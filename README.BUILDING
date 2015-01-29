@@ -1,43 +1,84 @@
                        Fetching and Building REDUCE
                        ============================
 
-[This document was written some while ago and needs a full review - I
-am putting this comment in in September 2014 as a reminder to prompt
-that re-work. ACN]
+                               January 2015
+
+
+
+The notes here are about having a full set of Reduce sources fetched from
+Sourceforge and compiling them on your own computer. Following that path
+lets you track the most recent changes, updates and corrections. Because
+both Reduce and the platforms that people may wish to build on change over
+time what is explained here will almost always have a few details where it
+is out of date: so check the date to see how recently this has been refreshed.
+But almost always the changes needed to what is explained here will be small,
+and if you find some please report back to the Reduce mailing list for the
+benefit of others.
 
 The prerequisites for using this package will depend somewhat on whether
 you choose to use the CSL or PSL build.
 
-At present most users of PSL will use the ready-build binaries of the PSL
-Lisp system that are fetched when you configure that option, and so almost no
-special development tools are required. However the full sources and some
-scripts for bootstrap-building of PSL Lisp from scratch are being provided,
-and anybody wishing to experiment in that area should check the PSL-specific
-parts of the tree and if necessary post enquiries on the mailing list and/or
-forum to check which cases are currently supported.
+Users of PSL will use the ready-build binaries of the PSL Lisp system that
+are present in the material hosted at Sourceforge. Rebuilding PSL from source
+is possible but the procedures are not covered at all here and anybody needing
+to do that probably needs to consult the PSL experts. Because PSL uses
+pre-made binaries these have to be present for the architecture you are using.
+They are available for all the most important or common cases. Because the
+binaries are pre-made there are few demands for compilers or special
+libraries installed on the computer you will use PSL on.
 
 For CSL you need to be able to compile both CSL itself and the FOX toolkit
 on which it depends. Please note that even if you have FOX available already
 on your computer the code her uses a (slightly) customised version and your
 standard system-wide installation of FOX will not be used and should be
-irrelevant here.
+irrelevant here. To join in develpoment work on what is hoped to be a future
+version of CSL-Reduce you will also need to be able to compile wxWidgets, and
+again at the time of writing you should use the customised version of that
+present within the Reduce tree rather than any standard one that you might
+already have available.
+
+You will need:
    For Windows, the "cygwin" environment providing a "bash" shell.
        Note that building under "msys" or the plain Windows command
-       prompt is not possible. Obviously it will be sensible to keep your
+       prompt is not possible (without you doing significant work of your
+       own to arrange for it). Obviously it will be sensible to keep your
        cygwin installation up to date, and some updates there have in the
        past not always been upards compatible. The aim is to keep the
        current CSL/Reduce at Sourceforge buildable using the most recent
        cygwin release. But any difficulty due to temporary bugs or glitches
-       at the cygwin end can not be resolved here!
+       at the cygwin end can not be resolved here! If you use a 32-bit cygwin
+       shell it is possible to build Reduce for cygwin32, cygwin64 and both
+       32 and 64-bit native Windows. At the time of writing the cygwin64
+       environment does not provide all the libraries needed to build
+       a 32-bit cygwin system, but can cope with the other three cases.
+       The command scripts/cygwin-sanity-check.sh attempts to check if
+       sufficient cygwin components have been installed, and it may save
+       you pain if you try it and respond to its suggestions before trying
+       a full build of Reduce.
+   For Macintosh you need the XCode command line tools, and you are liable
+       to need to use Macports to fetch and install a significant number
+       of commands and libraries that Apple do not provide as standard.
+       The csl/cslbase directory contains a file that lists the ports that
+       I have installed and that I fund sufficient. 
    GNU make (other versions of "make" are not liable to work), autoconf
        and automake. Well you can probably survive without having autoconf
        and automake, but if you have them you should use a reasonably up to
        date version.
-   For CSL you need a C/C++ development context. On Windows you
-       need the "mingw64-i686" and possily the "mingw-x86_64" compiler
-       variants (as well as plain gcc) from cygwin while on other systems
-       you need X11 and other development capability, including Xft,
-       fontconfig, (n)curses, Posix threads.
+   You need a C/C++ development context. On Windows you need the
+       "mingw64-i686" and "mingw-x86_64" compiler variants (as well as plain
+       gcc) from cygwin while on other systems you need X11 and other
+       development capability, including Xft, fontconfig, (n)curses, Posix
+       threads. The building has been tested using versions if gcc and clang.
+
+I have (recently) built using cygwin32, cygwin64, Ubuntu and Fedora Linuxes
+on pcs, Raspbian on a Raspberry Pi, OSX Yosemite and PCBSD/FreeBSD. In the
+past I have built using Solaris on both pc and sparc (requiring significant
+extra software installation), SGI, HP-pa, the IBM z-architecture and at one
+stage (not now I think) I coudl run Reduce on an HP IPAQ 4700 PDA. The hope
+is that almost any machine with a C compiler should suffice for the basic
+system. In case of a challenging environment it may be prudent to do initial
+testing by running "./configure --with-csl --without-gui" to avoid all
+attempts to build windowing libraries.
 
 One of the most common problems people seem to have the first time that they
 try to build CSL arises when they do not have quite all the necessary tools,
@@ -53,15 +94,26 @@ names of some packages alter the tests may become outdated.
 
 If you try to build REDUCE but one of the programming tools or development
 libraries that is required is not available then there is no guarantee that
-the failure that results will describe itself to you clearly.
+the failure that results will describe itself to you clearly! If the failure
+is detected at configuer time the evidence will be in a file "config.log"
+(possibly somewhere within the cslbuild directory). In case of trouble I often
+go
+    script buildlog.log
+    rm -rf cslbuild
+    ./configure --with-csl
+    make
+    exit
+and then buildlog.log contains a full transcript of all the output from the
+attempt. Its size can be daunting and distinguishing between messages,
+warnings, observations and errors can take experience!
 
 To try to make that easier to cope with I provide a script that attempts to
 check for prerequisites and that is lighter weight than the full configuration
 process and maybe reports trouble in a cleaner way. To use it select the
 Reduce "trunk" directory as current and at a bash prompt (you MUST have
-"bash" available as a shell, and you will run least rish if you run all scripts
-from it. I have tried to make most of them compatible with a legacy /bin/sh
-but testing and guaranteeing that is tedious) go
+"bash" available as a shell, and you will run least rishk if you run all
+scripts from it. I have tried to make most of them compatible with a legacy
+/bin/sh but testing and guaranteeing that is tedious) go
       scripts/csl-sanity-check.sh
 This should run auto-configure scripts and eventually compile and run a small
 program that pops up a dull window. If you get the window at the end it has
@@ -71,7 +123,7 @@ installation sources relevant your operating system and install more stuff,
 then try again. Eg for cygwin you re-run "setup", while on Linux I like it when
 my distribution lets me use "synaptic", but "apt-get" and "yum" and various
 other package managers can also be used. You need to check the documentation
-of your particular operating system - or perhaps better fina local expert to
+of your particular operating system - or perhaps better find local expert to
 get you started.
 
 Note that if you configure using "--with-csl --with-wx" you also need GTK2
@@ -128,23 +180,27 @@ You can fetch or update REDUCE in one of (at least) two ways
 (1) Fetch a file from the Sourceforge download area, eg from the
 reduce-algebra-source section. Unpack it. Note that the full archives
 at sourceforge are updated sporadically and not to any coherent schedule,
-so what you get could be a little out of date.
+so what you get could be a little out of date. Thus this scheme is not
+recommended!
 
 OR
 
 (2) Use subversion to fetch or refresh a copy from the master site.
-
-svn checkout
-  https://reduce-algebra.svn.sourceforge.net/svnroot/reduce-algebra
-  reduce-algebra
-(all the above three lines really stand for one long line of input)
-[Ha this URL is now painfully WRONG and out of date]
-
+        svn checkout \
+           svn://svn.code.sf.net/p/reduce-algebra/code/trunk \
+           reduce-algebra
     That should create a directory called "reduce-algebra" for you.
     To refresh your files, enter the reduce-algebra directory and go
         svn update
-    Note that the main copy of everything will end up in the "trunk"
-    sub-directory of what you fetch.
+    You can check the documentation of subversion (svn) to discover
+    what further options and possibilities tare provided. Two notable
+    advanntages of this are (a) "svn update" lets you refresh your copy
+    to match the very latest one available without needing to fetch
+    everything again afresh and (n) "svn -r NNNN update" lets you update
+    you local copy to match "revision NNNN", a possibly older copy of
+    everything, so if the main development version is even temporarily
+    broken (that should only happen accidentally!) you can fetch older
+    versions for comparison.
 
 The version fetched and updated using subversion (hah - note that you
 need "subversion" installed on your computer to do this!) will be fully
@@ -161,9 +217,30 @@ where REDUCE was unpacked as current and issue one of the command
          ./configure --with-csl
      OR  ./configure --with-psl
 
+It ought not to be necessary to provide any other options to the configure
+script or to pre-set environment variables, but for experts there are (of
+course) many opportunities for customisation. If you find you are on a platform
+where simple use of the configure script is insufficient please report that
+so that things can be updated and users in the future wioll come closer to
+find that everything works first time without fuss.
+
 Follow that by the command "make" and if all goes well everything relevant
 will be compiled. But at least in the CSL case please try
 scripts/csl-sanity-check.sh first - it may save you a lot of agony.
+
+If you build both the CSL and PSL versions then it can be a comfort to
+run
+    scripts/testall.sh
+which runs all the various test scripts and displays a report showing any
+places where the output on your machine does not match reference versions
+of the logs. Directories called csl-times and psl-times end up with the
+log output. In some cases log discrepancies are expected! For instance some
+of the test files generate timing reports so their output varies depending on
+the speed or size of your computer. In other cases improvements to the
+system may change test output but the reference logs may not have been
+updated to reflect it. Some logs are there to highlight difference between
+detaiuled behaviour of CSL and PSL that are not hugely important but that
+may be addressed at some stage in the future.
 
 For (some sort of) convenience a script "rebuild.sh" in the top level of
 the distribution tries to do this for both PSL and CSL and it then leaves
@@ -193,7 +270,7 @@ needs some resources in the same directory as the bain executable so merely
 copying <triple>/csl/reduce to somewhere else is not liable to be a good idea.
 
 Logs from building and testing Reduce end up in the directory where the
-main binary gets created, so if things go wromg that is where you may wish
+main binary gets created, so if things go wrong that is where you may wish
 to look.
 
 
@@ -203,58 +280,25 @@ There are a number of optional ways in which configuration may be customised:
    Enable "gcc -g" compilation of the C parts of CSL so that gdb can be
    used to debug things.
 
-         ./configure --with-csl --with-m32
-   On an architecture that is basically 64-bit (mostly 64-bit Linux) this
-   arranges to compile 32-bit binaries. As in "gcc -m32". Similarly
-   "--with-m64" exists. To use this your computer must be set up to be
-   able to build both widths of binary. This is sometimes referred to as
-   "multilib".
- 
-         ./configure --with-csl --with-mingw64
-   Provided a cross compiler x86_64-win64-mingw32-gcc is available (plus all
-   associated tools - and they can be installed via cygwin setup) build
-   a 64-bit Windows system.
-
-         ./configure --with-csl --with-cygwin
-   Normally the CSL build on a Windows platform builds a normal native Windows
-   binary using "mingw32". "--with-cygwin" causes it to build a "cygwin"
-   system that expects to use X-windows rather than a native Windows GUI,
-   and that links in the cygwin1.dll library which imposes some additional
-   license constraints. This is not expected to be very useful and will often
-   be broken.
-
-         ./configure --with-psl --with-m32
-   As "--with-m32" for CSL, this used 32-bit PSL even if you are in a
-   64-bit-capable environment. I think!
-
-   For example, to build both 32-bit and 64-bit PSL on a 64-bit Windows system
-   you would run the following commands
-         ./configure --with-psl --with-m32
-         ./configure --with-psl
-         make
+         ./configure --with-csl --without-gui
+         ./configure --with-csl --with-wx
+   By default the CSL version build in support for a GUI using the FOX
+   toolkit. If for some reason that is not required or can not be supported
+   then "--without-gui" removes it. There are some plans to change to use
+   wxWidgets rather than FOX, and "--with-wx" enables the experimental build
+   for that. At the time of writing the code compiles but is significantly
+   unfinished. Volunteers to help complete it would be useful!
 
    There are other options, many of which are experimental or historical.
-   See "./configure --help" for a definitive list. In the CSL world I will
-   perhaps note "--with-wx" which relates to a currently incomplete move from
-   using FOX to using wxWidgets as the GUI toolkit.
-
-
-
-Having built the system [in the CSL world] you can go
-         make testall
-and that will run the full set of REDUCE test scripts, leaving some output
-in the log directory. [With CSL] This also compares the test output with
-reference logs held in the main source tree and provides a summary of
-differences, and prepares a table comparing the performance of the current
-computer the the one used to create the reference logs.
-
-
+   See "./configure --help" for a definitive list.
 
 
 Developers and some more ambitious users may need to understand the
-directory layout in more detail.  The main directories supplied are
-as follows, where MACHINE stands for a machine identification, eg
-i686-pc-windows-debug.
+directory layout in more detail. The document "Inside Reduce" the
+the "primers" part of the Reduce documentation directory may provide
+useful guidance.
+The main directories supplied are as follows, where MACHINE stands for
+a machine identification, eg i686-pc-windows-debug.
 
  trunk                    The main version of everything
    bin                    Scripts to launch REDUCE etc
@@ -263,8 +307,6 @@ i686-pc-windows-debug.
    cslbuild/generated-c   Part of REDUCE compiled into C
             MACHINE/csl   where REDUCE binaries are built
                     fox   where the FOX GUI toolkit is built
-   csllogs/MACHINE/build  logs from building REDUCE
-                   test   logs from testing REDUCE
    packages/alg           REDUCE sources, on package per directory
             ...
             ztrans
@@ -275,8 +317,6 @@ i686-pc-windows-debug.
                     psl   copy of relevant architecture-specific PSL
                     red   REDUCE built binary "fasl" and image files
                     deps  used to record dependencies in the build
-   psllogs/build          logs from building REDUCE
-           test           logs from testing REDUCE
    scripts                scripts used to maintain the system.
 
 
@@ -289,21 +329,21 @@ is the main one used for rebuilding the system.
 
 For special purposes you may wish to investigate the csl/jlisp directory (all
 Reduce runnable via Java - distinctly slower and at present the user interface
-is not well sorted, but it might be fun) and csl/embedded (a kit for making
-a simple small C-coded version for potential use as a component in some other
-software rather than a free-standing complete program).
+is not well sorted, but it might be fun) and csl/new-embedded (a kit for
+making a simple small C-coded version for potential use as a component in
+some other software rather than a free-standing complete program).
 
 
 The more alive the Reduce project is the more you can expect there to be
 additions, changes and enhancements but please understand that these all
 carry risk of transient introduction of bugs. Report trouble to us via
 Sourceforge and when and if we can we will fix them. But all the source code
-is there so you can also join in the debugging and propse fixes (please!)
+is there so you can also join in the debugging and propose fixes (please!)
 
 
 
-A C Norman. July 2008. Updated Jan 2009, September 2010, March 2011
+A C Norman. July 2008. Updated Jan 2009, September 2010, March 2011,
+            September 2014, January 2015.
 
-[more updates needed - September 2014]
 
 
