@@ -57,19 +57,20 @@ load!-package 'matrix;
 
 fluid '(powlis!* wtl!*);
 
-global '(!*derexp !*dispjacobian);
-switch derexp, dispjacobian ;  % on derexp       : Smart chain ruling
-                               % on dispjacobian : Displays inverse
-                               %                   Jacobian.
+%global '(!*derexp !*dispjacobian);
+fluid '(!*dispjacobian);
+%switch derexp                 % on derexp       : Smart chain ruling
+switch dispjacobian ;          % on dispjacobian : Displays inverse Jacobian.
+
 symbolic procedure simpchangevar v;
-begin scalar u,f,j,dvar,flg;
+begin scalar u,f,j,dvar,flg,rulelist;
      dvar := if pairp car v then cdar v else car v.nil;
      v := cdr v;                        % Dvar: list of depend. var
      u :=  if pairp car v then cdar v else car v.nil;
      v := cdr v;                        % u: list of new variables
      if eqcar(car v,'list) then v := append(cdar v,cdr v);
      while cdr v do
-       << if caar v neq 'equal
+       << if not eqcar(car v,'equal)
             then rederr "improper new variable declaration";
           f := cdar v . f;  % f: list of entries (oldvar  func(newvrbs))
           v := cdr v >>;    %                           i     i
@@ -94,31 +95,43 @@ begin scalar u,f,j,dvar,flg;
      %  new   : car row,   old   : caar col,   jacobian       : cdr col
      %     row                col                      row,col
      %
-     for each row in pair(u,j) do
-       for each col in pair(f,cdr row) do
-        <<
-          let2(list('df,car row,caar col), sqchk cdr col, nil, t);
-          if !*dispjacobian and !*msg then
-             mathprint list('equal,list('df,car row,caar col),
-                            sqchk cdr col)
-        >>;
+     rulelist := 'list .
+       for each row in pair(u,j) conc
+         for each col in pair(f,cdr row) collect
+           begin scalar rule;
+             rule := {'replaceby,{'df,car row,caar col},sqchk cdr col};
+             if !*dispjacobian and !*msg then mathprint rule;
+             return rule;
+%%        <<
+%%          let2(list('df,car row,caar col), sqchk cdr col, nil, t);
+%%             mathprint list('equal,list('df,car row,caar col),
+%%                            sqchk cdr col)
+%%        >>;
+           end;
 %     flg := !*derexp;
 %     !*derexp := t;
-     begin scalar !*expanddf; !*expanddf := t; 
+
      v := changearg(dvar,u,v);
 
      for each  entry in f do
        v := subcare(car entry, cadr entry, v);
      % now here comes the striking point ... we evaluate the last
      % argument.
-     v := simp!* v;
+     v := evalletsub({{rulelist},{'simp!*,mkquote v}},nil) where !*expanddf := t;
+%%     v := simp!* v;
      % Now clean up the mess of LET;
+%%     for each new in u do
+%%       for each old in f do
+%%          << let2(list('df,new,car old), nil, nil, nil);
+%%             let2(list('df,new,car old), nil, t,   nil) >>;
+%     !*derexp := flg;
+
+     % We have to remove the dependencies of old variables to new
+     % variables.
      for each new in u do
        for each old in f do
-          << let2(list('df,new,car old), nil, nil, nil);
-             let2(list('df,new,car old), nil, t,   nil) >>;
-%     !*derexp := flg;
-     end;
+          depend1(new, car old, nil);
+
      return v;
 end;
 
