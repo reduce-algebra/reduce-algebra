@@ -571,6 +571,150 @@ returns the $n$th Motzkin number, according to the recursion formula
   M_{n+1} = \frac{2n+3}{n+3}M_{n}+ \frac{3n}{n+3}M_{n-1}\,.
 \end{displaymath}
 
+\section{CHANGEVAR operator}
+\hypertarget{operator:CHANGEVAR}{}
+\ttindextype{CHANGEVAR}{operator}
+
+\noindent
+Author: G. \"{U}\c{c}oluk.
+
+The operator \texttt{CHANGEVAR} does a variable transformation in a set of 
+differential equations.
+Syntax:
+\begin{syntaxtable}
+   \texttt{changevar(}\meta{oldvars},\meta{newvars},\meta{eqlist},\meta{diffeq}\texttt{)}
+\end{syntaxtable}
+\meta{diffeq} is either a single differential equation or a list of
+differential equations, \meta{oldvars} are the dependent variables to
+be substituted, \meta{newvars} are the new depend variables, and
+\meta{eqlist} is a list of equations of the form \meta{oldvar}
+\texttt{=} \meta{expression} where \meta{expression} is some function
+in the new dependent variables.
+
+The three lists \meta{oldvars}, \meta{newvars}, and \meta{eqlist} must
+be of the same length. If there is only one variable to be
+substituted, then it can be given instead of the list. The same applies to the list
+of differential equations, i.e., the following two
+commands are equivalent
+\begin{verbatim}
+    changevar(x,y,x=e^y,df(u,x) = log(x)};
+
+    changevar({x},{y},{x=e^y},{df(u,x) = log(x)}};
+\end{verbatim}
+There is one difference, though: the first command returns the transformed differential
+equation, the second one a list with a single element.
+
+\hypertarget{switch:DISPJACOBIAN}{}
+The switch \sw{DISPJACOBIAN} governs the display the entries of the inverse Jacobian,
+it is \texttt{OFF} per default.\ttindextype{DISPJACOBIAN}{switch}
+
+The mathematics behind the change of independent variable(s) in differential
+equations is quite straightforward. It is basically the application of the
+chain rule. If the dependent variable of the differential equation is $F$,
+the independent variables are $x_{i}$ and the new independent variables are
+$u_{i}$ (where ${\scriptstyle i=1\ldots n}$) then the first derivatives are:
+\[
+    \frac{\partial F}{\partial x_{i}} = \frac{\partial F}{\partial u_{j}}
+                                        \frac{\partial u_{j}}{\partial x_{i}}
+\]
+We assumed Einstein's summation convention. Here the problem is to
+calculate the $\partial u_{j}/\partial x_{i}$ terms if the change of variables
+is given by
+\[
+    x_{i} = f_{i}(u_{1},\ldots,u_{n})
+\]
+The first thought might be solving the above given equations for $u_{j}$ and
+then differentiating them with respect to $x_{i}$, then again making use of the
+equations above, substituting new variables for the old ones in the calculated
+derivatives. This is not always a  preferable way to proceed. Mainly because
+the functions $f_{i}$ may not always be easily invertible. Another approach
+that makes use of the Jacobian is better. Consider the above given equations
+which relate the old variables to the new ones. Let us differentiate them:
+\begin{eqnarray*}
+  \frac{\partial x_{j}}{\partial x_{i}} & = &
+        \frac{\partial f_{j}}{\partial x_{i}}   \\
+  \delta_{ij} & = &
+        \frac{\partial f_{j}}{\partial u_{k}}
+        \frac{\partial u_{k}}{\partial x_{i}}
+\end{eqnarray*}
+The first derivative is nothing but the $(j,k)$ th entry of the Jacobian matrix.
+
+So if we speak in matrix language
+\[ {\bf 1 = J \cdot D} \]
+where we defined the Jacobian
+\[ {\bf J}_{ij} \stackrel{\triangle}{=}  \frac{\partial f_{i}}{\partial u_{j}} \]
+and the matrix of the derivatives we wanted to obtain as
+\[ {\bf D}_{ij} \stackrel{\triangle}{=}  \frac{\partial u_{i}}{\partial x_{j}}. \]
+If the Jacobian has a non-vanishing determinant then it is invertible and
+we are able to write from the matrix equation above:
+\[ {\bf  D = J^{-1}} \]
+so finally we have what we want
+\[
+   \frac{\partial u_{i}}{\partial x_{j}} = \left[{\bf J^{-1}}\right]_{ij}
+\]
+The higher derivatives are obtained by the successive application of the chain
+rule and using the definitions of the old variables in terms of the new ones. It
+can be easily verified that the only derivatives that are needed to be
+calculated are the first order ones which are obtained above.
+
+\subsection{\texttt{CHANGEVAR} example: The 2-dim. Laplace Equation}
+The 2-dimensional Laplace equation in cartesian coordinates is:
+\[
+   \frac{\partial^{2} u}{\partial x^{2}} +
+   \frac{\partial^{2} u}{\partial y^{2}} = 0
+\]
+Now assume we want to obtain the polar coordinate form of Laplace equation.
+The change of variables is:
+\[
+   x = r \cos \theta, \qquad  y = r \sin \theta
+\]
+The solution using \texttt{CHANGEVAR} is as follows
+\begin{verbatim}
+  changevar({u},{r,theta},{x=r*cos theta,y=r*sin theta},
+            {df(u(x,y),x,2)+df(u(x,y),y,2)} );
+\end{verbatim}
+Here we could omit the curly braces in the first and last arguments (because
+those lists have only one member) and the curly braces in the third argument
+(because they are optional), but you cannot leave off the curly braces in the
+second argument. So one could equivalently write
+\begin{verbatim}
+   changevar(u,{r,theta},x=r*cos theta,y=r*sin theta,
+             df(u(x,y),x,2)+df(u(x,y),y,2) );
+\end{verbatim}
+If you have tried out the above example, you will notice that the denominator
+contains a $\cos^{2} \theta + \sin^{2} \theta$ which is actually equal to $1$.
+This has of course nothing to do with \texttt{CHANGEVAR}.  
+One has to be overcome these pattern matching problems by the
+conventional methods REDUCE provides (a rule, for example,
+will fix it).
+
+Secondly you will notice that your \texttt{u(x,y)} operator has changed to
+\texttt{u(r,theta)} in the result. Nothing magical  about this. That is just what
+we do with pencil and paper. \texttt{u(r,theta)} represents the  the transformed
+dependent variable.
+
+\subsection{Another \texttt{CHANGEVAR} example: An Euler Equation}
+Consider a differential equation which is of Euler type, for instance:
+\[
+   x^{3}y''' - 3 x^{2}y'' + 6 x y' - 6 y = 0
+\]
+where prime denotes differentiation with respect to $x$. As is well known,
+Euler type of equations are solved by a change of variable:
+\[
+   x = e^{u}
+\]
+So our call to \texttt{CHANGEVAR} reads as follows:
+\begin{verbatim}
+   changevar(y, u, x=e**u, x**3*df(y(x),x,3)-
+             3*x**2*df(y(x),x,2)+6*x*df(y(x),x)-6*y(x));
+\end{verbatim}
+and returns the result
+\begin{verbatim}
+   df(y(u),u,3) - 6*df(y(u),u,2) + 11*df(y(u),u) - 6*y(u)
+\end{verbatim}
+
+
+
 \section{CONTINUED\_FRACTION Operator}
 \hypertarget{operator:CONTINUED_FRACTION}{}
 \index{approximation}\index{rational number}
@@ -974,6 +1118,7 @@ algorithms supplied by Wolfram Koepf.% \cite{Koepf:92}.
 \section{PF Operator}\ttindex{PF}
 \hypertarget{operator:PF}{}
 
+\index{partial fraction}\index{partial fraction decomposition}\index{decomposition!partial fraction}
 \texttt{PF(\meta{exp},\meta{var})} transforms the expression \meta{exp} into
 a list of partial fractions with respect to the main variable, \meta{var}.
 \texttt{PF}
