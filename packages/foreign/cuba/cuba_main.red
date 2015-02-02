@@ -30,13 +30,12 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-
 module cuba_main;
 
-% The next line is unsatisfactory (for much the reason it was in redlog)
+% The next line is unsatisfactory (for much the reason it was in Redlog)
 % because it can ONLY behave while the Reduce source tree is available, and so
 % it will FAIL when Reduce has been distributed as a binary archive and
-% installed on a fresh computer. Furthermore if native windows is ever to
+% installed on a fresh computer. Furthermore if native Windows is ever to
 % be supported one would need a ".dll" suffix not ".so".
 libredcuba_loc!* := lto_sconcat {rltools_trunk(),
                                  "packages/foreign/cuba/libredcuba.so"};
@@ -48,17 +47,18 @@ else <<
    begin
       scalar w;
       w := lto_sconcat {rltools_trunk(), "packages/foreign/cuba"};
-% One bad thing here is that lto_sconcat is coded so it fails if some of
-% the strings passed contain double-quote marks, and I would have liked to
-% use some here!
+      % One bad thing here is that lto_sconcat is coded so it fails if some of
+      % the strings passed contain double-quote marks, and I would have liked to
+      % use some here!
       w := lto_sconcat {"sh -c 'cd ", w, "; make'"};
       system w
    end;
-% The call to SYSTEM might have managed to create the library, so
-% check again!
+   % The call to system() might have managed to create the library, so
+   % check again!
    if filep libredcuba_loc!* then
       libredcuba!* := open!-foreign!-library(libredcuba_loc!*)
-   else rederr {"Can't open the Cuba library ", libredcuba_loc!*} >>;
+   else rederr {"Can't open the Cuba library ", libredcuba_loc!*}
+>>;
 
 %% Setting parameters
 cuba_statefile!*   := find!-foreign!-function("cuba_statefile", libredcuba!*);

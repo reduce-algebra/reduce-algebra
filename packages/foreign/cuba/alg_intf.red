@@ -76,6 +76,8 @@ procedure to_num(x);
 
 %% Evaluate a Reduce call to an algebraic function 'fn' that takes a Reduce list
 %% of reals and delivers either a single real or another list of reals.
+%% An example where a we use a list as the returned value is in the NLopt interface,
+%% rednlopt.c, function red_mfunc_wrap.
 %% Awfully tricky!  Needs 'on rounded'.
 
 % ACN explanation: A REDUCE list of floats will have an internal representation
@@ -108,34 +110,36 @@ procedure to_num(x);
 % roughly the first half of the function converting in one direction and the
 % second converting back.
 
-procedure alg_call_list_to_rlist(fn, ll);
-  begin scalar w;
-    w := list(fn, 'list . for each v in ll collect ('!:rd!: . v));
-    % call the algebraic evaluator (Primer, sec. 3.4); result is in *SQ form.
-    w := list('aeval, mkquote w);
-%    princ "Thing to evaluate: "; print w;
-    w := errorset(w, !*backtrace, !*backtrace);
-%    princ "From errorset: "; print w;
-    if errorp w then rederr {"**a",ll,w}; % 0.0;
-    w := car w;
-    if not eqcar(w, 'list) then <<
-       % the result of 'fn' is not a list
-       return process_single(w,ll);
-    >>
-    else <<
-       % the result of 'fn' is a list
-       w := cdr w;
-       return for each y in w collect process_single(y,ll);
-    >>
-  end;
+procedure call_alg_fn_list2list(fn, ll);
+   begin scalar w;
+      w := list(fn, 'list . for each v in ll collect ('!:rd!: . v));
+      % call the algebraic evaluator (Primer, sec. 3.4); result is in *SQ form.
+      w := list('aeval, mkquote w);
+      %    princ "Thing to evaluate: "; print w;
+      w := errorset(w, !*backtrace, !*backtrace);
+      %    princ "From errorset: "; print w;
+      if errorp w then rederr {"**a",ll,w}; % 0.0;
+      w := car w;
+      if not eqcar(w, 'list) then <<
+       	 % the result of 'fn' is not a list
+       	 return process_single(w,ll);
+      >>
+      else <<
+       	 % the result of 'fn' is a list
+       	 % An example where this is used is in the NLopt interface, file
+       	 % rednlopt.c, function red_mfunc_wrap.
+       	 w := cdr w;
+       	 return for each y in w collect process_single(y,ll);
+      >>
+   end;
 
 
 procedure process_single(z,ll);
    begin;
       if numberp z then return float z;
-       z := numr cadr z;
-       if not eqcar(z, '!:rd!:) then rederr {"**b",ll,z}; % 0.0;
-       return cdr z;
+      z := numr cadr z;
+      if not eqcar(z, '!:rd!:) then rederr {"**b",ll,z}; % 0.0;
+      return cdr z;
    end;
 
 

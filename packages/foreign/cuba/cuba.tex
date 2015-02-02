@@ -1,10 +1,11 @@
 \documentclass[11pt]{article}
-% The fontenc package would be useful to suppoty "{" and "}" characters
+% The fontenc package would be useful to support "{" and "}" characters
 % in a \texttt context, however it is not always automatically available.
 % So when you see warnings about those characters here is a place you could
 % change to get rid of it.
 %\usepackage[T1]{fontenc}
 \usepackage{amsmath,amsfonts,color}
+\usepackage[letterpaper]{geometry}
 \usepackage[pdftex,colorlinks=true,linkcolor=blue,extension=pdf]{hyperref}
 
 \newcommand{\Reduce}{\textsc{Reduce}}
@@ -21,18 +22,75 @@
 \section{Introduction}
 
 The \texttt{cuba} package is an interface between {\Reduce} (CSL) and the
-{\Cuba} library for multi-dimensional numerical integration.  The libary can be
-found at \url{http://www.feynarts.de/cuba}.  It offers a choice of four
-independent methods: Vegas, Suave, Divonne, and Cuhre. The first three are Monte
-Carlo-based, the fourth is a deterministic algorithm.  It is recommended to read
-the {\Cuba} manual, and, optionally, to look at the other documentation provided
-on the site.
+{\Cuba} library for multi-dimensional numerical integration.  The library can be
+found at \url{http://www.feynarts.de/cuba} and offers a choice of four
+integration methods: \texttt{Vegas}, \texttt{Suave}, \texttt{Divonne}, and
+\texttt{Cuhre}. The first three are Monte Carlo-based and the fourth is
+deterministic.  It is recommended to read the {\Cuba} manual, and, optionally,
+to look at the other documentation provided on the site.
 
-The integrals are evaluated \emph{only} over hyper-rectangles\footnote{{\Cuba}
-  itself evaluates all integrals over the unit hypercube, but the {\Reduce}
-  interface provides a small extension, allowing the user to integrate over an
-  arbitrary hyper-rectangle.}.  As an example of what can be done using the
-\texttt{cuba} package in {\Reduce}, say $f$ is a function $\mathbb{R}^3\to
+Here is some basic information on the algorithms, copied from the {\Cuba} web
+site.
+\begin{table}[h]
+  \small
+  \begin{tabular}{|l|l|l|l|} \hline
+   \textsc{Routine} & \textsc{Basic Integration Method} & \textsc{Algorithm} &
+   \textsc{Variance Reduction} \\ \hline
+         & Sobol quasi-random sample,  & Monte Carlo & \\
+   Vegas & \emph{or} Mersenne Twister pseudo-random sample, & Monte Carlo &
+   importance sampling \\
+         & \emph{or} Ranlux pseudo-random sample & Monte Carlo & \\ \hline
+         & Sobol quasi-random sample, & Monte Carlo  & globally-adaptive \\
+   Suave & \emph{or} Mersenne Twister pseudo-random sample, & Monte Carlo & subdivision + \\
+         & \emph{or} Ranlux pseudo-random sample & Monte Carlo & importance sampling \\ \hline
+         & Korobov quasi-random sample,    & Monte Carlo &  stratified sampling, \\
+         & \emph{or} Sobol quasi-random sample, & Monte Carlo & aided by methods \\
+   Divonne & \emph{or} Mersenne Twister pseudo-random sample, & Monte Carlo &
+   from numerical \\
+         & \emph{or} Ranlux pseudo-random sample, & Monte Carlo & optimization \\
+         & \emph{or} cubature rules & deterministic &  \\ \hline
+   Cuhre & cubature rules & deterministic & globally-adaptive \\
+         & & & subdivision \\ \hline
+  \end{tabular}
+\end{table}
+
+\texttt{Vegas} is the simplest of the four.  It uses importance sampling for variance
+reduction, but is only in some cases competitive in terms of the number of
+samples needed to reach a prescribed accuracy.  Nevertheless, it has a few
+improvements over the original algorithm and comes in handy for cross-checking
+the results of other methods.
+
+\texttt{Suave} is a new algorithm which combines the advantages of two popular
+methods: importance sampling as done by \texttt{Vegas} and subregion sampling in
+a manner similar to \texttt{Miser}. By dividing into subregions, \texttt{Suave}
+manages to a certain extent to get around \texttt{Vegas}' difficulty to adapt
+its weight function to structures not aligned with the coordinate axes.
+
+\texttt{Divonne} is a further development of the CERNLIB routine D151. \texttt{
+  Divonne} works by stratified sampling, where the partitioning of the
+integration region is aided by methods from numerical optimization.  A number of
+improvements have been added to this algorithm, the most significant being the
+possibility to supply knowledge about the integrand.  Narrow peaks in particular
+are difficult to find without sampling very many points, especially in high
+dimensions.  Often the exact or approximate location of such peaks is known from
+analytic considerations, however, and with such hints the desired accuracy can
+be reached with far fewer points.
+
+\texttt{Cuhre} employs a cubature rule for subregion estimation in a globally
+adaptive subdivision scheme. It is hence a deterministic, not a Monte Carlo
+method. In each iteration, the subregion with the largest error is halved along
+the axis where the integrand has the largest fourth difference.  \texttt{Cuhre}
+is quite powerful in moderate dimensions, and is usually the only viable method
+to obtain high precision, say relative accuracies much below $10^{-3}$.
+
+
+\section{The {\Reduce} package}
+
+The \texttt{cuba} package evaluates integrals \emph{only} over
+hyper-rectangles\footnote{{\Cuba} itself evaluates all integrals over the unit
+  hypercube, but the {\Reduce} interface provides a small extension, allowing
+  the user to integrate over an arbitrary hyper-rectangle.}.  As an example of
+what can be done in {\Reduce}, say $f$ is a function $\mathbb{R}^3\to
 \mathbb{R}$ and we want to compute
 \begin{equation*}
   \int_{a_1}^{b_1} \int_{a_2}^{b_2} \int_{a_3}^{b_3} f(x_1,x_2,x_3)\, dx_1 \,
@@ -46,17 +104,21 @@ This is done by saying
   \begin{tabular}{l}
     load\_package cuba; \\
     on rounded; \\
-    cuba\_int(f,{{a1,b1},{a2,b2},{a3,b3}},Vegas);
+    cuba\_int(f,\{\{a1,b1\},\{a2,b2\},\{a3,b3\}\},Vegas);
   \end{tabular}
 \end{table*}\\
-if the ``Vegas'' algorithm is to be used.  Although quite a bit of effort has
-gone into making the package work even when not in rounded mode, it is probably
-best to have \texttt{on rounded}.
-
+\noindent\textbf{Notes}
+\begin{itemize}
+   \item If you have \texttt{on lower}, then \texttt{Vegas} above has to be
+     substituted by \texttt{!Vegas}.
+   \item Although quite a bit of effort has gone into making the package work
+     even when not in rounded mode, it is probably best to have \texttt{on
+       rounded}.
+\end{itemize}
 The {\Reduce} function \texttt{f} defining the integrand is assumed to take a
-3-element \emph{list} $x$ as input and return the value $f(x)$ of the
-integrand at the point $x\in\mathbb{R}^3$.  If so, \texttt{cuba\_int(...)} will
-return a list of the form
+3-element \emph{list} $x$ as input and return the value $f(x)$ of the integrand
+at the point $x\in\mathbb{R}^3$.  If so, the above call to
+\texttt{cuba\_int(...)} will return a list of the form
 \begin{center}
   \texttt{\{value, error, probability, number of regions,
             number of evaluations, status\}}
@@ -69,42 +131,40 @@ other quantities.
 
 \section{Installation}
 
-At present the Reduce parts of this package can only build using the CSL
-version of Reduce, but in that context get compiled automatically as part
-of the full standard system. However the code for {\Cuba} and the C-coded
-interface between that and Reduce has to be built by hand, and the current
-arrangements make that work when all the Reduce sources have been installed
-and Reduce is built from scratch.
+At present the {\Reduce} parts of this package can be built only using the CSL
+version of {\Reduce}, but in that context get compiled automatically as part of
+the full standard system.  However the code for {\Cuba} and the C-coded
+interface between it and {\Reduce} have to be built by hand, and currently this
+works when all the {\Reduce} sources have been installed and {\Reduce} is built
+from scratch.
 
-In that case you should identify the directory \verb+packages/foreign/cuba+
-in the Reduce source tree and select it as current. Ensure that the command
-\verb+wget+ is available on your platform and then You can then go
-\verb+make+ to fetch {\Cuba} from its home site, compile it and then create
-the dynamic library that forms a link between Cuba and Reduce.
+In that case you should identify the directory \texttt{packages/foreign/cuba} in
+the {\Reduce} source tree and select it as current.  Ensure that the command
+\texttt{wget} is available on your platform and then you can go \texttt{make} to
+fetch {\Cuba} from its home site, compile it, and create the dynamic library
+that forms a link between {\Cuba} and {\Reduce}.
 
-This should work on any sufficiently modern Unix-like system, including
-either the 32 or 64-bit version of Cygwin. The term "modern" here refers
-to Linux systems using releases from no older then the very end of 2011:
-any such will probably provide a version of the gcc C compiler (ie one
-from 4.6.x onwards) sufficient for Cuba. This corresponds to Ubuntu from
-release 11.10 onwards or Fedora from about version 15.
+This should work on any sufficiently modern Unix-like system, including either
+the 32- or 64-bit version of Cygwin. The term ``modern'' here refers to Linux
+systems using releases no older then the very end of 2011: any such will
+probably provide a version of the gcc C compiler (i.e. one from 4.6.x onwards)
+sufficient for {\Cuba}. This corresponds to Ubuntu from release 11.10 onwards or
+Fedora from about version 15.
 
-To use the Cuba package on Windows you must run a Cygwin version of CSL
-Reduce not a native windows one. That means that if you want the benefit of
-a GUI you must have an X server running and the environment variable
-DISPLAY set up for it. Passing the command-line flag ``\verb+--cygwin+'' to
-the CSL version of Reduce should cause a suitable version of the system to
-be loaded, and this probably needs to be done from the command line of
-a cygwin terminal. This limitation is because the main Cuba library does not
-support native Windows.
+To use the \texttt{cuba} package on Windows you must run a Cygwin version of CSL
+Reduce, not a native Windows one. That means that if you want the benefit of a
+GUI you must have an X server running and the environment variable DISPLAY set
+up for it.  Passing the command-line flag \texttt{--cygwin} to the CSL version
+of {\Reduce} should cause a suitable version of the system to be loaded, and this
+probably needs to be done from the command line of a Cygwin terminal.  This
+limitation is because the main {\Cuba} library does not support native Windows.
 
-Anybody with either and older version of an operating system or one other
-then (Free)BSD, OSX, Linux or Cygwin may need to identify a C compiler
-that can handle Cuba (any that support enough of the features of the 2011
-C standard should suffice) and edit "Makefile" to set the C compiler and
-any flags or options that it needs. Slightly more extreme alterations will
-be needed if the linking command that makes the dynamic interface library
-needs changing.
+Anybody with either and older version of an operating system or one other than
+(Free)BSD, OSX, Linux or Cygwin may need to identify a C compiler that can
+handle {\Cuba} (any that support enough of the features of the 2011 C standard
+should suffice) and edit the Makefile to set the C compiler and any flags or
+options that it needs.  Slightly bigger alterations will be needed if the
+linking command that makes the dynamic interface library needs changing.
 
 
 \section{The interface}
@@ -146,7 +206,9 @@ with $m>1$, integration routines that can do more than $2^{32}$ evaluations, and
 some of the parallelization features.
 \clearpage
 
-\section {The \texttt{cuba} package}
+
+
+\section {Implementation of the \texttt{cuba} package}
 
 \subsection{Structure}
 

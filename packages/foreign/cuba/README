@@ -6,4 +6,14 @@ Cuba itself evaluates all integrals over the unit hypercube, but the Reduce
 interface provides a small extension, allowing the user to integrate over an 
 arbitrary hyper-rectangle.
 
-Installation instructions are in cuba.pdf.
+A more detailed description and installation instructions are in cuba.pdf.
+
+
+Currently, there are the following issues: 
+
+1. If you run cuba.tst, do it only from Reduce running in a shell window, or
+from Reduce running inside Emacs.  The Fox interface or TeXmacs may freeze, for
+reasons currently unknown.
+
+2. Make sure your integrand produces a real-valued result over the entire domain
+of integration.  Complex values are not handled gracefully.
