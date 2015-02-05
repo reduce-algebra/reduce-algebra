@@ -17,7 +17,6 @@ module gnuintfc; % REDUCE-gnuplot interface.
 % PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
 % CONTRIBUTORS
 % BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 % SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
 % INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
@@ -41,6 +40,33 @@ global '(
    plottmp!*				% location of temporary files (including trailing directory spearator)
       );
 
+% Since it was first introduced the GNUPLOT package has passed a command
+% "set term XXX" to gnuplot, where XXX has typically been x11, aqua, vga
+% tek40xx or even dumb. At least with early versions of gnuplot that
+% was essential. It is possible - even probable - that modern versions of
+% gnuplot inspect their environment and choose a good terminal for themselves.
+% But it is reported that even now there are some users who are not content
+% with either the choices we make here or the ones that gnuplot makes for
+% itself so thet feel that they need to override things by putting directives
+% in comfiguration files or ebvironment variables that will control exactly
+% how gnuplot behaves. Such people are then invonvenienced if this Reduce
+% code forces an issue. So to preserve backwards compatibility and keep
+% everybody safe while supporting the latestm this switch is provided.
+% The default in "on force_gnuplot_term;" and that behaves just as Reduce has
+% for some while. If you specify "off force_gnuplot_term;" then it is probably
+% that in many circumstances gnuplot itself will pick sensible options, but
+% more importantly you gain the ability to guess better than gnuplot itself and
+% force your own customised choice of behaviour using ~/.gnuplot or
+% GNUPLOT.INI, or by setting GNUTERM etc - all as described in the gnuplot
+% documentation.
+% If somebody can show that they have done sufficiently extensive tests using
+% a wide range of current and somewhat elderly operating systems as well as
+% current and legacy versions of gnuplot so as to document that it would be
+% safe these days to make the default of this switch "off" rather than "on"
+% we can then change the default.
+
+switch force_gnuplot_term=on;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%% PSL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #if (member 'psl lispsystem!*)
    #if (member 'unix lispsystem!*)
@@ -63,7 +89,8 @@ global '(
      % terminal type.
 
    if null plotheader!* then
-   << if null x then
+   if null !*force_gnuplot_term then plotheader!* := ""
+   else << if null x then
       if getenv "DISPLAY" then x := '(nil . 
 "if(strstrt(GPVAL_TERMINALS,""aqua"")!=0)set terminal aqua;else set term x11;" )
                         else x:='(nil."dumb");
@@ -183,7 +210,8 @@ fluid '(!*!*windows);
      plotcmds!* := bldmsg("%wplotcmds",plottmp!*);
      plotcommand!* :=
      fnexpand bldmsg("$reduce\wutil\dos386\gnuplot.exe %w",plotcmds!*);
-     plotheader!* :=  "set term vga";
+     if !*force_gnuplot_term then plotheader!* :=  "set term vga";
+     else plotheader!* := "";
      plotcleanup!* :=                     % delete scratch files
        bldmsg("del %w",plotcmds!*).
         for each f in plotdta!* collect bldmsg("del %w",f);
@@ -203,8 +231,8 @@ fluid '(!*!*windows);
          bldmsg("%wplotdt%w",plottmp!*,i); % scratch data files
    plotcmds!* :=bldmsg("%wplotcmds",plottmp!*); % if pipes not accessible
    plotcommand!* := bldmsg("gnuplot %w",plotcmds!*);
-   plotheader!* :=    "set term x11;";
-
+   if !*force_gnuplot_term then plotheader!* :=    "set term x11;";
+   else plotheader!* := "";
    plotcleanup!* :=                  % delete scratch files
        {bldmsg("del %wplotdt*;*",plottmp!*),bldmsg("del %wplotcmds*;*",plottmp!*)};
    !*plotinterrupts := '(10002);
@@ -283,7 +311,8 @@ begin
            % being used knows about the "aqua" terminal type then assume that
            % we are on a Macintosh with that capability available and best.
     dirchar!* := "/";
-    plotheader!* :=
+    if null !*force_gnuplot_term then plotheader!* := ""
+    else plotheader!* :=
 "if(strstrt(GPVAL_TERMINALS,""aqua"")!=0)set terminal aqua;else set term x11;";
     plotdta!* := for i:=1:10 collect tmpnam();
     plotcmds!*:= tmpnam();
