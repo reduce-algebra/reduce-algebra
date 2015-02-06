@@ -39,7 +39,7 @@
 module mrvlimit;
 create!-package ('(mrvlimit expon),nil);
 
-global '(tracelimit!*); % for the tracing facility)
+global '(!*tracelimit); % for the tracing facility)
 
 switch tracelimit;
 
@@ -142,7 +142,8 @@ li:=li;
 if(numberp li) then return nil else <<
 if(li='(list)) then return nil else <<
 if(atom li) then return lisp ('list.{li}) else <<
-  if(car li='times) then <<
+  if car li eq 'quotient then return nil
+     else if(car li='times) then <<
                if(atom cadr li and atom caddr li) then
                      << if(length(cddr li)=1) then
                         return  lisp ('list.maxi1({cadr li}, {caddr li}))
