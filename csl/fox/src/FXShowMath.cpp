@@ -761,7 +761,7 @@ static int xfWidth(void *ff, const char *s, int len)
 
 // Returns NULL if all is well, else it may return an error string.
 
-static char *loadPrivateFonts(FXApp *appl, FXWindow *w)
+static const char *loadPrivateFonts(FXApp *appl, FXWindow *w)
 {
     for (int i=0; i<12; i++) mathFont[i] = NULL;
     for (int i=0; i<36; i++) masterFont[i] = NULL;
@@ -1588,9 +1588,11 @@ void measureBox1(Box *b)
     MatrixBox *m;
     BracketBox *bb;
     TopBox *tt;
+#ifdef WIN32
     int utflength;
     int l;
     char *ss;
+#endif
     if (DEBUGFONT & 4)
     {   printf("measureBox1(%p)\n", b); fflush(stdout);
         printf("type = %d\n", b->text.type); fflush(stdout);
@@ -3117,6 +3119,8 @@ static Box *readS();
 // sometimes the character does not appear. I reserve code 0xc5 for such
 // and extra remapping, but the tables here do not touch it at present!
 
+#ifdef WIN32
+
 static unsigned char remapTable[33] =
 {
     0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8,
@@ -3125,6 +3129,8 @@ static unsigned char remapTable[33] =
     0xbb, 0xbc, 0xbd, 0xbe, 0xbf, 0xc0, 0xc1, 0xc2,
     0xc3
 };
+
+#endif
 
 static int remap(int ch)
 {
@@ -3150,7 +3156,7 @@ static int remap(int ch)
 
 // I will also set myself up so that I can restore the original encoding.
 
-static char unmapTable[38] =
+static unsigned char unmapTable[38] =
 {
 // Characters codes 0xa0 to 0xc5 are used where perhaps naturally you would
 // have used 0x00 - 0x1f, 0x20 and 0x7f. This is because the non-printable
@@ -4486,7 +4492,7 @@ int setupShowMath(FXApp *app, int mainSize, FXWindow *w)
 {
     setupMemoryPool();
     rehashKeywordTable();            // names in the table of TeX keywords
-    char *message = loadPrivateFonts(app, w);
+    const char *message = loadPrivateFonts(app, w);
     if (message != NULL)
     {   printf("Failed to set up fonts: %s\n", message);
         exit(1);

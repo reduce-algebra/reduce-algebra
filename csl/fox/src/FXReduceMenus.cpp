@@ -62,7 +62,7 @@
 const char *reduceMenus[] =
 {
     "Calculus@differentiate@differentiate@"
-        "3@expression:ws@variable:x@1@"
+        "3@expression:ws@variable:x@n-times:1@"
         "df($1,$2,$3);",
     "Calculus@integrate@indefinite integration@"
         "2@expression:ws@variable:x@"
@@ -177,20 +177,20 @@ const char *reduceMenus[] =
     "Matrix@determinant@determinant@"
         "1@mat:ws@"
         "det($1);",
-    "Matrix@eigenvectors & values@eigenvectors & values@"
+    "Matrix@eigenvectors and values@eigenvectors and values@"
         "1@mat:ws@"
         "mateigen($1);",
 
 // End of Matrix section
 
-    "Display@plot@plot@"
+    "Graphs@plot@plot@"
         "4@function:ws@var:x@from:0@to:5@"
-        "load_package gnuplot; plot($1,$2=($3 .. $4));",
-    "Display@plot 3D@plot 3D@"
+        "plot($1,$2=($3 .. $4));",
+    "Graphs@3D plot@3D plot@"
         "7@function:ws@var1:x@from:0@to:5@var2:y@from:0@to:5@"
-        "load_package gnuplot; plot($1,$2=($3 .. $4),$5=($6 .. $7));",
+        "plot($1,$2=($3 .. $4),$5=($6 .. $7));",
 
-// End of Display section
+// End of Graphs section
 
     (const char *)0
 };

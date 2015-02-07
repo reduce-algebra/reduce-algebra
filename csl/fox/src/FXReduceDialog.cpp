@@ -57,11 +57,6 @@
 #include "FXReduceDialog.h"
 
 
-
-// Padding for buttons
-#define HORZ_PAD      12
-#define VERT_PAD      2
-
 using namespace FX;
 
 /*******************************************************************************/
@@ -80,8 +75,8 @@ FXIMPLEMENT(FXReduceDialog,FXDialogBox,FXReduceDialogMap,ARRAYNUMBER(FXReduceDia
 
 
 // Generic Reduce Dialog
-FXReduceDialog::FXReduceDialog(FXWindow* owner,const FXString& caption,FXIcon* ic,FXuint opts,FXint x,FXint y,FXint w,FXint h):
-  FXDialogBox(owner,caption,opts|DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE,x,y,w,h,10,10,10,10, 10,10)
+FXReduceDialog::FXReduceDialog(FXWindow* owner1,const FXString& caption,FXIcon* ic,FXuint opts,FXint x,FXint y,FXint w,FXint h):
+  FXDialogBox(owner1,caption,opts|DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE,x,y,w,h,10,10,10,10, 10,10)
 {
 #if 0
   FXHorizontalFrame* buttons=new FXHorizontalFrame(this,LAYOUT_SIDE_BOTTOM|LAYOUT_FILL_X|PACK_UNIFORM_WIDTH|PACK_UNIFORM_HEIGHT,0,0,0,0,0,0,0,0);
@@ -143,6 +138,132 @@ FXReduceDialog::~FXReduceDialog(){
   cancel=(FXButton*)-1L;
   }
 
+//@@ class FXAPI FXReduceInputDialog : public FXDialogBox {
+//@@   FXDECLARE(FXReduceInputDialog)
+//@@ protected:
+//@@   FXTextField *input[7];    // Text field widgets
+//@@ protected:
+//@@   FXReduceInputDialog(){}
+//@@ private:
+//@@   FXReduceInputDialog(const FXReduceInputDialog&);
+//@@   FXReduceInputDialog &operator=(const FXReduceInputDialog&);
+//@@   void initialize(int num, const FXString labels[]);
+//@@ public:
+//@@   long onCmdAccept(FXObject*,FXSelector,void*);
+//@@ public:
+//@@
+//@@   /// Construct input dialog box with given caption, icon, and prompt text
+//@@   FXReduceInputDialog(FXWindow* owner1,const FXString& caption,
+//@@     int num, const FXString labels[];
+//@@     FXint x=0,FXint y=0,FXint w=0,FXint h=0);
+//@@
+//@@   /// Get input string
+//@@   FXString getText(int num) const;
+//@@
+//@@   /// Set input string
+//@@   void setText(int num, const FXString& text);
+//@@
+//@@   /// Run modal invocation of the dialog
+//@@   virtual FXuint execute(FXuint placement=PLACEMENT_CURSOR);
+//@@
+//@@ };
+
+// Padding for buttons
+#define HORZ_PAD 20
+#define VERT_PAD 2
+
+/*******************************************************************************/
+
+// Map
+FXDEFMAP(FXReduceInputDialog) FXReduceInputDialogMap[]={
+  FXMAPFUNC(SEL_COMMAND,FXReduceInputDialog::ID_ACCEPT,FXReduceInputDialog::onCmdAccept),
+  };
+
+
+// Object implementation
+FXIMPLEMENT(FXReduceInputDialog,FXDialogBox,FXReduceInputDialogMap,ARRAYNUMBER(FXReduceInputDialogMap))
+
+
+
+
+// Create input dialog box
+FXReduceInputDialog::FXReduceInputDialog(FXWindow* owner1,
+    const FXString& caption,
+    int num, const FXString labels[], FXint x,FXint y,FXint w,FXint h):
+  FXDialogBox(owner1,caption,DECOR_TITLE|DECOR_BORDER,
+              x,y,w,h,10,10,10,10, 10,10){
+  initialize(num, labels);
+  }
+
+
+// Build contents
+void FXReduceInputDialog::initialize(int num, const FXString labels[]){
+  FXuint textopts=
+    TEXTFIELD_ENTER_ONLY|FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X;
+  FXHorizontalFrame* buttons=
+    new FXHorizontalFrame(this,
+      LAYOUT_SIDE_BOTTOM|LAYOUT_FILL_X|PACK_UNIFORM_WIDTH,0,0,0,0,0,0,0,0);
+  new FXButton(buttons,tr("&OK"),NULL,this,ID_ACCEPT,
+    BUTTON_INITIAL|BUTTON_DEFAULT|FRAME_RAISED|
+                   FRAME_THICK|LAYOUT_CENTER_Y|LAYOUT_RIGHT,
+    0,0,0,0,HORZ_PAD,HORZ_PAD,VERT_PAD,VERT_PAD);
+  new FXButton(buttons,tr("&Cancel"),NULL,this,ID_CANCEL,
+    BUTTON_DEFAULT|FRAME_RAISED|FRAME_THICK|LAYOUT_CENTER_Y|LAYOUT_RIGHT,
+    0,0,0,0,HORZ_PAD,HORZ_PAD,VERT_PAD,VERT_PAD);
+  new FXHorizontalSeparator(this,
+    SEPARATOR_GROOVE|LAYOUT_SIDE_BOTTOM|LAYOUT_FILL_X);
+  FXHorizontalFrame* toppart=
+    new FXHorizontalFrame(this,
+      LAYOUT_SIDE_TOP|LAYOUT_FILL_X|LAYOUT_CENTER_Y,0,0,0,0, 0,0,0,0, 10,10);
+//:  new FXLabel(toppart,FXString::null,icon1,
+//:    ICON_BEFORE_TEXT|JUSTIFY_CENTER_X|JUSTIFY_CENTER_Y|
+//:                     LAYOUT_FILL_Y|LAYOUT_FILL_X);
+  FXVerticalFrame* entry=
+    new FXVerticalFrame(toppart,
+      LAYOUT_FILL_X|LAYOUT_CENTER_Y,0,0,0,0, 0,0,0,0);
+  int i;
+  for (i=0; i<num; i++) {
+    new FXLabel(entry,labels[i],NULL,
+      JUSTIFY_LEFT|ICON_BEFORE_TEXT|LAYOUT_TOP|LAYOUT_LEFT|LAYOUT_FILL_X);
+    input[i]=new FXTextField(entry,20,this,ID_ACCEPT,
+                             textopts, 0,0,0,0, 8,8,4,4);
+    }
+  while (i < 7) input[i++] = NULL;
+  }
+
+
+// Get input string
+FXString FXReduceInputDialog::getText(int num) const {
+  if (input[num] == NULL) return "";
+  else return input[num]->getText();
+  }
+
+
+// Set input string
+void FXReduceInputDialog::setText(int num, const FXString& text){
+  if (input[num] != NULL) input[num]->setText(text);
+  }
+
+
+// We have to do this so as to force the initial text to be seleced
+FXuint FXReduceInputDialog::execute(FXuint placement){
+  create();
+  input[0]->setFocus();
+  input[0]->selectAll();
+  show(placement);
+  return getApp()->runModalFor(this);
+  }
+
+
+// Close dialog with an accept.
+long FXReduceInputDialog::onCmdAccept(FXObject* sender,FXSelector sel,void* ptr){
+  FXDialogBox::onCmdAccept(sender,sel,ptr);
+  return 1;
+  }
+
 }
 
+/*******************************************************************************/
+
 // end of FXReduceDialog.cpp
+

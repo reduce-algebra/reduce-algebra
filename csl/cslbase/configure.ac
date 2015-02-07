@@ -771,8 +771,7 @@ then
   then
 # I will not even look for Xft if I am building for win32 not X.
 #
-# Furthermore I will not try xft-con
-fig if I am cross-compiling. This may
+# Furthermore I will not try xft-config if I am cross-compiling. This may
 # be a mess if I ever try to cross compile towards a machine that needs it.
     AC_ARG_WITH(xft,
       AC_HELP_STRING([--with-xft],

@@ -408,7 +408,7 @@ case $inplace in
 # compiler available and if the config.status file where I would build is
 # older that my "configure" script. The tests are known to be happening under
 # cygwin so I am not going to worry overmuch about general portability issues!
-# I also want to know if my playform if the 32 or 64-bit variant of cygwin.
+# I also want to know if my platform if the 32 or 64-bit variant of cygwin.
     case `uname -m -o` in
     *i686*Cygwin*)
       cyg32="yes"
@@ -453,8 +453,9 @@ case $inplace in
 # (cross) build both 32 and 64-bit cygwin code from just one of the
 # platforms using either platfornm - but at present the 64-bit world does
 # not have enough development libraries available to support that. So here
-# I will only configure to build both 32 and 64 bit versiosn if I am
-# running on cyg32 but only the 64-bit if I am on cyg64.
+# I will only configure to build both 32 and 64 bit versions if I am
+# running on cyg32 but only the 64-bit if I am on cyg64. Well as of February
+# 2015 I can not cross-build the wxWidgets version for cyg64 using cyg32...
 #
 # Note that I will need to coordinte what I do here with the scripts in
 # winbuild that arrange to create all possible versions... and I probably
@@ -462,7 +463,12 @@ case $inplace in
 # just exactly one system.
       if test "x$cyg32" = "xyes"
       then
-        cygplatforms="i686-pc-cygwin x86_64-pc-cygwin"
+        if test "x$with_wx" = "xyes"
+        then
+          cygplatforms="i686-pc-cygwin"
+        else
+          cygplatforms="i686-pc-cygwin x86_64-pc-cygwin"
+        fi
       fi
       if test "x$cyg64" = "xyes"
       then

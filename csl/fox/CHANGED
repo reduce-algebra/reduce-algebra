@@ -16,6 +16,7 @@ autogen.sh                     remake "configure" script etc
 configure.ac                   all sorts of changes to support my world.
 
 include/FXText.h               add TEXT_COLUMNWRAP manifest
+include/fxdefs.h               extra test to support Cygwin wrt wchar_t
 src/FXText.cpp                 option to wrap at a fixed column plus
                                a load of stuff to support maths display
 src/Makefile.am                support 64-bit windows build using
@@ -38,6 +39,7 @@ src/FXPrintSample.cpp          accompanied the basis that FXDCNativePrinter
                                built on
 src/FXShowMath.cpp             display mathematical expressions
 src/FXTerminal.cpp             a terminal for interactive sessions to run in
+src/FXReduceDialog.cpp         reduce specific menu support
 src/FXWorker.cpp               thread-related parts assocated with FXTermninal
 
 src/cmfont-info.c              extract metrics from font info in a way I want

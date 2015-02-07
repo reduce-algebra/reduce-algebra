@@ -67,6 +67,7 @@
 #include "FXShowMath.h"
 #include "FXTerminal.h"      // my own header file.
 #include "termed.h"
+#include "FXReduceDialog.h"
 
 #include <string.h>
 #include <ctype.h>
@@ -441,6 +442,11 @@ void FXTerminal::appendText(const FXchar *newtext, FXint n, FXbool notify)
 void FXTerminal::appendStyledText(const FXchar *newtext, FXint n, FXint style1, FXbool notify)
 {
     FXText::appendStyledText(newtext, n, style1, notify);
+}
+
+void FXTerminal::appendStyledText(const FXString &newtext, FXint style1, FXbool notify)
+{
+    FXText::appendStyledText(newtext, style1, notify);
 }
 
 void FXTerminal::setStyled(FXbool st)
@@ -1746,7 +1752,7 @@ long FXTerminal::onCmdReduce(FXObject *c, FXSelector s, void *ptr)
     FXString ss = ((FXMenuCommand *)c)->getText();
     const char *mtext = ss.text();
     int l = (int)strlen(mtext);
-    const char **m = reduceMenus, *p;
+    const char **m = reduceMenus, *p, *p1;
     while (*m != NULL)
     {   p = *m++; // A particular menu string
         while (*p != '@') p++; // Skip top-level menu name
@@ -1760,25 +1766,82 @@ long FXTerminal::onCmdReduce(FXObject *c, FXSelector s, void *ptr)
 // and it should display a box that shows roughly
 //      ---------------------------
 //      | Dialog Box Title        |
-//      | f1  ################### |
-//      | ....................... |
-//      | fn  ################### |
+//      |-------------------------|
+//      | f1                      |
+//      |   ###################   |
+//      .           ...           .
+//      | fn                      |
+//      |   ###################   |
+//      |.........................|
 //      |    cancel         OK    |
 //      ---------------------------
 // where "###" denote fields that the user fills in, but that possibly have
 // some initial content to get them started.
-    if (isEditable())
-    {   killSelection();
-        setInputText("", 0);
-        appendStyledText("Reduce command \"", 16, STYLE_INPUT);
-        appendStyledText(mtext, strlen(mtext), STYLE_INPUT);
-        appendStyledText("\";", 2, STYLE_INPUT);
-        onCmdInsertNewline(c, s, ptr);
+
+//@@    printf("Description string = <%s>\n", p);
+    for (p1=p; *p1!='@'; p1++);
+    FXString caption = FXString(p, p1-p);
+    p1++; // past the "@"
+    int n = *p1++ - '0';
+    p1++; // past the "@"
+//@@    printf("Number of items in box = %d\n", n);
+    FXString labels[9], initcontents[9];
+    for (int i=0; i<9; i++) labels[i] = initcontents[i] = "";
+    p = p1;
+    for (int i=0; i<n; i++)
+    { for (p1=p; *p1!='@' && *p1!=':'; p1++);
+      labels[i] = FXString(p, p1-p);
+      p = p1+1;
+      while (*p1!='@') p1++;
+      if (p1>p) initcontents[i] = FXString(p, p1-p);
+      p = p1+1;
+//@@      printf("labels[%d] = <%s>, initcontents[%d] = <%s>\n",
+//@@        i, labels[i].text(), i, initcontents[i].text());
     }
-    else
-    {   string_ahead("Reduce command \"");
-        string_ahead(mtext);
+//@@    printf("Residual p = <%s>\n", p);
+    FXReduceInputDialog query(this, 
+        caption,
+        n,
+        labels);
+    for (int i=0; i<n; i++)
+      query.setText(i, initcontents[i]);
+    if (query.execute(PLACEMENT_OWNER))
+    { setFocus();
+//@@ printf("Accepted\n");
+//@@ for (int i=0; i<n; i++)
+//@@   printf("Result %d = <%s>\n", i, query.getText(i).text());
+      if (isEditable())
+      { killSelection();
+        setInputText("", 0);
+        while (*p != 0)
+        { while (*p != '$' && *p != 0)
+          { appendStyledText(p, 1, STYLE_INPUT);
+            p++;
+          }
+          if (*p == '$')
+          { n = *++p - '0' - 1;
+            p++;
+            appendStyledText(query.getText(n), STYLE_INPUT);
+          }
+        }
+        onCmdInsertNewline(c, s, ptr);
+      }
+      else
+      { while (*p != 0)
+        { while (*p != '$' && *p != 0)
+          { char b[4];
+            b[0] = *p++;
+            b[1] = 0;
+            string_ahead(b);
+          }
+          if (*p == '$')
+          { n = *++p - '0' - 1;
+            p++;
+            string_ahead(query.getText(n).text());
+          }
+        }
         string_ahead("\";\n");
+      }
     }
     setFocus();   // I am uncertain, but without this I lose focus...
     return 1;
@@ -3723,12 +3786,12 @@ void FXTerminal::insertMathsLines()
         }
 // Move on to the next line. Note that I arrange that any special info I
 // put in the buffer will NEVER include a newline character except within SO/SI
-        bool shifted=false;
+        bool shifted1=false;
         while (p1<length)
         {   int c=getByte(p1);
-            if (c==0x0e) shifted=true;
-            else if (c==0x0f) shifted=false;
-            else if (!shifted && c=='\n') break;
+            if (c==0x0e) shifted1=true;
+            else if (c==0x0f) shifted1=false;
+            else if (!shifted1 && c=='\n') break;
             p1++;
         }
         if (p1 < length) p1++;
@@ -3795,12 +3858,12 @@ void FXTerminal::insertMathsLines()
         heightString[0] = '0' + (nnrows & 0x3f);
         heightString[1] = '0' + ((nnrows>>6) & 0x3f);
         replaceStyledText(p1, 2, heightString, 2, STYLE_MATH);
-        bool shifted=false;
+        bool shifted2=false;
         while (p1<length)
         {   int c=getByte(p1);
-            if (c==0x0e) shifted=true;
-            else if (c==0x0f) shifted=false;
-            else if (!shifted && c=='\n') break;
+            if (c==0x0e) shifted2=true;
+            else if (c==0x0f) shifted2=false;
+            else if (!shifted2 && c=='\n') break;
             p1++;
         }
         if (p1 < length) p1++;
@@ -3848,12 +3911,12 @@ void FXTerminal::insertMathsLines()
 // If it has been discarded then the recovered pointer will be NULL
 // and so there will be no need to reset a back pointer.
         if (b != NULL) updateOwner(b, p1+3);
-        bool shifted=false;
+        bool shifted3=false;
         while (p1<length)
         {   int c=getByte(p1);
-            if (c==0x0e) shifted=true;
-            else if (c==0x0f) shifted=false;
-            else if (!shifted && c=='\n') break;
+            if (c==0x0e) shifted3=true;
+            else if (c==0x0f) shifted3=false;
+            else if (!shifted3 && c=='\n') break;
             p1++;
         }
         if (p1 < length) p1++;

@@ -397,6 +397,9 @@ public:
   void appendStyledText(const FXchar *text,FXint n,
                         FXint style=0,FXbool notify=FALSE);
 
+  void appendStyledText(const FXString &text,
+                        FXint style=0,FXbool notify=FALSE);
+
   /// Handle keyboard input
   long onKeyPress(FXObject *,FXSelector, void *);
 

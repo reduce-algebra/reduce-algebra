@@ -1,4 +1,4 @@
-The revision of wxWidgets that I have based my private version on is 77757.
+The revision of wxWidgets that I have based my private version on is 78452.
 
 This file records that fact and is used by "make" so that when its date
 stamp changes a fresh copy of wxWidgets will be unpacked for use. There is

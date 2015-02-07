@@ -358,7 +358,7 @@ typedef int                    FXint;
 typedef float                  FXfloat;
 typedef double                 FXdouble;
 typedef FXObject              *FXObjectPtr;
-#ifdef WIN32
+#if defined WIN32 || defined __CYGWIN__
 typedef unsigned int           FXwchar;
 #if defined(_MSC_VER) && !defined(_NATIVE_WCHAR_T_DEFINED)
 typedef unsigned short         FXnchar;

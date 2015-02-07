@@ -290,6 +290,15 @@ begin
        collect gtmpnam n;
     plotcleanup!* := if null tempdir!* then {"erase gnutmp.tm*"}
                      else {bldmsg("erase ""%w\gnutmp.tm*""", tempdir!*)} >>
+  else if memq('cygwin, lispsystem!*) then <<
+    plotheader!* := "";
+    dirchar!* := "/";
+    plotdta!* := for each n in
+       {"gnutmp.tm1", "gnutmp.tm2", "gnutmp.tm3", "gnutmp.tm4",
+        "gnutmp.tm5", "gnutmp.tm6", "gnutmp.tm7", "gnutmp.tm8"}
+       collect gtmpnam n;
+    plotcleanup!* := if null tempdir!* then {"rm gnutmp.tm*"}
+                     else {bldmsg("rm ""%w\gnutmp.tm*""", tempdir!*)} >>
   else <<  % Assume Unix or Linux or BSD with X11, or a Macintosh.
     dirchar!* := "/";
     if null !*force_gnuplot_term then plotheader!* := ""

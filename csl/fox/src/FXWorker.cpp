@@ -425,6 +425,7 @@ int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main)
         reduceMenu = NULL;
         while (*red != NULL)
         {   p = *red++;
+//@@ printf("p=%s\n", p);
             q = topName;
             while (*p != '@') *q++ = *p++;
             *q = 0;
@@ -432,25 +433,27 @@ int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main)
             q = subName;
             while (*p != '@') *q++ = *p++;
             *q = 0;
-//@@printf("%s : %s\n", topName, subName);
+//@@ printf("%s : %s\n", topName, subName);
 // Do I now have a new top-level menu name?
             if (strcmp(topName, curTop) != 0)
             {   if (reduceMenu != NULL)
                 {   new FXMenuTitle(main_menu_bar, curTop, NULL, reduceMenu);
-//@@printf("put %s at top\n", curTop);
+//@@ printf("put %s at top\n", curTop);
                 }
                 reduceMenu = new FXMenuPane(main_window);
                 strcpy(curTop, topName);
-//@@printf("create new sub-menu for %s\n", curTop);
+//@@ printf("create new sub-menu for %s\n", curTop);
             }
 // Add a sub-menu item
+//@@ printf("Add in %s\n", subName);
             new FXMenuCommand(reduceMenu, subName, NULL,
                                 (FXObject *)text, FXTerminal::ID_REDUCE);
         }
 // The final top-level menu now needs setting up.
-//@@printf("final top level item is %s\n", curTop);
+//@@ printf("final top level item is %s\n", curTop);
         new FXMenuTitle(main_menu_bar, curTop, NULL, reduceMenu);
     }
+//@@ printf("Menus should be OK now\n");
     helpMenu = new FXMenuPane(main_window);
     new FXMenuCommand(helpMenu, "&Help\tF1\tHelp", NULL,
                                 (FXObject *)text, FXTerminal::ID_HELP);

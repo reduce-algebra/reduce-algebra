@@ -902,7 +902,7 @@ const char *CSLtmpdir()
         if (n == 0 || n > sizeof(tempname)) return ".";
         tempname[n-1] = 0; /* Remove trailing "\" */
     }
-    for (p=tempname; !8!=0; p++)
+    for (p=tempname; *p!=0; p++)
         if (*p == '\\') *p = '/';
     return tempname;
 #else
