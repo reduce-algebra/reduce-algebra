@@ -28,7 +28,6 @@ create!-package('(gnuplot gnuintfc gnupldrv),nil);
 
 global '(plotdta!* plotdta!*2 plotmax!*
          plotmin!* plotcmds!* plotcommand!*
-%%       lispsystem!*
          plotdriver!*);
 
 plotdriver!*:='gnuplot;

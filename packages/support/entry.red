@@ -311,6 +311,8 @@ put('!*interval!*,'prtch,'! !.!.! );
 
 precedence .., or;
 
+switch force_gnuplot_term=on, trplot, plotkeep;
+
 
 % Prettyprint module entry point (built into CSL).
 

@@ -454,7 +454,7 @@ symbolic procedure c!:catom(x, env);
 % and use that as a place to save the old value of the fluid, so I believe
 % I may be safe. Well not quite I guess. How about
 %     (prog (a)                              % a local variable
-%        (prog (a) (declare (special a))  % hah this one os fluid!
+%        (prog (a) (declare (special a))  % hah this one is fluid!
 %              reference "a" here...
 % and related messes. So note that the outer binding means that a is
 % locally bound but the inner binding means that a fluid binding must

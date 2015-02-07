@@ -49,28 +49,28 @@ global '(
                            % seconds.
 
 
-      plotcommand!*          % string: command to start gnuplot
+      plotcommand!*        % string: command to start gnuplot
 
 
-      plotcmds!*             % file for collecting commands
+      plotcmds!*           % file for collecting commands
 
       plotdta!*            % files for collecting data
 
-      plotheader!*           % list of Gnuplot commands (strings)
+      plotheader!*         % list of Gnuplot commands (strings)
                            % for initializing GNUPLOT
 
-      plotcleanup!*          % list of system commands (strings)
+      plotcleanup!*        % list of system commands (strings)
                            % for cleaning up after gnuplot
 
 );
-
-if null plotcommand!* then rederr
-      " no support of GNUPLOT for this installation";
 
 fluid '(plot!-files!* plotpipe!*);
 
 symbolic procedure gp!-init();
    <<
+    if null plotcommand!* then initialize_gnuplot();
+    if null plotcommand!* then
+       rederr " no support for GNUPLOT in this installation";
     plot!-files!* := plotdta!*;
     plotoptions!*:=  nil;
     PlotOpenDisplay();
@@ -92,6 +92,9 @@ put('gnuplot,'reset,'gp!-reset);
 
 symbolic procedure PlotOpenDisplay();
    begin
+    if null plotcommand!* then initialize_gnuplot();
+    if null plotcommand!* then
+       rederr " no support for GNUPLOT in this installation";
     if null plotpipe!* then
     if not !*plotusepipe then plotpipe!* := open(plotcmds!*,'output)
         else <<plotpipe!* :=pipe!-open(plotcommand!*,'output)>>;
@@ -109,6 +112,9 @@ symbolic procedure gp!-show();
    <<if !*plotpause then plotprin2lt{"pause ",!*plotpause};
      close  plotpipe!*;
      plotpipe!* := nil;
+     if null plotcommand!* then initialize_gnuplot();
+     if null plotcommand!* then
+        rederr " no support for GNUPLOT in this installation";
      if plotcommand!* then
        <<plot!-exec plotcommand!*;
          if not !*plotkeep then

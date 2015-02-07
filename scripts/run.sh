@@ -45,7 +45,7 @@ xWindows_NT)
   pre=""
   suffix=".com"
   xtra=""
-  if test "x$cygwin" = "xyes"
+  if test "x$cygwin" = "xyes" || test "x$ap" = "xbootstrapreduce"
   then
     suffix=".exe"
   else

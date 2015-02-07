@@ -64,16 +64,32 @@ global '(
 % current and legacy versions of gnuplot so as to document that it would be
 % safe these days to make the default of this switch "off" rather than "on"
 % we can then change the default.
+% A further mess here is that I need to put the switch declaration in
+% support/entry.red so that it can be used before gnuplot is loaded and also
+% to be fully certain that the establishment of its initial value is not
+% re-done during the package loading process. I also need to ensure that
+% nothing that depends on it is activated at load time rather than just
+% when an attempt is made to create a plot.
 
-switch force_gnuplot_term=on;
+% switch force_gnuplot_term=on;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%% PSL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+global '(plotcommand!* gnuplot_select_terminal!*);
+
+% The initialize_gnuplot() function will set plotcommand!*.
+
+gnuplot_select_terminal!* :=
+"if(strstrt(GPVAL_TERMINALS,""aqua"")!=0)set terminal aqua;else set term x11;";
+
 #if (member 'psl lispsystem!*)
+%%%%%%%%%%%%%%%%%%%%%%%%%%% PSL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+fluid '(!*!*windows);
+
+symbolic procedure initialize_gnuplot();
+ <<
    #if (member 'unix lispsystem!*)
 
    !*plotusepipe:=t;               % pipes: yes
-%% already loaded at reduce build time
-%%   load pipes;
    !*plotpause:=nil;                 % pause: no
    if getenv "LOGNAME" then
       plottmp!* := bldmsg("%w%w%w.",get!-tempdir(),dirchar!*,getenv "LOGNAME")
@@ -86,13 +102,12 @@ switch force_gnuplot_term=on;
    plotcmds!* :=bldmsg("%wplotcmds",plottmp!*); % if pipes not accessible
 
      % select header lines for setting the appropriate GNUPLOT
-     % terminal type.
+     % terminal type if force_gnuplot_term is set on.
 
    if null plotheader!* then
    if null !*force_gnuplot_term then plotheader!* := ""
    else << if null x then
-      if getenv "DISPLAY" then x := '(nil . 
-"if(strstrt(GPVAL_TERMINALS,""aqua"")!=0)set terminal aqua;else set term x11;" )
+      if getenv "DISPLAY" then x := '(nil . gnuplot_select_terminal!*)
                         else x:='(nil."dumb");
       if wlessp (strlen strinf cdr x, 20) 
                  then  plotheader!* :=bldmsg("set term %w",cdr x)
@@ -102,24 +117,16 @@ switch force_gnuplot_term=on;
       assoc(getenv "TERM",
            '(
           %% You may want to extend or modify the terminal list above
-                ("xterm" . 
-"if(strstrt(GPVAL_TERMINALS,""aqua"")!=0)set terminal aqua;else set term x11;")
-                ("xterm-color" . 
-"if(strstrt(GPVAL_TERMINALS,""aqua"")!=0)set terminal aqua;else set term x11;")
-                ("sun-cmd" . "x11")  ("sun" . "x11")
+                ("xterm" . gnuplot_select_terminal!*)
+                ("xterm-color" . gnuplot_select_terminal!*)
+                ("sun-cmd" . "x11")
+                ("sun" . "x11")
                 ("hpterm" . "x11")
                 ("vt52"  . "tek40xx")
                 ("vt100" . "tek40xx")
                 ("vt102" . "tek40xx")
            ));
 
-%%      % add $reduce/plot to the path when using X11 (gnuplot will load a child).
-%%   plotcommand!*:=
-%%    begin scalar p;
-%%     if not(p:=getenv "gnuplot") then
-%%        p:=bldmsg("%w/plot",getenv "reduce");
-%%     return bldmsg("PATH=$PATH:%w;export PATH;gnuplot",p);
-%%    end;
    plotcommand!* := find!-gnuplot();
 
    plotcleanup!* :=                  % delete scratch files
@@ -128,97 +135,75 @@ switch force_gnuplot_term=on;
 
    #elif (intersection '(dos os2 win32 win64 winnt alphant) lispsystem!*)
 
-fluid '(!*!*windows);
-
-     % the following system selection must be done at load time
-
    if null get!-tempdir() then
    <<prin2t "warning: no TMP directory found. Using >C:<";
-     plottmp!*:="C:\";
-   >>
+     plottmp!*:="C:\" >>
    else plottmp!* := bldmsg("%w%w",get!-tempdir(),dirchar!*);
    !*plotpause:=nil;                       % no pause
    plotdta!* := for i:=1:10 collect
          bldmsg("%wplotdt%w.dat",plottmp!*,i); % scratch data files
 
-   if member ('win95,lispsystem!*) then
-    <<
-      % for Win95 until we have something better
-      %   pass commands as parameter file
-      %   write command file and data to directory /tmp
-
-     !*plotusepipe:=nil;                   % no pipes
-     plotcmds!* := bldmsg("%wplotcmds",plottmp!*);
-     plotcommand!* :=
-%    fnexpand bldmsg("$reduce\plot\wgnuplot.exe %w",plotcmds!*);
-     fnexpand bldmsg("$reduce\wutil\win32\wgnuplot.exe %w",plotcmds!*);
-     plotheader!* :=  "";
-     plotcleanup!* := NIL;                 % delete scratch files
-     !*plotpause := -1;
-%% Not Needed: defined in gnupldrv.red
-%%     copyd('plot!-exec,'system);
-%%     flag('(plot!-exec),'lose);
-    >> else
+%:   if member ('win95,lispsystem!*) then    % No longer worth supporting?
+%:    <<
+%:     !*plotusepipe:=nil;                   % no pipes
+%:     plotcmds!* := bldmsg("%wplotcmds",plottmp!*);
+%:     plotcommand!* :=
+%:       % The path on the next line will no longer apply!
+%:       fnexpand bldmsg("$reduce\wutil\win32\wgnuplot.exe %w",plotcmds!*);
+%:     plotheader!* :=  "";
+%:     plotcleanup!* := NIL;                 % delete scratch files
+%:     !*plotpause := -1;
+%:    >> else
 
    if !*!*windows eq 1 or member('winnt,lispsystem!*)
                        or member('win32,lispsystem!*)
                        or member('win64,lispsystem!*) then
    <<
-      % for windows:
-      %  use plot pipe
      if not getd 'pipe!-open then load w!-pipes;
      !*plotusepipe:=t;
      plotcmds!* := bldmsg("%wplotcmds",plottmp!*);;
-%%     plotcommand!* := bldmsg(
-%%%      "%w\plot\wgnupl32.exe;wgnuplot_parent;wgnuplot_text",
-%%%      "%w\plot\wgnuplot.exe;wgnuplot_parent;wgnuplot_text",
-%%       if member('dos,lispsystem!*) then
-%%        "%w\wutil\dos386\wgnuplot.exe;wgnuplot_parent;wgnuplot_text"
-%%        else if member('alphant,lispsystem!*) then
-%%        "%w\wutil\alphant\wgnuplot.exe;wgnuplot_parent;wgnuplot_text"
-%%        else
-%%        "%w\wutil\win32\wgnuplot.exe;wgnuplot_parent;wgnuplot_text",
-%%        getenv("reduce"));
      plotcommand!* := find!-gnuplot();
      plotheader!* := "";
      plotcleanup!* :=                     % delete scratch files
        bldmsg("del %w",plotcmds!*) .
         for each f in plotdta!* collect bldmsg("del %w",f);
-    >>
-  else if member('os2,lispsystem!*) then
-    <<
-     !*plotusepipe:=nil;                   % no pipes
-     plotcmds!* := bldmsg("%wplotcmds",plottmp!*);
-     plotcommand!* := "";
-     plotheader!* := "";
-
-     symbolic procedure plot!-exec u;
-       <<
-         prin2 "====> invoke GNUPLOT for file ";
-         prin2t plotcmds!*;
-       >>;
-
-     loadtime flag('(plot!-exec),'lose);
-    >>
-  else
-    <<
-      % for dos:
-      %   pass commands as parameter file
-      %   write command file and data to directory /tmp
-
-     !*plotusepipe:=nil;                   % no pipes
-     plotcmds!* := bldmsg("%wplotcmds",plottmp!*);
-     plotcommand!* :=
-     fnexpand bldmsg("$reduce\wutil\dos386\gnuplot.exe %w",plotcmds!*);
-     if !*force_gnuplot_term then plotheader!* :=  "set term vga";
-     else plotheader!* := "";
-     plotcleanup!* :=                     % delete scratch files
-       bldmsg("del %w",plotcmds!*).
-        for each f in plotdta!* collect bldmsg("del %w",f);
+%: I am commenting out the support for OS2 and DOS. It looks as if on
+%: OS2 the code here wrote out data to a file and asked the user to launch
+%: gnuplot. For DOS it assumed there was a gnuplot executable at the path
+%: $reduce\wutil\dos386\gnuplot.exe and that is certainly not something that
+%: is routinely available in current versions of Reduce.
+%:    >>
+%:  else if member('os2,lispsystem!*) then  % Does anybody still use OS2?
+%:    <<
+%:     !*plotusepipe:=nil;                   % no pipes
+%:     plotcmds!* := bldmsg("%wplotcmds",plottmp!*);
+%:     plotcommand!* := "";
+%:     plotheader!* := "";
+%:
+%:     symbolic procedure plot!-exec u;
+%:       <<
+%:         prin2 "====> invoke GNUPLOT for file ";
+%:         prin2t plotcmds!*;
+%:       >>;
+%:
+%:     loadtime flag('(plot!-exec),'lose);
+%:    >>
+%:  else
+%:    <<
+%:      % for dos:
+%:      %   pass commands as parameter file
+%:      %   write command file and data to directory /tmp
+%:
+%:     !*plotusepipe:=nil;                   % no pipes
+%:     plotcmds!* := bldmsg("%wplotcmds",plottmp!*);
+%:     plotcommand!* :=
+%:       fnexpand bldmsg("$reduce\wutil\dos386\gnuplot.exe %w",plotcmds!*);
+%:     if !*force_gnuplot_term then plotheader!* :=  "set term vga";
+%:     else plotheader!* := "";
+%:     plotcleanup!* :=                     % delete scratch files
+%:       bldmsg("del %w",plotcmds!*).
+%:        for each f in plotdta!* collect bldmsg("del %w",f);
     >>;
-
-%%  no longer necessary
-%%  plotmax!* := 3e36;                    % IEEE single precision
   !*plotinterrupts := '(10002);
 
    #elif (member 'vms lispsystem!*)
@@ -238,6 +223,8 @@ fluid '(!*!*windows);
    !*plotinterrupts := '(10002);
 
   #endif
+% end of definition of initialize_gnuplot();
+  >>;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% CSL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #elif (member 'csl lispsystem!*)
@@ -259,11 +246,7 @@ symbolic procedure gtmpnam base;
   else compress ('!" . append(explode2 tempdir!*,
                               car explode2 dirchar!* . cdr explode base));
 
-% In general I want the initialisation actions indicated here to be
-% obeyed at load-time. I achieve this by packaging them all inside
-% a function, which I then call.
-
-symbolic procedure init_gnuplot();
+symbolic procedure initialize_gnuplot();
 begin
   scalar w;
   !*plotpause := -1;                % wait for newline from user
@@ -307,13 +290,10 @@ begin
        collect gtmpnam n;
     plotcleanup!* := if null tempdir!* then {"erase gnutmp.tm*"}
                      else {bldmsg("erase ""%w\gnutmp.tm*""", tempdir!*)} >>
-  else <<  % Assume Unix with X11 in general, but if the version of GNUPLOT
-           % being used knows about the "aqua" terminal type then assume that
-           % we are on a Macintosh with that capability available and best.
+  else <<  % Assume Unix or Linux or BSD with X11, or a Macintosh.
     dirchar!* := "/";
     if null !*force_gnuplot_term then plotheader!* := ""
-    else plotheader!* :=
-"if(strstrt(GPVAL_TERMINALS,""aqua"")!=0)set terminal aqua;else set term x11;";
+    else plotheader!* := gnuplot_select_terminal!*;
     plotdta!* := for i:=1:10 collect tmpnam();
     plotcmds!*:= tmpnam();
     plotcleanup!* := bldmsg("rm ""%w""", plotcmds!*) .
@@ -321,8 +301,6 @@ begin
   return nil
 end;
   
-init_gnuplot();
-
 #endif
 
 endmodule;
