@@ -7,6 +7,9 @@ ex:=ex*log(x);
 
 mrv_limit(e^-x,x,infinity);
 
+mrv_limit(2^x,x,infinity);
+mrv_limit(2^-x,x,infinity);
+
 mrv_limit(log(x),x,infinity);
 
 mrv_limit(1/log(x),x,infinity);

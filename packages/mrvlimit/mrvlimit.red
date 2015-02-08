@@ -115,7 +115,8 @@ procedure maxi1(f,g);  lisp cadr (lisp (list('list,maxi(f,g))));
 
 algebraic;
 expr procedure compare(f,g);
-begin scalar logg, logf;
+begin scalar logg, logf, !*expandlogs;
+   lisp (!*expandlogs := t);
    logf:=log(f);
    logg:=log(g);
 
@@ -191,8 +192,10 @@ return lisp cdr ('list.maxi1(mrv(cadr li),mrv(append({'plus},cddr li)))) %her
                                       >>
            else <<
            if(car li='expt) then <<
-               if(cadr li neq 'e) then
-               return  mrv(cadr li)
+	      if cadr li neq 'e
+		 and not (atom cadr li and flagp(cadr li,'constant))
+                 and not numberp cadr li
+                then return  mrv(cadr li)
                else <<  %we have e to the power of something
                        if sqchk mrv_limit(caddr li,'x,'infinity)
                              eq 'infinity
@@ -411,7 +414,10 @@ if(member(x,mrv_f)) then
          %mrv_f2:=rewrite(mrv_f); % write "f2 is ", mrv_f2;
                  % now need to rewrite f itself
         small:=smallest(mrv_f);
-        h:=log(small); %write "h is ", h;
+	begin scalar !*expandlogs; lisp(!*expandlogs := t);
+	   h:=log(small); 
+	   if lisp !*tracelimit then write "h is ", h;
+	end;
         if(mrv_limit(h,x,infinity)=infinity) then
          <<
             small:=small^-1;
@@ -421,12 +427,13 @@ if(member(x,mrv_f)) then
           rule1:=
                 { small => ww,
                   1/small => ww^-1 };
-         let rule1; off mcd;
+         %let rule1; 
+	 off mcd;
 
-         f:=f;
+         f := (f where rule1);
          on mcd;
          off mcd; %f:=f;
-         clearrules rule1;
+         %clearrules rule1;
 
          % now rewritten in terms of w, and mrv(f)=w hopefully
         >>;
@@ -537,9 +544,9 @@ else <<
                          rule2:= {
                                    sign(log(~x)) => 1
                                  };
-                         let rule2;
-                         sig:=sign(lcof(series_exp,ww));
-                         clearrules rule2;
+                         %let rule2;
+                         sig:= (sign(lcof(series_exp,ww)) where rule2);
+                         %clearrules rule2;
                          return infinity;
                        >>;
                                                  >>;
