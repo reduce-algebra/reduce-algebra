@@ -142,6 +142,8 @@ symbolic procedure switch u;
                          x := cadr x>>
                  else typerr(caddr x,"switch default value");
          if not idp x then typerr(x,"switch");
+	 % Do nothing if the switch was already declared
+ 	 if flagp(x,'switch) and x memq switchlist!* then return;
          switchtree!* := add!-to!-sorted!-tree(x, switchtree!*);
 % Building switchlist!* this way keeps it sorted, which feels tidy to me.
          switchlist!* := flatten!-sorted!-tree(switchtree!*, nil);
