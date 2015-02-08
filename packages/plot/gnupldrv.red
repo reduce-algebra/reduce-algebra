@@ -27,10 +27,9 @@ module gnupldrv; % main GNUPLOT driver.
 %
 
 
-fluid '(plotstyle!*);
+fluid '(plotstyle!* !*trplot !*plotkeep);
 
-global '(!*plotusepipe !*trplot !*plotkeep !*plotrefine plotheader!*
-         plotcleanup!* plotoptions!*);
+global '(!*plotusepipe !*plotrefine plotheader!* plotcleanup!* plotoptions!*);
 
 switch  plotusepipe;       % use pipes
 

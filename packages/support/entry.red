@@ -311,6 +311,8 @@ put('!*interval!*,'prtch,'! !.!.! );
 
 precedence .., or;
 
+fluid '(!*trplot !*plotkeep);
+
 switch force_gnuplot_term=on, trplot, plotkeep;
 
 
