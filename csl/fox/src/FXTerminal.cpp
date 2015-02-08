@@ -1753,13 +1753,17 @@ long FXTerminal::onCmdReduce(FXObject *c, FXSelector s, void *ptr)
     const char *mtext = ss.text();
     int l = (int)strlen(mtext);
     const char **m = reduceMenus, *p, *p1;
+    int found = 0;
     while (*m != NULL)
     {   p = *m++; // A particular menu string
         while (*p != '@') p++; // Skip top-level menu name
         p++;                   // past the "@"
-        if (strncmp(mtext, p, l) == 0 && p[l] == '@') break;
+        if (strncmp(mtext, p, l) == 0 && p[l] == '@')
+        { found = 1;
+          break;
+        }
     }
-    if (*m == NULL) return 1; // Not found - this is a BUG
+    if (!found) return 1; // Not found - this is a BUG
     p = p+l+1;
 // Now p is a string that looks like:
 //    Dialog Box Title @ n @ f<1> @ f<2> @ .. @ f<n> @ template
