@@ -37,6 +37,17 @@ mrv_limit(e^-x,x,infinity);
 0
 
 
+mrv_limit(2^x,x,infinity);
+
+
+infinity
+
+mrv_limit(2^-x,x,infinity);
+
+
+0
+
+
 mrv_limit(log(x),x,infinity);
 
 
@@ -355,10 +366,3 @@ mrv_limit(misc4,x,infinity);
 
 end;
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 172 ms  plus GC time: 15 ms
-
-End of Lisp run after 0.17+0.07 seconds
-real 0.40
-user 0.04
-sys 0.03
