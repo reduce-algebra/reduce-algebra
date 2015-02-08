@@ -1332,7 +1332,7 @@ symbolic procedure mkabsf1 u;
         end;
 
 symbolic procedure mkabsfd u;
-   if null idomainp() then !:abs u ./ 1
+   if null idomainp() or pairp u and get(car u,'abs) then !:abs u ./ 1
     else (simpexpt list(prepsq nrm,'(quotient 1 2))
           where nrm = addsq(multsq(car us,car us),
                              multsq(cdr us,cdr us))
