@@ -100,9 +100,7 @@ addsq(simp 'x, numr simp 'x);
 
 *** declaration addf: (sf, sf) -> sf violated by result ((x . 1) . 1) 
 
-*** declaration addsq: (sq, sq) -> sq violated by result (((x . 1) . 1)) 
-
-(((x . 1) . 1))
+(1)
 
 
 algebraic;
@@ -115,10 +113,10 @@ assert_analyze();
 function          #calls              #bad calls   #assertion violations
 ------------------------------------------------------------------------
 addf                   1                       1                       2
-addsq                  1                       1                       2
+addsq                  1                       1                       1
 hugo                   2                       1                       1
 ------------------------------------------------------------------------
-sum                    4                       3                       5
+sum                    4                       3                       4
 ------------------------------------------------------------------------
 
 
@@ -130,10 +128,3 @@ assert_uninstall_all;
 
 end;
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 0 ms
-
-End of Lisp run after 0.00+0.04 seconds
-real 0.19
-user 0.03
-sys 0.03
