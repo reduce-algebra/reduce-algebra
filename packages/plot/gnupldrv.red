@@ -211,7 +211,7 @@ flag ('(
     contour nocontour logscale nologscale surface nosurface
 
           % equation type options
-    hidden3d xlabel ylabel zlabel title size terminal view output
+    hidden3d pm3d xlabel ylabel zlabel title size terminal view output
 
 ),'gp!-option);
 
@@ -413,6 +413,7 @@ symbolic procedure gp!-3exp(x,y,z,f);
       % for each p in l collect {caddr p};
      if z = 'points then z := 'z else f:=gp!-plotgrids f;
      plotprin2lt{"unset hidden3d"};
+     plotprin2lt{"unset pm3d"};
      if not h then plotoptions!* := 'parametric .
            delete('noparametric,plotoptions!*)
         else
@@ -431,6 +432,7 @@ symbolic procedure gp!-3exp(x,y,z,f);
      plotprin2 " with lines ";
      plotterpri();
      plotprin2lt{"unset hidden3d"};
+     plotprin2lt{"unset pm3d"};
      plotprin2lt{"set format xy"};
   end;
 
@@ -460,6 +462,7 @@ symbolic procedure gp!-3quads(x,y,z,f);
      h:=member('hidden3d,plotoptions!*);
      f:=gp!-plotquads f;
      plotprin2lt{"unset hidden3d"};
+     plotprin2lt{"unset pm3d"};
      plotoptions!* := 'parametric .
            delete('noparametric,plotoptions!*);
      plotprin2lt{"set view 60,30,1,1"};
@@ -475,6 +478,7 @@ symbolic procedure gp!-3quads(x,y,z,f);
      plotprin2 " with lines ";
      plotterpri();
      plotprin2lt{"unset hidden3d"};
+     plotprin2lt{"unset pm3d"};
      plotprin2lt{"set format xy"};
   end;
 

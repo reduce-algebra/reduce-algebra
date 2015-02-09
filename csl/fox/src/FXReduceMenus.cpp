@@ -114,10 +114,10 @@ const char *reduceMenus[] =
     "Algebra@solve@solve@"
         "2@equation:ws@var:x@"
         "solve({$1},{$2});",
-    "Algebra@numeric roots@numeric roots@"
-        "1@equation:ws@"
-        "roots($1);",
-    "Algebra@real roots@real roots@"
+    "Algebra@numeric solution to 1 equation@numeric solution to 1 equation@"
+        "3@equation:ws@val:x$guess:1.0$"
+        "load_package numeric; num_solve($1,$2=$3);",
+    "Algebra@real roots of polynomial@real roots of polynomial@"
         "1@equation:ws@"
         "realroots($1);",
     "Algebra@factorize factorize@"
@@ -139,10 +139,10 @@ const char *reduceMenus[] =
         "2@exprn:ws@var:x@"
         "pf($1,$2);",
     "Algebra@continued fraction@continued fraction@"
-        "2@exprn:ws@var:x@"
-        "load_package rataprx;cfrac($1,$2);",
+        "3@exprn:ws@var:x@terms:5@"
+        "load_package rataprx;cfrac($1,$2,$3);",
     "Algebra@numeric continued fraction@numeric continued fraction@"
-        "2@number:ws@lenth:5@"
+        "2@number:ws@terms:5@"
         "load_package rataprx;cfrac($1,$2);",
     "Algebra@sin(x)^2 -> sin(2x)@sin(x)^2 -> sin(2x)@"
         "1@exprn:ws@"
@@ -153,6 +153,9 @@ const char *reduceMenus[] =
     "Algebra@trig -> exponential@trig -> exponential@"
         "1@exprn:ws@"
         "trigsimp($1,expon);",
+    "Algebra@exponential -> trig@exponential -> trig@"
+        "1@exprn:ws@"
+        "trigsimp($1,trig);",
     "Algebra@sum series@sum series c@"
         "3@expr:ws@var:$i@nterms:5@"
         "sum($1,$2,$3);",

@@ -29,6 +29,7 @@ utils/Makefile.am              if cross-building use gcc to compile utils.
 
 include/FXDCNativePrinter.h    header files for my new stuff
 include/FXPostscriptFont.h
+include/FXReduceDialog.h
 include/FXShowMath.h
 include/FXTerminal.h
 
@@ -39,7 +40,8 @@ src/FXPrintSample.cpp          accompanied the basis that FXDCNativePrinter
                                built on
 src/FXShowMath.cpp             display mathematical expressions
 src/FXTerminal.cpp             a terminal for interactive sessions to run in
-src/FXReduceDialog.cpp         reduce specific menu support
+src/FXReduceDialog.cpp         Reduce specific menu support
+src/FXReduceMenus.cpp          table of the new menu text
 src/FXWorker.cpp               thread-related parts assocated with FXTermninal
 
 src/cmfont-info.c              extract metrics from font info in a way I want
@@ -100,5 +102,8 @@ February 2014: Move towards some Unicode interface to terminal handling so
      (Apr 18) more care with 2-byte wchar_t, and make "TERM=dumb" behave.
 
 December 2014: Change logic for finding help files.
+
+February 2015: Add menus to pop up dialog boxes for a range of Reduce
+     algebraic operations.
 
 <end of CHANGED>
