@@ -6,7 +6,7 @@
 
 all:
 	case `uname` in \
-	*WOW64*) $(MAKE) all64; ;; \
+	*WOW*) $(MAKE) all64; ;; \
 	*) $(MAKE) all32; ;; \
 	esac
 
@@ -70,7 +70,7 @@ winreduce32.exe:	$(WWIN32)
 
 reduce.img:	win32/csl/reduce.img
 	case `uname` in \
-	 *WOW64*) cp win64/csl/reduce.img .; ;; \
+	 *WOW*) cp win64/csl/reduce.img .; ;; \
 	 *) cp win32/csl/reduce.img .; ;; \
 	esac
 

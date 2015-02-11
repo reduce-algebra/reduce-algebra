@@ -306,7 +306,7 @@ case $ac_configure_args in
 esac
 
 case `uname` in
-*CYGWIN*WOW64*)
+*CYGWIN*WOW*)
   wow64="yes"
   ;;
 *CYGWIN* | *cygwin* | *mingw*)

@@ -31,7 +31,7 @@ xWindows_NT)
     c64="64";
     try64="yes"
     ;;
-  *WOW64*)
+  *WOW*)
 # 32-bit cygwin on 64-bit Windows
     c64=""
     try64="$notcygwin"

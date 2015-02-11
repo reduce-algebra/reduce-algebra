@@ -20,7 +20,7 @@
 echo Initial sanity checks...
 
 case `uname` in
-*WOW64*)
+*WOW*)
   echo Can build both 32 and 64-bit versions of Reduce
   ;;
 *)

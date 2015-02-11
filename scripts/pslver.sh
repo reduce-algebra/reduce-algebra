@@ -28,13 +28,13 @@ host=`"$here/../config.guess"`
 # and execution of some small program will resolve matters.
 
 case $host in
-*WOW64*)
+*WOW*)
   echo winx64
   exit 0
   ;;
 *CYGWIN* | *Cygwin* | *cygwin* | *MINGW* | *MinGW* | *Mingw* | *mingw*)
   case `uname` in
-  *CYGWIN*WOW64*)
+  *CYGWIN*WOW*)
     echo "mingw-w64"
     ;;
   *)
