@@ -119,7 +119,7 @@ symbolic procedure rd_euler!*;
 
 symbolic procedure cr_euler!*;
   (if u then mkcr(u,rdzero!*()) else nil)
-    where u=rd_euler!*
+    where u=rd_euler!*();
 
 
 %
