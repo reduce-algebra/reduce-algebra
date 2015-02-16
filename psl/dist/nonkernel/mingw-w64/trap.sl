@@ -87,20 +87,11 @@
 (lap '(
    % (*sigsetup 1  Huphandler  Huphandlerinstruction  "Hup")
        (*sigsetup 2  Inthandler  IntHandlerInstruction  "Interrupt")
-       (*sigsetup 3  QuitHandler QuitHandlerInstruction "Quit")
        (*sigsetup 4  IllHandler  IllHandlerInstruction  "Illegal Instruction")
-       (*sigsetup 5  Traphandler TrapHandlerInstruction "Trace Trap")
-       (*sigsetup 6  IotHandler  IotHandlerInstruction  "IOT Instruction")
-       (*sigsetup 7  Emthandler  EmtHandlerInstruction  "EMT Instruction")
+       (*sigsetup 6  IotHandler  AbrtHandlerInstruction  "Abort")
        (*sigsetup 8  FpeHandler  FpeHandlerInstruction "Floating Pt Exception")
-       (*sigsetup 10 Bushandler  BusHandlerInstruction  "Bus Error")
        (*sigsetup 11 SegHandler  SegHandlerInstruction
                                     "Segmentation Violation")
-       (*sigsetup 12 SysHandler  SysHandlerInstruction
-                                    "Bad Args to System Call")
-       (*sigsetup 13 PipeHandler PipeHandlerinstruction
-                                    "Write on Pipe With Noone to Read")
-       (*sigsetup 14 AlrmHandler AlrmHandlerInstruction "Alarm Clock")
        (*entry initializeinterrupts-1 expr 0)
        (*sigcall)
        (*exit 0)))
@@ -150,7 +141,7 @@
        (fstcw (displacement (reg 3) 0))
        (wait)
        (*move (displacement (reg 3) 0) (reg 2))
-       (*wor (reg 2)  2#110000000000)
+%       (*wor (reg 2)  2#110000000000)
        (*wand (reg 2) 2#11111111110010)
        (*move (reg 2) (displacement (reg 3) 0))
        (fldcw (displacement (reg 3) 0))
