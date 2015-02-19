@@ -835,7 +835,193 @@ inline procedure ofsf_mktag2(x,y);
    % identifiers. Returns the interned identifier [x]2[y].
    intern compress(nconc(explode x,'!2 . explode y));
 
+switch rlelimsetoptmarek;
+off1 'rlelimsetoptmarek;
+
 procedure ofsf_translat(atf,v,theo,pos,ans);
+   if !*rlelimsetoptmarek then
+      ofsf_translat_marek(atf,v,theo,pos,ans)
+   else
+      ofsf_translat_orig(atf,v,theo,pos,ans);
+
+procedure ofsf_translat_marek(atf,v,theo,pos,ans);
+   begin scalar res;
+      if v memq ofsf_varlat atf then <<
+      	 res := if pos then
+ 	    ofsf_translat_marek1(atf,v,theo)
+      	 else
+	    ofsf_translat_marek1(ofsf_negateat atf,v,theo);
+	 if res = '(nil . nil) then
+	    res := {'anypoint . nil} . {'anypoint . 1};
+	 return res
+      >>;
+      return nil . nil
+   end;
+
+%DS MYALP
+% MYALP ::= (BoundType . RootList) . (BoundType . Integer)
+% Root ::= Guard . RootDesc
+% RootDesc ::= 'rexp . {a, b, c, d} | 'quot . SQ
+% BoundType ::= 'lb | 'ub | 'lbpe | 'ubme | 'equal | 'neq
+
+% BoundType semantics:
+% ub: a root, which is an upper bound
+% ubme: a root, which is a strict upper bound
+% lb: a root, which is a lower bound
+% lbpe: a root, which is a strict lower bound
+% equal: a root of equality, so it has to be included in an elimset
+% neq: a root of negated equality, so it has to be included in an elimset
+% (either with plus or minus epsilon)
+
+procedure ofsf_translat_marek1(atf, v, theo);
+   % [atf] contains [v]. Returns a MYALP.
+   begin scalar op, p, w, a, b, c, res;
+      integer d;
+      op := ofsf_op atf;
+      p := ofsf_arg2l atf;
+      w := setkorder {v};
+      p := reorder p;
+      d := ldeg p;
+      if d > 2 then
+      	 res := 'failed . {v, "^", d}
+      else if d = 2 then <<
+	 a := lc p;
+	 p := red p;
+	 if domainp p or (mvar p neq v) then <<
+	    b := nil;
+	    c := p
+	 >> else <<
+	    b := lc p;
+	    c := red p
+	 >>;
+	 res := ofsf_cmpalpqua_marek(op, a, b, c, v, theo)
+      >> else <<  % [ldeg p] is 1
+      	 b := lc p;
+      	 c := red p;
+	 res := ofsf_cmpalplin_marek(op, b, c, v, theo)
+      >>;
+      setkorder w;
+      return res
+   end;
+
+procedure ofsf_cmpalplin_marek(op, b, c, v, theo);
+   % Returns a MYALP.
+   begin scalar w, guard, lguard, uguard;
+      w := 'quot . quotsq(!*f2q negf c, !*f2q b);
+      if op memq '(equal neq) then <<
+	 guard := ofsf_0mk2('neq, b);
+	 return ofsf_mkalp_marek(op, {guard . w})
+      >>;
+      if ofsf_surep(ofsf_0mk2('greaterp, b), theo) then <<
+	 guard := 'true;
+	 if op eq 'lessp then
+	    return ofsf_mkalp_marek('ubme, {guard . w});
+	 if op eq 'greaterp then
+	    return ofsf_mkalp_marek('lbpe, {guard . w});
+	 if op eq 'leq then
+	    return ofsf_mkalp_marek('ub, {guard . w});
+	 if op eq 'geq then
+	    return ofsf_mkalp_marek('lb, {guard . w})
+      >> else if ofsf_surep(ofsf_0mk2('lessp, b), theo) then <<
+	 guard := 'true;
+	 if op eq 'lessp then
+	    return ofsf_mkalp_marek('lbpe, {guard . w});
+	 if op eq 'greaterp then
+	    return ofsf_mkalp_marek('ubme, {guard . w});
+	 if op eq 'leq then
+	    return ofsf_mkalp_marek('lb, {guard . w});
+	 if op eq 'geq then
+	    return ofsf_mkalp_marek('ub, {guard . w})
+      >> else <<
+	 if op eq 'lessp then <<
+	    lguard := ofsf_0mk2('lessp, b);
+	    uguard := ofsf_0mk2('greaterp, b);
+	    return cl_alpunion({ofsf_mkalp_marek('ubme, {uguard . w}),
+	       ofsf_mkalp_marek('lbpe, {lguard . w})})
+	 >>;
+	 if op eq 'greaterp then <<
+	    lguard := ofsf_0mk2('greaterp, b);
+	    uguard := ofsf_0mk2('lessp, b);
+	    return cl_alpunion({ofsf_mkalp_marek('ubme, {uguard . w}),
+	       ofsf_mkalp_marek('lbpe, {lguard . w})})
+	 >>;
+	 if op eq 'leq then <<
+	    lguard := ofsf_0mk2('lessp, b);
+	    uguard := ofsf_0mk2('greaterp, b);
+	    return cl_alpunion({ofsf_mkalp_marek('ub, {uguard . w}),
+	       ofsf_mkalp_marek('lb, {lguard . w})})
+      	 >>;
+	 if op eq 'geq then <<
+	    lguard := ofsf_0mk2('greaterp, b);
+	    uguard := ofsf_0mk2('lessp, b);
+	    return cl_alpunion({ofsf_mkalp_marek('ub, {uguard . w}),
+	       ofsf_mkalp_marek('lb, {lguard . w})})
+	 >>
+      >>
+   end;
+
+procedure ofsf_cmpalpqua_marek(op, a, b, c, v, theo);
+   % Returns a MYALP.
+   begin scalar discr, dgeq0, mroot, proot, quot, guard, rootl, rootul, rootll;
+      discr := addf(multf(b, b), negf multf(4, multf(a, c)));
+      dgeq0 := ofsf_0mk2('geq, discr);
+      mroot := 'rexp . {negf b, -1, discr, multf(2, a)};
+      proot := 'rexp . {negf b, 1, discr, multf(2, a)};
+      if op memq '(equal neq) then <<
+	 if not ofsf_surep(ofsf_0mk2('equal, b), theo) then <<
+      	    quot := 'quot . quotsq(!*f2q negf c, !*f2q b);
+	    guard := rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('neq, b)});
+	    rootl := (guard . quot) . rootl
+	 >>;
+	 guard := rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0});
+	 rootl := (guard . mroot) . rootl;
+	 rootl := (guard . proot) . rootl;
+	 return ofsf_mkalp_marek(op, rootl)
+      >>;
+      if not null b then
+	 quot := 'quot . quotsq(!*f2q negf c, !*f2q b);
+      if op eq 'lessp then <<
+	 if not null b and not ofsf_surep(ofsf_0mk2('greaterp, b), theo) then
+	    rootll := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('lessp, b)}) . quot};
+	 rootll := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . mroot) . rootll;
+	 if not null b and not ofsf_surep(ofsf_0mk2('lessp, b), theo) then
+	    rootul := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('greaterp, b)}) . quot};
+	 rootul := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . proot) . rootul;
+	 return cl_alpunion {ofsf_mkalp_marek('lbpe, rootll), ofsf_mkalp_marek('ubme, rootul)}
+      >>;
+      if op eq 'greaterp then <<
+	 if not null b and not ofsf_surep(ofsf_0mk2('lessp, b), theo) then
+	    rootll := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('greaterp, b)}) . quot};
+	 rootll := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . proot) . rootll;
+	 if not null b and not ofsf_surep(ofsf_0mk2('greaterp, b), theo) then
+	    rootul := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('lessp, b)}) . quot};
+	 rootul := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . mroot) . rootul;
+	 return cl_alpunion {ofsf_mkalp_marek('lbpe, rootll), ofsf_mkalp_marek('ubme, rootul)}
+      >>;
+      if op eq 'leq then <<
+	 if not null b and not ofsf_surep(ofsf_0mk2('greaterp, b), theo) then
+	       rootll := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('lessp, b)}) . quot};
+	 rootll := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . mroot) . rootll;
+	 if not null b and not ofsf_surep(ofsf_0mk2('lessp, b), theo) then
+	    rootul := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('greaterp, b)}) . quot};
+	 rootul := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . proot) . rootul;
+	 return cl_alpunion {ofsf_mkalp_marek('lb, rootll), ofsf_mkalp_marek('ub, rootul)}
+      >>;
+      if op eq 'geq then <<
+	 if not null b and not ofsf_surep(ofsf_0mk2('lessp, b), theo) then
+	    rootll := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('greaterp, b)}) . quot};
+	 rootll := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . proot) . rootll;
+	 if not null b and not ofsf_surep(ofsf_0mk2('greaterp, b), theo) then
+	    rootul := {rl_mkn('and, {ofsf_0mk2('equal, a), ofsf_0mk2('lessp, b)}) . quot};
+	 rootul := (rl_mkn('and, {ofsf_0mk2('neq, a), dgeq0}) . mroot) . rootul;
+	 return cl_alpunion {ofsf_mkalp_marek('lb, rootll), ofsf_mkalp_marek('ub, rootul)}
+      >>
+   end;
+
+procedure ofsf_mkalp_marek(tag, rootl);
+   {tag . rootl} . {tag . length rootl};
+
+procedure ofsf_translat_orig(atf,v,theo,pos,ans);
    % Ordered field standard form translate atomic formula. [atf] is an
    % atomic formula $\rho(t,0)$; [v] is a variable; [theo] is the
    % current theory; [pos], [ans] are Bool. Returns an ALP. If [pos]
@@ -1142,6 +1328,79 @@ procedure rlqelog();
    end;
 
 procedure ofsf_elimset(v,alp);
+   if !*rlelimsetoptmarek then
+      ofsf_elimset_marek(v, alp)
+   else
+      ofsf_elimset_orig(v,alp);
+
+procedure ofsf_elimset_marek(v, alp);
+   % [v] is a variable; [alp] is MYALP. Returns an elimination set.
+   begin scalar w, takeu, numal, resl;
+      integer nlb, nub, nlbpe, nubme, numl, numu;
+      numal := cdr alp;
+      if (w := atsoc('lb, numal)) then
+      	 nlb := cdr w;
+      if (w := atsoc('ub, numal)) then
+      	 nub := cdr w;
+      if (w := atsoc('lbpe, numal)) then
+      	 nlbpe := cdr w;
+      if (w := atsoc('ubme, numal)) then
+      	 nubme := cdr w;
+      numl := nlb + nlbpe;
+      numu := nub + nubme;
+      if (numu < numl) or ((numu = numl) and (nubme < nlbpe)) then
+      	 takeu := t;
+      resl := for each e in car alp join
+	 ofsf_rootl2eterml_marek(car e, cdr e, takeu);
+      if takeu then
+	 resl := {'ofsf_qesubi, {'pinf}} . resl
+      else
+	 resl := {'ofsf_qesubi, {'minf}} . resl;
+      return resl
+   end;
+
+procedure ofsf_rootl2eterml_marek(btype, rootl, takeu);
+   % If [takeu] is [t], then upper bound are be taken, otherwise lower bounds
+   % are taken. Returns a list of elimination terms.
+   begin scalar res, guard, rdesc, rtype, root;
+      for each e in rootl collect <<
+	 guard . rdesc := e;
+	 rtype . root := rdesc;
+	 if btype eq 'equal then <<
+	    if rtype eq 'rexp then
+	       res := {'ofsf_qesubcr1, {guard, root}} . res;
+	    if rtype eq 'quot then
+	       res := {'ofsf_qesubcq, {guard, root}} . res
+	 >>;
+	 if btype eq 'neq then <<
+	    if rtype eq 'rexp then
+	       res := {if takeu then 'ofsf_qesubcrme1 else 'ofsf_qesubcrpe1, {guard, root}} . res;
+	    if rtype eq 'quot then
+	       res := {if takeu then 'ofsf_qesubcqme else 'ofsf_qesubcqpe, {guard, root}} . res
+	 >>;
+	 if btype eq 'lbpe and not takeu then <<
+	    if rtype eq 'rexp then
+	       res := {'ofsf_qesubcrpe1, {guard, root}} . res;
+	    if rtype eq 'quot then
+	       res := {'ofsf_qesubcqpe, {guard, root}} . res
+	 >>;
+	 if btype eq 'ubme and takeu then <<
+	    if rtype eq 'rexp then
+	       res := {'ofsf_qesubcrme1, {guard, root}} . res;
+	    if rtype eq 'quot then
+	       res := {'ofsf_qesubcqme, {guard, root}} . res
+	 >>;
+	 if (btype eq 'lb and not takeu) or (btype eq 'ub and takeu) then <<
+	    if rtype eq 'rexp then
+	       res := {'ofsf_qesubcr1, {guard, root}} . res;
+	    if rtype eq 'quot then
+	       res := {'ofsf_qesubcq, {guard, root}} . res
+	 >>
+      >>;
+      return res
+   end;
+
+procedure ofsf_elimset_orig(v,alp);
    % Ordered field standard form elimination set. [v] is a variable;
    % [alp] is a pair of alists. Returns an elimination set.
    begin scalar atfal,w,lpart,qpart,npart;
@@ -1553,6 +1812,24 @@ procedure ofsf_mkgtagq(eset,theo);
    end;
 
 procedure ofsf_gelimset(alp);
+   if !*rlelimsetoptmarek then
+      ofsf_gelimset_marek(alp)
+   else
+      ofsf_gelimset_orig(alp);
+
+procedure ofsf_gelimset_marek(alp);
+   begin scalar w, res;
+      w := car alp;
+      if w = 'failed then return 'failed;
+      res := for each e in w join
+      	 if car e eq 'equal then
+	    ofsf_rootl2eterml_marek(car e, cdr e, nil)
+      	 else
+	    rederr "BUG IN ofsf_gelimset_marek";
+      return res
+   end;
+
+procedure ofsf_gelimset_orig(alp);
    % Gauss elimination set. [alp] is a pair of alists obtained from
    % [ofsf_translat]. Returns an elimination set.
    begin scalar eset;
