@@ -91,7 +91,7 @@ symbolic procedure !*addsq(u,v);
     else if denr u=1 and denr v=1 then addf(numr u,numr v) ./ 1
     else begin scalar du,dv,x,y,z;
         x := gcdf(du:=denr u,dv:=denr v);
-        du:=quotf(du,x); dv:=quotf(dv,x);
+        du:=quotf!-fail(du,x); dv:=quotf!-fail(dv,x);
         y:=addf(!*multf(dv,numr u),!*multf(du,numr v));
         if null y then return nil ./ 1;
         z:=!*multf(denr u,dv);
@@ -100,7 +100,7 @@ symbolic procedure !*addsq(u,v);
         % developed common factors from SQRT expansion, so a
         % gcd of Y and Z is needed.
         x := gcdf(y,z);
-        return if x=1 then y ./ z else quotf(y,x) ./ quotf(z,x)
+        return if x=1 then y ./ z else quotf!-fail(y,x) ./ quotf!-fail(z,x)
     end;
 
 symbolic procedure !*multsq(u,v);
@@ -111,11 +111,11 @@ symbolic procedure !*multsq(u,v);
     else begin scalar w,x,y;
      x := gcdf(numr u,denr v);
      y := gcdf(numr v,denr u);
-     w := !*multf(quotf(numr u,x),quotf(numr v,y));
-     x := !*multf(quotf(denr u,y),quotf(denr v,x));
+     w := !*multf(quotf!-fail(numr u,x),quotf!-fail(numr v,y));
+     x := !*multf(quotf!-fail(denr u,y),quotf!-fail(denr v,x));
      if minusf x then <<w := negf w; x := negf x>>;
      y := gcdf(w,x);  % another factor may have been generated.
-     return if y=1 then w ./ x else quotf(w,y) ./ quotf(x,y)
+     return if y=1 then w ./ x else quotf!-fail(w,y) ./ quotf!-fail(x,y)
     end;
 
 symbolic procedure !*invsq a;

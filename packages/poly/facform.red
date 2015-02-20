@@ -338,7 +338,7 @@ symbolic procedure sqfrf u;
       x := mvar u;
       % With ezgcd off, some sqrts can take a long, long time.
       v := gcdf(u,diff(u,x)) where !*ezgcd = t;
-      u := quotf(u,v);
+      u := quotf!-fail(u,v);
       % If domain is a field, or has non-trivial units, v can have a
       % spurious numerical factor.
       if flagp(dmode!*,'field) and ((y := lnc u) neq 1)

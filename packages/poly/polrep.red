@@ -53,18 +53,18 @@ symbolic procedure addsq(u,v);
                              v := numr v ./ mkprod denr v>>;
         if !*lcm then x := gcdf!*(denr u,denr v)
          else x := gcdf(denr u,denr v);
-        z := canonsq(quotf(denr u,x) ./ quotf(denr v,x));
+        z := canonsq(quotf!-fail(denr u,x) ./ quotf!-fail(denr v,x));
         y := addf(multf(denr z,numr u),multf(numr z,numr v));
         if null y then return nil ./ 1;
         z := multf(denr u,denr z);
-        if (x := gcdf(y,x)) neq 1 then <<y := quotf(y,x);
-                                         z := quotf(z,x)>>;
+        if (x := gcdf(y,x)) neq 1 then <<y := quotf!-fail(y,x);
+                                         z := quotf!-fail(z,x)>>;
         if !*gcd then return if x=1 then y ./ z else canonsq(y ./ z);
 % If gcd is off (which is the default) y and z can still have an
 % incomplete gcd. Therefore to ensure full simplification we need to
 % take (the incomplete) gcd of y and z and divide it out.
         return if (x := gcdf(y,z))=1 then canonsq(y ./ z)
-                else canonsq(quotf(y,x) ./ quotf(z,x))
+                else canonsq(quotf!-fail(y,x) ./ quotf!-fail(z,x))
     end;
 
 symbolic procedure multsq(u,v);
@@ -75,8 +75,8 @@ symbolic procedure multsq(u,v);
     else begin scalar x,y,z;
         x := gcdf(numr u,denr v);
         y := gcdf(numr v,denr u);
-        z := multf(quotf(numr u,x),quotf(numr v,y));
-        x := multf(quotf(denr u,y),quotf(denr v,x));
+        z := multf(quotf!-fail(numr u,x),quotf!-fail(numr v,y));
+        x := multf(quotf!-fail(denr u,y),quotf!-fail(denr v,x));
         return canonsq(z ./ x)
     end;
 
@@ -472,8 +472,8 @@ symbolic procedure cprod2(p,m,u,b);
       while u and p neq 1 do
         <<if (z := gcdf(p,caar u)) neq 1
             then
-           <<p := quotf(p,z);
-             y := quotf(caar u,z);
+           <<p := quotf!-fail(p,z);
+             y := quotf!-fail(caar u,z);
              if y neq 1 then v := mksp(y,cdar u) . v;
              if b then v := mksp(z,m+cdar u) . v
               else if (n := m-cdar u)>0 then w := mksp(z,n) . w
@@ -642,6 +642,18 @@ symbolic procedure quotk(p,q);
          else nil)
       quotf1(lc p,q);
 
+symbolic procedure quotf!-fail(a,b);
+% version of quotf that fails if the division does;
+% if roundall is on in rounded mode, try again without conversion to rounded
+  if null a then nil
+  else begin scalar w;
+    w:=quotf(a,b);
+    if null w and !*rounded and !*roundall then (w:=quotf(a,b) where !*roundall:=nil);
+    if null w then rerror(poly,99,{"UNEXPECTED DIVISION FAILURE",a,b})
+    else return w
+  end;
+
+
 symbolic procedure rank p;
    %P is a standard form
    %Value is the rank of P;
@@ -757,7 +769,7 @@ symbolic procedure canonsq u;
        % a:=1+x/2; let x**2=0; a*a;
        % Should only be needed when an asymptotic reduction occurs.
        if asymplis!* and ((x := gcdf(numr u,denr u)) neq 1)
-         then u := quotf(numr u,x) ./ quotf(denr u,x);
+         then u := quotf!-fail(numr u,x) ./ quotf!-fail(denr u,x);
        % Now adjust for a positive leading numerical coeff in denr.
         x := lnc denr u;
         if x=1 then return u
@@ -806,7 +818,7 @@ symbolic procedure simpgd u;
    if null flagp(dmode!*,'field) then u
    else begin scalar x;
            if (x := gcdf(numr u,denr u)) neq 1
-             then u := quotf(numr u,x) ./ quotf(denr u,x);
+             then u := quotf!-fail(numr u,x) ./ quotf!-fail(denr u,x);
            return u
         end;
 
@@ -827,7 +839,7 @@ symbolic procedure invsq u;
 
 symbolic procedure gcdchk u;
    % Makes sure standard quotient u is in lowest terms.
-   (if x neq 1 then quotf(numr u,x) ./ quotf(denr u,x) else u)
+   (if x neq 1 then quotf!-fail(numr u,x) ./ quotf!-fail(denr u,x) else u)
    where x = gcdf(numr u,denr u);
 
 endmodule;

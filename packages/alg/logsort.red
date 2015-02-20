@@ -98,9 +98,9 @@ symbolic procedure clogf2 x; % does actual log combining.
       r := list lt z; z := red z;
       if eqcar(mvar r,'log) and ldeg r=1 then go to a2;
   a1: s := addf(r,s); go to lp;
-  a2: b := coefgcd(a := lc r,0); a := quotf(a,b);
-      d := coefgcd(c := lc y,0); c := quotf(c,d);
-      g := gcdf(a,c); a := quotf(a,g); c := quotf(c,g);
+  a2: b := coefgcd(a := lc r,0); a := quotf!-fail(a,b);
+      d := coefgcd(c := lc y,0); c := quotf!-fail(c,d);
+      g := gcdf(a,c); a := quotf!-fail(a,g); c := quotf!-fail(c,g);
       if not domainp a or not domainp c then go to a1
        else if numberp a and numberp c then go to a3
        else if quotf(a,c)=-1 then
@@ -112,7 +112,7 @@ symbolic procedure clogf2 x; % does actual log combining.
   a3: % a := list('times,logarg(cadr mvar r,multf(a,b)),
       %    logarg(cadr mvar y,multf(c,d))); g := g ./ 1;
       b := multf(a,b); d := multf(c,d);
-      k := gcdf(k,gcdf(b,d)); b := quotf(b,k); d := quotf(d,k);
+      k := gcdf(k,gcdf(b,d)); b := quotf!-fail(b,k); d := quotf!-fail(d,k);
       % Only combine a log if at most one of the arguments is complex.
       % Otherwise you can finish up on the wrong sheet.
       if !*precise and not one_complexlist {cadr mvar r,cadr mvar y}

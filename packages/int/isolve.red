@@ -478,7 +478,7 @@ symbolic procedure makeprim row;
         g:=getv(row,0);
         for i:=1:ccount do g:=gcdf(g,getv(row,i));
         if g neq 1 then
-           for i:=0:ccount do putv(row,i,quotf(getv(row,i),g));
+           for i:=0:ccount do putv(row,i,quotf!-fail(getv(row,i),g));
         for i := 0:ccount do
           <<g := getv(row,i);
             if g and not domainp g

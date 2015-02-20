@@ -43,7 +43,7 @@ symbolic procedure df2q p;
       w:=red p;
       while w do
        <<% Get denominator of answer as lcm of denoms in input.
-         d := multf(d,quotf(denr lc w,gcdf(d,denr lc w)));
+         d := multf(d,quotf!-fail(denr lc w,gcdf(d,denr lc w)));
          w := red w>>;
       while p do begin
            w := sqrt2top lc p;

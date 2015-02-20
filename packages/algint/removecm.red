@@ -59,7 +59,7 @@ if atom sf or not ordop(mvar sf,intvar) or not involvesf(sf,intvar)
       while (v:=involvesf(u,intvar)) do u:=lc makemainvar(u,v);
       if u iequal 1
         then return sf;
-      return quotf(sf,cmgcdf(sf,u))
+      return quotf!-fail(sf,cmgcdf(sf,u))
       end;
 
 symbolic procedure cmgcdf(sf,u);

@@ -119,12 +119,12 @@ symbolic procedure quadraticf1(a,b,c);
       c := addf(b,negf discrim);
       b := w;
       if (w := gcdf(a,b)) neq 1
-        then <<a1 := quotf(a,w); b := quotf(b,w);
-               denom := quotf(denom,w)>>;
+        then <<a1 := quotf!-fail(a,w); b := quotf!-fail(b,w);
+               denom := quotf!-fail(denom,w)>>;
       if (w := gcdf(a,denom)) neq 1 and (w := gcdf(c,denom))
-        then <<a := quotf(a,w);
-               c := quotf(c,w);
-               denom := quotf(denom,w)>>;
+        then <<a := quotf!-fail(a,w);
+               c := quotf!-fail(c,w);
+               denom := quotf!-fail(denom,w)>>;
       return list(denom,a1,b,a,c)
     end;
 

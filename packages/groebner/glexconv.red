@@ -325,8 +325,8 @@ again: break:=nil;
   <<if field then
      eqa:=addf(eqa,negf multf(quotf(lc eqa,lc p),p)) else
      <<gc:=gcdf(lc p,lc eqa);
-       eqa:=addf(multf(quotf(lc p,gc),eqa),
-                      negf multf(quotf(lc eqa,gc),p)) >>;
+       eqa:=addf(multf(quotf!-fail(lc p,gc),eqa),
+                      negf multf(quotf!-fail(lc eqa,gc),p)) >>;
    if not domainp eqa then eqa:=numr multsq(eqa ./ 1,1 ./ lc eqa);
    %%%%%%eqa:=groelinscont(eqa,xvars);
    eqa>>

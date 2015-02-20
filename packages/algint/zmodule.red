@@ -61,7 +61,7 @@ begin
              collect denr u;
 nochange:
  commonden:=mapply(function(lambda u,v;
-                      multf(u,quotf(v,gcdf(u,v)))),denlist)./1;
+                      multf(u,quotf!-fail(v,gcdf(u,v)))),denlist)./1;
   u:=nil;
   for each v in reslist do
     u:=(numr !*multsq(v,commonden)).u;

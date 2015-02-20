@@ -183,12 +183,12 @@ symbolic procedure xaddsq(u,v);
                              v := numr v ./ mkprod denr v>>;
         if !*lcm then x := gcdf!*(denr u,denr v)
          else x := gcdf(denr u,denr v);
-        z := canonsq(quotf(denr u,x) ./ quotf(denr v,x));
+        z := canonsq(quotf!-fail(denr u,x) ./ quotf!-fail(denr v,x));
         y := addf(multf(denr z,numr u),multf(numr z,numr v));
         if null y then return nil ./ 1;
         z := multf(denr u,denr z);
         return if x=1 or (x := gcdf(y,x))=1 then y ./ z
-                else canonsq(quotf(y,x) ./ quotf(z,x))
+                else canonsq(quotf!-fail(y,x) ./ quotf!-fail(z,x))
     end;
 
 % -----  -  -----

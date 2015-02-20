@@ -102,8 +102,8 @@ symbolic
         gg:=1;
         foreach z in zlist do
            <<w := subs2 diffsq(simp z,svar);   % subs2q?
-             gg := !*multf(gg,quotf(denr w,gcdf(denr w,gg)))>>;
-        gg := quotf(gg,gcdf(gg,denr integrand));
+             gg := !*multf(gg,quotf!-fail(denr w,gcdf(denr w,gg)))>>;
+        gg := quotf!-fail(gg,gcdf(gg,denr integrand));
         unintegrand := (!*multf(gg,numr integrand)
                         ./ !*multf(gg,denr integrand));  % multf?
         if !*trint then <<
@@ -151,10 +151,10 @@ symbolic
       dflogs := addsq((numr unintegrand) ./ 1,negsq dflogs);
       % Put everything in reduction eqn over common denominator.
       gcdq := gcdf(denr dflogs,denr dfu);
-      dfun := !*multf(numr dfu,denbad:=quotf(denr dflogs,gcdq));
+      dfun := !*multf(numr dfu,denbad:=quotf!-fail(denr dflogs,gcdq));
       denbad := !*multf(denr dfu,denbad);
       denbad := !*multf(denr unintegrand,denbad);
-      dflogs := !*multf(numr dflogs,quotf(denr dfu,gcdq));
+      dflogs := !*multf(numr dflogs,quotf!-fail(denr dfu,gcdq));
       dfu := dfun;
       % Now DFU and DFLOGS are S.F.s.
       rhs!* := multbyarbpowers f2df dfu;

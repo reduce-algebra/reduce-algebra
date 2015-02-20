@@ -125,8 +125,8 @@ begin
       then return (negf n ./ negf d)
       else return (n ./ d);
   q:=gcdf(q,d);
-  n:=quotf(n,q);
-  d:=quotf(d,q);
+  n:=quotf!-fail(n,q);
+  d:=quotf!-fail(d,q);
   if minusf d
     then return (negf n ./ negf d)
     else return (n ./ d)

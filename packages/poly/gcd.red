@@ -301,7 +301,7 @@ symbolic procedure lcm(u,v);
    if null u or null v then nil
     else if u=1 then v     % ONEP
     else if v=1 then u     % ONEP
-    else multf(u,quotf(v,gcdf(u,v)));
+    else multf(u,quotf!-fail(v,gcdf(u,v)));
 
 symbolic procedure remk(u,v);
    %modified pseudo-remainder algorithm

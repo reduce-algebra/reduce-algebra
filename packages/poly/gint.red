@@ -357,7 +357,7 @@ symbolic procedure girationalize!: u;
       !*gcd := t;
       if y=(z := conjgd(y := denr u)) then return u;
       % Remove from z any real polynomial factors of y and z.
-      z := quotf(z,quotf(
+      z := quotf!-fail(z,quotf(
          gcdf(addf(y,z),multf(addf(z,negf y),'!:gi!: . (0 . 1))),2));
       % The following subs2 can undo the above if !*match is non-NIL.
 %     return subs2 gigcdsq(multf(numr u,z),multf(y,z))

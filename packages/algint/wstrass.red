@@ -211,7 +211,7 @@ begin
     return weierstrass!-form1(c,d,x1,x2)
    end;
 
-symbolic procedure !*lcm!*(u,v); !*multf(u,quotf(v,gcdf(u,v)));
+symbolic procedure !*lcm!*(u,v); !*multf(u,quotf!-fail(v,gcdf(u,v)));
 
 symbolic procedure weierstrass!-form1(c,d,x1,x2);
  begin scalar b,u;
@@ -227,8 +227,8 @@ symbolic procedure weierstrass!-form1(c,d,x1,x2);
       % We found no repeated factors.
     for each v in u do
       for each w in v do
-        while (cc:=quotf(numr c,multf(w,w))) and
-              (dd:=quotf(numr d,exptf(w,3)))
+        while (cc:=quotf!-fail(numr c,multf(w,w))) and
+              (dd:=quotf!-fail(numr d,exptf(w,3)))
           do <<
             c:=cc ./ 1;
             d:=dd ./ 1;

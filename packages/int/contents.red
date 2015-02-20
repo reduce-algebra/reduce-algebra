@@ -95,9 +95,9 @@ symbolic procedure sqfree(p,vl);
         while not (p=1) do <<
             dp:=partialdiff(p,v);
             gg:=gcdf(p,dp);
-            pg:=quotf(p,gg);
+            pg:=quotf!-fail(p,gg);
             dpg:=negf partialdiff(pg,v);
-            p1:=gcdf(pg,addf(quotf(dp,gg),dpg));
+            p1:=gcdf(pg,addf(quotf!-fail(dp,gg),dpg));
             w1:=p1.w1;
             p:=gg>>;
         return sqmerge(reverse w1,w,t)

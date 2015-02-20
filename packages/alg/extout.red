@@ -241,7 +241,7 @@ symbolic procedure prepsq!*0(u,v);
    begin scalar x;
       return if null numr u then nil
               else if (x := gcdf(numr u,denr u)) neq 1
-        then prepsq!*1(quotf(numr u,x),quotf(denr u,x),v)
+        then prepsq!*1(quotf!-fail(numr u,x),quotf!-fail(denr u,x),v)
        else prepsq!*1(numr u,denr u,v)
    end;
 

@@ -90,14 +90,14 @@ symbolic procedure sqrtf1 p;
            else !*q2f simpsqrt list prepf p . 1
     else begin scalar co,pp,g,pg;
         co:=contentsmv(p,mvar p,nil); %contents of p.
-        pp:=quotf(p,co); %primitive part.
+        pp:=quotf!-fail(p,co); %primitive part.
         co:=sqrtf1(co); %process contents via recursion.
         g:=gcdf(pp,partialdiff(pp,mvar pp));
-        pg:=quotf(pp,g);
+        pg:=quotf!-fail(pp,g);
         g:=gcdf(g,pg); %a repeated factor of pp.
         if g=1 then pg:=1 . pp
         else <<
-            pg:= quotf(pp,!*multf(g,g)); %what is still left.
+            pg:= quotf!-fail(pp,!*multf(g,g)); %what is still left.
             pg:=sqrtf1(pg); %split that up.
             rplaca(pg,!*multf(car pg,g))>>;
                  %put in the thing found here.
