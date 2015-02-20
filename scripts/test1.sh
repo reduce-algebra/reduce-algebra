@@ -165,6 +165,17 @@ then
   fi
 fi
 
+# 
+# Use /dev/null in the .rlg file doesn't exist
+
+if test -f $here/packages/$d/$p.rlg
+then
+  rlgfile=$here/packages/$d/$p.rlg
+else
+  rlgfile=/dev/null
+fi
+
+# 
 # Each individual test should only take a few seconds. On my computer the
 # slowest ones may take almost 15 seconds. The idea behind applying a
 # ulimit here is to avoid trouble when and if a test script loops.
@@ -191,7 +202,7 @@ quit$
 XXX
 cat $p.howlong.tmp >> csl-times/$p.rlg.tmp
 printf CSL...
-sed -e "/^Tested on /,//d" <$here/packages/$d/$p.rlg |
+sed -e "/^Tested on /,//d" <$rlgfile |
   sed -e '/^Total time taken:/d; /^Number of garbage/d' \
       -e '/^Time: /d; /^CRACK needed :/d; /^time for init/d' \
       -e '/^+++ levelt compiled/d; /^\*\*\* (levelt): base/d' \
@@ -255,7 +266,7 @@ quit$
 XXX
 cat $p.howlong.tmp >> psl-times/$p.rlg.tmp
 printf "PSL..."
-sed -e "/^Tested on /,//d" <$here/packages/$d/$p.rlg | \
+sed -e "/^Tested on /,//d" <$rlgfile | \
   sed -e '/^Total time taken:/d; /^Number of garbage/d' \
       -e '/^Time: /d; /^CRACK needed :/d; /^time for init/d' \
       -e '/^+++ levelt compiled/d; /^\*\*\* (levelt): base/d' \
