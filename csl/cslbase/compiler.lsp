@@ -2678,50 +2678,50 @@ cmnd w w1 obj deff) (setq w (C!-end1 nil)) (close C_file) (setq cmnd (append
 (explodec s!:native_file) (quote (!")))) (cond ((memq (quote win32) 
 lispsystem!*) (setq obj "dll")) (t (setq obj "so"))) (setq obj (tmpnam obj)) 
 (cond ((memq (quote win32) lispsystem!*) (prog (nn) (setq nn (car 
-s!:faslmod_name)) (setq nn (list!-to!-string (prog (var1181 var1182) (setq 
-var1181 (explodec nn)) lab1180 (cond ((null var1181) (return (reversip 
-var1182)))) (prog (c) (setq c (car var1181)) (setq var1182 (cons (cond ((
-equal c (quote !-)) (quote !_)) (t c)) var1182))) (setq var1181 (cdr var1181)
-) (go lab1180)))) (setq deff (tmpnam "def")) (setq w1 (open deff (quote 
-output))) (setq w1 (wrs w1)) (princ "LIBRARY ") (princ (car s!:faslmod_name))
-(printc ".dll") (printc "EXPORTS") (printc " init") (princ " ") (princ nn) (
-printc "_setup") (printc "IMPORTS") (print!-imports) (close (wrs w1)) (setq 
-cmnd (append (explodec deff) (cons (quote ! ) cmnd)))))) (setq cmnd (append (
-explodec obj) (cons (quote ! ) cmnd))) (setq cmnd (append (explodec " -o ") 
-cmnd)) (prog (var1184) (setq var1184 (reverse (cdr (assoc (quote 
-compiler!-command) lispsystem!*)))) lab1183 (cond ((null var1184) (return nil
-))) (prog (x) (setq x (car var1184)) (setq cmnd (append (explodec x) (cons (
-quote ! ) cmnd)))) (setq var1184 (cdr var1184)) (go lab1183)) (setq cmnd (
-compress (cons (quote !") cmnd))) (print cmnd) (cond ((not (zerop (
-silent!-system cmnd))) (progn (princ "+++ C compilation for ") (prin (car 
-s!:faslmod_name)) (printc " failed"))) (t (progn (cond (!*strip_native (progn
-(setq cmnd (compress (cons (quote !") (append (explodec "strip ") (append (
-explodec obj) (quote (!"))))))) (print cmnd) (silent!-system cmnd)))) (setq 
-copysrc obj) (setq copydest (list!-to!-string (append (explodec (car 
-s!:faslmod_name)) (cons (quote !.) (explodec (cdr (assoc (quote linker) 
-lispsystem!*))))))) (cond ((not !*save_native) (progn (delete!-file 
-s!:native_file) (cond ((memq (quote win32) lispsystem!*) (delete!-file deff))
-)))) (write!-module (list (quote instate!-c!-code) (mkquote (car 
-s!:faslmod_name)) (mkquote w))))))))) (start!-module nil) (cond (copysrc (
-progn (copy!-native copysrc copydest) (cond ((not !*save_native) (
-delete!-file copysrc)))))) (setq dfprint!* s!:dfprintsave) (setq !*defn nil) 
-(setq !*comp (cdr s!:faslmod_name)) (setq s!:faslmod_name nil) (return nil)))
+s!:faslmod_name)) (setq nn (list2string (prog (var1181 var1182) (setq var1181
+(explodec nn)) lab1180 (cond ((null var1181) (return (reversip var1182)))) (
+prog (c) (setq c (car var1181)) (setq var1182 (cons (cond ((equal c (quote !-
+)) (quote !_)) (t c)) var1182))) (setq var1181 (cdr var1181)) (go lab1180))))
+(setq deff (tmpnam "def")) (setq w1 (open deff (quote output))) (setq w1 (
+wrs w1)) (princ "LIBRARY ") (princ (car s!:faslmod_name)) (printc ".dll") (
+printc "EXPORTS") (printc " init") (princ " ") (princ nn) (printc "_setup") (
+printc "IMPORTS") (print!-imports) (close (wrs w1)) (setq cmnd (append (
+explodec deff) (cons (quote ! ) cmnd)))))) (setq cmnd (append (explodec obj) 
+(cons (quote ! ) cmnd))) (setq cmnd (append (explodec " -o ") cmnd)) (prog (
+var1184) (setq var1184 (reverse (cdr (assoc (quote compiler!-command) 
+lispsystem!*)))) lab1183 (cond ((null var1184) (return nil))) (prog (x) (setq
+x (car var1184)) (setq cmnd (append (explodec x) (cons (quote ! ) cmnd)))) (
+setq var1184 (cdr var1184)) (go lab1183)) (setq cmnd (compress (cons (quote 
+!") cmnd))) (print cmnd) (cond ((not (zerop (silent!-system cmnd))) (progn (
+princ "+++ C compilation for ") (prin (car s!:faslmod_name)) (printc 
+" failed"))) (t (progn (cond (!*strip_native (progn (setq cmnd (compress (
+cons (quote !") (append (explodec "strip ") (append (explodec obj) (quote (!"
+))))))) (print cmnd) (silent!-system cmnd)))) (setq copysrc obj) (setq 
+copydest (list2string (append (explodec (car s!:faslmod_name)) (cons (quote 
+!.) (explodec (cdr (assoc (quote linker) lispsystem!*))))))) (cond ((not 
+!*save_native) (progn (delete!-file s!:native_file) (cond ((memq (quote win32
+) lispsystem!*) (delete!-file deff)))))) (write!-module (list (quote 
+instate!-c!-code) (mkquote (car s!:faslmod_name)) (mkquote w))))))))) (
+start!-module nil) (cond (copysrc (progn (copy!-native copysrc copydest) (
+cond ((not !*save_native) (delete!-file copysrc)))))) (setq dfprint!* 
+s!:dfprintsave) (setq !*defn nil) (setq !*comp (cdr s!:faslmod_name)) (setq 
+s!:faslmod_name nil) (return nil)))
 
 (put (quote faslend) (quote stat) (quote endstat))
 
 (de s!:file (s) (prog (r) (setq s (reverse (explodec s))) (prog nil lab1185 (
 cond ((null (and s (not (or (eqcar s (quote !/)) (eqcar s (quote !\)))))) (
 return nil))) (progn (setq r (cons (car s) r)) (setq s (cdr s))) (go lab1185)
-) (return (list!-to!-string r))))
+) (return (list2string r))))
 
 (de s!:trim!.c (s) (prog (r) (setq s (reverse (explodec s))) (cond ((eqcar s 
 (quote c)) (progn (setq s (cdr s)) (cond ((eqcar s (quote !.)) (setq s (cdr s
-))))))) (return (list!-to!-string (reverse s)))))
+))))))) (return (list2string (reverse s)))))
 
 (de s!:dir (s) (prog nil (setq s (reverse (explodec s))) (prog nil lab1186 (
 cond ((null (and s (not (or (eqcar s (quote !/)) (eqcar s (quote !\)))))) (
 return nil))) (setq s (cdr s)) (go lab1186)) (cond (s (setq s (cdr s)))) (
-cond ((null s) (return ".")) (t (return (list!-to!-string (reverse s)))))))
+cond ((null s) (return ".")) (t (return (list2string (reverse s)))))))
 
 (de faslout (u) (prog nil (terpri) (princ "FASLOUT ") (prin u) (princ 
 ": IN files;  or type in expressions") (terpri) (princ 
@@ -3359,12 +3359,12 @@ explode2 b) (quote (!")))))))
 
 (de c!:ccompilestart (name setupname dir hdrnow) (prog (o d w) (reset!-gensym
 0) (setq c!:registers (setq c!:available (setq c!:used nil))) (setq 
-File_name (list!-to!-string (explodec name))) (setq Setup_name (explodec 
-setupname)) (setq Setup_name (subst (quote !_) (quote !-) Setup_name)) (setq 
-Setup_name (list!-to!-string Setup_name)) (cond (dir (progn (cond ((memq (
-quote win32) lispsystem!*) (setq name (c!:concat dir (c!:concat "\" name)))) 
-(t (setq name (c!:concat dir (c!:concat "/" name)))))))) (princ "C file = ") 
-(print name) (setq C_file (open (c!:concat name ".c") (quote output))) (setq 
+File_name (list2string (explodec name))) (setq Setup_name (explodec setupname
+)) (setq Setup_name (subst (quote !_) (quote !-) Setup_name)) (setq 
+Setup_name (list2string Setup_name)) (cond (dir (progn (cond ((memq (quote 
+win32) lispsystem!*) (setq name (c!:concat dir (c!:concat "\" name)))) (t (
+setq name (c!:concat dir (c!:concat "/" name)))))))) (princ "C file = ") (
+print name) (setq C_file (open (c!:concat name ".c") (quote output))) (setq 
 L_file (c!:concat name ".lsp")) (setq L_contents nil) (setq c!:names_so_far 
 nil) (setq o (reverse (explode (date!-and!-time)))) (prog (i) (setq i 1) 
 lab1254 (cond ((minusp (times 1 (difference 5 i))) (return nil))) (progn (
@@ -3415,9 +3415,9 @@ c2 (cdr c1)) (setq c1 (car c1)) (c!:printf
 64 c1 76 c2)))) (setq c!:defnames (cdr c!:defnames))) (go lab1255)) (setq c3
 (setq checksum (md60 L_contents))) (setq c1 (remainder c3 10000000)) (setq 
 c3 (quotient c3 10000000)) (setq c2 (remainder c3 10000000)) (setq c3 (
-quotient c3 10000000)) (setq checksum (list!-to!-string (append (explodec c3)
-(cons (quote ! ) (append (explodec c2) (cons (quote ! ) (explodec c1))))))) 
-(c!:printf "    {NULL, (one_args *)%a, (two_args *)%a, 0}\n};\n\n" Setup_name
+quotient c3 10000000)) (setq checksum (list2string (append (explodec c3) (
+cons (quote ! ) (append (explodec c2) (cons (quote ! ) (explodec c1))))))) (
+c!:printf "    {NULL, (one_args *)%a, (two_args *)%a, 0}\n};\n\n" Setup_name 
 checksum) (c!:printf "%</* end of generated code %<*/\n") (close C_file) (
 cond (create_lfile (progn (setq L_file (open L_file (quote output))) (wrs 
 L_file) (linelength 72) (terpri) (princ "% ") (princ Setup_name) (princ 

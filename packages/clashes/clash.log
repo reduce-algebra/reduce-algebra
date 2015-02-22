@@ -322,7 +322,6 @@ sub_math                       defined in mathml mml_ir
 subeval0                       defined in sub fixes2
 sublistp                       defined in partdf xpowers
 subs3f1                        defined in subs3q noncom2
-subsetp                        defined in rsupport cali
 subsetrd                       defined in mathml mml_ir
 superprinm                     defined in cslcompat pretty
 superprintm                    defined in cslcompat pretty

@@ -557,6 +557,7 @@ symbolic procedure superprinm(x,s!:lmar);
     return x
   end;
 
+flag('(superprinm superprintm prettyprint), 'lose);
 
 % Access functions for a stack entry.
 

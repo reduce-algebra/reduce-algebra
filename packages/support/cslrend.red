@@ -654,6 +654,8 @@ symbolic inline procedure fourth u; cadddr u;
 
 symbolic inline procedure rest u; cdr u;
 
+flag('(first second third fourth resr), 'lose);
+
 
 Comment Initial setups for REDUCE;
 
@@ -771,6 +773,28 @@ symbolic procedure concat(u,v);
 % "extras.red" for an explanation.
 
 symbolic procedure dated!-gensym u; dated!-name u;
+
+symbolic procedure copyd(new,old);
+% Copy the function definition from old id to new. For CSL this plays
+% extra games with the '!*savedef property. The extra behaviour was
+% originally to favour the Reduce "patching" scheme but that is no longer
+% in use...
+   begin scalar x;
+      x := getd old;
+% If loading with !*savedef = '!*savedef then the actual definitions
+% do not get loaded, but the source forms do...
+      if null x then progn(
+        if not (!*savedef = '!*savedef)
+          then rerror('rlisp,1,list(old,"has no definition in copyd")) )
+      else progn(putd(new,car x,cdr x),
+                 if flagp(old, 'lose) then flag(list new, 'lose) );
+% The transfer of the saved definition is needed if the REDUCE "patch"
+% mechanism is to work fully properly.
+      if (x := get(old, '!*savedef)) then put(new, '!*savedef, x);
+      return new
+   end;
+
+flag('(copyd), 'lose);
 
 % The following is intended to run the test on a single package.
 % In due course I will improve it so it also checks the output,

@@ -338,6 +338,8 @@ symbolic inline procedure preci!: nmbr;
 symbolic inline procedure make!:ibf (mt, ep);
   '!:rd!: . (mt . ep);
 
+flag('(make!:ibf), 'lose);
+
 if not('ieee memq lispsystem!*) then
      flag('(fl2bf),'lose);
 

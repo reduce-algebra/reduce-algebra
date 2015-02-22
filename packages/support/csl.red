@@ -44,14 +44,12 @@ symbolic inline procedure fix2 u; fix u;
 
 flag('(lshift ashift), 'lose);
 
-%% land is now built in to CSL... (also lor, lxor and lnot)
-%
-%symbolic inline procedure land(a,b); logand(a,b);
-
 symbolic inline procedure msd!: u; msd u;
 
 symbolic inline procedure make!:ibf (mt, ep);
   '!:rd!: . (mt . ep);
+
+flag('(make!:ibf), 'lose);
 
 fluid '(!:bprec!:);
 
@@ -132,6 +130,10 @@ set!-print!-precision 6;
 % by a floating point exception, since as of Nov 1994 CSL built using
 % Watcom C 10.0a can not recover from such errors more than (about) ten
 % times in any one run - this avoids that during system building.
+%
+% Hahaha - the above comments shows traces of the way in which historical
+% real oddities and pain can end up frozen into code. In February 2015
+% comments about the situation in November 1994 seem "historical".
 
 global '(!!flexperr !!!~xx !!maxbflexp);
 
@@ -144,26 +146,33 @@ symbolic procedure find!!maxbflexp();
 
 flag('(find!!maxbflexp), 'lose);
 
-remflag('(copyd), 'lose);
+% At the stage that there was a "patch" mechanism used to update Reduce
+% this definition was needed here - including the jollies with the 'lose
+% flag - so that patching could apply to code within rlisp. Since the
+% Sourceforge release of Reduce the old patch mechanism has become redundant
+% and so this ugliness can be removed. This makes some comments in
+% cslprolo redundant too.
 
-symbolic procedure copyd(new,old);
-% Copy the function definition from old id to new.
-   begin scalar x;
-      x := getd old;
-% If loading with !*savedef = '!*savedef then the actual definitions
-% do not get loaded, but the source forms do...
-      if null x then <<
-        if not (!*savedef = '!*savedef)
-          then rerror('rlisp,1,list(old,"has no definition in copyd"))>>
-      else << putd(new,car x,cdr x);
-              if flagp(old, 'lose) then flag(list new, 'lose) >>;
-% The transfer of the saved definition is needed if the REDUCE "patch"
-% mechanism is to work fully properly.
-      if (x := get(old, '!*savedef)) then put(new, '!*savedef, x);
-      return new
-   end;
-
-flag('(copyd), 'lose);
+%remflag('(copyd), 'lose);
+%
+%symbolic procedure copyd(new,old);
+%% Copy the function definition from old id to new.
+%   begin scalar x;
+%      x := getd old;
+%% If loading with !*savedef = '!*savedef then the actual definitions
+%% do not get loaded, but the source forms do...
+%      if null x then <<
+%        if not (!*savedef = '!*savedef)
+%          then rerror('rlisp,1,list(old,"has no definition in copyd"))>>
+%      else << putd(new,car x,cdr x);
+%              if flagp(old, 'lose) then flag(list new, 'lose) >>;
+%% The transfer of the saved definition is needed if the REDUCE "patch"
+%% mechanism is to work fully properly.
+%      if (x := get(old, '!*savedef)) then put(new, '!*savedef, x);
+%      return new
+%   end;
+%
+%flag('(copyd), 'lose);
 
 inline procedure int2id x; % Turns 8-bit value into name. Only OK is under 0x80
   intern list2string list x;

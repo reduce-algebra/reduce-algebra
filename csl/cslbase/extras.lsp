@@ -62,12 +62,12 @@ setpchar prompt) (return nil)))
 "0123456789abcdefghijklmnopqrstuvwxyz" (remainder n 36)) (s!:stamp (truncate 
 n 36))))))))
 
-(de dated!-name (base) (intern (list!-to!-string (append (explodec base) (
-cons (quote !_) (append (reverse (s!:stamp (datestamp))) (cons (quote !_) (
-explodec (setq s!:gensym!-serial (plus s!:gensym!-serial 1))))))))))
+(de dated!-name (base) (intern (list2string (append (explodec base) (cons (
+quote !_) (append (reverse (s!:stamp (datestamp))) (cons (quote !_) (explodec
+(setq s!:gensym!-serial (plus s!:gensym!-serial 1))))))))))
 
-(de hashtagged!-name (base value) (intern (list!-to!-string (append (explodec
-base) (cons (quote !_) (s!:stamp (md60 value)))))))
+(de hashtagged!-name (base value) (intern (list2string (append (explodec base
+) (cons (quote !_) (s!:stamp (md60 value)))))))
 
 (remflag (quote (sort sortip)) (quote lose))
 
@@ -179,8 +179,8 @@ lab1010 (cond ((null var1011) (return nil))) (prog (k) (setq k (car var1011))
 (setq res (cons k res))) (setq var1011 (cdr var1011)) (go lab1010))) (t (
 prin (list (quote !?!?!?) c a))))))))))))))) (t (progn (cond ((null dest) (
 setq res (cons c res))) (t (princ c))))))) (setq i (plus i 1)) (go lab1012)) 
-(cond ((null dest) (return (list!-to!-string (reversip res)))) (t (progn (wrs
-o) (return nil))))))
+(cond ((null dest) (return (list2string (reversip res)))) (t (progn (wrs o) (
+return nil))))))
 
 (dm format (u !&optional env) (list (quote s!:format) (cadr u) (caddr u) (
 cons (quote list) (cdddr u))))
@@ -211,6 +211,8 @@ difference s!:rmar 21)))) (setq w (posn)) (cond ((greaterp w s!:lmar) (progn
 (terpri) (setq w 0)))) (cond ((lessp w s!:lmar) (setq s!:initialblanks (
 difference s!:lmar w)))) (s!:prindent x (plus s!:lmar 3)) (s!:overflow (quote
 none)) (linelength s!:rmar) (return x)))
+
+(flag (quote (superprinm superprintm prettyprint)) (quote lose))
 
 (dm s!:top (u !&optional v) (quote (car s!:stack)))
 

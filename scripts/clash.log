@@ -1,0 +1,486 @@
+This is the output from the script clash.sh. The script runs using the
+CSL "bootstrapreduce" and attempts to identify cases where several modules
+in Reduce define functions whose names match. This can have arisen for
+several reasons:
+
+(1) Accidental use of the same name for functions not intended to be
+    particularly related. This could cause trouble if the two packages
+    were to be loaded at the same time, so (at least) one variant should be
+    renamed.
+(2) Some function that might ideally be in the core was implemented in one
+    package and another package copied the definition. In some cases one but
+    not all versions have been changed or upgraded and there is risk of
+    inconsistency or at least confusion. The function should be lifted so its
+    capabilities are generally available.
+(3) As (2) but the two versions were developed independenly and may not be
+    identical. A merge step is needed before making the code cenrally
+    available or sometimes the differences in implementation will be so
+    great that at least in the short term renaming will be the only feasible
+    way to resolve the clash.
+(3) A package-writer found a correction or upgrade to the core but at the
+    time they did not have confidence or authority to install their version
+    centrally, so they put a redefinition just in their own package. The
+    changes should be properly globally tested and merged back to the main
+    version.
+(4) A package writer wanted extra or different behaviour from some generally
+    used function so chose just to replace the main code with their own.
+    A bad effect of this is that merely loading the package concerned would
+    alter system behaviour for everybody. My belief is that wherever possible
+    the new behaviour should be retrofitted to the central code, and if the
+    change is dramatic and could have severe performance issues if left in
+    place always the origial should become something like
+       symbolic procedure trunk_function u;
+         if !*package_maud_active then maud_function u
+         else original_function u;
+       symbolic procedure original_function u;
+         .. code as it should be in the default case ...
+(5) In a few cases a preliminary version of some function is present in
+    part of the code used very early in the bootstrapping process and then
+    a definitive copy is installed later. The early version may thus only
+    be used for a fairly short time during bootstrapping and having it
+    simpler than the final version may help. Such cases might be viewed
+    as features rather than as problems!
+
+
+There are MANY clashes here between fmprint and tmprint because one of these
+is merely an adjusted version of the other. But this history means that as
+changes are made to one those fixes will often not be applied to the other. I
+have hande-edited this list to segragate those cases since I count them as
+a special case.
+
+There are also clashes of behaviour that can be caused by use of "copyd"
+in packages, especially if those happen when the relevant package is merely
+loaded. Such behaviour would preclude for ever uprating that package so it
+became part of the pre-loaded core to give everybody instant optimised access
+to it without any delay that autoloading involves. I rather believe that
+treatment as suggested for (4) above would make things cleaner in that
+situatiuon, in that the variable !*package_maud_active could then be set on
+or off easily.
+
+
+!*k2pf                         defined in       excalc xideal eds
+!*num2id                       defined in       gentens indices
+add!+vector!+to!+list          defined in       gramschm symatvec
+add2resultbuf                  defined in       superv libreduce
+add_ndg                        defined in       geometry geoprover
+addm                           defined in       matsm sparsmat
+addm1                          defined in       matsm sparsmat
+addmpf                         defined in       partitsf xexcalc
+addpf                          defined in       partitsf xexcalc
+adjoin                         defined in       sl2psl lto
+adomainp                       defined in       numeric plotnum
+afactor                        defined in       afactor xcolor
+alistp                         defined in       baglist assertcheckfn
+altitude                       defined in       geometry geoprover
+angle_sum                      defined in       geometry geoprover
+applyfnrd                      defined in       mathml mml_ir
+approx                         defined in       approx sfellip
+attributes                     defined in       mathml tools
+basis                          defined in       vecanlys froben
+bassoc                         defined in       hephys tensorio
+butes                          defined in       mathml tools
+bvarrd                         defined in       mathml mml_ir
+canonical                      defined in       dummycnt contrtns
+charnump!:                     defined in       genpurfn spaces
+check_linearity                defined in       linalg splinalg
+ciml                           defined in       mathml mml_ir
+circle                         defined in       geometry geoprover
+circle_center                  defined in       geometry geoprover
+circle_sqradius                defined in       geometry geoprover
+clear_ndg                      defined in       geometry geoprover
+cnml                           defined in       mathml mml_ir
+comes!-before                  defined in       modpoly bigmodp
+companion                      defined in       linalg froben
+complex!*off!*switch           defined in       specfn specbess
+complex!*on!*switch            defined in       specfn specbess
+complex!*restore!*switch       defined in       specfn specbess
+compress!*                     defined in       mathml tools
+conditionrd                    defined in       mathml mml_ir
+conv                           defined in       convert expon
+convert                        defined in       ludecom convert
+copy_mat                       defined in       linalg froben
+copy_vect                      defined in       perms sparsmat
+cross                          defined in       dummy1 v3tools
+declarerd                      defined in       mathml mml_ir
+deg                            defined in       polyop desir odesolve
+deg!*form                      defined in       degform xexcalc
+degree                         defined in       sfto trigsmp2 turtle
+degreeml                       defined in       mathml mml_ir
+delall                         defined in       mathml tools
+delasc                         defined in       smacro general
+delqip                         defined in       sl2psl lto
+delqip1                        defined in       sl2psl lto
+depend                         defined in       depend orthovec
+depends                        defined in       depend cantens
+determinantrd                  defined in       mathml mml_ir
+dfargs                         defined in       mathml mml_ir
+dfml                           defined in       mathml mml_ir
+diag                           defined in       linalg froben
+diffrd                         defined in       mathml mml_ir
+dipfmon                        defined in       dipoly a2dip
+dipprin2                       defined in       vdp2dip dipprint
+domain!-!*                     defined in       mv reddom
+dummyp                         defined in       dummycnt ctintro
+dv_skel2factor1                defined in       dummycnt ctintro
+dv_skelsplit                   defined in       dummycnt ctintro
+elim                           defined in       multroot cdiffx
+equalml                        defined in       mathml mml_ir
+equalreval                     defined in       eqn pmpatch
+errorml                        defined in       mathml tools
+evalmax                        defined in       defintx convert
+evalplus                       defined in       defintx convert
+expression                     defined in       mathml mml_ir
+expt!-int                      defined in       ludecom plotnum definta
+exptexpflistp                  defined in       solvelnr edspatch
+exptpri                        defined in       mprint utf8
+extractmat                     defined in       geometry geoprover
+fancy!-level_sdniqcjau4jc      defined in       fmprint excalc
+find                           defined in       mathml tools expon
+find!*var                      defined in       codad1 codad2
+find!+var                      defined in       codad1 codad2
+find_companion                 defined in       linalg jordsymb
+flag1                          defined in       rcref crack
+flatindxl                      defined in       auxitens indices
+flatten                        defined in       int mrvlimit
+fnrd                           defined in       mathml mml_ir
+frobenius                      defined in       desir systems froben
+fullcopy                       defined in       dummy sparsmat
+functionp                      defined in       assertcheckfn randpoly
+gb_vars                        defined in       gb crgb
+gentran                        defined in       intrfc codgen
+get!*fdeg                      defined in       excalc xideal
+get!*ifdeg                     defined in       excalc xideal
+get!+vec!+dim                  defined in       gramschm symatvec
+get!+vec!+entry                defined in       gramschm symatvec
+get!-impfun!-args              defined in       cantens excalc
+get_coeffs                     defined in       linalg froben splinalg
+get_content                    defined in       mathml tools
+get_token                      defined in       mathml tools
+get_variable_list              defined in       linalg splinalg
+getargsrd                      defined in       mathml mml_ir
+getcind                        defined in       codad1 codad2
+getmat                         defined in       lamatrix matarg
+getrtype                       defined in       reval physop
+getrtype1                      defined in       reval avector
+getrtype2                      defined in       reval avector
+gram!+schmid                   defined in       gramschm symatvec
+groebfasttest                  defined in       buchbg groeweak
+groebtestrestriction           defined in       grinter2 groebrst
+gvar1                          defined in       invbint grinterf
+gvarlis                        defined in       invbint grinterf
+gvarlis1                       defined in       invbint grinterf
+i2bf!:                         defined in       simp arith
+ident                          defined in       nestdom pattdefn
+indvarprt                      defined in       gentens indxprin
+init                           defined in       codctl bibasis_involutive
+innerprod                      defined in       numeval ludecom
+intersection_point             defined in       geometry geoprover
+intervalrd                     defined in       mathml mml_ir
+isimp1                         defined in       hephys red2cvit
+kernelp                        defined in       noncom2 table1
+l2_angle                       defined in       geometry geoprover
+lambda_4ue81zccw261            defined in       sfto ofsfanuex ofsfvsl
+lambda_5ecvmqn0s7d8            defined in       solvealg edspatch
+lambda_63ircqeulrd3            defined in       ofsfqe dvfsfqe
+lambda_tvzjjrvmyxu4            defined in       edspde edssolve
+lambda_x9hgwkw3owh3            defined in       scripts dvfsfsiat
+lambda_xwwv19lu7y09            defined in       map qsum
+lambdard                       defined in       mathml mml_ir
+lengthreval                    defined in       reval baglist sparsmat
+lex                            defined in       mathml tools
+limit                          defined in       orthovec limits
+limitrd                        defined in       mathml mml_ir
+line                           defined in       evalmaps geometry geoprover
+lineint                        defined in       avector orthovec
+list2mat                       defined in       odelin geometry geoprover
+list2set                       defined in       sl2psl lto
+listdiff                       defined in       partdf xpowers
+listeval                       defined in       list pmpatch
+listml                         defined in       mathml mml_ir
+listplus                       defined in       specfn2 listvecops
+listpri                        defined in       list integrator
+listquotient                   defined in       map2strn listvecops
+listrd                         defined in       mathml mml_ir
+listsq                         defined in       specfn2 definth
+lndepends                      defined in       partdf edspatch
+log_baseml                     defined in       mathml mml_ir
+logbaserd                      defined in       mathml mml_ir
+logrd                          defined in       mathml mml_ir
+lowerind                       defined in       cantens excalc eds
+lowestdeg                      defined in       modsr polyexns
+lowlimitrd                     defined in       mathml mml_ir
+lto_partition                  defined in       lto pident
+ma_print                       defined in       mathml mml_ir
+make_identity                  defined in       linalg froben
+make_rule                      defined in       edsexptl jordsymb
+map!-eval1                     defined in       map edspatch
+maprint                        defined in       mprint physop
+mathml                         defined in       mathml mml_ir
+mathml2                        defined in       mathml mml_ir
+mathml_list2string             defined in       tools mml_ir
+matinverse                     defined in       bareiss sparsmat
+matrix_rows                    defined in       mathml mml_ir
+matrixml                       defined in       mathml mml_ir
+matrixp                        defined in       linalg splinalg
+matrixrd                       defined in       mathml mml_ir
+matrixrowrd                    defined in       mathml mml_ir
+matsm1                         defined in       matsm sparsmat
+maxi                           defined in       mrvlimit susy2
+maxorder                       defined in       isolve approx
+median                         defined in       geometry geoprover
+midpoint                       defined in       geometry geoprover
+minusml                        defined in       mathml mml_ir
+minusrd                        defined in       mathml mml_ir
+mk!+gram!+schmid               defined in       gramschm symatvec
+mk!+inner!+product             defined in       gramschm symatvec
+mk!+normalize!+vector          defined in       gramschm symatvec
+mk!+null!+vec                  defined in       gramschm symatvec
+mk!+scal!+mult!+vec            defined in       gramschm symatvec
+mk!+squared!+norm              defined in       gramschm symatvec
+mk!+vec!+add!+vec              defined in       gramschm symatvec
+mkequal                        defined in       spaces bfdoer2
+mkinterval                     defined in       spaces numeric
+mkmatrix                       defined in       lamatrix matarg
+mml                            defined in       mathml mml_ir
+mod                            defined in       matop sparsmat
+momentrd                       defined in       mathml mml_ir
+monic                          defined in       invbcomp ratint
+multd!*                        defined in       hephys table1
+multi_args                     defined in       mathml mml_ir
+multi_elem                     defined in       mathml mml_ir
+multilists                     defined in       mathml mml_ir
+multiminus                     defined in       mathml mml_ir
+multsm                         defined in       matsm sparsmat
+my!+nullsq!+p                  defined in       gramschm symatvec
+natnumlis                      defined in       matrext sparsmat
+ndepends                       defined in       partdf edspatch
+ndependsl                      defined in       partdf edspatch
+negpf                          defined in       excalc xideal eds
+newrederr                      defined in       zeilberg ztrans
+newrederr1                     defined in       zeilberg ztrans
+newton                         defined in       desir ratint
+nil2zero                       defined in       coddom wu
+nodepend                       defined in       depend orthovec
+noncom                         defined in       simp noncom2
+norepeat                       defined in       mathml tools
+norm                           defined in       froben ratint
+normalform                     defined in       matop bibasis_involutive
+null!+vec!+p                   defined in       gramschm symatvec
+oddp                           defined in       genpurfn wedge xexcalc
+ofsf_subconstat                defined in       clmisc ofsfqe
+operator_fn                    defined in       mathml mml_ir
+opfneval                       defined in       reval pmpatch
+opmtch                         defined in       opmtch pmintrfc
+ordp                           defined in       noncom2 spde
+ordpa                          defined in       order spde
+other_cc_point                 defined in       geometry geoprover
+other_cl_point                 defined in       geometry geoprover
+p3_angle                       defined in       geometry geoprover
+p3_circle                      defined in       geometry geoprover
+partialdiffrd                  defined in       mathml mml_ir
+pedalpoint                     defined in       geometry geoprover
+pfaffian                       defined in       calimat systems
+point                          defined in       geometry geoprover
+polynomialp                    defined in       odenon1 contfrac integrator
+polynomq                       defined in       qsum simplede zeilberg
+polynomq4                      defined in       qsum zeilberg
+polynomqqq                     defined in       qsum zeilberg residue contfrac
+pp_line                        defined in       geometry geoprover
+prin2!*                        defined in       mprint utf8
+print_ndg                      defined in       geometry geoprover
+printout                       defined in       mathml ir2om mml_ir
+printvec                       defined in       ezgcd genparser
+protected                      defined in       minlngth codpri
+prsubsetrd                     defined in       mathml mml_ir
+putform                        defined in       exintro edspatch
+quotientml                     defined in       mathml mml_ir
+rad                            defined in       mathml turtle
+rank!-eval                     defined in       rank spmateig
+rappend                        defined in       list baglist
+ratexp                         defined in       lsprat crutil
+rationalp                      defined in       codmat ofsf crutil
+rcons                          defined in       list baglist avector
+rdunwrap                       defined in       plotnum definta
+rdwrap!*                       defined in       ludecom plotnum
+rdwrap!-expt                   defined in       ludecom plotnum
+rdwrap2                        defined in       ludecom plotnum
+realroots                      defined in       roots2 realroot
+red!-char!-downcase            defined in       fortpri fmprint tmprint
+relationrd                     defined in       mathml mml_ir
+reln                           defined in       mathml mml_ir
+relnrd                         defined in       mathml mml_ir
+remflag1                       defined in       rcref crack
+remove_equals                  defined in       linalg splinalg
+remsym                         defined in       control dummycnt ctintro
+reordop                        defined in       reord noncom2
+revalind                       defined in       gentens indices
+revalindl                      defined in       gentens indices
+revalnuminterval               defined in       numeric plotnum
+rewrite                        defined in       sparsmat mrvlimit
+rfirst                         defined in       list baglist
+rinsert                        defined in       baglist pmintrfc
+rl2gfc                         defined in       bfauxil complxp
+rootrd                         defined in       mathml mml_ir
+roots                          defined in       roots bfdoer
+row                            defined in       mathml mml_ir
+rprint                         defined in       rprint sympatch
+rrest                          defined in       list baglist
+rreverse                       defined in       list baglist
+rsecond                        defined in       list baglist
+rthird                         defined in       list baglist
+savesolve                      defined in       simplede zeilberg
+scalefactors                   defined in       avector expres
+scprint                        defined in       mprint utf8
+search_att                     defined in       mathml tools
+select!-eval                   defined in       map qsum
+selectrd                       defined in       mathml mml_ir
+sep                            defined in       convert crsep
+seprd                          defined in       mathml mml_ir
+setmat                         defined in       lamatrix matarg
+setrd                          defined in       mathml mml_ir
+sets                           defined in       mathml mml_ir
+show                           defined in       control invbcomp
+simpcofactor                   defined in       cofactor sparsmat
+simpdet                        defined in       det sparsmat
+simpiden                       defined in       simp pmpatch
+simpsumsym                     defined in       genpurfn ctintro
+simptaylor                     defined in       approx tayintrf
+simptrace                      defined in       det sparsmat
+size_of_matrix                 defined in       linalg froben
+sl_unstraightify               defined in       rlsched rlsl
+solvelnrsys                    defined in       solvelnr primitive
+solvenonlnrsys2                defined in       solvealg edspatch
+solvesparsecheck               defined in       solvelnr edspatch
+solvevaradjust                 defined in       solvelnr edspatch
+solvevarordp                   defined in       solvelnr edspatch
+sq2bf!*                        defined in       specfn specbess sfgamma
+sqrdist                        defined in       geometry geoprover
+squarep                        defined in       linalg splinalg
+state_mk                       defined in       ofsfexfr clprl
+stats_getargs                  defined in       mathml mml_ir
+sub_math                       defined in       mathml mml_ir
+subeval0                       defined in       sub fixes2
+sublistp                       defined in       partdf xpowers
+subs3f1                        defined in       subs3q noncom2
+subsetrd                       defined in       mathml mml_ir
+swap                           defined in       vect sparsmat
+symbol                         defined in       mprint utf8
+symmetricp                     defined in       cholesky splinalg rankstat
+taylor                         defined in       approx orthovec
+taylorfunction                 defined in       idepend algint
+taylorp                        defined in       idepend pade
+tconc                          defined in       records sl2psl
+tensor                         defined in       gentens tensorio expres
+texlet                         defined in       rlfi tri
+tokbquote                      defined in       tok bquote
+token!-number                  defined in       tok smtread
+tp                             defined in       matsm sparsmat
+transposerd                    defined in       mathml mml_ir
+trim                           defined in       recsimpl zeilberg
+ttttype_ratpoly                defined in       qsum zeilberg residue contfrac
+tttype_ratpoly                 defined in       qsum zeilberg
+type_ratpoly                   defined in       qsum simplede zeilberg residue contfrac
+typerr                         defined in       lpri intro
+unchecked_getmatelem           defined in       lamatrix matarg
+upperlimitrd                   defined in       mathml mml_ir
+varpoint                       defined in       geometry geoprover
+vdpevlmon                      defined in       vdp2dip vdpcom
+vdpnumber                      defined in       vdp2dip groebner
+vdppoly                        defined in       vdp2dip vdpcom
+vdpzero!?                      defined in       vdp2dip vdpcom
+vector!+p                      defined in       gramschm symatvec
+vectoradd                      defined in       avector orthovec
+vectorml                       defined in       mathml mml_ir
+vectorplus                     defined in       avector orthovec
+vectorrd                       defined in       mathml mml_ir
+vevstrictlydivides!?           defined in       traverso ncgroeb
+vevzero!?                      defined in       a2dip vdp2dip vdpcom
+wedgek2                        defined in       wedge xexcalc
+
+=============
+
+fancy!-adjust!-bkt!-levels     defined in       fmprint tmprint
+fancy!-begin                   defined in       fmprint tmprint
+fancy!-bessel                  defined in       fmprint tmprint
+fancy!-binomial                defined in       fmprint tmprint
+fancy!-boolvalpri              defined in       fmprint tmprint
+fancy!-cmpxprin                defined in       fmprint tmprint
+fancy!-condpri                 defined in       fmprint tmprint
+fancy!-condpri0                defined in       fmprint tmprint
+fancy!-convert                 defined in       fmprint tmprint
+fancy!-dfpri                   defined in       fmprint tmprint
+fancy!-dfpri0                  defined in       fmprint tmprint
+fancy!-dfpriindexed            defined in       fmprint tmprint
+fancy!-dfpriindexedx           defined in       fmprint tmprint
+fancy!-dn!:prin                defined in       fmprint tmprint
+fancy!-end                     defined in       fmprint tmprint
+fancy!-esc                     defined in       fmprint tmprint
+fancy!-exptpri                 defined in       fmprint tmprint
+fancy!-factorial               defined in       fmprint tmprint
+fancy!-fail                    defined in       fmprint tmprint
+fancy!-flush                   defined in       fmprint tmprint
+fancy!-height                  defined in       fmprint tmprint
+fancy!-hypergeometric          defined in       fmprint tmprint
+fancy!-in!-brackets            defined in       fmprint tmprint
+fancy!-inprint                 defined in       fmprint tmprint
+fancy!-inprint1                defined in       fmprint tmprint
+fancy!-inprint2                defined in       fmprint tmprint
+fancy!-inprintlist             defined in       fmprint tmprint
+fancy!-intpri                  defined in       fmprint tmprint
+fancy!-last!-symbol            defined in       fmprint tmprint
+fancy!-limpri                  defined in       fmprint tmprint
+fancy!-listpri                 defined in       fmprint tmprint
+fancy!-lower!-digits           defined in       fmprint tmprint
+fancy!-lower!-digits1          defined in       fmprint tmprint
+fancy!-lower!-digitstrail      defined in       fmprint tmprint
+fancy!-maprin0                 defined in       fmprint tmprint
+fancy!-maprint                 defined in       fmprint tmprint
+fancy!-maprint!-atom           defined in       fmprint tmprint
+fancy!-maprint!-tex!-bkt       defined in       fmprint tmprint
+fancy!-matfit                  defined in       fmprint tmprint
+fancy!-matpri                  defined in       fmprint tmprint
+fancy!-matpri1                 defined in       fmprint tmprint
+fancy!-matpri2                 defined in       fmprint tmprint
+fancy!-matpri3                 defined in       fmprint tmprint
+fancy!-matpriflat              defined in       fmprint tmprint
+fancy!-matpriflat1             defined in       fmprint tmprint
+fancy!-meijerg                 defined in       fmprint tmprint
+fancy!-mode                    defined in       fmprint tmprint
+fancy!-oprin                   defined in       fmprint tmprint
+fancy!-out!-header             defined in       fmprint tmprint
+fancy!-out!-item               defined in       fmprint tmprint
+fancy!-out!-trailer            defined in       fmprint tmprint
+fancy!-output                  defined in       fmprint tmprint
+fancy!-partialdfpri            defined in       fmprint tmprint
+fancy!-patpri                  defined in       fmprint tmprint
+fancy!-prefix!-operator        defined in       fmprint tmprint
+fancy!-prin2                   defined in       fmprint tmprint
+fancy!-prin2!*                 defined in       fmprint tmprint
+fancy!-prin2number             defined in       fmprint tmprint
+fancy!-prin2number1            defined in       fmprint tmprint
+fancy!-prinfit                 defined in       fmprint tmprint
+fancy!-print!-format           defined in       fmprint tmprint
+fancy!-print!-format1          defined in       fmprint tmprint
+fancy!-print!-function!-arguments defined in       fmprint tmprint
+fancy!-print!-indexlist        defined in       fmprint tmprint
+fancy!-print!-indexlist1       defined in       fmprint tmprint
+fancy!-print!-one!-index       defined in       fmprint tmprint
+fancy!-prodpri                 defined in       fmprint tmprint
+fancy!-quotpri                 defined in       fmprint tmprint
+fancy!-rdprin                  defined in       fmprint tmprint
+fancy!-rdprin1                 defined in       fmprint tmprint
+fancy!-revalpri                defined in       fmprint tmprint
+fancy!-setmatpri               defined in       fmprint tmprint
+fancy!-special!-symbol         defined in       fmprint tmprint
+fancy!-sqreform                defined in       fmprint tmprint
+fancy!-sqrtpri                 defined in       fmprint tmprint
+fancy!-sqrtpri!*               defined in       fmprint tmprint
+fancy!-sub                     defined in       fmprint tmprint
+fancy!-sumpri                  defined in       fmprint tmprint
+fancy!-sumpri!*                defined in       fmprint tmprint
+fancy!-terpri!*                defined in       fmprint tmprint
+fancy!-tex                     defined in       fmprint tmprint
+fancy!-unquote                 defined in       fmprint tmprint
+fmp!-switch                    defined in       fmprint tmprint
+print_format                   defined in       fmprint tmprint
+set!-fancymode                 defined in       fmprint tmprint
