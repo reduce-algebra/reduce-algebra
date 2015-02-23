@@ -9,15 +9,6 @@ rl_set '(r);
 
 assert_install_all;
 
-on1 'rlanuexdebug;
-
-procedure anu_ivapprox(anu);
-   begin scalar iv;
-      iv := anu_iv anu;
-      return {float(numr car iv or 0)/float denr car iv,
-	 float(numr cdr iv or 0)/float denr cdr iv}
-   end;
-
 % TEST 1
 
 oo := setkorder '(x);
@@ -67,7 +58,7 @@ setkorder oo;
 
 oo := setkorder '(y x);
 
-ex2_hugo := aex_fromrp ratpoly_fromsf numr simp xread t;
+ex2_hugo := aex_fromrp simp xread t;
 x**2 - 2;
 
 ex2_sqrt2 := anu_mk(ex2_hugo, iv_mk(rat_fromnum 1, rat_fromnum 2));

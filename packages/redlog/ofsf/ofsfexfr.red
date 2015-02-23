@@ -254,8 +254,8 @@ asserted procedure ofsf_liftLevel(s: State): State;
 	 return nil;
       vl := state_vl s;
       xk := pop vl;
-      a := ofsf_feasible(state_trail s);
-      if not a then
+      a := ofsf_feasible state_trail s;
+      if null a then
 	 return nil;
       state_mk(nil, nil,
 	 trail_push(state_trail s, varass_mk(xk, a)),
@@ -267,13 +267,13 @@ asserted procedure ofsf_feasible(trl: Trail): AnuIntervalList;
    begin scalar fl, gl, assal, lit;
       for each tre in trl do
 	 if tre_varassp tre then
-	    assal := (varass_k tre . varass_value tre) . assal
-	 else <<  % we know tre_litp tre
+	    push(varass_k tre . varass_value tre, assal)
+	 else <<  % we know [tre_litp tre]
 	    lit := tre_lit tre;
 	    if ofsf_op lit eq 'equal then
-	       fl := lit . fl
+	       push(lit, fl)
 	    else
-	       gl := lit . gl
+	       push(lit, gl)
 	 >>;
       fl := for each f in fl collect
 	 ofsf_anusubf(ofsf_arg2l f, assal) . 'equal;
@@ -289,11 +289,11 @@ asserted procedure ofsf_feasible1(fl: List, gl: List): AnuIntervalList;
    % [fl] is a list of pairs [f . 'equal] where [f] is an Aex; [gl] is a list of
    % pairs [f . op] where [f] is an Aex and [op] is an ofsf operator different
    % from ['equal].
-   begin scalar xk, f, l, fidl;
+   begin scalar xk, f, l, fvarl;
       f := car pop fl;
-      fidl := aex_fvarl f;
-      assert(fidl and not cdr fidl);
-      xk := car fidl;
+      fvarl := aex_fvarl f;
+      assert(fvarl and not cdr fvarl);
+      xk := car fvarl;
       l := for each anu in aex_findroots(f, xk) join
 	 if ofsf_feasible11(anu, xk, fl, gl) then
 	    {anupt_mk anu};
@@ -318,12 +318,12 @@ asserted procedure ofsf_feasible11(anu: Anu, xk: Kernel, fl: List, gl: List): Bo
 asserted procedure ofsf_feasible2(gl: List): AnuIntervalList;
    % [gl] is a list of pairs [f . op] where [f] is an Aex and [op] is an ofsf
    % operator different from ['equal].
-   begin scalar xk, fidl, ivl, g, givl, rel;
+   begin scalar xk, fvarl, ivl, g, givl, rel;
       assert gl;
       ivl := {anusp_mk('anusp_open, 'minf, 'anusp_open, 'pinf)};
-      fidl := aex_fvarl caar gl;
-      assert(fidl and not cdr fidl);
-      xk := car fidl;
+      fvarl := aex_fvarl caar gl;
+      assert(fvarl and not cdr fvarl);
+      xk := car fvarl;
       while gl do <<
 	 g . rel := pop gl;
       	 givl := ofsf_lit2ivl(rel, g, xk);
@@ -552,10 +552,10 @@ asserted procedure anu_compare2(anu1: Anu, anu2: Anu, g: Kernel): Integer;
    end;
 
 asserted procedure aex_fromAnu(anu: Anu): Aex;
-   begin scalar vl, v, aex;
-      vl := aex_fvarl anu_dp anu;
-      assert(length vl = 1);
-      v := car vl;
+   begin scalar fvarl, v, aex;
+      fvarl := aex_fvarl anu_dp anu;
+      assert(fvarl and null cdr fvarl);
+      v := car fvarl;
       aex := aex_bind(aex_fromrp simp v, v, anu);
       return aex
    end;
@@ -563,7 +563,7 @@ asserted procedure aex_fromAnu(anu: Anu): Aex;
 asserted procedure anu_varChange(anu: Anu, newvar: Kernel): Anu;
    begin scalar dp;
       dp := anu_dp anu;
-      return anu_mk(aex_subrp(dp, car aex_fvarl dp, newvar), anu_iv anu)
+      return anu_mk(aex_subrp(dp, car aex_fvarl dp, !*k2q newvar), anu_iv anu)
    end;
 
 asserted procedure ofsf_feasibleEvalSgn(g: Aex, x: Kernel, anu: GAnu): Integer;
@@ -580,7 +580,7 @@ asserted procedure ofsf_feasibleEvalSgn(g: Aex, x: Kernel, anu: GAnu): Integer;
 asserted procedure aex_evalsgn(aex: Aex, op: Id): Boolean;
    % [aex] is a constant Aex; [op] is an ofsf operator. Returns Boolean.
    begin scalar sgn;
-      assert(aex_constp aex);
+      % assert(aex_constp aex);
       sgn := aex_sgn aex;
       if eqn(sgn, 0) then
 	 sgn := nil;
@@ -655,8 +655,7 @@ asserted procedure ofsf_subalf(f: SF, al: Alist): SQ;
    end;
 
 asserted procedure ofsf_anusubf(f: SF, al: Alist): Aex;
-   % [al] is an Alist, where the keys are kernels and the values
-   % are Anu.
+   % [al] is an Alist, where the keys are kernels and the values are Anu.
    begin scalar aex;
       aex := aex_fromsf f;
       for each pr in al do
@@ -665,14 +664,14 @@ asserted procedure ofsf_anusubf(f: SF, al: Alist): Aex;
    end;
 
 asserted procedure anu_refine(anu: Anu): Anu;
-   begin scalar iv, w, sc, fidl, x;
+   begin scalar iv, w, sc, fvarl, x;
       iv := anu_iv anu;
       if iv_lb iv = iv_rb iv then
 	 return anu;
       w := copy anu;
-      fidl := aex_fvarl anu_dp anu;
-      assert eqn(length fidl, 1);
-      x := car fidl;
+      fvarl := aex_fvarl anu_dp anu;
+      assert eqn(length fvarl, 1);
+      x := car fvarl;
       sc := aex_stdsturmchain(anu_dp anu, x);
       anu_refine1ip(w, sc);
       assert(w neq anu);
