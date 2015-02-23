@@ -688,7 +688,7 @@ asserted procedure ofsf_zerosolve(g: SF, p: AList, q: AList): DottedPair;
       precq := 1 ./ 10 ^ (precision 0 + 2);
       zero := for each pr in subal collect <<
 	 w := quotsq(!*f2q sfto_fsub(numr cdr pr, ral), !*f2q denr cdr pr);
-	 assert(eqn(denr(w, 1)));
+	 assert(eqn(denr w, 1));
 	 val := numr w;
 	 if val and not numberp val then
 	    while sfto_geqq(subtrsq(ra_u val, ra_l val), precq) do
