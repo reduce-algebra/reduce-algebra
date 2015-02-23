@@ -44,6 +44,9 @@ exports do!*psi, do!*polygamma, do!*trigamma!*halves,
 
 fluid '(compute!-bernoulli);
 
+fluid '(psi!*ld!*0 psi!*ld!*1);
+
+flag('(psi!*ld!*0 psi!*ld!*1),'share);
 
 %
 % Here's an approximation sufficiently good for most purposes
@@ -59,67 +62,46 @@ autoloading, since autoloading can happen at any time, even during rule processi
 when algebraic mode assignments are not possible
 ;
 
+% Floating point approximation of the Euler-Mascheroni constant 
+global '(!!euler_gamma); 
 
-%%algebraic (old!*precision := precision(0));
-%%precision 510;
-%%
-%%algebraic procedure get!-eulers!-constant;
-%%   begin scalar a;
-%%      a := 577215664901532860606512090082402431 * 10^40 +
-%%                       0421593359399235988057672348848677267776;
-%%      a := a * 10^40 + 6467093694706329174674951463144724980708;
-%%      a := a * 10^40 + 2480960504014486542836224173997644923536;
-%%      a := a * 10^40 + 2535003337429373377376739427925952582470;
-%%      a := a * 10^40 + 9491600873520394816567085323315177661152;
-%%      a := a * 10^40 + 8621199501507984793745085705740029921354;
-%%      a := a * 10^40 + 7861466940296043254215190587755352673313;
-%%      a := a * 10^40 + 9925401296742051375413954911168510280798;
-%%      a := a * 10^40 + 4234877587205038431093997361372553060889;
-%%      a := a * 10^40 + 3312676001724795378367592713515772261027;
-%%      a := a * 10^40 + 3492913940798430103417771778088154957066;
-%%      a := a * 10^30 + 107501016191663340152278935868;
-%%      a := a * (10**(-506));
-%%      return a
-%%   end;
-%%
-%%algebraic (euler!*constant := get!-eulers!-constant());
-%%
-%%algebraic precision old!*precision;
-%%algebraic clear old!*precision;
+% bigfloat approximation to 500 digits
+set!:const('!:euler_gamma,
+           '(-1 5772156649015328606065120900824024310
+                421593359399235988057672348848677267776
+      	        6467093694706329174674951463144724980708
+                2480960504014486542836224173997644923536
+                2535003337429373377376739427925952582470
+                9491600873520394816567085323315177661152
+                8621199501507984793745085705740029921354
+                7861466940296043254215190587755352673313
+                9925401296742051375413954911168510280798
+                4234877587205038431093997361372553060889
+                3312676001724795378367592713515772261027
+                3492913940798430103417771778088154957066
+                107501016191663340152278935868) );
 
-% Make variable accessible in symbolic and algebraic mode
-fluid('(euler!*constant));
-flag('(euler!*constant),'share);
+symbolic procedure !:euler_gamma k;
+% This function calculates the value of the constant "Euler_gamma",
+%      by calculating the value of the digamma function at point 1.
+% K is a positive integer.
+if not fixp k or k <= 0 then bflerrmsg '!:euler_gamma
+ else begin scalar u;
+    u := get!:const('!:euler_gamma, k);
+    if u neq 'not_found then return u;
+    u := do!*psi 1;
+    if denr u neq 1 or not rdp u then bflerrmsg '!:euler_gamma
+     else return !:minus numr u;
+ end;
 
-symbolic procedure set!-eulers!-constant;
-   begin scalar a,b,oldprec;
-      a := 577215664901532860606512090082402431 * 10^40 +
-                       0421593359399235988057672348848677267776;
-      a := a * 10^40 + 6467093694706329174674951463144724980708;
-      a := a * 10^40 + 2480960504014486542836224173997644923536;
-      a := a * 10^40 + 2535003337429373377376739427925952582470;
-      a := a * 10^40 + 9491600873520394816567085323315177661152;
-      a := a * 10^40 + 8621199501507984793745085705740029921354;
-      a := a * 10^40 + 7861466940296043254215190587755352673313;
-      a := a * 10^40 + 9925401296742051375413954911168510280798;
-      a := a * 10^40 + 4234877587205038431093997361372553060889;
-      a := a * 10^40 + 3312676001724795378367592713515772261027;
-      a := a * 10^40 + 3492913940798430103417771778088154957066;
-      a := a * 10^30 + 107501016191663340152278935868;
-      b := 10^506;
-      oldprec := precision 510;
-      euler!*constant := divbf(bfloat a,bfloat b);
-      precision oldprec;
-   end;
-
-set!-eulers!-constant();
+!!euler_gamma := bf2flr !:euler_gamma !!nbfpd;
+flag('(!!euler_gamma),'reserved);
 
 symbolic procedure rd_euler!*;
-  if !!rdprec < 501 then round!:mt(euler!*constant,!:bprec!:);
+   mkround if !*!*roundbf then !:euler_gamma !:bprec!: else !!euler_gamma;
 
 symbolic procedure cr_euler!*;
-  (if u then mkcr(u,rdzero!*()) else nil)
-    where u=rd_euler!*();
+  mkcr(rd_euler!*(),rdzero!*());
 
 
 %
@@ -395,14 +377,22 @@ algebraic procedure do!*zeta!*pos!*intcalc(z);
 %     Does not work for complex arguments.
 %
 
+remflag('(psi!*ld!*0 psi!*ld!*1),'reserved);
+
+psi!*ld!*0 := -1;   % precision at which last psi was calc'd
+psi!*ld!*1 :=  0;   % lowest post-scale value acceptable at
+                                % that precision
+
+
 algebraic procedure psi!*calc(z);
    begin scalar result, admissable, bern300, alglist!*, precom;
       integer prepre, scale, lowest;
       precom := complex!*off!*switch();
       prepre := precision 0;
       if prepre < !!nfpd then precision (!!nfpd + 1);
+      % The following is  8*rd!-tolerance!*
       admissable := (1 / (10 ** prepre)) / 2;
-      if prepre = psi!*ld(0) then lowest := psi!*ld(1)
+      if prepre = psi!*ld!*0 then lowest := psi!*ld!*1
       else
                << bern300 := abs bernoulli!*calc 300;
                   lowest := 1 +
@@ -412,8 +402,8 @@ algebraic procedure psi!*calc(z);
                                              sq2bf!* admissable)), 4),
                      i2bf!: 300), 3);  % Use symbolic mode so as to
                                     % force less accuracy for more speed
-                  psi!*ld(0) := prepre;
-                  psi!*ld(1) := lowest >> ;
+                  psi!*ld!*0 := prepre;
+                  psi!*ld!*1 := lowest >> ;
       if lowest>repart z then scale := ceiling(lowest - repart z) + 20;
       z := z + scale;
       result := algebraic symbolic psi!*calc!*sub(z, scale, admissable);
@@ -423,6 +413,7 @@ algebraic procedure psi!*calc(z);
       return result;
    end;
 
+flag('(psi!*ld!*0 psi!*ld!*1),'reserved);
 
 symbolic procedure psi!*calc!*sub(z, scale, admissable);
    begin scalar result, zsq, zsqp, this, bk;
@@ -431,9 +422,8 @@ symbolic procedure psi!*calc!*sub(z, scale, admissable);
       admissable := sq2bf!* admissable;
       zsq := timbf(z,z); zsqp := zsq;
       this := plubf(admissable, bfone!*);
-      result := difbf (log!: (z,c!:prec!:()),
-               divbf(bfone!*, timbf(bftwo!*, z)));
-      orda := order!: admissable - 5; rp := c!:prec!:();
+      result := difbf (log!* z, divbf(bfone!*, timbf(bftwo!*, z)));
+      orda := order!: admissable - 5; rp := !:bprec!:;
       while greaterp!: (abs!: this, admissable) do
                << bk := sq2bf!* symbolic algebraic bernoulli!*calc k;
                   this := divide!:(bk, timbf(i2bf!: k, zsqp), rp);
@@ -521,7 +511,7 @@ symbolic procedure polygamma!*calc!*s(n,z);
       integer k, nm1, nm2, rp, orda, min, scale;
 
       z := sq2bf!* z; signer := i2bf!:((-1)**(n-1));
-      admissable := divide!:(bfone!*,make!:ibf(1,c!:prec!:()),8);
+      admissable := divide!:(bfone!*,make!:ibf(1,!:bprec!:),8);
 
       min := 10 + conv!:bf2i
               exp!:(times!:(divide!:(bfone!*,i2bf!:(300+n),8),
@@ -534,14 +524,14 @@ symbolic procedure polygamma!*calc!*s(n,z);
       if scale < 0 then scale := 0;
       z0 := plubf(z,i2bf!: scale);
 
-      nfac := round!:mt(i2bf!: factorial(n-1),c!:prec!:());
+      nfac := round!:mt(i2bf!: factorial(n-1),!:bprec!:);
       zexp := texpt!:any(z0,n);
       result := plubf(divbf(nfac,zexp),
          divbf((nfac1 := timbf(i2bf!: n,nfac)),
             timbf(bftwo!*,(zexp1 := timbf(zexp,z0)))));
       nfac := nfac1; zexp := zexp1;
 
-      nm1 := n-1; nm2 := n-2; rp := c!:prec!:();
+      nm1 := n-1; nm2 := n-2; rp := !:bprec!:;
       nfac := timbf(nfac, i2bf!: (n+1));
       kfac := bftwo!*; zexp := timbf(zexp,z0);
       zsq := timbf(z0,z0);
@@ -565,7 +555,7 @@ symbolic procedure polygamma!*calc!*s(n,z);
 
       if scale neq 0 then
          << rescale := bfz!*;
-            nfac := round!:mt(i2bf!: factorial n,c!:prec!:());
+            nfac := round!:mt(i2bf!: factorial n,!:bprec!:);
             for k := 1:scale do
                <<rescale := plus!:(rescale,timbf(nfac,texpt!:(z,-n-1)));
                   z := plubf(z,bfone!*) >>;
@@ -712,18 +702,13 @@ symbolic procedure zeta!*general!*calc!*sub(z,zp,admissable,pre,stt);
 
 algebraic array stieltjes!: (5);  % for use in raw zeta computations
 algebraic array stf!:       (5);
-algebraic array psi!*ld     (1);
-algebraic (psi!*ld(0) := -1);   % precision at which last psi was calc'd
-algebraic (psi!*ld(1) :=  0);   % lowest post-scale value acceptable at
-                                % that precision
 
-
-Stieltjes!: (0) := 0.577215664901532860606512$ % Euler's constant
-Stieltjes!: (1) := -0.0728158233766$
-Stieltjes!: (2) := -0.00968992187973$
-Stieltjes!: (3) := 0.00206262773281$
-Stieltjes!: (4) := 0.00250054826029$
-Stieltjes!: (5) := 0.00427794456482$
+Stieltjes!: (0) := +0.577215664901532860606512$ % Euler's constant
+Stieltjes!: (1) := -0.072815845483676724860586$
+Stieltjes!: (2) := -0.009690363192872318484530$
+Stieltjes!: (3) := +0.002053834420303345866160$
+Stieltjes!: (4) := +0.002325370065467300057468$
+Stieltjes!: (5) := +0.000793323817301062701753$
 Stf!: (0) := 1$
 Stf!: (1) := 1$
 Stf!: (2) := 2$

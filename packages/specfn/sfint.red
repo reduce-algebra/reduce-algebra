@@ -148,13 +148,13 @@ algebraic procedure compute!:int!:functions(x,f);
     else if f = Ci then
            if x < 0 then result :=
                          - compute!:int!:functions(-x,f) -i*pi else
-              << n:=1; term := 1; result := euler!*constant + log(x);
+              << n:=1; term := 1; result := euler_gamma + log(x);
                while abs(term) > precis do
                  << term := -1 * (term * x*x)/((2n-1) * 2n);
                     result := result + term/(2n);
                     n := n + 1>>; >>
     else  if f = Ei then
-          << n:=1; term := 1; result := euler!*constant + log(x);
+          << n:=1; term := 1; result := euler_gamma + log(x);
                while abs(term) > precis do
                  << term := (term * x)/n;
                     result := result + term/n;
@@ -166,7 +166,7 @@ algebraic procedure compute!:int!:functions(x,f);
                     result := result + term/(2n+1);
                     n := n + 1>>; >>
     else  if f = Chi then
-            << n:=1; term := 1; result := euler!*constant + log(x);
+            << n:=1; term := 1; result := euler_gamma + log(x);
                while abs(term) > precis do
                  << term := (term * x*x)/((2n-1) * 2n);
                     result := result + term/(2n);

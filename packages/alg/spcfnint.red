@@ -102,14 +102,6 @@ let { Lerch_Phi (~z,~s,~a) => compute!:lerch_phi(z,s,a)
 
 % from specfn/sfconsts.red
 
-symbolic procedure compute!:Euler!:gamma ();
-  if not(!*rounded) then mk!*sq !*k2q 'Euler_gamma
-         else aeval '(minus (do!*psi 1));
-
-symbolic operator compute!:Euler!:gamma;
-
-let Euler_gamma => compute!:Euler!:gamma();
-
 let  Golden_Ratio = (1 + sqrt(5))/2; % for Architects
 
 
