@@ -778,33 +778,56 @@ asserted procedure aex_psquotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
    end;
 
 asserted procedure aex_psrem(f: Aex, g: Aex, x: Kernel): Aex;
-   % Aex pseudo remainder. This algorithm is independent from aex_psquotrem.
+   % Aex pseudo remainder. Returns a polynomial, which is sign-equivalent with
+   % (i.e., has the same sign for any choice of [x] as) the pseudo remainder of
+   % [f] and [g]. This procedure is independent from aex_psquotrem.
    begin scalar ff, gf, lcsgn, psr;
       assert(not aex_simplenullp g);
       if null aex_fvarl g then
    	 return aex_0();
-      ff := sfto_dprpartksf numr aex_ex f;
-      gf := sfto_dprpartksf numr aex_ex g;
+      ff := numr aex_ex f;
+      gf := numr aex_ex g;
       lcsgn := aex_sgn aex_lc(g, x);
       assert(eqn(lcsgn, 1) or eqn(lcsgn, -1));
-      psr := sfto_dprpartksf sfto_psrem(ff, gf, x, lcsgn);
+      psr := sfto_psrem(ff, gf, x, lcsgn);
       return aex_mklcnt aex_mk(!*f2q psr, ctx_filter(kernels psr, ctx_union(aex_ctx f, aex_ctx g)))
    end;
 
 asserted procedure aex_psremseq(f: Aex, g: Aex, x: Kernel): AexList;
-   % Pseudo remainder sequence for polynomials f and g. Returns a pseudo
-   % remainder sequence for polynomials f and g.
+   % Pseudo remainder sequence for polynomials f and g. Returns a sequence,
+   % which is sign-equivalent with the pseudo remainder sequence for polynomials
+   % f and g.
    begin scalar rem, res;
       assert(not aex_simplenullp g);
+      f := aex_divposcnt(aex_mklcnt f, x);
+      g := aex_divposcnt(aex_mklcnt g, x);
       res := {g, f};
       while aex_deg(g, x) > 0 do <<
 	 rem := aex_psrem(f, g, x);
 	 f := g;
 	 g := aex_neg rem;
-	 if not aex_simplenullp g then
+	 if not aex_simplenullp g then <<
+	    g := aex_divposcnt(g, x);
 	    res := g . res
+	 >>
       >>;
       return reversip res
+   end;
+
+asserted procedure aex_divposcnt(ae: Aex, x: Kernel): Aex;
+   % Divide positive content. [ae] is a univariate Aex in variable [x] with
+   % non-trivial leading coefficient. Returns an Aex, which is sign-equivalent
+   % to [ae].
+   begin scalar f, ct, q, res; integer sgn;
+      f := numr aex_ex ae;
+      ct := sfto_ucontentf f;
+      q := quotfx(f, ct);
+      sgn := aex_sgn aex_mk(!*f2q ct, ctx_filter(kernels ct, aex_ctx ae));
+      assert(eqn(sgn, 1) or eqn(sgn, -1));
+      res := aex_mk(!*f2q q, ctx_filter(kernels q, aex_ctx ae));
+      if eqn(sgn, 1) then
+	 return res;
+      return aex_neg res
    end;
 
 asserted procedure aex_stdsturmchain(f: Aex, x: Kernel): AexList;
@@ -813,7 +836,7 @@ asserted procedure aex_stdsturmchain(f: Aex, x: Kernel): AexList;
 
 asserted procedure aex_sturmchain(f: Aex, g: Aex, x: Kernel): AexList;
    % Sturm chain. Pseudo remainder is used to construct the chain.
-   aex_psremseq(aex_pp f, aex_pp g, x);
+   aex_psremseq(f, g, x);
 
 asserted procedure aex_stchsgnch(sc: AexList, x: Kernel, r: GRational): Integer;
    % Sturm chain sign changes. [sc] is a list of univariate Aex in variable [x].
