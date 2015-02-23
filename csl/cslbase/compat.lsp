@@ -159,6 +159,10 @@
 %%! predef [tab] \item [{\ttfamily tab}] \index{{\ttfamily tab}} ~\newline
 %% The value of this variable is a tab character.
 
+   (setq !$ff!$     (compress (list '!! (special!-char 5))))
+%%! predef [$ff$] \item [{\ttfamily !\$ff!\$}] \index{{\ttfamily !\$ff!\$}} ~\newline
+%% The value of this variable is a form-feed character.
+
 %%! predef [carriage-return] \item [{\ttfamily carriage\!-return}] \index{{\ttfamily carriage"!-return}} ~\newline
 %% The value of this variable is a carriage-return character that could arise
 %% in DOS-format files.
