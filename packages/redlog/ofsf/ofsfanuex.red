@@ -56,6 +56,10 @@ module ofsfanuex;
 % 2) If a variable x is bound to an Anu, the main variable of the algebraic
 % polynomial defining this number is x.
 
+% precision of approximation used in procedure [anu_evalf]:
+fluid '(anu_precision!*);
+anu_precision!* := 2;
+
 fluid '(bigvarpref!* bigvarcount!* smallvarpref!* smallvarcount!*);
 bigvarpref!* := 'zzzzz;
 bigvarcount!* := 0;
@@ -831,8 +835,11 @@ asserted procedure aex_divposcnt(ae: Aex, x: Kernel): Aex;
    end;
 
 asserted procedure aex_stdsturmchain(f: Aex, x: Kernel): AexList;
-   % Standard sturm chain. Pseudo remainder is used to construct the chain.
-   aex_sturmchain(f, aex_diff(f, x), x);
+   % Standard Sturm chain. Pseudo remainder is used to construct the chain.
+   <<
+      assert(aex_mvar f eq x);
+      aex_sturmchain(f, aex_diff(f, x), x)
+   >>;
 
 asserted procedure aex_sturmchain(f: Aex, g: Aex, x: Kernel): AexList;
    % Sturm chain. Pseudo remainder is used to construct the chain.
@@ -910,6 +917,17 @@ asserted procedure aex_sgn(ae: Aex): Integer;
       sc := aex_sturmchain(f, aex_mult(aex_diff(f, x), g), x);
       return aex_stchsgnch1(sc, x, iv_lb anu_iv alpha)
 	 - aex_stchsgnch1(sc, x, iv_rb anu_iv alpha)
+   end;
+
+asserted procedure aex_evalop(ae: Aex, op: Id): Boolean;
+   % Evaluate operator. [ae] is a constant Aex; [op] is an ofsf operator.
+   % Returns a Boolean.
+   begin scalar sgn;
+      assert(null aex_fvarl ae);
+      sgn := aex_sgn ae;
+      if eqn(sgn, 0) then
+	 sgn := nil;
+      return ofsf_evalatp(op, sgn)
    end;
 
 % Exact arithmetic with multiplicative inverses.
@@ -1240,7 +1258,7 @@ asserted procedure aex_atratnullp(ae: Aex, x: Kernel, r: Rational): Boolean;
    eqn(aex_sgn aex_subrat1(ae, x, r), 0);
 
 asserted procedure aex_deltastchsgnch(sc: AexList, x: Kernel, iv: RatInterval): Integer;
-   % delta sturm chain sign changes in an interval
+   % delta Sturm chain sign changes in an interval
    begin integer sclb, scrb;
       sclb := aex_stchsgnch1(sc, x, iv_lb iv);
       if eqn(sclb, 0) then
@@ -1454,7 +1472,7 @@ asserted procedure irp_refine(p: Irp, iv: RatInterval, ppl: IrpList): Anu;
 	    aex_deltastchsgnch(scpp, x, anu_iv a) > 0 or
 	    aex_atratnullp(aepp, x, iv_lb anu_iv a) or
 	    aex_atratnullp(aepp, x, iv_rb anu_iv a) do
-	       anu_refine1ip(a, sc)
+	       anu_refineip(a, sc)
       >>;
       return a
    end;
@@ -1527,6 +1545,89 @@ asserted procedure anu_ratp(a: Anu): ExtraBoolean;
       return nil
    end;
 
+asserted procedure anu_compare(a1: Anu, a2: Anu): Integer;
+   % Compare two Anu. [a1], [a2] are Anu. Returns an integer [z]. We have [z <
+   % 0] if [a1 < a2], [z = 0] if [a1 = a2] and [z = 1] if [a1 > a2].
+   begin scalar iv1, iv2;
+      if a1 = a2 then
+	 return 0;
+      iv1 := anu_iv a1;
+      iv2 := anu_iv a2;
+      if rat_leq(iv_rb iv1, iv_lb iv2) then
+	 return -1;
+      if rat_leq(iv_rb iv2, iv_lb iv1) then
+	 return 1;
+      return anu_compare1(a1, a2)
+   end;
+
+asserted procedure anu_compare1(a1: Anu, a2: Anu): Integer;
+   begin scalar v1, v2, ctx;
+      v1 := aex_mvar anu_dp a1;
+      v2 := aex_mvar anu_dp a2;
+      if v1 eq v2 then <<
+      	 v2 := mksmallid();
+      	 a2 := anu_rename(a2, v2);
+      >>;
+      ctx := ctx_fromial {v1 . a1, v2. a2};
+      return aex_sgn aex_mk(addsq(!*k2q v1, negsq !*k2q v2), ctx)
+   end;
+
+asserted procedure anu_refine(a: Anu): Anu;
+   % Algebraic number refine. Returns an [a] with smaller isolating interval.
+   begin scalar iv, w, aex, sc;
+      iv := anu_iv a;
+      if iv_lb iv = iv_rb iv then
+	 return a;
+      w := copy a;
+      aex := anu_dp a;
+      sc := aex_stdsturmchain(aex, aex_mvar aex);
+      anu_refineip(w, sc);
+      return w
+   end;
+
+asserted procedure anu_refineip(a: Anu, s: AexList): Anu;
+   % Algebraic number refine in place. [s] is a Sturm chain. Returns an [a] with
+   % smaller isolating interval. Remark: 1000 was replaced by 4.
+   begin scalar x, iv, lb, rb, m, scm;
+      x := aex_mvar anu_dp a;
+      iv := anu_iv a;
+      lb := iv_lb iv;
+      rb := iv_rb iv;
+      m := rat_quot(rat_add(lb, rb), rat_mk(2, 1));
+      if eqn(aex_sgn aex_subrat1(anu_dp a, x, m), 0) then <<
+	 % TODO: Rational number, construct simpler Anu.
+	 anu_putiv(a, iv_mk(
+	    rat_minus(m, rat_mult(rat_mk(1,4), rat_minus(m, lb))),
+	    rat_add(m, rat_mult(rat_mk(1,4), rat_minus(m, lb)))));
+	 return a
+      >>;
+      scm := aex_stchsgnch1(s, x, m);
+      if eqn(aex_stchsgnch1(s, x, lb) - scm, 1) then <<
+	 anu_putiv(a, iv_mk(lb, m));
+	 return a
+      >>;
+      anu_putiv(a, iv_mk(m, rb));
+      return a
+   end;
+
+asserted procedure anu_evalf(a: Anu): Floating;
+   % Algebraic number evaluate floating point. Returns a floating point
+   % approximation of [a], which is precise up to [anu_precision!*] decimal
+   % places.
+   begin scalar iv, ra, lb, ub;
+      ra := a;
+      repeat <<
+      	 ra := anu_refine ra;
+	 iv := anu_iv ra;
+	 lb := float(numr car iv or 0)/float denr car iv;
+	 ub := float(numr cdr iv or 0)/float denr cdr iv
+      >> until anu_approxEqualEnough(lb, ub);
+      return lb
+   end;
+
+asserted procedure anu_approxEqualEnough(lb: Floating, ub: Floating): Boolean;
+   eqn(fix(lb * 10^anu_precision!*) - fix(ub * 10^anu_precision!*), 0);
+
 asserted procedure anu_rename(a: Anu, xnew: Kernel);
    begin scalar aex, rp, varl, x, varal, rpnew, ialnew, w;
       aex := anu_dp a;
@@ -1571,31 +1672,6 @@ asserted procedure anu_check(a: Anu): Boolean;
       	 prin2t "***** anu_check: no root";
       >>;
       return valid
-   end;
-
-asserted procedure anu_refine1ip(a: Anu, s: AexList): Anu;
-   % Algebraic number refine in place. [s] is a sturmchain. Returns an [a] with
-   % smaller isolating interval. Remark: 1000 was replaced by 4.
-   begin scalar x, iv, lb, rb, m, scm;
-      x := aex_mvar anu_dp a;
-      iv := anu_iv a;
-      lb := iv_lb iv;
-      rb := iv_rb iv;
-      m := rat_quot(rat_add(lb, rb), rat_mk(2, 1));
-      if eqn(aex_sgn aex_subrat1(anu_dp a, x, m), 0) then <<
-	 % TODO: Rational number, construct simpler Anu.
-	 anu_putiv(a, iv_mk(
-	    rat_minus(m, rat_mult(rat_mk(1,4), rat_minus(m, lb))),
-	    rat_add(m, rat_mult(rat_mk(1,4), rat_minus(m, lb)))));
-	 return a
-      >>;
-      scm := aex_stchsgnch1(s, x, m);
-      if eqn(aex_stchsgnch1(s, x, lb) - scm, 1) then <<
-	 anu_putiv(a, iv_mk(lb, m));
-	 return a
-      >>;
-      anu_putiv(a, iv_mk(m, rb));
-      return a
    end;
 
 asserted procedure aex_badp(aex: Aex, fvn: Integer): ExtraBoolean;

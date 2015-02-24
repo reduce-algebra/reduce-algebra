@@ -37,9 +37,6 @@ lisp <<
 
 module ofsfexfr;
 
-fluid '(anu_precision!*);
-anu_precision!* := 2;
-
 %DS
 % GAnu ::= 'minf | 'pinf | Anu
 % AnuInterval ::= AnuSpan | AnuPoint | nil
@@ -309,7 +306,7 @@ asserted procedure ofsf_feasible11(anu: Anu, xk: Kernel, fl: List, gl: List): Bo
       >>;
       while cnt and gl do <<
 	 g . op := pop gl;
-	 if not aex_evalsgn(aex_bind(g, xk, anu), op) then
+	 if not aex_evalop(aex_bind(g, xk, anu), op) then
 	    cnt := nil
       >>;
       return cnt
@@ -513,59 +510,6 @@ asserted procedure ganu_compare(ganu1: GAnu, ganu2: GAnu): Integer;
    else
       anu_compare(ganu1, ganu2);
 
-asserted procedure anu_compare(anu1: Anu, anu2: Anu): Integer;
-   begin scalar iv1, iv2;
-      if anu1 = anu2 then
-	 return 0;
-      iv1 := anu_iv anu1;
-      iv2 := anu_iv anu2;
-      if rat_compare(iv_rb iv1, iv_lb iv2) leq 0 then
-	 return -1;
-      if rat_compare(iv_rb iv2, iv_lb iv1) leq 0 then
-	 return 1;
-      return anu_compare1(anu1, anu2)
-   end;
-
-asserted procedure rat_compare(r1, r2): Integer;
-   numr subtrsq(r1, r2) or 0;
-
-asserted procedure anu_compare1(anu1: Anu, anu2: Anu): Integer;
-   begin scalar g, oldorder, w;
-      g := gensym();
-      oldorder := setkorder(g . kord!*);
-      w := errorset({'anu_compare2, mkquote anu1, mkquote anu2, mkquote g},
-	 nil, !*backtrace);
-      setkorder oldorder;
-      if errorp w then
-	 rederr emsg!*;
-      return car w
-   end;
-
-asserted procedure anu_compare2(anu1: Anu, anu2: Anu, g: Kernel): Integer;
-   % [anu1], [anu2] are Anu or 'minf or 'pinf. Returns an integer [z]. We have
-   % [z < 0] if [anu1 < anu2], [z = 0] if [anu1 = anu2] and [z = 1] if [anu1 >
-   % anu2].
-   begin scalar aex1, aex2;
-      aex1 := aex_fromAnu anu1;
-      aex2 := aex_fromAnu anu_varChange(anu2, g);
-      return aex_sgn aex_minus(aex1, aex2)
-   end;
-
-asserted procedure aex_fromAnu(anu: Anu): Aex;
-   begin scalar fvarl, v, aex;
-      fvarl := aex_fvarl anu_dp anu;
-      assert(fvarl and null cdr fvarl);
-      v := car fvarl;
-      aex := aex_bind(aex_fromrp simp v, v, anu);
-      return aex
-   end;
-
-asserted procedure anu_varChange(anu: Anu, newvar: Kernel): Anu;
-   begin scalar dp;
-      dp := anu_dp anu;
-      return anu_mk(aex_subrp(dp, car aex_fvarl dp, !*k2q newvar), anu_iv anu)
-   end;
-
 asserted procedure ofsf_feasibleEvalSgn(g: Aex, x: Kernel, anu: GAnu): Integer;
    % Feasible evaluate sign. [g] is an Aex; [x] is the only free id in [g];
    % [anu] is an Anu or 'minf or 'pinf. Returns -1, 0, or 1. The result is the
@@ -576,16 +520,6 @@ asserted procedure ofsf_feasibleEvalSgn(g: Aex, x: Kernel, anu: GAnu): Integer;
       aex_sgnatminfty(g, x)
    else
       aex_sgn aex_bind(g, x, anu);
-
-asserted procedure aex_evalsgn(aex: Aex, op: Id): Boolean;
-   % [aex] is a constant Aex; [op] is an ofsf operator. Returns Boolean.
-   begin scalar sgn;
-      % assert(aex_constp aex);
-      sgn := aex_sgn aex;
-      if eqn(sgn, 0) then
-	 sgn := nil;
-      return ofsf_evalatp(op, sgn)
-   end;
 
 asserted procedure ofsf_forget(s: State): State;
    begin scalar tcl, tc, cnt, ntcl;
@@ -663,39 +597,9 @@ asserted procedure ofsf_anusubf(f: SF, al: Alist): Aex;
       return aex
    end;
 
-asserted procedure anu_refine(anu: Anu): Anu;
-   begin scalar iv, w, sc, fvarl, x;
-      iv := anu_iv anu;
-      if iv_lb iv = iv_rb iv then
-	 return anu;
-      w := copy anu;
-      fvarl := aex_fvarl anu_dp anu;
-      assert eqn(length fvarl, 1);
-      x := car fvarl;
-      sc := aex_stdsturmchain(anu_dp anu, x);
-      anu_refine1ip(w, sc);
-      assert(w neq anu);
-      return w
-   end;
-
 asserted procedure ganu_evalf(ganu: GAnu);
    % Returns Floating or [minf] or [pinf].
    if ganu memq '(minf pinf) then ganu else anu_evalf ganu;
-
-asserted procedure anu_evalf(anu: Anu): Floating;
-   begin scalar iv, ranu, lb, ub;
-      ranu := anu;
-      repeat <<
-      	 ranu := anu_refine ranu;
-	 iv := anu_iv ranu;
-	 lb := float(numr car iv or 0)/float denr car iv;
-	 ub := float(numr cdr iv or 0)/float denr cdr iv
-      >> until anu_approxEqualEnough(lb, ub);
-      return lb
-   end;
-
-asserted procedure anu_approxEqualEnough(lb: Floating, ub: Floating): Boolean;
-   eqn(fix(lb * 10^anu_precision!*) - fix(ub * 10^anu_precision!*), 0);
 
 procedure ofsf_ivlapprox(ivl);
    for each iv in ivl collect

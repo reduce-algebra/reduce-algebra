@@ -2412,17 +2412,17 @@ procedure ofsf_qemkstdansaexpe(f, v, anu);
       sc := aex_stdsturmchain(aex, aex_mvar aex);
       if !*rlqestdansint then <<
       	 while sfto_greaterq(subtrsq(iv_rb anu_iv anu, iv_lb anu_iv anu), 1 ./ 2) do
-	    anu_refine1ip(anu, sc);
+	    anu_refineip(anu, sc);
 	 z := sfto_ceilq iv_lb anu_iv anu;
 	 if z neq sfto_ceilq iv_rb anu_iv anu then
 	    if not eqn(aex_sgn aex_subrat(aex, aex_mvar aex, z), 0) then
 	       while sfto_ceilq iv_lb anu_iv anu neq sfto_ceilq iv_rb anu_iv anu do
-	    	  anu_refine1ip(anu, sc);
+	    	  anu_refineip(anu, sc);
       	 q := sfto_ceilq iv_rb anu_iv anu
       >> else
 	 q := iv_rb anu_iv anu;
       while ofsf_subconstq(f, v, q) eq 'false do <<
-	 anu_refine1ip(anu, sc);
+	 anu_refineip(anu, sc);
 	 q := iv_rb anu_iv anu
       >>;
       return {v, 'ofsf_qesubcq, {'true, q}}
@@ -2445,8 +2445,8 @@ procedure ofsf_findrat(anu1, anu2);
       sc1 := aex_stdsturmchain(aex1, aex_mvar aex1);
       sc2 := aex_stdsturmchain(aex2, aex_mvar aex2);
       while sfto_geqq(iv_rb anu_iv anu1, iv_lb anu_iv anu2) do <<
-	 anu_refine1ip(anu1, sc1);
-	 anu_refine1ip(anu2, sc2)
+	 anu_refineip(anu1, sc1);
+	 anu_refineip(anu2, sc2)
       >>;
       return iv_rb anu_iv anu1
    end;
