@@ -196,14 +196,56 @@ symbolic procedure ps!:prepfn!: u;
 %       then return !*kk2f {'abs,u}
 %      else return numr simpps1(mk!*sq x,ps!:depvar u, ps!:expansion!-point u);
 
+% symbolic procedure ps!:abs!: u;
+%   begin scalar x;
+%       if !*complex then
+%        return !*kk2f {'abs,u};
+% 
+%       x := prepsqxx simp {'abs,ps!:value u};
+%       if depends(x,'abs) then
+%         return !*kk2f {'abs,u}
+%       else if equal(x, ps!:value u) then
+%         returm u
+%       else
+%  	return numr simpps1({'minus, u}, ps!:depvar u, ps!:expansion!-point u);
+%   end;
+
 symbolic procedure ps!:abs!: u;
-  begin scalar x;
-     x := prepsqxx simp {'abs,ps!:value u};
-      if depends(x,'abs) then
-       return !*kk2f {'abs,u}
-      else
- 	return numr simpps1(x, ps!:depvar u, ps!:expansion!-point u);
-  end;
+   if !*complex then
+     !*kk2f {'abs, u}
+   else begin scalar ord, first, absterm1, pspart, divisor, rest, about;
+     ord := ps!:order u;
+     about := ps!:expansion!-point u;
+     first := prepsqxx  ps!:get!-term(u, ord);
+     absterm1 :=   simp {'abs, first};
+     divisor := if about = 0 or about = 'ps!:inf then
+                     ps!:depvar u
+                else 
+                    {'plus, ps!:depvar u, {'minus, about}};
+     if depends(absterm1, 'abs) then  <<
+       pspart := make!-constantps(ps!:get!-term(u, ord), first, ps!:depvar u);
+        if evenp ord then <<
+            pspart := {'quotient, u, pspart};
+            rest :=!*kk2f {'abs, first} >>
+        else  <<
+            pspart := {'quotient, u, {'times, divisor, pspart}};
+            rest := !*kk2f {'abs, {'times,  divisor, first}} >>  
+     >>
+     else 
+        if equal(absterm1, ps!:get!-term(u, ord)) then 
+          if evenp ord then << pspart := u; rest :=1 >>
+          else <<
+                pspart := {'quotient, u, divisor};
+                rest :=  !*kk2f {'abs, divisor} >>
+        else 
+           if evenp ord then << pspart := {'minus, u}; rest :=1 >>
+          else <<
+             pspart := {'quotient, {'minus, u}, divisor};
+             rest := !*kk2f {'abs, divisor}
+      	>>;  
+      pspart := numr  simpps1(pspart, ps!:depvar u, ps!:expansion!-point u);
+      return multf(rest, pspart);
+end;
 
 initdmode 'tps;
 
