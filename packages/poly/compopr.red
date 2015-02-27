@@ -289,6 +289,7 @@ symbolic procedure reimcosh u;
    where rearg = prepsq simprepart cdr u,
          imarg = prepsq simpimpart cdr u;
 
+      
 put('expt,'cmpxsplitfn,'reimexpt);
 
 symbolic procedure reimexpt u;
@@ -306,6 +307,150 @@ symbolic procedure reimexpt u;
               and fixp caddr caddr u
      then mksq(u,1)
     else addsq(mkrepart u,multsq(simp 'i,mkimpart u));
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The procedures below were added by Alan Barnes to handle tan, tanh, cot,
+% coth, sec, csc, sech, csch.
+% They all return results in terms of sin, cos, sinh and cosh of 
+% the real and imaginary parts of the argument of the function concerned. 
+% There are several equivalent ways of expressing the denominators;
+% below denominators are always expressed as the sum of 2 squares 
+
+put('tan,'cmpxsplitfn,'reimtan);
+
+symbolic procedure reimtan u;
+begin scalar rearg, imarg, sinx, sinhy, cosx, coshy;
+   rearg := prepsq simprepart cdr u;
+   imarg := prepsq simpimpart cdr u;
+   sinx  := simp {'sin, rearg};
+   sinhy := simp {'sinh, imarg};
+   cosx  := simp {'cos, rearg};
+   coshy := simp {'cosh, imarg};
+
+   return quotsq(
+      addsq(multsq(sinx, cosx),
+            multsq(simp 'i, multsq(sinhy, coshy))),
+      addsq(multsq(cosx, cosx), multsq(sinhy, sinhy)));
+end;
+
+put('tanh,'cmpxsplitfn,'reimtanh);
+
+symbolic procedure reimtanh u;
+begin scalar rearg, imarg, sinhx, siny, coshx, cosy;
+   rearg := prepsq simprepart cdr u;
+   imarg := prepsq simpimpart cdr u;
+   sinhx := simp {'sinh, rearg};
+   siny  := simp {'sin, imarg};
+   coshx := simp {'cosh, rearg};
+   cosy  := simp {'cos, imarg};
+
+   return quotsq(
+      addsq(multsq(sinhx, coshx),
+            multsq(simp 'i, multsq(siny, cosy))),
+      addsq(multsq(cosy, cosy), multsq(sinhx, sinhx)));
+end;
+
+put('cot,'cmpxsplitfn,'reimcot);
+
+symbolic procedure reimcot u;
+begin scalar rearg, imarg, sinx, sinhy, cosx, coshy;
+   rearg := prepsq simprepart cdr u;
+   imarg := prepsq simpimpart cdr u;
+   sinx  := simp {'sin, rearg};
+   sinhy := simp {'sinh, imarg};
+   cosx  := simp {'cos, rearg};
+   coshy := simp {'cosh, imarg};
+
+   return quotsq(
+      addsq(multsq(sinx, cosx),
+            multsq(simp 'i, negsq multsq(sinhy, coshy))),
+      addsq(multsq(sinhy, sinhy), multsq(sinx, sinx)));
+end;
+
+put('coth,'cmpxsplitfn,'reimcoth);
+
+symbolic procedure reimcoth u;
+begin scalar rearg, imarg, sinhx, siny, coshx, cosy;
+   rearg := prepsq simprepart cdr u;
+   imarg := prepsq simpimpart cdr u;
+   sinhx := simp {'sinh, rearg};
+   siny  := simp {'sin, imarg};
+   coshx := simp {'cosh, rearg};
+   cosy  := simp {'cos, imarg};
+
+  return quotsq(
+      addsq(multsq(sinhx, coshx),
+            multsq(simp 'i, negsq multsq(siny, cosy))),
+      addsq(multsq(sinhx, sinhx), multsq(siny, siny)));
+end;
+
+put('sec,'cmpxsplitfn,'reimsec);
+
+symbolic procedure reimsec u;
+begin scalar rearg, imarg, sinx, sinhy, cosx, coshy;
+   rearg := prepsq simprepart cdr u;
+   imarg := prepsq simpimpart cdr u;
+   sinx  := simp {'sin, rearg};
+   sinhy := simp {'sinh, imarg};
+   cosx  := simp {'cos, rearg};
+   coshy := simp {'cosh, imarg};
+
+   return quotsq(
+      addsq(multsq(cosx, coshy),
+            multsq(simp 'i, multsq(sinx, sinhy))),
+      addsq(multsq(cosx, cosx), multsq(sinhy, sinhy)));
+end;
+
+put('sech,'cmpxsplitfn,'reimsech);
+
+symbolic procedure reimsech u;
+begin scalar rearg, imarg, sinhx, siny, coshx, cosy;
+   rearg := prepsq simprepart cdr u;
+   imarg := prepsq simpimpart cdr u;
+   sinhx := simp {'sinh, rearg};
+   siny  := simp {'sin, imarg};
+   coshx := simp {'cosh, rearg};
+   cosy  := simp {'cos, imarg};
+
+   return quotsq(
+      addsq(multsq(coshx, cosy),
+            multsq(simp 'i, negsq multsq(sinhx, siny))),
+      addsq(multsq(cosy, cosy), multsq(sinhx, sinhx)));
+end;
+
+put('csc,'cmpxsplitfn,'reimcsc);
+
+symbolic procedure reimcsc u;
+begin scalar rearg, imarg, sinx, sinhy, cosx, coshy;
+   rearg := prepsq simprepart cdr u;
+   imarg := prepsq simpimpart cdr u;
+   sinx  := simp {'sin, rearg};
+   sinhy := simp {'sinh, imarg};
+   cosx  := simp {'cos, rearg};
+   coshy := simp {'cosh, imarg};
+
+   return quotsq(
+      addsq(multsq(sinx, coshy),
+            multsq(simp 'i, negsq multsq(cosx, sinhy))),
+      addsq(multsq(sinhy, sinhy), multsq(sinx, sinx)));
+end;
+
+put('csch,'cmpxsplitfn,'reimcsch);
+
+symbolic procedure reimcsch u;
+begin scalar rearg, imarg, sinhx, siny, coshx, cosy;
+   rearg := prepsq simprepart cdr u;
+   imarg := prepsq simpimpart cdr u;
+   sinhx := simp {'sinh, rearg};
+   siny  := simp {'sin, imarg};
+   coshx := simp {'cosh, rearg};
+   cosy  := simp {'cos, imarg};
+
+  return quotsq(
+      addsq(multsq(sinhx, cosy),
+            multsq(simp 'i, negsq multsq(coshx, siny))),
+      addsq(multsq(sinhx, sinhx), multsq(siny, siny)));
+end;
 
 endmodule;
 
