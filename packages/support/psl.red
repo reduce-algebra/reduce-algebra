@@ -335,6 +335,8 @@ symbolic inline procedure preci!: nmbr;
 %     else ff1(m,wshift(bitsperword,-1)))
 %    where m = mt!: nmbr;
 
+remflag('(make!:ibf), 'lose);
+
 symbolic inline procedure make!:ibf (mt, ep);
   '!:rd!: . (mt . ep);
 

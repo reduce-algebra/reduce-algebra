@@ -46,6 +46,8 @@ flag('(lshift ashift), 'lose);
 
 symbolic inline procedure msd!: u; msd u;
 
+remflag('(make!:ibf), 'lose);
+
 symbolic inline procedure make!:ibf (mt, ep);
   '!:rd!: . (mt . ep);
 
