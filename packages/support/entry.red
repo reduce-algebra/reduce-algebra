@@ -500,11 +500,12 @@ defautoload(compute!:int!:functions,specfn,expr,2);
 
 defautoload(sf!*eval,specfn,expr,2);
 
-flag('(do!*gamma do!*pochhammer do!*psi do!*polygamma do!*trigamma!*halves
+flag('(do!*gamma do!*pochhammer do!*polygamma do!*trigamma!*halves
        do!*zeta do!*zeta!*pos!*intcalc ibeta!:eval igamma!:eval),'opfn);
 defautoload(do!*gamma,(specfn sfgamma));
 defautoload(do!*pochhammer,(specfn sfgamma),expr,2);
-defautoload(do!*psi,(specfn sfgamma));
+defautoload(rdpsi!*,(specfn sfgamma));
+defautoload(crpsi!*,(specfn sfgamma));
 defautoload(do!*polygamma,(specfn sfgamma),expr,2);
 defautoload(do!*trigamma!*halves,(specfn sfgamma));
 defautoload(do!*zeta,(specfn sfgamma));

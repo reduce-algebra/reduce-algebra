@@ -454,14 +454,14 @@ symbolic procedure rdpsi!:compute!-lowerbound eps;
       % the number 1/300
       i300 := '(!:rd!: 480383960252853 . -57);
       % compute k so that abs(bernoulli(300)/(300*z^300)) < rd!-tolerance!*
-      return exp!:(timbf(log!:(divide!:(bern300,eps,4),4),i300),3);
+      return exp!:(timbf(log!:(divide!:(bern300,eps,32),32),i300),32);
    end;
    
 
 symbolic procedure rdpsi!:(z,k);
    if bfzerop!: z or minusp!: z and integerp!: z then bflerrmsg 'rdpsi!:
     else begin scalar result, admissable, lb, refl, pival;
-      integer scale, k7;
+      integer shift, k7;
       k7 := k+7;
       % For negative z, use the reflection formula
       % psi(z) = psi(1-z) - pi/tan(pi*z)
@@ -473,14 +473,13 @@ symbolic procedure rdpsi!:(z,k);
       % The following is  rd!-tolerance!*
       admissable := make!:ibf(1, 6-k);
       lb :=  rdpsi!:compute!-lowerbound admissable;
-      if greaterp!:(lb,z) then scale := 1 + conv!:bf2i difference!:(lb,z);
-      if scale > 0 then <<
-	 % make 20 extra scale steps to be on the safe side
-	 scale := scale + 20;
- 	 z := plus!:(z,i2bf!: scale) >>;
+      if greaterp!:(lb,z) then <<
+	 % make 20 extra shift steps to be on the safe side
+ 	 shift := 20 + conv!:bf2i difference!:(lb,z);
+ 	 z := plus!:(z,i2bf!: shift) >>;
       result := plus!:(difference!: (log!:(z,k7), divide!:(bfone!*, times!:(bftwo!*, z), k7)),
 	       	       rdpsi!:1(divide!:(bfone!*,times!:(z,z),k7),k,admissable));
-      for n := 1:scale do
+      for n := 1:shift do
 	 result := difference!:(result, divide!:(bfone!*, difference!:(z, i2bf!: n), k7));
       if refl then result := difference!:(result,refl);
       return round!:mt(result,k);
@@ -496,7 +495,9 @@ symbolic procedure rdpsi!:1(zsq,kp,admissable);
       zsqp := zsq;
       result := bfz!*;
       repeat <<
-	 bk := sq2bf!* bernoulli!*calc k where !*!*roundbf:=!*!*roundbf;
+	 % bernoulli!*calc may change the precision which resets !*!*roundbf, so bind it to itself
+	 % use bfloat since sq2bf!* may return a system float
+	 bk := bfloat sq2bf!* bernoulli!*calc k where !*!*roundbf:=!*!*roundbf;
 	 this := divide!:(times!:(bk,zsqp),i2bf!: k, k7);
 	 result := difference!:(result, this);
 	 k := k + 2;
@@ -512,14 +513,14 @@ symbolic procedure crpsi!* u;
    % psi(z) = psi(1-z) - pi/tan(pi*z)
    % unless z is a negative integer
     else if minusp!: tagrl u
-     then cr!:difference(
-	   (gfpsi!:(crprcd cr!:difference(!*rd2cr bfone!*,u),!:bprec!:) where !*!*roundbf := t),
-	   (cr!:quotient(crpi,crtan!*(cr!:times(crpi,u))) where crpi:=!*rd2br pi!*()))
+     then cr!:differ(
+	   (gfpsi!:(crprcd cr!:differ(!*rd2cr bfone!*,u),!:bprec!:) where !*!*roundbf := t),
+	   (cr!:quotient(crpi,crtan!*(cr!:times(crpi,u))) where crpi:=!*rd2cr pi!*()))
     else  (gfpsi!:(crprcd u,!:bprec!:) where !*!*roundbf := t);
 
 symbolic procedure gfpsi!:(z,k);
    begin scalar result, admissable, gfnorm, gflog, lb;
-      integer scale, k7;
+      integer shift, k7;
       k7 := k+7;
       gfnorm := rdhypot!*(gfrl z,gfim z);
       % The following is  rd!-tolerance!*
@@ -529,16 +530,15 @@ symbolic procedure gfpsi!:(z,k);
       % ie. we need to compute the shift for n for x via (x+n)^2 + y^2 > l^2
       % obviously, scaling is necessary only if |x| < l and |y| < l,
       % otherwise shift s > sqrt(l^2-y^2) - x 
-      if lessp!:(gfrl z, lb) and lessp!:(abs!: gfim z, lb) then
-	 scale := conv!:bf2i difference!:(bfsqrt difference!:(times!:(lb,lb),times!:(gfim z,gfim z)),gfrl z);
-      if scale > 0 then <<
-	 % make 20 extra scale steps to be on the safe side
-	 scale := scale + 20;
- 	 z := gfplus(z,mkgf(i2bf!: scale,bfz!*)) >>;
+      if lessp!:(gfrl z, lb) and lessp!:(abs!: gfim z, lb) then <<
+	 % make 20 extra shift steps to be on the safe side
+	 shift := 20 + conv!:bf2i difference!:(bfsqrt difference!:(times!:(lb,lb),times!:(gfim z,gfim z)),gfrl z);
+	 shift := shift + 20;
+ 	 z := gfplus(z,mkgf(i2bf!: shift,bfz!*)) >>;
       gflog := mkgf(log!:(gfnorm,k7),rdatan2!*(gfim z,gfrl z));
       result := gfplus(gfdiffer (gflog, gfquotient(rl2gfc bfone!*, gftimes(rl2gfc bftwo!*, z))),
 	       	       gfpsi!:1(gfquotient(rl2gfc bfone!*,gftimes(z,z)),k,admissable));
-      for n := 1:scale do
+      for n := 1:shift do
 	 result := gfdiffer(result, gfquotient(rl2gfc bfone!*, gfdiffer(z, mkgf(i2bf!: n,bfz!*))));
       return gf2cr!: result;
    end;

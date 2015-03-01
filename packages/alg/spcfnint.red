@@ -392,40 +392,42 @@ algebraic operator psi, polygamma;
 
 flag('(psi polygamma),'realvalued);
 
+put('psi,'!:rd!:,'rdpsi!*);
+put('psi,'!:cr!:,'crpsi!*);
+
 psi!*rules := {
 
-   psi(~x,~xx) => polygamma(x,xx),
+   psi(~n,~z) => polygamma(n,z),
 
    psi(~z)  =>  infinity
       when repart z = floor repart z and impart z = 0 and z < 1,
 
-   psi(~z)  =>  -Euler_gamma
-      when numberp z and z = 1
-               and symbolic !*rounded and precision(0) < 501,
+%   psi(1)   =>  -Euler_gamma,
+%   psi(1/2) =>  -Euler_gamma - 2 * log(2),
 
-   psi(~z)  =>  -Euler_gamma - 2 * log(2)
-      when numberp z and z = (1/2)
-               and symbolic !*rounded and precision(0) < 501,
-
-   psi(~z)  =>  do!*psi(z)
-      when numberp z and impart z = 0 and symbolic !*rounded,
+%   psi(~z)  =>  -Euler_gamma
+%      when numberp z and z = 1
+%               and symbolic !*rounded and precision(0) < 501,
+%
+%   psi(~z)  =>  -Euler_gamma - 2 * log(2)
+%      when numberp z and z = (1/2)
+%               and symbolic !*rounded and precision(0) < 501,
+%
+%   psi(~z)  =>  do!*psi(z)
+%      when numberp z and impart z = 0 and symbolic !*rounded,
 
    psi(~z)  =>  (psi(z/2) + psi((z+1)/2) + 2 * log(2)) / 2
       when numberp z and impart z = 0
                and (z/2) = floor (z/2)
-                  and z > 0 and not symbolic !*rounded,
+                  and z > 0, % and not symbolic !*rounded,
 
    psi(~z)  =>  psi(z-1) + (1 / (z-1))
       when numberp z and impart z = 0
-               and z > 1 and not symbolic !*rounded,
+               and z > 1, % and not symbolic !*rounded,
 
    psi(~z)  =>  psi(1-z) + pi*cot(pi*(1-z))
       when numberp z and impart z = 0
-               and z < 0 and not symbolic !*rounded,
-
-   psi(~z)  =>  psi(1-z) + pi*cot(pi*(1-z))
-      when numberp z and impart z = 0
-         and z > 1/2 and z < 1 and not symbolic !*rounded,
+               and (z < 0 or z > 1/2 and z < 1), % and not symbolic !*rounded,
 
    df(psi(~z),z)  =>  polygamma(1, z),
 

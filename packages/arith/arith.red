@@ -62,10 +62,8 @@ symbolic inline procedure ep!: u;
    % representation of a number.
    cddr u;
 
-% This is now in csl.red and psl.red in the support directory.
-%
-%symbolic inline procedure make!:ibf (mt, ep);
-%   '!:rd!: . (mt . ep);
+symbolic procedure make!:ibf (mt, ep);
+   '!:rd!: . (mt . ep);
 
 symbolic inline procedure i2bf!: u; make!:ibf (u, 0);
 
