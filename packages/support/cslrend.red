@@ -619,6 +619,16 @@ flag('(begin),'go);
 % that module unnecessarily, and because the definition given there is
 % rather PSL specific.
 
+% There is an ugliness here that arises because cslrend is processed during
+% bootstrapping and then read a second time to create the version of it that
+% will remain in the final working system. An effect is that a LOSE property
+% established when it is initially loaded could cause the function concerned
+% to be ignored the second time - with pretty bad conseqences. So any function
+% that is defined here and needs to be tagged LOSE must have the LOSE
+% property explicitly removed ahead of its definition. The same issue arises
+% in a few other files that are loaded really early in the bootstrapping part
+% of the Reduce build - and obviously for PSL just as much as for CSL.
+
 remflag('(string!-downcase),'lose);
 
 symbolic procedure string!-downcase u;
@@ -644,6 +654,8 @@ symbolic inline procedure iputv(u,v,w); putv(u,v,w);
 % the same rather than merely equivalent in function. So it is important to
 % use "u" here!
 
+remflag('(first second third fourth rest), 'lose);
+
 symbolic inline procedure first u; car u;
 
 symbolic inline procedure second u; cadr u;
@@ -654,8 +666,7 @@ symbolic inline procedure fourth u; cadddr u;
 
 symbolic inline procedure rest u; cdr u;
 
-flag('(first second third fourth resr), 'lose);
-
+flag('(first second third fourth rest), 'lose);
 
 Comment Initial setups for REDUCE;
 
@@ -773,6 +784,8 @@ symbolic procedure concat(u,v);
 % "extras.red" for an explanation.
 
 symbolic procedure dated!-gensym u; dated!-name u;
+
+remflag('(copyd), 'lose);
 
 symbolic procedure copyd(new,old);
 % Copy the function definition from old id to new. For CSL this plays
