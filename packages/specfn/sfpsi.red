@@ -33,7 +33,7 @@ module sfpsi; % Procedures relevant to the digamma, polygamma & zeta
 %        Yiu K. Man's email is: myk@maths.qmw.ac.uk
 
 imports sq2bf!*, sf!*eval;
-exports do!*psi, do!*polygamma, do!*trigamma!*halves,
+exports rdpsi!*, do!*polygamma, do!*trigamma!*halves,
    do!*zeta, do!*zeta!*pos!*intcalc;
 
 
@@ -42,7 +42,9 @@ exports do!*psi, do!*polygamma, do!*trigamma!*halves,
 % up psi calculations (a bit) when repeated calculations are made at the
 % same level of precision.
 
-fluid '(compute!-bernoulli);
+global '(bfz!* bfhalf!* bftwo!*);
+
+fluid '(compute!-bernoulli !*!*roundbf !*roundbf);
 
 fluid '(psi!*ld!*0 psi!*ld!*1);
 
@@ -61,9 +63,6 @@ assignments (e.g., to euler!*constant in algebraic mode. This conflicted with
 autoloading, since autoloading can happen at any time, even during rule processing
 when algebraic mode assignments are not possible
 ;
-
-% Floating point approximation of the Euler-Mascheroni constant 
-global '(!!euler_gamma); 
 
 % bigfloat approximation to 500 digits
 set!:const('!:euler_gamma,
@@ -89,16 +88,15 @@ if not fixp k or k <= 0 then bflerrmsg '!:euler_gamma
  else begin scalar u;
     u := get!:const('!:euler_gamma, k);
     if u neq 'not_found then return u;
-    u := do!*psi 1;
+    u := rdpsi!:(bfone!*,k);
     if denr u neq 1 or not rdp u then bflerrmsg '!:euler_gamma
-     else return !:minus numr u;
+     else <<u:= !:minus numr u;
+    	    save!:const('!:euler_gamma,u);
+            return u>>;
  end;
 
-!!euler_gamma := bf2flr !:euler_gamma !!nbfpd;
-flag('(!!euler_gamma),'reserved);
-
 symbolic procedure rd_euler!*;
-   mkround if !*!*roundbf then !:euler_gamma !:bprec!: else !!euler_gamma;
+   mkround if !*!*roundbf then !:euler_gamma !:bprec!: else bf2flr !:euler_gamma !!nbfpd;
 
 symbolic procedure cr_euler!*;
   mkcr(rd_euler!*(),rdzero!*());
@@ -129,7 +127,7 @@ symbolic procedure cr_euler!*;
 % Expressions for the derivative and integral of psi are included.
 %
 
-%% rules more to alg/spcfninst.red
+%% rules moved to alg/spcfnint.red
 %%
 %%algebraic operator psi, polygamma;
 %%symbolic operator psi!*calc;
@@ -343,8 +341,8 @@ algebraic procedure polygamma_aux(n,m);
 
 
 
-algebraic procedure do!*psi(z);
-   algebraic sf!*eval('psi!*calc,{z});
+%%algebraic procedure do!*psi(z);
+%%   algebraic sf!*eval('psi!*calc,{z});
 
 algebraic procedure do!*polygamma(n,z);
    algebraic sf!*eval('polygamma!*calc,{n,z});
@@ -377,66 +375,196 @@ algebraic procedure do!*zeta!*pos!*intcalc(z);
 %     Does not work for complex arguments.
 %
 
-remflag('(psi!*ld!*0 psi!*ld!*1),'reserved);
+%%remflag('(psi!*ld!*0 psi!*ld!*1),'reserved);
+%%
+%%psi!*ld!*0 := -1;   % precision at which last psi was calc'd
+%%psi!*ld!*1 :=  0;   % lowest post-scale value acceptable at
+%%                                % that precision
+%%
+%%
+%%algebraic procedure psi!*calc(z);
+%%   begin scalar result, admissable, bern300, alglist!*, precom;
+%%      integer prepre, scale, lowest;
+%%      precom := complex!*off!*switch();
+%%      prepre := precision 0;
+%%      if prepre < !!nfpd then precision (!!nfpd + 1);
+%%      % The following is  8*rd!-tolerance!*
+%%      admissable := (1 / (10 ** prepre)) / 2;
+%%      if prepre = psi!*ld!*0 then lowest := psi!*ld!*1
+%%      else
+%%               << bern300 := abs bernoulli!*calc 300;
+%%                  lowest := 1 +
+%%                     symbolic conv!:bf2i exp!:
+%%                               (divbf(log!:(divbf(sq2bf!* bern300,
+%%                                          timbf(i2bf!: 150,
+%%                                             sq2bf!* admissable)), 4),
+%%                     i2bf!: 300), 3);  % Use symbolic mode so as to
+%%                                    % force less accuracy for more speed
+%%                  psi!*ld!*0 := prepre;
+%%                  psi!*ld!*1 := lowest >> ;
+%%      if lowest>repart z then scale := ceiling(lowest - repart z) + 20;
+%%      z := z + scale;
+%%      result := algebraic symbolic psi!*calc!*sub(z, scale, admissable);
+%%
+%%      precision prepre;
+%%      complex!*restore!*switch(precom);
+%%      return result;
+%%   end;
+%%
 
-psi!*ld!*0 := -1;   % precision at which last psi was calc'd
-psi!*ld!*1 :=  0;   % lowest post-scale value acceptable at
-                                % that precision
+%%symbolic procedure psi!*calc!*sub(z, scale, admissable);
+%%   begin scalar result, zsq, zsqp, this, bk;
+%%      integer k, orda, rp; k := 2;
+%%      z := sq2bf!* z;
+%%      admissable := sq2bf!* admissable;
+%%      zsq := timbf(z,z); zsqp := zsq;
+%%      this := plubf(admissable, bfone!*);
+%%      result := difbf (log!* z, divbf(bfone!*, timbf(bftwo!*, z)));
+%%      orda := order!: admissable - 5; rp := !:bprec!:;
+%%      while greaterp!: (abs!: this, admissable) do
+%%               << bk := sq2bf!* symbolic algebraic bernoulli!*calc k;
+%%                  this := divide!:(bk, timbf(i2bf!: k, zsqp), rp);
+%%                  result := difbf(result, this);
+%%                  k := k + 2; rp := order!: this - orda;
+%%                  zsqp := timbf(zsqp, zsq) >>;
+%%      for n := 1:scale do
+%%               result := difbf(result, divbf(bfone!*, difbf(z, i2bf!: n)));
+%%      return mk!*sq !*f2q mkround result;
+%%   end;
+%%
+%%flag('(psi!*ld!*0 psi!*ld!*1),'reserved);
 
+%
+% numeric computation of digamma function: force bigfloat arithmetic 
+%
+symbolic procedure rdpsi!* u;
+   %
+   % handle special cases psi(1) => -euler_gamma
+   %     and psi(1/2) => -euler_gamma - 2*log(2)
+   %  rd_euler!* will call rdpsi!:(1) if necessary and save the computed value for later use
+   if rd!:onep u then rd!:minus rd_euler!*()
+    else if rd!:onep rd!:times(bftwo!*,u)
+     then rd!:minus rd!:plus(rd_euler!*(),rd!:times(bftwo!*,rdlog!* rdtwo!*()))
+    else (rdpsi!:(convprec u,!:bprec!:) where !*!*roundbf := t);
 
-algebraic procedure psi!*calc(z);
-   begin scalar result, admissable, bern300, alglist!*, precom;
-      integer prepre, scale, lowest;
-      precom := complex!*off!*switch();
-      prepre := precision 0;
-      if prepre < !!nfpd then precision (!!nfpd + 1);
-      % The following is  8*rd!-tolerance!*
-      admissable := (1 / (10 ** prepre)) / 2;
-      if prepre = psi!*ld!*0 then lowest := psi!*ld!*1
-      else
-               << bern300 := abs bernoulli!*calc 300;
-                  lowest := 1 +
-                     symbolic conv!:bf2i exp!:
-                               (divbf(log!:(divbf(sq2bf!* bern300,
-                                          timbf(i2bf!: 150,
-                                             sq2bf!* admissable)), 4),
-                     i2bf!: 300), 3);  % Use symbolic mode so as to
-                                    % force less accuracy for more speed
-                  psi!*ld!*0 := prepre;
-                  psi!*ld!*1 := lowest >> ;
-      if lowest>repart z then scale := ceiling(lowest - repart z) + 20;
-      z := z + scale;
-      result := algebraic symbolic psi!*calc!*sub(z, scale, admissable);
+symbolic procedure rdpsi!:compute!-lowerbound eps;
+   begin scalar bern300,i300;
+      % Approximation to abs(bernoulli(300))/300
+      bern300 := '(!:rd!: 213317478489793 . 1191);
+      % the number 1/300
+      i300 := '(!:rd!: 480383960252853 . -57);
+      % compute k so that abs(bernoulli(300)/(300*z^300)) < rd!-tolerance!*
+      return exp!:(timbf(log!:(divide!:(bern300,eps,4),4),i300),3);
+   end;
+   
 
-      precision prepre;
-      complex!*restore!*switch(precom);
+symbolic procedure rdpsi!:(z,k);
+   if bfzerop!: z or minusp!: z and integerp!: z then bflerrmsg 'rdpsi!:
+    else begin scalar result, admissable, lb, refl, pival;
+      integer scale, k7;
+      k7 := k+7;
+      % For negative z, use the reflection formula
+      % psi(z) = psi(1-z) - pi/tan(pi*z)
+      % unless z is a negative integer
+      if minusp!: z
+	then  << pival := !:pi k7;
+	         refl := divide!:(pival,tan!:(times!:(pival,z),k7),k7);
+	         z := difference!:(bfone!*,z); >>;
+      % The following is  rd!-tolerance!*
+      admissable := make!:ibf(1, 6-k);
+      lb :=  rdpsi!:compute!-lowerbound admissable;
+      if greaterp!:(lb,z) then scale := 1 + conv!:bf2i difference!:(lb,z);
+      if scale > 0 then <<
+	 % make 20 extra scale steps to be on the safe side
+	 scale := scale + 20;
+ 	 z := plus!:(z,i2bf!: scale) >>;
+      result := plus!:(difference!: (log!:(z,k7), divide!:(bfone!*, times!:(bftwo!*, z), k7)),
+	       	       rdpsi!:1(divide!:(bfone!*,times!:(z,z),k7),k,admissable));
+      for n := 1:scale do
+	 result := difference!:(result, divide!:(bfone!*, difference!:(z, i2bf!: n), k7));
+      if refl then result := difference!:(result,refl);
+      return round!:mt(result,k);
+   end;
+
+% 
+% Use asymptotic expansion http://dlmf.nist.gov/5.11.E2
+%
+
+symbolic procedure rdpsi!:1(zsq,kp,admissable);
+   begin scalar result, zsqp, this, bk;
+      integer k, k7; k := 2; k7:=kp+7;
+      zsqp := zsq;
+      result := bfz!*;
+      repeat <<
+	 bk := sq2bf!* bernoulli!*calc k where !*!*roundbf:=!*!*roundbf;
+	 this := divide!:(times!:(bk,zsqp),i2bf!: k, k7);
+	 result := difference!:(result, this);
+	 k := k + 2;
+	 zsqp := cut!:mt(times!:(zsqp, zsq),k7)
+      >> until lessp!:(abs!: this,admissable);
       return result;
    end;
 
-flag('(psi!*ld!*0 psi!*ld!*1),'reserved);
+symbolic procedure crpsi!* u;
+   % shortcut for real argument
+   if rd!:zerop tagim u then !*rd2cr rdpsi!* u
+   % For negative repart(z), use the reflection formula
+   % psi(z) = psi(1-z) - pi/tan(pi*z)
+   % unless z is a negative integer
+    else if minusp!: tagrl u
+     then cr!:difference(
+	   (gfpsi!:(crprcd cr!:difference(!*rd2cr bfone!*,u),!:bprec!:) where !*!*roundbf := t),
+	   (cr!:quotient(crpi,crtan!*(cr!:times(crpi,u))) where crpi:=!*rd2br pi!*()))
+    else  (gfpsi!:(crprcd u,!:bprec!:) where !*!*roundbf := t);
 
-symbolic procedure psi!*calc!*sub(z, scale, admissable);
-   begin scalar result, zsq, zsqp, this, bk;
-      integer k, orda, rp; k := 2;
-      z := sq2bf!* z;
-      admissable := sq2bf!* admissable;
-      zsq := timbf(z,z); zsqp := zsq;
-      this := plubf(admissable, bfone!*);
-      result := difbf (log!* z, divbf(bfone!*, timbf(bftwo!*, z)));
-      orda := order!: admissable - 5; rp := !:bprec!:;
-      while greaterp!: (abs!: this, admissable) do
-               << bk := sq2bf!* symbolic algebraic bernoulli!*calc k;
-                  this := divide!:(bk, timbf(i2bf!: k, zsqp), rp);
-                  result := difbf(result, this);
-                  k := k + 2; rp := order!: this - orda;
-                  zsqp := timbf(zsqp, zsq) >>;
+symbolic procedure gfpsi!:(z,k);
+   begin scalar result, admissable, gfnorm, gflog, lb;
+      integer scale, k7;
+      k7 := k+7;
+      gfnorm := rdhypot!*(gfrl z,gfim z);
+      % The following is  rd!-tolerance!*
+      admissable := make!:ibf(1, 6-k);
+      lb :=  rdpsi!:compute!-lowerbound admissable;
+      % this is the lower bound l for the norm of z = x +i*y where (x > 0)
+      % ie. we need to compute the shift for n for x via (x+n)^2 + y^2 > l^2
+      % obviously, scaling is necessary only if |x| < l and |y| < l,
+      % otherwise shift s > sqrt(l^2-y^2) - x 
+      if lessp!:(gfrl z, lb) and lessp!:(abs!: gfim z, lb) then
+	 scale := conv!:bf2i difference!:(bfsqrt difference!:(times!:(lb,lb),times!:(gfim z,gfim z)),gfrl z);
+      if scale > 0 then <<
+	 % make 20 extra scale steps to be on the safe side
+	 scale := scale + 20;
+ 	 z := gfplus(z,mkgf(i2bf!: scale,bfz!*)) >>;
+      gflog := mkgf(log!:(gfnorm,k7),rdatan2!*(gfim z,gfrl z));
+      result := gfplus(gfdiffer (gflog, gfquotient(rl2gfc bfone!*, gftimes(rl2gfc bftwo!*, z))),
+	       	       gfpsi!:1(gfquotient(rl2gfc bfone!*,gftimes(z,z)),k,admissable));
       for n := 1:scale do
-               result := difbf(result, divbf(bfone!*, difbf(z, i2bf!: n)));
-      return mk!*sq !*f2q mkround result;
+	 result := gfdiffer(result, gfquotient(rl2gfc bfone!*, gfdiffer(z, mkgf(i2bf!: n,bfz!*))));
+      return gf2cr!: result;
+   end;
+
+% 
+% Use asymptotic expansion http://dlmf.nist.gov/5.11.E2
+%
+
+symbolic procedure gfpsi!:1(zsq,kp,admissable);
+   begin scalar result, zsqp, this, bk;
+      integer k, k7; k := 2; k7:=kp+7;
+      zsqp := zsq;
+      result := rl2gfc bfz!*;
+      repeat <<
+	 bk := rl2gfc bfloat sq2bf!* bernoulli!*calc k where !*!*roundbf:=!*!*roundbf;
+	 this := gfquotient(gftimes(bk,zsqp), rl2gfc i2bf!: k);
+	 result := gfdiffer(result, this);
+	 k := k + 2;
+	 zsqp := gftimes(zsqp, zsq)
+      >> until lessp!:(rdhypot!*(gfrl this,gfim this),admissable);
+      return result;
    end;
 
 
-
+put('psi,'!:rd!:,'rdpsi!*);
+put('psi,'!:cr!:,'crpsi!*);
 
 %
 % algebraic procedure polygamma!*aux(n,z);
@@ -451,16 +579,47 @@ symbolic procedure psi!*calc!*sub(z, scale, admissable);
 %     and substitutes z for x into it, returning the result.
 %
 
-algebraic procedure polygamma!*aux(n,z);
-   begin scalar poly;
-      clear dummy!*arg;
-      poly := cot(pi * dummy!*arg);
-      for k := 1:n do poly := df(poly, dummy!*arg);
-      dummy!*arg := z;
-      return poly;
+%%algebraic procedure polygamma!*aux(n,z);
+%%   begin scalar poly;
+%%      clear dummy!*arg;
+%%      poly := cot(pi * dummy!*arg);
+%%      for k := 1:n do poly := df(poly, dummy!*arg);
+%%      dummy!*arg := z;
+%%      return poly;
+%%   end;
+
+%
+% The nth derivative of cot(pi*z) at point z=z0 is 
+%
+%   pi**n * df(cot(x),x) at x=pi*z0
+%
+% 
+
+
+remflag('(dummy!*arg),'reserved);
+
+symbolic procedure polygamma!*aux(n,z0);
+   begin scalar poly,x,y,pival;
+      z0 := sq2bf!* z0;
+      poly := simp '(cot dummy!*arg);
+      if not kernp poly then rerror('specfn,0, {"Internal error in polygamma:",n,z0,prepsq y});
+      y := mvar numr poly;
+      for k := 1:n do poly := diffsq(poly, 'dummy!*arg);
+      %
+      % compute x=pi*z0
+      %
+      pival := rdpi!*();
+      x := rdcot!*(rd!:times(pival,z0));
+      %
+      % now replace cot(dummy!*arg) by x=cot(pi*z0) and multiply by pi**n
+      %
+      x := subsq(poly,{y . x});
+      if denr x=1 and domainp numr x
+        then return rd!:times(numr x,texpt!:(pival,n))
+       else rerror('specfn,0, {"Internal error in polygamma:",n,z0,prepsq x});
    end;
 
-
+flag('(dummy!*arg),'reserved);
 
 %
 % algebraic procedure polygamma!*calc(n,z);
@@ -484,8 +643,9 @@ algebraic procedure polygamma!*calc(n,z);
                   result := algebraic symbolic polygamma!*calc!*s(n,z0) >>
       else
                << z0 := 1-z;
-                  result := ((-1)**n)*(pi*polygamma!*aux(n,z0) +
-                     algebraic symbolic polygamma!*calc!*s(n,z0)) >>;
+                  result := pi*algebraic symbolic polygamma!*aux(n,z0) +
+                            algebraic symbolic polygamma!*calc!*s(n,z0);
+ 	          if not evenp n then result := -result >>;
       precision prepre;
       complex!*restore!*switch(precom);
       return result;
@@ -662,7 +822,7 @@ algebraic procedure zeta!*general!*calc(z);
 
 
 symbolic procedure zeta!*general!*calc!*sub(z,zp,admissable,pre,stt);
-   begin scalar result, prere, this, fac, pre, zk1, zk2, logz;
+   begin scalar result, prere, this, fac, pre, zk1, zk2;
                integer k;
 
       z := sq2bf!* z;
