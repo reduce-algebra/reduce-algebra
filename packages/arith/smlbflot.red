@@ -71,6 +71,7 @@ symbolic procedure bfzerop!: u;
 
 symbolic procedure fl2bf x;
   (if zerop x then bfz!* else
+   if not fp!-finite x then rederr "Floating point infinity or NaN" else
    begin scalar s,r; integer d;
      if x<0 then <<x := -x; s := t>>;
      % convert x to an integer equivalent;

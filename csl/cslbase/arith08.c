@@ -363,14 +363,25 @@ Lisp_Object Llcm(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 
 #endif /* COMMON */
 
+/*
+ * This now does special things for NaNs and infinities. For a NaN is just
+ * returns nil. For an infinity a returns an exponent value that is 1000000,
+ * much larger than any proper value.
+ */
+
 static Lisp_Object Ldecode_float(Lisp_Object nil, Lisp_Object a)
 {
-    double d = float_of_number(a), neg = 1.0;
+    double d, neg = 1.0;
     int x;
     Lisp_Object sign;
     if (!is_float(a)) return aerror("decode-float");
+    d = float_of_number(a);
+    if (!(d == d)) return onevalue(nil); /* a NaN */
     if (d < 0.0) d = -d, neg = -1.0;
     if (d == 0.0) x = 0;
+    else if (1.0/d == 0.0)               /* An infinity */
+    {   x = 1000000;                     /* Extreme (arbitrary) value */
+    }
     else
     {   d = frexp(d, &x);
         if (d == 1.0) d = 0.5, x++;
@@ -406,6 +417,13 @@ static Lisp_Object Ldecode_float(Lisp_Object nil, Lisp_Object a)
  * possible orders. If the exponent field in floats was not stored in the
  * position that would be 0x7f800000 in an integer my treatment of short
  * floats would fail, so I have already assumed that that is so. I think.
+ *
+ * These first two are now DEPRECATED in favour of fp-infinite etc defined
+ * just lower down... and I will now assume that all the machines I will ever
+ * use will use IEEE-style floating point. So goodbye some options used on
+ * old Vax and old System/360 and /370. And any system that uses roughly
+ * IEEE representation but does not support infinities and NaNs will cause
+ * pain.
  */
 
 static Lisp_Object Lfloat_denormalized_p(Lisp_Object nil, Lisp_Object a)
@@ -447,11 +465,7 @@ default:
 
 static Lisp_Object Lfloat_infinity_p(Lisp_Object nil, Lisp_Object a)
 {
-/*
- * The issue of NaN values is one I do not want to worry about at present.
- * I deem anything with the largest possibl exponent value to be infinite.
- */
-    int x = 0;
+    int32_t x;
     switch ((int)a & TAG_BITS)
     {
 #ifdef COMMON
@@ -464,26 +478,191 @@ case TAG_BOXFLOAT:
         {
 #ifdef COMMON
     case TYPE_SINGLE_FLOAT:
-            if (single_float_val(a) == 0.0) return onevalue(nil);
-            x = ((Single_Float *)((char *)a-TAG_BOXFLOAT))->f.i & 0x7f800000;
-            return onevalue(x == 0x7f800000 ? lisp_true : nil);
+            if (1.0 / single_float_val(a) != 0.0) return onevalue(nil);
+            return onevalue(lisp_true);
     case TYPE_LONG_FLOAT:
-            if (long_float_val(a) == 0.0) return onevalue(nil);
-            x = ((int32_t *)long_float_addr(a))[
-                    current_fp_rep&FP_WORD_ORDER ? 0 : 1] & 0x7ff00000;
-            return onevalue(x == 0x7ff00000 ? lisp_true : nil);
+            if (1.0 / long_float_val(a) != 0.0) return onevalue(nil);
+            return onevalue(lisp_true);
 #endif
     case TYPE_DOUBLE_FLOAT:
-            if (double_float_val(a) == 0.0) return onevalue(nil);
-            x = ((int32_t *)double_float_addr(a))[
-                    current_fp_rep&FP_WORD_ORDER ? 0 : 1] & 0x7ff00000;
-            return onevalue(x == 0x7ff00000 ? lisp_true : nil);
+            if (1.0 / double_float_val(a) != 0.0) return onevalue(nil);
+            return onevalue(lisp_true);
         }
 default:
         break;
     }
     return onevalue(nil);
 }
+
+
+/*
+ * Now the newer IEEE-support functions...
+ */
+
+
+/*
+ * If I have a number d then if (1.0/d)==0.0 I think that d must have been
+ * infinite and not a NaN. One needs to be confident that for a HUGE (but
+ * finite) d that the reciprocal will not underflow - but IEEE subnormal
+ * numbers extend the range to make that OK.
+ */
+
+static Lisp_Object Lfp_infinite(Lisp_Object nil, Lisp_Object a)
+{
+    int32_t x;
+    switch ((int)a & TAG_BITS)
+    {
+#ifdef COMMON
+case TAG_SFLOAT:
+        x = (int32_t)a & 0x7f800000;
+        return onevalue(x == 0x7f800000 ? lisp_true : nil);
+#endif
+case TAG_BOXFLOAT:
+        switch (type_of_header(flthdr(a)))
+        {
+#ifdef COMMON
+    case TYPE_SINGLE_FLOAT:
+            if (1.0 / single_float_val(a) != 0.0) return onevalue(nil);
+            return onevalue(lisp_true);
+    case TYPE_LONG_FLOAT:
+            if (1.0 / long_float_val(a) != 0.0) return onevalue(nil);
+            return onevalue(lisp_true);
+#endif
+    case TYPE_DOUBLE_FLOAT:
+            if (1.0 / double_float_val(a) != 0.0) return onevalue(nil);
+            return onevalue(lisp_true);
+        }
+default:
+        break;
+    }
+    return onevalue(nil);
+}
+
+/*
+ * A NaN is not equal to even itself....
+ */
+
+static Lisp_Object Lfp_nan(Lisp_Object nil, Lisp_Object a)
+{
+    int32_t x;
+    switch ((int)a & TAG_BITS)
+    {
+#ifdef COMMON
+case TAG_SFLOAT:
+        a &= 0x7fffffff;
+        if (a == 0x7f800000) return onevalue(nil);
+        x = (int32_t)a & 0x7f800000;
+        return onevalue(x == 0x7f800000 ? lisp_true : nil);
+#endif
+case TAG_BOXFLOAT:
+        switch (type_of_header(flthdr(a)))
+        {
+#ifdef COMMON
+    case TYPE_SINGLE_FLOAT:
+            if (single_float_val(a) == single_float_val(a))
+                return onevalue(nil);
+            return onevalue(lisp_true);
+    case TYPE_LONG_FLOAT:
+            if (long_float_val(a) == long_float_val(a))
+                return onevalue(nil);
+            return onevalue(lisp_true);
+#endif
+    case TYPE_DOUBLE_FLOAT:
+            if (double_float_val(a) == double_float_val(a))
+                return onevalue(nil);
+            return onevalue(lisp_true);
+        }
+default:
+        break;
+    }
+    return onevalue(nil);
+}
+
+/*
+ * infinity/infinity => NaN
+ * NaN/NaN => NaN
+ * otherwise x/x => 1.0
+ */
+
+static Lisp_Object Lfp_finite(Lisp_Object nil, Lisp_Object a)
+{
+    int32_t x;
+    switch ((int)a & TAG_BITS)
+    {
+#ifdef COMMON
+case TAG_SFLOAT:
+        x = (int32_t)a & 0x7f800000;
+        return onevalue(x != 0x7f800000 ? lisp_true : nil);
+#endif
+case TAG_BOXFLOAT:
+        switch (type_of_header(flthdr(a)))
+        {
+#ifdef COMMON
+    case TYPE_SINGLE_FLOAT:
+            if (single_float_val(a)/single_float_val(a) == 1.0)
+                return onevalue(lisp_true);
+            return onevalue(nil);
+    case TYPE_LONG_FLOAT:
+            if (long_float_val(a)/long_float_val(a) == 1.0)
+                return onevalue(lisp_true);
+            return onevalue(nil);
+#endif
+    case TYPE_DOUBLE_FLOAT:
+            if (double_float_val(a)/double_float_val(a) == 1.0)
+                return onevalue(lisp_true);
+            return onevalue(nil);
+        }
+default:
+        break;
+    }
+    return onevalue(nil);
+}
+
+/*
+ * I detect sub-normalised numbers by looking at the bit pattern that
+ * represents them. I could instead just have carefully specified
+ * constants the give the threshold below which values fall into this
+ * state.
+ */
+
+static Lisp_Object Lfp_subnorm(Lisp_Object nil, Lisp_Object a)
+{
+    int32_t x = 0;
+    switch ((int)a & TAG_BITS)
+    {
+#ifdef COMMON
+case TAG_SFLOAT:
+        if ((a & 0x7fffffff) == TAG_SFLOAT) return onevalue(nil);  /* 0.0 */
+        x = (int32_t)a & 0x7f800000;
+        return onevalue(x == 0 ? lisp_true : nil);
+#endif
+case TAG_BOXFLOAT:
+        switch (type_of_header(flthdr(a)))
+        {
+#ifdef COMMON
+    case TYPE_SINGLE_FLOAT:
+            if (single_float_val(a) == 0.0) return onevalue(nil);
+            x = ((Single_Float *)((char *)a-TAG_BOXFLOAT))->f.i & 0x7f800000;
+            return onevalue(x == 0 ? lisp_true : nil);
+    case TYPE_LONG_FLOAT:
+            if (long_float_val(a) == 0.0) return onevalue(nil);
+            x = ((int32_t *)long_float_addr(a))[
+                    current_fp_rep&FP_WORD_ORDER ? 0 : 1] & 0x7ff00000;
+            return onevalue(x == 0 ? lisp_true : nil);
+#endif
+    case TYPE_DOUBLE_FLOAT:
+            if (double_float_val(a) == 0.0) return onevalue(nil);
+            x = ((int32_t *)double_float_addr(a))[
+                    current_fp_rep&FP_WORD_ORDER ? 0 : 1] & 0x7ff00000;
+            return onevalue(x == 0 ? lisp_true : nil);
+        }
+default:
+        break;
+    }
+    return onevalue(nil);
+}
+
+
 
 /*
  * The functions such as float-digits, float-precision, float-radix are
@@ -595,9 +774,13 @@ static Lisp_Object Lftruncate(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     return aerror("ftruncate");
 }
 
+/*
+ * This may need to worry about NaNs and infinities.
+ */
+
 static Lisp_Object Linteger_decode_float(Lisp_Object nil, Lisp_Object a)
 {
-    double d = float_of_number(a);
+    double d;
 #ifdef COMMON
     int tag = (int)a & TAG_BITS;
 #endif
@@ -605,6 +788,8 @@ static Lisp_Object Linteger_decode_float(Lisp_Object nil, Lisp_Object a)
     int32_t a1, a2;
     CSL_IGNORE(nil);
     if (!is_float(a)) return aerror("integer-decode-float");
+    d = float_of_number(a);
+    if (!(d == d)) return onevalue(nil);
     if (d == 0.0)
 #ifdef COMMON
     {   mv_2 = fixnum_of_int(0);
@@ -616,31 +801,37 @@ static Lisp_Object Linteger_decode_float(Lisp_Object nil, Lisp_Object a)
                      fixnum_of_int(d<0 ? -1 : 1));
 #endif
     if (d < 0.0) d = -d, neg = 1;
-    d = frexp(d, &x);
-    if (d == 1.0) d = 0.5, x++;
-#ifdef COMMON
-    if (tag == TAG_SFLOAT)
-    {   d *= TWO_20;
-        x -= 20;
-        a1 = (int32_t)d;
-        a = fixnum_of_int(a1);
-    }
-    else if (tag == TAG_BOXFLOAT &&
-             type_of_header(flthdr(a)) == TYPE_SINGLE_FLOAT)
-    {   d *= TWO_24;
-        x -= 24;
-        a1 = (int32_t)d;
-        a = fixnum_of_int(a1);
+    if (1.0/d == 0.0)
+    {   a = fixnum_of_int(1);
+        x = 1000000;
     }
     else
+    {   d = frexp(d, &x);
+        if (d == 1.0) d = 0.5, x++;
+#ifdef COMMON
+        if (tag == TAG_SFLOAT)
+        {   d *= TWO_20;
+            x -= 20;
+            a1 = (int32_t)d;
+            a = fixnum_of_int(a1);
+        }
+        else if (tag == TAG_BOXFLOAT &&
+                 type_of_header(flthdr(a)) == TYPE_SINGLE_FLOAT)
+        {   d *= TWO_24;
+            x -= 24;
+            a1 = (int32_t)d;
+            a = fixnum_of_int(a1);
+        }
+        else
 #endif
-    {   d *= TWO_22;
-        a1 = (int32_t)d;
-        d -= (double)a1;
-        a2 = (int32_t)(d*TWO_31);  /* This conversion should be exact */
-        x -= 53;
-        a = make_two_word_bignum(a1, a2);
-        errexit();
+        {   d *= TWO_22;
+            a1 = (int32_t)d;
+            d -= (double)a1;
+            a2 = (int32_t)(d*TWO_31);  /* This conversion should be exact */
+            x -= 53;
+            a = make_two_word_bignum(a1, a2);
+            errexit();
+        }
     }
 #ifdef COMMON
     {   mv_2 = fixnum_of_int(x);
@@ -648,8 +839,8 @@ static Lisp_Object Linteger_decode_float(Lisp_Object nil, Lisp_Object a)
         return nvalues(a, 3);
     }
 #else
-        return list3(a, fixnum_of_int(x),
-                     neg ? fixnum_of_int(-1) : fixnum_of_int(1));
+    return list3(a, fixnum_of_int(x),
+                 neg ? fixnum_of_int(-1) : fixnum_of_int(1));
 #endif
 }
 
@@ -721,6 +912,8 @@ static Lisp_Object lisp_fix_sub(Lisp_Object a, int roundmode)
     int x, x1;
     CSLbool negative;
     double d = float_of_number(a);
+    if (!(d == d)) return aerror("NaN in fix");
+    if (1.0/d == 0.0) return aerror("infinity in fix");
     if (M2_31_1 < d && d < TWO_31)
     {   int32_t a = (int32_t)d;
 /*
@@ -1402,6 +1595,16 @@ setup_type const arith08_setup[] =
     {"decode-float",            Ldecode_float, too_many_1, wrong_no_1},
     {"float-denormalized-p",    Lfloat_denormalized_p, too_many_1, wrong_no_1},
     {"float-infinity-p",        Lfloat_infinity_p, too_many_1, wrong_no_1},
+/*
+ * The next are four functions that are new as of March 2015 - introduced
+ * as a start towards support for the special IEEE values. They replace the
+ * two above, which I hereby deprecate (and I expect that nobody has ever
+ * used anyway).
+ */
+    {"fp-infinite",             Lfp_infinite, too_many_1, wrong_no_1},
+    {"fp-nan",                  Lfp_nan, too_many_1, wrong_no_1},
+    {"fp-finite",               Lfp_finite, too_many_1, wrong_no_1},
+    {"fp-subnorm",              Lfp_subnorm, too_many_1, wrong_no_1},
     {"integer-decode-float",    Linteger_decode_float, too_many_1, wrong_no_1},
     {"integer-length",          Linteger_length, too_many_1, wrong_no_1},
     {"float-digits",            Lfloat_digits, too_many_1, wrong_no_1},

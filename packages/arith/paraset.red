@@ -32,6 +32,12 @@ module paraset;   % Parameter determining module.
 % for floating point numbers.  !!nfpd, !!nbfpd, and !!maxbflexp are
 % computed at load, but !!maxbflexp may have to be fixed up at run time
 % if !!flexperr is true.
+% [March 2015] also compute !!minnorm the smallest normalised floating
+% point number. This will mostly be relevant for IEEE arithmetic and will
+% end up as just the smallest non-zero number if subnorms are not in use.
+% Provide (more or less) portable definitions of tests for infinity, NaN and
+% subnorms... with the one for infinity being cheaper than the use of
+% explode.
 
 imports errorp, errorset!*, neq, roundconstants;
 
@@ -47,7 +53,7 @@ symbolic procedure find!!nfpd;
       repeat <<x := 10.0*x+y; i := i+1>> until (z := x+1.0)=x;
 % The following line and the corresponding one in find!!nbfpd can call
 % FIX on a a value that is around 10^16 (if floats are IEEE 64-bit values) and
-% that mighht lead to unreliable conseqences. If arithmetic is IEEE (as maybe
+% that might lead to unreliable conseqences. If arithmetic is IEEE (as maybe
 % it mostly will be these days) then the test would fail anyway, so
 % in that case commenting it out can not have adverse effects!
 %     if 10.0*fix(z/10) - 1.0 neq x then i := i - 1;
@@ -72,6 +78,27 @@ symbolic procedure find!!maxbflexp;
       !!flexperr := not errorp z and not car z;
       return !!maxbflexp := n end;
 
+symbolic procedure find!!minnorm();
+   begin scalar a, b, c;
+     a := 1.0;
+     b := 0.0;
+     repeat <<
+       c := b;
+       b := a;
+       a := 2.0*a + 1.0 >> until a/2.0 = b;
+% Now c should be a numbers whose mantissa has all possible bits set.
+     repeat <<
+       b := c;
+       c := c/2.0 >> until 2.0*c neq b;
+% If my computer does not provide denormalised numbers this loop
+% will end on an underflow with c zero.
+     if c = 0.0 then !!minnorm := b
+     else !!minnorm := c;
+   end;
+
+% I believe I might now retire this in favour of fp!-infinite but BEWARE
+% that this code will also reply "true" on NaNs as well as infinities.
+
 symbolic procedure infinityp u;
    % Check for a representation of an IEEE floating point infinity.
    not(x eq '!- or digit x) where x=car explode u;
@@ -87,7 +114,7 @@ symbolic procedure !!mfefix;
     if not !!plumax then roundconstants()>>;
 
 find!!nfpd(); find!!nbfpd();
-find!!maxbflexp();
+find!!maxbflexp(); find!!minnorm();
 
 !!epsqrt := 10.0**((-1 - !!nfpd)/2);
 
@@ -97,6 +124,25 @@ find!!maxbflexp();
 
 !!floatbits := (10*(!!nfpd + 1))/3;  % Smallest power of 2 that does
                % not fit in mantissa.  Note that 10/3 > log(10)/log(2).
+
+
+% The following should only ever be used on floating point values. Note
+% that it may be important to use EQN not EQUAL here in case EQUAL treats
+% things that are EQ as being equal, while NaN must not be treated as
+% equal even to itself.
+
+symbolic inline procedure fp!-infinite x;
+  eqn(1.0/x, 0.0);
+
+symbolic inline procedure fp!-nan x;
+  not eqn(x, x);
+
+symbolic inline procedure fp!-finite x;
+  eqn(x/x, 1.0);
+
+symbolic inline procedure fp!-subnorm x;
+  abs x < !!minnorm;
+
 
 endmodule;
 

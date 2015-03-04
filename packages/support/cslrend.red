@@ -460,6 +460,10 @@ flag('(iplus itimes iplus2 itimes2 iadd1 isub1 iminus iminusp
        idifference iquotient iremainder ilessp igreaterp ileq igeq
        izerop ionep iequal apply1 apply2 apply3), 'lose);
 
+#if (null (memq 'jlisp lispsystem!*))
+flag('(fp!-infinite fp!-nan fp!-finite fp!-subnorm), 'lose);
+#endif
+
 Comment There are also a number of system constants required for each
 implementation. In systems that don't support inums, the equivalent
 single precision integers should be used;

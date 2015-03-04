@@ -345,10 +345,19 @@ symbolic procedure rd!:plus(u,v);
    begin scalar x,y;
       x := convprc2(u,v); y := yy!!;
       u := if not atom x then plubf(x,y) else
+#if (member 'csl lispsystem!*)
+% Pretty-well ever since IEEE arithmetic has been in use CSL has probably
+% just overflowed to give an IEEE infinity, and has not raised an exception.
+         <<z := x + y;
+           if fp!-infinite z
+             then <<rndbfon(); plubf(x := bfloat x,y := bfloat y)>>
+             else z>>;
+#else
          <<z := errorset!*(list('plus2,mkquote x,mkquote y),nil);
            if errorp z
              then <<rndbfon(); plubf(x := bfloat x,y := bfloat y)>>
              else car z>>;
+#endif
       return mkround rdzchk(u,x,y) end) where z=nil;
 
 symbolic procedure rd!:difference(u,v);
@@ -357,10 +366,17 @@ symbolic procedure rd!:difference(u,v);
    begin scalar x,y;
       x := convprc2(u,v); y := yy!!;
       u := if not atom x then difbf(x,y) else
+#if (member 'csl lispsystem!*)
+         <<z := x - y;
+           if fp!-infinite z
+             then <<rndbfon(); difbf(x := bfloat x,y := bfloat y)>>
+             else z>>;
+#else
          <<z := errorset!*(list('difference,mkquote x,mkquote y),nil);
            if errorp z
              then <<rndbfon(); difbf(x := bfloat x,y := bfloat y)>>
              else car z>>;
+#endif
       return mkround rdzchk(u,x,if atom y then -y else minus!: y) end)
    where z=nil;
 
@@ -370,9 +386,15 @@ symbolic procedure rd!:times(u,v);
    begin scalar x,y;
       x := convprc2(u,v); y := yy!!;
       return mkround if not atom x then timbf(x,y) else
+#if (member 'csl lispsystem!*)
+         <<z := x*y;
+           if fp!-infinite z then <<rndbfon(); timbf(bfloat x,bfloat y)>>
+              else z>> end) where z=nil;
+#else
          <<z := errorset!*(list('times2,mkquote x,mkquote y),nil);
            if errorp z then <<rndbfon(); timbf(bfloat x,bfloat y)>>
               else car z>> end) where z=nil;
+#endif
 
 symbolic procedure rd!:quotient(u,v);
   if !:zerop v then rerror(arith,7,"division by zero") else
@@ -384,9 +406,20 @@ symbolic procedure rd!:quotient(u,v);
       return mkround if not atom x then
          if mt!: y=0 then rdqoterr() else divbf(x,y)
          else
+#if (member 'csl lispsystem!*)
+           <<z := x/y;
+% Here  use the test "not fp!-finite" which would notice a NaN as well
+% as infinities. That is because 0.0/0.0 might generate a NaN (although
+% at present it raises an exception whhich would then not be caught here).
+% This is a bit hypothetical because the case of dividion by 0.0 is trapped
+% a few libes above here!
+             if not fp!-finite z then <<rndbfon(); divbf(bfloat x,bfloat y)>>
+                else z>> end) where z=nil;
+#else
            <<z := errorset!*(list('quotient,mkquote x,mkquote y),nil);
              if errorp z then <<rndbfon(); divbf(bfloat x,bfloat y)>>
                 else car z>> end) where z=nil;
+#endif
 
 symbolic procedure rdqoterr; error(0,"zero divisor in quotient");
 

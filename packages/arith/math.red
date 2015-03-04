@@ -509,7 +509,9 @@ symbolic procedure fsplit x;
    % expect (i.e., REQUIRE) that products of pairs of such numbers get
    % formed without any rounding at all.  This should be so even on
    % IEEE single precision arithmetic (25 bits of mantissa).  For IBM
-   % mainframe single precision even more effort would be needed.
+   % mainframe single precision even more effort would be needed, but I
+   % think I am now moving to a stance that only IEEE floats will ever be
+   % used.
    begin scalar xx, n;
       if x = 0.0 then return (0.0 . 0.0);
       xx := x; n := 1.0;
