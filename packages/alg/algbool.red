@@ -86,7 +86,8 @@ flag('(!:rd!: !:cr!: !:rn!: !:crn!: !:mod!: !:gi!:),'numbertag);
 
 symbolic procedure ratnump x;
    % Returns T iff any prefix expression x is a rational number.
-   atom numr(x := simp!* x) and atom denr x;
+   (atom numr(x := simp!* x) or car numr x eq '!:rn!:) and atom denr x;
+
 
 flag ('(ratnump), 'boolean);
 
