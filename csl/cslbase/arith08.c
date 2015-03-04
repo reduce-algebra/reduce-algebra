@@ -504,7 +504,8 @@ default:
  * If I have a number d then if (1.0/d)==0.0 I think that d must have been
  * infinite and not a NaN. One needs to be confident that for a HUGE (but
  * finite) d that the reciprocal will not underflow - but IEEE subnormal
- * numbers extend the range to make that OK.
+ * numbers extend the range to make that OK. Note that if d==0.0 then 1.0/d
+ * will come out as an infinity (not raising an exception) so all will be OK!
  */
 
 static Lisp_Object Lfp_infinite(Lisp_Object nil, Lisp_Object a)
@@ -568,6 +569,9 @@ case TAG_BOXFLOAT:
             return onevalue(lisp_true);
 #endif
     case TYPE_DOUBLE_FLOAT:
+/* a NaN should not be equal even to itself, but beware any compiler that
+ * tries to be clever here and things otherwise!
+ */
             if (double_float_val(a) == double_float_val(a))
                 return onevalue(nil);
             return onevalue(lisp_true);
@@ -599,17 +603,27 @@ case TAG_BOXFLOAT:
         {
 #ifdef COMMON
     case TYPE_SINGLE_FLOAT:
-            if (single_float_val(a)/single_float_val(a) == 1.0)
-                return onevalue(lisp_true);
+            {   float f = single_float_val(a);
+                if (f-f == 0.0)
+                    return onevalue(lisp_true);
+            }
             return onevalue(nil);
     case TYPE_LONG_FLOAT:
-            if (long_float_val(a)/long_float_val(a) == 1.0)
-                return onevalue(lisp_true);
+            {   double f = long_float_val(a);
+                if (f-f == 0.0)
+                    return onevalue(lisp_true);
+            }
             return onevalue(nil);
 #endif
+/*
+ * If something is infinite oa a NaN then subtracting it from itself yields
+ * a NaN. For any finite value the subtraction should give zero.
+ */
     case TYPE_DOUBLE_FLOAT:
-            if (double_float_val(a)/double_float_val(a) == 1.0)
-                return onevalue(lisp_true);
+            {   double f = double_float_val(a);
+                if (f-f == 0.0)
+                    return onevalue(lisp_true);
+            }
             return onevalue(nil);
         }
 default:

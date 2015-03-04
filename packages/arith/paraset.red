@@ -131,14 +131,24 @@ find!!maxbflexp(); find!!minnorm();
 % things that are EQ as being equal, while NaN must not be treated as
 % equal even to itself.
 
+% I pre-check for zero so that I do not attempt to compute 1.0/0.0. This
+% is because on systems that do not actually have infinities that attempt at
+% division could raise an exception. Well even without that situation I can
+% worry because if x is a sub-normalised number (eg 1.0e-311) its reciprocal
+% could be an IEEE infinity. So my first attempt here was not good enough to
+% be safe for PSL. Hence the fact that I only do the division if the absolute
+% value of x is at least 1.0e300. So almost all non-infinities will be
+% detected by the range check and only the extreme ones fall to the
+% reciprocal test.
+
 symbolic inline procedure fp!-infinite x;
-  eqn(1.0/x, 0.0);
+  (x > 1.0e300 or x < -1.0e300) and eqn(1.0/x, 0.0);
 
 symbolic inline procedure fp!-nan x;
   not eqn(x, x);
 
 symbolic inline procedure fp!-finite x;
-  eqn(x/x, 1.0);
+  eqn(x-x, 0.0);
 
 symbolic inline procedure fp!-subnorm x;
   abs x < !!minnorm;
