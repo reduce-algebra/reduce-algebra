@@ -1,386 +1,292 @@
+PM is a general pattern matcher similar in style to those found in systems such
+as SMP and Mathematica, and is based on the pattern matcher described in Kevin
+McIsaac, ``Pattern Matching Algebraic Identities'', SIGSAM Bulletin, 19 (1985),
+4-13.  The following is a description of its structure.
 
-PM is a general pattern matcher similar in style to those found in systems
-such as SMP and Mathematica, and is based on the pattern matcher described
-in Kevin McIsaac, \char`\"{}Pattern Matching Algebraic Identities\char`\"{},
-SIGSAM Bulletin, 19 (1985), 4-13. \\
-\ \\
-The following is a description of its structure. \\
-\ \\
-A template is any expression composed of literal elements (e.g. \char`\"{}5\char`\"{},
-\char`\"{}a\char`\"{} or \char`\"{}a+1\char`\"{}) and specially denoted pattern 
-variables (e.g. ?a or ??b). Atoms beginning with `?' are called generic variables 
-and match any expression. \\
-\ \\
-Atoms beginning with `??' are called multi-generic variables and match any
-expression or any sequence of expressions including the null or empty
-sequence. A sequence is an expression of the form `{[}a1, a2,...{]}'. When
-placed in a function argument list the brackets are removed, i.e. f({[}a,1{]})
-$->$ f(a,1) and f(a,{[}1,2{]},b) $->$ f(a,1,2,b). \\
-\ \\
-A template is said to match an expression if the template is literally
-equal to the expression or if by replacing any of the generic or
-multi-generic symbols occurring in the template, the template can be made
-to be literally equal to the expression. These replacements are called the
-bindings for the generic variables. A replacement is an expression of the
-form `exp1 $->$ exp2', which means exp1 is replaced by exp2, or `exp1 $-->$
-exp2', which is the same except exp2 is not simplified until after the
-substitution for exp1 is made. If the expression has any of the
-properties; associativity, commutativity, or an identity element, they are
-used to determine if the expressions match. If an attempt to match the
-template to the expression fails the matcher backtracks, unbinding generic
-variables, until it reached a place were it can make a different choice.
-It then proceeds along the new branch. \\
-\ \\
-The current matcher proceeds from left to right in a depth first search of
-the template expression tree. Rearrangements of the expression are
-generated when the match fails and the matcher backtracks. \\
-\ \\
-The matcher also supports semantic matching. Briefly, if a subtemplate
+A \emph{template} is any expression composed of literal elements,
+e.g. \texttt{5}, \texttt{a}, or \texttt{a+1}, and specially-denoted pattern
+variables, e.g. \texttt{?a} or \texttt{??b}.  Atoms beginning with \texttt{?}
+are called \emph{generic variables} and match any expression.
+
+Atoms beginning with \texttt{??} are called \emph{multi-generic variables} and
+match any expression or any sequence of expressions including the null or empty
+sequence.  A sequence is an expression of the form \texttt{[a1,a2,...]}.  When
+placed in a function argument list the brackets are removed,
+i.e. \texttt{f([a,1]) -> f(a,1)} and \texttt{f(a,[1,2],b) -> f(a,1,2,b)}.
+
+A template is said to match an expression if the template is literally equal to
+the expression, or if by replacing any of the generic or multi-generic symbols
+occurring in the template, the template can be made to be literally equal to the
+expression.  These replacements are called the \emph{bindings} for the generic
+variables.  A replacement is an expression of the form \texttt{exp1 -> exp2},
+which means \texttt{exp1} is replaced by \texttt{exp2}, or \texttt{exp1 -->
+exp2}, which is the same except \texttt{exp2} is not simplified until after the
+substitution for \texttt{exp1} is made.  If the expression has any of the
+properties associativity, commutativity, or an identity element, they are used
+to determine if the expressions match.  If an attempt to match the template to
+the expression fails the matcher backtracks, unbinding generic variables, until
+it reaches a place where it can make a different choice.  It then proceeds along
+the new branch.
+
+The current matcher proceeds from left to right in a depth-first search of the
+template expression tree.  Rearrangements of the expression are generated when
+the match fails and the matcher backtracks.
+
+The matcher also supports \emph{semantic} matching.  Briefly, if a subtemplate
 does not match the corresponding subexpression because they have different
-structures then the two are equated and the matcher continues matching the
-rest of the expression until all the generic variables in the subexpression
-are bound. The equality is then checked. This is controlled by the switch
-`semantic'. By default it is on. \\
-
-{\tt M($exp,temp$)} \\
-\ \\
-\begin{tabular}{lp{11cm}}
-\hspace*{0.2cm} & The template, temp, is matched against the expression, exp. If the
-template is literally equal to the expression `T' is returned. If the
-template is literally equal to the expression after replacing the
-generic variables by their bindings then the set of bindings is returned
-as a set of replacements. Otherwise 0 (nil) is returned. \\
-\end{tabular} \\
-\ \\
-\ \\
-{\bf Examples:} \\
-\ \\
-
-
- A \char`\"{}literal\char`\"{} template
-
- m(f(a),f(a));
-
- T
-
-
-
- Not literally equal
-
- m(f(a),f(b));
-
- 0
-
-
-
- Nested operators
-
- m(f(a,h(b)),f(a,h(b)));
-
- T
-
-
-
- a \char`\"{}generic\char`\"{} template
-
- m(f(a,b),f(a,?a));
-
- \{?A$->$B\}
-
-
-
- m(f(a,b),f(?a,?b));
-
- \{?B$->$B,?A$->$A\}
-
-
-
- The Multi-Generic symbol, ??a, takes \char`\"{}rest\char`\"{} of arguments
-
- m(f(a,b),f(??a));
-
- \{??A$->${[}A,B{]}\}
-
-
-
- but the Generic symbol, ?a, does not
-
- m(f(a,b),f(?a));
-
- 0
-
-
-
- Flag h as associative
-
- flag('(h),'assoc);
-
- Associativity is used to \char`\"{}group\char`\"{} terms together
-
- m(h(a,b,d,e),h(?a,d,?b));
-
- \{?B$->$E,?A'$->$H(A,B)\}
-
-
-
- \char`\"{}plus\char`\"{} is a symmetric function
-
- m(a+b+c,c+?a+?b);
-
- \{?B$->$A,?A$->$B\}
-
-
-
- it is also associative
-
- m(a+b+c,b+?a);
-
- \{?A$->$C + A\}
-
-
-
- Note the affect of using multi-generic symbol is different
-
- m(a+b+c,b+??c);
-
- \{??C$->${[}C,A{]}\}
-
-
-
-temp \_= logical-exp \\
-\ \\
-A template may be qualified by the use of the conditional operator `\_=',
-such!-that. When a such!-that condition is encountered in a template it
-is held until all generic variables appearing in logical-exp are bound.
-
-On the binding of the last generic variable logical-exp is simplified
-and if the result is not `T' the condition fails and the pattern matcher
-backtracks. When the template has been fully parsed any remaining held
-such-that conditions are evaluated and compared to `T'. \\
-\ \\
-{\bf Examples:} \\
-\ \\
- m(f(a,b),f(?a,?b\_=(?a=?b)));
-
- 0
-
-
- m(f(a,a),f(?a,?b\_=(?a=?b)));
-
- \{?B$->$A,?A$->$A\}
-
-
-
- Note that f(?a,?b\_=(?a=?b)) is the same as f(?a,?a)
-
-
-
-S(exp,\{temp1$->$sub1,temp2$->$sub2,...\},rept, depth) \\
-\ \\
-Substitute the set of replacements into exp, resubstituting a maximum of
-'rept' times and to a maximum depth 'depth'. 'Rept' and 'depth' have the
-default values of 1 and infinity respectively. Essentially S is a
-breadth first search and replace.
-
-Each template is matched against exp until a successful match occurs.
-
-Any replacements for generic variables are applied to the rhs of that
-replacement and exp is replaced by the rhs. The substitution process is
-restarted on the new expression starting with the first replacement. If
-none of the templates match exp then the first replacement is tried
-against each sub-expression of exp. If a matching template is found
-then the sub-expression is replaced and process continues with the next
-sub-expression.
+structures, then the two are equated and the matcher continues matching the rest
+of the expression until all the generic variables in the subexpression are
+bound.  The equality is then checked.  This is controlled by the
+switch \texttt{semantic}.  By default it is \texttt{on}.
+
+\subsection{\texttt{M(exp,temp)}} 
+
+The template \texttt{temp} is matched against the expression \texttt{exp}.  If
+the template is literally equal to the expression \texttt{T} is returned.  If
+the template is literally equal to the expression after replacing the generic
+variables by their bindings then the set of bindings is returned as a set of
+replacements.  Otherwise \texttt{0} (\texttt{nil}) is returned.
+
+\subsubsection*{Examples:}
+
+A ``literal'' template:
+\begin{verbatim}
+        m(f(a), f(a));
+        t
+\end{verbatim}
+Not literally equal:
+\begin{verbatim}
+        m(f(a), f(b));
+        0
+\end{verbatim}
+Nested operators:
+\begin{verbatim}
+        m(f(a,h(b)), f(a,h(b)));
+        t
+\end{verbatim}
+``Generic'' templates:
+\begin{verbatim}
+        m(f(a,b), f(a,?a));
+        {?a -> b}
+        m(f(a,b), f(?a,?b));
+        {?b -> b, ?a -> a}
+\end{verbatim}
+The multi-generic symbol \texttt{??a} matches the ``rest'' of the arguments:
+\begin{verbatim}
+        m(f(a,b), f(??a));
+        {??a -> {[a, b]}
+\end{verbatim}
+but the generic symbol \texttt{?a} does not:
+\begin{verbatim}
+        m(f(a,b), f(?a));
+        0
+\end{verbatim}
+Flag $h$ as ``associative'':
+\begin{verbatim}
+        flag('(h), 'assoc);
+\end{verbatim}
+Associativity is used to group terms together:
+\begin{verbatim}
+        m(h(a,b,d,e), h(?a,d,?b));
+        {?b -> e, ?a -> h(a,b)}
+\end{verbatim}
+``plus'' is a symmetric function:
+\begin{verbatim}
+        m(a+b+c, c+?a+?b);
+        {?b -> a, ?a -> b}
+\end{verbatim}
+and it is also associative
+\begin{verbatim}
+        m(a+b+c, b+?a);
+        {?a -> c + a}
+\end{verbatim}
+Note that the effect of using a multi-generic symbol is different:
+\begin{verbatim}
+        m(a+b+c,b+??c);
+        {??c -> [c,a]}
+\end{verbatim}
+
+
+
+\subsection{temp \_= logical\_exp} 
+
+A template may be qualified by the use of the conditional operator \texttt{\_=},
+\texttt{such!-that}.  When a \texttt{such-that} condition is encountered in a template, it
+is held until all generic variables appearing in \texttt{logical\_exp} are bound.
+
+On the binding of the last generic variable, \texttt{logical\_exp} is simplified
+and if the result is not \texttt{T} the condition fails and the pattern matcher
+backtracks.  When the template has been fully parsed any remaining
+held \texttt{such-that} conditions are evaluated and compared to \texttt{T}.
+
+\subsubsection*{Examples:}
+
+\begin{verbatim}
+        m(f(a,b), f(?a,?b\_=(?a=?b)));
+        0
+        m(f(a,a), f(?a,?b\_=(?a=?b)));
+        {?b -> a, ?a -> a}
+\end{verbatim}
+Note that \texttt{f(?a,?b\_=(?a=?b))} is the same as \texttt{f(?a,?a)}.
+
+
+\subsection{S(exp,\{temp1 $\to$ sub1, temp2 $\to$ sub2, \ldots\}, rept, depth)}
+
+Substitute the set of replacements into \texttt{exp}, re-substituting a maximum
+of \texttt{rept} times and to a maximum depth \texttt{depth}. \texttt{rept} and
+\texttt{depth} have the default values of 1 and $\infty$ respectively.
+Essentially, \texttt{S} is a breadth-first search-and-replace.  (There is also a
+depth-first version, \texttt{Sd(...)}.)  Each template is matched against
+\texttt{exp} until a successful match occurs.
+
+Any replacements for generic variables are applied to the r.h.s. of that
+replacement and \texttt{exp} is replaced by the r.h.s.  The substitution process
+is restarted on the new expression starting with the first replacement.  If none
+of the templates match \texttt{exp} then the first replacement is tried against
+each sub-expression of \texttt{exp}. If a matching template is found then the
+sub-expression is replaced and process continues with the next sub-expression.
 
 When all sub-expressions have been examined, if a match was found, the
-expression is evaluated and the process is restarted on the
-sub-expressions of the resulting expression, starting with the first
-replacement. When all sub-expressions have been examined and no match
-found the sub-expressions are reexamined using the next replacement.
-Finally when this has been done for all replacements and no match found
-then the process recures on each sub-expression.
+expression is evaluated and the process is restarted on the sub-expressions of
+the resulting expression, starting with the first replacement.  When all
+sub-expressions have been examined and no match found the sub-expressions are
+reexamined using the next replacement.  Finally when this has been done for all
+replacements and no match found then the process recures on each sub-expression.
+The process is terminated after \texttt{rept} replacements or when the
+expression no longer changes.
+
+The command
+\begin{verbatim}
+        Si(exp, {temp1 -> sub1, temp2 -> sub2, ...}, depth)
+\end{verbatim}
+means ``substitute infinitely many times until expression stops changing''.  It
+is short-hand for \texttt{S(exp,\{temp1 -> sub1, temp2 -> sub2,...\},Inf, depth)}.
 
 
-The process is terminated after rept replacements or when the expression
-no longer changes.
+\subsubsection*{Examples:}
 
-
-
-Si(exp,\{temp1$->$sub1,temp2$->$sub2,...\}, depth)
-
-
-Substitute infinitely many times until expression stops changing.
-Short hand notation for S(exp,\{temp1$->$sub1,temp2$->$sub2,...\},Inf,
-depth)
-
-
-Sd(exp,\{temp1$->$sub1,temp2$->$sub2,...\},rept, depth)
-
-
-Depth first version of Substitute.\\
-\ \\
-{\bf Examples:} \\
-\ \\
- s(f(a,b),f(a,?b)$->$?b\^{}2);
-
- 2
-
- B
-
-
-
- s(a+b,a+b$->$a{*}b);
-
- B{*}A
-
-
-
- \char`\"{}associativity\char`\"{} is used to group a+b+c in to (a+b)
-+ c
-
- s(a+b+c,a+b$->$a{*}b);
-
- B{*}A + C
-
-
+\begin{verbatim}
+        s(f(a,b), f(a,?b) -> ?b\^{}2);
+        2
+        b
+        s(a+b, a+b -> a{*}b);
+        b*a
+\end{verbatim}
+``Associativity'' is used to group $a+b+c$ to $(a+b)+c$:
+\begin{verbatim}
+        s(a+b+c, a+b -> a*b);
+        b*a + c
+\end{verbatim}
 The next three examples use a rule set that defines the factorial function.
-
-Substitute once
-
- s(nfac(3),\{nfac(0)$->$1,nfac(?x)$->$?x{*}nfac(?x-1)\});
-
- 3{*}NFAC(2)
-
-
-Substitute twice
-
- s(nfac(3),\{nfac(0)$->$1,nfac(?x)$->$?x{*}nfac(?x-1)\},2);
-
- 6{*}NFAC(1)
-
-
-Substitute until expression stops changing
-
- si(nfac(3),\{nfac(0)$->$1,nfac(?x)$->$?x{*}nfac(?x-1)\});
-
- 6
-
-
-Only substitute at the top level
-
- s(a+b+f(a+b),a+b$->$a{*}b,inf,0);
-
- F(B + A) + B{*}A
-
-
-temp :- exp \\
-\ \\
-If during simplification of an expression, temp matches some
-sub-expression then that sub-expression is replaced by exp. If there is
-a choice of templates to apply the least general is used.
-
-If a old rule exists with the same template then the old rule is
-replaced by the new rule. If exp is `nil' the rule is retracted.
+Substitute once:
+\begin{verbatim}
+        s(nfac(3), {nfac(0) -> 1, nfac(?x) -> ?x*nfac(?x-1)});
+        3*nfac(2)
+\end{verbatim}
+Substitute twice:
+\begin{verbatim}
+        s(nfac(3), {nfac(0) -> 1, nfac(?x) -> ?x*nfac(?x-1)}, 2);
+        6*nfac(1)
+\end{verbatim}
+Substitute until expression stops changing:
+\begin{verbatim}
+        si(nfac(3), {nfac(0) -> 1, nfac(?x) -> ?x{*}nfac(?x-1)});
+        6
+\end{verbatim}
+Only substitute at the top level:
+\begin{verbatim}
+        s(a+b+f(a+b), a+b -> a*b, inf, 0);
+        f(b+a) + b*a
+\end{verbatim}
 
 
 
-temp ::- exp
+\subsection{temp :- exp and temp ::- exp}
 
+If during simplification of an expression, \texttt{temp} matches some
+sub-expression, then that sub-expression is replaced by \texttt{exp}.  If there
+is a choice of templates to apply, the least general is used.
 
-Same as temp :- exp, but the lhs is not simplified until the replacement
-is made \\
-\ \\
-{\bf Examples:} \\
-\ \\
-Define the factorial function of a natural number as a recursive function
-and a termination condition. For all other values write it as a Gamma
-Function. Note that the order of definition is not important as the rules
-are reordered so that the most specific rule is tried first.
+If an old rule exists with the same template, then the old rule is replaced by
+the new rule.  If \texttt{exp} is \texttt{nil} the rule is retracted.
 
-Note the use of `::-' instead of `:-' to stop simplification of
-the LHS. Hold stops its arguments from being simplified. \\
-\ \\
- fac(?x\_=Natp(?x)) ::- ?x{*}fac(?x-1);
+\texttt{temp ::- exp} is the same as \texttt{temp :- exp}, but the l.h.s. is not
+simplified until the replacement is made.
 
- HOLD(FAC(?X-1){*}?X)
+\subsubsection*{Examples:}
 
-
-
- fac(0) :- 1;
-
- 1
-
-
-
- fac(?x) :- Gamma(?x+1);
-
- GAMMA(?X + 1)
-
-
-
- fac(3);
-
- 6
+Define the factorial function of a natural number as a recursive function and a
+termination condition.  For all other values write it as a gamma function.  Note
+that the order of definition is not important, as the rules are re-ordered so
+that the most specific rule is tried first.  Note the use of \texttt{::-}
+instead of \texttt{:-} to stop simplification of the l.h.s.  \texttt{hold} stops
+its arguments from being simplified. 
+\begin{verbatim}
+        fac(?x \_= Natp(?x)) ::- ?x*fac(?x-1);
+        hold(fac(?X-1)*?X)
+        fac(0) :- 1;
+        1
+        fac(?x) :- Gamma(?x+1);
+        gamma(?X + 1)
+        fac(3);
+        6
+        fac(3/2);
+        gamma(5/2)
+\end{verbatim}
 
 
 
- fac(3/2);
+\subsection{Arep(\{rep1,rep2,\ldots\})}
 
- GAMMA(5/2)
-
-
-
-Arep(\{rep1,rep2,..\}) \\
-\ \\
-In future simplifications automatically apply replacements rep1,
-rep2...~ until the rules are retracted. In effect it replaces the
-operator `$->$' by `:-' in the set of replacements \{rep1, rep2,...\}.
+In future simplifications automatically apply replacements \texttt{rep1, rep2,
+  ...} until the rules are retracted.  In effect, this replaces the operator
+\texttt{->} by \texttt{:-} in the set of replacements \texttt{\{rep1, rep2,
+  ...\}}.
 
 
+\subsection{Drep(\{rep1,rep2,..\})}
 
-Drep(\{rep1,rep2,..\})
+Delete the rules \texttt{rep1, rep2, ...}.
 
-
-
- Delete the rules rep1, rep2,... \\
-\ \\
 As we said earlier, the matcher has been constructed along the lines of the
-pattern matcher described in McIsaac with the addition of such-that
-conditions and `semantic matching' as described in Grief. To make a
-template efficient some consideration should be given to the structure of
-the template and the position of such-that statements. In general the
-template should be constructed to that failure to match is recognize as
-early as possible. The multi-generic symbol should be used when ever
-appropriate, particularly with symmetric functions. For further details
-see McIsaac. \\
-\ \\
-{\bf Examples:} \\
-\ \\
- f(?a,?a,?b) is better that f(?a,?b,?c\_=(?a=?b))
+pattern matcher described in McIsaac with the addition of such-that conditions
+and ``semantic matching'' as described in Grief.  To make a template efficient,
+some consideration should be given to the structure of the template and the
+position of such-that statements.  In general the template should be constructed
+so that failure to match is recognized as early as possible.  The multi-generic
+symbol should be used whenever appropriate, particularly with symmetric
+functions.  For further details see McIsaac.
 
- ?a+??b is better than ?a+?b+?c...
+\subsubsection*{Examples:}
 
-The template, f(?a+?b,?a,?b), matched against f(3,2,1) is
-matched as f(?e\_=(?e=?a+?b),?a,?b) when semantic matching is allowed. \\
+\texttt{f(?a,?a,?b)} is better than \texttt{f(?a,?b,?c\_=(?a=?b))}. 
+\texttt{?a+??b} is better than \texttt{?a+?b+?c...}.
 
-{\bf Switches} \\
-\ \\
-{\tt TRPM} \\
-Produces a trace of the rules applied during a substitution. This is
-useful to see how the pattern matcher works, or to understand an
-unexpected result. \\
-\ \\
-In general usage the following switches need not be considered. \\
-\ \\
-{\tt SEMANTIC} \\
-Allow semantic matches, e.g. f(?a+?b,?a,?b) will match f(3,2,1) even
-though the matcher works from left to right. \\
-\ \\
-{\tt SYM!-ASSOC} \\
-Limits the search space of symmetric associative functions when the
-template contains multi-generic symbols so that generic symbols will not
-the function. For example: m(a+b+c,?a+??b) will return \{?a $->$ a, ??b$->$
-{[}b,c{]}\} or \{?a $->$ b, ??b$->$ {[}a,c{]}\} or \{?a $->$ c, ??b$->$ {[}a,b{]}\}
-but no \{?a $->$ a+b, ??b$->$ c\} etc. No sane template should require these 
-types of matches. However they can be made available by turning the switch off.
+The template \texttt{f(?a+?b,?a,?b)}, matched against \texttt{f(3,2,1)} is
+matched as \texttt{f(?e\_=(?e=?a+?b),?a,?b)} when semantic matching is allowed.
+
+
+\subsection{Switches}
+
+\begin{description}
+  \item[\texttt{TRPM}] Produces a trace of the rules applied during a
+    substitution.  This is useful to see how the pattern matcher works, or to
+    understand an unexpected result.
+\end{description}
+In general usage the following switches need not be considered:
+\begin{description}
+  \item[\texttt{SEMANTIC}] Allow semantic matches, e.g. \texttt{f(?a+?b,?a,?b)}
+    will match \texttt{f(3,2,1)}, even though the matcher works from left to
+    right.
+  \item[\texttt{SYM!-ASSOC}] Limits the search space of symmetric associative
+    functions when the template contains multi-generic symbols so that generic
+    symbols will not function. For example \texttt{(a+b+c,?a+??b)} will return
+      \begin{verbatim}
+        {?a -> a, ??b -> [b,c]} \textrm{or} {?a -> b, ??b -> [a,c]}
+        \textrm{or} {?a -> c, ??b -> [a,b]}
+      \end{verbatim}
+      but not \texttt{\{?a -> a+b, ??b -> c\}}, etc.  No sane template should
+      require these types of matches.  However they can be made available by
+      turning the switch off.
+\end{description}
 
