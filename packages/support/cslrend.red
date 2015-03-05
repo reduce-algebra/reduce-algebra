@@ -772,6 +772,9 @@ flag('(sort stable!-sort stable!-sortip reversip2),'lose);
 % We also need this.
 
 flag('(lengthc),'lose);
+#if (null (member 'jlisp lispsystem!*))
+flag('(widelengthc),'lose);
+#endif
 
 symbolic procedure concat2(u,v); concat(u,v);
 

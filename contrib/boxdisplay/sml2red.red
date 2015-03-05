@@ -87,7 +87,8 @@
 % facilities.
 
 lisp;
-on echo,comp;
+off echo;
+on comp;
 if member('csl, lispsystem!*) then <<
   enable!-errorset(3,3);
   verbos 7 >>;
@@ -121,6 +122,7 @@ smlEofCount := 0;
 
 symbolic procedure smlNextChar();
   begin
+    scalar !*echo;
     smlChar := readch();
     if smlChar = !$eol!$ then smlLine := smlLine + 1;
     if smlChar = !$eof!$ then <<
@@ -751,8 +753,8 @@ symbolic procedure smlProgram();
 %     if smlSym neq '!; then
 %       smlError """;"" expected at end of top level form";
       if not zerop posn() then terpri();
-      prettyprint w;
-      if eqcar(w, '!U) then smlReadFile(cadr w)  >>;
+      if eqcar(w, '!U) then smlReadFile(cadr w)
+      else prettyprint w  >>;
     if not zerop posn() then terpri();
     printc "+++ finished reading a segment of SML code";
     smlSym := '!;;
@@ -1867,7 +1869,7 @@ U "Input";
 U "test";
 
 ;endOfFile
-;;;;
+;;
 
 end;
 

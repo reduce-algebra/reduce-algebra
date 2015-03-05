@@ -2435,7 +2435,8 @@ static int raw_char_from_terminal()
         putc_stream(c, stream);
         if (exception_pending()) flip_exception();
     }
-    else if (spool_file != NULL) PUTC(c, spool_file);
+    else if (spool_file != NULL &&
+             non_terminal_input == NULL) PUTC(c, spool_file);
     return c;
 }
 
@@ -4106,7 +4107,8 @@ void read_eval_print(int noisy)
         }
 
         if (qvalue(standard_input) == lisp_terminal_io &&
-            spool_file != NULL) PUTC('\n', spool_file);
+            spool_file != NULL &&
+            non_terminal_input == NULL) PUTC('\n', spool_file);
 
         miscflags |= (HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG);
         errorset_msg = NULL;
