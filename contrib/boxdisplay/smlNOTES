@@ -1,0 +1,149 @@
+                      Conversion from SML into Lisp
+                             ACN, March 2015
+
+
+These are rather random notes about the file sml2red.red and trhe directory
+sml. The code in sml2red.red parses the SML source code in the sml directory
+and is intended to end up concerting it so it can be execured in a Reduce
+context. At some stage I will then start editing the source in sml/* to
+make it for Reduce's needs better. That will for instance include
+  (.) Provding better input capabilities for it.
+  (.) Using fonts other then the CM ones and hence using different
+      metrics.
+  (.) Providing the output possibly still in dvi form but certanly not
+      just dumped to files.
+  (.) Adding support for tall delimiters, radical signs and the other
+      TeX features that are at present missing.
+
+The plain is to keep the SML code as the definitive version. One reason for
+that is the general clarity of SML as a notation, but perhaps a stronger one
+is the static type-checking that is imposed when the SML code is looked at
+by a genuine SML language processor (I am using "poly" at present). This is
+very good for maintaining code quality. Furthermore if the originaql SML code
+has been carefully type-checked that way I can then afford to allow my
+SML to Lisp conversion to go ahead confident of type-safety and it will
+very nearly be the case that the translation can simply ignore all type-
+related information in the source and merely assume that all will be well.
+That will simplify both the translation process and the generated code.
+
+There are a number of issues that mean that SML, which in some sense a "Lisp
+Family" language, differs rather substantially from Standard Lisp. I will
+comment here on some of the issues in mapping one to the other and how I might
+cope.
+
+The first thing is that SML has a module system that can help it manage
+name-spaces. I think that the first part of my translation into Lisp will
+need to be to make every short identifier onto its full long equivalent, so
+that each name ends up with a name that has a "." in it. So for instance
+the names "ShipOut.shipOut"  and "StyleParams.Delim" are liable to feature
+in the traslated code. I might like to be able to leave purely local
+identifiers like a, b, c, x, y and z as they originally stand, but that
+will be for tidiness not because of any real need.
+
+Semantic conversion will be fun!
+
+Standard Lisp is a LISP-2 (ie the association between names and values is
+separate from that between names and functions). It does not support
+full function closures. SML differs in both of those respects.
+
+So I need to consider how I can map such sequences as
+   fun foo x = fn y => x + y;
+   foo 3 4;
+into Lisp.
+
+First take a pessimistic view that I may not be able to tell whether any
+function call at all is one that needs special treatment.
+
+I can arrange that for ML every function definition leads to something stored
+in the value call of the name concerned. This will be a CONS with code and
+environment. A call
+   foo 3
+in SML will then map onto Lisp code
+   funcall(car foo, cdr foo, 3)
+
+Now I need to look at the conversion of the function definition. Start with
+the lambda expression within it - this has to turn into
+   'g0001 . x
+where there has been a definition
+   symbolic procedure g0001(env, y); env + y;
+
+Now the definition for foo becomes
+   foo := 'g0002 . nil;
+   symbolic procedure g0002(x, env); 'g0001 . x;
+
+Because SML is side effect free passing just values in the environment
+suffices. The example here has only one free variable used by the lambda
+term. I will need to pre-scan any function and identify all its free
+variables and pass a structure holding values for all of them.
+
+The above imposes costs in two places. Wherever a closure is created it
+performs (at least one) CONS. I think that is acceptable and close to
+inevitable. But every time it calls a function it does so using funcall
+(which is a variant on apply) and while that is not a severe overhead for
+the CSL bytecode model it is messier for PSL. It also passes and extra
+argument, the environment, everywhere. In cases where there are no free
+variable in play that adds cost. Use of Curried functions such as
+   fun foo x y = x + y;
+carry this overhead even if every single call gives foo both arguments
+at one place in the code.
+
+The above model will treat an ML function definition such as
+   fun foo(x, y) = x + y;
+as defining a function of 1 argument where that argument is a tuple. That
+will have to be packed when the call is made and unpacked again within
+the function - as in
+   foo := 'g0003 . nil;
+   symbolic procedure g0003 arg; car arg + cdr arg;
+
+It will be good if I can spot as many cases as possible where higher order
+activity is not used. This will be when in a function call the name of the
+function resolves directly to a static top level definition, and where
+the number of applications indicated at definition point and call point match.
+[what I sort of mean is that if one interprets curried function usage as
+merely a notation for functions with several arguments that the number
+of arguments provided matches the number expected]. It may also be
+necessary to insist that for function with tuple-style arguments that the
+definition and call match.
+
+In that sort of case
+   fun foo x y = x + y;
+   fun bar(x, y) = x + y;
+   foo 1 2 + bar(3, 4);
+can map onto
+   symbolic procedure foo(x, y); x+y;
+   symbolic procedure bar(x, y); x+y;
+   foo(1,2) + bar(3,4);
+in a natural manner. If somewhere there is a use foo or bar that does not
+provide arguments exactly matching the signature then the arrangement
+involving  g0001, g0002, g0003 etc will need to be established as well.
+
+Any function call that can not be resolved such that it turns into natural
+Lisp will need to use the funcall scheme, and any function definition that
+could possibly be used that way will need to provide the corresponding
+special definition.
+
+There may be some special cases of higher order idioms where simple source
+to source conversions allow me to use my optimisations. So treating
+   fun foo x y = bar y
+as if it had been
+   fun foo x y z = bar y z
+might be called for if all calls to foo give it 3 arguments (in the curried
+sense). Special translations of "map" and some other key higher order
+functions may also really simplify matters - for instance
+   map foo [1,2,3];
+may be able to become
+   for each g0004 in [1,2,3] collect foo g0004;
+and that leaves foo being explicitly called with a single argument.
+
+A luxury I have here is that I have a complete fixed program to translate
+and so I expect to be able to perform my optimisation in a lot of places. If
+the code had to be translated piecemeal or it was held to be extendable then
+I might need to treat every function as potentially having "general" calls
+made to it.
+
+OK so all this is routine and is technology that has been well understood
+for very many years, but it still makes sense to write there here as a
+reminder to myself and an explanation to anybody else who may be new to
+the issues.
+
+                                                           Arthur Norman

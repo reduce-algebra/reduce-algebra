@@ -1,0 +1,202 @@
+This directory contains the version of the SML implementation of
+TeX Maths Layout algorithms in close to its original form. It has been
+updated to allow for changes to the specification of SML from '90 to '97.
+
+Thanks are due to Heckmann and Wilhelm for this code.
+
+                                               ACN February 2015
+
+
+=====================================================================
+The following exchanges of emails confirm permission to make use of the
+files here.
+
+
+
+From heckmann@absint.com Thu Apr 15 17:25:43 2010
+Date: Thu, 15 Apr 2010 18:25:14 +0200
+From: Reinhold Heckmann <heckmann@absint.com>
+To: Arthur Norman <acn1@cam.ac.uk>
+Cc: wilhelm@cs.uni-sb.de
+Subject: Re: TeX in SML from around 1997
+
+Arthur Norman wrote:
+> Hi! I have just come across that paper and so let me start by saying
+> what fun it is.
+That's nice to hear.
+
+> I had been considering what would be involved with
+> re-creating exactly the formula layout that TeX uses for display of
+> formulae for the Reduce algebra system (check reduce-algebra at
+> Sourceforge). At present the way I display formula there is to use code
+> that maps Reduce onto TeX-format textual stuff like $\int \sqrt ...$, I
+> pass that to some C++ code that I wrote that instantly turns it back
+> from textual form into an internal representation, then box structures.
+> I then have code that paints direct from the boxes on the screen. I use
+> cmr10, cmmi10, cmsy10 and cmex10 when painting. But I do not use any
+> code from TeX itself and the exact layout and spacing I have is my own
+> thoughtless code - it is a maths display but purists fuss that it is not
+> as good as it should be... specifically that TeX gets the spacing a lot
+> better!
+
+Parts of this can be usefully combined with our layouter, I think.
+We never created a parser from $\int \sqrt ...$ to SML terms.
+On the other side, I programmed a translator from box terms to dvi,
+but painting the box terms directly may also be useful.
+
+> I might also add that a few years ago I taight the SML course at
+> Cambridge - Larry Paulson has been doing that for a while, but I gave it
+> before im and stood in for him a few years back when he went on leave.
+> 
+> There are three ways your work really encourages me - one is that SML
+> code is so much nicer than the Web/Pascal TeX original. The second is
+> that you concentrate on just the maths mode layout, and for my purposes
+> at present I do not care about the rest! And finally your code
+> demonstrates that the guts of the TeX maths layout stuff can fit in
+> under 2500 lines of code (albeit SML - a *NOTABLY* concise language) and
+> that is a nice size body of code to work on individually or with one or
+> two friends... it is feasible to look at.
+
+> OK, so after the above introduction, a couple of questions:
+> 
+> (1) I have fetched your code from the ftp server as mentioned in your
+> paper. It does not have any explicit license terms attached. In a spirit
+> of caution before I look much further I should ask your permission to
+> use the code you have, hack at it, use it as a basis for other
+> experiments etc etc... if anything derived from it weher to end up in
+> Reduce I note that we have the rest of Reduce under the 2-clause BSD
+> license (which in effect says "do what you like with this, but you may
+> not blame me if it bits you"), so I should explicitly check your
+> reaction to using it in that context.
+
+For my part, I think you can use it since I stopped working with it long ago.
+
+> (2) The things you list as incomplete in the version in the FTP server
+> are (a) radicals such as \sqrt (b) huge delimiters built up out of
+> towers and (c) accented symbols. I guess also a box that embeds
+> text-mode TeX inside a formula could also go beyond your scope! I
+> presume that you stopped work on the project soon after the paper and
+> that you do not have a version that is more complete, but I ought to ask!
+
+Yes, that's true.
+
+> And do you believe that the things that need finishing off
+> introduce real new serious issues or do you view them as just "more of
+> the same"? Any hints or advice there would be interesting.
+
+I think (b) and (c) are more of the same.
+\sqrt might be a bit more tricky since the V-like part of it varies in size
+according to the size of the argument,
+and has to fit exactly to the overline-like part.
+
+What we did to derive our SML code was to study Knuth's TeX book
+and to translate the Pascal code to SML, applying the simplifications
+offered by this more powerful language.
+So you should look at Knuth's implementation of \sqrt and translate it, too.
+
+> I do not know if I will find the energy or time to make serious use of
+> your work to replace or improve the layout of my display, but you can
+> probably see why it interests me!
+
+> I am sending this email in the immediate run up to Easter (so Happy
+> Easter!), and I will then be away from Cambridge and email for around a
+> fortnight, so do not need an instant response... And at this stage I
+> have downloaded your code and read the paper and a few lines of the code
+> itself, but e.g. not tried it... this message is so I know where I am
+> before I invest real time...
+
+I was also away a few days ...
+
+Best wishes for your work
+Reinhold Heckmann
+
+From wilhelm@gigasun.cs.uni-sb.de Thu Apr 15 17:38:26 2010
+Date: Thu, 15 Apr 2010 18:38:21 +0200 (CEST)
+From: wilhelm@gigasun.cs.uni-sb.de
+To: Reinhold Heckmann <heckmann@absint.com>
+Cc: Arthur Norman <acn1@cam.ac.uk>, wilhelm@cs.uni-sb.de
+Subject: Re: TeX in SML from around 1997
+
+Hi,
+I also agree to you using the code without formal license agreement.
+It would be nice, though, if you would acknowledge the paper and the
+origin of the SML code if you extend it and integrate it somewhere.
+
+Cheers,  Reinhard Wilhelm
+
+
+
+=====================================================================
+
+
+This directory contains a re-implementation of TeX's formula layout
+written in Standard ML of New Jersey, version 109.2
+by Reinhold Heckmann, Universitaet des Saarlandes,
+following suggestions by Reinhard Wilhelm, Universitaet des Saarlandes.
+
+WARNING:  The system is still in the status of development.
+-------   This distribution may contain errors of any kind.
+
+The present system can typeset nearly all formulae
+by translating them from formula terms (see MathTypes.sml)
+into box terms (see BoxTypes.sml).
+The only exceptions are accents, roots, and big delimiters.
+The resulting box terms can be translated into dvi output.
+At present, there is no good way to enter formulae;
+a parser is needed which can read TeX input and build formula terms from it.
+Also, the testing possibilities and user friendliness
+are not yet well developed.
+
+To install:
+   get formulae.tar.gz
+   zcat formulae.tar.gz | tar -xf -
+This gives a directory called `formulae'.
+Go into this directory.
+Start sml (best: Standard ML of New Jersey, version 109.2).
+   use "edit.m";
+   U "all";
+... and everything is read in and translated (hopefully).
+
+At the moment, the system provides two test functions (see test.sml)
+  test1, test2: unit -> unit
+which, when executed, typeset certain fixed formulae,
+translate them to dvi and write them into file  "das.dvi".
+(Sorry, this file name is built in.)
+As an example, the distributed system contains
+the file "das.dvi" resulting from running test1.
+It also contains a TeX file "dastex.tex" which contains the formulae
+of test2 to allow comparing TeX layout with our system's layout.
+More tests can be programmed by editing or augmenting file "test.sml".
+
+The typesetting system itself is contained in files "----.sml".
+For a rough description of their organization, see file "OVERVIEW".
+In addition, there are files RM05 ... RM10 MI05 ... MI10 SY05 ... SY10 EX09 EX10
+which contain condensed font information (height, depth, and width of characters).
+These files have been derived from TeX's TFM files.
+
+File "edit.m" contains functions which provide access to the Unix editor "vi"
+from within sml.
+   E "xxx";
+runs the editor on file "xxx.sml" (note the addition of the suffix).
+After leaving the editor, the file is reloaded
+if there have been any changes to it.
+A call
+   U "xxx";
+loads file "xxx.sml" without editing.
+Both functions store the file name internally;
+if the same file is to be edited / loaded again,
+it suffices to call
+   E "";
+and likewise with U.
+
+File "all.sml" contains a sequence of U's
+which load the files containing the system in their proper order.
+(Sorry, there is no "make" or any other kind of source code management.)
+
+Documentation:
+The core system is described in the paper
+"A Functional Description of TeX's Formula Layout"
+submitted to Journal of Functional Programming.
+Unfortunately, there is no documentation of the usage of the system
+other than the remarks in this file
+(mainly because we have not yet implemented a nice user interface).
