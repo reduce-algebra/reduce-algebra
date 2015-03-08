@@ -80,7 +80,7 @@ The statement {\tt mathstyle} defines the style of formula typesetting.
 The variable {\tt laline!*} defines the length of output lines.
 
 The fractions with horizontal divide bars are typeset by using the
-new \REDUCE{} infix operator \verb+\+.  This operator is not
+new \REDUCE{} infix operator \verb+//+.  This operator is not
 algebraically simplified.  During typesetting of powers the checking on
 the form of the power base and exponent is performed to determine the
 form of the typeset expression (eg.  sqrt symbol, using parentheses).
@@ -150,13 +150,13 @@ turned {\tt on} resp. {\tt off}. by default is {\tt off}.
 {\bf Operators}
 
 \begin{description}
-\item[infix] - \verb+\+
+\item[infix] - \verb+//+
 \item[prefix] - {\tt int,dint,df,pdf,sum,product,sqrt} and all \REDUCE{}
 prefix operators defined in the \REDUCE{} kernel and the SOLVE module.
 \end{description}
 
 \begin{verbatim}
-   <alg. expression> \ <alg. expression>
+   <alg. expression> // <alg. expression>
    int(<function>,<variable>)
    dint(<from>,<to>,<function>,<variable>)
    df(<function>,<variables>)
