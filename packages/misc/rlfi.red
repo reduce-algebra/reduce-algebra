@@ -95,8 +95,8 @@ flag('(!h!a!t !c!h!e!c!k !b!r!e!v!e !a!c!u!t!e !g!r!a!v!e !t!i!l!d!e
        bar vec dot ddot),'accdef);
 
 
-deflist('((!b!o!l!d !{!\!b!f! )(!r!o!m!a!n !{!\r!m! )
-          (bold !{!\!b!f! )(roman !{!\r!m! )),'fontdef);
+deflist('((!b!o!l!d !\!\!m!a!t!h!b!f!{)(!r!o!m!a!n !\!m!a!t!h!r!m!{)
+          (bold !\!m!a!t!h!b!f!{)(roman !\!m!a!t!h!r!m!{)),'fontdef);
 
 deflist('((!( !\!l!e!f!t!() (!) !\!r!i!g!h!t!)) (!P!I !\!p!i! )
          (!p!i !\pi! ) (!E !e) (!I !i) (e !e) (i !i)),'name);
@@ -119,37 +119,37 @@ deflist('(
 % Other REDUCE operators
 
 deflist('(
-(abs        "{\rm abs}")           (deg2rad    "{\rm deg2rad}")
-(acosd      "{\rm acosd}")         (dilog      "{\rm dilog}")
-(acosh      "{\rm acosh}")         (dms2deg    "{\rm dms2deg}")
-(acot       "{\rm acot}")          (dms2rad    "{\rm dms2rad}")
-(acotd      "{\rm acotd}")         (erf        "{\rm erf}")
-(acoth      "{\rm acoth}")         (expint     "{\rm expint}")
-(acsc       "{\rm acsc}")          (factorial  "{\rm factorial}")
-(acscd      "{\rm acscd}")         (fix        "{\rm fix}")
-(acsch      "{\rm acsch}")         (floor      "{\rm floor}")
-(arbcomplex "{\rm arbcomplex}")    (hypot      "{\rm hypot}")
-(arbint     "{\rm arbint}")        (icbrt      "{\rm icbrt}")
-(arbreal    "{\rm arbreal}")       (ilog2      "{\rm ilog2}")
-(argd       "{\rm argd}")          (impart     "{\rm impart}")
-(asec       "{\rm asec}")          (irootn     "{\rm irootn}")
-(asecd      "{\rm asecd}")         (isqrt      "{\rm isqrt}")
-(asech      "{\rm asech}")         (log10      "{\rm log10}")
-(asind      "{\rm asind}")         (logb       "{\rm logb}")
-(asinh      "{\rm asinh}")         (norm       "{\rm norm}")
-(atan2      "{\rm atan2}")         (one_of     "{\rm one_of}")
-(atan2d     "{\rm atan2d}")        (perm       "{\rm perm}")
-(atand      "{\rm atand}")         (rad2deg    "{\rm rad2deg}")
-(atanh      "{\rm atanh}")         (rad2dms    "{\rm rad2dms}")
-(cbrt       "{\rm cbrt}")          (repart     "{\rm repart}")
-(ceiling    "{\rm ceiling}")       (root_of    "{\rm root_of}")
-(choose     "{\rm choose}")        (round      "{\rm round}")
-(cosd       "{\rm cosd}")          (secd       "{\rm secd}")
-(cosh       "{\rm cosh}")          (sech       "{\rm sech}")
-(cotd       "{\rm cotd}")          (sgn        "{\rm sgn}")
-(cscd       "{\rm cscd}")          (sind       "{\rm sind}")
-(csch       "{\rm csch}")          (sol        "{\rm sol}")
-(deg2dms    "{\rm deg2dms}")       (tand       "{\rm tand}")
+(abs        "{\mathrm{abs}}")           (deg2rad    "{\mathrm{deg2rad}}")
+(acosd      "{\mathrm{acosd}}")         (dilog      "{\mathrm{dilog}}")
+(acosh      "{\mathrm{acosh}}")         (dms2deg    "{\mathrm{dms2deg}}")
+(acot       "{\mathrm{acot}}")          (dms2rad    "{\mathrm{dms2rad}}")
+(acotd      "{\mathrm{acotd}}")         (erf        "{\mathrm{erf}}")
+(acoth      "{\mathrm{acoth}}")         (expint     "{\mathrm{expint}}")
+(acsc       "{\mathrm{acsc}}")          (factorial  "{\mathrm{factorial}}")
+(acscd      "{\mathrm{acscd}}")         (fix        "{\mathrm{fix}}")
+(acsch      "{\mathrm{acsch}}")         (floor      "{\mathrm{floor}}")
+(arbcomplex "{\mathrm{arbcomplex}}")    (hypot      "{\mathrm{hypot}}")
+(arbint     "{\mathrm{arbint}}")        (icbrt      "{\mathrm{icbrt}}")
+(arbreal    "{\mathrm{arbreal}}")       (ilog2      "{\mathrm{ilog2}}")
+(argd       "{\mathrm{argd}}")          (impart     "{\mathrm{impart}}")
+(asec       "{\mathrm{asec}}")          (irootn     "{\mathrm{irootn}}")
+(asecd      "{\mathrm{asecd}}")         (isqrt      "{\mathrm{isqrt}}")
+(asech      "{\mathrm{asech}}")         (log10      "{\mathrm{log10}}")
+(asind      "{\mathrm{asind}}")         (logb       "{\mathrm{logb}}")
+(asinh      "{\mathrm{asinh}}")         (norm       "{\mathrm{norm}}")
+(atan2      "{\mathrm{atan2}}")         (one_of     "{\mathrm{one_of}}")
+(atan2d     "{\mathrm{atan2d}}")        (perm       "{\mathrm{perm}}")
+(atand      "{\mathrm{atand}}")         (rad2deg    "{\mathrm{rad2deg}}")
+(atanh      "{\mathrm{atanh}}")         (rad2dms    "{\mathrm{rad2dms}}")
+(cbrt       "{\mathrm{cbrt}}")          (repart     "{\mathrm{repart}}")
+(ceiling    "{\mathrm{ceiling}}")       (root_of    "{\mathrm{root_of}}")
+(choose     "{\mathrm{choose}}")        (round      "{\mathrm{round}}")
+(cosd       "{\mathrm{cosd}}")          (secd       "{\mathrm{secd}}")
+(cosh       "{\mathrm{cosh}}")          (sech       "{\mathrm{sech}}")
+(cotd       "{\mathrm{cotd}}")          (sgn        "{\mathrm{sgn}}")
+(cscd       "{\mathrm{cscd}}")          (sind       "{\mathrm{sind}}")
+(csch       "{\mathrm{csch}}")          (sol        "{\mathrm{sol}}")
+(deg2dms    "{\mathrm{deg2dms}}")       (tand       "{\mathrm{tand}}")
           ),'lapop);
 
 symbolic procedure get!*(u,v);
@@ -435,11 +435,11 @@ begin
 end;
 
 % Definition of new operator of division --> horizontal division line
-newtok '((!\) backslash);
-deflist('((backslash recip)),'unary);
-algebraic infix \;
-precedence 'backslash,'quotient;
-put('backslash,'simpfn,'simpiden);
+%newtok '((!\) backslash);
+%deflist('((backslash recip)),'unary);
+%algebraic infix \;
+%precedence 'backslash,'quotient;
+put('slash,'simpfn,'simpiden);
 
 symbolic procedure prin2la u;
 % Prints atom or string U, checks the length of line
@@ -460,7 +460,7 @@ symbolic procedure prinfrac(l,p);
   prin2la "}{";
   maprintla(cadr l,0);
   prin2la "}" >>;
-put('backslash,'laprifn,'prinfrac);
+put('slash,'laprifn,'prinfrac);
 
 symbolic procedure defindex u;
 % Defines the placing of indices of an operator
@@ -753,7 +753,10 @@ put('arbcomplex,'indexed,'(down));
 algebraic;
 
 operator pdf,dint,product;
-defid !.!.!., name=cdots;    % for Taylor & TPS (added by A.Barnes, Jan 2015)
+
+% doesn't work during compile as the parser doesn't yet know about the defid statement
+%defid !.!.!., name=cdots;    % for Taylor & TPS (added by A.Barnes, Jan 2015)
+put('!.!.!.,'name,'!\cdots! );
 
 endmodule;
 
