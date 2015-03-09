@@ -573,29 +573,6 @@ procedure evalnum0(u);
       return w
    end;
 
-% The PSL bootstrap build requires the "!" here
-#if (memq 'psl lispsystem!*)
-
-symbolic procedure hexdig w;
-  cdr assoc(w, '((0 . !0) (1 . !1) (2 . !2) (3 . !3)
-                 (4 . !4) (5 . !5) (6 . !6) (7 . !7)
-                 (8 . !8) (9 . !9) (10 . !a) (11 . !b)
-                 (12 . !c) (13 . !d) (14 . !e) (15 . !f)));
-
-symbolic procedure explodehex n;
-  begin
-% Only for use with integers
-    scalar r, s;
-    if n = 0 then return "0";
-    if n < 0 then << n := -n; s = t >>;
-    while not zerop n do <<
-       r := hexdig remainder(n, 16) . r;
-       n := n / 16 >>;
-    if s then r := '!- . r;
-    return r
-  end;
-
-#endif
 
 symbolic procedure hexfloat1 w1;
 % hexfloat may be useful from symbolic mode

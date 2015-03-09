@@ -437,6 +437,26 @@ symbolic inline procedure princ x; prin2 x;
 symbolic inline procedure prin x;  prin1 x;
 symbolic inline procedure printc x; << prin2 x; terpri(); x >>;
 
+symbolic procedure hexdig w;
+  cdr assoc(w, '((0 . !0) (1 . !1) (2 . !2) (3 . !3)
+                 (4 . !4) (5 . !5) (6 . !6) (7 . !7)
+                 (8 . !8) (9 . !9) (10 . !a) (11 . !b)
+                 (12 . !c) (13 . !d) (14 . !e) (15 . !f)));
+
+symbolic procedure explodehex n;
+  begin
+% Only for use with integers
+    scalar r, s;
+    if n = 0 then return "0";
+    if n < 0 then << n := -n; s = t >>;
+    while not zerop n do <<
+       r := hexdig remainder(n, 16) . r;
+       n := n / 16 >>;
+    if s then r := '!- . r;
+    return r
+  end;
+
+
 % A function to expand a filename glob (pattern) via a pipe
 %  A couple of tricky issues here:
 %    a) set *raise to nil so that upper case characters in strings are not changed to lower case
