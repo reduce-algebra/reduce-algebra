@@ -187,7 +187,7 @@ asserted procedure ofsf_cadpreparation(phi: Formula, prjordl: List, aaplus: List
    % variables of [phi] and bound variables are in front of free variables.
    % [aaplus] is a list of SF; additional polynomials to be added to projection
    % polynomials.
-   begin scalar w, ophi, varl, qal, oldorder, psi, aa, cd;
+   begin scalar w, ophi, varl, qal, oldorder, psi, aa, rvbl, cd;
       integer r, k, l;
       if !*rlverbose then
 	 ioto_tprin2t "+++ Preparation Phase";
@@ -230,8 +230,8 @@ asserted procedure ofsf_cadpreparation(phi: Formula, prjordl: List, aaplus: List
 	    ioto_prin2t {"+++ Adding ", length aaplus, " projection polynomials."};
       	 aaplus := for each f in aaplus collect reorder f
       >>;
-      l := (if bvb then k + length car bvb else 0)
-      	 where bvb := cdr reverse ofsf_cadvbl1 phi;
+      rvbl := reversip ofsf_cadvbl phi;
+      l := (if cdr rvbl then k + length car cdr rvbl else 0);
       cd := caddata_mkblank();
       caddata_putphi(cd, phi);
       caddata_putk(cd, k);

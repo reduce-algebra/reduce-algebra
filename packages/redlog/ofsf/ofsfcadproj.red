@@ -76,51 +76,11 @@ procedure SFListP(s);
 procedure KernelListP(s);
    listp s and (null s or assert_kernelp car s and KernelListP cdr s);
 
-%%% --- projection order code --- %%%
-
-asserted procedure ofsf_cadvbl1(phi: Formula): List;
-   % Variable-block-list. [phi] is a prenex fof. Returns a list of lists
-   % [[xr..][..xk]..[xk..x1]] of Kernels.
-   begin scalar tmp, fvarl, ql, cq, cll, cl, a;
-      tmp := ofsf_mkvarl phi;  % ((xr,...,x_1).((x_r.Q_r),...,(x_k+1.Q_k+1)))
-      fvarl := car tmp;  % ((xr,...,x_1)
-      ql := cdr tmp;
-      if ql then <<
-      	 cq := cdar ql;  % current quantifier
-      	 while ql do <<
-	    a := car ql;
-	    ql := cdr ql;
-	    fvarl := cdr fvarl;
-	    if cdr a neq cq then <<
-	       cll := cl . cll;
-	       cq := cdr a;
-	       cl := nil
-	    >>;
-	    cl := car a . cl;
-	 >>;
-	 cll := reversip cl . cll
-      >>;
-      cll := fvarl . cll;
-      cll := reversip cll;
-      return cll
-end;
-
-asserted procedure ofsf_gcadporder(phi: Formula): List;
-   % Generic CAD projection order. Returns a list of identifiers. The result is
-   % a list of all variables in a PNF of [phi] encoding an order suitable for
-   % generic CAD projection. We assume that [ofsf_gcad] uses [cl_pnf] for PNF
-   % computation.
-   begin scalar !*rlqegen;
-      !*rlqegen := t;
-      return ofsf_cadporder phi
-   end;
-
-asserted procedure ofsf_cadporder(phi: Formula): List;
-   ofsf_cadporder0(phi, 'ofsf_cadporder!-rate, 'ofsf_cadporder!-betterp);
+%%% --- projection order optimization code --- %%%
 
 switch dolzmann;
 
-asserted procedure ofsf_cadporder!-betterp(rating, optrating, theo, theoopt): Boolean;
+asserted procedure ofsf_cadporder!-betterp(rating: Integer, optrating: Integer, theo: List, theoopt: List): Boolean;
    if not !*dolzmann then
       not optrating or rating < optrating or
       (!*rlqegen and rating = optrating and length theo < length theoopt)
@@ -128,40 +88,14 @@ asserted procedure ofsf_cadporder!-betterp(rating, optrating, theo, theoopt): Bo
       not optrating or rating > optrating or
       (!*rlqegen and rating = optrating and length theo < length theoopt);
 
-asserted procedure ofsf_cadporder!-rate(pset: List): Integer;
+asserted procedure ofsf_cadporder!-rate(pset: SFList): Integer;
    % length pset;
    for each f in pset sum sf_stdeg f;
 
-asserted procedure ofsf_cadporder0(phi: Formula, rate, betterp): List;
-   % CAD projection order. [phi] is an OFSF FORMULA. Returns a list of
-   % identifiers. The result is a list of all variables in a PNF of [phi]
-   % encoding an order suitable for CAD projection. We assume that [ofsf_cad]
-   % uses [cl_pnf] for PNF computation.
-   begin scalar cll, varl, !*rlcadverbose;
-      if !*rlverbose then
-	 ioto_prin2t "+++ Optimizing projection order.";
-      if !*rlcaddecdeg then
-	 phi := ofsf_caddecdeg phi;
-      phi := cl_pnf phi;
-      cll := ofsf_cadsplt phi;
-      if !*rlverbose then <<
-      	 ioto_tprin2 {"++ input order: ->"};
-	 for each x in cll do
-	    ioto_prin2 {" ", x, " ->"}
-      >>;
-      cll := ofsf_cadporder1(ofsf_transfac cl_terml phi, cll, rate, betterp);
-      if !*rlverbose then <<
-      	 ioto_tprin2 {"++ optimized order: ->"};
-	 for each x in cll do
-	    ioto_prin2 {" ", x, " ->"}
-      >>;
-      varl := for each cl in cll join cl;
-      return varl
-   end;
-
 asserted procedure ofsf_caddecdeg(phi: Formula): Formula;
    begin scalar w;
-      if !*rlverbose then ioto_prin2 "- decrease degrees: ";
+      if !*rlverbose then
+	 ioto_prin2 "- decrease degrees: ";
       w := ofsf_decdeg0 phi;
       phi := car w;
       if !*rlverbose then
@@ -170,145 +104,164 @@ asserted procedure ofsf_caddecdeg(phi: Formula): Formula;
       return phi
    end;
 
-asserted procedure ofsf_cadsplt(phi: Formula): List;
-   begin scalar fvarl, ql, cq, cll, cl, a, tmp;
-      tmp := ofsf_mkvarl phi;
-      fvarl := car tmp;
-      ql := cdr tmp;
-      if ql then <<
-      	 cq := cdar ql;
-      	 while ql do <<
-	    a := car ql;
-	    ql := cdr ql;
-	    fvarl := cdr fvarl;
-	    if cdr a neq cq then <<
-	       cll := cl . cll;
-	       cq := cdr a;
+asserted procedure ofsf_cadvbl(phi: Formula): List;
+   % CAD variable block list. [phi] is a prenex formula. Returns a List of Lists
+   % of variables. The last element of this list is the list of unquantified
+   % variables, i.e., is [nil] when [phi] is a sentence. Each list represents a
+   % block of variables, i.e., ordering can be arbitrarily changed only within
+   % these blocks.
+   begin scalar varl, qal, cq, cl, cll, v, q;
+      varl . qal := ofsf_mkvarl phi;  % ((xr, ..., x_1) . ((x_r.Q_r), ..., (x_k+1.Q_k+1)))
+      if qal then <<
+      	 cq := cdar qal;  % current quantifier
+      	 while qal do <<
+	    v . q := pop qal;
+	    pop varl;
+	    if q neq cq then <<
+	       push(cl, cll);
+	       cq := q;
 	       cl := nil
 	    >>;
-	    cl := car a . cl;
+	    push(v, cl)
 	 >>;
-	 cll := reversip cl . cll
+	 push(reversip cl, cll)
       >>;
-      cll := fvarl . cll;
-      cll := reversip cll;
-      return cll
+      push(varl, cll);
+      return reversip cll
    end;
 
-asserted procedure ofsf_cadporder1(tl,cll,rate,betterp): List;
-   % CAD projection order subroutine. [tl] is a list of (irreducible) SF's;
-   % [cll] is a LIST of lists of identifiers. Returns a LIST of lists of
-   % identifers. The variable order is optimized for projection within each list
-   % in [cll].
-   begin scalar w, varl, ncll, cl, theo;
-      varl := for each cl in cll join append(cl,nil);
+asserted procedure ofsf_gcadporder(phi: Formula): KernelList;
+   % Generic CAD projection order. The result is a List of all variables in a
+   % PNF of [phi] encoding an order suitable for generic CAD projection. We
+   % assume that [ofsf_gcad] uses [cl_pnf] for PNF computation.
+   begin scalar !*rlqegen;
+      !*rlqegen := t;
+      return ofsf_cadporder phi
+   end;
+
+asserted procedure ofsf_cadporder(phi: Formula): KernelList;
+   % CAD projection order. The result is a List of all variables in a PNF of
+   % [phi] encoding an order suitable for CAD projection. We assume that
+   % [ofsf_cad] uses [cl_pnf] for PNF computation.
+   begin scalar cll, !*rlcadverbose;
+      if !*rlverbose then
+	 ioto_prin2t "+++ Optimizing projection order.";
+      if !*rlcaddecdeg then
+	 phi := ofsf_caddecdeg phi;
+      phi := cl_pnf phi;
+      cll := ofsf_cadvbl phi;
+      if !*rlverbose then <<
+      	 ioto_tprin2 {"+ input order by blocks:"};
+	 for each cl in cll do
+	    ioto_prin2 {" -> ", cl}
+      >>;
+      cll := ofsf_cadporder1(ofsf_transfac cl_terml phi, cll);
+      if !*rlverbose then <<
+      	 ioto_tprin2 {"+ optimized order:"};
+	 for each cl in cll do
+	    ioto_prin2 {" -> ", cl}
+      >>;
+      return for each cl in cll join cl
+   end;
+
+asserted procedure ofsf_cadporder1(fl: SFList, cll: List): List;
+   % CAD projection order subroutine. [fl] is a List of irreducible SF; [cll] is
+   % a List of Lists of variables. Returns a List of Lists of variables. The
+   % variable order is optimized for projection within each List in [cll].
+   begin scalar cl, lastp, ncl, ncll, theo;
+      integer j;
+      j := for each cl in cll sum
+	 length cl;
       while cll do <<
-	 cl := car cll;
-	 cll := cdr cll;
+	 cl := pop cll;
 	 if cl then <<
-	    w := ofsf_cadporder2(tl,cl,varl,null cll or null car cll,theo,
-	       rate,betterp);
-	    tl := car w;
-	    ncll := cadr w . ncll;
-	    theo := caddr w
+	    lastp := null cll or null car cll;
+	    {fl, ncl, theo} := ofsf_cadporder2(fl, cl, j, lastp, theo);
+	    push(ncl, ncll);
+	    j := j - length cl
 	 >> else
-	    ncll := nil . ncll
+	    push(nil, ncll)
       >>;
       return reversip ncll
    end;
 
-procedure ofsf_cadporder2(tl,cl,varl,lastp,theo,rate,betterp);
-   % CAD projection order subroutine. [tl] is a list of (irreducible) SF's; [cl]
-   % is a LIST of identifiers; [varl] is a LIST of IDENTIFIERS; [lastp] is
-   % BOOLEAN. Returns a pair $(T . V)$, where $T$ is a LIST of SF's and $V$ is a
-   % LIST of IDENTIFIER's. [varl] is the list of all variables in the original
-   % input formula in the given input order, i.e., [cl] is a subsegment of
-   % [varl]. If [lastp] is non-[nil], then we are in the last projection block.
-   % $V$ contains the variables from [cl] in an order optimized for projection,
-   % and $T$ is the projection set after projecting in this order $V$.
-   begin scalar w,ncl,lvarl;
+asserted procedure ofsf_cadporder2(fl: SFList, cl: KernelList, j: Integer, lastp: Boolean, theo: List): List;
+   % CAD projection order subroutine. [fl] is a List of irreducible SF; [cl] is
+   % a block of variables; [j] is the level of the first variable in [cl]; If
+   % [lastp] is [t], then [cl] is the last projection block. Returns a List
+   % [{nfl, ncl, ntheo}], where [ncl] contains the variables from [cl] in an
+   % order optimized for projection, and [nfl] is the projection set after
+   % projecting in this order [ncl].
+   begin scalar x, ncl;
       if !*rlverbose then
-	 ioto_tprin2t {"+ Current input block: -> ",cl," ->"};
-      lvarl := member(car cl,varl);
+	 ioto_tprin2t {"+ current input block: ", cl};
       while cl and (not lastp or cdr cl) do <<
-      	 w := ofsf_cadporder3(tl,cl,lvarl,theo,rate,betterp);
-	 tl := car w;
-	 ncl := cadr w . ncl;
-	 theo := caddr w;
-	 cl := delete(cadr w,cl);
-	 lvarl := delete(cadr w,lvarl)
+      	 {fl, x, theo} := ofsf_cadporder3(fl, cl, j, theo);
+	 push(x, ncl);
+	 cl := delete(x, cl);
+	 j := j - 1
       >>;
       if lastp then
-	 ncl := car cl . ncl;
+	 push(car cl, ncl);
       ncl := reversip ncl;
       if !*rlverbose then
-	 ioto_tprin2t {"+ Reordered block: ",ncl};
-      return {tl,ncl,theo}
+	 ioto_tprin2t {"+ reordered block: ", ncl};
+      return {fl, ncl, theo}
    end;
 
-procedure ofsf_cadporder3(tl,cl,lvarl,theo,rate,betterp);
-   % CAD projection order subroutine. [tl] is a list of (irreducible) SF's; [cl]
-   % is a LIST of identifiers; [lvarl] is a LIST of identifiers. Returns a pair
-   % $(T . v)$, where $T$ is a LIST of SF's and $v$ is an IDENTIFIER. [lvarl] is
-   % the tail of the list of all variables in the original input formula in the
-   % given input order starting with [cl]. $v$ is the best variables in [cl] for
-   % the next projection step and $T$ is the result of this projection step.
-   begin scalar pset,xopt,psetopt,optrating,theoopt,rating,j,psetpr;
-      j := length lvarl;
+asserted procedure ofsf_cadporder3(fl: SFList, cl: KernelList, j: Integer, theo: List): List;
+   % CAD projection order subroutine. [fl] is a List of irreducible SF; [cl] is
+   % a block of variables; [j] is the level of the first variable in [cl].
+   % Returns a List [{nfl, v, ntheo}], where [v] is the best variable in [cl]
+   % for the next projection step and [nfl] is the result of this projection
+   % step.
+   begin scalar pp1, pp2, r, pset, xopt, psetopt, ropt, theoopt;
       for each x in cl do <<
 	 if !*rlverbose then
-	    ioto_prin2 {"[",x,":"};
-	 lvarl := x . delete(x,lvarl);
-	 psetpr := ofsf_cadporder!-project(tl,x,lvarl,j,theo);
-	 pset := car psetpr;
-	 rating := apply(rate,{pset});
-	 pset := union(car psetpr,cdr psetpr);
+	    ioto_prin2 {"[", x, ":"};
+	 pp1 . pp2 := ofsf_cadporder!-project(fl, x, j, theo);
+	 r := ofsf_cadporder!-rate pp1;
+	 pset := union(pp1, pp2);
 	 if !*rlverbose then <<
-	    ioto_prin2 rating;
+	    ioto_prin2 r;
 	    if !*rlqegen then
-	       ioto_prin2 {"/",length theo};
+	       ioto_prin2 {"/", length theo};
 	    ioto_prin2 "] "
 	 >>;
-	 if apply(betterp,{rating,optrating,theo,theoopt}) then <<
+	 if ofsf_cadporder!-betterp(r, ropt, theo, theoopt) then <<
 	    xopt := x;
 	    psetopt := pset;
-	    optrating := rating;
-	    if !*rlqegen then theoopt := theo
-	 >>;
+	    ropt := r;
+	    if !*rlqegen then
+	       theoopt := theo
+	 >>
       >>;
-      if !*rlqegen then theo := theoopt;
-      if !*rlverbose then ioto_prin2t {"choose ",xopt};
-      return {psetopt,xopt,theo}
-   end;
-
-procedure ofsf_cadporder!-project(tl,x,lvarl,j,theo);
-   begin scalar pset,oldorder;
-      oldorder := setkorder {x};
-      tl := for each f in tl collect
-	 reorder f;
+      if !*rlverbose then
+	 ioto_prin2t {"choose ", xopt};
       if !*rlqegen then
-	 theo := for each at in theo collect
-	    ofsf_0mk2(ofsf_op at,reorder ofsf_arg2l at);
-      pset := ofsf_cadporder!-project1(tl,x,lvarl,j,theo);
-      setkorder oldorder;
-      return pset
+	 theo := theoopt;
+      return {psetopt, xopt, theo}
    end;
 
-procedure ofsf_cadporder!-project1(tl,x,lvarl,j,theo);
-   begin scalar ffj,ffi,pset,w;
-      ffj := ffi := nil;
-      for each f in tl do
+asserted procedure ofsf_cadporder!-project(fl: SFList, x: Kernel, j: Integer, theo: List): DottedPair;
+   begin scalar oldorder, ffj, ffi, pset, w;
+      oldorder := setkorder {x};
+      fl := for each f in fl collect
+	 reorder f;
+      for each f in fl do
 	 if mvar f eq x then
-	    ffj := f . ffj
+	    push(f, ffj)
 	 else
-	    ffi := f . ffi;
-      pset :=  if !*rlqegen then <<
-	 w := ofsf_projopcohogen(ffj, nth(reverse lvarl, j), j, theo);
-	 theo := cdr w;
-	 ofsf_transfac car w
+	    push(f, ffi);
+      if !*rlqegen then <<
+	 theo := for each at in theo collect
+	    ofsf_0mk2(ofsf_op at, reorder ofsf_arg2l at);
+	 w := ofsf_projopcohogen(ffj, x, j, theo);
+	 pset := ofsf_transfac car w
       >> else
-	 ofsf_transfac ofsf_projopcoho(ffj, nth(reverse lvarl, j), j);
-      return (pset . ffi)
+	 pset := ofsf_transfac ofsf_projopcoho(ffj, x, j);
+      setkorder oldorder;
+      return pset . ffi
    end;
 
 %%% --- projection code --- %%%
