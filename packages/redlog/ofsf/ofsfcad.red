@@ -528,12 +528,12 @@ asserted procedure ofsf_ptoc(basecell: Acell, psi: QfFormula, cd: CadData): Atre
       % (2) Recursion Case: 1 <= j <= r
       assert(1 <= j and j <= r);
       if !*rlcadte then <<  % trial evaluation
-	 psi := ofsf_trialeval(psi, sp);
+      	 psi := ofsf_trialeval(psi, sp);
       	 if psi memq '(true false) then <<
-	    acell_puttv(basecell, psi);
-	    if ofsf_cadverbosep() then
-	       ioto_prin2 ":T)";
-	    return atree_mk basecell
+      	    acell_puttv(basecell, psi);
+      	    if ofsf_cadverbosep() then
+      	       ioto_prin2 ":T)";
+      	    return atree_mk basecell
       	 >>
       >>;
       k := caddata_k cd;
@@ -566,7 +566,7 @@ asserted procedure ofsf_ptoc(basecell: Acell, psi: QfFormula, cd: CadData): Atre
 	 (cell := ofsf_nextcell(ncbuffer, sp, iri, xj, j, k)) do <<
 	    tree := ofsf_ptoc(cell, psi, cd);
 	    push(tree, treel);
-	    tv := acell_gettv atree_rootcell tree
+	    tv := acell_gettv atree_rootcell tree;
 	 >>;
       acell_puttv(basecell, tv);
       res := atree_mk basecell;
@@ -604,7 +604,12 @@ asserted procedure ofsf_iswhitecell(cell: Acell, cd: CadData): Boolean;
    end;
 
 asserted procedure ofsf_trialeval(psi: QfFormula, sp: AnuList): QfFormula;
-   cl_simpl(cl_apply2ats1(psi,
+   %TODO: Remove when simpl is compatible with higher depth.
+   if rlqeinfcore!* then cl_simpl(cl_apply2ats1(psi,
+      function(lambda(atf, sp); ofsf_0mk2(ofsf_op atf,
+	 ofsf_trialevalsgnf(ofsf_arg2l atf, sp))), {sp}),
+      nil, 1)
+   else cl_simpl(cl_apply2ats1(psi,
       function(lambda(atf, sp); ofsf_0mk2(ofsf_op atf,
 	 ofsf_trialevalsgnf(ofsf_arg2l atf, sp))), {sp}),
       nil, -1);
@@ -1126,6 +1131,12 @@ asserted procedure atree_rootcell(tt: Atree): Any;
 asserted procedure atree_childl(tt: Atree): List;
    nth(tt, 3);
 
+asserted procedure atree_getleafs(tt: Atree): List;
+begin;
+   if null atree_childl(tt) then return atree_rootcell(tt);
+   return for each c in atree_childl(tt) collect atree_getleafs(c);
+end;
+
 asserted procedure atree_childrenatlevel(tt: Atree, n: Integer): List;
    % Returns the list of Acells with distance exactly [n] from the root of [tt].
    if eqn(n, 0) then
@@ -1446,6 +1457,11 @@ asserted procedure ofsf_solutionformula(cd: CadData): Any;
 	 if !*rlverbose and !*rlcadans then
 	    ioto_prin2t {"+ ANSWERS (for decision problem): ",
 	       cdr atsoc('answers, acell_gettl atree_rootcell dd)};
+	 if !*rlqeinfcore then <<
+	    for each cell in atree_getleafs(dd) do <<
+		  ic_appendcadcellList(rlqeicdata!*,cell);
+	       >>;
+	 >>;
 	 caddata_putphiprime(cd, acell_gettv atree_rootcell dd);
 	 return nil
       >>;
