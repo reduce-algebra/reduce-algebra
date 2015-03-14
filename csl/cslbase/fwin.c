@@ -1478,7 +1478,7 @@ void process_file_name(char *filename, char *old, size_t n)
  * some old users and legacy applications will certainly continue to use
  * links. However the Posix-style APIs do not provide any way to deal with
  * them! So here I use some Carbon calls to map a path to an alias into
- * a path to the file it refers to. Thise code was requested by Thomas
+ * a path to the file it refers to. This code was requested by Thomas
  * Sturm who provided a skeleton chunk of code showing what APIs needed to be
  * used and references to the documentation to them, so thanks are due.
  */
