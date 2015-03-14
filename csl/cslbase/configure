@@ -7871,7 +7871,9 @@ fi
 done
 
     with_gxx=`echo $with_gcc | sed  -e 's/gcc/g++/'`
-    if test "x$with_gcc" = "x$with_gxx" || test $altGCC="no"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: altGCC = $altGCC. Try $with_gxx for g++ compiler" >&5
+$as_echo "$as_me: altGCC = $altGCC. Try $with_gxx for g++ compiler" >&6;}
+    if test "x$with_gcc" = "x$with_gxx" || test $altGCC = "no"
     then
       as_fn_error $? "--with-gcc=$with_gcc is invalid" "$LINENO" 5
     fi

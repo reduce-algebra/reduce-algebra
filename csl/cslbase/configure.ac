@@ -621,7 +621,8 @@ then
 # overriding. But I will check if their pick seems to be available.
     AC_CHECK_PROGS([altGCC], $with_gcc)
     with_gxx=`echo $with_gcc | sed  -e 's/gcc/g++/'`
-    if test "x$with_gcc" = "x$with_gxx" || test $altGCC="no"
+    AC_MSG_NOTICE([altGCC = $altGCC. Try $with_gxx for g++ compiler])
+    if test "x$with_gcc" = "x$with_gxx" || test $altGCC = "no"
     then
       AC_MSG_ERROR([--with-gcc=$with_gcc is invalid])
     fi
