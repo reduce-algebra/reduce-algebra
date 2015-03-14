@@ -635,7 +635,7 @@ symbolic procedure fancy!-inprint1(op,p,l);
    for each v in l do
    <<lop := op;
      if op='plus and eqcar(v,'minus) then
-       <<lop := 'minus; v:= cadr v>>;
+       <<lop := 'minus; v:= cadr v; p:=get('minus,'infix)>>;
      if space then fancy!-prin2!*("\,",1);
      if 'failed = fancy!-oprin lop then
       <<fancy!-terpri!* nil; fancy!-oprin lop>>;
@@ -652,7 +652,7 @@ symbolic procedure fancy!-inprint2(op,p,l);
     if not testing!-width!* or w neq 'failed then
      <<lop:=op;
        if op='plus and eqcar(v,'minus) then
-              <<lop := 'minus; v:= cadr v>>;
+              <<lop := 'minus; v:= cadr v; p:=get('minus,'infix)>>;
        if space then fancy!-prin2!*("\,",1);
        fancy!-oprin lop;
        if space then fancy!-prin2!*("\,",1);
