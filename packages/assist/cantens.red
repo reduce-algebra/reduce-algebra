@@ -118,9 +118,6 @@ inline procedure careq_tilde u;
 inline procedure careq_minus u;
    eqcar(u,'minus);
 
-inline procedure lowerind u;
-   list('minus,u);
-
 inline procedure raiseind u;
    cadr u;
 

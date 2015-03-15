@@ -44,20 +44,6 @@ symbolic procedure carx(u,v);
 % symbolic macro procedure concat u;
 %    if null u then nil else expand(cdr u,'concat2);
 
-% symbolic procedure delasc(u,v);
-%    if null v then nil
-%    else if atom car v or u neq caar v then car v . delasc(u,cdr v)
-%    else cdr v;
-
-% This definition, due to A.C. Norman, avoids recursion.
-
-symbolic procedure delasc(u,v);
-  begin scalar w;
-     while v do
-      <<if atom car v or u neq caar v then w := car v . w; v := cdr v>>;
-     return reversip w
-  end;
-
 symbolic procedure eqexpr u;
    % Returns true if U is an equation or similar structure
    % (e.g., a rule).
@@ -69,21 +55,6 @@ flag('(eq equal),'equalopr);
 symbolic procedure evenp x; remainder(x,2)=0;
 
 flag('(evenp),'opfn);  % Make a symbolic operator.
-
-% The definition of this function has been migrated to rlisp/tok.red
-%
-%symbolic procedure lengthc u;
-%   %gives character length of U excluding string and escape chars;
-%   begin integer n; scalar x;
-%      n := 0;
-%      x := explode u;
-%      if car x eq '!" then return length x-2;
-%      while x do
-%        <<if car x eq '!! then x := cdr x;
-%          n := n+1;
-%          x := cdr x>>;
-%      return n
-%   end;
 
 symbolic procedure makearbcomplex;
    begin scalar ans;
@@ -179,6 +150,55 @@ symbolic procedure xnp(u,v);
    %returns true if the atom lists U and V have at least one common
    %element;
    u and (car u memq v or xnp(cdr u,v));
+
+% In earlier versions of Reduce there were various functions where the
+% definition were replicated in several places. When these are pure
+% duplicates it seems good to lift the definitions to here so that they
+% are included just once. So some of the functions defined here may be
+% a little specialist and not used in very many places.
+
+inline procedure !*k2pf u;
+   u .* (1 ./ 1) .+ nil;
+
+inline procedure negpf u;
+   multpfsq(u,(-1) ./ 1);
+
+inline procedure lowerind u;
+   list('minus,u);
+
+% The next two are from excalc.
+
+inline procedure get!*fdeg u;
+   (if x then car x else nil) where x = get(u,'fdegree);
+
+inline procedure get!*ifdeg u;
+   (if x then cdr x else nil)
+    where x = assoc(length cdr u,get(car u,'ifdegree));
+
+% The next is from fmprint.red/tmprint.red
+
+symbolic macro procedure fancy!-level u;
+ % unwind-protect for special output functions.
+  {'prog,'(pos fl w),
+      '(setq pos fancy!-pos!*),
+      '(setq fl fancy!-line!*),
+      {'setq,'w,cadr u},
+      '(cond ((eq w 'failed)
+              (setq fancy!-line!* fl)
+              (setq fancy!-pos!* pos))),
+       '(return w)};
+
+fluid '(ints!-as!-symbols!*);
+ints!-as!-symbols!* := mkvect 15;
+for i := 0:15 do putv(ints!-as!-symbols!*, i,
+                      intern compress ('!! . explode i));
+
+% Make a symbols whose name is the sequence of digits from the
+% number u. This (!*num2id 37) will give !37.
+ 
+symbolic procedure !*num2id u;
+   if u <= 15 and u >= 0 then getv(ints!-as!-symbols!*, u)
+   else intern compress('!! . explode u);
 
 endmodule;
 

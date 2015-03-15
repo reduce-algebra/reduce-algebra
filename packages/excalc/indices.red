@@ -544,14 +544,6 @@ symbolic procedure flatindl u;
    if null u then nil
     else append(car u,flatindl cdr u);
 
-symbolic procedure !*num2id u;
-%converts a numeric index to an id;
-  %if u = 0 then rerror(excalc,7,"0 not allowed as index") else
-   if u<10 then intern cdr assoc(u,
-             '((0 . !0) (1 . !1) (2 . !2) (3 . !3) (4 . !4)
-               (5 . !5) (6 . !6) (7 . !7) (8 . !8) (9 . !9)))
-    else intern compress('!! . explode u);
-
 symbolic procedure revalind u;
    begin scalar x,y,alglist!*,dmode!*;
      x := subfg!*;

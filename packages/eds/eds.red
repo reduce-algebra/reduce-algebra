@@ -173,17 +173,5 @@ symbolic macro procedure edscall u;
 %%%         function list . mkquote car x . cdr x;
 
 
-% Macros from excalc for compilation
-% BEWARE if excalc ever though of changing any of these!
-
-inline procedure !*k2pf u;
-   u .* (1 ./ 1) .+ nil;
-
-inline procedure negpf u;
-   multpfsq(u,(-1) ./ 1);
-
-inline procedure lowerind u;
-   list('minus,u);
-
 endmodule;
 end;

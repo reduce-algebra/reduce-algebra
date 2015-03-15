@@ -47,7 +47,9 @@ fluid  '(!*fort
          ymax!*
          ymin!*
          rprifn!*
-         rterfn!*);
+         rterfn!*
+         !*utf8
+         !*utf82d);
 
 fluid '(!*TeX);
 
@@ -140,7 +142,8 @@ symbolic procedure vec!-maprin(u,p!*!*);
 
 symbolic procedure exptpri(l,p);
 % Prints expression in an exponent notation.
-   begin scalar !*list,x,pp,q,w1,w2;
+   if !*utf8 then utf8_exptpri(x, p)
+   else begin scalar !*list,x,pp,q,w1,w2;
       if not !*nat or !*fort then return 'failed;
       pp := not((q:=get('expt,'infix))>p);  % Need to parenthesize
       w1 := cadr l;
@@ -247,7 +250,11 @@ symbolic procedure oprin op;
    get(op,'prtch);
 
 symbolic procedure prin2!* u;
-    if outputhandler!* then apply2(outputhandler!*,'prin2!*,u)
+% It seems to me possible that the UTF8 package ought to be rewritten to use
+% the outputhandler!* mechanism... but I am putting in minimal changes right
+% now.
+    if !*utf8 then prin2!* u
+    else if outputhandler!* then apply2(outputhandler!*,'prin2!*,u)
      else begin integer m,n,p; scalar x;
       if x := get(u,'oldnam) then u := x;
       if overflowed!* then return 'overflowed
@@ -315,6 +322,7 @@ symbolic procedure terpri!* u;
 
 symbolic procedure scprint(u,n);
    begin scalar m;
+        if !*utf8 then return utf8_scprint(u, n);
         posn!* := 0;
         for each v in u do <<
            if cdar v=n then <<
@@ -422,8 +430,17 @@ symbolic procedure revlis_without_mode u;
 
 % Definition of some symbols and their access function.
 
-symbolic procedure symbol s;
-   get(s,'symbol!-character);
+% This has extra support for the UTF8 module so that utf8.red does not
+% feel it need to replace this common definition.
+
+symbolic procedure symbol(s);
+   if !*utf8 then <<
+      if !*utf82d then
+         get(s,'utf8_2d!-symbol!-character) or
+         get(s,'utf8_symbol!-character) or get(s,'symbol!-character)
+      else get(s,'utf8_symbol!-character) or get(s,'symbol!-character) >>
+   else get(s,'symbol!-character);
+
 
 put('!.pi, 'symbol!-character, 'pi);
 put('bar, 'symbol!-character, '!-);

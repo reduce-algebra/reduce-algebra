@@ -58,7 +58,6 @@ situatiuon, in that the variable !*package_maud_active could then be set on
 or off easily.
 
 
-!*k2pf                         defined in       excalc xideal eds
 !*num2id                       defined in       gentens indices
 add!+vector!+to!+list          defined in       gramschm symatvec
 add2resultbuf                  defined in       superv libreduce
@@ -132,9 +131,7 @@ evalplus                       defined in       defintx convert
 expression                     defined in       mathml mml_ir
 expt!-int                      defined in       ludecom plotnum definta
 exptexpflistp                  defined in       solvelnr edspatch
-exptpri                        defined in       mprint utf8
 extractmat                     defined in       geometry geoprover
-fancy!-level_sdniqcjau4jc      defined in       fmprint excalc
 find                           defined in       mathml tools expon
 find!*var                      defined in       codad1 codad2
 find!+var                      defined in       codad1 codad2
@@ -148,8 +145,6 @@ fullcopy                       defined in       dummy sparsmat
 functionp                      defined in       assertcheckfn randpoly
 gb_vars                        defined in       gb crgb
 gentran                        defined in       intrfc codgen
-get!*fdeg                      defined in       excalc xideal
-get!*ifdeg                     defined in       excalc xideal
 get!+vec!+dim                  defined in       gramschm symatvec
 get!+vec!+entry                defined in       gramschm symatvec
 get!-impfun!-args              defined in       cantens excalc
@@ -206,7 +201,6 @@ lndepends                      defined in       partdf edspatch
 log_baseml                     defined in       mathml mml_ir
 logbaserd                      defined in       mathml mml_ir
 logrd                          defined in       mathml mml_ir
-lowerind                       defined in       cantens excalc eds
 lowestdeg                      defined in       modsr polyexns
 lowlimitrd                     defined in       mathml mml_ir
 lto_partition                  defined in       lto pident
@@ -255,7 +249,6 @@ my!+nullsq!+p                  defined in       gramschm symatvec
 natnumlis                      defined in       matrext sparsmat
 ndepends                       defined in       partdf edspatch
 ndependsl                      defined in       partdf edspatch
-negpf                          defined in       excalc xideal eds
 newrederr                      defined in       zeilberg ztrans
 newrederr1                     defined in       zeilberg ztrans
 newton                         defined in       desir ratint
@@ -286,7 +279,6 @@ polynomq                       defined in       qsum simplede zeilberg
 polynomq4                      defined in       qsum zeilberg
 polynomqqq                     defined in       qsum zeilberg residue contfrac
 pp_line                        defined in       geometry geoprover
-prin2!*                        defined in       mprint utf8
 print_ndg                      defined in       geometry geoprover
 printout                       defined in       mathml ir2om mml_ir
 printvec                       defined in       ezgcd genparser
@@ -330,7 +322,6 @@ rsecond                        defined in       list baglist
 rthird                         defined in       list baglist
 savesolve                      defined in       simplede zeilberg
 scalefactors                   defined in       avector expres
-scprint                        defined in       mprint utf8
 search_att                     defined in       mathml tools
 select!-eval                   defined in       map qsum
 selectrd                       defined in       mathml mml_ir
@@ -364,7 +355,6 @@ sublistp                       defined in       partdf xpowers
 subs3f1                        defined in       subs3q noncom2
 subsetrd                       defined in       mathml mml_ir
 swap                           defined in       vect sparsmat
-symbol                         defined in       mprint utf8
 symmetricp                     defined in       cholesky splinalg rankstat
 taylor                         defined in       approx orthovec
 taylorfunction                 defined in       idepend algint

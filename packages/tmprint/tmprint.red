@@ -942,18 +942,22 @@ symbolic procedure fancy!-terpri!* u;
      overflowed!* := nil
    >>;
 
-symbolic macro procedure fancy!-level u;
- % unwind-protect for special output functions.
-  {'prog,'(pos tpos fl w),
-      '(setq pos fancy!-pos!*),
-      '(setq tpos fancy!-texpos),
-      '(setq fl fancy!-line!*),
-      {'setq,'w,cadr u},
-      '(cond ((eq w 'failed)
-              (setq fancy!-line!* fl)
-              (setq fancy!-texpos tpos)
-              (setq fancy!-pos!* pos))),
-       '(return w)};
+
+% Moved to alg/general.red so that other modules could use it when
+% implementing their own custom printing.
+%
+%symbolic macro procedure fancy!-level u;
+% % unwind-protect for special output functions.
+%  {'prog,'(pos tpos fl w),
+%      '(setq pos fancy!-pos!*),
+%      '(setq tpos fancy!-texpos),
+%      '(setq fl fancy!-line!*),
+%      {'setq,'w,cadr u},
+%      '(cond ((eq w 'failed)
+%              (setq fancy!-line!* fl)
+%              (setq fancy!-texpos tpos)
+%              (setq fancy!-pos!* pos))),
+%       '(return w)};
 
 symbolic procedure fancy!-begin();
   % collect current status of fancy output. Return as a list

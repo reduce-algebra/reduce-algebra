@@ -86,16 +86,6 @@ on1 'utf8expall;
 on1 'utf8diffquot;
 on1 'utf8pad;
 
-copyd('prin2!*_orig,'prin2!*);
-copyd('scprint_orig,'scprint);
-copyd('exptpri_orig,'exptpri);
-
-procedure prin2!*(u);
-   if not !*utf8 then
-      prin2!*_orig u
-   else
-      utf8_prin2!* u;
-
 procedure utf8_prin2!*(u);
    if outputhandler!* then apply2(outputhandler!*,'prin2!*,u)
    else begin integer m,n,p; scalar x,y;
@@ -127,16 +117,6 @@ procedure utf8_prin2!*(u);
       else prin2lint(u,posn!* #+ 1,p #- 1)
    end;
 
-procedure scprint(u,n);
-   <<
-      if not !*utf8 then
-      	 scprint_orig(u,n)
-      else
-      	 utf8_scprint(u,n);
-      if !*utf8pad then
-      	 utf8_dots(cdaar lastcar u - posn!*)
-   >>;
-
 procedure utf8_scprint(u,n);
    begin scalar m,w,x,padded;
       posn!* := 0;
@@ -160,7 +140,8 @@ procedure utf8_scprint(u,n);
 	       utf8_prin2 cdr v;
 	    posn!* := cdaar v
  	 >>
-      >>
+      >>;
+      if !*utf8pad then utf8_dots(cdaar lastcar u - posn!*)
    end;
 
 procedure utf8_dots(n);
@@ -211,12 +192,6 @@ procedure utf8_subscript(d);
       (!4 . (226 130 132)) (!5 . (226 130 133)) (!6 . (226 130 134))
       (!7 . (226 130 135)) (!8 . (226 130 136)) (!9 . (226 130 137))
       (!0 . (226 130 128))));
-
-procedure exptpri(x,y);
-   if not !*utf8 then
-      exptpri_orig(x,y)
-   else
-      utf8_exptpri(x,y);
 
 procedure utf8_exptpri(x,p);
    begin scalar e, q, expo, w;
@@ -345,15 +320,6 @@ procedure intprint u;
       prin2!* symbol 'd;
       maprin caddr u
    end;
-
-procedure symbol(s);
-   if !*utf8 and !*utf82d then
-      get(s,'utf8_2d!-symbol!-character) or
-      get(s,'utf8_symbol!-character) or get(s,'symbol!-character)
-   else if !*utf8 then
-      get(s,'utf8_symbol!-character) or get(s,'symbol!-character)
-   else
-      get(s,'symbol!-character);
 
 put('ex,'utf8,'(1 226 136 131));
 put('all,'utf8,'(1 226 136 128));

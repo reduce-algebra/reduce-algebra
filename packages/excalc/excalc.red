@@ -90,15 +90,6 @@ inline procedure tpsf u;
    %selector for leading term in partitioned sf;
    car u;
 
-inline procedure !*k2pf u;
-   u .* (1 ./ 1) .+ nil;
-
-inline procedure negpf u;
-   multpfsq(u,(-1) ./ 1);
-
-inline procedure lowerind u;
-   list('minus,u);
-
 inline procedure lwf u;
    %selector for leading factor in wedge.
    car u;
@@ -114,26 +105,15 @@ inline procedure get!-impfun!-args u;
    % Get dependencies of id u.
    cdr assoc(u,depl!*);
 
-inline procedure get!*fdeg u;
-   (if x then car x else nil) where x = get(u,'fdegree);
+% Migrated to alg/general.red because re-used elsewhere...
+%
+%inline procedure get!*fdeg u;
+%   (if x then car x else nil) where x = get(u,'fdegree);
+%
+%inline procedure get!*ifdeg u;
+%   (if x then cdr x else nil)
+%    where x = assoc(length cdr u,get(car u,'ifdegree));
 
-inline procedure get!*ifdeg u;
-   (if x then cdr x else nil)
-    where x = assoc(length cdr u,get(car u,'ifdegree));
-
-
-%%% This macro from fmprint.red needed for independent compilation.
-
-symbolic macro procedure fancy!-level u;
- % unwind-protect for special output functions.
-  {'prog,'(pos fl w),
-      '(setq pos fancy!-pos!*),
-      '(setq fl fancy!-line!*),
-      {'setq,'w,cadr u},
-      '(cond ((eq w 'failed)
-              (setq fancy!-line!* fl)
-              (setq fancy!-pos!* pos))),
-       '(return w)};
 
 endmodule;
 

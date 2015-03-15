@@ -297,9 +297,6 @@ symbolic procedure one!-entryp(u,v);
 symbolic procedure one!-entry!-listp(u,v);
    null u or one!-entryp(car u,v) and one!-entry!-listp(cdr u,v);
 
-% This function is (also) defined in alg/general.red but is put here
-% because it is needed early(ish) in the bootstrap process.
-
 symbolic procedure delasc(u,v);
   begin scalar w;
      while v do
