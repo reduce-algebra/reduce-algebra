@@ -16,7 +16,10 @@ symbolic procedure remdups z;
   for each n in oblist() do <<
     z := get(n, 'load!-source);
     z := remdups z;
-    if not atom z and not atom cdr z and cddr z then <<
+% I know that fmprint and tmprint are near duplicates and so I will not
+% mention clashes that only involve exactly those two.
+    if not atom z and not atom cdr z and cddr z and
+      not (cdr z = '("fmprint" "tmprint")) then <<
       prin n; ttab 30; princ " defined in      ";
       for each z1 in cdr z do <<
         princ " "; princ z1>>;

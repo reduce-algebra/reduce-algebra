@@ -58,6 +58,8 @@ situatiuon, in that the variable !*package_maud_active could then be set on
 or off easily.
 
 
+
+!*k2pf                         defined in       general xideal
 addm                           defined in       matsm sparsmat
 addm1                          defined in       matsm sparsmat
 addmpf                         defined in       partitsf xexcalc
@@ -87,6 +89,7 @@ conv                           defined in       convert expon
 convert                        defined in       ludecom convert
 copy_mat                       defined in       linalg froben
 copy_vect                      defined in       perms sparsmat
+copyd                          defined in       cslprolo cslrend
 cross                          defined in       dummy1 v3tools
 declarerd                      defined in       mathml mml_ir
 deg                            defined in       polyop desir odesolve
@@ -94,7 +97,6 @@ deg!*form                      defined in       degform xexcalc
 degree                         defined in       sfto trigsmp2 turtle
 degreeml                       defined in       mathml mml_ir
 delall                         defined in       mathml tools
-delasc                         defined in       smacro general
 delqip                         defined in       sl2psl lto
 delqip1                        defined in       sl2psl lto
 depend                         defined in       depend orthovec
@@ -132,6 +134,8 @@ fullcopy                       defined in       dummy sparsmat
 functionp                      defined in       assertcheckfn randpoly
 gb_vars                        defined in       gb crgb
 gentran                        defined in       intrfc codgen
+get!*fdeg                      defined in       general xideal
+get!*ifdeg                     defined in       general xideal
 get!+vec!+dim                  defined in       gramschm symatvec
 get!+vec!+entry                defined in       gramschm symatvec
 get!-impfun!-args              defined in       cantens excalc
@@ -232,6 +236,7 @@ my!+nullsq!+p                  defined in       gramschm symatvec
 natnumlis                      defined in       matrext sparsmat
 ndepends                       defined in       partdf edspatch
 ndependsl                      defined in       partdf edspatch
+negpf                          defined in       general xideal
 newrederr                      defined in       zeilberg ztrans
 newrederr1                     defined in       zeilberg ztrans
 newton                         defined in       desir ratint
@@ -338,6 +343,7 @@ texlet                         defined in       rlfi tri
 tokbquote                      defined in       tok bquote
 token!-number                  defined in       tok smtread
 tp                             defined in       matsm sparsmat
+tprettyprint                   defined in       cslcompat pretty
 transposerd                    defined in       mathml mml_ir
 trim                           defined in       recsimpl zeilberg
 ttttype_ratpoly                defined in       qsum zeilberg residue contfrac
@@ -358,91 +364,3 @@ vectorrd                       defined in       mathml mml_ir
 vevstrictlydivides!?           defined in       traverso ncgroeb
 vevzero!?                      defined in       a2dip vdp2dip vdpcom
 wedgek2                        defined in       wedge xexcalc
-
-=============
-
-fancy!-adjust!-bkt!-levels     defined in       fmprint tmprint
-fancy!-begin                   defined in       fmprint tmprint
-fancy!-bessel                  defined in       fmprint tmprint
-fancy!-binomial                defined in       fmprint tmprint
-fancy!-boolvalpri              defined in       fmprint tmprint
-fancy!-cmpxprin                defined in       fmprint tmprint
-fancy!-condpri                 defined in       fmprint tmprint
-fancy!-condpri0                defined in       fmprint tmprint
-fancy!-convert                 defined in       fmprint tmprint
-fancy!-dfpri                   defined in       fmprint tmprint
-fancy!-dfpri0                  defined in       fmprint tmprint
-fancy!-dfpriindexed            defined in       fmprint tmprint
-fancy!-dfpriindexedx           defined in       fmprint tmprint
-fancy!-dn!:prin                defined in       fmprint tmprint
-fancy!-end                     defined in       fmprint tmprint
-fancy!-esc                     defined in       fmprint tmprint
-fancy!-exptpri                 defined in       fmprint tmprint
-fancy!-factorial               defined in       fmprint tmprint
-fancy!-fail                    defined in       fmprint tmprint
-fancy!-flush                   defined in       fmprint tmprint
-fancy!-height                  defined in       fmprint tmprint
-fancy!-hypergeometric          defined in       fmprint tmprint
-fancy!-in!-brackets            defined in       fmprint tmprint
-fancy!-inprint                 defined in       fmprint tmprint
-fancy!-inprint1                defined in       fmprint tmprint
-fancy!-inprint2                defined in       fmprint tmprint
-fancy!-inprintlist             defined in       fmprint tmprint
-fancy!-intpri                  defined in       fmprint tmprint
-fancy!-last!-symbol            defined in       fmprint tmprint
-fancy!-limpri                  defined in       fmprint tmprint
-fancy!-listpri                 defined in       fmprint tmprint
-fancy!-lower!-digits           defined in       fmprint tmprint
-fancy!-lower!-digits1          defined in       fmprint tmprint
-fancy!-lower!-digitstrail      defined in       fmprint tmprint
-fancy!-maprin0                 defined in       fmprint tmprint
-fancy!-maprint                 defined in       fmprint tmprint
-fancy!-maprint!-atom           defined in       fmprint tmprint
-fancy!-maprint!-tex!-bkt       defined in       fmprint tmprint
-fancy!-matfit                  defined in       fmprint tmprint
-fancy!-matpri                  defined in       fmprint tmprint
-fancy!-matpri1                 defined in       fmprint tmprint
-fancy!-matpri2                 defined in       fmprint tmprint
-fancy!-matpri3                 defined in       fmprint tmprint
-fancy!-matpriflat              defined in       fmprint tmprint
-fancy!-matpriflat1             defined in       fmprint tmprint
-fancy!-meijerg                 defined in       fmprint tmprint
-fancy!-mode                    defined in       fmprint tmprint
-fancy!-oprin                   defined in       fmprint tmprint
-fancy!-out!-header             defined in       fmprint tmprint
-fancy!-out!-item               defined in       fmprint tmprint
-fancy!-out!-trailer            defined in       fmprint tmprint
-fancy!-output                  defined in       fmprint tmprint
-fancy!-partialdfpri            defined in       fmprint tmprint
-fancy!-patpri                  defined in       fmprint tmprint
-fancy!-prefix!-operator        defined in       fmprint tmprint
-fancy!-prin2                   defined in       fmprint tmprint
-fancy!-prin2!*                 defined in       fmprint tmprint
-fancy!-prin2number             defined in       fmprint tmprint
-fancy!-prin2number1            defined in       fmprint tmprint
-fancy!-prinfit                 defined in       fmprint tmprint
-fancy!-print!-format           defined in       fmprint tmprint
-fancy!-print!-format1          defined in       fmprint tmprint
-fancy!-print!-function!-arguments defined in       fmprint tmprint
-fancy!-print!-indexlist        defined in       fmprint tmprint
-fancy!-print!-indexlist1       defined in       fmprint tmprint
-fancy!-print!-one!-index       defined in       fmprint tmprint
-fancy!-prodpri                 defined in       fmprint tmprint
-fancy!-quotpri                 defined in       fmprint tmprint
-fancy!-rdprin                  defined in       fmprint tmprint
-fancy!-rdprin1                 defined in       fmprint tmprint
-fancy!-revalpri                defined in       fmprint tmprint
-fancy!-setmatpri               defined in       fmprint tmprint
-fancy!-special!-symbol         defined in       fmprint tmprint
-fancy!-sqreform                defined in       fmprint tmprint
-fancy!-sqrtpri                 defined in       fmprint tmprint
-fancy!-sqrtpri!*               defined in       fmprint tmprint
-fancy!-sub                     defined in       fmprint tmprint
-fancy!-sumpri                  defined in       fmprint tmprint
-fancy!-sumpri!*                defined in       fmprint tmprint
-fancy!-terpri!*                defined in       fmprint tmprint
-fancy!-tex                     defined in       fmprint tmprint
-fancy!-unquote                 defined in       fmprint tmprint
-fmp!-switch                    defined in       fmprint tmprint
-print_format                   defined in       fmprint tmprint
-set!-fancymode                 defined in       fmprint tmprint
