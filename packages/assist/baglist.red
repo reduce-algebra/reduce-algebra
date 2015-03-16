@@ -237,11 +237,6 @@ symbolic procedure nul!: u; baglistp u and null cdr u;
 
 flag('(baglistp nul!:),'boolean);
 
-symbolic procedure alistp u$
-% Not for use in algebraic mode.
-if null u then t else
-(not atom car u) and alistp cdr u;
-
 symbolic procedure abaglistp u;
 % For use in algebraic mode. Recognizes when a bag-like object
 % contains bags which themselves contain two and only two objects.

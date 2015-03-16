@@ -59,19 +59,19 @@ symbolic procedure plotrounded d;
     >>;
    end;
 
-symbolic procedure adomainp u;
- % numberp test in an algebraic form.
-   numberp u or (pairp u and idp car u and get(car u,'dname))
-             or eqcar(u,'minus) and adomainp cadr u;
-
-symbolic procedure revalnuminterval(u,num);
- % Evaluate u as interval; numeric bounds required if num=T.
-  begin scalar l;
-    if not eqcar(u,'!*interval!*) then typerr(u,"interval");
-    l:={reval cadr u,reval caddr u};
-    if null num or(adomainp car l and adomainp cadr l)then return l;
-    typerr(u,"numeric interval");
-  end;
+% symbolic procedure adomainp u;
+%  % numberp test in an algebraic form.
+%    numberp u or (pairp u and idp car u and get(car u,'dname))
+%              or eqcar(u,'minus) and adomainp cadr u;
+%
+% symbolic procedure revalnuminterval(u,num);
+%  % Evaluate u as interval; numeric bounds required if num=T.
+%   begin scalar l;
+%     if not eqcar(u,'!*interval!*) then typerr(u,"interval");
+%     l:={reval cadr u,reval caddr u};
+%     if null num or(adomainp car l and adomainp cadr l)then return l;
+%     typerr(u,"numeric interval");
+%   end;
 
 ploteval!-alist2!*:={{'x . 1},{'y . 2}};
 

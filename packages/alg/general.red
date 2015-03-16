@@ -175,7 +175,9 @@ inline procedure get!*ifdeg u;
    (if x then cdr x else nil)
     where x = assoc(length cdr u,get(car u,'ifdegree));
 
-% The next is from fmprint.red/tmprint.red
+% The next is from fmprint.red/tmprint.red. I rather suspect that fmprint.red
+% should be discarded in favour of tmprint.red since they are really the same
+% code... but until that happens I will try a little tidy-up job here.
 
 symbolic macro procedure fancy!-level u;
  % unwind-protect for special output functions.
@@ -199,6 +201,29 @@ for i := 0:15 do putv(ints!-as!-symbols!*, i,
 symbolic procedure !*num2id u;
    if u <= 15 and u >= 0 then getv(ints!-as!-symbols!*, u)
    else intern compress('!! . explode u);
+
+symbolic procedure add!+vector!+to!+list(vector1, vectorlist);
+% returns a list of vectors consisting of vectorlist with vector1
+% added at the end. Used in symmetry and linalg packages.
+   append(vectorlist, list vector1);
+
+symbolic procedure adomainp u;
+ % numberp test in an algebraic form.
+   numberp u or (pairp u and idp car u and get(car u,'dname))
+             or eqcar(u,'minus) and adomainp cadr u;
+
+symbolic procedure revalnuminterval(u,num);
+ % Evaluate u as interval; numeric bounds required if num=T.
+  begin scalar l;
+    if not eqcar(u,'!*interval!*) then typerr(u,"interval");
+    l:={reval cadr u,reval caddr u};
+    if null num or(adomainp car l and adomainp cadr l)then return l;
+    typerr(u,"numeric interval");
+  end;
+
+symbolic procedure alistp l;
+   null l or (pairp l and pairp car l and alistp cdr l);
+
 
 endmodule;
 

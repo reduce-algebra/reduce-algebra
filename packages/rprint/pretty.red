@@ -86,6 +86,10 @@ symbolic procedure prettyprint x;
     terpri();
     nil>>;
 
+symbolic procedure tprettyprint x;
+ << terpri();
+    prettyprint x >>;
+
 symbolic procedure superprintm(x,lmar);
   << superprinm(x,lmar); terpri(); x >>;
 

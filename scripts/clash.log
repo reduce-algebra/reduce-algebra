@@ -58,20 +58,12 @@ situatiuon, in that the variable !*package_maud_active could then be set on
 or off easily.
 
 
-!*num2id                       defined in       gentens indices
-add!+vector!+to!+list          defined in       gramschm symatvec
-add2resultbuf                  defined in       superv libreduce
-add_ndg                        defined in       geometry geoprover
 addm                           defined in       matsm sparsmat
 addm1                          defined in       matsm sparsmat
 addmpf                         defined in       partitsf xexcalc
 addpf                          defined in       partitsf xexcalc
 adjoin                         defined in       sl2psl lto
-adomainp                       defined in       numeric plotnum
 afactor                        defined in       afactor xcolor
-alistp                         defined in       baglist assertcheckfn
-altitude                       defined in       geometry geoprover
-angle_sum                      defined in       geometry geoprover
 applyfnrd                      defined in       mathml mml_ir
 approx                         defined in       approx sfellip
 attributes                     defined in       mathml tools
@@ -83,10 +75,6 @@ canonical                      defined in       dummycnt contrtns
 charnump!:                     defined in       genpurfn spaces
 check_linearity                defined in       linalg splinalg
 ciml                           defined in       mathml mml_ir
-circle                         defined in       geometry geoprover
-circle_center                  defined in       geometry geoprover
-circle_sqradius                defined in       geometry geoprover
-clear_ndg                      defined in       geometry geoprover
 cnml                           defined in       mathml mml_ir
 comes!-before                  defined in       modpoly bigmodp
 companion                      defined in       linalg froben
@@ -131,7 +119,6 @@ evalplus                       defined in       defintx convert
 expression                     defined in       mathml mml_ir
 expt!-int                      defined in       ludecom plotnum definta
 exptexpflistp                  defined in       solvelnr edspatch
-extractmat                     defined in       geometry geoprover
 find                           defined in       mathml tools expon
 find!*var                      defined in       codad1 codad2
 find!+var                      defined in       codad1 codad2
@@ -169,11 +156,9 @@ ident                          defined in       nestdom pattdefn
 indvarprt                      defined in       gentens indxprin
 init                           defined in       codctl bibasis_involutive
 innerprod                      defined in       numeval ludecom
-intersection_point             defined in       geometry geoprover
 intervalrd                     defined in       mathml mml_ir
 isimp1                         defined in       hephys red2cvit
 kernelp                        defined in       noncom2 table1
-l2_angle                       defined in       geometry geoprover
 lambda_4ue81zccw261            defined in       sfto ofsfanuex ofsfvsl
 lambda_5ecvmqn0s7d8            defined in       solvealg edspatch
 lambda_63ircqeulrd3            defined in       ofsfqe dvfsfqe
@@ -185,9 +170,9 @@ lengthreval                    defined in       reval baglist sparsmat
 lex                            defined in       mathml tools
 limit                          defined in       orthovec limits
 limitrd                        defined in       mathml mml_ir
-line                           defined in       evalmaps geometry geoprover
+line                           defined in       evalmaps geoprover
 lineint                        defined in       avector orthovec
-list2mat                       defined in       odelin geometry geoprover
+list2mat                       defined in       odelin geoprover
 list2set                       defined in       sl2psl lto
 listdiff                       defined in       partdf xpowers
 listeval                       defined in       list pmpatch
@@ -221,8 +206,6 @@ matrixrowrd                    defined in       mathml mml_ir
 matsm1                         defined in       matsm sparsmat
 maxi                           defined in       mrvlimit susy2
 maxorder                       defined in       isolve approx
-median                         defined in       geometry geoprover
-midpoint                       defined in       geometry geoprover
 minusml                        defined in       mathml mml_ir
 minusrd                        defined in       mathml mml_ir
 mk!+gram!+schmid               defined in       gramschm symatvec
@@ -266,20 +249,12 @@ opfneval                       defined in       reval pmpatch
 opmtch                         defined in       opmtch pmintrfc
 ordp                           defined in       noncom2 spde
 ordpa                          defined in       order spde
-other_cc_point                 defined in       geometry geoprover
-other_cl_point                 defined in       geometry geoprover
-p3_angle                       defined in       geometry geoprover
-p3_circle                      defined in       geometry geoprover
 partialdiffrd                  defined in       mathml mml_ir
-pedalpoint                     defined in       geometry geoprover
 pfaffian                       defined in       calimat systems
-point                          defined in       geometry geoprover
 polynomialp                    defined in       odenon1 contfrac integrator
 polynomq                       defined in       qsum simplede zeilberg
 polynomq4                      defined in       qsum zeilberg
 polynomqqq                     defined in       qsum zeilberg residue contfrac
-pp_line                        defined in       geometry geoprover
-print_ndg                      defined in       geometry geoprover
 printout                       defined in       mathml ir2om mml_ir
 printvec                       defined in       ezgcd genparser
 protected                      defined in       minlngth codpri
@@ -307,7 +282,6 @@ remsym                         defined in       control dummycnt ctintro
 reordop                        defined in       reord noncom2
 revalind                       defined in       gentens indices
 revalindl                      defined in       gentens indices
-revalnuminterval               defined in       numeric plotnum
 rewrite                        defined in       sparsmat mrvlimit
 rfirst                         defined in       list baglist
 rinsert                        defined in       baglist pmintrfc
@@ -345,7 +319,6 @@ solvesparsecheck               defined in       solvelnr edspatch
 solvevaradjust                 defined in       solvelnr edspatch
 solvevarordp                   defined in       solvelnr edspatch
 sq2bf!*                        defined in       specfn specbess sfgamma
-sqrdist                        defined in       geometry geoprover
 squarep                        defined in       linalg splinalg
 state_mk                       defined in       ofsfexfr clprl
 stats_getargs                  defined in       mathml mml_ir
@@ -373,7 +346,6 @@ type_ratpoly                   defined in       qsum simplede zeilberg residue c
 typerr                         defined in       lpri intro
 unchecked_getmatelem           defined in       lamatrix matarg
 upperlimitrd                   defined in       mathml mml_ir
-varpoint                       defined in       geometry geoprover
 vdpevlmon                      defined in       vdp2dip vdpcom
 vdpnumber                      defined in       vdp2dip groebner
 vdppoly                        defined in       vdp2dip vdpcom

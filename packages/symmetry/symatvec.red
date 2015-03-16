@@ -536,13 +536,15 @@ scalar ortholist,i;
   return ortholist;
 end;
 
-symbolic procedure add!+vector!+to!+list(vector1,vectorlist);
-% returns a list of vectors consisting of vectorlist
-% and the vector1 at the end
-% internal structure
-begin
-    return append(vectorlist,list(vector1));
-end;
+% Now in alg/general because used elsewhere too.
+%
+% symbolic procedure add!+vector!+to!+list(vector1,vectorlist);
+% % returns a list of vectors consisting of vectorlist
+% % and the vector1 at the end
+% % internal structure
+% begin
+%     return append(vectorlist,list(vector1));
+% end;
 
 symbolic procedure mk!+internal!+mat(vectorlist);
 % returns a matrix consisting of columns

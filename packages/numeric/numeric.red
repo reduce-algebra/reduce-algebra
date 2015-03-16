@@ -66,18 +66,18 @@ minus!-infinity!* := '(minus infinity);
 
 % intervals
 
-symbolic procedure adomainp u;
-   numberp u or (pairp u and idp car u and get(car u,'dname))
-    or (eqcar(u,'minus) and  adomainp cadr u);
-
-symbolic procedure revalnuminterval(u,num);
- % Evaluate u as interval; numeric bounds required if num=T.
-  begin scalar l;
-    if not eqcar(u,'!*interval!*) then typerr(u,"interval");
-    l:={reval cadr u,reval caddr u};
-    if adomainpx(car l,num) and adomainpx(cadr l,num)then return l;
-    typerr(u,"numeric interval");
-  end;
+% symbolic procedure adomainp u;
+%    numberp u or (pairp u and idp car u and get(car u,'dname))
+%     or (eqcar(u,'minus) and  adomainp cadr u);
+%
+% symbolic procedure revalnuminterval(u,num);
+%  % Evaluate u as interval; numeric bounds required if num=T.
+%   begin scalar l;
+%     if not eqcar(u,'!*interval!*) then typerr(u,"interval");
+%     l:={reval cadr u,reval caddr u};
+%     if adomainpx(car l,num) and adomainpx(cadr l,num)then return l;
+%     typerr(u,"numeric interval");
+%   end;
 
 symbolic procedure adomainpx(u,num);
   % extended algebraic domainp test:

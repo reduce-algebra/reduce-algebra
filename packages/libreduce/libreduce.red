@@ -38,11 +38,13 @@ module coloutput;
 
 fluid '(!*mode);
 
-global '(statcounter);
+global '(statcounter !*libreduce_active);
 
-copyd('lr_add2resultbuf,'add2resultbuf);
+% Having this variable set to true will cause the main function add2resultbuf
+% to do extra work that is as required here... And if you then set this
+% variable to false you should return to standard Reduce behaviour.
 
-on comp;
+!*libreduce_active := t;
 
 procedure lr_sprint(u);
    prin2 u;
@@ -51,24 +53,16 @@ procedure lr_aprint(u);
    prin2 reval u;
 
 procedure lr_result();
-   <<
-      prin2 int2id 3;
-   >>;
+   prin2 int2id 3;
 
 procedure lr_statcounter();
-   <<
-      prin2 int2id 4
-   >>;
+   prin2 int2id 4
 
 procedure lr_mode();
-   <<
-      prin2 int2id 5
-   >>;
+   prin2 int2id 5
 
 procedure lr_posttext();
-   <<
-      prin2 int2id 6
-   >>;
+   prin2 int2id 6
 
 procedure lr_printer(u,mode);
    <<
@@ -78,21 +72,6 @@ procedure lr_printer(u,mode);
       else
 	 lr_aprint u
    >>;
-
-procedure add2resultbuf(u,mode);
-   <<
-      lr_result();
-      if null(semic!* eq '!$) then lr_printer(u,mode);
-      lr_statcounter();
-      prin2 statcounter;
-      lr_mode();
-      prin2 if !*mode eq 'symbolic then 1 else 0;
-      lr_posttext();
-      terpri();
-      lr_add2resultbuf(u,mode)
-   >>;
-
-off comp;
 
 endmodule;  % coloutput;
 
@@ -121,6 +100,10 @@ procedure lr_color(c);
       compress('!" . int2id 1 .
       	 reversip('!" . int2id 2 . cdr reversip cdr explode c))
    else
+% This line worries me - I think that odd characters like int2id 1 and
+% int2id 2 NEED exclamation marks ahead of them when the list is passed
+% to compress. I am not changing this right now because it really needs
+% review by the code's author. ACN March 2015.
       intern compress(int2id 1 . nconc(explode c,{int2id 2}));
 
 procedure lr_uncolor(c);

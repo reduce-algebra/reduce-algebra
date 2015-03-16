@@ -6,3 +6,16 @@ This directory contains the Reduce GeoProver Package sources.
      GeoProver.out	    - output of the test
      GeoProver.html	    - A help file in HTML
 
+
+There are some old files with names like old-geometry.red that represent
+an earlier version of this code.
+
+on 16 March 2015 we have:
+"geometry.red should be removed since it is a predecessor of geoprover.red.
+Best regards, Hans-Gert"
+
+Also note that up to date versions of geoprover (which is supported on
+several algebra systems, not just Reduce) can be found at at
+               https://github.com/hg-graebe/GeoProver/
+
+

@@ -243,15 +243,16 @@ symbolic procedure Gram!+Schmid(vectorlist);
   end;
 
 
-
-symbolic procedure add!+vector!+to!+list(vector1,vectorlist);
-  %
-  % returns a list of vectors consisting of vectorlist
-  % and the vector1 at the end
-  % internal structure
-  begin
-    return append(vectorlist,list(vector1));
-  end;
+% Now in alg/general.red because used elsewhere too.
+%
+% symbolic procedure add!+vector!+to!+list(vector1,vectorlist);
+%   %
+%   % returns a list of vectors consisting of vectorlist
+%   % and the vector1 at the end
+%   % internal structure
+%   begin
+%     return append(vectorlist,list(vector1));
+%   end;
 
 
 

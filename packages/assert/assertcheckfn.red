@@ -82,8 +82,8 @@ procedure booleanp(x);
 procedure ftypep(x);
    x eq 'expr or x eq 'fexpr or x eq 'macro;
 
-procedure alistp(l);
-   not l or pairp l and pairp car l and alistp cdr l;
+% procedure alistp(l);
+%    not l or pairp l and pairp car l and alistp cdr l;
 
 procedure condformp(x);
    not x or pairp x and list2p car x and condformp cdr x;
