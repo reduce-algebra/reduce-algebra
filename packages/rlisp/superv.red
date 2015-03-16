@@ -53,7 +53,7 @@ fluid '(!*debug
         newrule!*
         semic!*
         tslin!*
-        !*libreduce_active);
+        !*libreduce!_active);
 
 global '(!$eof!$
          !*byeflag!*
@@ -453,15 +453,15 @@ symbolic procedure add2resultbuf(u,mode);
 % main definition of add2resultbuf so that at the cost of a small extra test
 % here there will not be a need for copying and replacing the main definition.
 % Note that functions like lr_results etc are ones in the libreduce package.
-      if !*libreduce_active then <<
-         lr_result();
-         if null(semic!* eq '!$) then lr_printer(u,mode);
-         lr_statcounter();
-         prin2 statcounter;
-         lr_mode();
-         prin2 if !*mode eq 'symbolic then 1 else 0;
-         lr_posttext();
-         terpri() >>;
+      if !*libreduce!_active then progn(
+         lr!_result(),
+         if null(semic!* eq '!$) then lr!_printer(u,mode),
+         lr!_statcounter(),
+         prin2 statcounter,
+         lr!_mode(),
+         prin2 (if !*mode eq 'symbolic then 1 else 0),
+         lr!_posttext(),
+         terpri());
       if mode eq 'symbolic
        or (null u and (null !*reduce4 or null(mode eq 'empty!_list)))
        or !*nosave!* then return nil;
