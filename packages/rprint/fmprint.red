@@ -129,6 +129,8 @@ fluid '(
 %         fancy!-mode!*
       );
 
+fluid '(fancy!-texpos);
+
 switch fancy_tex; % output TEX equivalent.
 
 % fancy!-mode!* := if '!6 = car reverse explode2 getenv "reduce" then 36
@@ -212,6 +214,7 @@ symbolic procedure set!-fancymode bool;
   if bool neq !*fancy!-mode then
     <<!*fancy!-mode:=bool;
       fancy!-pos!*:=0;
+      fancy!-texpos:=0;
       fancy!-page!*:=nil;
       fancy!-line!*:=nil;
       overflowed!* := nil;
@@ -383,14 +386,14 @@ symbolic procedure fancy!-terpri!* u;
 symbolic procedure fancy!-begin();
   % collect current status of fancy output. Return as a list
   % for later recovery.
-  {fancy!-pos!*,fancy!-line!*};
+  {fancy!-pos!*,fancy!-line!*,fancy!-texpos};
 
 symbolic procedure fancy!-end(r,s);
   % terminates a fancy print sequence. Eventually resets
   % the output status from status record <s> if the result <r>
   % signals an overflow.
   <<if r='failed then
-     <<fancy!-line!*:=car s; fancy!-pos!*:=cadr s>>;
+     <<fancy!-line!*:=car s; fancy!-pos!*:=cadr s;fancy!-texpos:=caddr s>>;
      r>>;
 
 symbolic procedure fancy!-mode u;
@@ -822,6 +825,12 @@ put('reval!*,'fancy!-prifn,'fancy!-revalpri);
 
 put('aminusp!:,'fancy!-prifn,'fancy!-patpri);
 put('aminusp!:,'fancy!-pat,'(lessp !&1 0));
+
+symbolic procedure fancy!-holdpri u;
+   if atom cadr u then fancy!-maprin0 cadr u
+   else fancy!-in!-brackets({'fancy!-maprin0, mkquote cadr u}, '!(, '!));
+
+put('!*hold, 'fancy!-prifn, 'fancy!-holdpri);
 
 symbolic procedure fancy!-patpri u;
   begin scalar p;

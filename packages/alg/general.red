@@ -181,12 +181,13 @@ inline procedure get!*ifdeg u;
 
 symbolic macro procedure fancy!-level u;
  % unwind-protect for special output functions.
-  {'prog,'(pos fl w),
+  {'prog,'(pos tpos fl w),
       '(setq pos fancy!-pos!*),
       '(setq fl fancy!-line!*),
       {'setq,'w,cadr u},
       '(cond ((eq w 'failed)
               (setq fancy!-line!* fl)
+              (setq fancy!-texpos tpos)
               (setq fancy!-pos!* pos))),
        '(return w)};
 
