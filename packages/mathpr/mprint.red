@@ -142,7 +142,7 @@ symbolic procedure vec!-maprin(u,p!*!*);
 
 symbolic procedure exptpri(l,p);
 % Prints expression in an exponent notation.
-   if !*utf8 then utf8_exptpri(x, p)
+   if !*utf8 then utf8_exptpri(l,p)
    else begin scalar !*list,x,pp,q,w1,w2;
       if not !*nat or !*fort then return 'failed;
       pp := not((q:=get('expt,'infix))>p);  % Need to parenthesize
@@ -253,7 +253,7 @@ symbolic procedure prin2!* u;
 % It seems to me possible that the UTF8 package ought to be rewritten to use
 % the outputhandler!* mechanism... but I am putting in minimal changes right
 % now.
-    if !*utf8 then prin2!* u
+    if !*utf8 then utf8_prin2!* u
     else if outputhandler!* then apply2(outputhandler!*,'prin2!*,u)
      else begin integer m,n,p; scalar x;
       if x := get(u,'oldnam) then u := x;

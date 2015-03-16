@@ -3109,6 +3109,7 @@ END
   fi
 fi
 
+
 # The next bit is because config.guess fails on Solaris if SHELL=/bin/bash
 if test -x /bin/sh
 then

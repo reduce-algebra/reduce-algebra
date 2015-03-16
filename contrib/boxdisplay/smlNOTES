@@ -59,17 +59,17 @@ in the value call of the name concerned. This will be a CONS with code and
 environment. A call
    foo 3
 in SML will then map onto Lisp code
-   funcall(car foo, cdr foo, 3)
+   funcall(car Vfoo, cdr foo, 3)
 
 Now I need to look at the conversion of the function definition. Start with
 the lambda expression within it - this has to turn into
-   'g0001 . x
+   'F1foo . x
 where there has been a definition
-   symbolic procedure g0001(env, y); env + y;
+   symbolic procedure F1foo(env, y); env + y;
 
 Now the definition for foo becomes
-   foo := 'g0002 . nil;
-   symbolic procedure g0002(x, env); 'g0001 . x;
+   Vfoo := 'Ffoo . nil;
+   symbolic procedure Ffoo(env, x); 'F1foo . x;
 
 Because SML is side effect free passing just values in the environment
 suffices. The example here has only one free variable used by the lambda
@@ -92,8 +92,8 @@ The above model will treat an ML function definition such as
 as defining a function of 1 argument where that argument is a tuple. That
 will have to be packed when the call is made and unpacked again within
 the function - as in
-   foo := 'g0003 . nil;
-   symbolic procedure g0003 arg; car arg + cdr arg;
+   Vfoo := 'Ffoo . nil;
+   symbolic procedure Ffoo arg; car arg + cdr arg;
 
 It will be good if I can spot as many cases as possible where higher order
 activity is not used. This will be when in a function call the name of the
@@ -110,12 +110,12 @@ In that sort of case
    fun bar(x, y) = x + y;
    foo 1 2 + bar(3, 4);
 can map onto
-   symbolic procedure foo(x, y); x+y;
-   symbolic procedure bar(x, y); x+y;
-   foo(1,2) + bar(3,4);
+   symbolic procedure Ffoo(x, y); x+y;
+   symbolic procedure Fbar(x, y); x+y;
+   Ffoo(1,2) + Fbar(3,4);
 in a natural manner. If somewhere there is a use foo or bar that does not
 provide arguments exactly matching the signature then the arrangement
-involving  g0001, g0002, g0003 etc will need to be established as well.
+involving all the general complication will need to be established as well.
 
 Any function call that can not be resolved such that it turns into natural
 Lisp will need to use the funcall scheme, and any function definition that
@@ -132,7 +132,7 @@ sense). Special translations of "map" and some other key higher order
 functions may also really simplify matters - for instance
    map foo [1,2,3];
 may be able to become
-   for each g0004 in [1,2,3] collect foo g0004;
+   for each Temp in [1,2,3] collect funcall(car Vfoo, cdr Vfoo, Temp);
 and that leaves foo being explicitly called with a single argument.
 
 A luxury I have here is that I have a complete fixed program to translate
@@ -146,4 +146,118 @@ for very many years, but it still makes sense to write there here as a
 reminder to myself and an explanation to anybody else who may be new to
 the issues.
 
-                                                           Arthur Norman
+
+
+
+The above notes about functions mainly refer to how they are called. Now
+I need to consider how I keep track of what is to be called. The main thing
+that will emerge here is that what I called an "environment" above is
+really just the "static chain" as traditionally used by compilers to cope
+with dynamic free variables.
+
+All the time when translating code I will maintain information about a context
+that shows what names are in scope and how they are bound. If I take a view
+that everything must be declared I will pre-seed this with information
+about all operators built into SML and all library functions that I allow
+my code to rely on: these will all be statically defined at the top level.
+
+A new top level definition
+   val maude = ...
+or fun maude arg = ...
+will add the name "maude" to this top-level context, but each successive
+version will be allocated a fresh Lisp-name, as in Vmaude, V1maude, V2maude
+etc. The idea here is that all names in the generated Lisp will be kept
+so they do not clash with existing Lisp/Reduce ones, and having a capital "V"
+at the start is is close enough to that to suffice. The numeric segment after
+the initial letter can not conflict with the part that is the name of the
+SML identifier because SML names start with either a letter or a punctuation
+mark. So for SML long names I may end up with things like "V123abc.def.ghi"
+and I can also have "V+" and "V*" etc.
+
+I might plausibly convert every SML "fun" definition into a "val" one by
+mapping
+   fun maude x y = ---
+to val rec maude = fn x => fn y => ...
+since this reduces the number of constructions to be worried about later.
+
+If I do this then I will need to take care to map clausal function definitions
+suitably, and the interesting sort of case there is
+   fun maude A1 B1 = ...
+     | maude A1 B2 = ...
+     | maude A2 B  = ...
+where the decomposition into an explicitly curried form has to do its
+pattern matching one operand at a time.
+
+The second special issue with this translation is mutual recursion, where
+   fun maude1 x = ...
+   and maude2 x = ...
+   and maude3 x = ...
+will need to map to
+   val rec (maude1, maude2, maude3) = (
+      fn x => ... ,
+      fn x => ... ,
+      fn x => ...)
+
+I now think that I might properly perform these normalisations while building
+the parse tree since they are basically local rewrites to be performed
+unconditionally. Doing them there then simplifies the job of the main
+translator.
+
+OK so now I "just" need to consider the translation of "fn x => ..." forms.
+I will first fuss about naming. In most cases one of these will
+be within an expression that is on the right hand side of a "val maude ="
+statement, and in that case I will use a name "F000maude" for the Lisp
+function generated (with successive integers in place of 000). That can
+cover both cases where there are multiple definitions of maude and cases where
+there are multiple lambda-expressions within or nested within a single
+definition - while still maintaining at least some degree of linkage
+between the names used in the original SML and the ones appearing in the
+translated code. In particular the especially simple (and I hope common) case
+where the source code starts off with a single top-level definition of
+the form
+   fun maude x = ...
+will map first into
+   val rec maude = fn x => ...
+and Vmaude will be a variable to hold the function-value - but Fmaude will be
+the name chosen for the translation of the lambda-expression.
+
+Now I will want to scan expressions and categorise every variable used.
+The cases will be
+ (1) it was defined by a top-level "val".
+ (2) it was defined by the lambda that immediately encloses me
+ (3) it was defined by some outer enclosing lambda
+ (4) none of the above apply - this is an error condition!
+The error case will be triggered fairly frequently at the start because
+use of a built-in or library function that has not had its details registered
+with the translator will trigger it.
+
+For all the above the name may not denote the whole of the value that was
+bound. This will happen when de-structuring is called for, as in
+   fn (a,b,c) => ...
+where a, b and c refer to parts of the argument. Well I have worried about
+naming. So if I introduce some names in SML using either the above or
+   val (a,b,c) = ...
+I will invent a name for the composite object as "V000a,b,c" and then perhaps
+"a" will be referenced as "car V000a,b,c".
+
+In case (1) I can refer directly to the Lisp variable "Vx" (or whatever).
+In case (2) I use the argument of enclosing funtion. This will again in
+general be a simple refernce to a Lisp variable V1x.
+In case (3) access need to be via the static chain. If this is has entries
+for (eg) 4 enclosing contexts this would be in the form (A . B . C . D)
+where each letter will be a structure containing all the values from the
+corresponding level that need passing.
+
+To sort of what they are and hence decide the shape of this structure
+I will need to scan code present within a context and list all references to
+dynamic free variables. The structure can then be planned (and if it is empty
+it can be omitted) and then both the outer function can be translated and
+the inner stuff.
+
+So let me try all of this out
+  fun foo a b c = a + b + c;
+  val rec foo = fn a => fn b => fn c => op+(op+(a,b), c);
+         Vfoo   Ffoo    F1foo   F2foo
+
+
+

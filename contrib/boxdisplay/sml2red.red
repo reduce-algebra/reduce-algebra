@@ -109,13 +109,13 @@ off raise, lower;
 
 fluid '(smlChar smlCharsize smlChars smlCharp smlLine smlFile smlFileStack);
 
-smlFile := "-";
-smlFileStack := nil;
-smlChar := '! ;
-smlCharsize := 256;
-smlChars := mkvect smlCharsize;
-smlCharp := 0;
-smlLine := 1;
+<< File := "-";
+   smlFileStack := nil;
+   smlChar := '! ;
+   smlCharsize := 256;
+   smlChars := mkvect smlCharsize;
+   smlCharp := 0;
+   smlLine := 1 >>;
 
 fluid '(smlEofCount);
 smlEofCount := 0;
@@ -244,7 +244,7 @@ symbolic procedure smlString();
       if smlChar = '!\ then smlChar := smlEscapedChar();
       if smlChar neq 'ignore then r := smlChar . r >>;
     smlNextChar();
-    return list2string reverse r
+    return list2widestring reverse r
   end;
 
 % This should support the full SML-97 set of character escapes.
@@ -305,7 +305,7 @@ symbolic procedure smlNumber();
         while flagp(smlChar, 'smlOpChar) do <<
           v := smlChar . v;
           smlNextChar() >>;
-        return intern list2string reverse v >>;
+        return intern list2widestring reverse v >>;
       s := t >>;                % Record the sign
     if smlChar = '!0 then <<
       smlNextChar();
@@ -460,7 +460,7 @@ symbolic procedure smlToken1();
             digit smlChar or
             smlChar = '!_ or
             smlChar = '!' do r := smlChar . r;
-      return intern list2string reverse r >>
+      return intern list2widestring reverse r >>
 % I will handle "'" specially since it introduces type valuables.
     else if smlChar = '!' then return begin
       scalar equality;
@@ -475,7 +475,7 @@ symbolic procedure smlToken1();
             digit smlChar or
             smlChar = '!_ or
             (smlChar = '!' and (equality := t)) do r := smlChar . r;
-      r := list('!:typeVar, intern list2string reverse r);
+      r := list('!:typeVar, intern list2widestring reverse r);
       flag(list r, 'typevar);
       if equality then flag(list r, 'equalitytype);
       return r end
@@ -494,7 +494,7 @@ symbolic procedure smlToken1();
 % gets intercepted to denote a character literal.
       if r = '(!#) and smlChar = '!" then % #" for character literal
         return list('!:char, smlString())
-      else if r then return intern list2string reverse r;
+      else if r then return intern list2widestring reverse r;
 % Here r was empty which means we did not have any smlOpChar characters,
 % so we must have a punctuation character like "(", "," or ";"
       r := smlChar;
@@ -746,7 +746,7 @@ symbolic procedure endInfixScope();
 
 symbolic procedure smlProgram();
   begin
-    scalar w;
+    scalar r, w;
     while smlSkipSemicolons() neq !$eof!$ and smlSym neq 'end!Of!File do <<
       w := smlTopLevelDeclaration();
 % The following lines seem to clash with current reality!
@@ -754,11 +754,18 @@ symbolic procedure smlProgram();
 %       smlError """;"" expected at end of top level form";
       if not zerop posn() then terpri();
       if eqcar(w, '!U) then smlReadFile(cadr w)
-      else prettyprint w  >>;
+      else <<
+        r := w . r;
+        prettyprint w  >> >>;
     if not zerop posn() then terpri();
     printc "+++ finished reading a segment of SML code";
     smlSym := '!;;
-    return "End of SML code detected"
+    terpri();
+    printc "End of SML code detected";
+% Now I have the whole of my code available to deal with...
+    r := reverse r;
+    smlTranslate r;
+    return nil
   end;
 
 % I want a few general helper functions for use while building the parser.
@@ -957,7 +964,7 @@ symbolic procedure smlSignatureDecl();
       smlCheckFor '!=;
       r := list(name, smlSignature()) . r >>
     until smlSym neq 'and;
-    return 'signature . reverse r
+    return '!:signature . reverse r
   end;
 
 symbolic procedure smlSignature();
@@ -1200,18 +1207,21 @@ symbolic procedure smlFunctionHeading();
 %    fun _ infix b = ...
 %    fun 0 infix b = ... where a wildcard or a pattern is to the left of
 % an infix operator that I am defining.
-      smlError "Infix expression after fun" >>;
+      smlError "Infix expression after fun not supported yet" >>;
     if not smlShortId smlSym then
       smlError("Illegal name ""%s"" for function", smlSym);
-    r := list smlSym;
+    r := smlSym;
     smlNextSym();
-    if idp smlSym and get(smlSym, 'smlInfixLeft) then
-      smlError "Infix definition with fun";
+    if idp smlSym and get(smlSym, 'smlInfix) then
+      smlError "Infix definition with fun not implemented yet";
 % Now I know I have the "simple" case of a function heading.
-    r := smlAtomicPattern() . r;
+    r := list(r, smlAtomicPattern());
+% Note that I will parse (f a b c d) as
+%                        ((((f a) b) c) d)
+% ie as a Curried arrangement.
     while smlSym neq '!= and smlSym neq '!: do
-      r := smlAtomicPattern() . r;
-    return reverse r  
+      r := list(r, smlAtomicPattern());
+    return r  
   end;
 
 % I need to know if a symbol could be the start of an atomic pattern...
@@ -1323,7 +1333,10 @@ symbolic procedure smlPattern1 preced;
           smlShift(preced, smlSym) do <<
       op := smlSym;
       smlNextSym();
-      r := list(op, r, smlPattern1 op) >>;
+% Note that I will transform    x * y   into
+%                               op* (x, y)
+% where the operator will take a single two-tuple argument.
+      r := list(op, list('!:tuple, r, smlPattern1 op)) >>;
    return r
   end;
 
@@ -1563,7 +1576,7 @@ symbolic procedure smlInfixExpression preced;
           smlShift(preced, smlSym) do <<
       op := smlSym;
       smlNextSym();
-      r := list(op, r, smlInfixExpression op) >>;
+      r := list(op, list('!:tuple, r, smlInfixExpression op)) >>;
     return r
   end;
 
@@ -1773,11 +1786,329 @@ symbolic procedure smlRecordEntry();
   end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Now I will test things a bit.
 
-%tr smlExpression, smlFunctionHeading, smlClausalFunction, smlFunDecl;
-%tr smlPattern, smlPattern1, smlPattern2, smlAtomicPattern;
-%tr smlAtomicExpression, smlToken;
+on echo; % At least temporarily!
+
+% The code here is now going to be to do with translating parsed SML into
+% Lisp. See the file smlNOTES for some commentary.
+
+symbolic procedure smlTranslate r;
+  begin
+    scalar w;
+% First I should map names so that the SML module system is supported and
+% so that names local to one signature/structure do not clash with those
+% in another.
+    printc "### module-related namespace support not implemented yet";
+% I can now have several sorts of things to deal with
+%   (1)  The "everything else" case is going to be for expressions that
+%        just need evaluating. Well there may be some other special cases
+%        I have missed out...
+%   (2)  (!:fun ...) for a top-level function definition
+%   (2a) (!:clausalfundef (!:fun ...) (!:fun ...) ...)
+%        used for function definitions using pattern matching.
+%   (3)  (!:val ...) for a top-level value definition
+%   (4)  (!:open modulname)
+%   (5)  (:datatype ...)
+%   (6)  (:typedef ...)
+%   (7)  (!:exception ...)
+%   (8)  (!:signature ...)
+%   (9)  (!:structure ...)
+%        Format is
+%          (:structure
+%            (name
+%              (!:regular NAME) or sometimes nil
+%              (!:struct
+%                (!:objectdeclaration
+%                   (!:fun ...) etc etc
+%                ))))
+% The first three of these are going to be most useful for free-standing
+% testing, but the SML TeX has its top level almost entirely as signatures
+% and structures.
+    for each d in r do <<
+      princ "### About to translate "; prettyprint d;
+      rprint (
+        if atom d then smlTranslateGeneral d
+        else if (w := get(car d, 'smlTranslate)) then apply1(w, d)
+        else smlTranslateGeneral d) >>
+  end;
+
+symbolic procedure smlFunctionCall(ff, arg);
+  begin
+    scalar w;
+    w := intern list2widestring ('!V . wideid2list ff);
+    return list('funcall,
+      list('car, w),
+      list('cdr, w),
+      smlTranslateExpression arg)
+  end;
+
+symbolic procedure smlTranslateExpression d;
+  begin
+    scalar w;
+    if atom d then return smlTranslateAtom d
+    else if atom car d and
+      (w := get(car d, 'specialTranslation)) then return funcall(w, d);
+% Otherwise I will suppose that I have a function call. The easy case
+% will be a function whose name is atomic, and I create
+%     funcall(car Vname, cdr Vname, argument)
+    if atom car d then smlFunctionCall(car d, cadr d);
+% The messier case is when the function is not atomic. This will arise
+% in all Curried calls. My translation will be
+%    begin scalar g; g := function_expression;
+%      return funcall(car g, cdr g, argument) end
+% where g is a new name.
+    w := gensym();
+    return list('prog, list w,
+      list('setq, w, smlTranslateExpression car d),
+      list('return,
+        list('funcall,
+          list('car, w),
+          list('cdr, w),
+          smlTranslateExpression cadr d)))
+  end;
+
+symbolic procedure odds l;
+  if null l then nil
+  else car l . evens cdr l;
+
+symbolic procedure evens l;
+  if null l then nil else odds cdr l;
+
+symbolic procedure translateTuple d;
+  begin
+    scalar l, r;
+    d := cdr d;
+    if null d then return nil
+    else if null cdr d then return smlTranslateExpression car d;
+    l := odds d;
+    r := evens d;
+    list('cons, translateTuple (nil . l), translateTuple (nil . r))
+  end;
+
+tr translateTuple, odds, evens;
+
+put('!:tuple, 'specialTranslation, 'translateTuple);
+
+symbolic procedure translateList d;
+  begin
+    d := cdr d;
+    if null d then return nil
+    else return 'list . for each x in d collect smlTranslateExpression x
+  end;
+
+tr translateList;
+
+put('!:list, 'specialTranslation, 'translateList);
+
+symbolic procedure translate!+ d;
+  begin
+    scalar arg;
+    arg := cadr d;
+% The usage
+%     op+ (a,b)
+% will map to (plus a b)
+% but cases such as
+%     op+ (if x then (1, y) else (y, 3))
+% where the tuple arguments is not quite made totally explicit will drop back
+% to do things clumsily.
+    if not eqcar(arg, '!:tuple) then return smlFunctionCall(car d, arg)
+    else return list('plus, smlTranslateExpression cadr arg,
+                            smlTranslateExpression caddr arg)
+  end;
+
+tr translate!+, smlTranslateExpression;
+
+put('!+, 'specialTranslation, 'translate!+);
+
+symbolic procedure translate!- d;
+  begin
+    scalar arg;
+    arg := cadr d;
+    if not eqcar(arg, '!:tuple) then return smlFunctionCall(car d, arg)
+    else return list('difference, smlTranslateExpression cadr arg,
+                                  smlTranslateExpression caddr arg)
+  end;
+
+put('!-, 'specialTranslation, 'translate!-);
+
+symbolic procedure translate!* d;
+  begin
+    scalar arg;
+    arg := cadr d;
+    if not eqcar(arg, '!:tuple) then return smlFunctionCall(car d, arg)
+    else return list('times, smlTranslateExpression cadr arg,
+                             smlTranslateExpression caddr arg)
+  end;
+
+put('!*, 'specialTranslation, 'translate!*);
+
+symbolic procedure translate!:!: d;
+  begin
+    scalar arg;
+    arg := cadr d;
+    if not eqcar(arg, '!:tuple) then return smlFunctionCall(car d, arg)
+    else return list('cons, smlTranslateExpression cadr arg,
+                            smlTranslateExpression caddr arg)
+  end;
+
+put('!:!:, 'specialTranslation, 'translate!:!:);
+
+symbolic procedure translate!= d;
+  begin
+    scalar arg;
+    arg := cadr d;
+    if not eqcar(arg, '!:tuple) then return smlFunctionCall(car d, arg)
+    else return list('equal, smlTranslateExpression cadr arg,
+                             smlTranslateExpression caddr arg)
+  end;
+
+put('!=, 'specialTranslation, 'translate!=);
+
+symbolic procedure translate!> d;
+  begin
+    scalar arg;
+    arg := cadr d;
+    if not eqcar(arg, '!:tuple) then return smlFunctionCall(car d, arg)
+    else return list('greaterp, smlTranslateExpression cadr arg,
+                                smlTranslateExpression caddr arg)
+  end;
+
+put('!>, 'specialTranslation, 'translate!>);
+
+symbolic procedure translate!< d;
+  begin
+    scalar arg;
+    arg := cadr d;
+    if not eqcar(arg, '!:tuple) then return smlFunctionCall(car d, arg)
+    else return list('lessp, smlTranslateExpression cadr arg,
+                             smlTranslateExpression caddr arg)
+  end;
+
+put('!<, 'specialTranslation, 'translate!<);
+
+symbolic procedure translate!>!= d;
+  begin
+    scalar arg;
+    arg := cadr d;
+    if not eqcar(arg, '!:tuple) then return smlFunctionCall(car d, arg)
+    else return list('geq, smlTranslateExpression cadr arg,
+                           smlTranslateExpression caddr arg)
+  end;
+
+put('!>!=, 'specialTranslation, 'translate!>!=);
+
+symbolic procedure translate!<!= d;
+  begin
+    scalar arg;
+    arg := cadr d;
+    if not eqcar(arg, '!:tuple) then return smlFunctionCall(car d, arg)
+    else return list('leq, smlTranslateExpression cadr arg,
+                           smlTranslateExpression caddr arg)
+  end;
+
+put('!<!=, 'specialTranslation, 'translate!<!=);
+
+symbolic procedure translate!!!= d;
+  begin
+    scalar arg;
+    arg := cadr d;
+    if not eqcar(arg, '!:tuple) then return smlFunctionCall(car d, arg)
+    else return list('neq, smlTranslateExpression cadr arg,
+                           smlTranslateExpression caddr arg)
+  end;
+
+put('!!!=, 'specialTranslation, 'translate!!!=);
+
+symbolic procedure translate!@ d;
+  begin
+    scalar arg;
+    arg := cadr d;
+    if not eqcar(arg, '!:tuple) then return smlFunctionCall(car d, arg)
+    else return list('append, smlTranslateExpression cadr arg,
+                              smlTranslateExpression caddr arg)
+  end;
+
+put('!@, 'specialTranslation, 'translate!@);
+
+symbolic procedure translateIf d;
+  'if . for each x in cdr d collect smlTranslateExpression x;
+
+put('!:if, 'specialTranslation, 'translateIf);
+
+symbolic procedure smlTranslateAtom d;
+  d;
+
+symbolic procedure smlTranslateGeneral d;
+    smlTranslateExpression d;
+
+symbolic procedure smlTranslateFun d;
+  begin
+% There can be a variety of formats here:
+%     (!:fun (name a1) body)                 simple form
+%     (!:fun ((name a1) a2) body)            Curried
+%     (!:fun (name (!:tuple a1 a2)) body)    pattern matching - other
+%                                            constructors are possible too.
+% I suspect that the initial specifier can be wrapped in !:typed and there
+% may be other odd cases - but the above will do to let me get started.
+    scalar w, fn, arg, body, w1, w2;
+    w := cadr d;
+    fn := car w;
+    arg := cadr w;
+    body := caddr d;
+    if idp fn and idp arg then <<  % Simplest case!
+      w1 := intern list2widestring ('!F . wideid2list fn);
+      w2 := intern list2widestring ('!V . wideid2list fn);
+      w := list('de, w1, list('!*env!*, arg), body);
+      return list('progn, w, list('setq, w2, list('cons, mkquote w1, nil))) >>;
+    error(0, list("smlTranslateFun", d, fn, arg, body));
+  end;
+
+put('!:fun, 'smlTranslate, 'smlTranslateFun);
+
+symbolic procedure smlTranslateClausalFun d;
+  error(0, list("smlTranslateClausalFun", d));
+
+put('!:clausalfundef, 'smlTranslate, 'smlTranslateClausalFun);
+
+symbolic procedure smlTranslateVal d;
+  error(0, list("smlTranslateVal", d));
+
+put('!:val, 'smlTranslate, 'smlTranslateVal);
+
+symbolic procedure smlTranslateOpen d;
+  error(0, list("smlTranslateOpen", d));
+
+put('!:open, 'smlTranslate, 'smlTranslateOpen);
+
+symbolic procedure smlTranslateDatatype d;
+  error(0, list("smlTranslateDatatype", d));
+
+put('!:datatype, 'smlTranslate, 'smlTranslateDatatype);
+
+symbolic procedure smlTranslateTypedef d;
+  error(0, list("smlTranslateTypedef", d));
+
+put('!:typedef, 'smlTranslate, 'smlTranslateTypedef);
+
+symbolic procedure smlTranslateException d;
+  error(0, list("smlTranslateException", d));
+
+put('!:exception, 'smlTranslate, 'smlTranslateException);
+
+symbolic procedure smlTranslateSignature d;
+  error(0, list("smlTranslateSignature", d));
+
+put('!:signature, 'smlTranslate, 'smlTranslateSignature);
+
+symbolic procedure smlTranslateStructure d;
+  error(0, list("smlTranslateStructure", d));
+
+put('!:structure, 'smlTranslate, 'smlTranslateStructure);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Now I will test things a bit. At some later stage I will migrate these
+% into separate files...
 
 smlProgram();
 (* I put a succession of test cases here... the first are very basic *)
@@ -1804,8 +2135,24 @@ fun sum ( h :: t ) = h + sum t;
 
 endOfFile
 
+% Next someting that it might actually be worthwhile translating into
+% Lisp/Reduce to test
+smlProgram();
+
+fun fact n =
+  if n = 0 then 1 else n * fact(n-1);
+
+fun ifact n r =
+  if n = 0 then r
+  else ifact (n-1) (n*r);
+
+endOfFile
+
+
 % After the above small test I will try to read in at least the start of
 % the SML code that performs TeX style mathematical layout...
+
+quit; % For now!
 
 smlProgram();
 (* The operator U will read in one of my source files.
@@ -1869,7 +2216,8 @@ U "Input";
 U "test";
 
 ;endOfFile
-;;
+;
 
-end;
+quit;
+
 
