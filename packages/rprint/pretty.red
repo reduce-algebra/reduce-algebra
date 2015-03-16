@@ -86,8 +86,17 @@ symbolic procedure prettyprint x;
     terpri();
     nil>>;
 
+% prettyprint is defined to display things using the current position on the
+% line as its starting point. That is excellent if you do something like
+%   terpri(); princ "X: "; prettyprint xxx;
+% because the prettyprinted material lines up neatly beyond the "X: ". However
+% if you happen to have more on the current output line when you start
+% prettyprinting the effect is jolly ugly. So tprettyprint forces a newline
+% first if you are at present more then 6 places in... The number 6 is rather
+% arbitrary!
+
 symbolic procedure tprettyprint x;
- << terpri();
+ << if posn() > 6 then terpri();
     prettyprint x >>;
 
 symbolic procedure superprintm(x,lmar);

@@ -520,12 +520,16 @@ thin!* := 5;
 %                      formatting of long thin lists. default 
 %                      value is 5;
 
-remflag('(superprinm superprintm prettyprint), 'lose);
+remflag('(superprinm superprintm prettyprint tprettyprint), 'lose);
 
 symbolic procedure prettyprint x;
  << superprinm(x,posn()); % What REDUCE seems to want. Looks a bit odd to me!
     terpri();
     nil>>;
+
+symbolic procedure tprettyprint x;
+ << if posn() > 6 then terpri();
+    prettyprint x >>;
 
 symbolic procedure superprintm(x,s!:lmar);
   << superprinm(x,s!:lmar); terpri(); x >>;

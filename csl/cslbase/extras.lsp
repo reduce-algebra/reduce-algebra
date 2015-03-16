@@ -196,9 +196,13 @@ s!:initialblanks s!:lmar s!:pendingrpars s!:rmar s!:rparcount s!:stack)))
 
 (setq thin!* 5)
 
-(remflag (quote (superprinm superprintm prettyprint)) (quote lose))
+(remflag (quote (superprinm superprintm prettyprint tprettyprint)) (quote 
+lose))
 
 (de prettyprint (x) (progn (superprinm x (posn)) (terpri) nil))
+
+(de tprettyprint (x) (progn (cond ((greaterp (posn) 6) (terpri))) (
+prettyprint x)))
 
 (de superprintm (x s!:lmar) (progn (superprinm x s!:lmar) (terpri) x))
 
