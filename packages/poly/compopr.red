@@ -1,7 +1,7 @@
 module compopr;   % Operators on Complex Expressions.
 
 % Author: Eberhard Schruefer.
-% Modifications by:  Francis Wright.
+% Modifications by:  Francis Wright, Rainer Schoepf & Alan Barnes.
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -113,7 +113,10 @@ symbolic procedure mkimpart u;
     else mksq(list('impart, u),1);
 
 symbolic procedure take!-realpart u;
-   repartf numr u ./ denr u;
+% real part of numerator and the denominator may have a common factor 
+% so must use multsq here
+%   repartf numr u ./ denr u;
+   multsq(repartf(numr u) ./ 1, 1 ./ denr u);
 
 symbolic procedure repartf u;
    % We can't check for null dmode!* as there may still be complex
@@ -132,7 +135,10 @@ symbolic procedure repartf u;
        where u = reorder u where kord!* = 'i . kord!*;
 
 symbolic procedure take!-impart u;
-   impartf numr u ./ denr u;
+% imaginary part of numerator and the denominator may have a common factor 
+% so must use multsq here
+%   impartf numr u ./ denr u;
+   multsq(impartf(numr u) ./ 1, 1 ./ denr u);
 
 symbolic procedure impartf u;
    % We can't check for null dmode!* as there may still be complex
@@ -451,6 +457,21 @@ begin scalar rearg, imarg, sinhx, siny, coshx, cosy;
             multsq(simp 'i, negsq multsq(coshx, siny))),
       addsq(multsq(sinhx, sinhx), multsq(siny, siny)));
 end;
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Inverse Functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% only log for now  -- really needs new rules for atan2 in elem.red
+
+put('log,'cmpxsplitfn,'reimlog);
+
+symbolic procedure reimlog u;
+   addsq(simp {'quotient, {'log, {'plus, {'expt, rearg, 2},
+                                    {'expt, imarg , 2}}}, 2},
+         multsq(simp 'i, simp {'atan2, imarg, rearg}))
+   where rearg = prepsq simprepart cdr u,
+      	 imarg = prepsq simpimpart cdr u;
 
 endmodule;
 
