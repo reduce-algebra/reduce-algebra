@@ -20,29 +20,31 @@
 all: libredcuba.so cuba.pdf
 
 # The sequence of operations here is:
-# (1) Set the absolute path for where CUBA will be installed (this is
-#     a sub-directory of the current location;
-# (2) Fetch a copy of the Cuba sources from www.feynarts.de. From time
-#     time it could make sense to review this web address and the version
-#     number. The data here was valid in January 2015;
-# (3) Get rid of any previously unpacked copy of Cuba and unpack the archive;
-# (4) Configure it, specifying the location to be used for an installed
-#     copy but trusting the Cuba developers and maintainers as regards all
-#     other choices;
+# (1) Set the installation path for Cuba to a sub-directory of the current location.
+# (2) Fetch a copy of the Cuba sources from http://www.feynarts.de.
+#     From time to time it could make sense to review this web address and the
+#     version number:
+
+cuba_ver = Cuba-4.1
+# This was valid in March 2015.
+
+# (3) Get rid of any previously unpacked copy of Cuba and unpack the new version.
+# (4) Configure it, specifying the location to be used for installation, but
+#     trusting the Cuba developers and maintainers regarding all other choices.
 # (5) Compile and move the resulting libraries to the right place. Note that
-#     to build Cuba-4.1 requires the GNU version of "make" since its
-#     own Makefile is not compatible with the older style make utility present
-#     on some BSD systems.
-# (6) Discard the fetched and the unpacked copies of source and build
-#     files so as not to leave space occupied.
+#     to build Cuba requires the GNU version of "make" since its own Makefile
+#     is not compatible with the older style make utility present on some BSD systems.
+# (6) Clean up: remove the fetched and the unpacked copies of the source and
+#     build files.
+
 
 .PHANTOM:	build_cuba
 build_cuba cuba/lib/libcuba.a:
 	CUBA=`pwd`/cuba && \
-	wget http://www.feynarts.de/cuba/Cuba-4.1.tar.gz && \
-	rm -rf Cuba-4.1 && \
-	tar xvfz Cuba-4.1.tar.gz && \
-	cd Cuba-4.1 && \
+	wget http://www.feynarts.de/cuba/$(cuba_ver).tar.gz && \
+	rm -rf $(cuba_ver) && \
+	tar xzf $(cuba_ver).tar.gz && \
+	cd $(cuba_ver) && \
 	case `uname -a` in \
 	*Linux* | *linux* )  \
 	CC="gcc" ; CXX="g++" ; CFLAGS="-O3 -fPIC" ; mk="$(MAKE)" ; ;; \
@@ -60,7 +62,7 @@ build_cuba cuba/lib/libcuba.a:
 		CC="$$CC" CFLAGS="$$CFLAGS" CXX="$$CXX" && \
 	$$mk install && \
 	cd .. && \
-	rm -rf Cuba-4.1 Cuba-4.1.tar.gz
+	rm -rf $(cuba_ver) $(cuba_ver).tar.gz
 
 CUBA = ./cuba
 
@@ -94,7 +96,8 @@ libredcuba.so: redcuba.c C_call_CSL.h cuba/lib/libcuba.a
 	esac && \
 	$$CC $$CFLAGS -I $(CUBA)/include -c redcuba.c && \
 	$$CC -shared -o libredcuba.so redcuba.o -Wl,-rpath,$(CUBA)/lib \
-		-L $(CUBA)/lib -lcuba
+		-L $(CUBA)/lib -lcuba && \
+	rm redcuba.o
 
 cuba.pdf:	cuba.tex
 	pdflatex cuba.tex
