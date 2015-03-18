@@ -97,8 +97,8 @@ deflist('((dms2deg!* simpdms) (dms2rad!* simpdms)), 'simparg);
 deflist('((atan2 2) (hypot 2) (atan2d 2) (logb 2)),
   'number!-of!-args);
 
-flag('(acsc sind asind tand atand cotd acotd cscd acscd csch
-       acsch deg2rad rad2deg),'odd);   % sgn.
+flag('(acsc sind asind tand atand cotd cscd acscd csch
+       acsch deg2rad rad2deg),'odd);   % sgn, acotd.
 
 flag('(cosd secd),'even);
 
