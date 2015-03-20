@@ -56,13 +56,13 @@ procedure lr_result();
    prin2 int2id 3;
 
 procedure lr_statcounter();
-   prin2 int2id 4
+   prin2 int2id 4;
 
 procedure lr_mode();
-   prin2 int2id 5
+   prin2 int2id 5;
 
 procedure lr_posttext();
-   prin2 int2id 6
+   prin2 int2id 6;
 
 procedure lr_printer(u,mode);
    <<
