@@ -157,12 +157,20 @@ symbolic procedure cratan!* u;
 %       cr!:plus(cri!*(),u),cr!:differ(cri!*(),u)));
 
 symbolic procedure cracot!* u;
-   cr!:times(cri!/2(),crlog!* cr!:quotient(
-      cr!:differ(u,cri!*()),cr!:plus(cri!*(),u)));
+  cr!:differ(!*rd2cr pi!/2!*(), cratan!* u);
+
+% previous version has wrong principal value range  -pi/2 ... pi/2
+% symbolic procedure cracot!* u;
+%   cr!:times(cri!/2(),crlog!* cr!:quotient(
+%      cr!:differ(u,cri!*()),cr!:plus(cri!*(),u)));
 
 % symbolic procedure cracotd!* u;
-%    crr2d!* cr!:times(cri!/2(),crlog!* cr!:quotient(
-%       cr!:differ(u,cri!*()),cr!:plus(cri!*(),u)));
+%  cr!:differ(i2cr!* 90, cratand!* u);
+
+% % previous version has wrong principal value range  -90 ... 90
+% % symbolic procedure cracotd!* u;
+% %    crr2d!* cr!:times(cri!/2(),crlog!* cr!:quotient(
+% %       cr!:differ(u,cri!*()),cr!:plus(cri!*(),u)));
 
 symbolic procedure crsec!* u; cr!:quotient(i2cr!* 1,crcos!* u);
 
