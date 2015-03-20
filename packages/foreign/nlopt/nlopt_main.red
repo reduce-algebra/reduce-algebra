@@ -3,15 +3,63 @@
 % "librednlopt.so" serving as "glue" between Reduce/CSL and the NLopt 
 % library "libnlopt.so".
 
+% Author: Kostas N. Oikonomou
+
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
+%
+
 module nlopt_main;
 
 off lower;
 
-librednlopt_loc!* := lto_sconcat {rltools_trunk(), "packages/foreign/nlopt/librednlopt.so"};
+% The next line is unsatisfactory (for much the reason it was in Redlog)
+% because it can ONLY behave while the Reduce source tree is available, and so
+% it will FAIL when Reduce has been distributed as a binary archive and
+% installed on a fresh computer. Furthermore if native Windows is ever to
+% be supported one would need a ".dll" suffix not ".so".
+librednlopt_loc!* := lto_sconcat {rltools_trunk(),
+   "packages/foreign/nlopt/librednlopt.so"};
+
 if filep librednlopt_loc!* then
    librednlopt!* := open!-foreign!-library(librednlopt_loc!*)
-else
+else <<
+   if filep lto_sconcat {rltools_trunk(), "packages/foreign/nlopt/Makefile"} then
+   begin
+      scalar w;
+      w := lto_sconcat {rltools_trunk(), "packages/foreign/nlopt"};
+      % One bad thing here is that lto_sconcat is coded so it fails if some of
+      % the strings passed contain double-quote marks, and I would have liked to
+      % use some here!
+      w := lto_sconcat {"sh -c 'cd ", w, "; make'"};
+      system w
+   end;
+   % The call to system() might have managed to create the library
+   if filep librednlopt_loc!* then
+      librednlopt!* := open!-foreign!-library(librednlopt_loc!*);
+>>;
+if not librednlopt!* then
    rederr {"Can't open the NLopt library ", librednlopt_loc!*};
+
 
 % =================================================
 % The NLopt algorithms, from nlopt.h in NLopt 2.4.2
@@ -73,33 +121,6 @@ nlopt_algorithm_codes!* := {
 % An association list with the reverse association:
 nlopt_algorithm_rev_codes!* := 
    for each p in nlopt_algorithm_codes!* collect reverse p;
-
-% See if an interface routine returns an error.
-procedure ret_check(who,what);
-   begin scalar err,mess;
-      if what = 1 then return;  % "nlopt success"
-      if what < 0 then <<
-	 err := 
-      	    if what = -1 then "nlopt failure!"
-	    else if what = -2 then
- 	       "invalid arguments or unsupported constraints! (perhaps for this algorithm)"
-      	    else if what = -3 then "out of memory!"
-	    else if what = -4 then "progress limited by roundoff"
-	    else "forced stop";
- 	 rederr {concat(who, ":"), err};
-      >>
-      else <<
-	 % these are informative messages
-	 mess := 
-	    if what = 2 then "stop value reached" 
-	    else if what = 3 then "f-tolerance reached"
-	    else if what = 4 then "x-tolerance reached"
-	    else if what = 5 then "max evaluations reached"
-	    else "max time reached";
-	 prin2t mess;
-      >>;
-   end;
-
 
 %% Basics
 NLOPT_create!*  := find!-foreign!-function("NLOPT_create", librednlopt!*);
@@ -170,10 +191,36 @@ NLOPT_set_population!* := find!-foreign!-function("NLOPT_set_population", libred
 NLOPT_srand!* := find!-foreign!-function("NLOPT_srand", librednlopt!*);
 
 
-
 % ==========================================
 % Basics
 % ==========================================
+
+% See if an interface routine returns an error.
+procedure ret_check(who,what);
+   begin scalar err,mess;
+      if what = 1 then return;  % "nlopt success"
+      if what < 0 then <<
+	 err := 
+      	    if what = -1 then "nlopt failure!"
+	    else if what = -2 then
+ 	       "invalid arguments or unsupported constraints! (perhaps for this algorithm)"
+      	    else if what = -3 then "out of memory!"
+	    else if what = -4 then "progress limited by roundoff"
+	    else "forced stop";
+ 	 rederr {concat(who, ":"), err};
+      >>
+      else <<
+	 % these are informative messages
+	 mess := 
+	    if what = 2 then "stop value reached" 
+	    else if what = 3 then "f-tolerance reached"
+	    else if what = 4 then "x-tolerance reached"
+	    else if what = 5 then "max evaluations reached"
+	    else "max time reached";
+	 prin2t mess;
+      >>;
+   end;
+
 
 procedure nlopt_algorithms();
    begin scalar n;

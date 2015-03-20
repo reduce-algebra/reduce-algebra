@@ -38,12 +38,12 @@ module cuba_main;
 % installed on a fresh computer. Furthermore if native Windows is ever to
 % be supported one would need a ".dll" suffix not ".so".
 libredcuba_loc!* := lto_sconcat {rltools_trunk(),
-                                 "packages/foreign/cuba/libredcuba.so"};
+   "packages/foreign/cuba/libredcuba.so"};
+
 if filep libredcuba_loc!* then
    libredcuba!* := open!-foreign!-library(libredcuba_loc!*)
 else <<
-   if filep lto_sconcat {rltools_trunk(),
-                         "packages/foreign/cuba/Makefile"} then
+   if filep lto_sconcat {rltools_trunk(), "packages/foreign/cuba/Makefile"} then
    begin
       scalar w;
       w := lto_sconcat {rltools_trunk(), "packages/foreign/cuba"};
@@ -53,14 +53,18 @@ else <<
       w := lto_sconcat {"sh -c 'cd ", w, "; make'"};
       system w
    end;
-   % The call to system() might have managed to create the library, so
-   % check again!
+   % The call to system() might have managed to create the library
    if filep libredcuba_loc!* then
-      libredcuba!* := open!-foreign!-library(libredcuba_loc!*)
-   else rederr {"Can't open the Cuba library ", libredcuba_loc!*}
+      libredcuba!* := open!-foreign!-library(libredcuba_loc!*);
 >>;
+if not libredcuba!* then
+   rederr {"Can't open the Cuba library ", libredcuba_loc!*};
 
-%% Setting parameters
+
+
+% ============================
+% Setting parameters
+% ============================
 cuba_statefile!*   := find!-foreign!-function("cuba_statefile", libredcuba!*);
 cuba_verbosity!*   := find!-foreign!-function("cuba_verbosity", libredcuba!*);
 cuba_set_flags_bit!*   := find!-foreign!-function("cuba_set_flags_bit",   libredcuba!*);
@@ -71,17 +75,23 @@ cuba_suave_par!*   := find!-foreign!-function("cuba_suave_par", libredcuba!*);
 cuba_divonne_par!* := find!-foreign!-function("cuba_divonne_par", libredcuba!*);
 cuba_cuhre_par!*   := find!-foreign!-function("cuba_cuhre_par", libredcuba!*);
 
-%% Arrays of doubles
+% ============================
+% Arrays of doubles
+% ============================
 newDoubleArray!*  := find!-foreign!-function("newDoubleArray", libredcuba!*);
 setDoubleArray!*  := find!-foreign!-function("setDoubleArray", libredcuba!*);
 freeDoubleArray!* := find!-foreign!-function("freeDoubleArray", libredcuba!*);
 
-%% Integration algorithms
+% ============================
+% Integration algorithms
+% ============================
 cuba_algorithms!* := {'!Vegas,'!Suave,'!Divonne,'!Cuhre};
 % Set the shared variable cuba_algorithms to a proper algebraic-mode value:
 cuba_algorithms := 'list . cuba_algorithms!*;
 cuba_int!*      := find!-foreign!-function("cuba_int", libredcuba!*);
+% ============================
 % Internal to the interface:
+% ============================
 set_alg!*       := find!-foreign!-function("set_alg", libredcuba!*);
 set_integrand!* := find!-foreign!-function("set_integrand", libredcuba!*);
 get_result!*    := find!-foreign!-function("get_result",  libredcuba!*);

@@ -1,6 +1,20 @@
 # Makefile for the C-coded interface between Reduce and Cuba.
 
 # Cuba is fetched and unpacked.
+
+all: libredcuba.so cuba.pdf
+
+# The sequence of operations here is:
+# (1) Set the installation path for Cuba to a sub-directory of the current location.
+# (2) Fetch a copy of the Cuba sources from http://www.feynarts.de.
+#     From time to time it could make sense to review this web address and the
+#     version number:
+
+cuba_ver = Cuba-4.1
+# This was valid in March 2015.
+
+
+# (3) Get rid of any previously unpacked copy of Cuba and unpack the new version.
 # The current Cuba code has been observed building using various versions
 # of clang and versions of gcc from release 4.6.x onwards. gcc 4.5.x and
 # earlier will not suffice. The builds have been tested on FreeBSD 10,
@@ -16,33 +30,23 @@
 # Also, despite use of autoconf to direct the building of Cuba-4.1 it
 # appears to be necessary to force -fPIC into CFLAGS in order that the
 # library that is built is usable for the purposes needed here.
-
-all: libredcuba.so cuba.pdf
-
-# The sequence of operations here is:
-# (1) Set the installation path for Cuba to a sub-directory of the current location.
-# (2) Fetch a copy of the Cuba sources from http://www.feynarts.de.
-#     From time to time it could make sense to review this web address and the
-#     version number:
-
-cuba_ver = Cuba-4.1
-# This was valid in March 2015.
-
-# (3) Get rid of any previously unpacked copy of Cuba and unpack the new version.
 # (4) Configure it, specifying the location to be used for installation, but
 #     trusting the Cuba developers and maintainers regarding all other choices.
 # (5) Compile and move the resulting libraries to the right place. Note that
 #     to build Cuba requires the GNU version of "make" since its own Makefile
-#     is not compatible with the older style make utility present on some BSD systems.
+#     is not compatible with the older style make utility present on some BSD
+#     systems.
 # (6) Clean up: remove the fetched and the unpacked copies of the source and
 #     build files.
 
 
-.PHANTOM:	build_cuba
+
+
+
 build_cuba cuba/lib/libcuba.a:
-	CUBA=`pwd`/cuba && \
 	wget http://www.feynarts.de/cuba/$(cuba_ver).tar.gz && \
-	rm -rf $(cuba_ver) && \
+	CUBA=`pwd`/cuba	 && \
+	rm -rf $(CUBA) && \
 	tar xzf $(cuba_ver).tar.gz && \
 	cd $(cuba_ver) && \
 	case `uname -a` in \
@@ -58,13 +62,11 @@ build_cuba cuba/lib/libcuba.a:
 	printf "Unknown machine: please update the Makefile\n" ; \
 	exit 1 ; ;; \
 	esac && \
-	./configure --prefix="$$CUBA" \
-		CC="$$CC" CFLAGS="$$CFLAGS" CXX="$$CXX" && \
+	./configure --prefix="$$CUBA" CC="$$CC" CFLAGS="$$CFLAGS" CXX="$$CXX" && \
 	$$mk install && \
 	cd .. && \
 	rm -rf $(cuba_ver) $(cuba_ver).tar.gz
 
-CUBA = ./cuba
 
 # The next sequence will build the code that interfaces between Cuba and
 # Reduce. Because this package as whole does not use autoconf and because
@@ -77,12 +79,10 @@ CUBA = ./cuba
 # update.
 # 
 # It is probable that the code here is not very fussy about what compiler is
-# used so mostly the choice being made here is between gcc and clang. It will be
-# important that the module created is compatible with the Reduce binary you use
-# and the command here depends on an option of the form "-Wl,-rpath..." being
-# accepted while linking the code.
+# used so mostly the choice being made here is between gcc and clang.
 
 libredcuba.so: redcuba.c C_call_CSL.h cuba/lib/libcuba.a
+	CUBA=`pwd`/cuba	 && \
 	case `uname -a` in \
 	*Linux* | *linux* )  \
 	CC="gcc" ; CFLAGS="-O3 -fPIC"; ;; \
@@ -94,10 +94,9 @@ libredcuba.so: redcuba.c C_call_CSL.h cuba/lib/libcuba.a
 	printf "Unknown machine: please update the Makefile\n" ; \
 	exit 1 ; ;; \
 	esac && \
-	$$CC $$CFLAGS -I $(CUBA)/include -c redcuba.c && \
-	$$CC -shared -o libredcuba.so redcuba.o -Wl,-rpath,$(CUBA)/lib \
-		-L $(CUBA)/lib -lcuba && \
-	rm redcuba.o
+	$$CC $$CFLAGS -I $$CUBA/include -c redcuba.c && \
+	$$CC -shared -o libredcuba.so redcuba.o -L $$CUBA/lib -lcuba && \
+	rm redcuba.o  && rm -rf $$CUBA
 
 cuba.pdf:	cuba.tex
 	pdflatex cuba.tex

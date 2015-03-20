@@ -1,3 +1,3 @@
 This is an interface between Reduce/CSL and the NLopt package for
 numerical optimization.  See http://ab-initio.mit.edu/wiki/index.php/NLopt.
-Currently tested under FreeBSD 10.  More under way.
+Currently tested under FreeBSD 10.  Should also work under Linux.
