@@ -133,6 +133,15 @@ compiletime
 %  define!-constant(!!fleps1exp,-40)
 >>;
 
+symbolic procedure float!-is!-finite x;
+  floatp x and ieeeexpt x < ieeemaxexp;
+
+symbolic procedure float!-is!-nan x;
+  floatp x and ieeeexpt x = ieeemaxexp and ieeemant x neq 0;
+
+symbolic procedure float!-is!-infinite x;
+  floatp x and ieeeexpt x = ieeemaxexp and ieeemant x = 0;
+
 symbolic procedure safe!-fp!-plus(x,y);
   begin
     scalar ex,ey,sx,sy,z,ez;
@@ -436,6 +445,8 @@ remflag('(cond),'eval);
 symbolic inline procedure princ x; prin2 x;
 symbolic inline procedure prin x;  prin1 x;
 symbolic inline procedure printc x; << prin2 x; terpri(); x >>;
+
+symbolic inline procedure list!-to!-vector a; list2vector a;
 
 symbolic procedure hexdig w;
   cdr assoc(w, '((0 . !0) (1 . !1) (2 . !2) (3 . !3)
