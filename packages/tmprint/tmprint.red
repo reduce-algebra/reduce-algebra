@@ -176,7 +176,7 @@ module tmprint; % Output module for TeXmacs interface
 %
 %     fancy-prifn      print function for an operator
 %
-%     fancy-pprifn     print function for an oeprator including current
+%     fancy-pprifn     print function for an operator including current
 %                      operator precedence for infix printing
 %
 %     fancy!-flatprifn print function for objects which require
@@ -289,7 +289,7 @@ symbolic procedure fmp!-switch mode;
             outputhandler!-stack!* := cdr outputhandler!-stack!*;
             !*fancy := nil
           >>
-          else
+	  else
           << !*fancy := nil;
              rederr "FANCY is not current output handler" >>
 % ACN feels that raising an error on an attempt to switch off an option
@@ -354,16 +354,14 @@ inline procedure writechar n;
 #else
 
 inline procedure string!-to!-list a;
-    explode2 a;
+    string2list a;
 
-% I do not know if this has to be like this in PSL, but it reflects
-% what was in the code.
 symbolic procedure raw!-print!-string s;
-     for each x in string!-to!-list s do prin2 x;
+     prin2 s;
+
 % writechar already exists in PSL.
 
-symbolic procedure explode2lc s;
-    explode2 s where !*lower = t;
+% explode2lc already defned in support/psl.red
 
 #endif
 
@@ -571,16 +569,15 @@ symbolic procedure fancy!-flush();
 #else
 
 symbolic procedure fancy!-flush();
-  begin
-    scalar !*lower;  % Rebinding *lower is needed for PSL here
-    fancy!-terpri!* t;
+    << fancy!-terpri!* t;
         for each line in reverse fancy!-page!* do
-      if line and not eqcar(car line,'tab) then <<
-         fancy!-out!-header();
+        if line and not eqcar(car line,'tab) then
+        <<fancy!-out!-header();
           for each it in reverse line do fancy!-out!-item it;
-         fancy!-out!-trailer() >>;
-     set!-fancymode nil
-  end;
+          fancy!-out!-trailer();
+        >>;
+        set!-fancymode nil;
+      >> where !*lower=nil;
 
 #endif
 
@@ -708,10 +705,6 @@ flag('(texpointsize), 'opfn);
 %   Huge       25    25
 
 fluid '(cm!-widths!*);
-
-#if (memq 'psl lispsystem!*)
-symbolic procedure list!-to!-vector a; list2vector a;
-#endif
 
 cm!-widths!* := list(
     % name checksum design-size (millipoints)
@@ -1703,7 +1696,7 @@ symbolic procedure fancy!-print!-format(u,p);
   end;
 
 symbolic procedure fancy!-print!-format1(u,p,a);
-  begin scalar w,x,y,pl,bkt,obkt,q;
+  begin scalar w,x,pl,bkt,obkt,q;
    if eqcar(u,'list) then u:= cdr u;
    while u and w neq 'failed do
    <<x:=car u; u:=cdr u;
@@ -2760,6 +2753,8 @@ if tm_pslp() then <<
    copyd('tm_compute!-prompt!-string!-orig,'compute!-prompt!-string);
    copyd('compute!-prompt!-string,'tm_compute!-prompt!-string)
 >>;
+
+fluid '(breaklevel!*);
 
 procedure tm_break_prompt();
    <<
