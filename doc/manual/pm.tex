@@ -282,11 +282,12 @@ In general usage the following switches need not be considered:
     functions when the template contains multi-generic symbols so that generic
     symbols will not function. For example \texttt{(a+b+c,?a+??b)} will return
       \begin{verbatim}
-        {?a -> a, ??b -> [b,c]} \textrm{or} {?a -> b, ??b -> [a,c]}
-        \textrm{or} {?a -> c, ??b -> [a,b]}
+        {?a -> a, ??b -> [b,c]} or
+        {?a -> b, ??b -> [a,c]} or
+        {?a -> c, ??b -> [a,b]}
       \end{verbatim}
-      but not \texttt{\{?a -> a+b, ??b -> c\}}, etc.  No sane template should
-      require these types of matches.  However they can be made available by
-      turning the switch off.
+    but not \texttt{\{?a -> a+b, ??b -> c\}}, etc.  No sane template should
+    require these types of matches.  However they can be made available by
+    turning the switch off.
 \end{description}
 
