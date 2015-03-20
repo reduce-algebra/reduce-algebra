@@ -1,0 +1,341 @@
+% Numerical tests
+on rounded;
+
+
+reslist := {sind(40), cosd(40), tand(40), cotd(40), secd(40), cscd(40)};
+
+
+reslist := {0.642787609687,0.766044443119,0.839099631177,1.19175359259,
+
+            1.30540728933,1.55572382686}
+
+
+% Checks
+t:= third reslist$
+
+
+(first reslist)^2 + (second reslist)^2;
+
+
+1
+
+first reslist -t/sqrt(1+t^2);
+
+
+0
+
+sind(80)-2t/(1+t^2);
+
+
+0
+
+atand(t);
+
+
+40.0
+    
+
+{atand(1), atand(sqrt 3), atand(sqrt 2-1), acotd(-2), asecd(-2/sqrt(3))};
+
+
+{45.0,60.0,22.5,153.434948823,150.0}
+
+{atand(1), atand(sqrt 3), atand(sqrt 2-1), acotd 2, acotd(-2),  
+acotd(2)+acotd(-2), asecd(-2/sqrt(3))};
+
+
+{45.0,
+
+ 60.0,
+
+ 22.5,
+
+ 26.5650511771,
+
+ 153.434948823,
+
+ 180.0,
+
+ 150.0}
+
+
+reslist := {atan2d(sqrt 3-1, sqrt 3+1), atan2d( -(1+sqrt 3), 1-sqrt 3)};
+
+
+reslist := {15.0, - 105.0}
+
+sind(second reslist)+ sqrt(2)/4*(sqrt 3+1);
+
+
+0
+
+
+{argd(2.1), argd(-1)};
+
+
+{0,180.0}
+
+
+{sind(40+i), atand(1+i), asind(2), asecd(1/2)};
+
+
+{sind(i + 40),
+
+ atand(i + 1),
+
+ asind(2),
+
+ asecd(0.5)}
+  % not evaluated
+{argd(1+i), argd(-1-i), argd(1-sqrt(3)*i)};
+
+
+{argd(i + 1),
+
+ argd( - i - 1),
+
+ argd( - 1.73205080757*i + 1)}
+ % not evaluated
+atan2d(1+i, 1-i);
+
+
+atan2d(i + 1, - i + 1)
+   % not evaluated
+
+on complex;
+
+
+*** Domain mode rounded changed to complex-rounded 
+
+
+{sind(40+i), atand(1+i), asind(2), asecd(1/2)};
+
+
+{0.642885514323 - 0.011640856063*i,58.2825255885 + 23.0534999427*i,90.0
+
+  - 75.4561292902*i,75.4561292902*i}
+ 
+{argd(1+i), argd(-1-i), argd(1-sqrt(3)*i)};
+
+
+{45.0, - 135.0, - 60.0}
+ 
+
+reslist := {acotd(3i), acotd(-3i), atand(3i)};
+
+
+reslist := 
+
+{180.0 - 19.8572040137*i,180.0 + 19.8572040137*i, - 90.0 + 19.8572040137*i}
+
+first reslist + second reslist-180;
+
+
+180.0
+
+90-third reslist-first reslist;
+
+
+0
+
+
+reslist := {acotd(0.3i), acotd(-0.3i), atand(0.3i)};
+
+
+reslist := {90.0 - 17.7341669974*i,90.0 + 17.7341669974*i,17.7341669974*i}
+
+first reslist + second reslist-180;
+
+
+0
+
+90-third reslist-first reslist;
+
+
+0
+
+
+off complex;
+
+
+*** Domain mode complex-rounded changed to rounded 
+
+precision 50;
+
+
+12
+
+
+reslist := {sind(40), cosd(40), tand(40), cotd(40), secd(40), cscd(40)};
+
+
+reslist := {0.64278760968653932632264340990726343290755988420568,
+
+            0.7660444431189780352023926505554166739358324570804,
+
+            0.83909963117728001176312729812318136468743428301235,
+
+            1.1917535925942099587053080718604193369307004077085,
+
+            1.3054072893322786045931334929227408159984972912637,
+
+            1.5557238268604123200563559546372533808211721914623}
+
+
+% Checks
+t:= third reslist$
+
+
+(first reslist)^2 + (second reslist)^2;
+
+
+1
+
+first reslist -t/sqrt(1+t^2);
+
+
+0
+
+sind(80)-2t/(1+t^2);
+
+
+0
+
+atand(t);
+
+
+40.0
+ 
+
+{atand(1), atand(sqrt 3), atand(sqrt 2-1), acotd 2, acotd(-2), 
+ acotd(2)+acotd(-2), asecd(-2/sqrt(3))};
+
+
+{45.0,
+
+ 60.0,
+
+ 22.5,
+
+ 26.565051177077989351572193720453294671204214299645,
+
+ 153.43494882292201064842780627954670532879578570035,
+
+ 180.0,
+
+ 150.0}
+
+
+{argd(2.1), argd(-1)};
+
+
+{0,180.0}
+
+
+{sind(40+i), atand(1+i), asind(2), asecd(1/2)};
+
+
+{sind(i + 40),
+
+ atand(i + 1),
+
+ asind(2),
+
+ asecd(0.5)}
+  % not evaluated
+{argd(1+i), argd(-1-i), argd(1-sqrt(3)*i)};
+
+
+{argd(i + 1),
+
+ argd( - i - 1),
+
+ argd( - 1.7320508075688772935274463415058723669428052538104*i + 1)}
+ % not evaluated
+atan2d(1+i, 1-i);
+
+
+atan2d(i + 1, - i + 1)
+   % not evaluated
+
+on complex;
+
+
+*** Domain mode rounded changed to complex-rounded 
+
+
+{sind(40+i), atand(1+i), asind(2), asecd(1/2)};
+
+
+{0.64288551432335641781608341666793432509025069321368
+
+  - 0.011640856062954495412717394300170594108025115690364*i,
+
+ 58.282525588538994675786096860226647335602107149823
+
+  + 23.053499942704926636434894802956564350596149550014*i,90.0
+
+  - 75.456129290216892004100125807761194799622944046311*i,
+
+ 75.456129290216892004100125807761194799622944046311*i}
+ 
+{argd(1+i), argd(-1-i), argd(1-sqrt(3)*i)};
+
+
+{45.0, - 135.0, - 60.0}
+ 
+
+reslist := {acotd(3i), acotd(-3i), atand(3i)};
+
+
+reslist := {180.0 - 19.857204013738643405681078890619792188442077385669*i,180.0
+
+             + 19.857204013738643405681078890619792188442077385669*i, - 90.0
+
+             + 19.857204013738643405681078890619792188442077385669*i}
+
+first reslist + second reslist-180;
+
+
+180.0
+
+90-third reslist-first reslist;
+
+
+0
+
+
+reslist := {acotd(0.3i), acotd(-0.3i), atand(0.3i)};
+
+
+reslist := {90.0 - 17.734166997397996843513571101613770576404209837151*i,90.0
+
+             + 17.734166997397996843513571101613770576404209837151*i,
+
+            17.734166997397996843513571101613770576404209837151*i}
+
+first reslist + second reslist-180;
+
+
+0
+
+90-third reslist-first reslist;
+
+
+0
+
+
+% atan2d(1+i, 1-i);   % should cause an error obviously!
+precision 12;
+
+
+50
+
+% atan2d(1+i, 1-i);   % would cause error
+
+off complex, rounded;
+
+
+*** Domain mode complex-rounded changed to rounded 
+
+end;
