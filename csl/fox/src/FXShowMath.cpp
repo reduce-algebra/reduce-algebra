@@ -96,7 +96,7 @@ extern int file_readable(char *a, char *b, size_t n);
 
 namespace FX {
 
-static int DEBUGFONT = 0;
+static int DEBUGFONT = -1;
 
 // I make the size of my memory pool depend on the size of a pointer
 // because the size of box components depends on that. The setting here
@@ -104,7 +104,18 @@ static int DEBUGFONT = 0;
 // cache around say 80 full lines of maths display. Beyond that the
 // system would need to re-parse for redisplay.
 
-#define memoryPoolSize (0x8000*sizeof(void *))
+// Well this size limit turns out to be problematic. At present I do not
+// understand whether it is systematically a disaster or that there is merely
+// a bug triggered when it is exceeded. However with the size (0x8000) here
+// the simple input (x+y)^500 causes a crash in the CSL GUI. Also trying to
+// run the specfn.tst test script fails (the output from one of the kummer
+// examples in it is around 600 lines and 100 Kbytes). So as a holding
+// measure I am increasing the pool size by a factor of 16. This does not
+// cure the underlying problem but maybe moves it far out enough to buy
+// me some time to investigate. ACN March 2015.
+
+//#define memoryPoolSize (0x8000*sizeof(void *))
+#define memoryPoolSize (0x80000*sizeof(void *))
 
 static void *memoryPool = NULL;
 static unsigned int memoryPoolIn, memoryPoolOut;
