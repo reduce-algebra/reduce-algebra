@@ -180,9 +180,6 @@ symbolic procedure cratand!* u;
    crr2d!* cr!:times(cri!/2(),crlog!* cr!:quotient(
       cr!:plus(cri!*(),u),cr!:differ(cri!*(),u)));
 
-symbolic procedure cracot!* u;
-  cr!:differ(!*rd2cr pi!/2!*(), cratan!* u);
-
 symbolic procedure cracotd!* u;
   cr!:differ(i2cr!* 90, cratand!* u);
 
