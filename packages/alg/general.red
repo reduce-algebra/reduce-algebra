@@ -213,12 +213,20 @@ symbolic procedure adomainp u;
    numberp u or (pairp u and idp car u and get(car u,'dname))
              or eqcar(u,'minus) and adomainp cadr u;
 
+symbolic procedure adomainpx(u,num);
+  % extended algebraic domainp test:
+  % num = t: u is a domain element;
+  % num = inf: u is a domain element or inf or (minus inf)
+  % num = nil: u is arbitrary.
+    null num or adomainp u or num='infinity
+                and member(u,'(infinity (minus infinity)));
+
 symbolic procedure revalnuminterval(u,num);
  % Evaluate u as interval; numeric bounds required if num=T.
   begin scalar l;
     if not eqcar(u,'!*interval!*) then typerr(u,"interval");
     l:={reval cadr u,reval caddr u};
-    if null num or(adomainp car l and adomainp cadr l)then return l;
+    if adomainpx(car l,num) and adomainpx(cadr l,num) then return l;
     typerr(u,"numeric interval");
   end;
 

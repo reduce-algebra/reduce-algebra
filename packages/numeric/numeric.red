@@ -78,14 +78,14 @@ minus!-infinity!* := '(minus infinity);
 %     if adomainpx(car l,num) and adomainpx(cadr l,num)then return l;
 %     typerr(u,"numeric interval");
 %   end;
-
-symbolic procedure adomainpx(u,num);
-  % extended algebraic domainp test:
-  % num = t: u is a domain element;
-  % num = inf: u is a domain element or inf or (minus inf)
-  % num = nil: u is arbitrary.
-    null num or adomainp u or num='infinity
-                and member(u,'(infinity (minus infinity)));
+% 
+% symbolic procedure adomainpx(u,num);
+%   % extended algebraic domainp test:
+%   % num = t: u is a domain element;
+%   % num = inf: u is a domain element or inf or (minus inf)
+%   % num = nil: u is arbitrary.
+%     null num or adomainp u or num='infinity
+%                 and member(u,'(infinity (minus infinity)));
 
 symbolic procedure evalgreaterpx(a,b);
   if a =minus!-infinity!* or b = 'infinity then nil else
