@@ -142,6 +142,27 @@ symbolic procedure float!-is!-nan x;
 symbolic procedure float!-is!-infinite x;
   floatp x and ieeeexpt x = ieeemaxexp and ieeemant x = 0;
 
+symbolic procedure float!-is!-subnormal x;
+  floatp x and ieeeexpt x = 0;
+
+
+remflag('(fp!-infinite fp!-nan fp!-finite fp!-subnorm),'lose);
+
+symbolic inline procedure fp!-infinite x;
+  float!-is!-infinite x;
+
+symbolic inline procedure fp!-nan x;
+  float!-is!-nan x;
+
+symbolic inline procedure fp!-finite x;
+  float!-is!-finite x;
+
+symbolic inline procedure fp!-subnorm x;
+  float!-is!-subnormal x;
+
+flag('(fp!-infinite fp!-nan fp!-finite fp!-subnorm),'lose);
+
+
 symbolic procedure safe!-fp!-plus(x,y);
   begin
     scalar ex,ey,sx,sy,z,ez;
