@@ -1152,7 +1152,7 @@ symbolic procedure opfchk!! u;
  evc: if fn := get(fn1,'!:cr!:) then go to a;
  err: rerror(alg,18,list(fn1,"is not defined as complex function"));
    s: if not (u := apply1(sf, revlis u)) then return nil;
-   a: u := errorset!*(list('apply,mkquote fn,mkquote u),nil);
+   a: u := errorset2 list('apply,mkquote fn,mkquote u);
       if errorp u then
          if ce then <<u := ce; ce := nil; go to evc>> else return nil
        else return if int then intconv car u else car u
@@ -1168,7 +1168,7 @@ symbolic procedure simpcr x;
    <<(<<if not errorp y then z := car y;
         y := simplist x where dmode!* = '!:cr!:;
         if y then z . y else z>>)
-   where z=nil,y=errorset!*(list('simprd,mkquote x),nil)>>;
+   where z=nil,y=errorset2 list('simprd,mkquote x)>>;
 
 symbolic procedure simprd x;
    % Converts any argument list that can be converted to list of rd's.
