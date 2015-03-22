@@ -107,7 +107,7 @@ symbolic procedure initialize_gnuplot();
    if null plotheader!* then
    if null !*force_gnuplot_term then plotheader!* := ""
    else << if null x then
-      if getenv "DISPLAY" then x := '(nil . gnuplot_select_terminal!*)
+      if getenv "DISPLAY" then x := nil . gnuplot_select_terminal!*
                         else x:='(nil."dumb");
       if wlessp (strlen strinf cdr x, 20) 
                  then  plotheader!* :=bldmsg("set term %w",cdr x)
@@ -115,10 +115,10 @@ symbolic procedure initialize_gnuplot();
    >>
      where x =
       assoc(getenv "TERM",
+	    ("xterm" . gnuplot_select_terminal!*) .
+	    ("xterm-color" . gnuplot_select_terminal!*) .
            '(
           %% You may want to extend or modify the terminal list above
-                ("xterm" . gnuplot_select_terminal!*)
-                ("xterm-color" . gnuplot_select_terminal!*)
                 ("sun-cmd" . "x11")
                 ("sun" . "x11")
                 ("hpterm" . "x11")
