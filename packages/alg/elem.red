@@ -681,6 +681,7 @@ invhyprules := {
                        when fixp n and n>2,
   atanh(~x) => acosh((1+x^2)/(1-x^2)) * sign (x) / 2
                when symbolic(not !*complex)
+                     and x^2 neq 1
                      and acosh((1+x^2)/(1-x^2)) freeof acosh
 }$
 
@@ -693,7 +694,7 @@ trig_imag_rules := {
     cosh(i * ~~x / ~~y)  => cos(x/y) when impart(y)=0,
     asin(i * ~~x / ~~y)  => i * asinh(x/y) when impart(y)=0,
     atan(i * ~~x / ~~y)  => i * atanh(x/y) when impart(y)=0
-                                and not(x=1 and y=1),
+                                and not((x=1 or x=-1) and y=1),
     asinh(i * ~~x / ~~y) => i * asin(x/y) when impart(y)=0,
     atanh(i * ~~x / ~~y) => i * atan(x/y) when impart(y)=0
 }$
