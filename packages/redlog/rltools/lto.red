@@ -49,13 +49,6 @@ procedure lto_insertq(x,l);
    % is a list. Conses [x] to [l] if [x] is not already [memq].
    if x memq l then l else x . l;
 
-procedure lto_insertqcar(x,l);                                                    
-begin;                                                                            
-   if not l then return (x . nil);                                                
-   if car x = caar l then return l;                                               
-   return car l . lto_insertqcar(x,cdr l);                                        
-end;  
-
 procedure lto_quicksort(l,sortp);
    % List tools quick sort. [l] is a list; [sortp] is a function that
    % implements an ordering. Returns a list. [l] is sorted such that

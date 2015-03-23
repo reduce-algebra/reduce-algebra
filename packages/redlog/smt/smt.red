@@ -116,9 +116,7 @@ procedure smts_processAssert(constraint);
 
 procedure smts_processCheckSat();
    begin scalar w, tval;
-      %!*rlqeinfcore:=T;
       w := rl_qea(rl_ex(rl_smkn('and, smts_assertionl!*), nil), nil);
-      %!*rlqeinfcore:=nil;
       if null w then <<
 	 smts_prin2t 'unsat;
 	 return

@@ -301,12 +301,7 @@ procedure cl_smsimpl!-junct1(op,atl,col,knowl,newknowl,n,break);
    begin scalar a,w,wop,argl,sicol,natl;
       while col do <<
 	 a := pop col;
-	 % Turn off infeasible core computation for higher depth.
-	 if !*rlqeicsimpl then <<
- 	    !*rlqeicsimpl:=nil;
-	    w := cl_simpl1(a,newknowl,n-1,op);
- 	    !*rlqeicsimpl:=T;
-	 >> else w := cl_simpl1(a,newknowl,n-1,op);
+	 w := cl_simpl1(a,newknowl,n-1,op);
 	 wop := rl_op w;
 	 if wop eq break then <<
 	    a := break;
