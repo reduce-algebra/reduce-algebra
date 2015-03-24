@@ -722,7 +722,7 @@ symbolic procedure token1;
 % If a token is read such that a letter is preceeded by an exclamation mark
 % I will set the variable escaped!*. The purpose of this is to support a
 % tool that will report on cases where names are used in Reduce such that they
-% are identical other than in case. So if both "symbolic" and "SYMBOLIC" are
+% are identical other than in case. So if both "symbolic" and "sYmBoLiC" are
 % used that is a clash. However I do not want "!Alpha" and "alpha" to count
 % as a clash, or "!X" and "!x" and "x". So the presence of a letter whose
 % case is explicitly preserved by the escape character will be taken as a mark
@@ -1070,8 +1070,12 @@ symbolic procedure scan;
                         (null (x=nxtsym!*)) then go to new
 % Here I will allow "comment" to be spent in either upper or lower case
 % so that if "off raise;" (or "off lower;") is active things that may be
-% intended to be comments remain treated as such.
-         else if nxtsym!* eq 'comment or nxtsym!* eq '!C!O!M!M!E!N!T
+% intended to be comments remain treated as such. The various capitalisations
+% detected here actually arise within the Reduce sources (at least until at
+% some stage they are tidied away...)
+         else if nxtsym!* eq 'comment or
+                 nxtsym!* eq '!C!O!M!M!E!N!T or
+                 nxtsym!* eq '!Comment
           then progn(x := read!-comment1 'comment,
                      if !*comment then return x else go to a)
          else if nxtsym!* eq '!% and ttype!*=3

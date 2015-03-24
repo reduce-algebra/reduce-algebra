@@ -249,10 +249,10 @@ symbolic procedure identity!-function x;
   x;
 
 symbolic procedure ordpcadr(u, v);
-  ordp(car u, cadr v);
+  ordp(cadr u, cadr v);
 
 symbolic procedure ordopcadr(u, v);
-  ordop(car u, cadr v);
+  ordop(cadr u, cadr v);
 
 symbolic procedure arg1of2(u, v); u;
 

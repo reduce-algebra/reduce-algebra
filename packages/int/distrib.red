@@ -158,8 +158,8 @@ symbolic procedure f2df p;
         else plusdf(multdfconst(((lpow p .* 1) .+ nil) ./ 1,f2df lc p),
                     f2df red p);
 
-% SYMBOLIC PROCEDURE VAR2DF(VAR,N,ZLIST);
-%    ((VP1(VAR,N,ZLIST) .* (1 ./ 1)) .+ NIL);
+% symbolic procedure var2df(var,n,zlist);
+%    ((vp1(var,n,zlist) .* (1 ./ 1)) .+ nil);
 
 symbolic procedure vp1(var,degg,z);
 % Takes VAR and finds it in Z (=list), raises it to power DEGG and puts
