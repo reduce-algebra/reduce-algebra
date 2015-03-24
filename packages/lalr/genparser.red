@@ -1134,7 +1134,7 @@ symbolic procedure lalr_construct_parser g;
     renamings := nil;
     for each i in c do cc := lalr_insert_core(i, cc);
     lalr_rename_gotos();
-    if !*lalr_verbose then lalr_printitems("Merged Items:", cc);
+    if !*lalr_verbose then lalr_print_items("Merged Items:", cc);
     lalr_make_actions cc;
     if !*lalr_verbose then <<
       princ "action_index "; lalr_printshortnum_vector action_index;
