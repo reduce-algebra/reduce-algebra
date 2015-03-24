@@ -56,36 +56,8 @@ top: if null l then return nil;
      go to top
   end;
 
-%
-% Well you might wonder... this is in cslprolo.red AND in cslrend.red.
-% The reason is that it is needed early if rlisp is to be patchable. It
-% is needed AFTER rlisp.red has been loaded because the first time in
-% the bootstrap-build that RLISP is loaded no attention is given to LOSE
-% properties (this is a REAL misery) so the definition must be put in
-% place on top of the incorrect one built by RLISP the first time
-% around.
-%
-
-remflag('(copyd), 'lose);
-
-symbolic procedure copyd(new,old);
-% Copy the function definition from old id to new.
-   begin scalar x;
-      x := getd old;
-% If loading with !*savedef = '!*savedef then the actual definitions
-% do not get loaded, but the source forms do...
-      if null x then progn(
-        if not (!*savedef = '!*savedef)
-          then rerror('rlisp,1,list(old,"has no definition in copyd")) )
-      else progn(putd(new,car x,cdr x),
-                 if flagp(old, 'lose) then flag(list new, 'lose) );
-% The transfer of the saved definition is needed if the REDUCE "patch"
-% mechanism is to work fully properly.
-      if (x := get(old, '!*savedef)) then put(new, '!*savedef, x);
-      return new
-   end;
-
-flag('(copyd), 'lose);
+% Back when Reduce was updated using a patching mechanism I needed to define
+% COPYD here, but that is no longer the case.
 
 % The following are built into CSL and so any definition found within
 % the REDUCE sources should be viewed as "portability" but should be ignored.
@@ -93,8 +65,8 @@ flag('(copyd), 'lose);
 % note that the elementary functions within CSL are (almost always)
 % implemented using "crlibm" the "correctly rounded mathematical library"
 % which is certainly higher quality than the portable code within Reduce
-% and often gets more accuract answers that the elementary functions provided
-% by vendors. Its use shoudl also ensure that CSL delivers bit-identical
+% and often gets more accurate answers that the elementary functions provided
+% by vendors. Its use should also ensure that CSL delivers bit-identical
 % results on any platform it runs on.
 
 if memq('vsl, lispsystem!*) then

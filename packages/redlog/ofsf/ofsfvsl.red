@@ -766,7 +766,7 @@ asserted procedure vsl_solve(sysl: List, yl: List): AList;
 	 s := subsq(pop sl, subal);
 	 resal := (v . s) . resal
       >>;
-      return sort(resal, function(lambda(x,y); ordop(car x, car y)))
+      return sort(resal, function ordopcar)
    end;
 
 asserted procedure vsl_plugin(yl: Kernel): AList;

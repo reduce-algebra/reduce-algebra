@@ -64,9 +64,7 @@ symbolic procedure varopt!* m;
   for each x in dpmat_list m do
     for each y in bas_dpoly x do c:=mo_lcm(c,car y);
   return
-    for each x in
-        sort(mo_2list c,function(lambda(x,y); cdr x>cdr y)) collect
-        car x;
+    for each x in sort(mo_2list c,function greaterpcdr) collect car x;
   end;
 
 % ----- Certain stuff on maps -------------

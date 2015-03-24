@@ -941,7 +941,7 @@ symbolic procedure lalr_most_common_dest p;
     return car w
   end;
 
-symbolic procedure printvec v;
+symbolic procedure lalr_printgeneric_vector v;
   begin
     scalar ch;
     ch := '![;
@@ -963,7 +963,7 @@ symbolic procedure printvec v;
 % however I can use regular Lisp arrays instead with only modest waste of
 % space and that is what I do on PSL.
 
-symbolic procedure print8 v;
+symbolic procedure lalr_printbyte_vector v;
   begin
     scalar ch;
     ch := '!#!V8![;
@@ -976,7 +976,7 @@ symbolic procedure print8 v;
     return v
   end;
 
-symbolic procedure print16 v;
+symbolic procedure lalr_printshortnum_vector v;
   begin
     scalar ch;
     ch := '!#!V16![;
@@ -1020,9 +1020,9 @@ symbolic procedure lalr_make_gotos();
       putv16(goto_new_state, p, cdar r);
       r := cdr r >>;
     if !*lalr_verbose then <<
-      princ "goto_index: ";     print16 goto_index;
-      princ "goto_old_state: "; print16 goto_old_state;
-      princ "goto_new_state: "; print16 goto_new_state >>
+      princ "goto_index: ";     lalr_printshortnum_vector goto_index;
+      princ "goto_old_state: "; lalr_printshortnum_vector goto_old_state;
+      princ "goto_new_state: "; lalr_printshortnum_vector goto_new_state >>
   end;
 
 fluid '(pending_rules!*);
@@ -1134,15 +1134,15 @@ symbolic procedure lalr_construct_parser g;
     renamings := nil;
     for each i in c do cc := lalr_insert_core(i, cc);
     lalr_rename_gotos();
-    if !*lalr_verbose then lalr_print_items("Merged Items:", cc);
+    if !*lalr_verbose then lalr_printitems("Merged Items:", cc);
     lalr_make_actions cc;
     if !*lalr_verbose then <<
-      princ "action_index "; print16 action_index;
-      princ "action_terminal "; print16 action_terminal;
-      princ "action_result "; print16 action_result;
-      princ "action_fn "; printvec action_fn;
-      princ "action_n "; print8 action_n;
-      princ "action_A "; print16 action_A >>;
+      princ "action_index "; lalr_printshortnum_vector action_index;
+      princ "action_terminal "; lalr_printshortnum_vector action_terminal;
+      princ "action_result "; lalr_printshortnum_vector action_result;
+      princ "action_fn "; lalr_printgeneric_vector action_fn;
+      princ "action_n "; lalr_printbyte_vector action_n;
+      princ "action_A "; lalr_printshortnum_vector action_A >>;
     lalr_make_gotos();
     lalr_cleanup()
   end;

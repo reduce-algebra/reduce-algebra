@@ -264,8 +264,7 @@ procedure dvfsf_gelimset(a,v);
    end;
 
 procedure dvfsf_qemkans(an,svf);
-   sort(dvfsf_qebacksub dvfsf_qemkans1 an,
-      function(lambda(x,y); ordp(cadr x,cadr y)));
+   sort(dvfsf_qebacksub dvfsf_qemkans1 an, function ordpcadr);
 
 procedure dvfsf_qemkans1(an);
    % [an] is an answer. Returns a list of equations.

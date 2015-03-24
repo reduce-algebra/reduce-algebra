@@ -183,18 +183,18 @@ inline procedure xset_item c;
 
 accessors (lpdf . !_) . !_;
 
-inline procedure !*k2pf u;                 % from excalc
-   u .* (1 ./ 1) .+ nil;
-
-inline procedure negpf u;                  % from excalc
-   multpfsq(u,(-1) ./ 1);
-
-inline procedure get!*fdeg u;                      % from excalc
-   (if x then car x else nil) where x = get(u,'fdegree);
-
-inline procedure get!*ifdeg u;                     % from excalc
-   (if x then cdr x else nil)
-    where x = assoc(length cdr u,get(car u,'ifdegree));
+% inline procedure !*k2pf u;                 % from excalc
+%    u .* (1 ./ 1) .+ nil;
+%
+% inline procedure negpf u;                  % from excalc
+%    multpfsq(u,(-1) ./ 1);
+%
+% inline procedure get!*fdeg u;                      % from excalc
+%    (if x then car x else nil) where x = get(u,'fdegree);
+%
+% inline procedure get!*ifdeg u;                     % from excalc
+%    (if x then cdr x else nil)
+%     where x = assoc(length cdr u,get(car u,'ifdegree));
 
 endmodule;
 end;

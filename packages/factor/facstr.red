@@ -101,7 +101,7 @@ symbolic procedure reconstruct!-multivariate!-factors vset!-mod!-p;
          "factors into multivariate modular factors, which will in";
       printstr "turn be used in the later Hensel construction.  The";
       printstr "starting modular factors are:";
-      printvec(" f(",number!-of!-factors,")=",best!-factors!-mod!-p);
+      ezgcd_printvec(" f(",number!-of!-factors,")=",best!-factors!-mod!-p);
       prin2!* "The modulus is "; printstr current!-modulus >>;
     find!-multivariate!-factors!-mod!-p(u0,
       best!-factors!-mod!-p,

@@ -395,7 +395,7 @@ asserted procedure ctx_new(): AexCtx;
    {'ctx, nil};
 
 asserted procedure ctx_fromial(ial: AList): AexCtx;
-   {'ctx, sort(ial, function(lambda(x, y); ordop(car x, car y)))};
+   {'ctx, sort(ial, function ordopcar)};
 
 asserted procedure ctx_ial(c: AexCtx): AList;
    cadr c;
@@ -463,9 +463,8 @@ asserted procedure ctx_union(c1: AexCtx, c2: AexCtx): AexCtx;
    begin scalar ial1, ial2, w;
       ial1 := for each pr in ctx_ial c1 collect car pr . cdr pr;
       ial2 := for each pr in ctx_ial c2 collect car pr . cdr pr;
-      w := lto_almerge({ial1, ial2}, function(lambda(x, y); x));
-      w := sort(w, function(lambda(x, y); ordop(car x, car y)));
-      return {'ctx, w}
+      w := lto_almerge({ial1, ial2}, function arg1of2);
+      return {'ctx, sort(w, function ordopcar)}
    end;
 
 % Aex functions.

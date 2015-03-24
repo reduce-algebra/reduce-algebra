@@ -224,11 +224,11 @@ temploop:
         factor!-trace <<
           printstr "   Giving:";
           if null zz then
-          printvec("     f(",number!-of!-factors,",1) = ",x1)
+          ezgcd_printvec("     f(",number!-of!-factors,",1) = ",x1)
            else <<
-          printvec("     a(",number!-of!-factors,",1) = ",x1);
+          ezgcd_printvec("     a(",number!-of!-factors,",1) = ",x1);
           printstr "   New a's are now:";
-          printvec("     a(",number!-of!-factors,") = ",frvec) >>>>;
+          ezgcd_printvec("     a(",number!-of!-factors,") = ",frvec) >>>>;
          d:=times!-mod!-p(correction!-factor,
               if zz then form!-sum!-and!-product!-mod!-p(x1,fhatvec,
                 number!-of!-factors)
@@ -251,7 +251,7 @@ temploop:
         res:=diff!-over!-k!-mod!-p(difference!-mod!-p(res,d),k,car v);
         factor!-trace <<
            if null zz then <<printstr "   New factors are now:";
-                printvec("     f(",number!-of!-factors,") = ",frvec)>>;
+                ezgcd_printvec("     f(",number!-of!-factors,") = ",frvec)>>;
           prin2!* "   and residue = ";
           printsf res;
           printstr "-------------"
@@ -357,9 +357,9 @@ symbolic procedure multihen!-exit(first!-time,frvec,zz);
            else printstr "Therefore these factors are already correct."
         else <<
           if zz then <<printstr "Correct a's are:";
-                     printvec("  a(",number!-of!-factors,") = ",frvec)>>
+                     ezgcd_printvec("  a(",number!-of!-factors,") = ",frvec)>>
            else <<printstr "Correct factors are:";
-                 printvec("  f(",number!-of!-factors,") = ",frvec) >>>>;
+                 ezgcd_printvec("  f(",number!-of!-factors,") = ",frvec) >>>>;
       terpri!*(nil);
       printstr "**************************************************";
       terpri!*(nil)>>;
@@ -373,7 +373,7 @@ symbolic procedure find!-msg1(best!-factors,growth!-factor,poly);
       printstr hensel!-growth!-size;
       terpri!*(nil);
       printstr "We know f(i) as follows:";
-      printvec("  f(",number!-of!-factors,") = ",best!-factors);
+      ezgcd_printvec("  f(",number!-of!-factors,") = ",best!-factors);
       prin2!* " and we shall put in powers of ";
       prinsf growth!-factor;
       printstr " to find them fully."
@@ -397,7 +397,7 @@ symbolic procedure find!-msg3(best!-factors,v);
       prinvar car v;
       printstr ", we have the";
       printstr "factors so far as:";
-      printvec("  f(",number!-of!-factors,") = ",best!-factors);
+      ezgcd_printvec("  f(",number!-of!-factors,") = ",best!-factors);
       printstr "Subtracting the product of these from the polynomial";
       prin2!* "and differentiating wrt "; prinvar car v;
       printstr " gives a residue:"
@@ -410,7 +410,7 @@ symbolic procedure find!-msg4(predicted!-forms,v);
         prinvar car v; printstr ".";
         printstr
           "Predictions are based on the bivariate factors :";
-        printvec("     f(",number!-of!-factors,") = ",predicted!-forms)
+        ezgcd_printvec("     f(",number!-of!-factors,") = ",predicted!-forms)
         >>;
 
 symbolic procedure find!-msg5;
@@ -580,7 +580,7 @@ symbolic procedure solve!-msg1(c,fvec,v);
       prin2!* " / f(i) mod ";
       printstr hensel!-growth!-size;
       printstr "    and";
-      printvec("      f(",number!-of!-factors,") = ",fvec);
+      ezgcd_printvec("      f(",number!-of!-factors,") = ",fvec);
       terpri!*(nil);
       prin2!*
          "First solve the problem in one less variable by putting ";
@@ -591,7 +591,7 @@ symbolic procedure solve!-msg1(c,fvec,v);
 symbolic procedure solve!-msg2(resvec,v);
     factor!-trace <<
       printstr "Giving:";
-      printvec("  a(",number!-of!-factors,",0) = ",resvec);
+      ezgcd_printvec("  a(",number!-of!-factors,",0) = ",resvec);
       printstr "Subtracting the contributions these give in (*) from";
       prin2!* "the R.H.S. of (*) ";
       prin2!* "and differentiating wrt "; prinvar car v;

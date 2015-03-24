@@ -494,10 +494,6 @@ deflist('((imports rlis)),'stat);   % Needed for ~imports to work.
 
 symbolic procedure concat2(u,v); concat(u,v);
 
-% Used by patching mechanism.
-
-symbolic procedure dated!-gensym u; gensym();
-
 load get!-options;
 load strings;
 load str!-search;

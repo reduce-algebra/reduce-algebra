@@ -92,9 +92,9 @@ symbolic procedure randpoly u;
       for each x in cdr u do
          if x eq 'dense or x eq 'sparse then s := x
          else if not (eqexpr x and
-            (if cadr x eq 'coeffs and functionp caddr x then
+            (if cadr x eq 'coeffs and rand_functionp caddr x then
                c := caddr x
-            else if cadr x eq 'expons and functionp caddr x then
+            else if cadr x eq 'expons and rand_functionp caddr x then
                e := caddr x
             else if cadr x memq '(degree deg maxdeg) and
                natnump caddr x then d := caddr x
@@ -138,13 +138,13 @@ symbolic procedure randpoly u;
          else p
    end;
 
-symbolic procedure functionp f;
+symbolic procedure rand_functionp f;
    % Returns t if f can be applied as a function.
    getd f or eqcar(f,'lambda);
 
 symbolic procedure natnump n;
    % Returns t if n is a natural number.
-   fixp n and n >= 0;
+  fixp n and n >= 0;
 
 symbolic inline procedure kp2f(k, p);
    % k : unique kernel, p : natural number > 0

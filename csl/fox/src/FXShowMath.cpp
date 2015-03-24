@@ -96,7 +96,7 @@ extern int file_readable(char *a, char *b, size_t n);
 
 namespace FX {
 
-static int DEBUGFONT = -1;
+static int DEBUGFONT = 0;
 
 // I make the size of my memory pool depend on the size of a pointer
 // because the size of box components depends on that. The setting here
@@ -200,7 +200,7 @@ static void poolDestroyChunk()
     }
     IntVoidStar *rp = (IntVoidStar *)((char *)memoryPool + memoryPoolOut);
 // It would be a MESS if a single chunk occupied the entire pool. That is
-// supposed not to happen because "chunks" are each expacted to represent
+// supposed not to happen because "chunks" are each expected to represent
 // roughly a single line of stuff. tmprint.red is thus expected to render
 // long expressions as multiple lines that can be handled independently.
 // Here I arrange that if I fill up the pool before completing creation of

@@ -98,7 +98,7 @@ symbolic inline procedure put!-image!-poly!-and!-content
        impol,
        get!-f!-numvec s);
 
-symbolic procedure printvec(str1,n,str2,v);
+symbolic procedure ezgcd_printvec(str1,n,str2,v);
 << for i:=1:n do <<
     prin2!* str1;
     prin2!* i;

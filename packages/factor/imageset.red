@@ -463,7 +463,7 @@ symbolic procedure dist!.lc!.msg1(delta,im!.factors,r,s,v);
       printstr "We have a polynomial whose image factors (call";
       printstr "them the IM-factors) are:";
       prin2!* delta; printstr " (= numeric content, delta)";
-      printvec(" f(",r,")= ",im!.factors);
+      ezgcd_printvec(" f(",r,")= ",im!.factors);
       prin2!* "  wrt the image set: ";
       for each x in get!-image!-set s do <<
         prinvar car x; prin2!* "="; prin2!* cdr x; prin2!* ";" >>;

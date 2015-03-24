@@ -1177,7 +1177,7 @@ symbolic procedure select!-eval u;
   w:=freequote formbool(w,nil,'algebraic);
   if v then w:={'replaceby,v,w};
   r:=for each q in
-        pair(cdr map!-eval1(l,w,function(lambda y;y),'lispeval),cdr l)
+        pair(cdr map!-eval1(l,w,function identity!-function,'lispeval),cdr l)
       join if car q and car q neq 0 then {cdr q};
   if r then return car l . r;
   if (r:=atsoc(car l,'((plus . 0)(times . 1)(and . 1)(or . 0))))

@@ -90,7 +90,7 @@ symbolic procedure putform(u,v);
    begin
    excalcputform(u,v);
    if not atom u then
-   << put(car u,'subfunc,'(lambda (a b) b));
+   << put(car u,'subfunc,function arg2of2);
       remflag({car u},'covariant) >>;
    end;
 
@@ -206,7 +206,7 @@ symbolic procedure solvenonlnrsys2();
         then load!-package 'groebner;
       for each x in iv!* do if not member(x,last!-vars!*) then
         for each y in last!-vars!* do depend1(x,y,t);
-      iv!* := sort(iv!*,function (lambda(a,b);depends(a,b)));
+      iv!* := sort(iv!*,function depends);
       if !*trnonlnr then
       <<  prin2t "Entering Groebner for system";
           writepri(mkquote system!*,'only);

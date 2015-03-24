@@ -902,7 +902,7 @@ asserted procedure sfto_mirror(f: SF): SF;
       sfto_fsub1(f, {mvar f . negf !*k2f mvar f});
 
 asserted procedure sfto_qsub(f: SF, al: AList): SQ;
-   sfto_qsub1(f, sort(al, function(lambda(x,y); ordop(car x, car y))));
+   sfto_qsub1(f, sort(al, function ordopcar));
 
 asserted procedure sfto_qsub1(f: SF, al: AList): SQ;
    begin scalar mv, nredq, nlcq, nhtq;

@@ -781,17 +781,6 @@ symbolic procedure concat2(u,v); concat(u,v);
 symbolic procedure concat(u,v);
    list2string append(string2list u, string2list v);
 
-% Used by the (old) patching mechanism.
-%
-% Note that DESPITE the name this MUST be an interned symbol not a
-% gensym since it will be used as the name of a function written out
-% using FASLOUT and later re-loaded: gensym identities can not survive
-% this transition.  The symbols created by dated!-name are almost
-% always going to avoid clashes - see commentary in the CSL source file
-% "extras.red" for an explanation.
-
-symbolic procedure dated!-gensym u; dated!-name u;
-
 remflag('(copyd), 'lose);
 
 symbolic procedure copyd(new,old);

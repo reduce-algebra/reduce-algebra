@@ -3741,6 +3741,8 @@ void FXTerminal::insertMathsLines()
 // '0000' is a 4-byte gap that will be used to hold a handle to the
 //       box-structure representing the given line of the mathematical
 //       formula. The handle will use 6-bits per byte so I have 24-bits here.
+//       A consquence is that I have built in ann architectural limit at
+//       16 Mbytes of display buffer.
 //
 // Note that when I parse a bit of TeX I may run out of memory in the
 // area reserved for box structures, and in that case I will discard some

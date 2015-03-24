@@ -62,7 +62,7 @@ symbolic inline procedure ep!: u;
    % representation of a number.
    cddr u;
 
-symbolic procedure make!:ibf (mt, ep);
+symbolic inline procedure make!:ibf (mt, ep);
    '!:rd!: . (mt . ep);
 
 symbolic inline procedure i2bf!: u; make!:ibf (u, 0);

@@ -87,7 +87,7 @@ symbolic procedure partialcontact(vars,ind);
    % -> partialcontact:eds
    begin scalar s,jet,ord,sys;
    vars := foreach l in getrlist vars collect getrlist l;
-   vars := sort(vars,function(lambda(x,y); car x > car y));
+   vars := sort(vars,function greaterpcar);
    ind := !*a2cfrm{makelist getrlist ind};
    s := mkeds{{},foreach f in cfrm_cob ind collect !*k2pf f,ind,nil};
    puteds(s,'sqvar,!*sqvar!*);

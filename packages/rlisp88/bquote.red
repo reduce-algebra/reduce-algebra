@@ -30,15 +30,17 @@ module bquote;   % Support for backquote.
 
 % Lisp parsing case.
 
-symbolic procedure tokbquote;
-   begin
-     crchar!* := readch1();
-      nxtsym!* := list('backq,rread());
-      ttype!* := 3;
-      return nxtsym!*
-   end;
-
-put('!`,'tokprop,'tokbquote);
+% The definition here is identical to the one n rlisp/tok.red
+%
+% symbolic procedure tokbquote;
+%    begin
+%      crchar!* := readch1();
+%       nxtsym!* := list('backq,rread());
+%       ttype!* := 3;
+%       return nxtsym!*
+%    end;
+%
+% put('!`,'tokprop,'tokbquote);
 
 put('backq,'formfn,'formbquote);
 

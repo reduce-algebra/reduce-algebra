@@ -67,6 +67,7 @@ global '(!$eof!$
 %     3  operator-like character  +,-,...
 %     4  result of quotation      '(something)
          ttype!*
+         escaped!*
          !*csl
          !*psl
          named!-character!*);
@@ -715,11 +716,23 @@ symbolic procedure token1;
         rplaca(cdr x,apply1('minus,cadr x));        % Also for booting.
         return x;
     escape:
-        begin scalar raise,!*lower;
-           raise := !*raise;
-           !*raise := nil;
+        begin scalar !*raise,!*lower;
+           escaped!* := t;
            x := readch1();
-           !*raise := raise
+% If a token is read such that a letter is preceeded by an exclamation mark
+% I will set the variable escaped!*. The purpose of this is to support a
+% tool that will report on cases where names are used in Reduce such that they
+% are identical other than in case. So if both "symbolic" and "SYMBOLIC" are
+% used that is a clash. However I do not want "!Alpha" and "alpha" to count
+% as a clash, or "!X" and "!x" and "x". So the presence of a letter whose
+% case is explicitly preserved by the escape character will be taken as a mark
+% that the word was meant to be just as written. This can leave bad cases
+% such as "!Alpha" vs "!AlphA" but it covers enough to be useful for now.
+% I do not set escaped!* to nil here - if you wish to inspect it please set
+% it to nil before calling token(). The arrangement like that is perhaps
+% ugly but minimises overhead in all the common cases where this is not
+% actually being used.
+           if liter x then escaped!* := t;
         end;
     letter:
         ttype!* := 0;
@@ -842,17 +855,13 @@ symbolic procedure token1;
 % major hook that manages extra symbol tables.
         return nxtsym!*;
     extpackescape:
-        begin scalar raise,!*lower;
-           raise := !*raise;
-           !*raise := nil;
-           x := readch1();
-           !*raise := raise
+        begin scalar !*raise,!*lower;
+           escaped!* := t;
+           x := readch1()
         end;
         go to extpackmore;
     string:
-        begin scalar raise,!*lower;
-           raise := !*raise;
-           !*raise := nil;
+        begin scalar !*raise,!*lower;
        strinx:
            x := wideid2list x; % extract character from the symbol.
        dumpx:
@@ -863,8 +872,7 @@ symbolic procedure token1;
        dumped:
            named!-character!* := nil;
            if (x := readch1()) eq !$eof!$
-             then progn(!*raise := raise,
-                        crchar!* := '! ,
+             then progn(crchar!* := '! ,
                         lpriw("***** End-of-file in string",nil),
                         filenderr())
             else if (null(x eq '!")) or named!-character!* then go to strinx;
@@ -872,20 +880,17 @@ symbolic procedure token1;
            named!-character!* := nil;
            x := readch1();
            if (x eq '!") and (null named!-character!*) then go to strinx;
-           nxtsym!* := list2widestring cdr reversip!* y;
-           !*raise := raise
+           nxtsym!* := list2widestring cdr reversip!* y
          end;
         ttype!* := 1;
         crchar!* := x;
         go to c;
     coment:
-        begin scalar !*lower,raise;
-        raise := !*raise;
-        !*raise := nil;
+        begin scalar !*raise,!*lower;
     comm1:
         named!-character!* := nil;
-        if (null(readch1() eq !$eol!$)) or named!-character!* then go to comm1;
-        !*raise := raise
+        if (null((x := readch1()) eq !$eol!$ or
+                  x eq !$eof!$)) or named!-character!* then go to comm1
         end;
         x := readch1();
         go to a
@@ -1063,7 +1068,10 @@ symbolic procedure scan;
     c:  if null idp nxtsym!* then go to l
          else if (x:=get(nxtsym!*,'newnam)) and
                         (null (x=nxtsym!*)) then go to new
-         else if nxtsym!* eq 'comment
+% Here I will allow "comment" to be spent in either upper or lower case
+% so that if "off raise;" (or "off lower;") is active things that may be
+% intended to be comments remain treated as such.
+         else if nxtsym!* eq 'comment or nxtsym!* eq '!C!O!M!M!E!N!T
           then progn(x := read!-comment1 'comment,
                      if !*comment then return x else go to a)
          else if nxtsym!* eq '!% and ttype!*=3

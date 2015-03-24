@@ -1926,8 +1926,7 @@ procedure ofsf_qemkans(an,svf);
 	 ofsf_qebacksub res
       else
 	 ofsf_qenobacksub res;
-      if !*rlqebacksub then
-	 res := sort(res, function(lambda(x,y); ordp(cadr x,cadr y)));
+      if !*rlqebacksub then res := sort(res, function ordpcadr);
       if !*rlverbose then <<
 	 ioto_tprin2 {"++++ Time for answer processing: ", time() - time, " ms"};
 	 gctime := gctime() - gctime;
@@ -2173,7 +2172,7 @@ procedure ofsf_r2anu(r, anunan);
 
 procedure aex_fromsfial(f, ial);
    begin scalar rial, aex;
-      rial := sort(ial, function(lambda(x, y); ordop(car y, car x)));
+      rial := sort(ial, function ordopcadr);
       aex := aex_fromsf f;
       for each pr in rial do
 	 aex := aex_bind(aex, car pr, cdr pr);

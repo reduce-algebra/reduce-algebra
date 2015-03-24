@@ -248,8 +248,7 @@ symbolic procedure edsgradecoords(crd,jet0);
          if j0 := assoc(length c0,u) then nconc(j0,{c})
          else u := (length c0 . {c}) . u;
          end;
-      u := sort(u,function(lambda x,y; car x > car y));
-      return foreach v in u collect cdr v;
+      return foreach v in sort(u,function greaterpcar) collect cdr v;
       end;
 
 
