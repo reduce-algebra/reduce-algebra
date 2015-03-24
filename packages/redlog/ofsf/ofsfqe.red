@@ -2172,7 +2172,7 @@ procedure ofsf_r2anu(r, anunan);
 
 procedure aex_fromsfial(f, ial);
    begin scalar rial, aex;
-      rial := sort(ial, function ordopcadr);
+      rial := sort(ial, function ordopcar);
       aex := aex_fromsf f;
       for each pr in rial do
 	 aex := aex_bind(aex, car pr, cdr pr);
