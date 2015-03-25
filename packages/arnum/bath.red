@@ -190,14 +190,14 @@ end;
 % these are the patches for trailing coefficient and other tests in
 % the factorize algorithm;
 
-SYMBOLIC PROCEDURE FACTOR!-TRIALDIV(POLY,FLIST,M,LLIST);
+symbolic procedure factor!-trialdiv(poly,flist,m,llist);
 % Combines the factors in FLIST mod M and test divides the result
 % into POLY (over integers) to see if it goes. If it doesn't
 % then DIDNTGO is returned, else the pair (D . Q) is
 % returned where Q is the quotient obtained and D is the product
 % of the factors mod M;
-  IF POLYZEROP POLY THEN ERRORF "Test dividing into zero?"
-  ELSE BEGIN SCALAR D,Q,tcpoly,tcoeff,x,oldmod,w,poly1,try1;
+  if polyzerop poly then errorf "Test dividing into zero?"
+  else begin scalar d,q,tcpoly,tcoeff,x,oldmod,w,poly1,try1;
     factor!-trace <<
       prin2!* "We combine factors ";
       for each ff in flist do <<
@@ -215,7 +215,7 @@ SYMBOLIC PROCEDURE FACTOR!-TRIALDIV(POLY,FLIST,M,LLIST);
     if not zerop remainder(tcpoly,tcoeff) then <<
       factor!-trace printstr " it didn't go (tc test)";
       set!-modulus oldmod;
-      return 'DIDNTGO >>;
+      return 'didntgo >>;
   % it has passed the tc test - now try evaluating at 1;
     poly1 := eval!-at!-1 poly;
     try1 := 1;
@@ -225,60 +225,60 @@ SYMBOLIC PROCEDURE FACTOR!-TRIALDIV(POLY,FLIST,M,LLIST);
     if (zerop try1 and not zerop poly1) or
        not zerop remainder(poly1,try1) then <<
       factor!-trace printstr " it didn't go (test at 1)";
-      return 'DIDNTGO >>;
+      return 'didntgo >>;
   % it has passed both tests - work out longhand;
-    D:=COMBINE(FLIST,M,LLIST);
-    IF DIDNTGO(Q:=QUOTF(POLY,CAR D)) THEN <<
-      FACTOR!-TRACE PRINTSTR " it didn't go (division fail)";
-      RETURN 'DIDNTGO >>
-    ELSE <<
-      FACTOR!-TRACE PRINTSTR " it worked !";
-      RETURN (CAR D . QUOTF(Q,CDR D)) >>
-  END;
+    d:=combine(flist,m,llist);
+    if didntgo(q:=quotf(poly,car d)) then <<
+      factor!-trace printstr " it didn't go (division fail)";
+      return 'didntgo >>
+    else <<
+      factor!-trace printstr " it worked !";
+      return (car d . quotf(q,cdr d)) >>
+  end;
 
 
 
-SYMBOLIC PROCEDURE COMBINE(FLIST,M,L);
+symbolic procedure combine(flist,m,l);
 % multiply factors in flist mod m;
 % L is a list of the factors for use in FACTOR!-TRACE;
-  BEGIN SCALAR OM,RES,W,LCF,LCFINV,LCFPROD;
-%    FACTOR!-TRACE <<                         )
-%      PRIN2!* "We combine factors ";         )  RJB:
-%      FOR EACH FF IN FLIST DO <<             )  Moved to factor-trialdiv;
-%        W:=ASSOC(FF,L);                      )  This is the only change to
-%        PRIN2!* "f(";                        )  this routine.
-%        PRIN2!* cdr w;                       )
-%        PRIN2!* "), " >> ;                   )
-%      PRIN2!* "and try dividing : " >>;      )
-    LCF := LC CAR FLIST; % ALL LEADING COEFFTS SHOULD BE THE SAME;
-    LCFPROD := 1;
+  begin scalar om,res,w,lcf,lcfinv,lcfprod;
+%    factor!-trace <<                         )
+%      prin2!* "We combine factors ";         )  RJB:
+%      for each ff in flist do <<             )  Moved to factor-trialdiv;
+%        w:=assoc(ff,l);                      )  This is the only change to
+%        prin2!* "f(";                        )  this routine.
+%        prin2!* cdr w;                       )
+%        prin2!* "), " >> ;                   )
+%      prin2!* "and try dividing : " >>;      )
+    lcf := lc car flist; % all leading coeffts should be the same;
+    lcfprod := 1;
 % This is one of only two places in the entire factorizer where
 % it is ever necessary to use a modulus larger than word-size;
-    IF M>LARGEST!-SMALL!-MODULUS THEN <<
-      OM:=SET!-GENERAL!-MODULUS M;
-      LCFINV := GENERAL!-MODULAR!-RECIPROCAL LCF;
-      RES:=GENERAL!-REDUCE!-MOD!-P CAR FLIST;
-      FOR EACH FF IN CDR FLIST DO <<
-        IF NOT LCF=LC FF THEN ERRORF "BAD LC IN FLIST";
-        RES:=GENERAL!-TIMES!-MOD!-P(
-            GENERAL!-TIMES!-MOD!-P(LCFINV,
-                GENERAL!-REDUCE!-MOD!-P FF),RES);
-        LCFPROD := LCFPROD*LCF >>;
-      RES:=GENERAL!-MAKE!-MODULAR!-SYMMETRIC RES;
-      SET!-MODULUS OM;
-      RETURN (RES . LCFPROD) >>
-    ELSE <<
-      OM:=SET!-MODULUS M;
-      LCFINV := MODULAR!-RECIPROCAL LCF;
-      RES:=REDUCE!-MOD!-P CAR FLIST;
-      FOR EACH FF IN CDR FLIST DO <<
-        IF NOT LCF=LC FF THEN ERRORF "BAD LC IN FLIST";
-        RES:=TIMES!-MOD!-P(TIMES!-MOD!-P(LCFINV,REDUCE!-MOD!-P FF),RES);
-        LCFPROD := LCFPROD*LCF >>;
-      RES:=MAKE!-MODULAR!-SYMMETRIC RES;
-      SET!-MODULUS OM;
-      RETURN (RES . LCFPROD) >>
-  END;
+    if m>largest!-small!-modulus then <<
+      om:=set!-general!-modulus m;
+      lcfinv := general!-modular!-reciprocal lcf;
+      res:=general!-reduce!-mod!-p car flist;
+      for each ff in cdr flist do <<
+        if not lcf=lc ff then errorf "bad lc in flist";
+        res:=general!-times!-mod!-p(
+            general!-times!-mod!-p(lcfinv,
+                general!-reduce!-mod!-p ff),res);
+        lcfprod := lcfprod*lcf >>;
+      res:=general!-make!-modular!-symmetric res;
+      set!-modulus om;
+      return (res . lcfprod) >>
+    else <<
+      om:=set!-modulus m;
+      lcfinv := modular!-reciprocal lcf;
+      res:=reduce!-mod!-p car flist;
+      for each ff in cdr flist do <<
+        if not lcf=lc ff then errorf "bad lc in flist";
+        res:=times!-mod!-p(times!-mod!-p(lcfinv,reduce!-mod!-p ff),res);
+        lcfprod := lcfprod*lcf >>;
+      res:=make!-modular!-symmetric res;
+      set!-modulus om;
+      return (res . lcfprod) >>
+  end;
 
 symbolic procedure eval!-at!-1 f;
   % f a univariate standard form over Z;
@@ -289,84 +289,84 @@ symbolic procedure eval!-at!-1 f;
 symbolic procedure try!.combining(l,poly,m,sofar);
   try!.combining1(l,poly,m,sofar,2);
 
-SYMBOLIC PROCEDURE TRY!.COMBINING1(L,POLY,M,SOFAR,k);
+symbolic procedure try!.combining1(l,poly,m,sofar,k);
 % l is a list of factors, f(i), s.t. (product of the f(i) mod m) = poly
 % but no f(i) divides poly over the integers. we find the combinations
 % of the f(i) that yield the true factors of poly over the integers.
 % sofar is a list of these factors found so far.
 % start combining K at a time.
-  IF POLY=1 THEN
-    IF NULL L THEN SOFAR
-    ELSE ERRORF(LIST("TOO MANY BAD FACTORS:",L))
-  ELSE BEGIN SCALAR N,RES,FF,V,W,W1,COMBINED!.FACTORS,LL; % K removed here;
-    N:=LENGTH L;
-    IF N=1 THEN
-      IF LDEG CAR L > (LDEG POLY)/2 THEN
-        RETURN ('ONE! BAD! FACTOR . SOFAR)
-      ELSE ERRORF(LIST("ONE BAD FACTOR DOES NOT FIT:",L));
-    IF N=2 OR N=3 THEN <<
-      W:=LC CDAR L; % The LC of all the factors is the same;
-      WHILE NOT (W=LC POLY) DO POLY:=QUOTFAIL(POLY,W);
+  if poly=1 then
+    if null l then sofar
+    else errorf(list("too many bad factors:",l))
+  else begin scalar n,res,ff,v,w,w1,combined!.factors,ll; % K removed here;
+    n:=length l;
+    if n=1 then
+      if ldeg car l > (ldeg poly)/2 then
+        return ('one! bad! factor . sofar)
+      else errorf(list("one bad factor does not fit:",l));
+    if n=2 or n=3 then <<
+      w:=lc cdar l; % The LC of all the factors is the same;
+      while not (w=lc poly) do poly:=quotfail(poly,w);
             % poly's LC may be a higher power of w than we want
             % and we must return a result with the same
             % LC as each of the combined factors;
-      IF NOT !*OVERVIEW THEN FACTOR!-TRACE <<
-        PRINTSTR "We combine:";
-         FOR EACH LF IN L DO FAC!-PRINTSF CDR LF;
-         PRIN2!* " mod "; PRIN2!* M;
-         PRINTSTR " to give correct factor:";
-         FAC!-PRINTSF POLY >>;
-       COMBINE!.ALPHAS(L,T);
-       RETURN (POLY . SOFAR) >>;
-    LL:=FOR EACH FF IN L COLLECT (CDR FF . CAR FF);
-%    K := 2;  K is now an argument to try.combining1;
-  LOOP1:
-      IF K > N/2 THEN GO TO EXIT;
-      W:=KOUTOF(K,IF 2*K=N THEN CDR L ELSE L,NIL);
-      WHILE W AND (V:=FACTOR!-TRIALDIV(POLY,CAR W,M,LL))='DIDNTGO DO
-      << W:=CDR W;
-        WHILE W AND
-            ((CAR W = '!*LAZYADJOIN) OR (CAR W = '!*LAZYKOUTOF)) DO
-          IF CAR W= '!*LAZYADJOIN THEN
-            W:=LAZY!-ADJOIN(CADR W,CADDR W,CADR CDDR W)
-          ELSE W:=KOUTOF(CADR W,CADDR W,CADR CDDR W)
+      if not !*overview then factor!-trace <<
+        printstr "We combine:";
+         for each lf in l do fac!-printsf cdr lf;
+         prin2!* " mod "; prin2!* m;
+         printstr " to give correct factor:";
+         fac!-printsf poly >>;
+       combine!.alphas(l,t);
+       return (poly . sofar) >>;
+    ll:=for each ff in l collect (cdr ff . car ff);
+%    k := 2;  K is now an argument to try.combining1;
+  loop1:
+      if k > n/2 then go to exit;
+      w:=koutof(k,if 2*k=n then cdr l else l,nil);
+      while w and (v:=factor!-trialdiv(poly,car w,m,ll))='didntgo do
+      << w:=cdr w;
+        while w and
+            ((car w = '!*lazyadjoin) or (car w = '!*lazykoutof)) do
+          if car w= '!*lazyadjoin then
+            w:=lazy!-adjoin(cadr w,caddr w,cadr cddr w)
+          else w:=koutof(cadr w,caddr w,cadr cddr w)
         >>;
-      IF NOT(V='DIDNTGO) THEN <<
-        FF:=CAR V; V:=CDR V;
-        IF NOT !*OVERVIEW THEN FACTOR!-TRACE <<
-          PRINTSTR "We combine:";
-           FOR EACH A IN CAR W DO FAC!-PRINTSF A;
-         PRIN2!* " mod "; PRIN2!* M;
-         PRINTSTR " to give correct factor:";
-         FAC!-PRINTSF FF >>;
-       FOR EACH A IN CAR W DO <<
-         W1:=L;
-         WHILE NOT (A = CDAR W1) DO W1:=CDR W1;
-         COMBINED!.FACTORS:=CAR W1 . COMBINED!.FACTORS;
-         L:=DELETE(CAR W1,L) >>;
-       COMBINE!.ALPHAS(COMBINED!.FACTORS,T);
+      if not(v='didntgo) then <<
+        ff:=car v; v:=cdr v;
+        if not !*overview then factor!-trace <<
+          printstr "We combine:";
+           for each a in car w do fac!-printsf a;
+         prin2!* " mod "; prin2!* m;
+         printstr " to give correct factor:";
+         fac!-printsf ff >>;
+       for each a in car w do <<
+         w1:=l;
+         while not (a = cdar w1) do w1:=cdr w1;
+         combined!.factors:=car w1 . combined!.factors;
+         l:=delete(car w1,l) >>;
+       combine!.alphas(combined!.factors,t);
 %%% Now try combining the remaining factors, starting with k-tuples.
-       RES:=try!.combining1(l,v,m,ff . sofar,k);
-       GO TO EXIT>>;
-    K := K + 1;
-    GO TO LOOP1;
-  EXIT:
-    IF RES THEN RETURN RES
-    ELSE <<
-      W:=LC CDAR L; % The LC of all the factors is the same;
-      WHILE NOT (W=LC POLY) DO POLY:=QUOTFAIL(POLY,W);
+       res:=try!.combining1(l,v,m,ff . sofar,k);
+       go to exit>>;
+    k := k + 1;
+    go to loop1;
+  exit:
+    if res then return res
+    else <<
+      w:=lc cdar l; % The LC of all the factors is the same;
+      while not (w=lc poly) do poly:=quotfail(poly,w);
             % poly's LC may be a higher power of w than we want
             % and we must return a result with the same
             % LC as each of the combined factors;
-      IF NOT !*OVERVIEW THEN FACTOR!-TRACE <<
-        PRINTSTR "We combine:";
-          FOR EACH FF IN L DO FAC!-PRINTSF CDR FF;
-          PRIN2!* " mod "; PRIN2!* M;
-          PRINTSTR " to give correct factor:";
-          FAC!-PRINTSF POLY >>;
-      COMBINE!.ALPHAS(L,T);
-      RETURN (POLY . SOFAR) >>
-  END;
+      if not !*overview then factor!-trace <<
+        printstr "We combine:";
+          for each ff in l do fac!-printsf cdr ff;
+          prin2!* " mod "; prin2!* m;
+          printstr " to give correct factor:";
+          fac!-printsf poly >>;
+      combine!.alphas(l,t);
+      return (poly . sofar) >>
+  end;
 
 end;
 
@@ -543,30 +543,30 @@ symbolic procedure !:expt(u,n);
       go to a
    end;
 
-SYMBOLIC PROCEDURE MULTD(U,V);
+symbolic procedure multd(u,v);
    %U is a domain element, V a standard form.
    %Value is standard form for U*V;
-   IF NULL V THEN NIL
-    ELSE IF DOMAINP V THEN MULTDM(U,V)
-    ELSE adjoin!-term(LPOW V, MULTD(U,LC V), MULTD(U,RED V));
+   if null v then nil
+    else if domainp v then multdm(u,v)
+    else adjoin!-term(lpow v, multd(u,lc v), multd(u,red v));
 
 %
 % Not sure why we fix this one;
 %
-SYMBOLIC PROCEDURE RECIPROCAL!-BY!-GCD(A,B,X,Y);
+symbolic procedure reciprocal!-by!-gcd(a,b,x,y);
 %On input A and B should be coprime. This routine then
 %finds X and Y such that A*X+B*Y=1, and returns the value Y
 %on input A > B;
-   IF B=0 THEN ERRORF "INVALID MODULAR DIVISION"
-   ELSE IF B=1 THEN IF Y < 0 THEN Y+CURRENT!-MODULUS ELSE Y
-   ELSE BEGIN SCALAR W;
+   if b=0 then errorf "invalid modular division"
+   else if b=1 then if y < 0 then y+current!-modulus else y
+   else begin scalar w;
 %N.B. Invalid modular division is either:
 % a)  attempt to divide by zero directly
 % b)  modulus is not prime, and input is not
 %     coprime with it;
-     W:=divide(A,B); % quotient . remainder;
-     RETURN RECIPROCAL!-BY!-GCD(B,cdr w,Y,X-Y*car W)
-   END;
+     w:=divide(a,b); % quotient . remainder;
+     return reciprocal!-by!-gcd(b,cdr w,y,x-y*car w)
+   end;
 
 end;
 
@@ -1444,7 +1444,7 @@ symbolic procedure subresultant(u, v, x);
        u := reorder u;
        v := reorder v;
        if mvar u neq x or mvar v neq x then
-         REDERR "Subresultant: args must involve eliminating variable"
+         rederr "Subresultant: args must involve eliminating variable"
     >>;
     if ldeg u < ldeg v then <<
       g := u;

@@ -1,4 +1,4 @@
-MODULE MATPRI; % matrix prettyprinter
+module matpri; % matrix prettyprinter
 
 % Author: Takeyuki Takahashi, Toyohashi University of Technology.
 
@@ -26,267 +26,268 @@ MODULE MATPRI; % matrix prettyprinter
 %
 
 
-GLOBAL '(!&COUNT!& !&M!-P!-FLAG!& !&NAME !&NAMEARRAY);
+global '(!&count!& !&m!-p!-flag!& !&name !&namearray);
 
 % General functions.
 
-SYMBOLIC PROCEDURE TERPRI!* U;
-   BEGIN INTEGER N;
-      IF !&M!-P!-FLAG!& THEN <<!&COUNT!& := T; GO TO C>>;
-      IF !*FORT THEN RETURN FTERPRI U
-       ELSE IF NOT PLINE!* OR NOT !*NAT THEN GO TO B;
-      N := YMAX!*;
-      PLINE!* := REVERSE PLINE!*;
-    A:
-      SCPRINT(PLINE!*,N);
-      TERPRI();
-      IF N=YMIN!* THEN GO TO B;
-      N := N - 1;
-      GO TO A;
-    B:
-      IF U THEN TERPRI();
-    C:
-      PLINE!* := NIL;
-      POSN!* := ORIG!*;
-      YCOORD!* := YMAX!* := YMIN!* := 0
-   END;
+symbolic procedure terpri!* u;
+   begin integer n;
+      if !&m!-p!-flag!& then <<!&count!& := t; go to c>>;
+      if !*fort then return fterpri u
+       else if not pline!* or not !*nat then go to b;
+      n := ymax!*;
+      pline!* := reverse pline!*;
+    a:
+      scprint(pline!*,n);
+      terpri();
+      if n=ymin!* then go to b;
+      n := n - 1;
+      go to a;
+    b:
+      if u then terpri();
+    c:
+      pline!* := nil;
+      posn!* := orig!*;
+      ycoord!* := ymax!* := ymin!* := 0
+   end;
 
-SYMBOLIC PROCEDURE PLUS!-L U; PLUS!-L1(0,U);
+symbolic procedure plus!-l u; plus!-l1(0,u);
 
-SYMBOLIC PROCEDURE PLUS!-L1(N,U);
-   IF NULL U THEN N ELSE <<N := N + CAR U; PLUS!-L1(N,CDR U)>>;
+symbolic procedure plus!-l1(n,u);
+   if null u then n else <<n := n + car u; plus!-l1(n,cdr u)>>;
 
-SYMBOLIC PROCEDURE DELNTH(N,L);
-   IF N=1 THEN CDR L ELSE CAR L . DELNTH(N - 1,CDR L);
+symbolic procedure delnth(n,l);
+   if n=1 then cdr l else car l . delnth(n - 1,cdr l);
 
 
 % MATRIX Pretty printer.
 
-SYMBOLIC PROCEDURE MAT!-P!-PRINT U;
-   BEGIN INTEGER C!-LENG1,ICOLN,PP,ICOL,COLUMN!-LENG,M,N;
-         SCALAR COLUMN!-S!-POINT,MAXLENG,ELEMENT!-LENG;
-      U := CDR U;
-      ICOLN := LENGTH CAR U;
-      ICOL := LINELENGTH NIL - 8;
-      !&M!-P!-FLAG!& := T;
-      ELEMENT!-LENG := !&COUNT U;
-      !&M!-P!-FLAG!& := NIL;
-    A:
-      MAXLENG := !&MAX!-ROW ELEMENT!-LENG;
-      C!-LENG1 := PLUS!-L MAXLENG + 3*(ICOLN - 1);
-      IF C!-LENG1=COLUMN!-LENG THEN GO TO DUMP;
-      COLUMN!-LENG := C!-LENG1;
-      IF COLUMN!-LENG>ICOL
-        THEN <<ELEMENT!-LENG :=
-                SUBST( - 1,MAXL MAXLENG,ELEMENT!-LENG);
-               GO TO A>>;
-      PRIN2!* !&NAME;
-      PRIN2!* " := ";
-      TERPRI!* NIL;
-      N := 0;
-      COLUMN!-S!-POINT :=
-       FOR EACH Y IN MAXLENG COLLECT <<N := N + Y;
-                                       N := N + 3;
-                                       N + 3>>;
-      COLUMN!-S!-POINT := APPEND(LIST 3,COLUMN!-S!-POINT);
-      TERPRI();
-      PRIN2 "|-";
-      SPACES (COLUMN!-LENG + 4);
-      PRIN2 "-|";
-      TERPRI();
-      M := 1;
-      FOR EACH Y IN U DO
-         <<N := 1;
-           FOR EACH Z IN Y DO
-              <<POSN!* := NTH(COLUMN!-S!-POINT,N);
-                IF NTH(NTH(ELEMENT!-LENG,M),N)<0
-                  THEN <<PRIN2!* "*";
-                         PRIN2!* "(";
-                         PRIN2!* M;
-                         PRIN2!* ",";
-                         PRIN2!* N;
-                         PRIN2!* ")">>
-                 ELSE MAPRIN Z;
-                N := N + 1>>;
-           PP := COLUMN!-LENG + 7;
-           FOR I := YMIN!*:YMAX!* DO
-              <<PLINE!* := APPEND(PLINE!*, LIST(((0 . 1) . I) . "|"));
-                PLINE!* := APPEND(LIST(((PP . (PP + 1)) . I) . "|"),
-                                  PLINE!*)>>;
-           TERPRI!* NIL;
-           M := M + 1;
-           PRIN2 "| ";
-           SPACES (COLUMN!-LENG + 4);
-           PRIN2 " |";
-           TERPRI()>>;
-      PRIN2 "|-";
-      SPACES (COLUMN!-LENG + 4);
-      PRIN2 "-|";
-      TERPRI();
-      TERPRI();
-      M := 1;
-      FOR EACH Y IN U DO
-         <<N := 1;
-           FOR EACH Z IN Y DO
-              <<IF NTH(NTH(ELEMENT!-LENG,M),N)<0
-                       THEN <<PRIN2!* "*";
-                              PRIN2!* "(";
-                              PRIN2!* M;
-                              PRIN2!* ",";
-                              PRIN2!* N;
-                              PRIN2!* ")";
-                              PRIN2!* " ";
-                              MAPRIN Z;
-                              TERPRI!* T>>;
-                N := N + 1>>;
-           M := M + 1>>;
-      RETURN NIL;
-    DUMP:
-      PRIN2T "Column length too long";
-      MATPRI!*('MAT . U,LIST MKQUOTE !&NAME,'ONLY)
-   END;
+symbolic procedure mat!-p!-print u;
+   begin integer c!-leng1,icoln,pp,icol,column!-leng,m,n;
+         scalar column!-s!-point,maxleng,element!-leng;
+      u := cdr u;
+      icoln := length car u;
+      icol := linelength nil - 8;
+      !&m!-p!-flag!& := t;
+      element!-leng := !&count u;
+      !&m!-p!-flag!& := nil;
+    a:
+      maxleng := !&max!-row element!-leng;
+      c!-leng1 := plus!-l maxleng + 3*(icoln - 1);
+      if c!-leng1=column!-leng then go to dump;
+      column!-leng := c!-leng1;
+      if column!-leng>icol
+        then <<element!-leng :=
+                subst( - 1,maxl maxleng,element!-leng);
+               go to a>>;
+      prin2!* !&name;
+      prin2!* " := ";
+      terpri!* nil;
+      n := 0;
+      column!-s!-point :=
+       for each y in maxleng collect <<n := n + y;
+                                       n := n + 3;
+                                       n + 3>>;
+      column!-s!-point := append(list 3,column!-s!-point);
+      terpri();
+      prin2 "|-";
+      spaces (column!-leng + 4);
+      prin2 "-|";
+      terpri();
+      m := 1;
+      for each y in u do
+         <<n := 1;
+           for each z in y do
+              <<posn!* := nth(column!-s!-point,n);
+                if nth(nth(element!-leng,m),n)<0
+                  then <<prin2!* "*";
+                         prin2!* "(";
+                         prin2!* m;
+                         prin2!* ",";
+                         prin2!* n;
+                         prin2!* ")">>
+                 else maprin z;
+                n := n + 1>>;
+           pp := column!-leng + 7;
+           for i := ymin!*:ymax!* do
+              <<pline!* := append(pline!*, list(((0 . 1) . i) . "|"));
+                pline!* := append(list(((pp . (pp + 1)) . i) . "|"),
+                                  pline!*)>>;
+           terpri!* nil;
+           m := m + 1;
+           prin2 "| ";
+           spaces (column!-leng + 4);
+           prin2 " |";
+           terpri()>>;
+      prin2 "|-";
+      spaces (column!-leng + 4);
+      prin2 "-|";
+      terpri();
+      terpri();
+      m := 1;
+      for each y in u do
+         <<n := 1;
+           for each z in y do
+              <<if nth(nth(element!-leng,m),n)<0
+                       then <<prin2!* "*";
+                              prin2!* "(";
+                              prin2!* m;
+                              prin2!* ",";
+                              prin2!* n;
+                              prin2!* ")";
+                              prin2!* " ";
+                              maprin z;
+                              terpri!* t>>;
+                n := n + 1>>;
+           m := m + 1>>;
+      return nil;
+    dump:
+      prin2t "Column length too long";
+      matpri!*('mat . u,list mkquote !&name,'only)
+   end;
 
-SYMBOLIC PROCEDURE !&COUNT U;
-   BEGIN INTEGER N;
-      RETURN FOREACH Y IN U COLLECT
-                FOREACH Z IN Y COLLECT
-                   <<!&COUNT!& := NIL;
-                     MAPRIN Z;
-                     N := POSN!*;
-                     PLINE!* := NIL;
-                     POSN!* := ORIG!*;
-                     YCOORD!* := YMAX!* := YMIN!* := 0;
-                     IF NULL !&COUNT!& THEN N ELSE MINUS N>>;
-   END;
+symbolic procedure !&count u;
+   begin integer n;
+      return foreach y in u collect
+                foreach z in y collect
+                   <<!&count!& := nil;
+                     maprin z;
+                     n := posn!*;
+                     pline!* := nil;
+                     posn!* := orig!*;
+                     ycoord!* := ymax!* := ymin!* := 0;
+                     if null !&count!& then n else minus n>>;
+   end;
 
-GLOBAL '(!&MAX!-L);
+global '(!&max!-l);
 
-SYMBOLIC PROCEDURE !&MAX!-ROW U;
-   BEGIN SCALAR V;
-    A:
-      IF NULL CAR U THEN RETURN V;
-      U := !&MAX!-ROW1 U;
-      V := APPEND(V,LIST !&MAX!-L);
-      GO TO A
-   END;
+symbolic procedure !&max!-row u;
+   begin scalar v;
+    a:
+      if null car u then return v;
+      u := !&max!-row1 u;
+      v := append(v,list !&max!-l);
+      go to a
+   end;
 
-SYMBOLIC PROCEDURE !&MAX!-ROW1 U;
-   BEGIN
-      !&MAX!-L := 1;
-      RETURN FOR EACH Y IN U COLLECT
-                <<!&MAX!-L := IF CAR Y<0 THEN 6
-                               ELSE MAX(!&MAX!-L,CAR Y);
-                  CDR Y>>
-   END;
+symbolic procedure !&max!-row1 u;
+   begin
+      !&max!-l := 1;
+      return for each y in u collect
+                <<!&max!-l := if car y<0 then 6
+                               else max(!&max!-l,car y);
+                  cdr y>>
+   end;
 
-SYMBOLIC PROCEDURE MAXL U; MAXL1(CDR U,CAR U);
+symbolic procedure maxl u; maxl1(cdr u,car u);
 
-SYMBOLIC PROCEDURE MAXL1(U,V);
-   IF NULL U THEN V
-    ELSE IF CAR U>V THEN MAXL1(CDR U,CAR U)
-    ELSE MAXL1(CDR U,V);
+symbolic procedure maxl1(u,v);
+   if null u then v
+    else if car u>v then maxl1(cdr u,car u)
+    else maxl1(cdr u,v);
 
-SYMBOLIC PROCEDURE MPRINT U;
-   BEGIN SCALAR V;
-    A:
-      IF NULL U THEN RETURN NIL
-       ELSE IF ATOM CAR U AND (V := GET(CAR U,'MATRIX))
-        THEN <<!&NAME := CAR U;
-               MAT!-P!-PRINT V;
-               !&NAME := NIL>>
-       ELSE IF STRINGP CAR U THEN VARPRI(CAR U,NIL,'ONLY)
-       ELSE IF V := ARRAYP CAR U
-        THEN <<!&NAMEARRAY := CAR U;
-               PRINT!-ARRAY2(LIST V,NIL);
-               !&NAMEARRAY := NIL;
-               NIL>>
-       ELSE <<!&NAME := CAR U;
-              RAT!-P!-PRINT AEVAL CAR U;
-              !&NAME := NIL>>;
-    B:
-      U := CDR U;
-      GO TO A
-   END;
+symbolic procedure mprint u;
+   begin scalar v;
+    a:
+      if null u then return nil
+       else if atom car u and (v := get(car u,'matrix))
+        then <<!&name := car u;
+               mat!-p!-print v;
+               !&name := nil>>
+       else if stringp car u then varpri(car u,nil,'only)
+       else if v := arrayp car u
+        then <<!&namearray := car u;
+               print!-array2(list v,nil);
+               !&namearray := nil;
+               nil>>
+       else <<!&name := car u;
+              rat!-p!-print aeval car u;
+              !&name := nil>>;
+    b:
+      u := cdr u;
+      go to a
+   end;
 
-RLISTAT '(MPRINT);
+rlistat '(mprint);
 
-SYMBOLIC PROCEDURE PRINT!-ARRAY2(U,W);
-   BEGIN INTEGER N; SCALAR V;
-      V := CAR U;
-      IF CAR V EQ '!&VECTOR
-        THEN BEGIN
-                N := CADR V;
-                V := CDR V;
-                IF W THEN W := CAR W;
-                FOR I := 0:N DO
-                   <<V := CDR V;
-                     PRINT!-ARRAY2(V,LIST APPEND(W,LIST I))>>
-             END
-       ELSE IF V NEQ 0
-        THEN <<!&NAME := APPEND(LIST !&NAMEARRAY,CAR W);
-               RAT!-P!-PRINT V;
-               !&NAME := NIL>>
-   END;
+symbolic procedure print!-array2(u,w);
+   begin integer n; scalar v;
+      v := car u;
+      if car v eq '!&vector
+        then begin
+                n := cadr v;
+                v := cdr v;
+                if w then w := car w;
+                for i := 0:n do
+                   <<v := cdr v;
+                     print!-array2(v,list append(w,list i))>>
+             end
+       else if v neq 0
+        then <<!&name := append(list !&namearray,car w);
+               rat!-p!-print v;
+               !&name := nil>>
+   end;
 
 
 % Rational function Pretty printer.
 
-SYMBOLIC PROCEDURE RAT!-P!-PRINT U;
-   BEGIN INTEGER OS,LN,ORGNUM,ORGDEN,LL,LENNUM,LENDEN;
-         SCALAR NAME,UDEN,UNUM;
-      IF NULL U THEN RETURN NIL;
-      IF NUMBERP U
-        THEN <<VARPRI(U,LIST MKQUOTE !&NAME,'ONLY);
-               TERPRI();
-               !&NAME := NIL;
-               RETURN NIL>>;
-      U := CADR U;
-      !&M!-P!-FLAG!& := T;
-      LENDEN := !&COUNT!-LENGTH (UDEN := CDR U./1);
-      LENNUM := !&COUNT!-LENGTH (UNUM := CAR U./1);
-      !&M!-P!-FLAG!& := NIL;
-      LN := (LINELENGTH NIL - LENGTHC !&NAME) - 4;
-      OS := ORIG!*;
-      IF CDR U=1 OR LENDEN>LN OR LENNUM>LN THEN GO TO DUMP;
-      IF !&NAME
-        THEN <<INPRINT('SETQ,2,LIST !&NAME);
-               OPRIN 'SETQ;
-               NAME := PLINE!*;
-               OS := POSN!*;
-               !&NAME := NIL;
-               PLINE!* := NIL>>;
-      IF LENDEN>LENNUM
-        THEN <<ORGNUM := (LENDEN - LENNUM)/2; LL := LENDEN>>
-       ELSE <<ORGDEN := (LENNUM - LENDEN)/2; LL := LENNUM>>;
-      POSN!* := ORGNUM + OS + 1;
-      MAPRIN MK!*SQ UNUM;
-      TERPRI!* NIL;
-      IF NAME THEN PLINE!* := NAME ELSE PLINE!* := NIL;
-      POSN!* := OS;
-      FOR I := 1:LL + 2 DO PRIN2!* "-";
-      TERPRI!* NIL;
-      POSN!* := ORGDEN + OS + 1;
-      MAPRIN MK!*SQ UDEN;
-      TERPRI!* T;
-      RETURN NIL;
-    DUMP:
-      VARPRI(MK!*SQ U,LIST MKQUOTE !&NAME,'ONLY);
-      TERPRI();
-      !&NAME := NIL
-   END;
+symbolic procedure rat!-p!-print u;
+   begin integer os,ln,orgnum,orgden,ll,lennum,lenden;
+         scalar name,uden,unum;
+      if null u then return nil;
+      if numberp u
+        then <<varpri(u,list mkquote !&name,'only);
+               terpri();
+               !&name := nil;
+               return nil>>;
+      u := cadr u;
+      !&m!-p!-flag!& := t;
+      lenden := !&count!-length (uden := cdr u./1);
+      lennum := !&count!-length (unum := car u./1);
+      !&m!-p!-flag!& := nil;
+      ln := (linelength nil - lengthc !&name) - 4;
+      os := orig!*;
+      if cdr u=1 or lenden>ln or lennum>ln then go to dump;
+      if !&name
+        then <<inprint('setq,2,list !&name);
+               oprin 'setq;
+               name := pline!*;
+               os := posn!*;
+               !&name := nil;
+               pline!* := nil>>;
+      if lenden>lennum
+        then <<orgnum := (lenden - lennum)/2; ll := lenden>>
+       else <<orgden := (lennum - lenden)/2; ll := lennum>>;
+      posn!* := orgnum + os + 1;
+      maprin mk!*sq unum;
+      terpri!* nil;
+      if name then pline!* := name else pline!* := nil;
+      posn!* := os;
+      for i := 1:ll + 2 do prin2!* "-";
+      terpri!* nil;
+      posn!* := orgden + os + 1;
+      maprin mk!*sq uden;
+      terpri!* t;
+      return nil;
+    dump:
+      varpri(mk!*sq u,list mkquote !&name,'only);
+      terpri();
+      !&name := nil
+   end;
 
-SYMBOLIC PROCEDURE !&COUNT!-LENGTH U;
-   BEGIN INTEGER N;
-      !&COUNT!& := NIL;
-      MAPRIN MK!*SQ U;
-      N := POSN!* - ORIG!*;
-      IF !&COUNT!& THEN N := LINELENGTH NIL + 10;
-      PLINE!* := NIL;
-      POSN!* := ORIG!*;
-      YCOORD!* := YMAX!* := YMIN!* := 0;
-      RETURN N
-   END;
+symbolic procedure !&count!-length u;
+   begin integer n;
+      !&count!& := nil;
+      maprin mk!*sq u;
+      n := posn!* - orig!*;
+      if !&count!& then n := linelength nil + 10;
+      pline!* := nil;
+      posn!* := orig!*;
+      ycoord!* := ymax!* := ymin!* := 0;
+      return n
+   end;
 
-ENDMODULE;
+endmodule;
 
-END;
+end;
+

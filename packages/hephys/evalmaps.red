@@ -246,26 +246,7 @@ begin
  return coeff . dpropagator(cadr w,cddr w,dump)
 end$
 
-%SYMBOLIC PROCEDURE DSTR!-TO!-ALG(STRAND,RLST,DUMP)$
-%IF NULL STRAND THEN LIST('RECIP,MK!-COEFF1(DUMP,RLST))
-%ELSE
-%  BEGIN
-%    SCALAR VRTX$
-%      VRTX:=DVERTEX!-TO!-PROJECTOR(CAR STRAND,RLST,DUMP)$
-%      IF 0=VRTX THEN RETURN 0$
-%      IF NULL CADR VRTX THEN RETURN
-%      LIST('TIMES,CAR VRTX,DSTR!-TO!-ALG(CDR STRAND,RLST,CDDR VRTX))$
-%
-% RETURN LIST('TIMES,CAR VRTX,
-%        'PLUS . (FOR EACH TRM IN CDR VRTX COLLECT
-%      LIST('TIMES,CAR TRM,DSTR!-TO!-ALG(CDR STRAND,RLST,CDR TRM))) )
-
-%===MODYFIED 4.07.89
-
-remflag('(dstr!-to!-alg),'lose)$
-
 symbolic procedure dstr!-to!-alg(strand,rlst,dump)$
-%IF NULL STRAND THEN LIST('RECIP,MK!-COEFF1(DUMP,RLST))
 if null strand then consrecip list(mk!-coeff1(dump,rlst))
 else
   begin
@@ -287,8 +268,6 @@ else
                                       dstr!-to!-alg(cdr strand,rlst,
                                                     cdr trm))))$
 end$
-
-flag('(dstr!-to!-alg),'lose)$
 
 symbolic procedure cvitimes2(x,y)$
 if (x=0) or (y=0) then 0
@@ -322,3 +301,4 @@ else if old = car l then new . l!-subst(new,old,cdr l)
 endmodule;
 
 end;
+

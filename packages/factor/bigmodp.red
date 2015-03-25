@@ -1,4 +1,4 @@
-MODULE BIGMODP; % Modular polynomial arithmetic where the modulus may
+module bigmodp; % Modular polynomial arithmetic where the modulus may
                 % be a bignum.
 
 % Authors: A. C. Norman and P. M. A. Moore, 1981.
@@ -27,100 +27,101 @@ MODULE BIGMODP; % Modular polynomial arithmetic where the modulus may
 %
 
 
-FLUID '(CURRENT!-MODULUS MODULUS!/2);
+fluid '(current!-modulus modulus!/2);
 
 symbolic inline procedure comes!-before(p1, p2);
 % Similar to the REDUCE function ORDPP, but does not cater for
 % non-commutative terms and assumes that exponents are small integers.
-    (CAR P1=CAR P2 AND IGREATERP(CDR P1,CDR P2)) OR
-       (NOT(CAR P1=CAR P2) AND ORDOP(CAR P1,CAR P2));
+    (car p1=car p2 and igreaterp(cdr p1,cdr p2)) or
+       (not(car p1=car p2) and ordop(car p1,car p2));
 
-SYMBOLIC PROCEDURE GENERAL!-PLUS!-MOD!-P(A,B);
+symbolic procedure general!-plus!-mod!-p(a,b);
 % form the sum of the two polynomials a and b
 % working over the ground domain defined by the routines
 % general!-modular!-plus, general!-modular!-times etc. the inputs to
 % this routine are assumed to have coefficients already
 % in the required domain;
-   IF NULL A THEN B
-   ELSE IF NULL B THEN A
-   ELSE IF domainp A THEN
-      IF domainp B THEN !*n2f GENERAL!-MODULAR!-PLUS(A,B)
-      ELSE (LT B) .+ GENERAL!-PLUS!-MOD!-P(A,RED B)
-   ELSE IF domainp B THEN (LT A) .+ GENERAL!-PLUS!-MOD!-P(RED A,B)
-   ELSE IF LPOW A = LPOW B THEN
-      ADJOIN!-TERM(LPOW A,
-         GENERAL!-PLUS!-MOD!-P(LC A,LC B),
-         GENERAL!-PLUS!-MOD!-P(RED A,RED B))
-   ELSE IF COMES!-BEFORE(LPOW A,LPOW B) THEN
-         (LT A) .+ GENERAL!-PLUS!-MOD!-P(RED A,B)
-   ELSE (LT B) .+ GENERAL!-PLUS!-MOD!-P(A,RED B);
+   if null a then b
+   else if null b then a
+   else if domainp a then
+      if domainp b then !*n2f general!-modular!-plus(a,b)
+      else (lt b) .+ general!-plus!-mod!-p(a,red b)
+   else if domainp b then (lt a) .+ general!-plus!-mod!-p(red a,b)
+   else if lpow a = lpow b then
+      adjoin!-term(lpow a,
+         general!-plus!-mod!-p(lc a,lc b),
+         general!-plus!-mod!-p(red a,red b))
+   else if comes!-before(lpow a,lpow b) then
+         (lt a) .+ general!-plus!-mod!-p(red a,b)
+   else (lt b) .+ general!-plus!-mod!-p(a,red b);
 
-SYMBOLIC PROCEDURE GENERAL!-TIMES!-MOD!-P(A,B);
-   IF (NULL A) OR (NULL B) THEN NIL
-   ELSE IF domainp A THEN GEN!-MULT!-BY!-CONST!-MOD!-P(B,A)
-   ELSE IF domainp B THEN GEN!-MULT!-BY!-CONST!-MOD!-P(A,B)
-   ELSE IF MVAR A=MVAR B THEN GENERAL!-PLUS!-MOD!-P(
-     GENERAL!-PLUS!-MOD!-P(GENERAL!-TIMES!-TERM!-MOD!-P(LT A,B),
-                  GENERAL!-TIMES!-TERM!-MOD!-P(LT B,RED A)),
-     GENERAL!-TIMES!-MOD!-P(RED A,RED B))
-   ELSE IF ORDOP(MVAR A,MVAR B) THEN
-     ADJOIN!-TERM(LPOW A,GENERAL!-TIMES!-MOD!-P(LC A,B),
-       GENERAL!-TIMES!-MOD!-P(RED A,B))
-   ELSE ADJOIN!-TERM(LPOW B,
-        GENERAL!-TIMES!-MOD!-P(A,LC B),GENERAL!-TIMES!-MOD!-P(A,RED B));
+symbolic procedure general!-times!-mod!-p(a,b);
+   if (null a) or (null b) then nil
+   else if domainp a then gen!-mult!-by!-const!-mod!-p(b,a)
+   else if domainp b then gen!-mult!-by!-const!-mod!-p(a,b)
+   else if mvar a=mvar b then general!-plus!-mod!-p(
+     general!-plus!-mod!-p(general!-times!-term!-mod!-p(lt a,b),
+                  general!-times!-term!-mod!-p(lt b,red a)),
+     general!-times!-mod!-p(red a,red b))
+   else if ordop(mvar a,mvar b) then
+     adjoin!-term(lpow a,general!-times!-mod!-p(lc a,b),
+       general!-times!-mod!-p(red a,b))
+   else adjoin!-term(lpow b,
+        general!-times!-mod!-p(a,lc b),general!-times!-mod!-p(a,red b));
 
-SYMBOLIC PROCEDURE GENERAL!-TIMES!-TERM!-MOD!-P(TERM,B);
+symbolic procedure general!-times!-term!-mod!-p(term,b);
 %multiply the given polynomial by the given term;
-    IF NULL B THEN NIL
-    ELSE IF domainp B THEN
-        ADJOIN!-TERM(TPOW TERM,
-            GEN!-MULT!-BY!-CONST!-MOD!-P(TC TERM,B),NIL)
-    ELSE IF TVAR TERM=MVAR B THEN
-         ADJOIN!-TERM(MKSP(TVAR TERM,IPLUS2(TDEG TERM,LDEG B)),
-                      GENERAL!-TIMES!-MOD!-P(TC TERM,LC B),
-                      GENERAL!-TIMES!-TERM!-MOD!-P(TERM,RED B))
-    ELSE IF ORDOP(TVAR TERM,MVAR B) THEN
-      ADJOIN!-TERM(TPOW TERM,GENERAL!-TIMES!-MOD!-P(TC TERM,B),NIL)
-    ELSE ADJOIN!-TERM(LPOW B,
-      GENERAL!-TIMES!-TERM!-MOD!-P(TERM,LC B),
-      GENERAL!-TIMES!-TERM!-MOD!-P(TERM,RED B));
+    if null b then nil
+    else if domainp b then
+        adjoin!-term(tpow term,
+            gen!-mult!-by!-const!-mod!-p(tc term,b),nil)
+    else if tvar term=mvar b then
+         adjoin!-term(mksp(tvar term,iplus2(tdeg term,ldeg b)),
+                      general!-times!-mod!-p(tc term,lc b),
+                      general!-times!-term!-mod!-p(term,red b))
+    else if ordop(tvar term,mvar b) then
+      adjoin!-term(tpow term,general!-times!-mod!-p(tc term,b),nil)
+    else adjoin!-term(lpow b,
+      general!-times!-term!-mod!-p(term,lc b),
+      general!-times!-term!-mod!-p(term,red b));
 
-SYMBOLIC PROCEDURE GEN!-MULT!-BY!-CONST!-MOD!-P(A,N);
+symbolic procedure gen!-mult!-by!-const!-mod!-p(a,n);
 % multiply the polynomial a by the constant n;
-   IF NULL A THEN NIL
-   ELSE IF N=1 THEN A
-   ELSE IF domainp A THEN !*n2f GENERAL!-MODULAR!-TIMES(A,N)
-   ELSE ADJOIN!-TERM(LPOW A,GEN!-MULT!-BY!-CONST!-MOD!-P(LC A,N),
-     GEN!-MULT!-BY!-CONST!-MOD!-P(RED A,N));
+   if null a then nil
+   else if n=1 then a
+   else if domainp a then !*N2F general!-modular!-times(a,n)
+   else adjoin!-term(lpow a,gen!-mult!-by!-const!-mod!-p(lc a,n),
+     gen!-mult!-by!-const!-mod!-p(red a,n));
 
-SYMBOLIC PROCEDURE GENERAL!-DIFFERENCE!-MOD!-P(A,B);
-   GENERAL!-PLUS!-MOD!-P(A,GENERAL!-MINUS!-MOD!-P B);
+symbolic procedure general!-difference!-mod!-p(a,b);
+   general!-plus!-mod!-p(a,general!-minus!-mod!-p b);
 
-SYMBOLIC PROCEDURE GENERAL!-MINUS!-MOD!-P A;
-   IF NULL A THEN NIL
-   ELSE IF domainp A THEN GENERAL!-MODULAR!-MINUS A
-   ELSE (LPOW A .* GENERAL!-MINUS!-MOD!-P LC A) .+
-        GENERAL!-MINUS!-MOD!-P RED A;
+symbolic procedure general!-minus!-mod!-p a;
+   if null a then nil
+   else if domainp a then general!-modular!-minus a
+   else (lpow a .* general!-minus!-mod!-p lc a) .+
+        general!-minus!-mod!-p red a;
 
-SYMBOLIC PROCEDURE GENERAL!-REDUCE!-MOD!-P A;
+symbolic procedure general!-reduce!-mod!-p a;
 %converts a multivariate poly from normal into modular polynomial;
-    IF NULL A THEN NIL
-    ELSE IF domainp A THEN !*n2f GENERAL!-MODULAR!-NUMBER A
-    ELSE ADJOIN!-TERM(LPOW A,
-                      GENERAL!-REDUCE!-MOD!-P LC A,
-                      GENERAL!-REDUCE!-MOD!-P RED A);
+    if null a then nil
+    else if domainp a then !*n2f general!-modular!-number a
+    else adjoin!-term(lpow a,
+                      general!-reduce!-mod!-p lc a,
+                      general!-reduce!-mod!-p red a);
 
-SYMBOLIC PROCEDURE GENERAL!-MAKE!-MODULAR!-SYMMETRIC A;
+symbolic procedure general!-make!-modular!-symmetric a;
 % input is a multivariate MODULAR poly A with nos in the range 0->(p-1).
 % This folds it onto the symmetric range (-p/2)->(p/2);
-    IF NULL A THEN NIL
-    ELSE IF DOMAINP A THEN
-      IF A>MODULUS!/2 THEN !*n2f(A - CURRENT!-MODULUS)
-      ELSE A
-    ELSE ADJOIN!-TERM(LPOW A,
-                      GENERAL!-MAKE!-MODULAR!-SYMMETRIC LC A,
-                      GENERAL!-MAKE!-MODULAR!-SYMMETRIC RED A);
+    if null a then nil
+    else if domainp a then
+      if a>modulus!/2 then !*N2F(a - current!-modulus)
+      else a
+    else adjoin!-term(lpow a,
+                      general!-make!-modular!-symmetric lc a,
+                      general!-make!-modular!-symmetric red a);
 
-ENDMODULE;
+endmodule;
 
-END;
+end;
+

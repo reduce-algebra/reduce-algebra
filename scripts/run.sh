@@ -123,18 +123,18 @@ xWindows_NT)
       exit 0
     fi
   done
-  if test "x$pre" != "x"
-  then
-    for hx in $versions
-    do
-#     echo Try: -x $here/../cslbuild/$hx/csl/$ap.exe
-      if test -x $here/../cslbuild/$hx/csl/$ap.exe
-      then
-        exec $here/../cslbuild/$hx/csl/$ap.exe $xtra $*
-        exit 0
-      fi
-    done
-  fi
+# If only a cygwin version has been built this next fragment (which looks
+# for eg reduce.exe rather than either cygwin-reduce.exe or reduce.com)
+# may sometimes help.
+  for hx in $versions
+  do
+#   echo Try: -x $here/../cslbuild/$hx/csl/$ap.exe
+    if test -x $here/../cslbuild/$hx/csl/$ap.exe
+    then
+      exec $here/../cslbuild/$hx/csl/$ap.exe $xtra $*
+      exit 0
+    fi
+  done
   if test "x$cygwin" = "xyes"
   then
     if test "x$try64" = "xyes"

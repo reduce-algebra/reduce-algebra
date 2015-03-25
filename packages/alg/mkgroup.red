@@ -22,86 +22,87 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-SYMBOLIC PROCEDURE MKGROUP;
+symbolic procedure mkgroup;
    %Expects a list of statements terminated by a >>;
-   BEGIN SCALAR LST,DELIM;
-    A:      LST := ACONC(LST,XREAD 'GROUP);
-        IF CURSYM!* EQ '!*RSQB!* THEN GO TO B
-         ELSE IF NULL DELIM THEN DELIM := CURSYM!*
-         ELSE IF NOT(DELIM EQ CURSYM!*)
-          THEN SYMERR("Syntax error: mixed , and ; in group",NIL);
-        GO TO A;
-    B:  SCAN();
-        RETURN IF DELIM EQ '!*SEMICOL!* THEN 'PROGN . LST
-                ELSE 'VECT . LST
-   END;
+   begin scalar lst,delim;
+    a:      lst := aconc(lst,xread 'group);
+        if cursym!* eq '!*rsqb!* then go to b
+         else if null delim then delim := cursym!*
+         else if not(delim eq cursym!*)
+          then symerr("Syntax error: mixed , and ; in group",nil);
+        go to a;
+    b:  scan();
+        return if delim eq '!*semicol!* then 'progn . lst
+                else 'vect . lst
+   end;
 
-PUT('!*LSQB!*,'STAT,'MKGROUP);
+put('!*lsqb!*,'stat,'mkgroup);
 
-NEWTOK '((![) !*LSQB!*);
+newtok '((![) !*lsqb!*);
 
-NEWTOK '((!]) !*RSQB!*);
+newtok '((!]) !*rsqb!*);
 
-SYMBOLIC PROCEDURE FORMVECT(U,VARS,MODE);
-   BEGIN INTEGER N; SCALAR V;
-      U := FOR EACH X IN U COLLECT FORM1(X,VARS,MODE); % was FORMC
-      V := MKVECT(LENGTH U-1);
-      N := 0;
-      FOR EACH X IN U DO <<PUTV(V,N,X); N := N+1>>;
-      RETURN V
-   END;
+symbolic procedure formvect(u,vars,mode);
+   begin integer n; scalar v;
+      u := for each x in u collect form1(x,vars,mode); % was FORMC
+      v := mkvect(length u-1);
+      n := 0;
+      for each x in u do <<putv(v,n,x); n := n+1>>;
+      return v
+   end;
 
-PUT('VECT,'FORMFN,'FORMVECT);
+put('vect,'formfn,'formvect);
 
-PUT('VECEXPRP,'EVFN,'EVVECTOR);
+put('vecexprp,'evfn,'evvector);
 
-SYMBOLIC PROCEDURE !*!*A2S(U,VARS);
-   IF U = '(QUOTE NIL) THEN NIL
+symbolic procedure !*!*a2s(u,vars);
+   if u = '(quote nil) then niL
 %   else if eqcar(u,'for) and not(cadddr u eq 'do)
 %    then list('foraeval,u)
-    ELSE IF VECTORP U THEN LIST(!*!*A2SFN,U)
-    ELSE IF NULL U OR CONSTANTP U AND NULL FIXP U
-      OR INTEXPRNP(U,VARS) AND NULL !*COMPOSITES
-      OR NOT ATOM U AND IDP CAR U
-         AND FLAGP(CAR U,'NOCHANGE) AND NOT(CAR U EQ 'GETEL)
-     THEN U
-    ELSE LIST(!*!*A2SFN,U);
+    else if vectorp u then list(!*!*a2sfn,u)
+    else if null u or constantp u and null fixp u
+      or intexprnp(u,vars) and null !*composites
+      or not atom u and idp car u
+         and flagp(car u,'nochange) and not(car u eq 'getel)
+     then u
+    else list(!*!*a2sfn,u);
 
-SYMBOLIC PROCEDURE VECEXPRP U;
+symbolic procedure vecexprp u;
    % Determines if U is a valid vector expression.
-   IF VECTORP U THEN T
-    ELSE IF ATOM U THEN NIL
-    ELSE IF CAR U EQ 'PLUS THEN VECEXPRLISP CDR U
-    ELSE IF CAR U EQ 'TIMES THEN ONEVECEXPRLISP CDR U
-    ELSE IF CAR U EQ 'MINUS THEN VECEXPRP CADR U
-    ELSE IF CAR U EQ 'QUOTIENT
-     THEN VECEXPRP CADR U AND NOT VECEXPRP CADDR U
-    ELSE NIL;
+   if vectorp u then t
+    else if atom u then nil
+    else if car u eq 'plus then vecexprlisp cdr u
+    else if car u eq 'times then onevecexprlisp cdr u
+    else if car u eq 'minus then vecexprp cadr u
+    else if car u eq 'quotient
+     then vecexprp cadr u and not vecexprp caddr u
+    else nil;
 
-SYMBOLIC PROCEDURE VECEXPRLISP U;
-   NULL U OR VECEXPRP CAR U AND VECEXPRLISP CDR U;
+symbolic procedure vecexprlisp u;
+   null u or vecexprp car u and vecexprlisp cdr u;
 
-SYMBOLIC PROCEDURE ONEVECEXPRLISP U;
-   IF NULL U THEN NIL
-    ELSE IF VECEXPRP CAR U THEN NOTVECEXPRLISP CDR U
-    ELSE ONEVECEXPRLISP CDR U;
+symbolic procedure onevecexprlisp u;
+   if null u then nil
+    else if vecexprp car u then notvecexprlisp cdr u
+    else onevecexprlisp cdr u;
 
-SYMBOLIC PROCEDURE NOTVECEXPRLISP U;
-   NULL U OR NOT VECEXPRP CAR U AND NOTVECEXPRLISP CDR U;
+symbolic procedure notvecexprlisp u;
+   null u or not vecexprp car u and notvecexprlisp cdr u;
 
-SYMBOLIC PROCEDURE EVVECTOR(u,v);
+symbolic procedure evvector(u,v);
    % Simplification function for a vector expression.
-   IF VECTORP U THEN EVVECT(U,NIL,NIL)
-    ELSE NIL;
+   if vectorp u then evvect(u,nil,nil)
+    else nil;
 
-SYMBOLIC PROCEDURE EVVECT(U,OPR,ARG);
-   BEGIN INTEGER N; SCALAR V;
-      N := UPBV U;
-      V := MKVECT N;
-      FOR I := 0:N DO PUTV(V,I,
-                           REVAL IF NULL OPR THEN GETV(U,I)
-                                  ELSE LIST(OPR,GETV(U,I),ARG));
-      RETURN V
-   END;
+symbolic procedure evvect(u,opr,arg);
+   begin integer n; scalar v;
+      n := upbv u;
+      v := mkvect n;
+      for i := 0:n do putv(v,i,
+                           reval if null opr then getv(u,i)
+                                  else list(opr,getv(u,i),arg));
+      return v
+   end;
 
-END;
+end;
+

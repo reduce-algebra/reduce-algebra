@@ -2493,6 +2493,13 @@ case TAG_VECTOR:
                                     k++;
                                     ch = celt(stack[0], k);
                                     n = (n << 6) | (ch & 0x3f);
+/*
+ * There is a portability issue here. ON some platforms (and perhaps with
+ * some locales set) you may find (for instance) case conversion between
+ * small; and large Greek letters (as in the TeX notation \gamma vd \Gamma),
+ * while in others only basic Latin characters will get case converted. This
+ * effect may show up in the utf8-in-list regression test.
+ */
                                     if (escaped_printing & escape_fold_down)
                                         n = towlower(n);
                                     else if (escaped_printing & escape_fold_up)

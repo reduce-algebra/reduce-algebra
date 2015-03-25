@@ -1,4 +1,4 @@
-MODULE HACKSQRT;  % Routines for manipulation of sqrt expressions.
+module hacksqrt;  % Routines for manipulation of sqrt expressions.
 
 % Author: James H. Davenport.
 

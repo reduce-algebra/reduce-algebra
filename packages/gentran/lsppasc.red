@@ -67,16 +67,16 @@ symbolic procedure pasc!-symtabput(name,type,value);
 begin
   scalar basetype, origtype, wastypedecl;
   basetype:=car value;
-  if basetype = 'TYPE then <<
+  if basetype = 'type then <<
      wastypedecl:=t;
      value:=cdr value;
     basetype:=car value >>;
   origtype:=symtabget(name,basetype) or symtabget('!*main!*,basetype);
   if pairp origtype then origtype:=cdr origtype; % strip off name;
-  if pairp origtype and car origtype = 'TYPE
+  if pairp origtype and car origtype = 'type
      then value:= (cadr origtype). append(cdr value,cddr origtype);
   if wastypedecl
-     then symtabput(name,type,'TYPE . value)
+     then symtabput(name,type,'type . value)
      else symtabput(name,type,value);
   end;
 
@@ -123,7 +123,7 @@ begin
   for each dec in symtabget(name, '!*decs!*) do
     if car dec memq params
        then paramtypes := append(paramtypes, list dec)
-       else if cadr dec neq 'TYPE then
+       else if cadr dec neq 'type then
             vartypes := append(vartypes, list dec);
   r := mkfpascprocdec(type, name, params, paramtypes);
   if !*gendecs then
@@ -677,7 +677,7 @@ begin
   scalar l,w, linelen;
   linelen := linelength 150;
   pprin2 c;
-  while c neq !$eof!$  and w neq 'END do <<
+  while c neq !$eof!$  and w neq 'end do <<
     if c eq !$eol!$ then
     <<  pterpri(); c := readch()  >>
     else if c eq '!{ then << c := procpasccomm(); w:= nil >>
@@ -690,20 +690,20 @@ begin
          << pprin2 c; l:=c . l; c := readch() >>;
       w:=intern compress reverse l;
       l:=nil >>;
-    if w eq 'VAR then c:=procpascvar c
-    else if w eq 'CONST then c:=procpascconst c
-    else if w eq 'TYPE then c:=procpasctype c
-    else if w memq '(FUNCTION PROCEDURE OPERATOR)
+    if w eq 'var then c:=procpascvar c
+    else if w eq 'const then c:=procpascconst c
+    else if w eq 'type then c:=procpasctype c
+    else if w memq '(function procedure operator)
          then c:=procfuncoperheading(w,c)
-    else if w eq 'BEGIN then c:= NIL . procpasctem1 c
-    else if w neq 'END then <<
+    else if w eq 'begin then c:= nil . procpasctem1 c
+    else if w neq 'end then <<
        while c neq '!; do <<
          if c eq '!{ then c := procpasccomm()
            else << pprin2 c; c := readch() >> >>;
        pprin2 c;
        c:=nil . readch() >>;
     % recursive, since PASCAL is
-    if w eq 'END then <<
+    if w eq 'end then <<
        c:=flushspaces c;
        if not ( c memq '(!; !.)) then
           gentranerr('e,nil,"END not followed by ; or .",nil);
@@ -728,14 +728,14 @@ next:
   while liter c or digit c or c eq '!_ do
     << pprin2 c; l:=c . l; c := readch() >>;
   w:=intern compress reverse l;
-  if w memq '(FUNCTION PROCEDURE OPERATOR CONST VAR)
+  if w memq '(function procedure operator const var)
      then return w . c;
   c:=flushspaces c;
   if c neq '!= then
      gentranerr('e,nil,"Malformed TYPE declaration", nil);
   l:=readpascaltype c;
   c:=car l;
-  pasc!-symtabput(pascfuncname!*,w,'TYPE . cdr l);
+  pasc!-symtabput(pascfuncname!*,w,'type . cdr l);
   goto next;
   end;
 
@@ -751,7 +751,7 @@ next:
   while liter c or digit c or c eq '!_ do
     << pprin2 c; l:=c . l; c := readch() >>;
   name:=intern compress reverse l;
-  if name memq '(FUNCTION PROCEDURE OPERATOR CONST VAR BEGIN)
+  if name memq '(function procedure operator const var begin)
      then return name . c;
   c:=flushspaces c;
   namelist:=list name;

@@ -1,4 +1,4 @@
-MODULE VECT;  % Vector support routines.
+module vect;  % Vector support routines.
 
 % Authors: Mary Ann Moore and Arthur C. Norman.
 % Modified by: James H. Davenport.
@@ -27,124 +27,125 @@ MODULE VECT;  % Vector support routines.
 %
 
 
-EXPORTS MKUNIQUEVECT,MKVEC,MKVECF2Q,MKIDENM,COPYVEC,VECSORT,SWAP,
-        NON!-NULL!-VEC,MKVECT2;
+exports mkuniquevect,mkvec,mkvecf2q,mkidenm,copyvec,vecsort,swap,
+        non!-null!-vec,mkvect2;
 
-SYMBOLIC PROCEDURE MKUNIQUEVECT V;
-BEGIN SCALAR U,N;
-  N:=UPBV V;
-  FOR I:=0:N DO BEGIN
-    SCALAR UU;
-    UU:=GETV(V,I);
-    IF NOT (UU MEMBER U)
-      THEN U:=UU.U
-    END;
-  RETURN MKVEC U
-  END;
+symbolic procedure mkuniquevect v;
+begin scalar u,n;
+  n:=upbv v;
+  for i:=0:n do begin
+    scalar uu;
+    uu:=getv(v,i);
+    if not (uu member u)
+      then u:=uu.u
+    end;
+  return mkvec u
+  end;
 
-SYMBOLIC PROCEDURE MKVEC(L);
-BEGIN SCALAR V,I;
-  V:=MKVECT(ISUB1 LENGTH L);
-  I:=0;
-  WHILE L DO <<PUTV(V,I,CAR L); I:=IADD1 I; L:=CDR L>>;
-  RETURN V
-  END;
+symbolic procedure mkvec(l);
+begin scalar v,i;
+  v:=mkvect(isub1 length l);
+  i:=0;
+  while l do <<putv(v,i,car l); i:=iadd1 i; l:=cdr l>>;
+  return v
+  end;
 
-SYMBOLIC PROCEDURE MKVECF2Q(L);
-BEGIN
-  SCALAR V,I,LL;
-  V:=MKVECT(ISUB1 LENGTH L);
-  I:=0;
-  WHILE L DO <<
-    LL:=CAR L;
-    IF LL = 0 THEN LL:=NIL;
-    PUTV(V,I,!*F2Q LL);
-    I:=IADD1 I;
-    L:=CDR L >>;
-  RETURN V
-  END;
+symbolic procedure mkvecf2q(l);
+begin
+  scalar v,i,ll;
+  v:=mkvect(isub1 length l);
+  i:=0;
+  while l do <<
+    ll:=car l;
+    if ll = 0 then ll:=nil;
+    putv(v,i,!*f2q ll);
+    i:=iadd1 i;
+    l:=cdr l >>;
+  return v
+  end;
 
-SYMBOLIC PROCEDURE MKIDENM N;
-BEGIN
-  SCALAR ANS,U;
-  SCALAR C0,C1;
-  C0:=NIL ./ 1;
-  C1:= 1 ./ 1;
+symbolic procedure mkidenm n;
+begin
+  scalar ans,u;
+  scalar c0,c1;
+  c0:=nil ./ 1;
+  c1:= 1 ./ 1;
   % constants.
-  ANS:=MKVECT(N);
-  FOR I:=0 STEP 1 UNTIL N DO <<
-    U:=MKVECT N;
-    FOR J:=0 STEP 1 UNTIL N DO
-      IF I IEQUAL J
-        THEN PUTV(U,J,C1)
-        ELSE PUTV(U,J,C0);
-    PUTV(ANS,I,U) >>;
-  RETURN ANS
-  END;
+  ans:=mkvect(n);
+  for i:=0 step 1 until n do <<
+    u:=mkvect n;
+    for j:=0 step 1 until n do
+      if i iequal j
+        then putv(u,j,c1)
+        else putv(u,j,c0);
+    putv(ans,i,u) >>;
+  return ans
+  end;
 
-SYMBOLIC PROCEDURE COPYVEC(V,N);
-   BEGIN SCALAR NEW;
-    NEW:=MKVECT(N);
-    FOR I:=0:N DO PUTV(NEW,I,GETV(V,I));
-    RETURN NEW
-   END;
+symbolic procedure copyvec(v,n);
+   begin scalar new;
+    new:=mkvect(n);
+    for i:=0:n do putv(new,i,getv(v,i));
+    return neW
+   end;
 
-SYMBOLIC PROCEDURE VECSORT(U,L);
+symbolic procedure vecsort(u,l);
 % Sorts vector v of numbers into decreasing order.
 % Performs same interchanges of all vectors in the list l.
-BEGIN
-  SCALAR J,K,N,V,W;
-  N:=UPBV U;% elements 0...n exist.
+begin
+  scalar j,k,n,v,w;
+  n:=upbv u;% elements 0...n exist.
   % algorithm used is a bubble sort.
-  FOR I:=1:N DO BEGIN
-    V:=GETV(U,I);
-    K:=I;
-  LOOP:
-    J:=K;
-    K:=ISUB1 K;
-    W:=GETV(U,K);
-    IF V<=W
-      THEN GOTO ORDERED;
-    PUTV(U,K,V);
-    PUTV(U,J,W);
-    MAPC(L,FUNCTION (LAMBDA U;SWAP(U,J,K)));
-    IF K>0
-      THEN GOTO LOOP;
-  ORDERED:
-    END;
-  RETURN NIL
-  END;
+  for i:=1:n do begin
+    v:=getv(u,i);
+    k:=i;
+  loop:
+    j:=k;
+    k:=isub1 k;
+    w:=getv(u,k);
+    if v<=w
+      then goto ordered;
+    putv(u,k,v);
+    putv(u,j,w);
+    mapc(l,function (lambda u;swap(u,j,k)));
+    if k>0
+      then goto loop;
+  ordered:
+    end;
+  return nil
+  end;
 
-SYMBOLIC PROCEDURE SWAP(U,J,K);
-IF NULL U
-  THEN NIL
-  ELSE BEGIN
-    SCALAR V;
+symbolic procedure swap(u,j,k);
+if null u
+  then nil
+  else begin
+    scalar v;
     %swaps elements i,j of vector u.
-    V:=GETV(U,J);
-    PUTV(U,J,GETV(U,K));
-    PUTV(U,K,V)
-    END;
+    v:=getv(u,j);
+    putv(u,j,getv(u,k));
+    putv(u,k,v)
+    end;
 
-SYMBOLIC PROCEDURE NON!-NULL!-VEC V;
-BEGIN
-  SCALAR CNT;
-  CNT := 0;
-  FOR I:=0:UPBV V DO
-    IF GETV(V,I)
-      THEN CNT:=IADD1 CNT;
-  RETURN CNT
-  END;
+symbolic procedure non!-null!-vec v;
+begin
+  scalar cnt;
+  cnt := 0;
+  for i:=0:upbv v do
+    if getv(v,i)
+      then cnt:=iadd1 cnt;
+  return cnt
+  end;
 
-SYMBOLIC PROCEDURE MKVECT2(N,INITIAL);
-BEGIN
-  SCALAR U;
-  U:=MKVECT N;
-  FOR I:=0:N DO
-    PUTV(U,I,INITIAL);
-  RETURN U
-  END;
+symbolic procedure mkvect2(n,initial);
+begin
+  scalar u;
+  u:=mkvect n;
+  for i:=0:n do
+    putv(u,i,initial);
+  return u
+  end;
 
-ENDMODULE;
+endmodule;
 
-END;
+end;
+
