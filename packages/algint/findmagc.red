@@ -1,4 +1,4 @@
-MODULE FINDMAGC;
+module findmagc;
 
 % Author: James H. Davenport.
 

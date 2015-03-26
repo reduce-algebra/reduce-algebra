@@ -10,7 +10,13 @@ here=`dirname "$here"`
 if test "x$1" = "x"
 then
   rm -f $here/scripts/caseclash.files
-  find $here/packages \( -name \*.red -o -name \*.tst \) -print \
+# Here I filter out less1.red to less7.red because they use case
+# for emphasis. I filter our rlisp88.tst mainly because the
+# /* ... */ style comments in it lead to comment text getting scanned
+# in a manner that is unhelpful here.
+  find $here/packages -name \*.red -and -not -name less\*.red \
+     >> $here/scripts/caseclash.files
+  find $here/packages -name \*.tst -and -not -name rlisp88.tst \
      >> $here/scripts/caseclash.files
 fi
 

@@ -1,4 +1,4 @@
-MODULE MODIFY;
+module modify;
 
 % Author: James H. Davenport.
 
@@ -26,121 +26,121 @@ MODULE MODIFY;
 %
 
 
-FLUID '(!*TRA INTVAR);
+fluid '(!*tra intvar);
 
-EXPORTS MODIFY!-SQRTS,COMBINE!-SQRTS;
+exports modify!-sqrts,combine!-sqrts;
 
-SYMBOLIC PROCEDURE MODIFY!-SQRTS(BASIS,SQRTL);
-BEGIN
-  SCALAR SQRTL!-IN!-SF,N,U,V,F;
-  N:=UPBV BASIS;
-  SQRTL!-IN!-SF:=FOR EACH U IN SQRTL COLLECT
-                    !*Q2F SIMP ARGOF U;
-  FOR I:=0:N DO BEGIN
-    U:=GETV(BASIS,I);
-    V:=SQRTSINSQ(U,INTVAR);
+symbolic procedure modify!-sqrts(basis,sqrtl);
+begin
+  scalar sqrtl!-in!-sf,n,u,v,f;
+  n:=upbv basis;
+  sqrtl!-in!-sf:=for each u in sqrtl collect
+                    !*q2f simp argof u;
+  for i:=0:n do begin
+    u:=getv(basis,i);
+    v:=sqrtsinsq(u,intvar);
     % We have two tasks to perform,
     % the replacing of SQRT(A)*SQRT(B) by SQRT(A*B)
     % where relevant and the replacing of SQRT(A)
     % by SQRT(A*B) or 1 (depending on whether it occurs in
     % the numerator or the denominator).
-    V:=setdiff(v,SQRTL);
-    IF NULL V
-      THEN GO TO NOCHANGE;
-    U:=SQRT2TOP U;
-    U:=MULTSQ(MODIFY2(NUMR U,V,SQRTL!-IN!-SF) ./ 1,
-              1 ./ MODIFY2(DENR U,V,SQRTL!-IN!-SF));
-    V:=SQRTSINSQ(U,INTVAR);
-    V:=setdiff(v,SQRTL);
-    IF V THEN <<
-      IF !*TRA THEN <<
-        PRINTC "Discarding element";
-        PRINTSQ U >>;
-      PUTV(BASIS,I,1 ./ 1) >>
-      ELSE PUTV(BASIS,I,REMOVECMSQ U);
-    F:=T;
-  NOCHANGE:
-    END;
-  BASIS:=MKUNIQUEVECT BASIS;
-  IF F AND !*TRA THEN <<
-    PRINTC "Basis replaced by";
-    MAPVEC(BASIS,FUNCTION PRINTSQ) >>;
-  RETURN BASIS
-  END;
+    v:=setdiff(v,sqrtl);
+    if null v
+      then go to nochange;
+    u:=sqrt2top u;
+    u:=multsq(modify2(numr u,v,sqrtl!-in!-sf) ./ 1,
+              1 ./ modify2(denr u,v,sqrtl!-in!-sf));
+    v:=sqrtsinsq(u,intvar);
+    v:=setdiff(v,sqrtl);
+    if v then <<
+      if !*tra then <<
+        printc "Discarding element";
+        printsq u >>;
+      putv(basis,i,1 ./ 1) >>
+      else putv(basis,i,removecmsq u);
+    f:=t;
+  nochange:
+    end;
+  basis:=mkuniquevect basis;
+  if f and !*tra then <<
+    printc "Basis replaced by";
+    mapvec(basis,function printsq) >>;
+  return basis
+  end;
 
 
-SYMBOLIC PROCEDURE COMBINE!-SQRTS(BASIS,SQRTL);
-BEGIN
-  SCALAR SQRTL!-IN!-SF,N,U,V,F;
-  N:=UPBV BASIS;
-  SQRTL!-IN!-SF:=FOR EACH U IN SQRTL COLLECT
-                    !*Q2F SIMP ARGOF U;
-  FOR I:=0:N DO BEGIN
-    U:=GETV(BASIS,I);
-    V:=SQRTSINSQ(U,INTVAR);
+symbolic procedure combine!-sqrts(basis,sqrtl);
+begin
+  scalar sqrtl!-in!-sf,n,u,v,f;
+  n:=upbv basis;
+  sqrtl!-in!-sf:=for each u in sqrtl collect
+                    !*q2f simp argof u;
+  for i:=0:n do begin
+    u:=getv(basis,i);
+    v:=sqrtsinsq(u,intvar);
     % We have one task to perform,
     % the replacing of SQRT(A)*SQRT(B) by SQRT(A*B)
     % where relevant.
-    V:=setdiff(v,SQRTL);
-    IF NULL V
-      THEN GO TO NOCHANGE;
-    U:=MULTSQ(MODIFY2(NUMR U,V,SQRTL!-IN!-SF) ./ 1,
-              1 ./ MODIFY2(DENR U,V,SQRTL!-IN!-SF));
-    PUTV(BASIS,I,U);
-    F:=T;
-  NOCHANGE:
-    END;
-  IF F AND !*TRA THEN <<
-    PRINTC "Basis replaced by";
-    MAPVEC(BASIS,FUNCTION PRINTSQ) >>;
-  RETURN BASIS
-  END;
+    v:=setdiff(v,sqrtl);
+    if null v
+      then go to nochange;
+    u:=multsq(modify2(numr u,v,sqrtl!-in!-sf) ./ 1,
+              1 ./ modify2(denr u,v,sqrtl!-in!-sf));
+    putv(basis,i,u);
+    f:=t;
+  nochange:
+    end;
+  if f and !*tra then <<
+    printc "Basis replaced by";
+    mapvec(basis,function printsq) >>;
+  return basis
+  end;
 
 
-SYMBOLIC PROCEDURE MODIFY2(SF,SQRTSIN,REALSQRTS);
-IF ATOM SF
-  THEN SF
-  ELSE IF ATOM MVAR SF
-    THEN SF
-    ELSE IF EQCAR(MVAR SF,'SQRT) AND DEPENDSP(MVAR SF,INTVAR)
-      THEN BEGIN
-        SCALAR U,V,W,LCSF,SQRTSIN2,W2,LCSF2,TEMP;
-        U:=!*Q2F SIMP ARGOF MVAR SF;
-        V:=REALSQRTS;
-        WHILE V AND NULL (W:=MODIFY!-QUOTF(CAR V,U))
-          DO V:=CDR V;
-        IF NULL V
-          THEN <<
-            IF !*TRA THEN <<
-              PRINTC "Unable to modify (postponed)";
-              PRINTSF !*KK2F MVAR SF >>;
-            RETURN SF >>;
-        V:=CAR V;
+symbolic procedure modify2(sf,sqrtsin,realsqrts);
+if atom sf
+  then sf
+  else if atom mvar sf
+    then sf
+    else if eqcar(mvar sf,'sqrt) and dependsp(mvar sf,intvar)
+      then begin
+        scalar u,v,w,lcsf,sqrtsin2,w2,lcsf2,temp;
+        u:=!*q2f simp argof mvar sf;
+        v:=realsqrts;
+        while v and null (w:=modify!-quotf(car v,u))
+          do v:=cdr v;
+        if null v
+          then <<
+            if !*tra then <<
+              printc "Unable to modify (postponed)";
+              printsf !*kk2f mvar sf >>;
+            return sf >>;
+        v:=car v;
         % We must modify SQRT(U) into SQRT(V) if possible.
-        LCSF:=LC SF;
-        SQRTSIN2:=DELETE(MVAR SF,SQRTSIN);
-        WHILE SQRTSIN2 AND (W NEQ 1) DO <<
-          TEMP:=!*Q2F SIMP ARGOF CAR SQRTSIN2;
-          IF (W2:=MODIFY!-QUOTF(W,TEMP)) AND
-             (LCSF2:=MODIFY!-QUOTF(LCSF,!*KK2F CAR SQRTSIN2))
-            THEN <<
-              W:=W2;
-              LCSF:=LCSF2 >>;
-          SQRTSIN2:=CDR SQRTSIN2 >>;
-        IF W = 1
-          THEN RETURN ADDF(MULTF(LCSF,FORMSQRT V),
-                           MODIFY2(RED SF,SQRTSIN,REALSQRTS));
+        lcsf:=lc sf;
+        sqrtsin2:=delete(mvar sf,sqrtsin);
+        while sqrtsin2 and (w neq 1) do <<
+          temp:=!*q2f simp argof car sqrtsin2;
+          if (w2:=modify!-quotf(w,temp)) and
+             (lcsf2:=modify!-quotf(lcsf,!*kk2f car sqrtsin2))
+            then <<
+              w:=w2;
+              lcsf:=lcsf2 >>;
+          sqrtsin2:=cdr sqrtsin2 >>;
+        if w = 1
+          then return addf(multf(lcsf,formsqrt v),
+                           modify2(red sf,sqrtsin,realsqrts));
                            % It is important to use FORMSQRT here since
                            % SIMPSQRT will recreate the factorisation
                            % we are trying to destroy.
           % Satisfactorily explained away.
-        RETURN ADDF(MULTF(!*P2F LPOW SF,
-                          MODIFY2(LC SF,SQRTSIN,REALSQRTS)),
-                    MODIFY2(RED SF,SQRTSIN,REALSQRTS))
-        END
-      ELSE ADDF(MULTF(!*P2F LPOW SF,
-                      MODIFY2(LC SF,SQRTSIN,REALSQRTS)),
-                MODIFY2(RED SF,SQRTSIN,REALSQRTS));
+        return addf(multf(!*p2f lpow sf,
+                          modify2(lc sf,sqrtsin,realsqrts)),
+                    modify2(red sf,sqrtsin,realsqrts))
+        end
+      else addf(multf(!*p2f lpow sf,
+                      modify2(lc sf,sqrtsin,realsqrts)),
+                modify2(red sf,sqrtsin,realsqrts));
 
 
 
@@ -187,26 +187,27 @@ IF ATOM SF
 %                modifyup(red sf,sqrtl));
 
 
-SYMBOLIC PROCEDURE MODIFY!-QUOTF(U,V);
+symbolic procedure modify!-quotf(u,v);
 % Replacement for quotf, in that it gets sqrts right.
-IF ATOM V OR ATOM MVAR V
-  THEN QUOTF(U,V)
-  ELSE IF U=V THEN 1
-  ELSE BEGIN
-    SCALAR SQ;
-    SQ:=SQRT2TOP(U ./ V);
-    IF INVOLVESF(DENR SQ,INTVAR)
-      THEN RETURN NIL;
-    IF NOT ONEP DENR SQ
-      THEN IF NOT NUMBERP DENR SQ
-        THEN INTERR "Gauss' lemma violated in modify"
-        ELSE IF !*TRA
-          THEN <<
-            PRINTC "*** Denominator ignored in modify";
-            PRINTC DENR SQ >>;
-    RETURN NUMR SQ
-    END;
+if atom v or atom mvar v
+  then quotf(u,v)
+  else if u=v then 1
+  else begin
+    scalar sq;
+    sq:=sqrt2top(u ./ v);
+    if involvesf(denr sq,intvar)
+      then return nil;
+    if not onep denr sq
+      then if not numberp denr sq
+        then interr "Gauss' lemma violated in modify"
+        else if !*tra
+          then <<
+            printc "*** Denominator ignored in modify";
+            printc denr sq >>;
+    return numr sq
+    end;
 
-ENDMODULE;
+endmodule;
 
-END;
+end;
+

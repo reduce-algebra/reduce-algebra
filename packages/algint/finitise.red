@@ -1,4 +1,4 @@
-MODULE FINITISE;
+module finitise;
 
 % Author: James H. Davenport.
 
@@ -26,43 +26,43 @@ MODULE FINITISE;
 %
 
 
-FLUID '(!*tra INTVAR);
+fluid '(!*tra intvar);
 
-EXPORTS FINITISE;
-IMPORTS NEWPLACE,GETSQRTSFROMPLACES,INTERR,COMPLETEPLACES2,SQRTSIGN;
-IMPORTS MKILIST,EXTENPLACE;
+exports finitise;
+imports newplace,getsqrtsfromplaces,interr,completeplaces2,sqrtsign;
+imports mkilist,extenplace;
 
 
-SYMBOLIC PROCEDURE FINITISE(PLACES,MULTS);
-BEGIN
-  SCALAR PLACESMISC,MULTSMISC,M,N,SQRTS;
-  SCALAR PLACES0,MULTS0,PLACESINF,MULTSINF;
-  NEWPLACE LIST (INTVAR.INTVAR);
+symbolic procedure finitise(places,mults);
+begin
+  scalar placesmisc,multsmisc,m,n,sqrts;
+  scalar places0,mults0,placesinf,multsinf;
+  newplace list (intvar.intvar);
     % fix the disaster with 1/sqrt(x**2-1)
     % (but with no other 1/sqrt(x**2-k).
-  SQRTS:=GETSQRTSFROMPLACES PLACES;
-  PLACESMISC:=PLACES;
-  MULTSMISC:=MULTS;
-  N:=0;
-  WHILE PLACESMISC DO <<
-    IF EQCAR(RFIRSTSUBS CAR PLACESMISC,'QUOTIENT)
-        AND (N > CAR MULTSMISC)
-      THEN <<
-        N:=CAR MULTSMISC;
-        M:=MULTIPLICITY!-FACTOR CAR PLACESMISC >>;
-    PLACESMISC:=CDR PLACESMISC;
-    MULTSMISC:=CDR MULTSMISC >>;
-  IF N = 0
-    THEN INTERR "Why did we call finitise ??";
+  sqrts:=getsqrtsfromplaces places;
+  placesmisc:=places;
+  multsmisc:=mults;
+  n:=0;
+  while placesmisc do <<
+    if eqcar(rfirstsubs car placesmisc,'quotient)
+        and (n > car multsmisc)
+      then <<
+        n:=car multsmisc;
+        m:=multiplicity!-factor car placesmisc >>;
+    placesmisc:=cdr placesmisc;
+    multsmisc:=cdr multsmisc >>;
+  if n = 0
+    then interr "Why did we call finitise ??";
   % N must be corrected to allow for our representation of
   % multiplicities at places where X is not the local parameter.
-  N:=DIVIDE(N,M);
-  IF CDR N neq 0 and !*TRA
-    THEN PRINTC
+  n:=divide(n,m);
+  if cdr n neq 0 and !*tra
+    then printc
      "Cannot get the poles moved precisely because of ramification";
-   IF (CDR N) < 0
-     THEN N:=(-1) + CAR N
-     ELSE N:=CAR N;
+   if (cdr n) < 0
+     then n:=(-1) + car n
+     else n:=car n;
         % The above 3 lines (as a replacement for the line below)
         % inserted JHD 06 SEPT 80.
 %  n:=car n;
@@ -72,64 +72,65 @@ BEGIN
   % We now wish to divide by X**N, thus increasing
   % the degrees of all infinite places by N and
   % decreasing the degrees of all places lying over 0.
-  WHILE PLACES DO <<
-    IF ATOM RFIRSTSUBS CAR PLACES
-      THEN <<
-        PLACES0:=(CAR PLACES).PLACES0;
-        MULTS0:=(CAR MULTS).MULTS0 >>
-      ELSE IF CAR RFIRSTSUBS CAR PLACES EQ 'QUOTIENT
-        THEN <<
-          PLACESINF:=(CAR PLACES).PLACESINF;
-          MULTSINF:=(CAR MULTS).MULTSINF >>
-        ELSE <<
-          PLACESMISC:=(CAR PLACES).PLACESMISC;
-          MULTSMISC:=(CAR MULTS).MULTSMISC >>;
-    PLACES:=CDR PLACES;
-    MULTS:=CDR MULTS >>;
-  IF PLACES0
-    THEN <<
-      PLACES0:=COMPLETEPLACES2(PLACES0,MULTS0,SQRTS);
-      MULTS0:=CDR PLACES0;
-      PLACES0:=CAR PLACES0;
-      M:=MULTIPLICITY!-FACTOR CAR PLACES0;
-      MULTS0:=FOR EACH U IN MULTS0 COLLECT U+N*M >>
-    ELSE <<
-      PLACES0:=FOR EACH U IN SQRTSIGN(SQRTS,INTVAR)
-                 COLLECT (INTVAR.INTVAR).U;
-      MULTS0:=MKILIST(PLACES0,N * (MULTIPLICITY!-FACTOR CAR PLACES0))>>;
-  PLACESINF:=COMPLETEPLACES2(PLACESINF,
-                             MULTSINF,
-                             FOR EACH U IN EXTENPLACE CAR PLACESINF
-                               COLLECT LSUBS U);
-  MULTSINF:=CDR PLACESINF;
-  PLACESINF:=CAR PLACESINF;
-  WHILE PLACESINF DO <<
-    M:=MULTIPLICITY!-FACTOR CAR PLACESINF;
-    IF (CAR MULTSINF) NEQ N*M
-      THEN <<
-        PLACESMISC:=(CAR PLACESINF).PLACESMISC;
-        MULTSMISC:=(CAR MULTSINF -N*M).MULTSMISC >>;
+  while places do <<
+    if atom rfirstsubs car places
+      then <<
+        places0:=(car places).places0;
+        mults0:=(car mults).mults0 >>
+      else if car rfirstsubs car places eq 'quotient
+        then <<
+          placesinf:=(car places).placesinf;
+          multsinf:=(car mults).multsinf >>
+        else <<
+          placesmisc:=(car places).placesmisc;
+          multsmisc:=(car mults).multsmisc >>;
+    places:=cdr places;
+    mults:=cdr mults >>;
+  if places0
+    then <<
+      places0:=completeplaces2(places0,mults0,sqrts);
+      mults0:=cdr places0;
+      places0:=car places0;
+      m:=multiplicity!-factor car places0;
+      mults0:=for each u in mults0 collect u+n*m >>
+    else <<
+      places0:=for each u in sqrtsign(sqrts,intvar)
+                 collect (intvar.intvar).u;
+      mults0:=mkilist(places0,n * (multiplicity!-factor car places0))>>;
+  placesinf:=completeplaces2(placesinf,
+                             multsinf,
+                             for each u in extenplace car placesinf
+                               collect lsubs u);
+  multsinf:=cdr placesinf;
+  placesinf:=car placesinf;
+  while placesinf do <<
+    m:=multiplicity!-factor car placesinf;
+    if (car multsinf) neq n*m
+      then <<
+        placesmisc:=(car placesinf).placesmisc;
+        multsmisc:=(car multsinf -n*m).multsmisc >>;
       % This test ensures that we do not add places
       % with a multiplicity of zero.
-    PLACESINF:=CDR PLACESINF;
-    MULTSINF:=CDR MULTSINF >>;
-  RETURN LIST(NCONC(PLACES0,PLACESMISC),
-              NCONC(MULTS0,MULTSMISC),
-              -N)
-  END;
+    placesinf:=cdr placesinf;
+    multsinf:=cdr multsinf >>;
+  return list(nconc(places0,placesmisc),
+              nconc(mults0,multsmisc),
+              -n)
+  end;
 
 
-SYMBOLIC PROCEDURE MULTIPLICITY!-FACTOR PLACE;
-BEGIN
-  SCALAR N;
-  N:=1;
-  FOR EACH U IN PLACE DO
-    IF (LSUBS U EQ INTVAR) AND
-        EQCAR(RSUBS U,'EXPT)
-      THEN N:=N*(CADDR RSUBS U);
-  RETURN N
-  END;
+symbolic procedure multiplicity!-factor place;
+begin
+  scalar n;
+  n:=1;
+  for each u in place do
+    if (lsubs u eq intvar) and
+        eqcar(rsubs u,'expt)
+      then n:=n*(caddr rsubs u);
+  return n
+  end;
 
-ENDMODULE;
+endmodule;
 
-END;
+end;
+

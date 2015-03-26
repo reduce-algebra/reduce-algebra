@@ -1464,199 +1464,202 @@ endmodule$
 
 end$
 
------------------------------------------------------------------------------------
-Possible Improvements:
-
- - auch subtrahieren, wenn 0 Gewinn (Zyklus!)
- - kann Zyklus mit decoupling geben
- - Erweiterung auf mehrere Gleichungen
- - counter example: 
-   0 = +a+b+c        
-   0 =   -b  +d+e
-   0 =     -c-d  +f
-   0 = -a      -e-f
-   combining any 2 gives a longer one, summing 3 an equally long one and 
-   the sum of all 4 is even zero.
- - In order not to run into a cycle with decouple one could use
-   dec_hist_list but that costs memory.
- ---------
-
-    DONE
-    - when a ftem_ function becomes non-zero then drop all equations from the rl_with lists
-      which involve this function
-
-    DONE:
-    - Another problem with allowing some non-zero multipliers and others not:
-      0 =   a +   b +   c +   d + g
-      0 = e*a + e*b + e*c + f*d
-      Here the SHORTER one could and should be replaced by 0 = f*d - e*d - e*g using
-      the longer first one.
-
- - Parallelize the shortening
- - It could be beneficial to produce and ADD new equations if they are short, eg
-   0 = a*g + a*h + b*c \____  b**2*c - a**2*c = c*(a-b)*(a+b) = 0
-   0 = b*g + b*h + a*c /
-   Disadvantage: Checking ALL quotients takes much longer.
- - If a new equation is slightly longer than the one to be replaced (de2) then one
-   could ADD this new equation and mark it as redundant (and check whether it has
-   any useful properties, e.g. factorizability, involving only few ftem_, or being
-   an ODE when de1,de2 were PDEs.
- - perhaps return in shorten() and shorten_pdes() only a single new and to delete PDE, 
-   not lists with each only one element
- - One probably could speed up the shortening of homogeneous polynomials
-   if the degree of both polynomials are equal.
-   This would need a modification of partition_3 and inputting all 'fcts as
-   2nd parameter.
- - test adding some extra length allowance to the new generated equation
- - try take_first=t
- - stop when take_first=nil and max_reduction = 2*min(n1,n2) is achieved
-
-    DONE:
-    - When one equation has no flin_ and the other has then treat both as having
-      no flin_.
-
- - How can the knowledge of factors be used for shortening, especially if they
-   have more than one term?
-   E.g. if both equations have common factors, or one is factorizable and the other
-   not, or both are factorizable.
- - Write procedures that plot the size of equations that were shortened over the step number,
-   and `number of terms in all equations' over 'length interval of equations'
- - produce plots for different degrees of overdetermination.
-
- - About rounding:
-   "also im lisp mode macht quotient einfach division ohne rest
-   und Ruecksicht auf Umstehende.Da ist ceiling auch simpel
-   gestrickt.Das macht das LISP system.
-
-   Im Algebraic mode ist das anders. Da machen quotient
-   und ceiling schon mehr.
-
-   Die Wandlung machst Du am einfachsten mit
-
-   simpquot '(quotient 4 5);
-
-   bzw round!* falls Du die nackte float haben willst.
-
-   round!*  '(!:rd!: . 0.8);
-   "
- - The memory to store which equation has already been length reduced wrt to which
-   equation grows quadratically with the number of equations and becomes the more
-   serious the more equations one has. Perhaps one could delete all rl_with entries
-   of all equations coming in the list of equations before largest_fully_shortened.
-   This has the consequence that one has to look up the rl_with information at the
-   larger of both equations. But then, why not just storing this information only
-   for the larger of both equations?
-
-    DONE:
-    - When shortening a single equation wrt all others, then consider also longer equations
-      which are less than 2 times as long as the equation to be shortened.
-
- - Because the order of pairing equations for shortening does depend on the number of terms
-   and the place of the equation in the list pdes of equations, it should be fixed some
-   time that when multi-term factors are dropped and the number of terms of the equation
-   is dropped than they should get a new place in pdes, moving more to the start.
-
- - load trysub22
-then do
-
- s 20 l 11 10 30 30 30 11 11 11 11 11 11 11 11 l 11 10 td 30)
-
-and get:
-
-next: tr_decouple is now on.
-next: 30
-
-Step 41352:
-*** Garbage collection starting
-*** GC 679: 13-Jan-2008 02:09:54 (~ 11358250 ms cpu time, gc : 3 %)
-*** time 1340 ms, 56164584 occupied, 318491626 recovered, 318491666 free
-
-  first pde e_1659:  6 terms, 28 factors, with derivatives
- of functions of all variables:
-
-    3   2       2   7
- (p9 ,p9 ,p9,p24 ,p3 ,p3)
-
-is not differentiated,  second pde e_837:  9 terms, 44 factors, with derivatives
- of functions of all variables:
-
-    3   2       2   8   5   2
- (p9 ,p9 ,p9,p24 ,p3 ,p3 ,p3 )
-
-is not differentiated, to eliminate
-p9
-
-
-e_1659 (resp its derivative) is multiplied with
-***** Non-numeric argument in arithmetic
-
- - A serious problem is that numerical factors may grow too large.
-   Maybe this is unavoidable. One should have a constant for the
-   largest numerical factor so that one can change this easily.
-
- - Is there a bug when equations are shortened by 0 terms?
-   Shall one ignore it, or use it for replacing the previous equation or add it?
-
- - Is it useful to add many short equations in order to reduce larger ones better?
-
- - maybe one should inspect new equations and stop shortening them it they have
-   too long numerical coefficients? That would be better than trying to shorten
-   this equation when there is not a chance anyway?
-
- - Or should one have a counter of how often a quotient is disregarded because of too
-   large numerical coefficients and when this counter gets too large, then stop
-   shortening this equation?
-
- - Larger equations are reduced for a while but then not anymore because their
-   Num factors grow too large. But then they do not shrink and can not become
-   very short to shorten other and/or to provide a breakthrough with very short
-   equations.
-
- - When shortening a single equation, ak how often maximally.
-
------------------------------------------------------------------------------------
-alg_length_reduction    % interface to crack
-  err_catch_short       % wrap up
-    mkeqSQ
-    shorten_pdes        % find a pair of equations
-      shorten           % shorten two pdes given by names with each other
-			% returns a dotted pair, where car is a list of the values 
-                        % of new pdes (only one) and cdr is a list of names of pdes 
-                        % to be dropped (also only one)
-        sort_partition  % in crint.red
-        partition_1
-        partition_2
-        short
-          clean_den(qc,j)$
-            clean_num(qc,j)$
-
-
-
-alg_length_reduce_1  % Do one length-reducing combination of a single equation wrt all others
-
-  alg_length_reduction
-
-is_algebraic % very short test
-
-
-drop_lin_dep(arglist)$       % module 12
-% drops linear dependent equations
-     Calls: drop_pde neq reval solveeval sort_partition !~prettyprint 
-
-find_1_term_eqn(arglist)$    % module 13
-% checks whether a linear combination of the equations can produce
-% an equation with only one term
-     Calls: aeval aeval!* assgnpri drop_pde mkeq neq reval 
-            solveeval sort_partition typeeq union !~prettyprint 
-
-
-tr alg_length_reduction 
-tr err_catch_short      
-tr mkeqSQ
-tr shorten_pdes  
-tr shorten       
-tr sort_partition 
-tr short
-tr clean_den
-tr clean_num
-
+%-----------------------------------------------------------------------------------
+% (although this is after the "end$" I prefer that it is comment not raw text
+% so that simple source analysis tools do not get confused. ACN. March 2015)
+%
+%Possible Improvements:
+%
+% - auch subtrahieren, wenn 0 Gewinn (Zyklus!)
+% - kann Zyklus mit decoupling geben
+% - Erweiterung auf mehrere Gleichungen
+% - counter example:
+%   0 = +a+b+c
+%   0 =   -b  +d+e
+%   0 =     -c-d  +f
+%   0 = -a      -e-f
+%   combining any 2 gives a longer one, summing 3 an equally long one and
+%   the sum of all 4 is even zero.
+% - In order not to run into a cycle with decouple one could use
+%   dec_hist_list but that costs memory.
+% ---------
+%
+%    DONE
+%    - when a ftem_ function becomes non-zero then drop all equations from the rl_with lists
+%      which involve this function
+%
+%    DONE:
+%    - Another problem with allowing some non-zero multipliers and others not:
+%      0 =   a +   b +   c +   d + g
+%      0 = e*a + e*b + e*c + f*d
+%      Here the SHORTER one could and should be replaced by 0 = f*d - e*d - e*g using
+%      the longer first one.
+%
+% - Parallelize the shortening
+% - It could be beneficial to produce and ADD new equations if they are short, eg
+%   0 = a*g + a*h + b*c \____  b**2*c - a**2*c = c*(a-b)*(a+b) = 0
+%   0 = b*g + b*h + a*c /
+%   Disadvantage: Checking ALL quotients takes much longer.
+% - If a new equation is slightly longer than the one to be replaced (de2) then one
+%   could ADD this new equation and mark it as redundant (and check whether it has
+%   any useful properties, e.g. factorizability, involving only few ftem_, or being
+%   an ODE when de1,de2 were PDEs.
+% - perhaps return in shorten() and shorten_pdes() only a single new and to delete PDE,
+%   not lists with each only one element
+% - One probably could speed up the shortening of homogeneous polynomials
+%   if the degree of both polynomials are equal.
+%   This would need a modification of partition_3 and inputting all 'fcts as
+%   2nd parameter.
+% - test adding some extra length allowance to the new generated equation
+% - try take_first=t
+% - stop when take_first=nil and max_reduction = 2*min(n1,n2) is achieved
+%
+%    DONE:
+%    - When one equation has no flin_ and the other has then treat both as having
+%      no flin_.
+%
+% - How can the knowledge of factors be used for shortening, especially if they
+%   have more than one term?
+%   E.g. if both equations have common factors, or one is factorizable and the other
+%   not, or both are factorizable.
+% - Write procedures that plot the size of equations that were shortened over the step number,
+%   and `number of terms in all equations' over 'length interval of equations'
+% - produce plots for different degrees of overdetermination.
+%
+% - About rounding:
+%   "also im lisp mode macht quotient einfach division ohne rest
+%   und Ruecksicht auf Umstehende.Da ist ceiling auch simpel
+%   gestrickt.Das macht das LISP system.
+%
+%   Im Algebraic mode ist das anders. Da machen quotient
+%   und ceiling schon mehr.
+%
+%   Die Wandlung machst Du am einfachsten mit
+%
+%   simpquot '(quotient 4 5);
+%
+%   bzw round!* falls Du die nackte float haben willst.
+%
+%   round!*  '(!:rd!: . 0.8);
+%   "
+% - The memory to store which equation has already been length reduced wrt to which
+%   equation grows quadratically with the number of equations and becomes the more
+%   serious the more equations one has. Perhaps one could delete all rl_with entries
+%   of all equations coming in the list of equations before largest_fully_shortened.
+%   This has the consequence that one has to look up the rl_with information at the
+%   larger of both equations. But then, why not just storing this information only
+%   for the larger of both equations?
+%
+%    DONE:
+%    - When shortening a single equation wrt all others, then consider also longer equations
+%      which are less than 2 times as long as the equation to be shortened.
+%
+% - Because the order of pairing equations for shortening does depend on the number of terms
+%   and the place of the equation in the list pdes of equations, it should be fixed some
+%   time that when multi-term factors are dropped and the number of terms of the equation
+%   is dropped than they should get a new place in pdes, moving more to the start.
+%
+% - load trysub22
+%then do
+%
+% s 20 l 11 10 30 30 30 11 11 11 11 11 11 11 11 l 11 10 td 30)
+%
+%and get:
+%
+%next: tr_decouple is now on.
+%next: 30
+%
+%Step 41352:
+%*** Garbage collection starting
+%*** GC 679: 13-Jan-2008 02:09:54 (~ 11358250 ms cpu time, gc : 3 %)
+%*** time 1340 ms, 56164584 occupied, 318491626 recovered, 318491666 free
+%
+%  first pde e_1659:  6 terms, 28 factors, with derivatives
+% of functions of all variables:
+%
+%    3   2       2   7
+% (p9 ,p9 ,p9,p24 ,p3 ,p3)
+%
+%is not differentiated,  second pde e_837:  9 terms, 44 factors, with derivatives
+% of functions of all variables:
+%
+%    3   2       2   8   5   2
+% (p9 ,p9 ,p9,p24 ,p3 ,p3 ,p3 )
+%
+%is not differentiated, to eliminate
+%p9
+%
+%
+%e_1659 (resp its derivative) is multiplied with
+%***** Non-numeric argument in arithmetic
+%
+% - A serious problem is that numerical factors may grow too large.
+%   Maybe this is unavoidable. One should have a constant for the
+%   largest numerical factor so that one can change this easily.
+%
+% - Is there a bug when equations are shortened by 0 terms?
+%   Shall one ignore it, or use it for replacing the previous equation or add it?
+%
+% - Is it useful to add many short equations in order to reduce larger ones better?
+%
+% - maybe one should inspect new equations and stop shortening them it they have
+%   too long numerical coefficients? That would be better than trying to shorten
+%   this equation when there is not a chance anyway?
+%
+% - Or should one have a counter of how often a quotient is disregarded because of too
+%   large numerical coefficients and when this counter gets too large, then stop
+%   shortening this equation?
+%
+% - Larger equations are reduced for a while but then not anymore because their
+%   Num factors grow too large. But then they do not shrink and can not become
+%   very short to shorten other and/or to provide a breakthrough with very short
+%   equations.
+%
+% - When shortening a single equation, ak how often maximally.
+%
+%-----------------------------------------------------------------------------------
+%alg_length_reduction    % interface to crack
+%  err_catch_short       % wrap up
+%    mkeqSQ
+%    shorten_pdes        % find a pair of equations
+%      shorten           % shorten two pdes given by names with each other
+%			% returns a dotted pair, where car is a list of the values
+%                        % of new pdes (only one) and cdr is a list of names of pdes
+%                        % to be dropped (also only one)
+%        sort_partition  % in crint.red
+%        partition_1
+%        partition_2
+%        short
+%          clean_den(qc,j)$
+%            clean_num(qc,j)$
+%
+%
+%
+%alg_length_reduce_1  % Do one length-reducing combination of a single equation wrt all others
+%
+%  alg_length_reduction
+%
+%is_algebraic % very short test
+%
+%
+%drop_lin_dep(arglist)$       % module 12
+%% drops linear dependent equations
+%     Calls: drop_pde neq reval solveeval sort_partition !~prettyprint
+%
+%find_1_term_eqn(arglist)$    % module 13
+%% checks whether a linear combination of the equations can produce
+%% an equation with only one term
+%     Calls: aeval aeval!* assgnpri drop_pde mkeq neq reval
+%            solveeval sort_partition typeeq union !~prettyprint
+%
+%
+%tr alg_length_reduction
+%tr err_catch_short
+%tr mkeqSQ
+%tr shorten_pdes
+%tr shorten
+%tr sort_partition
+%tr short
+%tr clean_den
+%tr clean_num
+%

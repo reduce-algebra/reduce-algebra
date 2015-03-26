@@ -1,4 +1,4 @@
-MODULE HIDDEN;
+module hidden;
 
 % Author: James H. Davenport.
 
@@ -26,399 +26,399 @@ MODULE HIDDEN;
 %
 
 
-FLUID '(!*trint
-        !*TRJHD
-        CANCELLATIONLIST
-        EQUALITYSTACK
-        HIDE
-        INDEXLIST
-        INDEXMAP
-        INEQUALITYSTACK
-        LASTREDUCTION
-        NINDEX
-        POPSTACK
-        RHS
-        ULIST);
+fluid '(!*trint
+        !*trjhd
+        cancellationlist
+        equalitystack
+        hide
+        indexlist
+        indexmap
+        inequalitystack
+        lastreduction
+        nindex
+        popstack
+        rhs
+        ulist);
 
-EXPORTS HIDDENTERMGENERATORS;
-IMPORTS INTERR,NEXTPRIME,MKSP,ADDF,GETV,!*MULTF,PRINTSF,GCDF,QUOTF,NEGF;
-IMPORTS MAKEPRIM,PRIN2,MKVECT,COPYVEC,PRINTDF;
-
-
-%PACKAGE FOR DEALING WITH LINEAR SUBSPACES DEFINED;
-% BY BOTH EQUALITIES AND INEQUALITIES;
+exports hiddentermgenerators;
+imports interr,nextprime,mksp,addf,getv,!*multf,printsf,gcdf,quotf,negf;
+imports makeprim,prin2,mkvect,copyvec,printdf;
 
 
-% MAJOR DATASTRUCTURE - ;
-% AN EQUATION IS STORED IN A VECTOR OF LENGTH (LENGTH INDEXLIST);
-% ELEMENTS 2::N ARE THE COEFFS OF THE VARIOUS INDEX QUANTITIES;
-% ELEMENT 1 IS CONSTANT PART;
-% ELEMENT 0 IS NUMBER DEFINING A PIVOT IN THE ROW;
-%;
-% ALL VECTOR ELEMENTS ARE STANDARD FORMS;
-
-SYMBOLIC PROCEDURE NEWSPACE;
- BEGIN SCALAR W;
-    INDEXMAP:=NIL;
-    NINDEX:=1;
-    W:=INDEXLIST;
-    WHILE W DO <<
-        NINDEX:=NINDEX+1;
-        INDEXMAP:=(CAR W . NINDEX) . INDEXMAP;
-        W:=CDR W >>;
-    POPSTACK:=EQUALITYSTACK:=INEQUALITYSTACK:=NIL;
-    IF !*TRINT THEN PRINTC "NEW SPACE SET UP"
- END;
-
-SYMBOLIC PROCEDURE CURRENTSPACE;
-%PICKS UP THE CURRENT SET OF LINEAR CONSTRAINTS SO THEY CAN BE STORED;
-    (EQUALITYSTACK . INEQUALITYSTACK) . POPSTACK;
-
-% RESTORES A SPACE SAVED BY 'CURRENTSPACE';
-SYMBOLIC PROCEDURE SETLINSPACE A;
- << POPSTACK:=CDR A;
-    A:=CAR A;
-    EQUALITYSTACK:=CAR A;
-    INEQUALITYSTACK:=CDR A;
-    NIL >>;
+% Package for dealing with linear subspaces defined
+% by both equalities and inequalities
 
 
-SYMBOLIC PROCEDURE NEWEQUATION(EQQN,NOTFLAG);
-% DECLARE THE EQUATION;
-%    EQQN=0;
-% (OR IF NOTFLAG IS SET)    EQQN NE 0;
-% TO HOLD IN ADDITION TO ALL PREVIOUSLY DECLARED RELATIONSHIPS;
-% RETURN 'INCONSISTENT IF THIS IS NOT POSSIBLE;
- BEGIN SCALAR NEWROW,NEWPIVOT,Q1,R;
-    IF !*TRINT THEN <<
-       PRIN2 "NEW ";
-       IF NOTFLAG THEN PRIN2 "IN";
-       PRINTC "EQUALITY";
-       PRINTSF EQQN >>;
-    IF INEQUALITYSTACK='INCONSISTENT THEN INTERR "DOUBLE INCONSISTENCY";
-    POPSTACK:=(EQUALITYSTACK . INEQUALITYSTACK) . POPSTACK;
-    NEWROW:=MKVECT NINDEX; % SPACE FOR NEW ROW IN EQQNSTACK;
-%   FOR I:=0:NINDEX DO PUTV(NEWROW,I,NIL); %SET TO ZERO;
-    EXPANDINTO(NEWROW,EQQN,1);
-    MAKEPRIM(NEWROW,NINDEX); % REMOVE ANY COMMON FACTORS;
-    MAPC(REVERSE EQUALITYSTACK,FUNCTION LAMBDA J;
-      ELIMINATEWITH(NEWROW,J));
-    NEWPIVOT:=0;
-    FOR I:=2:NINDEX DO
-      IF GETV(NEWROW,I) NEQ NIL THEN NEWPIVOT:=I;
-    IF NEWPIVOT=0 THEN
-       IF (GETV(NEWROW,1)=NIL)=NOTFLAG THEN GO TO CONTRADICT
-         ELSE RETURN 'REDUNDANT;
-    PUTV(NEWROW,0,NEWPIVOT);
-    IF NOTFLAG THEN <<
-      INEQUALITYSTACK:=NEWROW . INEQUALITYSTACK;
-      IF !*TRINT THEN PRINTC "NEW INEQUALITY ADDED";
-      RETURN 'CONSISTENT! INEQUALITY >>;
-    EQUALITYSTACK:=NEWROW . EQUALITYSTACK;
-    Q1:=INEQUALITYSTACK;
-    INEQUALITYSTACK:=NIL;
-WIND:
-    IF Q1=NIL THEN RETURN 'CONSISTENT! EQUALITY;
-    R:=COPYVEC(CAR Q1,NINDEX);
-    Q1:=CDR Q1;
-    ELIMINATEWITH(R,NEWROW);
-    NEWPIVOT:=0;
-    FOR I:=2:NINDEX DO
-      IF GETV(R,I) NEQ NIL THEN NEWPIVOT:=I;
-    IF NEWPIVOT NEQ 0 THEN GO TO OK;
-    IF GETV(R,1)=NIL THEN GO TO CONTRADICT;
-    GO TO WIND;
-CONTRADICT:
-    EQUALITYSTACK:=INEQUALITYSTACK:='INCONSISTENT;
-    RETURN 'INCONSISTENT;
-OK: PUTV(R,0,NIL);
-    MAKEPRIM(R,NINDEX);
-    INEQUALITYSTACK:=R . INEQUALITYSTACK;
-    GO TO WIND
- END;
+% Major datastructure -
+% An equation is stored in a vector of length (length indexlist)
+% elements 2::n are the coeffs of the various index quantities
+% element 1 is constant part
+% element 0 is number defining a pivot in the row
+%
+% all vector elements are standard forms
 
-SYMBOLIC PROCEDURE EXPANDINTO(ROW,VAL,ABOVE);
-    IF DOMAINP VAL THEN PUTV(ROW,1,ADDF(GETV(ROW,1),!*MULTF(VAL,ABOVE)))
-    ELSE BEGIN SCALAR X;
-      X:=ATSOC(MVAR VAL,INDEXMAP); % PROCESS LEADING TERM FIRST;
-      IF X THEN << X:=CDR X;
-        IF NOT (TDEG LT VAL = 1) THEN
-          INTERR "NOT LINEAR IN EXPANDINTO";
-        PUTV(ROW,X,ADDF(GETV(ROW,X),!*MULTF(LC VAL,ABOVE))) >>
-    ELSE EXPANDINTO(ROW,LC VAL,!*MULTF(ABOVE,((LPOW VAL) .* 1) .+ NIL));
-    RETURN EXPANDINTO(ROW,RED VAL,ABOVE)
- END;
+symbolic procedure newspace;
+ begin scalar w;
+    indexmap:=nil;
+    nindex:=1;
+    w:=indexlist;
+    while w do <<
+        nindex:=nindex+1;
+        indexmap:=(car w . nindex) . indexmap;
+        w:=cdr w >>;
+    popstack:=equalitystack:=inequalitystack:=nil;
+    if !*trint then printc "New space set up"
+ end;
 
-SYMBOLIC PROCEDURE ELIMINATEWITH(NEWROW,OLDROW);
-   BEGIN SCALAR PIVOTX,P,Q;
-    PIVOTX:=GETV(OLDROW,0);
-    P:=GETV(NEWROW,PIVOTX);
-    IF P=NIL THEN RETURN NIL; %NOTHING NEEDS DOING;
-    Q:=GETV(OLDROW,PIVOTX);
-    BEGIN SCALAR GG;
-      GG:=GCDF(P,Q);
-      P:=QUOTF(P,GG);
-      Q:=NEGF QUOTF(Q,GG) END;
-    FOR I:=1:NINDEX DO
-      PUTV(NEWROW,I,ADDF(!*MULTF(GETV(NEWROW,I),Q),
-                         !*MULTF(GETV(OLDROW,I),P)));
-    PIVOTX:=GETV(NEWROW,0);
-    PUTV(NEWROW,0,NIL);
-    MAKEPRIM(NEWROW,NINDEX);
-    PUTV(NEWROW,0,PIVOTX);
-    RETURN NIL
-   END;
+symbolic procedure currentspace;
+% Picks up the current set of linear constraints so they can be stored
+    (equalitystack . inequalitystack) . popstack;
 
-SYMBOLIC PROCEDURE DROPEQUATION;
-   BEGIN
-    IF ATOM POPSTACK THEN INTERR "POPSTACK UNDERFLOW";
-    EQUALITYSTACK:=CAAR POPSTACK;
-    INEQUALITYSTACK:=CDAR POPSTACK;
-    POPSTACK:=CDR POPSTACK
-   END;
+% Restores a space saved by 'currentspace'
+symbolic procedure setlinspace a;
+ << popstack:=cdr a;
+    a:=car a;
+    equalitystack:=car a;
+    inequalitystack:=cdr a;
+    nil >>;
 
 
-SYMBOLIC PROCEDURE PRINTLINSPACE();
- BEGIN IF EQUALITYSTACK='INCONSISTENT THEN <<
-      PRINTC "NEVER HAPPENS";
-      RETURN NIL >>;
-    IF EQUALITYSTACK=NIL THEN
-      PRINTC "NO EQUALITYIES ACTIVE"
-    ELSE << PRINTC "SUBJECT TO"; PRINTEQNS EQUALITYSTACK >>;
-    IF ATOM INEQUALITYSTACK THEN RETURN NIL;
-    PRINTC "EXCEPT WHEN";
-    PRINTEQNS INEQUALITYSTACK;
-    RETURN NIL END;
+symbolic procedure newequation(eqqn,notflag);
+% Declare the equation
+%    eqqn=0
+% (or if notflag is set)    eqqn ne 0
+% to hold in addition to all previously declared relationships
+% return 'inconsistent if this is not possible
+ begin scalar newrow,newpivot,q1,r;
+    if !*trint then <<
+       prin2 "New ";
+       if notflag then prin2 "in";
+       printc "equality";
+       printsf eqqn >>;
+    if inequalitystack='inconsistent then interr "double inconsistency";
+    popstack:=(equalitystack . inequalitystack) . popstack;
+    newrow:=mkvect nindex; % Space for new row in eqqnstack
+%   for i:=0:nindex do putv(newrow,i,nil); %set to zero
+    expandinto(newrow,eqqn,1);
+    makeprim(newrow,nindex); % Remove any common factors
+    mapc(reverse equalitystack,function lambda j;
+      eliminatewith(newrow,j));
+    newpivot:=0;
+    for i:=2:nindex do
+      if getv(newrow,i) neq nil then newpivot:=i;
+    if newpivot=0 then
+       if (getv(newrow,1)=nil)=notflag then go to contradict
+         else return 'redundant;
+    putv(newrow,0,newpivot);
+    if notflag then <<
+      inequalitystack:=newrow . inequalitystack;
+      if !*trint then printc "New inequality added";
+      return 'consistent! inequality >>;
+    equalitystack:=newrow . equalitystack;
+    q1:=inequalitystack;
+    inequalitystack:=nil;
+wind:
+    if q1=nil then return 'consistent! equality;
+    r:=copyvec(car q1,nindex);
+    q1:=cdr q1;
+    eliminatewith(r,newrow);
+    newpivot:=0;
+    for i:=2:nindex do
+      if getv(r,i) neq nil then newpivot:=i;
+    if newpivot neq 0 then go to ok;
+    if getv(r,1)=nil then go to contradict;
+    go to wind;
+contradict:
+    equalitystack:=inequalitystack:='inconsistent;
+    return 'inconsistent;
+ok: putv(r,0,nil);
+    makeprim(r,nindex);
+    inequalitystack:=r . inequalitystack;
+    go to wind
+ end;
 
-SYMBOLIC PROCEDURE PRINTEQNS L;
- BEGIN WHILE L DO <<
-      PRINTSF VEC2SF(CAR L,INDEXMAP);
-      TERPRI();
-      L:=CDR L >>;
-    TERPRI();
-    RETURN NIL END;
+symbolic procedure expandinto(row,val,above);
+    if domainp val then putv(row,1,addf(getv(row,1),!*multf(val,above)))
+    else begin scalar x;
+      x:=atsoc(mvar val,indexmap); % Process leading term first
+      if x then << x:=cdr x;
+        if not (tdeg lt val = 1) then
+          interr "not linear in expandinto";
+        putv(row,x,addf(getv(row,x),!*multf(lc val,above))) >>
+    else expandinto(row,lc val,!*multf(above,((lpow val) .* 1) .+ nil));
+    return expandinto(row,red val,above)
+ end;
 
-SYMBOLIC PROCEDURE VEC2SF(X,INDEXMAP);
- BEGIN SCALAR R;
-    R:=GETV(X,1); % CONSTANT PART;
-    FOR I:=2:NINDEX DO BEGIN
-        SCALAR V;
-        V:=INDEXMAP;
-        WHILE NOT (I=CDAR V) DO V:=CDR V;
-        V:=CAAR V;
-        V:=(MKSP(V,1) .* 1) .+ NIL;
-        R:=ADDF(R,!*MULTF(V,GETV(X,I))) END;
-    RETURN R END;
+symbolic procedure eliminatewith(newrow,oldrow);
+   begin scalar pivotx,p,q;
+    pivotx:=getv(oldrow,0);
+    p:=getv(newrow,pivotx);
+    if p=nil then return nil; %Nothing needs doing
+    q:=getv(oldrow,pivotx);
+    begin scalar gg;
+      gg:=gcdf(p,q);
+      p:=quotf(p,gg);
+      q:=negf quotf(q,gg) end;
+    for i:=1:nindex do
+      putv(newrow,i,addf(!*multf(getv(newrow,i),q),
+                         !*multf(getv(oldrow,i),p)));
+    pivotx:=getv(newrow,0);
+    putv(newrow,0,nil);
+    makeprim(newrow,nindex);
+    putv(newrow,0,pivotx);
+    return nil
+   end;
+
+symbolic procedure dropequation;
+   begin
+    if atom popstack then interr "popstack underflow";
+    equalitystack:=caar popstack;
+    inequalitystack:=cdar popstack;
+    popstack:=cdr popstack
+   end;
 
 
+symbolic procedure printlinspace();
+ begin if equalitystack='inconsistent then <<
+      printc "never happens";
+      return nil >>;
+    if equalitystack=nil then
+      printc "no equalityies active"
+    else << printc "subject to"; printeqns equalitystack >>;
+    if atom inequalitystack then return nil;
+    printc "except when";
+    printeqns inequalitystack;
+    return nil end;
 
+symbolic procedure printeqns l;
+ begin while l do <<
+      printsf vec2sf(car l,indexmap);
+      terpri();
+      l:=cdr l >>;
+    terpri();
+    return nil end;
 
-
-SYMBOLIC PROCEDURE HIDDENTERMGENERATORS(RHS);
- BEGIN SCALAR P,Q,REDUCTIONS;
-    CANCELLATIONLIST:=NIL;
-    HIDE:=NIL;
-    NEWSPACE(); %INIT LINEAR SUBSPACE PACKAGE;
-    ELIMINATECONSTOFINT();
-    REDUCTIONS:=CONSTRAINEDREDUCTIONS RHS;
-    IF !*TRINT THEN MAPC(REDUCTIONS,FUNCTION PRINTREDUCTION);
-    LASTREDUCTION:=LVLAST REDUCTIONS;
-    P:=CDR REDUCTIONS;
-    WHILE P DO <<
-        Q:=REDUCTIONS;
-        WHILE NOT (P EQ Q) DO <<
-            INTERFERE(CAR P,CAR Q); %MAY EXTEND REDUCTIONS LIST;
-            Q:=CDR Q >>;
-        P:=CDR P >>;
-    RETURN NIL
-   END;
+symbolic procedure vec2sf(x,indexmap);
+ begin scalar r;
+    r:=getv(x,1); % constant part
+    for i:=2:nindex do begin
+        scalar v;
+        v:=indexmap;
+        while not (i=cdar v) do v:=cdr v;
+        v:=caar v;
+        v:=(mksp(v,1) .* 1) .+ nil;
+        r:=addf(r,!*multf(v,getv(x,i))) end;
+    return r end;
 
 
 
 
-SYMBOLIC PROCEDURE LVLAST L;
-    IF NULL L THEN INTERR "L=NIL IN LVLAST"
-    ELSE IF NULL CDR L THEN L
-    ELSE LVLAST CDR L;
 
-%SYMBOLIC PROCEDURE NEWREDUCTION A;
-%% RECORD A NEW REDUCTION FORMULA;
-%  BEGIN
-%    A:=LIST A;
-%    RPLACD(LASTREDUCTION,A);
-%    LASTREDUCTION:=A
-%   END;
+symbolic procedure hiddentermgenerators(rhs);
+ begin scalar p,q,reductions;
+    cancellationlist:=nil;
+    hide:=nil;
+    newspace(); %Init linear subspace package
+    eliminateconstofint();
+    reductions:=constrainedreductions rhs;
+    if !*trint then mapc(reductions,function printreduction);
+    lastreduction:=lvlast reductions;
+    p:=cdr reductions;
+    while p do <<
+        q:=reductions;
+        while not (p eq q) do <<
+            interfere(car p,car q); %May extend reductions list
+            q:=cdr q >>;
+        p:=cdr p >>;
+    return nil
+   end;
 
-SYMBOLIC PROCEDURE ELIMINATECONSTOFINT();
-% SET UP AN INEQUALITY THAT GETS RID OF THE CONSTANT OF
-% INTEGRATION BUT NO OTHER POSITIVE TERMS. MAYBE THIS IS
-% DONE BY A FUDGE..... ;
- BEGIN SCALAR P,R,M,V,X;
-    X:=INDEXLIST;
-    P:=LPOW ULIST;
-% (A) FIND LARGEST VALUE IN THIS THING;
-    M:=0;
-    WHILE P DO << M:=MAX(M,CAR P); P:=CDR P >>;
-    V:=0;
-    P:=LPOW ULIST;
-% NOW ALLOCATE A PRIME NUMBER > M TO EACH INDEX;
-    WHILE P DO <<
-        M:=NEXTPRIME M;
-        R:=ADDF(R,(MKSP(CAR X,1) .* M) .+ NIL);
-        X:=CDR X;
-        V:=V-M*CAR P;
-        P:=CDR P >>;
-    IF NOT(V=0) THEN R:=ADDF(R,V);
-    NEWEQUATION(R,T); %ASSERT THE INEQUALITY;
-    RETURN NIL
-  END;
 
-SYMBOLIC PROCEDURE CONSTRAINEDREDUCTIONS RHS;
- BEGIN SCALAR RELS,FG;
-TOP:
-    IF RHS=NIL THEN RETURN REVERSEWOC RELS;
-    FG:=NEWEQUATION(NUMR LC RHS,T); %NON-ZERO LEADING TERM;
-    IF NOT(FG='INCONSISTENT) THEN
-        RELS:=(RHS . CURRENTSPACE()) . RELS;
-    DROPEQUATION();
-    FG:=NEWEQUATION(NUMR LC RHS,NIL); %NOW LT = 0;
-    IF FG='INCONSISTENT THEN RETURN REVERSEWOC RELS;
-    RHS:=RED RHS;
-    GO TO TOP END;
 
-SYMBOLIC PROCEDURE PRINTREDUCTION A;
- BEGIN
-    PRINTC "**** REDUCTION FORMULA ****";
-    PRINTDF CAR A;
-    SETLINSPACE CDR A;
-    PRINTLINSPACE()
- END;
 
-SYMBOLIC PROCEDURE INTERFERE(A,B);
- BEGIN
-   IF !*TRJHD THEN PRINTC "POTENTIAL CANCELLATION DETECTED"
- END;
+symbolic procedure lvlast l;
+    if null l then interr "l=nil in lvlast"
+    else if null cdr l then l
+    else lvlast cdr l;
+
+%symbolic procedure newreduction a;
+%% Record a new reduction formula
+%  begin
+%    a:=list a;
+%    rplacd(lastreduction,a);
+%    lastreduction:=a
+%   end;
+
+symbolic procedure eliminateconstofint();
+% Set up an inequality that gets rid of the constant of
+% integration but no other positive terms. maybe this is
+% done by a fudge.....
+ begin scalar p,r,m,v,x;
+    x:=indexlist;
+    p:=lpow ulist;
+% (a) find largest value in this thing
+    m:=0;
+    while p do << m:=max(m,car p); p:=cdr p >>;
+    v:=0;
+    p:=lpow ulist;
+% now allocate a prime number > m to each index
+    while p do <<
+        m:=nextprime m;
+        r:=addf(r,(mksp(car x,1) .* m) .+ nil);
+        x:=cdr x;
+        v:=v-m*car p;
+        p:=cdr p >>;
+    if not(v=0) then r:=addf(r,v);
+    newequation(r,t); %Assert the inequality
+    return nil
+  end;
+
+symbolic procedure constrainedreductions rhs;
+ begin scalar rels,fg;
+top:
+    if rhs=nil then return reversewoc rels;
+    fg:=newequation(numr lc rhs,t); %non-zero leading term
+    if not(fg='inconsistent) then
+        rels:=(rhs . currentspace()) . rels;
+    dropequation();
+    fg:=newequation(numr lc rhs,nil); %now lt = 0
+    if fg='inconsistent then return reversewoc rels;
+    rhs:=red rhs;
+    go to top end;
+
+symbolic procedure printreduction a;
+ begin
+    printc "**** REDUCTION FORMULA ****";
+    printdf car a;
+    setlinspace cdr a;
+    printlinspace()
+ end;
+
+symbolic procedure interfere(a,b);
+ begin
+   if !*trjhd then printc "potential cancellation detected"
+ end;
 
 
 %**********************************************************************;
-% FROM HERE DOWN I HAVE CODE LEFT OVER FROM THE PREVIOUS VERSION;
+% From here down I have code left over from the previous version
 
 
-%SYMBOLIC PROCEDURE SHIFTMATCH(FORM,P1,P2);
-%    SFSUBLIS(FORM,SHIFTASSOC(P1,P2,INDEXLIST));
+%symbolic procedure shiftmatch(form,p1,p2);
+%    sfsublis(form,shiftassoc(p1,p2,indexlist));
 
-%SYMBOLIC PROCEDURE SHIFTASSOC(P1,P2,L);
-%    IF NULL L THEN NIL
-%    ELSE ((CAR L) . (CAAR P1 - CAAR P2)) .
-%                         SHIFTASSOC(CDR P1,CDR P2,CDR L);
-
-
-%SYMBOLIC PROCEDURE SFSUBLIS(FM,L);
-%    IF DOMAINP FM THEN FM
-%    ELSE BEGIN
-%      SCALAR W;
-%      W:=ATSOC(MVAR FM,L);
-%      IF W NEQ NIL THEN <<
-%        W:=CDR W;
-%        IF W=0 THEN W:=NIL >>;
-%      W:=(MKSP(MVAR FM,1) .* 1) .+ W;
-%      W:=!*MULTF(W,SFSUBLIS(LC FM,L));
-%      RETURN ADDF(W,SFSUBLIS(RED FM,L)) END;
+%symbolic procedure shiftassoc(p1,p2,l);
+%    if null l then nil
+%    else ((car l) . (caar p1 - caar p2)) .
+%                         shiftassoc(cdr p1,cdr p2,cdr l);
 
 
+%symbolic procedure sfsublis(fm,l);
+%    if domainp fm then fm
+%    else begin
+%      scalar w;
+%      w:=atsoc(mvar fm,l);
+%      if w neq nil then <<
+%        w:=cdr w;
+%        if w=0 then w:=nil >>;
+%      w:=(mksp(mvar fm,1) .* 1) .+ w;
+%      w:=!*multf(w,sfsublis(lc fm,l));
+%      return addf(w,sfsublis(red fm,l)) end;
 
 
 
-%SYMBOLIC PROCEDURE CONSTANTOFINTEGRATION();
-% BEGIN SCALAR N;
-%    IF NOT NULL INEQUALITYSTACK THEN RETURN NIL;
-%%TO BE RECOGNIZED, THE TERM HERE MUST BE TOTALLY CONSTRAINED;
-%%BY EQUALITIES, AND MUST MATCH THE C OF I ALREADY SET IN ULIST;
-%    N:=LENGTH EQUALITYSTACK;
-%    IF NOT (N=NINDEX-1) THEN RETURN NIL;
-%    RETURN MATCHP(LPOW ULIST,EQUALITYSTACK,INEQUALITYSTACK) END;
 
 
-%SYMBOLIC PROCEDURE DFSUBLIS(P,L);
-%    DFSUBLIS1(P,L,MAPCAR(L,FUNCTION CDR));
-
-%SYMBOLIC PROCEDURE DFSUBLIS1(P,L1,L2);
-%    IF NULL P THEN NIL
-%    ELSE (LAMBDA COEF,REST;
-%      IF NULL COEF THEN REST ELSE
-%        (PLUSLISTS(LPOW P,L2) .* (COEF ./ DENR LC P)) .+ REST)
-%      (SFSUBLIS(NUMR LC P,L1),DFSUBLIS1(RED P,L1,L2));
-
-%SYMBOLIC PROCEDURE PLUSLISTS(L1,L2);
-%    IF NULL L1 THEN NIL
-%    ELSE ((CAAR L1 + CAR L2) . NIL) . PLUSLISTS(CDR L1,CDR L2);
+%symbolic procedure constantofintegration();
+% begin scalar n;
+%    if not null inequalitystack then return nil;
+%%To be recognized, the term here must be totally constrained
+%%by equalities, and must match the c of i already set in ulist
+%    n:=length equalitystack;
+%    if not (n=nindex-1) then return nil;
+%    return matchp(lpow ulist,equalitystack,inequalitystack) end;
 
 
-%SYMBOLIC PROCEDURE INVERTCLASHES();
-% BEGIN
-%    CANCELLATIONLIST:=NIL;
-%    MAPC(HIDE,FUNCTION CLASH);
-%    MAPC(CANCELLATIONLIST,FUNCTION PRINTCANCEL);
-% END;
+%symbolic procedure dfsublis(p,l);
+%    dfsublis1(p,l,mapcar(l,function cdr));
 
-%SYMBOLIC PROCEDURE PRINTCANCEL L;
-% BEGIN
-%    EQUALITYSTACK:=CAAR L;
-%    INEQUALITYSTACK:=CDAR L;
-%    PRINTC "A PHANTOM MAY BE NEEDED WHEN THE LEADING TERM SATISFIES";
-%    PRINTLINSPACE();
-%    PRINTC "OFFSETS =";
-%    MAPC(CDR L,FUNCTION PRINTC);
-%    TERPRI()
-% END;
+%symbolic procedure dfsublis1(p,l1,l2);
+%    if null p then nil
+%    else (lambda coef,rest;
+%      if null coef then rest else
+%        (pluslists(lpow p,l2) .* (coef ./ denr lc p)) .+ rest)
+%      (sfsublis(numr lc p,l1),dfsublis1(red p,l1,l2));
+
+%symbolic procedure pluslists(l1,l2);
+%    if null l1 then nil
+%    else ((caar l1 + car l2) . nil) . pluslists(cdr l1,cdr l2);
 
 
-%SYMBOLIC PROCEDURE CLASH(A);
-%% A IS THE STRUCTURE ((A . B) . (EQUAL . INEQUAL))
-%% CREATE A CORRESPONDING ENTRY ON CALCELLATIONLIST;
-% BEGIN
-%    SCALAR RF1,RF2,LINEQ;
-%    LINEQ:=CDR A;
-%    RF1:=CAAR A;
-%    RF2:=CDAR A;
-%    A:=PLUSDF(RED RF1,RED RF2);
-%% NOW LT A IS MAYBE IMPORTANT TERM LEFT OVER;
-%    LINEQ:=SHIFTEQNS(CAR LINEQ,UNLIST LPOW A) .
-%             SHIFTEQNS(CDR LINEQ,UNLIST LPOW A);
-%    A:=FORMDELTAS(LPOW A,LPOW RF1);
-%    CANCELLATIONLIST:=(LINEQ . LIST A) . CANCELLATIONLIST;
-%    RETURN NIL
-% END;
+%symbolic procedure invertclashes();
+% begin
+%    cancellationlist:=nil;
+%    mapc(hide,function clash);
+%    mapc(cancellationlist,function printcancel);
+% end;
 
-%SYMBOLIC PROCEDURE UNLIST L;
-%    IF NULL L THEN NIL
-%    ELSE CAAR L . UNLIST CDR L;
+%symbolic procedure printcancel l;
+% begin
+%    equalitystack:=caar l;
+%    inequalitystack:=cdar l;
+%    printc "A phantom may be needed when the leading term satisfies";
+%    printlinspace();
+%    printc "offsets =";
+%    mapc(cdr l,function printc);
+%    terpri()
+% end;
 
 
-%SYMBOLIC PROCEDURE FORMDELTAS(A,B);
-%    IF NULL A THEN NIL
-%    ELSE (CAAR A - CAAR B) . FORMDELTAS(CDR A,CDR B);
+%symbolic procedure clash(a);
+%% A is the structure ((a . b) . (equal . inequal))
+%% create a corresponding entry on calcellationlist
+% begin
+%    scalar rf1,rf2,lineq;
+%    lineq:=cdr a;
+%    rf1:=caar a;
+%    rf2:=cdar a;
+%    a:=plusdf(red rf1,red rf2);
+%% Now lt a is maybe important term left over
+%    lineq:=shifteqns(car lineq,unlist lpow a) .
+%             shifteqns(cdr lineq,unlist lpow a);
+%    a:=formdeltas(lpow a,lpow rf1);
+%    cancellationlist:=(lineq . list a) . cancellationlist;
+%    return nil
+% end;
 
-%SYMBOLIC PROCEDURE SHIFTEQNS(L,DELTA);
-%    IF NULL L THEN NIL
-%    ELSE SHIFTEQN(CAR L,DELTA) . SHIFTEQNS(CDR L,DELTA);
+%symbolic procedure unlist l;
+%    if null l then nil
+%    else caar l . unlist cdr l;
 
 
-%SYMBOLIC PROCEDURE SHIFTEQN(V,DELTA);
-% BEGIN SCALAR W,I,NEW;
-%    NEW:=MKVECT NINDEX;
-%    FOR I:=0:NINDEX DO PUTV(NEW,I,GETV(V,I));
-%    V:=NEW;
-%    I:=2;
-%    W:=NIL;
-%    WHILE DELTA DO <<
-%        W:=ADDF(W,!*MULTF(GETV(V,I),CAR DELTA));
-%        DELTA:=CDR DELTA >>;
-%    PUTV(V,1,ADDF(GETV(V,1),NEGF W));
-%    RETURN V
-% END;
+%symbolic procedure formdeltas(a,b);
+%    if null a then nil
+%    else (caar a - caar b) . formdeltas(cdr a,cdr b);
 
-ENDMODULE;
+%symbolic procedure shifteqns(l,delta);
+%    if null l then nil
+%    else shifteqn(car l,delta) . shifteqns(cdr l,delta);
 
-END;
+
+%symbolic procedure shifteqn(v,delta);
+% begin scalar w,i,new;
+%    new:=mkvect nindex;
+%    for i:=0:nindex do putv(new,i,getv(v,i));
+%    v:=new;
+%    i:=2;
+%    w:=nil;
+%    while delta do <<
+%        w:=addf(w,!*multf(getv(v,i),car delta));
+%        delta:=cdr delta >>;
+%    putv(v,1,addf(getv(v,1),negf w));
+%    return v
+% end;
+
+endmodule;
+
+end;
 

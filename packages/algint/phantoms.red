@@ -1,4 +1,4 @@
-MODULE PHANTOMS;
+module phantoms;
 
 % Author: James H. Davenport.
 
@@ -26,127 +26,127 @@ MODULE PHANTOMS;
 %
 
 
-FLUID '(!*trint CANCELLATIONLIST INEQUALITYSTACK LHS MAGICLIST NINDEX
-        TERMSUSED);
+fluid '(!*trint cancellationlist inequalitystack lhs magiclist nindex
+        termsused);
 
-EXPORTS PHANTOMTERMS;
+exports phantomterms;
 
-IMPORTS GETV,!*MULTF,ADDF;
+imports getv,!*multf,addf;
 
 % See if an exponent set agrees with a set of linear constraints.
 
 
-SYMBOLIC PROCEDURE MATCHP(POW,EQUALITIES,INEQUALITIES);
-%TRUE IF THE EQUALITIES AND INEQUALITIES GIVEN ARE CONSISTENT WITH;
-%THE GIVEN POWER;
- BEGIN SCALAR FG;
-TOP:
-    IF NULL EQUALITIES THEN GO TO INEQ;
-    FG:=MATCHEQNP(POW,CAR EQUALITIES);
-    IF NULL FG THEN RETURN NIL; %CLASH WITH AN EQUALITY;
-    EQUALITIES:=CDR EQUALITIES;
-    GO TO TOP;
-INEQ:
-    IF NULL INEQUALITIES THEN RETURN T; %OK - CONSISTENT;
-    FG:=MATCHEQNP(POW,CAR INEQUALITYSTACK);
-    IF FG THEN RETURN NIL; %CLASH WITH AN INEQUALITY;
-    INEQUALITIES:=CDR INEQUALITIES;
-    GO TO INEQ END;
+symbolic procedure matchp(pow,equalities,inequalities);
+%True if the equalities and inequalities given are consistent with
+%the given power
+ begin scalar fg;
+top:
+    if null equalities then go to ineq;
+    fg:=matcheqnp(pow,car equalities);
+    if null fg then return nil; %Clash with an equality
+    equalities:=cdr equalities;
+    go to top;
+ineq:
+    if null inequalities then return t; %OK - consistent
+    fg:=matcheqnp(pow,car inequalitystack);
+    if fg then return nil; %Clash with an inequality
+    inequalities:=cdr inequalities;
+    go to ineq end;
 
 
-SYMBOLIC PROCEDURE MATCHEQNP(POW,EQQN);
-% SUBSTITUTE INTEGERS GIVEN BY POW INTO LINEAR
-% FORM EQQN AND RETURN T IF RESULT IS ZERO;
- BEGIN SCALAR I,RES;
-    RES:=GETV(EQQN,1); %CONSTANT TERM FROM THE EQUATION;
-    FOR I:=2:NINDEX DO <<
-      RES:=ADDF(RES,!*MULTF(!*N2F CAR POW,GETV(EQQN,I)));
-      POW:=CDR POW >>;
-    IF NULL RES THEN RETURN T
-                ELSE RETURN NIL
- END;
+symbolic procedure matcheqnp(pow,eqqn);
+% Substitute integers given by pow into linear
+% form eqqn and return t if result is zero
+ begin scalar i,res;
+    res:=getv(eqqn,1); %Constant term from the equation
+    for i:=2:nindex do <<
+      res:=addf(res,!*multf(!*n2f car pow,getv(eqqn,i)));
+      pow:=cdr pow >>;
+    if null res then return t
+                else return nil
+ end;
 
-%SYMBOLIC PROCEDURE !*N2F N;
-%% CONVERT NUMBER INTO STANDARD FORM;
-%    IF N=0 THEN NIL
-%    ELSE N;
+%symbolic procedure !*n2f n;
+%% Convert number into standard form
+%    if n=0 then nil
+%    else n;
 
-SYMBOLIC PROCEDURE PHANTOMTERMS(LHS);
-% PUT EXTRA TERM ON THE FRONT OF LHS TO ALLOW FOR MALICE IN;
-% CANCELLING TERMS. GIVE IT A ZERO WEIGHT;
- BEGIN SCALAR R,S;
-    IF !*TRINT THEN PRINTC "PHANTOMTERMS CALLED ON";
-    IF !*TRINT THEN SUPERPRINT LHS;
-    R:=FINDPHANTOMS(LPOW LHS); %THINGS THAT MAY BE NEEDED;
-    IF !*TRINT THEN PRINTC "FINDPHANTOMS RETURNED";
-    IF !*TRINT THEN PRINTC R;
-    WHILE R DO <<
-       IF NOT MEMBER(CAR R,TERMSUSED) THEN S:=(CAR R) . S;
-       R:=CDR R >>;
-    IF !*TRINT THEN PRINTC "UNUSED PHANTOMS=";
-    S:=REVERSEWOC S; %BACK IN RIGHT ORDER AGAIN;
-    IF !*TRINT THEN PRINTC S;
-    IF NOT NULL S THEN <<
-    IF !*TRINT THEN   PRINTC "PHANTOM TERM GENERATED IN INTEGRAND";
-    IF !*TRINT THEN   PRINTC "EXPONENT SET IS";
-    IF !*TRINT THEN   PRINTC CAR S >>;
-    IF NULL S THEN R:=LHS
-    ELSE R := ((CAR S) . (NIL . 1)) . LHS;
-    RETURN R END;
-
-
-SYMBOLIC PROCEDURE FINDPHANTOMS(POW);
- BEGIN SCALAR L,W;
-    L:=CANCELLATIONLIST;
-TOP:
-    IF NULL L THEN RETURN CDRXX ASSOC(POW,MAGICLIST);
-%SEEK USER HELP ON MAGICLIST;
-    W:=PHANTOMMATCH(POW,CAR L);
-    IF NOT NULL W THEN RETURN W;
-    L:=CDR L;
-    GO TO TOP END;
+symbolic procedure phantomterms(lhs);
+% Put extra term on the front of lhs to allow for malice i;
+% cancelling terms. give it a zero weight.
+ begin scalar r,s;
+    if !*trint then printc "phantomterms called on";
+    if !*trint then superprint lhs;
+    r:=findphantoms(lpow lhs); %Things that may be needed
+    if !*trint then printc "findphantoms returned";
+    if !*trint then printc r;
+    while r do <<
+       if not member(car r,termsused) then s:=(car r) . s;
+       r:=cdr r >>;
+    if !*trint then printc "unused phantoms=";
+    s:=reversewoc s; %Back in right order again
+    if !*trint then printc s;
+    if not null s then <<
+    if !*trint then   printc "phantom term generated in integrand";
+    if !*trint then   printc "exponent set is";
+    if !*trint then   printc car s >>;
+    if null s then r:=lhs
+    else r := ((car s) . (nil . 1)) . lhs;
+    return r end;
 
 
-SYMBOLIC PROCEDURE CDRXX A;
-    IF ATOM A THEN NIL
-    ELSE CDR A;
+symbolic procedure findphantoms(pow);
+ begin scalar l,w;
+    l:=cancellationlist;
+top:
+    if null l then return cdrxx assoc(pow,magiclist);
+%seek user help on magiclist
+    w:=phantommatch(pow,car l);
+    if not null w then return w;
+    l:=cdr l;
+    go to top end;
 
 
-SYMBOLIC PROCEDURE PHANTOMMATCH(POW,PATTERN);
-% ITEMS ON CANCELLATIONLIST ARE (CASE . EFFECT) WHERE
-% CASE = (EQUALITIES . INEQUALITIES) - A SET OF CONSTRAINTS
-% ON THE POWER THAT MUST BE SATISFIED BEFORE IT IS SPECIAL,
-% AND EFFECT IS A LIST OF OFFSETS THAT HAVE TO BE SUBTRACTED
-% TO POW TO GET THE POWERS REPRESENTING GENERATED PHANTOMS;
- BEGIN SCALAR R;
-    R:=MATCHP(POW,CAAR PATTERN,CDAR PATTERN);
-    IF NULL R THEN RETURN NIL; %TEMPLATE DOES NOT FIT;
-    RETURN OFFSETLIST(POW,CDR PATTERN)
- END;
+symbolic procedure cdrxx a;
+    if atom a then nil
+    else cdr a;
 
-SYMBOLIC PROCEDURE OFFSETLIST(POW,L);
-    IF NULL L THEN NIL
-    ELSE BEGIN
-        SCALAR W;
-        W:=OFFSET1(POW,CAR L);
-        L:=OFFSETLIST(POW,CDR L);
-        IF W THEN L:=W . L;
-        RETURN L END;
 
-SYMBOLIC PROCEDURE OFFSET1(POW,DELTA);
-% COMPUTE OFFSET VERSION OF EXPONENT SET - RETURN NIL IF THIS
-% WOULD INVOLVE NEGATIVE POWERS;
-  BEGIN
-    SCALAR W;
-TOP:
-    IF NULL POW THEN RETURN REVERSEWOC W;
-    W:=(CAR POW - CAR DELTA) . W;
-    IF MINUSP CAR W THEN RETURN NIL;
-    POW:=CDR POW; DELTA:=CDR DELTA;
-    GOTO TOP
-   END;
+symbolic procedure phantommatch(pow,pattern);
+% Items on cancellationlist are (case . effect) where
+% case = (equalities . inequalities) - a set of constraints
+% on the power that must be satisfied before it is special,
+% and effect is a list of offsets that have to be subtracted
+% to pow to get the powers representing generated phantoms
+ begin scalar r;
+    r:=matchp(pow,caar pattern,cdar pattern);
+    if null r then return nil; %Template does not fit
+    return offsetlist(pow,cdr pattern)
+ end;
 
-ENDMODULE;
+symbolic procedure offsetlist(pow,l);
+    if null l then nil
+    else begin
+        scalar w;
+        w:=offset1(pow,car l);
+        l:=offsetlist(pow,cdr l);
+        if w then l:=w . l;
+        return l end;
 
-END;
+symbolic procedure offset1(pow,delta);
+% Compute offset version of exponent set - return nil if this
+% would involve negative powers
+  begin
+    scalar w;
+top:
+    if null pow then return reversewoc w;
+    w:=(car pow - car delta) . w;
+    if minusp car w then return nil;
+    pow:=cdr pow; delta:=cdr delta;
+    goto top
+   end;
+
+endmodule;
+
+end;
 

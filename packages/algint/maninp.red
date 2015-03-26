@@ -1,4 +1,4 @@
-MODULE MANINP;
+module maninp;
 
 % Author: James H. Davenport.
 

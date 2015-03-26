@@ -581,7 +581,9 @@ symbolic procedure token!-number x;
          (not (string!-length id2string x = 1)) then go to ret
        else if x eq '!.
          then if dotp
-                then rerror('rlisp,3,"Syntax error: improper number")
+                then rerror('rlisp,3,
+                  concat("Syntax error: improper number ",
+                          list2string reverse (x . y)))
                else progn(dotp := t, go to num2)
        else if digit x then go to num1
        else if y = '(!0) and (x eq '!x or x eq '!X) then go to hexnum
@@ -615,7 +617,9 @@ symbolic procedure token!-number x;
       y := 16*y + z;
       go to hexnum1;
    nume2:
-      if null z then rerror('rlisp,4,"Syntax error: improper number");
+      if null z then rerror('rlisp,4,
+         concat("Syntax error: improper number ",
+                list2string (x . append(z, 'e . y))));
 % This use of compress is for a number...
       z := compress reversip!* z;
       if sign then power := power - z else power := power + z;

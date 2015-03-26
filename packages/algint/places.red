@@ -1,18 +1,18 @@
-MODULE PLACES;
+module places;
 
 % Author: James H. Davenport.
 
-FLUID '(BASIC!-LISTOFALLSQRTS
-        BASIC!-LISTOFNEWSQRTS
-        INTVAR
-        LISTOFALLSQRTS
-        LISTOFNEWSQRTS
-        SQRT!-INTVAR
-        SQRT!-PLACES!-ALIST
-        SQRTS!-IN!-INTEGRAND);
+fluid '(basic!-listofallsqrts
+        basic!-listofnewsqrts
+        intvar
+        listofallsqrts
+        listofnewsqrts
+        sqrt!-intvar
+        sqrt!-places!-alist
+        sqrts!-in!-integrand);
 
-EXPORTS GETSQRTSFROMPLACES,SQRTSINPLACES,GET!-CORRECT!-SQRTS,BASICPLACE,
-        EXTENPLACE,EQUALPLACE,PRINTPLACE;
+exports getsqrtsfromplaces,sqrtsinplaces,get!-correct!-sqrts,basicplace,
+        extenplace,equalplace,printplace;
 
 
 
@@ -52,66 +52,66 @@ EXPORTS GETSQRTSFROMPLACES,SQRTSINPLACES,GET!-CORRECT!-SQRTS,BASICPLACE,
 
 % Given a list of places, produces a list of all
 % the SQRTs in it that depend on INTVAR.
-SYMBOLIC PROCEDURE GETSQRTSFROMPLACES PLACES;
+symbolic procedure getsqrtsfromplaces places;
   % The following loop finds all the SQRTs for a basis,
   % taking account of BASICPLACEs.
-BEGIN
-  SCALAR BASIS,V,B,C,VV;
-  FOR EACH U IN PLACES DO <<
-    V:=ANTISUBS(BASICPLACE U,INTVAR);
-    VV:=SQRTSINSQ (SUBSTITUTESQ(!*KK2Q INTVAR,V),INTVAR);
+begin
+  scalar basis,v,b,c,vv;
+  for each u in places do <<
+    v:=antisubs(basicplace u,intvar);
+    vv:=sqrtsinsq (substitutesq(!*kk2q intvar,v),intvar);
       % We must go via SUBSTITUTESQ to get parallel
       % substitutions performed correctly.
-    IF VV
-      THEN VV:=SIMP ARGOF CAR VV;
-    FOR EACH W IN EXTENPLACE U DO <<
-      B:=SUBSTITUTESQ(SIMP LSUBS W,V);
-      B:=DELETE(SQRT!-INTVAR,SQRTSINSQ(B,INTVAR));
-      FOR EACH U IN B DO
-        FOR EACH V IN DELETE(U,B) DO
-          IF DEPENDSP(V,U)
-            THEN B:=DELETE(U,B);
+    if vv
+      then vv:=simp argof car vv;
+    for each w in extenplace u do <<
+      b:=substitutesq(simp lsubs w,v);
+      b:=delete(sqrt!-intvar,sqrtsinsq(b,intvar));
+      for each u in b do
+        for each v in delete(u,b) do
+          if dependsp(v,u)
+            then b:=delete(u,b);
             % remove all the "inner" items, since they will
             % be accounted for anyway.
-      IF LENGTH B IEQUAL 1
-        THEN B:=CAR B
- ELSE B:=MVAR NUMR SIMPSQRTSQ MAPPLY(FUNCTION !*MULTSQ,
-                                FOR EACH U IN B COLLECT SIMP ARGOF U);
-      IF VV AND NOT (B MEMBER SQRTS!-IN!-INTEGRAND)
-        THEN <<
-          C:=NUMR MULTSQ(SIMP ARGOF B,VV);
-          C:=CAR SQRTSINSF(SIMPSQRT2 C,NIL,INTVAR);
-   IF C MEMBER SQRTS!-IN!-INTEGRAND
-            THEN B:=C >>;
-      IF NOT (B MEMBER BASIS)
-        THEN BASIS:=B.BASIS >> >>;
+      if length b iequal 1
+        then b:=car b
+ else b:=mvar numr simpsqrtsq mapply(function !*multsq,
+                                for each u in b collect simp argof u);
+      if vv and not (b member sqrts!-in!-integrand)
+        then <<
+          c:=numr multsq(simp argof b,vv);
+          c:=car sqrtsinsf(simpsqrt2 c,nil,intvar);
+   if c member sqrts!-in!-integrand
+            then b:=c >>;
+      if not (b member basis)
+        then basis:=b.basis >> >>;
   % The following loop deals with the annoying case of, say,
   % (X DIFFERENCE X 1) (X EXPT X 2) which should give rise to
   % SQRT(X-1).
-  FOR EACH U IN PLACES DO BEGIN
-    V:=CDR U;
-    IF NULL V OR (CAR RFIRSTSUBS V NEQ 'EXPT)
-      THEN RETURN;
-    U:=SIMP!* SUBST(LIST('MINUS,INTVAR),INTVAR,RFIRSTSUBS U);
-    WHILE V AND (CAR RFIRSTSUBS V EQ 'EXPT) DO <<
-      U:=SIMPSQRTSQ U;
-      V:=CDR V;
-      BASIS:=UNION(BASIS,DELETE(SQRT!-INTVAR,SQRTSINSQ(U,INTVAR))) >>
-    END;
-  RETURN REMOVE!-EXTRA!-SQRTS BASIS
-  END;
+  for each u in places do begin
+    v:=cdr u;
+    if null v or (car rfirstsubs v neq 'expt)
+      then return;
+    u:=simp!* subst(list('minus,intvar),intvar,rfirstsubs u);
+    while v and (car rfirstsubs v eq 'expt) do <<
+      u:=simpsqrtsq u;
+      v:=cdr v;
+      basis:=union(basis,delete(sqrt!-intvar,sqrtsinsq(u,intvar))) >>
+    end;
+  return remove!-extra!-sqrts basis
+  end;
 
 
 
-SYMBOLIC PROCEDURE SQRTSINPLACES U;
+symbolic procedure sqrtsinplaces u;
 % Note the difference between this procedure and
 % the previous one: this one does not take account
 % of the BASICPLACE component (& is pretty useless).
-IF NULL U
-  THEN NIL
-  ELSE SQRTSINTREE(FOR EACH V IN CAR U COLLECT LSUBS V,
-                   INTVAR,
-                   SQRTSINPLACES CDR U);
+if null u
+  then nil
+  else sqrtsintree(for each v in car u collect lsubs v,
+                   intvar,
+                   sqrtsinplaces cdr u);
 
 
 
@@ -129,23 +129,23 @@ IF NULL U
 
 
 
-SYMBOLIC PROCEDURE GET!-CORRECT!-SQRTS U;
+symbolic procedure get!-correct!-sqrts u;
 % u is a basicplace.
-BEGIN
-  SCALAR V;
-  V:=ASSOC(U,SQRT!-PLACES!-ALIST);
-  IF V
-    THEN <<
-      V:=CDR V;
-      LISTOFALLSQRTS:=CDR V;
-      LISTOFNEWSQRTS:=CAR V
+begin
+  scalar v;
+  v:=assoc(u,sqrt!-places!-alist);
+  if v
+    then <<
+      v:=cdr v;
+      listofallsqrts:=cdr v;
+      listofnewsqrts:=car v
       >>
-    ELSE <<
-      LISTOFNEWSQRTS:=BASIC!-LISTOFNEWSQRTS;
-      LISTOFALLSQRTS:=BASIC!-LISTOFALLSQRTS
+    else <<
+      listofnewsqrts:=basic!-listofnewsqrts;
+      listofallsqrts:=basic!-listofallsqrts
       >>;
-  RETURN NIL
-  END;
+  return nil
+  end;
 
 
 
@@ -165,115 +165,116 @@ BEGIN
 
 
 
-SYMBOLIC PROCEDURE BASICPLACE(U);
+symbolic procedure basicplace(u);
 % Returns the basic part of a place.
-IF NULL U
-  THEN NIL
-  ELSE IF ATOM CAAR U
-    THEN (CAR U).BASICPLACE CDR U
-    ELSE NIL;
+if null u
+  then nil
+  else if atom caar u
+    then (car u).basicplace cdr u
+    else nil;
 
 
 
-SYMBOLIC PROCEDURE EXTENPLACE(U);
+symbolic procedure extenplace(u);
 % Returns the extension part of a place.
-IF U AND ATOM CAAR U
-  THEN EXTENPLACE CDR U
-  ELSE U;
+if u and atom caar u
+  then extenplace cdr u
+  else u;
 
 
 
-SYMBOLIC PROCEDURE EQUALPLACE(A,B);
+symbolic procedure equalplace(a,b);
 % Sees if two extension places represent the same place or not.
-IF NULL A
-  THEN IF NULL B
-    THEN T
-    ELSE NIL
-  ELSE IF NULL B
-    THEN NIL
-    ELSE IF MEMBER(CAR A,B)
-      THEN EQUALPLACE(CDR A,DELETE(CAR A,B))
-      ELSE NIL;
+if null a
+  then if null b
+    then t
+    else nil
+  else if null b
+    then nil
+    else if member(car a,b)
+      then equalplace(cdr a,delete(car a,b))
+      else nil;
 
 
 
-SYMBOLIC PROCEDURE REMOVE!-EXTRA!-SQRTS BASIS;
-BEGIN
-  SCALAR BASIS2,SAVE;
-  SAVE:=BASIS2:=FOR EACH U IN BASIS COLLECT !*Q2F SIMP ARGOF U;
-  FOR EACH U IN BASIS2 DO
-    FOR EACH V IN DELETE(U,BASIS2) DO
-      IF QUOTF(V,U)
-        THEN BASIS2:=DELETE(V,BASIS2);
-  IF BASIS2 EQ SAVE
-    THEN RETURN BASIS
-    ELSE RETURN FOR EACH U IN BASIS2 COLLECT LIST('SQRT,PREPF U)
-  END;
+symbolic procedure remove!-extra!-sqrts basis;
+begin
+  scalar basis2,save;
+  save:=basis2:=for each u in basis collect !*q2f simp argof u;
+  for each u in basis2 do
+    for each v in delete(u,basis2) do
+      if quotf(v,u)
+        then basis2:=delete(v,basis2);
+  if basis2 eq save
+    then return basis
+    else return for each u in basis2 collect list('sqrt,prepf u)
+  end;
 
 
 
-SYMBOLIC PROCEDURE PRINTPLACE U;
-BEGIN
-  SCALAR A,N,V;
-  A:=RFIRSTSUBS U;
-  PRINC (V:=LFIRSTSUBS U);
-  PRINC "=";
-  IF ATOM A
-    THEN PRINC "0"
-    ELSE IF (CAR A EQ 'QUOTIENT) AND (CADR A=1)
-      THEN PRINC "infinity"
-      ELSE <<
- N:=NEGSQ ADDSQ(!*KK2Q V,NEGSQ SIMP!* A);
+symbolic procedure printplace u;
+begin
+  scalar a,n,v;
+  a:=rfirstsubs u;
+  princ (v:=lfirstsubs u);
+  princ "=";
+  if atom a
+    then princ "0"
+    else if (car a eq 'quotient) and (cadr a=1)
+      then princ "infinity"
+      else <<
+ n:=negsq addsq(!*kk2q v,negsq simp!* a);
 % NEGSQ added JHD 22.3.87 - the previous value was wrong.
 % If the substitution is (X-v) then this takes -v to 0,
 % so the place was at -v.
-        IF (NUMBERP NUMR N) AND (NUMBERP DENR N)
-          THEN <<
-            PRINC NUMR N;
-            IF NOT ONEP DENR N
-              THEN <<
-                PRINC " / ";
-                PRINC DENR N >> >>
-          ELSE <<
-            IF DEGREEIN(NUMR N,INTVAR) > 1
-             THEN PRINTC "Any root of:";
-            PRINTSQ N;
-            IF CDR U
-              THEN PRINC "at the place " >> >>;
-  U:=CDR U;
-  IF NULL U
-    THEN GOTO NL!-RETURN;
-  N:=1;
-  WHILE U AND (CAR RFIRSTSUBS U EQ 'EXPT) DO <<
-    N:=N * CADDR RFIRSTSUBS U;
-    U:=CDR U >>;
-  IF N NEQ 1 THEN <<
-    TERPRI!* NIL;
+        if (numberp numr n) and (numberp denr n)
+          then <<
+            princ numr n;
+            if not onep denr n
+              then <<
+                princ " / ";
+                princ denr n >> >>
+          else <<
+            if degreein(numr n,intvar) > 1
+             then printc "Any root of:";
+            printsq n;
+            if cdr u
+              then princ "at the place " >> >>;
+  u:=cdr u;
+  if null u
+    then goto nl!-return;
+  n:=1;
+  while u and (car rfirstsubs u eq 'expt) do <<
+    n:=n * caddr rfirstsubs u;
+    u:=cdr u >>;
+  if n neq 1 then <<
+    terpri!* nil;
     prin2 " ";
-    PRINC V;
-    PRINC "=>";
-    PRINC V;
-    PRINC "**";
-    PRINC N >>;
-  WHILE U DO <<
-    IF CAR RFIRSTSUBS U EQ 'MINUS
-      THEN PRINC "-"
-      ELSE PRINC "+";
-    U:=CDR U >>;
-NL!-RETURN:
-  TERPRI();
-  RETURN
-  END;
+    princ v;
+    princ "=>";
+    princ v;
+    princ "**";
+    princ n >>;
+  while u do <<
+    if car rfirstsubs u eq 'minus
+      then princ "-"
+      else princ "+";
+    u:=cdr u >>;
+nl!-return:
+  terpri();
+  return
+  end;
 
 
 
-SYMBOLIC PROCEDURE DEGREEIN(SF,VAR);
-IF ATOM SF
-  THEN 0
-  ELSE IF MVAR SF EQ VAR
-    THEN LDEG SF
-    ELSE MAX(DEGREEIN(LC SF,VAR),DEGREEIN(RED SF,VAR));
+symbolic procedure degreein(sf,var);
+if atom sf
+  then 0
+  else if mvar sf eq var
+    then ldeg sf
+    else max(degreein(lc sf,var),degreein(red sf,var));
 
-ENDMODULE;
+endmodule;
 
-END;
+end;
+

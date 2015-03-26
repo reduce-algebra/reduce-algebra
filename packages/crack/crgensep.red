@@ -1490,61 +1490,65 @@ end$
 endmodule$
 
 end$
------------------------------------------------------
-module gensep_lin:
-
-quick_gen_separation  (10)
-  get_gen_separ_pde
-    maxnoargs
-  gensep
-  eqinsert
-
-case_gen_separation   (30.4.2013: currently listed as module but not listed in full_proc_list_)
-  gen_separation
-
-gen_separation        (26)
-  get_gen_separ_pde
-  gensep
-  eqinsert
-
-gensep
-  cp_sq2p_val
-  partitn
-  mkeqSQlist
-
-module gensep_non_lin:
-
-gen_separation2       (48)
-  newgensep
-    separizable
-      separ2
-        sep(p,ftem,varl,nil,nil)$   (in linear case sep(p,ftem,varl,nonrat,pdes) )
-  eqinsert
-
-------------------------------------------------------
-
-module gensep_lin:
-
-tr quick_gen_separation
-tr case_gen_separation
-tr gen_separation
-tr maxnoargs
-tr get_gen_separ_pde
-tr gensep
-tr partitn
-tr felim
-tr backint
-tr separ
-
-tr my_smemberl
-tr stripcond
-tr checkli
-tr longst
-tr starequ
-tr pickfac
-tr find_cond
-tr starsep
-tr separizable
-tr newgensep
-tr gen_separation2
-tr separ2
+%-----------------------------------------------------
+% Having non-Reduce input at the end of a file even after "end$" causes trouble
+% for simple source analysis tools.
+%
+%module gensep_lin:
+%
+%quick_gen_separation  (10)
+%  get_gen_separ_pde
+%    maxnoargs
+%  gensep
+%  eqinsert
+%
+%case_gen_separation   (30.4.2013: currently listed as module but not listed in full_proc_list_)
+%  gen_separation
+%
+%gen_separation        (26)
+%  get_gen_separ_pde
+%  gensep
+%  eqinsert
+%
+%gensep
+%  cp_sq2p_val
+%  partitn
+%  mkeqSQlist
+%
+%module gensep_non_lin:
+%
+%gen_separation2       (48)
+%  newgensep
+%    separizable
+%      separ2
+%        sep(p,ftem,varl,nil,nil)$   (in linear case sep(p,ftem,varl,nonrat,pdes) )
+%  eqinsert
+%
+%------------------------------------------------------
+%
+%module gensep_lin:
+%
+%tr quick_gen_separation
+%tr case_gen_separation
+%tr gen_separation
+%tr maxnoargs
+%tr get_gen_separ_pde
+%tr gensep
+%tr partitn
+%tr felim
+%tr backint
+%tr separ
+%
+%tr my_smemberl
+%tr stripcond
+%tr checkli
+%tr longst
+%tr starequ
+%tr pickfac
+%tr find_cond
+%tr starsep
+%tr separizable
+%tr newgensep
+%tr gen_separation2
+%tr separ2
+%

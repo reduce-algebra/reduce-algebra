@@ -1,4 +1,4 @@
-MODULE ABASIC;   % Basic definitions for algebraic function integrator.
+module abasic;   % Basic definitions for algebraic function integrator.
 
 % Author: James H. Davenport.
 
