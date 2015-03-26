@@ -95,7 +95,7 @@ procedure smts_token1();
 	 x := smts_readch1();
  	 go to a
       >> else if digit x then
-      	 return token!-number x
+      	 return smts_token!-number x
       else if smts_liter x then
       	 go to letter
       else if x eq '!; then
@@ -179,7 +179,7 @@ procedure smts_token1();
       go to a
    end;
 
-procedure token!-number(x);
+procedure smts_token!-number(x);
    % Read and return a valid number from input. Adjusted by A.C. Norman to be
    % less sensitive to input case and to support hex numbers.
    begin scalar dotp, power, sign, y, z;
@@ -193,7 +193,7 @@ procedure token!-number(x);
     num2:
        if (x := readch1()) eq '!. then
  	  if dotp then
- 	     rerror('smtsupp, 3, "Syntax error: improper number")
+ 	     rerror('smtread, 3, "Syntax error: improper number")
 	  else <<
 	     dotp := t;
  	     go to num2
@@ -230,7 +230,7 @@ procedure token!-number(x);
       go to hexnum1;
    nume2:
       if null z then
- 	 rerror('smtsupp, 4, "Syntax error: improper number");
+ 	 rerror('smtread, 4, "Syntax error: improper number");
       z := compress reversip!* z;
       if sign then
  	 power := power - z
