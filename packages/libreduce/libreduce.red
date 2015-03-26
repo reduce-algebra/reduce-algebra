@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2008-2009 Thomas Sturm
+% Copyright (c) 2008-2013 Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@
 lisp <<
    fluid '(lr_rcsid!* lr_copyright!*);
    lr_rcsid!* := "$Id$";
-   lr_copyright!* := "(c) 2008 T. Sturm"
+   lr_copyright!* := "(c) 2008-2013 T. Sturm"
 >>;
 
 module coloutput;
