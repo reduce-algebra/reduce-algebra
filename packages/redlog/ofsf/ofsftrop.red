@@ -418,7 +418,7 @@ asserted procedure ofsf_posdirp1(ff: SF, scond: QfFormula, one: AList, fone: Int
 	 ev := pop l;
 	 lp_negconstr skiprows;
 	 w := lp_optimize();
-	 if not (w memq '(infeasible unbounded)) then <<
+	 if not (w memq '(infeasible unbounded)) and ofsf_smallp w then <<
 	    % Unbounded is actually feasible but without a solution. I have to
 	    % think about this. For now I am just skipping it.
 	    dir := ('c . pop w) . for i := 1:d collect mkid('n, i) . pop w;
@@ -459,6 +459,12 @@ asserted procedure ofsf_posdirp1(ff: SF, scond: QfFormula, one: AList, fone: Int
       	 return '(-1 nil nil);
       zero := for each pr in zero collect car pr . mk!*sq cdr pr;
       return {flag, other, {zero, mk!*sq fzero}}
+   end;
+
+procedure ofsf_smallp(w);
+   begin scalar l;
+      l := for each n in cdr w collect fix n;
+      return lto_max l < 100
    end;
 
 asserted procedure ofsf_sceval(f: QfFormula, subl: AList): TruthValue;
