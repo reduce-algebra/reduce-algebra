@@ -86,7 +86,7 @@ symbolic procedure copyvec(v,n);
    begin scalar new;
     new:=mkvect(n);
     for i:=0:n do putv(new,i,getv(v,i));
-    return neW
+    return new
    end;
 
 symbolic procedure vecsort(u,l);

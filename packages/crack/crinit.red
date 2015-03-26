@@ -67,7 +67,7 @@ ud_4 userrules_ verify_end_of_parallel_run vl_)$
 pass_back:='(done_trafo history_ limit_time level_ nfct_ size_hist sol_list 
              stepcounter_ time_limit inverse_trafo_list_incomplete)$
 
-Comment :
+comment :
 
 Variables not to be changed interactively are not updated:
    allflags_ crack_load_cmd default_proc_list_ full_proc_list_ 
@@ -144,16 +144,16 @@ end$
 symbolic operator setcrackflags$
 symbolic procedure setcrackflags$
 <<
-ONE_ARGUMENT_FUNCTIONS_:='(ABS ACOS ACOSD ACOSH ACOT ACOTD ACOTH ACSC
- 			   ACSCD ACSCH ASEC ASECD ASECH ASIN ASIND ASINH
-			   ATAN ATAND ATANH CBRT COS COSD COSH COT
-			   COTD COTH CSC CSCD CSCH EXP HYPOT LN
-			   LOG LOGB LOG10 SEC SECD SECH SIN SIND SINH SQRT
-			   TAN TAND TANH MINUS)$
+one_argument_functions_:='(abs acos acosd acosh acot acotd acoth acsc
+ 			   acscd acsch asec asecd asech asin asind asinh
+			   atan atand atanh cbrt cos cosd cosh cot
+			   cotd coth csc cscd csch exp hypot ln
+			   log logb log10 sec secd sech sin sind sinh sqrt
+			   tan tand tanh minus)$
 
-REDUCEFUNCTIONS_:=append(ONE_ARGUMENT_FUNCTIONS_,
-                         '(ATAN2 ATAN2D FACTORIAL PLUS DIFFERENCE DF TIMES 
-                           QUOTIENT EXPT INT))$
+reducefunctions_:=append(one_argument_functions_,
+                         '(atan2 atan2d factorial plus difference df times 
+                           quotient expt int))$
 
 allflags_:='(to_eval to_fullint to_int to_sep to_gensep to_casesep to_decoup 
              to_diff to_under 
@@ -611,11 +611,11 @@ pvm_activate()$    % initializes pvm_able in crpvm.red
 
 !*iconic:=nil$     put('!*iconic,'description,list("whether new processes in parallelization should appear as icons"))$
 
-done_trafo:={'LIST}$   put('done_trafo,'description,list("a list of backtransformations of done transformations"))$
+done_trafo:={'list}$   put('done_trafo,'description,list("a list of backtransformations of done transformations"))$
 
 inverse_trafo_list_incomplete:=nil$  put('inverse_trafo_list_incomplete,'description,list(""))$
 
-groeb_solve:='REDUCE$  put('groeb_solve,'description,list("which Groebner package to use and how, options:
+groeb_solve:='reduce$  put('groeb_solve,'description,list("which Groebner package to use and how, options:
  'SL_LEX  for Singular in mode 'lex
  'SL_GRAD for Singular in mode 'gradlex
  'SL_REVGRAD for Singular in mode 'revgradlex
@@ -655,7 +655,7 @@ groeb_diff_max:=15$         put('groeb_diff_max,'description,list("a measure of 
 
 alg_poly:=nil$       put('alg_poly,'description,list("=t if the system is algebraic and polynomial"))$
 
-case_list:={'LIST}$  put('case_list,'description,list("an algebraic list of expressions which should be considered =0/<>0 in this order"))$
+case_list:={'list}$  put('case_list,'description,list("an algebraic list of expressions which should be considered =0/<>0 in this order"))$
 
 equations_file:=""$  put('equations_file,'description,list("name of the file from which equations are read and added"))$
 
@@ -965,7 +965,7 @@ put('case_gen_separation,'description,
 algebraic procedure ini_let_rules$
 begin 
 
-  lisp(userrules_:={'LIST})$    % LET rules defined by the user
+  lisp(userrules_:={'list})$    % LET rules defined by the user
 
   explog_:= {
    cot(~x) => 1/tan(x),

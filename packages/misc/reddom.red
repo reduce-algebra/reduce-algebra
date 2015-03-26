@@ -70,16 +70,16 @@ symbolic procedure reduce(u,v);
    begin scalar weightlist,x;
       % Look for equal ratios of elements.
       x := u;
-      IF !*YYY THEN
-      x := reduce!-ratios(x,v);
+      if !*yyy then
+        x := reduce!-ratios(x,v);
       % Define weighting list.
       weightlist := set!-weights v;
       % Choose column elimination with lowest weight.
-      IF !*XXX THEN
-      x := reduce!-columns(x,v,weightlist);
+      if !*xxx then
+        x := reduce!-columns(x,v,weightlist);
       % Look for a reduction in weight of the expression.
-      IF !*XXX THEN
-      x := reduce!-weights(x,v,weightlist);
+      if !*xxx then
+        x := reduce!-weights(x,v,weightlist);
       return x
    end;
 

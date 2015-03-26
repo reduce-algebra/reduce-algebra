@@ -1,782 +1,2679 @@
-$EOF$   $eof$   
-*ADDSQ   *addsq   
-*ALLFAC   *allfac   
-*BALANCED_MOD   *balanced_mod   
-*COMBINELOGS   *combinelogs   
-*CRAMER   *cramer   
-*DIFFF   *difff   
-*DIFFP   *diffp   
-*DIFFSQ   *diffsq   
-*DIV   *div   
-*EXP   *exp   
-*EXPANDLOGS   *expandlogs   
-*FACTOR   *factor   
-*GCD   *gcd   
-*INVSQ   *invsq   
-*K2F   *k2f   
-*KK2F   *kk2f   
-*KK2Q   *kk2q   
-*LIMITEDFACTORS   *limitedfactors   
-*MCD   *mcd   
-*MULTF   *multf   
-*MULTSQ   *multsq   
-*N2F   *n2f   
-*NoInt   *noint   
-*Odesolve_NoInt   *odesolve_noint   
-*P2F   *p2f   
-*P2q   *p2q   
-*PRECISE   *precise   
-*Q2F   *q2f   
-*RATIONAL   *rational   
-*TRA   *tra   
-*TRINT   *trint   
-*TRJHD   *trjhd   
-*TayExp2q   *tayexp2q   
-*TeXbreak   *texbreak   
-*TeXindent   *texindent   
-*YYY   *yyy   
-*vdpInteger   *vdpinteger   
-*vdpModular   *vdpmodular   
-1PI   1pi   
-A   a   
-A1   a1   
-A2   a2   
-A3   a3   
-A4   a4   
-A5   a5   
-AA   aa   
-AB   ab   
-ABASIC   abasic   
-ABOVE   above   
-ACOS   acos   
-ACOSH   acosh   
-ADDF   addf   
-ADDSQ   AddSQ   addsq   
-AFactor   afactor   
-AGM   agm   
-ALGEBRAICP   algebraicp   
-ALGEBRAICSF   algebraicsf   
-ALGFN   algfn   
-ALGFNP   algfnp   
-ALGFNPL   algfnpl   
-ALGFNSF   algfnsf   
-ALGFNSQ   algfnsq   
-ALGNUMS   algnums   
-ALL   all   
-ALLFAC   allfac   
-AList   Alist   aList   alist   
-AND   and   
-ANS   ans   
-ANSWER   Answer   answer   
-ANTI2   anti2   
-ANTISUBS   antisubs   
-ARGOF   argof   
-ASIN   asin   
-ASSOC   assoc   
-ATAN   atan   
-ATOM   Atom   atom   
-ATSOC   atsoc   
-Acell   acell   
-Aex   aex   
-Ai   ai   
-Aiprime   aiprime   
-Airy_AiPrime   Airy_Aiprime   
-Airy_Biprime   Airy_biprime   
-Algebraic   algebraic   
-Alpha   alpha   
-An   aN   an   
-Anu   anu   
-Any   any   
-Ap   ap   
-ApplySym   applysym   
-Ar   ar   
-B   b   
-B1   b1   
-B2   b2   
-B3   b3   
-BA   Ba   ba   
-BALANCED_MOD   balanced_mod   
-BASIC-LISTOFALLSQRTS   basic-listofallsqrts   
-BASIC-LISTOFNEWSQRTS   basic-listofnewsqrts   
-BASICPLACE   basicplace   
-BASIS   basis   
-BASIS2   basis2   
-BB   bb   
-BEGIN   begin   
-BINOMIAL   binomial   
-Bernoulli   bernoulli   
-BernoulliP   bernoullip   
-BesselI   besselI   besseli   
-BesselJ   besselJ   besselj   
-BesselK   besselK   besselk   
-BesselY   besselY   bessely   
-BettiNumbers*   bettiNumbers*   
-Bi   bi   
-Biprime   biprime   
-Boolean   boolean   
-C   c   
-C1   c1   
-C2   c2   
-C3   c3   
-CAAR   caar   
-CADDR   caddr   
-CADR   cadr   
-CANCELLATIONLIST   cancellationlist   
-CAR   car   
-CDAR   cdar   
-CDR   cdr   
-CDRXX   cdrxx   
-CHEBYSHEVT   ChebyshevT   chebyshevT   chebyshevt   
-CHEBYSHEVU   ChebyshevU   chebyshevU   chebyshevu   
-COATES-FDI   coates-fdi   
-COEFF   coeff   
-COLLECT   collect   
-COMBINE-SQRTS   combine-sqrts   
-COMBINELOGS   combinelogs   
-COMM   comm   
-COMMUTE   commute   
-COMPLETEPLACES2   completeplaces2   
-COMPLEX   complex   
-CONSTRAINEDREDUCTIONS   constrainedreductions   
-CONTRACT   contract   
-CONTRADICT   contradict   
-COPYVEC   copyvec   
-COS   Cos   cos   
-COSH   cosh   
-CR*   cr*   
-CRAMER   cramer   
-CURRENTSPACE   currentspace   
-Catalan   catalan   
-Chi   chi   
-Ci   ci   
-Circle   circle   
-Circle1   circle1   
-Clause   clause   
-Comment*   comment*   
-Constant   constant   
-D   d   
-D4   d4   
-DD   dd   
-DEGREEIN   degreein   
-DELETE   delete   
-DELTA   Delta   delta   
-DENR   denr   
-DENR-ALGNO   denr-algno   
-DEPENDSP   dependsp   
-DEPENDSPL   dependspl   
-DEPLIST   deplist   
-DEPLUS   deplus   
-DETIMES   detimes   
-DF   df   
-DFF   dff   
-DIFFP   diffp   
-DIV   div   
-DIVIDE   divide   
-DMODE*   dmode*   
-DO   do   
-DOMAINP   domainp   
-DOT   dot   
-DROPEQUATION   dropequation   
-DUMP-SQRTS-COEFFS   dump-sqrts-coeffs   
-DUMP-SQRTS-COEFFS2   dump-sqrts-coeffs2   
-DW   dw   
-DX   Dx   dx   
-DY   dy   
-Domain   domain   
-E   e   
-EACH   each   
-EEXPR   eexpr   
-ELIMINATECONSTOFINT   eliminateconstofint   
-ELIMINATEWITH   eliminatewith   
-ELSE   else   
-EMSG*   emsg*   
-END   end   
-ENDMODULE   endmodule   
-EQ   eq   
-EQCAR   eqcar   
-EQQN   eqqn   
-EQUAL   equal   
-EQUALITIES   equalities   
-EQUALITYSTACK   equalitystack   
-EQUALPLACE   equalplace   
-ERROR   error   
-EVAL   eval   
-EVENP   evenp   
-EXP   exp   
-EXPANDINTO   expandinto   
-EXPANDLOGS   expandlogs   
-EXPORTS   exports   
-EXPSUB   expsub   
-EXPT   expt   
-EXTENPLACE   extenplace   
-Ei   ei   
-Error1   error1   
-Euler:aux   euler:aux   
-Euler_gamma   euler_gamma   
-ExptSQ   exptsq   
-F   f   
-F0   f0   
-FACTOR   factor   
-FACTORIAL   Factorial   factorial   
-FDI-PRINT   fdi-print   
-FDI-REVERT   fdi-revert   
-FDI-REVERTPOW   fdi-revertpow   
-FDI-REVERTSQ   fdi-revertsq   
-FDI-UPGR2   fdi-upgr2   
-FDI-UPGRADE   fdi-upgrade   
-FDI2   fdi2   
-FG   fg   
-FI   fi   
-FINDMAGC   findmagc   
-FINDPHANTOMS   findphantoms   
-FINITISE   finitise   
-FIRSTLINEARRELATION   firstlinearrelation   
-FIXP   fixp   
-FL   fl   
-FLOATP   floatp   
-FLUID   fluid   
-FOR   for   
-FORMSQRT   formsqrt   
-FPS   fps   
-FRACDI   fracdi   
-FRACTIONAL-DEGREE-AT-INFINITY   fractional-degree-at-infinity   
-FUNCTION   Function   function   
-Fact_mat   fact_mat   
-Factorizer   factorizer   
-Formula   formula   
-Fresnel_C   fresnel_c   
-Fresnel_S   fresnel_s   
-Ftype   ftype   
-G   g   
-G3   g3   
-GAMMA   Gamma   gamma   
-GAnu   ganu   
-GCD   gcd   
-GCDF   gcdf   
-GCDN   gcdn   
-GENTRAN   gentran   
-GET-CORRECT-SQRTS   get-correct-sqrts   
-GETSQRTSFROMPLACES   getsqrtsfromplaces   
-GETV   getV   getv   
-GFMexit   gfmexit   
-GFMsq   gfmsq   
-GG   gg   
-GHFsq   ghfsq   
-GO   go   
-GPerm   gperm   
-GegenbauerP   gegenbauerP   gegenbauerp   
-GenSym   gensym   
-Ghg   ghg   
-Global   global   
-Golden_Ratio   Golden_ratio   golden_ratio   
-GradedBettiNumbers*   gradedBettiNumbers*   
-Gram+Schmid   gram+schmid   
-H   h   
-HEPHYS   hephys   
-HERMITEP   HermiteP   Hermitep   hermitep   
-HIDDEN   hidden   
-HIDDENTERMGENERATORS   hiddentermgenerators   
-HIDE   hide   
-Hankel1   hankel1   
-Hankel2   hankel2   
-Heaviside   heaviside   
-I   i   
-I1   i1   
-I2   i2   
-I3   i3   
-IADD1   iadd1   
-ID   Id   id   
-IDP   idp   
-IEQUAL   iequal   
-IF   If   if   
-II   ii   
-IMPART   impart   
-IMPORTS   imports   
-IN   In   in   
-INDEXLIST   indexlist   
-INDEXMAP   indexmap   
-INEQ   ineq   
-INEQUALITIES   inequalities   
-INEQUALITYSTACK   inequalitystack   
-INFSUM   infsum   
-INTERFERE   interfere   
-INTERR   interr   
-INTVAR   intvar   
-INVOLVESF   involvesf   
-INVOLVESQ   involvesq   
-INVSQ   invsq   
-ISO   iso   
-ISUB1   isub1   
-IV   iv   
-InfCoreData   InfcoreData   
-Init   init   
-IntDf   intdf   
-Integer   integer   
-Iri   iri   
-J   j   
-J1   j1   
-J2   j2   
-JACOBIP   JacobiP   jacobiP   jacobip   
-JHDDIFF   jhddiff   
-K   k   
-KK   kk   
-Kernel   kernel   
-KernelList   kernellist   
-KummerM   kummerM   kummerm   
-KummerU   kummerU   kummeru   
-L   l   
-L0   l0   
-L1   l1   
-L2   l2   
-L3   l3   
-L4   l4   
-L5   l5   
-L6   l6   
-L7   l7   
-L8   l8   
-LAGUERREP   LaguerreP   laguerreP   laguerrep   
-LAMBDA   lambda   
-LAST-NON-ZERO   last-non-zero   
-LASTREDUCTION   lastreduction   
-LC   lc   
-LCMN   lcmn   
-LCSF   lcsf   
-LCSF2   lcsf2   
-LDEG   ldeg   
-LEGENDREP   LegendreP   legendreP   legendrep   
-LEGENDREQ   LegendreQ   
-LENGTH   length   
-LET   Let   let   
-LFIRSTSUBS   lfirstsubs   
-LHS   lhs   
-LIMITEDFACTORS   limitedfactors   
-LIST   List   list   
-LISTOFALLSQRTS   listofallsqrts   
-LISTOFNEWSQRTS   listofnewsqrts   
-LISTP   listp   
-LITERAL   literal   
-LOOP   loop   
-LPOW   lpow   
-LSUBS   lsubs   
-LT   lt   
-LVLAST   lvlast   
-Left   left   
-Lerch_Phi   Lerch_phi   lerch_phi   
-Line   line   
-List1   list1   
-List2   list2   
-Lommel2sq   lommel2sq   
-Lst   lst   
-M   m   
-M1   m1   
-M2   m2   
-MA   Ma   ma   
-MAGICLIST   magiclist   
-MAKEPRIM   makeprim   
-MANINP   maninp   
-MAPC   mapc   
-MAPPLY   mapply   
-MAPVEC   mapvec   
-MARKVAR   markvar   
-MATCHEQNP   matcheqnp   
-MATCHP   matchp   
-MATRIX   matrix   
-MAX   max   
-MCD   mcd   
-MELLINCOEF   mellincoef   
-MEMBER   member   
-MEMQ   memq   
-MINUSP   minusp   
-MKILIST   mkilist   
-MKSP   mksp   
-MKUNIQUEVECT   mkuniquevect   
-MKVECT   mkvect   
-MKVECT2   mkvect2   
-MODIFY   modify   
-MODIFY-QUOTF   modify-quotf   
-MODIFY-SQRTS   modify-sqrts   
-MODIFY2   modify2   
-MODULE   module   
-MULTBYALLCOMBINATIONS   multbyallcombinations   
-MULTF   MultF   multf   
-MULTIPLICITY-FACTOR   multiplicity-factor   
-MULTPQ   multpq   
-MULTS   mults   
-MULTS0   mults0   
-MULTSINF   multsinf   
-MULTSMISC   multsmisc   
-MULTSQ   MultSQ   multsq   
-MV   mv   
-MVAR   mvar   
-MXINV   mxinv   
-M__   m__   
-Make-Taylor*   Make-taylor*   make-Taylor*   make-taylor*   
-MathML   mathML   mathml   
-MathML2   mathML2   mathml2   
-MeijerG   meijerg   
-MonomCompare   monomCompare   
-Motzkin   motzkin   
-MsgPri   msgpri   
-N   n   
-NCONC   nconc   
-NEGF   negf   
-NEGSQ   NegSQ   negsq   
-NEQ   neq   
-NEWEQUATION   newequation   
-NEWPIVOT   newpivot   
-NEWPLACE   newplace   
-NEWROW   newrow   
-NEWSPACE   newspace   
-NEXTPRIME   nextprime   
-NIL   niL   nil   
-NINDEX   nindex   
-NL-RETURN   nl-return   
-NN   nn   
-NNN   nnn   
-NOCHANGE   nochange   
-NONCOM   noncom   
-NONCOMP*   noncomp*   
-NOT   not   
-NOTFLAG   notflag   
-NULL   null   
-NUMBERP   numberp   
-NUMR   numr   
-Nargs   nargs   
-Natp   natp   
-Nmax   nmax   
-NoInt   noint   
-NormalForm   normalForm   normalform   
-Nosimp   nosimp   
-Number   number   
-O   o   
-ODESolve-Exact*   Odesolve-Exact*   
-ODESolve-Int   Odesolve-Int   
-ODESolve-Make-Explicit   Odesolve-Make-Explicit   
-ODESolve-NonLinear1   ODESolve-nonlinear1   
-ODESolve-Solns   odesolve-solns   
-OFF   off   
-OFFSET1   offset1   
-OFFSETLIST   offsetlist   
-OK   ok   
-OLDROW   oldrow   
-OLst   olst   
-OMATP   omatp   
-OMOBJ   omobj   
-ON   on   
-ONE   one   
-ONEP   onep   
-OR   or   
-Obj   obj   
-Of   of   
-Once   once   
-P   p   
-P-LIST   p-list   
-P1   p1   
-P2   p2   
-P3   p3   
-P4   p4   
-P9   p9   
-PAIRP   pairp   
-PART   part   
-PATTERN   pattern   
-PF   pf   
-PHANTOMMATCH   phantommatch   
-PHANTOMS   phantoms   
-PHANTOMTERMS   phantomterms   
-PHI   phi   
-PHYSINDEX   physindex   
-PI   Pi   pi   
-PIVOTX   pivotx   
-PLACE   place   
-PLACES   places   
-PLACES0   places0   
-PLACESINF   placesinf   
-PLACESMISC   placesmisc   
-PLUS   plus   
-POPSTACK   popstack   
-POW   pow   
-PRECISE   precise   
-PREPF   prepf   
-PREPSQ   prepsq   
-PRIME   prime   
-PRIMEP   primep   
-PRIMES   primes   
-PRIN2   prin2   
-PRINC   princ   
-PRINTC   printc   
-PRINTDF   printdf   
-PRINTEQNS   printeqns   
-PRINTLINSPACE   printlinspace   
-PRINTPLACE   printplace   
-PRINTREDUCTION   printreduction   
-PRINTSF   printsf   
-PRINTSQ   printsq   
-PROCEDURE   procedure   
-PRODUCT   product   
-PUT   Put   put   
-PUTV   putv   
-P_list   p_list   
-Package   package   
-Pair   pair   
-Pinv   pinv   
-Pochhammer   pochhammer   
-Point   point   
-PolynomQ   polynomq   
-PolynomQQ   polynomqq   
-PolynomQQQ   polynomQQQ   polynomqqq   
-Polynomialp   polynomialp   
-Psi   psi   
-Q   q   
-Q1   q1   
-Q2   q2   
-Q3   q3   
-QG   qg   
-QUASILINPDE   quasilinpde   
-QUOTF   quotf   
-Qinv   qinv   
-QuotSQ   quotsq   
-R   r   
-R1   r1   
-R2   r2   
-RA   rA   ra   
-RATIONAL   Rational   rational   
-REALSQRTS   realsqrts   
-RED   red   
-REDUCE   reduce   
-REDUCEFUNCTIONS_   reducefunctions_   
-REDUCTIONS   reductions   
-RELS   rels   
-REMFLAG   remflag   
-REMOVE-EXTRA-SQRTS   remove-extra-sqrts   
-REMOVECMSQ   removecmsq   
-RES   Res   res   
-REST   rest   
-RETURN   return   
-REVERSE   reverse   
-REVERSEWOC   reversewoc   
-RFIRSTSUBS   rfirstsubs   
-RFU   rfu   
-RHS   rhs   
-RLst   rlst   
-ROW   row   
-RSOLVE   rsolve   
-RSUBS   rsubs   
-RSetd   rsetd   
-RVALUE   rvalue   
-RatPoly   ratPoly   
-Ratio   ratio   
-RationalP   rationalp   
-Re   re   
-RecursionSimplify   Recursionsimplify   
-RedErr   rederr   
-Rev   rev   
-Right   right   
-Rlistat   rlistat   
-S   s   
-S0   s0   
-SAVE   save   
-SCALAR   scalar   
-SCALOP   scalop   
-SETLINSPACE   setlinspace   
-SF   sf   
-SFList   SfList   
-SGhg   Sghg   sghg   
-SHARE   share   
-SIMP   simp   
-SIMP*   simp*   
-SIMPSQRT2   simpsqrt2   
-SIMPSQRTSQ   simpsqrtsq   
-SIN   sin   
-SINH   sinh   
-SOlvemethods*   solvemethods*   
-SQ   sq   
-SQLIST   sqlist   
-SQRT   sqrt   
-SQRT-INTVAR   sqrt-intvar   
-SQRT-PLACES-ALIST   sqrt-places-alist   
-SQRT2TOP   sqrt2top   
-SQRTL   sqrtl   
-SQRTL-IN-SF   sqrtl-in-sf   
-SQRTS   sqrts   
-SQRTS-IN-INTEGRAND   sqrts-in-integrand   
-SQRTSAVE   sqrtsave   
-SQRTSIGN   sqrtsign   
-SQRTSIN   sqrtsin   
-SQRTSIN2   sqrtsin2   
-SQRTSINPLACES   sqrtsinplaces   
-SQRTSINSF   sqrtsinsf   
-SQRTSINSQ   sqrtsinsq   
-SQRTSINTREE   sqrtsintree   
-SQRTSSOFAR   sqrtssofar   
-SS   ss   
-SUB   sub   
-SUBST   subst   
-SUBSTITUTESQ   substitutesq   
-SUM   sum   
-SUPERPRINT   superprint   
-SYMBOLIC   SYMBOLic   Symbolic   symbolic   
-Shi   shi   
-Si   si   
-Some   some   
-SpTT   spTT   
-Spec_Recrules   Spec_recrules   
-State   state   
-Stf:   stf:   
-Stieltjes:   stieltjes:   
-String   string   
-StruveH   struveH   struveh   
-StruveHsq   struvehsq   
-StruveL   struveL   struvel   
-StruveLsq   struvelsq   
-T   t   
-T1   t1   
-TAB*   tab*   
-TDEG   tdeg   
-TEMP   temp   
-TEMPVAR   tempvar   
-TERMSUSED   termsused   
-TERPRI   terpri   
-TERPRI*   terpri*   
-TEST   test   
-THEN   then   
-TO   To   to   
-TOP   top   
-TT   tt   
-Tag   tag   
-TayCfSQ   TayCfSq   
-TayCoeffList   TayCoefflist   
-TayCoeffList-union   taycoefflist-union   
-TayExp-Quotient   TayExp-quotient   
-TayExp-greaterp   tayexp-greaterp   
-TayOrig   Tayorig   
-TayTp-min2   taytp-min2   
-Taylor   taylor   
-Taylor*p   taylor*p   
-TaylorPrintTerms   taylorprintterms   
-TaylorRevert   taylorrevert   
-TaylorTemplate   taylortemplate   
-The   the   
-Theory   theory   
-This   this   
-Tlist   tlist   
-TypErr   typerr   
-U   u   
-U**J   u**j   
-U1   u1   
-U2   u2   
-U3   u3   
-ULIST   ulist   
-UNION   union   
-UPBV   upbv   
-US   us   
-UT   ut   
-UU   uu   
-UV   uv   
-U_   u_   
-V   v   
-V1   v1   
-V2   v2   
-V3   v3   
-VAL   val   
-VAR   var   
-VEC   vec   
-VEC2SF   vec2sf   
-VECOP   vecop   
-VT   vt   
-VV   vv   
-Vak   vak   
-VarList   varlist   
-Vector   vector   
-W   w   
-W2   w2   
-WHILE   while   
-WIND   wind   
-WhittakerM   whittakerm   
-WhittakerW   whittakerw   
-Write   write   
-X   x   
-X11   x11   
-X12   x12   
-X21   x21   
-X22   x22   
-X31   x31   
-X32   x32   
-XSUBSTITUTEP   xsubstitutep   
-Y   y   
-Y0   y0   
-Y1   y1   
-Y2   y2   
-Z   z   
-Z0   z0   
-Z1   z1   
-Z2   z2   
-ZERO   zero   
-ZEROP   zerop   
-Zeta   zeta   
-addto-all-TayTpElORders   addto-all-TayTpElOrders   addto-all-taytpelorders   
-algint-RATNUMP   algint-ratnump   
-allIntervalsP   allintervalsP   
-attributesML   attributesml   
-bN   bn   
-bigA   biga   
-cN   cn   
-cS   cs   
-cap_J   cap_j   
-cap_M   cap_m   
-co_dynPush   co_dynpush   
-columnT   columnt   
-convert-Taylor*   convert-taylor*   
-cst-Taylor*   cst-taylor*   
-dC   dc   
-dS   ds   
-definitionURL   definitionurl   
-dipILcomb1   dipilcomb1   
-dipcontEvMin   dipcontevmin   
-dipcontLowerEv   dipcontlowerev   
-evtpList   evtplist   
-fList   flist   
-foundBReak   foundBreak   
-gFI   gfi   
-groebPosCancel   groebposcancel   
-has-Taylor*   has-taylor*   
-i&makeComment   i&makecomment   
-ibalp_var-getLev   ibalp_var-getlev   
-ic_appendguardList   ic_appendguardlist   
-ic_cadcellList   ic_cadcelllist   
-ic_computeInfCore   ic_computeinfcore   
-ic_falseVect   ic_falsevect   
-ic_resetcadcellList   ic_resetcadcelllist   
-ic_updateevtpList   ic_updateevtplist   
-ic_varList   ic_varlist   
-initialSet   initialset   
-int_Simplify_factorial   int_simplify_factorial   
-ithListElem   ithlistelem   
-makeVdp   makevdp   
-neW   new   
-newForm   newform   
-newJ   newj   
-numList   numlist   
-ofsf_s2aPointPair   ofsf_s2apointPair   
-ofsf_updIvl   ofsf_updivl   
-parseML   parseml   
-phi_N   phi_n   
-polE   pole   
-polP   polp   
-prepTayCoeff   preptaycoeff   
-prepTaylor*   preptaylor*   
-red_Interreduce   red_interreduce   
-red_Straight   red_straight   
-red_TailRed   red_tailred   
-rootsList   rootslist   
-rowT   rowt   
-rplacA   rplaca   
-rplacD   rplacd   
-setFuncsNaryRD   setFuncsnaryRD   
-traceFPS   tracefps   
-updateSQ   updatesq   
-vdpDisjoint?   vdpdisjoint?   
-vdpGetProp   vdpgetprop   
-vdpLbc   vdplbc   
-vdpredZero?   vdpredzero?   
++++ Transcript to /cygdrive/y/projects/reduce-alg started at Thu Mar 26 21:33:10 2015 +++
+Reduce (Free CSL version), 26-Mar-15 ...
 
-780 symbols involved
+
+nil
+
+
+nil
+
+
+(1318 files)
+
+
+
+0
+
++++ Start processing file "alg-form.red"
+At end of alg-form.red total token count = 179
++++ Start processing file "alg.red"
+At end of alg.red total token count = 203
++++ Start processing file "algbool.red"
+At end of algbool.red total token count = 520
++++ Start processing file "algdcl.red"
+At end of algdcl.red total token count = 801
++++ Start processing file "coeff.red"
+At end of coeff.red total token count = 1260
++++ Start processing file "depend.red"
+At end of depend.red total token count = 1807
++++ Start processing file "elem.red"
+At end of elem.red total token count = 7649
++++ Start processing file "eqn.red"
+At end of eqn.red total token count = 8188
++++ Start processing file "exptchk.red"
+At end of exptchk.red total token count = 9107
++++ Start processing file "extout.red"
+At end of extout.red total token count = 11111
++++ Start processing file "fac.red"
+At end of fac.red total token count = 11272
++++ Start processing file "farith.red"
+At end of farith.red total token count = 11499
++++ Start processing file "forall.red"
+At end of forall.red total token count = 17346
++++ Start processing file "gcdchk.red"
+At end of gcdchk.red total token count = 18224
++++ Start processing file "general.red"
+At end of general.red total token count = 19370
++++ Start processing file "genmod.red"
+At end of genmod.red total token count = 20148
++++ Start processing file "heugcd.red"
+At end of heugcd.red total token count = 22788
++++ Start processing file "intro.red"
+At end of intro.red total token count = 23880
++++ Start processing file "linop.red"
+At end of linop.red total token count = 24952
++++ Start processing file "logsort.red"
+At end of logsort.red total token count = 25742
++++ Start processing file "map.red"
+At end of map.red total token count = 26369
++++ Start processing file "maxmin.red"
+At end of maxmin.red total token count = 26729
++++ Start processing file "mkgroup.red"
+At end of mkgroup.red total token count = 27177
++++ Start processing file "mygeneral.red"
+At end of mygeneral.red total token count = 28172
++++ Start processing file "nestrad.red"
+At end of nestrad.red total token count = 28528
++++ Start processing file "nssimp.red"
+At end of nssimp.red total token count = 29333
++++ Start processing file "numsup.red"
+At end of numsup.red total token count = 29368
++++ Start processing file "opmtch.red"
+At end of opmtch.red total token count = 31337
++++ Start processing file "order.red"
+At end of order.red total token count = 31897
++++ Start processing file "part.red"
+At end of part.red total token count = 32730
++++ Start processing file "prep.red"
+At end of prep.red total token count = 33953
++++ Start processing file "random.red"
+At end of random.red total token count = 34294
++++ Start processing file "reval.red"
+At end of reval.red total token count = 36146
++++ Start processing file "rmsubs.red"
+At end of rmsubs.red total token count = 36179
++++ Start processing file "showrule.red"
+At end of showrule.red total token count = 37418
++++ Start processing file "simp.red"
+At end of simp.red total token count = 45609
++++ Start processing file "simplog.red"
+At end of simplog.red total token count = 47022
++++ Start processing file "smallmod.red"
+At end of smallmod.red total token count = 47478
++++ Start processing file "sort.red"
+At end of sort.red total token count = 48041
++++ Start processing file "spcfnint.red"
+At end of spcfnint.red total token count = 52630
++++ Start processing file "str.red"
+At end of str.red total token count = 53270
++++ Start processing file "sub.red"
+At end of sub.red total token count = 54875
++++ Start processing file "weight.red"
+At end of weight.red total token count = 55107
++++ Start processing file "zfactor.red"
+At end of zfactor.red total token count = 56505
++++ Start processing file "abasic.red"
+At end of abasic.red total token count = 56716
++++ Start processing file "afactor.red"
+At end of afactor.red total token count = 58007
++++ Start processing file "algfn.red"
+At end of algfn.red total token count = 58290
++++ Start processing file "algint.red"
+At end of algint.red total token count = 58468
++++ Start processing file "algnums.red"
+At end of algnums.red total token count = 58978
++++ Start processing file "antisubs.red"
+At end of antisubs.red total token count = 59523
++++ Start processing file "coates.red"
+At end of coates.red total token count = 61861
++++ Start processing file "coatesid.red"
+At end of coatesid.red total token count = 63950
++++ Start processing file "findmagc.red"
+At end of findmagc.red total token count = 64253
++++ Start processing file "findres.red"
+At end of findres.red total token count = 64979
++++ Start processing file "finitise.red"
+At end of finitise.red total token count = 65469
++++ Start processing file "fixsubf.red"
+At end of fixsubf.red total token count = 66338
++++ Start processing file "fracdi.red"
+At end of fracdi.red total token count = 66927
++++ Start processing file "genus.red"
+At end of genus.red total token count = 67493
++++ Start processing file "hidden.red"
+At end of hidden.red total token count = 68784
++++ Start processing file "intbasis.red"
+At end of intbasis.red total token count = 70405
++++ Start processing file "inttaylr.red"
+At end of inttaylr.red total token count = 72875
++++ Start processing file "jhddiff.red"
+At end of jhddiff.red total token count = 73062
++++ Start processing file "jhdriver.red"
+At end of jhdriver.red total token count = 74058
++++ Start processing file "linrel.red"
+At end of linrel.red total token count = 74345
++++ Start processing file "log2atan.red"
+At end of log2atan.red total token count = 75215
++++ Start processing file "maninp.red"
+At end of maninp.red total token count = 75338
++++ Start processing file "modify.red"
+At end of modify.red total token count = 76030
++++ Start processing file "modlineq.red"
+At end of modlineq.red total token count = 77440
++++ Start processing file "nagell.red"
+At end of nagell.red total token count = 79000
++++ Start processing file "nbasis.red"
+At end of nbasis.red total token count = 79787
++++ Start processing file "phantoms.red"
+At end of phantoms.red total token count = 80313
++++ Start processing file "places.red"
+At end of places.red total token count = 81145
++++ Start processing file "precoats.red"
+At end of precoats.red total token count = 82301
++++ Start processing file "primes.red"
+At end of primes.red total token count = 82360
++++ Start processing file "removecm.red"
+At end of removecm.red total token count = 82997
++++ Start processing file "sqfrnorm.red"
+At end of sqfrnorm.red total token count = 83812
++++ Start processing file "substns.red"
+At end of substns.red total token count = 84394
++++ Start processing file "torsionb.red"
+At end of torsionb.red total token count = 84766
++++ Start processing file "wstrass.red"
+At end of wstrass.red total token count = 87160
++++ Start processing file "zmodule.red"
+At end of zmodule.red total token count = 88783
++++ Start processing file "arith.red"
+At end of arith.red total token count = 89564
++++ Start processing file "bfauxil.red"
+At end of bfauxil.red total token count = 92853
++++ Start processing file "bfelem.red"
+At end of bfelem.red total token count = 97156
++++ Start processing file "comprd.red"
+At end of comprd.red total token count = 98941
++++ Start processing file "crelem.red"
+At end of crelem.red total token count = 99819
++++ Start processing file "load.red"
+At end of load.red total token count = 99853
++++ Start processing file "math.red"
+At end of math.red total token count = 104510
++++ Start processing file "paraset.red"
+At end of paraset.red total token count = 104907
++++ Start processing file "rdelem.red"
+At end of rdelem.red total token count = 107439
++++ Start processing file "rounded.red"
+At end of rounded.red total token count = 110391
++++ Start processing file "smlbflot.red"
+At end of smlbflot.red total token count = 113202
++++ Start processing file "arinv.red"
+At end of arinv.red total token count = 114335
++++ Start processing file "arnum.red"
+At end of arnum.red total token count = 118333
++++ Start processing file "bath.red"
+At end of bath.red total token count = 125793
++++ Start processing file "assert.red"
+At end of assert.red total token count = 127389
++++ Start processing file "assertcheckfn.red"
+At end of assertcheckfn.red total token count = 128140
++++ Start processing file "assertproc.red"
+At end of assertproc.red total token count = 128562
++++ Start processing file "assist.red"
+At end of assist.red total token count = 128577
++++ Start processing file "auxitens.red"
+At end of auxitens.red total token count = 129140
++++ Start processing file "backtrck.red"
+At end of backtrck.red total token count = 129591
++++ Start processing file "baglist.red"
+At end of baglist.red total token count = 133903
++++ Start processing file "cantens.red"
+At end of cantens.red total token count = 134176
++++ Start processing file "checkind.red"
+At end of checkind.red total token count = 134458
++++ Start processing file "control.red"
+At end of control.red total token count = 137056
++++ Start processing file "contrtns.red"
+At end of contrtns.red total token count = 138780
++++ Start processing file "ctintro.red"
+At end of ctintro.red total token count = 140053
++++ Start processing file "dummy.red"
+At end of dummy.red total token count = 140132
++++ Start processing file "dummycnt.red"
+At end of dummycnt.red total token count = 148849
++++ Start processing file "genpurfn.red"
+At end of genpurfn.red total token count = 151438
++++ Start processing file "gentens.red"
+At end of gentens.red total token count = 154059
++++ Start processing file "grassman.red"
+At end of grassman.red total token count = 154292
++++ Start processing file "hcvctors.red"
+At end of hcvctors.red total token count = 155484
++++ Start processing file "helpasst.red"
+At end of helpasst.red total token count = 155808
++++ Start processing file "matrext.red"
+At end of matrext.red total token count = 157342
++++ Start processing file "opertens.red"
+At end of opertens.red total token count = 158299
++++ Start processing file "partitns.red"
+At end of partitns.red total token count = 160700
++++ Start processing file "perms.red"
+At end of perms.red total token count = 162522
++++ Start processing file "polyexns.red"
+At end of polyexns.red total token count = 163774
++++ Start processing file "sl2psl.red"
+At end of sl2psl.red total token count = 164038
++++ Start processing file "spaces.red"
+At end of spaces.red total token count = 165701
++++ Start processing file "switchxt.red"
+At end of switchxt.red total token count = 165715
++++ Start processing file "transfns.red"
+At end of transfns.red total token count = 166238
++++ Start processing file "vectorop.red"
+At end of vectorop.red total token count = 166933
++++ Start processing file "atensor.red"
+At end of atensor.red total token count = 166944
++++ Start processing file "basis.red"
+At end of basis.red total token count = 167541
++++ Start processing file "dummy1.red"
+At end of dummy1.red total token count = 168303
++++ Start processing file "dummy2.red"
+At end of dummy2.red total token count = 169652
++++ Start processing file "perm1.red"
+At end of perm1.red total token count = 170846
++++ Start processing file "pvector.red"
+At end of pvector.red total token count = 172132
++++ Start processing file "tensor.red"
+At end of tensor.red total token count = 174447
++++ Start processing file "tensor1.red"
+At end of tensor1.red total token count = 176355
++++ Start processing file "tensorio.red"
+At end of tensorio.red total token count = 177015
++++ Start processing file "avector.red"
+At end of avector.red total token count = 181414
++++ Start processing file "bibasis.red"
+At end of bibasis.red total token count = 181428
++++ Start processing file "bibasis_interface.red"
+At end of bibasis_interface.red total token count = 181808
++++ Start processing file "bibasis_involutive.red"
+At end of bibasis_involutive.red total token count = 182869
++++ Start processing file "bibasis_janet_tree.red"
+At end of bibasis_janet_tree.red total token count = 183885
++++ Start processing file "bibasis_monom.red"
+At end of bibasis_monom.red total token count = 185691
++++ Start processing file "bibasis_polynom.red"
+At end of bibasis_polynom.red total token count = 186694
++++ Start processing file "bibasis_qset.red"
+At end of bibasis_qset.red total token count = 187075
++++ Start processing file "bibasis_triple.red"
+At end of bibasis_triple.red total token count = 187485
++++ Start processing file "bibasis_tset.red"
+At end of bibasis_tset.red total token count = 187713
++++ Start processing file "breduce.red"
+At end of breduce.red total token count = 188387
++++ Start processing file "bas.red"
+At end of bas.red total token count = 189320
++++ Start processing file "bcsf.red"
+At end of bcsf.red total token count = 189878
++++ Start processing file "cali.red"
+At end of cali.red total token count = 190423
++++ Start processing file "calimat.red"
+At end of calimat.red total token count = 191249
++++ Start processing file "dpmat.red"
+At end of dpmat.red total token count = 192971
++++ Start processing file "dpoly.red"
+At end of dpoly.red total token count = 195126
++++ Start processing file "groeb.red"
+At end of groeb.red total token count = 197996
++++ Start processing file "groebf.red"
+At end of groebf.red total token count = 201158
++++ Start processing file "hf.red"
+At end of hf.red total token count = 202196
++++ Start processing file "intf.red"
+At end of intf.red total token count = 203834
++++ Start processing file "lf.red"
+At end of lf.red total token count = 206137
++++ Start processing file "matop.red"
+At end of matop.red total token count = 208295
++++ Start processing file "mo.red"
+At end of mo.red total token count = 210131
++++ Start processing file "moid.red"
+At end of moid.red total token count = 211056
++++ Start processing file "odim.red"
+At end of odim.red total token count = 212001
++++ Start processing file "prime.red"
+At end of prime.red total token count = 215712
++++ Start processing file "quot.red"
+At end of quot.red total token count = 217116
++++ Start processing file "red.red"
+At end of red.red total token count = 218384
++++ Start processing file "res.red"
+At end of res.red total token count = 218562
++++ Start processing file "ring.red"
+At end of ring.red total token count = 219796
++++ Start processing file "scripts.red"
+At end of scripts.red total token count = 221675
++++ Start processing file "triang.red"
+At end of triang.red total token count = 222811
++++ Start processing file "camal.red"
+At end of camal.red total token count = 223084
++++ Start processing file "fourdom.red"
+At end of fourdom.red total token count = 224430
++++ Start processing file "fourplus.red"
+At end of fourplus.red total token count = 224772
++++ Start processing file "hdiff.red"
+At end of hdiff.red total token count = 225352
++++ Start processing file "hsub.red"
+At end of hsub.red total token count = 226026
++++ Start processing file "makefour.red"
+At end of makefour.red total token count = 227287
++++ Start processing file "cdiff.red"
+At end of cdiff.red total token count = 227299
++++ Start processing file "cdiffx.red"
+At end of cdiffx.red total token count = 228680
++++ Start processing file "KdV_loc-cl_1.red"
+At end of KdV_loc-cl_1.red total token count = 230056
++++ Start processing file "KdV_loc-cl_1_res.red"
+At end of KdV_loc-cl_1_res.red total token count = 230109
++++ Start processing file "KdV_loc-cl_2.red"
+At end of KdV_loc-cl_2.red total token count = 231471
++++ Start processing file "KdV_loc-cl_2_res.red"
+At end of KdV_loc-cl_2_res.red total token count = 231500
++++ Start processing file "KdV_denom_1.red"
+At end of KdV_denom_1.red total token count = 232340
++++ Start processing file "KdV_denom_2.red"
+At end of KdV_denom_2.red total token count = 233195
++++ Start processing file "KdV_denom_2_res.red"
+At end of KdV_denom_2_res.red total token count = 234444
++++ Start processing file "KdV_Ham_1.red"
+At end of KdV_Ham_1.red total token count = 236366
++++ Start processing file "KdV_Ham_1_res.red"
+At end of KdV_Ham_1_res.red total token count = 236406
++++ Start processing file "KdV_loc-cl_2_res.red"
+At end of KdV_loc-cl_2_res.red total token count = 236435
++++ Start processing file "KdV_nloc-cl_1.red"
+At end of KdV_nloc-cl_1.red total token count = 238379
++++ Start processing file "KdV_nloc-cl_1_res.red"
+At end of KdV_nloc-cl_1_res.red total token count = 238576
++++ Start processing file "KdV_nloc-Ham_1.red"
+At end of KdV_nloc-Ham_1.red total token count = 240624
++++ Start processing file "KdV_nloc-Ham_1_res.red"
+At end of KdV_nloc-Ham_1_res.red total token count = 240688
++++ Start processing file "KdV_nloc-Ham_2.red"
+At end of KdV_nloc-Ham_2.red total token count = 242775
++++ Start processing file "KdV_nloc-Ham_2_res.red"
+At end of KdV_nloc-Ham_2_res.red total token count = 242839
++++ Start processing file "Burg_hsym_1.red"
+At end of Burg_hsym_1.red total token count = 244151
++++ Start processing file "Burg_hsym_1_res.red"
+At end of Burg_hsym_1_res.red total token count = 244268
++++ Start processing file "KdV_hsym_1.red"
+At end of KdV_hsym_1.red total token count = 245571
++++ Start processing file "KdV_hsym_1_res.red"
+At end of KdV_hsym_1_res.red total token count = 245593
++++ Start processing file "KdV_hsym_2.red"
+At end of KdV_hsym_2.red total token count = 246844
++++ Start processing file "KdV_hsym_2_res.red"
+At end of KdV_hsym_2_res.red total token count = 246871
++++ Start processing file "KdV_hsym_3.red"
+At end of KdV_hsym_3.red total token count = 248122
++++ Start processing file "KdV_hsym_3_res.red"
+At end of KdV_hsym_3_res.red total token count = 248135
++++ Start processing file "Bous_Ham_1.red"
+At end of Bous_Ham_1.red total token count = 250843
++++ Start processing file "Bous_Ham_1_res.red"
+At end of Bous_Ham_1_res.red total token count = 250863
++++ Start processing file "Bous_Ham_2.red"
+At end of Bous_Ham_2.red total token count = 253681
++++ Start processing file "Bous_Ham_2_res.red"
+At end of Bous_Ham_2_res.red total token count = 253746
++++ Start processing file "integrator.red"
+At end of integrator.red total token count = 257786
++++ Start processing file "supervf.red"
+At end of supervf.red total token count = 259725
++++ Start processing file "tools21.red"
+At end of tools21.red total token count = 264292
++++ Start processing file "bcint.red"
+At end of bcint.red total token count = 264551
++++ Start processing file "cgb.red"
+At end of cgb.red total token count = 270445
++++ Start processing file "dp.red"
+At end of dp.red total token count = 274534
++++ Start processing file "gb.red"
+At end of gb.red total token count = 280289
++++ Start processing file "gbsc.red"
+At end of gbsc.red total token count = 281225
++++ Start processing file "smartev.red"
+At end of smartev.red total token count = 282379
++++ Start processing file "svdp.red"
+At end of svdp.red total token count = 283216
++++ Start processing file "vecev.red"
+At end of vecev.red total token count = 284174
++++ Start processing file "clprl.red"
+At end of clprl.red total token count = 285873
++++ Start processing file "applysym.red"
+At end of applysym.red total token count = 290168
++++ Start processing file "conlaw.red"
+At end of conlaw.red total token count = 290181
++++ Start processing file "conlaw0.red"
+At end of conlaw0.red total token count = 294050
++++ Start processing file "conlaw1.red"
+At end of conlaw1.red total token count = 297664
++++ Start processing file "conlaw2.red"
+At end of conlaw2.red total token count = 302279
++++ Start processing file "conlaw3.red"
+At end of conlaw3.red total token count = 304998
++++ Start processing file "conlaw4.red"
+At end of conlaw4.red total token count = 309298
++++ Start processing file "crack.red"
+At end of crack.red total token count = 309445
++++ Start processing file "crdec.red"
+At end of crdec.red total token count = 320048
++++ Start processing file "crdiffelim.red"
+At end of crdiffelim.red total token count = 321709
++++ Start processing file "crequsol.red"
+At end of crequsol.red total token count = 322129
++++ Start processing file "crgb.red"
+At end of crgb.red total token count = 325171
++++ Start processing file "crgensep.red"
+At end of crgensep.red total token count = 331485
++++ Start processing file "crhomalg.red"
+At end of crhomalg.red total token count = 333743
++++ Start processing file "crident.red"
+At end of crident.red total token count = 337217
++++ Start processing file "crineq.red"
+At end of crineq.red total token count = 342340
++++ Start processing file "crinit.red"
+At end of crinit.red total token count = 346320
++++ Start processing file "crint.red"
+At end of crint.red total token count = 365663
++++ Start processing file "crintfix.red"
+At end of crintfix.red total token count = 367003
++++ Start processing file "crlinalg.red"
+At end of crlinalg.red total token count = 369119
++++ Start processing file "crmain.red"
+At end of crmain.red total token count = 385069
++++ Start processing file "crorder.red"
+At end of crorder.red total token count = 385790
++++ Start processing file "crpvm.red"
+At end of crpvm.red total token count = 387994
++++ Start processing file "crsep.red"
+At end of crsep.red total token count = 392297
++++ Start processing file "crshort.red"
+At end of crshort.red total token count = 399365
++++ Start processing file "crsimp.red"
+At end of crsimp.red total token count = 410496
++++ Start processing file "crsimpso.red"
+At end of crsimpso.red total token count = 415021
++++ Start processing file "crstart.red"
+At end of crstart.red total token count = 415028
++++ Start processing file "crstruc.red"
+At end of crstruc.red total token count = 415178
++++ Start processing file "crsubsys.red"
+At end of crsubsys.red total token count = 417854
++++ Start processing file "crtrafo.red"
+At end of crtrafo.red total token count = 422985
++++ Start processing file "crunder.red"
+At end of crunder.red total token count = 426855
++++ Start processing file "crutil.red"
+At end of crutil.red total token count = 468169
++++ Start processing file "dev.red"
+At end of dev.red total token count = 468190
++++ Start processing file "fixes2.red"
+At end of fixes2.red total token count = 468434
++++ Start processing file "liepde.red"
+At end of liepde.red total token count = 475152
++++ Start processing file "v3tools.red"
+At end of v3tools.red total token count = 482014
++++ Start processing file "crossref.red"
+At end of crossref.red total token count = 484198
++++ Start processing file "defint.red"
+At end of defint.red total token count = 484242
++++ Start processing file "defint0.red"
+At end of defint0.red total token count = 487476
++++ Start processing file "definta.red"
+At end of definta.red total token count = 495203
++++ Start processing file "defintb.red"
+At end of defintb.red total token count = 496868
++++ Start processing file "defintc.red"
+At end of defintc.red total token count = 497193
++++ Start processing file "defintd.red"
+At end of defintd.red total token count = 498340
++++ Start processing file "definte.red"
+At end of definte.red total token count = 502097
++++ Start processing file "defintf.red"
+At end of defintf.red total token count = 505368
++++ Start processing file "defintg.red"
+At end of defintg.red total token count = 507366
++++ Start processing file "definth.red"
+At end of definth.red total token count = 509236
++++ Start processing file "definti.red"
+At end of definti.red total token count = 510817
++++ Start processing file "defintj.red"
+At end of defintj.red total token count = 512241
++++ Start processing file "defintk.red"
+At end of defintk.red total token count = 518115
++++ Start processing file "defintx.red"
+At end of defintx.red total token count = 523305
++++ Start processing file "a2dip.red"
+At end of a2dip.red total token count = 523826
++++ Start processing file "bcoeff.red"
+At end of bcoeff.red total token count = 524693
++++ Start processing file "condense.red"
+At end of condense.red total token count = 524776
++++ Start processing file "dip2a.red"
+At end of dip2a.red total token count = 524902
++++ Start processing file "dipoly.red"
+At end of dipoly.red total token count = 524997
++++ Start processing file "dipoly1.red"
+At end of dipoly1.red total token count = 526064
++++ Start processing file "dipprint.red"
+At end of dipprint.red total token count = 526234
++++ Start processing file "dipvars.red"
+At end of dipvars.red total token count = 526342
++++ Start processing file "expvec.red"
+At end of expvec.red total token count = 527046
++++ Start processing file "torder.red"
+At end of torder.red total token count = 529487
++++ Start processing file "vdp2dip.red"
+At end of vdp2dip.red total token count = 533581
++++ Start processing file "vdp2dip1.red"
+At end of vdp2dip1.red total token count = 536943
++++ Start processing file "vdp3dip.red"
+At end of vdp3dip.red total token count = 540822
++++ Start processing file "vdpcom.red"
+At end of vdpcom.red total token count = 542610
++++ Start processing file "contact.red"
+At end of contact.red total token count = 543856
++++ Start processing file "disjoin.red"
+At end of disjoin.red total token count = 544289
++++ Start processing file "eds.red"
+At end of eds.red total token count = 544434
++++ Start processing file "edsaux.red"
+At end of edsaux.red total token count = 545834
++++ Start processing file "edscfrm.red"
+At end of edscfrm.red total token count = 548924
++++ Start processing file "edsequiv.red"
+At end of edsequiv.red total token count = 549413
++++ Start processing file "edseval.red"
+At end of edseval.red total token count = 551705
++++ Start processing file "edsexptl.red"
+At end of edsexptl.red total token count = 553182
++++ Start processing file "edsnorml.red"
+At end of edsnorml.red total token count = 554088
++++ Start processing file "edspatch.red"
+At end of edspatch.red total token count = 555447
++++ Start processing file "edspde.red"
+At end of edspde.red total token count = 556878
++++ Start processing file "edssolve.red"
+At end of edssolve.red total token count = 558822
++++ Start processing file "edsuser.red"
+At end of edsuser.red total token count = 560044
++++ Start processing file "element.red"
+At end of element.red total token count = 560479
++++ Start processing file "invol.red"
+At end of invol.red total token count = 561630
++++ Start processing file "prolong.red"
+At end of prolong.red total token count = 562679
++++ Start processing file "pullback.red"
+At end of pullback.red total token count = 563961
++++ Start processing file "restrict.red"
+At end of restrict.red total token count = 564821
++++ Start processing file "systems.red"
+At end of systems.red total token count = 566941
++++ Start processing file "tableaux.red"
+At end of tableaux.red total token count = 567156
++++ Start processing file "transfrm.red"
+At end of transfrm.red total token count = 568572
++++ Start processing file "degform.red"
+At end of degform.red total token count = 568841
++++ Start processing file "exaux.red"
+At end of exaux.red total token count = 568982
++++ Start processing file "excalc.red"
+At end of excalc.red total token count = 569062
++++ Start processing file "exdf.red"
+At end of exdf.red total token count = 569864
++++ Start processing file "exintro.red"
+At end of exintro.red total token count = 570466
++++ Start processing file "exlists.red"
+At end of exlists.red total token count = 571290
++++ Start processing file "forder.red"
+At end of forder.red total token count = 572135
++++ Start processing file "frames.red"
+At end of frames.red total token count = 574574
++++ Start processing file "hodge.red"
+At end of hodge.red total token count = 575189
++++ Start processing file "idexf.red"
+At end of idexf.red total token count = 575585
++++ Start processing file "indices.red"
+At end of indices.red total token count = 578961
++++ Start processing file "indsymm.red"
+At end of indsymm.red total token count = 580236
++++ Start processing file "indxprin.red"
+At end of indxprin.red total token count = 580684
++++ Start processing file "innerprd.red"
+At end of innerprd.red total token count = 581328
++++ Start processing file "liedf.red"
+At end of liedf.red total token count = 581793
++++ Start processing file "lievalfm.red"
+At end of lievalfm.red total token count = 581854
++++ Start processing file "partdf.red"
+At end of partdf.red total token count = 583374
++++ Start processing file "partitsf.red"
+At end of partitsf.red total token count = 584889
++++ Start processing file "vardf.red"
+At end of vardf.red total token count = 586302
++++ Start processing file "vecanlys.red"
+At end of vecanlys.red total token count = 586498
++++ Start processing file "wedge.red"
+At end of wedge.red total token count = 587353
++++ Start processing file "alphas.red"
+At end of alphas.red total token count = 587560
++++ Start processing file "bigmodp.red"
+At end of bigmodp.red total token count = 588127
++++ Start processing file "coeffts.red"
+At end of coeffts.red total token count = 589454
++++ Start processing file "degsets.red"
+At end of degsets.red total token count = 589904
++++ Start processing file "ezgcd.red"
+At end of ezgcd.red total token count = 590243
++++ Start processing file "ezgcdf.red"
+At end of ezgcdf.red total token count = 594464
++++ Start processing file "facmisc.red"
+At end of facmisc.red total token count = 595763
++++ Start processing file "facmod.red"
+At end of facmod.red total token count = 597499
++++ Start processing file "facprim.red"
+At end of facprim.red total token count = 599731
++++ Start processing file "facstr.red"
+At end of facstr.red total token count = 600156
++++ Start processing file "factor.red"
+At end of factor.red total token count = 600342
++++ Start processing file "facuni.red"
+At end of facuni.red total token count = 601464
++++ Start processing file "imageset.red"
+At end of imageset.red total token count = 603028
++++ Start processing file "interfac.red"
+At end of interfac.red total token count = 604683
++++ Start processing file "linmodp.red"
+At end of linmodp.red total token count = 605144
++++ Start processing file "mhensfns.red"
+At end of mhensfns.red total token count = 607156
++++ Start processing file "modpoly.red"
+At end of modpoly.red total token count = 609283
++++ Start processing file "multihen.red"
+At end of multihen.red total token count = 611707
++++ Start processing file "pfacmult.red"
+At end of pfacmult.red total token count = 612445
++++ Start processing file "pfactor.red"
+At end of pfactor.red total token count = 613108
++++ Start processing file "unihens.red"
+At end of unihens.red total token count = 618208
++++ Start processing file "vecpoly.red"
+At end of vecpoly.red total token count = 618919
++++ Start processing file "approx.red"
+At end of approx.red total token count = 619905
++++ Start processing file "charpol.red"
+At end of charpol.red total token count = 622110
++++ Start processing file "discret.red"
+At end of discret.red total token count = 624786
++++ Start processing file "expres.red"
+At end of expres.red total token count = 629509
++++ Start processing file "fide.red"
+At end of fide.red total token count = 629522
++++ Start processing file "fide1.red"
+At end of fide1.red total token count = 629533
++++ Start processing file "hurwp.red"
+At end of hurwp.red total token count = 631296
++++ Start processing file "iimet.red"
+At end of iimet.red total token count = 643954
++++ Start processing file "linband.red"
+At end of linband.red total token count = 647872
++++ Start processing file "alg_intf.red"
+At end of alg_intf.red total token count = 648124
++++ Start processing file "cuba.red"
+At end of cuba.red total token count = 648161
++++ Start processing file "cuba_main.red"
+At end of cuba_main.red total token count = 649067
++++ Start processing file "gurobi.red"
+At end of gurobi.red total token count = 649628
++++ Start processing file "alg_intf.red"
+At end of alg_intf.red total token count = 649880
++++ Start processing file "nlopt.red"
+At end of nlopt.red total token count = 649958
++++ Start processing file "nlopt_main.red"
+At end of nlopt_main.red total token count = 652316
++++ Start processing file "z3.red"
+At end of z3.red total token count = 653255
++++ Start processing file "gcref.red"
+At end of gcref.red total token count = 653968
++++ Start processing file "gentran.red"
+At end of gentran.red total token count = 653988
++++ Start processing file "goutput.red"
+At end of goutput.red total token count = 654212
++++ Start processing file "gparser.red"
+At end of gparser.red total token count = 655076
++++ Start processing file "intrfc.red"
+At end of intrfc.red total token count = 657705
++++ Start processing file "lspc.red"
+At end of lspc.red total token count = 661421
++++ Start processing file "lspfor.red"
+At end of lspfor.red total token count = 665142
++++ Start processing file "lsppasc.red"
+At end of lsppasc.red total token count = 669859
++++ Start processing file "lsprat.red"
+At end of lsprat.red total token count = 672751
++++ Start processing file "pre.red"
+At end of pre.red total token count = 673393
++++ Start processing file "redlsp.red"
+At end of redlsp.red total token count = 674883
++++ Start processing file "segmnt.red"
+At end of segmnt.red total token count = 676718
++++ Start processing file "templt.red"
+At end of templt.red total token count = 676920
++++ Start processing file "utils.red"
+At end of utils.red total token count = 678129
++++ Start processing file "geometry.red"
+At end of geometry.red total token count = 678137
++++ Start processing file "geoprover.red"
+At end of geoprover.red total token count = 681699
++++ Start processing file "old-geometry.red"
+At end of old-geometry.red total token count = 684645
++++ Start processing file "old-geometry.red"
+At end of old-geometry.red total token count = 687591
++++ Start processing file "supp.red"
+At end of supp.red total token count = 687841
++++ Start processing file "buchbg.red"
+At end of buchbg.red total token count = 693859
++++ Start processing file "glexconv.red"
+At end of glexconv.red total token count = 696328
++++ Start processing file "greduo.red"
+At end of greduo.red total token count = 696670
++++ Start processing file "grinter2.red"
+At end of grinter2.red total token count = 696855
++++ Start processing file "grinterf.red"
+At end of grinterf.red total token count = 698644
++++ Start processing file "groebcri.red"
+At end of groebcri.red total token count = 699205
++++ Start processing file "groebfac.red"
+At end of groebfac.red total token count = 699790
++++ Start processing file "groebidq.red"
+At end of groebidq.red total token count = 701562
++++ Start processing file "groebman.red"
+At end of groebman.red total token count = 702474
++++ Start processing file "groebmes.red"
+At end of groebmes.red total token count = 704154
++++ Start processing file "groebner.red"
+At end of groebner.red total token count = 704423
++++ Start processing file "groebnr2.red"
+At end of groebnr2.red total token count = 704625
++++ Start processing file "groebopt.red"
+At end of groebopt.red total token count = 704968
++++ Start processing file "groebres.red"
+At end of groebres.red total token count = 705364
++++ Start processing file "groebrst.red"
+At end of groebrst.red total token count = 705900
++++ Start processing file "groebsea.red"
+At end of groebsea.red total token count = 706373
++++ Start processing file "groebsor.red"
+At end of groebsor.red total token count = 706642
++++ Start processing file "groebspa.red"
+At end of groebspa.red total token count = 707091
++++ Start processing file "groebtra.red"
+At end of groebtra.red total token count = 709999
++++ Start processing file "groesolv.red"
+At end of groesolv.red total token count = 713712
++++ Start processing file "groeweak.red"
+At end of groeweak.red total token count = 714642
++++ Start processing file "groext.red"
+At end of groext.red total token count = 715097
++++ Start processing file "hggroeb.red"
+At end of hggroeb.red total token count = 715493
++++ Start processing file "hilbert2.red"
+At end of hilbert2.red total token count = 717481
++++ Start processing file "hilbertp.red"
+At end of hilbertp.red total token count = 718690
++++ Start processing file "hilberts.red"
+At end of hilberts.red total token count = 720612
++++ Start processing file "hille.red"
+At end of hille.red total token count = 722259
++++ Start processing file "ideals.red"
+At end of ideals.red total token count = 723184
++++ Start processing file "kredelw.red"
+At end of kredelw.red total token count = 723623
++++ Start processing file "kuechl.red"
+At end of kuechl.red total token count = 725756
++++ Start processing file "traverso.red"
+At end of traverso.red total token count = 726348
++++ Start processing file "guardian.red"
+At end of guardian.red total token count = 727710
++++ Start processing file "guardianprint.red"
+At end of guardianprint.red total token count = 728004
++++ Start processing file "guardianschemes.red"
+At end of guardianschemes.red total token count = 728385
++++ Start processing file "cvit.red"
+At end of cvit.red total token count = 729320
++++ Start processing file "cvitmap.red"
+At end of cvitmap.red total token count = 738995
++++ Start processing file "evalmaps.red"
+At end of evalmaps.red total token count = 740566
++++ Start processing file "hephys.red"
+At end of hephys.red total token count = 746092
++++ Start processing file "intfierz.red"
+At end of intfierz.red total token count = 746939
++++ Start processing file "map2strn.red"
+At end of map2strn.red total token count = 748021
++++ Start processing file "noncom2.red"
+At end of noncom2.red total token count = 751811
++++ Start processing file "physop.red"
+At end of physop.red total token count = 765539
++++ Start processing file "red2cvit.red"
+At end of red2cvit.red total token count = 766735
++++ Start processing file "contents.red"
+At end of contents.red total token count = 768131
++++ Start processing file "csolve.red"
+At end of csolve.red total token count = 768802
++++ Start processing file "df2q.red"
+At end of df2q.red total token count = 769388
++++ Start processing file "dint.red"
+At end of dint.red total token count = 770066
++++ Start processing file "distrib.red"
+At end of distrib.red total token count = 771384
++++ Start processing file "divide.red"
+At end of divide.red total token count = 772371
++++ Start processing file "driver.red"
+At end of driver.red total token count = 779646
++++ Start processing file "hacksqrt.red"
+At end of hacksqrt.red total token count = 780367
++++ Start processing file "halfangl.red"
+At end of halfangl.red total token count = 782261
++++ Start processing file "ibasics.red"
+At end of ibasics.red total token count = 782809
++++ Start processing file "idepend.red"
+At end of idepend.red total token count = 783067
++++ Start processing file "int-table.red"
+At end of int-table.red total token count = 783889
++++ Start processing file "int.red"
+At end of int.red total token count = 784065
++++ Start processing file "intfac.red"
+At end of intfac.red total token count = 784598
++++ Start processing file "isolve.red"
+At end of isolve.red total token count = 787289
++++ Start processing file "jpatches.red"
+At end of jpatches.red total token count = 788679
++++ Start processing file "makevars.red"
+At end of makevars.red total token count = 789245
++++ Start processing file "ratint.red"
+At end of ratint.red total token count = 789454
++++ Start processing file "reform.red"
+At end of reform.red total token count = 789746
++++ Start processing file "simpsqrt.red"
+At end of simpsqrt.red total token count = 791058
++++ Start processing file "sqrtf.red"
+At end of sqrtf.red total token count = 791355
++++ Start processing file "symint.red"
+At end of symint.red total token count = 792495
++++ Start processing file "tidysqrt.red"
+At end of tidysqrt.red total token count = 793405
++++ Start processing file "trcase.red"
+At end of trcase.red total token count = 794801
++++ Start processing file "trialdiv.red"
+At end of trialdiv.red total token count = 795268
++++ Start processing file "vect.red"
+At end of vect.red total token count = 795856
++++ Start processing file "invbase.red"
+At end of invbase.red total token count = 795893
++++ Start processing file "invbcomp.red"
+At end of invbcomp.red total token count = 799340
++++ Start processing file "invbint.red"
+At end of invbint.red total token count = 799900
++++ Start processing file "genparser.red"
+At end of genparser.red total token count = 803030
++++ Start processing file "lalr.red"
+At end of lalr.red total token count = 803068
++++ Start processing file "try.red"
+At end of try.red total token count = 803141
++++ Start processing file "yylex.red"
+At end of yylex.red total token count = 805115
++++ Start processing file "yyparse.red"
+At end of yyparse.red total token count = 805515
++++ Start processing file "genparser.red"
+At end of genparser.red total token count = 808640
++++ Start processing file "lalr.red"
+At end of lalr.red total token count = 808678
++++ Start processing file "try.red"
+At end of try.red total token count = 808751
++++ Start processing file "yylex.red"
+At end of yylex.red total token count = 810732
++++ Start processing file "yyparse.red"
+At end of yyparse.red total token count = 811257
++++ Start processing file "genparser.red"
+At end of genparser.red total token count = 814416
++++ Start processing file "lalr.red"
+At end of lalr.red total token count = 814454
++++ Start processing file "try.red"
+At end of try.red total token count = 814527
++++ Start processing file "yylex.red"
+At end of yylex.red total token count = 816508
++++ Start processing file "yyparse.red"
+At end of yyparse.red total token count = 816998
++++ Start processing file "genparser.red"
+At end of genparser.red total token count = 820123
++++ Start processing file "lalr.red"
+At end of lalr.red total token count = 820161
++++ Start processing file "try.red"
+At end of try.red total token count = 820234
++++ Start processing file "yylex.red"
+At end of yylex.red total token count = 822215
++++ Start processing file "yyparse.red"
+At end of yyparse.red total token count = 822740
++++ Start processing file "genparser.red"
+At end of genparser.red total token count = 825912
++++ Start processing file "lalr.red"
+At end of lalr.red total token count = 825950
++++ Start processing file "try.red"
+At end of try.red total token count = 826023
++++ Start processing file "yylex.red"
+At end of yylex.red total token count = 828004
++++ Start processing file "yyparse.red"
+At end of yyparse.red total token count = 828528
++++ Start processing file "genparser.red"
+At end of genparser.red total token count = 831705
++++ Start processing file "lalr.red"
+At end of lalr.red total token count = 831743
++++ Start processing file "try.red"
+At end of try.red total token count = 831816
++++ Start processing file "yylex.red"
+At end of yylex.red total token count = 833761
++++ Start processing file "yyparse.red"
+At end of yyparse.red total token count = 834284
++++ Start processing file "genparser.red"
+At end of genparser.red total token count = 837443
++++ Start processing file "lalr.red"
+At end of lalr.red total token count = 837481
++++ Start processing file "try.red"
+At end of try.red total token count = 837554
++++ Start processing file "yylex.red"
+At end of yylex.red total token count = 839499
++++ Start processing file "yyparse.red"
+At end of yyparse.red total token count = 840022
++++ Start processing file "genparser.red"
+At end of genparser.red total token count = 843685
++++ Start processing file "lalr.red"
+At end of lalr.red total token count = 843719
++++ Start processing file "try.red"
+At end of try.red total token count = 843792
++++ Start processing file "yylex.red"
+At end of yylex.red total token count = 845734
++++ Start processing file "yyparse.red"
+At end of yyparse.red total token count = 846362
++++ Start processing file "genparser.red"
+At end of genparser.red total token count = 850778
++++ Start processing file "lalr.red"
+At end of lalr.red total token count = 850812
++++ Start processing file "sml.red"
+At end of sml.red total token count = 850821
++++ Start processing file "try.red"
+At end of try.red total token count = 850894
++++ Start processing file "yylex.red"
+At end of yylex.red total token count = 852846
++++ Start processing file "yyparse.red"
+At end of yyparse.red total token count = 853476
++++ Start processing file "laplace.red"
+At end of laplace.red total token count = 860568
++++ Start processing file "libreduce.red"
+At end of libreduce.red total token count = 861004
++++ Start processing file "old-libreduce.red"
+At end of old-libreduce.red total token count = 861437
++++ Start processing file "cholesky.red"
+At end of cholesky.red total token count = 861817
++++ Start processing file "fsimplex.red"
+At end of fsimplex.red total token count = 866348
++++ Start processing file "gramschm.red"
+At end of gramschm.red total token count = 867063
++++ Start processing file "lamatrix.red"
+At end of lamatrix.red total token count = 867351
++++ Start processing file "linalg.red"
+At end of linalg.red total token count = 875152
++++ Start processing file "ludecom.red"
+At end of ludecom.red total token count = 877445
++++ Start processing file "simplex.red"
+At end of simplex.red total token count = 880922
++++ Start processing file "svd.red"
+At end of svd.red total token count = 884016
++++ Start processing file "tadjoint.red"
+At end of tadjoint.red total token count = 884992
++++ Start processing file "listvecops.red"
+At end of listvecops.red total token count = 886546
++++ Start processing file "lpdo.red"
+At end of lpdo.red total token count = 892347
++++ Start processing file "ir2om.red"
+At end of ir2om.red total token count = 893781
++++ Start processing file "mathml.red"
+At end of mathml.red total token count = 906683
++++ Start processing file "mathmlom.red"
+At end of mathmlom.red total token count = 906696
++++ Start processing file "mathml_1.red"
+At end of mathml_1.red total token count = 919556
++++ Start processing file "mml_ir.red"
+At end of mml_ir.red total token count = 925047
++++ Start processing file "mtables.red"
+At end of mtables.red total token count = 925061
++++ Start processing file "om2ir.red"
+At end of om2ir.red total token count = 927030
++++ Start processing file "tools.red"
+At end of tools.red total token count = 928644
++++ Start processing file "dfprin.red"
+At end of dfprin.red total token count = 929539
++++ Start processing file "fortpri.red"
+At end of fortpri.red total token count = 931004
++++ Start processing file "mathpr.red"
+At end of mathpr.red total token count = 931021
++++ Start processing file "mintro.red"
+At end of mintro.red total token count = 931023
++++ Start processing file "mprint.red"
+At end of mprint.red total token count = 933307
++++ Start processing file "prend.red"
+At end of prend.red total token count = 933540
++++ Start processing file "ratprin.red"
+At end of ratprin.red total token count = 934132
++++ Start processing file "specprin.red"
+At end of specprin.red total token count = 934814
++++ Start processing file "sqprint.red"
+At end of sqprint.red total token count = 935462
++++ Start processing file "xprint.red"
+At end of xprint.red total token count = 937116
++++ Start processing file "bareiss.red"
+At end of bareiss.red total token count = 938591
++++ Start processing file "cofactor.red"
+At end of cofactor.red total token count = 938757
++++ Start processing file "det.red"
+At end of det.red total token count = 939392
++++ Start processing file "extops.red"
+At end of extops.red total token count = 940473
++++ Start processing file "glmat.red"
+At end of glmat.red total token count = 942505
++++ Start processing file "matpri.red"
+At end of matpri.red total token count = 943314
++++ Start processing file "matpri2.red"
+At end of matpri2.red total token count = 944510
++++ Start processing file "matproc.red"
+At end of matproc.red total token count = 944821
++++ Start processing file "matrix.red"
+At end of matrix.red total token count = 945713
++++ Start processing file "matsm.red"
+At end of matsm.red total token count = 946644
++++ Start processing file "nestdom.red"
+At end of nestdom.red total token count = 947368
++++ Start processing file "nullsp.red"
+At end of nullsp.red total token count = 947995
++++ Start processing file "rank.red"
+At end of rank.red total token count = 948235
++++ Start processing file "resultnt.red"
+At end of resultnt.red total token count = 949977
++++ Start processing file "boolean.red"
+At end of boolean.red total token count = 951111
++++ Start processing file "cedit.red"
+At end of cedit.red total token count = 952232
++++ Start processing file "changevr.red"
+At end of changevr.red total token count = 952688
++++ Start processing file "comfac.red"
+At end of comfac.red total token count = 952830
++++ Start processing file "compact.red"
+At end of compact.red total token count = 952899
++++ Start processing file "compactf.red"
+At end of compactf.red total token count = 954418
++++ Start processing file "dfpart.red"
+At end of dfpart.red total token count = 955811
++++ Start processing file "ftr.red"
+At end of ftr.red total token count = 956928
++++ Start processing file "lie.red"
+At end of lie.red total token count = 956943
++++ Start processing file "lie1234.red"
+At end of lie1234.red total token count = 978290
++++ Start processing file "liendmc1.red"
+At end of liendmc1.red total token count = 980282
++++ Start processing file "limits.red"
+At end of limits.red total token count = 985053
++++ Start processing file "misc.red"
+At end of misc.red total token count = 985065
++++ Start processing file "mv.red"
+At end of mv.red total token count = 985785
++++ Start processing file "mvmatch.red"
+At end of mvmatch.red total token count = 986129
++++ Start processing file "odeex.red"
+At end of odeex.red total token count = 986595
++++ Start processing file "pf.red"
+At end of pf.red total token count = 987562
++++ Start processing file "randpoly.red"
+At end of randpoly.red total token count = 989384
++++ Start processing file "rcref.red"
+At end of rcref.red total token count = 992995
++++ Start processing file "reacteqn.red"
+At end of reacteqn.red total token count = 993970
++++ Start processing file "reddom.red"
+At end of reddom.red total token count = 994841
++++ Start processing file "redio.red"
+At end of redio.red total token count = 995481
++++ Start processing file "reset.red"
+At end of reset.red total token count = 997378
++++ Start processing file "rlfi.red"
+At end of rlfi.red total token count = 1000276
++++ Start processing file "sets.red"
+At end of sets.red total token count = 1001226
++++ Start processing file "trigd.red"
+At end of trigd.red total token count = 1004739
++++ Start processing file "expon.red"
+At end of expon.red total token count = 1006952
++++ Start processing file "mrvlimit.red"
+At end of mrvlimit.red total token count = 1009573
++++ Start processing file "ncdip.red"
+At end of ncdip.red total token count = 1010937
++++ Start processing file "ncenv.red"
+At end of ncenv.red total token count = 1011513
++++ Start processing file "ncfactor.red"
+At end of ncfactor.red total token count = 1014211
++++ Start processing file "ncgroeb.red"
+At end of ncgroeb.red total token count = 1015546
++++ Start processing file "ncout.red"
+At end of ncout.red total token count = 1016029
++++ Start processing file "ncpoly.red"
+At end of ncpoly.red total token count = 1016098
++++ Start processing file "froben.red"
+At end of froben.red total token count = 1021986
++++ Start processing file "jordan.red"
+At end of jordan.red total token count = 1022846
++++ Start processing file "jordsymb.red"
+At end of jordsymb.red total token count = 1025411
++++ Start processing file "matarg.red"
+At end of matarg.red total token count = 1025685
++++ Start processing file "nestdom.red"
+At end of nestdom.red total token count = 1026391
++++ Start processing file "normform.red"
+At end of normform.red total token count = 1026402
++++ Start processing file "ratjord.red"
+At end of ratjord.red total token count = 1030752
++++ Start processing file "smithex.red"
+At end of smithex.red total token count = 1033139
++++ Start processing file "smithex1.red"
+At end of smithex1.red total token count = 1035325
++++ Start processing file "bounds.red"
+At end of bounds.red total token count = 1038485
++++ Start processing file "chebysh.red"
+At end of chebysh.red total token count = 1039838
++++ Start processing file "gauss.red"
+At end of gauss.red total token count = 1040291
++++ Start processing file "newton.red"
+At end of newton.red total token count = 1041306
++++ Start processing file "numeric.red"
+At end of numeric.red total token count = 1041537
++++ Start processing file "numeval.red"
+At end of numeval.red total token count = 1042975
++++ Start processing file "numfit.red"
+At end of numfit.red total token count = 1043476
++++ Start processing file "numint.red"
+At end of numint.red total token count = 1046511
++++ Start processing file "numsolve.red"
+At end of numsolve.red total token count = 1048455
++++ Start processing file "rungeku.red"
+At end of rungeku.red total token count = 1049465
++++ Start processing file "steepstd.red"
+At end of steepstd.red total token count = 1050744
++++ Start processing file "assume.red"
+At end of assume.red total token count = 1050893
++++ Start processing file "occal.red"
+At end of occal.red total token count = 1051062
++++ Start processing file "occomp.red"
+At end of occomp.red total token count = 1051070
++++ Start processing file "ocdispl.red"
+At end of ocdispl.red total token count = 1051078
++++ Start processing file "ocinterf.red"
+At end of ocinterf.red total token count = 1053584
++++ Start processing file "ocload.red"
+At end of ocload.red total token count = 1053626
++++ Start processing file "ocparse.red"
+At end of ocparse.red total token count = 1055732
++++ Start processing file "ocpriprg.red"
+At end of ocpriprg.red total token count = 1057160
++++ Start processing file "ocread.red"
+At end of ocread.red total token count = 1057943
++++ Start processing file "ocstruct.red"
+At end of ocstruct.red total token count = 1058240
++++ Start processing file "ocvars.red"
+At end of ocvars.red total token count = 1058333
++++ Start processing file "oczusatz.red"
+At end of oczusatz.red total token count = 1060254
++++ Start processing file "regex.red"
+At end of regex.red total token count = 1063001
++++ Start processing file "signpref.red"
+At end of signpref.red total token count = 1063200
++++ Start processing file "odeintfc.red"
+At end of odeintfc.red total token count = 1066338
++++ Start processing file "odelin.red"
+At end of odelin.red total token count = 1068790
++++ Start processing file "odenon1.red"
+At end of odenon1.red total token count = 1072558
++++ Start processing file "odenonn.red"
+At end of odenonn.red total token count = 1074754
++++ Start processing file "odepatch.red"
+At end of odepatch.red total token count = 1075294
++++ Start processing file "odesolve.red"
+At end of odesolve.red total token count = 1075610
++++ Start processing file "odespcfn.red"
+At end of odespcfn.red total token count = 1076098
++++ Start processing file "odetop.red"
+At end of odetop.red total token count = 1078821
++++ Start processing file "orthovec.red"
+At end of orthovec.red total token count = 1082079
++++ Start processing file "pgauss.red"
+At end of pgauss.red total token count = 1083749
++++ Start processing file "pgcond.red"
+At end of pgcond.red total token count = 1084023
++++ Start processing file "pgsm.red"
+At end of pgsm.red total token count = 1085532
++++ Start processing file "pident.red"
+At end of pident.red total token count = 1086386
++++ Start processing file "gnuintfc.red"
+At end of gnuintfc.red total token count = 1086730
++++ Start processing file "gnupldrv.red"
+At end of gnupldrv.red total token count = 1088681
++++ Start processing file "gnuplot.red"
+At end of gnuplot.red total token count = 1088709
++++ Start processing file "parray.red"
+At end of parray.red total token count = 1088858
++++ Start processing file "plot.red"
+At end of plot.red total token count = 1089166
++++ Start processing file "plotexp2.red"
+At end of plotexp2.red total token count = 1091390
++++ Start processing file "plotexp3.red"
+At end of plotexp3.red total token count = 1092287
++++ Start processing file "plotimp2.red"
+At end of plotimp2.red total token count = 1095097
++++ Start processing file "plotimp3.red"
+At end of plotimp3.red total token count = 1095753
++++ Start processing file "plotnum.red"
+At end of plotnum.red total token count = 1097003
++++ Start processing file "plotsynt.red"
+At end of plotsynt.red total token count = 1098342
++++ Start processing file "pltpara.red"
+At end of pltpara.red total token count = 1098956
++++ Start processing file "turtle.red"
+At end of turtle.red total token count = 1099832
++++ Start processing file "xvect.red"
+At end of xvect.red total token count = 1099999
++++ Start processing file "pattdefn.red"
+At end of pattdefn.red total token count = 1100414
++++ Start processing file "pattperm.red"
+At end of pattperm.red total token count = 1101288
++++ Start processing file "pm.red"
+At end of pm.red total token count = 1102400
++++ Start processing file "pmintrfc.red"
+At end of pmintrfc.red total token count = 1104597
++++ Start processing file "pmpatch.red"
+At end of pmpatch.red total token count = 1105246
++++ Start processing file "pmrules.red"
+At end of pmrules.red total token count = 1105958
++++ Start processing file "pmrules2.red"
+At end of pmrules2.red total token count = 1114160
++++ Start processing file "unify.red"
+At end of unify.red total token count = 1114595
++++ Start processing file "compopr.red"
+At end of compopr.red total token count = 1116809
++++ Start processing file "conj.red"
+At end of conj.red total token count = 1117849
++++ Start processing file "cpxrn.red"
+At end of cpxrn.red total token count = 1118721
++++ Start processing file "decompos.red"
+At end of decompos.red total token count = 1121143
++++ Start processing file "diff.red"
+At end of diff.red total token count = 1124026
++++ Start processing file "dmode.red"
+At end of dmode.red total token count = 1124669
++++ Start processing file "dmodeop.red"
+At end of dmodeop.red total token count = 1125922
++++ Start processing file "exptf.red"
+At end of exptf.red total token count = 1126288
++++ Start processing file "facform.red"
+At end of facform.red total token count = 1128408
++++ Start processing file "gcd.red"
+At end of gcd.red total token count = 1130217
++++ Start processing file "gint.red"
+At end of gint.red total token count = 1132564
++++ Start processing file "homog.red"
+At end of homog.red total token count = 1132925
++++ Start processing file "horner.red"
+At end of horner.red total token count = 1133224
++++ Start processing file "interpol.red"
+At end of interpol.red total token count = 1133464
++++ Start processing file "kernel.red"
+At end of kernel.red total token count = 1133682
++++ Start processing file "kronf.red"
+At end of kronf.red total token count = 1134537
++++ Start processing file "mksp.red"
+At end of mksp.red total token count = 1135064
++++ Start processing file "modular.red"
+At end of modular.red total token count = 1135995
++++ Start processing file "polrep.red"
+At end of polrep.red total token count = 1140912
++++ Start processing file "poly.red"
+At end of poly.red total token count = 1141337
++++ Start processing file "polydiv.red"
+At end of polydiv.red total token count = 1142029
++++ Start processing file "polyop.red"
+At end of polyop.red total token count = 1142943
++++ Start processing file "primfac.red"
+At end of primfac.red total token count = 1143682
++++ Start processing file "quotf.red"
+At end of quotf.red total token count = 1144214
++++ Start processing file "rational.red"
+At end of rational.red total token count = 1144891
++++ Start processing file "reord.red"
+At end of reord.red total token count = 1145263
++++ Start processing file "rnelem.red"
+At end of rnelem.red total token count = 1145632
++++ Start processing file "specfac.red"
+At end of specfac.red total token count = 1147786
++++ Start processing file "subs2q.red"
+At end of subs2q.red total token count = 1148903
++++ Start processing file "subs3q.red"
+At end of subs3q.red total token count = 1149785
++++ Start processing file "subs4q.red"
+At end of subs4q.red total token count = 1149909
++++ Start processing file "tdconv.red"
+At end of tdconv.red total token count = 1151124
++++ Start processing file "profile.red"
+At end of profile.red total token count = 1152711
++++ Start processing file "qhull.red"
+At end of qhull.red total token count = 1153091
++++ Start processing file "qsum.red"
+At end of qsum.red total token count = 1164684
++++ Start processing file "raarith.red"
+At end of raarith.red total token count = 1166140
++++ Start processing file "raiv.red"
+At end of raiv.red total token count = 1166423
++++ Start processing file "ranum.red"
+At end of ranum.red total token count = 1167730
++++ Start processing file "rarcount.red"
+At end of rarcount.red total token count = 1168838
++++ Start processing file "contfr.red"
+At end of contfr.red total token count = 1169244
++++ Start processing file "contfrac.red"
+At end of contfrac.red total token count = 1171791
++++ Start processing file "decrep.red"
+At end of decrep.red total token count = 1173257
++++ Start processing file "pade.red"
+At end of pade.red total token count = 1173708
++++ Start processing file "primitive.red"
+At end of primitive.red total token count = 1173872
++++ Start processing file "rataprx.red"
+At end of rataprx.red total token count = 1173884
++++ Start processing file "convert.red"
+At end of convert.red total token count = 1174887
++++ Start processing file "ratint.red"
+At end of ratint.red total token count = 1178612
++++ Start processing file "rd.red"
+At end of rd.red total token count = 1179062
++++ Start processing file "redfront.red"
+At end of redfront.red total token count = 1180003
++++ Start processing file "acfsf.red"
+At end of acfsf.red total token count = 1180651
++++ Start processing file "acfsfbnf.red"
+At end of acfsfbnf.red total token count = 1180956
++++ Start processing file "acfsfgs.red"
+At end of acfsfgs.red total token count = 1183133
++++ Start processing file "acfsfmisc.red"
+At end of acfsfmisc.red total token count = 1184182
++++ Start processing file "acfsfqe.red"
+At end of acfsfqe.red total token count = 1185095
++++ Start processing file "acfsfsiat.red"
+At end of acfsfsiat.red total token count = 1185377
++++ Start processing file "acfsfsism.red"
+At end of acfsfsism.red total token count = 1186224
++++ Start processing file "cl.red"
+At end of cl.red total token count = 1186734
++++ Start processing file "clbnf.red"
+At end of clbnf.red total token count = 1191196
++++ Start processing file "clmisc.red"
+At end of clmisc.red total token count = 1195034
++++ Start processing file "clnf.red"
+At end of clnf.red total token count = 1197593
++++ Start processing file "clqe.red"
+At end of clqe.red total token count = 1203754
++++ Start processing file "clresolv.red"
+At end of clresolv.red total token count = 1204528
++++ Start processing file "clsimpl.red"
+At end of clsimpl.red total token count = 1208416
++++ Start processing file "clsl.red"
+At end of clsl.red total token count = 1209082
++++ Start processing file "cltab.red"
+At end of cltab.red total token count = 1209771
++++ Start processing file "dcfsf.red"
+At end of dcfsf.red total token count = 1210487
++++ Start processing file "dcfsfkacem.red"
+At end of dcfsfkacem.red total token count = 1225569
++++ Start processing file "dcfsfmisc.red"
+At end of dcfsfmisc.red total token count = 1225904
++++ Start processing file "dcfsfqe.red"
+At end of dcfsfqe.red total token count = 1232589
++++ Start processing file "dcfsfsism.red"
+At end of dcfsfsism.red total token count = 1234421
++++ Start processing file "dvfsf.red"
+At end of dvfsf.red total token count = 1235270
++++ Start processing file "dvfsfmisc.red"
+At end of dvfsfmisc.red total token count = 1236781
++++ Start processing file "dvfsfqe.red"
+At end of dvfsfqe.red total token count = 1238279
++++ Start processing file "dvfsfsiat.red"
+At end of dvfsfsiat.red total token count = 1240251
++++ Start processing file "dvfsfsism.red"
+At end of dvfsfsism.red total token count = 1241008
++++ Start processing file "ibalp.red"
+At end of ibalp.red total token count = 1244059
++++ Start processing file "ibalpkapur.red"
+At end of ibalpkapur.red total token count = 1248614
++++ Start processing file "ibalpqsat.red"
+At end of ibalpqsat.red total token count = 1259656
++++ Start processing file "mma.red"
+At end of mma.red total token count = 1260372
++++ Start processing file "mri.red"
+At end of mri.red total token count = 1261583
++++ Start processing file "mriqe.red"
+At end of mriqe.red total token count = 1263960
++++ Start processing file "mri_ofsf.red"
+At end of mri_ofsf.red total token count = 1264016
++++ Start processing file "mri_pasf.red"
+At end of mri_pasf.red total token count = 1264062
++++ Start processing file "ofsf.red"
+At end of ofsf.red total token count = 1265437
++++ Start processing file "ofsfanuex.red"
+At end of ofsfanuex.red total token count = 1275238
++++ Start processing file "ofsfbnf.red"
+At end of ofsfbnf.red total token count = 1276226
++++ Start processing file "ofsfcad.red"
+At end of ofsfcad.red total token count = 1284022
++++ Start processing file "ofsfcadproj-redundant.red"
+At end of ofsfcadproj-redundant.red total token count = 1289871
++++ Start processing file "ofsfcadproj.red"
+At end of ofsfcadproj.red total token count = 1295090
++++ Start processing file "ofsfdecdeg.red"
+At end of ofsfdecdeg.red total token count = 1296059
++++ Start processing file "ofsfdet.red"
+At end of ofsfdet.red total token count = 1298235
++++ Start processing file "ofsfdpep.red"
+At end of ofsfdpep.red total token count = 1305053
++++ Start processing file "ofsfexfr.red"
+At end of ofsfexfr.red total token count = 1308308
++++ Start processing file "ofsfgs.red"
+At end of ofsfgs.red total token count = 1310651
++++ Start processing file "ofsfhqe.red"
+At end of ofsfhqe.red total token count = 1318714
++++ Start processing file "ofsflp.red"
+At end of ofsflp.red total token count = 1319690
++++ Start processing file "ofsfmisc.red"
+At end of ofsfmisc.red total token count = 1323165
++++ Start processing file "ofsfopt.red"
+At end of ofsfopt.red total token count = 1326470
++++ Start processing file "ofsfqe.red"
+At end of ofsfqe.red total token count = 1342826
++++ Start processing file "ofsfsiat.red"
+At end of ofsfsiat.red total token count = 1344581
++++ Start processing file "ofsfsism.red"
+At end of ofsfsism.red total token count = 1348377
++++ Start processing file "ofsftfc.red"
+At end of ofsftfc.red total token count = 1352079
++++ Start processing file "ofsftrop.red"
+At end of ofsftrop.red total token count = 1356586
++++ Start processing file "ofsfvsl.red"
+At end of ofsfvsl.red total token count = 1360920
++++ Start processing file "ofsfxopt.red"
+At end of ofsfxopt.red total token count = 1363996
++++ Start processing file "pasf.red"
+At end of pasf.red total token count = 1365696
++++ Start processing file "pasfbnf.red"
+At end of pasfbnf.red total token count = 1365915
++++ Start processing file "pasfmisc.red"
+At end of pasfmisc.red total token count = 1372770
++++ Start processing file "pasfnf.red"
+At end of pasfnf.red total token count = 1373538
++++ Start processing file "pasfopt.red"
+At end of pasfopt.red total token count = 1373569
++++ Start processing file "pasfqe.red"
+At end of pasfqe.red total token count = 1379786
++++ Start processing file "pasfresolve.red"
+At end of pasfresolve.red total token count = 1380799
++++ Start processing file "pasfsiat.red"
+At end of pasfsiat.red total token count = 1382304
++++ Start processing file "pasfsism.red"
+At end of pasfsism.red total token count = 1384123
++++ Start processing file "qepcad.red"
+At end of qepcad.red total token count = 1385277
++++ Start processing file "qqe.red"
+At end of qqe.red total token count = 1386982
++++ Start processing file "qqemisc.red"
+At end of qqemisc.red total token count = 1392688
++++ Start processing file "qqeqe.red"
+At end of qqeqe.red total token count = 1394264
++++ Start processing file "qqeqemisc.red"
+At end of qqeqemisc.red total token count = 1398494
++++ Start processing file "qqesiat.red"
+At end of qqesiat.red total token count = 1399490
++++ Start processing file "qqesism.red"
+At end of qqesism.red total token count = 1399500
++++ Start processing file "qqetrans.red"
+At end of qqetrans.red total token count = 1401458
++++ Start processing file "qqe_ofsf.red"
+At end of qqe_ofsf.red total token count = 1403254
++++ Start processing file "redlog.red"
+At end of redlog.red total token count = 1405742
++++ Start processing file "rlami.red"
+At end of rlami.red total token count = 1409507
++++ Start processing file "rlcont.red"
+At end of rlcont.red total token count = 1410407
++++ Start processing file "rlhelp.red"
+At end of rlhelp.red total token count = 1412706
++++ Start processing file "rlsched.red"
+At end of rlsched.red total token count = 1414255
++++ Start processing file "rlsl.red"
+At end of rlsl.red total token count = 1416183
++++ Start processing file "rlslv.red"
+At end of rlslv.red total token count = 1416414
++++ Start processing file "ioto.red"
+At end of ioto.red total token count = 1417067
++++ Start processing file "lto.red"
+At end of lto.red total token count = 1419334
++++ Start processing file "rltools.red"
+At end of rltools.red total token count = 1419829
++++ Start processing file "sfto.red"
+At end of sfto.red total token count = 1426377
++++ Start processing file "sftoresultant.red"
+At end of sftoresultant.red total token count = 1429402
++++ Start processing file "smt.red"
+At end of smt.red total token count = 1430194
++++ Start processing file "smtread.red"
+At end of smtread.red total token count = 1431634
++++ Start processing file "smtsupp.red"
+At end of smtsupp.red total token count = 1432339
++++ Start processing file "talp.red"
+At end of talp.red total token count = 1433162
++++ Start processing file "talpbnf.red"
+At end of talpbnf.red total token count = 1433540
++++ Start processing file "talpmisc.red"
+At end of talpmisc.red total token count = 1434771
++++ Start processing file "talpqe.red"
+At end of talpqe.red total token count = 1438485
++++ Start processing file "talpsiat.red"
+At end of talpsiat.red total token count = 1439296
++++ Start processing file "talpsism.red"
+At end of talpsism.red total token count = 1442073
++++ Start processing file "tplp.red"
+At end of tplp.red total token count = 1443349
++++ Start processing file "tplpkapur.red"
+At end of tplpkapur.red total token count = 1452267
++++ Start processing file "block4.red"
+At end of block4.red total token count = 1452955
++++ Start processing file "forall4.red"
+At end of forall4.red total token count = 1453166
++++ Start processing file "form4.red"
+At end of form4.red total token count = 1454617
++++ Start processing file "forstat4.red"
+At end of forstat4.red total token count = 1454932
++++ Start processing file "matrix4.red"
+At end of matrix4.red total token count = 1455978
++++ Start processing file "package4.red"
+At end of package4.red total token count = 1457535
++++ Start processing file "proc4.red"
+At end of proc4.red total token count = 1458151
++++ Start processing file "ranks.red"
+At end of ranks.red total token count = 1458815
++++ Start processing file "rankstat.red"
+At end of rankstat.red total token count = 1461566
++++ Start processing file "reduce4.red"
+At end of reduce4.red total token count = 1461652
++++ Start processing file "reval4.red"
+At end of reval4.red total token count = 1461967
++++ Start processing file "simp4.red"
+At end of simp4.red total token count = 1462593
++++ Start processing file "struct4.red"
+At end of struct4.red total token count = 1463085
++++ Start processing file "table1.red"
+At end of table1.red total token count = 1466498
++++ Start processing file "table2.red"
+At end of table2.red total token count = 1467604
++++ Start processing file "table3.red"
+At end of table3.red total token count = 1467845
++++ Start processing file "tables.red"
+At end of tables.red total token count = 1467860
++++ Start processing file "tower.red"
+At end of tower.red total token count = 1468846
++++ Start processing file "residue.red"
+At end of residue.red total token count = 1469535
++++ Start processing file "0xread.red"
+At end of 0xread.red total token count = 1470804
++++ Start processing file "1xread.red"
+At end of 1xread.red total token count = 1472070
++++ Start processing file "array.red"
+At end of array.red total token count = 1472752
++++ Start processing file "block.red"
+At end of block.red total token count = 1473740
++++ Start processing file "charname.red"
+At end of charname.red total token count = 1473763
++++ Start processing file "form.red"
+At end of form.red total token count = 1477865
++++ Start processing file "forstat.red"
+At end of forstat.red total token count = 1479146
++++ Start processing file "infix.red"
+At end of infix.red total token count = 1479367
++++ Start processing file "inter.red"
+At end of inter.red total token count = 1479921
++++ Start processing file "io.red"
+At end of io.red total token count = 1480730
++++ Start processing file "list.red"
+At end of list.red total token count = 1482068
++++ Start processing file "loops.red"
+At end of loops.red total token count = 1482446
++++ Start processing file "lpri.red"
+At end of lpri.red total token count = 1482834
++++ Start processing file "mkset.red"
+At end of mkset.red total token count = 1483187
++++ Start processing file "module-dist.red"
+At end of module-dist.red total token count = 1483482
++++ Start processing file "module.red"
+At end of module.red total token count = 1484266
++++ Start processing file "newtok.red"
+At end of newtok.red total token count = 1484729
++++ Start processing file "parser.red"
+At end of parser.red total token count = 1485139
++++ Start processing file "proc.red"
+At end of proc.red total token count = 1486403
++++ Start processing file "rintro-txt.red"
+At end of rintro-txt.red total token count = 1486410
++++ Start processing file "rlisp.red"
+At end of rlisp.red total token count = 1486442
++++ Start processing file "rsupport.red"
+At end of rsupport.red total token count = 1487482
++++ Start processing file "slfns.red"
+At end of slfns.red total token count = 1487498
++++ Start processing file "smacro.red"
+At end of smacro.red total token count = 1488932
++++ Start processing file "statmisc.red"
+At end of statmisc.red total token count = 1489867
++++ Start processing file "superv.red"
+At end of superv.red total token count = 1492423
++++ Start processing file "switch.red"
+At end of switch.red total token count = 1492992
++++ Start processing file "tok.red"
+At end of tok.red total token count = 1496974
++++ Start processing file "vector.red"
+At end of vector.red total token count = 1497386
++++ Start processing file "where.red"
+At end of where.red total token count = 1497519
++++ Start processing file "xmodule.red"
+At end of xmodule.red total token count = 1497894
++++ Start processing file "xread.red"
+At end of xread.red total token count = 1499146
++++ Start processing file "bquote.red"
+At end of bquote.red total token count = 1499364
++++ Start processing file "comment.red"
+At end of comment.red total token count = 1499487
++++ Start processing file "for88.red"
+At end of for88.red total token count = 1501248
++++ Start processing file "inspect.red"
+At end of inspect.red total token count = 1503438
++++ Start processing file "loops88.red"
+At end of loops88.red total token count = 1504124
++++ Start processing file "mstruct.red"
+At end of mstruct.red total token count = 1504874
++++ Start processing file "records.red"
+At end of records.red total token count = 1505443
++++ Start processing file "rlisp88.red"
+At end of rlisp88.red total token count = 1505741
++++ Start processing file "rvector.red"
+At end of rvector.red total token count = 1506150
++++ Start processing file "allroot.red"
+At end of allroot.red total token count = 1510235
++++ Start processing file "bfdoer.red"
+At end of bfdoer.red total token count = 1514291
++++ Start processing file "bfdoer2.red"
+At end of bfdoer2.red total token count = 1517849
++++ Start processing file "complxp.red"
+At end of complxp.red total token count = 1521888
++++ Start processing file "multroot.red"
+At end of multroot.red total token count = 1525749
++++ Start processing file "nrstroot.red"
+At end of nrstroot.red total token count = 1526826
++++ Start processing file "realroot.red"
+At end of realroot.red total token count = 1530104
++++ Start processing file "rootaux.red"
+At end of rootaux.red total token count = 1531559
++++ Start processing file "roots.red"
+At end of roots.red total token count = 1532084
++++ Start processing file "roots2.red"
+At end of roots2.red total token count = 1532105
++++ Start processing file "fmprint.red"
+At end of fmprint.red total token count = 1538771
++++ Start processing file "pretty.red"
+At end of pretty.red total token count = 1540356
++++ Start processing file "rprint.red"
+At end of rprint.red total token count = 1544630
++++ Start processing file "rdebug.red"
+At end of rdebug.red total token count = 1546009
++++ Start processing file "rtrace.red"
+At end of rtrace.red total token count = 1547937
++++ Start processing file "rubi_parse.red"
+At end of rubi_parse.red total token count = 1553630
++++ Start processing file "rubi_red.red"
+At end of rubi_red.red total token count = 1553650
++++ Start processing file "rubi_rules.red"
+At end of rubi_rules.red total token count = 1553678
++++ Start processing file "codad1.red"
+At end of codad1.red total token count = 1556508
++++ Start processing file "codad2.red"
+At end of codad2.red total token count = 1561975
++++ Start processing file "codctl.red"
+At end of codctl.red total token count = 1566026
++++ Start processing file "coddec.red"
+At end of coddec.red total token count = 1569069
++++ Start processing file "coddom.red"
+At end of coddom.red total token count = 1569942
++++ Start processing file "codgen.red"
+At end of codgen.red total token count = 1570779
++++ Start processing file "codhrn.red"
+At end of codhrn.red total token count = 1573495
++++ Start processing file "codmat.red"
+At end of codmat.red total token count = 1578180
++++ Start processing file "codopt.red"
+At end of codopt.red total token count = 1580773
++++ Start processing file "codpri.red"
+At end of codpri.red total token count = 1585824
++++ Start processing file "codstr.red"
+At end of codstr.red total token count = 1587161
++++ Start processing file "minlngth.red"
+At end of minlngth.red total token count = 1587866
++++ Start processing file "restore.red"
+At end of restore.red total token count = 1588399
++++ Start processing file "scope.red"
+At end of scope.red total token count = 1589008
++++ Start processing file "desir.red"
+At end of desir.red total token count = 1598600
++++ Start processing file "glsolve.red"
+At end of glsolve.red total token count = 1598957
++++ Start processing file "ineq.red"
+At end of ineq.red total token count = 1599551
++++ Start processing file "linineq.red"
+At end of linineq.red total token count = 1602333
++++ Start processing file "liqsimp1.red"
+At end of liqsimp1.red total token count = 1602766
++++ Start processing file "liqsimp2.red"
+At end of liqsimp2.red total token count = 1603776
++++ Start processing file "modroots.red"
+At end of modroots.red total token count = 1604583
++++ Start processing file "modsolve.red"
+At end of modsolve.red total token count = 1605637
++++ Start processing file "modsqrt.red"
+At end of modsqrt.red total token count = 1606156
++++ Start processing file "modsr.red"
+At end of modsr.red total token count = 1607277
++++ Start processing file "nonlnr.red"
+At end of nonlnr.red total token count = 1607418
++++ Start processing file "polineq.red"
+At end of polineq.red total token count = 1608050
++++ Start processing file "ppsoln.red"
+At end of ppsoln.red total token count = 1609049
++++ Start processing file "quartic.red"
+At end of quartic.red total token count = 1610685
++++ Start processing file "rsolve.red"
+At end of rsolve.red total token count = 1612309
++++ Start processing file "solve.red"
+At end of solve.red total token count = 1613131
++++ Start processing file "solve1.red"
+At end of solve1.red total token count = 1618885
++++ Start processing file "solvealg.red"
+At end of solvealg.red total token count = 1625199
++++ Start processing file "solvelnr.red"
+At end of solvelnr.red total token count = 1626041
++++ Start processing file "solvetab.red"
+At end of solvetab.red total token count = 1628473
++++ Start processing file "sparse.red"
+At end of sparse.red total token count = 1628487
++++ Start processing file "sparsmat.red"
+At end of sparsmat.red total token count = 1636534
++++ Start processing file "spchlsky.red"
+At end of spchlsky.red total token count = 1637000
++++ Start processing file "spgrmshm.red"
+At end of spgrmshm.red total token count = 1637297
++++ Start processing file "splinalg.red"
+At end of splinalg.red total token count = 1646574
++++ Start processing file "spludcmp.red"
+At end of spludcmp.red total token count = 1649190
++++ Start processing file "spmateig.red"
+At end of spmateig.red total token count = 1650414
++++ Start processing file "spsvd.red"
+At end of spsvd.red total token count = 1653745
++++ Start processing file "spde.red"
+At end of spde.red total token count = 1660936
++++ Start processing file "constre.red"
+At end of constre.red total token count = 1661567
++++ Start processing file "dilog.red"
+At end of dilog.red total token count = 1661897
++++ Start processing file "fps.red"
+At end of fps.red total token count = 1661929
++++ Start processing file "ghyper.red"
+At end of ghyper.red total token count = 1668612
++++ Start processing file "harmonic.red"
+At end of harmonic.red total token count = 1669038
++++ Start processing file "hgrsolve.red"
+At end of hgrsolve.red total token count = 1669579
++++ Start processing file "jsymbols.red"
+At end of jsymbols.red total token count = 1673665
++++ Start processing file "linrec.red"
+At end of linrec.red total token count = 1674546
++++ Start processing file "meijerg.red"
+At end of meijerg.red total token count = 1681509
++++ Start processing file "ratalgo.red"
+At end of ratalgo.red total token count = 1681910
++++ Start processing file "recsimpl.red"
+At end of recsimpl.red total token count = 1683641
++++ Start processing file "sfairy.red"
+At end of sfairy.red total token count = 1687127
++++ Start processing file "sfbdata.red"
+At end of sfbdata.red total token count = 1687195
++++ Start processing file "sfbern.red"
+At end of sfbern.red total token count = 1688471
++++ Start processing file "sfbes.red"
+At end of sfbes.red total token count = 1694522
++++ Start processing file "sfbinom.red"
+At end of sfbinom.red total token count = 1695289
++++ Start processing file "sfconsts.red"
+At end of sfconsts.red total token count = 1695960
++++ Start processing file "sfellip.red"
+At end of sfellip.red total token count = 1708128
++++ Start processing file "sfellipi.red"
+At end of sfellipi.red total token count = 1710980
++++ Start processing file "sfgamm.red"
+At end of sfgamm.red total token count = 1712609
++++ Start processing file "sfgamma.red"
+At end of sfgamma.red total token count = 1712661
++++ Start processing file "sfgen.red"
+At end of sfgen.red total token count = 1713013
++++ Start processing file "sfigamma.red"
+At end of sfigamma.red total token count = 1713652
++++ Start processing file "sfint.red"
+At end of sfint.red total token count = 1715310
++++ Start processing file "sfkummer.red"
+At end of sfkummer.red total token count = 1716248
++++ Start processing file "sfother.red"
+At end of sfother.red total token count = 1717969
++++ Start processing file "sfpolys.red"
+At end of sfpolys.red total token count = 1722222
++++ Start processing file "sfpsi.red"
+At end of sfpsi.red total token count = 1724934
++++ Start processing file "sfrules.red"
+At end of sfrules.red total token count = 1725547
++++ Start processing file "sfsums.red"
+At end of sfsums.red total token count = 1726442
++++ Start processing file "simpfact.red"
+At end of simpfact.red total token count = 1729544
++++ Start processing file "simplede.red"
+At end of simplede.red total token count = 1733548
++++ Start processing file "specbess.red"
+At end of specbess.red total token count = 1733764
++++ Start processing file "specfaux.red"
+At end of specfaux.red total token count = 1733776
++++ Start processing file "specfn.red"
+At end of specfn.red total token count = 1734045
++++ Start processing file "specfn2.red"
+At end of specfn2.red total token count = 1735363
++++ Start processing file "substexp.red"
+At end of substexp.red total token count = 1736343
++++ Start processing file "complx.red"
+At end of complx.red total token count = 1737190
++++ Start processing file "prod.red"
+At end of prod.red total token count = 1738884
++++ Start processing file "sum.red"
+At end of sum.red total token count = 1739115
++++ Start processing file "sum2.red"
+At end of sum2.red total token count = 1743800
++++ Start processing file "zeilberg.red"
+At end of zeilberg.red total token count = 1757280
++++ Start processing file "autopatch.red"
+At end of autopatch.red total token count = 1757287
++++ Start processing file "build.red"
+At end of build.red total token count = 1757611
++++ Start processing file "clrend.red"
+At end of clrend.red total token count = 1758096
++++ Start processing file "compat.red"
+At end of compat.red total token count = 1758140
++++ Start processing file "csl.red"
+At end of csl.red total token count = 1759072
++++ Start processing file "cslprolo.red"
+At end of cslprolo.red total token count = 1759188
++++ Start processing file "cslrend.red"
+At end of cslrend.red total token count = 1760300
++++ Start processing file "entry.red"
+At end of entry.red total token count = 1762381
++++ Start processing file "fastmath-by-acn.red"
+
++++ Using private sin/cos
+At end of fastmath-by-acn.red total token count = 1763698
++++ Start processing file "fastmath.red"
+At end of fastmath.red total token count = 1764484
++++ Start processing file "fastmod.red"
+At end of fastmod.red total token count = 1765099
++++ Start processing file "patches.red"
+At end of patches.red total token count = 1765107
++++ Start processing file "psl.red"
+At end of psl.red total token count = 1767391
++++ Start processing file "pslprolo.red"
+At end of pslprolo.red total token count = 1767574
++++ Start processing file "pslrend.red"
+At end of pslrend.red total token count = 1768700
++++ Start processing file "remake.red"
+At end of remake.red total token count = 1769678
++++ Start processing file "smacros.red"
+At end of smacros.red total token count = 1769680
++++ Start processing file "smacros0.red"
+At end of smacros0.red total token count = 1769682
++++ Start processing file "support.red"
+At end of support.red total token count = 1769682
++++ Start processing file "susy2.red"
+At end of susy2.red total token count = 1798951
++++ Start processing file "symatvec.red"
+At end of symatvec.red total token count = 1801502
++++ Start processing file "symaux.red"
+At end of symaux.red total token count = 1803287
++++ Start processing file "symcheck.red"
+At end of symcheck.red total token count = 1805172
++++ Start processing file "symchrep.red"
+At end of symchrep.red total token count = 1805982
++++ Start processing file "symdata1.red"
+At end of symdata1.red total token count = 1806590
++++ Start processing file "symdata2.red"
+At end of symdata2.red total token count = 1806819
++++ Start processing file "symhandl.red"
+At end of symhandl.red total token count = 1808131
++++ Start processing file "symmetry.red"
+At end of symmetry.red total token count = 1808143
++++ Start processing file "sympatch.red"
+At end of sympatch.red total token count = 1808221
++++ Start processing file "symwork.red"
+At end of symwork.red total token count = 1810092
++++ Start processing file "taybasic.red"
+At end of taybasic.red total token count = 1812093
++++ Start processing file "tayconv.red"
+At end of tayconv.red total token count = 1812544
++++ Start processing file "taydiff.red"
+At end of taydiff.red total token count = 1813035
++++ Start processing file "tayexpnd.red"
+At end of tayexpnd.red total token count = 1816008
++++ Start processing file "tayfns.red"
+At end of tayfns.red total token count = 1820784
++++ Start processing file "tayfront.red"
+At end of tayfront.red total token count = 1820978
++++ Start processing file "tayimpl.red"
+At end of tayimpl.red total token count = 1821717
++++ Start processing file "tayintrf.red"
+At end of tayintrf.red total token count = 1823086
++++ Start processing file "tayintro.red"
+At end of tayintro.red total token count = 1823601
++++ Start processing file "taylor.red"
+At end of taylor.red total token count = 1825062
++++ Start processing file "taypart.red"
+At end of taypart.red total token count = 1825178
++++ Start processing file "tayprint.red"
+At end of tayprint.red total token count = 1825499
++++ Start processing file "tayrevrt.red"
+At end of tayrevrt.red total token count = 1826604
++++ Start processing file "taysimp.red"
+At end of taysimp.red total token count = 1828137
++++ Start processing file "taysubst.red"
+At end of taysubst.red total token count = 1829239
++++ Start processing file "tayutils.red"
+At end of tayutils.red total token count = 1831737
++++ Start processing file "tmprint.red"
+At end of tmprint.red total token count = 1840410
++++ Start processing file "tps.red"
+At end of tps.red total token count = 1842018
++++ Start processing file "tpscomp.red"
+At end of tpscomp.red total token count = 1844409
++++ Start processing file "tpsconv.red"
+At end of tpsconv.red total token count = 1844843
++++ Start processing file "tpsdom.red"
+At end of tpsdom.red total token count = 1845798
++++ Start processing file "tpseval.red"
+At end of tpseval.red total token count = 1847800
++++ Start processing file "tpsfns.red"
+At end of tpsfns.red total token count = 1848121
++++ Start processing file "tpsmisc.red"
+At end of tpsmisc.red total token count = 1848567
++++ Start processing file "tpsrev.red"
+At end of tpsrev.red total token count = 1849625
++++ Start processing file "tpssum.red"
+At end of tpssum.red total token count = 1850069
++++ Start processing file "tri.red"
+At end of tri.red total token count = 1856645
++++ Start processing file "trigint.red"
+At end of trigint.red total token count = 1858321
++++ Start processing file "otrgsimp.red"
+At end of otrgsimp.red total token count = 1858335
++++ Start processing file "otrgsmp1.red"
+At end of otrgsmp1.red total token count = 1862142
++++ Start processing file "otrgsmp2.red"
+At end of otrgsmp2.red total token count = 1865563
++++ Start processing file "trigsimp.red"
+At end of trigsimp.red total token count = 1865575
++++ Start processing file "trigsmp1.red"
+At end of trigsmp1.red total token count = 1869411
++++ Start processing file "trigsmp2.red"
+At end of trigsmp2.red total token count = 1872187
++++ Start processing file "utf8.red"
+At end of utf8.red total token count = 1873643
++++ Start processing file "vas.red"
+At end of vas.red total token count = 1880579
++++ Start processing file "wu.red"
+At end of wu.red total token count = 1882429
++++ Start processing file "cface.red"
+At end of cface.red total token count = 1882814
++++ Start processing file "xcolor.red"
+At end of xcolor.red total token count = 1884870
++++ Start processing file "xaux.red"
+At end of xaux.red total token count = 1885700
++++ Start processing file "xcrit.red"
+At end of xcrit.red total token count = 1886259
++++ Start processing file "xexcalc.red"
+At end of xexcalc.red total token count = 1886825
++++ Start processing file "xgroeb.red"
+At end of xgroeb.red total token count = 1887824
++++ Start processing file "xideal.red"
+At end of xideal.red total token count = 1887929
++++ Start processing file "xpowers.red"
+At end of xpowers.red total token count = 1888594
++++ Start processing file "xreduct.red"
+At end of xreduct.red total token count = 1889614
++++ Start processing file "xstorage.red"
+At end of xstorage.red total token count = 1889893
++++ Start processing file "ztrans.red"
+At end of ztrans.red total token count = 1890110
++++ Start processing file "ztrrules.red"
+At end of ztrrules.red total token count = 1898806
++++ Start processing file "alg.tst"
+At end of alg.tst total token count = 1900459
++++ Start processing file "algint.tst"
+At end of algint.tst total token count = 1905683
++++ Start processing file "arith.tst"
+At end of arith.tst total token count = 1908922
++++ Start processing file "arnum.tst"
+At end of arnum.tst total token count = 1909415
++++ Start processing file "assert.tst"
+At end of assert.tst total token count = 1909546
++++ Start processing file "assist.tst"
+At end of assist.tst total token count = 1912442
++++ Start processing file "cantens.tst"
+At end of cantens.tst total token count = 1915542
++++ Start processing file "dummy.tst"
+At end of dummy.tst total token count = 1916790
++++ Start processing file "selfgra.tst"
+At end of selfgra.tst total token count = 1918563
++++ Start processing file "atensor.tst"
+At end of atensor.tst total token count = 1919148
++++ Start processing file "avector.tst"
+At end of avector.tst total token count = 1919648
++++ Start processing file "bibasis.tst"
+At end of bibasis.tst total token count = 1919936
++++ Start processing file "cali.tst"
+At end of cali.tst total token count = 1923358
++++ Start processing file "camal.tst"
+At end of camal.tst total token count = 1923836
++++ Start processing file "cdiff.tst"
+At end of cdiff.tst total token count = 1925150
++++ Start processing file "cgb.tst"
+At end of cgb.tst total token count = 1926669
++++ Start processing file "clprl.tst"
+At end of clprl.tst total token count = 1927327
++++ Start processing file "applysym.tst"
+At end of applysym.tst total token count = 1928259
++++ Start processing file "conlaw.tst"
+At end of conlaw.tst total token count = 1928935
++++ Start processing file "crack.tst"
+At end of crack.tst total token count = 1930580
++++ Start processing file "liepde.tst"
+At end of liepde.tst total token count = 1931535
++++ Start processing file "v3tools.tst"
+At end of v3tools.tst total token count = 1933330
++++ Start processing file "defint.tst"
+At end of defint.tst total token count = 1935820
++++ Start processing file "eds.tst"
+At end of eds.tst total token count = 1937186
++++ Start processing file "excalc.tst"
+At end of excalc.tst total token count = 1940943
++++ Start processing file "factor.tst"
+At end of factor.tst total token count = 1942953
++++ Start processing file "fide.tst"
+At end of fide.tst total token count = 1949682
++++ Start processing file "cuba.tst"
+At end of cuba.tst total token count = 1950070
++++ Start processing file "gurobi.tst"
+At end of gurobi.tst total token count = 1950225
++++ Start processing file "nlopt.tst"
+At end of nlopt.tst total token count = 1951335
++++ Start processing file "z3.tst"
+At end of z3.tst total token count = 1951747
++++ Start processing file "gcref.tst"
+At end of gcref.tst total token count = 1951802
++++ Start processing file "gentran.tst"
+At end of gentran.tst total token count = 1952240
++++ Start processing file "geoprover.tst"
+At end of geoprover.tst total token count = 1954505
++++ Start processing file "old-geometry.tst"
+At end of old-geometry.tst total token count = 1959591
++++ Start processing file "old-geometry.tst"
+At end of old-geometry.tst total token count = 1964677
++++ Start processing file "groebner.tst"
+At end of groebner.tst total token count = 1966724
++++ Start processing file "ideals.tst"
+At end of ideals.tst total token count = 1966953
++++ Start processing file "guardian.tst"
+At end of guardian.tst total token count = 1967068
++++ Start processing file "cvit.tst"
+At end of cvit.tst total token count = 1968575
++++ Start processing file "physop.tst"
+At end of physop.tst total token count = 1969130
++++ Start processing file "int.tst"
+At end of int.tst total token count = 1974212
++++ Start processing file "invbase.tst"
+At end of invbase.tst total token count = 1974377
++++ Start processing file "lalr.tst"
+At end of lalr.tst total token count = 1974475
++++ Start processing file "lalr.tst"
+At end of lalr.tst total token count = 1974597
++++ Start processing file "lalr1.tst"
+At end of lalr1.tst total token count = 1974612
++++ Start processing file "lalr.tst"
+At end of lalr.tst total token count = 1974734
++++ Start processing file "lalr1.tst"
+At end of lalr1.tst total token count = 1974749
++++ Start processing file "lalr.tst"
+At end of lalr.tst total token count = 1974871
++++ Start processing file "lalr1.tst"
+At end of lalr1.tst total token count = 1974886
++++ Start processing file "lalr.tst"
+At end of lalr.tst total token count = 1975008
++++ Start processing file "lalr1.tst"
+At end of lalr1.tst total token count = 1975023
++++ Start processing file "lalr.tst"
+At end of lalr.tst total token count = 1975139
++++ Start processing file "lalr1.tst"
+At end of lalr1.tst total token count = 1975159
++++ Start processing file "lalr.tst"
+At end of lalr.tst total token count = 1975275
++++ Start processing file "lalr1.tst"
+At end of lalr1.tst total token count = 1975295
++++ Start processing file "lalr.tst"
+At end of lalr.tst total token count = 1975468
++++ Start processing file "lalr1.tst"
+At end of lalr1.tst total token count = 1975488
++++ Start processing file "new-lalr.tst"
+At end of new-lalr.tst total token count = 1975536
++++ Start processing file "draft_rlisp_parser.tst"
+At end of draft_rlisp_parser.tst total token count = 1975541
++++ Start processing file "lalr.tst"
+At end of lalr.tst total token count = 1975874
++++ Start processing file "lalr1.tst"
+At end of lalr1.tst total token count = 1975899
++++ Start processing file "new-lalr.tst"
+At end of new-lalr.tst total token count = 1975956
++++ Start processing file "laplace.tst"
+At end of laplace.tst total token count = 1980565
++++ Start processing file "linalg.tst"
+At end of linalg.tst total token count = 1982528
++++ Start processing file "listvecops.tst"
+At end of listvecops.tst total token count = 1982897
++++ Start processing file "lpdo.tst"
+At end of lpdo.tst total token count = 1983403
++++ Start processing file "mathml.tst"
+At end of mathml.tst total token count = 1983538
++++ Start processing file "mathmlom.tst"
+At end of mathmlom.tst total token count = 1999792
++++ Start processing file "matrix.tst"
+At end of matrix.tst total token count = 2003081
++++ Start processing file "boolean.tst"
+At end of boolean.tst total token count = 2003302
++++ Start processing file "changevr.tst"
+At end of changevr.tst total token count = 2003458
++++ Start processing file "compact.tst"
+At end of compact.tst total token count = 2004356
++++ Start processing file "dfpart.tst"
+At end of dfpart.tst total token count = 2005076
++++ Start processing file "lie.tst"
+At end of lie.tst total token count = 2005476
++++ Start processing file "limits.tst"
+At end of limits.tst total token count = 2008077
++++ Start processing file "pf.tst"
+At end of pf.tst total token count = 2008528
++++ Start processing file "randpoly.tst"
+At end of randpoly.tst total token count = 2008908
++++ Start processing file "reacteqn.tst"
+At end of reacteqn.tst total token count = 2009023
++++ Start processing file "rlfi.tst"
+At end of rlfi.tst total token count = 2009430
++++ Start processing file "sets.tst"
+At end of sets.tst total token count = 2009776
++++ Start processing file "trigd-num.tst"
+At end of trigd-num.tst total token count = 2010471
++++ Start processing file "trigd-simp.tst"
+At end of trigd-simp.tst total token count = 2011167
++++ Start processing file "mrvlimit.tst"
+At end of mrvlimit.tst total token count = 2012271
++++ Start processing file "ncpoly.tst"
+At end of ncpoly.tst total token count = 2012885
++++ Start processing file "normform.tst"
+At end of normform.tst total token count = 2014410
++++ Start processing file "numeric.tst"
+At end of numeric.tst total token count = 2016073
++++ Start processing file "extend.tst"
+At end of extend.tst total token count = 2016280
++++ Start processing file "misc.tst"
+At end of misc.tst total token count = 2017194
++++ Start processing file "odesolve.tst"
+At end of odesolve.tst total token count = 2017769
++++ Start processing file "zimmer.tst"
+At end of zimmer.tst total token count = 2020034
++++ Start processing file "zimmerop.tst"
+At end of zimmerop.tst total token count = 2023144
++++ Start processing file "zimopbas.tst"
+At end of zimopbas.tst total token count = 2026259
++++ Start processing file "orthovec.tst"
+At end of orthovec.tst total token count = 2026616
++++ Start processing file "pgauss.tst"
+At end of pgauss.tst total token count = 2027958
++++ Start processing file "gnuplot.tst"
+At end of gnuplot.tst total token count = 2029019
++++ Start processing file "riemann.tst"
+At end of riemann.tst total token count = 2029713
++++ Start processing file "specplot.tst"
+At end of specplot.tst total token count = 2031730
++++ Start processing file "turtle.tst"
+At end of turtle.tst total token count = 2032206
++++ Start processing file "pm.tst"
+At end of pm.tst total token count = 2033642
++++ Start processing file "poly.tst"
+At end of poly.tst total token count = 2037159
++++ Start processing file "polydiv.tst"
+At end of polydiv.tst total token count = 2037687
++++ Start processing file "qsum.tst"
+At end of qsum.tst total token count = 2038741
++++ Start processing file "ranum.tst"
+At end of ranum.tst total token count = 2039071
++++ Start processing file "rataprx.tst"
+At end of rataprx.tst total token count = 2039669
++++ Start processing file "ratint.tst"
+At end of ratint.tst total token count = 2040005
++++ Start processing file "ibalp.tst"
+At end of ibalp.tst total token count = 2126939
++++ Start processing file "ibalpkapur.tst"
+At end of ibalpkapur.tst total token count = 2127697
++++ Start processing file "mri.tst"
+At end of mri.tst total token count = 2127745
++++ Start processing file "ofsf-big.tst"
+At end of ofsf-big.tst total token count = 2192112
++++ Start processing file "ofsf.tst"
+At end of ofsf.tst total token count = 2204747
++++ Start processing file "ofsfdpep.tst"
+At end of ofsfdpep.tst total token count = 2205308
++++ Start processing file "ofsfexfr-debug.tst"
+At end of ofsfexfr-debug.tst total token count = 2205379
++++ Start processing file "ofsfexfr.tst"
+At end of ofsfexfr.tst total token count = 2205891
++++ Start processing file "ofsfvsl.tst"
+At end of ofsfvsl.tst total token count = 2206423
++++ Start processing file "pasf.tst"
+At end of pasf.tst total token count = 2207101
++++ Start processing file "qqe_ofsf.tst"
+At end of qqe_ofsf.tst total token count = 2207318
++++ Start processing file "iflow.tst"
+At end of iflow.tst total token count = 2207422
++++ Start processing file "iflowcl.tst"
+At end of iflowcl.tst total token count = 2207522
++++ Start processing file "iflowcl.tst"
+At end of iflowcl.tst total token count = 2207622
++++ Start processing file "iflownl.tst"
+At end of iflownl.tst total token count = 2207738
++++ Start processing file "aci.tst"
+At end of aci.tst total token count = 2207805
++++ Start processing file "as5v.tst"
+At end of as5v.tst total token count = 2207887
++++ Start processing file "ccon.tst"
+At end of ccon.tst total token count = 2207930
++++ Start processing file "ell.tst"
+At end of ell.tst total token count = 2207980
++++ Start processing file "hong.tst"
+At end of hong.tst total token count = 2208020
++++ Start processing file "mc4.tst"
+At end of mc4.tst total token count = 2208091
++++ Start processing file "quartic.tst"
+At end of quartic.tst total token count = 2208121
++++ Start processing file "quarticneg.tst"
+At end of quarticneg.tst total token count = 2208162
++++ Start processing file "snip.tst"
+At end of snip.tst total token count = 2208203
++++ Start processing file "solo2.tst"
+At end of solo2.tst total token count = 2208291
++++ Start processing file "wilk.tst"
+At end of wilk.tst total token count = 2208393
++++ Start processing file "wnip.tst"
+At end of wnip.tst total token count = 2208434
++++ Start processing file "ell.tst"
+At end of ell.tst total token count = 2208484
++++ Start processing file "ell.tst"
+At end of ell.tst total token count = 2208534
++++ Start processing file "sl9.tst"
+At end of sl9.tst total token count = 2208734
++++ Start processing file "rp3sol.tst"
+At end of rp3sol.tst total token count = 2212909
++++ Start processing file "testseries1.tst"
+At end of testseries1.tst total token count = 2218293
++++ Start processing file "testseries10.tst"
+At end of testseries10.tst total token count = 2222006
++++ Start processing file "testseries11.tst"
+At end of testseries11.tst total token count = 2222980
++++ Start processing file "testseries12.tst"
+At end of testseries12.tst total token count = 2239950
++++ Start processing file "testseries13.tst"
+At end of testseries13.tst total token count = 2242508
++++ Start processing file "testseries14.tst"
+At end of testseries14.tst total token count = 2247892
++++ Start processing file "testseries2.tst"
+At end of testseries2.tst total token count = 2258650
++++ Start processing file "testseries3.tst"
+At end of testseries3.tst total token count = 2259122
++++ Start processing file "testseries4.tst"
+At end of testseries4.tst total token count = 2260803
++++ Start processing file "testseries5.tst"
+At end of testseries5.tst total token count = 2261809
++++ Start processing file "testseries6.tst"
+At end of testseries6.tst total token count = 2268248
++++ Start processing file "testseries7.tst"
+At end of testseries7.tst total token count = 2269765
++++ Start processing file "testseries8.tst"
+At end of testseries8.tst total token count = 2273235
++++ Start processing file "testseries9.tst"
+At end of testseries9.tst total token count = 2274687
++++ Start processing file "rp3sol.tst"
+At end of rp3sol.tst total token count = 2278862
++++ Start processing file "testseries1.tst"
+At end of testseries1.tst total token count = 2284246
++++ Start processing file "testseries10.tst"
+At end of testseries10.tst total token count = 2287959
++++ Start processing file "testseries11.tst"
+At end of testseries11.tst total token count = 2288933
++++ Start processing file "testseries12.tst"
+At end of testseries12.tst total token count = 2305903
++++ Start processing file "testseries13.tst"
+At end of testseries13.tst total token count = 2308461
++++ Start processing file "testseries14.tst"
+At end of testseries14.tst total token count = 2313845
++++ Start processing file "testseries2.tst"
+At end of testseries2.tst total token count = 2324603
++++ Start processing file "testseries3.tst"
+At end of testseries3.tst total token count = 2325075
++++ Start processing file "testseries4.tst"
+At end of testseries4.tst total token count = 2326756
++++ Start processing file "testseries5.tst"
+At end of testseries5.tst total token count = 2327762
++++ Start processing file "testseries6.tst"
+At end of testseries6.tst total token count = 2334201
++++ Start processing file "testseries7.tst"
+At end of testseries7.tst total token count = 2335718
++++ Start processing file "testseries8.tst"
+At end of testseries8.tst total token count = 2339188
++++ Start processing file "testseries9.tst"
+At end of testseries9.tst total token count = 2340640
++++ Start processing file "ab07hopf9.tst"
+At end of ab07hopf9.tst total token count = 2340954
++++ Start processing file "ab07hopf9.tst"
+At end of ab07hopf9.tst total token count = 2341268
++++ Start processing file "aci.tst"
+At end of aci.tst total token count = 2341335
++++ Start processing file "as5v.tst"
+At end of as5v.tst total token count = 2341417
++++ Start processing file "ccon.tst"
+At end of ccon.tst total token count = 2341460
++++ Start processing file "ell.tst"
+At end of ell.tst total token count = 2341510
++++ Start processing file "gatermann.tst"
+At end of gatermann.tst total token count = 2341982
++++ Start processing file "hong.tst"
+At end of hong.tst total token count = 2342022
++++ Start processing file "mc4.tst"
+At end of mc4.tst total token count = 2342093
++++ Start processing file "mtp2.tst"
+At end of mtp2.tst total token count = 2342223
++++ Start processing file "mtp3.tst"
+At end of mtp3.tst total token count = 2342665
++++ Start processing file "p9.tst"
+At end of p9.tst total token count = 2342758
++++ Start processing file "quartic.tst"
+At end of quartic.tst total token count = 2342788
++++ Start processing file "rp2.tst"
+At end of rp2.tst total token count = 2343289
++++ Start processing file "rp3.tst"
+At end of rp3.tst total token count = 2344186
++++ Start processing file "snip.tst"
+At end of snip.tst total token count = 2344227
++++ Start processing file "solo2.tst"
+At end of solo2.tst total token count = 2344315
++++ Start processing file "wilk.tst"
+At end of wilk.tst total token count = 2344417
++++ Start processing file "wnip.tst"
+At end of wnip.tst total token count = 2344458
++++ Start processing file "snip.tst"
+At end of snip.tst total token count = 2344499
++++ Start processing file "wnip.tst"
+At end of wnip.tst total token count = 2344540
++++ Start processing file "aci.tst"
+At end of aci.tst total token count = 2344624
++++ Start processing file "as5v.tst"
+At end of as5v.tst total token count = 2344711
++++ Start processing file "ccon.tst"
+At end of ccon.tst total token count = 2344759
++++ Start processing file "ell.tst"
+At end of ell.tst total token count = 2344826
++++ Start processing file "hong.tst"
+At end of hong.tst total token count = 2344871
++++ Start processing file "mc4.tst"
+At end of mc4.tst total token count = 2344947
++++ Start processing file "quartic.tst"
+At end of quartic.tst total token count = 2344982
++++ Start processing file "quarticneg.tst"
+At end of quarticneg.tst total token count = 2345022
++++ Start processing file "snip.tst"
+At end of snip.tst total token count = 2345068
++++ Start processing file "solo2.tst"
+At end of solo2.tst total token count = 2345161
++++ Start processing file "wilk.tst"
+At end of wilk.tst total token count = 2345268
++++ Start processing file "wnip.tst"
+At end of wnip.tst total token count = 2345314
++++ Start processing file "redlog.tst"
+At end of redlog.tst total token count = 2346297
++++ Start processing file "rltools.tst"
+At end of rltools.tst total token count = 2347525
++++ Start processing file "tplp.tst"
+At end of tplp.tst total token count = 2347702
++++ Start processing file "tplpkapur.tst"
+At end of tplpkapur.tst total token count = 2348340
++++ Start processing file "reduce4.tst"
+At end of reduce4.tst total token count = 2350002
++++ Start processing file "2011-08-29-fleps.tst"
+At end of 2011-08-29-fleps.tst total token count = 2350038
++++ Start processing file "2011-08-30-divide-0-by-0-in-sub.tst"
+At end of 2011-08-30-divide-0-by-0-in-sub.tst total token count = 2350097
++++ Start processing file "2011-08-31-linelength.tst"
+At end of 2011-08-31-linelength.tst total token count = 2350223
++++ Start processing file "2011-08-31-off-cref.tst"
+At end of 2011-08-31-off-cref.tst total token count = 2350228
++++ Start processing file "2011-09-01-safe-fp.tst"
+At end of 2011-09-01-safe-fp.tst total token count = 2350994
++++ Start processing file "2011-09-05-expanddf.tst"
+At end of 2011-09-05-expanddf.tst total token count = 2352014
++++ Start processing file "2011-09-18-defint.tst"
+At end of 2011-09-18-defint.tst total token count = 2352451
++++ Start processing file "2011-10-09-defint.tst"
+At end of 2011-10-09-defint.tst total token count = 2352483
++++ Start processing file "2011-10-21-t-nil.tst"
+At end of 2011-10-21-t-nil.tst total token count = 2352860
++++ Start processing file "2012-05-25-combineexpt-int.tst"
+At end of 2012-05-25-combineexpt-int.tst total token count = 2352874
++++ Start processing file "2012-05-29-sub-failure-in-rule.tst"
+At end of 2012-05-29-sub-failure-in-rule.tst total token count = 2353039
++++ Start processing file "2012-07-24-bigfloat-comparison-to-zero.tst"
+At end of 2012-07-24-bigfloat-comparison-to-zero.tst total token count = 2353133
++++ Start processing file "2012-07-25-int-invtrig.tst"
+At end of 2012-07-25-int-invtrig.tst total token count = 2353351
++++ Start processing file "2012-08-23-sum.tst"
+At end of 2012-08-23-sum.tst total token count = 2353384
++++ Start processing file "2012-09-08-invalid-arglist.tst"
+At end of 2012-09-08-invalid-arglist.tst total token count = 2353413
++++ Start processing file "2012-09-13-groesolve.tst"
+At end of 2012-09-13-groesolve.tst total token count = 2353519
++++ Start processing file "2012-09-14-vandermonde.tst"
+At end of 2012-09-14-vandermonde.tst total token count = 2353531
++++ Start processing file "2012-09-29-specfn-defint.tst"
+At end of 2012-09-29-specfn-defint.tst total token count = 2353584
++++ Start processing file "2012-10-24-errors-in-modular-arithmetic.tst"
+At end of 2012-10-24-errors-in-modular-arithmetic.tst total token count = 
+2353644
++++ Start processing file "2012-11-08-solve-wrong-with-abs.tst"
+At end of 2012-11-08-solve-wrong-with-abs.tst total token count = 2353671
++++ Start processing file "2012-11-12-int.tst"
+At end of 2012-11-12-int.tst total token count = 2354671
++++ Start processing file "2012-11-12-solve-exponential-equations.tst"
+At end of 2012-11-12-solve-exponential-equations.tst total token count = 2354715
++++ Start processing file "2013-03-17-linalg-simplex.tst"
+At end of 2013-03-17-linalg-simplex.tst total token count = 2354771
++++ Start processing file "2013-04-06-num_solve-with-specfn.tst"
+At end of 2013-04-06-num_solve-with-specfn.tst total token count = 2354790
++++ Start processing file "2013-04-08-print-alias-names.tst"
+At end of 2013-04-08-print-alias-names.tst total token count = 2354806
++++ Start processing file "2013-04-16-scope.tst"
+At end of 2013-04-16-scope.tst total token count = 2354862
++++ Start processing file "2013-05-18-general-dependency-in-df-rule.tst"
+At end of 2013-05-18-general-dependency-in-df-rule.tst total token count = 
+2354938
++++ Start processing file "2013-06-29-trigsimp.tst"
+At end of 2013-06-29-trigsimp.tst total token count = 2355038
++++ Start processing file "2013-06-30-rounding.tst"
+At end of 2013-06-30-rounding.tst total token count = 2355133
++++ Start processing file "2013-07-31-rlgqe.tst"
+At end of 2013-07-31-rlgqe.tst total token count = 2355173
++++ Start processing file "2013-08-01-syntax-error-msg.tst"
+At end of 2013-08-01-syntax-error-msg.tst total token count = 2355183
++++ Start processing file "2013-08-04-num_solve-newton.tst"
+At end of 2013-08-04-num_solve-newton.tst total token count = 2355211
++++ Start processing file "2013-08-16-noncom2-factor.tst"
+At end of 2013-08-16-noncom2-factor.tst total token count = 2355615
++++ Start processing file "2013-09-09-sum-rule.tst"
+At end of 2013-09-09-sum-rule.tst total token count = 2355706
++++ Start processing file "2014-02-20-zero-divisor-in-rounded-mode.tst"
+At end of 2014-02-20-zero-divisor-in-rounded-mode.tst total token count = 
+2355770
++++ Start processing file "2014-03-17-utf8-in-list.tst"
+At end of 2014-03-17-utf8-in-list.tst total token count = 2356009
++++ Start processing file "2014-06-23-prefix-operator-precendence.tst"
+At end of 2014-06-23-prefix-operator-precendence.tst total token count = 2356667
++++ Start processing file "2014-08-04-solve-algebraic.tst"
+At end of 2014-08-04-solve-algebraic.tst total token count = 2356736
++++ Start processing file "2014-10-21-ifdef.tst"
+At end of 2014-10-21-ifdef.tst total token count = 2356775
++++ Start processing file "2014-11-09-accuracy-elementary-fns.tst"
+At end of 2014-11-09-accuracy-elementary-fns.tst total token count = 2357551
++++ Start processing file "2014-12-29-incomplete-cancellation.tst"
+At end of 2014-12-29-incomplete-cancellation.tst total token count = 2357628
++++ Start processing file "2015-01-01-32-bit-integer-vectors-in-csl.tst"
+At end of 2015-01-01-32-bit-integer-vectors-in-csl.tst total token count = 
+2357664
++++ Start processing file "2015-01-01-shifts.tst"
+At end of 2015-01-01-shifts.tst total token count = 2357884
++++ Start processing file "2015-01-17-select-operator.tst"
+At end of 2015-01-17-select-operator.tst total token count = 2357933
++++ Start processing file "2015-01-29-repart-impart-abs-sign.tst"
+At end of 2015-01-29-repart-impart-abs-sign.tst total token count = 2357995
++++ Start processing file "2015-03-20-errors-during-simpcr.tst"
+At end of 2015-03-20-errors-during-simpcr.tst total token count = 2358008
++++ Start processing file "2015-03-20-invalid-arguments-in-atan-rules.tst"
+At end of 2015-03-20-invalid-arguments-in-atan-rules.tst total token count = 
+2358021
++++ Start processing file "residue.tst"
+At end of residue.tst total token count = 2358651
++++ Start processing file "charname.tst"
+At end of charname.tst total token count = 2358800
++++ Start processing file "roots.tst"
+At end of roots.tst total token count = 2362699
++++ Start processing file "rtrace.tst"
+At end of rtrace.tst total token count = 2363048
++++ Start processing file "charlwood.tst"
+At end of charlwood.tst total token count = 2363244
++++ Start processing file "rubi.tst"
+At end of rubi.tst total token count = 2363291
++++ Start processing file "rubi_red.tst"
+At end of rubi_red.tst total token count = 2363318
++++ Start processing file "rubi_red4.tst"
+At end of rubi_red4.tst total token count = 2363345
++++ Start processing file "scope.tst"
+At end of scope.tst total token count = 2365510
++++ Start processing file "desir.tst"
+At end of desir.tst total token count = 2365951
++++ Start processing file "ineq.tst"
+At end of ineq.tst total token count = 2366373
++++ Start processing file "modsr.tst"
+At end of modsr.tst total token count = 2366708
++++ Start processing file "rsolve.tst"
+At end of rsolve.tst total token count = 2367134
++++ Start processing file "solve.tst"
+At end of solve.tst total token count = 2373749
++++ Start processing file "sparse.tst"
+At end of sparse.tst total token count = 2374914
++++ Start processing file "spde.tst"
+At end of spde.tst total token count = 2375293
++++ Start processing file "fps.tst"
+At end of fps.tst total token count = 2376189
++++ Start processing file "specfn.tst"
+At end of specfn.tst total token count = 2378721
++++ Start processing file "specfn2.tst"
+At end of specfn2.tst total token count = 2379961
++++ Start processing file "sum.tst"
+At end of sum.tst total token count = 2381406
++++ Start processing file "zeilberg.tst"
+At end of zeilberg.tst total token count = 2385296
++++ Start processing file "susy2.tst"
+At end of susy2.tst total token count = 2388624
++++ Start processing file "symmetry.tst"
+At end of symmetry.tst total token count = 2389006
++++ Start processing file "taylor.tst"
+At end of taylor.tst total token count = 2400899
++++ Start processing file "tps.tst"
+At end of tps.tst total token count = 2401489
++++ Start processing file "tri.tst"
+At end of tri.tst total token count = 2402064
++++ Start processing file "trigint.tst"
+At end of trigint.tst total token count = 2402240
++++ Start processing file "examples.tst"
+At end of examples.tst total token count = 2402998
++++ Start processing file "trigsimp.tst"
+At end of trigsimp.tst total token count = 2404645
++++ Start processing file "wu.tst"
+At end of wu.tst total token count = 2405088
++++ Start processing file "xcolor.tst"
+At end of xcolor.tst total token count = 2405889
++++ Start processing file "xideal.tst"
+At end of xideal.tst total token count = 2406883
++++ Start processing file "ztrans.tst"
+At end of ztrans.tst total token count = 2410616
+
+nil
+
+
+nil
+
+
+nil
+
+
+
+Output will be in 
+/cygdrive/y/projects/reduce-algebra/trunk/scripts/caseclash.list
+
+460 symbols involved
+
+nil
+
+
++++ Transcript closed at end of run +++

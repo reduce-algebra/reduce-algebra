@@ -82,13 +82,13 @@ symbolic procedure chebcoeffs(func,x,a,b,n);
         scalar fac,bpa,bma,f,!1pi,c,y,su,nn,half,w;
 
     x:={x};
-    !1PI := rdpi!*();
+    !1pi := rdpi!*();
     nn := dm!:(1/n);
     n1 := n-1;
     half := dm!:(1/2);
 
      dm!: <<bma:=(b-a)/2; bpa:=(b+a)/2>>;
-     w := dm!:(!1PI*nn);
+     w := dm!:(!1pi*nn);
      f:=for k:=0:n1 collect
      <<y := dm!: (rdcos!*(w*(k+half))*bma+bpa);
            evaluate(func,x,{y})
@@ -97,7 +97,7 @@ symbolic procedure chebcoeffs(func,x,a,b,n);
      dm!: <<fac:=2*nn>>;
      c:=for j:=0:n1 collect
      <<
-        w:= dm!:(!1PI*j*nn);
+        w:= dm!:(!1pi*j*nn);
         su:=nil;
         for k:=0:n1 do
           dm!:(su := su+nth(f,iadd1 k) *rdcos!*(w*(k+half)));

@@ -142,15 +142,15 @@ load_package rsolve;       %---to compute the rational roots of a poly, r_solve(
 
 
 
-procedure vas_list2poly(numList,var);
+procedure vas_list2poly(numlist,var);
 %---++++++++++++++++++++++
 %---converts the number list numList to a univariate poly in variable var 
 %---with coefficients the elements of numList
 %---++++++++++++++++++++++
 begin scalar len, temp;
 temp:=0;
-len:=length(numList);
-for j:=1 step 1 until len do temp:=temp*var + part(numList,j);
+len:=length(numlist);
+for j:=1 step 1 until len do temp:=temp*var + part(numlist,j);
 return temp;
 end;
 
@@ -175,7 +175,7 @@ begin scalar  c, le, v, s, s1;
 return v;
 end;
 
-procedure vas_poslbdLMQ(p,x);
+procedure vas_poslbdlmq(p,x);
 %---++++++++++++++++++++++
 %---Implements the Local_Max_Quadratic method (LMQ) to compute a  
 %---lower bound on the values of the POSITIVE roots of p(x).      
@@ -186,7 +186,7 @@ procedure vas_poslbdLMQ(p,x);
 %---
 %---PRECISION will be adjusted, if needed, by evalf.                   
 %---++++++++++++++++++++++
-begin scalar cl, timesused, len, m, n, q, tempmin, tempminINF, tempmax;
+begin scalar cl, timesused, len, m, n, q, tempmin, tempmininf, tempmax;
  cl := coeff(p,x);
  q := -1;
  tempmax := 0;
@@ -198,13 +198,13 @@ begin scalar cl, timesused, len, m, n, q, tempmin, tempminINF, tempmax;
 % reduce does not support ops with infinity; 
 % hence set tempmin := 10^(number of digits of the max coeff + 1);
 
-tempminINF := 10^( 2*ceiling(evalf(log(max(abs(cl)))/log(10.0))) );
+tempmininf := 10^( 2*ceiling(evalf(log(max(abs(cl)))/log(10.0))) );
 
  for m := 2 step 1 until len do
  begin
   if part(cl,m) < 0 then 
    begin
-    tempmin := tempminINF;              % reduce does not support ops with infinity
+    tempmin := tempmininf;              % reduce does not support ops with infinity
     for n := 1 step 1 until m-1 do
      begin
       if part(cl,n) > 0 then
@@ -218,12 +218,12 @@ tempminINF := 10^( 2*ceiling(evalf(log(max(abs(cl)))/log(10.0))) );
    end;
  end;
  if tempmax = 0 then return infinity;
- if tempmax = tempminINF then return 0;          %  for wilkinson polys as in maxima??
+ if tempmax = tempmininf then return 0;          %  for wilkinson polys as in maxima??
  if 2^(-ceiling(evalf(logb(tempmax,2)))) < 1.e-16 then return 0;
  return 2^(-ceiling(evalf(logb(tempmax,2))))        
 end;
 
-procedure vas_posubLMQ(p,x);
+procedure vas_posublmq(p,x);
 %---++++++++++++++++++++++
 %---Implements the Local_Max_Quadratic method (LMQ) to compute a  
 %---lower bound on the values of the POSITIVE roots of p(x).      
@@ -234,7 +234,7 @@ procedure vas_posubLMQ(p,x);
 %---
 %---PRECISION will be adjusted, if needed, by evalf.                      
 %---++++++++++++++++++++++
-begin scalar cl, timesused, len, m, n, q, tempmin, tempminINF, tempmax;
+begin scalar cl, timesused, len, m, n, q, tempmin, tempmininf, tempmax;
 cl := coeff(p,x);
 cl := reverse(cl);
 q := -1;
@@ -247,13 +247,13 @@ timesused := for j := 1 : len collect (1);
 
 % reduce does not support ops with infinity; 
 % hence set tempmin := 10^(twice the number of digits of the max coeff + 1);
-tempminINF := 10^( 2*ceiling(evalf(log(max(abs(cl)))/log(10.0))) + 1 );   
+tempmininf := 10^( 2*ceiling(evalf(log(max(abs(cl)))/log(10.0))) + 1 );   
 
 for m := len step -1 until 2 do
 begin
  if part(cl,m-1) < 0 then
   begin
-   tempmin := tempminINF;           % reduce does not support ops with infinity
+   tempmin := tempmininf;           % reduce does not support ops with infinity
    for n := len+1 step -1 until m+1 do
     begin
      if part(cl,n-1) > 0 then
@@ -278,7 +278,7 @@ if (a > b) then return {b,a}
 else return {a,b}
 end;
 
-procedure VAS_Pos_Roots(p, x, ap, bp, cp, dp);
+procedure vas_pos_roots(p, x, ap, bp, cp, dp);
 %---++++++++++++++++++++++
 %---This algorithm implements the Vincent-Akritas-Strzebnski method for the 
 %---isolation of the real roots of polynomials.
@@ -289,18 +289,18 @@ procedure VAS_Pos_Roots(p, x, ap, bp, cp, dp);
 %---Nonlinear Analysis: Modelling and Control, Vol. 10, No. 4, 297-304, 2005.
 %---++++++++++++++++++++++
 begin scalar a, b, c, d, a1, b1, c1, d1, a2, b2, c2, d2, att, bt, ct ,
-dt, f, g, f1, f2, ft, intervalsToBeProcessed, lb, n, rootIsolationIntervals, r,
+dt, f, g, f1, f2, ft, intervalstobeprocessed, lb, n, rootisolationintervals, r,
 ub, v, v1, v2, vt, xx, yy;
 
- intervalsToBeProcessed := list();
- rootIsolationIntervals := list();
+ intervalstobeprocessed := list();
+ rootisolationintervals := list();
  f := p;
  v := vas_variations(f, x);
- ub := vas_posubLMQ(f, x);
+ ub := vas_posublmq(f, x);
 
 % comment step 1;
- if (v = 0) then return rootIsolationIntervals;
- if (v = 1) then return rootIsolationIntervals := vas_intrv(0, ap*ub) . rootIsolationIntervals;
+ if (v = 0) then return rootisolationintervals;
+ if (v = 1) then return rootisolationintervals := vas_intrv(0, ap*ub) . rootisolationintervals;
 
 %-------------------------------------------------------
 %---Do the Chinese trick No. 2 in case v==2 ; 29-01-2013 
@@ -308,42 +308,42 @@ ub, v, v1, v2, vt, xx, yy;
 
  if ( (v = 2) and (sign(sub(x=0, f))*sign(sub(x=1, f)) < 0) ) then
  begin
-   rootIsolationIntervals := vas_intrv(ap*1, ap*ub) . rootIsolationIntervals;
-   rootIsolationIntervals := vas_intrv(0, ap*1) . rootIsolationIntervals;
+   rootisolationintervals := vas_intrv(ap*1, ap*ub) . rootisolationintervals;
+   rootisolationintervals := vas_intrv(0, ap*1) . rootisolationintervals;
 %---CANNOT use "return rootIsolationIntervals" 
 %---within begin-end block  So, used "go to label".
   go to label
  end;
- intervalsToBeProcessed := {ap, bp, cp, dp, f, v} . intervalsToBeProcessed;
+ intervalstobeprocessed := {ap, bp, cp, dp, f, v} . intervalstobeprocessed;
 
 % comment step 2;
 %---in maxima you cannot go to a label outside the while block so we had to use if; in reduce we can use while.
 %---label: if (intervalsToBeProcessed neq {}) then
 
-label: while intervalsToBeProcessed neq {} do
+label: while intervalstobeprocessed neq {} do
  begin
-   g := first intervalsToBeProcessed;
+   g := first intervalstobeprocessed;
    a := part(g,1);
    b := part(g,2);
    c := part(g,3);
    d := part(g,4);
    f := part(g,5);
    v := part(g,6);
-   intervalsToBeProcessed := rest intervalsToBeProcessed;
+   intervalstobeprocessed := rest intervalstobeprocessed;
    if (lcof(f,x) < 0) then f := (-1)*f;  %---positive lcof
    %-------------------------------------------------------
    %---Do the Chinese trick No. 2 in case v==2 ; 29-01-2013 
    %-------------------------------------------------------
    if ( (v = 2) and (sign(sub(x=0, f))*sign(sub(x=1, f)) < 0) ) then
    begin
-     rootIsolationIntervals := append(rootIsolationIntervals,{vas_intrv((a+b)/(c+d), b/d)});
-     ub := vas_posubLMQ(f,x);
-     rootIsolationIntervals := append(rootIsolationIntervals,{vas_intrv((a+b)/(c+d), (a*ub+b)/(c*ub+d))});
+     rootisolationintervals := append(rootisolationintervals,{vas_intrv((a+b)/(c+d), b/d)});
+     ub := vas_posublmq(f,x);
+     rootisolationintervals := append(rootisolationintervals,{vas_intrv((a+b)/(c+d), (a*ub+b)/(c*ub+d))});
      go to label
    end;
 
 % comment step 3;
-  lb := vas_poslbdLMQ(f,x);
+  lb := vas_poslbdlmq(f,x);
 
 % comment step 4;
   if (lb > 16) then
@@ -362,7 +362,7 @@ label: while intervalsToBeProcessed neq {} do
     d := lb*c + d;
     if (sub(x=0,f) = 0) then
     begin
-      rootIsolationIntervals := append(rootIsolationIntervals,{{b/d, b/d}});
+      rootisolationintervals := append(rootisolationintervals,{{b/d, b/d}});
       f := f/x
     end;
     v := vas_variations(f,x);
@@ -370,8 +370,8 @@ label: while intervalsToBeProcessed neq {} do
     if (v = 1) then
     begin
       if (c neq 0) 
-         then rootIsolationIntervals := append(rootIsolationIntervals, {vas_intrv(a/c,b/d)})
-         else rootIsolationIntervals := append(rootIsolationIntervals, {vas_intrv(b,b+a*vas_posubLMQ(p,x))}); 
+         then rootisolationintervals := append(rootisolationintervals, {vas_intrv(a/c,b/d)})
+         else rootisolationintervals := append(rootisolationintervals, {vas_intrv(b,b+a*vas_posublmq(p,x))}); 
       go to label
     end
   end;
@@ -385,7 +385,7 @@ label: while intervalsToBeProcessed neq {} do
   r := 0;
   if (sub(x = 0, f1) = 0) then
   begin
-    rootIsolationIntervals := append(rootIsolationIntervals, {{b1/d1, b1/d1}});
+    rootisolationintervals := append(rootisolationintervals, {{b1/d1, b1/d1}});
     f1 := f1 / x;
     r := 1
   end;
@@ -418,10 +418,10 @@ label: while intervalsToBeProcessed neq {} do
      then 
      begin 
        if ( c1 neq 0 ) 
-          then rootIsolationIntervals := append(rootIsolationIntervals, {vas_intrv(a1/c1, b1/d1)})
-          else rootIsolationIntervals := append(rootIsolationIntervals, {vas_intrv(b1, b1 + a1 * vas_posubLMQ(f1,x))})
+          then rootisolationintervals := append(rootisolationintervals, {vas_intrv(a1/c1, b1/d1)})
+          else rootisolationintervals := append(rootisolationintervals, {vas_intrv(b1, b1 + a1 * vas_posublmq(f1,x))})
      end 
-     else intervalsToBeProcessed := {a1, b1, c1, d1, f1, v1} . intervalsToBeProcessed;
+     else intervalstobeprocessed := {a1, b1, c1, d1, f1, v1} . intervalstobeprocessed;
 
 % comment step 10;
   if (v2 = 0) then go to label;
@@ -429,37 +429,37 @@ label: while intervalsToBeProcessed neq {} do
      then 
      begin
        if (c2 neq 0) 
-          then rootIsolationIntervals := append(rootIsolationIntervals, {vas_intrv(a2/c2, b2/d2)})
-          else rootIsolationIntervals := append(rootIsolationIntervals, {vas_intrv(b2, b2 + a2 * vas_posubLMQ(f2, x))})
+          then rootisolationintervals := append(rootisolationintervals, {vas_intrv(a2/c2, b2/d2)})
+          else rootisolationintervals := append(rootisolationintervals, {vas_intrv(b2, b2 + a2 * vas_posublmq(f2, x))})
      end
-     else intervalsToBeProcessed := {a2, b2, c2, d2, f2, v2} . intervalsToBeProcessed;
+     else intervalstobeprocessed := {a2, b2, c2, d2, f2, v2} . intervalstobeprocessed;
    go to label
  end;                           %---ends the big if loop
-return vas_my_sort(rootIsolationIntervals);
+return vas_my_sort(rootisolationintervals);
 end;
 
-procedure vas_my_sort(intervalList);
+procedure vas_my_sort(intervallist);
 %---++++++++++++++++++++++
 %---Uses bubble sort to sort the root isolation intervals in VAS_Pos_Roots above
 %---The intervals are of the form {{a, b}, {a1,b1}, ..}
 %---++++++++++++++++++++++
-begin scalar flag, n, label, len, loop, a, b, c, d, rootIsolationIntervals,
+begin scalar flag, n, label, len, loop, a, b, c, d, rootisolationintervals,
 temp1, temp2;
-rootIsolationIntervals:=intervalList;
-len:=length(rootIsolationIntervals);
-if len = 0 or len = 1 then return rootIsolationIntervals;
+rootisolationintervals:=intervallist;
+len:=length(rootisolationintervals);
+if len = 0 or len = 1 then return rootisolationintervals;
 loop := len - 1;
 
 label: flag:=0;
 n:=1;
 while n <= loop do
 begin 
-  a:=part(part(rootIsolationIntervals,n),2);
-  b:=part(part(rootIsolationIntervals,n+1),2);
+  a:=part(part(rootisolationintervals,n),2);
+  b:=part(part(rootisolationintervals,n+1),2);
   if a = b then
   begin
-    c:=part(part(rootIsolationIntervals,n),1);
-    d:=part(part(rootIsolationIntervals,n+1),1);
+    c:=part(part(rootisolationintervals,n),1);
+    d:=part(part(rootisolationintervals,n+1),1);
     if a < b then check:=0 else check:=1;
   end;
   if a neq b then 
@@ -471,10 +471,10 @@ begin
 
   if check = 1 then 
   begin
-    temp1:=part(rootIsolationIntervals,n);
-    temp2:=part(rootIsolationIntervals,n+1);
-    rootIsolationIntervals:=part(rootIsolationIntervals,n):=temp2;
-    rootIsolationIntervals:=part(rootIsolationIntervals,n+1):=temp1;
+    temp1:=part(rootisolationintervals,n);
+    temp2:=part(rootisolationintervals,n+1);
+    rootisolationintervals:=part(rootisolationintervals,n):=temp2;
+    rootisolationintervals:=part(rootisolationintervals,n+1):=temp1;
     flag:=1;
   end;
  
@@ -484,10 +484,10 @@ end;
 %---the last elements are sorted
 loop := loop -1;              
 if flag = 1 then go to label;
-return rootIsolationIntervals
+return rootisolationintervals
 end;
 
-procedure VAS(p,x);
+procedure vas(p,x);
 %---++++++++++++++++++++++
 %---Calls VAS_Pos_Roots to compute the positive and negative roots 
 %---and forms the list of isolating intervals of a poly WITHOUT multiple roots.
@@ -498,7 +498,7 @@ begin scalar a, a1, apot, len, len0, len1, len2, f, ff, k, pp,temp,temp2;
 pp:= (-1)^deg(p,x)*sub(x=-x,p);
 
 %---isolate the positive roots
-a:= VAS_Pos_Roots(p,x,1,0,0,1);
+a:= vas_pos_roots(p,x,1,0,0,1);
 len:=length(a);
 
 %---isolate the negative roots
@@ -509,7 +509,7 @@ begin
   for i:=1 : len do a1:=append(a1,{vas_intrv(-part(part(a,i),1),-part(part(a,i),2))});
   a1:=reverse(a1)
 end
-else a1:= VAS_Pos_Roots(pp,x,-1,0,0,1);
+else a1:= vas_pos_roots(pp,x,-1,0,0,1);
 
 apot:={};
 k:=1;
@@ -561,13 +561,13 @@ begin;
 return for each x in r_solve(p) collect rhs(x);
 end;
 
-procedure vas_formRationalRootIntervals(p);
+procedure vas_formrationalrootintervals(p);
 %---++++++++++++++++++++++
 %---Compute the rational roots for each square free poly and 
 %---output a list of the form {{{{a,a},..}, m1}, {{{b,b},..}, m2}, ..}, where mI is the multiplicity
 %---++++++++++++++++++++++
 begin scalar list_sqrfree_factors_plus_multiplicity,
-list_Of_RationalRoots_PlusMultiplicity_PerFactor, roots2interval;
+list_of_rationalroots_plusmultiplicity_perfactor, roots2interval;
 
 %COMMENT Form the list of the square free polys along with their multiplicity;
 list_sqrfree_factors_plus_multiplicity:=sqfdec(p);
@@ -576,12 +576,12 @@ list_sqrfree_factors_plus_multiplicity:=sqfdec(p);
 if (list_sqrfree_factors_plus_multiplicity = {}) then return({{{},1}}); 
 
 %COMMENT For each square free poly compute its rational roots;
-list_Of_RationalRoots_PlusMultiplicity_PerFactor :=
+list_of_rationalroots_plusmultiplicity_perfactor :=
 for each xx in list_sqrfree_factors_plus_multiplicity collect  
   append({vas_my_rsolve(part(xx,1))},{part(xx,2)});
 
 %COMMENT Form the interval for each rational root along with the multiplicity;
-roots2intervals:= for each yy in list_Of_RationalRoots_PlusMultiplicity_PerFactor
+roots2intervals:= for each yy in list_of_rationalroots_plusmultiplicity_perfactor
 collect {for each xx in first(yy) collect {xx,xx}, first(rest(yy)) };
 
 %COMMENT sort the intervals;
@@ -590,29 +590,29 @@ append({vas_my_sort(first(xx))},{second(xx)}))
 
 end;
 
-procedure vas_my_first(aList);
+procedure vas_my_first(alist);
 %---++++++++++++++++++++++
 %---Reduce crashes on first([]) so tests are needed before advancing pointers
 %---++++++++++++++++++++++
 
 begin scalar mylist;
   mylist:={};
-  if aList neq {} then mylist := first aList;
+  if alist neq {} then mylist := first alist;
   return mylist;
 end;
 
-procedure vas_my_rest(aList);
+procedure vas_my_rest(alist);
 %---++++++++++++++++++++++
 %---Reduce crashes on rest([]) so tests are needed before advancing pointers
 %---++++++++++++++++++++++
 
 begin scalar mylist;
   mylist:={};
-  if aList neq {} then mylist := rest aList;
+  if alist neq {} then mylist := rest alist;
   return mylist;
 end;
 
-procedure vas_combineSublistsOfSameMultiplicity(intervalsLIST);
+procedure vas_combinesublistsofsamemultiplicity(intervalslist);
 %---++++++++++++++++++++++
 %---The input list is ORDERED according to multiplicity!
 %---
@@ -628,44 +628,44 @@ procedure vas_combineSublistsOfSameMultiplicity(intervalsLIST);
 %---NOTICE THAT NO MORE THAN 2 LISTS CAN HAVE SAME MULTIPLICITY
 %---++++++++++++++++++++++
 
-begin  scalar intervalsLISTE, intervalsLISTP, rootIntervalsSameMultiplicity,
+begin  scalar intervalsliste, intervalslistp, rootintervalssamemultiplicity,
 temp;
   
-  intervalsLISTP := intervalsLIST;
-  intervalsLISTE := vas_my_first(intervalsLISTP);
-  intervalsLISTP := vas_my_rest(intervalsLISTP);
-  rootIntervalsSameMultiplicity := {};
+  intervalslistp := intervalslist;
+  intervalsliste := vas_my_first(intervalslistp);
+  intervalslistp := vas_my_rest(intervalslistp);
+  rootintervalssamemultiplicity := {};
 
-  while (intervalsLISTE neq {} and intervalsLISTP neq {}) do
+  while (intervalsliste neq {} and intervalslistp neq {}) do
   begin
          %---  COMMENT multiplicities match;
-    if ( vas_my_first(vas_my_rest(intervalsLISTE)) = vas_my_first(vas_my_rest(vas_my_first(intervalsLISTP))) ) then
+    if ( vas_my_first(vas_my_rest(intervalsliste)) = vas_my_first(vas_my_rest(vas_my_first(intervalslistp))) ) then
     begin
-      temp := union(vas_my_first(intervalsLISTE) , vas_my_first(vas_my_first(intervalsLISTP)));
+      temp := union(vas_my_first(intervalsliste) , vas_my_first(vas_my_first(intervalslistp)));
       temp:= vas_my_sort temp;
-      rootIntervalsSameMultiplicity := append(rootIntervalsSameMultiplicity,
-            {{temp, vas_my_first(vas_my_rest(intervalsLISTE))}});
-      intervalsLISTP := vas_my_rest(intervalsLISTP); 
-      intervalsLISTE := vas_my_first(intervalsLISTP);
-      intervalsLISTP := vas_my_rest(intervalsLISTP);  
+      rootintervalssamemultiplicity := append(rootintervalssamemultiplicity,
+            {{temp, vas_my_first(vas_my_rest(intervalsliste))}});
+      intervalslistp := vas_my_rest(intervalslistp); 
+      intervalsliste := vas_my_first(intervalslistp);
+      intervalslistp := vas_my_rest(intervalslistp);  
     end
           %---  COMMENT multiplicities differ;
     else 
     begin
-      rootIntervalsSameMultiplicity := append(rootIntervalsSameMultiplicity,
-            {intervalsLISTE});
-      intervalsLISTE := vas_my_first(intervalsLISTP);
-      intervalsLISTP := vas_my_rest(intervalsLISTP); 
+      rootintervalssamemultiplicity := append(rootintervalssamemultiplicity,
+            {intervalsliste});
+      intervalsliste := vas_my_first(intervalslistp);
+      intervalslistp := vas_my_rest(intervalslistp); 
     end;
   end;
-  if (intervalsLISTE neq {}) then
-    rootIntervalsSameMultiplicity := append(rootIntervalsSameMultiplicity,
-          {intervalsLISTE});
-  return rootIntervalsSameMultiplicity
+  if (intervalsliste neq {}) then
+    rootintervalssamemultiplicity := append(rootintervalssamemultiplicity,
+          {intervalsliste});
+  return rootintervalssamemultiplicity
 end;
 
 
-procedure vas_addMissingSqrfreeFactors(pol,allIntervals);
+procedure vas_addmissingsqrfreefactors(pol,allintervals);
 %---++++++++++++++++++++++
 %---make sure list pol has the same length as list  allIntervals; 
 %---pol is a list of the form {{sqrfree_factor, m}, ...} whereas 
@@ -674,37 +674,37 @@ procedure vas_addMissingSqrfreeFactors(pol,allIntervals);
 %---so we insert in the form {x-a, m}.
 %---++++++++++++++++++++++
 
-begin scalar pol2, polE,  polP, allIntervalsE, allIntervalsP;
+begin scalar pol2, pole,  polp, allintervalse, allintervalsp;
 
-if ( length(pol) = length(allIntervals) ) then return pol;
+if ( length(pol) = length(allintervals) ) then return pol;
 
 pol2:=list();
-polP:=pol;
-allIntervalsP:=allIntervals;
+polp:=pol;
+allintervalsp:=allintervals;
 
-polE:=vas_my_first(polP);
-polP:=vas_my_rest(polP);
-allIntervalsE:=vas_my_first(allIntervalsP);
-allIntervalsP:=vas_my_rest(allintervalsP);
+pole:=vas_my_first(polp);
+polp:=vas_my_rest(polp);
+allintervalse:=vas_my_first(allintervalsp);
+allintervalsp:=vas_my_rest(allintervalsp);
 
-while ( allIntervalsE neq {} ) do      %---ONLY one test is better!!!
+while ( allintervalse neq {} ) do      %---ONLY one test is better!!!
 begin
-   if ( vas_my_first(vas_my_rest(allIntervalsE)) = vas_my_first(vas_my_rest(polE)) ) then
+   if ( vas_my_first(vas_my_rest(allintervalse)) = vas_my_first(vas_my_rest(pole)) ) then
    begin
-      pol2:=append(pol2,{polE});
-      polE:=vas_my_first(polP);
-      polP:=vas_my_rest(polP);
-      allIntervalsE:=vas_my_first(allIntervalsP);
-      allIntervalsP:=vas_my_rest(allIntervalsP);
+      pol2:=append(pol2,{pole});
+      pole:=vas_my_first(polp);
+      polp:=vas_my_rest(polp);
+      allintervalse:=vas_my_first(allintervalsp);
+      allintervalsp:=vas_my_rest(allintervalsp);
    end
 
 %  if vas_my_first(vas_my_rest(allIntervalsE)) neq vas_my_first(vas_my_rest(polE)) then
    else
    begin
-      pol2:=append(pol2, {{x - vas_my_first(vas_my_first(vas_my_first(allIntervalsE))), 
-                            vas_my_first(vas_my_rest(allIntervalsE))}});
-      allIntervalsE:=vas_my_first(allIntervalsP);
-      allIntervalsP:=vas_my_rest(allIntervalsP);
+      pol2:=append(pol2, {{x - vas_my_first(vas_my_first(vas_my_first(allintervalse))), 
+                            vas_my_first(vas_my_rest(allintervalse))}});
+      allintervalse:=vas_my_first(allintervalsp);
+      allintervalsp:=vas_my_rest(allintervalsp);
    end;
 end;
 
@@ -856,7 +856,7 @@ return apot
 
 end;
 
-procedure vas_changeStyle(apot);
+procedure vas_changestyle(apot);
 %---++++++++++++++++++++++
 %---change slightly the format of apot, which in the input is of the form
 %---{{{{a1,b1},{a2,b2},...{ak,bk}},m1},{{{,},{,},...{,}},m2},...}
@@ -887,17 +887,17 @@ procedure vas_interval_sort(apot);
 %---prepares list for output
 %---++++++++++++++++++++++
 
-begin scalar apot2, j, sorted_SET;
+begin scalar apot2, j, sorted_set;
    
 if apot = {} then return {};
-apot2 := vas_changeStyle(apot);
+apot2 := vas_changestyle(apot);
 
-COMMENT union_SET := {};
-COMMENT for j:=1:length(apot2) do union_SET := union(union_SET, part(apot2,j));
+comment union_SET := {};
+comment for j:=1:length(apot2) do union_SET := union(union_SET, part(apot2,j));
 
-sorted_SET := vas_my_sort2(apot2);
+sorted_set := vas_my_sort2(apot2);
 
-return sorted_SET;
+return sorted_set;
 
 end;
 
@@ -939,7 +939,7 @@ begin scalar p_list,j,temp;
 return temp;
 end;
 
-procedure vas_list_linear_factors_raised_mult(rationalRootsIntervals);
+procedure vas_list_linear_factors_raised_mult(rationalrootsintervals);
 %---++++++++++++++++++++++
 %---the input is a list of intervals of the form { {{},1}, { {{3,3},{5,5}}, 2 } }
 %---computes a list of the corresponding linear factors raised to their multiplicity
@@ -947,10 +947,10 @@ procedure vas_list_linear_factors_raised_mult(rationalRootsIntervals);
 %---
 %---++++++++++++++++++++++
 
-begin scalar y, y2, y3, y4, j, k, listRationalFactors, rr;
-  listRationalFactorsRaisedMult:=list();
-  y2:=rationalRootsIntervals;
-  for j:=1 : length(rationalRootsIntervals) do
+begin scalar y, y2, y3, y4, j, k, listrationalfactors, rr;
+  listrationalfactorsraisedmult:=list();
+  y2:=rationalrootsintervals;
+  for j:=1 : length(rationalrootsintervals) do
   begin
     y:=vas_my_first(y2);
     y4:=vas_my_first(y);
@@ -959,34 +959,34 @@ begin scalar y, y2, y3, y4, j, k, listRationalFactors, rr;
       y3:=vas_my_first(y4);
       y4:=vas_my_rest(y4);
       rr:=vas_my_first(y3);
-      listRationalFactorsRaisedMult:= append(listRationalFactorsRaisedMult, 
+      listrationalfactorsraisedmult:= append(listrationalfactorsraisedmult, 
           {(x-rr)^(vas_my_first(vas_my_rest(y)))}); 
     end;
     y2:=vas_my_rest(y2);
   end;
-return listRationalFactorsRaisedMult;
+return listrationalfactorsraisedmult;
 end;
 
-procedure vas_my_sort_multiplicity(allIntervals);
+procedure vas_my_sort_multiplicity(allintervals);
 %---++++++++++++++++++++++
 %---input:{{{{3,3}},1},{{{2,2}},2},{{{-4,0},{5/4,3/2},{3/2,2}},1}}
 %---output:{{{{3,3}},1},{{{-4,0},{5/4,3/2},{3/2,2}},1},{{{2,2}},2}}
 %---++++++++++++++++++++++
 
 begin scalar temp,i,j;
-  for i := 1 : length(allIntervals)-1 do  
+  for i := 1 : length(allintervals)-1 do  
   begin
-    for j := i+1 : length(allIntervals) do
+    for j := i+1 : length(allintervals) do
     begin
-      if part(allIntervals,j,2) < part(allIntervals,i,2) then 
+      if part(allintervals,j,2) < part(allintervals,i,2) then 
       begin 
-        temp := part(allIntervals,i);
-        allIntervals := part(allIntervals,i) := part(allIntervals,j);
-        allIntervals := part(allIntervals,j) := temp;
+        temp := part(allintervals,i);
+        allintervals := part(allintervals,i) := part(allintervals,j);
+        allintervals := part(allintervals,j) := temp;
       end;
     end;
   end;
-return allIntervals;
+return allintervals;
 end;
 
 procedure vas_realintervals(pt);
@@ -1010,9 +1010,9 @@ procedure vas_realintervals(pt);
 %---and can easily evaluate pt at them!
 %---++++++++++++++++++++++
 
-begin scalar p1,k,p,j,pol,poly,listRationalFactors,
-irrationalRootsIntervals, rationalRootsIntervals, productRationalFactors,
-allIntervals, rationalRootsONLY, i, prod, temp;
+begin scalar p1,k,p,j,pol,poly,listrationalfactors,
+irrationalrootsintervals, rationalrootsintervals, productrationalfactors,
+allintervals, rationalrootsonly, i, prod, temp;
 
 % comment take care of rounded;
 
@@ -1031,13 +1031,13 @@ temp:=coeff( pt, mainvar ( pt ) );
 temp:=map(mainvar, temp);
 temp:=map(~x => if (x eq 0) then 1 else 0 ,temp);
 prod:=1; for each x in temp do prod:=x*prod ; 
-if (prod eq 0) then  return(vas_realintervals_Invalid_poly!_Input_poly_should_have_one_variable_and_rational_coefficients) ;
+if (prod eq 0) then  return(vas_realintervals_invalid_poly!_input_poly_should_have_one_variable_and_rational_coefficients) ;
 
 % comment initialize;
 % comment rationalRootsONLY=1 means there are ONLY rational roots;
 
-productRationalFactors:=1;
-rationalRootsONLY:=0;
+productrationalfactors:=1;
+rationalrootsonly:=0;
 
 % comment change poly variable to x, so that it works for polys in ANY variable;
 
@@ -1057,20 +1057,20 @@ p:=p/vas_content(p,x);
 
 % comment find the rational roots and form their "isolating intervals" {{{a, a}, m}, etc };
 
-rationalRootsIntervals:= vas_formRationalRootIntervals( p );
+rationalrootsintervals:= vas_formrationalrootintervals( p );
 
 % comment Form the product of the factors with rational roots and divide it out of the poly;
 
-if length(rationalRootsIntervals) > 1 or (
-(length(rationalRootsIntervals) =1) and (length(part(rationalRootsIntervals,1,1))
+if length(rationalrootsintervals) > 1 or (
+(length(rationalrootsintervals) =1) and (length(part(rationalrootsintervals,1,1))
 neq 0) ) then 
 begin
-  listRationalFactors:=vas_list_linear_factors_raised_mult(rationalRootsIntervals);
-  productRationalFactors:=for i:=1 step 1 until length(listRationalFactors) product part(listRationalFactors,i) 
-end else rationalRootsIntervals:={};
+  listrationalfactors:=vas_list_linear_factors_raised_mult(rationalrootsintervals);
+  productrationalfactors:=for i:=1 step 1 until length(listrationalfactors) product part(listrationalfactors,i) 
+end else rationalrootsintervals:={};
 
-productRationalFactors:=num(productRationalFactors);
-poly := first(divide(p,productRationalFactors));
+productrationalfactors:=num(productrationalfactors);
+poly := first(divide(p,productrationalfactors));
 poly := poly/vas_content(poly,x);
 
 % comment If poly =1, all roots are rational. Set rationalRootsONLY to 1;
@@ -1078,59 +1078,59 @@ poly := poly/vas_content(poly,x);
 if poly = 1 then
 begin
    poly := p;
-   irrationalRootsIntervals := list();
-   rationalRootsONLY := 1;
+   irrationalrootsintervals := list();
+   rationalrootsonly := 1;
 end;
 
 % comment rationalRootsONLY=0 means we have irrational roots to be isolated using VAS;
 
 
-if rationalRootsONLY = 0 then
+if rationalrootsonly = 0 then
 begin
    pol :=sqfdec(poly);
-   irrationalRootsIntervals:= for i:=1 : length(pol) collect({0});
+   irrationalrootsintervals:= for i:=1 : length(pol) collect({0});
    for k:=1 :length(pol) do
    begin
-     irrationalRootsIntervals := part(irrationalRootsIntervals,k):= {VAS(part(pol,k,1),x),
+     irrationalrootsintervals := part(irrationalrootsintervals,k):= {vas(part(pol,k,1),x),
           part(pol,k,2)};
    end;
 end;
 
 % comment merge the intervals for the rational and irrational roots;
 
-allIntervals:= union (rationalRootsIntervals, irrationalRootsIntervals);
+allintervals:= union (rationalrootsintervals, irrationalrootsintervals);
 
 % comment sort them according to multiplicity;
 
-allIntervals:= vas_my_sort_multiplicity(allIntervals);
+allintervals:= vas_my_sort_multiplicity(allintervals);
 
 % comment If rationalRootsONLY=0, combine sublists of same multiplicity (to conform to structure of pol);
 % comment allIntervals is now of the form {{{{a,b},{},..},m}, etc }; 
 % comment Moreover, a rational root {{a,a}, m} does NOT have the corresponding factor in pol, so we insert in it the factor {x-a, m};
 
-if rationalRootsONLY = 0 then
+if rationalrootsonly = 0 then
 begin
-     allIntervals:=vas_combineSublistsOfSameMultiplicity(allIntervals);
-    pol:=vas_addMissingSqrfreeFactors(pol,allIntervals);
+     allintervals:=vas_combinesublistsofsamemultiplicity(allintervals);
+    pol:=vas_addmissingsqrfreefactors(pol,allintervals);
 end;
-if rationalRootsONLY neq 0 then pol:=sqfdec(poly);
+if rationalrootsonly neq 0 then pol:=sqfdec(poly);
 
 % comment If rationalRootsONLY=0, make sure there is no interval overlap within a given multiplicity and among different multiplicities;
 
-if rationalRootsONLY = 0 then 
+if rationalrootsonly = 0 then 
 begin
-    allIntervals:= vas_interval_overlap2(pol,allIntervals);
-    allIntervals:=vas_interval_overlap(pol,allIntervals);
+    allintervals:= vas_interval_overlap2(pol,allintervals);
+    allintervals:=vas_interval_overlap(pol,allintervals);
 end;
 
 
 % comment sort intervals;
-allIntervals:=vas_interval_sort(allIntervals);
+allintervals:=vas_interval_sort(allintervals);
 
 % comment take care of rounded;
 if not rounded_was_on then off rounded else on rounded;
 
-return allIntervals;
+return allintervals;
 
 end;
 
@@ -1149,25 +1149,25 @@ begin scalar flist;
 return for i:=1 step 1 until length(flist) product part(flist,i);
 end;
 
-procedure vas_my_sort_numbers(listNumbers);
+procedure vas_my_sort_numbers(listnumbers);
 %---++++++++++++++++++++++
 %---sorts a list of real numbers 
 %---++++++++++++++++++++++
 
 begin scalar temp,i,j; 
- for i := 1 : length(listNumbers)-1 do 
+ for i := 1 : length(listnumbers)-1 do 
  begin 
-   for j :=i+1 : length(listNumbers) do 
+   for j :=i+1 : length(listnumbers) do 
    begin 
-     if part(listNumbers,j) < part(listNumbers,i) then 
+     if part(listnumbers,j) < part(listnumbers,i) then 
      begin 
-       temp := part(listNumbers,i); 
-       listNumbers := part(listNumbers,i) := part(listNumbers,j); 
-       listNumbers := part(listNumbers,j) := temp; 
+       temp := part(listnumbers,i); 
+       listnumbers := part(listnumbers,i) := part(listnumbers,j); 
+       listnumbers := part(listnumbers,j) := temp; 
      end; 
    end; 
  end; 
-return listNumbers; 
+return listnumbers; 
 end;
 
 
@@ -1201,7 +1201,7 @@ p:=foreach l in p collect cons(car l , i2bf!: cdr l);
  return res;
 end;
 
-procedure vas_approx_roots(p,rootIntervalsPoly);
+procedure vas_approx_roots(p,rootintervalspoly);
 %---++++++++++++++++++++++
 %---Uses Reduce's procedure rootfind (thru its interface vas_rfind) to approximate the real roots 
 %---given rootIntervals, their list of isolation intervals .
@@ -1209,8 +1209,8 @@ procedure vas_approx_roots(p,rootIntervalsPoly);
 %---Computes the real roots in the corresponding intervals.
 %---++++++++++++++++++++++
 
-begin scalar  irratrootIntervals, irratroots, listRationalFactors, pp, ratPoly, 
-ratrootIntervals, rootIntervals, ratroots, rootsList;
+begin scalar  irratrootintervals, irratroots, listrationalfactors, pp, ratpoly, 
+ratrootintervals, rootintervals, ratroots, rootslist;
 
 % comment store value of rounded;
 
@@ -1219,7 +1219,7 @@ if lisp !*rounded then rounded_was_on := t
 
 % comment empty list or constant p;
 
-if rootIntervalsPoly = {} or mainvar(p) = 0 then return {};
+if rootintervalspoly = {} or mainvar(p) = 0 then return {};
 
 % comment check for valid input; 
 
@@ -1227,11 +1227,11 @@ temp:=coeff( p, mainvar ( p ) );
 temp:=map(mainvar, temp);
 temp:=map(~x => if (x eq 0) then 1 else 0 ,temp);
 prod:=1; for each x in temp do prod:=x*prod ; 
-if (prod eq 0) then  return(vas_approx_roots_Invalid_poly!_Input_poly_should_have_one_variable_and_rational_coefficients) ;
+if (prod eq 0) then  return(vas_approx_roots_invalid_poly!_input_poly_should_have_one_variable_and_rational_coefficients) ;
 
 % comment initialize;
 
-rootIntervals:=rootIntervalsPoly;
+rootintervals:=rootintervalspoly;
 off rounded;
 
 
@@ -1257,23 +1257,23 @@ pp:=vas_my_sqrfree(pp);
 
 % comment compute the rational roots and remove their product from pp;
 
-ratrootIntervals:=for i:=1 step 1 until length(rootIntervals) collect 
-if first(first(part(rootIntervals,i)))=second(first(part(rootIntervals,i))) 
-then first(part(rootIntervals,i)) else {};
+ratrootintervals:=for i:=1 step 1 until length(rootintervals) collect 
+if first(first(part(rootintervals,i)))=second(first(part(rootintervals,i))) 
+then first(part(rootintervals,i)) else {};
 
-ratrootIntervals:=union(ratrootIntervals);
-if length(ratrootIntervals)=1 and first ratrootIntervals ={} then ratrootIntervals:={};
+ratrootintervals:=union(ratrootintervals);
+if length(ratrootintervals)=1 and first ratrootintervals ={} then ratrootintervals:={};
 
-if ratrootIntervals neq {} then ratrootIntervals:= select(~xx=> xx neq {},ratrootIntervals);
+if ratrootintervals neq {} then ratrootintervals:= select(~xx=> xx neq {},ratrootintervals);
 
-ratroots:= map(~xx =>  first(xx) ,ratrootIntervals);
+ratroots:= map(~xx =>  first(xx) ,ratrootintervals);
 
-listRationalFactors:= map(~xx => den(xx)*(x-xx) , ratroots);
+listrationalfactors:= map(~xx => den(xx)*(x-xx) , ratroots);
 
-ratPoly:=for i:=1 step 1 until length(listRationalFactors) product
-part(listRationalFactors,i);
+ratpoly:=for i:=1 step 1 until length(listrationalfactors) product
+part(listrationalfactors,i);
 
-pp := first(divide(pp,ratPoly));
+pp := first(divide(pp,ratpoly));
 pp:=pp/vas_content(pp,x);
 
 if pp=1 then 
@@ -1284,40 +1284,40 @@ end;
 
 % comment compute the irrational root intervals and approximate the corresponding roots ;
 
-irratrootIntervals:=for i:=1 step 1 until length(rootIntervals) collect if
-first(first(part(rootIntervals,i))) neq second(first(part(rootIntervals,i)))
-then part(rootIntervals,i) else {};
+irratrootintervals:=for i:=1 step 1 until length(rootintervals) collect if
+first(first(part(rootintervals,i))) neq second(first(part(rootintervals,i)))
+then part(rootintervals,i) else {};
 
-irratrootIntervals:=union(irratrootIntervals);
+irratrootintervals:=union(irratrootintervals);
 
-if length(irratrootIntervals)=1 and first irratrootIntervals ={} then irratrootIntervals:={};
+if length(irratrootintervals)=1 and first irratrootintervals ={} then irratrootintervals:={};
 
-if irratrootIntervals neq {} then irratrootIntervals:= select(~xx=> xx neq {},irratrootIntervals);
+if irratrootintervals neq {} then irratrootintervals:= select(~xx=> xx neq {},irratrootintervals);
 
-irratrootIntervals:=for i:=1 step 1 until length(irratrootIntervals) collect
-first(part(irratrootIntervals,i));
+irratrootintervals:=for i:=1 step 1 until length(irratrootintervals) collect
+first(part(irratrootintervals,i));
 
 % comment The precision is that defined by evalf in vas_poslbdLMQ and vas_posubLMQ ;
 
-irratroots:=for i:=1 step 1 until length(irratrootIntervals) collect 
-vas_rfind(pp, first( part(irratrootIntervals,i)), second(
-part(irratrootIntervals,i)) );
+irratroots:=for i:=1 step 1 until length(irratrootintervals) collect 
+vas_rfind(pp, first( part(irratrootintervals,i)), second(
+part(irratrootintervals,i)) );
 
 % comment merge the two lists of roots and sort the resulting one;
  
-rootsList:=  union(irratroots, ratroots  );
+rootslist:=  union(irratroots, ratroots  );
 
 rootslist:=vas_my_sort_numbers(rootslist);
 
 % comment exit ;
 
 label:
-rootsList:=map(xx => mainvar(p)=xx,rootsList);
+rootslist:=map(xx => mainvar(p)=xx,rootslist);
 
 % comment RE-store value of rounded;
 if not rounded_was_on then off rounded;
 
-return rootsList;
+return rootslist;
 
 
 end;

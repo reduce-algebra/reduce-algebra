@@ -48,12 +48,12 @@ fluid '(constructors!* !*f!*);
 
 symbolic procedure mml(fi);
 begin;
- FILE!*:=t;
+ file!*:=t;
  !*f!*:= open(fi, 'input);
  !*f!*:= rds(!*f!*);
  mml2ir();
  close rds !*f!*;
- FILE!*:=nil;
+ file!*:=nil;
 end;
 
 % This function starts the parsing mechanism, which is a recursive descent
@@ -70,12 +70,12 @@ begin scalar res;
  temp2:=nil;
  lex();
  if char='(m a t h) then
-     res:=mathML()
-   else errorML("<math>",2);
+     res:=mathml()
+   else errorml("<math>",2);
  lex();
  if char='(!/ m a t h) then
    terpri()
-   else errorML("</math>",19);
+   else errorml("</math>",19);
 
  return res;
 end;
@@ -85,14 +85,14 @@ end;
 % It is necessary to have both since some functions end their task one
 % token ahead (eg getargs()).
 
-symbolic procedure mathML();
+symbolic procedure mathml();
 begin scalar a;
  a:=nil;
  lex();
  return sub_math();
 end;
 
-symbolic procedure mathML2();
+symbolic procedure mathml2();
 begin scalar a;
  a:=nil;
  return sub_math();
@@ -112,17 +112,17 @@ begin scalar a, aa;
  % and then it doesnt work anymore...
 
   if char='(v e c t o r) then
-   <<a:=vectorRD();
+   <<a:=vectorrd();
      if char neq '(!/ v e c t o r) then
-       errorML("</vector>",2);
+       errorml("</vector>",2);
      return a>>;
 
  if (aa:=assoc(compress!* char, constructors!*)) then <<
     a:=apply(cadr aa, nil );
-    if PAIRP a then if car a = 'csymbol then a:=cddr a;
-    if PAIRP a then if car a = 'fn then a:=cddr a;
+    if pairp a then if car a = 'csymbol then a:=cddr a;
+    if pairp a then if car a = 'fn then a:=cddr a;
     if compress!* char neq third aa then
-      errorML(third cdr aa, 2);
+      errorml(third cdr aa, 2);
     return a>>;
 
   return nil;
@@ -133,7 +133,7 @@ end;
 % content to be used by the function calling it. It will have different
 % behaviours according to the attributes contained.
 
-symbolic procedure cnRD();
+symbolic procedure cnrd();
 begin scalar type, sep, tt, base;
 % Must check that what is being returned is an int.
  type:=nil;
@@ -155,7 +155,7 @@ begin scalar type, sep, tt, base;
  >>;
 
  if member(intern type, '(rational complex!-cartesian complex!-polar)) neq nil then
-   << sep:=sepRD();
+   << sep:=seprd();
       if type='rational then <<
         lex();
         return rational(compress!* tt, sep)
@@ -170,7 +170,7 @@ begin scalar type, sep, tt, base;
 end;
 
 
-symbolic procedure ciRD();
+symbolic procedure cird();
 begin scalar test, type,aa, tt, ats;
  aa:=nil; type:=nil; test:=nil;
  ats:=retattributes(atts, '(type));
@@ -178,7 +178,7 @@ begin scalar test, type,aa, tt, ats;
  tt := char;
  lex();
   << test:=compress tt;
-     if NUMBERP test then errorML(test, 4);
+     if numberp test then errorml(test, 4);
      test := compress!* tt;
      if ats = nil then return test;
      return list('ci, ats, test)>>
@@ -206,10 +206,10 @@ end;
 % Reads through values seperated by <sep/> tags and
 % returns them in a list
 
-symbolic procedure sepRD();
+symbolic procedure seprd();
 begin scalar p1, p2;
  p1:=nil; p2:=nil;
- if char neq '(s e p !/) then errorML("<sep/>",2);
+ if char neq '(s e p !/) then errorml("<sep/>",2);
  lex();
  p2:=compress!* char;
  return p2;
@@ -217,18 +217,18 @@ end;
 
 % Creates a vector by using function matrix_row.
 
-symbolic procedure vectorRD();
+symbolic procedure vectorrd();
 begin scalar a, ats;
  ats:=retattributes(atts, '(type other));
  a:=nil;
- a:=matrixrowRD();
+ a:=matrixrowrd();
  a:=cons('vectorml,cons(ats, a));
  return a;
 end;
 
 % The following functions constructs the matrix from the mathml information.
 
-symbolic procedure matrixRD();
+symbolic procedure matrixrd();
 begin scalar b1, stop, ats, b2;
  ats:=retattributes(atts, '(type));
  stop:=0;
@@ -238,39 +238,39 @@ begin scalar b1, stop, ats, b2;
  <<
    lex();
    if char='(m a t r i x r o w) then
-    <<b2:=matrixrowRD();
+    <<b2:=matrixrowrd();
       if b1 neq nil then b1:=append(b1, list b2)
       else b1:=list b2;
       if char neq '(!/ m a t r i x r o w) then
-       errorML("</matrixrow>",2)>>
+       errorml("</matrixrow>",2)>>
    else stop:=1
   >>;
  return cons('matrix, cons(ats,cons('matrixrow, list b1)));
 end;
 
-symbolic procedure matrixrowRD();
+symbolic procedure matrixrowrd();
 begin scalar a;
  a:=nil;
- a:=mathML();
+ a:=mathml();
  return if a=nil then nil
-        else cons(a, matrixrowRD());
+        else cons(a, matrixrowrd());
 end;
 
 % returns a lambda function constructed from the information supplied.
 
-symbolic procedure lambdaRD();
+symbolic procedure lambdard();
 begin scalar b1, b2, ats;
- ats:=retattributes(atts, '(type definitionURL encoding));
+ ats:=retattributes(atts, '(type definitionurl encoding));
  lex();
- b1:=getargsRD();
- b2:=mathML2();
+ b1:=getargsrd();
+ b2:=mathml2();
  lex();
  return cons('lambda, cons(ats, append (b1, list b2)));
 end;
 
 % returns a set constructed from the information supplied.
 
-symbolic procedure setRD();
+symbolic procedure setrd();
 begin scalar setvars, ats;
  ats:=retattributes(atts, '(type));
  setvars:= cons('set, cons(ats, stats_getargs()));
@@ -279,7 +279,7 @@ end;
 
 % returns a list constructed from the information supplied.
 
-symbolic procedure listRD();
+symbolic procedure listrd();
 begin scalar ats;
  ats:=retattributes(atts, '(order));
  return cons('list, cons(ats , stats_getargs()));
@@ -287,11 +287,11 @@ end;
 
 
 
-symbolic procedure fnRD();
+symbolic procedure fnrd();
 begin scalar b1;
  lex();
- if char neq '(c i) then errorML(compress char,20)
- else b1:= mathML2();
+ if char neq '(c i) then errorml(compress char,20)
+ else b1:= mathml2();
  lex();
  return b1;
 end;
@@ -299,15 +299,15 @@ end;
 % Reads the declare construct and sets the value of the given variable to
 % the given value.
 
-symbolic procedure declareRD();
+symbolic procedure declarerd();
 begin scalar b1, b2, ats;
- ats:=retattributes(atts, '(type nargs occurence scope definitionURL));
+ ats:=retattributes(atts, '(type nargs occurence scope definitionurl));
  lex();
  if char='(c i) then
-  << b1:=ciRD()>>
- else errorML("<ci>", 8);
+  << b1:=cird()>>
+ else errorml("<ci>", 8);
  lex();
- if char neq '(!/ d e c l a r e) then <<b2 :=mathML2(); lex()>>;
+ if char neq '(!/ d e c l a r e) then <<b2 :=mathml2(); lex()>>;
 
  return cons('declare, list(ats, b1, b2));
 end;
@@ -315,7 +315,7 @@ end;
 % This function will determine if the next token is a valid token following
 % an apply token. It then calls the appropriate function if succesful.
 
-symbolic procedure applyRD();
+symbolic procedure applyrd();
 begin scalar aa, fun;
  lex();
  % This following _if_ statement relates the mathml tag to its entry in functions!*
@@ -324,7 +324,7 @@ begin scalar aa, fun;
  % It uses the table in functions!* to find the function name (the third entry) and
  % the arguments to send the RD function.
 
- mmlatts:=retattributes(atts, '(type definitionURL encoding));
+ mmlatts:=retattributes(atts, '(type definitionurl encoding));
 
  if (aa:=assoc(compress!* char, functions!*)) then <<
    fun:=apply(cadr aa, nil);
@@ -332,24 +332,24 @@ begin scalar aa, fun;
    mmlatts:=nil;
    return cons(cadr rest aa, fun);
  >>;
- errorML(compress char, 17);
+ errorml(compress char, 17);
 end;
 
 
 %  Reads through a select construct and acts accordingly.
 
-symbolic procedure selectRD();
+symbolic procedure selectrd();
 begin scalar a1, b2, b3;
  a1:=mathml();
 
  if car a1 = 'matrix then <<
    b2:=mathml();
    lex();
-   if char neq '(!/ a p p l y) then <<b3:=MathML2(); lex()>>;
+   if char neq '(!/ a p p l y) then <<b3:=mathml2(); lex()>>;
    return cons(a1, list(b2, b3))
  >>;
 
- if car a1 = 'list OR car a1 = 'vectorml then <<
+ if car a1 = 'list or car a1 = 'vectorml then <<
    b2:=mathml();
    lex();
    return cons(a1, list b2)
@@ -359,18 +359,18 @@ end;
 
 % Returns the transpose of the element contained in the transpose tags.
 
-symbolic procedure transposeRD();
+symbolic procedure transposerd();
 begin scalar a;
- a:=mathML();
+ a:=mathml();
  lex();
  return list a;
 end;
 
 % Returns the determinant of the given element.
 
-symbolic procedure determinantRD();
+symbolic procedure determinantrd();
 begin scalar a;
- a:=mathML();
+ a:=mathml();
  lex();
  return list a;
 end;
@@ -378,31 +378,31 @@ end;
 % Takes the given function name, makes it an operator, and then
 % applies it to the arguments specified in the mathml input.
 
-symbolic procedure applyfnRD();
+symbolic procedure applyfnrd();
 begin scalar b1, b2, c1;
  b1:=nil; b2:=nil; c1:=nil;
- b1:=fnRD();
+ b1:=fnrd();
  b2:=stats_getargs();
  return b1 . nil . b2;
 end;
 
 % Introduces the new csymbol element of MathML 2.0
 
-symbolic procedure csymbolRD();
+symbolic procedure csymbolrd();
 begin scalar b1, b2, c1;
  b1:=nil; b2:=nil; c1:=nil;
- b1:=fnRD();
+ b1:=fnrd();
  b2:=stats_getargs();
  return b1 . nil . b2;
 end;
 
 % Reads the condition tag.
 
-symbolic procedure conditionRD();
+symbolic procedure conditionrd();
 begin scalar a;
  a:=mathml();
  lex();
- if char neq '(!/ c o n d i t i o n) then errorML("</condition>", 2);
+ if char neq '(!/ c o n d i t i o n) then errorml("</condition>", 2);
  return cons('condition, list a);
 end;
 
@@ -410,24 +410,24 @@ end;
 
 fluid '(relations!*);
 
-symbolic procedure relnRD();
+symbolic procedure relnrd();
 begin scalar aa, ats;
  lex();
- ats:=retattributes(atts, '(type definitionURL));
+ ats:=retattributes(atts, '(type definitionurl));
  if (aa:=assoc(compress!* char, relations!*)) then return cons(cadr rest aa, cons(ats, apply(cadr aa, nil)));
 end;
 
-symbolic procedure relationRD( type );
+symbolic procedure relationrd( type );
 begin scalar args;
  args:=stats_getargs();
  return cons(cadr type, args);
 end;
 
 %!!!!!!!! PROBABLY USELESS FUNCTION!!!!!
-symbolic procedure binaryrelationRD( type );
+symbolic procedure binaryrelationrd( type );
 begin scalar arg1, arg2;
- arg1 := MathML();
- arg2 := MathML();
+ arg1 := mathml();
+ arg2 := mathml();
  lex();
  return cons(type, list (arg1, arg2));
 end;
@@ -436,62 +436,62 @@ end;
 % what should be by the tags.
 
 
-symbolic procedure subsetRD();
+symbolic procedure subsetrd();
 begin scalar abc1;
 abc1:=nil;
-abc1:=mathML();
+abc1:=mathml();
 return if abc1 = nil then '()
-        else cons(abc1, subsetRD());
+        else cons(abc1, subsetrd());
 end;
 
-symbolic procedure prsubsetRD();
+symbolic procedure prsubsetrd();
 begin scalar abc1;
 abc1:=nil;
-abc1:=mathML();
+abc1:=mathml();
 return if abc1 = nil then '()
-        else cons(abc1, prsubsetRD());
+        else cons(abc1, prsubsetrd());
 end;
 
 % These functions parse through most MathML elements,
 % since many fall in the unary, binary and nary categories.
 
-symbolic procedure unaryRD();
+symbolic procedure unaryrd();
 begin scalar a;
-  a:= mathML();
+  a:= mathml();
   lex();
   return list a;
 end;
 
-symbolic procedure binaryRD();
+symbolic procedure binaryrd();
 begin scalar a1, a2;
-  a1:=mathML();
-  a2:=mathML();
+  a1:=mathml();
+  a2:=mathml();
   lex();
   return cons(a1, list a2);
 end;
 
-symbolic procedure naryRD();
+symbolic procedure naryrd();
 begin scalar a;
-a:=mathML();
+a:=mathml();
 return if a = nil then '()
-        else cons(a, naryRD());
+        else cons(a, naryrd());
 end;
 
-symbolic procedure setFuncsNaryRD();
+symbolic procedure setfuncsnaryrd();
 begin scalar a;
-a:=mathML();
-if PAIRP a then <<if cadr a neq nil then if intern cadr car cadr a = 'multiset then mmlatts:='multiset;>>;
+a:=mathml();
+if pairp a then <<if cadr a neq nil then if intern cadr car cadr a = 'multiset then mmlatts:='multiset;>>;
 return if a = nil then '()
-        else cons(a, setFuncsnaryRD());
+        else cons(a, setfuncsnaryrd());
 end;
 
-symbolic procedure setFuncsBinRD();
+symbolic procedure setfuncsbinrd();
 begin scalar flag,a1,a2;
   flag:=nil;
-  a1:=mathML();
-  if PAIRP a1 then <<if cadr a1 neq nil then if intern cadr car cadr a1 = 'multiset then flag:=t;>>;
-  a2:=mathML();
-  if PAIRP a2 then <<if cadr a2 neq nil then if intern cadr car cadr a2 = 'multiset then flag:=t else flag:=nil;>>;
+  a1:=mathml();
+  if pairp a1 then <<if cadr a1 neq nil then if intern cadr car cadr a1 = 'multiset then flag:=t;>>;
+  a2:=mathml();
+  if pairp a2 then <<if cadr a2 neq nil then if intern cadr car cadr a2 = 'multiset then flag:=t else flag:=nil;>>;
   lex();
   if flag=t then mmlatts:='multiset;
   return cons(a1, list a2);
@@ -500,26 +500,26 @@ end;
 
 % Encodes information given in a <limit/> tag.
 
-symbolic procedure limitRD();
+symbolic procedure limitrd();
 begin scalar var, condi, low, exp, ats;
  ats:=retattributes(atts, '(definitionurl));
  low:=nil;
  lex();
  if char='(b v a r) then
-  << var:=bvarRD();
-     if (caddr var neq 1) then errorML("<degree>",8);
+  << var:=bvarrd();
+     if (caddr var neq 1) then errorml("<degree>",8);
      lex()>>
  else var:=nil;
 
  if char='(l o w l i m i t) then
-  << low:=lowlimitRD();
+  << low:=lowlimitrd();
      >>
  else if char='(c o n d i t i o n) then
-     <<      condi:=conditionRD()
+     <<      condi:=conditionrd()
         >>
       else condi:=nil;
 
- exp:=mathML();
+ exp:=mathml();
  lex();
 
  if condi=nil then
@@ -531,11 +531,11 @@ end;
 
 % Returns the partial derivative.
 
-symbolic procedure partialdiffRD();
+symbolic procedure partialdiffrd();
 begin scalar res, bvar, express;
  lex();
- bvar:=getargsRD();
- express:=mathML2();
+ bvar:=getargsrd();
+ express:=mathml2();
  lex();
 % res:=cons(express, bvar);
  res:=append(bvar, list express);
@@ -544,14 +544,14 @@ end;
 
 % Returns the derivative.
 
-symbolic procedure diffRD();
+symbolic procedure diffrd();
 begin scalar bvar, express;
  lex();
  if char='(b v a r) then
-  <<bvar:=bvarRD();
+  <<bvar:=bvarrd();
     lex()>>
  else bvar:=nil;
- express:=mathML2();
+ express:=mathml2();
  lex();
  return diff2 list(bvar, express);
 end;
@@ -578,30 +578,30 @@ end;
 % This function reads through the a series of <bvar> tags and extracts the
 % variables.
 
-symbolic procedure getargsRD();
+symbolic procedure getargsrd();
 begin scalar a;
 
 % Dont forget. This function leaves the file pointer on
 % the next token after the last bvar. So you need to use mathML2 after.
 
 if char='(b v a r) then
-<<a:=bvarRD();
+<<a:=bvarrd();
   lex();
-  return cons (a,getargsRD())>>;
+  return cons (a,getargsrd())>>;
 end;
 
 % Parses through MathML quantifiers
 
-symbolic procedure quantifierRD();
+symbolic procedure quantifierrd();
 begin scalar bvars, condi, exp;
   lex();
-  bvars:=getargsRD();
+  bvars:=getargsrd();
   if char='(c o n d i t i o n) then
-     condi:=conditionRD()
+     condi:=conditionrd()
   else condi:=nil;
 
-  if condi neq nil then exp:=MathML()
-  else exp:=MathML2();
+  if condi neq nil then exp:=mathml()
+  else exp:=mathml2();
   lex();
   return append(bvars, list(condi, exp));
 end;
@@ -609,7 +609,7 @@ end;
 % This function will parse through the sum, product and int tags. Takes in the expression, then
 % the bound variable, and finally the limits, conditions or intervals if they exist.
 
-symbolic procedure symbolsRD();
+symbolic procedure symbolsrd();
 begin scalar bvar, low, upper, int, exp, result, cond;
  low:=nil;
  upper:=nil;
@@ -619,28 +619,28 @@ begin scalar bvar, low, upper, int, exp, result, cond;
  cond:=nil;
  lex();
  if char='(b v a r) then
-      <<bvar:=bvarRD();
+      <<bvar:=bvarrd();
         if (caddr bvar eq 1) then bvar:=bvar
         else
-         errorML("",13);
+         errorml("",13);
         lex()>>
-   else errorML("<bvar>",14);
+   else errorml("<bvar>",14);
 
 
- if char='(l o w l i m i t) then <<low:=lowupperlimitRD(); lex()>>
+ if char='(l o w l i m i t) then <<low:=lowupperlimitrd(); lex()>>
    else low:=nil;
 
  if char='(i n t e r v a l) then
-   <<int:=intervalRD();
+   <<int:=intervalrd();
      lex()>>
    else int:=nil;
 
  if char='(c o n d i t i o n) then
-   <<cond:=conditionRD();
+   <<cond:=conditionrd();
      lex()>>
    else cond:=nil;
 
- exp:=mathML2();
+ exp:=mathml2();
  lex();
  if (low neq nil) then return list(bvar, low, exp);
  if (int neq nil) then return list(bvar, int, exp);
@@ -651,15 +651,15 @@ end;
 % Here we parse bound variables. The function reads the variable as well as
 % the degree if there is one.
 
-symbolic procedure bvarRD();
+symbolic procedure bvarrd();
 begin scalar var, deg;
  lex();
  if char='(d e g r e e) then
-     errorML("<bvar>",15);
- var:=mathML2();
+     errorml("<bvar>",15);
+ var:=mathml2();
  lex();
  if char='(d e g r e e) then
-   << deg:=mathML();
+   << deg:=mathml();
       lex();
       if char neq '(!/ d e g r e e) then
         error("</degree>",2);
@@ -667,76 +667,76 @@ begin scalar var, deg;
  else deg:=1;
 
  if char='(!/ b v a r) then return cons('bvar , list(var, deg))
-   else errorML("</bvar>", 2);
+   else errorml("</bvar>", 2);
 end;
 
 % Functions used to parse the limits of an integral, sum, or product.
 
-symbolic procedure lowupperlimitRD();
+symbolic procedure lowupperlimitrd();
 begin scalar lowlimit,  upperlimit;
- lowlimit:=mathML();
+ lowlimit:=mathml();
  lex();
- if char='(!/ l o w l i m i t) then upperlimit:=upperlimitRD()
-   else errorML("</lowlimit>", 2);
+ if char='(!/ l o w l i m i t) then upperlimit:=upperlimitrd()
+   else errorml("</lowlimit>", 2);
  return cons('lowupperlimit, list (lowlimit, upperlimit))
 end;
 
-symbolic procedure lowlimitRD();
+symbolic procedure lowlimitrd();
 begin scalar lowlimit;
- lowlimit:=mathML();
+ lowlimit:=mathml();
  lex();
- if char neq '(!/ l o w l i m i t) then errorML("</lowlimit>", 2);
+ if char neq '(!/ l o w l i m i t) then errorml("</lowlimit>", 2);
  return cons('lowlimit, list lowlimit);
 end;
 
-symbolic procedure upperlimitRD();
+symbolic procedure upperlimitrd();
 begin scalar upperlimit;
  lex();
- if char neq '(u p l i m i t) then errorML("<uplimit>", 10);
- upperlimit:=mathML();
+ if char neq '(u p l i m i t) then errorml("<uplimit>", 10);
+ upperlimit:=mathml();
  lex();
  if char='(!/ u p l i m i t) then return upperlimit
-   else errorML("</uplimit>", 2);
+   else errorml("</uplimit>", 2);
 end;
 
-symbolic procedure intervalRD();
+symbolic procedure intervalrd();
 begin scalar l,u, ats;
  ats:=retattributes(atts, '(closure));
- l:=mathML();
- u:=mathML();
+ l:=mathml();
+ u:=mathml();
  lex();
  if char='(!/ i n t e r v a l) then return cons('interval, list(ats, l,u))
-   else errorML("</interval>", 2);
+   else errorml("</interval>", 2);
 end;
 
 % Following functions just evaluate calculus functions.
 
-symbolic procedure logRD();
+symbolic procedure logrd();
 begin scalar a1, base;
  base:=nil;
  lex();
  if char='(l o g b a s e) then
-    <<base:=logbaseRD();
+    <<base:=logbaserd();
       lex()>>;
-  a1:=mathML2();
+  a1:=mathml2();
   lex();
    return cons(base, list a1);
 end;
 
-symbolic procedure logbaseRD();
+symbolic procedure logbaserd();
 begin scalar a;
- a:=mathML();
+ a:=mathml();
  lex();
  if char='(!/ l o g b a s e) then return a
-   else errorML("</logbase>",2);
+   else errorml("</logbase>",2);
 end;
 
 
 % % Work on here. Make sure you can have either one or two arguments...
-symbolic procedure minusRD();
+symbolic procedure minusrd();
 begin scalar c,b;
-  c:=mathML();
-  b:=mathML();
+  c:=mathml();
+  b:=mathml();
   if b=nil then c:= cons(c,'())
    else <<
         c:=cons(c, cons(b, '()));
@@ -745,37 +745,37 @@ begin scalar c,b;
 end;
 
 
-symbolic procedure rootRD();
+symbolic procedure rootrd();
 begin scalar b,deg;
   lex();
   if char='(d e g r e e) then
-  << deg:=mathML();
+  << deg:=mathml();
      lex();
      if char neq '(!/ d e g r e e) then
        error("</degree>","Syntax ERROR: Missing end tag");
      lex()>>
   else deg:=2;
 
-  b:=mathML2();
+  b:=mathml2();
   lex();
   return list(cons('degree, list deg), b);
 end;
 
 
 
-symbolic procedure minmaxRD();
+symbolic procedure minmaxrd();
 begin scalar a, bvar, cond, flag;
  lex();
  flag:=0;
- if char = '(b v a r) then <<bvar:=bvarRD(); flag:=1; lex();>> else bvar:=nil;
- if char = '(c o n d i t i o n) then <<cond:=conditionRD()>>
+ if char = '(b v a r) then <<bvar:=bvarrd(); flag:=1; lex();>> else bvar:=nil;
+ if char = '(c o n d i t i o n) then <<cond:=conditionrd()>>
  else <<
    a:=mathml2();
    a:=cons(a, stats_getargs());
    cond:=nil
  >>;
 
- if flag=1 then << a:=MathML2(); lex()>>;
+ if flag=1 then << a:=mathml2(); lex()>>;
  if bvar neq nil then return cons(bvar, append(list cond, list a));
  if cond neq nil then return list(cond);
  return a;
@@ -784,11 +784,11 @@ end;
 
 % Following function are in charge of parsing statistics related mathml.
 
-symbolic procedure momentRD( );
+symbolic procedure momentrd( );
 begin scalar  deg, child;
  lex();
  if char='(d e g r e e) then
-   << deg:=mathML();
+   << deg:=mathml();
       lex();
       if char neq '(!/ d e g r e e) then
         error("</degree>",2);
@@ -806,7 +806,7 @@ end;
 symbolic procedure stats_getargs();
 begin scalar ww;
   ww:=nil;
-  ww:=mathML();
+  ww:=mathml();
   if ww neq nil then <<
   return cons (ww,stats_getargs())>>;
 end;
@@ -822,7 +822,7 @@ end;
 
 symbolic procedure ir2mml( u );
 begin;
-     FLUID '(indent);
+     fluid '(indent);
      ind:=3;
      indent:=0$
      printout("<math>");
@@ -834,10 +834,10 @@ end;
 
 % Prints out vectors.
 
-symbolic procedure vectorML( elem );
+symbolic procedure vectorml( elem );
 begin;
    printout("<vector");
-   attributesML(car elem, "");
+   attributesml(car elem, "");
    indent!* t;
    multi_elem(cdr elem);
    indent!* nil;
@@ -846,10 +846,10 @@ end;
 
 % Following functions print out matrices.
 
-symbolic procedure matrixML( elem );
+symbolic procedure matrixml( elem );
 begin;
    printout("<matrix");
-   attributesML(car elem, "");
+   attributesml(car elem, "");
    indent!* t;
    if cadr elem = 'matrixrow then matrix_rows(caddr elem)
    else matrix_rows(cols2rows caddr elem);
@@ -875,7 +875,7 @@ begin;
 end;
 
 
-symbolic procedure identML(elem);
+symbolic procedure identml(elem);
 begin;
   printout( "<ident/>" );
 end;
@@ -888,7 +888,7 @@ fluid '(ir2mml!*);
 symbolic procedure expression( elem );
 begin scalar aa;;
 if elem neq nil then
-if (ATOM elem) then constsML( elem ) else
+if (atom elem) then constsml( elem ) else
  <<
   if (aa:=assoc(car elem, ir2mml!*)) then <<
      if caddr aa = nil then
@@ -897,14 +897,14 @@ if (ATOM elem) then constsML( elem ) else
        apply(cadr aa, list(cdr elem, car elem))
   >>
   else
-    if ((car elem)= '!*sq)  then expression (PREPSQ (cadr elem))
+    if ((car elem)= '!*sq)  then expression (prepsq (cadr elem))
     else operator_fn(elem);>>;
 end;
 
-symbolic procedure tendstoML( elem );
+symbolic procedure tendstoml( elem );
 begin;
    printout("<apply><tendsto");
-   attributesML(car elem, "/");
+   attributesml(car elem, "/");
    indent!* t;
    expression(cadr elem);
    expression(caddr elem);
@@ -918,7 +918,7 @@ end;
 symbolic procedure dfml( elem );
 begin scalar test;
  test:=cdr elem;
- if length test=1 OR (length test=2 AND NUMBERP
+ if length test=1 or (length test=2 and numberp
 cadr test) then
     printout("<apply><diff/>")
  else
@@ -934,11 +934,11 @@ symbolic procedure dfargs( elem );
 begin;
  if elem neq nil then
    << if length elem>1 then
-      <<  if NUMBERP cadr elem then
+      <<  if numberp cadr elem then
           <<printout("<bvar>");
             indent!* t;
             expression car elem;
-            degreeML(cadr elem);
+            degreeml(cadr elem);
             indent!* nil;
             printout("</bvar>");
             dfargs(cddr elem)>>
@@ -961,7 +961,7 @@ end;
 
 % Prints out degree statements.
 
-symbolic procedure degreeML( elem );
+symbolic procedure degreeml( elem );
 begin;
  if car elem neq nil then <<
    printout("<degree>");
@@ -972,7 +972,7 @@ begin;
 end;
 
 
-symbolic procedure rationalML(elem);
+symbolic procedure rationalml(elem);
 begin scalar a, b;
  a:=cadr elem;
  b:=caddr elem;
@@ -987,7 +987,7 @@ symbolic procedure reln(elem, tty);
 begin;
  printout("<apply>");
  princ "<"; princ tty;
- attributesML(car elem, "/");
+ attributesml(car elem, "/");
  indent!* t;
  multi_elem( cdr elem );
  indent!* nil;
@@ -996,11 +996,11 @@ end;
 
 % Prints out a set.
 
-symbolic procedure containerML( elem, tty );
+symbolic procedure containerml( elem, tty );
 begin;
   if tty = 'integer_interval then tty:='interval;
   printout("<"); princ tty;
-  attributesML(car elem, "");
+  attributesml(car elem, "");
   indent!* t;
   multi_elem( cdr elem );
   indent!* nil;
@@ -1013,17 +1013,17 @@ symbolic procedure sets(elem, tty);
 begin;
  printout("<apply>");
  princ "<"; princ tty;
- attributesML(car elem, "/");
+ attributesml(car elem, "/");
  indent!* t;
  multi_elem( cdr elem );
  indent!* nil;
  printout("</apply>");
 end;
 
-symbolic procedure listML( elem );
+symbolic procedure listml( elem );
 begin;
   printout( "<list" );
-  attributesML(car elem,"");
+  attributesml(car elem,"");
   indent!* t;
   multilists( cdr elem );
   indent!* nil;
@@ -1033,7 +1033,7 @@ end;
 symbolic procedure multilists( elem );
 begin;
  if elem neq nil then
-  if ((LENGTH elem)=1) then expression (car elem)
+  if ((length elem)=1) then expression (car elem)
     else <<expression(car elem); multilists(cdr elem);>>
 end;
 
@@ -1045,7 +1045,7 @@ begin;
   printout("<apply>");
   indent!* t;
   printout("<csymbol");
-  if car elem neq nil then attributesML(car elem, "")
+  if car elem neq nil then attributesml(car elem, "")
   else princ ">";
   indent!* t;
   printout("<ci>");
@@ -1084,10 +1084,10 @@ end;
 
 % Prints out logs with a base.
 
-symbolic procedure log_baseML(elem, type);
+symbolic procedure log_baseml(elem, type);
 begin;
   printout("<apply><log");
-  attributesML(car elem, "/");
+  attributesml(car elem, "/");
   indent!* t;
   if car reverse elem neq nil then <<
     printout("<logbase>");
@@ -1103,7 +1103,7 @@ end;
 
 % Prints out equal relns.
 
-symbolic procedure equalML( elem );
+symbolic procedure equalml( elem );
 begin;
   printout( "<reln><eq/>" );
   indent!* t;
@@ -1115,24 +1115,24 @@ end;
 
 % Prints out square roots and moments.
 
-symbolic procedure degreetoksML( elem, tty );
+symbolic procedure degreetoksml( elem, tty );
 begin;
   printout( "<apply><" ); princ tty;
-  attributesML(car elem, "/");
+  attributesml(car elem, "/");
   indent!* t;
-  degreeML(cdadr elem);
+  degreeml(cdadr elem);
   expression( caddr elem );
   indent!* nil;
   printout( "</apply>" );
 end;
 
-symbolic procedure bvarML(elem);
+symbolic procedure bvarml(elem);
 begin;
   printout("<bvar>");
   indent!* t;
   expression(car elem);
   if cadr elem neq 1 then <<
-    degreeML(list cadr elem);
+    degreeml(list cadr elem);
   >>;
   indent!* nil;
   printout("</bvar>")
@@ -1140,12 +1140,12 @@ end;
 
 % This function prints a series of bvar statements
 
-symbolic procedure xbvarML(elem);
+symbolic procedure xbvarml(elem);
 begin;
-  if elem neq nil then <<bvarML cdar elem; xbvarML cdr elem>>;
+  if elem neq nil then <<bvarml cdar elem; xbvarml cdr elem>>;
 end;
 
-symbolic procedure conditionML( elem );
+symbolic procedure conditionml( elem );
 begin;
   printout("<condition>");
   indent!* t;
@@ -1154,7 +1154,7 @@ begin;
   printout("</condition>")
 end;
 
-symbolic procedure lambdaML( elem );
+symbolic procedure lambdaml( elem );
 begin;
   printout("<lambda");
   attributesml(car elem, "");
@@ -1164,7 +1164,7 @@ begin;
   printout("</lambda>")
 end;
 
-symbolic procedure attributesML( a, s );
+symbolic procedure attributesml( a, s );
 begin;
   if a eq nil then <<princ s; princ ">">>
   else <<
@@ -1177,7 +1177,7 @@ begin;
      >>
      else mathml_list2string(cadar a);
      princ"""";
-     attributesML(cdr a, s);
+     attributesml(cdr a, s);
   >>;
 end;
 
@@ -1186,17 +1186,17 @@ begin;
   if a neq nil then <<princ car a; mathml_list2string(cdr a)>>;
 end;
 
-symbolic procedure declareML( elem );
+symbolic procedure declareml( elem );
 begin;
   printout("<declare");
-  attributesML(car elem, "");
+  attributesml(car elem, "");
   indent!* t;
   multi_elem(cdr elem);
   indent!* nil;
   printout("</declare>")
 end;
 
-symbolic procedure lowupperlimitML( elem );
+symbolic procedure lowupperlimitml( elem );
 begin;
   printout("<lowlimit>");
   indent!* t;
@@ -1210,7 +1210,7 @@ begin;
   printout("</uplimit>");
 end;
 
-symbolic procedure lowlimitML( elem );
+symbolic procedure lowlimitml( elem );
 begin;
   printout("<lowlimit>");
   indent!* t;
@@ -1222,9 +1222,9 @@ end;
 
 % Prints out quotients.
 
-symbolic procedure quotientML( elem , tty);
+symbolic procedure quotientml( elem , tty);
 begin;
-  if (NUMBERP car elem) AND (NUMBERP cadr elem) then <<
+  if (numberp car elem) and (numberp cadr elem) then <<
      if !*web=nil then printout("<cn type=""rational""> ")
      else printout("<cn type=&quot;rational&quot;> ");
      princ car elem;
@@ -1245,7 +1245,7 @@ end;
 
 symbolic procedure nary( elem, type );
 begin;
-  if car elem = 'e AND type = 'power then unary(cdr elem, 'exp)
+  if car elem = 'e and type = 'power then unary(cdr elem, 'exp)
   else <<
     printout( "<apply>" );
     princ "<";
@@ -1264,7 +1264,7 @@ begin;
 end;
 
 
-symbolic procedure minusML( elem );
+symbolic procedure minusml( elem );
 begin;
   printout( "<apply><minus/>" );
   indent!* t;
@@ -1279,23 +1279,23 @@ begin;
   if ((length elem)=2) then expression cadr elem;
 end;
 
-symbolic procedure ciML(elem);
+symbolic procedure ciml(elem);
 begin;
   printout("<ci");
-  attributesML(car elem, "");
+  attributesml(car elem, "");
   princ(cadr elem);
   princ("</ci>");
 end;
 
-symbolic procedure cnML(elem);
+symbolic procedure cnml(elem);
 begin;
   printout("<cn");
-  attributesML(car elem, "");
+  attributesml(car elem, "");
   princ(cadr elem);
   princ("</cn>");
 end;
 
-symbolic procedure semanticML(elem);
+symbolic procedure semanticml(elem);
 begin;
   if length elem > 1 then <<
     printout("<apply>");
@@ -1322,7 +1322,7 @@ begin;
   >>;
 end;
 
-symbolic procedure numML(elem, type);
+symbolic procedure numml(elem, type);
 begin;
    if type='based_integer then <<
      printout "<cn type=""integer"" base="""; princ cadr elem; princ """> "; princ cadr caddr elem; princ " </cn>";
@@ -1340,17 +1340,17 @@ end;
 % Prints out all pieces of data: i.e terminal symbols.
 % They can be numbers, identifiers, or constants.
 
-symbolic procedure constsML(exp);
+symbolic procedure constsml(exp);
 begin;
-      if (NUMBERP exp) then
+      if (numberp exp) then
                       << printout "<cn";
-                               if (FLOATP exp) then  princ " type=""real""> "
+                               if (floatp exp) then  princ " type=""real""> "
                             else
-                              if (FIXP exp) then princ " type=""integer""> "
+                              if (fixp exp) then princ " type=""integer""> "
                                 else princ "> ";
                          princ exp;
                          princ " </cn>">>;
-         if (IDP exp) then
+         if (idp exp) then
                      <<
                         if member(intern exp, constants!*) neq nil then
 %                            <<printout "<cn type=""constant""> "; princ exp; princ " </cn>"; return nil>>
@@ -1390,8 +1390,8 @@ begin;
    if !*web = nil then terpri();
    if !*web = nil then for i := 1:indent
       do << princ " " >>;
-   if PAIRP str then
-    <<if car str='!:rd!: OR car str='!:rn!: then ma_print str
+   if pairp str then
+    <<if car str='!:rd!: or car str='!:rn!: then ma_print str
     else princ str>>
    else princ str;
 end;
@@ -1402,7 +1402,7 @@ algebraic operator g_eq;
 algebraic operator l_eq;
 algebraic operator gt;
 algebraic operator lt;
-lisp operator plusRD;
+lisp operator plusrd;
 
 symbolic procedure test();
 begin scalar a;

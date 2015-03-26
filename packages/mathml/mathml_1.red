@@ -53,7 +53,7 @@ switch both;
 global '(!*web);
 switch web;
 
-LISP (FILE!*:=nil);
+lisp (file!*:=nil);
 !*mathml:=nil;
 !*both:=nil;
 !*web:=nil;
@@ -67,7 +67,7 @@ off web;
 
 %Tokens to be found between <ci></ci> tags.
 
-RDci!*:='
+rdci!*:='
 ((!&imaginaryi!; . (consts 'i))
 (!&ii!; . (consts 'i))
 (!&exponential!; . (consts 'e))
@@ -78,103 +78,103 @@ RDci!*:='
 
 %Tokens to be found between <reln></reln> tags.
 
-RDreln!*:=
-'((tendsto . (tendstoRD ))
-(eq!/ . (relationRD 'eq))
-(neq!/ . (relationRD 'neq))
-(lt!/ . (relationRD 'lt))
-(gt!/ . (relationRD 'gt))
-(geq!/ . (relationRD 'geq))
-(leq!/ . (relationRD 'leq))
-(in!/ . (inRD ))
-(notin!/ . (notinRD ))
-(subset!/ . (relationRD 'subset))
-(prsubset!/ . (relationRD 'prsubset))
-(notprsubset!/ . (notprsubsetRD ))
-(notsubset!/ . (notsubsetRD )));
+rdreln!*:=
+'((tendsto . (tendstord ))
+(eq!/ . (relationrd 'eq))
+(neq!/ . (relationrd 'neq))
+(lt!/ . (relationrd 'lt))
+(gt!/ . (relationrd 'gt))
+(geq!/ . (relationrd 'geq))
+(leq!/ . (relationrd 'leq))
+(in!/ . (inrd ))
+(notin!/ . (notinrd ))
+(subset!/ . (relationrd 'subset))
+(prsubset!/ . (relationrd 'prsubset))
+(notprsubset!/ . (notprsubsetrd ))
+(notsubset!/ . (notsubsetrd )));
 
 %Tokens to be found between <apply></apply> tags.
 
-RDlist!*:=
-'((divide!/ . (divideRD))
-(setdiff!/ . ( setdiffRD))
-(select!/ . (selectRD))
-(transpose!/ . ( transposeRD))
-(determinant!/ . ( determinantRD))
-(fn . ( applyfnRD))
-(union!/ . (unionRD))
-(intersect!/ . (intersectionRD))
-(implies!/ . ( impliesRD))
-(not!/ . ( notRD))
-(xor!/ . (xorRD))
-(or!/ . (orRD))
-(and!/ . (andRD))
-(mean!/ . ( meanRD))
-(var!/ . ( varRD))
-(sdev!/ . ( sdevRD))
-(moment!/ . ( momentRD))
-(median!/ . ( medianRD))
-(sin!/ . ( sinRD))
-(sec!/ . ( secRD))
-(sinh!/ . ( sinhRD))
-(sech!/ . ( sechRD))
-(arcsin!/ . ( arcsinRD))
-(cos!/ . ( cosRD))
-(csc!/ . ( cscRD))
-(cosh!/ . ( coshRD))
-(csch!/ . ( cschRD))
-(arccos!/ . ( arccosRD))
-(tan!/ . ( tanRD))
-(cot!/ . ( cotRD))
-(tanh!/ . ( tanhRD))
-(coth!/ . ( cothRD))
-(arctan!/ . ( arctanRD))
-(abs!/ . ( absRD))
-(ln!/ . ( lnRD))
-(plus!/ . ( plusRD))
-(times!/ . ( timesRD))
-(power!/ . ( powerRD))
-(exp!/ . ( expRD))
-(factorial!/ . ( factorialRD))
-(quotient!/ . ( quotientRD))
-(max!/ . ( maxRD))
-(min!/ . ( minRD))
-(minus!/ . ( minusRD))
-(rem!/ . (remRD))
-(conjugate!/ . ( conjugateRD))
-(root!/ . ( rootRD))
-(gcd!/ . ( gcdRD))
-(log!/ . (logRD))
-(int!/ . (intRD))
-(sum!/ . ( sumRD))
-(limit!/ . (limitRD))
-(condition . (conditionRD))
-(product!/ . (productRD))
-(diff!/ . (diffRD))
-(partialdiff!/ . (partialdiffRD)));
+rdlist!*:=
+'((divide!/ . (dividerd))
+(setdiff!/ . ( setdiffrd))
+(select!/ . (selectrd))
+(transpose!/ . ( transposerd))
+(determinant!/ . ( determinantrd))
+(fn . ( applyfnrd))
+(union!/ . (unionrd))
+(intersect!/ . (intersectionrd))
+(implies!/ . ( impliesrd))
+(not!/ . ( notrd))
+(xor!/ . (xorrd))
+(or!/ . (orrd))
+(and!/ . (andrd))
+(mean!/ . ( meanrd))
+(var!/ . ( varrd))
+(sdev!/ . ( sdevrd))
+(moment!/ . ( momentrd))
+(median!/ . ( medianrd))
+(sin!/ . ( sinrd))
+(sec!/ . ( secrd))
+(sinh!/ . ( sinhrd))
+(sech!/ . ( sechrd))
+(arcsin!/ . ( arcsinrd))
+(cos!/ . ( cosrd))
+(csc!/ . ( cscrd))
+(cosh!/ . ( coshrd))
+(csch!/ . ( cschrd))
+(arccos!/ . ( arccosrd))
+(tan!/ . ( tanrd))
+(cot!/ . ( cotrd))
+(tanh!/ . ( tanhrd))
+(coth!/ . ( cothrd))
+(arctan!/ . ( arctanrd))
+(abs!/ . ( absrd))
+(ln!/ . ( lnrd))
+(plus!/ . ( plusrd))
+(times!/ . ( timesrd))
+(power!/ . ( powerrd))
+(exp!/ . ( exprd))
+(factorial!/ . ( factorialrd))
+(quotient!/ . ( quotientrd))
+(max!/ . ( maxrd))
+(min!/ . ( minrd))
+(minus!/ . ( minusrd))
+(rem!/ . (remrd))
+(conjugate!/ . ( conjugaterd))
+(root!/ . ( rootrd))
+(gcd!/ . ( gcdrd))
+(log!/ . (logrd))
+(int!/ . (intrd))
+(sum!/ . ( sumrd))
+(limit!/ . (limitrd))
+(condition . (conditionrd))
+(product!/ . (productrd))
+(diff!/ . (diffrd))
+(partialdiff!/ . (partialdiffrd)));
 
-RDelems!* :=
-'((reln . (relnRD !/reln "</reln>"))
-(set . ( setRD !/set "</set>"))
-(fn . ( fnRD !/fn "</fn>"))
-(declare . ( declareRD !/declare "</declare>"))
-(list . ( listRD !/list "</list>"))
-(matrix . ( matrixRD !/matrix "</matrix>"))
-(cn . ( cnML !/cn "</cn>"))
-(ci . ( ciML !/ci "</ci>"))
-(lambda . ( lambdaRD !/lambda "</lambda>")));
+rdelems!* :=
+'((reln . (relnrd !/reln "</reln>"))
+(set . ( setrd !/set "</set>"))
+(fn . ( fnrd !/fn "</fn>"))
+(declare . ( declarerd !/declare "</declare>"))
+(list . ( listrd !/list "</list>"))
+(matrix . ( matrixrd !/matrix "</matrix>"))
+(cn . ( cnml !/cn "</cn>"))
+(ci . ( ciml !/ci "</ci>"))
+(lambda . ( lambdard !/lambda "</lambda>")));
 
 unary!* :=
 '((determinant . (unary determinant))
 (transpose . (unary transpose))
-(sum . (sum_prodML sum))
-(prod . (sum_prodML product))
-(df . (dfML nil))      % FJW: (df.(dfML df))
+(sum . (sum_prodml sum))
+(prod . (sum_prodml product))
+(df . (dfml nil))      % FJW: (df.(dfML df))
 (impart . (complpart impart))
 (repart . (complpart repart))
 (abs . (unary abs))
 (gcd . (n_nary gcd))
-(set . (setML set))
+(set . (setml set))
 (factorial . (unary factorial))
 (max . (n_nary max))
 (min . (n_nary min))
@@ -185,22 +185,22 @@ unary!* :=
 (cot . (unary cot))
 (coth . (unary coth))
 (csch . (unary csch))
-(acos . (trigML acos))
-(asin . (trigML asin))
-(atan . (trigML atan))
+(acos . (trigml acos))
+(asin . (trigml asin))
+(atan . (trigml atan))
 (sech . (unary sech))
 (sinh . (unary sinh))
 (tan . (unary tan))
 (tanh . (unary tanh))
 (csc . (unary csc))
-(quotient . (quotientML nil))
+(quotient . (quotientml nil))
 (plus . (n_nary plus))
 (times . (n_nary times))
 (expt . (n_nary power))
-(sqrt . (sqrtML sqrt))
+(sqrt . (sqrtml sqrt))
 (log . (unary log))
-(logb . (log_baseML logb))
-(log10 . (log_baseML log10))
+(logb . (log_baseml logb))
+(log10 . (log_baseml log10))
 (ln . (unary ln))
 (eq . (reln eq))
 (neq . (reln neq))
@@ -219,11 +219,11 @@ unary!* :=
 (setdf . (sets setdf))
 (arbcomplex . (printsub2cadr arbcomplex))
 (arbint . (printsub2cadr arbint))
-(mat . (matrixML nil))
-(minus . (minusML nil))
-(int . (integralML nil))
-(equal . (equalML nil))
-(list . (listML nil)));
+(mat . (matrixml nil))
+(minus . (minusml nil))
+(int . (integralml nil))
+(equal . (equalml nil))
+(list . (listml nil)));
 
 
 
@@ -238,7 +238,7 @@ begin scalar token;
  token:=nil;
  if atts neq nil then safe_atts:=atts;
  atts:=nil;
- if ch neq !$EOF!$ then <<
+ if ch neq !$eof!$ then <<
   if ch=space then while (ch:=readch())=space do
   else
    if ch='!< then char:=get_token()
@@ -266,9 +266,9 @@ end;
 symbolic procedure get_content();
 begin scalar d;
  d:=();
- while (ch:=readch()) neq '!< AND ch neq !$EOF!$
+ while (ch:=readch()) neq '!< and ch neq !$eof!$
 do
-    if ch neq space AND id2int(ch)>10 then
+    if ch neq space and id2int(ch)>10 then
 d:=cons(ch,d);
  if d neq nil then d:=cons('!$,d);
  return d;
@@ -296,18 +296,18 @@ begin scalar l, stop,d;
          while (stop=0) do
           << d:=cons(car att, d);
              att:=cdr att;
-             if (car att='!  ) OR (car att='!$) then stop:=1
+             if (car att='!  ) or (car att='!$) then stop:=1
           >>
       >>
       else
          while (stop=0) do
           << d:=cons(car att, d);
              att:=cdr att;
-             if (car att='!  ) OR (car att='!$) then stop:=1
+             if (car att='!  ) or (car att='!$) then stop:=1
           >>
    >>
  else
- errorML(compress key,1);
+ errorml(compress key,1);
  if car d='!" then d:=cdr d;
  return reverse d
  >>
@@ -333,7 +333,7 @@ symbolic procedure butes( str );
 %Removes all attributes to a token.
 begin cha;
 cha:=car str;
-return if (cha='!  OR cha='!$) then <<'(); >>
+return if (cha='!  or cha='!$) then <<'(); >>
         else  cons(car str, butes cdr str);
 end;
 
@@ -343,19 +343,19 @@ end;
 
 symbolic procedure mml(ff);
 begin;
- FILE!*:=t;
+ file!*:=t;
  ff:= open(ff, 'input);
  ff:= rds(ff);
- parseML();
+ parseml();
  close rds ff;
- FILE!*:=nil;
+ file!*:=nil;
 end;
 
 %This function starts the parsing mechanism, which is a recursive descent
 %parsing.
 
 
-symbolic procedure parseML();
+symbolic procedure parseml();
 begin scalar res, vswitch;
  res:=nil;
  vswitch:=nil;
@@ -366,12 +366,12 @@ begin scalar res, vswitch;
  temp2:=nil;
  lex();
  if char='(m a t h) then
-     res:=mathML()
-   else errorML("<math>",2);
+     res:=mathml()
+   else errorml("<math>",2);
  lex();
  if char='(!/ m a t h) then
    terpri()
-   else errorML("</math>",19);
+   else errorml("</math>",19);
 
  return algebraic res;
 end;
@@ -380,14 +380,14 @@ end;
 %token onwards, and the other one from the actual token onwards.
 
 
-symbolic procedure mathML();
+symbolic procedure mathml();
 begin scalar a;
  a:=nil;
  lex();
  return sub_math();
 end;
 
-symbolic procedure mathML2();
+symbolic procedure mathml2();
 begin scalar a;
  a:=nil;
  return sub_math();
@@ -398,16 +398,16 @@ end;
 symbolic procedure sub_math();
    begin scalar a,aa;
       if char='(a p p l y)
-        then <<a := applyML();
-               if char neq '(!/ a p p l y) then errorML("</apply>",3)>>
+        then <<a := applyml();
+               if char neq '(!/ a p p l y) then errorml("</apply>",3)>>
        else if char='(v e c t o r)
-        then <<a := vectorRD();
+        then <<a := vectorrd();
                if char neq '(!/ v e c t o r)
-                then errorML("</vector>",2)>>
-       else if (aa := assoc(compress!* char, RDelems!*))
+                then errorml("</vector>",2)>>
+       else if (aa := assoc(compress!* char, rdelems!*))
         then <<a := apply(cadr aa, '() );
                if compress!* char neq third aa
-                 then errorML(third cdr aa, 2)>>;
+                 then errorml(third cdr aa, 2)>>;
       return a
    end;
 
@@ -426,7 +426,7 @@ symbolic procedure compress!* u;
 %content to be used by the function calling it. It will have different
 %behaviours according to the type of the <cn> data.
 
-symbolic procedure cnML();
+symbolic procedure cnml();
 begin scalar type, sep, tt,aa;
 %Must check that what is being returned is an int.
  type:=nil; sep:=nil;
@@ -438,17 +438,17 @@ begin scalar type, sep, tt,aa;
 
  if type='(c o n s t a n t) then
  <<
-   if (aa:=assoc(intern compress tt, RDci!*)) then
+   if (aa:=assoc(intern compress tt, rdci!*)) then
      return apply(first cdr aa, rest cdr aa) >>;
 
- if IDP compress tt then errorML(compress tt, 16);
+ if idp compress tt then errorml(compress tt, 16);
 
  if type=nil then return compress tt;
  if member(type, '((r e a l) (i n t e g e r))) neq nil then
     return compress tt;
  if member(type, '((r a t i o n a l) (c o m p l e x !- c a r t e s i a n)
                    (c o m p l e x !- p o l a r))) neq nil then
-   << sep:=sepRD();
+   << sep:=seprd();
       if type='(r a t i o n a l) then <<lex();return alg_quotient(compress tt, sep)>>
       else
       if type='(c o m p l e x !- c a r t e s i a n) then
@@ -460,7 +460,7 @@ begin scalar type, sep, tt,aa;
 end;
 
 
-symbolic procedure ciML();
+symbolic procedure ciml();
 begin scalar test, type,aa, tt;
  aa:=nil; type:=nil; test:=nil;
  type:=search_att(atts, '(t y p e));
@@ -468,7 +468,7 @@ begin scalar test, type,aa, tt;
  tt := char;
  lex();
   << test:=compress tt;
-     if NUMBERP test then errorML(test, 4);
+     if numberp test then errorml(test, 4);
      test:=intern test;
      return test>>
 end;
@@ -492,10 +492,10 @@ end;
 
 %Returns the two values separated by a <sep/> tag.
 
-symbolic procedure sepRD();
+symbolic procedure seprd();
 begin scalar p1, p2;
  p1:=nil; p2:=nil;
- if char neq '(s e p !/) then errorML("<sep/>",2);
+ if char neq '(s e p !/) then errorml("<sep/>",2);
  lex();
  p2:=compress char;
  return p2;
@@ -503,17 +503,17 @@ end;
 
 %Creates a vector by using function matrix_row.
 
-symbolic procedure vectorRD();
+symbolic procedure vectorrd();
 begin scalar a;
  a:=nil;
- a:=matrixrowRD();
+ a:=matrixrowrd();
  a:=lisp aeval list('mat, a);
  return a;
 end;
 
 %The following functions construct the matrix from the mathml information.
 
-symbolic procedure matrixRD();
+symbolic procedure matrixrd();
 begin scalar b1, b2, stop;
  stop:=0;
  b1:='();
@@ -522,39 +522,39 @@ begin scalar b1, b2, stop;
  <<
    lex();
    if char='(m a t r i x r o w) then
-    <<b2:=matrixrowRD();
+    <<b2:=matrixrowrd();
       if b1 neq nil then b1:=append(b1, list b2)
       else b1:=list b2;
       if char neq '(!/ m a t r i x r o w) then
-       errorML("</matrixrow>",2)>>
+       errorml("</matrixrow>",2)>>
    else stop:=1
   >>;
  return aeval cons ('mat ,b1);
 end;
 
-symbolic procedure matrixrowRD();
+symbolic procedure matrixrowrd();
 begin scalar a;
  a:=nil;
- a:=mathML();
+ a:=mathml();
  return if a=nil then nil
-        else cons(a, matrixrowRD());
+        else cons(a, matrixrowrd());
 end;
 
 %returns a lambda function constructed from the information supplied.
 
-symbolic procedure lambdaRD();
+symbolic procedure lambdard();
 begin scalar b1, b2;
  lex();
- b1:=bvarRD();
+ b1:=bvarrd();
  b1:=car b1;
- b2:=mathML();
+ b2:=mathml();
  lex();
  return algebraic( (lambda  b1; b2) b1 );
 end;
 
 %returns a set constructed from the information supplied.
 
-symbolic procedure setRD();
+symbolic procedure setrd();
 begin scalar setvars;
  atts:='(t y p e != s e t !$);
  setvars:= cons('list,stats_getargs());
@@ -580,7 +580,7 @@ else if x=car l then delall(x, cdr l)
 
 %returns a list constructed from the information supplied.
 
-symbolic procedure listRD();
+symbolic procedure listrd();
 begin scalar setvars, lorder, tmp;
  lorder:=search_att(atts, '(o r d e r));
  atts:='(t y p e != l i s t !$);
@@ -604,17 +604,17 @@ end;
 
 symbolic procedure pred(u,v);
 begin;
-return if NUMBERP u and NUMBERP v then <<if u<v then t>> else
- if IDP u and IDP v then <<if id2int(u) < id2int(v) then t>>
- else if NUMBERP u and IDP v then <<if u<id2int(v) then t>> else
-if IDP u and NUMBERP v then <<if id2int(u)<v then t>>;
+return if numberp u and numberp v then <<if u<v then t>> else
+ if idp u and idp v then <<if id2int(u) < id2int(v) then t>>
+ else if numberp u and idp v then <<if u<id2int(v) then t>> else
+if idp u and numberp v then <<if id2int(u)<v then t>>;
 end;
 
 %This one sorts in alphanumerical order
 
 symbolic procedure lexog(u,v);
 begin;
- return if IDP u and IDP v then <<if id2int(u) < id2int(v) then t>>
+ return if idp u and idp v then <<if id2int(u) < id2int(v) then t>>
  else t;
 end;
 
@@ -622,18 +622,18 @@ end;
 
 symbolic procedure numer(u,v);
 begin;
- return if NUMBERP u and NUMBERP v then <<if u<v then t>>
+ return if numberp u and numberp v then <<if u<v then t>>
  else t;
 end;
 
 %Makes the next token in the inputstream an operator.
 
-symbolic procedure fnRD();
+symbolic procedure fnrd();
 begin scalar b1;
  lex();
- if char neq '(c i) then errorML(compress char,20)
- else b1:= mathML2();
- if ATOM b1 then algebraic operator b1;
+ if char neq '(c i) then errorml(compress char,20)
+ else b1:= mathml2();
+ if atom b1 then algebraic operator b1;
  lex();
  return b1;
 end;
@@ -641,11 +641,11 @@ end;
 %Reads the declare construct and sets the value of the given variable to
 %the given value.
 
-symbolic procedure declareRD();
+symbolic procedure declarerd();
 begin scalar b1, b2, flagg, at;
  at:=atts;
  flagg := nil;
- b1:=mathML();
+ b1:=mathml();
  clear b1;
  clear reval b1;
  lex();
@@ -656,7 +656,7 @@ begin scalar b1, b2, flagg, at;
    flagg:=t;
 
  if char='(!/ d e c l a r e) then return nil;
- b2 :=mathML2();
+ b2 :=mathml2();
  if get(b1, 'type)='(f n) then
   << algebraic operator b1>>;
  if flagg = t then setk(b1, b2)
@@ -668,23 +668,23 @@ end;
 %This function will determine if the next token is a valid token following
 %an apply token. It then calls the appropriate function if succesful.
 
-symbolic procedure applyML();
+symbolic procedure applyml();
    begin scalar aa;
       lex();
-      if (aa := assoc(compress!* char, RDlist!*))
+      if (aa := assoc(compress!* char, rdlist!*))
         then return apply(first cdr aa, rest cdr aa)
        else if char='(i d e n t !/) or char='(c o m p o s e !/)
         then return nil
        else if char='(i n v e r s e !/) then return t
-       else errorML(compress!* char, 17)
+       else errorml(compress!* char, 17)
    end;
 
 %Reads the next two elements and returns their setdifference.
 
-symbolic procedure setdiffRD();
+symbolic procedure setdiffrd();
 begin scalar b1, b2;
- b1:=mathML();
- b2:=mathML();
+ b1:=mathml();
+ b2:=mathml();
  lex();
  if b1=reval b1 and b2=reval b2 then return list('setdiff,b1, b2)
 else
@@ -695,12 +695,12 @@ end;
 
 %Reads through a select construct and acts accordingly.
 
-symbolic procedure selectRD();
+symbolic procedure selectrd();
 begin scalar a1, res;
  a1:=stats_getargs();
  if caar a1='mat then res:=mat_select(a1);
  if caar a1='list then res:=list_select(a1);
- if ATOM res then return res;
+ if atom res then return res;
  return cons('list, res);
 end;
 
@@ -721,9 +721,9 @@ end;
 
 %Returns the transpose of the element contained in the transpose tags.
 
-symbolic procedure transposeRD();
+symbolic procedure transposerd();
 begin scalar a, res;
- a:=mathML();
+ a:=mathml();
  res:=algebraic(tp a);
  lex();
  return res;
@@ -731,9 +731,9 @@ end;
 
 %Returns the determinant of the given element.
 
-symbolic procedure determinantRD();
+symbolic procedure determinantrd();
 begin scalar a, res;
- a:=mathML();
+ a:=mathml();
    res:=alg_det a;
  lex();
  return res;
@@ -747,10 +747,10 @@ end;
 %Takes the given function name, makes it an operator, and then
 %applies it to the arguments specified in the mathml input.
 
-symbolic procedure applyfnRD();
+symbolic procedure applyfnrd();
 begin scalar b1, b2, c1;
  b1:=nil; b2:=nil; c1:=nil;
- b1:=fnRD();
+ b1:=fnrd();
  b2:=stats_getargs();
  b2:=cons(b1, b2);
  c1:=algebraic b2;
@@ -759,12 +759,12 @@ end;
 
 %Returns the union of the elements specified.
 
-symbolic procedure unionRD();
+symbolic procedure unionrd();
 begin scalar b1, a1, a2,type,res;
  b1:=stats_getargs();
  a1:=car b1;
  a2:=cadr b1;
- if PAIRP a1 AND PAIRP a2 then <<
+ if pairp a1 and pairp a2 then <<
    type := car a1;
    a1:=cons('list, eval_list cdr a1);
    a2:=cons('list, eval_list cdr a2);
@@ -779,12 +779,12 @@ end;
 
 %Returns the intersection of the elements specified.
 
-symbolic procedure intersectionRD();
+symbolic procedure intersectionrd();
 begin scalar b1, a1, a2,type,res;
  b1:=stats_getargs();
  a1:=car b1;
  a2:=cadr b1;
- if PAIRP a1 AND PAIRP a2 then <<
+ if pairp a1 and pairp a2 then <<
    type := car a1;
    a1:=cons('list, eval_list cdr a1);
    a2:=cons('list, eval_list cdr a2);
@@ -813,7 +813,7 @@ end;
 symbolic procedure eval_list_sets(args);
 begin scalar ab;
  return if args=nil then nil
- else <<if PAIRP reval car args then
+ else <<if pairp reval car args then
             <<
           if car reval car args='list then
              ab:=cons('set, cdr reval car args)>>
@@ -828,7 +828,7 @@ symbolic procedure constants(args);
 begin scalar b1;
 if args neq nil then b1:=car args;
  return if args=nil then nil
-   else <<if b1=reval b1 AND IDP b1 OR PAIRP b1 then temp2:='stop
+   else <<if b1=reval b1 and idp b1 or pairp b1 then temp2:='stop
           else  constants(cdr args)>>;
 end;
 
@@ -836,67 +836,67 @@ end;
 
 %Return boolean values of the arguments given.
 
-symbolic procedure notRD();
+symbolic procedure notrd();
 begin scalar a;
- a:=mathML();
+ a:=mathml();
  lex();
  return not(reval a);
 end;
 
-symbolic procedure impliesRD();
+symbolic procedure impliesrd();
 begin scalar a1,b1,c1;
- a1:=mathML();
- b1:=mathML();
+ a1:=mathml();
+ b1:=mathml();
  if b1='false then b1:=nil;
  if a1='false then a1:=nil;
- if reval a1 AND not reval b1 then c1:=nil
+ if reval a1 and not reval b1 then c1:=nil
  else c1:=t;
  lex();
  return c1;
 end;
 
-symbolic procedure andRD();
+symbolic procedure andrd();
 begin scalar a;
  a:=stats_getargs();
  a:=subst(nil, 'false, a);
- a:=and2RD(a);
+ a:=and2rd(a);
  return a;
 end;
 
-symbolic procedure and2RD(args);
+symbolic procedure and2rd(args);
 begin
  return if length args=1 then reval car args
-            else and(reval car args, and2RD(cdr args));
+            else and(reval car args, and2rd(cdr args));
 
 end;
 
-symbolic procedure orRD();
+symbolic procedure orrd();
 begin scalar a;
  a:=stats_getargs();
  a:=subst(nil, 'false, a);
- a:=or2RD(a);
+ a:=or2rd(a);
  return a;
 end;
 
-symbolic procedure or2RD(args);
+symbolic procedure or2rd(args);
 begin
  return if length args=1 then reval car args
-            else or(reval car args, or2RD(cdr args));
+            else or(reval car args, or2rd(cdr args));
 
 end;
 
-symbolic procedure xorRD();
+symbolic procedure xorrd();
 begin scalar a;
  a:=stats_getargs();
  a:=subst(nil, 'false, a);
- a:=xor2RD(a);
+ a:=xor2rd(a);
  return a;
 end;
 
-symbolic procedure xor2RD(args);
+symbolic procedure xor2rd(args);
 begin
  return if args=() then nil
-            else alg_xor(reval car args, xor2RD(cdr args));
+            else alg_xor(reval car args, xor2rd(cdr args));
 
 end;
 
@@ -908,143 +908,143 @@ end;
 
 %All defined trigonometric functions.
 
-algebraic procedure sinRD();
+algebraic procedure sinrd();
 begin scalar a;
- a:=symbolic mathML();
+ a:=symbolic mathml();
  symbolic lex();
  return sin(a);
 end;
 
-algebraic procedure secRD();
+algebraic procedure secrd();
 begin scalar a;
- a:=symbolic mathML();
+ a:=symbolic mathml();
  symbolic lex();
  return sec(a);
 end;
 
-algebraic procedure sinhRD();
+algebraic procedure sinhrd();
 begin scalar a;
- a:=symbolic mathML();
+ a:=symbolic mathml();
  symbolic lex();
  return sinh(a);
 end;
 
-algebraic procedure sechRD();
+algebraic procedure sechrd();
 begin scalar a;
- a:=symbolic mathML();
+ a:=symbolic mathml();
  symbolic lex();
  return sech(a);
 end;
 
-algebraic procedure arcsinRD();
+algebraic procedure arcsinrd();
 begin scalar a;
- a:=symbolic mathML();
+ a:=symbolic mathml();
  symbolic lex();
  return asin(a);
 end;
 
-algebraic procedure cosRD();
+algebraic procedure cosrd();
 begin scalar a;
- a:=symbolic mathML();
+ a:=symbolic mathml();
  symbolic lex();
  return cos(a);
 end;
 
-algebraic procedure cscRD();
+algebraic procedure cscrd();
 begin scalar a;
- a:=symbolic mathML();
+ a:=symbolic mathml();
  symbolic lex();
  return csc(a);
 end;
 
-algebraic procedure coshRD();
+algebraic procedure coshrd();
 begin scalar a;
- a:=symbolic mathML();
+ a:=symbolic mathml();
  symbolic lex();
  return cosh(a);
 end;
 
-algebraic procedure cschRD();
+algebraic procedure cschrd();
 begin scalar a;
- a:=symbolic mathML();
+ a:=symbolic mathml();
  symbolic lex();
  return csch(a);
 end;
 
-algebraic procedure arccosRD();
+algebraic procedure arccosrd();
 begin scalar a;
- a:=symbolic mathML();
+ a:=symbolic mathml();
  symbolic lex();
  return acos(a);
 end;
 
-algebraic procedure tanRD();
+algebraic procedure tanrd();
 begin scalar a;
- a:=symbolic mathML();
+ a:=symbolic mathml();
  symbolic lex();
  return tan(a);
 end;
 
-algebraic procedure cotRD();
+algebraic procedure cotrd();
 begin scalar a;
- a:=symbolic mathML();
+ a:=symbolic mathml();
  symbolic lex();
  return cot(a);
 end;
 
-algebraic procedure tanhRD();
+algebraic procedure tanhrd();
 begin scalar a;
- a:=symbolic mathML();
+ a:=symbolic mathml();
  symbolic lex();
  return tanh(a);
 end;
 
-algebraic procedure cothRD();
+algebraic procedure cothrd();
 begin scalar a;
- a:=symbolic mathML();
+ a:=symbolic mathml();
  symbolic lex();
  return coth(a);
 end;
 
-algebraic procedure arctanRD();
+algebraic procedure arctanrd();
 begin scalar a;
- a:=symbolic mathML();
+ a:=symbolic mathml();
  symbolic lex();
  return atan(a);
 end;
 
 %Reads the condition tag.
 
-symbolic procedure conditionRD();
+symbolic procedure conditionrd();
 begin scalar a;
  lex();
- if char='(r e l n) then a:=relnRD()
- else a:=mathML();
+ if char='(r e l n) then a:=relnrd()
+ else a:=mathml();
  lex();
  return a;
 end;
 
 %This function will read all legal tags following the <reln> tag.
 
-symbolic procedure relnRD();
+symbolic procedure relnrd();
    begin scalar a,aa;
       lex();
-      if (aa := assoc(compress!* char, RDreln!*))
+      if (aa := assoc(compress!* char, rdreln!*))
         then a := apply(first cdr aa, rest cdr aa)
-       else errorML(compress!* char, 18);
+       else errorml(compress!* char, 18);
       return if a=t then t else if null a then 'false else a;
    end;
 
 
-symbolic procedure relationRD( type );
+symbolic procedure relationrd( type );
 begin scalar args,a;
  args:=stats_getargs();
  if type='(quote eq) then <<a:= alg_eq(args)>> else
  if type='(quote neq) then <<a:= alg_neq(args)>> else
  if type='(quote lt) then <<a:= alg_lt(args)>> else
  if type='(quote gt) then <<a:= alg_gt(args)>> else
- if type='(quote subset) then <<a:=subsetRD(args)>> else
- if type='(quote prsubset) then <<a:=prsubsetRD(args)>> else
+ if type='(quote subset) then <<a:=subsetrd(args)>> else
+ if type='(quote prsubset) then <<a:=prsubsetrd(args)>> else
  if type='(quote geq) then <<a:= alg_geq(args)>> else
  if type='(quote leq) then <<a:= alg_leq(args)>>;
 
@@ -1055,12 +1055,12 @@ end;
 %The following functions do all the necessay actions in order to evaluate
 %what should be by the tags.
 
-symbolic procedure notsubsetRD();
+symbolic procedure notsubsetrd();
 begin scalar b1, b2;
- b1:=mathML();
- b2:=mathML();
+ b1:=mathml();
+ b2:=mathml();
  lex();
- if b1=reval b1 AND b2=reval b2 then
+ if b1=reval b1 and b2=reval b2 then
     return list('notsubset, b1, b2);
  if b1= reval b1 then
     return list('notsubset, b1,cons ('set, cdr reval b2));
@@ -1072,12 +1072,12 @@ begin scalar b1, b2;
     return nil;
 end;
 
-symbolic procedure notprsubsetRD();
+symbolic procedure notprsubsetrd();
 begin scalar b1, b2;
- b1:=mathML();
- b2:=mathML();
+ b1:=mathml();
+ b2:=mathml();
  lex();
- if b1=reval b1 AND b2=reval b2 then
+ if b1=reval b1 and b2=reval b2 then
     return list('notprsubset, b1, b2);
  if b1= reval b1 then
     return list('notprsubset, b1,cons('set, cdr reval b2));
@@ -1089,18 +1089,18 @@ return nil;
 end;
 
 
-symbolic procedure subsetRD(sets);
+symbolic procedure subsetrd(sets);
 begin scalar args,val;
  args:=sets;
  val:=t;
  while (length args > 1) do
-  << if NUMBERP reval car args then
-       errorML(reval car args,5);
-     if car args = reval car args OR cadr args = reval cadr args then
+  << if numberp reval car args then
+       errorml(reval car args,5);
+     if car args = reval car args or cadr args = reval cadr args then
      << args:='();
         val:=cons('subset, eval_list_sets(sets))>>
      else
-     << val:=AND(val, alg_subset(reval car args, reval cadr args));
+     << val:=and(val, alg_subset(reval car args, reval cadr args));
         args:=cdr args >>
   >>;
  return val;
@@ -1116,15 +1116,15 @@ begin;
 end;
 
 
-symbolic procedure prsubsetRD(sets);
+symbolic procedure prsubsetrd(sets);
 begin scalar args, val;
  val:=t;
  while (length args > 1) do
-  << if car args = reval car args OR cadr args = reval cadr args then
+  << if car args = reval car args or cadr args = reval cadr args then
      << args:='();
         val:=cons('prsubset, eval_list_sets(sets))>>
      else
-     << val:=AND(val, alg_prsubset(reval car args, reval cadr args));
+     << val:=and(val, alg_prsubset(reval car args, reval cadr args));
         args:=cdr args >> >>;
  return val;
 end;
@@ -1134,32 +1134,32 @@ begin;
   if setdiff(a,b)=nil then return t else return nil;
 end;
 
-symbolic procedure inRD();
+symbolic procedure inrd();
 begin scalar b1,b2;
- b1:= mathML();
- b2:= mathML();
+ b1:= mathml();
+ b2:= mathml();
  lex();
- if b2 = reval b2 AND ATOM b2 then
+ if b2 = reval b2 and atom b2 then
  <<
-    if b2='n then <<if FIXP b1 then return t else return nil>>;
-    if b2='r then <<if NUMBERP b1 then return t else return nil>>;
+    if b2='n then <<if fixp b1 then return t else return nil>>;
+    if b2='r then <<if numberp b1 then return t else return nil>>;
     return list('in, reval b1, b2)
  >>;
- if MEMBER(reval b1,reval  b2) neq nil then return t
+ if member(reval b1,reval  b2) neq nil then return t
    else return nil;
 end;
 
-symbolic procedure notinRD();
+symbolic procedure notinrd();
 begin scalar b1,b2;
- b1:= mathML();
- b2:= mathML();
+ b1:= mathml();
+ b2:= mathml();
  lex();
- if b2 = reval b2 AND ATOM b2 then
+ if b2 = reval b2 and atom b2 then
  <<
-    if b2='N then if FIXP b1 then return nil else return nil;
-    if b2='R then if NUMBERP b1 then return nil else return nil;
+    if b2='n then if fixp b1 then return nil else return nil;
+    if b2='r then if numberp b1 then return nil else return nil;
     return list('notin, reval b1, b2)>>;
- if MEMBER(reval b1,reval  b2) neq nil then return nil
+ if member(reval b1,reval  b2) neq nil then return nil
    else return t;
 end;
 
@@ -1202,11 +1202,11 @@ symbolic procedure alg_lt2(args);
 begin;
  return if length args=1 then t
         else
- if (NUMBERP reval car args AND NUMBERP reval cadr args )then
+ if (numberp reval car args and numberp reval cadr args )then
    <<if (reval car args < reval cadr args) then
        alg_lt2(cdr args)
      else nil>>
- else errorML("",6);
+ else errorml("",6);
 end;
 
 
@@ -1223,11 +1223,11 @@ symbolic procedure alg_gt2(args);
 begin;
  return if length args=1 then t
         else
- if (NUMBERP reval car args AND NUMBERP reval cadr args )then
+ if (numberp reval car args and numberp reval cadr args )then
    <<if (reval car args > reval cadr args) then
        alg_gt2(cdr args)
      else nil>>
- else errorML("",6);
+ else errorml("",6);
 end;
 
 symbolic procedure alg_geq(args);
@@ -1242,11 +1242,11 @@ symbolic procedure alg_geq2(args);
 begin;
  return if length args=1 then t
         else
- if (NUMBERP reval car args AND NUMBERP reval cadr args )then
+ if (numberp reval car args and numberp reval cadr args )then
    <<if (reval car args >= reval cadr args) then
        alg_geq2(cdr args)
      else nil>>
- else errorML("",6);
+ else errorml("",6);
 end;
 
 symbolic procedure alg_leq(args);
@@ -1261,22 +1261,22 @@ symbolic procedure alg_leq2(args);
 begin;
  return if length args=1 then t
         else
- if (NUMBERP reval car args AND NUMBERP reval cadr args )then
+ if (numberp reval car args and numberp reval cadr args )then
    <<if (reval car args <= reval cadr args) then
        alg_leq2(cdr args)
      else nil>>
- else errorML("",6);
+ else errorml("",6);
 end;
 
 %Interprets the <tendsto> tag when used in the <limit> tag.
 
-symbolic procedure tendstoRD();
+symbolic procedure tendstord();
 begin scalar attr, arg1 ,arg2;
  if intersection(atts, '(t y p e)) neq nil then
     attr:=search_att(atts, '(t y p e))
  else attr:=nil;
- arg1:=mathML();
- arg2:=mathML();
+ arg1:=mathml();
+ arg2:=mathml();
  lex();
  return list (attr,arg2);
 end;
@@ -1284,28 +1284,28 @@ end;
 %Returns the limit of the information given. Uses the Reduce package
 %LIMITS.
 
-symbolic procedure limitRD();
+symbolic procedure limitrd();
 begin scalar var, condi, low, exp;
  lex();
  if char='(b v a r) then
-  << var:=bvarRD();
+  << var:=bvarrd();
      if eqn(cadr var,1) then var:=car var
       else
-         errorML("<degree>",8);
+         errorml("<degree>",8);
      lex()>>
  else var:=nil;
 
  if char='(l o w l i m i t) then
-  << low:=lowlimitRD();
+  << low:=lowlimitrd();
      lex()>>
  else if char='(c o n d i t i o n) then
-     <<      condi:=conditionRD();
+     <<      condi:=conditionrd();
         if char neq '(!/ c o n d i t i o n) then
-        errorML("</condition>",2);
+        errorml("</condition>",2);
         lex()>>
       else condi:=nil;
 
- exp:=mathML2();
+ exp:=mathml2();
  lex();
 
  if condi=nil then
@@ -1327,33 +1327,33 @@ end;
 
 %Returns the sum.
 
-symbolic procedure sumRD();
+symbolic procedure sumrd();
 begin scalar svar, low, upper, express, res;
  svar:=nil; low:=nil; upper:=nil; express:=nil; res:=nil;
  lex();
  if char='(b v a r) then
-      <<svar:=bvarRD();
+      <<svar:=bvarrd();
         if eqn(cadr svar,1) then svar:=car svar
         else
-         errorML("<degree>",7);
+         errorml("<degree>",7);
         lex()>>
- else errorML("<bvar>",9);
+ else errorml("<bvar>",9);
 
  if char='(l o w l i m i t) then
-     << low:=lowlimitRD();
+     << low:=lowlimitrd();
         lex();
           if char='(u p l i m i t) then
-             <<      upper:=upperlimitRD();
+             <<      upper:=upperlimitrd();
                 lex()>>
-        else errorML("<uplimit>",10) >>
+        else errorml("<uplimit>",10) >>
  else if char='(i n t e r v a l) then
-     <<      res:=intervalRD();
+     <<      res:=intervalrd();
         lex();
         low:=car res;
         upper:=cadr res >>
-      else errorML("<lowlimit> or <interval>",11);
+      else errorml("<lowlimit> or <interval>",11);
 
- express:=mathML2();
+ express:=mathml2();
  lex();
 
  return algebraic sum(express, svar, low, upper);
@@ -1377,31 +1377,31 @@ end;
 
 %Returns the product.
 
-symbolic procedure productRD();
+symbolic procedure productrd();
 begin scalar pvar, low, upper, pexpress, res;
  lex();
  if char='(b v a r) then
-      <<pvar:=bvarRD();
+      <<pvar:=bvarrd();
         if eqn(cadr pvar,1) then pvar:=car pvar
         else
-         errorML("<degree>",12);
+         errorml("<degree>",12);
         lex()>>
- else errorML("<bvar>",9);
+ else errorml("<bvar>",9);
  if char='(l o w l i m i t) then
-     << low:=lowlimitRD();
+     << low:=lowlimitrd();
         lex();
           if char='(u p l i m i t) then
-             <<      upper:=upperlimitRD();
+             <<      upper:=upperlimitrd();
                 lex()>>
-        else errorML("<uplimit>",10)>>
+        else errorml("<uplimit>",10)>>
  else if char='(i n t e r v a l) then
-     <<      res:=intervalRD();
+     <<      res:=intervalrd();
         lex();
         low:=car res;
         upper:=cadr res >>
-      else errorML("<lowlimit> or <interval>",11);
+      else errorml("<lowlimit> or <interval>",11);
 
- pexpress:=mathML2();
+ pexpress:=mathml2();
  lex();
 
  return algebraic prod(pexpress, pvar, low, upper);
@@ -1427,11 +1427,11 @@ end;
 
 %Returns the partial derivative.
 
-symbolic procedure partialdiffRD();
+symbolic procedure partialdiffrd();
 begin scalar res, bvar, express;
  lex();
- bvar:=getargsRD();
- express:=mathML2();
+ bvar:=getargsrd();
+ express:=mathml2();
  lex();
  res:=differentiate(express, bvar);
  return res;
@@ -1451,29 +1451,29 @@ end;
 %This function reads through the a series of <bvar> tags and extracts the
 %variables.
 
-symbolic procedure getargsRD();
+symbolic procedure getargsrd();
 begin scalar a;
 
 %Dont forget. This function leaves the file pointer on
 %the next token after the last bvar. So you need to use mathML2 after.
 
 if char='(b v a r) then
-<<a:=bvarRD();
+<<a:=bvarrd();
   lex();
-  return cons (a,getargsRD())>>;
+  return cons (a,getargsrd())>>;
 end;
 
 %Returns the derivative.
 
-symbolic procedure diffRD();
+symbolic procedure diffrd();
 begin scalar bvar, degree, express, res;
  lex();
  if char='(b v a r) then
-  <<bvar:=bvarRD();
+  <<bvar:=bvarrd();
     degree:=cadr bvar;
     bvar:=car bvar; lex()>>
  else <<bvar:=nil; degree:=nil>>;
- express:=mathML2();
+ express:=mathml2();
  lex();
  res:=alg_df(express, bvar, degree);
  return res;
@@ -1487,40 +1487,40 @@ end;
 %This function will calculate the integral. Takes in the expression, then
 %the bound variable, and finally the limits if they exist.
 
-symbolic procedure intRD();
+symbolic procedure intrd();
 begin scalar bvar, low, upper, int, exp;
  lex();
  if char='(b v a r) then
-      <<bvar:=bvarRD();
+      <<bvar:=bvarrd();
         if eqn(cadr bvar,1) then bvar:=car bvar
         else
-         errorML("",13);
+         errorml("",13);
         lex()>>
-   else errorML("<bvar>",14);
+   else errorml("<bvar>",14);
 
 
- if char='(l o w l i m i t) then <<low:=lowlimitRD(); lex()>>
+ if char='(l o w l i m i t) then <<low:=lowlimitrd(); lex()>>
    else low:=nil;
 
- if char='(u p l i m i t) then <<upper:=upperlimitRD(); lex()>>
+ if char='(u p l i m i t) then <<upper:=upperlimitrd(); lex()>>
    else upper:=nil;
 
  if char='(i n t e r v a l) then
-   <<int:=intervalRD();
+   <<int:=intervalrd();
      low:=car int;
      upper:=cadr int;
      lex()>>
    else int:=nil;
 
 
- exp:=mathML2();
+ exp:=mathml2();
  lex();
  return alg_int(exp, bvar, low, upper);
 end;
 
 algebraic procedure alg_int(exp, bvar, low, upper);
 begin scalar res;
- if (low='nil) AND (upper=nil) then res:= int(exp, bvar)
+ if (low='nil) and (upper=nil) then res:= int(exp, bvar)
   else res:= int(exp,bvar,low,upper);
 return res;
 end;
@@ -1528,57 +1528,57 @@ end;
 %Here we parse bound variables. The function reads the variable as well as
 %the degree if there is one.
 
-symbolic procedure bvarRD();
+symbolic procedure bvarrd();
 begin scalar var, deg;
  lex();
  if char='(d e g r e e) then
-     errorML("<bvar>",15);
- var:=mathML2();
+     errorml("<bvar>",15);
+ var:=mathml2();
  lex();
  if char='(d e g r e e) then
-   << deg:=mathML();
+   << deg:=mathml();
       lex();
       if char neq '(!/ d e g r e e) then
         error("</degree>",2);
       lex()>>
  else deg:=1;
  if char='(!/ b v a r) then return list(var, deg)
-   else errorML("</bvar>", 2);
+   else errorml("</bvar>", 2);
 end;
 
 %Functions used to parse the limits of an integral, sum, or product.
 
-symbolic procedure lowlimitRD();
+symbolic procedure lowlimitrd();
 begin scalar lowlimit;
- lowlimit:=mathML();
+ lowlimit:=mathml();
  lex();
  if char='(!/ l o w l i m i t) then return lowlimit
-   else errorML("</lowlimit>", 2);
+   else errorml("</lowlimit>", 2);
 end;
 
-symbolic procedure upperlimitRD();
+symbolic procedure upperlimitrd();
 begin scalar upperlimit;
- upperlimit:=mathML();
+ upperlimit:=mathml();
  lex();
  if char='(!/ u p l i m i t) then return upperlimit
-   else errorML("</uplimit>", 2);
+   else errorml("</uplimit>", 2);
 end;
 
 
-symbolic procedure intervalRD();
+symbolic procedure intervalrd();
 begin scalar l,u;
- l:=mathML();
- u:=mathML();
+ l:=mathml();
+ u:=mathml();
  lex();
  if char='(!/ i n t e r v a l) then return list(l,u)
-   else errorML("</interval>", 2);
+   else errorml("</interval>", 2);
 end;
 
 %Following functions just evaluate calculus functions.
 
-symbolic procedure lnRD();
+symbolic procedure lnrd();
 begin scalar a;
- a:=alg_ln(mathML());
+ a:=alg_ln(mathml());
  lex();
  return a;
 end;
@@ -1588,14 +1588,14 @@ begin;
   return ln(a);
 end;
 
-symbolic procedure logRD();
+symbolic procedure logrd();
 begin scalar a, a1, base;
  base:=nil;
  lex();
  if char='(l o g b a s e) then
-    <<base:=logbaseRD();
+    <<base:=logbaserd();
       lex()>>;
-  a1:=mathML2();
+  a1:=mathml2();
   lex();
   a:=alg_log(a1, base);
   return a;
@@ -1608,18 +1608,18 @@ begin;
   return logb(a, base);
 end;
 
-symbolic procedure logbaseRD();
+symbolic procedure logbaserd();
 begin scalar a;
- a:=mathML();
+ a:=mathml();
  lex();
  if char='(!/ l o g b a s e) then return a
-   else errorML("</logbase>",2);
+   else errorml("</logbase>",2);
 end;
 
 
-symbolic procedure conjugateRD();
+symbolic procedure conjugaterd();
 begin scalar a;
-  a:= alg_conj(mathML());
+  a:= alg_conj(mathml());
   lex();
   return a;
 end;
@@ -1630,10 +1630,10 @@ begin;
 end;
 
 
-symbolic procedure minusRD();
+symbolic procedure minusrd();
 begin scalar c,b;
-  c:=mathML();
-  b:=mathML();
+  c:=mathml();
+  b:=mathml();
   if b=nil then c:=alg_minus(c)
    else <<
         c:=alg_difference(c,b);
@@ -1652,9 +1652,9 @@ begin;
 end;
 
 
-symbolic procedure absRD();
+symbolic procedure absrd();
 begin scalar a;
-  a:=alg_abs(mathML());
+  a:=alg_abs(mathml());
   lex();
   return a;
 end;
@@ -1664,18 +1664,18 @@ begin;
  return abs(a);
 end;
 
-symbolic procedure rootRD();
+symbolic procedure rootrd();
 begin scalar b,deg;
   lex();
   if char='(d e g r e e) then
-  << deg:=mathML();
+  << deg:=mathml();
      lex();
      if char neq '(!/ d e g r e e) then
        error("</degree>","Syntax ERROR: Missing end tag");
      lex()>>
   else deg:=2;
 
-  b:=mathML2();
+  b:=mathml2();
   lex();
   return alg_root(b,deg);
 end;
@@ -1686,7 +1686,7 @@ return b**(1/a);
 end;
 
 
-symbolic procedure remRD();
+symbolic procedure remrd();
 begin scalar a, a1, a2;
   a1:=mathml();
   a2:=mathml();
@@ -1700,9 +1700,9 @@ begin;
   return remainder(a,b);
 end;
 
-symbolic procedure factorialRD();
+symbolic procedure factorialrd();
 begin scalar a;
-  a:=alg_factorial(mathML());
+  a:=alg_factorial(mathml());
   lex();
   return a;
 end;
@@ -1712,9 +1712,9 @@ begin;
   return factorial(a);
 end;
 
-symbolic procedure expRD();
+symbolic procedure exprd();
 begin scalar a;
-  a:= alg_exp(mathML());
+  a:= alg_exp(mathml());
   lex();
   return a;
 end;
@@ -1724,11 +1724,11 @@ begin;
   return exp(a);
 end;
 
-symbolic procedure quotientRD();
+symbolic procedure quotientrd();
 begin scalar a, a1, a2;
-  a1:=mathML();
-  a2:=mathML();
-  if IDP reval a1 OR IDP reval a2 then a:=alg_quotient(a1,a2)
+  a1:=mathml();
+  a2:=mathml();
+  if idp reval a1 or idp reval a2 then a:=alg_quotient(a1,a2)
   else
   a:= (reval a1)/(reval a2);
   lex();
@@ -1740,11 +1740,11 @@ begin;
   return a/b;
 end;
 
-symbolic procedure divideRD();
+symbolic procedure dividerd();
 begin scalar a, a1, a2;
-  a1:=mathML();
-  a2:=mathML();
-  if a2 = 0 then errorML("", 21);
+  a1:=mathml();
+  a2:=mathml();
+  if a2 = 0 then errorml("", 21);
   a:=alg_divide(a1,a2);
   lex();
   return a;
@@ -1755,21 +1755,21 @@ begin;
   return quotient(a,b);
 end;
 
-symbolic procedure gcdRD();
+symbolic procedure gcdrd();
 begin scalar c1;
  c1:=stats_getargs();
  constants(c1);
  if temp2='stop then
    << temp2:=nil;
       return cons('gcd, eval_list(c1))>>
- else return gcdRD2(c1);
+ else return gcdrd2(c1);
 end;
 
-symbolic procedure gcdRD2(args);
+symbolic procedure gcdrd2(args);
 begin scalar a;
 a:=reval car args;
 return if length args=1 then  car args
-        else alg_gcd2(a, gcdRD2(cdr args));
+        else alg_gcd2(a, gcdrd2(cdr args));
 end;
 
 algebraic procedure alg_gcd2(a , b);
@@ -1777,11 +1777,11 @@ begin;
 return gcd(a,b);
 end;
 
-symbolic procedure minRD();
+symbolic procedure minrd();
 begin scalar a;
-a:=mathML();
+a:=mathml();
 return if a=nil then nil
-         else alg_min(a,minRD());
+         else alg_min(a,minrd());
 end;
 
 algebraic procedure alg_min(a,b);
@@ -1789,11 +1789,11 @@ begin;
  return min(b,a);
 end;
 
-symbolic procedure maxRD();
+symbolic procedure maxrd();
 begin scalar a;
-a:=mathML();
+a:=mathml();
 return if a=nil then nil
-         else alg_max(a,maxRD());
+         else alg_max(a,maxrd());
 end;
 
 algebraic procedure alg_max(a,b);
@@ -1801,14 +1801,14 @@ begin;
   return max(a,b)
 end;
 
-lisp operator plusRD;
+lisp operator plusrd;
 
-symbolic procedure plusRD();
+symbolic procedure plusrd();
 begin scalar abc1;
 abc1:=nil;
-abc1:=mathML();
+abc1:=mathml();
 return if abc1 = nil then 0
-        else alg_plus(abc1, plusRD());
+        else alg_plus(abc1, plusrd());
 end;
 
 algebraic procedure alg_plus(acb1,b);
@@ -1817,12 +1817,12 @@ return acb1+b;
 end;
 
 
-symbolic procedure timesRD();
+symbolic procedure timesrd();
 begin scalar a;
 a:=nil;
-a:=mathML();
+a:=mathml();
 return if a=nil then 1
-  else alg_times(a, timesRD());
+  else alg_times(a, timesrd());
 end;
 
 algebraic procedure alg_times(a,b);
@@ -1834,10 +1834,10 @@ end;
 
 
 
-symbolic procedure powerRD();
+symbolic procedure powerrd();
 begin scalar var,power;
- var:=mathML();
- power:=mathML();
+ var:=mathml();
+ power:=mathml();
  lex();
  return alg_expt(var,power);
 end;
@@ -1851,7 +1851,7 @@ end;
 %as well as closing the input/output stream, and exiting the program
 %correctly.
 
-symbolic procedure errorML( str, msg );
+symbolic procedure errorml( str, msg );
 begin;
  terpri();
  princ "***** Error in token number ";
@@ -1963,8 +1963,8 @@ begin;
 
 
  terpri();
- if FILE!*=t then close rds f;
- FILE!*:=nil;
+ if file!*=t then close rds f;
+ file!*:=nil;
  rederr("");
  rederr("");
  terpri();
@@ -1972,7 +1972,7 @@ end;
 
 %Following function are in charge of parsing statistics related mathml.
 
-symbolic procedure meanRD();
+symbolic procedure meanrd();
 begin scalar b, size, args;
  args:=stats_getargs();
  b:=0;
@@ -1983,7 +1983,7 @@ begin scalar b, size, args;
  return alg_quotient(b,size);
 end;
 
-symbolic procedure sdevRD(  );
+symbolic procedure sdevrd(  );
 begin scalar args,mean,b,size;
  args:=stats_getargs();
  mean:=alg_mean( args );
@@ -1994,13 +1994,13 @@ begin scalar args,mean,b,size;
  return b;
 end;
 
-symbolic procedure varRD( );
+symbolic procedure varrd( );
 begin scalar args;
  args:=stats_getargs();
  return alg_expt(sdev( args ), 2);
 end;
 
-symbolic procedure medianRD( );
+symbolic procedure medianrd( );
 begin scalar args, siz, si;
  args:=stats_getargs();
  args:=cons('list, args);
@@ -2020,14 +2020,14 @@ begin scalar rr;
  else return rr;
 end;
 
-symbolic procedure momentRD( );
+symbolic procedure momentrd( );
 begin scalar args,size,d,i;
  args:=stats_getargs();
 if char='(d e g r e e) then
- <<i:=mathML();
+ <<i:=mathml();
    lex();
    if char='(!/ d e g r e e) then lex()
-   else errorML("</degree>",2)>>
+   else errorml("</degree>",2)>>
 else i:=1;
  d:=();
  size:=length args;
@@ -2062,7 +2062,7 @@ end;
 symbolic procedure stats_getargs();
 begin scalar ww;
   ww:=nil;
-  ww:=mathML();
+  ww:=mathml();
   if ww neq nil then <<
   return cons (ww,stats_getargs())>>;
 end;
@@ -2110,31 +2110,31 @@ if mode neq 'terpri then
      found_int:=0$
      found_compl:=0$
      flagg:=0$
-     if (PAIRP u) then <<
+     if (pairp u) then <<
         if !*web=t then printout("<EMBED TYPE=""text/mathml"" MMLDATA=""");
         printout("<math>");
          indent:=3;
 
         if ((car u)='setq) then
-          <<if (PAIRP caddr u) then
-              if (issq(caddr u)=1) then arbitrary_c( PREPSQ cadr caddr u )
+          <<if (pairp caddr u) then
+              if (issq(caddr u)=1) then arbitrary_c( prepsq cadr caddr u )
                  else
                     if (caaddr u='mat) then arbitrary_c(caddr u)
                     else
                       if (caaddr u='list) then arbitrary_c( !*a2k caddr u);
-             setqML( u )>>
+             setqml( u )>>
         else
            if ((car u)='list) then
              << arbitrary_c( !*a2k u );
-                  listML(cdr u)>>
+                  listml(cdr u)>>
            else
                   if ((car u)='mat) then
                 << arbitrary_c( u );
-                     matrixML(cdr u)>>
+                     matrixml(cdr u)>>
               else
                      if ((car u)='!*sq) then
-                      << arbitrary_c(PREPSQ (cadr u));
-                       expression(PREPSQ (cadr u))>>
+                      << arbitrary_c(prepsq (cadr u));
+                       expression(prepsq (cadr u))>>
                  else expression(u);
 
              indent:=indent-3;
@@ -2145,7 +2145,7 @@ if mode neq 'terpri then
              terpri()
         >>
      else
-        if (ATOM u) then <<
+        if (atom u) then <<
            if !*web=t then printout("<EMBED TYPE=""text/mathml"" MMLDATA="" ");
            printout( "<math>" );
            indent:=3;
@@ -2159,7 +2159,7 @@ if mode neq 'terpri then
 
 %Prints out vectors.
 
-symbolic procedure vectorML( elem );
+symbolic procedure vectorml( elem );
 begin;
    printout("<vector>");
    indent:=indent+3;
@@ -2170,9 +2170,9 @@ end;
 
 %Following functions print out matrices.
 
-symbolic procedure matrixML( elem );
+symbolic procedure matrixml( elem );
 begin;
-  if length elem=1 then vectorML( elem )
+  if length elem=1 then vectorml( elem )
   else
   << printout("<matrix>");
      indent:=indent+3;
@@ -2209,7 +2209,7 @@ found_mat_int:=nil;
 found_compl:=nil;
 found_mat_compl:=nil;
 
-if (PAIRP elem) then <<
+if (pairp elem) then <<
    if (car elem='mat) then
      << isarb_mat_compl(cdr elem);
         isarb_mat_int(cdr elem)>>
@@ -2219,7 +2219,7 @@ if (PAIRP elem) then <<
 
 
 
-  if ((found_compl=1) OR (found_int=1)) then
+  if ((found_compl=1) or (found_int=1)) then
    << flagg:=1;
       printout( "<apply><forall/>" );
       indent:=indent+3;
@@ -2227,7 +2227,7 @@ if (PAIRP elem) then <<
       print_arb_int(elem);
       printout( "<condition>");
       indent:=indent+3;
-      if ((found_compl=1) AND (found_int=1)) then
+      if ((found_compl=1) and (found_int=1)) then
         << printout( "<apply><and/>" );
            indent:=indent+3>>
       else
@@ -2241,12 +2241,12 @@ if (PAIRP elem) then <<
 
 
       if (found_compl=1) then
-        in_complexML( consts_compl );
+        in_complexml( consts_compl );
       if (found_int=1) then
-        in_integerML( consts_int );
+        in_integerml( consts_int );
 
 
-      if ((found_compl=1) AND (found_int=1)) then
+      if ((found_compl=1) and (found_int=1)) then
          << indent:=indent-3;
             printout( "</apply>" )>>
       else
@@ -2262,7 +2262,7 @@ if (PAIRP elem) then <<
       printout( "</condition>" )>>;
 
 
-  if ((found_mat_compl=1) OR (found_mat_int=1)) then
+  if ((found_mat_compl=1) or (found_mat_int=1)) then
     << flagg:=1;
        printout( "<apply><forall/>" );
        indent:=indent+3;
@@ -2271,7 +2271,7 @@ if (PAIRP elem) then <<
        printout( "<condition>");
        indent:=indent+3;
 
-       if ((found_mat_compl=1) AND (found_mat_int=1)) then
+       if ((found_mat_compl=1) and (found_mat_int=1)) then
          << printout( "<apply><and/>" );
            indent:=indent+3>>
        else
@@ -2285,11 +2285,11 @@ if (PAIRP elem) then <<
 
 
        if (found_mat_compl=1) then
-          in_complexML( consts_mat_compl );
+          in_complexml( consts_mat_compl );
        if (found_mat_int=1) then
-          in_integerML( consts_mat_int );
+          in_integerml( consts_mat_int );
 
-       if ((found_mat_compl=1) AND (found_mat_int=1)) then
+       if ((found_mat_compl=1) and (found_mat_int=1)) then
          << indent:=indent-3;
             printout( "</apply>" )>>
        else
@@ -2306,7 +2306,7 @@ if (PAIRP elem) then <<
   >>
 end;
 
-symbolic procedure in_complexML( elem );
+symbolic procedure in_complexml( elem );
 begin;
   if (elem neq ()) then <<
     printout("<reln><in/>");
@@ -2315,11 +2315,11 @@ begin;
     printout("<ci type=""set""> C </ci>");
     indent:=indent-3;
     printout("</reln>");
-    in_complexML( cdr elem )>>;
+    in_complexml( cdr elem )>>;
 end;
 
 
-symbolic procedure in_integerML( elem );
+symbolic procedure in_integerml( elem );
 begin;
   if (elem neq ()) then <<
     printout("<reln><in/>");
@@ -2328,7 +2328,7 @@ begin;
     printout("<ci type=""set""> N </ci>");
     indent:=indent-3;
     printout("</reln>");
-    in_integerML( cdr elem )>>;
+    in_integerml( cdr elem )>>;
 end;
 
 symbolic procedure close_forall();
@@ -2338,7 +2338,7 @@ end;
 
 %Prints out setq statements as <declare> statements.
 
-symbolic procedure setqML( elem );
+symbolic procedure setqml( elem );
 begin;
   printout( "<declare>" );
   indent:=indent+3;
@@ -2350,7 +2350,7 @@ end;
 
 %Prints out lists.
 
-symbolic procedure listML( elem );
+symbolic procedure listml( elem );
 begin;
   printout( "<list>" );
   indent:=indent+3;
@@ -2362,7 +2362,7 @@ end;
 symbolic procedure multilists( elem );
 begin;
  if elem neq nil then
-  if ((LENGTH elem)=1) then expression (car elem)
+  if ((length elem)=1) then expression (car elem)
     else <<expression(car elem); multilists(cdr elem);>>
 end;
 
@@ -2373,8 +2373,8 @@ end;
 
 symbolic procedure expression( elem );
 begin scalar aa;
-if (ATOM elem) then f4( elem ) else
-if car elem='!:RD!: then <<printout elem>> else
+if (atom elem) then f4( elem ) else
+if car elem='!:rd!: then <<printout elem>> else
  <<
 
 
@@ -2384,13 +2384,13 @@ if car elem='!:RD!: then <<printout elem>> else
       apply(cadr aa, list cdr elem)
     else
       apply(cadr aa, list(cdr elem, caddr aa)) >> else
-  if ((car elem)= '!*sq)  then expression (PREPSQ (cadr elem)) else
+  if ((car elem)= '!*sq)  then expression (prepsq (cadr elem)) else
   operator_fn(elem);>>;
 end;
 
 %Prints out sum, or products.
 
-symbolic procedure sum_prodML( elem, tty );
+symbolic procedure sum_prodml( elem, tty );
 begin;
  printout("<apply>");
  princ "<"; princ tty; princ "/>";
@@ -2420,7 +2420,7 @@ end;
 symbolic procedure dfml( elem );
 begin scalar test;
  test:=cdr elem;
- if length test=1 OR (length test=2 AND NUMBERP cadr test) then
+ if length test=1 or (length test=2 and numberp cadr test) then
     printout("<apply><diff/>")
  else
     printout("<apply><partialdiff/>");
@@ -2435,11 +2435,11 @@ symbolic procedure dfargs( elem );
 begin;
  if elem neq nil then
    << if length elem>1 then
-      <<  if NUMBERP cadr elem then
+      <<  if numberp cadr elem then
           <<printout("<bvar>");
             indent:=indent+3;
             expression car elem;
-            degreeML(cadr elem);
+            degreeml(cadr elem);
             indent:=indent-3;
             printout("</bvar>");
             dfargs(cddr elem)>>
@@ -2461,7 +2461,7 @@ end;
 
 %Prints out degree statements.
 
-symbolic procedure degreeML( elem );
+symbolic procedure degreeml( elem );
 begin;
  printout("<degree>");
  indent:=indent+3;
@@ -2509,7 +2509,7 @@ end;
 
 %Prints out a set.
 
-symbolic procedure setML( elem );
+symbolic procedure setml( elem );
 begin;
   printout("<set>");
   indent:=indent+3;
@@ -2542,10 +2542,10 @@ end;
 %Prints out all trigonometric functions which have not the same tag name,
 %as reduce function.
 
-symbolic procedure trigML(elem, type);
+symbolic procedure trigml(elem, type);
 begin;
   printout("<apply>");
-  if ((type='acos) OR (type='asin) OR (type='atan)) then
+  if ((type='acos) or (type='asin) or (type='atan)) then
     << if (type='acos) then princ "<arccos/>";
        if (type='asin) then princ "<arcsin/>";
        if (type='atan) then princ "<arctan/>">>;
@@ -2571,7 +2571,7 @@ end;
 
 %Prints out logs with a base.
 
-symbolic procedure log_baseML(elem, type);
+symbolic procedure log_baseml(elem, type);
 begin;
   printout("<apply><log/>");
   indent:=indent+3;
@@ -2588,7 +2588,7 @@ end;
 
 %Prints out equal relns.
 
-symbolic procedure equalML( elem );
+symbolic procedure equalml( elem );
 begin;
   printout( "<reln><eq/>" );
   indent:=indent+3;
@@ -2600,7 +2600,7 @@ end;
 
 %Prints out square roots.
 
-symbolic procedure sqrtML( elem , type);
+symbolic procedure sqrtml( elem , type);
 begin;
   printout( "<apply><root/>" );
   indent:=indent+3;
@@ -2612,7 +2612,7 @@ end;
 
 %Prints out integrals.
 
-symbolic procedure integralML( elem );
+symbolic procedure integralml( elem );
 begin;
   printout( "<apply><int/>" );
   indent:=indent+3;
@@ -2639,9 +2639,9 @@ end;
 
 %Prints out quotients.
 
-symbolic procedure quotientML( elem );
+symbolic procedure quotientml( elem );
 begin;
-  if (NUMBERP car elem) AND (NUMBERP cadr elem) then <<
+  if (numberp car elem) and (numberp cadr elem) then <<
      if !*web=nil then printout("<cn type=""rational""> ")
      else printout("<cn type=&quot;rational&quot;> ");
      princ car elem;
@@ -2661,7 +2661,7 @@ end;
 
 symbolic procedure n_nary( elem, type );
 begin;
-  if car elem = 'e AND type = 'power then unary(cdr elem, 'exp)
+  if car elem = 'e and type = 'power then unary(cdr elem, 'exp)
   else <<
     printout( "<apply>" );
     princ "<";
@@ -2680,7 +2680,7 @@ begin;
 end;
 
 
-symbolic procedure minusML( elem );
+symbolic procedure minusml( elem );
 begin;
   printout( "<apply><minus/>" );
   indent:=indent+3;
@@ -2718,17 +2718,17 @@ else <<
        princ "&ImaginaryI;";
        princ "</cn>">>
    else <<
-      if (NUMBERP exp) then
+      if (numberp exp) then
                       << printout "<cn";
-                               if (FLOATP exp) then <<if !*web=nil then princ " type=""real"">"
+                               if (floatp exp) then <<if !*web=nil then princ " type=""real"">"
                                                 else princ " type=&quot;real&quot;>" >>
                             else
-                              if (FIXP exp) then <<if !*web=nil then princ " type=""integer"">"
+                              if (fixp exp) then <<if !*web=nil then princ " type=""integer"">"
                                                   else princ " type=&quot;integer&quot;>" >>
                                 else princ ">";
                          princ exp;
                          princ "</cn>">>;
-         if (IDP exp) then
+         if (idp exp) then
                      <<  printout "<ci";
                          if (listp exp) then <<if !*web=nil then princ " type=""list"">"
                                               else princ " type=&quot;list&quot;>">>
@@ -2808,8 +2808,8 @@ begin;
    if !*web = nil then terpri();
    if !*web = nil then for i := 1:indent
       do << princ " " >>;
-   if PAIRP str then
-    <<if car str='!:rd!: OR car str='!:rn!: then ma_print str
+   if pairp str then
+    <<if car str='!:rd!: or car str='!:rn!: then ma_print str
     else princ str>>
    else princ str;
 end;
@@ -2821,7 +2821,7 @@ end;
 symbolic procedure issq( elem );
 begin scalar value;
  value:=0;
-        if (ATOM elem) then value:=0
+        if (atom elem) then value:=0
            else <<if ((car elem)='!*sq) then value:=1
                   else value:=0>>;
   return value;
@@ -2829,14 +2829,14 @@ end;
 
 symbolic procedure isarb_compl( elem );
 begin;
-if (PAIRP elem) then <<
+if (pairp elem) then <<
   if ((car elem)= 'arbcomplex) then found_compl:=1
      else  multi_isarb_compl(cdr elem);>>
 end;
 
 symbolic procedure multi_isarb_compl( elem );
 begin;
-if (PAIRP elem) then <<
+if (pairp elem) then <<
    if (elem=()) then
       else <<isarb_compl(car elem); multi_isarb_compl( cdr elem);>> >>
 end;
@@ -2844,21 +2844,21 @@ end;
 
 symbolic procedure isarb_int( elem );
 begin;
-if (PAIRP elem) then <<
+if (pairp elem) then <<
   if ((car elem)= 'arbint) then found_int:=1
      else  multi_isarb_int(cdr elem);>>
 end;
 
 symbolic procedure multi_isarb_int( elem );
 begin;
-if (PAIRP elem) then <<
+if (pairp elem) then <<
    if (elem=()) then
       else <<isarb_int(car elem); multi_isarb_int( cdr elem);>> >>
 end;
 
 symbolic procedure print_arb_compl( elem );
 begin;
-if (PAIRP elem) then <<
+if (pairp elem) then <<
   if ((car elem)= 'arbcomplex) then
      << if (xnp(list (cadr elem),consts_compl) eq nil) then
           << printsub(cadr elem, 'compl);
@@ -2875,7 +2875,7 @@ end;
 
 symbolic procedure print_arb_int( elem );
 begin;
-if (PAIRP elem) then <<
+if (pairp elem) then <<
   if ((car elem)= 'arbint) then
      << if (xnp(list (cadr elem),consts_int) eq nil) then
           << printsub(cadr elem, 'int);
@@ -2900,8 +2900,8 @@ symbolic procedure isarb_row_int( elem );
 begin;
   if (elem neq()) then
          << if (issq(car elem)=1) then
-                if (PAIRP (PREPSQ cadr (car elem))) then
-                   if (car (PREPSQ cadr (car elem))='arbint) then
+                if (pairp (prepsq cadr (car elem))) then
+                   if (car (prepsq cadr (car elem))='arbint) then
                          found_mat_int:=1;
            isarb_row_int(cdr elem);>>
 end;
@@ -2919,8 +2919,8 @@ symbolic procedure isarb_row_compl( elem );
 begin;
   if (elem neq()) then
          << if (issq(car elem)=1) then
-                if (PAIRP (PREPSQ cadr (car elem))) then
-                   if (car (PREPSQ cadr (car elem))='arbcomplex) then
+                if (pairp (prepsq cadr (car elem))) then
+                   if (car (prepsq cadr (car elem))='arbcomplex) then
                          found_mat_compl:=1;
            isarb_row_compl(cdr elem);>>
 end;
@@ -2936,9 +2936,9 @@ symbolic procedure printarb_row_compl( elem );
 begin scalar value;
   if (elem neq()) then
          << if (issq(car elem)=1) then
-              if (PAIRP (PREPSQ cadr (car elem))) then
-                << value:=cadr PREPSQ cadr car elem;
-                          if (car (PREPSQ cadr (car elem)))='arbcomplex then
+              if (pairp (prepsq cadr (car elem))) then
+                << value:=cadr prepsq cadr car elem;
+                          if (car (prepsq cadr (car elem)))='arbcomplex then
                        if (xnp(list (value), consts_mat_compl) eq nil) then
                         << printsub(value, 'compl);
                             consts_mat_compl:=cons(value, consts_mat_compl)>> >>;
@@ -2958,9 +2958,9 @@ symbolic procedure printarb_row_int( elem );
 begin scalar value;
   if (elem neq()) then
          << if (issq(car elem)=1) then
-              if (PAIRP (PREPSQ cadr (car elem))) then
-                 << value:=cadr PREPSQ cadr car elem;
-                          if (car (PREPSQ cadr (car elem)))='arbint then
+              if (pairp (prepsq cadr (car elem))) then
+                 << value:=cadr prepsq cadr car elem;
+                          if (car (prepsq cadr (car elem)))='arbint then
                        if (xnp(list (value), consts_mat_int) eq nil) then
                         << printsub(value, 'int);
                             consts_mat_int:=cons(value, consts_mat_int)>> >>;
@@ -2993,30 +2993,30 @@ symbolic procedure math_ml (u);
      found_int:=0$
      found_compl:=0$
      flagg:=0$
-     if (PAIRP u) then <<
+     if (pairp u) then <<
         printout("<math>");
          indent:=3;
 
         if ((car u)='setq) then
-          <<if (PAIRP caddr u) then
-              if (issq(caddr u)=1) then arbitrary_c( PREPSQ cadr caddr u )
+          <<if (pairp caddr u) then
+              if (issq(caddr u)=1) then arbitrary_c( prepsq cadr caddr u )
                  else
                     if (caaddr u='mat) then arbitrary_c(caddr u)
                     else
                       if (caaddr u='list) then arbitrary_c( !*a2k caddr u);
-             setqML( u )>>
+             setqml( u )>>
         else
            if ((car u)='list) then
              << arbitrary_c( !*a2k u );
-                  listML(cdr u)>>
+                  listml(cdr u)>>
            else
                   if ((car u)='mat) then
                 << arbitrary_c( u );
-                     matrixML(cdr u)>>
+                     matrixml(cdr u)>>
               else
                      if ((car u)='!*sq) then
-                      << arbitrary_c(PREPSQ (cadr u));
-                       expression(PREPSQ (cadr u))>>
+                      << arbitrary_c(prepsq (cadr u));
+                       expression(prepsq (cadr u))>>
                  else expression(u);
 
              indent:=indent-3;
@@ -3025,7 +3025,7 @@ symbolic procedure math_ml (u);
              printout( "</math>" )
         >>
      else
-        if (ATOM u) then <<
+        if (atom u) then <<
            printout( "<math>" );
            indent:=3;
            expression( u );

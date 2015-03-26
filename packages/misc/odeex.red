@@ -35,9 +35,9 @@ algebraic;
 % y' = f(x,y)
 % in a neighborhood of x0 *if* f is holomorphic in x and y at (x0,y0).
 
-PROCEDURE detaylor(f,x,y,x0,y0,N);
-
-begin scalar wj, pot;
+procedure detaylor(f,x,y,x0,y0,N);
+begin
+  scalar wj, pot;
   wj:=f; pot:=x-x0;
   return ( y0+sub({x=x0,y=y0},f)*(x-x0) +
             for j:=2:n sum

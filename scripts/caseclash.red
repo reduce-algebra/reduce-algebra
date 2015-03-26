@@ -24,7 +24,7 @@ allnames := mkhash(1000, 3, 2.0)$
 total := 0;
 
 for each ff in filelist do begin
-  scalar a, b, c, u, v, w, peekchar!*, !*echo, !*raise, !*lower;
+  scalar a, b, c, u, v, w, x, peekchar!*, !*echo, !*raise, !*lower;
   w := reverse explodec ff;
   while not eqcar(w, '!/) do <<
     v := car w . v;
@@ -43,7 +43,9 @@ for each ff in filelist do begin
        total := total + 1;
        u := intern list2string explode2lc c; % Lower case name
        v := gethash(u, allnames);
-       if not member(c, v) then puthash(u, allnames, c . v) >>;
+       x := assoc(c, v);
+       if x then rplacd(x, add1 cdr x)
+       else puthash(u, allnames, (c . 1) . v) >>;
      escaped!* := nil >>;
   cursym!* := '!*semicol!*;
   crchr!* := '! ;
@@ -64,12 +66,25 @@ for each p in hashcontents allnames do <<
 
 dups := sort(dups, 'orderp)$
 
-<<
+begin
+  scalar a, b;
+  a := 't . 's . 'i . 'l .cddr cdddr reverse string2list files;
+  a := list2string reverse a;
+  terpri(); princ "Output will be in "; printc a;
+  a := open(a, 'output);
+  b := wrs a;
   for each p in dups do <<
-    for each x in p do << princ x; princ "   " >>;
+    for each x in p do <<
+       princ car x;
+       princ ":";
+       prin cdr x;
+       ttab 38 >>;
     terpri() >>;
-  prin length dups; printc " symbols involved";
-  nil >>;
+  terpri(); prin length dups; printc " symbols involved";
+  wrs b;
+  close a;
+  terpri(); prin length dups; printc " symbols involved"
+end;
 
 
 quit;

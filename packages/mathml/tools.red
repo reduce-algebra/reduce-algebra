@@ -53,7 +53,7 @@ switch both;
 global '(!*web);
 switch web;
 
-LISP (FILE!*:=nil);
+lisp (file!*:=nil);
 !*mathml:=nil;
 !*both:=nil;
 !*web:=nil;
@@ -77,7 +77,7 @@ begin scalar token,safe_atts;
  if atts neq nil then safe_atts:=atts;
  atts:=nil;
  if ch eq int2id(10) then ch:=readch();
- if ch neq !$EOF!$ then <<
+ if ch neq !$eof!$ then <<
    if ch=space then while (ch:=readch())=space do
    else
     if ch='!< then char:=get_token()
@@ -111,14 +111,14 @@ end;
 symbolic procedure get_content();
 begin scalar d, d2;
  d:='();
- while (ch:=readch()) neq '!< AND ch neq !$EOF!$  do <<
+ while (ch:=readch()) neq '!< and ch neq !$eof!$  do <<
    if ch neq int2id(10) then
    d:=cons(ch,d)
  >>;
  d2:=delall('!  , d);
  if d2 eq nil then d:=nil
  else
-   <<if car d2 neq '!"  AND car reverse d2 neq '!"  then
+   <<if car d2 neq '!"  and car reverse d2 neq '!"  then
           d:=d2 else return reverse d>>;
  if d neq nil then d:=cons('!$,d);
  return d;
@@ -152,18 +152,18 @@ begin scalar l, stop,d;
          while (stop=0) do
           << d:=cons(car att, d);
              att:=cdr att;
-             if (car att='!  ) OR (car att='!$) then stop:=1
+             if (car att='!  ) or (car att='!$) then stop:=1
           >>
       >>
       else
          while (stop=0) do
           << d:=cons(car att, d);
              att:=cdr att;
-             if (car att='!  ) OR (car att='!$) then stop:=1
+             if (car att='!  ) or (car att='!$) then stop:=1
           >>
    >>
  else
- errorML(compress key,1);
+ errorml(compress key,1);
  if car d='!" then d:=cdr d;
  return reverse d
  >>
@@ -186,7 +186,7 @@ end;
 symbolic procedure butes( str );
 begin scalar cha;
 cha:=car str;
-return if (cha='!  OR cha='!$) then <<'(); >>
+return if (cha='!  or cha='!$) then <<'(); >>
         else  cons(car str, butes cdr str);
 end;
 
@@ -267,7 +267,7 @@ end;
 
 symbolic procedure isvalid(a);
 begin;
-   if IDP compress a neq t then return compress a;
+   if idp compress a neq t then return compress a;
    if assoc(compress!* a, functions!*) then return t;
    a:=reverse cons('!/,  reverse a);
    if assoc(compress!* a, functions!*) then <<char:=a; return t>>;
@@ -280,7 +280,7 @@ end;
 symbolic procedure notstring(a);
 begin scalar a, a2;
  a2:=delall('!  , a);
- if car a2 neq '!"  AND car reverse a2 neq '!"
+ if car a2 neq '!"  and car reverse a2 neq '!"
  then return t else return nil;
 end;
 
@@ -317,7 +317,7 @@ end;
 % correctly.                                                                     %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-symbolic procedure errorML( str, msg );
+symbolic procedure errorml( str, msg );
 begin;
  terpri();
  princ "***** Error in token number ";
@@ -430,8 +430,8 @@ begin;
 
 
  terpri();
- if FILE!*=t then close rds !*f!*;
- FILE!*:=nil;
+ if file!*=t then close rds !*f!*;
+ file!*:=nil;
  rederr("");
  rederr("");
  terpri();
@@ -453,14 +453,14 @@ end;
 
 symbolic procedure cols2rows2(l, s);
 begin;
-  if s neq 0 then return cons(ithListElem(l, s), cols2rows2(l, s-1));
+  if s neq 0 then return cons(ithlistelem(l, s), cols2rows2(l, s-1));
 end;
 
 % This function is given a list of lists (ie a matrix) and an index i.
 % It then returns a list containing the ith element of the lists in the list lst
 % for example: listelem('((1 2)(3 4)(5 6)), 2) --> (2 4 6)
 
-symbolic procedure ithListElem(lst, i);
+symbolic procedure ithlistelem(lst, i);
 begin;
   if lst neq nil then return cons(nth(car lst, i), ithlistelem (cdr lst, i));
 end;

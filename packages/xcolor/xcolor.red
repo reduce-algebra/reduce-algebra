@@ -1,4 +1,4 @@
-module xColor;
+module xcolor;
 
 %----------------------------------------------------------------------
 % File:      xcolor.red
@@ -48,8 +48,8 @@ module xColor;
 %                         xColor package.
 %----------------------------------------------------------------------
 
-  imports AddSQ,MultSQ,NegSQ,QuotSQ,ExptSQ$
-  exports Color0$
+  imports addsq,multsq,negsq,quotsq,exptsq$
+  exports color0$
 
 create!-package('(xcolor cface),'(contrib physics));
 
@@ -110,41 +110,41 @@ create!-package('(xcolor cface),'(contrib physics));
 
 %----------------------- Selector/Constructor -------------------------
 
-symbolic inline procedure GetCoef g0$ car g0$
-symbolic inline procedure GetVL g0$ cdr g0$
+symbolic inline procedure getcoef g0$ car g0$
+symbolic inline procedure getvl g0$ cdr g0$
 
-symbolic inline procedure PutCoef(g0,c)$ rplacA(g0,c)$
-symbolic inline procedure PutVL(g0,vl)$ rplacD(g0,vl)$
+symbolic inline procedure putcoef(g0,c)$ rplaca(g0,c)$
+symbolic inline procedure putvl(g0,vl)$ rplacd(g0,vl)$
 
-symbolic inline procedure GetTV v$ car v$
-symbolic inline procedure GetE1 v$ cadr v$
-symbolic inline procedure GetE2 v$ caddr v$
-symbolic inline procedure GetE3 v$ cadddr v$
-symbolic inline procedure GetInQ v$ GetE1 v$
-symbolic inline procedure GetOutQ v$ GetE2 v$
+symbolic inline procedure gettv v$ car v$
+symbolic inline procedure gete1 v$ cadr v$
+symbolic inline procedure gete2 v$ caddr v$
+symbolic inline procedure gete3 v$ cadddr v$
+symbolic inline procedure getinq v$ gete1 v$
+symbolic inline procedure getoutq v$ gete2 v$
 
-symbolic inline procedure PutTV(v,tv)$ rplacA(v,tv)$
-symbolic inline procedure PutE1(v,e)$ rplacA(cdr v,e)$
-symbolic inline procedure PutE2(v,e)$ rplacA(cddr v,e)$
-symbolic inline procedure PutE3(v,e)$ rplacA(cdddr v,e)$
-symbolic inline procedure PutInQ(v,e)$ PutE1(v,e)$
-symbolic inline procedure PutOutQ(v,e)$ PutE2(v,e)$
+symbolic inline procedure puttv(v,tv)$ rplaca(v,tv)$
+symbolic inline procedure pute1(v,e)$ rplaca(cdr v,e)$
+symbolic inline procedure pute2(v,e)$ rplaca(cddr v,e)$
+symbolic inline procedure pute3(v,e)$ rplaca(cdddr v,e)$
+symbolic inline procedure putinq(v,e)$ pute1(v,e)$
+symbolic inline procedure putoutq(v,e)$ pute2(v,e)$
 
-symbolic inline procedure MkG0(c,g0)$ c . g0$
+symbolic inline procedure mkg0(c,g0)$ c . g0$
 
-symbolic inline procedure ChkTV(v,tv)$ GetTV v eq tv$
-symbolic inline procedure QGVp v$ ChkTV(v,'QG)$
-symbolic inline procedure G3Vp v$ ChkTV(v,'G3)$
+symbolic inline procedure chktv(v,tv)$ gettv v eq tv$
+symbolic inline procedure qgvp v$ chktv(v,'qg)$
+symbolic inline procedure g3vp v$ chktv(v,'g3)$
 
-symbolic inline procedure ZCoefP g0$ null numr GetCoef g0$
+symbolic inline procedure zcoefp g0$ null numr getcoef g0$
 
-symbolic inline procedure MkCopyG0 g0$
+symbolic inline procedure mkcopyg0 g0$
   %--------------------------------------------------------------------
   % Make a copy of structure g0 without copying coeffitient.
   %--------------------------------------------------------------------
-  GetCoef g0 . MkCopy GetVL g0$
+  getcoef g0 . mkcopy getvl g0$
 
-symbolic inline procedure ChkHP v$
+symbolic inline procedure chkhp v$
   %--------------------------------------------------------------------
   % Check headpole.
   %--------------------------------------------------------------------
@@ -156,7 +156,7 @@ symbolic inline procedure ChkHP v$
   %           \     /                   :        :
   %            --<--                     ........
   %--------------------------------------------------------------------
-  GetE1 v eq GetE2 v or GetE1 v eq GetE3 v or GetE2 v eq GetE3 v$
+  gete1 v eq gete2 v or gete1 v eq gete3 v or gete2 v eq gete3 v$
 
 %----------------------------- Debug ----------------------------------
 
@@ -165,7 +165,7 @@ symbolic inline procedure ChkHP v$
 
 %----------------------------- Others ---------------------------------
 
-symbolic procedure CError u$
+symbolic procedure cerror u$
   %--------------------------------------------------------------------
   % Output error message and interupt evaluation.
   %--------------------------------------------------------------------
@@ -175,81 +175,81 @@ symbolic procedure CError u$
        varpri(x,x,nil)
     >>$
     terpri!* t$
-    Error1()
+    error1()
   >>$
 
-symbolic procedure RemoveV(g0,v)$
+symbolic procedure removev(g0,v)$
   %--------------------------------------------------------------------
   % Remove vertex v from g0.
   % g0 is modified.
   %--------------------------------------------------------------------
-  if null g0 then CError list("Vertex",v,"is absent.")
-  else if cadr g0 eq v then rplacD(g0,cddr g0)
-  else RemoveV(cdr g0,v)$
+  if null g0 then cerror list("Vertex",v,"is absent.")
+  else if cadr g0 eq v then rplacd(g0,cddr g0)
+  else removev(cdr g0,v)$
 
-symbolic inline procedure ExistQGV g0$
+symbolic inline procedure existqgv g0$
   %--------------------------------------------------------------------
   % Find quark-gluon vertex in g0.
   % Return quark-gluon vertex or nil.
   %--------------------------------------------------------------------
-  assoc('QG,GetVL g0)$
+  assoc('qg,getvl g0)$
 
-symbolic inline procedure Exist3GV g0$
+symbolic inline procedure exist3gv g0$
   %--------------------------------------------------------------------
   % Find three-gluon vertex in g0.
   % Return three-gluon vertex or nil.
   %--------------------------------------------------------------------
-  assoc('G3,GetVL g0)$
+  assoc('g3,getvl g0)$
 
-symbolic procedure MkCopy u$
+symbolic procedure mkcopy u$
   %--------------------------------------------------------------------
   % Make a copy of any structures.
   %--------------------------------------------------------------------
-  if atom u then u else MkCopy car u . MkCopy cdr u$
+  if atom u then u else mkcopy car u . mkcopy cdr u$
 
-symbolic inline procedure RevV(v,e)$
+symbolic inline procedure revv(v,e)$
   %--------------------------------------------------------------------
   % Revolve v such that e become the first edge.
   % v is modified.
   %--------------------------------------------------------------------
-  if null G3Vp v or null memq(e,cdr v)
-    then CError list("Edge",e,"is absent in vertex",v)
-  else RevV0(v,e)$
+  if null g3vp v or null memq(e,cdr v)
+    then cerror list("Edge",e,"is absent in vertex",v)
+  else revv0(v,e)$
 
-symbolic procedure RevV0(v,e)$
+symbolic procedure revv0(v,e)$
   %--------------------------------------------------------------------
   % Revolve v such that e become the first edge.
   % v is modified.
   %--------------------------------------------------------------------
-  if GetE1 v eq e then v
+  if gete1 v eq e then v
   else begin scalar w$
-         w := GetE1 v$
-         PutE1(v,GetE2 v)$
-         PutE2(v,GetE3 v)$
-         PutE3(v,w)$
-         return RevV0(v,e)$
+         w := gete1 v$
+         pute1(v,gete2 v)$
+         pute2(v,gete3 v)$
+         pute3(v,w)$
+         return revv0(v,e)$
        end$ % RevV0
 
 %------------------------ Global/Fluid --------------------------------
 
-global '(SU_order Spur_TT n!*!*2!-1)$
+global '(su_order spur_tt n!*!*2!-1)$
 
-SU_order := '(3 . 1)$        % default value
-Spur_TT  := '(1 . 2)$        % default value
+su_order := '(3 . 1)$        % default value
+spur_tt  := '(1 . 2)$        % default value
 n!*!*2!-1:= '(8 . 1)$        % default value
 
 %----------------------------------------------------------------------
 
-symbolic procedure Color0 g0$
+symbolic procedure color0 g0$
   %--------------------------------------------------------------------
   % g0 - c-graph.
   % Return colour factor (s.q.).
   %--------------------------------------------------------------------
-  if ChkCG g0 then
-    MultSQ(AFactor g0,Color1(MkG0(1 ./ 1,MkCopy g0),nil,nil ./ 1))
-  else CError list "This is impossible!"$
+  if chkcg g0 then
+    multsq(afactor g0,color1(mkg0(1 ./ 1,mkcopy g0),nil,nil ./ 1))
+  else cerror list "This is impossible!"$
 
-symbolic procedure ChkCG g0$
+symbolic procedure chkcg g0$
   %--------------------------------------------------------------------
   % Check structure g0.
   % Return t if g0 is ok else output message and interupt program.
@@ -258,51 +258,51 @@ symbolic procedure ChkCG g0$
     vl := g0$
     while vl do <<
       x := car vl$
-      if GetTV x eq 'QG then <<
-          if (z:=assoc(GetInQ x,u)) then
-            if cdr z eq 'OutQ then rplacD(z,'ok)
-            else CError
+      if gettv x eq 'qg then <<
+          if (z:=assoc(getinq x,u)) then
+            if cdr z eq 'outq then rplacd(z,'ok)
+            else cerror
                list(car z,"can not use as in-quark in vertex",x)
-          else u:=(GetInQ x . 'InQ) . u$
-          if (z:=assoc(GetOutQ x,u)) then
-            if cdr z eq 'InQ then rplacD(z,'ok)
-            else CError
+          else u:=(getinq x . 'inq) . u$
+          if (z:=assoc(getoutq x,u)) then
+            if cdr z eq 'inq then rplacd(z,'ok)
+            else cerror
                list(car z,"can not use as out-quark in vertex",x)
-          else u:=(GetOutQ x . 'OutQ) . u$
-          if (z:=assoc(GetE3 x,u)) then
-            if cdr z eq 'Gluon then rplacD(z,'ok)
-            else CError list(car z,"can not use as gluon in vertex",x)
-          else u:=(GetE3 x . 'Gluon) . u$
+          else u:=(getoutq x . 'outq) . u$
+          if (z:=assoc(gete3 x,u)) then
+            if cdr z eq 'gluon then rplacd(z,'ok)
+            else cerror list(car z,"can not use as gluon in vertex",x)
+          else u:=(gete3 x . 'gluon) . u$
         >>
-      else if GetTV x eq 'G3 then <<
-          if (z:=assoc(GetE1 x,u)) then
-            if cdr z eq 'Gluon then rplacD(z,'ok)
-            else CError list(car z,"can not use as gluon in vertex",x)
-          else u:=(GetE1 x . 'Gluon) . u$
-          if (z:=assoc(GetE2 x,u)) then
-            if cdr z eq 'Gluon then rplacD(z,'ok)
-            else CError list(car z,"can not use as gluon in vertex",x)
-          else u:=(GetE2 x . 'Gluon) . u$
-          if (z:=assoc(GetE3 x,u)) then
-            if cdr z eq 'Gluon then rplacD(z,'ok)
-            else CError list(car z,"can not use as gluon in vertex",x)
-          else u:=(GetE3 x . 'Gluon) . u$
+      else if gettv x eq 'g3 then <<
+          if (z:=assoc(gete1 x,u)) then
+            if cdr z eq 'gluon then rplacd(z,'ok)
+            else cerror list(car z,"can not use as gluon in vertex",x)
+          else u:=(gete1 x . 'gluon) . u$
+          if (z:=assoc(gete2 x,u)) then
+            if cdr z eq 'gluon then rplacd(z,'ok)
+            else cerror list(car z,"can not use as gluon in vertex",x)
+          else u:=(gete2 x . 'gluon) . u$
+          if (z:=assoc(gete3 x,u)) then
+            if cdr z eq 'gluon then rplacd(z,'ok)
+            else cerror list(car z,"can not use as gluon in vertex",x)
+          else u:=(gete3 x . 'gluon) . u$
         >>
-      else CError list("Invalid type of vertex",x)$
+      else cerror list("Invalid type of vertex",x)$
       vl := cdr vl$
     >>$
     while u do <<
-      X := car u$
+      x := car u$
       if null(cdr x eq 'ok) then
-        CError list(car x,"is a free particle. Not yet implemented.")
+        cerror list(car x,"is a free particle. Not yet implemented.")
       else if null idp car x then
-        CError list(car x,"invalid as a name of particle.")
+        cerror list(car x,"invalid as a name of particle.")
       else u:=cdr u$
     >>$
     return t$  % o.k.
   end$ % ChkCG
 
-symbolic procedure AFactor g0$
+symbolic procedure afactor g0$
   %--------------------------------------------------------------------
   % Calculate A-factor of g0:
   % A**(<num. of QG-vert.>+<num. of 3G-vert.>-<num. of free gluons>)/2
@@ -310,26 +310,26 @@ symbolic procedure AFactor g0$
   %--------------------------------------------------------------------
   begin scalar n$
     n := 0$
-    for each x in g0 do if QGVp x or G3Vp x then n := n + 1$
+    for each x in g0 do if qgvp x or g3vp x then n := n + 1$
     if remainder(n,2) neq 0 then
-      CError list("Invalid structure of c0-graph.",
+      cerror list("Invalid structure of c0-graph.",
         if null g0 then nil
         else if null cdr g0 then car g0
         else 'times . g0)$
-    return ExptSQ(Spur_TT,n/2)$
+    return exptsq(spur_tt,n/2)$
   end$ % AFactor
 
 %symbolic procedure Color1(g0,st,result)$ Color2(g0,st,result)$
 
-symbolic procedure Color1(g0,st,result)$
+symbolic procedure color1(g0,st,result)$
   %--------------------------------------------------------------------
   % g0 - c0-graph,
   % st - stack for still uncalculated graphs,
   % Return results - colour factor (s.q.).
   %--------------------------------------------------------------------
-  if ZCoefP g0 or null GetVL g0 then
-    if null st then AddSQ(GetCoef g0,result)
-    else Color1(car st,cdr st,AddSQ(GetCoef g0,result))
+  if zcoefp g0 or null getvl g0 then
+    if null st then addsq(getcoef g0,result)
+    else color1(car st,cdr st,addsq(getcoef g0,result))
   else begin scalar v$
 %
 %  Patch from 15/08/93
@@ -339,60 +339,60 @@ symbolic procedure Color1(g0,st,result)$
 %        g0 := Split3GV(g0,v)$
 %        return Color1(car g0,cdr g0 . st,result)
 %     >>
-    if (v:=ExistQGV g0) then <<
-        if ChkHP v then return Color1((nil ./ 1) . nil,st,result)$
-        g0 := RemoveG(g0,v)$
+    if (v:=existqgv g0) then <<
+        if chkhp v then return color1((nil ./ 1) . nil,st,result)$
+        g0 := removeg(g0,v)$
         return
-          Color1(car g0
+          color1(car g0
                 ,if cdr g0 then (cdr g0 . st) else st
                 ,result
                 )
       >>
-    else if (v:=Exist3GV g0) then <<
-         if ChkHP v then return Color1((nil ./ 1) . nil,st,result)$
-         g0 := Split3GV(g0,v)$
-         return Color1(car g0,cdr g0 . st,result)
+    else if (v:=exist3gv g0) then <<
+         if chkhp v then return color1((nil ./ 1) . nil,st,result)$
+         g0 := split3gv(g0,v)$
+         return color1(car g0,cdr g0 . st,result)
       >>
-    else CError list("Invalid structure of c0-graph."
+    else cerror list("Invalid structure of c0-graph."
            ,if null g0 then nil
             else if null cdr g0 then car g0
             else 'times . g0
                     )$
   end$ % Color1
 
-symbolic procedure RemoveG(g0,v1)$
+symbolic procedure removeg(g0,v1)$
   %--------------------------------------------------------------------
   % Remove gluon which containe in quark-gluon vertex(v1).
   % Return pair (g1.g2), where g1 and g2 are graphs.
   %--------------------------------------------------------------------
   begin scalar v2$
-    v2 := FindE(GetVL g0,GetE3 v1)$
-    if car v2 eq v1 then v2 := FindE(cdr v2,GetE3 v1)$
-    if null v2 then CError list("Free edge",GetE3 v1,"in vertex",v1)$
+    v2 := finde(getvl g0,gete3 v1)$
+    if car v2 eq v1 then v2 := finde(cdr v2,gete3 v1)$
+    if null v2 then cerror list("Free edge",gete3 v1,"in vertex",v1)$
     v2 := car v2$
-    if ChkHP v2 then return (((nil ./ 1) . nil) . nil)$
-    if QGVp v2 then return RemoveG1(g0,v1,v2)
-    else if G3Vp v2 then return RemoveG2(g0,v1,v2)
-    else CError list("Invalid type of vertex",v1)$
+    if chkhp v2 then return (((nil ./ 1) . nil) . nil)$
+    if qgvp v2 then return removeg1(g0,v1,v2)
+    else if g3vp v2 then return removeg2(g0,v1,v2)
+    else cerror list("Invalid type of vertex",v1)$
   end$ % RemoveG
 
-symbolic procedure FindE(vl,e)$
+symbolic procedure finde(vl,e)$
   %--------------------------------------------------------------------
   % Find vertex included edge e in vertex list vl.
   % Return vertex list started by vertex included e or nil.
   %--------------------------------------------------------------------
   if null vl then nil
   else if memq(e,cdar vl) then vl
-  else FindE(cdr vl,e)$
+  else finde(cdr vl,e)$
 
-symbolic procedure RemoveG1(g0,v1,v2)$
+symbolic procedure removeg1(g0,v1,v2)$
   %--------------------------------------------------------------------
   % Remove gluon between two quark-gluon verticies v1 and v2.
   % Return pair (g1.g2), where g1 and g2 are graphs.
   %--------------------------------------------------------------------
   begin scalar v3,v6,g1,w$
-    RemoveV(g0,v1)$
-    RemoveV(g0,v2)$
+    removev(g0,v1)$
+    removev(g0,v2)$
     %------------------------------------------------------------------
     %      --<--
     %     /     \
@@ -403,8 +403,8 @@ symbolic procedure RemoveG1(g0,v1,v2)$
     %      -->--
     %------------------------------------------------------------------
     %DMessage "2. 3j-symbol?"$
-    if GetInQ v1 eq GetOutQ v2 and GetOutQ v1 eq GetInQ v2 then
-      return (MkG0(MultSQ(n!*!*2!-1,GetCoef g0),GetVL g0) . nil)$
+    if getinq v1 eq getoutq v2 and getoutq v1 eq getinq v2 then
+      return (mkg0(multsq(n!*!*2!-1,getcoef g0),getvl g0) . nil)$
     %------------------------------------------------------------------
     %           v1
     %  v3--<----*--<--                    v3--<----
@@ -417,21 +417,21 @@ symbolic procedure RemoveG1(g0,v1,v2)$
     %           v2
     %------------------------------------------------------------------
     %DMessage "3. Arc.?"$
-    v3 := FindE(GetVL g0,GetOutQ v1)$
-    if GetInQ v1 eq GetOutQ v2 then <<
-        if v3 then PutInQ(car v3,GetInQ v2)
-        else CError list("Free edge",GetOutQ v1,"in vertex",v1)$
+    v3 := finde(getvl g0,getoutq v1)$
+    if getinq v1 eq getoutq v2 then <<
+        if v3 then putinq(car v3,getinq v2)
+        else cerror list("Free edge",getoutq v1,"in vertex",v1)$
         return
-          (MkG0(MultSQ(QuotSQ(n!*!*2!-1,SU_order),GetCoef g0),GetVL g0)
+          (mkg0(multsq(quotsq(n!*!*2!-1,su_order),getcoef g0),getvl g0)
           . nil
           )$
       >>$
-    v6 := FindE(GetVL g0,GetOutQ v2)$
-    if GetOutQ v1 eq GetInQ v2 then <<
-        if v6 then PutInQ(car v6,GetInQ v1)
-        else CError list("Free edge",GetOutQ v2,"in vertex",v2)$
+    v6 := finde(getvl g0,getoutq v2)$
+    if getoutq v1 eq getinq v2 then <<
+        if v6 then putinq(car v6,getinq v1)
+        else cerror list("Free edge",getoutq v2,"in vertex",v2)$
       return
-        (MkG0(MultSQ(QuotSQ(n!*!*2!-1,SU_order),GetCoef g0),GetVL g0)
+        (mkg0(multsq(quotsq(n!*!*2!-1,su_order),getcoef g0),getvl g0)
         . nil
         )$
       >>$
@@ -449,38 +449,38 @@ symbolic procedure RemoveG1(g0,v1,v2)$
     %------------------------------------------------------------------
     %DMessage "4. Common case."$
     if null v3 or null v6 then
-      CError list("Invalid structure of c-graph"
+      cerror list("Invalid structure of c-graph"
                  ,if null g0 then nil
                   else if null cdr g0 then car g0
                   else 'times . g0
                  )$
     v3 := car v3$
     v6 := car v6$
-    PutInQ(v3,GetInQ v2)$
-    PutInQ(v6,GetInQ v1)$
+    putinq(v3,getinq v2)$
+    putinq(v6,getinq v1)$
     %------------------------------------------------------------------
     % Diagram (b)
     %------------------------------------------------------------------
-    g1 := MkCopyG0 g0$
-    w := GetVL g1$
+    g1 := mkcopyg0 g0$
+    w := getvl g1$
     v3 := car member(v3,w)$
     v6 := car member(v6,w)$
-    PutInQ(v3,GetInQ v1)$
-    PutInQ(v6,GetInQ v2)$
+    putinq(v3,getinq v1)$
+    putinq(v6,getinq v2)$
     %------------------------------------------------------------------
     return
-      (g0 . MkG0(MultSQ(QuotSQ(('-1 ./ 1),SU_order),GetCoef g1),w))$
+      (g0 . mkg0(multsq(quotsq(('-1 ./ 1),su_order),getcoef g1),w))$
   end$
 
-symbolic procedure RemoveG2(g0,v1,v2)$
+symbolic procedure removeg2(g0,v1,v2)$
   %--------------------------------------------------------------------
   % Remove gluon between quark-gluon(v1) and three-gluon(v2) verticies.
   % Return pair (g1.g2), where g1 and g2 are graphs.
   %--------------------------------------------------------------------
   begin scalar g1,z,u1,u2$
-    v2 := RevV(v2,GetE3 v1)$
-    PutTV(v2,'QG)$
-    g1 := MkCopyG0 g0$
+    v2 := revv(v2,gete3 v1)$
+    puttv(v2,'qg)$
+    g1 := mkcopyg0 g0$
     u1 := car member(v1,g1)$
     u2 := car member(v2,g1)$
     %------------------------------------------------------------------
@@ -495,23 +495,23 @@ symbolic procedure RemoveG2(g0,v1,v2)$
     %                              (a)                    (b)
     %------------------------------------------------------------------
     %DMessage "2. Common case."$
-    z := GetE2 v1$
-    PutE2(v1,GetE3 v1)$
-    PutE3(v1,GetE2 v2)$
-    PutE2(v2,z)$
+    z := gete2 v1$
+    pute2(v1,gete3 v1)$
+    pute3(v1,gete2 v2)$
+    pute2(v2,z)$
     %------------------------------------------------------------------
     % Diagram (b)
     %------------------------------------------------------------------
-    z := GetE1 u1$
-    PutE1(u1,GetE3 u1)$
-    PutE3(u1,GetE2 u2)$
-    PutE2(u2,GetE1 u2)$
-    PutE1(u2,z)$
+    z := gete1 u1$
+    pute1(u1,gete3 u1)$
+    pute3(u1,gete2 u2)$
+    pute2(u2,gete1 u2)$
+    pute1(u2,z)$
     %------------------------------------------------------------------
-    return (g0 . MkG0(NegSQ GetCoef g1,GetVL g1))$
+    return (g0 . mkg0(negsq getcoef g1,getvl g1))$
   end$ % RemoveG2
 
-symbolic procedure Split3GV(g0,v1)$
+symbolic procedure split3gv(g0,v1)$
   %--------------------------------------------------------------------
   % Split three-gluon verticies v1 onto three quark-gluon verticies.
   % g0 is modified.
@@ -529,30 +529,30 @@ symbolic procedure Split3GV(g0,v1)$
     %
     %                             (a)                 (b)
     %------------------------------------------------------------------
-    v5 := list('QG,GenSym(),GenSym(),GetE2 v1)$
-    v6 := list('QG,GenSym(),GetInQ v5,GetE1 v1)$
-    PutTV(v1,'QG)$
-    PutE1(v1,GetOutQ v5)$
-    PutE2(v1,GetInQ v6)$
-    PutVL(g0,v5 . v6 . GetVL g0)$
+    v5 := list('qg,gensym(),gensym(),gete2 v1)$
+    v6 := list('qg,gensym(),getinq v5,gete1 v1)$
+    puttv(v1,'qg)$
+    pute1(v1,getoutq v5)$
+    pute2(v1,getinq v6)$
+    putvl(g0,v5 . v6 . getvl g0)$
     %------------------------------------------------------------------
     % Diagram (b)
     %------------------------------------------------------------------
-    g1 := MkCopyG0 g0$
-    v1 := car member(v1,GetVL g1)$
-    v5 := car member(v5,GetVL g1)$
-    v6 := car member(v6,GetVL g1)$
-    z := GetInQ v1$
-    PutE1(v1,GetOutQ v1)$
-    PutE2(v1,z)$
-    z := GetInQ v5$
-    PutE1(v5,GetOutQ v5)$
-    PutE2(v5,z)$
-    z := GetInQ v6$
-    PutE1(v6,GetOutQ v6)$
-    PutE2(v6,z)$
+    g1 := mkcopyg0 g0$
+    v1 := car member(v1,getvl g1)$
+    v5 := car member(v5,getvl g1)$
+    v6 := car member(v6,getvl g1)$
+    z := getinq v1$
+    pute1(v1,getoutq v1)$
+    pute2(v1,z)$
+    z := getinq v5$
+    pute1(v5,getoutq v5)$
+    pute2(v5,z)$
+    z := getinq v6$
+    pute1(v6,getoutq v6)$
+    pute2(v6,z)$
     %------------------------------------------------------------------
-    return (g0 . MkG0(NegSQ GetCoef g1,GetVL g1))$
+    return (g0 . mkg0(negsq getcoef g1,getvl g1))$
   end$ % Split3GV
 
 %----------------------------------------------------------------------
