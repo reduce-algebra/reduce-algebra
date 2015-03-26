@@ -196,7 +196,10 @@ procedure ioto_prtbop(b, op);
    <<
       if flagp(op, 'spaced) then
 	 b := ioto_prtb(b, '! );
-      b := ioto_prtb(b, get(op, 'prtch) or op);
+      b := if op eq 'expt then
+	 ioto_prtb(b, '!^)
+      else
+ 	 ioto_prtb(b, get(op, 'prtch) or op);
       if flagp(op, 'spaced) then
 	 b := ioto_prtb(b, '! );
       b
