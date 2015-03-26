@@ -137,6 +137,9 @@ procedure ev_lcm(e1,e2);
 procedure min!#(a,b);
    if a #< b then a else b;
 
+procedure max!#(a,b);
+   if a #> b then a else b;
+
 procedure ev_zero();
    begin scalar v; integer i;
       v := mkvect ev_ub!*;

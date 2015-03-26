@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(dp_rcsid!* dp_copyright!*);
@@ -45,7 +45,7 @@ fluid '(td_vars!* td_sortmode!* td_sortextension!* !*tdusetorder);
 td_vars!* := '(list);
 
 td_sortmode!* := 'revgradlex;
-   
+
 put('td,'psopfn,'td_torder);
 
 flag('(xrevgradlex revgradlex lex),'dipsortmode);
@@ -270,7 +270,7 @@ procedure ev_mtest!?(e1,e2);
       >>;
       return r
    end;
-      
+
 procedure ev_2a(e);
    % Returns list of prefix equivalents of exponent vector e.
    ev_2a1(e,dip_vars!*);
@@ -926,7 +926,7 @@ procedure dip_comp(p1,p2);
 	 return T;
       return dip_comp(dip_mred p1,dip_mred p2)
    end;
-      
+
 procedure dip_comp1(p1,p2);
    ev_comp(dip_evlmon p1,dip_evlmon p2);
 
@@ -934,7 +934,7 @@ procedure dip_one();
    % Distributive polynomial one. Nor argument. Returns the DIP
    % representation of 1 in the current polynomial ring.
    dip_fmon(bc_a2bc 1,ev_zero());
-   
+
 endmodule;  % dip
 
 module td;
