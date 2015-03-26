@@ -77,7 +77,7 @@ asserted procedure ra_normalize0(x: RA): RA;
       u := ra_u x;
       assert(not null numr sfto_qsub1f, {ra_x() . l});
       assert(not null numr sfto_qsub1(f, {ra_x() . u}));
-      if null numr u or minusf numr u or null l or minusf negf numr l then
+      if null numr u or minusf numr u or null numr l or minusf negf numr l then
 	 return x;
       % We now know l < 0 < u.
       if null sfto_abssummand f then
