@@ -186,6 +186,8 @@ char *read_valid_line(char der_prompt[]) {
   else {
     if (strcmp(orig_prompt,"?") == 0) {
       line = line_quit("n");
+    } else if (orig_prompt[strlen(orig_prompt) - 2] == '%') {
+      line = line_quit("(exit)");
     } else if (orig_prompt[strlen(orig_prompt) - 2] == '>') {
       line = line_quit("q");
     } else if (orig_prompt[strlen(orig_prompt) - 2] == ':') {
