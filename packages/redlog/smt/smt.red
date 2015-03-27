@@ -36,6 +36,8 @@ create!-package('(smt smtread), nil);
 
 load!-package 'rltools;
 
+global '(nxtsym!*);
+global '(!$eof!$);
 global '(emsg!*);
 
 fluid '(!*raise);
@@ -69,7 +71,7 @@ procedure smts_mainloop();
       pchar := smts_setPrompt pno;
       smts_prin2t "";
       form := smts_rread();
-      while form neq '(exit) do <<
+      while form neq '(exit) and form neq !$eof!$ do <<
 	 w := errorset({'smts_processForm, mkquote form}, t, t);
       	 if errorp w then
 	    smts_error();
@@ -97,12 +99,22 @@ procedure smts_processForm(form);
       smts_processReset()
    else if eqcar(form, 'set!-logic) then
       smts_processSetLogic cadr form
+   else if eqcar(form, 'read) then
+      smts_processRead cadr form
    else if eqcar(form, 'reduce!-eval) then
-      prin2t smts_processReduceEval cadr form
+      smts_processReduceEval cadr form
+   else if eqcar(form, 'reduce!-dump!-assertions) then
+      smts_processReduceDumpAssertions cadr form
    else if eqcar(form, 'quit) then
       quit
    else if eqcar(form, 'help) then
       smts_processHelp()
+   else if eqcar(form, 'set!-info) then
+      nil
+   else if eqcar(form, 'declare!-const) then
+      nil
+   else if eqcar(form, 'declare!-fun) then
+      nil
    else
       smts_error();
 
@@ -206,11 +218,21 @@ procedure smts_processReset();
    >>;
 
 procedure smts_processReduceEval(form);
-   eval form;
+   prin2t eval form;
+
+procedure smts_processReduceDumpAssertions(phi);
+   <<
+      assgnpri(setk(phi, rl_mk!*fof rl_smkn('and, smts_assertionl!*)), {phi}, 'only);
+      terpri();
+      smts_prin2t ""
+   >>;
 
 procedure smts_processSetLogic(id);
    if id eq '!Q!F_!N!R!A then <<
       rl_set '(ofsf);
+      smts_prin2t ""
+   >> else if id eq '!Q!F_!N!I!A or id eq '!Q!F_!L!I!A then <<
+      rl_set '(pasf);
       smts_prin2t ""
    >> else
       smts_error();
@@ -226,6 +248,15 @@ procedure smts_prin2t(item);
       lr_mode();
       prin2 2
    >>;
+
+procedure smts_processRead(file);
+   begin scalar ch;
+      ch := open(file, 'input);
+      rds ch;
+      smts_mainloop();
+      rds nil;
+      close(ch)
+   end;
 
 procedure smts_error();
    if !*smtsplain then
