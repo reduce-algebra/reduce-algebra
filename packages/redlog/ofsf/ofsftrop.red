@@ -461,9 +461,12 @@ asserted procedure ofsf_posdirp1(ff: SF, scond: QfFormula, one: AList, fone: Int
       return {flag, other, {zero, mk!*sq fzero}}
    end;
 
-procedure ofsf_smallp(w);
+asserted procedure ofsf_smallp(w: Any): ExtraBoolean;
+   % w is a list of floats from an external solver or of Lisp prefix rational
+   % numbers from the Reduce Simplex.
    begin scalar l;
-      l := for each n in cdr w collect fix n;
+      l := for each n in cdr w collect
+ 	 abs if floatp n then fix n else sfto_sf2int numr sfto_ceilq simp n;
       return lto_max l < 100
    end;
 
