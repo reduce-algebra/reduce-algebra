@@ -1,0 +1,47 @@
+                                casefold.c
+
+
+This is a perhaps silly utility that can be used to convert all parts of a
+file that are not in strings and not parts of comments to lower case. It has
+a list of exceptions for words that should NOT be folded to lower case.
+
+Its purpose is to make it possible to finalize the adaptation of Reduce
+from its original upper-case-only world to one where eventually we can
+make the system case sensitive.
+
+Anybody offended by the changes it has made to their code may either edit
+their files back to the state they want manually or they may add the mixed
+case words that matter to them to the list here and use this to apply
+changes systematically. In most cases where package maintainers had used
+mixed case at all I found multiple instances where they had not been
+consistent in its use.
+
+A harder issue is competing modules that use the same name but where there
+is disagreement as to the best case to use. Especially for local variables
+people ought really to be able to use whatever capitalization they like
+within their own package - but for simplicity I will apply global adjustments.
+
+The change I made that perhaps led me to need to alter most odd files was
+making the fully spelt out word COMMENT always appear in upper case in
+source files. This led to the need to adjust many log files. Note that
+"comment" and "Comment" will still be treated as introducing a comment
+if Reduce input has case-folding enabled. I believed that the bold word
+COMMENT was a better thing to standardise on than its lower case varient.
+
+When initially building this I will avoid processing anything in the redlog
+directory even though there are inconsistencies there so that the relevant
+authors can fix things up be hand! But otherwise I go something like
+
+    for x in packages/*/*.red packages/*/*.tst
+    do
+      ./casefold $x
+    done
+
+to standardise the bulk of Reduce. I then need to check and review all
+the .rlg files where they echo input that has been subjec to case change.
+I prefer to edit those individually as that helps ensure I have really
+considred log-file changes...
+
+
+
+Arthur Norman. March 2015
