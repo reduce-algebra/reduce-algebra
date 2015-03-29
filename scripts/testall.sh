@@ -3,9 +3,11 @@
 # Test all package
 
 # Usage:
-#    scripts/testall.sh [--install]        test everything
-#    scripts/testall.sh [--install] --csl   test just the CSL version
-#    scripts/testall.sh [--install] --psl   test just the PSL version
+#   scripts/testall.sh [--install]           test everything
+#   scripts/testall.sh [--install] --boot    test bootstrap CSL & PSL
+#   scripts/testall.sh [--install] --csl     test just the CSL version
+#   scripts/testall.sh [--install] --cslboot test the CSL bootstrap version
+#   scripts/testall.sh [--install] --psl     test just the PSL version
 
 # I want this script to be one I can launch from anywhere, so
 # to access files etc I need to know where it lives.
@@ -33,21 +35,25 @@ else
   if test $# = 1
   then
     case $1 in
-    --csl)
+    --csl | --cslboot)
       csl="yes"
       psl="no"
+      ;;
+    --boot)
+      csl="yes"
+      psl="yes"
       ;;
     --psl)
       csl="no"
       psl="yes"
       ;;
     *)
-      echo "scripts/testall.sh [--csl or --psl]"
+      echo "scripts/testall.sh [--boot, --csl (or --cslboot) or --psl]"
       exit 1
       ;;
     esac
   else
-    echo "scripts/testall.sh [--csl or --psl]"
+    echo "scripts/testall.sh [--boot, --csl (or --cslboot) or --psl]"
     exit 1
   fi
 fi
@@ -145,7 +151,3 @@ then
 fi
 
 # end of script
-
-
-
-

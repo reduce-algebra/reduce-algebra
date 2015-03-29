@@ -35,9 +35,14 @@
 (setq !*savedef (and (not (memq 'embedded lispsystem!*))
                      (zerop (cdr (assoc 'c!-code lispsystem!*)))))
 
-(cond  % When I have a bootstrap image I will get to see all backtraces
-       % since sometimes that is valuable for debugging messy cases!
-   (!*savedef (enable!-errorset 3 3)))
+%-- I once had this - these days I will feel I want more consistency between
+%-- the main and bootstrap version and I can use enable!-errorset to be able
+%-- to see backtraces if I need to. Or I can implement a "-g2" (or some such)
+%-- command line option to support it...
+%--
+%-- (cond  % When I have a bootstrap image I will get to see all backtraces
+%--        % since sometimes that is valuable for debugging messy cases!
+%--    (!*savedef (enable!-errorset 3 3)))
 
 (make!-special '!*native_code)
 (setq !*native_code nil)

@@ -75,10 +75,11 @@ begin
   b := wrs a;
   for each p in dups do <<
     for each x in p do <<
+       if posn() > 40 then << terpri(); ttab 38 >>
+       else if posn() > 0 then ttab 38;
        princ car x;
        princ ":";
-       prin cdr x;
-       ttab 38 >>;
+       prin cdr x >>;
     terpri() >>;
   terpri(); prin length dups; printc " symbols involved";
   wrs b;

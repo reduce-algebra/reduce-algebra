@@ -6,6 +6,10 @@
 
 #    scripts/test1.sh [--install] [--keep] [--csl or --psl] package_name 
 # OR scripts/test1.sh [--install] [--keep] [--csl or --psl] regressions testname
+#
+# You can use "--cslboot" instead of "--csl" to use the CSL bootstrap version
+# of Reduce, which may be slower. You can say "--boot" to get both CSL and PSL
+# but using the CSL bootstrap version.
 
 # I want this script to be one I can launch from anywhere, so
 # to access files etc I need to know where it lives.
@@ -26,10 +30,25 @@ case $1 in
 esac
 
 csl="yes"
+cslname="redcsl"
 psl="yes"
+
 case $1 in
+--boot)
+  csl="yes"
+  cslname="bootstrapreduce"
+  psl="yes"
+  shift
+  ;;
 --csl)
   csl="yes"
+  cslname="redcsl"
+  psl="no"
+  shift
+  ;;
+--cslboot)
+  csl="yes"
+  cslname="bootstrapreduce"
   psl="no"
   shift
   ;;
@@ -46,8 +65,21 @@ case $1 in
   ;;
 esac
 case $1 in
+--boot)
+  csl="yes"
+  cslname="bootstrapreduce"
+  psl="yes"
+  shift
+  ;;
 --csl)
   csl="yes"
+  cslname="redcsl"
+  psl="no"
+  shift
+  ;;
+--cslboot)
+  csl="yes"
+  cslname="bootstrapreduce"
   psl="no"
   shift
   ;;
@@ -187,7 +219,7 @@ then
 
 mkdir -p csl-times
 
-$timecmd sh -c "$here/bin/redcsl -k160m -v -w > csl-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+$timecmd sh -c "$here/bin/$cslname -k160m -v -w > csl-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
