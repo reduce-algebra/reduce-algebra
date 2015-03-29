@@ -89,7 +89,7 @@ symbolic procedure gen!-mult!-by!-const!-mod!-p(a,n);
 % multiply the polynomial a by the constant n;
    if null a then nil
    else if n=1 then a
-   else if domainp a then !*nsf general!-modular!-times(a,n)
+   else if domainp a then !*n2f general!-modular!-times(a,n)
    else adjoin!-term(lpow a,gen!-mult!-by!-const!-mod!-p(lc a,n),
      gen!-mult!-by!-const!-mod!-p(red a,n));
 
@@ -115,7 +115,7 @@ symbolic procedure general!-make!-modular!-symmetric a;
 % This folds it onto the symmetric range (-p/2)->(p/2);
     if null a then nil
     else if domainp a then
-      if a>modulus!/2 then !*nsf(a - current!-modulus)
+      if a>modulus!/2 then !*n2f(a - current!-modulus)
       else a
     else adjoin!-term(lpow a,
                       general!-make!-modular!-symmetric lc a,
@@ -124,4 +124,3 @@ symbolic procedure general!-make!-modular!-symmetric a;
 endmodule;
 
 end;
-
