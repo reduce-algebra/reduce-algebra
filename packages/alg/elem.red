@@ -287,6 +287,7 @@ for all x let cos acos x=x, sin asin x=x, tan atan x=x,
            csc acsc x=x, sech asech x=x, csch acsch x=x;
 
 for all x let acos(-x)=pi-acos(x),
+              asec(-x)=pi-asec(x),
               acot(-x)=pi-acot(x);
 
 % Fold the elementary trigonometric functions down to the origin.
@@ -295,44 +296,68 @@ let
 
  sin( (~~w + ~~k*pi)/~~d)
      => (if evenp fix(k/d) then 1 else -1)
-          * sin((w + remainder(k,d)*pi)/d)
-      when w freeof pi and ratnump(k/d) and fixp k and abs(k/d) >= 1,
+          * sin(w/d + ((k/d)-fix(k/d))*pi)
+      when w freeof pi and ratnump(k/d) and abs(k/d) >= 1,
 
  sin( ~~k*pi/~~d) => sin((1-k/d)*pi)
       when ratnump(k/d) and k/d > 1/2,
 
  cos( (~~w + ~~k*pi)/~~d)
      => (if evenp fix(k/d) then 1 else -1)
-          * cos((w + remainder(k,d)*pi)/d)
-      when w freeof pi and ratnump(k/d) and fixp k and abs(k/d) >= 1,
+          * cos(w/d + ((k/d)-fix(k/d))*pi)
+      when w freeof pi and ratnump(k/d) and abs(k/d) >= 1,
 
  cos( ~~k*pi/~~d) => -cos((1-k/d)*pi)
       when ratnump(k/d) and k/d > 1/2,
 
- tan( (~~w + ~~k*pi)/~~d)
-     => tan((w + remainder(k,d)*pi)/d)
+ csc( (~~w + ~~k*pi)/~~d)
+     => (if evenp fix(k/d) then 1 else -1)
+          * csc(w/d + ((k/d)-fix(k/d))*pi)
       when w freeof pi and ratnump(k/d) and fixp k and abs(k/d) >= 1,
 
+ csc( ~~k*pi/~~d) => csc((1-k/d)*pi)
+      when ratnump(k/d) and k/d > 1/2,
+
+ sec( (~~w + ~~k*pi)/~~d)
+     => (if evenp fix(k/d) then 1 else -1)
+          * sec(w/d + ((k/d)-fix(k/d))*pi)
+      when w freeof pi and ratnump(k/d) and fixp k and abs(k/d) >= 1,
+
+ sec( ~~k*pi/~~d) => -sec((1-k/d)*pi)
+      when ratnump(k/d) and k/d > 1/2,
+
+ tan( (~~w + ~~k*pi)/~~d)
+     => tan(w/d + ((k/d)-fix(k/d))*pi)
+      when w freeof pi and ratnump(k/d) and abs(k/d) >= 1,
+
  cot( (~~w + ~~k*pi)/~~d)
-     => cot((w + remainder(k,d)*pi)/d)
-      when w freeof pi and ratnump(k/d) and fixp k and abs(k/d) >= 1;
+     => cot(w/d + ((k/d)-fix(k/d))*pi)
+      when w freeof pi and ratnump(k/d) and abs(k/d) >= 1;
 
 % The following rules follow the pattern
 %   sin(~x + pi/2)=> cos(x) when x freeof pi
 % however allowing x to be a quotient and a negative pi/2 shift.
 % We need to handleonly pi/2 shifts here because
 % the bigger shifts are already covered by the rules above.
+%
+% Note the use of ~~d instead of ~d in the denominator for rational k.
 
-let sin((~x + ~~k*pi)/~d) => sign(k/d)*cos(x/d)
+let sin((~x + ~~k*pi)/~~d) => sign(k/d)*cos(x/d)
          when x freeof pi and abs(k/d) = 1/2,
 
-    cos((~x + ~~k*pi)/~d) => -sign(k/d)*sin(x/d)
+    cos((~x + ~~k*pi)/~~d) => -sign(k/d)*sin(x/d)
          when x freeof pi and abs(k/d) = 1/2,
 
-    tan((~x + ~~k*pi)/~d) => -cot(x/d)
+    csc((~x + ~~k*pi)/~~d) => sign(k/d)*sec(x/d)
          when x freeof pi and abs(k/d) = 1/2,
 
-    cot((~x + ~~k*pi)/~d) => -tan(x/d)
+    sec((~x + ~~k*pi)/~~d) => -sign(k/d)*csc(x/d)
+         when x freeof pi and abs(k/d) = 1/2,
+
+    tan((~x + ~~k*pi)/~~d) => -cot(x/d)
+         when x freeof pi and abs(k/d) = 1/2,
+
+    cot((~x + ~~k*pi)/~~d) => -tan(x/d)
          when x freeof pi and abs(k/d) = 1/2;
 
 % Inherit function values.
@@ -366,12 +391,13 @@ symbolic operator knowledge_about;
 symbolic procedure trigquot(n,d);
   % Form a quotient n/d, replacing sin and cos by tan/cot
   % whenver possible.
-  begin scalar m,u,w;
+  begin scalar m,u,v,w;
     u:=if eqcar(n,'minus) then <<m:=t; cadr n>> else n;
-    if pairp u and pairp d then
-      if car u eq 'sin and car d eq 'cos and cadr u=cadr d
+    v:=if eqcar(d,'minus) then <<m:=not m; cadr d>> else d;
+    if pairp u and pairp v then
+      if car u eq 'sin and car v eq 'cos and cadr u=cadr v
             then w:='tan else
-      if car u eq 'cos and car d eq 'sin and cadr u=cadr d
+      if car u eq 'cos and car v eq 'sin and cadr u=cadr v
             then w:='cot;
     if null w then return{'quotient,n,d};
     w:={w,cadr u};
@@ -430,27 +456,43 @@ let
 
  sinh( (~~w + ~~k*pi)/~~d)
       => (if evenp fix(i*k/d) then 1 else -1)
-           * sinh((w + remainder(i*k,d)*pi/i)/d)
-       when w freeof pi and ratnump(i*k/d) and fixp k and abs(i*k/d)>=1,
+           * sinh(w/d + (i*k/d-fix(i*k/d))*pi/i)
+       when w freeof pi and ratnump(i*k/d) and abs(i*k/d)>=1,
 
  sinh( ~~k*pi/~~d) => sinh((i-k/d)*pi)
        when ratnump(i*k/d) and abs(i*k/d) > 1/2,
 
  cosh( (~~w + ~~k*pi)/~~d)
       => (if evenp fix(i*k/d) then 1 else -1)
-           * cosh((w + remainder(i*k,d)*pi/i)/d)
-       when w freeof pi and ratnump(i*k/d) and fixp k and abs(i*k/d)>=1,
+           * cosh(w/d + (i*k/d-fix(i*k/d))*pi/i)
+       when w freeof pi and ratnump(i*k/d) and abs(i*k/d)>=1,
 
  cosh( ~~k*pi/~~d) => -cosh((i-k/d)*pi)
        when ratnump(i*k/d) and abs(i*k/d) > 1/2,
 
- tanh( (~~w + ~~k*pi)/~~d)
-      => tanh((w + remainder(i*k,d)*pi/i)/d)
+ csch( (~~w + ~~k*pi)/~~d)
+      => (if evenp fix(i*k/d) then 1 else -1)
+           * csch(w + (i*k/d-fix(i*k/d))*pi/i)
        when w freeof pi and ratnump(i*k/d) and fixp k and abs(i*k/d)>=1,
 
+ csch( ~~k*pi/~~d) => csch((i-k/d)*pi)
+       when ratnump(i*k/d) and abs(i*k/d) > 1/2,
+
+ sech( (~~w + ~~k*pi)/~~d)
+      => (if evenp fix(i*k/d) then 1 else -1)
+           * sech(w/d + (i*k/d-fix(i*k/d))*pi/i)
+       when w freeof pi and ratnump(i*k/d) and fixp k and abs(i*k/d)>=1,
+
+ sech( ~~k*pi/~~d) => -sech((i-k/d)*pi)
+       when ratnump(i*k/d) and abs(i*k/d) > 1/2,
+
+ tanh( (~~w + ~~k*pi)/~~d)
+      => tanh(w/d + (i*k/d-fix(i*k/d))*pi/i)
+       when w freeof pi and ratnump(i*k/d) and abs(i*k/d)>=1,
+
  coth( (~~w + ~~k*pi)/~~d)
-      => coth((w + remainder(i*k,d)*pi/i)/d)
-       when w freeof pi and ratnump(i*k/d) and fixp k and abs(i*k/d)>=1;
+      => coth(w/d + (i*k/d-fix(i*k/d))*pi/i)
+       when w freeof pi and ratnump(i*k/d) and abs(i*k/d)>=1;
 
 % The following rules follow the pattern
 %   sinh(~x + i*pi/2)=> cosh(x) when x freeof pi
@@ -458,16 +500,22 @@ let
 % We need to handle only pi/2 shifts here because
 % the bigger shifts are already covered by the rules above.
 
-let sinh((~x + ~~k*pi)/~d) => i*sign(-i*k/d)*cosh(x/d)
+let sinh((~x + ~~k*pi)/~~d) => i*sign(-i*k/d)*cosh(x/d)
           when x freeof pi and abs(i*k/d) = 1/2,
 
-    cosh((~x + ~~k*pi)/~d) => i*sign(-i*k/d)*sinh(x/d)
+    cosh((~x + ~~k*pi)/~~d) => i*sign(-i*k/d)*sinh(x/d)
           when x freeof pi and abs(i*k/d) = 1/2,
 
-    tanh((~x + ~~k*pi)/~d) => coth(x/d)
+    csch((~~x + ~~k*pi)/~~d) => -i*sign(-i*k/d)*sech(x/d)
           when x freeof pi and abs(i*k/d) = 1/2,
 
-    coth((~x + ~~k*pi)/~d) => tanh(x/d)
+    sech((~~x + ~~k*pi)/~~d) => -i*sign(-i*k/d)*csch(x/d)
+          when x freeof pi and abs(i*k/d) = 1/2,
+
+    tanh((~x + ~~k*pi)/~~d) => coth(x/d)
+          when x freeof pi and abs(i*k/d) = 1/2,
+
+    coth((~x + ~~k*pi)/~~d) => tanh(x/d)
           when x freeof pi and abs(i*k/d) = 1/2;
 
 
@@ -485,6 +533,9 @@ let sinh((~x + ~~k*pi)/~d) => i*sign(-i*k/d)*cosh(x/d)
 %      return if null numr u then nil ./ 1
 %             else quotsq(mkabsf1 absf numr u,mkabsf1 denr u)
 %  end;
+
+% Transfer inverse function values from cos to acos and tan to atan.
+% Negative values not needed.
 
 acos_rules :=
   symbolic(
@@ -545,6 +596,9 @@ let df(acsc(~x),x) =>  -1/(x*sqrt(x**2 - 1)),
     df(asec(~x),x) => 1/(x^2*sqrt(1-1/x^2)),
     df(acsch(~x),x)=> -1/(x*sqrt(1+ x**2)),
     df(asech(~x),x)=> -1/(x*sqrt(1- x**2));
+
+% rules for atan2  
+let df(atan2(~y,~x),~z) => (x*df(y, z)-y*df(x, z))/(x^2+y^2);
 
 %for all x let e**log x=x;   % Requires every power to be checked.
 
@@ -703,20 +757,22 @@ let trig_imag_rules;
 
 % Generalized periodicity rules for trigonometric functions.
 % FJW, 16 October 1996.
+% exp rule corrected and others generalised to work for negative n
+% by AB March 2015 (negative n would give error)
 
 let {
- cos(~n*pi*arbint(~i) + ~~x) => cos(remainder(n,2)*pi*arbint(i) + x)
+ cos(~n*pi*arbint(~i) + ~~x) => cos((if evenp n then 0 else 1)*pi*arbint(i) + x)
   when fixp n,
- sin(~n*pi*arbint(~i) + ~~x) => sin(remainder(n,2)*pi*arbint(i) + x)
+ sin(~n*pi*arbint(~i) + ~~x) => sin((if evenp n then 0 else 1)*pi*arbint(i) + x)
   when fixp n,
  tan(~n*pi*arbint(~i) + ~~x) => tan(x) when fixp n,
- sec(~n*pi*arbint(~i) + ~~x) => sec(remainder(n,2)*pi*arbint(i) + x)
+ sec(~n*pi*arbint(~i) + ~~x) => sec((if evenp n then 0 else 1)*pi*arbint(i) + x)
   when fixp n,
- csc(~n*pi*arbint(~i) + ~~x) => csc(remainder(n,2)*pi*arbint(i) + x)
+ csc(~n*pi*arbint(~i) + ~~x) => csc((if evenp n then 0 else 1)*pi*arbint(i) + x)
   when fixp n,
  cot(~n*pi*arbint(~i) + ~~x) => cot(x) when fixp n,
- exp(~n*i*pi*arbint(~k) + ~~x) => exp(x) * (if evenp n then 1 else -1)
-  when fixp n
+ exp(~n*i*pi*arbint(~k) + ~~x) => 
+      exp((if evenp n then 0 else 1)*i*pi*arbint(k) + x) when fixp n
 };
 
 endmodule;
