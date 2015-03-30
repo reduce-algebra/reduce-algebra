@@ -2,13 +2,13 @@ symbolic;
 
 on1 'assert;
 
-struct Tag;
-struct PosNumber asserted by PosNumberP;
+struct tag;
+struct posnumber asserted by posnumberp;
 
-procedure PosNumberP(s);
+procedure posnumberp(s);
    numberp s and s > 0;
 
-asserted procedure hugo(x1: Number, x2: PosNumber, x3: Tag): DottedPair;
+asserted procedure hugo(x1: number, x2: posnumber, x3: tag): dottedpair;
    x3 . (x1 + x2);
 
 hugo(1, 1, 'y);
@@ -21,8 +21,8 @@ hugo(1, -1, 'y);
 
 assert_uninstall hugo;
 
-declare addf: (SF, SF) -> SF;
-declare addsq: (SQ, SQ) -> SQ;
+declare addf: (sf, sf) -> sf;
+declare addsq: (sq, sq) -> sq;
 
 assert_install addf, addsq;
 

@@ -169,7 +169,7 @@ symbolic procedure red!=subst2(model,basel);
 
 % ---------------- Top reduction ------------------------
 
-symbolic procedure red_TopRedBE(bas,model);
+symbolic procedure red_topredbe(bas,model);
 % Takes a base element model and returns it top reduced with bounded
 % ecart.
   if (null bas_dpoly model) or (null bas) then model
@@ -178,18 +178,18 @@ symbolic procedure red_TopRedBE(bas,model);
      if cali_trace()>79 then
        << write" reduce "; dp_print bas_dpoly model >>;
      while (q:=bas_dpoly model) and
-                (v:=red_divtestBE(bas,dp_lmon q,bas_dpecart model)) do
+                (v:=red_divtestbe(bas,dp_lmon q,bas_dpecart model)) do
                         model:=red_subst(model,v);
      return model;
      end;
 
-symbolic procedure red_divtestBE(a,b,e);
+symbolic procedure red_divtestbe(a,b,e);
 % Returns the first f in the base list a, such that lt(f) | b
 % and ec(f)<=e, else nil. b is a monomial.
   if null a then nil
   else if (bas_dpecart(car a) <= e) and
         mo_vdivides!?(dp_lmon bas_dpoly car a,b) then car a
-  else red_divtestBE(cdr a,b,e);
+  else red_divtestbe(cdr a,b,e);
 
 symbolic procedure red_divtest(a,b);
 % Returns the first f in the base list a, such that lt(f) | b else nil.
@@ -198,7 +198,7 @@ symbolic procedure red_divtest(a,b);
   else if mo_vdivides!?(dp_lmon bas_dpoly car a,b) then car a
   else red_divtest(cdr a,b);
 
-symbolic procedure red_TopRed(bas,model);
+symbolic procedure red_topred(bas,model);
 % Takes a base element model and returns it top reduced.
 % For noetherian term orders this is the classical top reduction; no
 % additional simplifiers occur. For local term orders it is Mora's
@@ -207,12 +207,12 @@ symbolic procedure red_TopRed(bas,model);
   else begin
      scalar v,q;
         % Make first reduction with bounded ecart.
-     model:=red_TopRedBE(bas,model);
+     model:=red_topredbe(bas,model);
         % Now loop into reduction with minimal ecart.
      while (q:=bas_dpoly model) and (v:=red_divtest(bas,dp_lmon q)) do
          << v:=red_subst(model,v);
             if not !*noetherian then bas:=red_update(bas,model);
-            model:=red_TopRedBE(bas,v);
+            model:=red_topredbe(bas,v);
          >>;
      return model;
      end;
@@ -241,7 +241,7 @@ symbolic procedure red!=cancelsimp(a,b);
 
 % ------------- Total reduction and Tail reduction -----------
 
-Comment
+COMMENT
 
 For total reduction one has to organize recursive calls of TopRed on
 tails of the current model. Since we do pseudoreduction, we have to
@@ -256,7 +256,7 @@ symbolic procedure red!=hide p;
 % Hide the terms of the dpoly p. This is involutive !
   for each x in p collect (mo_times_ei(-1,mo_neg car x) . cdr x);
 
-symbolic procedure red!=hideLt model;
+symbolic procedure red!=hidelt model;
   bas_make1(bas_nr model,cdr p,
         dp_sum(bas_rep model, red!=hide({car p})))
   where p=bas_dpoly model;
@@ -271,36 +271,36 @@ symbolic procedure red!=recover model;
                 reversip v);
    end;
 
-symbolic procedure red_TailRedDriver(bas,model,redfctn);
+symbolic procedure red_tailreddriver(bas,model,redfctn);
 % Takes a base element model and reduces the tail with the
 % top reduce "redfctn" recursively.
   if (null bas_dpoly model) or (null cdr bas_dpoly model)
                 or (null bas) then model
   else begin
      while bas_dpoly model do
-        model:=apply2(redfctn,bas,red!=hideLt(model));
+        model:=apply2(redfctn,bas,red!=hidelt(model));
      return red!=recover(model);
      end;
 
-symbolic procedure red_TailRed(bas,model);
+symbolic procedure red_tailred(bas,model);
 % The tail reduction as we understand it at the moment.
   if !*noetherian then
-        red_TailRedDriver(bas,model,function red_TopRed)
-  else red_TailRedDriver(bas,model,function red_TopRedBE);
+        red_tailreddriver(bas,model,function red_topred)
+  else red_tailreddriver(bas,model,function red_topredbe);
 
-symbolic procedure red_TotalRed(bas,model);
+symbolic procedure red_totalred(bas,model);
 % Make a terminating total reduction, i.e. for noetherian term orders
 % the classical one and for local term orders tail reduction with
 % bounded ecart.
-  red_TailRed(bas,red_TopRed(bas,model));
+  red_tailred(bas,red_topred(bas,model));
 
 % ---------- Reduction of the straightening parts --------
 
-symbolic procedure red_Straight(bas);
+symbolic procedure red_straight(bas);
 % Autoreduce straightening formulae of the base list bas, classical
 % in the noetherian case and with bounded ecart in the local case.
   begin scalar u;
-  u:=for each x in bas collect red_TailRed(bas,x);
+  u:=for each x in bas collect red_tailred(bas,x);
   if !*bcsimp then u:=bas_simp u;
   return sort(u,function red_better);
   end;
@@ -314,7 +314,7 @@ symbolic procedure red_collect bas;
     return bas1 . bas2;
     end;
 
-symbolic procedure red_TopInterreduce m;
+symbolic procedure red_topinterreduce m;
 % Reduce rows of the base list m with red_TopRed until it has pairwise
 % incomparable leading terms
 % Compute correct representation parts. Do no tail reduction.
@@ -327,7 +327,7 @@ symbolic procedure red_TopInterreduce m;
                 <<write" interreduce ";terpri();bas_print m>>;
          m:=nil; w:=cdr c; bas1:=car c;
          while w do
-           << c:=red_TopRed(bas1,car w);
+           << c:=red_topred(bas1,car w);
               if bas_dpoly c then m:=c . m;
               w:=cdr w
             >>;
@@ -344,15 +344,15 @@ symbolic procedure red_redpol(bas,model);
   begin scalar m;
   m:=red_prepare model;
   return red_extract
-    (if !*red_total then red_TotalRed(bas,m) else red_TopRed(bas,m))
+    (if !*red_total then red_totalred(bas,m) else red_topred(bas,m))
   end;
 
-symbolic procedure red_Interreduce m;
+symbolic procedure red_interreduce m;
 % Applies to arbitrary term orders.
    begin
         % Top reduction, producing pairwise incomparable leading terms.
-   m:=red_TopInterreduce m;
-   if !*red_total then m:=red_Straight m; % Tail reduction :
+   m:=red_topinterreduce m;
+   if !*red_total then m:=red_straight m; % Tail reduction :
    return m;
    end;
 

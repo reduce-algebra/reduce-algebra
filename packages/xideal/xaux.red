@@ -29,7 +29,7 @@ module xaux;
 
 
 
-Comment.  The routines in EXCALC sometimes use a new type, here called
+COMMENT.  The routines in EXCALC sometimes use a new type, here called
 wedgepf, internally.  It has the same structure as a pf, but the powers
 are lists of factors in an implicit wedge product.  The WEDGE tag may
 or may not be present.  A pf, typically a 0- or 1-form, can be
@@ -79,7 +79,7 @@ symbolic procedure wedgepf(u,v);
    !*wedgepf2pf wedgepf2(u,!*pf2wedgepf v);
 
 
-Comment.  The list xvars!* is used to decide which 0-form kernels are
+COMMENT.  The list xvars!* is used to decide which 0-form kernels are
 counted as parameters and which as variables ("xvars") in partitioned
 pf's.  The xvars statement allows this list to be set.
 

@@ -7,9 +7,9 @@
 
 % Formal Laurent series
 
-fps(E^x,x);
+fps(e^x,x);
 
-fps(E^x/(x^3),x);
+fps(e^x/(x^3),x);
 
 fps(x * e^(x^4),x);
 
@@ -27,7 +27,7 @@ fps(e^(asin x),x);
 
 fps(e^(asinh x),x);
 
-fps((x + sqrt(1+x^2))^A,x);
+fps((x + sqrt(1+x^2))^a,x);
 
 fps(e^(x^2)*erf x,x);
 
@@ -75,8 +75,8 @@ fps((1-x^5)^6,x);
 
 fps(asec x,x);
 
-fps(besseli(0,x),x);
-fps(besseli(1,x),x);
+fps(BesselI(0,x),x);
+fps(BesselI(1,x),x);
 
 fps(exp(x^(1/3)),x);
 fps(log(1-x),x);
@@ -92,7 +92,7 @@ fps(1/cos(asin x),x);
 fps(sqrt(1-x^2)+x*asin x,x);
 fps(sqrt(1-sqrt(x)),x);
 fps(cos(n*acos x),x);
-fps(cos x+I*sin x,x);
+fps(cos x+i*sin x,x);
 fps(cos(3*asinh x),x);
 fps(cos(n*asinh x),x);
 fps(sin(n*log(x+sqrt(1+x^2))),x);
@@ -118,7 +118,7 @@ fps(sqrt(2-x^2),x);
 fps(ci x,x);
 fps(log(1-2*x*y+x^2),x);
 
-FPS(sin x,x,pi);
+fps(sin x,x,pi);
 
 % detect logarithmic singularity and bail out
 

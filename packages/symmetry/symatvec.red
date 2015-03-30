@@ -504,7 +504,7 @@ scalar z,sum;
   return sum;
 end;
 
-symbolic procedure mk!+Gram!+Schmid(vectorlist,vector1);
+symbolic procedure mk!+gram!+schmid(vectorlist,vector1);
 % returns a vectorlist of orthonormal vectors
 % assumptions: vectorlist is orthonormal basis, internal structure
 begin
@@ -523,7 +523,7 @@ scalar i,orthovec,scalo,vectors1;
   return vectors1
 end;
 
-symbolic procedure Gram!+Schmid(vectorlist);
+symbolic procedure gram!+schmid(vectorlist);
 % returns a vectorlist of orthonormal vectors
 begin
 scalar ortholist,i;
@@ -532,7 +532,7 @@ scalar ortholist,i;
       ortholist:=nil
         else rederr("strange in Gram-Schmid");
   for i:=1:length(vectorlist) do
-        ortholist:=mk!+Gram!+Schmid(ortholist,nth(vectorlist,i));
+        ortholist:=mk!+gram!+schmid(ortholist,nth(vectorlist,i));
   return ortholist;
 end;
 
@@ -596,17 +596,17 @@ scalar rulesum,storecomp;
                  storecomp:=nil;
               >>;
           rulesum:=evalwhereexp ({'(list (list
- (REPLACEBY
-   (COS (!~ X))
-   (TIMES
-      (QUOTIENT 1 2)
- (PLUS (EXPT E (TIMES I (!~ X))) (EXPT E (MINUS (TIMES I (!~ X))))) ))
- (REPLACEBY
-   (SIN (!~ X))
-   (TIMES
-      (QUOTIENT 1 (times 2 i))
- (difference (EXPT E (TIMES I (!~ X)))
-      (EXPT E (MINUS (TIMES I (!~ X))))) ))
+ (replaceby
+   (cos (!~ x))
+   (times
+      (quotient 1 2)
+ (plus (expt e (times i (!~ x))) (expt e (minus (times i (!~ x))))) ))
+ (replaceby
+   (sin (!~ x))
+   (times
+      (quotient 1 (times 2 i))
+ (difference (expt e (times i (!~ x)))
+      (expt e (minus (times i (!~ x))))) ))
 
 ))
 , prepsq(scal1)});

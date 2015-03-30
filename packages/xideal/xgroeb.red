@@ -99,75 +99,75 @@ symbolic procedure allxvars f;
    else append(wedgefax lpow f,allxvars red f);
 
 
-symbolic procedure xideal0 F;
+symbolic procedure xideal0 f;
    % F:list of pf -> xideal0:list of pf
    % GB algorithm
-   begin scalar G,F0,P;
-   if !*trxideal then xprint_basis("Input Basis",F);
-   if !*xfullreduce then F := weak_xautoreduce1(F,{});
-   if !*trxideal and not xequiv(F,xpolylist!*) then
-      xprint_basis("New Basis",F);
-   P := critical_pairs(F,{},empty_xset());
-   while not empty_xsetp P do
+   begin scalar g,f0,p;
+   if !*trxideal then xprint_basis("Input Basis",f);
+   if !*xfullreduce then f := weak_xautoreduce1(f,{});
+   if !*trxideal and not xequiv(f,xpolylist!*) then
+      xprint_basis("New Basis",f);
+   p := critical_pairs(f,{},empty_xset());
+   while not empty_xsetp p do
       begin scalar cp,k;
-      cp := remove_least_item P;
+      cp := remove_least_item p;
       if !*trxideal then xprint_pair cp;
-      if not xriterion_1(cp,F,P) and not xriterion_2(cp,zerodivs!*,P)
-        then if k := weak_xreduce(critical_element cp,F) then
+      if not xriterion_1(cp,f,p) and not xriterion_2(cp,zerodivs!*,p)
+        then if k := weak_xreduce(critical_element cp,f) then
             if lpow k = 1 then % quick exit for trivial ideal
-             <<P := empty_xset();
-               F := {xregister(!*k2pf 1,cp)}>>
+             <<p := empty_xset();
+               f := {xregister(!*k2pf 1,cp)}>>
             else
              <<k := xregister(xnormalise k,cp);
-               G := if !*xfullreduce then weak_xautoreduce1({k},F)
-                     else k . F;
-               F0 := intersection(F,G);
-               P := remove_critical_pairs(setdiff(F,F0),P);
-               if !*trxideal and not xequiv(G,xpolylist!*) then
-                  xprint_basis("New Basis",G);
-               P := critical_pairs(setdiff(G,F0),F0,P);
-               F := G>>
+               g := if !*xfullreduce then weak_xautoreduce1({k},f)
+                     else k . f;
+               f0 := intersection(f,g);
+               p := remove_critical_pairs(setdiff(f,f0),p);
+               if !*trxideal and not xequiv(g,xpolylist!*) then
+                  xprint_basis("New Basis",g);
+               p := critical_pairs(setdiff(g,f0),f0,p);
+               f := g>>
          else if !*trxideal and not !*trxmod then writepri(0,'last);
       end;
-   return if !*xfullreduce then xautoreduce1 F
-          else reversip sort(F,'pfordp);
+   return if !*xfullreduce then xautoreduce1 f
+          else reversip sort(f,'pfordp);
    end;
 
 
-symbolic procedure xriterion_1(cp,G,P);
-   if null G then nil
+symbolic procedure xriterion_1(cp,g,p);
+   if null g then nil
    else if pr_type cp neq 'spoly_pair then nil
    else x neq pr_lhs cp
     and x neq pr_rhs cp
     and xdiv(xval x,xkey cp)
-    and (null pr or not find_item(pr,P)
+    and (null pr or not find_item(pr,p)
            where pr = make_spoly_pair(x,pr_lhs cp))
-    and (null pr or not find_item(pr,P)
+    and (null pr or not find_item(pr,p)
            where pr = make_spoly_pair(x,pr_rhs cp))
     and <<if !*trxideal then writepri("criterion 1 hit",'last); t>>
-    or  xriterion_1(cp,cdr G,P) where x = car G;
+    or  xriterion_1(cp,cdr g,p) where x = car g;
 
 
-symbolic procedure xriterion_2(cp,G,P);
+symbolic procedure xriterion_2(cp,g,p);
    % G = zerodivs!* at the start
    % I don't believe this ever returns t for our case
-   if null G then nil
+   if null g then nil
    else if pr_type cp neq 'wedge_pair then nil
    else !*k2pf x neq pr_lhs cp
     and xdiv({x,x},xkey cp)
-    and (null pr or not find_item(pr,P)
+    and (null pr or not find_item(pr,p)
            where pr = make_wedge_pair(x,pr_rhs cp))
     and <<if !*trxideal then writepri("criterion 2 hit",'last); t>>
-    or  xriterion_2(cp,cdr G,P) where x = car G;
+    or  xriterion_2(cp,cdr g,p) where x = car g;
 
 
 % The remaining procedure are for tracing and debugging
 
 
-symbolic procedure xequiv(F,G);
+symbolic procedure xequiv(f,g);
    % F,G:list of pf -> xequiv:bool
    % true if F and G have equal contents, possibly reordered
-   length F = length G and sublistp(F,G);
+   length f = length g and sublistp(f,g);
 
 
 symbolic procedure xregister(k,pr);

@@ -3,11 +3,11 @@
 
 % Example taken from Feinberg (Chemical Engineering):
 
-   species := {A1,A2,A3,A4,A5};
+   species := {a1,a2,a3,a4,a5};
 
-   reac2ode {  A1 + A4 <> 2A1,       rho, beta,
-               A1 + A2 <> A3,        gamma, epsilon,
-               A3      <> A2 + A5,   theta, mue};
+   reac2ode {  a1 + a4 <> 2a1,       rho, beta,
+               a1 + a2 <> a3,        gamma, epsilon,
+               a3      <> a2 + a5,   theta, mue};
         
   inputmat;
 
@@ -22,13 +22,13 @@
 % extraction of species.
  
    species := {};
-   reac2ode {  A1 + A4 <> 2A1, 
-               A1 + A2 <> A3,
-               A3      <> A2 + A5};
+   reac2ode {  a1 + a4 <> 2a1, 
+               a1 + a2 <> a3,
+               a3      <> a2 + a5};
  
    on rounded;
    species := {};
-   reac2ode {  A1 + A4 <> 2A1, 17.3* 22.4**1.5,
+   reac2ode {  a1 + a4 <> 2a1, 17.3* 22.4**1.5,
                                0.04* 22.4**1.5 };
 
 end;

@@ -28,7 +28,7 @@
 
 module geoprover;
 
-comment
+COMMENT
 
 GeoProver inline part. Version 1.3
 
@@ -62,16 +62,16 @@ clear_ndg();  % Initialization
 
 algebraic procedure is_equal(a,b); a-b;
 %algebraic procedure Normal(a); a;
-algebraic procedure Point(a,b); {a,b};
-algebraic procedure Line(a,b,c); reduce_coords({a,b,c});
+algebraic procedure point(a,b); {a,b};
+algebraic procedure line(a,b,c); reduce_coords({a,b,c});
 
 algebraic procedure par_point(a,b,c);
-  Point(part(a,1)-part(b,1)+part(c,1),
+  point(part(a,1)-part(b,1)+part(c,1),
   part(a,2)-part(b,2)+part(c,2));
 
 algebraic procedure pp_line(a,b);
 % The line through A and B.
-  Line(part(b,2)-part(a,2),part(a,1)-part(b,1),
+  line(part(b,2)-part(a,2),part(a,1)-part(b,1),
         part(a,2)*part(b,1)-part(a,1)*part(b,2));
 
 algebraic procedure intersection_point(a,b);
@@ -82,45 +82,45 @@ algebraic procedure intersection_point(a,b);
    d2:=part(a,1)*part(b,3)-part(b,1)*part(a,3);
    if d=0 then rederr"Lines are parallel";
    add_ndg(num d);
-   return Point(-d1/d,-d2/d);
+   return point(-d1/d,-d2/d);
    end;
 
 algebraic procedure ortho_line(p,a);
 % The line through P orthogonal to the line a.
   begin scalar u,v; u:=first a; v:=second a;
-  return Line(v,-u,u*second p-v*first p);
+  return line(v,-u,u*second p-v*first p);
   end;
 
 algebraic procedure par_line(p,a);
 % The parallel to line a through P.
-  Line(part(a,1),part(a,2),
+  line(part(a,1),part(a,2),
         -(part(a,1)*part(p,1)+part(a,2) *part(p,2)));
 
 algebraic procedure varpoint(b,a,l);
 % The point D=l*A+(1-l)*B.
-  Point(l*part(a,1)+(1-l)*part(b,1),l*part(a,2)+(1-l)*part(b,2));
+  point(l*part(a,1)+(1-l)*part(b,1),l*part(a,2)+(1-l)*part(b,2));
 
 algebraic procedure line_slider(a,u);
 % Slider on the line a using parameter u.
   begin scalar p,d;
   if part(a,2)=0 then
-        << p:=Point(-part(a,3)/part(a,1),u); d:=part(a,1); >>
+        << p:=point(-part(a,3)/part(a,1),u); d:=part(a,1); >>
   else
-        << p:=Point(u,-(part(a,3)+part(a,1)*u)/part(a,2));
+        << p:=point(u,-(part(a,3)+part(a,1)*u)/part(a,2));
            d:=part(a,2);
         >>;
   add_ndg(num d);
   return p;
   end;
 
-algebraic procedure circle_slider(M,A,u);
+algebraic procedure circle_slider(m,a,u);
 % Slider on the circle with center M and circumfere point A using
 % parameter u.
   begin scalar a1,a2,m1,m2,d;
-  a1:=part(A,1); a2:=part(A,2); d:= u^2 + 1;
-  m1:=part(M,1); m2:=part(M,2);
+  a1:=part(a,1); a2:=part(a,2); d:= u^2 + 1;
+  m1:=part(m,1); m2:=part(m,2);
   add_ndg(num d);
-  return Point((a1*(u^2-1) + 2*m1 + 2*(m2-a2)*u)/d,
+  return point((a1*(u^2-1) + 2*m1 + 2*(m2-a2)*u)/d,
          (a2 + 2*(m1-a1)*u + (2*m2-a2)*u^2)/d);
   end;
 
@@ -181,13 +181,13 @@ algebraic procedure angle_sum(a,b);
 algebraic procedure eq_angle(a,b,c,d,e,f);
   p3_angle(a,b,c)-p3_angle(d,e,f);
 
-algebraic procedure on_bisector(P,A,B,C);
+algebraic procedure on_bisector(p,a,b,c);
 % P is a point on the bisector of the angle ABC.
 % Returns num(u)*den(v)-num(v)*den(u) with
 % u:=angle(pp_line(A,B),pp_line(P,B))
 % v:=angle(pp_line(P,B),pp_line(C,B))
   begin scalar a1,a2,b1,b2,c1,c2,p1,p2;
-        a1:=part(A,1); a2:=part(A,2);
+        a1:=part(a,1); a2:=part(a,2);
         b1:=part(b,1); b2:=part(b,2);
         c1:=part(c,1); c2:=part(c,2);
         p1:=part(p,1); p2:=part(p,2);
@@ -197,11 +197,11 @@ algebraic procedure on_bisector(P,A,B,C);
   b1*p2 - b2*c1 + b2*p1 + c1*p2 - c2*p1)
   end;
 
-algebraic procedure rotate(C, A, angle);
+algebraic procedure rotate(c, a, angle);
   begin scalar ac1,ac2;
-  ac1:=part(A,1)-part(C,1); ac2:=part(A,2)-part(C,2);
-  return Point(part(C,1)+ac1*cos(angle*pi)-ac2*sin(angle*pi),
-    part(C,2)+ac1*sin(angle*pi)+ac2*cos(angle*pi));
+  ac1:=part(a,1)-part(c,1); ac2:=part(a,2)-part(c,2);
+  return point(part(c,1)+ac1*cos(angle*pi)-ac2*sin(angle*pi),
+    part(c,2)+ac1*sin(angle*pi)+ac2*cos(angle*pi));
   end;
 
 % ========== symmetric lines and points
@@ -212,24 +212,24 @@ algebraic procedure sym_line(a,l);
   a1:=part(a,1); a2:=part(a,2); a3:=part(a,3);
   l1:=part(l,1); l2:=part(l,2); l3:=part(l,3);
   u:=l1^2 - l2^2;
-  return Line(- a1*u - 2*a2*l1*l2, - 2*a1*l1*l2 + a2*u,
+  return line(- a1*u - 2*a2*l1*l2, - 2*a1*l1*l2 + a2*u,
                 - 2*(a1*l1 + a2*l2)*l3 + a3*(l1^2 + l2^2));
   end;
 
 % ===================== circles
 
-algebraic procedure Circle(c1,c2,c3,c4); reduce_coords({c1,c2,c3,c4});
+algebraic procedure circle(c1,c2,c3,c4); reduce_coords({c1,c2,c3,c4});
 
-algebraic procedure pc_circle(M,A);
+algebraic procedure pc_circle(m,a);
 % Circle with center M and Point A on circumference.
-  Circle(1, -2*part(M,1), -2*part(M,2),
-            part(A,1)*(2*part(M,1)-part(A,1)) +
-            part(A,2)*(2*part(M,2)-part(A,2)));
+  circle(1, -2*part(m,1), -2*part(m,2),
+            part(a,1)*(2*part(m,1)-part(a,1)) +
+            part(a,2)*(2*part(m,2)-part(a,2)));
 
 algebraic procedure circle_center c;
 % The center of the circle c.
   begin add_ndg(num part(c,1));
-  return Point(-part(c,2)/2/part(c,1) ,-part(c,3)/(2*part(c,1)));
+  return point(-part(c,2)/2/part(c,1) ,-part(c,3)/(2*part(c,1)));
   end;
 
 algebraic procedure circle_sqradius c;
@@ -240,34 +240,34 @@ algebraic procedure circle_sqradius c;
         (2*part(c,1))^2;
   end;
 
-algebraic procedure p3_circle(A,B,C);
+algebraic procedure p3_circle(a,b,c);
 % The circle through three given points
   begin scalar a1,a2,a3,b1,b2,b3,c1,c2,c3;
-  a1:=part(A,1); a2:=part(A,2); a3:=a1^2+a2^2;
+  a1:=part(a,1); a2:=part(a,2); a3:=a1^2+a2^2;
   b1:=part(b,1); b2:=part(b,2); b3:=b1^2+b2^2;
   c1:=part(c,1); c2:=part(c,2); c3:=c1^2+c2^2;
-  return Circle(a1*(b2-c2) + (a2-b2)*c1 + b1*(c2-a2),
+  return circle(a1*(b2-c2) + (a2-b2)*c1 + b1*(c2-a2),
     a3*(c2-b2) + (a2-c2)*b3 + (b2-a2)*c3,
     a3*(b1-c1) + (c1-a1)*b3 + (a1-b1)*c3,
     a3*(b2*c1-b1*c2) + (a1*c2-a2*c1)*b3 + (a2*b1-a1*b2)*c3)
   end;
 
-algebraic procedure on_circle(P,c);
-  begin scalar p1,p2; p1:=part(P,1); p2:=part(P,2);
+algebraic procedure on_circle(p,c);
+  begin scalar p1,p2; p1:=part(p,1); p2:=part(p,2);
   return part(c,1)*(p1^2+p2^2)+part(c,2)*p1+part(c,3)*p2+part(c,4);
   end;
 
 % Intersecting with circles
 
-algebraic procedure other_cl_point(P,c,l);
+algebraic procedure other_cl_point(p,c,l);
 % circle c and line l intersect at P. The procedure returns their
 % second intersection point.
-  if on_line(P,l) neq 0 then rederr "Point not on the line"
-  else if on_circle(P,c) neq 0 then
+  if on_line(p,l) neq 0 then rederr "Point not on the line"
+  else if on_circle(p,c) neq 0 then
         rederr "Point not on the circle"
   else begin scalar c1,c2,c3,l1,l2,d,d1,p1,p2;
   c1:=part(c,1); c2:=part(c,2); c3:=part(c,3);
-  l1:=part(l,1); l2:=part(l,2); p1:=part(P,1); p2:=part(P,2);
+  l1:=part(l,1); l2:=part(l,2); p1:=part(p,1); p2:=part(p,2);
   d:=c1*(l1^2 + l2^2); add_ndg(num d); d1:=c1*(l1^2-l2^2);
   return {(d1*p1+((2*c1*p2 + c3)*l1-c2*l2)*l2)/d,
         (- d1*p2+((2*c1*p1 + c2)*l2-c3*l1)*l1)/d};
@@ -279,10 +279,10 @@ algebraic procedure radical_axis(c1,c2);
   for i:=2:4 collect
         (part(c1,1)*part(c2,i)-part(c1,i)*part(c2,1));
 
-algebraic procedure other_cc_point(P,c1,c2);
+algebraic procedure other_cc_point(p,c1,c2);
 % Circles c1 and c2 intersect at P. The procedure returns their
 % second intersection point.
-  other_cl_point(P,c1,radical_axis(c1,c2));
+  other_cl_point(p,c1,radical_axis(c1,c2));
 
 algebraic procedure is_cl_tangent(c,l);
 % Line l is tangent to the circle c.
@@ -335,12 +335,12 @@ algebraic procedure reduce_coords u;
 
 % ================ new
 
-algebraic procedure circle_inverse(M,R,P);
+algebraic procedure circle_inverse(m,r,p);
 % compute the inverse of P wrt. the circle pc_circle(M,R)
   begin scalar m1,m2,r1,r2,p1,p2,d;
-  m1:=part(M,1); m2:=part(M,2);
-  r1:=part(R,1); r2:=part(R,2);
-  p1:=part(P,1); p2:=part(P,2);
+  m1:=part(m,1); m2:=part(m,2);
+  r1:=part(r,1); r2:=part(r,2);
+  p1:=part(p,1); p2:=part(p,2);
   d:=(m1-p1)^2+(m2-p2)^2;
   add_ndg(d);
   return ((m1-p1)^2+(m2-p2)^2+(m1-r1)^2+(m2-r2)^2)/d;
@@ -348,64 +348,64 @@ algebraic procedure circle_inverse(M,R,P);
 
 % GeoProver code generated from database
 
-algebraic procedure altitude(A__,B__,C__);
-        ortho_line(A__,pp_line(B__,C__));
+algebraic procedure altitude(a__,b__,c__);
+        ortho_line(a__,pp_line(b__,c__));
 
-algebraic procedure centroid(A__,B__,C__);
-        intersection_point(median(A__,B__,C__),median(B__,C__,A__));
+algebraic procedure centroid(a__,b__,c__);
+        intersection_point(median(a__,b__,c__),median(b__,c__,a__));
 
-algebraic procedure circumcenter(A__,B__,C__);
-        intersection_point(p_bisector(A__,B__), p_bisector(B__,C__));
+algebraic procedure circumcenter(a__,b__,c__);
+        intersection_point(p_bisector(a__,b__), p_bisector(b__,c__));
 
-algebraic procedure csym_point(P__,Q__);
-        varpoint(Q__,P__,-1);
+algebraic procedure csym_point(p__,q__);
+        varpoint(q__,p__,-1);
 
-algebraic procedure fixedpoint(A__,B__,u_);
-        varpoint(A__,B__,u_);
+algebraic procedure fixedpoint(a__,b__,u_);
+        varpoint(a__,b__,u_);
 
-algebraic procedure is_concyclic(A__,B__,C__,D__);
-        on_circle(D__,p3_circle(A__,B__,C__));
+algebraic procedure is_concyclic(a__,b__,c__,d__);
+        on_circle(d__,p3_circle(a__,b__,c__));
 
-algebraic procedure median(A__,B__,C__);
-        pp_line(A__,midpoint(B__,C__));
+algebraic procedure median(a__,b__,c__);
+        pp_line(a__,midpoint(b__,c__));
 
-algebraic procedure midpoint(A__,B__);
-        fixedpoint(A__,B__,1/2);
+algebraic procedure midpoint(a__,b__);
+        fixedpoint(a__,b__,1/2);
 
-algebraic procedure orthocenter(A__,B__,C__);
-        intersection_point(altitude(A__,B__,C__),altitude(B__,C__,A__));
+algebraic procedure orthocenter(a__,b__,c__);
+        intersection_point(altitude(a__,b__,c__),altitude(b__,c__,a__));
 
-algebraic procedure other_incenter(M__,A__,B__);
-        intersection_point(ortho_line(A__,pp_line(M__,A__)),
-ortho_line(B__,pp_line(M__,B__)));
+algebraic procedure other_incenter(m__,a__,b__);
+        intersection_point(ortho_line(a__,pp_line(m__,a__)),
+ortho_line(b__,pp_line(m__,b__)));
 
-algebraic procedure p3_angle(A__,B__,C__);
-        l2_angle(pp_line(B__,A__),pp_line(B__,C__));
+algebraic procedure p3_angle(a__,b__,c__);
+        l2_angle(pp_line(b__,a__),pp_line(b__,c__));
 
-algebraic procedure p9_center(A__,B__,C__);
-        circle_center(p9_circle(A__,B__,C__));
+algebraic procedure p9_center(a__,b__,c__);
+        circle_center(p9_circle(a__,b__,c__));
 
-algebraic procedure p9_circle(A__,B__,C__);
-        p3_circle(midpoint(A__,B__),midpoint(A__,C__),midpoint(B__,C__));
+algebraic procedure p9_circle(a__,b__,c__);
+        p3_circle(midpoint(a__,b__),midpoint(a__,c__),midpoint(b__,c__));
 
-algebraic procedure p_bisector(B__,C__);
-        ortho_line(midpoint(B__,C__),pp_line(B__,C__));
+algebraic procedure p_bisector(b__,c__);
+        ortho_line(midpoint(b__,c__),pp_line(b__,c__));
 
-algebraic procedure pappus_line(A__,B__,C__,D__,E__,F__);
-        pp_line(intersection_point(pp_line(A__,E__),pp_line(B__,D__)),
-        intersection_point(pp_line(A__,F__),pp_line(C__,D__)));
+algebraic procedure pappus_line(a__,b__,c__,d__,e__,f__);
+        pp_line(intersection_point(pp_line(a__,e__),pp_line(b__,d__)),
+        intersection_point(pp_line(a__,f__),pp_line(c__,d__)));
 
-algebraic procedure pedalpoint(P__,a_);
-        intersection_point(ortho_line(P__,a_),a_);
+algebraic procedure pedalpoint(p__,a_);
+        intersection_point(ortho_line(p__,a_),a_);
 
-algebraic procedure sqrdist_pl(A__,l_);
-        sqrdist(A__,pedalpoint(A__,l_));
+algebraic procedure sqrdist_pl(a__,l_);
+        sqrdist(a__,pedalpoint(a__,l_));
 
-algebraic procedure sym_point(P__,l_);
-        fixedpoint(P__,pedalpoint(P__,l_),2);
+algebraic procedure sym_point(p__,l_);
+        fixedpoint(p__,pedalpoint(p__,l_),2);
 
-algebraic procedure triangle_area(A__,B__,C__);
-        1/2*is_collinear(A__,B__,C__);
+algebraic procedure triangle_area(a__,b__,c__);
+        1/2*is_collinear(a__,b__,c__);
 
 endmodule; % GeoProver
 

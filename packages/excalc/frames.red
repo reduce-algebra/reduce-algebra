@@ -220,7 +220,7 @@ symbolic procedure frame u;
 symbolic procedure pickupwedges u;
    pickupwedges1(u,nil);
 
-Symbolic procedure pickupwedges1(u,v);
+symbolic procedure pickupwedges1(u,v);
    if null u then v
     else if null cdar u then pickupwedges1(cdr u,v)
     else if null v then pickupwedges1((caar u . red cdar u) . cdr u,

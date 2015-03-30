@@ -1,4 +1,4 @@
-I_setting(x,y,z);
+i_setting(x,y,z);
 
 
 
@@ -8,28 +8,28 @@ torder revgradlex;
 {{},lex}
 
 
-u := I(x*z-y**2, x**3-y*z);
+u := i(x*z-y**2, x**3-y*z);
 
 
               2  3
 u := i(x*z - y ,x  - y*z)
 
-y member I(x,y^2);
+y member i(x,y^2);
 
 
 0
 
-x member I(x,y^2);
+x member i(x,y^2);
 
 
 1
 
-I(x,y^2) subset I(x,y);
+i(x,y^2) subset i(x,y);
 
 
 1
          % yes
-I(x,y) subset I(x,y^2);
+i(x,y) subset i(x,y^2);
 
 
 0
@@ -40,14 +40,14 @@ I(x,y) subset I(x,y^2);
 
 
 
-q1 := u .: I(x);
+q1 := u .: i(x);
 
 
          3        2      2           2
 q1 := i(x  - y*z,x *y - z , - x*z + y )
                         % quotient ideal
 
-q2 := u .+ I(x^2 * y - z^2);
+q2 := u .+ i(x^2 * y - z^2);
 
 
          3        2      2           2
@@ -60,21 +60,21 @@ if q1 .= q2 then write "same ideal";
 same ideal
     % test equality
 
-intersection(u,I(y));
+intersection(u,i(y));
 
 
    3      2    2  2      2             3
 i(x *y - y *z,x *y  - y*z , - x*y*z + y )
                    % ideal intersection
 
-u .: I(y);
+u .: i(y);
 
 
    3        2      2           2
 i(x  - y*z,x *y - z , - x*z + y )
 
 
-u .: I(x,y);
+u .: i(x,y);
 
 
    3        2      2           2
@@ -83,7 +83,7 @@ i(x  - y*z,x *y - z , - x*z + y )
 
 %-----------------------------------------------------
 
-u1 := I(x,y^2);
+u1 := i(x,y^2);
 
 
            2
@@ -95,7 +95,7 @@ u1u1:= u1 .* u1;
            4    2  2
 u1u1 := i(y ,x*y ,x )
                        % square ideal
-u0 :=I(x,y);
+u0 :=i(x,y);
 
 
 u0 := i(x,y)
@@ -133,7 +133,7 @@ u1 subset u0;
 1
    % yes
 
-intersection (I(x) , I(x^2,x*y,y^2)) .= intersection(I(x) , I(x^2,y));
+intersection (i(x) , i(x^2,x*y,y^2)) .= intersection(i(x) , i(x^2,y));
 
 
 1

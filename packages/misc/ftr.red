@@ -116,8 +116,8 @@ symbolic procedure module!-file!-split1;
    begin scalar x,!*raise;
       while not errorp (x := errorset!*('(uread),t))
             and (x := car x) neq !$eof!$
-            and x neq 'END!; do
-         if x neq 'MODULE then rerror(ftr,1,"Invalid module format")
+            and x neq 'end!; do
+         if x neq 'module then rerror(ftr,1,"Invalid module format")
           else begin scalar ochan,oldochan,y;
              y := xread t;   % Should be module name.
              ochan:= open(concat(dir!*,concat(mkfil y,".red")),'output);
@@ -143,7 +143,7 @@ symbolic procedure read!-module;
        else eolcount := 0;
       prin2 x;
       if x memq '(!e !E)
-         then if y = '(L U D O M D N E)
+         then if y = '(l u d o m d n e)
                   or y = '(!l !u !d !o !m !d !n !e)
                 then <<prin2 readch();
                        terpri();
@@ -151,7 +151,7 @@ symbolic procedure read!-module;
                        prin2t "end;";
                        return nil>>
                else y := list x
-        else if x memq '(N D M O U L !n !d !m !o !u !l)
+        else if x memq '(n d m o u l !n !d !m !o !u !l)
          then y := x . y
         else y := nil;
      go to a

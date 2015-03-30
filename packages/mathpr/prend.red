@@ -32,7 +32,7 @@ switch clisp;
 
 % These parts come from rend.red.....
 
-comment
+COMMENT
 vdu(23, 235,   0,   0, 224,  48,  24,  24,  24,  24, % mat-top-r
     23, 236,  24,  24,  24,  24,  12,   7,   0,   0, % mat-bottom-l
     23, 237,   0,  30,  51,  97,  97,  51,  30,   0, % infinity left

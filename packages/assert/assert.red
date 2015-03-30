@@ -210,7 +210,7 @@ procedure assert_analyze();
 	 s3 := s3 + cadddr pr
       >>;
       headline := '(function . (!#calls  !#bad! calls !#assertion! violations));
-      footline := 'SUM . {s1,s2,s3};
+      footline := 'sum . {s1,s2,s3};
       assertstatistics!* := nil . headline . nil .
 	 reversip(nil . footline . nil . assertstatistics!*);
       for each pr in assertstatistics!* do <<

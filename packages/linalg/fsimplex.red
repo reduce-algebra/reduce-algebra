@@ -346,21 +346,21 @@ procedure fs_s2a!-simplex(w);
    {'list,sc_prepsq car w,'list . cdr w};
 
 procedure fs_simplex2(max!-or!-min, objective, equation!-list, boundal);
-   begin scalar A, b, obj!-mat, X, ib, xb, Binv, ph1optval, ansl, optval,
+   begin scalar a, b, obj!-mat, x, ib, xb, binv, ph1optval, ansl, optval,
  	 subal, addcl, splal, gensyml;
       integer no!-coeffs,no!-variables;
       {addcl, subal, splal, gensyml} := fs_analyze!-bounds boundal;
       {objective, equation!-list} :=
 	 fs_preproc!-bounds(objective, equation!-list, addcl, subal, splal);
       equation!-list := fs_norminput(objective, equation!-list);
-      {A, b, obj!-mat, X, no!-variables} :=
+      {a, b, obj!-mat, x, no!-variables} :=
 	 fs_init(max!-or!-min, objective, equation!-list);
-      no!-coeffs := fast!-column!-dim A;
-      {ph1optval, xb, ib, Binv} := fs_phase1(A, b);
+      no!-coeffs := fast!-column!-dim a;
+      {ph1optval, xb, ib, binv} := fs_phase1(a, b);
       if not sc_null ph1optval then
 	 return 'infeasible;
-      {optval, xb, ib} := fs_phase2(obj!-mat, A, b, ib, Binv, xb);
-      ansl := fs_make!-answer!-list(xb, ib, no!-coeffs, X, no!-variables);
+      {optval, xb, ib} := fs_phase2(obj!-mat, a, b, ib, binv, xb);
+      ansl := fs_make!-answer!-list(xb, ib, no!-coeffs, x, no!-variables);
       if max!-or!-min = 'max then
        	 optval := sc_negsq optval;
       ansl := fs_postproc!-bounds(ansl, subal, splal, gensyml);
@@ -479,7 +479,7 @@ procedure fs_init(max!-or!-min,objective,eql);
    % [nonslacks] of variables in the [eql] so we know where to stop
    % making answers in fs_make!-answer!-list.
    begin
-      scalar A,b,obj!-mat,X,vl,obj!-mat,nonslacks,w,slackeqs,A,b,X;
+      scalar a,b,obj!-mat,x,vl,obj!-mat,nonslacks,w,slackeqs,a,b,x;
       if max!-or!-min = 'max then
        	 objective := sc_negsq objective;
       vl := fs_eqlvarl eql;
@@ -488,29 +488,29 @@ procedure fs_init(max!-or!-min,objective,eql);
       slackeqs := car w;
       b := cadr w;
       vl := union(vl,caddr w);
-      w := fs_get!-X!-and!-obj!-mat(objective,vl);
-      X := car w;
+      w := fs_get!-x!-and!-obj!-mat(objective,vl);
+      x := car w;
       obj!-mat := cadr w;
-      A := fs_simp!-get!-A(slackeqs,vl);
-      return {A,b,obj!-mat,X,nonslacks}
+      a := fs_simp!-get!-a(slackeqs,vl);
+      return {a,b,obj!-mat,x,nonslacks}
    end;
 
-procedure fs_phase1(A,b);
-   begin scalar w,A1,ib,xb,Binv,phase1!-obj;
-      w := fs_create!-phase1!-A1!-and!-obj!-and!-ib A;
-      A1 := car w;
+procedure fs_phase1(a,b);
+   begin scalar w,a1,ib,xb,binv,phase1!-obj;
+      w := fs_create!-phase1!-a1!-and!-obj!-and!-ib a;
+      a1 := car w;
       phase1!-obj := cadr w;
       ib := caddr w;
       xb := b;
-      Binv := fast!-make!-identity fast!-row!-dim A;
-      return fs_simplex!-calculation(phase1!-obj,A1,b,ib,Binv,xb)
+      binv := fast!-make!-identity fast!-row!-dim a;
+      return fs_simplex!-calculation(phase1!-obj,a1,b,ib,binv,xb)
    end;
 
-procedure fs_phase2(obj!-mat,A,b,ib,Binv,xb);
+procedure fs_phase2(obj!-mat,a,b,ib,binv,xb);
    begin scalar big,k,stop,i,sum,abs!-sum,work;
       integer m,n;
-      m := fast!-row!-dim A;
-      n := fast!-column!-dim A;
+      m := fast!-row!-dim a;
+      n := fast!-column!-dim a;
       for ell := 1:m do
 	 if nth(ib,ell) > n then <<
       	    big := sc_simp(-1);
@@ -518,8 +518,8 @@ procedure fs_phase2(obj!-mat,A,b,ib,Binv,xb);
       	    stop := nil;
       	    i := 1;
       	    while i<=n and not stop do <<
-               sum := sc_scalarproduct(fast!-stack!-rows(Binv,ell),
-	       	  fast!-augment!-columns(A,i));
+               sum := sc_scalarproduct(fast!-stack!-rows(binv,ell),
+	       	  fast!-augment!-columns(a,i));
 	       abs!-sum := sc_abs sum;
                if sc_geq(big,abs!-sum) then
 	       	  stop := t
@@ -531,34 +531,34 @@ procedure fs_phase2(obj!-mat,A,b,ib,Binv,xb);
       	    >>;
       	    if sc_minussq big then
 	       rederr {"Error in simplex: Constraint",k," is redundant."};
-      	    work := fast!-augment!-columns(A,k);
-      	    Binv := fs_phiprm(Binv,work,ell);
+      	    work := fast!-augment!-columns(a,k);
+      	    binv := fs_phiprm(binv,work,ell);
       	    nth(ib,ell) := k
       	 >>;
-      return fs_simplex!-calculation(obj!-mat,A,b,ib,Binv,xb)
+      return fs_simplex!-calculation(obj!-mat,a,b,ib,binv,xb)
    end;
 
-procedure fs_create!-phase1!-A1!-and!-obj!-and!-ib(A);
-   begin scalar phase1!-obj,A1,ib;
-      integer column!-dim!-A1,column!-dim!-A,i;
-      column!-dim!-A := fast!-column!-dim A;
+procedure fs_create!-phase1!-a1!-and!-obj!-and!-ib(a);
+   begin scalar phase1!-obj,a1,ib;
+      integer column!-dim!-a1,column!-dim!-a,i;
+      column!-dim!-a := fast!-column!-dim a;
       % Add artificials to A.
-      A1 := sc_matrixaugment(A,fast!-make!-identity(fast!-row!-dim A));
-      column!-dim!-A1 := fast!-column!-dim A1;
-      phase1!-obj := sc_mkmatrix(1,column!-dim!-A1);
-      for i := column!-dim!-A+1:column!-dim!-A1 do
+      a1 := sc_matrixaugment(a,fast!-make!-identity(fast!-row!-dim a));
+      column!-dim!-a1 := fast!-column!-dim a1;
+      phase1!-obj := sc_mkmatrix(1,column!-dim!-a1);
+      for i := column!-dim!-a+1:column!-dim!-a1 do
        	 sc_setmat(phase1!-obj,1,i,sc_simp 1);
-      ib := for i := column!-dim!-A+1:column!-dim!-A1 collect i;
-      return {A1,phase1!-obj,ib}
+      ib := for i := column!-dim!-a+1:column!-dim!-a1 collect i;
+      return {a1,phase1!-obj,ib}
    end;
 
-procedure fs_simplex!-calculation(obj!-mat,A,b,ib,Binv,xb);
+procedure fs_simplex!-calculation(obj!-mat,a,b,ib,binv,xb);
    % Applies the revised simplex algorithm. See above for details.
    begin scalar rs1,sb,rs2,rs3,u,continue,obj!-value;
       integer k,iter,ell;
       obj!-value := fs_compute!-objective(fs_get!-cb(obj!-mat,ib),xb);
       while continue neq 'optimal do <<
-      	 rs1 := fs_rstep1(A,obj!-mat,Binv,ib);
+      	 rs1 := fs_rstep1(a,obj!-mat,binv,ib);
       	 sb := car rs1;
       	 k := cadr rs1;
       	 u := caddr rs1;
@@ -566,14 +566,14 @@ procedure fs_simplex!-calculation(obj!-mat,A,b,ib,Binv,xb);
       	 if continue neq 'optimal then <<
             rs2 := fs_rstep2(xb,sb);
             ell := cadr rs2;
-            rs3 := fs_rstep3(xb,obj!-mat,b,Binv,A,ib,k,ell);
+            rs3 := fs_rstep3(xb,obj!-mat,b,binv,a,ib,k,ell);
             iter := iter + 1;
-            Binv := car rs3;
+            binv := car rs3;
             obj!-value := cadr rs3;
             xb := caddr rs3
       	 >>
       >>;
-      return {obj!-value,xb,ib,Binv}
+      return {obj!-value,xb,ib,binv}
    end;
 
 procedure fs_eqlvarl(eql);
@@ -629,39 +629,39 @@ procedure fs_add!-slacks!-to!-equations(equation!-list);
 
 flag('(add!-slacks!-to!-list),'opfn);
 
-procedure fs_simp!-get!-A(slack!-equations,variable!-list);
+procedure fs_simp!-get!-a(slack!-equations,variable!-list);
    % Extracts the A matrix from the slack equations.
-   begin scalar A,slack!-elt,var!-elt;
+   begin scalar a,slack!-elt,var!-elt;
       integer length!-slack!-equations,length!-variable!-list;
       length!-slack!-equations := length slack!-equations;
       length!-variable!-list := length variable!-list;
-      A := sc_mkmatrix(length!-slack!-equations,length!-variable!-list);
+      a := sc_mkmatrix(length!-slack!-equations,length!-variable!-list);
       for row := 1:length!-slack!-equations do <<
        	 for col := 1:length!-variable!-list do <<
             slack!-elt := nth(slack!-equations,row);
             var!-elt := nth(variable!-list,col);
-            sc_setmat(A,row,col,   % TODO
+            sc_setmat(a,row,col,   % TODO
 	       sc_simp algebraic coeffn(lisp sc_prepsq slack!-elt,var!-elt,1))
 	 >>
       >>;
-      return A
+      return a
    end;
 
-procedure fs_get!-X!-and!-obj!-mat(objective,variable!-list);
+procedure fs_get!-x!-and!-obj!-mat(objective,variable!-list);
    % Converts the variable list into a matrix and creates the objective
    % matrix. This is the matrix s.t. obj!-mat * X = objective function.
-   begin scalar X,obj!-mat;
+   begin scalar x,obj!-mat;
       integer length!-variable!-list,tmp;
       length!-variable!-list := length variable!-list;
-      X := sc_mkmatrix(length!-variable!-list,1);
+      x := sc_mkmatrix(length!-variable!-list,1);
       obj!-mat :=sc_mkmatrix(1,length!-variable!-list);
       for i := 1:length!-variable!-list do <<
-       	 sc_setmat(X,i,1,nth(variable!-list,i));
+       	 sc_setmat(x,i,1,nth(variable!-list,i));
        	 tmp := nth(variable!-list,i);
        	 sc_setmat(obj!-mat,1,i,sc_simp algebraic     % TODO
 	    coeffn(lisp sc_prepsq objective,tmp,1))
       >>;
-      return {X,obj!-mat}
+      return {x,obj!-mat}
    end;
 
 procedure fs_get!-cb(obj!-mat,ib);
@@ -673,16 +673,16 @@ procedure fs_compute!-objective(cb,xb);
    % Objective value := cb * xb (both are matrices)
    sc_scalarproduct(cb,xb);
 
-procedure fs_rstep1(A,obj!-mat,Binv,ib);
+procedure fs_rstep1(a,obj!-mat,binv,ib);
   % Implements step 1 of the revised simplex algorithm.
   % ie: Computation of search direction sb.
   begin scalar u,sb,sum,i!-in!-ib;
      integer i,j,m,n,k,vkmin;
-     m := fast!-row!-dim A;
-     n := fast!-column!-dim A;
+     m := fast!-row!-dim a;
+     n := fast!-column!-dim a;
      u := sc_mkmatrix(m,1);
      sb := sc_mkmatrix(m,1);
-     u := sc_matrixproduct(sc_negtranspose(Binv),
+     u := sc_matrixproduct(sc_negtranspose(binv),
 	sc_transpose(fs_get!-cb(obj!-mat,ib)));
      k := 0;
      vkmin := sc_simp '(expt 10 10);
@@ -695,7 +695,7 @@ procedure fs_rstep1(A,obj!-mat,Binv,ib);
 	      i!-in!-ib := t;
        	if not i!-in!-ib then <<
            sum := sc_addsq(sc_getmat(obj!-mat,1,i),
-	      sc_columnscalarproduct(fast!-augment!-columns(A,i),u));
+	      sc_columnscalarproduct(fast!-augment!-columns(a,i),u));
            if not sc_geq(sum,vkmin) then <<
               vkmin := sum;
               k := i
@@ -708,7 +708,7 @@ procedure fs_rstep1(A,obj!-mat,Binv,ib);
            sum := sc_simp 0;
            for j := 1:m do
 	      sum := sc_addsq(sum,
-		 sc_multsq(sc_getmat(Binv,i,j),sc_getmat(A,j,k)));
+		 sc_multsq(sc_getmat(binv,i,j),sc_getmat(a,j,k)));
            sc_setmat(sb,i,1,sum)
 	>>;
       	return {sb,k,u,nil}
@@ -736,36 +736,36 @@ procedure fs_rstep2(xb,sb);
      return {sigb,ell}
   end;
 
-procedure fs_rstep3(xb,obj!-mat,b,Binv,A,ib,k,ell);
+procedure fs_rstep3(xb,obj!-mat,b,binv,a,ib,k,ell);
   % step3: Update.
-  begin scalar work,Binv;
-     work := fast!-augment!-columns(A,k);
-     Binv := fs_phiprm(Binv,work,ell);
-     xb := sc_matrixproduct(Binv,b);
+  begin scalar work,binv;
+     work := fast!-augment!-columns(a,k);
+     binv := fs_phiprm(binv,work,ell);
+     xb := sc_matrixproduct(binv,b);
      nth(ib,ell) := k;
      obj!-mat := fs_compute!-objective(fs_get!-cb(obj!-mat,ib),xb);
-     return {Binv,obj!-mat,xb}
+     return {binv,obj!-mat,xb}
   end;
 
-procedure fs_phiprm(Binv,D,ell);
+procedure fs_phiprm(binv,d,ell);
    % Replaces B^(-1) with [phi((B^(-1)',A(k),l)]'.
    begin scalar sum,temp;
       integer m;
-      m := fast!-column!-dim Binv;
-      sum := sc_scalarproduct(fast!-stack!-rows(Binv,ell),D);
+      m := fast!-column!-dim binv;
+      sum := sc_scalarproduct(fast!-stack!-rows(binv,ell),d);
       if not sc_null sum then
        	 sum := sc_quotsq(sc_simp 1,sum);
-      Binv := fast!-mult!-rows(Binv,ell,sum);
+      binv := fast!-mult!-rows(binv,ell,sum);
       for j := 1:m do <<
        	 if j neq ell then <<
-            temp := sc_scalarproduct(fast!-stack!-rows(Binv,j),D);
-            Binv := fast!-add!-rows(Binv,ell,j,sc_negsq temp)
+            temp := sc_scalarproduct(fast!-stack!-rows(binv,j),d);
+            binv := fast!-add!-rows(binv,ell,j,sc_negsq temp)
 	 >>
       >>;
-      return Binv
+      return binv
    end;
 
-procedure fs_make!-answer!-list(xb,ib,no!-coeffs,X,no!-variables);
+procedure fs_make!-answer!-list(xb,ib,no!-coeffs,x,no!-variables);
    % Creates a list of the values of the variables at the optimal
    % solution.
    begin scalar x!-mat,ansl,xb!-elem;
@@ -779,7 +779,7 @@ procedure fs_make!-answer!-list(xb,ib,no!-coeffs,X,no!-variables);
 	 i := i+1
       >>;
       ansl := for i:=1:no!-variables collect
-	 {'equal,sc_getmat(X,i,1),sc_prepsq(sc_getmat(x!-mat,1,i))};
+	 {'equal,sc_getmat(x,i,1),sc_prepsq(sc_getmat(x!-mat,1,i))};
       return ansl
    end;
 
@@ -1029,19 +1029,19 @@ procedure sc_negmatrix(matr);
       return v
    end;
 
-procedure sc_matrixproduct(A,B);
+procedure sc_matrixproduct(a,b);
    % Computes product of two Matrices
-   begin scalar mat1,coldimB,rowdimA,newrow1,newrow2,transposeB;
-      rowdimA := fast!-row!-dim A;
-      coldimB := fast!-column!-dim B;
-      mat1 := sc_mkmatrix(rowdimA,coldimB);
-      transposeB := sc_transpose(B);
-      for i := 1:rowdimA do
-	 for j := 1:coldimB do <<
+   begin scalar mat1,coldimb,rowdima,newrow1,newrow2,transposeb;
+      rowdima := fast!-row!-dim a;
+      coldimb := fast!-column!-dim b;
+      mat1 := sc_mkmatrix(rowdima,coldimb);
+      transposeb := sc_transpose(b);
+      for i := 1:rowdima do
+	 for j := 1:coldimb do <<
 	    newrow1 := mkvect 0;
-	    sc_iputv(newrow1,0,sc_igetv(A,i-1));
+	    sc_iputv(newrow1,0,sc_igetv(a,i-1));
 	    newrow2 := mkvect 0;
-	    sc_iputv(newrow2,0,sc_igetv(transposeB,j-1));
+	    sc_iputv(newrow2,0,sc_igetv(transposeb,j-1));
 	    sc_setmat(mat1,i,j,sc_rowscalarproduct(newrow1,newrow2))
 	 >>;
       return mat1

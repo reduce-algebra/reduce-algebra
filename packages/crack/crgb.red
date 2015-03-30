@@ -1,5 +1,5 @@
 %**********************************************************************
-module poly_GB$
+module poly_gb$
 %**********************************************************************
 %  Interface subroutines to the F4 package of J P Faugere
 %  Authors: Winfried Neun, May 2003, Thomas Wolf since 2003
@@ -28,7 +28,7 @@ module poly_GB$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
-symbolic procedure find_Singular$
+symbolic procedure find_singular$
    % Check the installation of Singular
    % Singular is not distributed together with Crack and thus the
    % installation directory is not known to Crack unlike the package
@@ -111,7 +111,7 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
 
   for each p in h1 do <<
    if get(p,'non_rat_kern) then use:=nil else 
-   if (null vl_) or (groeb_solve = 'DiffElim) then use:=t else <<
+   if (null vl_) or (groeb_solve = 'diffelim) then use:=t else <<
     h2:=get(p,'kern);
     while h2 and not pairp car h2 do h2:=cdr h2;
     if null h2 then use:=t else use:=nil
@@ -131,7 +131,7 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
   >>$
 
   sol:=
-  if groeb_solve = 'DiffElim then <<
+  if groeb_solve = 'diffelim then <<
    % The environment variable DiffElimCall has to be set.
    rational_bak:=!*rational; 
    if !*rational then <<resimpli:=t;algebraic (off rational)>>;
@@ -145,7 +145,7 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
     while h2                              and 
           ((atom car h2)             or 
            ((pairp car h2    ) and 
-            (car car h2 = 'DF) and 
+            (car car h2 = 'df) and 
             (atom cadr car h2)     )    )     do h2:=cdr h2;
     if null h2 then rat_ineq:=cons(h1,rat_ineq)
    >>$
@@ -201,31 +201,31 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
    % here added to ineq_ and not below because the packages Singular,
    % GB (?) and groebner (REDUCE) to not generate new inequalities.
 
-   for each h2 in caddr h1 do addSQineq(pdes,h2,t)$ % adding potentially new inequalities
-   h1:={'LIST,cons('LIST,nconc(car h1,nconc(cadr h1,
+   for each h2 in caddr h1 do addsqineq(pdes,h2,t)$ % adding potentially new inequalities
+   h1:={'list,cons('list,nconc(car h1,nconc(cadr h1,
                          nconc(cadddr h1,car cddddr h1))))}$
    h1
   >> else
 
-  if ((groeb_solve = 'SL_LEX) or
-      (groeb_solve = 'SL_GRAD) or
-      (groeb_solve = 'SL_REVGRAD)) then <<
+  if ((groeb_solve = 'sl_lex) or
+      (groeb_solve = 'sl_grad) or
+      (groeb_solve = 'sl_revgrad)) then <<
 
-   find_Singular()$
+   find_singular()$
    if (null singular_call) or (null singular_lib) then nil else 
-   if groeb_solve = 'SL_LEX     then call_sing(ftem_,psys,'lex) else 
-   if groeb_solve = 'SL_GRAD    then call_sing(ftem_,psys,'gradlex) else 
-   if groeb_solve = 'SL_REVGRAD then call_sing(ftem_,psys,'revgradlex) 
+   if groeb_solve = 'sl_lex     then call_sing(ftem_,psys,'lex) else 
+   if groeb_solve = 'sl_grad    then call_sing(ftem_,psys,'gradlex) else 
+   if groeb_solve = 'sl_revgrad then call_sing(ftem_,psys,'revgradlex) 
   >>                               else
-  if groeb_solve = 'GB_LEX then
-  algebraic {call_gb(lisp(cons('LIST,ftem_)),
-                     lisp(cons('LIST,for each p in psys collect(
+  if groeb_solve = 'gb_lex then
+  algebraic {call_gb(lisp(cons('list,ftem_)),
+                     lisp(cons('list,for each p in psys collect(
                                      reval {'!*sq,get(p,'sqval),t}))),
                      lisp 'lex)}
   else
-  if groeb_solve = 'GB_REVGRAD then
-  algebraic {call_gb(lisp(cons('LIST,ftem_)),
-                     lisp(cons('LIST,for each p in psys collect(
+  if groeb_solve = 'gb_revgrad then
+  algebraic {call_gb(lisp(cons('list,ftem_)),
+                     lisp(cons('list,for each p in psys collect(
                                      reval {'!*sq,get(p,'sqval),t}))),
                      lisp 'revgradlex)}
   else <<
@@ -236,17 +236,17 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
 
   if print_ then <<
    terpri()$
-   if groeb_solve = 'DiffElim                        then 
+   if groeb_solve = 'diffelim                        then 
    write"A differential Groebner basis computation " else 
    write"An algebraic Groebner basis computation "
   >>$
   return
-  if null sol or (sol={'LIST,nil}) then <<
+  if null sol or (sol={'list,nil}) then <<
     if print_ then <<write"was not successful."$terpri()>>$
     nil
   >>                               else
-  if (sol={'LIST,{'LIST,1}}) or 
-     (sol={'LIST,{'LIST,(1 . 1)}}) then <<
+  if (sol={'list,{'list,1}}) or 
+     (sol={'list,{'list,(1 . 1)}}) then <<
     if print_ then write"yields a contradiction."$
     contradiction_:=t$
     nil
@@ -269,11 +269,11 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
         terpri()$
         write"The new equations are:"$
       >>$
-      if groeb_solve = 'DiffElim then % call_diffelim
-      pdes:=mkeqSQlist(sol,nil,nil,ftem_,vl_,allflags_,t,
+      if groeb_solve = 'diffelim then % call_diffelim
+      pdes:=mkeqsqlist(sol,nil,nil,ftem_,vl_,allflags_,t,
                        list(0),nil)
                  else % algebraic system
-      pdes:=mkeqSQlist(nil,nil,sol,ftem_,vl_,allflags_,t,
+      pdes:=mkeqsqlist(nil,nil,sol,ftem_,vl_,allflags_,t,
                        list(0),nil)$
 
       % take those functions out of flin_ which are 
@@ -283,8 +283,8 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
        if null get(p,'linear_) then
        for each h1 in get(p,'fcts) do 
        if member(h1,flin_) and
-	  (null lin_check_SQ(((first_term_SF numr get(p,'sqval)) . 1),{h1}) or
-	   null lin_check_SQ(get(p,'sqval),{h1})) then
+	  (null lin_check_sq(((first_term_sf numr get(p,'sqval)) . 1),{h1}) or
+	   null lin_check_sq(get(p,'sqval),{h1})) then
        flin_:=delete(h1,flin_)
       >>$
 
@@ -302,7 +302,7 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
       backup_to_file(pdes,forg,nil)$  % with all pdes deleted
       while sol do <<
         n:=n+1$
-        start_level(n,for each l1 in cdar sol collect {'EQUAL,0,reval l1})$ 
+        start_level(n,for each l1 in cdar sol collect {'equal,0,reval l1})$ 
                       % "A case of a Groebner computation"
 %#        level_:=cons(n,level_)$
         if print_ then <<
@@ -313,11 +313,11 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
         % further necessary step to call crackmain():
         recycle_fcts:=nil$  % such that functions generated in the sub-call 
                             % will not clash with existing functions
-        if groeb_solve = 'DiffElim then % call_diffelim
-        pdes:=mkeqSQlist(nil,nil,cdar sol,ftem_,vl_,allflags_,t,
+        if groeb_solve = 'diffelim then % call_diffelim
+        pdes:=mkeqsqlist(nil,nil,cdar sol,ftem_,vl_,allflags_,t,
                          list(0),nil)
                                    else % algebraic problem
-        pdes:=mkeqSQlist(nil,nil,cdar sol,ftem_,vl_,allflags_,t,
+        pdes:=mkeqsqlist(nil,nil,cdar sol,ftem_,vl_,allflags_,t,
                          list(0),nil)$
 
         % take those functions out of flin_ which are 
@@ -327,8 +327,8 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
          if null get(p,'linear_) then
          for each h1 in get(p,'fcts) do 
          if member(h1,flin_) and
-	    (null lin_check_SQ(((first_term_SF numr get(p,'sqval)) . 1),{h1}) or
-	     null lin_check_SQ(get(p,'sqval),{h1})) then
+	    (null lin_check_sq(((first_term_sf numr get(p,'sqval)) . 1),{h1}) or
+	     null lin_check_sq(get(p,'sqval),{h1})) then
          flin_:=delete(h1,flin_)
         >>$
 
@@ -350,7 +350,7 @@ end$
 endmodule$
 
 %**********************************************************************
-module Faugere$
+module faugere$
 %**********************************************************************
 %  Interface subroutines to the F4 package of J P Faugere
 %  Author: Winfried Neun, May 2003 
@@ -451,7 +451,7 @@ end$
 endmodule$
 
 %**********************************************************************
-module Singular$
+module singular$
 %**********************************************************************
 %  Interface subroutines to the package Singular
 %  Author: Winfried Neun, October 2003 
@@ -462,8 +462,8 @@ put('call_singular,'psopfn,'call_sing)$
 symbolic procedure call_sing(vars,polys,oder)$
 begin scalar ll,xx,chnout,filein,fileout,ofl!*bak,cpu,gc,p$
 
- vars:='LIST . vars$
- polys:=cons('LIST,for each p in polys collect(reval {'!*sq,get(p,'sqval),t}));
+ vars:='list . vars$
+ polys:=cons('list,for each p in polys collect(reval {'!*sq,get(p,'sqval),t}));
 
  filein := !*singular_filein  or if filep ("/tmp")                 then 
        bldmsg("%w%w",  "/tmp/singular_a1_",level_string(session_)) else 
@@ -531,7 +531,7 @@ begin scalar ll,xx,chnout,filein,fileout,ofl!*bak,cpu,gc,p$
   write"The Singular computation finished."$terpri()$
   write"Time: ",time()-cpu," ms,  GC: ",gctime()-gc," ms"$ terpri()
  >>$ 
- return if xx = 0 then {'LIST,algebraic(read_singular_output (fileout))} else nil
+ return if xx = 0 then {'list,algebraic(read_singular_output (fileout))} else nil
 
 end$
 

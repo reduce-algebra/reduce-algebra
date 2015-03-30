@@ -486,7 +486,7 @@ symbolic procedure expt(x,y);
       return r
    end;
 
-Comment
+COMMENT
    Consider the calculation z = 1.01 ** 16384.  I have chosen the
    exponent to be a power of 2 for simplicity of explanation, but other
    values will suffer the same way.  The value of z will be computed as

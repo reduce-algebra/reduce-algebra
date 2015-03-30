@@ -56,7 +56,7 @@ flag('(psi!*ld!*0 psi!*ld!*1),'share);
 %   won't be used.  This approximation is to 506 dec. places.
 %
 
-comment 
+COMMENT 
 
 The original code ran in algebraic mode and consequently defined rules and variable
 assignments (e.g., to euler!*constant in algebraic mode. This conflicted with
@@ -863,22 +863,22 @@ symbolic procedure zeta!*general!*calc!*sub(z,zp,admissable,pre,stt);
 algebraic array stieltjes!: (5);  % for use in raw zeta computations
 algebraic array stf!:       (5);
 
-Stieltjes!: (0) := +0.577215664901532860606512$ % Euler's constant
-Stieltjes!: (1) := -0.072815845483676724860586$
-Stieltjes!: (2) := -0.009690363192872318484530$
-Stieltjes!: (3) := +0.002053834420303345866160$
-Stieltjes!: (4) := +0.002325370065467300057468$
-Stieltjes!: (5) := +0.000793323817301062701753$
-Stf!: (0) := 1$
-Stf!: (1) := 1$
-Stf!: (2) := 2$
-Stf!: (3) := 6$
-Stf!: (4) := 24$
-Stf!: (5) := 120$
+stieltjes!: (0) := +0.577215664901532860606512$ % Euler's constant
+stieltjes!: (1) := -0.072815845483676724860586$
+stieltjes!: (2) := -0.009690363192872318484530$
+stieltjes!: (3) := +0.002053834420303345866160$
+stieltjes!: (4) := +0.002325370065467300057468$
+stieltjes!: (5) := +0.000793323817301062701753$
+stf!: (0) := 1$
+stf!: (1) := 1$
+stf!: (2) := 2$
+stf!: (3) := 6$
+stf!: (4) := 24$
+stf!: (5) := 120$
 
 algebraic procedure raw!*zeta(z);
    << z := z-1;
-      1/z + (for m := 0:5 sum ((-1)**m * Stieltjes!:(m) * z**m / Stf!:(m)))
+      1/z + (for m := 0:5 sum ((-1)**m * stieltjes!:(m) * z**m / stf!:(m)))
    >>;
 
 endmodule;

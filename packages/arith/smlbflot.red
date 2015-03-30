@@ -268,7 +268,7 @@ symbolic procedure bfexplode0x (m, ex);
 
 symbolic procedure bfprin!:lst (lst, ex, dotpos);
   begin scalar result,ee,w; integer j;
-    ee:='E;
+    ee:='e;
     if !*fort and liter(w:=reval fort_exponent) then ee:=w else w:=nil;
     if car lst eq '!- and dotpos = 1 then <<dotpos := 2; ex := ex - 1>>;
     if ex neq 0 then if car lst eq '!- then <<ex := ex + dotpos - 2;

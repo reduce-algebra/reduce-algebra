@@ -28,7 +28,7 @@ module mstruct;  % A tiny structure package for Standard Lisp.
 %
 
 
-comment
+COMMENT
 
  DESCRIPTION
 
@@ -91,7 +91,7 @@ flag('(defstruct), 'eval);
 
 fluid '(!*faststructs);
 
-switch FASTSTRUCTS;
+switch faststructs;
 
 macro procedure defstruct u;
 begin integer indx;
@@ -105,7 +105,7 @@ begin integer indx;
   if predicate then predicate := cdr predicate;
   constructor := atsoc('constructor,cdr options);
   if constructor then constructor := cdr constructor;
-  functions := NIL;
+  functions := nil;
   if constructor then
    functions := build_defstruct_constructor_macro(name,
                                                   constructor,
@@ -215,19 +215,19 @@ macro procedure rsetf u; expandrsetf(cadr u, caddr u);
 
 expr procedure expandrsetf(lhs, rhs);
  if atom lhs then {'setq, lhs, rhs}
-    else if eqcar(lhs, '!&VARIABLE_FETCH) then
-        '!&VARIABLE_STORE . append(cdr lhs, {rhs})
-    else if get(car lhs, 'ASSIGN_OP) then
-         get(car lhs, 'ASSIGN_OP) . append(cdr lhs, {rhs})
+    else if eqcar(lhs, '!&variable_fetch) then
+        '!&variable_store . append(cdr lhs, {rhs})
+    else if get(car lhs, 'assign_op) then
+         get(car lhs, 'assign_op) . append(cdr lhs, {rhs})
     else if getd car lhs and eqcar(getd car lhs, 'macro) then
         expandrsetf(apply(cdr getd car lhs, {lhs}), rhs)
     else error(0, {lhs, "bad RSETF form"});
 
 deflist('((getv putv) (igetv putv) (car rplaca) (cdr rplacd)),
-        'ASSIGN_OP);
+        'assign_op);
 
 % This is CSL specific but shouldn't hurt anybody.
-put('qgetv, 'ASSIGN_OP, 'qputv);
+put('qgetv, 'assign_op, 'qputv);
 
 endmodule;
 

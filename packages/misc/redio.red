@@ -61,7 +61,7 @@ symbolic procedure setpgln(p,l);
 % and TERPRI() to terminate a buffer..all else
 % done in package..spaces,tabs,etc. ;
 
-Comment Character lists are (length . chars), for FITS;
+COMMENT Character lists are (length . chars), for FITS;
 
 
 symbolic  procedure getes u;

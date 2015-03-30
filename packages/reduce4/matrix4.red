@@ -351,9 +351,9 @@ symbolic procedure letmtr(u,v,y);
    begin scalar z;
     z := cdr u;
     if not y then rederr list("Matrix",car u,"not set");
-    rplaca(pnth(nth(RVALUE y,car z),cadr z),v);
+    rplaca(pnth(nth(rvalue y,car z),cadr z),v);
     return v
-   END;
+   end;
 
 symbolic procedure setmat(u,v);
    'setmat . u . list put(u,'matvalue,mateval v);

@@ -44,7 +44,7 @@ fluid '(compute!-bernoulli);
 %   A numerical value is always computed if rounded mode is on.
 %
 
-Comment The following rules moved to core (alg/spcfnint.red);
+COMMENT The following rules moved to core (alg/spcfnint.red);
 
 %%algebraic operator gamma,m_gamma; % m_gamma is the incomplete gamma
 %% % function which happens to be produced by definite integration.
@@ -298,7 +298,7 @@ algebraic procedure gamma!*calc!*s!*sub(z,scale,op);
    begin scalar za, z1, result; integer z0;
       za := z; z0 := floor (z+1); z1 := z + scale;
       result := algebraic symbolic log!*gamma(z1,z0);
-      result := (exp result / pochhammer(z,scale));
+      result := (exp result / Pochhammer(z,scale));
       return result;
    end;
 
@@ -519,10 +519,10 @@ algebraic procedure poch!*conj!*calc(z,n);
 % lets prod (in sum package) know about gamma.
 
 algebraic
-  let { prod(~n,~n,~anf,~ende) => Gamma(ende + 1)/Gamma(anf)
+  let { prod(~n,~n,~anf,~ende) => gamma(ende + 1)/gamma(anf)
                 when not( fixp anf and anf < 0) ,
 
-        prod(~n,~n,~anf) => Gamma(n+1)/Gamma(anf)
+        prod(~n,~n,~anf) => gamma(n+1)/gamma(anf)
                 when not( fixp anf and anf < 0),
 
         prod(~k +~n,k,~nanf,~nend) =>
@@ -541,12 +541,12 @@ algebraic
 %       prod(~n,~n) =>  gamma(n+1)},
 
         (~~u*gamma(~x+~~n0))//(~~v*gamma(x +~~n1)) =>
-        (u*gamma(~x+n0))/(v*(x+n1-1)*Gamma(x+n1-1))
+        (u*gamma(~x+n0))/(v*(x+n1-1)*gamma(x+n1-1))
                  when not (numberp x and x eq 0)
                  and (fixp n0 and fixp n1 and n0<n1 and (n1 -n0)< 6),
 
         (~~u*gamma(~x+~~n0))//(~~v*gamma(x +~~n1)) =>
-        (u*gamma(~x+n0-1)*(x+n0-1))/(v*Gamma(x+n1))
+        (u*gamma(~x+n0-1)*(x+n0-1))/(v*gamma(x+n1))
                 when not (numberp x and x eq 0)
                  and (fixp n0 and fixp n1 and n0>n1  and (n0-n1)< 6)
 };

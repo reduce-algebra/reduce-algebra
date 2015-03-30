@@ -2717,7 +2717,7 @@ symbolic procedure f4(exp);
 begin;
 if (exp='pi) then
      princ "<pi/>"
-else if (exp='euler_gamma) then
+else if (exp='Euler_gamma) then
      princ "<eulergamma/>"
 else if (exp='true) then
      princ "<true/>"

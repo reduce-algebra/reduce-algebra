@@ -98,7 +98,7 @@ procedure profile_profile(fn);
       if not d or car d neq 'expr then
 	 rederr {fn,"is not an expr procedure"};
       profile_list!* := fn . profile_list!*;
-      profile_updAlist();
+      profile_updalist();
       d := cdr d;
       args := for i:=1:get(fn,'number!-of!-args) collect mkid('a,i);
       put(fn,'profile_origfn,d);
@@ -110,7 +110,7 @@ procedure profile_profile(fn);
       profile_reset()
    end;
 
-procedure profile_updAlist();
+procedure profile_updalist();
       for each fn in profile_list!* do
       	 if not assoc({fn},profile_alist!*) then
       	    profile_alist!* := ({fn} . {0,0,0}) . profile_alist!*;
@@ -139,7 +139,7 @@ procedure profile_reset();
       profile_recursion1l!* := nil;
       profile_recursion2l!* := nil;
       profile_alist!* := nil;
-      profile_updAlist();
+      profile_updalist();
       profile_refresh()
    >>;
 
@@ -244,18 +244,18 @@ procedure profile_toplevel!-table(alist,ts2,ts3);
       tlalist := sort(tlalist,function(lambda(x,y); caddr x > caddr y));
       % Add headline and footlines to the list and print.
       tlalist := lto_nconcn {
-	 {nil}, {profile_qtHeadline("Toplevel Calls")},
+	 {nil}, {profile_qtheadline("Toplevel Calls")},
  	 {nil}, tlalist,
 	 if cdr tlalist then {nil},
-	 if cdr tlalist then {profile_qtSum tlalist},
-	 {nil}, {profile_qtTotal(ts2,ts3)}, {nil}};
+	 if cdr tlalist then {profile_qtsum tlalist},
+	 {nil}, {profile_qttotal(ts2,ts3)}, {nil}};
       profile_print1(tlalist,10)
    end;
 
-procedure profile_qtHeadline(title);
+procedure profile_qtheadline(title);
    title . '("calls" "time(ms)" "time(%)"  "gc(ms)" "gc(%)");
 
-procedure profile_qtSum(al);
+procedure profile_qtsum(al);
    begin integer d,s1,s2,s3,s4,s5;
       % Sum everything up.
       for each pr in al do <<
@@ -269,7 +269,7 @@ procedure profile_qtSum(al);
       return {"sum",s1,s2,s3,s4,s5}
    end;
 
-procedure profile_qtTotal(ts2,ts3);
+procedure profile_qttotal(ts2,ts3);
    {"total"," ",ts2,100.0,ts3,100.0};
 
 procedure profile_truncate(x,d);
@@ -291,11 +291,11 @@ procedure profile_special!-table(alist,fn,ts2,ts3);
       spalist := sort(spalist,
 	 function(lambda(x,y); length car x < length car y));
       spalist := lto_nconcn {
-	 {nil}, {profile_qtHeadline(fn)},
+	 {nil}, {profile_qtheadline(fn)},
 	 {nil}, spalist,
 	 if cdr spalist then {nil},
-	 if cdr spalist then {profile_qtSum(spalist)},
-	 {nil}, {profile_qtTotal(ts2,ts3)}, {nil}};
+	 if cdr spalist then {profile_qtsum(spalist)},
+	 {nil}, {profile_qttotal(ts2,ts3)}, {nil}};
       profile_print1(spalist,10);
       terpri()
    end;

@@ -44,7 +44,7 @@ global '(spare!*);
 
 switch ifactor,overview,trallfac,trfac;
 
-comment This factorizer should be used with a system dependent file
+COMMENT This factorizer should be used with a system dependent file
 containing a setting of the variable LARGEST!-SMALL!-MODULUS. If at all
 possible the integer arithmetic operations used here should be mapped
 onto corresponding ones available in the underlying Lisp implementation,

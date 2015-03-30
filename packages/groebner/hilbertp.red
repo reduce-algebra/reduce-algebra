@@ -116,7 +116,7 @@ begin scalar arry,inds;
  if length inds = 1 then
   return  {'getv,{'cdr,arry},car inds}
   else return {'getv,{'cdr,arry},
-                    'functionIndex2.{'car,arry}.inds} end;
+                    'functionindex2.{'car,arry}.inds} end;
 
 symbolic procedure makerarray dims;
 begin scalar u,n;

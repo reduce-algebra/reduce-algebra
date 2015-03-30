@@ -7,7 +7,7 @@
 
 % Hook into the general ODE solver:
 
-algebraic procedure ODESolve_Hook_Demo (ode, y, x);
+algebraic procedure odesolve_hook_demo (ode, y, x);
    %% For any ODE, if the dependent variable is z then this hook
    %% procedure returns a solution corresponding to ODESolve failing
    %% to find any solution; otherwise it returns nil (nothing) and so
@@ -15,11 +15,11 @@ algebraic procedure ODESolve_Hook_Demo (ode, y, x);
    if y=z then {ode=0};
 
 % Set the hook:
-symbolic(ODESolve_Before_Hook := '(ODESolve_Hook_Demo));
+symbolic(odesolve_before_hook := '(odesolve_hook_demo));
 
 % Hook into the nonlinear ODE solver:
 
-algebraic procedure ODESolve_Non_Hook_Demo (ode, y, x, n);
+algebraic procedure odesolve_non_hook_demo (ode, y, x, n);
    %% If the ODE is nontrivially nonlinear and the order is 3 then
    %% this hook procedure returns a solution corresponding to ODESolve
    %% failing to find any solution; otherwise it returns nil (nothing)
@@ -27,11 +27,11 @@ algebraic procedure ODESolve_Non_Hook_Demo (ode, y, x, n);
    if n=3 then {ode=0};
 
 % Set the hook:
-symbolic(ODESolve_Before_Non_Hook := '(ODESolve_Non_Hook_Demo));
+symbolic(odesolve_before_non_hook := '(odesolve_non_hook_demo));
 
 % Hook into the general linear ODE solver:
 
-algebraic procedure ODESolve_Lin_Hook_Demo
+algebraic procedure odesolve_lin_hook_demo
    (odecoeffs, driver, y, x, n, m);
    %% If the ODE is linear and the order is 3 then this hook procedure
    %% returns a solution corresponding to ODESolve failing to find any
@@ -41,7 +41,7 @@ algebraic procedure ODESolve_Lin_Hook_Demo
       {(for i := m : n sum part(odecoeffs,i+1)*df(y,x,i)) = driver};
 
 % Set the hook:
-symbolic(ODESolve_Before_Lin_Hook := '(ODESolve_Lin_Hook_Demo));
+symbolic(odesolve_before_lin_hook := '(odesolve_lin_hook_demo));
 
 % Test all the hooks:
 
@@ -58,8 +58,8 @@ odesolve(df(y,x,2)+1);                  % hook ignored
 odesolve(df(y,x,3)+1);                  % hook operates
 
 % Clear the hooks:
-symbolic(ODESolve_Before_Hook := nil);
-symbolic(ODESolve_Before_Non_Hook := nil);
-symbolic(ODESolve_Before_Lin_Hook := nil);
+symbolic(odesolve_before_hook := nil);
+symbolic(odesolve_before_non_hook := nil);
+symbolic(odesolve_before_lin_hook := nil);
 
 end;

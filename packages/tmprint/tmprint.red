@@ -788,13 +788,13 @@ for each x in '(
     !\lambda      !\mu           !\nu           !\xi
     !\pi          !\rho          !\sigma        !\tau
     !\upsilon     !\phi          !\chi          !\psi
-    !\omega       !\mathit!{A!}  !\mathit!{B!}  !\Chi!     % Trailing space
-    !\Delta!      !\mathit!{E!}  !\Phi!         !\Gamma!   %
-    !\mathit!{H!} !\mathit!{I!}  !\vartheta     !\Kappa!   %
-    !\Lambda!     !\mathit!{M!}  !\mathit!{N!}  !\mathit!{O!}
-    !\Pi!         !\Theta!       !\mathit!{R!}  !\Sigma!   %
-    !\Tau!        !\Upsilon!     !\Omega!       !\Xi!      %
-    !\Psi!        !\mathit!{Z!}  !\varphi!      !\pound\    )
+    !\omega       !\mathit!{a!}  !\mathit!{b!}  !\chi!     % Trailing space
+    !\delta!      !\mathit!{e!}  !\phi!         !\gamma!   %
+    !\mathit!{h!} !\mathit!{i!}  !\vartheta     !\kappa!   %
+    !\lambda!     !\mathit!{m!}  !\mathit!{n!}  !\mathit!{o!}
+    !\pi!         !\theta!       !\mathit!{r!}  !\sigma!   %
+    !\tau!        !\upsilon!     !\omega!       !\xi!      %
+    !\psi!        !\mathit!{z!}  !\varphi!      !\pound\    )
   do put(x, 'texcharwidth, 1);
 
 put('!\not, 'texcharwidth, 0);
@@ -804,7 +804,7 @@ for each x in '(
     !\sec       !\csc       !\arcsin     !\arccos
     !\arctan    !\sinh      !\cosh       !\tanh
     !\coth      !\exp       !\log        !\ln
-    !\max       !\min       !\Re         !\Im) do
+    !\max       !\min       !\re         !\im) do
   put(x, 'texcharwidth, sub1 length explode2 x);
 
 symbolic procedure fancy!-prin2!*(u,n);
@@ -1462,15 +1462,15 @@ deflist('(
 
 % Now for some Unicode versions!
 deflist('(
-     (!#Alpha; "\mathit{A}") (!#Beta; "\mathit{B}") (!#Chi; "\Chi ")
-     (!#Delta; "\Delta ") (!#Epsilon; "\mathit{E}") (!#Phi; "\Phi ")
-     (!#Gamma; "\Gamma ") (!#Eta; "\mathit{H}") (!#Iota; "\mathit{I}")
-     (!vartheta "\vartheta") (!#Kappa; "\Kappa ") (!#Lambda; "\Lambda ")
-     (!#Mu; "\mathit{M}") (!#Nu; "\mathit{N}") (!O "\mathit{O}")
-     (!#Pi; "\Pi ") (!#Theta; "\Theta ") (!#Rho; "\mathit{R}")
-     (!#Sigma; "\Sigma ") (!#Tau; "\Tau ") (!#Upsilon; "\Upsilon ")
-     (!#Omega; "\Omega ") (!#Xi; "\Xi ") (!#Psi; "\Psi ")
-     (!#Zeta; "\mathit{Z}") (!varphi "\varphi ") (!#pound; "\pound ")
+     (!#alpha; "\mathit{A}") (!#beta; "\mathit{B}") (!#chi; "\Chi ")
+     (!#delta; "\Delta ") (!#epsilon; "\mathit{E}") (!#phi; "\Phi ")
+     (!#gamma; "\Gamma ") (!#eta; "\mathit{H}") (!#iota; "\mathit{I}")
+     (!vartheta "\vartheta") (!#kappa; "\Kappa ") (!#lambda; "\Lambda ")
+     (!#mu; "\mathit{M}") (!#nu; "\mathit{N}") (!O "\mathit{O}")
+     (!#pi; "\Pi ") (!#theta; "\Theta ") (!#rho; "\mathit{R}")
+     (!#sigma; "\Sigma ") (!#tau; "\Tau ") (!#upsilon; "\Upsilon ")
+     (!#omega; "\Omega ") (!#xi; "\Xi ") (!#psi; "\Psi ")
+     (!#zeta; "\mathit{Z}") (!varphi "\varphi ") (!#pound; "\pound ")
         ),'fancy!-special!-symbol);
 
 #else
@@ -2213,7 +2213,7 @@ symbolic procedure fancy!-matfit(u,p,op);
 
 put('mat,'fancy!-prinfit,'fancy!-matfit);
 
-put('taylor!*,'fancy!-reform,'Taylor!*print1);
+put('taylor!*,'fancy!-reform,'taylor!*print1);
 
 endmodule;
 
@@ -2380,16 +2380,16 @@ symbolic procedure fancy!-impart(u);
    return fancy!-print!-function!-arguments cdr u;
   end;
 
-put('euler_gamma,'fancy!-special!-symbol,"\gamma");
+put('Euler_gamma,'fancy!-special!-symbol,"\gamma");
 
-put('besseli,'fancy!-prifn,'fancy!-bessel);
-put('besselj,'fancy!-prifn,'fancy!-bessel);
-put('bessely,'fancy!-prifn,'fancy!-bessel);
-put('besselk,'fancy!-prifn,'fancy!-bessel);
-put('besseli,'fancy!-functionsymbol,'(ascii 73));
-put('besselj,'fancy!-functionsymbol,'(ascii 74));
-put('bessely,'fancy!-functionsymbol,'(ascii 89));
-put('besselk,'fancy!-functionsymbol,'(ascii 75));
+put('BesselI,'fancy!-prifn,'fancy!-bessel);
+put('BesselJ,'fancy!-prifn,'fancy!-bessel);
+put('BesselY,'fancy!-prifn,'fancy!-bessel);
+put('BesselK,'fancy!-prifn,'fancy!-bessel);
+put('BesselI,'fancy!-functionsymbol,'(ascii 73));
+put('BesselJ,'fancy!-functionsymbol,'(ascii 74));
+put('BesselY,'fancy!-functionsymbol,'(ascii 89));
+put('BesselK,'fancy!-functionsymbol,'(ascii 75));
 
 symbolic procedure fancy!-bessel(u);
  fancy!-level
@@ -2440,9 +2440,9 @@ symbolic procedure fancy!-hypergeometric u;
 
 % hypergeometric({1,2,u/w,v},{5,6},sqrt x);
 
-put('meijerg,'fancy!-prifn,'fancy!-meijerG);
+put('MeijerG,'fancy!-prifn,'fancy!-meijerg);
 
-symbolic procedure fancy!-meijerG u;
+symbolic procedure fancy!-meijerg u;
  fancy!-level
   begin scalar w,a1,a2,a3;
    integer n,m,p,q;

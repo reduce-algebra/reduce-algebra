@@ -135,7 +135,7 @@ global '(!*oc!-parse!-actions!*);
    (functional . read_funct)
    (boundaries . read_bounds)
    (boundary_conditions . read_bconds)
-   (comment . skip_comment)
+   (COMMENT . skip_comment)
    (restrictions . read_restr)
    (end_point_is_free . free_rhs)
    (target_language . read_targetlang)
@@ -192,7 +192,7 @@ symbolic procedure reset_oc_parser;
      !*oc!-parse!-boundaries!* := nil;
      !*oc!-parse!-bconds!* := nil;
      !*oc!-parse!-rhs!-is!-free!* := 0;
-     !*oc!-parse!-targetlang!* := 'C;
+     !*oc!-parse!-targetlang!* := 'c;
      !*oc!-parse!-timevar!* := nil;
      !*oc!-parse!-constants!* := nil;
      !*oc!-parse!-parameters!* := nil;
@@ -479,13 +479,13 @@ symbolic procedure output_abbrevs;
 
 symbolic procedure output_consts;
    for each pp in !*oc!-parse!-constants!* do <<
-     writepri (mkquote {'Define_constant, car pp, cdr pp},'first);
+     writepri (mkquote {'define_constant, car pp, cdr pp},'first);
      writepri(''!;,'last)>>;
 
 symbolic procedure output_params;
    for each pp in !*oc!-parse!-parameters!* do <<
-     writepri (mkquote if null cdr pp then {'Define_parameter, car pp}
-                 else {'Define_parameter, car pp, cdr pp},'first);
+     writepri (mkquote if null cdr pp then {'define_parameter, car pp}
+                 else {'define_parameter, car pp, cdr pp},'first);
      writepri(''!;,'last)>>;
 
 

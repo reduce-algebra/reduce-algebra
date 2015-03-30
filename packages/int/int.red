@@ -52,9 +52,9 @@ initl!* := append('(!*noextend), initl!*);
 
 flag('(interr),'transfer);   %For the compiler;
 
-flag ('(atan dilog ei erf expt log tan),'transcendental);
+flag ('(atan dilog Ei erf expt log tan),'transcendental);
 
-comment Kludge to define derivative of an integral and integral of
+COMMENT Kludge to define derivative of an integral and integral of
         a derivative;
 
 frlis!* := union('(!=x !=y),frlis!*);

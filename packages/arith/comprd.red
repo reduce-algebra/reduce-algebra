@@ -30,7 +30,7 @@ module comprd; % *** Support for Complex Rounded Arithmetic.
 %
 
 
-Comment this module defines a complex rounded as:
+COMMENT this module defines a complex rounded as:
 
   (<tag>. (<structure> . <structure>>)  or  ('!:cr!: . (rl . im))
 

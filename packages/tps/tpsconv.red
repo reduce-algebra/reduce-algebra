@@ -61,7 +61,7 @@ end;
 %                where x = (if exp = -1 then bas
 %                           else {'expt,bas, -exp});
 
-Comment
+COMMENT
  The following coding treats negative order terms in expansions
  about infinity in the same way as Taylor (ie. 1 over negative powers
   of x), whereas the code above prints these as positive powers of x;

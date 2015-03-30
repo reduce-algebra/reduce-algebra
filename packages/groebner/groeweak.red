@@ -36,7 +36,7 @@ begin scalar f1,c,vev,divisor,oldmode,a;
  f1:=vdpzero();a:=vbcfi 1;
  while not vdpzero!? f and vdpzero!? f1 do
  begin
-  vev:=vdpevlmon f;c:=vdpLbc f;
+  vev:=vdpevlmon f;c:=vdplbc f;
   if type = 'sort then while g and vevcompless!?(vev,vdpevlmon(car g))
    do g:=cdr g;
   divisor:=groebsearchinlist(vev,g);

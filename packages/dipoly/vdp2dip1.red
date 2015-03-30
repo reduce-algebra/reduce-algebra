@@ -47,8 +47,8 @@ fluid'(dipvars!* !*vdpinteger);
 
 symbolic procedure dip2vdp u;
  % is unsed when u can be empty
-   (if dipzero!? uu then makeVdp(a2bc 0,nil,nil)
-                    else makeVdp(diplbc uu,dipevlmon uu,uu))
+   (if dipzero!? uu then makevdp(a2bc 0,nil,nil)
+                    else makevdp(diplbc uu,dipevlmon uu,uu))
            where uu = if !*groebsubs then dipsubs2 u else u;
 
 
@@ -149,7 +149,7 @@ symbolic procedure vdpmoncomp(coef,vev,vdp);
 symbolic procedure vdpappendmon(vdp,coef,vev);
    if vdpzero!? vdp then vdpfmon(coef,vev) else
    if vbczero!? coef then vdp else
-   makevdp(vdpLbc vdp,vdpevlmon vdp,
+   makevdp(vdplbc vdp,vdpevlmon vdp,
             dipsum(vdppoly vdp,dipfmon(coef,vev)));
 
 % add monomial to vdp, place of new monomial still unknown
@@ -301,7 +301,7 @@ symbolic procedure dipsimpconti (p);
     if not bcplus!? diplbc p then num:=bcneg num;
     if bcone!? num  and cdr co = nil  then return nil . p;
     lco:=cdr co;
-    if groebmonfac neq 0  then lco:=dipcontLowerEv cdr co;
+    if groebmonfac neq 0  then lco:=dipcontlowerev cdr co;
     res:=p;
     if not(bcone!? num and lco = nil) then
                  res:=dipreduceconti (p,num,lco);
@@ -330,7 +330,7 @@ symbolic procedure dipsimpcontr (p);
     if dipzero!?  p then return nil . p;
     co:=dipcontentr p;
     if bcone!? diplbc p  and co = nil  then return nil . p;
-    lco:=dipcontLowerEv co;
+    lco:=dipcontlowerev co;
     res:=p;
     if not(bcone!? diplbc p and lco = nil) then
                res:=dipreducecontr (p,bcinv diplbc p,lco);
@@ -345,7 +345,7 @@ symbolic procedure dipcontentr p;
 symbolic procedure dipcontentr1 (ev,p1);
    if dipzero!? p1 then ev
       else begin
-             if ev then ev:=dipcontEvMin(dipevlmon p1,ev);
+             if ev then ev:=dipcontevmin(dipevlmon p1,ev);
              if null ev then return nil
                        else return dipcontentr1 (ev,dipmred p1) end;
 
@@ -414,7 +414,7 @@ symbolic procedure vdpprod(d1,d2); dip2vdp dipprod(vdppoly d1,vdppoly d2);
 %
 % LCOMB1: calculate mon1 * vdp1 + mon2 * vdp2
 symbolic procedure vdpilcomb1(d1,vbc1,vev1,d2,vbc2,vev2);
- dip2vdp dipILcomb1 (vdppoly d1,vbc1,vev1,vdppoly d2,vbc2,vev2);
+ dip2vdp dipilcomb1 (vdppoly d1,vbc1,vev1,vdppoly d2,vbc2,vev2);
 
 symbolic procedure dipilcomb1 (p1,bc1,ev1,p2,bc2,ev2);
 % same asl dipILcomb, exponent vectors multiplied in already
@@ -522,7 +522,7 @@ symbolic procedure vdpprint u; <<vdpprin2 u; terpri()>>;
 
 symbolic procedure vdpprin2 u;
    <<(if x then <<prin2 "p("; prin2 x; prin2 "):  ">>)
-                 where x=vdpGetProp(u,'number);
+                 where x=vdpgetprop(u,'number);
       vdpprint1(u,nil,vdpprintmax)>>;
 
 symbolic procedure vdpprint1(u,v,max); vdpprint1x(vdppoly u,v,max);

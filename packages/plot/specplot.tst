@@ -34,71 +34,71 @@ plot(cos(x^2),x=(-3 .. 3),title="cos(x^2)");
 
 %Handbook of Mathematical Functions - page 778
 
-plot(chebyshevt(1,x),chebyshevt(2,x),chebyshevt(3,x),chebyshevt(4,x),
-chebyshevt(5,x),x=(-1 .. 1),title="Chebyshev t Polynomials");
+plot(ChebyshevT(1,x),ChebyshevT(2,x),ChebyshevT(3,x),ChebyshevT(4,x),
+ChebyshevT(5,x),x=(-1 .. 1),title="Chebyshev t Polynomials");
 
 
 %Handbook of Mathematical Functions - page 779
 
-plot(chebyshevu(1,x),chebyshevu(2,x),chebyshevu(3,x),chebyshevu(4,x),
-chebyshevu(5,x),x=(-1 .. 1),y=(-6 .. 6),
+plot(ChebyshevU(1,x),ChebyshevU(2,x),ChebyshevU(3,x),ChebyshevU(4,x),
+ChebyshevU(5,x),x=(-1 .. 1),y=(-6 .. 6),
 title="Chebyshev u Polynomials");
 
 %Handbook of Mathematical Functions - page 776
 
-plot(gegenbauerp(2,1/2,x),gegenbauerp(3,1/2,x),gegenbauerp(4,1/2,x),
-gegenbauerp(5,1/2,x),x=(-1 .. 1),y=(-1 .. 1),
+plot(GegenbauerP(2,1/2,x),GegenbauerP(3,1/2,x),GegenbauerP(4,1/2,x),
+GegenbauerP(5,1/2,x),x=(-1 .. 1),y=(-1 .. 1),
 title="Gegenbauer Polynomials");
 
 
 %Handbook of Mathematical Functions - page 777
 
 
-plot(gegenbauerp(5,0.2,x),gegenbauerp(5,0.4,x),gegenbauerp(5,0.6,x),
-gegenbauerp(5,0.8,x),gegenbauerp(5,1,x),x=(-1 .. 1),y=(-1.5 .. 1.5),
+plot(GegenbauerP(5,0.2,x),GegenbauerP(5,0.4,x),GegenbauerP(5,0.6,x),
+GegenbauerP(5,0.8,x),GegenbauerP(5,1,x),x=(-1 .. 1),y=(-1.5 .. 1.5),
 title="Gegenbauer Polynomials");
 
 
 %Handbook of Mathematical Functions - page 780
 
 
-plot(laguerrep(2,x),laguerrep(3,x),laguerrep(4,x),laguerrep(5,x),
+plot(LaguerreP(2,x),LaguerreP(3,x),LaguerreP(4,x),LaguerreP(5,x),
 x=(0 .. 6),y=(-2 .. 4),title="Laguerre Polynomials");
 
 
 %Handbook of Mathematical Functions - page 780
 
-plot(legendrep(2,x),legendrep(3,x),legendrep(4,x),legendrep(5,x),
+plot(LegendreP(2,x),LegendreP(3,x),LegendreP(4,x),LegendreP(5,x),
 x=(-1 .. 1),y=(-1 .. 1),title="Legendre Polynomials");
 
 %Handbook of Mathematical Functions - page 496
 
-plot(struveh(0,x),struveh(1,x),struveh(2,x),struveh(3,x),
+plot(StruveH(0,x),StruveH(1,x),StruveH(2,x),StruveH(3,x),
 x=(0 .. 12),y=(-0.5 .. 2),title="Struve Functions");
 
 %Handbook of Mathematical Functions - page 496
 
-plot(struveh(-1,x),struveh(-2,x),struveh(-3,x),
+plot(StruveH(-1,x),StruveH(-2,x),StruveH(-3,x),
 x=(0 .. 16),y=(-1 .. 1),title="Struve Functions");
 
 %Handbook of Mathematical Functions - page 776
 
-plot(jacobip(5,1.5,0,x),jacobip(5,1.5,-0.2,x),jacobip(5,1.5,-0.4,x),
-jacobip(5,1.5,-0.6,x),jacobip(5,1.5,-0.8,x),x=(-1 .. 1),
+plot(JacobiP(5,1.5,0,x),JacobiP(5,1.5,-0.2,x),JacobiP(5,1.5,-0.4,x),
+JacobiP(5,1.5,-0.6,x),JacobiP(5,1.5,-0.8,x),x=(-1 .. 1),
 y=(-1.5 .. 1.5),title="Jacobi Polynomials");
  
 
 %Handbook of Mathematical Functions - page 776
 
-plot(jacobip(5,1.0,-0.5,x),jacobip(5,1.2,-0.5,x),jacobip(5,1.4,-0.5,x),
-jacobip(5,1.6,-0.5,x),jacobip(5,1.8,-0.5,x),jacobip(5,2.0,-0.5,x),
+plot(JacobiP(5,1.0,-0.5,x),JacobiP(5,1.2,-0.5,x),JacobiP(5,1.4,-0.5,x),
+JacobiP(5,1.6,-0.5,x),JacobiP(5,1.8,-0.5,x),JacobiP(5,2.0,-0.5,x),
 x=(-1 .. 1),y=(-1.5 .. 1.5),title="Jacobi Polynomials");
  
 
 %Handbook of Mathematical Functions - page 773
 
-plot(jacobip(1,1.5,-0.5,x),jacobip(2,1.5,-0.5,x),jacobip(3,1.5,-0.5,x),
-jacobip(4,1.5,-0.5,x),jacobip(5,1.5,-0.5,x),x=(-1 .. 1),
+plot(JacobiP(1,1.5,-0.5,x),JacobiP(2,1.5,-0.5,x),JacobiP(3,1.5,-0.5,x),
+JacobiP(4,1.5,-0.5,x),JacobiP(5,1.5,-0.5,x),x=(-1 .. 1),
 y=(-1.5 .. 3),title="Jacobi Polynomials");
  
 %Handbook of Mathematical Functions - page 780
@@ -107,28 +107,28 @@ y=(-1.5 .. 3),title="Jacobi Polynomials");
 algebraic procedure hermite_base(x,n);
      hermite_base1(x,n,{2*x,1},1);
 
-plot(hermitep(2,x)/8,hermitep(3,x)/27,hermitep(4,x)/64,
- hermitep(5,x)/125,x=(0 .. 4),y=(-2 .. 8),
+plot(HermiteP(2,x)/8,HermiteP(3,x)/27,HermiteP(4,x)/64,
+ HermiteP(5,x)/125,x=(0 .. 4),y=(-2 .. 8),
  title="Hermite Polynomials/n^3");
 >>;
 
 
 %Mathematica - page 115
 
-plot(besselj(0,x),besselj(1,x),besselj(2,x),besselj(4,x),x=(0 .. 10),
+plot(BesselJ(0,x),BesselJ(1,x),BesselJ(2,x),BesselJ(4,x),x=(0 .. 10),
 y=(-2 .. 2),title="Bessel functions of 1st kind");
 
 
 %Handbook of Mathematical Functions - page 359
 
-plot(bessely(0,x),bessely(1,x),bessely(2,x),x=(0.1 .. 10),y=(-1 .. 1),
+plot(BesselY(0,x),BesselY(1,x),BesselY(2,x),x=(0.1 .. 10),y=(-1 .. 1),
 title="Bessel functions of 2nd kind");
 
 
 %bessely(2,x),bessely(4,x)
 
 
-plot(besseli(0,x),besseli(1,x),besseli(2,x),x=(-4 .. 4),y=(-10 .. 15),
+plot(BesselI(0,x),BesselI(1,x),BesselI(2,x),x=(-4 .. 4),y=(-10 .. 15),
 title="Bessel functions of 3rd kind");
 
 
@@ -340,14 +340,14 @@ title="dx/dt=x-y-x(x^2+y^2), dy/dt=x+y-y(x^2+y^2)");
 
 plot(repart(lambert_w(x)));
 
-plot(Jacobisn(u,1/2),Jacobicn(u,1/2),Jacobidn(u,1/2), u=(0 .. 4*EllipticK
+plot(jacobisn(u,1/2),jacobicn(u,1/2),jacobidn(u,1/2), u=(0 .. 4*elliptick
 (1/2)), y = (-1 .. 1),title="sn , cn and dn for m=1/2");
 
-plot(Jacobins(u,1/2),Jacobinc(u,1/2),Jacobind(u,1/2), u=(0 .. 4*EllipticK
+plot(jacobins(u,1/2),jacobinc(u,1/2),jacobind(u,1/2), u=(0 .. 4*elliptick
 (1/2)), y = (-2 .. 2.5),title="ns , nc and nd for m=1/2");
 
-plot(Jacobics(u,1/2),Jacobisc(u,1/2),Jacobicd(u,1/2), Jacobidc(u,1/2), u=
-(0 .. 4*EllipticK(1/2)),y = (-1.5 .. 1.5)
+plot(jacobics(u,1/2),jacobisc(u,1/2),jacobicd(u,1/2), jacobidc(u,1/2), u=
+(0 .. 4*elliptick(1/2)),y = (-1.5 .. 1.5)
 ,title="cs, sc, cd and dc for m=1/2");
 
 end;

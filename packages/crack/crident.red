@@ -58,9 +58,9 @@ begin scalar p,ex$
  terpri()$
  write "If you want to add an identity then type `new_idty' <ENTER>. "$
  p:=termread()$
- if (p='NEW_IDTY) or member(p,idnties_) then
+ if (p='new_idty) or member(p,idnties_) then
   <<terpri()$write "Input of a value for "$
-  if p='NEW_IDTY then write "the new identity."
+  if p='new_idty then write "the new identity."
                  else write p,"."$
   terpri()$
   write "You can use names of other identities, e.g. 3*id_2 - df(id_1,x); "$
@@ -69,11 +69,11 @@ begin scalar p,ex$
   terpri()$
   ex:=termxread()$
   for each a in idnties_ do ex:=subst(get(a,'val),a,ex)$  % #?#
-  if p neq 'NEW_IDTY then drop_idty(p)$
+  if p neq 'new_idty then drop_idty(p)$
   new_idty(reval ex,nil,nil)$                             % #?#
 
   terpri()$write car idnties_$
-  if p='NEW_IDTY then write " is added"
+  if p='new_idty then write " is added"
                  else write " replaces ",p$
  >>
  else <<terpri()$
@@ -84,7 +84,7 @@ end$
 symbolic procedure trivial_idty(pdes,idval)$
 if zerop idval or                                 % #?#
    (pdes and
-    null smemberl(pdes,search_li(idval,'DF))) % identity is purely alg.
+    null smemberl(pdes,search_li(idval,'df))) % identity is purely alg.
    then t else nil$
 
 symbolic procedure new_idty(idty,pdes,simplify)$
@@ -93,7 +93,7 @@ begin scalar id,idcp$
  if simplify then <<
   id:=contradiction_;
 % idty:=simplifypde(idty,pdes,t,nil)$
-  idty:=prepsq car simplifypdeSQ(simp idty,pdes,t,nil,nil)$ % ##### already SQ-updated, maybe drop prepsq
+  idty:=prepsq car simplifypdesq(simp idty,pdes,t,nil,nil)$ % ##### already SQ-updated, maybe drop prepsq
   contradiction_:=id
  >>$
  if not trivial_idty(pdes,idty) then <<
@@ -143,7 +143,7 @@ begin scalar oldli,pl,s,idty,news,succ,p,l$ % ,r,newr$
    for each p in pl do l:=union(get(p,'vars),l)$
    if l then l:=length l else l:=0$
 
-   pl:=setdiff(pl,search_li(idty,'DF));
+   pl:=setdiff(pl,search_li(idty,'df));
    % now all pdes in pl are redundand, drop the longest
    if null pl then remflag1(car oldli,'to_subst)
               else <<
@@ -173,7 +173,7 @@ begin scalar oldli,pl,s,idty,news,succ,p,l$ % ,r,newr$
      >>$
      % assuming s occurs linearly:
      pl:=coeffn(idty,s,1)$
-     news:=reval {'QUOTIENT,{'DIFFERENCE,{'TIMES,pl,s},idty},pl};
+     news:=reval {'quotient,{'difference,{'times,pl,s},idty},pl};
      %for each r in idnties_ do
      %if not freeof(get(r,'val),s) then <<     % #?#
      % newr:=reval subst(news,s,get(r,'val));  % #?#
@@ -213,10 +213,10 @@ begin scalar s,p,h,pl$
   write"lisp(nequ_:=",nequ_,")$"$terpri()$
   write"off batch_mode$"$terpri()$
   write"list_of_variables:="$
-  algebraic write lisp cons('LIST,vl_)$
+  algebraic write lisp cons('list,vl_)$
 
   write"list_of_functions:="$
-  algebraic write lisp cons('LIST,pdes)$
+  algebraic write lisp cons('list,pdes)$
 
   for each h in pdes do 
   if pl:=assoc(h,depl!*) then 
@@ -225,7 +225,7 @@ begin scalar s,p,h,pl$
   
   write"list_of_equations:="$
   algebraic write 
-  lisp( cons('LIST,for each h in idnties_ collect get(h,'val)));
+  lisp( cons('list,for each h in idnties_ collect get(h,'val)));
 
   terpri()$ write"solution_:=crack(list_of_equations,{},"$
   terpri()$ write"                 list_of_functions,"$
@@ -251,7 +251,7 @@ begin scalar l$
  write"present decoupling information, i.e. `dec_with'"$ terpri()$
  write"would be set to nil. Please confirm (y/n). "$
  l:=termread()$
- if (l='y) or (l='Y) then <<
+ if (l='y) or (l='y) then <<
   record_hist:=t;
   for each l in pdes do put(l,'histry_,l)$
   for each l in pdes do put(l,'dec_with,nil)$
@@ -313,10 +313,10 @@ begin scalar cl,ncl,vlcp,xlist,eql,a,f,newpdes,ftem_bak,
  pdes:=smemberl(allpdes,idty)$
  a:=all_deriv_search(idty,pdes)$  % there is available: all_deriv_search_SF(p,ftem)
  xlist:=smemberl(vl,a)$
- cl:=intcurrent3(idty,cons('LIST,pdes),cons('LIST,xlist))$
+ cl:=intcurrent3(idty,cons('list,pdes),cons('list,xlist))$
  % intcurrent3 is only successful if only 2 derivatives found
  if (not zerop caddr cl) and inter_divint then 
- cl:=intcurrent2(idty,cons('LIST,pdes),cons('LIST,xlist))$
+ cl:=intcurrent2(idty,cons('list,pdes),cons('list,xlist))$
  if zerop caddr cl then <<
   cl:=cdadr cl;   
   vlcp:=xlist;
@@ -365,14 +365,14 @@ begin scalar cl,ncl,vlcp,xlist,eql,a,f,newpdes,ftem_bak,
    pdes:=cdr pdes
   >>$
   ftem_bak:=ftem_;
-  eql:=int_curl(reval cons('LIST,ncl),  cons('LIST,fl),
-                      cons('LIST,xlist),cons('LIST,varslist(ncl,ftem_,vl)) )$
+  eql:=int_curl(reval cons('list,ncl),  cons('list,fl),
+                      cons('list,xlist),cons('list,varslist(ncl,ftem_,vl)) )$
   % eql has the form {'LIST,reval cons('LIST,resu),cons('LIST,neweq)}
   if (null eql) or (null cdadr eql) or (zerop cadadr eql) then return nil;
   eql:=cdr eql;
   if print_ then <<
-   ncl:=for i:=1:nx collect {'DF,nth(cl,i),nth(xlist,i)};
-   ncl:=if cdr ncl then cons('PLUS,ncl)
+   ncl:=for i:=1:nx collect {'df,nth(cl,i),nth(xlist,i)};
+   ncl:=if cdr ncl then cons('plus,ncl)
                    else car ncl;
    terpri()$
    write"The identity "$
@@ -408,7 +408,7 @@ begin scalar cl,ncl,vlcp,xlist,eql,a,f,newpdes,ftem_bak,
    drop_idty(org_idty)$ 
    while eql do <<
     if not zerop car eql then <<
-     a:=mkeqSQ(nil,nil,car eql,ftem_,vl,allflags_,nil,list(0),nil,allpdes);
+     a:=mkeqsq(nil,nil,car eql,ftem_,vl,allflags_,nil,list(0),nil,allpdes);
      newpdes:=cons(a,newpdes);
     >>;
     eql:=cdr eql;
@@ -426,29 +426,29 @@ begin scalar cl,ncl,vlcp,xlist,eql,a,f,newpdes,ftem_bak,
       k:=l;
       l:=l+dl;
       dl:=sub1 dl;
-      {'DF,nth(newpdes,k),nth(xlist,j)}
+      {'df,nth(newpdes,k),nth(xlist,j)}
      >>;
      a:=if null a then 0 else
-        if cdr a then cons('PLUS,a)
+        if cdr a then cons('plus,a)
                  else car a;
-     idty:={'PLUS,idty,a};
+     idty:={'plus,idty,a};
      % then sum over -df(q^{ij},j), j>i
      if i=1 then l:=1
             else l:=k+nx-i+1;
      a:=for j:=(i+1):nx collect << 
       k:=l;
       l:=l+1;
-      {'DF,nth(newpdes,k),nth(xlist,j)}
+      {'df,nth(newpdes,k),nth(xlist,j)}
      >>;
      a:=if null a then 0 else
-        if cdr a then cons('PLUS,a)
+        if cdr a then cons('plus,a)
                  else car a;
     >>$
-    newidtylist:=cons({'DIFFERENCE,idty,a},newidtylist);
+    newidtylist:=cons({'difference,idty,a},newidtylist);
    >>;
    eql:=nil;
    for each a in extrapdes do <<
-    a:=mkeqSQ(nil,nil,a,ftem_,vl,allflags_,t,list(0),nil,allpdes);
+    a:=mkeqsq(nil,nil,a,ftem_,vl,allflags_,t,list(0),nil,allpdes);
     allpdes:=eqinsert(a,allpdes);
     to_do_list:=cons(list('subst_level_35,%allpdes,forg,vl_,
                           list a),
@@ -518,8 +518,8 @@ begin scalar n,qli,i,j,k,qij,a,flp,f,resu,qlicp$
     flin_:=sort_according_to(cons(f,flin_),ftem_);
     qli:=cons(a . f,qli)
    >>;
-   f:={'DF,f,nth(xlist,k)};
-   if flp then f:={'MINUS,f};
+   f:={'df,f,nth(xlist,k)};
+   if flp then f:={'minus,f};
    qij:=cons(f,qij)
   >>$
   if null qij then <<qij:=newfct(fname_,setdiff(vl,xlist),nfct_);
@@ -527,7 +527,7 @@ begin scalar n,qli,i,j,k,qij,a,flp,f,resu,qlicp$
                      ftem_:=fctinsert(qij,ftem_);
                      flin_:=sort_according_to(cons(qij,flin_),ftem_)>>
               else
-  if cdr qij then qij:=reval cons('PLUS,qij)
+  if cdr qij then qij:=reval cons('plus,qij)
              else qij:=car qij;
   resu:=cons(qij,resu)  
  >>$
@@ -537,14 +537,14 @@ end$
 symbolic procedure updt_curl(h2,rmdr,fl,done_xlist,x,cdrxlist,n,k)$
 % a subroutine of int_curl
 begin scalar i,h4,h5,h6,h7,rmdr,y,pint,succ$
- if (not zerop reval reval {'DF,rmdr,x}) then <<
+ if (not zerop reval reval {'df,rmdr,x}) then <<
   if print_ then <<terpri()$write"No success."$terpri()>>$
   succ:=nil
  >>                                      else <<
   succ:=t;
   if done_xlist then << % there is one computed curl component to be updated
    % integration wrt done_xlist
-   h7:=intcurrent2(rmdr,fl,cons('LIST,done_xlist));
+   h7:=intcurrent2(rmdr,fl,cons('list,done_xlist));
    rmdr:=caddr h7;
    h7:=cdadr h7;
    % update the already computed h2-components with the new h7-comp.
@@ -553,7 +553,7 @@ begin scalar i,h4,h5,h6,h7,rmdr,y,pint,succ$
    for i:=1:(k-1) do <<
     h5:=add1 h5;
     for h6:=1:(n-k) do <<h4:=cons(car h2,h4);h2:=cdr h2>>;
-    h4:=cons({'DIFFERENCE,car h2,car h7},h4);
+    h4:=cons({'difference,car h2,car h7},h4);
     h2:=cdr h2;
     h7:=cdr h7;
     for h6:=1:h5 do <<h4:=cons(car h2,h4);h2:=cdr h2>>
@@ -602,13 +602,13 @@ begin scalar h1,h2,h3,resu,newpli,xcp,done_xlist,n,k,ok,neweq,ftem_bak$
  k:=0;
  ok:=t;
  ftem_bak:=ftem_;
- if n=1 then return {'LIST,reval cons('LIST,pli),{'LIST}}$
+ if n=1 then return {'list,reval cons('list,pli),{'list}}$
 
  while cdr pli and ok do <<
   k:=add1 k;
   % the integration has to be done first wrt cdr xlist. The resulting
   % curl will be used to change the remining pli to be integrated
-  h3:=intcurrent2(reval car pli,fl,cons('LIST,cdr xlist));
+  h3:=intcurrent2(reval car pli,fl,cons('list,cdr xlist));
   pli:=cdr pli;
   h1:=cdadr h3;   
   h3:=reval reval caddr h3;           
@@ -622,7 +622,7 @@ begin scalar h1,h2,h3,resu,newpli,xcp,done_xlist,n,k,ok,neweq,ftem_bak$
               else <<      % generalized integration of the remainder
     neweq:=append(cddr h3,neweq);
     h2:=car h3;
-    h1:=cons({'PLUS,car h1,cadr h3},cdr h1);
+    h1:=cons({'plus,car h1,cadr h3},cdr h1);
     % because of cdr xlist neq nil here q^{k(k+1)} is updated
    >>
   >>$
@@ -633,7 +633,7 @@ begin scalar h1,h2,h3,resu,newpli,xcp,done_xlist,n,k,ok,neweq,ftem_bak$
    % update the remaining pli to be integrated
    newpli:=nil;
    while h1 do <<
-    newpli:=cons({'PLUS,{'DF,car h1,car xlist},car pli},newpli);
+    newpli:=cons({'plus,{'df,car h1,car xlist},car pli},newpli);
     h1:=cdr h1;
     pli:=cdr pli
    >>;
@@ -652,7 +652,7 @@ begin scalar h1,h2,h3,resu,newpli,xcp,done_xlist,n,k,ok,neweq,ftem_bak$
               else <<
     neweq:=append(cddr h3,neweq);
     h2:=car h3;
-    h2:=cons({'DIFFERENCE,car h2,cadr h3},cdr h2)
+    h2:=cons({'difference,car h2,cadr h3},cdr h2)
     % because of null xlist here car h2=q^{n-1,n} is updated
    >>$
   >>
@@ -664,11 +664,11 @@ begin scalar h1,h2,h3,resu,newpli,xcp,done_xlist,n,k,ok,neweq,ftem_bak$
  >>         else <<
   h1:=curlconst(xcp,vl)$
   while h1 do <<
-   resu:=cons({'PLUS,car h2,car h1},resu);
+   resu:=cons({'plus,car h2,car h1},resu);
    h1:=cdr h1; 
    h2:=cdr h2; 
   >>$
-  return {'LIST,reval cons('LIST,resu),cons('LIST,neweq)}
+  return {'list,reval cons('list,resu),cons('list,neweq)}
  >>
 end$
 

@@ -609,7 +609,7 @@ symbolic procedure hvar1 q$
          for each w in z do <<
              if null atom w and car w eq 'expt then w:=cadr w
               else if numberp w then w:=nil$
-             if w and (y:=assoc(w,v)) then rplacD(y,cdr y + 1)
+             if w and (y:=assoc(w,v)) then rplacd(y,cdr y + 1)
               else if w then v:=(w . 1).v$
          >>$
     >>$

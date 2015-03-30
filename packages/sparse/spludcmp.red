@@ -49,17 +49,17 @@ symbolic procedure splu_decom(in_mat);
   % Runs the show!
   %
   begin
-    scalar ans,I_turned_rounded_on;
+    scalar ans,i_turned_rounded_on;
     integer sq_size;
     if not matrixp(in_mat) then
      rederr "Error in splu_decom: non matrix input.";
     if not squarep(in_mat) then
      rederr "Error in splu_decom: input matrix should be square.";
-    if not !*rounded then << I_turned_rounded_on := t; on rounded; >>;
+    if not !*rounded then << i_turned_rounded_on := t; on rounded; >>;
     sq_size := sprow_dim(in_mat);
     if spcx_test(in_mat,sq_size) then ans := spcompdet(in_mat)
      else ans := spunsymdet(in_mat);
-    if I_turned_rounded_on then off rounded;
+    if i_turned_rounded_on then off rounded;
     return ans;
   end;
 
@@ -100,7 +100,7 @@ symbolic procedure spunsymdet(mat1);
   % bounds of the machine accuracy (ie: acc s.t. 1+acc > 1).
   %
   begin
-    scalar x,y,in_mat,tmp,int_vec,L,U,col,tp_mat1,tp_mat2,val,col2;
+    scalar x,y,in_mat,tmp,int_vec,l,u,col,tp_mat1,tp_mat2,val,col2;
     integer i,j,k,l,n;
     j := 1;
     in_mat := copy_vect(mat1,nil);
@@ -155,9 +155,9 @@ symbolic procedure spunsymdet(mat1);
       >>;
     >>;
     tmp := spget_l_and_u(in_mat,n);
-    L := car tmp;
-    U := cadr tmp;
-    return {'list,L,U,int_vec};
+    l := car tmp;
+    u := cadr tmp;
+    return {'list,l,u,int_vec};
   end;
 
 symbolic procedure spinnerprod(l,s,u,c1,rowa,rowb);
@@ -194,23 +194,23 @@ symbolic procedure spget_l_and_u(in_mat,sq_size);
   % sq_size is the no of rows (and columns) of in_mat.
   %
   begin
-    scalar L,U,col;
+    scalar l,u,col;
     integer i,j,val;
-    L := mkempspmat(sq_size,list('spm,sq_size,sq_size));
-    U := mkempspmat(sq_size,list('spm,sq_size,sq_size));
+    l := mkempspmat(sq_size,list('spm,sq_size,sq_size));
+    u := mkempspmat(sq_size,list('spm,sq_size,sq_size));
     for i:=1:sq_size do
-    << letmtr3(list(U,i,i),1,U,nil);
+    << letmtr3(list(u,i,i),1,u,nil);
        col:=findrow(in_mat,i);
        for each xx in cdr col do
        << j:=car xx;
          val:=cdr xx;
          if j<=i then
-         << letmtr3(list(L,i,j),val,L,nil)>>
+         << letmtr3(list(l,i,j),val,l,nil)>>
          else if j>=i+1 then
-         << letmtr3(list(U,i,j),val,U,nil)>>;
+         << letmtr3(list(u,i,j),val,u,nil)>>;
        >>;
     >>;
-    return {L,U};
+    return {l,u};
   end;
 
 
@@ -228,7 +228,7 @@ symbolic procedure spcompdet(mat1);
   % if A, modified by rounding errors, is singular.
   %
   begin
-    scalar x,y,in_mat,tmp,int_vec,L,U,p,pp,v,w,z,col,tp_mat1,rcol,recol,
+    scalar x,y,in_mat,tmp,int_vec,l,u,p,pp,v,w,z,col,tp_mat1,rcol,recol,
            re,icol,imcol,im,rval,ival,rl,il,cl;
     integer i,j,k,l,n;
     if algebraic (det(mat1)) = 0 then rederr
@@ -332,9 +332,9 @@ symbolic procedure spcompdet(mat1);
    >>;
     in_mat := spim_compress(in_mat,n);
     tmp := spget_l_and_u(in_mat,n);
-    L := car tmp;
-    U := cadr tmp;
-    return {'list,L,U,int_vec};
+    l := car tmp;
+    u := cadr tmp;
+    return {'list,l,u,int_vec};
   end;
 
 symbolic procedure spcxinnerprod(l,s,u,cr,ci,vec_ar,vec_ai,vec_br,vec_bi);

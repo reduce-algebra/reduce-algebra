@@ -2,10 +2,10 @@
 % error in sum operator, reported by Petrov Alexander
 %
  
-operator H,k,x;
+operator h,k,x;
 
 
-H := sum( (1/2)*k(i)*x(i)**2, i, -infinity,infinity);
+h := sum( (1/2)*k(i)*x(i)**2, i, -infinity,infinity);
 
 
                    2
@@ -18,7 +18,7 @@ r1 := {df(sum( ~f, ~i, ~i1,~i2),~x) => sum( df(f, x),i,i1,i2)};
 
 r1 := {df(sum(~f,~i,~i1,~i2),~x) => sum(df(f,x),i,i1,i2)}
 
-(df(H,x(i)) where r1);
+(df(h,x(i)) where r1);
 
 
 sum(k(i)*x(i),i, - infinity,infinity)

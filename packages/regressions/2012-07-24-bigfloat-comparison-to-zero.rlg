@@ -1,4 +1,4 @@
-comment 
+COMMENT 
 
  Test for sf.net bug #3547914 and fix to greaterp!:
 

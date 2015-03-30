@@ -36,7 +36,7 @@ Arthur C. Norman
 Herbert Stoyan
 ;
 
-Comment we first set up a suitable testing functions;
+COMMENT we first set up a suitable testing functions;
 
 fluid '(gcknt!*);
 
@@ -413,7 +413,7 @@ testint(r/sqrt(2*e*r**2-alpha**2-2*k*r),r);
 % testint(1/(r*sqrt(2*h*r**2-alpha**2-epsilon**2-2*k*r**4)),r);
 
 
-Comment many of these integrals used to require Steve Harrington's
+COMMENT many of these integrals used to require Steve Harrington's
 	code to evaluate. They originated in Novosibirsk as examples
 	of using Analytik. There are still a few examples that could
 	be evaluated using better heuristics;
@@ -458,7 +458,7 @@ testint(x*log(x+(x**2+1)**(1/2)),x);
 testint(x*(e**x*sin(x)+1)**2,x);
 testint(x*e**x*cos(x),x);
 
-Comment the following set came from Herbert Stoyan;
+COMMENT the following set came from Herbert Stoyan;
 
 testint(1/(x-3)**4,x);
 testint(x/(x**3-1),x);
@@ -502,7 +502,7 @@ testint(erf(x),x);
 
 testint(erf(x+a),x);
 
-Comment here is an example of using the integrator with pattern
+COMMENT here is an example of using the integrator with pattern
 	matching;
 
 for all m,n let int(k1**m*log(k1)**n/(p**2-k1**2),k1)=foo(m,n),
@@ -513,7 +513,7 @@ for all m,n let int(k1**m*log(k1)**n/(p**2-k1**2),k1)=foo(m,n),
 
 int(k1**2*log(k1)/(p**2-k1**2),k1);
 
-Comment It is interesting to see how much of this one can be done;
+COMMENT It is interesting to see how much of this one can be done;
 
 let f1s= (12*log(s/mc**2)*s**2*pi**2*mc**3*(-8*s-12*mc**2+3*mc)
 	+ pi**2*(12*s**4*mc+3*s**4+176*s**3*mc**3-24*s**3*mc**2
@@ -522,11 +522,11 @@ let f1s= (12*log(s/mc**2)*s**2*pi**2*mc**3*(-8*s-12*mc**2+3*mc)
 
 int(f1s,s);
 
-factor ei,log;
+factor Ei,log;
 
 ws;
 
-Comment the following is an example of integrals that used to loop
+COMMENT the following is an example of integrals that used to loop
         forever.  They were first revealed by problems with Bessel
 	function integration when specfn was loaded,
 	e.g., int(x*besseli(2,x),x) or int(besselj(n,x),x);
@@ -536,7 +536,7 @@ operator f; let {df(f(~x),x) => x*f(x-1)};
 int(f x,x);
 
 
-Comment the following integrals reveal deficiencies in the current
+COMMENT the following integrals reveal deficiencies in the current
 integrator;
 
 %high degree denominator;

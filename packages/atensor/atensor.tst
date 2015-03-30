@@ -145,6 +145,6 @@ a2(m,n)*ri(m,n,c,d) + a2(k,l)*ri(c,d,l,k);
 % The total execution time is:
 showtime;
 
-$END$
+$end$
 
 

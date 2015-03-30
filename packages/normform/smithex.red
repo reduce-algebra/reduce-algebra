@@ -34,7 +34,7 @@ module smithex; % Computation of the Smithex normal form of a matrix.           
 
 symbolic procedure smithex(mat1,x);
   begin
-    scalar A,Left,Right,tmp,isclear,g,L,R1,poly1,poly2,quo1,quo2,r,
+    scalar a,left,right,tmp,isclear,g,l,r1,poly1,poly2,quo1,quo2,r,
            lc,tquo,q,full_coeff_list,rule_list,input_mode;
     integer i,j,n,m;
 
@@ -49,22 +49,22 @@ symbolic procedure smithex(mat1,x);
     on combineexpt;
 
     tmp := nest_input_smith(mat1,x);
-    A := car tmp;
+    a := car tmp;
     full_coeff_list := cadr tmp;
 
-    n := car size_of_matrix(A); %  No. of rows.
-    m := cadr size_of_matrix(A); %  No. of columns.
+    n := car size_of_matrix(a); %  No. of rows.
+    m := cadr size_of_matrix(a); %  No. of columns.
 
-    Left := make_identity(n,n) ;
-    Right := make_identity(m,m);
+    left := make_identity(n,n) ;
+    right := make_identity(m,m);
 
     for k:=1:min(n,m) do
     <<
       %
       %  Pivot selection from row k to column k.
       %
-      i := k; while i <= n and getmat(A,i,k) = 0 do i := i+1;
-      j := k; while j <= m and getmat(A,k,j) = 0 do j := j+1;
+      i := k; while i <= n and getmat(a,i,k) = 0 do i := i+1;
+      j := k; while j <= m and getmat(a,k,j) = 0 do j := j+1;
 
       if i > n and j > m then <<>>
       else
@@ -74,20 +74,20 @@ symbolic procedure smithex(mat1,x);
         %
         for l:=i+1:n do
         <<
-          if getmat(A,l,k) = 0 then l := l+1
-          else if deg(getmat(A,l,k),x) < deg(getmat(A,i,k),x) then
+          if getmat(a,l,k) = 0 then l := l+1
+          else if deg(getmat(a,l,k),x) < deg(getmat(a,i,k),x) then
           i := l;
         >>;
 
         for l:=j+1:m do
         <<
-          if getmat(A,k,l) = 0 then l := l+1
-          else if deg(getmat(A,k,l),x) < deg(getmat(A,k,j),x) then
+          if getmat(a,k,l) = 0 then l := l+1
+          else if deg(getmat(a,k,l),x) < deg(getmat(a,k,j),x) then
           j := l;
         >>;
 
-        if i <= n and (j > m or deg(getmat(A,i,k),x) <
-                                 deg(getmat(A,k,j),x))
+        if i <= n and (j > m or deg(getmat(a,i,k),x) <
+                                 deg(getmat(a,k,j),x))
     then
         %
         %  Pivot is A(i,k), interchange row k,i if necessary.
@@ -98,16 +98,16 @@ symbolic procedure smithex(mat1,x);
 
             for l:=k:m do
             <<
-              tmp := getmat(A,i,l);
-              setmat(A,i,l,getmat(A,k,l));
-              setmat(A,k,l,tmp);
+              tmp := getmat(a,i,l);
+              setmat(a,i,l,getmat(a,k,l));
+              setmat(a,k,l,tmp);
             >>;
 
             for l:=1:n do
             <<
-              tmp := getmat(Left,l,i);
-              setmat(Left,l,i,getmat(Left,l,k));
-              setmat(Left,l,k,tmp);
+              tmp := getmat(left,l,i);
+              setmat(left,l,i,getmat(left,l,k));
+              setmat(left,l,k,tmp);
             >>;
 
           >>
@@ -122,16 +122,16 @@ symbolic procedure smithex(mat1,x);
 
             for l:=k:n do
             <<
-              tmp := getmat(A,l,j);
-              setmat(A,l,j,getmat(A,l,k));
-              setmat(A,l,k,tmp);
+              tmp := getmat(a,l,j);
+              setmat(a,l,j,getmat(a,l,k));
+              setmat(a,l,k,tmp);
             >>;
 
             for l:=1:m do
             <<
-              tmp := getmat(Right,j,l);
-              setmat(Right,j,l,getmat(Right,k,l));
-              setmat(Right,k,l,tmp);
+              tmp := getmat(right,j,l);
+              setmat(right,j,l,getmat(right,k,l));
+              setmat(right,k,l,tmp);
             >>;
 
           >>;
@@ -146,38 +146,38 @@ symbolic procedure smithex(mat1,x);
         <<
           for i:=k+1:n do
           <<
-            if getmat(A,i,k) = 0 then <<>>
+            if getmat(a,i,k) = 0 then <<>>
             else
             <<
-              poly1 := getmat(A,k,k);
-              poly2 := getmat(A,i,k);
+              poly1 := getmat(a,k,k);
+              poly2 := getmat(a,i,k);
               tmp := calc_exgcd(poly1,poly2,x);
               g := car tmp;
-              L := cadr tmp;
-              R1 := caddr tmp;
+              l := cadr tmp;
+              r1 := caddr tmp;
               quo1 := get_quo(poly1,g);
               quo2 := get_quo(poly2,g);
 
               for j:=k+1:m do
               <<
-                tmp := {'plus,{'times,L,getmat(A,k,j)},{'times,R1,
-                        getmat(A,i,j)}};
-                setmat(A,i,j,{'plus,{'times,quo1,getmat(A,i,j)},{'times,
-                       {'minus,quo2},getmat(A,k,j)}});
-                setmat(A,k,j,tmp);
+                tmp := {'plus,{'times,l,getmat(a,k,j)},{'times,r1,
+                        getmat(a,i,j)}};
+                setmat(a,i,j,{'plus,{'times,quo1,getmat(a,i,j)},{'times,
+                       {'minus,quo2},getmat(a,k,j)}});
+                setmat(a,k,j,tmp);
               >>;
 
               for j:=1:n do
               <<
-                tmp := {'plus,{'times,quo1,getmat(Left,j,k)},
-                        {'times,quo2,getmat(Left,j,i)}};
-                setmat(Left,j,i,{'plus,{'times,{'minus,R1},
-                       getmat(Left,j,k)},{'times,L,getmat(Left,j,i)}});
-                setmat(Left,j,k,tmp);
+                tmp := {'plus,{'times,quo1,getmat(left,j,k)},
+                        {'times,quo2,getmat(left,j,i)}};
+                setmat(left,j,i,{'plus,{'times,{'minus,r1},
+                       getmat(left,j,k)},{'times,l,getmat(left,j,i)}});
+                setmat(left,j,k,tmp);
               >>;
 
-              setmat(A,k,k,g);
-              setmat(A,i,k,0);
+              setmat(a,k,k,g);
+              setmat(a,i,k,0);
             >>;
           >>;
 
@@ -187,52 +187,52 @@ symbolic procedure smithex(mat1,x);
           %
           for i:=k+1:m do
           <<
-            q := get_quo(getmat(A,k,i),getmat(A,k,k));
-            setmat(A,k,i,get_rem(getmat(A,k,i),getmat(A,k,k)));
+            q := get_quo(getmat(a,k,i),getmat(a,k,k));
+            setmat(a,k,i,get_rem(getmat(a,k,i),getmat(a,k,k)));
 
             for j:=1:m do
             <<
-              setmat(Right,k,j,{'plus,getmat(Right,k,j),{'times,q,
-                     getmat(Right,i,j)}});
+              setmat(right,k,j,{'plus,getmat(right,k,j),{'times,q,
+                     getmat(right,i,j)}});
             >>;
 
           >>;
 
           for i:=k+1:m do
           <<
-            if getmat(A,k,i) = 0 then <<>>
+            if getmat(a,k,i) = 0 then <<>>
             else
             <<
-              poly1 := getmat(A,k,k);
-              poly2 := getmat(A,k,i);
+              poly1 := getmat(a,k,k);
+              poly2 := getmat(a,k,i);
               tmp := calc_exgcd(poly1,poly2,x);
               g := car tmp;
-              L := cadr tmp;
-              R1 := caddr tmp;
+              l := cadr tmp;
+              r1 := caddr tmp;
               quo1 := get_quo(poly1,g);
               quo2 := get_quo(poly2,g);
 
               for j:=k+1:n do
               <<
-                tmp := {'plus,{'times,L,getmat(A,j,k)},{'times,R1,
-                        getmat(A,j,i)}};
-                setmat(A,j,i,{'plus,{'times,quo1,getmat(A,j,i)},{'times,
-                       {'minus,quo2},getmat(A,j,k)}});
-                setmat(A,j,k,tmp);
+                tmp := {'plus,{'times,l,getmat(a,j,k)},{'times,r1,
+                        getmat(a,j,i)}};
+                setmat(a,j,i,{'plus,{'times,quo1,getmat(a,j,i)},{'times,
+                       {'minus,quo2},getmat(a,j,k)}});
+                setmat(a,j,k,tmp);
               >>;
 
               for j:=1:m do
               <<
-                tmp := {'plus,{'times,quo1,getmat(Right,k,j)},
-                        {'times,quo2,getmat(Right,i,j)}};
-                setmat(Right,i,j,{'plus,{'times,{'minus,R1},
-                       getmat(Right,k,j)},
-                       {'times,L,getmat(Right,i,j)}});
-                setmat(Right,k,j,tmp);
+                tmp := {'plus,{'times,quo1,getmat(right,k,j)},
+                        {'times,quo2,getmat(right,i,j)}};
+                setmat(right,i,j,{'plus,{'times,{'minus,r1},
+                       getmat(right,k,j)},
+                       {'times,l,getmat(right,i,j)}});
+                setmat(right,k,j,tmp);
               >>;
 
-              setmat(A,k,k,g);
-              setmat(A,k,i,0);
+              setmat(a,k,k,g);
+              setmat(a,k,i,0);
               isclear := nil;
             >>;
           >>;
@@ -248,35 +248,35 @@ symbolic procedure smithex(mat1,x);
     %
     for i:=1:min(n,m) do
     <<
-      if getmat(A,i,i) neq 0 then
+      if getmat(a,i,i) neq 0 then
       <<
         r := r+1;
         % Watch out for integers giving lc = 0.
-        if lcof(getmat(A,i,i),x) = 0  then lc := getmat(A,i,i)
-        else lc := lcof(getmat(A,i,i),x);
-        setmat(A,r,r,{'quotient,getmat(A,i,i),lc});
+        if lcof(getmat(a,i,i),x) = 0  then lc := getmat(a,i,i)
+        else lc := lcof(getmat(a,i,i),x);
+        setmat(a,r,r,{'quotient,getmat(a,i,i),lc});
 
         if i = r then
         <<
           for j:=1:m do
           <<
-            setmat(Right,i,j,{'times,getmat(Right,i,j),lc});
+            setmat(right,i,j,{'times,getmat(right,i,j),lc});
           >>;
         >>
         else
         <<
-          setmat(A,i,i,0);
+          setmat(a,i,i,0);
           for j:=1:n do
           <<
-            tmp := getmat(Left,j,r);
-            setmat(Left,j,r,getmat(Left,j,i));
-            setmat(Left,j,i,tmp);
+            tmp := getmat(left,j,r);
+            setmat(left,j,r,getmat(left,j,i));
+            setmat(left,j,i,tmp);
           >>;
           for j:=1:m do
           <<
-            tmp := {'times,getmat(Right,i,j),lc};
-            setmat(Right,i,j,{'quotient,getmat(Right,r,j),lc});
-            setmat(Right,r,j,tmp);
+            tmp := {'times,getmat(right,i,j),lc};
+            setmat(right,i,j,{'quotient,getmat(right,r,j),lc});
+            setmat(right,r,j,tmp);
           >>;
         >>;
 
@@ -289,37 +289,37 @@ symbolic procedure smithex(mat1,x);
     <<
       j:=i+1;
       <<
-        while getmat(A,i,i) neq 1 and j <= r do
+        while getmat(a,i,i) neq 1 and j <= r do
         <<
-          poly1 := getmat(A,i,i);
-          poly2 := getmat(A,j,j);
+          poly1 := getmat(a,i,i);
+          poly2 := getmat(a,j,j);
           tmp := calc_exgcd(poly1,poly2,x);
           g := car tmp;
-          L := cadr tmp;
-          R1 := caddr tmp;
+          l := cadr tmp;
+          r1 := caddr tmp;
           quo1 := get_quo(poly1,g);
           quo2 := get_quo(poly2,g);
 
-          setmat(A,i,i,g);
-          setmat(A,j,j,{'times,quo1,getmat(A,j,j)});
+          setmat(a,i,i,g);
+          setmat(a,j,j,{'times,quo1,getmat(a,j,j)});
 
           for k:=1:n do
           <<
-            tmp := {'plus,{'times,quo1,getmat(Left,k,i)},{'times,quo2,
-                    getmat(Left,k,j)}};
-            setmat(Left,k,j,{'plus,{'times,{'minus,R1},
-                   getmat(Left,k,i)},{'times,L,getmat(Left,k,j)}});
-            setmat(Left,k,i,tmp);
+            tmp := {'plus,{'times,quo1,getmat(left,k,i)},{'times,quo2,
+                    getmat(left,k,j)}};
+            setmat(left,k,j,{'plus,{'times,{'minus,r1},
+                   getmat(left,k,i)},{'times,l,getmat(left,k,j)}});
+            setmat(left,k,i,tmp);
           >>;
 
           for k:=1:m do
           <<
-            tquo := {'times,R1,quo2};
+            tquo := {'times,r1,quo2};
             tmp := {'plus,{'times,{'plus,1,{'minus,tquo}},
-                    getmat(Right,i,k)},{'times,tquo,getmat(Right,j,k)}};
-            setmat(Right,j,k,{'plus,{'minus,getmat(Right,i,k)},
-                   getmat(Right,j,k)});
-            setmat(Right,i,k,tmp);
+                    getmat(right,i,k)},{'times,tquo,getmat(right,j,k)}};
+            setmat(right,j,k,{'plus,{'minus,getmat(right,i,k)},
+                   getmat(right,j,k)});
+            setmat(right,i,k,tmp);
           >>;
 
           j := j+1;
@@ -339,9 +339,9 @@ symbolic procedure smithex(mat1,x);
     %  Remove nests.
     %
     let rule_list;
-    A := de_nest_mat(A);
-    Left := de_nest_mat(Left);
-    Right := de_nest_mat(Right);
+    a := de_nest_mat(a);
+    left := de_nest_mat(left);
+    right := de_nest_mat(right);
     clearrules rule_list;
     %
     % Return to original mode.
@@ -354,7 +354,7 @@ symbolic procedure smithex(mat1,x);
     >>;
     off combineexpt;
 
-    return {'list,A,Left,Right};
+    return {'list,a,left,right};
   end;
 
 flag ('(smithex),'opfn);  %  So it can be used from algebraic mode.
@@ -396,7 +396,7 @@ symbolic procedure get_coeffs_smith(poly,x);
 
 
 
-symbolic procedure nest_input_smith(A,x);
+symbolic procedure nest_input_smith(a,x);
   %
   % Takes a matrix and converts all elements into nested form.
   % Also finds all coefficients and returns them in a list.
@@ -406,35 +406,35 @@ symbolic procedure nest_input_smith(A,x);
   % and is thus not nested.
   %
   begin
-    scalar tmp,coeff_list,full_coeff_list,AA;
+    scalar tmp,coeff_list,full_coeff_list,aa;
 
     integer row_dim,col_dim;
 
     full_coeff_list := nil;
     coeff_list := nil;
 
-    AA := copy_mat(A);
+    aa := copy_mat(a);
 
-    row_dim := car size_of_matrix(AA);
-    col_dim := cadr  size_of_matrix(AA);
+    row_dim := car size_of_matrix(aa);
+    col_dim := cadr  size_of_matrix(aa);
 
     for i := 1:row_dim do
     <<
       for j := 1:col_dim do
       <<
-        coeff_list := get_coeffs_smith(getmat(AA,i,j),x);
+        coeff_list := get_coeffs_smith(getmat(aa,i,j),x);
         if coeff_list = nil then <<>>
         else full_coeff_list := union(coeff_list,full_coeff_list);
         for each elt in coeff_list do
         <<
           tmp := {'co,2,elt};
-          setmat(AA,i,j,algebraic (sub(elt=tmp,getmat(AA,i,j))));
+          setmat(aa,i,j,algebraic (sub(elt=tmp,getmat(aa,i,j))));
         >>;
       >>;
     >>;
 
 
-    return {AA,full_coeff_list};
+    return {aa,full_coeff_list};
   end;
 
 

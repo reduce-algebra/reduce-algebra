@@ -8,19 +8,19 @@ availablegroups();
 {z2,k4,d3,d4,d5,d6,c3,c4,c5,c6,s4,a4}
 
 
-printgroup(D4);
+printgroup(d4);
 
 
 {id,rd4,rot2d4,rot3d4,sd4,srd4,sr2d4,sr3d4}
 
 
-generators(D4);
+generators(d4);
 
 
 {rd4,sd4}
 
 
-charactertable(D4);
+charactertable(d4);
 
 
 {{d4,{{id},1},{{rd4,rot3d4},1},{{rot2d4},1},{{sd4,sr2d4},1},{{sr3d4,srd4},1}},
@@ -34,32 +34,32 @@ charactertable(D4);
  {d4,{{id},2},{{rd4,rot3d4},0},{{rot2d4},-2},{{sd4,sr2d4},0},{{sr3d4,srd4},0}}}
 
 
-characternr(D4,1);
+characternr(d4,1);
 
 
 {d4,{{id},1},{{rd4,rot3d4},1},{{rot2d4},1},{{sd4,sr2d4},1},{{sr3d4,srd4},1}}
 
-characternr(D4,2);
+characternr(d4,2);
 
 
 {d4,{{id},1},{{rd4,rot3d4},1},{{rot2d4},1},{{sd4,sr2d4},-1},{{sr3d4,srd4},-1}}
 
-characternr(D4,3);
+characternr(d4,3);
 
 
 {d4,{{id},1},{{rd4,rot3d4},-1},{{rot2d4},1},{{sd4,sr2d4},1},{{sr3d4,srd4},-1}}
 
-characternr(D4,4);
+characternr(d4,4);
 
 
 {d4,{{id},1},{{rd4,rot3d4},-1},{{rot2d4},1},{{sd4,sr2d4},-1},{{sr3d4,srd4},1}}
 
-characternr(D4,5);
+characternr(d4,5);
 
 
 {d4,{{id},2},{{rd4,rot3d4},0},{{rot2d4},-2},{{sd4,sr2d4},0},{{sr3d4,srd4},0}}
 
-irreduciblereptable(D4);
+irreduciblereptable(d4);
 
 
 {{d4,
@@ -328,7 +328,7 @@ irreduciblereptable(D4);
 
   }}
 
-irreduciblerepnr(D4,1);
+irreduciblerepnr(d4,1);
 
 
 {d4,
@@ -381,7 +381,7 @@ irreduciblerepnr(D4,1);
 
  }
 
-irreduciblerepnr(D4,2);
+irreduciblerepnr(d4,2);
 
 
 {d4,
@@ -434,7 +434,7 @@ irreduciblerepnr(D4,2);
 
  }
 
-irreduciblerepnr(D4,3);
+irreduciblerepnr(d4,3);
 
 
 {d4,
@@ -487,7 +487,7 @@ irreduciblerepnr(D4,3);
 
  }
 
-irreduciblerepnr(D4,4);
+irreduciblerepnr(d4,4);
 
 
 {d4,
@@ -540,7 +540,7 @@ irreduciblerepnr(D4,4);
 
  }
 
-irreduciblerepnr(D4,5);
+irreduciblerepnr(d4,5);
 
 
 {d4,
@@ -649,7 +649,7 @@ sp := [0  1  0  0  0]
 
 
 
-rep:={D4,rD4=rr,sD4=sp};
+rep:={d4,rd4=rr,sd4=sp};
 
 
 rep := {d4,
@@ -865,7 +865,7 @@ r1 := [0  0  1]
 
 
 
-repC3:={C3,rC3=r1};
+repc3:={c3,rc3=r1};
 
 
 repc3 := {c3,rc3=
@@ -879,7 +879,7 @@ repc3 := {c3,rc3=
           }
 
 
-mC3:=mat((a,b,c),
+mc3:=mat((a,b,c),
          (c,a,b),
          (b,c,a));
 
@@ -892,7 +892,7 @@ mc3 := [c  a  b]
 
 
 
-diagonalize(mC3,repC3);
+diagonalize(mc3,repc3);
 
 
 [a + b + c              0                          0           ]
@@ -912,7 +912,7 @@ diagonalize(mC3,repC3);
 on complex;
 
 
-diagonalize(mC3,repC3);
+diagonalize(mc3,repc3);
 
 
 mat((a + b + c,0,0),

@@ -32,7 +32,7 @@ fluid '(!*blockp !*fastfor !*modular);
 
 global '(cursym!* foractions!*);
 
-Comment the syntax of the FOR statement is as follows:
+COMMENT the syntax of the FOR statement is as follows:
 
                  {step i3 until}
         {i := i1 {             } i2 }

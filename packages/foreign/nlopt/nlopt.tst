@@ -69,10 +69,10 @@ procedure mc_cormic_f(x);
 
 
 % ============================================================================
-procedure tst_ros(x0,M,alg);
+procedure tst_ros(x0,m,alg);
    begin scalar ans;
       nlopt_create(alg, 2);
-      nlopt_set_maxeval(M);
+      nlopt_set_maxeval(m);
       nlopt_set_lower_bounds({-2,-2});
       nlopt_set_upper_bounds({2,2});
       nlopt_set_min_objective(rosenbrock_f);
@@ -82,10 +82,10 @@ procedure tst_ros(x0,M,alg);
       return ans;
    end;
 
-procedure tst_ros30(x0,M,alg);
+procedure tst_ros30(x0,m,alg);
    begin scalar ans;
       nlopt_create(alg, 30);
-      nlopt_set_maxeval(M);
+      nlopt_set_maxeval(m);
       nlopt_set_lower_bounds(for i := 1:30 collect -30);
       nlopt_set_upper_bounds(for i := 1:30 collect 30);
       nlopt_set_min_objective(rosenbrock30_f);
@@ -95,10 +95,10 @@ procedure tst_ros30(x0,M,alg);
       return ans;
    end;
 
-procedure tst_mc(x0,M,alg);
+procedure tst_mc(x0,m,alg);
    begin scalar ans;
       nlopt_create(alg,2);
-      nlopt_set_maxeval(M);
+      nlopt_set_maxeval(m);
       nlopt_set_lower_bounds({-1.5,-3});
       nlopt_set_upper_bounds({4,4});
       nlopt_set_min_objective(mc_cormic_f);
@@ -145,20 +145,20 @@ procedure sq_c2(x);
 clear a,b;  % kludgy!
 
 procedure sq_c1c2(x);
-   begin scalar C,c1,c2,dC,dc1,dc2;
+   begin scalar c,c1,c2,dc,dc1,dc2;
       % Do NOT declare a, b; scalars are automatically initialized to 0 in
       % algebraic mode, so the 'sub' won't work!
-      C := (a*x.1+b)^3 - x.2;           % parameterized constraint function
-      c1 := sub({a=2, b=0}, C);
-      c2 := sub({a=-1,b=1}, C);
-      dC := {3*a*(a*x.1 + b)^2, -1.0};  % its gradient
-      dc1 := sub({a=2, b=0}, dC);
-      dc2 := sub({a=-1,b=1}, dC);
+      c := (a*x.1+b)^3 - x.2;           % parameterized constraint function
+      c1 := sub({a=2, b=0}, c);
+      c2 := sub({a=-1,b=1}, c);
+      dc := {3*a*(a*x.1 + b)^2, -1.0};  % its gradient
+      dc1 := sub({a=2, b=0}, dc);
+      dc2 := sub({a=-1,b=1}, dc);
       return appendn({c1,c2},dc1,dc2);  % in 'assist' package
    end;
 
 
-procedure tst_tut(x0,M,alg);
+procedure tst_tut(x0,m,alg);
    begin scalar ans;
       nlopt_create(alg, 2);
       nlopt_set_lower_bounds({-20000,0});
@@ -169,7 +169,7 @@ procedure tst_tut(x0,M,alg);
       nlopt_set_xtol_rel(1e-4);
       % stop when answer is accurate to 3 decimals:
       % nlopt_set_stopval(sqrt(8./27)+1e-3);
-      nlopt_set_maxeval(M);
+      nlopt_set_maxeval(m);
       ans := nlopt_optimize(x0);
       write nlopt_algorithm_name(alg), ":";
       nlopt_destroy();
@@ -183,7 +183,7 @@ procedure tst_tut(x0,M,alg);
 %% Entropy maximization test with an n-sided die.
 %% =========================================================================
 
-procedure H(x);
+procedure h(x);
    - for each xi in x sum xi*log(xi);  % Reduce treats 0*log(0) properly
 
 procedure sum_c(x);
@@ -199,13 +199,13 @@ procedure mean_c(x);
    end;
 
 % An n-sided die with a specified average throw 'av'
-procedure tst_die(n,av,tol,M,alg);
+procedure tst_die(n,av,tol,m,alg);
    begin scalar x0, mtol, ans;
       nlopt_create(alg, n);
-      nlopt_set_max_objective(H);
+      nlopt_set_max_objective(h);
       x0 := for k := 1:n collect 1/n;
       mtol := for k := 1:n collect tol;
-      nlopt_set_maxeval(M);
+      nlopt_set_maxeval(m);
       % constraints: all x_i >= 0, sum x_i = 1, sum i*x_i = av.
       % inequalities are expressed as <expn> <= 0:
       nlopt_add_inequality_mconstraint(nonneg_c,n,mtol);
@@ -245,28 +245,28 @@ end;
 
 
 % 2-d Rosenbrock
-tst_ros({0,0},500,NLOPT_LN_COBYLA);
+tst_ros({0,0},500,nlopt_ln_cobyla);
 write "testopt -a 25 -c -e 500  -o 0 yields {0.0579211,{0.759468,0.575982}}";
-tst_ros({0,0},5000,NLOPT_LN_COBYLA);
+tst_ros({0,0},5000,nlopt_ln_cobyla);
 write "testopt -a 25 -c -e 5000 -o 0 yields {0.0000793492,{0.991096,0.982245}}";
-tst_ros({0,0},201,NLOPT_GN_ORIG_DIRECT);
+tst_ros({0,0},201,nlopt_gn_orig_direct);
 write "testopt -a 6 -c -e 200 -o 0 yields {0.0123457,{0.888889,0.790123}}";
-tst_ros({0,0},1016,NLOPT_GN_ORIG_DIRECT);
+tst_ros({0,0},1016,nlopt_gn_orig_direct);
 write "testopt -a 6 -c -e 1000 -o 0 yields {0.000106815,{0.989687,0.979413}}";
 % McCormick
-tst_mc({1.25,0.5},100,NLOPT_LN_COBYLA);
+tst_mc({1.25,0.5},100,nlopt_ln_cobyla);
 write "testopt -a 25 -c -e 100 -o 1 yields  {-1.91322,{-0.547198,-1.5472}}";
-tst_mc({1.25,0.5},113,NLOPT_GN_ORIG_DIRECT);
+tst_mc({1.25,0.5},113,nlopt_gn_orig_direct);
 write "testopt -a 6 -c -e 100 -o 1 yields {-1.91315,{-0.553155,-1.54527}}";
 % 30-dimensional Rosenbrock, with z0 = {0,...,0}.
-tst_ros30(z0,2000, NLOPT_GN_ORIG_DIRECT);
+tst_ros30(z0,2000, nlopt_gn_orig_direct);
 write "testopt -a 5  -c -e 8000 -o 4 yields {28.0396},{0.356653,0.118884,0.0274348,0.00914495,...}}";
 % HERE WE HAVE A DISAGREEMENT
-tst_ros30(z0,1000, NLOPT_GN_MLSL);
+tst_ros30(z0,1000, nlopt_gn_mlsl);
 write "testopt -a 20 -c -e 1000 -o 4 yields {27.5606,{0.460273 0.21201 0.0532263 0.0100821 0.00908559,...}}";
 % Tutorial. The trajectory to the result (but not the final result) depends on the lower bound!
-tst_tut({1.234,5.678},4,NLOPT_LN_COBYLA);   % COBYLA
-tst_tut({1.234,5.678},4,NLOPT_LD_MMA);   % MMA
+tst_tut({1.234,5.678},4,nlopt_ln_cobyla);   % COBYLA
+tst_tut({1.234,5.678},4,nlopt_ld_mma);   % MMA
 % Entropy, die
 % Should yield {1.61358, {0.0543531,0.0787714,0.11416,0.165447,0.239775,0.347494}}
-tst_die(6,4.5,1e-5,300,NLOPT_LN_COBYLA);
+tst_die(6,4.5,1e-5,300,nlopt_ln_cobyla);

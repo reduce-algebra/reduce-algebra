@@ -39,12 +39,12 @@ module maxmin;  % Support for generalized MAX and MIN.
 put('max, 'simpfn, 'simpmax);
 
 symbolic procedure simpmax u;
-   S_simpmaxmin('max, function evalgreaterp, u, nil);
+   s_simpmaxmin('max, function evalgreaterp, u, nil);
 
 put('min, 'simpfn, 'simpmin);
 
 symbolic procedure simpmin u;
-   S_simpmaxmin('min, function evallessp, u, nil);
+   s_simpmaxmin('min, function evallessp, u, nil);
 
 flag('(max min),'listargp);
 
@@ -52,7 +52,7 @@ symbolic inline procedure maxmin_difflist(u,v);
  for each uu in u collect reval list('difference,uu ,v);
 
 
-symbolic procedure S_simpmaxmin(maxmin, relation, u,rec);
+symbolic procedure s_simpmaxmin(maxmin, relation, u,rec);
    begin scalar arglist, arglistp, mval, x;
       if null u then return nil ./ 1;   % 0 returned for empty args.
       arglistp := arglist := list nil;  % Dummy car with cdr to rplacd.
@@ -73,8 +73,8 @@ symbolic procedure S_simpmaxmin(maxmin, relation, u,rec);
                 return !*kk2f(maxmin . !*trim arglist) ./ 1;
       if cdr arglist then
         if length cdr arglist >= 1 and
-           not eqcar(prepsq(mval :=S_simpmaxmin(maxmin,relation,
-                        maxmin_difflist(arglist,car arglist),T)),maxmin)
+           not eqcar(prepsq(mval :=s_simpmaxmin(maxmin,relation,
+                        maxmin_difflist(arglist,car arglist),t)),maxmin)
            then return addsq(mval,simp!* car arglist)
            else return !*kk2f(maxmin . !*trim arglist) ./ 1;
       % Otherwise just return the single (extreme) value:
@@ -94,7 +94,7 @@ symbolic procedure flattenmaxmin(maxmin, u);
       if atom el then list el
       else if car el eq 'list then flattenmaxmin(maxmin, cdr el)
       else if car el eq maxmin then cdr el
-      else if car el='MAT then for each r in cdr el join r
+      else if car el='mat then for each r in cdr el join r
       else list el;
 
 endmodule;

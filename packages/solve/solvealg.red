@@ -1025,7 +1025,7 @@ symbolic procedure solvenonlnrtansolve(u,x,w);
    <<z:=reval caddr q;
      z:=reval sublis(solvenonlnrtansolve1 z,z);
      !!arbint:=ar;
-     y:=solve0({'equal,{'tan,{'quotient,V,2}},z},x);
+     y:=solve0({'equal,{'tan,{'quotient,v,2}},z},x);
      r:=union(y,r)>>;
     % Test for the special cases x=pi(not covered by tangent substitution).
    y := errorset2 {'subf,mkquote w,mkquote{x . 'pi}};

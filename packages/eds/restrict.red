@@ -28,7 +28,7 @@ module restrict;
 %
 
 
-Comment. Data structures:
+COMMENT. Data structures:
 
         rsx     ::= list of prefix (usually !*sq)
         rmap    ::= {map,rsx}

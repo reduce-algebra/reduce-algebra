@@ -234,7 +234,7 @@ symbolic procedure difference!*(u,v);
     addd(value u,negf value v);
 
 symbolic procedure difference_kernel_kernel(u,v);
-   (if null x then ZERO else
+   (if null x then zero else
      mkobject(x,'poly)) where x=addf(!*k2f value u,negf !*k2f value v);
 
 symbolic procedure difference_kernel_poly(u,v);
@@ -347,12 +347,12 @@ ranks u^n : {int,int} -> int,    % n should be restricted to posint
 
 symbolic procedure expt_int_int(u,v); mkobject(value u**value v,'int);
 
-fluid '(ONE);
+fluid '(one);
 
-ONE := mkobject(1,'nzint);
+one := mkobject(1,'nzint);
 
 symbolic procedure expt_poly_int(u,v);
-   if type v eq 'zero then ONE else
+   if type v eq 'zero then one else
     if xtype(u,'int) then expt_int_int(u,v) else
     if xtype(u,'kernel) then
      mkobject(!*q2f exptsq(!*k2q value u,value v),'poly) else
@@ -360,7 +360,7 @@ symbolic procedure expt_poly_int(u,v);
 
 symbolic procedure expt_xratpol_int(u,v);
    % Poly case handled by expt_poly_int.
-   if type v eq 'zero then ONE else
+   if type v eq 'zero then one else
     mkobject(exptsq(value u,value v),'ratpol);
 
 symbolic procedure expt_ratpol_ratpol(u,v);
@@ -413,7 +413,7 @@ ranks df(u,v) : {poly,kernel} -> poly,
 
 symbolic procedure df_poly_kernel(u,v);
    if type u eq 'zero then u else
-    if xtype(u,'int) then ZERO else
+    if xtype(u,'int) then zero else
     if xtype(u,'kernel) then
       mkobject(diffp(value u .** 1,value v),'ratpol) else
       mkobject(difff(value u,value v),'ratpol);
@@ -429,7 +429,7 @@ ranks int(u,v) : {poly,kernel} -> ratpol,
 
 symbolic procedure int_poly_kernel(u,v);
    if type u eq 'zero then u else
-    if xtype(u,'int) then ZERO else
+    if xtype(u,'int) then zero else
     if xtype(u,'kernel) then
       mkobject(simpint{value u,value v},'ratpol) else
       mkobject(simpint{prepf value u,value v},'ratpol);

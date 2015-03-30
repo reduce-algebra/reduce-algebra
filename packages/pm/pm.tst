@@ -89,11 +89,11 @@ si(nfac(3),{nfac(0)->1,nfac(?x)->?x*nfac(?x-1)});
 
 operator gamma,fac;
 
-fac(?x _=Natp(?x)) ::- ?x*fac(?x-1);
+fac(?x _=natp(?x)) ::- ?x*fac(?x-1);
 
 fac(0)  :- 1;
 
-fac(?x) :- Gamma(?x+1);
+fac(?x) :- gamma(?x+1);
 
 fac(3);
 
@@ -119,21 +119,21 @@ legp(x,y);
 
 % TESTS OF EXTENSIONS TO BASIC PATTERN MATCHER.
 
-comment *: MSet[?exprn,?val] or ?exprn ::: ?val
+COMMENT *: MSet[?exprn,?val] or ?exprn ::: ?val
 	assigns the value ?val to the projection ?exprn in such a way
 	as to store explicitly each form of ?exprn requested. *;
  
-Nosimp('mset,(t t));
+nosimp('mset,(t t));
 
-Newtok '((!: !: !: !-) Mset);
+newtok '((!: !: !: !-) mset);
 
 infix :::-;
 
-precedence Mset,RSetd;
+precedence mset,rsetd;
 
 ?exprn :::- ?val ::- (?exprn ::- (?exprn :- ?val ));
 
-scs := sin(?x)^2 + Cos(?x)^2 -> 1;
+scs := sin(?x)^2 + cos(?x)^2 -> 1;
 
 % The following pattern substitutes the rule sin^2 + cos^2 into a sum of
 % such terms.  For 2n terms (ie n sin and n cos) the pattern has a worst
@@ -141,11 +141,11 @@ scs := sin(?x)^2 + Cos(?x)^2 -> 1;
 
 operator trig,u;
 
-trig(?i) :::- Ap(+, Ar(?i,sin(u(?1))^2+Cos(u(?1))^2));
+trig(?i) :::- ap(+, ar(?i,sin(u(?1))^2+cos(u(?1))^2));
 
-if si(trig 1,scs) = 1 then write("Pm ok") else Write("PM failed");
+if si(trig 1,scs) = 1 then write("Pm ok") else write("PM failed");
 
-if si(trig 10,scs) = 10 then write("Pm ok") else Write("PM failed");
+if si(trig 10,scs) = 10 then write("Pm ok") else write("PM failed");
 
 % The next one takes about 70 seconds on an HP 9000/350, calling UNIFY
 % 1927 times.
@@ -162,17 +162,17 @@ operator #,@,ghg;
 
 xx := ghg(4,3,@(a,b,c,d),@(d,1+a-b,1+a-c),1);
 
-S(xx,sghg(3));
+s(xx,sghg(3));
 
 s(ws,sghg(2));
 
 yy := ghg(3,2,@(a-1,b,c/2),@((a+b)/2,c),1);
 
-S(yy,sghg(1));
+s(yy,sghg(1));
 
 yy := ghg(3,2,@(a-1,b,c/2),@(a/2+b/2,c),1);
 
-S(yy,sghg(1));
+s(yy,sghg(1));
 
 % Some Ghg theorems.
 
@@ -180,23 +180,23 @@ flag('(@), 'symmetric);
 
 % Watson's Theorem.
 
-SGhg(1) := Ghg(3,2,@(?a,?b,?c),@(?d _=?d=(1+?a+?b)/2,?e _=?e=2*?c),1) -> 
-     Gamma(1/2)*Gamma(?c+1/2)*Gamma((1+?a+?b)/2)*Gamma((1-?a-?b)/2+?c)/
-     (Gamma((1+?a)/2)*Gamma((1+?b)/2)*Gamma((1-?a)/2+?c)
-	*Gamma((1-?b)/2+?c));
+sghg(1) := ghg(3,2,@(?a,?b,?c),@(?d _=?d=(1+?a+?b)/2,?e _=?e=2*?c),1) -> 
+     gamma(1/2)*gamma(?c+1/2)*gamma((1+?a+?b)/2)*gamma((1-?a-?b)/2+?c)/
+     (gamma((1+?a)/2)*gamma((1+?b)/2)*gamma((1-?a)/2+?c)
+	*gamma((1-?b)/2+?c));
 
 % Dixon's theorem.
 
-SGhg(2) := Ghg(3,2,@(?a,?b,?c),@(?d _=?d=1+?a-?b,?e _=?e=1+?a-?c),1) -> 
-     Gamma(1+?a/2)*Gamma(1+?a-?b)*Gamma(1+?a-?c)*Gamma(1+?a/2-?b-?c)/
-     (Gamma(1+?a)*Gamma(1+?a/2-?b)*Gamma(1+?a/2-?c)*Gamma(1+?a-?b-?c));
+sghg(2) := ghg(3,2,@(?a,?b,?c),@(?d _=?d=1+?a-?b,?e _=?e=1+?a-?c),1) -> 
+     gamma(1+?a/2)*gamma(1+?a-?b)*gamma(1+?a-?c)*gamma(1+?a/2-?b-?c)/
+     (gamma(1+?a)*gamma(1+?a/2-?b)*gamma(1+?a/2-?c)*gamma(1+?a-?b-?c));
 
-SGhg(3) := Ghg(?p,?q,@(?a,??b),@(?a,??c),?z)
-		   -> Ghg(?p-1,?q-1,@(??b),@(??c),?z);
+sghg(3) := ghg(?p,?q,@(?a,??b),@(?a,??c),?z)
+		   -> ghg(?p-1,?q-1,@(??b),@(??c),?z);
 
-SGhg(9) := Ghg(1,0,@(?a),?b,?z )       ->  (1-?z)^(-?a);
-SGhg(10) := Ghg(0,0,?a,?b,?z)          ->  E^?z;
-SGhg(11) := Ghg(?p,?q,@(??t),@(??b),0) ->  1;
+sghg(9) := ghg(1,0,@(?a),?b,?z )       ->  (1-?z)^(-?a);
+sghg(10) := ghg(0,0,?a,?b,?z)          ->  e^?z;
+sghg(11) := ghg(?p,?q,@(??t),@(??b),0) ->  1;
 
 % If one of the bottom parameters is zero or a negative integer the
 % hypergeometric functions may be singular, so the presence of a
@@ -208,10 +208,10 @@ SGhg(11) := Ghg(?p,?q,@(??t),@(??b),0) ->  1;
 % Reference: AS 15.1; Slater, Generalized Hypergeometric Functions,
 %     Cambridge University Press,1966.
 
-s(Ghg(3,2,@(a,b,c),@(b,c),z),SGhg(3));
+s(ghg(3,2,@(a,b,c),@(b,c),z),sghg(3));
 
-si(Ghg(3,2,@(a,b,c),@(b,c),z),{SGhg(3),Sghg(9)});
+si(ghg(3,2,@(a,b,c),@(b,c),z),{sghg(3),sghg(9)});
 
-S(Ghg(3,2,@(a-1,b,c),@(a-b,a-c),1),sghg 2);
+s(ghg(3,2,@(a-1,b,c),@(a-b,a-c),1),sghg 2);
 
 end;

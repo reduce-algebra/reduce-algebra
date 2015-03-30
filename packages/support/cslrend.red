@@ -300,8 +300,8 @@ switches!* := '(
     talpqegauss               talpqp                    taylorautocombine
     taylorautoexpand          taylorkeeporiginal        taylornocache
     taylorprintorder          tdusetorder               tensor
-    test_plot                 testecho                  tex
-    texbreak                  texindent                 time
+    test_plot                 testecho                  TeX
+    TeXbreak                  TeXindent                 time
     tr_lie                    tra                       tracefps
     tracelimit                traceratint               tracespecfns
     tracetrig                 trallfac                  trchrstrem
@@ -345,7 +345,7 @@ tab!*:= compress(list('!!, special!-char 3));   % tab key
 % This file defines the system dependent code necessary to run REDUCE
 % under CSL.
 
-Comment The following functions, which are referenced in the basic
+COMMENT The following functions, which are referenced in the basic
 REDUCE source (RLISP, ALG1, ALG2, MATR and PHYS) should be defined to
 complete the definition of REDUCE:
 
@@ -404,7 +404,7 @@ symbolic procedure mkfil u;
     else string!-downcase u;
 
 
-Comment The following functions are only referenced if various flags are
+COMMENT The following functions are only referenced if various flags are
 set, or the functions are actually defined. They are defined in another
 module, which is not needed to build the basic system. The name of the
 flag follows the function name, enclosed in parentheses:
@@ -427,7 +427,7 @@ flag follows the function name, enclosed in parentheses:
 
 
 
-Comment The following operator is used to save a REDUCE session as a
+COMMENT The following operator is used to save a REDUCE session as a
 file for later use;
 
 symbolic procedure savesession u;
@@ -438,19 +438,19 @@ flag('(savesession),'opfn);
 flag('(savesession),'noval);
 
 
-Comment make "system" available as an operator;
+COMMENT make "system" available as an operator;
 
 flag('(system),'opfn);
 
 flag('(system),'noval);
 
 
-Comment to make "faslend" an endstat;
+COMMENT to make "faslend" an endstat;
 
 put('faslend,'stat,'endstat);
 
 
-Comment The current REDUCE model allows for the availability of fast
+COMMENT The current REDUCE model allows for the availability of fast
 arithmetical operations on small integers (called "inums").  All modern
 LISPs provide such support.  However, the program will still run without
 these constructs.  The relevant functions that should be defined for
@@ -464,7 +464,7 @@ flag('(iplus itimes iplus2 itimes2 iadd1 isub1 iminus iminusp
 flag('(fp!-infinite fp!-nan fp!-finite fp!-subnorm), 'lose);
 #endif
 
-Comment There are also a number of system constants required for each
+COMMENT There are also a number of system constants required for each
 implementation. In systems that don't support inums, the equivalent
 single precision integers should be used;
 
@@ -538,7 +538,9 @@ symbolic procedure begin;
 % (errorset E nil nil). Some of these backtraces are a nuisance since
 % the "error" is not in any sense a problem, but when things are going
 % wrong it can be most frustrating if the evidence is hidden.
-     if !*savedef and getd 'enable!-errorset then enable!-errorset(3,3);
+% Hmmm this is more nuisance than it is worth, so disable it but leave this
+% to show how to reinstate if when things become desparate!
+%    if !*savedef and getd 'enable!-errorset then enable!-errorset(3,3);
      if modulep 'tmprint then <<
         w := verbos 0;
         load!-module 'tmprint;
@@ -672,7 +674,7 @@ symbolic inline procedure rest u; cdr u;
 
 flag('(first second third fourth rest), 'lose);
 
-Comment Initial setups for REDUCE;
+COMMENT Initial setups for REDUCE;
 
 spare!* := 0;    % We need this for bootstrapping.
 
@@ -708,18 +710,18 @@ flag('(load reload),'noform);
 
 deflist('((load rlis) (reload rlis)),'stat);
 
-symbolic macro procedure load x; PSL!-load(cdr x, nil);
-symbolic macro procedure reload x; PSL!-load(cdr x, t);
+symbolic macro procedure load x; psl!-load(cdr x, nil);
+symbolic macro procedure reload x; psl!-load(cdr x, t);
 
-global '(PSL!-loaded!*);
-PSL!-loaded!* := nil;
+global '(psl!-loaded!*);
+psl!-loaded!* := nil;
 
-symbolic procedure PSL!-load(mods, reloadp);
+symbolic procedure psl!-load(mods, reloadp);
   for each x in mods do <<
-    if reloadp or not member(x, PSL!-loaded!*) then <<
+    if reloadp or not member(x, psl!-loaded!*) then <<
 %      load!-module x;
        load!-package x;
-       PSL!-loaded!* := union(list x, PSL!-loaded!*) >> >>;
+       psl!-loaded!* := union(list x, psl!-loaded!*) >> >>;
 
 symbolic macro procedure tr x;
    list('trace, list('quote, cdr x));
@@ -744,7 +746,7 @@ deflist('((tr rlis)     (trst rlis)
 % Now built-in to CSL
 %symbolic procedure prop x; plist x;  % Yukky PSL compatibility.
 
-Comment The following declarations are needed to build various modules;
+COMMENT The following declarations are needed to build various modules;
 
 flag('(mkquote spaces subla boundp error1),'lose);
 

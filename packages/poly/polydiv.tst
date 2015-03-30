@@ -56,13 +56,13 @@ off rationalize;
 on allfac;  remfac x;
 
 procedure test_pseudo_division(a, b, x);
-   begin scalar qr, L;
+   begin scalar qr, l;
       qr := pseudo_divide(a, b, x);
-      L := lcof(b,x);
+      l := lcof(b,x);
       %% For versions of REDUCE prior to 3.6 use:
       %% L := if b freeof x then b else lcof(b,x);
       if first qr * b + second qr =
-         L^(deg(a,x)-deg(b,x)+1) * a then
+         l^(deg(a,x)-deg(b,x)+1) * a then
          write "Pseudo-division OK"
       else
          write "Pseudo-division failed"

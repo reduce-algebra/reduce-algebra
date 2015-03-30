@@ -54,21 +54,21 @@ operator g;
 
 off expanddf;
 
-depend g(v),A1;
+depend g(v),a1;
 
-df(g(v),A1);
+df(g(v),a1);
 
 on expanddf;
 
-df(g(v),A1);
+df(g(v),a1);
 
 off expanddf;
 
-df(df(int(g(v),v),A1),v);
+df(df(int(g(v),v),a1),v);
 
 on expanddf;
 
-df(df(int(g(v),v),A1),v);
+df(df(int(g(v),v),a1),v);
 
 % more chain rule tests: multiple derivatives
 
@@ -76,7 +76,7 @@ off expanddf;
 operator y;
 depend ux,x;
 
-comment
+COMMENT
  Since ux depends on x, derivatives w.r.t. x can be expressed via
  the chain through derivatives w.r.t. uxi, if the switch expanddf
  is set to on ;
@@ -109,7 +109,7 @@ df(y(ux),ux,x);
 
 off expanddf;
 
-comment 
+COMMENT 
  Now do the same, but with an explicit value for the derivative of ux w.r.t. x;
 
 let df(ux,x) = 1/e**x;
@@ -144,19 +144,19 @@ df(y(ux),ux,x);
 
 off expanddf;
 
-df(df(g(v),A1),v);
+df(df(g(v),a1),v);
 
 on expanddf;
 
-df(df(g(v),A1),v);
+df(df(g(v),a1),v);
 
 on commutedf;
 
-df(df(g(v),A1),v);
+df(df(g(v),a1),v);
 
 off commutedf;
 
-df(df(g(v),A1),v);
+df(df(g(v),a1),v);
 
 depend uuu,xxx;
 

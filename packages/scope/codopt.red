@@ -572,7 +572,7 @@ begin scalar zz,zzhr,x1,y,p,ljsi,cljsi;
     if zeropp(dm!-difference(dm!-times(ival(car zz),bil),
                               dm!-times(ival(car zzhr),bkl)))
      then p:=cljsi.p;
-comment
+COMMENT
   if zeropp(dm!-difference(dm!-quotient(bil,bkl),
                             dm!-quotient(ival(car zzhr),ival(car zz))))
       then p:=cljsi.p;

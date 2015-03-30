@@ -55,9 +55,9 @@ symbolic procedure spcholesky(mat1);
   %
   %
   begin
-    scalar col,x,p,in_mat,L,U,I_turned_rounded_on,val;
+    scalar col,x,p,in_mat,l,u,i_turned_rounded_on,val;
     integer i,j,n;
-    if not !*rounded then << I_turned_rounded_on := t; on rounded; >>;
+    if not !*rounded then << i_turned_rounded_on := t; on rounded; >>;
     if not matrixp(mat1) then
      rederr "Error in spcholesky:  non matrix input.";
     if not symmetricp(mat1) then
@@ -87,10 +87,10 @@ symbolic procedure spcholesky(mat1);
          >>;
        >>;
       >>;
-    L := spget_l(in_mat,p,n);
-    U := algebraic tp(L);
-    if I_turned_rounded_on then off rounded;
-    return {'list,L,U};
+    l := spget_l(in_mat,p,n);
+    u := algebraic tp(l);
+    if i_turned_rounded_on then off rounded;
+    return {'list,l,u};
   end;
 
 flag('(spcholesky),'opfn);  % So it can be used from algebraic mode.
@@ -102,21 +102,21 @@ symbolic procedure spget_l(in_mat,p,sq_size);
   % Pulls out L from in_mat and p.
   %
   begin
-    scalar L,col;
+    scalar l,col;
     integer i,j,val;
-    L := mkempspmat(sq_size,list('spm,sq_size,sq_size));
+    l := mkempspmat(sq_size,list('spm,sq_size,sq_size));
     for i:=1:sq_size do
     <<
-      letmtr3(list(L,i,i), reval {'quotient,1,getv(p,i)},L,nil);
+      letmtr3(list(l,i,i), reval {'quotient,1,getv(p,i)},l,nil);
       col:=findrow(in_mat,i);
       for each xx in cdr col do
        << j:=car xx;
           val:=cdr xx;
           if j<i then <<if val = 0 then nil
-                          else letmtr3(list(L,i,j),val,L,nil);>>;
+                          else letmtr3(list(l,i,j),val,l,nil);>>;
        >>;
     >>;
-    return L;
+    return l;
   end;
 
 endmodule;

@@ -260,7 +260,7 @@ end;
 
 symbolic procedure lambdard();
 begin scalar b1, b2, ats;
- ats:=retattributes(atts, '(type definitionurl encoding));
+ ats:=retattributes(atts, '(type definitionURL encoding));
  lex();
  b1:=getargsrd();
  b2:=mathml2();
@@ -301,7 +301,7 @@ end;
 
 symbolic procedure declarerd();
 begin scalar b1, b2, ats;
- ats:=retattributes(atts, '(type nargs occurence scope definitionurl));
+ ats:=retattributes(atts, '(type nargs occurence scope definitionURL));
  lex();
  if char='(c i) then
   << b1:=cird()>>
@@ -324,7 +324,7 @@ begin scalar aa, fun;
  % It uses the table in functions!* to find the function name (the third entry) and
  % the arguments to send the RD function.
 
- mmlatts:=retattributes(atts, '(type definitionurl encoding));
+ mmlatts:=retattributes(atts, '(type definitionURL encoding));
 
  if (aa:=assoc(compress!* char, functions!*)) then <<
    fun:=apply(cadr aa, nil);
@@ -413,7 +413,7 @@ fluid '(relations!*);
 symbolic procedure relnrd();
 begin scalar aa, ats;
  lex();
- ats:=retattributes(atts, '(type definitionurl));
+ ats:=retattributes(atts, '(type definitionURL));
  if (aa:=assoc(compress!* char, relations!*)) then return cons(cadr rest aa, cons(ats, apply(cadr aa, nil)));
 end;
 
@@ -502,7 +502,7 @@ end;
 
 symbolic procedure limitrd();
 begin scalar var, condi, low, exp, ats;
- ats:=retattributes(atts, '(definitionurl));
+ ats:=retattributes(atts, '(definitionURL));
  low:=nil;
  lex();
  if char='(b v a r) then
@@ -1171,7 +1171,7 @@ begin;
      princ " ";
      princ caar a;
      princ "=""";
-     if caar a neq 'definitionurl then <<
+     if caar a neq 'definitionURL then <<
         if cadar a = 'vectorml then princ "vector"
         else princ cadar a;
      >>

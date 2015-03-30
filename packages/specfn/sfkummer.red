@@ -36,23 +36,23 @@ exports kummerm!*calc;
 % had to cut out of this before getting this version was a sight to
 % behold.
 
-algebraic (operator kummerM, kummerU);
+algebraic (operator KummerM, KummerU);
 
 symbolic operator kummerm!*calc;
 
 
 algebraic (kummer!*rules := {
 
-kummerU(~a,~b,~z)  =>  ( pi / sin (pi * b)) *
-      ( (kummerM(a,b,z) / (gamma(1+a-b) * gamma(b))) -
-         ((z**(1-b)) * (kummerM(1+a-b,2-b,z)/(gamma(a) * gamma(2-b)))))
+KummerU(~a,~b,~z)  =>  ( pi / sin (pi * b)) *
+      ( (KummerM(a,b,z) / (gamma(1+a-b) * gamma(b))) -
+         ((z**(1-b)) * (KummerM(1+a-b,2-b,z)/(gamma(a) * gamma(2-b)))))
    when numberp b and (impart b neq 0 or b neq floor b)
       and numberp a and (impart a neq 0 or a neq floor a or a > 0)
          and not(z=0 and repart(1-b) < 0)
                and ((a-b) neq floor repart (a-b) or (a-b) > -1),
 
-kummerU(~a,~b,~z)  =>  ( pi / sin (pi * b)) *
-      ( -((z**(1-b)) * (kummerM(1+a-b,2-b,z)/(gamma(a) * gamma(2-b)))))
+KummerU(~a,~b,~z)  =>  ( pi / sin (pi * b)) *
+      ( -((z**(1-b)) * (KummerM(1+a-b,2-b,z)/(gamma(a) * gamma(2-b)))))
    when numberp b and (impart b neq 0 or b neq floor b)
       and not(z=0 and repart(1-b) < 0)
                 % ComplexInfinity otherwise, but we can't calculate with
@@ -61,24 +61,24 @@ kummerU(~a,~b,~z)  =>  ( pi / sin (pi * b)) *
 
 
 
-kummerM(~a,~a,~z) => exp(z) when not(fixp a and a <= 0) ,
+KummerM(~a,~a,~z) => exp(z) when not(fixp a and a <= 0) ,
 
 %% fix by FJW : old form: kummerM(~a,~b,~z)  =>  exp z       when a = b,
 
-kummerM(~a,~b,~z)  =>  ((2 * exp (z/2)) / z) * sinh (z/2)
+KummerM(~a,~b,~z)  =>  ((2 * exp (z/2)) / z) * sinh (z/2)
    when numberp a and numberp b and numberp z
       and a = 1 and b = 2 and impart z = 0 and z neq 0,
 
-kummerM(~a,~b,~z)  =>  ((-2 * i * exp (z/2)) / z) * sin (-z / (2*i))
+KummerM(~a,~b,~z)  =>  ((-2 * i * exp (z/2)) / z) * sin (-z / (2*i))
    when numberp a and numberp b and numberp z
       and a = 1 and b = 2 and repart z = 0 and z neq 0,
 
-kummerM(~a,~b,~z)  =>  infinity
+KummerM(~a,~b,~z)  =>  infinity
    when numberp a and numberp b
       and impart b = 0 and b < 0 and b = floor b
                and not (impart a = 0 and a < 0 and a = floor a and a >= b),
 
-kummerM(~a,~b,~z)  =>  do!*kummerm(a,b,z)
+KummerM(~a,~b,~z)  =>  do!*kummerm(a,b,z)
    when symbolic !*rounded
       and numberp a and numberp b and numberp z
                and b neq 0
@@ -128,23 +128,23 @@ algebraic procedure kummerm!*calc(a,b,z);
 
 symbolic procedure kummerm!*calc!*sub(a,b,z);
    begin scalar result, this,
-               admissable, pAmod, pBmod;
+               admissable, pamod, pbmod;
       integer rp, orda, k;
       a := sq2bf!* a; b := sq2bf!* b; z := sq2bf!* z;
       result := bfone!*; k := 1;
-      pAmod := timbf(a,z); pBmod := b;
+      pamod := timbf(a,z); pbmod := b;
       admissable := divbf(bfone!*,
                i2bf!: (2**(5 + c!:prec!:())));
       orda := order!: admissable - 5;
       this := bfone!*; rp := c!:prec!:();
       while greaterp!: (abs!: this, admissable) do
-               << this := divide!:(times!:(this,pAmod),
-                            times!:(pBmod, i2bf!: k),rp);
+               << this := divide!:(times!:(this,pamod),
+                            times!:(pbmod, i2bf!: k),rp);
                   rp := order!: this - orda;
                   result := plus!:(result, this);
                   k := k + 1;
-                  pAmod := plus!:(pAmod, z);
-                  pBmod := plus!:(pBmod, bfone!*);
+                  pamod := plus!:(pamod, z);
+                  pbmod := plus!:(pbmod, bfone!*);
                >>;
       return mk!*sq !*f2q mkround result;
    end;

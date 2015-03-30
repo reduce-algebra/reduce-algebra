@@ -52,13 +52,13 @@ load!-package 'arnum; % So we can test whether it's in use or not.
 % see jordansymbolic.
 
 
-symbolic procedure jordan(A);
+symbolic procedure jordan(a);
   begin
-    scalar AA,l,tmp,P,Pinv,ans,ans_mat,full_coeff_list,rule_list,
+    scalar aa,l,tmp,p,pinv,ans,ans_mat,full_coeff_list,rule_list,
            input_mode;
 
-    matrix_input_test(A);
-    if (car size_of_matrix(A)) neq (cadr size_of_matrix(A))
+    matrix_input_test(a);
+    if (car size_of_matrix(a)) neq (cadr size_of_matrix(a))
      then rederr "ERROR: expecting a square matrix. ";
 
     input_mode := get(dmode!*,'dname);
@@ -72,16 +72,16 @@ symbolic procedure jordan(A);
      then on rational;
     on combineexpt;
 
-    tmp := nest_input(A);
-    AA := car tmp;
+    tmp := nest_input(a);
+    aa := car tmp;
     full_coeff_list := cadr tmp;
 
-    l := jordansymbolicform(AA, full_coeff_list);
+    l := jordansymbolicform(aa, full_coeff_list);
 
     tmp := jordanform(l, full_coeff_list);
     ans := car tmp;
-    P := cadr tmp;
-    Pinv := caddr tmp;
+    p := cadr tmp;
+    pinv := caddr tmp;
     %
     %  Set up rule list for removing nests.
     %
@@ -96,8 +96,8 @@ symbolic procedure jordan(A);
     %
     let rule_list;
     ans_mat := de_nest_mat(ans);
-    P := de_nest_mat(P);
-    Pinv := de_nest_mat(Pinv);
+    p := de_nest_mat(p);
+    pinv := de_nest_mat(pinv);
     clearrules rule_list;
     %
     % Return to original mode.
@@ -110,7 +110,7 @@ symbolic procedure jordan(A);
     >>;
     off combineexpt;
 
-    return {'list, ans_mat, P, Pinv};
+    return {'list, ans_mat, p, pinv};
   end;
 
 flag ('(jordan),'opfn);  %  So it can be used from algebraic mode.
@@ -119,11 +119,11 @@ flag ('(jordan),'opfn);  %  So it can be used from algebraic mode.
 
 symbolic procedure jordanform(l, full_coeff_list);
   begin
-    scalar jj,z,zeroes,P,Pinv,x,tmp,tmp1,de_nest;
+    scalar jj,z,zeroes,p,pinv,x,tmp,tmp1,de_nest;
     integer n,d;
 
-    P := nth(l,3);
-    Pinv := nth(l,4);
+    p := nth(l,3);
+    pinv := nth(l,4);
 
     n := length nth(nth(l,2),1);
     x := nth (nth(l,2),2);
@@ -189,21 +189,21 @@ symbolic procedure jordanform(l, full_coeff_list);
         <<
           tmp := nth(zeroes,j);
           tmp := caddr tmp;
-          P := algebraic sub(mkid(x,off_mod_reval{'plus,
-                             {'times,10,i},j})=tmp,P);
+          p := algebraic sub(mkid(x,off_mod_reval{'plus,
+                             {'times,10,i},j})=tmp,p);
         >>;
 
         for j:=1:length zeroes do
         <<
           tmp := nth(zeroes,j);
           tmp := caddr tmp;
-          Pinv := algebraic sub(mkid(x,off_mod_reval{'plus,
-                                {'times,10,i},j})= tmp, Pinv);
+          pinv := algebraic sub(mkid(x,off_mod_reval{'plus,
+                                {'times,10,i},j})= tmp, pinv);
         >>;
       >>;
     >>;
 
-    return {jj,P,Pinv};
+    return {jj,p,pinv};
   end;
 
 

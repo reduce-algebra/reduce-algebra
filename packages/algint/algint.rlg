@@ -37,7 +37,7 @@ Herbert Stoyan
 ;
 
 
-Comment we first set up a suitable testing functions;
+COMMENT we first set up a suitable testing functions;
 
 
 fluid '(gcknt!*);
@@ -3470,7 +3470,7 @@ testint(1/(r*sqrt(2*h*r**2-alpha**2-epsilon**2-2*k*r**4)),r);
 
 
 
-Comment many of these integrals used to require Steve Harrington's
+COMMENT many of these integrals used to require Steve Harrington's
 	code to evaluate. They originated in Novosibirsk as examples
 	of using Analytik. There are still a few examples that could
 	be evaluated using better heuristics;
@@ -3770,7 +3770,7 @@ testint(x*e**x*cos(x),x);
                  2
 
 
-Comment the following set came from Herbert Stoyan;
+COMMENT the following set came from Herbert Stoyan;
 
 
 testint(1/(x-3)**4,x);
@@ -4002,7 +4002,7 @@ int(erf(a + x),x)
 
 
 
-Comment some interesting integrals of algebraic functions;
+COMMENT some interesting integrals of algebraic functions;
 
 
 % The Chebyshev integral.
@@ -4186,7 +4186,7 @@ log(sqrt(x  - 4) + sqrt(x  - 1) + 1)
 % testint(sqrt(-4*sqrt(2)+9)*x-sqrt(x**4+2*x**2+4*x+1)*sqrt(2),x);
 
 
-Comment here is an example of using the integrator with pattern
+COMMENT here is an example of using the integrator with pattern
 	matching;
 
 
@@ -4253,7 +4253,7 @@ int(f1s,s);
        - 24*mc*s *y  - 24*mc*s*y  - 3*s *y  - 6*s *y  - 6*s*y ))/(384*e   *s*y)
 
 
-factor ei,log;
+factor Ei,log;
 
 
 
@@ -4282,7 +4282,7 @@ ws;
      - 6*s*y ))/(384*e   *s*y)
 
 
-Comment the following integrals reveal deficiencies in the current
+COMMENT the following integrals reveal deficiencies in the current
 integrator;
 
 

@@ -85,14 +85,14 @@ let { polylog(1,~z) => -log(1-z),
       polylog(2,1/2) => (pi^2 - 6*log(2)^2)/12,
       polylog(2,1) => pi^2/6,
       polylog(2,2) => pi^2/4-i*pi*log(2),
-      polylog(2,i) => -pi^2/48 + I*catalan,
-      polylog(2,-i) => -pi^2/48 - I*catalan,
+      polylog(2,i) => -pi^2/48 + i*Catalan,
+      polylog(2,-i) => -pi^2/48 - i*Catalan,
       polylog(3,1/2) => (4*log(2)^3 - 2*pi^2*log(2) + 21*zeta(3))/24,
       polylog(~s,1) => zeta(s),
       df(polylog(~n,~z),~z) => polylog(n-1,z)/z when fixp n and n>1
 };
 
-let { Lerch_Phi (~z,~s,~a) => compute!:lerch_phi(z,s,a)
+let { Lerch_phi (~z,~s,~a) => compute!:lerch_phi(z,s,a)
               when lisp !*rounded and numberp z and abs(z)<1
                      and numberp s and numberp a,
       polylog(~n,~z) =>  z*compute!:lerch_phi(z,n,1)
@@ -102,7 +102,7 @@ let { Lerch_Phi (~z,~s,~a) => compute!:lerch_phi(z,s,a)
 
 % from specfn/sfconsts.red
 
-let  Golden_Ratio = (1 + sqrt(5))/2; % for Architects
+let  golden_ratio = (1 + sqrt(5))/2; % for Architects
 
 
 
@@ -112,26 +112,26 @@ let  Golden_Ratio = (1 + sqrt(5))/2; % for Architects
 %       in sci.math.symbolic
 %
 
-symbolic procedure compute!:Khinchin();
+symbolic procedure compute!:khinchin();
  (if not(!*rounded) then mk!*sq('((((Khinchin . 1) . 1)) . 1)) else
-    aeval ('compute!:Khinchin1 . nil)) where !:prec!: = !:prec!: ;
+    aeval ('compute!:khinchin1 . nil)) where !:prec!: = !:prec!: ;
 
-symbolic operator compute!:Khinchin;
+symbolic operator compute!:khinchin;
 
-let Khinchin => compute!:Khinchin();
+let Khinchin => compute!:khinchin();
 
-flag('(Euler_gamma Golden_ratio catalan Khinchin),'reserved);
-flag('(Euler_gamma Golden_ratio catalan Khinchin),'constant);
-flag('(Euler_gamma Golden_ratio catalan Khinchin),'realvalued);
+flag('(Euler_gamma golden_ratio Catalan Khinchin),'reserved);
+flag('(Euler_gamma golden_ratio Catalan Khinchin),'constant);
+flag('(Euler_gamma golden_ratio Catalan Khinchin),'realvalued);
 let {
    sign(Euler_gamma) => 1,
-   sign(Golden_ratio) => 1,
-   sign(catalan) => 1,
+   sign(golden_ratio) => 1,
+   sign(Catalan) => 1,
    sign(Khinchin) => 1 };
 put('Euler_gamma,'!:rd!:,'rd_euler!*);
 put('Euler_gamma,'!:cr!:,'cr_euler!*);
-put('catalan,'!:rd!:,'rd_catalan!*);
-put('catalan,'!:cr!:,'cr_catalan!*);
+put('Catalan,'!:rd!:,'rd_catalan!*);
+put('Catalan,'!:cr!:,'cr_catalan!*);
 
 % from specfn/sfgen.red
 
@@ -154,7 +154,7 @@ let bernoullirules;
 operator Euler;
 
 let {   Euler(0)  => 1,
-        Euler(~n) => Euler!:aux(n) when fixp n and n > 0};
+        Euler(~n) => euler!:aux(n) when fixp n and n > 0};
 
 symbolic operator euler!:aux;
 
@@ -232,48 +232,48 @@ beta(~z,~w)  =>  0
 let beta!*rules;
 
 
-Comment Ruleset for calculating the Pochhammer symbol
+COMMENT Ruleset for calculating the Pochhammer symbol
         Author:  Wolfram Koepf, Freie Universitaet Berlin 1992,
         Translated to Reduce syntax by Winfried Neun, ZIB Berlin.
         Made generally safer (and uglier) by Chris Cannam, ZIB.
         ;
 
 
-algebraic operator pochhammer;
+algebraic operator Pochhammer;
 symbolic operator do!*pochhammer;
 
 pochhammer!*rules := {
 
-df(pochhammer(~z,~k),~z) => pochhammer(~z,~k) * (Psi(z+k)-Psi(z)),
+df(Pochhammer(~z,~k),~z) => Pochhammer(~z,~k) * (psi(z+k)-psi(z)),
 
-pochhammer(~z,~k)  => (-1)^k*factorial(-z)/factorial(-z-k)
+Pochhammer(~z,~k)  => (-1)^k*factorial(-z)/factorial(-z-k)
    when fixp z and z<0,
 
-pochhammer(~z,~k)  =>  ( for i:=0:(k-1) product(z + i))
+Pochhammer(~z,~k)  =>  ( for i:=0:(k-1) product(z + i))
    when numberp k and k < 20 and k > 0,
 
-pochhammer(~z,~k)  =>  1
+Pochhammer(~z,~k)  =>  1
    when numberp k and k = 0,
 
-pochhammer(~z,~k)  => factorial(z+k-1)/factorial(z-1)
+Pochhammer(~z,~k)  => factorial(z+k-1)/factorial(z-1)
    when fixp z and z > 0,
 
-pochhammer(~z,~k -1)  =>
-   2 * pochhammer(1/2,k) / (2*k -1)
+Pochhammer(~z,~k -1)  =>
+   2 * Pochhammer(1/2,k) / (2*k -1)
       when numberp z and z = 1/2,
 
-pochhammer(~a,~k)  =>
+Pochhammer(~a,~k)  =>
    factorial(2k)/((4^k) * factorial(k))
       when numberp a and a = 1/2,
 
-pochhammer(~n,~k)  =>
+Pochhammer(~n,~k)  =>
    do!*pochhammer(n,k)
       when numberp n and numberp k
          and impart n = 0 and impart k = 0
             and n = floor n and k = floor k
                and n > -1 and k > 0,
 
-pochhammer(~a,~k)  =>
+Pochhammer(~a,~k)  =>
    do!*pochhammer(a,k)
       when symbolic !*rounded
          and numberp k and numberp a
@@ -281,18 +281,18 @@ pochhammer(~a,~k)  =>
                and ((a neq floor a) or (a > 0))
                   and k = floor k and k > 0,
 
-pochhammer(~n,~k)  =>
+Pochhammer(~n,~k)  =>
    (-1)^k * factorial(-n) / factorial(-n-k)
       when numberp n and numberp k
          and impart n = 0
             and n = floor n and n < 1 and (-n-k) >= 0,
 
-pochhammer(~a,~k)  =>
-   pochhammer(2*a-1,2k)/((4^k) * pochhammer((2 a -1)/2,k))
+Pochhammer(~a,~k)  =>
+   Pochhammer(2*a-1,2k)/((4^k) * Pochhammer((2 a -1)/2,k))
       when numberp a and impart a = 0
          and (a+1/2) = floor (a+1/2) and a > 0,
 
-pochhammer(~a,~k)  =>
+Pochhammer(~a,~k)  =>
    (-1)^(-a+1/2) * Pochhammer(1-a-(-a+1/2),(-a+1/2)) *
                    Pochhammer(a+(-a+1/2),k-(-a+1/2))
       when numberp a and impart a = 0
@@ -305,71 +305,71 @@ special!*pochhammer!*rules := {
         % these special rules are normally disabled because
         % they produce a lot of load for the algebraic mode
 
-pochhammer(~a,~k)*pochhammer(~b,~k)  =>
-   pochhammer(2a,2k)/(4^k)
+Pochhammer(~a,~k)*Pochhammer(~b,~k)  =>
+   Pochhammer(2a,2k)/(4^k)
       when (b-a)=1/2,
 
-pochhammer(~a,~k)  =>
-   (-1)^(-a+1/2) * pochhammer(1-a-(-a+1/2),-a+1/2) *
-      pochhammer(a +(-a +1/2),k-(-a+1/2))
+Pochhammer(~a,~k)  =>
+   (-1)^(-a+1/2) * Pochhammer(1-a-(-a+1/2),-a+1/2) *
+      Pochhammer(a +(-a +1/2),k-(-a+1/2))
          when numberp a and impart a = 0
             and (a+1/2) = floor (a+1/2) and a<0,
 
-pochhammer(~z,~k) * pochhammer(~cz,~k)  =>
+Pochhammer(~z,~k) * Pochhammer(~cz,~k)  =>
    do!*poch!*conj!*calc(z,k)
       when numberp z and numberp cz and numberp k
          and not(impart z = 0) and z = conj cz
             and impart k = 0 and k = floor k and k >= 0,
 
-pochhammer(~a,~k)*pochhammer(~aa,~k)  =>
+Pochhammer(~a,~k)*Pochhammer(~aa,~k)  =>
    factorial(3 k)/(factorial(k) * 27^k)
       when numberp a and a = 1/3 and numberp aa and aa = 2/3,
 
-pochhammer(~a,~k) * pochhammer(~aa,~k)  =>
+Pochhammer(~a,~k) * Pochhammer(~aa,~k)  =>
    factorial(1 + 3 k)/(27 ^k * factorial(k))
       when numberp a and a = 2/3 and numberp aa and aa = 4/3,
 
-pochhammer(~b,~k) * pochhammer(~c,~k)  =>
-   pochhammer(3*b,3*k)/( 27^k * pochhammer(b +2/3,k))
+Pochhammer(~b,~k) * Pochhammer(~c,~k)  =>
+   Pochhammer(3*b,3*k)/( 27^k * Pochhammer(b +2/3,k))
       when numberp b and numberp c
          and (c-b)=1/3 and (b-1/3) = floor (b-1/3) and not (b-1/3 = 0),
 
-pochhammer(~a,~k)*pochhammer(~aa,~k)*pochhammer(~aaa,~k)  =>
+Pochhammer(~a,~k)*Pochhammer(~aa,~k)*Pochhammer(~aaa,~k)  =>
    factorial(4*k)/(factorial(k) * 64^k)
       when numberp a and numberp aa and numberp aaa
          and a = 1/4 and aa = 1/2 and aaa = 3/4,
 
-pochhammer(~a,~k)*pochhammer(~aa,~k)*
-      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
+Pochhammer(~a,~k)*Pochhammer(~aa,~k)*
+      Pochhammer(~aaa,~k)*Pochhammer(~aaaa,~k)  =>
    factorial(5*k)/(factorial(k) * 3125^k)
       when numberp a and numberp aa
          and numberp aaa and numberp aaaa
             and a = 1/5 and aa = 2/5 and aaa = 3/5 and aaaa = 4/5,
 
-pochhammer(~a,~k)*pochhammer(~aa,~k)*
-      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
+Pochhammer(~a,~k)*Pochhammer(~aa,~k)*
+      Pochhammer(~aaa,~k)*Pochhammer(~aaaa,~k)  =>
    5*(1/5 +k)*factorial(5*k)/(factorial(k) * 3125^k)
       when numberp a and numberp aa
          and numberp aaa and numberp aaaa
             and a = 2/5 and aa = 3/5 and aaa = 4/5 and aaaa = 6/5,
 
-pochhammer(~a,~k)*pochhammer(~aa,~k)*
-      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
+Pochhammer(~a,~k)*Pochhammer(~aa,~k)*
+      Pochhammer(~aaa,~k)*Pochhammer(~aaaa,~k)  =>
    (25 *(1/5+k)*(2/5 +k)*factorial(5*k)) / (factorial(k) * 2* 3125^k)
       when numberp a and numberp aa
          and numberp aaa and numberp aaaa
             and a = 3/5 and aa = 4/5 and aaa = 6/5 and aaaa = 7/5,
 
-pochhammer(~a,~k)*pochhammer(~aa,~k)*
-      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
+Pochhammer(~a,~k)*Pochhammer(~aa,~k)*
+      Pochhammer(~aaa,~k)*Pochhammer(~aaaa,~k)  =>
    (125*(1/5+k)*(2/5+k)*(3/5+k)*factorial(5*k)) /
       (factorial(k) * 6 *3125^k)
          when numberp a and numberp aa
             and numberp aaa and numberp aaaa
                and a = 4/5 and aa = 6/5 and aaa = 7/5 and aaaa = 8/5,
 
-pochhammer(~a,~k)*pochhammer(~aa,~k)*
-      pochhammer(~aaa,~k)*pochhammer(~aaaa,~k)  =>
+Pochhammer(~a,~k)*Pochhammer(~aa,~k)*
+      Pochhammer(~aaa,~k)*Pochhammer(~aaaa,~k)  =>
    (625*(1/5+k)*(2/5+k)*(3/5+k)*(4/5+k)*factorial(5*k)) /
       (factorial(k) * 24 *3125^k)
          when numberp a and numberp aa

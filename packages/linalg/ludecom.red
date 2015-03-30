@@ -60,13 +60,13 @@ symbolic procedure get_num_part f;
 %   else if f='pi then 3.141592653589793238462643
 %   else if f='e then 2.7182818284590452353602987
    else if atom f then f
-   else if eqcar(f, '!:RD!:) then
+   else if eqcar(f, '!:rd!:) then
           if atom cdr f then cdr f else bf2flr f
-   else if eqcar(f, '!:DN!:) then rdwrap2 cdr f
-   else if eqcar(f, 'MINUS) then
+   else if eqcar(f, '!:dn!:) then rdwrap2 cdr f
+   else if eqcar(f, 'minus) then
     begin scalar x;
        x := get_num_part cadr f;
-       return if numberp x then minus float x else {'MINUS,x}
+       return if numberp x then minus float x else {'minus,x}
     end
    else if eqcar(f,'expt) then rdwrap!-expt f
    else get_num_part car f . get_num_part cdr f;
@@ -107,17 +107,17 @@ symbolic procedure lu_decom(in_mat);
   % Runs the show!
   %
   begin
-    scalar ans,I_turned_rounded_on;
+    scalar ans,i_turned_rounded_on;
     integer sq_size;
     if not matrixp(in_mat) then
      rederr "Error in lu_decom: non matrix input.";
     if not squarep(in_mat) then
      rederr "Error in lu_decom: input matrix should be square.";
-    if not !*rounded then << I_turned_rounded_on := t; on rounded; >>;
+    if not !*rounded then << i_turned_rounded_on := t; on rounded; >>;
     sq_size := first size_of_matrix(in_mat);
     if cx_test(in_mat,sq_size) then ans := compdet(in_mat)
      else ans := unsymdet(in_mat);
-    if I_turned_rounded_on then off rounded;
+    if i_turned_rounded_on then off rounded;
     return ans;
   end;
 
@@ -164,7 +164,7 @@ symbolic procedure unsymdet(mat1);
   % accuracy (ie: acc s.t. 1+acc > 1).
   %
   begin
-    scalar x,y,in_mat,tmp,int_vec,L,U; %d1,d2,det;
+    scalar x,y,in_mat,tmp,int_vec,l,u; %d1,d2,det;
     integer i,j,k,l,n;
     j := 1;
     in_mat := copy_mat(mat1);
@@ -228,11 +228,11 @@ symbolic procedure unsymdet(mat1);
       >>;
     >>;
     tmp := get_l_and_u(in_mat,n);
-    L := first tmp;
-    U := second tmp;
+    l := first tmp;
+    u := second tmp;
     % Compute determinant.
     %det := {'times,d1,{'expt,2,d2}};
-    return {'list,L,U,int_vec};
+    return {'list,l,u,int_vec};
   end;
 
 
@@ -290,26 +290,26 @@ symbolic procedure get_l_and_u(in_mat,sq_size);
   % sq_size is the no of rows (and columns) of in_mat.
   %
   begin
-    scalar L,U;
+    scalar l,u;
     integer i,j;
-    L := mkmatrix(sq_size,sq_size);
-    U := mkmatrix(sq_size,sq_size);
+    l := mkmatrix(sq_size,sq_size);
+    u := mkmatrix(sq_size,sq_size);
     for i:=1:sq_size do
     <<
       for j:=1:i do
       <<
-        setmat(L,i,j,getmat(in_mat,i,j));
+        setmat(l,i,j,getmat(in_mat,i,j));
       >>;
     >>;
     for i:=1:sq_size do
     <<
-      setmat(U,i,i,1);
+      setmat(u,i,i,1);
       for j:=i+1:sq_size do
       <<
-        setmat(U,i,j,getmat(in_mat,i,j));
+        setmat(u,i,j,getmat(in_mat,i,j));
       >>;
     >>;
-    return {L,U};
+    return {l,u};
   end;
 
 
@@ -328,7 +328,7 @@ symbolic procedure compdet(mat1);
   % if A, modified by rounding errors, is singular.
   %
   begin
-    scalar x,y,in_mat,tmp,int_vec,L,U,p,pp,v,w,z; %detr,deti,dete,det;
+    scalar x,y,in_mat,tmp,int_vec,l,u,p,pp,v,w,z; %detr,deti,dete,det;
     integer i,j,k,l,n;
     if algebraic (det(mat1)) = 0 then rederr
 "Error in lu_decom: matrix is singular. LU decomposition not possible.";
@@ -423,11 +423,11 @@ symbolic procedure compdet(mat1);
     >>;
     in_mat := im_compress(in_mat,n);
     tmp := get_l_and_u(in_mat,n);
-    L := first tmp;
-    U := second tmp;
+    l := first tmp;
+    u := second tmp;
     % Compute determinant.
     %det := {'times,{'plus,detr,{'times,'i,deti}},{'expt,2,dete}};
-    return {'list,L,U,int_vec};
+    return {'list,l,u,int_vec};
   end;
 
 

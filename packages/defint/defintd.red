@@ -45,18 +45,18 @@ begin scalar ff1,ff2,alpha,var,chosen_num,coef,temp,const,result;
         if (cadr u) = 0 then ff2 := '(0 0 x)
         else  ff2 := prepsq simp cadr u;
 
-        if (ff1 = 'UNKNOWN) then return simp 'unknown;
-        if (ff2 = 'UNKNOWN) then return simp 'unknown;
+        if (ff1 = 'unknown) then return simp 'unknown;
+        if (ff2 = 'unknown) then return simp 'unknown;
         alpha := caddr u;
         var := cadddr u;
 
         if car ff1 = 'f31 or car ff1 = 'f32 then
-                << put('f1,'g,spec_log(ff1)); MELLINCOEF :=1>>
+                << put('f1,'g,spec_log(ff1)); mellincoef :=1>>
         else
         << chosen_num := cadr ff1;
            put('f1,'g,getv(mellin!-transforms!*,chosen_num));
            coef := getv(mellin!-coefficients!*,chosen_num);
-           if coef then MELLINCOEF:= coef else MELLINCOEF :=1>>;
+           if coef then mellincoef:= coef else mellincoef :=1>>;
 
         if car ff2 = 'f31 or car ff2 = 'f32 then
            put('f2,'g,spec_log(ff2))
@@ -64,7 +64,7 @@ begin scalar ff1,ff2,alpha,var,chosen_num,coef,temp,const,result;
         << chosen_num := cadr ff2;
            put('f2,'g,getv(mellin!-transforms!*,chosen_num));
            coef := getv(mellin!-coefficients!*,chosen_num);
-           if coef then MELLINCOEF:= coef * MELLINCOEF >>;
+           if coef then mellincoef:= coef * mellincoef >>;
 
         temp :=  simp list('intgg,'f1 . cddr ff1,
                                                         'f2 . cddr ff2,alpha,var);
@@ -100,7 +100,7 @@ algebraic <<
  for all z let sinh(z) = (exp (z) - exp(-z))/2;
  for all z let cosh(z) = (exp (z) + exp(-z))/2;
 
-operator laplace2,Y_transform2,K_transform2,struveh_transform2,
+operator laplace2,y_transform2,k_transform2,struveh_transform2,
                fourier_sin2,fourier_cos2;
 
 gamma_rules :=
@@ -147,26 +147,26 @@ end;
 % A function to calculate Y transforms of given functions via
 % integration of Meijer G-functions.
 
-put('Y_transform,'psopfn,'new_Y_transform);
+put('y_transform,'psopfn,'new_y_transform);
 
-symbolic procedure new_Y_transform(lst);
+symbolic procedure new_y_transform(lst);
 
 begin scalar new_lst;
 lst := product_test(lst);
-new_lst := {'Y_transform2,lst};
+new_lst := {'y_transform2,lst};
 return defint_trans(new_lst);
 end;
 
 % A function to calculate K-transforms of given functions via
 % integration of Meijer G-functions.
 
-put('K_transform,'psopfn,'new_K_transform);
+put('k_transform,'psopfn,'new_k_transform);
 
-symbolic procedure new_K_transform(lst);
+symbolic procedure new_k_transform(lst);
 
 begin scalar new_lst;
 lst := product_test(lst);
-new_lst := {'K_transform2,lst};
+new_lst := {'k_transform2,lst};
 return defint_trans(new_lst);
 end;
 

@@ -1,4 +1,4 @@
-module TayIntrf;
+module tayintrf;
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -31,7 +31,7 @@ module TayIntrf;
 %*****************************************************************
 
 
-exports simptaylor, simpTaylor!*, taylorexpand$
+exports simptaylor, simptaylor!*, taylorexpand$
 
 imports
 
@@ -41,14 +41,14 @@ imports
         prepsq, revlis, reversip, simp, simp!*, subs2, subsq, typerr,
 
 % from the header module:
-        !*tay2q, get!-degree, has!-Taylor!*, has!-TayVars,
-        make!-Taylor!*, multintocoefflist, resimptaylor, TayCfPl,
-        TayCfSq, TayCoeffList, TayFlags, TayMakeCoeff, TayOrig,
-        TayTemplate, TayTpElOrder, TayTpElPoint,
-        Taylor!-kernel!-sq!-p, taymincoeff,
+        !*tay2q, get!-degree, has!-taylor!*, has!-tayvars,
+        make!-taylor!*, multintocoefflist, resimptaylor, taycfpl,
+        taycfsq, taycoefflist, tayflags, taymakecoeff, tayorig,
+        taytemplate, taytpelorder, taytpelpoint,
+        taylor!-kernel!-sq!-p, taymincoeff,
 
 % from module Tayintro:
-        replace!-nth, Taylor!-error, var!-is!-nth,
+        replace!-nth, taylor!-error, var!-is!-nth,
 
 % from module TayExpnd:
         taylorexpand,
@@ -60,7 +60,7 @@ imports
         invtaylor1, quottaylor1,
 
 % from module Tayconv:
-        prepTaylor!*;
+        preptaylor!*;
 
 
 fluid '(!*backtrace !*precise !*tayinternal!* !*taylorkeeporiginal !*taylorautocombine
@@ -68,14 +68,14 @@ fluid '(!*backtrace !*precise !*tayinternal!* !*taylorkeeporiginal !*taylorautoc
 
 global '(mul!*);
 
-comment The following statement forces all expressions to be
+COMMENT The following statement forces all expressions to be
         re-simplified if the switch `taylorautocombine' is set to on,
         unfortunately, this is not always sufficient;
 
 put ('taylorautocombine, 'simpfg, '((t (rmsubs))));
 
 
-comment Interface to the fkern mechanism that makes kernels unique and 
+COMMENT Interface to the fkern mechanism that makes kernels unique and 
         stores them in the klist property;
 
 symbolic procedure tayfkern u;
@@ -113,7 +113,7 @@ symbolic procedure simptaylor u;
   % This procedure returns the input if it cannot expand the expression.
   %
   if remainder(length u,3) neq 1
-    then Taylor!-error('wrong!-no!-args,'taylor)
+    then taylor!-error('wrong!-no!-args,'taylor)
    else if null subfg!* then mksq('taylor . u,1)
    else begin scalar !*precise,arglist,degree,f,ll,result,var,var0;
      %
@@ -154,7 +154,7 @@ symbolic procedure simptaylor u;
      %
      % If the result does not contain a Taylor kernel, return the input.
      %
-     return if has!-Taylor!* result then result
+     return if has!-taylor!* result then result
              else mksq('taylor . prepsq f . u,1)
    end;
 
@@ -201,8 +201,8 @@ symbolic procedure taylor1sq (f, varlis, var0, n);
   %
   % First check if it is a Taylor kernel
   %
-  if Taylor!-kernel!-sq!-p f
-    then if has!-TayVars(mvar numr f,varlis)
+  if taylor!-kernel!-sq!-p f
+    then if has!-tayvars(mvar numr f,varlis)
            %
            % special case: f has already been expanded w.r.t. var.
            %
@@ -219,22 +219,22 @@ symbolic procedure taylor1sq (f, varlis, var0, n);
             %  (degreelist . coefficient)
             %
             z :=
-              for each cc in TayCoeffList f join
-                for each cc2 in taylor2 (TayCfSq cc, varlis, var0, n)
+              for each cc in taycoefflist f join
+                for each cc2 in taylor2 (taycfsq cc, varlis, var0, n)
                   collect
-                    TayMakeCoeff (append (TayCfPl cc, TayCfPl cc2),
-                                  TayCfSq cc2);
+                    taymakecoeff (append (taycfpl cc, taycfpl cc2),
+                                  taycfsq cc2);
             %
             % Append the new list to the Taylor template and return.
             %
-            y := append(TayTemplate f,list {varlis,var0,n,n+1});
-            return make!-Taylor!* (z, y, TayOrig f, TayFlags f)
+            y := append(taytemplate f,list {varlis,var0,n,n+1});
+            return make!-taylor!* (z, y, tayorig f, tayflags f)
             end
    %
    % Last possible case: f is not a Taylor expression.
    % Expand it.
    %
-   else make!-Taylor!* (
+   else make!-taylor!* (
                  taylor2 (f, varlis, var0, n),
                  list {varlis,var0,n,n+1},
                  if !*taylorkeeporiginal then f else nil,
@@ -242,11 +242,11 @@ symbolic procedure taylor1sq (f, varlis, var0, n);
 
 symbolic procedure taylor2 (f, varlis, var0, n);
   begin scalar result,oldklist;
-    oldklist := get('Taylor!*,'klist);
+    oldklist := get('taylor!*,'klist);
     result := errorset!* ({'taylor2e, mkquote f, mkquote varlis, mkquote var0, mkquote n}, nil);
-    put('Taylor!*,'klist,oldklist);
+    put('taylor!*,'klist,oldklist);
     if atom result
-      then Taylor!-error ('expansion, "(possible singularity!)")
+      then taylor!-error ('expansion, "(possible singularity!)")
      else return car result
   end$
 
@@ -339,7 +339,7 @@ symbolic procedure taylor2f (f, var, var0, n, flg);
     f := !*f2q f;
     z := subs2 subsq (f, x);
     if null numr z and not flg then n := n + 1 else flg := t;
-    y := list TayMakeCoeff ((list list 0), z);
+    y := list taymakecoeff ((list list 0), z);
     k := 1;
     while k <= n and not null numr f do
       << f := multsq (diffsq (f, var), 1 ./ k);
@@ -347,7 +347,7 @@ symbolic procedure taylor2f (f, var, var0, n, flg);
          % subs2 added to simplify expressions involving roots
          z := subs2 subsq (f, x);
          if null numr z and not flg then n := n + 2 else flg := t;
-         if not null numr z then y := TayMakeCoeff(list list k, z) . y;
+         if not null numr z then y := taymakecoeff(list list k, z) . y;
          k := k + 1 >>;
     return reversip y
   end;
@@ -362,22 +362,22 @@ symbolic procedure taylor2hom (f, varlis, var0, n);
      for each v in taylor2hom (cdr u,
                                cdr varlis,
                                var0,
-                               n - get!-degree TayCfPl car u)
-           collect list (car TayCfPl car u . TayCfPl car v) . cdr v$
+                               n - get!-degree taycfpl car u)
+           collect list (car taycfpl car u . taycfpl car v) . cdr v$
 
 symbolic procedure taylorsamevar (u, varlis, var0, n);
   begin scalar tp; integer mdeg, pos;
     if cdr varlis
-      then Taylor!-error ('not!-implemented,
+      then taylor!-error ('not!-implemented,
                           "(homogeneous expansion in TAYLORSAMEVAR)");
-    tp := TayTemplate u;
+    tp := taytemplate u;
     pos := car var!-is!-nth (tp, car varlis);
     tp := nth (tp, pos);
-    if TayTpElPoint tp neq var0
-      then return taylor1 (if not null TayOrig u then TayOrig u
-                            else simp!* prepTaylor!* u,
+    if taytpelpoint tp neq var0
+      then return taylor1 (if not null tayorig u then tayorig u
+                            else simp!* preptaylor!* u,
                            varlis, var0, n);
-    mdeg := TayTpElOrder tp;
+    mdeg := taytpelorder tp;
     if n=mdeg then return u
      else if n > mdeg
       %
@@ -385,22 +385,22 @@ symbolic procedure taylorsamevar (u, varlis, var0, n);
       %
       then << lprim "Cannot expand further... truncated.";
               return u >> ;
-    return make!-Taylor!* (
-        for each cc in TayCoeffList u join
-          if nth (nth (TayCfPl cc, pos), 1) > n
+    return make!-taylor!* (
+        for each cc in taycoefflist u join
+          if nth (nth (taycfpl cc, pos), 1) > n
             then nil
            else list cc,
-        replace!-nth(TayTemplate u,pos,
-                      {varlis,TayTpElPoint tp,n,n+1}),
-        TayOrig u, TayFlags u)
+        replace!-nth(taytemplate u,pos,
+                      {varlis,taytpelpoint tp,n,n+1}),
+        tayorig u, tayflags u)
   end$
 
 
-comment The `FULL' flag causes the whole term (including the
+COMMENT The `FULL' flag causes the whole term (including the
         Taylor!* symbol) to be passed to SIMPTAYLOR!* ;
 
-symbolic procedure simpTaylor!* u;
-  if TayCoefflist u memq frlis!* or eqcar(TayCoefflist u,'!~)
+symbolic procedure simptaylor!* u;
+  if taycoefflist u memq frlis!* or eqcar(taycoefflist u,'!~)
     then !*tay2q u
    else <<
      %
@@ -410,14 +410,14 @@ symbolic procedure simpTaylor!* u;
        then mul!* := aconc!* (mul!*, 'taysimpsq);
      !*tay2q resimptaylor u >>$
 
-flag ('(Taylor!*), 'full)$
+flag ('(taylor!*), 'full)$
 
-put ('Taylor!*, 'simpfn, 'simpTaylor!*)$
+put ('taylor!*, 'simpfn, 'simptaylor!*)$
 
-comment The following is necessary to properly process Taylor kernels
+COMMENT The following is necessary to properly process Taylor kernels
         in substitutions;
 
-flag ('(Taylor!*), 'simp0fn);
+flag ('(taylor!*), 'simp0fn);
 
 endmodule;
 

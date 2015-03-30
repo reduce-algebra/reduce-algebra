@@ -1,4 +1,4 @@
-module TayUtils;
+module tayutils;
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -31,16 +31,16 @@ module TayUtils;
 %*****************************************************************
 
 
-exports add!-degrees, add!.comp!.tp!., check!-for!-cst!-Taylor,
+exports add!-degrees, add!.comp!.tp!., check!-for!-cst!-taylor,
         comp!.tp!.!-p, delete!-superfluous!-coeffs, enter!-sorted,
         exceeds!-order, exceeds!-order!-variant, find!-non!-zero,
         get!-cst!-coeff, inv!.tp!., is!-neg!-pl, min2!-order,
         mult!.comp!.tp!., rat!-kern!-pow, replace!-next,
         subtr!-degrees, subtr!-tp!-order, taydegree!<,
         taydegree!-strict!<!=, taymincoeff, tayminpowerlist,
-        Taylor!*!-constantp, Taylor!*!-nzconstantp, Taylor!*!-onep,
-        Taylor!*!-zerop, TayTpmin2, tp!-greaterp, truncate!-coefflist,
-        truncate!-Taylor!*;
+        taylor!*!-constantp, taylor!*!-nzconstantp, taylor!*!-onep,
+        taylor!*!-zerop, taytpmin2, tp!-greaterp, truncate!-coefflist,
+        truncate!-taylor!*;
 
 imports
 
@@ -49,16 +49,16 @@ imports
 
 % from the header module:
         !*tay2q, get!-degree, get!-degreelist, make!-cst!-powerlist,
-        Make!-Taylor!*, nzerolist, prune!-coefflist, TayCfPl, TayCfSq,
-        TayCoeffList, TayGetCoeff, TayFlags, Taylor!:, TayOrig,
-        TayTemplate, TayTpElNext, TayTpElOrder, TayTpElPoint,
-        TayTpElVars, TpDegreeList, TpNextList,
+        make!-taylor!*, nzerolist, prune!-coefflist, taycfpl, taycfsq,
+        taycoefflist, taygetcoeff, tayflags, taylor!:, tayorig,
+        taytemplate, taytpelnext, taytpelorder, taytpelpoint,
+        taytpelvars, tpdegreelist, tpnextlist,
 
 % from module Tayintro:
         confusion,
 
 % from module TayUtils:
-        TayCoeffList!-zerop;
+        taycoefflist!-zerop;
 
 
 
@@ -66,7 +66,7 @@ symbolic procedure add!-degrees (dl1, dl2);
   %
   % calculates the element-wise sum of two degree lists dl1, dl2.
   %
-  Taylor!:
+  taylor!:
     begin scalar dl,u,v,w;
       while dl1 do <<
         u := car dl1;
@@ -86,7 +86,7 @@ symbolic procedure subtr!-degrees(dl1,dl2);
   %
   % calculates the element-wise difference of two degree lists dl1, dl2.
   %
-  Taylor!:
+  taylor!:
     begin scalar dl,u,v,w;
       while dl1 do <<
         u := car dl1;
@@ -147,9 +147,9 @@ symbolic procedure get!-denom!-ll(dl,pl);
 symbolic procedure smallest!-increment cfl;
    if null cfl then confusion 'smallest!-increment
     else begin scalar result;
-     result := for each l in TayCfPl car cfl collect get!-denom!-l l;
+     result := for each l in taycfpl car cfl collect get!-denom!-l l;
      for each el in cdr cfl do
-       result := get!-denom!-ll(result,TayCfPl el);
+       result := get!-denom!-ll(result,taycfpl el);
      return for each n in result collect if n=1 then n else mkrn(1,n);
    end;
 
@@ -178,7 +178,7 @@ symbolic procedure min2!-order(nextlis,ordlis,dl);
   % Returns the corrected nextlis.
   %
   if null nextlis then nil
-   else (Taylor!: (if dg > car ordlis then min2(dg,car nextlis)
+   else (taylor!: (if dg > car ordlis then min2(dg,car nextlis)
                    else car nextlis) where dg := get!-degree car dl)
           . min2!-order(cdr nextlis,cdr ordlis,cdr dl);
 
@@ -188,9 +188,9 @@ symbolic procedure replace!-next(tp,nl);
    %  with the next part replaced.
    %
    if null tp then nil
-    else {TayTpElVars car tp,
-          TayTpElPoint car tp,
-          TayTpElOrder car tp,
+    else {taytpelvars car tp,
+          taytpelpoint car tp,
+          taytpelorder car tp,
           car nl}
            . replace!-next(cdr tp,cdr nl);
 
@@ -201,11 +201,11 @@ symbolic procedure comp!.tp!.!-p (u, v);
   % Returns t if possible.
   %
   begin;
-    u := TayTemplate u; v := TayTemplate v;
+    u := taytemplate u; v := taytemplate v;
     if length u neq length v then return nil;
    loop:
-    if not (TayTpElVars car u = TayTpElVars car v
-            and TayTpElPoint car u = TayTpElPoint car v)
+    if not (taytpelvars car u = taytpelvars car v
+            and taytpelpoint car u = taytpelpoint car v)
       then return nil;
     u := cdr u; v := cdr v;
     if null u then return t;
@@ -221,19 +221,19 @@ symbolic procedure add!.comp!.tp!.(u,v);
   % degrees are the minimum of the corresponding degrees of u and v,
   % or nil if variables or expansion point(s) do not match.
   %
-  Taylor!:
+  taylor!:
   begin scalar w;
-    u := TayTemplate u; v := TayTemplate v;
+    u := taytemplate u; v := taytemplate v;
     if length u neq length v then return nil;
     if null u then return {nil};
    loop:
-    if not (TayTpElVars car u = TayTpElVars car v
-            and TayTpElPoint car u = TayTpElPoint car v)
+    if not (taytpelvars car u = taytpelvars car v
+            and taytpelpoint car u = taytpelpoint car v)
       then return nil
-     else w := {TayTpElVars car u,
-                TayTpElPoint car u,
-                min2(TayTpElOrder car u,TayTpElOrder car v),
-                min2(TayTpElNext car u,TayTpElNext car v)}
+     else w := {taytpelvars car u,
+                taytpelpoint car u,
+                min2(taytpelorder car u,taytpelorder car v),
+                min2(taytpelnext car u,taytpelnext car v)}
                 . w;
     u := cdr u; v := cdr v;
     if null u then return {reversip w};
@@ -241,16 +241,16 @@ symbolic procedure add!.comp!.tp!.(u,v);
   end;
 
 symbolic procedure taymindegreel(pl,dl);
-   Taylor!:
+   taylor!:
      if null pl then nil
       else min2(get!-degree car pl,car dl)
              . taymindegreel(cdr pl,cdr dl);
 
 symbolic procedure get!-min!-degreelist cfl;
-  Taylor!:
+  taylor!:
     if null cfl then confusion 'get!-min!-degreelist
-     else if null cdr cfl then get!-degreelist TayCfPl car cfl
-     else taymindegreel(TayCfPl car cfl,
+     else if null cdr cfl then get!-degreelist taycfpl car cfl
+     else taymindegreel(taycfpl car cfl,
                         get!-min!-degreelist cdr cfl);
 
 symbolic procedure mult!.comp!.tp!.(u,v,div!?);
@@ -262,32 +262,32 @@ symbolic procedure mult!.comp!.tp!.(u,v,div!?);
   % and two nextlists to be used by truncate!-coefflist which
   % are made up so that the kernels have the same number of terms.
   %
-  Taylor!:
+  taylor!:
   begin scalar cf1,cf2,next1,next2,ord1,ord2,w,
         !#terms!-1,!#terms!-next,dl1,dl2,mindg;
-    cf1 := prune!-coefflist TayCoeffList u;
-    if null cf1 then dl1 := nzerolist length TayTemplate u
+    cf1 := prune!-coefflist taycoefflist u;
+    if null cf1 then dl1 := nzerolist length taytemplate u
      else dl1 := get!-min!-degreelist cf1;
-    cf2 := prune!-coefflist TayCoeffList v;
-    if null cf2 then dl2 := nzerolist length TayTemplate v
+    cf2 := prune!-coefflist taycoefflist v;
+    if null cf2 then dl2 := nzerolist length taytemplate v
      else dl2 := get!-min!-degreelist cf2;
-    u := TayTemplate u; v := TayTemplate v;
+    u := taytemplate u; v := taytemplate v;
     if length u neq length v then return nil;
     if null u then return {nil,nil,nil,nil,nil};
    loop:
-    if not (TayTpElVars car u = TayTpElVars car v
-            and TayTpElPoint car u = TayTpElPoint car v)
+    if not (taytpelvars car u = taytpelvars car v
+            and taytpelpoint car u = taytpelpoint car v)
       then return nil;
     mindg := if div!? then car dl1 - car dl2 else car dl1 + car dl2;
-    !#terms!-1 := min2(TayTpElOrder car u - car dl1,
-                       TayTpElOrder car v - car dl2);
-    !#terms!-next := min2(TayTpElNext car u - car dl1,
-                          TayTpElNext car v - car dl2);
+    !#terms!-1 := min2(taytpelorder car u - car dl1,
+                       taytpelorder car v - car dl2);
+    !#terms!-next := min2(taytpelnext car u - car dl1,
+                          taytpelnext car v - car dl2);
     ord1 := (!#terms!-1 + car dl1) . ord1;
     ord2 := (!#terms!-1 + car dl2) . ord2;
     next1 := (!#terms!-next + car dl1) . next1;
     next2 := (!#terms!-next + car dl2) . next2;
-    w := {TayTpElVars car u,TayTpElPoint car u,
+    w := {taytpelvars car u,taytpelpoint car u,
           mindg + !#terms!-1,mindg + !#terms!-next}
           . w;
     u := cdr u; v := cdr v; dl1 := cdr dl1; dl2 := cdr dl2;
@@ -306,18 +306,18 @@ symbolic procedure inv!.tp!. u;
   % which is made up so that the resulting kernel has the correct
   % number of terms.
   %
-  Taylor!:
+  taylor!:
   begin scalar w,cf,!#terms!-1,!#terms!-next,dl,mindg;
-    cf := prune!-coefflist TayCoeffList u;
-    if null cf then dl := nzerolist length TayTemplate u
-     else dl := get!-degreelist TayCfPl car cf;
-    u := TayTemplate u;
+    cf := prune!-coefflist taycoefflist u;
+    if null cf then dl := nzerolist length taytemplate u
+     else dl := get!-degreelist taycfpl car cf;
+    u := taytemplate u;
     if null u then return {nil,nil};
    loop:
     mindg := - car dl;
-    !#terms!-1 := TayTpElOrder car u - car dl;
-    !#terms!-next := TayTpElNext car u - car dl;
-    w := {TayTpElVars car u,TayTpElPoint car u,mindg + !#terms!-1,
+    !#terms!-1 := taytpelorder car u - car dl;
+    !#terms!-next := taytpelnext car u - car dl;
+    w := {taytpelvars car u,taytpelpoint car u,mindg + !#terms!-1,
           mindg + !#terms!-next}
           . w;
     u := cdr u; dl := cdr dl;
@@ -332,7 +332,7 @@ symbolic inline procedure taycoeff!-before(cc1,cc2);
   % returns t if coeff cc1 is ordered before cc2
   % both are of the form (degreelist . sq)
   %
-  taydegree!<(TayCfPl cc1,TayCfPl cc2);
+  taydegree!<(taycfpl cc1,taycfpl cc2);
 
 symbolic procedure taydegree!<(u,v);
   %
@@ -340,7 +340,7 @@ symbolic procedure taydegree!<(u,v);
   %
   % returns t if coefflist u is ordered before v
   %
-  Taylor!:
+  taylor!:
   begin scalar u1,v1;
    loop:
     u1 := car u;
@@ -363,7 +363,7 @@ symbolic procedure taydegree!-strict!<!=(u,v);
   % returns t if every component coefflist u is less or equal than
   %  respective component of v
   %
-  Taylor!:
+  taylor!:
   begin scalar u1,v1;
    loop:
     u1 := car u;
@@ -387,7 +387,7 @@ symbolic procedure exceeds!-order(ordlis,cf);
   % equal than those in the degreelist ordlis
   %
   if null ordlis then nil
-   else Taylor!:(get!-degree car cf >= car ordlis)
+   else taylor!:(get!-degree car cf >= car ordlis)
           or exceeds!-order(cdr ordlis,cdr cf);
 
 symbolic procedure exceeds!-order!-variant(ordlis,cf);
@@ -398,7 +398,7 @@ symbolic procedure exceeds!-order!-variant(ordlis,cf);
   % equal than those in the degreelist ordlis
   %
   if null ordlis then nil
-   else Taylor!:(get!-degree car cf > car ordlis)
+   else taylor!:(get!-degree car cf > car ordlis)
           or exceeds!-order!-variant(cdr ordlis,cdr cf);
 
 symbolic procedure enter!-sorted (u, alist);
@@ -419,9 +419,9 @@ symbolic procedure delete!-superfluous!-coeffs(cflis,pos,n);
   % This procedure deletes all coefficients of a TayCoeffList cflis
   % whose degree in position pos exceeds n.
   %
-  Taylor!:
+  taylor!:
   for each cc in cflis join
-     (if get!-degree nth(TayCfPl cc,pos) > n then nil else {cc});
+     (if get!-degree nth(taycfpl cc,pos) > n then nil else {cc});
 
 symbolic procedure truncate!-coefflist (cflis, dl);
   %
@@ -432,51 +432,51 @@ symbolic procedure truncate!-coefflist (cflis, dl);
   %
   begin scalar l;
     for each cf in cflis do
-      if not exceeds!-order (dl, TayCfPl cf) then l := cf . l;
+      if not exceeds!-order (dl, taycfpl cf) then l := cf . l;
     return reversip l
   end;
 
-symbolic procedure TayTp!-min2(tp1,tp2);
+symbolic procedure taytp!-min2(tp1,tp2);
   %
   % finds minimum (w.r.t. Order and Next parts) of compatible
   %  templates tp1 and tp2
   %
-  Taylor!:
+  taylor!:
     if null tp1 then nil
-     else if not (TayTpElVars car tp1 = TayTpElVars car tp2 and
-                  TayTpElPoint car tp1 = TayTpElPoint car tp2)
-      then confusion 'TayTpmin2
-     else {TayTpElVars car tp1,TayTpElPoint car tp2,
-           min2(TayTpElOrder car tp1,TayTpElOrder car tp2),
-           min2(TayTpElNext car tp1,TayTpElNext car tp2)}
-          . TayTp!-min2(cdr tp1,cdr tp2);
+     else if not (taytpelvars car tp1 = taytpelvars car tp2 and
+                  taytpelpoint car tp1 = taytpelpoint car tp2)
+      then confusion 'taytpmin2
+     else {taytpelvars car tp1,taytpelpoint car tp2,
+           min2(taytpelorder car tp1,taytpelorder car tp2),
+           min2(taytpelnext car tp1,taytpelnext car tp2)}
+          . taytp!-min2(cdr tp1,cdr tp2);
 
 
-symbolic procedure truncate!-Taylor!*(tay,ntp);
+symbolic procedure truncate!-taylor!*(tay,ntp);
   %
   % tcl is a coefflist for template otp
   % truncate it to coefflist for template ntp
   %
-  Taylor!:
+  taylor!:
    begin scalar nl,ol,l,tp,tcl,otp;
-     tcl := TayCoeffList tay;
-     otp := TayTemplate tay;
+     tcl := taycoefflist tay;
+     otp := taytemplate tay;
      tp := for each pp in pair(ntp,otp) collect
-           {TayTpElVars car pp,
-            TayTpElPoint car pp,
-            min2(TayTpElOrder car pp,TayTpElOrder cdr pp),
-            min2(TayTpElNext car pp,TayTpElNext cdr pp)};
-     nl := TpNextList tp;
-     ol := TpDegreeList tp;
+           {taytpelvars car pp,
+            taytpelpoint car pp,
+            min2(taytpelorder car pp,taytpelorder cdr pp),
+            min2(taytpelnext car pp,taytpelnext cdr pp)};
+     nl := tpnextlist tp;
+     ol := tpdegreelist tp;
      for each cf in tcl do
-       if not null numr TayCfSq cf
+       if not null numr taycfsq cf
 %         then ((if not exceeds!-order(nl,pl) then l := cf . l
 %                 else nl := min2!-order(nl,ol,pl))
          then ((if not exceeds!-order!-variant(ol,pl) then l := cf . l
                  else nl := min2!-order(nl,ol,pl))
-                where pl := TayCfPl cf);
-     return make!-Taylor!*(reversip l,replace!-next(tp,nl),
-                           TayOrig tay,TayFlags tay)
+                where pl := taycfpl cf);
+     return make!-taylor!*(reversip l,replace!-next(tp,nl),
+                           tayorig tay,tayflags tay)
    end;
 
 symbolic procedure tp!-greaterp(tp1,tp2);
@@ -486,7 +486,7 @@ symbolic procedure tp!-greaterp(tp1,tp2);
    %  order wrt at least one variable is greater in tp1 than in tp2.
    %
    if null tp1 then nil
-    else Taylor!: (TayTpElOrder car tp1 > TayTpElOrder car tp2)
+    else taylor!: (taytpelorder car tp1 > taytpelorder car tp2)
            or tp!-greaterp(cdr tp1,cdr tp2);
 
 symbolic procedure subtr!-tp!-order(tp1,tp2);
@@ -495,22 +495,22 @@ symbolic procedure subtr!-tp!-order(tp1,tp2);
    %  expansion points this function returns the difference in their
    %  orders.
    %
-   Taylor!:
+   taylor!:
     if null tp1 then nil
-     else (TayTpElOrder car tp1 - TayTpElOrder car tp2)
+     else (taytpelorder car tp1 - taytpelorder car tp2)
             . subtr!-tp!-order(cdr tp1,cdr tp2);
 
 
-comment Procedures to non-destructively modify Taylor templates;
+COMMENT Procedures to non-destructively modify Taylor templates;
 
-symbolic procedure addto!-all!-TayTpElOrders(tp,nl);
-  Taylor!:
+symbolic procedure addto!-all!-taytpelorders(tp,nl);
+  taylor!:
    if null tp then nil
-    else {TayTpElVars car tp,
-          TayTpElPoint car tp,
-          TayTpElOrder car tp + car nl,
-          TayTpElNext car tp + car nl} .
-         addto!-all!-TayTpElOrders(cdr tp,cdr nl);
+    else {taytpelvars car tp,
+          taytpelpoint car tp,
+          taytpelorder car tp + car nl,
+          taytpelnext car tp + car nl} .
+         addto!-all!-taytpelorders(cdr tp,cdr nl);
 
 symbolic procedure taymincoeff cflis;
   %
@@ -518,8 +518,8 @@ symbolic procedure taymincoeff cflis;
   % or 0 if there isn't any.
   %
   if null cflis then 0
-   else if not null numr TayCfSq car cflis
-    then get!-degree car TayCfPl car cflis
+   else if not null numr taycfsq car cflis
+    then get!-degree car taycfpl car cflis
    else taymincoeff cdr cflis;
 
 symbolic procedure tayminpowerlist cflis;
@@ -528,68 +528,68 @@ symbolic procedure tayminpowerlist cflis;
   % cflis or a list of zeroes if there isn't any.
   %
   if null cflis then confusion 'tayminpowerlist
-   else tayminpowerlist1(cflis,length TayCfPl car cflis);
+   else tayminpowerlist1(cflis,length taycfpl car cflis);
 
 symbolic procedure tayminpowerlist1(cflis,l);
    if null cflis then nzerolist l
-    else if null numr TayCfSq car cflis
+    else if null numr taycfsq car cflis
      then tayminpowerlist1(cdr cflis,l)
-    else get!-degreelist TayCfPl car cflis;
+    else get!-degreelist taycfpl car cflis;
 
 symbolic procedure get!-cst!-coeff tay;
-   TayGetCoeff(make!-cst!-powerlist TayTemplate tay,TayCoeffList tay);
+   taygetcoeff(make!-cst!-powerlist taytemplate tay,taycoefflist tay);
 
-symbolic procedure Taylor!*!-constantp tay;
-   Taylor!*!-constantp1(make!-cst!-powerlist TayTemplate tay,
-                        TayCoeffList tay);
+symbolic procedure taylor!*!-constantp tay;
+   taylor!*!-constantp1(make!-cst!-powerlist taytemplate tay,
+                        taycoefflist tay);
 
-symbolic procedure Taylor!*!-constantp1(pl,tcf);
+symbolic procedure taylor!*!-constantp1(pl,tcf);
    if null tcf then t
-    else if TayCfPl car tcf = pl
-     then TayCoeffList!-zerop cdr tcf
-    else if not null numr TayCfSq car tcf then nil
-    else Taylor!*!-constantp1(pl,cdr tcf);
+    else if taycfpl car tcf = pl
+     then taycoefflist!-zerop cdr tcf
+    else if not null numr taycfsq car tcf then nil
+    else taylor!*!-constantp1(pl,cdr tcf);
 
-symbolic procedure check!-for!-cst!-Taylor tay;
+symbolic procedure check!-for!-cst!-taylor tay;
    begin scalar pl,tc;
-      pl := make!-cst!-powerlist TayTemplate tay;
-      tc := TayCoeffList tay;
-      return if Taylor!*!-constantp1(pl,tc) then TayGetCoeff(pl,tc)
+      pl := make!-cst!-powerlist taytemplate tay;
+      tc := taycoefflist tay;
+      return if taylor!*!-constantp1(pl,tc) then taygetcoeff(pl,tc)
               else !*tay2q tay
    end;
 
-symbolic procedure Taylor!*!-nzconstantp tay;
-   Taylor!*!-nzconstantp1(make!-cst!-powerlist TayTemplate tay,
-                          TayCoeffList tay);
+symbolic procedure taylor!*!-nzconstantp tay;
+   taylor!*!-nzconstantp1(make!-cst!-powerlist taytemplate tay,
+                          taycoefflist tay);
 
-symbolic procedure Taylor!*!-nzconstantp1(pl,tcf);
+symbolic procedure taylor!*!-nzconstantp1(pl,tcf);
    if null tcf then nil
-    else if TayCfPl car tcf = pl
-     then if null numr TayCfSq car tcf then nil
-           else TayCoeffList!-zerop cdr tcf
-    else if TayCfPl car tcf neq pl and
-            not null numr TayCfSq car tcf
+    else if taycfpl car tcf = pl
+     then if null numr taycfsq car tcf then nil
+           else taycoefflist!-zerop cdr tcf
+    else if taycfpl car tcf neq pl and
+            not null numr taycfsq car tcf
      then nil
-    else Taylor!*!-nzconstantp1(pl,cdr tcf);
+    else taylor!*!-nzconstantp1(pl,cdr tcf);
 
-symbolic procedure Taylor!*!-onep tay;
-   Taylor!-onep1(make!-cst!-powerlist TayTemplate tay,TayCoeffList tay);
+symbolic procedure taylor!*!-onep tay;
+   taylor!-onep1(make!-cst!-powerlist taytemplate tay,taycoefflist tay);
 
-symbolic procedure Taylor!-onep1(pl,tcf);
+symbolic procedure taylor!-onep1(pl,tcf);
    if null tcf then nil
-    else if TayCfPl car tcf = pl
-     then if TayCfSq car tcf = (1 ./ 1)
-            then TayCoeffList!-zerop cdr tcf
+    else if taycfpl car tcf = pl
+     then if taycfsq car tcf = (1 ./ 1)
+            then taycoefflist!-zerop cdr tcf
            else nil
-    else if null numr TayCfSq car tcf
-     then Taylor!*!-nzconstantp1(pl,cdr tcf)
+    else if null numr taycfsq car tcf
+     then taylor!*!-nzconstantp1(pl,cdr tcf)
     else nil;
 
 symbolic procedure is!-neg!-pl pl;
   %
   % Returns t if any of the exponents in pl is negative.
   %
-  Taylor!:
+  taylor!:
     if null pl then nil
      else if get!-degree car pl < 0 then t
      else is!-neg!-pl cdr pl;
@@ -604,7 +604,7 @@ symbolic procedure rat!-kern!-pow(x,pos);
      if domainp x or not null red x or not (lc x=1) then return nil;
      n := ldeg x;
      x := mvar x;
-     Taylor!:
+     taylor!:
        if eqcar(x,'sqrt) then return (cadr x . mkrn(1,2)*n)
         else if eqcar(x,'expt) and (y := simprn{caddr x})
                then if null pos or (y := car y)>0

@@ -464,7 +464,7 @@ symbolic inline procedure pascexp_name(u);
 if atom u then
   list(u)
 else
-  rplaca(pascexp ('dummyArrayToken . cdr u), car u)$
+  rplaca(pascexp ('dummyarraytoken . cdr u), car u)$
 
 procedure mkfpascassign(lhs, rhs);
 begin

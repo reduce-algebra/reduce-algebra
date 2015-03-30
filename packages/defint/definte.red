@@ -51,113 +51,113 @@ let laplace2_rules;
 hankel2_rules :=
 
 { hankel2(1/~x,~f1,~x) =>
-                int(1/x*f1*besselj(n,2*(s*x)^(1/2)),x,0,infinity),
+                int(1/x*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
   hankel2(1/~x^(~a),~f1,~x) =>
-                int(1/x^a*f1*besselj(n,2*(s*x)^(1/2)),x,0,infinity),
+                int(1/x^a*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
   hankel2(1/sqrt(~x),~f1,~x) =>
-                int(1/sqrt(x)*f1*besselj(n,2*(s*x)^(1/2)),x,0,infinity),
+                int(1/sqrt(x)*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
   hankel2(1/(sqrt(~x)*~x),~f1,~x) =>
-            int(1/(sqrt(x)*x)*f1*besselj(n,2*(s*x)^(1/2)),x,0,infinity),
+            int(1/(sqrt(x)*x)*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
   hankel2(1/(sqrt(~x)*~x^~a),~f1,~x) =>
-          int(1/(sqrt(x)*x^a)*f1*besselj(n,2*(s*x)^(1/2)),x,0,infinity),
+          int(1/(sqrt(x)*x^a)*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
   hankel2(~x^~a,~f1,~x) =>
-          int(x^a*f1*besselj(n,2*(s*x)^(1/2)),x,0,infinity),
-  hankel2(~x,~f1,~x) => int(x*f1*besselj(n,2*(s*x)^(1/2)),x,0,infinity),
+          int(x^a*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
+  hankel2(~x,~f1,~x) => int(x*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
   hankel2(sqrt(~x),~f1,~x) =>
-          int(sqrt(x)*f1*besselj(n,2*(s*x)^(1/2)),x,0,infinity),
+          int(sqrt(x)*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
   hankel2(sqrt(~x)*~x,~f1,~x) =>
-          int(sqrt(x)*x,f1,besselj(n,2*(s*x)^(1/2)),x,0,infinity),
+          int(sqrt(x)*x,f1,BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
   hankel2(sqrt(~x)*~x^~a,~f1,~x) =>
-          int(sqrt(x)*x^a*f1*besselj(n,2*(s*x)^(1/2)),x,0,infinity),
-  hankel2(~b,~f1,~x) => int(b*f1*besselj(n,2*(s*x)^(1/2)),x,0,infinity),
-  hankel2(~f1,~x) => int(f1*besselj(n,2*(s*x)^(1/2)),x,0,infinity)
+          int(sqrt(x)*x^a*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
+  hankel2(~b,~f1,~x) => int(b*f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity),
+  hankel2(~f1,~x) => int(f1*BesselJ(n,2*(s*x)^(1/2)),x,0,infinity)
 };
 
 let hankel2_rules;
 
-Y_transform2_rules :=
+y_transform2_rules :=
 
-{ Y_transform2(1/~x,~f1,~x) =>
-                      int(1/x*f1*bessely(n,2*(s*x)^(1/2)),x,0,infinity),
-  Y_transform2(1/~x^(~a),~f1,~x) =>
-                    int(1/x^a*f1*bessely(n,2*(s*x)^(1/2)),x,0,infinity),
-  Y_transform2(1/sqrt(~x),~f1,~x) =>
-                int(1/sqrt(x)*f1*bessely(n,2*(s*x)^(1/2)),x,0,infinity),
-  Y_transform2(1/(sqrt(~x)*~x),~f1,~x) =>
-            int(1/(sqrt(x)*x)*f1*bessely(n,2*(s*x)^(1/2)),x,0,infinity),
-  Y_transform2(1/(sqrt(~x)*~x^~a),~f1,~x) =>
-          int(1/(sqrt(x)*x^a)*f1*bessely(n,2*(s*x)^(1/2)),x,0,infinity),
-  Y_transform2(~x^~a,~f1,~x) =>
-                int(x^a*f1*bessely(n,2*(s*x)^(1/2)),x,0,infinity),
-  Y_transform2(~x,~f1,~x) =>
-                int(x*f1*bessely(n,2*(s*x)^(1/2)),x,0,infinity),
-  Y_transform2(sqrt(~x),~f1,~x) =>
-                int(sqrt(x)*f1*bessely(n,2*(s*x)^(1/2)),x,0,infinity),
-  Y_transform2(sqrt(~x)*~x,~f1,~x) =>
-                int(sqrt(x)*x*f1*bessely(n,2*(s*x)^(1/2)),x,0,infinity),
-  Y_transform2(sqrt(~x)*~x^~a,~f1,~x) =>
-              int(sqrt(x)*x^a*f1*bessely(n,2*(s*x)^(1/2)),x,0,infinity),
-  Y_transform2(~b,~f1,~x) =>
-              int(b*f1*bessely(n,2*(s*x)^(1/2)),x,0,infinity),
-  Y_transform2(~f1,~x) => int(f1*bessely(n,2*(s*x)^(1/2)),x,0,infinity)
+{ y_transform2(1/~x,~f1,~x) =>
+                      int(1/x*f1*BesselY(n,2*(s*x)^(1/2)),x,0,infinity),
+  y_transform2(1/~x^(~a),~f1,~x) =>
+                    int(1/x^a*f1*BesselY(n,2*(s*x)^(1/2)),x,0,infinity),
+  y_transform2(1/sqrt(~x),~f1,~x) =>
+                int(1/sqrt(x)*f1*BesselY(n,2*(s*x)^(1/2)),x,0,infinity),
+  y_transform2(1/(sqrt(~x)*~x),~f1,~x) =>
+            int(1/(sqrt(x)*x)*f1*BesselY(n,2*(s*x)^(1/2)),x,0,infinity),
+  y_transform2(1/(sqrt(~x)*~x^~a),~f1,~x) =>
+          int(1/(sqrt(x)*x^a)*f1*BesselY(n,2*(s*x)^(1/2)),x,0,infinity),
+  y_transform2(~x^~a,~f1,~x) =>
+                int(x^a*f1*BesselY(n,2*(s*x)^(1/2)),x,0,infinity),
+  y_transform2(~x,~f1,~x) =>
+                int(x*f1*BesselY(n,2*(s*x)^(1/2)),x,0,infinity),
+  y_transform2(sqrt(~x),~f1,~x) =>
+                int(sqrt(x)*f1*BesselY(n,2*(s*x)^(1/2)),x,0,infinity),
+  y_transform2(sqrt(~x)*~x,~f1,~x) =>
+                int(sqrt(x)*x*f1*BesselY(n,2*(s*x)^(1/2)),x,0,infinity),
+  y_transform2(sqrt(~x)*~x^~a,~f1,~x) =>
+              int(sqrt(x)*x^a*f1*BesselY(n,2*(s*x)^(1/2)),x,0,infinity),
+  y_transform2(~b,~f1,~x) =>
+              int(b*f1*BesselY(n,2*(s*x)^(1/2)),x,0,infinity),
+  y_transform2(~f1,~x) => int(f1*BesselY(n,2*(s*x)^(1/2)),x,0,infinity)
 };
 
-let Y_transform2_rules;
+let y_transform2_rules;
 
-K_transform2_rules :=
+k_transform2_rules :=
 
-{ K_transform2(1/~x,~f1,~x) =>
-                      int(1/x*f1*besselK(n,2*(s*x)^(1/2)),x,0,infinity),
-  K_transform2(1/~x^(~a),~f1,~x) =>
-                    int(1/x^a*f1*besselK(n,2*(s*x)^(1/2)),x,0,infinity),
-  K_transform2(1/sqrt(~x),~f1,~x) =>
-                int(1/sqrt(x)*f1*besselK(n,2*(s*x)^(1/2)),x,0,infinity),
-  K_transform2(1/(sqrt(~x)*~x),~f1,~x) =>
-            int(1/(sqrt(x)*x)*f1*besselK(n,2*(s*x)^(1/2)),x,0,infinity),
-  K_transform2(1/(sqrt(~x)*~x^~a),~f1,~x) =>
-          int(1/(sqrt(x)*x^a)*f1*besselK(n,2*(s*x)^(1/2)),x,0,infinity),
-  K_transform2(~x^~a,~f1,~x) =>
-          int(x^a*f1*besselK(n,2*(s*x)^(1/2)),x,0,infinity),
-  K_transform2(~x,~f1,~x) =>
-          int(x*f1*besselK(n,2*(s*x)^(1/2)),x,0,infinity),
-  K_transform2(sqrt(~x),~f1,~x) =>
-          int(sqrt(x)*f1*besselK(n,2*(s*x)^(1/2)),x,0,infinity),
-  K_transform2(sqrt(~x)*~x,~f1,~x) =>
-          int(sqrt(x)*x*f1*besselK(n,2*(s*x)^(1/2)),x,0,infinity),
-  K_transform2(sqrt(~x)*~x^~a,~f1,~x) =>
-          int(sqrt(x)*x^a*f1*besselK(n,2*(s*x)^(1/2)),x,0,infinity),
-  K_transform2(~b,~f1,~x) =>
-          int(b*f1*besselK(n,2*(s*x)^(1/2)),x,0,infinity),
-  K_transform2(~f1,~x) => int(f1*besselK(n,2*(s*x)^(1/2)),x,0,infinity)
+{ k_transform2(1/~x,~f1,~x) =>
+                      int(1/x*f1*BesselK(n,2*(s*x)^(1/2)),x,0,infinity),
+  k_transform2(1/~x^(~a),~f1,~x) =>
+                    int(1/x^a*f1*BesselK(n,2*(s*x)^(1/2)),x,0,infinity),
+  k_transform2(1/sqrt(~x),~f1,~x) =>
+                int(1/sqrt(x)*f1*BesselK(n,2*(s*x)^(1/2)),x,0,infinity),
+  k_transform2(1/(sqrt(~x)*~x),~f1,~x) =>
+            int(1/(sqrt(x)*x)*f1*BesselK(n,2*(s*x)^(1/2)),x,0,infinity),
+  k_transform2(1/(sqrt(~x)*~x^~a),~f1,~x) =>
+          int(1/(sqrt(x)*x^a)*f1*BesselK(n,2*(s*x)^(1/2)),x,0,infinity),
+  k_transform2(~x^~a,~f1,~x) =>
+          int(x^a*f1*BesselK(n,2*(s*x)^(1/2)),x,0,infinity),
+  k_transform2(~x,~f1,~x) =>
+          int(x*f1*BesselK(n,2*(s*x)^(1/2)),x,0,infinity),
+  k_transform2(sqrt(~x),~f1,~x) =>
+          int(sqrt(x)*f1*BesselK(n,2*(s*x)^(1/2)),x,0,infinity),
+  k_transform2(sqrt(~x)*~x,~f1,~x) =>
+          int(sqrt(x)*x*f1*BesselK(n,2*(s*x)^(1/2)),x,0,infinity),
+  k_transform2(sqrt(~x)*~x^~a,~f1,~x) =>
+          int(sqrt(x)*x^a*f1*BesselK(n,2*(s*x)^(1/2)),x,0,infinity),
+  k_transform2(~b,~f1,~x) =>
+          int(b*f1*BesselK(n,2*(s*x)^(1/2)),x,0,infinity),
+  k_transform2(~f1,~x) => int(f1*BesselK(n,2*(s*x)^(1/2)),x,0,infinity)
 };
 
-let K_transform2_rules;
+let k_transform2_rules;
 
 struveh2_rules :=
 
 { struveh2(1/~x,~f1,~x) =>
-                 int(1/x*f1*struveh(n,2*(s*x)^(1/2)),x,0,infinity),
+                 int(1/x*f1*StruveH(n,2*(s*x)^(1/2)),x,0,infinity),
   struveh2(1/~x^(~a),~f1,~x) =>
-                 int(1/x^a*f1*struveh(n,2*(s*x)^(1/2)),x,0,infinity),
+                 int(1/x^a*f1*StruveH(n,2*(s*x)^(1/2)),x,0,infinity),
   struveh2(1/sqrt(~x),~f1,~x) =>
-                int(1/sqrt(x)*f1*struveh(n,2*(s*x)^(1/2)),x,0,infinity),
+                int(1/sqrt(x)*f1*StruveH(n,2*(s*x)^(1/2)),x,0,infinity),
   struveh2(1/(sqrt(~x)*~x),~f1,~x) =>
-            int(1/(sqrt(x)*x)*f1*struveh(n,2*(s*x)^(1/2)),x,0,infinity),
+            int(1/(sqrt(x)*x)*f1*StruveH(n,2*(s*x)^(1/2)),x,0,infinity),
   struveh2(1/(sqrt(~x)*~x^~a),~f1,~x) =>
-          int(1/(sqrt(x)*x^a)*f1*struveh(n,2*(s*x)^(1/2)),x,0,infinity),
+          int(1/(sqrt(x)*x^a)*f1*StruveH(n,2*(s*x)^(1/2)),x,0,infinity),
   struveh2(~x^~a,~f1,~x) =>
-          int(x^a*f1*struveh(n,2*(s*x)^(1/2)),x,0,infinity),
+          int(x^a*f1*StruveH(n,2*(s*x)^(1/2)),x,0,infinity),
   struveh2(~x,~f1,~x) =>
-          int(x*f1*struveh(n,2*(s*x)^(1/2)),x,0,infinity),
+          int(x*f1*StruveH(n,2*(s*x)^(1/2)),x,0,infinity),
   struveh2(sqrt(~x),~f1,~x) =>
-          int(sqrt(x)*f1*struveh(n,2*(s*x)^(1/2)),x,0,infinity),
+          int(sqrt(x)*f1*StruveH(n,2*(s*x)^(1/2)),x,0,infinity),
   struveh2(sqrt(~x)*~x,~f1,~x) =>
-          int(sqrt(x)*x*f1*struveh(n,2*(s*x)^(1/2)),x,0,infinity),
+          int(sqrt(x)*x*f1*StruveH(n,2*(s*x)^(1/2)),x,0,infinity),
   struveh2(sqrt(~x)*~x^~a,~f1,~x) =>
-          int(sqrt(x)*x^a*f1*struveh(n,2*(s*x)^(1/2)),x,0,infinity),
+          int(sqrt(x)*x^a*f1*StruveH(n,2*(s*x)^(1/2)),x,0,infinity),
   struveh2(~b,~f1,~x) =>
-          int(b*f1*struveh(n,2*(s*x)^(1/2)),x,0,infinity),
-  struveh2(~f1,~x) => int(f1*struveh(n,2*(s*x)^(1/2)),x,0,infinity)
+          int(b*f1*StruveH(n,2*(s*x)^(1/2)),x,0,infinity),
+  struveh2(~f1,~x) => int(f1*StruveH(n,2*(s*x)^(1/2)),x,0,infinity)
 };
 
 let struveh2_rules;

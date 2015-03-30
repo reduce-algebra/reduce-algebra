@@ -47,40 +47,40 @@ algebraic procedure adelete (v,u);
 
 algebraic procedure RecursionSimplify (ex);
 
-begin scalar eqq,L1,L2,L3,L4,L5,F,Nargs,n,a,x,kern;
+begin scalar eqq,l1,l2,l3,l4,l5,f,nargs,n,a,x,kern;
 
   eqq := ex;
   lisp (kern := union (kernels !*q2f  (numr simp eqq ./ 1),
                         kernels !*q2f (denr simp eqq ./ 1)));
 
-  L1 := 'list . lisp  foreach k in kern join if atom k then nil else
+  l1 := 'list . lisp  foreach k in kern join if atom k then nil else
                                 list k;
-  L2 := 'list . lisp foreach k in kern join if atom k then nil else
+  l2 := 'list . lisp foreach k in kern join if atom k then nil else
                                 list (car k , -1 + length k);
 
   while not(l2 = {}) do <<
 
-        F:=  first l2; L2 := rest L2;
-        Nargs := first l2; L2 := rest L2;
-        L3 := foreach kk in L1 join
-                 if part(kk,0) = F  and
-                         lisp equal(-1 + length (prepsq cadr kk),Nargs)
+        f:=  first l2; l2 := rest l2;
+        nargs := first l2; l2 := rest l2;
+        l3 := foreach kk in l1 join
+                 if part(kk,0) = f  and
+                         lisp equal(-1 + length (prepsq cadr kk),nargs)
                  then list kk else list ('list);
-       L4:= foreach kk in L3 collect lisp ('list . cddr prepsq cadr kk);
-       L4 := trim L4;
-       foreach kkk in L4 do  <<
-          L5 := foreach kkkk in L3 join
+       l4:= foreach kk in l3 collect lisp ('list . cddr prepsq cadr kk);
+       l4 := trim l4;
+       foreach kkk in l4 do  <<
+          l5 := foreach kkkk in l3 join
                 if kkk = lisp ('list . cddr prepsq cadr kkkk)
                 then lisp list('list , cadr prepsq cadr kkkk)
                         else {};
-         while length L5 > 2 do <<
-                n := max(L5);
-                if member(n-1,L5) and member(n-2,L5) then
+         while length l5 > 2 do <<
+                n := max(l5);
+                if member(n-1,l5) and member(n-2,l5) then
                    <<   spec_nnnnn:= n;
-                        eqq := (eqq where Spec_recrules);
+                        eqq := (eqq where spec_recrules);
                         spec_nnnnn:= nil 
                    >>;
-                L5 := adelete(n,L5);
+                l5 := adelete(n,l5);
 
                 >>; >>; >>;
 return eqq;
@@ -91,7 +91,7 @@ algebraic procedure spec_check_n(n);
 
 
 algebraic (
-Spec_Recrules :={
+spec_recrules :={
 % AS (9.1.27)
 
 BesselJ(~n,~z) => - BesselJ(n-2,z) + (2*(n-1)/z)*BesselJ(n-1,z)
@@ -110,11 +110,11 @@ BesselK(~n,~z) => BesselK(n-2,z) + (2*(n-1)/z)*BesselK(n-1,z)
 when spec_check_n(n),
 % AS (9.1.27)
 
-Hankel1(~n,~z) => - Hankel1(n-2,z) + (2*(n-1)/z)*Hankel1(n-1,z)
+hankel1(~n,~z) => - hankel1(n-2,z) + (2*(n-1)/z)*hankel1(n-1,z)
 when spec_check_n(n),
 % AS (9.1.27)
 
-Hankel2(~n,~z) => - Hankel2(n-2,z) + (2*(n-1)/z)*Hankel2(n-1,z)
+hankel2(~n,~z) => - hankel2(n-2,z) + (2*(n-1)/z)*hankel2(n-1,z)
 when spec_check_n(n),
 % AS (13.4.2)
 
@@ -180,18 +180,18 @@ when spec_check_n(n),
 HermiteP(~n,~z) => -2*(n-1)*HermiteP(n-2,z) + 2*z*HermiteP(n-1,z)
 when spec_check_n(n) ,
 
-struveH(~nnnnn,~x)=>
-((x^2*struveH(-3 + nnnnn,x) + 5*x*struveH(-2 + nnnnn,x) -
-        4*nnnnn*x*struveH(-2 + nnnnn,x) + 2*struveH(-1 + nnnnn,x) -
-        6*nnnnn*struveH(-1 + nnnnn,x) + 4*nnnnn^2*struveH(-1 + nnnnn,x)
-        + x^2*struveH(-1 + nnnnn,x))/(-x + 2*nnnnn*x))
+StruveH(~nnnnn,~x)=>
+((x^2*StruveH(-3 + nnnnn,x) + 5*x*StruveH(-2 + nnnnn,x) -
+        4*nnnnn*x*StruveH(-2 + nnnnn,x) + 2*StruveH(-1 + nnnnn,x) -
+        6*nnnnn*StruveH(-1 + nnnnn,x) + 4*nnnnn^2*StruveH(-1 + nnnnn,x)
+        + x^2*StruveH(-1 + nnnnn,x))/(-x + 2*nnnnn*x))
   when spec_check_n(nnnnn),
 
 %(* AS (12.2.4)-(12.2.5) *)
 
-struveL(~nnnnn,~x) => ((-(x*struveL(-3 + nnnnn, x)) +
-(-1 + 4*(-1 + nnnnn))*struveL(-2 + nnnnn, x) +
-((-2*(-1 + nnnnn) - 4*(-1 + nnnnn)^2 + x^2)*struveL(-1 + nnnnn, x))/x)/
+StruveL(~nnnnn,~x) => ((-(x*StruveL(-3 + nnnnn, x)) +
+(-1 + 4*(-1 + nnnnn))*StruveL(-2 + nnnnn, x) +
+((-2*(-1 + nnnnn) - 4*(-1 + nnnnn)^2 + x^2)*StruveL(-1 + nnnnn, x))/x)/
 (1 + 2*(-1 + nnnnn))) when spec_check_n(nnnnn) } )$
 
 % can be locally applied with where.

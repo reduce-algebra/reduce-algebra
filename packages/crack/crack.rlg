@@ -42,7 +42,7 @@ lisp(initial_proc_list_ :=   % initial_proc_list_ is saved for an
 on dfprint$
 
                   % to print partial deriv. as indices
-comment 
+COMMENT 
 -------------------------------------------------------
 
                      Modules in CRACK 
@@ -76,7 +76,7 @@ write"        Integration: Integrating exact PDEs "$
 
 
         Integration: Integrating exact PDEs 
-comment
+COMMENT
 
 An important part of CRACK are integration routines 
 which  employ a number of different techniques which 
@@ -149,7 +149,7 @@ write"               unknown functions of fewer variables"$
 
 
                unknown functions of fewer variables
- comment
+ COMMENT
 
 The price of integrating non-exact expressions will be 
 the introduction of extra conditions but in fewer variables 
@@ -213,7 +213,7 @@ write"          Integration: Integrating Factors"$
 
 
           Integration: Integrating Factors
- comment
+ COMMENT
 
 Heuristics for the determination of integrating factors
 in CRACK are not rigorous but often useful. $
@@ -269,7 +269,7 @@ write"     Integration: Recognizing a 2-dim divergence"$
 
 
      Integration: Recognizing a 2-dim divergence
- comment
+ COMMENT
 
 Being able to recognize a structure 0=df(a,x)+df(b,y)
 where a,b are differential expressions is of benefit
@@ -348,7 +348,7 @@ write"      Integration: Solving ODEs for partial derivatives"$
 
 
       Integration: Solving ODEs for partial derivatives
- comment
+ COMMENT
 
 In CRACK ODEs and PDEs which are ODEs for a single partial
 derivative are investigated by the program ODESOLVE by
@@ -411,7 +411,7 @@ write"       Separation: Direct separation of PDEs"$
 
 
        Separation: Direct separation of PDEs
- comment
+ COMMENT
 
 Another important group of modules concerns separations.
 In this example z is an extra independent variable on which
@@ -472,7 +472,7 @@ write"                   (combined with integration)"$
 
 
                    (combined with integration)
- comment
+ COMMENT
 
 This example is the same as before, only now h is not assumed
 to be given but to be calculated. In this example there is no 
@@ -568,7 +568,7 @@ write"    Combination: Pseudo Differential Groebner Basis"$
 
 
     Combination: Pseudo Differential Groebner Basis
- comment
+ COMMENT
 
 Another group of modules tries to take advantage of 
 combining equations or their derivatives. The main tool
@@ -658,7 +658,7 @@ write"      Combination: Shortening linear PDE systems"$
 
 
       Combination: Shortening linear PDE systems
- comment
+ COMMENT
 
 To reduce memory requirements now and for further
 computations with a system of equations it is advisable
@@ -721,7 +721,7 @@ write"  Parametric solution of linear underdetermined ODEs"$
 
 
   Parametric solution of linear underdetermined ODEs
- comment
+ COMMENT
 
 The following example demonstrates an algorithm for the
 parametric solution of underdetermined linear ODEs with
@@ -806,7 +806,7 @@ write" Application: Investigating point symmetries of an ODE"$
 
 
  Application: Investigating point symmetries of an ODE
- comment
+ COMMENT
 
 Finally a  small real life example that demonstrates
 the interplay of different modules to solve completely
@@ -820,7 +820,7 @@ in Kamke's book using the following CRACK input:  $
 % liepde({{df(y,x,2)*x**4-df(y,x)*(2*x*y+x**3)+4*y**2},{y},{x}},
 %        {"point"},{})$ 
 
-comment 
+COMMENT 
 (and renaming xi_x --> xi, eta_y --> eta, y!`1 --> y1
 which is only done to ease reading). Instead of just 
 doing this liepde-call which would take care of 
@@ -907,7 +907,7 @@ write"  Integration: Solving a linear 1st order PDE"$
 
 
   Integration: Solving a linear 1st order PDE
- comment
+ COMMENT
 
 If the computation of a differential Groebner Basis is getting
 bigger and bigger and normal integration is not successful and
@@ -970,7 +970,7 @@ write"  Integration: Integration enabled through a syzygy"$
 
 
   Integration: Integration enabled through a syzygy
-comment
+COMMENT
 
 A side product of a differential Groebner basis computation
 is the computation of syzygies, i.e. identities between

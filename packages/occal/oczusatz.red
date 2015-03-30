@@ -25,9 +25,9 @@ module oczusatz;
 % POSSIBILITY OF SUCH DAMAGE.
 
 
-comment Redefinitions and additions for REDUCE 3.5;
+COMMENT Redefinitions and additions for REDUCE 3.5;
 
-comment redefinition of rnfactor!: -- not needed in future versions;
+COMMENT redefinition of rnfactor!: -- not needed in future versions;
 
 symbolic procedure rnfactor!: u;
    begin scalar x,y,dmode!*; integer m,n;
@@ -43,7 +43,7 @@ symbolic procedure rnfactor!: u;
    end;
 
 
-comment Some enhancements to the solve module;
+COMMENT Some enhancements to the solve module;
 
 fluid '(!*solve!-deferred!-kernels!* !*backtrace !*nonlnr vars!*);
 
@@ -139,7 +139,7 @@ symbolic procedure solve!-wrt!-deferred!-kernels(sols,defkrnls,varlis);
       end;
 
 
-comment
+COMMENT
 deflist ('((log exp)
            (exp log)
            (sin asin)
@@ -437,7 +437,7 @@ symbolic procedure try!-log!-relations (krnl1, krnl2, krnl3);
 symbolic procedure generate!-exponential!-relations kl;
   nil; % not much for now
 
-comment some additions/corrections for the gentran package;
+COMMENT some additions/corrections for the gentran package;
 
 global '(irena!-constants !*lisparithexpops!* !*lisplogexpops!*
          !*c!-functions!* pascfuncname!*);

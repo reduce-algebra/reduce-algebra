@@ -1,6 +1,6 @@
-module CFace;
-  imports Color0$
-  exports simpQG,simpG3,simpCGparh$
+module cface;
+  imports color0$
+  exports simpqg,simpg3,simpcgparh$
 %----------------------------------------------------------------------
 % Purpose:   Interface between REDUCE and xColor module.
 % Author:    A.Kryukov
@@ -47,57 +47,57 @@ n!*!*2!-1:= '(8 . 1)$        % default value
 
 %----------------------------------------------------------------------
 
-symbolic procedure SUdim u$
+symbolic procedure sudim u$
   %--------------------------------------------------------------------
   % Set order of SU group.
   %--------------------------------------------------------------------
   << SU_order := simp car u$
-     n!*!*2!-1 := AddSQ(MultSQ(SU_order,SU_order),('-1 ./ 1))$
+     n!*!*2!-1 := addsq(multsq(SU_order,SU_order),('-1 ./ 1))$
   >>$
 
-symbolic procedure SpTT u$
+symbolic procedure sptt u$
   %--------------------------------------------------------------------
   % Set value of A: Sp(TiTj) = A*Delta(i,j).
   %--------------------------------------------------------------------
   << Spur_TT := simp car u$ >>$
 
-rlistat '(SUdim SpTT)$
+rlistat '(sudim sptt)$
 
 %--------------- Set simpFunction for QG and G3 operators -------------
 
-symbolic procedure simpQG u$ simpCV(u,'QG)$
-symbolic procedure simpG3 u$ simpCV(u,'G3)$
+symbolic procedure simpqg u$ simpcv(u,'qg)$
+symbolic procedure simpg3 u$ simpcv(u,'g3)$
 
-put('QG,'simpfn,'simpQG)$
-put('G3,'simpfn,'simpG3)$
+put('qg,'simpfn,'simpqg)$
+put('g3,'simpfn,'simpg3)$
 
-symbolic procedure simpCV(u,x)$
+symbolic procedure simpcv(u,x)$
   %--------------------------------------------------------------------
   % u is a kernel.
   % Add to mul!* simpCGraph function.
   % return u (s.q.)
   %--------------------------------------------------------------------
   if length u neq 3 then
-    CError list("Invalid number of edges in vertex",u)
-  else << if not ('simpCGraph memq mul!*) then
-            mul!* := aconc!*(mul!*,'simpCGraph)$
+    cerror list("Invalid number of edges in vertex",u)
+  else << if not ('simpcgraph memq mul!*) then
+            mul!* := aconc!*(mul!*,'simpcgraph)$
           !*k2q(x . u)
        >>$
 
-symbolic procedure simpCGraph u$
+symbolic procedure simpcgraph u$
   %--------------------------------------------------------------------
   % u is a s.q..
   % Simplified u and return one (s.q.).
   %--------------------------------------------------------------------
   if null numr u or numberp numr u or red numr u then u
   else begin
-         SU_order := simp list('!*SQ,SU_order,nil)$
-         n!*!*2!-1 := AddSQ(MultSQ(SU_order,SU_order),('-1 ./ 1))$
-         Spur_TT := simp list('!*SQ,Spur_TT,nil)$
-         return QuotSQ(simpCGraph1(numr u,nil,1),!*f2q denr u)$
+         SU_order := simp list('!*sq,SU_order,nil)$
+         n!*!*2!-1 := addsq(multsq(SU_order,SU_order),('-1 ./ 1))$
+         Spur_TT := simp list('!*sq,Spur_TT,nil)$
+         return quotsq(simpcgraph1(numr u,nil,1),!*f2q denr u)$
        end$ % simpCGraph
 
-symbolic procedure simpCGraph1(u,v,w)$
+symbolic procedure simpcgraph1(u,v,w)$
   %--------------------------------------------------------------------
   % u is a s.f..
   % Seperate u on two part:
@@ -106,19 +106,19 @@ symbolic procedure simpCGraph1(u,v,w)$
   % Return <color factorof v>*w  (s.q.).
   %--------------------------------------------------------------------
   if numberp u or red u then
-    if v then MultSQ(Color0 v,MultF(u,w) ./ 1) else MultF(u,w) ./ 1
-  else if null atom mvar u and car mvar u eq 'QG then
-         if ldeg u = 1 then simpCGraph1(lc u,mvar u . v,w)
-         else CError list("Vertex",list('!*SQ,u ./ 1,t)
+    if v then multsq(color0 v,multf(u,w) ./ 1) else multf(u,w) ./ 1
+  else if null atom mvar u and car mvar u eq 'qg then
+         if ldeg u = 1 then simpcgraph1(lc u,mvar u . v,w)
+         else cerror list("Vertex",list('!*sq,u ./ 1,t)
                          ,"can not be multiply by itself."
                          )
-  else if null atom mvar u and car mvar u eq 'G3 then
-         if ldeg u = 1 then simpCGraph1(lc u,mvar u . v,w)
-         else if ldeg u = 2 then simpCGraph1(lc u,mvar u . mvar u . v,w)
-         else CError list("Vertex",list('!*SQ,u ./ 1,t),
+  else if null atom mvar u and car mvar u eq 'g3 then
+         if ldeg u = 1 then simpcgraph1(lc u,mvar u . v,w)
+         else if ldeg u = 2 then simpcgraph1(lc u,mvar u . mvar u . v,w)
+         else cerror list("Vertex",list('!*sq,u ./ 1,t),
                       "can not be multiplied by itself more then twice."
                          )
-  else simpCGraph1(lc u,v,MultF(!*p2f lpow u,w))$
+  else simpcgraph1(lc u,v,multf(!*p2f lpow u,w))$
 
 %----------------------------------------------------------------------
 endmodule;

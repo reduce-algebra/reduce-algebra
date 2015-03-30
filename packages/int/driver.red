@@ -948,21 +948,21 @@ intrules :=
    int(1/~f^(~x^2/~b),x) => erf(x/sqrt(b*log(f)))*sqrt(pi)*sqrt(b*log(f))/2
               when f freeof x and b freeof x,
 
-   int(e^(~~b*~x)/x,x) => ei(b*x) when b freeof x,
-   int(e^(~x/~b)/x,x) => ei(x/b) when b freeof x,
-   int(1/(exp(~x*~~b)*x),x) => ei(-x*b) when b freeof x,
-   int(1/(exp(~x/~b)*x),x) => ei(-x/b) when b freeof x,
-   int(~a^(~~b*~x)/x,x) => ei(x*b*log(a)) when a freeof x and b freeof x,
-   int(~a^(~x/~b)/x,x) => ei(x/b*log(a)) when a freeof x and b freeof x,
-   int(1/((~a^(~~b*~x))*x),x) => ei(-x*b*log(a)) when a freeof x and b freeof x,
-   int(1/((~a^(~x/~b))*x),x) => ei(-x/b*log(a)) when a freeof x and b freeof x,
-   int(~a^(~~b*~x^~n)/~x,x) => ei(x^n*b*log(a))/n
+   int(e^(~~b*~x)/x,x) => Ei(b*x) when b freeof x,
+   int(e^(~x/~b)/x,x) => Ei(x/b) when b freeof x,
+   int(1/(exp(~x*~~b)*x),x) => Ei(-x*b) when b freeof x,
+   int(1/(exp(~x/~b)*x),x) => Ei(-x/b) when b freeof x,
+   int(~a^(~~b*~x)/x,x) => Ei(x*b*log(a)) when a freeof x and b freeof x,
+   int(~a^(~x/~b)/x,x) => Ei(x/b*log(a)) when a freeof x and b freeof x,
+   int(1/((~a^(~~b*~x))*x),x) => Ei(-x*b*log(a)) when a freeof x and b freeof x,
+   int(1/((~a^(~x/~b))*x),x) => Ei(-x/b*log(a)) when a freeof x and b freeof x,
+   int(~a^(~~b*~x^~n)/~x,x) => Ei(x^n*b*log(a))/n
               when a freeof x and b freeof x and n freeof x,
-   int(~a^(~x^~n/~b)/~x,x) => ei(x^n/b*log(a))/n
+   int(~a^(~x^~n/~b)/~x,x) => Ei(x^n/b*log(a))/n
               when a freeof x and b freeof x and n freeof x,
-   int(1/((~a^(~~b*~x^~n))*x),x) => ei(-x^n*b*log(a))/n
+   int(1/((~a^(~~b*~x^~n))*x),x) => Ei(-x^n*b*log(a))/n
               when a freeof x and b freeof x and n freeof x,
-   int(1/((~a^(~x^~n/~b))*x),x) => ei(-x^n/b*log(a))/n
+   int(1/((~a^(~x^~n/~b))*x),x) => Ei(-x^n/b*log(a))/n
               when a freeof x and b freeof x and n freeof x,
    int(sin(~~b*~x)/x,x) => si(b*x) when b freeof x,     % FJW
    int(sin(~x/~b)/x,x) => si(x/b) when b freeof x,      % FJW
@@ -974,15 +974,15 @@ intrules :=
 %% int(cos(~x)/x,x) => ci(x),           % FJW
    int(cos(~x)/x^2,x) => -cos(x)/x -si(x),
    int(cos(~x)^2/x,x) =>(log(x)+ci(2x)/2),
-   int(1/log(~~b*~x),x) => ei(log(b*x))/b when b freeof x, % FJW
-   int(1/log(~x/~b),x) => ei(log(x/b))*b when b freeof x, % FJW
+   int(1/log(~~b*~x),x) => Ei(log(b*x))/b when b freeof x, % FJW
+   int(1/log(~x/~b),x) => Ei(log(x/b))*b when b freeof x, % FJW
 %% int(1/log(~x),x) => ei(log(x)),      % FJW
 %% int(1/log(~x+~b),x) => ei(log(x+b)) when b freeof x, % FJW
-   int(1/log(~~a*~x+~b),x) => ei(log(a*x+b))/a when a freeof x and b freeof x, % FJW
-   int(1/log(~x/~a+~b),x) => ei(log(x/a+b))*a when a freeof x and b freeof x, % FJW
-   int(~x/log(~x),x) => ei(2*log(x)),
-   int(~x^~n/log(x),x) => ei((n+1)*log(x)) when fixp n,
-   int(1/(~x^~n*log(x)),x) => ei((-n+1)*log(x)) when fixp n,
+   int(1/log(~~a*~x+~b),x) => Ei(log(a*x+b))/a when a freeof x and b freeof x, % FJW
+   int(1/log(~x/~a+~b),x) => Ei(log(x/a+b))*a when a freeof x and b freeof x, % FJW
+   int(~x/log(~x),x) => Ei(2*log(x)),
+   int(~x^~n/log(x),x) => Ei((n+1)*log(x)) when fixp n,
+   int(1/(~x^~n*log(x)),x) => Ei((-n+1)*log(x)) when fixp n,
 
    int(asin(~~a*~x+~~b),~x) => 1/a*((a*x+b)*asin(a*x+b)+sqrt(1-(a*x+b)^2))
                                  when a freeof x and b freeof x,

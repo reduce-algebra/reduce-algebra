@@ -53,7 +53,7 @@ END COMMENT;
 
 % ------------- Minimal resolutions --------------
 
-symbolic procedure Resolve!*(m,d);
+symbolic procedure resolve!*(m,d);
 % Compute a minimal resolution of the dpmat m, i.e. a list of dpmat's
 % (s0 s1 s2 ...), where sk is the k-th syzygy module of m, upto the
 % d'th part.
@@ -71,11 +71,11 @@ symbolic procedure Resolve!*(m,d);
 
 % ----------------- The Betti numbers -------------
 
-symbolic procedure bettiNumbers!* c;
+symbolic procedure bettinumbers!* c;
 % Returns the list of Betti numbers of the chain c.
    for each x in c collect dpmat_cols x;
 
-symbolic procedure gradedBettiNumbers!* c;
+symbolic procedure gradedbettinumbers!* c;
 % Returns the list of degree lists (according to the ecart) of the
 % generators of the chain c.
   for each x in c collect

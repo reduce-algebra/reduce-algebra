@@ -158,7 +158,7 @@ symbolic procedure
 
 % #########   The General Groebner driver ###############
 
-Comment
+COMMENT
 
 It returns {gb,syz,trace}  with change on the relation part of gb,
 where
@@ -186,11 +186,11 @@ end Comment;
 
 symbolic procedure groeb!=generaldriver(r,c,gb,comp_syz);
   begin scalar u, q, syz, p, pl, pol, trace, return_by_unit,
-                simp, rf, Ccrit;
-    Ccrit:=(not comp_syz) and (c<2); % don't reduce main syzygies
+                simp, rf, ccrit;
+    ccrit:=(not comp_syz) and (c<2); % don't reduce main syzygies
     simp:=sort(listminimize(gb,function red!=cancelsimp),
                 function red_better);
-    pl:=groeb_makepairlist(gb,Ccrit);
+    pl:=groeb_makepairlist(gb,ccrit);
     rf:=get('cali,'groeb!=rf);
     if cali_trace() > 30 then groeb_printpairlist pl;
     if cali_trace() > 5 then
@@ -222,11 +222,11 @@ symbolic procedure groeb!=generaldriver(r,c,gb,comp_syz);
 
           if cali_trace() > 20 then
             << terpri(); write r,". ---> "; dp_print2 q >>;
-          if Ccrit and (dp_unit!? q) then return_by_unit:=t;
+          if ccrit and (dp_unit!? q) then return_by_unit:=t;
 
                    % ----- update
           if not return_by_unit then
-          << pl:=groeb_updatePL(pl,gb,pol,Ccrit);
+          << pl:=groeb_updatepl(pl,gb,pol,ccrit);
              if cali_trace() > 30 then
                 << terpri(); groeb_printpairlist pl >>;
               gb:=pol.gb;
@@ -251,14 +251,14 @@ symbolic procedure groeb!=generaldriver(r,c,gb,comp_syz);
 
 % --- The different reduction functions.
 
-symbolic procedure groeb!=rf1(pol,simp); {red_TotalRed(simp,pol),simp};
+symbolic procedure groeb!=rf1(pol,simp); {red_totalred(simp,pol),simp};
 
 symbolic procedure groeb!=rf2(pol,simp);
   if (null bas_dpoly pol) or (null simp) then {pol,simp}
   else begin scalar v,q;
 
         % Make first reduction with bounded ecart.
-     pol:=red_TopRedBE(simp,pol);
+     pol:=red_topredbe(simp,pol);
 
         % Now loop into reduction with minimal ecart.
      while (q:=bas_dpoly pol) and (v:=red_divtest(simp,dp_lmon q)) do
@@ -266,11 +266,11 @@ symbolic procedure groeb!=rf2(pol,simp);
                 % Updating the simplifier list could make sense even
                 % for the noetherian case, since it is a global list.
             simp:=red_update(simp,pol);
-            pol:=red_TopRedBE(simp,v);
+            pol:=red_topredbe(simp,v);
          >>;
 
         % Now make tail reduction
-     if !*red_total and bas_dpoly pol then pol:=red_TailRed(simp,pol);
+     if !*red_total and bas_dpoly pol then pol:=red_tailred(simp,pol);
      return {pol,simp};
      end;
 
@@ -278,15 +278,15 @@ symbolic procedure groeb!=rf3(pol,simp);
 % Total reduction with bounded ecart.
   if (null bas_dpoly pol) or (null simp) then {pol,simp}
   else begin
-     pol:=red_TopRedBE(simp,pol);
+     pol:=red_topredbe(simp,pol);
      if bas_dpoly pol then
-        pol:=red_TailRedDriver(simp,pol,function red_TopRedBE);
+        pol:=red_tailreddriver(simp,pol,function red_topredbe);
      return {pol,simp};
      end;
 
 % #########   The Lazy Groebner driver ###############
 
-Comment
+COMMENT
 
 The lazy groebner driver implements the lazy strategy for local
 standard bases, i.e. stepwise reduction of S-Polynomials according to
@@ -316,11 +316,11 @@ symbolic procedure groeb!=nextspol(pl,queue);
 
 symbolic procedure groeb!=lazydriver(r,c,gb,comp_syz);
 % The lazy version of the driver.
-  begin scalar syz, Ccrit, queue, v, simp, p, pl, pol, return_by_unit;
+  begin scalar syz, ccrit, queue, v, simp, p, pl, pol, return_by_unit;
     simp:=sort(listminimize(gb,function red!=cancelsimp),
                 function red_better);
-    Ccrit:=(not comp_syz) and (c<2); % don't reduce main syzygies
-    pl:=groeb_makepairlist(gb,Ccrit);
+    ccrit:=(not comp_syz) and (c<2); % don't reduce main syzygies
+    pl:=groeb_makepairlist(gb,ccrit);
     if cali_trace() > 30 then groeb_printpairlist pl;
     if cali_trace() > 5 then
         <<terpri(); write" New base elements :";terpri() >>;
@@ -333,7 +333,7 @@ symbolic procedure groeb!=lazydriver(r,c,gb,comp_syz);
          if cali_trace() > 10 then groeb_printpair(p,pl);
          pol:=groeb_spol p;
          if bas_dpoly pol then % back into the queue
-             if Ccrit and dp_unit!? bas_dpoly pol then
+             if ccrit and dp_unit!? bas_dpoly pol then
                         return_by_unit:=t
              else queue:=merge(list pol, queue,
                                     function groeb!=queuesort)
@@ -343,7 +343,7 @@ symbolic procedure groeb!=lazydriver(r,c,gb,comp_syz);
       else
       << pol:=car queue; queue:=cdr queue;
            % Try one top reduction step
-         if (v:=red_divtestBE(simp,dp_lmon bas_dpoly pol,
+         if (v:=red_divtestbe(simp,dp_lmon bas_dpoly pol,
                         bas_dpecart pol)) then ()
                 % do nothing with simp !
          else if (v:=red_divtest(simp,dp_lmon bas_dpoly pol)) then
@@ -362,14 +362,14 @@ symbolic procedure groeb!=lazydriver(r,c,gb,comp_syz);
             % usual postprocessing :
             pol:=groeb!=postprocess
                 if !*red_total then
-                red_TailRedDriver(gb,pol,function red_TopRedBE)
+                red_tailreddriver(gb,pol,function red_topredbe)
                 else pol;
             if dp_unit!? bas_dpoly pol then return_by_unit:=t
             else % update the computation
             << r:=r+1; pol:=bas_newnumber(r,pol);
                if cali_trace() > 20 then
                << terpri(); write r,". --> "; dp_print2 bas_dpoly pol>>;
-               pl:=groeb_updatePL(pl,gb,pol,Ccrit);
+               pl:=groeb_updatepl(pl,gb,pol,ccrit);
                simp:=red_update(simp,pol);
                gb:=pol.gb;
             >>
@@ -389,19 +389,19 @@ symbolic procedure groeb!=lazydriver(r,c,gb,comp_syz);
 
 % ---------- Critical pair criteria -----------------------
 
-symbolic procedure groeb!=critA(p);
+symbolic procedure groeb!=crita(p);
 % p is a pair list {(i.k):i running} of pairs with equal module
 % component number. Choose those pairs among them that are minimal wrt.
 % division order on lcm(i.k).
-  listminimize(p,function groeb!=testA);
+  listminimize(p,function groeb!=testa);
 
-symbolic procedure groeb!=testA(p,q); mo_divides!?(nth(p,3),nth(q,3));
+symbolic procedure groeb!=testa(p,q); mo_divides!?(nth(p,3),nth(q,3));
 
-symbolic procedure groeb!=critB(e,p);
+symbolic procedure groeb!=critb(e,p);
 % Delete pairs from p, for which testB is false.
-  for each x in p join if not groeb!=testB(e,x) then {x};
+  for each x in p join if not groeb!=testb(e,x) then {x};
 
-symbolic procedure groeb!=testB(e,a);
+symbolic procedure groeb!=testb(e,a);
 % e=lt(f_k). Test, whether for a=pair (i j)
 % komp(a)=komp(e) and Syz(i,j,k)=[ 1 * * ].
     (mo_comp e=car a)
@@ -411,17 +411,17 @@ symbolic procedure groeb!=testB(e,a);
     and (not mo_equal!?(mo_lcm(dp_lmon bas_dpoly nth(a,4),e),
                         nth(a,3)));
 
-symbolic procedure groeb!=critC(p);
+symbolic procedure groeb!=critc(p);
 % Delete main syzygies.
-  for each x in p join if not groeb!=testC1 x then {x};
+  for each x in p join if not groeb!=testc1 x then {x};
 
-symbolic procedure groeb!=testC1 el;
+symbolic procedure groeb!=testc1 el;
     mo_equal!?(
         mo_sum(dp_lmon bas_dpoly nth(el,5),
                dp_lmon bas_dpoly nth(el,4)),
         nth(el,3));
 
-symbolic procedure groeb_updatePL(p,gb,be,Ccrit);
+symbolic procedure groeb_updatepl(p,gb,be,ccrit);
 % Update the pairlist p with the new base element be and the old ones
 % in the base list gb. Discard pairs where both base elements have
 % number part 0.
@@ -431,17 +431,17 @@ symbolic procedure groeb_updatePL(p,gb,be,Ccrit);
         if (k=mo_comp dp_lmon bas_dpoly b)
                 and(n or (bas_nr b neq 0)) then
                         p1:=groeb!=newpair(k,b,be).p1;
-    p1:=groeb!=critA(sort(p1,function groeb!=better));
-    if Ccrit then p1:=groeb!=critC p1;
+    p1:=groeb!=crita(sort(p1,function groeb!=better));
+    if ccrit then p1:=groeb!=critc p1;
     return
         merge(p1,
-              groeb!=critB(a,p), function groeb!=better);
+              groeb!=critb(a,p), function groeb!=better);
     end;
 
-symbolic procedure groeb_makepairlist(gb,Ccrit);
+symbolic procedure groeb_makepairlist(gb,ccrit);
     begin scalar newgb,p;
     while gb do
-    << p:=groeb_updatePL(p,newgb,car gb,Ccrit);
+    << p:=groeb_updatepl(p,newgb,car gb,ccrit);
        newgb:=car gb .  newgb; gb:=cdr gb
     >>;
     return p;

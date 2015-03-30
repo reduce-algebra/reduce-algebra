@@ -61,11 +61,11 @@ interval!*:=
 % Maps MathML constants to OpenMath constant symbols
 % and their CDs.
 
-constantsOM!*:=
-'((!&ImaginaryI!; . (nums1 i))
-(!&ExponentialE!; . (nums1 e))
+constantsom!*:=
+'((!&imaginaryi!; . (nums1 i))
+(!&exponentiale!; . (nums1 e))
 (!&pi!; . (nums1 pi))
-(!&NotANumber!; . (nums1 nan))
+(!&notanumber!; . (nums1 nan))
 (!&gamma!; . (nums1 gamma))
 (!&infin!; . (nums1 infinity))
 (!&false!; . (logic1 false))
@@ -84,23 +84,23 @@ begin;
    indent:=0;
    printout("<OMOBJ>");
    indent!* t;
-   objectOM( elem );
+   objectom( elem );
    indent!* nil;
    printout("</OMOBJ>");
 end;
 
-symbolic procedure objectOM(elem);
+symbolic procedure objectom(elem);
 begin scalar aa;;
-   if PAIRP elem then <<
+   if pairp elem then <<
     if (aa:=assoc(car elem, ir2mml!*)) then <<
       apply(cadddr aa, list elem)
      >>
-    else fnOM(elem);
+    else fnom(elem);
    >>
-   else basicOM(elem);
+   else basicom(elem);
 end;
 
-symbolic procedure strOM(elem);
+symbolic procedure strom(elem);
 begin;
   printout "<OMSTR> ";princ cadr elem; princ " </OMSTR>";
 end;
@@ -108,19 +108,19 @@ end;
 % Recieves an element which is not a list
 % and prints out OpenMath accordingly.
 
-symbolic procedure basicOM(elem);
+symbolic procedure basicom(elem);
 begin;
-  if NUMBERP elem then <<
-    if FIXP elem then integerOM(elem);
-    if FLOATP elem then floatOM(elem)
+  if numberp elem then <<
+    if fixp elem then integerom(elem);
+    if floatp elem then floatom(elem)
   >>
   else
-    if IDP elem then variableOM(elem);
+    if idp elem then variableom(elem);
 end;
 
 % Prints out integers
 
-symbolic procedure integerOM(elem);
+symbolic procedure integerom(elem);
 begin;
    printout("<OMI> ");
    princ elem;
@@ -129,7 +129,7 @@ end;
 
 % Prints out decimal floats
 
-symbolic procedure floatOM(elem);
+symbolic procedure floatom(elem);
 begin;
    printout("<OMF ");
    princ "dec="""; princ elem; princ """/>";
@@ -137,9 +137,9 @@ end;
 
 % Prints out OpenMath variables
 
-symbolic procedure variableOM(elem);
+symbolic procedure variableom(elem);
 begin scalar aa;
- aa:=assoc(intern elem, constantsOM!*);
+ aa:=assoc(intern elem, constantsom!*);
  if aa neq nil then <<
     printout("<OMS ");
     princ "cd=""";
@@ -162,7 +162,7 @@ end;
 % Prints out all OpenMath symbols of 1, 2, or more arguments
 % constructed by application.
 
-symbolic procedure naryOM(elem);
+symbolic procedure naryom(elem);
 begin scalar cd, name;
   name:=car elem;
   if name='var then name:='variance;
@@ -174,21 +174,21 @@ begin scalar cd, name;
   printout "<OMA>";
   indent:=indent+2;
   printout "<OMS cd="""; princ cd; princ """ name="""; princ name; princ """>";
-  multiOM(cddr elem);
+  multiom(cddr elem);
   indent:=indent-2;
   printout "</OMA>";
 end;
 
-symbolic procedure multiOM(elem);
+symbolic procedure multiom(elem);
 begin;
-   if ((length elem)=1) then objectOM( car elem )
-       else <<objectOM car elem ; multiOM( cdr elem );>>
+   if ((length elem)=1) then objectom( car elem )
+       else <<objectom car elem ; multiom( cdr elem );>>
 end;
 
 % Prints out the OpenMath matrix_selector or
 % vector_selector symbols
 
-symbolic procedure selectOM(elem);
+symbolic procedure selectom(elem);
 begin scalar name;
   if caaddr elem ='matrix then name:='matrix_selector
   else name:='vector_selector;
@@ -196,8 +196,8 @@ begin scalar name;
   indent:=indent+2;
   printout "<OMS cd=""linalg3"" name="""; princ name;
   princ """/>";
-  multiOM(cdddr elem);
-  objectOM caddr elem;
+  multiom(cdddr elem);
+  objectom caddr elem;
   indent:=indent-2;
   printout "</OMA>";
 end;
@@ -205,7 +205,7 @@ end;
 % Prints out elements which are
 % containers in MathML.
 
-symbolic procedure containerOM(elem);
+symbolic procedure containerom(elem);
 begin scalar cd, att, name;
   att:=cadr elem;
   name:=car elem;
@@ -213,21 +213,21 @@ begin scalar cd, att, name;
   indent!* t;
   if name = 'vectorml then name:= 'vector;
   cd := cadr assoc(name, valid_om!*);
-  if car elem = 'set and PAIRP att then <<
+  if car elem = 'set and pairp att then <<
     if intern cadr car att='multiset then cd:='multiset1;
   >>;
 
   if car elem = 'vectorml then name:= "vector";
   if car elem = 'vectorml then elem:= 'vector . cdr elem;
   printout "<OMS cd="""; princ cd; princ """ name="""; princ name; princ """/>";
-  multiOM(cddr elem);
+  multiom(cddr elem);
   indent!* nil;
   printout "</OMA>";
 end;
 
 % Prints out OpenMath intervals
 
-symbolic procedure intervalOM(elem);
+symbolic procedure intervalom(elem);
 begin scalar aa, att, name, cd;
   att:=cadr elem;
   name:=car elem;
@@ -244,7 +244,7 @@ begin scalar aa, att, name, cd;
   printout "<OMA>";
   indent!* t;
   printout "<OMS cd="""; princ cd; princ """ name="""; princ name; princ """/>";
-  multiOM(cddr elem);
+  multiom(cddr elem);
   indent!* nil;
   printout "</OMA>";
 
@@ -253,33 +253,33 @@ end;
 % Prints matrices according to the definition
 % in CD linalg1
 
-symbolic procedure matrixOM(elem);
+symbolic procedure matrixom(elem);
 begin;
   printout "<OMA>";
   indent!* t;
   printout "<OMS cd=""linalg1"" name=""matrix""/>";
-  matrixrowOM(cadddr elem);
+  matrixrowom(cadddr elem);
   indent!* nil;
   printout "</OMA>";
 end;
 
-symbolic procedure matrixrowOM(elem);
+symbolic procedure matrixrowom(elem);
 begin;
   if elem neq nil then <<
     printout "<OMA>";
     indent!* t;
     printout "<OMS cd=""linalg1"" name=""matrixrow""/>";
-    multiOM(car elem);
+    multiom(car elem);
     indent!* nil;
     printout "</OMA>";
-    matrixrowOM cdr elem;
+    matrixrowom cdr elem;
   >>;
 end;
 
 % Prints out variables which posses
 % an attribute
 
-symbolic procedure ciOM(elem);
+symbolic procedure ciom(elem);
 begin;
   printout "<OMATTR>";
   indent!* t;
@@ -292,26 +292,26 @@ begin;
   princ """>";
   indent!* nil;
   printout "</OMATP>";
-  objectOM(caddr elem);
+  objectom(caddr elem);
   indent!* nil;
   printout "</OMATTR>";
 end;
 
 % Prints out constants such as pi, gamma etc...
 
-symbolic procedure numOM(elem);
+symbolic procedure numom(elem);
 begin;
   printout "<OMA>";
   indent!* t;
   printout "<OMS cd=""nums1"" name="""; princ car elem; princ """/>";
-  objectOM cadr elem;
-  if car elem='based_integer then strOM cadr caddr elem
-  else objectOM caddr elem;
+  objectom cadr elem;
+  if car elem='based_integer then strom cadr caddr elem
+  else objectom caddr elem;
   indent!* nil;
   printout "</OMA>";
 end;
 
-symbolic procedure fnOM(elem);
+symbolic procedure fnom(elem);
 begin;
   printout "<OMA>";
   indent!* t;
@@ -324,17 +324,17 @@ begin;
   printout "<OMS cd=""typmml"" name="""; princ "fn_type"; princ """/>";
   indent!* nil;
   printout "</OMATP>";
-  objectOM car elem;
+  objectom car elem;
   indent!* nil;
   printout "</OMATTR>";
-  multiOM(cddr elem);
+  multiom(cddr elem);
   indent!* nil;
   printout "</OMA>";
 end;
 
 % Prints out partial differentiation expressions
 
-symbolic procedure partialdiffOM(elem);
+symbolic procedure partialdiffom(elem);
 begin scalar cd, var, fun, name;
   cd := assoc(car elem, valid_om!*);
   if cd neq nil then cd:=cadr cd;
@@ -342,12 +342,12 @@ begin scalar cd, var, fun, name;
   var:=cdr reverse cddr elem;
   fun:=car reverse elem;
 
-  if length var = 1 then symbolsOM('diff . cdr elem);
+  if length var = 1 then symbolsom('diff . cdr elem);
 end;
 
 % Prints out elements such as sum, prod, diff and int.
 
-symbolic procedure symbolsOM(elem);
+symbolic procedure symbolsom(elem);
 begin scalar cd, var, fun, int, name;
   cd := assoc(car elem, valid_om!*);
   if cd neq nil then cd:=cadr cd;
@@ -357,21 +357,21 @@ begin scalar cd, var, fun, int, name;
   if name neq 'diff then int:=cadddr elem;
 
   % This error states that a <sum> will not be translated to MathML
-  if int neq nil then if car int = 'condition then errorML("<condition> tag not supported in MathML", 1);
+  if int neq nil then if car int = 'condition then errorml("<condition> tag not supported in MathML", 1);
 
   printout "<OMA>";
   indent!* t;
-  if int neq nil AND name='int then name:='defint;
+  if int neq nil and name='int then name:='defint;
   printout "<OMS cd="""; princ cd; princ """ name="""; princ name; princ """/>";
-  if int neq nil then objectOM int;
-  lambdaOM ('lambda . nil . var . list fun);
+  if int neq nil then objectom int;
+  lambdaom ('lambda . nil . var . list fun);
   indent!* nil;
   printout "</OMA>";
 end;
 
 % Prints out lambda expressions
 
-symbolic procedure lambdaOM(elem);
+symbolic procedure lambdaom(elem);
 begin scalar var, fun;
   var:= cadr caddr elem;
   fun:=car reverse elem;
@@ -380,30 +380,30 @@ begin scalar var, fun;
   printout "<OMS cd=""fns1"" name=""lambda""/>";
   printout "<OMBVAR>";
   indent!* t;
-  objectOM var;
+  objectom var;
   indent!* nil;
   printout "</OMBVAR>";
-  objectOM fun;
+  objectom fun;
   indent!* nil;
   printout "</OMBIND>";
 end;
 
 % Does not work...
 
-symbolic procedure semanticOM(elem);
+symbolic procedure semanticom(elem);
 begin scalar sem;
   printout "<OMA>";
   indent!* t;
   sem:=cadr cadr elem;
   mathml_list2string sem;
-  multiOM cddr elem;
+  multiom cddr elem;
   indent!* nil;
   printout "</OMA>";
 end;
 
 % Prints out limit expressions
 
-symbolic procedure limitOM(elem);
+symbolic procedure limitom(elem);
 begin scalar limit, fun, var, tendsto;
   var:=caddr elem;
   limit:=cadddr elem;
@@ -413,41 +413,41 @@ begin scalar limit, fun, var, tendsto;
   indent!* t;
   printout "<OMS cd=""limit1"" name=""limit""/>";
   if car limit = 'lowlimit then <<
-    objectOM cadr limit;
+    objectom cadr limit;
     printout "<OMS cd=""limit1"" name=""null""/>"
   >>;
   if car limit = 'condition then <<
-    objectOM car reverse cadr limit;
+    objectom car reverse cadr limit;
     tendsto:=  cadr car cadr cadr limit;
     printout "<OMS cd=""limit1"" name="""; princ tendsto; princ """/>"
   >>;
-  lambdaOM ('limit . nil . var . list fun);
+  lambdaom ('limit . nil . var . list fun);
   indent!* nil;
   printout "</OMA>";
 end;
 
 % Prints out OpenMath quantifiers
 
-symbolic procedure quantOM(elem);
+symbolic procedure quantom(elem);
 begin;
-  if cadr reverse elem neq nil then errorML("condition tag not supported in MathML ", 2);
+  if cadr reverse elem neq nil then errorml("condition tag not supported in MathML ", 2);
   printout "<OMBIND>";
   indent!* t;
   printout "<OMS cd=""quant1"" name="""; princ car elem; princ """/>";
   printout "<OMBVAR>";
   indent!* t;
-  bvarOM cddr elem;
+  bvarom cddr elem;
   indent!* nil;
   printout "</OMBVAR>";
-  objectOM car reverse elem;
+  objectom car reverse elem;
   indent!* nil;
   printout "</OMBIND>";
 end;
 
-symbolic procedure bvarOM(elem);
+symbolic procedure bvarom(elem);
 begin;
-  if PAIRP car elem then
-  if car car elem = 'bvar then <<objectOM cadr car elem; bvarOM cdr elem>>;
+  if pairp car elem then
+  if car car elem = 'bvar then <<objectom cadr car elem; bvarom cdr elem>>;
 end;
 
 symbolic procedure printout( str );

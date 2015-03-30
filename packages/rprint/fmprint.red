@@ -1482,22 +1482,22 @@ symbolic procedure fancy!-matfit(u,p,op);
 
 put('mat,'fancy!-prinfit,'fancy!-matfit);
 
-put('taylor!*,'fancy!-reform,'Taylor!*print1);
+put('taylor!*,'fancy!-reform,'taylor!*print1);
 
 endmodule;
 
 module fancy_specfn;
 
-put('euler_gamma,'fancy!-special!-symbol,"\gamma");
+put('Euler_gamma,'fancy!-special!-symbol,"\gamma");
 
-put('besseli,'fancy!-prifn,'fancy!-bessel);
-put('besselj,'fancy!-prifn,'fancy!-bessel);
-put('bessely,'fancy!-prifn,'fancy!-bessel);
-put('besselk,'fancy!-prifn,'fancy!-bessel);
-put('besseli,'fancy!-functionsymbol,'(ascii 73));
-put('besselj,'fancy!-functionsymbol,'(ascii 74));
-put('bessely,'fancy!-functionsymbol,'(ascii 89));
-put('besselk,'fancy!-functionsymbol,'(ascii 75));
+put('BesselI,'fancy!-prifn,'fancy!-bessel);
+put('BesselJ,'fancy!-prifn,'fancy!-bessel);
+put('BesselY,'fancy!-prifn,'fancy!-bessel);
+put('BesselK,'fancy!-prifn,'fancy!-bessel);
+put('BesselI,'fancy!-functionsymbol,'(ascii 73));
+put('BesselJ,'fancy!-functionsymbol,'(ascii 74));
+put('BesselY,'fancy!-functionsymbol,'(ascii 89));
+put('BesselK,'fancy!-functionsymbol,'(ascii 75));
 
 symbolic procedure fancy!-bessel(u);
  fancy!-level
@@ -1547,9 +1547,9 @@ symbolic procedure fancy!-hypergeometric u;
 
 % hypergeometric({1,2,u/w,v},{5,6},sqrt x);
 
-put('meijerg,'fancy!-prifn,'fancy!-meijerG);
+put('MeijerG,'fancy!-prifn,'fancy!-meijerg);
 
-symbolic procedure fancy!-meijerG u;
+symbolic procedure fancy!-meijerg u;
  fancy!-level
   begin scalar w,a1,a2,a3;
    integer n,m,p,q;

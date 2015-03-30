@@ -47,7 +47,7 @@ begin scalar mvar1,inde,constpart,lowestind,modic,modrec,indis;
 mvar1 := part(mainvar rec ,0);
 inde  := mainvar part(mainvar rec,1);
 indis := the_indices(foreach kk in ic collect lhs kk,mvar1);
-highestind := if indis neq {} then max(indis) else NIL;
+highestind := if indis neq {} then max(indis) else nil;
 nindis := the_indices(rec,mvar1);
 
            % applying rule : rec where r(~n) => 0
@@ -149,9 +149,9 @@ algebraic procedure solve_lin_rec(rec,ic);
 %                           4             4
 
 algebraic (moivre_expt := { (~z)^(~k) =>
-              Moivre(z,k) when not  freeof(z,i)});
+              moivre(z,k) when not  freeof(z,i)});
 
-algebraic procedure Moivre(z,k);
+algebraic procedure moivre(z,k);
 
   begin scalar rho,phi; % what ( will happen
   rho := sqrt( (repart z)^2 + (impart z)^2);
@@ -164,16 +164,16 @@ algebraic procedure the_indices(ex,mvar);
 
 if part(ex,0) = list then for each kk in ex join the_indices(kk,mvar)
 else
-begin scalar eqq,L1,L2,kern;
+begin scalar eqq,l1,l2,kern;
   eqq := ex;
   lisp (kern := union (kernels !*q2f  (numr simp eqq ./ 1),
                         kernels !*q2f (denr simp eqq ./ 1)));
 
-  L1 := 'list . lisp  foreach k in kern join
+  l1 := 'list . lisp  foreach k in kern join
          if atom k then nil else if eqcar(k,mvar) then
                                 list cadr k else nil;
 
-  return L1;
+  return l1;
 end;
 endmodule;
 end;

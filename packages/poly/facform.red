@@ -45,7 +45,7 @@ switch limitedfactors,nopowers;
 put('sqfree,'simpfg,'((t (rmsubs) (setq !*exp nil))
                       (nil (rmsubs) (setq !*exp t))));
 
-comment In this module, we consider the manipulation of factored forms.
+COMMENT In this module, we consider the manipulation of factored forms.
     These have the structure
 
        <monomial> . <form-power-list>

@@ -263,7 +263,7 @@ else algebraic write str," := ",
 lisp prepsq !*di2q(list car p, varlist!*)," + ",
 lisp prepsq !*di2q(cdr p, varlist!*);
 %----------------------------------------------------------------------
-symbolic procedure addgt(U);
+symbolic procedure addgt(u);
 if ordering = 'lex then u else eval('plus.u) . u$
 %-----------------------------------------------------------------------
 symbolic procedure printsys(str,gg!*);

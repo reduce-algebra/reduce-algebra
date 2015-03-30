@@ -56,13 +56,13 @@ testdecompose  ( (u + v)**2 +10 );
 testdecompose  ( (u + v + 10)**2 -100 );
 
     % some special (difficult) cases
-testdecompose (X**4 + 88*X**3*Y + 2904*X**2*Y**2 - 10*X**2 
-           + 42592*X*Y**3 - 440*X*Y + 234256*Y**4 - 4840*Y**2);
+testdecompose (x**4 + 88*x**3*y + 2904*x**2*y**2 - 10*x**2 
+           + 42592*x*y**3 - 440*x*y + 234256*y**4 - 4840*y**2);
 
     % a polynomial with complex coefficients
 on complex;
-testdecompose(X**4 + (88*I)*X**3*Y - 2904*X**2*Y**2 - 10*X**2 - 
-              (42592*I)*X*Y**3 - (440*I)*X*Y + 234256*Y**4 + 4840*Y**2);
+testdecompose(x**4 + (88*i)*x**3*y - 2904*x**2*y**2 - 10*x**2 - 
+              (42592*i)*x*y**3 - (440*i)*x*y + 234256*y**4 + 4840*y**2);
 off complex;
 
 

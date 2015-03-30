@@ -28,7 +28,7 @@ module xexcalc;
 %
 
 
-Comment. The core routines in EXCALC have symbols:
+COMMENT. The core routines in EXCALC have symbols:
 
         wedgepf2: pf,wedgepf -> wedgepf
         wedgek2:  lpow pf,lpow wedgepf -> wedgepf

@@ -37,35 +37,35 @@ module smithex1;
 
 
 
-symbolic procedure smithex_int(B);
+symbolic procedure smithex_int(b);
   begin
-    scalar Left,Right,isclear,A;
+    scalar left,right,isclear,a;
     integer n,m,i,j,k,l,tmp,g,ll,rr,int1,int2,quo1,quo2,r,sgn,rrquo,
             q,input_mode;
 
-    matrix_input_test(B);
+    matrix_input_test(b);
 
     input_mode := get(dmode!*,'dname);
     if input_mode = 'modular
      then rederr "ERROR: smithex_int does not work with modular on.";
 
-    integer_entries_test(B);
+    integer_entries_test(b);
 
-    A := copy_mat(B);
+    a := copy_mat(b);
 
-    n := car size_of_matrix(A); %  No. of rows.
-    m := cadr size_of_matrix(A); %  No. of columns.
+    n := car size_of_matrix(a); %  No. of rows.
+    m := cadr size_of_matrix(a); %  No. of columns.
 
-    Left := make_identity(n,n) ;
-    Right := make_identity(m,m);
+    left := make_identity(n,n) ;
+    right := make_identity(m,m);
 
     for k:=1:min(n,m) do
     <<
       %
       %  Pivot selection from row k to column k.
       %
-      i := k; while i<= n and getmat(A,i,k) = 0 do i:=i+1;
-      j := k; while j<= m and getmat(A,k,j) = 0 do j:=j+1;
+      i := k; while i<= n and getmat(a,i,k) = 0 do i:=i+1;
+      j := k; while j<= m and getmat(a,k,j) = 0 do j:=j+1;
 
       if i>n and j>m then <<>>
       else
@@ -75,17 +75,17 @@ symbolic procedure smithex_int(B);
         %
         for l:=i+1:n do
         <<
-          if getmat(A,l,k) = 0 then l := l+1
-          else if abs(getmat(A,l,k)) < abs(getmat(A,i,k)) then i := l;
+          if getmat(a,l,k) = 0 then l := l+1
+          else if abs(getmat(a,l,k)) < abs(getmat(a,i,k)) then i := l;
         >>;
 
         for l:=j+1:m do
         <<
-          if getmat(A,k,l) = 0 then l := l+1
-          else if abs(getmat(A,k,l)) < abs(getmat(A,k,j)) then j := l;
+          if getmat(a,k,l) = 0 then l := l+1
+          else if abs(getmat(a,k,l)) < abs(getmat(a,k,j)) then j := l;
         >>;
 
-        if i<=n and (j>m or abs(getmat(A,i,k))<abs(getmat(A,k,j))) then
+        if i<=n and (j>m or abs(getmat(a,i,k))<abs(getmat(a,k,j))) then
         %
         %  Pivot is A(i,k), interchange row k,i if necessary.
         %
@@ -95,16 +95,16 @@ symbolic procedure smithex_int(B);
 
             for l:=k:m do
             <<
-              tmp:= getmat(A,i,l);
-              setmat(A,i,l,getmat(A,k,l));
-              setmat(A,k,l,tmp);
+              tmp:= getmat(a,i,l);
+              setmat(a,i,l,getmat(a,k,l));
+              setmat(a,k,l,tmp);
             >>;
 
             for l:=1:n do
             <<
-              tmp:= getmat(Left,l,i);
-              setmat(Left,l,i,getmat(Left,l,k));
-              setmat(Left,l,k,tmp);
+              tmp:= getmat(left,l,i);
+              setmat(left,l,i,getmat(left,l,k));
+              setmat(left,l,k,tmp);
             >>;
 
           >>
@@ -119,16 +119,16 @@ symbolic procedure smithex_int(B);
 
             for l:=k:n do
             <<
-              tmp:= getmat(A,l,j);
-              setmat(A,l,j,getmat(A,l,k));
-              setmat(A,l,k,tmp);
+              tmp:= getmat(a,l,j);
+              setmat(a,l,j,getmat(a,l,k));
+              setmat(a,l,k,tmp);
             >>;
 
             for l:=1:m do
             <<
-              tmp:= getmat(Right,j,l);
-              setmat(Right,j,l,getmat(Right,k,l));
-              setmat(Right,k,l,tmp);
+              tmp:= getmat(right,j,l);
+              setmat(right,j,l,getmat(right,k,l));
+              setmat(right,k,l,tmp);
             >>;
 
           >>;
@@ -143,17 +143,17 @@ symbolic procedure smithex_int(B);
         <<
           for i:=k+1:n do
           <<
-            if getmat(A,i,k) = 0 then <<>>
+            if getmat(a,i,k) = 0 then <<>>
             else
             <<
-              int1 := getmat(A,k,k);
-              int2 := getmat(A,i,k);
+              int1 := getmat(a,k,k);
+              int2 := getmat(a,i,k);
               tmp := (calc_exgcd_int(int1,int2));
               g := car tmp;
               ll := cadr tmp;
               rr := caddr tmp;
-              quo1 := get_quo_int(getmat(A,k,k),g);
-              quo2 := get_quo_int(getmat(A,i,k),g);
+              quo1 := get_quo_int(getmat(a,k,k),g);
+              quo2 := get_quo_int(getmat(a,i,k),g);
 
               %
               %  We have  ll A(k,k)/g + rr A(i,k)/g = 1
@@ -167,21 +167,21 @@ symbolic procedure smithex_int(B);
 
               for j:=k+1:m do
               <<
-                tmp := ll*getmat(A,k,j)+rr*getmat(A,i,j);
-                setmat(A,i,j,quo1*getmat(A,i,j)-quo2*getmat(A,k,j));
-                setmat(A,k,j,tmp);
+                tmp := ll*getmat(a,k,j)+rr*getmat(a,i,j);
+                setmat(a,i,j,quo1*getmat(a,i,j)-quo2*getmat(a,k,j));
+                setmat(a,k,j,tmp);
               >>;
 
               for j:=1:n do
               <<
-                tmp := quo1*getmat(Left,j,k)+quo2*getmat(Left,j,i);
-                setmat(Left,j,i,-rr*getmat(Left,j,k)+ll*
-                       getmat(Left,j,i));
-                setmat(Left,j,k,tmp);
+                tmp := quo1*getmat(left,j,k)+quo2*getmat(left,j,i);
+                setmat(left,j,i,-rr*getmat(left,j,k)+ll*
+                       getmat(left,j,i));
+                setmat(left,j,k,tmp);
               >>;
 
-              setmat(A,k,k,g);
-              setmat(A,i,k,0);
+              setmat(a,k,k,g);
+              setmat(a,i,k,0);
             >>;
           >>;
 
@@ -191,45 +191,45 @@ symbolic procedure smithex_int(B);
           %
           for i:=k+1:m do
           <<
-            q := get_quo_int(getmat(A,k,i),getmat(A,k,k));
-            setmat(A,k,i,get_rem_int(getmat(A,k,i),getmat(A,k,k)));
+            q := get_quo_int(getmat(a,k,i),getmat(a,k,k));
+            setmat(a,k,i,get_rem_int(getmat(a,k,i),getmat(a,k,k)));
 
             for j:=1:m do
             <<
-              setmat(Right,k,j,getmat(Right,k,j)+q*getmat(Right,i,j));
+              setmat(right,k,j,getmat(right,k,j)+q*getmat(right,i,j));
             >>;
 
           >>;
 
           for i:=k+1:m do
           <<
-            if getmat(A,k,i) = 0 then <<>>
+            if getmat(a,k,i) = 0 then <<>>
             else
             <<
-              tmp := calc_exgcd_int( getmat(A,k,k),getmat(A,k,i));
+              tmp := calc_exgcd_int( getmat(a,k,k),getmat(a,k,i));
               g := car tmp;
               ll := cadr tmp;
               rr := caddr tmp;
-              quo1 := get_quo_int(getmat(A,k,k),g);
-              quo2 := get_quo_int(getmat(A,k,i),g);
+              quo1 := get_quo_int(getmat(a,k,k),g);
+              quo2 := get_quo_int(getmat(a,k,i),g);
 
               for j:=k+1:n do
               <<
-                tmp := ll*getmat(A,j,k) + rr*getmat(A,j,i);
-                setmat(A,j,i,quo1*getmat(A,j,i)-quo2*getmat(A,j,k));
-                setmat(A,j,k,tmp);
+                tmp := ll*getmat(a,j,k) + rr*getmat(a,j,i);
+                setmat(a,j,i,quo1*getmat(a,j,i)-quo2*getmat(a,j,k));
+                setmat(a,j,k,tmp);
               >>;
 
               for j:=1:m do
               <<
-                tmp := quo1*getmat(Right,k,j)+quo2*getmat(Right,i,j);
-                setmat(Right,i,j,-rr*getmat(Right,k,j)+ll*
-                       getmat(Right,i,j));
-                setmat(Right,k,j,tmp);
+                tmp := quo1*getmat(right,k,j)+quo2*getmat(right,i,j);
+                setmat(right,i,j,-rr*getmat(right,k,j)+ll*
+                       getmat(right,i,j));
+                setmat(right,k,j,tmp);
               >>;
 
-              setmat(A,k,k,g);
-              setmat(A,k,i,0);
+              setmat(a,k,k,g);
+              setmat(a,k,i,0);
 
               isclear := nil;
             >>;
@@ -246,36 +246,36 @@ symbolic procedure smithex_int(B);
     %
     for i:=1:min(n,m) do
     <<
-      if getmat(A,i,i) neq 0 then
+      if getmat(a,i,i) neq 0 then
       <<
         r := r+1;
-        sgn := algebraic (sign(getmat(A,i,i)));
-        setmat(A,r,r,sgn*getmat(A,i,i));
+        sgn := algebraic (sign(getmat(a,i,i)));
+        setmat(a,r,r,sgn*getmat(a,i,i));
         if i = r then
         <<
 
           for j:=1:m do
           <<
-            setmat(Right,i,j,getmat(Right,i,j)*sgn);
+            setmat(right,i,j,getmat(right,i,j)*sgn);
           >>;
 
         >>
         else
         <<
-          setmat(A,i,i,0);
+          setmat(a,i,i,0);
 
           for j:=1:n do
           <<
-            tmp := getmat(Left,j,r);
-            setmat(Left,j,r,getmat(Left,j,i));
-            setmat(Left,j,i,tmp);
+            tmp := getmat(left,j,r);
+            setmat(left,j,r,getmat(left,j,i));
+            setmat(left,j,i,tmp);
           >>;
 
           for j:=1:m do
           <<
-            tmp := getmat(Right,i,j)*sgn;
-            setmat(Right,i,j,getmat(Right,r,j)*sgn);
-            setmat(Right,r,j,tmp);
+            tmp := getmat(right,i,j)*sgn;
+            setmat(right,i,j,getmat(right,r,j)*sgn);
+            setmat(right,r,j,tmp);
           >>;
 
         >>;
@@ -288,34 +288,34 @@ symbolic procedure smithex_int(B);
     <<
       j:=i+1;
       <<
-        while getmat(A,i,i) neq 1 and j <= r do
+        while getmat(a,i,i) neq 1 and j <= r do
         <<
-          int1 := getmat(A,i,i);
-          int2 := getmat(A,j,j);
+          int1 := getmat(a,i,i);
+          int2 := getmat(a,j,j);
           g := car (calc_exgcd_int(int1,int2));
           ll := cadr (calc_exgcd_int(int1,int2));
           rr := caddr (calc_exgcd_int(int1,int2));
-          quo1 := get_quo_int(getmat(A,i,i),g);
-          quo2 := get_quo_int(getmat(A,j,j),g);
+          quo1 := get_quo_int(getmat(a,i,i),g);
+          quo2 := get_quo_int(getmat(a,j,j),g);
 
-          setmat(A,i,i,g);
-          setmat(A,j,j,quo1*getmat(A,j,j));
+          setmat(a,i,i,g);
+          setmat(a,j,j,quo1*getmat(a,j,j));
 
           for k:=1:n do
           <<
-            tmp := quo1*getmat(Left,k,i)+quo2*getmat(Left,k,j);
-            setmat(Left,k,j,-rr*getmat(Left,k,i)+ll*
-                   getmat(Left,k,j));
-            setmat(Left,k,i,tmp);
+            tmp := quo1*getmat(left,k,i)+quo2*getmat(left,k,j);
+            setmat(left,k,j,-rr*getmat(left,k,i)+ll*
+                   getmat(left,k,j));
+            setmat(left,k,i,tmp);
           >>;
 
           for k:=1:m do
           <<
             rrquo := rr*quo2;
-            tmp := (1-rrquo)*getmat(Right,i,k)+rrquo*
-                   getmat(Right,j,k);
-            setmat(Right,j,k,-getmat(Right,i,k)+getmat(Right,j,k));
-            setmat(Right,i,k,tmp);
+            tmp := (1-rrquo)*getmat(right,i,k)+rrquo*
+                   getmat(right,j,k);
+            setmat(right,j,k,-getmat(right,i,k)+getmat(right,j,k));
+            setmat(right,i,k,tmp);
           >>;
 
           j := j+1;
@@ -323,7 +323,7 @@ symbolic procedure smithex_int(B);
       >>;
     >>;
 
-    return {'list,A,Left,Right};
+    return {'list,a,left,right};
   end;
 
 flag ('(smithex_int),'opfn);  %  So it can be used from algebraic mode.
@@ -415,13 +415,13 @@ symbolic procedure get_rem_int(int1,int2);
   end;
 
 
-symbolic procedure integer_entries_test(B);
+symbolic procedure integer_entries_test(b);
   begin
-    for i:=1:car size_of_matrix(B) do
+    for i:=1:car size_of_matrix(b) do
     <<
-      for j:=1:cadr size_of_matrix(B) do
+      for j:=1:cadr size_of_matrix(b) do
       <<
-        if not numberp getmat(B,i,j) then rederr
+        if not numberp getmat(b,i,j) then rederr
          "ERROR: matrix contains non_integer entries. Try smithex. "
       >>;
     >>;

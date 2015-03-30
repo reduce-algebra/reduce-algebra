@@ -1,5 +1,5 @@
 
-comment simple tests of hypergeometric operator;
+COMMENT simple tests of hypergeometric operator;
 
 hypergeometric ({},{},z);
 
@@ -75,7 +75,7 @@ hypergeometric ({a,b},{2*b},z);
 
 
 
-comment simple tests of MeijerG operator;
+COMMENT simple tests of MeijerG operator;
 
 MeijerG({{},1},{{0}},x);
 

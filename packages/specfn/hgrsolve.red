@@ -1,4 +1,4 @@
-module hypergeomRsolve;
+module hypergeomrsolve;
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -26,61 +26,61 @@ module hypergeomRsolve;
 
 fluid '(!*tracefps);
 
-algebraic procedure hypergeomRsolve (r,k,a0);
+algebraic procedure hypergeomrsolve (r,k,a0);
 
 % solves the recurrence equation
 %
 %  a(k+1) = r(k) * a(k), a(0) = a0
 
-  begin scalar Re,NNN,DDD,c,p,q,ak,sols,II;
+  begin scalar re,nnn,ddd,c,p,q,ak,sols,ii;
 
-   P := {}; Q := {};
-   C := 1;
+   p := {}; q := {};
+   c := 1;
 
-   Re := R * (k + 1);
+   re := r * (k + 1);
 
-   NNN := old_factorize num Re; DDD := old_factorize den re;
+   nnn := old_factorize num re; ddd := old_factorize den re;
 
-   foreach nn in NNN do
+   foreach nn in nnn do
    if freeof (nn,k) then c := c * nn
         else if deg(nn,k) =1 then
-        << C:= c*coeffn(nn,k,1);
-            P:= append (p,list(coeffn(nn,k,0)/coeffn(nn,k,1)))>>
+        << c:= c*coeffn(nn,k,1);
+            p:= append (p,list(coeffn(nn,k,0)/coeffn(nn,k,1)))>>
         else if deg(nn,k) =2 then
         << c := c *  lcof(nn,k);
                 sols := solve(nn,k);
                 for each s in sols do
                    << for i:=1:first multiplicities!* do
-                        P:= (- rhs s) . p;
+                        p:= (- rhs s) . p;
                       multiplicities!* := rest multiplicities!*;
                   >>
         >>
         else rederr(" hypergeomRsolve failed");
 
-   foreach dd in DDD do
-   if freeof (DD,k) then c := c / dd
-        else if deg(DD,k) =1 then
-        << C:= C/coeffn(dd,k,1);
-            Q:= append (Q,list(coeffn(dd,k,0)/coeffn(dd,k,1)))>>
-        else if deg(DD,k) =2 then
+   foreach dd in ddd do
+   if freeof (dd,k) then c := c / dd
+        else if deg(dd,k) =1 then
+        << c:= c/coeffn(dd,k,1);
+            q:= append (q,list(coeffn(dd,k,0)/coeffn(dd,k,1)))>>
+        else if deg(dd,k) =2 then
              << c := c /  lcof(dd,k);
                 sols := solve(dd,k);
                 for each s in sols do
                    << for i:=1:first multiplicities!* do
-                        Q:= (- rhs s) . Q;
+                        q:= (- rhs s) . q;
                       multiplicities!* := rest multiplicities!*;
                   >>;
              >>
         else rederr(" hypergeomRsolve failed");
 
-   RSOLVE := infinite;
-   for each s in P do if fixp s and s < 0 then RSOLVE := finite;
-   if symbolic !*traceFPS then  write "RSOLVE  = ",RSOLVE;
+   rsolve := infinite;
+   for each s in p do if fixp s and s < 0 then rsolve := finite;
+   if symbolic !*tracefps then  write "RSOLVE  = ",rsolve;
 
-   P := for each s in P product pochhammer(s,k);
-   Q := for each s in Q product pochhammer(s,k);
+   p := for each s in p product Pochhammer(s,k);
+   q := for each s in q product Pochhammer(s,k);
 
-   ak := a0 * (C^k) * P/(q * factorial k);
+   ak := a0 * (c^k) * p/(q * factorial k);
 
 % Do additional simplification here??
 

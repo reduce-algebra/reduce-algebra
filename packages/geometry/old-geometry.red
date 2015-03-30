@@ -64,7 +64,7 @@ end comment;
 
 module geometry;
 
-comment
+COMMENT
 
 Data structures:
 
@@ -83,7 +83,7 @@ algebraic(write(" Geometry ", get('geometry,'version),
 
 % ============= vector geometry ===============
 
-comment
+COMMENT
 
 For affine (plane) geometry one can try to express the coordinates of
 all points in the configuration through barycentric coordinates wrt.
@@ -112,12 +112,12 @@ clear_ndg();
 
 % Generators:
 
-algebraic procedure Point(a,b); {a,b};
-algebraic procedure Line(a,b,c); {a,b,c};
+algebraic procedure point(a,b); {a,b};
+algebraic procedure line(a,b,c); {a,b,c};
 
 algebraic procedure pp_line(a,b);
 % The line through A and B.
-  Line(part(b,2)-part(a,2),part(a,1)-part(b,1),
+  line(part(b,2)-part(a,2),part(a,1)-part(b,1),
         part(a,2)*part(b,1)-part(a,1)*part(b,2));
 
 algebraic procedure intersection_point(a,b);
@@ -128,39 +128,39 @@ algebraic procedure intersection_point(a,b);
    d2:=part(a,1)*part(b,3)-part(b,1)*part(a,3);
    if d=0 then rederr"Lines are parallel";
    add_ndg(num d);
-   return Point(-d1/d,-d2/d);
+   return point(-d1/d,-d2/d);
    end;
 
 algebraic procedure lot(p,a);
 % The perpendicular from P onto the line a.
   begin scalar u,v; u:=first a; v:=second a;
-  return Line(v,-u,u*second p-v*first p);
+  return line(v,-u,u*second p-v*first p);
   end;
 
 algebraic procedure par(p,a);
 % The parallel to line a through P.
-  Line(part(a,1),part(a,2),
+  line(part(a,1),part(a,2),
         -(part(a,1)*part(p,1)+part(a,2) *part(p,2)));
 
 algebraic procedure pedalpoint(p,a);
 % The pedal point of the perpendicular from P onto the line a.
-  intersection_point(lot(P,a),a);
+  intersection_point(lot(p,a),a);
 
 algebraic procedure midpoint(a,b);
 % The midpoint of AB
-  Point((part(a,1)+part(b,1))/2, (part(a,2)+part(b,2))/2);
+  point((part(a,1)+part(b,1))/2, (part(a,2)+part(b,2))/2);
 
 algebraic procedure varpoint(a,b,l);
 % The point D=l*A+(1-l)*B.
-  Point(l*part(a,1)+(1-l)*part(b,1),l*part(a,2)+(1-l)*part(b,2));
+  point(l*part(a,1)+(1-l)*part(b,1),l*part(a,2)+(1-l)*part(b,2));
 
 algebraic procedure choose_pl(a,u);
 % Choose a point on the line a using parameter u.
   begin scalar p,d;
   if part(a,2)=0 then
-        << p:=Point(-part(a,3)/part(a,1),u); d:=part(a,1); >>
+        << p:=point(-part(a,3)/part(a,1),u); d:=part(a,1); >>
   else
-        << p:=Point(u,-(part(a,3)+part(a,1)*u)/part(a,2));
+        << p:=point(u,-(part(a,3)+part(a,1)*u)/part(a,2));
            d:=part(a,2);
         >>;
   add_ndg(num d);
@@ -227,9 +227,9 @@ algebraic procedure l2_angle(a,b);
   return (part(a,2)*part(b,1)-part(b,2)*part(a,1))/d;
   end;
 
-algebraic procedure p3_angle(A,B,C);
+algebraic procedure p3_angle(a,b,c);
 % tan of the angle between the lines BA and BC
-  l2_angle(pp_line(B,A),pp_line(B,C));
+  l2_angle(pp_line(b,a),pp_line(b,c));
 
 algebraic procedure angle_sum(a,b);
 % a=tan(\alpha), b=tan(\beta). Returns tan(\alpha+\beta)
@@ -237,13 +237,13 @@ algebraic procedure angle_sum(a,b);
   return (a+b)/d;
   end;
 
-algebraic procedure point_on_bisector(P,A,B,C);
+algebraic procedure point_on_bisector(p,a,b,c);
 % P is a point on the bisector of the angle ABC.
 % Returns num(u)*den(v)-num(v)*den(u) with
 % u:=angle(pp_line(A,B),pp_line(P,B))
 % v:=angle(pp_line(P,B),pp_line(C,B))
   begin scalar a1,a2,b1,b2,c1,c2,p1,p2;
-        a1:=part(A,1); a2:=part(A,2);
+        a1:=part(a,1); a2:=part(a,2);
         b1:=part(b,1); b2:=part(b,2);
         c1:=part(c,1); c2:=part(c,2);
         p1:=part(p,1); p2:=part(p,2);
@@ -255,9 +255,9 @@ algebraic procedure point_on_bisector(P,A,B,C);
 
 % ========== symmetric lines and points
 
-algebraic procedure sympoint(P,l);
+algebraic procedure sympoint(p,l);
 % The point symmetric to P wrt. the line l.
-  varpoint(P,pedalpoint(P,l),-1);
+  varpoint(p,pedalpoint(p,l),-1);
 
 algebraic procedure symline(a,l);
 % The line symmetric to a wrt. the line l.
@@ -265,41 +265,41 @@ algebraic procedure symline(a,l);
   a1:=part(a,1); a2:=part(a,2); a3:=part(a,3);
   l1:=part(l,1); l2:=part(l,2); l3:=part(l,3);
   u:=l1^2 - l2^2;
-  return Line(- a1*u - 2*a2*l1*l2, - 2*a1*l1*l2 + a2*u,
+  return line(- a1*u - 2*a2*l1*l2, - 2*a1*l1*l2 + a2*u,
                 - 2*(a1*l1 + a2*l2)*l3 + a3*(l1^2 + l2^2));
   end;
 
 % ===================== circles
 
-comment
+COMMENT
 
         Circle1 represents a circle as the pair {M,sqr} consisting of
         the center M and the square of its radius.
 
 end comment;
 
-algebraic procedure Circle1(M,sqr); {M,sqr};
+algebraic procedure circle1(m,sqr); {m,sqr};
 
-algebraic procedure p3_circle1(A,B,C);
+algebraic procedure p3_circle1(a,b,c);
 % The circle through three given points
-  begin scalar M;
-  M:=intersection_point(mp(A,B),mp(B,C));
-  return Circle1(M,sqrdist(M,A));
+  begin scalar m;
+  m:=intersection_point(mp(a,b),mp(b,c));
+  return circle1(m,sqrdist(m,a));
   end;
 
-algebraic procedure point_on_circle1(P,c);
+algebraic procedure point_on_circle1(p,c);
 % Test a point P to be on c:Circle1.
-  sqrdist(P,part(c,1))-part(c,2);
+  sqrdist(p,part(c,1))-part(c,2);
 
-algebraic procedure choose_pc(M,r,u);
+algebraic procedure choose_pc(m,r,u);
 % Choose a point on the circle with center M and radius (not squared
 % radius !) r using a rational parametrization of the circle.
   begin scalar d;
   d:=(u^2+1); add_ndg(num d);
-  return Point(r*(u^2-1)/d+part(M,1), 2*r*u/d+part(M,2));
+  return point(r*(u^2-1)/d+part(m,1), 2*r*u/d+part(m,2));
   end;
 
-comment
+COMMENT
 
 Another approach represents a circle through its equation
 
@@ -315,17 +315,17 @@ A circle is henceforth a quadruple c={c1,c2,c3,c4}.
 
 end comment;
 
-algebraic procedure Circle(c1,c2,c3,c4); {c1,c2,c3,c4};
+algebraic procedure circle(c1,c2,c3,c4); {c1,c2,c3,c4};
 
-algebraic procedure c1_circle(M,sqr);
+algebraic procedure c1_circle(m,sqr);
 % Circle from center M and squared radius sqr.
-  Circle(1, -2*part(M,1), -2*part(M,2),
-        part(M,1)^2 + part(M,2)^2 - sqr);
+  circle(1, -2*part(m,1), -2*part(m,2),
+        part(m,1)^2 + part(m,2)^2 - sqr);
 
 algebraic procedure circle_center c;
 % The center of the circle c.
   begin add_ndg(num part(c,1));
-  return Point(-part(c,2)/2/part(c,1) ,-part(c,3)/(2*part(c,1)));
+  return point(-part(c,2)/2/part(c,1) ,-part(c,3)/(2*part(c,1)));
   end;
 
 algebraic procedure circle_sqradius c;
@@ -336,50 +336,50 @@ algebraic procedure circle_sqradius c;
         (2*part(c,1))^2;
   end;
 
-algebraic procedure p3_circle(A,B,C);
+algebraic procedure p3_circle(a,b,c);
 % The circle through three given points
   begin scalar a1,a2,a3,b1,b2,b3,c1,c2,c3;
-  a1:=part(A,1); a2:=part(A,2); a3:=a1^2+a2^2;
+  a1:=part(a,1); a2:=part(a,2); a3:=a1^2+a2^2;
   b1:=part(b,1); b2:=part(b,2); b3:=b1^2+b2^2;
   c1:=part(c,1); c2:=part(c,2); c3:=c1^2+c2^2;
-  return Circle(a1*(b2-c2) + (a2-b2)*c1 + b1*(c2-a2),
+  return circle(a1*(b2-c2) + (a2-b2)*c1 + b1*(c2-a2),
     a3*(c2-b2) + (a2-c2)*b3 + (b2-a2)*c3,
     a3*(b1-c1) + (c1-a1)*b3 + (a1-b1)*c3,
     a3*(b2*c1-b1*c2) + (a1*c2-a2*c1)*b3 + (a2*b1-a1*b2)*c3)
   end;
 
-algebraic procedure point_on_circle(P,c);
-  begin scalar p1,p2; p1:=part(P,1); p2:=part(P,2);
+algebraic procedure point_on_circle(p,c);
+  begin scalar p1,p2; p1:=part(p,1); p2:=part(p,2);
   return part(c,1)*(p1^2+p2^2)+part(c,2)*p1+part(c,3)*p2+part(c,4);
   end;
 
-algebraic procedure p4_circle(A,B,C,D);
-  point_on_circle(D,p3_circle(A,B,C));
+algebraic procedure p4_circle(a,b,c,d);
+  point_on_circle(d,p3_circle(a,b,c));
 
 % Intersecting with circles
 
-algebraic procedure other_cl_point(P,c,l);
+algebraic procedure other_cl_point(p,c,l);
 % circle c and line l intersect at P. The procedure returns their
 % second intersection point.
-  if point_on_line(P,l) neq 0 then rederr "Point not on the line"
-  else if point_on_circle(P,c) neq 0 then
+  if point_on_line(p,l) neq 0 then rederr "Point not on the line"
+  else if point_on_circle(p,c) neq 0 then
         rederr "Point not on the circle"
   else begin scalar c1,c2,c3,l1,l2,d,d1,p1,p2;
   c1:=part(c,1); c2:=part(c,2); c3:=part(c,3);
-  l1:=part(l,1); l2:=part(l,2); p1:=part(P,1); p2:=part(P,2);
+  l1:=part(l,1); l2:=part(l,2); p1:=part(p,1); p2:=part(p,2);
   d:=c1*(l1^2 + l2^2); add_ndg(num d); d1:=c1*(l1^2-l2^2);
   return {(d1*p1+((2*c1*p2 + c3)*l1-c2*l2)*l2)/d,
         (- d1*p2+((2*c1*p1 + c2)*l2-c3*l1)*l1)/d};
   end;
 
-algebraic procedure other_cc_point(P,c1,c2);
+algebraic procedure other_cc_point(p,c1,c2);
 % Circles c1 and c2 intersect at P. The procedure returns their
 % second intersection point, computing by elimination the line through
 % the common intersection points.
   begin scalar l;
   l:=for i:=2:4 collect
         (part(c1,1)*part(c2,i)-part(c1,i)*part(c2,1));
-  return other_cl_point(P,c1,l);
+  return other_cl_point(p,c1,l);
   end;
 
 algebraic procedure cl_tangent(c,l);

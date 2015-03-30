@@ -36,20 +36,20 @@ fluid '(gurobi_libredgurobi!*);
 fluid '(gurobi_redgrb!*);
 fluid '(gurobi_newmodel!*);
 fluid '(gurobi_addconstr!*);
-fluid '(gurobi_addconstrFast!*);
-fluid '(gurobi_numVars!*);
+fluid '(gurobi_addconstrfast!*);
+fluid '(gurobi_numvars!*);
 fluid '(gurobi_delconstr1!*);
 fluid '(gurobi_delconstr!*);
 fluid '(gurobi_negconstr1!*);
 fluid '(gurobi_negconstr!*);
 fluid '(gurobi_updatemodel!*);
 fluid '(gurobi_write!*);
-fluid '(gurobi_newDoubleArray!*);
-fluid '(gurobi_setDoubleArray!*);
-fluid '(gurobi_freeDoubleArray!*);
-fluid '(gurobi_pushToVal!*);
+fluid '(gurobi_newdoublearray!*);
+fluid '(gurobi_setdoublearray!*);
+fluid '(gurobi_freedoublearray!*);
+fluid '(gurobi_pushtoval!*);
 fluid '(gurobi_optimize!*);
-fluid '(gurobi_getSol!*);
+fluid '(gurobi_getsol!*);
 fluid '(gurobi_freemodel!*);
 
 gurobi_libredgurobi!* := lto_sconcat {rltools_trunk(), "packages/foreign/gurobi/libredgurobi.so"};
@@ -59,20 +59,20 @@ if filep gurobi_libredgurobi!* then <<
 
    gurobi_newmodel!* := find!-foreign!-function("gurobi_newmodel", gurobi_redgurobi!*);
    gurobi_addconstr!* := find!-foreign!-function("gurobi_addconstr", gurobi_redgurobi!*);
-   gurobi_addconstrFast!* := find!-foreign!-function("gurobi_addconstrFast", gurobi_redgurobi!*);
-   gurobi_numVars!* := find!-foreign!-function("gurobi_numVars", gurobi_redgurobi!*);
+   gurobi_addconstrfast!* := find!-foreign!-function("gurobi_addconstrFast", gurobi_redgurobi!*);
+   gurobi_numvars!* := find!-foreign!-function("gurobi_numVars", gurobi_redgurobi!*);
    gurobi_negconstr1!* := find!-foreign!-function("gurobi_negconstr1", gurobi_redgurobi!*);
    gurobi_negconstr!* := find!-foreign!-function("gurobi_negconstr", gurobi_redgurobi!*);
    gurobi_delconstr1!* := find!-foreign!-function("gurobi_delconstr1", gurobi_redgurobi!*);
    gurobi_delconstr!* := find!-foreign!-function("gurobi_delconstr", gurobi_redgurobi!*);
    gurobi_updatemodel!* := find!-foreign!-function("gurobi_updatemodel", gurobi_redgurobi!*);
    gurobi_write!* := find!-foreign!-function("gurobi_write", gurobi_redgurobi!*);
-   gurobi_newDoubleArray!* := find!-foreign!-function("gurobi_newDoubleArray", gurobi_redgurobi!*);
-   gurobi_setDoubleArray!* := find!-foreign!-function("gurobi_setDoubleArray", gurobi_redgurobi!*);
-   gurobi_freeDoubleArray!* := find!-foreign!-function("gurobi_freeDoubleArray", gurobi_redgurobi!*);
-   gurobi_pushToVal!* := find!-foreign!-function("gurobi_pushToVal", gurobi_redgurobi!*);
+   gurobi_newdoublearray!* := find!-foreign!-function("gurobi_newDoubleArray", gurobi_redgurobi!*);
+   gurobi_setdoublearray!* := find!-foreign!-function("gurobi_setDoubleArray", gurobi_redgurobi!*);
+   gurobi_freedoublearray!* := find!-foreign!-function("gurobi_freeDoubleArray", gurobi_redgurobi!*);
+   gurobi_pushtoval!* := find!-foreign!-function("gurobi_pushToVal", gurobi_redgurobi!*);
    gurobi_optimize!* := find!-foreign!-function("gurobi_optimize", gurobi_redgurobi!*);
-   gurobi_getSol!* := find!-foreign!-function("gurobi_getSol", gurobi_redgurobi!*);
+   gurobi_getsol!* := find!-foreign!-function("gurobi_getSol", gurobi_redgurobi!*);
    gurobi_freemodel!* := find!-foreign!-function("gurobi_freemodel", gurobi_redgurobi!*)
 >>;
 
@@ -80,26 +80,26 @@ procedure gurobi_newmodel(n, m);
    % [n] real variables plus [m] integer variables, all unbounded from below.
    call!-foreign!-function(gurobi_newmodel!*, 'int32, n, 'int32, m);
 
-inline procedure gurobi_newDoubleArray(n);
-   call!-foreign!-function(gurobi_newDoubleArray!*, 'int32, n, 'int64);
+inline procedure gurobi_newdoublearray(n);
+   call!-foreign!-function(gurobi_newdoublearray!*, 'int32, n, 'int64);
 
-inline procedure gurobi_setDoubleArray(a, i, x);
-   call!-foreign!-function(gurobi_setDoubleArray!*, 'int64, a, 'int32, i, 'double, x);
+inline procedure gurobi_setdoublearray(a, i, x);
+   call!-foreign!-function(gurobi_setdoublearray!*, 'int64, a, 'int32, i, 'double, x);
 
-inline procedure gurobi_freeDoubleArray(a);
-   call!-foreign!-function(gurobi_freeDoubleArray!*, 'int64, a);
+inline procedure gurobi_freedoublearray(a);
+   call!-foreign!-function(gurobi_freedoublearray!*, 'int64, a);
 
-inline procedure gurobi_pushToVal(x);
-   call!-foreign!-function(gurobi_pushToVal!*, 'double, x);
+inline procedure gurobi_pushtoval(x);
+   call!-foreign!-function(gurobi_pushtoval!*, 'double, x);
 
 inline procedure gurobi_addconstr(relstr, val, c);
    call!-foreign!-function(gurobi_addconstr!*, 'string, relstr, 'int64, val, 'double, c);
 
-inline procedure gurobi_addconstrFast(relstr, c);
-   call!-foreign!-function(gurobi_addconstrFast!*, 'string, relstr, 'double, c);
+inline procedure gurobi_addconstrfast(relstr, c);
+   call!-foreign!-function(gurobi_addconstrfast!*, 'string, relstr, 'double, c);
 
-inline procedure gurobi_numVars();
-   call!-foreign!-function(gurobi_numVars!*, 'int32);
+inline procedure gurobi_numvars();
+   call!-foreign!-function(gurobi_numvars!*, 'int32);
 
 inline procedure gurobi_negconstr1();
    call!-foreign!-function gurobi_negconstr1!*;
@@ -119,8 +119,8 @@ inline procedure gurobi_updatemodel();
 inline procedure gurobi_write(fn);
    call!-foreign!-function(gurobi_write!*, 'string, fn);
 
-inline procedure gurobi_getSol(i);
-   call!-foreign!-function(gurobi_getSol!*, 'int32, i, 'double);
+inline procedure gurobi_getsol(i);
+   call!-foreign!-function(gurobi_getsol!*, 'int32, i, 'double);
 
 inline procedure gurobi_freemodel();
    call!-foreign!-function(gurobi_freemodel!*);
@@ -131,17 +131,17 @@ procedure gurobi_optimize();
       w := intern compress reversip cdr reverse cdr explode w;
       if w neq 'optimal then
 	 return w;
-      sol := for i := 1 : gurobi_numVars() collect
-	 gurobi_getSol i;
+      sol := for i := 1 : gurobi_numvars() collect
+	 gurobi_getsol i;
       return sol
    end;
 
 procedure gurobi_addconstraint(rel, cl, c);
    begin scalar val, relstr; integer len;
       len := length cl;
-      val := gurobi_newDoubleArray len;
+      val := gurobi_newdoublearray len;
       for i := 0:len-1 do
-	 gurobi_setDoubleArray(val, i, pop cl);
+	 gurobi_setdoublearray(val, i, pop cl);
       relstr := if rel eq 'equal then
  	 "="
       else if rel eq 'leq then
@@ -151,14 +151,14 @@ procedure gurobi_addconstraint(rel, cl, c);
       else
 	 rederr {"illegal relation", rel};
       gurobi_addconstr(relstr, val, c);
-      gurobi_freeDoubleArray val
+      gurobi_freedoublearray val
    end;
 
-procedure gurobi_addconstraintFast(rel, cl, c);
+procedure gurobi_addconstraintfast(rel, cl, c);
    begin scalar relstr; integer len;
       len := length cl;
       for i := 0:len-1 do
-	 gurobi_pushToVal pop cl;
+	 gurobi_pushtoval pop cl;
       relstr := if rel eq 'equal then
  	 "="
       else if rel eq 'leq then
@@ -167,7 +167,7 @@ procedure gurobi_addconstraintFast(rel, cl, c);
  	 ">"
       else
 	 rederr {"illegal relation", rel};
-      gurobi_addconstrFast(relstr, c)
+      gurobi_addconstrfast(relstr, c)
    end;
 
 procedure gurobi_dumpmodel();

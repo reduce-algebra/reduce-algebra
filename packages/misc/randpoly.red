@@ -40,7 +40,7 @@ symbolic procedure apply_e e;
    % Apply an exponent generator function e
    % and check that it has returned an integer.
    if fixp(e := apply(e, nil)) then e else
-      RedErr "randpoly expons function must return an integer";
+      rederr "randpoly expons function must return an integer";
 
 put('randpoly, 'simpfn, 'randpoly);
 
@@ -167,7 +167,7 @@ symbolic procedure !*kp2q(k, p);
    else
       % Is this the right behaviour?
       % cf. part of procedure invsq in POLY.RED
-      if null numr(k := mksq(k, -p)) then RedErr "Zero divisor"
+      if null numr(k := mksq(k, -p)) then rederr "Zero divisor"
       else revpr k;
 
 
@@ -222,7 +222,7 @@ symbolic procedure rand!-mons!-sparse(v, trms, d, o, univar);
 % Support procedures for randpoly
 % ===============================
 
-global '(!_BinomialK !_BinomialB !_BinomialN);
+global '(!_binomialk !_binomialb !_binomialn);
 
 % binomial in the specfn package is implemented as an algebraic
 % operator, and I suspect is not very efficient.  It will not clash
@@ -236,21 +236,21 @@ symbolic procedure binomial(n, k);
       if k = 0 then return 1;
       if n < 2*k then return binomial(n,n-k);
       n1 := n+1;
-      if !_BinomialN = n then <<        % Partial result exits ...
-         b := !_BinomialB;
-         if !_BinomialK <= k then
-            for i := !_BinomialK+1 : k do
+      if !_binomialn = n then <<        % Partial result exits ...
+         b := !_binomialb;
+         if !_binomialk <= k then
+            for i := !_binomialk+1 : k do
                b := quotient((n1-i)*b,i)
          else
-            for i := !_BinomialK step -1 until k+1 do
+            for i := !_binomialk step -1 until k+1 do
                b := quotient(i*b,n1-i) >>
       else <<                           % First binomial computation
          b := 1;
          for i := 1 : k do
             b := quotient((n1-i)*b,i);
-         !_BinomialN := n >>;
-      !_BinomialK := k;
-      return !_BinomialB := b
+         !_binomialn := n >>;
+      !_binomialk := k;
+      return !_binomialb := b
    end;
 
 
@@ -327,7 +327,7 @@ precedence .., or;
 
 algebraic operator ..;
 
-put('!*interval!*, 'PRTCH, '! !.!.! );
+put('!*interval!*, 'prtch, '! !.!.! );
 
 put('rand, 'psopfn, 'rand);
 
@@ -335,7 +335,7 @@ symbolic procedure rand u;
    % Returns a random number generator, and compiles it if COMP is on.
    % Optional second argument generates a named procedure.
    if null u or (cdr u and cddr u) then
-      RedErr "rand takes 1 or 2 arguments"
+      rederr "rand takes 1 or 2 arguments"
    else begin scalar fname, fn;
       if cdr u and not idp(fname := reval cadr u) then
          typerr(fname, "procedure name");
@@ -343,7 +343,7 @@ symbolic procedure rand u;
       else if eqcar(u,'!*interval!*) then
       begin scalar a, b;
         if not(fixp(a := cadr u) and fixp(b := caddr u) and a<b) then
-        RedErr
+        rederr
         "rand range argument a .. b must have integer a,b with a < b";
         return if zerop a then {'random, b + 1}
            else {'plus2, a, {'random, b - a + 1}}
@@ -364,11 +364,11 @@ put('random, 'psopfn, 'evalrandom);
 
 symbolic procedure evalrandom u;
    % More flexible interface to the random function.
-   if null u or cdr u then RedErr "random takes a single argument"
+   if null u or cdr u then rederr "random takes a single argument"
    else if eqcar(u := reval car u,'!*interval!*) then
    begin scalar a, b;
      if not(fixp(a := cadr u) and fixp(b := caddr u) and a < b) then
-     RedErr
+     rederr
      "random range argument a .. b must have integer a,b with a < b";
      return if zerop a then random(b + 1) else a + random(b - a + 1)
    end
@@ -387,7 +387,7 @@ put('proc, 'psopfn, 'proc);
 symbolic procedure proc u;
    % Returns an anonymous procedure definition,
    % compiled if COMP is ON.
-   if null u then RedErr "proc requires at least a body argument"
+   if null u then rederr "proc requires at least a body argument"
    else <<
       % aeval!* necessary instead of aeval here to avoid caching
       % and hence loss of possible randomness within loops:
@@ -412,7 +412,7 @@ put('showproc, 'psopfn, 'showproc);
 symbolic procedure showproc r;
    % Displays a proc.
    (if codep rr then
-      RedErr "Argument is a compiled proc -- cannot display"
+      rederr "Argument is a compiled proc -- cannot display"
    else << terpri(); rprint subst('plus, 'plus2, rr); >>)
       where rr = getproc car r;
 
@@ -427,7 +427,7 @@ symbolic procedure getproc r;
          if car r eq 'lambda then r  % share variable
          else if eqcar(r := ( (if x then apply(x, {cdr r}))
             where x = get(car r, 'psopfn) ), 'lambda) then r )
-   or RedErr "Argument is not a proc";
+   or rederr "Argument is not a proc";
 
 symbolic procedure getfnbody r;
    (r := getd r) and cdr r;

@@ -466,9 +466,9 @@ begin
     cc(1,3,r)*cc(r,4,s)+cc(3,4,r)*cc(r,1,s)+cc(4,1,r)*cc(r,3,s);
    jac4:=for r:=1:4 sum
     cc(2,3,r)*cc(r,4,s)+cc(3,4,r)*cc(r,2,s)+cc(4,2,r)*cc(r,3,s);
-   if (jac1 neq 0 OR jac2 neq 0 OR jac3 neq 0 OR jac4 neq 0 ) then
+   if (jac1 neq 0 or jac2 neq 0 or jac3 neq 0 or jac4 neq 0 ) then
     s:=4>>;
- if (jac1 neq 0 OR jac2 neq 0 OR jac3 neq 0 OR jac4 neq 0 )then
+ if (jac1 neq 0 or jac2 neq 0 or jac3 neq 0 or jac4 neq 0 )then
   <<clear l_f,ordv,cc;symbolic rederr "not a Lie algebra">>;
  m1:=0;
  for s:=1:6 do
@@ -721,7 +721,7 @@ end;
 algebraic procedure trivcent(a1,a2,a3,a4,a5,b1,b2,b3,b4,b5);
 begin integer flag;
       scalar he,help,alpha,beta,c1,c2,c3,c4,c5,
-             d1,d2,d3,d4,d5,P,e1,e2,e3,e4,e5,e6;
+             d1,d2,d3,d4,d5,p,e1,e2,e3,e4,e5,e6;
  if (a1*b2-a2*b1)=0 then
   if (a3*b4-a4*b3)=0 then
    <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,1,1),(0,0,0,1))*liemat;
@@ -741,7 +741,7 @@ begin integer flag;
      if beta>0 then flag:=2 else flag:=3>> else
    <<c1:=0;c2:=b1-a1*b2/a2;c3:=-alpha;c4:=alpha*a1/a2;
      c5:=1/c3;d1:=a1/(a2*c2);d2:=c5;d3:=1/c2;d4:=0;d5:=c3;
-     flag:=4;P:=beta/(alpha*alpha)>>>> else
+     flag:=4;p:=beta/(alpha*alpha)>>>> else
   if b1 neq 0 then <<alpha:=1+a1/b2;beta:=-a1/b2;
    if alpha=0 then
     <<c1:=-a1*b2/b1;c2:=0;c3:=-sqrt(abs(beta))*b2/b1;c4:=-c3*b1;
@@ -753,7 +753,7 @@ begin integer flag;
       if beta>0 then flag:=2 else flag:=3>> else
     <<c1:=-a1*b2/b1;c2:=0;c3:=alpha*b2/b1;c4:=-alpha*b2;
       c5:=1/c4;d1:=1/c1;d2:=0;d3:=-1/(a1*b2);d4:=c5;d5:=c4;
-      flag:=4;P:=beta/(alpha*alpha)>>>> else
+      flag:=4;p:=beta/(alpha*alpha)>>>> else
    if a1 neq b2 then <<alpha:=a1+b2;beta:=-a1*b2;
     if alpha=0 then
      <<c1:=1;c2:=1;c3:=sqrt(abs(beta))/a1;c4:=sqrt(abs(beta))/b2;
@@ -767,7 +767,7 @@ begin integer flag;
      <<c1:=1;c2:=1;c3:=-alpha/a1;c4:=-alpha/b2;c5:=-1/alpha;
        help:=1/b2-1/a1;d1:=1/(b2*help);d2:=1/(alpha*help);
        d3:=-1/(a1*help);d4:=-d2;d5:=-alpha;
-       flag:=4;P:=beta/(alpha*alpha)>>>> else
+       flag:=4;p:=beta/(alpha*alpha)>>>> else
      <<c1:=1;c2:=0;c3:=0;c4:=1;c5:=1/a1;
        d1:=1;d2:=0;d3:=0;d4:=1;d5:=a1;flag:=1>>;
  liemat:=mat((c1,c2,0,0),(c3,c4,0,0),(0,0,c5,0),(0,0,0,1))*liemat;
@@ -780,7 +780,7 @@ begin integer flag;
  if flag=4 then
   <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,e1+e4,1),(0,0,1,0))*liemat;
     a1:=-e4;a2:=e1+e3+e4;a3:=-1;a4:=1;a5:=-e5;
-    b1:=P*(e1+e4)+e2;b2:=e4;b3:=P;b4:=0;b5:=-e6>> else
+    b1:=p*(e1+e4)+e2;b2:=e4;b3:=p;b4:=0;b5:=-e6>> else
   if flag=1 then
    if (e1+e4=0) then
     <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,0,1),(0,0,1,0))*liemat;
@@ -789,7 +789,7 @@ begin integer flag;
     <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,e1+e4,-2),(0,0,0,1))*liemat;
       a1:=e4-e1;a2:=-2*e3;a3:=e1;a4:=e3;a5:=e5*(e1+e4);
       b1:=-2*e2;b2:=e1-e4;b3:=e2;b4:=e4;b5:=e6*(e1+e4)>>;
- if (flag=1 OR flag=4) then
+ if (flag=1 or flag=4) then
   if a1*b2-a2*b1=0 then
    if b1=0 then
     <<liemat:=mat((a2,0,0,0),(0,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
@@ -882,7 +882,7 @@ end;
 
 algebraic procedure comcom0();
 begin scalar he,a1,b1,c1,a2,b2,c2,a3,b3,c3,aa1,bb1,cc1,
-             aa2,bb2,cc2,al1,be1,ga1,al2,be2,ga2,r,s,P,q;
+             aa2,bb2,cc2,al1,be1,ga1,al2,be2,ga2,r,s,p,q;
  a1:=l_z(1,4,1);b1:=l_z(1,4,2);c1:=l_z(1,4,3);
  a2:=l_z(2,4,1);b2:=l_z(2,4,2);c2:=l_z(2,4,3);
  a3:=l_z(3,4,1);b3:=l_z(3,4,2);c3:=l_z(3,4,3);
@@ -914,10 +914,10 @@ begin scalar he,a1,b1,c1,a2,b2,c2,a3,b3,c3,aa1,bb1,cc1,
       <<liemat:=mat((1,0,0,0),(0,0,1,0),(0,1,0,0),(0,0,0,1/bb2))*liemat;
         al1:=aa1/bb2;be1:=cc1/bb2;al2:=1/bb2;ga1:=be2:=ga2:=0>>
      else
-      <<r:=-aa1-bb2;s:=aa1*bb2-cc1;P:=s-r*r/3;
+      <<r:=-aa1-bb2;s:=aa1*bb2-cc1;p:=s-r*r/3;
         q:=2*r*r*r/27-s*r/3+bb2*cc1-bb1*cc2;
-        c1:=(-q/2+sqrt(q*q/4+P*P*P/27))**(1/3)+
-            (-q/2-sqrt(q*q/4+P*P*P/27))**(1/3)-r/3;
+        c1:=(-q/2+sqrt(q*q/4+p*p*p/27))**(1/3)+
+            (-q/2-sqrt(q*q/4+p*p*p/27))**(1/3)-r/3;
         a1:=(c1-bb2)/bb1;b1:=(c1-bb2)*(c1-aa1)/bb1;
       liemat:=mat((1,0,0,0),(0,0,1,0),(a1,1,b1,0),(0,0,0,1/c1))*liemat;
         al1:=(aa1-a1*bb1)/c1;be1:=(cc1-b1*bb1)/c1;
@@ -1080,7 +1080,7 @@ begin integer ii;
             write "[W,Z]=2W, [X,Y]=W, [X,Z]=X-",a3,"Y, ",
            "[Y,Z]=",a3,"X+Y";lie_class:={liealg(4),comtab(17),a3}>>>>>>;
     if (help neq 1) then
-     if (c2=0 OR b2 neq c3) then
+     if (c2=0 or b2 neq c3) then
      <<if (b2 neq c3) then
       liemat:=mat((1,0,0,0),(0,1,c2/(b2-c3),0),(0,0,1,0),(0,0,0,1))*
       liemat;

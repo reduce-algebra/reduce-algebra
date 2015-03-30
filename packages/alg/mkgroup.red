@@ -56,7 +56,7 @@ put('vect,'formfn,'formvect);
 put('vecexprp,'evfn,'evvector);
 
 symbolic procedure !*!*a2s(u,vars);
-   if u = '(quote nil) then niL
+   if u = '(quote nil) then nil
 %   else if eqcar(u,'for) and not(cadddr u eq 'do)
 %    then list('foraeval,u)
     else if vectorp u then list(!*!*a2sfn,u)

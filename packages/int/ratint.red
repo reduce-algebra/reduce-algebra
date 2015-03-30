@@ -26,7 +26,7 @@ module ratint;   % Support for direct rational integration.
 %
 
 
-SYMBOLic procedure rationalintegrate(x,var);
+symbolic procedure rationalintegrate(x,var);
     begin     scalar n,d;
       n:=numr x; d:=denr x;
       if not(var member varsinsf(d,nil)) then

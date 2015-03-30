@@ -34,7 +34,7 @@ module bfdoer2; % routines for doing bfloat arithmetic, mixed float
 %
 
 
-Comment  support for allroot and realroot modules;
+COMMENT  support for allroot and realroot modules;
 
 exports allout, automod, bfixup, bfmax, cexpand, ckprec, ckpzro, csize,
         ftout, gf2flt, gffinit, gfrtrnd, gfsimp, gfsqfrf, mkdn,

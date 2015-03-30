@@ -53,7 +53,7 @@ flag('(anlfn crflapo),'compile);
 
 flag('(bldmsg printf),'naryargs);  % Added by Eberhard Schruefer.
 
-comment  EXPAND flag on these forces expansion of MACROS;
+COMMENT  EXPAND flag on these forces expansion of MACROS;
 
 expand!* := '(for foreach repeat while);
 

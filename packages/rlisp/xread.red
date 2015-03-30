@@ -67,7 +67,7 @@ symbolic procedure eolcheck;
 
 symbolic procedure xcomment(u,commentlist);
    progn((if commentlist
-           then u := 'comment . aconc(reversip commentlist,u)),
+           then u := 'COMMENT . aconc(reversip commentlist,u)),
          u);
 
 symbolic procedure xread1 u;

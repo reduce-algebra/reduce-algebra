@@ -49,7 +49,7 @@ symbolic procedure dd_groebner!* q;
                   % cancel common denominators
       w := for each j in w collect f2vdp numr simp j;
       dd_homog!-check w;
-      if not !*vdpInteger then
+      if not !*vdpinteger then
       <<np := t;
         for each p in w do
           np := if np then vdpcoeffcientsfromdomain!? p else nil;

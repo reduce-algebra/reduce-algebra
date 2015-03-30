@@ -66,7 +66,7 @@ symbolic inline procedure rndpwr j;
     return make!:ibf(car !#w, cdr !#w + cddr j)
   end;
 
-symbolic procedure CSL_normbf x;
+symbolic procedure csl_normbf x;
    begin
       scalar mt,s;
       integer ep;
@@ -88,11 +88,11 @@ symbolic procedure CSL_normbf x;
 remflag('(normbf), 'lose);
 
 symbolic procedure normbf x;
-   CSL_normbf x;
+   csl_normbf x;
 
 flag('(normbf), 'lose);
 
-symbolic procedure CSL_timbf(u, v);
+symbolic procedure csl_timbf(u, v);
   begin
      scalar m;
 %    m := mt!: u * mt!: v;
@@ -103,7 +103,7 @@ symbolic procedure CSL_timbf(u, v);
      return make!:ibf(car m, cdr m + cddr u + cddr v)
   end;
 
-symbolic inline procedure timbf(u, v); CSL_timbf(u, v);
+symbolic inline procedure timbf(u, v); csl_timbf(u, v);
 
 !#endif
 

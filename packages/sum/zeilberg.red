@@ -66,7 +66,7 @@ zeilberger_representation:=nil;
 
 % operator gamma,binomial;   % Now in entry.red.
 symbolic <<
-   (algebraic operator hypergeom,pochhammer) where !*msg = nil>>;
+   (algebraic operator hypergeom,Pochhammer) where !*msg = nil>>;
 operator summ,zb_f,zb_sigma;
 operator local_gamma,local_prod;
 %%%
@@ -92,7 +92,7 @@ onerules:=
 {gamma(~zb_x)=>1,
  binomial(~zb_x,~zb_y)=> 1,
  factorial(~zb_x)=> 1,
- pochhammer(~zb_x,~zb_y)=> 1
+ Pochhammer(~zb_x,~zb_y)=> 1
 };
 
 onerules2:={summ(~zb_x)=>1,hypergeom(~zb_x1,~zb_x2,~zb_x3)=>1};
@@ -830,7 +830,7 @@ deno:=tmp;
 %write "deno:=",deno;
 %write "nume:=",nume;
 return hyperterm(nume,deno,lcr1/lcr2,n-m)*factorial(n-m)/
-pochhammer(m+1,n-m);
+Pochhammer(m+1,n-m);
 end;
 %extended_sumrecursion((pochhammer( - n,k)* pochhammer(b,k)*
 %pochhammer(c,k))/(factorial(k)*pochhammer((b - n + 1)/2,k)*
@@ -1149,8 +1149,8 @@ begin
 scalar lu,ll;
 lu:=arglength(upper);
 ll:=arglength(lower);
-return ((for j:=1:lu product(pochhammer(part(upper,j),k)))*z^k/
-((for j:=1:ll product(pochhammer(part(lower,j),k)))*factorial(k)));
+return ((for j:=1:lu product(Pochhammer(part(upper,j),k)))*z^k/
+((for j:=1:ll product(Pochhammer(part(lower,j),k)))*factorial(k)));
 end;
 
 algebraic procedure simplify_combinatorial(term1);
@@ -1172,8 +1172,8 @@ term1:=(term1 where prod(~term,~k,~m1,~m2)=>
    producttopochhammer(term,k,m1,m2));
 term1:=(term1 where local_prod(~term,~k,~m1,~m2)=>
    prod(~term,~k,~m1,~m2));
-term1:=(term1 where pochhammer(0,~k)=>0);
-term1:=(term1 where pochhammer(~n,~k)=> gamma(~n+~k)/gamma(~n));
+term1:=(term1 where Pochhammer(0,~k)=>0);
+term1:=(term1 where Pochhammer(~n,~k)=> gamma(~n+~k)/gamma(~n));
 term1:=(term1 where binomial(~n,~k) =>
         factorial(~n)/(factorial(~n - ~k)*factorial(~k)));
 term1:=(term1 where factorial(~k)=> gamma(~k+1));
@@ -1533,10 +1533,10 @@ producttopochhammer(den(term),k,m1,m2);
     aa:=part(co,2);
     bb:=pa/aa -k;
     if bb = 0 then
-     liste:=(part(liste,j):=pochhammer(m1+ part(co,1),m2-m1+1))
+     liste:=(part(liste,j):=Pochhammer(m1+ part(co,1),m2-m1+1))
     else
      liste:=(part(liste,j):=
-      aa^(m2-m1)*pochhammer(bb,m2+1)/pochhammer(bb,m1))
+      aa^(m2-m1)*Pochhammer(bb,m2+1)/Pochhammer(bb,m1))
    >>
  >>;
  if fehler then return local_prod(term,k,m1,m2);
@@ -1752,7 +1752,7 @@ if head1 = gamma or
    head1 = factorial then
    list1:=append(list1,{part(term1,1)})
 else if
-   head1 = pochhammer or
+   head1 = Pochhammer or
    head1 = binomial then
    list1:=append(list1,{part(term1,1),part(term1,2)})
 else
@@ -1871,7 +1871,7 @@ oldnumlist:=numlist;
 numlist:={};
 for j:=1: arglength(oldnumlist) do
  numlist:=append({part(oldnumlist,j ) + 1-minint},numlist);
-if sub(k=1-minint,den(ank)) = 0 or sub(pochhammer= poch, den(ank)) = 0
+if sub(k=1-minint,den(ank)) = 0 or sub(Pochhammer= poch, den(ank)) = 0
   then tmp:=limit(ank,k,1-minint)
 else
  tmp:=sub(k=1-minint,ank);

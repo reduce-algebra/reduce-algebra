@@ -78,9 +78,9 @@ cuba_cuhre_par!*   := find!-foreign!-function("cuba_cuhre_par", libredcuba!*);
 % ============================
 % Arrays of doubles
 % ============================
-newDoubleArray!*  := find!-foreign!-function("newDoubleArray", libredcuba!*);
-setDoubleArray!*  := find!-foreign!-function("setDoubleArray", libredcuba!*);
-freeDoubleArray!* := find!-foreign!-function("freeDoubleArray", libredcuba!*);
+newdoublearray!*  := find!-foreign!-function("newDoubleArray", libredcuba!*);
+setdoublearray!*  := find!-foreign!-function("setDoubleArray", libredcuba!*);
+freedoublearray!* := find!-foreign!-function("freeDoubleArray", libredcuba!*);
 
 % ============================
 % Integration algorithms
@@ -172,13 +172,13 @@ symbolic operator
 
 % These procedures are internal to the interface, they are not supposed to be
 % used at the Reduce level!
-procedure newDoubleArray(n);
+procedure newdoublearray(n);
    % the 'int64 represents the fact that the foreign function's result is a pointer
-   call!-foreign!-function(newDoubleArray!*, 'int32,n, 'int64);
-procedure setDoubleArray(a,i,x);
-   call!-foreign!-function(setDoubleArray!*, 'int64,a, 'int32,i, 'double,x);
-procedure freeDoubleArray(a);
-   call!-foreign!-function(freeDoubleArray!*, 'int64,a);
+   call!-foreign!-function(newdoublearray!*, 'int32,n, 'int64);
+procedure setdoublearray(a,i,x);
+   call!-foreign!-function(setdoublearray!*, 'int64,a, 'int32,i, 'double,x);
+procedure freedoublearray(a);
+   call!-foreign!-function(freedoublearray!*, 'int64,a);
 
 
 % The interface gets very complicated here!!!  To understand why the following 3
@@ -206,7 +206,7 @@ procedure decode(r);
 % We deal with this list by making the C 'cuba_int' set a static variable
 % (array) which we then read via procedure 'get_result!*'.
 procedure cuba_int(integrand,bounds,alg);
-   begin scalar savedmode, n, lb, ub, b1, Clb, Cub, r;
+   begin scalar savedmode, n, lb, ub, b1, clb, cub, r;
       if not getd(integrand) then
 	 rederr {"'", integrand, "' is not defined!"};
       if member(alg, cuba_algorithms!*) then <<
@@ -263,15 +263,15 @@ procedure cuba_int(integrand,bounds,alg);
 	 b1 := numr simp caddr b;
 	 to_num(b1)  % no ; here!
       >>;
-      Clb := newDoubleArray(n);
-      Cub := newDoubleArray(n);
+      clb := newdoublearray(n);
+      cub := newdoublearray(n);
       for i := 0:n-1 do <<
-	 setDoubleArray(Clb, i, nth(lb,i+1));
-	 setDoubleArray(Cub, i, nth(ub,i+1));
+	 setdoublearray(clb, i, nth(lb,i+1));
+	 setdoublearray(cub, i, nth(ub,i+1));
       >>;
-      call!-foreign!-function(cuba_int!*, 'int64,Clb, 'int64,Cub);
-      freeDoubleArray(Clb);
-      freeDoubleArray(Cub);
+      call!-foreign!-function(cuba_int!*, 'int64,clb, 'int64,cub);
+      freedoublearray(clb);
+      freedoublearray(cub);
       r := for i := 1:6 collect 
 	 call!-foreign!-function(get_result!*, 'int32,i-1, 'double);
       % r is a Lisp list (value, error, prob, num regions, num eval, return code).

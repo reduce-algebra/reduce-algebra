@@ -1,4 +1,4 @@
-module TayPart;
+module taypart;
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -31,7 +31,7 @@ module TayPart;
 %*****************************************************************
 
 %exports Taylor!*part,Taylor!*setpart;
-exports Taylor!*part;
+exports taylor!*part;
 
 imports
 
@@ -40,21 +40,21 @@ imports
         typerr,
 
 % from the header module:
-        make!-Taylor!*, TayCoefflist, TayFlags, TaylorTemplate,
-        TayOrig,
+        make!-taylor!*, taycoefflist, tayflags, taylortemplate,
+        tayorig,
 
 % from module TayConv:
-        prepTaylor!*;
+        preptaylor!*;
 
 
 %fluid '(!*taylorprintorder TaylorPrintTerms);
 
 
-symbolic procedure Taylor!*part(tay,n);
+symbolic procedure taylor!*part(tay,n);
    begin scalar prep;
 %     prep := (Taylor!*print1 tay) where !*taylorprintorder='t,
 %                                        TaylorPrintTerms='all;
-     prep := prepTaylor!* tay;
+     prep := preptaylor!* tay;
      if atom prep then parterr(prep,n);
      if n=0 then return car prep;
      prep := cdr prep;
@@ -63,7 +63,7 @@ symbolic procedure Taylor!*part(tay,n);
      return nth(prep,n)
    end;
 
-put('Taylor!*,'partop,'Taylor!*part);
+put('taylor!*,'partop,'taylor!*part);
 
 
 %symbolic procedure Taylor!*setpart(tay,nl,repl);

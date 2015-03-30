@@ -892,8 +892,8 @@ begin scalar apot2, j, sorted_set;
 if apot = {} then return {};
 apot2 := vas_changestyle(apot);
 
-comment union_SET := {};
-comment for j:=1:length(apot2) do union_SET := union(union_SET, part(apot2,j));
+COMMENT union_SET := {};
+COMMENT for j:=1:length(apot2) do union_SET := union(union_SET, part(apot2,j));
 
 sorted_set := vas_my_sort2(apot2);
 

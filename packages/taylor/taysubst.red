@@ -1,4 +1,4 @@
-module TaySubst;
+module taysubst;
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -42,14 +42,14 @@ imports
         subeval1, subs2!*, subsq, subtrsq, typerr,
 
 % from the header module:
-        make!-Taylor!*, set!-TayCfSq, TayCfPl, TayCfSq, TayCoeffList,
-        TayFlags, Taylor!:, Taylor!-error, TayVars, TayMakeCoeff,
-        TayOrig, TayTemplate, TayTpElNext, TayTpElOrder, TayTpElPoint,
-        TayTpElVars,
+        make!-taylor!*, set!-taycfsq, taycfpl, taycfsq, taycoefflist,
+        tayflags, taylor!:, taylor!-error, tayvars, taymakecoeff,
+        tayorig, taytemplate, taytpelnext, taytpelorder, taytpelpoint,
+        taytpelvars,
 
 % from module Tayintro:
         constant!-sq!-p, delete!-nth, delete!-nth!-nth, replace!-nth,
-        Taylor!-error, Taylor!-error!*, var!-is!-nth,
+        taylor!-error, taylor!-error!*, var!-is!-nth,
 
 % from module Tayutils:
        enter!-sorted, rat!-kern!-pow;
@@ -61,24 +61,24 @@ put ('taylor!*, 'subfunc, 'subsubtaylor);
 
 symbolic procedure subsubtaylor(l,v);
   begin scalar x,clist,delete_list,tp,pl;
-    clist := for each u in TayCoeffList v collect
-               TayMakeCoeff(TayCfPl u,subsq(TayCfSq u,l));
-    tp := TayTemplate v;
+    clist := for each u in taycoefflist v collect
+               taymakecoeff(taycfpl u,subsq(taycfsq u,l));
+    tp := taytemplate v;
     %
     % Substitute in expansion point
     %
     tp := for each quartet in tp collect
-            {TayTpElVars quartet,
-             reval subeval1(l,TayTpElPoint quartet),
-             TayTpElOrder quartet,
-             TayTpElNext quartet};
+            {taytpelvars quartet,
+             reval subeval1(l,taytpelpoint quartet),
+             taytpelorder quartet,
+             taytpelnext quartet};
     pl := for each quartet in tp collect
-            nlist(nil,length TayTpElVars quartet);
+            nlist(nil,length taytpelvars quartet);
     %
     % Make x the list of substitutions of Taylor variables.
     %
     for each p in l do
-      if car p member TayVars v
+      if car p member tayvars v
         %
         % The replacement of a Taylor variable must again be
         % a kernel.  If it is a constant, we have to delete it
@@ -97,16 +97,16 @@ symbolic procedure subsubtaylor(l,v);
             pos := car w;
             pos1 := cdr w;
             if not null nth(nth(pl,pos),pos1)
-              then Taylor!-error('invalid!-subst,
+              then taylor!-error('invalid!-subst,
                             "multiple substitution for same variable");
             pl := replace!-nth!-nth(pl,pos,pos1,0);
             %
             % Calculate the difference (new_variable - expansion_point)
             %
-            about := TayTpElPoint nth(tp,pos);
+            about := taytpelpoint nth(tp,pos);
             if about eq 'infinity
               then if null numr temp
-                then Taylor!-error!*('zero!-denom,"Taylor Substitution")
+                then taylor!-error!*('zero!-denom,"Taylor Substitution")
                else temp := invsq temp
              else temp := subtrsq(temp,simp!* about);
             %
@@ -118,28 +118,28 @@ symbolic procedure subsubtaylor(l,v);
             %
             % Substitute in every coefficient
             %
-            Taylor!:
+            taylor!:
             for each cc in clist do begin scalar exponent;
-              w := nth(TayCfPl cc,pos);
-              w := if null cdr w then delete!-nth(TayCfPl cc,pos)
-                    else delete!-nth!-nth(TayCfPl cc,pos,pos1);
-              exponent := nth(nth(TayCfPl cc,pos),pos1);
-              z := if exponent = 0 then TayCfSq cc
+              w := nth(taycfpl cc,pos);
+              w := if null cdr w then delete!-nth(taycfpl cc,pos)
+                    else delete!-nth!-nth(taycfpl cc,pos,pos1);
+              exponent := nth(nth(taycfpl cc,pos),pos1);
+              z := if exponent = 0 then taycfsq cc
                      else if exponent < 0 and null numr temp
-                      then Taylor!-error!*('zero!-denom,
+                      then taylor!-error!*('zero!-denom,
                                          "Taylor Substitution")
-                     else multsq(TayCfSq cc,exptsq(temp,exponent));
+                     else multsq(taycfsq cc,exptsq(temp,exponent));
               y := assoc(w,ll);
-              if y then set!-TayCfSq(y,subs2!* addsq(TayCfSq y,z))
+              if y then set!-taycfsq(y,subs2!* addsq(taycfsq y,z))
                else if not null numr (z := subs2!* z)
-                then ll := TayMakeCoeff(w,z) . ll
+                then ll := taymakecoeff(w,z) . ll
              end;
             %
             % Delete zero coefficients
             %
             clist := nil;
             while ll do <<
-              if not null numr TayCfSq car ll
+              if not null numr taycfsq car ll
                 then clist := enter!-sorted(car ll,clist);
               ll := cdr ll>>;
           end
@@ -150,57 +150,57 @@ symbolic procedure subsubtaylor(l,v);
          else begin scalar w,expo; integer pos,pos1;
            expo := cdr temp;
            temp := car temp;
-           for each el in delete(car p,TayVars v) do
+           for each el in delete(car p,tayvars v) do
              if depends(temp,el)
-               then Taylor!-error('invalid!-subst,
+               then taylor!-error('invalid!-subst,
                                   {"dependent variables",cdr p,el});
            if not (expo = 1) then <<
              w := var!-is!-nth(tp,car p);
              pos := car w;
              pos1 := cdr w;
              if not null nth(nth(pl,pos),pos1)
-               then Taylor!-error('invalid!-subst,
+               then taylor!-error('invalid!-subst,
                             "different powers in homogeneous template");
              pl := replace!-nth!-nth(pl,pos,pos1,expo)>>;
            x := (car p . temp) . x
          end
         end;
    for each pp in sort(delete_list,function sortpred) do
-      <<if null cdr TayTpElVars u
+      <<if null cdr taytpelvars u
           then <<tp := delete!-nth(tp,car pp);
                  pl := delete!-nth(pl,car pp)>>
          else <<tp := replace!-nth(tp,car pp,
-                                   {delete!-nth(TayTpElVars u,cdr pp),
-                                    TayTpElPoint u,
-                                    TayTpElOrder u,
-                                    TayTpElNext u});
+                                   {delete!-nth(taytpelvars u,cdr pp),
+                                    taytpelpoint u,
+                                    taytpelorder u,
+                                    taytpelnext u});
                 pl := delete!-nth!-nth(pl,car pp,cdr pp)>>>>
           where u := nth(tp,car pp);
     if null tp
-      then return if null clist then 0 else prepsq TayCfSq car clist;
+      then return if null clist then 0 else prepsq taycfsq car clist;
     x := reversip x;
     pl := check!-pl pl;
-    if null pl then Taylor!-error('invalid!-subst,
+    if null pl then taylor!-error('invalid!-subst,
                             "different powers in homogeneous template");
     return if pl = nlist(1,length tp)
-             then make!-Taylor!*(clist,sublis(x,tp),
-                        if !*taylorkeeporiginal and TayOrig v
-                          then subsq(TayOrig v,l)
+             then make!-taylor!*(clist,sublis(x,tp),
+                        if !*taylorkeeporiginal and tayorig v
+                          then subsq(tayorig v,l)
                          else nil,
-                        TayFlags v)
-            else make!-Taylor!*(change!-coefflist(clist,pl),
+                        tayflags v)
+            else make!-taylor!*(change!-coefflist(clist,pl),
                         change!-tp(sublis(x,tp),pl),
-                        if !*taylorkeeporiginal and TayOrig v
-                          then subsq(TayOrig v,l)
+                        if !*taylorkeeporiginal and tayorig v
+                          then subsq(tayorig v,l)
                          else nil,
-                        TayFlags v)
+                        tayflags v)
   end;
 
 symbolic procedure sortpred(u,v);
    car u > car v or car u = car v and cdr u > cdr v;
 
 symbolic procedure check!-pl pl;
-  Taylor!:
+  taylor!:
    if null pl then nil
     else ((if n=0 then check!-pl cdr pl
             else if n and n<0 then nil
@@ -212,21 +212,21 @@ symbolic procedure check!-pl0(n,nl);
 
 symbolic procedure change!-coefflist(cflist,pl);
    for each cf in cflist collect
-     TayMakeCoeff(change!-pl(TayCfPl cf,pl),TayCfSq cf);
+     taymakecoeff(change!-pl(taycfpl cf,pl),taycfsq cf);
 
 symbolic procedure change!-tp(tp,pl);
    if null tp then nil
     else (if null car pl then car tp
-           else Taylor!:{TayTpElVars car tp,
-                         TayTpElPoint car tp,
-                         TayTpElOrder car tp * car pl,
-                         TayTpElNext car tp * car pl})
+           else taylor!:{taytpelvars car tp,
+                         taytpelpoint car tp,
+                         taytpelorder car tp * car pl,
+                         taytpelnext car tp * car pl})
         . cdr tp;
 
 symbolic procedure change!-pl(pl,pl0);
   if null pl then nil
    else (if null car pl0 then car pl
-          else for each n in car pl collect Taylor!:(car pl0 * n))
+          else for each n in car pl collect taylor!:(car pl0 * n))
         . change!-pl(cdr pl,cdr pl0);
 
 endmodule;

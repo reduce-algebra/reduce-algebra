@@ -30,7 +30,7 @@ algebraic <<
 ztransrules := {
   ztrans_aux(1,~n,~z) => z/(z-1),
 
-  ztrans_aux(BINOMIAL(~n+~~k,~m),~n,~z) => z^(k+1)/(z-1)^(m+1) when
+  ztrans_aux(binomial(~n+~~k,~m),~n,~z) => z^(k+1)/(z-1)^(m+1) when
                                        (freeof(k,n) and freeof(m,n)),
 
   ztrans_aux(factorial(~n)/(factorial(~n-~k)*factorial(~k)),~n,~z)
@@ -43,7 +43,7 @@ ztransrules := {
   ztrans_aux(~a^(~n+~~k),~n,~z) => a^k*z/(z-a) when (freeof(a,n)
                                and freeof(k,n)),
 
-  ztrans_aux(1/~a^(~n+~~k),~n,~z) => SUB(a=1/a,ztrans(a^(n+k),n,z))
+  ztrans_aux(1/~a^(~n+~~k),~n,~z) => sub(a=1/a,ztrans(a^(n+k),n,z))
                                  when (freeof(a,n) and freeof(k,n)),
 
   ztrans_aux(e^(~n*~~a),~n,~z) => -z/(e^a-z) when freeof(a,n),
@@ -51,84 +51,84 @@ ztransrules := {
   ztrans_aux(e^((~n+~~k)*~~a),~n,~z) => e^(a*k)*-z/(e^a-z)
                                    when (freeof(a,n) and freeof(k,n)),
 
-  ztrans_aux(1/FACTORIAL(~n),~n,~z) => e^(1/z),
+  ztrans_aux(1/factorial(~n),~n,~z) => e^(1/z),
 
-  ztrans_aux(1/FACTORIAL(2*~n+~~k),~n,~z) =>
-                        z^((k-1)/2)*(SQRT(z)*SINH(1/SQRT(z))
+  ztrans_aux(1/factorial(2*~n+~~k),~n,~z) =>
+                        z^((k-1)/2)*(sqrt(z)*sinh(1/sqrt(z))
                         - sum(1/(factorial(2*j+1)*z^j),j,0,(k-3)/2))
                         when (freeof(k,n) and fixp((k+1)/2) and k>0),
 
-  ztrans_aux(1/FACTORIAL(2*~n+~~k),~n,~z) =>
-                        z^(k/2)*(COSH(1/SQRT(z))
+  ztrans_aux(1/factorial(2*~n+~~k),~n,~z) =>
+                        z^(k/2)*(cosh(1/sqrt(z))
                         - sum(1/(factorial(2*j)*z^j),j,0,k/2-1))
                         when (freeof(k,n) and fixp(k/2) and k>=0),
 
-  ztrans_aux((-1)^~n/FACTORIAL(2*~n+~~k),~n,~z) =>
-                (-z)^((k-1)/2)*(SQRT(z)*SIN(1/SQRT(z))
+  ztrans_aux((-1)^~n/factorial(2*~n+~~k),~n,~z) =>
+                (-z)^((k-1)/2)*(sqrt(z)*sin(1/sqrt(z))
                 - sum((-1)^j/(factorial(2*j+1)*z^j),j,0,(k-3)/2))
                       when(freeof(k,n) and fixp((k+1)/2) and k>0),
 
-  ztrans_aux((-1)^~n/FACTORIAL(2*~n+~~k),~n,~z) =>
-                        (-z)^(k/2)*(COS(1/SQRT(z))
+  ztrans_aux((-1)^~n/factorial(2*~n+~~k),~n,~z) =>
+                        (-z)^(k/2)*(cos(1/sqrt(z))
                         - sum((-1)^j/(factorial(2*j)*z^j),j,0,k/2-1))
                         when (freeof(k,n) and fixp(k/2) and k>=0),
 
-  ztrans_aux(SINH(~~al*~n+~~p),~n,~z) => z*(z*SINH(p) + SINH(al-p))
-                                   /(z^2 - 2*z*COSH(al) + 1)
+  ztrans_aux(sinh(~~al*~n+~~p),~n,~z) => z*(z*sinh(p) + sinh(al-p))
+                                   /(z^2 - 2*z*cosh(al) + 1)
                                    when (freeof(al,n) and freeof(p,n)),
 
-  ztrans_aux(COSH(~~al*~n+~~p),~n,~z) => z*(z*COSH(p) - COSH(al-p))
-                                   /(z^2 - 2*z*COSH(al) + 1)
+  ztrans_aux(cosh(~~al*~n+~~p),~n,~z) => z*(z*cosh(p) - cosh(al-p))
+                                   /(z^2 - 2*z*cosh(al) + 1)
                                    when (freeof(al,n) and freeof(p,n)),
 
-  ztrans_aux(SIN(~~b*~n+~~p),~n,~z) =>  z*(z*SIN(p) + SIN(b-p))
-                                   /(z^2 - 2*z*COS(b) + 1)
+  ztrans_aux(sin(~~b*~n+~~p),~n,~z) =>  z*(z*sin(p) + sin(b-p))
+                                   /(z^2 - 2*z*cos(b) + 1)
                                     when (freeof(b,n) and freeof(p,n)),
 
-  ztrans_aux(COS(~~b*~n+~~p),~n,~z) =>  z*(z*COS(p) - COS(b-p))
-                                   /(z^2 - 2*z*COS(b) + 1)
+  ztrans_aux(cos(~~b*~n+~~p),~n,~z) =>  z*(z*cos(p) - cos(b-p))
+                                   /(z^2 - 2*z*cos(b) + 1)
                                     when (freeof(b,n) and freeof(p,n)),
 
-  ztrans_aux(e^(~~a*~n)*SIN(~~b*~n),~n,~z) =>
-                            z*e^a*SIN(b)/(z^2-2*z*e^a*COS(b)+e^(2*a))
+  ztrans_aux(e^(~~a*~n)*sin(~~b*~n),~n,~z) =>
+                            z*e^a*sin(b)/(z^2-2*z*e^a*cos(b)+e^(2*a))
                                    when (freeof(a,n) and freeof(b,n)),
 
-  ztrans_aux(e^(~~a*~n)*COS(~~b*~n),~n,~z) =>
-                        z*(z-e^a*COS(b))/(z^2-2*z*e^a*COS(b)+e^(2*a))
+  ztrans_aux(e^(~~a*~n)*cos(~~b*~n),~n,~z) =>
+                        z*(z-e^a*cos(b))/(z^2-2*z*e^a*cos(b)+e^(2*a))
                                    when (freeof(a,n) and freeof(b,n)),
 
-  ztrans_aux(COS(~~b*(~n+~~k))/(~n+~~k),~n,~z) =>
-                        z^(k-1)*(z*log(z/SQRT(z^2-2*z*COS(b)+1))
+  ztrans_aux(cos(~~b*(~n+~~k))/(~n+~~k),~n,~z) =>
+                        z^(k-1)*(z*log(z/sqrt(z^2-2*z*cos(b)+1))
                         - sum(cos(b*(j+1))/((j+1)*z^j),j,0,k-2))
                         when (freeof(b,n) and freeof(k,n)
                                      and fixp(k) and k>0),
 
-  ztrans_aux(SIN(~~b*(~n+~~k))/(~n+~~k),~n,~z) =>
-                        z^(k-1)*(-z*ATAN(SIN(b)/(COS(b)-z))
+  ztrans_aux(sin(~~b*(~n+~~k))/(~n+~~k),~n,~z) =>
+                        z^(k-1)*(-z*atan(sin(b)/(cos(b)-z))
                         - sum(sin(b*(j+1))/((j+1)*z^j),j,0,k-2))
                         when (freeof(b,n) and freeof(k,n)
                                      and fixp(k) and k>0),
 
-  ztrans_aux((-1)^n*COS(~~b*(~n+~~k))/(~n+~~k),~n,~z) =>
-                        -(-z)^(k-1)*(z*log(SQRT(z^2+2*z*COS(b)+1/z))
+  ztrans_aux((-1)^n*cos(~~b*(~n+~~k))/(~n+~~k),~n,~z) =>
+                        -(-z)^(k-1)*(z*log(sqrt(z^2+2*z*cos(b)+1/z))
                         - sum((-1)^j*cos(b*(j+1))/((j+1)*z^j),j,0,k-2))
                         when (freeof(b,n) and freeof(k,n) and fixp(k)),
 
-  ztrans_aux(COS(~~b*~n)/FACTORIAL(~n),~n,~z) =>
-                                COS(SIN(b)/z)*e^(COS(b)/z)
+  ztrans_aux(cos(~~b*~n)/factorial(~n),~n,~z) =>
+                                cos(sin(b)/z)*e^(cos(b)/z)
                                 when freeof(b,n),
 
-  ztrans_aux(COS(~~b*(~n+~~k))/FACTORIAL(~n+~~k),~n,~z) =>
-                        z^k*(COS(SIN(b)/z)*e^(COS(b)/z)
+  ztrans_aux(cos(~~b*(~n+~~k))/factorial(~n+~~k),~n,~z) =>
+                        z^k*(cos(sin(b)/z)*e^(cos(b)/z)
                         - sum(cos(b*j)/(factorial(j)*z^j),j,0,k-1))
                                      when (freeof(b,n) and fixp(k)),
 
-  ztrans_aux(SIN(~~b*~n)/FACTORIAL(~n),~n,~z) =>
-                                SIN(SIN(b)/z)*e^(COS(b)/z)
+  ztrans_aux(sin(~~b*~n)/factorial(~n),~n,~z) =>
+                                sin(sin(b)/z)*e^(cos(b)/z)
                                 when freeof(b,n),
 
-  ztrans_aux(SIN(~~b*(~n+~~k))/FACTORIAL(~n+~~k),~n,~z) =>
-                        z^k*(SIN(SIN(b)/z)*e^(COS(b)/z)
+  ztrans_aux(sin(~~b*(~n+~~k))/factorial(~n+~~k),~n,~z) =>
+                        z^k*(sin(sin(b)/z)*e^(cos(b)/z)
                         - sum(sin(b*j)/(factorial(j)*z^j),j,0,k-1))
                                      when (freeof(b,n) and fixp(k)),
 
@@ -147,44 +147,44 @@ ztransrules := {
   ztrans_aux((~f+~g)/~~h,~n,~z) => ztrans(f/h,n,z) + ztrans(g/h,n,z),
 
 %MULTIPLICATION
-  ztrans_aux(~n^~~p*~~f,~n,~z) => -z*DF(ztrans(n^(p-1)*f,n,z),z)
+  ztrans_aux(~n^~~p*~~f,~n,~z) => -z*df(ztrans(n^(p-1)*f,n,z),z)
                                   when freeof(p,n) and fixp(p) and p>0,
 
-  ztrans_aux(~n^~~p*~~f/~g,~n,~z) => -z*DF(ztrans(n^(p-1)*f/g,n,z),z)
+  ztrans_aux(~n^~~p*~~f/~g,~n,~z) => -z*df(ztrans(n^(p-1)*f/g,n,z),z)
                                   when freeof(p,n) and fixp(p) and p>0,
 
 %Shift up
   ztrans_aux(~f(~n+~k),~n,~z) =>
-                        z^k*(ztrans(f(n),n,z)-SUM(f(n)*z^(-n),n,0,k-1))
+                        z^k*(ztrans(f(n),n,z)-sum(f(n)*z^(-n),n,0,k-1))
                         when freeof(k,n) and fixp(k) and k>0,
 
   ztrans_aux(~f(~n+~k)/~g(~n+~k),~n,~z) =>
                         z^k*(ztrans(f(n)/g(n),n,z)-
-                        SUM(f(n)/g(n)*z^(-n),n,0,k-1))
+                        sum(f(n)/g(n)*z^(-n),n,0,k-1))
                         when freeof(k,n) and fixp(k) and k>0,
 
   ztrans_aux(1/~g(~n+~k),~n,~z) =>
                         z^k*(ztrans(1/g(n),n,z)-
-                        SUM(1/g(n)*z^(-n),n,0,k-1))
+                        sum(1/g(n)*z^(-n),n,0,k-1))
                         when freeof(k,n) and fixp(k) and k>0,
 
 %Similar Expressions
-  ztrans_aux(~a^(~n+~~k)*~f,~n,~z) => a^k*SUB(z=(z/a),ztrans(f,n,z))
+  ztrans_aux(~a^(~n+~~k)*~f,~n,~z) => a^k*sub(z=(z/a),ztrans(f,n,z))
                                   when freeof(a,n) and freeof(k,n),
 
   ztrans_aux(~a^(~n+~~k)*~~f/~g,~n,~z) =>
-                                    a^k*SUB(z=(z/a),ztrans(f/g,n,z))
+                                    a^k*sub(z=(z/a),ztrans(f/g,n,z))
                                     when freeof(a,n) and freeof(k,n),
 
   ztrans_aux(~a^(~n-~~k)*~~f/~g,~n,~z) =>
-                                    a^k*SUB(z=(z/a),ztrans(f/g,n,z))
+                                    a^k*sub(z=(z/a),ztrans(f/g,n,z))
                                     when freeof(a,n) and freeof(k,n),
 
-  ztrans_aux(1/~a^(~n+~~k)*~f,~n,~z) => 1/a^k*SUB(z=z*a,ztrans(f,n,z))
+  ztrans_aux(1/~a^(~n+~~k)*~f,~n,~z) => 1/a^k*sub(z=z*a,ztrans(f,n,z))
                                     when freeof(a,n) and freeof(k,n),
 
   ztrans_aux(1/~a^(~n+~~k)*~~f/~g,~n,~z) =>
-                                    1/a^k*SUB(z=z*a,ztrans(f/g,n,z))
+                                    1/a^k*sub(z=z*a,ztrans(f/g,n,z))
                                     when freeof(a,n) and freeof(k,n),
 
 %Summations
@@ -192,7 +192,7 @@ ztransrules := {
                                 ztrans(f(n),n,z)*ztrans(g(n),n,z)
                                 when freeof(k,n),
 
-  ztrans_aux(~summ(~f,~k,0,~n),~n,~z) => z*ztrans(SUB(k=n,f),n,z)/(z-1)
+  ztrans_aux(~summ(~f,~k,0,~n),~n,~z) => z*ztrans(sub(k=n,f),n,z)/(z-1)
                                      when freeof(k,n) and summ = sum,
 
 %  ztrans_aux(~summ(~~f/~g,~k,0,~n),~n,~z) =>
@@ -200,9 +200,9 @@ ztransrules := {
 %                                    when (freeof(k,n) and summ = sum),
 
   ztrans_aux(~summ(~f,~k,0,(~n+~w)),~n,~z) =>
-                        z*ztrans(SUB(k=n,f),n,z)/(z-1) +
-                        sum(z^x*(ztrans(SUB(k=n,f),n,z) -
-                        sum(SUB(k=n,f)/z^n,n,0,x-1)),x,1,w)
+                        z*ztrans(sub(k=n,f),n,z)/(z-1) +
+                        sum(z^x*(ztrans(sub(k=n,f),n,z) -
+                        sum(sub(k=n,f)/z^n,n,0,x-1)),x,1,w)
                         when (freeof(w,n) and fixp(w) and w>0
                         and summ = sum),
 
@@ -214,13 +214,13 @@ ztransrules := {
 %                       and summ = sum),
 
   ztrans_aux(~summ(~f,~k,~p,~n),~n,~z) =>
-                        ztrans(sum(SUB(k=k+p,f),k,0,n-p),n,z)
+                        ztrans(sum(sub(k=k+p,f),k,0,n-p),n,z)
                         when (freeof(p,n) and fixp(p) and p>0
                         and summ = sum),
 
   ztrans_aux(~summ(~f,~k,0,(~nn)),~n,~z) =>
-                ztrans(SUB(k=n,f),n,z)/(z-1) -
-                sum(1/z^y*ztrans(SUB(k=n,f),n,z),y,1,((n-nn)-1))
+                ztrans(sub(k=n,f),n,z)/(z-1) -
+                sum(1/z^y*ztrans(sub(k=n,f),n,z),y,1,((n-nn)-1))
                 when (freeof((nn-n),n) and fixp(nn-n) and
                 (nn-n)<0 and summ = sum),
 
@@ -231,14 +231,14 @@ ztransrules := {
 %               (nn-n)<0 and summ = sum),
 
   ztrans_aux(~summ(~f,~k,~p,~n),~n,~z) =>
-                        ztrans(sum(SUB(k=k+p,f),k,0,n+(-p)),n,z)
+                        ztrans(sum(sub(k=k+p,f),k,0,n+(-p)),n,z)
                         when (freeof(p,n) and fixp(p) and p<0
                         and summ = sum),
 
   ztrans_aux(~summ(~f,~k,~p,~q),~n,~z) =>
                         (begin scalar r;
                          r := q-p;
-                         return ztrans(sum(SUB(k=k+p,f),k,0,r),n,z);
+                         return ztrans(sum(sub(k=k+p,f),k,0,r),n,z);
                          end)  when (not(p=0) and summ = sum),
 
 %Errors
@@ -329,24 +329,24 @@ invztransrules:=
 %Linear rules
 %============
 
-  invztrans (~P,~z,~n) => !$do_invztrans!$
+  invztrans (~p,~z,~n) => !$do_invztrans!$
         when freeof((!$do_invztrans!$ :=
-                          do_invztrans(P,z,n)),lisp 'fail),
+                          do_invztrans(p,z,n)),lisp 'fail),
 
-  invztrans1(~P,~z,~n) => P*invztrans1(1,z,n)
-                 when freeof(P,z) and not (p=1),
+  invztrans1(~p,~z,~n) => p*invztrans1(1,z,n)
+                 when freeof(p,z) and not (p=1),
 
-  invztrans1(~P*~f,~z,~n) => P*invztrans1(f,z,n) when freeof(P,z),
+  invztrans1(~p*~f,~z,~n) => p*invztrans1(f,z,n) when freeof(p,z),
 
-  invztrans1(~f/~Q,~z,~n) => invztrans1(f,z,n)/Q when freeof(Q,z),
+  invztrans1(~f/~q,~z,~n) => invztrans1(f,z,n)/q when freeof(q,z),
 
-  invztrans1(~P/~g,~z,~n) => P*invztrans1(1/g,z,n) when freeof(P,z)
-                            and NOT(P=1),
+  invztrans1(~p/~g,~z,~n) => p*invztrans1(1/g,z,n) when freeof(p,z)
+                            and not(p=1),
 
-  invztrans1(~P*~f/~g,~z,~n) => P*invztrans1(f/g,z,n) when freeof(P,z),
+  invztrans1(~p*~f/~g,~z,~n) => p*invztrans1(f/g,z,n) when freeof(p,z),
 
-  invztrans1(~f/(~Q*~g),~z,~n) =>
-                                invztrans1(f/g,z,n)/Q when freeof(Q,z),
+  invztrans1(~f/(~q*~g),~z,~n) =>
+                                invztrans1(f/g,z,n)/q when freeof(q,z),
 
   invztrans1(-~f,~z,~n) => -invztrans1(f,z,n),
 
@@ -362,8 +362,8 @@ invztransrules:=
 
   invztrans1(~f/~g,~z,~n) => invztrans_aux(f,g,z,n)
 
-        when ( NOT(freeof(f/g,sin))  OR NOT(freeof(f/g,cos)) OR
-               NOT(freeof(f/g,sinh)) OR NOT(freeof(f/g,cosh)) ),
+        when ( not(freeof(f/g,sin))  or not(freeof(f/g,cos)) or
+               not(freeof(f/g,sinh)) or not(freeof(f/g,cosh)) ),
 
 
 %If not a trig/hyperbolic rational
@@ -393,8 +393,8 @@ invztrans_auxrules :=
 
 %Linearity
 %=========
-  invztrans_aux(~f,-~~X*~z^2+~~W*~z-~Y,~z,~n) =>
-                                -invztrans_aux(f,X*z^2-W*z+Y,z,n),
+  invztrans_aux(~f,-~~x*~z^2+~~w*~z-~y,~z,~n) =>
+                                -invztrans_aux(f,x*z^2-w*z+y,z,n),
 
   invztrans_aux(~f+~h,~g,~z,~n) =>
                 invztrans_aux(f,g,z,n) + invztrans_aux(h,g,z,n),
@@ -404,100 +404,100 @@ invztrans_auxrules :=
 %rational inputs.
 %=======================================
 
-  invztrans_aux(~z,(~~X*~z^2-~~W*~z+~Y),~z,~n) =>
+  invztrans_aux(~z,(~~x*~z^2-~~w*~z+~y),~z,~n) =>
 
-        SUB(srX=sqrt(X), srW=sqrt(W), srY=sqrt(Y),
-            2*srY^n*SIN(ACOS(srX*W/(2*srY*X))*n)
-            / ( srX^n*sqrt(4*X*Y-W^2) ) )
+        sub(srx=sqrt(x), srw=sqrt(w), sry=sqrt(y),
+            2*sry^n*sin(acos(srx*w/(2*sry*x))*n)
+            / ( srx^n*sqrt(4*x*y-w^2) ) )
 
-        when (numberp(X) and numberp(W) and numberp(Y) and
-              Y>0 and W>0 and (W^2)<(4*X*Y))
-        OR   (numberp(X) and numberp(W) and NOT(numberp(Y)) and W>0)
-        OR   (NOT(numberp(X) and numberp(W) and numberp(Y))
-              and freeof((W/X),cosh)),
-
-
-  invztrans_aux(~z,(~~X*~z^2+~~W*~z+~Y),~z,~n) =>
-
-        SUB(srX=sqrt(X), srW=sqrt(W), srY=sqrt(Y),
-            -2*srY^n*(-1)^n*SIN(ACOS(srX*W/(2*srY*X))*n)
-            / ( srX^n*sqrt(4*X*Y-W^2) ) )
-
-        when (numberp(X) and numberp(W) and numberp(Y) and
-              Y>0 and W>0 and (W^2)<(4*X*Y))
-        OR   (numberp(X) and numberp(W) and NOT(numberp(Y)) and W<0)
-        OR   (NOT(numberp(X) and numberp(W) and numberp(Y))
-              and freeof((W/X),cosh)),
-
-  invztrans_aux(~z,(~~X*~z^2-~~W*~z+~Y),~z,~n) =>
-
-        SUB(srX=sqrt(X), srW=sqrt(W), srY=sqrt(Y),
-            2*srY^n*SINH(ACOSH(srX*W/(2*srY*X))*n)
-            / ( srX^n*sqrt(W^2-4*X*Y) ) )
-
-        when (numberp(X) and numberp(W) and numberp(Y) and
-              Y>0 and (W^2)>(4*X*Y))
-        OR   (NOT(numberp(X) and numberp(W) and numberp(Y))),
-
-  invztrans_aux(~z,(~~X*~z^2+~~W*~z+~Y),~z,~n) =>
-
-        SUB(srX=sqrt(X), srW=sqrt(W), srY=sqrt(Y),
-            -2*(-srY)^n*SINH(ACOSH(srX*W/(2*srY*X))*n)
-            / ( srX^n*sqrt(W^2-4*X*Y) ) )
-
-        when (numberp(X) and numberp(W) and numberp(Y) and
-              Y>0 and (W^2)>(4*X*Y))
-        OR   (NOT(numberp(X) and numberp(W) and numberp(Y))),
-
-  invztrans_aux(~z^2,(~~X*~z^2-~~W*~z+~Y),~z,~n) =>
-
-        SUB(srX=sqrt(X), srW=sqrt(W), srY=sqrt(Y),
-            (srY^n*(sqrt(4*X*Y-W^2)*COS(ACOS(srX*W/(2*srY*X))*n)
-            + SIN(ACOS(srX*W/(2*srY*X))*n)*W))
-            / ( srX^n*sqrt(4*X*Y-W^2)*X ) )
-
-        when (numberp(X) and numberp(W) and numberp(Y) and
-              Y>0 and W>0 and (w^2)<(2*X*Y))
-        OR   (numberp(X) and numberp(W) and W>0)
-        OR   (NOT(numberp(X) and numberp(W) and numberp(Y))
-              and freeof((W/X),cosh)),
+        when (numberp(x) and numberp(w) and numberp(y) and
+              y>0 and w>0 and (w^2)<(4*x*y))
+        or   (numberp(x) and numberp(w) and not(numberp(y)) and w>0)
+        or   (not(numberp(x) and numberp(w) and numberp(y))
+              and freeof((w/x),cosh)),
 
 
-  invztrans_aux(~z^2,(~~X*~z^2+~~W*~z+~Y),~z,~n) =>
+  invztrans_aux(~z,(~~x*~z^2+~~w*~z+~y),~z,~n) =>
 
-        SUB(srX=sqrt(X), srW=sqrt(W), srY=sqrt(Y),
-            (srY^n*(-1)^n*(sqrt(4*X*Y-W^2)*COS(ACOS(srX*W/(2*srY*X))*n)
-            + SIN(ACOS(srX*W/(2*srY*X))*n)*W))
-            / ( srX^n*sqrt(4*X*Y-W^2)*X ) )
+        sub(srx=sqrt(x), srw=sqrt(w), sry=sqrt(y),
+            -2*sry^n*(-1)^n*sin(acos(srx*w/(2*sry*x))*n)
+            / ( srx^n*sqrt(4*x*y-w^2) ) )
 
-        when (numberp(X) and numberp(W) and numberp(Y) and
-              Y>0 and W>0 and (W^2)>(4*X*Y))
-        OR   (numberp(X) and numberp(W) and W<0)
-        OR   (NOT(numberp(X) and numberp(W) and numberp(Y))
-              and freeof((W/X),cosh)),
+        when (numberp(x) and numberp(w) and numberp(y) and
+              y>0 and w>0 and (w^2)<(4*x*y))
+        or   (numberp(x) and numberp(w) and not(numberp(y)) and w<0)
+        or   (not(numberp(x) and numberp(w) and numberp(y))
+              and freeof((w/x),cosh)),
+
+  invztrans_aux(~z,(~~x*~z^2-~~w*~z+~y),~z,~n) =>
+
+        sub(srx=sqrt(x), srw=sqrt(w), sry=sqrt(y),
+            2*sry^n*sinh(acosh(srx*w/(2*sry*x))*n)
+            / ( srx^n*sqrt(w^2-4*x*y) ) )
+
+        when (numberp(x) and numberp(w) and numberp(y) and
+              y>0 and (w^2)>(4*x*y))
+        or   (not(numberp(x) and numberp(w) and numberp(y))),
+
+  invztrans_aux(~z,(~~x*~z^2+~~w*~z+~y),~z,~n) =>
+
+        sub(srx=sqrt(x), srw=sqrt(w), sry=sqrt(y),
+            -2*(-sry)^n*sinh(acosh(srx*w/(2*sry*x))*n)
+            / ( srx^n*sqrt(w^2-4*x*y) ) )
+
+        when (numberp(x) and numberp(w) and numberp(y) and
+              y>0 and (w^2)>(4*x*y))
+        or   (not(numberp(x) and numberp(w) and numberp(y))),
+
+  invztrans_aux(~z^2,(~~x*~z^2-~~w*~z+~y),~z,~n) =>
+
+        sub(srx=sqrt(x), srw=sqrt(w), sry=sqrt(y),
+            (sry^n*(sqrt(4*x*y-w^2)*cos(acos(srx*w/(2*sry*x))*n)
+            + sin(acos(srx*w/(2*sry*x))*n)*w))
+            / ( srx^n*sqrt(4*x*y-w^2)*x ) )
+
+        when (numberp(x) and numberp(w) and numberp(y) and
+              y>0 and w>0 and (w^2)<(2*x*y))
+        or   (numberp(x) and numberp(w) and w>0)
+        or   (not(numberp(x) and numberp(w) and numberp(y))
+              and freeof((w/x),cosh)),
 
 
-  invztrans_aux(~z^2,(~~X*~z^2-~~W*~z+~Y),~z,~n) =>
+  invztrans_aux(~z^2,(~~x*~z^2+~~w*~z+~y),~z,~n) =>
 
-        SUB(srX=sqrt(X), srW=sqrt(W), srY=sqrt(Y),
-            (srY^n*(sqrt(W^2-4*X*Y)*COSH(ACOSH(srX*W/(2*srY*X))*n)
-            + SINH(ACOSH(srX*W/(2*srY*X))*n)*W))
-            / ( srX^n*sqrt(W^2-4*X*Y)*X ) )
+        sub(srx=sqrt(x), srw=sqrt(w), sry=sqrt(y),
+            (sry^n*(-1)^n*(sqrt(4*x*y-w^2)*cos(acos(srx*w/(2*sry*x))*n)
+            + sin(acos(srx*w/(2*sry*x))*n)*w))
+            / ( srx^n*sqrt(4*x*y-w^2)*x ) )
 
-        when (numberp(X) and numberp(W) and numberp(Y) and
-              Y>0 and W>(4*X*Y))
-        OR   (NOT(numberp(X) and numberp(W) and numberp(Y))),
+        when (numberp(x) and numberp(w) and numberp(y) and
+              y>0 and w>0 and (w^2)>(4*x*y))
+        or   (numberp(x) and numberp(w) and w<0)
+        or   (not(numberp(x) and numberp(w) and numberp(y))
+              and freeof((w/x),cosh)),
 
-  invztrans_aux(~z^2,(~~X*~z^2+~~W*~z+~Y),~z,~n) =>
 
-        SUB(srX=sqrt(X), srW=sqrt(W), srY=sqrt(Y),
-            ((-srY)^n*(sqrt(W^2-4*X*Y)*COSH(ACOSH(srX*W/(2*srY*X))*n)
-            + SINH(ACOSH(srX*W/(2*srY*X))*n)*W))
-            / ( srX^n*sqrt(W^2-4*X*Y)*X ) )
+  invztrans_aux(~z^2,(~~x*~z^2-~~w*~z+~y),~z,~n) =>
 
-        when (numberp(X) and numberp(W) and numberp(Y) and
-              Y>0 and W>(4*X*Y))
-        OR   (NOT(numberp(X) and numberp(W) and numberp(Y))),
+        sub(srx=sqrt(x), srw=sqrt(w), sry=sqrt(y),
+            (sry^n*(sqrt(w^2-4*x*y)*cosh(acosh(srx*w/(2*sry*x))*n)
+            + sinh(acosh(srx*w/(2*sry*x))*n)*w))
+            / ( srx^n*sqrt(w^2-4*x*y)*x ) )
+
+        when (numberp(x) and numberp(w) and numberp(y) and
+              y>0 and w>(4*x*y))
+        or   (not(numberp(x) and numberp(w) and numberp(y))),
+
+  invztrans_aux(~z^2,(~~x*~z^2+~~w*~z+~y),~z,~n) =>
+
+        sub(srx=sqrt(x), srw=sqrt(w), sry=sqrt(y),
+            ((-sry)^n*(sqrt(w^2-4*x*y)*cosh(acosh(srx*w/(2*sry*x))*n)
+            + sinh(acosh(srx*w/(2*sry*x))*n)*w))
+            / ( srx^n*sqrt(w^2-4*x*y)*x ) )
+
+        when (numberp(x) and numberp(w) and numberp(y) and
+              y>0 and w>(4*x*y))
+        or   (not(numberp(x) and numberp(w) and numberp(y))),
 
   invztrans_aux(~f,~g,~z,~n) => invztrans_end(f/g,z,n)
 
@@ -512,36 +512,36 @@ invztrans_endrules :=
 %trigonometric inputs
 %====================
 
-  invztrans_end(~z*atan(SIN(~b)//(COS(~b)-~z)),~z,~n) =>
-        -SIN(b*(n+1))/(n+1) when numberp(b)
-     OR (freeof(b,z) and NOT(numberp(b))),
+  invztrans_end(~z*atan(sin(~b)//(cos(~b)-~z)),~z,~n) =>
+        -sin(b*(n+1))/(n+1) when numberp(b)
+     or (freeof(b,z) and not(numberp(b))),
 
-  invztrans_end(~z*atan(SIN(~b)//(~z+COS(~b))),~z,~n) =>
-        (-1)^n*SIN(b*(n+1))/(n+1) when numberp(a)
-     OR (freeof(a,z) and NOT(numberp(a))),
+  invztrans_end(~z*atan(sin(~b)//(~z+cos(~b))),~z,~n) =>
+        (-1)^n*sin(b*(n+1))/(n+1) when numberp(a)
+     or (freeof(a,z) and not(numberp(a))),
 
   invztrans_end(~z*log(~z/sqrt(~z^2-~a*~z+1)),~z,~n) =>
-        COS(ACOS(a/2)*(n+1))/(n+1) when (numberp(a) and a>0 and a<=-2)
-     OR (freeof(a,z) and NOT(numberp(a))),
+        cos(acos(a/2)*(n+1))/(n+1) when (numberp(a) and a>0 and a<=-2)
+     or (freeof(a,z) and not(numberp(a))),
 
   invztrans_end(~z*log(~z/sqrt(~z^2+~a*~z+1)),~z,~n) =>
-        COS(ACOS(-a/2)*(n+1))/(n+1) when (numberp(a) and a<0 and a>=-2)
-     OR (freeof(a,z) and NOT(numberp(a))),
+        cos(acos(-a/2)*(n+1))/(n+1) when (numberp(a) and a<0 and a>=-2)
+     or (freeof(a,z) and not(numberp(a))),
 
   invztrans_end(~z*log(sqrt(~z^2-~a*~z+1)/~z),~z,~n) =>
-       (-1)^n* COS(ACOS(-a/2)*(n+1))/(n+1)
+       (-1)^n* cos(acos(-a/2)*(n+1))/(n+1)
         when (numberp(a) and a<0 and a>=-2)
-     OR (freeof(a,z) and NOT(numberp(a))),
+     or (freeof(a,z) and not(numberp(a))),
 
   invztrans_end(~z*log(sqrt(~z^2+~a*~z+1)/~z),~z,~n) =>
-        (-1)^n*COS(ACOS(a/2)*(n+1))/(n+1)
+        (-1)^n*cos(acos(a/2)*(n+1))/(n+1)
         when (numberp(a) and a>0 and a<=-2)
-     OR (freeof(a,z) and NOT(numberp(a))),
+     or (freeof(a,z) and not(numberp(a))),
 
-  invztrans_end(COS(~a/~z)*e^(sqrt(1-~a^2)/~z),~z,~n) =>
-        COS(ASIN(a)*n)/factorial(n) when (numberp(a) and a<=1 and
+  invztrans_end(cos(~a/~z)*e^(sqrt(1-~a^2)/~z),~z,~n) =>
+        cos(asin(a)*n)/factorial(n) when (numberp(a) and a<=1 and
        a>=-1)
-     OR (freeof(a,z) and NOT(numberp(a))),
+     or (freeof(a,z) and not(numberp(a))),
 
 %**********************************************************************
 
@@ -575,8 +575,8 @@ invztrans_endrules :=
   invztrans(~z^~~k/(z+~~a)^~~m,~z,~n) =>
                 binomial(n+k-1,m-1)*(-a)^(n+k)/(-a)^m
                 when freeof(k,z) and freeof(m,z) and freeof(a,z) and
-                     (NOT(numberp k) OR (numberp k and fixp k)) and
-                     (NOT(numberp m) OR (numberp m and fixp m)),
+                     (not(numberp k) or (numberp k and fixp k)) and
+                     (not(numberp m) or (numberp m and fixp m)),
 
 %(over n!)
 %---------

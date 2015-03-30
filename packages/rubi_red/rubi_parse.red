@@ -296,12 +296,12 @@ mmatok := nil;
 %       |   Rule 'eof'
 %
 
-symbolic procedure parseRules();
+symbolic procedure parserules();
   begin
     scalar r;
     while mmatok = !$eol!$ do next_mma_tok();
     while not (mmatok = !$eof!$) do <<
-       r := parseRule() . r;
+       r := parserule() . r;
        while mmatok = !$eol!$ do next_mma_tok() >>;
     return reverse r
   end;
@@ -309,44 +309,44 @@ symbolic procedure parseRules();
 % Rule  ::= Expression
 %
 
-symbolic procedure parseRule();
-  parseExpression();
+symbolic procedure parserule();
+  parseexpression();
 
 % Expression := E0 | Expression ';' E0
 %
 
-symbolic procedure parseExpression();
+symbolic procedure parseexpression();
   begin
     scalar r;
-    r := parseE0();
+    r := parsee0();
     while mmatok = '!; do <<
       next_mma_tok();
-      r := list('!;, r, parseE0()) >>;
+      r := list('!;, r, parsee0()) >>;
     return r;
   end;
 
 % E0 := E1 | E0 '/;' E1
 %
 
-symbolic procedure parseE0();
+symbolic procedure parsee0();
   begin
     scalar r;
-    r := parseE1();
+    r := parsee1();
     while mmatok = '!/!; do <<
       next_mma_tok();
-      r := list('!/!;, r, parseE1()) >>;
+      r := list('!/!;, r, parsee1()) >>;
     return r;
   end;
 
 % E1        ::= E2 | E2 ':=' E2;
 
-symbolic procedure parseE1();
+symbolic procedure parsee1();
   begin
     scalar r;
-    r := parseE2();
+    r := parsee2();
     if mmatok = '!:!= then <<
       next_mma_tok();
-      r := list('!:!=, r, parseE2()) >>;
+      r := list('!:!=, r, parsee2()) >>;
     return r;
   end;
 
@@ -354,26 +354,26 @@ symbolic procedure parseE1();
 % E2 ::= E3 | E2 '||' E3
 %
 
-symbolic procedure parseE2();
+symbolic procedure parsee2();
   begin
     scalar r;
-    r := parseE3();
+    r := parsee3();
     while mmatok = '!|!| do <<
       next_mma_tok();
-      r := list('or, r, parseE3()) >>;
+      r := list('or, r, parsee3()) >>;
     return r;
   end;
 
 % E3        ::= E4 | E3 '&&' E4
 %
 
-symbolic procedure parseE3();
+symbolic procedure parsee3();
   begin
     scalar r;
-    r := parseE4();
+    r := parsee4();
     while mmatok = '!&!& do <<
       next_mma_tok();
-      r := list('and, r, parseE4()) >>;
+      r := list('and, r, parsee4()) >>;
     return r;
   end;
 
@@ -403,30 +403,30 @@ symbolic procedure parseE3();
 %           | E5 '===' E5
 %           | E5 '=!=' E5
 
-symbolic procedure parseE4chain(r, a, tok, allowed);
+symbolic procedure parsee4chain(r, a, tok, allowed);
   begin
     scalar b;
     next_mma_tok();
-    b := parseE5();
+    b := parsee5();
     r := list(get(tok, 'reduce_form), a, b) . r;
     if member(mmatok, allowed) then
-      return parseE4chain(r, b, mmatok, allowed);
+      return parsee4chain(r, b, mmatok, allowed);
     if null cdr r then return car r
     else return 'and . reverse r
   end;
 
-symbolic procedure parseE4();
+symbolic procedure parsee4();
   begin
     scalar a;
-    a := parseE5();
+    a := parsee5();
     if mmatok = '!< or mmatok = '!<!= then
-      return parseE4chain(nil, a, mmatok, '(!< !<!=))
+      return parsee4chain(nil, a, mmatok, '(!< !<!=))
     else if mmatok = '!> or mmatok = '!>!= then
-      return parseE4chain(nil, a, mmatok, '(!> !>!=))
+      return parsee4chain(nil, a, mmatok, '(!> !>!=))
     else if mmatok = '!=!= or mmatok = '!!!= then
-      return parseE4chain(nil, a, mmatok, '(!=!= !!!=))
+      return parsee4chain(nil, a, mmatok, '(!=!= !!!=))
     else if mmatok = '!=!=!= or mmatok = '!=!!!= then
-      return parseE4chain(nil, a, mmatok, '(!=!=!= !=!!!=))
+      return parsee4chain(nil, a, mmatok, '(!=!=!= !=!!!=))
     else return a
   end;
 
@@ -441,14 +441,14 @@ put('!!!=, 'reduce_form, 'neq);
 
 % E5 ::= E6 | E5 '+' E6 | E5 '-' E6
 %
-symbolic procedure parseE5();
+symbolic procedure parsee5();
   begin
     scalar r, op;
-    r := parseE6();
+    r := parsee6();
     while mmatok = '!+ or mmatok = '!- do <<
        op := mmatok;
        next_mma_tok();
-       r := list(get(op, 'reduce_form), r, parseE6()) >>;
+       r := list(get(op, 'reduce_form), r, parsee6()) >>;
     return r
   end;
 
@@ -460,10 +460,10 @@ put('!-, 'reduce_form, 'difference);
 % with something suitable. This involves a little bit of look-ahead
 % that is not very cleary expressed in the formal grammar.
 
-symbolic procedure parseE6();
+symbolic procedure parsee6();
   begin
     scalar r, op;
-    r := parseE7();
+    r := parsee7();
     while mmatok = '!* or mmatok = '!/ or
       (idp mmatok and not flagp(mmatok, 'operator_like)
        and mmatok neq !$eol!$ and mmatok neq !$eof!$) or
@@ -472,7 +472,7 @@ symbolic procedure parseE6();
          op := mmatok;
          next_mma_tok() >>
        else op := '!*;
-       r := list(get(op, 'reduce_form), r, parseE7()) >>;
+       r := list(get(op, 'reduce_form), r, parsee7()) >>;
     return r
   end;
 
@@ -482,16 +482,16 @@ put('!/, 'reduce_form, 'quotient);
 % E7    ::= '-' E7 | E8 | E8 '^' E7
 %
 
-symbolic procedure parseE7();
+symbolic procedure parsee7();
   begin
     scalar r;
     if mmatok = '!- then <<
        next_mma_tok();
-       r := list('minus, parseE7()) >>
-    else r := parseE8();
+       r := list('minus, parsee7()) >>
+    else r := parsee8();
     if mmatok = '!^ then <<
       next_mma_tok();
-      return list('expt, r, parseE7()) >>
+      return list('expt, r, parsee7()) >>
     else return r
   end;
 
@@ -499,10 +499,10 @@ symbolic procedure parseE7();
 
 % Factorials may be written as "E!".
 
-symbolic procedure parseE8();
+symbolic procedure parsee8();
   begin
     scalar r;
-    r := parseE9();
+    r := parsee9();
     while mmatok = '!! do <<
       next_mma_tok();
       r := list('factorial, r) >>;
@@ -530,25 +530,25 @@ symbolic procedure parseE8();
 % and revisit this later to make it more complete and to bring it more
 % carefully into agreement with Mathematica as a whole.
 
-symbolic procedure parseE9();
+symbolic procedure parsee9();
   begin
     scalar r, w;
     if mmatok = !$eof!$ then return mmatok
     else if mmatok = '!( then <<
       << next_mma_tok();
-         r := parseExpression() >> where outer_level = nil;
+         r := parseexpression() >> where outer_level = nil;
       checkfor '!);
       return r >>
     else if mmatok = '!{ then <<
       << next_mma_tok();
-         r := parseExpression();
-         r := 'bracelist . r . parseBraceTail() >> where outer_level = nil;
+         r := parseexpression();
+         r := 'bracelist . r . parsebracetail() >> where outer_level = nil;
       next_mma_tok();
       return r >>
     else if mmatok = '![ then <<
       << next_mma_tok();
-         r := parseExpression();
-         r := 'bracketlist . r . parseArgTail() >> where outer_level = nil;
+         r := parseexpression();
+         r := 'bracketlist . r . parseargtail() >> where outer_level = nil;
       next_mma_tok();
       return r >>
     else if numberp mmatok or stringp mmatok then <<
@@ -562,12 +562,12 @@ symbolic procedure parseE9();
     next_mma_tok();
     if mmatok = '!= then <<
       next_mma_tok();
-      return list('setq, r, parseExpression()) >>
+      return list('setq, r, parseexpression()) >>
     else if mmatok = '![ then <<
       while mmatok = '![ do <<
         << next_mma_tok();
-           w := parseExpression();
-           r := r . w . parseArgTail() >> where outer_level = nil;
+           w := parseexpression();
+           r := r . w . parseargtail() >> where outer_level = nil;
         next_mma_tok() >>;
       return r >>
     else if mmatok = '!_ then <<
@@ -575,8 +575,8 @@ symbolic procedure parseE9();
       next_mma_tok();
       if mmatok = '![ then <<
         << next_mma_tok();
-           w := parseExpression();
-           r := r . w . parseArgTail() >> where outer_level = nil;
+           w := parseexpression();
+           r := r . w . parseargtail() >> where outer_level = nil;
         next_mma_tok();
         return r >>
       else if idp mmatok and not flagp(mmatok, 'operator_like) then <<
@@ -593,8 +593,8 @@ symbolic procedure parseE9();
       if mmatok = '![ then <<
         while mmatok = '![ do <<
           << next_mma_tok();
-             w := parseExpression();
-             r := r . w . parseArgTail() >> where outer_level = nil;
+             w := parseexpression();
+             r := r . w . parseargtail() >> where outer_level = nil;
           next_mma_tok() >>;
         return r >>
       else return r >>
@@ -609,22 +609,22 @@ symbolic procedure parseE9();
 % bracket as current so that thei caller must read beyond it. That is
 % a policy applied so I can ignore blank lines within "[]" and "{}".
 
-symbolic procedure parseArgTail();
+symbolic procedure parseargtail();
   begin
     scalar r;
     if mmatok = '!] then return nil;
     checkfor '!,;
-    r := parseExpression();
-    return r . parseArgTail()
+    r := parseexpression();
+    return r . parseargtail()
   end;
 
-symbolic procedure parseBraceTail();
+symbolic procedure parsebracetail();
   begin
     scalar r;
     if mmatok = '!} then return nil;
     checkfor '!,;
-    r := parseExpression();
-    return r . parseBraceTail()
+    r := parseexpression();
+    return r . parsebracetail()
   end;
 
 
@@ -898,14 +898,14 @@ put('!Erf,             'reduceversion, 'erf);
 put('!Elliptic!E,      'reduceversion, 'elliptice);
 put('!Elliptic!F,      'reduceversion, 'ellipticf);
 put('!Elliptic!Pi,     'reduceversion, 'ellipticpi);
-put('!Exp!Integral!Ei, 'reduceversion, 'ei);
+put('!Exp!Integral!Ei, 'reduceversion, 'Ei);
 put('!Log!Integral,    'reduceversion, 'li);
 put('!Poly!Log,        'reduceversion, 'polylog);
 put('!Product!Log,     'reduceversion, 'productlog);
 put('!Erfc,            'reduceversion, 'erfc);
 put('!Erfi,            'reduceversion, 'erfi);
-put('!Fresnel!S,       'reduceversion, 'fresnel_s);
-put('!Fresnel!C,       'reduceversion, 'fresnel_c);
+put('!Fresnel!S,       'reduceversion, 'Fresnel_S);
+put('!Fresnel!C,       'reduceversion, 'Fresnel_C);
 put('!Sin!Integral,    'reduceversion, 'si);
 put('!Cos!Integral,    'reduceversion, 'ci);
 put('!Gamma,           'reduceversion, 'gamma);
@@ -918,7 +918,7 @@ put('!Zeta,            'reduceversion, 'zeta);
 % Make things operators if that are not already so...
 
 for each x in '(elliptice ellipticf ellipticpi li
-    polylog productlog erfc erfi fresnel_s fresnel_c
+    polylog productlog erfc erfi Fresnel_S Fresnel_C
     polygamma loggamma shi chi zeta mma_simplify) do
   if not get(x, 'simpfn) then apply1('operator, list x);
 
@@ -1115,10 +1115,10 @@ symbolic procedure read_one_rubi_test(filename, version4);
        if mmatok neq '!{ then syntax_error "'{' expected";
        currexpr := list car currexpr;
        next_mma_tok();
-       r := parseExpression();
+       r := parseexpression();
        integrand := reverse cddr currexpr;
        while eqcar(integrand, !$eol!$) do integrand := cdr integrand;
-       r := 'bracelist . r . parseBraceTail();
+       r := 'bracelist . r . parsebracetail();
        next_mma_tok();
 %      r := errorset('(parseE9), t, t);
 %      if atom r then syntax_error "parsing failed"
@@ -1444,7 +1444,7 @@ symbolic procedure read_rubi_rule_file filename;
     eofcounter := 0;
     outer_level := t;
     next_mma_tok();
-    r := errorset('(parseRules), t, t);
+    r := errorset('(parserules), t, t);
     rds save;
     close ff;
     if atom r then return error(0, "parsing failed");

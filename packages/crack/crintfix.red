@@ -282,8 +282,8 @@ module intdf$
 %% load_package int$
 %apply1('load!-package, 'int)$           % not at compile time!
 
-switch PartialIntDf$                    % off by default
-deflist('((PartialIntDf ((t (rmsubs))))), 'simpfg)$
+switch partialintdf$                    % off by default
+deflist('((partialintdf ((t (rmsubs))))), 'simpfg)$
 
 % If the switch PartialIntDf is turned on then integration by parts is
 % performed if the result simplifies in the sense that it integrates a
@@ -309,15 +309,15 @@ symbolic procedure simpint1 u;
       % FJW: At this point linearity has been applied.
       return if (v := opmtch u) then simp v
          % FJW: Check for a directly integrable derivative:
-      else if (v := NestedIntDf(cadr u, caddr u)) then mksq(v,1)
+      else if (v := nestedintdf(cadr u, caddr u)) then mksq(v,1)
       else if !*failhard then rerror(int,4,"FAILHARD switch set")
          % FJW: Integrate by parts if the result simplifies:
-      else if !*PartialIntDf and
-         (v := PartialIntDf(cadr u, caddr u)) then mksq(v,1)
+      else if !*partialintdf and
+         (v := partialintdf(cadr u, caddr u)) then mksq(v,1)
       else mksq(u,1)
    end$
 
-symbolic procedure NestedIntDf(y, x);
+symbolic procedure nestedintdf(y, x);
    %% int( ... df(f,A,x,B) ..., x) -> ... df(f,A,B) ...
    %% Find a df(f,A,x,B) among possibly nested int's and df's within
    %% the integrand y in int(y,x), and return the whole structure y
@@ -332,7 +332,7 @@ symbolic procedure NestedIntDf(y, x);
                %% use delete for portability!
                %% deleq is defined in CSL, delq in PSL -- oops!
          else if memq(car_y, '(df int)) and
-            (nested := NestedIntDf(cadr y, x)) then
+            (nested := nestedintdf(cadr y, x)) then
             %% int( df(int(df(f, A, x, B), c), C), x ) ->
             %%      df(int(df(f, A, B), c), C)
             %% int( int(df(f, A, x, B), c), x ) ->
@@ -340,7 +340,7 @@ symbolic procedure NestedIntDf(y, x);
             car_y . nested . cddr y
    end$
 
-symbolic procedure PartialIntDf(y, x);
+symbolic procedure partialintdf(y, x);
    %% int(u(x)*df(v(x),x), x) -> u(x)*v(x) - int(df(u(x),x)*v(x), x)
    %% Integrate by parts if the resulting integral simplifies [to
    %% avoid infinite loops], which means that df(u(x),x) may not

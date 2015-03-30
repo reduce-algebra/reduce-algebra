@@ -134,17 +134,17 @@ symbolic procedure yyparse();
           state_stack := w . state_stack;
           next_input := -1 >>
         else begin                                   % REDUCE
-          scalar A, n, action;
+          scalar a, n, action;
           w := - (w + 1);
           if w < action_first_error then <<
             action := getv(action_fn, w);
             n := getv8(action_n, w);             % RHS count
-            A := getv16(action_A, w);            % LHS non-terminal
+            a := getv16(action_a, w);            % LHS non-terminal
             if !*lalr_verbose then <<
               print list("action", w, "state", car state_stack,
                 "non_terminals", non_terminals, "A", a);
               princ "RHS count "; prin n; princ " turn into ";
-              print ntname A >>;
+              print ntname a >>;
 % I am now reducing by "A -> beta { action() }" where beta has n items
             w := nil;
             for i := 1:n do <<
@@ -163,9 +163,9 @@ symbolic procedure yyparse();
             sym_stack := w . sym_stack;
             if !*lalr_verbose then <<
               princ "now get goto for "; prin car state_stack;
-              princ " and "; prin ntname A;
-              princ " = "; print get_goto(car state_stack, A) >>;
-            state_stack := get_goto(car state_stack, A) . state_stack >>
+              princ " and "; prin ntname a;
+              princ " = "; print get_goto(car state_stack, a) >>;
+            state_stack := get_goto(car state_stack, a) . state_stack >>
           else <<
             w := w - action_first_error;
             yyerror getv(action_error_messages, w);

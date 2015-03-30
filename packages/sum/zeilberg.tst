@@ -64,9 +64,9 @@ gosper(1/(k*(k+10)),k);
 gosper(1/(k*(k+1)*(k+2)),k);
 gosper(1/(k*(k+1)*(k+2)*(k+3)*(k+4)*(k+5)*(k+6)*(k+7)*(k+8)*(k+9)*
 	  (k+10)),k);
-gosper(pochhammer(k-n,n),k);
-gosper((a+k-1)*pochhammer(a,k),k);
-gosper((a-k-1)/pochhammer(a-k,k),k);
+gosper(Pochhammer(k-n,n),k);
+gosper((a+k-1)*Pochhammer(a,k),k);
+gosper((a-k-1)/Pochhammer(a-k,k),k);
 gosper(binomial(k,n),k); 
 gosper(k*binomial(k,n),k);
 % gosper(k^10*binomial(k,n),k);
@@ -204,14 +204,14 @@ clear(ff,gg);
 gosper(factorial(k),k);
 gosper(factorial(2*k)/(factorial(k)*factorial(k+1)),k);
 % gosper(1/(factorial(k)*(k^4+k^2+1)),k);
-gosper(binomial(A,k),k);
+gosper(binomial(a,k),k);
 gosper(1/k,k);
 gosper((1+k)/(1-k),k);
 % gosper(3^k*(3*k^2+2*a*k-4*k-2-a)/((2*k+2+a)*(2*k+a)*(k+1)*k),k);
 gosper(factorial(k+n)*factorial(n)/
 ((-1)^k*factorial(n-k)*factorial(k)*2^k),k);
 gosper(1/(k*(k+1/2)),k);
-gosper(pochhammer(a,k),k);
+gosper(Pochhammer(a,k),k);
 gosper(binomial(n,k),k);
 
 % 5) Finding recurrence equations for definite sums
@@ -230,7 +230,7 @@ sumrecursion(binomial(n,k)^2/binomial(2*n,n),k,n);
 sumrecursion(
 factorial(n+k)*factorial(b+k)*factorial(c-n-1)*factorial(c-b-1),k,n);
 sumrecursion(
-pochhammer(a,k)*pochhammer(b,k)/(factorial(k)*pochhammer(c,k)),k,a);
+Pochhammer(a,k)*Pochhammer(b,k)/(factorial(k)*Pochhammer(c,k)),k,a);
 % Kummer
 sumrecursion((-1)^(n+k)*factorial(2*n+c-1)*factorial(n)*factorial(n+c-1)
 /(factorial(2*n+c-1-k)*factorial(2*n-k)*factorial(c+k-1)*
@@ -314,8 +314,8 @@ sumrecursion(binomial(m,r)*binomial(n-r,n-r-q)*(t-1)^r,r,m);
 % sumrecursion(binomial(m,r)*binomial(n-r,n-r-q)*(t-1)^r,r,n);
 % sumrecursion(binomial(m,r)*binomial(n-r,n-r-q)*(t-1)^r,r,q);
 % sumrecursion(binomial(m,r)*binomial(n-r,n-r-q)*(t-1)^r,r,r);
-sumrecursion(pochhammer(-n/2,k)*pochhammer(-n/2+1/2,k)/
-(factorial(k)*pochhammer(b+1/2,k)),k,n);
+sumrecursion(Pochhammer(-n/2,k)*Pochhammer(-n/2+1/2,k)/
+(factorial(k)*Pochhammer(b+1/2,k)),k,n);
 % Watson
 % sumrecursion(pochhammer(a,k)*pochhammer(b,k)*pochhammer(c,k)/(
 % factorial(k)*pochhammer(1/2*(a+b+1),k)*pochhammer(2*c,k)),k,c);
@@ -343,9 +343,9 @@ sumrecursion((-1)^k*binomial(n,k)^3,k,n);
 % sumrecursion(pochhammer(a+b+c-n,j+l)*pochhammer(a+b-n/2,j+l)/
 % (factorial(j)*factorial(l)*pochhammer(a-n/2+1,j)*
 %   pochhammer(b-n/2+1,l)),j,b);
-sumrecursion(pochhammer(a+b+c-n,j+l)*pochhammer(a+b-n/2,j+l)/
-(factorial(j)*factorial(l)*pochhammer(a-n/2+1,j)*
-   pochhammer(b-n/2+1,l)),j,c);
+sumrecursion(Pochhammer(a+b+c-n,j+l)*Pochhammer(a+b-n/2,j+l)/
+(factorial(j)*factorial(l)*Pochhammer(a-n/2+1,j)*
+   Pochhammer(b-n/2+1,l)),j,c);
 % sumrecursion(
 % (-1)^(a+b+c)*gamma(a+b+c-d/2)*gamma(d/2-c)*gamma(a+c-d/2)*
 %    gamma(b+c-d/2)/

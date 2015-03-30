@@ -35,7 +35,7 @@ imports int!-fac,fquotf,gcdf,interr,!*multf,partialdiff,quotf,ordop,
         addf,negf,domainp,difff,mksp,negsq,invsq,addsq,!*multsq,diffsq;
 
 
-comment we assume no power substitution is necessary in this module;
+COMMENT we assume no power substitution is necessary in this module;
 
 symbolic procedure contents(p,v);
 % Find the contents of the polynomial p wrt variable v;

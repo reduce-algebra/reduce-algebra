@@ -123,13 +123,13 @@ int(sin(x^(3/2)),x,0,infinity);
                 3
 
 
-int(besselj(2,x),x,0,infinity);
+int(BesselJ(2,x),x,0,infinity);
 
 
 1
 
 
-int(besselj(2,y^(5/4)),y,0,infinity);
+int(BesselJ(2,y^(5/4)),y,0,infinity);
 
 
     4/5        7
@@ -141,25 +141,25 @@ int(besselj(2,y^(5/4)),y,0,infinity);
             5
 
 
-int(x^(-1)*besselj(2,sqrt(x)),x,0,infinity);
+int(x^(-1)*BesselJ(2,sqrt(x)),x,0,infinity);
 
 
 1
 
 
-int(bessely(2,x),x,0,infinity);
+int(BesselY(2,x),x,0,infinity);
 
 
 int(bessely(2,x),x,0,infinity)
 
 
-int(x*besseli(2,x),x,0,infinity);
+int(x*BesselI(2,x),x,0,infinity);
 
 
 int(x*besseli(2,x),x,0,infinity)
 
 
-int(besselk(0,x),x,0,infinity);
+int(BesselK(0,x),x,0,infinity);
 
 
  pi
@@ -167,7 +167,7 @@ int(besselk(0,x),x,0,infinity);
  2
 
 
-int(x^2*besselk(2,x),x,0,infinity);
+int(x^2*BesselK(2,x),x,0,infinity);
 
 
  3*pi
@@ -187,7 +187,7 @@ int(cosh(2*x),x,0,infinity);
 int(cosh(2*x),x,0,infinity)
 
 
-int(-3*ei(-x),x,0,infinity);
+int(-3*Ei(-x),x,0,infinity);
 
 
 3
@@ -199,7 +199,7 @@ int(x*shi(x),x,0,infinity);
 int(x*shi(x),x,0,infinity)
 
 
-int(x*fresnel_c(x),x,0,infinity);
+int(x*Fresnel_C(x),x,0,infinity);
 
 
 int(x*fresnel_c(x),x,0,infinity)
@@ -241,7 +241,7 @@ int(sin x + cos x,x,0,infinity);
 int(sin(x) + cos(x),x,0,infinity)
 
 
-int(ei(-x) + sin(x^2),x,0,infinity);
+int(Ei(-x) + sin(x^2),x,0,infinity);
 
 
  sqrt(pi)*sqrt(2) - 4
@@ -339,7 +339,7 @@ int(cos(sqrt(x))*e^(-x),x,0,infinity);
             2*e
 
 
-int(e^(-x)*besselj(2,x),x,0,infinity);
+int(e^(-x)*BesselJ(2,x),x,0,infinity);
 
 
   - 2*sqrt(2) + 3
@@ -367,7 +367,7 @@ e   *( - erf(---) + 1)
               2
 
 
-int(besseli(2,x)*e^(-x),x,0,infinity);
+int(BesselI(2,x)*e^(-x),x,0,infinity);
 
 
                     - 1                            1
@@ -463,14 +463,14 @@ int(x*e^(-1/2*x^2),x,0,infinity);
 1
 
 
-int(x^2*besselj(2,x),x,0,infinity);
+int(x^2*BesselJ(2,x),x,0,infinity);
 
 
      2
 int(x *besselj(2,x),x,0,infinity)
 
 
-int(x*besselk(1,x),x,0,infinity);
+int(x*BesselK(1,x),x,0,infinity);
 
 
  pi
@@ -478,7 +478,7 @@ int(x*besselk(1,x),x,0,infinity);
  2
 
 
-int(-3*ei(-x),x,0,infinity);
+int(-3*Ei(-x),x,0,infinity);
 
 
 3
@@ -568,7 +568,7 @@ int(si(x),x,0,y);
 si(y)*y - 1 + cos(y)
 
 
-int(besselj(2,x^(1/4)),x,0,y);
+int(BesselJ(2,x^(1/4)),x,0,y);
 
 
                                  1/4               1/4
@@ -578,7 +578,7 @@ int(besselj(2,x^(1/4)),x,0,y);
        + 4*y   *(y    + 2)*(y    - 2)*besselj(1,y   ))
 
 
-int(x*besseli(2,x),x,0,y);
+int(x*BesselI(2,x),x,0,y);
 
 
  - (2*(besseli(0,y) - 1) - besseli(1,y)*y)
@@ -666,7 +666,7 @@ int(sin(n*x),x,0,y);
          n
 
 
-int(heaviside(x-1),x,0,y);
+int(Heaviside(x-1),x,0,y);
 
 
 (y - 1)*heaviside(y - 1)
@@ -755,7 +755,7 @@ laplace_transform(1/(b^2-a^2),cos(a*x)-cos(b*x),x);
  a *b  + a *s  + b *s  + s
 
 
-laplace_transform(besselj(0,2*sqrt(k*x)),x);
+laplace_transform(BesselJ(0,2*sqrt(k*x)),x);
 
 
    1
@@ -797,7 +797,7 @@ laplace_transform(1/k,e^(-k^2/(4*x)),x);
        sqrt(s)
 
 
-laplace_transform(2/(sqrt(pi*x)),besselk(0,2*sqrt(2*k*x)),x);
+laplace_transform(2/(sqrt(pi*x)),BesselK(0,2*sqrt(2*k*x)),x);
 
 
   k/s            k
@@ -819,7 +819,7 @@ hankel_transform(x,x);
           2
 	
 
-Y_transform(x,x);
+y_transform(x,x);
 
 
           - n + 4          n + 4
@@ -831,7 +831,7 @@ Y_transform(x,x);
            2                2
 	
 
-K_transform(x,x);
+k_transform(x,x);
 
 
          - n + 4          n + 4
@@ -902,7 +902,7 @@ fourier_sin(1/(b-a),(e^(-a*x)-e^(-b*x)),x);
  a *b  + a *s  + b *s  + s
 
 
-fourier_sin(besselj(0,a*x),x);
+fourier_sin(BesselJ(0,a*x),x);
 
 
                 2    2
@@ -1068,7 +1068,7 @@ laplace_transform(1/(2*a^2)*(cosh(a*x)-cos(a*x)),x);
  a  - s
 
 
-laplace_transform(k*a^k/x*besselj(k,a*x),x);
+laplace_transform(k*a^k/x*BesselJ(k,a*x),x);
 
 
           2*k

@@ -2,7 +2,7 @@
 
 % Author: Stanley L. Kameny (stan_kameny@rand.org)
 
-comment  Addition for roots mod 1.95.  The function multroot has been
+COMMENT  Addition for roots mod 1.95.  The function multroot has been
   added to the roots package in mod 1.95.  This provides the capability
   to solve a nest of n polynomials in n variables, provided that each
   polynomial either is univariate or introduces a new variable to the
@@ -11,7 +11,7 @@ comment  Addition for roots mod 1.95.  The function multroot has been
   subsequent, are correct to all digits shown.  As in the prior examples,
   root order and values should agree exactly with that given here.
 
-comment  This test file works only with Reduce version 3.5 and later
+COMMENT  This test file works only with Reduce version 3.5 and later
   and contains examples all of which are solved by roots mod 1.94.
   Answers are rounded to the value given by rootacc (default = 6)
   unless higher accuracy is needed to separate roots.  Format may differ 
@@ -111,7 +111,7 @@ zz:= x**9-45x-2; roots zz;
 % x=1.14348 + 1.13804*i,x=1.14348 - 1.13804*i,x=1.61483}
 
 
-comment  In the next two examples, there are complex roots with
+COMMENT  In the next two examples, there are complex roots with
   extremely  small real parts (new capability in Mod 1.91.);
 
 % 14) nine roots, 1 real and 4 complex pairs.
@@ -121,7 +121,7 @@ zz:= x**9-9999x**2-0.01; roots zz;
 % x=5.0025E-29 + 0.00100005*i,x=5.0025E-29 - 0.00100005*i,
 % x=2.32408 + 2.91431*i,x=2.32408 - 2.91431*i,x=3.72754}
 
-comment  Rootacc 7 produces 7 place accuracy.  Answers will print in
+COMMENT  Rootacc 7 produces 7 place accuracy.  Answers will print in
   bigfloat format if floating point print >6 digits is not implemented.;
 
 % 15) nine roots, 1 real and 4 complex pairs.
@@ -221,7 +221,7 @@ zz:= ((10x-1)**4+1)*((10x+1)**4+1); roots zz;
 % x=-0.170711 - 0.0707107*i,x=0.170711 + 0.0707107*i,
 % x=-0.170711 + 0.0707107*i,x=0.170711 - 0.0707107*i}
 
-comment  In these examples, accuracy increase is required to separate a
+COMMENT  In these examples, accuracy increase is required to separate a
   repeated root from a simple root.;
 
 % 31)  Using allroots;
@@ -232,7 +232,7 @@ zz:= (x-4)*(x-3)**2*(1000000x-3000001); roots zz;
 realroots zz;
 %{x=3.0,x=3.0,x=3.000001,x=4.0}
 
-comment  Tests of new capabilities in mod 1.87 for handling complex
+COMMENT  Tests of new capabilities in mod 1.87 for handling complex
   polynomials and polynomials with very small imaginary parts or very
   small real roots. A few real examples are shown, just to demonstrate
   that these still work.;
@@ -580,7 +580,7 @@ nearestroot(zz,rr1);
 %     10000000
 
 
-comment  New capabilities added to Mod 1.90 for avoiding floating point
+COMMENT  New capabilities added to Mod 1.90 for avoiding floating point
   exceptions and exceeding iteration limits.;
 
 % 77) This and the next example would previously have aborted because
@@ -679,7 +679,7 @@ roots zz; off rounded; % rounded not normally needed for roots.
 %{x=0,x= - 1.0E+500,x= - 1}
 off roundbf;
 
-comment  Switch roundbf will have been turned on in the last example in
+COMMENT  Switch roundbf will have been turned on in the last example in
   most computer systems.  This will inhibit the use of hardware floating
   point unless roundbf is turned off.
 
@@ -893,7 +893,7 @@ zz := 1000000*r**18 + 250000000000*r**4 - 1000000*r**2 + 1; roots zz;
 % r=-2.36886 + 0.540677*i,r=2.36886 - 0.540677*i}
 
 
-comment  These five examples are very difficult root finding problems
+COMMENT  These five examples are very difficult root finding problems
   for automatic root finding (not employing problem-specific
   procedures.) They require extremely high precision and high accuracy
   to separate almost multiple roots (multiplicity broken by a small high
@@ -1005,26 +1005,26 @@ zz:=(c^2*x^2-3)^2+i*c^2*x^9; roots zz;
 % compxroots is on.  In this example, p1 must be computed at accuracy 33
 % in order to yield an accuracy of 20 for p2.
 res :=          % Structure is {eq1(p1,p2),eq2(p1)}
-{ - 65193331905902035840886401184447471772856493442267717*P1**13
-- 1664429561324832520726401259146912155464247056480012434*P1**12
-- 6261475374084274810766056740641579522309310708502887990*P1**11
-+ 58050875148721867394302891225676265051604299348469583622*P1**10
-- 25149162547648105419319267662238682603649922079217227285*P1**9
-- 440495842372965561251919788209759089436362766115660350108*P1**8
-+ 1031835865631194068430476093579502290454870220388968336688*P1**7
-- 176560168441303582471783015188457142709772508915411137856*P1**6
-- 3394297397883799767380936436924078166849454318674637153232*P1**5
-+ 8572159983028240622274769676964404195355003175115163884096*P1**4
-- 11689989317682872105592244166702248132836279639925035950656*P1**3
-+ 9646776768609439752430866001814626337809195004192011294976*P1**2
-- 4455646388442119339178004445898515058096390082146233345536*P1
-+ 4709370575236909034773453200518274143851133066819671040*P2
+{ - 65193331905902035840886401184447471772856493442267717*p1**13
+- 1664429561324832520726401259146912155464247056480012434*p1**12
+- 6261475374084274810766056740641579522309310708502887990*p1**11
++ 58050875148721867394302891225676265051604299348469583622*p1**10
+- 25149162547648105419319267662238682603649922079217227285*p1**9
+- 440495842372965561251919788209759089436362766115660350108*p1**8
++ 1031835865631194068430476093579502290454870220388968336688*p1**7
+- 176560168441303582471783015188457142709772508915411137856*p1**6
+- 3394297397883799767380936436924078166849454318674637153232*p1**5
++ 8572159983028240622274769676964404195355003175115163884096*p1**4
+- 11689989317682872105592244166702248132836279639925035950656*p1**3
++ 9646776768609439752430866001814626337809195004192011294976*p1**2
+- 4455646388442119339178004445898515058096390082146233345536*p1
++ 4709370575236909034773453200518274143851133066819671040*p2
 + 886058257542744466307567014351806947093655767531394713600,
-53271*P1**14 + 1393662*P1**13 + 6077030*P1**12 - 41382626*P1**11
-+ 6240255*P1**10 + 313751524*P1**9 - 698694844*P1**8
-+ 134987928*P1**7 + 2322386256*P1**6 - 6102636608*P1**5
-+ 8722164608*P1**4 - 7907887488*P1**3 + 4508378368*P1**2
-- 1477342720*P1 + 213248000}$
+53271*p1**14 + 1393662*p1**13 + 6077030*p1**12 - 41382626*p1**11
++ 6240255*p1**10 + 313751524*p1**9 - 698694844*p1**8
++ 134987928*p1**7 + 2322386256*p1**6 - 6102636608*p1**5
++ 8722164608*p1**4 - 7907887488*p1**3 + 4508378368*p1**2
+- 1477342720*p1 + 213248000}$
 multroot(20,res);
 %{{p1= - 16.330244199212269912,p2= - 12.905402440394357204},{p1
 %    = - 13.071850241794867852,p2= - 20.369934278813005573}}

@@ -77,9 +77,9 @@ module odelin$  % Simple linear ODE solver
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-global '(ODESolve_Before_Lin_Hook ODESolve_After_Lin_Hook)$
+global '(odesolve_before_lin_hook odesolve_after_lin_hook)$
 
-algebraic procedure ODESolve!-linear(ode, y, x);
+algebraic procedure odesolve!-linear(ode, y, x);
    %% MAIN LINEAR SOLVER
    %% Assumes ODE is an algebraically irreducible "polynomial" expression.
    begin scalar reduced_ode, auxvar, auxeqn, odecoeffs,
@@ -97,7 +97,7 @@ algebraic procedure ODESolve!-linear(ode, y, x);
       odecoeffs := coeff(auxeqn, auxvar); % low .. high
       traceode "This is a linear ODE of order ", high_pow, ".";
       first_arb := !!arbconst + 1;
-      symbolic if not(solution := ODESolve!-linear!-basis
+      symbolic if not(solution := odesolve!-linear!-basis
          (odecoeffs, driver, y, x, high_pow, low_pow) or
          (not !*odesolve_fast and
          %% Add a switch to control access to this thread?
@@ -106,14 +106,14 @@ algebraic procedure ODESolve!-linear(ode, y, x);
             "But ODESolve cannot solve it using linear techniques, so ...";
             %% NB: This will probably produce a NONLINEAR ODE!
             %% But, in desperation, try it anyway ...
-            (ODESolve!-Interchange(ode, y, x) where !*odesolve_basis = nil)
+            (odesolve!-interchange(ode, y, x) where !*odesolve_basis = nil)
          >>)) then return;
       %% Return solution as BASIS or LINEAR COMBINATION, assuming a
       %% SINGLE solution since the ODE is linear:
       return if symbolic !*odesolve_basis then % return basis
          if (part(solution, 1, 0) = equal) then
             if lhs first solution = y and % solution is explicit
-         (auxeqn := ODESolve!-LinComb2Basis
+         (auxeqn := odesolve!-lincomb2basis
             (rhs first solution, first_arb, !!arbconst)) then auxeqn
             else << write
                "***** Cannot convert nonlinear combination solution to basis!";
@@ -121,34 +121,34 @@ algebraic procedure ODESolve!-linear(ode, y, x);
          else solution
       else                              % return linear combination
          if part(solution, 1, 0) = list then
-            {y = ODESolve!-Basis2LinComb solution}
+            {y = odesolve!-basis2lincomb solution}
          else solution
    end$
 
-algebraic procedure ODESolve!-linear!-basis
+algebraic procedure odesolve!-linear!-basis
    (odecoeffs, driver, y, x, ode_order, min_order);
    %% Always returns the solution in basis format.
    %% Called by ODESolve!-Riccati in odenon1.
    symbolic if ode_order = 1 then
-      ODESolve!-linear1(odecoeffs, driver, x)
+      odesolve!-linear1(odecoeffs, driver, x)
    else or(
-      ODESolve!-Run!-Hook(
-         'ODESolve_Before_Lin_Hook,
+      odesolve!-run!-hook(
+         'odesolve_before_lin_hook,
          {odecoeffs,driver,y,x,ode_order,min_order}),
-      ODESolve!-linearn
+      odesolve!-linearn
          (odecoeffs, driver, y, x, ode_order, min_order, nil),
-      ODESolve!-Run!-Hook(
-         'ODESolve_After_Lin_Hook,
+      odesolve!-run!-hook(
+         'odesolve_after_lin_hook,
          {odecoeffs,driver,y,x,ode_order,min_order}))$
 
-algebraic procedure ODESolve!-linear!-basis!-recursive
+algebraic procedure odesolve!-linear!-basis!-recursive
    (odecoeffs, driver, y, x, ode_order, min_order);
    %% Always returns the solution in basis format.
    %% Internal linear solver called recursively.
    symbolic if ode_order = 1 then
-      ODESolve!-linear1(odecoeffs, driver, x)
+      odesolve!-linear1(odecoeffs, driver, x)
    else
-      ODESolve!-linearn
+      odesolve!-linearn
          (odecoeffs, driver, y, x, ode_order, min_order, t)$
 
 
@@ -157,28 +157,28 @@ algebraic procedure ODESolve!-linear!-basis!-recursive
 % Solve a linear first-order ODE by using an integrating factor.
 % Based on procedure linear1 from module ode1ord by Malcolm MacCallum.
 
-algebraic procedure ODESolve!-linear1(odecoeffs, driver, x);
+algebraic procedure odesolve!-linear1(odecoeffs, driver, x);
    %% Solve the linear ODE reduced_ode = driver, where
    %% reduced_ode = A(x)*(dy/dx + P(x)*y), driver = A(x)*Q(x).
    %% Uses Odesolve!-Int to optionally turn off final integration.
-   begin scalar A, P, Q;
-      A := second odecoeffs;
-      P := first odecoeffs/A;
-      Q := driver/A;
-      return if P then                  % dy/dx + P(x)*y = Q(x)
+   begin scalar a, p, q;
+      a := second odecoeffs;
+      p := first odecoeffs/a;
+      q := driver/a;
+      return if p then                  % dy/dx + P(x)*y = Q(x)
          begin scalar intfactor, !*combinelogs;
             traceode "It is solved by the integrating factor method.";
             %% intfactor simplifies better if logs are combined:
             symbolic(!*combinelogs := t);
-            P := (P where tan(~x) => sin(x)/cos(x));
-            intfactor := exp(int(P, x));
-            return if Q then
-               { {1/intfactor}, Odesolve!-Int(intfactor*Q,x)/intfactor }
+            p := (p where tan(~x) => sin(x)/cos(x));
+            intfactor := exp(int(p, x));
+            return if q then
+               { {1/intfactor}, odesolve!-int(intfactor*q,x)/intfactor }
             else { {1/intfactor} }
          end
       else <<                           % dy/dx = Q(x)
          traceode "It is solved by quadrature.";
-         if Q then {{1}, Odesolve!-Int(Q, x)} else {{1}}
+         if q then {{1}, odesolve!-int(q, x)} else {{1}}
       >>
    end$
 
@@ -198,7 +198,7 @@ algebraic procedure ODESolve!-linear1(odecoeffs, driver, x);
 % again whether it has constant coefficients, is of Euler type or has
 % trivially reducible order.
 
-algebraic procedure ODESolve!-linearn
+algebraic procedure odesolve!-linearn
    (odecoeffs, driver, y, x, ode_order, min_order, recursive);
    %% Solve the linear ODE: reduced_ode = driver.
    begin scalar lcoeff, odecoeffs1, driver1, solution;
@@ -217,13 +217,13 @@ algebraic procedure ODESolve!-linearn
 
       %% Test for constant coefficients:
       if odecoeffs1 freeof x then
-         return ODESolve!-LCC(odecoeffs1, driver1, x, ode_order);
+         return odesolve!-lcc(odecoeffs1, driver1, x, ode_order);
 
       traceode "It has non-constant coefficients.";
 
       %% Test for Euler form:
       if (solution :=
-         ODESolve!-Euler(odecoeffs1, driver1, x, ode_order))
+         odesolve!-euler(odecoeffs1, driver1, x, ode_order))
       then return solution;
 
       %% Test for trivial order reduction.  The result cannot have
@@ -231,7 +231,7 @@ algebraic procedure ODESolve!-linearn
       %% exact or ...
       if min_order neq 0 and ode_order neq min_order and
          %% else would reduce to purely algebraic equation
-         (solution := ODELin!-Reduce!-Order
+         (solution := odelin!-reduce!-order
             (odecoeffs, driver, y, x, ode_order, min_order))
       then return solution;
 
@@ -239,10 +239,10 @@ algebraic procedure ODESolve!-linearn
 
       %% Test for exact form - try monic then original form:
       if (solution :=
-         ODELin!-Exact(odecoeffs1, driver1, y, x, ode_order))
+         odelin!-exact(odecoeffs1, driver1, y, x, ode_order))
       then return solution;
       if lcoeff neq 1 and (solution :=
-         ODELin!-Exact(odecoeffs, driver, y, x, ode_order))
+         odelin!-exact(odecoeffs, driver, y, x, ode_order))
       then return solution;
 
       %% Add other methods here ...
@@ -250,7 +250,7 @@ algebraic procedure ODESolve!-linearn
 
       %% FINALLY, test for a second-order special-function equation:
       if ode_order = 2 and
-         (solution := ODESolve!-Specfn(odecoeffs1, driver1, x))
+         (solution := odesolve!-specfn(odecoeffs1, driver1, x))
       then return solution
    end$
 
@@ -271,29 +271,29 @@ algebraic procedure ODESolve!-linearn
 % > dsolve(diff(y(x),x) + y(x) = x);
 %                       y(x) = x - 1 + exp(-x) _C1
 
-algebraic procedure ODESolve!-Basis2LinComb solution;
+algebraic procedure odesolve!-basis2lincomb solution;
    %% Convert basis { {B1, B2, ...}, PI } to linear combination:
    begin scalar lincomb;
-      lincomb := for each B in first solution sum <<newarbconst()>>*B;
+      lincomb := for each b in first solution sum <<newarbconst()>>*b;
       %% << >> above is NECESSARY to force immediate evaluation!
       if length solution > 1 then
          lincomb := lincomb + second solution;
       return lincomb
    end$
 
-algebraic procedure ODESolve!-LinComb2Basis
+algebraic procedure odesolve!-lincomb2basis
       (lincomb, first_arb, last_arb);
    %% Convert linear combination to basis { {B1, B2, ...}, PI }:
-   ODESolve!-LinComb2Basis1({}, lincomb, first_arb, last_arb)$
+   odesolve!-lincomb2basis1({}, lincomb, first_arb, last_arb)$
 
-algebraic procedure ODESolve!-LinComb2Basis1
+algebraic procedure odesolve!-lincomb2basis1
       (basis, lincomb, first_arb, last_arb);
    %% `basis' is a LIST of independent reduced_ode solutions.
    %% Algorithm is to recursively move components from lincomb to
    %% basis.
-   begin scalar coeffs, C;  C := arbconst last_arb;
-      coeffs := coeff(lincomb, C);
-      if high_pow > 1 or smember(C, coeffs) then
+   begin scalar coeffs, c;  c := arbconst last_arb;
+      coeffs := coeff(lincomb, c);
+      if high_pow > 1 or smember(c, coeffs) then
          return                         % cannot convert
       else if high_pow = 1 then <<
          basis := second coeffs . basis;
@@ -303,7 +303,7 @@ algebraic procedure ODESolve!-LinComb2Basis1
       return if first_arb >= last_arb then
          { basis, lincomb }
       else
-         ODESolve!-LinComb2Basis1
+         odesolve!-lincomb2basis1
             (basis, lincomb, first_arb, last_arb-1)
    end$
 
@@ -339,9 +339,9 @@ algebraic procedure ODESolve!-LinComb2Basis1
 % method", but as soon as any integral fails to evaluate it switches
 % to "variation of parameters".
 
-algebraic procedure ODESolve!-LCC(odecoeffs, driver, x, ode_order);
+algebraic procedure odesolve!-lcc(odecoeffs, driver, x, ode_order);
    % Returns a solution basis or nil (if it fails).
-   begin scalar auxvar, auxeqn, i, auxroots, solutions, PI;
+   begin scalar auxvar, auxeqn, i, auxroots, solutions, pi;
       traceode "It has constant coefficients.";
       %% TEMPORARY HACK -- REBUILD AUXEQN:
       auxvar := symbolic gensym();  i := -1;
@@ -357,16 +357,16 @@ algebraic procedure ODESolve!-LCC(odecoeffs, driver, x, ode_order);
          traceode "But auxiliary equation could not be solved!";
       if (solutions := rest solutions) neq {} then goto a;
       % Now we find the complementary solution:
-      solutions := ODESolve!-LCC!-CompSoln(auxroots, x);
+      solutions := odesolve!-lcc!-compsoln(auxroots, x);
       % Next the particular integral:
       if driver = 0 then return { solutions };
-      if not (PI := ODESolve!-LCC!-PI(auxroots, driver, x)) then
+      if not (pi := odesolve!-lcc!-pi(auxroots, driver, x)) then
          %% (Cannot use `or' as an algebraic operator!)
-         PI := ODESolve!-PI(solutions, driver, x);
-      return { solutions, PI }
+         pi := odesolve!-pi(solutions, driver, x);
+      return { solutions, pi }
    end$
 
-algebraic procedure ODESolve!-LCC!-CompSoln(auxroots, x);
+algebraic procedure odesolve!-lcc!-compsoln(auxroots, x);
    %% Construct the complimentary solution (functions) from the roots
    %% of the auxiliary equation for a linear ODE with constant
    %% coefficients.  Pairs of complex conjugate roots are converted to
@@ -448,7 +448,7 @@ algebraic procedure impart!* u;
 algebraic procedure conj!* u;
    << u := conj u;  u where vars!-are!-real >>$
 
-algebraic procedure ODESolve!-LCC!-PI(auxroots, driver, x);
+algebraic procedure odesolve!-lcc!-pi(auxroots, driver, x);
    % Try to construct a particular integral using the `D-operator
    % method'.  Factorise the linear operator (done anyway for the
    % C.F.) and then apply for each root m the operation
@@ -477,7 +477,7 @@ algebraic procedure ODESolve!-LCC!-PI(auxroots, driver, x);
       else return driver
    end$
 
-algebraic procedure ODESolve!-PI(solutions, R, x);
+algebraic procedure odesolve!-pi(solutions, r, x);
    % Given a "monic" forced linear nth-order ODE
 
    %   y^(n) + a_(n-1)(x)y^(n-1) + ... + a_1(x)y = R(x)
@@ -491,45 +491,45 @@ algebraic procedure ODESolve!-PI(solutions, R, x);
          "Constructing particular integral using `variation of parameters'.";
       return
          if (n := length solutions) = 2 then
-         begin scalar y1, y2, W;
+         begin scalar y1, y2, w;
             y1 := first solutions;  y2 := second solutions;
             %% The Wronskian, kept separate to facilitate tracing:
-            W := trigsimp(y1*df(y2, x) - y2*df(y1, x));
-            traceode "The Wronskian is ", W;
-            R := R/W;
-            return -ode!-int(y2*R, x)*y1 + ode!-int(y1*R, x)*y2
+            w := trigsimp(y1*df(y2, x) - y2*df(y1, x));
+            traceode "The Wronskian is ", w;
+            r := r/w;
+            return -ode!-int(y2*r, x)*y1 + ode!-int(y1*r, x)*y2
          end
          else
-         begin scalar Wmat, ys, W, i;
+         begin scalar wmat, ys, w, i;
             %% Construct the (square) Wronskian matrix of the solutions:
-            Wmat := {ys := solutions};
+            wmat := {ys := solutions};
             for i := 2 : n do
-               Wmat := (ys := for each y in ys collect df(y,x)) . Wmat;
+               wmat := (ys := for each y in ys collect df(y,x)) . wmat;
             load_package matrix;              % to define mat
-            Wmat := list2mat reverse Wmat;
+            wmat := list2mat reverse wmat;
             %% The Wronskian (determinant), kept separate for tracing:
-            W := trigsimp det Wmat;
-            traceode "The Wronskian is ", W;
-            R := R/W;  i := 0;
+            w := trigsimp det wmat;
+            traceode "The Wronskian is ", w;
+            r := r/w;  i := 0;
             return
                for each y in solutions sum
-                  ode!-int(cofactor(Wmat, n, i:=i+1)*R, x) * y
+                  ode!-int(cofactor(wmat, n, i:=i+1)*r, x) * y
          end
    end$
 
 % This facility should be in the standard matrix package!
 symbolic operator list2mat$
-symbolic procedure list2mat M;
+symbolic procedure list2mat m;
    % Input:  (list (list A B ...) (list C D ...) ...)
    % Output: (mat  (A B ...) (C D ...) ...)
-   'mat . for each row in cdr M collect cdr row$
+   'mat . for each row in cdr m collect cdr row$
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Special cases of non-constant coefficients:
 
-algebraic procedure ODESolve!-Euler(odecoeffs, driver, x, ode_order);
+algebraic procedure odesolve!-euler(odecoeffs, driver, x, ode_order);
    %% Solve a (MONIC) ODE having (essentially) the form
    %% reduced_ode = x^n df(y,x,n) + ... + a_{n-1} x df(y,x) + a_n y = driver
    %% odecoeffs = {a_n, a_{n-1} x, ..., a_0 x^n} / (a_0 x^n)
@@ -571,48 +571,48 @@ algebraic procedure ODESolve!-Euler(odecoeffs, driver, x, ode_order);
       >>;
       odecoeffs := coeff(tmp, x);       % TEMPORARY HACK!
       driver := sub(x=e^x, driver*x^ode_order);
-      solution := ODESolve!-LCC(odecoeffs, driver, x, ode_order);
+      solution := odesolve!-lcc(odecoeffs, driver, x, ode_order);
       solution := sub(x=log x, solution);
       if shift then solution := sub(x=x+shift, solution);
       return solution
    end$
 
-algebraic procedure ODELin!-Exact(P_list, driver, y, x, n);
+algebraic procedure odelin!-exact(p_list, driver, y, x, n);
    %% Computes a (linear) first integral if ODE is an exact linear
    %% n'th order ODE P_n(x) df(y,x,n) + ... + P_0(x) y = R(x).
-   begin scalar P_0, C, Q_list, Q, const, soln, PI;
-      P_0 := first P_list;
-      P_list := reverse rest P_list;         % P_n, ..., P_1
+   begin scalar p_0, c, q_list, q, const, soln, pi;
+      p_0 := first p_list;
+      p_list := reverse rest p_list;         % P_n, ..., P_1
       %% ODE is exact if C = df(P_n,x,n) - df(P_{n-1},x,{n-1}) + ...
       %% + (-1)^{n-1} df(P_1,x) + (-1)^n P_0 = 0.
-      for each P in P_list do C := P - df(C,x);
-      C := P_0 - df(C,x);               % C = 0 if exact
-      if C then return;
-      Q_list := {};
-      for each P in P_list do
-         Q_list := (Q := P - df(Q,x)) . Q_list; % Q_0, ..., Q_{n-1}
+      for each p in p_list do c := p - df(c,x);
+      c := p_0 - df(c,x);               % C = 0 if exact
+      if c then return;
+      q_list := {};
+      for each p in p_list do
+         q_list := (q := p - df(q,x)) . q_list; % Q_0, ..., Q_{n-1}
       driver := int(driver, x) + (const := symbolic gensym());
       %% The first integral is the LINEAR (n-1)'th order ODE
       %% Q_{n-1}(x) df(y,x,n) + ... + Q_0(x) y = int(R(x),x).
       traceode "It is exact, and the following linear ODE of order ",
          n-1, " is a first integral:";
       if symbolic !*trode then <<
-         C := y;
-         soln := first Q_list*y +
-            ( for each Q in rest Q_list sum Q*(C := df(C,x)) );
+         c := y;
+         soln := first q_list*y +
+            ( for each q in rest q_list sum q*(c := df(c,x)) );
          write soln = driver
       >>;
       %% Recurse on the order:
-      C := Q_list;
+      c := q_list;
       %% First-integral ODE must have min order 0, since input ODE was
       %% already order-reduced.
-      soln := ODESolve!-linear!-basis!-recursive
-         (Q_list, driver, y, x, n-1, 0);
-      PI := second soln;                % MUST exist since driver neq 0
-      PI := coeff(PI, const);           % { real PI, extra basis fn }
+      soln := odesolve!-linear!-basis!-recursive
+         (q_list, driver, y, x, n-1, 0);
+      pi := second soln;                % MUST exist since driver neq 0
+      pi := coeff(pi, const);           % { real PI, extra basis fn }
       return if high_pow = 1 then
-         if first PI then { second PI . first soln, first PI }
-         else { second PI . first soln }
+         if first pi then { second pi . first soln, first pi }
+         else { second pi . first soln }
       else <<
          %% This error should now be redundant!
          write "*** Internal error in ODELin!-Exact:",
@@ -622,19 +622,19 @@ algebraic procedure ODELin!-Exact(P_list, driver, y, x, n);
       >>
    end$
 
-algebraic procedure ODELin!-Reduce!-Order
+algebraic procedure odelin!-reduce!-order
    (odecoeffs, driver, y, x, ode_order, min_order);
    %% If ODE does not explicitly involve y (and perhaps low order
    %% derivatives) then simplify by reducing the effective order
    %% (unless there is only one) and try to solve the reduced ODE to
    %% give a first integral.  Applies only to ODEs of order > 1.
-   begin scalar solution, PI;
+   begin scalar solution, pi;
       ode_order := ode_order - min_order;
       for ord := 1 : min_order do odecoeffs := rest odecoeffs;
       traceode "Performing trivial order reduction to give the order ",
          ode_order, " linear ODE with coefficients (low -- high): ",
          odecoeffs;
-      solution := ODESolve!-linear!-basis!-recursive
+      solution := odesolve!-linear!-basis!-recursive
          (odecoeffs, driver, y, x, ode_order, 0);
       if not solution then <<
          traceode "But ODESolve cannot solve the reduced ODE! ";
@@ -646,14 +646,14 @@ algebraic procedure ODELin!-Reduce!-Order
          " and re-solving ...";
       %% = lin comb of fns of x, so just integrate min_order times:
       if length solution > 1 then       % PI = particular integral
-         PI := second solution;
+         pi := second solution;
       solution := append(
          for each c in first solution collect
-            ODESolve!-multi!-int(c, x, min_order),
+            odesolve!-multi!-int(c, x, min_order),
          %% and add min_order extra basis functions:
          for i := min_order-1 step -1 until 0 collect x^i );
-      return if PI then
-         { solution, ODESolve!-multi!-int(PI, x, min_order) }
+      return if pi then
+         { solution, odesolve!-multi!-int(pi, x, min_order) }
       else
          { solution }
    end$

@@ -112,7 +112,7 @@ symbolic procedure on!-double(forms);
 % ------------------------------------------------------------------- ;
 begin
   scalar newtype;
-  foreach dec in symtabget(nil, '!*Decs!*) do
+  foreach dec in symtabget(nil, '!*decs!*) do
     if newtype := assoc(cadr(dec),
                          '((real!*8 . real)
                            (complex!*16 . complex)
@@ -209,7 +209,7 @@ symbolic procedure isimplicit(type);
 % ------------------------------------------------------------------- ;
 begin
   scalar implicit, result, etype;
-  implicit := explode('IMPLICIT! );
+  implicit := explode('implicit! );
   etype := explode(type);
   result := 't;
   while result and implicit do

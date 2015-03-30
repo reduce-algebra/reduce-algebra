@@ -22,7 +22,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-comment
+COMMENT
 
   The following routines can handle scalar expressions that are composed out
   of 3-vectors in three different notations:
@@ -177,7 +177,7 @@ if null all then {cons(nil,for each h in wgths_ collect 0)}
              )$
     >> until if found_more then t else
              if found_less=nil then
-             <<fino_:=cons(if cdar h then cons('TIMES,car h)
+             <<fino_:=cons(if cdar h then cons('times,car h)
                                      else caar h            ,fino_)$ t>>
              else <<newli:=cons(h,newli); nil>>
   >>$
@@ -216,17 +216,17 @@ if ordp(cadr  li,caddr li) and
 if ordp(caddr li,car   li) and
    ordp(car   li,cadr  li) then mkid(caddr li,mkid(car li,cadr li)) else
 if ordp(car   li,caddr li) and
-   ordp(caddr li,cadr  li) then{'MINUS,mkid(car li,mkid(caddr li,cadr li))}else
+   ordp(caddr li,cadr  li) then{'minus,mkid(car li,mkid(caddr li,cadr li))}else
 if ordp(cadr  li,car   li) and
-   ordp(car   li,caddr li) then{'MINUS,mkid(cadr li,mkid(car li,caddr li))}else
+   ordp(car   li,caddr li) then{'minus,mkid(cadr li,mkid(car li,caddr li))}else
 if ordp(caddr li,cadr  li) and
-   ordp(cadr  li,car   li) then{'MINUS,mkid(caddr li,mkid(cadr li,car li))}else
+   ordp(cadr  li,car   li) then{'minus,mkid(caddr li,mkid(cadr li,car li))}else
 write"error in ord!"
                 else
-{'DIFFERENCE,{'TIMES,if ordp(car  li,caddr li) then
+{'difference,{'times,if ordp(car  li,caddr li) then
                        mkid(car   li,caddr li) else
                        mkid(caddr li,car   li),l2s(cons(cadr li,cdddr li))},
-             {'TIMES,if ordp(cadr li,caddr li) then
+             {'times,if ordp(cadr li,caddr li) then
                        mkid(cadr  li,caddr li) else
                        mkid(caddr li,cadr  li),l2s(cons(car  li,cdddr li))} }$
 %----------------------------------------------------
@@ -287,7 +287,7 @@ begin scalar h,hm,p,perm,allperm,idli,idlicp$
 
    h:=reval l2s p$
    if not zerop h then <<
-    hm:=reval {'MINUS,h}$
+    hm:=reval {'minus,h}$
     idlicp:=idli$
     while idlicp and
           caar idlicp neq h and
@@ -300,13 +300,13 @@ begin scalar h,hm,p,perm,allperm,idli,idlicp$
 % for each h in idli do mathprint {'EQUAL,cdr h,car h}$
  >>$
  fino_:=nil;
- return for each h in idli collect {'DIFFERENCE,car h, cdr h}
+ return for each h in idli collect {'difference,car h, cdr h}
 end$
 %----------------------------------------------------
 
 symbolic fluid '(algebraic_reduce_functions)$
 lisp (algebraic_reduce_functions:=
-'(PLUS MINUS DIFFERENCE TIMES QUOTIENT EXPT ARBCOMPLEX LIST))$
+'(plus minus difference times quotient expt arbcomplex list))$
 
 symbolic procedure expro(a)$
 % procedure to extract all identifiers
@@ -358,25 +358,25 @@ symbolic procedure vc(v)$
 {mkid(v,1),mkid(v,2),mkid(v,3)}$
 %----------------------------------------------------
 
-symbolic procedure dot(F,G)$
+symbolic procedure dot(f,g)$
 % returns the scalar product of two vectors represented
 % by lisp lists of components
-reval {'PLUS,{'TIMES,car   F,car   G},
-             {'TIMES,cadr  F,cadr  G},
-             {'TIMES,caddr F,caddr G} }$
+reval {'plus,{'times,car   f,car   g},
+             {'times,cadr  f,cadr  g},
+             {'times,caddr f,caddr g} }$
 %----------------------------------------------------
 
-symbolic procedure cross(F,G)$
+symbolic procedure cross(f,g)$
 % returns the skew product of two vectors represented
 % by lisp lists of components
-{{'DIFFERENCE,{'TIMES,cadr  F,caddr G},{'TIMES,caddr F,cadr  G}},
- {'DIFFERENCE,{'TIMES,caddr F,car   G},{'TIMES,car   F,caddr G}},
- {'DIFFERENCE,{'TIMES,car   F,cadr  G},{'TIMES,cadr  F,car   G}} }$
+{{'difference,{'times,cadr  f,caddr g},{'times,caddr f,cadr  g}},
+ {'difference,{'times,caddr f,car   g},{'times,car   f,caddr g}},
+ {'difference,{'times,car   f,cadr  g},{'times,cadr  f,car   g}} }$
 %----------------------------------------------------
 
-symbolic procedure spat(F,G,H)$
+symbolic procedure spat(f,g,h)$
 % returns the spate (triple) product of three vectors
-dot(F,cross(G,H))$
+dot(f,cross(g,h))$
 %----------------------------------------------------
 
 symbolic operator v2c$
@@ -427,25 +427,25 @@ symbolic procedure get_vlist_of_term(at)$
 % returns a sorted association list of vectors and their degree
 % appearing in the single term 'at'
 begin scalar f1,v,vl,vlc,h$
- if pairp at and car at = 'QUOTIENT then at:=cadr at;
- if pairp at and car at = 'MINUS then <<
+ if pairp at and car at = 'quotient then at:=cadr at;
+ if pairp at and car at = 'minus then <<
   at:=cadr at;
-  if pairp at and car at = 'QUOTIENT then at:=cadr at
+  if pairp at and car at = 'quotient then at:=cadr at
  >>$
- if pairp at and ((car at = 'TIMES) or
-                  (car at = 'LIST ) or
-                  (car at = 'EQUAL)    ) then at:=cdr at
+ if pairp at and ((car at = 'times) or
+                  (car at = 'list ) or
+                  (car at = 'equal)    ) then at:=cdr at
                                          else at:={at}$
  while at do <<
   f1:=car at;  at:=cdr at;
   if not ((numberp f1               ) or
           ((pairp f1) and
-           (car f1 = 'QUOTIENT) and
+           (car f1 = 'quotient) and
            (numberp cadr f1) and
            (numberp caddr f1)       )    ) then
   if atom f1 then for each v in letters_of f1 do vl:=addvec(v,vl) else
-  if car f1 neq 'ARBCOMPLEX then
-  if car f1 neq 'EXPT then write"****** car not EXPT ******" else
+  if car f1 neq 'arbcomplex then
+  if car f1 neq 'expt then write"****** car not EXPT ******" else
   for each v in letters_of cadr f1 do
   for h:=1:(caddr f1) do vl:=addvec(v,vl)
  >>;
@@ -474,7 +474,7 @@ begin scalar vl,v,h,gs;
  gs:=gensym()$
  for each v in vl do <<
   % replace each component_of_car_v by gs**(component_of_car_v)
-  for each h in vc car v do a:=subst({'TIMES,h,gs},h,a)$
+  for each h in vc car v do a:=subst({'times,h,gs},h,a)$
   a:=reval a$
   a:=coeffn(a,gs,cdr v)
  >>$
@@ -489,28 +489,28 @@ symbolic procedure t1(a)$
 % t1 returns the first term of its numerator
 if null a then 0 else
 if atom a then a else
-if (car a='QUOTIENT) then reval {'QUOTIENT,t1 cadr a,caddr a} else
-if (car a='PLUS) or (car a='DIFFERENCE) then cadr a
+if (car a='quotient) then reval {'quotient,t1 cadr a,caddr a} else
+if (car a='plus) or (car a='difference) then cadr a
                                         else a$
 %----------------------------------------------------
 
 symbolic operator genpro_wg$
 % converting algebraic input list to symbolic and result back to algebraic
 symbolic procedure genpro_wg(vl)$
-cons('LIST,for each g in genpro_wg_l(for each h in cdr vl collect cdr h)
-           collect cons('LIST,g))$
+cons('list,for each g in genpro_wg_l(for each h in cdr vl collect cdr h)
+           collect cons('list,g))$
 %----------------------------------------------------
 
 symbolic procedure addvectowg(wg,v)$
 % adds vector v of weights to the vector wg
-for j:=1:(length wg) collect reval {'PLUS,nth(wg,j),nth(v,j)}$
+for j:=1:(length wg) collect reval {'plus,nth(wg,j),nth(v,j)}$
 %----------------------------------------------------
 
 symbolic procedure genpro_wg_l(vl)$
 % input: symbolic list of variables with weights, e.g.
 %        vl={{A,1,0,0},{B,0,1,0},{U,0,0,1},{V,1,0,1}}$
 % output: list of scalar/spate products + weights {{AA,2,0,0},..}
-if null vl then {'LIST} else
+if null vl then {'list} else
 begin scalar n,j,k,l,p2,p3,wg;
 
  wg:=for j:=1:((length cdar vl)) collect 0$
@@ -544,7 +544,7 @@ symbolic operator genpro$  % moved up
 symbolic procedure genpro(vl)$
 % input: algebraic list of vectors, e.g. {a,b,u,v}
 % output: algebraic list of scalar and spate products
-cons('LIST,for each h in genpro_wg_l(std_wg cdr vl) collect car h)$
+cons('list,for each h in genpro_wg_l(std_wg cdr vl) collect car h)$
 %----------------------------------------------------
 
 symbolic procedure hc2s(ahc)$
@@ -568,21 +568,21 @@ begin scalar v,vl,nf,f,fl,zro,h,sol,ansatz$ %,oldorder$
   f:=mkid('!&c,nf);
   nf:=add1 nf$
   fl:=cons(f,fl);
-  {'TIMES,f,v}
+  {'times,f,v}
  >>$
  fino_:=nil;
  if tr_vec then <<
   write"The vector ansatz has ",length fl," unknown coefficients."$terpri()
  >>$
  if null cdr ansatz then ansatz:=reval car ansatz
-                    else ansatz:=reval cons('PLUS,ansatz)$
+                    else ansatz:=reval cons('plus,ansatz)$
 
  % generate a list vl of all components of all vectors
  vl:=for each v in cdr ahc join vc car v$
 
 % oldorder:=setkorder vl;
 
- zro:={'LIST,reval {'DIFFERENCE,car ahc,v2c ansatz}}$
+ zro:={'list,reval {'difference,car ahc,v2c ansatz}}$
 
  % splitting zro:
 
@@ -596,7 +596,7 @@ begin scalar v,vl,nf,f,fl,zro,h,sol,ansatz$ %,oldorder$
    sol:=cdr sol$
   >>$
   if tr_vec then <<write"zro has ",length zro," conditions."$terpri()>>$
-  zro:=cons('LIST,zro)
+  zro:=cons('list,zro)
  >>$
  if tr_vec then <<
   write (length zro) - 1," conditions for ",length fl," unknowns."$terpri()
@@ -605,7 +605,7 @@ begin scalar v,vl,nf,f,fl,zro,h,sol,ansatz$ %,oldorder$
  % solution of the condition:
  !!arbint:=0$
  if tr_vec then <<write"solveeval start"$terpri()>>$
- sol:=solveeval list(zro,cons('LIST,fl));
+ sol:=solveeval list(zro,cons('list,fl));
  if tr_vec then <<write"solveeval end"$terpri()>>$
 
  return
@@ -634,7 +634,7 @@ begin scalar v,vl,nf,f,fl,zro,h,sol,ansatz$ %,oldorder$
     print_:=nil$
     old_history:='(l 11 !; q 0)$
    >>$
-   sol:=crack(sol,{},lisp cons('LIST,extract_prod(sol)),{});
+   sol:=crack(sol,{},lisp cons('list,extract_prod(sol)),{});
   >>$
 
   lisp(if tr_vec then <<write"hc2s end"$terpri()>>)$
@@ -674,7 +674,7 @@ begin scalar av,ahv,ahc,at1,tr_vec$
   ahc:=filter_hom(a,at1)$ % includes assoc list of vectors + degree
 
   ahv:=hc2s ahc$
-  if ahv then <<av:=cons(ahv,av); a:=reval {'DIFFERENCE,a,car ahc}>>
+  if ahv then <<av:=cons(ahv,av); a:=reval {'difference,a,car ahc}>>
          else <<write"All the terms with the same homogeneity as the"$
                 terpri()$
                 write"following terms can not be vectorized: "$
@@ -696,7 +696,7 @@ begin scalar av,ahv,ahc,at1,tr_vec$
    terpri()
   >>$
   if tr_vec then <<write"c2sl stop"$terpri()>>$
-  reval cons('LIST,av)
+  reval cons('list,av)
  >>$
 
 end$
@@ -711,7 +711,7 @@ begin scalar plc$
  while pl and (caar pl neq v) do <<plc:=cons(car pl,plc);pl:=cdr pl>>$
  if null pl then plc:=cons((v . at),plc)
             else <<
-  plc:=cons((v . {'PLUS,cdar pl,at}),plc);
+  plc:=cons((v . {'plus,cdar pl,at}),plc);
   pl:=cdr pl;
   while pl do <<plc:=cons(car pl,plc);pl:=cdr pl>>
  >>$
@@ -737,7 +737,7 @@ begin scalar at1,pl,sh,n,wg,j,k,vli,wli,vlc,idty,gs$
   % add at1 to the right partition
   pl:=add_hom_term(get_vlist_of_term(at1),at1,pl)$
 
-  a:=reval {'DIFFERENCE,a,at1}
+  a:=reval {'difference,a,at1}
  >>$
 
  % optimize the formulation in terms of n-products for each single partition
@@ -767,8 +767,8 @@ begin scalar at1,pl,sh,n,wg,j,k,vli,wli,vlc,idty,gs$
   % now identities are generated that contain each one n-vector product
   % expressed in terms of scalar and triple products:
   gs:=gensym()$
-  idty:=cons('LIST,
-             cons(reval {'DIFFERENCE,sh,gs},
+  idty:=cons('list,
+             cons(reval {'difference,sh,gs},
                   if d then append(cdr idty,genid(reverse vli,reverse wli))
                        else        cdr idty
             ))$
@@ -785,18 +785,18 @@ begin scalar at1,pl,sh,n,wg,j,k,vli,wli,vlc,idty,gs$
   tr_short:=t$
   old_history:='(67 e_1 nil q 0)$
 %old_history:=nil$
-  idty:=algebraic(crack(idty,{},lisp cons('LIST,extract_prod(idty)),{}));
-  if idty={'LIST} then <<write"ERROR 1 in CRACK!"$terpri()>>
+  idty:=algebraic(crack(idty,{},lisp cons('list,extract_prod(idty)),{}));
+  if idty={'list} then <<write"ERROR 1 in CRACK!"$terpri()>>
                   else <<
    idty:=cadr cadr idty; % the remaining equations from the first solution
    while idty and freeof(car idty,gs) do idty:=cdr idty;
    if null idty then <<write"ERROR 2 in CRACK!"$terpri()>>
                 else <<
-    idty:=solveeval list(car idty,{'LIST,gs});
-    if null idty or (idty={'LIST}) then <<write"ERROR 3 in SOLVE!"$terpri()>>
+    idty:=solveeval list(car idty,{'list,gs});
+    if null idty or (idty={'list}) then <<write"ERROR 3 in SOLVE!"$terpri()>>
                                    else <<
      idty:=caddr cadr idty$
-     if 0=reval reval {'DIFFERENCE,sh,idty} then
+     if 0=reval reval {'difference,sh,idty} then
      write"Partition is unchanged."         else <<
       write"shortened expression:";
       mathprint idty    % rhs of first solution
@@ -835,14 +835,14 @@ shortvex(a,t)$
 %end$
 %----------------------------------------------------
 
-algebraic procedure poisson_c(F,G,poi_struc_mat)$
+algebraic procedure poisson_c(f,g,poi_struc_mat)$
 % computes Poisson bracket for arbitrary expressions F,G
 % using the Poisson structure matrix poi_struc_mat
-for each h in poi_struc_mat sum (df(F,first h)*df(G,second h)-
-                                 df(G,first h)*df(F,second h) )*(third h)$
+for each h in poi_struc_mat sum (df(f,first h)*df(g,second h)-
+                                 df(g,first h)*df(f,second h) )*(third h)$
 %----------------------------------------------------
 
-algebraic procedure poisson_v(F,G,poi_struc_mat)$
+algebraic procedure poisson_v(f,g,poi_struc_mat)$
 % computes the numerator of the Poisson bracket for vector expressions F,G
 % using the Poisson structure matrix poi_struc_mat.
 % It uses the global variables v_ (algebraic list of vectors) and gbase_ (an
@@ -863,7 +863,7 @@ begin scalar h,r,s,alle$
                   poi_(r,s):=for each h in c2sl poisson_c(v2c r,v2c s,
                                                           poi_struc_mat)
                              sum first h$
-                  poi_(r,s)*df(F,r)*df(G,s)>>$
+                  poi_(r,s)*df(f,r)*df(g,s)>>$
 
  r:=preduce(num h,gbase_);
  return
@@ -920,13 +920,13 @@ end$
 symbolic operator addweights$
 symbolic procedure addweights(vwghts,exl)$
 % The same as symaddweights, only returning an algebraic list of alg. lists
-cons('LIST,for each h in symaddweights(vwghts,exl) collect cons('LIST,h))$
+cons('list,for each h in symaddweights(vwghts,exl) collect cons('list,h))$
 %----------------------------------------------------
 
 lisp(nfct_:=1)$  % defined in crack
 
-symbolic operator gFI$
-symbolic procedure gFI(wgcp,alle,fdep,heads)$
+symbolic operator gfi$
+symbolic procedure gfi(wgcp,alle,fdep,heads)$
 begin scalar k,g,h,p,rtn,dropped1,dropped2,f,fl,gt1$
   % - If one wants a specific factor then this factor has to be multiplied
   %   afterwards and gfi has to be given appropriate lowered weights
@@ -961,28 +961,28 @@ begin scalar k,g,h,p,rtn,dropped1,dropped2,f,fl,gt1$
   for each h in fino_ do << % i.e. for each functionally dependent expression
    h:=reval h$
    h:=if not pairp h then list h else
-      if (car h='PLUS) or (car h='DIFFERENCE) then cdr h else list h;
+      if (car h='plus) or (car h='difference) then cdr h else list h;
    gt1:=nil$
 
    while h do <<
     g:=car h$ h:=cdr h$ % g is one term of the funct. dep. expression
     % drop minus sign
-    if pairp g and car g='MINUS then g:=cadr g;
+    if pairp g and car g='minus then g:=cadr g;
     % drop numerical denominator
-    if pairp g and car g='QUOTIENT and numberp caddr g then g:=cadr g;
+    if pairp g and car g='quotient and numberp caddr g then g:=cadr g;
     % drop numerical factor
-    if pairp g and car g='TIMES then <<
+    if pairp g and car g='times then <<
      p:=nil;
      for each k in cdr g do % i.e. for each factor
      if numberp k or
         (pairp k and
-         car k = 'QUOTIENT and
+         car k = 'quotient and
          numberp cadr k and
          numberp caddr k) then p:=cons(k,p);
      if p then <<
-      if cdr p then p:=cons('TIMES,p)
+      if cdr p then p:=cons('times,p)
                else p:=car p;
-      g:=reval {'QUOTIENT,g,p}
+      g:=reval {'quotient,g,p}
      >>
     >>$
     if null member(g,rtn) then <<gt1:=nil; % hcp is not contained in ansatz
@@ -1004,14 +1004,14 @@ begin scalar k,g,h,p,rtn,dropped1,dropped2,f,fl,gt1$
    f:=mkid('!&r,nfct_)$
    nfct_:=add1 nfct_$
    fl:=cons(f,fl)$
-   rtn:=cons({'TIMES,f,h},rtn)
+   rtn:=cons({'times,f,h},rtn)
   >>$
 
   if tr_vec then
   write"dropped: ",dropped1,"+",dropped2," kept: ",length rtn$
   return reval
-         cons('LIST,if null rtn then nil else
-                    cons(if cdr rtn then cons('PLUS,rtn)
+         cons('list,if null rtn then nil else
+                    cons(if cdr rtn then cons('plus,rtn)
                                     else car rtn,
                          fl))
 end$
@@ -1021,22 +1021,22 @@ algebraic procedure gpi(wgl,vl,gbase)$
 % subroutine to generate polynomial identities between vectors
 % as used by vinit().
 begin scalar hh,vcl,id,fl,g,h$
- hh:=lisp(cons('LIST,for each h in std_wg(cdr vl) collect
-                     cons('LIST,h)));
+ hh:=lisp(cons('list,for each h in std_wg(cdr vl) collect
+                     cons('list,h)));
  hh:=gfi(wgl,hh,{},{});
  if hh neq {} then <<
-  ID:=first hh$
-  FL:=rest hh$
-  hh:={v2c ID}$
-  vcl:=for each h in vl join lisp cons('LIST,vc reval h);
+  id:=first hh$
+  fl:=rest hh$
+  hh:={v2c id}$
+  vcl:=for each h in vl join lisp cons('list,vc reval h);
   for each g in vcl do
   hh:=for each h in hh join coeff(h,g)$
   lisp(!!arbint:=0)$
   hh:=solve(hh,fl)$
-  ID:=sub(first hh,ID);
-  ID:=for h:=1:lisp(!!arbint) collect num coeffn(ID,arbcomplex(h),1);
+  id:=sub(first hh,id);
+  id:=for h:=1:lisp(!!arbint) collect num coeffn(id,arbcomplex(h),1);
 
-  for each h in ID do
+  for each h in id do
   if not fixp h then
   if gbase={} then gbase:={h}
               else <<
@@ -1076,8 +1076,8 @@ symbolic procedure wg_li(a,vlw)$
 % denominator is disregarded.
 begin scalar wg,at1,h,wl,n,vlwcp,errorcd,m$
  a:=reval a$
- if pairp a and car a = 'QUOTIENT then a:=cadr a$
- a:=if pairp a and car a = 'PLUS then cdr a
+ if pairp a and car a = 'quotient then a:=cadr a$
+ a:=if pairp a and car a = 'plus then cdr a
                                  else list a$
 
  repeat <<
@@ -1128,14 +1128,14 @@ begin scalar el,h,subli1,subli2,g,para,f,cnd,fl,ansatz,pl,n$
  n:=0;
  for each el in cdr li do <<
   h:=gensym()$
-  subli1:=cons({'EQUAL,h,el},subli1);
+  subli1:=cons({'equal,h,el},subli1);
   n:=add1 n$
-  subli2:=cons({'EQUAL,h,mkid('p_,n)},subli2);
+  subli2:=cons({'equal,h,mkid('p_,n)},subli2);
   g:=wg_li(el,vlw)$
   para:=cons(cons(h,g),para)
  >>$
- subli1:=cons('LIST,subli1)$
- subli2:=cons('LIST,subli2)$
+ subli1:=cons('list,subli1)$
+ subli2:=cons('list,subli2)$
 
  fino_:=nil;gen para;
 
@@ -1150,11 +1150,11 @@ begin scalar el,h,subli1,subli2,g,para,f,cnd,fl,ansatz,pl,n$
   f:=mkid('!&r,nfct_)$
   nfct_:=add1 nfct_$
   fl:=cons(f,fl)$
-  ansatz:=cons({'TIMES,f,h},ansatz)
+  ansatz:=cons({'times,f,h},ansatz)
  >>$
- fl:=cons('LIST,fl)$
- ansatz:=cons('PLUS,ansatz);
- cnd:=reval {'DIFFERENCE,a,algebraic(sub(subli1,lisp ansatz))};
+ fl:=cons('list,fl)$
+ ansatz:=cons('plus,ansatz);
+ cnd:=reval {'difference,a,algebraic(sub(subli1,lisp ansatz))};
 
  return
  algebraic <<

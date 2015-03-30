@@ -133,7 +133,7 @@ return nil;
     >>$
     fl:=del_equ_from_fl(h2,fl);
     h2:=cadr h1;
-    while (not pairp car h2) or (caar h2 neq 'EQUAL) do h2:=cdr h2;
+    while (not pairp car h2) or (caar h2 neq 'equal) do h2:=cdr h2;
     f:=cadar h2$
     remain_fl:=delete(f,remain_fl);
     if tr_opt then <<
@@ -204,7 +204,7 @@ begin scalar oldorder,p,h,pcf,allcf,fl,u,v,tr_subsys,sysli,sy,r,s,ncondi,
   while fl do << % we have no need to check: not domainp l because
                  % equations are supposed to be homogeneous (not null fhom_)
    if null h or (mvar h neq car fl) then   pcf:=cons(   0,pcf)
-                                    else <<pcf:=cons({'!*SQ,(lc h . 1),t},pcf);
+                                    else <<pcf:=cons({'!*sq,(lc h . 1),t},pcf);
                                            h:=red h>>;
    fl:=cdr fl
   >>;
@@ -260,7 +260,7 @@ begin scalar oldorder,p,h,pcf,allcf,fl,u,v,tr_subsys,sysli,sy,r,s,ncondi,
 %                  >>$                             %@@
 %  ncondi:=cons(determinante('matrix_849),ncondi)$ %@@
 
-  algebraic write {'!*SQ,h,t};                          %@@
+  algebraic write {'!*sq,h,t};                          %@@
 
   setk('matrix_849,nil)
  >>;
@@ -273,7 +273,7 @@ begin scalar oldorder,p,h,pcf,allcf,fl,u,v,tr_subsys,sysli,sy,r,s,ncondi,
  no_of_pdes:=length pdes;
  s:=nil;
  for each h in ncondi do <<
-  r:=mkeqSQ(h,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes);
+  r:=mkeqsq(h,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes);
   pdes:=eqinsert(r,pdes)$
   s:=cons(r,s)
  >>;
@@ -339,9 +339,9 @@ begin scalar pdes,flcp,p,f,h,coefgcd,pdescp,casesub,nocasub,s,ff,q$
   >>; % while pdescp
 
   if coefgcd neq 1 then <<
-   if pairp coefgcd and car coefgcd='!*SQ then 
+   if pairp coefgcd and car coefgcd='!*sq then 
 % better do a full factorization:
-   h:=simplifySQ(cadr coefgcd,get(p,'fcts),t,nil,nil)
+   h:=simplifysq(cadr coefgcd,get(p,'fcts),t,nil,nil)
                                           else h:=(1 . 1)$
 
    if h neq {(1 . 1)} then casesub:=cons((coefgcd . f),casesub)
@@ -352,13 +352,13 @@ begin scalar pdes,flcp,p,f,h,coefgcd,pdescp,casesub,nocasub,s,ff,q$
  if print_ then <<
   if casesub then <<
    write"Case generating substitutions:"$terpri()$
-   mathprint cons('LIST,for each s in casesub collect 
-                        {'!*SQ,multsq(cadar s,simp cdr s),t})
+   mathprint cons('list,for each s in casesub collect 
+                        {'!*sq,multsq(cadar s,simp cdr s),t})
   >>$
   if nocasub then <<
    write"Non-case generating substitutions:"$terpri()$
-   mathprint cons('LIST,for each s in nocasub collect 
-                        {'!*SQ,multsq(cadar s,simp cdr s),t})
+   mathprint cons('list,for each s in nocasub collect 
+                        {'!*sq,multsq(cadar s,simp cdr s),t})
   >>
  >>$
 
@@ -374,7 +374,7 @@ begin scalar pdes,flcp,p,f,h,coefgcd,pdescp,casesub,nocasub,s,ff,q$
    write"After ",s,if s=1 then " substitution"
                           else " substitutions"," a case distinction for "$
    terpri()$
-   mathprint {'!*SQ,cadaar casesub,t}$
+   mathprint {'!*sq,cadaar casesub,t}$
    write"is made. In the case <>0 the shortening substitution"$terpri()$
    write"should be performed again."$terpri()
   >>$
@@ -397,7 +397,7 @@ begin scalar pdes,flcp,p,f,h,coefgcd,pdescp,casesub,nocasub,s,ff,q$
   fhom_:=sort_according_to(cons(ff,fhom_),ftem_)$  
 
   % new equation
-  q:=mkeqSQ(subtrsq(multsq(cadar s,simp cdr s),simp ff),nil,nil,
+  q:=mkeqsq(subtrsq(multsq(cadar s,simp cdr s),simp ff),nil,nil,
             ftem_,vl_,allflags_,nil,list(0),nil,pdes)$
   put(q,'not_to_eval,{ff})$
   pdes:=eqinsert(q,pdes)$

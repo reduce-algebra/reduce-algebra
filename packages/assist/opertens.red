@@ -45,7 +45,7 @@ begin scalar y,z,w;
  z:=fullcopy u;
  w:=z;
  l: if domainp z then return w
-    else if (not atom mvar z) and (y:=get(car mvar z, 'Translate2))
+    else if (not atom mvar z) and (y:=get(car mvar z, 'translate2))
        then set_mvar(z, apply1(car y,mvar z));
      z:= lc z;
      go to l;
@@ -69,7 +69,7 @@ symbolic procedure clearallnewids;
     <<if flagp(x,'tensor) then
         rem_tensor1 x
       else clear x;
-      remprop(x,'Translate2)>>;
+      remprop(x,'translate2)>>;
   opertensnewids!*:=nil>>;
 
 symbolic procedure dftypetooper(u);
@@ -77,14 +77,14 @@ symbolic procedure dftypetooper(u);
 % df_g_n_2 gets property (dfprop df (g 1) (n 1) 2)
 % same occurs for dfpart if it is given the prop ('Transtocanonical 'dftypetooper)
 % Declares the results as being a tensor if one of the args at least is tensor
-begin scalar name,proplist,arglist,varlist,switchid,IsTens,spacel,z;
+begin scalar name,proplist,arglist,varlist,switchid,istens,spacel,z;
  name:=list(car u);
  proplist:= name;
  for each y in cdr u do
    << if listp y then
        << name:=car y . ('!_ . name);
           if flagp(car y,'tensor) then
-            << IsTens:=t;
+            << istens:=t;
                if null !*onespace and null((z:=get(car y,'belong_to_space)) memq spacel)
                  then spacel:=z . spacel;
                if (listp cadr y) and ((caadr y) eq 'list ) then
@@ -110,7 +110,7 @@ begin scalar name,proplist,arglist,varlist,switchid,IsTens,spacel,z;
  arglist:=reverse(arglist);
  proplist:=reverse(proplist);
  name:=list_to_ids!:(reverse name);
- if IsTens then
+ if istens then
   << if flagp(name,'tensor)
        then
          << if get(name,'translate2) and ((cdr get(name,'translate2)) neq proplist) then
@@ -131,7 +131,7 @@ begin scalar name,proplist,arglist,varlist,switchid,IsTens,spacel,z;
              then << mkop name;
                      opertensnewids!*:= name . opertensnewids!* ;
                      intern name>>;
-           put(name,'Translate2,'opertodftype . proplist);
+           put(name,'translate2,'opertodftype . proplist);
            arglist:=varlist>>  >>;
   return name . arglist;
 end;
@@ -189,7 +189,7 @@ begin scalar proplist,idslist,varlist,argres,name,i,switchid,y,idsl,varl;
 end;
 
 symbolic procedure makedfperm;
-  put('df,'Translate1,'dftypetooper);
+  put('df,'translate1,'dftypetooper);
 
 flag ('(makedfperm), 'opfn);
 deflist('((makedfperm endstat)),'stat);

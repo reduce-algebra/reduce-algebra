@@ -285,19 +285,19 @@ gosper(1/(k*(k+1)*(k+2)*(k+3)*(k+4)*(k+5)*(k+6)*(k+7)*(k+8)*(k+9)*
 
    *(k + 5)*(k + 4)*(k + 3)*(k + 2)*(k + 1))
 
-gosper(pochhammer(k-n,n),k);
+gosper(Pochhammer(k-n,n),k);
 
 
  pochhammer(k - n,n)*k
 -----------------------
          n + 1
 
-gosper((a+k-1)*pochhammer(a,k),k);
+gosper((a+k-1)*Pochhammer(a,k),k);
 
 
 (a + k)*pochhammer(a,k)
 
-gosper((a-k-1)/pochhammer(a-k,k),k);
+gosper((a-k-1)/Pochhammer(a-k,k),k);
 
 
          - 1
@@ -573,7 +573,7 @@ gosper(factorial(2*k)/(factorial(k)*factorial(k+1)),k);
 ***** Gosper algorithm: no closed form solution exists 
 
 % gosper(1/(factorial(k)*(k^4+k^2+1)),k);
-gosper(binomial(A,k),k);
+gosper(binomial(a,k),k);
 
 
 ***** Gosper algorithm: no closed form solution exists 
@@ -600,7 +600,7 @@ gosper(1/(k*(k+1/2)),k);
 
 ***** Gosper algorithm: no closed form solution exists 
 
-gosper(pochhammer(a,k),k);
+gosper(Pochhammer(a,k),k);
 
 
 ***** Gosper algorithm: no closed form solution exists 
@@ -651,7 +651,7 @@ factorial(n+k)*factorial(b+k)*factorial(c-n-1)*factorial(c-b-1),k,n);
  + (n - 1 - b)*(n - 1 - c)*summ(n - 1)
 
 sumrecursion(
-pochhammer(a,k)*pochhammer(b,k)/(factorial(k)*pochhammer(c,k)),k,a);
+Pochhammer(a,k)*Pochhammer(b,k)/(factorial(k)*Pochhammer(c,k)),k,a);
 
 
 (b - c + a)*summ(a) - (a - c)*summ(a - 1)
@@ -865,8 +865,8 @@ sumrecursion(binomial(m,r)*binomial(n-r,n-r-q)*(t-1)^r,r,m);
 % sumrecursion(binomial(m,r)*binomial(n-r,n-r-q)*(t-1)^r,r,n);
 % sumrecursion(binomial(m,r)*binomial(n-r,n-r-q)*(t-1)^r,r,q);
 % sumrecursion(binomial(m,r)*binomial(n-r,n-r-q)*(t-1)^r,r,r);
-sumrecursion(pochhammer(-n/2,k)*pochhammer(-n/2+1/2,k)/
-(factorial(k)*pochhammer(b+1/2,k)),k,n);
+sumrecursion(Pochhammer(-n/2,k)*Pochhammer(-n/2+1/2,k)/
+(factorial(k)*Pochhammer(b+1/2,k)),k,n);
 
 
 (n - 1 + 2*b)*summ(n) - 2*(n - 1 + b)*summ(n - 1)
@@ -903,9 +903,9 @@ sumrecursion((-1)^k*binomial(n,k)^3,k,n);
 % sumrecursion(pochhammer(a+b+c-n,j+l)*pochhammer(a+b-n/2,j+l)/
 % (factorial(j)*factorial(l)*pochhammer(a-n/2+1,j)*
 %   pochhammer(b-n/2+1,l)),j,b);
-sumrecursion(pochhammer(a+b+c-n,j+l)*pochhammer(a+b-n/2,j+l)/
-(factorial(j)*factorial(l)*pochhammer(a-n/2+1,j)*
-   pochhammer(b-n/2+1,l)),j,c);
+sumrecursion(Pochhammer(a+b+c-n,j+l)*Pochhammer(a+b-n/2,j+l)/
+(factorial(j)*factorial(l)*Pochhammer(a-n/2+1,j)*
+   Pochhammer(b-n/2+1,l)),j,c);
 
 
  - (n + 1 - l - c - b - a)*(n + 2 - 2*l - 2*c - 2*b)*summ(c - 1)

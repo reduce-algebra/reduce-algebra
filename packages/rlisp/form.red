@@ -147,7 +147,7 @@ symbolic procedure form1(u,vars,mode);
                      else u
        else if not atom car u then return form2(u,vars,mode)
        else if not idp car u then typerr(car u,"operator")
-       else if car u eq 'comment
+       else if car u eq 'COMMENT
         then return form1(car lastpair u,vars,mode)
        else if flagp(car u,'noform) then return u
        else if arrayp car u

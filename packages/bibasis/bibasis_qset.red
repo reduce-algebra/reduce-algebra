@@ -36,84 +36,84 @@ module bibasis_qset;
 % Q = triple_1 . ... . triple_n . (nil . nil) and triple_i <= triple_(i+1)
 
 
-expr procedure SortedTripleListInsert(tripleList, triple);
-begin scalar tmpMonom, tripleListIterator;
-    tmpMonom := TripleGetLm(triple);
-    tripleListIterator := tripleList;
-    while and(car(tripleListIterator),
-              neq(MonomCompare(TripleGetLm(car(tripleListIterator)), tmpMonom), 1)) do
+expr procedure sortedtriplelistinsert(triplelist, triple);
+begin scalar tmpmonom, triplelistiterator;
+    tmpmonom := triplegetlm(triple);
+    triplelistiterator := triplelist;
+    while and(car(triplelistiterator),
+              neq(monomcompare(triplegetlm(car(triplelistiterator)), tmpmonom), 1)) do
     <<
-        tripleListIterator := cdr(tripleListIterator);
+        triplelistiterator := cdr(triplelistiterator);
     >>;
-    bibasis_insert(tripleListIterator, triple);
+    bibasis_insert(triplelistiterator, triple);
 end;
 
 
-inline procedure SetQReset(); FluidBibasisSetQ := (nil . nil);
-inline procedure SetQIsEmpty(); null(car(FluidBibasisSetQ));
-inline procedure SetQInsert(triple); SortedTripleListInsert(FluidBibasisSetQ, triple);
+inline procedure setqreset(); fluidbibasissetq := (nil . nil);
+inline procedure setqisempty(); null(car(fluidbibasissetq));
+inline procedure setqinsert(triple); sortedtriplelistinsert(fluidbibasissetq, triple);
 
 
-expr procedure SetQInsertList(tripleList);
-begin scalar iteratorQ, iteratorList; integer monomCompare;
-    iteratorQ := FluidBibasisSetQ;
-    iteratorList := tripleList;
-    while and(car(iteratorQ), car(iteratorList)) do 
+expr procedure setqinsertlist(triplelist);
+begin scalar iteratorq, iteratorlist; integer monomcompare;
+    iteratorq := fluidbibasissetq;
+    iteratorlist := triplelist;
+    while and(car(iteratorq), car(iteratorlist)) do 
     <<
-        monomCompare := MonomCompare(TripleGetLm(car(iteratorQ)), TripleGetLm(car(iteratorList)));
-        if or(monomCompare = -1,
-              monomCompare = 0) then
+        monomcompare := monomcompare(triplegetlm(car(iteratorq)), triplegetlm(car(iteratorlist)));
+        if or(monomcompare = -1,
+              monomcompare = 0) then
         <<
-            iteratorQ := cdr(iteratorQ);
+            iteratorq := cdr(iteratorq);
         >>
         else
         <<
-            bibasis_insert(iteratorQ, car(iteratorList));
-            iteratorQ := cdr(iteratorQ);
-            iteratorList := cdr(iteratorList);
+            bibasis_insert(iteratorq, car(iteratorlist));
+            iteratorq := cdr(iteratorq);
+            iteratorlist := cdr(iteratorlist);
         >>;
     >>;
-    if car(iteratorList) then
+    if car(iteratorlist) then
     <<
-        bibasis_remove(rplacd(iteratorQ, iteratorList));
+        bibasis_remove(rplacd(iteratorq, iteratorlist));
     >>;
 end;
 
 
-expr procedure SetQGet();
+expr procedure setqget();
 begin scalar triple;
-    triple := car(FluidBibasisSetQ);
-    bibasis_remove(FluidBibasisSetQ);
+    triple := car(fluidbibasissetq);
+    bibasis_remove(fluidbibasissetq);
     return triple;
 end;
 
 
-expr procedure SetQDeleteDescendants(ancestorID);
-begin scalar currentTriple;
-    currentTriple := FluidBibasisSetQ;
-    while car(currentTriple) do
+expr procedure setqdeletedescendants(ancestorid);
+begin scalar currenttriple;
+    currenttriple := fluidbibasissetq;
+    while car(currenttriple) do
     <<
-        if TripleGetAncestorID(car(currentTriple)) = ancestorID then
+        if triplegetancestorid(car(currenttriple)) = ancestorid then
         <<
-            bibasis_remove(currentTriple);
+            bibasis_remove(currenttriple);
         >>
         else
         <<
-            currentTriple := cdr(currentTriple);
+            currenttriple := cdr(currenttriple);
         >>;
     >>;
 end;
 
 
-expr procedure SetQPrint();
-begin scalar currentTriple;
+expr procedure setqprint();
+begin scalar currenttriple;
     prin2 "SetQ( ";
-    currentTriple := FluidBibasisSetQ;
-    while car(currentTriple) do
+    currenttriple := fluidbibasissetq;
+    while car(currenttriple) do
     <<
-        prin2 car(currentTriple);
+        prin2 car(currenttriple);
         prin2 ", ";
-        currentTriple := cdr(currentTriple);
+        currenttriple := cdr(currenttriple);
     >>;
     prin2 " )"; 
     terpri();

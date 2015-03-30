@@ -119,7 +119,7 @@ symbolic procedure r_solve!-eval u;
    %   nomul: do not compute multiplicities (thereby saving some time);
    %   noeqs: do not return univariate zeros as equations.
 
-   if null u then RedErr "r/i_solve called with no equations" else
+   if null u then rederr "r/i_solve called with no equations" else
    begin scalar var, mul, noeqs;
       % Process options, after setting defaults:
       mul := if !*multiplicities then 'expand else 'separate;
@@ -184,7 +184,7 @@ symbolic procedure r_solve!-eval1(f, var, mul, noeqs);
          return r_solve!-output(f, r_solve f, mul, noeqs);
    error:
       %% TypErr(prepf f, "univariate poly over Z in specified var")
-      TypErr(prepf f, "univariate polynomial over Z")
+      typerr(prepf f, "univariate polynomial over Z")
    end;
 
 
@@ -210,7 +210,7 @@ symbolic procedure r_solve!-output(f, zeros, mul, noeqs);
             f := diff(f,x);  m := m + 1;
             zeros := for each z in zeros join if
                   (if !*i_solve then zerop eval_uni_poly(f,z) % integer.
-                  else null numr eval_uni_poly_Q(f, z) ) % rational
+                  else null numr eval_uni_poly_q(f, z) ) % rational
                then {z} else << solns := (z . m) . solns; nil >>
             >>;
          solns := for each s in solns collect
@@ -278,8 +278,8 @@ symbolic procedure r_solve f;
    % where f(x) = SUM_{i=0}^n a_i x^i = 0.
    % Assumes f is a standard form.
    % If !*i_solve then computes only INTEGER zeros.
-   begin scalar x, f1, fm, f1m, L;
-      scalar a_n, a_0, p, b, N, p!^N, !2!^r, !2!^r1, p2r, p2r1;
+   begin scalar x, f1, fm, f1m, l;
+      scalar a_n, a_0, p, b, n, p!^n, !2!^r, !2!^r1, p2r, p2r1;
       scalar !*ezgcd, !*gcd, current!-modulus, modulus!/2;
       x := mvar f;  !*gcd := t;
 
@@ -318,26 +318,26 @@ symbolic procedure r_solve f;
       % Find zero set of f mod p by simple exhaustive search:
       current!-modulus := p;
       for xx := 0 : p-1 do
-         if zerop mod_eval_uni_poly(fm, xx) then L := xx . L;
-      tr_write "Zero set mod ", p, ": ", L;
-      if null L then return nil;
+         if zerop mod_eval_uni_poly(fm, xx) then l := xx . l;
+      tr_write "Zero set mod ", p, ": ", l;
+      if null l then return nil;
 
       % Determine modular prime power bound:
       b := 2 * if !*i_solve then a_0 else a_n*a_0;
-      N := 1;  p!^N := p;
-      while p!^N <= b do << N := N + 1;  p!^N := p * p!^N >>;
-      tr_write "Modular prime power bound: ", N;
+      n := 1;  p!^n := p;
+      while p!^n <= b do << n := n + 1;  p!^n := p * p!^n >>;
+      tr_write "Modular prime power bound: ", n;
 
       % Lift to zeros of f mod p^N by quadratic Hensel lifting:
       !2!^r := 1;  p2r := p;            % r := 0
-      while !2!^r < N do <<
+      while !2!^r < n do <<
          %% !2!^r1 := 2*!2!^r;  p2r1 := p2r^2;
-         p2r1 := if (!2!^r1 := 2*!2!^r) < N then p2r^2
-            else << !2!^r1 := N;  p!^N >>;
+         p2r1 := if (!2!^r1 := 2*!2!^r) < n then p2r^2
+            else << !2!^r1 := n;  p!^n >>;
          tr_write "****************************************";
          tr_write "Lift modulo prime power ", p, "^", !2!^r1,
             " = ", p2r1;
-         L := for each alpha_r in L collect
+         l := for each alpha_r in l collect
          begin integer fm, b_r, f1m, y;
             tr_write "Current zero mod ",p,"^",!2!^r,": ",alpha_r;
             current!-modulus := p2r1;
@@ -354,13 +354,13 @@ symbolic procedure r_solve f;
             tr_write "y = -b_r/f1m mod ", p2r, ": ", y;
             return remainder(alpha_r + p2r*y, p2r1)
          end;
-         tr_write "Zero set mod ", p, "^", !2!^r1, ": ", L;
+         tr_write "Zero set mod ", p, "^", !2!^r1, ": ", l;
          !2!^r := !2!^r1;  p2r := p2r1
       >>;
 
       return if !*i_solve then
          % Check for genuine (non-modular) integer roots:
-         for each alpha in L join
+         for each alpha in l join
             (if zerop eval_uni_poly(f, a) then {a})
                where a = balance_mod(alpha, p2r)
       else
@@ -371,13 +371,13 @@ symbolic procedure r_solve f;
          %% x^2 + 2 has zeros {1,2} mod 3, but no rational zeros.
          %% balance_mod is an odd function, i.e. commutes with sign
          %% change, so we can use a_n := abs lc f as computed above:
-         for each alpha in L join <<
+         for each alpha in l join <<
             if zerop alpha then alpha := nil ./ 1
             else <<
                alpha := balance_mod(remainder(alpha*a_n, p2r), p2r);
                alpha := ((alpha/g)./(a_n/g) where g = gcdn(alpha, a_n))
             >>;
-            if null numr eval_uni_poly_Q(f, alpha) then {alpha} >>
+            if null numr eval_uni_poly_q(f, alpha) then {alpha} >>
    end;
 
 
@@ -410,7 +410,7 @@ symbolic procedure eval_uni_poly(f, a);
       return r
    end;
 
-symbolic procedure eval_uni_poly_Q(f, a);
+symbolic procedure eval_uni_poly_q(f, a);
    % Evaluate univariate integer polynomial
    % f(x) at x = a using Horner's rule.
    % f : standard form; a : rational number as standard quotient

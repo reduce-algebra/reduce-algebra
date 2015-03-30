@@ -32,7 +32,7 @@ lisp(print_:=nil)$           % to suppress printing the computation
 lisp(initial_proc_list_ :=   % initial_proc_list_ is saved for an 
      proc_list_)$            % application at the end
 on dfprint$                  % to print partial deriv. as indices
-comment 
+COMMENT 
 -------------------------------------------------------
 
                      Modules in CRACK 
@@ -61,7 +61,7 @@ Empty lists are {}.
 
 ============================================================;
 
-write"        Integration: Integrating exact PDEs "$comment
+write"        Integration: Integrating exact PDEs "$COMMENT
 
 An important part of CRACK are integration routines 
 which  employ a number of different techniques which 
@@ -85,7 +85,7 @@ write"======================================================="$
 write"  Integration: Integration of an exact PDE + terms "$
 write"               which are not exact (are not a total "$
 write"               derivative) but which only involve "$
-write"               unknown functions of fewer variables"$ comment
+write"               unknown functions of fewer variables"$ COMMENT
 
 The price of integrating non-exact expressions will be 
 the introduction of extra conditions but in fewer variables 
@@ -105,7 +105,7 @@ nodependlist {f,g}$
 
 write"======================================================="$
 
-write"          Integration: Integrating Factors"$ comment
+write"          Integration: Integrating Factors"$ COMMENT
 
 Heuristics for the determination of integrating factors
 in CRACK are not rigorous but often useful. $
@@ -122,7 +122,7 @@ nodependlist {f}$
 
 write"======================================================="$
 
-write"     Integration: Recognizing a 2-dim divergence"$ comment
+write"     Integration: Recognizing a 2-dim divergence"$ COMMENT
 
 Being able to recognize a structure 0=df(a,x)+df(b,y)
 where a,b are differential expressions is of benefit
@@ -147,7 +147,7 @@ clear a,b,de$
 
 write"======================================================="$
 
-write"      Integration: Solving ODEs for partial derivatives"$ comment
+write"      Integration: Solving ODEs for partial derivatives"$ COMMENT
 
 In CRACK ODEs and PDEs which are ODEs for a single partial
 derivative are investigated by the program ODESOLVE by
@@ -166,7 +166,7 @@ clear de$
 
 write"======================================================="$
 
-write"       Separation: Direct separation of PDEs"$ comment
+write"       Separation: Direct separation of PDEs"$ COMMENT
 
 Another important group of modules concerns separations.
 In this example z is an extra independent variable on which
@@ -192,7 +192,7 @@ nodependlist {f,g,h}$
 write"======================================================="$
 
 write"       Separation: Indirect separation of PDEs"$
-write"                   (combined with integration)"$ comment
+write"                   (combined with integration)"$ COMMENT
 
 This example is the same as before, only now h is not assumed
 to be given but to be calculated. In this example there is no 
@@ -221,7 +221,7 @@ nodependlist {f,g,h}$
 
 write"======================================================="$
 
-write"    Combination: Pseudo Differential Groebner Basis"$ comment
+write"    Combination: Pseudo Differential Groebner Basis"$ COMMENT
 
 Another group of modules tries to take advantage of 
 combining equations or their derivatives. The main tool
@@ -252,7 +252,7 @@ clear de$
 
 write"======================================================="$
 
-write"      Combination: Shortening linear PDE systems"$ comment
+write"      Combination: Shortening linear PDE systems"$ COMMENT
 
 To reduce memory requirements now and for further
 computations with a system of equations it is advisable
@@ -269,7 +269,7 @@ clear de1,de2$
 nodependlist {f}$
 write"======================================================="$
 
-write"  Parametric solution of linear underdetermined ODEs"$ comment
+write"  Parametric solution of linear underdetermined ODEs"$ COMMENT
 
 The following example demonstrates an algorithm for the
 parametric solution of underdetermined linear ODEs with
@@ -290,7 +290,7 @@ nodependlist {f,g}$
 
 write"======================================================="$
 
-write" Application: Investigating point symmetries of an ODE"$ comment
+write" Application: Investigating point symmetries of an ODE"$ COMMENT
 
 Finally a  small real life example that demonstrates
 the interplay of different modules to solve completely
@@ -303,7 +303,7 @@ in Kamke's book using the following CRACK input:  $
 % liepde({{df(y,x,2)*x**4-df(y,x)*(2*x*y+x**3)+4*y**2},{y},{x}},
 %        {"point"},{})$ 
 
-comment 
+COMMENT 
 (and renaming xi_x --> xi, eta_y --> eta, y!`1 --> y1
 which is only done to ease reading). Instead of just 
 doing this liepde-call which would take care of 
@@ -333,7 +333,7 @@ nodependlist {xi,eta}$
 
 write"======================================================="$
 
-write"  Integration: Solving a linear 1st order PDE"$ comment
+write"  Integration: Solving a linear 1st order PDE"$ COMMENT
 
 If the computation of a differential Groebner Basis is getting
 bigger and bigger and normal integration is not successful and
@@ -357,7 +357,7 @@ clear de$
 
 write"======================================================="$
 
-write"  Integration: Integration enabled through a syzygy"$comment
+write"  Integration: Integration enabled through a syzygy"$COMMENT
 
 A side product of a differential Groebner basis computation
 is the computation of syzygies, i.e. identities between

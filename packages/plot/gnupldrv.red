@@ -72,7 +72,7 @@ symbolic procedure gp!-init();
        rederr " no support for GNUPLOT in this installation";
     plot!-files!* := plotdta!*;
     plotoptions!*:=  nil;
-    PlotOpenDisplay();
+    plotopendisplay();
   >>;
 
 put('gnuplot,'init,'gp!-init);
@@ -89,7 +89,7 @@ symbolic procedure gp!-reset();
 
 put('gnuplot,'reset,'gp!-reset);
 
-symbolic procedure PlotOpenDisplay();
+symbolic procedure plotopendisplay();
    begin
     if null plotcommand!* then initialize_gnuplot();
     if null plotcommand!* then
@@ -164,17 +164,17 @@ symbolic procedure plotprinexpr1(u,oldop);
                            bf2flr u,nil)
           else
      if (op:=car u) memq '(plus times difference quotient expt) then
-           plotprinexpr2(cdr u,get(car u,'PRTCH),
+           plotprinexpr2(cdr u,get(car u,'prtch),
                oldop and not (op memq(oldop memq
                       '(difference plus times quotient expt)))
                ,op)
           else
-     if op='MINUS then
+     if op='minus then
           <<prin2 "(-";
             plotprinexpr1(cadr u,t);
             prin2 ")">>
           else
-     if get(car u,'!:RD!:) then
+     if get(car u,'!:rd!:) then
          <<prin2 car u; plotprinexpr2(cdr u,'!, ,t,nil)>>
           else
         typerr(u," expression for printing")
@@ -194,7 +194,7 @@ symbolic procedure gnuploteval u;
   begin scalar m,evallhseqp!*;
     evallhseqp!* := t;
     m:=plotrounded(nil);
-    PlotOpenDisplay();
+    plotopendisplay();
     for each v in u do
     <<plotprinexpr reval v; plotprin2 " ">>;
     plotterpri();

@@ -36,7 +36,7 @@ algebraic procedure liendimcom1(n);
 begin
  if (not(symbolic fixp(n)) or n<2) then
  symbolic rederr "dimension out of range";
- symbolic (if gettype 'lienstrucin neq 'ARRAY then
+ symbolic (if gettype 'lienstrucin neq 'array then
           rederr "lienstrucin not ARRAY");
  if length lienstrucin neq {n+1,n+1,n+1} then
           symbolic rederr "dimension of lienstrucin out of range";

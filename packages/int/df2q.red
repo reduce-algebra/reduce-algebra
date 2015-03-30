@@ -32,7 +32,7 @@ exports df2q;
 
 imports addf,gcdf,mksp,!*multf,quotf;
 
-Comment We assume that results already have reduced powers, so
+COMMENT We assume that results already have reduced powers, so
         that no power substitution is necessary;
 
 symbolic procedure df2q p;

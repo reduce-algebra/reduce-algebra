@@ -191,7 +191,7 @@ symbolic procedure edmatch(u,v);
 
 symbolic procedure lprim!* u; <<lprim u; terpri()>>;
 
-Comment Editing Function Definitions;
+COMMENT Editing Function Definitions;
 
 remprop('editdef,'stat);
 
@@ -225,7 +225,7 @@ symbolic procedure addter2buf; crbuf!* := !$eol!$ . crbuf!*;
 
 put('editdef,'stat,'rlis);
 
-Comment Displaying past input expressions;
+COMMENT Displaying past input expressions;
 
 put('display,'stat,'rlis);
 

@@ -112,7 +112,7 @@ begin scalar g,h,bak,kernlist!*bak,kord!*bak,mi,newp,p1,bakup_bak,s;
  for each pc in cdr newp do p1:=p1+get(pc,'terms);
  h:=for each pc in car newp collect
     if sqzerop pc then <<nequ_:=add1 nequ_;nil>> 
-                  else mkeqSQ(pc,nil,nil,fctsort union(get(car  mi,'fcts),
+                  else mkeqsq(pc,nil,nil,fctsort union(get(car  mi,'fcts),
                                                        get(cadr mi,'fcts)),
                               union(get(car  mi,'vars),
                                     get(cadr mi,'vars)),allflags_,t,list(0),nil,allpdes);
@@ -217,7 +217,7 @@ symbolic procedure shorten_pdes(des,p2)$
 if not pairp des or not pairp cdr des then (nil . nil) else
 begin scalar p2rl,p,pc,pcc,newp,ineq_pre$ %,p2_to_eval$
  for each p1 in ineq_ do
- if one_termpSF(numr p1) then ineq_pre:=cons(prepsq p1,ineq_pre)$
+ if one_termpsf(numr p1) then ineq_pre:=cons(prepsq p1,ineq_pre)$
  if alg_poly then ineq_pre:=sort_according_to(ineq_pre,ftem_)$
 
  % find the pair of pdes not yet reduced with each other
@@ -280,7 +280,7 @@ end$
 
 %-------------------
 
-symbolic procedure partition_3(de,AnB,A)$
+symbolic procedure partition_3(de,anb,a)$
 % l is an equation in SQ-form, 
 % returning {(#_of_terms_in_1         . (  1    . inhomog  )),
 %            (#_of_terms_in_SFcoeff_1 . (flin_1 . SFcoeff_1)),...}
@@ -290,11 +290,11 @@ symbolic procedure partition_3(de,AnB,A)$
 %
 begin scalar l,l1,mv;
  l:=reorder numr get(de,'sqval);
- while l and not domainp l and member(mv:=mvar l,AnB) do <<
+ while l and not domainp l and member(mv:=mvar l,anb) do <<
   l1:=cons(cons(no_of_tm_sf lc l,cons(mv,lc l)), l1)$
   l:=red l
  >>;
- while l and not domainp l and member(mvar l,A) do l:=red l;  
+ while l and not domainp l and member(mvar l,a) do l:=red l;  
  return if l then cons(cons(no_of_tm_sf l,cons(1,l)), l1) % inhom case
              else l1                                      % homog case
 end$
@@ -403,7 +403,7 @@ symbolic procedure shorten(de1,de2,ineq_pre)$
 begin scalar a,b,r,l1,l2,nl1,nl2,l1ul2,l1ml2,l2ml1,l1il2,oldorder,
       de1p,de2p,termsof1,termsof2,flip,m1,m2,n1,n2,ql,ql1,ql2,maxcancel,
       take_first,tr_short_local,no_factors_x_1,no_factors_x_2,homo,
-      changed_korder,DoNotReplace1,DoNotReplace2,tryboth,replace1,bestq;
+      changed_korder,donotreplace1,donotreplace2,tryboth,replace1,bestq;
       % ,max_success; 
 
  % take_first:=t; 
@@ -432,13 +432,13 @@ begin scalar a,b,r,l1,l2,nl1,nl2,l1ul2,l1ml2,l2ml1,l1il2,oldorder,
 
  if null flagp(de1,'to_eval) or  
     (homo and (cadr get(de1,'hom_deg)<cadr get(de2,'hom_deg))) or
-    (2*termsof1<termsof2) then DoNotReplace1:=t;
+    (2*termsof1<termsof2) then donotreplace1:=t;
 
  if null flagp(de2,'to_eval) or  
     (homo and (cadr get(de2,'hom_deg)<cadr get(de1,'hom_deg))) or
-    (2*termsof2<termsof1) then DoNotReplace2:=t;
+    (2*termsof2<termsof1) then donotreplace2:=t;
 
- if DoNotReplace1 and DoNotReplace2 then return nil$
+ if donotreplace1 and donotreplace2 then return nil$
 
  %---- determination of l1,l2 nl1,nl2
  % In the following l1 and l2 are all functions and their derivatives in 
@@ -525,7 +525,7 @@ begin scalar a,b,r,l1,l2,nl1,nl2,l1ul2,l1ml2,l2ml1,l1il2,oldorder,
     write "caar  a=", caar a;terpri()$ 
     write "cadar a=",cadar a;terpri()$ 
     write "cddar a=",cddar a;terpri()$ 
-    write "cddar a="$algebraic write lisp {'!*SQ,(cddar a . 1),t};
+    write "cddar a="$algebraic write lisp {'!*sq,(cddar a . 1),t};
     a:=cdr a;    
    >>;terpri()$
    write"de2:",de2," with ",termsof2," terms"$terpri()$
@@ -534,7 +534,7 @@ begin scalar a,b,r,l1,l2,nl1,nl2,l1ul2,l1ml2,l2ml1,l1il2,oldorder,
     write "caar  a=", caar a;terpri()$ 
     write "cadar a=",cadar a;terpri()$ 
     write "cddar a=",cddar a;terpri()$ 
-    write "cddar a="$algebraic write lisp {'!*SQ,(cddar a . 1),t};
+    write "cddar a="$algebraic write lisp {'!*sq,(cddar a . 1),t};
     a:=cdr a;    
    >>;terpri()$
   >>
@@ -545,10 +545,10 @@ begin scalar a,b,r,l1,l2,nl1,nl2,l1ul2,l1ml2,l2ml1,l1il2,oldorder,
                                   else {2*termsof2,0}
  >>$
 
- if ((car maxcancel)<termsof1) then if DoNotReplace1 then return nil
-                                                     else DoNotReplace2:=t$
- if ((car maxcancel)<termsof2) then if DoNotReplace2 then return nil
-                                                     else DoNotReplace1:=t$
+ if ((car maxcancel)<termsof1) then if donotreplace1 then return nil
+                                                     else donotreplace2:=t$
+ if ((car maxcancel)<termsof2) then if donotreplace2 then return nil
+                                                     else donotreplace1:=t$
 
  % flip is determined, so that after a flip (if necessary) de2 is replaced,
  % i.e. if n1 is the number of terms of de1 then at least n1 terms must be
@@ -557,7 +557,7 @@ begin scalar a,b,r,l1,l2,nl1,nl2,l1ul2,l1ml2,l2ml1,l1il2,oldorder,
 
  % Although nl1,2 are not used further below, the use of nconc instead of
  % append let once to a wrong 'fcts and 'fct_kern_nli property of an equation
- if DoNotReplace2 or (termsof2<termsof1) then <<
+ if donotreplace2 or (termsof2<termsof1) then <<
   flip:=t;
   a:=de1p; de1p:=de2p; de2p:=a;
   no_factors_x_2:=if l1 or null l2 then nl2 
@@ -575,7 +575,7 @@ begin scalar a,b,r,l1,l2,nl1,nl2,l1ul2,l1ml2,l2ml1,l1il2,oldorder,
   n2:=termsof2
  >>;
 
- if null DoNotReplace1 and null DoNotReplace2 then tryboth:=t;
+ if null donotreplace1 and null donotreplace2 then tryboth:=t;
 % max_success:=if tryboth then if termsof1<termsof2 then 2*termsof1 
 %                                                   else 2*termsof2
 %                         else 2*termsof1$
@@ -587,8 +587,8 @@ begin scalar a,b,r,l1,l2,nl1,nl2,l1ul2,l1ml2,l2ml1,l1il2,oldorder,
  % n1:=n1-4$
 
  if length_inc_alg neq 1.0 then <<
-  m1:=reval algebraic(ceiling lisp {'QUOTIENT,n1,length_inc_alg});
-  m2:=reval algebraic(ceiling lisp {'QUOTIENT,n2,length_inc_alg})
+  m1:=reval algebraic(ceiling lisp {'quotient,n1,length_inc_alg});
+  m2:=reval algebraic(ceiling lisp {'quotient,n2,length_inc_alg})
  >>                                    else <<
   m1:=n1;
   m2:=n2
@@ -687,9 +687,9 @@ if null take_first and (r neq (m2:=no_of_tm_sf numr l2)) then <<
  
  algebraic<<
   off nat$
-  write"de1:=",lisp {'!*SQ,get(de1,'sqval),t}$
-  write"de2:=",lisp {'!*SQ,get(de2,'sqval),t}$
-  write"m1 =",lisp {'!*SQ,m1,t}$
+  write"de1:=",lisp {'!*sq,get(de1,'sqval),t}$
+  write"de2:=",lisp {'!*sq,get(de2,'sqval),t}$
+  write"m1 =",lisp {'!*sq,m1,t}$
   on nat
  >>;
  write"ql="$terpri()$
@@ -726,7 +726,7 @@ if null take_first and (r neq (m2:=no_of_tm_sf numr l2)) then <<
      if r=0 then <<
       write"Equation ",nl2,"(",a,") is deleted as it is a consequence of ",nl1,"(",
             get(nl1,'terms),") :"$
-      algebraic(write " 0 = ",lisp {'!*SQ,(numr subtrsq(mksq(nl2,1),multsq(m1,mksq(nl1,1))) . 1),t})
+      algebraic(write " 0 = ",lisp {'!*sq,(numr subtrsq(mksq(nl2,1),multsq(m1,mksq(nl1,1))) . 1),t})
 
      >>     else <<
       if null car recycle_eqns then m2:=mkid(eqname_,nequ_)
@@ -736,7 +736,7 @@ if null take_first and (r neq (m2:=no_of_tm_sf numr l2)) then <<
       write"Equation ",nl2,"(",a,") is shortened by ",b,if b=1 then " term" else " terms",
 	   " using ",nl1,"(",get(nl1,'terms),") ","and ","is ","replaced by:"$
       algebraic(write lisp m2,"(",r,") = ",
-                      lisp {'!*SQ,(numr subtrsq(mksq(nl2,1),multsq(m1,mksq(nl1,1))) . 1),t})
+                      lisp {'!*sq,(numr subtrsq(mksq(nl2,1),multsq(m1,mksq(nl1,1))) . 1),t})
      >>
     >>
    >>;
@@ -890,7 +890,7 @@ symbolic procedure short(ql1,ql2,d1,d2,n1,n2,n1_now,max_save_now,max_save_later,
  % - if tryboth=t then try to shorten any one of both equations, else try only
  %                to shorten de2, i.e. the mother of d2.
 begin
- scalar LastQSuccess,d2cop,j1,j2,e1,e2,q,dcl,nu,ldcl,lnu,h,repl1,repl2,allowedq
+ scalar lastqsuccess,d2cop,j1,j2,e1,e2,q,dcl,nu,ldcl,lnu,h,repl1,repl2,allowedq
         ,max_coeff_len_reached
 %,bynow1,bynow2
 %,qisnumber,qcount
@@ -917,14 +917,14 @@ begin
 %bynow1:=0; bynow2:=0; qcount:=0;
  repeat <<  % for each term e1 of d1
   n1_now:=n1_now-2;                                                   
-  e1:=first_term_SF d1; d1:=subtrf(d1,e1);
+  e1:=first_term_sf d1; d1:=subtrf(d1,e1);
   %---- divide each term e1 of d1 through all terms e2 of d2 
   d2cop:=d2;
   %---- continue as long as possible and un-successful 
-  while d2cop and not(take_first and LastQSuccess) do << % correct version, 3% slower than:
+  while d2cop and not(take_first and lastqsuccess) do << % correct version, 3% slower than:
 % while d2cop and null LastQSuccess do << % The first quotient which proves to be
                                           % beneficial is nearly always the best
-   e2:=first_term_SF d2cop; d2cop:=subtrf(d2cop,e2);
+   e2:=first_term_sf d2cop; d2cop:=subtrf(d2cop,e2);
    q:=cancel(e1 ./ e2);         % otherwise already successful
 
 %qcount:=add1 qcount$
@@ -983,11 +983,11 @@ begin
    %---- Do numerical coefficients get too long?
    if allowedq and 
       ((numberp  lnu  and (( lnu>max_coeff_len) or ( lnu<-max_coeff_len))) or
-       (pairp  lnu and (car  lnu='!:GI!:) and 
+       (pairp  lnu and (car  lnu='!:gi!:) and 
 	((cadr  lnu>max_coeff_len) or (cadr  lnu<-max_coeff_len) or
 	 (cddr  lnu>max_coeff_len) or (cddr  lnu<-max_coeff_len)    )    ) or
        (numberp ldcl  and ((ldcl>max_coeff_len) or (ldcl<-max_coeff_len))) or
-       (pairp ldcl and (car ldcl='!:GI!:) and 
+       (pairp ldcl and (car ldcl='!:gi!:) and 
 	((cadr ldcl>max_coeff_len) or (cadr ldcl<-max_coeff_len) or
 	 (cddr ldcl>max_coeff_len) or (cddr ldcl<-max_coeff_len)    )    )    ) then <<
     if tr_short and null max_coeff_len_reached then <<
@@ -999,18 +999,18 @@ begin
    >>                                                                           else
 
    %---- Record the quotient, check whether it is successful
-   if null allowedq then LastQSuccess:=nil
+   if null allowedq then lastqsuccess:=nil
                     else 
    if repl1 and (null repl2 or (n1>n2)) then <<  % to replace de1
 %if qisnumber then write"###### wrongly adding to ql1!"$
     h:=add_quotient(ql1,nu,lnu,dcl,ldcl,j1)$
-    if car h > n2 then LastQSuccess:=t
-                  else LastQSuccess:=nil$
+    if car h > n2 then lastqsuccess:=t
+                  else lastqsuccess:=nil$
     ql1:=cdr h
    >>                                   else <<  % to replace de1
     h:=add_quotient(ql2,nu,lnu,dcl,ldcl,j2)$
-    if car h > n1 then LastQSuccess:=t
-                  else LastQSuccess:=nil$
+    if car h > n1 then lastqsuccess:=t
+                  else lastqsuccess:=nil$
     ql2:=cdr h
    >>
 
@@ -1030,7 +1030,7 @@ begin
 
  >>    % all terms of d1
  until (null d1                             ) or % everything divided
-       (take_first and LastQSuccess         ) or % successful: saving > cost 
+       (take_first and lastqsuccess         ) or % successful: saving > cost 
        (((null tryboth           ) or 
          ((j1 > 0) and (null ql1))    ) and 
         (  j2 > 0) and (null ql2)           )$   % all quotients are too rare 
@@ -1093,7 +1093,7 @@ begin scalar nall,m,qc,qq,preqc$
   if pairp ldcl then <<
    write"####### ldcl=",ldcl," is not an integer!"$ terpri()
   >>$
-  if pairp lnu and car lnu neq '!:RN!: then <<
+  if pairp lnu and car lnu neq '!:rn!: then <<
    write"####### lnu=",lnu," is not rational!"$ terpri()
   >>$
   if fixp lnu then qq:=(lnu . ldcl) else 
@@ -1204,18 +1204,18 @@ begin scalar pdes,tr_drop,p,cp,incre,newpdes,m,h,s,r,a,v,
      if cp then write"found: car cp=",car cp$terpri()$
     >>$
     if cp then <<r:=cadar cp;
-                 incre:=reval {'QUOTIENT,
-                               {'TIMES,m,r,    
-                                if cadr h>1 then cons('PLUS,caddr h)
+                 incre:=reval {'quotient,
+                               {'times,m,r,    
+                                if cadr h>1 then cons('plus,caddr h)
                                             else caaddr h},
                                s};
                  rplaca(cddar cp,cons(incre,caddar cp))
                >>  
           else <<r:=if (pairp s) or (numberp s) then gensym() else s;
                  indp:=s;
-                 incre:=reval {'QUOTIENT,
-                               {'TIMES,m,r,   
-                                if cadr h>1 then cons('PLUS,caddr h)
+                 incre:=reval {'quotient,
+                               {'times,m,r,   
+                                if cadr h>1 then cons('plus,caddr h)
                                             else caaddr h},
                                s};
                  vli:=cons({s,r,{incre}},vli)
@@ -1234,7 +1234,7 @@ begin scalar pdes,tr_drop,p,cp,incre,newpdes,m,h,s,r,a,v,
   % Formulating a list of conditions
   while vli do <<
    v:=caddar vli; vli:=cdr vli;
-   conli:=cons(if cdr v then cons('PLUS,v)
+   conli:=cons(if cdr v then cons('plus,v)
                         else car v,
                conli)
   >>;
@@ -1250,7 +1250,7 @@ begin scalar pdes,tr_drop,p,cp,incre,newpdes,m,h,s,r,a,v,
    >>; 
    if car indli then pdes:=cons(car newpdes,pdes)
                 else <<
-    s:=cdr solveeval {cons('LIST,subst(1,car mli,conli)),cons('LIST,cdr mli)};
+    s:=cdr solveeval {cons('list,subst(1,car mli,conli)),cons('list,cdr mli)};
     if s then <<drop_pde(car newpdes,nil,nil)$  % lin. dep.
                 success:=t$
                 if print_ then <<
@@ -1320,18 +1320,18 @@ begin scalar pdes,tr_drop,p,cp,incre,m,h,s,r,a,v,
      if cp then <<write"found: car cp=",car cp$terpri()$>>
     >>$
     if cp then <<r:=cadar cp;
-                 incre:=reval {'QUOTIENT,
-                               {'TIMES,m,%r,    
-                                if cadr h>1 then cons('PLUS,caddr h)
+                 incre:=reval {'quotient,
+                               {'times,m,%r,    
+                                if cadr h>1 then cons('plus,caddr h)
                                             else caaddr h},
                                s};
                  rplaca(cddar cp,cons(incre,caddar cp))
                >>  
           else <<r:=if (pairp s) or (numberp s) then gensym() else s;
                  indp:=s;
-                 incre:=reval {'QUOTIENT,
-                               {'TIMES,m,%r,   
-                                if cadr h>1 then cons('PLUS,caddr h)
+                 incre:=reval {'quotient,
+                               {'times,m,%r,   
+                                if cadr h>1 then cons('plus,caddr h)
                                             else caaddr h},
                                s};
                  vli:=cons({s,r,{incre}},vli)
@@ -1352,7 +1352,7 @@ begin scalar pdes,tr_drop,p,cp,incre,m,h,s,r,a,v,
   while vli do <<
    sli:=cons(caar vli,sli);
    v:=caddar vli; vli:=cdr vli;
-   conli:=cons(if cdr v then cons('PLUS,v)
+   conli:=cons(if cdr v then cons('plus,v)
                         else car v,
                conli)
   >>;
@@ -1360,8 +1360,8 @@ begin scalar pdes,tr_drop,p,cp,incre,m,h,s,r,a,v,
   % Now the investigation of the existence of equations with only one
   % term
   slilen:=length sli;
-  mli  :=cons('LIST,  mli);
-  conli:=cons('LIST,conli);
+  mli  :=cons('list,  mli);
+  conli:=cons('list,conli);
   if tr_drop then <<
    write"sli=",sli$terpri()$
    algebraic(write"mli=",mli)$
@@ -1373,12 +1373,12 @@ begin scalar pdes,tr_drop,p,cp,incre,m,h,s,r,a,v,
    pdes:=newpdes;
    while pdes and 
          ((get(car pdes,'terms)>1) or 
-          (not zerop reval {'DIFFERENCE,get(car pdes,'val),newp})) do
+          (not zerop reval {'difference,get(car pdes,'val),newp})) do
    pdes:=cdr pdes;
    if null pdes then <<
     cp:=conli;
     for s:=1:h do cp:=cdr cp;
-    rplaca(cp,reval {'PLUS,1,car cp});
+    rplaca(cp,reval {'plus,1,car cp});
     if tr_drop then <<
      write"h=",h$terpri()$
      algebraic(write"new conli=",conli)$
@@ -1420,7 +1420,7 @@ begin scalar pdes,tr_drop,p,cp,incre,m,h,s,r,a,v,
       v:=subst(0,m,car conli)$
       conli:=cdr conli$
       if r=h then <<
-       v:=reval {'PLUS,{'TIMES,m,newp},v}$
+       v:=reval {'plus,{'times,m,newp},v}$
       >>$
       newconli:=cons(v,newconli);
       r:=add1(r)
@@ -1428,7 +1428,7 @@ begin scalar pdes,tr_drop,p,cp,incre,m,h,s,r,a,v,
      conli:=reverse newconli$
 
      % the new equation:
-     newp:=mkeqSQ(nil,nil,newp,fl,vl,allflags_,t,list(0),nil,newpdes);
+     newp:=mkeqsq(nil,nil,newp,fl,vl,allflags_,t,list(0),nil,newpdes);
      % last argument is nil as no new inequalities can result
      % if new equation has only one term
      % --> has been changed as this may change, e.g. ineq_or
@@ -1451,7 +1451,7 @@ begin scalar pdes,tr_drop,p,cp,incre,m,h,s,r,a,v,
     >>;                        % end of successful find
     cp:=conli;
     for s:=1:h do cp:=cdr cp;
-    rplaca(cp,reval {'PLUS,-1,car cp});
+    rplaca(cp,reval {'plus,-1,car cp});
    >>                          % if the 1-term PDE is not already known
   >>$                          % for each possible single term
 

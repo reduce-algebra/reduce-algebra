@@ -28,7 +28,7 @@ module tableaux;
 %
 
 
-Comment. Tableaux are stored internally in a tagged matrix of 1-forms:
+COMMENT. Tableaux are stored internally in a tagged matrix of 1-forms:
 
          tab     ::= 'tab . matrix of pf
 

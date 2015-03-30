@@ -23,21 +23,21 @@
 %
 
 omfuncs!*:=
-'((oma . (omaIR))
-(oms . (omsIR))
-(omi . (omiIR))
-(omv . (omvIR))
-(omf . (omfIR))
-(omstr . (omstrIR))
-(ombind . (ombindIR))
-(omattr . (omattrIR)));
+'((oma . (omair))
+(oms . (omsir))
+(omi . (omiir))
+(omv . (omvir))
+(omf . (omfir))
+(omstr . (omstrir))
+(ombind . (ombindir))
+(omattr . (omattrir)));
 
 symbolic procedure om2ir();
 begin scalar res;
  % Initialisation of important variables used by the lexer.
 
  res:=nil;
- FLUID '(safe_atts char ch atts count temp space temp2);
+ fluid '(safe_atts char ch atts count temp space temp2);
  space:=int2id(32);
  count:=0;
  ch:=readch();
@@ -50,13 +50,13 @@ begin scalar res;
      lex();
      res:=omobj();
  >>
-   else errorML("<omobj>",2);
+   else errorml("<omobj>",2);
 
  lex();
 
  if char='(!/ o m o b j) then
    terpri()
-   else errorML("</omobj>",19);
+   else errorml("</omobj>",19);
 
  return res;
 end;
@@ -86,9 +86,9 @@ end;
 
 % Checks if the current token is equivalent to the given tag.
 
-symbolic procedure checkTag(tag);
+symbolic procedure checktag(tag);
 begin;
-  if char neq tag then errorML("Problem", "problem");
+  if char neq tag then errorml("Problem", "problem");
 end;
 
 % This function returns the symbol read within an <OMS> tag.
@@ -96,7 +96,7 @@ end;
 % MathML symbol is. If there isnt any it encodes the symbol
 % for use in a <semantic> tag.
 
-symbolic procedure omsIR();
+symbolic procedure omsir();
 begin scalar cd, name, sem, aa, bb, cd, attr, symb, validcd;
   attr:=nil;
 
@@ -148,8 +148,8 @@ begin scalar cd, name, sem, aa, bb, cd, attr, symb, validcd;
   if validcd neq nil then validcd:=cadr validcd;
   %debug("validcd: ",validcd);
 
-  if aa eq nil OR cd=validcd eq nil then <<
-    sem:=encodeIR(name);
+  if aa eq nil or cd=validcd eq nil then <<
+    sem:=encodeir(name);
     return sem;
   >>;
 
@@ -162,7 +162,7 @@ end;
 % The following function encodes an unknown symbol into a
 % valid representation for use within <semantic> tags.
 
-symbolic procedure encodeIR(name);
+symbolic procedure encodeir(name);
 begin scalar sem;
   sem:=append(char, cons('!  , atts));
   sem:=delall('!$, sem);
@@ -171,7 +171,7 @@ end;
 
 lisp operator om2mml;
 
-symbolic procedure omiIR();
+symbolic procedure omiir();
 begin scalar int;
   lex();
   int := compress char;
@@ -179,20 +179,20 @@ begin scalar int;
   return int;
 end;
 
-symbolic procedure omvIR();
+symbolic procedure omvir();
 begin scalar name;
   name:=find(atts, 'name);
-  if find(atts, 'hex) neq nil then errorML("wrong att", 2);
-  if find(atts, 'dec) neq nil then errorML("wrong att", 2);
+  if find(atts, 'hex) neq nil then errorml("wrong att", 2);
+  if find(atts, 'dec) neq nil then errorml("wrong att", 2);
   return name;
 end;
 
-symbolic procedure variablesIR();
+symbolic procedure variablesir();
 begin scalar var, vars;
   if char neq '(!/ o m b v a r) then <<
-    var:=omvIR();
+    var:=omvir();
   lex();
-    vars:=variablesIR();
+    vars:=variablesir();
     if var eq nil then
      return append(var, vars)
     else
@@ -200,14 +200,14 @@ begin scalar var, vars;
   >>;
 end;
 
-symbolic procedure omfIR();
+symbolic procedure omfir();
 begin scalar float;
   float:=find(atts, 'dec);
-  if find(atts, 'name) neq nil then errorML("wrong att", 2);
+  if find(atts, 'name) neq nil then errorml("wrong att", 2);
   return float;
 end;
 
-symbolic procedure omstrIR();
+symbolic procedure omstrir();
 begin scalar str;
   lex();
   str := compress char;
@@ -215,7 +215,7 @@ begin scalar str;
   return cons('string, list str);
 end;
 
-symbolic procedure omaIR();
+symbolic procedure omair();
 begin scalar obj, elems;
   lex();
   obj:=omobj();
@@ -228,48 +228,48 @@ begin scalar obj, elems;
   if car obj neq 'matrix then <<
     lex();
     elems:=omobjs();
-    checkTag('(!/ o m a));
+    checktag('(!/ o m a));
   >>;
 
   return append(obj, elems);
 end;
 
-symbolic procedure ombindIR();
+symbolic procedure ombindir();
 begin scalar symb, vars, obj;
   lex();
   symb:=omobj();
   lex();
-  vars:=toBvarIR variablesIR();
+  vars:=tobvarir variablesir();
   lex();
   obj:=omobj();
   lex();
-  checkTag('(!/ o m b i n d));
+  checktag('(!/ o m b i n d));
   return append(symb , append(vars, list obj));
 end;
 
-symbolic procedure omattrIR();
+symbolic procedure omattrir();
 begin scalar omatp, var;
   lex();
-  omatp:=omatpIR();
+  omatp:=omatpir();
   lex();
   var:=omobj();
   lex();
-  checkTag('(!/ o m a t t r));
-  if PAIRP omatp then if cadar omatp = 'csymbol then return (var . list nil);
-  if NUMBERP var then return list('cn, omatp, var);
+  checktag('(!/ o m a t t r));
+  if pairp omatp then if cadar omatp = 'csymbol then return (var . list nil);
+  if numberp var then return list('cn, omatp, var);
   return list('ci, omatp, var);
 end;
 
-symbolic procedure omatpIR();
+symbolic procedure omatpir();
 begin scalar symb ,obj;
   lex();
-  symb:=car omsIR();
+  symb:=car omsir();
 
   lex();
   obj:=car omobj();
 
   lex();
-  checkTag('(!/ o m a t p));
+  checktag('(!/ o m a t p));
 
   return list (symb . list obj);
 end;
@@ -277,9 +277,9 @@ end;
 % The following function transforms a list of variables
 % into a list of bvar constructs. ie: (x y)->((bvar x 1)(bvar y 1))
 
-symbolic procedure toBvarIR(bv);
+symbolic procedure tobvarir(bv);
 begin;
-  if bv neq nil then return cons(cons('bvar, list(car bv, 1)), toBvarIR(cdr bv));
+  if bv neq nil then return cons(cons('bvar, list(car bv, 1)), tobvarir(cdr bv));
 end;
 
 
@@ -287,7 +287,7 @@ end;
 % OpenMath special operators are defined. This is where
 % matrix, int, sum, prod, diff etc... are treated.
 
-symbolic procedure matrixIR();
+symbolic procedure matrixir();
 begin scalar res;
   lex();
   res:=omobjs();
@@ -299,7 +299,7 @@ end;
 symbolic procedure matrixelems(elem);
   if elem neq nil then cons(cddr car elem, matrixelems cdr elem);
 
-symbolic procedure sum_prodIR();
+symbolic procedure sum_prodir();
 begin scalar var, fun, int, name;
   name:=intern find(atts, 'name);
   lex();
@@ -307,13 +307,13 @@ begin scalar var, fun, int, name;
   int:='lowupperlimit . (cdr int);
   lex();
   fun:=omobj();
-  var:=lambdaVar fun;
-  fun:=lambdaFun fun;
+  var:=lambdavar fun;
+  fun:=lambdafun fun;
   return append(list(name , nil) , append(var  , int . list fun));
   return name . nil . var . int . list fun;
 end;
 
-symbolic procedure integralIR();
+symbolic procedure integralir();
 begin scalar int, fun, var, tag;
   tag:=intern find(atts, 'name);
 
@@ -331,14 +331,14 @@ begin scalar int, fun, var, tag;
   lex();
   fun:=omobj();
 
-  if PAIRP fun then if car fun = 'lambda then <<
-      var:=lambdaVar fun;
-      fun:=lambdaFun fun;
+  if pairp fun then if car fun = 'lambda then <<
+      var:=lambdavar fun;
+      fun:=lambdafun fun;
   >>;
   return append(list(tag , nil) , append(var  , list fun));
 end;
 
-symbolic procedure partialdiffIR();
+symbolic procedure partialdiffir();
 begin scalar lis, fun, var, tag, vars;
   tag:=intern find(atts, 'name);
 
@@ -346,15 +346,15 @@ begin scalar lis, fun, var, tag, vars;
   lis:=omobj();
 
   if car lis='list then lis:=cddr lis
-  else errorML("",3);
+  else errorml("",3);
 
   lex();
   fun:=omobj();
 
-  if PAIRP fun then
+  if pairp fun then
     if car fun = 'lambda then <<
-       var:=lambdaVar fun;
-       fun:=lambdaFun fun;
+       var:=lambdavar fun;
+       fun:=lambdafun fun;
        vars:= pdiffvars(lis, var);
     >>;
 
@@ -366,12 +366,12 @@ begin;
   return if ind neq nil then nth(v, car ind) . pdiffvars(cdr ind, v);
 end;
 
-symbolic procedure selectIR();
+symbolic procedure selectir();
 begin scalar name, cd, a,b, c, tag;
   name:=intern find(atts, 'name);
   cd:=intern find(atts, 'cd);
   tag:=list 'selector;
-  if member(cd, '(linalg3)) eq nil then tag:=encodeIR(name);
+  if member(cd, '(linalg3)) eq nil then tag:=encodeir(name);
   lex();
   a:=omobj();
   if name='matrix_selector then <<
@@ -387,11 +387,11 @@ begin scalar name, cd, a,b, c, tag;
 end;
 
 
-symbolic procedure limitIR();
+symbolic procedure limitir();
 begin scalar val, type, cd, fun, var, res, tag;
   cd:=intern find(atts, 'cd);
   tag:=list 'limit;
-  if member(cd, '(limit1)) eq nil then tag:=encodeIR('limit);
+  if member(cd, '(limit1)) eq nil then tag:=encodeir('limit);
   lex();
   val:=omobj();
   lex();
@@ -405,11 +405,11 @@ begin scalar val, type, cd, fun, var, res, tag;
   % Extract the necessary information from the OpenMath read in just above.
   type:=caadr type;
 
-  if member(type, '(below above both_sides null)) eq nil then errorML("wrong method of approach", 2);
+  if member(type, '(below above both_sides null)) eq nil then errorml("wrong method of approach", 2);
   if type='null then type:='both_sides;
 
-  var:= lambdaVar fun;
-  fun:= lambdaFun fun;
+  var:= lambdavar fun;
+  fun:= lambdafun fun;
 
   % Transform that information into intermediate representation.
   res:= append(tag, (nil . var ));
@@ -422,7 +422,7 @@ begin scalar val, type, cd, fun, var, res, tag;
   return res;
 end;
 
-symbolic procedure numIR();
+symbolic procedure numir();
 begin scalar base, a1, a2, tag;
   tag:=intern find(atts, 'name);
   lex();
@@ -431,15 +431,15 @@ begin scalar base, a1, a2, tag;
   a2:=omobj();
 
   if tag = 'complex_cartesian then <<
-    if IDP a1 OR IDP a2 then return 'plus . nil . a1 . list ('times . nil . a2 . list '!&imaginaryi!;)
+    if idp a1 or idp a2 then return 'plus . nil . a1 . list ('times . nil . a2 . list '!&imaginaryi!;)
   >>;
 
   if tag = 'complex_polar then <<
-    if IDP a1 OR IDP a2 then return 'times . nil . a1 . list ('exp . nil . list ('times . nil . a2 . list '!&imaginaryi!;))
+    if idp a1 or idp a2 then return 'times . nil . a1 . list ('exp . nil . list ('times . nil . a2 . list '!&imaginaryi!;))
   >>;
 
   if tag = 'rational then <<
-    if IDP a1 OR IDP a2 then return 'divide . nil . a1 . list a2;
+    if idp a1 or idp a2 then return 'divide . nil . a1 . list a2;
   >>;
 
   return tag . nil . a1. list a2;
@@ -449,29 +449,29 @@ end;
 % The following function deals with OpenMath symbols
 % not taking any arguments such as false, true, zero, etc...
 
-symbolic procedure unaryIR(validcd, tag);
+symbolic procedure unaryir(validcd, tag);
 begin scalar name, cd;
   name:=intern find(atts, 'name);
   cd:=intern find(atts, 'cd);
-  if cd neq validcd then return encodeIR name;
+  if cd neq validcd then return encodeir name;
   return tag;
 end;
 
 % Returns the first main variable of a lambda expression
 
-symbolic procedure lambdaVar(l);
+symbolic procedure lambdavar(l);
 begin;
   return cdr reverse cddr l;
 end;
 
-symbolic procedure lambdaVar2(l);
+symbolic procedure lambdavar2(l);
 begin;
   return cadr caddr l;
 end;
 
 % Returns the function of a lambda expression
 
-symbolic procedure lambdaFun(l);
+symbolic procedure lambdafun(l);
 begin;
   return car reverse l;
 end;

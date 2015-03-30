@@ -1867,7 +1867,7 @@ begin scalar plbak,plcop,ok;
 end$  % of modify_proc_list
 
 symbolic procedure choose_6_20(arglist);
-comment
+COMMENT
  This procedure is for automatic runs, not interactive use.
  It assumes that in proc_list_ the entry 'choose_6_20 is
  followed by either 'subst_level_45 (6) or 'subst_level_35 (20).
@@ -1960,7 +1960,7 @@ end;
 
 
 symbolic procedure choose_27_8_16(arglist);
-comment
+COMMENT
  This procedure is for automatic runs, not interactive use.
  It assumes that in proc_list_ the entry 'choose_27_8_16
  is followed by 'diff_length_reduction,'factorize_to_substitute,'subst_level_3
@@ -2080,7 +2080,7 @@ end;
 
 
 symbolic procedure choose_30_47_21(arglist);
-comment
+COMMENT
  This procedure is for automatic runs, not interactive use.
  It assumes that in proc_list_ the entry 'choose_30_47_21
  is followed by 'decoupling,'factorize_any,'subst_level_4
@@ -2226,7 +2226,7 @@ begin
 end;
 
 symbolic procedure choose_70_65_8_47(arglist);
-comment
+COMMENT
  This procedure is for automatic runs, not interactive use.
  The idea is to simplify the system through a case splitting if
  it gets too difficult. The decision is based on the last
@@ -2317,7 +2317,7 @@ begin scalar csh,plbak,ok,plcop,do_split,sl,shcp;
 end;
 
 symbolic procedure choose_30_47_72(arglist);
-comment
+COMMENT
  This procedure is for automatic runs, not interactive use.
  The idea is for huge and highly overdetermined systems to balance
  reading in of equations, to do substitutions, decoupling and
@@ -2376,7 +2376,7 @@ end;
 
 
 symbolic procedure choose_11_30(arglist);
-comment
+COMMENT
  This procedure is for automatic runs, not interactive use.
  It assumes that in proc_list_ the entry 'choose_11_30 is
  followed by either 'alg_length_reduction (11) or 'decoupling (30).
@@ -2483,7 +2483,7 @@ if size_watch then begin
 end;
 
 symbolic procedure try_other_ordering(arglist);
-comment
+COMMENT
  This procedure is for automatic runs, not interactive use.
  It assumes that in proc_list_ there is 'decoupling (30)
  and that this procedure comes definitely after 30 and pretty
@@ -6518,7 +6518,7 @@ begin scalar a,h;
  >>
 end;
 
-symbolic procedure printdhmstime(a);
+symbolic procedure printDHMStime(a);
 % print how many days, hours, minutes and seconds a is
 begin scalar b;
  if a>10000 then <<
@@ -8406,7 +8406,7 @@ if session_ and % Otherwise the current computation is a side computation
                 % which should not interfere with the case tree.
    keep_case_tree then
 begin
- comment
+ COMMENT
   The stored list is nil, or no file is stored if no case
   distinction has happened yet.
 

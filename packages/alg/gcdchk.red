@@ -201,7 +201,7 @@ symbolic procedure modular!-image(p,var);
       if null v then x:=nil
       else x:=modular!-times(v,x);
       if w then x:=modular!-plus(x,w);
-      return if x=0 then nil else X
+      return if x=0 then nil else x
     end;
 
 endmodule;

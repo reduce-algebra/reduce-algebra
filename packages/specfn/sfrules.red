@@ -30,7 +30,7 @@ operator defint,choose;
 
 put('intgggg,'simpfn,'simpintgggg);
 
-SHARE MELLINCOEF$
+share mellincoef$
 
 defint_rules:=
 
@@ -82,20 +82,20 @@ symbolic procedure simpintgggg (u);
         ff1 := prepsq simp car u;
         if (cadr u) = 0 then ff2 := '(0 0 x) else
                 ff2 := prepsq simp cadr u;
-        if (ff1 = 'UNKNOWN) then return simp 'unknown;
-        if (ff2 = 'UNKNOWN) then return simp 'unknown;
+        if (ff1 = 'unknown) then return simp 'unknown;
+        if (ff2 = 'unknown) then return simp 'unknown;
         alpha := caddr u;
         var := cadddr u;
 
         chosen_num := cadr ff1;
         put('f1,'g,getv(mellin!-transforms!*,chosen_num));
         coef := getv(mellin!-coefficients!*,chosen_num);
-        if coef then MELLINCOEF:= coef else MELLINCOEF :=1;
+        if coef then mellincoef:= coef else mellincoef :=1;
 
         chosen_num := cadr ff2;
         put('f2,'g,getv(mellin!-transforms!*,chosen_num));
         coef := getv(mellin!-coefficients!*,chosen_num);
-        if coef then MELLINCOEF:= coef * MELLINCOEF ;
+        if coef then mellincoef:= coef * mellincoef ;
 
        return
         simp list('intgg,list('f1,caddr ff1), list('f2,caddr ff2),

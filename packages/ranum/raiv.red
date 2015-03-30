@@ -28,32 +28,32 @@
 
 module raiv;
 
-asserted procedure riv_mk(l: SQ, u: SQ): IV;
+asserted procedure riv_mk(l: sq, u: sq): iv;
    % [l] and [u] are numbers.
    {'iv, l, u};
 
-asserted procedure riv_l(i: IV): SQ;
+asserted procedure riv_l(i: iv): sq;
    % Lower bound.
    cadr i;
 
-asserted procedure riv_u(i: IV): SQ;
+asserted procedure riv_u(i: iv): sq;
    % Upper bound.
    caddr i;
 
-asserted procedure riv_plus(i1: IV, i2: IV): IV;
+asserted procedure riv_plus(i1: iv, i2: iv): iv;
    % ]l1, u1[ + ]l2, u2[ = ]l1 + l2, u1 + u2[
    riv_mk(addsq(riv_l i1, riv_l i2), addsq(riv_u i1, riv_u i2));
 
-asserted procedure riv_minus(i: IV): IV;
+asserted procedure riv_minus(i: iv): iv;
    % - ]l, u[ = ]-u, -l[
    riv_mk(negsq riv_u i, negsq riv_l i);
 
-asserted procedure riv_contains(i: IV, q: SQ): Boolean;
+asserted procedure riv_contains(i: iv, q: sq): boolean;
    sfto_lessq(riv_l i, q) and sfto_lessq(q, riv_u i);
 
 put('iv, 'prifn, 'riv_print);
 
-asserted procedure riv_print0(i: IV);
+asserted procedure riv_print0(i: iv);
    begin scalar w1, w2;
       prin2!* "]";
       if !*rarat then <<
@@ -74,7 +74,7 @@ asserted procedure riv_print0(i: IV);
 
 ra_wrap(riv_print0, riv_print, 1);
 
-asserted procedure riv_rat2float(q: SQ, prec: Integer): Floating;
+asserted procedure riv_rat2float(q: sq, prec: integer): floating;
    begin scalar w, sh;
       sh := 10 ^ prec;
       w := (float(numr q or 0) / float denr q);

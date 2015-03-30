@@ -7,7 +7,7 @@
 
 % Formal Laurent series
 
-fps(E^x,x);
+fps(e^x,x);
 
 
               k
@@ -16,7 +16,7 @@ infsum(--------------,k,0,infinity)
         factorial(k)
 
 
-fps(E^x/(x^3),x);
+fps(e^x/(x^3),x);
 
 
                k
@@ -104,7 +104,7 @@ infsum(--------------------------------,k,0,infinity) + x
           4 *factorial(k) *(2*k - 1)
 
 
-fps((x + sqrt(1+x^2))^A,x);
+fps((x + sqrt(1+x^2))^a,x);
 
 
          2*k       k  2*k              - a                 a
@@ -294,7 +294,7 @@ fps(asec x,x);
 
 
 
-fps(besseli(0,x),x);
+fps(BesselI(0,x),x);
 
 
                 2*k
@@ -303,7 +303,7 @@ infsum(--------------------,k,0,infinity)
          2*k             2
         2   *factorial(k)
 
-fps(besseli(1,x),x);
+fps(BesselI(1,x),x);
 
 
                         2*k
@@ -457,7 +457,7 @@ infsum(--------------------------------------------------------------,k,0,
 
    0,infinity)
 
-fps(cos x+I*sin x,x);
+fps(cos x+i*sin x,x);
 
 
             k  k
@@ -634,7 +634,7 @@ fps(log(1-2*x*y+x^2),x);
 fps(log(1 - 2*x*y + x ),x,0)
 
 
-FPS(sin x,x,pi);
+fps(sin x,x,pi);
 
 
                    2*k       k

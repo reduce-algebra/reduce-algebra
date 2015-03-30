@@ -1,4 +1,4 @@
-MODULE COMPAT;
+module compat;
 
 % Author: Anthony C. Hearn;
 

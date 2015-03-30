@@ -36,7 +36,7 @@ setcrackflags()$
 lisp(print_:=nil)$       
 on dfprint$
 
-comment
+COMMENT
 -------------------------------------------------------
 The following runs demonstrate the program LIEPDE for 
 the computation of infinitesimal symmetries. Times given
@@ -48,7 +48,7 @@ PSL Reduce.
 lisp(prelim_:=nil)$      % not necessary as this is the default value
 lisp(individual_:=nil)$  % not necessary as this is the default value
 
-comment
+COMMENT
 -------------------------------------------------------
 The first example is a single ODE with a parametric
 function f=f(x) for which point symmetries are to be
@@ -71,7 +71,7 @@ lisp(freeint_:=t)$   % Because the simplification of differential
                      % may provide difficulties such solutions involving
                      % unevaluated integrals are disabled.
 
-comment
+COMMENT
 -------------------------------------------------------
 The following example demonstrates a number of things.
 The Burgers equation is investigated concerning third
@@ -86,7 +86,7 @@ nodepnd {u}$
 depend u,t,x$
 liepde({df(u,t)=df(u,x,2)+df(u,x)**2,{u},{t,x}},{"general",3},{},{})$
 
-comment
+COMMENT
 -------------------------------------------------------
 Now the same equation is investigated, this time only
 df(u,x,2) and its derivatives are substituted. As a
@@ -102,7 +102,7 @@ write"-------------------------------------------------------"$
 liepde({df(u,x,2)=df(u,t)-df(u,x)**2,{u},{t,x}},{"general",3},{},{})$
 nodepnd {u}$
 
-comment
+COMMENT
 -------------------------------------------------------
 The following example includes the Karpman equations
 for three unknown functions in 4 variables. 
@@ -165,7 +165,7 @@ solve(
 
 nodepnd {r,f,v}$
 
-comment
+COMMENT
 -------------------------------------------------------
 In the following example a system of two equations (by
 V.Sokolov) is investigated concerning a special ansatz for
@@ -216,7 +216,7 @@ liepde({des,{u,v},{t,x}},
       )$
 nodepnd {f,g}$
 
-comment
+COMMENT
 -------------------------------------------------------
 A relative new feature of the package CRACK is to be able to solve
 non-linear problems where unknowns to be determined may appear in

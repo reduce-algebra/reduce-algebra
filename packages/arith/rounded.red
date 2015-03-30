@@ -30,7 +30,7 @@ module rounded; % *** Support for Arbitrary Rounded Arithmetic.
 %
 
 
-Comment this module defines a rounded object as a list with two fields:
+COMMENT this module defines a rounded object as a list with two fields:
 
       (<tag>.<structure>).
 

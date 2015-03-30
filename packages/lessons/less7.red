@@ -24,7 +24,7 @@ inquiry to A.C. Hearn at the Rand Corporation may reveal that someone
 else has already implemented the supplementary facility and can send a
 copy.)
 
-;PAUSE;COMMENT
+;pause;COMMENT
 
 A type of statement is available to both modes if its leading keyword
 appears in either of the equivalent statements
@@ -54,7 +54,7 @@ in IF or WHILE statements, it should be flagged BOOLEAN, as in
 
       FLAG('(...),'BOOLEAN);
 
-;PAUSE;COMMENT
+;pause;COMMENT
 
 Other functions which are used but not defined in RLISP are the built-in
 LISP functions.  See a description of the underlying LISP system for
@@ -88,7 +88,7 @@ use these techniques to make them available to algebraic mode.  In order
 to do so, it is usually necessary to understand how REDUCE represents
 and simplifies algebraic expressions.
 
-;PAUSE;COMMENT
+;pause;COMMENT
 
 One of the REDUCE representations is called Cambridge Prefix.  An
 expression is either an atom or a list consisting of a literal atom,
@@ -115,20 +115,20 @@ indeterminate, function name, or literal subexpression which is the
 right argument.  Isfreeof is similar to the REDUCE FREEOF function but
 less general;
 
-PAUSE;
+pause;
 
-FLAG('(ISFREEOF), 'BOOLEAN);
-INFIX ISFREEOF;
-SYMBOLIC PROCEDURE CAMPRE1 ISFREEOF CAMPRE2;
-   IF CAMPRE1=CAMPRE2 THEN NIL
-   ELSE IF ATOM CAMPRE1 THEN T
-   ELSE (CAR CAMPRE1 ISFREEOF CAMPRE2)
-      AND (CDR CAMPRE1 ISFREEOF CAMPRE2);
+flag('(isfreeof), 'boolean);
+infix isfreeof;
+symbolic procedure campre1 isfreeof campre2;
+   if campre1=campre2 then nil
+   else if atom campre1 then t
+   else (car campre1 isfreeof campre2)
+      and (cdr campre1 isfreeof campre2);
 
-ALGEBRAIC IF LOG(5+X+COS(Y)) ISFREEOF SIN(Z-7)
-   THEN WRITE "WORKS ONE WAY";
-ALGEBRAIC IF NOT(LOG(5+X+COS(Y)) ISFREEOF COS(Y))
-   THEN WRITE "WORKS OTHER WAY TOO";
+algebraic if log(5+x+cos(y)) isfreeof sin(z-7)
+   then write "WORKS ONE WAY";
+algebraic if not(log(5+x+cos(y)) isfreeof cos(y))
+   then write "WORKS OTHER WAY TOO";
 
 COMMENT Conceivably we might wish to distinguish when CAMPRE2 is a
 literal atom occurring as a function name from the case when CAMPRE2 is
@@ -136,7 +136,7 @@ a literal atom and occurs as an indeterminate.  Accordingly, see if you
 can write two such more specialized infix predicates named ISFREEOFINDET
 and ISFREEOFFUNCTION;
 
-PAUSE;
+pause;
 
 COMMENT  When writing a symbolic-mode function, it is often desired
 to invoke the algebraic simplifier from within the function.  This
@@ -159,7 +159,7 @@ reset to NIL if subsequent LET, MATCH, or computational ON
 statements could change the environment is such a way that the
 expression might require resimplification next time it is used.
 
-;PAUSE;COMMENT
+;pause;COMMENT
 
 Standard quotients are neither Cambridge nor REDUCE prefix, so the
 purpose of the atom '!*SQ is to make the value of all algebraic-mode
@@ -191,7 +191,7 @@ to make the final result be REDUCE prefix.  Also it is often more
 efficient to work with polynomials rather than rational functions
 during the intermediate steps.
 
-;PAUSE;COMMENT
+;pause;COMMENT
 
 The coefficient domain of polynomials is floating-point numbers,
 integers, integers modulo an arbitrary integer modulus, or rational
@@ -216,7 +216,7 @@ is represented as a standard power dotted with its coefficient, which
 is a standard form in the remaining variables.  A standard power is
 represented as a variable dotted with a positive integer degree.
 
-;PAUSE;COMMENT
+;pause;COMMENT
 
 Letting ::= denote "is defined as" and letting | denote "or",
 we can summarize the REDUCE data representations as follows:
@@ -256,9 +256,9 @@ and to invent your own when convenient.  As an example of how this can
 be done, here is the macro definition for extracting the main variable
 of a standard term;
 
-   SYMBOLIC SMACRO PROCEDURE TVAR TRM; CAAR TRM;
+   symbolic smacro procedure tvar trm; caar trm;
 
-PAUSE;
+pause;
 
 COMMENT It turns out that there are already built-in selectors named TC,
 TPOW, and TDEG, which respectively extract the coefficient, leading
@@ -275,7 +275,7 @@ substitute into, raise to a positive integer power, and determine the
 greatest common divisor of standard forms.  See if you can use them to
 define a macro which subtracts standard forms;
 
-PAUSE;
+pause;
 
 COMMENT The best way to become adept at working with standard forms and
 standard quotients is to study the corresponding portions of the REDUCE
@@ -285,16 +285,16 @@ function named ISFREEOFKERN which determines whether or not its left
 argument is free of the kernel which is the right argument, using REDUCE
 prefix rather than Cambridge prefix for the left argument;
 
-PAUSE;
+pause;
 
 COMMENT  As a final example of the interaction between modes, here
 is a function which produces simple print plots;
 
-SHARE NCOLS;
-NCOLS := 66;
-SYMBOLIC OPERATOR PLOT;
-SYMBOLIC PROCEDURE PLOT(EX, XINIT, DX, NDX, YINIT, DY);
-   BEGIN COMMENT This procedure produces a print-plot of univariate
+share ncols;
+ncols := 66;
+symbolic operator plot;
+symbolic procedure plot(ex, xinit, dx, ndx, yinit, dy);
+   begin COMMENT This procedure produces a print-plot of univariate
       expression EX where,
          XINIT is the initial value of the indeterminate,
          DX is the increment per line of the indeterminate,
@@ -308,85 +308,85 @@ SYMBOLIC PROCEDURE PLOT(EX, XINIT, DX, NDX, YINIT, DY);
       unable to numerically evaluate expressions involving operations
       other than +, -, *, /, and integer powers;
 
-   SCALAR X, F, Y;  INTEGER COL, NCOLSMINUS1;
-   NCOLSMINUS1 := NCOLS - 1;
-   WRITE "Starting the plot of ",EX;
-   X := LISTOFVARS EX;          % find indeterminates;
-   IF LENGTH X > 1 THEN REDERR
+   scalar x, f, y;  integer col, ncolsminus1;
+   ncolsminus1 := ncols - 1;
+   write "Starting the plot of ",ex;
+   x := listofvars ex;          % find indeterminates;
+   if length x > 1 then rederr
      "ERROR: PLOT expression can have at most 1 indeterminate";
-   IF NULL X THEN <<
-      WRITE "ERROR: no indeterminates in ", EX;
-      REDERR "" >>
-   ELSE X := CAR X;
-   WRITE " in variable ",x;terpri();
+   if null x then <<
+      write "ERROR: no indeterminates in ", ex;
+      rederr "" >>
+   else x := car x;
+   write " in variable ",x;terpri();
    COMMENT Convert args from algebraic to symbolic values;
-   XINIT := REVALX XINIT;
-   DX := REVALX DX;
-   YINIT := REVALX YINIT;
-   DY := REVALX DY;
+   xinit := revalx xinit;
+   dx := revalx dx;
+   yinit := revalx yinit;
+   dy := revalx dy;
 
-   FOR J:= 0:NDX DO <<
+   for j:= 0:ndx do <<
 
       % generate expression with current value substituted for x
-      F := SUBST(XINIT + J*DX, X, EX);
-      Y := EVAL(F);                      % eval expression
-      COL := RND((Y - YINIT)/DY);        % scale and round for cols
+      f := subst(xinit + j*dx, x, ex);
+      y := eval(f);                      % eval expression
+      col := rnd((y - yinit)/dy);        % scale and round for cols
 
-      IF COL<0 THEN WRITE "<"
-      ELSE IF COL > NCOLSMINUS1 THEN << SPACES(NCOLSMINUS1);
-         PRIN2 ">";
-         TERPRI() >>
-      ELSE << SPACES(COL);
-         PRIN2 "*";
-         TERPRI() >>
+      if col<0 then write "<"
+      else if col > ncolsminus1 then << spaces(ncolsminus1);
+         prin2 ">";
+         terpri() >>
+      else << spaces(col);
+         prin2 "*";
+         terpri() >>
       >> ;
-   IF NULL Y THEN REDERR
+   if null y then rederr
      "ERROR: UNABLE TO PERFORM FLOATING-POINT EVALUATION OF 1ST ARG"
-   END;
+   end;
 
-PAUSE;
+pause;
 
-SYMBOLIC PROCEDURE LISTOFVARS CAMPRE;
-   IF NULL CAMPRE OR NUMBERP CAMPRE THEN NIL
-   ELSE IF ATOM CAMPRE THEN LIST CAMPRE
-   ELSE VARSINARGS CDR CAMPRE;
+symbolic procedure listofvars campre;
+   if null campre or numberp campre then nil
+   else if atom campre then list campre
+   else varsinargs cdr campre;
 
-SYMBOLIC PROCEDURE VARSINARGS LISTOFCAMPRE;
-   BEGIN SCALAR X;
-   RETURN IF NULL LISTOFCAMPRE THEN NIL
-   ELSE UNION(LISTOFVARS CAR LISTOFCAMPRE, VARSINARGS CDR LISTOFCAMPRE);
-   END;
+symbolic procedure varsinargs listofcampre;
+   begin scalar x;
+   return if null listofcampre then nil
+   else union(listofvars car listofcampre, varsinargs cdr listofcampre);
+   end;
 
-SYMBOLIC PROCEDURE RND X;
-   BEGIN SCALAR ANS;
-   ANS := REVALX X;
-   IF NOT NUMBERP X THEN REDDERR "RND GIVEN NON-NUMERIC ARGUMENT";
-   IF ANS >=0 THEN ANS := FIX(ANS+00.5)
-   ELSE ANS:= FIX(ANS-0.5);
-   RETURN ANS
-   END;
+symbolic procedure rnd x;
+   begin scalar ans;
+   ans := revalx x;
+   if not numberp x then redderr "RND GIVEN NON-NUMERIC ARGUMENT";
+   if ans >=0 then ans := fix(ans+00.5)
+   else ans:= fix(ans-0.5);
+   return ans
+   end;
 
-SYMBOLIC PROCEDURE REVALX U;
+symbolic procedure revalx u;
    % MAKE SURE WE GET TRUE FLOATS IN SYMBOLIC MODE.
-   IF EQCAR(U,'!:RD!:) THEN RDPREPX U ELSE U;
+   if eqcar(u,'!:rd!:) then rdprepx u else u;
 
-SYMBOLIC PROCEDURE RDPREPX U;
-   IF FLOATP CDR U THEN CDR U ELSE BF2FLR U;
+symbolic procedure rdprepx u;
+   if floatp cdr u then cdr u else bf2flr u;
 
-PAUSE;
+pause;
 
-ON ROUNDED;
+on rounded;
 
-PLOT(Y**2,     0, 0.25, 10, 0, 0.25);
-PAUSE;
+plot(y**2,     0, 0.25, 10, 0, 0.25);
+pause;
 
-PLOT((A+1)**2, 0, 0.25, 10, 0, 0.25);
-PAUSE;
+plot((a+1)**2, 0, 0.25, 10, 0, 0.25);
+pause;
 
-B := A*2;
+b := a*2;
 
-PLOT(A*B,      0, 0.25, 10, 0, 0.25);
-PAUSE;
+plot(a*b,      0, 0.25, 10, 0, 0.25);
+pause;
 
 COMMENT We leave it as an exercise to write a more elaborate plot
 procedure which offers amenities such as automatic scaling, numbered
@@ -395,4 +395,4 @@ ordinates, etc.
 Good luck with these exercises, with REDUCE, with computer algebra and
 with all of your endeavors.
 
-;END;
+;end;

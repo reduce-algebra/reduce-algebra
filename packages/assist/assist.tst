@@ -3,13 +3,13 @@
 % Author: H. Caprasse <hubert.caprasse@ulg.ac.be>
 %load_package assist$
 
-Comment 2. HELP for ASSIST:;
+COMMENT 2. HELP for ASSIST:;
 ;
 assist();
 ;
 assisthelp(7);
 ;
-Comment 3. CONTROL OF SWITCHES:;
+COMMENT 3. CONTROL OF SWITCHES:;
 ;
 switches;
 off exp; on gcd; off precise;
@@ -20,11 +20,11 @@ switches;
 if !*mcd then "the switch mcd is on";
 if !*gcd then "the switch gcd is on";
 ;
-Comment 4. MANIPULATION OF THE LIST STRUCTURE:;
+COMMENT 4. MANIPULATION OF THE LIST STRUCTURE:;
 ;
 t1:=mklist(5);
 
-Comment   MKLIST does NEVER destroy anything ;
+COMMENT   MKLIST does NEVER destroy anything ;
 
 mklist(t1,10);
 mklist(t1,3);
@@ -94,7 +94,7 @@ position(a2,t1);
 appendn(li,li,li);
 ;
 clear t1,li;
-comment 5. THE BAG STRUCTURE AND OTHER FUNCTION FOR LISTS AND BAGS.
+COMMENT 5. THE BAG STRUCTURE AND OTHER FUNCTION FOR LISTS AND BAGS.
  ;
 aa:=bag(x,1,"A");
 putbag bg1,bg2;
@@ -170,7 +170,7 @@ appendn(ab,ab,ab);
 append(ab,al);
 append(al,ab);
 clear ab; a1;
-;comment Association list or bag may be constructed and thoroughly used;
+;COMMENT Association list or bag may be constructed and thoroughly used;
 ;
 l:=list(a1,a2,a3,a4);
 b:=bg1(x1,x2,x3);
@@ -178,7 +178,7 @@ al:=pair(list(1,2,3,4),l);
 ab:=pair(bg1(1,2,3),b);
 ;
 clear b;
-comment : A BOOLEAN function abaglistp to test if it is an association;
+COMMENT : A BOOLEAN function abaglistp to test if it is an association;
 ;
 if abaglistp bag(bag(1,2)) then "it is an associated bag";
 ;
@@ -202,7 +202,7 @@ asslist(a1,list(list(x,a1),list(y,a1),list(x,y)));
 restaslist(bag(a1,x),bg1(bag(x,a1,a2),bag(a1,x,b2),bag(x,y,z)));
 restaslist(list(a1,x),bag(bag(x,a1,a2),bag(a1,x,b2),bag(x,y,z)));
 ;
-Comment 6. SETS AND THEIR MANIPULATION FUNCTIONS
+COMMENT 6. SETS AND THEIR MANIPULATION FUNCTIONS
 ;
 ts:=mkset list(a1,a1,a,2,2);
 if setp ts then "this is a SET";
@@ -217,7 +217,7 @@ symdiff(ts,ts);
 intersect(listbag(ts,set1),listbag(ts,set2));
 
 
-Comment 7. GENERAL PURPOSE UTILITY FUNCTIONS :;
+COMMENT 7. GENERAL PURPOSE UTILITY FUNCTIONS :;
 ;
 clear a1,a2,a3,a,x,y,z,x1,x2,op$
 ;
@@ -337,7 +337,7 @@ list_to_array({a,b,c,d},1,ar);
 array_to_list ar;  
 list_to_array({{a},{b},{c},{d}},2,ar);
 ;
-comment 8. PROPERTIES AND FLAGS:;
+COMMENT 8. PROPERTIES AND FLAGS:;
 ;
 putflag(list(a1,a2),fl1,t);
 putflag(list(a1,a2),fl2,t);
@@ -352,7 +352,7 @@ displayprop(x1,propname);
 putprop(x1,propname,value,0);
 displayprop(x1,propname);
 ;
-Comment 9. CONTROL FUNCTIONS:;
+COMMENT 9. CONTROL FUNCTIONS:;
 ;
 alatomp z;
 z:=s1;
@@ -409,7 +409,7 @@ clear op;
 %show arrays;
 %show matrices;
 ;
-comment end of the interactive part;
+COMMENT end of the interactive part;
 ;
 clear op;
 operator op;
@@ -418,9 +418,9 @@ clearop op;
 ;
 clearfunctions abs,tan;
 ;
-comment  THIS FUNCTION MUST BE USED WITH CARE !!!!!;
+COMMENT  THIS FUNCTION MUST BE USED WITH CARE !!!!!;
 ;
-Comment 10. HANDLING OF POLYNOMIALS
+COMMENT 10. HANDLING OF POLYNOMIALS
 
 clear x,y,z;
 COMMENT  To see the internal representation :;
@@ -454,7 +454,7 @@ divpol(pol,x+2*y+3*z**2);
 ;
 lowestdeg(pol,y);
 ;
-Comment 11.  HANDLING OF SOME TRANSCENDENTAL FUNCTIONS:;
+COMMENT 11.  HANDLING OF SOME TRANSCENDENTAL FUNCTIONS:;
 ;
 trig:=((sin x)**2+(cos x)**2)**4;
 trigreduce trig;
@@ -470,7 +470,7 @@ hypreduce (sinh x **2 -cosh x **2);
 clear a,b,c,d;
 ;
 
-Comment 13. HANDLING OF N-DIMENSIONAL VECTORS:;
+COMMENT 13. HANDLING OF N-DIMENSIONAL VECTORS:;
 ;
 clear u1,u2,v1,v2,v3,v4,w3,w4;
 u1:=list(v1,v2,v3,v4);
@@ -483,7 +483,7 @@ crossvect(rest u1,rest u2);
 mpvect(rest u1,rest u2, minvect(rest u1,rest u2));
 scalvect(crossvect(rest u1,rest u2),minvect(rest u1,rest u2));
 ;
-Comment 14. HANDLING OF GRASSMANN OPERATORS:;
+COMMENT 14. HANDLING OF GRASSMANN OPERATORS:;
 ;
 putgrass eta,eta1;
 grasskernel:=
@@ -512,7 +512,7 @@ clearrules grasskernel;
 remgrass eta,eta1;
 clearop zz;
 ;
-Comment  15. HANDLING OF MATRICES:;
+COMMENT  15. HANDLING OF MATRICES:;
 ;
 clear m,mm,b,b1,bb,cc,a,b,c,d,a1,a2;
 load_package matrix;
@@ -530,7 +530,7 @@ m;
 on errcont;
 baglmat(bag(bag(a1),bag(a2)),bag);
 off errcont;
-comment  Right since a bag-like object cannot become a matrix.;
+COMMENT  Right since a bag-like object cannot become a matrix.;
 ;
 coercemat(m,op);
 coercemat(m,list);
@@ -568,7 +568,7 @@ hermat(bb,hbb);
 % id hbb changed to a matrix id and assigned to the hermitian matrix
 % of bb.
 ;
-load_package HEPHYS;
+load_package hephys;
 
 % Use of remvector.
 ;

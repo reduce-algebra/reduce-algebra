@@ -172,14 +172,14 @@ symbolic procedure simplex1(input);
   % contains no anti_cycling algorithm.
   %
   begin
-    scalar max_or_min,objective,equation_list,tmp,A,b,obj_mat,X,A1,
-           phase1_obj,ib,xb,Binv,simp_calc,phase1_obj_value,big,sum,
-           stop,work,I_turned_rounded_on,ans_list,optimal_value;
+    scalar max_or_min,objective,equation_list,tmp,a,b,obj_mat,x,a1,
+           phase1_obj,ib,xb,binv,simp_calc,phase1_obj_value,big,sum,
+           stop,work,i_turned_rounded_on,ans_list,optimal_value;
     integer m,n,k,i,ell,no_coeffs,no_variables,equation_variables;
     max_or_min := reval car input;
     objective := reval cadr input;
     equation_list := normalize!-equationl reval caddr input;  % <--- patch
-    if not !*rounded then << I_turned_rounded_on := t; on rounded; >>;
+    if not !*rounded then << i_turned_rounded_on := t; on rounded; >>;
 
     if (max_or_min neq 'max) and (max_or_min neq 'min) then rederr
      "Error in simplex(first argument): must be either max or min.";
@@ -206,35 +206,35 @@ symbolic procedure simplex1(input);
                                equation_variables);
 
     tmp := initialise(max_or_min,objective,equation_list);
-    A := car tmp;
+    a := car tmp;
     b := cadr tmp;
     obj_mat := caddr tmp;
-    X := cadddr tmp;
+    x := cadddr tmp;
     % no_variables is the number of variables in the input equation
     % list. this is used in make_answer_list.
     no_variables := car cddddr tmp;
 
     % r.h.s. (i.e. b matrix) must be positive.
-    tmp := check_minus_b(A,b);
-    A := car tmp;
+    tmp := check_minus_b(a,b);
+    a := car tmp;
     b := cadr tmp;
 
-    m := fast_row_dim(A);
-    n := no_coeffs := fast_column_dim(A);
+    m := fast_row_dim(a);
+    n := no_coeffs := fast_column_dim(a);
 
-    tmp := create_phase1_A1_and_obj_and_ib(A);
-    A1 := car tmp;
+    tmp := create_phase1_a1_and_obj_and_ib(a);
+    a1 := car tmp;
     phase1_obj := cadr tmp;
     ib := caddr tmp;
     xb := copy_mat(b);
-    Binv := fast_make_identity(fast_row_dim(A));
+    binv := fast_make_identity(fast_row_dim(a));
     % Phase 1 data is now ready to go...
 
-    simp_calc := simplex_calculation(phase1_obj,A1,b,ib,Binv,xb);
+    simp_calc := simplex_calculation(phase1_obj,a1,b,ib,binv,xb);
 
     phase1_obj_value := car simp_calc;
     xb := cadr simp_calc;
-    Binv := cadddr(simp_calc);
+    binv := cadddr(simp_calc);
     if get_num_part(phase1_obj_value) neq 0
      then rederr "Error in simplex: Problem has no feasible solution.";
 
@@ -250,8 +250,8 @@ symbolic procedure simplex1(input);
       while i<=n and not stop do
       <<
         sum := get_num_part(smplx_prepsq(fast_getmat(reval
-                {'times,fast_stack_rows(Binv,ell),
-                 fast_augment_columns(A,i)},1,1)));
+                {'times,fast_stack_rows(binv,ell),
+                 fast_augment_columns(a,i)},1,1)));
         if abs(sum) leq big then stop := t
         else
         <<
@@ -262,18 +262,18 @@ symbolic procedure simplex1(input);
       >>;
       if big geq 0 then <<>>
       else rederr {"Error in simplex: constraint",k," is redundant."};
-      work := fast_augment_columns(A,k);
-      Binv := phiprm(Binv,work,ell);
+      work := fast_augment_columns(a,k);
+      binv := phiprm(binv,work,ell);
       nth(ib,ell) := k;
     >>;
 
     % Into Phase 2.
-    simp_calc := simplex_calculation(obj_mat,A,b,ib,Binv,xb);
+    simp_calc := simplex_calculation(obj_mat,a,b,ib,binv,xb);
     optimal_value := car simp_calc;
     xb := cadr simp_calc;
     ib := caddr simp_calc;
-    ans_list := make_answer_list(xb,ib,no_coeffs,X,no_variables);
-    if I_turned_rounded_on then off rounded;
+    ans_list := make_answer_list(xb,ib,no_coeffs,x,no_variables);
+    if i_turned_rounded_on then off rounded;
     if max_or_min = 'max then
      optimal_value := my_reval{'minus,optimal_value};
     return {'list,optimal_value,'list.ans_list};
@@ -373,17 +373,17 @@ symbolic procedure initialise(max_or_min,objective,equation_list);
   % where to stop making answers in make_answer_list.
   %
   begin
-    scalar more_init,A,b,obj_mat,X;
+    scalar more_init,a,b,obj_mat,x;
     integer no_variables;
     if max_or_min = 'max then
      objective := reval{'times,objective,-1};
     more_init := more_initialise(objective,equation_list);
-    A := car more_init;
+    a := car more_init;
     b := cadr more_init;
     obj_mat := caddr more_init;
-    X := cadddr more_init;
+    x := cadddr more_init;
     no_variables := car cddddr more_init;
-    return {A,b,obj_mat,X,no_variables};
+    return {a,b,obj_mat,x,no_variables};
   end;
 
 
@@ -391,7 +391,7 @@ symbolic procedure initialise(max_or_min,objective,equation_list);
 symbolic procedure more_initialise(objective,equation_list);
   begin
     scalar objective,equation_list,non_slack_variable_list,obj_mat,
-           no_of_non_slacks,tmp,variable_list,slack_equations,A,b,X;
+           no_of_non_slacks,tmp,variable_list,slack_equations,a,b,x;
     non_slack_variable_list :=
      get_preliminary_variable_list(equation_list);
     no_of_non_slacks := length non_slack_variable_list;
@@ -399,16 +399,16 @@ symbolic procedure more_initialise(objective,equation_list);
     slack_equations := car tmp;
     b := cadr tmp;
     variable_list := union(non_slack_variable_list,caddr tmp);
-    tmp := get_X_and_obj_mat(objective,variable_list);
-    X := car tmp;
+    tmp := get_x_and_obj_mat(objective,variable_list);
+    x := car tmp;
     obj_mat := cadr tmp;
-    A := simp_get_A(slack_equations,variable_list);
-    return {A,b,obj_mat,X,no_of_non_slacks};
+    a := simp_get_a(slack_equations,variable_list);
+    return {a,b,obj_mat,x,no_of_non_slacks};
   end;
 
 
 
-symbolic procedure check_minus_b(A,b);
+symbolic procedure check_minus_b(a,b);
   %
   % The algorithm requires the r.h.s. (i.e. the b matrix) to contain
   % only positive entries.
@@ -419,33 +419,33 @@ symbolic procedure check_minus_b(A,b);
       if get_num_part( reval getmat(b,i,1) ) < 0 then
       <<
         b := mult_rows(b,i,-1);
-        A := mult_rows(A,i,-1);
+        a := mult_rows(a,i,-1);
       >>;
     >>;
-    return {A,b};
+    return {a,b};
   end;
 
 
 
-symbolic procedure create_phase1_A1_and_obj_and_ib(A);
+symbolic procedure create_phase1_a1_and_obj_and_ib(a);
   begin
-    scalar phase1_obj,A1,ib;
-    integer column_dim_A1,column_dim_A,row_dim_A1,i;
-    column_dim_A := fast_column_dim(A);
+    scalar phase1_obj,a1,ib;
+    integer column_dim_a1,column_dim_a,row_dim_a1,i;
+    column_dim_a := fast_column_dim(a);
     % Add artificials to A.
-    A1 := fast_matrix_augment({A,fast_make_identity(fast_row_dim(A))});
-    column_dim_A1 := fast_column_dim(A1);
-    row_dim_A1 := fast_row_dim(A1);
-    phase1_obj := mkmatrix(1,fast_column_dim(A1));
-    for i:=column_dim_A+1:fast_column_dim(A1) do
+    a1 := fast_matrix_augment({a,fast_make_identity(fast_row_dim(a))});
+    column_dim_a1 := fast_column_dim(a1);
+    row_dim_a1 := fast_row_dim(a1);
+    phase1_obj := mkmatrix(1,fast_column_dim(a1));
+    for i:=column_dim_a+1:fast_column_dim(a1) do
      fast_setmat(phase1_obj,1,i,1);
-    ib := for i:=column_dim_A+1:fast_column_dim(A1) collect i;
-    return {A1,phase1_obj,ib};
+    ib := for i:=column_dim_a+1:fast_column_dim(a1) collect i;
+    return {a1,phase1_obj,ib};
   end;
 
 
 
-symbolic procedure simplex_calculation(obj_mat,A,b,ib,Binv,xb);
+symbolic procedure simplex_calculation(obj_mat,a,b,ib,binv,xb);
   %
   % Applies the revised simplex algorithm. See above for details.
   %
@@ -455,7 +455,7 @@ symbolic procedure simplex_calculation(obj_mat,A,b,ib,Binv,xb);
     obj_value := compute_objective(get_cb(obj_mat,ib),xb);
     while continue neq 'optimal do
     <<
-      rs1 := rstep1(A,obj_mat,Binv,ib);
+      rs1 := rstep1(a,obj_mat,binv,ib);
       sb := car rs1;
       k := cadr rs1;
       u := caddr rs1;
@@ -464,14 +464,14 @@ symbolic procedure simplex_calculation(obj_mat,A,b,ib,Binv,xb);
       <<
         rs2 := rstep2(xb,sb);
         ell := cadr rs2;
-        rs3 := rstep3(xb,obj_mat,b,Binv,A,ib,k,ell);
+        rs3 := rstep3(xb,obj_mat,b,binv,a,ib,k,ell);
         iter := iter + 1;
-        Binv := car rs3;
+        binv := car rs3;
         obj_value := cadr rs3;
         xb := caddr rs3;
       >>;
     >>;
-    return {obj_value,xb,ib,Binv};
+    return {obj_value,xb,ib,binv};
   end;
 
 
@@ -546,49 +546,49 @@ flag('(add_slacks_to_list),'opfn);
 
 
 
-symbolic procedure simp_get_A(slack_equations,variable_list);
+symbolic procedure simp_get_a(slack_equations,variable_list);
   %
   % Extracts the A matrix from the slack equations.
   %
   begin
-    scalar A,slack_elt,var_elt;
+    scalar a,slack_elt,var_elt;
     integer row,col,length_slack_equations,length_variable_list;
     length_slack_equations := length slack_equations;
     length_variable_list := length variable_list;
-    A := mkmatrix(length slack_equations,length variable_list);
+    a := mkmatrix(length slack_equations,length variable_list);
     for row := 1:length_slack_equations do
     <<
       for col := 1:length_variable_list do
       <<
         slack_elt := nth(slack_equations,row);
         var_elt := nth(variable_list,col);
-        fast_setmat(A,row,col,smplx_prepsq(
+        fast_setmat(a,row,col,smplx_prepsq(
                                algebraic coeffn(slack_elt,var_elt,1)));
       >>;
     >>;
-    return A;
+    return a;
   end;
 
 
 
-symbolic procedure get_X_and_obj_mat(objective,variable_list);
+symbolic procedure get_x_and_obj_mat(objective,variable_list);
   %
   % Converts the variable list into a matrix and creates the objective
   % matrix. This is the matrix s.t. obj_mat * X = objective function.
   %
   begin
-    scalar X,obj_mat;
+    scalar x,obj_mat;
     integer i,length_variable_list,tmp;
     length_variable_list := length variable_list;
-    X := mkmatrix(length_variable_list,1);
+    x := mkmatrix(length_variable_list,1);
     obj_mat := mkmatrix(1,length_variable_list);
     for i := 1:length variable_list do
     <<
-      fast_setmat(X,i,1,nth(variable_list,i));
+      fast_setmat(x,i,1,nth(variable_list,i));
       tmp := nth(variable_list,i);
       fast_setmat(obj_mat,1,i,algebraic coeffn(objective,tmp,1));
     >>;
-    return {X,obj_mat};
+    return {x,obj_mat};
   end;
 
 
@@ -610,7 +610,7 @@ symbolic procedure compute_objective(cb,xb);
 
 
 
-symbolic procedure rstep1(A,obj_mat,Binv,ib);
+symbolic procedure rstep1(a,obj_mat,binv,ib);
   %
   % Implements step 1 of the revised simplex algorithm.
   % ie: Computation of search direction sb.
@@ -620,12 +620,12 @@ symbolic procedure rstep1(A,obj_mat,Binv,ib);
   begin
     scalar u,sb,sum,i_in_ib;
     integer i,j,m,n,k,vkmin;
-    m := fast_row_dim(A);
-    n := fast_column_dim(A);
+    m := fast_row_dim(a);
+    n := fast_column_dim(a);
     u := mkmatrix(m,1);
     sb := mkmatrix(m,1);
     %  Compute u.
-    u := reval {'times,{'minus,algebraic (tp(Binv))},
+    u := reval {'times,{'minus,algebraic (tp(binv))},
                 algebraic tp(symbolic get_cb(obj_mat,ib))};
     k := 0;
     vkmin := 10^10;
@@ -641,7 +641,7 @@ symbolic procedure rstep1(A,obj_mat,Binv,ib);
       if not i_in_ib then
       <<
         sum := specrd!:plus(smplx_prepsq(fast_getmat(obj_mat,1,i)),
-                two_column_scalar_product(fast_augment_columns(A,i),u));
+                two_column_scalar_product(fast_augment_columns(a,i),u));
         % if i is not in ib.
         %sum := fast_getmat(obj_mat,1,i);
         %for p:=1:m do
@@ -665,7 +665,7 @@ symbolic procedure rstep1(A,obj_mat,Binv,ib);
       <<
         sum := 0;
         for j:=1:m do sum := specrd!:plus(sum,
-         specrd!:times(fast_getmat(Binv,i,j),fast_getmat(A,j,k)));
+         specrd!:times(fast_getmat(binv,i,j),fast_getmat(a,j,k)));
         fast_setmat(sb,i,1,sum);
       >>;
       return {sb,k,u,nil};
@@ -707,55 +707,55 @@ symbolic procedure rstep2(xb,sb);
 
 
 
-symbolic procedure rstep3(xb,obj_mat,b,Binv,A,ib,k,ell);
+symbolic procedure rstep3(xb,obj_mat,b,binv,a,ib,k,ell);
   %
   % step3: Update.
   %
   % see above for details. (comments in simplex).
   %
   begin
-    scalar work,Binv;
-    work := fast_augment_columns(A,k);
-    Binv := phiprm(Binv,work,ell);
-    xb := reval{'times,Binv,b};
+    scalar work,binv;
+    work := fast_augment_columns(a,k);
+    binv := phiprm(binv,work,ell);
+    xb := reval{'times,binv,b};
     nth(ib,ell) := k;
     obj_mat := compute_objective(get_cb(obj_mat,ib),xb);
-    return {Binv,obj_mat,xb};
+    return {binv,obj_mat,xb};
   end;
 
 
 
-symbolic procedure phiprm(Binv,D,ell);
+symbolic procedure phiprm(binv,d,ell);
   %
   % Replaces B^(-1) with [phi((B^(-1)',A(k),l)]'.
   %
   begin
     scalar sum,temp;
     integer m,j;
-    m := fast_column_dim(Binv);
-    sum := scalar_product(fast_stack_rows(Binv,ell),D);
+    m := fast_column_dim(binv);
+    sum := scalar_product(fast_stack_rows(binv,ell),d);
 %    if get_num_part(sum) = 0 then
 %     rederr
 %{"Error in simplex: new matrix would be singular. Inner product = 0."};
     if not zerop get_num_part(sum) then
      sum := specrd!:quotient(1,sum);
-    Binv := fast_mult_rows(Binv,ell,sum);
+    binv := fast_mult_rows(binv,ell,sum);
     for j:=1:m do
     <<
       if j = ell then <<>>
       else
       <<
-        temp := fast_getmat(reval{'times,fast_stack_rows(Binv,j),D},
+        temp := fast_getmat(reval{'times,fast_stack_rows(binv,j),d},
                             1,1);
-        Binv := fast_add_rows(Binv,ell,j,{'minus,temp});
+        binv := fast_add_rows(binv,ell,j,{'minus,temp});
       >>;
     >>;
-    return Binv;
+    return binv;
   end;
 
 
 
-symbolic procedure make_answer_list(xb,ib,no_coeffs,X,no_variables);
+symbolic procedure make_answer_list(xb,ib,no_coeffs,x,no_variables);
   %
   % Creates a list of the values of the variables at the optimal
   % solution.
@@ -771,7 +771,7 @@ symbolic procedure make_answer_list(xb,ib,no_coeffs,X,no_variables);
         fast_setmat(x_mat,1,elt,fast_getmat(xb,i,1)); i := i+1;
      >>;
      ans_list := for i:=1:no_variables collect
-                 {'equal,my_reval fast_getmat(X,i,1),
+                 {'equal,my_reval fast_getmat(x,i,1),
                  get_num_part(my_reval fast_getmat(x_mat,1,i))};
     return ans_list;
   end;

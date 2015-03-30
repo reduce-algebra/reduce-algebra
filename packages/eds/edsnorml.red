@@ -28,7 +28,7 @@ module edsnormal;
 %
 
 
-Comment. The next section contains routines for putting an EDS into
+COMMENT. The next section contains routines for putting an EDS into
 "normal" form. An EDS S is in "normal" form if
 
 ***   1) S contains no 0-forms,                *** removed 27/4/95

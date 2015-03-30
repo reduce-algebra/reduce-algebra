@@ -26,7 +26,7 @@ module quotfx;
 %
 
 
-Comment in many calls to QUOTF, the result is not checked for NIL
+COMMENT in many calls to QUOTF, the result is not checked for NIL
 because the caller is sure there will be no remainder, e.g. if the
 divisor is a gcd.  This occurs not only at several places in the REDUCE
 kernel, but especially in Groebner, which simplifies polynomials with

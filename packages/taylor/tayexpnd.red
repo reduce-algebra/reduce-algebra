@@ -44,18 +44,18 @@ imports
         simp!*, subsq, subtrsq,
 
 % from the header module:
-        !*tay2q, cst!-Taylor!*, has!-Taylor!*, make!-cst!-coefficient,
-        make!-Taylor!*, prune!-coefflist, set!-TayOrig, TayCfPl,
-        TayCfSq, TayCoeffList, TayFlags, Taylor!*p,
-        Taylor!-kernel!-sq!-p, Taylor!-trace, Taylor!-trace!-mprint,
-        Taylor!:, TayMakeCoeff, TayOrig, TayTemplate, TayTpElNext,
-        TayTpElOrder, TayTpElPoint, TayTpElVars, TayTpVars, TayVars,
+        !*tay2q, cst!-taylor!*, has!-taylor!*, make!-cst!-coefficient,
+        make!-taylor!*, prune!-coefflist, set!-tayorig, taycfpl,
+        taycfsq, taycoefflist, tayflags, taylor!*p,
+        taylor!-kernel!-sq!-p, taylor!-trace, taylor!-trace!-mprint,
+        taylor!:, taymakecoeff, tayorig, taytemplate, taytpelnext,
+        taytpelorder, taytpelpoint, taytpelvars, taytpvars, tayvars,
 
 % from module TayBasic:
         addtaylor!*, multtaylor, multtaylor!*, quottaylor!-as!-sq,
 
 % from module TayConv:
-        prepTaylor!*,
+        preptaylor!*,
 
 % from module TayFns:
         inttaylorwrttayvar, taycoefflist!-union,
@@ -64,8 +64,8 @@ imports
         taylor1,
 
 % from module TayIntro:
-        nzerolist, replace!-nth, smemberlp, Taylor!-error,
-        Taylor!-error!*, var!-is!-nth,
+        nzerolist, replace!-nth, smemberlp, taylor!-error,
+        taylor!-error!*, var!-is!-nth,
 
 % from module TaySimp:
         expttayrat, taysimpsq, taysimpsq!*,
@@ -73,7 +73,7 @@ imports
 % from module TayUtils:
         add!.comp!.tp!., addto!-all!-taytpelorders, enter!-sorted,
         mult!.comp!.tp!., subtr!-tp!-order, tayminpowerlist,
-        taytp!-min2, tp!-greaterp, truncate!-Taylor!*;
+        taytp!-min2, tp!-greaterp, truncate!-taylor!*;
 
 
 fluid '(!*backtrace
@@ -124,19 +124,19 @@ symbolic procedure taylorexpand(sq,tp);
       put('taylor!*,'klist,oldklist);
       if null errorp result
         then <<result := car result;
-               if cycles>0 and Taylor!-kernel!-sq!-p result
+               if cycles>0 and taylor!-kernel!-sq!-p result
                  then result := !*tay2q
-                                  truncate!-Taylor!*(
+                                  truncate!-taylor!*(
                                    mvar numr result,tp);
                return result>>;
       if null !*tayrestart!* then error1();
       erfg!* := nil;
-      Taylor!-trace {"Failed with template",ll};
+      taylor!-trace {"Failed with template",ll};
       cycles := cycles + 1;
       if cycles > !*taylor!-max!-precision!-cycles!*
-         then Taylor!-error('max_cycles,cycles - 1);
-      ll := addto!-all!-TayTpElOrders(ll,nlist(2,length ll));
-      Taylor!-trace {"Restarting with template",ll};
+         then taylor!-error('max_cycles,cycles - 1);
+      ll := addto!-all!-taytpelorders(ll,nlist(2,length ll));
+      taylor!-trace {"Restarting with template",ll};
       goto restart
    end)
      where !*taylor!-expansion!-level!* := !*taylor!-expansion!-level!*+1;
@@ -157,17 +157,17 @@ symbolic procedure taylorexpand1(sq,ll,flg);
     restart:
      count := count + 1;
      if count > !*taylor!-max!-precision!-cycles!*
-        or oldresult and TayTemplate oldresult = TayTemplate result
-       then Taylor!-error('max_cycles,count - 1);
+        or oldresult and taytemplate oldresult = taytemplate result
+       then taylor!-error('max_cycles,count - 1);
      oldresult := result;
-     Taylor!-trace {"expanding s.q. (level", !*taylor!-expansion!-level!*, 
+     taylor!-trace {"expanding s.q. (level", !*taylor!-expansion!-level!*, 
                     ") with template", 
                     for each el in ll collect 
-                      {TayTpElVars el,
-		       TayTpElPoint el,
-		       prepTayExp TayTpElOrder el,
-		       prepTayExp TayTpElNext el}};
-     Taylor!-trace!-mprint mk!*sq sq;
+                      {taytpelvars el,
+		       taytpelpoint el,
+		       preptayexp taytpelorder el,
+		       preptayexp taytpelnext el}};
+     taylor!-trace!-mprint mk!*sq sq;
      if denr sq = 1
        then result := taysimpsq!* taylorexpand!-sf(numr sq,lll,t)
 %      else if not dependsl(denr sq,TayTpVars lll) then begin scalar nn;
@@ -209,30 +209,30 @@ symbolic procedure taylorexpand1(sq,ll,flg);
       else begin scalar nn,dd;
          dd := taylorexpand!-sf(denr sq,lll,nil);
          if null numr dd
-           then Taylor!-error!*('zero!-denom,'taylorexpand)
-          else if not Taylor!-kernel!-sq!-p dd
+           then taylor!-error!*('zero!-denom,'taylorexpand)
+          else if not taylor!-kernel!-sq!-p dd
            then return
               result := taysimpsq!*
                           quotsq(taylorexpand!-sf(numr sq,lll,t),dd);
-         lmin := prune!-coefflist TayCoeffList mvar numr dd;
-         if null lmin then Taylor!-error!*('zero!-denom,'taylorexpand);
+         lmin := prune!-coefflist taycoefflist mvar numr dd;
+         if null lmin then taylor!-error!*('zero!-denom,'taylorexpand);
          lmin := tayminpowerlist lmin;
          nn := taylorexpand!-sf(
                  numr sq,
-                 addto!-all!-TayTpElOrders(lll,lmin),t);
-         if not (Taylor!-kernel!-sq!-p nn and Taylor!-kernel!-sq!-p dd)
+                 addto!-all!-taytpelorders(lll,lmin),t);
+         if not (taylor!-kernel!-sq!-p nn and taylor!-kernel!-sq!-p dd)
            then result := taysimpsq!* quotsq(nn,dd)
           else result := quottaylor!-as!-sq(nn,dd);
        end;
-     if not Taylor!-kernel!-sq!-p result
-       then return if not smemberlp(TayTpVars ll,result)
-                     then !*tay2q cst!-Taylor!*(result,ll)
+     if not taylor!-kernel!-sq!-p result
+       then return if not smemberlp(taytpvars ll,result)
+                     then !*tay2q cst!-taylor!*(result,ll)
                     else result;
      result := mvar numr result;
      dorestart := nil;
-      Taylor!:
+      taylor!:
         begin scalar ll1;
-          ll1 := TayTemplate result;
+          ll1 := taytemplate result;
           for i := (length ll1 - length ll) step -1 until 1 do
             ll := nth(ll1,i) . ll;
           if flg then <<nl := subtr!-tp!-order(ll,ll1);
@@ -240,17 +240,17 @@ symbolic procedure taylorexpand1(sq,ll,flg);
          end;
      if dorestart
 %     if tp!-greaterp(ll,TayTemplate result)
-       then <<lll := addto!-all!-TayTpElOrders(lll,nl);
-              Taylor!-trace {"restarting (loss of precision):",
+       then <<lll := addto!-all!-taytpelorders(lll,nl);
+              taylor!-trace {"restarting (loss of precision):",
                              "old =",ll,
                              "result =",result,
                              "new =",lll};
               goto restart>>;
-     result := truncate!-Taylor!*(result,ll);
-     if !*taylorkeeporiginal then set!-TayOrig(result,sq);
+     result := truncate!-taylor!*(result,ll);
+     if !*taylorkeeporiginal then set!-tayorig(result,sq);
      result := !*tay2q result;
-     Taylor!-trace {"result of expanding s.q. (level", !*taylor!-expansion!-level!*, ") is"};
-     Taylor!-trace!-mprint mk!*sq result;
+     taylor!-trace {"result of expanding s.q. (level", !*taylor!-expansion!-level!*, ") is"};
+     taylor!-trace!-mprint mk!*sq result;
      return result
   end;
 
@@ -261,27 +261,27 @@ symbolic procedure taylorexpand!-sf(sf,ll,flg);
     restart:
      count := count + 1;
      if count > !*taylor!-max!-precision!-cycles!*
-       then Taylor!-error('max_cycles,count - 1);
-     Taylor!-trace {"expanding s.f. (level", !*taylor!-expansion!-level!*,
+       then taylor!-error('max_cycles,count - 1);
+     taylor!-trace {"expanding s.f. (level", !*taylor!-expansion!-level!*,
                     ") with template", 
                     for each el in ll collect 
-                      {TayTpElVars el,
-		       TayTpElPoint el,
-		       prepTayExp TayTpElOrder el,
-		       prepTayExp TayTpElNext el}};
-     Taylor!-trace!-mprint mk!*sq !*f2q sf;
+                      {taytpelvars el,
+		       taytpelpoint el,
+		       preptayexp taytpelorder el,
+		       preptayexp taytpelnext el}};
+     taylor!-trace!-mprint mk!*sq !*f2q sf;
      x := nil ./ 1;
      rest := sf;
      while not null rest do <<
        if domainp rest
-         then <<next := !*tay2q!* cst!-Taylor!*(rest ./ 1,lll);
+         then <<next := !*tay2q!* cst!-taylor!*(rest ./ 1,lll);
                 rest := nil>>
         else <<
           lp := taylorexpand!-sp(lpow rest,lll,flg);
           if lc rest=1 then next := lp
            else <<
           lcof := taylorexpand!-sf(lc rest,lll,flg);
-          if Taylor!-kernel!-sq!-p lcof and Taylor!-kernel!-sq!-p lp
+          if taylor!-kernel!-sq!-p lcof and taylor!-kernel!-sq!-p lp
             and (tps :=
                    mult!.comp!.tp!.(mvar numr lcof,mvar numr lp,nil))
             then next := !*tay2q!*
@@ -290,19 +290,19 @@ symbolic procedure taylorexpand!-sf(sf,ll,flg);
          >>;
           rest := red rest>>;
        if null numr x then x := next
-        else if Taylor!-kernel!-sq!-p x and Taylor!-kernel!-sq!-p next
+        else if taylor!-kernel!-sq!-p x and taylor!-kernel!-sq!-p next
                and (tps := add!.comp!.tp!.(mvar numr x,mvar numr next))
          then x := !*tay2q!*
                      addtaylor!*(mvar numr x,mvar numr next,car tps)
         else x := taysimpsq!* addsq(x,next)>>;
-     if not Taylor!-kernel!-sq!-p x then return x;
+     if not taylor!-kernel!-sq!-p x then return x;
      if null flg then <<
-       xcl := prune!-coefflist TayCoeffList mvar numr x;
+       xcl := prune!-coefflist taycoefflist mvar numr x;
        if null xcl then <<
-         lll := addto!-all!-TayTpElOrders(lll,nlist(2,length lll));
-         Taylor!-trace {"restarting (no coeffs)...(",count,")"};
+         lll := addto!-all!-taytpelorders(lll,nlist(2,length lll));
+         taylor!-trace {"restarting (no coeffs)...(",count,")"};
          goto restart >>
-        else Taylor!:
+        else taylor!:
              <<l := tayminpowerlist xcl;
                dorestart := nil;
                nl := for i := 1:length lll collect
@@ -312,44 +312,44 @@ symbolic procedure taylorexpand!-sf(sf,ll,flg);
                         else 0;
                if dorestart
                  then <<flg :=t;
-                        lll := addto!-all!-TayTpElOrders(lll,nl);
-                        Taylor!-trace
+                        lll := addto!-all!-taytpelorders(lll,nl);
+                        taylor!-trace
                           {"restarting (no cst trm)...(",count,"):",
                            "result =",mvar numr x,
                            "new =",lll};
                         goto restart>>>>>>;
-     Taylor!-trace {"result of expanding s.f. (level", !*taylor!-expansion!-level!*, ") is"};
-     Taylor!-trace!-mprint mk!*sq x;
+     taylor!-trace {"result of expanding s.f. (level", !*taylor!-expansion!-level!*, ") is"};
+     taylor!-trace!-mprint mk!*sq x;
      return x
   end;
 
 
 symbolic procedure taylorexpand!-sp(sp,ll,flg);
-  Taylor!:
+  taylor!:
    begin scalar fn,krnl,pow,sk,vars;
 %    if (sk := assoc({sp,ll},car !*taylor!-assoc!-list!*))
 %      then return cdr sk;
-    Taylor!-trace {"expanding s.p. (level", !*taylor!-expansion!-level!*,
+    taylor!-trace {"expanding s.p. (level", !*taylor!-expansion!-level!*,
                    ") with template", 
                    for each el in ll collect 
-                      {TayTpElVars el,
-		       TayTpElPoint el,
-		       prepTayExp TayTpElOrder el,
-		       prepTayExp TayTpElNext el}};
-    Taylor!-trace!-mprint mk!*sq !*p2q sp;
-    vars := TayTpVars ll;
+                      {taytpelvars el,
+		       taytpelpoint el,
+		       preptayexp taytpelorder el,
+		       preptayexp taytpelnext el}};
+    taylor!-trace!-mprint mk!*sq !*p2q sp;
+    vars := taytpvars ll;
     krnl := car sp;
     pow := cdr sp;
     if idp krnl and krnl memq vars
       then <<pow := 1;
-             sk := !*tay2q!* make!-pow!-Taylor!*(krnl,cdr sp,ll);
+             sk := !*tay2q!* make!-pow!-taylor!*(krnl,cdr sp,ll);
 %             taylor!-add!-to!-cache(sp,TayTemplate mvar numr sk,sk)
              >>
       % optimization for (expt var (quotient fixnum fixnum))
      else if eqcar(krnl,'expt) and cadr krnl memq vars and
               eqcar(caddr krnl,'quotient) and fixp cadr caddr krnl and fixp caddr caddr krnl
       then <<pow := mkrn(cdr sp * cadr caddr krnl,caddr caddr krnl);
-	     sk := !*tay2q!* make!-pow!-Taylor!*(cadr krnl, pow,ll);
+	     sk := !*tay2q!* make!-pow!-taylor!*(cadr krnl, pow,ll);
              pow := 1>>
      else if sfp krnl then sk := taylorexpand!-sf(krnl,ll,flg)
      else if (sk := assoc({sp,ll},car !*taylor!-assoc!-list!*))
@@ -361,9 +361,9 @@ symbolic procedure taylorexpand!-sp(sp,ll,flg);
      else <<sk := if idp krnl
               then if dependsl(krnl,vars)
                      then taylorexpand!-diff(krnl,ll,flg)
-                    else !*tay2q!* cst!-Taylor!*(simp!* krnl,ll)
-             else if Taylor!*p krnl
-                    then if smemberlp(vars,TayVars krnl)
+                    else !*tay2q!* cst!-taylor!*(simp!* krnl,ll)
+             else if taylor!*p krnl
+                    then if smemberlp(vars,tayvars krnl)
                            then taylorexpand!-samevar(krnl,ll,flg)
                    else taylorexpand!-taylor(krnl,ll,flg)
              else if not idp car krnl
@@ -378,40 +378,40 @@ symbolic procedure taylorexpand!-sp(sp,ll,flg);
                                else <<flg := t;
                                       prepsq
                                         taylorexpand(simp!* el,ll)>>;
-                    if has!-Taylor!* args
+                    if has!-taylor!* args
                       then res := apply1(fn,car krnl . args)
                      else if null flg
                       then res :=
-                             !*tay2q!* cst!-Taylor!*(mksq(krnl,1),ll)
+                             !*tay2q!* cst!-taylor!*(mksq(krnl,1),ll)
                      else res := mksq(krnl,1);
                     return res
                   end;
-            if Taylor!-kernel!-sq!-p sk
+            if taylor!-kernel!-sq!-p sk
               then taylor!-add!-to!-cache(
-                     krnl . 1,TayTemplate mvar numr sk,sk)>>;
+                     krnl . 1,taytemplate mvar numr sk,sk)>>;
     if not(pow = 1)
-      then <<if not Taylor!-kernel!-sq!-p sk
+      then <<if not taylor!-kernel!-sq!-p sk
                then sk := taysimpsq exptsq(sk,pow)
               else <<sk := mvar numr sk;
                      sk := !*tay2q!* if pow=2 then multtaylor(sk,sk)
                                       else expttayrat(sk,pow ./ 1)>>;
-             if Taylor!-kernel!-sq!-p sk
+             if taylor!-kernel!-sq!-p sk
                then taylor!-add!-to!-cache(
-                      sp,TayTemplate mvar numr sk,sk)>>;
-    Taylor!-trace {"result of expanding s.p. (level", !*taylor!-expansion!-level!*, ") is"};
-    Taylor!-trace!-mprint mk!*sq sk;
+                      sp,taytemplate mvar numr sk,sk)>>;
+    taylor!-trace {"result of expanding s.p. (level", !*taylor!-expansion!-level!*, ") is"};
+    taylor!-trace!-mprint mk!*sq sk;
     return sk
   end;
 
-symbolic procedure make!-pow!-Taylor!*(krnl,pow,ll);
-  Taylor!:
+symbolic procedure make!-pow!-taylor!*(krnl,pow,ll);
+  taylor!:
    begin scalar pos,var0,nxt,ordr,x,torig; integer pos1;
      pos := var!-is!-nth(ll,krnl);
      pos1 := cdr pos;
      pos := car pos;
-     var0 := TayTpElPoint nth(ll,pos);
-     ordr := TayTpElOrder nth(ll,pos);
-     nxt := TayTpElNext nth(ll,pos);
+     var0 := taytpelpoint nth(ll,pos);
+     ordr := taytpelorder nth(ll,pos);
+     nxt := taytpelnext nth(ll,pos);
      if !*taylorkeeporiginal
        then torig := if eqcar(pow,'!:rn!:)
                        then simpexpt1(krnl,cdr pow,t)
@@ -419,8 +419,8 @@ symbolic procedure make!-pow!-Taylor!*(krnl,pow,ll);
 %     if ordr < pow
 %       then
              ll := replace!-nth(ll,pos,
-                               ({TayTpElVars tpel,
-                                 TayTpElPoint tpel,
+                               ({taytpelvars tpel,
+                                 taytpelpoint tpel,
                                  max2(pow,ordr),max2(pow,ordr)+nxt-ordr}
                                  where tpel := nth(ll,pos)));
 %     if ordr < 1 then return
@@ -433,13 +433,13 @@ symbolic procedure make!-pow!-Taylor!*(krnl,pow,ll);
 %                       nil,nil)
 %     else
       if var0 = 0 or var0 eq 'infinity
-        then return make!-Taylor!*(
+        then return make!-taylor!*(
                {make!-var!-coefflist(ll,pos,pos1,pow,
                                      var0 eq 'infinity)},
                ll,
                torig,
                nil);
-      x := make!-Taylor!*(
+      x := make!-taylor!*(
                {make!-cst!-coefficient(simp!* var0,ll),
                 make!-var!-coefflist(ll,pos,pos1,1,nil)},
                ll,
@@ -448,12 +448,12 @@ symbolic procedure make!-pow!-Taylor!*(krnl,pow,ll);
       if not (pow=1) then x := expttayrat(x,
                                           if eqcar(pow,'!:rn!:) then cdr pow 
                                            else pow ./ 1);
-      if !*taylorkeeporiginal then set!-TayOrig(x,torig);
+      if !*taylorkeeporiginal then set!-tayorig(x,torig);
       return x
    end;
 
 symbolic procedure make!-var!-coefflist(tp,pos,pos1,pow,infflg);
-   TayMakeCoeff(make!-var!-powerlist(tp,pos,pos1,pow,infflg),1 ./ 1);
+   taymakecoeff(make!-var!-powerlist(tp,pos,pos1,pow,infflg),1 ./ 1);
 
 symbolic procedure make!-var!-powerlist(tp,pos,pos1,pow,infflg);
    if null tp then nil
@@ -463,33 +463,33 @@ symbolic procedure make!-var!-powerlist(tp,pos,pos1,pow,infflg);
                      else if infflg then -pow
                      else pow
             else nzerolist l)
-          where l := length TayTpElVars car tp)
+          where l := length taytpelvars car tp)
           . make!-var!-powerlist(cdr tp,pos - 1,pos1,pow,infflg);
 
 
 symbolic procedure taylorexpand!-taylor(tkrnl,ll,flg);
    begin scalar tay,notay,x;
      notay := nil ./ 1;
-     for each cc in TayCoeffList tkrnl do <<
+     for each cc in taycoefflist tkrnl do <<
 %       x := taylorexpand1(TayCfSq cc,ll,t);
-       x := taylorexpand1(TayCfSq cc,ll,flg);
-       if Taylor!-kernel!-sq!-p x
+       x := taylorexpand1(taycfsq cc,ll,flg);
+       if taylor!-kernel!-sq!-p x
          then tay := nconc(tay,
-                           for each cc2 in TayCoefflist mvar numr x
-                             collect TayMakeCoeff(
-                                       append(TayCfPl cc,TayCfPl cc2),
-                                       TayCfSq cc2))
-        else Taylor!-error('expansion,"(possbile singularity)")>>;
+                           for each cc2 in taycoefflist mvar numr x
+                             collect taymakecoeff(
+                                       append(taycfpl cc,taycfpl cc2),
+                                       taycfsq cc2))
+        else taylor!-error('expansion,"(possbile singularity)")>>;
               %notay := aconc!*(notay,cc)>>;
      return
        if null tay then nil ./ 1
-        else !*tay2q!* make!-Taylor!*(tay,
-                                      append(TayTemplate tkrnl,ll),
+        else !*tay2q!* make!-taylor!*(tay,
+                                      append(taytemplate tkrnl,ll),
                                       nil,nil);
   end;
 
 
-comment The cache maintained in !*!*taylorexpand!-diff!-cache!*!* is
+COMMENT The cache maintained in !*!*taylorexpand!-diff!-cache!*!* is
         the key to handle the case of a kernel whose derivative
         involves the kernel itself. It is guaranteed that in every
         recursive step the expansion order is smaller than in the
@@ -528,20 +528,20 @@ symbolic procedure taylorexpand!-diff(krnl,ll,flg);
               % taylor1 is the function that does the real work
               %
               result := !*tay2q!* taylor1(result,
-                                          TayTpElVars el,
-                                          TayTpElPoint el,
-                                          TayTpElOrder el)>>;
-    if !*taylorkeeporiginal and Taylor!-kernel!-sq!-p result
-      then set!-TayOrig(mvar numr result,!*k2q krnl);
+                                          taytpelvars el,
+                                          taytpelpoint el,
+                                          taytpelorder el)>>;
+    if !*taylorkeeporiginal and taylor!-kernel!-sq!-p result
+      then set!-tayorig(mvar numr result,!*k2q krnl);
     return result
   end;
 
 symbolic procedure taylorexpand!-diff1(krnl,ll,flg);
-   <<if y and TayTpVars ll = TayTpVars(y := cdr y)
+   <<if y and taytpvars ll = taytpvars(y := cdr y)
           and not tp!-greaterp(y,ll)
        then ll := for each el in y collect
-                    {TayTpElVars el,TayTpElPoint el,
-                     TayTpElOrder el - 1,TayTpElNext el - 1};
+                    {taytpelvars el,taytpelpoint el,
+                     taytpelorder el - 1,taytpelnext el - 1};
      !*!*taylorexpand!-diff!-cache!*!* :=
                 (krnl . ll) . !*!*taylorexpand!-diff!-cache!*!*;
      for each el in ll do result := taylorexpand!-diff2(result,el,nil);
@@ -557,50 +557,50 @@ symbolic procedure taylorexpand!-diff2(sq,el,flg);
      % We check whether there is a rule for taylorsingularity.
      %
      sterm := simp!* {'taylorsingularity,mvar numr sq,
-                      'list . TayTpElVars el,TayTpElPoint el};
+                      'list . taytpelvars el,taytpelpoint el};
      if kernp sterm and eqcar(mvar numr sterm,'taylorsingularity)
        then sterm := nil % failed
       else sq := subtrsq(sq,sterm);
-     if TayTpElOrder el > 0 then <<
-       l := for each var in TayTpElVars el collect begin scalar r;
+     if taytpelorder el > 0 then <<
+       l := for each var in taytpelvars el collect begin scalar r;
             r := taylorexpand1(diffsq(sq,var),
-                               {{TayTpElVars el,
-                                 TayTpElPoint el,
-                                 TayTpElOrder el - 1,
-                                 TayTpElNext el - 1}},flg);
-            if Taylor!-kernel!-sq!-p r
+                               {{taytpelvars el,
+                                 taytpelpoint el,
+                                 taytpelorder el - 1,
+                                 taytpelnext el - 1}},flg);
+            if taylor!-kernel!-sq!-p r
               then return inttaylorwrttayvar(mvar numr r,var)
-             else Taylor!-error('expansion,"(possible singularity)");
+             else taylor!-error('expansion,"(possible singularity)");
           end;
-       tcl := TayCoeffList!-union
-                for each pp in l collect TayCoeffList cdr pp;
+       tcl := taycoefflist!-union
+                for each pp in l collect taycoefflist cdr pp;
        for each pp in l do
          if car pp then singlist := addsq(singlist,car pp);
        if not null numr singlist
-         then Taylor!-error('expansion,"(possible singularity)")>>;
+         then taylor!-error('expansion,"(possible singularity)")>>;
      %
      % If we have a special singularity, then set c0 to zero.
      %
      if not null sterm then c0 := nil ./ 1
-      else c0 := subsq(sq,for each var in TayTpElVars el collect
-                            (var . TayTpElPoint el));
-     l0 := {nzerolist length TayTpElVars el};
+      else c0 := subsq(sq,for each var in taytpelvars el collect
+                            (var . taytpelpoint el));
+     l0 := {nzerolist length taytpelvars el};
 
      if null numr c0 then nil
-      else if not Taylor!-kernel!-sq!-p c0
-       then tcl := TayMakeCoeff(l0,c0) . tcl
+      else if not taylor!-kernel!-sq!-p c0
+       then tcl := taymakecoeff(l0,c0) . tcl
       else <<c0 := mvar numr c0;
-             tp := nconc!*(TayTemplate c0,tp);
-             for each pp in TayCoeffList c0 do
-               tcl := enter!-sorted(TayMakeCoeff(append(TayCfPl pp,l0),
-                                                 TayCfSq pp),
+             tp := nconc!*(taytemplate c0,tp);
+             for each pp in taycoefflist c0 do
+               tcl := enter!-sorted(taymakecoeff(append(taycfpl pp,l0),
+                                                 taycfsq pp),
                                     tcl)>>;
 
      if not null l
        then for each pp in l do
-              tp := TayTp!-min2(tp,TayTemplate cdr pp);
+              tp := taytp!-min2(tp,taytemplate cdr pp);
 
-     tay := !*tay2q!* make!-Taylor!*(tcl,tp,
+     tay := !*tay2q!* make!-taylor!*(tcl,tp,
                          if !*taylorkeeporiginal then sq else nil,nil);
 
      if not null numr singlist then tay := addsq(singlist,tay);
@@ -615,41 +615,41 @@ if null get('psi,'simpfn) then algebraic operator psi;
 
 algebraic let {
   taylorsingularity(dilog(~x),~y,~y0) => pi^2/6 - log(x)*log(1-x),
-  taylorsingularity(ei(~x),~y,~y0) => log(x) - psi(1)
+  taylorsingularity(Ei(~x),~y,~y0) => log(x) - psi(1)
 };
 
 symbolic procedure taylorexpand!-samevar(u,ll,flg);
-  Taylor!:
+  taylor!:
   begin scalar tpl;
-    tpl := TayTemplate u;
+    tpl := taytemplate u;
     for each tpel in ll do begin scalar tp,varlis,mdeg,n; integer pos;
-      varlis := TayTpElVars tpel;
+      varlis := taytpelvars tpel;
       pos := car var!-is!-nth(tpl,car varlis);
       tp := nth(tpl,pos);
-      if length varlis > 1 and not (varlis = TayTpElVars tp)
-        then Taylor!-error('not!-implemented,
+      if length varlis > 1 and not (varlis = taytpelvars tp)
+        then taylor!-error('not!-implemented,
                             "(homogeneous expansion in TAYLORSAMEVAR)");
-      n := TayTpElOrder tpel;
-      if TayTpElPoint tp neq TayTpElPoint tpel
-        then u := taylor1(if not null TayOrig u then TayOrig u
-                           else simp!* prepTaylor!* u,
-                          varlis,TayTpElPoint tpel,n);
-      mdeg := TayTpElOrder tp;
+      n := taytpelorder tpel;
+      if taytpelpoint tp neq taytpelpoint tpel
+        then u := taylor1(if not null tayorig u then tayorig u
+                           else simp!* preptaylor!* u,
+                          varlis,taytpelpoint tpel,n);
+      mdeg := taytpelorder tp;
       if n=mdeg then nil
        else if n > mdeg
         %
         % further expansion required
         %
         then if null flg then nil
-              else Taylor!-error('expansion,
+              else taylor!-error('expansion,
                                  "Cannot expand further... truncated.")
-       else u := make!-Taylor!*(
-          for each cc in TayCoeffList u join
-            if nth(nth(TayCfPl cc,pos),1) > n
+       else u := make!-taylor!*(
+          for each cc in taycoefflist u join
+            if nth(nth(taycfpl cc,pos),1) > n
               then nil
              else list cc,
-          replace!-nth(tpl,pos,{varlis,TayTpElPoint tpel,n,n+1}),
-          TayOrig u,TayFlags u)
+          replace!-nth(tpl,pos,{varlis,taytpelpoint tpel,n,n+1}),
+          tayorig u,tayflags u)
      end;
     return !*tay2q!* u
   end;

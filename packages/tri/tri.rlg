@@ -4,7 +4,7 @@ global '(textest!*);
 
 
 
-symbolic procedure texexa(code);
+symbolic procedure TeXexa(code);
    begin
      prin2 "\TRIexa{"; prin2 textest!*;
      if !*TeXindent then prin2 "}{TeXindent}{" else
@@ -19,7 +19,7 @@ texexa
 
 
 algebraic procedure exa(expression,code);
-   begin symbolic texexa code; return expression end;
+   begin symbolic TeXexa code; return expression end;
 
 
 exa
@@ -35,13 +35,13 @@ symbolic(textest!*:="Integration");
 "Integration"
 
 
-texsetbreak(120,1000);
+TeXsetbreak(120,1000);
 
 % \tolerance 1000
 % \hsize=120mm
 
 
-on texindent;
+on TeXindent;
 
 
 

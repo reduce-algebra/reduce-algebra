@@ -98,10 +98,10 @@ odesolve(2*df(y,x)*x*y + x^2 - 2*x*y - y^2, y, x, explicit);
 % but Maple 6 cannot!).
 
 % General solution:
-odesolve(M*L*df(phi(tt),tt,2) = -M*g*sin(phi(tt)));
+odesolve(m*l*df(phi(tt),tt,2) = -m*g*sin(phi(tt)));
 
 % Use of `t' as independent variable:
-odesolve(M*L*df(phi(t),t,2) = -M*g*sin(phi(t)));
+odesolve(m*l*df(phi(t),t,2) = -m*g*sin(phi(t)));
 
 % Conditional (eigenvalue) solution:
 %% odesolve(M*L*df(phi(t),t,2) = -M*g*sin(phi(t)),

@@ -117,7 +117,7 @@ put('lpdocoeffnorm,'switchdefault,t);
 put('lasimp,'switchdefault,t);
 %%% odesolve
 put('odesolve_equidim,'switchdefault,t);
-put('NoIntInt,'switchdefault,t);
+put('nointint,'switchdefault,t);
 put('odesolve_plus_or_minus,'switchdefault,t);
 put('odesolve_load_specfn,'switchdefault,t);
 put('odesolve_diff,'switchdefault,t);

@@ -105,7 +105,7 @@ limit((sin tan x-tan sin x)/(asin atan x-atan asin x),x,0); % 1
 % This one has the value infinity, but fails with de L'Hospital's rule:
 limit((e+1)^(x^2)/e^x,x,infinity); % infinity  % fails
 
-comment
+COMMENT
 The following examples were not in the previous set$
 
 % Simon test examples:
@@ -123,7 +123,7 @@ limit!+(x^(1/3)/(x+1),x,0); % 0
 limit(log(x)^2/x^(1/3),x,0); % infinity
 limit(log x/x^(1/3),x,0); % - infinity
 
-h := (X^(1/3) + 3*X**(1/4))/(7*(SQRT(X + 9) - 3)**(1/4));
+h := (x^(1/3) + 3*x**(1/4))/(7*(sqrt(x + 9) - 3)**(1/4));
 limit(h,x,0); % 3/7*6^(1/4)
 
 % Examples from Paul S. Wang's thesis:
@@ -152,23 +152,23 @@ limit(df(z3,z),z,pi/2); % 2*pi
 
 % A test by Wolfram Koepf.
 f:=x^2/(3*(-27*x^2 - 2*x^3 + 3^(3/2)*(27*x^4 + 4*x^5)^(1/2))^(1/3));
-L0:=limit(f,x,0); % L0 := 0
-f1:=((f-L0)/x^(1/3))$
-L1:=limit(f1,x,0); % L1 := 0
-f2:=((f1-L1)/x^(1/3))$
-L2:=limit(f2,x,0); % L2 := -1/2^(1/3)
-f3:=((f2-L2)/x^(1/3))$
-L3:=limit(f3,x,0); % L3 := 0
-f4:=((f3-L3)/x^(1/3))$
-L4:=limit(f4,x,0); % L4 := 0
-f5:=((f4-L4)/x^(1/3))$
-L5:=limit(f5,x,0); % L5 = -2^(2/3)/81
-f6:=((f5-L5)/x^(1/3))$
-L6:=limit(f6,x,0); % L6 := 0
-f7:=((f6-L6)/x^(1/3))$
-L7:=limit(f7,x,0); % L7 := 0
-f8:=((f7-L7)/x^(1/3))$
-L8:=limit(f8,x,0); % L8 := 7/(6561*2^(1/3))
+l0:=limit(f,x,0); % L0 := 0
+f1:=((f-l0)/x^(1/3))$
+l1:=limit(f1,x,0); % L1 := 0
+f2:=((f1-l1)/x^(1/3))$
+l2:=limit(f2,x,0); % L2 := -1/2^(1/3)
+f3:=((f2-l2)/x^(1/3))$
+l3:=limit(f3,x,0); % L3 := 0
+f4:=((f3-l3)/x^(1/3))$
+l4:=limit(f4,x,0); % L4 := 0
+f5:=((f4-l4)/x^(1/3))$
+l5:=limit(f5,x,0); % L5 = -2^(2/3)/81
+f6:=((f5-l5)/x^(1/3))$
+l6:=limit(f6,x,0); % L6 := 0
+f7:=((f6-l6)/x^(1/3))$
+l7:=limit(f7,x,0); % L7 := 0
+f8:=((f7-l7)/x^(1/3))$
+l8:=limit(f8,x,0); % L8 := 7/(6561*2^(1/3))
 
 limit(log(1+x)^2/x^(1/3),x,infinity);  % 0
 limit(e^(log(1+x)^2/x^(1/3)),x,infinity); % 1
@@ -182,16 +182,16 @@ limit(log(ss),x,0); % log(-1)
 ss := ((x^(1/2) - 1)^(1/3) + (x^(1/5) + 1)^2)/x^(1/5);
 limit(ss,x,0); % 2
 
-h := (X^(1/5) + 3*X**(1/4))^2/(7*(SQRT(X + 9) - 3 - x/6))**(1/5);
+h := (x^(1/5) + 3*x**(1/4))^2/(7*(sqrt(x + 9) - 3 - x/6))**(1/5);
 limit(h,x,0); % -6^(3/5)/7^(1/5)
 
-comment one sided limit from bug report by Zbynek Konecny ;
+COMMENT one sided limit from bug report by Zbynek Konecny ;
 
 limit!-((abs(x)-3)/(x-3),x,3); % 1
 
 end;
 
-comment  The following examples all fail with the present limit package.
+COMMENT  The following examples all fail with the present limit package.
 To make them all work it will be best to define a separate limit 
 evaluator, either to be used separately, or to be used when the present 
 evaluator has failed.$

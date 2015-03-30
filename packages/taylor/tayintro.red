@@ -1,4 +1,4 @@
-module TayIntro;
+module tayintro;
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -33,7 +33,7 @@ module TayIntro;
 
 exports
         confusion, constant!-sq!-p, delete!-nth, delete!-nth!-nth,
-        replace!-nth, replace!-nth!-nth, smemberlp, Taylor!-error,
+        replace!-nth, replace!-nth!-nth, smemberlp, taylor!-error,
         var!-is!-nth;
 
 imports
@@ -43,9 +43,9 @@ imports
         prepsq, prin2t, rerror,
 
 % from the header module
-        TayTpElVars;
+        taytpelvars;
 
-fluid '(!*tayexpanding!* !*tayrestart!* Taylor!:date!* Taylor!:version);
+fluid '(!*tayexpanding!* !*tayrestart!* taylor!:date!* taylor!:version);
 
 symbolic procedure var!-is!-nth(tp,var);
   %
@@ -58,7 +58,7 @@ symbolic procedure var!-is!-nth(tp,var);
   begin scalar el,found; integer n,m;
     repeat <<
       n := n + 1;
-      el := TayTpElVars car tp;
+      el := taytpelvars car tp;
       m := 1;
       while el do <<
         if var neq car el then <<el := cdr el; m := m + 1>>
@@ -120,9 +120,9 @@ symbolic procedure confusion msg;
   %
   << terpri ();
      prin2 "TAYLOR PACKAGE (version ";
-     prin2 Taylor!:version;
+     prin2 taylor!:version;
      prin2 ", as of ";
-     prin2 Taylor!:date!*;
+     prin2 taylor!:date!*;
      prin2t "):";
      prin2 "This can't happen (";
      prin2 msg;
@@ -130,7 +130,7 @@ symbolic procedure confusion msg;
      rerror (taylor, 1,
              "Please send input and output to Rainer M. Schoepf!") >>;
 
-symbolic procedure Taylor!-error (type, info);
+symbolic procedure taylor!-error (type, info);
   %
   % called if a normal error occurs.
   % type is the type of error, info the error info.
@@ -170,7 +170,7 @@ symbolic procedure Taylor!-error (type, info);
              then "Computation loops (recursive definition?):"
             else if type eq 'not!-implemented
              then "Not implemented yet"
-            else confusion 'Taylor!-ERROR;
+            else confusion 'taylor!-error;
 %    rerror (taylor, errno,
     rerror (taylor, 2,
             if null info then msg
@@ -178,14 +178,14 @@ symbolic procedure Taylor!-error (type, info);
              else msg . info);
   end;
 
-symbolic procedure Taylor!-error!*(type,info);
+symbolic procedure taylor!-error!*(type,info);
    %
    % Like Taylor!-error, but calls sets !*tayrestart!* and calls
    %  error1 if !*tayexpanding!* indicates that expansion is going
    %  on and more terms might be necessary.
    %
    if !*tayexpanding!* then <<!*tayrestart!* := t; error1()>>
-    else Taylor!-error(type,info);
+    else taylor!-error(type,info);
 
 endmodule;
 

@@ -51,7 +51,7 @@ off1 'cgbcontred;
 off1 'cgbcounthf;
 off1 'cgbcheckg;
 
-!*cgbsloppy := T;
+!*cgbsloppy := t;
 !*cgbsugar := nil;  % Indicator for using sugar property of VDP's.
 		    % This is on for gb computation and off for using
 		    % the code from external procedures. Do not
@@ -116,7 +116,7 @@ macro procedure gb_mkinterface(argl);
       	 prgn := {'put,mkquote smi,''number!-of!-args,len+3} . prgn;
       	 prgn := {'de,smi,args,{'gb_interface!$,mkquote sm, mkquote a2sl1,
 	    mkquote a2sl2,mkquote defl,mkquote xvfn,mkquote s2a,mkquote s2s,
-	    mkquote s,T,'list . args}} . prgn
+	    mkquote s,t,'list . args}} . prgn
       >>;
       if (null modes or modes eq 'am) then <<
       	 % Define the algebraic mode interface
@@ -134,17 +134,17 @@ macro procedure gb_mkinterface(argl);
    end;
 
 gb_mkinterface('gb,'(gb_a2s!-psys),'(gb_a2s2!-psys),
-   nil,'gb_xvars!-psys,'gb_s2a!-gbx,'gb_s2s!-gb,T,'f,nil);
+   nil,'gb_xvars!-psys,'gb_s2a!-gbx,'gb_s2s!-gb,t,'f,nil);
 
 %% gb_mkinterface('gbgsys,'(gb_a2s!-psys),'(gb_a2s2!-psys),
 %%    nil,'gb_xvars!-psys,'gb_s2a!-gsys,'gb_s2s!-gsys,T,'f,nil);
 
 gb_mkinterface('reduce,'(gb_a2s!-pol gb_a2s!-psys),
    '(gb_a2s2!-pol gb_a2s2!-psys),
-   nil,'gb_xvars!-ppsys,'gb_s2a!-pol,'gb_s2s!-pol,T,'f,nil);
+   nil,'gb_xvars!-ppsys,'gb_s2a!-pol,'gb_s2s!-pol,t,'f,nil);
 
 gb_mkinterface('ltb,'(gb_a2s!-psys),'(gb_a2s2!-psys),
-   nil,'gb_xvars!-psys,'gb_s2a!-gb,'gb_s2s!-gb,T,'f,nil);
+   nil,'gb_xvars!-psys,'gb_s2a!-gb,'gb_s2s!-gb,t,'f,nil);
 
 procedure gb_a2s!-psys(l);
    % Groebner bases algebraic mode to symbolic mode polynomial system.
@@ -245,7 +245,7 @@ procedure gb_interface!$(fname,a2sl1,a2sl2,defl,xvfn,s2a,s2s,s,smp,argl);
       w := errorset({'gb_interface1!$,
 	 mkquote fname,mkquote a2sl2,mkquote s2a,mkquote s2s,mkquote s,
 	 mkquote smp,mkquote argl, mkquote nargl,mkquote car vl,
-	 mkquote cdr vl},T,!*backtrace);
+	 mkquote cdr vl},t,!*backtrace);
       vdp_cleanup oenv;
       if errorp w then
       	 rederr {"Error during ",fname};
@@ -381,8 +381,8 @@ procedure gb_gb(p);
 	 cgb_tr1count!*,cgb_tr2count!*,cgb_tr3count!*,cgb_b4count!*,
 	 cgb_strangecount!*,cgb_paircount!*,cgb_hfaccount!*,cgb_gcount!*,
 	 cgb_gbcount!*,cgb_updbcount!*,cgb_updbcountp!*,cgb_updbcalls!*;
-      !*exp := !*gcd := !*ezgcd := T;
-      !*cgbsugar := T;
+      !*exp := !*gcd := !*ezgcd := t;
+      !*cgbsugar := t;
       if !*cgbstat then
       	 savetime := time();
       if !*cgbcheckg then
@@ -783,7 +783,7 @@ procedure gb_strange!-reduction(s,p1,p2);
       saves := s;
       tp1 := vdp_evlmon p1;
       tp2 := vdp_evlmon p2;
-      c := T; while c and not vdp_zero!? s do <<
+      c := t; while c and not vdp_zero!? s do <<
 	 ts := vdp_evlmon s;
 	 if gb_buch!-ev_divides!?(tp2,ts) then
 	    s := gb_reduceonestepint(s,vdp_zero(),vdp_lbc s,ts,p2)
@@ -814,7 +814,7 @@ procedure gb_normalform(f,g);
  	 c := vdp_lbc f;
 	 divisor := gb_searchinlist(vev,g);
 	 if divisor then <<
-	    tai := T;
+	    tai := t;
 	    if vdp_monp divisor then
 	       f := vdp_cancelmev(f,vdp_evlmon divisor)
 	    else <<
@@ -1258,7 +1258,7 @@ procedure gb_reduce(f,g);
  	 c := vdp_lbc f;
 	 divisor := gb_searchinlist(vev,g);
 	 if divisor then <<
-	    tai := T;
+	    tai := t;
 	    if vdp_monp divisor then
 	       f := vdp_cancelmev(f,vdp_evlmon divisor)
 	    else

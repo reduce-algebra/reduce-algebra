@@ -13,7 +13,7 @@ on echo;
 off nat; % To make it easier to compare differing output.
 showtime;
 
-comment
+COMMENT
 
 	####################################
 	###				 ###
@@ -321,7 +321,7 @@ end comment;
     degree m;
 
 
-comment
+COMMENT
 
 	####################################
 	###				 ###
@@ -437,7 +437,7 @@ end comment;
     off detectunits;
 
 
-comment
+COMMENT
 
 	####################################
 	###				 ###
@@ -507,7 +507,7 @@ end comment;
     off rational;
 
 
-comment
+COMMENT
 
 	####################################
 	###				 ###
@@ -574,7 +574,7 @@ end comment;
     modequalp(n1,n2);
 
 
-comment
+COMMENT
 
 	########################################
 	###				     ###
@@ -601,27 +601,27 @@ end comment;
 
   % Gerdt et al. : Seventh order KdV type equation.
 
-A1:=-2*L1**2+L1*L2+2*L1*L3-L2**2-7*L5+21*L6$
-A2:=7*L7-2*L1*L4+3/7*L1**3$
-B1:=L1*(5*L1-3*L2+L3)$
-B2:=L1*(2*L6-4*L4)$
-B3:=L1*L7/2$
-P1:=L1*(L4-L5/2+L6)$
-P2:=(2/7*L1**2-L4)*(-10*L1+5*L2-L3)$
-P3:=(2/7*L1**2-L4)*(3*L4-L5+L6)$
-P4:=A1*(-3*L1+2*L2)+21*A2$
-P5:=A1*(2*L4-2*L5)+A2*(-45*L1+15*L2-3*L3)$
-P6:=2*A1*L7+A2*(12*L4-3*L5+2*L6)$
-P7:=B1*(2*L2-L1)+7*B2$
-P8:=B1*L3+7*B2$
-P9:=B1*(-2*L4-2*L5)+B2*(2*L2-8*L1)+84*B3$
-P10:=B1*(8/3*L5+6*L6)+B2*(11*L1-17/3*L2+5/3*L3)-168*B3$
-P11:=15*B1*L7+B2*(5*L4-2*L5)+B3*(-120*L1+30*L2-6*L3)$
-P12:=-3*B1*L7+B2*(-L4/2+L5/4-L6/2)+B3*(24*L1-6*L2)$
-P13:=3*B2*L7+B3*(40*L4-8*L5+4*L6)$
+a1:=-2*l1**2+l1*l2+2*l1*l3-l2**2-7*l5+21*l6$
+a2:=7*l7-2*l1*l4+3/7*l1**3$
+b1:=l1*(5*l1-3*l2+l3)$
+b2:=l1*(2*l6-4*l4)$
+b3:=l1*l7/2$
+p1:=l1*(l4-l5/2+l6)$
+p2:=(2/7*l1**2-l4)*(-10*l1+5*l2-l3)$
+p3:=(2/7*l1**2-l4)*(3*l4-l5+l6)$
+p4:=a1*(-3*l1+2*l2)+21*a2$
+p5:=a1*(2*l4-2*l5)+a2*(-45*l1+15*l2-3*l3)$
+p6:=2*a1*l7+a2*(12*l4-3*l5+2*l6)$
+p7:=b1*(2*l2-l1)+7*b2$
+p8:=b1*l3+7*b2$
+p9:=b1*(-2*l4-2*l5)+b2*(2*l2-8*l1)+84*b3$
+p10:=b1*(8/3*l5+6*l6)+b2*(11*l1-17/3*l2+5/3*l3)-168*b3$
+p11:=15*b1*l7+b2*(5*l4-2*l5)+b3*(-120*l1+30*l2-6*l3)$
+p12:=-3*b1*l7+b2*(-l4/2+l5/4-l6/2)+b3*(24*l1-6*l2)$
+p13:=3*b2*l7+b3*(40*l4-8*l5+4*l6)$
 
-polys:={P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12,P13};
-vars:={L7,L6,L5,L4,L3,L2,L1};
+polys:={p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13};
+vars:={l7,l6,l5,l4,l3,l2,l1};
 clear a1,a2,b1,b2,b3$
 
 	off lexefgb; 
@@ -734,7 +734,7 @@ x1**2+x1+2*x2*x5+2*x3*x4,
 
     vars:={dx,dy,x,y};
     setring(vars,degreeorder vars,revlex);
-    f3:={DY*( - X*DX + Y**2*DY - Y*DY),DX*(X**2*DX - X*DX - Y*DY)}$
+    f3:={dy*( - x*dx + y**2*dy - y*dy),dx*(x**2*dx - x*dx - y*dy)}$
     primarydecomposition f3;
 
 showtime;

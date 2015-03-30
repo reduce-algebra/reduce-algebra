@@ -378,7 +378,7 @@ symbolic procedure assgnpri(u,v,w);
     if null u then u := 0;
     if !*nero and u=0 then return nil;
     % Special cases.  These tests need to be generalized.
-    if !*TeX then return texpri(u,v,w)
+    if !*TeX then return TeXpri(u,v,w)
      else if getd 'vecp and vecp u then return vecpri(u,'mat);
    % The following is a bit of a mess. "fancy" output using latex style
    % in CSL has real difficulty when given really large expressions,

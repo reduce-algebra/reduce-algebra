@@ -187,53 +187,53 @@ symbolic procedure weak_xreduce1(f,p,l);
    end;
 
 
-symbolic procedure xautoreduce F;
+symbolic procedure xautoreduce f;
    % F:list of pf -> weak_xautoreduce:list of pf
    % returns autoreduced form of F,
    % sorted in increasing order of leading terms
-   xautoreduce1 weak_xautoreduce F;
+   xautoreduce1 weak_xautoreduce f;
 
 
-symbolic procedure xautoreduce1 G;
+symbolic procedure xautoreduce1 g;
    % G:list of pf -> xautoreduce1:list of pf
    % G is weakly autoreduced, result is autoreduced and sorted
-   begin scalar H;
-   H := reversip sort(G,'pfordp); % otherwise need to reduce wrt H too.
-   G := {};
-   while H do
+   begin scalar h;
+   h := reversip sort(g,'pfordp); % otherwise need to reduce wrt H too.
+   g := {};
+   while h do
      begin scalar k;
-     k := car H; H := cdr H;
-     k := xreduce(k,G);
-     if k then G := k . G;
+     k := car h; h := cdr h;
+     k := xreduce(k,g);
+     if k then g := k . g;
      end;
-   return reversip G;
+   return reversip g;
    end;
 
 
-symbolic procedure weak_xautoreduce F;
+symbolic procedure weak_xautoreduce f;
    % F:list of pf -> weak_xautoreduce:list of pf
    % returns weakly autoreduced form of F
-   weak_xautoreduce1(F,{});
+   weak_xautoreduce1(f,{});
 
 
-symbolic procedure weak_xautoreduce1(F,G);
+symbolic procedure weak_xautoreduce1(f,g);
    % F,G:list of pf -> weak_xautoreduce1:list of pf
    % G is (weakly) autoreduced, F may be reducible wrt G.
    begin
-   while F do
+   while f do
       begin scalar k;
-      k := car F; F := cdr F;
-      if k := weak_xreduce(k,G) then
+      k := car f; f := cdr f;
+      if k := weak_xreduce(k,g) then
         begin
         k := xnormalise k;
-        foreach h in G do
+        foreach h in g do
            if xdiv(xval k,xval h) then
-            <<F := h . F;
-              G := delete(h,G)>>;
-        G := append(G,{k});
+            <<f := h . f;
+              g := delete(h,g)>>;
+        g := append(g,{k});
         end;
       end;
-   return G;
+   return g;
    end;
 
 

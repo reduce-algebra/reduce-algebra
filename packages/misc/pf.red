@@ -26,7 +26,7 @@ module pf;  % Compute partial fractions for an expression.
 %
 
 
-Comment PF is the top level operator for finding the partial fractions
+COMMENT PF is the top level operator for finding the partial fractions
 of an expression.  It returns the partial fractions as a list.
 
 The algorithms used here are relatively unsophisticated, and use the

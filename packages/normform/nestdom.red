@@ -34,7 +34,7 @@ module nestdom; %
 % Adaption to allow convertion between arnum and nested.
 %%%%%%%%%
 symbolic procedure ident(x);x;
-PUT('!:ar!:,'!:nest!:,'ident);
+put('!:ar!:,'!:nest!:,'ident);
 %%%%%%%%%
 
 
@@ -46,9 +46,9 @@ inline procedure nestlevel u; cadr u;
 inline procedure nestdmode u; caddr u;
 inline procedure nestsq u; cdddr u;
 
-GLOBAL '(DOMAINLIST!*);
+global '(domainlist!*);
 
-FLUID '(alglist!* nestlevel!*);
+fluid '(alglist!* nestlevel!*);
 nestlevel!* := 0;
 
 switch nested;

@@ -93,7 +93,7 @@ symbolic procedure hf!=powers m;
   if null m then t
   else (length mo_support car m<2) and hf!=powers cdr m;
 
-Comment
+COMMENT
 
 Second variant : by induction on the number of variables using the
 exactness of the sequence

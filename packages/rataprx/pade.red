@@ -58,7 +58,7 @@ procedure pade(f, x, h, n, d);
 
 %check to see if input is rational
 %if so larger degrees of n & d will return input
-     if type_ratpoly(f,x) AND deg(num f,x)<=n AND deg(den f,x)<=d
+     if type_ratpoly(f,x) and deg(num f,x)<=n and deg(den f,x)<=d
      then return f
      else
      << y := lisp gensym();            %declare y as local variable
@@ -77,13 +77,13 @@ procedure pade(f, x, h, n, d);
 
         tay_expsn  := taylor(g, y,0,n+d);
         tay_output := taylortostandard(tay_expsn);
-        if NOT(freeof(tay_output,df)) then rederr "not yet implemented"
+        if not(freeof(tay_output,df)) then rederr "not yet implemented"
         %Some Taylor Expansions do not exist at present.
 
         else
         << poly_taylor :=
               denom*(num tay_output) - numer*(den tay_output);
-           coeff_list := COEFF(poly_taylor,y);
+           coeff_list := coeff(poly_taylor,y);
 
            if (n+d+1)>length(coeff_list)
            %Only consider first n+d+1 coefficients at most.

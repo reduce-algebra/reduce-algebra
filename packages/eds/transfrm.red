@@ -28,7 +28,7 @@ module transfrm;
 %
 
 
-Comment. Data structure:
+COMMENT. Data structure:
 
         xform   ::= list of 1-form kernel . 1-form pf
 

@@ -36,22 +36,22 @@ lisp(tr_hom_alg:=t)$
 algebraic procedure bi_lin_expt(p)$
 if p=1 then 0 else
 if  arglength(p)<2 then 1 else
-if (arglength(p)=2) and (part(p,0)=EXPT) then part(p,2)
+if (arglength(p)=2) and (part(p,0)=expt) then part(p,2)
                                          else write"error!"$
 
-symbolic procedure find_hom_deg_SF(p)$
+symbolic procedure find_hom_deg_sf(p)$
 % p is supposed to be a standard form,
 % returns {total degree of flin_ functions,
 %          total degree of all other functions}
 % in first term of p.
 begin scalar tm,f,sb,l1,l2$
- tm:=first_term_SF p$
+ tm:=first_term_sf p$
  l1:=gensym()$
  l2:=gensym()$
  for each f in flin_ do 
-    sb:=cons((f . {'TIMES,f,l1}), sb)$
+    sb:=cons((f . {'times,f,l1}), sb)$
  for each f in setdiff(fhom_,flin_) do 
-    sb:=cons((f . {'TIMES,f,l2}), sb)$
+    sb:=cons((f . {'times,f,l2}), sb)$
  tm:=numr quotsq(simp {'!*sq,subf(tm,sb),nil}, (tm . 1))$
 
  return
@@ -128,18 +128,18 @@ $
   sf:=numr get(p,'sqval);   % sf is the numerator of the equation
   wtli:=nil;
   while sf do <<
-   tf:=first_term_SF sf; sf:=subtrf(sf,tf); % tf is the first term
+   tf:=first_term_sf sf; sf:=subtrf(sf,tf); % tf is the first term
 
    wt:=nil;
    while tf and not domainp tf do <<
     w:=assoc(mvar tf,ali);
     if w then <<
-     wt:=cons({'TIMES,ldeg tf,cdr w},wt)
+     wt:=cons({'times,ldeg tf,cdr w},wt)
     >>;
     tf:=lc tf
    >>;
    wt:=if null wt then 0              else
-       if cdr  wt then cons('PLUS,wt) else 
+       if cdr  wt then cons('plus,wt) else 
                        car wt$
    wtli:=cons(wt,wtli)
   >>;
@@ -149,13 +149,13 @@ $
   % the same weight as the first term, eli is the resulting
   % list of conditions
   for each w in cdr wtli do
-  eli:=cons(reval {'DIFFERENCE,car wtli,w}, eli) 
+  eli:=cons(reval {'difference,car wtli,w}, eli) 
 
  >>;
 
  % solving the system of conditions
  !!arbint:=0;
- s:=solveeval {cons('LIST,eli),cons('LIST,wl)};
+ s:=solveeval {cons('list,eli),cons('list,wl)};
 
  if !!arbint=0 then write"This system is not homogeneous." else
  if !!arbint=1 then write"This system has the following homogeneity:" else
@@ -175,27 +175,27 @@ symbolic procedure make_hom_ansatz(f_1,f_2,d1,d2)$
 begin scalar ans,ans1,ans2,h,fl,rply;
 
  if null f_1 then ans1:=1 else
- if null cdr f_1 then ans1:={'EXPT,car f_1,d1} else
- ans1:={'EXPT,cons('PLUS,f_1),d1}$
+ if null cdr f_1 then ans1:={'expt,car f_1,d1} else
+ ans1:={'expt,cons('plus,f_1),d1}$
 
  if null f_2 then ans2:=1 else
- if null cdr f_2 then ans2:={'EXPT,car f_1,d2} else
- ans2:={'EXPT,cons('PLUS,f_2),d2}$
+ if null cdr f_2 then ans2:={'expt,car f_1,d2} else
+ ans2:={'expt,cons('plus,f_2),d2}$
 
- ans:=reval {'TIMES,ans1,ans2}$
+ ans:=reval {'times,ans1,ans2}$
 
  return
- if (not pairp ans) or (car ans neq 'PLUS) then <<
+ if (not pairp ans) or (car ans neq 'plus) then <<
   h:=gensym();
-  {'LIST,{'TIMES,h,ans},{'LIST,h}}
+  {'list,{'times,h,ans},{'list,h}}
  >>                                        else <<
   ans:=cdr ans$
   for each f in ans do <<
    h:=gensym()$
    fl:=cons(h,fl)$
-   rply:=cons({'TIMES,h,f},rply)
+   rply:=cons({'times,h,f},rply)
   >>$
-  {'LIST,cons('PLUS,rply),cons('LIST,fl)}
+  {'list,cons('plus,rply),cons('list,fl)}
  >>
 end$
 
@@ -245,7 +245,7 @@ begin scalar p,fl,rs,h$
  >>$
 %rs:=cons('PLUS,rs)$
 %return {'LIST,reval rs,cons('LIST,fl)}
- return {'LIST,{'!*SQ,rs,t},cons('LIST,fl)}
+ return {'list,{'!*sq,rs,t},cons('list,fl)}
 end$
 
 symbolic procedure drop_dep_bi_lin(arglist)$
@@ -259,8 +259,8 @@ begin scalar pdes,cnd,fl,f,cndcp,c,linde,again$
 % cnd:=bi_lin_sep(cadr cnd,fl_1,fl_2)$ 
 %  cnd:=split_simplify({{'LIST,cadr cnd},{'LIST},
 %                       cons('LIST,append(fl_1,fl_2)),{'LIST},t})$
-  cnd:=split_simplify({{'LIST,cadr cnd},{'LIST},
-                       fl,cons('LIST,ftem_),t})$
+  cnd:=split_simplify({{'list,cadr cnd},{'list},
+                       fl,cons('list,ftem_),t})$
 
   if print_ then <<write"Now solving the linear system."$terpri()>>$
   !!arbint:=0;
@@ -309,7 +309,7 @@ begin scalar h,pdes,fc,rhs,lhs,lhsfl,cnd,cndcp,fl,fl_1,fl_2,
 
  change_prompt_to ""$ 
  repeat h:=termread() until (h='y) or (h='n)$
- If h='n then arglist:=drop_dep_bi_lin(arglist)$
+ if h='n then arglist:=drop_dep_bi_lin(arglist)$
  terpri()$
 
  fl_1:=flin_;
@@ -328,7 +328,7 @@ begin scalar h,pdes,fc,rhs,lhs,lhsfl,cnd,cndcp,fl,fl_1,fl_2,
    rhs:=cadr rhs;  % expression
   >>$
 
-  hdg:=find_hom_deg_SF(numr simp fc)$
+  hdg:=find_hom_deg_sf(numr simp fc)$
   dg1:=1-car  hdg$
   dg2:=1-cadr hdg$
   lhs:=make_hom_ansatz(fl_1,fl_2,dg1,dg2)$
@@ -338,12 +338,12 @@ begin scalar h,pdes,fc,rhs,lhs,lhsfl,cnd,cndcp,fl,fl_1,fl_2,
 % cnd:=bi_lin_sep(algebraic(fc*lhs-rhs),fl_1,fl_2)$ 
 %  cnd:=split_simplify({{'LIST,algebraic(fc*lhs-rhs)},{'LIST},
 %                       cons('LIST,append(fl_1,fl_2)),{'LIST},t})$
-  cnd:=split_simplify({{'LIST,algebraic(fc*lhs-rhs)},{'LIST},
-                       fl,cons('LIST,ftem_),t})$
+  cnd:=split_simplify({{'list,algebraic(fc*lhs-rhs)},{'list},
+                       fl,cons('list,ftem_),t})$
 
   if print_ then <<write"Now solving the linear system."$terpri()>>$
   !!arbint:=0;
-  cnd:=cdr solveeval list(cnd,cons('LIST,append(cdr lhsfl,cdr fl)))$
+  cnd:=cdr solveeval list(cnd,cons('list,append(cdr lhsfl,cdr fl)))$
   if cnd then <<
   
    cnd:=car cnd; % i.e. take the first solution
@@ -358,7 +358,7 @@ begin scalar h,pdes,fc,rhs,lhs,lhsfl,cnd,cndcp,fl,fl_1,fl_2,
 %    cndcp:={'TIMES,fc,cndcp}$
      cndcp:={'!*sq,multsq(simp fc,cndcp),t}$
 
-     pdes:=eqinsert(h:=mkeqSQ(cndcp,nil,nil,ftem_,vl_,
+     pdes:=eqinsert(h:=mkeqsq(cndcp,nil,nil,ftem_,vl_,
                               allflags_,t,list(0),nil,pdes),pdes)$
      if h and not freeof(pdes,h) then <<
 
@@ -375,7 +375,7 @@ begin scalar h,pdes,fc,rhs,lhs,lhsfl,cnd,cndcp,fl,fl_1,fl_2,
   write"Do you want to find further factorizable equations ",
        "with other factors? (y/n) "$
   repeat h:=termread() until (h='y) or (h='n)$
-  If h='y then again:=t
+  if h='y then again:=t
           else again:=nil$
  >> until null again$
 
@@ -446,7 +446,7 @@ begin scalar p,h,f,fp,bestf,l1,pdes,forg,nzf,allnzf,
  if expert_mode then l1:=selectpdes(pdes,1)
                 else l1:=cadddr arglist$
  for each p in ineq_ do
- if no_number_atom_SQ p then allnzf:=cons(mvar numr p,allnzf);
+ if no_number_atom_sq p then allnzf:=cons(mvar numr p,allnzf);
 
  % Find a rational equation with only 2 or 3 functions of all variables
  % with homogeneity degree (0 n). Find a case where one of the 
@@ -500,7 +500,7 @@ begin scalar p,h,f,fp,bestf,l1,pdes,forg,nzf,allnzf,
  if f neq bestf then <<
   newf:=newfct(fname_,vl,nfct_)$  nfct_:=add1 nfct_$
   ftem_:=append(ftem_,list newf)$
-  newe:=mkeqSQ(simp {'DIFFERENCE,f,{'TIMES,newf,bestf}},nil,nil,
+  newe:=mkeqsq(simp {'difference,f,{'times,newf,bestf}},nil,nil,
                {f,newf,bestf},vl,allflags_,t,list(0),nil,pdes);
   pdes:=eqinsert(newe,pdes)$ 
   % The substitution f=>newf*bestf is (unfortunately) done in all

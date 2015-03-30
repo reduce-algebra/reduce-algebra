@@ -40,31 +40,31 @@ xvars nil;
 
 % Exterior system for heat equation on 1st jet bundle
 
-S := {d u - u(-t)*d t - u(-x)*d x,
+s := {d u - u(-t)*d t - u(-x)*d x,
       d u(-t)^d t + d u(-x)^d x,
       d u(-x)^d t - u(-t)*d x^d t};
 
 % Check that it's closed.
 
-dS := d S xmodideal S;
+ds := d s xmodideal s;
 
 
 % Exterior system for a Monge-Ampere equation
 
 korder d u(-y,-y),d u(-x,-y),d u(-x,-x),d u(-y),d u(-x),d u;
-M := {u(-x,-x)*u(-y,-y) - u(-x,-y)**2,
+m := {u(-x,-x)*u(-y,-y) - u(-x,-y)**2,
       d u       -  u(-x)*d x   -  u(-y)*d y,
       d u(-x) - u(-x,-x)*d x - u(-x,-y)*d y,
       d u(-y) - u(-x,-y)*d x - u(-y,-y)*d y}$
 
 % Get the full Groebner basis
 
-gbdeg := xideal M;
+gbdeg := xideal m;
 
 % Changing the term ordering can be dramatic
 
 xorder gradlex;
-gbgrad := xideal M;
+gbgrad := xideal m;
 
 % But the bases are equivalent
 

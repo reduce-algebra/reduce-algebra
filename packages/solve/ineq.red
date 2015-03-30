@@ -48,7 +48,7 @@ load!-package'solve;  % Some routines from solve are needed.
 fluid'(solvemethods!*);
 
 if not memq('ineqseval,solvemethods!*) then
-      solvemethods!*:='ineqseval!*!*.SOlvemethods!*;
+      solvemethods!*:='ineqseval!*!*.solvemethods!*;
 
 if not get('geq,'simpfn) then
     <<mkop'leq; mkop'geq; mkop'lessp; mkop'greaterp>>;

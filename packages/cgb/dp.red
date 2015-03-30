@@ -918,12 +918,12 @@ procedure dip_comp(p1,p2);
       if null p1 then
       	 return nil;
       if null p2 then
-	 return T;
+	 return t;
       w := dip_comp1(p1,p2);
       if w #= -1 then
 	 return nil;
       if w #= 1 then
-	 return T;
+	 return t;
       return dip_comp(dip_mred p1,dip_mred p2)
    end;
 

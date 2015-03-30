@@ -26,9 +26,9 @@ module ranks;  % Rank operations.
 %
 
 
-fluid '(ZERO);
+fluid '(zero);
 
-ZERO := mkobject(0,'zero);
+zero := mkobject(0,'zero);
 
 symbolic procedure addrank(name,arity,coarity);
    begin scalar m,disambop,x;

@@ -461,7 +461,7 @@ algebraic procedure airyapm(z,proc);
 %functions with complex arguments" (Corless,Jefferey,Rasmussen),
 %J. Comput Phys. 99(1992), 106-114"
 
-algebraic procedure Ai_Asymptotic(absz);
+algebraic procedure ai_asymptotic(absz);
 
     begin scalar prec;
        prec := lisp !:prec!:;
@@ -487,8 +487,8 @@ algebraic procedure num_airy(z,fname);
 
 %This is the procedure to evaluate Airy_ai of z.
 
- if fname = Ai then <<
-    if Ai_Asymptotic(abs(z)) = 1 then
+ if fname = ai then <<
+    if ai_asymptotic(abs(z)) = 1 then
         <<if abs(arg(-z)) < ((2/3)*pi) then summ:= asairyam(z,ai)
         else if abs(arg(z)) < pi then summ := asairyap(z,ai);
         >>
@@ -499,16 +499,16 @@ algebraic procedure num_airy(z,fname);
 %This is the procedure to evaluate Airy_bi of z.
 %Similar procedures for Airy_aiprime and Airy_biprime follow.
 
- else if fname = Bi then <<
-     if Ai_Asymptotic(abs(z)) = 1 then
+ else if fname = bi then <<
+     if ai_asymptotic(abs(z)) = 1 then
 <<    if abs(arg(-z)) < ((2/3)*pi) then summ := asairyam(z,bi)
        else if abs(arg(z)) < ((1/3)*pi)  then summ := asairyap(z,bi);
 >>
    else summ := airya2(z,bi);
     return summ; >>
 
- else if fname = Aiprime then <<
-      if Ai_Asymptotic(abs(z)) = 1 then
+ else if fname = aiprime then <<
+      if ai_asymptotic(abs(z)) = 1 then
 <<
        if abs(arg(-z)) < (2/3) * pi then summ := airyapm(z,aiprime)
        else if abs(arg(z)) < pi then summ := airyapp(z,aiprime);
@@ -516,8 +516,8 @@ algebraic procedure num_airy(z,fname);
        else summ := airyap(z,aiprime);
     return summ; >>
 
- else if fname = Biprime then <<
-       if Ai_Asymptotic(abs(z)) = 1 then
+ else if fname = biprime then <<
+       if ai_asymptotic(abs(z)) = 1 then
 <<
        if abs(arg(-z)) < ((2/3)*pi) then summ := airyapm(z,biprime)
        else if abs(arg(z)) < ((1/3)*pi) then summ := airyapp(z,biprime);
@@ -536,37 +536,37 @@ operator Airy_Ai, Airy_Bi, Airy_Aiprime, Airy_Biprime;
 %evaluate each of the four Airy function cases respectively.
 %The rule for differentiation are also described.
 
-Airy_rules := { Airy_Ai(0) => (3 ^ (-2/3)) / gamma(2/3),
-                Airy_Ai(~z) => num_airy (z,Ai)
+airy_rules := { Airy_Ai(0) => (3 ^ (-2/3)) / gamma(2/3),
+                Airy_Ai(~z) => num_airy (z,ai)
                         when symbolic !*rounded and numberp z,
                 df(Airy_Ai(~z),z) => Airy_Aiprime(z),
 
                 Airy_Bi(0) => sqrt(3) * (3 ^ (-2/3)) / gamma(2/3),
-                Airy_Bi(~z) => num_airy (z,Bi)
+                Airy_Bi(~z) => num_airy (z,bi)
                         when symbolic !*rounded and numberp z,
                 df(Airy_Bi(~z),z) => Airy_Biprime(z),
 
                 Airy_Aiprime(0) => -((3 ^ (-1/3)) / gamma(1/3)),
-                Airy_Aiprime(~z) => num_airy (z,Aiprime)
+                Airy_Aiprime(~z) => num_airy (z,aiprime)
                         when symbolic !*rounded and numberp z,
                 df(Airy_Aiprime(~z),z) => z * Airy_Ai(z),
 
                 Airy_Biprime(0) => sqrt(3) * (3 ^ (-1/3)) / gamma(1/3),
-                Airy_Biprime(~z) => num_airy (z,Biprime)
+                Airy_Biprime(~z) => num_airy (z,biprime)
                         when symbolic !*rounded and numberp z,
                 df(Airy_Biprime(~z),z) => z * Airy_Bi(z)
                };
 
 %This activates the above rule set.
 
-let Airy_rules;
+let airy_rules;
 
 %The following is an inactive rule set that can be activated by the user
 %if desired.
 %When activated, it will represent the Airy functions in terms of Bessel
 %Functions.
 
-Airy2Bessel_rules :=
+airy2bessel_rules :=
 { Airy_Ai(~z) => (1/3) * sqrt(z) * << (BesselI(-1/3,ee) -
                  BesselI(1/3,ee))
                   where ee => (2/3 * (z ^ (3/2))) >>

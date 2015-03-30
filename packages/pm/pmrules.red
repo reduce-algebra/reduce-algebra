@@ -76,7 +76,7 @@ symbolic procedure simpbool u;
   x := get(car u,'boolfn) or car u;
   u := for each j in cdr u collect reval j;
   u := apply (x, u);
-  return (if u then !*k2f T else 0) ./ 1
+  return (if u then !*k2f t else 0) ./ 1
  end;
 
 flag('(numberp fixp), 'full);

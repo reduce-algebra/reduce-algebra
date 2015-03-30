@@ -529,7 +529,7 @@ symbolic procedure prime!=eqhull(m,d);
 
 % ---------- Primary Decomposition Algorithms ------------
 
-Comment
+COMMENT
 
 by [GTZ]'s approach:
         - Compute successively a list {(Q_i,p_i)} of pairs
@@ -664,7 +664,7 @@ symbolic procedure prime!=decompose1 m;
                 {m, dpmat_times_dpoly(q,
                         dpmat_unit(dpmat_cols m,dpmat_coldegs m))};
 
-Comment
+COMMENT
 
 At this moment M = M:<p>\intersection (M,q*F), q=p^n, and
         - l is the list of primary comp., lifted from the first part
@@ -732,7 +732,7 @@ symbolic procedure prime!=decompose2 m;
    where cali!=degrees:=cali!=degrees,
                 cali!=basering:=cali!=basering;
 
-symbolic procedure prime!=necessary(P,m,l);
+symbolic procedure prime!=necessary(p,m,l);
 % P a prime to be testet, M the original module, l the list of
 % (possibly) associated primes of M, including P.
 % Returns true <=> P is an embedded prime.

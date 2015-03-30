@@ -236,7 +236,7 @@ begin    scalar a,pl$
   if pl then <<
     pl:=append(for each a in car pl collect simp cdr a,for each a in cadr pl collect simp a); % <--- old  22.8.08
 %   pl:=append(for each a in car pl collect simp a,for each a in cadr pl collect simp a);  % <--- next
-    pl:=mkeqSQlist(pl,nil,nil,fctsort union(ftem_,get(p,'fcts)),get(p,'vars), 
+    pl:=mkeqsqlist(pl,nil,nil,fctsort union(ftem_,get(p,'fcts)),get(p,'vars), 
                    cons('to_drop,allflags_),t,get(p,'orderings),pdes)$
     drop_pde(p,nil,nil);
     flag(pl,'used_);
@@ -344,7 +344,7 @@ begin scalar histy,l1,l4,nv,vl1,nv1,h,x,f,ft,aa,bb,cc,
     if null l1 then ft:=nil  % to stop
                else << % Listing of all special cases to be considered
       for each h in cdadr l1 do 
-      if null can_not_become_zeroSQ(simp car h,ftem) then cases:=cons(car h,cases);
+      if null can_not_become_zerosq(simp car h,ftem) then cases:=cons(car h,cases);
       if cases then <<
         % add case distinctions to todo list
         to_do_list:=cons(list('split_into_cases,simp car cases),to_do_list);
@@ -358,8 +358,8 @@ begin scalar histy,l1,l4,nv,vl1,nv1,h,x,f,ft,aa,bb,cc,
         % q:=reval {'QUOTIENT,cdr cadadr l1,car cadadr l1}; 
         % This division through car cadadr l1 had to be dropped because the
         % back-multiplication will not happen --> check_sum gets wrong --> loop
-        q:={'QUOTIENT,reval {'QUOTIENT,cdr cadadr l1,car cadadr l1},
-                      {'QUOTIENT,1,car cadadr l1}}$
+        q:={'quotient,reval {'quotient,cdr cadadr l1,car cadadr l1},
+                      {'quotient,1,car cadadr l1}}$
         cc:=cadr l1$
         % We drop the last division and differentiation.
         cc:=cons(car cc,cddr cc)
@@ -368,7 +368,7 @@ begin scalar histy,l1,l4,nv,vl1,nv1,h,x,f,ft,aa,bb,cc,
         q:=car l1$                            % new expression
         cc:=cadr l1;
       >>$
-      if (pairp q) and (car q='QUOTIENT) then <<
+      if (pairp q) and (car q='quotient) then <<
         bb:=caddr q;                          % we take off the denimonator
         q:=cadr q                             % q is now only the numerator
       >>                                 else bb:=1$
@@ -385,7 +385,7 @@ begin scalar histy,l1,l4,nv,vl1,nv1,h,x,f,ft,aa,bb,cc,
 
   stop_let_rules(ruli)$
 
-  RETURN 
+  return 
   if null l1 then if tr_gensep then <<terpri()$
                     write"felim or newgensep gave nil!!"$terpri()$
                     write"q=",q; terpri();
@@ -436,7 +436,7 @@ begin scalar histy,l1,l4,nv,vl1,nv1,h,x,f,ft,aa,bb,cc,
       ft:=smemberl(ftem,cdr h);
       vl1:=argset(ft)$
       if null (aa:=stardep(ft,vl1)) or 
-         (not pairp ft) or (car ft neq 'PLUS) then l4:=cons(h,l4)
+         (not pairp ft) or (car ft neq 'plus) then l4:=cons(h,l4)
                                               else <<
         par:=partitn(cdr h,   % expression
                      append(histy,      % history so far, 
@@ -459,7 +459,7 @@ begin scalar histy,l1,l4,nv,vl1,nv1,h,x,f,ft,aa,bb,cc,
 
         if par then <<
 	  l4:=append(l4,for each f in car par collect 
-			  ({'TIMES,car h,car f} . cdr f));  
+			  ({'times,car h,car f} . cdr f));  
 	  extra_cond:=append(extra_cond,cadr par); % collecting any
 						   % appearing conditions
 	  cases:=append(cases,caddr par);
@@ -501,7 +501,7 @@ begin scalar a,b,l,l1,ft1,v,prflag,f1$
   %--- To run separ, functions ft1 should not be in the denominator
   %--- ?????? What if nonl. Problems?
 
-  if pairp q and (car q='QUOTIENT) and smemberl(ft1,caddr q) then <<
+  if pairp q and (car q='quotient) and smemberl(ft1,caddr q) then <<
    if tr_gensep then <<
     terpri()$
     write "The quotient of the expression to be separated contains one or more ",
@@ -560,9 +560,9 @@ begin scalar a,b,l,l1,ft1,v,prflag,f1$
        terpri()
       >>         else <<                    
 !#if (equal version!* "REDUCE 3.6")
-        a:=reval aeval list('QUOTIENT,q,b)$ 
+        a:=reval aeval list('quotient,q,b)$ 
 !#else 
-        a:=reval list('QUOTIENT,q,b)$ 
+        a:=reval list('quotient,q,b)$ 
 !#endif
         %--- for later backward integrations: extension of the history
         l:=cons(b . q ,l)$  %--- new: q is the equ. before division & diff.
@@ -570,9 +570,9 @@ begin scalar a,b,l,l1,ft1,v,prflag,f1$
         %--- l1 has to be updated as the coefficients
         % change through division and differentiation
 	l1:=for each c in l1 collect
-	    reval list('DF,list('QUOTIENT,c,b),v)$
+	    reval list('df,list('quotient,c,b),v)$
         %--- the differentiation
-	q:=reval list('DF,a,v)$
+	q:=reval list('df,a,v)$
 	if tr_gensep then
 	<<write "The new equation: "$
 	  eqprint q$
@@ -629,7 +629,7 @@ begin scalar succ,ft,q,l,v,v1,vf,s1,s2,p,f1,f2,fctr,check_sum,
     % At first putting the denominator back in
     % l4 is a list of pairs (sep_coefficient . sep_remainding_factor) 
     if denomi neq 1 then
-    l4:=for each h in l4 collect (car h . {'QUOTIENT,cdr h,denomi});
+    l4:=for each h in l4 collect (car h . {'quotient,cdr h,denomi});
 
     if tr_gensep then <<terpri()$ write "backward integration w.r.t. ",v>>$
 
@@ -677,7 +677,7 @@ begin scalar succ,ft,q,l,v,v1,vf,s1,s2,p,f1,f2,fctr,check_sum,
             terpri()$write "which is now multiplied with: "$eqprint fctr
           >>$
 %          q:=reval list('TIMES,fctr,car h,car q)$  % One has to multiply with car h now %21.8.08
-          q:=reval list('TIMES,fctr,car q)$  % 22.8.08
+          q:=reval list('times,fctr,car q)$  % 22.8.08
           % One can not multiply with car h before the integratepde() call because car h 
           % can depend on extra independent variables on which the functions ft do
           % not depend and then the new functions of integration would not depend on 
@@ -703,21 +703,21 @@ begin scalar succ,ft,q,l,v,v1,vf,s1,s2,p,f1,f2,fctr,check_sum,
               while s2 do
               <<% only divisions through factors that can be swallowed by f1
                 if not smemberl(vf,caar s2) then 
-                f2:=list('QUOTIENT,f2,caar s2)$
-                if not my_freeof(f1,v1) then f2:=reval list('DF,f2,v1)$
+                f2:=list('quotient,f2,caar s2)$
+                if not my_freeof(f1,v1) then f2:=reval list('df,f2,v1)$
                 % actually only dividing through those factors of (caar s2)
                 % which depend on v1 and which do not contain variables
                 % which f2 does not depent on.
                 s2:=cdr s2
               >>$
-              if not smemberl(vf,car s1) then f2:=list('TIMES,f2,car s1)$
+              if not smemberl(vf,car s1) then f2:=list('times,f2,car s1)$
             >>$
             % the remaining integrations in the current element of histy
             if histy then <<
               s2:=reverse l$ 
               while s2 do
-              <<if not smemberl(vf,caar s2) then f2:=list('QUOTIENT,f2,caar s2)$
-                if not my_freeof(f1,v1) then f2:=reval list('DF,f2,v1)$
+              <<if not smemberl(vf,caar s2) then f2:=list('quotient,f2,caar s2)$
+                if not my_freeof(f1,v1) then f2:=reval list('df,f2,v1)$
                 s2:=cdr s2
               >>;
             >>;
@@ -732,7 +732,7 @@ begin scalar succ,ft,q,l,v,v1,vf,s1,s2,p,f1,f2,fctr,check_sum,
           allfnew:=append(fnew_,allfnew)$
           ftem:=union(fnew_,ftem);
           % car h is the coefficient dropped through direct separation          
-          if succ then check_sum:={'DIFFERENCE,check_sum,{'TIMES,q,car h}};     % <-------- changed  %22.8.08
+          if succ then check_sum:={'difference,check_sum,{'times,q,car h}};     % <-------- changed  %22.8.08
 %          if succ then check_sum:={'DIFFERENCE,check_sum,q};                     % <-------- new    %21.8.08
         >>$
         (car h . q) % the value to be collected to give the new l4              % <-------- changed %22.8.08
@@ -790,7 +790,7 @@ begin scalar newconds,condi;
   condi:=cdar conds;
   conds:=cdr conds;
   if length condi=1 then condi:=car condi
-		    else condi:=cons('PLUS,condi);
+		    else condi:=cons('plus,condi);
   newconds:=cons(condi,newconds)
  >>;
  return newconds
@@ -843,7 +843,7 @@ symbolic procedure starequ(n,alindep,blindep)$
 % generates all cases each with all conditions with _i representing
 % ai or bi, equations and new functions are not generated
 begin
- comment
+ COMMENT
   The equation to separate has the form 0 = sum_i ai*bi
   where the bi do not depend on some variable x. The
   procedure starequ generates cases:
@@ -1159,16 +1159,16 @@ begin
       cilist:=cons(ci,cilist);
       nfct_:=nfct_+1;
 
-      acond:=cons(list('MINUS,list('TIMES,ci,car pickfac(ex,ai))),acond);
+      acond:=cons(list('minus,list('times,ci,car pickfac(ex,ai))),acond);
       if pri then <<write"acond=",acond;terpri()>>$
 
       if bco:=find_cond(bcons,ai) then <<
-       bcons:=subst(subst(list('TIMES,ci,a1),a1,bco),bco,bcons);
+       bcons:=subst(subst(list('times,ci,a1),a1,bco),bco,bcons);
        if pri then <<write"bcons=",bcons;terpri()>>$
       >>
 
      >>;
-     acond:=cons('PLUS,acond)
+     acond:=cons('plus,acond)
 
     >>
 	       else << % The condition aco is a *-condition
@@ -1185,7 +1185,7 @@ begin
       ali:=
       if not zerop car ali then
       for each i in cdr ali collect
-      reval list('DF,list('QUOTIENT,i,car ali),x)
+      reval list('df,list('quotient,i,car ali),x)
 			   else cdr ali;
       if pri then <<write"ali2=",ali;terpri()>>$
 
@@ -1197,7 +1197,7 @@ begin
 
      >>;
      acond:=car ali;
-     if (pairp acond) and (car acond = 'QUOTIENT) then
+     if (pairp acond) and (car acond = 'quotient) then
      acond:=cadr acond;
 
     >>;
@@ -1215,7 +1215,7 @@ begin
   % adding all b-conditions to the new case newca
   while bcons do <<
    if length car bcons = 1 then newca:=cons(caar bcons,newca)
-			   else newca:=cons(cons('PLUS,car bcons),
+			   else newca:=cons(cons('plus,car bcons),
 						 newca);
    bcons:=cdr bcons
   >>;
@@ -1431,7 +1431,7 @@ begin scalar p,h,fl,l,l1,pdes,forg,n,result,d,contrad,newpdes$%,newfdep,bak,sol
       forg:=cadr h; % was not assigned above as it has not changed probably
      >>;
      n:=n+1$
-     start_level(n,list {'EQUAL,0,cdr d})$
+     start_level(n,list {'equal,0,cdr d})$
      if print_ then <<
       terpri()$
       write "CRACK is now called with the assumption : "$
@@ -1446,7 +1446,7 @@ begin scalar p,h,fl,l,l1,pdes,forg,n,result,d,contrad,newpdes$%,newfdep,bak,sol
      fl:=append(get(p,'fcts),car d);
      newpdes:=pdes$
      for each h in cdr d do 
-     newpdes:=eqinsert(mkeqSQ(nil,nil,h,fl,vl_,allflags_,t,list(0),nil,newpdes),newpdes); % #?#
+     newpdes:=eqinsert(mkeqsq(nil,nil,h,fl,vl_,allflags_,t,list(0),nil,newpdes),newpdes); % #?#
      % further necessary step to call crackmain():
      recycle_fcts:=nil$  % such that functions generated in the sub-call 
                          % will not clash with existing functions
@@ -1481,7 +1481,7 @@ begin scalar p,h,fl,l,l1,pdes,forg,n,result,d,contrad,newpdes$%,newfdep,bak,sol
    pdes:=drop_pde(p,pdes,nil)$
    for each h in cdr l do 
 %  pdes:=eqinsert(mkeq  (        h,fl,vl_,allflags_,t,list(0),nil,pdes),pdes);
-   pdes:=eqinsert(mkeqSQ(nil,nil,h,fl,vl_,allflags_,t,list(0),nil,pdes),pdes); % #?# 
+   pdes:=eqinsert(mkeqsq(nil,nil,h,fl,vl_,allflags_,t,list(0),nil,pdes),pdes); % #?# 
    result:=list(pdes,forg)
   >>$
   return result$

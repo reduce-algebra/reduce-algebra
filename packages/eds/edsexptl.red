@@ -34,7 +34,7 @@ load_package 'xideal;
 
 %%%% Characteristic variety, symbol relations and symbol matrix
 
-Comment. At present, algebraic routines.
+COMMENT. At present, algebraic routines.
 
 endcomment;
 
@@ -50,12 +50,12 @@ symbolic procedure indexnames u;
    end;
 
 
-algebraic procedure symbol_relations(S,name);
+algebraic procedure symbol_relations(s,name);
    % S:eds, name:id -> symbol_relations:list of 1-form
    begin scalar tbl,ix,sys,pis,!*varopt,!*arbvars;
    pform name(i,j) = 1;
-   tbl := tableau S;
-   ix := indexnames independence S;
+   tbl := tableau s;
+   ix := indexnames independence s;
    for i:=1:first length tbl do
       indexrange !!symbol!!index=i;
    pis := for i:=1:first length tbl collect
@@ -70,15 +70,15 @@ algebraic procedure symbol_relations(S,name);
    end;
 
 
-algebraic procedure symbol_matrix(S,name);
+algebraic procedure symbol_matrix(s,name);
    % S:eds, name:id -> symbol_matrix:matrix of 0-form
    begin scalar sys,wlist,n;
    pform name(i) = 0,{!!symbol!!pi(i,j),!!symbol!!w(i)}=1;
-   n := first length tableau S;
+   n := first length tableau s;
    wlist := for i:=1:n collect !!symbol!!w(i);
-   sys := symbol_relations(S,!!symbol!!pi);
+   sys := symbol_relations(s,!!symbol!!pi);
    rl := for i:=1:n join
-      foreach j in indexnames independence S collect
+      foreach j in indexnames independence s collect
           make_rule(!!symbol!!pi(i,-j),!!symbol!!w(i)*name(-j));
    let rl;
 %   sys := (sys where rl);
@@ -93,13 +93,13 @@ algebraic procedure symbol_matrix(S,name);
    end;
 
 
-algebraic procedure characteristic_variety(S,name);
+algebraic procedure characteristic_variety(s,name);
    % S:eds, name:id -> characteristic_variety:{list of 0-form,list of
    % variable}
    begin scalar ix,m,sys;
          scalar xvars!*;  % make all 0-forms coefficients
-   ix := indexnames independence S;
-   m := symbol_matrix(S,name);
+   ix := indexnames independence s;
+   m := symbol_matrix(s,name);
    if first length m > second length m then m := tp m;
    for i:=1:second length m do
       indexrange symbol!!index!!=i;
@@ -137,24 +137,24 @@ symbolic procedure invariants u;
       rederr "Wrong number of arguments to invariants";
 
 
-algebraic procedure invariants0(S,C);
-   begin scalar ans,inv,cfrm,Z,xvars!*;
+algebraic procedure invariants0(s,c);
+   begin scalar ans,inv,cfrm,z,xvars!*;
    load_package odesolve,crack;
    % Update for CRACK version 1-Dec-2002
    setcrackflags();
    cfrm := coframing();
-   if part(S,0) = eds then
-   << set_coframing S;
-      if C = {} then C := coordinates S;
-      S := systemeds S >> % Use systemeds rather than system for
+   if part(s,0) = eds then
+   << set_coframing s;
+      if c = {} then c := coordinates s;
+      s := systemeds s >> % Use systemeds rather than system for
                           % compiler.
    else
-      S := xauto S;
-   if C = {} then C := reverse sort(coordinates S,edsorderp);
-   Z := for a:=1:length S collect lisp mkform!*(mkid('eds!:u,a),0);
-   ans := foliation(S,C,Z);
-   inv := solve(ans,Z);
-   if length Z = 1 then
+      s := xauto s;
+   if c = {} then c := reverse sort(coordinates s,edsorderp);
+   z := for a:=1:length s collect lisp mkform!*(mkid('eds!:u,a),0);
+   ans := foliation(s,c,z);
+   inv := solve(ans,z);
+   if length z = 1 then
       inv := foreach x in inv collect {x};
    if lisp !*edsdebug then write "Constants";
    if lisp !*edsdebug then write inv;
@@ -167,72 +167,72 @@ algebraic procedure invariants0(S,C);
    end;
 
 
-algebraic procedure foliation(S,C,Z);
-   begin scalar r,n,x,S0,Z0,g,Q,f,f0;
+algebraic procedure foliation(s,c,z);
+   begin scalar r,n,x,s0,z0,g,q,f,f0;
                scalar print_,fname_,time_,!*allbranch,!*arbvars,xvars!*;
    % Constants
-   r := length S;
-   n := length C;
+   r := length s;
+   n := length c;
    fname_ := 'eds!:c;
    % Deal with errors and end case
    if r > n then
       rerror(eds,000,"Not enough coordinates in foliation");
-   if r neq length Z then
+   if r neq length z then
       rerror(eds,000,"Wrong number of invariant labels in foliation");
    if r = n then
-   << g := for a:=1:r collect part(C,a) = part(Z,a);
+   << g := for a:=1:r collect part(c,a) = part(z,a);
       lisp edsdebug("Intermediate result",g,'prefix);
       return g >>;
    % Choose truncation
-   S0 := {}; Z0 := {};
-   while length S0 < r do
-   << x := first C;
-      C := rest C;
-      Z0 := x . Z0;
-      S0 := xauto(S xmod {d x}) >>;
-   C := append(C,rest Z0);
+   s0 := {}; z0 := {};
+   while length s0 < r do
+   << x := first c;
+      c := rest c;
+      z0 := x . z0;
+      s0 := xauto(s xmod {d x}) >>;
+   c := append(c,rest z0);
    lisp edsdebug("Truncating coordinate : ",x,'prefix);
    % Compute foliation for truncation
-   g := foliation(S0,C,Z);
+   g := foliation(s0,c,z);
    % Calculate ODE
-   foreach y in Z do
+   foreach y in z do
    << lisp(y := !*a2k y); fdomain y=y(eds!:t) >>;
-   S := pullback(S,g);
-   S := pullback(S,{x = eds!:t});
-   Q := foreach f in S collect @eds!:t _| f;
-   Q := solve(Q,foreach y in Z collect @(y,eds!:t));
-   if r neq 1 then Q :=  first Q;
-   Q := foreach f in Q collect (lhs f - rhs f);
-   Q := sub(partdf=df,Q);
-   lisp edsdebug("CRACK ODE",Q,'prefix);
+   s := pullback(s,g);
+   s := pullback(s,{x = eds!:t});
+   q := foreach f in s collect @eds!:t _| f;
+   q := solve(q,foreach y in z collect @(y,eds!:t));
+   if r neq 1 then q :=  first q;
+   q := foreach f in q collect (lhs f - rhs f);
+   q := sub(partdf=df,q);
+   lisp edsdebug("CRACK ODE",q,'prefix);
    % Solve ODE
-   Q := crack(Q,{},Z,{});
+   q := crack(q,{},z,{});
    % Restore 0-form properties of Z (cleared by CRACK)
-   foreach y in Z do
+   foreach y in z do
       << lisp(y := !*a2k y); lisp mkform!*(y, 0) >>;
-   lisp edsdebug("CRACK solution",Q,'prefix);
+   lisp edsdebug("CRACK solution",q,'prefix);
    % Analyse result for the general solution
    f := {};
-   while Q neq {} do
-   << f := first Q; Q := rest Q;
-      Z0 := third f;
-      if first f = {} and length Z0 = r then Q := {}
-      else if length Z0 > r then
-               if length(f0 := solve(first f,Z)) = 0 then f := {}
+   while q neq {} do
+   << f := first q; q := rest q;
+      z0 := third f;
+      if first f = {} and length z0 = r then q := {}
+      else if length z0 > r then
+               if length(f0 := solve(first f,z)) = 0 then f := {}
                else
                << if r = 1 then f0 := {{first f0}};
-            Z0 := foreach v in Z0 join
-               if v member Z then {} else {v};
-            f := {{},append(second f,first f0),Z0};
-             Q := {} >>
+            z0 := foreach v in z0 join
+               if v member z then {} else {v};
+            f := {{},append(second f,first f0),z0};
+             q := {} >>
       else f := {} >>;
-   foreach y in Z do
+   foreach y in z do
       << lisp(y := !*a2k y); remfdomain y >>;
    if f = {} then
       rerror(eds,000,"Intermediate ODE general solution not found");
    % Compose general solution with truncated foliation
    g := sub(second f,g);
-   f := (eds!:t = x) . for a := 1:r collect part(Z0,a) = part(Z,a);
+   f := (eds!:t = x) . for a := 1:r collect part(z0,a) = part(z,a);
    g := sub(f,g);
    lisp edsdebug("Intermediate result",g,'prefix);
    return g;

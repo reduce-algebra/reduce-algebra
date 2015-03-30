@@ -158,40 +158,40 @@ do!*one!*beta((pi * 10), exp(5));
 
 off rounded;
 
-pochhammer(4,5);
-pochhammer(-4,5);
-pochhammer(4,-5);
-pochhammer(-4,-5);
-pochhammer(17/2,12);
-pochhammer(-17/2,12);
-pochhammer(1/3,14)*pochhammer(2/3,15);
+Pochhammer(4,5);
+Pochhammer(-4,5);
+Pochhammer(4,-5);
+Pochhammer(-4,-5);
+Pochhammer(17/2,12);
+Pochhammer(-17/2,12);
+Pochhammer(1/3,14)*Pochhammer(2/3,15);
 
-q := pochhammer(1/5,11)*pochhammer(2/5,11)*pochhammer(3/5,11)*
-      pochhammer(1-1/5,11)*pochhammer(1,11)*pochhammer(6/5,11)*
-       pochhammer(70/50,11)*pochhammer(8/5,11)*pochhammer(9/5,11);
+q := Pochhammer(1/5,11)*Pochhammer(2/5,11)*Pochhammer(3/5,11)*
+      Pochhammer(1-1/5,11)*Pochhammer(1,11)*Pochhammer(6/5,11)*
+       Pochhammer(70/50,11)*Pochhammer(8/5,11)*Pochhammer(9/5,11);
 
 on complex;
 
-pochhammer(a+b*i,c)*pochhammer(a-b*i,c);
+Pochhammer(a+b*i,c)*Pochhammer(a-b*i,c);
 
 a := 2;
 b := 3;
 c := 5;
 
-pochhammer(a+b*i,c)*pochhammer(a-b*i,c);
+Pochhammer(a+b*i,c)*Pochhammer(a-b*i,c);
 
 off complex;
 on rounded;
 
-pochhammer(1/5,11)*pochhammer(2/5,11)*pochhammer(3/5,11)*
- pochhammer(1-1/5,11)*pochhammer(1,11)*pochhammer(6/5,11)*
-  pochhammer(70/50,11)*pochhammer(8/5,11)*pochhammer(9/5,11);
+Pochhammer(1/5,11)*Pochhammer(2/5,11)*Pochhammer(3/5,11)*
+ Pochhammer(1-1/5,11)*Pochhammer(1,11)*Pochhammer(6/5,11)*
+  Pochhammer(70/50,11)*Pochhammer(8/5,11)*Pochhammer(9/5,11);
 
 q;
 
-pochhammer(pi,floor (pi**8));
-pochhammer(-pi,floor (pi**7));
-pochhammer(1.5,floor (pi**8));
+Pochhammer(pi,floor (pi**8));
+Pochhammer(-pi,floor (pi**7));
+Pochhammer(1.5,floor (pi**8));
 
 
 
@@ -405,9 +405,9 @@ for each a in t!*kummer!*a do
    for each b in t!*kummer!*a do
       for each z in t!*kummer!*a do
       	 << write "KummerM(", a, ",", b, ",", z, ") = ",
-      	       kummerm(a,b,z);
+      	       KummerM(a,b,z);
       	    write "KummerU(", a, ",", b, ",", z, ") = ",
-      	       kummeru(a,b,z) >>;
+      	       KummerU(a,b,z) >>;
 
 on rounded;
 precision 30;
@@ -424,22 +424,22 @@ for each a in t!*kummer!*b do
       for each z in t!*kummer!*b do
       	 << if t!*k!*c = 7
       	    then << write "KummerM(", a, ",", b, ",", z, ") = ",
-      	       	       kummerm(a,b,z);
+      	       	       KummerM(a,b,z);
       	       	    write "KummerU(", a, ",", b, ",", z, ") = ",
-      	       	       kummeru(a,b,z);
+      	       	       KummerU(a,b,z);
       	       	    t!*k!*c := 0 >>;
       	    t!*k!*c := t!*k!*c + 1 >>;
 
 off rounded;
 clear x, y, z, t!*k!*c;
 
-df(df(kummerM(a,b,z),z),z);
-df(kummerU(a,b,z),z);
+df(df(KummerM(a,b,z),z),z);
+df(KummerU(a,b,z),z);
 
 z := ((x^2 + y)^5) + (x^(x+y));
 
-df(df(kummerM(a,b,z),y),x);
-df(kummerU(a,b,z),x);
+df(df(KummerM(a,b,z),y),x);
+df(KummerU(a,b,z),x);
 
 
 
@@ -478,8 +478,8 @@ r;
 
 off complex, rounded;
 
-df(df(besselj(pp,qq)+rr * hankel1(pp*2,qq) *
-      bessely(pp-qq,qq),qq),qq);
+df(df(BesselJ(pp,qq)+rr * hankel1(pp*2,qq) *
+      BesselY(pp-qq,qq),qq),qq);
 
 % Possible values for real args
 t!*bes!*vr := { 1, pi, -pi, 26 }$
@@ -500,10 +500,10 @@ preord := 10**pre;
 t!*b!*c := 3;
 
 algebraic procedure do!*one!*bessel(s,n,z);
-   (if s = 1 then besselj(n,z)
-      else if s = 2 then bessely(n,z)
-      else if s = 3 then besseli(n,z)
-      else besselk(n,z));
+   (if s = 1 then BesselJ(n,z)
+      else if s = 2 then BesselY(n,z)
+      else if s = 3 then BesselI(n,z)
+      else BesselK(n,z));
 
 algebraic procedure pr!*bessel(s,n,z,k);
    << if t!*b!*c = k
@@ -653,15 +653,15 @@ polylog(2,1/3);
 off rounded;
 
 
-lerch_phi(3,4,1);
+Lerch_phi(3,4,1);
 
-lerch_phi(4,0,3);
+Lerch_phi(4,0,3);
 
-lerch_phi(x,a,1);
+Lerch_phi(x,a,1);
 
-lerch_phi(1,x,1);
+Lerch_phi(1,x,1);
 
-df(lerch_phi(x,3,4),x);
+df(Lerch_phi(x,3,4),x);
 
 
 % =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -675,7 +675,7 @@ off complex;
 
 precision 50;
 
-euler_gamma;
+Euler_gamma;
 
 Khinchin;
 
@@ -685,7 +685,7 @@ Catalan;
 
 on complex;
 
-euler_gamma;
+Euler_gamma;
 
 Khinchin;
 

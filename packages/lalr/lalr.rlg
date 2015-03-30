@@ -191,9 +191,9 @@ nil
 
 
 grammar := '(
-  (S  ((C C)    )   % One production for S, no semantic actions
+  (s  ((c c)    )   % One production for S, no semantic actions
   )
-  (C  (("c" C)  )   % First production for C
+  (c  (("c" c)  )   % First production for C
       (("d")    )   % Second production for C
   ));
 
@@ -442,15 +442,15 @@ symbolic procedure neatprintc x;
 neatprintc
 
 
-g4_46 := '((S   ((L "=" R)   (neatprintc "## S => L = R")
+g4_46 := '((s   ((l "=" r)   (neatprintc "## S => L = R")
                              (list 'equal !$1 !$3))
-                ((R)         (neatprintc "## S => R")
+                ((r)         (neatprintc "## S => R")
                              !$1))
-           (L   (("*" R)     (neatprintc "## L => * R")
+           (l   (("*" r)     (neatprintc "## L => * R")
                              (list 'star !$2))
                 ((!:symbol)  (neatprintc "## L => symbol")
                              !$1))
-           (R   ((L)         (neatprintc "## R => L")
+           (r   ((l)         (neatprintc "## R => L")
                              !$1)));
 
 
@@ -515,18 +515,18 @@ pparse()$
 % grammar, and illustrates both left and right associativity, and
 % cases where two operators have the same precedence.
 
-gtest := '((S  ((P))
-               ((S "^" S) (list 'pow !$1 !$3))
-               ((S "**" S) (list 'pow !$1 !$3))
-               ((S "*" S) (list 'tms !$1 !$3))
-               ((S "/" S) (list 'quot !$1 !$3))
-               ((S "+" S) (list 'plus !$1 !$3))
-               ((S "-" S) (list 'diff !$1 !$3))
-               ((S "=" S) (list 'eq !$1 !$3))
-               (("-" S) (list 'minus !$2))
-               (("+" S) !$2))
+gtest := '((s  ((p))
+               ((s "^" s) (list 'pow !$1 !$3))
+               ((s "**" s) (list 'pow !$1 !$3))
+               ((s "*" s) (list 'tms !$1 !$3))
+               ((s "/" s) (list 'quot !$1 !$3))
+               ((s "+" s) (list 'plus !$1 !$3))
+               ((s "-" s) (list 'diff !$1 !$3))
+               ((s "=" s) (list 'eq !$1 !$3))
+               (("-" s) (list 'minus !$2))
+               (("+" s) !$2))
 
-           (P  (("(" S ")") !$2)
+           (p  (("(" s ")") !$2)
                ((!:symbol))
                ((!:string))
                ((!:number))));
@@ -589,7 +589,7 @@ nil
 % Demonstrate various of the short-hand notations...
 
 lalr_construct_parser '(
- (S
+ (s
 % (opt ...) means that the included material is optional.
           (("begin" (opt "and" "also") "end"))));
 
@@ -635,7 +635,7 @@ nil
 
 
 lalr_construct_parser '(
- (S
+ (s
 % (star ...) is for zero or mor instances of something.
           (((star "a") "end") !$1)));
 
@@ -681,7 +681,7 @@ nil
 
 
 lalr_construct_parser '(
- (S
+ (s
 % (plus ...) is for one or more repetitions of an item
           (((plus "a") "end") !$1)));
 
@@ -727,7 +727,7 @@ nil
 
 
 lalr_construct_parser '(
- (S
+ (s
 % (list delimiter item-description) is a sequence of zero
 % or more items, and if there are several that are separated by the
 % indicated delimiter. 
@@ -760,7 +760,7 @@ nil
 
 
 lalr_construct_parser '(
- (S
+ (s
 % (listplus delimiter item-description) is as (list ...) however it
 % requires at least one item.
           (((listplus ";" !:symbol) "eof") !$1)));
@@ -792,7 +792,7 @@ nil
 
 
 lalr_construct_parser '(
- (S
+ (s
 % (or x y z) may be a more compact way of writing what could
 % otherwise by given as multiple productions, so for instance
 % (or "+" "-" "*" "/") would match one of the listed operators.

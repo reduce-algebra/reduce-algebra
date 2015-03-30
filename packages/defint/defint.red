@@ -47,8 +47,8 @@ create!-package ('(defint definta defintc defintf definti defint0
   flag('(definta defintb definte defintf definti defintk),'lap);
 #endif
 
-fluid '(MELLINCOEF);
-share MELLINCOEF$
+fluid '(mellincoef);
+share mellincoef$
 
 endmodule;
 

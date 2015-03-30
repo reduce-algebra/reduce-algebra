@@ -185,7 +185,7 @@ return type
 end$
 
 procedure arrayeltp exp;
-length symtabget(nil, car exp) > 2 or equal(car exp,'dummyArrayToken)$
+length symtabget(nil, car exp) > 2 or equal(car exp,'dummyarraytoken)$
 
 
 %%                                 %%

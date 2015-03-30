@@ -60,9 +60,9 @@ module odenon1$  % Special form nonlinear ODEs of order 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-global '(ODESolve_Before_Non1Grad_Hook ODESolve_After_Non1Grad_Hook)$
+global '(odesolve_before_non1grad_hook odesolve_after_non1grad_hook)$
 
-algebraic procedure ODESolve!-NonLinear1(ode, y, x);
+algebraic procedure odesolve!-nonlinear1(ode, y, x);
    %% Top-level solver for non-linear first-order ODEs.
    begin scalar odecoeffs, gradient, solution, p, ode_p;
       traceode1 "Entering top-level non-linear first-order solver ...";
@@ -76,16 +76,16 @@ algebraic procedure ODESolve!-NonLinear1(ode, y, x);
       then <<                           % first DEGREE ODE
          gradient := -first odecoeffs / second odecoeffs;
          symbolic if (solution := or(
-            ODESolve!-Run!-Hook(
-               'ODESolve_Before_Non1Grad_Hook, {gradient, y, x}),
-            ODESolve!-Separable(gradient, y, x),
-            ODESolve!-QuasiSeparable(gradient, y, x),
-            ODESolve!-Homogeneous(gradient, y, x),
-            ODESolve!-QuasiHomog(gradient, y, x),
-            ODESolve!-Bernoulli(gradient, y, x),
-            ODESolve!-Riccati(gradient, y, x),
-            ODESolve!-Run!-Hook(
-               'ODESolve_After_Non1Grad_Hook, {gradient, y, x})))
+            odesolve!-run!-hook(
+               'odesolve_before_non1grad_hook, {gradient, y, x}),
+            odesolve!-separable(gradient, y, x),
+            odesolve!-quasiseparable(gradient, y, x),
+            odesolve!-homogeneous(gradient, y, x),
+            odesolve!-quasihomog(gradient, y, x),
+            odesolve!-bernoulli(gradient, y, x),
+            odesolve!-riccati(gradient, y, x),
+            odesolve!-run!-hook(
+               'odesolve_after_non1grad_hook, {gradient, y, x})))
          then return solution
       >>;
       %% If ode degree neq 1 or above solvers fail then ...
@@ -96,15 +96,15 @@ algebraic procedure ODESolve!-NonLinear1(ode, y, x);
       %% Lagrange form is y = xF(y') + G(y').  If F(p) = p then this
       %% is a Clairaut equation.  It is "solvable-for-x" if it can be
       %% put into the form x = f(y,p).
-      if (solution := ODESolve!-Clairaut(ode, ode_p, p, y, x)) then
+      if (solution := odesolve!-clairaut(ode, ode_p, p, y, x)) then
          return solution;
       %% Avoid infinite loops:
       symbolic if !*odesolve!-solvable!-xy then return;
       symbolic(!*odesolve!-solvable!-xy := t);
       %% "Solvable for y" includes Lagrange as a special case:
       symbolic return
-         ODESolve!-Solvable!-y(ode_p, p, y, x) or
-         ODESolve!-Solvable!-x(ode_p, p, y, x)
+         odesolve!-solvable!-y(ode_p, p, y, x) or
+         odesolve!-solvable!-x(ode_p, p, y, x)
    end$
 
 
@@ -112,7 +112,7 @@ algebraic procedure ODESolve!-NonLinear1(ode, y, x);
 
 % Support routines
 
-algebraic procedure ODENon!-Linear1(ode, y, x);
+algebraic procedure odenon!-linear1(ode, y, x);
    %% Solve the linear ODE:  dy/dx = gradient(x,y) = P(x)*y + Q(x)
    %% Split into 2 procedures by FJW.
    begin scalar gradient;
@@ -120,29 +120,29 @@ algebraic procedure ODENon!-Linear1(ode, y, x);
       gradient := -first gradient/second gradient;
       traceode!* "This is a first-order linear ODE solved by ";
       return if smember(y, gradient) then
-      begin scalar P, Q;
+      begin scalar p, q;
          traceode "the integrating factor method.";
-         P := lcof(num gradient,y)/den gradient;
-         Q := gradient - P*y;
-         return { y = ODENon!-Linear1PQ(P, Q, x) }
+         p := lcof(num gradient,y)/den gradient;
+         q := gradient - p*y;
+         return { y = odenon!-linear1pq(p, q, x) }
       end
       else <<
          traceode "quadrature.";
          % FJW: Optionally turn off final integration:
-         { y = ODESolve!-Int(gradient, x) + newarbconst() }
+         { y = odesolve!-int(gradient, x) + newarbconst() }
       >>
    end$
 
-algebraic procedure ODENon!-Linear1PQ(P, Q, x);
+algebraic procedure odenon!-linear1pq(p, q, x);
    %% Solve the linear ODE:  dy/dx = P(x)*y + Q(x)
    %% Called directly by ODESolve!-Bernoulli
    begin scalar intfactor, !*combinelogs;
       %% intfactor simplifies better if logs in the integral are
       %% combined:
       symbolic(!*combinelogs := t);
-      intfactor := exp(int(-P, x));
+      intfactor := exp(int(-p, x));
       %% Optionally turn off final integration:
-      return (newarbconst() + ODESolve!-Int(intfactor*Q,x))/intfactor
+      return (newarbconst() + odesolve!-int(intfactor*q,x))/intfactor
    end$
 
 %% algebraic procedure unfactorize factorlist;
@@ -155,7 +155,7 @@ algebraic procedure ODENon!-Linear1PQ(P, Q, x);
 
 % Separable ODEs
 
-algebraic procedure ODESolve!-Separable(gradient, y, x);
+algebraic procedure odesolve!-separable(gradient, y, x);
    %% The ODE has the form dy/dx = gradient = F(x,y).  If F(x,y) =
    %% f(x)g(y) then the ODE is separable, in which case return the
    %% solution; otherwise return nil.
@@ -165,12 +165,12 @@ algebraic procedure ODESolve!-Separable(gradient, y, x);
       %% Handle implicit dependence on x (ignoring that via y):
       symbolic (<< depend1(y, x, nil);
          %% Hack sub to handle implicit dependences:
-         copyd('ODESolve!-old!-subsublis, 'subsublis);
-         copyd('subsublis, 'ODESolve!-subsublis);
+         copyd('odesolve!-old!-subsublis, 'subsublis);
+         copyd('subsublis, 'odesolve!-subsublis);
          g := errorset!*(
-            {'ODESolve!-Separable1, mkquote gradient, mkquote x}, nil);
-         copyd('subsublis, 'ODESolve!-old!-subsublis);
-         if errorp g then RedErr {"(in ODESolve!-Separable1)", emsg!*};
+            {'odesolve!-separable1, mkquote gradient, mkquote x}, nil);
+         copyd('subsublis, 'odesolve!-old!-subsublis);
+         if errorp g then rederr {"(in ODESolve!-Separable1)", emsg!*};
          g := car g;
          if depends(g, x) then g := nil;
       >> where depl!* = depl!*);
@@ -191,7 +191,7 @@ algebraic procedure ODESolve!-Separable(gradient, y, x);
       return { num gradient = 0 }
    end$
 
-algebraic procedure ODESolve!-Separable1(gradient, x);
+algebraic procedure odesolve!-separable1(gradient, x);
    %% Find a small constant alpha such that F(alpha,y) exists and
    %% F(alpha,y) neq 0, and return F(alpha,y), where F = gradient:
    begin scalar numer, denom, alpha, d, n;
@@ -204,7 +204,7 @@ algebraic procedure ODESolve!-Separable1(gradient, x);
       return n/d
    end$
 
-symbolic procedure ODESolve!-subsublis(u,v);
+symbolic procedure odesolve!-subsublis(u,v);
    % NOTE: This definition assumes that with the exception of *SQ and
    % domain elements, expressions do not contain dotted pairs.
 
@@ -228,14 +228,14 @@ symbolic procedure ODESolve!-subsublis(u,v);
                  then mkid(v, '!!) else % FJW
                  v
               else if not idp car v
-               then for each j in v collect ODESolve!-subsublis(u,j)
+               then for each j in v collect odesolve!-subsublis(u,j)
               else if x := get(car v,'subfunc) then apply2(x,u,v)
               else if get(car v,'dname) then v
-              else if car v eq '!*sq then ODESolve!-subsublis(u,prepsq cadr v)
-              else for each j in v collect ODESolve!-subsublis(u,j)
+              else if car v eq '!*sq then odesolve!-subsublis(u,prepsq cadr v)
+              else for each j in v collect odesolve!-subsublis(u,j)
    end$
 
-algebraic procedure ODESolve!-QuasiSeparable(gradient, y, x);
+algebraic procedure odesolve!-quasiseparable(gradient, y, x);
    %% The ODE has the form dy/dx = gradient = F(x,y).  If F(x,y) =
    %% f(y+kx) then the ODE is quasi-separable, in which case return
    %% the solution; otherwise return nil.
@@ -257,7 +257,7 @@ algebraic procedure ODESolve!-QuasiSeparable(gradient, y, x);
 
 % Algebraically homogeneous ODEs
 
-algebraic procedure ODESolve!-Homogeneous(gradient, y, x);
+algebraic procedure odesolve!-homogeneous(gradient, y, x);
    %% The ODE has the form dy/dx = gradient = F(x,y).  If F(x,y) =
    %% f(y/x) then the ODE is algebraically homogeneous.
    %% Setting y = vx => v + x dv/dx = F(x,vx) = f(v)
@@ -290,7 +290,7 @@ algebraic procedure ODESolve!-Homogeneous(gradient, y, x);
 %% F, or a quotient of powers (quotient (expt ... ) (expt ... )) which
 %% must be treated separately.
 
-algebraic procedure ODESolve!-QuasiHomog(gradient, y, x);
+algebraic procedure odesolve!-quasihomog(gradient, y, x);
    %% The ODE has the form dy/dx = gradient = F(x,y).  If F(x,y) =
    %% f((a1*x + b1*y + c1)/(a2*x + b2*y + c2)) where the function f
    %% may be arbitrary then the ODE is reducible to algebraically
@@ -300,7 +300,7 @@ algebraic procedure ODESolve!-QuasiHomog(gradient, y, x);
       traceode1 "Testing for a quasi-homogeneous ODE ...";
       %% First, find an "argument" that is a rational function, with
       %% numerator and denominator that both depend on x.
-      if not(tmp := symbolic ODESolve!-QuasiHomog1(reval gradient, x))
+      if not(tmp := symbolic odesolve!-quasihomog1(reval gradient, x))
       then return;
       n := num tmp;  d := den tmp;
       %% Now check that numerator and denominator have the same degree
@@ -338,14 +338,14 @@ algebraic procedure ODESolve!-QuasiHomog(gradient, y, x);
       n := rhs first soln;  d := rhs second soln;
       gradient := sub(x=x+n, y=y+d, gradient);
       %% ODE was quasi-homogeneous iff the new ODE is homogeneous:
-      if (soln := ODESolve!-Homogeneous(gradient,y,x)) then
+      if (soln := odesolve!-homogeneous(gradient,y,x)) then
          return sub(x=x-n, y=y-d, soln);
       traceode "... which it is not!"
    end$
 
 %%% The calls to `depends' below are inefficient!
 
-symbolic procedure ODESolve!-QuasiHomog1(u, x);
+symbolic procedure odesolve!-quasihomog1(u, x);
    %% Assumes "algebraic" form!  Get the first argument of any
    %% composition of functions that is a quotient of polynomials or
    %% symbolic powers (expt forms) that both depend on `x'.
@@ -362,7 +362,7 @@ symbolic procedure ODESolve!-QuasiHomog1(u, x);
    else  % Process first x-dependent argument of operator u:
    begin
    a: if (u := cdr u) then
-         if depends(car u, x) then return ODESolve!-QuasiHomog1(car u, x)
+         if depends(car u, x) then return odesolve!-quasihomog1(car u, x)
          else go to a
    end$
 
@@ -371,13 +371,13 @@ symbolic procedure ODESolve!-QuasiHomog1(u, x);
 
 % Bernoulli ODEs
 
-symbolic operator ODESolve!-Bernoulli$
+symbolic operator odesolve!-bernoulli$
 
-symbolic procedure ODESolve!-Bernoulli(rhs, y, x);
+symbolic procedure odesolve!-bernoulli(rhs, y, x);
    %% The ODE has the form df(y,x) = rhs.  If rhs has the Bernoulli
    %% form P(x)*y + Q(x)*y^n then extract P(x), Q(x), n and return the
    %% solution else return nil.
-   ( begin scalar num_rhs, den_rhs, C1, C2, d, d1, d2, d3, P, Q, n;
+   ( begin scalar num_rhs, den_rhs, c1, c2, d, d1, d2, d3, p, q, n;
       traceode1 "Testing for a Bernoulli ODE ...";
       %% Degrees will be constructed in true prefix form.
       %% Need sum of two terms, both with main var (essentially) y.
@@ -394,23 +394,23 @@ symbolic procedure ODESolve!-Bernoulli(rhs, y, x);
 
       %% Now num must have the form y^d1 C1(x) + y^d2 C2(x),
       %% where d1 > d2 and d2 = 0 is allowed (if d <> 0 or d3 <> 0).
-      if (C1 := get!!y!^n!*C(num_rhs, y)) then
-         << d1 := car C1;  C1 := cdr C1 >>
+      if (c1 := get!!y!^n!*c(num_rhs, y)) then
+         << d1 := car c1;  c1 := cdr c1 >>
       else return;
       num_rhs := red num_rhs;
       %% Allow d2 = 0 => num_rhs freeof y
       if not smember(y, num_rhs) then
-         << d2 := 0;  C2 := num_rhs >>
+         << d2 := 0;  c2 := num_rhs >>
       else if red num_rhs then return
-      else if (C2 := get!!y!^n!*C(num_rhs, y)) then
-         << d2 := car C2;  C2 := cdr C2 >>
+      else if (c2 := get!!y!^n!*c(num_rhs, y)) then
+         << d2 := car c2;  c2 := cdr c2 >>
       else return;
 
       %% Den must have the form C3(x) or y^d3 C3(x).
       %% In the latter case, combine the powers of y.
       if smember(y, den_rhs) then
          if null red den_rhs and
-            (den_rhs := get!!y!^n!*C(den_rhs, y)) then <<
+            (den_rhs := get!!y!^n!*c(den_rhs, y)) then <<
             d3 := car den_rhs;  den_rhs := cdr den_rhs;
             d1 := {'difference, d1, d3};
             d2 := {'difference, d2, d3}
@@ -419,71 +419,71 @@ symbolic procedure ODESolve!-Bernoulli(rhs, y, x);
       %% Simplify the degrees of y and find which is 1:
       if d then << d1 := {'plus, d1, d};  d2 := {'plus, d2, d} >>;
       d1 := aeval d1;  d2 := aeval d2;
-      if d1 = 1 then << P := C1; Q := C2; n := d2 >>
-      else if d2 = 1 then << P := C2; Q := C1; n := d1 >>
+      if d1 = 1 then << p := c1; q := c2; n := d2 >>
+      else if d2 = 1 then << p := c2; q := c1; n := d1 >>
       else return;
       %% A final check that P, Q, n are valid:
-      if Bernoulli!-depend!-check(P, y) or
-         Bernoulli!-depend!-check(Q, y) or
-            Bernoulli!-depend!-check(den_rhs, y) or
-               Bernoulli!-depend!-check(n, x) then return;
+      if bernoulli!-depend!-check(p, y) or
+         bernoulli!-depend!-check(q, y) or
+            bernoulli!-depend!-check(den_rhs, y) or
+               bernoulli!-depend!-check(n, x) then return;
       %% ( Last test implies Bernoulli!-depend!-check(n, y). )
       %% For testing:
       %% return {'list, mk!*sq(P ./ den_rhs), mk!*sq(Q ./ den_rhs), n};
-      P := mk!*sq(P ./ den_rhs);  Q := mk!*sq(Q ./ den_rhs);
-      return ODESolve!-Bernoulli1(P, Q, y, x, n)
+      p := mk!*sq(p ./ den_rhs);  q := mk!*sq(q ./ den_rhs);
+      return odesolve!-bernoulli1(p, q, y, x, n)
    end ) where depl!* = depl!*$
 
-symbolic procedure Bernoulli!-depend!-check(f, xy);
+symbolic procedure bernoulli!-depend!-check(f, xy);
    %% f is a standard form, xy is an identifier (kernel).
    if numr difff(f, xy) then <<         % neq 0 (nil)
       traceode "It is not of Bernoulli type because ...";
-      MsgPri(nil, !*f2a f, "depends (possibly implicitly) on",
+      msgpri(nil, !*f2a f, "depends (possibly implicitly) on",
          get(xy, 'odesolve!-depvar) or xy, nil);
       %% (y might be gensym -- 'odesolve!-depvar set in odeintfc)
       t
    >>$
 
-symbolic procedure get!!y!^n!*C(u, y);
+symbolic procedure get!!y!^n!*c(u, y);
    %% Assume that u is a standard form representation of y^n * C(x)
    %% with y the leading kernel.  Return (n . C) or nil
-   begin scalar n, C;
+   begin scalar n, c;
       if mvar u eq y then <<            % ?? y^n * C(x), n nonnegint
-         n := ldeg u;  C := lc u;
-         return if not domainp C and smember(y, mvar C) then
-            ( if (C := get!!y!^n!*C1(C, y)) then
+         n := ldeg u;  c := lc u;
+         return if not domainp c and smember(y, mvar c) then
+            ( if (c := get!!y!^n!*c1(c, y)) then
                % y^n * y^n1 * C(x), n nonnegint
-               {'plus, n, car C} . cdr C )
-         else n . C
+               {'plus, n, car c} . cdr c )
+         else n . c
       >> else                           % (y^n1)^n * C(x), n nonnegint
-         return get!!y!^n!*C1(u, y)
+         return get!!y!^n!*c1(u, y)
    end$
 
-symbolic procedure get!!y!^n!*C1(u, y);
+symbolic procedure get!!y!^n!*c1(u, y);
    % u = (y^n1)^n * C(x), n nonnegint
-   begin scalar n, C;
+   begin scalar n, c;
       n := mvar u;
       if not(eqcar(n, 'expt) and cadr n eq y) then return;
       n := {'times, caddr n, ldeg u};
-      C := lc u;
-      return n . C
+      c := lc u;
+      return n . c
    end$
 
-algebraic procedure ODESolve!-Bernoulli1(P, Q, y, x, n);
+algebraic procedure odesolve!-bernoulli1(p, q, y, x, n);
    begin scalar !*odesolve_noint;  % Force integration?
       traceode "It is of Bernoulli type.";
       n := 1 - n;
       return if symbolic !*odesolve_explicit then
-         { y = ODENon!-Linear1PQ(n*P, n*Q, x)^(1/n)*
+         { y = odenon!-linear1pq(n*p, n*q, x)^(1/n)*
                newroot_of_unity(n) }    % explicit form
-      else { y^n = ODENon!-Linear1PQ(n*P, n*Q, x) } % implicit form
+      else { y^n = odenon!-linear1pq(n*p, n*q, x) } % implicit form
    end$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Riccati ODEs
 
-algebraic procedure ODESolve!-Riccati(rhs, y, x);
+algebraic procedure odesolve!-riccati(rhs, y, x);
    %% The ODE has the form df(y,x) = rhs.  If rhs has the Riccati form
    %% a(x)y^2 + b(x)y + c(x) then transform to a reduced linear
    %% second-order ODE and attempt to solve it.
@@ -500,7 +500,7 @@ algebraic procedure ODESolve!-Riccati(rhs, y, x);
          "and transforms into the linear second-order ODE: ",
          num(df(y,x,2) + b*df(y,x) + c*y) = 0;
       soln := {c, b, 1};                % low .. high
-      soln := ODESolve!-linear!-basis(soln, 0, y, x, 2,
+      soln := odesolve!-linear!-basis(soln, 0, y, x, 2,
          if c then 0 else if b then 1 else 2); % min_order
       if not soln then <<
          traceode "But ODESolve cannot solve it!";
@@ -521,7 +521,7 @@ algebraic procedure ODESolve!-Riccati(rhs, y, x);
 % ODEs that are "solvable for y or x", including Clairaut and Lagrange
 % as special cases.
 
-algebraic procedure ODESolve!-Clairaut(ode, ode_p, p, y, x);
+algebraic procedure odesolve!-clairaut(ode, ode_p, p, y, x);
    %% Assuming that ode is first order, determine whether it is of
    %% Clairaut type f(xy'-y) = g(y'), and if so return its general
    %% solution together with a singular solution if one exists.
@@ -541,8 +541,8 @@ algebraic procedure ODESolve!-Clairaut(ode, ode_p, p, y, x);
       return (sub(p = newarbconst(), ode_p) = 0) . sing_soln
    end$
 
-symbolic operator ODESolve!-Solvable!-y$
-symbolic procedure ODESolve!-Solvable!-y(ode_p, p, y, x);
+symbolic operator odesolve!-solvable!-y$
+symbolic procedure odesolve!-solvable!-y(ode_p, p, y, x);
    %% ode_p has the form f(x,y,p) where p = y'.
    ( algebraic begin scalar c, lagrange, ode_y, ode_x;
       traceode1 "Testing for a ""solvable for y"" or Lagrange ODE ...";
@@ -568,14 +568,14 @@ symbolic procedure ODESolve!-Solvable!-y(ode_p, p, y, x);
          traceode "It is of Lagrange type and reduces to this ",
             "subsidiary ODE for x(y'): ",
             ode_x = 0;
-         ode_x := ODENon!-Linear1(ode_x, x, p)
+         ode_x := odenon!-linear1(ode_x, x, p)
       >> else if symbolic !*odesolve_fast then return
          traceode "Sub-solver terminated: fast mode, no heuristics!"
       else <<
          %% ode_x is an arbitrary first-order ODE for p(x), so ...
          traceode "It is ""solvable for y"" and reduces ",
             "to this subsidiary ODE for y'(x):";
-         ode_x := ODESolve!-FirstOrder(ode_x, p, x);
+         ode_x := odesolve!-firstorder(ode_x, p, x);
          if not ode_x then <<
             traceode "But ODESolve cannot solve it!";
             return
@@ -588,17 +588,17 @@ symbolic procedure ODESolve!-Solvable!-y(ode_p, p, y, x);
          %% Try to eliminate p between ode_y and ode_x else fail.
          %% Assume that the interface code will try to actually solve
          %% this for y:
-         Odesolve!-Elim!-Param(ode_y, y, ode_x, p, y)
+         odesolve!-elim!-param(ode_y, y, ode_x, p, y)
       else
          %% Return a parametric solution {y(p), x(p), p}:
          if lagrange then            % soln explicit for x
-            for each soln in ode_x collect ODESolve!-Simp!-ArbParam
+            for each soln in ode_x collect odesolve!-simp!-arbparam
                sub(p=newarbparam(), {y = sub(soln, ode_y), soln, p})
          else
             for each soln in ode_x join <<
                %% Make solution as explicit as possible:
                soln := solve(soln, x);
-               for each s in soln collect ODESolve!-Simp!-ArbParam
+               for each s in soln collect odesolve!-simp!-arbparam
                   sub(p=newarbparam(),
                      if symbolic eqcar(caddr s, 'root_of) then
                         {y=ode_y, sub(part(rhs s, 2)=x, part(rhs s, 1)), p}
@@ -607,8 +607,8 @@ symbolic procedure ODESolve!-Solvable!-y(ode_p, p, y, x);
    end ) where depl!* = depl!*$
 
 
-symbolic operator ODESolve!-Solvable!-x$
-symbolic procedure ODESolve!-Solvable!-x(ode_p, p, y, x);
+symbolic operator odesolve!-solvable!-x$
+symbolic procedure odesolve!-solvable!-x(ode_p, p, y, x);
    %% ode_p has the form f(x,y,p) where p = y'.
    not !*odesolve_fast and              % heuristic solution
    ( algebraic begin scalar c, ode_x, ode_y;
@@ -623,7 +623,7 @@ symbolic procedure ODESolve!-Solvable!-x(ode_p, p, y, x);
       %% ode_y is an arbitrary first-order ODE for p(y), so ...
       traceode "It is ""solvable for x"" and reduces ",
          "to this subsidiary ODE for y'(y):";
-      ode_y := ODESolve!-FirstOrder(ode_y, p, y);
+      ode_y := odesolve!-firstorder(ode_y, p, y);
       if not ode_y then <<
          traceode "But ODESolve cannot solve it! ";
          return
@@ -635,13 +635,13 @@ symbolic procedure ODESolve!-Solvable!-x(ode_p, p, y, x);
          %% Try to eliminate p between ode_x and ode_y else fail.
          %% Assume that the interface code will try to actually solve
          %% this for y:
-         Odesolve!-Elim!-Param(ode_x, x, ode_y, p, y)
+         odesolve!-elim!-param(ode_x, x, ode_y, p, y)
       else
          for each soln in ode_y join <<
             %% Return a parametric solution {y(p), x(p), p}:
             %% Make solution as explicit as possible:
             soln := solve(soln, y);
-            for each s in soln collect ODESolve!-Simp!-ArbParam
+            for each s in soln collect odesolve!-simp!-arbparam
                sub(p=newarbparam(),
                   if symbolic eqcar(caddr s, 'root_of) then
                      {sub(part(rhs s, 2)=y, part(rhs s, 1)), x=ode_x, p}
@@ -659,7 +659,7 @@ algebraic (!!arbparam := 0)$
 algebraic procedure newarbparam();
    arbparam(!!arbparam:=!!arbparam+1)$
 
-algebraic procedure Odesolve!-Elim!-Param(ode_y, y, ode_x, p, depvar);
+algebraic procedure odesolve!-elim!-param(ode_y, y, ode_x, p, depvar);
    %% ode_y is an expression for y and ode_x is an rlist of odesolve
    %% solutions for x, both in terms of a parameter p.  Return a list
    %% of equations corresponding to the equations in ode_x but with p
@@ -675,7 +675,7 @@ algebraic procedure Odesolve!-Elim!-Param(ode_y, y, ode_x, p, depvar);
                ode_x := rest ode_x
             >>;
          if ode_x = {} then
-            return Odesolve!-Tidy!-Implicit(result, y)
+            return odesolve!-tidy!-implicit(result, y)
       >>;
       ode_y := solve(ode_y, p);
       %% solve here may return a one_of construct (zimmer (4) & (19)).
@@ -689,13 +689,13 @@ algebraic procedure Odesolve!-Elim!-Param(ode_y, y, ode_x, p, depvar);
                   if (s:=sub(soln, num lhs s)) neq 0 then {num s}
                   else {}
                else {num(sub(soln, rhs s) - x)};  % s is x = f(x,y)
-         return Odesolve!-Tidy!-Implicit(result, depvar)
+         return odesolve!-tidy!-implicit(result, depvar)
       >>;
       traceode "But cannot eliminate parameter ",
          "to make solution explicit."
    end$
 
-algebraic procedure Odesolve!-Tidy!-Implicit(solns, depvar);
+algebraic procedure odesolve!-tidy!-implicit(solns, depvar);
    %% Remove repeated and irrelevant factors from implicit solutions.
    for each soln in solns join
       for each fac in factorize soln join
@@ -703,19 +703,19 @@ algebraic procedure Odesolve!-Tidy!-Implicit(solns, depvar);
 
 switch odesolve_simp_arbparam$          % DEFAULT OFF.  TEMPORARY?
 
-symbolic operator ODESolve!-Simp!-ArbParam$
-symbolic procedure ODESolve!-Simp!-ArbParam u;
+symbolic operator odesolve!-simp!-arbparam$
+symbolic procedure odesolve!-simp!-arbparam u;
    %% Simplify arbparam expressions within parametric solution u
    %% (cf. ODESolve!-Simp!-ArbConsts)
    begin scalar !*precise, x, y, ss_x, ss_y, arbexprns_x, arbexprns_y,
       arbexprns, param;
       if not(rlistp u and length u = 4) then
-         TypErr(u, "parametric ODE solution");
+         typerr(u, "parametric ODE solution");
       if not !*odesolve_simp_arbparam then return u; % TEMPORARY?
       x := lhs cadr u;  y := lhs caddr u;
-      if not(ss_x := ODESolve!-Structr(caddr cadr u, x, y, 'arbparam))
+      if not(ss_x := odesolve!-structr(caddr cadr u, x, y, 'arbparam))
       then return u;
-      if not(ss_y := ODESolve!-Structr(caddr caddr u, x, y, 'arbparam))
+      if not(ss_y := odesolve!-structr(caddr caddr u, x, y, 'arbparam))
       then return u;
       ss_x := cdr ss_x;  ss_y := cdr ss_y;
       arbexprns_x := for each s in cdr ss_x collect caddr s;
@@ -761,7 +761,7 @@ symbolic procedure ODESolve!-Simp!-ArbParam u;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-symbolic operator Polynomialp$
+symbolic operator polynomialp$
 
 %% symbolic procedure polynomialp(pol, var);
 %%    %% Returns true if numerator of pol is polynomial in var.
@@ -774,23 +774,23 @@ symbolic operator Polynomialp$
 %%       return not smember(var, pol)
 %%    end$
 
-symbolic procedure Polynomialp(pol, var);
+symbolic procedure polynomialp(pol, var);
    %% Returns true if numerator of pol is polynomial in var.
    %% Assumes on exp, mcd.
-   Polynomial!-Form!-p(numr simp!* pol, !*a2k var)$
+   polynomial!-form!-p(numr simp!* pol, !*a2k var)$
 
-symbolic procedure Polynomial!-Form!-p(sf, y);
+symbolic procedure polynomial!-form!-p(sf, y);
    %% A standard form `sf' is polynomial if each of its terms is
    %% polynomial:
    domainp sf or
-      (Polynomial!-Term!-p(lt sf, y) and Polynomial!-Form!-p(red sf, y))$
+      (polynomial!-term!-p(lt sf, y) and polynomial!-form!-p(red sf, y))$
 
-symbolic procedure Polynomial!-Term!-p(st, y);
+symbolic procedure polynomial!-term!-p(st, y);
    %% A standard term `st' is polynomial if either (a) its
    %% leading power is polynomial and its coefficient is free of y, or (b)
    %% its leading power is free of y and its coefficient is polynomial:
    if tvar st eq y then not smember(y, tc st)
-   else if not smember(y, tvar st) then Polynomial!-Form!-p(tc st, y)$
+   else if not smember(y, tvar st) then polynomial!-form!-p(tc st, y)$
 
 endmodule;
 

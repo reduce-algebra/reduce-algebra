@@ -28,7 +28,7 @@ module edseval;
 %
 
 
-Comment. A simple exterior differential system is stored in a list:
+COMMENT. A simple exterior differential system is stored in a list:
 
         eds     ::= {'!!eds!!,sys,ind,cfrm,props}
         sys     ::= list of pf
@@ -353,11 +353,11 @@ symbolic procedure texprieds(u,v,w);
    % Have to hide the EDS from TRI's makeprefix
    % but not from TRIX's makeprefix.
    if edsp u then
-      texvarpri(
+      TeXvarpri(
          if get('hodge,'texname) then !*eds2a u
          else 'texpriedsop . !*eds2a u,v,w)
    else
-      texvarpri(makelist foreach s in getrlist u collect
+      TeXvarpri(makelist foreach s in getrlist u collect
          if get('hodge,'texname) then !*eds2a s
          else 'texpriedsop . !*eds2a s,v,w);
 

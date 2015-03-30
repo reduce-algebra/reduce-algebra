@@ -15,7 +15,7 @@ on div, intstr;  off allfac;            % to look prettier
 depend y, x;
 
 % (1) Linear Bernoulli 1
-odesolve((x^4-x^3)*df(y,x) + 2*x^4*y = x^3/3 + C, y, x);
+odesolve((x^4-x^3)*df(y,x) + 2*x^4*y = x^3/3 + c, y, x);
 
 % (2) Linear Bernoulli 2
 odesolve(-1/2*df(y,x) + y = sin x, y, x);
@@ -86,13 +86,13 @@ odesolve(df(y,x) + y = y^3*sin x, y, x, explicit);
 expand_plus_or_minus ws;
 
 % (19) Bernoulli 2
-depend {P, Q}, x;
+depend {p, q}, x;
 begin scalar soln, !*exp, !*allfac;  % for a neat solution
    on allfac;
-   soln := odesolve(df(y,x) + P*y = Q*y^n, y, x);
+   soln := odesolve(df(y,x) + p*y = q*y^n, y, x);
    off allfac;  return soln
 end;
-odesolve(df(y,x) + P*y = Q*y^(2/3), y, x);
+odesolve(df(y,x) + p*y = q*y^(2/3), y, x);
 
 % (20) Clairaut 1
 odesolve((x^2-1)*df(y,x)^2 - 2x*y*df(y,x) + y^2 - 1 = 0, y, x, explicit);

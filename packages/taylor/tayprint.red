@@ -1,4 +1,4 @@
-module TayPrint;
+module tayprint;
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -31,7 +31,7 @@ module TayPrint;
 %*****************************************************************
 
 
-exports Taylor!*print, Taylor!*print1;
+exports taylor!*print, taylor!*print1;
 
 imports
 
@@ -40,15 +40,15 @@ imports
         prepsq, simp!*, smemq, typerr,
 
 % from the header module:
-        TayCfSq, TayCoeffList, TayOrig, TayTemplate, TayTpElOrder,
-        TayTpElPoint, TayTpElVars,
+        taycfsq, taycoefflist, tayorig, taytemplate, taytpelorder,
+        taytpelpoint, taytpelvars,
 
 % from module Tayconv:
-        prepTaylor!*, prepTaylor!*1, Taylor!-gen!-big!-O;
+        preptaylor!*, preptaylor!*1, taylor!-gen!-big!-o;
 
 
-fluid '(!*fort !*nat !*taylorprintorder Taylor!-truncation!-flag
-        TaylorPrintTerms);
+fluid '(!*fort !*nat !*taylorprintorder taylor!-truncation!-flag
+        taylorprintterms);
 
 symbolic procedure check!-print!-terms u;
   begin scalar x;
@@ -59,23 +59,23 @@ symbolic procedure check!-print!-terms u;
   end;
 
 
-symbolic procedure Taylor!*print1 u;
-  if smemq('!~,u) or atom TayCoeffList u and not null TayCoeffList u
-    then 'Taylor . cdr u
-   else begin scalar Taylor!-truncation!-flag, prepexpr, rest, nterms;
+symbolic procedure taylor!*print1 u;
+  if smemq('!~,u) or atom taycoefflist u and not null taycoefflist u
+    then 'taylor . cdr u
+   else begin scalar taylor!-truncation!-flag, prepexpr, rest, nterms;
     nterms := if !*taylorprintorder
-                then check!-print!-terms TaylorPrintTerms
+                then check!-print!-terms taylorprintterms
                else nil;
-    prepexpr := prepTaylor!*1 (
-                  TayCoeffList u,
-                  TayTemplate u,
+    prepexpr := preptaylor!*1 (
+                  taycoefflist u,
+                  taytemplate u,
                   nterms);
     if !*taylorprintorder then <<
-      rest := {Taylor!-gen!-big!-O TayTemplate u};
-      if Taylor!-truncation!-flag then begin integer notprinted;
+      rest := {taylor!-gen!-big!-o taytemplate u};
+      if taylor!-truncation!-flag then begin integer notprinted;
            notprinted := -nterms;
-           for each pp in TayCoeffList u do
-             if not null numr TayCfSq pp then
+           for each pp in taycoefflist u do
+             if not null numr taycfsq pp then
                notprinted := notprinted + 1;
            if notprinted=1 then rest := "(1 term)" . rest
             else rest := list2string ('!( .
@@ -90,32 +90,32 @@ symbolic procedure Taylor!*print1 u;
             else nconc (prepexpr, rest)
   end;
 
-comment The following statement is the interface for the XReduce
+COMMENT The following statement is the interface for the XReduce
         fancy printer;
 
-put('Taylor!*,'fancy!-reform,'Taylor!*print1);
+put('taylor!*,'fancy!-reform,'taylor!*print1);
 
 
-symbolic procedure Taylor!*print(u,p);
-  if !*fort then fmprint(prepTaylor!* u,0)
+symbolic procedure taylor!*print(u,p);
+  if !*fort then fmprint(preptaylor!* u,0)
    else if null !*nat then maprint(
                      'taylor .
-                        (if TayOrig u
-                           then prepsq Tayorig u
-                          else prepTaylor!* u) .
-                        for each el in TayTemplate u join
-                          {if null cdr TayTpElVars el
-                             then car TayTpElVars el
-                            else 'list . TayTpElVars el,
-                           TayTpElPoint el,
-                           TayTpElOrder el},
+                        (if tayorig u
+                           then prepsq tayorig u
+                          else preptaylor!* u) .
+                        for each el in taytemplate u join
+                          {if null cdr taytpelvars el
+                             then car taytpelvars el
+                            else 'list . taytpelvars el,
+                           taytpelpoint el,
+                           taytpelorder el},
                      p)
-   else maprint(Taylor!*print1 u,p);
+   else maprint(taylor!*print1 u,p);
 
-put('Taylor!*,'pprifn,'Taylor!*print);
+put('taylor!*,'pprifn,'taylor!*print);
 
 
-comment We need another printing function for use with the
+COMMENT We need another printing function for use with the
         TeX-REDUCE interface; %not yet done;
 
 

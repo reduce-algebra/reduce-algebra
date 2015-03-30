@@ -33,46 +33,46 @@ module assertcheckfn;
 compiletime on1 'assert;
 
 % Primitive data types (2.1 of the SL Report)
-struct Integer checked by fixp;
-struct Floating checked by floatp;
-struct Id checked by idp;
-struct String checked by stringp;
-struct DottedPair checked by pairp;
-struct Vector checked by vectorp;
-struct FunctionPointer checked by codep;
+struct integer checked by fixp;
+struct floating checked by floatp;
+struct id checked by idp;
+struct string checked by stringp;
+struct dottedpair checked by pairp;
+struct vector checked by vectorp;
+struct functionpointer checked by codep;
 
 % Classes of Primitive Data Types (2.2. of the SL Report)
-struct Boolean checked by booleanp;
-struct ExtraBoolean;
-struct Ftype checked by ftypep;
-struct Number checked by numberp;
-struct Constant checked by constantp;
-struct Any;
-struct Atom checked by atom;
+struct boolean checked by booleanp;
+struct extraboolean;
+struct ftype checked by ftypep;
+struct number checked by numberp;
+struct constant checked by constantp;
+struct any;
+struct atom checked by atom;
 
 % Structures (2.3 of SL Report)
-struct List checked by listp;
-struct Alist checked by alistp;
-struct CondForm checked by condformp;
-struct LambdaExpression checked by lambdap;
-struct Function checked by functionp;
+struct list checked by listp;
+struct alist checked by alistp;
+struct condform checked by condformp;
+struct lambdaexpression checked by lambdap;
+struct function checked by functionp;
 
 % Lists of Fixed Length:
-struct List1 checked by list1p;
-struct List2 checked by list2p;
-struct List3 checked by list3p;
-struct List4 checked by list4p;
-struct List5 checked by list5p;
-struct List6 checked by list6p;
-struct List7 checked by list7p;
+struct list1 checked by list1p;
+struct list2 checked by list2p;
+struct list3 checked by list3p;
+struct list4 checked by list4p;
+struct list5 checked by list5p;
+struct list6 checked by list6p;
+struct list7 checked by list7p;
 
 % Standard Forms and Standard Quotients etc.
-struct SF checked by sfpx;
-struct SF!* checked by sfpx!*;  % non-zero SF
-struct NoOrdSF checked by noordsfpx;
-struct SQ checked by sqp;
-struct Domain checked by domainp;
-struct Kernel checked by assert_kernelp;
+struct sf checked by sfpx;
+struct sf!* checked by sfpx!*;  % non-zero SF
+struct noordsf checked by noordsfpx;
+struct sq checked by sqp;
+struct domain checked by domainp;
+struct kernel checked by assert_kernelp;
 
 compiletime off1 'assert;
 

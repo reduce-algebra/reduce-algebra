@@ -72,7 +72,7 @@ symbolic procedure gb!-new u;
   begin scalar v,w;
     u:= test!-ideal reval u;
     v:={u,id!-vars!*,vdpsortmode!*};
-    w:='I . cdr groebnereval{'list . cdr u,id!-vars!*};
+    w:='i . cdr groebnereval{'list . cdr u,id!-vars!*};
     gb!-list!* := (v.w) . gb!-list!*;
     gb!-list!* := ((w.cdr v).w) . gb!-list!*; return w end;
 

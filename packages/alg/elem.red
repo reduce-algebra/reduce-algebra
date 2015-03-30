@@ -607,7 +607,7 @@ for all x,y let df(x**y,x)= y*x**(y-1),
 
 % Ei, erf, erfc, erfi, exp and dilog.
 
-operator dilog,ei,erf,erfi,erfc,exp;
+operator dilog,Ei,erf,erfi,erfc,exp;
 
 let {
    dilog(0) => pi**2/6,
@@ -618,7 +618,7 @@ let {
 
 let df(dilog(~x),(~x)) => -log(x)/(x-1);
 
-let df(ei(~x),~x) => e**x/x;
+let df(Ei(~x),~x) => e**x/x;
 
 
 
@@ -651,15 +651,15 @@ let   e**(i*pi/2) = i,
 operator ci,si;
 
 let {
-  Si(0) => 0,
-  Si(-~x) => (- Si(x)),
+  si(0) => 0,
+  si(-~x) => (- si(x)),
   df(si(~x),x) => sin(x)/x,
-  Si(~x) => compute!:int!:functions(x,Si)
+  si(~x) => compute!:int!:functions(x,si)
             when numberp x and lisp !*rounded,
 
-  Ci(-~x) => - Ci(x) -i*pi,
+  ci(-~x) => - ci(x) -i*pi,
   df(ci(~x),x) => cos(x)/x,
-  Ci(~x) => compute!:int!:functions(x,Ci)
+  ci(~x) => compute!:int!:functions(x,ci)
             when numberp x and abs(x) <= 20 and lisp !*rounded
 };
 

@@ -78,7 +78,7 @@ symbolic procedure ikeda(tt);
 % from Willi-Hans Steeb: The NONLINEAR WORKBOOK, chap. 1.2
 %      World Scientific, 1999
 
-begin scalar taut,X,Y,x1,y1,c1,c2,c3,rho;
+begin scalar taut,x,y,x1,y1,c1,c2,c3,rho;
 
 x := 0.5; y := 0.5;
 c1 := 0.4; c2 := 0.9; c3 := 9.0; rho := 0.85;

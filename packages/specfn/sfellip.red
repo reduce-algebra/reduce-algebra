@@ -33,15 +33,15 @@ algebraic;
 %The following procedure is the process of the Arithmetic Geometric
 %Mean.
 
-procedure AGM_function(a0,b0,c0);
+procedure agm_function(a0,b0,c0);
 
-   begin scalar aN, bN, cN, aN!-1, bN!-1, alist, blist, clist;
+   begin scalar an, bn, cn, an!-1, bn!-1, alist, blist, clist;
 
      %Initial values.
 
-        aN!-1 := a0;
-        bN!-1 := b0;
-        cN    := 20; %To initiate while loop below.
+        an!-1 := a0;
+        bn!-1 := b0;
+        cn    := 20; %To initiate while loop below.
 
      %Put initial values at end of list.
 
@@ -55,36 +55,36 @@ procedure AGM_function(a0,b0,c0);
      %When the absolute value of cN reaches a value smaller than that
      %of the required precision the loop exits. The value of aN=bN=AGM.
 
-        while abs(cN) > 10^(-(Symbolic !:prec!:)) do
+        while abs(cn) > 10^(-(symbolic !:prec!:)) do
 
            << %Calculations for the process of the AGM
 
-                aN := (aN!-1 + bN!-1) / 2;
-                bN := sqrt(aN!-1 * bN!-1);
-                cN := (aN!-1 - bN!-1) / 2;
+                an := (an!-1 + bn!-1) / 2;
+                bn := sqrt(an!-1 * bn!-1);
+                cn := (an!-1 - bn!-1) / 2;
 
              %Adding the next term to each of the lists.
 
-                alist := aN.alist;
-                blist := bN.blist;
-                clist := cN.clist;
+                alist := an.alist;
+                blist := bn.blist;
+                clist := cn.clist;
 
              %Resetting the values in order to execute the next loop.
 
-                aN!-1 := aN;
-                bN!-1 := bN
+                an!-1 := an;
+                bn!-1 := bn
            >>;
 
      %N is the number of terms in each list (excluding the initial
      % values) used to calculate the AGM.
 
-        N := LENGTH(alist) - 1;
+        n := length(alist) - 1;
 
      %The following list contains all the items required in the
      %calculation of other procedures which use the AGM
      %ie. {N, AGM, {aN to a0},{bN to b0},{cN to c0}}
 
-        return list(N ,aN, alist, blist, clist)
+        return list(n ,an, alist, blist, clist)
 
    end;
 %######################################################################
@@ -105,28 +105,28 @@ procedure AGM_function(a0,b0,c0);
 %to calculate the remaining twelve Jacobi Functions.
 
 
-procedure PHI_function(a0,b0,c0,u);
+procedure phi_function(a0,b0,c0,u);
 
-   begin scalar alist, clist,N,a_n,aN,cN,i, phi_N, phi_N!-1, phi_list;
+   begin scalar alist, clist,n,a_n,an,cn,i, phi_n, phi_n!-1, phi_list;
 
-        agm   := AGM_function(a0,b0,c0);
-        alist := PART(agm,3);              % aN to a0
-        clist := PART(agm,5);              % cN to c0
-        N := PART(agm,1);
-        a_n := PART(alist,1);              % Value of the AGM.
-        phi_N := (2^N)*a_n*u;
-        phi_list := {phi_N}$
+        agm   := agm_function(a0,b0,c0);
+        alist := part(agm,3);              % aN to a0
+        clist := part(agm,5);              % cN to c0
+        n := part(agm,1);
+        a_n := part(alist,1);              % Value of the AGM.
+        phi_n := (2^n)*a_n*u;
+        phi_list := {phi_n}$
         i := 1;
 
-        while i < LENGTH(alist) do
+        while i < length(alist) do
 
            <<
-                aN := PART(alist,i);
-                cN := PART(clist,i);
+                an := part(alist,i);
+                cn := part(clist,i);
 
-                phi_N!-1 := (asin((cN/aN)*sin(phi_N)) + phi_N) / 2;
-                phi_list := phi_N!-1.phi_list;
-                phi_N := phi_N!-1;
+                phi_n!-1 := (asin((cn/an)*sin(phi_n)) + phi_n) / 2;
+                phi_list := phi_n!-1.phi_list;
+                phi_n := phi_n!-1;
                 i := i+1
            >>;
 
@@ -142,28 +142,28 @@ procedure PHI_function(a0,b0,c0,u);
 
 %This computes the Amplitude of u.
 
-procedure Amplitude(u,m);
-        asin(Jacobisn(u,m));
+procedure amplitude(u,m);
+        asin(jacobisn(u,m));
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-operator JacobiAmplitude;
+operator jacobiamplitude;
 
-JacobiAMrules :=
+jacobiamrules :=
 
 {
-        JacobiAmplitude(~u,~m) => Amplitude(u,m) when lisp !*rounded
+        jacobiamplitude(~u,~m) => amplitude(u,m) when lisp !*rounded
                                          and numberp u and numberp m
 }$
 
-let JacobiAMrules;
+let jacobiamrules;
 
 %######################################################################
 %JACOBI FUNCTIONS
 
 %Increases the precision used to evaluate algebraic arguments.
 
-symbolic procedure  Num_JACOBI (u);
+symbolic procedure  num_jacobi (u);
 % check that length u >= 3 !
  if length u < 3 then
          rederr "illegal call to num_jacobisn" else
@@ -177,283 +177,283 @@ symbolic procedure  Num_JACOBI (u);
 
   end;
 
-put('Num_Elliptic, 'psopfn, 'Num_JACOBI);
+put('num_elliptic, 'psopfn, 'num_jacobi);
 
 %######################################################################
 %This procedure is called by Jacobisn when the on rounded switch is
 %used. It evaluates the value of Jacobisn numerically.
 
 
-procedure Num_Jacobisn(u,m);
+procedure num_jacobisn(u,m);
 
-   begin scalar phi0, Jsn;
-        phi0 := PART(PHI_function(1,sqrt(1-m),sqrt(m),u),1);
-        Jsn := sin(phi0);
-        return Jsn
+   begin scalar phi0, jsn;
+        phi0 := part(phi_function(1,sqrt(1-m),sqrt(m),u),1);
+        jsn := sin(phi0);
+        return jsn
    end;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobisn definition
 %===================
 
-operator Jacobisn;
-operator EllipticK!';
-operator EllipticK;
+operator jacobisn;
+operator elliptick!';
+operator elliptick;
 
 %This rule list includes all the special cases of the Jacobisn
 %function.
 
-JacobiSNrules :=
+jacobisnrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        Jacobisn(~u,0)   => sin u,
-        Jacobisn(~u,1)   => tanh u,
-        Jacobisn(~u,-~m) => Jacobisn(u,m),
+        jacobisn(~u,0)   => sin u,
+        jacobisn(~u,1)   => tanh u,
+        jacobisn(~u,-~m) => jacobisn(u,m),
 %Change of argument
 %------------------
-        Jacobisn(~u + ~v,~m) =>
-                ( Jacobisn(u,m)*Jacobicn(v,m)*Jacobidn(v,m)
-                + Jacobisn(v,m)*Jacobicn(u,m)*Jacobidn(u,m) )
-                / (1-m*((Jacobisn(u,m))^2)*((Jacobisn(v,m))^2)),
+        jacobisn(~u + ~v,~m) =>
+                ( jacobisn(u,m)*jacobicn(v,m)*jacobidn(v,m)
+                + jacobisn(v,m)*jacobicn(u,m)*jacobidn(u,m) )
+                / (1-m*((jacobisn(u,m))^2)*((jacobisn(v,m))^2)),
 
-        Jacobisn(2*~u,~m) =>
-                ( 2*Jacobisn(u,m)*Jacobicn(u,m)*Jacobidn(u,m) )
-                / (1-m*((Jacobisn(u,m))^4)),
+        jacobisn(2*~u,~m) =>
+                ( 2*jacobisn(u,m)*jacobicn(u,m)*jacobidn(u,m) )
+                / (1-m*((jacobisn(u,m))^4)),
 
-        Jacobisn(~u/2,~m) =>
-                ( 1- Jacobicn(u,m) ) / ( 1 + Jacobidn(u,m) ),
+        jacobisn(~u/2,~m) =>
+                ( 1- jacobicn(u,m) ) / ( 1 + jacobidn(u,m) ),
 
 
-        Jacobisn(-~u,~m) => -Jacobisn(u,m),
-        Jacobisn((~u+EllipticK(~m)),~m)   =>  Jacobicd(u,m),
-        Jacobisn((~u-EllipticK(~m)),~m)   => -Jacobicd(u,m),
-        Jacobisn((EllipticK(~m)-~u),~m)   =>  Jacobicd(u,m),
-        Jacobisn((~u+2*EllipticK(~m)),~m) => -Jacobisn(u,m),
-        Jacobisn((~u-2*EllipticK(~m)),~m) => -Jacobisn(u,m),
-        Jacobisn((2*EllipticK(~m)-~u),~m) =>  Jacobisn(u,m),
-        Jacobisn(~u+i*EllipticK!'(~m),~m) => (m^(-1/2))*Jacobins(u,m),
+        jacobisn(-~u,~m) => -jacobisn(u,m),
+        jacobisn((~u+elliptick(~m)),~m)   =>  jacobicd(u,m),
+        jacobisn((~u-elliptick(~m)),~m)   => -jacobicd(u,m),
+        jacobisn((elliptick(~m)-~u),~m)   =>  jacobicd(u,m),
+        jacobisn((~u+2*elliptick(~m)),~m) => -jacobisn(u,m),
+        jacobisn((~u-2*elliptick(~m)),~m) => -jacobisn(u,m),
+        jacobisn((2*elliptick(~m)-~u),~m) =>  jacobisn(u,m),
+        jacobisn(~u+i*elliptick!'(~m),~m) => (m^(-1/2))*jacobins(u,m),
 
-        Jacobisn((~u+2*i*EllipticK!'(~m)),~m) => Jacobisn(u,m),
+        jacobisn((~u+2*i*elliptick!'(~m)),~m) => jacobisn(u,m),
 
-        Jacobisn((~u+EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
-                                              (m^(-1/2))*Jacobidc(u,m),
+        jacobisn((~u+elliptick(~m)+i*elliptick!'(~m)),~m) =>
+                                              (m^(-1/2))*jacobidc(u,m),
 
-        Jacobisn((~u+2*EllipticK(~m)+2*i*EllipticK!'(~m)),~m) =>
-                                                        -Jacobisn(u,m),
+        jacobisn((~u+2*elliptick(~m)+2*i*elliptick!'(~m)),~m) =>
+                                                        -jacobisn(u,m),
 %Special Arguments
 %-----------------
-        Jacobisn(0,~m) => 0,
+        jacobisn(0,~m) => 0,
 
-        Jacobisn((1/2)*EllipticK(~m),~m) =>1/((1+((1-m)^(1/2)))^(1/2)),
+        jacobisn((1/2)*elliptick(~m),~m) =>1/((1+((1-m)^(1/2)))^(1/2)),
 
-        Jacobisn(EllipticK(~m),~m) => 1,
+        jacobisn(elliptick(~m),~m) => 1,
 
-        Jacobisn((1/2)*i*EllipticK!'(~m),~m) => i*m^(-1/4),
+        jacobisn((1/2)*i*elliptick!'(~m),~m) => i*m^(-1/4),
 
-        Jacobisn((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
+        jacobisn((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m) =>
                             (2^(-1/2))*m^(-1/4)*(((1+(m^(1/2)))^(1/2))
                                             + i*((1-(m^(1/2)))^(1/2))),
 
-        Jacobisn(EllipticK(~m)+(1/2)*i*EllipticK!'(~m),~m) => m^(-1/4),
+        jacobisn(elliptick(~m)+(1/2)*i*elliptick!'(~m),~m) => m^(-1/4),
 
-        Jacobisn(i*EllipticK!'(~m),~m) => infinity,
+        jacobisn(i*elliptick!'(~m),~m) => infinity,
 
-        Jacobisn((1/2)*EllipticK(~m)+i*EllipticK!'(~m),~m) =>
+        jacobisn((1/2)*elliptick(~m)+i*elliptick!'(~m),~m) =>
                                               (1-((1-m)^(1/2)))^(-1/2),
 
-        Jacobisn(EllipticK(~m)+i*EllipticK!'(~m),~m) => m^(-1/2),
+        jacobisn(elliptick(~m)+i*elliptick!'(~m),~m) => m^(-1/2),
 
 
 %Derivatives, Integral
 %---------------------
-        df(Jacobisn(~u,~m),~u)  => Jacobicn(u,m)*Jacobidn(u,m),
-        df(Jacobisn(~u,~m),~m)  => (m*Jacobisn(u,m)*Jacobicn(u,m)^2
-                        - EllipticE(u,m)*Jacobicn(u,m)*Jacobidn(u,m)/m)
-                        / (1-(m^2)) +  u*Jacobicn(u,m)*Jacobidn(u,m)/m,
+        df(jacobisn(~u,~m),~u)  => jacobicn(u,m)*jacobidn(u,m),
+        df(jacobisn(~u,~m),~m)  => (m*jacobisn(u,m)*jacobicn(u,m)^2
+                        - elliptice(u,m)*jacobicn(u,m)*jacobidn(u,m)/m)
+                        / (1-(m^2)) +  u*jacobicn(u,m)*jacobidn(u,m)/m,
 
-        int(Jacobisn(~u,~m),~u) =>
-                (m^(-1/2))*ln(Jacobidn(u,m)-(m^(1/2))*Jacobicn(u,m)),
+        int(jacobisn(~u,~m),~u) =>
+                (m^(-1/2))*ln(jacobidn(u,m)-(m^(1/2))*jacobicn(u,m)),
 
 %Calls Num_Jacobisn when the rounded switch is on.
 %-------------------------------------------------
-        Jacobisn(~u,~m) => Num_Elliptic(Num_Jacobisn, u, m)
+        jacobisn(~u,~m) => num_elliptic(num_jacobisn, u, m)
                            when lisp !*rounded and numberp u
-                           and numberp m and IMPART(u) = 0,
+                           and numberp m and impart(u) = 0,
 
-        Jacobisn(~u,~m) => Num_Elliptic(complex_SN, u, m)
+        jacobisn(~u,~m) => num_elliptic(complex_sn, u, m)
                            when lisp !*rounded and numberp repart u
                            and numberp impart u and numberp m
-                           and IMPART(u) neq 0
+                           and impart(u) neq 0
 
 }$
-let JacobiSNrules;
+let jacobisnrules;
 
 %......................................................................
 %Evaluates Jacobisn when imaginary argument.
 
-operator complex_SN;
-SNrule :=
+operator complex_sn;
+snrule :=
 {
 
-        complex_SN(i*~u,~m) => i*Num_Jacobisc(u,1-m),
+        complex_sn(i*~u,~m) => i*num_jacobisc(u,1-m),
 
-        complex_SN(~x + i*~y,~m) =>
-                ( Num_Jacobisn(x,m)*Num_Jacobidn(y,1-m)
-                + i*Num_Jacobicn(x,m)*Num_Jacobidn(x,m)
-                   *Num_Jacobisn(y,1-m)*Num_Jacobicn(y,1-m) )
-                / (((Num_Jacobicn(y,1-m))^2)+
-                   m*((Num_Jacobisn(x,m))^2)*((Num_Jacobisn(y,1-m))^2))
+        complex_sn(~x + i*~y,~m) =>
+                ( num_jacobisn(x,m)*num_jacobidn(y,1-m)
+                + i*num_jacobicn(x,m)*num_jacobidn(x,m)
+                   *num_jacobisn(y,1-m)*num_jacobicn(y,1-m) )
+                / (((num_jacobicn(y,1-m))^2)+
+                   m*((num_jacobisn(x,m))^2)*((num_jacobisn(y,1-m))^2))
 }$
-let SNrule;
+let snrule;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %This procedure is called by Jacobicn when the on rounded switch is
 %used. It evaluates the value of Jacobicn numerically.
 
-procedure Num_Jacobicn(u,m);
+procedure num_jacobicn(u,m);
 
-   begin scalar phi0, Jcn;
-        phi0 := PART(PHI_function(1,sqrt(1-m),sqrt(m),u),1);
-        Jcn := cos(phi0);
-        return Jcn
+   begin scalar phi0, jcn;
+        phi0 := part(phi_function(1,sqrt(1-m),sqrt(m),u),1);
+        jcn := cos(phi0);
+        return jcn
    end;
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobicn definition
 %===================
 
-operator Jacobicn;
+operator jacobicn;
 
 %This rule list includes all the special cases of the Jacobicn
 %function.
 
-JacobiCNrules :=
+jacobicnrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        Jacobicn(~u,0)   => cos u,
-        Jacobicn(~u,1)   => sech u,
-        Jacobicn(~u,-~m) => Jacobicn(u,m),
+        jacobicn(~u,0)   => cos u,
+        jacobicn(~u,1)   => sech u,
+        jacobicn(~u,-~m) => jacobicn(u,m),
 %Change of Argument
 %------------------
-        Jacobicn(~u + ~v,~m) =>
-                ( Jacobicn(u,m)*Jacobicn(v,m) - Jacobisn(u,m)
-                   *Jacobidn(u,m)*Jacobisn(v,m)*Jacobidn(v,m) )
-                / (1 - m*((Jacobisn(u,m))^2)*((Jacobisn(v,m))^2)),
+        jacobicn(~u + ~v,~m) =>
+                ( jacobicn(u,m)*jacobicn(v,m) - jacobisn(u,m)
+                   *jacobidn(u,m)*jacobisn(v,m)*jacobidn(v,m) )
+                / (1 - m*((jacobisn(u,m))^2)*((jacobisn(v,m))^2)),
 
-        Jacobicn(2*~u,~m) =>
-                ( ((Jacobicn(u,m))^2) - ((Jacobisn(u,m))^2)
-                  *((Jacobidn(u,m))^2) )
-                / (1- m*((Jacobisn(u,m))^4)),
+        jacobicn(2*~u,~m) =>
+                ( ((jacobicn(u,m))^2) - ((jacobisn(u,m))^2)
+                  *((jacobidn(u,m))^2) )
+                / (1- m*((jacobisn(u,m))^4)),
 
-        Jacobicn(~u/2,~m) =>
-                ( Jacobidn(u,m) + Jacobicn(u,m) )
-                / ( 1 + Jacobidn(u,m) ),
+        jacobicn(~u/2,~m) =>
+                ( jacobidn(u,m) + jacobicn(u,m) )
+                / ( 1 + jacobidn(u,m) ),
 
-        Jacobicn(-~u,~m) => Jacobicn (u,m),
+        jacobicn(-~u,~m) => jacobicn (u,m),
 
-        Jacobicn((~u+EllipticK(~m)),~m) =>-((1-m)^(1/2))*Jacobisd(u,m),
-        Jacobicn((~u-EllipticK(~m)),~m) => ((1-m)^(1/2))*Jacobisd(u,m),
-        Jacobicn((EllipticK(~m)-~u),~m) => ((1-m)^(1/2))*Jacobisd(u,m),
-        Jacobicn((~u+2*EllipticK(~m)),~m) => -Jacobicn(u,m),
-        Jacobicn((~u-2*EllipticK(~m)),~m) => -Jacobicn(u,m),
-        Jacobicn((2*EllipticK(~m)-~u),~m) => -Jacobicn(u,m),
-        Jacobicn((~u+i*EllipticK!'(~m)),~m) =>
-                                            -i*(m^(-1/2))*Jacobids(u,m),
+        jacobicn((~u+elliptick(~m)),~m) =>-((1-m)^(1/2))*jacobisd(u,m),
+        jacobicn((~u-elliptick(~m)),~m) => ((1-m)^(1/2))*jacobisd(u,m),
+        jacobicn((elliptick(~m)-~u),~m) => ((1-m)^(1/2))*jacobisd(u,m),
+        jacobicn((~u+2*elliptick(~m)),~m) => -jacobicn(u,m),
+        jacobicn((~u-2*elliptick(~m)),~m) => -jacobicn(u,m),
+        jacobicn((2*elliptick(~m)-~u),~m) => -jacobicn(u,m),
+        jacobicn((~u+i*elliptick!'(~m)),~m) =>
+                                            -i*(m^(-1/2))*jacobids(u,m),
 
-        Jacobicn((~u+2*i*EllipticK!'(~m)),~m) => -Jacobicn(u,m),
+        jacobicn((~u+2*i*elliptick!'(~m)),~m) => -jacobicn(u,m),
 
-        Jacobicn((~u+EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
-                             -i*((1-m)^(1/2))*(m^(-1/2))*Jacobinc(u,m),
+        jacobicn((~u+elliptick(~m)+i*elliptick!'(~m)),~m) =>
+                             -i*((1-m)^(1/2))*(m^(-1/2))*jacobinc(u,m),
 
-        Jacobicn((~u+2*EllipticK(~m)+2*i*EllipticK!'(~m)),~m) =>
-                                                         Jacobicn(u,m),
+        jacobicn((~u+2*elliptick(~m)+2*i*elliptick!'(~m)),~m) =>
+                                                         jacobicn(u,m),
 %Special Arguments
 %-----------------
-        Jacobicn(0,~m) => 1,
+        jacobicn(0,~m) => 1,
 
-        Jacobicn((1/2)*EllipticK(~m),~m) =>
+        jacobicn((1/2)*elliptick(~m),~m) =>
                                  ((1-m)^(1/4))/(1+((1-m)^(1/2)))^(1/2),
 
-        Jacobicn(EllipticK(~m),~m) => 0,
+        jacobicn(elliptick(~m),~m) => 0,
 
-        Jacobicn((1/2)*i*EllipticK!'(~m),~m) =>
+        jacobicn((1/2)*i*elliptick!'(~m),~m) =>
                                        ((1+(m^(1/2)))^(1/2))/(m^(1/4)),
 
-        Jacobicn((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
+        jacobicn((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m) =>
                                            (((1-m)/(4*m))^(1/4))*(1-i),
 
-        Jacobicn(EllipticK(~m)+(1/2)*i*EllipticK!'(~m),~m) =>
+        jacobicn(elliptick(~m)+(1/2)*i*elliptick!'(~m),~m) =>
                                   -i*(((1-(m^(1/2)))/(m^(1/2))))^(1/2),
 
-        Jacobicn(i*EllipticK!'(~m),~m) => infinity,
+        jacobicn(i*elliptick!'(~m),~m) => infinity,
 
-        Jacobicn((1/2)*EllipticK(~m)+i*EllipticK!'(~m),~m) =>
+        jacobicn((1/2)*elliptick(~m)+i*elliptick!'(~m),~m) =>
                           -i*((((1-m)^(1/2))/(1-((1-m)^(1/2))))^(1/2)),
 
-        Jacobicn(EllipticK(~m)+i*EllipticK!'(~m),~m) =>
+        jacobicn(elliptick(~m)+i*elliptick!'(~m),~m) =>
                                                   -i*(((1-m)/m)^(1/2)),
 %Derivatives, Integral
 %---------------------
-        df(Jacobicn(~u,~m),~u)  => -Jacobisn(u,m)*Jacobidn(u,m),
-        df(Jacobicn(~u,~m),~m)  => (-m*(Jacobisn(u,m)^2)*Jacobicn(u,m)
-                                   + EllipticE(u,m)*Jacobisn(u,m)
-                                     *Jacobidn(u,m)/m)/(1-(m^2))
-                                   - u*Jacobisn(u,m)*Jacobidn(u,m)/m,
+        df(jacobicn(~u,~m),~u)  => -jacobisn(u,m)*jacobidn(u,m),
+        df(jacobicn(~u,~m),~m)  => (-m*(jacobisn(u,m)^2)*jacobicn(u,m)
+                                   + elliptice(u,m)*jacobisn(u,m)
+                                     *jacobidn(u,m)/m)/(1-(m^2))
+                                   - u*jacobisn(u,m)*jacobidn(u,m)/m,
 
-        int(Jacobicn(~u,~m),~u) => (m^(-1/2))*acos(Jacobidn(u,m)),
+        int(jacobicn(~u,~m),~u) => (m^(-1/2))*acos(jacobidn(u,m)),
 
 %Calls Num_Jacobicn when rounded switch is on.
 %---------------------------------------------
-        Jacobicn(~u,~m) => Num_Elliptic(Num_Jacobicn, u, m)
+        jacobicn(~u,~m) => num_elliptic(num_jacobicn, u, m)
                            when lisp !*rounded and numberp u
-                           and numberp m and IMPART(u) = 0,
+                           and numberp m and impart(u) = 0,
 
-        Jacobicn(~u,~m) => Num_Elliptic(complex_CN, u, m)
+        jacobicn(~u,~m) => num_elliptic(complex_cn, u, m)
                            when lisp !*rounded and numberp repart u
                            and numberp impart u and numberp m
-                           and IMPART(u) neq 0
+                           and impart(u) neq 0
 }$
-let JacobiCNrules;
+let jacobicnrules;
 
 %......................................................................
 %Evaluates Jacobicn when imaginary argument.
 
-operator complex_CN;
-CNrule :=
+operator complex_cn;
+cnrule :=
 {
 
-        complex_CN(i*~u,~m) => Num_Jacobinc(u,1-m),
+        complex_cn(i*~u,~m) => num_jacobinc(u,1-m),
 
-        complex_CN(~x + i*~y,~m) =>
+        complex_cn(~x + i*~y,~m) =>
 
-                ( Num_Jacobicn(x,m)*Num_Jacobicn(y,1-m)
-                - i*Num_Jacobisn(x,m)*Num_Jacobidn(x,m)
-                   *Num_Jacobisn(y,1-m)*Num_Jacobidn(y,1-m) )
-                / (((Num_Jacobicn(y,1-m))^2)+
-                   m*((Num_Jacobisn(x,m))^2)*((Num_Jacobisn(y,1-m))^2))
+                ( num_jacobicn(x,m)*num_jacobicn(y,1-m)
+                - i*num_jacobisn(x,m)*num_jacobidn(x,m)
+                   *num_jacobisn(y,1-m)*num_jacobidn(y,1-m) )
+                / (((num_jacobicn(y,1-m))^2)+
+                   m*((num_jacobisn(x,m))^2)*((num_jacobisn(y,1-m))^2))
 }$
-let CNrule;
+let cnrule;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %This procedure is called by Jacobidn when the on rounded switch is
 %used. It evaluates the value of Jacobidn numerically.
 
-procedure Num_Jacobidn(u,m);
-   begin scalar PHI, phi0,  phi1, numer, denom, Jdn;
-        PHI  := PHI_function(1,sqrt(1-m),sqrt(m),u);
-        phi0 := PART(PHI,1);
-        phi1 := PART(PHI,2);
+procedure num_jacobidn(u,m);
+   begin scalar phi, phi0,  phi1, numer, denom, jdn;
+        phi  := phi_function(1,sqrt(1-m),sqrt(m),u);
+        phi0 := part(phi,1);
+        phi1 := part(phi,2);
         numer := cos(phi0);
         denom := cos(phi1 - phi0);
 
-        if denom < 10^(-(Symbolic !:prec!:))
-        then  Jdn := otherDN(u,m)
-        else  Jdn := numer/denom;
-        return Jdn
+        if denom < 10^(-(symbolic !:prec!:))
+        then  jdn := otherdn(u,m)
+        else  jdn := numer/denom;
+        return jdn
    end;
 
-procedure otherDN(u,m);
+procedure otherdn(u,m);
    begin scalar mu, v, dn;
         mu := ((1-((1-m)^(1/2))) / (1+((1-m)^(1/2))))^2;
         v  := u / (1+(mu^(1/2)));
@@ -475,922 +475,922 @@ procedure approx(u,m);
 %Jacobidn definition
 %===================
 
-operator Jacobidn;
+operator jacobidn;
 
 %This rule list includes all the special cases of the Jacobidn
 %function.
 
-JacobiDNrules :=
+jacobidnrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        Jacobidn(~u,0)   => 1,
-        Jacobidn(~u,1)   => sech u,
-        Jacobidn(~u,-~m) => Jacobidn(u,m),
+        jacobidn(~u,0)   => 1,
+        jacobidn(~u,1)   => sech u,
+        jacobidn(~u,-~m) => jacobidn(u,m),
 %Change of Argument
 %------------------
-        Jacobidn(~u + ~v,~m) =>
-                ( Jacobidn(u,m)*Jacobidn(v,m) - m*Jacobisn(u,m)
-                   *Jacobicn(u,m)*Jacobisn(v,m)*Jacobicn(v,m) )
-                / (1 - m*((Jacobisn(u,m))^2)*((Jacobisn(v,m))^2)),
+        jacobidn(~u + ~v,~m) =>
+                ( jacobidn(u,m)*jacobidn(v,m) - m*jacobisn(u,m)
+                   *jacobicn(u,m)*jacobisn(v,m)*jacobicn(v,m) )
+                / (1 - m*((jacobisn(u,m))^2)*((jacobisn(v,m))^2)),
 
-        Jacobidn(2*~u,~m) =>
-                (  ((Jacobidn(u,m))^2) - m*((Jacobisn(u,m))^2)
-                  *((Jacobicn(u,m))^2) )
-                / (1- m*((Jacobisn(u,m))^4)),
+        jacobidn(2*~u,~m) =>
+                (  ((jacobidn(u,m))^2) - m*((jacobisn(u,m))^2)
+                  *((jacobicn(u,m))^2) )
+                / (1- m*((jacobisn(u,m))^4)),
 
-        Jacobidn(~u/2,~m) =>
-                ( (1-m) + Jacobidn(u,m) + m*Jacobicn(u,m))
-                / ( 1 + Jacobidn(u,m) ),
+        jacobidn(~u/2,~m) =>
+                ( (1-m) + jacobidn(u,m) + m*jacobicn(u,m))
+                / ( 1 + jacobidn(u,m) ),
 
-        Jacobidn(-~u,~m) => Jacobidn(u,m),
+        jacobidn(-~u,~m) => jacobidn(u,m),
 
-        Jacobidn((~u+EllipticK(~m)),~m) => ((1-m)^(1/2))*Jacobind(u,m),
-        Jacobidn((~u-EllipticK(~m)),~m) => ((1-m)^(1/2))*Jacobind(u,m),
-        Jacobidn((EllipticK(~m)-~u),~m) => ((1-m)^(1/2))*Jacobind(u,m),
-        Jacobidn((~u+2*EllipticK(~m)),~m) => Jacobidn(u,m),
-        Jacobidn((~u-2*EllipticK(~m)),~m) => Jacobidn(u,m),
-        Jacobidn((2*EllipticK(~m)-~u),~m) => Jacobidn(u,m),
-        Jacobidn((~u+i*EllipticK!'(~m)),~m)   => -i*Jacobics(u,m),
-        Jacobidn((~u+2*i*EllipticK!'(~m)),~m) => -Jacobidn(u,m),
+        jacobidn((~u+elliptick(~m)),~m) => ((1-m)^(1/2))*jacobind(u,m),
+        jacobidn((~u-elliptick(~m)),~m) => ((1-m)^(1/2))*jacobind(u,m),
+        jacobidn((elliptick(~m)-~u),~m) => ((1-m)^(1/2))*jacobind(u,m),
+        jacobidn((~u+2*elliptick(~m)),~m) => jacobidn(u,m),
+        jacobidn((~u-2*elliptick(~m)),~m) => jacobidn(u,m),
+        jacobidn((2*elliptick(~m)-~u),~m) => jacobidn(u,m),
+        jacobidn((~u+i*elliptick!'(~m)),~m)   => -i*jacobics(u,m),
+        jacobidn((~u+2*i*elliptick!'(~m)),~m) => -jacobidn(u,m),
 
-        Jacobidn((~u+EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
-                                         i*((1-m)^(1/2))*Jacobisc(u,m),
+        jacobidn((~u+elliptick(~m)+i*elliptick!'(~m)),~m) =>
+                                         i*((1-m)^(1/2))*jacobisc(u,m),
 
-        Jacobidn((~u+2*EllipticK(~m)+2*i*EllipticK!'(~m)),~m) =>
-                                                        -Jacobidn(u,m),
+        jacobidn((~u+2*elliptick(~m)+2*i*elliptick!'(~m)),~m) =>
+                                                        -jacobidn(u,m),
 %Special Arguments
 %-----------------
-        Jacobidn(0,~m) => 1,
+        jacobidn(0,~m) => 1,
 
-        Jacobidn((1/2)*EllipticK(~m),~m) => (1-m)^(1/4),
+        jacobidn((1/2)*elliptick(~m),~m) => (1-m)^(1/4),
 
-        Jacobidn(EllipticK(~m),~m) => (1-m)^(1/2),
+        jacobidn(elliptick(~m),~m) => (1-m)^(1/2),
 
-        Jacobidn((1/2)*i*EllipticK!'(~m),~m) =>   (1+(m^(1/2)))^(1/2),
+        jacobidn((1/2)*i*elliptick!'(~m),~m) =>   (1+(m^(1/2)))^(1/2),
 
-        Jacobidn((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
+        jacobidn((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m) =>
                          (((1-m)/4)^(1/4))*(((1+((1-m)^(1/2)))^(1/2))
                                         - i*((1-((1-m)^(1/2)))^(1/2))),
 
-        Jacobidn(EllipticK(~m)+(1/2)*i*EllipticK!'(~m),~m) =>
+        jacobidn(elliptick(~m)+(1/2)*i*elliptick!'(~m),~m) =>
                                                    (1-(m^(1/2)))^(1/2),
 
-        Jacobidn(i*EllipticK!'(~m),~m) => infinity,
+        jacobidn(i*elliptick!'(~m),~m) => infinity,
 
-        Jacobidn((1/2)*EllipticK(~m)+i*EllipticK!'(~m),~m) =>
+        jacobidn((1/2)*elliptick(~m)+i*elliptick!'(~m),~m) =>
                                                       -i*((1-m)^(1/4)),
 
-        Jacobidn(EllipticK(~m)+i*EllipticK!'(~m),~m) => 0,
+        jacobidn(elliptick(~m)+i*elliptick!'(~m),~m) => 0,
 
 %Derivatives, Intergal
 %---------------------
 % Following a hint from Alain Moussiaux
 %       df(Jacobidn(~u,~m),~u)  => -m *Jacobisn(u,m)*Jacobicn(u,m),
-        df(Jacobidn(~u,~m),~u)  => -m**2 *Jacobisn(u,m)*Jacobicn(u,m),
-        df(Jacobidn(~u,~m),~m)  => m*(-(Jacobisn(u,m)^2)*Jacobidn(u,m)
-                                   + EllipticE(u,m)*Jacobisn(u,m)
-                                     *Jacobicn(u,m))/(1-(m^2))
-                                   - m*u*Jacobisn(u,m)*Jacobicn(u,m),
+        df(jacobidn(~u,~m),~u)  => -m**2 *jacobisn(u,m)*jacobicn(u,m),
+        df(jacobidn(~u,~m),~m)  => m*(-(jacobisn(u,m)^2)*jacobidn(u,m)
+                                   + elliptice(u,m)*jacobisn(u,m)
+                                     *jacobicn(u,m))/(1-(m^2))
+                                   - m*u*jacobisn(u,m)*jacobicn(u,m),
 
-        int(Jacobidn(~u,~m),~u) => asin(Jacobisn(u,m)),
+        int(jacobidn(~u,~m),~u) => asin(jacobisn(u,m)),
 
 %Calls Num_Jacobidn when rounded switch is on.
 %---------------------------------------------
-        Jacobidn(~u,~m) => Num_Elliptic(Num_Jacobidn, u, m)
+        jacobidn(~u,~m) => num_elliptic(num_jacobidn, u, m)
                            when lisp !*rounded and numberp u
-                           and numberp m and IMPART(u) = 0,
+                           and numberp m and impart(u) = 0,
 
-        Jacobidn(~u,~m) => Num_Elliptic(complex_DN, u, m)
+        jacobidn(~u,~m) => num_elliptic(complex_dn, u, m)
                            when lisp !*rounded and numberp repart u
                            and numberp impart u and numberp m
-                           and IMPART(u) neq 0
+                           and impart(u) neq 0
 }$
-let JacobiDNrules;
+let jacobidnrules;
 
 %......................................................................
 %Evaluates Jacobidn when imaginary argument.
 
-operator complex_DN;
-DNrule :=
-{       complex_DN(i*~u,~m) => Num_Jacobidc(u,1-m),
+operator complex_dn;
+dnrule :=
+{       complex_dn(i*~u,~m) => num_jacobidc(u,1-m),
 
-        complex_DN(~x + i*~y,~m) =>
+        complex_dn(~x + i*~y,~m) =>
 
-        ( Num_Jacobidn(x,m)*Num_Jacobicn(y,1-m)*Num_Jacobidn(y,1-m)
-        - i*m*Num_Jacobisn(x,m)*Num_Jacobicn(x,m)*Num_Jacobisn(y,1-m) )
-        / ( ((Num_Jacobicn(y,1-m))^2) + m*((Num_Jacobisn(x,m))^2)
-                                         *((Num_Jacobisn(y,1-m))^2) )
+        ( num_jacobidn(x,m)*num_jacobicn(y,1-m)*num_jacobidn(y,1-m)
+        - i*m*num_jacobisn(x,m)*num_jacobicn(x,m)*num_jacobisn(y,1-m) )
+        / ( ((num_jacobicn(y,1-m))^2) + m*((num_jacobisn(x,m))^2)
+                                         *((num_jacobisn(y,1-m))^2) )
 }$
-let DNrule;
+let dnrule;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %This procedure is called by Jacobicd when the on rounded switch is
 %used. It evaluates the value of Jacobicd numerically.
 
-procedure Num_Jacobicd(u,m);
+procedure num_jacobicd(u,m);
 
-        Num_Jacobicn(u,m) / Num_Jacobidn(u,m);
+        num_jacobicn(u,m) / num_jacobidn(u,m);
 
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobicd definition
 %===================
 
-operator Jacobicd;
+operator jacobicd;
 
 %This rule list includes all the special cases of the Jacobicd
 %function.
 
-JacobiCDrules :=
+jacobicdrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        Jacobicd(~u,0)   => cos u,
-        Jacobicd(~u,1)   => 1,
-        Jacobicd(~u,-~m) => Jacobicd(u,m),
+        jacobicd(~u,0)   => cos u,
+        jacobicd(~u,1)   => 1,
+        jacobicd(~u,-~m) => jacobicd(u,m),
 %Change of Argument
 %------------------
-        Jacobicd(-~u,~m)   => Jacobicd(u,m),
-        Jacobicd((~u+EllipticK(~m)),~m)   => -Jacobisn(u,m),
-        Jacobicd((~u-EllipticK(~m)),~m)   =>  Jacobisn(u,m),
-        Jacobicd((EllipticK(~m)-~u),~m)   =>  Jacobisn(u,m),
-        Jacobicd((~u+2*EllipticK(~m)),~m) => -Jacobicd(u,m),
-        Jacobicd((~u-2*EllipticK(~m)),~m) => -Jacobicd(u,m),
-        Jacobicd((2*EllipticK(~m)-~u),~m) => -Jacobicd(u,m),
-        Jacobicd((~u+i*EllipticK!'(~m)),~m) =>
-                                              (m^(-1/2))*Jacobidc(u,m),
+        jacobicd(-~u,~m)   => jacobicd(u,m),
+        jacobicd((~u+elliptick(~m)),~m)   => -jacobisn(u,m),
+        jacobicd((~u-elliptick(~m)),~m)   =>  jacobisn(u,m),
+        jacobicd((elliptick(~m)-~u),~m)   =>  jacobisn(u,m),
+        jacobicd((~u+2*elliptick(~m)),~m) => -jacobicd(u,m),
+        jacobicd((~u-2*elliptick(~m)),~m) => -jacobicd(u,m),
+        jacobicd((2*elliptick(~m)-~u),~m) => -jacobicd(u,m),
+        jacobicd((~u+i*elliptick!'(~m)),~m) =>
+                                              (m^(-1/2))*jacobidc(u,m),
 
-        Jacobicd((~u+2*i*EllipticK!'(~m)),~m) => Jacobicd(u,m),
+        jacobicd((~u+2*i*elliptick!'(~m)),~m) => jacobicd(u,m),
 
-        Jacobicd((~u+EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
-                                             -(m^(-1/2))*Jacobins(u,m),
+        jacobicd((~u+elliptick(~m)+i*elliptick!'(~m)),~m) =>
+                                             -(m^(-1/2))*jacobins(u,m),
 
-        Jacobicd((~u+2*EllipticK(~m)+2*i*EllipticK!'(~m)),~m) =>
-                                                        -Jacobicd(u,m),
+        jacobicd((~u+2*elliptick(~m)+2*i*elliptick!'(~m)),~m) =>
+                                                        -jacobicd(u,m),
 %Special Arguments
 %-----------------
-        Jacobicd(0,~m) => 1,
+        jacobicd(0,~m) => 1,
 
-        Jacobicd((1/2)*EllipticK(~m),~m) => 1 /(1+((1-m)^(1/2)))^(1/2),
+        jacobicd((1/2)*elliptick(~m),~m) => 1 /(1+((1-m)^(1/2)))^(1/2),
 
-        Jacobicd(EllipticK(~m),~m) => 0,
+        jacobicd(elliptick(~m),~m) => 0,
 
-        Jacobicd((1/2)*i*EllipticK!'(~m),~m) => 1/(m^(1/4)),
+        jacobicd((1/2)*i*elliptick!'(~m),~m) => 1/(m^(1/4)),
 
-        Jacobicd((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
+        jacobicd((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m) =>
                            (1-i)/((m^(1/4))*(((1+((1-m)^(1/2)))^(1/2))
                                         -i*((1-((1-m)^(1/2)))^(1/2)))),
 
-        Jacobicd(EllipticK(~m)+(1/2)*i*EllipticK!'(~m),~m) =>
+        jacobicd(elliptick(~m)+(1/2)*i*elliptick!'(~m),~m) =>
                                                           -i/(m^(1/4)),
 
-        Jacobicd(i*EllipticK!'(~m),~m) =>
-                                        Jacobicn(i*EllipticK!'(~m),~m)
-                                      / Jacobidn(i*EllipticK!'(~m),~m),
+        jacobicd(i*elliptick!'(~m),~m) =>
+                                        jacobicn(i*elliptick!'(~m),~m)
+                                      / jacobidn(i*elliptick!'(~m),~m),
 
-        Jacobicd((1/2)*EllipticK(~m)+i*EllipticK!'(~m),~m) =>
+        jacobicd((1/2)*elliptick(~m)+i*elliptick!'(~m),~m) =>
                                            1/((1-((1-m)^(1/2)))^(1/2)),
 
-        Jacobicd(EllipticK(~m)+i*EllipticK!'(~m),~m) => infinity,
+        jacobicd(elliptick(~m)+i*elliptick!'(~m),~m) => infinity,
 
 %Derivatives,Integral
 %--------------------
-        df(Jacobicd(~u,~m),~u) => -(1 - m)*Jacobisd(u,m)*Jacobind(u,m),
-        df(Jacobicd(~u,~m),~m) =>
-                                ( Jacobidn(u,m)*df(Jacobicn(u,m),m)
-                                - Jacobicn(u,m)*df(Jacobidn(u,m),m))
-                                / ((Jacobidn(u,m))^2),
+        df(jacobicd(~u,~m),~u) => -(1 - m)*jacobisd(u,m)*jacobind(u,m),
+        df(jacobicd(~u,~m),~m) =>
+                                ( jacobidn(u,m)*df(jacobicn(u,m),m)
+                                - jacobicn(u,m)*df(jacobidn(u,m),m))
+                                / ((jacobidn(u,m))^2),
 
-        int(Jacobicd(~u,~m),~u) =>
-                m^(-1/2)*ln(Jacobind(u,m) + (m^(1/2))*Jacobisd(u,m)),
+        int(jacobicd(~u,~m),~u) =>
+                m^(-1/2)*ln(jacobind(u,m) + (m^(1/2))*jacobisd(u,m)),
 
 %Calls Num_Jacobicd when rounded switch is on.
 %---------------------------------------------
-        Jacobicd(~u,~m) => Num_Elliptic(Num_Jacobicd, u, m)
+        jacobicd(~u,~m) => num_elliptic(num_jacobicd, u, m)
                            when lisp !*rounded and numberp u
                            and numberp m
 }$
-let JacobiCDrules;
+let jacobicdrules;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %This procedure is called by Jacobisd when the on rounded switch is
 %used. It evaluates the value of Jacobisd numerically.
 
-procedure Num_Jacobisd(u,m);
+procedure num_jacobisd(u,m);
 
-   Num_Jacobisn(u,m) / Num_Jacobidn(u,m);
+   num_jacobisn(u,m) / num_jacobidn(u,m);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobisd definition
 %===================
 
-operator Jacobisd;
+operator jacobisd;
 
 %This rule list includes all the special cases of the Jacobisd
 %function.
 
-JacobiSDrules :=
+jacobisdrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        Jacobisd(~u,0)   => sin u,
-        Jacobisd(~u,1)   => sinh u,
-        Jacobisd(~u,-~m) => Jacobisd(u,m),
+        jacobisd(~u,0)   => sin u,
+        jacobisd(~u,1)   => sinh u,
+        jacobisd(~u,-~m) => jacobisd(u,m),
 %Change of Argument
 %------------------
-        Jacobisd(-~u,~m)   => -Jacobisd(u,m),
+        jacobisd(-~u,~m)   => -jacobisd(u,m),
 
-        Jacobisd((~u+EllipticK(~m)),~m) =>((1-m)^(-1/2))*Jacobicn(u,m),
-        Jacobisd((~u-EllipticK(~m)),~m) => -((1-m)^(-1/2))
-                                                        *Jacobicn(u,m),
+        jacobisd((~u+elliptick(~m)),~m) =>((1-m)^(-1/2))*jacobicn(u,m),
+        jacobisd((~u-elliptick(~m)),~m) => -((1-m)^(-1/2))
+                                                        *jacobicn(u,m),
 
-        Jacobisd((EllipticK(~m)-~u),~m) =>((1-m)^(-1/2))*Jacobicn(u,m),
+        jacobisd((elliptick(~m)-~u),~m) =>((1-m)^(-1/2))*jacobicn(u,m),
 
-        Jacobisd((~u+2*EllipticK(~m)),~m) => -Jacobisd(u,m),
-        Jacobisd((~u-2*EllipticK(~m)),~m) => -Jacobisd(u,m),
-        Jacobisd((2*EllipticK(~m)-~u),~m) =>  Jacobisd(u,m),
+        jacobisd((~u+2*elliptick(~m)),~m) => -jacobisd(u,m),
+        jacobisd((~u-2*elliptick(~m)),~m) => -jacobisd(u,m),
+        jacobisd((2*elliptick(~m)-~u),~m) =>  jacobisd(u,m),
 
-        Jacobisd((~u+i*EllipticK!'(~m)),~m) =>
-                                             i*(m^(-1/2))*Jacobinc(u,m),
+        jacobisd((~u+i*elliptick!'(~m)),~m) =>
+                                             i*(m^(-1/2))*jacobinc(u,m),
 
-        Jacobisd((~u+2*i*EllipticK!'(~m)),~m) => -Jacobisd(u,m),
+        jacobisd((~u+2*i*elliptick!'(~m)),~m) => -jacobisd(u,m),
 
-        Jacobisd((~u+EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
-                          -i*((1-m)^(-1/2))*(m^(-1/2))*Jacobids(u,m),
+        jacobisd((~u+elliptick(~m)+i*elliptick!'(~m)),~m) =>
+                          -i*((1-m)^(-1/2))*(m^(-1/2))*jacobids(u,m),
 
-        Jacobisd((~u+2*EllipticK(~m)+2*i*EllipticK!'(~m)),~m) =>
-                                                         Jacobisd(u,m),
+        jacobisd((~u+2*elliptick(~m)+2*i*elliptick!'(~m)),~m) =>
+                                                         jacobisd(u,m),
 %Special Arguments
 %-----------------
-        Jacobisd(0,~m) => 0,
+        jacobisd(0,~m) => 0,
 
-        Jacobisd((1/2)*EllipticK(~m),~m) =>
+        jacobisd((1/2)*elliptick(~m),~m) =>
                          1 / (((1+((1-m)^(1/2)))^(1/2))*((1-m)^(1/4))),
 
-        Jacobisd(EllipticK(~m),~m) => 1/((1-m)^(1/2)),
+        jacobisd(elliptick(~m),~m) => 1/((1-m)^(1/2)),
 
-        Jacobisd((1/2)*i*EllipticK!'(~m),~m) =>
+        jacobisd((1/2)*i*elliptick!'(~m),~m) =>
                                     i*(m^(-1/4))/((1+(m^(1/2)))^(1/2)),
 
-        Jacobisd((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
+        jacobisd((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m) =>
 
-                Jacobisn((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m)
-                / Jacobidn((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m),
+                jacobisn((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m)
+                / jacobidn((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m),
 
-        Jacobisd(EllipticK(~m)+(1/2)*i*EllipticK!'(~m),~m) =>
+        jacobisd(elliptick(~m)+(1/2)*i*elliptick!'(~m),~m) =>
                                         (m^(-1/4))/(1-(m^(1/2))^(1/2)),
 
-        Jacobisd(i*EllipticK!'(~m),~m) =>
-                                        Jacobisn(i*EllipticK!'(~m),~m)
-                                      / Jacobidn(i*EllipticK!'(~m),~m),
+        jacobisd(i*elliptick!'(~m),~m) =>
+                                        jacobisn(i*elliptick!'(~m),~m)
+                                      / jacobidn(i*elliptick!'(~m),~m),
 
-        Jacobisd((1/2)*EllipticK(~m)+i*EllipticK!'(~m),~m) =>
+        jacobisd((1/2)*elliptick(~m)+i*elliptick!'(~m),~m) =>
                          ((1-((1-m)^(1/2)))^(-1/2))/(-i*((1-m)^(1/4))),
 
-        Jacobisd(EllipticK(~m)+i*EllipticK!'(~m),~m) => infinity,
+        jacobisd(elliptick(~m)+i*elliptick!'(~m),~m) => infinity,
 
 %Derivatives, Integral
 %---------------------
-        df(Jacobisd(~u,~m),~u) => Jacobicd(u,m)*Jacobind(u,m),
-        df(Jacobisd(~u,~m),~m) =>
-                                ( Jacobidn(u,m)*df(Jacobisn(u,m),m)
-                                - Jacobisn(u,m)*df(Jacobidn(u,m),m))
-                                / ((Jacobidn(u,m))^2),
+        df(jacobisd(~u,~m),~u) => jacobicd(u,m)*jacobind(u,m),
+        df(jacobisd(~u,~m),~m) =>
+                                ( jacobidn(u,m)*df(jacobisn(u,m),m)
+                                - jacobisn(u,m)*df(jacobidn(u,m),m))
+                                / ((jacobidn(u,m))^2),
 
-        int(Jacobisd(~u,~m),~u) =>
-                   (m*(1-m))^(-1/2)*asin(-(m^(1/2))*(Jacobicd(u,m))),
+        int(jacobisd(~u,~m),~u) =>
+                   (m*(1-m))^(-1/2)*asin(-(m^(1/2))*(jacobicd(u,m))),
 
 %Calls Num_Jacobisd when rounded switch is on.
 %---------------------------------------------
-        Jacobisd(~u,~m) => Num_Elliptic(Num_Jacobisd, u, m)
+        jacobisd(~u,~m) => num_elliptic(num_jacobisd, u, m)
                            when lisp !*rounded and numberp u
                            and numberp m
 }$
-let JacobiSDrules;
+let jacobisdrules;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %This procedure is called by Jacobind when the on rounded switch is
 %used. It evaluates the value of Jacobind numerically.
 
-procedure Num_Jacobind(u,m);
+procedure num_jacobind(u,m);
 
-        1 / Num_Jacobidn(u,m);
+        1 / num_jacobidn(u,m);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobind definition
 %===================
 
-operator Jacobind;
+operator jacobind;
 
 %This rule list includes all the special cases of the Jacobind
 %function.
 
-JacobiNDrules :=
+jacobindrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        Jacobind(~u,0)   => 1,
-        Jacobind(~u,1)   => cosh u,
-        Jacobind(~u,-~m) => Jacobind(u,m),
+        jacobind(~u,0)   => 1,
+        jacobind(~u,1)   => cosh u,
+        jacobind(~u,-~m) => jacobind(u,m),
 %Change of Argument
 %------------------
-        Jacobind(-~u,~m)   => Jacobind(u,m),
+        jacobind(-~u,~m)   => jacobind(u,m),
 
-        Jacobind((~u+EllipticK(~m)),~m) =>((1-m)^(-1/2))*Jacobidn(u,m),
-        Jacobind((~u-EllipticK(~m)),~m) =>((1-m)^(-1/2))*Jacobidn(u,m),
-        Jacobind((EllipticK(~m)-~u),~m) =>((1-m)^(-1/2))*Jacobidn(u,m),
+        jacobind((~u+elliptick(~m)),~m) =>((1-m)^(-1/2))*jacobidn(u,m),
+        jacobind((~u-elliptick(~m)),~m) =>((1-m)^(-1/2))*jacobidn(u,m),
+        jacobind((elliptick(~m)-~u),~m) =>((1-m)^(-1/2))*jacobidn(u,m),
 
-        Jacobind((~u+2*EllipticK(~m)),~m) => Jacobind(u,m),
-        Jacobind((~u-2*EllipticK(~m)),~m) => Jacobind(u,m),
-        Jacobind((2*EllipticK(~m)-~u),~m) => Jacobind(u,m),
+        jacobind((~u+2*elliptick(~m)),~m) => jacobind(u,m),
+        jacobind((~u-2*elliptick(~m)),~m) => jacobind(u,m),
+        jacobind((2*elliptick(~m)-~u),~m) => jacobind(u,m),
 
-        Jacobind((~u+i*EllipticK!'(~m)),~m)   => i*Jacobisc(u,m),
-        Jacobind((~u+2*i*EllipticK!'(~m)),~m) => -Jacobind(u,m),
+        jacobind((~u+i*elliptick!'(~m)),~m)   => i*jacobisc(u,m),
+        jacobind((~u+2*i*elliptick!'(~m)),~m) => -jacobind(u,m),
 
-        Jacobind((~u+EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
-                                       -i*((1-m)^(-1/2))*Jacobics(u,m),
+        jacobind((~u+elliptick(~m)+i*elliptick!'(~m)),~m) =>
+                                       -i*((1-m)^(-1/2))*jacobics(u,m),
 
-        Jacobind((~u+2*EllipticK(~m)+2*i*EllipticK!'(~m)),~m) =>
-                                                        -Jacobind(u,m),
+        jacobind((~u+2*elliptick(~m)+2*i*elliptick!'(~m)),~m) =>
+                                                        -jacobind(u,m),
 %Special Arguments
 %-----------------
-        Jacobind(0,~m) => 1,
+        jacobind(0,~m) => 1,
 
-        Jacobind((1/2)*EllipticK(~m),~m) => 1 / ((1-m)^(1/4)),
+        jacobind((1/2)*elliptick(~m),~m) => 1 / ((1-m)^(1/4)),
 
-        Jacobind(EllipticK(~m),~m) => 1 / ((1-m)^(1/2)),
+        jacobind(elliptick(~m),~m) => 1 / ((1-m)^(1/2)),
 
-        Jacobind((1/2)*i*EllipticK!'(~m),~m) =>
+        jacobind((1/2)*i*elliptick!'(~m),~m) =>
                                                1/((1+(m^(1/2)))^(1/2)),
 
-        Jacobind((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
+        jacobind((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m) =>
 
-                1/Jacobidn((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m),
+                1/jacobidn((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m),
 
-        Jacobind(EllipticK(~m)+(1/2)*i*EllipticK!'(~m),~m) =>
+        jacobind(elliptick(~m)+(1/2)*i*elliptick!'(~m),~m) =>
                                                1/((1-(m^(1/2)))^(1/2)),
 
-        Jacobind(i*EllipticK!'(~m),~m) =>
-                                    1 / Jacobidn(i*EllipticK!'(~m),~m),
+        jacobind(i*elliptick!'(~m),~m) =>
+                                    1 / jacobidn(i*elliptick!'(~m),~m),
 
-        Jacobind((1/2)*EllipticK(~m)+i*EllipticK!'(~m),~m) =>
+        jacobind((1/2)*elliptick(~m)+i*elliptick!'(~m),~m) =>
                                                 1 / (-i*((1-m)^(1/4))),
 
-        Jacobind(EllipticK(~m)+i*EllipticK!'(~m),~m) => infinity,
+        jacobind(elliptick(~m)+i*elliptick!'(~m),~m) => infinity,
 
 %Derivatives, Integral
 %---------------------
-        df(Jacobind(~u,~m),~u) => m*Jacobisd(u,m)*Jacobicd(u,m),
-        df(Jacobind(~u,~m),~m) =>
-                            -(df(Jacobidn(u,m),m))/((Jacobidn(u,m))^2),
+        df(jacobind(~u,~m),~u) => m*jacobisd(u,m)*jacobicd(u,m),
+        df(jacobind(~u,~m),~m) =>
+                            -(df(jacobidn(u,m),m))/((jacobidn(u,m))^2),
 
-        int(Jacobind(~u,~m),~u) => (1-m)^(-1/2)*(acos(Jacobicd(u,m))),
+        int(jacobind(~u,~m),~u) => (1-m)^(-1/2)*(acos(jacobicd(u,m))),
 
 %Calls Num_Jacobind when rounded switch is on.
 %---------------------------------------------
-        Jacobind(~u,~m) => Num_Elliptic(Num_Jacobind, u, m)
+        jacobind(~u,~m) => num_elliptic(num_jacobind, u, m)
                            when lisp !*rounded and numberp u
                            and numberp m
 }$
-let JacobiNDrules;
+let jacobindrules;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %This procedure is called by Jacobidc when the on rounded switch is
 %used. It evaluates the value of Jacobidc numerically.
 
-procedure Num_Jacobidc(u,m);
+procedure num_jacobidc(u,m);
 
-        Num_Jacobidn(u,m) / Num_Jacobicn(u,m);
+        num_jacobidn(u,m) / num_jacobicn(u,m);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobidc definition
 %===================
 
-operator Jacobidc;
+operator jacobidc;
 
 %This rule list includes all the special cases of the Jacobidc
 %function.
 
-JacobiDCrules :=
+jacobidcrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        Jacobidc(~u,0)   => sec u,
-        Jacobidc(~u,1)   => 1,
-        Jacobidc(~u,-~m) => Jacobidc(u,m),
+        jacobidc(~u,0)   => sec u,
+        jacobidc(~u,1)   => 1,
+        jacobidc(~u,-~m) => jacobidc(u,m),
 %Change of Argument
 %------------------
-        Jacobidc(-~u,~m)   => Jacobidc(u,m),
+        jacobidc(-~u,~m)   => jacobidc(u,m),
 
-        Jacobidc((~u+EllipticK(~m)),~m) => -Jacobins(u,m),
-        Jacobidc((~u-EllipticK(~m)),~m) =>  Jacobidns(u,m),
-        Jacobidc((EllipticK(~m)-~u),~m) =>  Jacobins(u,m),
-        Jacobidc((~u+2*EllipticK(~m)),~m)   => -Jacobidc(u,m),
-        Jacobidc((~u-2*EllipticK(~m)),~m)   => -Jacobidc(u,m),
-        Jacobidc((2*EllipticK(~m)-~u),~m)   => -Jacobidc(u,m),
-        Jacobidc((~u+i*EllipticK!'(~m)),~m) => (m^(1/2))*Jacobicd(u,m),
-        Jacobidc((~u+2*i*EllipticK!'(~m)),~m) => Jacobidc(u,m),
+        jacobidc((~u+elliptick(~m)),~m) => -jacobins(u,m),
+        jacobidc((~u-elliptick(~m)),~m) =>  jacobidns(u,m),
+        jacobidc((elliptick(~m)-~u),~m) =>  jacobins(u,m),
+        jacobidc((~u+2*elliptick(~m)),~m)   => -jacobidc(u,m),
+        jacobidc((~u-2*elliptick(~m)),~m)   => -jacobidc(u,m),
+        jacobidc((2*elliptick(~m)-~u),~m)   => -jacobidc(u,m),
+        jacobidc((~u+i*elliptick!'(~m)),~m) => (m^(1/2))*jacobicd(u,m),
+        jacobidc((~u+2*i*elliptick!'(~m)),~m) => jacobidc(u,m),
 
-        Jacobidc((~u+EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
-                                               (m^(1/2))*Jacobisn(u,m),
+        jacobidc((~u+elliptick(~m)+i*elliptick!'(~m)),~m) =>
+                                               (m^(1/2))*jacobisn(u,m),
 
-        Jacobidc((~u+2*EllipticK(~m)+2*i*EllipticK!'(~m)),~m) =>
-                                                        -Jacobidc(u,m),
+        jacobidc((~u+2*elliptick(~m)+2*i*elliptick!'(~m)),~m) =>
+                                                        -jacobidc(u,m),
 %Special Arguments
 %-----------------
-        Jacobidc(0,~m) => 1,
+        jacobidc(0,~m) => 1,
 
-        Jacobidc((1/2)*EllipticK(~m),~m) => (1+((1-m)^(1/2)))^(1/2),
+        jacobidc((1/2)*elliptick(~m),~m) => (1+((1-m)^(1/2)))^(1/2),
 
-        Jacobidc(EllipticK(~m),~m) => infinity,
+        jacobidc(elliptick(~m),~m) => infinity,
 
-        Jacobidc((1/2)*i*EllipticK!'(~m),~m) => m^(1/4),
+        jacobidc((1/2)*i*elliptick!'(~m),~m) => m^(1/4),
 
-        Jacobidc((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
-                Jacobidn((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m)
-                / Jacobicn((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m),
+        jacobidc((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m) =>
+                jacobidn((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m)
+                / jacobicn((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m),
 
-        Jacobidc(EllipticK(~m)+(1/2)*i*EllipticK!'(~m),~m) =>
+        jacobidc(elliptick(~m)+(1/2)*i*elliptick!'(~m),~m) =>
                                                            i*(m^(1/4)),
 
-        Jacobidc(i*EllipticK!'(~m),~m) =>
-                                        Jacobidn(i*EllipticK!'(~m),~m)
-                                      / Jacobicn(i*EllipticK!'(~m),~m),
+        jacobidc(i*elliptick!'(~m),~m) =>
+                                        jacobidn(i*elliptick!'(~m),~m)
+                                      / jacobicn(i*elliptick!'(~m),~m),
 
-        Jacobidc((1/2)*EllipticK(~m)+i*EllipticK!'(~m),~m) =>
+        jacobidc((1/2)*elliptick(~m)+i*elliptick!'(~m),~m) =>
                                                (1-((1-m)^(1/2)))^(1/2),
 
-        Jacobidc(EllipticK(~m)+i*EllipticK!'(~m),~m) => 0,
+        jacobidc(elliptick(~m)+i*elliptick!'(~m),~m) => 0,
 
 %Derivatives, Integral
 %---------------------
-        df(Jacobidc(~u,~m),~u) => (1-m)*Jacobisc(u,m)*Jacobinc(u,m),
-        df(Jacobidc(~u,~m),~m) =>
-                                (Jacobicn(u,m)*df(Jacobidn(u,m),m)
-                                - Jacobidn(u,m)*df(Jacobicn(u,m),m))
-                                / ((Jacobicn(u,m))^2),
+        df(jacobidc(~u,~m),~u) => (1-m)*jacobisc(u,m)*jacobinc(u,m),
+        df(jacobidc(~u,~m),~m) =>
+                                (jacobicn(u,m)*df(jacobidn(u,m),m)
+                                - jacobidn(u,m)*df(jacobicn(u,m),m))
+                                / ((jacobicn(u,m))^2),
 
-        int(Jacobidc(~u,~m),~u) => ln(Jacobinc(u,m) + Jacobisc(u,m)),
+        int(jacobidc(~u,~m),~u) => ln(jacobinc(u,m) + jacobisc(u,m)),
 
 %Calls Num_Jacobidc when rounded switch is on.
 %---------------------------------------------
-        Jacobidc(~u,~m) => Num_Elliptic(Num_Jacobidc, u, m)
+        jacobidc(~u,~m) => num_elliptic(num_jacobidc, u, m)
                            when lisp !*rounded and numberp u
                            and numberp m
 }$
-let JacobiDCrules;
+let jacobidcrules;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %This procedure is called by Jacobinc when the on rounded switch is
 %used. It evaluates the value of Jacobinc numerically.
 
-procedure Num_Jacobinc(u,m);
+procedure num_jacobinc(u,m);
 
-        1 / Num_Jacobicn(u,m);
+        1 / num_jacobicn(u,m);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobinc definition
 %===================
 
-operator Jacobinc;
+operator jacobinc;
 
 %This rule list includes all the special cases of the Jacobinc
 %function.
 
-JacobiNCrules :=
+jacobincrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        Jacobinc(~u,0)   => sec u,
-        Jacobinc(~u,1)   => cosh u,
-        Jacobinc(~u,-~m) => Jacobinc(u,m),
+        jacobinc(~u,0)   => sec u,
+        jacobinc(~u,1)   => cosh u,
+        jacobinc(~u,-~m) => jacobinc(u,m),
 %Change of Argument
 %------------------
-        Jacobinc(-~u,~m)   => Jacobinc(u,m),
+        jacobinc(-~u,~m)   => jacobinc(u,m),
 
-        Jacobinc((~u+EllipticK(~m)),~m) => -((1-m)^(-1/2))
-                                                        *Jacobids(u,m),
+        jacobinc((~u+elliptick(~m)),~m) => -((1-m)^(-1/2))
+                                                        *jacobids(u,m),
 
-        Jacobinc((~u-EllipticK(~m)),~m) =>((1-m)^(-1/2))*Jacobids(u,m),
-        Jacobinc((EllipticK(~m)-~u),~m) =>((1-m)^(-1/2))*Jacobids(u,m),
+        jacobinc((~u-elliptick(~m)),~m) =>((1-m)^(-1/2))*jacobids(u,m),
+        jacobinc((elliptick(~m)-~u),~m) =>((1-m)^(-1/2))*jacobids(u,m),
 
-        Jacobinc((~u+2*EllipticK(~m)),~m) => -Jacobinc(u,m),
-        Jacobinc((~u-2*EllipticK(~m)),~m) => -Jacobinc(u,m),
-        Jacobinc((2*EllipticK(~m)-~u),~m) => -Jacobinc(u,m),
-        Jacobinc((~u+i*EllipticK!'(~m)),~m) =>
-                                             i*(m^(1/2))*Jacobisd(u,m),
+        jacobinc((~u+2*elliptick(~m)),~m) => -jacobinc(u,m),
+        jacobinc((~u-2*elliptick(~m)),~m) => -jacobinc(u,m),
+        jacobinc((2*elliptick(~m)-~u),~m) => -jacobinc(u,m),
+        jacobinc((~u+i*elliptick!'(~m)),~m) =>
+                                             i*(m^(1/2))*jacobisd(u,m),
 
-        Jacobinc((~u+2*i*EllipticK!'(~m)),~m) => -Jacobinc(u,m),
+        jacobinc((~u+2*i*elliptick!'(~m)),~m) => -jacobinc(u,m),
 
-        Jacobinc((~u+EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
-                            i*((1-m)^(-1/2))*(m^(1/2))*Jacobicn(u,m),
+        jacobinc((~u+elliptick(~m)+i*elliptick!'(~m)),~m) =>
+                            i*((1-m)^(-1/2))*(m^(1/2))*jacobicn(u,m),
 
-        Jacobinc((~u+2*EllipticK(~m)+2*i*EllipticK!'(~m)),~m) =>
-                                                         Jacobinc(u,m),
+        jacobinc((~u+2*elliptick(~m)+2*i*elliptick!'(~m)),~m) =>
+                                                         jacobinc(u,m),
 %Special Arguments
 %-----------------
-        Jacobinc(0,~m) => 1,
+        jacobinc(0,~m) => 1,
 
-        Jacobinc((1/2)*EllipticK(~m),~m) => ((1+((1-m)^(1/2)))^(1/2))
+        jacobinc((1/2)*elliptick(~m),~m) => ((1+((1-m)^(1/2)))^(1/2))
                                                         /((1-m)^(1/4)),
 
-        Jacobinc(EllipticK(~m),~m) => infinity,
+        jacobinc(elliptick(~m),~m) => infinity,
 
-        Jacobinc((1/2)*i*EllipticK!'(~m),~m) =>
+        jacobinc((1/2)*i*elliptick!'(~m),~m) =>
                                        (m^(1/4))/((1+(m^(1/2)))^(1/2)),
 
-        Jacobinc((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
+        jacobinc((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m) =>
                                              ((4*m/(1-m))^(1/4))/(1-i),
 
-        Jacobinc(EllipticK(~m)+(1/2)*i*EllipticK!'(~m),~m) =>
-                1 / Jacobicn(EllipticK(~m)+(1/2)*i*EllipticK!'(~m),~m),
+        jacobinc(elliptick(~m)+(1/2)*i*elliptick!'(~m),~m) =>
+                1 / jacobicn(elliptick(~m)+(1/2)*i*elliptick!'(~m),~m),
 
-        Jacobinc(i*EllipticK!'(~m),~m) =>
-                                    1 / Jacobicn(i*EllipticK!'(~m),~m),
+        jacobinc(i*elliptick!'(~m),~m) =>
+                                    1 / jacobicn(i*elliptick!'(~m),~m),
 
-        Jacobinc((1/2)*EllipticK(~m)+i*EllipticK!'(~m),~m) =>
-                1 / Jacobicn((1/2)*EllipticK(~m)+i*EllipticK!'(~m),~m),
+        jacobinc((1/2)*elliptick(~m)+i*elliptick!'(~m),~m) =>
+                1 / jacobicn((1/2)*elliptick(~m)+i*elliptick!'(~m),~m),
 
-        Jacobinc(EllipticK(~m)+i*EllipticK!'(~m),~m) =>
+        jacobinc(elliptick(~m)+i*elliptick!'(~m),~m) =>
                                                    i*((m/(1-m))^(1/2)),
 %Derivatives, Integral
 %---------------------
-        df(Jacobinc(~u,~m),~u) => Jacobisc(u,m)*Jacobidc(u,m),
-        df(Jacobinc(~u,~m),~m) =>
-                            -(df(Jacobicn(u,m),m))/((Jacobicn(u,m))^2),
+        df(jacobinc(~u,~m),~u) => jacobisc(u,m)*jacobidc(u,m),
+        df(jacobinc(~u,~m),~m) =>
+                            -(df(jacobicn(u,m),m))/((jacobicn(u,m))^2),
 
-        int(Jacobinc(~u,~m),~u) =>
+        int(jacobinc(~u,~m),~u) =>
 
-         ((1-m)^(-1/2))*ln(Jacobidc(u,m)+((1-m)^(1/2))*Jacobisc(u,m)),
+         ((1-m)^(-1/2))*ln(jacobidc(u,m)+((1-m)^(1/2))*jacobisc(u,m)),
 
 %Calls Num_Jacobinc when rounded switch is on.
 %---------------------------------------------
-        Jacobinc(~u,~m) => Num_Elliptic(Num_Jacobinc, u, m)
+        jacobinc(~u,~m) => num_elliptic(num_jacobinc, u, m)
                            when lisp !*rounded and numberp u
                            and numberp m
 }$
-let JacobiNCrules;
+let jacobincrules;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %This procedure is called by Jacobisc when the on rounded switch is
 %used. It evaluates the value of Jacobisc numerically.
 
-procedure Num_Jacobisc(u,m);
+procedure num_jacobisc(u,m);
 
-        Num_Jacobisn(u,m) / Num_Jacobicn(u,m);
+        num_jacobisn(u,m) / num_jacobicn(u,m);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobisc definition
 %===================
 
-operator Jacobisc;
+operator jacobisc;
 
 %This rule list includes all the special cases of the Jacobisc
 %function.
 
-JacobiSCrules :=
+jacobiscrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        Jacobisc(~u,0)   => tan u,
-        Jacobisc(~u,1)   => sinh u,
-        Jacobisc(~u,-~m) => Jacobisc(u,m),
+        jacobisc(~u,0)   => tan u,
+        jacobisc(~u,1)   => sinh u,
+        jacobisc(~u,-~m) => jacobisc(u,m),
 %Change of Argument
 %------------------
-        Jacobisc(-~u,~m)   => -Jacobisc(u,m),
+        jacobisc(-~u,~m)   => -jacobisc(u,m),
 
-        Jacobisc((~u+EllipticK(~m)),~m) => -((1-m)^(-1/2))
-                                                        *Jacobics(u,m),
+        jacobisc((~u+elliptick(~m)),~m) => -((1-m)^(-1/2))
+                                                        *jacobics(u,m),
 
-        Jacobisc((~u-EllipticK(~m)),~m) => -((1-m)^(-1/2))
-                                                        *Jacobics(u,m),
+        jacobisc((~u-elliptick(~m)),~m) => -((1-m)^(-1/2))
+                                                        *jacobics(u,m),
 
-        Jacobisc((EllipticK(~m)-~u),~m) =>((1-m)^(-1/2))*Jacobics(u,m),
+        jacobisc((elliptick(~m)-~u),~m) =>((1-m)^(-1/2))*jacobics(u,m),
 
-        Jacobisc((~u+2*EllipticK(~m)),~m) =>  Jacobisc(u,m),
-        Jacobisc((~u-2*EllipticK(~m)),~m) =>  Jacobisc(u,m),
-        Jacobisc((2*EllipticK(~m)-~u),~m) => -Jacobisc(u,m),
-        Jacobisc((~u+i*EllipticK!'(~m)),~m)   =>i*Jacobind(u,m),
-        Jacobisc((~u+2*i*EllipticK!'(~m)),~m) => -Jacobisc(u,m),
+        jacobisc((~u+2*elliptick(~m)),~m) =>  jacobisc(u,m),
+        jacobisc((~u-2*elliptick(~m)),~m) =>  jacobisc(u,m),
+        jacobisc((2*elliptick(~m)-~u),~m) => -jacobisc(u,m),
+        jacobisc((~u+i*elliptick!'(~m)),~m)   =>i*jacobind(u,m),
+        jacobisc((~u+2*i*elliptick!'(~m)),~m) => -jacobisc(u,m),
 
-        Jacobisc((~u+EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
-                                        i*((1-m)^(-1/2))*Jacobidn(u,m),
+        jacobisc((~u+elliptick(~m)+i*elliptick!'(~m)),~m) =>
+                                        i*((1-m)^(-1/2))*jacobidn(u,m),
 
-        Jacobisc((~u+2*EllipticK(~m)+2*i*EllipticK!'(~m)),~m) =>
-                                                        -Jacobisc(u,m),
+        jacobisc((~u+2*elliptick(~m)+2*i*elliptick!'(~m)),~m) =>
+                                                        -jacobisc(u,m),
 %Special Arguments
 %-----------------
-        Jacobisc(0,~m) => 0,
+        jacobisc(0,~m) => 0,
 
-        Jacobisc((1/2)*EllipticK(~m),~m) => 1 / ((1-m)^(1/4)),
+        jacobisc((1/2)*elliptick(~m),~m) => 1 / ((1-m)^(1/4)),
 
-        Jacobisc(EllipticK(~m),~m) => infinity,
+        jacobisc(elliptick(~m),~m) => infinity,
 
-        Jacobisc((1/2)*i*EllipticK!'(~m),~m) =>
+        jacobisc((1/2)*i*elliptick!'(~m),~m) =>
                                                i/((1+(m^(1/2)))^(1/2)),
 
-        Jacobisc((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
+        jacobisc((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m) =>
 
-                Jacobisn((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m)
-                / Jacobicn((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m),
+                jacobisn((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m)
+                / jacobicn((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m),
 
-        Jacobisc(EllipticK(~m)+(1/2)*i*EllipticK!'(~m),~m) =>
+        jacobisc(elliptick(~m)+(1/2)*i*elliptick!'(~m),~m) =>
                                                i/((1-(m^(1/2)))^(1/2)),
 
-        Jacobisc(i*EllipticK!'(~m),~m) =>
-                                      Jacobisn(i*EllipticK!'(~m),~m)
-                                      / Jacobicn(i*EllipticK!'(~m),~m),
+        jacobisc(i*elliptick!'(~m),~m) =>
+                                      jacobisn(i*elliptick!'(~m),~m)
+                                      / jacobicn(i*elliptick!'(~m),~m),
 
-        Jacobisc((1/2)*EllipticK(~m)+i*EllipticK!'(~m),~m) =>
+        jacobisc((1/2)*elliptick(~m)+i*elliptick!'(~m),~m) =>
 
-                  Jacobisn((1/2)*EllipticK(~m)+i*EllipticK!'(~m),~m)
-                  / Jacobicn((1/2)*EllipticK(~m)+i*EllipticK!'(~m),~m),
+                  jacobisn((1/2)*elliptick(~m)+i*elliptick!'(~m),~m)
+                  / jacobicn((1/2)*elliptick(~m)+i*elliptick!'(~m),~m),
 
-        Jacobisc(EllipticK(~m)+i*EllipticK!'(~m),~m) =>i/((1-m)^(1/2)),
+        jacobisc(elliptick(~m)+i*elliptick!'(~m),~m) =>i/((1-m)^(1/2)),
 
 
 %Derivatives, Integral
 %---------------------
-        df(Jacobisc(~u,~m),~u) => Jacobidc(u,m)*Jacobinc(u,m),
-        df(Jacobisc(~u,~m),~m) =>
-                                ( Jacobicn(u,m)*df(Jacobisn(u,m),m)
-                                - Jacobisn(u,m)*df(Jacobicn(u,m),m))
-                                /((Jacobicn(u,m))^2),
+        df(jacobisc(~u,~m),~u) => jacobidc(u,m)*jacobinc(u,m),
+        df(jacobisc(~u,~m),~m) =>
+                                ( jacobicn(u,m)*df(jacobisn(u,m),m)
+                                - jacobisn(u,m)*df(jacobicn(u,m),m))
+                                /((jacobicn(u,m))^2),
 
-        int(Jacobisc(~u,~m),u) =>
+        int(jacobisc(~u,~m),u) =>
 
-          ((1-m)^(-1/2))*ln(Jacobidc(u,m)+((1-m)^(1/2))*Jacobinc(u,m)),
+          ((1-m)^(-1/2))*ln(jacobidc(u,m)+((1-m)^(1/2))*jacobinc(u,m)),
 
 %Calls Num_Jacobisc when rounded switch is on.
 %---------------------------------------------
-        Jacobisc(~u,~m) => Num_Elliptic(Num_Jacobisc, u, m)
+        jacobisc(~u,~m) => num_elliptic(num_jacobisc, u, m)
                            when lisp !*rounded and numberp u
                            and numberp m
 }$
-let JacobiSCrules;
+let jacobiscrules;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %This procedure is called by Jacobins when the on rounded switch is
 %used. It evaluates the value of Jacobins numerically.
 
-procedure Num_Jacobins(u,m);
+procedure num_jacobins(u,m);
 
-        1 / Num_Jacobisn(u,m);
+        1 / num_jacobisn(u,m);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobins definition
 %===================
 
-operator Jacobins;
+operator jacobins;
 
 %This rule list includes all the special cases of the Jacobins
 %function.
 
-JacobiNSrules :=
+jacobinsrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        Jacobins(~u,0)   => csc u,
-        Jacobins(~u,1)   => coth u,
-        Jacobins(~u,-~m) => Jacobins(u,m),
+        jacobins(~u,0)   => csc u,
+        jacobins(~u,1)   => coth u,
+        jacobins(~u,-~m) => jacobins(u,m),
 %Change of Argument
 %------------------
-        Jacobins(-~u,~m)   => -Jacobins(u,m),
+        jacobins(-~u,~m)   => -jacobins(u,m),
 
-        Jacobins((~u+EllipticK(~m)),~m)   =>  Jacobidc(u,m),
-        Jacobins((~u-EllipticK(~m)),~m)   => -Jacobidc(u,m),
-        Jacobins((EllipticK(~m)-~u),~m)   =>  Jacobidc(u,m),
-        Jacobins((~u+2*EllipticK(~m)),~m) => -Jacobins(u,m),
-        Jacobins((~u-2*EllipticK(~m)),~m) => -Jacobins(u,m),
-        Jacobins((2*EllipticK(~m)-~u),~m) =>  Jacobins(u,m),
-        Jacobins((~u+i*EllipticK!'(~m)),~m) => (m^(1/2))*Jacobisn(u,m),
-        Jacobins((~u+2*i*EllipticK!'(~m)),~m) => Jacobins(u,m),
-        Jacobins((~u+EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
-                                               (m^(1/2))*Jacobicd(u,m),
+        jacobins((~u+elliptick(~m)),~m)   =>  jacobidc(u,m),
+        jacobins((~u-elliptick(~m)),~m)   => -jacobidc(u,m),
+        jacobins((elliptick(~m)-~u),~m)   =>  jacobidc(u,m),
+        jacobins((~u+2*elliptick(~m)),~m) => -jacobins(u,m),
+        jacobins((~u-2*elliptick(~m)),~m) => -jacobins(u,m),
+        jacobins((2*elliptick(~m)-~u),~m) =>  jacobins(u,m),
+        jacobins((~u+i*elliptick!'(~m)),~m) => (m^(1/2))*jacobisn(u,m),
+        jacobins((~u+2*i*elliptick!'(~m)),~m) => jacobins(u,m),
+        jacobins((~u+elliptick(~m)+i*elliptick!'(~m)),~m) =>
+                                               (m^(1/2))*jacobicd(u,m),
 
-        Jacobins((~u+2*EllipticK(~m)+2*i*EllipticK!'(~m)),~m) =>
-                                                        -Jacobins(u,m),
+        jacobins((~u+2*elliptick(~m)+2*i*elliptick!'(~m)),~m) =>
+                                                        -jacobins(u,m),
 %Special Arguments
 %-----------------
-        Jacobins(0,~m) => infinity,
+        jacobins(0,~m) => infinity,
 
-        Jacobins((1/2)*EllipticK(~m),~m) => (1+((1-m)^(1/2)))^(1/2),
+        jacobins((1/2)*elliptick(~m),~m) => (1+((1-m)^(1/2)))^(1/2),
 
-        Jacobins(EllipticK(~m),~m) => 1,
+        jacobins(elliptick(~m),~m) => 1,
 
-        Jacobins((1/2)*i*EllipticK!'(~m),~m) => -i*(m^(1/4)),
+        jacobins((1/2)*i*elliptick!'(~m),~m) => -i*(m^(1/4)),
 
-        Jacobins((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
+        jacobins((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m) =>
 
-                1/Jacobisn((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m),
+                1/jacobisn((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m),
 
-        Jacobins(EllipticK(~m)+(1/2)*i*EllipticK!'(~m),~m) =>(m^(1/4)),
+        jacobins(elliptick(~m)+(1/2)*i*elliptick!'(~m),~m) =>(m^(1/4)),
 
-        Jacobins(i*EllipticK!'(~m),~m) =>
+        jacobins(i*elliptick!'(~m),~m) =>
 
-                                      1/Jacobisn(i*EllipticK!'(~m),~m),
+                                      1/jacobisn(i*elliptick!'(~m),~m),
 
-        Jacobins((1/2)*EllipticK(~m)+i*EllipticK!'(~m),~m) =>
+        jacobins((1/2)*elliptick(~m)+i*elliptick!'(~m),~m) =>
 
                                                (1-((1-m)^(1/2)))^(1/2),
 
-        Jacobins(EllipticK(~m)+i*EllipticK!'(~m),~m) => m^(1/2),
+        jacobins(elliptick(~m)+i*elliptick!'(~m),~m) => m^(1/2),
 %Derivatives, Integral
 %---------------------
-        df(Jacobins(~u,~m),~u) => -Jacobids(u,m)*Jacobics(u,m),
-        df(Jacobins(~u,~m),~m) =>
-                            -(df(Jacobisn(u,m),m))/((Jacobisn(u,m))^2),
+        df(jacobins(~u,~m),~u) => -jacobids(u,m)*jacobics(u,m),
+        df(jacobins(~u,~m),~m) =>
+                            -(df(jacobisn(u,m),m))/((jacobisn(u,m))^2),
 
-        int(Jacobins(~u,~m),~u) => ln(Jacobids(u,m) - Jacobics(u,m)),
+        int(jacobins(~u,~m),~u) => ln(jacobids(u,m) - jacobics(u,m)),
 
 %Calls Num_Jacobins when rounded switch is on.
 %---------------------------------------------
-        Jacobins(~u,~m) => Num_Elliptic(Num_Jacobins, u, m)
+        jacobins(~u,~m) => num_elliptic(num_jacobins, u, m)
                            when lisp !*rounded and numberp u
                            and numberp m
 }$
-let JacobiNSrules;
+let jacobinsrules;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %This procedure is called by Jacobids when the on rounded switch is
 %used. It evaluates the value of Jacobids numerically.
 
-procedure Num_Jacobids(u,m);
+procedure num_jacobids(u,m);
 
-        Num_Jacobidn(u,m) / Num_Jacobisn(u,m);
+        num_jacobidn(u,m) / num_jacobisn(u,m);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobids definition
 %===================
 
-operator Jacobids;
+operator jacobids;
 
 %This rule list includes all the special cases of the Jacobids
 %function.
 
-JacobiDSrules :=
+jacobidsrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        Jacobids(~u,0)   => csc u,
-        Jacobids(~u,1)   => csch u,
-        Jacobids(~u,-~m) => Jacobids(u,m),
+        jacobids(~u,0)   => csc u,
+        jacobids(~u,1)   => csch u,
+        jacobids(~u,-~m) => jacobids(u,m),
 %Change of Argument
 %------------------
-        Jacobids(-~u,~m)   =>-Jacobids(u,m),
+        jacobids(-~u,~m)   =>-jacobids(u,m),
 
-        Jacobids((~u+EllipticK(~m)),~m) => ((1-m)^(1/2))*Jacobinc(u,m),
-        Jacobids((~u-EllipticK(~m)),~m) =>-((1-m)^(1/2))*Jacobinc(u,m),
-        Jacobids((EllipticK(~m)-~u),~m) => ((1-m)^(1/2))*Jacobinc(u,m),
+        jacobids((~u+elliptick(~m)),~m) => ((1-m)^(1/2))*jacobinc(u,m),
+        jacobids((~u-elliptick(~m)),~m) =>-((1-m)^(1/2))*jacobinc(u,m),
+        jacobids((elliptick(~m)-~u),~m) => ((1-m)^(1/2))*jacobinc(u,m),
 
-        Jacobids((~u+2*EllipticK(~m)),~m) => -Jacobids(u,m),
-        Jacobids((~u-2*EllipticK(~m)),~m) => -Jacobids(u,m),
-        Jacobids((2*EllipticK(~m)-~u),~m) =>  Jacobids(u,m),
-        Jacobids((~u+i*EllipticK!'(~m)),~m) =>
-                                             -i*(m^(1/2))*Jacobicn(u,m),
+        jacobids((~u+2*elliptick(~m)),~m) => -jacobids(u,m),
+        jacobids((~u-2*elliptick(~m)),~m) => -jacobids(u,m),
+        jacobids((2*elliptick(~m)-~u),~m) =>  jacobids(u,m),
+        jacobids((~u+i*elliptick!'(~m)),~m) =>
+                                             -i*(m^(1/2))*jacobicn(u,m),
 
-        Jacobids((~u+2*i*EllipticK!'(~m)),~m) => -Jacobids(u,m),
+        jacobids((~u+2*i*elliptick!'(~m)),~m) => -jacobids(u,m),
 
-        Jacobids((~u+EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
-                               i*((1-m)^(1/2))*(m^(1/2))*Jacobisd(u,m),
+        jacobids((~u+elliptick(~m)+i*elliptick!'(~m)),~m) =>
+                               i*((1-m)^(1/2))*(m^(1/2))*jacobisd(u,m),
 
-        Jacobids((~u+2*EllipticK(~m)+2*i*EllipticK!'(~m)),~m) =>
-                                                         Jacobids(u,m),
+        jacobids((~u+2*elliptick(~m)+2*i*elliptick!'(~m)),~m) =>
+                                                         jacobids(u,m),
 %Special Arguments
 %-----------------
-        Jacobids(0,~m) => infinity,
+        jacobids(0,~m) => infinity,
 
-        Jacobids((1/2)*EllipticK(~m),~m) =>
+        jacobids((1/2)*elliptick(~m),~m) =>
                                ((1+((1-m)^(1/2)))^(1/2))*((1-m)^(1/4)),
 
-        Jacobids(EllipticK(~m),~m) => (1-m)^(1/2),
+        jacobids(elliptick(~m),~m) => (1-m)^(1/2),
 
-        Jacobids((1/2)*i*EllipticK!'(~m),~m) =>
+        jacobids((1/2)*i*elliptick!'(~m),~m) =>
                                     -i*(m^(1/4))*((1+(m^(1/2)))^(1/2)),
 
-        Jacobids((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
+        jacobids((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m) =>
 
-                Jacobidn((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m)
-                / Jacobisn((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m),
+                jacobidn((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m)
+                / jacobisn((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m),
 
-        Jacobids(EllipticK(~m)+(1/2)*i*EllipticK!'(~m),~m) =>
+        jacobids(elliptick(~m)+(1/2)*i*elliptick!'(~m),~m) =>
                                        (m^(1/4))*((1-(m^(1/2)))^(1/2)),
 
-        Jacobids(i*EllipticK!'(~m),~m) =>
-                                      Jacobidn(i*EllipticK!'(~m),~m)
-                                      / Jacobisn(i*EllipticK!'(~m),~m),
+        jacobids(i*elliptick!'(~m),~m) =>
+                                      jacobidn(i*elliptick!'(~m),~m)
+                                      / jacobisn(i*elliptick!'(~m),~m),
 
-        Jacobids((1/2)*EllipticK(~m)+i*EllipticK!'(~m),~m) =>
+        jacobids((1/2)*elliptick(~m)+i*elliptick!'(~m),~m) =>
                             -i*((1-m)^(1/4))*((1-((1-m)^(1/2)))^(1/2)),
 
-        Jacobids(EllipticK(~m)+i*EllipticK!'(~m),~m) => 0,
+        jacobids(elliptick(~m)+i*elliptick!'(~m),~m) => 0,
 
 %Derivatives, Integral
 %---------------------
-        df(Jacobids(~u,~m),~u) => -Jacobics(u,m)*Jacobins(u,m),
-        df(Jacobids(~u,~m),~m) =>
-                                (Jacobisn(u,m)*df(Jacobidn(u,m),m)
-                                - Jacobidn(u,m)*df(Jacobisn(u,m),m))
-                                / ((Jacobisn(u,m))^2),
+        df(jacobids(~u,~m),~u) => -jacobics(u,m)*jacobins(u,m),
+        df(jacobids(~u,~m),~m) =>
+                                (jacobisn(u,m)*df(jacobidn(u,m),m)
+                                - jacobidn(u,m)*df(jacobisn(u,m),m))
+                                / ((jacobisn(u,m))^2),
 
-        int(Jacobids(~u,~m),~u) => ln(Jacobins(u,m) - Jacobics(u,m)),
+        int(jacobids(~u,~m),~u) => ln(jacobins(u,m) - jacobics(u,m)),
 
 %Calls Num_Jacobids when on rounded switch is on.
 %------------------------------------------------
-        Jacobids(~u,~m) => Num_Elliptic(Num_Jacobids, u, m)
+        jacobids(~u,~m) => num_elliptic(num_jacobids, u, m)
                            when lisp !*rounded and numberp u
                            and numberp m
 }$
-let JacobiDSrules;
+let jacobidsrules;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %This procedure is called by Jacobics when the on rounded switch is
 %used. It evaluates the value of Jacobics numerically.
 
-procedure Num_Jacobics(u,m);
+procedure num_jacobics(u,m);
 
-        Num_Jacobicn(u,m) / Num_Jacobisn(u,m);
+        num_jacobicn(u,m) / num_jacobisn(u,m);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobics definition
 %===================
 
-operator Jacobics;
+operator jacobics;
 
 %This rule list includes all the special cases of the Jacobics
 %function.
 
-JacobiCSrules :=
+jacobicsrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        Jacobics(~u,0)   => cot u,
-        Jacobics(~u,1)   => csch u,
-        Jacobics(~u,-~m) => Jacobics(u,m),
+        jacobics(~u,0)   => cot u,
+        jacobics(~u,1)   => csch u,
+        jacobics(~u,-~m) => jacobics(u,m),
 %Change of Argument
 %------------------
-        Jacobics(-~u,~m)   =>-Jacobics(u,m),
+        jacobics(-~u,~m)   =>-jacobics(u,m),
 
-        Jacobics((~u+EllipticK(~m)),~m) =>-((1-m)^(1/2))*Jacobisc(u,m),
-        Jacobics((~u-EllipticK(~m)),~m) =>-((1-m)^(1/2))*Jacobisc(u,m),
-        Jacobics((EllipticK(~m)-~u),~m) => ((1-m)^(1/2))*Jacobisc(u,m),
-        Jacobics((~u+2*EllipticK(~m)),~m) =>  Jacobics(u,m),
-        Jacobics((~u-2*EllipticK(~m)),~m) =>  Jacobics(u,m),
-        Jacobics((2*EllipticK(~m)-~u),~m) => -Jacobics(u,m),
-        Jacobics((~u+i*EllipticK!'(~m)),~m)   => -i*Jacobidn(u,m),
-        Jacobics((~u+2*i*EllipticK!'(~m)),~m) => -Jacobics(u,m),
+        jacobics((~u+elliptick(~m)),~m) =>-((1-m)^(1/2))*jacobisc(u,m),
+        jacobics((~u-elliptick(~m)),~m) =>-((1-m)^(1/2))*jacobisc(u,m),
+        jacobics((elliptick(~m)-~u),~m) => ((1-m)^(1/2))*jacobisc(u,m),
+        jacobics((~u+2*elliptick(~m)),~m) =>  jacobics(u,m),
+        jacobics((~u-2*elliptick(~m)),~m) =>  jacobics(u,m),
+        jacobics((2*elliptick(~m)-~u),~m) => -jacobics(u,m),
+        jacobics((~u+i*elliptick!'(~m)),~m)   => -i*jacobidn(u,m),
+        jacobics((~u+2*i*elliptick!'(~m)),~m) => -jacobics(u,m),
 
-        Jacobics((~u+EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
-                                        -i*((1-m)^(1/2))*Jacobind(u,m),
+        jacobics((~u+elliptick(~m)+i*elliptick!'(~m)),~m) =>
+                                        -i*((1-m)^(1/2))*jacobind(u,m),
 
-        Jacobics((~u+2*EllipticK(~m)+2*i*EllipticK!'(~m)),~m) =>
-                                                        -Jacobics(u,m),
+        jacobics((~u+2*elliptick(~m)+2*i*elliptick!'(~m)),~m) =>
+                                                        -jacobics(u,m),
 %Special Arguments
 %-----------------
-        Jacobics(0,~m) => infinity,
+        jacobics(0,~m) => infinity,
 
-        Jacobics((1/2)*EllipticK(~m),~m) => (1-m)^(1/4),
+        jacobics((1/2)*elliptick(~m),~m) => (1-m)^(1/4),
 
-        Jacobics(EllipticK(~m),~m) => 0,
+        jacobics(elliptick(~m),~m) => 0,
 
-        Jacobics((1/2)*i*EllipticK!'(~m),~m) =>
+        jacobics((1/2)*i*elliptick!'(~m),~m) =>
                                               -i*((1+(m^(1/2)))^(1/2)),
 
-        Jacobics((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m) =>
+        jacobics((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m) =>
 
-                Jacobicn((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m)
-                / Jacobisn((1/2)*(EllipticK(~m)+i*EllipticK!'(~m)),~m),
+                jacobicn((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m)
+                / jacobisn((1/2)*(elliptick(~m)+i*elliptick!'(~m)),~m),
 
-        Jacobics(EllipticK(~m)+(1/2)*i*EllipticK!'(~m),~m) =>
+        jacobics(elliptick(~m)+(1/2)*i*elliptick!'(~m),~m) =>
                                               -i*((1-(m^(1/2)))^(1/2)),
 
-        Jacobics(i*EllipticK!'(~m),~m) =>
-                                      Jacobicn(i*EllipticK!'(~m),~m)
-                                      / Jacobisn(i*EllipticK!'(~m),~m),
+        jacobics(i*elliptick!'(~m),~m) =>
+                                      jacobicn(i*elliptick!'(~m),~m)
+                                      / jacobisn(i*elliptick!'(~m),~m),
 
-        Jacobics((1/2)*EllipticK(~m)+i*EllipticK!'(~m),~m) =>
+        jacobics((1/2)*elliptick(~m)+i*elliptick!'(~m),~m) =>
                                                       -i*((1-m)^(1/4)),
 
-        Jacobics(EllipticK(~m)+i*EllipticK!'(~m),~m) =>
+        jacobics(elliptick(~m)+i*elliptick!'(~m),~m) =>
                                                        -i*((1-m)^(1/2)),
 %Derivatives, Integral
 %---------------------
-        df(Jacobics(~u,~m),~u) => -Jacobins(u,m)*Jacobids(u,m),
-        df(Jacobics(~u,~m),~m) =>
-                                ( Jacobisn(u,m)*df(Jacobicn(u,m),m)
-                                - Jacobicn(u,m)*df(Jacobisn(u,m),m))
-                                / ((Jacobisn(u,m))^2),
+        df(jacobics(~u,~m),~u) => -jacobins(u,m)*jacobids(u,m),
+        df(jacobics(~u,~m),~m) =>
+                                ( jacobisn(u,m)*df(jacobicn(u,m),m)
+                                - jacobicn(u,m)*df(jacobisn(u,m),m))
+                                / ((jacobisn(u,m))^2),
 
-        int(Jacobics(~u,~m),~u) => ln(Jacobins(u,m) - Jacobids(u,m)),
+        int(jacobics(~u,~m),~u) => ln(jacobins(u,m) - jacobids(u,m)),
 
 %Calls Num_Jacobics when rounded switch is on.
 %---------------------------------------------
-        Jacobics(~u,~m) => Num_Elliptic(Num_Jacobics, u, m)
+        jacobics(~u,~m) => num_elliptic(num_jacobics, u, m)
                            when lisp !*rounded and numberp u
                            and numberp m
 }$
-let JacobiCSrules;
+let jacobicsrules;
 
 endmodule;
 

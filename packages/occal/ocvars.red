@@ -72,8 +72,8 @@ symbolic procedure clear_oc_variables ();
     !*oc!-name!* := nil;
     !*oc!-title!* := nil;
     !*oc!-is!-free!* := nil;
-    !*oc!-tempvar!-prefix!* := 'ANS;
-    !*oc!-target!-lang!* := 'C;
+    !*oc!-tempvar!-prefix!* := 'ans;
+    !*oc!-target!-lang!* := 'c;
 %    !*oc_trace := nil
     >>;
 

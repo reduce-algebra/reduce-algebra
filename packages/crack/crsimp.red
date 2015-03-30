@@ -33,9 +33,9 @@ module simplifications$
 symbolic procedure signchange(g)$  %  #### to be dropped? still used in crint
 %  ensure, that the first term is positive
 if pairp g then
- if (car g='MINUS) then cadr g
- else if (car g='PLUS) and (pairp cadr g) and (caadr g='MINUS)
-      then reval list('MINUS,g)
+ if (car g='minus) then cadr g
+ else if (car g='plus) and (pairp cadr g) and (caadr g='minus)
+      then reval list('minus,g)
       else g
 else g$
 
@@ -118,12 +118,12 @@ begin scalar ft,a,fl,li,nc,nl,f,cpf,fv,fc,f_is_in_flin,flin_sub_found$
            t
          >>
        >> then 
-    <<a:=coeffn({'!*SQ,get(p,'sqval),t},f,1)$
-      a:=if pairp a and (car a='!*SQ) then cadr a
+    <<a:=coeffn({'!*sq,get(p,'sqval),t},f,1)$
+      a:=if pairp a and (car a='!*sq) then cadr a
                                       else simp a;
       if null (fl:=smemberl(delete(f,get(p,'fcts)),a)) then 
       li:=cons(cons(a,f),li)                           else
-      if can_not_become_zeroSQ(a,fl) then nc:=cons(cons(a,f),nc)
+      if can_not_become_zerosq(a,fl) then nc:=cons(cons(a,f),nc)
                                      else nl:=cons(cons(a,f),nl)
     >>$
 
@@ -248,7 +248,7 @@ begin scalar p,q,h,l1,l2,m,ntms,mdu,ineq_cp,rtn,lcop,fcteval_cop,necount,
       ineq_cp:=ineq_; ineq_:=nil;
       % partition of get(s,'fcteval_nli) into the above 4 cases
       for each l2 in h do <<
-        q:=mkeqSQ(car l2,nil,nil,get(s,'fcts),get(s,'vars),allflags_,
+        q:=mkeqsq(car l2,nil,nil,get(s,'fcts),get(s,'vars),allflags_,
 		  t,list(0),nil,nil);
 	% the pdes-argument in mkeqSQ() is nil to avoid lasting effect on pdes
 	necount:=add1 necount$
@@ -428,7 +428,7 @@ begin scalar l,l1,p,oldstarde$
  while l do <<  % for each factor
   if smember(f,car l) then <<   
    % p:=subsq(car l,{(f . ex)})$ 
-   p:=simp!* {'!*SQ,subsq(car l,{(f . ex)}),nil}$ 
+   p:=simp!* {'!*sq,subsq(car l,{(f . ex)}),nil}$ 
    % - simp!* {'!*SQ,..,nil} to simplify poly using identities, like i^2 -> -1
    if sqzerop p then <<l:=list nil$l1:=list 0>>
                 else <<
@@ -440,7 +440,7 @@ begin scalar l,l1,p,oldstarde$
  l:=nil$
  while l1 do <<
   if not member(car l1,cdr l1) then
-  l:=union(simplifySQ(car l1,ftem,t,nil,nil),l)$
+  l:=union(simplifysq(car l1,ftem,t,nil,nil),l)$
   l1:=cdr l1
  >>$
  l:=delete((1 . 1),l)$  % delete all non-vanishing factors
@@ -454,9 +454,9 @@ begin scalar l,l1,p,oldstarde$
     fctprint delete(f,get(eqn,'fcts))
    >>$
    write " found in ",eqn," : "$
-   eqprint(list('EQUAL,f,ex))
+   eqprint(list('equal,f,ex))
   >>$
-  raise_contradiction({'!*SQ,get(a,'sqval),t},
+  raise_contradiction({'!*sq,get(a,'sqval),t},
                       "leads to a contradiction in : ")$
   a:=nil
  >>        else 
@@ -468,12 +468,12 @@ begin scalar l,l1,p,oldstarde$
 %                 else l:=car l$
   if get(a,'level) neq level then <<
    pdes:=drop_pde(a,pdes,0)$ % pdes updated as it is used in mkeqSQ:
-   a:=mkeqSQ(nil,l,nil,ftem,vl,allflags_,nil,list(0),nil,pdes)
+   a:=mkeqsq(nil,l,nil,ftem,vl,allflags_,nil,list(0),nil,pdes)
   >>                         else <<
    p:=get(a,'derivs);    % keep the leading derivative to check 
    if p then p:=caar p;  % whether it changed in the substitution
    for each b in allflags_ do flag(list a,b)$
-   if null updateSQ(a,nil,l,nil,ftem,vl,nil,list(0),pdes) then <<
+   if null updatesq(a,nil,l,nil,ftem,vl,nil,list(0),pdes) then <<
     % l is a list of sq-form factors 
     drop_pde(a,pdes,0)$
     a:=nil
@@ -511,13 +511,13 @@ begin scalar fl,h,was_subst,dnr$
  forg:=for each h in forg collect
        if atom h then
        if f=h then <<put(f,'fcts,fl)$was_subst:=t$
-                     list('EQUAL,f,if pairp ex and (car ex='!*SQ) then cadr   ex 
+                     list('equal,f,if pairp ex and (car ex='!*sq) then cadr   ex 
                                                                   else simp!* ex )>>
               else h
                  else 
-       if (car h='EQUAL) and member(f,get(cadr h,'fcts)) then <<
+       if (car h='equal) and member(f,get(cadr h,'fcts)) then <<
         was_subst:=t$
-        dnr:=simp!* {'!*SQ,subf(denr caddr h,{(f . ex)}),nil};
+        dnr:=simp!* {'!*sq,subf(denr caddr h,{(f . ex)}),nil};
         if sqzerop dnr then <<contradiction_:=t$
          terpri()$write"##### ERROR: When substituting ",f," by ",ex,
                        " in the denominator of the forg entry: ",h,
@@ -525,8 +525,8 @@ begin scalar fl,h,was_subst,dnr$
          terpri()$
          nil
         >>             else <<
-         h:=list('EQUAL,cadr h,
-                 simp!* {'!*SQ,quotsq(subf(numr caddr h,{(f . ex)}),dnr),nil});
+         h:=list('equal,cadr h,
+                 simp!* {'!*sq,quotsq(subf(numr caddr h,{(f . ex)}),dnr),nil});
          % h:=list('EQUAL,cadr h,simp!* {'!*SQ,subsq(caddr h,{(f . ex)}),nil});
          % - simp!* {'!*SQ,..,nil} to simplify poly using identities, like i^2 -> -1
          put(cadr h,'fcts,
@@ -569,7 +569,7 @@ begin scalar f,fl,h,ex,res,slim,too_large,was_subst,
   if get(p,'starde) then ise:=t;
   slim:=get(p,'length)$
   ruli:=start_let_rules()$
-  ex:={'!*SQ,subs2 quotsq(subtrsq(multsq(cf,simp f),get(p,'sqval)),cf),t};
+  ex:={'!*sq,subs2 quotsq(subtrsq(multsq(cf,simp f),get(p,'sqval)),cf),t};
   % ex:={'!*SQ,simp!* {'!*SQ,quotsq(subtrsq(multsq(cf,simp f),get(p,'sqval)),cf),nil},t};
   % - simp!* {'!*SQ,..,nil} to simplify poly using identities, like i^2 -> -1
 
@@ -599,7 +599,7 @@ begin scalar f,fl,h,ex,res,slim,too_large,was_subst,
   ineq_bak:=ineq_$             % for the case that no substitution is done
   ineq_or_bak:=ineq_or$        %                   "
   if (not ise) and ((not partial_subs) or h) then %ineqsubst(ex,f,ftem_,pde)$
-                                       simp_all_ineq_with_subst_SQ(ex,f,pde)$
+                                       simp_all_ineq_with_subst_sq(ex,f,pde)$
 
   if not contradiction_ then <<
 
@@ -678,7 +678,7 @@ begin scalar f,fl,h,ex,res,slim,too_large,was_subst,
      fctprint delete(f,get(p,'fcts))
     >>$
     write " found in ",p," : "$
-    eqprint(list('EQUAL,f,ex))
+    eqprint(list('equal,f,ex))
    >>$
    % To avoid using p repeatedly for substitutions of different
    % functions in the same equations:
@@ -778,7 +778,7 @@ again:
     if car w<=2 then write"No case distinctions will be necessary."
                 else write"Case distinctions will be necessary."$
     terpri()$
-    write"The coefficient is:"$ mathprint {'!*SQ,caaddr w,t}$
+    write"The coefficient is:"$ mathprint {'!*sq,caaddr w,t}$
     write"Accept? (Enter y or n or s for stopping substitution) "$
     change_prompt_to ""$ 
     repeat h:=termread() until (h='y) or (h='n) or (h='s);
@@ -858,14 +858,14 @@ again:
     backup_to_file(pdes,forg,nil)$
 
     % make an equation from the coefficient
-    q:=mkeqSQ(car w,nil,nil,get(p,'fcts),get(p,'vars),allflags_,
+    q:=mkeqsq(car w,nil,nil,get(p,'fcts),get(p,'vars),allflags_,
               t,list(0),nil,pdes)$
     % and an equation from the remainder
     r:=nil;
     if not contradiction_ then <<
       hh:=subtrsq(get(p,'sqval),multsq(car w,simp cdr w))$
       if not sqzerop hh then 
-      r:=mkeqSQ(hh,nil,nil,get(p,'fcts),get(p,'vars),
+      r:=mkeqsq(hh,nil,nil,get(p,'fcts),get(p,'vars),
                 allflags_,t,list(0),nil,pdes)
     >>;
     if contradiction_ then <<
@@ -885,7 +885,7 @@ again:
        if not pairp h then h:={get(q,'sqval)}
       >>$
       for each l in h do % (was: .. in cdr h) % pdes:=  %  <=<=<=<=
-      addSQineq(pdes,l,if q then nil else t)$ % nil if l already simplified
+      addsqineq(pdes,l,if q then nil else t)$ % nil if l already simplified
       drop_pde(q,nil,nil)$
       if r then drop_pde(r,nil,nil)$
       l:=do_subst(md,p,w,pdes,forg,vl,pdelimit,keep_eqn)$
@@ -912,7 +912,7 @@ again:
         terpri()$
         write "for the substitution of ",cdr w," by ",p$
         write " we have to consider the case 0=",q,": "$
-        eqprint list('EQUAL,0,{'!*SQ,car w,t})
+        eqprint list('equal,0,{'!*sq,car w,t})
       >>$
       pdes:=eqinsert(q,drop_pde(p,pdes,nil))$
       if freeof(pdes,q) then <<
@@ -934,7 +934,7 @@ again:
         hh:=subtrsq(get(p,'sqval),multsq(car w,simp cdr w))$
         if sqzerop hh then <<drop_pde(p,pdes,nil); pdes:=delete(p,pdes)>>
                       else <<
-          updateSQ(p,hh,nil,nil,get(p,'fcts),get(p,'vars),t,list(0),pdes)$
+          updatesq(p,hh,nil,nil,get(p,'fcts),get(p,'vars),t,list(0),pdes)$
           drop_pde_from_idties(p,pdes,nil)$ % new history is nil as r has no history
           drop_pde_from_properties(p,pdes)
         >>$
@@ -959,7 +959,7 @@ again:
                          to_do_list)$
         cp_sq2p_val(q)$
         h3:=get(q,'pval)$
-        start_level(1,list {'EQUAL,0,h3})$
+        start_level(1,list {'equal,0,h3})$
 
         h:=get(q,'fac)$    % to add it to ineq_ afterwards
         if not pairp h then h:={get(q,'sqval)}$
@@ -971,13 +971,13 @@ again:
         pdes:= car hh; 
         forg:=cadr hh; % was not assigned above as it has not changed probably
         delete_backup()$
-        start_level(2,list {'INEQ,0,h3})$
+        start_level(2,list {'ineq,0,h3})$
         if print_ then <<
           terpri()$
 	  write "now back to the substitution of ",cdr w," by ",p$
         >>$
         for each h3 in h do % pdes:=  % <=<=<=<=
-        addSQineq(pdes,h3,nil); 
+        addsqineq(pdes,h3,nil); 
         fcteval p$ % fcteval_... properties were deleted in addSQineq
         if contradiction_ then <<cases_:=t$contradiction_:=nil>> % but no
                                % further investigation of this case
@@ -986,7 +986,7 @@ again:
 	  % equation, i.e. if car w is not anymore the coefficient of f 
 	  % in p then new determination of car w (coeff. of f) is needed
 	  hh:=coeffn({'!*sq,get(p,'sqval),t},cdr w,1);
-	  w:=(if pairp hh and (car hh='!*SQ) then cadr hh
+	  w:=(if pairp hh and (car hh='!*sq) then cadr hh
 					     else simp hh) . cdr w;
 
 % The following lines are commented out (16.5.2008) because:
@@ -1335,7 +1335,7 @@ begin scalar p,md,mdgr,mtm,f,dgr,f,tm,bestp;
   % compute the max degree of any factor
   mdgr:=0$ 
   for each f in get(p,'fac) do <<
-   dgr:=pde_degree_SQ(f,smemberl(get(p,'rational),f))$
+   dgr:=pde_degree_sq(f,smemberl(get(p,'rational),f))$
    if dgr>mdgr then mdgr:=dgr
   >>$
   tm:=get(p,'length)$
@@ -1368,7 +1368,7 @@ algebraic procedure stop_let_rules(ruli)$
 begin
   clearrules explog_$
   if (lisp(userrules_) neq {}) and
-     (lisp (zerop reval {'DIFFERENCE,
+     (lisp (zerop reval {'difference,
                          car  cdadr userrules_,
                          cadr cdadr userrules_}))
                     then clearrules lisp userrules_$
@@ -1533,10 +1533,10 @@ begin
    if drf then << % f occurs in this equation and we estimate the increase
     hp:=0$
     for each d in drf do <<
-     if cdar d then ff:=cons('DF,car d)
+     if cdar d then ff:=cons('df,car d)
                else ff:=caar d; 
-     nco:=coeffn({'!*SQ,get(p,'sqval),t},ff,cdr d);
-     nco:=if pairp nco and (car nco='!*SQ) then no_of_tm_sf numr cadr nco
+     nco:=coeffn({'!*sq,get(p,'sqval),t},ff,cdr d);
+     nco:=if pairp nco and (car nco='!*sq) then no_of_tm_sf numr cadr nco
                                            else 1;
      if cdr d > hp then hp:=cdr d$
      ffl:=cons({ff,cdr d,nco},ffl);
@@ -1639,10 +1639,10 @@ symbolic procedure bottom_up_subst(arglist)$
 % big and then it would be better to continue substituting in a 
 % different shorter equation.
 
-if currently_to_be_substituted_in neq '!*SUBST_DONE!* then
+if currently_to_be_substituted_in neq '!*subst_done!* then
 
 if (null car arglist) or (null cdar arglist)    then
-currently_to_be_substituted_in:='!*SUBST_DONE!* else
+currently_to_be_substituted_in:='!*subst_done!* else
 begin scalar pcp,found,pdes,fns,p,a,h;
 
 currently_to_be_substituted_in:=nil; % <-- for now as not in list 
@@ -1652,11 +1652,11 @@ currently_to_be_substituted_in:=nil; % <-- for now as not in list
  fns:=get(currently_to_be_substituted_in,'fcts);
 
  pcp:=car arglist;
- while (currently_to_be_substituted_in neq '!*SUBST_DONE!*) and
+ while (currently_to_be_substituted_in neq '!*subst_done!*) and
        null found do 
 
  if car pcp=currently_to_be_substituted_in then
- if null cdr pcp then currently_to_be_substituted_in:='!*SUBST_DONE!*
+ if null cdr pcp then currently_to_be_substituted_in:='!*subst_done!*
                  else <<
   currently_to_be_substituted_in:=cadr pcp;
   fns:=get(currently_to_be_substituted_in,'fcts);
@@ -1688,7 +1688,7 @@ currently_to_be_substituted_in:=nil; % <-- for now as not in list
  >> else pcp:=cdr pcp; % Check next equation for substitution
 
  return
- if currently_to_be_substituted_in='!*SUBST_DONE!* then nil 
+ if currently_to_be_substituted_in='!*subst_done!* then nil 
  else {pdes,cadr arglist}
 end$
 
@@ -1705,20 +1705,20 @@ begin scalar l,l1,l2,n,cp,not_to_substdf$
                                    collect car a,l)$    % all derivs
   for each s in forg do 
   if pairp s then 
-  l:=union(for each a in all_deriv_search_SF(numr caddr s,ftem_) collect car a,
-     union(for each a in all_deriv_search_SF(denr caddr s,ftem_) collect car a,
+  l:=union(for each a in all_deriv_search_sf(numr caddr s,ftem_) collect car a,
+     union(for each a in all_deriv_search_sf(denr caddr s,ftem_) collect car a,
      l))$
 
   for each s in fsub_ do 
-  l:=union(for each a in all_deriv_search_SF(numr cadr cdr s,ftem_) collect car a,
-     union(for each a in all_deriv_search_SF(denr cadr cdr s,ftem_) collect car a,
+  l:=union(for each a in all_deriv_search_sf(numr cadr cdr s,ftem_) collect car a,
+     union(for each a in all_deriv_search_sf(denr cadr cdr s,ftem_) collect car a,
      l))$
 
   l1:=df_min_list(l)$
   l:=nil$
   for each s in l1 do 
   if pairp s and not member(car s,not_to_substdf) then <<
-    l:=cons(cons('DF,s),l)$
+    l:=cons(cons('df,s),l)$
     not_to_substdf:=cons(car s,not_to_substdf)
   >> $
 
@@ -1733,7 +1733,7 @@ begin scalar l,l1,l2,n,cp,not_to_substdf$
    >>;
    cp:=forg;
    while cp and (n<2) do <<
-    if (pairp car cp) and (caar cp = 'EQUAL) and
+    if (pairp car cp) and (caar cp = 'equal) and
        member(cadar l,get(cadr car cp,'fcts)) then n:=add1 n;
     cp:=cdr cp
    >>;
@@ -1796,12 +1796,12 @@ for each h in forg collect
 if pairp h and member(d,get(cadr h,'fcts)) then <<
  put(cadr h,'fcts,fctinsert(p,delete(d,get(cadr h,'fcts))))$
  % reval subst(g,d,h)
- {'EQUAL,cadr h,simp {'!*SQ,subsq(caddr h,{(d . {'!*sq,g,t})}),nil}}
+ {'equal,cadr h,simp {'!*sq,subsq(caddr h,{(d . {'!*sq,g,t})}),nil}}
  % {'EQUAL,cadr h,simp!* {'!*SQ,subsq(caddr h,{(d . {'!*sq,g,t})}),nil}}
  % - simp!* {'!*SQ,..,nil} to simplify poly using identities, like i^2 -> -1
 >>                                         else h$
 
-symbolic procedure expand_INT(p,varlist)$  
+symbolic procedure expand_int(p,varlist)$  
 if null varlist then p
 else begin scalar v,n$
   v:=car varlist$
@@ -1810,23 +1810,23 @@ else begin scalar v,n$
      <<n:=car varlist$
        varlist:=cdr varlist>>
   else n:=1$
-  for i:=1:n do p:=list('INT,p,v)$
-  return expand_INT(p,varlist)
+  for i:=1:n do p:=list('int,p,v)$
+  return expand_int(p,varlist)
 end$
 
 symbolic procedure rational_less(a,b)$  
 % a and b are two reval'ued rational numbers in prefix form
 % It returns the boolean value of a<b
 if (pairp a) and 
-   (car a='QUOTIENT) then rational_less(cadr a,reval{'TIMES,caddr a,b}) else 
+   (car a='quotient) then rational_less(cadr a,reval{'times,caddr a,b}) else 
 if (pairp b) and
-   (car b='QUOTIENT) then rational_less(reval{'TIMES,caddr b,a},cadr b) else 
-if (pairp a) and (car a='MINUS) then 
-if (pairp b) and (car b='MINUS) then cadr a > cadr b 
-                                else not rational_less(cadr a,reval{'MINUS,b})
+   (car b='quotient) then rational_less(reval{'times,caddr b,a},cadr b) else 
+if (pairp a) and (car a='minus) then 
+if (pairp b) and (car b='minus) then cadr a > cadr b 
+                                else not rational_less(cadr a,reval{'minus,b})
                                 else
-if (pairp b) and (car b='MINUS) then 
-if a<0 then not rational_less(reval{'MINUS,a},cadr b)
+if (pairp b) and (car b='minus) then 
+if a<0 then not rational_less(reval{'minus,a},cadr b)
        else nil
                                 else a<b$
 
@@ -1840,7 +1840,7 @@ symbolic procedure substitution_weight(k,l,m,n,p,q)$
  % p .. a factor taking care of the number of lists in ineq_or
  %      and their length of which f is an element
  % q .. =1 if contains flin_ unknowns else =0
-reval {'QUOTIENT,{'TIMES,l,n,q},{'TIMES,p,{'EXPT,{'PLUS,{'TIMES,2,k},m},2}}}$
+reval {'quotient,{'times,l,n,q},{'times,p,{'expt,{'plus,{'times,2,k},m},2}}}$
 
 symbolic procedure test_factors_for_substitution(p,pv)$  
 %  p is the equation, pv the list of factors
@@ -1853,7 +1853,7 @@ begin scalar h,h1,h4,h3$
   h4:=t$
   % make an equation from the coefficient
   while h1 and h4 do <<
-   h3:=mkeqSQ(car h1,nil,nil,get(p,'fcts),get(p,'vars),allflags_,
+   h3:=mkeqsq(car h1,nil,nil,get(p,'fcts),get(p,'vars),allflags_,
               t,list(0),nil,nil)$
    contradiction_:=nil$
    % the last argument is nil to avoid having a lasting effect on pdes
@@ -1931,11 +1931,11 @@ begin scalar p,pv,f,fcl,fcc,h,h1,h2,h3,h4,h5,h6,h7,h8,eql,tr_gf$
     >>     else <<      % factor is new
      % Computing the total degree of the factor
      if fhom_ then <<
-      h2:=find_hom_deg_SF(numr f)$ 
+      h2:=find_hom_deg_sf(numr f)$ 
       h2:=(car h2) + (cadr h2)
      >>          else h2:=1;
      % If f is a function then counting in how many equations it appears
-     if no_number_atom_SQ f then << % count in how many equations f does occur
+     if no_number_atom_sq f then << % count in how many equations f does occur
       h5:=mvar numr f; % the function
       h3:=0;           % the counter
       h4:=pdes;
@@ -1954,7 +1954,7 @@ begin scalar p,pv,f,fcl,fcc,h,h1,h2,h3,h4,h5,h6,h7,h8,eql,tr_gf$
      while h6 do <<
       h7:=length h6;
       if h7 < 9 then
-      if member({f},car h6) then h5:={'TIMES,h5,{'EXPT,2,{'DIFFERENCE,9,h7}}}$
+      if member({f},car h6) then h5:={'times,h5,{'expt,2,{'difference,9,h7}}}$
       h6:=cdr h6
      >>$
      h5:=reval h5;
@@ -2016,13 +2016,13 @@ begin scalar p,pv,f,fcl,fcc,h,h1,h2,h3,h4,h5,h6,h7,h8,eql,tr_gf$
    % favour equations where the weight of the highest weight factor in
    % the equation is lowest. So, how good the best of the factors is
    % does little matter. We therefore change to product.
-   h6:={'TIMES,h6,cadr h}; 
+   h6:={'times,h6,cadr h}; 
    %if not zerop nth(h,8) then h6:={'TIMES,30,h6};  
    % The following change was made to use an equation less 
    % if more flin_ functions appear.
    if (null lin_problem) and 
-      (not zerop nth(h,8)) then h6:={'TIMES,
-                                     {'EXPT,2,{'PLUS,4,
+      (not zerop nth(h,8)) then h6:={'times,
+                                     {'expt,2,{'plus,4,
                                                get(p,'nfct_lin)}},
                                      h6};  
    % evaluating flin_ functions
@@ -2030,7 +2030,7 @@ begin scalar p,pv,f,fcl,fcc,h,h1,h2,h3,h4,h5,h6,h7,h8,eql,tr_gf$
    % fewer non-flin_ unknowns (at least in bi-lin alg problems)
    pv:=cdr pv
   >>$
-  h6:=reval {'TIMES,{'EXPT,2,h8},h6};     % punishment of many factors
+  h6:=reval {'times,{'expt,2,h8},h6};     % punishment of many factors
   if null h2 or rational_less(h6,h3) then <<
    h2:=p;
    h3:=h6;
@@ -2061,7 +2061,7 @@ endmodule$
 end$
 
 ------------------------------------------------------------------------------------------------------
-Substitutions with:
+substitutions with:
 
 procedure       # length_li pdelimit less_vars no_df no_cases lin_subst min_growth cost_limit keep_eqn
 
@@ -2093,9 +2093,9 @@ make_subst
   get_subst
   do_subst
     do_one_subst
-      mkeqSQ
+      mkeqsq
       updatesq
-  mkeqSQ
+  mkeqsq
     updatesq
 
 
@@ -2103,6 +2103,6 @@ tr make_subst
 tr get_subst 
 tr do_subst 
 tr do_one_subst 
-tr mkeqSQ 
+tr mkeqsq 
 tr updatesq 
 tr fcteval

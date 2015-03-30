@@ -5,26 +5,26 @@ COMMENT
 linelength(72)$
 % Example 1: Quantum Mechanics of a Dirac particle in an external
 %                      electromagnetic field
-VECOP P,A,K;
-SCALOP M;
-NONCOM P,A;
-PHYSINDEX J,L;
-oporder M,K,A,P;
+vecop p,a,k;
+scalop m;
+noncom p,a;
+physindex j,l;
+oporder m,k,a,p;
 
 % we have to set off allfac here since otherwise there appear
 % spurious negative powers in the printed output
  off allfac;
-FOR ALL J,L LET COMM(P(J),A(L))=K(J)*A(L);
-H:= COMMUTE(P**2/(2*M),E/(4*M**2)*(P DOT A));
+for all j,l let comm(p(j),a(l))=k(j)*a(l);
+h:= commute(p**2/(2*m),e/(4*m**2)*(p dot a));
 % showtime;
 %assign the corresponding value to the adjoint of H
-H!+ := adj H;
+h!+ := adj h;
 % showtime;
 % note the ordering of operators in the result!
 % enhance the readability of the output
  on allfac;
-ON CONTRACT;
-H;
+on contract;
+h;
 % showtime;
 % Example 2: Virasoro Algebra from Conformal Field Theory
 
@@ -55,15 +55,15 @@ for all r,h such that r > 0 or (r  > -2 and h = 0) let
              bra(h) | l(r) = 0;
 
 % define a procedure to calculate V.E.V.
-procedure Vak(X);
-bra(0) | X | ket(0);
+procedure vak(x);
+bra(0) | x | ket(0);
 
 % and now some calculations;
-MA:= adj(l(3)*l(5))*l(3)*l(5);  %modified 1.1
+ma:= adj(l(3)*l(5))*l(3)*l(5);  %modified 1.1
 % showtime;
 
 % here is the VEV of m
-vak(Ma);
+vak(ma);
 % showtime;
 % and now calculate another matrix element
 
@@ -89,7 +89,7 @@ noncom sigma,gammamat;
 physindex mu,nu;
 operator delta;
 for all mu,nu let anticomm(gammamat(mu),gammamat(nu))=2*delta(mu,nu)*unit,
-                  comm(gammamat(mu),gammamat(nu))=2*I*sigma(mu,nu);
+                  comm(gammamat(mu),gammamat(nu))=2*i*sigma(mu,nu);
 
 oporder p,q,gammamat,sigma;
 off allfac;

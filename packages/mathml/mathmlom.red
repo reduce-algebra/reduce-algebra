@@ -26,7 +26,7 @@ module mathmlom;
 %
 
 
-FLUID '(!*f!* safe_atts char ch atts omfuncs!*
+fluid '(!*f!* safe_atts char ch atts omfuncs!*
         interval!* mmltypes!* constantsom!*
         count temp space temp2 mmlatts constants!*
         functions!* relations!* constructors!* ir2mml!*

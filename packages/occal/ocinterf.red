@@ -125,7 +125,7 @@ symbolic procedure generate!-adjoint!-variables;
        number!-variable el;
        el>>;
 
-comment Depending on its argument, register!-dependencies establishes
+COMMENT Depending on its argument, register!-dependencies establishes
         or removes dependency of the dynamic, control and adjoint
         variables on the time variable;
 
@@ -172,7 +172,7 @@ symbolic procedure do_calculation();
 %    on rounded,double;
     rmsubs();    %% clear all internal information!
     varnum := 1;
-    gentranlang!* := !*oc!-target!-lang!* or 'C;
+    gentranlang!* := !*oc!-target!-lang!* or 'c;
 
     (let ('list . !*oc!-abbreviations!*)) where !*int := nil;
 
@@ -514,7 +514,7 @@ symbolic procedure handle!-linear!-part;
 fluid '(svarlis scountr svar);
 
 symbolic procedure calculate!-order (hlin, var, sch);
-  begin scalar x,y,z, A, B, subs; integer ordr;
+  begin scalar x,y,z, a, b, subs; integer ordr;
     subs := for each pp in !*oc!-dgls!* collect
               ({'df, car pp, !*oc!-time!-variable!*} . cdr pp);
     for i := 1 : length !*oc!-adjoint!-variables!* do
@@ -544,9 +544,9 @@ symbolic procedure calculate!-order (hlin, var, sch);
     y := cdr coeff1 (mk!*sq x, var, nil);
     if cddr y
       then rederr "This can't happen: nonlinear appearance of control!";
-    A := simp!* car y;
-    B := simp!* cadr y;
-    z := quotsq (negsq A, B);
+    a := simp!* car y;
+    b := simp!* cadr y;
+    z := quotsq (negsq a, b);
       writepri ("Singular control of order ", 'first);
       writepri (mkquote ordr, 'nil);
       writepri (" for variable ", nil);
@@ -567,7 +567,7 @@ symbolic procedure calculate!-order (hlin, var, sch);
 	       prin2!* "      ";
 	       assgnpri(cddr x,list cadr x,t)>>
        end;
-    return (ordr . if evenp ordr then B else negsq B)
+    return (ordr . if evenp ordr then b else negsq b)
   end;
 
 

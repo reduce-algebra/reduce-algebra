@@ -693,15 +693,15 @@ symbolic procedure spno_cols(mat_list);
 
 % Copies matrix BB into AA with BB(1,1) at AA(p,q).
 
-symbolic procedure spcopy_into(BB,AA,p,q);
+symbolic procedure spcopy_into(bb,aa,p,q);
   begin
-    scalar A,B;
+    scalar a,b;
     integer m,n,r,c,val,j,col;
     if not !*fast_la then
     <<
-      if not matrixp(BB) then rederr
+      if not matrixp(bb) then rederr
        "Error in spcopy_into(first argument): should be a matrix.";
-      if not matrixp(AA) then rederr
+      if not matrixp(aa) then rederr
        "Error in spcopy_into(second argument): should be a matrix.";
       if not fixp p then rederr
        "Error in spcopy_into(third argument): should be an integer.";
@@ -716,20 +716,20 @@ symbolic procedure spcopy_into(BB,AA,p,q);
         return;
       >>;
     >>;
-    if not sparsematp(BB) then BB:=sptransmat(BB);
-    m := sprow_dim(AA);
-    n := spcol_dim(AA);
-    r := sprow_dim(BB);
-    c := spcol_dim(BB);
+    if not sparsematp(bb) then bb:=sptransmat(bb);
+    m := sprow_dim(aa);
+    n := spcol_dim(aa);
+    r := sprow_dim(bb);
+    c := spcol_dim(bb);
     if not !*fast_la and (r+p-1>m or c+q-1>n) then
     <<
       % Only print offending matrices if they're not too big.
       if m*n<26 and r*c<26 then
       <<
         prin2t "***** Error in spcopy_into: the matrix";
-        myspmatpri2(BB);
+        myspmatpri2(bb);
         prin2t "      does not fit into";
-        myspmatpri2(AA);
+        myspmatpri2(aa);
         prin2  "      at position ";
         prin2 p;
         prin2 ",";
@@ -1264,7 +1264,7 @@ symbolic procedure spdiag(uu);
   %
   begin
     scalar bigA,arg,input,u,val,a,b,col,j;
-    integer nargs,Aidx,stp,bigsize,smallsize;
+    integer nargs,aidx,stp,bigsize,smallsize;
 
     u := car uu;
     input := u;
@@ -1284,7 +1284,7 @@ symbolic procedure spdiag(uu);
     >>;
 
     bigA := mkempspmat(bigsize,list('spm,bigsize,bigsize));
-    Aidx:=1;
+    aidx:=1;
     input := u;
     for k:=1:nargs do
     <<
@@ -1292,32 +1292,32 @@ symbolic procedure spdiag(uu);
       % If scalar entry.
       if algebraic length(arg) = 1 then
       <<
-        letmtr3(list(bigA,Aidx,Aidx),arg,bigA,nil);
-        Aidx:=Aidx+1;
+        letmtr3(list(bigA,aidx,aidx),arg,bigA,nil);
+        aidx:=aidx+1;
         input := cdr input;
       >>
       else
       <<
         smallsize:= sprow_dim(arg);
-        stp:=smallsize+Aidx-1;
+        stp:=smallsize+aidx-1;
         a:=1;
-        for i:=Aidx:stp do
+        for i:=aidx:stp do
         << col:=findrow(arg,a);
            if col then
            << for each xx in cdr col do
               << val:=cdr xx;
-                   j:=(Aidx-1)+car xx;
+                   j:=(aidx-1)+car xx;
                  letmtr3(list(bigA,i,j),val,bigA,nil);
               >>;
            >>;
                a:=a+1;
         >>;
-        Aidx := Aidx+smallsize;
+        aidx := aidx+smallsize;
         input := cdr input;
       >>;
     >>;
 
-    return biga;
+    return bigA;
   end;
 
 % Replaces row2 (r2) by mult1*r1 + r2.
@@ -1627,12 +1627,12 @@ flag('(sphermitian_tp),'opfn);
 % the columns in col_list. (Both row_list and col_list can be single
 % integer values).
 
-symbolic procedure spsub_matrix(A,row_list,col_list);
+symbolic procedure spsub_matrix(a,row_list,col_list);
   begin
     scalar new_mat;
-    if not !*fast_la and not matrixp(A) then rederr
+    if not !*fast_la and not matrixp(a) then rederr
      "Error in spsub_matrix(first argument): should be a matrix.";
-    new_mat := spstack_rows(A,row_list);
+    new_mat := spstack_rows(a,row_list);
     new_mat := spaugment_columns(new_mat,col_list);
     return new_mat;
   end;
@@ -1838,7 +1838,7 @@ put('spcoeff_matrix,'psopfn,'spcoeff_matrix1);
 
 symbolic procedure spcoeff_matrix1(equation_list);
   begin
-    scalar variable_list,A,X,b;
+    scalar variable_list,a,x,b;
     if pairp car equation_list and caar equation_list = 'list then
      equation_list := cdar equation_list;
     equation_list := remove_equals(equation_list);
@@ -1846,10 +1846,10 @@ symbolic procedure spcoeff_matrix1(equation_list);
     if variable_list = nil then
      rederr "Error in spcoeff_matrix: no variables in input.";
     check_linearity(equation_list,variable_list);
-    A := spget_A(equation_list,variable_list);
-    X := spget_X(variable_list);
+    a := spget_a(equation_list,variable_list);
+    x := spget_x(variable_list);
     b := spget_b(equation_list,variable_list);
-    return {'list,A,X,b};
+    return {'list,a,x,b};
   end;
 
 symbolic procedure remove_equals(equation_list);
@@ -1893,13 +1893,13 @@ symbolic procedure check_linearity(equation_list,variable_list);
 
 
 
-symbolic procedure spget_A(equation_list,variable_list);
+symbolic procedure spget_a(equation_list,variable_list);
   begin
-    scalar A,element,var_elt,val;
+    scalar a,element,var_elt,val;
     integer row,col,length_equation_list,length_variable_list;
     length_equation_list := length equation_list;
     length_variable_list := length variable_list;
-    A := mkempspmat(length equation_list,
+    a := mkempspmat(length equation_list,
              list('spm,length equation_list,length variable_list));
     for row:=1:length_equation_list do
     <<
@@ -1909,10 +1909,10 @@ symbolic procedure spget_A(equation_list,variable_list);
         var_elt := nth(variable_list,col);
         val:=algebraic coeffn(element,var_elt,1);
         if val = 0 then nil
-         else letmtr3(list(A,row,col),val,A,nil);
+         else letmtr3(list(a,row,col),val,a,nil);
       >>;
     >>;
-    return A;
+    return a;
   end;
 
 symbolic procedure spget_b(equation_list,variable_list);
@@ -1936,15 +1936,15 @@ symbolic procedure spget_b(equation_list,variable_list);
 
 
 
-symbolic procedure spget_X(variable_list);
+symbolic procedure spget_x(variable_list);
   begin
-    scalar X;
+    scalar x;
     integer row,length_variable_list;
     length_variable_list := length variable_list;
-    X := mkempspmat(length_variable_list,list('spm,length_variable_list,1));
+    x := mkempspmat(length_variable_list,list('spm,length_variable_list,1));
     for row := 1:length variable_list do
-     letmtr3(list(X,row,1),nth(variable_list,row),x,nil);
-    return X;
+     letmtr3(list(x,row,1),nth(variable_list,row),x,nil);
+    return x;
   end;
 
 
@@ -1996,19 +1996,19 @@ symbolic procedure spcompanion(poly,x);
 % Given a companion matrix, find_companion will return the associated
 % polynomial.
 
-symbolic procedure spfind_companion(R,x);
+symbolic procedure spfind_companion(r,x);
   begin
     scalar  p;
     integer rowdim,k;
-    if not matrixp(R) then rederr
+    if not matrixp(r) then rederr
      {"Error in spfind_companion(first argument): should be a matrix."};
-    rowdim := sprow_dim(R);
+    rowdim := sprow_dim(r);
     k := 2;
-    while k<=rowdim and findelem2(R,k,k-1)=1 do k:=k+1;
+    while k<=rowdim and findelem2(r,k,k-1)=1 do k:=k+1;
     p := 0;
     for j:=1:k-1 do
     <<
-      p:={'plus,p,{'times,{'minus,findelem2(R,j,k-1)},{'expt,x,j-1}}};
+      p:={'plus,p,{'times,{'minus,findelem2(r,j,k-1)},{'expt,x,j-1}}};
     >>;
     p := {'plus,p,{'expt,x,k-1}};
     return p;

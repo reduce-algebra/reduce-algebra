@@ -38,7 +38,7 @@
 
 module spsvd;
 
-symbolic procedure spsvd(A);
+symbolic procedure spsvd(a);
   %
   % Computation of the singular values and complete orthogonal
   % decomposition of a real rectangular matrix A.
@@ -50,15 +50,15 @@ symbolic procedure spsvd(A);
   %
   %
   begin
-    scalar ee,U,V,g,x,eps,tolerance,q,s,f,h,y,test_f_splitting,
+    scalar ee,u,v,g,x,eps,tolerance,q,s,f,h,y,test_f_splitting,
            cancellation,test_f_convergence,convergence,c,z,denom,q_mat,
-           I_rounded_turned_on,trans_done,val,val2,cols,cols2,tmpu
+           i_rounded_turned_on,trans_done,val,val2,cols,cols2,tmpu
            ,tmpv;
     integer i,j,k,l,l1,m,n;
-    trans_done := I_rounded_turned_on := nil;
-    if not !*rounded then << on rounded; I_rounded_turned_on := t; >>;
+    trans_done := i_rounded_turned_on := nil;
+    if not !*rounded then << on rounded; i_rounded_turned_on := t; >>;
 
-    if not matrixp(A) then
+    if not matrixp(a) then
      rederr "Error in spsvd: non matrix input.";
 
     % The value of eps can be decreased to increase accuracy.
@@ -70,14 +70,14 @@ symbolic procedure spsvd(A);
     % Algorithm requires m >= n. If this is not the case then transpose
     % the input and swap U and V in the output (as A = tp(U) diag(q) V
     % but tp(A) = tp(V) diag(q) U  ).
-    if sprow_dim(A) < spcol_dim(A) then
-    << A := algebraic tp(A); trans_done := t; >>;
+    if sprow_dim(a) < spcol_dim(a) then
+    << a := algebraic tp(a); trans_done := t; >>;
 
-    m := sprow_dim(A);
-    n := spcol_dim(A);
+    m := sprow_dim(a);
+    n := spcol_dim(a);
 
-    U := copy_vect(A,nil);
-    V := mkempspmat(n,list('spm,n,n));
+    u := copy_vect(a,nil);
+    v := mkempspmat(n,list('spm,n,n));
     ee := mkvect(n);
     q := mkvect(n);
 
@@ -100,11 +100,11 @@ symbolic procedure spsvd(A);
       if get_num_part(s) < tolerance then g := 0
       else
       <<
-        f := findelem2(U,i,i);
+        f := findelem2(u,i,i);
         if get_num_part(f)<0 then g := specrd!:sqrt(s)
            else g := my_minus(specrd!:sqrt(s));
           h := specrd!:plus(specrd!:times(f,g),my_minus(s));
-          letmtr3(list(U,i,i),specrd!:plus(f,my_minus(g)),u,nil);
+          letmtr3(list(u,i,i),specrd!:plus(f,my_minus(g)),u,nil);
          tmpu:=copy_vect(smtp (u,nil),nil);
          cols:=findrow(tmpu,i);
          for j:=l:n do
@@ -127,7 +127,7 @@ symbolic procedure spsvd(A);
               <<val2:=atsoc(k,cols2);
                 if val2=nil then val2:=(0 . 0);
                 if not (f='(!:rd!: . 0.0)) then
-                 letmtr3(list(U,k,j),specrd!:plus(cdr val2,
+                 letmtr3(list(u,k,j),specrd!:plus(cdr val2,
                       specrd!:times(f,val)),u,nil);
                >>;
             >>;
@@ -144,11 +144,11 @@ symbolic procedure spsvd(A);
       >>;
       if get_num_part(s) < tolerance then g := 0
       else
-      <<f := findelem2(U,i,i+1);
+      <<f := findelem2(u,i,i+1);
         if get_num_part(f)<0 then g := specrd!:sqrt(s)
          else g := my_minus(specrd!:sqrt(s));
         h := specrd!:plus(specrd!:times(f,g),my_minus(s));
-        letmtr3(list(U,i,i+1),specrd!:plus(f,my_minus(g)),u,nil);
+        letmtr3(list(u,i,i+1),specrd!:plus(f,my_minus(g)),u,nil);
         cols:=findrow(u,i);
         for each xx in cdr cols do
         <<j:=car xx;
@@ -174,7 +174,7 @@ symbolic procedure spsvd(A);
               if k>=l and k<=n then
               <<val:=getv(ee,k);
                 if val=nil then val:=0;
-               letmtr3(list(U,j,k),specrd!:plus(val2,
+               letmtr3(list(u,j,k),specrd!:plus(val2,
                         specrd!:times(s,val)),u,nil);
                >>;
             >>;
@@ -195,7 +195,7 @@ symbolic procedure spsvd(A);
          <<j:=car xx;
            val:=cdr xx;
            if j>=l and j<=n then
-            letmtr3(list(V,j,i),specrd!:quotient(val,h),v,nil);
+            letmtr3(list(v,j,i),specrd!:quotient(val,h),v,nil);
          >>;
         cols:=findrow(u,i);
         tmpv:=copy_vect(smtp(v,nil),nil);
@@ -218,17 +218,17 @@ symbolic procedure spsvd(A);
              if k>=l and k<=n then
              <<val2:=atsoc(k,cols2);
                if val2=nil then val2:=(0 . 0);
-                letmtr3(list(V,k,j),specrd!:plus(cdr val2,
+                letmtr3(list(v,k,j),specrd!:plus(cdr val2,
                         specrd!:times(s,val)),v,nil);
              >>;
            >>;
          >>;
         >>;
        for j:=l:n do
-        << letmtr3(list(V,i,j),0,v,nil);
-           letmtr3(list(V,j,i),0,v,nil);
+        << letmtr3(list(v,i,j),0,v,nil);
+           letmtr3(list(v,j,i),0,v,nil);
         >>;
-      letmtr3(list(V,i,i),1,v,nil);
+      letmtr3(list(v,i,i),1,v,nil);
       g := getv(ee,i);
       l := i;
     >>;
@@ -241,10 +241,10 @@ symbolic procedure spsvd(A);
       cols:=findrow(u,i);
       for each xx in cdr cols do
       <<j:=car xx;
-         if j>=l and j<=n then letmtr3(list(U,i,j),0,u,nil);
+         if j>=l and j<=n then letmtr3(list(u,i,j),0,u,nil);
       >>;
       if get_num_part(g) neq 0 then
-      <<h := specrd!:times(findelem2(U,i,i),g);
+      <<h := specrd!:times(findelem2(u,i,i),g);
         tmpu:=copy_vect(smtp (u,nil),nil);
         cols:=findrow(tmpu,i);
         for j:=l:n do
@@ -267,7 +267,7 @@ symbolic procedure spsvd(A);
              <<val2:=atsoc(k,cols2);
                if val2=nil then val2:=(0 . 0);
                if not (f='(minus (!:rd!: . 0.0))) then
-                letmtr3(list(U,k,j),specrd!:plus(cdr val2,
+                letmtr3(list(u,k,j),specrd!:plus(cdr val2,
                  specrd!:times(f,val)),u,nil);
               >>;
             >>;
@@ -278,14 +278,14 @@ symbolic procedure spsvd(A);
            <<j:=car xx;
              val:=cdr xx;
              if j>=i and j<=m then
-               letmtr3(list(U,j,i),specrd!:quotient(val,g),u,nil);
+               letmtr3(list(u,j,i),specrd!:quotient(val,g),u,nil);
            >>;
          >>
        else for each xx in cdr cols do
          << j:=car xx;
-            if j>=i and j<=m then letmtr3(list(U,j,i),0,u,nil);
+            if j>=i and j<=m then letmtr3(list(u,j,i),0,u,nil);
          >>;
- letmtr3(list(U,i,i),specrd!:plus(findelem2(U,i,i),1),u,nil);
+ letmtr3(list(u,i,i),specrd!:plus(findelem2(u,i,i),1),u,nil);
 >>;
 
     % Diagonalisation of the bidiagonal form:
@@ -332,8 +332,8 @@ symbolic procedure spsvd(A);
             <<j:=car xx;
               val:=cdr xx;
               if j<=m then
-              << y := findelem2(U,j,l1);
-                 letmtr3(list(U,j,l1),specrd!:plus(specrd!:times(y,c),
+              << y := findelem2(u,j,l1);
+                 letmtr3(list(u,j,l1),specrd!:plus(specrd!:times(y,c),
                                          specrd!:times(val,s)),u,nil);
               >>;
             >>;
@@ -384,11 +384,11 @@ symbolic procedure spsvd(A);
           h := specrd!:times(y,s);
           y := specrd!:times(y,c);
             for j:=1:m do
-            << z := findelem2(V,j,i);
+            << z := findelem2(v,j,i);
                x :=findelem2(v,j,i-1);
-               letmtr3(list(V,j,i-1),specrd!:plus(specrd!:times(x,c),
+               letmtr3(list(v,j,i-1),specrd!:plus(specrd!:times(x,c),
                                       specrd!:times(z,s)),v,nil);
-               letmtr3(list(V,j,i),specrd!:difference(specrd!:times
+               letmtr3(list(v,j,i),specrd!:difference(specrd!:times
                                     (z,c), specrd!:times(x,s)),v,nil);
             >>;
           z := specrd!:sqrt(specrd!:plus(specrd!:times(f,f),
@@ -400,11 +400,11 @@ symbolic procedure spsvd(A);
           x := specrd!:plus(specrd!:times(my_minus(s),g),
                             specrd!:times(c,y));
           for j:=1:m do
-          <<  y := findelem2(U,j,i-1);
+          <<  y := findelem2(u,j,i-1);
               z := findelem2(u,j,i);
-              letmtr3(list(U,j,i-1),specrd!:plus(specrd!:times(y,c),
+              letmtr3(list(u,j,i-1),specrd!:plus(specrd!:times(y,c),
                                         specrd!:times(z,s)),u,nil);
-              letmtr3(list(U,j,i),specrd!:difference(specrd!:times(z,c),
+              letmtr3(list(u,j,i),specrd!:difference(specrd!:times(z,c),
                                             specrd!:times(y,s)),u,nil);
            >>;
         >>;
@@ -423,7 +423,7 @@ symbolic procedure spsvd(A);
           <<j:=car xx;
             val:=cdr xx;
             if j<=n then
-              letmtr3(list(V,j,k),my_minus(val),v,nil);
+              letmtr3(list(v,j,k),my_minus(val),v,nil);
           >>;
          >>;
         k := k-1;
@@ -431,12 +431,12 @@ symbolic procedure spsvd(A);
     >>;
 
     q_mat := spq_to_diag_matrix(q);
-    if I_rounded_turned_on then off rounded;
+    if i_rounded_turned_on then off rounded;
     v:=spden_to_sp(v); % to print it out in Sparse manner
     u:=spden_to_sp(u);
     if trans_done then
-     return {'list,algebraic tp V,q_mat,algebraic tp U}
-      else return {'list,algebraic tp U,q_mat,algebraic tp V};
+     return {'list,algebraic tp v,q_mat,algebraic tp u}
+      else return {'list,algebraic tp u,q_mat,algebraic tp v};
   end;
 
 flag('(spsvd),'opfn); % To make it available from algebraic (user) mode.
@@ -479,25 +479,25 @@ symbolic procedure spden_to_sp(list);
  end;
 
 
-symbolic procedure sprd_copy_mat(A);
+symbolic procedure sprd_copy_mat(a);
   %
   % Creates a copy of the input matrix and returns it as well as
   % reval-ing each elt to get them in !:rd!: form;
   %
   begin
-    scalar C;
+    scalar c;
     integer row_dim,column_dim;
-    row_dim := sprow_dim(A);
-    column_dim := spcol_dim(A);
-    C := list('sparsemat,list('u,row_dim,column_dim));
+    row_dim := sprow_dim(a);
+    column_dim := spcol_dim(a);
+    c := list('sparsemat,list('u,row_dim,column_dim));
     for i:=1:row_dim do
     <<
       for j:=1:column_dim do
       <<
-        letmtr3(list(C,i,j),my_reval(findelem2(A,i,j)),c,nil);
+        letmtr3(list(c,i,j),my_reval(findelem2(a,i,j)),c,nil);
       >>;
     >>;
-    return C;
+    return c;
   end;
 
 

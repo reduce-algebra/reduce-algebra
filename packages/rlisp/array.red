@@ -65,7 +65,7 @@ symbolic procedure setel1(u,v,w,dims);
 symbolic procedure dimension u; get(u,'dimension);
 
 
-comment further support for REDUCE arrays;
+COMMENT further support for REDUCE arrays;
 
 symbolic procedure typechk(u,v);
    begin scalar x;

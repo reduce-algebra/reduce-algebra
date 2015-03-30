@@ -33,7 +33,7 @@ module simpsolution$
 symbolic operator dropredundant$
 
 symbolic procedure dropredundant(ex,fl,vl,unequ)$
-comment
+COMMENT
  All arguments are algebraic, ex is the list of expressions or
  equations from which the right side is taken, fl is the list of
  functions to be sorted out, vl the list of all extra independent variables,
@@ -45,16 +45,16 @@ begin scalar a;
  vl:=union(reverse argset cdr fl,cdr vl)$
  if null ftem_ then ftem_:=cdr fl$
  a:=dropredund(list(for each a in cdr ex collect simp 
-                    if (pairp a) and (car a='EQUAL) then caddr a else a,{},
+                    if (pairp a) and (car a='equal) then caddr a else a,{},
                     cdr fl,for each a in cdr unequ collect simp a),nil,vl);
  % dropredund() returns 
  % {{{EQUAL,f,0},..},{SQ-exp,..},{{EQUAL,f,SQ-exp},..},
  %  union(nofl_arbit,flstart),{ineq_ in SQ-form}}
  return if a then 
- {'LIST,cons('LIST,car    a),
-	cons('LIST,for each b in caddr a collect
-                   {'EQUAL,cadr b,prepsq caddr b}),
-	cons('LIST,cadddr a) }
+ {'list,cons('list,car    a),
+	cons('list,for each b in caddr a collect
+                   {'equal,cadr b,prepsq caddr b}),
+	cons('list,cadddr a) }
 	     else nil
 end$
 
@@ -81,7 +81,7 @@ begin
  for each f in (newforg:=sub_fsub_in_itself_and_in_forg cadr arglist) do 
  % i.e. for each f in forg
  if not pairp f then nofl:=cons(f,nofl) else
- if car f='EQUAL then fli:=cons(f,fli)$  
+ if car f='equal then fli:=cons(f,fli)$  
  % fli has the form {{EQUAL,f,SQ-form},...}
  fred:=setdiff(ftem_,nofl);
  if null fred then return if null bak then nil
@@ -128,7 +128,7 @@ begin
             then eqinsert(car oldpdes,newpdes) 
             else <<for each f in allflags_ do flag1(car oldpdes,f)$ 
                    % initialization before calling update
-                   p:=updateSQ(car oldpdes,car newpval,nil,nil,get(car oldpdes,'fcts),
+                   p:=updatesq(car oldpdes,car newpval,nil,nil,get(car oldpdes,'fcts),
                                get(car oldpdes,'vars),t,{0},newpdes)$
                    if null p then <<
                     drop_pde_from_idties(car oldpdes,car arglist,nil);
@@ -142,7 +142,7 @@ begin
   % delete the dropped functions in the property list of the forg functions
   for each f in dropped do
   for each p in caddr redu do <<
-   if (pairp p) and (car p='EQUAL) then
+   if (pairp p) and (car p='equal) then
    put(cadr p,'fcts,delete(f,get(cadr p,'fcts)))
   >>$
 
@@ -191,7 +191,7 @@ begin
  %
  for each el1 in append(car a,cadr a) do
  if el1 then b1:=cons(if pairp el1 then 
-                      if car el1 = 'EQUAL then caddr el1
+                      if car el1 = 'equal then caddr el1
                                           else el1
 	                           else el1             ,b1);
  % b1 is the list of expressions in SQ-form to be invariant  
@@ -277,7 +277,7 @@ begin
  collect_sol_bak:=collect_sol$collect_sol:=t$
  batchcount_bak :=batchcount_$  batchcount_:=-1$
  stepcounter_bak:=stepcounter_$ stepcounter_:=0$
- b:=crackmain(mkeqSQlist(condi,nil,nil,fl,vl_,allflags_,t,
+ b:=crackmain(mkeqsqlist(condi,nil,nil,fl,vl_,allflags_,t,
                          list(0),nil),fl);  %### each element of b has now 5 elements
  batchcount_:=batchcount_bak$
  stepcounter_:=stepcounter_bak$
@@ -314,7 +314,7 @@ begin
   % of fl and free of all free variables from the solution b1 then el1:=nil .
   for each el2 in cadr b1 do % for each computed assignment
   if (pairp el2) and         % should always be true
-     (car el2='EQUAL) and    % should always be true
+     (car el2='equal) and    % should always be true
      (null smemberl(fl,caddr el2)) and
      (null smemberl(caddr b1,caddr el2)) then el1:=nil;
   if el1 then b2:=cons(b1,b2);  
@@ -333,7 +333,7 @@ begin
   drop_fct(el1)$ % depl!*:=delete(assoc(el1,depl!*),depl!*)$
   if null fldrop then nil
                  else <<    % drop at least all functions fldrop
-   redund:=for each el1 in fldrop collect list('EQUAL,el1,0); 
+   redund:=for each el1 in fldrop collect list('equal,el1,0); 
 
    % `a' has the structure of one solution of CRACK in symbolic mode,
    % {{SQ-expressions},{{EQUAL,f,SQ-form}},{f},{ineq_ in SQ-form}}
@@ -346,7 +346,7 @@ begin
 
    % substitutions in assignments
    sol:=for each el3 in cadr a collect 
-        {'EQUAL,cadr el3, subsq(caddr el3,el2)};
+        {'equal,cadr el3, subsq(caddr el3,el2)};
 
    % substitutions in inequalities 
    unequ:=for each el3 in cadddr a collect subsq(el3,el2);
@@ -367,7 +367,7 @@ begin
                    % newfu are the assignments computed in the last CRACK run
  for each el1 in cadr b do
  if not((pairp el1       ) and
-        (car el1 = 'EQUAL)     ) then arbit:=cons(el1,arbit)
+        (car el1 = 'equal)     ) then arbit:=cons(el1,arbit)
                                  else newfu:=cons(el1,newfu)$ 
  oldcon:=car a;   
  sol:=cadr a;     
@@ -384,14 +384,14 @@ begin
   % do not appear in an equation of `unsolved' which has only as
   % independent variables the same as car el1 and cdr el1 depend on.
 
-  redund:=cons(list('EQUAL,car el1,0),redund);
+  redund:=cons(list('equal,car el1,0),redund);
   fldrop:=cons(car el1,fldrop);
   % the function and its copy are both not essential
   oldcon:=for each el2 in oldcon collect subsq(el2,{(car el1 . 0)});
   sol:=for each el2 in sol collect <<
-   if (pairp el2) and (car el2='EQUAL) then
+   if (pairp el2) and (car el2='equal) then
    put(cadr el2,'fcts,delete(car el1,get(cadr el2,'fcts)));
-   {'EQUAL,cadr el2, subsq(caddr el2,{(car el1 . 0)})}
+   {'equal,cadr el2, subsq(caddr el2,{(car el1 . 0)})}
   >>$
   unequ:=for each el2 in unequ collect subsq(el2,{(car el1 . 0)});
   arbit:=delete(car el1,arbit);
@@ -402,7 +402,7 @@ begin
   fldupli2:=delete(cdr el1,fldupli2); 
   % newfu is a list of assignments of the last crackmain run
   newfu:=for each el2 in newfu collect 
-  {'EQUAL,cadr el2, subsq(caddr el2,{(car el1 . 0),(cdr el1 . 0)})}
+  {'equal,cadr el2, subsq(caddr el2,{(car el1 . 0),(cdr el1 . 0)})}
  >>                                                 else
  newcorres:=cons(el1,newcorres);
 
@@ -429,7 +429,7 @@ begin
    el3:=newfu;
    while el3 and (cadar el3 neq caar b) do el3:=cdr el3;
    if el3 then <<
-    newnewfu:=cons(list('EQUAL,el2,
+    newnewfu:=cons(list('equal,el2,
                         subtrsq(addsq(caddr el1,
                                       simp cadar el3),
                                 caddar el3)),
@@ -446,7 +446,7 @@ begin
 
    if (not freeof(el1,cdar b)) then  % image function of el2 is in el1
    % solving el1 for the image function cdar b of el2
-   newnewfu:=cons({'EQUAL,
+   newnewfu:=cons({'equal,
                    cdar b,
                    subtrsq(addsq(simp cdar b,
                                  simp el2),
@@ -457,7 +457,7 @@ begin
     el3:=newfu;
     while el3 and (cadar el3 neq cdar b) do el3:=cdr el3;
     if el3 then <<
-     newnewfu:=cons({'EQUAL,
+     newnewfu:=cons({'equal,
                      cdar b,
                      subtrsq(addsq(caddar el3,
                                    simp cadr el1),
@@ -495,7 +495,7 @@ begin
    b:=cadr el1;     % b is a new function
    el2:=newcorres;  % caar el2 the corresponding old function
    while b neq cdar el2 do el2:=cdr el2; 
-   list('EQUAL,caar el2,caddr el1)
+   list('equal,caar el2,caddr el1)
   >>;
 
   % arbit are now all functions which came in only through the
@@ -529,11 +529,11 @@ begin
      % It is checked whether the arbitrary function el1 occurs only
      % linearly algebraically, so that it can be computed by
      % solving equation car el2
-     b:=lderiv(reval {'!*SQ,caddar el2,t},el1,vla);
+     b:=lderiv(reval {'!*sq,caddar el2,t},el1,vla);
      if cdr b=1 then << % success!! cadar el2 can be set to zero!
       if (car b neq el1) and print_ then <<terpri()$
        write" It is assumed that the equation:";terpri()$
-       deprint {{'!*SQ,caddar el2,t}};
+       deprint {{'!*sq,caddar el2,t}};
        write" has always a solution in ",el1;terpri()$
        write" functions: ";
        el3:=append(flstart,arbit); 
@@ -544,13 +544,13 @@ begin
        >>;
        fctprint b; b:=nil
       >>;
-      redund:=cons(list('EQUAL,cadar el2,0),redund);
+      redund:=cons(list('equal,cadar el2,0),redund);
       fldrop:=cons(cadar el2,fldrop);
       oldcon:=for each el3 in oldcon collect subsq(el3,{(cadar el2 . 0)});
       sol:=for each el3 in sol collect <<
-       if (pairp el3) and (car el3='EQUAL) then 
+       if (pairp el3) and (car el3='equal) then 
        put(cadr el3,'fcts,delete(cadar el2,get(cadr el3,'fcts)));
-       {'EQUAL,cadr el3, subsq(caddr el3,{(cadar el2 . 0)})}
+       {'equal,cadr el3, subsq(caddr el3,{(cadar el2 . 0)})}
       >>$
       unequ:=for each el3 in unequ collect subsq(el3,{(cadar el2 . 0)});
       flstart:=delete(cadar el2,flstart);
@@ -567,7 +567,7 @@ begin
   % 12.8.2007: I don't see how newfu is used after the substitution
   el2:=for each el1 in arbit collect (el1 . 0);
   newfu:=for each el1 in newfu collect 
-         {'EQUAL,cadr el1, subsq(caddr el1,el2)}
+         {'equal,cadr el1, subsq(caddr el1,el2)}
  >>;
  if fldrop and print_ then <<
   terpri()$
@@ -587,7 +587,7 @@ symbolic procedure ncontent p$
 % based on simpnprimitive in ezgcd.
 << p := simp!* p;
 %   if polyzerop(numr p) then 0 else
-   if p=('NIL . 1) then 0 else
+   if p=('nil . 1) then 0 else
    mk!*sq(numeric!-content numr p ./ numeric!-content denr p)
 >>$
 
@@ -616,19 +616,19 @@ begin
         if (numberp n) and (n<0) then cs1:=t
                                  else
 	if lisp pairp reval algebraic n then <<
-	  if part(n,0)='MINUS then cs1:=t else
-	  if part(n,0)='QUOTIENT then
+	  if part(n,0)='minus then cs1:=t else
+	  if part(n,0)='quotient then
           <<nu:=part(n,1);
             if lisp( pairp reval algebraic nu) and 
-               (part(nu,0)='MINUS) then cs1:=t else
+               (part(nu,0)='minus) then cs1:=t else
             if (numberp nu) and (nu<0) then cs1:=t else
-            if (arglength(nu)>0) and (part(nu,0)='PLUS) and 
+            if (arglength(nu)>0) and (part(nu,0)='plus) and 
                (arglength(part(nu,1))>0) and 
-               (part(part(nu,1),0)='MINUS) then cs1:=t
+               (part(part(nu,1),0)='minus) then cs1:=t
                                            else cs2:=nil
           >>                     else 
-	  if (part(n,0)='PLUS) and (arglength(part(n,1))>0) and 
-             (part(part(n,1),0)='MINUS) then cs1:=t
+	  if (part(n,0)='plus) and (arglength(part(n,1))>0) and 
+             (part(part(n,1),0)='minus) then cs1:=t
                                         else cs2:=nil
 	>>;
 	n:=ncontent(n);
@@ -652,7 +652,7 @@ begin
 end$ % of absorbconst
 
 algebraic procedure drop_const(oldsoln, vars, additive)$
-comment
+COMMENT
   oldsoln is the output of a CRACK call. In all solutions functions
   which are independent of all elements of vars are dropped from
   the list of free functions/constants and
@@ -713,7 +713,7 @@ begin
   return soln
 end$ % of drop_const
 
-comment
+COMMENT
  The following are routines to help finding bugs. 
  Advantages and disadvantages of current routines:
 
@@ -817,10 +817,10 @@ begin scalar pdes,forg,a,fsub,solu,l1,l2,batch_bak,session_bak,
 
  forg:=sub_fsub_in_itself_and_in_forg forg$
  for each a in forg do
- if (pairp a) and (car a='EQUAL) then 
- fsub:=cons({'EQUAL,cadr a,{'!*SQ,caddr a,t}},fsub)$
+ if (pairp a) and (car a='equal) then 
+ fsub:=cons({'equal,cadr a,{'!*sq,caddr a,t}},fsub)$
 
- if fsub then solu:=algebraic(sub(lisp cons('LIST,fsub),solu))$
+ if fsub then solu:=algebraic(sub(lisp cons('list,fsub),solu))$
  print_bak:=print_$
  if null !*batch_mode then print_:=8
                       else print_:=nil$
@@ -838,7 +838,7 @@ begin scalar pdes,forg,a,fsub,solu,l1,l2,batch_bak,session_bak,
  % solu should be in {LIST,!*SQ-form,...} but to make sure it is
  % evaluated with aeval again
  solu:=for each l1 in cdr aeval solu collect
-       if pairp l1 and (car l1='!*SQ) then cadr l1
+       if pairp l1 and (car l1='!*sq) then cadr l1
                                       else simp l1$
  ftem_:=setdiff(ftem_,freef)$
  a:=ftem_;
@@ -853,9 +853,9 @@ begin scalar pdes,forg,a,fsub,solu,l1,l2,batch_bak,session_bak,
   a:=setdiff(a,freef)$
   for each l1 in pdes do solu:=cons(get(l1,'sqval),solu)$
   pdes:=nil$
-  pdes:=mkeqSQlist(solu,nil,nil,a,vl_,allflags_,t,list(0),pdes)$
+  pdes:=mkeqsqlist(solu,nil,nil,a,vl_,allflags_,t,list(0),pdes)$
  >>       else  
- pdes:=append(mkeqSQlist(solu,nil,nil,a,vl_,allflags_,t,list(0),pdes),pdes)$
+ pdes:=append(mkeqsqlist(solu,nil,nil,a,vl_,allflags_,t,list(0),pdes),pdes)$
  print_more:=nil$
  proc_list_:=delete('solution_check1,proc_list_);
  % It must be possible to specify the modules to be used with cp in order
@@ -934,7 +934,7 @@ begin scalar g,h,k,p,ineq_cp,hsub$
  >>$
  ineq_cp:=ineq_$
  while ineq_cp and 
-       not zerop(h:=algebraic(sub(hsub,lisp {'!*SQ,car ineq_cp,t}))) do 
+       not zerop(h:=algebraic(sub(hsub,lisp {'!*sq,car ineq_cp,t}))) do 
  ineq_cp:=cdr ineq_cp$
  if null ineq_cp then <<
   ineq_cp:=ineq_or$
@@ -946,7 +946,7 @@ begin scalar g,h,k,p,ineq_cp,hsub$
            % car g is a factor list, we multiply all SQ-form factors
            p:=caar g;
            for each k in cdar g do p:=multsq(p,k);
-           {'!*SQ,p,t}
+           {'!*sq,p,t}
          >> ))) do g:=cdr g$
    g
   >> do ineq_cp:=cdr ineq_cp$
@@ -955,8 +955,8 @@ begin scalar g,h,k,p,ineq_cp,hsub$
  write".......... No inequality was violated. ............" else <<
   write"########## At least one inequality was violated: "$
   mathprint                    % car ineq_cp is a single or-inequality
-  cons('LIST,for each g in car ineq_cp collect   % g is a factor list
-      cons('LIST,for each k in g collect {'!*SQ,k,t})) % k is a factor
+  cons('list,for each g in car ineq_cp collect   % g is a factor list
+      cons('list,for each k in g collect {'!*sq,k,t})) % k is a factor
  >>$
  terpri()$
 end$
@@ -1029,7 +1029,7 @@ begin scalar solu,a,b,p,f,h,cpa$
 
  % test all pdes
  for each p in car arglist do <<                    
-  h:=algebraic (sub(lisp a,lisp {'!*SQ,get(p,'sqval),t}))$   
+  h:=algebraic (sub(lisp a,lisp {'!*sq,get(p,'sqval),t}))$   
   % This will be tested later due to lack of time now and because
   % there are no remaining equations in the solution to be used now.
   % if not zerop h and b then ; % reduce h moulo b

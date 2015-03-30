@@ -28,7 +28,7 @@ module cpxrn; % *** Support for Complex Rationals.
 %
 
 
-Comment this module defines a complex rational as:
+COMMENT this module defines a complex rational as:
 
       (<tag>. (<structure> . <structure>>).
 

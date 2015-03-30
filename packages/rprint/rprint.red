@@ -32,7 +32,7 @@ create!-package('(rprint),'(util));
 fluid '(!*lower !*n buffp combuff!* curmark curpos orig pretop
         pretoprinf rmar rprifn!* rterfn!*);
 
-comment RPRIFN!* allows output from RPRINT to be handled differently,
+COMMENT RPRIFN!* allows output from RPRINT to be handled differently,
         RTERFN!* allows end of lines to be handled differently;
 
 pretop := 'op; pretoprinf := 'oprinf;
@@ -577,7 +577,7 @@ symbolic procedure forallox u;
 
 put('forall,pretoprinf,'forallox);
 
-comment Support for printing algebraic mode code;
+COMMENT Support for printing algebraic mode code;
 
 put('aeval!*,pretoprinf,'aevalox);
 
@@ -614,7 +614,7 @@ put('!:rd!:,pretoprinf,function (lambda u;
 put('plus2,pretoprinf,function(lambda u;mprino('plus.u)));
 
 
-comment Declarations needed by old parser;
+COMMENT Declarations needed by old parser;
 
 if null get('!*semicol!*,'op)
   then <<put('!*semicol!*,'op,'((-1 0)));
@@ -665,7 +665,7 @@ symbolic procedure addmarks u;
    begin scalar bool,x;
       while u do
          <<if car u eq '!  then (if null bool
-                then <<bool := t; x := {'M,'L} . x>>)
+                then <<bool := t; x := {'m,'l} . x>>)
                else bool := nil;
            x := car u . x; u := cdr u>>;
       rplacd(buffp,reversip!* x);
@@ -673,7 +673,7 @@ symbolic procedure addmarks u;
    end;
 
 
-comment RPRINT MODULE, Part 2;
+COMMENT RPRINT MODULE, Part 2;
 
 fluid '(orig curpos);
 
@@ -809,7 +809,7 @@ symbolic procedure stringspace(u,n);
    if n<1 then nil else car u eq '!" or stringspace(cdr u,n - 1);
 
 
-comment Some interfaces needed;
+COMMENT Some interfaces needed;
 
 symbolic procedure prin20x u;
    if rprifn!* then apply1(rprifn!*,u) else prin2 u;

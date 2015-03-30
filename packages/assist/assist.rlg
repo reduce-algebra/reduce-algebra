@@ -3,7 +3,7 @@
 % Author: H. Caprasse <hubert.caprasse@ulg.ac.be>
 %load_package assist$
 
-Comment 2. HELP for ASSIST:;
+COMMENT 2. HELP for ASSIST:;
 
 ;
 
@@ -52,7 +52,7 @@ assisthelp(7);
 ;
 
 
-Comment 3. CONTROL OF SWITCHES:;
+COMMENT 3. CONTROL OF SWITCHES:;
 
 ;
 
@@ -141,7 +141,7 @@ if !*gcd then "the switch gcd is on";
 ;
 
 
-Comment 4. MANIPULATION OF THE LIST STRUCTURE:;
+COMMENT 4. MANIPULATION OF THE LIST STRUCTURE:;
 
 ;
 
@@ -152,7 +152,7 @@ t1:=mklist(5);
 t1 := {0,0,0,0,0}
 
 
-Comment   MKLIST does NEVER destroy anything ;
+COMMENT   MKLIST does NEVER destroy anything ;
 
 
 mklist(t1,10);
@@ -483,7 +483,7 @@ appendn(li,li,li);
 clear t1,li;
 
 
-comment 5. THE BAG STRUCTURE AND OTHER FUNCTION FOR LISTS AND BAGS.
+COMMENT 5. THE BAG STRUCTURE AND OTHER FUNCTION FOR LISTS AND BAGS.
  ;
 
 aa:=bag(x,1,"A");
@@ -827,7 +827,7 @@ a1
 
 ;
 
-comment Association list or bag may be constructed and thoroughly used;
+COMMENT Association list or bag may be constructed and thoroughly used;
 
 ;
 
@@ -858,7 +858,7 @@ ab := bg1(bg1(1,x1),bg1(2,x2),bg1(3,x3))
 clear b;
 
 
-comment : A BOOLEAN function abaglistp to test if it is an association;
+COMMENT : A BOOLEAN function abaglistp to test if it is an association;
 
 ;
 
@@ -945,7 +945,7 @@ bag(bag(x,b2),bag(a1,a2))
 ;
 
 
-Comment 6. SETS AND THEIR MANIPULATION FUNCTIONS
+COMMENT 6. SETS AND THEIR MANIPULATION FUNCTIONS
 ;
 
 ts:=mkset list(a1,a1,a,2,2);
@@ -997,7 +997,7 @@ set1(a1,a,2)
 
 
 
-Comment 7. GENERAL PURPOSE UTILITY FUNCTIONS :;
+COMMENT 7. GENERAL PURPOSE UTILITY FUNCTIONS :;
 
 ;
 
@@ -1465,7 +1465,7 @@ list_to_array({{a},{b},{c},{d}},2,ar);
 ;
 
 
-comment 8. PROPERTIES AND FLAGS:;
+COMMENT 8. PROPERTIES AND FLAGS:;
 
 ;
 
@@ -1525,7 +1525,7 @@ displayprop(x1,propname);
 ;
 
 
-Comment 9. CONTROL FUNCTIONS:;
+COMMENT 9. CONTROL FUNCTIONS:;
 
 ;
 
@@ -1671,7 +1671,7 @@ clear op;
 ;
 
 
-comment end of the interactive part;
+COMMENT end of the interactive part;
 
 ;
 
@@ -1707,12 +1707,12 @@ clearfunctions abs,tan;
 ;
 
 
-comment  THIS FUNCTION MUST BE USED WITH CARE !!!!!;
+COMMENT  THIS FUNCTION MUST BE USED WITH CARE !!!!!;
 
 ;
 
 
-Comment 10. HANDLING OF POLYNOMIALS
+COMMENT 10. HANDLING OF POLYNOMIALS
 
 clear x,y,z;
 
@@ -1978,7 +1978,7 @@ lowestdeg(pol,y);
 ;
 
 
-Comment 11.  HANDLING OF SOME TRANSCENDENTAL FUNCTIONS:;
+COMMENT 11.  HANDLING OF SOME TRANSCENDENTAL FUNCTIONS:;
 
 ;
 
@@ -2043,7 +2043,7 @@ clear a,b,c,d;
 
 
 
-Comment 13. HANDLING OF N-DIMENSIONAL VECTORS:;
+COMMENT 13. HANDLING OF N-DIMENSIONAL VECTORS:;
 
 ;
 
@@ -2105,7 +2105,7 @@ scalvect(crossvect(rest u1,rest u2),minvect(rest u1,rest u2));
 ;
 
 
-Comment 14. HANDLING OF GRASSMANN OPERATORS:;
+COMMENT 14. HANDLING OF GRASSMANN OPERATORS:;
 
 ;
 
@@ -2209,7 +2209,7 @@ t
 ;
 
 
-Comment  15. HANDLING OF MATRICES:;
+COMMENT  15. HANDLING OF MATRICES:;
 
 ;
 
@@ -2275,7 +2275,7 @@ baglmat(bag(bag(a1),bag(a2)),bag);
 off errcont;
 
 
-comment  Right since a bag-like object cannot become a matrix.;
+COMMENT  Right since a bag-like object cannot become a matrix.;
 
 ;
 
@@ -2479,7 +2479,7 @@ hermat(bb,hbb);
 ;
 
 
-load_package HEPHYS;
+load_package hephys;
 
 
 

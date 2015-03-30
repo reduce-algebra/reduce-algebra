@@ -826,7 +826,7 @@ symbolic procedure mkrootsql(u,n);
     else multsq(mkrootsq(caar u,n),mkrootsql(cdr u,n));
 
 
-comment The following four procedures return a partitioned root
+COMMENT The following four procedures return a partitioned root
     expression, which is a dotted pair of integral part (a standard
     form) and radical part (a list of prefix expressions). The whole
     structure represents U**(1/N);

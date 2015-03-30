@@ -66,7 +66,7 @@ symbolic procedure eval_generic(fn,u);
              if x := get(type j,'prefix_convert)
                then apply1(x,value j) else value j;
     if u and car u=0 and flagp(fn,'odd) and not flagp(fn,'nonzero)
-      then return ZERO;
+      then return zero;
     u := fn . u;
     if flagp(fn,'noncom) then ncmp!* := t;
     if null subfg!* then go to c

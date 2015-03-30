@@ -148,7 +148,7 @@ e^(u^6)/u^2;
 
 % The following two integrals must give identical results.
 
-I1 := int(cosh(x)^2,x);
+i1 := int(cosh(x)^2,x);
 
 
         4*x      2*x
@@ -157,7 +157,7 @@ i1 := ---------------------
                 2*x
              8*e
 
-I2 := int(1/sech(x)^2,x);
+i2 := int(1/sech(x)^2,x);
 
 
         4*x      2*x
@@ -167,7 +167,7 @@ i2 := ---------------------
              8*e
 
 
-I1-I2;
+i1-i2;
 
 
 0
@@ -175,7 +175,7 @@ I1-I2;
 
 % as must these two
 
-I3 := int(sinh(x)^2,x);
+i3 := int(sinh(x)^2,x);
 
 
         4*x      2*x
@@ -184,7 +184,7 @@ i3 := ---------------------
                 2*x
              8*e
 
-I4 := int(1/csch(x)^2,x);
+i4 := int(1/csch(x)^2,x);
 
 
         4*x      2*x
@@ -194,7 +194,7 @@ i4 := ---------------------
              8*e
 
 
-I3-I4;
+i3-i4;
 
 
 0
@@ -420,7 +420,7 @@ int(-------------------------,x)
                 b(x)
 
 
-comment check two integration rules that were wrong;
+COMMENT check two integration rules that were wrong;
 
 
 int(1/log(a*x+b),x);

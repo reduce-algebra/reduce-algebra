@@ -39,7 +39,7 @@ symbolic operator termxread$
 
 %----------------------------
 
-algebraic procedure ApplySym(problem,Symtry);
+algebraic procedure applysym(problem,symtry);
 %  problem ... {{equations},{functions},{variables}}
 %  Symtry  ... {{xi_..=..,..,eta_..=..,..},{constants in first list}}
 begin
@@ -49,7 +49,7 @@ begin
   lisp(change_prompt_to "" )$
   backup_reduce_flags()$
   clear sy_,sym_;
-  array sym_(length(second Symtry));
+  array sym_(length(second symtry));
   symbolic put('sy_,'simpfn,'simpiden)$
   symbolic put('ff,'simpfn,'simpiden)$
   symbolic put('ffi,'simpfn,'simpiden)$
@@ -58,13 +58,13 @@ begin
   ylist := maklist second problem;
   xlist := maklist  third problem;
 
-  con:=second Symtry;
+  con:=second symtry;
   symanz:=0;
   for each e1 in con do           % i.e. for all symmetries do:
   if freeof(eqlist,e1)    and     %------ only for symmetries
      freeoflist(e1,xlist) and
      freeoflist(e1,ylist) then    %------ no pseudo-Lie-symm.
-  <<genlist:=sub(e1=1,first Symtry);  %------ calculate symmetry
+  <<genlist:=sub(e1=1,first symtry);  %------ calculate symmetry
     for each el2 in con do
     if el1 neq el2 then genlist:=sub(el2=0,genlist);
     symanz:=symanz+1;
@@ -184,7 +184,7 @@ begin
 	  h3:=termxread();
 	  if h3 neq nil then oldsol:=h3
 	>> until oldsol neq nil;
-	h3:=NewParam(oldsol,genlist,h2);
+	h3:=newparam(oldsol,genlist,h2);
 	if h3 neq nil then oldsol:=h3
       >>
     >>
@@ -198,7 +198,7 @@ end$ % of ApplySym
 
 %----------------------------
 
-algebraic procedure NewParam(oldsol,genlist,u_)$
+algebraic procedure newparam(oldsol,genlist,u_)$
 % u_ is the name of the new parameter
 begin
   scalar h1,h2,h20,h3,h30,h4,vari,pde,e1,printold,clist,newsol,
@@ -289,7 +289,7 @@ end$
 
 %----------------------------
 
-algebraic procedure TransDf(y,yslist,vlist,indxlist)$
+algebraic procedure transdf(y,yslist,vlist,indxlist)$
 begin
  scalar m,n,e1,dfy;
  return
@@ -297,26 +297,26 @@ begin
 		else <<
   m:=first indxlist;
   n:=0;
-  dfy:=TransDf(y,yslist,vlist,rest indxlist);
+  dfy:=transdf(y,yslist,vlist,rest indxlist);
   for each e1 in vlist sum <<
    n:=n+1;
-   df(dfy,e1)*Dv!/Dx(n,m)   
+   df(dfy,e1)*dv!/dx(n,m)   
   >>
  >>
 end$ % of TransDf
 
 %----------------------------
 
-algebraic procedure TransDeriv(yik,yslist,vlist)$
+algebraic procedure transderiv(yik,yslist,vlist)$
 begin
  scalar indxlist,y,l1,l2;
- indxlist:=lisp cons('LIST,combidif(yik))$
- return TransDf(first indxlist,yslist,vlist,rest indxlist)
+ indxlist:=lisp cons('list,combidif(yik))$
+ return transdf(first indxlist,yslist,vlist,rest indxlist)
 end$ % of TransDeriv
 
 %----------------------------
 
-algebraic procedure DeTrafo(eqlist,yslist,xslist,ulist,vlist)$
+algebraic procedure detrafo(eqlist,yslist,xslist,ulist,vlist)$
 % Transformations of all orders are performed (point-, contact-,...)
 % but only x-derivatives of y's are transformed. To transform other
 % any other derivatives, subdiff1 must be extended to include all other
@@ -324,9 +324,9 @@ algebraic procedure DeTrafo(eqlist,yslist,xslist,ulist,vlist)$
 begin
  scalar avar,nvar,detpd,n,m,ordr,e1,e2,e3,sb;
  m:=length(xslist); n:=length(yslist)+m;
- clear dyx!/duv,Dv!/Dx;
+ clear dyx!/duv,dv!/dx;
  matrix dyx!/duv(n,n);
- matrix Dv!/Dx(m,m);
+ matrix dv!/dx(m,m);
  avar:=append(yslist,xslist);
  nvar:=append(ulist,vlist);
  n:=0;
@@ -358,21 +358,21 @@ begin
   n:=n+1;m:=0;
   for each e2 in vlist do <<
    m:=m+1;
-   Dv!/Dx(n,m):=total_alg_mode_deriv(rhs e1,e2) 
+   dv!/dx(n,m):=total_alg_mode_deriv(rhs e1,e2) 
              % it is assumed ulist does depend on vlist
   >>
  >>;
- Dv!/Dx:=Dv!/Dx**(-1);
+ dv!/dx:=dv!/dx**(-1);
 
  % Substitution of all derivatives
  for each e1 in sb do
  for each e2 in e1 do <<
   if not freeof(eqlist,lhs e2) then <<
    % which function is to be differentiated wrt. which variable
-   eqlist:=sub(lhs e2=TransDeriv(rhs e2,yslist,vlist),eqlist)
+   eqlist:=sub(lhs e2=transderiv(rhs e2,yslist,vlist),eqlist)
   >>
  >>;
- clear  Dv!/Dx;
+ clear  dv!/dx;
  return sub(xslist,sub(yslist,eqlist))$
 end$ % of DeTrafo
 
@@ -440,7 +440,7 @@ begin scalar h1,h2$
 
   if h2={} then h1:=t
 	   else h2:=first h2; %--- possibly other solutions
-  if LIST neq lisp(car algebraic h2) then h1:=t else
+  if list neq lisp(car algebraic h2) then h1:=t else
   if length(h2)<(nx+ny) then el2:=t;
   if h1 then repeat lisp
   <<write"The algebraic system ",append(xslist,yslist),
@@ -451,7 +451,7 @@ begin scalar h1,h2$
 	 "semicolon ; to end this investigation:";
     algebraic(h2:=termxread())
   >> until h2=nil or ( lisp(pairp algebraic h2)    and
-		     (LIST=lisp(car algebraic h2)) and
+		     (list=lisp(car algebraic h2)) and
 		     (length(h2)=(nx+ny))              )
 	else
   <<lisp<<terpri()$
@@ -671,7 +671,7 @@ begin scalar vari,pde,el1,el2,el3,el4,copgen,symvarfound,
 		write"- depends on U_ and if set to zero determines U_"$
 		terpri()>>$
 	      h:=termxread()$
-	    >> until not freeof(h,U_)$
+	    >> until not freeof(h,u_)$
 	    {h}
 	  >>
 	>>     else   % a PDE or a system of DEs
@@ -772,7 +772,7 @@ begin scalar vari,pde,el1,el2,el3,el4,copgen,symvarfound,
 	    >>;
 	    h:=einfachst(el1,u_);
 	    if lisp<<h2:=reval algebraic(num h);
-		     (not pairp h2) or (car h2 neq 'PLUS)>> then
+		     (not pairp h2) or (car h2 neq 'plus)>> then
 	    h:=num(h+1);
     %       if h= first el1 then
     %       if freeof(num(h+second el1),u_) then h:=num(h+2*second el1)
@@ -837,7 +837,7 @@ begin scalar vari,pde,el1,el2,el3,el4,copgen,symvarfound,
 	    for each el3 in ylist do
 	    for each el4 in xlist do depend el3,el4;
 
-	    eqlist:=DeTrafo(eqlist,yslist,xslist,ulist,vlist);
+	    eqlist:=detrafo(eqlist,yslist,xslist,ulist,vlist);
             lisp(
             if tr_as then <<
               terpri()$

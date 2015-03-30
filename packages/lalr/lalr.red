@@ -45,7 +45,7 @@ global '(dot_char rpar_char rsquare_char);
 global '(goto_index goto_old_state goto_new_state);
 global '(action_index, action_terminal action_result);
 global '(action_first_error action_error_messages);
-global '(action_fn action_A action_n);
+global '(action_fn action_a action_n);
 
 global '(terminals non_terminals symbols goto_cache action_map);
 fluid '(renamings);

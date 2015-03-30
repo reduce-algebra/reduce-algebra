@@ -309,7 +309,7 @@ symbolic procedure mtp v;
 symbolic procedure mchsarg(u,v,w);
    %  From ACH: I don't understand why I put in the following reversip,
    %  since it causes the least direct match to come back first.
-   reversip!* if mtp v and (W NEQ 'TIMES OR noncomfree u)
+   reversip!* if mtp v and (w neq 'times or noncomfree u)
      then for each j in noncomperm v collect pair(j,u)
     else for each j in noncomperm u join mcharg2(j,v,list nil,w);
 
@@ -326,19 +326,19 @@ symbolic procedure noncomperm u;
         where x=noncomdel(j,u);
 
 symbolic procedure noncomdel(u,v);
-   if null NONCOMP!* u then delete(u,v) else noncomdel1(u,v);
+   if null noncomp!* u then delete(u,v) else noncomdel1(u,v);
 
 symbolic procedure noncomdel1(u,v);
    begin scalar z;
    a: if null v then return reversip!* z
        else if u eq car v then return reversip2(z,cdr v)
-       else if NONCOMP!* car v then return 'failed;
+       else if noncomp!* car v then return 'failed;
       z := car v . z;
       v := cdr v;
       go to a
    end;
 
-symbolic procedure NONCOMP!* u;
+symbolic procedure noncomp!* u;
    noncomp u or eqcar(u,'expt) and noncomp cadr u;
 
 flagop antisymmetric,symmetric;

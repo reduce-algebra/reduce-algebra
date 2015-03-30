@@ -33,7 +33,7 @@ fluid '(!*edsverbose !*edsdebug !*arbvars !*varopt !*groebopt
         !*edssloppy !*edsdisjoint);
 
 
-Comment.  The edsdisjoin routines decompose a solution returned by
+COMMENT.  The edsdisjoin routines decompose a solution returned by
 eds*solve into a disjoint union of solutions (rmaps).  The operations
 intersection and difference are somewhat slow, so the whole process is
 only performed automatically if the switch edsdisjoint is on.

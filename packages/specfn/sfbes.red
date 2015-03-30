@@ -57,7 +57,7 @@ imports complex!*on!*switch, complex!*off!*switch,
 
 global '(!!logten);
 
-algebraic operator besselJ, besselY, besselI, besselK, hankel1, hankel2;
+algebraic operator BesselJ, BesselY, BesselI, BesselK, hankel1, hankel2;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%besselj%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % an improvement proposed by Alain Moussiaux
@@ -126,7 +126,7 @@ return !10j(nu,x);
 end;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-algebraic <<let besselj(~n,~x) =>  compute!:cvpr130108(n,x)
+algebraic <<let BesselJ(~n,~x) =>  compute!:cvpr130108(n,x)
                            when (numberp n and den n = 2 and
                             fixp(num n) and  abs(num n) < 6)>>;
 
@@ -134,41 +134,41 @@ symbolic operator do!*j, do!*y, do!*i;
 
 algebraic (bessel!*rules := {
 
-besselJ(~n,0)  => 1 when n=0,    % We need this form to be sure rules
+BesselJ(~n,0)  => 1 when n=0,    % We need this form to be sure rules
                                  % are in right order.
-besselJ(~n,0)  => 0
+BesselJ(~n,0)  => 0
    when numberp n and n neq 0,
 
-besselY(~n,0)  =>  infinity,
+BesselY(~n,0)  =>  infinity,
 
-besselJ(1/2,~z)  =>  sqrt(2/(pi*z)) * sin(z),
+BesselJ(1/2,~z)  =>  sqrt(2/(pi*z)) * sin(z),
 
-besselJ(-1/2,~z)  =>  sqrt(2/(pi*z)) * cos(z),
+BesselJ(-1/2,~z)  =>  sqrt(2/(pi*z)) * cos(z),
 
-besselY(-1/2,~z)  =>  sqrt(2/(pi*z)) * sin(z),
+BesselY(-1/2,~z)  =>  sqrt(2/(pi*z)) * sin(z),
 
-besselY(1/2,~z)  =>  - sqrt(2/(pi*z)) * cos(z),
+BesselY(1/2,~z)  =>  - sqrt(2/(pi*z)) * cos(z),
 
-besselK(~n,~z)  =>  sqrt(Pi/(2*z))*e^(-z)
+BesselK(~n,~z)  =>  sqrt(pi/(2*z))*e^(-z)
    when (n = 1/2 or n=-1/2),
 
-besselI(1/2,~z)  =>  1/sqrt(Pi*2*z)*(e^z - e^(-z)),
+BesselI(1/2,~z)  =>  1/sqrt(pi*2*z)*(e^z - e^(-z)),
 
-besselI(-1/2,~z)  =>  1/sqrt(pi*2*z)*(e^z + e^(-z)),
+BesselI(-1/2,~z)  =>  1/sqrt(pi*2*z)*(e^z + e^(-z)),
 
 % J and Y for negative values and indices.
 
-besselJ(~n,~z)  =>  ((-1)**n) * besselJ(-n,z)
+BesselJ(~n,~z)  =>  ((-1)**n) * BesselJ(-n,z)
    when numberp n and impart n=0 and n=floor n and n < 0,
 
-besselJ(~n,~z)  =>  ((-1)**n) * besselJ(n,-z)
+BesselJ(~n,~z)  =>  ((-1)**n) * BesselJ(n,-z)
    when numberp n and impart n=0 and n=floor n
         and numberp z and repart z < 0,
 
-besselY(~n,~z)  =>  ((-1)**n) * besselY(-n,z)
+BesselY(~n,~z)  =>  ((-1)**n) * BesselY(-n,z)
    when numberp n and impart n=0 and n=floor n and n < 0,
 
-besselY(~n,~z)  =>  ((besselJ(n,z)*cos(n*pi))-(besselJ(-n,z)))/sin(n*pi)
+BesselY(~n,~z)  =>  ((BesselJ(n,z)*cos(n*pi))-(BesselJ(-n,z)))/sin(n*pi)
    when not symbolic !*rounded
       and numberp n
                and (impart n neq 0 or not (repart n = floor repart n)),
@@ -181,26 +181,26 @@ hankel1(~n,~z)  =>  sqrt(2/(pi*z)) * (exp(i*z)/i)
 hankel2(~n,~z)  =>  sqrt(2/(pi*z)) * (exp(-i*z)/(-i))
    when symbolic !*complex and n = 1/2,
 
-hankel1(~n,~z)  =>  besselJ(n,z) + i * besselY(n,z)
+hankel1(~n,~z)  =>  BesselJ(n,z) + i * BesselY(n,z)
    when symbolic !*complex and not symbolic !*rounded,
 
-hankel2(~n,~z)  =>  besselJ(n,z) - i * besselY(n,z)
+hankel2(~n,~z)  =>  BesselJ(n,z) - i * BesselY(n,z)
    when symbolic !*complex and not symbolic !*rounded,
 
 
 % Modified Bessel functions I and K.
 
-besselI(~n,0)  =>  (if n = 0 then 1 else 0) when numberp n,
+BesselI(~n,0)  =>  (if n = 0 then 1 else 0) when numberp n,
 
-besselI(~n,~z)  =>  besselI(-n,z)
+BesselI(~n,~z)  =>  BesselI(-n,z)
    when numberp n and impart n=0 and n=floor n and n < 0,
 
-besselK(~n,~z)  =>  besselK(-n,z)
+BesselK(~n,~z)  =>  BesselK(-n,z)
    when numberp n and impart n=0 and n=floor n and n < 0,
 
-besselK(~n,0)  =>  infinity,
+BesselK(~n,0)  =>  infinity,
 
-besselK(~n,~z)  =>  (pi/2)*((besselI(-n,z) - besselI(n,z))/(sin(n*pi)))
+BesselK(~n,~z)  =>  (pi/2)*((BesselI(-n,z) - BesselI(n,z))/(sin(n*pi)))
    when numberp n and impart n = 0 and not (n = floor n),
 
 
@@ -212,23 +212,23 @@ besselK(~n,~z)  =>  (pi/2)*((besselI(-n,z) - besselI(n,z))/(sin(n*pi)))
 % df(besselK(~n,~z),z)  =>  -besselK(1,z) when numberp n and n = 0,
 
 % AS (9.1.26 and 27)
-df(besselJ(~n,~z),z)  =>  besselJ(n-1,z) - (n/z) * besselJ(n,z),
-df(besselY(~n,~z),z)  =>  besselY(n-1,z) - (n/z) * besselY(n,z),
+df(BesselJ(~n,~z),z)  =>  BesselJ(n-1,z) - (n/z) * BesselJ(n,z),
+df(BesselY(~n,~z),z)  =>  BesselY(n-1,z) - (n/z) * BesselY(n,z),
 df(BesselK(~n,~z),z)  =>  - BesselK(n-1,z) - (n/z) * BesselK(n,z),
 df(hankel1(~n,~z),z)  =>  hankel1(n-1,z) - (n/z) * hankel1(n,z),
 df(hankel2(~n,~z),z)  =>  hankel2(n-1,z) - (n/z) * hankel2(n,z),
-df(besselI(~n,~z),z)  => (besselI(n-1,z) + besselI(n+1,z)) / 2,
+df(BesselI(~n,~z),z)  => (BesselI(n-1,z) + BesselI(n+1,z)) / 2,
 
 
 % Sending to be computed
 
-besselJ(~n,~z)  =>  do!*j(n,z)
+BesselJ(~n,~z)  =>  do!*j(n,z)
    when numberp n and numberp z and symbolic !*rounded,
 
-besselY(~n,~z)  =>  do!*y(n,z)
+BesselY(~n,~z)  =>  do!*y(n,z)
    when numberp n and numberp z and symbolic !*rounded,
 
-besselI(~n,~z)  =>  do!*i(n,z)
+BesselI(~n,~z)  =>  do!*i(n,z)
    when numberp n and numberp z and symbolic !*rounded
 
 })$
@@ -494,7 +494,7 @@ symbolic procedure y!*calc!*s!*sub(n,z,ps,fkgamnk,prepre, st0);
       n := sq2bf!* n; n0 := conv!:bf2i n;
       tpi := pi!*();
 
-      if st0 = '(LIST) then
+      if st0 = '(list) then
          << modify := divbf(exp!:
                   (timbf(n, log!:(divbf(z, bftwo!*), c!:prec!:()+2)),
                      c!:prec!:()), tpi);
@@ -732,7 +732,7 @@ algebraic procedure y!*modifier!*calc(n,z);
 
       %  Simple expression for start value when n<1.
       if (n < 1) then
-               << start := ((2/pi) * log(z/2) * besselJ(n,z));
+               << start := ((2/pi) * log(z/2) * BesselJ(n,z));
                   fc := factorial n >>
 
       %  If n smallish, just sum using factorials. (REDUCE
@@ -744,7 +744,7 @@ algebraic procedure y!*modifier!*calc(n,z);
                << start := - (((z/2) ** (-n)) / pi) *
                      (for k := 0:(n-1) sum
                                ((factorial (n-k-1) * (((z**2)/4) ** k)) /
-                                 (factorial k))) + ((2/pi)*log(z/2)*besselJ(n,z));
+                                 (factorial k))) + ((2/pi)*log(z/2)*BesselJ(n,z));
                   fc := factorial n >>
 
       %  If n largish, avoid computing factorials, and try
@@ -760,7 +760,7 @@ algebraic procedure y!*modifier!*calc(n,z);
                                zfsqp := zfsqp * zfsq >>;
                   start := start + (fnk * zfsqp / fk);
                   start := - ((1/(modify*(pi**2)))*start)+
-                     ((2/pi)*log(z/2)*besselJ(n,z)) >>;
+                     ((2/pi)*log(z/2)*BesselJ(n,z)) >>;
 
       precision prepre;
       return {start, modify, fc};
@@ -923,7 +923,7 @@ algebraic procedure y!*reexpress(n,z);
       premsg := lisp !*msg;
       off msg;
       off rounded;
-      result := ((besselJ(n,z)*cos(n*pi))-(besselJ(-n,z)))/sin(n*pi);
+      result := ((BesselJ(n,z)*cos(n*pi))-(BesselJ(-n,z)))/sin(n*pi);
       on rounded;
       if premsg then on msg;
       return result;
@@ -955,7 +955,7 @@ algebraic procedure y!*calc!*sc(n,z);
       precom := complex!*on!*switch();
       ic := impart(log(-pi/2));
       complex!*restore!*switch(precom);
-      ic := ic*(2/pi)*besselj(n,-z);
+      ic := ic*(2/pi)*BesselJ(n,-z);
       md := - second st; fc := third st;
       precision prepre;
       precom := complex!*off!*switch();

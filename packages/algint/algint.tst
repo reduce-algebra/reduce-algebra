@@ -36,7 +36,7 @@ Arthur C. Norman
 Herbert Stoyan
 ;
 
-Comment we first set up a suitable testing functions;
+COMMENT we first set up a suitable testing functions;
 
 fluid '(gcknt!*);
 
@@ -403,7 +403,7 @@ testint(1/(r*sqrt(2*h*r**2-alpha**2-2*k*r**4)),r);
 testint(1/(r*sqrt(2*h*r**2-alpha**2-epsilon**2-2*k*r**4)),r);
 
 
-Comment many of these integrals used to require Steve Harrington's
+COMMENT many of these integrals used to require Steve Harrington's
 	code to evaluate. They originated in Novosibirsk as examples
 	of using Analytik. There are still a few examples that could
 	be evaluated using better heuristics;
@@ -448,7 +448,7 @@ testint(x*log(x+(x**2+1)**(1/2)),x);
 testint(x*(e**x*sin(x)+1)**2,x);
 testint(x*e**x*cos(x),x);
 
-Comment the following set came from Herbert Stoyan;
+COMMENT the following set came from Herbert Stoyan;
 
 testint(1/(x-3)**4,x);
 testint(x/(x**3-1),x);
@@ -493,7 +493,7 @@ testint(erf(x),x);
 testint(erf(x+a),x);
 
 
-Comment some interesting integrals of algebraic functions;
+COMMENT some interesting integrals of algebraic functions;
 
 % The Chebyshev integral.
 
@@ -516,7 +516,7 @@ testint(x*(sqrt(x**2-1)*x**2-4*sqrt(x**2-1)+sqrt(x**2-4)*x**2
 % testint(sqrt(-4*sqrt(2)+9)*x-sqrt(x**4+2*x**2+4*x+1)*sqrt(2),x);
 
 
-Comment here is an example of using the integrator with pattern
+COMMENT here is an example of using the integrator with pattern
 	matching;
 
 for all m,n let int(k1**m*log(k1)**n/(p**2-k1**2),k1)=foo(m,n),
@@ -536,11 +536,11 @@ let f1s= (12*log(s/mc**2)*s**2*pi**2*mc**3*(-8*s-12*mc**2+3*mc)
 
 int(f1s,s);
 
-factor ei,log;
+factor Ei,log;
 
 ws;
 
-Comment the following integrals reveal deficiencies in the current
+COMMENT the following integrals reveal deficiencies in the current
 integrator;
 
 %high degree denominator;

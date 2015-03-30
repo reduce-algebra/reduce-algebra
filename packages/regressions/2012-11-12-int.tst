@@ -30,17 +30,17 @@ e^(u^6)/u^2;
 
 % The following two integrals must give identical results.
 
-I1 := int(cosh(x)^2,x);
-I2 := int(1/sech(x)^2,x);
+i1 := int(cosh(x)^2,x);
+i2 := int(1/sech(x)^2,x);
 
-I1-I2;
+i1-i2;
 
 % as must these two
 
-I3 := int(sinh(x)^2,x);
-I4 := int(1/csch(x)^2,x);
+i3 := int(sinh(x)^2,x);
+i4 := int(1/csch(x)^2,x);
 
-I3-I4;
+i3-i4;
 
 % integrals that caused a very long run
 
@@ -104,7 +104,7 @@ int(1/log(sqrt(x)*x+b(x)),x);
 
 int(1/log(x/b(x)+sqrt(x)),x);
 
-comment check two integration rules that were wrong;
+COMMENT check two integration rules that were wrong;
 
 int(1/log(a*x+b),x);
 df(ws,x);
@@ -130,7 +130,7 @@ off algint;
 off precise;
 on factor;
 !2prim:=log(sqrt((a-x)*(b-x)*(x-1)*x));
-kk:=E**(-!2PRIM);
+kk:=e**(-!2prim);
 write "kk=",kk;
 v11:=const/(x*(a*b*x - a*b - a*x**2 + a*x - b*x**2 + b*x + x**3 -
 x**2));

@@ -17,8 +17,8 @@ that you run this lesson in RLISP rather than full REDUCE.  If you
 forgot or do not have a locally available separate RLISP, then please
 switch now to symbolic mode by typing the statement SYMBOLIC;
 
-SYMBOLIC;
-PAUSE;
+symbolic;
+pause;
 
 COMMENT Your most frequent mistakes are likely to be forgetting to quote
 data examples, using commas as separators within lists, and not puttng
@@ -32,8 +32,8 @@ to reinforce the learning by practice.:  Write expressions using CAR,
 CDR, CDDR, etc., (which are defined only through 4 letters between C and
 R), to individually extract each atom from F, where;
 
-F := '((JOHN . DOE) (1147 HOTEL STREET) HONOLULU);
-PAUSE;
+f := '((john . doe) (1147 hotel street) honolulu);
+pause;
 
 COMMENT  My solutions are CAAR F, CDAR F, CAADR F, CADADR F,
 CADDR CADR F, and CADDR F.
@@ -43,7 +43,7 @@ can also use it as an infix alias for CONS.  Do this to build from F and
 from the data 'MISTER the s-expression consisting of F with MISTER
 inserted before JOHN.DOE;
 
-PAUSE;
+pause;
 
 COMMENT  My solution is ('MISTER . CAR F) . CDR F .
 
@@ -56,13 +56,13 @@ duplicates.
 Here is a function which determines whether its first argument is a
 member of the set which is its second element;
 
-SYMBOLIC PROCEDURE MEMBERP(ELEM, SET1);
+symbolic procedure memberp(elem, set1);
    COMMENT  Returns T if s-expression ELEM is a top-level element
       of list SET1, returning NIL otherwise;
-   IF NULL SET1 THEN NIL
-      ELSE IF ELEM = CAR SET1 THEN T
-   ELSE MEMBERP(ELEM, CDR SET1);
-MEMBERP('BLUE, '(RED BLUE GREEN));
+   if null set1 then nil
+      else if elem = car set1 then t
+   else memberp(elem, cdr set1);
+memberp('blue, '(red blue green));
 
 COMMENT This function illustrates several convenient techniques for
 writing functions which process lists:
@@ -84,11 +84,11 @@ writing functions which process lists:
    3.  Use recursion to treat more complicated cases by extracting the
    first element and using the same functions on smaller arguments.;
 
-PAUSE;
+pause;
 COMMENT To make MEMBERP into an infix operator we make the declaration;
 
-INFIX MEMBERP;
-'(JOHN.DOE) MEMBERP '((FIG.NEWTON) FONZO (SANTA CLAUS));
+infix memberp;
+'(john.doe) memberp '((fig.newton) fonzo (santa claus));
 
 COMMENT Infix operators associate left, meaning expressions of the form
 
@@ -118,25 +118,25 @@ desires.  Actually, an analogous infix operator named MEMBER is already
 built-into RLISP, so we will use MEMBER rather than MEMBERP from here
 on;
 
-MEMBER(1147, CADR F);
+member(1147, cadr f);
 
 COMMENT Inspired by the simple yet elegant definition of MEMBERP, write
 a function named SETP which uses MEMBER to check for a duplicate element
 in its list argument, thus determining whether or not the argument of
 SETP is a set;
 
-PAUSE;
+pause;
 
 COMMENT  My solution is;
 
-SYMBOLIC PROCEDURE SETP CANDIDATE;
+symbolic procedure setp candidate;
    COMMENT Returns T if list CANDIDATE is a set, returning NIL
       otherwise;
-   IF NULL CANDIDATE THEN T
-   ELSE IF CAR CANDIDATE MEMBER CDR CANDIDATE THEN NIL
-   ELSE SETP CDR CANDIDATE;
-SETP '(KERMIT, (COOKIE MONSTER));
-SETP '(DOG CAT DOG);
+   if null candidate then t
+   else if car candidate member cdr candidate then nil
+   else setp cdr candidate;
+setp '(kermit, (cookie monster));
+setp '(dog cat dog);
 
 COMMENT If you used a BEGIN-block, local variables, loops, etc., then
 your solution is surely more awkward than mine.  For the duration of the
@@ -159,33 +159,33 @@ not, returning T otherwise.  You are always encouraged, by the way, to
 use any functions that are already builtin, or that we have previously
 defined, or that you define later as auxiliary functions;
 
-PAUSE;
+pause;
 COMMENT  My solution is;
 
-INFIX SUBSETOF;
-SYMBOLIC PROCEDURE SET1 SUBSETOF SET2;
-   IF NULL SET1 THEN T
-   ELSE IF CAR SET1 MEMBER SET2 THEN CDR SET1 SUBSETOF SET2
-   ELSE NIL;
-'(ROOF DOOR) SUBSETOF '(WINDOW DOOR FLOOR ROOF);
-'(APPLE BANANA) SUBSETOF '((APPLE COBBLER) (BANANA CREME PIE));
+infix subsetof;
+symbolic procedure set1 subsetof set2;
+   if null set1 then t
+   else if car set1 member set2 then cdr set1 subsetof set2
+   else nil;
+'(roof door) subsetof '(window door floor roof);
+'(apple banana) subsetof '((apple cobbler) (banana creme pie));
 
 COMMENT  Two sets are equal when they have identical elements, not
 necessarily in the same order.  Write an infix procedure named
 EQSETP which returns T if its two operands are equal sets, returning
 NIL otherwise;
 
-PAUSE;
+pause;
 
 COMMENT  The following solution introduces the PRECEDENCE declaration;
 
-INFIX EQSETP;
-PRECEDENCE EQSETP, =;
-PRECEDENCE SUBSETOF, EQSETP;
-SYMBOLIC PROCEDURE SET1 EQSETP SET2;
-   SET1 SUBSETOF SET2  AND  SET2 SUBSETOF SET1;
-'(BALLET TAP) EQSETP '(TAP BALLET);
-'(PINE FIR ASPEN) EQSETP '(PINE FIR PALM);
+infix eqsetp;
+precedence eqsetp, =;
+precedence subsetof, eqsetp;
+symbolic procedure set1 eqsetp set2;
+   set1 subsetof set2  and  set2 subsetof set1;
+'(ballet tap) eqsetp '(tap ballet);
+'(pine fir aspen) eqsetp '(pine fir palm);
 
 COMMENT The precedence declarations make SUBSETOF have a higher
 precedence than EQSETP and make the latter have higher precedence than
@@ -195,72 +195,72 @@ enabled me to omit parentheses around "SET1 SUBSUBSETOF SET2" and around
 operator, and to inspect the ordering among the latter, we merely
 inspect the value of the global variable named;
 
-PRECLIS!*;
+preclis!*;
 
 COMMENT Now see if you can write a REDUCE infix function named
 PROPERSUBSETOF, which determines if its left operand is a proper subset
 of its right operand, meaning it is a subset which is not equal to the
 right operand;
 
-PAUSE;
+pause;
 
 COMMENT  All of the above exercises have been predicates.  In contrast,
 the next exercise is to write a function called MAKESET, which returns
 a list which is a copy of its argument, omitting duplicates;
 
-PAUSE;
+pause;
 
 COMMENT  How about;
 
-SYMBOLIC PROCEDURE MAKESET LIS;
-   IF NULL LIS THEN NIL
-   ELSE IF CAR LIS MEMBER CDR LIS THEN MAKESET CDR LIS
-   ELSE CAR LIS . MAKESET CDR LIS;
+symbolic procedure makeset lis;
+   if null lis then nil
+   else if car lis member cdr lis then makeset cdr lis
+   else car lis . makeset cdr lis;
 
 COMMENT As you may have guessed, the next exercise is to implement an
 operator named INTERSECT, which returns the intersection of its set
 operands;
 
-PAUSE;
+pause;
 
 COMMENT  Here is my solution;
 
-INFIX INTERSECT;
-PRECEDENCE INTERSECT, SUBSETOF;
-SYMBOLIC PROCEDURE SET1 INTERSECT SET2;
-   IF NULL SET1 THEN NIL
-   ELSE IF CAR SET1 MEMBER SET2
-      THEN CAR SET1 . CDR SET1 INTERSECT SET2
-   ELSE CDR SET1 INTERSECT SET2;
+infix intersect;
+precedence intersect, subsetof;
+symbolic procedure set1 intersect set2;
+   if null set1 then nil
+   else if car set1 member set2
+      then car set1 . cdr set1 intersect set2
+   else cdr set1 intersect set2;
 
 COMMENT  Symbolic-mode REDUCE has a built-in function named SETDIFF,
 which returns the set of elements which are in its first argument but
 not the second.  See if you can write an infix definition of a similar
 function named DIFFSET;
 
-PAUSE;
+pause;
 
 COMMENT  Presenting --;
 
-INFIX DIFFSET;
-PRECEDENCE DIFFSET, INTERSECT;
-SYMBOLIC PROCEDURE LEFT DIFFSET RIGHT;
-   IF NULL LEFT THEN NIL
-   ELSE IF CAR LEFT MEMBER RIGHT THEN CDR LEFT DIFFSET RIGHT
-   ELSE CAR LEFT . (CDR LEFT DIFFSET RIGHT);
-'(SEAGULL WREN CONDOR) DIFFSET '(WREN LARK);
+infix diffset;
+precedence diffset, intersect;
+symbolic procedure left diffset right;
+   if null left then nil
+   else if car left member right then cdr left diffset right
+   else car left . (cdr left diffset right);
+'(seagull wren condor) diffset '(wren lark);
 
 COMMENT The symmetric difference of two sets is the set of all elements
 which are in only one of the two sets.  Implement a corresponding infix
 function named SYMDIFF.  Look for the easy way!  There is almost always
-one for examinations and instructional exercises; PAUSE;
+one for examinations and instructional exercises; pause;
 
 COMMENT  Presenting --;
-INFIX SYMDIFF;
-PRECEDENCE SYMDIFF, INTERSECT;
-SYMBOLIC PROCEDURE SET1 SYMDIFF SET2;
-   APPEND(SET1 DIFFSET SET2, SET2 DIFFSET SET1);
-'(SEAGULL WREN CONDOR) SYMDIFF '(WREN LARK);
+infix symdiff;
+precedence symdiff, intersect;
+symbolic procedure set1 symdiff set2;
+   append(set1 diffset set2, set2 diffset set1);
+'(seagull wren condor) symdiff '(wren lark);
 
 COMMENT We can use APPEND because the two set differences are disjoint.
 
@@ -270,13 +270,13 @@ elements in the set.  More generally, it is useful to have a function
 which returns the length of its list argument, and such a function is
 built-into RLISP.  See if you can write a similar function named SIZEE;
 
-PAUSE;
+pause;
 COMMENT  Presenting --;
-SYMBOLIC PROCEDURE SIZEE LIS;
-   IF NULL LIS THEN 0
-   ELSE 1 + SIZEE CDR LIS;
-SIZEE '(HOW MARVELOUSLY CONCISE);
-SIZEE '();
+symbolic procedure sizee lis;
+   if null lis then 0
+   else 1 + sizee cdr lis;
+sizee '(how marvelously concise);
+sizee '();
 
 COMMENT Literal atoms, meaning atoms which are not numbers, are stored
 uniquely in LISP and in RLISP, so comparison for equality of literal
@@ -297,23 +297,23 @@ test for identical s-expressions, which need not be merely two pointers
 to the same address.  Since "=" is built-in, compiled, and crucial, I
 will define my own differently-named version denoted ".=" as follows:;
 
-PAUSE;
-NEWTOK '((!. !=) MYEQUAL);
-INFIX EQATOM, MYEQUAL;
-PRECEDENCE MYEQUAL, EQUAL;
-PRECEDENCE EQATOM,EQ;
-SYMBOLIC PROCEDURE S1 MYEQUAL S2;
-   IF ATOM S1 THEN
-      IF ATOM S2 THEN S1 EQATOM S2
-      ELSE NIL
-   ELSE IF ATOM S2 THEN NIL
-   ELSE CAR S1 MYEQUAL CAR S2 AND CDR S1 MYEQUAL CDR S2;
-SYMBOLIC PROCEDURE A1 EQATOM A2;
-   IF NUMBERP A1 THEN
-      IF NUMBERP A2 THEN ZEROP(A1-A2)
-      ELSE NIL
-   ELSE IF NUMBERP A2 THEN NIL
-   ELSE A1 EQ A2;
+pause;
+newtok '((!. !=) myequal);
+infix eqatom, myequal;
+precedence myequal, equal;
+precedence eqatom,eq;
+symbolic procedure s1 myequal s2;
+   if atom s1 then
+      if atom s2 then s1 eqatom s2
+      else nil
+   else if atom s2 then nil
+   else car s1 myequal car s2 and cdr s1 myequal cdr s2;
+symbolic procedure a1 eqatom a2;
+   if numberp a1 then
+      if numberp a2 then zerop(a1-a2)
+      else nil
+   else if numberp a2 then nil
+   else a1 eq a2;
 
 COMMENT Here I introduced a help function named EQATOM, because I was
 beginning to become confused by detail when I got to the line which uses
@@ -331,7 +331,7 @@ programming languages too.
 ".=" is different from our previous examples in that ".=" recurses down
 the CAR as well as down the CDR of an s-expression;
 
-PAUSE;
+pause;
 COMMENT
 If a list has n elements, our function named MEMBERP or the equivalent
 built-in function named MEMBER requires on the order of n "=" tests.
@@ -361,7 +361,7 @@ on the following rules:
 Try writing an analogous function named MYORD, and, if you are in
 REDUCE rather than RLISP, test its behavior in comparison to ORDP;
 
-PAUSE;
+pause;
 
 COMMENT  Whether or not we use sorted sets, we can reduce the
 proportionality constant associated with the growth rate by replacing
@@ -389,16 +389,16 @@ having "SEEN" as the value of an indicator named "SEENORNOT").
 
 As an example, here is INTERSECT defined using this technique;
 
-SYMBOLIC PROCEDURE INTERSECT(S1, S2);
-   BEGIN SCALAR ANS, SET2;
-   FLAG(S1, 'SEEN);
-   SET2 := S2;
-   WHILE SET2 DO <<
-      IF FLAGP(CAR SET2, 'SEEN) THEN ANS := CAR SET2 . ANS;
-      SET2 := CDR SET2 >>;
-   REMFLAG(S1, 'SEEN);
-   RETURN ANS
-   END;
+symbolic procedure intersect(s1, s2);
+   begin scalar ans, set2;
+   flag(s1, 'seen);
+   set2 := s2;
+   while set2 do <<
+      if flagp(car set2, 'seen) then ans := car set2 . ans;
+      set2 := cdr set2 >>;
+   remflag(s1, 'seen);
+   return ans
+   end;
 
 COMMENT  Perhaps you noticed that, having used a BEGIN-block, group,
 loop, and assignments, I have not practiced what I preached about
@@ -416,4 +416,4 @@ package for set operations based upon either property-lists or sorting.
 This is the end of lesson 6.  When you are ready to run the final lesson
 7, load a fresh copy of REDUCE.
 
-;END;
+;end;

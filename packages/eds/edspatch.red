@@ -176,7 +176,7 @@ symbolic procedure solvenonlnrsys2();
   % Main driver. We need non-local exits here
   % because of possibly hidden non algebraic variable
   % dependencies.
-  if null !*solvealgp then system!*:='(FAILED) else % against recursion.
+  if null !*solvealgp then system!*:='(failed) else % against recursion.
   (begin scalar iv!*,kl!*,inv!*,fv!*,r,w,!*solvealgp,solvealgdb!*,sub!*;
          scalar last!-vars!*,groebroots!*,const!-vars!*,root!-vars!*;
          % preserving the variable sequence if *varopt is off
@@ -200,8 +200,8 @@ symbolic procedure solvenonlnrsys2();
             then return solvenonlnrtanhsolve(r,car uv!*,w);
       if atom (errorset('(solvealgk1),!*trnonlnr,nil))
                where dmode!*=nil
-         then return (system!*:='(FAILED));
-      system!*:='LIST.for each p in system!* collect prepf p;
+         then return (system!*:='(failed));
+      system!*:='list.for each p in system!* collect prepf p;
       if not('groebner memq loaded!-packages!*)
         then load!-package 'groebner;
       for each x in iv!* do if not member(x,last!-vars!*) then
@@ -210,9 +210,9 @@ symbolic procedure solvenonlnrsys2();
       if !*trnonlnr then
       <<  prin2t "Entering Groebner for system";
           writepri(mkquote system!*,'only);
-          writepri(mkquote('LIST.iv!*), 'only);
+          writepri(mkquote('list.iv!*), 'only);
       >>;
-      r := list(system!*,'LIST.iv!*);
+      r := list(system!*,'list.iv!*);
       r := groesolveeval r;
       if !*trnonlnr then
       <<  prin2t "leaving Groebner with intermediate result";
@@ -221,7 +221,7 @@ symbolic procedure solvenonlnrsys2();
       >>;
       if 'sin memq solvealgdb!* then r:=solvealgtrig2 r;
       if 'sinh memq solvealgdb!* then r:=solvealghyp2 r;
-      r:= if r='(LIST) then '(INCONSISTENT) else solvealginv r;
+      r:= if r='(list) then '(inconsistent) else solvealginv r;
       system!* := r;  % set value aside
       return r;
   end) where depl!*=depl!* ;

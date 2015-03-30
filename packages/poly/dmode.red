@@ -29,7 +29,7 @@ module dmode; % Functions for defining and using poly domain modes.
 %
 
 
-Comment
+COMMENT
    *** Description of Definition Requirements for Domain arithmetics ***
 
 Syntactically, such elements have the following form:

@@ -24,7 +24,7 @@ module calimat;
 %
 
 
-Comment
+COMMENT
 
                 #######################
                 #                     #

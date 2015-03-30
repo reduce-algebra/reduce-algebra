@@ -35,31 +35,31 @@ module odenonn$  % Special form nonlinear ODEs of order > 1
 %   avoid computing orders in both reduce and shift
 
 
-algebraic procedure ODESolve!-nonlinearn(ode, y, x);
+algebraic procedure odesolve!-nonlinearn(ode, y, x);
    %% `symbolic' mode here is ESSENTIAL, otherwise the code generated
    %% is as if this were a macro, except then it does not get eval'ed!
-   symbolic ODENon!-Reduce!-Order(ode, y, x)$
+   symbolic odenon!-reduce!-order(ode, y, x)$
 
 %% The following defines are used to allow easy changes to the calling
 %% sequence.
 
-define ODENon!-Reduce!-Order!-Next = ODESolve!-Shift$
+define odenon!-reduce!-order!-next = odesolve!-shift$
 %% Shifting currently NEEDED for Zimmer (8) (only)!
 
-define ODESolve!-Shift!-Next = ODESolve!-nonlinearn!*1$
+define odesolve!-shift!-next = odesolve!-nonlinearn!*1$
 
 switch odesolve_equidim_y$              % TEMPORARY?
 symbolic(!*odesolve_equidim_y := t)$    % TEMPORARY?
 
-algebraic procedure ODESolve!-nonlinearn!*1(ode, y, x);
+algebraic procedure odesolve!-nonlinearn!*1(ode, y, x);
    %% The order here seems to be important in practice:
    symbolic or(
-      ODESolve!-Autonomous(ode, y, x),
-      ODESolve!-ScaleInv(ode, y, x),    % includes equidim in x
+      odesolve!-autonomous(ode, y, x),
+      odesolve!-scaleinv(ode, y, x),    % includes equidim in x
       !*odesolve_equidim_y and
-      ODESolve!-Equidim!-y(ode, y, x) )$
+      odesolve!-equidim!-y(ode, y, x) )$
 
-algebraic procedure ODENon!-Reduce!-Order(ode, y, x);
+algebraic procedure odenon!-reduce!-order(ode, y, x);
    %% If ode does not explicitly involve y and low order derivatives
    %% then simplify by reducing the effective order (unless there is
    %% only one) and then try to solve the reduced ode directly to give
@@ -74,7 +74,7 @@ algebraic procedure ODENon!-Reduce!-Order(ode, y, x);
       %% Avoid reduction to a purely algebraic equation:
       if (min_order := min deriv_orders) = 0 or
          length deriv_orders = 1 then return
-            ODENon!-Reduce!-Order!-Next(ode, y, x);
+            odenon!-reduce!-order!-next(ode, y, x);
       max_order := max deriv_orders;
       ode := sub(df = odesolve!-df, ode);
       for ord := min_order : max_order do
@@ -87,9 +87,9 @@ algebraic procedure ODENon!-Reduce!-Order(ode, y, x);
          ode = 0;
       ode := symbolic(
          (if max_order - min_order = 1 then % first order
-            ODESolve!-nonlinear1(ode, y, x)
+            odesolve!-nonlinear1(ode, y, x)
          else
-            ODENon!-Reduce!-Order!-Next(ode, y, x))
+            odenon!-reduce!-order!-next(ode, y, x))
                where !*odesolve_explicit = t);
       if not ode then <<
          traceode "Cannot solve order-reduced ODE!";
@@ -104,22 +104,22 @@ algebraic procedure ODENon!-Reduce!-Order(ode, y, x);
          %% Each `soln' here is an EQUATION for y that may be
          %% implicit.
          if lhs soln = y then           % explicit
-            { y = ODESolve!-multi!-int!*(rhs soln, x, min_order) }
+            { y = odesolve!-multi!-int!*(rhs soln, x, min_order) }
          else <<
             soln := solve(soln, y);
             for each s in soln collect
                if lhs s = y then        % explicit
-                  y = ODESolve!-multi!-int!*(rhs s, x, min_order)
+                  y = odesolve!-multi!-int!*(rhs s, x, min_order)
                else                     % implicit
                   %% leave unsolved for now
                   sub(y = df(y,x,min_order), s)
          >>;
-      return ODESolve!-Simp!-ArbConsts(ode, y, x)
+      return odesolve!-simp!-arbconsts(ode, y, x)
    end$
 
-algebraic procedure ODESolve!-multi!-int!*(y, x, m);
+algebraic procedure odesolve!-multi!-int!*(y, x, m);
    %% Integate y wrt x m times and add arbitrary constants:
-   ODESolve!-multi!-int(y, x, m) +
+   odesolve!-multi!-int(y, x, m) +
       %% << >> below is NECESSARY to force immediate evaluation!
       for i := 0 : m-1 sum <<newarbconst()>>*x^i$
 
@@ -127,7 +127,7 @@ algebraic procedure ODESolve!-multi!-int!*(y, x, m);
 % Internal wrapper function for ODESolve!-Shift:
 algebraic operator odesolve!-sub!*$
 
-algebraic procedure ODESolve!-Shift(ode, y, x);
+algebraic procedure odesolve!-shift(ode, y, x);
    %% A first attempt at canonicalizing an ODE by shifting the
    %% independent variable.
    symbolic if not !*odesolve_fast then % heuristic solution
@@ -141,20 +141,20 @@ algebraic procedure ODESolve!-Shift(ode, y, x);
          (c := lcof(ode, df(y,x,first deriv_orders))) freeof x do
             deriv_orders := rest deriv_orders;
       if deriv_orders = {} then         % not shiftable
-         return ODESolve!-Shift!-Next(ode, y, x);
+         return odesolve!-shift!-next(ode, y, x);
       if (d := deg(c, x)) neq 1 then <<
          c := decompose c;
          while (c := rest c) neq {} and deg(rhs first c, x) neq 1 do;
          %% << null loop body >>
          if c neq {} then c := rhs first c;
          if deg(c, x) neq 1 then        % not shiftable
-            return ODESolve!-Shift!-Next(ode, y, x)
+            return odesolve!-shift!-next(ode, y, x)
       >>;
       %% c = ax + b is a linear component polynomial of the ode
       %% coefficients.
       if not(c freeof y) or not((c := coeff(c,x)) freeof x) or
          first c = 0 then               % not shiftable
-         return ODESolve!-Shift!-Next(ode, y, x);
+         return odesolve!-shift!-next(ode, y, x);
       c := first c / (a := second c);
       %% ode is a function of ax + b (= a(x + c)), so ...
       ode := sub(x = x - c, ode) / a^d;
@@ -164,7 +164,7 @@ algebraic procedure ODESolve!-Shift(ode, y, x);
       traceode "This ODE can be simplified by the ",
          "independent variable shift ", x => x - c,
          " to give: ", ode = 0;
-      ode := ODESolve!-Shift!-Next(ode, y, x);
+      ode := odesolve!-shift!-next(ode, y, x);
       if ode then return
          for each soln in ode collect
             if symbolic rlistp soln then   % parametric solution
@@ -180,7 +180,7 @@ algebraic procedure ODESolve!-Shift(ode, y, x);
 % Autonomous, equidimensional and scale-invariant ODEs
 % ====================================================
 
-algebraic procedure ODESolve!-Autonomous(ode, y, x);
+algebraic procedure odesolve!-autonomous(ode, y, x);
    %% If ODE is autonomous, i.e. x does not appear explicitly, then
    %% reduce the order by using y as independent variable and then try
    %% to solve the reduced ODE directly.  Applies only to ODEs of
@@ -200,7 +200,7 @@ algebraic procedure ODESolve!-Autonomous(ode, y, x);
       traceode
          "This ODE is autonomous -- transforming dependent variable ",
          "to derivative to give this ODE of order 1 lower: ", ode = 0;
-      ode := symbolic(ODESolve!*1(ode, u, y)
+      ode := symbolic(odesolve!*1(ode, u, y)
          where !*odesolve_explicit = t);
       if not ode then <<
          symbolic depend1(u,y,nil);
@@ -212,7 +212,7 @@ algebraic procedure ODESolve!-Autonomous(ode, y, x);
       traceode "Restoring order to give these first-order ODEs ...";
       soln := {};
    a: if ode neq {} then
-         if (u := ODESolve!-FirstOrder(first ode, y, x)) then <<
+         if (u := odesolve!-firstorder(first ode, y, x)) then <<
             soln := append(soln, u);
             ode := rest ode;
             go to a
@@ -221,10 +221,10 @@ algebraic procedure ODESolve!-Autonomous(ode, y, x);
                "arising from solution of transformed autonomous ODE!";
             return
          >>;
-      return ODESolve!-Simp!-ArbConsts(soln, y, x)
+      return odesolve!-simp!-arbconsts(soln, y, x)
    end$
 
-algebraic procedure ODESolve!-ScaleInv(ode, y, x);
+algebraic procedure odesolve!-scaleinv(ode, y, x);
    %% If ODE is scale invariant, i.e. invariant under x -> a x, y ->
    %% a^p y, then transform it to an equidimensional-in-x ODE and try
    %% to solve it.  If p = 0 then it is already equidimensional-in-x
@@ -263,19 +263,19 @@ algebraic procedure ODESolve!-ScaleInv(ode, y, x);
       if not(p := rhs first pow) then
          %% Scale invariant for p=0 =>
          %% equidimensional in x ...
-         return ODESolve!-ScaleInv!-Equidim!-x(ode, y, x);
+         return odesolve!-scaleinv!-equidim!-x(ode, y, x);
       %% ode is scale invariant (with p neq 0)
       symbolic depend1(u, x, t);
       ode := sub(y = x^p*u, ode);
       traceode "This ODE is scale invariant -- applying ", y => x^p*u,
          " to transform to the simpler ODE: ", ode = 0;
-      ode := ODESolve!-ScaleInv!-Equidim!-x(ode, u, x);
+      ode := odesolve!-scaleinv!-equidim!-x(ode, u, x);
       symbolic depend1(u, x, nil);
       if ode then return sub(u = y/x^p, ode);
       traceode "Cannot solve transformed scale invariant ODE!"
    end$
 
-algebraic procedure ODESolve!-ScaleInv!-Equidim!-x(ode, y, x);
+algebraic procedure odesolve!-scaleinv!-equidim!-x(ode, y, x);
    %% ODE is equidimensional in x, i.e. invariant under x -> ax, so
    %% transform it to an autonomous ODE and try to solve it.  (This
    %% includes "reduced" Euler equations as a special case.  Could
@@ -300,14 +300,14 @@ algebraic procedure ODESolve!-ScaleInv!-Equidim!-x(ode, y, x);
          ode = 0;
       symbolic depend1(y,x,nil);   % Necessary to avoid dependence loops
       %% ode should be autonomous PROVIDED no term independent of y
-      ode := symbolic ODESolve!-Autonomous(ode, y, tt);
+      ode := symbolic odesolve!-autonomous(ode, y, tt);
       symbolic depend1(y,x,t);   %%% ???
       symbolic depend1(y,tt,nil);
       if ode then return sub(tt = log x, ode);
       traceode "Cannot solve transformed equidimensional ODE!"
    end$
 
-algebraic procedure ODESolve!-Equidim!-y(ode, y, x);
+algebraic procedure odesolve!-equidim!-y(ode, y, x);
    %% If ODE is equidimensional in y, i.e. invariant under y -> ay,
    %% then simplify the ODE and try to solve the result.  Returns a
    %% solution or nil if this method does not lead to a solution.  Do
@@ -336,7 +336,7 @@ algebraic procedure ODESolve!-Equidim!-y(ode, y, x);
       %% nonlinear, but I don't think there is any guarantee that it
       %% will be linear -- is there?  Hence we must call the full
       %% general ode solver again:
-      ode := ODESolve!*1(ode, u, x);
+      ode := odesolve!*1(ode, u, x);
       symbolic depend1(u,x,nil);
       if not ode then <<
          traceode "Cannot solve transformed equidimensional ODE!";
@@ -353,21 +353,21 @@ algebraic procedure ODESolve!-Equidim!-y(ode, y, x);
 % Simplification of Arbitrary Constants
 % =====================================
 
-algebraic procedure ODESolve!-Simp!-ArbConsts(solns, y, x);
+algebraic procedure odesolve!-simp!-arbconsts(solns, y, x);
    %% To be applied to non-parametric solutions of ODEs containing
    %% arbconsts introduced earlier.
    for each soln in solns collect
       if symbolic rlistp soln then soln else
-         (ODESolve!-Simp!-ArbConsts1(lhs soln, y, x) =
-            ODESolve!-Simp!-ArbConsts1(rhs soln, y, x))$
+         (odesolve!-simp!-arbconsts1(lhs soln, y, x) =
+            odesolve!-simp!-arbconsts1(rhs soln, y, x))$
 
-algebraic procedure ODESolve!-Simp!-ArbConsts1(soln, y, x);
+algebraic procedure odesolve!-simp!-arbconsts1(soln, y, x);
    %% Simplify arbconst expressions within soln.  Messy arbconst
    %% expressions can be introduced by the integrator from simple
    %% arbconsts, and there would appear to be no way to avoid this
    %% other than to remove them after the event.
    begin scalar !*precise, ss, acexprns;
-      if not(ss := ODESolve!-Structr(soln, x, y, 'arbconst))
+      if not(ss := odesolve!-structr(soln, x, y, 'arbconst))
       then return soln;
       acexprns := rest ss;  ss := first ss;
       traceode "Simplifying the arbconst expressions in ", soln,
@@ -386,7 +386,7 @@ algebraic procedure ODESolve!-Simp!-ArbConsts1(soln, y, x);
       return ss
    end$
 
-symbolic operator ODESolve!-Structr$
+symbolic operator odesolve!-structr$
 %% symbolic procedure ODESolve!-Structr(u, x, y, arbop);
 %%    %% Return an rlist consisting of an expression involving variables
 %%    %% ansj representing sub-structures followed by equations of the
@@ -424,7 +424,7 @@ symbolic operator ODESolve!-Structr$
 %%       return makelist(ss . arbexprns)
 %%    end$
 
-symbolic procedure ODESolve!-Structr(u, x, y, arbop);
+symbolic procedure odesolve!-structr(u, x, y, arbop);
    %% Return an rlist representing U that consists of an expression
    %% involving variables `ansj' representing sub-structures followed
    %% by equations of the form `ansj = sub-structure', where the

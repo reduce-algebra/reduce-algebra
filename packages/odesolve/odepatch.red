@@ -41,14 +41,14 @@ module odepatch$  % Patches to standard REDUCE facilities
 %% apply1('load!-package, 'int)$           % not at compile time!
 packages_to_load int$                   % not at compile time!
 
-global '(ODESolveOldSimpInt)$
-(if not(s eq 'NoIntInt_SimpInt) then ODESolveOldSimpInt := s) where
+global '(odesolveoldsimpint)$
+(if not(s eq 'nointint_simpint) then odesolveoldsimpint := s) where
    s = get('int, 'simpfn)$              % to allow reloading
-put('int, 'simpfn, 'NoIntInt_SimpInt)$
+put('int, 'simpfn, 'nointint_simpint)$
 
-fluid '(!*NoInt !*Odesolve_NoInt !*df_partial)$
+fluid '(!*NoInt !*odesolve_noint !*df_partial)$
 
-symbolic procedure NoIntInt_SimpInt u;
+symbolic procedure nointint_simpint u;
    %% Patch to avoid trying to re-integrate symbolic integrals in the
    %% integrand, because it can take forever and achieve nothing!
    if !*NoInt then
@@ -70,27 +70,27 @@ symbolic procedure NoIntInt_SimpInt u;
       %% put('int, 'simpfn, 'SimpNoInt);
       car_u := mk!*sq simp!* car u;
       %% car_u := subeval{{'equal, 'Int, 'NoInt}, car_u};
-      car_u := subst('NoInt, 'Int, car_u);
+      car_u := subst('noint, 'int, car_u);
       u := car_u . !*a2k cadr u . nil;
       %% Prevent SimpInt from resetting itself!
-      put('int, 'simpfn, ODESolveOldSimpInt);    % assumed & RESET by simpint
-      result := errorset!*({ODESolveOldSimpInt, mkquote u}, t);
-      put('int, 'simpfn, 'NoIntInt_SimpInt); % reset INT interface
+      put('int, 'simpfn, odesolveoldsimpint);    % assumed & RESET by simpint
+      result := errorset!*({odesolveoldsimpint, mkquote u}, t);
+      put('int, 'simpfn, 'nointint_simpint); % reset INT interface
       if errorp result then error1();
-      return NoInt2Int car result;
+      return noint2int car result;
       %% Does this cause non-unique kernels?
    end$
 
-algebraic operator NoInt$               % Inert integration operator
+algebraic operator noint$               % Inert integration operator
 
 %% symbolic procedure SimpNoInt u;
 %%    !*kk2q('NoInt . u)$                % remain symbolic
 
-symbolic operator Odesolve!-Int$
-symbolic procedure Odesolve!-Int(y, x);
+symbolic operator odesolve!-int$
+symbolic procedure odesolve!-int(y, x);
    %% Used in SolveLinear1 on ode1 to control integration.
-   if !*Odesolve_NoInt then formlnr {'NoInt, y, x}
-   else mk!*sq NoIntInt_SimpInt{y, x}$  % aeval{'int, y, x}$
+   if !*odesolve_noint then formlnr {'noint, y, x}
+   else mk!*sq nointint_simpint{y, x}$  % aeval{'int, y, x}$
 
 %% put('Odesolve!-Int, 'simpfn, 'Simp!-Odesolve!-Int)$
 %% symbolic procedure Simp!-Odesolve!-Int u;
@@ -98,23 +98,23 @@ symbolic procedure Odesolve!-Int(y, x);
 %%    if !*Odesolve_NoInt then !*kk2q('NoInt . u)  % must eval u!!!
 %%    else NoIntInt_SimpInt u$         % aeval{'int, y, x}$
 
-symbolic procedure NoInt2Int u;
+symbolic procedure noint2int u;
    %% Convert all NoInt's back to Int's, without algebraic evaluation.
-   if eqcar(u,'NoInt) then 'Int . NoInt2Int cdr u
+   if eqcar(u,'noint) then 'int . noint2int cdr u
     else if atom u then u
     else begin
       scalar sa, sd;
-      sa := NoInt2Int car u;
-      sd := NoInt2Int cdr u;
+      sa := noint2int car u;
+      sd := noint2int cdr u;
       if sa eq car u and sd eq cdr u then return u
       else return sa . sd
     end;
 
 
-switch NoIntInt$  !*NoIntInt := t$
-put('NoIntInt, 'simpfg,
-   '((nil (put 'int 'simpfn 'SimpInt) (rmsubs))
-     (t (put 'int 'simpfn 'NoIntInt_SimpInt))))$
+switch nointint$  !*nointint := t$
+put('nointint, 'simpfg,
+   '((nil (put 'int 'simpfn 'simpint) (rmsubs))
+     (t (put 'int 'simpfn 'nointint_simpint))))$
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -424,8 +424,8 @@ switch odesolve_plus_or_minus$          % TEMPORARY
 % off by default -- it's to odangerous at present!
 % !*odesolve_plus_or_minus := t$          % TEMPORARY
 
-symbolic operator AlgSolve$
-symbolic procedure AlgSolve(u, v);
+symbolic operator algsolve$
+symbolic procedure algsolve(u, v);
    %% Return either a list of EXPLICIT solutions of a single scalar
    %% expression `u' for variable `v' or nil.
    begin scalar soln, tail, !*plus_or_minus;
@@ -437,7 +437,7 @@ symbolic procedure AlgSolve(u, v);
       return soln
    end$
 
-algebraic procedure SolvePM(u, v);
+algebraic procedure solvepm(u, v);
    %% Solve a single scalar expression `u' for variable `v', using the
    %% `plus_or_minus' operator in the solution of quadratics.
    %% *** NB: This messes up `root_multiplicities'. ***

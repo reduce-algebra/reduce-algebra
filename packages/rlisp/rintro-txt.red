@@ -1,4 +1,4 @@
-MODULE RINTRO!-TXT;  % Description of non-local variables used in RLISP.
+module rintro!-txt;  % Description of non-local variables used in RLISP.
 
 % Author: Anthony C. Hearn.
 

@@ -2,10 +2,10 @@
 
 % module README
 
- An Algebraic Number and Factorizer Package for REDUCE 3.2
+ an algebraic number and factorizer package for reduce 3.2
 
-      This code is copyright the authors and
-        the University of Bath 1985
+      this code is copyright the authors and
+        the university of bath 1985
 
 
 % Redistribution and use in source and binary forms, with or without
@@ -31,53 +31,53 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-This is a short guide to the installation and use of the algebraic number
-package.  Some familiarity with terms from Galois theory is assumed as is
-familiarity with REDUCE. The routines were developed under REDUCE 3.1 and
-3.2, and rely on various built-in functions. Occasionally a bug in one of
+this is a short guide to the installation and use of the algebraic number
+package.  some familiarity with terms from galois Theory is assumed as is
+familiarity with reduce. the routines were developed under reduce 3.1 and
+3.2, and rely on various built-in functions. occasionally a bug in one of
 these functions may cause a confusing error message to  be  produced;  we
 include a few fixes to some of these functions.
 
-To  load  all the algebraic number code enter REDUCE and type
+to  load  all the algebraic number code enter reduce and type
            in algin$
-This will load and compile (when the compiler is  on)  all  the  relevant
-pieces  of  the  package.   The  code  can  of  course  be  included as a
-collection of modules in the usual way.  If the factoriser is not  needed
+this will load and compile (when the compiler is  on)  all  the  relevant
+pieces  of  the  package.   the  code  can  of  course  be  included as a
+collection of modules in the usual way.  if the factoriser is not  needed
 then the arithmetic functions alone may be loaded by typing
          in arithin$
 
-To start using algebraic numbers, type
+to start using algebraic numbers, type
         on algebraics;
-and this indicates that the algebraic domain is to be used. The call
+and this indicates that the algebraic domain is to be used. the call
       alpha := algof(f);
 will set alpha to a representative of a root of f where f is a univariate
-(irreducible)  polynomial with integral or algebraic coefficients.  Alpha
-can then be used in calculations much as one might expect.  Alpha  is  in
+(irreducible)  polynomial with integral or algebraic coefficients.  alpha
+can then be used in calculations much as one might expect.  alpha  is  in
 general  a  polynomial  in algebraic kernels, particularly in the case of
-quadratic roots. Higher degree numbers may be shifted or scaled if it  is
+quadratic roots. higher degree numbers may be shifted or scaled if it  is
 thought the result has a 'simpler' minimal polynomial than the given one.
-The polynomial f is NOT checked for irreducibility (this would  take  too
-long),  it  is  left  to the user to do this.  In particular, it is quite
+the polynomial f is not checked for irreducibility (this would  take  too
+long),  it  is  left  to the user to do this.  in particular, it is quite
 possible to create dependent algebraics i.e.  one minimal  polynomial  is
-reducible  over  an  extension  of  Q  by  some  of the other algebraics.
-Provided dependent algebraics are  kept  separate  no  problems  will  be
+reducible  over  an  extension  of  q  by  some  of the other algebraics.
+provided dependent algebraics are  kept  separate  no  problems  will  be
 encountered,  but care should be taken not to mix dependent algebraics in
 an expression  as  non-trivial  representations  of  0  may  occur;  also
 division  may  fail  if  such  expressions  are  used  (this produces the
 message: "Unexpected factor of a minimal polynomial").
 
-Once all the code has been loaded, a short test is available: use
+once all the code has been loaded, a short test is available: use
           in algtest$
-If all is well, this should respond with a few timings for the tests.  If
-not,  some  sort  of  error  message  should be produced. This might help
-pinpoint the area in need of attention. Of course, an error-free  run  of
+if all is well, this should respond with a few timings for the tests.  if
+not,  some  sort  of  error  message  should be produced. this might help
+pinpoint the area in need of attention. of course, an error-free  run  of
 the test does not imply error-free code...
 
 
 
 
 
-Below is a summary of the functions supplied in this package:
+below is a summary of the functions supplied in this package:
 
 alpha := algof(f);    this assigns to alpha an algebraic which is a
                       root of the univariate polynomial f.
@@ -85,31 +85,31 @@ alpha := algof(f);    this assigns to alpha an algebraic which is a
 showalgs();       print the minimal polynomials of the currently created
                       algebraics.
 
-polyof(alpha, x);     result is the minimal polynomial of alpha over Z as a
+polyof(alpha, x);     result is the minimal polynomial of alpha over z as a
                       univariate polynomial in the kernel x.
 
-algfactor(f,a,b,..);  factorize the polynomial f over Q(a,b,..).
-                      Any algebraic occurring in a coefficient of f must be
+algfactor(f,a,b,..);  factorize the polynomial f over q(a,b,..).
+                      any algebraic occurring in a coefficient of f must be
                       included in the list a, b, ...
-                      If a, b, ... are omitted then factorization is over Z.
+                      if a, b, ... are omitted then factorization is over z.
 
-norm(f,a,b,..);       find the norm of f over Q(a,b,..).
-                      If a, b, ... are omitted then the result is just f.
+norm(f,a,b,..);       find the norm of f over q(a,b,..).
+                      if a, b, ... are omitted then the result is just f.
 
 on tralg;             switches on tracing of the factorizer,
 off tralg;            switches off ...
 
-Interface to algebraic factorizer in symbolic mode:
+interface to algebraic factorizer in symbolic mode:
 
-The  top-level  function  is  algfactorf(f,l)  (in  algfac)  where f is a
+the  top-level  function  is  algfactorf(f,l)  (in  algfac)  where f is a
 standard form, and l is a list of algebraic kernels of the  type  (alg  .
 algn),  in  the  order  "most  recently  created first" (this ordering is
-crucial to correct operation). This returns (c . flist), where c  is  the
+crucial to correct operation). this returns (c . flist), where c  is  the
 numeric content, and flist is a list of pairs (factor . multiplicity).
 
-The funtion normf(f,alg) (in algnorm) produces the the standard form that
+the funtion normf(f,alg) (in algnorm) produces the the standard form that
 is the norm of the standard form f over the extension  by  the  algebraic
-kernel  alpha.  The function normf1(f,alglist) returns the norm of f over
+kernel  alpha.  the function normf1(f,alglist) returns the norm of f over
 the extension by the list of kernels alglist.
 
 
@@ -886,7 +886,7 @@ symbolic procedure sqfr!-norm(f,x,alg!-tower);
   % and R is square-free, g and R are standard forms;
   % thus we map Norm:k(alpha) -> k;
   % Barry Trager's version of van der Waerden's algorithm;
-  begin scalar alpha,s,g,R,minus!-alpha,!*ezgcd;
+  begin scalar alpha,s,g,r,minus!-alpha,!*ezgcd;
     alpha := car alg!-tower;
     minus!-alpha := multdm(mkalg1 !*k2q alpha,-1);
     s := 0;
@@ -895,13 +895,13 @@ symbolic procedure sqfr!-norm(f,x,alg!-tower);
       s := s+1;
       g := my!-subf(g,x,minus!-alpha)
     >>;
-    R := normf(g,alpha);
-    while degree!-in!-form( gcdf!*( R,diff(R,x) ),x ) neq 0 do <<
+    r := normf(g,alpha);
+    while degree!-in!-form( gcdf!*( r,diff(r,x) ),x ) neq 0 do <<
       repeat <<
         s := s+1;
         g := my!-subf(g,x,minus!-alpha)
       >> until contains!-alpha(g,alpha);
-      R := normf(g,alpha)
+      r := normf(g,alpha)
     >>;
     if !*tralg then <<
       if s > 0 then <<
@@ -912,10 +912,10 @@ symbolic procedure sqfr!-norm(f,x,alg!-tower);
         prin2!* " so that ";
       >>;
       printstr "the norm ";
-      fac!-printsf R;
+      fac!-printsf r;
       printstr "is square-free, and we try to factorise this"
     >>;
-    return list(s,g,R)
+    return list(s,g,r)
   end;
 
 symbolic procedure pick!-minimal!-kernel f;
@@ -962,7 +962,7 @@ symbolic procedure alg!-factor(f,x,alg!-tower);
   % returns a list of the factors of f over k(alpha),
   % as standard forms;
   % Barry Trager's version of van der Waerden's algorithm;
-  begin scalar s,g,R,norm!-list,l,h,alpha,!*ezgcd;
+  begin scalar s,g,r,norm!-list,l,h,alpha,!*ezgcd;
     if degree!-in!-form(f,x) = 1 then <<
       if !*tralg then printstr "it is linear";
       return list f
@@ -977,8 +977,8 @@ symbolic procedure alg!-factor(f,x,alg!-tower);
     norm!-list := sqfr!-norm(f,x,alg!-tower);
     s := car norm!-list;
     g := cadr norm!-list;
-    R := caddr norm!-list;
-    l := alg!-factor(R,x,cdr alg!-tower);
+    r := caddr norm!-list;
+    l := alg!-factor(r,x,cdr alg!-tower);
          % we recurse down the tower;
     if length l = 1 then return list f;     % f irreducible;
     return

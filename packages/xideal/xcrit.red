@@ -28,7 +28,7 @@ module xcrit;
 %
 
 
-Comment. Critical pairs are stored as
+COMMENT. Critical pairs are stored as
 
         crit_pr ::= {key, type, pf, pf}
         key     ::= mon
@@ -61,10 +61,10 @@ symbolic procedure critical_pairs(q,p,c);
    end;
 
 
-symbolic procedure remove_critical_pairs(G,P);
+symbolic procedure remove_critical_pairs(g,p);
    % G:list of pf, P:xset -> remove_critical_pairs:xset
    % Remove critical pairs for old poly's G from existing xset P.
-   <<if G then remove_items(P,G); P>>;
+   <<if g then remove_items(p,g); p>>;
 
 
 symbolic procedure make_spoly_pair(f,g);

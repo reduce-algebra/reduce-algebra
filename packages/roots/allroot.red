@@ -31,7 +31,7 @@ module allroot; % Routines for solving real polynomials by iteration.
 %
 
 
-Comment   modules bfauxil, bfdoer, bfdoer2, complxp, rootaux, realroot,
+COMMENT   modules bfauxil, bfdoer, bfdoer2, complxp, rootaux, realroot,
  nrstroot and multroot needed also;
 
 exports accuroot, allroots, gfnewton, gfrootfind, sizatom;
@@ -300,7 +300,7 @@ symbolic procedure dsplyrtno m;
    (<< write "rootno. ",m; wrs n>> where n=wrs nil);
 
 symbolic procedure allroots(p,p0); % p is always bfloated at this call.
-Comment   With modifications for nosturm and offset iteration and root
+COMMENT   With modifications for nosturm and offset iteration and root
     inversion.$
   % do the actual work of finding roots of p in appropriate environment.
    begin scalar q,n,n0,c,cc,cprq,rln,cpn,qf,ac,y,er,rl,z,mb,inc,prec,xo,
@@ -406,7 +406,7 @@ root: qf := mb := !*mb := nmfg := nil;
          <<incmsg!$ := "equal roots found"; go to incr>>;
       if rl then rln := rln+1 else cpn := cpn+1;
       c := y . c; %mb := nil;
-  Comment  If we are using the inverse polynomial, then we need to
+  COMMENT  If we are using the inverse polynomial, then we need to
     find roots at increased accuracy and precision, to allow for loss of
     accuracy in taking the inverse.  Gfrootfind always provides that
     additional accuracy in the unrounded root z (which is used for

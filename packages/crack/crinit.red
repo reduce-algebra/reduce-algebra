@@ -67,7 +67,7 @@ ud_4 userrules_ verify_end_of_parallel_run vl_)$
 pass_back:='(done_trafo history_ limit_time level_ nfct_ size_hist sol_list 
              stepcounter_ time_limit inverse_trafo_list_incomplete)$
 
-comment :
+COMMENT :
 
 Variables not to be changed interactively are not updated:
    allflags_ crack_load_cmd default_proc_list_ full_proc_list_ 

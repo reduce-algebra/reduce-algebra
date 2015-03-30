@@ -8,19 +8,19 @@ linelength(72)$
 
 % Example 1: Quantum Mechanics of a Dirac particle in an external
 %                      electromagnetic field
-VECOP P,A,K;
+vecop p,a,k;
 
 
-SCALOP M;
+scalop m;
 
 
-NONCOM P,A;
+noncom p,a;
 
 
-PHYSINDEX J,L;
+physindex j,l;
 
 
-oporder M,K,A,P;
+oporder m,k,a,p;
 
 
 
@@ -29,10 +29,10 @@ oporder M,K,A,P;
  off allfac;
 
 
-FOR ALL J,L LET COMM(P(J),A(L))=K(J)*A(L);
+for all j,l let comm(p(j),a(l))=k(j)*a(l);
 
 
-H:= COMMUTE(P**2/(2*M),E/(4*M**2)*(P DOT A));
+h:= commute(p**2/(2*m),e/(4*m**2)*(p dot a));
 
 
             -1    -1    -1
@@ -49,7 +49,7 @@ h := (2*e*(m  )*(m  )*(m  )*k(idx1)*a(idx2)*p(idx1)*p(idx2)
 
 % showtime;
 %assign the corresponding value to the adjoint of H
-H!+ := adj H;
+h!+ := adj h;
 
 
   +                +          +          +          +      -1      -1
@@ -73,10 +73,10 @@ H!+ := adj H;
  on allfac;
 
 
-ON CONTRACT;
+on contract;
 
 
-H;
+h;
 
 
        3
@@ -137,15 +137,15 @@ for all r,h such that r > 0 or (r  > -2 and h = 0) let
 
 
 % define a procedure to calculate V.E.V.
-procedure Vak(X);
-bra(0) | X | ket(0);
+procedure vak(x);
+bra(0) | x | ket(0);
 
 
 vak
 
 
 % and now some calculations;
-MA:= adj(l(3)*l(5))*l(3)*l(5);
+ma:= adj(l(3)*l(5))*l(3)*l(5);
 
 
 ma := 2*l(8)*l(-3)*l(-5) + 4*l(8)*l(-8) + l(5)*l(3)*l(-3)*l(-5)
@@ -165,7 +165,7 @@ ma := 2*l(8)*l(-3)*l(-5) + 4*l(8)*l(-8) + l(5)*l(3)*l(-3)*l(-5)
 % showtime;
 
 % here is the VEV of m
-vak(Ma);
+vak(ma);
 
 
 4*c*(5*c + 83)
@@ -227,7 +227,7 @@ operator delta;
 
 
 for all mu,nu let anticomm(gammamat(mu),gammamat(nu))=2*delta(mu,nu)*unit,
-                  comm(gammamat(mu),gammamat(nu))=2*I*sigma(mu,nu);
+                  comm(gammamat(mu),gammamat(nu))=2*i*sigma(mu,nu);
 
 
 

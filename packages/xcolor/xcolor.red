@@ -232,10 +232,10 @@ symbolic procedure revv0(v,e)$
 
 %------------------------ Global/Fluid --------------------------------
 
-global '(su_order spur_tt n!*!*2!-1)$
+global '(SU_order Spur_TT n!*!*2!-1)$
 
-su_order := '(3 . 1)$        % default value
-spur_tt  := '(1 . 2)$        % default value
+SU_order := '(3 . 1)$        % default value
+Spur_TT  := '(1 . 2)$        % default value
 n!*!*2!-1:= '(8 . 1)$        % default value
 
 %----------------------------------------------------------------------
@@ -316,7 +316,7 @@ symbolic procedure afactor g0$
         if null g0 then nil
         else if null cdr g0 then car g0
         else 'times . g0)$
-    return exptsq(spur_tt,n/2)$
+    return exptsq(Spur_TT,n/2)$
   end$ % AFactor
 
 %symbolic procedure Color1(g0,st,result)$ Color2(g0,st,result)$
@@ -422,7 +422,7 @@ symbolic procedure removeg1(g0,v1,v2)$
         if v3 then putinq(car v3,getinq v2)
         else cerror list("Free edge",getoutq v1,"in vertex",v1)$
         return
-          (mkg0(multsq(quotsq(n!*!*2!-1,su_order),getcoef g0),getvl g0)
+          (mkg0(multsq(quotsq(n!*!*2!-1,SU_order),getcoef g0),getvl g0)
           . nil
           )$
       >>$
@@ -431,7 +431,7 @@ symbolic procedure removeg1(g0,v1,v2)$
         if v6 then putinq(car v6,getinq v1)
         else cerror list("Free edge",getoutq v2,"in vertex",v2)$
       return
-        (mkg0(multsq(quotsq(n!*!*2!-1,su_order),getcoef g0),getvl g0)
+        (mkg0(multsq(quotsq(n!*!*2!-1,SU_order),getcoef g0),getvl g0)
         . nil
         )$
       >>$
@@ -469,7 +469,7 @@ symbolic procedure removeg1(g0,v1,v2)$
     putinq(v6,getinq v2)$
     %------------------------------------------------------------------
     return
-      (g0 . mkg0(multsq(quotsq(('-1 ./ 1),su_order),getcoef g1),w))$
+      (g0 . mkg0(multsq(quotsq(('-1 ./ 1),SU_order),getcoef g1),w))$
   end$
 
 symbolic procedure removeg2(g0,v1,v2)$

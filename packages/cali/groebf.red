@@ -24,7 +24,7 @@ module groebf;
 %
 
 
-Comment
+COMMENT
 
                 ##############################
                 ###                        ###
@@ -436,7 +436,7 @@ symbolic procedure groebf!=slave c;
               else
               << if cali_trace()>20 then
                  << terpri(); write nr,". "; dp_print2 pol >>;
-                 pl:=groeb_updatePL(pl,gb,be,t);
+                 pl:=groeb_updatepl(pl,gb,be,t);
                  if cali_trace() > 30 then
                  << terpri(); groeb_printpairlist pl >>;
                  gb:=merge(list be,gb,function red_better);
@@ -450,7 +450,7 @@ symbolic procedure groebf!=slave c;
                  if groebf!=test(con,a) then
                  << if cali_trace()>20 then
                     << terpri(); write nr; write". "; dp_print2 pol >>;
-                    p:=groeb_updatePL(append(pl,nil),gb,be,t);
+                    p:=groeb_updatepl(append(pl,nil),gb,be,t);
                     if cali_trace() > 30 then
                     << terpri(); groeb_printpairlist p >>;
                     b:=merge(list be,append(gb,nil),
@@ -580,7 +580,7 @@ symbolic procedure groebf!=postprocess2 m;
                  for each p in second car x collect dp_neworder p},
         for each p in cdr x collect dp_from_a p);
 
-Comment The list of results :
+COMMENT The list of results :
 
 m1 : The list of TriangSets wrt. v produced in this run. They are in
 alg. prefix form to remember that they are Groebner bases only

@@ -41,43 +41,43 @@ module bibasis_triple;
 % 3 - prolong set
 
 
-inline procedure CreateProlongSet(); (nil . nil);
+inline procedure createprolongset(); (nil . nil);
 
 
-expr procedure CreateTriple(polynom);
-begin scalar tmpTriple;
-    tmpTriple := mkvect(3);
-    putv(tmpTriple, 0, FluidBibasisTripleID);
-    putv(tmpTriple, 1, polynom);
-    putv(tmpTriple, 2, FluidBibasisTripleID);
-    putv(tmpTriple, 3, CreateProlongSet());
-    FluidBibasisTripleID := iadd1(FluidBibasisTripleID);
-    return tmpTriple;
+expr procedure createtriple(polynom);
+begin scalar tmptriple;
+    tmptriple := mkvect(3);
+    putv(tmptriple, 0, fluidbibasistripleid);
+    putv(tmptriple, 1, polynom);
+    putv(tmptriple, 2, fluidbibasistripleid);
+    putv(tmptriple, 3, createprolongset());
+    fluidbibasistripleid := iadd1(fluidbibasistripleid);
+    return tmptriple;
 end;
 
 
-expr procedure CreateTripleWithAncestor(polynom, ancestorID);
-begin scalar tmpTriple;
-    tmpTriple := mkvect(3);
-    putv(tmpTriple, 0, FluidBibasisTripleID);
-    putv(tmpTriple, 1, polynom);
-    putv(tmpTriple, 2, ancestorID);
-    putv(tmpTriple, 3, CreateProlongSet());
-    FluidBibasisTripleID := iadd1(FluidBibasisTripleID);
-    return tmpTriple;
+expr procedure createtriplewithancestor(polynom, ancestorid);
+begin scalar tmptriple;
+    tmptriple := mkvect(3);
+    putv(tmptriple, 0, fluidbibasistripleid);
+    putv(tmptriple, 1, polynom);
+    putv(tmptriple, 2, ancestorid);
+    putv(tmptriple, 3, createprolongset());
+    fluidbibasistripleid := iadd1(fluidbibasistripleid);
+    return tmptriple;
 end;
 
 
-inline procedure TripleGetID(triple); getv(triple, 0);
-inline procedure TripleGetPolynom(triple); getv(triple, 1);
-inline procedure TripleGetAncestorID(triple); getv(triple, 2);
-inline procedure TripleGetLm(triple); PolynomGetLm(getv(triple, 1));
-inline procedure TripleGetProlongSet(triple); getv(triple, 3);
+inline procedure triplegetid(triple); getv(triple, 0);
+inline procedure triplegetpolynom(triple); getv(triple, 1);
+inline procedure triplegetancestorid(triple); getv(triple, 2);
+inline procedure triplegetlm(triple); polynomgetlm(getv(triple, 1));
+inline procedure triplegetprolongset(triple); getv(triple, 3);
 
 
-expr procedure TripleIsProlongedBy(triple, variable);
+expr procedure tripleisprolongedby(triple, variable);
 begin scalar set;
-    set := TripleGetProlongSet(triple);
+    set := triplegetprolongset(triple);
     while and(car(set),
               car(set) > variable) do
     <<
@@ -94,9 +94,9 @@ begin scalar set;
 end;
 
 
-expr procedure TripleSetProlongedBy(triple, variable);
+expr procedure triplesetprolongedby(triple, variable);
 begin scalar set;
-    set := TripleGetProlongSet(triple);
+    set := triplegetprolongset(triple);
     while and(car(set),
               car(set) > variable) do
     <<
@@ -109,12 +109,12 @@ begin scalar set;
 end;
 
 
-expr procedure TripleSetProlongSet(triple, prolongSet);
+expr procedure triplesetprolongset(triple, prolongset);
 begin scalar set;
-    while prolongSet do
+    while prolongset do
     <<
-        set := car(prolongSet) . set;
-        prolongSet := cdr(prolongSet);
+        set := car(prolongset) . set;
+        prolongset := cdr(prolongset);
     >>;
     putv(triple, 3, reverse(set));
 end;
