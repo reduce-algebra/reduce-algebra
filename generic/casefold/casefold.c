@@ -52,6 +52,47 @@
 // will not be normalised, but I will accept that limitation in the name of
 // simplicity.
 
+// Usage:
+//    casefold filename
+// Perform simple uniform case-folding on all symbolic in the given file and
+// write the results back to that file. Leave a copy of the original
+// version in "filename.pre-casefold". If you run casefold twice the backup
+// will only let you go back one step. Those worsd listed in the array
+// MixedCase in the source file end up capitalized as shown there - everything
+// else (outside comments, strings and character escapes) goes to lower case.
+//
+//    casefold + filename [[:] Word]*
+// Performs custom folding on the file, putting the adjusted version back
+// in place. The only words that are adjusted are those in th list of words
+// specifed on the command line. If a word the is preceeded by a ":" that
+// capitalisation applies where the word is ued in a context that the
+// Reduce "assert" package thinks of as a type-name. So
+//    casefold + myfile.red oneWord : OneWord ...
+// would map "oneword" and all other initial capitalisations of that
+// sequence of letters onto "oneWord" in general contexts and "OneWord" after
+// a ":".
+// The contexts for type-names are
+//   procedure ... : Name ... (; | $)
+//   declare   ... : Name ... (; | $)
+//   scalar    ... : Name ... (; | $)
+//   typedef Name 
+//   struct  Name
+// Well more pedantically with procedure or scalar after a ":" you are in
+// "type" mode up to the next ")" or a "," that is not nested within parens
+// brackets or braces.
+// Thus one might permit
+//   begin scalar fn:SQ->SQ, u:{Integer,SQ,SQ}, a:Atom;
+// or some such. It is not the job of thus utility to decide just what
+// syntax will be used for type annotations - it just wants to support what
+// exists now and what seems plausible by way of extensions to that!
+//
+// A "typical" use in this mode might be
+//   casefold + sourcefile.red sq : SQ
+// intended  to force a procedure header into eg the form
+//    symbolic procedure hugo(sq:SQ):SQ;
+// where the variable name is in lower case and the type-name in upper.
+
+
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -153,10 +194,58 @@ static const char *MixedCase[] =
     "bigA",
     "definitionURL",
     "groebPosCancel",
-    "printDHMStime"
+    "printDHMStime",
+    NULL                 // termination!
 };
 
 
+static const char *regularNames[100];
+static const char *typeNames[100];
+
+static int regularNamesCount = 0, typeNamesCount = 0;
+
+// This enum is for "type context" detection.
+//
+// It corresponds to a state machine:
+//
+//                   declare
+//    GENERAL    ---procedure---> PROCEDURE
+//                   scalar
+//
+//    GENERAL    ----typedef----> TYPEDEF
+//                   struct
+//
+//    GENERAL    -----other-----> GENERAL
+//
+//    PROCEDURE  -------:-------> ARGTYPE
+//    PROCEDURE  -----(;|$)-----> GENERAL
+//    PROCEDURE  -----other-----> PROCEDURE
+//
+//    ARGTYPE    -------,-------> PROCEDURE
+//    ARGTYPE    -----(;|$)-----> GENERAL
+//    ARGTYPE    ----symbol*----> ARGTYPE
+//    ARGTYPE    -----other-----> ARGTYPE
+//
+//    TYPEDEF    ----symbol*----> GENERAL
+//    TYPEDEF    -----other-----> GENERAL
+//
+// The annotation "symbol*" indicates a symbol that is mapped as a type name
+// not as a general word. There are some pathologies with input such as
+//   "typedef procedure ..."
+// as to whether the word "procedure" is to be treated as a symbopl or as a
+// reserved word. I will ignore such concerns since in valid input they
+// should not arise.
+//
+
+enum
+{
+   GENERAL,
+   PROCEDURE,
+   ARGTYPE,
+   TYPEDEF
+};
+
+// This enum is for string and comment detection.
 enum
 {
     PLAIN,
@@ -172,8 +261,24 @@ enum
 
 static FILE *fout;
 
-static char outword[200];
-static int owp = 0;
+#define MAX_LINE 1000
+
+static char origline[MAX_LINE], newline[MAX_LINE];
+static char outword[MAX_LINE];
+static int origlinep = 0, newlinep = 0, owp = 0;
+static int simplemode = 1;
+static int typecontext = GENERAL;
+
+static void check_endline()
+{
+    origline[origlinep] = 0;
+    newline[newlinep] = 0;
+    if (strcmp(origline, newline) != 0)
+    {   fprintf(stderr, "Original:  %s", origline);
+        fprintf(stderr, "Converted: %s\n", newline);
+    }
+    origlinep = newlinep = 0;
+}
 
 static void flushword()
 {
@@ -181,18 +286,55 @@ static void flushword()
     const char *p1, *p2;
 // I do a crude linear search here because this is a cheap enough
 // task that optimisation is not really needed.
-    for (i=0; i<sizeof(MixedCase)/sizeof(MixedCase[0]); i++)
+    const char **wordlist = MixedCase;
+    if (simplemode == 0)
+    {   if (typecontext == ARGTYPE ||
+            typecontext == TYPEDEF) wordlist = typeNames;
+        else wordlist = regularNames;
+    }
+    for (i=0; wordlist[i]!=NULL; i++)
     {   p1 = outword;
-        p2 = MixedCase[i];
+        p2 = wordlist[i];
         while (*p1!=0 && *p2!=0 &&
-               *p1 == tolower(*p2))
+               tolower(*p1) == tolower(*p2))
         {   p1++;
             p2++;
         }
         if (*p1==0 && *p2==0) break;
     }
-    if (*p1==0 && *p2==0) fprintf(fout, "%s", MixedCase[i]);
-    else fprintf(fout, "%s", outword);
+    if (*p1==0 && *p2==0) p1 = wordlist[i];
+    else
+    {   p1 = outword;
+        if (simplemode)
+        {   int prevesc = 0;
+            char *p3 = outword;
+            while (*p3 != 0)
+            {   if (!prevesc) *p3 = tolower(*p3);
+                prevesc = (*p3 == '!');
+                p3++;
+            }
+        }
+    }
+    switch (typecontext)
+    {
+case GENERAL:
+// I am aware that strcasecmp is not ANSI C but it is Posix. If needbe I could
+// implement my own version.
+        if (strcasecmp(p1, "procedure") == 0 ||
+            strcasecmp(p1, "declare")   == 0 ||
+            strcasecmp(p1, "scalar")    == 0) typecontext = PROCEDURE;
+        else if (strcasecmp(p1, "struct")  == 0 ||
+                 strcasecmp(p1, "typedef") == 0) typecontext = TYPEDEF;
+        else if (typecontext == TYPEDEF) typecontext = GENERAL;
+default:
+        break;
+    }
+    while (*p1 != 0)
+    {   putc(*p1, fout);
+        newline[newlinep++] = *p1;
+        if (*p1 == '\n') check_endline();
+        p1++;
+    }
     owp = 0;
 }
 
@@ -206,10 +348,27 @@ static void outch(int c, int mode)
     {
 case 0: if (owp != 0) flushword();
         putc(c, fout);
+        newline[newlinep++] = c;
+        if (c == '\n') check_endline();
         return;
 case 1: if (!isalnum(c) && c!='_')
         {   if (owp != 0) flushword();
             putc(c, fout);
+            switch (typecontext)
+            {
+        case PROCEDURE:
+                if (c == ':') typecontext = ARGTYPE;
+                else if (c == ';' || c == '$') typecontext = GENERAL;
+                break;
+        case ARGTYPE:
+                if (c == ',') typecontext = PROCEDURE;
+                else if (c == ';' || c == '$') typecontext = GENERAL;
+                break;
+        default:
+                break;
+            }
+            newline[newlinep++] = c;
+            if (c == '\n') check_endline();
             return;
         }
         // drop through
@@ -232,10 +391,18 @@ int main(int argc, char *argv[])
 //     !<char>
 //     # <alphanumerics> ;
     int context = PLAIN;
-    char prev[12];
+    char prev[12], old_filename[300];
     const char *fname = NULL;
     int i, c = '\n', c1;
     FILE *fin = stdin;
+// Detect an initial argument that is "+" and flag it and so a "shift"
+// operation.
+    simplemode = 1;
+    if (argc > 1 && strcmp(argv[1], "+") == 0)
+    {   simplemode = 0;
+        argc--;
+        argv++;
+    }
     if (argc > 1) fin = fopen(fname = argv[1], "r");
     if (fin == NULL)
     {   fprintf(stderr, "Unable to read input file\n");
@@ -247,10 +414,36 @@ int main(int argc, char *argv[])
     {   fprintf(stderr, "Unable to write to output file\n");
         exit(1);
     }
+// In complicated mode grab the rest of the arguments.
+    if (!simplemode)
+    {   int j;
+        int typecase = 0;
+// Note that argv[1] is the file name so exception info starts at argv[2]
+        for (j=2; j<argc; j++)
+        {   if (strcmp(argv[j], ":") == 0)
+            {   typecase = 1;
+                continue;
+            }
+            if (typecase) typeNames[typeNamesCount++] = argv[j];
+            else regularNames[regularNamesCount++] = argv[j];
+            typecase = 0;
+        }
+        typeNames[typeNamesCount] = NULL;
+        regularNames[regularNamesCount] = NULL;
+        for (j=0; j<regularNamesCount; j++)
+            printf("R%d] %s\n", j, regularNames[j]);
+        for (j=0; j<typeNamesCount; j++)
+            printf("T%d] %s\n", j, typeNames[j]);
+    }
     memset(prev, ' ', sizeof(prev));
     prev[8] = 0;
     while ((c1 = c, (c = getc(fin)) != EOF))
-    {   switch (context)
+    {   origline[origlinep++] = c;
+        if (origlinep > MAX_LINE-2)
+        {   fprintf(stderr, "\n+++ Overlong input line\n");
+            exit(1);
+        }
+        switch (context)
         {
     case COMMENT88:
 // Here I just has a "/" in PLAIN context and I need to check for a "*";
@@ -268,7 +461,7 @@ int main(int argc, char *argv[])
             {   context = COMMENT88;
                 continue;
             }
-            outch(tolower(c), c=='!' ? 2 : 1);
+            outch(c, c=='!' ? 2 : 1);
             if (c == '%') context = PERCENT;
             else if (c == '#') context = HASHED;
             else if (c == '"') context = STRING;
@@ -316,7 +509,9 @@ int main(int argc, char *argv[])
     fclose(fin);  
     if (fname != NULL)
     {   fclose(fout);
-        rename(fname, "old-file");
+        sprintf(old_filename, "%s.pre-casefold", fname);
+        remove(old_filename);
+        rename(fname, old_filename);
         rename("tempfile.tmp", fname);
         fprintf(stderr, "Replaced original file\n");
     }
