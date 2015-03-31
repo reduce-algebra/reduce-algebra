@@ -1,7 +1,7 @@
 module elem; % Simplification rules for elementary functions.
 
 % Author: Anthony C. Hearn.
-% Modifications by:  Herbert Melenk, Rainer Schoepf.
+% Modifications by:  Herbert Melenk, Rainer Schoepf and others.
 
 % Copyright (c) 1993 The RAND Corporation. All rights reserved.
 
@@ -68,28 +68,54 @@ symbolic procedure sign!-of u;
   % Returns -1,0 or 1 if the sign of u is known. Otherwise nil.
    (numberp s and s) where s = numr simp!-sign{u};
 
-symbolic procedure simp!-sign u;
- begin scalar s,n;
-   u:=reval car u;
-   s:=if eqcar(u,'abs) then '(1 . 1)
-      else if eqcar(u,'times) then simp!-sign!-times u
-      else if eqcar(u,'plus) then simp!-sign!-plus u
-      else simpiden{'sign,u};
-   if not numberp(n:=numr s) or n=1 or n=-1 then return s;
+symbolic procedure simp!-sign1 u;
+ begin scalar x,s,n;
+   s:=if atom u then
+      << if numberp u then (if u > 0 then 1 else if u < 0 then -1 else 0) ./ 1
+          else simp!-sign2 u >>
+       else if car u eq '!:rd!: then
+ 	  (if rd!:zerop u then nil else if rd!:minusp u then -1 else 1) ./ 1
+       else if car u eq 'abs then '(1 . 1)
+       else if car u eq 'minus then negsq simp!-sign1 cadr u
+       else if car u eq 'times then simp!-sign!-times u
+       else if car u eq 'quotient then simp!-sign!-quot u
+       else if car u eq 'plus then simp!-sign!-plus u
+       else if car u eq 'expt then simp!-sign!-expt u
+       else simp!-sign2 u;
+   n:=numr s;
+   if not numberp n or n=1 or n=-1 or n=0 then return s;
    typerr(n,"sign value");
  end;
+
+symbolic procedure simp!-sign2 u;
+   % fallback to standard rules: 1. try numeric evaluation, 2. call simpiden
+   (if x then x ./ 1 else simpiden{'sign,u}) where x := rd!-sign u;
+
+symbolic procedure simp!-sign u;
+   simp!-sign1 reval car u;
 
 symbolic procedure simp!-sign!-times w;
  % Factor all known signs out of the product.
   begin scalar n,s,x;
    n:=1;
    for each f in cdr w do
-   <<x:=simp!-sign {f};
+   <<x:=simp!-sign1 f;
      if fixp numr x then n:=n * numr x else s:=f.s>>;
    n:=(n/abs n) ./ 1;
-   s:=if null s then '(1 . 1) else
-     simpiden {'sign, if cdr s then 'times.reversip s else car s};
+   s:=if null s then '(1 . 1)
+       else simp!-sign2(if cdr s then 'times.reversip s else car s);
    return multsq (n,s)
+  end;
+
+symbolic procedure simp!-sign!-quot w;
+ % Factor known signs out of the quotient.
+  begin scalar x,y,flg,z;
+     if eqcar(cadr w,'minus) then << flg:=t;  w := {car w,cadr cadr w, caddr w} >>;
+     x := simp!-sign1 cadr w;		% numerator
+     y := simp!-sign1 caddr w;		% denominator
+     if denr x = 1 and fixp numr x or denr y = 1 and fixp numr y then z := multsq (x,y)
+      else z := simp!-sign2 w;
+     return if flg then negsq z else z
   end;
 
 symbolic procedure simp!-sign!-plus w;
@@ -97,13 +123,24 @@ symbolic procedure simp!-sign!-plus w;
  % or one unknown sign were found.
   begin scalar n,m,x,q;
    for each f in cdr w do if null q then
-   <<x:=simp!-sign {f};
+   <<x:=simp!-sign1 f;
      m:=if fixp numr x then numr x/abs denr x;
      if null m or n and m neq n then q:=t;
      n:=m>>;
-   return if null q then n ./ 1 else
-       simpiden {'sign,w};
+   return if null q then n ./ 1 else simp!-sign2 w;
   end;
+
+symbolic procedure simp!-sign!-expt w;
+  (if fixp ex and evenp ex and not(!*complex or !*precise_complex) then (1 ./ 1)
+    else (
+     if fixp ex and denr sb = 1 and fixp numr sb
+       then (if not evenp ex and numr sb < 0 then -1 else 1) ./ 1
+      else if fixp ex and not(!*complex or !*precise_complex) then sb
+      else if ex = '(quotient 1 2) and sb = (1 ./ 1) then 1 ./ 1
+      else if sb = (1 ./ 1) and realvaluedp ex then (1 ./ 1)
+      else simp!-sign2 w
+         ) where sb := simp!-sign1 cadr w
+  ) where ex := caddr w;
 
 fluid '(rd!-sign!*);
 
@@ -137,27 +174,29 @@ put('sign,'simpfn,'simp!-sign);
 % sign.
 
 sign_rules :=
-   { sign ~x => (if x>0 then 1 else if x<0 then -1 else 0)
-        when numberp x and impart x=0,
-     sign(e) => 1,
-     sign(pi) => 1,
-     sign(-~x) => -sign(x),
+   {
+%%   sign ~x => (if x>0 then 1 else if x<0 then -1 else 0)
+%%      when numberp x and impart x=0,
+%%   sign(e) => 1,
+%%   sign(pi) => 1,
+%%   sign(-~x) => -sign(x),
 %%   sign( ~x * ~y) =>  sign x * sign y
 %%         when numberp sign x or numberp sign y,
-     sign( ~x / ~y) =>  sign x * sign y
-           when y neq 1 and (numberp sign x or numberp sign y),
+%%   sign( ~x / ~y) =>  sign x * sign y
+%%         when y neq 1 and (numberp sign x or numberp sign y),
 %%   sign( ~x + ~y) =>  sign x when sign x = sign y,
-     sign( ~x ^ ~n) => 1 when fixp (n/2) and 
-                              lisp(not (!*complex or !*precise_complex)),
-     sign( ~x ^ ~n) => sign x^n when fixp n and numberp sign x,
-     sign( ~x ^ ~n) => sign x when fixp n and 
-                                   lisp(not (!*complex or !*precise_complex)),
-     sign(sqrt ~a)  => 1 when sign a=1,
-     sign(sinh ~x)  => sign(x) when realvaluedp x,
+%%   sign( ~x ^ ~n) => 1 when fixp (n/2) and 
+%%                            lisp(not (!*complex or !*precise_complex)),
+%%   sign( ~x ^ ~n) => sign x^n when fixp n and numberp sign x,
+%%   sign( ~x ^ ~n) => sign x when fixp n and 
+%%                                 lisp(not (!*complex or !*precise_complex)),
+%%   sign(sqrt ~a)  => 1 when sign a=1,
+     sign(sinh ~x)  => sign(x) when numberp sign(x) or realvaluedp x,
      sign(cosh ~x)  => 1 when realvaluedp x,
-     sign( ~a ^ ~x) => 1 when sign a=1 and realvaluedp x,
+     sign(tanh ~x)  => sign(x) when numberp sign(x) or realvaluedp x,
+%%   sign( ~a ^ ~x) => 1 when sign a=1 and realvaluedp x,
 %%   sign(abs ~a)   => 1,
-     sign ~a => rd!-sign a when rd!-sign a,
+%%   sign ~a => rd!-sign a when rd!-sign a,
      % Next rule here for convenience.
      abs(~x)^2 => x^2 when symbolic not !*precise}$
      % $ above needed for bootstrap.
@@ -518,21 +557,6 @@ let sinh((~x + ~~k*pi)/~~d) => i*sign(-i*k/d)*cosh(x/d)
     coth((~x + ~~k*pi)/~~d) => tanh(x/d)
           when x freeof pi and abs(i*k/d) = 1/2;
 
-
-% Transfer inverse function values from cos to acos and tan to atan.
-% Negative values not needed.
-
-%symbolic procedure simpabs u;
-%   if null u or cdr u then mksq('abs . revlis u, 1)  % error?.
-%    else begin scalar x;
-%      u := car u;
-%      if eqcar(u,'quotient) and fixp cadr u and fixp caddr u
-%         and cadr u>0 and caddr u>0 then return simp u;
-%      if x := rd!-abs u then return x;
-%      u := simp!* u;
-%      return if null numr u then nil ./ 1
-%             else quotsq(mkabsf1 absf numr u,mkabsf1 denr u)
-%  end;
 
 % Transfer inverse function values from cos to acos and tan to atan.
 % Negative values not needed.

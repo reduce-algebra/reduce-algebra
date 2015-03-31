@@ -1,0 +1,279 @@
+
+sign(pi);
+
+
+1
+
+
+sign(e);
+
+
+1
+
+
+sign(e^3);
+
+
+1
+
+
+sign(-e^3);
+
+
+-1
+
+
+sign(khinchin);
+
+
+sign(khinchin)
+
+
+sign(3/2);
+
+
+1
+
+
+on rational;
+
+
+
+sign(3/2);
+
+
+1
+
+
+off rational;
+
+
+
+sign(-x);
+
+
+ - sign(x)
+
+
+sign(-x*y);
+
+
+ - sign(x*y)
+
+
+sign(x/y);
+
+
+      x
+sign(---)
+      y
+
+
+sign(-x/y);
+
+
+         x
+ - sign(---)
+         y
+
+
+sign(3/x);
+
+
+sign(x)
+
+
+sign(x/e);
+
+
+sign(x)
+
+
+sign(3/e);
+
+
+1
+
+
+sign(3/e^pi);
+
+
+1
+
+
+sign(x^4);
+
+
+1
+
+
+sign(x^3);
+
+
+sign(x)
+
+
+on complex;
+
+
+
+sign(x^4);
+
+
+      4
+sign(x )
+
+
+sign(x^3);
+
+
+      3
+sign(x )
+
+
+off complex;
+
+
+
+sign(sqrt(e));
+
+
+1
+
+
+sign(pi^e);
+
+
+1
+
+
+sign(catalan);
+
+
+1
+
+
+sign(golden_ratio);
+
+
+1
+
+
+sign(euler_gamma);
+
+
+1
+
+
+sign(5+5i);
+
+
+sign(5*i + 5)
+
+
+on rounded;
+
+
+
+sign(5/2+3i/4);
+
+
+sign(0.75*i + 2.5)
+
+
+sign(5/2);
+
+
+1
+
+
+on complex;
+
+
+*** Domain mode rounded changed to complex-rounded 
+
+
+sign(5/2+3i/4);
+
+
+sign(2.5 + 0.75*i)
+
+
+sign(5/2);
+
+
+1
+
+
+off rounded;
+
+
+*** Domain mode complex-rounded changed to complex 
+
+
+sign(5/2+3i/4);
+
+
+sign(10 + 3*i)
+
+
+sign(5/2);
+
+
+1
+
+
+sign(x^e);
+
+
+      e
+sign(x )
+
+
+let sign(x) => 1;
+
+
+
+sign(x^e);
+
+
+1
+
+
+sign(sinh x);
+
+
+1
+
+
+sign(cosh x);
+
+
+sign(cosh(x))
+
+
+realvalued rr;
+
+
+
+sign(sinh rr);
+
+
+sign(rr)
+
+
+sign(cosh rr);
+
+
+1
+
+
+sign(tanh rr);
+
+
+sign(rr)
+
+
+
+end;
+
