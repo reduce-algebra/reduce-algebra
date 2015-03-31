@@ -232,6 +232,7 @@ symbolic procedure find_companion(r,x);
 
 flag('(companion,find_companion),'opfn);
 
+put('companion,'rtypefn,'quotematrix);
 
 
 symbolic procedure jordan_block(const,mat_dim);
@@ -260,6 +261,7 @@ symbolic procedure jordan_block(const,mat_dim);
 
 flag ('(jordan_block),'opfn);
 
+put('jordan_block,'rtypefn,'quotematrix);
 
 
 symbolic procedure sub_matrix(a,row_list,col_list);
@@ -363,6 +365,7 @@ symbolic procedure copy_into(bb,aa,p,q);
 
 flag ('(copy_into),'opfn);
 
+rtypecar copy_into;
 
 
 symbolic procedure copy_mat(u);
@@ -370,7 +373,6 @@ symbolic procedure copy_mat(u);
 
 
 
-put('diagonal,'psopfn,'diagonal1); % To allow variable input.
 symbolic procedure diagonal1(mat_list);
   %
   % Can take either a list of arguments or the arguments seperately.
@@ -403,6 +405,9 @@ symbolic procedure diagonal1(mat_list);
     return diag_mat;
   end;
 
+put('diagonal,'psopfn,'diagonal1); % To allow variable input.
+
+put('diagonal,'rtypefn,'quotematrix);
 
 
 symbolic procedure diag(uu);
@@ -529,6 +534,7 @@ symbolic procedure band_matrix(elt_list,sq_size);
 
 flag('(band_matrix),'opfn);
 
+put('band_matrix,'rtypefn,'quotematrix);
 
 
 symbolic procedure make_identity(sq_size);
@@ -542,6 +548,7 @@ symbolic procedure make_identity(sq_size);
 
 flag('(make_identity),'opfn);
 
+put('make_identity,'rtypefn,'quotematrix);
 
 
 symbolic procedure squarep(in_mat);
@@ -1047,7 +1054,7 @@ rtypecar mult_rows,mult_columns;
 
 
 %%%%%%%%%%%%%%%%%%%%% matrix_augment/matrix_stack %%%%%%%%%%%%%%%%%%%%%%
-put('matrix_augment,'psopfn,'matrix_augment1);
+
 symbolic procedure matrix_augment1(matrices);
   %
   % Takes any number of matrices and joins them horizontally.
@@ -1077,9 +1084,11 @@ symbolic procedure matrix_augment1(matrices);
     return 'mat.new_list;
   end;
 
+rtypecar matrix_augment;
+
+put('matrix_augment,'psopfn,'matrix_augment1);
 
 
-put('matrix_stack,'psopfn,'matrix_stack1);
 symbolic procedure matrix_stack1(matrices);
   %
   % Takes any number of matrices and joins them vertically.
@@ -1103,7 +1112,9 @@ symbolic procedure matrix_stack1(matrices);
     return 'mat.new_list;
   end;
 
+rtypecar matrix_stack;
 
+put('matrix_stack,'psopfn,'matrix_stack1);
 
 
 symbolic procedure no_rows(mat_list);
@@ -1231,6 +1242,7 @@ symbolic procedure block_matrix(rows,cols,mat_list);
 
 flag('(block_matrix),'opfn);
 
+put('block_matrix,'rtypefn,'quotematrix);
 
 
 symbolic procedure create_row_list(rows,cols,mat_list);
@@ -1317,7 +1329,6 @@ symbolic procedure check_rows(row_list);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% end block_matrix %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-put('vandermonde,'psopfn,'vandermonde1);
 symbolic procedure vandermonde1(variables);
   %
   % Input can be either a list or individual arguments.
@@ -1346,9 +1357,11 @@ symbolic procedure vandermonde1(variables);
     return vand;
   end;
 
+put('vandermonde,'psopfn,'vandermonde1);
+
+put('vandermonde,'rtypefn,'quotematrix);
 
 
-put('toeplitz,'psopfn,'toeplitz1);
 symbolic procedure toeplitz1(variables);
   %
   % Input can be either a list or individual arguments.
@@ -1376,6 +1389,11 @@ symbolic procedure toeplitz1(variables);
     >>;
     return toep;
   end;
+
+put('toeplitz,'psopfn,'toeplitz1);
+
+put('toeplitz,'rtypefn,'quotematrix);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%% kronecker_product %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1555,6 +1573,9 @@ symbolic procedure remove_columns(in_mat,col_list);
 
 flag('(minor,remove_rows,remove_columns),'opfn);
 
+rtypecar minor,remove_columns,remove_rows;
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% end  minor %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -1681,6 +1702,7 @@ symbolic procedure random_matrix(rowdim,coldim,limit);
 
 flag('(random_matrix),'opfn);
 
+put('random_matrix,'rtypefn,'quotematrix);
 
 
 symbolic procedure im_random_matrix(rowdim,coldim,limit);
@@ -1811,6 +1833,9 @@ symbolic procedure char_poly(in_mat,lmbda);
 
 flag('(char_matrix char_poly),'opfn);
 
+rtypecar char_matrix;
+
+
 %%%%%%%%%%%%%%%%%%%%%%%% end char_matrix/char_poly %%%%%%%%%%%%%%%%%%%%%
 
 
@@ -1932,6 +1957,9 @@ symbolic procedure rows_pivot(in_mat,pivot_row,pivot_col,row_list);
 
 flag('(pivot,rows_pivot),'opfn);
 
+rtypecar pivot,rows_pivot;
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% end pivot/rows_pivot %%%%%%%%%%%%%%%%%%%%%
 
 
@@ -1969,6 +1997,7 @@ symbolic procedure mat_jacobian(exp_list,var_list);
 
 flag('(mat_jacobian),'opfn);
 
+put('mat_jacobian,'rtypefn,'quotematrix);
 
 
 symbolic procedure hessian(poly,variables);
@@ -2009,6 +2038,7 @@ symbolic procedure hessian(poly,variables);
 
 flag('(hessian),'opfn);
 
+put('hessian,'rtypefn,'quotematrix);
 
 
 symbolic procedure hermitian_tp(in_mat);
@@ -2029,8 +2059,7 @@ symbolic procedure hermitian_tp(in_mat);
       for col:=1:column_dim(h_tp) do
       <<
         element := getmat(h_tp,row,col);
-        setmat(h_tp,row,col,
-               algebraic (repart(element) - i*impart(element)));
+        setmat(h_tp,row,col,mk!*sq simpconj list element);
       >>;
     >>;
     return h_tp;
@@ -2038,6 +2067,7 @@ symbolic procedure hermitian_tp(in_mat);
 
 flag('(hermitian_tp),'opfn);
 
+rtypecar hermitian_tp;
 
 
 symbolic procedure hilbert(sq_size,value);
@@ -2065,6 +2095,7 @@ symbolic procedure hilbert(sq_size,value);
 
 flag('(hilbert),'opfn);
 
+put('hilbert,'rtypefn,'quotematrix);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%% begin coeff_matrix  %%%%%%%%%%%%%%%%%%%%%%%%%%%

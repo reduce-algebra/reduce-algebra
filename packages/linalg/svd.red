@@ -386,6 +386,7 @@ symbolic procedure pseudo_inverse(in_mat);
 
 flag('(pseudo_inverse),'opfn);
 
+rtypecar pseudo_inverse;
 
 
 symbolic procedure rd_copy_mat(a);
