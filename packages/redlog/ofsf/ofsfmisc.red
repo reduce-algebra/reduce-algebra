@@ -165,6 +165,8 @@ procedure ofsf_vsubat(v, u, f);
       ofsf_qesubiat(f, v, 'pinf)
    else if u = '(minus infinity) then
       ofsf_qesubiat(f, v, 'minf)
+   else if eqcar(u, 'list) then
+      ofsf_qesubrat(f, v, for each p in cdr u collect numr simp p)
    else
       rederr {"ofsf_vsubat: unexpected term", u};
 
@@ -194,10 +196,23 @@ procedure ofsf_eqnrhskernels(x);
 procedure ofsf_vsubalchk(al);
    for each pr in al do
       if not ofsf_nstdp pr then
-	 rederr {"illegal term", cdr pr, "vsub"};
+	 rederr {"illegal term", cdr pr, "in vsub"};
 
 procedure ofsf_nstdp(u);
-   cdr u member '(epsilon (minus epsilon) infinity (minus infinity));
+   begin scalar cnt;
+      u := cdr u;
+      if u member '(epsilon (minus epsilon) infinity (minus infinity)) then
+      	 return t;
+      if not eqcar(u, 'list) or length cdr u neq 4 then
+	 return nil;
+      u := cdr u;
+      cnt := t; while cnt and u do
+	 if denr simp car u neq 1 then
+	    cnt := nil
+	 else
+	    u := cdr u;
+      return cnt
+   end;
 
 procedure ofsf_getineq(f,bvl);
    % Generate theory get inequalities. [f] is a formula, the right
