@@ -123,11 +123,12 @@ let Khinchin => compute!:khinchin();
 flag('(Euler_gamma golden_ratio Catalan Khinchin),'reserved);
 flag('(Euler_gamma golden_ratio Catalan Khinchin),'constant);
 flag('(Euler_gamma golden_ratio Catalan Khinchin),'realvalued);
-let {
-   sign(Euler_gamma) => 1,
-   sign(golden_ratio) => 1,
-   sign(Catalan) => 1,
-   sign(Khinchin) => 1 };
+%let {
+%   sign(Euler_gamma) => 1,
+%   sign(golden_ratio) => 1,
+%   sign(Catalan) => 1,
+%   sign(Khinchin) => 1
+% };
 put('Euler_gamma,'!:rd!:,'rd_euler!*);
 put('Euler_gamma,'!:cr!:,'cr_euler!*);
 put('Catalan,'!:rd!:,'rd_catalan!*);
