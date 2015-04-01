@@ -1,0 +1,74 @@
++++ Standard names +++
+A:53                                  a:15457
+AList:2                               Alist:1
+                                      alist:83
+Aex:2                                 aex:85
+Answer:3                              answer:208
+B:6                                   b:7893
+Boolean:3                             boolean:36
+Formula:4                             formula:29
+H:2                                   h:3092
+Id:4                                  id:292
+Integer:7                             integer:989
+J1:2                                  j1:261
+Kernel:3                              kernel:153
+List:30                               list:7434
+OMATP:24                              omatp:6
+OMOBJ:172                             omobj:22
+RationalP:8                           rationalp:10
+S:1                                   s:5926
+SF:23                                 sf:547
+SF*:2                                 sf*:1
+T:209                                 t:5732
+U:2                                   u:33660
+UT:2                                  ut:88
+V:5                                   v:14280
+VT:2                                  vt:80
+X229:6                                x229:6
+X259:6                                x259:6
+X261:5                                x261:5
+X262:7                                x262:7
+X263:7                                x263:7
+X268:5                                x268:5
+X269:7                                x269:7
+X270:7                                x270:7
+X271:7                                x271:7
+X272:6                                x272:6
+X273:6                                x273:6
+action_A:32                           action_a:4
+co_dynPush:1                          co_dynpush:1
+definitionURL:2                       definitionurl:8
+gurobi_addconstraintFast:1            gurobi_addconstraintfast:10
+ibalp_var-getLev:2                    ibalp_var-getlev:38
+ofsf_s2aPointPair:5                   ofsf_s2apointPair:2
+ofsf_updIvl:2                         ofsf_updivl:1
+rA:8                                  ra:76
+
+43 symbols involved
+
++++ Type names +++
+AList:37                              Alist:19
+                                      alist:1
+Any:95                                any:7
+Atom:3                                atom:1
+Boolean:60                            boolean:5
+Domain:3                              domain:1
+DottedPair:59                         dottedpair:4
+ExtraBoolean:39                       extraboolean:1
+Floating:4                            floating:2
+Formula:36                            formula:2
+Id:34                                 id:6
+Integer:141                           integer:10
+Kernel:152                            kernel:2
+List:302                              list:17
+List2:3                               list2:1
+List3:11                              list3:1
+List4:6                               list4:1
+List6:1                               list6:1
+NoOrdSF:2                             noordsf:1
+SF:212                                sf:17
+SFList:43                             SfList:1
+SQ:68                                 sq:15
+String:6                              string:3
+
+22 type symbols involved
