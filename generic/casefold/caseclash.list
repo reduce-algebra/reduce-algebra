@@ -1,29 +1,17 @@
 +++ Standard names +++
-A:53                                  a:15457
-AList:2                               Alist:1
-                                      alist:83
-Aex:2                                 aex:85
-Answer:3                              answer:208
-B:6                                   b:7893
-Boolean:3                             boolean:36
-Formula:4                             formula:29
-H:2                                   h:3092
-Id:4                                  id:292
-Integer:7                             integer:989
-J1:2                                  j1:261
-Kernel:3                              kernel:153
-List:30                               list:7434
+A:17                                  a:15377
+Answer:4                              answer:208
+B:6                                   b:7875
+Kernel:2                              kernel:153
+List:2                                list:7206
 OMATP:24                              omatp:6
 OMOBJ:172                             omobj:22
 RationalP:8                           rationalp:10
-S:1                                   s:5926
-SF:23                                 sf:547
-SF*:2                                 sf*:1
-T:209                                 t:5732
-U:2                                   u:33660
-UT:2                                  ut:88
-V:5                                   v:14280
-VT:2                                  vt:80
+S:1                                   s:5857
+SF:4                                  sf:547
+T:209                                 t:5588
+V:3                                   v:14068
+VarList:1                             varlist:230
 X229:6                                x229:6
 X259:6                                x259:6
 X261:5                                x261:5
@@ -35,40 +23,1507 @@ X270:7                                x270:7
 X271:7                                x271:7
 X272:6                                x272:6
 X273:6                                x273:6
-action_A:32                           action_a:4
 co_dynPush:1                          co_dynpush:1
 definitionURL:2                       definitionurl:8
 gurobi_addconstraintFast:1            gurobi_addconstraintfast:10
-ibalp_var-getLev:2                    ibalp_var-getlev:38
 ofsf_s2aPointPair:5                   ofsf_s2apointPair:2
 ofsf_updIvl:2                         ofsf_updivl:1
-rA:8                                  ra:76
 
-43 symbols involved
+29 symbols involved
 
 +++ Type names +++
-AList:37                              Alist:19
+AList:39                              Alist:20
                                       alist:1
 Any:95                                any:7
 Atom:3                                atom:1
-Boolean:60                            boolean:5
+Boolean:63                            boolean:5
 Domain:3                              domain:1
-DottedPair:59                         dottedpair:4
+DottedPair:66                         dottedpair:4
 ExtraBoolean:39                       extraboolean:1
 Floating:4                            floating:2
-Formula:36                            formula:2
-Id:34                                 id:6
-Integer:141                           integer:10
-Kernel:152                            kernel:2
-List:302                              list:17
+Formula:40                            formula:2
+Id:38                                 id:5
+Integer:148                           integer:10
+Kernel:153                            kernel:2
+List:330                              list:18
 List2:3                               list2:1
 List3:11                              list3:1
 List4:6                               list4:1
-List6:1                               list6:1
-NoOrdSF:2                             noordsf:1
-SF:212                                sf:17
-SFList:43                             SfList:1
+List6:2                               list6:1
+NoOrdSF:1                             noordsf:1
+SF:231                                sf:17
+SFList:45                             SfList:1
 SQ:68                                 sq:15
 String:6                              string:3
+
+22 type symbols involved
+
+
++++ Detailed Report +++
+
+
++++ Standard names +++
+
+                    A:17
+mathml/mathmlom.tst : 400
+     <ci type="set"> A </ci>
+mathml/mathmlom.tst : 426
+     <ci type="set"> A </ci>
+mathml/mathmlom.tst : 454
+     <ci type="set"> A </ci>
+mathml/mathmlom.tst : 462
+   <ci> A </ci>
+mathml/mathmlom.tst : 469
+     <ci> A </ci>
+mathml/mathmlom.tst : 477
+     <ci> A </ci>
+mathml/mathmlom.tst : 485
+     <ci> A </ci>
+mathml/mathmlom.tst : 493
+     <ci> A </ci>
+mathml/mathmlom.tst : 910
+  <ci>A</ci>
+mathml/mathmlom.tst : 927
+  <ci>A</ci>
+
+                    a:15377
+alg/coeff.red : 67
+        if null y then go to a;
+alg/coeff.red : 71
+    a:  z := (0 . !*ff2a(y,u)) . z;
+alg/elem.red : 155
+     sign(sqrt ~a)  => 1 when sign a=1,
+alg/elem.red : 155
+     sign(sqrt ~a)  => 1 when sign a=1,
+alg/elem.red : 158
+     sign( ~a ^ ~x) => 1 when sign a=1 and realvaluedp x,
+alg/elem.red : 158
+     sign( ~a ^ ~x) => 1 when sign a=1 and realvaluedp x,
+alg/elem.red : 160
+     sign ~a => rd!-sign a when rd!-sign a,
+alg/elem.red : 160
+     sign ~a => rd!-sign a when rd!-sign a,
+alg/elem.red : 160
+     sign ~a => rd!-sign a when rd!-sign a,
+alg/elem.red : 189
+for all x let logb(a**x,a)=x;
+
+                    Answer:4
+redlog/cl/clqe.red : 91
+declare ce_mk: (VarList, QfFormula, Kernel, List, Answer) -> ContainerElement;
+redlog/cl/clqe.red : 116
+declare ce_ans: (ContainerElement) -> Answer;
+redlog/cl/clqe.red : 271
+declare cl_mkJ: (QfFormula,Answer) -> Junction;
+redlog/cl/clqe.red : 283
+declare cl_jA: (Junction) -> Answer;
+
+                    answer:208
+algint/afactor.red : 246
+  scalar prim,res,answer,u,v,x,y; % scalar var2
+algint/afactor.red : 266
+        if u neq '(1 . 1) then answer := u . answer>>
+algint/afactor.red : 266
+        if u neq '(1 . 1) then answer := u . answer>>
+algint/afactor.red : 273
+  end;
+algint/antisubs.red : 37
+  scalar answer,w;
+algint/antisubs.red : 46
+      else answer:=(x.anti2(w,x)).answer;
+algint/antisubs.red : 46
+      else answer:=(x.anti2(w,x)).answer;
+algint/antisubs.red : 49
+    then answer:=(x.x).answer;
+algint/antisubs.red : 49
+    then answer:=(x.x).answer;
+algint/antisubs.red : 49
+    then answer:=(x.x).answer;
+
+                    B:6
+mathml/mathmlom.tst : 401
+     <ci type="set"> B </ci>
+mathml/mathmlom.tst : 427
+     <ci type="set"> B </ci>
+mathml/mathmlom.tst : 470
+     <ci> B </ci>
+mathml/mathmlom.tst : 478
+     <ci> B </ci>
+mathml/mathmlom.tst : 486
+     <ci> B </ci>
+mathml/mathmlom.tst : 494
+     <ci> B </ci>
+
+                    b:7875
+alg/coeff.red : 70
+        if null y then go to b;
+alg/coeff.red : 72
+    b:  lowpow!* := caar z;
+alg/coeff.red : 94
+      if null y then return 0; % changed by JHD for consistency
+alg/coeff.red : 99
+       else <<y := red y; go to b>>
+alg/elem.red : 201
+for all a,b,x such that a=b let a^logb(x,b)=x;
+alg/elem.red : 201
+for all a,b,x such that a=b let a^logb(x,b)=x;
+alg/elem.red : 201
+for all a,b,x such that a=b let a^logb(x,b)=x;
+alg/farith.red : 41
+symbolic procedure idifference(a,b); a-b;
+alg/farith.red : 41
+symbolic procedure idifference(a,b); a-b;
+alg/farith.red : 43
+symbolic procedure iquotient(a,b); a/b;
+
+                    Kernel:2
+redlog/cl/clqe.red : 91
+declare ce_mk: (VarList, QfFormula, Kernel, List, Answer) -> ContainerElement;
+redlog/cl/clqe.red : 106
+declare ce_v: (ContainerElement) -> Kernel;
+
+                    kernel:153
+arnum/bath.red : 89
+                      univariate polynomial in the kernel x.
+arnum/bath.red : 112
+kernel  alpha.  the function normf1(f,alglist) returns the norm of f over
+cdiff/integrator.red : 237
+	    for each kernel in linear_functions do if length
+cdiff/integrator.red : 240
+		  where depl_entry=assoc(kernel,depl!*))=nr_of_variables then
+cdiff/integrator.red : 241
+		     solvable_kernels:=kernel . solvable_kernels;
+cdiff/integrator.red : 242
+	    for each kernel in append(df_functions,commutator_functions)do
+cdiff/integrator.red : 243
+	       solvable_kernels:=delete(kernel,solvable_kernels);
+cdiff/integrator.red : 264
+	    for each kernel in append(linear_functions,commutator_functions)do
+cdiff/integrator.red : 267
+		     where depl_entry=assoc(kernel,depl!*))do
+cdiff/integrator.red : 289
+lisp procedure successful_message_for(n,action,kernel);
+
+                    List:2
+redlog/cl/clqe.red : 91
+declare ce_mk: (VarList, QfFormula, Kernel, List, Answer) -> ContainerElement;
+redlog/cl/clqe.red : 111
+declare ce_eterm: (ContainerElement) -> List;
+
+                    list:7206
+alg/alg-form.red : 36
+        then rerror('alg,1,list("input called with",
+alg/alg-form.red : 41
+        then rerror(alg,1,list("Entry",u,"not found"));
+alg/alg-form.red : 50
+        then rerror('alg,1,list("ws called with",
+alg/alg-form.red : 55
+       else rerror(alg,2,list("Entry",u,"not found"))
+alg/algbool.red : 35
+               then numberp(x := reval list('difference,u,v))
+alg/algbool.red : 55
+        simp!* list('difference,v,u);
+alg/algdcl.red : 35
+     then list('flag,mkquote cdr u,mkquote 'opfn)
+alg/algdcl.red : 36
+    else list('operator,mkarg(cdr u,vars));
+alg/algdcl.red : 53
+      remflag(list u,'linear);
+alg/algdcl.red : 54
+      remflag(list u,'nary);
+
+                    OMATP:24
+mathml/mathmlom.tst : 2926
+    <OMATP>
+mathml/mathmlom.tst : 2929
+    </OMATP>
+mathml/mathmlom.tst : 2939
+           <OMATP>
+mathml/mathmlom.tst : 2942
+           </OMATP>
+mathml/mathmlom.tst : 2950
+           <OMATP>
+mathml/mathmlom.tst : 2953
+           </OMATP>
+mathml/mathmlom.tst : 2961
+           <OMATP>
+mathml/mathmlom.tst : 2964
+           </OMATP>
+mathml/mathmlom.tst : 2978
+       <OMATP>
+mathml/mathmlom.tst : 2981
+       </OMATP>
+
+                    omatp:6
+mathml/om2ir.red : 251
+begin scalar omatp, var;
+mathml/om2ir.red : 253
+  omatp:=omatpir();
+mathml/om2ir.red : 258
+  if pairp omatp then if cadar omatp = 'csymbol then return (var . list nil);
+mathml/om2ir.red : 258
+  if pairp omatp then if cadar omatp = 'csymbol then return (var . list nil);
+mathml/om2ir.red : 259
+  if numberp var then return list('cn, omatp, var);
+mathml/om2ir.red : 260
+  return list('ci, omatp, var);
+
+                    OMOBJ:172
+mathml/mathmlom.tst : 1296
+<OMOBJ>
+mathml/mathmlom.tst : 1307
+</OMOBJ>       
+mathml/mathmlom.tst : 1310
+<OMOBJ>
+mathml/mathmlom.tst : 1321
+</OMOBJ>       
+mathml/mathmlom.tst : 1324
+<OMOBJ>
+mathml/mathmlom.tst : 1340
+</OMOBJ>       
+mathml/mathmlom.tst : 1343
+<OMOBJ>       
+mathml/mathmlom.tst : 1352
+</OMOBJ>       
+mathml/mathmlom.tst : 1355
+<OMOBJ>
+mathml/mathmlom.tst : 1373
+</OMOBJ>      
+
+                    omobj:22
+mathml/om2ir.red : 51
+     res:=omobj();
+mathml/om2ir.red : 64
+symbolic procedure omobj();
+mathml/om2ir.red : 77
+    obj:=omobj();
+mathml/om2ir.red : 221
+  obj:=omobj();
+mathml/om2ir.red : 240
+  symb:=omobj();
+mathml/om2ir.red : 244
+  obj:=omobj();
+mathml/om2ir.red : 255
+  var:=omobj();
+mathml/om2ir.red : 269
+  obj:=car omobj();
+mathml/om2ir.red : 306
+  int:=omobj();
+mathml/om2ir.red : 309
+  fun:=omobj();
+
+                    RationalP:8
+redlog/ofsf/ofsf.red : 324
+struct Rational checked by RationalP;
+redlog/ofsf/ofsf.red : 344
+procedure RationalP(s);
+redlog/ofsf/ofsf.red : 349
+   null s or pairp s and RationalP car s and RationalListP cdr s;
+redlog/ofsf/ofsf.red : 352
+   RationalP s or s eq 'minfty or s eq 'infty;  % TODO: Change to 'minf, 'pinf.
+redlog/ofsf/ofsf.red : 355
+   pairp s and RationalP car s and RationalP cdr s;
+redlog/ofsf/ofsf.red : 355
+   pairp s and RationalP car s and RationalP cdr s;
+redlog/ofsf/ofsfanuex.red : 1722
+      if not pairp car iv or not RationalP car iv then
+redlog/ofsf/ofsfanuex.red : 1724
+      if not pairp cdr iv or not RationalP cdr iv then
+
+                    rationalp:10
+crack/crint.red : 2479
+   if not rationalp(newde,ford_) then newde:=nil else <<
+crack/crint.red : 2482
+          rationalp(subst(ford_,list('arbconst,j),newde),ford_) do j:=j+1;
+crack/crutil.red : 1220
+symbolic procedure rationalp(p,f);
+crack/crutil.red : 1229
+ rationalp(cadr p,f) and rationalp(caddr p,f))
+crack/crutil.red : 1229
+ rationalp(cadr p,f) and rationalp(caddr p,f))
+crack/crutil.red : 1238
+             else if rationalp(p,car ftem) then ratexp(p,cdr ftem)
+scope/codmat.red : 661
+% -------------------------------------------------------------------- ;
+scope/codmat.red : 669
+symbolic procedure rationalp f;
+scope/codmat.red : 752
+             (integerp(cadr caddr trm) or rationalp(cadr caddr trm))
+scope/codmat.red : 863
+               (integerp(cadr caddr fac) or rationalp(cadr caddr fac))
+
+                    S:1
+mathml/mathmlom.tst : 552
+         <ci> S</ci>
+
+                    s:5857
+alg/elem.red : 69
+   (numberp s and s) where s = numr simp!-sign{u};
+alg/elem.red : 69
+   (numberp s and s) where s = numr simp!-sign{u};
+alg/elem.red : 69
+   (numberp s and s) where s = numr simp!-sign{u};
+alg/elem.red : 72
+ begin scalar s,n;
+alg/elem.red : 74
+   s:=if eqcar(u,'abs) then '(1 . 1)
+alg/elem.red : 78
+   if not numberp(n:=numr s) or n=1 or n=-1 then return s;
+alg/elem.red : 78
+   if not numberp(n:=numr s) or n=1 or n=-1 then return s;
+alg/elem.red : 84
+  begin scalar n,s,x;
+alg/elem.red : 88
+     if fixp numr x then n:=n * numr x else s:=f.s>>;
+alg/elem.red : 88
+     if fixp numr x then n:=n * numr x else s:=f.s>>;
+
+                    SF:4
+redlog/rltools/sfto.red : 61
+declare addf: (SF,SF) -> SF;
+redlog/rltools/sfto.red : 61
+declare addf: (SF,SF) -> SF;
+redlog/rltools/sfto.red : 62
+declare multf: (SF,SF) -> SF;
+redlog/rltools/sfto.red : 62
+declare multf: (SF,SF) -> SF;
+
+                    sf:547
+alg/simp.red : 1126
+   begin scalar fn,fn1,sf,sc,int,ce; fn1 := fn := car u; u := cdr u;
+alg/simp.red : 1134
+      sf := if int then 'simprn
+alg/simp.red : 1135
+         else if (sf := get(fn,'simparg)) then sf else 'simprd;
+alg/simp.red : 1135
+         else if (sf := get(fn,'simparg)) then sf else 'simprd;
+alg/simp.red : 1154
+   s: if not (u := apply1(sf, revlis u)) then return nil;
+alg/simplog.red : 136
+symbolic procedure simplogb2(sf,base);
+alg/simplog.red : 138
+   then if null sf then rerror(alg,21,"Log 0 formed")
+alg/simplog.red : 138
+   then if null sf then rerror(alg,21,"Log 0 formed")
+alg/simplog.red : 140
+       then if sf iequal 1 then nil ./ 1
+alg/simplog.red : 140
+       then if sf iequal 1 then nil ./ 1
+
+                    T:209
+redlog/acfsf/acfsfbnf.red : 47
+   else
+redlog/acfsf/acfsfbnf.red : 55
+   else
+redlog/acfsf/acfsfmisc.red : 260
+      !*gcd := T;
+redlog/acfsf/acfsfqe.red : 48
+      !*cgbgen := T;
+redlog/acfsf/acfsfqe.red : 230
+      !*rlsiexpla := T;
+redlog/cl/clbnf.red : 304
+      flg:=T;
+redlog/cl/clbnf.red : 341
+      if null l then return ( (T . c) . nil);
+redlog/cl/clbnf.red : 346
+      if null ll then return ((T . c) . nil);
+redlog/cl/clbnf.red : 464
+   % Common logic subsumption and cut atomic formula list predicate.
+redlog/cl/clbnf.red : 602
+	    flg := T;
+
+                    t:5588
+alg/coeff.red : 58
+          then <<!*exp := t; u := resimp cadr u>>
+alg/coeff.red : 59
+         else <<!*exp := t; u := simp!* u>>;
+alg/coeff.red : 83
+      !*exp := t;
+alg/depend.red : 37
+   depend0(u,t);
+alg/depend.red : 74
+      %to allow the most general pattern matching to occur;
+alg/depend.red : 77
+    else if not atom u and idp car u and get(car u,'dname) then
+alg/depend.red : 82
+    else if atom v or idp car v and get(car v,'dname) then nil
+alg/elem.red : 58
+    else <<if null !*!*sqrt then <<!*!*sqrt := t;
+alg/elem.red : 102
+     if null m or n and m neq n then q:=t;
+alg/elem.red : 118
+    setdmode('rounded,t);
+
+                    V:3
+mathml/mathmlom.tst : 540
+     <ci> V </ci>
+mathml/mathmlom.tst : 545
+       <ci> V </ci>
+mathml/mathmlom.tst : 556
+     <ci> V </ci>
+
+                    v:14068
+alg/algbool.red : 31
+symbolic procedure evalequal(u,v);
+alg/algbool.red : 33
+      return if (x := getrtype u) neq getrtype v then nil
+alg/algbool.red : 35
+               then numberp(x := reval list('difference,u,v))
+alg/algbool.red : 38
+   end;
+alg/algbool.red : 50
+symbolic procedure evalgreaterp(u,v);
+alg/algbool.red : 55
+        simp!* list('difference,v,u);
+alg/algbool.red : 59
+symbolic procedure evalgeq(u,v); not evallessp(u,v);
+alg/algbool.red : 59
+symbolic procedure evalgeq(u,v); not evallessp(u,v);
+alg/algbool.red : 63
+symbolic procedure evallessp(u,v); evalgreaterp(v,u);
+alg/algbool.red : 63
+symbolic procedure evallessp(u,v); evalgreaterp(v,u);
+
+                    VarList:1
+redlog/cl/clqe.red : 96
+declare ce_vl: (ContainerElement) -> VarList;
+
+                    varlist:230
+algint/afactor.red : 245
+  scalar varlist,zlist,indexlist,sqrtlist,sqrtflag;
+algint/afactor.red : 252
+        y:=facbypp(car x,varlist);
+algint/jhdriver.red : 141
+symbolic procedure algebraiccase(expression,zlist,varlist);
+algint/jhdriver.red : 180
+        % if the difference is merely a constant.
+algint/jhdriver.red : 182
+  zlist:=findzvars(varlist,list intvar,intvar,nil);
+algint/jhdriver.red : 183
+  varlist:=setdiff(varlist,zlist);
+algint/jhdriver.red : 183
+  varlist:=setdiff(varlist,zlist);
+algint/jhdriver.red : 189
+  deriv:=transcendentalcase(deriv,intvar,nil,zlist,varlist);
+assist/opertens.red : 80
+begin scalar name,proplist,arglist,varlist,switchid,istens,spacel,z;
+assist/opertens.red : 92
+                    varlist:=append(varlist, cdadr y);
+
+                    X229:6
+redlog/ofsf/ofsf.tst : 679
+  3*X259+4*X261+3*X262+2*X263+X269+2*X270+3*X271+4*X272+5*X273+X229=2,
+redlog/ofsf/ofsf.tst : 680
+  7*X259+11*X261+8*X262+5*X263+3*X269+6*X270+9*X271+12*X272+15*X273+X229=4,
+redlog/ofsf/ofsf.tst : 682
+  X262+2*X263+5*X268+4*X269+3*X270+2*X271+X272+2*X229=1,
+redlog/ofsf/ofsf.tst : 683
+  X259+X262+2*X263+4*X268+3*X269+2*X270+X271-X273+3*X229=2,
+redlog/ofsf/ofsf.tst : 684
+  X259+2*X261+2*X262+2*X263+3*X268+3*X269+3*X270+3*X271+3*X272+3*X273+X229=1,
+redlog/ofsf/ofsf.tst : 685
+     X259+X261+X262+X263+X268+X269+X270+X271+X272+X273+X229=1};
+
+                    x229:6
+linalg/linalg.tst : 229
+  3*x259+4*x261+3*x262+2*x263+x269+2*x270+3*x271+4*x272+5*x273+x229=2,
+linalg/linalg.tst : 230
+  7*x259+11*x261+8*x262+5*x263+3*x269+6*x270+9*x271+12*x272+15*x273+x229=4,
+linalg/linalg.tst : 232
+  x262+2*x263+5*x268+4*x269+3*x270+2*x271+x272+2*x229=1,
+linalg/linalg.tst : 233
+  x259+x262+2*x263+4*x268+3*x269+2*x270+x271-x273+3*x229=2,
+linalg/linalg.tst : 234
+  x259+2*x261+2*x262+2*x263+3*x268+3*x269+3*x270+3*x271+3*x272+3*x273+x229=1,
+linalg/linalg.tst : 235
+  x259+x261+x262+x263+x268+x269+x270+x271+x272+x273+x229=1});
+
+                    X259:6
+redlog/ofsf/ofsf.tst : 679
+  3*X259+4*X261+3*X262+2*X263+X269+2*X270+3*X271+4*X272+5*X273+X229=2,
+redlog/ofsf/ofsf.tst : 680
+  7*X259+11*X261+8*X262+5*X263+3*X269+6*X270+9*X271+12*X272+15*X273+X229=4,
+redlog/ofsf/ofsf.tst : 681
+  2*X259+5*X261+4*X262+3*X263+3*X268+4*X269+5*X270+6*X271+7*X272+8*X273=1,
+redlog/ofsf/ofsf.tst : 683
+  X259+X262+2*X263+4*X268+3*X269+2*X270+X271-X273+3*X229=2,
+redlog/ofsf/ofsf.tst : 684
+  X259+2*X261+2*X262+2*X263+3*X268+3*X269+3*X270+3*X271+3*X272+3*X273+X229=1,
+redlog/ofsf/ofsf.tst : 685
+     X259+X261+X262+X263+X268+X269+X270+X271+X272+X273+X229=1};
+
+                    x259:6
+linalg/linalg.tst : 229
+  3*x259+4*x261+3*x262+2*x263+x269+2*x270+3*x271+4*x272+5*x273+x229=2,
+linalg/linalg.tst : 230
+  7*x259+11*x261+8*x262+5*x263+3*x269+6*x270+9*x271+12*x272+15*x273+x229=4,
+linalg/linalg.tst : 231
+  2*x259+5*x261+4*x262+3*x263+3*x268+4*x269+5*x270+6*x271+7*x272+8*x273=1,
+linalg/linalg.tst : 233
+  x259+x262+2*x263+4*x268+3*x269+2*x270+x271-x273+3*x229=2,
+linalg/linalg.tst : 234
+  x259+2*x261+2*x262+2*x263+3*x268+3*x269+3*x270+3*x271+3*x272+3*x273+x229=1,
+linalg/linalg.tst : 235
+  x259+x261+x262+x263+x268+x269+x270+x271+x272+x273+x229=1});
+
+                    X261:5
+redlog/ofsf/ofsf.tst : 679
+  3*X259+4*X261+3*X262+2*X263+X269+2*X270+3*X271+4*X272+5*X273+X229=2,
+redlog/ofsf/ofsf.tst : 680
+  7*X259+11*X261+8*X262+5*X263+3*X269+6*X270+9*X271+12*X272+15*X273+X229=4,
+redlog/ofsf/ofsf.tst : 681
+  2*X259+5*X261+4*X262+3*X263+3*X268+4*X269+5*X270+6*X271+7*X272+8*X273=1,
+redlog/ofsf/ofsf.tst : 684
+  X259+2*X261+2*X262+2*X263+3*X268+3*X269+3*X270+3*X271+3*X272+3*X273+X229=1,
+redlog/ofsf/ofsf.tst : 685
+     X259+X261+X262+X263+X268+X269+X270+X271+X272+X273+X229=1};
+
+                    x261:5
+linalg/linalg.tst : 229
+  3*x259+4*x261+3*x262+2*x263+x269+2*x270+3*x271+4*x272+5*x273+x229=2,
+linalg/linalg.tst : 230
+  7*x259+11*x261+8*x262+5*x263+3*x269+6*x270+9*x271+12*x272+15*x273+x229=4,
+linalg/linalg.tst : 231
+  2*x259+5*x261+4*x262+3*x263+3*x268+4*x269+5*x270+6*x271+7*x272+8*x273=1,
+linalg/linalg.tst : 234
+  x259+2*x261+2*x262+2*x263+3*x268+3*x269+3*x270+3*x271+3*x272+3*x273+x229=1,
+linalg/linalg.tst : 235
+  x259+x261+x262+x263+x268+x269+x270+x271+x272+x273+x229=1});
+
+                    X262:7
+redlog/ofsf/ofsf.tst : 679
+  3*X259+4*X261+3*X262+2*X263+X269+2*X270+3*X271+4*X272+5*X273+X229=2,
+redlog/ofsf/ofsf.tst : 680
+  7*X259+11*X261+8*X262+5*X263+3*X269+6*X270+9*X271+12*X272+15*X273+X229=4,
+redlog/ofsf/ofsf.tst : 681
+  2*X259+5*X261+4*X262+3*X263+3*X268+4*X269+5*X270+6*X271+7*X272+8*X273=1,
+redlog/ofsf/ofsf.tst : 682
+  X262+2*X263+5*X268+4*X269+3*X270+2*X271+X272+2*X229=1,
+redlog/ofsf/ofsf.tst : 683
+  X259+X262+2*X263+4*X268+3*X269+2*X270+X271-X273+3*X229=2,
+redlog/ofsf/ofsf.tst : 684
+  X259+2*X261+2*X262+2*X263+3*X268+3*X269+3*X270+3*X271+3*X272+3*X273+X229=1,
+redlog/ofsf/ofsf.tst : 685
+     X259+X261+X262+X263+X268+X269+X270+X271+X272+X273+X229=1};
+
+                    x262:7
+linalg/linalg.tst : 229
+  3*x259+4*x261+3*x262+2*x263+x269+2*x270+3*x271+4*x272+5*x273+x229=2,
+linalg/linalg.tst : 230
+  7*x259+11*x261+8*x262+5*x263+3*x269+6*x270+9*x271+12*x272+15*x273+x229=4,
+linalg/linalg.tst : 231
+  2*x259+5*x261+4*x262+3*x263+3*x268+4*x269+5*x270+6*x271+7*x272+8*x273=1,
+linalg/linalg.tst : 232
+  x262+2*x263+5*x268+4*x269+3*x270+2*x271+x272+2*x229=1,
+linalg/linalg.tst : 233
+  x259+x262+2*x263+4*x268+3*x269+2*x270+x271-x273+3*x229=2,
+linalg/linalg.tst : 234
+  x259+2*x261+2*x262+2*x263+3*x268+3*x269+3*x270+3*x271+3*x272+3*x273+x229=1,
+linalg/linalg.tst : 235
+  x259+x261+x262+x263+x268+x269+x270+x271+x272+x273+x229=1});
+
+                    X263:7
+redlog/ofsf/ofsf.tst : 679
+  3*X259+4*X261+3*X262+2*X263+X269+2*X270+3*X271+4*X272+5*X273+X229=2,
+redlog/ofsf/ofsf.tst : 680
+  7*X259+11*X261+8*X262+5*X263+3*X269+6*X270+9*X271+12*X272+15*X273+X229=4,
+redlog/ofsf/ofsf.tst : 681
+  2*X259+5*X261+4*X262+3*X263+3*X268+4*X269+5*X270+6*X271+7*X272+8*X273=1,
+redlog/ofsf/ofsf.tst : 682
+  X262+2*X263+5*X268+4*X269+3*X270+2*X271+X272+2*X229=1,
+redlog/ofsf/ofsf.tst : 683
+  X259+X262+2*X263+4*X268+3*X269+2*X270+X271-X273+3*X229=2,
+redlog/ofsf/ofsf.tst : 684
+  X259+2*X261+2*X262+2*X263+3*X268+3*X269+3*X270+3*X271+3*X272+3*X273+X229=1,
+redlog/ofsf/ofsf.tst : 685
+     X259+X261+X262+X263+X268+X269+X270+X271+X272+X273+X229=1};
+
+                    x263:7
+linalg/linalg.tst : 229
+  3*x259+4*x261+3*x262+2*x263+x269+2*x270+3*x271+4*x272+5*x273+x229=2,
+linalg/linalg.tst : 230
+  7*x259+11*x261+8*x262+5*x263+3*x269+6*x270+9*x271+12*x272+15*x273+x229=4,
+linalg/linalg.tst : 231
+  2*x259+5*x261+4*x262+3*x263+3*x268+4*x269+5*x270+6*x271+7*x272+8*x273=1,
+linalg/linalg.tst : 232
+  x262+2*x263+5*x268+4*x269+3*x270+2*x271+x272+2*x229=1,
+linalg/linalg.tst : 233
+  x259+x262+2*x263+4*x268+3*x269+2*x270+x271-x273+3*x229=2,
+linalg/linalg.tst : 234
+  x259+2*x261+2*x262+2*x263+3*x268+3*x269+3*x270+3*x271+3*x272+3*x273+x229=1,
+linalg/linalg.tst : 235
+  x259+x261+x262+x263+x268+x269+x270+x271+x272+x273+x229=1});
+
+                    X268:5
+redlog/ofsf/ofsf.tst : 681
+  2*X259+5*X261+4*X262+3*X263+3*X268+4*X269+5*X270+6*X271+7*X272+8*X273=1,
+redlog/ofsf/ofsf.tst : 682
+  X262+2*X263+5*X268+4*X269+3*X270+2*X271+X272+2*X229=1,
+redlog/ofsf/ofsf.tst : 683
+  X259+X262+2*X263+4*X268+3*X269+2*X270+X271-X273+3*X229=2,
+redlog/ofsf/ofsf.tst : 684
+  X259+2*X261+2*X262+2*X263+3*X268+3*X269+3*X270+3*X271+3*X272+3*X273+X229=1,
+redlog/ofsf/ofsf.tst : 685
+     X259+X261+X262+X263+X268+X269+X270+X271+X272+X273+X229=1};
+
+                    x268:5
+linalg/linalg.tst : 231
+  2*x259+5*x261+4*x262+3*x263+3*x268+4*x269+5*x270+6*x271+7*x272+8*x273=1,
+linalg/linalg.tst : 232
+  x262+2*x263+5*x268+4*x269+3*x270+2*x271+x272+2*x229=1,
+linalg/linalg.tst : 233
+  x259+x262+2*x263+4*x268+3*x269+2*x270+x271-x273+3*x229=2,
+linalg/linalg.tst : 234
+  x259+2*x261+2*x262+2*x263+3*x268+3*x269+3*x270+3*x271+3*x272+3*x273+x229=1,
+linalg/linalg.tst : 235
+  x259+x261+x262+x263+x268+x269+x270+x271+x272+x273+x229=1});
+
+                    X269:7
+redlog/ofsf/ofsf.tst : 679
+  3*X259+4*X261+3*X262+2*X263+X269+2*X270+3*X271+4*X272+5*X273+X229=2,
+redlog/ofsf/ofsf.tst : 680
+  7*X259+11*X261+8*X262+5*X263+3*X269+6*X270+9*X271+12*X272+15*X273+X229=4,
+redlog/ofsf/ofsf.tst : 681
+  2*X259+5*X261+4*X262+3*X263+3*X268+4*X269+5*X270+6*X271+7*X272+8*X273=1,
+redlog/ofsf/ofsf.tst : 682
+  X262+2*X263+5*X268+4*X269+3*X270+2*X271+X272+2*X229=1,
+redlog/ofsf/ofsf.tst : 683
+  X259+X262+2*X263+4*X268+3*X269+2*X270+X271-X273+3*X229=2,
+redlog/ofsf/ofsf.tst : 684
+  X259+2*X261+2*X262+2*X263+3*X268+3*X269+3*X270+3*X271+3*X272+3*X273+X229=1,
+redlog/ofsf/ofsf.tst : 685
+     X259+X261+X262+X263+X268+X269+X270+X271+X272+X273+X229=1};
+
+                    x269:7
+linalg/linalg.tst : 229
+  3*x259+4*x261+3*x262+2*x263+x269+2*x270+3*x271+4*x272+5*x273+x229=2,
+linalg/linalg.tst : 230
+  7*x259+11*x261+8*x262+5*x263+3*x269+6*x270+9*x271+12*x272+15*x273+x229=4,
+linalg/linalg.tst : 231
+  2*x259+5*x261+4*x262+3*x263+3*x268+4*x269+5*x270+6*x271+7*x272+8*x273=1,
+linalg/linalg.tst : 232
+  x262+2*x263+5*x268+4*x269+3*x270+2*x271+x272+2*x229=1,
+linalg/linalg.tst : 233
+  x259+x262+2*x263+4*x268+3*x269+2*x270+x271-x273+3*x229=2,
+linalg/linalg.tst : 234
+  x259+2*x261+2*x262+2*x263+3*x268+3*x269+3*x270+3*x271+3*x272+3*x273+x229=1,
+linalg/linalg.tst : 235
+  x259+x261+x262+x263+x268+x269+x270+x271+x272+x273+x229=1});
+
+                    X270:7
+redlog/ofsf/ofsf.tst : 679
+  3*X259+4*X261+3*X262+2*X263+X269+2*X270+3*X271+4*X272+5*X273+X229=2,
+redlog/ofsf/ofsf.tst : 680
+  7*X259+11*X261+8*X262+5*X263+3*X269+6*X270+9*X271+12*X272+15*X273+X229=4,
+redlog/ofsf/ofsf.tst : 681
+  2*X259+5*X261+4*X262+3*X263+3*X268+4*X269+5*X270+6*X271+7*X272+8*X273=1,
+redlog/ofsf/ofsf.tst : 682
+  X262+2*X263+5*X268+4*X269+3*X270+2*X271+X272+2*X229=1,
+redlog/ofsf/ofsf.tst : 683
+  X259+X262+2*X263+4*X268+3*X269+2*X270+X271-X273+3*X229=2,
+redlog/ofsf/ofsf.tst : 684
+  X259+2*X261+2*X262+2*X263+3*X268+3*X269+3*X270+3*X271+3*X272+3*X273+X229=1,
+redlog/ofsf/ofsf.tst : 685
+     X259+X261+X262+X263+X268+X269+X270+X271+X272+X273+X229=1};
+
+                    x270:7
+linalg/linalg.tst : 229
+  3*x259+4*x261+3*x262+2*x263+x269+2*x270+3*x271+4*x272+5*x273+x229=2,
+linalg/linalg.tst : 230
+  7*x259+11*x261+8*x262+5*x263+3*x269+6*x270+9*x271+12*x272+15*x273+x229=4,
+linalg/linalg.tst : 231
+  2*x259+5*x261+4*x262+3*x263+3*x268+4*x269+5*x270+6*x271+7*x272+8*x273=1,
+linalg/linalg.tst : 232
+  x262+2*x263+5*x268+4*x269+3*x270+2*x271+x272+2*x229=1,
+linalg/linalg.tst : 233
+  x259+x262+2*x263+4*x268+3*x269+2*x270+x271-x273+3*x229=2,
+linalg/linalg.tst : 234
+  x259+2*x261+2*x262+2*x263+3*x268+3*x269+3*x270+3*x271+3*x272+3*x273+x229=1,
+linalg/linalg.tst : 235
+  x259+x261+x262+x263+x268+x269+x270+x271+x272+x273+x229=1});
+
+                    X271:7
+redlog/ofsf/ofsf.tst : 679
+  3*X259+4*X261+3*X262+2*X263+X269+2*X270+3*X271+4*X272+5*X273+X229=2,
+redlog/ofsf/ofsf.tst : 680
+  7*X259+11*X261+8*X262+5*X263+3*X269+6*X270+9*X271+12*X272+15*X273+X229=4,
+redlog/ofsf/ofsf.tst : 681
+  2*X259+5*X261+4*X262+3*X263+3*X268+4*X269+5*X270+6*X271+7*X272+8*X273=1,
+redlog/ofsf/ofsf.tst : 682
+  X262+2*X263+5*X268+4*X269+3*X270+2*X271+X272+2*X229=1,
+redlog/ofsf/ofsf.tst : 683
+  X259+X262+2*X263+4*X268+3*X269+2*X270+X271-X273+3*X229=2,
+redlog/ofsf/ofsf.tst : 684
+  X259+2*X261+2*X262+2*X263+3*X268+3*X269+3*X270+3*X271+3*X272+3*X273+X229=1,
+redlog/ofsf/ofsf.tst : 685
+     X259+X261+X262+X263+X268+X269+X270+X271+X272+X273+X229=1};
+
+                    x271:7
+linalg/linalg.tst : 229
+  3*x259+4*x261+3*x262+2*x263+x269+2*x270+3*x271+4*x272+5*x273+x229=2,
+linalg/linalg.tst : 230
+  7*x259+11*x261+8*x262+5*x263+3*x269+6*x270+9*x271+12*x272+15*x273+x229=4,
+linalg/linalg.tst : 231
+  2*x259+5*x261+4*x262+3*x263+3*x268+4*x269+5*x270+6*x271+7*x272+8*x273=1,
+linalg/linalg.tst : 232
+  x262+2*x263+5*x268+4*x269+3*x270+2*x271+x272+2*x229=1,
+linalg/linalg.tst : 233
+  x259+x262+2*x263+4*x268+3*x269+2*x270+x271-x273+3*x229=2,
+linalg/linalg.tst : 234
+  x259+2*x261+2*x262+2*x263+3*x268+3*x269+3*x270+3*x271+3*x272+3*x273+x229=1,
+linalg/linalg.tst : 235
+  x259+x261+x262+x263+x268+x269+x270+x271+x272+x273+x229=1});
+
+                    X272:6
+redlog/ofsf/ofsf.tst : 679
+  3*X259+4*X261+3*X262+2*X263+X269+2*X270+3*X271+4*X272+5*X273+X229=2,
+redlog/ofsf/ofsf.tst : 680
+  7*X259+11*X261+8*X262+5*X263+3*X269+6*X270+9*X271+12*X272+15*X273+X229=4,
+redlog/ofsf/ofsf.tst : 681
+  2*X259+5*X261+4*X262+3*X263+3*X268+4*X269+5*X270+6*X271+7*X272+8*X273=1,
+redlog/ofsf/ofsf.tst : 682
+  X262+2*X263+5*X268+4*X269+3*X270+2*X271+X272+2*X229=1,
+redlog/ofsf/ofsf.tst : 684
+  X259+2*X261+2*X262+2*X263+3*X268+3*X269+3*X270+3*X271+3*X272+3*X273+X229=1,
+redlog/ofsf/ofsf.tst : 685
+     X259+X261+X262+X263+X268+X269+X270+X271+X272+X273+X229=1};
+
+                    x272:6
+linalg/linalg.tst : 229
+  3*x259+4*x261+3*x262+2*x263+x269+2*x270+3*x271+4*x272+5*x273+x229=2,
+linalg/linalg.tst : 230
+  7*x259+11*x261+8*x262+5*x263+3*x269+6*x270+9*x271+12*x272+15*x273+x229=4,
+linalg/linalg.tst : 231
+  2*x259+5*x261+4*x262+3*x263+3*x268+4*x269+5*x270+6*x271+7*x272+8*x273=1,
+linalg/linalg.tst : 232
+  x262+2*x263+5*x268+4*x269+3*x270+2*x271+x272+2*x229=1,
+linalg/linalg.tst : 234
+  x259+2*x261+2*x262+2*x263+3*x268+3*x269+3*x270+3*x271+3*x272+3*x273+x229=1,
+linalg/linalg.tst : 235
+  x259+x261+x262+x263+x268+x269+x270+x271+x272+x273+x229=1});
+
+                    X273:6
+redlog/ofsf/ofsf.tst : 679
+  3*X259+4*X261+3*X262+2*X263+X269+2*X270+3*X271+4*X272+5*X273+X229=2,
+redlog/ofsf/ofsf.tst : 680
+  7*X259+11*X261+8*X262+5*X263+3*X269+6*X270+9*X271+12*X272+15*X273+X229=4,
+redlog/ofsf/ofsf.tst : 681
+  2*X259+5*X261+4*X262+3*X263+3*X268+4*X269+5*X270+6*X271+7*X272+8*X273=1,
+redlog/ofsf/ofsf.tst : 683
+  X259+X262+2*X263+4*X268+3*X269+2*X270+X271-X273+3*X229=2,
+redlog/ofsf/ofsf.tst : 684
+  X259+2*X261+2*X262+2*X263+3*X268+3*X269+3*X270+3*X271+3*X272+3*X273+X229=1,
+redlog/ofsf/ofsf.tst : 685
+     X259+X261+X262+X263+X268+X269+X270+X271+X272+X273+X229=1};
+
+                    x273:6
+linalg/linalg.tst : 229
+  3*x259+4*x261+3*x262+2*x263+x269+2*x270+3*x271+4*x272+5*x273+x229=2,
+linalg/linalg.tst : 230
+  7*x259+11*x261+8*x262+5*x263+3*x269+6*x270+9*x271+12*x272+15*x273+x229=4,
+linalg/linalg.tst : 231
+  2*x259+5*x261+4*x262+3*x263+3*x268+4*x269+5*x270+6*x271+7*x272+8*x273=1,
+linalg/linalg.tst : 233
+  x259+x262+2*x263+4*x268+3*x269+2*x270+x271-x273+3*x229=2,
+linalg/linalg.tst : 234
+  x259+2*x261+2*x262+2*x263+3*x268+3*x269+3*x270+3*x271+3*x272+3*x273+x229=1,
+linalg/linalg.tst : 235
+  x259+x261+x262+x263+x268+x269+x270+x271+x272+x273+x229=1});
+
+                    co_dynPush:1
+redlog/cl/clqe.red : 146
+asserted procedure co_dynPush(co: Container, dol: ContainerElementL): Container;
+
+                    co_dynpush:1
+redlog/cl/clqe.red : 140
+      co_dynpush(co,dol)
+
+                    definitionURL:2
+mathml/mathmlom.tst : 1116
+               <csymbol definitionURL="..." encoding="...">
+mathml/mathmlom.tst : 1164
+               <csymbol definitionURL="..." encoding="...">
+
+                    definitionurl:8
+mathml/mathmlom.tst : 399
+<apply><union definitionurl="www.nag.co.uk"/>
+mathml/mathmlom.tst : 425
+<apply><intersect definitionurl="www.mit.edu"/>
+mathml/mathmlom.tst : 452
+<reln><in definitionurl="www.www.www"/>
+mathml/mathmlom.tst : 460
+ <reln><notin definitionurl="www.www.www"/>
+mathml/mathmlom.tst : 468
+<reln><prsubset definitionurl="www.www.www"/>
+mathml/mathmlom.tst : 476
+<reln><notsubset definitionurl="www.www.www"/>
+mathml/mathmlom.tst : 484
+<reln><notprsubset definitionurl="www.www.www"/>
+mathml/mathmlom.tst : 492
+<apply><setdiff definitionurl="www.www.www"/>
+
+                    gurobi_addconstraintFast:1
+redlog/ofsf/ofsflp.red : 66
+      	 gurobi_addconstraintFast(rel, l, r);
+
+                    gurobi_addconstraintfast:10
+foreign/gurobi/gurobi.red : 157
+procedure gurobi_addconstraintfast(rel, cl, c);
+foreign/gurobi/gurobi.tst : 5
+gurobi_addconstraintfast('geq, {-2, -2}, -3);
+foreign/gurobi/gurobi.tst : 6
+gurobi_addconstraintfast('geq, {1, 0}, 1);
+foreign/gurobi/gurobi.tst : 7
+gurobi_addconstraintfast('geq, {0, 1}, 1);
+foreign/gurobi/gurobi.tst : 23
+gurobi_addconstraintfast('geq, {3, 2}, 1);
+foreign/gurobi/gurobi.tst : 24
+gurobi_addconstraintfast('geq, {2, 0}, 1);
+foreign/gurobi/gurobi.tst : 25
+gurobi_addconstraintfast('geq, {0, 2}, 1);
+foreign/gurobi/gurobi.tst : 35
+gurobi_addconstraintfast('geq, {3, 2}, 1);
+foreign/gurobi/gurobi.tst : 36
+gurobi_addconstraintfast('geq, {2, 0}, 1);
+foreign/gurobi/gurobi.tst : 37
+gurobi_addconstraintfast('geq, {0, 2}, 1);
+
+                    ofsf_s2aPointPair:5
+redlog/ofsf/ofsftrop.red : 209
+      one := ofsf_s2aPointPair one;
+redlog/ofsf/ofsftrop.red : 210
+      other := ofsf_s2aPointPair other;
+redlog/ofsf/ofsftrop.red : 211
+      zero := ofsf_s2aPointPair zero;
+redlog/ofsf/ofsftrop.red : 215
+asserted procedure ofsf_s2aPointPair(pp: List2): List2;
+redlog/ofsf/ofsftrop.red : 434
+	       mathprint ofsf_s2aPointPair {
+
+                    ofsf_s2apointPair:2
+redlog/ofsf/ofsftrop.red : 561
+      	 mathprint ofsf_s2apointPair {sol, mk!*sq ffval}
+redlog/ofsf/ofsftrop.red : 611
+      	 mathprint ofsf_s2apointPair {subl, val}
+
+                    ofsf_updIvl:2
+redlog/ofsf/ofsfexfr.red : 408
+asserted procedure ofsf_updIvl(ivl: AnuIntervalList, givl: AnuIntervalList): AnuIntervalList;
+redlog/ofsf/ofsfexfr.red : 415
+      res2 := ofsf_updIvl(ivl, givl);
+
+                    ofsf_updivl:1
+redlog/ofsf/ofsfexfr.red : 327
+	 ivl := ofsf_updivl(ivl, givl);
+
+29 symbols involved
+
++++ Type names +++
+
+                    AList:39
+redlog/cl/clqe.red : 253
+asserted procedure co_stat(co: Container): AList;
+redlog/ofsf/ofsfanuex.red : 397
+asserted procedure ctx_fromial(ial: AList): AexCtx;
+redlog/ofsf/ofsfanuex.red : 400
+asserted procedure ctx_ial(c: AexCtx): AList;
+redlog/ofsf/ofsfcad.red : 687
+asserted procedure ofsf_addrootinfo0dim(cell: Acell, rnl: AList, hhtags: List): Any;
+redlog/ofsf/ofsfcad.red : 700
+asserted procedure ofsf_rnlinc(rnl: AList, tl: List): Any;
+redlog/ofsf/ofsfcad.red : 707
+asserted procedure ofsf_iriprepare(hhj: AList, xj: Kernel, sp: AnuList, varl: List): Iri;
+redlog/ofsf/ofsfexfr.red : 574
+asserted procedure ofsf_valueat(at: OfsfAtf, eqal: AList): Id;
+redlog/ofsf/ofsftrop.red : 218
+asserted procedure ofsf_al2eql(al: AList): List;
+redlog/ofsf/ofsftrop.red : 287
+asserted procedure ofsf_zerop2(f: SF, scond: QfFormula, one: AList, fone: Integer, posp: Boolean): List3;
+redlog/ofsf/ofsftrop.red : 334
+asserted procedure ofsf_posdirp(ff: SF, scond: QfFormula, one: AList, fone: Integer, d: Integer, vl: List, monl: List, posp: Boolean): List3;
+
+                    Alist:20
+redlog/cl/clmisc.red : 334
+asserted procedure cl_vsubfof(subl: Alist, f: Formula): Formula;
+redlog/ofsf/ofsfexfr.red : 580
+asserted procedure ofsf_subalf(f: SF, al: Alist): SQ;
+redlog/ofsf/ofsfexfr.red : 591
+asserted procedure ofsf_anusubf(f: SF, al: Alist): Aex;
+redlog/ofsf/ofsftrop.red : 101
+asserted procedure ofsf_formula2pol1(f: QfFormula, geal: Alist, gral: Alist, neal: Alist, posp: Boolean): List4;
+redlog/ofsf/ofsftrop.red : 101
+asserted procedure ofsf_formula2pol1(f: QfFormula, geal: Alist, gral: Alist, neal: Alist, posp: Boolean): List4;
+redlog/ofsf/ofsftrop.red : 101
+asserted procedure ofsf_formula2pol1(f: QfFormula, geal: Alist, gral: Alist, neal: Alist, posp: Boolean): List4;
+redlog/ofsf/ofsftrop.red : 146
+asserted procedure ofsf_geq2pol(lhs: SF, geal: Alist, gral: Alist, neal: Alist, posp: Boolean): List4;
+redlog/ofsf/ofsftrop.red : 146
+asserted procedure ofsf_geq2pol(lhs: SF, geal: Alist, gral: Alist, neal: Alist, posp: Boolean): List4;
+redlog/ofsf/ofsftrop.red : 146
+asserted procedure ofsf_geq2pol(lhs: SF, geal: Alist, gral: Alist, neal: Alist, posp: Boolean): List4;
+redlog/ofsf/ofsftrop.red : 161
+asserted procedure ofsf_greaterp2pol(lhs: SF, geal: Alist, gral: Alist, neal: Alist, posp: Boolean): List4;
+
+                    alist:1
+assert/assertcheckfn.red : 55
+struct alist checked by alistp;
+
+                    Any:95
+ranum/rarcount.red : 31
+asserted procedure ra_isolate0(f: SF, lb: Any, ub: Any): List;
+ranum/rarcount.red : 31
+asserted procedure ra_isolate0(f: SF, lb: Any, ub: Any): List;
+ranum/rarcount.red : 73
+asserted procedure ra_isolatingivl0(f: SF, lb: Any, ub: Any): DottedPair;
+ranum/rarcount.red : 73
+asserted procedure ra_isolatingivl0(f: SF, lb: Any, ub: Any): DottedPair;
+redlog/ofsf/ofsfanuex.red : 111
+asserted procedure rat_print(q: Rational): Any;
+redlog/ofsf/ofsfanuex.red : 232
+asserted procedure iv_print(iv: RatInterval): Any;
+redlog/ofsf/ofsfanuex.red : 407
+asserted procedure ctx_print(c: AexCtx): Any;
+redlog/ofsf/ofsfanuex.red : 543
+asserted procedure aex_print(ae: Aex): Any;
+redlog/ofsf/ofsfanuex.red : 1303
+asserted procedure irp_idata(p: Irp): Any;
+redlog/ofsf/ofsfanuex.red : 1306
+asserted procedure irp_tag(p: Irp): Any;
+
+                    any:7
+assert/assertcheckfn.red : 50
+struct any;
+qhull/qhull.red : 81
+asserted procedure qhull_createinfile(l: list, d: integer, n: integer, fn1: string): any;
+ranum/ranum.red : 135
+asserted procedure ra_wrapper(f: id, argl: list): any;
+ranum/ranum.red : 147
+asserted procedure ra_wrapper1(f: id, argl: list, oldmode: id): any;
+ranum/ranum.red : 270
+asserted procedure ra_intequiv0(x: ra): any;
+redlog/cl/clsl.red : 141
+declare cl_dcollect1: (any,number) -> list;
+redlog/cl/clsl.red : 148
+declare cl_sldepth: (any) -> number;
+
+                    Atom:3
+redlog/ofsf/ofsfcad.red : 458
+asserted procedure ofsf_fulltree(hh: Atom, varl: List): Atree;
+redlog/ofsf/ofsfcad.red : 466
+asserted procedure ofsf_ftoc(basecell: Acell, hh: Atom, varl: List): Atree;
+redlog/ofsf/ofsfcadproj.red : 313
+asserted procedure ofsf_distribute(fl: SfList, ff: Atom, varl: KernelList): Any;
+
+                    atom:1
+assert/assertcheckfn.red : 51
+struct atom checked by atom;
+
+                    Boolean:63
+redlog/cl/clqe.red : 582
+asserted procedure cl_qeblock(f: QfFormula, q: Quantifier, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
+redlog/cl/clqe.red : 594
+asserted procedure cl_qeblock1(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
+redlog/cl/clqe.red : 603
+asserted procedure cl_qeblock2(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
+redlog/cl/clqe.red : 620
+asserted procedure cl_qeblock3(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
+redlog/cl/clqe.red : 639
+asserted procedure cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL, dpth: Integer, vlv: Integer): List3;
+redlog/cl/clqe.red : 718
+asserted procedure cl_qevar(f: QfFormula, vl: KernelL, an: Answer, theo: Theory, ans: Boolean, bvl: KernelL): DottedPair;
+redlog/cl/clqe.red : 754
+asserted procedure cl_transform(f: QfFormula, vl: KernelL, an: Answer, theo: Theory, ans: Boolean, bvl: KernelL): List6;
+redlog/cl/clqe.red : 764
+asserted procedure cl_gauss(f: QfFormula, vl: KernelL, an: Answer, theo: Theory, ans: Boolean, bvl: KernelL): DottedPair;
+redlog/cl/clqe.red : 791
+asserted procedure cl_process!-candvl(f: QfFormula, vl: KernelL, an: Answer, theo: Theory, ans: Boolean, bvl: KernelL, candvl: KernelL): TaggedContainerElementL;
+redlog/cl/clqe.red : 825
+asserted procedure cl_esetsubst(f: QfFormula, v: Kernel, eset: List, vl: KernelL, an: List, theo: Theory, ans: Boolean, bvl: KernelL): DottedPair;
+
+                    boolean:5
+assert/assertcheckfn.red : 45
+struct boolean checked by booleanp;
+ranum/raarith.red : 140
+asserted procedure ra_minusp0(x: ra): boolean;
+ranum/raiv.red : 51
+asserted procedure riv_contains(i: iv, q: sq): boolean;
+ranum/ranum.red : 259
+asserted procedure ra_zerop(x: ra): boolean;
+ranum/ranum.red : 262
+asserted procedure ra_onep0(x: ra): boolean;
+
+                    Domain:3
+redlog/rltools/sfto.red : 65
+asserted procedure sfto_dcontentf(u: SF): Domain;
+redlog/rltools/sfto.red : 70
+asserted procedure sfto_dcontentf1(u: SF, g: Domain): Domain;
+redlog/rltools/sfto.red : 70
+asserted procedure sfto_dcontentf1(u: SF, g: Domain): Domain;
+
+                    domain:1
+assert/assertcheckfn.red : 74
+struct domain checked by domainp;
+
+                    DottedPair:66
+ranum/rarcount.red : 73
+asserted procedure ra_isolatingivl0(f: SF, lb: Any, ub: Any): DottedPair;
+ranum/rarcount.red : 144
+asserted procedure ra_vcatransform1(f: SF): DottedPair;
+redlog/cl/clnf.red : 240
+asserted procedure cl_replace!-varl(f: Formula): DottedPair;
+redlog/cl/clnf.red : 254
+asserted procedure cl_rename!-vars1(f: Formula, vl: DottedPair): DottedPair;
+redlog/cl/clnf.red : 254
+asserted procedure cl_rename!-vars1(f: Formula, vl: DottedPair): DottedPair;
+redlog/cl/clnf.red : 325
+asserted procedure cl_varl(f: Formula): DottedPair;
+redlog/cl/clnf.red : 333
+asserted procedure cl_varl1(f: Formula): DottedPair;
+redlog/cl/clnf.red : 340
+asserted procedure cl_varl2(f: Formula, fvl: KernelL, cbvl: KernelL, bvl: KernelL): DottedPair;
+redlog/cl/clqe.red : 212
+asserted procedure co_get(co: Container): DottedPair;
+redlog/cl/clqe.red : 217
+asserted procedure co_pop(co: Container): DottedPair;
+
+                    dottedpair:4
+assert/assertcheckfn.red : 40
+struct dottedpair checked by pairp;
+ranum/raarith.red : 53
+asserted procedure ra_refine1(f: sf, l: sq, u: sq, n: integer): dottedpair;
+ranum/ranum.red : 302
+asserted procedure ra_rn2ra0(rn: dottedpair): ra;
+assert/assert.tst : 11
+asserted procedure hugo(x1: number, x2: posnumber, x3: tag): dottedpair;
+
+                    ExtraBoolean:39
+ranum/rarcount.red : 70
+asserted procedure ra_ratnump(q: SQ): ExtraBoolean;
+redlog/cl/clqe.red : 245
+asserted procedure co_member(ce: ContainerElement, l: ContainerElementL): ExtraBoolean;
+redlog/ofsf/ofsfanuex.red : 419
+asserted procedure ctx_get(c: AexCtx, x: Kernel): ExtraBoolean;
+redlog/ofsf/ofsfanuex.red : 1351
+asserted procedure iri_nextroot(ir: Iri): ExtraBoolean;
+redlog/ofsf/ofsfanuex.red : 1527
+asserted procedure anu_ratp(a: Anu): ExtraBoolean;
+redlog/ofsf/ofsfanuex.red : 1676
+asserted procedure aex_badp(aex: Aex, fvn: Integer): ExtraBoolean;
+redlog/ofsf/ofsfanuex.red : 1714
+asserted procedure anu_badp(anu: Anu): ExtraBoolean;
+redlog/ofsf/ofsfcad.red : 981
+asserted procedure ncb_get(ncb: List): ExtraBoolean;
+redlog/ofsf/ofsfcad.red : 998
+asserted procedure ofsf_nextcell(ncbuffer: List, sp: AnuList, iri: Iri, xj: Kernel, j: Integer, k: Integer): ExtraBoolean;
+redlog/ofsf/ofsfcad.red : 1532
+asserted procedure ofsf_compsig(ww1: List, ww2: List): ExtraBoolean;
+
+                    extraboolean:1
+assert/assertcheckfn.red : 46
+struct extraboolean;
+
+                    Floating:4
+redlog/ofsf/ofsfanuex.red : 1612
+asserted procedure anu_evalf(a: Anu): Floating;
+redlog/ofsf/ofsfanuex.red : 1627
+asserted procedure anu_approxEqualEnough(lb: Floating, ub: Floating): Boolean;
+redlog/ofsf/ofsfanuex.red : 1627
+asserted procedure anu_approxEqualEnough(lb: Floating, ub: Floating): Boolean;
+redlog/rltools/sfto.red : 984
+asserted procedure sfto_floatsub(f: SF, subl: AList): Floating;
+
+                    floating:2
+assert/assertcheckfn.red : 37
+struct floating checked by floatp;
+ranum/raiv.red : 77
+asserted procedure riv_rat2float(q: sq, prec: integer): floating;
+
+                    Formula:40
+redlog/cl/cl.red : 71
+struct Formula;
+redlog/cl/clmisc.red : 334
+asserted procedure cl_vsubfof(subl: Alist, f: Formula): Formula;
+redlog/cl/clmisc.red : 334
+asserted procedure cl_vsubfof(subl: Alist, f: Formula): Formula;
+redlog/cl/clmisc.red : 341
+asserted procedure cl_vsubfof1(v: Kernel, u: List, f: Formula): Formula;
+redlog/cl/clmisc.red : 341
+asserted procedure cl_vsubfof1(v: Kernel, u: List, f: Formula): Formula;
+redlog/cl/clnf.red : 234
+asserted procedure cl_rename!-vars(f: Formula): Formula;
+redlog/cl/clnf.red : 234
+asserted procedure cl_rename!-vars(f: Formula): Formula;
+redlog/cl/clnf.red : 240
+asserted procedure cl_replace!-varl(f: Formula): DottedPair;
+redlog/cl/clnf.red : 254
+asserted procedure cl_rename!-vars1(f: Formula, vl: DottedPair): DottedPair;
+redlog/cl/clnf.red : 325
+asserted procedure cl_varl(f: Formula): DottedPair;
+
+                    formula:2
+redlog/cl/clsl.red : 39
+struct formula checked by formulap;
+redlog/cl/clsl.red : 69
+declare cl_straightify: (formula) -> slp;
+
+                    Id:38
+redlog/ofsf/ofsfanuex.red : 921
+asserted procedure aex_evalop(ae: Aex, op: Id): Boolean;
+redlog/ofsf/ofsfcad.red : 377
+asserted procedure acell_mk(idx: Integer, sp: AnuList, tv: Id, desc: QfFormula, tl: List): Acell;
+redlog/ofsf/ofsfcad.red : 390
+asserted procedure acell_gettv(c: Acell): Id;
+redlog/ofsf/ofsfcad.red : 411
+asserted procedure acell_puttv(c: Acell, tv: Id): Any;
+redlog/ofsf/ofsfcad.red : 1587
+asserted procedure ofsf_evalqff(f: QfFormula, sp: AnuList, idl: List): Id;
+redlog/ofsf/ofsfcad.red : 1625
+asserted procedure ofsf_evalqff!-fast(f: QfFormula, sp: AnuList, idl: List): Id;
+redlog/ofsf/ofsfcad.red : 1634
+asserted procedure ofsf_evalqff!-fast1(f: QfFormula, sp: AnuList, idl: List): Id;
+redlog/ofsf/ofsfcad.red : 1644
+asserted procedure ofsf_evalqff!-gand(gand, argl, sp: AnuList, idl: List): Id;
+redlog/ofsf/ofsfcad.red : 1689
+asserted procedure ofsf_signaturesbytv(ddk: List, tv: Id): List;
+redlog/ofsf/ofsfexfr.red : 72
+asserted procedure anuiv_type(iv: AnuInterval): Id;
+
+                    id:5
+assert/assertcheckfn.red : 38
+struct id checked by idp;
+ranum/ranum.red : 135
+asserted procedure ra_wrapper(f: id, argl: list): any;
+ranum/ranum.red : 147
+asserted procedure ra_wrapper1(f: id, argl: list, oldmode: id): any;
+ranum/ranum.red : 147
+asserted procedure ra_wrapper1(f: id, argl: list, oldmode: id): any;
+redlog/ofsf/ofsfmisc.red : 507
+declare ofsf_dfgPrintV: (id) -> id;
+
+                    Integer:148
+ranum/rarcount.red : 172
+asserted procedure ra_budan!-0!-1(f: SF): Integer;
+ranum/rarcount.red : 204
+asserted procedure ra_budancount(f: SF, l: SQ, u: SQ): Integer;
+ranum/rarcount.red : 207
+asserted procedure ra_budan!-0!-1_old(f: SF): Integer;
+redlog/cl/clqe.red : 238
+asserted procedure co_length(co: Container): Integer;
+redlog/cl/clqe.red : 639
+asserted procedure cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL, dpth: Integer, vlv: Integer): List3;
+redlog/cl/clqe.red : 639
+asserted procedure cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL, dpth: Integer, vlv: Integer): List3;
+redlog/ofsf/ofsfanuex.red : 95
+asserted procedure rat_mk(n: Integer, d: Integer): Rational;
+redlog/ofsf/ofsfanuex.red : 95
+asserted procedure rat_mk(n: Integer, d: Integer): Rational;
+redlog/ofsf/ofsfanuex.red : 103
+asserted procedure rat_numrn(q: Rational): Integer;
+redlog/ofsf/ofsfanuex.red : 107
+asserted procedure rat_denr(q: Rational): Integer;
+
+                    integer:10
+assert/assertcheckfn.red : 36
+struct integer checked by fixp;
+qhull/qhull.red : 81
+asserted procedure qhull_createinfile(l: list, d: integer, n: integer, fn1: string): any;
+qhull/qhull.red : 81
+asserted procedure qhull_createinfile(l: list, d: integer, n: integer, fn1: string): any;
+ranum/raarith.red : 42
+asserted procedure ra_refine0(x: ra, n: integer): ra;
+ranum/raarith.red : 53
+asserted procedure ra_refine1(f: sf, l: sq, u: sq, n: integer): dottedpair;
+ranum/raiv.red : 77
+asserted procedure riv_rat2float(q: sq, prec: integer): floating;
+ranum/ranum.red : 155
+asserted procedure ra_wrappertest0(x: integer, y: integer): integer;
+ranum/ranum.red : 155
+asserted procedure ra_wrappertest0(x: integer, y: integer): integer;
+ranum/ranum.red : 155
+asserted procedure ra_wrappertest0(x: integer, y: integer): integer;
+ranum/ranum.red : 290
+asserted procedure ra_i2ra0(z: integer): ra;
+
+                    Kernel:153
+redlog/cl/clmisc.red : 341
+asserted procedure cl_vsubfof1(v: Kernel, u: List, f: Formula): Formula;
+redlog/cl/clqe.red : 825
+asserted procedure cl_esetsubst(f: QfFormula, v: Kernel, eset: List, vl: KernelL, an: List, theo: Theory, ans: Boolean, bvl: KernelL): DottedPair;
+redlog/ofsf/ofsfanuex.red : 337
+asserted procedure sfto_kexp(x: Kernel, n: Integer): SF;
+redlog/ofsf/ofsfanuex.red : 344
+asserted procedure sfto_psrem(f: SF, g: SF, x: Kernel, s: Integer): SF;
+redlog/ofsf/ofsfanuex.red : 367
+asserted procedure sfto_psquotrem(f: SF, g: SF, x: Kernel): DottedPair;
+redlog/ofsf/ofsfanuex.red : 419
+asserted procedure ctx_get(c: AexCtx, x: Kernel): ExtraBoolean;
+redlog/ofsf/ofsfanuex.red : 446
+asserted procedure ctx_remove(c: AexCtx, x: Kernel): AexCtx;
+redlog/ofsf/ofsfanuex.red : 496
+asserted procedure aex_mklin(x: Kernel, ba: Rational): Aex;
+redlog/ofsf/ofsfanuex.red : 518
+asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
+redlog/ofsf/ofsfanuex.red : 539
+asserted procedure aex_unbind(ae: Aex, x: Kernel): Aex;
+
+                    kernel:2
+assert/assertcheckfn.red : 75
+struct kernel checked by assert_kernelp;
+ranum/raarith.red : 206
+asserted procedure ra_resf0(f: sf, g: sf, x: kernel): sf;
+
+                    List:330
+ranum/rarcount.red : 31
+asserted procedure ra_isolate0(f: SF, lb: Any, ub: Any): List;
+ranum/rarcount.red : 94
+asserted procedure ra_insertzero(ivl: List): List;
+ranum/rarcount.red : 94
+asserted procedure ra_insertzero(ivl: List): List;
+ranum/rarcount.red : 102
+asserted procedure ra_isolatingivl!$(argl: List): List;
+ranum/rarcount.red : 102
+asserted procedure ra_isolatingivl!$(argl: List): List;
+ranum/rarcount.red : 114
+asserted procedure ra_help(ivl: List): List;
+ranum/rarcount.red : 114
+asserted procedure ra_help(ivl: List): List;
+ranum/rarcount.red : 118
+asserted procedure ra_vca(f: SF, l: SQ, u: SQ): List;
+ranum/rarcount.red : 126
+asserted procedure ra_vca1(f: SF, a: SQ, b: SQ): List;
+redlog/cl/clmisc.red : 341
+asserted procedure cl_vsubfof1(v: Kernel, u: List, f: Formula): Formula;
+
+                    list:18
+assert/assertcheckfn.red : 54
+struct list checked by listp;
+qhull/qhull.red : 48
+asserted procedure qhull(l: list): list;
+qhull/qhull.red : 48
+asserted procedure qhull(l: list): list;
+qhull/qhull.red : 51
+asserted procedure qhull_a2slist(l: list): list;
+qhull/qhull.red : 51
+asserted procedure qhull_a2slist(l: list): list;
+qhull/qhull.red : 54
+asserted procedure qhull_s2alist(l: list): list;
+qhull/qhull.red : 54
+asserted procedure qhull_s2alist(l: list): list;
+qhull/qhull.red : 57
+asserted procedure qhull_qhull(l: list): list;
+qhull/qhull.red : 57
+asserted procedure qhull_qhull(l: list): list;
+qhull/qhull.red : 81
+asserted procedure qhull_createinfile(l: list, d: integer, n: integer, fn1: string): any;
+
+                    List2:3
+redlog/cl/clqe.red : 169
+asserted procedure co_hfn(item: ContainerElement): List2;
+redlog/ofsf/ofsftrop.red : 215
+asserted procedure ofsf_s2aPointPair(pp: List2): List2;
+redlog/ofsf/ofsftrop.red : 215
+asserted procedure ofsf_s2aPointPair(pp: List2): List2;
+
+                    list2:1
+assert/assertcheckfn.red : 62
+struct list2 checked by list2p;
+
+                    List3:11
+redlog/cl/clqe.red : 582
+asserted procedure cl_qeblock(f: QfFormula, q: Quantifier, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
+redlog/cl/clqe.red : 594
+asserted procedure cl_qeblock1(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
+redlog/cl/clqe.red : 603
+asserted procedure cl_qeblock2(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
+redlog/cl/clqe.red : 620
+asserted procedure cl_qeblock3(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
+redlog/cl/clqe.red : 639
+asserted procedure cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL, dpth: Integer, vlv: Integer): List3;
+redlog/ofsf/ofsftrop.red : 267
+asserted procedure ofsf_zeropTryOne(f: SF, vl: List): List3;
+redlog/ofsf/ofsftrop.red : 287
+asserted procedure ofsf_zerop2(f: SF, scond: QfFormula, one: AList, fone: Integer, posp: Boolean): List3;
+redlog/ofsf/ofsftrop.red : 334
+asserted procedure ofsf_posdirp(ff: SF, scond: QfFormula, one: AList, fone: Integer, d: Integer, vl: List, monl: List, posp: Boolean): List3;
+redlog/ofsf/ofsftrop.red : 397
+asserted procedure ofsf_posdirp1(ff: SF, scond: QfFormula, one: AList, fone: Integer, l: List, c: Integer, d: Integer, vl: List, snegp: Boolean): List3;
+redlog/rltools/sfto.red : 506
+asserted procedure sfto_exteucf(a: SF, b: SF): List3;
+
+                    list3:1
+assert/assertcheckfn.red : 63
+struct list3 checked by list3p;
+
+                    List4:6
+redlog/cl/clqe.red : 490
+asserted procedure cl_split(f: Formula): List4;
+redlog/ofsf/ofsftrop.red : 101
+asserted procedure ofsf_formula2pol1(f: QfFormula, geal: Alist, gral: Alist, neal: Alist, posp: Boolean): List4;
+redlog/ofsf/ofsftrop.red : 146
+asserted procedure ofsf_geq2pol(lhs: SF, geal: Alist, gral: Alist, neal: Alist, posp: Boolean): List4;
+redlog/ofsf/ofsftrop.red : 161
+asserted procedure ofsf_greaterp2pol(lhs: SF, geal: Alist, gral: Alist, neal: Alist, posp: Boolean): List4;
+redlog/ofsf/ofsftrop.red : 176
+asserted procedure ofsf_neq2pol(lhs: SF, geal: Alist, gral: Alist, neal: Alist, posp: Boolean): List4;
+redlog/ofsf/ofsftrop.red : 229
+asserted procedure ofsf_zerop1(f: SF, scond: QfFormula, posp: Boolean): List4;
+
+                    list4:1
+assert/assertcheckfn.red : 64
+struct list4 checked by list4p;
+
+                    List6:2
+redlog/cl/clqe.red : 525
+asserted procedure cl_qe1!-iterate(ql: List, varll: List, f: Theory, theo: Theory, bvl: KernelL): List6;
+redlog/cl/clqe.red : 754
+asserted procedure cl_transform(f: QfFormula, vl: KernelL, an: Answer, theo: Theory, ans: Boolean, bvl: KernelL): List6;
+
+                    list6:1
+assert/assertcheckfn.red : 66
+struct list6 checked by list6p;
+
+                    NoOrdSF:1
+redlog/rltools/sfto.red : 63
+declare negf: (NoOrdSF) -> NoOrdSF;
+
+                    noordsf:1
+assert/assertcheckfn.red : 72
+struct noordsf checked by noordsfpx;
+
+                    SF:231
+ranum/rarcount.red : 31
+asserted procedure ra_isolate0(f: SF, lb: Any, ub: Any): List;
+ranum/rarcount.red : 73
+asserted procedure ra_isolatingivl0(f: SF, lb: Any, ub: Any): DottedPair;
+ranum/rarcount.red : 108
+asserted procedure ra_mirror(f: SF): SF;
+ranum/rarcount.red : 108
+asserted procedure ra_mirror(f: SF): SF;
+ranum/rarcount.red : 118
+asserted procedure ra_vca(f: SF, l: SQ, u: SQ): List;
+ranum/rarcount.red : 122
+asserted procedure ra_transform(f: SF, l: SQ, u: SQ): SQ;
+ranum/rarcount.red : 126
+asserted procedure ra_vca1(f: SF, a: SQ, b: SQ): List;
+ranum/rarcount.red : 144
+asserted procedure ra_vcatransform1(f: SF): DottedPair;
+ranum/rarcount.red : 172
+asserted procedure ra_budan!-0!-1(f: SF): Integer;
+ranum/rarcount.red : 193
+asserted procedure ra_budan!-transform(f: SF): SF;
+
+                    sf:17
+assert/assertcheckfn.red : 70
+struct sf checked by sfpx;
+ranum/raarith.red : 53
+asserted procedure ra_refine1(f: sf, l: sq, u: sq, n: integer): dottedpair;
+ranum/raarith.red : 94
+asserted procedure ra_diff(f: sf): sf;
+ranum/raarith.red : 94
+asserted procedure ra_diff(f: sf): sf;
+ranum/raarith.red : 123
+asserted procedure ra_plustransform(f: sf): sf;
+ranum/raarith.red : 123
+asserted procedure ra_plustransform(f: sf): sf;
+ranum/raarith.red : 177
+asserted procedure ra_timestransform(f: sf): sf;
+ranum/raarith.red : 177
+asserted procedure ra_timestransform(f: sf): sf;
+ranum/raarith.red : 200
+asserted procedure ra_invtransform(f: sf): sf;
+ranum/raarith.red : 200
+asserted procedure ra_invtransform(f: sf): sf;
+
+                    SFList:45
+redlog/ofsf/ofsfcadproj-redundant.red : 1051
+asserted procedure ofsf_projlcs(bb: SFList, x: Kernel): SFList;
+redlog/ofsf/ofsfcadproj-redundant.red : 1051
+asserted procedure ofsf_projlcs(bb: SFList, x: Kernel): SFList;
+redlog/ofsf/ofsfcadproj-redundant.red : 1061
+asserted procedure ofsf_splitredl(bb: SFList, x: Kernel): List;
+redlog/ofsf/ofsfcadproj-redundant.red : 1079
+asserted procedure ofsf_splitredlordp(l1: SFList, l2: SFList): Boolean;
+redlog/ofsf/ofsfcadproj-redundant.red : 1079
+asserted procedure ofsf_splitredlordp(l1: SFList, l2: SFList): Boolean;
+redlog/ofsf/ofsfcadproj.red : 66
+struct SFList checked by SFListP;  % List of SF
+redlog/ofsf/ofsfcadproj.red : 91
+asserted procedure ofsf_cadporder!-rate(pset: SFList): Integer;
+redlog/ofsf/ofsfcadproj.red : 167
+asserted procedure ofsf_cadporder1(fl: SFList, cll: List): List;
+redlog/ofsf/ofsfcadproj.red : 188
+asserted procedure ofsf_cadporder2(fl: SFList, cl: KernelList, j: Integer, lastp: Boolean, theo: List): List;
+redlog/ofsf/ofsfcadproj.red : 212
+asserted procedure ofsf_cadporder3(fl: SFList, cl: KernelList, j: Integer, theo: List): List;
+
+                    SfList:1
+redlog/ofsf/ofsfcadproj.red : 313
+asserted procedure ofsf_distribute(fl: SfList, ff: Atom, varl: KernelList): Any;
+
+                    SQ:68
+ranum/rarcount.red : 70
+asserted procedure ra_ratnump(q: SQ): ExtraBoolean;
+ranum/rarcount.red : 118
+asserted procedure ra_vca(f: SF, l: SQ, u: SQ): List;
+ranum/rarcount.red : 118
+asserted procedure ra_vca(f: SF, l: SQ, u: SQ): List;
+ranum/rarcount.red : 122
+asserted procedure ra_transform(f: SF, l: SQ, u: SQ): SQ;
+ranum/rarcount.red : 122
+asserted procedure ra_transform(f: SF, l: SQ, u: SQ): SQ;
+ranum/rarcount.red : 122
+asserted procedure ra_transform(f: SF, l: SQ, u: SQ): SQ;
+ranum/rarcount.red : 126
+asserted procedure ra_vca1(f: SF, a: SQ, b: SQ): List;
+ranum/rarcount.red : 126
+asserted procedure ra_vca1(f: SF, a: SQ, b: SQ): List;
+ranum/rarcount.red : 204
+asserted procedure ra_budancount(f: SF, l: SQ, u: SQ): Integer;
+ranum/rarcount.red : 204
+asserted procedure ra_budancount(f: SF, l: SQ, u: SQ): Integer;
+
+                    sq:15
+assert/assertcheckfn.red : 73
+struct sq checked by sqp;
+ranum/raarith.red : 53
+asserted procedure ra_refine1(f: sf, l: sq, u: sq, n: integer): dottedpair;
+ranum/raarith.red : 53
+asserted procedure ra_refine1(f: sf, l: sq, u: sq, n: integer): dottedpair;
+ranum/raiv.red : 31
+asserted procedure riv_mk(l: sq, u: sq): iv;
+ranum/raiv.red : 31
+asserted procedure riv_mk(l: sq, u: sq): iv;
+ranum/raiv.red : 35
+asserted procedure riv_l(i: iv): sq;
+ranum/raiv.red : 39
+asserted procedure riv_u(i: iv): sq;
+ranum/raiv.red : 51
+asserted procedure riv_contains(i: iv, q: sq): boolean;
+ranum/raiv.red : 77
+asserted procedure riv_rat2float(q: sq, prec: integer): floating;
+ranum/ranum.red : 183
+asserted procedure ra_qmk(f: sf, l: sq, u: sq): ra;
+
+                    String:6
+redlog/ofsf/ofsfcad.red : 427
+asserted procedure acell_tvasstring(c: Acell): String;
+redlog/ofsf/ofsfcad.red : 1210
+asserted procedure atree_2dot(tt: Atree, filename: String): Any;
+redlog/ofsf/ofsfcad.red : 1262
+asserted procedure atree_2tgf(tt: Atree, filename: String): Any;
+redlog/ofsf/ofsfcad.red : 1307
+asserted procedure atree_2gml(tt: Atree, filename: String): Any;
+redlog/ofsf/ofsflp.red : 151
+asserted procedure lp_writeLp(fn: String, obj: List, cl: List, vl: List, rd: Integer);
+redlog/ofsf/ofsflp.red : 208
+asserted procedure lp_readSol(fn: String, vl: List, d: Integer);
+
+                    string:3
+assert/assertcheckfn.red : 39
+struct string checked by stringp;
+qhull/qhull.red : 81
+asserted procedure qhull_createinfile(l: list, d: integer, n: integer, fn1: string): any;
+qhull/qhull.red : 97
+asserted procedure qhull_parseoutfile(fn2: string): list;
 
 22 type symbols involved

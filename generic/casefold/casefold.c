@@ -221,7 +221,7 @@ static int regularNamesCount = 0, typeNamesCount = 0;
 //    PROCEDURE  -----(;|$)-----> GENERAL
 //    PROCEDURE  -----other-----> PROCEDURE
 //
-//    ARGTYPE    -------,-------> PROCEDURE
+//    ARGTYPE    ------,|)------> PROCEDURE
 //    ARGTYPE    -----(;|$)-----> GENERAL
 //    ARGTYPE    ----symbol*----> ARGTYPE
 //    ARGTYPE    -----other-----> ARGTYPE
@@ -308,6 +308,12 @@ static void flushword()
         if (simplemode)
         {   int prevesc = 0;
             char *p3 = outword;
+            if (typecontext == ARGTYPE ||
+                typecontext == TYPEDEF)
+            {   prevesc = (*p3 == '!');
+                *p3 = toupper(*p3);
+                p3++;
+            }
             while (*p3 != 0)
             {   if (!prevesc) *p3 = tolower(*p3);
                 prevesc = (*p3 == '!');
@@ -361,7 +367,7 @@ case 1: if (!isalnum(c) && c!='_')
                 else if (c == ';' || c == '$') typecontext = GENERAL;
                 break;
         case ARGTYPE:
-                if (c == ',') typecontext = PROCEDURE;
+                if (c == ',' || c == ')') typecontext = PROCEDURE;
                 else if (c == ';' || c == '$') typecontext = GENERAL;
                 break;
         default:

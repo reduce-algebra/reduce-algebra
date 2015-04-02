@@ -56,6 +56,7 @@ global '(!$eof!$
          crchar!*
          curline!*
          cursym!*
+         curescaped!*
          eof!*
          ifl!*
          nxtsym!*
@@ -559,6 +560,7 @@ symbolic procedure tokquote;
    begin
       crchar!* := readch1();
       nxtsym!* := mkquote rread();
+      curescaped!* := nil;
       ttype!* := 4;
       return nxtsym!*
    end;
@@ -911,6 +913,7 @@ symbolic procedure tokbquote;
    begin
      crchar!* := readch1();
       nxtsym!* := list('backquote,rread());
+      curescaped!* := nil;
       ttype!* := 3;
       return nxtsym!*
    end;
@@ -923,6 +926,7 @@ symbolic procedure token;
 
 symbolic procedure filenderr;
    begin
+      curescaped!* := nil;
       eof!* := eof!*+1;
       if terminalp() then error1()
        else error(99,if ifl!*
@@ -1065,12 +1069,13 @@ symbolic procedure addcomment u;
  %  if commentlist!*
  %    then cursym!* := 'comment . aconc(reversip commentlist!*,u)
  %   else
-   cursym!* := u;
+     cursym!* := u;
 
 symbolic procedure scan;
    begin scalar bool,x,y;
         if null (cursym!* eq '!*semicol!*) then go to b;
-    a:  nxtsym!* := token();
+    a:  escaped!* := nil;
+        nxtsym!* := token();
     b:  if null atom nxtsym!* and null toknump nxtsym!*
           then go to q1
          else if nxtsym!* eq 'else or cursym!* eq '!*semicol!*
@@ -1104,11 +1109,14 @@ symbolic procedure scan;
          else if nxtsym!* eq '!#endif then go to a
          else if nxtsym!* eq '!#eval then progn(
                      errorset(rread(), !*backtrace, nil),
+                     curescaped!* := (escaped!* := nil),
                      go to a)
          else if nxtsym!* eq '!#define then progn(
                      x := errorset(rread(), !*backtrace, nil),
+                     curescaped!* := (escaped!* := nil),
                      progn(if errorp x then go to a),
                      y := errorset(rread(), !*backtrace, nil),
+                     curescaped!* := (escaped!* := nil),
                      progn(if errorp y then go to a),
                      put(x, 'newnam, y),
                      go to a)
@@ -1125,6 +1133,7 @@ symbolic procedure scan;
          else if nxtsym!* eq !$eof!$ then return filenderr()
          else if car x then go to sw3;
    sw2: cursym!*:=cadr x;
+        curescaped!*:=nil;
         bool := nil;
         if cursym!* eq '!*rpar!* then go to l2
          else return addcomment cursym!*;
@@ -1162,6 +1171,7 @@ symbolic procedure scan;
   conditional:
 % The conditional expression used here must be written in Lisp form
         x := errorset(rread(), !*backtrace, nil);
+        curescaped!* := (escaped!* := nil);
 % errors in evaluation count as NIL
         if null errorp x and car x then go to a;
         x := nil;
@@ -1187,6 +1197,7 @@ symbolic procedure scan;
          else go to skipping;
   delim:
         semic!*:=nxtsym!*;
+        curescaped!* := nil;
         return addcomment '!*semicol!*;
   new:  nxtsym!* := x;
         if stringp x then go to l
@@ -1196,6 +1207,8 @@ symbolic procedure scan;
         prin2x " ";
         prin2x cadr(nxtsym!* := mkquote cadr nxtsym!*);
   l:    cursym!*:=nxtsym!*;
+        curescaped!* := escaped!*;
+        escaped!* := nil;
         nxtsym!* := token();
         if (nxtsym!* eq !$eof!$) and (ttype!* = 3) then return filenderr();
   l2:   if numberp nxtsym!*

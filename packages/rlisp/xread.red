@@ -33,7 +33,7 @@ module xread; % Routines for parsing RLISP input.
 
 fluid '(!*blockp !*eoldelimp !*reduce4 commentlist!*);   % !*ignoreeol
 
-global '(cursym!* nxtsym!*);
+global '(cursym!* curescaped!* nxtsym!*);
 
 % The conversion of an RLISP expression to LISP prefix form is carried
 % out by the function XREAD.  This function initiates the scanning
@@ -120,7 +120,7 @@ symbolic procedure xread1 u;
            and null(get(z1,'switch!*) and null(z1 eq '!())
            and null get(z1,'infix)
            and null (!*eoldelimp and z1 eq !$eol!$)
-          then progn(cursym!* := 'times, go to a)
+          then progn(cursym!* := 'times, curescaped!* := nil, go to a)
          else if u eq 'proc and length w > 2
           then symerr("Syntax error in procedure header",nil);
   next: z := scan();
