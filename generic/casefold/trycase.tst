@@ -5,4 +5,10 @@ Comment this is a comment;
 % Now some mixed case stuff
 This is a sample of CamelCase input.
 
+% With type stuff
+
+procedure Foo(X:hugo,Y:sq):flAmbeau;
+
+declare hugo : (oOk,ooK) -> ook;
+
 % end of test

@@ -1,4 +1,4 @@
-// casefold.c                                       A C Norman March 2015
+// casefold.c                                         A C Norman April 2015
 
 
 /**************************************************************************
@@ -62,6 +62,10 @@
 // else (outside comments, strings and character escapes) goes to lower case.
 //
 //    casefold + filename [[:] Word]*
+// I *HOPE* that this second mode will not be required, but it is present for
+// the benefit of those who want to adopt a more customised CamelCase style
+// in their code where the software can not guess what to do for itself.
+//
 // Performs custom folding on the file, putting the adjusted version back
 // in place. The only words that are adjusted are those in th list of words
 // specifed on the command line. If a word the is preceeded by a ":" that
@@ -97,6 +101,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 // The following words, when used within the Reduce sources, will end up
 // with the upper or mixed case as shown here.
@@ -225,6 +230,9 @@ static int regularNamesCount = 0, typeNamesCount = 0;
 //    ARGTYPE    -----(;|$)-----> GENERAL
 //    ARGTYPE    ----symbol*----> ARGTYPE
 //    ARGTYPE    -----other-----> ARGTYPE
+//    ARGTYPE    --(--*****--)--> ARGTYPE
+//    ARGTYPE    --[--*****--]--> ARGTYPE
+//    ARGTYPE    --{--*****--}--> ARGTYPE
 //
 //    TYPEDEF    ----symbol*----> GENERAL
 //    TYPEDEF    -----other-----> GENERAL
@@ -232,18 +240,49 @@ static int regularNamesCount = 0, typeNamesCount = 0;
 // The annotation "symbol*" indicates a symbol that is mapped as a type name
 // not as a general word. There are some pathologies with input such as
 //   "typedef procedure ..."
-// as to whether the word "procedure" is to be treated as a symbopl or as a
+// as to whether the word "procedure" is to be treated as a symbol or as a
 // reserved word. I will ignore such concerns since in valid input they
 // should not arise.
+// The odd notation in ARGTYPE represents some context free rather than
+// finite state processing to the effect that nested parentheses, brackets and
+// braces leave things in that state.
 //
 
 enum
 {
-   GENERAL,
-   PROCEDURE,
-   ARGTYPE,
-   TYPEDEF
+    GENERAL,
+    PROCEDURE,
+    ARGTYPE,
+    TYPEDEF
 };
+
+enum
+{
+    NONE=0,
+    PAREN,
+    BRACKET,
+    BRACE
+};
+
+static int64_t stack = 0;
+
+static int tos()
+{
+    return 0x3 & (int)stack;
+}
+
+static void push(int c)
+{
+    stack = (stack << 2) |
+       (c == '(' ? PAREN :
+        c == '[' ? BRACKET :
+        c == '{' ? BRACE : 0);
+}
+
+static void pop()
+{
+    stack = stack >> 2;
+}
 
 // This enum is for string and comment detection.
 enum
@@ -308,11 +347,19 @@ static void flushword()
         if (simplemode)
         {   int prevesc = 0;
             char *p3 = outword;
+// I will map words to lower case in "normal" context, but when I think they
+// are type names I will capitalize them - and if the symbol is just of length
+// 2 I will turn both (not just the first) letter to upper case. Thus the
+// convention I adopt here will lead to "Number", "Symbol", "SQ" and "SF".
             if (typecontext == ARGTYPE ||
                 typecontext == TYPEDEF)
             {   prevesc = (*p3 == '!');
                 *p3 = toupper(*p3);
                 p3++;
+                if (*p3 != 0 && *(p3+1) == 0 && !prevesc)
+                {   *p3 = toupper(*p3);
+                    p3++;
+                }
             }
             while (*p3 != 0)
             {   if (!prevesc) *p3 = tolower(*p3);
@@ -367,7 +414,12 @@ case 1: if (!isalnum(c) && c!='_')
                 else if (c == ';' || c == '$') typecontext = GENERAL;
                 break;
         case ARGTYPE:
-                if (c == ',' || c == ')') typecontext = PROCEDURE;
+                if (c == '(' || c == '[' || c == '{') push(c);
+                else if (c == ')' && tos()==PAREN) pop();
+                else if (c == ']' && tos()==BRACKET) pop();
+                else if (c == '}' && tos()==BRACE) pop();
+                else if (tos()==NONE &&
+                         (c == ',' || c == ')')) typecontext = PROCEDURE;
                 else if (c == ';' || c == '$') typecontext = GENERAL;
                 break;
         default:
@@ -436,10 +488,10 @@ int main(int argc, char *argv[])
         }
         typeNames[typeNamesCount] = NULL;
         regularNames[regularNamesCount] = NULL;
-        for (j=0; j<regularNamesCount; j++)
-            printf("R%d] %s\n", j, regularNames[j]);
-        for (j=0; j<typeNamesCount; j++)
-            printf("T%d] %s\n", j, typeNames[j]);
+//      for (j=0; j<regularNamesCount; j++)
+//          printf("R%d] %s\n", j, regularNames[j]);
+//      for (j=0; j<typeNamesCount; j++)
+//          printf("T%d] %s\n", j, typeNames[j]);
     }
     memset(prev, ' ', sizeof(prev));
     prev[8] = 0;

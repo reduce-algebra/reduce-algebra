@@ -1,17 +1,12 @@
 +++ Standard names +++
 A:17                                  a:15377
-Answer:4                              answer:208
 B:6                                   b:7875
-Kernel:2                              kernel:153
-List:2                                list:7206
 OMATP:24                              omatp:6
 OMOBJ:172                             omobj:22
 RationalP:8                           rationalp:10
 S:1                                   s:5857
-SF:4                                  sf:547
 T:209                                 t:5588
 V:3                                   v:14068
-VarList:1                             varlist:230
 X229:6                                x229:6
 X259:6                                x259:6
 X261:5                                x261:5
@@ -29,7 +24,7 @@ gurobi_addconstraintFast:1            gurobi_addconstraintfast:10
 ofsf_s2aPointPair:5                   ofsf_s2apointPair:2
 ofsf_updIvl:2                         ofsf_updivl:1
 
-29 symbols involved
+24 symbols involved
 
 +++ Type names +++
 AList:39                              Alist:20
@@ -42,18 +37,18 @@ DottedPair:66                         dottedpair:4
 ExtraBoolean:39                       extraboolean:1
 Floating:4                            floating:2
 Formula:40                            formula:2
-Id:38                                 id:5
+Id:38                                 id:6
 Integer:148                           integer:10
-Kernel:153                            kernel:2
-List:330                              list:18
+Kernel:155                            kernel:2
+List:332                              list:20
 List2:3                               list2:1
 List3:11                              list3:1
 List4:6                               list4:1
 List6:2                               list6:1
-NoOrdSF:1                             noordsf:1
-SF:231                                sf:17
+NoOrdSF:2                             noordsf:1
+SF:235                                sf:19
 SFList:45                             SfList:1
-SQ:68                                 sq:15
+SQ:68                                 sq:17
 String:6                              string:3
 
 22 type symbols involved
@@ -108,38 +103,6 @@ alg/elem.red : 160
 alg/elem.red : 189
 for all x let logb(a**x,a)=x;
 
-                    Answer:4
-redlog/cl/clqe.red : 91
-declare ce_mk: (VarList, QfFormula, Kernel, List, Answer) -> ContainerElement;
-redlog/cl/clqe.red : 116
-declare ce_ans: (ContainerElement) -> Answer;
-redlog/cl/clqe.red : 271
-declare cl_mkJ: (QfFormula,Answer) -> Junction;
-redlog/cl/clqe.red : 283
-declare cl_jA: (Junction) -> Answer;
-
-                    answer:208
-algint/afactor.red : 246
-  scalar prim,res,answer,u,v,x,y; % scalar var2
-algint/afactor.red : 266
-        if u neq '(1 . 1) then answer := u . answer>>
-algint/afactor.red : 266
-        if u neq '(1 . 1) then answer := u . answer>>
-algint/afactor.red : 273
-  end;
-algint/antisubs.red : 37
-  scalar answer,w;
-algint/antisubs.red : 46
-      else answer:=(x.anti2(w,x)).answer;
-algint/antisubs.red : 46
-      else answer:=(x.anti2(w,x)).answer;
-algint/antisubs.red : 49
-    then answer:=(x.x).answer;
-algint/antisubs.red : 49
-    then answer:=(x.x).answer;
-algint/antisubs.red : 49
-    then answer:=(x.x).answer;
-
                     B:6
 mathml/mathmlom.tst : 401
      <ci type="set"> B </ci>
@@ -175,62 +138,6 @@ alg/farith.red : 41
 symbolic procedure idifference(a,b); a-b;
 alg/farith.red : 43
 symbolic procedure iquotient(a,b); a/b;
-
-                    Kernel:2
-redlog/cl/clqe.red : 91
-declare ce_mk: (VarList, QfFormula, Kernel, List, Answer) -> ContainerElement;
-redlog/cl/clqe.red : 106
-declare ce_v: (ContainerElement) -> Kernel;
-
-                    kernel:153
-arnum/bath.red : 89
-                      univariate polynomial in the kernel x.
-arnum/bath.red : 112
-kernel  alpha.  the function normf1(f,alglist) returns the norm of f over
-cdiff/integrator.red : 237
-	    for each kernel in linear_functions do if length
-cdiff/integrator.red : 240
-		  where depl_entry=assoc(kernel,depl!*))=nr_of_variables then
-cdiff/integrator.red : 241
-		     solvable_kernels:=kernel . solvable_kernels;
-cdiff/integrator.red : 242
-	    for each kernel in append(df_functions,commutator_functions)do
-cdiff/integrator.red : 243
-	       solvable_kernels:=delete(kernel,solvable_kernels);
-cdiff/integrator.red : 264
-	    for each kernel in append(linear_functions,commutator_functions)do
-cdiff/integrator.red : 267
-		     where depl_entry=assoc(kernel,depl!*))do
-cdiff/integrator.red : 289
-lisp procedure successful_message_for(n,action,kernel);
-
-                    List:2
-redlog/cl/clqe.red : 91
-declare ce_mk: (VarList, QfFormula, Kernel, List, Answer) -> ContainerElement;
-redlog/cl/clqe.red : 111
-declare ce_eterm: (ContainerElement) -> List;
-
-                    list:7206
-alg/alg-form.red : 36
-        then rerror('alg,1,list("input called with",
-alg/alg-form.red : 41
-        then rerror(alg,1,list("Entry",u,"not found"));
-alg/alg-form.red : 50
-        then rerror('alg,1,list("ws called with",
-alg/alg-form.red : 55
-       else rerror(alg,2,list("Entry",u,"not found"))
-alg/algbool.red : 35
-               then numberp(x := reval list('difference,u,v))
-alg/algbool.red : 55
-        simp!* list('difference,v,u);
-alg/algdcl.red : 35
-     then list('flag,mkquote cdr u,mkquote 'opfn)
-alg/algdcl.red : 36
-    else list('operator,mkarg(cdr u,vars));
-alg/algdcl.red : 53
-      remflag(list u,'linear);
-alg/algdcl.red : 54
-      remflag(list u,'nary);
 
                     OMATP:24
 mathml/mathmlom.tst : 2926
@@ -378,38 +285,6 @@ alg/elem.red : 88
 alg/elem.red : 88
      if fixp numr x then n:=n * numr x else s:=f.s>>;
 
-                    SF:4
-redlog/rltools/sfto.red : 61
-declare addf: (SF,SF) -> SF;
-redlog/rltools/sfto.red : 61
-declare addf: (SF,SF) -> SF;
-redlog/rltools/sfto.red : 62
-declare multf: (SF,SF) -> SF;
-redlog/rltools/sfto.red : 62
-declare multf: (SF,SF) -> SF;
-
-                    sf:547
-alg/simp.red : 1126
-   begin scalar fn,fn1,sf,sc,int,ce; fn1 := fn := car u; u := cdr u;
-alg/simp.red : 1134
-      sf := if int then 'simprn
-alg/simp.red : 1135
-         else if (sf := get(fn,'simparg)) then sf else 'simprd;
-alg/simp.red : 1135
-         else if (sf := get(fn,'simparg)) then sf else 'simprd;
-alg/simp.red : 1154
-   s: if not (u := apply1(sf, revlis u)) then return nil;
-alg/simplog.red : 136
-symbolic procedure simplogb2(sf,base);
-alg/simplog.red : 138
-   then if null sf then rerror(alg,21,"Log 0 formed")
-alg/simplog.red : 138
-   then if null sf then rerror(alg,21,"Log 0 formed")
-alg/simplog.red : 140
-       then if sf iequal 1 then nil ./ 1
-alg/simplog.red : 140
-       then if sf iequal 1 then nil ./ 1
-
                     T:209
 redlog/acfsf/acfsfbnf.red : 47
    else
@@ -483,32 +358,6 @@ alg/algbool.red : 63
 symbolic procedure evallessp(u,v); evalgreaterp(v,u);
 alg/algbool.red : 63
 symbolic procedure evallessp(u,v); evalgreaterp(v,u);
-
-                    VarList:1
-redlog/cl/clqe.red : 96
-declare ce_vl: (ContainerElement) -> VarList;
-
-                    varlist:230
-algint/afactor.red : 245
-  scalar varlist,zlist,indexlist,sqrtlist,sqrtflag;
-algint/afactor.red : 252
-        y:=facbypp(car x,varlist);
-algint/jhdriver.red : 141
-symbolic procedure algebraiccase(expression,zlist,varlist);
-algint/jhdriver.red : 180
-        % if the difference is merely a constant.
-algint/jhdriver.red : 182
-  zlist:=findzvars(varlist,list intvar,intvar,nil);
-algint/jhdriver.red : 183
-  varlist:=setdiff(varlist,zlist);
-algint/jhdriver.red : 183
-  varlist:=setdiff(varlist,zlist);
-algint/jhdriver.red : 189
-  deriv:=transcendentalcase(deriv,intvar,nil,zlist,varlist);
-assist/opertens.red : 80
-begin scalar name,proplist,arglist,varlist,switchid,istens,spacel,z;
-assist/opertens.red : 92
-                    varlist:=append(varlist, cdadr y);
 
                     X229:6
 redlog/ofsf/ofsf.tst : 679
@@ -916,7 +765,7 @@ redlog/ofsf/ofsfexfr.red : 415
 redlog/ofsf/ofsfexfr.red : 327
 	 ivl := ofsf_updivl(ivl, givl);
 
-29 symbols involved
+24 symbols involved
 
 +++ Type names +++
 
@@ -1188,7 +1037,7 @@ asserted procedure ofsf_signaturesbytv(ddk: List, tv: Id): List;
 redlog/ofsf/ofsfexfr.red : 72
 asserted procedure anuiv_type(iv: AnuInterval): Id;
 
-                    id:5
+                    id:6
 assert/assertcheckfn.red : 38
 struct id checked by idp;
 ranum/ranum.red : 135
@@ -1197,6 +1046,8 @@ ranum/ranum.red : 147
 asserted procedure ra_wrapper1(f: id, argl: list, oldmode: id): any;
 ranum/ranum.red : 147
 asserted procedure ra_wrapper1(f: id, argl: list, oldmode: id): any;
+redlog/ofsf/ofsfmisc.red : 507
+declare ofsf_dfgPrintV: (id) -> id;
 redlog/ofsf/ofsfmisc.red : 507
 declare ofsf_dfgPrintV: (id) -> id;
 
@@ -1244,9 +1095,13 @@ asserted procedure ra_wrappertest0(x: integer, y: integer): integer;
 ranum/ranum.red : 290
 asserted procedure ra_i2ra0(z: integer): ra;
 
-                    Kernel:153
+                    Kernel:155
 redlog/cl/clmisc.red : 341
 asserted procedure cl_vsubfof1(v: Kernel, u: List, f: Formula): Formula;
+redlog/cl/clqe.red : 91
+declare ce_mk: (VarList, QfFormula, Kernel, List, Answer) -> ContainerElement;
+redlog/cl/clqe.red : 106
+declare ce_v: (ContainerElement) -> Kernel;
 redlog/cl/clqe.red : 825
 asserted procedure cl_esetsubst(f: QfFormula, v: Kernel, eset: List, vl: KernelL, an: List, theo: Theory, ans: Boolean, bvl: KernelL): DottedPair;
 redlog/ofsf/ofsfanuex.red : 337
@@ -1261,10 +1116,6 @@ redlog/ofsf/ofsfanuex.red : 446
 asserted procedure ctx_remove(c: AexCtx, x: Kernel): AexCtx;
 redlog/ofsf/ofsfanuex.red : 496
 asserted procedure aex_mklin(x: Kernel, ba: Rational): Aex;
-redlog/ofsf/ofsfanuex.red : 518
-asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
-redlog/ofsf/ofsfanuex.red : 539
-asserted procedure aex_unbind(ae: Aex, x: Kernel): Aex;
 
                     kernel:2
 assert/assertcheckfn.red : 75
@@ -1272,7 +1123,7 @@ struct kernel checked by assert_kernelp;
 ranum/raarith.red : 206
 asserted procedure ra_resf0(f: sf, g: sf, x: kernel): sf;
 
-                    List:330
+                    List:332
 ranum/rarcount.red : 31
 asserted procedure ra_isolate0(f: SF, lb: Any, ub: Any): List;
 ranum/rarcount.red : 94
@@ -1294,7 +1145,7 @@ asserted procedure ra_vca1(f: SF, a: SQ, b: SQ): List;
 redlog/cl/clmisc.red : 341
 asserted procedure cl_vsubfof1(v: Kernel, u: List, f: Formula): Formula;
 
-                    list:18
+                    list:20
 assert/assertcheckfn.red : 54
 struct list checked by listp;
 qhull/qhull.red : 48
@@ -1382,7 +1233,9 @@ asserted procedure cl_transform(f: QfFormula, vl: KernelL, an: Answer, theo: The
 assert/assertcheckfn.red : 66
 struct list6 checked by list6p;
 
-                    NoOrdSF:1
+                    NoOrdSF:2
+redlog/rltools/sfto.red : 63
+declare negf: (NoOrdSF) -> NoOrdSF;
 redlog/rltools/sfto.red : 63
 declare negf: (NoOrdSF) -> NoOrdSF;
 
@@ -1390,7 +1243,7 @@ declare negf: (NoOrdSF) -> NoOrdSF;
 assert/assertcheckfn.red : 72
 struct noordsf checked by noordsfpx;
 
-                    SF:231
+                    SF:235
 ranum/rarcount.red : 31
 asserted procedure ra_isolate0(f: SF, lb: Any, ub: Any): List;
 ranum/rarcount.red : 73
@@ -1412,7 +1265,7 @@ asserted procedure ra_budan!-0!-1(f: SF): Integer;
 ranum/rarcount.red : 193
 asserted procedure ra_budan!-transform(f: SF): SF;
 
-                    sf:17
+                    sf:19
 assert/assertcheckfn.red : 70
 struct sf checked by sfpx;
 ranum/raarith.red : 53
@@ -1482,7 +1335,7 @@ asserted procedure ra_budancount(f: SF, l: SQ, u: SQ): Integer;
 ranum/rarcount.red : 204
 asserted procedure ra_budancount(f: SF, l: SQ, u: SQ): Integer;
 
-                    sq:15
+                    sq:17
 assert/assertcheckfn.red : 73
 struct sq checked by sqp;
 ranum/raarith.red : 53

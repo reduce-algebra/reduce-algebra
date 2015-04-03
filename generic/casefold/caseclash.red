@@ -8,9 +8,27 @@
 %    redcsl -Dfiles=... -Doutputfile=...
 
 
-off echo;
+on echo;
 lisp;
 on backtrace;
+
+#if (memq 'csl lispsystem!*)
+
+% Merely reading support/psl.red inspects the value of this variable,
+% which exists in PSL but not CSL. Define it to avoid moans.
+bitsperword := 32;
+
+% In a rather similar way support/fastmath-by-acn.red needs the following
+% but merely for parsing the values returned are not very important!
+
+symbolic procedure gtfltn(); 1;
+symbolic procedure floatbase n; 1.0;
+symbolic procedure uxcos(x, y); cos x;
+symbolic procedure fltinf x; 1;
+symbolic procedure mkfltn n; 1.0; 
+
+#endif
+
 
 filelist := nil;
 
@@ -33,7 +51,7 @@ total := 0;
 
 for each ff in filelist do begin
   scalar a, b, c, h, m, u, v, w, x, location, peekchar!*,
-         !*echo, !*raise, !*lower, context, !*int;
+         stack, !*echo, !*raise, !*lower, context, !*int;
   w := reverse explodec ff;
   while w and not eqcar(w, '!/) do <<
     v := car w . v;
@@ -67,6 +85,9 @@ for each ff in filelist do begin
 %    ARGTYPE    -----(;|$)-----> GENERAL
 %    ARGTYPE    ----symbol*----> ARGTYPE
 %    ARGTYPE    -----other-----> ARGTYPE
+%    ARGTYPE    ---(-*****-)---> ARGTYPE
+%    ARGTYPE    ---[-*****-]---> ARGTYPE
+%    ARGTYPE    ---{-*****-}---> ARGTYPE
 %
 %    TYPEDEF    ----symbol*----> GENERAL
 %    TYPEDEF    -----other-----> GENERAL
@@ -96,11 +117,17 @@ for each ff in filelist do begin
          (c='typedef or c='struct) then context:='typedef
       else if context='procedure and c='!*colon!* then context:='argtype
       else if context='procedure and c='!*semicol!* then context:='general
-% The comma here should onnly be recognise3d if not nested within parens.
-% So this will mis-handle
+% The comma here should only be recognised if not nested within parens.
+% Consider...
 %    declare addf: (SF,SF) -> SF;
-% for now. I will fix that in a bit!
-      else if context='argtype and c='!*comma!* then context:='procedure
+      else if context='argtype and
+        (c='!*lpar!* or c='!*lsqbkt!* or c='!*lcbkt!*) then stack := c . stack
+      else if context='argtype and
+        ((c='!*rpar!* and eqcar(stack, '!*lpar!*)) or
+         (c='!*rsqbkt!* and eqcar(stack, '!*lsqbkt!*)) or
+         (c='!*rcbkt!* and eqcar(stack, '!*lcbkt!*))) then stack := cdr stack
+      else if context='argtype and c='!*comma!* and null stack then
+        context:='procedure
       else if context='argtype and c='!*rpar!* then context:='procedure
       else if context='argtype and c='!*colon!* then context:='argtype
       else if context='argtype and c='!*semicol!* then context:='general
