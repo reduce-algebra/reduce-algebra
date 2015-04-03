@@ -580,16 +580,16 @@ procedure ofsf_smordtable(r1,r2);
    % equivalent to $R(f+a,0)$ in case $[s]=[T]$ or to $R(f+b,0)$ in
    % case $[s]=[nil]$.
    begin scalar al;
-      al := '((equal . ((equal . false) (neq . (equal . T)) (geq . (equal .T))
-            (leq . false) (greaterp . (equal . T)) (lessp . false)))
+      al := '((equal . ((equal . false) (neq . (equal . t)) (geq . (equal .t))
+            (leq . false) (greaterp . (equal . t)) (lessp . false)))
          (neq . ((equal . (equal . nil)) (neq . nil) (geq . nil)
             (leq . (leq . nil)) (greaterp . nil) (lessp . (lessp . nil))))
-         (geq . ((equal . false) (neq . (geq . T)) (geq . (geq . T))
-            (leq . false) (greaterp . (geq . T)) (lessp . false)))
+         (geq . ((equal . false) (neq . (geq . t)) (geq . (geq . t))
+            (leq . false) (greaterp . (geq . t)) (lessp . false)))
          (leq . ((equal . (equal . nil)) (neq . nil) (geq . nil)
             (leq . (leq . nil)) (greaterp . nil) (lessp . (lessp . nil))))
-         (greaterp . ((equal . false) (neq . (greaterp . T))
-            (geq . (greaterp . T)) (leq . false) (greaterp . (greaterp . T))
+         (greaterp . ((equal . false) (neq . (greaterp . t))
+            (geq . (greaterp . t)) (leq . false) (greaterp . (greaterp . t))
             (lessp . false)))
          (lessp . ((equal . (equal . nil)) (neq . nil) (geq . nil)
             (leq . (leq . nil)) (greaterp . nil) (lessp . (lessp . nil)))));
@@ -641,7 +641,7 @@ procedure ofsf_susibinmult(old,new);
       if w = 1 then  % [ot] = [nt]
 	 return nil;
       if w then  % [nt] | [ot]
-	 return ofsf_susibinmult1(orel,nrel,ot,nt,w,olevel,nlevel,T);
+	 return ofsf_susibinmult1(orel,nrel,ot,nt,w,olevel,nlevel,t);
       w := quotf(nt,ot);
       if w then
 	 return ofsf_susibinmult1(nrel,orel,nt,ot,w,nlevel,olevel,nil);
@@ -669,7 +669,7 @@ procedure ofsf_susibinmult1(pr,fr,prod,af,cf,plevel,flevel,flg);
 	    return { ('ignore . not flg) }
       >>;
       if ofsf_wop fr then
-      	 return { '(ignore . T), '(ignore . nil),
+      	 return { '(ignore . t), '(ignore . nil),
 	    ('add . (ofsf_0mk2(car w,af) . cl_susiminlevel(plevel,flevel))),
 	    ('add . (ofsf_0mk2(cdr w,cf) . plevel))}
       else % The factor is necessary
@@ -723,11 +723,11 @@ procedure ofsf_susibineq(u,oop,nop,level);
       if w eq 'false then
 	 return 'false
       else if w eq oop then
-	 return '((delete . T))
+	 return '((delete . t))
       else if w eq nop then
 	 return {'(delete . nil)}
       else
-	 return {'(delete . nil), '(delete . T),
+	 return {'(delete . nil), '(delete . t),
 	    'add . (ofsf_0mk2(w,u) . level)};
    end;
 
@@ -751,7 +751,7 @@ procedure ofsf_susibinord(orel,ot,oabs,nrel,nt,nabs,level);
       if minusf diff then <<
       	 w := ofsf_smordtable(orel,nrel);
 	 if atom w then return w;
-      	 if eqcar(w,orel) and cdr w then return '((ignore . T));
+      	 if eqcar(w,orel) and cdr w then return '((ignore . t));
 	 if cdr w then
 	    return {'(ignore . nil),
 	       'add . (ofsf_0mk2(car w,ot) . level)}
@@ -760,7 +760,7 @@ procedure ofsf_susibinord(orel,ot,oabs,nrel,nt,nabs,level);
       >>;
       w := ofsf_smordtable(nrel,orel);
       if atom w then return w;
-      if eqcar(w,orel) and null cdr w then return '((ignore . T));
+      if eqcar(w,orel) and null cdr w then return '((ignore . t));
       if cdr w then
       	 return {'(ignore . nil)}
       else

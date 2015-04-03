@@ -43,7 +43,7 @@ procedure talp_dnf(f);
    % Term algebra Lisp prefix disjunctive normal form. [f] is a
    % formula. Returns a DNF of [f].
    if !*rlbnfsac then
-      (cl_dnf f) where !*rlsiso=T
+      (cl_dnf f) where !*rlsiso=t
    else
       cl_dnf f;
 
@@ -51,7 +51,7 @@ procedure talp_cnf(f);
    % Term algebra Lisp prefix conjunctive normal form. [f] is a
    % formula. Returns a CNF of [f].
    if !*rlbnfsac then
-      (cl_cnf f) where !*rlsiso=T
+      (cl_cnf f) where !*rlsiso=t
    else
       cl_cnf f;
 

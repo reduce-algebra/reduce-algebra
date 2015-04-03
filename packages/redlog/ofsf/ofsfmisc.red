@@ -141,7 +141,7 @@ procedure ofsf_a2cdl(atml);
          atf := caar atml;
       	 atml := cdr atml;
       	 terml := ofsf_arg2l atf . terml;
-	 if not(ofsf_op atf memq '(equal neq)) then flag := T
+	 if not(ofsf_op atf memq '(equal neq)) then flag := t
       >>;
       return for each x in terml collect
 	 if flag then
@@ -519,7 +519,7 @@ procedure ofsf_mktan2(phi);
    {'tan,{'quotient,phi,2}};
 
 
-declare ofsf_dfgPrintV: (id) -> id;
+declare ofsf_dfgPrintV: (Id) -> Id;
 
 procedure ofsf_dfgPrintV(v);
    % DFG print variable.

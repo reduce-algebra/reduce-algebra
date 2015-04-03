@@ -205,7 +205,7 @@ asserted procedure sfto_raisel(polyl: List, c: Integer): List;
    for each pr in polyl collect
       {car pr, cadr pr * c};
 
-asserted procedure sfto_subfwd(poly: SF, degal: AList): SF;
+asserted procedure sfto_subfwd(poly: SF, degal: Alist): SF;
    begin scalar w; integer d;
       if domainp poly then
       	 return poly;
@@ -216,7 +216,7 @@ asserted procedure sfto_subfwd(poly: SF, degal: AList): SF;
    end;
 
 % Avoid calls to subf in this procedure as well.
-% asserted procedure sfto_subbckl(polyl: List, degl: AList): List;
+% asserted procedure sfto_subbckl(polyl: List, degl: Alist): List;
 %    begin scalar w, subl, poly, res;
 %       while degl do <<
 % 	 w := car degl;
@@ -231,11 +231,11 @@ asserted procedure sfto_subfwd(poly: SF, degal: AList): SF;
 %       return res
 %    end;
 
-asserted procedure sfto_subbckl(polyl: List, degal: AList): List;
+asserted procedure sfto_subbckl(polyl: List, degal: Alist): List;
    for each pr in polyl collect
       {sfto_subbck(car pr, degal), cadr pr};
 
-asserted procedure sfto_subbck(poly: SF, degal: AList): SF;
+asserted procedure sfto_subbck(poly: SF, degal: Alist): SF;
    begin scalar w; integer d;
       if domainp poly then
       	 return poly;

@@ -28,7 +28,7 @@
 
 module raarith;
 
-asserted procedure ra_refine!$(u: list): ra;
+asserted procedure ra_refine!$(u: List): RA;
    begin
       scalar x;
       integer n;
@@ -39,7 +39,7 @@ asserted procedure ra_refine!$(u: list): ra;
 
 put('refine, 'psopfn, 'ra_refine!$);
 
-asserted procedure ra_refine0(x: ra, n: integer): ra;
+asserted procedure ra_refine0(x: RA, n: Integer): RA;
    % Refine [x] [n] times.
    begin scalar f, iv, l, u;
       f := ra_f x;
@@ -50,7 +50,7 @@ asserted procedure ra_refine0(x: ra, n: integer): ra;
 
 ra_wrap(ra_refine0, ra_refine, 2);
 
-asserted procedure ra_refine1(f: sf, l: sq, u: sq, n: integer): dottedpair;
+asserted procedure ra_refine1(f: SF, l: SQ, u: SQ, n: Integer): DottedPair;
    begin scalar c;
       for j := 1:n do <<
 	 c := sfto_avgq(l,u);
@@ -66,7 +66,7 @@ asserted procedure ra_refine1(f: sf, l: sq, u: sq, n: integer): dottedpair;
       return l . u
    end;
 
-asserted procedure ra_normalize0(x: ra): ra;
+asserted procedure ra_normalize0(x: RA): RA;
    % Normaize [x]. That is, return [nil] if [x] represents 0, else refine [x]
    % such that its interval does not contain zero.
    begin scalar f, l, u;
@@ -91,10 +91,10 @@ asserted procedure ra_normalize0(x: ra): ra;
 
 ra_wrap(ra_normalize0, ra_normalize, 1);
 
-asserted procedure ra_diff(f: sf): sf;
+asserted procedure ra_diff(f: SF): SF;
    numr difff(f, ra_x());
 
-asserted procedure ra_plus0(x: ra, y: ra): ra;
+asserted procedure ra_plus0(x: RA, y: RA): RA;
    begin scalar ff, gg, h, lx, ux, ly, uy, l, u;
       if null x then
  	 return y;
@@ -120,16 +120,16 @@ asserted procedure ra_plus0(x: ra, y: ra): ra;
 
 ra_wrap(ra_plus0, ra_plus, 2);
 
-asserted procedure ra_plustransform(f: sf): sf;
+asserted procedure ra_plustransform(f: SF): SF;
    % Transform f(x) into f(x-y). TODO
    sfto_fsub1(f, {ra_x() . addf(!*k2f ra_x(), negf !*k2f ra_y())});
 
-asserted procedure ra_difference1(x: ra, y: ra): ra;
+asserted procedure ra_difference1(x: RA, y: RA): RA;
    ra_plus0(x, ra_minus0 y);
 
 ra_wrap(ra_difference0, ra_difference, 2);
 
-asserted procedure ra_minus0(x: ra): ra;
+asserted procedure ra_minus0(x: RA): RA;
    if ra_zerop x then
       x
    else
@@ -137,7 +137,7 @@ asserted procedure ra_minus0(x: ra): ra;
 
 ra_wrap(ra_minus0, ra_minus, 1);
 
-asserted procedure ra_minusp0(x: ra): boolean;
+asserted procedure ra_minusp0(x: RA): Boolean;
    % [x] must ne normalized.
    begin scalar l;
       if null x then
@@ -148,7 +148,7 @@ asserted procedure ra_minusp0(x: ra): boolean;
 
 ra_wrap(ra_minusp0, ra_minusp, 1);
 
-asserted procedure ra_times0(x: ra, y: ra): ra;
+asserted procedure ra_times0(x: RA, y: RA): RA;
    begin scalar ff, gg, h, lx, ux, ly, uy, ll, l, u;
       if null x or null y then
 	 return nil;
@@ -174,18 +174,18 @@ asserted procedure ra_times0(x: ra, y: ra): ra;
 
 ra_wrap(ra_times0, ra_times, 2);
 
-asserted procedure ra_timestransform(f: sf): sf;
+asserted procedure ra_timestransform(f: SF): SF;
    % Transform f(x) into y^d * f(x/y). TODO
    numr sfto_qsub1(
       multf(f, ra_y() .** ldeg f .* 1 .+ nil),
       {ra_x() . (!*k2f ra_x() ./ !*k2f ra_y())});
 
-asserted procedure ra_quotient0(x: ra, y: ra): ra;
+asserted procedure ra_quotient0(x: RA, y: RA): RA;
    ra_times0(x, ra_inverse0 y);
 
 ra_wrap(ra_quotient0, ra_quotient, 2);
 
-asserted procedure ra_inverse0(x: ra): ra;
+asserted procedure ra_inverse0(x: RA): RA;
    begin scalar f, l, u, newl, newu;
       f := ra_f x;
       l := riv_l ra_iv x;
@@ -197,16 +197,16 @@ asserted procedure ra_inverse0(x: ra): ra;
 
 ra_wrap(ra_inverse0, ra_inverse, 1);
 
-asserted procedure ra_invtransform(f: sf): sf;
+asserted procedure ra_invtransform(f: SF): SF;
    % Transform f(x) into x^d * f(1/x). TODO
    numr sfto_qsub1(
       multf(f, ra_x() .** ldeg f .* 1 .+ nil),
       {ra_x() . (1 ./ !*k2f ra_x())});
 
-asserted procedure ra_resf0(f: sf, g: sf, x: kernel): sf;
+asserted procedure ra_resf0(f: SF, g: SF, x: Kernel): SF;
    sfto_dprpartf sfto_sqfpartf sfto_resf(f, g, x);
 
-asserted procedure ra_simpl0(x: ra): ra;
+asserted procedure ra_simpl0(x: RA): RA;
    begin scalar w;
       if not !*rasimpl then
 	 return x;
@@ -219,7 +219,7 @@ asserted procedure ra_simpl0(x: ra): ra;
 
 ra_wrap(ra_simpl0, ra_simpl, 1);
 
-asserted procedure ra_sifac0(x: ra): ra;
+asserted procedure ra_sifac0(x: RA): RA;
    begin scalar facl, f, l, u, c;
       if not !*rasifac then
 	 return x;

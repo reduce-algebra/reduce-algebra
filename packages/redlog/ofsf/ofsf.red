@@ -318,77 +318,77 @@ flag('(equal neq leq geq lessp greaterp),'spaced);
 flag('(ofsf_chsimpat),'full);
 
 % Ofsf Data Types
-struct OfsfAtf asserted by List3;
+struct OfsfAtf asserted by list3p;
 struct OfsfAtfL asserted by listp;
 
-struct Rational checked by RationalP;
-struct RationalList checked by RationalListP;
-struct GRational checked by GRationalP;
-struct RatInterval checked by RatIntervalP;
-struct RatIntervalList checked by RatIntervalListP;
-struct RatPoly checked by RatPolyP;
-struct AexCtx checked by AexCtxP;
-struct Aex checked by AexP;
-struct AexList checked by AexListP;
-struct TgAex checked by TgAexP;
-struct TgAexList checked by TgAexListP;
-struct Anu asserted by AnuP;
-struct TgAnu asserted by TgAnuP;
-struct AnuList asserted by AnuListP;
-struct TgAnuList asserted by TgAnuListP;
-struct Iri asserted by IriP;
+struct Rational checked by rationalp;
+struct RationalList checked by rationallistp;
+struct GRational checked by grationalp;
+struct RatInterval checked by ratintervalp;
+struct RatIntervalList checked by ratintervallistp;
+struct RatPoly checked by ratpolyp;
+struct AexCtx checked by aexctxp;
+struct Aex checked by aexp;
+struct AexList checked by aexlistp;
+struct TgAex checked by tgaexp;
+struct TgAexList checked by tgaexlistp;
+struct Anu asserted by anup;
+struct TgAnu asserted by tganup;
+struct AnuList asserted by anulistp;
+struct TgAnuList asserted by tganulistp;
+struct Iri asserted by irip;
 
 procedure IntegerListP(s);
    null s or pairp s and fixp car s and IntegerListP cdr s;
 
-procedure RationalP(s);
+procedure rationalp(s);
    sqp s and (null numr s or (fixp numr s and not eqn(numr s, 0))) and
       fixp denr s and denr s > 0;
 
-procedure RationalListP(s);
-   null s or pairp s and RationalP car s and RationalListP cdr s;
+procedure rationallistp(s);
+   null s or pairp s and rationalp car s and rationallistp cdr s;
 
-procedure GRationalP(s);
-   RationalP s or s eq 'minfty or s eq 'infty;  % TODO: Change to 'minf, 'pinf.
+procedure grationalp(s);
+   rationalp s or s eq 'minfty or s eq 'infty;  % TODO: Change to 'minf, 'pinf.
 
-procedure RatIntervalP(s);
-   pairp s and RationalP car s and RationalP cdr s;
+procedure ratintervalp(s);
+   pairp s and rationalp car s and rationalp cdr s;
 
-procedure RatIntervalListP(s);
-   null s or pairp s and RatIntervalP car s and RatIntervalListP cdr s;
+procedure ratintervallistp(s);
+   null s or pairp s and ratintervalp car s and ratintervallistp cdr s;
 
-procedure RatPolyP(s);
+procedure ratpolyp(s);
    sqp s and sfpx numr s and not zerop numr s and
       fixp denr s and denr s > 0;
 
-procedure AexCtxP(s);
+procedure aexctxp(s);
    pairp s and eqcar(s, 'ctx);
 
-procedure AexP(s);
+procedure aexp(s);
    pairp s and eqcar(s, 'aex);
 
-procedure AexListP(s);
-   null s or pairp s and AexP car s and AexListP cdr s;
+procedure aexlistp(s);
+   null s or pairp s and aexp car s and aexlistp cdr s;
 
-procedure TgAexP(s);
-   pairp s and AexP car s;
+procedure tgaexp(s);
+   pairp s and aexp car s;
 
-procedure TgAexListP(s);
-   null s or pairp s and TgAexP car s and TgAexListP cdr s;
+procedure tgaexlistp(s);
+   null s or pairp s and tgaexp car s and tgaexlistp cdr s;
 
-procedure AnuP(s);
+procedure anup(s);
    pairp s and eqcar(s, 'anu);
 
-procedure AnuListP(s);
-   null s or pairp s and AnuP car s and AnuListP cdr s;
+procedure anulistp(s);
+   null s or pairp s and anup car s and anulistp cdr s;
 
-procedure TgAnuP(s);
-   pairp s and AnuP car s;
+procedure tganup(s);
+   pairp s and anup car s;
 
-procedure TgAnuListP(s);
-   null s or pairp s and TgAnuP car s and TgAnuListP cdr s;
+procedure tganulistp(s);
+   null s or pairp s and tganup car s and tganulistp cdr s;
 
-procedure IriP(s);
+procedure irip(s);
    eqcar(s, 'iri);
 
 % Access Functions

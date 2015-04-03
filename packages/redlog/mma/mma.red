@@ -60,7 +60,7 @@ put('ofsf,'rl_services,
    '(rl_mma!* . mma_mma) . get('ofsf,'rl_services));
 
 rl_mkserv('mma,'(rl_simp),'(reval),'(nil),
-   function(lambda x; if x then rl_mk!*fof x),T);
+   function(lambda x; if x then rl_mk!*fof x),t);
 
 rl_set '(ofsf);
 
@@ -75,7 +75,7 @@ procedure mma_mma(f,fn);
       isfancy := !*fancy;
       if isfancy then
       	 off1 'fancy;
-      w := errorset({'mma_mma1,mkquote f,mkquote fn},T,!*backtrace);
+      w := errorset({'mma_mma1,mkquote f,mkquote fn},t,!*backtrace);
       if isfancy then
       	 on1 'fancy;
       if errorp w then <<

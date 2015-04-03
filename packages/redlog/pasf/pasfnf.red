@@ -106,11 +106,11 @@ procedure pasf_pnf2!-junctor(phi);
       args := rl_argn phi;
       % Preparing the PNF of arguments
       e := for each f in args collect pasf_pnf2(f);
-      onlyex := T; onlyall := T;
+      onlyex := t; onlyall := t;
       for each ej in e do <<
     	 qb := pasf_qb car ej;
     	 if qb > m then <<
- 	    m := qb; onlyex := T; onlyall := T
+ 	    m := qb; onlyex := t; onlyall := t
  	 >>;
     	 if cdr ej then <<
  	    l1 := (car ej) . l1;

@@ -45,16 +45,16 @@ qhull_wd!* := "/tmp/";
 
 operator qhull;
 
-asserted procedure qhull(l: list): list;
+asserted procedure qhull(l: List): List;
    qhull_s2alist qhull_qhull qhull_a2slist l;
 
-asserted procedure qhull_a2slist(l: list): list;
+asserted procedure qhull_a2slist(l: List): List;
    for each pt in cdr l collect cdr pt;
 
-asserted procedure qhull_s2alist(l: list): list;
+asserted procedure qhull_s2alist(l: List): List;
    'list . for each pt in l collect 'list . pt;
 
-asserted procedure qhull_qhull(l: list): list;
+asserted procedure qhull_qhull(l: List): List;
    begin scalar fn1, fn2, qhull, call, w; integer rnd, d, n;
       if null l then
  	 return nil;
@@ -78,7 +78,7 @@ asserted procedure qhull_qhull(l: list): list;
       return w
    end;
 
-asserted procedure qhull_createinfile(l: list, d: integer, n: integer, fn1: string): any;
+asserted procedure qhull_createinfile(l: List, d: Integer, n: Integer, fn1: String): Any;
    <<
       out fn1;
       prin2t d;
@@ -94,7 +94,7 @@ asserted procedure qhull_createinfile(l: list, d: integer, n: integer, fn1: stri
       shut fn1
    >>;
 
-asserted procedure qhull_parseoutfile(fn2: string): list;
+asserted procedure qhull_parseoutfile(fn2: String): List;
    begin scalar ch, res; integer d, n;
       ch := open(fn2, 'input);
       rds ch;

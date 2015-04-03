@@ -144,7 +144,7 @@ procedure tplp_enter(argl);
 	 tplp_mkpredicate cdr x;
       	 cadr x . caddr x
       >>;
-      return T . argl
+      return t . argl
    end;
 
 procedure tplp_exit();

@@ -44,29 +44,29 @@ module ofsfexfr;
 % AnuSpanBound ::= ('anusp_open | 'anusp_closed, GAnu)
 % AnuPoint ::= ('anuiv_point, Anu)
 
-struct GAnu asserted by GAnuP;
-struct AnuIntervalList asserted by AnuIntervalListP;
-struct AnuInterval asserted by AnuIntervalP;
-struct AnuSpan asserted by AnuSpanP;
-struct AnuSpanBound asserted by AnuSpanBoundP;
-struct AnuPoint asserted by AnuPointP;
+struct GAnu asserted by ganup;
+struct AnuIntervalList asserted by anuintervallistp;
+struct AnuInterval asserted by anuintervalp;
+struct AnuSpan asserted by anuspanp;
+struct AnuSpanBound asserted by anuspanboundp;
+struct AnuPoint asserted by anupointp;
 
-procedure GAnuP(s);
-   AnuP s or s eq 'minf or s eq 'pinf;
+procedure ganup(s);
+   anup s or s eq 'minf or s eq 'pinf;
 
-procedure AnuIntervalListP(s);
-   not s or pairp s and AnuIntervalP car s and AnuIntervalListP cdr s;
+procedure anuintervallistp(s);
+   not s or pairp s and anuintervalp car s and anuintervallistp cdr s;
 
-procedure AnuIntervalP(s);
+procedure anuintervalp(s);
    not s or eqcar(s, 'anuiv_span) or eqcar(s, 'anuiv_point);
 
-procedure AnuSpanP(s);
+procedure anuspanp(s);
    eqcar(s, 'anuiv_span);
 
-procedure AnuSpanBoundP(s);
+procedure anuspanboundp(s);
    eqcar(s, 'anusp_open) or eqcar(s, 'anusp_closed);
 
-procedure AnuPointP(s);
+procedure anupointp(s);
    eqcar(s, 'anuiv_point);
 
 asserted procedure anuiv_type(iv: AnuInterval): Id;
@@ -405,14 +405,14 @@ asserted procedure ofsf_feasibleEval(op: Id, n: Integer): Boolean;
    % [op] is an ofsf relation; [n] is an Integer. Returns Boolean.
    ofsf_evalatp(op, if eqn(n, 0) then nil else n);
 
-asserted procedure ofsf_updIvl(ivl: AnuIntervalList, givl: AnuIntervalList): AnuIntervalList;
+asserted procedure ofsf_updivl(ivl: AnuIntervalList, givl: AnuIntervalList): AnuIntervalList;
    % Update interval lists.
    begin scalar iv, res1, res2;
       if not ivl then
 	 return nil;
       iv := pop ivl;
       res1 := ofsf_ivcutl(iv, givl);
-      res2 := ofsf_updIvl(ivl, givl);
+      res2 := ofsf_updivl(ivl, givl);
       return nconc(res1, res2)
    end;
 
@@ -571,7 +571,7 @@ asserted procedure ofsf_value(c: Clause, trl: Trail): Id;
       return if cnt then 'false else 'true
    end;
 
-asserted procedure ofsf_valueat(at: OfsfAtf, eqal: AList): Id;
+asserted procedure ofsf_valueat(at: OfsfAtf, eqal: Alist): Id;
    if ofsf_evalatp(ofsf_op at, ofsf_subalf(ofsf_arg2l at, eqal)) then
       'true
    else

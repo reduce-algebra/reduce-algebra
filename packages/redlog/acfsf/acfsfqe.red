@@ -45,7 +45,7 @@ procedure acfsf_gqe(f,theo,xbvl);
    % Algebraically closed field generic quantifier elimination. [f] is
    % a formula; [theo] is a theory; [xbvl] is a list of variables.
    begin scalar !*cgbgen,!*cgbreal;
-      !*cgbgen := T;
+      !*cgbgen := t;
       return acfsf_qe1(f,theo,xbvl)
    end;
 
@@ -227,7 +227,7 @@ procedure acfsf_thsimpl(atl);
    % theory. Returns an equivalent theory. The returned theory is
    % simpler than the original one.
    begin scalar !*rlsiexpla,!*rlsipo;
-      !*rlsiexpla := T;
+      !*rlsiexpla := t;
       return sort(acfsf_thregen cl_simpl(rl_smkn('and,atl),nil,-1),'rl_ordatp)
    end;
 

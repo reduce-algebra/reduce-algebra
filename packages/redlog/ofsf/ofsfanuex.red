@@ -394,10 +394,10 @@ asserted procedure sfto_psquotrem(f: SF, g: SF, x: Kernel): DottedPair;
 asserted procedure ctx_new(): AexCtx;
    {'ctx, nil};
 
-asserted procedure ctx_fromial(ial: AList): AexCtx;
+asserted procedure ctx_fromial(ial: Alist): AexCtx;
    {'ctx, sort(ial, function ordopcar)};
 
-asserted procedure ctx_ial(c: AexCtx): AList;
+asserted procedure ctx_ial(c: AexCtx): Alist;
    cadr c;
 
 asserted procedure ctx_idl(c: AexCtx): List;
@@ -1719,9 +1719,9 @@ asserted procedure anu_badp(anu: Anu): ExtraBoolean;
       iv := caddr anu;
       if not pairp iv then
 	 return 12;
-      if not pairp car iv or not RationalP car iv then
+      if not pairp car iv or not rationalp car iv then
 	 return 13;
-      if not pairp cdr iv or not RationalP cdr iv then
+      if not pairp cdr iv or not rationalp cdr iv then
 	 return 14;
       if not sfto_lessq(car iv, cdr iv) then
 	 return 15;

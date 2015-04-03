@@ -257,7 +257,7 @@ procedure acfsf_decdeg2(f,v);
    % INTEGER $n$. The degree of [v] in [f] can be decremented using
    % the substitution $[v]^n=v$.
    begin scalar a,w,atl,dgcd,!*gcd,oddp;
-      !*gcd := T;
+      !*gcd := t;
       atl := cl_atl1 f;
       dgcd := 0;
       while atl and dgcd neq 1 do <<

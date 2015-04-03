@@ -60,12 +60,12 @@ module ranum;
 load!-package 'assert;
 load!-package 'rltools;
 
-struct ra asserted by rap;
+struct RA asserted by rap;
 
 procedure rap(s);
    null s or eqcar(s, '!:ra!:);
 
-struct iv checked by ivp;
+struct IV checked by ivp;
 
 procedure ivp(s);
    eqcar(s, 'iv);
@@ -132,7 +132,7 @@ macro procedure ra_wrap(argl);
       return 'progn . prgn
    end;
 
-asserted procedure ra_wrapper(f: id, argl: list): any;
+asserted procedure ra_wrapper(f: Id, argl: List): Any;
    begin scalar w, oldmode;
       oldmode := get(dmode!*, 'dname);
       w := errorset({'ra_wrapper1, mkquote f, mkquote argl, mkquote oldmode}, t, !*backtrace);
@@ -144,7 +144,7 @@ asserted procedure ra_wrapper(f: id, argl: list): any;
       return car w
    end;
 
-asserted procedure ra_wrapper1(f: id, argl: list, oldmode: id): any;
+asserted procedure ra_wrapper1(f: Id, argl: List, oldmode: Id): Any;
    begin scalar w;
       if oldmode then off1 oldmode;
       w := apply(f, argl);
@@ -152,7 +152,7 @@ asserted procedure ra_wrapper1(f: id, argl: list, oldmode: id): any;
       return w
    end;
 
-asserted procedure ra_wrappertest0(x: integer, y: integer): integer;
+asserted procedure ra_wrappertest0(x: Integer, y: Integer): Integer;
    <<
       if x=7 then rederr {"x=7"};
       x+y
@@ -160,7 +160,7 @@ asserted procedure ra_wrappertest0(x: integer, y: integer): integer;
 
 ra_wrap(ra_wrappertest0, ra_wrappertest, 2);
 
-asserted procedure ra_prep(x: ra): list;
+asserted procedure ra_prep(x: RA): List;
    {'ra, prepf ra_f x, prepsq riv_l ra_iv x, prepsq riv_u ra_iv x};
 
 put('ra, 'prifn, function(lambda u; ra_print numr ra_simp u));
@@ -177,30 +177,30 @@ inline procedure ra_zero();
    % The ranum representation of 0, in contrast to [nil].
    ra_mk(!*k2f ra_x(), riv_mk(-1 ./ 1, 1 ./ 1));
 
-asserted procedure ra_mk(f: sf, i: iv): ra;
+asserted procedure ra_mk(f: SF, i: IV): RA;
    {'!:ra!:, f, i};
 
-asserted procedure ra_qmk(f: sf, l: sq, u: sq): ra;
+asserted procedure ra_qmk(f: SF, l: SQ, u: SQ): RA;
    % Quick make construct the interval.
    {'!:ra!:, f, riv_mk(l, u)};
 
-asserted procedure ra_f(x: ra): sf;
+asserted procedure ra_f(x: RA): SF;
    % [x] must not be zero.
    cadr x;
 
-asserted procedure ra_iv(x: ra): iv;
+asserted procedure ra_iv(x: RA): IV;
    % [x] must not be zero.
    caddr x;
 
-asserted procedure ra_l(x: ra): sq;
+asserted procedure ra_l(x: RA): SQ;
    % [x] must not be zero.
    riv_l ra_iv x;
 
-asserted procedure ra_u(x: ra): sq;
+asserted procedure ra_u(x: RA): SQ;
    % [x] must not be zero.
    riv_u ra_iv x;
 
-asserted procedure ra_print(x: ra);
+asserted procedure ra_print(x: RA);
    if not !*nat then <<
       prin2!* "ranum(";
       maprin prepf ra_f x;
@@ -220,7 +220,7 @@ asserted procedure ra_print(x: ra);
       	 prin2!* ")"
       >>;
 
-asserted procedure ra_simp0(u: list): sq;
+asserted procedure ra_simp0(u: List): SQ;
    begin scalar f, l, u, w;
       u := cdr u;
       f := numr simp car u;
@@ -233,7 +233,7 @@ asserted procedure ra_simp0(u: list): sq;
 
 ra_wrap(ra_simp0, ra_simp, 1);
 
-asserted procedure ra_ra0(u: list): ra;
+asserted procedure ra_ra0(u: List): RA;
    % The Algebraic Mode constructor for real algebraic numbers.
    begin scalar bc, f, l, u;
       f := numr simp car u;
@@ -256,10 +256,10 @@ ra_wrap(ra_ra0, ra_ra, 1);
 
 put('ra, 'psopfn, 'ra_ra);
 
-asserted procedure ra_zerop(x: ra): boolean;
+asserted procedure ra_zerop(x: RA): Boolean;
    null red ra_f x;
 
-asserted procedure ra_onep0(x: ra): boolean;
+asserted procedure ra_onep0(x: RA): Boolean;
    % Explicity treat the special case x^n - 1 for efficiency.
    riv_contains(ra_iv x, 1 ./ 1) and
       (eqn(red ra_f x, -1) and eqn(lc ra_f x, 1) or
@@ -267,7 +267,7 @@ asserted procedure ra_onep0(x: ra): boolean;
 
 ra_wrap(ra_onep0, ra_onep, 1);
 
-asserted procedure ra_intequiv0(x: ra): any;
+asserted procedure ra_intequiv0(x: RA): Any;
    % Returns [x] or the Integer represented by [x].
    begin scalar f, l, u, z;
       if ra_zerop x then
@@ -287,7 +287,7 @@ asserted procedure ra_intequiv0(x: ra): any;
 
 ra_wrap(ra_intequiv0, ra_intequiv, 1);
 
-asserted procedure ra_i2ra0(z: integer): ra;
+asserted procedure ra_i2ra0(z: Integer): RA;
    begin scalar f, l, u;
       if eqn(z, 0) then
 	 return ra_zero();
@@ -299,7 +299,7 @@ asserted procedure ra_i2ra0(z: integer): ra;
 
 ra_wrap(ra_i2ra0, ra_i2ra, 1);
 
-asserted procedure ra_rn2ra0(rn: dottedpair): ra;
+asserted procedure ra_rn2ra0(rn: DottedPair): RA;
    begin scalar f, l, u;
       if rnzerop!: rn then
       	 return ra_zero();

@@ -45,13 +45,14 @@ fi
 
 if test "x$1" = "x"
 then
-  rm -f caseclash.files
 # Here I filter out less1.red to less7.red because they use case
 # for emphasis. They are old enough now that they really need an overall
 # review I suspect!
   find $here/packages$dir -name \*.red -and -not -name less\*.red \
-     >> caseclash.files
-  find $here/packages$dir -name \*.tst \
+     > caseclash.files
+# I avoid mathmlom.tst because it contains a load of markup notation
+# rather than "straightforward" Reduce input.
+  find $here/packages$dir -name \*.tst -and -not -name mathmlom.tst \
      >> caseclash.files
 fi
 

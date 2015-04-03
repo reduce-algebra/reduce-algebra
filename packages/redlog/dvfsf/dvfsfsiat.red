@@ -345,7 +345,7 @@ procedure dvfsf_ppolyp(f);
    % containing only the variable ['p] otherwise [nil] is returned.
    begin scalar w;
       if domainp f then
-	 return T;
+	 return t;
       w := kernels f;
       return null cdr w and car w eq 'p
    end;

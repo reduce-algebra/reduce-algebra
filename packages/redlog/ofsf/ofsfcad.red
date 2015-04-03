@@ -684,7 +684,7 @@ asserted procedure ofsf_addrootinfo(treel: List, hhtags: List): Any;
       acell_puttl(atree_rootcell car treel, {'above, ltg})
    end;
 
-asserted procedure ofsf_addrootinfo0dim(cell: Acell, rnl: AList, hhtags: List): Any;
+asserted procedure ofsf_addrootinfo0dim(cell: Acell, rnl: Alist, hhtags: List): Any;
    % Add root info to a cell with 0-dim last component in-place. Returns the
    % added info.
    begin scalar tl, ri;
@@ -697,15 +697,15 @@ asserted procedure ofsf_addrootinfo0dim(cell: Acell, rnl: AList, hhtags: List): 
       return ri
    end;
 
-asserted procedure ofsf_rnlinc(rnl: AList, tl: List): Any;
+asserted procedure ofsf_rnlinc(rnl: Alist, tl: List): Any;
    % Increment those elements in [rnl] whose car is in [tl]. This is done
    % in-place.
    for each rn in rnl do
       if memq(car rn, tl) then
 	 cdr rn := cdr rn + 1;
 
-asserted procedure ofsf_iriprepare(hhj: AList, xj: Kernel, sp: AnuList, varl: List): Iri;
-   % Prepare polynomials for incremental root isolation. [hhj] is an AList of
+asserted procedure ofsf_iriprepare(hhj: Alist, xj: Kernel, sp: AnuList, varl: List): Iri;
+   % Prepare polynomials for incremental root isolation. [hhj] is an Alist of
    % tag . SF, [xj] is a variable, [sp] is a sample point. Returns an Iri data
    % structure, which can be used to incrementally isolate the roots of [hhj].
    begin scalar w;

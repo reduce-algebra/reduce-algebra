@@ -69,7 +69,7 @@ asserted procedure vsls_nl(s: VslState): List;
 asserted procedure vsls_setnl(s: VslState, nl: List): Void;
    nth(s, 4) := nl;
 
-asserted procedure vsls_prop(s: VslState): AList;
+asserted procedure vsls_prop(s: VslState): Alist;
    nth(s, 5);
 
 asserted procedure vsls_put(s: VslState, key: Id, value: Any): Any;
@@ -748,7 +748,7 @@ asserted procedure vsl_analyze(l: List, kgeq0: OfsfAtf): List;
       return nlearnl
    end;
 
-asserted procedure vsl_solve(sysl: List, yl: List): AList;
+asserted procedure vsl_solve(sysl: List, yl: List): Alist;
    begin scalar tsl, vl, sl, plugal, subal, resal, s;
       yl := sort(yl, 'ordop);
       tsl := if !*cramer then solvecramer(sysl, yl) else solvebareiss(sysl, yl);
@@ -769,7 +769,7 @@ asserted procedure vsl_solve(sysl: List, yl: List): AList;
       return sort(resal, function ordopcar)
    end;
 
-asserted procedure vsl_plugin(yl: Kernel): AList;
+asserted procedure vsl_plugin(yl: Kernel): Alist;
    <<
       if !*rlverbose and yl then
       	 rludsc!* := rludsc!* + 1;

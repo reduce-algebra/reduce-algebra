@@ -762,9 +762,9 @@ procedure cl_susiupdknowl2(lat,knowl,n);
 	    addl := nconc(addl,cadr w);
 	    knowl := car w;
 	    if caddr w then
-	       ignflg := T;
+	       ignflg := t;
 	    if cadddr w then <<
-	       delflg := T;
+	       delflg := t;
 	       sck := nil
 	    >>
 	 >>
@@ -800,7 +800,7 @@ procedure cl_susiinter(prg,knowl,a);
 %% 	       cdr a := 'ignore
 %%       	 else if car p eq 'delete then
 	    if cdr p then
-	       delflg := T
+	       delflg := t
 	    else
 	       knowl := delqip(a,knowl)
       	 else if car p eq 'add then

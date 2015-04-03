@@ -164,7 +164,7 @@ procedure talp_enter(argl);
 	 else {cadr x . caddr x};
       for each x in talp_extlang!* do
 	 if cdr x > 0 then talp_mkalop x;
-      T . argl
+      t . argl
    >>;
 
 procedure talp_exit();
