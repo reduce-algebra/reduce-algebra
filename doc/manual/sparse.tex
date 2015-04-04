@@ -1,0 +1,1928 @@
+
+
+\newcommand\sparselineqlist {lin\_eqn$_{1}$,lin\_eqn$_{2}$, \ldots ,lin\_eqn$_{n}$}
+\newcommand\sparsematlist   {mat$_{1}$,mat$_{2}$, \ldots ,mat$_{n}$}
+\newcommand\sparseveclist   {vec$_{1}$,vec$_{2}$, \ldots ,vec$_{n}$}
+
+\newcommand\sparselazyfootnote{\footnote{The \{\}'s can be omitted.}}
+
+\index{Linear Algebra package}
+
+\subsection{Introduction}
+A very powerful feature of \REDUCE{} is the ease with which matrix 
+calculations can be performed.
+This package extends the available matrix feature to enable calculations
+with sparse matrices. This package also provides a selection of 
+functions that are useful in the world of linear algebra with respect to
+sparse matrices.
+
+\subsubsection*{Loading the Package}
+The package is loaded by: \texttt{load\_package sparse;}
+
+\subsection{Sparse Matrix Calculations}
+To extend the the syntax to this class of calculations we need to add an
+expression type \texttt{sparse}.
+
+\subsubsection{Sparse Variables}
+An identifier may be declared a sparse variable by the declaration
+\texttt{SPARSE}.
+The size of the sparse matrix must be declared explicitly in the matrix
+declaration. For example,
+\begin{verbatim}
+sparse aa(10,1),bb(200,200);
+\end{verbatim}
+declares \texttt{AA} to be a 10 x 1 (column) sparse matrix and \texttt{Y} to 
+be a 200 x 200 sparse matrix.
+The declaration \texttt{SPARSE} is similar to the declaration \texttt{MATRIX}.
+Once a symbol is declared to name a sparse matrix, it can not also be 
+used to name an array, operator, procedure, or used as an ordinary 
+variable. For more information see the Matrix Variables section in The
+\REDUCE {} User's Manual[2].
+
+\subsubsection{Assigning Sparse Matrix Elements}
+Once a matix has been declared a sparse matrix all elements of the 
+matrix are initialized to 0. Thus when a sparse matrix is initially 
+referred to the message
+\begin{verbatim}
+"The matrix is dense, contains only zeros"
+\end{verbatim}
+is returned. When printing out a matrix only the non-zero elements are 
+printed. This is due to the fact that only the non-zero elements of the 
+matrix are stored. 
+To assign the elements of the declared matrix we use the following 
+syntax. Assuming \texttt{AA} and \texttt{BB} have been declared as spasre 
+matrices, we simply write,
+\begin{verbatim}
+aa(1,1):=10;
+bb(100,150):=a;
+\end{verbatim}
+etc. This then sets the element in the first row and first column to 10,
+or the element in the 100th row and 150th column to \texttt{a}.
+
+\subsubsection{Evaluating Sparse Matrix Elements}
+Once an element of a sparse matrix has been assingned, it may be referred
+to in standard array element notation. Thus \texttt{aa(2,1)} refers to the 
+element in the second row and first column of the sparse matrix \texttt{AA}.
+
+\subsection{Sparse Matrix Expressions}
+These follow the normal rules of matrix algebra. Sums and products must 
+be of compatible size; otherwise an error will result during evaluation.
+Similarly, only square matrices may be raised to a power.
+A negative power is computed as the inverse of the matrix raised to the
+corresponding positive power. For more information and the syntax for 
+matrix algebra see the Matrix Expressions section in The \REDUCE{} 
+User's Manual[2].
+
+\subsection{Operators with Sparse Matrix Arguments}
+The operators in the Sparse Matix Package are the same as those in the
+Matrix Packge with the exception that the \texttt{NULLSPACE} operator is 
+not defined. See section Operators with Matrix Arguments in The 
+\REDUCE{} User's Manual[2] for more details.
+\subsubsection{Examples}
+In the examples the matrix $\mathcal{AA}$ will be 
+
+\begin{flushleft}
+\begin{math}
+\mathcal{AA} = \left( \begin{array}{cccc} 1 & 0 & 0 & 0 \\ 0 & 3 & 0 & 0 \\ 
+0 & 0 & 5 & 0 \\ 0 & 0 & 0 & 9
+\end{array} \right)
+\end{math}
+\end{flushleft}
+\begin {verbatim}
+det ppp;
+
+135
+
+trace ppp;
+
+18
+
+rank ppp;
+
+4
+
+spmateigen(ppp,eta);
+
+{{eta - 1,1,
+
+  spm(1,1) := arbcomplex(4)$
+  },
+
+ {eta - 3,1,
+
+  spm(2,1) := arbcomplex(5)$
+  },
+
+ {eta - 5,1,
+
+  spm(3,1) := arbcomplex(6)$
+  },
+
+ {eta - 9,1,
+
+  spm(4,1) := arbcomplex(7)$
+  }}
+\end{verbatim}
+
+\subsection{The Linear Algebra Package for Sparse Matrices}
+This package is an extension of the Linear Algebra Package for \REDUCE{}.[1]
+These functions are described 
+alphabetically in section 6 of this document and are labelled 6.1 to 
+6.47. They can be classified into four sections(n.b: the numbers after 
+the dots signify the function label in section 6).
+\subsubsection{Basic matrix handling}
+\begin{center}
+\begin{tabular}{l l l l l l}
+spadd\_columns     & \ldots & 6.1  & 
+spadd\_rows        & \ldots & 6.2  \\
+spadd\_to\_columns & \ldots & 6.3  &
+spadd\_to\_rows    & \ldots & 6.4  \\
+spaugment\_columns & \ldots & 6.5  &
+spchar\_poly       & \ldots & 6.9  \\
+spcol\_dim      & \ldots & 6.12  &
+spcopy\_into       & \ldots & 6.14 \\
+spdiagonal         & \ldots & 6.15 &
+spextend           & \ldots & 6.16 \\
+spfind\_companion  & \ldots & 6.17  &
+spget\_columns     & \ldots & 6.18 \\
+spget\_rows        & \ldots & 6.19 &
+sphermitian\_tp    & \ldots & 6.21 \\
+spmatrix\_augment  & \ldots & 6.27 &
+spmatrix\_stack    & \ldots & 6.29 \\
+spminor            & \ldots & 6.30 &
+spmult\_columns    & \ldots & 6.31 \\ 
+spmult\_rows       & \ldots & 6.32 &
+sppivot            & \ldots & 6.33 \\
+spremove\_columns  & \ldots & 6.35 &
+spremove\_rows     & \ldots & 6.36 \\
+sprow\_dim         & \ldots & 6.37 &
+sprows\_pivot      & \ldots & 6.38 \\
+spstack\_rows      & \ldots & 6.41 &
+spsub\_matrix      & \ldots & 6.42 \\
+spswap\_columns    & \ldots & 6.44 &
+spswap\_entries    & \ldots & 6.45 \\
+spswap\_rows       & \ldots & 6.46 &
+\end{tabular}
+\end{center}
+
+\subsubsection{Constructors}
+
+Functions that create sparse matrices.
+
+\begin{center}
+\begin{tabular}{l l l l l l}
+spband\_matrix       & \ldots & 6. 6 & 
+spblock\_matrix      & \ldots & 6. 7 \\
+spchar\_matrix       & \ldots & 6. 8 & 
+spcoeff\_matrix      & \ldots & 6. 11 \\ 
+spcompanion          & \ldots & 6. 13 & 
+sphessian            & \ldots & 6. 22 \\
+spjacobian           & \ldots & 6. 23 &
+spjordan\_block      & \ldots & 6. 24 \\ 
+spmake\_identity     & \ldots & 6. 26 &
+\end{tabular}
+\end{center}
+
+\subsubsection{High level algorithms}
+
+\begin{center}
+\begin{tabular}{l l l l l l}
+spchar\_poly       & \ldots & 6.9 & 
+spcholesky         & \ldots & 6.10 \\ 
+spgram\_schmidt    & \ldots & 6.20 & 
+splu\_decom        & \ldots & 6.25 \\
+sppseudo\_inverse  & \ldots & 6.34 & 
+svd                & \ldots & 6.43 
+\end{tabular}
+\end{center}
+
+\subsubsection{Predicates}
+
+\begin{center}
+\begin{tabular}{l l l l l l}
+matrixp     & \ldots & 6.28 & 
+sparsematp  & \ldots & 6.39 \\
+squarep     & \ldots & 6.40 &
+symmetricp  & \ldots & 6.47 
+\end{tabular}
+\end{center}
+
+\subsubsection*{Note on examples:} 
+
+In the examples the matrix $\mathcal{A}$ will be 
+
+\begin{flushleft}
+\begin{math}
+\mathcal{A} = \left( \begin{array}{ccc} 1 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 9
+\end{array} \right)
+\end{math}
+\end{flushleft}
+Unfortunately, due to restrictions of size, it is not practical to use
+``large'' sparse matrices in the examples. As a result the examples 
+shown may appear trivial, but they give an idea of how the functions 
+work.  
+
+\subsubsection*{Notation}
+
+Throughout $\mathcal{I}$ is used to indicate the identity matrix and 
+$\mathcal{A}^T$ to indicate the transpose of the matrix $\mathcal{A}$.
+
+\subsection{Available Functions}
+
+\subsubsection{spadd\_columns, spadd\_rows}
+
+\hspace*{0.175in} \texttt{spadd\_columns($\mathcal{A}$,c1,c2,expr);} 
+
+\hspace*{0.1in}
+\begin{tabular}{l l l}
+$\mathcal{A}$ & :- & a sparse matrix. \\
+c1,c2      & :- & positive integers. \\
+expr       & :- & a scalar expression. 
+\end{tabular}
+
+\textbf{Synopsis:}
+
+\begin{addtolength}{\leftskip}{0.22in}
+\parbox[t]{0.95\linewidth}{\texttt{spadd\_columns} replaces column c2 of 
+$\mathcal{A}$ by expr $*$ column($\mathcal{A}$,c1) $+$ column($\mathcal{A}$,c2).}
+
+\texttt{spadd\_rows} performs the equivalent task on the rows of $\mathcal{A}$.
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\begin{flushleft}
+\begin{math}
+\hspace*{0.16in}
+\begin{array}{ccc}
+\texttt{spadd\_columns}(\mathcal{A},1,2,x) & = & 
+\left( \begin{array}{ccc} 1 & x & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 9
+\end{array} \right)  
+\end{array}
+\end{math}
+\end{flushleft}
+
+\vspace*{0.1in}
+
+\begin{flushleft}
+\hspace*{0.1in}
+\begin{math}
+\begin{array}{ccc}
+\texttt{spadd\_rows}(\mathcal{A},2,3,5) & = & 
+\left( \begin{array}{ccc} 1 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 25 & 9 
+\end{array} \right)  
+\end{array}
+\end{math}
+\end{flushleft}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{spadd\_to\_columns}, \texttt{spadd\_to\_rows}, 
+\texttt{spmult\_columns}, \texttt{spmult\_rows}.
+
+
+\subsubsection{spadd\_rows}
+
+\hspace*{0.175in} see: \texttt{spadd\_columns}.
+
+
+\subsubsection{spadd\_to\_columns, spadd\_to\_rows}
+
+\hspace*{0.175in} \texttt{spadd\_to\_columns($\mathcal{A}$,column\_list,expr);}
+
+\hspace*{0.1in}
+\begin{tabular}{l l l}
+$\mathcal{A}$   &:-& a sparse matrix. \\
+column\_list &:-& a positive integer or a list of positive integers. \\
+expr        &:-& a scalar expression.
+\end{tabular}
+
+\textbf{Synopsis:}
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{spadd\_to\_columns} adds expr to each column specified in 
+column\_list of $\mathcal{A}$.  
+
+\texttt{spadd\_to\_rows} performs the equivalent task on the rows of 
+$\mathcal{A}$.
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.175in}
+\begin{math}
+\begin{array}{ccc}
+\texttt{spadd\_to\_columns}(\mathcal{A},\{1,2\},10) & = & 
+\left( \begin{array}{ccc} 11 & 10 & 0 \\ 10 & 15 & 0 \\ 10 & 10 & 9 
+\end{array} \right)  
+\end{array}
+\end{math}
+\end{flushleft}
+
+\vspace*{0.1in}
+
+\begin{flushleft}  
+\hspace*{0.175in}
+\begin{math}
+\begin{array}{ccc}
+\texttt{spadd\_to\_rows}(\mathcal{A},2,-x) & = & 
+\left( \begin{array}{ccc} 1 & 0 & 0 \\ -x & -x+5 & -x \\ 0 & 0 & 9 
+\end{array} \right)  
+\end{array}
+\end{math}
+\end{flushleft}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} 
+\texttt{spadd\_columns}, \texttt{spadd\_rows}, \texttt{spmult\_rows}, 
+\texttt{spmult\_columns}.
+
+
+\subsubsection{spadd\_to\_rows}
+
+\hspace*{0.175in} see: \texttt{spadd\_to\_columns}.
+
+
+\subsubsection{spaugment\_columns, spstack\_rows}
+
+\hspace*{0.175in} \texttt{spaugment\_columns($\mathcal{A}$,column\_list);}
+
+\hspace*{0.1in}
+\begin{tabular}{l l l}
+$\mathcal{A}$  &:-& a sparse matrix. \\
+column\_list &:-&  either a positive integer or a list of positive 
+                   integers. 
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{spaugment\_columns} gets hold of the columns of $\mathcal{A}$ specified 
+in column\_list and sticks them together. 
+
+\texttt{spstack\_rows} performs the same task on rows of 
+                $\mathcal{A}$.
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}
+\begin{array}{ccc}
+\texttt{spaugment\_columns}(\mathcal{A},\{1,2\}) & = & 
+\left( \begin{array}{cc} 1 & 0 \\ 0 & 5 \\ 0 & 0  
+\end{array} \right)  
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\vspace*{0.1in}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spstack\_rows}(\mathcal{A},\{1,3\}) & = & 
+\left( \begin{array}{ccc} 1 & 0 & 0 \\ 0 & 0 & 9
+\end{array} \right)  
+\end{array}  
+\end{math}
+\end{flushleft}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{spget\_columns}, \texttt{spget\_rows}, 
+\texttt{spsub\_matrix}.
+
+
+\subsubsection{spband\_matrix}
+
+\hspace*{0.175in} \texttt{spband\_matrix(expr\_list,square\_size);}
+
+\hspace*{0.1in}
+\begin{tabular}{l l l}
+expr\_list  \hspace*{0.088in} &:-& \parbox[t]{.72\linewidth}
+{either a single scalar expression or a list of an odd number of scalar
+expressions.} 
+\end{tabular}
+
+\vspace*{0.04in}
+\hspace*{0.1in}
+\begin{tabular}{l l l}
+square\_size &:-& a positive integer.
+\end{tabular}
+
+\textbf{Synopsis:}
+
+\begin{addtolength}{\leftskip}{0.22in}
+                \texttt{spband\_matrix} creates a sparse square matrix of 
+                dimension square\_size. 
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spband\_matrix}(\{x,y,z\},6) & = & 
+\left( \begin{array}{cccccc} y & z & 0 & 0 & 0 & 0 \\ x & y & z & 0 & 0
+& 0 \\ 0 & x & y & z & 0 & 0 \\ 0 & 0 & x & y & z & 0 \\ 0 & 0 & 0 & x &
+ y & z \\ 0 & 0 & 0 & 0 & x & y 
+\end{array} \right)
+\end{array}  
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:} 
+
+\hspace*{0.175in} \texttt{spdiagonal}.
+
+
+\subsubsection{spblock\_matrix}
+
+\hspace*{0.175in} \texttt{spblock\_matrix(r,c,matrix\_list);}
+
+\hspace*{0.1in}
+\begin{tabular}{l l l}
+r,c          &:-& positive integers. \\
+matrix\_list &:-& a list of matrices of either sparse or matrix type. 
+\end{tabular}
+
+\textbf{Synopsis:}
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{spblock\_matrix} creates a sparse matrix that consists of r by c matrices 
+filled from the matrix\_list row wise.
+
+\end{addtolength}
+
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\mathcal{B} = \left( \begin{array}{cc} 1 & 0 \\ 0 & 1
+\end{array} \right), & 
+\mathcal{C} = \left( \begin{array}{c} 5 \\ 0
+\end{array} \right), &
+\mathcal{D} = \left( \begin{array}{cc} 22 & 0 \\ 0 & 0
+\end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\vspace*{0.175in}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spblock\_matrix}(2,3,\{\mathcal{B,C,D,D,C,B}\}) & = & 
+\left( \begin{array}{ccccc} 1 & 0 & 5 & 22 & 0 \\ 0 & 1 & 0 & 0 & 0 
+\\
+22 & 0 & 5 & 1 & 0 \\ 0 & 0 & 0 & 0 & 1
+\end{array} \right)  
+\end{array}  
+\end{math}  
+\end{flushleft}
+
+
+\subsubsection{spchar\_matrix}
+
+\hspace*{0.175in} \texttt{spchar\_matrix($\mathcal{A},\lambda$);}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+$\mathcal{A}$ &:-& a square sparse matrix. \\
+$\lambda$  &:-& a symbol or algebraic expression. 
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{spchar\_matrix} creates the characteristic matrix $\mathcal{C}$ of 
+$\mathcal{A}$.
+
+This is $\mathcal{C} = \lambda * \mathcal{I} - \mathcal{A}$. 
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spchar\_matrix}(\mathcal{A},x) & = & 
+\left( \begin{array}{ccc} x-1 & 0 & 0 \\ 0 & x-5 & 0 \\ 0 & 0 & x-9 
+\end{array} \right)  
+\end{array}  
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{spchar\_poly}. 
+
+
+\subsubsection{spchar\_poly}
+
+\hspace*{0.175in} \texttt{spchar\_poly($\mathcal{A},\lambda$);}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+$\mathcal{A}$ &:-& a sparse square matrix. \\
+$\lambda$ &:-& a symbol or algebraic expression.
+\end{tabular}
+
+\textbf{Synopsis:}
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{spchar\_poly} finds the characteristic polynomial of
+                $\mathcal{A}$.  
+
+This is the determinant of $\lambda * \mathcal{I} - \mathcal{A}$.
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\hspace*{0.175in}
+\texttt{spchar\_poly($\mathcal{A}$,$x$) $= x^3-15*x^2-59*x-45$} 
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{spchar\_matrix}. 
+
+
+\subsubsection{spcholesky}
+
+\hspace*{0.175in} \texttt{spcholesky($\mathcal{A}$);}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+$\mathcal{A}$ &:-& a positive definite sparse matrix containing numeric entries.
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{spcholesky} computes the cholesky decomposition of $\mathcal{A}$.
+
+It returns \{$\mathcal{L,U}$\} where $\mathcal{L}$
+is a lower matrix, $\mathcal{U}$ is an upper matrix, \\ $\mathcal{A} = 
+\mathcal{LU}$, and $\mathcal{U} = \mathcal{L}^T$.
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.175in}
+\begin{math}  
+\mathcal{F} = \left( \begin{array}{ccc} 1 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 
+9
+\end{array} \right)
+\end{math}  
+\end{flushleft}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+$\texttt{cholesky}$(\mathcal{F}) & = & 
+\left\{ \left( \begin{array}{ccc} 1 & 0 & 0 \\ 0 & \sqrt{5} 
+& 0 \\ 
+0 & 0& 3 \end{array} \right), \left( 
+\begin{array}{ccc} 1 & 0 & 0 \\ 0 & \sqrt{5} & 0 \\ 0 
+& 0 & 3 \end{array} \right)
+\right\} \end{array}
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:} 
+
+\hspace*{0.175in} \texttt{splu\_decom}.
+
+
+\subsubsection{spcoeff\_matrix}
+
+\hspace*{0.175in} \texttt{spcoeff\_matrix(\{\sparselineqlist{}\});} 
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+\sparselineqlist  &:-& \parbox[t]{.435\linewidth}{linear equations. Can be 
+of the form {\it equation $=$ number} or just {\it equation}.}
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{spcoeff\_matrix} creates the coefficient matrix 
+                $\mathcal{C}$ of the linear equations. 
+
+It returns \{$\mathcal{C,X,B}$\} such that $\mathcal{CX} = \mathcal{B}$.
+
+\end{addtolength}
+
+
+\textbf{Examples:}
+
+\begin{math}
+\hspace*{0.175in}
+\texttt{spcoeff\_matrix}(\{y-20*w=10,y-z=20,y+4+3*z,w+x+50\}) =  
+\end{math}
+
+\vspace*{0.1in}
+
+\begin{flushleft}
+\hspace*{0.175in}
+\begin{math}  
+\left\{ \left( \begin{array}{cccc} 1 & -20 & 0 & 0 \\ 1 & 0 & -1 & 0 \\
+ 1 & 0 & 3 & 0 \\ 0 & 1 & 0 & 1 
+\end{array} \right), \left( \begin{array}{c} y \\ w \\ z \\ x \end{array} 
+\right), \left( \begin{array}{c} 10 \\ 20 \\ -4 \\ 50
+\end{array} \right) \right\} 
+\end{math}  
+\end{flushleft}
+
+\subsubsection{spcol\_dim, sprow\_dim}
+
+\hspace*{0.175in} \texttt{column\_dim($\mathcal{A}$);}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+$\mathcal{A}$ &:-& a sparse matrix.
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+\hspace*{0.175in} \texttt{spcol\_dim} finds the column dimension of 
+                $\mathcal{A}$. 
+
+\hspace*{0.175in} \texttt{sprow\_dim} finds the row dimension of $\mathcal{A}$.
+
+\textbf{Examples:}
+
+\hspace*{0.175in}
+\texttt{spcol\_dim}($\mathcal{A}$) = 3
+
+\subsubsection{spcompanion}
+
+\hspace*{0.175in} \texttt{spcompanion(poly,x);}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+poly &:-& a monic univariate polynomial in x. \\
+x    &:-& the variable.
+\end{tabular}
+
+\textbf{Synopsis:}
+
+\begin{addtolength}{\leftskip}{0.22in}
+                \texttt{spcompanion} creates the companion matrix $\mathcal{C}$
+                of poly. 
+
+This is the square matrix of dimension n, where n is the degree of poly 
+w.r.t. x.
+
+The entries of $\mathcal{C}$ are: 
+                $\mathcal{C}$(i,n) = -coeffn(poly,x,i-1) for i = 1 
+                \ldots n, $\mathcal{C}$(i,i-1) = 1 for i = 2 \ldots n and 
+                the rest are 0.
+
+\end{addtolength}
+
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spcompanion}(x^4+17*x^3-9*x^2+11,x) & = & 
+\left( \begin{array}{cccc} 0 & 0 & 0 & -11 \\ 1 & 0 & 0 & 0 \\ 
+0 & 1 & 0 & 9 \\ 0 & 0 & 1 & -17 
+\end{array} \right)
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{spfind\_companion}.
+
+
+\subsubsection{spcopy\_into}
+
+\hspace*{0.175in} \texttt{spcopy\_into($\mathcal{A,B}$,r,c);}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+$\mathcal{A,B}$ &:-& matrices of type sparse or matrix. \\
+r,c          &:-& positive integers. 
+\end{tabular}
+
+\textbf{Synopsis:} %\textbf{What it does:}
+
+\hspace*{0.175in} \texttt{spcopy\_into} copies matrix $\mathcal{A}$ into 
+                $\mathcal{B}$ with $\mathcal{A}$(1,1) at $\mathcal{B}$(r,c).
+
+\textbf{Examples:} 
+
+\begin{flushleft}
+\hspace*{0.175in}
+\begin{math}  
+\mathcal{G} = \left( \begin{array}{cccc} 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0
+\end{array} \right)
+\end{math}  
+\end{flushleft}
+
+\begin{flushleft}
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spcopy\_into}(\mathcal{A,G},1,2) & = & 
+\left( \begin{array}{cccc} 0 & 1 & 0 & 0 \\ 0 & 0 & 5 & 0 \\ 0 & 0 & 0 
+& 9 \\ 0 & 0 & 0 & 0  
+\end{array} \right)
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:} 
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{spaugment\_columns}, \texttt{spextend}, \texttt{spmatrix\_augment}, 
+\texttt{spmatrix\_stack}, \texttt{spstack\_rows}, \texttt{spsub\_matrix}.
+
+\end{addtolength}
+
+
+\subsubsection{spdiagonal}
+
+\hspace*{0.175in} \texttt{spdiagonal(\{\sparsematlist{}\});}\sparselazyfootnote{}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+\sparsematlist &:-& \parbox[t]{.58\linewidth}{each can be either a scalar 
+expr or a square matrix of sparse or matrix type. }
+\end{tabular}
+
+\textbf{Synopsis:} %\textbf{What it does:}
+
+\hspace*{0.175in} \texttt{spdiagonal} creates a sparse matrix that contains the 
+input on the diagonal.
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.175in}
+\begin{math}  
+\mathcal{H} = \left( \begin{array}{cc} 66 & 77 \\ 88 & 99
+\end{array} \right)
+\end{math}  
+\end{flushleft}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spdiagonal}(\{\mathcal{A},x,\mathcal{H}\}) & = & 
+\left( \begin{array}{cccccc} 1 & 0 & 0 & 0 & 0 & 0 \\ 0 & 5 & 0 & 0 & 0
+& 0 \\ 0 & 0 & 9 & 0 & 0 & 0 \\ 0 & 0 & 0 & x & 0 & 0 \\ 0 & 0 & 0 & 0 
+& 66 & 77 \\ 0 & 0 & 0 & 0 & 88 & 99 
+\end{array} \right)
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:} 
+
+\hspace*{0.175in} \texttt{spjordan\_block}.
+
+
+\subsubsection{spextend}
+
+\hspace*{0.175in} \texttt{spextend($\mathcal{A}$,r,c,expr);}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+$\mathcal{A}$ &:-& a sparse matrix. \\
+r,c        &:-& positive integers. \\
+expr      &:-& algebraic expression or symbol.
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+\begin{addtolength}{\leftskip}{0.22in}
+                \texttt{spextend} returns a copy of $\mathcal{A}$ that has been 
+                extended by r rows and c columns. The new entries are
+                made equal to expr.
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spextend}(\mathcal{A},1,2,0) & = & 
+\left( \begin{array}{ccccc} 1 & 0 & 0 & 0 & 0 \\ 0 & 5 & 0 & 0 & 0
+\\ 0 & 0 & 9 & 0 & 0 \\ 0 & 0 & 0 & 0 & 0 
+\end{array} \right)
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:} 
+
+\begin{addtolength}{\leftskip}{0.22in}
+\parbox[t]{0.95\linewidth}{\texttt{spcopy\_into}, \texttt{spmatrix\_augment}, 
+\texttt{spmatrix\_stack}, \texttt{spremove\_columns}, \texttt{spremove\_rows}.}
+
+\end{addtolength}
+
+
+\subsubsection{spfind\_companion}
+
+\hspace*{0.175in} \texttt{spfind\_companion($\mathcal{A}$,x);}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+$\mathcal{A}$ &:-& a sparse matrix. \\
+x          &:-& the variable.
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+\begin{addtolength}{\leftskip}{0.22in}
+  Given a sparse companion matrix, \texttt{spfind\_companion} finds the polynomial 
+from which it was made.
+
+\end{addtolength}
+
+
+\textbf{Examples:}
+
+\begin{flushleft}
+\hspace*{0.175in}
+\begin{math}  
+\mathcal{C} = \left( \begin{array}{cccc} 0 & 0 & 0 & -11 \\ 1 & 0 & 0 & 0 
+\\ 0 & 1 & 0 & 9 \\ 0 & 0 & 1 & -17 
+\end{array} \right)
+\end{math}  
+\end{flushleft}
+
+\vspace*{3mm}
+
+\begin{flushleft}
+\hspace*{0.175in}
+\begin{math}  
+\texttt{spfind\_companion}(\mathcal{C},x) = x^4+17*x^3-9*x^2+11
+\end{math}  
+\end{flushleft}
+
+\vspace*{3mm}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{spcompanion}.
+
+\subsubsection{spget\_columns, spget\_rows}
+
+\hspace*{0.175in} \texttt{spget\_columns($\mathcal{A}$,column\_list);}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+$\mathcal{A}$ &:-& a sparse matrix. \\
+c          &:-& either a positive integer or a list of positive 
+                integers.
+\end{tabular}
+
+\textbf{Synopsis:} %\textbf{What it does:}
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{spget\_columns} removes the columns of $\mathcal{A}$ specified in 
+                column\_list and returns them as a list of column 
+                matrices. 
+
+\end{addtolength}
+\hspace*{0.175in} \texttt{spget\_rows} performs the same task on the rows of 
+                $\mathcal{A}$. 
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spget\_columns}(\mathcal{A},\{1,3\}) & = & 
+\left\{ 
+        \left( \begin{array}{c} 1 \\ 0 \\ 0 \end{array} \right),
+        \left( \begin{array}{c} 0 \\ 0 \\ 9 \end{array} \right) 
+\right\} 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\vspace*{0.1in}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spget\_rows}(\mathcal{A},2) & = & 
+\left\{ 
+        \left( \begin{array}{ccc} 0 & 5 & 0 \end{array} \right)
+\right\} 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{spaugment\_columns}, \texttt{spstack\_rows}, 
+\texttt{spsub\_matrix}.
+
+
+\subsubsection{spget\_rows}
+
+\hspace*{0.175in} see: \texttt{spget\_columns}.
+
+
+\subsubsection{spgram\_schmidt}
+
+\hspace*{0.175in} \texttt{spgram\_schmidt(\{\sparseveclist{}\});}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+\sparseveclist &:-& \parbox[t]{.62\linewidth}{linearly independent vectors.
+                             Each vector must be written as a list of
+predefined sparse (column) matrices, eg: sparse a(4,1);, a(1,1):=1;}
+\end{tabular}
+
+\textbf{Synopsis:}
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{spgram\_schmidt} performs the gram\_schmidt 
+                orthonormalisation on the input vectors. 
+
+It returns a list of orthogonal normalised vectors.
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+Suppose a,b,c,d correspond to sparse matrices representing the following
+lists:-  \{\{1,0,0,0\},\{1,1,0,0\},\{1,1,1,0\},\{1,1,1,1\}\}.
+
+\texttt{spgram\_schmidt(\{\{a\},\{b\},\{c\},\{d\}\})} = 
+\{\{1,0,0,0\},\{0,1,0,0\},\{0,0,1,0\},\{0,0,0,1\}\}
+
+\subsubsection{sphermitian\_tp}
+
+\hspace*{0.175in} \texttt{sphermitian\_tp($\mathcal{A}$);}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+$\mathcal{A}$ &:-& a sparse matrix. 
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+\begin{addtolength}{\leftskip}{0.22in}
+                \texttt{sphermitian\_tp} computes the hermitian transpose of 
+                $\mathcal{A}$. 
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.175in}
+\begin{math}  
+\mathcal{J} = \left( \begin{array}{ccc} i+1 & i+2 & i+3 \\ 0 & 0 & 0 \\ 0 &
+i & 0 
+\end{array} \right)
+\end{math}  
+\end{flushleft}
+
+\vspace*{0.1in}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}        
+\begin{array}{ccc}
+\texttt{sphermitian\_tp}(\mathcal{J}) & = & 
+\left( \begin{array}{ccc} -i+1 & 0 & 0 \\ -i+2 & 0 & -i \\-i+3 & 0 & 0
+\end{array} \right)
+\end{array}
+\end{math}  
+\end{flushleft}                   
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{tp}\footnote{standard reduce call for the 
+transpose of a matrix - see {\REDUCE} User's Manual[2].}.
+
+
+\subsubsection{sphessian}
+
+\hspace*{0.175in} \texttt{sphessian(expr,variable\_list);}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+expr           &:-& a scalar expression. \\
+variable\_list &:-& either a single variable or a list of variables.
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+\begin{addtolength}{\leftskip}{0.22in}
+                \texttt{sphessian} computes the hessian matrix of expr w.r.t.
+                the variables in variable\_list. 
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}        
+\begin{array}{ccc}
+\texttt{sphessian}(x*y*z+x^2,\{w,x,y,z\}) & = & 
+\left( \begin{array}{cccc} 0 & 0 & 0 & 0 \\ 0 & 2 & z & y \\ 0 & z & 0 
+& x \\ 0 & y & x & 0
+\end{array} \right)
+\end{array}
+\end{math}  
+\end{flushleft}
+
+
+\subsubsection{spjacobian}
+
+\hspace*{0.175in} \texttt{spjacobian(expr\_list,variable\_list);}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+expr\_list   \hspace*{0.175in}  &:-& \parbox[t]{.72\linewidth}{either a 
+single algebraic expression or a list of algebraic expressions.} 
+\end{tabular}
+
+\vspace*{0.04in}
+\hspace*{0.1in}
+\begin{tabular}{l l l}
+variable\_list &:-& either a single variable or a list of variables.
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{spjacobian} computes the jacobian matrix of expr\_list w.r.t. 
+variable\_list. 
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\hspace*{0.175in} 
+\texttt{spjacobian(\{$x^4,x*y^2,x*y*z^3$\},\{$w,x,y,z$\})} = 
+
+\vspace*{0.1in}
+
+\begin{flushleft}  
+\hspace*{0.175in}
+\begin{math}        
+\left( \begin{array}{cccc} 0 & 4*x^3 & 0 & 0 \\ 0 & y^2 & 2*x*y & 0 \\ 
+0 & y*z^3 & x*z^3 & 3*x*y*z^2 
+\end{array} \right)
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{sphessian}, \texttt{df}\footnote{standard reduce call 
+for differentiation - see {\REDUCE} User's Manual[2].}.
+
+
+\subsubsection{spjordan\_block}
+
+\hspace*{0.175in} \texttt{spjordan\_block(expr,square\_size);}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+expr        &:-& an algebraic expression or symbol. \\
+square\_size &:-& a positive integer.
+\end{tabular}
+
+\textbf{Synopsis:}
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{spjordan\_block} computes the square jordan block matrix $\mathcal{J}$
+                of dimension square\_size. 
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}        
+\begin{array}{ccc}
+\texttt{spjordan\_block(x,5)} & = & 
+\left( \begin{array}{ccccc} x & 1 & 0 & 0 & 0 \\ 0 & x & 1 & 0 & 0 \\ 0 
+& 0 & x & 1 & 0 \\ 0 & 0 & 0 & x & 1 \\ 0 & 0 & 0 & 0 & x
+\end{array} \right)
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{spdiagonal}, \texttt{spcompanion}.
+
+
+\subsubsection{splu\_decom}
+
+%\textbf{How to use it:}
+
+\hspace*{0.175in} \texttt{splu\_decom($\mathcal{A}$);}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+$\mathcal{A}$ &:-& \parbox[t]{.848\linewidth}{a sparse matrix containing either 
+numeric entries or imaginary entries with numeric coefficients.}
+\end{tabular}
+
+\textbf{Synopsis:} %\textbf{What it does:}
+
+\begin{addtolength}{\leftskip}{0.22in}
+              \texttt{splu\_decom} performs LU decomposition on $\mathcal{A}$,
+              ie: it returns \{$\mathcal{L,U}$\} where $\mathcal{L}$
+              is a lower diagonal matrix, $\mathcal{U}$ an upper diagonal
+              matrix and $\mathcal{A} = \mathcal{LU}$.
+
+\end{addtolength}
+
+\textbf{caution:}
+
+\begin{addtolength}{\leftskip}{0.22in}
+The algorithm used can swap the rows of $\mathcal{A}$ 
+                during the calculation. This means that $\mathcal{LU}$ does
+                not equal $\mathcal{A}$ but a row equivalent of it. Due to
+                this, \texttt{splu\_decom} returns \{$\mathcal{L,U}$,vec\}. The
+                call \texttt{spconvert($\mathcal{A}$,vec)} will return the 
+                sparse matrix that has been decomposed, ie: $\mathcal{LU} = $
+                \texttt{spconvert($\mathcal{A}$,vec)}.
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\begin{flushleft}
+\hspace*{0.175in}
+\begin{math}  
+\mathcal{K} = \left( \begin{array}{ccc} 1 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 9
+\end{array} \right)
+\end{math}  
+\end{flushleft}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{cccc}
+$\texttt{lu} := \texttt{splu\_decom}$(\mathcal{K}) & = & 
+\left\{ 
+        \left( \begin{array}{ccc} 1 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 9 \end{array} \right), 
+        \left( \begin{array}{ccc} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 
+\end{array} \right), 
+	[\; 1 \; 2 \; 3 \; ]
+\right\} 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\vspace*{0.1in}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+$\texttt{first lu * second lu}$ & = & 
+        \left( \begin{array}{ccc} 1 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 9
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+$\texttt{convert($\mathcal{K}$,third lu}$) \hspace*{0.055in} & = & 
+        \left( \begin{array}{ccc} 1 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 9
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{spcholesky}.
+
+
+\subsubsection{spmake\_identity}
+
+\hspace*{0.175in} \texttt{spmake\_identity(square\_size);}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+square\_size &:-& a positive integer.
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+\hspace*{0.175in} \texttt{spmake\_identity} creates the identity matrix of 
+                dimension square\_size.
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spmake\_identity}(4) & = & 
+        \left( \begin{array}{cccc} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 
+& 0 & 1 & 0 \\ 0 & 0 & 0 & 1
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{spdiagonal}.
+
+
+\subsubsection{spmatrix\_augment, spmatrix\_stack}
+
+\hspace*{0.175in} \texttt{spmatrix\_augment(\{\sparsematlist\});}\sparselazyfootnote{}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+\sparsematlist &:-& matrices.
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+\hspace*{0.175in} \texttt{spmatrix\_augment} joins the matrices in 
+                  matrix\_list together horizontally. 
+
+\hspace*{0.175in} 
+\texttt{spmatrix\_stack} joins the matrices in matrix\_list 
+                together vertically.
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spmatrix\_augment}(\{\mathcal{A,A}\}) & = & 
+        \left( \begin{array}{cccccc} 1 & 0 & 0 & 1 & 0 & 0 \\ 0 & 5 & 0 
+& 0 & 5 & 0 \\ 0 & 0 & 9 & 0 & 0 & 9
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\vspace*{0.1in}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spmatrix\_stack}(\{\mathcal{A,A}\}) & = & 
+        \left( \begin{array}{ccc} 1 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 9 
+\\ 1 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 9 
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{spaugment\_columns}, \texttt{spstack\_rows}, 
+\texttt{spsub\_matrix}.
+
+
+\subsubsection{matrixp}
+
+%\textbf{How to use it:}
+
+\hspace*{0.175in} \texttt{matrixp(test\_input);}
+
+\hspace*{0.1in}  
+\begin{tabular}{l l l}
+test\_input &:-& anything you like.
+\end{tabular}
+
+\textbf{Synopsis:} %\textbf{What it does:}
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{matrixp} is a boolean function that returns t if 
+                the input is a matrix of type sparse or matrix and nil otherwise.
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\hspace*{0.175in} \texttt{matrixp}($\mathcal{A}$) = t 
+
+\hspace*{0.175in} \texttt{matrixp}(doodlesackbanana) = nil
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{squarep}, \texttt{symmetricp}, \texttt{sparsematp}.
+
+
+\subsubsection{spmatrix\_stack}
+
+\hspace*{0.175in} see: \texttt{spmatrix\_augment}.
+
+
+\subsubsection{spminor}
+
+\hspace*{0.175in} \texttt{spminor($\mathcal{A}$,r,c);}
+
+\hspace*{0.1in}  
+\begin{tabular}{l l l} 
+$\mathcal{A}$ &:-& a sparse matrix. \\
+r,c        &:-& positive integers.
+\end{tabular}
+
+\textbf{Synopsis:}
+
+\begin{addtolength}{\leftskip}{0.22in}
+                \texttt{spminor} computes the (r,c)'th minor of $\mathcal{A}$.
+ 
+\end{addtolength}
+                
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spminor}(\mathcal{A},1,3) & = & 
+        \left( \begin{array}{cc} 0 & 5 \\ 0 & 0
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{spremove\_columns}, \texttt{spremove\_rows}.
+
+
+\subsubsection{spmult\_columns, spmult\_rows}
+
+\hspace*{0.175in} \texttt{spmult\_columns($\mathcal{A}$,column\_list,expr);}
+
+\hspace*{0.1in}  
+\begin{tabular}{l l l}
+$\mathcal{A}$   &:-& a sparse matrix. \\
+column\_list &:-& a positive integer or a list of positive integers. \\
+expr        &:-& an algebraic expression.
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{spmult\_columns} returns a copy of $\mathcal{A}$ in which
+                the columns specified in column\_list have been 
+multiplied by expr. 
+
+\texttt{spmult\_rows} performs the same task on the rows of $\mathcal{A}$.
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spmult\_columns}(\mathcal{A},\{1,3\},x) & = & 
+        \left( \begin{array}{ccc} x & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 9*x 
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\vspace*{0.1in}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spmult\_rows}(\mathcal{A},2,10) & = & 
+        \left( \begin{array}{ccc} 1 & 0 & 0 \\ 0 & 50 & 0 \\ 0 & 0 & 
+9 \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{spadd\_to\_columns}, \texttt{spadd\_to\_rows}.
+
+
+\subsubsection\texttt{spmult\_rows}
+
+\hspace*{0.175in} see: \texttt{spmult\_columns}.
+
+
+\subsubsection{sppivot}
+
+\hspace*{0.175in} \texttt{sppivot($\mathcal{A}$,r,c);}
+
+\hspace*{0.1in}  
+\begin{tabular}{l l l} 
+$\mathcal{A}$ &:-& a sparse matrix. \\
+r,c        &:-& positive integers such that $\mathcal{A}$(r,c) neq 0.
+\end{tabular}
+
+\textbf{Synopsis:} %\textbf{What it does:}
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{sppivot} pivots $\mathcal{A}$ about it's (r,c)'th entry. 
+ 
+To do this, multiples of the r'th row are added to every
+     other row in the matrix. 
+
+This means that the c'th column
+                will be 0 except for the (r,c)'th entry. 
+
+\end{addtolength}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{sprows\_pivot}.
+
+
+\subsubsection{sppseudo\_inverse}
+
+\hspace*{0.175in} \texttt{sppseudo\_inverse($\mathcal{A}$);}
+
+\hspace*{0.1in}  
+\begin{tabular}{l l l} 
+$\mathcal{A}$ &:-& a sparse matrix.
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{sppseudo\_inverse}, also known as the Moore-Penrose inverse, computes
+the pseudo inverse of $\mathcal{A}$. 
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\begin{flushleft}
+\hspace*{0.175in}
+\begin{math}  
+\mathcal{R} = \left( \begin{array}{cccc} 0 & 0 & 3 & 0 \\ 9 & 0 & 7 & 0
+\end{array} \right)
+\end{math}  
+\end{flushleft}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{sppseudo\_inverse}(\mathcal{R}) & = & 
+        \left( \begin{array}{cc} -0.26 & 0.11 \\ 0 & 0 \\ 0.33 & 0 
+\\ 0.25 & -0.05 
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{spsvd}.
+
+\subsubsection{spremove\_columns, spremove\_rows}
+
+\hspace*{0.175in} \texttt{spremove\_columns($\mathcal{A}$,column\_list);}
+
+\hspace*{0.1in}  
+\begin{tabular}{l l l} 
+$\mathcal{A}$   &:-& a sparse matrix. \\
+column\_list &:-& either a positive integer or a list of 
+                  positive integers.
+\end{tabular}
+
+\textbf{Synopsis:}
+
+\hspace*{0.175in} \texttt{spremove\_columns} removes the columns specified in
+                column\_list from $\mathcal{A}$. 
+
+\hspace*{0.175in} \texttt{spremove\_rows} performs the same task on the rows 
+                of $\mathcal{A}$.
+
+\textbf{Examples:} 
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spremove\_columns}(\mathcal{A},2) & = & 
+        \left( \begin{array}{cc} 1 & 0 \\ 0 & 0 \\ 0 & 9  
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\vspace*{0.1in}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spremove\_rows}(\mathcal{A},\{1,3\}) & = & 
+        \left( \begin{array}{ccc} 0 & 5 & 0
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{spminor}.
+
+
+\subsubsection{spremove\_rows}
+
+\hspace*{0.175in} see: \texttt{spremove\_columns}.
+
+
+\subsubsection{sprow\_dim}
+
+\hspace{0.175in} see: \texttt{spcolumn\_dim}.
+
+
+\subsubsection{sprows\_pivot}
+
+\hspace*{0.175in} \texttt{sprows\_pivot($\mathcal{A}$,r,c,\{row\_list\});}
+
+\hspace*{0.1in}  
+\begin{tabular}{l l l} 
+$\mathcal{A}$ &:-& a sparse matrix. \\
+r,c        &:-& positive integers such that $\mathcal{A}$(r,c) neq 0.\\
+row\_list  &:-& positive integer or a list of positive integers.
+\end{tabular}
+
+\textbf{Synopsis:}
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{sprows\_pivot} performs the same task as \texttt{sppivot} but applies 
+the pivot only to the rows specified in row\_list.
+
+\end{addtolength}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{sppivot}.
+
+\subsubsection{sparsematp}
+
+\hspace*{0.175in} \texttt{sparsematp($\mathcal{A}$);}
+
+\hspace*{0.1in}  
+\begin{tabular}{l l l} 
+$\mathcal{A}$ &:-& a matrix.
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{sparsematp} is a boolean function that returns t if 
+                the matrix is declared sparse and nil otherwise.
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\begin{flushleft}
+\hspace*{0.175in}
+$\mathcal{L}$:= \texttt{mat((1,2,3),(4,5,6),(7,8,9));}
+\end{flushleft}
+
+\vspace*{0.1in}
+
+\hspace*{0.175in} \texttt{sparsematp}($\mathcal{A}$) = t 
+
+\hspace*{0.175in} \texttt{sparsematp}($\mathcal{L}$) = nil
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{matrixp}, \texttt{symmetricp}, \texttt{squarep}.
+
+
+\subsubsection{squarep}
+
+\hspace*{0.175in} \texttt{squarep($\mathcal{A}$);}
+
+\hspace*{0.1in}  
+\begin{tabular}{l l l} 
+$\mathcal{A}$ &:-& a matrix.
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{squarep} is a boolean function that returns t if 
+                the matrix is square and nil otherwise.
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\begin{flushleft}
+\hspace*{0.175in}
+\begin{math}  
+\mathcal{L} = \left( \begin{array}{ccc} 1 & 3 & 5 
+\end{array} \right)
+\end{math}  
+\end{flushleft}
+
+\vspace*{0.1in}
+
+\hspace*{0.175in} \texttt{squarep}($\mathcal{A}$) = t 
+
+\hspace*{0.175in} \texttt{squarep}($\mathcal{L}$) = nil
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{matrixp}, \texttt{symmetricp}, \texttt{sparsematp}.
+
+
+\subsubsection{spstack\_rows}
+
+\hspace*{0.175in} see: \texttt{spaugment\_columns}.
+
+
+\subsubsection{spsub\_matrix}
+
+\hspace*{0.175in} \texttt{spsub\_matrix($\mathcal{A}$,row\_list,column\_list);}
+
+\hspace*{0.1in}  
+\begin{tabular}{l l l} 
+$\mathcal{A}$              &:-& a sparse matrix. \\
+row\_list, column\_list &:-& \parbox[t]{.605\linewidth}{either a 
+positive integer or a list of positive integers.}
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+
+\begin{addtolength}{\leftskip}{0.22in}
+
+\texttt{spsub\_matrix} produces the matrix consisting of the
+              intersection of the rows specified in row\_list and the 
+columns specified in column\_list. 
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spsub\_matrix}(\mathcal{A},\{1,3\},\{2,3\}) & = & 
+        \left( \begin{array}{cc} 5 & 0\\ 0 & 9
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{spaugment\_columns}, \texttt{spstack\_rows}.
+
+
+\subsubsection{spsvd (singular value decomposition)}
+
+\hspace*{0.175in} \texttt{spsvd($\mathcal{A}$);}
+
+\hspace*{0.1in}  
+\begin{tabular}{l l l} 
+$\mathcal{A}$ &:-& a sparse matrix containing only numeric entries.
+\end{tabular}
+
+\textbf{Synopsis:} %\textbf{What it does:}
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{spsvd} computes the singular value decomposition of $\mathcal{A}$. 
+
+It returns \{$\mathcal{U},\sum,\mathcal{V}$\} where $\mathcal{A} = \mathcal{U} 
+\sum \mathcal{V}^T$ and $\sum = diag(\sigma_{1}, \ldots ,\sigma_{n}). \; 
+\sigma_{i}$ for $i= (1 \ldots n)$ are the singular values of $\mathcal{A}$.
+ 
+
+n is the column dimension of $\mathcal{A}$.
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\begin{flushleft}
+\hspace*{0.175in}
+\begin{math}  
+\mathcal{Q} = \left( \begin{array}{cc} 1 & 0 \\ 0 & 3 
+\end{array} \right)
+\end{math}  
+\end{flushleft}
+
+\begin{eqnarray}
+\hspace*{0.1in}
+\texttt{svd($\mathcal{Q}$)} & = & 
+\left\{ 
+        \left( \begin{array}{cc} -1 & 0 \\ 0 & 0 \end{array} \right), 
+\left( \begin{array}{cc} 1.0 & 0 \\ 0 & 5.0 \end{array} \right), 
+\right. \nonumber \\ & & \left. \: \; 
+\, \left( \begin{array}{cc} -1 & 0 \\ 0 & -1 \end{array} \right)       
+\right\} \nonumber \end{eqnarray}
+
+\subsubsection{spswap\_columns, spswap\_rows}
+
+\hspace*{0.175in} \texttt{spswap\_columns($\mathcal{A}$,c1,c2);}
+
+\hspace*{0.1in} 
+\begin{tabular}{l l l}
+$\mathcal{A}$ &:-& a sparse matrix. \\
+c1,c1      &:-& positive integers. 
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+\hspace*{0.175in} 
+\texttt{spswap\_columns} swaps column c1 of $\mathcal{A}$ with column c2. 
+
+\hspace*{0.175in} \texttt{spswap\_rows} performs the same task on 2 rows of 
+                $\mathcal{A}$.
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spswap\_columns}(\mathcal{A},2,3) & = & 
+        \left( \begin{array}{ccc} 1 & 0 & 0 \\ 0 & 0 & 5 \\ 0 & 9 & 0
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{spswap\_entries}.
+
+
+\subsubsection{swap\_entries}
+
+\hspace*{0.175in} \texttt{spswap\_entries($\mathcal{A}$,\{r1,c1\},\{r2,c2\});}
+
+\hspace*{0.1in}  
+\begin{tabular}{l l l} 
+$\mathcal{A}$  &:-& a sparse matrix. \\
+r1,c1,r2,c2 &:-& positive integers.
+\end{tabular}
+
+\textbf{Synopsis:} 
+
+\hspace*{0.175in} \texttt{spswap\_entries} swaps $\mathcal{A}$(r1,c1) with 
+                $\mathcal{A}$(r2,c2).
+
+\textbf{Examples:}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+\texttt{spswap\_entries}(\mathcal{A},\{1,1\},\{3,3\}) & = & 
+        \left( \begin{array}{ccc} 9 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 1
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{spswap\_columns}, \texttt{spswap\_rows}.
+
+
+\subsubsection{spswap\_rows}
+
+\hspace*{0.175in} see: \texttt{spswap\_columns}.
+
+
+\subsubsection{symmetricp}
+
+%\textbf{How to use it:}
+
+\hspace*{0.175in} \texttt{symmetricp($\mathcal{A}$);}
+
+\hspace*{0.1in}  
+\begin{tabular}{l l l} 
+$\mathcal{A}$ &:-& a matrix. 
+\end{tabular}
+
+\textbf{Synopsis:} %\textbf{What it does:}
+
+\begin{addtolength}{\leftskip}{0.22in}
+\texttt{symmetricp} is a boolean function that returns t if the 
+                matrix is symmetric and nil otherwise.
+
+\end{addtolength}
+
+\textbf{Examples:}
+
+\begin{flushleft}
+\hspace*{0.175in}
+\begin{math}  
+\mathcal{M} = \left( \begin{array}{cc} 1 & 2 \\ 3 & 4 
+\end{array} \right)
+\end{math}  
+\end{flushleft}
+
+\vspace*{0.1in}
+
+\hspace*{0.175in} \texttt{symmetricp}($\mathcal{A}$) = t 
+
+\hspace*{0.175in} \texttt{symmetricp}($\mathcal{M}$) = nil
+
+\textbf{Related functions:}
+
+\hspace*{0.175in} \texttt{matrixp}, \texttt{squarep}, \texttt{sparsematp}.
+
+\subsection{Fast Linear Algebra}
+
+By turning the \texttt{fast\_la} switch on, the speed of the following 
+functions will be increased:
+
+\begin{tabular}{l l l l}
+spadd\_columns    & spadd\_rows      & spaugment\_columns & spcol\_dim  \\
+spcopy\_into      & spmake\_identity & spmatrix\_augment  & spmatrix\_stack\\
+spminor           & spmult\_column   &  spmult\_row       & sppivot        \\
+spremove\_columns & spremove\_rows   & sprows\_pivot      & squarep      \\
+spstack\_rows     & spsub\_matrix    & spswap\_columns    & spswap\_entries\\
+spswap\_rows      & symmetricp                                     
+\end{tabular}
+
+The increase in speed will be insignificant unless you are making a 
+significant number(i.e: thousands) of calls. When using this switch, 
+error checking is minimised. This means that illegal input may give
+strange error messages. Beware.
+
+\subsection{Acknowledgments}
+This package is an extention of the code from the Linear Algebra Package
+for \REDUCE{} by Matt Rebbeck[1].
+
+The algorithms for \texttt{spcholesky}, \texttt{splu\_decom}, and \texttt{spsvd} are 
+taken from the book Linear Algebra - J.H. Wilkinson \& C. Reinsch[3].
+
+The \texttt{spgram\_schmidt} code comes from Karin Gatermann's Symmetry 
+package[4] for {\REDUCE}.
+
+
+\begin{thebibliography}{}
+\bibitem{matt} Matt Rebbeck: A Linear Algebra Package for {\REDUCE}, ZIB
+, Berlin. (1994)
+\bibitem{Reduce} Anthony C. Hearn: {\REDUCE} User's Manual 3.6.
+	RAND (1995)
+\bibitem{WiRe} J. H. Wilkinson \& C. Reinsch: Linear Algebra 
+(volume II). Springer-Verlag (1971)
+\bibitem{gat} Karin Gatermann: Symmetry: A {\REDUCE} package for the 
+computation of linear representations of groups. ZIB, Berlin. (1992)
+\end{thebibliography}

@@ -360,10 +360,11 @@ stringquotes \emph{inside} the argument string, e.g.
 
 \subsection{Examples}
 
-The following pictures are taken from a collection of sample plots
-(\texttt{gnuplot.tst}) and a set of tests for plotting special functions.  The
-pictures are made using the \texttt{qt} {\Gnuplot} device and using the menu of
-the graphics window to export to PDF or PNG.
+The following are taken from a collection of sample plots
+(\texttt{gnuplot.tst}) and a set of tests for plotting special
+functions. The pictures are made using the \texttt{qt} {\Gnuplot}
+device and using the menu of the graphics window to export to PDF or
+PNG.
 
 A simple plot for $\sin(1/x)$:
 \begin{verbatim}
@@ -435,15 +436,16 @@ plot(point(3u+3u*v^2-u^3, 3v+3u^2*v-v^3, 3u^2-3v^2), hidden3d,
 \newpage
 
 The following examples use the \texttt{specfn} package to draw a collection of
-Chebyshev's T polynomials and Bessel Y functions.
+Chebyshev T polynomials and Bessel Y functions.
 The special function package has to be loaded explicitely
 to make the operator ChebyshevT and BesselY available.
 
 %\newpage
 \begin{verbatim}
 load_package specfn;
-plot(chebyshevt(1,x), chebyshevt(2,x), chebyshevt(3,x), chebyshevt(4,x),
-     chebyshevt(5,x), x=(-1 .. 1), title="Chebyshev t Polynomials");
+plot(chebyshevt(1,x), chebyshevt(2,x), chebyshevt(3,x),
+     chebyshevt(4,x), chebyshevt(5,x),
+     x=(-1 .. 1), title="Chebyshev t Polynomials");
 \end{verbatim}
 
 \begin{picture}(12,7.5)(0,0)
