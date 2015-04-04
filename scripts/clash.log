@@ -306,7 +306,6 @@ simpcofactor                   defined in       cofactor sparsmat
 simpdet                        defined in       det sparsmat
 simpiden                       defined in       simp pmpatch
 simpsumsym                     defined in       genpurfn ctintro
-simptaylor                     defined in       approx tayintrf
 simptrace                      defined in       det sparsmat
 size_of_matrix                 defined in       linalg froben
 sl_unstraightify               defined in       rlsched rlsl
@@ -326,7 +325,6 @@ subs3f1                        defined in       subs3q noncom2
 subsetrd                       defined in       mathml mml_ir
 swap                           defined in       vect sparsmat
 symmetricp                     defined in       cholesky splinalg rankstat
-taylor                         defined in       approx orthovec
 taylorfunction                 defined in       idepend algint
 taylorp                        defined in       idepend pade
 tconc                          defined in       records sl2psl
