@@ -624,6 +624,31 @@ let df(acsc(~x),x) =>  -1/(x*sqrt(x**2 - 1)),
 % rules for atan2  
 let df(atan2(~y,~x),~z) => (x*df(y, z)-y*df(x, z))/(x^2+y^2);
 
+symbolic procedure simp!-atan2 u;
+   begin scalar x,y,z,v,w;
+      y := reval car u;
+      x := reval cadr u;
+      if numberp x and zerop x
+        then << z := simp!-sign1 y;
+                if denr z = 1 and numberp numr z and not zerop numr z
+ 		  then return multsq(z,simp '(quotient pi 2)) >>
+       else if numberp y and zerop y
+         then << z := simp!-sign1 x;
+                 if denr z = 1
+ 		   then << if numr z = 1 then return nil ./ 1
+ 		            else if numr z = -1 then return simp 'pi >> >>
+       else << z := simp!-sign1 x; v := simp!-sign1 y;
+               if denr z=1 and fixp numr z and denr v=1 and fixp numr v
+                 then << w := simp {'atan,{'quotient,y,x}};
+                         if numr z=1 then return w
+                          else if numr v=1 then return addsq(simp 'pi,w)
+                          else return subtrsq(w,simp 'pi) >> >>;
+       return simpiden {'atan2,y,x};
+   end;
+
+put('atan2,'simpfn,'simp!-atan2);
+  
+
 %for all x let e**log x=x;   % Requires every power to be checked.
 
 for all x,y let df(x**y,x)= y*x**(y-1),

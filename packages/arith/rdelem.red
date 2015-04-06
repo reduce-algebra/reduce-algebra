@@ -84,9 +84,9 @@ deflist('((exp rdexp!*) (expt rdexpt!*) (log rdlog!*) (sin rdsin!*)
 
 for each n in '(exp sin cos tan asin acos atan sinh cosh  % log
     sec csc cot tanh coth sech csch asinh acosh acot asec acsc atanh
-    acoth asech acsch logb log10 ln atan2 hypot
+    acoth asech acsch ln hypot % logb log10
 %   sind cosd asind acosd tand cotd atand acotd secd cscd asecd acscd
-%   atan2d cbrt
+%   atan2 atan2d cbrt
     deg2rad rad2deg deg2dms rad2dms dms2deg dms2rad norm arg argd)
        do put(n,'simpfn,'simpiden);
 
