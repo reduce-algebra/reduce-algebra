@@ -49,14 +49,17 @@ fluid '(smts_model!*);
 fluid '(!*smtsplain);
 
 switch smtslog;
+switch smtsilent;
 
 operator smt;
 
 procedure smt();
    begin scalar !*smtsplain;
       !*smtsplain := t;
-      terpri();
-      ioto_tprin2t {"Reduce SMT-LIB 2.0 REPL ..."};
+      if not !*smtsilent then <<
+      	 terpri();
+      	 ioto_tprin2t {"Reduce SMT-LIB 2.0 REPL ..."}
+      >>;
       smts_mainloop()
    end;
 
@@ -84,7 +87,10 @@ procedure smts_mainloop();
    end;
 
 procedure smts_setPrompt(pno);
-   setpchar lto_sconcat {lto_at2str pno, "% "};
+   if !*smtsilent then
+      setpchar ""
+   else
+      setpchar lto_sconcat {lto_at2str pno, "% "};
 
 procedure smts_processForm(form);
    if eqcar(form, 'assert) then
@@ -127,19 +133,39 @@ procedure smts_processAssert(constraint);
    >>;
 
 procedure smts_processCheckSat();
-   begin scalar w, tval;
-      w := rl_qea(rl_ex(rl_smkn('and, smts_assertionl!*), nil), nil);
-      if null w then <<
-	 smts_prin2t 'unsat;
-	 return
+   begin scalar w, tval, assl;
+      assl := for each ass in smts_assertionl!* collect
+	 cl_simpl(ass, nil, -1);
+      w := smts_processCheckSatAllPosP(assl);
+      if w then <<
+	 on1 'rlsifaco;
+	 w := rl_posqe(rl_ex(rl_smkn('and, assl), nil), nil);
+	 off1 'rlsifaco;
+	 {tval, smts_model!*} := {w, nil}
+      >> else <<
+      	 w := rl_qea(rl_ex(rl_smkn('and, assl), nil), nil);
+      	 if null w then <<
+	    smts_prin2t 'unsat;
+	    return
+      	 >>;
+      	 {tval, smts_model!*} := car w
       >>;
-      {tval, smts_model!*} := car w;
       if tval eq 'true then
 	 smts_prin2t 'sat
       else if tval eq 'false then
 	 smts_prin2t 'unsat
       else
 	 smts_prin2t 'unknown
+   end;
+
+procedure smts_processCheckSatAllPosP(assl);
+   begin scalar vl, pvl;
+      for each ass in assl do <<
+	 vl := union(vl, rl_fvarl ass);
+	 if rl_op ass eq 'greaterp and sfto_varp ofsf_arg2l ass then
+	    pvl := lto_insertq(mvar ofsf_arg2l ass, pvl)
+      >>;
+      return length vl = length pvl
    end;
 
 procedure smts_processGetModel();

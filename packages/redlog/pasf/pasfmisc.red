@@ -1694,6 +1694,36 @@ procedure pasf_smt2PrintT1(op, argl);
    >> else if op eq 'expt then
       pasf_smt2PrintT1('times, for i:=1:cadr argl collect car argl);
 
+procedure pasf_smt2ReadAt(form);
+   begin scalar op, w, lhs, rhs;
+      op := car form;
+      w := atsoc(op, '((!>!= . geq) (!<!= . leq) (!< . lessp) (!> . greaterp)
+   	 (!= . equal)));
+      if not w then
+	 cl_smt2ReadError {"error: expecting logical symbol but found ", op};
+      op := cdr w;
+      lhs := pasf_smt2ReadTerm cadr form;
+      rhs := pasf_smt2ReadTerm caddr form;
+      return pasf_0mk2(op, numr subtrsq(lhs, rhs))
+   end;
+
+procedure pasf_smt2ReadTerm(u);
+   simp pasf_smt2ReadTerm1 u;
+
+procedure pasf_smt2ReadTerm1(u);
+   begin scalar op, w;
+      if atom u or eqcar(u, '!:dn!:) or eqcar(u, '_) then
+ 	 return u;
+      op := car u;
+      w := atsoc(op, '((!+ . plus) (!- . minus) (!* . times) (!/ . quotient)));
+      if not w then
+	 cl_smt2ReadError {"error: expecting arithmetic symbol but found ", op};
+      op := cdr w;
+      if op eq 'minus and cddr u then
+	 op := 'difference;
+      return op . for each arg in cdr u collect pasf_smt2ReadTerm1 arg
+   end;
+
 endmodule; % pasfmisc
 
 end; % of file

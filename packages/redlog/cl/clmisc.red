@@ -870,7 +870,7 @@ procedure cl_smt2ReadForm(form);
       if form memq '(true false) then
 	 return form;
       op := car form;
-      if op eq '!=!> then
+      if op eq '!=!> or op eq 'implies then
  	 op := 'impl;
       if op memq '(not impl) then
 	 return rl_mkn(op, for each arg in cdr form collect
