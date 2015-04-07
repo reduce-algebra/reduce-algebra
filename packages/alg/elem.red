@@ -279,7 +279,7 @@ flag('(acoth acsc acsch asin asinh atan atanh sin tan csc csch sinh
 
 flag('(cos sec sech cosh),'even);
 
-flag('(cot coth csc csch),'nonzero);
+flag('(cot coth csc csch acoth),'nonzero);
 
 % In the following rules, it is not necessary to let f(0)=0, when f
 % is odd, since simpiden already does this.
@@ -307,7 +307,8 @@ let cos(0)= 1,
     sinh(i) => i*sin(1),
     cosh(i) => cos(1),
     acosh(1) => 0,
-    acosh(-1) => i*pi
+    acosh(-1) => i*pi,
+    acoth(0) => i*pi/2
   % acos(0)= pi/2,
   % acos(1)=0,
   % acos(1/2)=pi/3,
