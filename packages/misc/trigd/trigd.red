@@ -170,18 +170,22 @@ symbolic procedure crcotd!* u;
    where x=crexp!*(cr!:times(cr2i!*(),crd2r!* u)),y=i2cr!* 1;
 
 symbolic procedure crasind!* u;
-   crr2d!* cr!:minus timesi!* crasinh!* timesi!* u;
+%   crr2d!* cr!:minus timesi!* crasinh!* timesi!* u;
+   crr2d!* crasin!* u;
 
 symbolic procedure cracosd!* u;
-   crr2d!* cr!:plus(cr!:times(crhalf!*(),crpi!*()),
-      timesi!* crasinh!* timesi!* u);
-
+%   crr2d!* cr!:plus(cr!:times(crhalf!*(),crpi!*()),
+%      timesi!* crasinh!* timesi!* u);
+    crr2d!* cracos!* u;
+    
 symbolic procedure cratand!* u;
-   crr2d!* cr!:times(cri!/2(),crlog!* cr!:quotient(
-      cr!:plus(cri!*(),u),cr!:differ(cri!*(),u)));
+%   crr2d!* cr!:times(cri!/2(),crlog!* cr!:quotient(
+%      cr!:plus(cri!*(),u),cr!:differ(cri!*(),u)));
+   crr2d!* cratan!* u;
 
 symbolic procedure cracotd!* u;
-  cr!:differ(i2cr!* 90, cratand!* u);
+%  cr!:differ(i2cr!* 90, cratand!* u);
+  crr2d!* cracot!* u;
 
 symbolic procedure crsecd!* u;
    cr!:quotient(i2cr!* 1,crcos!* crd2r!* u);
@@ -190,10 +194,12 @@ symbolic procedure crcscd!* u;
   cr!:quotient(i2cr!* 1,crsin!* crd2r!* u);
 
 symbolic procedure crasecd!* u;
-   crr2d!* cracos!* cr!:quotient(i2cr!* 1,u);
+%   crr2d!* cracos!* cr!:quotient(i2cr!* 1,u);
+    crr2d!* crasec!* u;
 
 symbolic procedure cracscd!* u;
-  crr2d!* crasin!* cr!:quotient(i2cr!* 1,u);
+%   crr2d!* crasin!* cr!:quotient(i2cr!* 1,u);
+    crr2d!* cracsc!* u;
 
 % no procedure cratan2d!*  -- of course!
 
