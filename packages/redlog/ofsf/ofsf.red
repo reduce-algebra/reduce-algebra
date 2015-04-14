@@ -103,6 +103,8 @@ fluid '(ra_precision!*);
 fluid '(!*pgnoarbcomplex !*pgspsimpl !*pgspqe);
 fluid '(!*rlqegen1 !*rlpscsgen); % temporary for CAD
 fluid '(ofsf_hqetheo!* ofsf_hqexvars!*);         % temporary for HQE
+fluid '(anu_precision!*);  % precision of ANU approximation
+anu_precision!* := 2;
 
 flag('(ofsf),'rl_package);
 

@@ -56,10 +56,6 @@ module ofsfanuex;
 % 2) If a variable x is bound to an Anu, the main variable of the algebraic
 % polynomial defining this number is x.
 
-% precision of approximation used in procedure [anu_evalf]:
-fluid '(anu_precision!*);
-anu_precision!* := 2;
-
 fluid '(bigvarpref!* bigvarcount!* smallvarpref!* smallvarcount!*);
 bigvarpref!* := 'zzzzz;
 bigvarcount!* := 0;
