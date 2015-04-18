@@ -247,17 +247,17 @@ pochhammer!*rules := {
 
 df(Pochhammer(~z,~k),~z) => Pochhammer(~z,~k) * (psi(z+k)-psi(z)),
 
-Pochhammer(~z,~k)  => (-1)^k*factorial(-z)/factorial(-z-k)
-   when fixp z and z<0 and fixp k and z+k<0,
-
 Pochhammer(~z,~k)  =>  ( for i:=0:(k-1) product(z + i))
-   when numberp k and k < 20 and k > 0,
+   when fixp k and k < 20 and k > 0,
 
 Pochhammer(~z,~k)  =>  1
    when numberp k and k = 0,
 
 Pochhammer(~z,~k)  => factorial(z+k-1)/factorial(z-1)
-   when fixp z and z > 0,
+   when fixp z and z > 0 and fixp k and k > 0,
+
+Pochhammer(~z,~k)  => (-1)^k*factorial(-z)/factorial(-z-k)
+   when fixp z and z < 0 and fixp k and z+k < 0,
 
 Pochhammer(~z,~k -1)  =>
    2 * Pochhammer(1/2,k) / (2*k -1)
