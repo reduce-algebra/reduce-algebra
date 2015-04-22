@@ -254,7 +254,7 @@ Pochhammer(~z,~k)  =>  1
    when numberp k and k = 0,
 
 Pochhammer(~z,~k)  => factorial(z+k-1)/factorial(z-1)
-   when fixp z and z > 0 and fixp k and k > 0,
+   when fixp z and z > 0 and (fixp k and k > 0 or not numberp k),
 
 Pochhammer(~z,~k)  => (-1)^k*factorial(-z)/factorial(-z-k)
    when fixp z and z < 0 and fixp k and z+k < 0,
