@@ -867,16 +867,12 @@ Pochhammer(4,5);
 Pochhammer(-4,5);
 
 
-      - 24
----------------
- factorial(-1)
+0
 
 Pochhammer(4,-5);
 
 
- factorial(-2)
----------------
-       6
+pochhammer(4,-5)
 
 Pochhammer(-4,-5);
 
@@ -7181,10 +7177,3 @@ Catalan;
 
 end;
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 1422 ms  plus GC time: 156 ms
-
-End of Lisp run after 1.43+0.20 seconds
-real 1.88
-user 0.03
-sys 0.04
