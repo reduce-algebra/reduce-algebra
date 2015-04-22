@@ -69,9 +69,10 @@ symbolic procedure sign!-of u;
    (numberp s and s) where s = numr simp!-sign{u};
 
 symbolic procedure simp!-sign1 u;
- begin scalar x,s,n;
+ begin scalar s,n;
    s:=if atom u then
-      << if numberp u then (if u > 0 then 1 else if u < 0 then -1 else 0) ./ 1
+      << if !*modular then simpiden {'sign,u}
+          else if numberp u then (if u > 0 then 1 else if u < 0 then -1 else 0) ./ 1
           else simp!-sign2 u >>
        else if car u eq '!:rd!: then
  	  (if rd!:zerop u then nil else if rd!:minusp u then -1 else 1) ./ 1
