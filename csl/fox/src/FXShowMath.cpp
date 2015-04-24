@@ -47,7 +47,7 @@
 // potential detriment of those whose choice differs).
 
 
-/* $Id$ */
+// $Id$
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -100,25 +100,35 @@ static int DEBUGFONT = 0;
 
 // I make the size of my memory pool depend on the size of a pointer
 // because the size of box components depends on that. The setting here
-// will use 128K on a 32-bit machine or 256K on a 64-bit one and will
-// cache around say 80 full lines of maths display. Beyond that the
-// system would need to re-parse for redisplay.
+// will use 256K on a 32-bit machine or 512K on a 64-bit one and will
+// cache around say 150 full lines of maths display. Beyond that the
+// system would need to re-parse for redisplay. A consequence will be that
+// scrolling forward or back by a couple of pages will be instant and longer
+// scrolls will trigger repetition of TeX-style analysis, which is not in fact
+// terribly expensive.
 
-// Well this size limit turns out to be problematic. At present I do not
-// understand whether it is systematically a disaster or that there is merely
-// a bug triggered when it is exceeded. However with the size (0x8000) here
-// the simple input (x+y)^500 causes a crash in the CSL GUI. Also trying to
-// run the specfn.tst test script fails (the output from one of the kummer
-// examples in it is around 600 lines and 100 Kbytes). So as a holding
-// measure I am increasing the pool size by a factor of 16. This does not
-// cure the underlying problem but maybe moves it far out enough to buy
-// me some time to investigate. ACN March 2015.
 
-//#define memoryPoolSize (0x8000*sizeof(void *))
-#define memoryPoolSize (0x80000*sizeof(void *))
+#define memoryPoolSize (0x10000*sizeof(void *))
 
 static void *memoryPool = NULL;
 static unsigned int memoryPoolIn, memoryPoolOut;
+
+// For now at least I will leave things so that if one predefined
+// APRIL_2015 one gets the debugging output I used then while chasing issues
+// with this code. In a while I can clear away the traces of old bugs!
+#ifdef APRIL_2015
+#define N(f) (strrchr(f, '/')!=NULL ? 1+strrchr(f, '/') : f)
+#define M(s) fprintf(stderr, "%s:%d  %s\n", N(__FILE__), __LINE__, s), fflush(stderr);
+#define Md(s,n) fprintf(stderr, "%s:%d  %s %d\n", N(__FILE__), __LINE__, s, n), fflush(stderr);
+#define Mx(s,n) fprintf(stderr, "%s:%d  %s %x\n", N(__FILE__), __LINE__, s, n), fflush(stderr);
+#define Mp(s,n) fprintf(stderr, "%s:%d  %s %p\n", N(__FILE__), __LINE__, s, n), fflush(stderr);
+#else
+#define N(f)
+#define M(s)
+#define Md(s,n)
+#define Mx(s,n)
+#define Mp(s,n)
+#endif
 
 int handleFromPoolPointer(Box *p)
 {
@@ -133,6 +143,7 @@ Box *poolPointerFromHandle(int i)
 static void setupMemoryPool()
 {
     memoryPool = (void *)new char[memoryPoolSize];
+    M("setupUpMemoryPool")
     if (memoryPool == NULL)
     {   printf("Failed to allocate memory\n");
         exit(1);
@@ -144,21 +155,32 @@ static void poolDestroyChunk();
 
 static void *poolAllocate(unsigned int n)
 {
+    Md("poolAllocate", n);
+    n = (n + sizeof(void *) - 1) & (-sizeof(void *)); // pad to align
+    Md("poolAllocate", n);
     if (n >= memoryPoolSize) return NULL;
     for (;;)
     {   int spare = memoryPoolOut - memoryPoolIn;
         if (spare <= 0) spare += memoryPoolSize;
         if (n < (unsigned int)spare) break;
+        Md("destroy to get enough spare", spare);
         poolDestroyChunk();
     }
     unsigned int next = memoryPoolIn + n;
     if (next > memoryPoolSize)
-    {   while (memoryPoolOut > memoryPoolIn) poolDestroyChunk();
+    {   while (memoryPoolOut > memoryPoolIn)
+        {   M("poolOut > poolIn");
+            poolDestroyChunk();
+        }
         memoryPoolIn = 0;
-        while (memoryPoolOut <= n) poolDestroyChunk();
+        while (memoryPoolOut <= n)
+        {   Md("poolOut to small", memoryPoolOut);
+            poolDestroyChunk();
+        }
         next = n;
     }
     void *r = (void *)((char *)memoryPool + memoryPoolIn);
+    Md("Allocate at offset", memoryPoolIn);
     memoryPoolIn = next;
     return r;
 }
@@ -179,6 +201,10 @@ static void *chunkStart;
 
 static void *poolStartChunk(int owner)
 {
+#ifdef APRIL_2015
+    fprintf(stderr, "\n");
+#endif
+    Md("poolChunkStart", owner);
     chunkStart = poolAllocate(sizeof(struct IntVoidStar));
     IntVoidStar *rp = (IntVoidStar *)chunkStart;
     rp->i = owner;
@@ -194,6 +220,11 @@ static void poolEndChunk()
 
 static void poolDestroyChunk()
 {
+    M("poolDestroyChunk");
+// If when I find I need to destroy a chunk I discover that it is the one
+// I am trying to create right now that means the whole buffer has been
+// filled up with a single chunk (which is not even complete yet). That is
+// a disaster so I just quit!
     if ((void *)((char *)memoryPool + memoryPoolOut) == chunkStart)
     {   printf("Attempt to create over-large chunk\n");
         exit(1);
@@ -207,12 +238,17 @@ static void poolDestroyChunk()
 // the current chunk I just exit abruptly. Under Windows the message
 // apparently displayed using printf may not appear since the executable
 // may have been linked in a way that means it does not have a console.
+//
+// This second test should be redundant given the test above!
     if (rp->v == NULL)
     {   printf("Current incomplete chunk is over-large\n");
         exit(1);
     }
+    Md("reportDestroy", memoryPoolOut); 
+    Md("reportDestroy informing owner", rp->i);
     reportDestroy(rp->i); // inform owner
     memoryPoolOut = (int)((char *)rp->v - (char *)memoryPool);
+    Md("PoolOut now", memoryPoolOut);
 // The next call to poolAllocate() after the use of poolEndChunk (which
 // is what sets the end of chunk information as used here) is to allocate
 // a new chunk start block. If there is not enough room for one at the end
@@ -221,6 +257,7 @@ static void poolDestroyChunk()
 // matching wrap here.
     if (memoryPoolOut + sizeof(IntVoidStar) > memoryPoolSize)
         memoryPoolOut = 0;
+    Md("PoolOut now", memoryPoolOut);
 }
 
 typedef struct TexState
@@ -757,11 +794,11 @@ static int xfWidth(void *ff, const char *s, int len)
 
 #endif
 
-/*
- * The macro fontdsir must be the name of the fonts directory, and it
- * will typically be "reduce.fonts" but is is passed down by the
- * Makefile.
- */
+//
+// The macro fontdsir must be the name of the fonts directory, and it
+// will typically be "reduce.fonts" but is is passed down by the
+// Makefile.
+//
 
 #ifndef fontsdir
 #define fontsdir reduce.fonts
@@ -3917,6 +3954,7 @@ Box *parseTeX(getTeXchar *fn, int owner)
 
 void updateOwner(Box *b, int p)
 {
+    Md("updateOwner", p);
     IntVoidStar *chunk = (IntVoidStar *)(b->top.chunk);
     chunk->i = p;
 }

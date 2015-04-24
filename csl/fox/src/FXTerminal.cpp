@@ -3738,11 +3738,16 @@ void FXTerminal::insertMathsLines()
 //      offset this can specify is 511, which is better than twice the
 //      limit that applied in my previous version of this code.
 //      The scale is in the bottom 3 bits of the second byte.
-// '0000' is a 4-byte gap that will be used to hold a handle to the
+// 'xxxx' is a 4-byte gap that will be used to hold a handle to the
 //       box-structure representing the given line of the mathematical
 //       formula. The handle will use 6-bits per byte so I have 24-bits here.
-//       A consquence is that I have built in ann architectural limit at
-//       16 Mbytes of display buffer.
+//       A consquence is that I have built in an architectural limit at
+//       16 Mbytes of display buffer. I will sometimes need to indidate
+//       that there is no box structure yet... that is done by putting xxxx
+//       in place. That can not be interpreted as a proper handle because
+//       the 6-bits per byte used there use the characters
+//         0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmno
+//       notably stopping before "x".
 //
 // Note that when I parse a bit of TeX I may run out of memory in the
 // area reserved for box structures, and in that case I will discard some
@@ -3753,11 +3758,15 @@ void FXTerminal::insertMathsLines()
 // change under the feet of the box-management package. This is an ugly
 // constraint and probably shows that the two chunks of code need a tighter
 // interface...
-        FXText::appendStyledText("0000000", 7, STYLE_MATH);
-// At the stage the 0000000 is split up as:
+        FXText::appendStyledText("000xxxx", 7, STYLE_MATH);
+// At the stage the 000xxxx is split up as:
 //     00      will be number of rows used;
 //      00     will be centering indent and scale factor;
-//        0000 will be box address.
+//        xxxx will be box address.
+// A little later it will become
+//     {02}nnPPPP
+// where {02} is a byte that marks the start of some maths, nn is the
+// two byte scale and indent information and PPPP is a pointer.
         FXText::appendStyledText(fwin_maths, p-fwin_maths, STYLE_MATH);
         linecount++;
         fwin_maths = p;
@@ -3936,7 +3945,10 @@ Box *FXTerminal::getBoxAddress(int p) const
         c2 = getByte(p+1),
         c3 = getByte(p+2),
         c4 = getByte(p+3);
-    if (c1 == 0) return NULL;
+#ifdef APRIL_2015
+    fprintf(stderr, "getBoxAddress at %d = %c%c%c%c\n", p, c1, c2, c3, c4);
+#endif
+    if (c1 == 'x') return NULL;
     int n = (c4 - '0') & 0x3f;
     n = (n << 6) | ((c3 - '0') & 0x3f);
     n = (n << 6) | ((c2 - '0') & 0x3f);
@@ -3947,7 +3959,7 @@ Box *FXTerminal::getBoxAddress(int p) const
 void FXTerminal::recordBoxAddress(int p, Box *b)
 {
     char s[4];
-    int c1=0, c2=0, c3=0, c4=0;
+    int c1='x', c2='x', c3='x', c4='x';
     if (b != NULL)
     {   int n = handleFromPoolPointer(b);
         c1 = '0' + (n & 0x3f); n = n>>6;
@@ -3959,6 +3971,9 @@ void FXTerminal::recordBoxAddress(int p, Box *b)
     s[1] = c2;
     s[2] = c3;
     s[3] = c4;
+#ifdef APRIL_2015
+    fprintf(stderr, "recordBoxAddress at %d %c%c%c%c\n", p, c1, c2, c3, c4);
+#endif
     replaceStyledText(p, 4, s, 4, STYLE_MATH);
 }
 
@@ -3978,7 +3993,7 @@ void reportDestroy(int p)
 
 void FXTerminal::reportDestroy(int p)
 {
-    replaceStyledText(p, 4, "0000", 4, STYLE_MATH);
+    replaceStyledText(p, 4, "xxxx", 4, STYLE_MATH);
 }
 
 long FXTerminal::requestShowMath()
