@@ -1602,8 +1602,9 @@ COMMENT This is the function exp(-1/x^2), which has an essential
 implicit_taylor(x^2*log y+1,x,y,0,0,3);
 
 
+***** log 0 formed 
+
 ***** Computation of Taylor series of implicit function failed 
-      Input expression non-zero at given point 
 
 
 inverse_taylor(exp(x)-1,x,y,0,8);
@@ -2500,10 +2501,3 @@ COMMENT That's all, folks;
 
 end;
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 126 ms
-
-End of Lisp run after 0.12+0.04 seconds
-real 0.33
-user 0.03
-sys 0.06

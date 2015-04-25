@@ -59,9 +59,12 @@ imports
 
 symbolic procedure implicit_taylor(f,x,y,x0,y0,n);
 %   if not fixp n or n < 0 then typerr(n,"expansion order") else
-   begin scalar x,l,!*tayexpanding!*;
+   begin scalar z,l,!*tayexpanding!*;
      f := simp!* f;
-     if not null numr subsq(f,{x . x0,y . y0})
+     l := {'subsq,mkquote f,mkquote {x . x0,y . y0}};
+     z := errorset!*(z,!*trtaylor);
+     if errorp z then taylor!-error('implicit_taylor,nil)
+      else if not null car z
        then taylor!-error('implicit_taylor,
               "      Input expression non-zero at given point");
      !*tayexpanding!* := t;
@@ -72,8 +75,8 @@ symbolic procedure implicit_taylor(f,x,y,x0,y0,n);
             mkquote x0,
             mkquote y0,
             mkquote n};
-     x := errorset!*(l,!*trtaylor);
-     if not errorp x then return car x
+     z := errorset!*(l,!*trtaylor);
+     if not errorp z then return car z
       else taylor!-error('implicit_taylor,nil)
    end;
 
