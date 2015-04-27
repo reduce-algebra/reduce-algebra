@@ -1977,8 +1977,15 @@ static void fp_sprint(char *buff, double x, int prec)
 #ifdef DEBUG
     char *fullbuff = buff; /* Useful for when running under a debugger */
 #endif
+/*
+ * Note that I am assuming IEEE arithmetic here so the tricks that I use
+ * to detect -0.0, NaN and infinities ought to be OK. Just remember that
+ * -0.0 is equal to 0.0 and not less than it, so the simple test
+ & "x < 0.0" will not pick up the case of -0.0.
+ */
     if (x == 0.0)
-    {   strcpy(buff, "0.0");
+    {   if (1/x < 0.0) strcpy(buff, "-0.0");
+        strcpy(buff, "0.0");
         return;
     }
     if (x != x)
