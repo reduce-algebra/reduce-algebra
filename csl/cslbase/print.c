@@ -1984,8 +1984,8 @@ static void fp_sprint(char *buff, double x, int prec)
  & "x < 0.0" will not pick up the case of -0.0.
  */
     if (x == 0.0)
-    {   if (1/x < 0.0) strcpy(buff, "-0.0");
-        strcpy(buff, "0.0");
+    {   if (1.0/x < 0.0) strcpy(buff, "-0.0");
+        else strcpy(buff, "0.0");
         return;
     }
     if (x != x)
