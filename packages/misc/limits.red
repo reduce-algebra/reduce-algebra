@@ -510,9 +510,8 @@ symbolic procedure speccomb(a,b);
          if b>=0 then a
          else if a eq 'infinity then '(minus infinity) else 'infinity
       else ((if c then
-        <<c := prepsq c;
-          if evalgreaterp(c,0) then cc := 1 else if evallessp(c,0)
-            then cc := -1;
+        <<c := simp!-sign list mk!*sq c;
+	  if atom denr c and fixp numr c and numr c neq 0 then cc := numr c;
           if cc then c := if a eq 'infinity then 1 else -1;
           if cc then
              if c*cc = 1 then 'infinity else '(minus infinity)

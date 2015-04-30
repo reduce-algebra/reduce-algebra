@@ -1,0 +1,46 @@
+
+int(e^(-(x-mu)^2/(2*sigma^2)),x,-infinity,infinity);
+
+
+                2         2
+      - (x - mu) /(2*sigma )
+int(e                       ,x, - infinity,infinity)
+
+
+y := e^(-(x-mu)^2/(2*sigma^2));
+
+
+                     2      -2
+       - 1/2*(mu - x) *sigma
+y := e
+
+
+z := df(y,x)/x;
+
+
+                 2      -2         2      -2           -2              -2  2
+       - (mu - x) *sigma   + 1/2*mu *sigma   - mu*sigma  *x + 1/2*sigma  *x
+z := e
+
+                    -2  -1
+     *(mu - x)*sigma  *x
+
+
+limit(z,x,infinity);
+
+
+limit(z,x,infinity)
+
+
+on complex;
+
+
+
+limit(z,x,infinity);
+
+
+limit(z,x,infinity)
+
+
+end;
+
