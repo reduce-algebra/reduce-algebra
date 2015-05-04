@@ -51,6 +51,7 @@ import java.math.*;
 import java.util.*;
 import java.util.zip.*;
 import java.text.*;
+import java.lang.management.*;
 
 public class Jlisp
 {
@@ -230,9 +231,14 @@ public static void startup(String [] args,
     if (!CWin.isApplet) System.exit(0);
 }
 
+static ThreadMXBean bean;
+
 static void startup1(String [] args) throws ResourceException
 {
-    long startTime = System.currentTimeMillis();
+    bean = ManagementFactory.getThreadMXBean();
+//  System.out.println("Time support = " + bean.isThreadCpuTimeSupported());
+//  long startTime = System.currentTimeMillis();
+    long startTime = bean.getCurrentThreadCpuTime();
     String [] inputFile = new String [10];
     int inputCount = 0;
     imageCount = 0;
@@ -846,8 +852,9 @@ static void startup1(String [] args) throws ResourceException
         else break; // loop to do with RESTART-CSL calls
     }
     if (verbose)
-    {   long endTime = System.currentTimeMillis();
-        long elapsed = endTime - startTime;
+    {   long endTime = bean.getCurrentThreadCpuTime();
+//      long endTime = System.currentTimeMillis();
+        long elapsed = (endTime - startTime)/1000000;
         long secs = elapsed / 1000;
         long millis = elapsed % 1000;
         long tenths = millis / 100;

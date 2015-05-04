@@ -791,14 +791,275 @@ static int poll_time_countdown = 0;
 
 static long last_clock = -1;
 
-LispObject interpret(int pc) throws Exception
+LispObject liftcalln(int arg, int iw, int sp,
+                     LispObject a, LispObject b) throws Exception
 {
-    if (--poll_time_countdown < 0)
+    switch (iw)
+    {
+case 4: return ((Symbol)env[arg]).fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], b, a});
+case 5: return ((Symbol)env[arg]).fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], b, a});
+case 6: return ((Symbol)env[arg]).fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], b, a});
+case 7: return ((Symbol)env[arg]).fn.opn(new LispObject []
+	    {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], b, a});
+case 8: return ((Symbol)env[arg]).fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], b, a});
+case 9: return ((Symbol)env[arg]).fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], b, a});
+case 10:return ((Symbol)env[arg]).fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8], b, a});
+case 11:return ((Symbol)env[arg]).fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], b, a});
+case 12:return ((Symbol)env[arg]).fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], stack[sp+10], b, a});
+case 13:return ((Symbol)env[arg]).fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], stack[sp+10], stack[sp+11], b, a});
+case 14:return ((Symbol)env[arg]).fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12], b, a});
+case 15:return ((Symbol)env[arg]).fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12],
+             stack[sp+13], b, a});
+// The Standard Lisp Report mandates at least 15 arguments must be supported.
+// Common Lisp maybe does not have any real limit? Anyway I will go to 20
+// here.
+case 16:return ((Symbol)env[arg]).fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12],
+             stack[sp+13], stack[sp+14], b, a});
+case 17:return ((Symbol)env[arg]).fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12],
+             stack[sp+13], stack[sp+14], stack[sp+15], b, a});
+case 18:return ((Symbol)env[arg]).fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12],
+             stack[sp+13], stack[sp+14], stack[sp+15], stack[sp+16], b, a});
+case 19:return ((Symbol)env[arg]).fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12],
+             stack[sp+13], stack[sp+14], stack[sp+15], stack[sp+16],
+             stack[sp+17], b, a});
+case 20:return ((Symbol)env[arg]).fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12],
+             stack[sp+13], stack[sp+14], stack[sp+15], stack[sp+16],
+             stack[sp+17], stack[sp+18], b, a});
+default:
+        Jlisp.error("calls with over 20 args not supported in this Lisp");
+        return Jlisp.nil;
+    }
+}
+
+LispObject liftjcalln(int arg, int nargs, int sp,
+                      LispObject a, LispObject b) throws Exception
+{
+    Symbol tocall = (Symbol)env[arg];
+    switch (nargs)  // number of args
+    {
+// Just at present I do not treat calls to self specially here (in the
+// way that I do for JCALL rather than JCALLN). This is something that I
+// should fix sometime...
+case 0: return tocall.fn.op0();
+case 1: return tocall.fn.op1(a);
+case 2: return tocall.fn.op2(b, a);
+case 3: return tocall.fn.opn(new LispObject []
+            {stack[sp], b, a});
+case 4: sp -= 2;
+        return tocall.fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], b, a});
+case 5: sp -= 3;
+        return tocall.fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], b, a});
+case 6: sp -= 4;
+        return tocall.fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], b, a});
+case 7: sp -= 5;
+        return tocall.fn.opn(new LispObject []
+	    {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+            stack[sp+5], b, a});
+case 8: sp -= 6;
+        return tocall.fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], b, a});
+case 9: sp -= 7;
+        return tocall.fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], b, a});
+case 10:sp -= 8;
+        return tocall.fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8], b, a});
+case 11:sp -= 9;
+        return tocall.fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], b, a});
+case 12:sp -= 10;
+        return tocall.fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], stack[sp+10], b, a});
+case 13:sp -= 11;
+        return tocall.fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], stack[sp+10], stack[sp+11], b, a});
+case 14:sp -= 12;
+        return tocall.fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12], b, a});
+case 15:sp -= 13;
+        return tocall.fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12],
+             stack[sp+13], b, a});
+// The Standard Lisp Report mandates at least 15 arguments must be supported.
+// Common Lisp maybe does not have any real limit? Anyway I will go to 20
+// here.
+case 16:sp -= 14;
+        return tocall.fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12],
+             stack[sp+13], stack[sp+14], b, a});
+case 17:sp -= 15;
+        return tocall.fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12],
+             stack[sp+13], stack[sp+14], stack[sp+15], b, a});
+case 18:sp -= 16;
+        return tocall.fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12],
+             stack[sp+13], stack[sp+14], stack[sp+15], stack[sp+16], b, a});
+case 19:sp -= 17;
+        return tocall.fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12],
+             stack[sp+13], stack[sp+14], stack[sp+15], stack[sp+16],
+             stack[sp+17], b, a});
+case 20:sp -= 18;
+        return tocall.fn.opn(new LispObject []
+            {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4],
+             stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
+             stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12],
+             stack[sp+13], stack[sp+14], stack[sp+15], stack[sp+16],
+             stack[sp+17], stack[sp+18], b, a});
+default:
+        Jlisp.error("calls with over 20 args not supported in this Lisp",
+                    LispInteger.valueOf(nargs));
+        return Jlisp.nil;
+    }
+}
+
+int jcallself(int arg, int spsave, LispObject a, LispObject b) throws Exception
+{
+    switch (arg & 0xe0)  // number of args
+    {
+case 0x00: return 0;
+case 0x20: stack[spsave] = a;
+           return 0;
+case 0x40: stack[spsave] = a;
+           stack[spsave-1] = b;
+           return 0;
+case 0x60: stack[spsave] = a;
+           stack[spsave-1] = b;
+           stack[spsave-2] = stack[sp];
+           return 0;
+case 0x80: stack[spsave] = a;
+           stack[spsave-1] = b;
+           stack[spsave-2] = stack[sp];
+           stack[spsave-3] = stack[sp-1];
+           return 1;  // NB to allow for arg-count byte
+case 0xa0: stack[spsave] = a;
+           stack[spsave-1] = b;
+           stack[spsave-2] = stack[sp];
+           stack[spsave-3] = stack[sp-1];
+           stack[spsave-4] = stack[sp-2];
+           return 1;
+case 0xc0: stack[spsave] = a;
+           stack[spsave-1] = b;
+           stack[spsave-2] = stack[sp];
+           stack[spsave-3] = stack[sp-1];
+           stack[spsave-4] = stack[sp-2];
+           stack[spsave-5] = stack[sp-3];
+           return 1;
+case 0xe0: stack[spsave] = a;
+           stack[spsave-1] = b;
+           stack[spsave-2] = stack[sp];
+           stack[spsave-3] = stack[sp-1];
+           stack[spsave-4] = stack[sp-2];
+           stack[spsave-5] = stack[sp-3];
+           stack[spsave-6] = stack[sp-4];
+           return 1;
+default:
+           Jlisp.error("oddity with JCALL " +
+                       Integer.toHexString(arg));
+           return 0;
+    }
+}
+
+LispObject jcall(int arg, int sp, LispObject a, LispObject b) throws Exception
+{
+    switch (arg & 0xe0)  // number of args
+    {
+case 0x00: return ((Symbol)env[arg & 0x1f]).fn.op0();
+case 0x20: return ((Symbol)env[arg & 0x1f]).fn.op1(a);
+case 0x40: return ((Symbol)env[arg & 0x1f]).fn.op2(b, a);
+case 0x60: return ((Symbol)env[arg & 0x1f]).fn.opn(
+                      new LispObject [] {stack[sp--], b, a});
+case 0x80: sp -= 2;
+           return ((Symbol)env[arg & 0x1f]).fn.opn(
+               new LispObject [] {stack[sp+1], stack[sp+2], b, a});
+case 0xa0: sp -= 3;
+           return ((Symbol)env[arg & 0x1f]).fn.opn(
+               new LispObject [] {stack[sp+1], stack[sp+2], stack[sp+3], b, a});
+case 0xc0: sp -= 4;
+           return ((Symbol)env[arg & 0x1f]).fn.opn(
+               new LispObject [] {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], b, a});
+case 0xe0: sp -= 5;
+           return ((Symbol)env[arg & 0x1f]).fn.opn(
+               new LispObject [] {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], stack[sp+5], b, a});
+default:
+           return Jlisp.error("oddity with JCALL " +
+                              Integer.toHexString(arg));
+    }
+}
+
+void dopoll() throws Exception
+{
     {   poll_time_countdown = 10000;
-        long t = System.currentTimeMillis();
+//      long t = System.currentTimeMillis();
+        long t = Jlisp.bean.getCurrentThreadCpuTime();
         if (last_clock < 0) last_clock = t;
-        else while (t - last_clock > 1000)
-        {   last_clock += 1000;
+        else while (t - last_clock > 1000000000)
+        {   last_clock += 1000000000;
             ResourceException.time_now++;
             if (ResourceException.time_limit > 0 &&
                 ResourceException.time_now > ResourceException.time_limit)
@@ -809,64 +1070,77 @@ LispObject interpret(int pc) throws Exception
             }
         }
     } 
+}
+
+void extendstack() throws Exception
+{
+    int new_size = (3*stack_size)/2;
+    LispObject [] new_stack = new LispObject[new_size];
+    for (int i=0; i<=sp; i++) new_stack[i] = stack[i];
+    stack = new_stack;
+    stack_size = new_size;
+    if (Jlisp.verbosFlag != 0)
+        Jlisp.errprint("+++ Stack enlarged to " + stack_size);
+}
+
+LispObject safecar(LispObject a) throws Exception
+{
+    if (a.atom) Jlisp.error("attempt to take car of an atom", a);
+    return a.car;
+}
+
+LispObject safecdr(LispObject a) throws Exception
+{
+    if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
+    return a.cdr;
+}
+
+int freebind(int arg, int sp)
+{
+    LispObject [] v = ((LispVector)env[arg]).vec;
+    for (int i=0; i<v.length; i++)
+    {   stack[++sp] = v[i].car/*value*/;
+        v[i].car/*value*/ = Jlisp.nil;
+    }
+    stack[++sp] = env[arg];
+    stack[++sp] = Spid.fbind;
+    return sp;
+}
+
+LispObject interpret(int pc) throws Exception
+{
+    if (--poll_time_countdown < 0) dopoll();
     int spsave = sp;
     int arg;
     LispObject a = Jlisp.nil, b = Jlisp.nil, w;
     int iw, fname;
 
     if (sp > stack_size - 500) // the 500 is a pretty arbitrary margin!
-                               // bad enough code could breach it.
-    {   int new_size = (3*stack_size)/2;
-        LispObject [] new_stack = new LispObject[new_size];
-        for (int i=0; i<=sp; i++) new_stack[i] = stack[i];
-        stack = new_stack;
-        stack_size = new_size;
-        if (Jlisp.verbosFlag != 0)
-            Jlisp.errprint("+++ Stack enlarged to " + stack_size);
-    }
+        extendstack();         // bad enough code could breach it.
 
-    try { for (;;) 
+    try
     {
-    switch (bytecodes[pc++])
+    for (;;)
+    {
+    switch (arg = bytecodes[pc++])
     {
 case LOADLOC:
         b = a; a = stack[sp-(bytecodes[pc++] & 0xff)];
         continue;
 case LOADLOC0:
-        b = a; a = stack[sp-0];
-        continue;
 case LOADLOC1:
-        b = a; a = stack[sp-1];
-        continue;
 case LOADLOC2:
-        b = a; a = stack[sp-2];
-        continue;
 case LOADLOC3:
-        b = a; a = stack[sp-3];
-        continue;
 case LOADLOC4:
-        b = a; a = stack[sp-4];
-        continue;
 case LOADLOC5:
-        b = a; a = stack[sp-5];
-        continue;
 case LOADLOC6:
-        b = a; a = stack[sp-6];
-        continue;
 case LOADLOC7:
-        b = a; a = stack[sp-7];
-        continue;
 case LOADLOC8:
-        b = a; a = stack[sp-8];
-        continue;
 case LOADLOC9:
-        b = a; a = stack[sp-9];
-        continue;
 case LOADLOC10:
-        b = a; a = stack[sp-10];
-        continue;
 case LOADLOC11:
-        b = a; a = stack[sp-11];
+        b = a;
+        a = stack[sp - (arg-LOADLOC0)];
         continue;
 case LOC0LOC1:
         b = stack[sp-0];
@@ -899,79 +1173,45 @@ case LOADLIT:
         b = a; a = env[bytecodes[pc++] & 0xff];
         continue;
 case LOADLIT1:
-        b = a; a = env[1];
-        continue;
 case LOADLIT2:
-        b = a; a = env[2];
-        continue;
 case LOADLIT3:
-        b = a; a = env[3];
-        continue;
 case LOADLIT4:
-        b = a; a = env[4];
-        continue;
 case LOADLIT5:
-        b = a; a = env[5];
-        continue;
 case LOADLIT6:
-        b = a; a = env[6];
-        continue;
 case LOADLIT7:
-        b = a; a = env[7];
+        b = a;
+        a = env[arg - (LOADLIT1-1)];
         continue;
 case LOADFREE:
         b = a; a = env[bytecodes[pc++] & 0xff].car/*value*/;
         continue;
 case LOADFREE1:
-        b = a; a = env[1].car/*value*/;
-        continue;
 case LOADFREE2:
-        b = a; a = env[2].car/*value*/;
-        continue;
 case LOADFREE3:
-        b = a; a = env[3].car/*value*/;
-        continue;
 case LOADFREE4:
-        b = a; a = env[4].car/*value*/;
+        b = a;
+        a = env[arg - (LOADFREE1-1)].car/*value*/;
         continue;
 case STORELOC:
-        stack[sp-(bytecodes[pc++] & 0xff)] = a;
+        stack[sp - (bytecodes[pc++] & 0xff)] = a;
         continue;
 case STORELOC0:
-        stack[sp-0] = a;
-        continue;
 case STORELOC1:
-        stack[sp-1] = a;
-        continue;
 case STORELOC2:
-        stack[sp-2] = a;
-        continue;
 case STORELOC3:
-        stack[sp-3] = a;
-        continue;
 case STORELOC4:
-        stack[sp-4] = a;
-        continue;
 case STORELOC5:
-        stack[sp-5] = a;
-        continue;
 case STORELOC6:
-        stack[sp-6] = a;
-        continue;
 case STORELOC7:
-        stack[sp-7] = a;
+        stack[sp - (arg-STORELOC0)] = a;
         continue;
 case STOREFREE:
         env[bytecodes[pc++] & 0xff].car/*value*/ = a;
         continue;
 case STOREFREE1:
-        env[1].car/*value*/ = a;
-        continue;
 case STOREFREE2:
-        env[2].car/*value*/ = a;
-        continue;
 case STOREFREE3:
-        env[3].car/*value*/ = a;
+        env[arg - (STOREFREE1-1)].car/*value*/ = a;
         continue;
 case LOADLEX:
         Jlisp.error("bytecode LOADLEX not implemented");
@@ -980,339 +1220,98 @@ case STORELEX:
 case CLOSURE:
         Jlisp.error("bytecode CLOSURE not implemented");
 case CARLOC0:
-        b = a;
-        a = stack[sp-0];
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        continue;
 case CARLOC1:
-        b = a;
-        a = stack[sp-1];
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        continue;
 case CARLOC2:
-        b = a;
-        a = stack[sp-2];
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        continue;
 case CARLOC3:
-        b = a;
-        a = stack[sp-3];
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        continue;
 case CARLOC4:
-        b = a;
-        a = stack[sp-4];
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        continue;
 case CARLOC5:
-        b = a;
-        a = stack[sp-5];
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        continue;
 case CARLOC6:
-        b = a;
-        a = stack[sp-6];
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        continue;
 case CARLOC7:
-        b = a;
-        a = stack[sp-7];
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        continue;
 case CARLOC8:
-        b = a;
-        a = stack[sp-8];
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        continue;
 case CARLOC9:
-        b = a;
-        a = stack[sp-9];
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        continue;
 case CARLOC10:
-        b = a;
-        a = stack[sp-10];
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        continue;
 case CARLOC11:
         b = a;
-        a = stack[sp-11];
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
+        a = safecar(stack[sp - (arg - CARLOC0)]);
         continue;
 case CDRLOC0:
-        b = a;
-        a = stack[sp-0];
-        if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
-        a = a.cdr;
-        continue;
 case CDRLOC1:
-        b = a;
-        a = stack[sp-1];
-        if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
-        a = a.cdr;
-        continue;
 case CDRLOC2:
-        b = a;
-        a = stack[sp-2];
-        if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
-        a = a.cdr;
-        continue;
 case CDRLOC3:
-        b = a;
-        a = stack[sp-3];
-        if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
-        a = a.cdr;
-        continue;
 case CDRLOC4:
-        b = a;
-        a = stack[sp-4];
-        if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
-        a = a.cdr;
-        continue;
 case CDRLOC5:
         b = a;
-        a = stack[sp-5];
-        if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
-        a = a.cdr;
+        a = safecdr(stack[sp - (arg - CDRLOC0)]);
         continue;
 case CAARLOC0:
-        b = a;
-        a = stack[sp-0];
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        continue;
 case CAARLOC1:
-        b = a;
-        a = stack[sp-1];
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        continue;
 case CAARLOC2:
-        b = a;
-        a = stack[sp-2];
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        continue;
 case CAARLOC3:
         b = a;
-        a = stack[sp-3];
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
+        a = safecar(safecar(stack[sp - (arg - CAARLOC0)]));
         continue;
 case CALL0:
-        arg = bytecodes[pc++] & 0xff;
-	a = ((Symbol)env[arg]).fn.op0();
+	a = ((Symbol)env[bytecodes[pc++] & 0xff]).fn.op0();
 	continue;
 case CALL1:
-        arg = bytecodes[pc++] & 0xff;
-	a = ((Symbol)env[arg]).fn.op1(a);
+	a = ((Symbol)env[bytecodes[pc++] & 0xff]).fn.op1(a);
 	continue;
 case CALL2:
-        arg = bytecodes[pc++] & 0xff;
-	a = ((Symbol)env[arg]).fn.op2(b, a);
+	a = ((Symbol)env[bytecodes[pc++] & 0xff]).fn.op2(b, a);
 	continue;
 case CALL2R:
-        arg = bytecodes[pc++] & 0xff;
-	a = ((Symbol)env[arg]).fn.op2(a, b);
+	a = ((Symbol)env[bytecodes[pc++] & 0xff]).fn.op2(a, b);
 	continue;
 case CALL3:
-        arg = bytecodes[pc++] & 0xff;
-        a = ((Symbol)env[arg]).fn.opn(new LispObject [] {stack[sp--], b, a});
+        a = ((Symbol)env[bytecodes[pc++] & 0xff]).fn.opn(new LispObject [] {stack[sp--], b, a});
 	continue;
 case CALLN:
         arg = bytecodes[pc++] & 0xff;
-        switch (bytecodes[pc++] & 0xff)
-        {
-    case 4: sp -= 2;
-            a = ((Symbol)env[arg]).fn.opn(new LispObject [] 
-                {stack[sp+1], stack[sp+2], b, a});
-	    continue;
-    case 5: sp -= 3;
-            a = ((Symbol)env[arg]).fn.opn(new LispObject [] 
-                {stack[sp+1], stack[sp+2], stack[sp+3], b, a});
-	    continue;
-    case 6: sp -= 4;
-            a = ((Symbol)env[arg]).fn.opn(new LispObject [] 
-                {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], b, a});
-	    continue;
-    case 7: sp -= 5;
-            a = ((Symbol)env[arg]).fn.opn(new LispObject []
-	        {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], 
-                 stack[sp+5], b, a});
-            continue;
-    case 8: sp -= 6;
-            a = ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], 
-                 stack[sp+5], stack[sp+6], b, a});
-            continue;
-    case 9: sp -= 7;
-            a = ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], 
-                 stack[sp+5], stack[sp+6], stack[sp+7], b, a});
-            continue;
-    case 10:sp -= 8;
-            a = ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], 
-                 stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8], b, a});
-            continue;
-    case 11:sp -= 9;
-            a = ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], 
-                 stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
-                 stack[sp+9], b, a});
-            continue;
-    case 12:sp -= 10;
-            a = ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], 
-                 stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
-                 stack[sp+9], stack[sp+10], b, a});
-            continue;
-    case 13:sp -= 11;
-            a = ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], 
-                 stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
-                 stack[sp+9], stack[sp+10], stack[sp+11], b, a});
-            continue;
-    case 14:sp -= 12;
-            a = ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], 
-                 stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
-                 stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12], b, a});
-            continue;
-    case 15:sp -= 13;
-            a = ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], 
-                 stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
-                 stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12],
-                 stack[sp+13], b, a});
-            continue;
-// The Standard Lisp Report mandates at least 15 arguments must be supported.
-// Common Lisp maybe does not have any real limit? Anyway I will go to 20
-// here.
-    case 16:sp -= 14;
-            a = ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], 
-                 stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
-                 stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12],
-                 stack[sp+13], stack[sp+14], b, a});
-            continue;
-    case 17:sp -= 15;
-            a = ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], 
-                 stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
-                 stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12],
-                 stack[sp+13], stack[sp+14], stack[sp+15], b, a});
-            continue;
-    case 18:sp -= 16;
-            a = ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], 
-                 stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
-                 stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12],
-                 stack[sp+13], stack[sp+14], stack[sp+15], stack[sp+16], b, a});
-            continue;
-    case 19:sp -= 17;
-            a = ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], 
-                 stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
-                 stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12],
-                 stack[sp+13], stack[sp+14], stack[sp+15], stack[sp+16],
-                 stack[sp+17], b, a});
-            continue;
-    case 20:sp -= 18;
-            a = ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[sp+1], stack[sp+2], stack[sp+3], stack[sp+4], 
-                 stack[sp+5], stack[sp+6], stack[sp+7], stack[sp+8],
-                 stack[sp+9], stack[sp+10], stack[sp+11], stack[sp+12],
-                 stack[sp+13], stack[sp+14], stack[sp+15], stack[sp+16],
-                 stack[sp+17], stack[sp+18], b, a});
-            continue;
-    default:
-            Jlisp.error("calls with over 20 args not supported in this Lisp");
-        }
+        iw = bytecodes[pc++] & 0xff;
+        sp -= (iw-2);
+        a = liftcalln(arg, iw, sp, a, b);
+        continue;
 case CALL0_0:
 	a = op0();   // optimisation on call to self!
 	continue;
 case CALL0_1:
-	a = ((Symbol)env[1]).fn.op0();
-	continue;
 case CALL0_2:
-	a = ((Symbol)env[2]).fn.op0();
-	continue;
 case CALL0_3:
-	a = ((Symbol)env[3]).fn.op0();
+	a = ((Symbol)env[arg-CALL0_0]).fn.op0();
 	continue;
 case CALL1_0:
 	a = op1(a);   // call to self
 	continue;
 case CALL1_1:
-	a = ((Symbol)env[1]).fn.op1(a);
-	continue;
 case CALL1_2:
-	a = ((Symbol)env[2]).fn.op1(a);
-	continue;
 case CALL1_3:
-	a = ((Symbol)env[3]).fn.op1(a);
-	continue;
 case CALL1_4:
-	a = ((Symbol)env[4]).fn.op1(a);
-	continue;
 case CALL1_5:
-	a = ((Symbol)env[5]).fn.op1(a);
+	a = ((Symbol)env[arg-CALL1_0]).fn.op1(a);
 	continue;
 case CALL2_0:
 	a = op2(b, a);   // call to self
 	continue;
 case CALL2_1:
-	a = ((Symbol)env[1]).fn.op2(b, a);
-	continue;
 case CALL2_2:
-	a = ((Symbol)env[2]).fn.op2(b, a);
-	continue;
 case CALL2_3:
-	a = ((Symbol)env[3]).fn.op2(b, a);
-	continue;
 case CALL2_4:
-	a = ((Symbol)env[4]).fn.op2(b, a);
+	a = ((Symbol)env[arg-CALL2_0]).fn.op2(b, a);
 	continue;
 case BUILTIN0:
-        arg = bytecodes[pc++] & 0xff;
-	a = builtin0[arg].op0();
+	a = builtin0[bytecodes[pc++] & 0xff].op0();
 	continue;
 case BUILTIN1:
-        arg = bytecodes[pc++] & 0xff;
-	a = builtin1[arg].op1(a);
+	a = builtin1[bytecodes[pc++] & 0xff].op1(a);
 	continue;
 case BUILTIN2:
-        arg = bytecodes[pc++] & 0xff;
-	a = builtin2[arg].op2(b, a);
+	a = builtin2[bytecodes[pc++] & 0xff].op2(b, a);
 	continue;
 case BUILTIN2R:
-        arg = bytecodes[pc++] & 0xff;
-	a = builtin2[arg].op2(a, b);
+	a = builtin2[bytecodes[pc++] & 0xff].op2(a, b);
  	continue;
 case BUILTIN3:
-        arg = bytecodes[pc++] & 0xff;
-	a = builtin3[arg].opn(new LispObject [] {stack[sp--], b, a});
+	a = builtin3[bytecodes[pc++] & 0xff].opn(new LispObject [] {stack[sp--], b, a});
 	continue;
 case APPLY1:
         if (b instanceof Symbol)
@@ -1355,274 +1354,37 @@ case APPLY4:
         continue;
 case JCALL:
         arg = bytecodes[pc++];
-        switch (arg & 0xe0)  // number of args
-        {
-    case 0x00: arg &= 0x1f;
-               if (arg == 0)
-               {   sp = spsave;
-                   pc = 0;
-                   continue;
-               }
-               sp = spsave;
-               return ((Symbol)env[arg & 0x1f]).fn.op0();
-    case 0x20: arg &= 0x1f;
-               if (arg == 0)
-               {   stack[spsave] = a;
-                   sp = spsave;
-                   pc = 0;
-                   continue;
-               }
-               sp = spsave;
-               return ((Symbol)env[arg & 0x1f]).fn.op1(a);
-    case 0x40: arg &= 0x1f;
-               if (arg == 0)
-               {   stack[spsave] = a;
-                   stack[spsave-1] = b;
-                   sp = spsave;
-                   pc = 0;
-                   continue;
-               }
-               sp = spsave;
-               return ((Symbol)env[arg & 0x1f]).fn.op2(b, a);
-    case 0x60: arg &= 0x1f;
-               if (arg == 0)
-               {   stack[spsave] = a;
-                   stack[spsave-1] = b;
-                   stack[spsave-2] = stack[sp];
-                   sp = spsave;
-                   pc = 0;
-                   continue;
-               }
-               pc = sp;
-               sp = spsave;
-               return ((Symbol)env[arg & 0x1f]).fn.opn(
-                          new LispObject [] {stack[pc--], b, a});
-    case 0x80: arg &= 0x1f;
-               if (arg == 0)
-               {   stack[spsave] = a;
-                   stack[spsave-1] = b;
-                   stack[spsave-2] = stack[sp];
-                   stack[spsave-3] = stack[sp-1];
-                   sp = spsave;
-                   pc = 1;  // NB to allow for arg-count byte
-                   continue;
-               }
-               pc = sp;
-               sp = spsave;
-               pc -= 2; 
-               return ((Symbol)env[arg & 0x1f]).fn.opn(
-                   new LispObject [] {stack[pc+1], stack[pc+2], b, a});
-    case 0xa0: arg &= 0x1f;
-               if (arg == 0)
-               {   stack[spsave] = a;
-                   stack[spsave-1] = b;
-                   stack[spsave-2] = stack[sp];
-                   stack[spsave-3] = stack[sp-1];
-                   stack[spsave-4] = stack[sp-2];
-                   sp = spsave;
-                   pc = 1;
-                   continue;
-               }
-               pc = sp;
-               sp = spsave;
-               pc -= 3; 
-               return ((Symbol)env[arg & 0x1f]).fn.opn(
-                   new LispObject [] {stack[pc+1], stack[pc+2], stack[pc+3], b, a});
-    case 0xc0: arg &= 0x1f;
-               if (arg == 0)
-               {   stack[spsave] = a;
-                   stack[spsave-1] = b;
-                   stack[spsave-2] = stack[sp];
-                   stack[spsave-3] = stack[sp-1];
-                   stack[spsave-4] = stack[sp-2];
-                   stack[spsave-5] = stack[sp-3];
-                   sp = spsave;
-                   pc = 1;
-                   continue;
-               }
-               pc = sp;
-               sp = spsave;
-               pc -= 4; 
-               return ((Symbol)env[arg & 0x1f]).fn.opn(
-                   new LispObject [] {stack[pc+1], stack[pc+2], stack[pc+3], stack[pc+4], b, a});
-    case 0xe0: arg &= 0x1f;
-               if (arg == 0)
-               {   stack[spsave] = a;
-                   stack[spsave-1] = b;
-                   stack[spsave-2] = stack[sp];
-                   stack[spsave-3] = stack[sp-1];
-                   stack[spsave-4] = stack[sp-2];
-                   stack[spsave-5] = stack[sp-3];
-                   stack[spsave-6] = stack[sp-4];
-                   sp = spsave;
-                   pc = 1;
-                   continue;
-               }
-               pc = sp;
-               sp = spsave;
-               pc -= 5; 
-               return ((Symbol)env[arg & 0x1f]).fn.opn(
-                   new LispObject [] {stack[pc+1], stack[pc+2], stack[pc+3], stack[pc+4], stack[pc+5], b, a});
-    default:
-               return Jlisp.error("oddity with JCALL " +
-                                  Integer.toHexString(arg));
+        if ((arg & 0x1f) == 0) // callself case
+        {   pc = jcallself(arg, spsave, a, b);
+            sp = spsave;
+            continue;
+        }
+        else
+        {   iw = sp;
+            sp = spsave;
+            return jcall(arg, iw, a, b);
         }
 case JCALLN:
         arg = bytecodes[pc++];
-        switch (bytecodes[pc++] & 0xff)  // number of args
-        {
-// Just at present I do not treat calls to self specially here (in the
-// way that I do for JCALL rather than JCALLN). This is something that I
-// should fix sometime...
-    case 0: sp = spsave;
-            return ((Symbol)env[arg]).fn.op0();
-    case 1: sp = spsave;
-            return ((Symbol)env[arg]).fn.op1(a);
-    case 2: sp = spsave;
-            return ((Symbol)env[arg]).fn.op2(b, a);
-    case 3: pc = sp;
-            sp = spsave;
-            return ((Symbol)env[arg]).fn.opn(new LispObject [] 
-                {stack[pc--], b, a});
-    case 4: pc = sp;
-            sp = spsave;
-            pc -= 2; 
-            return ((Symbol)env[arg]).fn.opn(new LispObject [] 
-                {stack[pc+1], stack[pc+2], b, a});
-    case 5: pc = sp;
-            sp = spsave;
-            pc -= 3; 
-            return ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[pc+1], stack[pc+2], stack[pc+3], b, a});
-    case 6: pc = sp;
-            sp = spsave;
-            pc -= 4; 
-            return ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[pc+1], stack[pc+2], stack[pc+3], stack[pc+4], b, a});
-    case 7: pc = sp;
-            sp = spsave;
-            pc -= 5;
-            return ((Symbol)env[arg]).fn.opn(new LispObject []
-	        {stack[pc+1], stack[pc+2], stack[pc+3], stack[pc+4], 
-                 stack[pc+5], b, a});
-    case 8: pc = sp;
-            sp = spsave;
-            pc -= 6;
-            return ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[pc+1], stack[pc+2], stack[pc+3], stack[pc+4], 
-                 stack[pc+5], stack[pc+6], b, a});
-    case 9: pc = sp;
-            sp = spsave;
-            pc -= 7;
-            return ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[pc+1], stack[pc+2], stack[pc+3], stack[pc+4], 
-                 stack[pc+5], stack[pc+6], stack[pc+7], b, a});
-    case 10:pc = sp;
-            sp = spsave;
-            pc -= 8;
-            return ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[pc+1], stack[pc+2], stack[pc+3], stack[pc+4], 
-                 stack[pc+5], stack[pc+6], stack[pc+7], stack[pc+8], b, a});
-    case 11:pc = sp;
-            sp = spsave;
-            pc -= 9;
-            return ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[pc+1], stack[pc+2], stack[pc+3], stack[pc+4], 
-                 stack[pc+5], stack[pc+6], stack[pc+7], stack[pc+8],
-                 stack[pc+9], b, a});
-    case 12:pc = sp;
-            sp = spsave;
-            pc -= 10;
-            return ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[pc+1], stack[pc+2], stack[pc+3], stack[pc+4], 
-                 stack[pc+5], stack[pc+6], stack[pc+7], stack[pc+8],
-                 stack[pc+9], stack[pc+10], b, a});
-    case 13:pc = sp;
-            sp = spsave;
-            pc -= 11;
-            return ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[pc+1], stack[pc+2], stack[pc+3], stack[pc+4], 
-                 stack[pc+5], stack[pc+6], stack[pc+7], stack[pc+8],
-                 stack[pc+9], stack[pc+10], stack[pc+11], b, a});
-    case 14:pc = sp;
-            sp = spsave;
-            pc -= 12;
-            return ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[pc+1], stack[pc+2], stack[pc+3], stack[pc+4], 
-                 stack[pc+5], stack[pc+6], stack[pc+7], stack[pc+8],
-                 stack[pc+9], stack[pc+10], stack[pc+11], stack[pc+12], b, a});
-    case 15:pc = sp;
-            sp = spsave;
-            pc -= 13;
-            return ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[pc+1], stack[pc+2], stack[pc+3], stack[pc+4], 
-                 stack[pc+5], stack[pc+6], stack[pc+7], stack[pc+8],
-                 stack[pc+9], stack[pc+10], stack[pc+11], stack[pc+12],
-                 stack[pc+13], b, a});
-// The Standard Lisp Report mandates at least 15 arguments must be supported.
-// Common Lisp maybe does not have any real limit? Anyway I will go to 20
-// here.
-    case 16:pc = sp;
-            sp = spsave;
-            pc -= 14;
-            return ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[pc+1], stack[pc+2], stack[pc+3], stack[pc+4], 
-                 stack[pc+5], stack[pc+6], stack[pc+7], stack[pc+8],
-                 stack[pc+9], stack[pc+10], stack[pc+11], stack[pc+12],
-                 stack[pc+13], stack[pc+14], b, a});
-    case 17:pc = sp;
-            sp = spsave;
-            pc -= 15;
-            return ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[pc+1], stack[pc+2], stack[pc+3], stack[pc+4], 
-                 stack[pc+5], stack[pc+6], stack[pc+7], stack[pc+8],
-                 stack[pc+9], stack[pc+10], stack[pc+11], stack[pc+12],
-                 stack[pc+13], stack[pc+14], stack[pc+15], b, a});
-    case 18:pc = sp;
-            sp = spsave;
-            pc -= 16;
-            return ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[pc+1], stack[pc+2], stack[pc+3], stack[pc+4], 
-                 stack[pc+5], stack[pc+6], stack[pc+7], stack[pc+8],
-                 stack[pc+9], stack[pc+10], stack[pc+11], stack[pc+12],
-                 stack[pc+13], stack[pc+14], stack[pc+15], stack[pc+16], b, a});
-    case 19:pc = sp;
-            sp = spsave;
-            pc -= 17;
-            return ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[pc+1], stack[pc+2], stack[pc+3], stack[pc+4], 
-                 stack[pc+5], stack[pc+6], stack[pc+7], stack[pc+8],
-                 stack[pc+9], stack[pc+10], stack[pc+11], stack[pc+12],
-                 stack[pc+13], stack[pc+14], stack[pc+15], stack[pc+16],
-                 stack[pc+17], b, a});
-    case 20:pc = sp;
-            sp = spsave;
-            pc -= 18;
-            return ((Symbol)env[arg]).fn.opn(new LispObject []
-                {stack[pc+1], stack[pc+2], stack[pc+3], stack[pc+4], 
-                 stack[pc+5], stack[pc+6], stack[pc+7], stack[pc+8],
-                 stack[pc+9], stack[pc+10], stack[pc+11], stack[pc+12],
-                 stack[pc+13], stack[pc+14], stack[pc+15], stack[pc+16],
-                 stack[pc+17], stack[pc+18], b, a});
-    default:
-            Jlisp.error("calls with over 20 args not supported in this Lisp");
-        }
+        iw = sp;
+        sp = spsave;
+        return liftjcalln(arg, bytecodes[pc++] & 0xff, iw, a, b);
 case JUMP:
-        pc = pc + (bytecodes[pc] & 0xff) + 1;
-        continue;
+        arg = 0;
+        break;
 case JUMP_B:
         pc = pc - (bytecodes[pc] & 0xff) + 1;
         continue;
 case JUMP_L:
         arg = bytecodes[pc++] & 0xff;
-        pc = pc + (arg << 8) + (bytecodes[pc] & 0xff) + 1;
-        continue;
+        break;
 case JUMP_BL:
         arg = bytecodes[pc++] & 0xff;
         pc = pc - ((arg << 8) + (bytecodes[pc] & 0xff)) + 1;
         continue;
 case JUMPNIL:
-        if (a == Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (a == Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPNIL_B:
@@ -1631,7 +1393,7 @@ case JUMPNIL_B:
         continue;
 case JUMPNIL_L:
         arg = bytecodes[pc++] & 0xff;
-        if (a == Jlisp.nil) pc = pc + (arg << 8) + (bytecodes[pc] & 0xff) + 1;
+        if (a == Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPNIL_BL:
@@ -1640,7 +1402,8 @@ case JUMPNIL_BL:
         else pc++;
         continue;
 case JUMPT:
-        if (a != Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (a != Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPT_B:
@@ -1649,7 +1412,7 @@ case JUMPT_B:
         continue;
 case JUMPT_L:
         arg = bytecodes[pc++] & 0xff;
-        if (a != Jlisp.nil) pc = pc + (arg << 8) + (bytecodes[pc] & 0xff) + 1;
+        if (a != Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPT_BL:
@@ -1658,7 +1421,8 @@ case JUMPT_BL:
         else pc++;
         continue;
 case JUMPATOM:
-        if (a.atom) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (a.atom) break;
         else pc++;
         continue;
 case JUMPATOM_B:
@@ -1667,7 +1431,7 @@ case JUMPATOM_B:
         continue;
 case JUMPATOM_L:
         arg = bytecodes[pc++] & 0xff;
-        if (a.atom) pc = pc + (arg << 8) + (bytecodes[pc] & 0xff) + 1;
+        if (a.atom) break;
         else pc++;
         continue;
 case JUMPATOM_BL:
@@ -1676,7 +1440,8 @@ case JUMPATOM_BL:
         else pc++;
         continue;
 case JUMPNATOM:
-        if (!a.atom) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (!a.atom) break;
         else pc++;
         continue;
 case JUMPNATOM_B:
@@ -1685,7 +1450,7 @@ case JUMPNATOM_B:
         continue;
 case JUMPNATOM_L:
         arg = bytecodes[pc++] & 0xff;
-        if (!a.atom) pc = pc + (arg << 8) + (bytecodes[pc] & 0xff) + 1;
+        if (!a.atom) break;
         else pc++;
         continue;
 case JUMPNATOM_BL:
@@ -1696,7 +1461,8 @@ case JUMPNATOM_BL:
 case JUMPEQ:
 // @@@ here and many related places would need treatment of numbers if
 // I had to support EQ being a reliable comparison on integers.
-        if (a == b) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (a == b) break;
         else pc++;
         continue;
 case JUMPEQ_B:
@@ -1705,7 +1471,7 @@ case JUMPEQ_B:
         continue;
 case JUMPEQ_L:
         arg = bytecodes[pc++] & 0xff;
-        if (a == b) pc = pc + (arg << 8) + (bytecodes[pc] & 0xff) + 1;
+        if (a == b) break;
         else pc++;
         continue;
 case JUMPEQ_BL:
@@ -1714,7 +1480,8 @@ case JUMPEQ_BL:
         else pc++;
         continue;
 case JUMPNE:
-        if (a != b) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (a != b) break;
         else pc++;
         continue;
 case JUMPNE_B:
@@ -1723,7 +1490,7 @@ case JUMPNE_B:
         continue;
 case JUMPNE_L:
         arg = bytecodes[pc++] & 0xff;
-        if (a != b) pc = pc + (arg << 8) + (bytecodes[pc] & 0xff) + 1;
+        if (a != b) break;
         else pc++;
         continue;
 case JUMPNE_BL:
@@ -1732,7 +1499,8 @@ case JUMPNE_BL:
         else pc++;
         continue;
 case JUMPEQUAL:
-        if (a.lispequals(b)) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (a.lispequals(b)) break;
         else pc++;
         continue;
 case JUMPEQUAL_B:
@@ -1741,7 +1509,7 @@ case JUMPEQUAL_B:
         continue;
 case JUMPEQUAL_L:
         arg = bytecodes[pc++] & 0xff;
-        if (a.lispequals(b)) pc = pc + (arg << 8) + (bytecodes[pc] & 0xff) + 1;
+        if (a.lispequals(b)) break;
         else pc++;
         continue;
 case JUMPEQUAL_BL:
@@ -1750,7 +1518,8 @@ case JUMPEQUAL_BL:
         else pc++;
         continue;
 case JUMPNEQUAL:
-        if (!a.lispequals(b)) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (!a.lispequals(b)) break;
         else pc++;
         continue;
 case JUMPNEQUAL_B:
@@ -1759,7 +1528,7 @@ case JUMPNEQUAL_B:
         continue;
 case JUMPNEQUAL_L:
         arg = bytecodes[pc++] & 0xff;
-        if (!a.lispequals(b)) pc = pc + (arg << 8) + (bytecodes[pc] & 0xff) + 1;
+        if (!a.lispequals(b)) break;
         else pc++;
         continue;
 case JUMPNEQUAL_BL:
@@ -1768,223 +1537,269 @@ case JUMPNEQUAL_BL:
         else pc++;
         continue;
 case JUMPL0NIL:
-        if (stack[sp-0] == Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (stack[sp-0] == Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPL0T:
-        if (stack[sp-0] != Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (stack[sp-0] != Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPL1NIL:
-        if (stack[sp-1] == Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (stack[sp-1] == Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPL1T:
-        if (stack[sp-1] != Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (stack[sp-1] != Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPL2NIL:
-        if (stack[sp-2] == Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (stack[sp-2] == Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPL2T:
-        if (stack[sp-2] != Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (stack[sp-2] != Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPL3NIL:
-        if (stack[sp-3] == Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (stack[sp-3] == Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPL3T:
-        if (stack[sp-3] != Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (stack[sp-3] != Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPL4NIL:
-        if (stack[sp-4] == Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (stack[sp-4] == Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPL4T:
-        if (stack[sp-4] != Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (stack[sp-4] != Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPST0NIL:
-        if ((stack[sp-0] = a) == Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if ((stack[sp-0] = a) == Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPST0T:
-        if ((stack[sp-0] = a) != Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if ((stack[sp-0] = a) != Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPST1NIL:
-        if ((stack[sp-1] = a) == Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if ((stack[sp-1] = a) == Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPST1T:
-        if ((stack[sp-1] = a) != Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if ((stack[sp-1] = a) != Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPST2NIL:
-        if ((stack[sp-2] = a) == Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if ((stack[sp-2] = a) == Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPST2T:
-        if ((stack[sp-2] = a) != Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if ((stack[sp-2] = a) != Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPL0ATOM:
-        if (stack[sp-0].atom) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (stack[sp-0].atom) break;
         else pc++;
         continue;
 case JUMPL0NATOM:
-        if (!stack[sp-0].atom) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (!stack[sp-0].atom) break;
         else pc++;
         continue;
 case JUMPL1ATOM:
-        if (stack[sp-1].atom) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (stack[sp-1].atom) break;
         else pc++;
         continue;
 case JUMPL1NATOM:
-        if (!stack[sp-1].atom) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (!stack[sp-1].atom) break;
         else pc++;
         continue;
 case JUMPL2ATOM:
-        if (stack[sp-2].atom) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (stack[sp-2].atom) break;
         else pc++;
         continue;
 case JUMPL2NATOM:
-        if (!stack[sp-2].atom) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (!stack[sp-2].atom) break;
         else pc++;
         continue;
 case JUMPL3ATOM:
-        if (stack[sp-3].atom) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (stack[sp-3].atom) break;
         else pc++;
         continue;
 case JUMPL3NATOM:
-        if (!stack[sp-3].atom) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (!stack[sp-3].atom) break;
         else pc++;
         continue;
 case JUMPFREE1NIL:
-        if (env[1].car/*value*/ == Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[1].car/*value*/ == Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPFREE1T:
-        if (env[1].car/*value*/ != Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[1].car/*value*/ != Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPFREE2NIL:
-        if (env[2].car/*value*/ == Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[2].car/*value*/ == Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPFREE2T:
-        if (env[2].car/*value*/ != Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[2].car/*value*/ != Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPFREE3NIL:
-        if (env[3].car/*value*/ == Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[3].car/*value*/ == Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPFREE3T:
-        if (env[3].car/*value*/ != Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[3].car/*value*/ != Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPFREE4NIL:
-        if (env[4].car/*value*/ == Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[4].car/*value*/ == Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPFREE4T:
-        if (env[4].car/*value*/ != Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[4].car/*value*/ != Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPFREENIL:
-        arg = bytecodes[pc++] & 0xff;
-        if (env[arg].car/*value*/ == Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[bytecodes[pc++] & 0xff].car/*value*/ == Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPFREET:
-        arg = bytecodes[pc++] & 0xff;
-        if (env[arg].car/*value*/ != Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[bytecodes[pc++] & 0xff].car/*value*/ != Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPLIT1EQ:
-        if (env[1] == a) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[1] == a) break;
         else pc++;
         continue;
 case JUMPLIT1NE:
-        if (env[1] != a) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[1] != a) break;
         else pc++;
         continue;
 case JUMPLIT2EQ:
-        if (env[2] == a) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[2] == a) break;
         else pc++;
         continue;
 case JUMPLIT2NE:
-        if (env[2] != a) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[2] != a) break;
         else pc++;
         continue;
 case JUMPLIT3EQ:
-        if (env[3] == a) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[3] == a) break;
         else pc++;
         continue;
 case JUMPLIT3NE:
-        if (env[3] != a) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[3] != a) break;
         else pc++;
         continue;
 case JUMPLIT4EQ:
-        if (env[4] == a) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[4] == a) break;
         else pc++;
         continue;
 case JUMPLIT4NE:
-        if (env[4] != a) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[4] != a) break;
         else pc++;
         continue;
 case JUMPLITEQ:
-        arg = bytecodes[pc++] & 0xff;
-        if (env[arg] == a) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[bytecodes[pc++] & 0xff] == a) break;
         else pc++;
         continue;
 case JUMPLITNE:
-        arg = bytecodes[pc++] & 0xff;
-        if (env[arg] != a) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (env[bytecodes[pc++] & 0xff] != a) break;
         else pc++;
         continue;
 case JUMPB1NIL:
-        arg = bytecodes[pc++] & 0xff;
-        if (builtin1[arg].op1(a) == Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (builtin1[bytecodes[pc++] & 0xff].op1(a) == Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPB1T:
-        arg = bytecodes[pc++] & 0xff;
-        if (builtin1[arg].op1(a) != Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (builtin1[bytecodes[pc++] & 0xff].op1(a) != Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPB2NIL:
-        arg = bytecodes[pc++] & 0xff;
-        if (builtin2[arg].op2(b, a) == Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (builtin2[bytecodes[pc++] & 0xff].op2(b, a) == Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPB2T:
-        arg = bytecodes[pc++] & 0xff;
-        if (builtin2[arg].op2(b, a) != Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (builtin2[bytecodes[pc++] & 0xff].op2(b, a) != Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPFLAGP:
-        arg = bytecodes[pc++] & 0xff;
-        if (builtin2[BIflagp].op2(a, env[arg]) != Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (builtin2[BIflagp].op2(a, env[bytecodes[pc++] & 0xff]) != Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPNFLAGP:
-        arg = bytecodes[pc++] & 0xff;
-        if (builtin2[BIflagp].op2(a, env[arg]) == Jlisp.nil) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        arg = 0;
+        if (builtin2[BIflagp].op2(a, env[bytecodes[pc++] & 0xff]) == Jlisp.nil) break;
         else pc++;
         continue;
 case JUMPEQCAR:
         arg = bytecodes[pc++] & 0xff;
-        if (!a.atom && env[arg] == a.car) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        if (!a.atom && env[arg] == a.car)
+        {   arg = 0;
+            break;
+        }
         else pc++;
         continue;
 case JUMPNEQCAR:
         arg = bytecodes[pc++] & 0xff;
-        if (a.atom || env[arg] != a.car) pc = pc + (bytecodes[pc] & 0xff) + 1;
+        if (a.atom || env[arg] != a.car)
+        {   arg = 0;
+            break;
+        }
         else pc++;
         continue;
 case CATCH:
@@ -2008,15 +1823,7 @@ case PVBIND:
 case PVRESTORE:
         Jlisp.error("bytecode PVRESTORE not implemented");
 case FREEBIND:
-        arg = bytecodes[pc++] & 0xff;
-        {   LispObject [] v = ((LispVector)env[arg]).vec;
-            for (int i=0; i<v.length; i++)
-            {   stack[++sp] = v[i].car/*value*/;
-                v[i].car/*value*/ = Jlisp.nil;
-            }
-            stack[++sp] = env[arg];
-            stack[++sp] = Spid.fbind;
-        }
+        sp = freebind(bytecodes[pc++] & 0xff, sp);
         continue;
 case FREERSTR:
         {   sp--;   // ought to be the Spid
@@ -2103,36 +1910,22 @@ case NUMBERP:
         a = (a instanceof LispNumber) ? Jlisp.lispTrue : Jlisp.nil;
         continue;
 case CAR:
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
+        a = safecar(a);
         continue;
 case CDR:
-        if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
-        a = a.cdr;
+        a = safecdr(a);
         continue;
 case CAAR:
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
+        a = safecar(safecar(a));
         continue;
 case CADR:
-        if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
-        a = a.cdr;
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
+        a = safecar(safecdr(a));
         continue;
 case CDAR:
-        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-        a = a.car;
-        if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
-        a = a.cdr;
+        a = safecdr(safecar(a));
         continue;
 case CDDR:
-        if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
-        a = a.cdr;
-        if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
-        a = a.cdr;
+        a = safecdr(safecdr(a));
         continue;
 case CONS:
         a = new Cons(b, a);
@@ -2295,31 +2088,46 @@ case SPARE1:
         Jlisp.error("bytecode SPARE1 not implemented");
 case SPARE2:
         Jlisp.error("bytecode SPARE2 not implemented");
-    }
-    }}
+    } // end of switch
+// This should be where I get to if I do a "break;" in the big switch
+// statement above. Note that I am still within the for loop.
+    pc = pc + (arg << 8) + (bytecodes[pc] & 0xff) + 1;
+    continue;
+    } // end of for
+    } // end of try
     catch (Exception e)
     {
 // What I NEED to do here is to restore any free bindings that have been made.
 // I can find them because there is a Spid.fbind on the stack to mark them.
 //
+        sp = unwinder(sp, spsave);
+        throw e;
+    }
+}
+
+int unwinder(int sp, int spsave)
+{
+    LispObject a;
 // What I also WANT to do is to print a fragment of backtrace in relevant
 // cases.
-
-        while (sp != spsave)
-        {   a = stack[sp--];
-            if (a != Spid.fbind) continue;
-            LispObject [] v = ((LispVector)stack[sp--]).vec;
-            for (int i=v.length-1; i>=0; i--)
-            {   v[i].car/*value*/ = stack[sp--];
-            }
+    while (sp != spsave)
+    {   a = stack[sp--];
+        if (a != Spid.fbind) continue;
+        LispObject [] v = ((LispVector)stack[sp--]).vec;
+        for (int i=v.length-1; i>=0; i--)
+        {   v[i].car/*value*/ = stack[sp--];
         }
-        if (Jlisp.backtrace)
+    }
+    if (Jlisp.backtrace)
+    {   try
         {   Jlisp.errprint("Within: ");
             env[0].errPrint();
             Jlisp.errprintln();
         }
-        throw e;
+        catch (Exception e)
+        {}
     }
+    return spsave;
 }
 
 }

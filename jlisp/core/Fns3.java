@@ -2787,7 +2787,8 @@ class TimeFn extends BuiltinFunction
 {
     public LispObject op0() throws Exception
     {
-        return LispInteger.valueOf(System.currentTimeMillis());
+        long tt = Jlisp.bean.getCurrentThreadCpuTime();
+        return LispInteger.valueOf(tt/1000000);
     }
 }
 
