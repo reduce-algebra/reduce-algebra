@@ -891,6 +891,8 @@ asserted procedure cl_xpandlet(u: List, letal: AList): List;
 	    letal := cdr letal;
       	 return w
       >>;
+      if car u eq '!:dn!: then
+ 	 return u;
       return car u . for each arg in cdr u collect cl_xpandlet(arg, letal)
    end;
 
