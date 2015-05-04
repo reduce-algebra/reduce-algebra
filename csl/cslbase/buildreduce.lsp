@@ -649,7 +649,10 @@ symbolic procedure get_configuration_data();
             put(r1, 'folder, "regressions");
             reduce_regression_tests :=
                r1 . reduce_regression_tests >> >>;
-    reduce_test_cases := append(reduce_test_cases, reduce_regression_tests);
+% I will run the "alg" test twice! This is for the benefit of Java where the
+% first time will be seriously slowed down by the need to JIT almost
+% everything.
+    reduce_test_cases := 'alg . append(reduce_test_cases, reduce_regression_tests);
     for each x in w do
        if member('csl, cddr x) then put(car x, 'folder, cadr x);
 %   princ "reduce_base_modules: "; print reduce_base_modules;
