@@ -3104,7 +3104,6 @@ END
   fi
 fi
 
-
 # Set version
 FOX_MAJOR_VERSION=1
 FOX_MINOR_VERSION=6

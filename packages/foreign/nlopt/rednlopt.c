@@ -50,7 +50,8 @@ char *nlopt_result_mess(nlopt_result r) {
 void NLOPT_create(int32_t anum, int32_t n) {
   opt = nlopt_create(anum, n);
   if (opt == NULL)
-    fprintf(stderr,"Couldn't create '%s'!\n",nlopt_algorithm_name(anum));
+    fprintf(stderr, "Couldn't create '%s'!\n", nlopt_algorithm_name(anum));
+    // nlopt_algorithm_name is built-in to the NLopt library
 }
 
 void NLOPT_destroy() {
@@ -58,14 +59,14 @@ void NLOPT_destroy() {
 }
 
 int32_t NLOPT_get_algorithm() {
-  // The only reason for this "NLOPT_" is to convert from nlopt_algorithm to int32_t"!
+  // The only reason for this 'NLOPT_' is to convert from nlopt_algorithm to 'int32_t'!
   // Isn't there a better way?
   int32_t a = nlopt_get_algorithm(opt);
   return a;
 }
 
 int32_t NLOPT_get_dimension() {
-  // The only reason for this "NLOPT_" is to convert from "unsigned" to "int32_t"!
+  // The only reason for this 'NLOPT_' is to convert from "unsigned" to 'int32_t'!
   int32_t d = nlopt_get_dimension(opt);
   return d;
 }
