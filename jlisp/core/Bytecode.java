@@ -791,6 +791,28 @@ static int poll_time_countdown = 0;
 
 static long last_clock = -1;
 
+//
+// The Java systems I am using at present seem to treat the code here
+// in a very unkind manner. Even though it is the one main hot-spot for the
+// whole of Jlisp the default behaviour of the JIT is to observe that it is
+// a bulky procedure and refuse to compile it unless one uses the specialist
+// command line option -XX:-DontCompileHugeMethods. The consequence is a
+// substantial performance hit. It seems that by default that methods that
+// involve over 8K instructions in the JVM bytecode form will be rejected
+// for compilation - originally this was over twice that size. When one does a
+// web search many people say "Fire the programmer who wrote the large procedure"
+// but for the current purpose I remain of the opinion that the original code I had
+// here was about what I wanted, and the hacked version here now is ugly and
+// unnatural and the awkwardness is merely to try to work around JIT
+// limitations.
+//
+// The main method "interpret" here is now, at the time of measuring 7560 Java
+// instructions long, and the JIT will compile methods of length up to 8K, so
+// this now just squeezes in. But if I get round to supporting catch, throw and
+// other things I may bump up against the limit again!               ACN May 2015
+
+
+
 LispObject liftcalln(int arg, int iw, int sp,
                      LispObject a, LispObject b) throws Exception
 {
@@ -1055,11 +1077,10 @@ default:
 void dopoll() throws Exception
 {
     {   poll_time_countdown = 10000;
-//      long t = System.currentTimeMillis();
-        long t = Jlisp.bean.getCurrentThreadCpuTime();
+        long t = System.currentTimeMillis();;
         if (last_clock < 0) last_clock = t;
-        else while (t - last_clock > 1000000000)
-        {   last_clock += 1000000000;
+        else while (t - last_clock > 1000)
+        {   last_clock += 1000;
             ResourceException.time_now++;
             if (ResourceException.time_limit > 0 &&
                 ResourceException.time_now > ResourceException.time_limit)
@@ -1083,18 +1104,6 @@ void extendstack() throws Exception
         Jlisp.errprint("+++ Stack enlarged to " + stack_size);
 }
 
-LispObject safecar(LispObject a) throws Exception
-{
-    if (a.atom) Jlisp.error("attempt to take car of an atom", a);
-    return a.car;
-}
-
-LispObject safecdr(LispObject a) throws Exception
-{
-    if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
-    return a.cdr;
-}
-
 int freebind(int arg, int sp)
 {
     LispObject [] v = ((LispVector)env[arg]).vec;
@@ -1107,6 +1116,8 @@ int freebind(int arg, int sp)
     return sp;
 }
 
+long count = 0;
+
 LispObject interpret(int pc) throws Exception
 {
     if (--poll_time_countdown < 0) dopoll();
@@ -1114,14 +1125,16 @@ LispObject interpret(int pc) throws Exception
     int arg;
     LispObject a = Jlisp.nil, b = Jlisp.nil, w;
     int iw, fname;
-
     if (sp > stack_size - 500) // the 500 is a pretty arbitrary margin!
         extendstack();         // bad enough code could breach it.
+    count += 30;
 
     try
     {
     for (;;)
-    {
+    {   count++;
+// In Jlisp I will count the number of bytecode ops executed in any function
+// and I will attribute an overhead of 30 to function entry+exit.
     switch (arg = bytecodes[pc++])
     {
 case LOADLOC:
@@ -1232,7 +1245,9 @@ case CARLOC9:
 case CARLOC10:
 case CARLOC11:
         b = a;
-        a = safecar(stack[sp - (arg - CARLOC0)]);
+        a = stack[sp - (arg - CARLOC0)];
+        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
+        a = a.car;
         continue;
 case CDRLOC0:
 case CDRLOC1:
@@ -1241,14 +1256,20 @@ case CDRLOC3:
 case CDRLOC4:
 case CDRLOC5:
         b = a;
-        a = safecdr(stack[sp - (arg - CDRLOC0)]);
+        a = stack[sp - (arg - CDRLOC0)];
+        if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
+        a = a.cdr;
         continue;
 case CAARLOC0:
 case CAARLOC1:
 case CAARLOC2:
 case CAARLOC3:
         b = a;
-        a = safecar(safecar(stack[sp - (arg - CAARLOC0)]));
+        a = stack[sp - (arg - CAARLOC0)];
+        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
+        a = a.car;
+        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
+        a = a.car;
         continue;
 case CALL0:
 	a = ((Symbol)env[bytecodes[pc++] & 0xff]).fn.op0();
@@ -1371,6 +1392,8 @@ case JCALLN:
         return liftjcalln(arg, bytecodes[pc++] & 0xff, iw, a, b);
 case JUMP:
         arg = 0;
+// "break" here drops out to some commoned up code that completes the
+// implementation of a forward branch.
         break;
 case JUMP_B:
         pc = pc - (bytecodes[pc] & 0xff) + 1;
@@ -1910,22 +1933,36 @@ case NUMBERP:
         a = (a instanceof LispNumber) ? Jlisp.lispTrue : Jlisp.nil;
         continue;
 case CAR:
-        a = safecar(a);
+        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
+        a = a.car;
         continue;
 case CDR:
-        a = safecdr(a);
+        if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
+        a = a.cdr;
         continue;
 case CAAR:
-        a = safecar(safecar(a));
+        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
+        a = a.car;
+        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
+        a = a.car;
         continue;
 case CADR:
-        a = safecar(safecdr(a));
+        if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
+        a = a.cdr;
+        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
+        a = a.car;
         continue;
 case CDAR:
-        a = safecdr(safecar(a));
+        if (a.atom) Jlisp.error("attempt to take car of an atom", a);
+        a = a.car;
+        if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
+        a = a.cdr;
         continue;
 case CDDR:
-        a = safecdr(safecdr(a));
+        if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
+        a = a.cdr;
+        if (a.atom) Jlisp.error("attempt to take cdr of an atom", a);
+        a = a.cdr;
         continue;
 case CONS:
         a = new Cons(b, a);
@@ -2134,4 +2171,3 @@ int unwinder(int sp, int spsave)
 
 
 // End of Bytecode.java
-

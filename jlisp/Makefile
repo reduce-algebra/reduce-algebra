@@ -14,10 +14,11 @@ clean:
 
 reduce.jar:	core/*.java reduce_manifest reduce.img
 	javac -d . core/*.java
+	rm -f default.img
 	cp reduce.img default.img
 	-rm -f reduce.jar
 	jar cmf reduce_manifest reduce.jar uk default.img
-	rm default.img
+	rm -f default.img
 
 # minireduce.jar is a cut-down system not containing all the Reduce modules.
 # It will thus be smaller (albeit less capable of performing advanced
@@ -25,20 +26,22 @@ reduce.jar:	core/*.java reduce_manifest reduce.img
 
 minireduce.jar:	core/*.java reduce_manifest minireduce.img
 	javac -d . core/*.java
+	rm -f default.img
 	cp minireduce.img default.img
 	-rm -f minireduce.jar
 	jar cmf reduce_manifest minireduce.jar uk default.img
-	rm default.img
+	rm -f default.img
 
 # jlisp.jar is merely the Lisp system without any algebra. If may sometimes
 # be easier to work with this smaller system while developing or interfacing?
 
 jlisp.jar:	core/*.java jlisp_manifest jlisp.img
 	javac -d . core/*.java
+	rm -f default.img
 	cp jlisp.img default.img
 	-rm -f jlisp.jar
 	jar cmf jlisp_manifest jlisp.jar uk default.img
-	rm default.img
+	rm -f default.img
 
 
 JLISP   = java -jar jlisp.jar

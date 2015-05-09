@@ -73,6 +73,12 @@ static void print(String s) throws ResourceException
     ((LispStream)(lit[Lit.std_output].car/*value*/)).print(s);
 }
 
+static void printf(String s, Object... args) throws ResourceException
+{
+    String ss = String.format(s, args);
+    ((LispStream)(lit[Lit.std_output].car/*value*/)).print(ss);
+}
+
 static void println(String s) throws ResourceException
 {
     ((LispStream)(lit[Lit.std_output].car/*value*/)).println(s);
@@ -231,14 +237,15 @@ public static void startup(String [] args,
     if (!CWin.isApplet) System.exit(0);
 }
 
+static boolean hasThreadTime = false;
 static ThreadMXBean bean;
 
 static void startup1(String [] args) throws ResourceException
 {
     bean = ManagementFactory.getThreadMXBean();
-//  System.out.println("Time support = " + bean.isThreadCpuTimeSupported());
-//  long startTime = System.currentTimeMillis();
-    long startTime = bean.getCurrentThreadCpuTime();
+    long startTime =
+        (hasThreadTime = bean.isThreadCpuTimeSupported()) ?
+        bean.getCurrentThreadCpuTime()/1000000 :  System.currentTimeMillis();
     String [] inputFile = new String [10];
     int inputCount = 0;
     imageCount = 0;
@@ -630,7 +637,7 @@ static void startup1(String [] args) throws ResourceException
 
 // Having set up an image I optionally display a banner.
         if (verbose)
-        {   lispIO.println("Jlisp 0.93a ... " +
+        {   lispIO.println("Jlisp 0.97 ... " +
                ((LispString)lit[Lit.birthday]).string);
             if (loaded)
             {   lispIO.println("Sym    = " + Symbol.symbolCount);
@@ -639,7 +646,7 @@ static void startup1(String [] args) throws ResourceException
             }
             if (copyrightRequest)
             {
-                lispIO.println("Copyright \u00a9 (C) Codemist Ltd, 1998-2000");
+                lispIO.println("Copyright \u00a9 (C) Codemist Ltd, 1998-2015");
             }
         }
 
@@ -852,9 +859,9 @@ static void startup1(String [] args) throws ResourceException
         else break; // loop to do with RESTART-CSL calls
     }
     if (verbose)
-    {   long endTime = bean.getCurrentThreadCpuTime();
-//      long endTime = System.currentTimeMillis();
-        long elapsed = (endTime - startTime)/1000000;
+    {   long endTime = hasThreadTime ?
+            bean.getCurrentThreadCpuTime()/1000000 : System.currentTimeMillis();
+        long elapsed = endTime - startTime;
         long secs = elapsed / 1000;
         long millis = elapsed % 1000;
         long tenths = millis / 100;
@@ -1997,7 +2004,25 @@ static void initfns(Object [][] builtins)
         fn.name = name;
         Symbol.intern(name, fn, null);
     }
+}
 
+static void inituserfns(Object [][] builtins)
+{
+// When the things in U01.java to U60.java are initialised their names
+// are flagged as "lose" and their "inited" properties are set to false.
+    Symbol lose = Symbol.intern("lose");
+    Symbol lispT = Symbol.intern("t");
+    for (int i=0; i<builtins.length; i++)
+    {   Object [] s = builtins[i];
+        String name = (String)s[0];
+        LispFunction fn = (LispFunction)s[1];
+        ((BuiltinFunction)fn).inited = false;
+        fn.name = name;
+        try
+        {   Fns.put(Symbol.intern(name, fn, null), lose, lispT);
+        } catch (ResourceException e)
+        {}
+    }
 }
 
 static JlispExtras extrabuiltins = null;

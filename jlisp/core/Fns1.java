@@ -49,7 +49,7 @@ import java.lang.reflect.*;
 
 class Fns1
 {
-    Object [][] builtins = 
+    Object [][] builtins =
     {
         {"userjava",                    new UserJavaFn()},
         {"acons",                       new AconsFn()},
@@ -301,22 +301,22 @@ class UserJavaFn extends BuiltinFunction
             Class lov = (new LispObject [0]).getClass();
             m0 = m1 = m2 = mn = null;
             try
-            {   m0 = c.getMethod("op0", 
+            {   m0 = c.getMethod("op0",
                                 new Class [] {});
             }
             catch (NoSuchMethodException nsm) {}
             try
-            {   m1 = c.getMethod("op1", 
+            {   m1 = c.getMethod("op1",
                                 new Class [] {lo});
             }
             catch (NoSuchMethodException nsm) {}
             try
-            {   m2 = c.getMethod("op2", 
+            {   m2 = c.getMethod("op2",
                                 new Class [] {lo, lo});
             }
             catch (NoSuchMethodException nsm) {}
             try
-            {   mn = c.getMethod("opn", 
+            {   mn = c.getMethod("opn",
                                 new Class [] {lov});
             }
             catch (NoSuchMethodException nsm) {}
@@ -356,7 +356,7 @@ class AconsFn extends BuiltinFunction
 {
     public LispObject opn(LispObject [] args) throws Exception
     {
-        if (args.length != 3) 
+        if (args.length != 3)
             return error("acons called with " + args.length +
                          " args when 3 were expected");
         return new Cons(new Cons(args[0], args[1]), args[2]);
@@ -478,7 +478,7 @@ class Apply2Fn extends BuiltinFunction
 {
     public LispObject opn(LispObject [] args) throws Exception
     {
-        if (args.length != 3) 
+        if (args.length != 3)
             return error("apply2 called with " + args.length +
                          " args when 3 were expected");
         LispObject arg1 = args[0];
@@ -496,7 +496,7 @@ class Apply3Fn extends BuiltinFunction
 {
     public LispObject opn(LispObject [] args) throws Exception
     {
-        if (args.length != 4) 
+        if (args.length != 4)
             return error("apply3 called with " + args.length +
                          " args when 4 were expected");
         LispObject arg1 = args[0];
@@ -745,7 +745,7 @@ class Bps_putvFn extends BuiltinFunction
 {
     public LispObject opn(LispObject [] args) throws Exception
     {
-        if (args.length != 3) 
+        if (args.length != 3)
             return error("bps-putv called with " + args.length +
                          " args when 3 were expected");
         int n = args[1].intValue();
@@ -1370,7 +1370,7 @@ class ClrhashFn extends BuiltinFunction
         ((LispHash)Jlisp.lit[Lit.hashtab]).hash.clear();
         return Jlisp.nil;
     }
-    
+
     public LispObject op1(LispObject ht) throws Exception
     {
         ((LispHash)ht).hash.clear();
@@ -1892,7 +1892,7 @@ class EqualFn extends BuiltinFunction
     public LispObject op2(LispObject arg1, LispObject arg2)
     {
         if (arg1 == arg2) return Jlisp.lispTrue;
-        return (arg1.lispequals(arg2) ? 
+        return (arg1.lispequals(arg2) ?
                 Jlisp.lispTrue :
                 Jlisp.nil);
     }
@@ -1947,8 +1947,8 @@ class ErrorsetFn extends BuiltinFunction
 {
     public LispObject opn(LispObject [] args) throws Exception
     {
-        if (args.length != 3) 
-            return error("errorset called with " + args.length + 
+        if (args.length != 3)
+            return error("errorset called with " + args.length +
                          " arguments when 3 expected");
         LispObject form = args[0];
         boolean savehead = Jlisp.headline;
@@ -1969,7 +1969,7 @@ class ErrorsetFn extends BuiltinFunction
                     error("GO or RETURN out of context");
                 }
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
                 if (e instanceof ProgEvent)
                 {   ProgEvent ep = (ProgEvent)e;
@@ -2009,8 +2009,10 @@ class ErrorsetFn extends BuiltinFunction
                         Jlisp.errprintln("+++++ Error: " + m);
                     }
                 }
+// Sometimes when debugging I will temporarily edit the next line by
+// writing "back || true" so that the backtarce is ALWAYS displayed!
                 if (back)
-                {   LispStream ee = 
+                {   LispStream ee =
                         (LispStream)Jlisp.lit[Lit.err_output].car/*value*/;
                     e.printStackTrace(new PrintWriter(new WriterToLisp(ee)));
                 }
@@ -2082,8 +2084,8 @@ class ResourceLimitFn extends BuiltinFunction
     public LispObject opn(LispObject [] args) throws Exception
     {
         boolean ok = true;
-        if (args.length > 5 || args.length < 1) 
-            return error("resource-limit called with " + args.length + 
+        if (args.length > 5 || args.length < 1)
+            return error("resource-limit called with " + args.length +
                          " arguments when 1 to 5 expected");
         int save_time_base    = ResourceException.time_base,
             save_space_base   = ResourceException.space_base,
@@ -2610,7 +2612,7 @@ class FlushFn extends BuiltinFunction
 {
     public LispObject op0() throws Exception
     {
-        LispStream ee = 
+        LispStream ee =
             (LispStream)Jlisp.lit[Lit.std_output].car/*value*/;
         ee.flush();
         return Jlisp.nil;
@@ -2728,7 +2730,9 @@ class Gensym1Fn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
-        return new Gensym(((Symbol)arg1).pname);
+        if (arg1 instanceof LispString)
+            return new Gensym(((LispString)arg1).string);
+        else return new Gensym(((Symbol)arg1).pname);
     }
 }
 
@@ -2788,7 +2792,7 @@ class GetdFn extends BuiltinFunction
     {
         if (!(arg1 instanceof Symbol)) return Jlisp.nil;
         Symbol name = (Symbol)arg1;
-        if (name.special != null) 
+        if (name.special != null)
             return new Cons(Jlisp.lit[Lit.fexpr], name.special);
         LispFunction fn = name.fn;
         if (fn instanceof Undefined) return Jlisp.nil;
@@ -2942,7 +2946,7 @@ class HashcontentsFn extends BuiltinFunction
             {   Object key = k.next();
                 Object value = h.hash.get(key);
                 r = new Cons(
-                        new Cons((LispObject)key, 
+                        new Cons((LispObject)key,
                                  (LispObject)value),
                         r);
             }
@@ -2996,8 +3000,8 @@ class InormFn extends BuiltinFunction
             a = a.shiftRight(1);
         }
         int n = a.bitLength(); // check later about negative cases!
-        if (n <= k) 
-            return new Cons(LispInteger.valueOf(a), LispInteger.valueOf(r)); 
+        if (n <= k)
+            return new Cons(LispInteger.valueOf(a), LispInteger.valueOf(r));
         n = n - k; // number of bits to be lost
         boolean neg = a.signum() < 0;
         if (neg) a = a.negate();
@@ -3164,11 +3168,11 @@ class ListFn extends BuiltinFunction
 {
     public LispObject op0() { return Jlisp.nil; }
     public LispObject op1(LispObject arg1) throws ResourceException
-    {   return new Cons(arg1, Jlisp.nil); 
+    {   return new Cons(arg1, Jlisp.nil);
     }
     public LispObject op2(LispObject arg1, LispObject arg2) throws ResourceException
     {   return new Cons(arg1,
-            new Cons(arg2, Jlisp.nil)); 
+            new Cons(arg2, Jlisp.nil));
     }
     public LispObject opn(LispObject [] args) throws ResourceException
     {
@@ -3184,7 +3188,7 @@ class ListStarFn extends BuiltinFunction
 {
     public LispObject op0() { return Jlisp.nil; }
     public LispObject op1(LispObject arg1)
-    {   return arg1; 
+    {   return arg1;
     }
     public LispObject op2(LispObject arg1, LispObject arg2) throws ResourceException
     {   return new Cons(arg1, arg2);
@@ -3287,7 +3291,7 @@ class List_to_vectorFn extends BuiltinFunction
         n = 0;
         while (!arg1.atom)
         {   r.vec[n++] = arg1.car;
-            arg1 = arg1.cdr;   
+            arg1 = arg1.cdr;
         }
         return r;
     }
@@ -3305,7 +3309,7 @@ class List2StarFn extends BuiltinFunction
 {
     public LispObject opn(LispObject [] args) throws Exception
     {
-        if (args.length != 3) 
+        if (args.length != 3)
             return error("list2* called with " + args.length +
                          " args when 3 were expected");
         else return new Cons(args[0], new Cons(args[1], args[2]));

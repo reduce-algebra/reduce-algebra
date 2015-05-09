@@ -75,6 +75,8 @@ abstract class BuiltinFunction extends LispFunction
 	}
     }
 
+    boolean inited = false;
+
 }
 
 // End of BuiltinFunction.java

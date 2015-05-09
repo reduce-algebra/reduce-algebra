@@ -509,13 +509,101 @@ class MaplistFn extends BuiltinFunction
     }
 }
 
+class MapstoreData implements Comparable<MapstoreData>
+{
+    String name;
+    int size;
+    long count;
+    double merit;
+
+    MapstoreData(String name, int size, long count)
+    {
+        this.name = name;
+        this.size = size;
+        this.count = count;
+    }
+
+    public int compareTo(MapstoreData m)
+    {
+        return (merit < m.merit) ? 1 :
+               (merit > m.merit) ? -1 : 0;
+    }
+}
+
 class MapstoreFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
-        Jlisp.println();
-        Jlisp.println("*** MAPSTORE ***");
-        return Jlisp.nil;
+        LispObject r = Jlisp.nil;
+        Vector<MapstoreData> v = new Vector<MapstoreData>();
+// To be compatible with CSL the specification here needs to be
+//    nil or 0      print statistics and reset to zero
+//           1      print, but do not reset
+//           2      return list of stats, reset to zero
+//           3      return list, do not reset
+//           4      reset to zero, do not print, return nil
+//      [    8      Toggle call count mode    ] [not supported]
+        int n = arg1 == Jlisp.nil ? 0 : arg1.intValue();
+        if (n == 0 || n == 1)
+            Jlisp.println("  Value  %bytes (So far) MBytecodes Function name");
+// I will only process function definitions stored in the function cells
+// of symbols that are in the object list. So
+        double totalcount = 0;
+        for (int i=0; i<Jlisp.oblistSize; i++)
+        {   Symbol name = Jlisp.oblist[i];
+            if (name == null) continue;
+            LispFunction fn = name.fn;
+            if (!(fn instanceof Bytecode)) continue;
+            Bytecode bfn = (Bytecode)fn;
+            if (bfn.bytecodes == null) continue;
+            long count = bfn.count;
+            if (count == 0) continue;
+            totalcount += count;
+            int size = bfn.bytecodes.length;
+// Now I want to make the "size" more comparable with the interpretation of that
+// value as used in CSL, where almost by accident the size of some data structure
+// headers are included and rounding up to the next doubleword boundary applies.
+            size = (size + 11) & (-8);
+            switch (n)
+            {
+        default:
+        case 0:
+                bfn.count = 0;
+                // drop through
+        case 1:
+                v.add(new MapstoreData(name.pname, size, count));
+                continue;
+        case 2:
+                bfn.count = 0;
+                // drop through
+        case 3:
+                r = StaticFns.cons(
+                   StaticFns.cons3(name, LispInteger.valueOf(size),
+                       StaticFns.cons(LispInteger.valueOf(count), Jlisp.nil)), r);
+                continue;
+        case 4:
+                bfn.count = 0;
+                continue;
+            }
+        }
+        if (n == 0 || n == 1)
+        {
+            for (MapstoreData m : v)
+            {    m.merit = 10000.0*((double)m.count/(double)totalcount) /
+                     (1.0 + (double)m.size); 
+            }
+            Collections.sort(v);
+            double tot = 0.0, w;
+            for (MapstoreData m : v)
+                Jlisp.print(String.format(
+                    "%7.2f %7.2f (%6.2f) %9d: %s%n",
+                    m.merit,
+                    w = (100.0*m.count)/totalcount,
+                    tot += w,
+                    (m.count+500000)/1000000,
+                    m.name));
+        }
+        return r;
     }
 }
 
@@ -2301,7 +2389,9 @@ static Charset utf8 = Charset.forName("UTF-8");
 // and the middle one of those is not a valid UTF-8 sequence. The consequence
 // is that I can not use the system provided scheme to map it on to a Java
 // String, and if I can and I then try to convert it back I can not expect
-// to end up back where I started.
+// to end up back where I started. So I *NEED* to arrange that at all stage the
+// data in a string is UTF-8-valid and I must write in multibyte denotations
+// of codepoints in a sufficiently atomic manner.
 
 class String_storeFn extends BuiltinFunction
 {
@@ -2786,9 +2876,9 @@ class ThrowFn extends BuiltinFunction
 class TimeFn extends BuiltinFunction
 {
     public LispObject op0() throws Exception
-    {
-        long tt = Jlisp.bean.getCurrentThreadCpuTime();
-        return LispInteger.valueOf(tt/1000000);
+    {   long tt = Jlisp.hasThreadTime ?
+            Jlisp.bean.getCurrentThreadCpuTime()/1000000 : System.currentTimeMillis();
+        return LispInteger.valueOf(tt);
     }
 }
 
