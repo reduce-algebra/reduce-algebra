@@ -74,7 +74,6 @@ class Gensym extends Symbol
         LispObject w = Symbol.localGensyms;
         while (w != Jlisp.nil)
         {   if (w.car.car == this) break;
-System.out.println("gensym loop");
             w = w.cdr;
         }
         int n;
