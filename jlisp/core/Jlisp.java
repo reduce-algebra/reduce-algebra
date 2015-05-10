@@ -2135,7 +2135,7 @@ static void readEvalPrintLoop(boolean noRestart) throws ProgEvent, ResourceExcep
         }
         if (restartModule != null)
         {   try
-            {   Fasl.loadModule(new LispString(restartModule));
+            {   Fasl.loadModule(new LispString(restartModule), false);
             }
             catch (Exception ex)
             {   System.out.println("Unexpected exception " + ex);

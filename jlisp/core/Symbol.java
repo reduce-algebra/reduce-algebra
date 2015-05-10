@@ -160,7 +160,10 @@ public class Symbol extends LispObject
 
     static StringBuffer cache = new StringBuffer();
 
-    String toPrint()
+    static LispObject localGensyms = null;
+    static int localGensymCount = 0;
+
+    String toPrint() throws ResourceException
     {
         completeName();
         if ((currentFlags & (printEscape | printLower | printUpper)) == 0)

@@ -3,13 +3,13 @@ package uk.co.codemist.jlisp.core;
 
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 import java.io.*;
 
 /**************************************************************************
- * Copyright (C) 1998-2011, Codemist Ltd.                A C Norman       *
+ * Copyright (C) 1998-2015, Codemist Ltd.                A C Norman       *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
@@ -63,6 +63,29 @@ class Gensym extends Symbol
         if (myNumber < 100) pname += "0";
         if (myNumber < 1000) pname += "0";
         pname += myNumber;
+    }
+
+    String toPrint() throws ResourceException
+    {
+        if ((currentFlags & LispObject.checksumEscape) == 0)
+            return super.toPrint(); // do what a Symbol would do
+// Here I need to make a string "#Gnnn"
+        if (Symbol.localGensyms == null) Symbol.localGensyms = Jlisp.nil;
+        LispObject w = Symbol.localGensyms;
+        while (w != Jlisp.nil)
+        {   if (w.car.car == this) break;
+System.out.println("gensym loop");
+            w = w.cdr;
+        }
+        int n;
+        if (w == Jlisp.nil)
+        {   Symbol.localGensyms = new Cons(
+                new Cons(this,
+                         LispInteger.valueOf(n = Symbol.localGensymCount++)),
+                Symbol.localGensyms);
+        }
+        else n = ((LispSmallInteger)w.car.cdr).value;
+        return String.format("#G%d", n);
     }
 
     void dump() throws IOException

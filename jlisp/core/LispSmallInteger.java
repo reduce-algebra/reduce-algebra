@@ -3,7 +3,7 @@ package uk.co.codemist.jlisp.core;
 
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 /**************************************************************************
@@ -167,7 +167,7 @@ public class LispSmallInteger extends LispInteger
 		Jlisp.odump.write(X_STORE);
             }
 // Note whacky coding with sign bit in bottom bit position. The intent
-// of this is that numbers that ar esmall in absolute value will be
+// of this is that numbers that are small in absolute value will be
 // packed into rather few bytes.
 	    putPrefix(value == 0x80000000 ? 1 :
                       value < 0 ? 1 + ((-value)<<1) :

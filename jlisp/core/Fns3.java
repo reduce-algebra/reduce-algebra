@@ -3,14 +3,14 @@ package uk.co.codemist.jlisp.core;
 
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 
 // Fns3.java
 
 /**************************************************************************
- * Copyright (C) 1998-2011, Codemist Ltd.                A C Norman       *
+ * Copyright (C) 1998-2015, Codemist Ltd.                A C Norman       *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
@@ -55,6 +55,7 @@ class Fns3
         {"list2string",                 new List2stringFn()},
         {"liter",                       new LiterFn()},
         {"load-module",                 new Load_moduleFn()},
+        {"load-source",                 new Load_sourceFn()},
         {"lposn",                       new LposnFn()},
         {"macro-function",              new Macro_functionFn()},
         {"macroexpand",                 new MacroexpandFn()},
@@ -324,7 +325,15 @@ class Load_moduleFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
-        return Fasl.loadModule(arg1);
+        return Fasl.loadModule(arg1, false);
+    }
+}
+
+class Load_sourceFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        return Fasl.loadModule(arg1, true);
     }
 }
 
@@ -607,22 +616,108 @@ class MapstoreFn extends BuiltinFunction
     }
 }
 
+BigInteger positiveBigInt(byte [] res)
+{
+    BigInteger r = BigInteger.valueOf(0);
+    for (int i=res.length-1; i>=0; i--)
+        r = r.shiftLeft(8).or(BigInteger.valueOf(res[i] & 0xff));
+    return r;
+}
+
+void prinhex8(LispStream f, int n) throws ResourceException
+{
+    for (int i=0; i<8; i++)
+    {   int d = (n >> 28) & 0xf;
+        n = n << 4;
+        f.print(String.format("%x", d));
+    }
+}
+
+static BigInteger poslimit = new BigInteger("2147483647");
+static BigInteger neglimit = new BigInteger("-2147483648");
+
+void prinbigint(LispStream f, BigInteger n) throws ResourceException
+{
+    if (n.compareTo(poslimit) > 0 ||
+        n.compareTo(neglimit) < 0)
+    {   BigInteger n1 = n.and(poslimit);
+        prinhex8(f, n1.intValue());
+        n = n.subtract(n1);
+        prinbigint(f, n.shiftRight(31));
+    }
+    else prinhex8(f, n.intValue());
+}
+
 class Md5Fn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
         LispStream f = new LispDigester();
         LispObject save = Jlisp.lit[Lit.std_output].car/*value*/;
+// Weirdly in CSL the checksums on symbols, small integers and strings are
+// computed in an ODD and special way. I think that may be because I had
+// originally intended to do things other than via print and I did those
+// simple cases first - and then never tidies up. However I will try
+// to replicate that behaviour here!
+        Symbol.localGensyms = Jlisp.nil;
+        Symbol.localGensymCount = 0;
         try
         {   Jlisp.lit[Lit.std_output].car/*value*/ = f;
-            arg1.print(LispObject.noLineBreak+LispObject.printEscape);
+// For CSL fixnums (28-bit signed values) the characters processed are
+// 8 hex digits.
+            if (arg1 instanceof LispSmallInteger &&
+                ((LispSmallInteger)arg1).value >= -0x08000000 &&
+                ((LispSmallInteger)arg1).value < 0x08000000)
+            {   prinhex8(f, 16*((LispSmallInteger)arg1).value+1);
+            }
+// For larger integers the characters processed are as if the integer had
+// been split into 31-bit chunks, processed from least significant end
+// first, with each of these rendered as 8 gex digits. Negative values
+// are a 32-bit value with the top two bits both 1.
+            else if (arg1 instanceof LispInteger)
+                prinbigint(f, arg1.bigIntValue());
+// For strings just the string data is inspected, with no special treatment
+// for embedded quote marks, but code points over 0x7f will be represented
+// using utf-8 encoding.
+            else if (arg1 instanceof LispString)
+                arg1.print(LispObject.noLineBreak+
+                           LispObject.checksumEscape);
+// All other things pipe through the general printing code. The
+// "checksumEscape" flag must cause any gensym to be expanded as a
+// sequence of the form "#Gnnn" for numeric nnn where nnn is kept on
+// a list of local gensyms...
+            else arg1.print(LispObject.noLineBreak+
+                            LispObject.printEscape+
+                            LispObject.checksumEscape);
         }
         finally
         {   Jlisp.lit[Lit.std_output].car/*value*/ = save;
+            Symbol.localGensyms = Jlisp.nil;
         }
         byte [] res = f.md.digest();
-        return LispInteger.valueOf(new BigInteger(res));
+        return LispInteger.valueOf(positiveBigInt(res));
     }
+}
+
+// The following takes a 128-bit bignum and creates a 60-bit one using
+// a strange scheme copied from CSL so as to be compatible therewith.
+
+static BigInteger thirtyBits = new BigInteger("1073741823");
+
+BigInteger reduce60(BigInteger n)
+{
+    BigInteger v0 = n.and(poslimit);
+    BigInteger n1 = n.shiftRight(31);
+    BigInteger v1 = n1.and(thirtyBits);
+    if (v1.longValue() == 0 &&
+        (v0.longValue() & 0x40000000) == 0)
+    {   if (v0.longValue() != 0)
+        {   v1 = v0;  // certainly non-zero top half for result
+            v0 = n.shiftRight(64).and(poslimit);
+        }
+        else v1 = new BigInteger("305419896"); // 0x12345678!!!!!
+    }
+    return v1.shiftLeft(31).add(v0); 
 }
 
 class Md60Fn extends BuiltinFunction
@@ -631,15 +726,41 @@ class Md60Fn extends BuiltinFunction
     {
         LispStream f = new LispDigester();
         LispObject save = Jlisp.lit[Lit.std_output].car/*value*/;
+        Symbol.localGensyms = Jlisp.nil;
+        Symbol.localGensymCount = 0;
         try
         {   Jlisp.lit[Lit.std_output].car/*value*/ = f;
-            arg1.print(LispObject.noLineBreak+LispObject.printEscape);
+// For CSL fixnums (28-bit signed values) the characters processed are
+// 8 hex digits.
+            if (arg1 instanceof LispSmallInteger &&
+                ((LispSmallInteger)arg1).value >= -0x08000000 &&
+                ((LispSmallInteger)arg1).value < 0x08000000)
+            {   prinhex8(f, 16*((LispSmallInteger)arg1).value+1);
+            }
+// For larger integers the characters processed are as if the integer had
+// been split into 31-bit chunks, processed from least significant end
+// first, with each of these rendered as 8 gex digits. Negative values
+// are a 32-bit value with the top two bits both 1.
+            else if (arg1 instanceof LispInteger)
+                prinbigint(f, arg1.bigIntValue());
+// For strings just the string data is inspected, with no special treatment
+// for embedded quote marks, but code points over 0x7f will be represented
+// using utf-8 encoding.
+            else if (arg1 instanceof LispString)
+                arg1.print(LispObject.noLineBreak+
+                           LispObject.checksumEscape);
+            else arg1.print(LispObject.noLineBreak+
+                            LispObject.printEscape+
+                            LispObject.checksumEscape);
         }
         finally
         {   Jlisp.lit[Lit.std_output].car/*value*/ = save;
+            Symbol.localGensyms = Jlisp.nil;
         }
         byte [] res = f.md.digest();
-        return LispInteger.valueOf(new BigInteger(res).shiftRight(68));
+// NB that CSL does not quite do just the shift shown here... so I
+// need to make adjustements if I want to be totally consistent!
+        return LispInteger.valueOf(reduce60(positiveBigInt(res)));
     }
 }
 
@@ -2621,15 +2742,43 @@ class SxhashFn extends BuiltinFunction
     {
         LispStream f = new LispDigester();
         LispObject save = Jlisp.lit[Lit.std_output].car/*value*/;
+        Symbol.localGensyms = Jlisp.nil;
+        Symbol.localGensymCount = 0;
         try
         {   Jlisp.lit[Lit.std_output].car/*value*/ = f;
-            arg1.print(LispObject.noLineBreak+LispObject.printEscape);
+// For CSL fixnums (28-bit signed values) the characters processed are
+// 8 hex digits.
+            if (arg1 instanceof LispSmallInteger &&
+                ((LispSmallInteger)arg1).value >= -0x08000000 &&
+                ((LispSmallInteger)arg1).value < 0x08000000)
+            {   prinhex8(f, 16*((LispSmallInteger)arg1).value+1);
+            }
+// For larger integers the characters processed are as if the integer had
+// been split into 31-bit chunks, processed from least significant end
+// first, with each of these rendered as 8 gex digits. Negative values
+// are a 32-bit value with the top two bits both 1.
+            else if (arg1 instanceof LispInteger)
+                prinbigint(f, arg1.bigIntValue());
+// For strings just the string data is inspected, with no special treatment
+// for embedded quote marks, but code points over 0x7f will be represented
+// using utf-8 encoding.
+            else if (arg1 instanceof LispString)
+                arg1.print(LispObject.noLineBreak+
+                           LispObject.checksumEscape);
+// All other things pipe through the general printing code. The
+// "checksumEscape" flag must cause any gensym to be expanded as a
+// sequence of the form "#Gnnn" for numeric nnn where nnn is kept on
+// a list of local gensyms...
+            else arg1.print(LispObject.noLineBreak+
+                            LispObject.printEscape+
+                            LispObject.checksumEscape);
         }
         finally
         {   Jlisp.lit[Lit.std_output].car/*value*/ = save;
+            Symbol.localGensyms = Jlisp.nil;
         }
         byte [] res = f.md.digest();
-        return LispInteger.valueOf(new BigInteger(res).shiftRight(68));
+        return LispInteger.valueOf(reduce60(positiveBigInt(res)));
     }
 }
 

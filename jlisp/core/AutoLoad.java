@@ -3,11 +3,11 @@ package uk.co.codemist.jlisp.core;
 
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 /**************************************************************************
- * Copyright (C) 1998-2011, Codemist Ltd.                A C Norman       *
+ * Copyright (C) 1998-2015, Codemist Ltd.                A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -53,7 +53,7 @@ class AutoLoad extends LispFunction
     {
         name.completeName();
         name.fn = new Undefined(name.pname);
-        Fasl.loadModule(data.car);
+        Fasl.loadModule(data.car, false);
         return name.fn.op0();
     }
 
@@ -61,7 +61,7 @@ class AutoLoad extends LispFunction
     {
         name.completeName();
         name.fn = new Undefined(name.pname);
-        Fasl.loadModule(data.car);
+        Fasl.loadModule(data.car, false);
         return name.fn.op1(a1);
     }
 
@@ -69,7 +69,7 @@ class AutoLoad extends LispFunction
     {
         name.completeName();
         name.fn = new Undefined(name.pname);
-        Fasl.loadModule(data.car);
+        Fasl.loadModule(data.car, false);
         return name.fn.op2(a1, a2);
     }
 
@@ -77,7 +77,7 @@ class AutoLoad extends LispFunction
     {
         name.completeName();
         name.fn = new Undefined(name.pname);
-        Fasl.loadModule(data.car);
+        Fasl.loadModule(data.car, false);
         return name.fn.opn(args);
     }
 

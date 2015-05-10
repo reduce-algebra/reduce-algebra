@@ -78,11 +78,21 @@ class LispDigester extends LispStream
 // array of characters.
         for (int i=0; i<v.length; i++)
         {   char c = v[i];
-// characters are in general 16-bits wide (even though all the charcters that
-// I will normally use in the UK are only 7 bits) so I pass them to the
-// message digest process as two bytes each.
-            md.update((byte)(c >> 8));
-            md.update((byte)c);
+// Characters are in general 16-bits wide in Java but for compatibility with
+// CSL I need to adjust and pretend I have an UTF8 sequence. I will do the
+// mapping by hand here... I only allow for codepoints up to 0xffff and so
+// any that really lie beyond that and have bot expressed in terms of the
+// high and low surrogate pairs may end up messed up!
+            if (c <= 0x7f) md.update((byte)c);
+            else if (c <= 0x7ff)
+            {   md.update((byte)(0xc0 + ((c>>6) & 0x1f)));
+                md.update((byte)(0x80 + (c & 0x3f)));
+            }
+            else
+            {   md.update((byte)(0xe0 + ((c>>12) & 0x0f)));
+                md.update((byte)(0x80 + ((c>>6) & 0x3f)));
+                md.update((byte)(0x80 + (c & 0x3f)));
+            }
         }
     }
 

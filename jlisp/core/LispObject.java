@@ -76,6 +76,7 @@ public abstract class LispObject extends Object
     static final int printLower       = 32;
     static final int printUpper       = 64;
     static final int noLineBreak      = 128;
+    static final int checksumEscape   = 256;
 
     void print() throws ResourceException
     {
