@@ -128,7 +128,6 @@ symbolic procedure crtanh!* u;
 symbolic procedure crcoth!* u;
    cr!:quotient(cr!:plus(x,y),cr!:differ(x,y))
    where x=crexp!*(cr!:times(i2cr!* 2,u)),y=i2cr!* 1;
-
 symbolic procedure crsech!* u;
    cr!:quotient(i2cr!* 2,cr!:plus(y,cr!:quotient(i2cr!* 1,y)))
    where y=crexp!* u;
@@ -149,6 +148,10 @@ symbolic procedure crexp!* u;
 % The choice of cuts is to a large extent arbitrary. Below they are chosen
 % always to lie on the real or imaginary axes and to maintain conditions
 % such as oddness on the cut and continuity along the cut.
+% 
+% Except for acot, they agree with the cuts recommended by Kahan.
+% This exception is necessary as in Reduce acot(-z) = pi - acot z
+%
 % Beware of 'simplifications' such as log(a/b)=log(a)-log(b) as these
 % in general change the cut structure.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -167,10 +170,16 @@ symbolic procedure cratan!* u;
 % Adds pi if u lies on upper branch-cut (r>1)
 % This maintains the condition atan(-u)= -atan(u) on the branch-cut
 % The upper-cut lies in the first quadrant and the lower-cut in the third.
+%
+% Produces the same result as Kahan's formula below, but is faster.
   (if rd!:zerop tagrl u and  bflessp(rdone!*(), round!* tagim u) then
      cr!:plus(val, crpi!*()) else val)
   where val =  cr!:times(cri!/2(),crlog!* cr!:quotient(
                       cr!:plus(cri!*(),u),cr!:differ(cri!*(),u)));
+
+% symbolic procedure cratan1!* u;
+% % Branch points and branch cuts are as above
+%   cr!:minus timesi!* cratanh!* timesi!* u;
 
 symbolic procedure cracot!* u;
 % Branch points and branch-cut is as for atan
@@ -185,51 +194,68 @@ symbolic procedure cracsc!* u; crasin!* cr!:quotient(i2cr!* 1,u);
 
 symbolic procedure crasinh!* u;
 % Branch-cut is taken to be {r*i |r real & (r>=1 or r<= -1)}
-% The upper-half belongs to the second quadrant and the lower-half to the fourth
-% The condition asinh(-z) =-asinh z is maintained on the cut by
-% ensuring the correct branch is taken of the sqrt in log(i*(r-sqrt(r^2-1)))
-% on the two halves of the cut.
-% returns essentially the same result as
-%   crlog!* cr!:plus(u,crsqrt!* cr!:plus(cr!:times(u,u),i2cr!* 1));
-% but optimises the sqrt calculation for large z
-begin scalar rl, im, one, imbf, s;
-  rl:=tagrl u; im:=tagim u; imbf := round!* im; one:=rdone!*(); s:=1;
-  if rd!:zerop rl and 
-     (bflessp(one, imbf) or bflessp(imbf, bfminus one)) then
-        << if rd!:minusp im then <<im :=rd!:minus im; s:=-1>>;
-           return (if s=1 then val else cr!:minus val)
-              where val = mkcr(rd!:minus rdacosh!* im, pi!/2!*())>>;
+% The upper-half belongs to the first quadrant and the lower-half to the third
+% The condition asinh(-z) =-asinh z is maintained on the cut.
+%
+% This (Kahan's) simple formula is faster than the 'optimised' versions below
+%  and seems to produce equally accurate results.
+    crlog!* cr!:plus(u, crsqrt!* cr!:plus(i2cr!* 1,cr!:times(u,u)));
 
-  s := cr!:times(u,u);
-  return
-     if bflessp(round!* crnorm!* u,rdtwo!*()) then
-        crlog!* cr!:plus(u, crsqrt!* cr!:plus(i2cr!* 1,s))
-     else (if rd!:minusp rl then
-             crlog!* cr!:differ(u, cr!:times(u, sroot))
-           else
-             crlog!* cr!:plus(u, cr!:times(u, sroot)))
-           where sroot =
-               crsqrt!* cr!:plus(i2cr!* 1,cr!:quotient(i2cr!* 1,s));
-end;
+% symbolic procedure crasinh!* u;
+%    crlog!* cr!:plus(u,
+%      if bflessp(round!* crnorm!* u,rdtwo!*())
+%          then crsqrt!* cr!:plus(i2cr!* 1,s)
+%          else cr!:times(u,
+%             crsqrt!* cr!:plus(i2cr!* 1,cr!:quotient(i2cr!* 1,s))))
+%   where s=cr!:times(u,u);
 
-symbolic procedure cracosh!* u;
-% Branch cut is {r | r real and (r>=1 or r <= -1)}
-% Right-hand half is in 1st quadrant and left-hand half in the third quadrant.
-% Chosen in preference to that below as acosh(z)+acosh(-z)=pi*i everywhere.
-  cr!:differ(timesi!* cr!:times(crhalf!*(), crpi!*()), crasinh!* timesi!* u);
+% symbolic procedure crasinh1!* u;
+% % Returns essentially the same result as
+%%   crlog!* cr!:plus(u,crsqrt!* cr!:plus(cr!:times(u,u),i2cr!* 1));
+% % but optimises the sqrt calculation for large z without altering the cut.
+% %
+% % The original optimisation above had the effect of altering the branch cut
+% % to {r*i | r real & 1<= |r| <= 2} union {z | real z <0 & |z| =2}
+% % and destroying the oddness condition for most of the region |z| > 2.
+% % Beware of such rearrangements; these may alter the cuts.
+% 
+% (if bflessp(round!* crnorm!* u,rdtwo!*()) then
+%         crlog!* cr!:plus(u, crsqrt!* cr!:plus(i2cr!* 1,s))
+%    else (if rd!:minusp rl  or (rd!:zerop  rl and rd!:minusp tagim u) then
+%             crlog!* cr!:differ(u, cr!:times(u, sroot))
+%          else
+%              crlog!* cr!:plus(u, cr!:times(u, sroot)))
+%          where sroot = crsqrt!* cr!:plus(i2cr!* 1,cr!:quotient(i2cr!* 1,s)),
+%                rl = tagrl u)
+%      where s = cr!:times(u,u);
 
 % symbolic procedure cracosh!* u;
-% % The original version used the formula
-% %     acosh z = log(z+sqrt(z^2-1))
-% % The branch cuts were fubar: portions of both real and imaginary axes.
-% %
-% % The improved version uses the formula
-% %     acosh z = log(z+sqrt(z-1)*sqrt(z+1))
-% % the branch-cut is {r | r real and r< 1} 
-% % For r>0 cut is in 1st quadrant and when r<0  in the 2nd quadrant.
-% % Beware of 'simplifications' such as combining sqrts; these alter the cuts
-%  crlog!* cr!:plus(u,cr!:times(crsqrt!* cr!:differ(u, i2cr!* 1),
-%                               crsqrt!* cr!:plus(u, i2cr!* 1)));
+%    crlog!* cr!:plus(u,crsqrt!* cr!:differ(cr!:times(u,u),i2cr!* 1));
+
+symbolic procedure cracosh!* u;
+% The original version above used the formula
+%     acosh z = log(z+sqrt(z^2-1))
+% The branch cuts were the portions of the real axis |r| >=1  
+% and the whole of the imaginary axis.
+%
+% The improved version uses the formula
+%     acosh z = log(z+sqrt(z-1)*sqrt(z+1))
+% the branch-cut is {r | r real and r< 1} 
+% For r>0 cut is in 1st quadrant and when r<0  in the 2nd quadrant.
+% Beware of 'simplifications' such as combining sqrts; these may alter the cuts
+%
+% Produces same result as Kahan's formula below, but is faster.
+   crlog!* cr!:plus(u,cr!:times(crsqrt!* cr!:differ(u, i2cr!* 1),
+                                crsqrt!* cr!:plus(u, i2cr!* 1)));
+
+% symbolic procedure cracosh1!* u;
+% % This improved version uses Kahan's formula
+% %     acosh z = 2log(sqrt((z-1)/2) +sqrt((z+1)/2))
+% % the branch-cut should be the same as above
+%    cr!:times(two, crlog!*
+%               cr!:plus(crsqrt!* cr!:quotient(cr!:differ(u, i2cr!* 1), two),
+%                       crsqrt!* cr!:quotient(cr!:plus(u, i2cr!* 1), two)))
+%      where two = i2cr!* 2;
 
 symbolic procedure cratanh!* u;
 % The branch-points at u=+1 and u=-1  are singularities
@@ -237,20 +263,30 @@ symbolic procedure cratanh!* u;
 % Subtracts i*pi if u lies on right-hand branch-cut {r | r real & r>1}
 % This maintains the condition atanh(-u)= -atanh(u) on the branch-cut
 % The rh-cut lies in the fourth quadrant and the lh-cut in the second.
+%
+% Produces same result as Kahan's formula below, but is faster.
   (if rd!:zerop tagim u and  bflessp(rdone!*(), round!* tagrl u) then
      cr!:differ(val, cr!:times(cri!*(), crpi!*())) else val)
  where  val=cr!:times(crhalf!*(),crlog!* cr!:quotient(cr!:plus(i2cr!* 1,u),
       cr!:differ(i2cr!* 1,u)));
 
+% symbolic procedure cratanh1!* u;
+% %  Uses Kahan's formula 1/2(log(1+z)-log(1-z))
+% % The branch cuts are as as above  
+%  cr!:times(crhalf!*(),cr!:differ(crlog!* cr!:plus(i2cr!* 1,u),
+%                                 crlog!* cr!:differ(i2cr!* 1,u)));
+
 symbolic procedure cracoth!* u;
 % The branch-points at u=+1 and u=-1  are singularities
 % Branch cut is taken to be the interval of the real axis (-1, +1)
-% Subtracts i*pi if u lies on left half of branch-cut {r | r real & -1<r<0}
+% Subtracts i*pi if u lies on right half of branch-cut {r | r real & 0<r<1}
 % This maintains the condition acoth(-u)= -acoth(u) on the branch-cut
-% The rh half-cut lies in the first quadrant and the lh half-cut in the third.
-% There is a discontinuity as r --> 0  along the lh half-cut
-  (if rd!:zerop tagim u and rd!:minusp tagrl u  and 
-              bflessp(bfminus rdone!*(), round!* tagrl u)
+% The rh half-cut lies in the fourth quadrant and the lh half-cut in the second.
+% There is a discontinuity as r --> 0  along the rh half-cut
+%
+% Produces the same result as atanh(1/u) except at u=0 when i*pi/2 is returned.
+  (if rd!:zerop tagim u and (bflessp(rdzero!*(), rp)  and 
+              bflessp(rp, rdone!*())) where rp = round!* tagrl u
    then cr!:differ(val, cr!:times(cri!*(), crpi!*())) else val)
   where val = cr!:times(crhalf!*(),crlog!* 
                  cr!:quotient(cr!:plus(i2cr!* 1,u), cr!:differ(u,i2cr!* 1)));

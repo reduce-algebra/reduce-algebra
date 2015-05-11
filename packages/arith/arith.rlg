@@ -1612,25 +1612,25 @@ acosh ws;
 atanh 2;
 
 
-0.549306 + 1.5708*i
+0.549306 - 1.5708*i
 
 
 tanh ws;
 
 
-2.0 + 1.83697e-16*i
+2.0 - 1.83697e-16*i
 
 
 acoth 0.3;
 
 
-0.30952 + 1.5708*i
+0.30952 - 1.5708*i
 
 
 coth ws;
 
 
-0.3 - 5.57214e-17*i
+0.3 + 5.57214e-17*i
 
 
 asech(1-i);
@@ -2385,10 +2385,3 @@ algebraic;
 
 end;
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 16 ms
-
-End of Lisp run after 0.01+0.06 seconds
-real 0.22
-user 0.01
-sys 0.06
