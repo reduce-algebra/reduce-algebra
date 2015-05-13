@@ -1,15 +1,29 @@
 #! /bin/sh
 
 # Test a package
-# An option "--csl" or "--psl" can specify that only that one Lisp
-# is to be used.
-
-#    scripts/test1.sh [--install] [--keep] [--csl or --psl] package_name 
-# OR scripts/test1.sh [--install] [--keep] [--csl or --psl] regressions testname
 #
-# You can use "--cslboot" instead of "--csl" to use the CSL bootstrap version
-# of Reduce, which may be slower. You can say "--boot" to get both CSL and PSL
-# but using the CSL bootstrap version.
+#    scripts/test1.sh [options] package_name
+#    scripts/test1.sh [options] regressions testname
+#
+# The available options are
+#
+#     --keep      preserve raw intermediate files at end of test, eg for
+#                 debugging.
+#     --install   copy CSL results back into the main source tree as
+#                 a fresh set of reference log files
+#
+#     --csl       run tests using CSL
+#     --psl       run tests using PSL
+#     --jlisp     run tests using Jlisp
+#     --cslboot   run tests using CSL "bootstrapreduce"
+#     --jlispboot run tests using Jlisp "bootstrapreduce.jar"
+#
+# It is legal and reasonable and proper to specify multiple Lisp variants to
+# be tested. If none are explicitly mentioned the code will default to
+# behaving as if "--csl --psl" has been specified. Note that this means that
+# if you specify ANY platform explitly then only listed platforms will be
+# tested.
+#
 
 # I want this script to be one I can launch from anywhere, so
 # to access files etc I need to know where it lives.
@@ -20,85 +34,118 @@ here=`dirname "$here"`
 
 install="no"
 keep="no"
+platform=""
 
-# --install has to be the very first option given.
-case $1 in
---install)
-  install="yes"
-  shift
-  ;;
-esac
+csl="no"
+cslboot="no"
+jlisp="no"
+jlispboot="no"
+psl="no"
 
-csl="yes"
-cslname="redcsl"
-psl="yes"
+# I allow any number of the keyword arguments in any order. I will pick
+# off and process arguments for so long as any are available. This will
+# stop if I either upperly run put of arguments (detected when $# = 0) or
+# if $1 fails to match one of the keywords.
 
-case $1 in
---boot)
+stop="no"
+until test "$stop" = "yes"
+do
+  if test "$#" = "0"
+  then
+    stop="yes"
+  else
+    case $1 in
+    --install)
+      if test "$install" = "yes"
+      then
+        printf "You should only specify --install once. Stopping.\n"
+        exit 1
+      fi
+      install="yes";
+      shift
+      ;;
+    --keep)
+      if test "$keep" = "yes"
+      then
+        printf "You should only specify --keep once. Stopping.\n"
+        exit 1
+      fi
+      keep="yes";
+      shift
+      ;;
+    --csl)
+      if test "$csl" = "yes"
+      then
+        printf "You should only specify --csl once. Stopping.\n"
+        exit 1
+      fi
+      csl="yes"
+      platform="$platform csl"
+      shift
+      ;;
+    --cslboot)
+      if test "$cslboot" = "yes"
+      then
+        printf "You should only specify --cslboot once. Stopping.\n"
+        exit 1
+      fi
+      cslboot="yes"
+      platform="$platform cslboot"
+      shift
+      ;;
+    --jlisp)
+      if test "$jlisp" = "yes"
+      then
+        printf "You should only specify --jlisp once. Stopping.\n"
+        exit 1
+      fi
+      jlisp="yes"
+      platform="$platform jlisp"
+      shift
+      ;;
+    --jlispboot)
+      if test "$jlispboot" = "yes"
+      then
+        printf "You should only specify --jlispboot once. Stopping.\n"
+        exit 1
+      fi
+      jlispboot="yes"
+      platform="$platform jlispboot"
+      shift
+      ;;
+    --psl)
+      if test "$psl" = "yes"
+      then
+        printf "You should only specify --psl once. Stopping.\n"
+        exit 1
+      fi
+      psl="yes"
+      platform="$platform psl"
+      shift
+      ;;
+    -*)
+      printf "\"$1\" looks like an option but is not recognized.\n"
+      printf "Stopping.\n"
+      exit 1
+      ;;
+    *)
+      stop="yes"
+      ;;
+    esac
+  fi
+done
+
+# If no specific choice of platform was made I use a default...
+if test "$platform" = ""
+then
   csl="yes"
-  cslname="bootstrapreduce"
   psl="yes"
-  shift
-  ;;
---csl)
-  csl="yes"
-  cslname="redcsl"
-  psl="no"
-  shift
-  ;;
---cslboot)
-  csl="yes"
-  cslname="bootstrapreduce"
-  psl="no"
-  shift
-  ;;
---psl)
-  csl="no"
-  psl="yes"
-  shift
-  ;;
---keep)
-  keep="yes"
-  shift
-  ;;
-*)
-  ;;
-esac
-case $1 in
---boot)
-  csl="yes"
-  cslname="bootstrapreduce"
-  psl="yes"
-  shift
-  ;;
---csl)
-  csl="yes"
-  cslname="redcsl"
-  psl="no"
-  shift
-  ;;
---cslboot)
-  csl="yes"
-  cslname="bootstrapreduce"
-  psl="no"
-  shift
-  ;;
---psl)
-  csl="no"
-  psl="yes"
-  shift
-  ;;
---keep)
-  keep="yes"
-  shift
-  ;;
-*)
-  ;;
-esac
+  platform=" csl psl"
+fi
 
 loader=""
 
-# Make sure that all messages are in english
+# Make sure that all messages are in English
 LANG=C ; export LANG
 
 # If no argument is provided then this runs alg.tst
@@ -198,7 +245,7 @@ then
 fi
 
 # 
-# Use /dev/null in the .rlg file doesn't exist
+# Use /dev/null if the .rlg file doesn't exist
 
 if test -f $here/packages/$d/$p.rlg
 then
@@ -214,12 +261,24 @@ fi
  
 ulimit -c 60
 
-if test "$csl" = "yes"
+#######################################################################
+# CSL testing
+#######################################################################
+
+if test "$csl" = "yes" || test "$cslboot" = "yes"
 then
 
-mkdir -p csl-times
+# For CSL the normal and bootstrap versions will be processed almost
+# identically, so I wrap up the recipe in a function
 
-$timecmd sh -c "$here/bin/$cslname -k160m -v -w > csl-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+csltest() {
+name=$1
+command=$2
+showname=$3
+
+mkdir -p $name-times
+
+$timecmd sh -c "$here/bin/$command -k160m -v -w > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -232,8 +291,8 @@ write "START OF REDUCE TEST RUN ON $mc"$ in "$f"; write "END OF REDUCE TEST RUN"
 showtime1$
 quit$
 XXX
-cat $p.howlong.tmp >> csl-times/$p.rlg.tmp
-printf CSL...
+cat $p.howlong.tmp >> $name-times/$p.rlg.tmp
+printf $showname...
 sed -e "/^Tested on /,//d" <$rlgfile |
   sed -e '/^Total time taken:/d; /^Number of garbage/d' \
       -e '/^Time: /d; /^CRACK needed :/d; /^time for init/d' \
@@ -242,9 +301,9 @@ sed -e "/^Tested on /,//d" <$rlgfile |
       -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
       -e '/^max_gc_int :/d' \
       -e '/^max_gc_fac :/d' \
-       >csl-times/$p.rlg.orig
+       >$name-times/$p.rlg.orig
 sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
-    -e "/OMIT/,/TIMO/d" <csl-times/$p.rlg.tmp | \
+    -e "/OMIT/,/TIMO/d" <$name-times/$p.rlg.tmp | \
   sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
   sed -e '/^Total time taken:/d; /^Number of garbage/d' \
       -e '/^Time: /d; /^CRACK needed :/d; /^time for init/d' \
@@ -253,31 +312,47 @@ sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
       -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
       -e '/^max_gc_int :/d' \
       -e '/^max_gc_fac :/d' \
-       >csl-times/$p.rlg
-diff -B -w csl-times/$p.rlg.orig csl-times/$p.rlg >csl-times/$p.rlg.diff
-if test -s csl-times/$p.rlg.diff
-  then printf "Diff is in csl-times/$p.rlg.diff "
-  else printf "OK " ; rm -f csl-times/$p.rlg.diff csl-times/$p.rlg.orig
+       >$name-times/$p.rlg
+diff -B -w $name-times/$p.rlg.orig $name-times/$p.rlg >$name-times/$p.rlg.diff
+if test -s $name-times/$p.rlg.diff
+  then printf "Diff is in $name-times/$p.rlg.diff "
+  else printf "OK " ; rm -f $name-times/$p.rlg.diff $name-times/$p.rlg.orig
 fi
-echo "Tested on $mc CSL" > csl-times/$p.time
-sed -e "1,/END OF REDUCE TEST RUN/d"  <csl-times/$p.rlg.tmp | \
-  sed -e '/^1: *$/d;' >>csl-times/$p.time
+echo "Tested on $mc CSL" > $name-times/$p.time
+sed -e "1,/END OF REDUCE TEST RUN/d"  <$name-times/$p.rlg.tmp | \
+  sed -e '/^1: *$/d;' >>$name-times/$p.time
 if test "x$keep" = "xno"
 then
-  rm -f csl-times/$p.rlg.tmp
+  rm -f $name-times/$p.rlg.tmp
 fi
 
-if test "$install" = "yes"
+}
+
+if test "$csl" = "yes"
 then
-  cat $here/packages/$d/$p.tst > $here/xmpl/$p.tst
-  cat csl-times/$p.rlg csl-times/$p.time > $here/xmpl/$p.rlg
-  cat csl-times/$p.rlg csl-times/$p.time > $here/packages/$d/$p.rlg
+  csltest "csl" "redcsl" "CSL"
+
+  if test "$install" = "yes"
+  then
+    cat $here/packages/$d/$p.tst > $here/xmpl/$p.tst
+    cat csl-times/$p.rlg csl-times/$p.time > $here/xmpl/$p.rlg
+    cat csl-times/$p.rlg csl-times/$p.time > $here/packages/$d/$p.rlg
+  fi
+fi
+
+if test "$cslboot" = "yes"
+then
+  csltest "cslboot" "bootstrapreduce" "BootstrapCSL"
 fi
 
 fi # CSL case
 
 if test "$psl" = "yes"
 then
+
+#######################################################################
+# PSL testing
+#######################################################################
 
 mkdir -p psl-times
 
@@ -333,34 +408,162 @@ fi
 
 fi # PSL case
 
-if test "$csl" = "yes" && test "$psl" = "yes"
+#######################################################################
+# Jlisp testing
+# This may be similar enough to the CSL case that it should be merged?
+#######################################################################
+
+if test "$jlisp" = "yes" || test "$jlispboot" = "yes"
 then
-  echo "1k " > $p.timer.tmp
-  grep ^Time csl-times/$p.time | \
-   sed -e 's/.*(counter 1): //; s/ms.*//' >> $p.timer.tmp
-  echo " 100 * " >> $p.timer.tmp
-  grep ^Time psl-times/$p.time | \
-   sed -e 's/.*(counter 1): //; s/ms.*//' >> $p.timer.tmp
-  echo " / pq" >> $p.timer.tmp
-# If "dc" is not available then the following line leaves ratio empty.
-  ratio=`dc < $p.timer.tmp 2>/dev/null`
-  if test "x$ratio" != "x" && test "x$ratio" != "x0"
-  then 
-    printf "CSL/PSL:${ratio}%%"
-  fi
-  rm -f $p.timer.tmp
-  mkdir -p csl-psl-times-comparison
-  diff -B -w csl-times/$p.rlg psl-times/$p.rlg >csl-psl-times-comparison/$p.rlg.diff
-  if test -s csl-psl-times-comparison/$p.rlg.diff
-    then
-      echo " "
-      printf "CSL and PSL test logs differ!"
-    else rm -f csl-psl-times-comparison/$p.rlg.diff
-  fi
+
+jlisptest() {
+name=$1
+command=$2
+showname=$3
+
+mkdir -p $name-times
+
+wh="$here"
+if test -f /usr/bin/cygpath
+then
+  wh=`cygpath -m $wh`
 fi
 
-echo " "
+$timecmd sh -c "java -jar $wh/jlisp/$command -v -w > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+off int;
+symbolic linelength 80;
+symbolic(!*redeflg!* := nil);
+on errcont;
+$loader
+lisp (testdirectory:="$dd");
+lisp random_new_seed 1;
+resettime1;
+write "START OF REDUCE TEST RUN ON $mc"$ in "$f"; write "END OF REDUCE TEST RUN"$
+showtime1$
+quit$
+XXX
+cat $p.howlong.tmp >> $name-times/$p.rlg.tmp
+printf $showname...
+sed -e "/^Tested on /,//d" <$rlgfile |
+  sed -e '/^Total time taken:/d; /^Number of garbage/d' \
+      -e '/^Time: /d; /^CRACK needed :/d; /^time for init/d' \
+      -e '/^+++ levelt compiled/d; /^\*\*\* (levelt): base/d' \
+      -e '/^Request to set constant bitsperword/d' \
+      -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
+      -e '/^max_gc_int :/d' \
+      -e '/^max_gc_fac :/d' \
+       >$name-times/$p.rlg.orig
+sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
+    -e "/OMIT/,/TIMO/d" <$name-times/$p.rlg.tmp | \
+  sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
+  sed -e '/^Total time taken:/d; /^Number of garbage/d' \
+      -e '/^Time: /d; /^CRACK needed :/d; /^time for init/d' \
+      -e '/^+++ levelt compiled/d; /^\*\*\* (levelt): base/d' \
+      -e '/^Request to set constant bitsperword/d' \
+      -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
+      -e '/^max_gc_int :/d' \
+      -e '/^max_gc_fac :/d' \
+       >$name-times/$p.rlg
+diff -B -w $name-times/$p.rlg.orig $name-times/$p.rlg >$name-times/$p.rlg.diff
+if test -s $name-times/$p.rlg.diff
+  then printf "Diff is in $name-times/$p.rlg.diff "
+  else printf "OK " ; rm -f $name-times/$p.rlg.diff $name-times/$p.rlg.orig
+fi
+echo "Tested on $mc Jlisp" > $name-times/$p.time
+sed -e "1,/END OF REDUCE TEST RUN/d"  <$name-times/$p.rlg.tmp | \
+  sed -e '/^1: *$/d;' >>$name-times/$p.time
+if test "x$keep" = "xno"
+then
+  rm -f $name-times/$p.rlg.tmp
+fi
+}
+
+if test "$jlisp" = "yes"
+then
+  jlisptest "jlisp" "reduce.jar" "Jlisp"
+fi
+
+if test "$jlispboot" = "yes"
+then
+  jlisptest "jlispboot" "bootstrapreduce.jar" "JlispBootstrap"
+fi
+
+fi # Jlisp case
+
+#######################################################################
+# End of code that runs the tests.
+#######################################################################
+
+
+# Now I will show speed ratios. The first specified platform will be used
+# as defining the base-line. Thus
+#   test1.sh --csl --psl    uses CSL as the base
+#   test1.sh --psl --csl    uses PSL as the base
+# There is no merit in trying to do comparisons if only one system
+# had been tested, so I will detect and filter that case...
+
+counter=""
+for x in $platform
+do
+  counter="x$counter"
+done
+if test "$counter" != "x"
+then
+
+# Append on the end of the output line a list of speed ratios.
+  base=""
+  for sys in $platform
+  do
+    tt=`grep ^Time $sys-times/$p.time | \
+        sed -e 's/.*(counter 1): //; s/ms.*//'`
+    if test "x$base" = "x"
+    then
+# If the recorded time is zero (which at least sometimes comes out
+# as the string "0 " here) I will set a base-time of 1 so that I
+# avoid division by zero later on.
+      if test "x$tt" = "x" || test "x$tt" = "x0" || test "x$tt" = "x0 "
+      then
+        base="1"
+      else
+        base="$tt"
+      fi
+    fi
+# If "dc" is not available then the following line leaves ratio empty.
+    ratio=`printf "1k $tt 100 * $base / pq" | dc 2> /dev/null`
+    if test "x$ratio" = "x"
+    then
+      ratio="?"
+    fi
+    printf "$sys:${ratio}%% "
+  done
+  printf "\n"
+
+# Now if any test logs disagree (using the first platform to define
+# a reference) print messages that explain that fact.
+  base=""
+  for sys in $platform
+  do
+    if test "x$base" = "x"
+    then
+      base="$sys"
+    else
+      mkdir -p $base-$sys-times-comparison
+      diff -B -w $base-times/$p.rlg $sys-times/$p.rlg >$base-$sys-times-comparison/$p.rlg.diff
+      if test -s $base-$sys-times-comparison/$p.rlg.diff
+      then
+        printf "$base and $sys test logs differ!\n"
+      else rm -f $base-$sys-times-comparison/$p.rlg.diff
+      fi
+    fi
+  done
+
+else
+# Only one system being tested.
+  printf "\n"
+fi
 
 rm -f $p.howlong.tmp
+exit 0
 
 # end of test
+
