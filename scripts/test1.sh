@@ -496,9 +496,9 @@ fi # Jlisp case
 
 
 # Now I will show speed ratios. The first specified platform will be used
-# as defining the base-line. Thus
-#   test1.sh --csl --psl    uses CSL as the base
-#   test1.sh --psl --csl    uses PSL as the base
+# as defining the base-line. Thus for instance
+#   test1.sh --csl --psl            uses CSL as the base
+#   test1.sh --psl --csl --jlisp    uses PSL as the base
 # There is no merit in trying to do comparisons if only one system
 # had been tested, so I will detect and filter that case...
 
@@ -507,6 +507,7 @@ for x in $platform
 do
   counter="x$counter"
 done
+
 if test "$counter" != "x"
 then
 
@@ -551,7 +552,7 @@ then
       diff -B -w $base-times/$p.rlg $sys-times/$p.rlg >$base-$sys-times-comparison/$p.rlg.diff
       if test -s $base-$sys-times-comparison/$p.rlg.diff
       then
-        printf "$base and $sys test logs differ!\n"
+        printf "***** $base and $sys test logs differ!\n"
       else rm -f $base-$sys-times-comparison/$p.rlg.diff
       fi
     fi

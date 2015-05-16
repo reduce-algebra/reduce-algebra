@@ -3,151 +3,171 @@
 # Test all package
 
 # Usage:
-#   scripts/testall.sh [--install]           test everything
-#   scripts/testall.sh [--install] --boot    test bootstrap CSL & PSL
-#   scripts/testall.sh [--install] --csl     test just the CSL version
-#   scripts/testall.sh [--install] --cslboot test the CSL bootstrap version
-#   scripts/testall.sh [--install] --psl     test just the PSL version
+#   scripts/testall.sh [--noregressions]
+#                      [--install] [--keep]
+#                      [--csl] [--psl] [--jlisp] [--cslboot] [--jlispboot]
+#
+# If present the argument "--noregressions" must come first and it
+# causes the script to avoid running the regression tests. This may be useful
+# when just checking performance of the core of Reduce.
+#
+# Other arguments can be given in any order. "--install" will lead to
+# a fresh set of reference logs being places in the source tree based on
+# testing the CSL version. "--keep" preserves some temporary files created
+# during testing and may be useful when debugging this script.
+# --csl, --psl, --jlisp, --cslbool and --jlispboot select the variants
+# of Reduce to test, and any number of those options can be given. If none
+# are then "--csl --psl" is assumed.
+
+# Part of the intent here is that if any further variants of Reduce get created
+# it should be reasonably straightforward to extent the code here tu support
+# testing them. Changes will be needed in "test1.sh" too.
 
 # I want this script to be one I can launch from anywhere, so
-# to access files etc I need to know where it lives.
+# to access files etc I need to know where it lives. The logs directories
+# csl-times, psl-times etc are created as sub-directories of the directory
+# current when this script was invoked.
 
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
 here=`cd \`dirname "$here"\` ; pwd -P`
 here=`dirname "$here"`
 
+# Well I want to tidy up files relating to platforms being tested so I
+# do need to scan the argument list and collect them
 
-# The flags are mostly handled by being passed down to the test1.sh script
-
-install=
-case ${1:-x} in
---install)
-  install=--install
-  shift
-  ;;
-esac
-
-if test $# = 0
+noregressions="no"
+if test "x$1" = "x--noregressions"
 then
-  csl="yes"
-  psl="yes"
-else
-  if test $# = 1
-  then
-    case $1 in
-    --csl | --cslboot)
-      csl="yes"
-      psl="no"
-      ;;
-    --boot)
-      csl="yes"
-      psl="yes"
-      ;;
-    --psl)
-      csl="no"
-      psl="yes"
-      ;;
-    *)
-      echo "scripts/testall.sh [--boot, --csl (or --cslboot) or --psl]"
-      exit 1
-      ;;
-    esac
-  else
-    echo "scripts/testall.sh [--boot, --csl (or --cslboot) or --psl]"
+  noregressions="yes"
+  shift
+fi
+
+platform=""
+some="no"
+base=""
+for a in $*
+do
+  case $a
+  in
+  --install | --keep)
+    ;;
+  --csl | --psl | --jlisp | --cslboot | --jlispboot)
+    sys=`echo $a | sed 's/--//'`
+    if test "$some" = "no"
+    then
+      base="$sys"
+      platform="$sys"
+    else
+      platform="$platform $sys"
+    fi
+    some="yes"
+    ;;
+  *)
+    printf "\"$a\" is not a valid argument to this script.\n"
+    printf "Stopping.\n"
     exit 1
-  fi
+    ;;
+  esac
+done
+
+# Apply default if no platforms specified
+if test "$some" = "no"
+then
+  platform=" csl psl"
+  base="csl"
 fi
 
 #
 # Remove old log files
 #
-rm -f csl-times/*.rlg* psl-times/*.rlg* csl-psl-times-comparison/*.rlg.diff
+for sys in $platform
+do
+  rm -f $sys-times/*.rlg* $sys-times/*.rlg* $base-$sys-times-comparison/*.rlg.diff
+done
 
 packages=`sed -e '/^\%/d' $here/packages/package.map | \
           grep ' test ' | \
           sed -e 's/(//; s/".*//'`
+
 for p in $packages
 do
   echo "Test package $p"
-  $here/scripts/test1.sh $install $* $p
+  $here/scripts/test1.sh $* $p
 done
 
-for p1 in $here/packages/regressions/*.tst
+if test "$noregressions" = "no"
+then
+  for p1 in $here/packages/regressions/*.tst
+  do
+    p=${p1%.tst}
+    p=${p##*/}
+    echo "Test regression case $p"
+    $here/scripts/test1.sh $* regressions $p
+  done
+fi
+
+printf "\nSummary of test runs for $platform\n\n"
+
+for sys in $platform
 do
-  p=${p1%.tst}
-  p=${p##*/}
-  echo "Test regression case $p"
-  $here/scripts/test1.sh $install $* regressions $p
+  d=`cd $sys-times; echo *.rlg.diff`
+  if test "$d" != "*.rlg.diff"
+  then
+    printf "\nDifferences for $sys: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
+  fi
 done
 
-if test "$csl" = "yes"
-then
-  csldiffs=`cd csl-times ; echo *.rlg.diff`
-fi
-if test "$psl" = "yes"
-then
-  psldiffs=`cd psl-times ; echo *.rlg.diff`
-fi
-if test "$csl" = "yes" && test "$psl" = "yes"
-then
-  cslpsldiffs=`cd csl-psl-times-comparison ; echo *.rlg.diff`
-fi
-
-echo
-if test "$csl" = "yes"
-then
-  if test "$psl" = "yes"
+for sys in $platform
+do
+  if test "$sys" != "$base"
   then
-    echo "Summary of CSL and PSL test runs"
-    echo "================================"
-    echo
-    test "$csldiffs" != "*.rlg.diff" && echo "Differences for CSL:" `echo $csldiffs | sed -e 's/\.rlg\.diff//g'`
-    echo
-    test "$psldiffs" != "*.rlg.diff" && echo "Differences for PSL:" `echo $psldiffs | sed -e 's/\.rlg\.diff//g'`
-    echo
-    test "$cslpsldiffs" != "*.rlg.diff" && echo "Differences between CSL and PSL :" `echo $cslpsldiffs | sed -e 's/\.rlg\.diff//g'`
-  else
-    echo "Summary of CSL test runs"
-    echo "========================"
-    echo
-    test "$csldiffs" != "*.rlg.diff" && echo "Differences for CSL:" `echo $csldiffs | sed -e 's/\.rlg\.diff//g'`
+    d=`cd $base-$sys-times-comparison; echo *.rlg.diff`
+    if test "$d" != "*.rlg.diff"
+    then
+      printf "\nDifferences between $base and $sys: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
+    fi
   fi
-else
-  echo "Summary of PSL test runs"
-  echo "========================"
-    test "$psldiffs" != "*.rlg.diff" && echo "Differences for PSL:" `echo $psldiffs | sed -e 's/\.rlg\.diff//g'`
-    echo
-fi
-echo
+done
+
+printf "\n"
+
+reporttime() {
+  name=$1
+  dir=$2
+  total="0"
+  for x in $dir/*.time
+  do
+    val=`grep ^Time $x | sed -e 's/.*(counter 1): //; s/ms.*//'`
+# The apparently spurious "0" here is in case $val ends up as empty.
+    total=`printf "1k 0 $val $total + pq" | dc`
+  done
+  total=`printf "2k $total 1000 / pq" | dc`
+  printf "$name total = $total (seconds)\n"
+}
 
 if test "x`which dc`" != "x"
 then
-
-  if test "$csl" = "yes"
-  then
-    csltotal="0"
-    for x in csl-times/*.time
-    do
-      val=`grep ^Time $x | sed -e 's/.*(counter 1): //; s/ms.*//'`
-# The apparently spurious "0" here is in case $val ends up as empty.
-      csltotal=`printf "1k 0 %s %s + pq" $val $csltotal | dc`
-    done
-    csltotal=`printf "2k %s 1000 / pq" $csltotal | dc`
-    printf "CSL total = %s (seconds)\n" $csltotal
-  fi
-
-  if test "$psl" = "yes"
-  then
-    psltotal="0"
-    for x in psl-times/*.time
-    do
-      val=`grep ^Time $x | sed -e 's/.*(counter 1): //; s/ms.*//'`
-      psltotal=`printf "1k 0 %s %s + pq" $val $psltotal | dc`
-    done
-    psltotal=`printf "2k %s 1000 / pq" $psltotal | dc`
-    printf "PSL total = %s (seconds)\n" $psltotal
-  fi
-
+  for sys in $platform
+  do
+    case $sys in
+    csl)
+      reporttime "CSL" "csl-times"
+      ;;
+    psl)
+      reporttime "PSL" "psl-times"
+      ;;
+    jlisp)
+      reporttime "Jlisp" "jlisp-times"
+      ;;
+    cslboot)
+      reporttime "CSLboot" "cslboot-times"
+      ;;
+    jlispboot)
+      reporttime "Jlispboot" "jlispboot-times"
+      ;;
+    esac
+  done
 fi
 
 # end of script
+
