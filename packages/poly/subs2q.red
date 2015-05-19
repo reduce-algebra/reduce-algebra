@@ -42,8 +42,14 @@ symbolic procedure subs2q u;
    % Perform power substitutions on u. Check whether substitions
    % on numerator and denominator change these before doing
    % quotient (to avoid undoing rationalization of denominator).
-   ((if denr x=1 and denr y=1 and numr x=v and numr y=w then u
-      else quotsq(x,y))
+   ((if denr x=1 and denr y=1
+        then if  numr x=v and numr y=w then u
+              else quotsq(x,y)
+   % If the substitution in the numerator or the denominator of u
+   % yields non trivial denominators in the quotients x or y then
+   % another pass through subs2q after forming the quotient is 
+   % necessary as it might contain new potential matchable powers.  
+      else subs2q quotsq(x,y))
      where x=subs2f v, y=subs2f w)
     where v=numr u, w=denr u;
 
