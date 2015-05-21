@@ -47,7 +47,9 @@
 (make!-special '!*native_code)
 (setq !*native_code nil)
 
-(cond ((and (null !*savedef) (null (memq 'embedded lispsystem!*))) (progn
+(cond ((and (null !*savedef)
+       (null (memq 'jlisp lispsystem!*))
+       (null (memq 'embedded lispsystem!*))) (progn
 
    (de c!:install (name env c!-version !&optional c1)
       (cond
@@ -487,7 +489,8 @@ rds(xxx := open("$reduce/packages/support/build.red", 'input));
 
 symbolic;
 
-!#if (and (not (memq 'embedded lispsystem!*)) (not !*savedef))
+!#if (and (not (memq 'embedded lispsystem!*))
+          (not !*savedef))
 
 faslout 'user;
 
@@ -499,6 +502,9 @@ faslout 'user;
 
 if modulep 'cslcompat then load!-module 'cslcompat;
 
+!#if (not (memq 'jlisp lispsystem!*))
+% Note that Jlisp will use a different scheme to get the literal-vectors
+% of translated functions installed.
 
 symbolic procedure c!:install(name, env, c!-version, !&optional, c1);
   begin
@@ -581,6 +587,8 @@ rdf "$reduce/cslbuild/generated-c/u57.lsp"$
 rdf "$reduce/cslbuild/generated-c/u58.lsp"$
 rdf "$reduce/cslbuild/generated-c/u59.lsp"$
 rdf "$reduce/cslbuild/generated-c/u60.lsp"$
+
+!#endif
 
 if modulep 'smacros then load!-module 'smacros;
 
@@ -916,7 +924,7 @@ symbolic procedure profile_a_package names;
           oo := wrs open("buildlogs/flaguse.log", 'append);
           bytecounts t;
           close wrs oo;
-       end;
+       End;
        w1 := nil;
        while w do <<
            w2 := get(caar w, '!*savedef);
@@ -1663,5 +1671,4 @@ symbolic;
 
 lisp stop(0);
 bye;
-
 

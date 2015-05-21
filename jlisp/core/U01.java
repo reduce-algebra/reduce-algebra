@@ -1,13 +1,12 @@
 package uk.co.codemist.jlisp.core;
 
-
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-20202013.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 /**************************************************************************
- * Copyright (C) 1998-20202013, Codemist Ltd.                  A C Norman *
+ * Copyright (C) 1998-2015, Codemist Ltd.                      A C Norman *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
@@ -46,13 +45,16 @@ import java.util.*;
 import java.text.*;
 import java.math.BigInteger;
 
-class U01
+class U01 extends Uxx
 {
-    Object [][] builtins = 
-    {
-        {"u01-sample",                  new U01_sampleFn()},
-        {"addf",                        new J_addf()}
-    };
+    public U01()
+    {   builtins = new Object[][]
+        {
+            {"u01-sample",                  new U01_sampleFn()},
+            {"addf",                        new J_addf()}
+        };
+        System.out.printf("Count on %s = %d%n", toString(), builtins.length); // @@@
+    }
 
 
 class U01_sampleFn extends BuiltinFunction

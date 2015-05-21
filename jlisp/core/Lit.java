@@ -97,8 +97,8 @@ class Lit
         "*query-io*",
         "*redefmsg",
         "*resources*",
+        "lose",
 
-        "++spare2++",
         "++spare1++"
     };
     
@@ -156,7 +156,7 @@ class Lit
     static final int query_io   = 47;
     static final int redefmsg   = 48;
     static final int resources  = 49;
-    static final int spare2     = 50;
+    static final int lose       = 50;
     static final int spare1     = 51;
 }
 

@@ -12,6 +12,14 @@ clean:
 # Reduce, and so "java -jar reduce.jar" will launch the system with its
 # default image file.
 
+bootstrapreduce.jar:	core/*.java bootstrapreduce_manifest bootstrapreduce.img
+	javac -d . core/*.java
+	rm -f default.img
+	cp bootstrapreduce.img default.img
+	-rm -f bootstrapreduce.jar
+	jar cmf bootstrapreduce_manifest bootstrapreduce.jar uk default.img
+	rm -f default.img
+
 reduce.jar:	core/*.java reduce_manifest reduce.img
 	javac -d . core/*.java
 	rm -f default.img
@@ -76,6 +84,16 @@ jlisp.img:
 
 
 
+# .PHONY:	bootstrapreduce.img
+# If you want bootstrapreduce.img remade then delete it first...
+bootstrapreduce.img:
+	javac -d . core/*.java
+	-rm -f bootstrapreduce.img
+	java uk.co.codemist.jlisp.core.Jlisp -w -v -z -o bootstrapreduce.img \
+	"$(C)/buildreduce.lsp" -D@srcdir="$(C)" -D@reduce="$(C)/../.." \
+	-- bootstrapreduce.log
+
+
 .PHONY:	reduce.img
 reduce.img:
 	javac -d . core/*.java
@@ -93,6 +111,18 @@ minireduce.img:
 	"$(C)/buildreduce.lsp" -Dminireduce -D@srcdir="$(C)" \
 	-D@reduce="$(C)/../.." -- reduce.log
 
+
+.PHONY:	profile
+# Please remake bootstrapreduce.jar ahead of this.
+profile:
+	java -jar bootstrapreduce.jar -w "$(C)/profile.red" \
+		-D@srcdir="$(C)" -D@reduce="$(C)/../.." -L profile.log
+
+.PHONY:	smallprofile
+# Please remake bootstrapreduce.jar ahead of this.
+smallprofile:
+	java -jar bootstrapreduce.jar -w profile.red \
+		-D@srcdir="$(C)" -D@reduce="$(C)/../.." -L smallprofile.log
 
 .PHONY:	testall
 testall:

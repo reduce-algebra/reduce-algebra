@@ -3,11 +3,11 @@ package uk.co.codemist.jlisp.core;
 
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 /**************************************************************************
- * Copyright (C) 1998-2011, Codemist Ltd.                A C Norman       *
+ * Copyright (C) 1998-2015, Codemist Ltd.                A C Norman       *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
@@ -793,7 +793,20 @@ class Byte_getvFn extends BuiltinFunction
 
 class BytecountsFn extends BuiltinFunction
 {
+// In CSL optionally bootstrapreduce can count the number of uses of each
+// particular bytecode opcode. This was useful when tuning the design of the
+// bytecoded instruction set. It can also (again optionally) record the
+// number of uses of "get" or "flagp" with each particular tag, so that
+// it is possible to choose properties to support an optimised implementation
+// of. For the Java version the counts will only be collected if
+// InstrumentedBytecode had been in use...
     public LispObject op0() throws Exception
+    {
+// Pending! But this must NOT print anything in the case that the
+// measurement option is not enabled.
+        return Jlisp.nil;
+    }
+    public LispObject op1(LispObject arg1) throws Exception
     {
         return Jlisp.nil;
     }

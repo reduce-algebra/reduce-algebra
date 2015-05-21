@@ -2322,7 +2322,7 @@ typedef struct mapstore_item
     Lisp_Object p;
 } mapstore_item;
 
-int profile_count_mode;
+int profile_count_mode = 0;
 
 static int MS_CDECL profile_cf(const void *a, const void *b)
 {
@@ -2412,7 +2412,7 @@ Lisp_Object Lmapstore(Lisp_Object nil, Lisp_Object a)
                     {   e = qcar(e);
                         if (is_bps(e))
                         {   Header ch = *(Header *)(data_of_bps(e) - CELL);
-                            clen = length_of_header(ch);
+                            clen = length_of_header(ch) - CELL;
                         }
                     }
                     n = qcount(low + TAG_SYMBOL);

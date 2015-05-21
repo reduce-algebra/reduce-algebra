@@ -1,5 +1,6 @@
 package uk.co.codemist.jlisp.core;
 
+
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
@@ -35,24 +36,19 @@ package uk.co.codemist.jlisp.core;
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// U48.java
+// Uxx.java
 
-// Each built-in function is created wrapped in a class
-// that is derived from BuiltinFunction.
+// A superclass for U01 to U60.
 
 import java.io.*;
 import java.util.*;
 import java.text.*;
 import java.math.BigInteger;
 
-class U48 extends Uxx
+class Uxx
 {
-    U48()
-    {   builtins = new Object [][]
-        {
-        };
-    }
+    Object [][] builtins;
 }
 
-// end of U48.java
+// end of Uxx.java
 

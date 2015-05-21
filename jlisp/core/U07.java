@@ -1,13 +1,12 @@
 package uk.co.codemist.jlisp.core;
 
-
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2313.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 /**************************************************************************
- * Copyright (C) 1998-2013, Codemist Ltd.                  A C Norman     *
+ * Copyright (C) 1998-2015, Codemist Ltd.                      A C Norman *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
@@ -46,38 +45,13 @@ import java.util.*;
 import java.text.*;
 import java.math.BigInteger;
 
-class U07
+class U07 extends Uxx
 {
-    Object [][] builtins = 
-    {
-        {"u07-sample",                  new U07_sampleFn()},
-    };
-
-
-class U07_sampleFn extends BuiltinFunction
-{
-    public LispObject op0()
-    {
-        return Jlisp.nil;
+    U07()
+    {   builtins = new Object [][]
+        {
+        };
     }
-    public LispObject op1(LispObject arg1)
-    {
-        return arg1;
-    }
-    public LispObject op2(LispObject arg1, LispObject arg2) throws ResourceException
-    {
-        return arg1;
-    }
-    public LispObject opn(LispObject [] args) throws ResourceException
-    {
-        int n = args.length;
-        if (n == 0) return Jlisp.nil;
-        else return args[0];
-    }
-}
-
-
-
 }
 
 // end of U07.java

@@ -13,11 +13,11 @@ package uk.co.codemist.jlisp.core;
 
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 /**************************************************************************
- * Copyright (C) 1998-2011, Codemist Ltd.                A C Norman       *
+ * Copyright (C) 1998-2015, Codemist Ltd.                A C Norman       *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
@@ -67,6 +67,7 @@ static boolean headline = true;
 static boolean backtrace = true;
 static LispObject errorCode;
 static int verbosFlag = 1;
+static boolean instrumented = false;
 
 static void print(String s) throws ResourceException
 {
@@ -491,7 +492,8 @@ static void startup1(String [] args) throws ResourceException
 
     if (extrabuiltins != null) extrabuiltins.recorduserfns(builtinFunctions);
 
-    Bytecode.setupBuiltins();
+    if (instrumented) InstrumentedBytecode.setupBuiltins();
+    else Bytecode.setupBuiltins();
 
 // I open all the image files that the user had mentioned...
     if (imageCount == 0)
@@ -1563,9 +1565,13 @@ static LispObject readObject() throws IOException, ResourceException
                     for (i=0; i<operand; i++) data[i] = (byte)idump.read();
                 }
                 FnWithEnv ws;
-                if (nargs > 0xff) ws = new ByteOpt(nargs);
+                if (nargs > 0xff)
+                {   if (instrumented) ws = new InstrumentedByteOpt(nargs);
+                    else ws = new ByteOpt(nargs);
+                }
                 else 
-                {   ws = new Bytecode();
+                {   if (instrumented) ws = new InstrumentedBytecode();
+                    else ws = new Bytecode();
                     ws.nargs = nargs;
                 }
                 ws.bytecodes = data;
@@ -1577,7 +1583,7 @@ static LispObject readObject() throws IOException, ResourceException
 // Bytecode is the only sub-class that exists and the only one that this
 // rea-loading code can ever re-create.  So I expect to have to do more
 // work when or if I add more, for instance for code that has been reduced
-// to real Jaba bytecodes rather than my Jlisp-specific ones.
+// to real Java bytecodes rather than my Jlisp-specific ones.
                 opcode = idump.read();
                 if (opcode < LispObject.X_VEC || opcode > LispObject.X_VEC+3)
                     throw new IOException("Corrupted image file");
@@ -2010,16 +2016,15 @@ static void inituserfns(Object [][] builtins)
 {
 // When the things in U01.java to U60.java are initialised their names
 // are flagged as "lose" and their "inited" properties are set to false.
-    Symbol lose = Symbol.intern("lose");
-    Symbol lispT = Symbol.intern("t");
     for (int i=0; i<builtins.length; i++)
     {   Object [] s = builtins[i];
         String name = (String)s[0];
         LispFunction fn = (LispFunction)s[1];
+        System.out.printf("Init %s to %s%n", name, fn.toString()); // @@@
         ((BuiltinFunction)fn).inited = false;
         fn.name = name;
         try
-        {   Fns.put(Symbol.intern(name, fn, null), lose, lispT);
+        {   Fns.put(Symbol.intern(name, fn, null), lit[Lit.lose], lispTrue);
         } catch (ResourceException e)
         {}
     }
@@ -2061,14 +2066,19 @@ static void initSymbols() throws ResourceException
 
 // The things put in lispsystem* must include various ones relied upon
 // by the REDUCE build scripts!
+    int tr = (extrabuiltins == null) ? 0 : extrabuiltins.countFunctions();
+    instrumented = (tr == 0);
+    System.out.printf("instrumented = %b%n", instrumented);
     ((Symbol)lit[Lit.lispsystem]).car/*value*/ =
         new Cons(new Cons(Symbol.intern("platform"), Symbol.intern("java")),
-        new Cons(new Cons(Symbol.intern("c-code"), LispInteger.valueOf(0)),
+// Note that even in Jlisp whhere it will really be "Java code" I put the
+// information here under a tag "c-code".
+        new Cons(new Cons(Symbol.intern("c-code"), LispInteger.valueOf(tr)),
         new Cons(new Cons(Symbol.intern("name"),   new LispString("java")),
         new Cons(Symbol.intern("csl"),       // a lie, in some sense!
         new Cons(Symbol.intern("jlisp"),
-        new Cons(Symbol.intern("embedded"),
-        nil))))));
+//      new Cons(Symbol.intern("embedded"),
+        nil)))));
 
     Fns.fluid(nil);
     Fns.fluid(lispTrue);

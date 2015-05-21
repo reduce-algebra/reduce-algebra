@@ -1,0 +1,10 @@
+The file JoshTreon_Dissertation.pdf is a copy of the final year
+undergraduate dissertation by John Treon (Cambridge, 2015) describing
+his work to improve Jlisp in a way analagous to the way that CSL is
+enhanced via translating key functions form Lisp to C. The code
+[that will be] here is a modified version of that which he had, mainly
+changed as Jlisp was updated to improve compatibility with CSL as regards
+the various private facilities just needed for this.
+
+         Arthur Norman    May 2015
+

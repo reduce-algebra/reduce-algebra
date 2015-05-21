@@ -119,6 +119,7 @@ class Fns3
         {"posn",                        new PosnFn()},
         {"preserve",                    new PreserveFn()},
         {"restart-csl",                 new RestartFn()},
+        {"restore-c-code",              new RestoreCCodeFn()},
         {"saveobject",                  new SaveObjectFn()},
         {"restoreobject",               new RestoreObjectFn()},
         {"prin",                        new PrinFn()},
@@ -401,7 +402,8 @@ class Make_bpsFn extends BuiltinFunction
     public LispObject op1(LispObject arg1) throws Exception
     {
         int n = ((LispSmallInteger)arg1).value;
-        return new Bytecode(n);
+        return Jlisp.instrumented ? new InstrumentedBytecode(n) :
+               new Bytecode(n);
     }
 }
 
@@ -569,10 +571,6 @@ class MapstoreFn extends BuiltinFunction
             if (count == 0) continue;
             totalcount += count;
             int size = bfn.bytecodes.length;
-// Now I want to make the "size" more comparable with the interpretation of that
-// value as used in CSL, where almost by accident the size of some data structure
-// headers are included and rounding up to the next doubleword boundary applies.
-            size = (size + 11) & (-8);
             switch (n)
             {
         default:
@@ -1436,6 +1434,25 @@ class RestartFn extends BuiltinFunction
     {
         Jlisp.backtrace = false;
         throw new ProgEvent(ProgEvent.RESTART, arg1, arg2, "restart");
+    }
+}
+
+class RestoreCCodeFn extends BuiltinFunction
+{
+// If a function, say "foo", has been translated into Java and so built-in
+// to the main body of Java code here then the Lisp fasl file that would
+// have defined it merely calls restore-c-code on its name when it would
+// otherwise have instated a definition. This must put back the Jave coded
+// version. A case where this would matter would be:
+//     Load Reduce
+//     symbolic procedure foo x; 'foo; % Define a new and different version
+//     load!-module 'module_that_really_defines_foo;
+// so that loading the module can instate what it should. I will NOT do that
+// just yet!
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        System.out.printf("\n+++ restore-c-code needs implementing\n");
+        return Jlisp.nil;
     }
 }
 
@@ -2893,8 +2910,11 @@ class Symbol_set_definitionFn extends BuiltinFunction
 //   nopts = number of optional args wanted
 //   flagbits & 1   "hard case": pass Spid.noarg not nil for missing opts
 //   flagbits & 2    &rest arg present
-                    b = new ByteOpt(b.bytecodes, v.vec, 
-                                    nargs, nopts, flagbits);
+                    if (Jlisp.instrumented)
+                        b = new InstrumentedByteOpt(b.bytecodes, v.vec, 
+                                                    nargs, nopts, flagbits);
+                    else b = new ByteOpt(b.bytecodes, v.vec, 
+                                         nargs, nopts, flagbits);
                 }
                 else 
                 {   b.env = v.vec;

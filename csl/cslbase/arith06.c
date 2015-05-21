@@ -1725,7 +1725,7 @@ Lisp_Object Lmd60(Lisp_Object env, Lisp_Object a)
     else
     {
 /*
- * Here I ensure that the checksum that I return is a 2-word bignum.
+ * Here I ensure that the checksum that I return is a 2-word bignum
  * This SKEWS the distribution somewhat, in that results lower than 2^30
  * will never be returned. In the very unusual case that the low 61 bits
  * of md5 were all zero I return a somewhat arbitrary alternative value.

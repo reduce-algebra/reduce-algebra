@@ -3,11 +3,11 @@ package uk.co.codemist.jlisp.core;
 
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2000.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 /**************************************************************************
- * Copyright (C) 1998-2011, Codemist Ltd.                A C Norman       *
+ * Copyright (C) 1998-2015, Codemist Ltd.                A C Norman       *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
@@ -1127,14 +1127,12 @@ LispObject interpret(int pc) throws Exception
     int iw, fname;
     if (sp > stack_size - 500) // the 500 is a pretty arbitrary margin!
         extendstack();         // bad enough code could breach it.
-    count += 30;
 
+    count += 1; // Just count calls...
     try
     {
     for (;;)
-    {   count++;
-// In Jlisp I will count the number of bytecode ops executed in any function
-// and I will attribute an overhead of 30 to function entry+exit.
+    {
     switch (arg = bytecodes[pc++])
     {
 case LOADLOC:

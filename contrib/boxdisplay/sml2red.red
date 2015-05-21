@@ -1130,8 +1130,46 @@ symbolic procedure smlClausalFunction();
         heading := list('!:typed, heading, smlType()) >>;
       smlCheckFor '!=;
       list('!:fun, heading, smlExpression()) >>, '!|);
-    if null cdr w then return car w
+% There are two possibilities here. In one case there is only one clause and
+% at present the parse tree will look like
+%    (:fun heading expression)
+% where heading is liable to be of the form
+%      (((name  arg1) arg2) arg3)
+% where the name is atomic. This needs to map to
+%    (:val name t (:fn (:match (:mrule arg1 V1))))
+% where V1 will be
+%                 (:fn (:match (:mrule arg2 V2)))
+% with V2
+%                 (:fn (:match (:mrule arg3 expression)))
+% and similarly for other numbers of arguments.
+    if null cdr w then return smlSimpleFunction(cadar w, caddar w)
+% If there are multiple clauses then each (:match ..) can end up with
+% several (:mrule ..) components. Overall in that case the name must be the
+% same in each case and the number of args must match. One then only
+% generates multiple :mrule bits if the corresponding arguments differ.
+% So if you have
+%    fun f x nil = ...
+%      | f y (a :: b) = ...
+% the converted code must not try to dispatch discribimating between x and
+% y, and indeed I think it will need to do some alpha-conversion there
+% after unifying the compatible arguments "x" and "y". A nastier case than
+% that would be
+%    fun f (a :: b) [] = ...
+%      | f (p :: q) (r :: s) = ...
+%      | f [] z = ...
+% where the first two clauses must consolidate as regards dispatch.
+% Oh dear that starts to sound messy! For now I will implement things such
+% that written arguments that are not textually identical are expected to
+% be structurally different.
     else return ('!:clausalfundef . w)
+  end;
+
+symbolic procedure smlSimpleFunction(heading, body);
+  begin
+    while not atom heading do <<
+      body := list('!:fn, list('!:match, list('!:mrule, cadr heading, body)));
+      heading := car heading >>;
+    return list('!:val, heading, t, body)
   end;
 
 symbolic procedure smlTyVarSeq();
@@ -2060,6 +2098,9 @@ symbolic procedure smlTranslateFun d;
       w2 := intern list2widestring ('!V . wideid2list fn);
       w := list('de, w1, list('!*env!*, arg), body);
       return list('progn, w, list('setq, w2, list('cons, mkquote w1, nil))) >>;
+
+    return d; % UNTRANSLATED@@@@@@@@
+
     error(0, list("smlTranslateFun", d, fn, arg, body));
   end;
 
@@ -2132,6 +2173,11 @@ fun f (x) = x;
 
 (* Infix constructor *)
 fun sum ( h :: t ) = h + sum t;
+
+fn x => x + 1;
+fn (a :: b) => a;
+fn 0 -> 1
+ | n => n*foo(n-1);1;5q
 
 endOfFile
 

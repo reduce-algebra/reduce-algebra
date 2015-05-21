@@ -1,12 +1,12 @@
 /*
- * bytes1.c                           Copyright (C) 1991-2014, Codemist Ltd
+ * bytes1.c                           Copyright (C) 1991-2015, Codemist Ltd
  *
  *
  * Bytecode interpreter for Lisp
  */
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -49,7 +49,7 @@
 
 #ifndef NO_BYTECOUNT
 /*
- * RECORD_GET can be set to track all used of PUT, GE, FLAG and FLAGP. This
+ * RECORD_GET can be set to track all used of PUT, GET, FLAG and FLAGP. This
  * may be useful when deciding which tags should be treated specially as
  * "fastget" ones, but that decision is not going to be reviwed at all often
  * and so I will leave things so that when somebody wants that information

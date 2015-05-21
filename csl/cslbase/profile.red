@@ -22,6 +22,11 @@ get_configuration_data();
 delete!-file "profile.dat";
 delete!-file "buildlogs/flaguse.log";
 
+% I do not think that profiling the regresison tests is a useful idea.
+
+for each x in reduce_regression_tests do
+   reduce_test_cases := delete(x, reduce_test_cases);
+
 profile_a_package reduce_test_cases;
 
 bye;
