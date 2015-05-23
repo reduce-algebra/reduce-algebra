@@ -3,11 +3,11 @@ package uk.co.codemist.jlisp.core;
 
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2000.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 /**************************************************************************
- * Copyright (C) 1998-2011, Codemist Ltd.                A C Norman       *
+ * Copyright (C) 1998-2015, Codemist Ltd.                A C Norman       *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
@@ -47,6 +47,7 @@ class LispOutputStream extends LispStream
     {
         super(n);
         wr = new BufferedWriter(new FileWriter(nameConvert(n)));
+        log = null;
         closeMe = true;
         Jlisp.openOutputFiles.add(this);
     }
@@ -55,6 +56,7 @@ class LispOutputStream extends LispStream
     {
         super(n.getName());
         wr = new BufferedWriter(new FileWriter(n));
+        log = null;
         closeMe = true;
         Jlisp.openOutputFiles.add(this);
     }
@@ -64,6 +66,7 @@ class LispOutputStream extends LispStream
     {
         super(n);
         wr = new BufferedWriter(new FileWriter(nameConvert(n), appendp));
+        log = null;
         closeMe = true;
         Jlisp.openOutputFiles.add(this);
     }
@@ -73,6 +76,7 @@ class LispOutputStream extends LispStream
     {
         super("<stdout>");
         wr = Jlisp.out;
+        log = null;
         closeMe = false;
         Jlisp.openOutputFiles.add(this);
     }
@@ -81,6 +85,9 @@ class LispOutputStream extends LispStream
     {
         try
         {   wr.flush();
+// This does not use a separate class for log files because I sometimes need
+// to change the behaviour of an existing one dynamically.
+            if (log != null) log.flush();
         }
         catch (IOException e)
         {}
@@ -92,6 +99,10 @@ class LispOutputStream extends LispStream
         try
         {   wr.flush();
             if (closeMe) wr.close();
+            if (log != null)
+            {   log.flush();
+                if (closeMe) log.close();
+            }
         }
         catch (IOException e)
         {}
@@ -115,6 +126,10 @@ class LispOutputStream extends LispStream
                 if (c == '\n') 
                 {   wr.write(v, p, i-p);
                     wr.write(eol);
+                    if (log != null)
+                    {   log.write(v, p, i-p);
+                        log.write(eol);
+                    }
                     p = i+1;
                     column = 0;
                 }
@@ -123,12 +138,14 @@ class LispOutputStream extends LispStream
 // map the '\n' onto a platform-specific end-of-line.
                 else if (c == '\r')
                 {   wr.write(v, p, i-p);
+                    if (log != null) log.write(v, p, i-p);
                     p = i+1;
                     column = 0;
                 }
                 else column++;
             }
             wr.write(v, p, v.length-p);
+            if (log != null) log.write(v, p, v.length-p);
         }
         catch (IOException e)
         {}
@@ -145,15 +162,24 @@ class LispOutputStream extends LispStream
                 if (c == '\n') 
                 {   wr.write(v, p, i-p);
                     wr.write(eol);
+                    if (log != null)
+                    {   wr.write(v, p, i-p);
+                        wr.write(eol);
+                    }
                     p = i+1;
                 }
                 else if (c == '\r')
                 {   wr.write(v, p, i-p);
+                    if (log != null) log.write(v, p, i-p);
                     p = i+1;
                 }
             }
             wr.write(v, p, v.length-p);
             wr.write(eol);
+            if (log != null)
+            {   log.write(v, p, v.length-p);
+                log.write(eol);
+            }
         }
         catch (IOException e)
         {}

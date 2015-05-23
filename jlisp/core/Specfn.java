@@ -3,11 +3,11 @@ package uk.co.codemist.jlisp.core;
 
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2000.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 /**************************************************************************
- * Copyright (C) 1998-2011, Codemist Ltd.                A C Norman       *
+ * Copyright (C) 1998-2015, Codemist Ltd.                A C Norman       *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
@@ -80,7 +80,8 @@ class Specfn
         {"list",     new ListSpecial()},
         {"list*",    new ListStarSpecial()},
         {"declare",  new DeclareSpecial()},
-//      {"unwind-protect",  new UnwindProtectSpecial()}, // until fixed!
+        {"catch",    new CatchSpecial()},
+        {"unwind-protect",  new UnwindProtectSpecial()},
     };
 
 
@@ -500,18 +501,37 @@ class DeclareSpecial extends SpecialFunction
 
 }
 
+class CatchSpecial extends SpecialFunction
+{
+    LispObject op(LispObject args) throws Exception
+    {
+        LispObject tag, r;
+        if (args.atom) return Jlisp.nil;
+        tag = args.car.eval();
+        args = args.cdr;
+        if (args.atom) return Jlisp.nil;
+        try
+        {   r = args.car.eval();
+        }
+        catch (LispThrow e)
+        {   if (e.throwtag == tag) return e.details;
+            else throw e; // Reinstate the throw!
+        }
+        return r;
+    }
+}
+
 class UnwindProtectSpecial extends SpecialFunction
 {
     LispObject op(LispObject args) throws Exception
     {
-        LispObject r;
+        LispObject r = Jlisp.nil;
         if (args.atom) return Jlisp.nil;
         try
         {   r = args.car.eval();
         }
         finally
-        {
-            args = args.cdr;
+        {   args = args.cdr;
             if (!args.atom) args.car.eval();
         }
         return r;
@@ -519,4 +539,5 @@ class UnwindProtectSpecial extends SpecialFunction
 }
 
 // End of Specfn.java
+
 

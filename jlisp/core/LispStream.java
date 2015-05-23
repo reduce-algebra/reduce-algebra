@@ -3,11 +3,11 @@ package uk.co.codemist.jlisp.core;
 
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 /**************************************************************************
- * Copyright (C) 1998-2011, Codemist Ltd.                A C Norman       *
+ * Copyright (C) 1998-2015, Codemist Ltd.                A C Norman       *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
@@ -73,6 +73,7 @@ class LispStream extends LispObject
     StringBuffer sb;      // for explodeToString()
     MessageDigest md;     // for md5 checksumming
     Writer wr;            // for ordinary printing!
+    Writer log;           // if not null then log to here too
 
     void print(String s) throws ResourceException
     { // attempting to print to (eg) an input stream has no effect at all

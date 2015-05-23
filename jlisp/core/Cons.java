@@ -137,6 +137,9 @@ public class Cons extends LispObject
         catch (ProgEvent e)
         {   throw e;
         }
+        catch (LispThrow e)
+        {   throw e;
+        }
         catch (Exception e)
         {   if (Jlisp.backtrace)
             {   Jlisp.errprint("Evaluating: ");

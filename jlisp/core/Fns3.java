@@ -622,6 +622,15 @@ BigInteger positiveBigInt(byte [] res)
     return r;
 }
 
+void prinhex7(LispStream f, int n) throws ResourceException
+{
+    for (int i=0; i<7; i++)
+    {   int d = (n >> 24) & 0xf;
+        n = n << 4;
+        f.print(String.format("%x", d));
+    }
+}
+
 void prinhex8(LispStream f, int n) throws ResourceException
 {
     for (int i=0; i<8; i++)
@@ -666,7 +675,7 @@ class Md5Fn extends BuiltinFunction
             if (arg1 instanceof LispSmallInteger &&
                 ((LispSmallInteger)arg1).value >= -0x08000000 &&
                 ((LispSmallInteger)arg1).value < 0x08000000)
-            {   prinhex8(f, 16*((LispSmallInteger)arg1).value+1);
+            {   prinhex7(f, ((LispSmallInteger)arg1).value);
             }
 // For larger integers the characters processed are as if the integer had
 // been split into 31-bit chunks, processed from least significant end
@@ -678,8 +687,10 @@ class Md5Fn extends BuiltinFunction
 // for embedded quote marks, but code points over 0x7f will be represented
 // using utf-8 encoding.
             else if (arg1 instanceof LispString)
+            {   f.print("\"");
                 arg1.print(LispObject.noLineBreak+
                            LispObject.checksumEscape);
+            }
 // All other things pipe through the general printing code. The
 // "checksumEscape" flag must cause any gensym to be expanded as a
 // sequence of the form "#Gnnn" for numeric nnn where nnn is kept on
@@ -733,7 +744,7 @@ class Md60Fn extends BuiltinFunction
             if (arg1 instanceof LispSmallInteger &&
                 ((LispSmallInteger)arg1).value >= -0x08000000 &&
                 ((LispSmallInteger)arg1).value < 0x08000000)
-            {   prinhex8(f, 16*((LispSmallInteger)arg1).value+1);
+            {   prinhex7(f, ((LispSmallInteger)arg1).value);
             }
 // For larger integers the characters processed are as if the integer had
 // been split into 31-bit chunks, processed from least significant end
@@ -745,8 +756,10 @@ class Md60Fn extends BuiltinFunction
 // for embedded quote marks, but code points over 0x7f will be represented
 // using utf-8 encoding.
             else if (arg1 instanceof LispString)
+            {   f.print("\"");
                 arg1.print(LispObject.noLineBreak+
                            LispObject.checksumEscape);
+            }
             else arg1.print(LispObject.noLineBreak+
                             LispObject.printEscape+
                             LispObject.checksumEscape);
@@ -792,10 +805,9 @@ class MemqFn extends BuiltinFunction
     public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
     {
         while (!arg2.atom)
-        {   if (arg1 instanceof LispNumber)                 // @@@
-            {   if (arg1.lispequals(arg2.car)) return arg2; // @@@
-            }                                               // @@@
-            else if (arg1 == arg2.car) return arg2;
+        {   if (arg1 == arg2.car ||
+                (arg1 instanceof LispNumber &&
+                 arg1.lispequals(arg2.car))) return arg2;
             arg2 = arg2.cdr;
         }
         return Jlisp.nil;
@@ -2466,7 +2478,20 @@ class SpoolFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
-        return error(name + " not yet implemented");
+        if (!(arg1 instanceof LispString)) 
+            return error("argument to spool must be a string");
+        String name = ((LispString)arg1).string;
+        Writer wr = null;
+        try
+        {   wr = new BufferedWriter(
+               new FileWriter(LispStream.nameConvert(name)));
+        }
+        catch (IOException e)
+        {   return error("unable to open file for spool");
+        }
+        if (Jlisp.lispIO.log != null) Jlisp.lispIO.log.close();
+        Jlisp.lispIO.log = wr;
+        return Jlisp.nil;
     }
 }
 
@@ -2634,7 +2659,7 @@ class String2listFn extends BuiltinFunction
 // This must emit its output in UTF-8
         for (byte c : s.getBytes(utf8))
         {   int ic = 0xff & (int)c;
-//System.out.printf("Character code = %d = %x\n", ic, ic); // @@@
+//System.out.printf("Character code = %d = %x\n", ic, ic);
             r = new Cons(LispInteger.valueOf(ic), r);
         }
         return Fns.reversip(r);
@@ -2669,10 +2694,9 @@ class SublaFn extends BuiltinFunction
                 u = cu.cdr;
                 if (cu.car.atom) continue;
                 LispObject ccu = cu.car;
-                if (v instanceof LispNumber)                   // @@@
-                {   if (v.lispequals(ccu.car)) return ccu.car; // @@@
-                }                                              // @@@
-                else if (ccu.car == v) return ccu.cdr;
+                if (ccu.car == v ||
+                    (v instanceof LispSmallInteger &&
+                     v.lispequals(ccu.car))) return ccu.cdr;
             }
             return v;
         }
@@ -2768,7 +2792,7 @@ class SxhashFn extends BuiltinFunction
             if (arg1 instanceof LispSmallInteger &&
                 ((LispSmallInteger)arg1).value >= -0x08000000 &&
                 ((LispSmallInteger)arg1).value < 0x08000000)
-            {   prinhex8(f, 16*((LispSmallInteger)arg1).value+1);
+            {   prinhex7(f, ((LispSmallInteger)arg1).value);
             }
 // For larger integers the characters processed are as if the integer had
 // been split into 31-bit chunks, processed from least significant end
@@ -2780,8 +2804,10 @@ class SxhashFn extends BuiltinFunction
 // for embedded quote marks, but code points over 0x7f will be represented
 // using utf-8 encoding.
             else if (arg1 instanceof LispString)
+            {   f.print("\"");
                 arg1.print(LispObject.noLineBreak+
                            LispObject.checksumEscape);
+            }
 // All other things pipe through the general printing code. The
 // "checksumEscape" flag must cause any gensym to be expanded as a
 // sequence of the form "#Gnnn" for numeric nnn where nnn is kept on
@@ -3038,7 +3064,12 @@ class ThrowFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
-        return error(name + " not yet implemented");
+        return op2(arg1, Jlisp.nil);
+    }
+
+    public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
+    {
+        throw new LispThrow(arg1, arg2);
     }
 }
 

@@ -37,28 +37,17 @@ package uk.co.codemist.jlisp.core;
  *************************************************************************/
 
 
-class LispException extends Exception
+class LispThrow extends LispException
 {
-    LispObject details;
-    String message;
+    LispObject throwtag;
     
-    LispException()
+    LispThrow(LispObject tag, LispObject value)
     {
-        this.message = "unknown"; 
-	this.details = Jlisp.nil;
+        this.message = "throw used"; 
+        this.throwtag = tag;
+	this.details = value;
     }
     
-    LispException(String message)
-    {
-        this.message=message;
-	this.details=null; 
-    }
-    
-    LispException(String message, LispObject details)
-    {
-        this.message = message;
-	this.details = details; 
-    }
 }
 
-// end of LispException.java
+// end if LispThrow.java

@@ -109,7 +109,6 @@ class Fns1
         {"car",                         new CarFn()},
         {"car*",                        new CarStarFn()},
         {"carcheck",                    new CarcheckFn()},
-        {"catch",                       new CatchFn()},
         {"cbrt",                        new CbrtFn()},
         {"cdaaar",                      new CdaaarFn()},
         {"cdaadr",                      new CdaadrFn()},
@@ -559,9 +558,9 @@ class AtsocFn extends BuiltinFunction
             arg2 = p.cdr;
             if (p.car.atom) continue;
             LispObject q = p.car;
-            if (arg1 instanceof LispNumber &&            // @@@
-                arg1.lispequals(q.car)) return p.car;    // @@@
-            else if (arg1 == q.car) return p.car;
+            if (arg1 == q.car ||
+                (arg1 instanceof LispSmallInteger &&
+                 arg1.lispequals(q.car))) return p.car;
         }
         return Jlisp.nil;
     }
@@ -1068,14 +1067,6 @@ class CarcheckFn extends BuiltinFunction
     }
 }
 
-class CatchFn extends BuiltinFunction
-{
-    public LispObject op1(LispObject arg1) throws Exception
-    {
-        return error(name + " not yet implemented");
-    }
-}
-
 class CbrtFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
@@ -1454,7 +1445,7 @@ class CompressFn extends BuiltinFunction
         {   Jlisp.errprintln(
                 "Error in compress: " + e.getMessage());
 
-            LispStream ee = // @@@
+            LispStream ee = // @@@ for debugging
                         (LispStream)Jlisp.lit[Lit.err_output].car/*value*/;
             e.printStackTrace(new PrintWriter(new WriterToLisp(ee)));
             r = Jlisp.nil;
@@ -1647,9 +1638,9 @@ class DeleqFn extends BuiltinFunction
         while (!arg2.atom)
         {   LispObject a2 = arg2;
             arg2 = a2.cdr;
-            if (arg1 instanceof LispNumber &&    // @@@
-                arg1.lispequals(a2.car)) break;  // @@@
-            else if (a2.car == arg1) break;
+            if (a2.car == arg1 ||
+                (arg1 instanceof LispSmallInteger &&
+                 arg1.lispequals(a2.car))) break;
             w = new Cons(a2.car, w);
         }
         while (!w.atom)
@@ -1855,9 +1846,12 @@ class EqFn extends BuiltinFunction
 {
     public LispObject op2(LispObject arg1, LispObject arg2)
     {
-        if (arg1 instanceof LispNumber)                                // @@@
-            return arg1.lispequals(arg2) ? Jlisp.lispTrue : Jlisp.nil; // @@@
-        else return arg1==arg2 ? Jlisp.lispTrue : Jlisp.nil;
+// Here I do horrid and potentially costly things so that it appears that
+// EQ is a reliable test on small integers.
+        if (arg1 == arg2 ||
+            (arg1 instanceof LispSmallInteger &&
+             arg1.lispequals(arg2))) return Jlisp.lispTrue;
+        else return Jlisp.nil;
     }
 }
 
@@ -1867,9 +1861,10 @@ class EqcarFn extends BuiltinFunction
     {
         if (arg1.atom) return Jlisp.nil;
         arg1 = arg1.car;
-        if (arg1 instanceof LispNumber)                                // @@@
-            return arg1.lispequals(arg2) ? Jlisp.lispTrue : Jlisp.nil; // @@@
-        else return arg1==arg2 ? Jlisp.lispTrue : Jlisp.nil;
+        if (arg1 == arg2 ||
+            (arg1 instanceof LispSmallInteger &&
+             arg1.lispequals(arg2))) return Jlisp.lispTrue;
+        else return Jlisp.nil;
     }
 }
 

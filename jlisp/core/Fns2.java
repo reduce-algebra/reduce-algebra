@@ -708,7 +708,12 @@ class EqSafeFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
-        return Jlisp.nil;
+// I have made Jlisp's version of EQ test small integers in an expensive
+// way so I can report as I do here. This is for better compatibility
+// with CSL and PSL despite a performance hit.
+        if (arg1 instanceof Symbol ||
+            arg1 instanceof LispSmallInteger) return Jlisp.lispTrue;
+        else return Jlisp.nil;
     }
 }
 

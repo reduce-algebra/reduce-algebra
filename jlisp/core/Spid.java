@@ -3,11 +3,11 @@ package uk.co.codemist.jlisp.core;
 
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2000.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 /**************************************************************************
- * Copyright (C) 1998-2011, Codemist Ltd.                A C Norman       *
+ * Copyright (C) 1998-2015, Codemist Ltd.                A C Norman       *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
@@ -50,9 +50,11 @@ class Spid extends LispObject
     static final int FBIND    = 1;  // free bindings on stack in bytecode
     static final int NOARG    = 2;  // "no argument" after &opt
     static final int DEFINMOD = 3;  // introduces bytecode def in fasl file
+    static final int CATCH    = 4;  // On stack in a CATCH frame
 
-    static final Spid fbind = new Spid(FBIND);
-    static final Spid noarg = new Spid(NOARG);
+    static final Spid fbind   = new Spid(FBIND);
+    static final Spid noarg   = new Spid(NOARG);
+    static final Spid catcher = new Spid(CATCH);
 
     Spid(int tag)
     {
@@ -127,3 +129,4 @@ class Spid extends LispObject
 
 }
 
+// End of Spid.java

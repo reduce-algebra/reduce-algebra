@@ -38,6 +38,8 @@ package uk.co.codemist.jlisp.core;
 class Bytecode extends FnWithEnv
 {
 
+static LispObject catchTags;
+
 Bytecode()
 {
     env = new LispObject [0];
@@ -1480,43 +1482,54 @@ case JUMPNATOM_BL:
         else pc++;
         continue;
 case JUMPEQ:
-// @@@ here and many related places would need treatment of numbers if
-// I had to support EQ being a reliable comparison on integers.
+// Beware small integers!
         arg = 0;
-        if (a == b) break;
+        if (a == b ||
+            (a instanceof LispSmallInteger && a.lispequals(b))) break;
         else pc++;
         continue;
 case JUMPEQ_B:
-        if (a == b) pc = pc - (bytecodes[pc] & 0xff) + 1;
+        if (a == b ||
+            (a instanceof LispSmallInteger && a.lispequals(b)))
+            pc = pc - (bytecodes[pc] & 0xff) + 1;
         else pc++;
         continue;
 case JUMPEQ_L:
         arg = bytecodes[pc++] & 0xff;
-        if (a == b) break;
+        if (a == b ||
+            (a instanceof LispSmallInteger && a.lispequals(b))) break;
         else pc++;
         continue;
 case JUMPEQ_BL:
         arg = bytecodes[pc++] & 0xff;
-        if (a == b) pc = pc - ((arg << 8) + (bytecodes[pc] & 0xff)) + 1;
+        if (a == b ||
+            (a instanceof LispSmallInteger && a.lispequals(b)))
+            pc = pc - ((arg << 8) + (bytecodes[pc] & 0xff)) + 1;
         else pc++;
         continue;
 case JUMPNE:
         arg = 0;
-        if (a != b) break;
+        if (a != b &&
+            (!(a instanceof LispSmallInteger) || !a.lispequals(b))) break;
         else pc++;
         continue;
 case JUMPNE_B:
-        if (a != b) pc = pc - (bytecodes[pc] & 0xff) + 1;
+        if (a != b &&
+            (!(a instanceof LispSmallInteger) || !a.lispequals(b)))
+            pc = pc - (bytecodes[pc] & 0xff) + 1;
         else pc++;
         continue;
 case JUMPNE_L:
         arg = bytecodes[pc++] & 0xff;
-        if (a != b) break;
+        if (a != b &&
+            (!(a instanceof LispSmallInteger) || !a.lispequals(b))) break;
         else pc++;
         continue;
 case JUMPNE_BL:
         arg = bytecodes[pc++] & 0xff;
-        if (a != b) pc = pc - ((arg << 8) + (bytecodes[pc] & 0xff)) + 1;
+        if (a != b &&
+            (!(a instanceof LispSmallInteger) || !a.lispequals(b)))
+            pc = pc - ((arg << 8) + (bytecodes[pc] & 0xff)) + 1;
         else pc++;
         continue;
 case JUMPEQUAL:
@@ -1729,52 +1742,62 @@ case JUMPFREET:
         continue;
 case JUMPLIT1EQ:
         arg = 0;
-        if (env[1] == a) break;
+        if (env[1] == a ||
+            (a instanceof LispSmallInteger && a.lispequals(env[1]))) break;
         else pc++;
         continue;
 case JUMPLIT1NE:
         arg = 0;
-        if (env[1] != a) break;
+        if (env[1] != a &&
+            (!(a instanceof LispSmallInteger) || !a.lispequals(env[1]))) break;
         else pc++;
         continue;
 case JUMPLIT2EQ:
         arg = 0;
-        if (env[2] == a) break;
+        if (env[2] == a ||
+            (a instanceof LispSmallInteger && a.lispequals(env[2]))) break;
         else pc++;
         continue;
 case JUMPLIT2NE:
         arg = 0;
-        if (env[2] != a) break;
+        if (env[2] != a &&
+            (!(a instanceof LispSmallInteger) || !a.lispequals(env[2]))) break;
         else pc++;
         continue;
 case JUMPLIT3EQ:
         arg = 0;
-        if (env[3] == a) break;
+        if (env[3] == a ||
+            (a instanceof LispSmallInteger && a.lispequals(env[3]))) break;
         else pc++;
         continue;
 case JUMPLIT3NE:
         arg = 0;
-        if (env[3] != a) break;
+        if (env[3] != a &&
+            (!(a instanceof LispSmallInteger) || !a.lispequals(env[3]))) break;
         else pc++;
         continue;
 case JUMPLIT4EQ:
         arg = 0;
-        if (env[4] == a) break;
+        if (env[4] == a ||
+            (a instanceof LispSmallInteger && a.lispequals(env[4]))) break;
         else pc++;
         continue;
 case JUMPLIT4NE:
         arg = 0;
-        if (env[4] != a) break;
+        if (env[4] != a &&
+            (!(a instanceof LispSmallInteger) || !a.lispequals(env[4]))) break;
         else pc++;
         continue;
 case JUMPLITEQ:
         arg = 0;
-        if (env[bytecodes[pc++] & 0xff] == a) break;
+        if ((w = env[bytecodes[pc++] & 0xff]) == a ||
+            (a instanceof LispSmallInteger && a.lispequals(w))) break;
         else pc++;
         continue;
 case JUMPLITNE:
         arg = 0;
-        if (env[bytecodes[pc++] & 0xff] != a) break;
+        if ((w = env[bytecodes[pc++] & 0xff]) != a &&
+            (!(a instanceof LispSmallInteger) || !a.lispequals(w))) break;
         else pc++;
         continue;
 case JUMPB1NIL:
@@ -1809,7 +1832,8 @@ case JUMPNFLAGP:
         continue;
 case JUMPEQCAR:
         arg = bytecodes[pc++] & 0xff;
-        if (!a.atom && env[arg] == a.car)
+        if (!a.atom && ((w = env[arg]) == a.car ||
+            (w instanceof LispSmallInteger && w.lispequals(a.car))))
         {   arg = 0;
             break;
         }
@@ -1817,22 +1841,55 @@ case JUMPEQCAR:
         continue;
 case JUMPNEQCAR:
         arg = bytecodes[pc++] & 0xff;
-        if (a.atom || env[arg] != a.car)
+        if (a.atom || ((w = env[arg]) != a.car &&
+           (!(w instanceof LispSmallInteger) || !w.lispequals(a.car))))
         {   arg = 0;
             break;
         }
         else pc++;
         continue;
 case CATCH:
-        Jlisp.error("bytecode CATCH not implemented");
+        iw = pc + (bytecodes[pc] & 0xff);
+        pc++;
+        catchTags = new Cons(a, catchTags);
+        stack[++sp] = LispInteger.valueOf(iw);
+        stack[++sp] = catchTags;
+        stack[++sp] = Spid.catcher;
+        continue;
 case CATCH_B:
-        Jlisp.error("bytecode CATCH_B not implemented");
+        iw = pc - (bytecodes[pc] & 0xff);
+        pc++;
+        catchTags = new Cons(a, catchTags);
+        stack[++sp] = LispInteger.valueOf(iw);
+        stack[++sp] = catchTags;
+        stack[++sp] = Spid.catcher;
+        continue;
 case CATCH_L:
-        Jlisp.error("bytecode CATCH_L not implemented");
+        iw = bytecodes[pc++] & 0xff;
+        iw = pc + (iw<<8) + (bytecodes[pc] & 0xff);
+        pc++;
+        catchTags = new Cons(a, catchTags);
+        stack[++sp] = LispInteger.valueOf(iw);
+        stack[++sp] = catchTags;
+        stack[++sp] = Spid.catcher;
+        continue;
 case CATCH_BL:
-        Jlisp.error("bytecode CATCHH_BL not implemented");
+        iw = bytecodes[pc++] & 0xff;
+        iw = pc - ((iw<<8) + (bytecodes[pc] & 0xff));
+        pc++;
+        catchTags = new Cons(a, catchTags);
+        stack[++sp] = LispInteger.valueOf(iw);
+        stack[++sp] = catchTags;
+        stack[++sp] = Spid.catcher;
+        continue;
 case UNCATCH:
-        Jlisp.error("bytecode UNCATCH not implemented");
+        sp--;
+        w = stack[sp--];
+        sp--;
+        catchTags = w.cdr;
+        w.car = w;
+        w.cdr = Jlisp.nil;
+        continue;
 case THROW:
         Jlisp.error("bytecode THROW not implemented");
 case PROTECT:
@@ -1919,10 +1976,21 @@ case EQCAR:
         else b = b.car;
         // drop through into EQ
 case EQ:
-        if (a instanceof LispInteger)                         // @@@ EQ
-            a = a.lispequals(b) ? Jlisp.lispTrue : Jlisp.nil; // @@@ EQ
-        else                                                  // @@@ EQ
-            a = (a == b) ? Jlisp.lispTrue : Jlisp.nil;
+// I have a nasty cop-out here, and need to consider it everywhere that
+// EQ is used not just in this in-line version. In CSL all sufficiently
+// small integers are stored as immediate data and so EQ is a reliable
+// test on them... at present the range is numbers whose signed value fits
+// within 28 bits, but that should not be considered long-term guaranteed.
+// PSL has "inums" and it looks as if they are 27 or 56-bits wide.
+//
+// All this means that there is a real denger that there can be extant
+// Reduce code that (perhaps improperly) uses EQ to compare numbers that
+// it expects to be small integers, and so despite the fact that it will
+// slow me down I will support that test here.
+        if (a == b ||
+            (a instanceof LispSmallInteger &&
+             a.lispequals(b))) a = Jlisp.lispTrue;
+        else a = Jlisp.nil;
         continue;
 case EQUAL:
         a = (a.lispequals(b)) ? Jlisp.lispTrue : Jlisp.nil;

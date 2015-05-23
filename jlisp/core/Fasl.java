@@ -306,7 +306,8 @@ class Fasl
 //   Well - I have just adjusted the code here so that at least most of the
 //   time it is in exact alignment with CSL!
 
-// More to do here @@@@
+// More to do here @@@@ Specifically load things if the correct info is on the
+// property list.
 
         if (saved_definition != Jlisp.nil)
             Fns.put(name, Jlisp.lit[Lit.savedef], saved_definition);

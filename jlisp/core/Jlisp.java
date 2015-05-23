@@ -430,19 +430,19 @@ static void startup1(String [] args) throws ResourceException
 // directive is ignored and output again goes to the "standard" place.
 
     if (mainOutput == null)
-    {   if (transcript == null) lispIO = new LispOutputStream();
-        else lispIO = new DoubleWriter(transcript);
+    {   lispIO = new LispOutputStream();
+        lispIO.log = transcript;
     }
     else
     {   try
-        {   if (transcript == null) lispIO = new LispOutputStream(mainOutput);
-        else lispIO = new DoubleWriter(mainOutput, transcript);
+        {   lispIO = new LispOutputStream(mainOutput);
+            lispIO.log = transcript;
         }
         catch (IOException e)
         {    errs[errCount++] =
                  "File \"" + mainOutput + "\" could not be written to";
-            if (transcript == null) lispIO = new LispOutputStream();
-            else lispIO = new DoubleWriter(transcript);
+            lispIO = new LispOutputStream();
+            lispIO.log = transcript;
         }
     }
     if (transcript != null)
@@ -690,6 +690,7 @@ static void startup1(String [] args) throws ResourceException
         for (i=0; i<128; i++) // To speed up readch()
         {   chars[i] = Symbol.intern(String.valueOf((char)i));
         }
+        Bytecode.catchTags = nil;
 
 // If no input files had been specified I will read from the standard
 // input - often the keyboard. Otherwise I will process each file that
@@ -2068,7 +2069,6 @@ static void initSymbols() throws ResourceException
 // by the REDUCE build scripts!
     int tr = (extrabuiltins == null) ? 0 : extrabuiltins.countFunctions();
     instrumented = (tr == 0);
-    System.out.printf("instrumented = %b%n", instrumented);
     ((Symbol)lit[Lit.lispsystem]).car/*value*/ =
         new Cons(new Cons(Symbol.intern("platform"), Symbol.intern("java")),
 // Note that even in Jlisp whhere it will really be "Java code" I put the
