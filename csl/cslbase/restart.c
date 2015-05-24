@@ -6580,7 +6580,7 @@ void copy_into_nilseg(int fg)
     BASE[155]    = callstack;
     BASE[156]    = procstack;
     BASE[157]    = procmem;
-    BASE[157]    = trap_time;
+    BASE[158]    = trap_time;
 
 #ifdef COMMON
     BASE[170]    = keyword_package;
