@@ -1,11 +1,11 @@
-/*  eval2.c                          Copyright (C) 1989-2014 Codemist Ltd */
+/*  eval2.c                          Copyright (C) 1989-2015 Codemist Ltd */
 
 /*
  * Interpreter (part 2).  apply & some special forms
  */
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -266,7 +266,7 @@ Lisp_Object apply(Lisp_Object fn, int nargs, Lisp_Object env, Lisp_Object name, 
  * There are (nargs) arguments on the Lisp stack, and apply() must use them
  * then pop them off.  They were pushed in the order push(arg1); push(arg2),
  * and so on, and the stack grows upwards.
- * If I built in DEBUF mode then mane_of_caller names the function that
+ * If I built in DEBUG mode then mane_of_caller names the function that
  * called me...
  * If I return with an error I will hand back the value name rather than the
  * junk value normally used in such cases.

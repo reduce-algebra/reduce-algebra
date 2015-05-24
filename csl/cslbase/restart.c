@@ -1,4 +1,4 @@
-/*  restart.c                       Copyright (C) 1989-2014 Codemist Ltd */
+/*  restart.c                       Copyright (C) 1989-2015 Codemist Ltd */
 
 /*
  * Code needed to start off Lisp when no initial heap image is available,
@@ -8,7 +8,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -6580,6 +6580,7 @@ void copy_into_nilseg(int fg)
     BASE[155]    = callstack;
     BASE[156]    = procstack;
     BASE[157]    = procmem;
+    BASE[157]    = trap_time;
 
 #ifdef COMMON
     BASE[170]    = keyword_package;
@@ -6754,6 +6755,7 @@ void copy_out_of_nilseg(int fg)
     callstack             = BASE[155];
     procstack             = BASE[156];
     procmem               = BASE[157];
+    trap_time             = BASE[158];
 
 #ifdef COMMON
 
@@ -7143,4 +7145,3 @@ int main(int argc, char *argv[])
 
 
 /* end of restart.c */
-

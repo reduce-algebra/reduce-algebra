@@ -218,7 +218,7 @@ difference s!:rmar 21)))) (setq w (posn)) (cond ((greaterp w s!:lmar) (progn
 difference s!:lmar w)))) (s!:prindent x (plus s!:lmar 3)) (s!:overflow (quote
 none)) (linelength s!:rmar) (return x)))
 
-(flag (quote (superprinm superprintm prettyprint)) (quote lose))
+(flag (quote (superprinm superprintm prettyprint tprettyprint)) (quote lose))
 
 (dm s!:top (u !&optional v) (quote (car s!:stack)))
 
