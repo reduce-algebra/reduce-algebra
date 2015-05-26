@@ -127,6 +127,8 @@ class Fns2
         {"ashift",                      new AshiftFn()},
         {"lshift",                      new LshiftFn()},
         {"irightshift",                 new IrightshiftFn()},
+        {"is-spid",                     new Is_spidFn()},
+        {"spid-to-nil",                 new Spid_to_nilFn()},
         {"isub1",                       new Isub1Fn()},
         {"itimes",                      new ItimesFn()},
         {"itimes2",                     new Itimes2Fn()},
@@ -1712,6 +1714,26 @@ class ZeropFn extends BuiltinFunction
         return arg1.zerop();
     }
 }
+
+// The next two are used in compiled code when handling &OPT optional
+// arguments.
+
+class Is_spidFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        return arg1 instanceof Spid ? Jlisp.lispTrue : Jlisp.nil;
+    }
+}
+
+class Spid_to_nilFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        return arg1 instanceof Spid ? Jlisp.lispTrue : arg1;
+    }
+}
+
 
 }
 

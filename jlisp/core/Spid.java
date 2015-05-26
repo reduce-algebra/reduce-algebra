@@ -51,10 +51,12 @@ class Spid extends LispObject
     static final int NOARG    = 2;  // "no argument" after &opt
     static final int DEFINMOD = 3;  // introduces bytecode def in fasl file
     static final int CATCH    = 4;  // On stack in a CATCH frame
+    static final int PROTECT  = 5;  // on stack for UNWIND-PROTECT
 
     static final Spid fbind   = new Spid(FBIND);
     static final Spid noarg   = new Spid(NOARG);
     static final Spid catcher = new Spid(CATCH);
+    static final Spid protecter = new Spid(PROTECT);
 
     Spid(int tag)
     {

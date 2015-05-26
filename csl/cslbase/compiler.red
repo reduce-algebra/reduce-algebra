@@ -381,7 +381,7 @@ symbolic procedure s!:prinhex4 n;
 %
 
 flag('(comp plap pgwd pwrds notailcall ord nocompile
-       carcheckflag savedef carefuleq r2i
+       carcheckflag savedef r2i
        native_code save_native strip_native), 'switch); % for RLISP
 
 if not boundp '!*comp then <<      % compile automatically on "de"
@@ -419,13 +419,6 @@ if not boundp '!*savedef then <<   % keep interpretable definition on p-list
 if not boundp '!*carcheckflag then << % safety/speed control
    fluid '(!*carcheckflag);
    !*carcheckflag := t >>;
-
-if not boundp '!*carefuleq then << % force EQ to be function call
-   fluid '(!*carefuleq);           % to permit checking of (EQ number number)
-   !*carefuleq := (boundp 'lispsystem!* and
-                   not null (member('jlisp, lispsystem!*))) or
-                  (boundp '!*features!* and
-                   not null (member('!:jlisp, !*features!*))) >>;
 
 if not boundp '!*r2i then << % apply Recursion to Iteration conversions
    fluid '(!*r2i);
@@ -3074,8 +3067,7 @@ symbolic procedure s!:comcatch(x, env, context);
     s!:set_label g
   end;
 
-if not memq('jlisp, lispsystem!*) then
-   put('catch, 's!:compfn, 's!:comcatch);
+put('catch, 's!:compfn, 's!:comcatch);
 
 % Compiled support for catch, throw and errorset not working in Jlisp yet!
 
@@ -3089,8 +3081,7 @@ symbolic procedure s!:comthrow(x, env, context);
     rplacd(env, cddr env)
   end;
 
-if not memq('jlisp, lispsystem!*) then
-   put('throw, 's!:compfn, 's!:comthrow);
+put('throw, 's!:compfn, 's!:comthrow);
 
 symbolic procedure s!:comunwind!-protect(x, env, context);
   begin
@@ -3116,8 +3107,7 @@ symbolic procedure s!:comunwind!-protect(x, env, context);
     rplacd(env, cddddr env)
   end;
 
-if not memq('jlisp, lispsystem!*) then
-   put('unwind!-protect, 's!:compfn, 's!:comunwind!-protect);
+put('unwind!-protect, 's!:compfn, 's!:comunwind!-protect);
 
 symbolic procedure s!:comdeclare(x, env, context);
 % I print a message if I find DECLARE where I am compiling things.
@@ -3736,10 +3726,6 @@ symbolic procedure s!:testeq(neg, x, env, lab);
        prin s!:current_function; princ " : ";
        prin a; princ " "; print b;
        return s!:testequal(neg, 'equal . cdr x, env, lab) >>;
-    if !*carefuleq then <<
-       s!:comval(x, env, 1);
-       s!:outjump(if neg then 'JUMPT else 'JUMPNIL, lab);
-       return >>;
 % eq tests against nil can be optimised a bit
     if null a then s!:jumpif(not neg, b, env, lab)
     else if null b then s!:jumpif(not neg, a, env, lab)
@@ -3762,10 +3748,6 @@ symbolic procedure s!:testeq(neg, x, env, lab);
 symbolic procedure s!:testeq1(neg, x, env, lab);
   begin
     scalar a, b;
-    if !*carefuleq then <<
-       s!:comval(x, env, 1);
-       s!:outjump(if neg then 'JUMPT else 'JUMPNIL, lab);
-       return >>;
     a := s!:improve cadr x;
     b := s!:improve caddr x;
 % eq tests against nil can be optimised a bit
@@ -3830,11 +3812,7 @@ symbolic procedure s!:testeqcar(neg, x, env, lab);
        if posn() neq 0 then terpri();
        princ "++++ EQCAR on number upgraded to EQUALCAR in ";
        prin s!:current_function; princ " : "; print b;
-       promote := t >>
-    else if !*carefuleq then <<
-       s!:comval(x, env, 1);
-       s!:outjump(if neg then 'JUMPT else 'JUMPNIL, lab);
-       return >>;
+       promote := t >>;
     if not promote and eqcar(b, 'quote) then <<
        s!:comval(a, env, 1);
        b := cadr b;

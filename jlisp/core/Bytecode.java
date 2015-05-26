@@ -174,10 +174,10 @@ public LispObject opn(LispObject [] args) throws Exception
 
 static LispFunction builtin0[], builtin1[], builtin2[], builtin3[];
 
-static LispFunction lookupBuiltin(String s) throws ResourceException
+static LispFunction find(String s) throws ResourceException
 {
     LispFunction r = (LispFunction)Jlisp.builtinFunctions.get(s);
-    if (r == null) Jlisp.println("Function " + s + " not found");
+    if (r == null) Jlisp.printf("Function \"%s\" not found%n", s);
     return r;
 }
 
@@ -232,225 +232,225 @@ static void setupBuiltins() throws ResourceException
     builtin2 = new LispFunction[73];
     builtin3 = new LispFunction[10];
 
-    builtin0[0]   = lookupBuiltin("batchp");               BIbatchp =                0;
-    builtin0[1]   = lookupBuiltin("date");                 BIdate =                  1;
-    builtin0[2]   = lookupBuiltin("eject");                BIeject =                 2;
-    builtin0[3]   = lookupBuiltin("error1");               BIerror1 =                3;
-    builtin0[4]   = lookupBuiltin("gctime");               BIgctime =                4;
-    builtin0[5]   = lookupBuiltin("gensym");               BIgensym =                5;
-    builtin0[6]   = lookupBuiltin("lposn");                BIlposn =                 6;
-//  builtin0[7]   = lookupBuiltin("next-random");          BInext_random =           7;
-    builtin0[8]   = lookupBuiltin("posn");                 BIposn =                  8;
-    builtin0[9]   = lookupBuiltin("read");                 BIread =                  9;
-    builtin0[10]  = lookupBuiltin("readch");               BIreadch =                10;
-    builtin0[11]  = lookupBuiltin("terpri");               BIterpri =                11;
-    builtin0[12]  = lookupBuiltin("time");                 BItime =                  12;
-//  builtin0[13]  = lookupBuiltin("tyi");                  BItyi =                   13;
-//  builtin0[14]  = lookupBuiltin("load-spid");            BIload_spid =             14;
+    builtin0[0] =find("batchp");               BIbatchp =                0;
+    builtin0[1] =find("date");                 BIdate =                  1;
+    builtin0[2] =find("eject");                BIeject =                 2;
+    builtin0[3] =find("error1");               BIerror1 =                3;
+    builtin0[4] =find("gctime");               BIgctime =                4;
+    builtin0[5] =find("gensym");               BIgensym =                5;
+    builtin0[6] =find("lposn");                BIlposn =                 6;
+    builtin0[7] =find("next-random");          BInext_random =           7;
+    builtin0[8] =find("posn");                 BIposn =                  8;
+    builtin0[9] =find("read");                 BIread =                  9;
+    builtin0[10]=find("readch");               BIreadch =                10;
+    builtin0[11]=find("terpri");               BIterpri =                11;
+    builtin0[12]=find("time");                 BItime =                  12;
+    builtin0[13]=find("tyi");                  BItyi =                   13;
+    builtin0[14]=find("load-spid");            BIload_spid =             14;
 
-    builtin1[0]   = lookupBuiltin("abs");                  BIabs =                   0;
-    builtin1[1]   = lookupBuiltin("add1");                 BIadd1 =                  1;
-    builtin1[2]   = lookupBuiltin("atan");                 BIatan =                  2;
-    builtin1[3]   = lookupBuiltin("apply0");               BIapply0 =                3;
-    builtin1[4]   = lookupBuiltin("atom");                 BIatom =                  4;
-    builtin1[5]   = lookupBuiltin("boundp");               BIboundp =                5;
-    builtin1[6]   = lookupBuiltin("char-code");            BIchar_code =             6;
-    builtin1[7]   = lookupBuiltin("close");                BIclose =                 7;
-    builtin1[8]   = lookupBuiltin("codep");                BIcodep =                 8;
-    builtin1[9]   = lookupBuiltin("compress");             BIcompress =              9;
-    builtin1[10]  = lookupBuiltin("constantp");            BIconstantp =             10;
-    builtin1[11]  = lookupBuiltin("digit");                BIdigit =                 11;
-    builtin1[12]  = lookupBuiltin("endp");                 BIendp =                  12;
-    builtin1[13]  = lookupBuiltin("eval");                 BIeval =                  13;
-    builtin1[14]  = lookupBuiltin("evenp");                BIevenp =                 14;
-    builtin1[15]  = lookupBuiltin("evlis");                BIevlis =                 15;
-    builtin1[16]  = lookupBuiltin("explode");              BIexplode =               16;
-    builtin1[17]  = lookupBuiltin("explode2lc");           BIexplode2lc =            17;
-    builtin1[18]  = lookupBuiltin("explode2");             BIexplode2 =              18;
-    builtin1[18]  = lookupBuiltin("explodec");             BIexplodec =              18;
-    builtin1[19]  = lookupBuiltin("fixp");                 BIfixp =                  19;
-    builtin1[20]  = lookupBuiltin("float");                BIfloat =                 20;
-    builtin1[21]  = lookupBuiltin("floatp");               BIfloatp =                21;
-//  builtin1[22]  = lookupBuiltin("symbol-specialp");      BIsymbol_specialp =       22;
-//  builtin1[23]  = lookupBuiltin("gc");                   BIgc =                    23;
-    builtin1[24]  = lookupBuiltin("gensym1");              BIgensym1 =               24;
-    builtin1[25]  = lookupBuiltin("getenv");               BIgetenv =                25;
-//  builtin1[26]  = lookupBuiltin("symbol-globalp");       BIsymbol_globalp =        26;
-    builtin1[27]  = lookupBuiltin("iadd1");                BIiadd1 =                 27;
-    builtin1[28]  = lookupBuiltin("symbolp");              BIsymbolp =               28;
-    builtin1[29]  = lookupBuiltin("iminus");               BIiminus =                29;
-    builtin1[30]  = lookupBuiltin("iminusp");              BIiminusp =               30;
-    builtin1[31]  = lookupBuiltin("indirect");             BIindirect =              31;
-    builtin1[32]  = lookupBuiltin("integerp");             BIintegerp =              32;
-    builtin1[33]  = lookupBuiltin("intern");               BIintern =                33;
-    builtin1[34]  = lookupBuiltin("isub1");                BIisub1 =                 34;
-    builtin1[35]  = lookupBuiltin("length");               BIlength =                35;
-    builtin1[36]  = lookupBuiltin("lengthc");              BIlengthc =               36;
-    builtin1[37]  = lookupBuiltin("linelength");           BIlinelength =            37;
-    builtin1[38]  = lookupBuiltin("liter");                BIliter =                 38;
-    builtin1[39]  = lookupBuiltin("load-module");          BIload_module =           39;
-    builtin1[40]  = lookupBuiltin("lognot");               BIlognot =                40;
-    builtin1[41]  = lookupBuiltin("macroexpand");          BImacroexpand =           41;
-    builtin1[42]  = lookupBuiltin("macroexpand-1");        BImacroexpand_1 =         42;
-    builtin1[43]  = lookupBuiltin("macro-function");       BImacro_function =        43;
-    builtin1[44]  = lookupBuiltin("make-bps");             BImake_bps =              44;
-    builtin1[45]  = lookupBuiltin("make-global");          BImake_global =           45;
-    builtin1[46]  = lookupBuiltin("make-simple-string");   BImake_simple_string =    46;
-    builtin1[47]  = lookupBuiltin("make-special");         BImake_special =          47;
-    builtin1[48]  = lookupBuiltin("minus");                BIminus =                 48;
-    builtin1[49]  = lookupBuiltin("minusp");               BIminusp =                49;
-    builtin1[50]  = lookupBuiltin("mkvect");               BImkvect =                50;
-    builtin1[51]  = lookupBuiltin("modular-minus");        BImodular_minus =         51;
-    builtin1[52]  = lookupBuiltin("modular-number");       BImodular_number =        52;
-    builtin1[53]  = lookupBuiltin("modular-reciprocal");   BImodular_reciprocal =    53;
-    builtin1[54]  = lookupBuiltin("null");                 BInull =                  54;
-    builtin1[55]  = lookupBuiltin("oddp");                 BIoddp =                  55;
-    builtin1[56]  = lookupBuiltin("onep");                 BIonep =                  56;
-    builtin1[57]  = lookupBuiltin("pagelength");           BIpagelength =            57;
-    builtin1[58]  = lookupBuiltin("pairp");                BIpairp =                 58;
-    builtin1[59]  = lookupBuiltin("plist");                BIplist =                 59;
-    builtin1[60]  = lookupBuiltin("plusp");                BIplusp =                 60;
-    builtin1[61]  = lookupBuiltin("prin");                 BIprin =                  61;
-    builtin1[62]  = lookupBuiltin("princ");                BIprinc =                 62;
-    builtin1[63]  = lookupBuiltin("print");                BIprint =                 63;
-    builtin1[64]  = lookupBuiltin("printc");               BIprintc =                64;
-//  builtin1[65]  = lookupBuiltin("random");               BIrandom =                65;
-    builtin1[66]  = lookupBuiltin("rational");             BIrational =              66;
-//  builtin1[67]  = lookupBuiltin("load");                 BIload =                  67;
-    builtin1[68]  = lookupBuiltin("rds");                  BIrds =                   68;
-    builtin1[69]  = lookupBuiltin("remd");                 BIremd =                  69;
-    builtin1[70]  = lookupBuiltin("reverse");              BIreverse =               70;
-    builtin1[71]  = lookupBuiltin("reversip");             BIreversip =              71;
-    builtin1[72]  = lookupBuiltin("seprp");                BIseprp =                 72;
-    builtin1[73]  = lookupBuiltin("set-small-modulus");    BIset_small_modulus =     73;
-    builtin1[74]  = lookupBuiltin("spaces");               BIspaces =                74;
-    builtin1[74]  = lookupBuiltin("xtab");                 BIxtab =                  74;
-    builtin1[75]  = lookupBuiltin("special-char");         BIspecial_char =          75;
-    builtin1[76]  = lookupBuiltin("special-form-p");       BIspecial_form_p =        76;
-    builtin1[77]  = lookupBuiltin("spool");                BIspool =                 77;
-    builtin1[78]  = lookupBuiltin("stop");                 BIstop =                  78;
-    builtin1[79]  = lookupBuiltin("stringp");              BIstringp =               79;
-    builtin1[80]  = lookupBuiltin("sub1");                 BIsub1 =                  80;
-    builtin1[81]  = lookupBuiltin("symbol-env");           BIsymbol_env =            81;
-    builtin1[82]  = lookupBuiltin("symbol-function");      BIsymbol_function =       82;
-    builtin1[83]  = lookupBuiltin("symbol-name");          BIsymbol_name =           83;
-    builtin1[84]  = lookupBuiltin("symbol-value");         BIsymbol_value =          84;
-    builtin1[85]  = lookupBuiltin("system");               BIsystem =                85;
-    builtin1[86]  = lookupBuiltin("fix");                  BIfix =                   86;
-    builtin1[87]  = lookupBuiltin("ttab");                 BIttab =                  87;
-    builtin1[88]  = lookupBuiltin("tyo");                  BItyo =                   88;
-    builtin1[89]  = lookupBuiltin("remob");                BIremob =                 89;
-    builtin1[90]  = lookupBuiltin("unmake-global");        BIunmake_global =         90;
-    builtin1[91]  = lookupBuiltin("unmake-special");       BIunmake_special =        91;
-    builtin1[92]  = lookupBuiltin("upbv");                 BIupbv =                  92;
-    builtin1[93]  = lookupBuiltin("vectorp");              BIvectorp =               93;
-//  builtin1[93]  = lookupBuiltin("simple-vectorp");       BIsimple_vectorp =        93;
-    builtin1[94]  = lookupBuiltin("verbos");               BIverbos =                94;
-    builtin1[95]  = lookupBuiltin("wrs");                  BIwrs =                   95;
-    builtin1[96]  = lookupBuiltin("zerop");                BIzerop =                 96;
-    builtin1[97]  = lookupBuiltin("car");                  BIcar =                   97;
-    builtin1[98]  = lookupBuiltin("cdr");                  BIcdr =                   98;
-    builtin1[99]  = lookupBuiltin("caar");                 BIcaar =                  99;
-    builtin1[100] = lookupBuiltin("cadr");                 BIcadr =                  100;
-    builtin1[101] = lookupBuiltin("cdar");                 BIcdar =                  101;
-    builtin1[102] = lookupBuiltin("cddr");                 BIcddr =                  102;
-    builtin1[103] = lookupBuiltin("qcar");                 BIqcar =                  103;
-    builtin1[104] = lookupBuiltin("qcdr");                 BIqcdr =                  104;
-    builtin1[105] = lookupBuiltin("qcaar");                BIqcaar =                 105;
-    builtin1[106] = lookupBuiltin("qcadr");                BIqcadr =                 106;
-    builtin1[107] = lookupBuiltin("qcdar");                BIqcdar =                 107;
-    builtin1[108] = lookupBuiltin("qcddr");                BIqcddr =                 108;
-    builtin1[109] = lookupBuiltin("ncons");                BIncons =                 109;
-    builtin1[110] = lookupBuiltin("numberp");              BInumberp =               110;
-//  builtin1[111] = lookupBuiltin("is-spid");              BIis_spid =               111;
-//  builtin1[112] = lookupBuiltin("spid-to-nil");          BIspid_to_nil =           112;
-//  builtin1[113] = lookupBuiltin("mv-list*");             BImv_listSTAR =           113;
+    builtin1[0] =find("abs");                  BIabs =                   0;
+    builtin1[1] =find("add1");                 BIadd1 =                  1;
+    builtin1[2] =find("atan");                 BIatan =                  2;
+    builtin1[3] =find("apply0");               BIapply0 =                3;
+    builtin1[4] =find("atom");                 BIatom =                  4;
+    builtin1[5] =find("boundp");               BIboundp =                5;
+    builtin1[6] =find("char-code");            BIchar_code =             6;
+    builtin1[7] =find("close");                BIclose =                 7;
+    builtin1[8] =find("codep");                BIcodep =                 8;
+    builtin1[9] =find("compress");             BIcompress =              9;
+    builtin1[10]=find("constantp");            BIconstantp =             10;
+    builtin1[11]=find("digit");                BIdigit =                 11;
+    builtin1[12]=find("endp");                 BIendp =                  12;
+    builtin1[13]=find("eval");                 BIeval =                  13;
+    builtin1[14]=find("evenp");                BIevenp =                 14;
+    builtin1[15]=find("evlis");                BIevlis =                 15;
+    builtin1[16]=find("explode");              BIexplode =               16;
+    builtin1[17]=find("explode2lc");           BIexplode2lc =            17;
+    builtin1[18]=find("explode2");             BIexplode2 =              18;
+    builtin1[18]=find("explodec");             BIexplodec =              18;
+    builtin1[19]=find("fixp");                 BIfixp =                  19;
+    builtin1[20]=find("float");                BIfloat =                 20;
+    builtin1[21]=find("floatp");               BIfloatp =                21;
+    builtin1[22]=find("symbol-specialp");      BIsymbol_specialp =       22;
+    builtin1[23]=find("gc");                   BIgc =                    23;
+    builtin1[24]=find("gensym1");              BIgensym1 =               24;
+    builtin1[25]=find("getenv");               BIgetenv =                25;
+    builtin1[26]=find("symbol-globalp");       BIsymbol_globalp =        26;
+    builtin1[27]=find("iadd1");                BIiadd1 =                 27;
+    builtin1[28]=find("symbolp");              BIsymbolp =               28;
+    builtin1[29]=find("iminus");               BIiminus =                29;
+    builtin1[30]=find("iminusp");              BIiminusp =               30;
+    builtin1[31]=find("indirect");             BIindirect =              31;
+    builtin1[32]=find("integerp");             BIintegerp =              32;
+    builtin1[33]=find("intern");               BIintern =                33;
+    builtin1[34]=find("isub1");                BIisub1 =                 34;
+    builtin1[35]=find("length");               BIlength =                35;
+    builtin1[36]=find("lengthc");              BIlengthc =               36;
+    builtin1[37]=find("linelength");           BIlinelength =            37;
+    builtin1[38]=find("liter");                BIliter =                 38;
+    builtin1[39]=find("load-module");          BIload_module =           39;
+    builtin1[40]=find("lognot");               BIlognot =                40;
+    builtin1[41]=find("macroexpand");          BImacroexpand =           41;
+    builtin1[42]=find("macroexpand-1");        BImacroexpand_1 =         42;
+    builtin1[43]=find("macro-function");       BImacro_function =        43;
+    builtin1[44]=find("make-bps");             BImake_bps =              44;
+    builtin1[45]=find("make-global");          BImake_global =           45;
+    builtin1[46]=find("make-simple-string");   BImake_simple_string =    46;
+    builtin1[47]=find("make-special");         BImake_special =          47;
+    builtin1[48]=find("minus");                BIminus =                 48;
+    builtin1[49]=find("minusp");               BIminusp =                49;
+    builtin1[50]=find("mkvect");               BImkvect =                50;
+    builtin1[51]=find("modular-minus");        BImodular_minus =         51;
+    builtin1[52]=find("modular-number");       BImodular_number =        52;
+    builtin1[53]=find("modular-reciprocal");   BImodular_reciprocal =    53;
+    builtin1[54]=find("null");                 BInull =                  54;
+    builtin1[55]=find("oddp");                 BIoddp =                  55;
+    builtin1[56]=find("onep");                 BIonep =                  56;
+    builtin1[57]=find("pagelength");           BIpagelength =            57;
+    builtin1[58]=find("pairp");                BIpairp =                 58;
+    builtin1[59]=find("plist");                BIplist =                 59;
+    builtin1[60]=find("plusp");                BIplusp =                 60;
+    builtin1[61]=find("prin");                 BIprin =                  61;
+    builtin1[62]=find("princ");                BIprinc =                 62;
+    builtin1[63]=find("print");                BIprint =                 63;
+    builtin1[64]=find("printc");               BIprintc =                64;
+    builtin1[65]=find("random");               BIrandom =                65;
+    builtin1[66]=find("rational");             BIrational =              66;
+    builtin1[67]=find("load");                 BIload =                  67;
+    builtin1[68]=find("rds");                  BIrds =                   68;
+    builtin1[69]=find("remd");                 BIremd =                  69;
+    builtin1[70]=find("reverse");              BIreverse =               70;
+    builtin1[71]=find("reversip");             BIreversip =              71;
+    builtin1[72]=find("seprp");                BIseprp =                 72;
+    builtin1[73]=find("set-small-modulus");    BIset_small_modulus =     73;
+    builtin1[74]=find("spaces");               BIspaces =                74;
+    builtin1[74]=find("xtab");                 BIxtab =                  74;
+    builtin1[75]=find("special-char");         BIspecial_char =          75;
+    builtin1[76]=find("special-form-p");       BIspecial_form_p =        76;
+    builtin1[77]=find("spool");                BIspool =                 77;
+    builtin1[78]=find("stop");                 BIstop =                  78;
+    builtin1[79]=find("stringp");              BIstringp =               79;
+    builtin1[80]=find("sub1");                 BIsub1 =                  80;
+    builtin1[81]=find("symbol-env");           BIsymbol_env =            81;
+    builtin1[82]=find("symbol-function");      BIsymbol_function =       82;
+    builtin1[83]=find("symbol-name");          BIsymbol_name =           83;
+    builtin1[84]=find("symbol-value");         BIsymbol_value =          84;
+    builtin1[85]=find("system");               BIsystem =                85;
+    builtin1[86]=find("fix");                  BIfix =                   86;
+    builtin1[87]=find("ttab");                 BIttab =                  87;
+    builtin1[88]=find("tyo");                  BItyo =                   88;
+    builtin1[89]=find("remob");                BIremob =                 89;
+    builtin1[90]=find("unmake-global");        BIunmake_global =         90;
+    builtin1[91]=find("unmake-special");       BIunmake_special =        91;
+    builtin1[92]=find("upbv");                 BIupbv =                  92;
+    builtin1[93]=find("vectorp");              BIvectorp =               93;
+    builtin1[93]=find("simple-vectorp");       BIsimple_vectorp =        93;
+    builtin1[94]=find("verbos");               BIverbos =                94;
+    builtin1[95]=find("wrs");                  BIwrs =                   95;
+    builtin1[96]=find("zerop");                BIzerop =                 96;
+    builtin1[97]=find("car");                  BIcar =                   97;
+    builtin1[98]=find("cdr");                  BIcdr =                   98;
+    builtin1[99]=find("caar");                 BIcaar =                  99;
+    builtin1[100]=find("cadr");                BIcadr =                  100;
+    builtin1[101]=find("cdar");                BIcdar =                  101;
+    builtin1[102]=find("cddr");                BIcddr =                  102;
+    builtin1[103]=find("qcar");                BIqcar =                  103;
+    builtin1[104]=find("qcdr");                BIqcdr =                  104;
+    builtin1[105]=find("qcaar");               BIqcaar =                 105;
+    builtin1[106]=find("qcadr");               BIqcadr =                 106;
+    builtin1[107]=find("qcdar");               BIqcdar =                 107;
+    builtin1[108]=find("qcddr");               BIqcddr =                 108;
+    builtin1[109]=find("ncons");               BIncons =                 109;
+    builtin1[110]=find("numberp");             BInumberp =               110;
+    builtin1[111]=find("is-spid");             BIis_spid =               111;
+    builtin1[112]=find("spid-to-nil");         BIspid_to_nil =           112;
+    builtin1[113]=find("mv-list*");            BImv_listSTAR =           113;
 
-    builtin2[0]   = lookupBuiltin("append");               BIappend =                0;
-    builtin2[1]   = lookupBuiltin("ash");                  BIash =                   1;
-    builtin2[2]   = lookupBuiltin("assoc");                BIassoc =                 2;
-    builtin2[3]   = lookupBuiltin("atsoc");                BIatsoc =                 3;
-    builtin2[4]   = lookupBuiltin("deleq");                BIdeleq =                 4;
-    builtin2[5]   = lookupBuiltin("delete");               BIdelete =                5;
-    builtin2[6]   = lookupBuiltin("divide");               BIdivide =                6;
-    builtin2[7]   = lookupBuiltin("eqcar");                BIeqcar =                 7;
-    builtin2[8]   = lookupBuiltin("eql");                  BIeql =                   8;
-    builtin2[9]   = lookupBuiltin("eqn");                  BIeqn =                   9;
-    builtin2[10]  = lookupBuiltin("expt");                 BIexpt =                  10;
-    builtin2[11]  = lookupBuiltin("flag");                 BIflag =                  11;
-    builtin2[12]  = lookupBuiltin("flagpcar");             BIflagpcar =              12;
-    builtin2[13]  = lookupBuiltin("gcdn");                 BIgcdn =                  13;
-    builtin2[14]  = lookupBuiltin("geq");                  BIgeq =                   14;
-    builtin2[15]  = lookupBuiltin("getv");                 BIgetv =                  15;
-    builtin2[16]  = lookupBuiltin("greaterp");             BIgreaterp =              16;
-    builtin2[17]  = lookupBuiltin("idifference");          BIidifference =           17;
-    builtin2[18]  = lookupBuiltin("igreaterp");            BIigreaterp =             18;
-    builtin2[19]  = lookupBuiltin("ilessp");               BIilessp =                19;
-    builtin2[20]  = lookupBuiltin("imax");                 BIimax =                  20;
-    builtin2[21]  = lookupBuiltin("imin");                 BIimin =                  21;
-    builtin2[22]  = lookupBuiltin("iplus2");               BIiplus2 =                22;
-    builtin2[23]  = lookupBuiltin("iquotient");            BIiquotient =             23;
-    builtin2[24]  = lookupBuiltin("iremainder");           BIiremainder =            24;
-    builtin2[25]  = lookupBuiltin("irightshift");          BIirightshift =           25;
-    builtin2[26]  = lookupBuiltin("itimes2");              BIitimes2 =               26;
-//  builtin2[27]  = lookupBuiltin("lcm");                  BIlcm =                   27;
-    builtin2[28]  = lookupBuiltin("leq");                  BIleq =                   28;
-    builtin2[29]  = lookupBuiltin("lessp");                BIlessp =                 29;
-    builtin2[30]  = lookupBuiltin("make-random-state");    BImake_random_state =     30;
-    builtin2[31]  = lookupBuiltin("max2");                 BImax2 =                  31;
-    builtin2[32]  = lookupBuiltin("member");               BImember =                32;
-    builtin2[33]  = lookupBuiltin("memq");                 BImemq =                  33;
-    builtin2[34]  = lookupBuiltin("min2");                 BImin2 =                  34;
-    builtin2[35]  = lookupBuiltin("mod");                  BImod =                   35;
-    builtin2[36]  = lookupBuiltin("modular-difference");   BImodular_difference =    36;
-    builtin2[37]  = lookupBuiltin("modular-expt");         BImodular_expt =          37;
-    builtin2[38]  = lookupBuiltin("modular-plus");         BImodular_plus =          38;
-    builtin2[39]  = lookupBuiltin("modular-quotient");     BImodular_quotient =      39;
-    builtin2[40]  = lookupBuiltin("modular-times");        BImodular_times =         40;
-    builtin2[41]  = lookupBuiltin("nconc");                BInconc =                 41;
-    builtin2[42]  = lookupBuiltin("neq");                  BIneq =                   42;
-    builtin2[43]  = lookupBuiltin("orderp");               BIorderp =                43;
-    builtin2[43]  = lookupBuiltin("ordp");                 BIordp =                  43;
-    builtin2[44]  = lookupBuiltin("quotient");             BIquotient =              44;
-    builtin2[45]  = lookupBuiltin("remainder");            BIremainder =             45;
-    builtin2[46]  = lookupBuiltin("remflag");              BIremflag =               46;
-    builtin2[47]  = lookupBuiltin("remprop");              BIremprop =               47;
-    builtin2[48]  = lookupBuiltin("rplaca");               BIrplaca =                48;
-    builtin2[49]  = lookupBuiltin("rplacd");               BIrplacd =                49;
-    builtin2[50]  = lookupBuiltin("schar");                BIschar =                 50;
-    builtin2[51]  = lookupBuiltin("set");                  BIset =                   51;
-    builtin2[52]  = lookupBuiltin("smemq");                BIsmemq =                 52;
-    builtin2[53]  = lookupBuiltin("subla");                BIsubla =                 53;
-    builtin2[54]  = lookupBuiltin("sublis");               BIsublis =                54;
-    builtin2[55]  = lookupBuiltin("symbol-set-definition");BIsymbol_set_definition = 55;
-    builtin2[56]  = lookupBuiltin("symbol-set-env");       BIsymbol_set_env =        56;
-////builtin2[57]  = lookupBuiltin("times2");               BItimes2 =                57;
-    builtin2[58]  = lookupBuiltin("xcons");                BIxcons =                 58;
-    builtin2[59]  = lookupBuiltin("equal");                BIequal =                 59;
-    builtin2[60]  = lookupBuiltin("eq");                   BIeq =                    60;
-    builtin2[61]  = lookupBuiltin("cons");                 BIcons =                  61;
-    builtin2[62]  = lookupBuiltin("list2");                BIlist2 =                 62;
-    builtin2[63]  = lookupBuiltin("get");                  BIget =                   63;
-    builtin2[64]  = lookupBuiltin("qgetv");                BIqgetv =                 64;
-    builtin2[65]  = lookupBuiltin("flagp");                BIflagp =                 65;
-    builtin2[66]  = lookupBuiltin("apply1");               BIapply1 =                66;
-    builtin2[67]  = lookupBuiltin("difference");           BIdifference =            67;
-    builtin2[68]  = lookupBuiltin("plus2");                BIplus2 =                 68;
-    builtin2[69]  = lookupBuiltin("times2");               BItimes2 =                69;
-    builtin2[70]  = lookupBuiltin("equalcar");             BIequalcar =              70;
-    builtin2[71]  = lookupBuiltin("iequal");               BIiequal =                71;
-    builtin2[72]  = lookupBuiltin("reversip");             BIreversip2 =             72;
+    builtin2[0] =find("append");               BIappend =                0;
+    builtin2[1] =find("ash");                  BIash =                   1;
+    builtin2[2] =find("assoc");                BIassoc =                 2;
+    builtin2[3] =find("atsoc");                BIatsoc =                 3;
+    builtin2[4] =find("deleq");                BIdeleq =                 4;
+    builtin2[5] =find("delete");               BIdelete =                5;
+    builtin2[6] =find("divide");               BIdivide =                6;
+    builtin2[7] =find("eqcar");                BIeqcar =                 7;
+    builtin2[8] =find("eql");                  BIeql =                   8;
+    builtin2[9] =find("eqn");                  BIeqn =                   9;
+    builtin2[10]=find("expt");                 BIexpt =                  10;
+    builtin2[11]=find("flag");                 BIflag =                  11;
+    builtin2[12]=find("flagpcar");             BIflagpcar =              12;
+    builtin2[13]=find("gcdn");                 BIgcdn =                  13;
+    builtin2[14]=find("geq");                  BIgeq =                   14;
+    builtin2[15]=find("getv");                 BIgetv =                  15;
+    builtin2[16]=find("greaterp");             BIgreaterp =              16;
+    builtin2[17]=find("idifference");          BIidifference =           17;
+    builtin2[18]=find("igreaterp");            BIigreaterp =             18;
+    builtin2[19]=find("ilessp");               BIilessp =                19;
+    builtin2[20]=find("imax");                 BIimax =                  20;
+    builtin2[21]=find("imin");                 BIimin =                  21;
+    builtin2[22]=find("iplus2");               BIiplus2 =                22;
+    builtin2[23]=find("iquotient");            BIiquotient =             23;
+    builtin2[24]=find("iremainder");           BIiremainder =            24;
+    builtin2[25]=find("irightshift");          BIirightshift =           25;
+    builtin2[26]=find("itimes2");              BIitimes2 =               26;
+    builtin2[27]=find("lcm");                  BIlcm =                   27;
+    builtin2[28]=find("leq");                  BIleq =                   28;
+    builtin2[29]=find("lessp");                BIlessp =                 29;
+    builtin2[30]=find("make-random-state");    BImake_random_state =     30;
+    builtin2[31]=find("max2");                 BImax2 =                  31;
+    builtin2[32]=find("member");               BImember =                32;
+    builtin2[33]=find("memq");                 BImemq =                  33;
+    builtin2[34]=find("min2");                 BImin2 =                  34;
+    builtin2[35]=find("mod");                  BImod =                   35;
+    builtin2[36]=find("modular-difference");   BImodular_difference =    36;
+    builtin2[37]=find("modular-expt");         BImodular_expt =          37;
+    builtin2[38]=find("modular-plus");         BImodular_plus =          38;
+    builtin2[39]=find("modular-quotient");     BImodular_quotient =      39;
+    builtin2[40]=find("modular-times");        BImodular_times =         40;
+    builtin2[41]=find("nconc");                BInconc =                 41;
+    builtin2[42]=find("neq");                  BIneq =                   42;
+    builtin2[43]=find("orderp");               BIorderp =                43;
+    builtin2[43]=find("ordp");                 BIordp =                  43;
+    builtin2[44]=find("quotient");             BIquotient =              44;
+    builtin2[45]=find("remainder");            BIremainder =             45;
+    builtin2[46]=find("remflag");              BIremflag =               46;
+    builtin2[47]=find("remprop");              BIremprop =               47;
+    builtin2[48]=find("rplaca");               BIrplaca =                48;
+    builtin2[49]=find("rplacd");               BIrplacd =                49;
+    builtin2[50]=find("schar");                BIschar =                 50;
+    builtin2[51]=find("set");                  BIset =                   51;
+    builtin2[52]=find("smemq");                BIsmemq =                 52;
+    builtin2[53]=find("subla");                BIsubla =                 53;
+    builtin2[54]=find("sublis");               BIsublis =                54;
+    builtin2[55]=find("symbol-set-definition");BIsymbol_set_definition = 55;
+    builtin2[56]=find("symbol-set-env");       BIsymbol_set_env =        56;
+    builtin2[57]=find("times2");               BItimes2 =                57;
+    builtin2[58]=find("xcons");                BIxcons =                 58;
+    builtin2[59]=find("equal");                BIequal =                 59;
+    builtin2[60]=find("eq");                   BIeq =                    60;
+    builtin2[61]=find("cons");                 BIcons =                  61;
+    builtin2[62]=find("list2");                BIlist2 =                 62;
+    builtin2[63]=find("get");                  BIget =                   63;
+    builtin2[64]=find("qgetv");                BIqgetv =                 64;
+    builtin2[65]=find("flagp");                BIflagp =                 65;
+    builtin2[66]=find("apply1");               BIapply1 =                66;
+    builtin2[67]=find("difference");           BIdifference =            67;
+    builtin2[68]=find("plus2");                BIplus2 =                 68;
+    builtin2[69]=find("times2");               BItimes2 =                69;
+    builtin2[70]=find("equalcar");             BIequalcar =              70;
+    builtin2[71]=find("iequal");               BIiequal =                71;
+    builtin2[72]=find("reversip");             BIreversip2 =             72;
 
-    builtin3[0]   = lookupBuiltin("bps-putv");             BIbps_putv =              0;
-    builtin3[1]   = lookupBuiltin("errorset");             BIerrorset =              1;
-    builtin3[2]   = lookupBuiltin("list2*");               BIlist2STAR =             2;
-    builtin3[3]   = lookupBuiltin("list3");                BIlist3 =                 3;
-//  builtin3[4]   = lookupBuiltin("putprop");              BIputprop =               4;
-    builtin3[5]   = lookupBuiltin("putv");                 BIputv =                  5;
-    builtin3[6]   = lookupBuiltin("putv-char");            BIputv_char =             6;
-    builtin3[7]   = lookupBuiltin("subst");                BIsubst =                 7;
-    builtin3[8]   = lookupBuiltin("apply2");               BIapply2 =                8;
-    builtin3[9]   = lookupBuiltin("acons");                BIacons =                 9;
+    builtin3[0] =find("bps-putv");             BIbps_putv =              0;
+    builtin3[1] =find("errorset");             BIerrorset =              1;
+    builtin3[2] =find("list2*");               BIlist2STAR =             2;
+    builtin3[3] =find("list3");                BIlist3 =                 3;
+    builtin3[4] =find("putprop");              BIputprop =               4;
+    builtin3[5] =find("putv");                 BIputv =                  5;
+    builtin3[6] =find("putv-char");            BIputv_char =             6;
+    builtin3[7] =find("subst");                BIsubst =                 7;
+    builtin3[8] =find("apply2");               BIapply2 =                8;
+    builtin3[9] =find("acons");                BIacons =                 9;
 }
 
 
@@ -1007,7 +1007,7 @@ int jcallself(int arg, int spsave, LispObject a, LispObject b) throws Exception
     switch (arg & 0xe0)  // number of args
     {
 case 0x00: return 0;
-case 0x20: stack[spsave] = a;
+case 0x20: stack[spsave] =a;
            return 0;
 case 0x40: stack[spsave] = a;
            stack[spsave-1] = b;
@@ -1130,7 +1130,8 @@ LispObject interpret(int pc) throws Exception
     if (sp > stack_size - 500) // the 500 is a pretty arbitrary margin!
         extendstack();         // bad enough code could breach it.
 
-    count += 1; // Just count calls...
+    for (;;)
+    {
     try
     {
     for (;;)
@@ -1849,7 +1850,7 @@ case JUMPNEQCAR:
         else pc++;
         continue;
 case CATCH:
-        iw = pc + (bytecodes[pc] & 0xff);
+        iw = pc + (bytecodes[pc] & 0xff) + 1;
         pc++;
         catchTags = new Cons(a, catchTags);
         stack[++sp] = LispInteger.valueOf(iw);
@@ -1891,11 +1892,18 @@ case UNCATCH:
         w.cdr = Jlisp.nil;
         continue;
 case THROW:
-        Jlisp.error("bytecode THROW not implemented");
+        throw new LispThrow(b, a);
 case PROTECT:
-        Jlisp.error("bytecode PROTECT not implemented");
+// I obey this when an UNWIND-PROTECT block has completed without any
+// special events. So I remove the "CATCH" frams on the stack and leave things
+// with whatever my current value of the "a" register is there.
+        sp -= 2;
+        stack[sp] = a;
+        continue;
 case UNPROTECT:
-        Jlisp.error("bytecode UNPROTECT not implemented");
+        a = stack[sp--];
+        if (a instanceof LispSavedException) throw ((LispSavedException)a).e;
+        continue;
 case PVBIND:
         Jlisp.error("bytecode PVBIND not implemented");
 case PVRESTORE:
@@ -2097,7 +2105,7 @@ case QGETVN:
         continue;
 case BIGSTACK:
         iw = bytecodes[pc++] & 0xff;
-        System.out.printf("BIGSTACK %x%n", iw);
+        Jlisp.printf("BIGSTACK %x%n", iw);
         switch (iw & 0xc0)
         {
     default:
@@ -2128,7 +2136,7 @@ case BIGSTACK:
         }
 case BIGCALL:
         iw = bytecodes[pc++] & 0xff;
-//      System.out.printf("BIGCALL %x%n", iw);
+//      Jlisp.printf("BIGCALL %x%n", iw);
         fname = (bytecodes[pc++] & 0xff) + ((iw & 0xf) << 8);
         switch (iw >> 4)
         {
@@ -2196,41 +2204,116 @@ case SPARE2:
 // statement above. Note that I am still within the for loop.
     pc = pc + (arg << 8) + (bytecodes[pc] & 0xff) + 1;
     continue;
-    } // end of for
-    } // end of try
+    } // end of for loop
+    } // end of try block
     catch (Exception e)
     {
-// What I NEED to do here is to restore any free bindings that have been made.
-// I can find them because there is a Spid.fbind on the stack to mark them.
+// ordinary RETURNs out of a function do not come here, but cases of errors
+// or THROWs generated by things called from this function do. I have several
+// cases that I must detect:
+// (a) If there had been fluid bindings then I need to undo them.
+// (b) If there had been an UNWIND-PROTECT active in the current
+//     function then I need to temporarily suppress the tendany to
+//     exit and go and process the recovery code that came with that. This
+//     is a bit similar in intend to what restoring fluids do but involves
+//     running arbitrary code rather than performing a simple fixed
+//     operation.
+// (c) If this function had set up a CATCH and the exit being processed
+//     is a matching THROW then I need to handle the situation by transferring
+//     control back into the current function.
+// I will note that after the recovery code that UNWIND-PROTECT can trigger
+// I may sometimes need to come back and continue the unwinding that is
+// happening here. However if the protected block had not triggered an unusual
+// exit I will continue after the recovery action...
 //
-        sp = unwinder(sp, spsave);
-        throw e;
+// All of the above are handled by having a special marker (referred to here
+// as a "Spid" (for Special Identifier) on the (software) stack.
+// For fluid bindings the format is
+//         Spid.fbind
+//         [v1 v2 v3 ...]      all the variables as bound
+//         old value of vn
+//         ...
+//         old value of v1
+// and this can be processed entirely within the unwinder code.
+//
+// For a CATCH the stack format is
+//         Spid.catcher
+//         (this-catch-tag ...)
+//         <label>
+// and the list shown has the current catch tag as its first item and
+// all other active catch tags as the rest of the list. So an instance
+// of THROW needs to check its tag against the first item on that list.
+// The <label> is represented as a LispSmallInteger that represents the
+// value of "pc", ie the bytecode program counter.
+//
+// UNWIND-PROTECT starts as if it was
+//    (CATCH (LOAD!-SPID) ...)
+// so its stack marker is again Spid.catcher but the catch tag used is
+// the special value Spid.protecter.
+// I will come back and discuss what happens later in the process of
+// handling the recovery part of UNWIND-PROTECT later.
+//
+// The function unwind will unwind the stack restoring fluid variables.
+// It will stop either when sp is back to spsave (ie there is no more
+// stacked information relevant to the current function or if it finds
+// a frame relevant to CATCH or UNWIND-PROTECT. It will ignore CATCH records
+// that allude to tags not currently being thrown.
+        sp = unwinder(sp, spsave, e);
+        if (sp < 0) // processing UNWIND-PROTECT
+        {   sp = -sp;
+            a = Jlisp.nil; // just to be tidy
+            pc = stack[sp].intValue();
+// Save the exception that is to be reinstated when the recovery block
+// is done.
+            stack[sp] = new LispSavedException(e);
+            continue;
+        }
+        if (sp == spsave) throw e;
+// Process CATCH or UNWIND-PROTECT
+        if (e instanceof LispThrow)
+            a = ((LispThrow)e).details;
+        else a = Jlisp.nil;
+        pc = stack[sp--].intValue();
+        continue;
     }
+    } // end of outer for loop
 }
 
-int unwinder(int sp, int spsave)
+int unwinder(int sp, int spsave, Exception e) throws ResourceException
 {
     LispObject a;
-// What I also WANT to do is to print a fragment of backtrace in relevant
-// cases.
     while (sp != spsave)
     {   a = stack[sp--];
-        if (a != Spid.fbind) continue;
+        if (a == Spid.catcher)
+        {   a = stack[sp--];
+            catchTags = a.cdr;
+// Ha ha I will return -sp if I find an active UNWIND-PROTECT record.
+// Note that in this case sp will not be 0 because the jump address will
+// still be stacked.
+            if (a.car == Spid.protecter) return -sp;
+            if (e instanceof LispThrow &&
+                ((LispThrow)e).throwtag == a.car) return sp;
+// If a CATCH record is not relevant just pop the three items that make it
+// up.
+            sp--;
+            continue;
+        }
+        else if (a != Spid.fbind) continue;
         LispObject [] v = ((LispVector)stack[sp--]).vec;
         for (int i=v.length-1; i>=0; i--)
         {   v[i].car/*value*/ = stack[sp--];
         }
     }
-    if (Jlisp.backtrace)
+    if (Jlisp.backtrace && !(e instanceof LispThrow))
     {   try
         {   Jlisp.errprint("Within: ");
             env[0].errPrint();
             Jlisp.errprintln();
         }
-        catch (Exception e)
+        catch (Exception e1)
         {}
     }
-    return spsave;
+    return sp;
 }
 
 }

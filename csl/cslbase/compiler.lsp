@@ -219,7 +219,7 @@ subst) (quote s!:builtin3) 7) (put (quote apply2) (quote s!:builtin3) 8) (put
 (de s!:prinhex4 (n) (progn (s!:prinhex2 (truncate n 256)) (s!:prinhex2 n)))
 
 (flag (quote (comp plap pgwd pwrds notailcall ord nocompile carcheckflag 
-savedef carefuleq r2i native_code save_native strip_native)) (quote switch))
+savedef r2i native_code save_native strip_native)) (quote switch))
 
 (cond ((not (boundp (quote !*comp))) (progn (fluid (quote (!*comp))) (setq 
 !*comp t))))
@@ -247,11 +247,6 @@ setq !*savedef nil))))
 
 (cond ((not (boundp (quote !*carcheckflag))) (progn (fluid (quote (
 !*carcheckflag))) (setq !*carcheckflag t))))
-
-(cond ((not (boundp (quote !*carefuleq))) (progn (fluid (quote (!*carefuleq))
-) (setq !*carefuleq (or (and (boundp (quote lispsystem!*)) (not (null (member
-(quote jlisp) lispsystem!*)))) (and (boundp (quote !*features!*)) (not (null
-(member (quote !:jlisp) !*features!*)))))))))
 
 (cond ((not (boundp (quote !*r2i))) (progn (fluid (quote (!*r2i))) (setq 
 !*r2i t))))
@@ -1567,16 +1562,14 @@ cons 0 (cons 0 (cdr env))))) (s!:comval (cons (quote progn) (cddr x)) env
 context) (s!:outopcode0 (quote UNCATCH) (quote (UNCATCH))) (rplacd env (
 cddddr env)) (s!:set_label g)))
 
-(cond ((not (memq (quote jlisp) lispsystem!*)) (put (quote catch) (quote 
-s!:compfn) (quote s!:comcatch))))
+(put (quote catch) (quote s!:compfn) (quote s!:comcatch))
 
 (de s!:comthrow (x env context) (prog nil (s!:comval (cadr x) env 1) (
 s!:outopcode0 (quote PUSH) (quote (PUSH))) (rplacd env (cons 0 (cdr env))) (
 s!:comval (caddr x) env 1) (s!:outopcode0 (quote THROW) (quote (THROW))) (
 rplacd env (cddr env))))
 
-(cond ((not (memq (quote jlisp) lispsystem!*)) (put (quote throw) (quote 
-s!:compfn) (quote s!:comthrow))))
+(put (quote throw) (quote s!:compfn) (quote s!:comthrow))
 
 (de s!:comunwind!-protect (x env context) (prog (g) (setq g (gensym)) (
 s!:comval (quote (load!-spid)) env 1) (s!:outjump (quote CATCH) g) (rplacd 
@@ -1586,8 +1579,7 @@ PROTECT))) (s!:set_label g) (rplaca (cdr env) 0) (s!:comval (cons (quote
 progn) (cddr x)) env context) (s!:outopcode0 (quote UNPROTECT) (quote (
 UNPROTECT))) (rplacd env (cddddr env))))
 
-(cond ((not (memq (quote jlisp) lispsystem!*)) (put (quote unwind!-protect) (
-quote s!:compfn) (quote s!:comunwind!-protect))))
+(put (quote unwind!-protect) (quote s!:compfn) (quote s!:comunwind!-protect))
 
 (de s!:comdeclare (x env context) (prog nil (cond (!*pwrds (progn (princ 
 "+++ ") (prin x) (princ " ignored") (terpri))))))
@@ -1906,34 +1898,30 @@ setq b (s!:improve (caddr x))) (cond ((or (s!:eval_to_eq_unsafe a) (
 s!:eval_to_eq_unsafe b)) (progn (cond ((neq (posn) 0) (terpri))) (princ 
 "++++ EQ on number upgraded to EQUAL in ") (prin s!:current_function) (princ 
 " : ") (prin a) (princ " ") (print b) (return (s!:testequal neg (cons (quote 
-equal) (cdr x)) env lab))))) (cond (!*carefuleq (progn (s!:comval x env 1) (
-s!:outjump (cond (neg (quote JUMPT)) (t (quote JUMPNIL))) lab) (return nil)))
-) (cond ((null a) (s!:jumpif (not neg) b env lab)) (t (cond ((null b) (
-s!:jumpif (not neg) a env lab)) (t (cond ((or (eqcar a (quote quote)) (and (
-atom a) (not (symbolp a)))) (progn (s!:comval b env 1) (cond ((eqcar a (quote
-quote)) (setq a (cadr a)))) (setq b (list (cond (neg (quote JUMPLITEQ)) (t (
-quote JUMPLITNE))) a a)) (s!:record_literal_for_jump b env lab))) (t (cond ((
-or (eqcar b (quote quote)) (and (atom b) (not (symbolp b)))) (progn (
-s!:comval a env 1) (cond ((eqcar b (quote quote)) (setq b (cadr b)))) (setq a
-(list (cond (neg (quote JUMPLITEQ)) (t (quote JUMPLITNE))) b b)) (
-s!:record_literal_for_jump a env lab))) (t (progn (s!:load2 a b env) (cond (
-neg (s!:outjump (quote JUMPEQ) lab)) (t (s!:outjump (quote JUMPNE) lab)))))))
-)))))))
+equal) (cdr x)) env lab))))) (cond ((null a) (s!:jumpif (not neg) b env lab))
+(t (cond ((null b) (s!:jumpif (not neg) a env lab)) (t (cond ((or (eqcar a (
+quote quote)) (and (atom a) (not (symbolp a)))) (progn (s!:comval b env 1) (
+cond ((eqcar a (quote quote)) (setq a (cadr a)))) (setq b (list (cond (neg (
+quote JUMPLITEQ)) (t (quote JUMPLITNE))) a a)) (s!:record_literal_for_jump b 
+env lab))) (t (cond ((or (eqcar b (quote quote)) (and (atom b) (not (symbolp 
+b)))) (progn (s!:comval a env 1) (cond ((eqcar b (quote quote)) (setq b (cadr
+b)))) (setq a (list (cond (neg (quote JUMPLITEQ)) (t (quote JUMPLITNE))) b b
+)) (s!:record_literal_for_jump a env lab))) (t (progn (s!:load2 a b env) (
+cond (neg (s!:outjump (quote JUMPEQ) lab)) (t (s!:outjump (quote JUMPNE) lab)
+)))))))))))))
 
-(de s!:testeq1 (neg x env lab) (prog (a b) (cond (!*carefuleq (progn (
-s!:comval x env 1) (s!:outjump (cond (neg (quote JUMPT)) (t (quote JUMPNIL)))
-lab) (return nil)))) (setq a (s!:improve (cadr x))) (setq b (s!:improve (
-caddr x))) (cond ((null a) (s!:jumpif (not neg) b env lab)) (t (cond ((null b
-) (s!:jumpif (not neg) a env lab)) (t (cond ((or (eqcar a (quote quote)) (and
-(atom a) (not (symbolp a)))) (progn (s!:comval b env 1) (cond ((eqcar a (
-quote quote)) (setq a (cadr a)))) (setq b (list (cond (neg (quote JUMPLITEQ))
-(t (quote JUMPLITNE))) a a)) (s!:record_literal_for_jump b env lab))) (t (
-cond ((or (eqcar b (quote quote)) (and (atom b) (not (symbolp b)))) (progn (
-s!:comval a env 1) (cond ((eqcar b (quote quote)) (setq b (cadr b)))) (setq a
-(list (cond (neg (quote JUMPLITEQ)) (t (quote JUMPLITNE))) b b)) (
-s!:record_literal_for_jump a env lab))) (t (progn (s!:load2 a b env) (cond (
-neg (s!:outjump (quote JUMPEQ) lab)) (t (s!:outjump (quote JUMPNE) lab)))))))
-)))))))
+(de s!:testeq1 (neg x env lab) (prog (a b) (setq a (s!:improve (cadr x))) (
+setq b (s!:improve (caddr x))) (cond ((null a) (s!:jumpif (not neg) b env lab
+)) (t (cond ((null b) (s!:jumpif (not neg) a env lab)) (t (cond ((or (eqcar a
+(quote quote)) (and (atom a) (not (symbolp a)))) (progn (s!:comval b env 1) 
+(cond ((eqcar a (quote quote)) (setq a (cadr a)))) (setq b (list (cond (neg (
+quote JUMPLITEQ)) (t (quote JUMPLITNE))) a a)) (s!:record_literal_for_jump b 
+env lab))) (t (cond ((or (eqcar b (quote quote)) (and (atom b) (not (symbolp 
+b)))) (progn (s!:comval a env 1) (cond ((eqcar b (quote quote)) (setq b (cadr
+b)))) (setq a (list (cond (neg (quote JUMPLITEQ)) (t (quote JUMPLITNE))) b b
+)) (s!:record_literal_for_jump a env lab))) (t (progn (s!:load2 a b env) (
+cond (neg (s!:outjump (quote JUMPEQ) lab)) (t (s!:outjump (quote JUMPNE) lab)
+)))))))))))))
 
 (put (quote eq) (quote s!:testfn) (function s!:testeq))
 
@@ -1961,19 +1949,17 @@ cdr x)) env lab))
 setq b (s!:improve (caddr x))) (cond ((s!:eval_to_eq_unsafe b) (progn (cond (
 (neq (posn) 0) (terpri))) (princ 
 "++++ EQCAR on number upgraded to EQUALCAR in ") (prin s!:current_function) (
-princ " : ") (print b) (setq promote t))) (t (cond (!*carefuleq (progn (
-s!:comval x env 1) (s!:outjump (cond (neg (quote JUMPT)) (t (quote JUMPNIL)))
-lab) (return nil)))))) (cond ((and (not promote) (eqcar b (quote quote))) (
-progn (s!:comval a env 1) (setq b (cadr b)) (setq a (list (cond (neg (quote 
-JUMPEQCAR)) (t (quote JUMPNEQCAR))) b b)) (s!:record_literal_for_jump a env 
-lab))) (t (cond ((or (equal b nil) (equal b t) (and (not (symbolp b)) (
-eq!-safe b))) (progn (s!:comval a env 1) (setq a (list (cond (neg (quote 
-JUMPEQCAR)) (t (quote JUMPNEQCAR))) b b)) (s!:record_literal_for_jump a env 
-lab))) (t (progn (setq sw (s!:load2 a b env)) (cond (sw (s!:outopcode0 (quote
-SWOP) (quote (SWOP))))) (cond (promote (s!:outopcode1 (quote BUILTIN2) (get 
-(quote equalcar) (quote s!:builtin2)) (quote equalcar))) (t (s!:outopcode0 (
-quote EQCAR) (quote (EQCAR))))) (s!:outjump (cond (neg (quote JUMPT)) (t (
-quote JUMPNIL))) lab))))))))
+princ " : ") (print b) (setq promote t)))) (cond ((and (not promote) (eqcar b
+(quote quote))) (progn (s!:comval a env 1) (setq b (cadr b)) (setq a (list (
+cond (neg (quote JUMPEQCAR)) (t (quote JUMPNEQCAR))) b b)) (
+s!:record_literal_for_jump a env lab))) (t (cond ((or (equal b nil) (equal b 
+t) (and (not (symbolp b)) (eq!-safe b))) (progn (s!:comval a env 1) (setq a (
+list (cond (neg (quote JUMPEQCAR)) (t (quote JUMPNEQCAR))) b b)) (
+s!:record_literal_for_jump a env lab))) (t (progn (setq sw (s!:load2 a b env)
+) (cond (sw (s!:outopcode0 (quote SWOP) (quote (SWOP))))) (cond (promote (
+s!:outopcode1 (quote BUILTIN2) (get (quote equalcar) (quote s!:builtin2)) (
+quote equalcar))) (t (s!:outopcode0 (quote EQCAR) (quote (EQCAR))))) (
+s!:outjump (cond (neg (quote JUMPT)) (t (quote JUMPNIL))) lab))))))))
 
 (put (quote eqcar) (quote s!:testfn) (function s!:testeqcar))
 

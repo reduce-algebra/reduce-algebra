@@ -56,6 +56,7 @@ class Fns3
         {"liter",                       new LiterFn()},
         {"load-module",                 new Load_moduleFn()},
         {"load-source",                 new Load_sourceFn()},
+        {"load-spid",                   new Load_spidFn()},
         {"lposn",                       new LposnFn()},
         {"macro-function",              new Macro_functionFn()},
         {"macroexpand",                 new MacroexpandFn()},
@@ -335,6 +336,16 @@ class Load_sourceFn extends BuiltinFunction
     public LispObject op1(LispObject arg1) throws Exception
     {
         return Fasl.loadModule(arg1, true);
+    }
+}
+
+class Load_spidFn extends BuiltinFunction
+{
+// Called directly from compiled code to load the PROTECT spid that
+// is used as a catch tag when doing UNWIND-PROTECT.
+    public LispObject op0() throws Exception
+    {
+        return Spid.protecter;
     }
 }
 
