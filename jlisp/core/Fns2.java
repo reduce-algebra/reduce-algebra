@@ -133,6 +133,7 @@ class Fns2
         {"itimes",                      new ItimesFn()},
         {"itimes2",                     new Itimes2Fn()},
         {"izerop",                      new IzeropFn()},
+        {"lcm",                         new LcmnFn()},
         {"lcmn",                        new LcmnFn()},
         {"leq",                         new LeqFn()},
         {"lessp",                       new LesspFn()},
@@ -166,6 +167,7 @@ class Fns2
         {"safe-modular-reciprocal",     new Safe_modular_reciprocalFn()},
         {"modular-times",               new Modular_timesFn()},
         {"msd",                         new MsdFn()},
+        {"mv-list",                     new MvListFn()},
         {"numberp",                     new NumberpFn()},
         {"oddp",                        new OddpFn()},
         {"onep",                        new OnepFn()},
@@ -174,6 +176,7 @@ class Fns2
         {"plusp",                       new PluspFn()},
         {"quotient",                    new QuotientFn()},
         {"random-fixnum",               new Random_fixnumFn()},
+        {"random",                      new Random_numberFn()},
         {"random-number",               new Random_numberFn()},
         {"rational",                    new RationalFn()},
         {"remainder",                   new RemainderFn()},
@@ -1426,6 +1429,17 @@ class MsdFn extends BuiltinFunction
     }
 }
 
+class MvListFn extends BuiltinFunction
+{
+// In Common Lisp "mv-list" might be used to save multiple values, eg
+// across unwind-protect. In Standard Lisp there are no multiple values so
+// this has degenerate behaviour.
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        return new Cons(arg1, Jlisp.nil);
+    }
+}
+
 class NumberpFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1)
@@ -1463,7 +1477,9 @@ class Random_fixnumFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
-        return error(name + " not yet implemented");
+// Valus a positive number that would be a fixnum in CSL!
+        int w = Jlisp.random.nextInt() & 0x07ffffff;
+        return LispInteger.valueOf(w);
     }
 }
 
@@ -1471,6 +1487,11 @@ class Random_numberFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
+// Argument should be a positive integer or float...
+        if (arg1 instanceof LispFloat)
+            return new LispFloat(Jlisp.random.nextDouble()*
+                                 ((LispFloat)arg1).value);
+        BigInteger b = arg1.bigIntValue();
         return error(name + " not yet implemented");
     }
 }

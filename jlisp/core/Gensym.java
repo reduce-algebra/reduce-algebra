@@ -1,6 +1,9 @@
 package uk.co.codemist.jlisp.core;
 
 
+/* $Id$ */
+
+
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
@@ -41,7 +44,7 @@ import java.io.*;
 class Gensym extends Symbol
 {
     String nameBase = "G";
-    static int gensymCounter = 0;
+    static int gensymCounter = 1;
     int myNumber = -1;
 
     Gensym(String name)

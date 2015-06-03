@@ -38,20 +38,36 @@ package uk.co.codemist.jlisp.core;
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
+#ifndef INSTRUMENTED
 class Bytecode extends BytecodeCore
+#else /* INSTRUMENTED */
+class InstrumentedBytecode extends Bytecode
+#endif /* INSTRUMENTED */
 {
 
+#ifndef INSTRUMENTED
 Bytecode()
+#else /* INSTRUMENTED */
+InstrumentedBytecode()
+#endif /* INSTRUMENTED */
 {
     env = new LispObject [0];
 }
 
+#ifndef INSTRUMENTED
 Bytecode(LispObject [] env)
+#else /* INSTRUMENTED */
+InstrumentedBytecode(LispObject [] env)
+#endif /* INSTRUMENTED */
 {
     this.env = env;
 }
 
+#ifndef INSTRUMENTED
 Bytecode(int n)
+#else /* INSTRUMENTED */
+InstrumentedBytecode(int n)
+#endif /* INSTRUMENTED */
 {
     env = new LispObject [0];
     bytecodes = new byte [n];
@@ -66,6 +82,9 @@ LispObject interpret(int pc) throws Exception
     int iw, fname;
     if (sp > stack_size - 500) // the 500 is a pretty arbitrary margin!
         extendstack();         // bad enough code could breach it.
+#ifdef INSTRUMENTED
+    count += 30;
+#endif /* INSTRUMENTED */
 
     for (;;)
     {
@@ -73,6 +92,11 @@ LispObject interpret(int pc) throws Exception
     {
     for (;;)
     {
+#ifdef INSTRUMENTED
+        count++;
+// In Jlisp I will count the number of bytecode ops executed in any function
+// and I will attribute an overhead of 30 to function entry+exit.
+#endif /* INSTRUMENTED */
     switch (arg = bytecodes[pc++])
     {
 case LOADLOC:
@@ -1256,4 +1280,8 @@ case SPARE2:
 
 }
 
+#ifndef INSTRUMENTED
 // End of Bytecode.java
+#else /* INSTRUMENTED */
+// end of InstrumentedBytecode.java
+#endif /* INSTRUMENTED */

@@ -1,6 +1,9 @@
 package uk.co.codemist.jlisp.core;
 
 
+/* $Id$ */
+
+
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
@@ -50,13 +53,15 @@ class Spid extends LispObject
     static final int FBIND    = 1;  // free bindings on stack in bytecode
     static final int NOARG    = 2;  // "no argument" after &opt
     static final int DEFINMOD = 3;  // introduces bytecode def in fasl file
-    static final int CATCH    = 4;  // On stack in a CATCH frame
+    static final int CATCH    = 4;  // on stack in a CATCH frame
     static final int PROTECT  = 5;  // on stack for UNWIND-PROTECT
+    static final int NOPROP   = 6;  // used with fastgets.
 
-    static final Spid fbind   = new Spid(FBIND);
-    static final Spid noarg   = new Spid(NOARG);
-    static final Spid catcher = new Spid(CATCH);
+    static final Spid fbind     = new Spid(FBIND);
+    static final Spid noarg     = new Spid(NOARG);
+    static final Spid catcher   = new Spid(CATCH);
     static final Spid protecter = new Spid(PROTECT);
+    static final Spid noprop    = new Spid(NOPROP);
 
     Spid(int tag)
     {

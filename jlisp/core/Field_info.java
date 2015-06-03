@@ -1,6 +1,9 @@
 package uk.co.codemist.jlisp.core;
 
 
+/* $Id$ */
+
+
 // 16/02/02 actually made to do something
 // almost exactly identical to Method_info so may consider making a superclass
 // and then subclassing Method_info and Field_info from it?

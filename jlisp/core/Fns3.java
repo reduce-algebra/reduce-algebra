@@ -1,6 +1,9 @@
 package uk.co.codemist.jlisp.core;
 
 
+/* $Id$ */
+
+
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
@@ -255,6 +258,9 @@ class Fns3
         {"untraceset1",                 new Untraceset1Fn()},
         {"upbv",                        new UpbvFn()},
         {"user-homedir-pathname",       new User_homedir_pathnameFn()},
+// Until and unless I worry about Common Lisp compatibility and "complicated"
+// vectors I will make simple-vectorp just identical to vectorp.
+        {"simple-vectorp",              new VectorpFn()},
         {"vectorp",                     new VectorpFn()},
         {"verbos",                      new VerbosFn()},
         {"where-was-that",              new Where_was_thatFn()},
@@ -431,7 +437,7 @@ class Make_globalFn extends BuiltinFunction
     public LispObject op1(LispObject arg1) throws ResourceException
     {
         Symbol s = (Symbol)arg1;
-        Fns.put(s, Jlisp.lit[Lit.global], Jlisp.lispTrue);
+        Fns.put(s, (Symbol)Jlisp.lit[Lit.global], Jlisp.lispTrue);
         if (s.car/*value*/ == Jlisp.lit[Lit.undefined]) s.car/*value*/ = Jlisp.nil;
         return Jlisp.nil; 
     }
@@ -469,7 +475,7 @@ class Make_specialFn extends BuiltinFunction
     public LispObject op1(LispObject arg1) throws ResourceException
     {
         Symbol s = (Symbol)arg1;
-        Fns.put(s, Jlisp.lit[Lit.special], Jlisp.lispTrue);
+        Fns.put(s, (Symbol)Jlisp.lit[Lit.special], Jlisp.lispTrue);
         if (s.car/*value*/ == Jlisp.lit[Lit.undefined]) s.car/*value*/ = Jlisp.nil;
         return Jlisp.nil; 
     }
@@ -557,6 +563,7 @@ class MapstoreFn extends BuiltinFunction
     public LispObject op1(LispObject arg1) throws Exception
     {
         LispObject r = Jlisp.nil;
+        if (!Jlisp.instrumented) return Jlisp.lispTrue;
         Vector<MapstoreData> v = new Vector<MapstoreData>();
 // To be compatible with CSL the specification here needs to be
 //    nil or 0      print statistics and reset to zero
@@ -575,8 +582,8 @@ class MapstoreFn extends BuiltinFunction
         {   Symbol name = Jlisp.oblist[i];
             if (name == null) continue;
             LispFunction fn = name.fn;
-            if (!(fn instanceof Bytecode)) continue;
-            Bytecode bfn = (Bytecode)fn;
+            if (!(fn instanceof InstrumentedBytecode)) continue;
+            InstrumentedBytecode bfn = (InstrumentedBytecode)fn;
             if (bfn.bytecodes == null) continue;
             long count = bfn.count;
             if (count == 0) continue;
@@ -1351,14 +1358,17 @@ class OrderpFn extends BuiltinFunction
         LispObject caru = cu.car, carv = cv.car;
         if (caru.lispequals(carv))
             return ordp(cu.cdr, cv.cdr);
-        else if (Fns.get(caru, Jlisp.lit[Lit.noncom]) !=
+        else if (caru instanceof Symbol &&
+                 Fns.get((Symbol)caru, (Symbol)Jlisp.lit[Lit.noncom]) !=
                  Jlisp.nil)
-        {   if (Fns.get(carv, Jlisp.lit[Lit.noncom]) !=
+        {   if (carv instanceof Symbol &&
+                Fns.get((Symbol)carv, (Symbol)Jlisp.lit[Lit.noncom]) !=
                 Jlisp.nil)
                 return ordp(caru, carv);
             else return true;
         }
-        else if (Fns.get(carv, Jlisp.lit[Lit.noncom]) !=
+        else if (carv instanceof Symbol &&
+                 Fns.get((Symbol)carv, (Symbol)Jlisp.lit[Lit.noncom]) !=
                  Jlisp.nil)
             return false;
         else return ordp(caru, carv);
@@ -1430,9 +1440,21 @@ class Pipe_openFn extends BuiltinFunction
 
 class PlistFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws Exception
     {
-        return ((Symbol)arg1).cdr/*plist*/;
+        if (!(arg1 instanceof Symbol)) return Jlisp.nil;
+        Symbol name = (Symbol)arg1;
+        LispObject pl = name.cdr/*plist*/;
+        LispObject [] v = name.fastgets;
+        if (v != null)
+        {   for (int i=0; i<63; i++)
+            {   if (v[i] != Spid.noprop)
+                    pl = new Cons(new Cons(Jlisp.fastgetNames[i],
+                                           Jlisp.lispTrue),
+                                  pl);
+            }
+        }
+        return pl;
     }
 }
 
@@ -1781,7 +1803,7 @@ class PutFn extends BuiltinFunction
         if (args.length != 3)
             return error("put called with " + args.length +
                 "args when 3 expected");
-        return Fns.put((Symbol)args[0], args[1], args[2]);
+        return Fns.put((Symbol)args[0], (Symbol)args[1], args[2]);
     }
 }
 
@@ -2115,7 +2137,7 @@ class RemflagFn extends BuiltinFunction
         {   LispObject p = arg1;
             Symbol s = (Symbol)p.car;
             arg1 = p.cdr;
-            Fns.remprop(s, arg2);
+            Fns.remprop(s, (Symbol)arg2);
         }
         return Jlisp.nil;
     }
@@ -2165,7 +2187,7 @@ class RempropFn extends BuiltinFunction
     public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
     {
         if (!(arg1 instanceof Symbol)) return Jlisp.nil;
-        else return Fns.remprop((Symbol)arg1, arg2);
+        else return Fns.remprop((Symbol)arg1, (Symbol)arg2);
     }
 }
 
@@ -2856,14 +2878,6 @@ class Symbol_envFn extends BuiltinFunction
     }
 }
 
-class Symbol_fastgetsFn extends BuiltinFunction
-{
-    public LispObject op1(LispObject arg1) throws Exception
-    {
-        return error(name + " not yet implemented");
-    }
-}
-
 class Symbol_fn_cellFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
@@ -2882,14 +2896,50 @@ class Symbol_functionFn extends BuiltinFunction
     }
 }
 
+class Symbol_fastgetsFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        if (!(arg1 instanceof Symbol))
+            return error("Bad argument to fastgets", arg1);
+        LispObject [] v = ((Symbol)arg1).fastgets;
+Jlisp.printf("v = %s%n", v==null?"null":v.toString());
+        if (v == null) return Jlisp.nil;
+        else return new LispVector(v);
+    }
+}
+
 class Symbol_make_fastgetFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+// make-fastget(id, nil) returns nil if not a fastget symbol, otherwise
+//                       integer in range 0-63
+// make-fastget(id, n)   sets up to use slot n (0 <= n <= 63)
+// make-fastget(id, -1)  cancels above.
+    public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
     {
-        return Jlisp.nil;
-    }
-    public LispObject op2(LispObject arg1, LispObject arg2)
-    {
+        if (!(arg1 instanceof Symbol))
+            return error("bad argument to make-fastget", arg1);
+        Symbol id = (Symbol)arg1;
+// Ahah - the top 16 bits of cacheFlags for a symbol need to be preserved
+// in image files!
+        if (arg2 == Jlisp.nil)
+        {   int r = id.cacheFlags >> 16;
+            if (r == 0) return Jlisp.nil;
+            else return LispInteger.valueOf(r-1);
+        }
+        else if (!(arg2 instanceof LispSmallInteger))
+            return error("bad argument to make-fastget", arg2);
+        int n = arg2.intValue();
+        if (n < 0 || n > 63)
+        {   id.cacheFlags &= 0xffff;
+            id.fastgets = null;
+        }
+        else
+        {   id.cacheFlags = (id.cacheFlags & 0xffff) | ((n+1)<<16);
+// fastgetNames is just used by prop/plist when you wish to inspect the
+// (virtual) property list of a symbol.
+            Jlisp.fastgetNames[n] = id;
+        }
         return Jlisp.nil;
     }
 }
@@ -3207,7 +3257,7 @@ class Unmake_globalFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
-        Fns.remprop((Symbol)arg1, Jlisp.lit[Lit.global]);
+        Fns.remprop((Symbol)arg1, (Symbol)Jlisp.lit[Lit.global]);
         return Jlisp.nil;
     }
 }
@@ -3216,7 +3266,7 @@ class Unmake_specialFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
-        Fns.remprop((Symbol)arg1, Jlisp.lit[Lit.special]);
+        Fns.remprop((Symbol)arg1, (Symbol)Jlisp.lit[Lit.special]);
         return Jlisp.nil;
     }
 }

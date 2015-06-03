@@ -1,6 +1,9 @@
 package uk.co.codemist.jlisp.core;
 
 
+/* $Id$ */
+
+
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
@@ -825,6 +828,7 @@ class CarFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
+if (arg1.atom) (new Exception()).printStackTrace(System.out);
         if (arg1.atom) return error("Attempt to take car of an atom");
         else return arg1.car;
     }
@@ -2562,7 +2566,7 @@ class FlagFn extends BuiltinFunction
         {   LispObject p = arg1;
             Symbol name = (Symbol)p.car;
             arg1 = p.cdr;
-            Fns.put(name, arg2, Jlisp.lispTrue);
+            Fns.put(name, (Symbol)arg2, Jlisp.lispTrue);
         }
         return arg1;
     }
@@ -2572,7 +2576,8 @@ class FlagpFn extends BuiltinFunction
 {
     public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
     {
-        LispObject res = Fns.get(arg1, arg2);
+        if (!(arg1 instanceof Symbol && arg2 instanceof Symbol)) return Jlisp.nil;
+        LispObject res = Fns.get((Symbol)arg1, (Symbol)arg2);
         if (res != Jlisp.nil) res = Jlisp.lispTrue;
         return res;
     }
@@ -2582,7 +2587,8 @@ class FlagpStarStarFn extends BuiltinFunction
 {
     public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
     {
-        LispObject res = Fns.get(arg1, arg2);
+        if (!(arg1 instanceof Symbol && arg2 instanceof Symbol)) return Jlisp.nil;
+        LispObject res = Fns.get((Symbol)arg1, (Symbol)arg2);
         if (res != Jlisp.nil) res = Jlisp.lispTrue;
         return res;
     }
@@ -2594,7 +2600,8 @@ class FlagpcarFn extends BuiltinFunction
     {
         if (arg1.atom) return Jlisp.nil;
         arg1 = arg1.car;
-        LispObject res = Fns.get(arg1, arg2);
+        if (!(arg1 instanceof Symbol && arg2 instanceof Symbol)) return Jlisp.nil;
+        LispObject res = Fns.get((Symbol)arg1, (Symbol)arg2);
         if (res != Jlisp.nil) res = Jlisp.lispTrue;
         return res;
     }
@@ -2612,7 +2619,7 @@ class FluidpFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1)
     {
-        return Fns.get(arg1, Jlisp.lit[Lit.special]);
+        return Fns.get((Symbol)arg1, (Symbol)Jlisp.lit[Lit.special]);
     }
 }
 
@@ -2766,7 +2773,8 @@ class GetFn extends BuiltinFunction
 {
     public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
     {
-        return Fns.get(arg1, arg2);
+        if (!(arg1 instanceof Symbol && arg2 instanceof Symbol)) return Jlisp.nil;
+        return Fns.get((Symbol)arg1, (Symbol)arg2);
     }
 }
 
@@ -2774,7 +2782,8 @@ class GetStarFn extends BuiltinFunction
 {
     public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
     {
-        return Fns.get(arg1, arg2);
+        if (!(arg1 instanceof Symbol && arg2 instanceof Symbol)) return Jlisp.nil;
+        return Fns.get((Symbol)arg1, (Symbol)arg2);
     }
 }
 
@@ -2921,7 +2930,7 @@ class GlobalpFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1)
     {
-        return Fns.get(arg1, Jlisp.lit[Lit.global]);
+        return Fns.get((Symbol)arg1, (Symbol)Jlisp.lit[Lit.global]);
     }
 }
 
@@ -3341,4 +3350,5 @@ class List3Fn extends BuiltinFunction
 }
 
 // end of Fns1.java
+
 

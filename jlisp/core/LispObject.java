@@ -1,13 +1,16 @@
 package uk.co.codemist.jlisp.core;
 
 
+/* $Id$ */
+
+
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 /**************************************************************************
- * Copyright (C) 1998-2011, Codemist Ltd.                A C Norman       *
+ * Copyright (C) 1998-2015, Codemist Ltd.                A C Norman       *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
@@ -77,6 +80,8 @@ public abstract class LispObject extends Object
     static final int printUpper       = 64;
     static final int noLineBreak      = 128;
     static final int checksumEscape   = 256;
+// The above values are also saved in the low 16 bits of the cacheFlags
+// field of a Symbol.
 
     void print() throws ResourceException
     {

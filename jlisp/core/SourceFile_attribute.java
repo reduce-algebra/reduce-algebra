@@ -1,6 +1,9 @@
 package uk.co.codemist.jlisp.core;
 
 
+/* $Id$ */
+
+
 // amended 01/02/02
 // 16/02/02 IGNORE SOURCEFILE_ATTRIBUTE since OPTIONAL
 // associated code in ClassDescription has been commented out

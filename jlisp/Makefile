@@ -8,6 +8,17 @@ all:	reduce.jar minireduce.jar jlisp.jar
 clean:
 	-rm -rf *.jar *.class *.img *.log *.bak *~ uk inline*
 
+# I use the "unifdef" utility here so I can have a SINGLE master source
+# file for my bytecode interpreter.
+
+core/Bytecode.java:	core/Bytecode.java.base
+	unifdef -x2 -UINSTRUMENTED < core/Bytecode.java.base \
+		> core/Bytecode.java
+
+core/InstrumentedBytecode.java:	core/Bytecode.java.base
+	unifdef -x2 -DINSTRUMENTED < core/Bytecode.java.base \
+		> core/InstrumentedBytecode.java
+
 # The idea here is that the jar file contains EVERYTHING needed for
 # Reduce, and so "java -jar reduce.jar" will launch the system with its
 # default image file.

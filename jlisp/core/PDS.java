@@ -1,6 +1,9 @@
 package uk.co.codemist.jlisp.core;
 
 
+/* $Id$ */
+
+
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2000.
@@ -471,7 +474,7 @@ void addToDirectory(String member) throws IOException, ResourceException
             if (l == 0) break; // end of data in this chunk
             n += l + 16;
         }
-        Jlisp.println("Found the end");
+//      Jlisp.println("Found the end");
 // Next check to see if there is space in the block to add the entry that
 // is wanted here.
         byte [] nb = member.getBytes("UTF8");
@@ -489,7 +492,7 @@ void addToDirectory(String member) throws IOException, ResourceException
 // Would overflow this chunk, so chain on another one.
         {   long end = loc;
             loc = loc + DirectoryBlockSize;   // allow for the index block
-            Jlisp.println("end = " + end);
+//          Jlisp.println("end = " + end);
             f.seek(p+2);
             f.write((int)(end >> 24));
             f.write((int)(end >> 16));
@@ -508,7 +511,7 @@ void addToDirectory(String member) throws IOException, ResourceException
     }
 // new chunk will go on end of file
     memberData = (int)(p + n); // fill data in when member is closed
-    Jlisp.println("p=" + p + " n = " + n + " mD = " + memberData);
+//  Jlisp.println("p=" + p + " n = " + n + " mD = " + memberData);
     memberStart = (int)loc;    // suppose that 32-bit offsets are enough
     for (int j=0; j<16; j++)   // put in zeros for data (at this stage)
         buffer[n++] = 0;

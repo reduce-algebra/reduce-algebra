@@ -1,6 +1,9 @@
 package uk.co.codemist.jlisp.core;
 
 
+/* $Id$ */
+
+
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
@@ -47,8 +50,25 @@ class Fns
 {
     static String prompt = null;
 
-    static LispObject put(Symbol name, LispObject key, LispObject value) throws ResourceException
+    static void fluid(Symbol s) throws ResourceException
     {
+        put(s, (Symbol)Jlisp.lit[Lit.special], Jlisp.lispTrue);
+        if (s.car/*value*/ == Jlisp.lit[Lit.undefined]) s.car/*value*/ = Jlisp.nil;
+    }
+
+    static LispObject put(Symbol name, Symbol key, LispObject value) throws ResourceException
+    {
+        int f = key.cacheFlags >> 16;
+        if (f != 0)
+        {   LispObject [] v;
+            if ((v = name.fastgets) == null)
+            {   v = new LispObject[63];
+                for (int i=0; i<63; i++) v[i] = Spid.noprop;
+                name.fastgets = v;
+            }
+            v[f-1] = value;
+            return value;
+        }
         LispObject plist = name.cdr/*plist*/;
         while (!plist.atom)
 	{   LispObject w = plist;
@@ -63,17 +83,17 @@ class Fns
         return value;
     }
 
-    static void fluid(LispObject a) throws ResourceException
+    static LispObject get(Symbol name, Symbol key)
     {
-        Symbol s = (Symbol)a;
-        put(s, Jlisp.lit[Lit.special], Jlisp.lispTrue);
-        if (s.car/*value*/ == Jlisp.lit[Lit.undefined]) s.car/*value*/ = Jlisp.nil;
-    }
-
-    static LispObject get(LispObject n, LispObject key)
-    {
-        if (!(n instanceof Symbol)) return Jlisp.nil;
-        Symbol name = (Symbol)n;
+        int f = key.cacheFlags >> 16;
+        if (f != 0)
+        {   if (name.fastgets == null) return Jlisp.nil;
+            else
+            {   LispObject w = name.fastgets[f-1];
+                if (w == Spid.noprop) w = Jlisp.nil;
+                return w;
+            }
+        }
         LispObject plist = name.cdr/*plist*/;
         while (!plist.atom)
 	{   LispObject w = plist;
@@ -84,8 +104,14 @@ class Fns
         return Jlisp.nil;
     }
 
-    static LispObject remprop(Symbol name, LispObject key)
+    static LispObject remprop(Symbol name, Symbol key)
     {
+        int f = key.cacheFlags >> 16;
+        if (f != 0)
+        {   LispObject [] v;
+            if ((v = name.fastgets) != null) v[f-1] = Spid.noprop;
+            return Jlisp.nil;
+        }
         LispObject plist = name.cdr/*plist*/;
         LispObject prev = null;
         while (!plist.atom)

@@ -1,6 +1,9 @@
 package uk.co.codemist.jlisp.core;
 
 
+/* $Id$ */
+
+
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2000.
@@ -40,22 +43,18 @@ import java.io.*;
 public class FnWithEnv extends LispFunction
 {
 
-int nargs;           // integer field saved in image file
-byte [] bytecodes;   // can be null if not needed (never shared?)
+int nargs = 0;              // integer field saved in image file
+byte [] bytecodes = null;   // can be null if not needed (never shared?)
 public LispObject [] env;   // vector of lisp objects, eg literals
 
 FnWithEnv()
 {
     env = new LispObject[0];
-    bytecodes = null;
-    nargs = 0;
 }
 
 FnWithEnv(LispObject [] env)
 {
     this.env = env;
-    bytecodes = null;
-    nargs = 0;
 }
 
 void scan()

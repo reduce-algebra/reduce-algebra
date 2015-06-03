@@ -1,6 +1,9 @@
 package uk.co.codemist.jlisp.core;
 
 
+/* $Id$ */
+
+
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
@@ -310,7 +313,7 @@ class Fasl
 // property list.
 
         if (saved_definition != Jlisp.nil)
-            Fns.put(name, Jlisp.lit[Lit.savedef], saved_definition);
+            Fns.put(name, (Symbol)Jlisp.lit[Lit.savedef], saved_definition);
     }
 
 

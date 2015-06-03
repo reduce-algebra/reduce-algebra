@@ -1,6 +1,9 @@
 package uk.co.codemist.jlisp.core;
 
 
+/* $Id$ */
+
+
 // Reduce
 //
 // Standard Lisp system coded in Java. Actually this goes
@@ -77,10 +80,7 @@ int countFunctions()
 {
     int n = 0;
     for (Uxx u : translatedCode)
-    {   System.out.printf("%s => %d%n", u.toString(), u.builtins.length);
         n += u.builtins.length;
-    }
-    System.out.printf("countFunctions() in Reduce = %d%n", n);
     return n;
 }
 

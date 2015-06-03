@@ -1,6 +1,9 @@
 package uk.co.codemist.jlisp.core;
 
 
+/* $Id$ */
+
+
 // amended 02/02/02 so that it actually does something
 // a lot of code simply copied over from Attribute_info
 // maybe an idea to make all infos inherit from somewhere=>no copying

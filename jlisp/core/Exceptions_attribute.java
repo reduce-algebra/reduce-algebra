@@ -1,6 +1,9 @@
 package uk.co.codemist.jlisp.core;
 
 
+/* $Id$ */
+
+
 //04/03/02 for adding java/lang/Exception to Method_info
 //note if more exceptions need adding...
 //make a ByteArray.shortArrayToByteArray() for infotemp[1]

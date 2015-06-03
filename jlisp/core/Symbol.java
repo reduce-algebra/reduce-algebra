@@ -1,13 +1,16 @@
 package uk.co.codemist.jlisp.core;
 
 
+/* $Id$ */
+
+
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 /**************************************************************************
- * Copyright (C) 1998-2011, Codemist Ltd.                A C Norman       *
+ * Copyright (C) 1998-2015, Codemist Ltd.                A C Norman       *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
@@ -53,12 +56,12 @@ public class Symbol extends LispObject
 //  LispObject value;        // shallow-binding         use .car instead!
 //  LispObject plist;        // property list           use .cdr instead!
 
+    LispObject [] fastgets;  // if non-null some optimised property values
     String pname;            // print name
     int cacheFlags;          // used with cacheString to speed up..
-    String cacheString;      // .. printing when escape chare may be needed
+    String cacheString;      // .. printing when escape chars may be needed
     public LispFunction fn;         // function (if any)
     SpecialFunction special; // special fn (if any)
-
 
     void completeName()      // needed to that gensyms can have delayed names
     {
@@ -92,7 +95,7 @@ public class Symbol extends LispObject
 // not found on object-list, so create it.
         p = new Symbol();
         p.pname = name;
-        p.cacheFlags = -1;
+        p.cacheFlags = 0xffff;
         p.car/*value*/ = Jlisp.lit[Lit.undefined];
         p.cdr/*plist*/ = Jlisp.nil;
         Jlisp.oblist[hash] = p;
@@ -143,7 +146,7 @@ public class Symbol extends LispObject
 // not found on object-list, so create it.
         p = new Symbol();
         p.pname = name;
-        p.cacheFlags = -1;
+        p.cacheFlags = 0xffff;
         p.car/*value*/ = Jlisp.lit[Lit.undefined];
         p.cdr/*plist*/ = Jlisp.nil;
         Jlisp.oblist[hash] = p;
@@ -168,11 +171,11 @@ public class Symbol extends LispObject
         completeName();
         if ((currentFlags & (printEscape | printLower | printUpper)) == 0)
             return pname;
-        else if (currentFlags == cacheFlags) return cacheString;
+        else if (currentFlags == (cacheFlags & 0xffff)) return cacheString;
         cache.setLength(0);
         String p = pname;
         if (p.length() == 0) return p;
-        cacheFlags = currentFlags;
+        cacheFlags = (cacheFlags & 0xffff0000) | currentFlags;
         if ((currentFlags & printLower) != 0) p = p.toLowerCase();
         else if ((currentFlags & printUpper) != 0) p = p.toUpperCase();
         char c = p.charAt(0);
@@ -268,6 +271,12 @@ public class Symbol extends LispObject
             if (Jlisp.descendSymbols)
             {   if (car/*value*/ != null) Jlisp.stack.push(car/*value*/);
                 if (cdr/*plist*/ != null) Jlisp.stack.push(cdr/*plist*/);
+//              if (fastgets != null)
+//              {   for (int i=0; i<63; i++)
+//                  {   if (fastgets[i] != Spid.noprop)
+//                          Jlisp.stack.push(fastgets[i]);
+//                  }
+//              }
                 if (fn != null) Jlisp.stack.push(fn);
                 if (special != null) Jlisp.stack.push(special);
             }
@@ -296,7 +305,7 @@ public class Symbol extends LispObject
 // Now this is the first time I see this symbol while writing a dump
 // file. For a symbol I emit
 //    SYM n c0 c1 ... cn  // the name
-//    special fn plist value
+//    special fn fastgets plist value
             if (!Jlisp.descendSymbols) // ie for FASL not PRESERVE
             {
 // The search here is a crude linear search through the most recent
@@ -334,7 +343,28 @@ public class Symbol extends LispObject
             for (int i=0; i<length; i++)
                 Jlisp.odump.write(rep[i]);
             if (Jlisp.descendSymbols)        
-            {   Jlisp.stack.push(car/*value*/);
+            {   int flags = (cacheFlags >> 16) & 0xffff;
+//@@                Jlisp.odump.write(flags & 0xff);
+//@@                Jlisp.odump.write((flags>>8) & 0xff);
+//              long getmap = 0;
+//              if (fastgets != null)
+//                  for (int i=0; i<63; i++)
+//                      if (fastgets[i] != Spid.noprop)
+//                          getmap |= (1L << i);
+// Just after the print-name I write either the marker byte 0x80 or
+// 8 bytes being a map showing which of the 63 possible fastget slots
+// are in use. The order in which I write the bytes is such that the bit
+// 0x80 at the start would correspond to a non-existent 64th fastget slot.
+//System.out.printf("getmap = " + getmap + "\n");
+//              if (getmap == 0) Jlisp.odump.write(0x80);
+//              else
+//              {   for (int i=0; i<8; i++)
+//                      Jlisp.odump.write((int)((getmap>>(8*(8-i))) & 0xff));
+//                  for (int i=0; i<63; i++)
+//                      if (fastgets[i] != Spid.noprop)
+//                          Jlisp.stack.push(fastgets[i]);
+//              }
+                Jlisp.stack.push(car/*value*/);
                 Jlisp.stack.push(cdr/*plist*/);
                 Jlisp.stack.push(special);
 // If the symbol had a non-trivial function-definition then that will

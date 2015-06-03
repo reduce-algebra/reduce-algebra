@@ -1,6 +1,9 @@
 package uk.co.codemist.jlisp.core;
 
 
+/* $Id$ */
+
+
 // Jlisp
 //
 // Standard Lisp system coded in Java. Actually this goes
@@ -133,6 +136,8 @@ static void traceprintln() throws ResourceException
 
 static LispObject error(String s) throws LispException
 {
+//System.out.printf("%n@@@ Eek @@@%n");
+//(new Exception()).printStackTrace(System.out);
     if (headline)
     {   errprintln();
         errprintln("++++ " + s);
@@ -240,6 +245,10 @@ public static void startup(String [] args,
 
 static boolean hasThreadTime = false;
 static ThreadMXBean bean;
+
+static int translatedCount = 0;
+
+static Random random = new Random();
 
 static void startup1(String [] args) throws ResourceException
 {
@@ -393,6 +402,12 @@ static void startup1(String [] args) throws ResourceException
                 }
                 break;
         case 'r': // initial random seed
+// If the number following "-r" is malformed the directive is just ignored.
+                try
+                {   long s = Long.parseLong(arg1);
+                    random = new Random(s);
+                }
+                catch (NumberFormatException e) {}
                 break;
         case 'u': // undefined symbol
                 if (undefineCount < undefineSymbol.length)
@@ -457,6 +472,9 @@ static void startup1(String [] args) throws ResourceException
         lispErr.println(errs[i]);
 
     LispSmallInteger.preAllocate();  // some small integers treated specially
+
+    translatedCount = (extrabuiltins == null) ? 0 : extrabuiltins.countFunctions();
+    instrumented = (translatedCount == 0);
 
 // For use while I am re-loading images and also to assist the
 // custom Lisp bytecoded stuff I build a table of all the functions
@@ -964,6 +982,7 @@ static LispVector obvector = new LispVector((LispObject [])oblist);
 static Symbol [] chars  = new Symbol[128];  // to speed up READCH
 static LispObject [] spine = new LispObject[17]; // for PRESERVE
 
+static Symbol [] fastgetNames = new Symbol[63];
 
 static int inputType;
 
@@ -1033,6 +1052,9 @@ static void preserve(OutputStream dump) throws IOException
         for (i=0; i<oblistSize; i++)
         {   scanObject(oblist[i]);
         }
+        for (i=0; i<63; i++)
+        {   scanObject(fastgetNames[i]);
+        }
         scanObject(gp);
         scanObject(g1);
         scanObject(g2);
@@ -1072,6 +1094,7 @@ static void preserve(OutputStream dump) throws IOException
             }
         }
         odump.write(LispObject.X_ENDHASH); // marks end of oblist data
+        for (i=0; i<63; i++) writeObject(fastgetNames[i]);
         if (Fns.prompt == null) odump.write(0);
         else
         {   odump.write(1);
@@ -1230,6 +1253,7 @@ static void restore(InputStream dump) throws IOException, ResourceException
     }
 //System.out.println("termination of oblist found : " + oblistCount);
 
+    for (i=0; i<63; i++) fastgetNames[i] = (Symbol)readObject();
     LispObject w;
 
     if (idump.read() == 0) Fns.prompt = null;
@@ -1240,7 +1264,7 @@ static void restore(InputStream dump) throws IOException, ResourceException
 
     w = readObject();
     try { Gensym.gensymCounter = w.intValue(); }
-    catch (Exception ee) { Gensym.gensymCounter = 0; }
+    catch (Exception ee) { Gensym.gensymCounter = 1; }
 
     w = readObject();
     try { modulus = w.intValue(); }
@@ -1250,7 +1274,6 @@ static void restore(InputStream dump) throws IOException, ResourceException
     w = readObject();
     try { printprec = w.intValue(); }
     catch (Exception ee) { printprec = 14; }
-
 
     postRestore();
 }
@@ -1419,6 +1442,8 @@ static LispObject readObject() throws IOException, ResourceException
                 {   shared[sharedIndex++] = ws;
                     setLabel = false;
                 }
+// Note that as implemented here a gensym can not be used as a tag that
+// has its treatment optimised using "fastget".
                 if (!descendSymbols)
                 {   ws.car/*value*/ = lit[Lit.undefined];
                     ws.cdr/*plist*/ = nil;
@@ -1440,10 +1465,33 @@ static LispObject readObject() throws IOException, ResourceException
     case LispObject.X_UNDEFn:
             {   byte [] data = new byte[operand];
                 for (i=0; i<operand; i++) data[i] = (byte)idump.read();
+//@@System.out.printf("Symbol %s with descend = %b%n", new String(data, "UTF8"), descendSymbols); // @@
                 if (descendSymbols)
-                {   Symbol ws = new Symbol();
+                {   //@@int flags = idump.read() & 0xff;
+                    //@@flags |= (idump.read() & 0xff)<<8;
+//@@System.out.printf("Symbol %s has flags %d%n", new String(data, "UTF8"), flags); // @@
+//                  i = idump.read() & 0xff;
+//                  long getmap = 0;
+//                  if (i != 0x80)
+//                  {   getmap = ((long)i)<<56;
+//                      for (i=0; i<7; i++)
+//                          getmap |= ((long)(idump.read() & 0xff))<<(8*(6-i));
+//                  }
+//System.out.printf("getmap = " + getmap + "\n");
+                    Symbol ws = new Symbol();
                     Symbol.symbolCount++;
                     ws.pname = new String(data, "UTF8");
+//@@                    ws.cacheFlags = flags<<16;
+// In general I avoid having readObject recursive, but I am going to be lazy
+// here for the "fastgets" array...
+//                  if (getmap != 0)
+//                  {   LispObject [] v = new LispObject[63];
+//                      ws.fastgets = v;
+//                      for (i=0; i<63; i++)
+//                      {   if ((getmap & (1L<<i)) == 0) v[i] = Spid.noprop;
+//                          else v[i] = readObject();
+//                      }
+//                  }
                     stack.push(ws);
                     istack[sp++] = state;
                     if (opcode == LispObject.X_SYMn) state = S_SYMFN;
@@ -2021,11 +2069,10 @@ static void inituserfns(Object [][] builtins)
     {   Object [] s = builtins[i];
         String name = (String)s[0];
         LispFunction fn = (LispFunction)s[1];
-        System.out.printf("Init %s to %s%n", name, fn.toString()); // @@@
         ((BuiltinFunction)fn).inited = false;
         fn.name = name;
         try
-        {   Fns.put(Symbol.intern(name, fn, null), lit[Lit.lose], lispTrue);
+        {   Fns.put(Symbol.intern(name, fn, null), (Symbol)lit[Lit.lose], lispTrue);
         } catch (ResourceException e)
         {}
     }
@@ -2037,14 +2084,13 @@ static void initSymbols() throws ResourceException
 {
 //System.out.println("Beginning cold start: " + oblistCount);
     Fns.prompt = null;
-    Gensym.gensymCounter = 0;
+    Gensym.gensymCounter = 1;
 
 // set up nil first since it is needed by Symbol.intern
     nil = Symbol.intern("nil");
     nil.cdr/*plist*/ = nil;
     nil.car/*value*/ = nil;
     nil.car = nil.cdr = nil;
-
 // next set up "undefined" and "t" which both have themselves as value
     lit[Lit.undefined]       = Symbol.intern("*undefined-value*");
     ((Symbol)lit[Lit.undefined]).car/*value*/ = lit[Lit.undefined];
@@ -2056,6 +2102,7 @@ static void initSymbols() throws ResourceException
     for (int i=0; i<Lit.names.length; i++)
     {   lit[i] = Symbol.intern(Lit.names[i]);
     }
+    for (int i=0; i<63; i++) fastgetNames[i] = nil;
 
 // The object list has a funny treatment to make it agree with CSL
     lit[Lit.starpackage].car/*value*/ =
@@ -2067,27 +2114,26 @@ static void initSymbols() throws ResourceException
 
 // The things put in lispsystem* must include various ones relied upon
 // by the REDUCE build scripts!
-    int tr = (extrabuiltins == null) ? 0 : extrabuiltins.countFunctions();
-    instrumented = (tr == 0);
     ((Symbol)lit[Lit.lispsystem]).car/*value*/ =
         new Cons(new Cons(Symbol.intern("platform"), Symbol.intern("java")),
 // Note that even in Jlisp whhere it will really be "Java code" I put the
 // information here under a tag "c-code".
-        new Cons(new Cons(Symbol.intern("c-code"), LispInteger.valueOf(tr)),
+        new Cons(new Cons(Symbol.intern("c-code"),
+                          LispInteger.valueOf(translatedCount)),
         new Cons(new Cons(Symbol.intern("name"),   new LispString("java")),
         new Cons(Symbol.intern("csl"),       // a lie, in some sense!
         new Cons(Symbol.intern("jlisp"),
 //      new Cons(Symbol.intern("embedded"),
         nil)))));
 
-    Fns.fluid(nil);
-    Fns.fluid(lispTrue);
-    Fns.fluid(lit[Lit.lispsystem]);
-    Fns.fluid(lit[Lit.raise]);
-    Fns.fluid(lit[Lit.lower]);
-    Fns.fluid(lit[Lit.starcomp]);
-    Fns.fluid(lit[Lit.commonLisp]);
-    Fns.fluid(lit[Lit.redefmsg]);
+    Fns.fluid((Symbol)nil);
+    Fns.fluid((Symbol)lispTrue);
+    Fns.fluid((Symbol)lit[Lit.lispsystem]);
+    Fns.fluid((Symbol)lit[Lit.raise]);
+    Fns.fluid((Symbol)lit[Lit.lower]);
+    Fns.fluid((Symbol)lit[Lit.starcomp]);
+    Fns.fluid((Symbol)lit[Lit.commonLisp]);
+    Fns.fluid((Symbol)lit[Lit.redefmsg]);
 
     initfns(fns1.builtins);
     initfns(fns2.builtins);

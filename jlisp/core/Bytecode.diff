@@ -1,0 +1,26 @@
+41c41
+< class Bytecode extends BytecodeCore
+---
+> class InstrumentedBytecode extends Bytecode
+44c44
+< Bytecode()
+---
+> InstrumentedBytecode()
+49c49
+< Bytecode(LispObject [] env)
+---
+> InstrumentedBytecode(LispObject [] env)
+54c54
+< Bytecode(int n)
+---
+> InstrumentedBytecode(int n)
+68a69
+>     count += 30;
+75a77,79
+>         count++;
+> // In Jlisp I will count the number of bytecode ops executed in any function
+> // and I will attribute an overhead of 30 to function entry+exit.
+1259c1263
+< // End of Bytecode.java
+---
+> // end of InstrumentedBytecode.java

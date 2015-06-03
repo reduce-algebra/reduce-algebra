@@ -1,5 +1,8 @@
 package uk.co.codemist.jlisp.core;
 
+
+/* $Id$ */
+
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
@@ -53,7 +56,6 @@ class U01 extends Uxx
             {"u01-sample",                  new U01_sampleFn()},
             {"addf",                        new J_addf()}
         };
-        System.out.printf("Count on %s = %d%n", toString(), builtins.length); // @@@
     }
 
 
