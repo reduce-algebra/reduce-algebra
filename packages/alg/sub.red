@@ -230,13 +230,24 @@ symbolic procedure subf1(u,l);
          else if null numr x then go to e;   %Substitution of 0;
         x1 := x;
         for each j in y do
-         <<m := cdar j;
+         <<m := tdeg j;
            if m memq frlis!*
             then <<x := simpexpt list(prepsq x1,m); m := 1>>;
            w := multsq(subs2 exptsq(x,m-n),w);
            n := m;
-           z := addsq(multsq(w,subf1(cdr j,l)),z)>>;
-    e:  y := nil;
+           z := addsq(multsq(w,subf1(tc j,l)),z)>>;
+    e:  
+        % At this point the current mvar is substituted by 0
+        % so that only the constant term of the polynomial remains.
+        % The simplest way to do this would be to drop the list of coefficients:
+        % y := nil;
+	% However, one of the coefficients may depend on mvar, and
+        % the substitution mvar-->0 inside this coefficient may be invalid, as in
+        %  sub(x=0,x*e^(1/x^2))
+        % and an error should be signaled. To achieve this, the substution is tried
+        % for all coefficients in the list y, although the resulting values are not
+        % needed and therefore discarded.
+        while y do << subf1(tc car y,l); y := cdr y >>;
         if null u then return z
          else if domainp u then return addsq(subf1(u,l),z);
         go to a0;

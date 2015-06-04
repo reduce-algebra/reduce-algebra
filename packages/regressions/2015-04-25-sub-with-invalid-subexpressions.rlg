@@ -1,0 +1,33 @@
+
+y := x^2*e^(1/x^2);
+
+
+         2
+      1/x   2
+y := e    *x
+
+
+sub(x=0,y);
+
+
+***** Zero divisor 
+
+
+z := exp(2*x)/x^2;
+
+
+       2*x
+      e
+z := ------
+        2
+       x
+
+
+limit(z,x,infinity);
+
+
+infinity
+
+
+end;
+
