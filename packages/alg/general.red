@@ -183,6 +183,7 @@ symbolic macro procedure fancy!-level u;
  % unwind-protect for special output functions.
   {'prog,'(pos tpos fl w),
       '(setq pos fancy!-pos!*),
+      '(setq tpos fancy!-texpos),
       '(setq fl fancy!-line!*),
       {'setq,'w,cadr u},
       '(cond ((eq w 'failed)
