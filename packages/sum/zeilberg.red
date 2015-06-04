@@ -1761,7 +1761,8 @@ else
 return list1;
 end;
 
-operator hypergeometric;
+%% operator decl. no longer needed, done in autoload for specfn2
+%%operator hypergeometric;
 
 %let {gamma(~n)=>factorial(n-1) when (fixp(n) and n>0)};
 
