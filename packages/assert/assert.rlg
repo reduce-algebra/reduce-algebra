@@ -10,14 +10,14 @@ on1 'assert;
 nil
 
 
-struct tag;
+struct Tag;
 *** struct tag is not checked 
 
 
 
 nil
 
-struct posnumber asserted by posnumberp;
+struct Posnumber asserted by posnumberp;
 
 
 nil
@@ -30,7 +30,7 @@ procedure posnumberp(s);
 posnumberp
 
 
-asserted procedure hugo(x1: number, x2: posnumber, x3: tag): dottedpair;
+asserted procedure hugo(x1: Number, x2: Posnumber, x3: Tag): DottedPair;
    x3 . (x1 + x2);
 
 
@@ -74,12 +74,12 @@ assert_uninstall hugo;
 nil
 
 
-declare addf: (sf, sf) -> sf;
+declare addf: (SF, SF) -> SF;
 
 
 (addf hugo)
 
-declare addsq: (sq, sq) -> sq;
+declare addsq: (SQ, SQ) -> SQ;
 
 
 (addsq addf hugo)
