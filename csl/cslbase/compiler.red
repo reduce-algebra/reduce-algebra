@@ -1,36 +1,35 @@
 %  
 % Compiler from Lisp into byte-codes for use with CSL/CCL.
-%       Copyright (C) Codemist Ltd, 1990-2011
+%       Copyright (C) Codemist Ltd, 1990-2015
 %
 
-
 %%
-%% Copyright (C) 2011,              A C Norman, Codemist Ltd              *
-%%                                                                        *
-%% Redistribution and use in source and binary forms, with or without     *
-%% modification, are permitted provided that the following conditions are *
-%% met:                                                                   *
-%%                                                                        *
-%%     * Redistributions of source code must retain the relevant          *
-%%       copyright notice, this list of conditions and the following      *
-%%       disclaimer.                                                      *
-%%     * Redistributions in binary form must reproduce the above          *
-%%       copyright notice, this list of conditions and the following      *
-%%       disclaimer in the documentation and/or other materials provided  *
-%%       with the distribution.                                           *
-%%                                                                        *
-%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
-%% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
-%% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
-%% FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
-%% COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
-%% INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
-%% BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
-%% OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
-%% ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
-%% TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
-%% THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
-%% DAMAGE.                                                                *
+%% Copyright (C) 2015,              A C Norman, Codemist Ltd
+%%
+%% Redistribution and use in source and binary forms, with or without
+%% modification, are permitted provided that the following conditions are
+%% met:
+%%
+%%     * Redistributions of source code must retain the relevant
+%%       copyright notice, this list of conditions and the following
+%%       disclaimer.
+%%     * Redistributions in binary form must reproduce the above
+%%       copyright notice, this list of conditions and the following
+%%       disclaimer in the documentation and/or other materials provided
+%%       with the distribution.
+%%
+%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+%% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+%% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+%% FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+%% COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+%% INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+%% BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+%% OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+%% ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+%% TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+%% THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+%% DAMAGE.
 %%
 
 
@@ -3782,9 +3781,11 @@ symbolic procedure s!:testequal(neg, x, env, lab);
 % equal tests against nil can be optimised
     if null a then s!:jumpif(not neg, b, env, lab)
     else if null b then s!:jumpif(not neg, a, env, lab)
-% comparisons involving a literal identifier or (in this
+% comparisons involving a literal identifier or (in the CSL
 % Lisp implementation) a fixnum can be turned into uses of
 % eq rather than equal, to good effect.
+% For Jlisp I make the implementation of EQ more messy than one would like
+% to maintain compatibility...
     else if (eqcar(a, 'quote) and (symbolp cadr a or eq!-safe cadr a)) or
             (eqcar(b, 'quote) and (symbolp cadr b or eq!-safe cadr b)) or
             (not idp a and eq!-safe a) or
@@ -4125,15 +4126,23 @@ put('funcall, 's!:tidy_fn, 's!:imp_funcall);
 % equal tests into ones that use eq instead
 
 symbolic procedure s!:eval_to_eq_safe x;
-   null x or 
-   x=t or 
+% NIL and T both evaluate to something that EQ is safe on.
+   x=nil or 
+   x=t or
+% Small enough integers can use EQ.
    (not symbolp x and eq!-safe x) or
+% I tag some functions that are pure booleans because I know that their
+% result will be NIL or T
    (not atom x and flagp(car x, 'eq!-safe)) or
+% Quoted expressions evaluate to understood things.
    (eqcar(x, 'quote) and (symbolp cadr x or eq!-safe cadr x));
 
 symbolic procedure s!:eval_to_eq_unsafe x;
+% Something is unsafe if it is (eg) a number that is floating or too big
    (atom x and not symbolp x and not eq!-safe x) or
+% Some functions guarantee to return something where EQ is "delicate".
    (not atom x and flagp(car x, 'eq!-unsafe)) or
+% Again quotes can be analysed fully.
    (eqcar(x, 'quote) and (not atom cadr x or
       (not symbolp cadr x and not eq!-safe cadr x)));
 
