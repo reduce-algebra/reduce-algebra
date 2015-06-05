@@ -1492,6 +1492,7 @@ class Random_numberFn extends BuiltinFunction
             return new LispFloat(Jlisp.random.nextDouble()*
                                  ((LispFloat)arg1).value);
         BigInteger b = arg1.bigIntValue();
+//@@@@ Unfinished work @@@@
         return error(name + " not yet implemented");
     }
 }
@@ -1754,7 +1755,6 @@ class Spid_to_nilFn extends BuiltinFunction
         return arg1 instanceof Spid ? Jlisp.lispTrue : arg1;
     }
 }
-
 
 }
 
