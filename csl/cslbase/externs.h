@@ -1,14 +1,12 @@
-/* externs.h                            Copyright (C) Codemist 1989-2014 */
+/* externs.h                            Copyright (C) Codemist 1989-2015 */
 
 /*
  *   Main batch of extern declarations.
  *
  */
 
-
-
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -502,7 +500,8 @@ extern Lisp_Object trace_output, fasl_stream;
 extern Lisp_Object native_code, native_symbol, traceprint_symbol;
 extern Lisp_Object loadsource_symbol;
 extern Lisp_Object hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
-extern Lisp_Object gchook, resources, callstack, procstack, procmem, trap_time;
+extern Lisp_Object gchook, resources, callstack, procstack, procmem;
+extern Lisp_Object trap_time, count_high;
 
 #ifdef COMMON
 extern Lisp_Object keyword_package;
@@ -737,6 +736,7 @@ extern Lisp_Object * volatile stacklimit;
 #define procstack             BASE[156]
 #define procmem               BASE[157]
 #define trap_time             BASE[158]
+#define count_high            BASE[159]
 
 #ifdef COMMON
 #define keyword_package       BASE[170]

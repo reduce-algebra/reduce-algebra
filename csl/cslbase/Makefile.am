@@ -75,7 +75,15 @@ AM_CPPFLAGS = $(TRACE)
 AM_LDFLAGS  = $(TRACE)
 
 reduce_CPPFLAGS = $(TRACE) -DNO_BYTECOUNT=1
-csl_CPPFLAGS    = $(TRACE) -DNO_BYTECOUNT=1
+#
+# At least on a temporary basis I will make CSL keep profiling
+# information. This is because that will help me debug the profile
+# collection code and is acceptable because maybe only very few people use
+# raw CSL and anyway performance is "good enough" for most purposes
+# regardless.
+#
+#csl_CPPFLAGS    = $(TRACE) -DNO_BYTECOUNT=1
+csl_CPPFLAGS    = $(TRACE)
 
 # If I list all the phony targets here this may help document things you
 # can do via this Makefile

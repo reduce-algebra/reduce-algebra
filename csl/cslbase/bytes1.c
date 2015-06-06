@@ -1010,11 +1010,52 @@ Lisp_Object Lplist(Lisp_Object nil, Lisp_Object a)
  */
 extern int profile_count_mode;
 
-#define OPCOUNT	(profile_count_mode ? 1 : (opcodes+70)/100)
-
 #include "opnames.c"
 
-static int32_t total = 0, frequencies[256];
+static uint64_t total = 0, frequencies[256];
+
+/*
+ * Another horrid issue! On a 32-bit machine I keep profile counts in a
+ * 32-bit field, and now in 2015 it only takes a couple of seconds for a tight
+ * loop to cause that to overflow. That is a misery! So to increment counts
+ * I will keep everything in the main count field in 64-bit systems and
+ * use a property-list field as an extension on 32-bit ones (giving me
+ * a limit at 30+27=57 bits in that case). This should result in absolute
+ * compatibility as to statistics gathered, but the way I have implemented
+ * it can leave a property list entry in 32-bit images that will not be used
+ * in 64-bit contexts.
+ */
+static int increment_counter(Lisp_Object nil, int n)
+{
+/*
+ * C does not let me make the test on word-size a compile time test, so I
+ * need to hope that the compiler optimises this apparently dynamic test
+ * away for me.
+ */
+    if (CELL == 8) qcount(elt(litvec, 0)) += n;
+    else
+    {   Lisp_Object name = elt(litvec, 0);
+        uintptr_t count = qcount(name) + n;
+        if ((count & 0xc0000000) != 0)
+        {   uintptr_t extra = (count >> 30) & 0x3;
+            Lisp_Object prop = get(name, count_high);
+            if (is_fixnum(prop)) extra += int_of_fixnum(prop);
+            putprop(name, count_high, fixnum_of_int(extra));
+            count &= 0x3fffffff;
+        }
+        qcount(name) = count;
+/*
+ * Unfortunately it is at least possible that "put" might report an error
+ * here, so I need to check for that.
+ */
+        nil = C_nil;
+        if (exception_pending())
+        {   flip_exception();
+            return 1;
+        }
+    }
+    return 0;
+}
 
 #endif
 
@@ -1032,7 +1073,8 @@ Lisp_Object MS_CDECL bytecounts(Lisp_Object nil, int nargs, ...)
 #ifdef NO_BYTECOUNT
     stdout_printf("bytecode statistics not available\n");
 #else
-    stdout_printf("\nFrequencies of each bytecode (%ld total)", total);
+    stdout_printf("\nFrequencies of each bytecode (%ldM total)",
+                   (int)(total/1000000));
     if (total == 0) total = 1;
     for (i=0; i<256; i++)
     {   if ((i & 3) == 0) stdout_printf("\n");
@@ -1424,21 +1466,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
  * end up allocating three stack locations (one for each instance of x) and
  * hence makes this function overall have much to big a stack frame.
  */
-#ifndef NO_BYTECOUNT
-    int32_t opcodes = 30; /* Attribute 30-bytecode overhead to entry sequence */
-#endif
-#ifdef CHECK_STACK
-    {   char *my_stack = (char *)&my_stack;
-        if (native_stack == NULL) native_stack = native_stack_base = my_stack;
-        else if (my_stack + 10000 < native_stack)
-        {   native_stack = my_stack;
-            Lisp_Object ffsym = elt(lit, 0);
-            trace_printf("\nFunction %s stack depth %d\n",
-                         &celt(qpname(ffsym), 0),
-                         native_stack_base - my_stack);
-        }
-    }
-#endif
 #if defined DEBUG || !defined NO_BYTECOUNT
 /*
  * ffname will be the first 15 characters of the name of the function
@@ -1470,6 +1497,18 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
     CSL_IGNORE(ffsym);
     debug_assert(1);
 #endif
+#ifdef CHECK_STACK
+    {   char *my_stack = (char *)&my_stack;
+        if (native_stack == NULL) native_stack = native_stack_base = my_stack;
+        else if (my_stack + 10000 < native_stack)
+        {   native_stack = my_stack;
+            Lisp_Object ffsym = elt(lit, 0);
+            trace_printf("\nFunction %s stack depth %d\n",
+                         &celt(qpname(ffsym), 0),
+                         native_stack_base - my_stack);
+        }
+    }
+#endif
 
 /*
  * The byte-stream interpreter here uses the lisp stack and two
@@ -1495,6 +1534,10 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
 #endif
 #endif
     litvec = lit;
+#ifndef NO_BYTECOUNT
+    if (increment_counter(nil, profile_count_mode ? 1 : 30)) return nil;
+    /* Attribute 30-bytecode overhead to entry sequence */
+#endif
 /*
  * The next lines are used to allow for functions with > 3 args, and for
  * &optional and &rest cases. Some of these need one or two bytes at the
@@ -1560,14 +1603,8 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
     {
         HANDLE_BLIP;
 #ifndef NO_BYTECOUNT
-/*
- * So that there is no risk of losing information when one crashes out from
- * a very heavy function I bring the profile information up to date every so
- * often.
- */
-        if (opcodes++ > 1000 && !profile_count_mode)
-        {   qcount(elt(litvec, 0)) += (opcodes+50)/100;
-            opcodes = 0;
+        if (!profile_count_mode)
+        {   if (increment_counter(nil, 1)) goto pop_stack_and_exit;
         }
         total++;
         frequencies[*ppc]++;
@@ -1616,14 +1653,9 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
  */
             exit_count = 1;
 #endif
-#ifndef NO_BYTECOUNT
-            qcount(elt(litvec, 0)) += OPCOUNT;
-#endif
             C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
             if (callstack != nil) callstack = qcdr(callstack);
-#endif
-#ifndef NO_BYTECOUNT
             name_of_caller = NULL;
 #endif
             return A_reg;
@@ -1634,14 +1666,9 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
 #ifdef COMMON
             exit_count = 1;
 #endif
-#ifndef NO_BYTECOUNT
-            qcount(elt(litvec, 0)) += OPCOUNT;
-#endif
             C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
             if (callstack != nil) callstack = qcdr(callstack);
-#endif
-#ifndef NO_BYTECOUNT
             name_of_caller = NULL;
 #endif
             return A_reg;
@@ -1652,27 +1679,17 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
 #ifdef COMMON
             exit_count = 1;
 #endif
-#ifndef NO_BYTECOUNT
-            qcount(elt(litvec, 0)) += OPCOUNT;
-#endif
             C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
             if (callstack != nil) callstack = qcdr(callstack);
-#endif
-#ifndef NO_BYTECOUNT
             name_of_caller = NULL;
 #endif
             return A_reg;
 
     case OP_NILEXIT:
-#ifndef NO_BYTECOUNT
-            qcount(elt(litvec, 0)) += OPCOUNT;
-#endif
             C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
             if (callstack != nil) callstack = qcdr(callstack);
-#endif
-#ifndef NO_BYTECOUNT
             name_of_caller = NULL;
 #endif
             return onevalue(nil);
@@ -4970,9 +4987,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
  * there is no need to do any LOSE operations just before an EXIT since the
  * stack gets reset automatically here.
  */
-#ifndef NO_BYTECOUNT
-            qcount(elt(litvec, 0)) += OPCOUNT;
-#endif
             C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
             if (callstack != nil) callstack = qcdr(callstack);
@@ -5077,7 +5091,7 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
                     else A_reg = nil;
                 }
                 else
-                {   A_reg = elt(r1, w & 0x7f);
+                {   A_reg = elt(r1, w & 0x3f);
                     if (A_reg == SPID_NOPROP)
                     {   if (w & 0x40) A_reg = B_reg;
                         else A_reg = nil;
@@ -5355,10 +5369,6 @@ jcall0: r1 = elt(litvec, fname);
 #ifndef NO_BYTECOUNT
         name_of_caller = (const char *)ffname;
 #endif
-#ifndef NO_BYTECOUNT
-        qcount(elt(litvec, 0)) += OPCOUNT;
-        opcodes = 30;
-#endif
 /*
  * The issue here is cases such as
  *    (de f1 (x) (f2 x))
@@ -5469,10 +5479,6 @@ jcall1: r1 = elt(litvec, fname);
 #endif
 #ifndef NO_BYTECOUNT
         name_of_caller = (const char *)ffname;
-#endif
-#ifndef NO_BYTECOUNT
-        qcount(elt(litvec, 0)) += OPCOUNT;
-        opcodes = 30;
 #endif
 /*
  * The issue here is cases such as
@@ -5607,10 +5613,6 @@ jcall2: r1 = elt(litvec, fname);
 #ifndef NO_BYTECOUNT
         name_of_caller = (const char *)ffname;
 #endif
-#ifndef NO_BYTECOUNT
-        qcount(elt(litvec, 0)) += OPCOUNT;
-        opcodes = 30;
-#endif
 /*
  * The issue here is cases such as
  *    (de f1 (x) (f2 x))
@@ -5722,10 +5724,6 @@ jcall3: r1 = elt(litvec, fname);
         name_of_caller = (const char *)ffname;
 #endif
         pop(r2);
-#ifndef NO_BYTECOUNT
-        qcount(elt(litvec, 0)) += OPCOUNT;
-        opcodes = 30;
-#endif
 /*
  * The issue here is cases such as
  *    (de f1 (x) (f2 x))
@@ -5799,10 +5797,6 @@ jcall3: r1 = elt(litvec, fname);
 #endif
 
 jcalln:
-#ifndef NO_BYTECOUNT
-        qcount(elt(litvec, 0)) += OPCOUNT;
-        opcodes = 30;
-#endif
 /*
  * The issue here is cases such as
  *    (de f1 (x) (f2 x))
@@ -5850,14 +5844,9 @@ jcalln:
         debug_assert(1);
         nil = C_nil;
         if (exception_pending()) goto ncall_error_exit;
-#ifndef NO_BYTECOUNT
-        qcount(elt(litvec, 0)) += OPCOUNT;
-#endif
         C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
         if (callstack != nil) callstack = qcdr(callstack);
-#endif
-#ifndef NO_BYTECOUNT
         name_of_caller = NULL;
 #endif
         return A_reg;
@@ -5993,17 +5982,12 @@ create_closure:
         {   A_reg = exit_value;
             continue;
         }
-#ifndef NO_BYTECOUNT
-        qcount(elt(litvec, 0)) += OPCOUNT;
-#endif
         C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
         if (callstack != nil) callstack = qcdr(callstack);
-#endif
-        flip_exception();
-#ifndef NO_BYTECOUNT
         name_of_caller = NULL;
 #endif
+        flip_exception();
         return nil;
     }
 }

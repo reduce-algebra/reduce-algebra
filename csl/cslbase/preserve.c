@@ -1,7 +1,7 @@
-/* preserve.c                 Copyright (c) Codemist Ltd, 1990-2008 */
+/* preserve.c                 Copyright (c) Codemist Ltd, 1990-2015 */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -2652,6 +2652,7 @@ void preserve(char *banner, int len)
         }
     }
 
+    Lmapstore(nil, fixnum_of_int(4)); // Reset all counts to zero.
     reclaim(nil, "preserve", GC_PRESERVE, 0); /* FULL garbage collection */
     nil = C_nil;
 /*

@@ -1,4 +1,4 @@
-/* tags.h                               Copyright (C) Codemist 1990-2013 */
+/* tags.h                               Copyright (C) Codemist 1990-2015 */
 
 /*
  *   Data-structure and tag bit definitions, also common C macros
@@ -9,7 +9,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

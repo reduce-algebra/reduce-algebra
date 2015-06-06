@@ -2061,8 +2061,8 @@ funcall!*) u)))))))))) (return u)))
 
 (put (quote funcall) (quote s!:tidy_fn) (quote s!:imp_funcall))
 
-(de s!:eval_to_eq_safe (x) (or (null x) (equal x t) (and (not (symbolp x)) (
-eq!-safe x)) (and (not (atom x)) (flagp (car x) (quote eq!-safe))) (and (
+(de s!:eval_to_eq_safe (x) (or (equal x nil) (equal x t) (and (not (symbolp x
+)) (eq!-safe x)) (and (not (atom x)) (flagp (car x) (quote eq!-safe))) (and (
 eqcar x (quote quote)) (or (symbolp (cadr x)) (eq!-safe (cadr x))))))
 
 (de s!:eval_to_eq_unsafe (x) (or (and (atom x) (not (symbolp x)) (not (

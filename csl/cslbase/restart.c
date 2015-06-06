@@ -291,7 +291,7 @@ Lisp_Object error_output, query_io, terminal_io, trace_output, fasl_stream;
 Lisp_Object native_code, native_symbol, traceprint_symbol, loadsource_symbol;
 Lisp_Object hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
 Lisp_Object gchook, resources, callstack, procstack, procmem, trap_time;
-Lisp_Object used_space, avail_space, eof_symbol, call_stack;
+Lisp_Object count_high, used_space, avail_space, eof_symbol, call_stack;
 Lisp_Object workbase[51];
 
 
@@ -4782,9 +4782,11 @@ static void cold_setup()
     resources           = make_undefined_symbol("*resources*");
     used_space          = make_undefined_symbol("*used-space*");
     avail_space         = make_undefined_symbol("*avail-space*");
+/* Note that end-of-file is represented by an odd Unicode value (in UTF-8) */
     eof_symbol          = make_undefined_symbol("\xf4\x8f\xbf\xbf");
     call_stack          = nil;
     trap_time           = make_undefined_symbol("trap-time*");
+    count_high          = make_undefined_symbol("count-high*");
     qheader(lower_symbol) |= SYM_SPECIAL_VAR;
     qheader(echo_symbol)  |= SYM_SPECIAL_VAR;
     qheader(hankaku_symbol) |= SYM_SPECIAL_VAR;
@@ -6581,6 +6583,7 @@ void copy_into_nilseg(int fg)
     BASE[156]    = procstack;
     BASE[157]    = procmem;
     BASE[158]    = trap_time;
+    BASE[159]    = count_high;
 
 #ifdef COMMON
     BASE[170]    = keyword_package;
@@ -6756,6 +6759,7 @@ void copy_out_of_nilseg(int fg)
     procstack             = BASE[156];
     procmem               = BASE[157];
     trap_time             = BASE[158];
+    count_high            = BASE[159];
 
 #ifdef COMMON
 

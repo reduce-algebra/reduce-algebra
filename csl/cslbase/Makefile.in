@@ -538,9 +538,17 @@ AM_LDFLAGS = $(TRACE)
 reduce_CPPFLAGS = $(TRACE) -DNO_BYTECOUNT=1 $(am__append_2) \
 	-DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) \
 	-Dfontsdir=reduce.$(fontsdir) $(am__append_5)
-csl_CPPFLAGS = $(TRACE) -DNO_BYTECOUNT=1 $(am__append_3) \
-	-DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) \
-	-Dfontsdir=reduce.$(fontsdir) $(am__append_6)
+#
+# At least on a temporary basis I will make CSL keep profiling
+# information. This is because that will help me debug the profile
+# collection code and is acceptable because maybe only very few people use
+# raw CSL and anyway performance is "good enough" for most purposes
+# regardless.
+#
+#csl_CPPFLAGS    = $(TRACE) -DNO_BYTECOUNT=1
+csl_CPPFLAGS = $(TRACE) $(am__append_3) -DBINDIR=$(bindir) \
+	-DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) \
+	$(am__append_6)
 @exeext_FALSE@plain_csl = csl.unnecessary.except.on.windows
 
 # If I list all the phony targets here this may help document things you

@@ -1,4 +1,4 @@
-/* File gc.c                    Copyright (c) Codemist Ltd, 1990-2013 */
+/* File gc.c                    Copyright (c) Codemist Ltd, 1990-2015 */
 
 /*
  * Garbage collection.
@@ -43,7 +43,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -2318,7 +2318,7 @@ typedef struct mapstore_item
 {
     double w;
     double n;
-    uintptr_t n1;
+    uint64_t n1;
     Lisp_Object p;
 } mapstore_item;
 
@@ -2407,7 +2407,8 @@ Lisp_Object Lmapstore(Lisp_Object nil, Lisp_Object a)
                 if (is_symbol_header(h))
                 {   Lisp_Object e = qenv(low + TAG_SYMBOL);
                     intptr_t clen = 0;
-                    uintptr_t n;
+                    uint64_t n;
+                    Lisp_Object w;
                     if (is_cons(e))
                     {   e = qcar(e);
                         if (is_bps(e))
@@ -2416,6 +2417,11 @@ Lisp_Object Lmapstore(Lisp_Object nil, Lisp_Object a)
                         }
                     }
                     n = qcount(low + TAG_SYMBOL);
+                    if (CELL==4)
+                    {   w = get((Lisp_Object)(low+TAG_SYMBOL), count_high);
+                        if (is_fixnum(w))
+                            n = n + (((uint64_t)int_of_fixnum(w))<<30);
+                    }
                     if (n != 0 && clen != 0)
                     {   double w = (double)n/(double)clen;
 /*
@@ -2455,7 +2461,7 @@ Lisp_Object Lmapstore(Lisp_Object nil, Lisp_Object a)
  */
                                     w1 = list3((Lisp_Object)(low + TAG_SYMBOL),
                                               fixnum_of_int(clen),
-                                              fixnum_of_int(n));
+                                              make_lisp_integer64(n));
                                     nil = C_nil;
                                     if (exception_pending() || gcn != gc_number)
                                         return nil;
@@ -2469,7 +2475,12 @@ Lisp_Object Lmapstore(Lisp_Object nil, Lisp_Object a)
  * Reset count unless 1 bit of arg is set
  */
                             if ((what & 1) == 0)
-                                qcount(low + TAG_SYMBOL) = 0;
+                            {   qcount(low + TAG_SYMBOL) = 0;
+                                if (CELL==4)
+                                    putprop((Lisp_Object)(low+TAG_SYMBOL),
+                                            count_high,
+                                            fixnum_of_int(0));
+                            }
                         }
                     }
                     low += symhdr_length;
