@@ -402,16 +402,16 @@ put('gnuplot,'plot!-2exp,'gp!-2exp);
 symbolic procedure badpointp u;
       null u or nil memq u;
 
-symbolic procedure gp!-3exp(x,y,z,f);
+symbolic procedure gp!-3exp(x,y,z,pts);
  % x:   name of x coordinate,
  % y:   name of y coordinate,
  % z:   name of z coordinate,
- % f:   orthogonal list of point lists.
-  begin scalar h;     % bad.
+ % pts: list of orthogonal list of point lists.
+  begin scalar cm,h;     % bad.
    %  h:=member('hidden3d,plotoptions!*);
     % if h then f:=for each l in f collect
       % for each p in l collect {caddr p};
-     if z = 'points then z := 'z else f:=gp!-plotgrids f;
+     if z = 'points then z := 'z else pts:= foreach f in pts collect gp!-plotgrids f;
      plotprin2lt{"unset hidden3d"};
      plotprin2lt{"unset pm3d"};
      if not h then plotoptions!* := 'parametric .
@@ -428,8 +428,11 @@ symbolic procedure gp!-3exp(x,y,z,f);
      gp!-plotoptions();
      plotprin2lt{"unset key"};
      plotprin2 "splot ";
-     plotprin2 "'"; plotprin2 f; plotprin2 "'";
-     plotprin2 " with lines ";
+     for each f in pts do
+     << if cm then <<plotprin2 ",\"; plotterpri()>>;
+        plotprin2 "'"; plotprin2 f; plotprin2 "'";
+	plotprin2 " with lines "; cm := t;
+     >>;
      plotterpri();
      plotprin2lt{"unset hidden3d"};
      plotprin2lt{"unset pm3d"};

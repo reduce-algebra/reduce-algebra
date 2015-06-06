@@ -36,17 +36,18 @@ module plotexp3; % Computing surface z=f(x,y) with regular grid.
 %   direction is valid, nil if the connection is broken.
 
 symbolic procedure ploteval3xy(x,y,z);
-  begin scalar rx,ry,rz,f,fcn;
+  begin scalar rx,ry,rz,f,fcns;
      rx:=plotrange(x,
       reval(plot_xrange or '(!*interval!* -10 10)));
      ry:=plotrange(y,
       reval(plot_yrange or '(!*interval!* -10 10)));
      rz:=plotrange(z, reval(plot_zrange or nil));
-     fcn := car reverse plotfunctions!*;
+     fcns := reverse plotfunctions!*;
      if z='implicit then
-       return ploteval2xyimpl(rx,ry,fcn,x,y);
-     f:= if eqcar(fcn,'points) then caddr fcn else
-        ploteval3xy1(cdar plotfunctions!*,
+       return ploteval2xyimpl(rx,ry,car fcns,x,y);
+     f:= for each fcn in fcns collect
+	   if eqcar(fcn,'points) then caddr fcn else
+        ploteval3xy1(cdr fcn,
          z,if rz then car rz, if rz then cadr rz,
          x,car rx,cadr rx,
          y,car ry,cadr ry);
