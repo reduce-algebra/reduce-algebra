@@ -434,9 +434,9 @@ symbolic procedure gp!-3exp(x,y,z,pts);
 	plotprin2 " with lines "; cm := t;
      >>;
      plotterpri();
-     plotprin2lt{"unset hidden3d"};
-     plotprin2lt{"unset pm3d"};
-     plotprin2lt{"set format xy"};
+%     plotprin2lt{"unset hidden3d"};
+%     plotprin2lt{"unset pm3d"};
+     if h then plotprin2lt{"set format xy"};
   end;
 
 put('gnuplot,'plot!-3exp!-reg,'gp!-3exp);
@@ -482,7 +482,7 @@ symbolic procedure gp!-3quads(x,y,z,f);
      plotterpri();
      plotprin2lt{"unset hidden3d"};
      plotprin2lt{"unset pm3d"};
-     plotprin2lt{"set format xy"};
+     if h then plotprin2lt{"set format xy"};
   end;
 
 put('gnuplot,'plot!-3quads,'gp!-3quads);
