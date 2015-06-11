@@ -317,16 +317,10 @@ symbolic procedure prem(r,v,var);
       else
       <<
         rule_list := {'expt,var,dr}=>0;
-#if (memq 'jlisp lispsystem!*)
-        let rule_list;
-        r := reval r;
-        without!-timeout clearrules rule_list;
-#else
         unwind!-protect(<<
               let rule_list;
               r := reval r >>,
            without!-timeout clearrules rule_list);
-#endif
       >>;
       r := reval{'plus,{'times,l,r},{'minus,tt}};
       dr := deg(r,var);

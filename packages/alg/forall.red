@@ -173,14 +173,9 @@ symbolic procedure let0 u;
 
 symbolic procedure let00 u;
    begin
-#if (memq 'jlisp lispsystem!*)
-      u := errorset!*(list('let1,mkquote u),t);
-      frasc!* := mcond!* := nil;
-#else
       unwind!-protect(
         u := errorset!*(list('let1,mkquote u),t),
         frasc!* := mcond!* := nil);
-#endif
       if errorp u then error1() else return car u
    end;
 
@@ -541,15 +536,9 @@ symbolic procedure evalletsub2(u,v);
    begin scalar newrule!*,oldrules!*,props!*,w;
       w := set_rules(car u,v);
       % We need resimp on since u may contain (*SQ ... T).
-#if (memq 'jlisp lispsystem!*)
-      u := errorset!*(cadr u,nil);
-      % Restore previous environment, if changed.
-      without!-timeout restore_rules w;
-#else
       unwind!-protect(u := errorset!*(cadr u,nil), % where !*resimp = t;
         % Restore previous environment, if changed.
         without!-timeout restore_rules w);
-#endif
       return u
    end;
 
@@ -732,13 +721,8 @@ symbolic procedure match00 u;
 symbolic procedure clear u;
    begin
       rmsubs();
-#if (memq 'jlisp lispsystem!*)
-      u := errorset!*(list('clear1,mkquote u),t);
-      mcond!* := frasc!* := nil;
-#else
       unwind!-protect(u := errorset!*(list('clear1,mkquote u),t),
         mcond!* := frasc!* := nil);
-#endif
       if errorp u then error1() else return car u
    end;
 

@@ -1,19 +1,11 @@
 package uk.co.codemist.jlisp.core;
 
-
-/* $Id$ */
-
-
 // Jlisp
 //
 // Standard Lisp system coded in Java. Actually this goes
-// way beyond the Standard Lisp Report and includes a large fraction
-// of that which is present in the CSL Lisp system.
+// way beyond the Standard Lisp Report and tries to be almost
+// as compatible as possible with CSL.
 //
-// The purpose of this implementation is to support
-// REDUCE. Early versions of jlisp were amazingly slow but
-// performance is gradually improving!
-
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
@@ -48,6 +40,9 @@ package uk.co.codemist.jlisp.core;
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
+
+/* $Id$ */
+
 
 import java.io.*;
 import java.math.*;
@@ -1146,13 +1141,14 @@ static final int S_HASHKEY    = -3;
 static final int S_HASHVAL    = -4;
 static final int S_SYMVAL     = -5;
 static final int S_SYMPLIST   = -6;
-static final int S_SYMFN      = -7;
+static final int S_SYMFASTGETS= -7;
 static final int S_SYMSPECIAL = -8;
-static final int S_AUTONAME   = -9;
-static final int S_AUTODATA   = -10;
-static final int S_INTERP_BODY= -11;
-static final int S_MACRO_BODY = -12;
-static final int S_CALLAS_BODY= -13;
+static final int S_SYMFN      = -9;
+static final int S_AUTONAME   = -10;
+static final int S_AUTODATA   = -11;
+static final int S_INTERP_BODY= -12;
+static final int S_MACRO_BODY = -13;
+static final int S_CALLAS_BODY= -14;
 
 static final int S_CADR       = -100;  // +0 to +15 offsets from this used
 
@@ -1213,8 +1209,6 @@ static void restore(InputStream dump) throws IOException, ResourceException
 
     for (i=0; i<Lit.names.length; i++)
     {   lit[i] = readObject();
-//      System.out.println("literal " + i + " restored");
-//      if (lit[i] instanceof Symbol) System.out.println("= " + ((Symbol)lit[i]).pname);
     }
 
     for (i=0; i<oblistSize; i++) oblist[i] = null;
@@ -1227,31 +1221,25 @@ static void restore(InputStream dump) throws IOException, ResourceException
     while ((s = (Symbol)readObject()) != null)
     {   s.completeName();
         String name = s.pname;
-//if (name.length() > 1) System.out.println("restore symbol <" + name + "> length " + name.length());
         int inc = name.hashCode();
-//System.out.println("raw hash = " + Integer.toHexString(inc));
 // I want my hash addresses and the increment to be positive...
 // and Java tells me what the hash algorithm for strings is. What I do here
 // ensures that strings that differ only in their final character get placed
 // some multiple of 169 apart (is not quite adjacant).
         int hash = ((169*inc) & 0x7fffffff) % oblistSize;
         inc = 1 + ((inc & 0x7fffffff) % (oblistSize-1)); // never zero
-//System.out.println("first probe = " + hash + " " + inc);
         while (oblist[hash] != null)
         {   if (oblist[hash].pname.equals(name))
                 System.out.println("Two symbols called <" + name + "> " +
                    Integer.toHexString((int)name.charAt(0)));
             hash += inc;
             if (hash >= oblistSize) hash -= oblistSize;
-//System.out.println("next probe = " + hash);
         }
-//System.out.println("Put <" + name + "> at " + hash + " " + inc);
         oblist[hash] = s;
         oblistCount++;
 // I will permit the hash table loading to reach 0.75, but then I take action
         if (4*oblistCount > 3*oblistSize) reHashOblist();
     }
-//System.out.println("termination of oblist found : " + oblistCount);
 
     for (i=0; i<63; i++) fastgetNames[i] = (Symbol)readObject();
     LispObject w;
@@ -1307,7 +1295,6 @@ static void reHashOblist()
             hash += inc;
             if (hash >= n) hash -= n;
         }
-//System.out.println("Relocate <" + s.pname + "> at " + hash + " " + inc);
         v[hash] = s;
     }
     oblist = v;
@@ -1442,9 +1429,16 @@ static LispObject readObject() throws IOException, ResourceException
                 {   shared[sharedIndex++] = ws;
                     setLabel = false;
                 }
-// Note that as implemented here a gensym can not be used as a tag that
-// has its treatment optimised using "fastget".
-                if (!descendSymbols)
+                if (descendSymbols)
+                {   int flags = idump.read() & 0xff;
+                    flags |= (idump.read() & 0xff)<<8;
+                    ws.cacheFlags = flags<<16;
+                    stack.push(ws);
+                    istack[sp++] = state;
+                    state = S_SYMFN;
+                    continue;
+                }
+                else
                 {   ws.car/*value*/ = lit[Lit.undefined];
                     ws.cdr/*plist*/ = nil;
                     if (ws.pname != null) ws.fn = new Undefined(ws.pname);
@@ -1453,10 +1447,6 @@ static LispObject readObject() throws IOException, ResourceException
                     w = ws;
                     break;
                 }
-                stack.push(ws);
-                istack[sp++] = state;
-                state = S_SYMFN;
-                continue;
             }
     case LispObject.X_SYM:
             opcode = LispObject.X_SYMn; // drop through
@@ -1465,33 +1455,13 @@ static LispObject readObject() throws IOException, ResourceException
     case LispObject.X_UNDEFn:
             {   byte [] data = new byte[operand];
                 for (i=0; i<operand; i++) data[i] = (byte)idump.read();
-//@@System.out.printf("Symbol %s with descend = %b%n", new String(data, "UTF8"), descendSymbols); // @@
                 if (descendSymbols)
-                {   //@@int flags = idump.read() & 0xff;
-                    //@@flags |= (idump.read() & 0xff)<<8;
-//@@System.out.printf("Symbol %s has flags %d%n", new String(data, "UTF8"), flags); // @@
-//                  i = idump.read() & 0xff;
-//                  long getmap = 0;
-//                  if (i != 0x80)
-//                  {   getmap = ((long)i)<<56;
-//                      for (i=0; i<7; i++)
-//                          getmap |= ((long)(idump.read() & 0xff))<<(8*(6-i));
-//                  }
-//System.out.printf("getmap = " + getmap + "\n");
+                {   int flags = idump.read() & 0xff;
+                    flags |= (idump.read() & 0xff)<<8;
                     Symbol ws = new Symbol();
                     Symbol.symbolCount++;
                     ws.pname = new String(data, "UTF8");
-//@@                    ws.cacheFlags = flags<<16;
-// In general I avoid having readObject recursive, but I am going to be lazy
-// here for the "fastgets" array...
-//                  if (getmap != 0)
-//                  {   LispObject [] v = new LispObject[63];
-//                      ws.fastgets = v;
-//                      for (i=0; i<63; i++)
-//                      {   if ((getmap & (1L<<i)) == 0) v[i] = Spid.noprop;
-//                          else v[i] = readObject();
-//                      }
-//                  }
+                    ws.cacheFlags = flags<<16;
                     stack.push(ws);
                     istack[sp++] = state;
                     if (opcode == LispObject.X_SYMn) state = S_SYMFN;
@@ -1706,7 +1676,7 @@ static LispObject readObject() throws IOException, ResourceException
             }
             break;
     case LispObject.X_SPID:
-            w = new Spid(idump.read());
+            w = Spid.valueOf(idump.read());
             break;
     case LispObject.X_DEFINMOD:
 // This case is ONLY expected to be present in FASL modules, and it is a
@@ -1866,6 +1836,16 @@ static LispObject readObject() throws IOException, ResourceException
         case S_SYMSPECIAL:
                 {   Symbol ws = (Symbol)stack.peek();
                     ws.special = (SpecialFunction)w;
+                    state = S_SYMFASTGETS;
+                    break;
+                }
+        case S_SYMFASTGETS:
+                {   Symbol ws = (Symbol)stack.peek();
+// There might be a possibility that I am busy reading in "nil" itself and
+// so trying to check for it would be premature... hence I use an
+// "instanceof" test here!
+                    ws.fastgets = (w instanceof Symbol) ? null :
+                        ((LispVector)w).vec;
                     state = S_SYMPLIST;
                     break;
                 }
@@ -2001,30 +1981,41 @@ default:
 
 static LispObject readTail() throws Exception
 {
-    LispObject r;
-    if (!readIn.inputValid)
-    {   inputType = readIn.nextToken();
-        readIn.inputValid = true;
-    }
-    switch (inputType)
-    {
-case '.':
-        readIn.inputValid = false;
-        r = read();
-        if (!readIn.inputValid)
+    LispObject w, r=nil;
+// This has been re-written so that although it now turns over more heap it
+// does not recurse directly. This saves stack when reading in LONG lists.
+    for (;;)
+    {   if (!readIn.inputValid)
         {   inputType = readIn.nextToken();
             readIn.inputValid = true;
         }
-        if (inputType == ')') readIn.inputValid = false;
-        return r;
-case LispStream.TT_EOF:
-        throw new EOFException();
-case ')':
-        readIn.inputValid = false;
-        return nil;
-default:r = read();
-        return new Cons(r, readTail());
+        switch (inputType)
+        {
+    case '.':
+            readIn.inputValid = false;
+            w = read();
+            if (!readIn.inputValid)
+            {   inputType = readIn.nextToken();
+                readIn.inputValid = true;
+            }
+            if (inputType == ')') readIn.inputValid = false;
+            break;
+    case LispStream.TT_EOF:
+            throw new EOFException();
+    case ')':
+            readIn.inputValid = false;
+            w = nil;
+            break;
+    default:r = new Cons(read(), r);
+            continue;
+        }
+        break;
     }
+    while (r!=nil)
+    {   w = new Cons(r.car, w);
+        r = r.cdr;
+    }
+    return w;
 }
 
 static LispObject expandBackquote(LispObject a) throws ResourceException

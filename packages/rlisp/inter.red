@@ -188,16 +188,6 @@ symbolic procedure trap!-time!-value();
 % lead to some diagnostic, while using a "begin/end" here make things appear
 % to be Ok but to behave unexpectedly.
 
-#if (memq 'jlisp lispsystem!*)
-
-% At present the Jlisp compiler does not support CATCH and so I will
-% just not do this time-limiting stuff there.
-
-smacro procedure with!-timeout(n, u);
-  u;
-
-#else
-
 smacro procedure with!-timeout(n, u);
   (lambda ott;
     (lambda trap!-time!*;
@@ -206,7 +196,6 @@ smacro procedure with!-timeout(n, u);
          catch('!@timeout!@, u . nil)>>)(nil))
     (trap!-time!-value());
 
-#endif
 
 % A typical use of this would be:
 %

@@ -1,9 +1,5 @@
 package uk.co.codemist.jlisp.core;
 
-
-/* $Id$ */
-
-
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
@@ -38,6 +34,9 @@ package uk.co.codemist.jlisp.core;
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
+
+
+// $Id$
 
 
 // Class to represent Lisp symbols
@@ -271,18 +270,14 @@ public class Symbol extends LispObject
             if (Jlisp.descendSymbols)
             {   if (car/*value*/ != null) Jlisp.stack.push(car/*value*/);
                 if (cdr/*plist*/ != null) Jlisp.stack.push(cdr/*plist*/);
-//              if (fastgets != null)
-//              {   for (int i=0; i<63; i++)
-//                  {   if (fastgets[i] != Spid.noprop)
-//                          Jlisp.stack.push(fastgets[i]);
-//                  }
-//              }
+                if (fastgets == null) Jlisp.stack.push(Jlisp.nil);
+                else Jlisp.stack.push(new LispVector(fastgets));
                 if (fn != null) Jlisp.stack.push(fn);
                 if (special != null) Jlisp.stack.push(special);
             }
         }
     }
-    
+
     void dump() throws IOException
     {
         Object w = Jlisp.repeatedObjects.get(this);
@@ -305,7 +300,6 @@ public class Symbol extends LispObject
 // Now this is the first time I see this symbol while writing a dump
 // file. For a symbol I emit
 //    SYM n c0 c1 ... cn  // the name
-//    special fn fastgets plist value
             if (!Jlisp.descendSymbols) // ie for FASL not PRESERVE
             {
 // The search here is a crude linear search through the most recent
@@ -344,28 +338,14 @@ public class Symbol extends LispObject
                 Jlisp.odump.write(rep[i]);
             if (Jlisp.descendSymbols)        
             {   int flags = (cacheFlags >> 16) & 0xffff;
-//@@                Jlisp.odump.write(flags & 0xff);
-//@@                Jlisp.odump.write((flags>>8) & 0xff);
-//              long getmap = 0;
-//              if (fastgets != null)
-//                  for (int i=0; i<63; i++)
-//                      if (fastgets[i] != Spid.noprop)
-//                          getmap |= (1L << i);
-// Just after the print-name I write either the marker byte 0x80 or
-// 8 bytes being a map showing which of the 63 possible fastget slots
-// are in use. The order in which I write the bytes is such that the bit
-// 0x80 at the start would correspond to a non-existent 64th fastget slot.
-//System.out.printf("getmap = " + getmap + "\n");
-//              if (getmap == 0) Jlisp.odump.write(0x80);
-//              else
-//              {   for (int i=0; i<8; i++)
-//                      Jlisp.odump.write((int)((getmap>>(8*(8-i))) & 0xff));
-//                  for (int i=0; i<63; i++)
-//                      if (fastgets[i] != Spid.noprop)
-//                          Jlisp.stack.push(fastgets[i]);
-//              }
+                Jlisp.odump.write(flags & 0xff);
+                Jlisp.odump.write((flags>>8) & 0xff);
                 Jlisp.stack.push(car/*value*/);
                 Jlisp.stack.push(cdr/*plist*/);
+// The fastget info is stored when in use as a raw Java vector, but for
+// the purposes of checkpointing it is treated as if it was a Lisp vector.
+                Jlisp.stack.push(fastgets==null ? Jlisp.nil :
+                                 new LispVector(fastgets));
                 Jlisp.stack.push(special);
 // If the symbol had a non-trivial function-definition then that will
 // be dumped straight after the symbol-header/pname info. Otherwise I

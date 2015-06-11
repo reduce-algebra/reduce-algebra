@@ -199,6 +199,8 @@ class LispStream extends LispObject
     static final int sym    = 12;
     static final int signed = 13;
 
+static int count = 0;
+
     void prompt() throws ResourceException
     {
         if (!needsPrompt) return;

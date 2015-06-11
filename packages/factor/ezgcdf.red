@@ -66,18 +66,6 @@ symbolic procedure ezgcdf(u,v);
    begin scalar erfgx,kordx,x;
       erfgx := erfg!*;
       kordx := kord!*;
-#if (memq 'jlisp lispsystem!*)
-        x := errorset2{'ezgcdf1,mkquote u,mkquote v};
-% I am going to hope that the activity that checks for and potentially raises
-% a timeout trap can not happen during the "if null errorp x" test here.
-        << if null errorp x then return first x;
-           without!-timeout <<
-             % If ezgcdf fails, erfg!* can be set to t,
-             % (e.g., in invlap(c/(p^3/8-9p^2/4+27/2*p-27)^2,p,t)), and
-             % the kernel order not properly reset.
-             erfg!* := erfgx;
-             setkorder kordx >> >>;
-#else
       unwind!-protect(
         x := errorset2{'ezgcdf1,mkquote u,mkquote v},
 % I am going to hope that the activity that checks for and potentially raises
@@ -89,7 +77,6 @@ symbolic procedure ezgcdf(u,v);
              % the kernel order not properly reset.
              erfg!* := erfgx;
              setkorder kordx >> >>);
-#endif
       return gcdf1(u,v)
    end;
 

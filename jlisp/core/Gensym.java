@@ -1,9 +1,5 @@
 package uk.co.codemist.jlisp.core;
 
-
-/* $Id$ */
-
-
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
@@ -40,6 +36,9 @@ import java.io.*;
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
+
+// $Id$
+
 
 class Gensym extends Symbol
 {
@@ -113,8 +112,13 @@ class Gensym extends Symbol
             Jlisp.odump.write((myNumber >> 16) & 0xff);
             Jlisp.odump.write((myNumber >> 24) & 0xff);
 	    if (Jlisp.descendSymbols)	
-	    {   Jlisp.stack.push(car/*value*/);
+	    {   int flags = (cacheFlags >> 16) & 0xffff;
+                Jlisp.odump.write(flags & 0xff);
+                Jlisp.odump.write((flags>>8) & 0xff);
+                Jlisp.stack.push(car/*value*/);
 	        Jlisp.stack.push(cdr/*plist*/);
+                Jlisp.stack.push(fastgets==null ? Jlisp.nil :
+                                 new LispVector(fastgets));
 	        Jlisp.stack.push(special);
 	        Jlisp.stack.push(fn);
 	    }

@@ -1,15 +1,5 @@
 package uk.co.codemist.jlisp.core;
 
-
-/* $Id$ */
-
-
-//
-// This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
-//
-
-
 // Fns3.java
 
 /**************************************************************************
@@ -41,6 +31,18 @@ package uk.co.codemist.jlisp.core;
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
+
+// $Id$
+
+
+//
+// This file is part of the Jlisp implementation of Standard Lisp
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
+//
+
+
+
+
 // Each built-in function is created wrapped in a class
 // that is derived from BuiltinFunction.
 
@@ -1447,11 +1449,13 @@ class PlistFn extends BuiltinFunction
         LispObject pl = name.cdr/*plist*/;
         LispObject [] v = name.fastgets;
         if (v != null)
-        {   for (int i=0; i<63; i++)
-            {   if (v[i] != Spid.noprop)
-                    pl = new Cons(new Cons(Jlisp.fastgetNames[i],
-                                           Jlisp.lispTrue),
-                                  pl);
+        {   for (int i=62; i>=0; i--)
+            {
+// Note that for the "==" test on the next line (and correspondingly in the
+// implementations of GET and FLAGP) to work the value Spid.noprop has to be
+// a singleton.
+                if (v[i] != Spid.noprop)
+                    pl = new Cons(new Cons(Jlisp.fastgetNames[i], v[i]), pl);
             }
         }
         return pl;
@@ -2903,7 +2907,7 @@ class Symbol_fastgetsFn extends BuiltinFunction
         if (!(arg1 instanceof Symbol))
             return error("Bad argument to fastgets", arg1);
         LispObject [] v = ((Symbol)arg1).fastgets;
-Jlisp.printf("v = %s%n", v==null?"null":v.toString());
+Jlisp.printf("v = %s%n", v==null?"null":v.toString());// @@
         if (v == null) return Jlisp.nil;
         else return new LispVector(v);
     }
@@ -2930,6 +2934,7 @@ class Symbol_make_fastgetFn extends BuiltinFunction
         else if (!(arg2 instanceof LispSmallInteger))
             return error("bad argument to make-fastget", arg2);
         int n = arg2.intValue();
+//        n -= 100;   //@@ At present codes are 100-162 not 0-62
         if (n < 0 || n > 63)
         {   id.cacheFlags &= 0xffff;
             id.fastgets = null;

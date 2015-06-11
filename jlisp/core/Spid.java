@@ -45,14 +45,29 @@ import java.util.*;
 // This is an object that the user should NEVER get directly hold of
 // but which may be used internally as a marker.
 
+class SubSpid
+{
+    int tag;
+    SubSpid(int tag)
+    {   this.tag = tag;
+    }
+    public boolean equals(Object other)
+    {   return (other instanceof SubSpid &&
+                ((SubSpid)other).tag == tag);
+    }
+    public int hashCode()
+    {   return tag;
+    }
+}
+
 class Spid extends LispObject
 {
     int tag;
     int data;   // NB NB NB   the field not saved in checkpoint files
 
-    static final int FBIND    = 1;  // free bindings on stack in bytecode
-    static final int NOARG    = 2;  // "no argument" after &opt
-    static final int DEFINMOD = 3;  // introduces bytecode def in fasl file
+    static final int DEFINMOD = 1;  // introduces bytecode def in fasl file
+    static final int FBIND    = 2;  // free bindings on stack in bytecode
+    static final int NOARG    = 3;  // "no argument" after &opt
     static final int CATCH    = 4;  // on stack in a CATCH frame
     static final int PROTECT  = 5;  // on stack for UNWIND-PROTECT
     static final int NOPROP   = 6;  // used with fastgets.
@@ -62,6 +77,26 @@ class Spid extends LispObject
     static final Spid catcher   = new Spid(CATCH);
     static final Spid protecter = new Spid(PROTECT);
     static final Spid noprop    = new Spid(NOPROP);
+
+    static Spid valueOf(int n)
+    {
+        switch (n)
+        {
+    case FBIND:
+            return fbind;
+    case NOARG:
+            return noarg;
+    case CATCH:
+            return catcher;
+    case PROTECT:
+            return protecter;
+    case NOPROP:
+            return noprop;
+    default:
+            System.out.printf("%n+++ Unknown SPID code %d created%n", n);
+            return new Spid(n);
+        }
+    }
 
     Spid(int tag)
     {
@@ -101,7 +136,7 @@ class Spid extends LispObject
 
     void scan()
     {
-        Object w = new Integer(tag);
+        Object w = new SubSpid(tag);
         if (Jlisp.objects.contains(w)) // seen before?
 	{   if (!Jlisp.repeatedObjects.containsKey(w))
 	    {   Jlisp.repeatedObjects.put(
@@ -114,7 +149,7 @@ class Spid extends LispObject
     
     void dump() throws IOException
     {
-        Object d = new Integer(tag);
+        Object d = new SubSpid(tag);
         Object w = Jlisp.repeatedObjects.get(d);
 	if (w != null &&
 	    w instanceof Integer) putSharedRef(w); // processed before

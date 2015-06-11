@@ -211,13 +211,8 @@ symbolic procedure reval!-without(u,v);
    begin scalar x;
       x := get(v,'opmtch);
       remprop(v,'opmtch);
-#if (memq 'jlisp lispsystem!*)
-      u := errorset!*(list('reval,mkquote u),t);
-      put(v,'opmtch,x);
-#else
       unwind!-protect(u := errorset!*(list('reval,mkquote u),t),
         put(v,'opmtch,x));
-#endif
       if errorp u then error1() else return car u
    end;
 

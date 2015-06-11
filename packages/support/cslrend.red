@@ -834,29 +834,6 @@ put('gc, 'simpfg, '((t (verbos t))
 
 !#if (memq 'jlisp lispsystem!*)
 
-% At present Jlisp does not support unwind-protect properly. It
-% can interpret it, and it compiles it into bytecodes, but the bytecode
-% interpreter then does not support those cases. So as a temporary measure
-% here is something that does not actually deal with errors but gets the
-% recovery form evaluated in the easy case when things do not exit
-% abruptly. I had hoped I could macroexpand to something using errorset
-% and obtain full functionality here but that seems to be unduly hard
-% mainly because of access to local variables.
-
-symbolic macro procedure unwind!-protect u;
-  begin
-    scalar g, x;
-    u := cdr u;
-    if not atom u then <<
-       x := car u;
-       u := cdr u >>;
-    g := gensym();
-    return list('prog, list g,
-       list('setq, g, x),
-       'progn . u,
-       list('return, g))
-  end;
-
 symbolic procedure find!-gnuplot();
   "gnuplot";
 
