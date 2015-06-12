@@ -5404,8 +5404,10 @@ jcall0: r1 = elt(litvec, fname);
 #endif
             stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             ppc = (unsigned char *)data_of_bps(codevec);
+#ifndef NO_BYTECOUNT
             if (increment_counter(nil, profile_count_mode ? 1 : 30))
                 goto pop_stack_and_exit;
+#endif
             continue;
         }
         else if (f345 == tracebytecoded0 || f345 == tracesetbytecoded0)
@@ -5433,8 +5435,10 @@ jcall0: r1 = elt(litvec, fname);
             popv(1);
             pop2(codevec, litvec);
             ppc = (unsigned char *)data_of_bps(codevec);
+#ifndef NO_BYTECOUNT
             if (increment_counter(nil, profile_count_mode ? 1 : 30))
                 goto pop_stack_and_exit;
+#endif
             continue;
         }
         C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
@@ -5520,8 +5524,10 @@ jcall1: r1 = elt(litvec, fname);
             stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             push(A_reg);
             ppc = (unsigned char *)data_of_bps(codevec);
+#ifndef NO_BYTECOUNT
             if (increment_counter(nil, profile_count_mode ? 1 : 30))
                 goto pop_stack_and_exit;
+#endif
             continue;
         }
         else if (f1 == tracebytecoded1 || f1 == tracesetbytecoded1)
@@ -5546,8 +5552,10 @@ jcall1: r1 = elt(litvec, fname);
             popv(1);
             pop2(codevec, litvec);
             ppc = (unsigned char *)data_of_bps(codevec);
+#ifndef NO_BYTECOUNT
             if (increment_counter(nil, profile_count_mode ? 1 : 30))
                 goto pop_stack_and_exit;
+#endif
             continue;
         }
         C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
@@ -5657,8 +5665,10 @@ jcall2: r1 = elt(litvec, fname);
             stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             push2(B_reg, A_reg);
             ppc = (unsigned char *)data_of_bps(codevec);
+#ifndef NO_BYTECOUNT
             if (increment_counter(nil, profile_count_mode ? 1 : 30))
                 goto pop_stack_and_exit;
+#endif
             continue;
         }
         else if (f2 == tracebytecoded2 || f2 == tracesetbytecoded2)
@@ -5683,8 +5693,10 @@ jcall2: r1 = elt(litvec, fname);
             popv(1);
             pop2(codevec, litvec);
             ppc = (unsigned char *)data_of_bps(codevec);
+#ifndef NO_BYTECOUNT
             if (increment_counter(nil, profile_count_mode ? 1 : 30))
                 goto pop_stack_and_exit;
+#endif
             continue;
         }
         C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
@@ -5772,8 +5784,10 @@ jcall3: r1 = elt(litvec, fname);
             stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
             push3(r2, B_reg, A_reg);
             ppc = (unsigned char *)data_of_bps(codevec);
+#ifndef NO_BYTECOUNT
             if (increment_counter(nil, profile_count_mode ? 1 : 30))
                 goto pop_stack_and_exit;
+#endif
             continue;
         }
         else if (f345 == tracebytecoded3 || f345 == tracesetbytecoded3)
@@ -5798,8 +5812,10 @@ jcall3: r1 = elt(litvec, fname);
             popv(1);
             pop2(codevec, litvec);
             ppc = (unsigned char *)data_of_bps(codevec);
+#ifndef NO_BYTECOUNT
             if (increment_counter(nil, profile_count_mode ? 1 : 30))
                 goto pop_stack_and_exit;
+#endif
             continue;
         }
         C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
