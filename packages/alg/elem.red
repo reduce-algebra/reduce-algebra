@@ -232,8 +232,10 @@ for all x let log10(10**x)=x;
 
 for all x let 10^log10(x)=x;
 
-let impart(log(~a)) => 0 when numberp a and a>0;
-let repart(log(~a)) => log(a) when numberp a and a>0;
+%% Remove these rules as they return wrong results in complex mode
+%% and are superceded by the code in poly/compopr.red
+%let impart(log(~a)) => 0 when numberp a and a>0;
+%let repart(log(~a)) => log(a) when numberp a and a>0;
 
 %% The following rule interferes with HE vector simplification,
 %% until the problem is resolved use a more complicated rule

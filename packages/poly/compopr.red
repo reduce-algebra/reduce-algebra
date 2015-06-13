@@ -466,10 +466,16 @@ end;
 
 put('log,'cmpxsplitfn,'reimlog);
 
+% When Re(x) is a number in log(x), there is no point in computing the squares
+% and square roots. Return log(abs(x)) as real part.
+% This improves simplification of, e.g., repart(log(5)) and repart(log(-5))
+% which both used to return log(25)/2
 symbolic procedure reimlog u;
-   addsq(simp {'quotient, {'log, {'plus, {'expt, rearg, 2},
-                                    {'expt, imarg , 2}}}, 2},
-         multsq(simp 'i, simp {'atan2, imarg, rearg}))
+  (addsq(if imarg=0 and (numberp rearg or eqcar(rearg,'minus) and numberp cadr rearg)
+          then simp {'log, {'abs, rearg}}
+          else simp {'quotient, {'log, {'plus, {'expt, rearg, 2},
+                                               {'expt, imarg , 2}}}, 2},
+         multsq(simp 'i, simp {'atan2, imarg, rearg})))
    where rearg = prepsq simprepart cdr u,
       	 imarg = prepsq simpimpart cdr u;
 
