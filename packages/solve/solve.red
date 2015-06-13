@@ -58,6 +58,8 @@ algebraic operator one_of;
 
 put('arbint,'simpfn,'simpiden);
 
+put('arbint,'cmpxsplitfn,'simp);
+
 % algebraic operator arbreal;
 
 symbolic operator expand_cases;

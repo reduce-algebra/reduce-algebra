@@ -473,6 +473,10 @@ symbolic procedure reimlog u;
    where rearg = prepsq simprepart cdr u,
       	 imarg = prepsq simpimpart cdr u;
 
+%%% special cases
+
+put('arbint,'cmpxsplitfn,'simp);
+
 endmodule;
 
 end;
