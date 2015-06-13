@@ -214,21 +214,21 @@ flag('(e i nil pi),'reserved);   % Leave out T for now.
 
 % Logarithms.
 
-let log(e)= 1,
-    log(1)= 0,
-    log10(10) = 1,
-    log10(1) = 0;
-
-for all x let logb(1,x) = 0,
-              logb(x,x) = 1,
-              logb(x,e) = log(x),
-              logb(x,10) = log10(x);
-
-for all x let log(e**x)=x; % e**log x=x now done by simpexpt.
-
-for all x let logb(a**x,a)=x;
-
-for all x let log10(10**x)=x;
+%%let log(e)= 1,
+%%    log(1)= 0,
+%%    log10(10) = 1,
+%%    log10(1) = 0;
+%%
+%%for all x let logb(1,x) = 0,
+%%              logb(x,x) = 1,
+%%              logb(x,e) = log(x),
+%%              logb(x,10) = log10(x);
+%%
+%%for all x let log(e**x)=x; % e**log x=x now done by simpexpt.
+%%
+%%for all x let logb(a**x,a)=x;
+%%
+%%for all x let log10(10**x)=x;
 
 for all x let 10^log10(x)=x;
 

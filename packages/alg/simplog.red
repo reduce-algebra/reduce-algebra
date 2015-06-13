@@ -36,6 +36,23 @@ imports addf,addsq,comfac,quotf,prepf,mksp,simp!*,!*multsq,simptimes,
         minusf,negf,negsq,mk!*sq,carx,multsq,resimp,simpiden,simpplus,
         prepd,mksq,rerror,zfactor,sfchk;
 
+%% Rules implemented here:
+%%
+%% log(e) => 1,
+%% log(1) => 0,
+%% log(e^~x) => x,
+%%
+%% log10(1) => 0,
+%% log10(10) => 1,
+%% log10(10^~x) => x,
+%%
+%% logb(1,~x) => 0,
+%% logb(~x,~x) => 1,
+%% logb(~x,e) => log(x),
+%% logb(~x,10) => log10(x),
+%% logb(~a^~x,~a) => x
+%%
+
 symbolic inline procedure get!-log!-base u;
    if car u eq 'log10 then 10 else nil;
 
@@ -43,24 +60,42 @@ symbolic procedure simplog u;
    (if !*expandlogs then
      (resimp simplogbi(x,get!-log!-base u) where !*expandlogs=nil)
     else if x=0 then rerror(alg,210,{car u,"0 formed"})
-    else if fixp x and car u='log10 and not(dmode!* and get('log10,dmode!*))
-      then simplogbn(x,get!-log!-base u,t)
+    % log(1) = 0
+    else if x=1 then nil ./ 1
+    % log(e) = 1, log10(10) = 1
+    else if x eq 'e and not (car u eq 'log10) then 1 ./ 1
+    else if fixp x and car u eq 'log10 and not(dmode!* and get('log10,dmode!*))
+     then simplogbn(x,get!-log!-base u,t)
+    % log(e^x) = x, log10(10^x) = x
+    else if eqcar(x,'expt) and cadr x = (if car u eq 'log10 then 10 else 'e)
+     then simp caddr x 
     else if eqcar(x,'quotient) and cadr x=1
       and (null !*precise or realvaluedp caddr x)
      then negsq simpiden(car u . cddr x)
     else simpiden u)
-    where x=carx(cdr u,'simplog);
+    where x=reval carx(cdr u,'simplog);
 
 symbolic procedure simplogb u;
    (if !*expandlogs then
      (resimp simplogbi(x,carx(cddr u,'simplogb)) where !*expandlogs=nil)
     else if x=0 then rerror(alg,210,"Logb(0,...) formed")
+    % logb(1,x) = 0
+    else if x=1 then nil ./ 1
+    % logb(x,x) = 1
+    else if reval {'difference,x,caddr u} = 0 then 1 ./ 1
+    % logb(x,e) = log(x)
+    else if caddr u = 'e then simplog {'log,x}
+    % logb(x,10) = log10(x)
+    else if reval {'difference,10,caddr u} = 0 then simplog {'log10,x}
 %    else if fixp x then simplogbn(x,caddr u,nil)
+    % logb(a^x,a) = x
+    else if eqcar(x,'expt) and reval {'difference,cadr x,caddr u} = 0
+     then simp caddr x 
     else if eqcar(x,'quotient) and cadr x=1
       and (null !*precise or realvaluedp caddr x)
      then negsq simpiden {car u, caddr x, caddr u}
     else simpiden u)
-    where x=cadr u;
+    where x=reval cadr u;
 
 put('log,'simpfn,'simplog);
 

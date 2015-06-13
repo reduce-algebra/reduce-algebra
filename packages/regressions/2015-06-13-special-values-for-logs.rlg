@@ -1,0 +1,189 @@
+
+log(e);
+
+
+1
+
+log(1);
+
+
+0
+
+log10(10);
+
+
+1
+
+log10(1);
+
+
+0
+
+
+on rounded;
+
+
+log(e);
+
+
+1
+
+log(1);
+
+
+0
+
+log10(10);
+
+
+1
+
+log10(1);
+
+
+0
+
+
+on complex;
+
+
+*** Domain mode rounded changed to complex-rounded 
+
+log(e);
+
+
+1
+
+log(1);
+
+
+0
+
+log10(10);
+
+
+1
+
+log10(1);
+
+
+0
+
+
+off complex,rounded;
+
+
+*** Domain mode complex-rounded changed to rounded 
+
+
+logb(1,x);
+
+
+0
+
+logb(1,y);
+
+
+0
+
+logb(1,x^2/y);
+
+
+0
+
+logb(x/y,x/y);
+
+
+1
+
+logb(y,e);
+
+
+log(y)
+
+logb(x*y,10);
+
+
+log10(x*y)
+
+
+log(e^(x^2));
+
+
+ 2
+x
+
+logb(e^(x^2),e);
+
+
+ 2
+x
+
+log10(10^x);
+
+
+x
+
+logb(10^x,10);
+
+
+x
+
+
+logb(a**x,a);
+
+
+x
+
+logb((a^2)^(x^2),a^2);
+
+
+              2
+           2*x   2
+logb(abs(a)    ,a )
+
+
+log(1/3);
+
+
+ - log(3)
+
+log(-1/3);
+
+
+      - 1
+log(------)
+      3
+
+log(1/-3);
+
+
+      - 1
+log(------)
+      3
+
+log((-1)/(-3));
+
+
+ - log(3)
+
+
+array a(3);
+
+
+a(1) := 1/3;
+
+
+         1
+a(1) := ---
+         3
+
+log(a(1));
+
+
+ - log(3)
+
+
+
+end;
+
