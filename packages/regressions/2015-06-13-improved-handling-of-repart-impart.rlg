@@ -1,0 +1,109 @@
+
+repart(log(5));
+
+
+log(5)
+
+impart(log(5));
+
+
+0
+
+
+log(2+3i);
+
+
+log(3*i + 2)
+
+repart(log(2+3i));
+
+
+ log(13)
+---------
+    2
+
+impart(log(2+3i));
+
+
+      3
+atan(---)
+      2
+
+% This used to return incorrect value 0
+on complex;
+
+
+impart(log(2+3i));
+
+
+      3
+atan(---)
+      2
+
+
+off complex;
+
+
+
+realvalued y;
+
+
+
+repart(log(5));
+
+
+log(5)
+
+repart(log(-5));
+
+
+log(5)
+
+repart(log(x));
+
+
+              2            2
+ log(impart(x)  + repart(x) )
+------------------------------
+              2
+
+repart(log(y));
+
+
+      2
+ log(y )
+---------
+    2
+
+off precise;
+
+
+repart(log(5));
+
+
+log(5)
+
+repart(log(-5));
+
+
+log(5)
+
+repart(log(x));
+
+
+              2            2
+ log(impart(x)  + repart(x) )
+------------------------------
+              2
+
+repart(log(y));
+
+
+      2
+ log(y )
+---------
+    2
+
+
+end;
+
