@@ -23,4 +23,8 @@ repart(log(-5));
 repart(log(x));
 repart(log(y));
 
+on rational;
+
+repart log(-3/2);
+
 end;

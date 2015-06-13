@@ -471,8 +471,7 @@ put('log,'cmpxsplitfn,'reimlog);
 % This improves simplification of, e.g., repart(log(5)) and repart(log(-5))
 % which both used to return log(25)/2
 symbolic procedure reimlog u;
-  (addsq(if imarg=0 and (numberp rearg or eqcar(rearg,'minus) and numberp cadr rearg)
-          then simp {'log, {'abs, rearg}}
+  (addsq(if imarg=0 and evalnumberp rearg then simp {'log, {'abs, rearg}}
           else simp {'quotient, {'log, {'plus, {'expt, rearg, 2},
                                                {'expt, imarg , 2}}}, 2},
          multsq(simp 'i, simp {'atan2, imarg, rearg})))
