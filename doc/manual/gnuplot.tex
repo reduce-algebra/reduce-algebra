@@ -63,6 +63,9 @@ parameters:
     \item a list of expressions with one (identical) unknown,
       e.g. \texttt{\{sin(u),\allowbreak cos(u)\}}.
     \item an expression with two unknowns, e.g. \texttt{u*sin(u)\^{}2+sqrt(v)}.
+    \item a list of expressions with two (identical) unknowns,
+      e.g. \linebreak
+      \texttt{\{x\textasciicircum{2}+y\textasciicircum{2},\allowbreak x\textasciicircum{2}-y\textasciicircum{2}\}}.
     \item a parametic expression of the form \texttt{point(<u>,<v>)} or
       \texttt{point(<u>,\allowbreak <v>,<w>)} where \texttt{u,v,w} are
       expressions which depend of one or two parameters; if there is one
@@ -71,7 +74,8 @@ parameters:
       describes a surface in 3D. The parameters are treated as independent
       variables.  Example: \texttt{point(sin t,cos t,t/10)}.
     \item an equation with a symbol on the left-hand side and an expression with
-      one or two unknowns on the right-hand side, e.g. \texttt{dome=\allowbreak
+      one or two unknowns on the right-hand side, e.g.\linebreak[3]
+      \texttt{dome=\allowbreak
         1/(x\^{}2+y\^{}2)}.
     \item an equation with an expression on the left-hand side and a zero on
       right-hand side describing implicitly a one dimensional variety in the
@@ -95,7 +99,7 @@ parameters:
   evaluate to numbers. If no range is specified the default ranges for
   independent variables are $(-10\,\,..\,\,10)$ and the range for the dependent
   variable is set to maximum number of the {\Gnuplot} executable (using double
-  floats on most IEEE machines and single floats under DOS).  Additionally the
+  floats on most IEEE machines).  Additionally the
   number of interval subdivisions can be assigned as a formal quotient
   \texttt{variable=(lower\_bound\,..\,upper\_bound)\allowbreak /<it>} where
   \texttt{it} is a positive integer. E.g. \texttt{(1 .. 5)/30} means the
@@ -107,7 +111,7 @@ parameters:
   should be enclosed in string quotes.
 \end{itemize}
 Please note that a blank has to be inserted between a number and a dot,
-otherwise the REDUCE translator will be misled.
+otherwise the \REDUCE{} translator will be misled.
  
 If a function is given as an equation the left-hand side is mainly used as a
 label for the axis of the dependent variable.
@@ -119,8 +123,8 @@ point set list.  Normally all functions and point sets are plotted by lines. A
 point set is drawn by points only if functions and the point set are drawn in
 one picture.
 
-In three dimensions only one surface can be shown per call.  Also an
-implicitly-given curve must be the sole object for one picture.
+The same applies to three dimensions with explicit functions. However, an
+implicitly given curve must be the sole object for one picture.
 
 The functional expressions are evaluated in \texttt{rounded} mode.  This is done
 automatically, it is not necessary to turn on rounded mode explicitly.

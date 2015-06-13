@@ -23,12 +23,13 @@
 \else
 
 \documentstyle[11pt,epsfig,reduce,nfltxsym,twoside]{article}
-\makeatletter
 
-\define@nomathsize{70}
-\define@nomathsize{40}
+%\makeatletter
 
-\makeatother
+%\define@nomathsize{70}
+%\define@nomathsize{40}
+
+%\makeatother
 
 \renewcommand{\encodingdefault}{T1}
 \renewcommand{\familydefault}{ptm}
@@ -143,6 +144,9 @@ parameters:
     \item an expression with two unknowns, e.g. 
           $u*sin(u)**2+sqrt(v)$
 
+    \item a list of expressions with two (identical) unknowns,
+      e.g.  \texttt{\{x\^{2}+y\^{2},\allowbreak x\^{2}-y\^{2}\}},
+
     \item a parametic expression  of the form $point(<u>,<v>)$ or
           $point(<u>,<v>,<w>)$ where $<u>$, $<v>$ and $<w>$ are
           expressions which depend of one or two parameters;
@@ -220,7 +224,7 @@ lines. A point set is drawn by points only if functions and
 the point set are drawn in one picture.
 
 In three dimensions only one surface can be shown per call.
-Also an implicilty given curve  must be the sole object for one
+Also an implicitly given curve  must be the sole object for one
 picture.
 
 The functional expressions are evaluated in \verb$rounded$ mode.
