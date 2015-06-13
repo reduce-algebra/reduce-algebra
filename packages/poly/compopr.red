@@ -465,17 +465,21 @@ end;
 % only log for now  -- really needs new rules for atan2 in elem.red
 
 put('log,'cmpxsplitfn,'reimlog);
+put('log10,'cmpxsplitfn,'reimlog);
 
 % When Re(x) is a number in log(x), there is no point in computing the squares
 % and square roots. Return log(abs(x)) as real part.
 % This improves simplification of, e.g., repart(log(5)) and repart(log(-5))
 % which both used to return log(25)/2
 symbolic procedure reimlog u;
-  (addsq(if imarg=0 and evalnumberp rearg then simp {'log, {'abs, rearg}}
-          else simp {'quotient, {'log, {'plus, {'expt, rearg, 2},
+  (addsq(if imarg=0 then simp {op, {'abs, rearg}}
+          else if rearg=0 then simp {op, {'abs, imarg}}
+          else simp {'quotient, {op, {'plus, {'expt, rearg, 2},
                                                {'expt, imarg , 2}}}, 2},
-         multsq(simp 'i, simp {'atan2, imarg, rearg})))
-   where rearg = prepsq simprepart cdr u,
+         multsq(simp if op='log10 then '(quotient i (log 10)) else 'i,
+                simp {'atan2, imarg, rearg})))
+   where op = car u,
+         rearg = prepsq simprepart cdr u,
       	 imarg = prepsq simpimpart cdr u;
 
 %%% special cases
