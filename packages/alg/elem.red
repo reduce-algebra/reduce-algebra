@@ -385,23 +385,23 @@ let
 %
 % Note the use of ~~d instead of ~d in the denominator for rational k.
 
-let sin((~x + ~~k*pi)/~~d) => sign(k/d)*cos(x/d)
-         when x freeof pi and abs(k/d) = 1/2,
+let sin((~x + ~~k*pi)/~~d) => sign repart(k/d)*cos(x/d + i*pi*impart(k/d))
+         when abs repart(k/d) = 1/2,
 
-    cos((~x + ~~k*pi)/~~d) => -sign(k/d)*sin(x/d)
-         when x freeof pi and abs(k/d) = 1/2,
+    cos((~x + ~~k*pi)/~~d) => -sign repart(k/d)*sin(x/d + i*pi*impart(k/d))
+         when abs repart(k/d) = 1/2,
 
-    csc((~x + ~~k*pi)/~~d) => sign(k/d)*sec(x/d)
-         when x freeof pi and abs(k/d) = 1/2,
+    csc((~x + ~~k*pi)/~~d) => sign repart(k/d)*sec(x/d + i*pi*impart(k/d))
+         when abs repart(k/d) = 1/2,
 
-    sec((~x + ~~k*pi)/~~d) => -sign(k/d)*csc(x/d)
-         when x freeof pi and abs(k/d) = 1/2,
+    sec((~x + ~~k*pi)/~~d) => -sign repart(k/d)*csc(x/d + i*pi*impart(k/d))
+         when abs repart(k/d) = 1/2,
 
-    tan((~x + ~~k*pi)/~~d) => -cot(x/d)
-         when x freeof pi and abs(k/d) = 1/2,
+    tan((~x + ~~k*pi)/~~d) => -cot(x/d + i*pi*impart(k/d))
+         when abs repart(k/d) = 1/2,
 
-    cot((~x + ~~k*pi)/~~d) => -tan(x/d)
-         when x freeof pi and abs(k/d) = 1/2;
+    cot((~x + ~~k*pi)/~~d) => -tan(x/d + i*pi*impart(k/d))
+         when x freeof pi and abs repart(k/d) = 1/2;
 
 % Inherit function values.
 
@@ -537,23 +537,25 @@ let
 % We need to handle only pi/2 shifts here because
 % the bigger shifts are already covered by the rules above.
 
-let sinh((~x + ~~k*pi)/~~d) => i*sign(-i*k/d)*cosh(x/d)
-          when x freeof pi and abs(i*k/d) = 1/2,
+let 
+    sinh((~~x + ~~k*pi)/~~d) => i*sign impart(k/d)*cosh(x/d + pi*repart(k/d))
+         when abs impart(k/d) = 1/2,
 
-    cosh((~x + ~~k*pi)/~~d) => i*sign(-i*k/d)*sinh(x/d)
-          when x freeof pi and abs(i*k/d) = 1/2,
+    cosh((~~x + ~~k*pi)/~~d) => i*sign impart(k/d)*sinh(x/d+pi*repart(k/d))
+         when abs impart(k/d) = 1/2,
 
-    csch((~~x + ~~k*pi)/~~d) => -i*sign(-i*k/d)*sech(x/d)
-          when x freeof pi and abs(i*k/d) = 1/2,
+% next 2 rules could be omitted and use inheritance
+    csch((~~x + ~~k*pi)/~~d) => -i*sign impart(k/d)*sech(x/d + pi*repart(k/d))
+         when abs impart(k/d) = 1/2,
 
-    sech((~~x + ~~k*pi)/~~d) => -i*sign(-i*k/d)*csch(x/d)
-          when x freeof pi and abs(i*k/d) = 1/2,
+    sech((~~x + ~~k*pi)/~~d) => -i*sign impart(k/d)*csch(x/d+pi*repart(k/d))
+         when abs impart(k/d) = 1/2,
 
-    tanh((~x + ~~k*pi)/~~d) => coth(x/d)
-          when x freeof pi and abs(i*k/d) = 1/2,
+    tanh((~~x + ~~k*pi)/~~d) => coth(x/d+pi*repart(k/d))
+         when abs impart(k/d) = 1/2,
 
-    coth((~x + ~~k*pi)/~~d) => tanh(x/d)
-          when x freeof pi and abs(i*k/d) = 1/2;
+    coth((~~x + ~~k*pi)/~~d) => tanh(x/d+pi*repart(k/d))
+         when abs impart(k/d) = 1/2;
 
 
 % Transfer inverse function values from cos to acos and tan to atan.

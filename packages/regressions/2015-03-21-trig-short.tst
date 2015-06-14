@@ -74,7 +74,17 @@ sech(a/2+1/2*i*pi); sech(a/2-1/2*i*pi);
 tanh(a/2+1/2*i*pi); tanh(a/2-1/2*i*pi);
 coth(a/2+1/2*i*pi); coth(a/2-1/2*i*pi);
 
-% a couple of nonsensical simplifications
+% The following input expressions did return wrong results, like
+% sin(a/2+1/2*i*pi) --> cos(a/2)*sign(i)
+% and
+% sinh(a/2+1/2*pi)  --> -i*cosh(a/2)*sign(i)
+
+sin(a/2+1/2*i*pi); sin(a/2-1/2*i*pi);
+cos(a/2+1/2*i*pi); cos(a/2-1/2*i*pi);
+csc(a/2+1/2*i*pi); csc(a/2-1/2*i*pi);
+sec(a/2+1/2*i*pi); sec(a/2-1/2*i*pi);
+tan(a/2+1/2*i*pi); tan(a/2-1/2*i*pi);
+cot(a/2+1/2*i*pi); cot(a/2-1/2*i*pi);
 
 sinh(a/2+1/2*pi); sinh(a/2-1/2*pi);
 cosh(a/2+1/2*pi); cosh(a/2-1/2*pi);
