@@ -1,20 +1,78 @@
 
 % u58.lsp           Machine generated Lisp
 
-(c!:install "u58" 3090 997791 2504163)
+(c!:install "u58" 14926 4601053 3404986)
 
-(c!:install 'rand!-mons!-dense '(rand!-mons!-dense nil mksq max multf
-lastpair) 3519816536075209)
+(c!:install 'mchcomb '(mchcomb nil frlis!* ncmp!* smemqlp comb mchcomb2
+mchsarg lastpair setdiff) 291186260739121549)
 
-(c!:install '!:dm2fix '(!:dm2fix nil !*noequiv 0.0 int!-equiv!-chk) 
-2203029852143571371)
+(c!:install 'irp_aex '(irp_aex nth) 2181938210901538142)
 
-(c!:install 'calc_map_tar '(calc_map_tar ev!-poles constimes ev!-tades
-strand!-alg!-top) 2074601762213313877)
+(c!:install 'formopr '(formopr symbolic flag opfn operator mkarg) 
+734211570063637338)
 
-(c!:install 'st_ad_numsorttree1 '(st_ad_numsorttree1 !* nil !+
-numlist_ordp !- cdr_signsort lastpair ad_numsort cdr_sort) 
-1124270650941605903)
+(c!:install 'updkorder '(updkorder kord!* nil alglist!*) 
+467378026450231291)
+
+(c!:install 'groebfasttest '(groebfasttest nil) 2225559225235425092)
+
+(c!:install 'sc_negtranspose '(sc_negtranspose nil fast!-row!-dim
+fast!-column!-dim sc_mkmatrix sc_getmat sc_negsq sc_setmat) 
+1174707352613512955)
+
+(c!:install 'evalset_eq '(evalset_eq set_eq equal evalsetbool apply) 
+1152963132903555802)
+
+(c!:install 'dp!=a2dpatom '(dp!=a2dpatom nil cali!=basering
+ring_all_names cali_bc_fi mo_from_a dp_term cali_bc_from_a mo_zero) 
+321569725278902271)
+
+(c!:install 'legendre!-symbol '(legendre!-symbol general!-modular!-expt)
+ 2147372502581689754)
+
+(c!:install 'radf '(radf !*gcd !*mcd t nil !*precise_complex !*precise
+abs !*reduced dmode!* !*modular !*numval expt radd multf !:recip
+domainvalchk !*q2f multd prepf comfac to sfchk mkexpt comfac!-to!-poly
+quotf minusf negf lnc sqfrf radf1 mksp check!-radf!-sign) 
+2047862539242897659)
+
+(c!:install 'reduce!-mod!-eig '(reduce!-mod!-eig nil reduce!-mod!-eigf
+lcm quotf multf) 455080532723605792)
+
+(c!:install 'identity '(identity) 1705878608931709846)
+
+(c!:install 'ra_i2ra '(ra_i2ra ra_i2ra0 ra_wrapper) 588277285646709865)
+
+(c!:install 'lto_hmember '(lto_hmember apply lto_hmember1) 
+1905637738227880727)
+
+(c!:install 'ofsf_sacatlp '(ofsf_sacatlp nil ordp) 1642731296400115659)
+
+(c!:install 'repr_atfnew '(repr_atfnew (cong ncong) nil pasf_coeflst
+minusf pasf_anegrel multf repr_new) 1676932974862805964)
+
+(c!:install 'specrd!:plus '(specrd!:plus minus add_minus mkround
+rd!:difference rd!:plus) 826983004334204257)
+
+(c!:install 'setrow '(setrow maxvar rowmin rowmax nil codmat t max min) 
+531873444985007162)
+
+(c!:install '!:mod!:units '(!:mod!:units current!-modulus) 
+100682879966902125)
+
+(c!:install 'exdfpf '(exdfpf nil exdfk multpfsq exdf0 wedgepf2
+mkuniquewedge addpf) 184208791114024624)
+
+(c!:install 'bfsqrt '(bfsqrt bfz!* !:bprec!: !:rd!: bfhalf!* minusp!:
+terrlst bfzerop!: order!: conv!:mt divide!: plus!: times!: difference!:
+abs!: greaterp!: inorm) 326498081677235603)
+
+(c!:install 'msolve!-poly '(msolve!-poly current!-modulus !*trnonlnr
+"Current modulus larger than" failed nil lprim kernels msolve!-polya
+msolve!-polyn) 91685823521947210)
+
+(c!:install 'bf2rn1 '(bf2rn1 t !:rd!: !:bprec!: minus!: lshift normbf
+difbf divide!: abs!: bfzerop!: greaterp!: invbf) 27281473935028942)
 
 (c!:install 'make!-image!-lc!-list1 '(make!-image!-lc!-list1 varlist nil
 t polyzero !*d2n horner!-rule!-for!-one!-var) 1392158257754706136)
@@ -22,96 +80,47 @@ t polyzero !*d2n horner!-rule!-for!-one!-var) 1392158257754706136)
 (c!:install 'lto_hinsert '(lto_hinsert apply lto_hinsert1) 
 2129320686914834953)
 
-(c!:install 'ofsf_mksol1 '(ofsf_mksol1 negf quotsq) 1145963426005006540)
-
-(c!:install 'get_nr_irred_reps '(get_nr_irred_reps !*complex
-get!*nr!*complex!*irred!*reps get!*nr!*real!*irred!*reps) 
-130552199331658638)
-
-(c!:install 'num '(num simp!* mk!*sq) 580636443919111328)
-
-(c!:install 'exp!: '(exp!: t bfone!* !:rd!: !:bprec!: nil bflerrmsg
-bfzerop!: abs!: conv!:bf2i difference!: msd times!: cut!:mt minusp!:
-divide!: round!:mt greaterp!: cut!:ep order!: max plus!: !:e texpt!:) 
-971868138296338597)
-
-(c!:install 'mk_names_map_2 '(mk_names_map_2 nil) 2019102283627614724)
-
-(c!:install 'dp!=prod '(dp!=prod t nil dp_times_bcmo dp_sum) 
-2069304953421315782)
-
-(c!:install 'permp!: '(permp!: t) 1310205780846314399)
-
-(c!:install 'pa_vect2list '(pa_vect2list nil upbve ordn) 
-1315450921329836366)
-
-(c!:install 'mkbin '(mkbin) 948100678985762811)
-
-(c!:install 'try!-all!-constants '(try!-all!-constants nil
-number!-needed current!-modulus split!-further) 332395174585977833)
-
-(c!:install 'find!-non!-zero '(find!-non!-zero confusion) 
-1843618901966006074)
-
-(c!:install 'mk_resimp_rep '(mk_resimp_rep nil get_group_in
-get!*elements get_rep_matrix_in mk!+resimp!+mat) 2079311118525604802)
-
-(c!:install 'powmtch '(powmtch nil t) 1211941034865087075)
-
-(c!:install 'product!-set2 '(product!-set2 nil) 1141923048983691310)
-
-(c!:install 'revise2 '(revise2 aliaslist finalalias known nil !*vectorc
-rhsaliases constp subscriptedvarp ireval introduce!-alias) 
-2274297686933781480)
-
-(c!:install 'setequal '(setequal nil subsetp) 1000524733990914143)
-
-(c!:install 'deflate1 '(deflate1 nil ncoeffs times!: plus!:) 
-2203928117898340331)
-
-(c!:install 'mk_edge_name '(mk_edge_name n_edge) 779004546166813582)
-
-(c!:install 'compactf2 '(compactf2 t nreverse compactf3) 
-1185190549680854377)
-
-(c!:install 'simpldot '(simpldot nil list reval1 listdotprod2 simp
-multsq) 273273381128497746)
-
-(c!:install 'ofsf_qesubq '(ofsf_qesubq ofsf_qesubqat cl_apply2ats1) 
-1179630422231280358)
-
 (c!:install 'get_first_kernel '(get_first_kernel nil gfk) 
 1813278792908950793)
 
-(c!:install 'remk '(remk nil degr multf negf to addf) 
-1723941094955150317)
+(c!:install 'exceeds!-order!-variant '(exceeds!-order!-variant nil
+tayexp!-plus2 tayexp!-greaterp) 281437532664161638)
 
-(c!:install 'freeoflist '(freeoflist t nil freeof) 251081470479192262)
+(c!:install 'qqe_ofsf_ordatp '(qqe_ofsf_ordatp ordp qqe_ofsf_ordrelp) 
+1015085286788638325)
 
-(c!:install 'cl_applysac1 '(cl_applysac1 t break (nil) nil cl_applysac2)
- 1788569299640575763)
+(c!:install 'get_num_part '(get_num_part !:rd!: !:dn!: minus expt bf2flr
+nreverse rdwrap2 rdwrap!-expt) 1851619515349251964)
 
-(c!:install 'pasf_univnlp '(pasf_univnlp t nil setkorder reorder) 
-96961101792147756)
+(c!:install 'rembras '(rembras !*nat t " " "(" ")" prin2!* maprin) 
+1490696696680403491)
 
-(c!:install 'aex_pp '(aex_pp aex_ex sfto_dprpartksf aex_ctx aex_mk) 
-1490179185811556760)
+(c!:install 'infinityp '(infinityp !- t) 650902818912177841)
 
-(c!:install 'relationrd '(relationrd (quote eq) equal (quote lt) lessp (
-quote gt) greaterp (quote subset) (quote prsubset) (quote geq) geq (
-quote leq) leq t false stats_getargs prsubsetrd subsetrd) 
-20752685500375651)
+(c!:install 'mod!-dump '(mod!-dump freeind mod!-dump1) 
+971018643620945822)
 
-(c!:install 'ps!:find!-order1 '(ps!:find!-order1 ps ps!:order!-fn
-ps!:max!-order nil ps!:order!-limit tps "Expression "
-" has zero expansion to order " ps!:order ps!:last!-term ps!:getv apply
-ps!:putv ps!:value ps!:evaluate!-next rerror) 940013012999076635)
+(c!:install 'bfprin0 '(bfprin0 !:print!-prec!: !:prec!: round!:dec1
+bfprin0x) 903295039315450273)
 
-(c!:install '!*rd2cr '(!*rd2cr 0.0 bfz!* convprec mkcr) 
-331026390271928663)
+(c!:install 'lto_hentry '(lto_hentry nil) 1295995888836628298)
 
-(c!:install 'ldf!-all!-var '(ldf!-all!-var ldf!-dep!-var ldf!-pow!-var
-ldf!-spf!-var appends makeset) 1333976100562228379)
+(c!:install 'no_of_tm_sf_limited '(no_of_tm_sf_limited t) 
+584841158207714251)
+
+(c!:install 'clearrules '(clearrules nil !*sqrtrulep rule!-list) 
+52718252063084690)
+
+(c!:install 'pasf_anegateat '(pasf_anegateat true t false (cong ncong)
+pasf_anegrel pasf_mkop negf) 772954739155271814)
+
+(c!:install 'listeq '(listeq nil) 2063551688827354275)
+
+(c!:install 'qsimpcomb_standard_integer_part '(
+qsimpcomb_standard_integer_part !*balanced_mod !*exp !*factor !*rational
+exp balanced_mod rational nil on off mk!*sq aeval simp
+qsimpcomb_standard_integer_part_sf addsq qremf !:minusp addf) 
+944958182892733980)
 
 
 % End of generated Lisp code
