@@ -82,6 +82,7 @@ class Fns3
         {"maplist",                     new MaplistFn()},
         {"mapstore",                    new MapstoreFn()},
         {"md5",                         new Md5Fn()},
+        {"md5string",                   new Md5stringFn()},
         {"md60",                        new Md60Fn()},
         {"member",                      new MemberFn()},
         {"member**",                    new MemberStarStarFn()},
@@ -584,6 +585,7 @@ class MapstoreFn extends BuiltinFunction
         {   Symbol name = Jlisp.oblist[i];
             if (name == null) continue;
             LispFunction fn = name.fn;
+            if (fn instanceof TracedFunction) fn = ((TracedFunction)fn).fn;
             if (!(fn instanceof InstrumentedBytecode)) continue;
             InstrumentedBytecode bfn = (InstrumentedBytecode)fn;
             if (bfn.bytecodes == null) continue;
@@ -636,6 +638,9 @@ class MapstoreFn extends BuiltinFunction
 
 BigInteger positiveBigInt(byte [] res)
 {
+//    for (int i=0; i<res.length; i++)
+//        System.out.printf("%x ", res[i] & 0xff);
+//    System.out.printf("%n");
     BigInteger r = BigInteger.valueOf(0);
     for (int i=res.length-1; i>=0; i--)
         r = r.shiftLeft(8).or(BigInteger.valueOf(res[i] & 0xff));
@@ -718,6 +723,33 @@ class Md5Fn extends BuiltinFunction
             else arg1.print(LispObject.noLineBreak+
                             LispObject.printEscape+
                             LispObject.checksumEscape);
+        }
+        finally
+        {   Jlisp.lit[Lit.std_output].car/*value*/ = save;
+            Symbol.localGensyms = Jlisp.nil;
+        }
+        byte [] res = f.md.digest();
+        return LispInteger.valueOf(positiveBigInt(res));
+    }
+}
+
+class Md5stringFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        LispStream f = new LispDigester();
+        LispObject save = Jlisp.lit[Lit.std_output].car/*value*/;
+        Symbol.localGensyms = Jlisp.nil;
+        Symbol.localGensymCount = 0;
+        try
+        {   Jlisp.lit[Lit.std_output].car/*value*/ = f;
+// For strings just the string data is inspected, with no special treatment
+// for embedded quote marks, but code points over 0x7f will be represented
+// using utf-8 encoding.
+            if (arg1 instanceof LispString)
+                arg1.print(LispObject.noLineBreak+
+                           LispObject.checksumEscape);
+            else return Jlisp.nil;
         }
         finally
         {   Jlisp.lit[Lit.std_output].car/*value*/ = save;
@@ -826,7 +858,7 @@ class MemqFn extends BuiltinFunction
     {
         while (!arg2.atom)
         {   if (arg1 == arg2.car ||
-                (arg1 instanceof LispNumber &&
+                (arg1 instanceof LispSmallInteger &&
                  arg1.lispequals(arg2.car))) return arg2;
             arg2 = arg2.cdr;
         }
@@ -2801,10 +2833,9 @@ class SubstqFn extends BuiltinFunction
 
     LispObject substq(LispObject a, LispObject b, LispObject c) throws ResourceException
     {
-        if (b instanceof LispNumber)
-        {   if (b.lispequals(c)) return a;
-        }
-        else if (b == c) return a;
+        if (b == c) return a;
+        else if (b instanceof LispSmallInteger &&
+                 b.lispequals(c)) return a;
         if (c.atom) return c;
         LispObject cc = c;
         LispObject aa = substq(a, b, cc.car);

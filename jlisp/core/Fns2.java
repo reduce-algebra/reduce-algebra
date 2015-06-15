@@ -1,6 +1,5 @@
 package uk.co.codemist.jlisp.core;
 
-
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
@@ -94,6 +93,7 @@ class Fns2
         {"evenp",                       new EvenpFn()},
         {"exp",                         new ExpFn()},
         {"expt",                        new ExptFn()},
+        {"find-gnuplot",                new FindGnuplotFn()},
         {"fix",                         new FixFn()},
         {"fixp",                        new FixpFn()},
         {"float",                       new FloatFn()},
@@ -699,6 +699,15 @@ class ExptFn extends BuiltinFunction
         return arg1.expt(arg2);
     }
 }
+
+class FindGnuplotFn extends BuiltinFunction
+{
+    public LispObject op0(LispObject arg1) throws Exception
+    {
+        return new LispString("gnuplot");
+    }
+}
+
 
 class FixFn extends BuiltinFunction
 {

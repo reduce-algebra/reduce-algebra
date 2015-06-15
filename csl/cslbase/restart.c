@@ -6811,6 +6811,52 @@ void copy_out_of_nilseg(int fg)
     user_base_9           = BASE[199];
 }
 
+
+#ifndef OLDER_VERSION
+
+/*
+ * June 2015: I am now going to try MD5 code from Alexander Peslyak
+ * (Solar Designer). The code is public domain and all I do here is provide
+ * wrappers so it appears to the bulk of CSL just as the previous version had.
+ * The main motivation for this is that I must have corrupted the Eric
+ * Younger code at some stage since it returned incorrect results for input
+ * strings whose length was 55 mod 64. This showed up when comparing behaviour
+ * with a Java-coded equivalent. I expect I could track down just what I had
+ * wrong, but moving to the alternative public domain implementation seemed
+ * both a good way to verify that the existing code I had was wrong and to end
+ * up with something clean and tidy for the future.
+ *
+ * Please note that these days MD5 is not considered cryptographically secure,
+ * and the implementation here will not be robust against side-attacks etc.
+ * The proper uses hare are as a checksum fur use when chance rather than
+ * malic is the opponent.
+ */
+
+#include "md5.h"
+#include "md5.c"
+
+MD5_CTX context;
+
+void CSL_MD5_Init(void)
+{
+    CSL_MD5_busy = YES;
+    MD5_Init(&context);
+}
+
+void CSL_MD5_Update(const unsigned char *data, int len)
+{
+    MD5_Update(&context, data, len);
+}
+
+void CSL_MD5_Final(unsigned char *md)
+{
+    MD5_Final(md, &context);
+    CSL_MD5_busy = NO;
+}
+
+#else /* OLDER_VERSION */
+
+
 /*
  * For some of what follows I think I need to show that I have considered
  * the issue of export regulations.
@@ -7037,7 +7083,7 @@ static void md5_block(void)
     MD5_D += D;
 }
 
-void CSL_MD5_Update(unsigned char *data, int len)
+void CSL_MD5_Update(const unsigned char *data, int len)
 {
     unsigned char *p = (unsigned char *)MD5_data;
 /*
@@ -7146,6 +7192,8 @@ int main(int argc, char *argv[])
  * This is the end of the Eric Young code - what follows is Codemist
  * original code again.
  */
+#endif /* OLDER_VERSION */
+
 
 
 /* end of restart.c */

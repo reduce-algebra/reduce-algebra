@@ -50,7 +50,7 @@ global '(action_fn action_a action_n);
 global '(terminals non_terminals symbols goto_cache action_map);
 fluid '(renamings);
 
-#if (or (memq 'psl lispsystem!*) (memq 'jlisp lispsystem!*))
+#if (memq 'psl lispsystem!*)
 
 % CSL has special vectors that hold just 8-bit integers (it also has ones
 % for 16-bit integers) and use of those will decrease the amount of
@@ -92,7 +92,7 @@ inline procedure getv16(v, n); getv(v, n);
 % whose sole element is the association list. This code just uses
 % EQUAL tests for hash table membership.
 
-symbolic procedure mkhash(size, equality_mode, expandion_factor);
+symbolic procedure mkhash(size, equality_mode, expansion_factor);
    list nil;
 
 symbolic procedure puthash(key, table, value);

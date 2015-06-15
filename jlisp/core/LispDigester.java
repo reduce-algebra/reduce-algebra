@@ -1,16 +1,12 @@
 package uk.co.codemist.jlisp.core;
 
-
-/* $Id$ */
-
-
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2000.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 /**************************************************************************
- * Copyright (C) 1998-2011, Codemist Ltd.                A C Norman       *
+ * Copyright (C) 1998-2015, Codemist Ltd.                A C Norman       *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
@@ -39,6 +35,8 @@ package uk.co.codemist.jlisp.core;
  * DAMAGE.                                                                *
  *************************************************************************/
 
+// $Id$
+
 
 import java.io.*;
 import java.security.*;
@@ -50,16 +48,11 @@ class LispDigester extends LispStream
     {
         super("<md5 digester>");
         try
-        {   md = MessageDigest.getInstance("MD5", "SUN");
+        {   md = MessageDigest.getInstance("MD5");
         }
         catch (NoSuchAlgorithmException e)
         {
             Jlisp.errprintln("No MD5 available: " + e.getMessage());
-            md = null;
-        }
-        catch (NoSuchProviderException e)
-        {
-            Jlisp.errprintln("No provider: " + e.getMessage());
             md = null;
         }
     }
@@ -80,11 +73,11 @@ class LispDigester extends LispStream
 // It *MAY* be better to use getChars here and move data into a pre-allocated
 // array of characters.
         for (int i=0; i<v.length; i++)
-        {   char c = v[i];
+        {   int c = v[i] & 0xffff;
 // Characters are in general 16-bits wide in Java but for compatibility with
 // CSL I need to adjust and pretend I have an UTF8 sequence. I will do the
 // mapping by hand here... I only allow for codepoints up to 0xffff and so
-// any that really lie beyond that and have bot expressed in terms of the
+// any that really lie beyond that and have not expressed in terms of the
 // high and low surrogate pairs may end up messed up!
             if (c <= 0x7f) md.update((byte)c);
             else if (c <= 0x7ff)
@@ -92,7 +85,9 @@ class LispDigester extends LispStream
                 md.update((byte)(0x80 + (c & 0x3f)));
             }
             else
-            {   md.update((byte)(0xe0 + ((c>>12) & 0x0f)));
+            {   if ((c & 0xf800) == 0xf800)
+                    System.out.printf("Surrogate Trouble\n");
+                md.update((byte)(0xe0 + ((c>>12) & 0x0f)));
                 md.update((byte)(0x80 + ((c>>6) & 0x3f)));
                 md.update((byte)(0x80 + (c & 0x3f)));
             }
@@ -103,7 +98,7 @@ class LispDigester extends LispStream
     {
         print(s);
         if (md != null)
-        {   md.update((byte)0);
+        {   // md.update((byte)0); Why did I ever have this?
             md.update((byte)'\n');
         }
     }
@@ -111,5 +106,3 @@ class LispDigester extends LispStream
 }
 
 // end of LispDigester.java
-
-

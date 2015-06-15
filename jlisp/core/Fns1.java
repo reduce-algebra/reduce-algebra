@@ -1,9 +1,5 @@
 package uk.co.codemist.jlisp.core;
 
-
-/* $Id$ */
-
-
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
@@ -38,6 +34,9 @@ package uk.co.codemist.jlisp.core;
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
+
+// $Id$
+
 
 // Fns1.java
 
@@ -221,6 +220,10 @@ class Fns1
         {"flush",                       new FlushFn()},
         {"format",                      new FormatFn()},
         {"fp-evaluate",                 new Fp_evaluateFn()},
+        {"fp-infinite",                 new Fp_infiniteFn()},
+        {"fp-nan",                      new Fp_NaNFn()},
+        {"fp-finite",                   new Fp_finiteFn()},
+        {"fp-subnorm",                  new Fp_subnormFn()},
         {"fputv32",                     new Fputv32Fn()},
         {"fputv64",                     new Fputv64Fn()},
         {"funcall",                     new FuncallFn()},
@@ -259,6 +262,7 @@ class Fns1
         {"lastpair",                    new LastpairFn()},
         {"length",                      new LengthFn()},
         {"lengthc",                     new LengthcFn()},
+        {"widelengthc",                 new WidelengthcFn()},
         {"library-name",                new Library_nameFn()},
         {"linelength",                  new LinelengthFn()},
         {"list",                        new ListFn()},
@@ -2656,6 +2660,55 @@ class Fp_evaluateFn extends BuiltinFunction
     }
 }
 
+class Fp_infiniteFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        if (!(arg1 instanceof LispFloat)) return Jlisp.nil;
+        double v = ((LispFloat)arg1).value;
+        if (Double.isInfinite(v)) return Jlisp.lispTrue;
+        else return Jlisp.nil;
+    }
+}
+
+class Fp_NaNFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        if (!(arg1 instanceof LispFloat)) return Jlisp.nil;
+        double v = ((LispFloat)arg1).value;
+        if (Double.isNaN(v)) return Jlisp.lispTrue;
+        else return Jlisp.nil;
+    }
+}
+
+class Fp_finiteFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        if (!(arg1 instanceof LispFloat)) return Jlisp.nil;
+        double v = ((LispFloat)arg1).value;
+        if (!Double.isInfinite(v) &&
+            !Double.isNaN(v)) return Jlisp.lispTrue;
+        else return Jlisp.nil;
+    }
+}
+
+class Fp_subnormFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        if (!(arg1 instanceof LispFloat)) return Jlisp.nil;
+        double v = ((LispFloat)arg1).value;
+// Note that I choose to view 0.0 as normalised. If the number is a NaN
+// then the comaprisons should yield "false".
+        if (v != 0.0 &&
+            v < Double.MIN_NORMAL &&
+            v > -Double.MIN_NORMAL) return Jlisp.lispTrue;
+        else return Jlisp.nil;
+    }
+}
+
 class Fputv32Fn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
@@ -3138,7 +3191,24 @@ class LengthcFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws ResourceException
     {
-        LispStream f = new LispCounter();
+        LispStream f = new LispCounter(true);
+        LispObject save = Jlisp.lit[Lit.std_output].car/*value*/;
+        try
+        {   Jlisp.lit[Lit.std_output].car/*value*/ = f;
+            arg1.print(LispObject.noLineBreak);
+        }
+        finally
+        {   Jlisp.lit[Lit.std_output].car/*value*/ = save;
+        }
+        return LispInteger.valueOf(f.column);
+    }
+}
+
+class WidelengthcFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws ResourceException
+    {
+        LispStream f = new LispCounter(false);
         LispObject save = Jlisp.lit[Lit.std_output].car/*value*/;
         try
         {   Jlisp.lit[Lit.std_output].car/*value*/ = f;

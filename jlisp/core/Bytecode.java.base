@@ -340,6 +340,9 @@ case JCALL:
         if ((arg & 0x1f) == 0) // callself case
         {   pc = jcallself(arg, spsave, a, b);
             sp = spsave;
+#ifdef INSTRUMENTED
+            count += 30;
+#endif /* INSTRUMENTED */
             continue;
         }
         else

@@ -1615,11 +1615,95 @@ Lisp_Object Lmd5(Lisp_Object env, Lisp_Object a)
     else if (is_vector(a) && type_of_header(vechdr(a)) == TYPE_STRING)
     {   len = length_of_header(vechdr(a));
         CSL_MD5_Init();
-        CSL_MD5_Update("\"", 1);
+        CSL_MD5_Update((const unsigned char *)"\"", 1);
         CSL_MD5_Update((unsigned char *)(a + CELL - TAG_VECTOR), len-CELL);
     }
     else checksum(a);
     CSL_MD5_Final(md);
+/*    for (i=0; i<16; i++) printf("%x ", md[i] & 0xff);
+ *   printf("\n");
+ */
+    v0 = md[0] + (md[1]<<8) + (md[2]<<16) + (md[3]<<24);
+    v1 = md[4] + (md[5]<<8) + (md[6]<<16) + (md[7]<<24);
+    v2 = md[8] + (md[9]<<8) + (md[10]<<16) + (md[11]<<24);
+    v3 = md[12] + (md[13]<<8) + (md[14]<<16) + (md[15]<<24);
+    v4 = v3 >> 28;
+    v3 = ((v3 << 3) | (v2 >> 29)) & 0x7fffffff;
+    v2 = ((v2 << 2) | (v1 >> 30)) & 0x7fffffff;
+    v1 = ((v1 << 1) | (v0 >> 31)) & 0x7fffffff;
+    v0 &= 0x7fffffff;
+/*
+ * Note the funny tests. This is because in my representation the
+ * top word of a bignum is a 2s complement signed value and to keep clear
+ * of overflow that means I use an extra digit slightly before one might
+ * imagine it is necessary!
+ */
+    if (v4 != 0 || (v3 & 0x40000000) != 0) len = CELL+20;
+    else if (v3 != 0 || (v2 & 0x40000000) != 0) len = CELL+16;
+    else if (v2 != 0 || (v1 & 0x40000000) != 0) len = CELL+12;
+    else if (v1 != 0 || (v0 & 0x40000000) != 0) len = CELL+8;
+    else if ((v0 & fix_mask) != 0) len = CELL+4;
+    else return onevalue(fixnum_of_int(v0));
+    r = getvector(TAG_NUMBERS, TYPE_BIGNUM, len);
+    errexit();
+    if (SIXTY_FOUR_BIT)
+    {   switch (len)
+        {
+    case CELL+20:
+            bignum_digits(r)[5] = 0;  /* zeros out padding word as necessary */
+            bignum_digits(r)[4] = v4;
+    case CELL+16:
+    case CELL+12:
+            bignum_digits(r)[3] = v3;
+            bignum_digits(r)[2] = v2;
+    case CELL+8:
+    case CELL+4:
+            bignum_digits(r)[1] = v1;
+            bignum_digits(r)[0] = v0;
+            break;
+        }
+    }
+    else
+    {   switch (len)
+        {
+    case CELL+20:
+    case CELL+16:
+            bignum_digits(r)[4] = v4; /* zeros out padding word as necessary */
+            bignum_digits(r)[3] = v3;
+    case CELL+12:
+    case CELL+8:
+            bignum_digits(r)[2] = v2;
+            bignum_digits(r)[1] = v1;
+    case CELL+4:
+            bignum_digits(r)[0] = v0;
+            break;
+        }
+    }
+/*  validate_number("MD5", r, r, r); */
+    return onevalue(r);
+}
+
+/*
+ * For testing the MD5 code... processes a string "raw".
+ */
+
+Lisp_Object Lmd5string(Lisp_Object env, Lisp_Object a)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object r;
+    unsigned char md[16];
+    uint32_t v0, v1, v2, v3, v4;
+    int32_t len, i;
+    CSL_IGNORE(env);
+    if (is_vector(a) && type_of_header(vechdr(a)) == TYPE_STRING)
+    {   len = length_of_header(vechdr(a));
+        CSL_MD5_Init();
+        CSL_MD5_Update((unsigned char *)(a + CELL - TAG_VECTOR), len-CELL);
+    }
+    else return onevalue(nil);
+    CSL_MD5_Final(md);
+    for (i=0; i<16; i++) printf("%x ", md[i] & 0xff);
+    printf("\n");
     v0 = md[0] + (md[1]<<8) + (md[2]<<16) + (md[3]<<24);
     v1 = md[4] + (md[5]<<8) + (md[6]<<16) + (md[7]<<24);
     v2 = md[8] + (md[9]<<8) + (md[10]<<16) + (md[11]<<24);
@@ -1710,7 +1794,7 @@ Lisp_Object Lmd60(Lisp_Object env, Lisp_Object a)
     else if (is_vector(a) && type_of_header(vechdr(a)) == TYPE_STRING)
     {   len = length_of_header(vechdr(a));
         CSL_MD5_Init();
-        CSL_MD5_Update("\"", 1);
+        CSL_MD5_Update((const unsigned char *)"\"", 1);
         CSL_MD5_Update((unsigned char *)(a + CELL - TAG_VECTOR), len-CELL);
     }
     else checksum(a);
@@ -1821,6 +1905,7 @@ setup_type const arith06_setup[] =
     {"times2",                  too_few_2, Ltimes2, wrong_no_2},
     {"zerop",                   Lzerop, too_many_1, wrong_no_1},
     {"md5",                     Lmd5, too_many_1, wrong_no_1},
+    {"md5string",               Lmd5string, too_many_1, wrong_no_1},
     {"md60",                    Lmd60, too_many_1, wrong_no_1},
 #ifdef COMMON
     {"*",                       Lidentity, Ltimes2, Ltimes},

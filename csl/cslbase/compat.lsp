@@ -45,7 +45,7 @@
 
 (symbol!-make!-fastget 'noncom 0)  % built into the kernel
 (setpchar "> ")
-%%@@(symbol!-make!-fastget 'lose   1)
+(symbol!-make!-fastget 'lose   1)
 (setpchar "> ")
 
 (flag '(raise lower echo comp plap pgwd pwrds savedef) 'switch)

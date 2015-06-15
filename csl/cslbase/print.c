@@ -1,11 +1,11 @@
-/*  print.c                           Copyright (C) 1990-2014 Codemist Ltd */
+/*  print.c                           Copyright (C) 1990-2015 Codemist Ltd */
 
 /*
  * Printing, plus some file-related operations.
  */
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -3873,7 +3873,8 @@ int char_to_checksum(int c, Lisp_Object f)
  */
     CSL_IGNORE(f);
     if (exception_pending()) return 1;
-    checksum_buffer[checksum_count++] = (char)c;
+    checksum_buffer[checksum_count++] = (unsigned char)c;
+/* printf("Digest %x \'%c\'\n", c, c); */
     if (checksum_count == sizeof(checksum_buffer))
     {   CSL_MD5_Update(checksum_buffer, sizeof(checksum_buffer));
         checksum_count = 0;
@@ -3893,8 +3894,7 @@ void checksum(Lisp_Object u)
     internal_prin(u, 0);
     if (exception_pending()) return;
     stream_write_data(lisp_work_stream) = nil;
-    if (checksum_count != 0)
-    CSL_MD5_Update(checksum_buffer, checksum_count);
+    if (checksum_count != 0) CSL_MD5_Update(checksum_buffer, checksum_count);
 }
 
 /*

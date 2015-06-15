@@ -460,9 +460,7 @@ flag('(iplus itimes iplus2 itimes2 iadd1 isub1 iminus iminusp
        idifference iquotient iremainder ilessp igreaterp ileq igeq
        izerop ionep iequal apply1 apply2 apply3), 'lose);
 
-#if (null (memq 'jlisp lispsystem!*))
 flag('(fp!-infinite fp!-nan fp!-finite fp!-subnorm), 'lose);
-#endif
 
 COMMENT There are also a number of system constants required for each
 implementation. In systems that don't support inums, the equivalent
@@ -774,9 +772,7 @@ flag('(sort stable!-sort stable!-sortip reversip2),'lose);
 % We also need this.
 
 flag('(lengthc),'lose);
-#if (null (member 'jlisp lispsystem!*))
 flag('(widelengthc),'lose);
-#endif
 
 symbolic procedure concat2(u,v); concat(u,v);
 
@@ -831,13 +827,6 @@ flag('(call!-foreign!-function), 'variadic);
 
 put('gc, 'simpfg, '((t (verbos t))
                     (nil (verbos nil))));
-
-!#if (memq 'jlisp lispsystem!*)
-
-symbolic procedure find!-gnuplot();
-  "gnuplot";
-
-!#endif
 
 global '(!*psl !*csl);
 !*psl := nil;

@@ -320,6 +320,7 @@ case JCALL:
         if ((arg & 0x1f) == 0) // callself case
         {   pc = jcallself(arg, spsave, a, b);
             sp = spsave;
+            count += 30;
             continue;
         }
         else

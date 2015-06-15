@@ -1,10 +1,6 @@
 package uk.co.codemist.jlisp.core;
 
 
-/* $Id$ */
-
-
-
 // This is to demonstrate how user Java code can be called from Jlisp.
 // You may edit this file to put in arbitrary Java definitions in the
 // various methods (which had better be public static and named as shown 
@@ -20,7 +16,7 @@ package uk.co.codemist.jlisp.core;
 //
 
 /**************************************************************************
- * Copyright (C) 1998-2011, Codemist Ltd.                A C Norman       *
+ * Copyright (C) 1998-2015, Codemist Ltd.                A C Norman       *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
@@ -49,6 +45,7 @@ package uk.co.codemist.jlisp.core;
  * DAMAGE.                                                                *
  *************************************************************************/
 
+// $Id$
 
 public class UserJava
 {
@@ -75,3 +72,5 @@ public class UserJava
         return r;
     }
 }
+
+// end of UserJava.java

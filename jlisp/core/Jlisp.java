@@ -41,7 +41,7 @@ package uk.co.codemist.jlisp.core;
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 
 import java.io.*;

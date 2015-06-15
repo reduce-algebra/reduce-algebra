@@ -1,16 +1,12 @@
 package uk.co.codemist.jlisp.core;
 
-
-/* $Id$ */
-
-
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2000.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 /**************************************************************************
- * Copyright (C) 1998-2011, Codemist Ltd.                A C Norman       *
+ * Copyright (C) 1998-2015, Codemist Ltd.                A C Norman       *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
@@ -39,15 +35,21 @@ package uk.co.codemist.jlisp.core;
  * DAMAGE.                                                                *
  *************************************************************************/
 
+// $Id$
+
+
 import java.io.*;
 
 class LispCounter extends LispStream
 {
 
-    LispCounter()
+    boolean utf8;
+
+    LispCounter(boolean utf8)
     {
         super("<character counter>");
         column = 0;
+        this.utf8 = utf8;
     }
 
     void flush()
@@ -60,12 +62,31 @@ class LispCounter extends LispStream
 
     void print(String s)
     {
-        column += s.length();
+        if (utf8)
+        {   for (char c : s.toCharArray())
+            {   if (c <= 0x7f) column += 1;
+                else if (c <= 0x7ff) column += 2;
+// Java uses UTF-16 so here I deal with the surrogates. If I count
+// 2 bytes for either high or low surrogates then proper pairs will
+// give me a total of 4 which is what I need.
+                else if ((c & 0xf800) == 0xd800) column += 2;
+                else column += 3;
+            }
+        }
+        else
+// Wben counting "characters" rather than "bytes" I should ignore UTF-16 low
+// surrogates so that charaters with a codepoint over U+ffff still end up
+// counted as 1 rather than 2 units.
+        {   for (char c : s.toCharArray())
+            {   if ((c & 0xfc00) != 0xdc00) column++;
+            }
+        }
     }
 
     void println(String s)
     {
-        column += s.length() + 1;
+        print(s);
+        column++;
     }
 
 }
