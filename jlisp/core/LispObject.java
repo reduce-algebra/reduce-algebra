@@ -186,8 +186,17 @@ public abstract class LispObject extends Object
     static final int X_RECENT   = 0xf2; // used in FASL but not checkpoints
     static final int X_RECENT1  = 0xf3; // used in FASL but not checkpoints
     static final int X_OBLIST   = 0xf4; // oblist vector
+    static final int X_VECxx    = 0xf5; // vector of 8, 16 or 32-bit integers
+        static final int XX_VEC8    = 0;    // tag after X_VECxx for VEC8
+        static final int XX_VEC16   = 1;    // for VEC16
+        static final int XX_VE32    = 2;    // for VEC32
+        static final int XX_VEC64   = 3;    // for VEC64
+        static final int XX_VECF    = 4;    // for VEC of floats
+        static final int XX_VECD    = 5;    // for VEC of doubles
+        static final int XX_VECs1   = 6;    // (spare)
+        static final int XX_VECs2   = 7;    // (spare)
 
-// 0xf2 to 0xff spare at present...
+// 0xf6 to 0xff spare at present...
 
     abstract void scan();
     abstract void dump() throws IOException;

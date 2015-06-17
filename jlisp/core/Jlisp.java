@@ -1600,7 +1600,7 @@ static LispObject readObject() throws IOException, ResourceException
 // My Bytecoded is a sub-class of FnWithEnv - a general class for functions
 // that want a vector of LispObjects kept with them. But at present
 // Bytecode is the only sub-class that exists and the only one that this
-// rea-loading code can ever re-create.  So I expect to have to do more
+// re-loading code can ever re-create.  So I expect to have to do more
 // work when or if I add more, for instance for code that has been reduced
 // to real Java bytecodes rather than my Jlisp-specific ones.
                 opcode = idump.read();
@@ -1725,6 +1725,36 @@ static LispObject readObject() throws IOException, ResourceException
     case LispObject.X_STORE:
             setLabel = true;
             continue;
+    case LispObject.X_VECxx:
+            {   int n = idump.read() & 0xff;
+                n |= ((idump.read() & 0xff) << 8);
+                n |= ((idump.read() & 0xff) << 16);
+                n |= ((idump.read() & 0xff) << 24);
+                int flavour = (n >> 29) & 0x7;
+                n &= 0x1fffffff;
+                switch (flavour)
+                {
+            case LispObject.XX_VEC8:
+                    {   byte [] v = new byte[n];
+                        for (i=0; i<n; i++) v[i] = (byte)idump.read();
+                        w = new LispVec8(v);
+                        break;
+                    }
+            case LispObject.XX_VEC16:
+                    {   short [] v = new short[n];
+                        for (i=0; i<n; i++)
+                        {   int h = idump.read() & 0xff;
+                            h |= ((idump.read() & 0xff) << 8);
+                            v[i] = (short)h;
+                        }
+                        w = new LispVec16(v);
+                        break;
+                    }
+            default:
+                    throw new IOException("Bad byte in image file");
+                }
+            }
+            break;
     default:
             throw new IOException("Bad byte in image file");
         }

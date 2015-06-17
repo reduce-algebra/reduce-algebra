@@ -241,9 +241,9 @@ class Fns1
         {"getenv",                      new GetenvFn()},
         {"gethash",                     new GethashFn()},
         {"getv",                        new GetvFn()},
+        {"getv8",                       new Getv8Fn()},
         {"getv16",                      new Getv16Fn()},
         {"getv32",                      new Getv32Fn()},
-        {"getv8",                       new Getv8Fn()},
         {"global",                      new GlobalFn()},
         {"globalp",                     new GlobalpFn()},
         {"hash-table-p",                new Hash_table_pFn()},
@@ -2947,23 +2947,31 @@ class GetvFn extends BuiltinFunction
     }
 }
 
+class Getv8Fn extends BuiltinFunction
+{
+    public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
+    {
+        if (!(arg1 instanceof LispVec8))
+            return Jlisp.error("Not a byte-vector in getv8", arg1);
+        LispVec8 v = (LispVec8)arg1;
+        int i = arg2.intValue();
+        return LispInteger.valueOf(v.vec[i]);
+    }
+}
+
 class Getv16Fn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1) throws Exception
+    public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
     {
-        return error(name + " not yet implemented");
+        if (!(arg1 instanceof LispVec16))
+            return Jlisp.error("Not a short-vector in getv16", arg1);
+        LispVec16 v = (LispVec16)arg1;
+        int i = arg2.intValue();
+        return LispInteger.valueOf(v.vec[i]);
     }
 }
 
 class Getv32Fn extends BuiltinFunction
-{
-    public LispObject op1(LispObject arg1) throws Exception
-    {
-        return error(name + " not yet implemented");
-    }
-}
-
-class Getv8Fn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
@@ -3420,5 +3428,4 @@ class List3Fn extends BuiltinFunction
 }
 
 // end of Fns1.java
-
 

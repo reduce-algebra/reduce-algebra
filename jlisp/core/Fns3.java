@@ -93,9 +93,9 @@ class Fns3
         {"mkhash",                      new MkhashFn()},
         {"mkquote",                     new MkquoteFn()},
         {"mkvect",                      new MkvectFn()},
+        {"mkvect8",                     new Mkvect8Fn()},
         {"mkvect16",                    new Mkvect16Fn()},
         {"mkvect32",                    new Mkvect32Fn()},
-        {"mkvect8",                     new Mkvect8Fn()},
         {"mkxvect",                     new MkxvectFn()},
         {"modulep",                     new ModulepFn()},
         {"native-address",              new Native_addressFn()},
@@ -149,9 +149,9 @@ class Fns3
         {"puthash",                     new PuthashFn()},
         {"putv",                        new PutvFn()},
         {"putv-char",                   new Putv_charFn()},
+        {"putv8",                       new Putv8Fn()},
         {"putv16",                      new Putv16Fn()},
         {"putv32",                      new Putv32Fn()},
-        {"putv8",                       new Putv8Fn()},
         {"qcaar",                       new QcaarFn()},
         {"qcadr",                       new QcadrFn()},
         {"qcar",                        new QcarFn()},
@@ -936,23 +936,25 @@ class MkvectFn extends BuiltinFunction
     }
 }
 
+class Mkvect8Fn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        int n = ((LispSmallInteger)arg1).value;
+        return new LispVec8(n+1); // Hah - index values from 0 to n
+    }
+}
+
 class Mkvect16Fn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
-        return error(name + " not yet implemented");
+        int n = ((LispSmallInteger)arg1).value;
+        return new LispVec16(n+1); // Hah - index values from 0 to n
     }
 }
 
 class Mkvect32Fn extends BuiltinFunction
-{
-    public LispObject op1(LispObject arg1) throws Exception
-    {
-        return error(name + " not yet implemented");
-    }
-}
-
-class Mkvect8Fn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
@@ -1896,23 +1898,37 @@ class Putv_charFn extends BuiltinFunction
     }
 }
 
+class Putv8Fn extends BuiltinFunction
+{
+    public LispObject opn(LispObject [] args) throws Exception
+    {
+        if (args.length != 3)
+            return error("putv8 called with " + args.length +
+                "args when 3 expected");
+        LispVec8 v = (LispVec8)args[0];
+        LispSmallInteger n = (LispSmallInteger)args[1];
+        int i = n.value;
+        v.vec[i] = (byte)args[2].intValue();
+        return args[2];
+    }
+}
+
 class Putv16Fn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1) throws Exception
+    public LispObject opn(LispObject [] args) throws Exception
     {
-        return error(name + " not yet implemented");
+        if (args.length != 3)
+            return error("putv16 called with " + args.length +
+                "args when 3 expected");
+        LispVec16 v = (LispVec16)args[0];
+        LispSmallInteger n = (LispSmallInteger)args[1];
+        int i = n.value;
+        v.vec[i] = (short)args[2].intValue();
+        return args[2];
     }
 }
 
 class Putv32Fn extends BuiltinFunction
-{
-    public LispObject op1(LispObject arg1) throws Exception
-    {
-        return error(name + " not yet implemented");
-    }
-}
-
-class Putv8Fn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {

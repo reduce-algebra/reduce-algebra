@@ -35,22 +35,22 @@ package uk.co.codemist.jlisp.core;
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id$
+// $Id: LispVector.java 3127 2015-06-11 16:17:22Z arthurcnorman $
 
 
 import java.io.*;
 
-class LispVector extends LispObject
+class LispVec16 extends LispObject
 {
-    LispObject [] vec;
+    short [] vec;
 
-    LispVector(int n)
+    LispVec16(int n)
     {
-        vec = new LispObject [n];
-        for (int i=0; i<n; i++) vec[i] = Jlisp.nil;
+        vec = new short [n];
+        for (int i=0; i<n; i++) vec[i] = 0;
     }
 
-    LispVector(LispObject [] v)
+    LispVec16(short [] v)
     {
         vec = v;
     }
@@ -63,37 +63,36 @@ class LispVector extends LispObject
     void iprint() throws ResourceException
     {
         if ((currentFlags & noLineBreak) == 0 &&
-            currentOutput.column + 1 > currentOutput.lineLength)
+            currentOutput.column + 4 > currentOutput.lineLength)
             currentOutput.println();
-        currentOutput.print("[");
+        currentOutput.print("#V16(");
         if (vec.length == 0)
 	{   if ((currentFlags & noLineBreak) == 0 &&
                 currentOutput.column + 1 > currentOutput.lineLength)
                 currentOutput.println();
-            currentOutput.print("]");
+            currentOutput.print(")");
             return;
         }
-        if (vec[0] == null)
-        {   if ((currentFlags & noLineBreak) == 0 &&
+        String s = String.format("%d", vec[0]);
+        if ((currentFlags & noLineBreak) == 0 &&
+                currentOutput.column + s.length() > currentOutput.lineLength)
+                currentOutput.println();
+        currentOutput.print(s);
+        for (int i=1; i<vec.length; i++)
+	{   if ((currentFlags & noLineBreak) == 0 &&
                 currentOutput.column + 1 > currentOutput.lineLength)
                 currentOutput.println();
-            currentOutput.print(".");
-        }
-        else vec[0].iprint();
-        for (int i=1; i<vec.length; i++)
-	{   if (vec[i] == null)
-            {   if ((currentFlags & noLineBreak) == 0 &&
-                    currentOutput.column + 1 >= currentOutput.lineLength)
+            else currentOutput.print(" ");
+            String s1 = String.format("%d", vec[i]);
+            if ((currentFlags & noLineBreak) == 0 &&
+                    currentOutput.column + s1.length() > currentOutput.lineLength)
                     currentOutput.println();
-                else currentOutput.print(" ");
-                currentOutput.print(".");
-            }
-            else vec[i].blankprint();
+            currentOutput.print(s1);
         }
         if ((currentFlags & noLineBreak) == 0 &&
             currentOutput.column + 1 > currentOutput.lineLength)
             currentOutput.println();
-        currentOutput.print("]");
+        currentOutput.print(")");
     }
 
     void blankprint() throws ResourceException
@@ -107,37 +106,37 @@ class LispVector extends LispObject
 
     public boolean lispequals(Object b)
     {
-        if (!(b instanceof LispVector)) return false;
+        if (!(b instanceof LispVec16)) return false;
         if (b == this) return true;
-        else if (this == Jlisp.obvector || b == Jlisp.obvector) return false;
-        LispVector vb = (LispVector)b;
+        LispVec16 vb = (LispVec16)b;
         if (vec.length != vb.vec.length) return false;
         for (int i=0; i<vec.length; i++)
-            if (!vec[i].lispequals(vb.vec[i])) return false;
+            if (vec[i] != vb.vec[i]) return false;
         return true;
+    }
+
+    public boolean equals(Object b)
+    {
+        return lispequals(b);
     }
 
     public int lisphashCode()
     {
-        return lisphashCode(100);
-    }
-
-    int lisphashCode(int n)
-    {
-        int r = 19937;
+        int r = 33;
         for (int i=0; i<vec.length; i++) 
-	{   LispObject b = vec[i];
-            if (b == null) r = 54321*r;
-            else if (!b.atom)
-                r = 169*r + ((Cons)b).lisphashCode(b, n-10);
-            else r = 0x8040201*r + b.lisphashCode();
+	{   int b = vec[i];
+            r = 0x16421*r + 163*b;
         }
         return r;  
     }
 
+    public int hashcode()
+    {
+        return lisphashCode();
+    }
+
     void scan()
     {
-        if (this == Jlisp.obvector) return;
         if (Jlisp.objects.contains(this)) // seen before?
 	{   if (!Jlisp.repeatedObjects.containsKey(this))
 	    {   Jlisp.repeatedObjects.put(
@@ -146,16 +145,10 @@ class LispVector extends LispObject
 	    }
 	}
 	else Jlisp.objects.add(this);
-	for (int i=0; i<vec.length; i++)
-	    Jlisp.stack.push(vec[i]);
     }
-    
+
     void dump() throws IOException
     {
-        if (this == Jlisp.obvector)
-        {   Jlisp.odump.write(X_OBLIST);
-            return;
-        }
         Object w = Jlisp.repeatedObjects.get(this);
 	if (w != null &&
 	    w instanceof Integer) putSharedRef(w); // processed before
@@ -164,17 +157,24 @@ class LispVector extends LispObject
 	    {   Jlisp.repeatedObjects.put(
 	            this,
 		    new Integer(Jlisp.sharedIndex++));
-		Jlisp.odump.write(X_STORE);
+		Jlisp.odump.write(LispObject.X_STORE);
             }
 	    int length = vec.length;
-	    putPrefix(length, X_VEC);
-	    for (int i=0; i<length; i++)
-	        Jlisp.stack.push(vec[i]);
+	    putPrefix(length, LispObject.X_VECxx);
+            int n = vec.length + (LispObject.XX_VEC16 << 29);
+            Jlisp.odump.write(n);
+            Jlisp.odump.write(n>>8);
+            Jlisp.odump.write(n>>16);
+            Jlisp.odump.write(n>>24);
+	    for (int i=0; i<vec.length; i++)
+            {   Jlisp.odump.write(vec[i]);
+	        Jlisp.odump.write(vec[i]>>8);
+            }
 	}
     }
 
 
 }
 
-// end of LispVector.java
+// end of LispVec16.java
 
