@@ -309,6 +309,7 @@ let cos(0)= 1,
     sech(0) =1,
     sinh(i) => i*sin(1),
     cosh(i) => cos(1),
+    acosh(0) => i*pi/2,
     acosh(1) => 0,
     acosh(-1) => i*pi,
     acoth(0) => i*pi/2
