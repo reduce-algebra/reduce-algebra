@@ -1,7 +1,7 @@
 package uk.co.codemist.jlisp.core;
 
 
-/* $Id$ */
+// $Id$
 
 
 //04/03/02 for adding java/lang/Exception to Method_info

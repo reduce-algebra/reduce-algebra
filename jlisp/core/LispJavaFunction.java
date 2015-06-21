@@ -1,7 +1,7 @@
 package uk.co.codemist.jlisp.core;
 
 
-/* $Id$ */
+// $Id$
 
 
 //NOT USED ...SEE JavaFn.java instead

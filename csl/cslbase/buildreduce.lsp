@@ -861,7 +861,15 @@ symbolic procedure test_a_package names;
   end;
 
 symbolic procedure profile_compare_fn(p, q);
-   (float caddr p/float cadr p) < (float caddr q/float cadr q);
+  begin
+    scalar a, b;
+    a := (float caddr p/float cadr p);
+    b := (float caddr q/float cadr q);
+    if a < b then return t
+    else if a > b then return nil
+    else return ordp(p, q)   % Use alpha ordering on function
+                             % if counts match exactly.
+  end;
 
 %
 % This function runs a test file and sorts out what the top 350
@@ -901,7 +909,8 @@ symbolic procedure profile_a_package names;
        quitfn := getd 'quit;
        remd 'quit;
        putd('quit, 'expr, 'posn);
-       mapstore 4;  % reset counts;
+       if boundp 'tracefluid then print mapstore 2
+       else mapstore 4;  % reset counts;
        !*errcont := t;
 % I try hard to arrange that even if the test fails I can continue and that
 % input & output file selection is not messed up for me.
@@ -1466,33 +1475,6 @@ symbolic procedure check_a_package;
 
 
 faslend;
-
-% faslout 'cslhelp;
-%
-% module cslhelp;
-%
-% global '(!*force);
-%
-% flag('(force),'switch);
-% flag('(on),'eval);
-%
-% on force;
-%
-% symbolic procedure formhelp(u,vars,mode);
-%    list('help, 'list . for each x in cdr u collect mkquote x);
-%
-% if member('help, lispsystem!*) then <<
-%    put('help, 'stat, 'rlis);
-%    flag('(help), 'go);
-%    put('help, 'formfn, 'formhelp) >>;
-%
-% off force;
-% remflag('(on),'eval);
-%
-% endmodule;
-%
-% faslend;
-
 
 load!-module 'remake;
 

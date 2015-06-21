@@ -156,6 +156,7 @@ class Fns1
         {"deleq",                       new DeleqFn()},
         {"delete",                      new DeleteFn()},
         {"delete-file",                 new Delete_fileFn()},
+        {"delete-file-match",           new Delete_file_matchFn()},
         {"library-members",             new Library_membersFn()},
         {"delete-module",               new Delete_moduleFn()},
         {"demo-mode",                   new Demo_modeFn()},
@@ -1298,7 +1299,27 @@ class Char_codeFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
-        return error(name + " not yet implemented");
+        String s;
+// End of file maps to -1 as a special case.
+        if (arg1 == Jlisp.lit[Lit.eof]) return LispInteger.valueOf(-1);
+        else if (arg1 instanceof Symbol)
+        {   ((Symbol)arg1).completeName();
+            s = ((Symbol)arg1).pname;
+        }
+        else if (arg1 instanceof LispInteger) return arg1;
+        else if (!(arg1 instanceof LispString))
+            return Jlisp.error("Invalid argument to char-code", arg1);
+        else s = ((LispString)arg1).string;
+        int cp = s.length() == 0 ? 0 : s.charAt(0);
+// This deals with surrogates. If an initial high surrogate is not
+// followed by a low surrogate I return the (Unicode-illegal) high surrogate
+// value.
+        if ((cp & 0xfc00) == 0xd800)
+        {   int cp1 = s.length() == 1 ? 0 : s.charAt(1);
+            if ((cp1 & 0xfc00) == 0xdc00)
+                cp = 0x10000 + ((cp & 0x03ff) << 10) + (cp1 & 0x03ff);
+        }
+        return LispInteger.valueOf(cp);
     }
 }
 
@@ -1411,6 +1432,7 @@ class CompressFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
+        if (arg1 == Jlisp.nil) return Jlisp.lit[Lit.eof];
         LispObject save = Jlisp.lit[Lit.std_input].car/*value*/;
         LispStream from = new ListReader(arg1);
         LispObject r = Jlisp.nil;
@@ -1694,6 +1716,21 @@ class Delete_fileFn extends BuiltinFunction
         else if (arg1 instanceof LispString) s = ((LispString)arg1).string;
         else return Jlisp.nil;
         return LispStream.fileDelete(s);
+    }
+}
+
+class Delete_file_matchFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        String s;
+        if (arg1 instanceof Symbol)
+        {   ((Symbol)arg1).completeName();
+            s = ((Symbol)arg1).pname;
+        }
+        else if (arg1 instanceof LispString) s = ((LispString)arg1).string;
+        else return Jlisp.nil;
+        return LispStream.fileDeleteMatch(s);
     }
 }
 

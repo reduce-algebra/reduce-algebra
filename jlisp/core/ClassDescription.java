@@ -1,7 +1,7 @@
 package uk.co.codemist.jlisp.core;
 
 
-/* $Id$ */
+// $Id$
 
 
 //    Date: 09/02/02

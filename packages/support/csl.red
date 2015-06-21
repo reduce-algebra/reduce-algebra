@@ -149,34 +149,6 @@ symbolic procedure find!!maxbflexp();
 
 flag('(find!!maxbflexp), 'lose);
 
-% At the stage that there was a "patch" mechanism used to update Reduce
-% this definition was needed here - including the jollies with the 'lose
-% flag - so that patching could apply to code within rlisp. Since the
-% Sourceforge release of Reduce the old patch mechanism has become redundant
-% and so this ugliness can be removed. This makes some comments in
-% cslprolo redundant too.
-
-%remflag('(copyd), 'lose);
-%
-%symbolic procedure copyd(new,old);
-%% Copy the function definition from old id to new.
-%   begin scalar x;
-%      x := getd old;
-%% If loading with !*savedef = '!*savedef then the actual definitions
-%% do not get loaded, but the source forms do...
-%      if null x then <<
-%        if not (!*savedef = '!*savedef)
-%          then rerror('rlisp,1,list(old,"has no definition in copyd"))>>
-%      else << putd(new,car x,cdr x);
-%              if flagp(old, 'lose) then flag(list new, 'lose) >>;
-%% The transfer of the saved definition is needed if the REDUCE "patch"
-%% mechanism is to work fully properly.
-%      if (x := get(old, '!*savedef)) then put(new, '!*savedef, x);
-%      return new
-%   end;
-%
-%flag('(copyd), 'lose);
-
 inline procedure int2id x; % Turns 8-bit value into name. Only OK is under 0x80
   intern list2string list x;
 
@@ -191,12 +163,6 @@ symbolic macro procedure compiletime u;
 
 symbolic macro procedure loadtime u;
    list('eval!-when, '(load eval), cadr u);
-
-%symbolic macro procedure csl u;
-%   cadr u;
-
-%symbolic macro procedure psl u;
-%   nil;
 
 symbolic macro procedure printf u;
   list('printf1, cadr u, 'list . cddr u);

@@ -7882,11 +7882,7 @@ symbolic procedure delete!-file!-exact fi;
 
 % To have ? or * actively matching in file name
 
-!#if (and (memq 'csl lispsystem!*) (not (memq 'jlisp lispsystem!*)))
-
-% If I assume that Java 7 with its version of the nio package is
-% available then supporting this in Jlisp would be easy. However I will
-% wait before I move to that.
+!#if (memq 'csl lispsystem!*)
 
 symbolic procedure delete!-file!-match fi;
   delete!-wildcard fi;

@@ -212,13 +212,13 @@
       ((null (cdr l)) (car l))
       (t (list fn (car l) (expand (cdr l) fn)))))
 
-(dm plus (a) 
-   (cond ((null (cdr a)) 0)
-         (t (expand (cdr a) 'plus2))))
-
-(dm times (a) 
-   (cond ((null (cdr a)) 1)
-         (t (expand (cdr a) 'times2))))
+% (dm plus (a)
+%    (cond ((null (cdr a)) 0)
+%          (t (expand (cdr a) 'plus2))))
+%
+% (dm times (a)
+%    (cond ((null (cdr a)) 1)
+%          (t (expand (cdr a) 'times2))))
 
 (de mapcar (l fn)
   (prog (r)

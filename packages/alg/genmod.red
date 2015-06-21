@@ -43,10 +43,13 @@ symbolic procedure set!-general!-modulus p;
      previous!-modulus:=current!-modulus;
      current!-modulus:=p;
      modulus!/2 := p/2;
-% Allow for use of small moduli where appropriate.
+% Allow for use of small moduli where appropriate. What this bit is about is
+% that CSL supports "set-small-modulus" setting a general potentially bignum
+% modulus, and modular-plus and related functions then handle the big cases
+% gracefully, meansing that the functions here like general-modular-plus are
+% basically redundant. I am now making Jlisp do the same.
 #if (or (not (memq 'csl lispsystem!*))
-        (memq 'vsl lispsystem!*)
-        (memq 'jlisp lispsystem!*))
+        (memq 'vsl lispsystem!*))
      if p <= largest!-small!-modulus then
 #endif
         set!-small!-modulus p;

@@ -5,7 +5,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -563,7 +563,11 @@ Lisp_Object Lchar_code(Lisp_Object nil, Lisp_Object a)
     CSL_IGNORE(nil);
     a = characterify(a);
     if (!is_char(a)) return aerror("char-code");
-/* Note the special treatment of EOF here */
+/*
+ * Note the special treatment of EOF here, and that characterify accepts
+ * integers, symbols and strings and disentangled UTF-8 encoding to return
+ * something that encapsulated the codepoint that is wanted.
+ */
     if (a == CHAR_EOF) return onevalue(fixnum_of_int(-1));
     return onevalue(fixnum_of_int(code_of_char(a)));
 }
@@ -1445,4 +1449,3 @@ setup_type const char_setup[] =
 };
 
 /* end of char.c */
-

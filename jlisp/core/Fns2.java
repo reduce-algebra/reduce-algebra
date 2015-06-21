@@ -1623,16 +1623,28 @@ class SechFn extends BuiltinFunction
 
 class Set_small_modulusFn extends BuiltinFunction
 {
+// For full CSL compatibility I need to allow the modulus to be either
+// large or small here.
     public LispObject op1(LispObject arg1) throws Exception
     {
-        int old = Jlisp.modulus;
-        if (! (arg1 instanceof LispSmallInteger))
-             return error("arg of set-small-modulus is not a small integer");
-        int n = ((LispSmallInteger)arg1).value;
-        if (n <= 0) 
-             return error("set-small-modulus needs a positive argument");
-        Jlisp.modulus = n;
-        Jlisp.bigModulus = BigInteger.valueOf(n);
+        BigInteger old = Jlisp.bigModulus;
+        if (arg1 instanceof LispSmallInteger)
+        {   int n = ((LispSmallInteger)arg1).value;
+            if (n <= 0) 
+                 return error("set-small-modulus needs a positive argument");
+            Jlisp.modulus = n;
+            Jlisp.bigModulus = BigInteger.valueOf(n);
+            Jlisp.modulusIsBig = false;
+        }
+        else if (arg1 instanceof LispBigInteger)
+        {   BigInteger n = ((LispBigInteger)arg1).value;
+            if (n.signum() < 0)
+                 return error("set-small-modulus needs a positive argument");
+            Jlisp.modulus = 0;   // Invalid here!
+            Jlisp.bigModulus = n;
+            Jlisp.modulusIsBig = true;
+        }
+        else return error("arg of set-small-modulus is not an integer");
         return LispInteger.valueOf(old);
     }
 }

@@ -1,9 +1,5 @@
 package uk.co.codemist.jlisp.core;
 
-
-/* $Id$ */
-
-
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
@@ -39,11 +35,26 @@ package uk.co.codemist.jlisp.core;
  * DAMAGE.                                                                *
  *************************************************************************/
 
+// $Id$
+
+
 import java.io.*;
 import java.math.*;
 import java.util.*;
 import java.text.*;
 import java.security.*;
+
+// To implement file-delete-match (used to help the "crack" package) I
+// use file-management mechanisms introduced in Java release 7. At the time
+// of writing this the current Java is release 8, and in a year or two
+// this transition will have fully filtered through I rather hope. But
+// using java.nio.file will mean that this code will not build or run
+// on systems that have not been updated. I somewhat believe that Java
+// users should keep pretty well up to date for security reasons so hope
+// that few will be hurt by what I am, doing.
+
+import java.nio.file.*;
+import java.nio.file.attribute.*;
 
 class LispStream extends LispObject
 {
@@ -748,6 +759,55 @@ static int count = 0;
         }
         catch (Exception e)
         {   return Jlisp.nil;
+        }
+    }
+    
+    static LispObject fileDeleteMatch(String s)
+    {
+// The expectation here is that the string denoting the file can contain
+// "*" and "?". I am only going to support wildcards in the final component of
+// a path, and I will only delete regular files (not directories).
+//
+        class Deleter extends SimpleFileVisitor<Path>
+        {
+            private final PathMatcher m;
+            Deleter(String p)
+            {   m = FileSystems.getDefault().getPathMatcher("glob:" + p);
+            }
+            public FileVisitResult visitFile(Path f, BasicFileAttributes a)
+            {   Path n = f.getFileName();
+// For now I will display a message reporting on the file I am deleting. This
+// is temporary while this code feels very new.
+                if (n != null && m.matches(n))
+                {   System.out.printf("Delete %s%n", f.toString()); // @@@
+                    f.toFile().delete();
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        }
+        s = nameConvert(s);
+        try
+        {   int sep = s.lastIndexOf("/");
+            if (sep == -1) sep = s.lastIndexOf("\\");
+            String s1, s2;
+            if (sep == -1)
+            {   s1 = ".";
+                s2 = s;
+            }
+            else
+            {   s1 = s.substring(0, sep);
+                s2 = s.substring(sep+1);
+            }
+            System.out.printf("delete-file-match %s %s%n", s1, s2);
+            Deleter f = new Deleter(s2);
+            Files.walkFileTree(Paths.get(s1),
+                               EnumSet.noneOf(FileVisitOption.class),
+                               1, f);
+            return Jlisp.lispTrue;
+        }
+        catch (Exception e)
+        {   System.out.printf("Exception %s%n", e.toString());
+            return Jlisp.nil;
         }
     }
     

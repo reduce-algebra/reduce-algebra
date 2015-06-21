@@ -1,3 +1,5 @@
+% "profile.red"
+
 % Collect profile information about all REDUCE modules that have
 % associated test scripts.  The information is put in "profile.dat"
 % in the current directory but you then probably want to move it up
@@ -22,7 +24,7 @@ get_configuration_data();
 delete!-file "profile.dat";
 delete!-file "buildlogs/flaguse.log";
 
-% I do not think that profiling the regresison tests is a useful idea.
+% I do not think that profiling the regressison tests is a useful idea.
 
 for each x in reduce_regression_tests do
    reduce_test_cases := delete(x, reduce_test_cases);
@@ -31,5 +33,4 @@ profile_a_package reduce_test_cases;
 
 bye;
 
-
-
+% end of profile.red

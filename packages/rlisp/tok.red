@@ -139,19 +139,14 @@ symbolic procedure bytelist2id u;
 % abstraction here that writes the sequences of octets that make up the
 % UTF-8 representation of a single codepoint, and in the simple case I
 % just write byte at a time but for Jlisp (in particular) I need to
-% ensure that these are treated atomically. So jlisp has functions
+% ensure that these are treated atomically. So Jlisp has functions
 % to write 2, 3 and 4 bytes into a string and the intent is that these are
-% used when those bytes form part of a single UTF-8 group. I flag them
-% with 'lose here so that for jlisp the built-in versions happen. For CSL and
-% PSL I make writing 2, 3 or 4 bytes into procedures. I had wanted to make
+% used when those bytes form part of a single UTF-8 group. For PSL
+% I make writing 2, 3 or 4 bytes into procedures. I had wanted to make
 % these inline procedures or smacros but it is too early in the bootstrapping
 % for that. But the extra procedure call will only happen if an character
 % outside the basic Latin set (U+0000 to U+007f) is being processed, so I
-% am not too worried. Also note here that again for bootstrapping reasons
-% I have to write MEMQ using infix notation...
-
-if 'jlisp memq lispsystem!* then
-  flag('(string!-store1 string!-store2 string!-store3 string!-store4), 'lose);
+% am not too worried.
 
 symbolic procedure string!-store1(s, n, c);
   string!-store(s, n, c);

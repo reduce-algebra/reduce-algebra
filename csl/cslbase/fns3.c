@@ -1,4 +1,4 @@
-/*  fns3.c                          Copyright (C) 1989-2013 Codemist Ltd */
+/*  fns3.c                          Copyright (C) 1989-2015 Codemist Ltd */
 
 /*
  * Basic functions part 3.
@@ -6,7 +6,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1973,6 +1973,127 @@ Lisp_Object MS_CDECL Lsputv(Lisp_Object nil, int nargs, ...)
     if (n1 < 0 || n1 >= hl) return aerror1("putv-char", n);
     celt(v, n1) = (char)vx;
     return onevalue(x);
+}
+
+/*
+ * The next few correspond to multiple calls to string-store and are there
+ * so that if a string is updated in a way that is intended to put an UTL-8
+ * multi-byte sequnce into the middle of it then that can all be done in one
+ * call, not leaving an invalid UTF-8 sequence in a visible intermediate
+ * string. This would be an important abstraction if the underlying
+ * representation of strings was NOT in UTF-8 and the code around here
+ * was having to do mappings and conversions.
+ */
+
+Lisp_Object MS_CDECL Lsputv2(Lisp_Object nil, int nargs, ...)
+{
+    Header h;
+    va_list a;
+    int32_t vx1, vx2;
+    intptr_t n1, hl;
+    Lisp_Object v, n, x1, x2;
+    argcheck(nargs, 4, "sputv2");
+    va_start(a, nargs);
+    v = va_arg(a, Lisp_Object);
+    n = va_arg(a, Lisp_Object);
+    x1 = va_arg(a, Lisp_Object);
+    x2 = va_arg(a, Lisp_Object);
+    va_end(a);
+    CSL_IGNORE(nil);
+    if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_STRING)
+        return aerror1("putv-char2", v);
+    else if (!is_fixnum(n)) return aerror1("putv-char", n);
+    if (is_fixnum(x1)) vx1 = int_of_fixnum(x1);
+    else if (is_char(x1)) vx1 = code_of_char(x1);
+    else return aerror1("putv-char2 contents", x1);
+    if (is_fixnum(x2)) vx2 = int_of_fixnum(x2);
+    else if (is_char(x2)) vx2 = code_of_char(x2);
+    else return aerror1("putv-char2 contents", x2);
+    hl = length_of_header(h) - CELL;
+    n1 = int_of_fixnum(n);
+    if (n1 < 0 || n1+1 >= hl) return aerror1("putv-char2", n);
+    celt(v, n1) = (char)vx1;
+    celt(v, n1+1) = (char)vx2;
+    return onevalue(x2);
+}
+
+Lisp_Object MS_CDECL Lsputv3(Lisp_Object nil, int nargs, ...)
+{
+    Header h;
+    va_list a;
+    int32_t vx1, vx2, vx3;
+    intptr_t n1, hl;
+    Lisp_Object v, n, x1, x2, x3;
+    argcheck(nargs, 5, "sputv3");
+    va_start(a, nargs);
+    v = va_arg(a, Lisp_Object);
+    n = va_arg(a, Lisp_Object);
+    x1 = va_arg(a, Lisp_Object);
+    x2 = va_arg(a, Lisp_Object);
+    x3 = va_arg(a, Lisp_Object);
+    va_end(a);
+    CSL_IGNORE(nil);
+    if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_STRING)
+        return aerror1("putv-char2", v);
+    else if (!is_fixnum(n)) return aerror1("putv-char", n);
+    if (is_fixnum(x1)) vx1 = int_of_fixnum(x1);
+    else if (is_char(x1)) vx1 = code_of_char(x1);
+    else return aerror1("putv-char2 contents", x1);
+    if (is_fixnum(x2)) vx2 = int_of_fixnum(x2);
+    else if (is_char(x2)) vx2 = code_of_char(x2);
+    else return aerror1("putv-cha2r contents", x2);
+    if (is_fixnum(x3)) vx3 = int_of_fixnum(x3);
+    else if (is_char(x3)) vx3 = code_of_char(x3);
+    else return aerror1("putv-char3 contents", x3);
+    hl = length_of_header(h) - CELL;
+    n1 = int_of_fixnum(n);
+    if (n1 < 0 || n1+2 >= hl) return aerror1("putv-char3", n);
+    celt(v, n1) = (char)vx1;
+    celt(v, n1+1) = (char)vx2;
+    celt(v, n1+2) = (char)vx3;
+    return onevalue(x3);
+}
+
+Lisp_Object MS_CDECL Lsputv4(Lisp_Object nil, int nargs, ...)
+{
+    Header h;
+    va_list a;
+    int32_t vx1, vx2, vx3, vx4;
+    intptr_t n1, hl;
+    Lisp_Object v, n, x1, x2, x3, x4;
+    argcheck(nargs, 6, "sputv4");
+    va_start(a, nargs);
+    v = va_arg(a, Lisp_Object);
+    n = va_arg(a, Lisp_Object);
+    x1 = va_arg(a, Lisp_Object);
+    x2 = va_arg(a, Lisp_Object);
+    x3 = va_arg(a, Lisp_Object);
+    x4 = va_arg(a, Lisp_Object);
+    va_end(a);
+    CSL_IGNORE(nil);
+    if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_STRING)
+        return aerror1("putv-char2", v);
+    else if (!is_fixnum(n)) return aerror1("putv-char", n);
+    if (is_fixnum(x1)) vx1 = int_of_fixnum(x1);
+    else if (is_char(x1)) vx1 = code_of_char(x1);
+    else return aerror1("putv-char2 contents", x1);
+    if (is_fixnum(x2)) vx2 = int_of_fixnum(x2);
+    else if (is_char(x2)) vx2 = code_of_char(x2);
+    else return aerror1("putv-cha2r contents", x2);
+    if (is_fixnum(x3)) vx3 = int_of_fixnum(x3);
+    else if (is_char(x3)) vx3 = code_of_char(x3);
+    else return aerror1("putv-char3 contents", x3);
+    if (is_fixnum(x4)) vx4 = int_of_fixnum(x4);
+    else if (is_char(x4)) vx4 = code_of_char(x4);
+    else return aerror1("putv-char4 contents", x4);
+    hl = length_of_header(h) - CELL;
+    n1 = int_of_fixnum(n);
+    if (n1 < 0 || n1+3 >= hl) return aerror1("putv-char3", n);
+    celt(v, n1) = (char)vx1;
+    celt(v, n1+1) = (char)vx2;
+    celt(v, n1+2) = (char)vx3;
+    celt(v, n1+3) = (char)vx4;
+    return onevalue(x4);
 }
 
 Lisp_Object Lbpsupbv(Lisp_Object nil, Lisp_Object v)
@@ -3978,6 +4099,10 @@ setup_type const funcs3_setup[] =
     {"allocate-string",         Lsmkvect, too_many_1, wrong_no_1},
     {"putv-char",               wrong_no_3a, wrong_no_3b, Lsputv},
     {"string-store",            wrong_no_3a, wrong_no_3b, Lsputv},
+    {"string-store1",           wrong_no_3a, wrong_no_3b, Lsputv},
+    {"string-store2",           wrong_no_3a, wrong_no_3b, Lsputv2},
+    {"string-store3",           wrong_no_3a, wrong_no_3b, Lsputv3},
+    {"string-store4",           wrong_no_3a, wrong_no_3b, Lsputv4},
     {"bps-putv",                wrong_no_3a, wrong_no_3b, Lbpsputv},
     {"bps-getv",                too_few_2, Lbpsgetv, wrong_no_2},
     {"bps-upbv",                Lbpsupbv, too_many_1, wrong_no_1},
@@ -4049,4 +4174,3 @@ setup_type const funcs3_setup[] =
 };
 
 /* end of fns3.c */
-

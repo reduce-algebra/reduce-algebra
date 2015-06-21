@@ -580,6 +580,7 @@ static void startup1(String [] args) throws ResourceException
             lispTrue = null;
             modulus = 1;
             bigModulus = BigInteger.valueOf(modulus);
+            modulusIsBig = false;
             Specfn.progData = null;
             Specfn.progEvent = Specfn.NONE;
             errorCode = null;
@@ -958,6 +959,8 @@ static LispObject [] lit = new LispObject[Lit.names.length];
 
 static int modulus = 1;
 static BigInteger bigModulus = BigInteger.ONE;
+static boolean modulusIsBig = false;
+
 static int printprec = 6;
 
 static Fns1 fns1 = new Fns1();

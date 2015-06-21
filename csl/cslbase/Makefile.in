@@ -4955,6 +4955,19 @@ profile:	bootstrapreduce.img
 @canrun_TRUE@	chmod 664 $(gensrc)/*
 @canrun_FALSE@	echo Can not profile on this platform
 
+specialprofile:	bootstrapreduce.img
+@canrun_TRUE@	$(TRACE)mkdir -p buildlogs
+@canrun_TRUE@	chmod 664 $(gensrc)/*
+@canrun_TRUE@	./bootstrapreduce$(EXEEXT) -w -Dno_init_file -Dtracefluid \
+@canrun_TRUE@		$(CYGSRC)/profile.red -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
+@canrun_TRUE@		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
+@canrun_TRUE@		-- buildlogs/profile.log
+# I preserve the previous profile.dat as profile.dat.old
+@canrun_TRUE@	-$(CP) $(gensrc)/profile.dat $(gensrc)/profile.dat.old
+@canrun_TRUE@	mv profile.dat $(gensrc)
+@canrun_TRUE@	chmod 664 $(gensrc)/*
+@canrun_FALSE@	echo Can not profile on this platform
+
 prof-inst:	profile.dat
 	$(CP) profile.dat $(gensrc)
 	chmod 664 $(gensrc)/*

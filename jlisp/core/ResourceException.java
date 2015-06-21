@@ -1,16 +1,13 @@
 package uk.co.codemist.jlisp.core;
 
 
-/* $Id$ */
-
-
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 /**************************************************************************
- * Copyright (C) 1998-2011, Codemist Ltd.                A C Norman       *
+ * Copyright (C) 1998-2015, Codemist Ltd.                A C Norman       *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
@@ -39,6 +36,8 @@ package uk.co.codemist.jlisp.core;
  * DAMAGE.                                                                *
  *************************************************************************/
 
+// $Id$
+
 
 class ResourceException extends LispException
 {
@@ -65,3 +64,5 @@ static int time_limit = -1, space_limit = -1, io_limit = -1, errors_limit = -1;
 	this.details = details; 
     }
 }
+
+// end of ResouceException.java

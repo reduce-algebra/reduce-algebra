@@ -127,12 +127,19 @@ minireduce.img:
 # Please remake bootstrapreduce.jar ahead of this.
 profile:
 	java -jar bootstrapreduce.jar -w "$(C)/profile.red" \
+		-Dcpulimit= -Dconslimit= -Dno_init_file \
+		-D@srcdir="$(C)" -D@reduce="$(C)/../.." -L profile.log
+
+specialprofile:
+	java -jar bootstrapreduce.jar -w "$(C)/profile.red" \
+		-Dtracefluid -Dcpulimit= -Dconslimit= -Dno_init_file \
 		-D@srcdir="$(C)" -D@reduce="$(C)/../.." -L profile.log
 
 .PHONY:	smallprofile
 # Please remake bootstrapreduce.jar ahead of this.
 smallprofile:
 	java -jar bootstrapreduce.jar -w profile.red \
+		-Dcpulimit= -Dconslimit= -Dno_init_file \
 		-D@srcdir="$(C)" -D@reduce="$(C)/../.." -L smallprofile.log
 
 .PHONY:	testall

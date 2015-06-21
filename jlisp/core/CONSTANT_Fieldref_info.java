@@ -1,7 +1,7 @@
 package uk.co.codemist.jlisp.core;
 
 
-/* $Id$ */
+// $Id$
 
 
 //created 20/02/02 since it wasn't needed for Trivial.java

@@ -97,7 +97,7 @@ if memq('vsl, lispsystem!*) then
        threevectorp
        sort
 % stable!-sort stable!-sortip
-       lengthc prin2 princ),'lose)
+       lengthc prin2 princ substq),'lose)
 else
    flag('(atsoc copy eqcar gcdn geq lastpair leq mkquote neq reversip
        rplacw iplus itimes iplus2 itimes2 iadd1 isub1 iminus iminusp
@@ -112,9 +112,9 @@ else
        ceiling floor round clrhash puthash gethash remhash
        princ!-upcase princ!-downcase union intersection
        safe!-fp!-plus safe!-fp!-times safe!-fp!-quot threevectorp
-       sort stable!-sort stable!-sortip lengthc prin2 princ),'lose);
+       sort stable!-sort stable!-sortip lengthc prin2 princ substq
+       string!-store1 string!-store2 string!-store3 string!-store4), 'lose);
 
-flag('(substq), 'lose);
 
 !*argnochk := t;
 

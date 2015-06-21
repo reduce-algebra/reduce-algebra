@@ -1,8 +1,5 @@
 package uk.co.codemist.jlisp.core;
 
-
-/* $Id$ */
-
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
@@ -37,6 +34,9 @@ package uk.co.codemist.jlisp.core;
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
+
+// $Id$
+
 
 // U15.java
 

@@ -1,9 +1,5 @@
 package uk.co.codemist.jlisp.core;
 
-
-/* $Id$ */
-
-
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
@@ -39,6 +35,7 @@ package uk.co.codemist.jlisp.core;
  * DAMAGE.                                                                *
  *************************************************************************/
 
+// $Id$
 
 import java.math.*;
 import java.io.*;
@@ -242,6 +239,9 @@ public class LispSmallInteger extends LispInteger
     LispObject modMinus() throws Exception
     {
         if (value == 0) return this;
+        else if (Jlisp.modulusIsBig)
+            return LispInteger.valueOf(
+                Jlisp.bigModulus.subtract(BigInteger.valueOf(value)));
         else return valueOf(Jlisp.modulus - value);
     }
 
@@ -249,6 +249,10 @@ public class LispSmallInteger extends LispInteger
     {
         if (value == 0) 
             return Jlisp.error("attempt to take modular recip of zero");
+        else if (Jlisp.modulusIsBig)
+        {   return LispInteger.valueOf(
+                BigInteger.valueOf(value).modInverse(Jlisp.bigModulus));
+        }
         int a = Jlisp.modulus, b = value, s = 0, t = 1;
         while (b != 0)
         {   int q = a/b;
@@ -262,6 +266,10 @@ public class LispSmallInteger extends LispInteger
     LispObject safeModRecip() throws Exception
     {
         if (value == 0) return Jlisp.nil;
+        else if (Jlisp.modulusIsBig)
+        {   return LispInteger.valueOf(
+                BigInteger.valueOf(value).modInverse(Jlisp.bigModulus));
+        }
         int a = Jlisp.modulus, b = value, s = 0, t = 1;
         while (b != 0)
         {   int q = a/b;
@@ -274,6 +282,13 @@ public class LispSmallInteger extends LispInteger
 
     LispObject reduceMod() throws Exception
     {
+// If a number is small and the modulus is big then reduce(n) is just n if
+// that is positive, or (M+n) if n is negative.
+        if (Jlisp.modulusIsBig)
+        {   if (value >= 0) return this;
+            else return LispInteger.valueOf(
+                Jlisp.bigModulus.add(BigInteger.valueOf(value)));
+        }
         int r = value % Jlisp.modulus;
         if (r < 0) r += Jlisp.modulus;
         return valueOf(r);
@@ -486,6 +501,11 @@ public class LispSmallInteger extends LispInteger
 
     LispObject modExpt(int a) throws Exception
     {
+        if (Jlisp.modulusIsBig)
+        {    BigInteger r = BigInteger.valueOf(value);
+             r = r.modPow(BigInteger.valueOf(a), Jlisp.bigModulus);
+             return LispInteger.valueOf(r);
+        }
         long r = 1;
         long w = value;
         while (a != 0)
@@ -766,6 +786,12 @@ public class LispSmallInteger extends LispInteger
     LispObject modAddSmallInteger(LispSmallInteger a) throws Exception
     {
         int n = a.value + value;
+        if (Jlisp.modulusIsBig)
+        {   BigInteger r = BigInteger.valueOf(n);
+            if (r.compareTo(Jlisp.bigModulus) >= 0)
+                r = r.subtract(Jlisp.bigModulus);
+            return LispInteger.valueOf(r);
+        }
         if (n >= Jlisp.modulus) n -= Jlisp.modulus;
         return valueOf(n);
     }
@@ -773,6 +799,11 @@ public class LispSmallInteger extends LispInteger
     LispObject modSubtractSmallInteger(LispSmallInteger a) throws Exception
     {
         int n = a.value - value;
+        if (Jlisp.modulusIsBig)
+        {   BigInteger r = BigInteger.valueOf(n);
+            if (r.signum() < 0) r = r.add(Jlisp.bigModulus);
+            return LispInteger.valueOf(r);
+        }
         if (n < 0) n += Jlisp.modulus;
         return valueOf(n);
     }
@@ -780,6 +811,12 @@ public class LispSmallInteger extends LispInteger
     LispObject modMultiplySmallInteger(LispSmallInteger a) throws Exception
     {
         long n = (long)a.value * (long)value;
+        if (Jlisp.modulusIsBig)
+        {   BigInteger r = BigInteger.valueOf(n);
+// Everything here shoudl be positive, so life is good.
+            r = r.remainder(Jlisp.bigModulus);
+            return LispInteger.valueOf(r);
+        }
         return valueOf(n % Jlisp.modulus);
     }
 
@@ -787,6 +824,14 @@ public class LispSmallInteger extends LispInteger
     {
         if (value == 0) 
             return Jlisp.error("attempt to divide by (modular) zero");
+        if (Jlisp.modulusIsBig)
+        {   BigInteger p = BigInteger.valueOf(arg.value);
+            BigInteger q = BigInteger.valueOf(value);
+            BigInteger r = q.modInverse(Jlisp.bigModulus);
+            r = r.multiply(p);
+            r = r.remainder(Jlisp.bigModulus);
+            return LispInteger.valueOf(r);
+        }
         int a = Jlisp.modulus, b = value, s = 0, t = 1;
         while (b != 0)
         {   int q = a/b;
