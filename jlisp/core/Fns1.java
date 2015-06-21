@@ -2064,7 +2064,7 @@ class ErrorsetFn extends BuiltinFunction
                 }
 // Sometimes when debugging I will temporarily edit the next line by
 // writing "back || true" so that the backtarce is ALWAYS displayed!
-                if (back)
+                if (back || true)
                 {   LispStream ee =
                         (LispStream)Jlisp.lit[Lit.err_output].car/*value*/;
                     e.printStackTrace(new PrintWriter(new WriterToLisp(ee)));

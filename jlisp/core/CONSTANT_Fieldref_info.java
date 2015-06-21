@@ -8,7 +8,7 @@ package uk.co.codemist.jlisp.core;
 // exactly same as CONSTANT_Methodref_info with "Method" replaced by "Field"
 
 /**************************************************************************
- * Copyright (C) 1998-2011, Codemist Ltd.                A C Norman       *
+ * Copyright (C) 1998-2015, Codemist Ltd.                A C Norman       *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *

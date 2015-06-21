@@ -6,11 +6,11 @@ package uk.co.codemist.jlisp.core;
 
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2000.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
 //
 
 /**************************************************************************
- * Copyright (C) 1998-2011, Codemist Ltd.                A C Norman       *
+ * Copyright (C) 1998-2015, Codemist Ltd.                A C Norman       *
  *                            also contributions from Vijay Chauhan, 2002 *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
@@ -44,7 +44,9 @@ import java.math.*;
 
 // The implementations here are intended to avoid total stupidity about
 // overflow and accuracy, but are not striving for the very best 
-// least-significant-bit results.
+// least-significant-bit results. Hmmm in CSL I use the "crlibm" library so
+// that elementary functions end up perfectly rounded. It would be a lot of
+// work to achieve the same here.
 
 class MyMath
 {
