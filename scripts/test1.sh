@@ -261,6 +261,24 @@ fi
  
 ulimit -c 60
 
+# There are a number of "sed" operations I use to tidy up logs files
+# so that comparisons do not show up frivolous differences. I put the
+# scripts here so that if they need extending I have them in one neat place.
+
+SED1='/^Total time taken:/d;
+      /^Number of garbage/d;
+      /^Time: /d;
+      /^CRACK needed :/d;
+      /^time for init/d;
+      /^+++ levelt compiled/d;
+      /^\*\*\* (levelt): base/d;
+      /^Request to set constant bitsperword/d;
+      /^Step /d;
+      /^time to formulate/d;
+      /\*\*\* turned off switch/d;
+      /^max_gc_int :/d;
+      /^max_gc_fac :/d'
+
 #######################################################################
 # CSL testing
 #######################################################################
@@ -294,25 +312,11 @@ XXX
 cat $p.howlong.tmp >> $name-times/$p.rlg.tmp
 printf $showname...
 sed -e "/^Tested on /,//d" <$rlgfile |
-  sed -e '/^Total time taken:/d; /^Number of garbage/d' \
-      -e '/^Time: /d; /^CRACK needed :/d; /^time for init/d' \
-      -e '/^+++ levelt compiled/d; /^\*\*\* (levelt): base/d' \
-      -e '/^Request to set constant bitsperword/d' \
-      -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
-      -e '/^max_gc_int :/d' \
-      -e '/^max_gc_fac :/d' \
-       >$name-times/$p.rlg.orig
+  sed -e "$SED1" >$name-times/$p.rlg.orig
 sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
     -e "/OMIT/,/TIMO/d" <$name-times/$p.rlg.tmp | \
   sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
-  sed -e '/^Total time taken:/d; /^Number of garbage/d' \
-      -e '/^Time: /d; /^CRACK needed :/d; /^time for init/d' \
-      -e '/^+++ levelt compiled/d; /^\*\*\* (levelt): base/d' \
-      -e '/^Request to set constant bitsperword/d' \
-      -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
-      -e '/^max_gc_int :/d' \
-      -e '/^max_gc_fac :/d' \
-       >$name-times/$p.rlg
+  sed -e "$SED1" >$name-times/$p.rlg
 diff -B -w $name-times/$p.rlg.orig $name-times/$p.rlg >$name-times/$p.rlg.diff
 if test -s $name-times/$p.rlg.diff
   then printf "Diff is in $name-times/$p.rlg.diff "
@@ -374,25 +378,11 @@ XXX
 cat $p.howlong.tmp >> psl-times/$p.rlg.tmp
 printf "PSL..."
 sed -e "/^Tested on /,//d" <$rlgfile | \
-  sed -e '/^Total time taken:/d; /^Number of garbage/d' \
-      -e '/^Time: /d; /^CRACK needed :/d; /^time for init/d' \
-      -e '/^+++ levelt compiled/d; /^\*\*\* (levelt): base/d' \
-      -e '/^Request to set constant bitsperword/d' \
-      -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
-      -e '/^max_gc_int :/d' \
-      -e '/^max_gc_fac :/d' \
-     >psl-times/$p.rlg.orig
+  sed -e "$SED1" >psl-times/$p.rlg.orig
 sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
     -e "/OMIT/,/TIMO/d" <psl-times/$p.rlg.tmp | \
   sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
-  sed -e '/^Total time taken:/d; /^Number of garbage/d' \
-      -e '/^Time: /d; /^CRACK needed :/d; /^time for init/d' \
-      -e '/^+++ levelt compiled/d; /^\*\*\* (levelt): base/d' \
-      -e '/^Request to set constant bitsperword/d' \
-      -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
-      -e '/^max_gc_int :/d' \
-      -e '/^max_gc_fac :/d' \
-     >psl-times/$p.rlg
+  sed -e "$SED1" >psl-times/$p.rlg
 diff -B -w psl-times/$p.rlg.orig psl-times/$p.rlg >psl-times/$p.rlg.diff
 if test -s psl-times/$p.rlg.diff
   then echo "diff is in psl-times/$p.rlg.diff"
@@ -445,25 +435,11 @@ XXX
 cat $p.howlong.tmp >> $name-times/$p.rlg.tmp
 printf $showname...
 sed -e "/^Tested on /,//d" <$rlgfile |
-  sed -e '/^Total time taken:/d; /^Number of garbage/d' \
-      -e '/^Time: /d; /^CRACK needed :/d; /^time for init/d' \
-      -e '/^+++ levelt compiled/d; /^\*\*\* (levelt): base/d' \
-      -e '/^Request to set constant bitsperword/d' \
-      -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
-      -e '/^max_gc_int :/d' \
-      -e '/^max_gc_fac :/d' \
-       >$name-times/$p.rlg.orig
+  sed -e "$SED1" >$name-times/$p.rlg.orig
 sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
     -e "/OMIT/,/TIMO/d" <$name-times/$p.rlg.tmp | \
   sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
-  sed -e '/^Total time taken:/d; /^Number of garbage/d' \
-      -e '/^Time: /d; /^CRACK needed :/d; /^time for init/d' \
-      -e '/^+++ levelt compiled/d; /^\*\*\* (levelt): base/d' \
-      -e '/^Request to set constant bitsperword/d' \
-      -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
-      -e '/^max_gc_int :/d' \
-      -e '/^max_gc_fac :/d' \
-       >$name-times/$p.rlg
+  sed -e "$SED1" >$name-times/$p.rlg
 diff -B -w $name-times/$p.rlg.orig $name-times/$p.rlg >$name-times/$p.rlg.diff
 if test -s $name-times/$p.rlg.diff
   then printf "Diff is in $name-times/$p.rlg.diff "

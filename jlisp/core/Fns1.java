@@ -2063,8 +2063,11 @@ class ErrorsetFn extends BuiltinFunction
                     }
                 }
 // Sometimes when debugging I will temporarily edit the next line by
-// writing "back || true" so that the backtarce is ALWAYS displayed!
-                if (back || true)
+// writing "back || true" so that the backtrace is ALWAYS displayed! But
+// really if I want detailed backtraces everywhere I should just launch
+// with the "-g" flag that forces that. And/or get around to implementing
+// enable-errorset...
+                if (back)
                 {   LispStream ee =
                         (LispStream)Jlisp.lit[Lit.err_output].car/*value*/;
                     e.printStackTrace(new PrintWriter(new WriterToLisp(ee)));

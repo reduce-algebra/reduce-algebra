@@ -558,11 +558,24 @@ end comment;
 	% also algebraically. 
 
     symbolic;
-    n:=get('n,'basis);
+
+        % In symbolic mode data gets printed as raw Lisp structures, and
+        % the various Lisp systems used are now all 100% compatible about
+        % exactly where the wrape lines. This is especially true when the
+        % structure being printed inclouded dotted pairs. So rather than
+        % using the native Lisp printing code I use "portable_print" which
+        % is defined in alg/general.red and which should behave identically
+        % across systems. A simple user would not need to fuss.
+
+    portable_print (n:=get('n,'basis))$
 
 	% This needs even more time than the eqhull, of course.
 
-    u:=primarydecomposition!* n;
+    portable_print (u:=primarydecomposition!* n)$
+
+        % The next two lines generate concise simple output and so I
+        % trust Lisp's own printing.
+
     for each x in u collect easydim!* cadr x;
     for each x in u collect degree!* car x;
 

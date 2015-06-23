@@ -2141,14 +2141,11 @@ case TAG_CONS:
         }
         if (w != nil)
         {   stack[0] = w;
-            outprefix(NO, 3);
-            putc_stream(' ', active_stream);
+            outprefix(YES, 1);
             errexitvn(1);
             putc_stream('.', active_stream);
             errexitvn(1);
-            putc_stream(' ', active_stream);
-            errexitvn(1);
-            internal_prin(stack[0], 0);
+            internal_prin(stack[0], 1);
         }
         popv(1);
         outprefix(NO, 1);

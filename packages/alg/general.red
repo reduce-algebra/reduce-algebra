@@ -39,10 +39,53 @@ symbolic procedure carx(u,v);
    if null cdr u then car u
     else rerror(alg,5,list("Wrong number of arguments to",v));
 
-% We assume concat2 is defined in the underlying Lisp system.
+% There are places in the test scripts that print stuff as raw Lisp data.
+% CSL and PSL may not readily agree exactly about where to break lines
+% when output is long. This code may not be as good or general as the
+% built-in versions but should match exactly across platforms.
 
-% symbolic macro procedure concat u;
-%    if null u then nil else expand(cdr u,'concat2);
+fluid '(!*ll!*);
+
+symbolic procedure p_print(u, blankfirst);
+  if atom u then
+  begin
+    scalar n, e;
+% Vectors are treated however "explode" handles them (at present).
+    n := length (e := explode u);
+    if blankfirst then <<
+      if (posn() + n + 1) > !*ll!* then terpri()
+      else prin2 '!  >>
+    else if (posn()+n) > !*ll!* then terpri();
+    for each c in e do prin2 c
+  end
+  else <<
+    if blankfirst then <<
+      if (posn() + 2) > !*ll!* then terpri()
+      else prin2 '!  >>
+    else if (posn()+1) >= !*ll!* then terpri();
+    prin2 "(";
+    p_print(car u, nil);
+    while not atom (u := cdr u) do p_print(car u, t);
+    if u neq nil then <<
+      if (posn()+2) >= !*ll!* then <<
+        terpri();
+        prin2 "." >>
+      else prin2 " .";
+      p_print(u, t) >>;
+    if (posn()+1) >= !*ll!* then terpri();
+    prin2 ")" >>;
+      
+symbolic procedure portable_print u;
+  begin
+    scalar !*ll!*;
+% To avoid running into trouble with the line-wrapping of the underlying Lisp
+% I wrap here 4 spaces ahead of the nominal width.
+    !*ll!* := linelength nil - 4;
+    if posn() neq 0 then terpri();
+    p_print(u, nil);
+    terpri();
+    return u
+  end;
 
 symbolic procedure eqexpr u;
    % Returns true if U is an equation or similar structure
