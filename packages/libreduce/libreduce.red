@@ -46,11 +46,41 @@ global '(statcounter !*libreduce_active);
 
 !*libreduce_active := t;
 
+switch lrxml;
+
 procedure lr_sprint(u);
-   prin2 u;
+   if !*lrxml then
+      lr_printxml u
+   else
+      prin2 u;
 
 procedure lr_aprint(u);
-   prin2 reval u;
+   if !*lrxml then
+      lr_printxml reval u
+   else
+      prin2 reval u;
+
+procedure lr_printxml(s);
+   lr_printxml1(s, 0);
+
+procedure lr_printxml1(s, indent);
+   begin scalar op;
+      for i:=1:indent do prin2 " ";
+      if not pairp s then <<
+	 prin2 "<constant symbol=""";
+      	 prin2 s;
+	 prin2t """/>"
+      >> else <<
+	 op := pop s;
+	 prin2 "<apply symbol=""";
+      	 prin2 op;
+	 prin2t """>";
+	 for each arg in s do
+	    lr_printxml1(arg, indent + 2);
+      	 for i:=1:indent do prin2 " ";
+	 prin2t "</apply>"
+      >>
+   end;
 
 procedure lr_result();
    prin2 int2id 3;
