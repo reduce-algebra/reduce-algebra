@@ -339,44 +339,45 @@ for all x let acos(-x)=pi-acos(x),
 let
 
  sin( (~~w + ~~k*pi)/~~d)
-     => (if evenp fix(k/d) then 1 else -1)
-          * sin(w/d + ((k/d)-fix(k/d))*pi)
-      when w freeof pi and ratnump(k/d) and abs(k/d) >= 1,
+     => (if evenp fix repart(k/d) then 1 else -1)
+          * sin(w/d + ((k/d)-fix repart(k/d))*pi)
+      when ((ratnump(rp) and abs(rp) >= 1) where rp => repart(k/d)),
 
  sin( ~~k*pi/~~d) => sin((1-k/d)*pi)
       when ratnump(k/d) and k/d > 1/2,
 
  cos( (~~w + ~~k*pi)/~~d)
-     => (if evenp fix(k/d) then 1 else -1)
-          * cos(w/d + ((k/d)-fix(k/d))*pi)
-      when w freeof pi and ratnump(k/d) and abs(k/d) >= 1,
+     => (if evenp fix repart(k/d) then 1 else -1)
+          * cos(w/d + ((k/d)-fix repart(k/d))*pi)
+      when ((ratnump(rp) and abs(rp) >= 1) where rp => repart(k/d)),
 
  cos( ~~k*pi/~~d) => -cos((1-k/d)*pi)
       when ratnump(k/d) and k/d > 1/2,
 
+% next two rules needed with current definition of knowledge_about
  csc( (~~w + ~~k*pi)/~~d)
-     => (if evenp fix(k/d) then 1 else -1)
-          * csc(w/d + ((k/d)-fix(k/d))*pi)
-      when w freeof pi and ratnump(k/d) and fixp k and abs(k/d) >= 1,
+     => (if evenp fix repart(k/d) then 1 else -1)
+          * csc(w/d + ((k/d)-fix repart(k/d))*pi)
+      when ((ratnump(rp) and abs(rp) >= 1) where rp => repart(k/d)),
 
  csc( ~~k*pi/~~d) => csc((1-k/d)*pi)
       when ratnump(k/d) and k/d > 1/2,
 
  sec( (~~w + ~~k*pi)/~~d)
-     => (if evenp fix(k/d) then 1 else -1)
-          * sec(w/d + ((k/d)-fix(k/d))*pi)
-      when w freeof pi and ratnump(k/d) and fixp k and abs(k/d) >= 1,
+     => (if evenp fix repart(k/d) then 1 else -1)
+          * sec(w/d + ((k/d)-fix repart(k/d))*pi)
+      when ((ratnump(rp) and abs(rp) >= 1) where rp => repart(k/d)),
 
  sec( ~~k*pi/~~d) => -sec((1-k/d)*pi)
       when ratnump(k/d) and k/d > 1/2,
 
  tan( (~~w + ~~k*pi)/~~d)
-     => tan(w/d + ((k/d)-fix(k/d))*pi)
-      when w freeof pi and ratnump(k/d) and abs(k/d) >= 1,
+     => tan(w/d + ((k/d)-fix repart(k/d))*pi)
+      when ((ratnump(rp) and abs(rp) >= 1) where rp => repart(k/d)),
 
  cot( (~~w + ~~k*pi)/~~d)
-     => cot(w/d + ((k/d)-fix(k/d))*pi)
-      when w freeof pi and ratnump(k/d) and abs(k/d) >= 1;
+     => cot(w/d + ((k/d)-fix repart(k/d))*pi)
+      when ((ratnump(rp) and abs(rp) >= 1) where rp => repart(k/d));
 
 % The following rules follow the pattern
 %   sin(~x + pi/2)=> cos(x) when x freeof pi
@@ -493,44 +494,45 @@ let acsch(~x) => asinh(1/x) when knowledge_about(asinh,1/x,acsch),
 let
 
  sinh( (~~w + ~~k*pi)/~~d)
-      => (if evenp fix(i*k/d) then 1 else -1)
-           * sinh(w/d + (i*k/d-fix(i*k/d))*pi/i)
-       when w freeof pi and ratnump(i*k/d) and abs(i*k/d)>=1,
+      => (if evenp fix impart(k/d) then 1 else -1)
+           * sinh(w/d + (k/d-i*fix impart(k/d))*pi)
+       when ((ratnump(ip) and abs(ip) >= 1) where ip => impart(k/d)),
 
  sinh( ~~k*pi/~~d) => sinh((i-k/d)*pi)
        when ratnump(i*k/d) and abs(i*k/d) > 1/2,
 
  cosh( (~~w + ~~k*pi)/~~d)
-      => (if evenp fix(i*k/d) then 1 else -1)
-           * cosh(w/d + (i*k/d-fix(i*k/d))*pi/i)
-       when w freeof pi and ratnump(i*k/d) and abs(i*k/d)>=1,
+      => (if evenp fix impart(k/d) then 1 else -1)
+           * cosh(w/d + (k/d-i*fix impart(k/d))*pi)
+       when ((ratnump(ip) and abs(ip) >= 1) where ip => impart(k/d)),
 
  cosh( ~~k*pi/~~d) => -cosh((i-k/d)*pi)
        when ratnump(i*k/d) and abs(i*k/d) > 1/2,
 
+% next two rules needed with current definition of knowledge_about
  csch( (~~w + ~~k*pi)/~~d)
-      => (if evenp fix(i*k/d) then 1 else -1)
-           * csch(w + (i*k/d-fix(i*k/d))*pi/i)
-       when w freeof pi and ratnump(i*k/d) and fixp k and abs(i*k/d)>=1,
+      => (if evenp fix impart(k/d) then 1 else -1)
+           * csch(w/d + (k/d-i*fix impart(k/d))*pi)
+       when ((ratnump(ip) and abs(ip) >= 1) where ip => impart(k/d)),
 
  csch( ~~k*pi/~~d) => csch((i-k/d)*pi)
        when ratnump(i*k/d) and abs(i*k/d) > 1/2,
 
  sech( (~~w + ~~k*pi)/~~d)
-      => (if evenp fix(i*k/d) then 1 else -1)
-           * sech(w/d + (i*k/d-fix(i*k/d))*pi/i)
-       when w freeof pi and ratnump(i*k/d) and fixp k and abs(i*k/d)>=1,
+      => (if evenp fix impart(k/d) then 1 else -1)
+           * sech(w/d + (k/d-i*fix impart(k/d))*pi)
+       when ((ratnump(ip) and abs(ip) >= 1) where ip => impart(k/d)),
 
  sech( ~~k*pi/~~d) => -sech((i-k/d)*pi)
        when ratnump(i*k/d) and abs(i*k/d) > 1/2,
 
  tanh( (~~w + ~~k*pi)/~~d)
-      => tanh(w/d + (i*k/d-fix(i*k/d))*pi/i)
-       when w freeof pi and ratnump(i*k/d) and abs(i*k/d)>=1,
+      => tanh(w/d + (k/d-i*fix impart(k/d))*pi)
+       when ((ratnump(ip) and abs(ip) >= 1) where ip => impart(k/d)),
 
  coth( (~~w + ~~k*pi)/~~d)
-      => coth(w/d + (i*k/d-fix(i*k/d))*pi/i)
-       when w freeof pi and ratnump(i*k/d) and abs(i*k/d)>=1;
+      => coth(w/d + (k/d-i*fix impart(k/d))*pi)
+       when ((ratnump(ip) and abs(ip) >= 1) where ip => impart(k/d));
 
 % The following rules follow the pattern
 %   sinh(~x + i*pi/2)=> cosh(x) when x freeof pi

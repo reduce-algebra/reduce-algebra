@@ -148,5 +148,75 @@ sin(z+3*arbint(1)*pi);
  % no longer crashes
 sin(z-3*arbint(1)*pi);
 
+% better conditions on pi shifts
+sin(1/pi+pi);
+off mcd;
+sin(1/pi+pi);
+on mcd;
+
+sin(pi^2+pi);
+cos(pi^2+pi);
+csc(pi^2+pi);
+sec(pi^2+pi);
+tan(pi^2+pi);
+cot(pi^2+pi);
+
+sin(2i*pi+pi);
+cos(2i*pi+pi);
+csc(2i*pi+pi);
+sec(2i*pi+pi);
+tan(2i*pi+pi);
+cot(2i*pi+pi);
+
+sinh(2i*pi+pi);
+cosh(2i*pi+pi);
+csch(2i*pi+pi);
+sech(2i*pi+pi);
+tanh(2i*pi+pi);
+coth(2i*pi+pi);
+
+on complex;
+sin(2i*pi+pi);
+cos(2i*pi+pi);
+csc(2i*pi+pi);
+sec(2i*pi+pi);
+tan(2i*pi+pi);
+cot(2i*pi+pi);
+sinh(2i*pi+pi);
+cosh(2i*pi+pi);
+csch(2i*pi+pi);
+sech(2i*pi+pi);
+tanh(2i*pi+pi);
+coth(2i*pi+pi);
+off complex;
+
+sin(3/5*pi);
+cos(3/5*pi);
+csc(3/5*pi);
+sec(3/5*pi);
+tan(3/5*pi);
+cot(3/5*pi);
+
+sin(-5/7*pi);
+cos(-5/7*pi);
+csc(-5/7*pi);
+sec(-5/7*pi);
+tan(-5/7*pi);
+cot(-5/7*pi);
+
+sinh(3/5*i*pi);
+cosh(3/5*i*pi);
+csch(3/5*i*pi);
+sech(3/5*i*pi);
+tanh(3/5*i*pi);
+coth(3/5*i*pi);
+
+sinh(-5/7*i*pi);
+cosh(-5/7*i*pi);
+csch(-5/7*i*pi);
+sech(-5/7*i*pi);
+tanh(-5/7*i*pi);
+coth(-5/7*i*pi);
+
 end;
 
