@@ -136,7 +136,7 @@ procedure exfrdata_putlevel(ed, l);       putv(ed, 10, l);
 procedure exfrdata_putmode(ed, m);        putv(ed, 11, m);
 procedure exfrdata_puttarget(ed, tgt);    putv(ed, 12, tgt);
 
-asserted procedure exfrdata_init(phi: OfFormula): ExfrData;
+asserted procedure exfrdata_init(phi: QfFormula): ExfrData;
    % [phi] is a quantifier-free formula in CNF.
    begin scalar ed, varl, oo, lvlal, cc;
       integer n, i;
