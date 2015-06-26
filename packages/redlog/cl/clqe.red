@@ -591,11 +591,15 @@ asserted procedure cl_qeblock(f: QfFormula, q: Quantifier, varl: KernelL, theo: 
       return {rvl, for each x in jl collect rl_nnfnot car x . cdr x, theo}
    end;
 
+switch ofsfvs;  % temporary for development
+
 asserted procedure cl_qeblock1(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
    % Quantifier elimination for one block subroutine. The result contains the
    % list of variables for which elimination failed, the (possibly partial)
    % possibly negated elimination result as a JunctionL, and the new theory.
-   if !*rlqeheu then
+   if !*ofsfvs and rl_cname car rl_set nil eq 'ofsf then
+      vs_block(f, varl, theo, ans, bvl)
+   else if !*rlqeheu then
       cl_qeblock2(f,varl,theo,ans,bvl)
    else
       cl_qeblock3(f,varl,theo,ans,bvl);

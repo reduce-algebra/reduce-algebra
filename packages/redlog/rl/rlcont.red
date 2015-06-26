@@ -126,7 +126,7 @@ procedure rl_exit();
 procedure rl_enter(argl);
    begin scalar w,enter,cid,usedcname;
       usedcname := car argl;
-      cid := get(usedcname,'rl_calias) or usedcname;
+      cid := rl_cname usedcname;
       argl := cdr argl;
       w := errorset({'load!-package,mkquote(cid)},nil,!*backtrace)
 	 where !*msg=nil;
@@ -159,6 +159,9 @@ procedure rl_enter(argl);
       rmsubs();
       return nil
    end;
+
+procedure rl_cname(usedcname);
+   get(usedcname, 'rl_calias) or usedcname;
 
 procedure rl_onp(s);
    eval intern compress append(explode '!*,explode s);
