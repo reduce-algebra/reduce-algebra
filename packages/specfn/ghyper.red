@@ -518,7 +518,8 @@ symbolic procedure dfform_hypergeometric(ghfform,dfvar,n);
 		         'list . for each el in a collect {'plus, el, 1},
 		         'list . for each el in b collect {'plus, el, 1},
                          var};
-             result := multsq(fct,result) >>;
+             result := multsq(fct,result);
+	     if dfvar neq var then result := multsq(result,simp!*{'df,var,dfvar}) >>;
     if n neq 1
       then result := multsq(!*t2q((ghfform .** (n-1)) .* n),result);
     return result;
