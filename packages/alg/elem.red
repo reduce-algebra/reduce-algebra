@@ -597,7 +597,7 @@ impart(pi) := 0$
 for all x let df(acos(x),x)= -sqrt(1-x**2)/(1-x**2),
               df(asin(x),x)= sqrt(1-x**2)/(1-x**2),
               df(atan(x),x)= 1/(1+x**2),
-              df(acosh(x),x)= sqrt(x**2-1)/(x**2-1),
+              df(acosh(x),x)= sqrt(x-1)*sqrt(x+1)/(x**2-1),
               df(acot(x),x)= -1/(1+x**2),
               df(acoth(x),x)= -1/(1-x**2),
               df(asinh(x),x)= sqrt(x**2+1)/(x**2+1),
@@ -622,7 +622,7 @@ let df(acsc(~x),x) =>  -1/(x*sqrt(x**2 - 1)),
 %   df(asec(~x),x) => 1/(x*sqrt(x**2 - 1)),  % Only true for abs x>1.
     df(asec(~x),x) => 1/(x^2*sqrt(1-1/x^2)),
     df(acsch(~x),x)=> -1/(x*sqrt(1+ x**2)),
-    df(asech(~x),x)=> -1/(x*sqrt(1- x**2));
+    df(asech(~x),x)=> -1/(x*sqrt(1- x)*sqrt(1+x));
 
 % rules for atan2  
 let df(atan2(~y,~x),~z) => (x*df(y, z)-y*df(x, z))/(x^2+y^2);
@@ -767,17 +767,17 @@ invhyprules := {
   cosh(~n*atanh ~u) => cosh((n-2)*atanh u) * (1+u^2)/(1-u^2) +
                        sinh((n-2)*atanh u) * 2*u/(1-u^2)
                        when fixp n and n>2,
-  sinh(acosh ~u) => sqrt(u^2-1),
+  sinh(acosh ~u) => sqrt(u-1)*sqrt(u+1),
   cosh(asinh ~u) => sqrt(1+u^2),
-  sinh(2*acosh ~u) => 2 * u * sqrt(u^2-1),
+  sinh(2*acosh ~u) => 2 * u * sqrt(u-1)*sqrt(u+1),
   cosh(2*acosh ~u) => 2*u^2 - 1,
   sinh(2*asinh ~u) => 2 * u * sqrt(1+u^2),
   cosh(2*asinh ~u) => 1 + 2*u^2,
   sinh(~n*acosh ~u) => sinh((n-2)*acosh u) * (2*u^2 - 1) +
-                       cosh((n-2)*acosh u) * 2 * u * sqrt(u^2-1)
+                       cosh((n-2)*acosh u) * 2 * u * sqrt(u-1)*sqrt(u+1)
                        when fixp n and n>2,
   cosh(~n*acosh ~u) => cosh((n-2)*acosh u) * (2*u^2 - 1) +
-                       sinh((n-2)*acosh u) * 2 * u * sqrt(u^2-1)
+                       sinh((n-2)*acosh u) * 2 * u * sqrt(u-1)*sqrt(u+1)
                        when fixp n and n>2,
   sinh(~n*asinh ~u) => sinh((n-2)*asinh u) * (1 + 2*u^2) +
                        cosh((n-2)*asinh u) * 2 * u * sqrt(1+u^2)
@@ -810,7 +810,7 @@ let trig_imag_rules;
 % Generalized periodicity rules for trigonometric functions.
 % FJW, 16 October 1996.
 % exp rule corrected and others generalised to work for negative n
-% by AB March 2015 (negative n would give error)
+% by AB March 2015 (negative n used to give error)
 
 let {
  cos(~n*pi*arbint(~i) + ~~x) => cos((if evenp n then 0 else 1)*pi*arbint(i) + x)
