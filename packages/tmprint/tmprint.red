@@ -2428,6 +2428,7 @@ symbolic procedure fancy!-hypergeometric u;
    w:=fancy!-print!-one!-index length a2;
    if testing!-width!* and w eq 'failed then return w;
    fancy!-prin2!*("\left(\left.",nil);
+   fancy!-prin2!*("{}",0);
    w := w eq 'failed or fancy!-print!-indexlist1(a1,'!^,'!*comma!*);
    w := w eq 'failed or fancy!-print!-indexlist1(a2,'!_,'!*comma!*);
    fancy!-prin2!*("\,",1);
