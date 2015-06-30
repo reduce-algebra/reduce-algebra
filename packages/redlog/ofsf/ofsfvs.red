@@ -42,7 +42,10 @@ rlvarsellvl!* := 1;
 
 % data types and access functions
 
-struct VSvs checked by VSvsP;  % virtual substitution
+struct VSsu checked by VSsuP;  % virtual substitution
+struct VSvs checked by VSvsP;  % virtual substitution: test point substitution
+struct VSdg checked by VSdgP;  % virtual substitution: degree shift
+struct VSar checked by VSarP;  % virtual substitution: arbitrary
 struct VStp checked by VStpP;  % test point
 struct VSnd checked by VSndP;  % QE tree node
 struct VSco checked by VScoP;  % container of nodes
@@ -53,15 +56,24 @@ struct VSdb checked by VSdbP;  % virtual substitution data for a block
 struct VStpL checked by VStpLP;  % list of test points
 struct VSndL checked by VSndLP;  % list of QE tree nodes
 
-procedure VSvsP(s);  % virtual substitution
-   null s or (pairp s and car s eq 'vsvs);
+procedure VSsuP(s);  % virtual substitution
+   null s or VSarP s or VSdgP s or VSvsP s;
+
+procedure VSvsP(s);  % virtual substitution: test point substitution
+   pairp s and car s eq 'vsvs;
+
+procedure VSdgP(s);  % virtual substitution: degree shift
+   pairp s and car s eq 'vsdg;
+
+procedure VSarP(s);  % virtual substitution: arbitrary
+   pairp s and car s eq 'vsar;
 
 procedure VStpP(s);  % test point
    % TODO: Specify this data type.
    pairp s;
 
 procedure VSndP(s);  % QE tree node
-   null s or (pairp s and car s eq 'vsnd);
+   pairp s and car s eq 'vsnd;
 
 procedure VScoP(s);  % container of nodes
    listp s;
@@ -81,19 +93,55 @@ procedure VStpLP(s);  % list of test points
 procedure VSndLP(s);  % list of QE tree nodes
    null s or (pairp s and VSndP car s and VSndLP cdr s);
 
-asserted procedure vsvs_mk(v: Kernel, tp: VStp);
-   % Virtual substitution make.
+asserted procedure vssu_vpp(vs: VSsu): Boolean;
+   % Virtual substitution test point substitution predicate.
+   pairp vs and car vs eq 'vsvs;
+
+asserted procedure vssu_dgp(vs: VSsu): Boolean;
+   % Virtual substitution degree shift predicate.
+   pairp vs and car vs eq 'vsdg;
+
+asserted procedure vssu_arp(vs: VSsu): Boolean;
+   % Virtual substitution arbitrary predicate.
+   pairp vs and car vs eq 'vsar;
+
+asserted procedure vsvs_mk(v: Kernel, tp: VStp): VSsu;
+   % Virtual substitution test point substitution make.
    {'vsvs, v, tp};
 
-asserted procedure vsvs_v(vs: VSvs);
-   % Virtual substitution variable.
+asserted procedure vsvs_v(vs: VSvs): Kernel;
+   % Virtual substitution test point substitution variable.
    nth(vs, 2);
 
-asserted procedure vsvs_tp(vs: VSvs);
-   % Virtual substitution test point.
+asserted procedure vsvs_tp(vs: VSvs): VStp;
+   % Virtual substitution test point substitution test point.
    nth(vs, 3);
 
-asserted procedure vsnd_mk(flg: Boolean, vs: VSvs, varl: KernelL, f: QfFormula, p: VSnd): VSnd;
+asserted procedure vsdg_mk(v: Kernel, g: Integer, sv: Kernel): VSsu;
+   % Virtual substitution degree shift make.
+   {'vsdg, v, g, sv};
+
+asserted procedure vsdg_v(vs: VSdg): Integer;
+   % Virtual substitution degree shift variable.
+   nth(vs, 2);
+
+asserted procedure vsdg_g(vs: VSdg): Integer;
+   % Virtual substitution degree shift gcd.
+   nth(vs, 3);
+
+asserted procedure vsdg_sv(vs: VSdg): Kernel;
+   % Virtual substitution degree shift shadow variable.
+   nth(vs, 4);
+
+asserted procedure vsar_mk(v: Kernel): VSsu;
+   % Virtual substitution arbitrary make.
+   {'vsar, v};
+
+asserted procedure vsar_v(vs: VSar): Kernel;
+   % Virtual substitution arbitrary variable.
+   nth(vs, 2);
+
+asserted procedure vsnd_mk(flg: Boolean, vs: VSsu, varl: KernelL, f: QfFormula, p: VSnd): VSnd;
    % QE tree node make. [flg] denotes whether virtual substitution
    % [vs] needs to be applied; [varl] is a list of variables to be
    % eliminated; [f] is a quantifier-free formula; [p] is the parent
@@ -104,7 +152,7 @@ asserted procedure vsnd_flg(nd: VSnd): Boolean;
    % QE tree node flag.
    nth(nd, 2);
 
-asserted procedure vsnd_vs(nd: VSnd): VSvs;
+asserted procedure vsnd_su(nd: VSnd): VSsu;
    % QE tree node virtual substitution.
    nth(nd, 3);
 
@@ -229,7 +277,7 @@ asserted procedure vsdb_new(): VSdb;
       putv(vdb, 3, 'undefined);        % global background theory
       putv(vdb, 4, 'undefined);        % do not make assumptions on variables in [bvl]
       putv(vdb, 5, 'undefined);        % whether we should compute answers
-      putv(vdb, 6, 'undefined);        % pool of QE tree nodes: working, succes, and failure
+      putv(vdb, 6, 'undefined);        % pool of QE tree nodes: working, success, and failure
       % putv(vdb, 7, nil);      % QEA flag; quantifier elimination with answers
       % putv(vdb, 8, nil);      % QEASTD flag; quantifier elimination with standard answers
       % putv(vdb, 9, nil);      % QEGEN flag; generic quantifier elimination
@@ -253,14 +301,31 @@ procedure vsdb_putbvl(vdb, bvl);                  putv(vdb, 4, bvl);
 procedure vsdb_putans(vdb, ans);                  putv(vdb, 5, ans);
 procedure vsdb_puttree(vdb, tree);                putv(vdb, 6, tree);
 
-asserted procedure vsvs_apply(vs: VSvs, f: QfFormula): QfFormula;
+asserted procedure vssu_apply(vs: VSsu, f: QfFormula): QfFormula;
    % Virtual substitution apply.
+   if vssu_vpp vs then
+      vsvs_apply(vs, f)
+   else if vssu_dgp vs then
+      vsdg_apply(vs, f)
+   else if vssu_arp vs then
+      vsar_apply(vs, f);
+
+asserted procedure vsvs_apply(vs: VSvs, f: QfFormula): QfFormula;
+   % Virtual substitution test point substitution apply.
    % TEMPORARY! Using old code to have something runnable.
    begin scalar v, tp;
       v := vsvs_v vs;
       tp := vsvs_tp vs;
       return cdr apply(car tp, nil . nil . f . v . cdr tp)
    end;
+
+asserted procedure vsdg_apply(vs: VSdg, f: QfFormula): QfFormula;
+   % Virtual substitution degree shift apply.
+   f;
+
+asserted procedure vsar_apply(vs: VSar, f: QfFormula): QfFormula;
+   % Virtual substitution arbitrary apply.
+   f;
 
 asserted procedure vsnd_expand(nd: VSnd): VSndL;
    % QE tree node expand. Returns a list of QE tree nodes. The list is
@@ -354,38 +419,40 @@ asserted procedure vs_mainloop(vdb: VSdb);
    % Quantifier elimination for one block subroutine. This procedure
    % realizes the main loop of QE for a single block of quantifiers.
    % No meaningful return value. [vdb] is modified in-place.
-   begin scalar tree, n, varl, f, childl;
+   begin scalar n, tree, varl, f, su, childl;
       tree := vsdb_tree vdb;
       while vstr_todop tree do <<
 	 n . tree := vstr_wget tree;
 	 varl := vsnd_varl n;
 	 f := vsnd_f n;
-	 if vsnd_flg n then <<
-	    f := vsvs_apply(vsnd_vs n, f);
-	    for each ff in vs_splitor f do
+	 su := vsnd_su n;
+	 if vsnd_flg n then % we need to substitute
+	    for each ff in vs_splitor vssu_apply(su, f) do
 	       tree := vstr_winsert(tree,
-		  vsnd_mk(nil, vsnd_vs n, varl, ff, vsnd_parent n))
-	 >> else if not vstr_hmember(tree, f) then <<
-	    tree := vstr_hinsert(tree, f);
-	    if null varl then <<
+		  vsnd_mk(nil, su, varl, ff, vsnd_parent n))
+	 else  % substitution was already done
+	    if not vstr_hmember(tree, f) or vssu_arp su then <<
+	       if not vssu_arp su then  % we know that [f] is not in the hash table
+	       	  tree := vstr_hinsert(tree, f);
 	       if f eq 'true then
-		  tree := vstr_dropall tree;
-	       tree := vstr_sinsert(tree, n)
-	    >> else <<
-	       childl := vsnd_expand n;
-	       if childl then
-		  for each child in childl do
-		     tree := vstr_winsert(tree, child)
-	       else
-		  tree := vstr_finsert(tree, n)
+	       	  tree := vstr_dropall tree;
+	       if null varl then
+	       	  tree := vstr_sinsert(tree, n)
+	       else <<
+	       	  childl := vsnd_expand n;
+	       	  if childl then
+		     for each child in childl do
+		     	tree := vstr_winsert(tree, child)
+	       	  else
+		     tree := vstr_finsert(tree, n)
+	       >>
 	    >>
-	 >>
       >>;
       vsdb_puttree(vdb, tree);
       return
    end;
 
-% TODO: Move to following procedure to cl module.
+% TODO: Move the following procedure to cl module.
 asserted procedure vs_splitor(f: QfFormula): QfFormulaL;
    if rl_op f eq 'or then
       rl_argn f
@@ -410,6 +477,17 @@ asserted procedure vsnd_printSummary(nd: VSnd);
 
 asserted procedure vsndl_printLength(ndl: VSndL);
    ioto_prin2t {"VS node list of length ", length ndl};
+
+asserted procedure vssu_printSummary(vs: VSsu);
+   <<
+      ioto_prin2 {"VS: "};
+      if vssu_vpp vs then
+      	 ioto_prin2t {vsvs_v vs, " = test point"}
+      else if vssu_dgp vs then
+      	 ioto_prin2t {vsdg_v vs, " = sqrt ", vsdg_g vs, " from ", vsdg_sv vs}
+      else if vssu_arp vs then
+      	 ioto_prin2t {vsar_v vs, " = arbitrary"}
+   >>;
 
 endmodule;  % ofsfvs
 
