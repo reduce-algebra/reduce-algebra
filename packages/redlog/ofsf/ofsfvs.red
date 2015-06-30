@@ -57,7 +57,7 @@ struct VStpL checked by VStpLP;  % list of test points
 struct VSndL checked by VSndLP;  % list of QE tree nodes
 
 procedure VSsuP(s);  % virtual substitution
-   null s or VSarP s or VSdgP s or VSvsP s;
+   VSarP s or VSdgP s or VSvsP s;
 
 procedure VSvsP(s);  % virtual substitution: test point substitution
    pairp s and car s eq 'vsvs;
@@ -121,7 +121,7 @@ asserted procedure vsdg_mk(v: Kernel, g: Integer, sv: Kernel): VSsu;
    % Virtual substitution degree shift make.
    {'vsdg, v, g, sv};
 
-asserted procedure vsdg_v(vs: VSdg): Integer;
+asserted procedure vsdg_v(vs: VSdg): Kernel;
    % Virtual substitution degree shift variable.
    nth(vs, 2);
 
@@ -321,7 +321,22 @@ asserted procedure vsvs_apply(vs: VSvs, f: QfFormula): QfFormula;
 
 asserted procedure vsdg_apply(vs: VSdg, f: QfFormula): QfFormula;
    % Virtual substitution degree shift apply.
-   f;
+   begin
+      f := cl_apply2ats1(f, 'vs_decdeg, {vsdg_v vs, vsdg_g vs, vsdg_sv vs});
+      if not evenp vsdg_g vs then
+	 return f;
+      return rl_mk2('and, ofsf_0mk2('geq, vsdg_sv vs), f)
+   end;
+
+asserted procedure vs_decdeg(at: QfFormula, v: Kernel, g: Integer, sv: Kernel): QfFormula;
+   % Decrement degree of atomic formula. Replace each occurence of
+   % [v^n] by [sv^(n/g)].
+   begin scalar f;
+      % assert(at is atomic);
+      f := rl_arg2l at;
+      f := sfto_decdegf(f, v, g);
+      return ofsf_0mk2(rl_op at, sfto_renamef(f, v, sv))
+   end;
 
 asserted procedure vsar_apply(vs: VSar, f: QfFormula): QfFormula;
    % Virtual substitution arbitrary apply.
@@ -330,18 +345,62 @@ asserted procedure vsar_apply(vs: VSar, f: QfFormula): QfFormula;
 asserted procedure vsnd_expand(nd: VSnd): VSndL;
    % QE tree node expand. Returns a list of QE tree nodes. The list is
    % empty iff expanding failed.
-   <<
+   begin scalar w;
       assert(vsnd_varl nd);
       assert(not vsnd_flg nd);
+      w := vsnd_expandNO nd;
+      if w then
+	 return w;
+      w := vsnd_expandDG nd;
+      if w then
+	 return w;
+      % Now each variable occurs, and no degree shift is possible.
       if eqn(rlvarsellvl!*, 1) then
-	 vsnd_expand1 nd
-      else if eqn(rlvarsellvl!*, 2) then
-	 vsnd_expand2 nd
-      else if eqn(rlvarsellvl!*, 3) then
-	 vsnd_expand3 nd
-      else if eqn(rlvarsellvl!*, 4) then
-	 vsnd_expand4 nd
-   >>;
+	 return vsnd_expand1 nd;
+      if eqn(rlvarsellvl!*, 2) then
+	 return vsnd_expand2 nd;
+      if eqn(rlvarsellvl!*, 3) then
+	 return vsnd_expand3 nd;
+      if eqn(rlvarsellvl!*, 4) then
+	 return vsnd_expand4 nd
+   end;
+
+asserted procedure vsnd_expandNO(nd: VSnd): VSndL;
+   % QE tree node expand by non-occurring variables. Returns either
+   % [nil] or a one element list of QE tree nodes. [nil] is returned
+   % iff expand w.r.t. non-occurring variables is not possible, i.e.,
+   % when every variable from [vsnd_varl nd] occurs in [vsnd_f nd].
+   begin scalar vl, rvl, res, v;
+      vl := vsnd_varl nd;
+      rvl := cl_fvarl1 vsnd_f nd;
+      while vl and null res do <<
+	 v := pop vl;
+	 if not (v memq rvl) then
+	    res := {vsnd_mk(nil, vsar_mk v, delq(v, vsnd_varl nd), vsnd_f nd, nd)}
+      >>;
+      return res
+   end;
+
+asserted procedure vsnd_expandDG(nd: VSnd): VSndL;
+   % QE tree node expand by degree shift. Returns either [nil] or a
+   % one element list of QE tree nodes. [nil] is returned iff degree
+   % shift is not possible w.r.t. no variable in [vsnd_varl nd].
+   begin scalar vl, f, res, v, sv; integer g;
+      vl := vsnd_varl nd;
+      f := vsnd_f nd;
+      if vssu_dgp vsnd_su nd then
+	 vl := delq(vsdg_sv vsnd_su nd, vl);  % degree shift is not possible w.r.t. the most recent shadow variable
+      while vl and null res do <<
+	 v := pop vl;
+	 g := vs_dgcd(f, v);
+	 if g > 1 then <<
+	    sv := vs_shadow v;
+	    res := {vsnd_mk(t, vsdg_mk(v, g, sv),
+	       subst(sv, v, vsnd_varl nd), vsnd_f nd, nd)}
+	 >>
+      >>;
+      return res
+   end;
 
 asserted procedure vsnd_expand1(nd: VSnd): VSndL;
    % QE tree node expand1: Use the first variable.
@@ -419,20 +478,21 @@ asserted procedure vs_mainloop(vdb: VSdb);
    % Quantifier elimination for one block subroutine. This procedure
    % realizes the main loop of QE for a single block of quantifiers.
    % No meaningful return value. [vdb] is modified in-place.
-   begin scalar n, tree, varl, f, su, childl;
+   begin scalar n, tree, varl, f, su, mbr, childl;
       tree := vsdb_tree vdb;
       while vstr_todop tree do <<
 	 n . tree := vstr_wget tree;
 	 varl := vsnd_varl n;
 	 f := vsnd_f n;
 	 su := vsnd_su n;
-	 if vsnd_flg n then % we need to substitute
+	 if vsnd_flg n then  % substitution has not been done yet
 	    for each ff in vs_splitor vssu_apply(su, f) do
 	       tree := vstr_winsert(tree,
 		  vsnd_mk(nil, su, varl, ff, vsnd_parent n))
-	 else  % substitution was already done
-	    if not vstr_hmember(tree, f) or vssu_arp su then <<
-	       if not vssu_arp su then  % we know that [f] is not in the hash table
+	 else <<  % substitution was already done
+	    mbr := vstr_hmember(tree, f);
+	    if not mbr or vssu_arp su then <<
+	       if not mbr then
 	       	  tree := vstr_hinsert(tree, f);
 	       if f eq 'true then
 	       	  tree := vstr_dropall tree;
@@ -447,17 +507,57 @@ asserted procedure vs_mainloop(vdb: VSdb);
 		     tree := vstr_finsert(tree, n)
 	       >>
 	    >>
+	 >>
       >>;
       vsdb_puttree(vdb, tree);
       return
    end;
 
-% TODO: Move the following procedure to cl module.
+% TODO: Move the following procedure to cl.
 asserted procedure vs_splitor(f: QfFormula): QfFormulaL;
    if rl_op f eq 'or then
       rl_argn f
    else
       {f};
+
+% TODO: Move the following procedure to cl.
+asserted procedure vs_shadow(v: Kernel): Kernel;
+   % Create shadow variable for [v].
+   begin scalar res;
+      res := gensym();
+      put(res, 'shadow, v);
+      return res
+   end;
+
+% TODO: Move the following procedure to cl.
+asserted procedure vs_dgcd(f: QfFormula, v: Kernel): Integer;
+   % Degree gcd. Returns the gcd of the exponents of [v] in [f]. If
+   % [v] does not occur in [f], then [0] is returned.
+   begin scalar atl, at; integer g;
+      atl := cl_atl1 f;
+      while atl and not eqn(g, 1) do <<
+	 at := pop atl;
+	 g := gcdn(g, sfto_dgcdf(ofsf_arg2l at, v))
+      >>;
+      return g
+   end;
+
+% TODO: Move the following procedure to sfto.
+asserted procedure sfto_dgcdf(f: SF, v: Kernel): Integer;
+   % Degree gcd. Returns the gcd of the exponents of [v] in [f]. If
+   % [v] does not occur in [f], then [0] is returned.
+   begin scalar oo; integer g;
+      if domainp f then
+	 return 0;
+      oo := setkorder {v};
+      f := reorder f;
+      while not domainp f and mvar f eq v and not eqn(g, 1) do <<
+	 g := gcdn(g, ldeg f);
+	 f := red f
+      >>;
+      setkorder oo;
+      return g
+   end;
 
 % functions mainly for debugging purposes
 
@@ -484,7 +584,7 @@ asserted procedure vssu_printSummary(vs: VSsu);
       if vssu_vpp vs then
       	 ioto_prin2t {vsvs_v vs, " = test point"}
       else if vssu_dgp vs then
-      	 ioto_prin2t {vsdg_v vs, " = sqrt ", vsdg_g vs, " from ", vsdg_sv vs}
+      	 ioto_prin2t {vsdg_v vs, " = ", vsdg_g vs, "-th root of ", vsdg_sv vs}
       else if vssu_arp vs then
       	 ioto_prin2t {vsar_v vs, " = arbitrary"}
    >>;
