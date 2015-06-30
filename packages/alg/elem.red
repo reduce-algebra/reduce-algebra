@@ -618,11 +618,12 @@ for all x let df(acos(x),x)= -sqrt(1-x**2)/(1-x**2),
               df(cot x,x)=-1-cot x**2,
               df(coth x,x)=1-coth x**2;
 
-let df(acsc(~x),x) =>  -1/(x*sqrt(x**2 - 1)),
-%   df(asec(~x),x) => 1/(x*sqrt(x**2 - 1)),  % Only true for abs x>1.
+% Beware we cannot take an x factor inside the sqrt in the 4 formulae below
+% as this changes the cuts and introduces sign errors in part of the domain.
+let df(acsc(~x),x) =>  -1/(x^2*sqrt(1-1/x^2)),
     df(asec(~x),x) => 1/(x^2*sqrt(1-1/x^2)),
-    df(acsch(~x),x)=> -1/(x*sqrt(1+ x**2)),
-    df(asech(~x),x)=> -1/(x*sqrt(1- x)*sqrt(1+x));
+    df(acsch(~x),x)=> -1/(x^2*sqrt(1+ 1/x^2)),
+    df(asech(~x),x)=> -1/(x^2*sqrt(1/x-1)*sqrt(1/x+1));
 
 % rules for atan2  
 let df(atan2(~y,~x),~z) => (x*df(y, z)-y*df(x, z))/(x^2+y^2);
