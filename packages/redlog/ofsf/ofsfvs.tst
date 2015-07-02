@@ -10,8 +10,8 @@ on rlverbose;
 % trprinter!* := 'mytrprint;
 
 % procedure mytrprint(s);
-%    if s and VStrP s then
-%       vstr_printSummary s
+%    if s and VSdbP s then
+%       vsdb_printSummary s
 %    else if s and VSndP s then
 %       vsnd_printSummary s
 %    else if s and VSndLP s then

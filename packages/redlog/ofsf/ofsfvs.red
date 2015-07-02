@@ -42,30 +42,30 @@ rlvarsellvl!* := 1;
 
 % data types and access functions
 
-struct VSsu checked by VSsuP;  % virtual substitution
-struct VSvs checked by VSvsP;  % virtual substitution: test point substitution
-struct VSdg checked by VSdgP;  % virtual substitution: degree shift
-struct VSar checked by VSarP;  % virtual substitution: arbitrary
+struct VSsu checked by VSsuP;  % VS
+struct VSvs checked by VSvsP;  % VS: test point substitution
+struct VSdg checked by VSdgP;  % VS: degree shift
+struct VSar checked by VSarP;  % VS: arbitrary
 struct VStp checked by VStpP;  % test point
 struct VSnd checked by VSndP;  % QE tree node
 struct VSco checked by VScoP;  % container of nodes
 struct VSht checked by VShtP;  % hash table of quantifier-free formulas
-struct VStr checked by VStrP;  % QE tree
-struct VSdb checked by VSdbP;  % virtual substitution data for a block
+struct VSdb checked by VSdbP;  % VS data for a block
+struct VSde checked by VSdeP;  % VS data for elimination set computation
 
 struct VStpL checked by VStpLP;  % list of test points
 struct VSndL checked by VSndLP;  % list of QE tree nodes
 
-procedure VSsuP(s);  % virtual substitution
+procedure VSsuP(s);  % VS
    VSarP s or VSdgP s or VSvsP s;
 
-procedure VSvsP(s);  % virtual substitution: test point substitution
+procedure VSvsP(s);  % VS: test point substitution
    pairp s and car s eq 'vsvs;
 
-procedure VSdgP(s);  % virtual substitution: degree shift
+procedure VSdgP(s);  % VS: degree shift
    pairp s and car s eq 'vsdg;
 
-procedure VSarP(s);  % virtual substitution: arbitrary
+procedure VSarP(s);  % VS: arbitrary
    pairp s and car s eq 'vsar;
 
 procedure VStpP(s);  % test point
@@ -81,11 +81,11 @@ procedure VScoP(s);  % container of nodes
 procedure VShtP(s);  % hash table of quantifier-free formulas
    pairp s and car s eq 'vsht;
 
-procedure VStrP(s);  % QE tree
-   pairp s and car s eq 'vstr;
-
-procedure VSdbP(s);  % virtual substitution data for a block
+procedure VSdbP(s);  % VS data for a block
    atom s and getv(s, 0) eq 'vsdb;
+
+procedure VSdeP(s);  % VS data for elimination set computation
+   atom s and getv(s, 0) eq 'vsde;
 
 procedure VStpLP(s);  % list of test points
    null s or (pairp s and VStpP car s and VStpLP cdr s);
@@ -94,58 +94,57 @@ procedure VSndLP(s);  % list of QE tree nodes
    null s or (pairp s and VSndP car s and VSndLP cdr s);
 
 asserted procedure vssu_vpp(vs: VSsu): Boolean;
-   % Virtual substitution test point substitution predicate.
+   % VS test point substitution predicate.
    pairp vs and car vs eq 'vsvs;
 
 asserted procedure vssu_dgp(vs: VSsu): Boolean;
-   % Virtual substitution degree shift predicate.
+   % VS degree shift predicate.
    pairp vs and car vs eq 'vsdg;
 
 asserted procedure vssu_arp(vs: VSsu): Boolean;
-   % Virtual substitution arbitrary predicate.
+   % VS arbitrary predicate.
    pairp vs and car vs eq 'vsar;
 
 asserted procedure vsvs_mk(v: Kernel, tp: VStp): VSsu;
-   % Virtual substitution test point substitution make.
+   % VS test point substitution make.
    {'vsvs, v, tp};
 
 asserted procedure vsvs_v(vs: VSvs): Kernel;
-   % Virtual substitution test point substitution variable.
+   % VS test point substitution variable.
    nth(vs, 2);
 
 asserted procedure vsvs_tp(vs: VSvs): VStp;
-   % Virtual substitution test point substitution test point.
+   % VS test point substitution test point.
    nth(vs, 3);
 
 asserted procedure vsdg_mk(v: Kernel, g: Integer, sv: Kernel): VSsu;
-   % Virtual substitution degree shift make.
+   % VS degree shift make.
    {'vsdg, v, g, sv};
 
 asserted procedure vsdg_v(vs: VSdg): Kernel;
-   % Virtual substitution degree shift variable.
+   % VS degree shift variable.
    nth(vs, 2);
 
 asserted procedure vsdg_g(vs: VSdg): Integer;
-   % Virtual substitution degree shift gcd.
+   % VS degree shift gcd.
    nth(vs, 3);
 
 asserted procedure vsdg_sv(vs: VSdg): Kernel;
-   % Virtual substitution degree shift shadow variable.
+   % VS degree shift shadow variable.
    nth(vs, 4);
 
 asserted procedure vsar_mk(v: Kernel): VSsu;
-   % Virtual substitution arbitrary make.
+   % VS arbitrary make.
    {'vsar, v};
 
 asserted procedure vsar_v(vs: VSar): Kernel;
-   % Virtual substitution arbitrary variable.
+   % VS arbitrary variable.
    nth(vs, 2);
 
 asserted procedure vsnd_mk(flg: Boolean, vs: VSsu, varl: KernelL, f: QfFormula, p: VSnd): VSnd;
-   % QE tree node make. [flg] denotes whether virtual substitution
-   % [vs] needs to be applied; [varl] is a list of variables to be
-   % eliminated; [f] is a quantifier-free formula; [p] is the parent
-   % QE tree node.
+   % QE tree node make. [flg] denotes whether VS [vs] needs to be
+   % applied; [varl] is a list of variables to be eliminated; [f] is a
+   % quantifier-free formula; [p] is the parent QE tree node.
    {'vsnd, flg, vs, varl, f, p};
 
 asserted procedure vsnd_flg(nd: VSnd): Boolean;
@@ -153,7 +152,7 @@ asserted procedure vsnd_flg(nd: VSnd): Boolean;
    nth(nd, 2);
 
 asserted procedure vsnd_su(nd: VSnd): VSsu;
-   % QE tree node virtual substitution.
+   % QE tree node VS.
    nth(nd, 3);
 
 asserted procedure vsnd_varl(nd: VSnd): KernelL;
@@ -168,7 +167,7 @@ asserted procedure vsnd_parent(nd: VSnd): VSnd;
    % QE tree node parent QE tree node.
    nth(nd, 6);
 
-asserted procedure vsco_new(): VSco;
+asserted procedure vsco_mk(): VSco;
    % Container new.
    nil;
 
@@ -190,7 +189,7 @@ asserted procedure vsco_get(co: VSco): DottedPair;
       co
    >>;
 
-asserted procedure vsht_new(): VSht;
+asserted procedure vsht_mk(): VSht;
    % Hash table new.
    {'vsht, nil};
 
@@ -206,103 +205,158 @@ asserted procedure vsht_hfn(f: QfFormula): List;
    % Hash table hashing function.
    {f};
 
-asserted procedure vstr_new(): VStr;
-   % QE tree new.
-   {'vstr, vsco_new(), vsco_new(), vsco_new(), vsht_new()};
-
-asserted procedure vstr_w(vtr: VStr): VSco;
-   % QE tree working nodes container.
-   nth(vtr, 2);
-
-asserted procedure vstr_s(vtr: VStr): VSco;
-   % QE tree success nodes container.
-   nth(vtr, 3);
-
-asserted procedure vstr_f(vtr: VStr): VSco;
-   % QE tree failure nodes container.
-   nth(vtr, 4);
-
-asserted procedure vstr_h(vtr: VStr): VSht;
-   % QE tree hash table.
-   nth(vtr, 5);
-
-asserted procedure vstr_todop(vtr: VStr): ExtraBoolean;
-   % QE tree todo predicate. Checks whether the working nodes
-   % container is empty.
-   vsco_nonemptyp vstr_w vtr;
-
-asserted procedure vstr_wget(vtr: VStr): DottedPair;
-   % QE tree get working node. [vtr] is a QE tree with a non-empty
-   % working nodes container. Returns a pair [(nd . ntr)], where [nd]
-   % is VSnd and [ntr] is VStr with [nd] removed from the working
-   % nodes container.
-   begin scalar c;
-      assert(vstr_todop vtr);
-      c := vsco_get vstr_w vtr;
-      return car c . {'vstr, cdr c, vstr_s vtr, vstr_f vtr, vstr_h vtr}
-   end;
-
-asserted procedure vstr_dropall(vtr: VStr): VStr;
-   % QE tree drop all tree nodes. Returns VStr with working, success,
-   % and failure containers empty.
-   {'vstr, vsco_new(), vsco_new(), vsco_new(), vstr_h vtr};
-
-asserted procedure vstr_hmember(vtr: VStr, f: QfFormula): ExtraBoolean;
-   % QE tree hash table member.
-   vsht_member(vstr_h vtr, f);
-
-asserted procedure vstr_winsert(vtr: VStr, nd: VSnd): VStr;
-   % QE tree working container insert.
-   {'vstr, vsco_insert(vstr_w vtr, nd), vstr_s vtr, vstr_f vtr, vstr_h vtr};
-
-asserted procedure vstr_sinsert(vtr: VStr, nd: VSnd): VStr;
-   % QE tree success container insert.
-   {'vstr, vstr_w vtr, vsco_insert(vstr_s vtr, nd), vstr_f vtr, vstr_h vtr};
-
-asserted procedure vstr_finsert(vtr: VStr, nd: VSnd): VStr;
-   % QE tree failure container insert.
-   {'vstr, vstr_w vtr, vstr_s vtr, vsco_insert(vstr_f vtr, nd), vstr_h vtr};
-
-asserted procedure vstr_hinsert(vtr: VStr, f: QfFormula): VStr;
-   % QE tree hash table insert.
-   {'vstr, vstr_w vtr, vstr_s vtr, vstr_f vtr, vsht_insert(vstr_h vtr, f)};
-
 asserted procedure vsdb_new(): VSdb;
-   % Virtual substitution data for a block new.
-   begin scalar vdb;
-      vdb := mkvect(6);
-      putv(vdb, 0, 'vsdb);
-      putv(vdb, 1, 'undefined);        % variables to be eliminated
-      putv(vdb, 2, 'undefined);        % matrix formula of the current block
-      putv(vdb, 3, 'undefined);        % global background theory
-      putv(vdb, 4, 'undefined);        % do not make assumptions on variables in [bvl]
-      putv(vdb, 5, 'undefined);        % whether we should compute answers
-      putv(vdb, 6, 'undefined);        % pool of QE tree nodes: working, success, and failure
-      % putv(vdb, 7, nil);      % QEA flag; quantifier elimination with answers
-      % putv(vdb, 8, nil);      % QEASTD flag; quantifier elimination with standard answers
-      % putv(vdb, 9, nil);      % QEGEN flag; generic quantifier elimination
-      % putv(vdb, 10, nil);     % QELOCAL flag; local quantifier elimination
-      % putv(vdb, 11, nil);     % QEDEBUG flag; debugging
-      % putv(vdb, 12, nil);     % QESTAT flag; statistics
-      return vdb
+   % VS data for a block new.
+   begin scalar db;
+      db := mkvect(10);
+      putv(db, 0, 'vsdb);
+      % The following fields are constant, i.e., assigned exactly once
+      % after the creation of VSdb:
+      putv(db, 1, 'undefined);        % [varl]: variables to be eliminated
+      putv(db, 2, 'undefined);        % [f]: matrix formula of the current block
+      putv(db, 3, 'undefined);        % [theo]: global background theory
+      putv(db, 4, 'undefined);        % [bvl]: do not make assumptions on variables in [bvl]
+      putv(db, 5, 'undefined);        % [ans]: whether we should compute answers
+      % putv(db, x, 'undefined);        % QEA flag; quantifier elimination with answers
+      % putv(db, x, 'undefined);        % QEASTD flag; quantifier elimination with standard answers
+      % putv(db, x, 'undefined);        % QEGEN flag; generic quantifier elimination
+      % putv(db, x, 'undefined);        % QELOCAL flag; local quantifier elimination
+      % putv(db, x, 'undefined);        % QEDEBUG flag; debugging
+      % putv(db, x, 'undefined);        % QESTAT flag; statistics
+      % The following fields change during execution:
+      putv(db, 6, 'undefined);        % [wc]: container of QE tree working nodes
+      putv(db, 7, 'undefined);        % [sc]: container of QE tree success nodes
+      putv(db, 8, 'undefined);        % [fc]: container of QE tree failure nodes
+      putv(db, 9, 'undefined);        % [ht]: hash table of quantifier-free formulas
+      putv(db, 10, 'undefined);       % [curtheo]: current theory
+      return db
    end;
 
-procedure vsdb_varl(vdb);                         getv(vdb, 1);
-procedure vsdb_f(vdb);                            getv(vdb, 2);
-procedure vsdb_theo(vdb);                         getv(vdb, 3);
-procedure vsdb_bvl(vdb);                          getv(vdb, 4);
-procedure vsdb_ans(vdb);                          getv(vdb, 5);
-procedure vsdb_tree(vdb);                         getv(vdb, 6);
+procedure vsdb_varl(db);                         getv(db, 1);
+procedure vsdb_f(db);                            getv(db, 2);
+procedure vsdb_theo(db);                         getv(db, 3);
+procedure vsdb_bvl(db);                          getv(db, 4);
+procedure vsdb_ans(db);                          getv(db, 5);
+procedure vsdb_wc(db);                           getv(db, 6);
+procedure vsdb_sc(db);                           getv(db, 7);
+procedure vsdb_fc(db);                           getv(db, 8);
+procedure vsdb_ht(db);                           getv(db, 9);
+procedure vsdb_curtheo(db);                      getv(db, 10);
 
-procedure vsdb_putvarl(vdb, varl);                putv(vdb, 1, varl);
-procedure vsdb_putf(vdb, f);                      putv(vdb, 2, f);
-procedure vsdb_puttheo(vdb, theo);                putv(vdb, 3, theo);
-procedure vsdb_putbvl(vdb, bvl);                  putv(vdb, 4, bvl);
-procedure vsdb_putans(vdb, ans);                  putv(vdb, 5, ans);
-procedure vsdb_puttree(vdb, tree);                putv(vdb, 6, tree);
+procedure vsdb_putvarl(db, varl);                putv(db, 1, varl);
+procedure vsdb_putf(db, f);                      putv(db, 2, f);
+procedure vsdb_puttheo(db, theo);                putv(db, 3, theo);
+procedure vsdb_putbvl(db, bvl);                  putv(db, 4, bvl);
+procedure vsdb_putans(db, ans);                  putv(db, 5, ans);
+procedure vsdb_putwc(db, wc);                    putv(db, 6, wc);
+procedure vsdb_putsc(db, sc);                    putv(db, 7, sc);
+procedure vsdb_putfc(db, fc);                    putv(db, 8, fc);
+procedure vsdb_putht(db, ht);                    putv(db, 9, ht);
+procedure vsdb_putcurtheo(db, theo);             putv(db, 10, theo);
+
+asserted procedure vsdb_mkinitial(varl: KernelL, f: QfFormula, theo: Theory, bvl: KernelL, ans: Boolean): VSdb;
+   % VS data for a block make initial VSdb.
+   begin scalar db;
+      db := vsdb_new();
+      vsdb_putvarl(db, varl);
+      vsdb_putf(db, f);
+      vsdb_puttheo(db, theo);
+      vsdb_putbvl(db, bvl);
+      vsdb_putans(db, ans);
+      vsdb_putwc(db, vsco_mk());
+      vsdb_putsc(db, vsco_mk());
+      vsdb_putfc(db, vsco_mk());
+      vsdb_putht(db, vsht_mk());
+      vsdb_putcurtheo(db, theo);
+      vsdb_wcinsert(db, vsnd_mk(nil, nil, varl, f, nil));
+      return db
+   end;
+
+asserted procedure vsdb_todop(db: VSdb): ExtraBoolean;
+   % Todo predicate. Checks whether the working nodes container is
+   % empty.
+   vsco_nonemptyp vsdb_wc db;
+
+asserted procedure vsdb_wcget(db: VSdb): VSnd;
+   % Get a node from the working container.
+   begin scalar c;
+      assert(vsdb_todop db);
+      c := vsco_get vsdb_wc db;
+      vsdb_putwc(db, cdr c);
+      return car c
+   end;
+
+asserted procedure vsdb_dropall(db: VSdb);
+   % Drop all nodes. Removes all nodes from working, success, and
+   % failure containers.
+   <<
+      vsdb_putwc(db, vsco_mk());
+      vsdb_putsc(db, vsco_mk());
+      vsdb_putfc(db, vsco_mk())
+   >>;
+
+asserted procedure vsdb_htmember(db: VSdb, f: QfFormula): ExtraBoolean;
+   % Hash table member.
+   vsht_member(vsdb_ht db, f);
+
+asserted procedure vsdb_wcinsert(db: VSdb, nd: VSnd);
+   % Working container insert.
+   vsdb_putwc(db, vsco_insert(vsdb_wc db, nd));
+
+asserted procedure vsdb_scinsert(db: VSdb, nd: VSnd);
+   % Success container insert.
+   vsdb_putsc(db, vsco_insert(vsdb_sc db, nd));
+
+asserted procedure vsdb_fcinsert(db: VSdb, nd: VSnd);
+   % Failure container insert.
+   vsdb_putfc(db, vsco_insert(vsdb_fc db, nd));
+
+asserted procedure vsdb_htinsert(db: VSdb, f: QfFormula);
+   % Hash table insert.
+   vsdb_putht(db, vsht_insert(vsdb_ht db, f));
+
+asserted procedure vsde_new(): VSde;
+   % VS data for elimination set computation new.
+   begin scalar de;
+      de := mkvect(6);
+      putv(de, 0, 'vsde);
+      putv(de, 1, 'undefined);        % [var]: variable to compute elimset for
+      putv(de, 2, 'undefined);        % [f]: quantifier-free formula
+      putv(de, 3, 'undefined);        % [curtheo]: current background theory
+      putv(de, 4, 'undefined);        % [bvl]: do not make assumptions on variables in [bvl]
+      putv(de, 5, 'undefined);        % [apcl]: list of atomic prime constituents
+      putv(de, 6, 'undefined);        % [tpl]: list of test points
+      return de
+   end;
+
+procedure vsde_var(de);                         getv(de, 1);
+procedure vsde_f(de);                           getv(de, 2);
+procedure vsde_curtheo(de);                     getv(de, 3);
+procedure vsde_bvl(de);                         getv(de, 4);
+procedure vsde_apcl(de);                        getv(de, 5);
+procedure vsde_tpl(de);                         getv(de, 6);
+
+procedure vsde_putvar(de, var);                 putv(de, 1, var);
+procedure vsde_putf(de, f);                     putv(de, 2, f);
+procedure vsde_putcurtheo(de, theo);            putv(de, 3, theo);
+procedure vsde_putbvl(de, bvl);                 putv(de, 4, bvl);
+procedure vsde_putapcl(de, apcl);               putv(de, 5, apcl);
+procedure vsde_puttpl(de, tpl);                 putv(de, 6, tpl);
+
+asserted procedure vsde_mkinitial(var: Kernel, f: QfFormula, theo: Theory, bvl: KernelL): VSde;
+   begin scalar de;
+      de := vsde_new();
+      vsde_putvar(de, var);
+      vsde_putf(de, f);
+      vsde_putcurtheo(de, theo);
+      vsde_putbvl(de, bvl);
+      vsde_putapcl(de, nil);
+      vsde_puttpl(de, nil);
+      return de
+   end;
 
 asserted procedure vssu_apply(vs: VSsu, f: QfFormula): QfFormula;
-   % Virtual substitution apply.
+   % VS apply.
    if vssu_vpp vs then
       vsvs_apply(vs, f)
    else if vssu_dgp vs then
@@ -311,7 +365,7 @@ asserted procedure vssu_apply(vs: VSsu, f: QfFormula): QfFormula;
       vsar_apply(vs, f);
 
 asserted procedure vsvs_apply(vs: VSvs, f: QfFormula): QfFormula;
-   % Virtual substitution test point substitution apply.
+   % VS test point substitution apply.
    % TEMPORARY! Using old code to have something runnable.
    begin scalar v, tp;
       v := vsvs_v vs;
@@ -320,15 +374,15 @@ asserted procedure vsvs_apply(vs: VSvs, f: QfFormula): QfFormula;
    end;
 
 asserted procedure vsdg_apply(vs: VSdg, f: QfFormula): QfFormula;
-   % Virtual substitution degree shift apply.
+   % VS degree shift apply.
    begin
-      f := cl_apply2ats1(f, 'vs_decdeg, {vsdg_v vs, vsdg_g vs, vsdg_sv vs});
+      f := cl_apply2ats1(f, 'vsdg_decdeg, {vsdg_v vs, vsdg_g vs, vsdg_sv vs});
       if not evenp vsdg_g vs then
 	 return f;
       return rl_mk2('and, ofsf_0mk2('geq, vsdg_sv vs), f)
    end;
 
-asserted procedure vs_decdeg(at: QfFormula, v: Kernel, g: Integer, sv: Kernel): QfFormula;
+asserted procedure vsdg_decdeg(at: QfFormula, v: Kernel, g: Integer, sv: Kernel): QfFormula;
    % Decrement degree of atomic formula. Replace each occurence of
    % [v^n] by [sv^(n/g)].
    begin scalar f;
@@ -339,117 +393,133 @@ asserted procedure vs_decdeg(at: QfFormula, v: Kernel, g: Integer, sv: Kernel): 
    end;
 
 asserted procedure vsar_apply(vs: VSar, f: QfFormula): QfFormula;
-   % Virtual substitution arbitrary apply.
-   f;
+   % VS arbitrary apply. Mathematically, it should be never needed to
+   % apply this VS.
+   <<
+      assert(nil);
+      f
+   >>;
 
-asserted procedure vsnd_expand(nd: VSnd): VSndL;
-   % QE tree node expand. Returns a list of QE tree nodes. The list is
-   % empty iff expanding failed.
+asserted procedure vsdb_expandNode(db: VSdb, nd: VSnd);
+   % Expand node. No meaningful return value. [db] is modified in
+   % place so that [nd] is properly expanded at the end of the
+   % procedure, i.e., either a list of children is added to the
+   % working container, or [nd] is added to the failure container.
    begin scalar w;
       assert(vsnd_varl nd);
       assert(not vsnd_flg nd);
-      w := vsnd_expandNO nd;
-      if w then
-	 return w;
-      w := vsnd_expandDG nd;
-      if w then
-	 return w;
+      if vsdb_tryExpandNO(db, nd) then
+	 return;
+      if vsdb_tryExpandDG(db, nd) then
+	 return;
       % Now each variable occurs, and no degree shift is possible.
       if eqn(rlvarsellvl!*, 1) then
-	 return vsnd_expand1 nd;
+	 vsdb_expandNode1(db, nd);
       if eqn(rlvarsellvl!*, 2) then
-	 return vsnd_expand2 nd;
+	 vsdb_expandNode2(db, nd);
       if eqn(rlvarsellvl!*, 3) then
-	 return vsnd_expand3 nd;
+	 vsdb_expandNode3(db, nd);
       if eqn(rlvarsellvl!*, 4) then
-	 return vsnd_expand4 nd
+	 vsdb_expandNode4(db, nd)
    end;
 
-asserted procedure vsnd_expandNO(nd: VSnd): VSndL;
-   % QE tree node expand by non-occurring variables. Returns either
-   % [nil] or a one element list of QE tree nodes. [nil] is returned
-   % iff expand w.r.t. non-occurring variables is not possible, i.e.,
-   % when every variable from [vsnd_varl nd] occurs in [vsnd_f nd].
+asserted procedure vsdb_tryExpandNO(db: VSdb, nd: VSnd): Boolean;
+   % Try to expand node by non-occurring variable. Returns whether
+   % this was successful. [nil] is returned iff every variable from
+   % [vsnd_varl nd] occurs in [vsnd_f nd].
    begin scalar vl, rvl, res, v;
       vl := vsnd_varl nd;
       rvl := cl_fvarl1 vsnd_f nd;
-      while vl and null res do <<
+      while vl and not res do <<
 	 v := pop vl;
-	 if not (v memq rvl) then
-	    res := {vsnd_mk(nil, vsar_mk v, delq(v, vsnd_varl nd), vsnd_f nd, nd)}
-      >>;
-      return res
-   end;
-
-asserted procedure vsnd_expandDG(nd: VSnd): VSndL;
-   % QE tree node expand by degree shift. Returns either [nil] or a
-   % one element list of QE tree nodes. [nil] is returned iff degree
-   % shift is not possible w.r.t. no variable in [vsnd_varl nd].
-   begin scalar vl, f, res, v, sv; integer g;
-      vl := vsnd_varl nd;
-      f := vsnd_f nd;
-      if vssu_dgp vsnd_su nd then
-	 vl := delq(vsdg_sv vsnd_su nd, vl);  % degree shift is not possible w.r.t. the most recent shadow variable
-      while vl and null res do <<
-	 v := pop vl;
-	 g := vs_dgcd(f, v);
-	 if g > 1 then <<
-	    sv := vs_shadow v;
-	    res := {vsnd_mk(t, vsdg_mk(v, g, sv),
-	       subst(sv, v, vsnd_varl nd), vsnd_f nd, nd)}
+	 if not (v memq rvl) then <<
+	    res := t;
+	    vsdb_wcinsert(db,
+	       vsnd_mk(nil, vsar_mk v, delq(v, vsnd_varl nd), vsnd_f nd, nd))
 	 >>
       >>;
       return res
    end;
 
-asserted procedure vsnd_expand1(nd: VSnd): VSndL;
-   % QE tree node expand1: Use the first variable.
-   begin scalar v;
-      v := car vsnd_varl nd;
-      return vsnd_eset2vsndl(nd, eset_compute(vsnd_f nd, v), v)
-   end;
-
-asserted procedure vsnd_expand2(nd: VSnd): VSndL;
-   % QE tree node expand2: Use the first feasible variable.
-   begin scalar varl, f, eset, v;
-      varl := vsnd_varl nd;
+asserted procedure vsdb_tryExpandDG(db: VSdb, nd: VSnd): Boolean;
+   % Try to expand node by degree shift. Returns whether this was
+   % successful. [nil] is returned iff degree shift is not possible
+   % w.r.t. no variable in [vsnd_varl nd].
+   begin scalar vl, f, res, v, sv; integer g;
+      vl := vsnd_varl nd;
       f := vsnd_f nd;
-      while null eset and varl do <<
-	 v := pop varl;
-	 eset := eset_compute(f, v)
+      if vssu_dgp vsnd_su nd then
+	 vl := delq(vsdg_sv vsnd_su nd, vl);  % We need not to try degree shift w.r.t. the most recent shadow variable.
+      while vl and not res do <<
+	 v := pop vl;
+	 g := vs_dgcd(f, v);
+	 if g > 1 then <<
+	    res := t;
+	    sv := vs_shadow v;
+	    vsdb_wcinsert(db, vsnd_mk(t,
+	       vsdg_mk(v, g, sv), subst(sv, v, vsnd_varl nd), vsnd_f nd, nd))
+	 >>
       >>;
-      return vsnd_eset2vsndl(nd, eset, v)
+      return res
    end;
 
-asserted procedure vsnd_expand3(nd: VSnd): VSndL;
-   % QE tree node expand3: Use the variable with the best elimination
-   % set.
-   ;
+asserted procedure vsdb_expandNode1(db: VSdb, nd: VSnd);
+   % Expand node using strategy 1: Use the first variable.
+   begin scalar de, v;
+      v := car vsnd_varl nd;
+      de := vsde_mkinitial(v, vsnd_f nd, vsdb_curtheo db, vsdb_bvl db);
+      vsde_compute de;
+      vsdb_insertaec(db, nd, de)
+   end;
 
-asserted procedure vsnd_expand4(nd: VSnd): VSndL;
-   % QE tree node expand4: Use the variable with the best formula
-   % after elimination.
-   ;
-
-asserted procedure vsnd_eset2vsndl(nd: VSnd, eset: VStpL, v: Kernel): VSndL;
-   % QE tree node eset2vsndl. Transform elimination set [eset] for
-   % node [nd] to list of QE tree nodes.
-   begin scalar varl, f;
+asserted procedure vsdb_expandNode2(db: VSdb, nd: VSnd);
+   % Expand node using strategy 2: Use the first feasible variable.
+   begin scalar varl, f, v, de;
       varl := vsnd_varl nd;
       f := vsnd_f nd;
-      return for each tp in eset collect
-	 vsnd_mk(t, vsvs_mk(v, tp), delq(v, varl), f, nd)
+      repeat <<
+	 v := pop varl;
+      	 de := vsde_mkinitial(v, vsnd_f nd, vsdb_curtheo db, vsdb_bvl db);
+	 vsde_compute de;
+      >> until null varl or vsde_tpl de;
+      vsdb_insertaec(db, nd, de)
    end;
 
-asserted procedure eset_compute(f: QfFormula, x: Kernel): VStpL;
-   % Elimination set compute.
+asserted procedure vsdb_expandNode3(db: VSdb, nd: VSnd);
+   % Expand node using strategy 3: Use the variable with the best
+   % elimination set.
+   ;
+
+asserted procedure vsdb_expandNode4(db: VSdb, nd: VSnd);
+   % Expand node using strategy 4: Use the variable with the best
+   % formula after elimination.
+   ;
+
+asserted procedure vsdb_insertaec(db: VSdb, nd: VSnd, de: VSde);
+   % Insert node after elimination set computation.
+   begin scalar tpl, f, v, nvarl;
+      tpl := vsde_tpl de;
+      if null vsde_tpl de then <<
+	 vsdb_finsert(db, nd);
+	 return
+      >>;
+      f := vsde_f de;
+      v := vsde_var de;
+      nvarl := delq(v, vsnd_varl nd);
+      for each tp in tpl do
+	 vsdb_wcinsert(db, vsnd_mk(t, vsvs_mk(v, tp), nvarl, f, nd))
+   end;
+
+asserted procedure vsde_compute(de: VSde);
+   % Compute elimination set.
    % TEMPORARY! Using old code to obtain something runnable.
-   begin scalar alp, w;
-      alp := cl_qeatal(f, x, nil, nil);
-      w := ofsf_elimset(x, alp);
-      return for each hu in w join
+   begin scalar alp, w, ww;
+      alp := cl_qeatal(vsde_f de, vsde_var de, nil, nil);
+      w := ofsf_elimset(vsde_var de, alp);
+      ww := for each hu in w join
 	 for each huhu in cdr hu collect
-	    car hu . huhu
+	    car hu . huhu;
+      vsde_puttpl(de, ww)
    end;
 
 asserted procedure vs_block(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
@@ -458,59 +528,42 @@ asserted procedure vs_block(f: QfFormula, varl: KernelL, theo: Theory, ans: Bool
    % contains the list of variables for which elimination failed, the
    % (possibly partial) possibly negated elimination result as a
    % JunctionL, and the new theory.
-   begin scalar vdb, root, tree;
-      vdb := vsdb_new();
-      root := vsnd_mk(nil, nil, varl, f, nil);
-      tree := vstr_winsert(vstr_new(), root);
-      vsdb_putf(vdb, f);
-      vsdb_putvarl(vdb, varl);
-      vsdb_puttheo(vdb, theo);
-      vsdb_putans(vdb, ans);
-      vsdb_putbvl(vdb, bvl);
-      vsdb_puttree(vdb, tree);
-      vs_mainloop vdb;
+   begin scalar db;
+      db := vsdb_mkinitial(varl, f, theo, bvl, ans);
+      vs_mainloop db;
       ioto_prin2t nil;
-      vstr_printSummary vsdb_tree vdb;
+      vsdb_printSummary db;
       return {varl, {f . nil}, theo}
    end;
 
-asserted procedure vs_mainloop(vdb: VSdb);
+asserted procedure vs_mainloop(db: VSdb);
    % Quantifier elimination for one block subroutine. This procedure
    % realizes the main loop of QE for a single block of quantifiers.
-   % No meaningful return value. [vdb] is modified in-place.
-   begin scalar n, tree, varl, f, su, mbr, childl;
-      tree := vsdb_tree vdb;
-      while vstr_todop tree do <<
-	 n . tree := vstr_wget tree;
-	 varl := vsnd_varl n;
-	 f := vsnd_f n;
-	 su := vsnd_su n;
-	 if vsnd_flg n then  % substitution has not been done yet
+   % No meaningful return value. [db] is modified in-place.
+   begin scalar nd, varl, f, su, mbr, childl;
+      while vsdb_todop db do <<
+	 nd := vsdb_wcget db;
+	 varl := vsnd_varl nd;
+	 f := vsnd_f nd;
+	 su := vsnd_su nd;
+	 if vsnd_flg nd then  % substitution has not been done yet
 	    for each ff in vs_splitor vssu_apply(su, f) do
-	       tree := vstr_winsert(tree,
-		  vsnd_mk(nil, su, varl, ff, vsnd_parent n))
+	       vsdb_wcinsert(db,
+		  vsnd_mk(nil, su, varl, ff, vsnd_parent nd))
 	 else <<  % substitution was already done
-	    mbr := vstr_hmember(tree, f);
+	    mbr := vsdb_htmember(db, f);
 	    if not mbr or vssu_arp su then <<
 	       if not mbr then
-	       	  tree := vstr_hinsert(tree, f);
+	       	  vsdb_htinsert(db, f);
 	       if f eq 'true then
-	       	  tree := vstr_dropall tree;
+	       	  vsdb_dropall db;
 	       if null varl then
-	       	  tree := vstr_sinsert(tree, n)
-	       else <<
-	       	  childl := vsnd_expand n;
-	       	  if childl then
-		     for each child in childl do
-		     	tree := vstr_winsert(tree, child)
-	       	  else
-		     tree := vstr_finsert(tree, n)
-	       >>
+	       	  vsdb_scinsert(db, nd)
+	       else
+		  vsdb_expandNode(db, nd)
 	    >>
 	 >>
-      >>;
-      vsdb_puttree(vdb, tree);
-      return
+      >>
    end;
 
 % TODO: Move the following procedure to cl.
@@ -561,13 +614,13 @@ asserted procedure sfto_dgcdf(f: SF, v: Kernel): Integer;
 
 % functions mainly for debugging purposes
 
-asserted procedure vstr_printSummary(vtr: VStr);
+asserted procedure vsdb_printSummary(db: VSdb);
    <<
-      ioto_prin2 {"VS tree: "};
-      	 ioto_prin2t {"#W: ", length vstr_w vtr,
-      	    " #S: ", length vstr_s vtr,
-      	    " #F: ", length vstr_f vtr,
-      	    " #H: ", length cadr vstr_h vtr}
+      ioto_prin2 {"VSdb: "};
+      	 ioto_prin2t {"#W: ", length vsdb_wc db,
+      	    " #S: ", length vsdb_sc db,
+      	    " #F: ", length vsdb_fc db,
+      	    " #H: ", length cadr vsdb_ht db}
    >>;
 
 asserted procedure vsnd_printSummary(nd: VSnd);
