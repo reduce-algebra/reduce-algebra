@@ -1360,10 +1360,10 @@ static int bracketWidth(char type, int flags, int height, int depth)
             s = "\x09\x6f\x1b\x29\x39";
             break;
     case '|':                 // LEFT vertical bar
-            s = "\x0c\x0c\x42\x42\x42";
+            s = "\x0c\x0c\x0c\x0c\x0c";
             break;
     case '!':                 // RIGHT vertical bar
-            s = "\x0c\x0c\x43\x43\x43";
+            s = "\x0c\x0c\x0c\x0c\x0c";
             break;
     case 'Q':                 // square root marker
             s = "\x70\x71\x72\x73\x74";
@@ -4183,21 +4183,21 @@ case '}':
         bottom = 0x3b;
         break;
 case '|':           // LEFT vertical bar
-        topp = "\x0c\x0c\x42\x42\x42";
+        topp = "\x0c\x0c\x0c\x0c\x0c";
 // Note that vertical bars have to use a tower of glyphs right from
 // the very start, while all the other cases can use a single glyph for
 // heights 2,3,4 and 5.
         toph = 1;
         tower =  0x0c;
-        if (n >= 2) ntower = n - 2;
-        bottom = 0x0a;
+        if (n >= 2) ntower = n - 1;
+        bottom = 0x0c;
         break;
 case '!':           // RIGHT vertical bar
-        topp = "\x0c\x0c\x43\x43\x43";
+        topp = "\x0c\x0c\x0c\x0c\x0c";
         toph = 1;
         tower =  0x0c;
-        if (n >= 2) ntower = n - 2;
-        bottom = 0x0a;
+        if (n >= 2) ntower = n - 1;
+        bottom = 0x0c;
         break;
 case 'Q':
         topp = "\x70\x71\x72\x73\x76";
@@ -4296,7 +4296,7 @@ default:
     if ((top & 0xff) == 0xff) top = topp[4];
 // I general here I need to display in one of several patterns based on
 // midflag and ntower. I use ntower=-1 for the case where a single
-// glyph pains the entire bracket, otherwise ntower is a repeat
+// glyph paints the entire bracket, otherwise ntower is a repeat
 // count.  mid is non-zero only in the "{}" case where everything is
 // messier... In the easy case I go:
 //
