@@ -37,10 +37,13 @@ lisp <<
 
 module ofsfvs;
 
-fluid '(rlvarsellvl!*);
+fluid '(rlvarsellvl!* rldegbound!*);
 rlvarsellvl!* := 1;
+rldegbound!* := 3;
 
-% data types and access functions
+%%% data types %%%
+
+struct Position checked by PositionP;  % position in formula
 
 struct VSsu checked by VSsuP;  % VS
 struct VSvs checked by VSvsP;  % VS: test point substitution
@@ -52,9 +55,16 @@ struct VSco checked by VScoP;  % container of nodes
 struct VSht checked by VShtP;  % hash table of quantifier-free formulas
 struct VSdb checked by VSdbP;  % VS data for a block
 struct VSde checked by VSdeP;  % VS data for elimination set computation
+struct VSdt checked by VSdtP;  % VS data for formula traversal
 
-struct VStpL checked by VStpLP;  % list of test points
-struct VSndL checked by VSndLP;  % list of QE tree nodes
+struct VStpL checked by VStpLP;  % list of VStp
+struct VSndL checked by VSndLP;  % list of VSnd
+struct VSdtL checked by VSdtLP;  % list of VSdt
+
+%%% checking procedures %%%
+
+procedure PositionP(s);  % position in formula
+   null s or (pairp s and fixp car s and PositionP cdr s);
 
 procedure VSsuP(s);  % VS
    VSarP s or VSdgP s or VSvsP s;
@@ -82,16 +92,24 @@ procedure VShtP(s);  % hash table of quantifier-free formulas
    pairp s and car s eq 'vsht;
 
 procedure VSdbP(s);  % VS data for a block
-   atom s and getv(s, 0) eq 'vsdb;
+   vectorp s and getv(s, 0) eq 'vsdb;
 
 procedure VSdeP(s);  % VS data for elimination set computation
-   atom s and getv(s, 0) eq 'vsde;
+   vectorp s and getv(s, 0) eq 'vsde;
 
-procedure VStpLP(s);  % list of test points
+procedure VSdtP(s);  % VS data for formula traversal
+   vectorp s and getv(s, 0) eq 'vsdt;
+
+procedure VStpLP(s);
    null s or (pairp s and VStpP car s and VStpLP cdr s);
 
-procedure VSndLP(s);  % list of QE tree nodes
+procedure VSndLP(s);
    null s or (pairp s and VSndP car s and VSndLP cdr s);
+
+procedure VSdtLP(s);
+   null s or (pairp s and VSdtP car s and VSdtLP cdr s);
+
+%%% VS %%%
 
 asserted procedure vssu_vpp(vs: VSsu): Boolean;
    % VS test point substitution predicate.
@@ -141,6 +159,8 @@ asserted procedure vsar_v(vs: VSar): Kernel;
    % VS arbitrary variable.
    nth(vs, 2);
 
+%%% QE tree node %%%
+
 asserted procedure vsnd_mk(flg: Boolean, vs: VSsu, varl: KernelL, f: QfFormula, p: VSnd): VSnd;
    % QE tree node make. [flg] denotes whether VS [vs] needs to be
    % applied; [varl] is a list of variables to be eliminated; [f] is a
@@ -167,6 +187,8 @@ asserted procedure vsnd_parent(nd: VSnd): VSnd;
    % QE tree node parent QE tree node.
    nth(nd, 6);
 
+%%% container of nodes %%%
+
 asserted procedure vsco_mk(): VSco;
    % Container new.
    nil;
@@ -189,6 +211,8 @@ asserted procedure vsco_get(co: VSco): DottedPair;
       co
    >>;
 
+%%% hash table of quantifier-free formulas %%%
+
 asserted procedure vsht_mk(): VSht;
    % Hash table new.
    {'vsht, nil};
@@ -204,6 +228,8 @@ asserted procedure vsht_member(ht: VSht, f: QfFormula): ExtraBoolean;
 asserted procedure vsht_hfn(f: QfFormula): List;
    % Hash table hashing function.
    {f};
+
+%%% VS data for a block %%%
 
 asserted procedure vsdb_new(): VSdb;
    % VS data for a block new.
@@ -254,7 +280,7 @@ procedure vsdb_putfc(db, fc);                    putv(db, 8, fc);
 procedure vsdb_putht(db, ht);                    putv(db, 9, ht);
 procedure vsdb_putcurtheo(db, theo);             putv(db, 10, theo);
 
-asserted procedure vsdb_mkinitial(varl: KernelL, f: QfFormula, theo: Theory, bvl: KernelL, ans: Boolean): VSdb;
+asserted procedure vsdb_mk(varl: KernelL, f: QfFormula, theo: Theory, bvl: KernelL, ans: Boolean): VSdb;
    % VS data for a block make initial VSdb.
    begin scalar db;
       db := vsdb_new();
@@ -315,6 +341,8 @@ asserted procedure vsdb_htinsert(db: VSdb, f: QfFormula);
    % Hash table insert.
    vsdb_putht(db, vsht_insert(vsdb_ht db, f));
 
+%%% VS data for elimination set computation %%%
+
 asserted procedure vsde_new(): VSde;
    % VS data for elimination set computation new.
    begin scalar de;
@@ -343,7 +371,7 @@ procedure vsde_putbvl(de, bvl);                 putv(de, 4, bvl);
 procedure vsde_putapcl(de, apcl);               putv(de, 5, apcl);
 procedure vsde_puttpl(de, tpl);                 putv(de, 6, tpl);
 
-asserted procedure vsde_mkinitial(var: Kernel, f: QfFormula, theo: Theory, bvl: KernelL): VSde;
+asserted procedure vsde_mk(var: Kernel, f: QfFormula, theo: Theory, bvl: KernelL): VSde;
    begin scalar de;
       de := vsde_new();
       vsde_putvar(de, var);
@@ -354,6 +382,69 @@ asserted procedure vsde_mkinitial(var: Kernel, f: QfFormula, theo: Theory, bvl: 
       vsde_puttpl(de, nil);
       return de
    end;
+
+asserted procedure vsdt_new(): VSdt;
+   % VS data for formula traversal new.
+   begin scalar dt;
+      dt := mkvect(6);
+      putv(dt, 0, 'vsdt);
+      putv(dt, 1, 'undefined);        % [var]: variable
+      putv(dt, 2, 'undefined);        % [f]: quantifier-free formula
+      putv(dt, 3, 'undefined);        % [bvl]: do not make assumptions on variables in [bvl]
+      putv(dt, 4, 'undefined);        % [ptheo]: persistent theory
+      putv(dt, 5, 'undefined);        % [ttheo]: temporary theory
+      putv(dt, 6, 'undefined);        % [data]: list of collected data
+      return dt
+   end;
+
+%DS
+% CollectedData ::= (Position, list of ParamRoot, persistent theory supplement)
+
+procedure vsdt_var(dt);                         getv(dt, 1);
+procedure vsdt_f(dt);                           getv(dt, 2);
+procedure vsdt_bvl(dt);                         getv(dt, 3);
+procedure vsdt_ptheo(dt);                       getv(dt, 4);
+procedure vsdt_ttheo(dt);                       getv(dt, 5);
+procedure vsdt_data(dt);                        getv(dt, 6);
+
+procedure vsdt_putvar(dt, var);                 putv(dt, 1, var);
+procedure vsdt_putf(dt, f);                     putv(dt, 2, f);
+procedure vsdt_putbvl(dt, bvl);                 putv(dt, 3, bvl);
+procedure vsdt_putptheo(dt, ptheo);             putv(dt, 4, ptheo);
+procedure vsdt_putttheo(dt, ttheo);             putv(dt, 5, ttheo);
+procedure vsdt_putdata(dt, data);               putv(dt, 6, data);
+
+asserted procedure vsdt_mk(var: Kernel, f: QfFormula, bvl: KernelL, ptheo: Theory, ttheo: Theory): VSdt;
+   begin scalar dt;
+      dt := vsdt_new();
+      vsdt_putvar(dt, var);
+      vsdt_putf(dt, f);
+      vsdt_putbvl(dt, bvl);
+      vsdt_putptheo(dt, ptheo);
+      vsdt_putttheo(dt, ttheo);
+      vsdt_putdata(dt, nil);
+      return dt
+   end;
+
+asserted procedure vsdt_mkfrom(dt: VSdt): VSdt;
+   begin scalar ndt;
+      ndt := vsdt_new();
+      vsdt_putvar(ndt, vsdt_var dt);
+      vsdt_putf(ndt, vsdt_f dt);
+      vsdt_putbvl(ndt, vsdt_bvl dt);
+      vsdt_putptheo(ndt, vsdt_ptheo dt);
+      vsdt_putttheo(ndt, vsdt_ttheo dt);
+      vsdt_putdata(ndt, vsdt_data dt);
+      return ndt
+   end;
+
+asserted procedure vsdt_ptheoinsert(dt: VSdt, f: QfFormula);
+   vsdt_putptheo(dt, f . vsdt_ptheo dt);
+
+asserted procedure vsdt_ttheoinsert(dt: VSdt, f: QfFormula);
+   vsdt_putttheo(dt, f . vsdt_ttheo dt);
+
+%%% "real" procedures %%%
 
 asserted procedure vssu_apply(vs: VSsu, f: QfFormula): QfFormula;
    % VS apply.
@@ -405,7 +496,7 @@ asserted procedure vsdb_expandNode(db: VSdb, nd: VSnd);
    % place so that [nd] is properly expanded at the end of the
    % procedure, i.e., either a list of children is added to the
    % working container, or [nd] is added to the failure container.
-   begin scalar w;
+   begin
       assert(vsnd_varl nd);
       assert(not vsnd_flg nd);
       if vsdb_tryExpandNO(db, nd) then
@@ -467,7 +558,7 @@ asserted procedure vsdb_expandNode1(db: VSdb, nd: VSnd);
    % Expand node using strategy 1: Use the first variable.
    begin scalar de, v;
       v := car vsnd_varl nd;
-      de := vsde_mkinitial(v, vsnd_f nd, vsdb_curtheo db, vsdb_bvl db);
+      de := vsde_mk(v, vsnd_f nd, vsdb_curtheo db, vsdb_bvl db);
       vsde_compute de;
       vsdb_insertaec(db, nd, de)
    end;
@@ -479,7 +570,7 @@ asserted procedure vsdb_expandNode2(db: VSdb, nd: VSnd);
       f := vsnd_f nd;
       repeat <<
 	 v := pop varl;
-      	 de := vsde_mkinitial(v, vsnd_f nd, vsdb_curtheo db, vsdb_bvl db);
+      	 de := vsde_mk(v, vsnd_f nd, vsdb_curtheo db, vsdb_bvl db);
 	 vsde_compute de;
       >> until null varl or vsde_tpl de;
       vsdb_insertaec(db, nd, de)
@@ -522,6 +613,155 @@ asserted procedure vsde_compute(de: VSde);
       vsde_puttpl(de, ww)
    end;
 
+asserted procedure vsdt_gaussposl(dt: VSdt, p: Position);
+   % Compute positions of all Gauss prime constituents. [p] is the
+   % position of [vsdt_f dt]. Positions are reversed, i.e., the last
+   % entry in the list is the index of a child of the root. Positions
+   % of all Gauss prime constituent are stored as a list in [vsdt_data
+   % dt].
+   begin scalar op, cl, c, cdt, cdtl, pcl; integer i;
+      op := rl_op vsdt_f dt;
+      if not rl_boolp op then <<
+	 vsdt_gaussposl!-at(dt, p);
+	 return
+      >>;
+      assert(op eq 'and or op eq 'or);
+      cl := rl_argn vsdt_f dt;
+      while cl do <<
+	 c := pop cl;
+	 i := i + 1;
+	 cdt := vsdt_mkfrom dt;
+	 vsdt_putf(cdt, c);
+	 vsdt_add2ttheo(cdt, append(pcl, cl), op eq 'or);
+	 vsdt_gaussposl(cdt, i . p);
+	 push(cdt, cdtl);
+	 push(c, pcl)
+      >>;
+      if op eq 'and then
+	 vsdt_gaussposl!-gand(dt, p, reversip cdtl);
+      if op eq 'or then
+	 vsdt_gaussposl!-gor(dt, p, reversip cdtl)
+   end;
+
+asserted procedure vsdt_gaussposl!-at(dt: VSdt, p: Position);
+   % Compute positions of all Gauss prime constituents in atomic
+   % formula. [p] is the position of atomic formula [vsdt_f dt].
+   begin scalar atf, op, lhs, data;
+      atf := vsdt_f dt;
+      op := rl_op atf;
+      lhs := rl_arg2l atf;
+      if op eq 'equal and not domainp lhs and ldeg lhs <= rldegbound!* then  % position [p] is Gauss
+	 data := {{p, 'roots!-from . p, nil}};
+      vsdt_putdata(dt, data)
+   end;
+
+asserted procedure vsdt_cogaussposl(dt: VSdt, p: Position);
+   % Compute positions of all co-Gauss prime constituents. [p] is the
+   % position of [vsdt_f dt]. Positions are reversed, i.e., the last
+   % entry in the list is the index of a child of the root. Position
+   % of all co-Gauss prime constituents are stored in [vsdt_data dt].
+   begin scalar op, cl, c, cdt, cdtl, pcl; integer i;
+      op := rl_op vsdt_f dt;
+      if not rl_boolp op then <<
+	 vsdt_cogaussposl!-at(dt, p);
+	 return
+      >>;
+      assert(op eq 'and or op eq 'or);
+      cl := rl_argn vsdt_f dt;
+      while cl do <<
+	 c := pop cl;
+	 i := i + 1;
+	 cdt := vsdt_mkfrom dt;
+	 vsdt_putf(cdt, c);
+	 vsdt_add2ttheo(cdt, append(pcl, cl), op eq 'or);
+	 vsdt_cogaussposl(cdt, i . p);
+	 push(cdt, cdtl);
+	 push(c, pcl)
+      >>;
+      if op eq 'and then
+	 vsdt_gaussposl!-gor(dt, p, reversip cdtl);
+      if op eq 'or then
+	 vsdt_gaussposl!-gand(dt, p, reversip cdtl)
+   end;
+
+asserted procedure vsdt_cogaussposl!-at(dt: VSdt, p: Position);
+   % Compute positions of all co-Gauss prime constituents in atomic
+   % formula. [p] is the position of atomic formula [vsdt_f dt].
+   begin scalar atf, op, lhs, data;
+      atf := vsdt_f dt;
+      op := rl_op atf;
+      lhs := rl_arg2l atf;
+      if op eq 'neq and not domainp lhs and ldeg lhs <= rldegbound!* then  % position [p] is co-Gauss
+	 data := {{p, 'roots!-from . p, nil}};
+      vsdt_putdata(dt, data)
+   end;
+
+asserted procedure vsdt_gaussposl!-gand(dt: VSdt, p: Position, cdtl: VSdtL);
+   % Compute positions of all (co)-Gauss prime constituents:
+   % generalized and subroutine. [p] is the position of [vsdt_f dt].
+   % [cdtl] are VSdt for all children of [p] with pre-computed data.
+   % This procedure merges these to obtain the list of all (co)-Gauss
+   % prime constituents in formula [vsdt_f dt] at position [p].
+   begin scalar cdata, cdtgl, bcdt, data; integer i;
+      for each cdt in cdtl do <<
+	 i := i + 1;
+      	 cdata := vsdt_data cdt;
+      	 if cdata and nth(car cdata, 1) = (i . p) then  % position [i . p] is (co)-Gauss
+	    push(cdt, cdtgl)
+      >>;
+      if cdtgl then <<  % position [p] is (co)-Gauss
+	 bcdt := vsdt_gaussposl!-bestcdt(dt, p, reversip cdtgl);
+	 cdata := vsdt_data bcdt;
+	 data := {p, nth(car cdata, 2), nth(car cdata, 3)}
+      >> else  % position [p] is not (co)-Gauss
+	 for each cdt in cdtl do
+	    data := vsdt_mergedata(data, vsdt_data cdt);
+      vsdt_putdata(dt, data)
+   end;
+
+asserted procedure vsdt_gaussposl!-gor(dt: VSdt, p: Position, cdtl: VSdtL);
+   % Compute positions of all (co)-Gauss prime constituents:
+   % generalized or subroutine. [p] is the position of [vsdt_f dt].
+   % [cdtl] are VSdt for all children of [p] with pre-computed data.
+   % This procedure merges these to obtain the list of all (co)-Gauss
+   % prime constituents in formula [vsdt_f dt] at position [p].
+   begin scalar g, cdata, data, prl, ptl; integer i;
+      g := t;
+      for each cdt in cdtl do <<
+	 i := i + 1;
+	 cdata := vsdt_data cdt;
+	 if null cdata or not (nth(car cdata, 1) = (i . p)) then  % position [i . p] is not (co)-Gauss
+	    g := nil;
+	 data := vsdt_mergedata(data, cdata)
+      >>;
+      if g then <<  % position [p] is (co)-Gauss
+	 for each dt in data do <<
+	    prl := append(prl, nth(dt, 2));
+	    ptl := append(ptl, nth(dt, 3))
+	 >>;
+	 data := {p, prl, ptl}
+      >>;
+      vsdt_putdata(dt, data)
+   end;
+
+asserted procedure vsdt_gaussposl!-bestcdt(dt: VSdt, p: Position, cdtgl: VSdtL): VSdt;
+   % Select the best child from children list [cdtgl].
+   car cdtgl;
+
+asserted procedure vsdt_add2ttheo(dt: VSdt, fl: QfFormulaL, neg: Boolean);
+   % Add to temporary theory. Some formulas from [fl] are added to
+   % [vsdt_ttheo dt]. If [neg] is [t], then the formulas are negated
+   % before adding them to [vsdt_ttheo dt]. The current criterion:
+   % Atomic formulas not containing the variable [vsdt_var dt].
+   for each f in fl do
+      % TODO: Write and use qff_atp f.
+      if (not rl_boolp rl_op f) and not (vsdt_var dt memq cl_fvarl f) then
+	 vsdt_ttheoinsert(dt, if neg then rl_negateat f else f);
+
+asserted procedure vsdt_mergedata(data1: List, data2: List): List;
+   % Merge CollectedData.
+   append(data1, data2);
+
 asserted procedure vs_block(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
    % TODO: Update this old procedure description.
    % Quantifier elimination for one block subroutine. The result
@@ -529,7 +769,7 @@ asserted procedure vs_block(f: QfFormula, varl: KernelL, theo: Theory, ans: Bool
    % (possibly partial) possibly negated elimination result as a
    % JunctionL, and the new theory.
    begin scalar db;
-      db := vsdb_mkinitial(varl, f, theo, bvl, ans);
+      db := vsdb_mk(varl, f, theo, bvl, ans);
       vs_mainloop db;
       ioto_prin2t nil;
       vsdb_printSummary db;
@@ -540,7 +780,7 @@ asserted procedure vs_mainloop(db: VSdb);
    % Quantifier elimination for one block subroutine. This procedure
    % realizes the main loop of QE for a single block of quantifiers.
    % No meaningful return value. [db] is modified in-place.
-   begin scalar nd, varl, f, su, mbr, childl;
+   begin scalar nd, varl, f, su, mbr;
       while vsdb_todop db do <<
 	 nd := vsdb_wcget db;
 	 varl := vsnd_varl nd;
@@ -640,6 +880,18 @@ asserted procedure vssu_printSummary(vs: VSsu);
       	 ioto_prin2t {vsdg_v vs, " = ", vsdg_g vs, "-th root of ", vsdg_sv vs}
       else if vssu_arp vs then
       	 ioto_prin2t {vsar_v vs, " = arbitrary"}
+   >>;
+
+asserted procedure vsdt_printSummary(dt: VSdt);
+   <<
+      ioto_prin2 {"VSdt with ttheo:"};
+      for each f in vsdt_ttheo dt do
+      	 mathprint rl_prepfof f
+      % ioto_prin2 {"VSdt: "};
+      % ioto_prin2t {"f: ", vsdt_f dt,
+      % 	 " #ptheo: ", length vsdt_ptheo dt,
+      % 	 " #ttheo: ", length vsdt_ttheo dt,
+      % 	 " data: ", vsdt_data dt}
    >>;
 
 endmodule;  % ofsfvs
