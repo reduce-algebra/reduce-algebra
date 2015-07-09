@@ -49,6 +49,7 @@ struct VSsu checked by VSsuP;  % VS
 struct VSvs checked by VSvsP;  % VS: test point substitution
 struct VSdg checked by VSdgP;  % VS: degree shift
 struct VSar checked by VSarP;  % VS: arbitrary
+struct VSpr checked by VSprP;  % parametric root
 struct VStp checked by VStpP;  % test point
 struct VSnd checked by VSndP;  % QE tree node
 struct VSco checked by VScoP;  % container of nodes
@@ -57,6 +58,7 @@ struct VSdb checked by VSdbP;  % VS data for a block
 struct VSde checked by VSdeP;  % VS data for elimination set computation
 struct VSdt checked by VSdtP;  % VS data for formula traversal
 
+struct VSprL checked by VSprLP;  % list of VSpr
 struct VStpL checked by VStpLP;  % list of VStp
 struct VSndL checked by VSndLP;  % list of VSnd
 struct VSdtL checked by VSdtLP;  % list of VSdt
@@ -77,6 +79,9 @@ procedure VSdgP(s);  % VS: degree shift
 
 procedure VSarP(s);  % VS: arbitrary
    pairp s and car s eq 'vsar;
+
+procedure VSprP(s);  % parametric root
+   pairp s and car s eq 'vspr;
 
 procedure VStpP(s);  % test point
    % TODO: Specify this data type.
@@ -99,6 +104,9 @@ procedure VSdeP(s);  % VS data for elimination set computation
 
 procedure VSdtP(s);  % VS data for formula traversal
    vectorp s and getv(s, 0) eq 'vsdt;
+
+procedure VSprLP(s);
+   null s or (pairp s and VSprP car s and VSprLP cdr s);
 
 procedure VStpLP(s);
    null s or (pairp s and VStpP car s and VStpLP cdr s);
@@ -158,6 +166,26 @@ asserted procedure vsar_mk(v: Kernel): VSsu;
 asserted procedure vsar_v(vs: VSar): Kernel;
    % VS arbitrary variable.
    nth(vs, 2);
+
+%%% parametric root %%%
+
+asserted procedure vspr_mk(d: Integer, f: SF, s: DottedPair): VSpr;
+   % Parametric root make. [d] is the degree of [f], [s] is a root
+   % specification [(type . index)], where [type] is a real type and
+   % [index] is a root index.
+   {'vspr, d, f, s};
+
+asserted procedure vspr_d(pr: VSpr): Integer;
+   % Parametric root degree.
+   nth(pr, 2);
+
+asserted procedure vspr_f(pr: VSpr): SF;
+   % Parametric root polynomial.
+   nth(pr, 3);
+
+asserted procedure vspr_rs(pr: VSpr): DottedPair;
+   % Parametric root root specification.
+   nth(pr, 4);
 
 %%% QE tree node %%%
 
@@ -398,7 +426,7 @@ asserted procedure vsdt_new(): VSdt;
    end;
 
 %DS
-% CollectedData ::= (Position, list of ParamRoot, persistent theory supplement)
+% CollectedData ::= (Position, VSprL, persistent theory supplement)
 
 procedure vsdt_var(dt);                         getv(dt, 1);
 procedure vsdt_f(dt);                           getv(dt, 2);
@@ -490,6 +518,221 @@ asserted procedure vsar_apply(vs: VSar, f: QfFormula): QfFormula;
       assert(nil);
       f
    >>;
+
+asserted procedure vspr_at2prl(at: QfFormula, x: Kernel, theo: Theory, bndf: Id): VSprL;
+   % Atomic formula to list of parametric roots. [at] is an atomic
+   % formula of the form ([f] [op] [0]); [theo] is a theory that can
+   % be used to rule out some parametric roots. Returns a list of all
+   % possible parametric roots of [f] that represent some interesting
+   % point, i.e., a bound computed by procedure [bndf].
+   begin scalar f, op, lcf, finished, resl; integer d;
+      % This procedure uses local equational theory as follows: If [lc
+      % f = 0] follows from [theo], then [f] is not considered. If [lc
+      % f <> 0] follows from [theo], then [red f] is not considered.
+      % Otherwise, we add [lc f = 0] to [theo], and consider [red f].
+      f := rl_arg2l at;
+      assert(sfto_mvartest(f, x));
+      if ldeg f > rldegbound!* then
+      	 return 'degree!-too!-high;
+      op := rl_op at;
+      repeat <<
+      	 if sfto_mvartest(f, x) then <<
+	    lcf := lc f;
+	    if ofsf_surep(ofsf_0mk2('neq, lcf), theo) then <<
+	       finished := t;
+	       resl := append(resl, apply(bndf, {ofsf_0mk2(op, f), x}))
+	    >> else if not ofsf_surep(ofsf_0mk2('equal, lcf), theo) then <<
+	       push(ofsf_0mk2('equal, lcf), theo);
+	       resl := append(resl, apply(bndf, {ofsf_0mk2(op, f), x}))
+	    >>;
+	    f := red f
+	 >> else
+	    finished := t
+      >> until finished;
+      return resl
+   end;
+
+asserted procedure vspr_at2prl!-ub(at: QfFormula, x: Kernel): VSprL;
+   % Atomic formula to list of parametric roots: upper bounds.
+   begin scalar f, cfl, op; integer l;
+      f := rl_arg2l at;
+      cfl := coeffs f;
+      l := length cfl;
+      op := rl_op at;
+      if eqn(l, 2) then <<  % the linear case
+      	 if op memq '(equal neq) then
+	    return {vspr_mk(1, f, 1 . 1), vspr_mk(1, f, (-1) . 1)};
+      	 if op memq '(lessp leq) then
+	    return {vspr_mk(1, f, 1 . 1)};
+      	 if op eq '(geq greaterp) then
+	    return {vspr_mk(1, f, (-1) . 1)}
+      >>;
+      if eqn(l, 3) then <<  % the quadratic case
+	 if op memq '(equal neq) then
+	    return {
+	       vspr_mk(2, f, 1 . 1),
+	       vspr_mk(2, f, 1 . 2),
+	       vspr_mk(2, f, 2 . 1),
+	       vspr_mk(2, f, (-1) . 1),
+	       vspr_mk(2, f, (-1) . 2),
+	       vspr_mk(2, f, (-2) . 1)
+	       	  };
+      	 if op memq '(lessp leq) then
+	    return {
+	       vspr_mk(2, f, 1 . 2),
+	       vspr_mk(2, f, 2 . 1),
+	       vspr_mk(2, f, (-1) . 1),
+	       vspr_mk(2, f, (-2) . 1)
+	    	  };
+      	 if op eq '(geq greaterp) then
+	    return {
+	       vspr_mk(2, f, 1 . 1),
+	       vspr_mk(2, f, 2 . 1),
+	       vspr_mk(2, f, (-1) . 2),
+	       vspr_mk(2, f, (-2) . 1)
+	       	  }
+      >>;
+      if eqn(l, 4) then <<  % the cubic case
+      	 if op memq '(equal neq) then
+	    return {
+	       vspr_mk(3, f, 1 . 1),
+	       vspr_mk(3, f, 2 . 1),
+	       vspr_mk(3, f, 2 . 2),
+	       vspr_mk(3, f, 3 . 1),
+	       vspr_mk(3, f, 3 . 2),
+	       vspr_mk(3, f, 4 . 1),
+	       vspr_mk(3, f, 4 . 2),
+	       vspr_mk(3, f, 4 . 3),
+	       vspr_mk(3, f, (-1) . 1),
+	       vspr_mk(3, f, (-2) . 1),
+	       vspr_mk(3, f, (-2) . 2),
+	       vspr_mk(3, f, (-3) . 1),
+	       vspr_mk(3, f, (-3) . 2),
+	       vspr_mk(3, f, (-4) . 1),
+	       vspr_mk(3, f, (-4) . 2),
+	       vspr_mk(3, f, (-4) . 3)
+	       	  };
+      	 if op memq '(lessp leq) then
+	    return {
+	       vspr_mk(3, f, 1 . 1),
+	       vspr_mk(3, f, 2 . 1),
+	       vspr_mk(3, f, 2 . 2),
+	       vspr_mk(3, f, 3 . 1),
+	       vspr_mk(3, f, 3 . 2),
+	       vspr_mk(3, f, 4 . 1),
+	       vspr_mk(3, f, 4 . 3),
+	       vspr_mk(3, f, (-2) . 1),
+	       vspr_mk(3, f, (-3) . 2),
+	       vspr_mk(3, f, (-4) . 2)
+	       	  };
+      	 if op eq '(geq greaterp) then
+	    return {
+	       vspr_mk(3, f, 2 . 1),
+	       vspr_mk(3, f, 3 . 2),
+	       vspr_mk(3, f, 4 . 2),
+	       vspr_mk(3, f, (-1) . 1),
+	       vspr_mk(3, f, (-2) . 1),
+	       vspr_mk(3, f, (-2) . 2),
+	       vspr_mk(3, f, (-3) . 1),
+	       vspr_mk(3, f, (-3) . 2),
+	       vspr_mk(3, f, (-4) . 1),
+	       vspr_mk(3, f, (-4) . 3)
+	       	  }
+      >>;
+      % This should be unreachable.
+      assert(nil)
+   end;
+
+asserted procedure vspr_at2prl!-lb(at: QfFormula, x: Kernel): VSprL;
+   % Atomic formula to list of parametric roots: lower bounds.
+   begin scalar f, cfl, op; integer l;
+      f := rl_arg2l at;
+      cfl := coeffs f;
+      l := length cfl;
+      op := rl_op at;
+      if eqn(l, 2) then <<  % the linear case
+      	 if op memq '(equal neq) then
+	    return {vspr_mk(1, f, 1 . 1), vspr_mk(1, f, (-1) . 1)};
+      	 if op memq '(lessp leq) then
+	    return {vspr_mk(1, f, (-1) . 1)};
+      	 if op eq '(geq greaterp) then
+	    return {vspr_mk(1, f, 1 . 1)}
+      >>;
+      if eqn(l, 3) then <<  % the quadratic case
+      	 if op memq '(equal neq) then
+	    return {
+	       vspr_mk(2, f, 1 . 1),
+	       vspr_mk(2, f, 1 . 2),
+	       vspr_mk(2, f, 2 . 1),
+	       vspr_mk(2, f, (-1) . 1),
+	       vspr_mk(2, f, (-1) . 2),
+	       vspr_mk(2, f, (-2) . 1)
+	       	  };
+      	 if op memq '(lessp leq) then
+	    return {
+	       vspr_mk(2, f, 1 . 1),
+	       vspr_mk(2, f, 2 . 1),
+	       vspr_mk(2, f, (-1) . 2),
+	       vspr_mk(2, f, (-2) . 1)
+	    	  };
+      	 if op eq '(geq greaterp) then
+	    return {
+	       vspr_mk(2, f, 1 . 2),
+	       vspr_mk(2, f, 2 . 1),
+	       vspr_mk(2, f, (-1) . 1),
+	       vspr_mk(2, f, (-2) . 1)
+	       	  }
+      >>;
+      if eqn(l, 4) then <<  % the cubic case
+      	 if op memq '(equal neq) then
+	    return {
+	       vspr_mk(3, f, 1 . 1),
+	       vspr_mk(3, f, 2 . 1),
+	       vspr_mk(3, f, 2 . 2),
+	       vspr_mk(3, f, 3 . 1),
+	       vspr_mk(3, f, 3 . 2),
+	       vspr_mk(3, f, 4 . 1),
+	       vspr_mk(3, f, 4 . 2),
+	       vspr_mk(3, f, 4 . 3),
+	       vspr_mk(3, f, (-1) . 1),
+	       vspr_mk(3, f, (-2) . 1),
+	       vspr_mk(3, f, (-2) . 2),
+	       vspr_mk(3, f, (-3) . 1),
+	       vspr_mk(3, f, (-3) . 2),
+	       vspr_mk(3, f, (-4) . 1),
+	       vspr_mk(3, f, (-4) . 2),
+	       vspr_mk(3, f, (-4) . 3)
+	       	  };
+      	 if op memq '(lessp leq) then
+	    return {
+	       vspr_mk(3, f, 2 . 1),
+	       vspr_mk(3, f, 3 . 2),
+	       vspr_mk(3, f, 4 . 2),
+	       vspr_mk(3, f, (-1) . 1),
+	       vspr_mk(3, f, (-2) . 1),
+	       vspr_mk(3, f, (-2) . 2),
+	       vspr_mk(3, f, (-3) . 1),
+	       vspr_mk(3, f, (-3) . 2),
+	       vspr_mk(3, f, (-4) . 1),
+	       vspr_mk(3, f, (-4) . 3)
+	       	  };
+      	 if op eq '(geq greaterp) then
+	    return {
+	       vspr_mk(3, f, 1 . 1),
+	       vspr_mk(3, f, 2 . 1),
+	       vspr_mk(3, f, 2 . 2),
+	       vspr_mk(3, f, 3 . 1),
+	       vspr_mk(3, f, 3 . 2),
+	       vspr_mk(3, f, 4 . 1),
+	       vspr_mk(3, f, 4 . 3),
+	       vspr_mk(3, f, (-2) . 1),
+	       vspr_mk(3, f, (-3) . 2),
+	       vspr_mk(3, f, (-4) . 2)
+	       	  }
+      >>;
+      % This should be unreachable.
+      assert(nil)
+   end;
 
 asserted procedure vsdb_expandNode(db: VSdb, nd: VSnd);
    % Expand node. No meaningful return value. [db] is modified in
@@ -646,12 +889,14 @@ asserted procedure vsdt_gaussposl(dt: VSdt, p: Position);
 asserted procedure vsdt_gaussposl!-at(dt: VSdt, p: Position);
    % Compute positions of all Gauss prime constituents in atomic
    % formula. [p] is the position of atomic formula [vsdt_f dt].
-   begin scalar atf, op, lhs, data;
+   begin scalar atf, op, lhs, theo, data;
       atf := vsdt_f dt;
       op := rl_op atf;
       lhs := rl_arg2l atf;
-      if op eq 'equal and not domainp lhs and ldeg lhs <= rldegbound!* then  % position [p] is Gauss
-	 data := {{p, 'roots!-from . p, nil}};
+      if op eq 'equal and not domainp lhs and ldeg lhs <= rldegbound!* then <<  % position [p] is Gauss
+	 theo := append(vsdt_ptheo dt, vsdt_ttheo dt);
+	 data := {{p, vspr_at2prl(atf, vsdt_var dt, theo, 'vspr_at2prl!-ub), nil}}
+      >>;
       vsdt_putdata(dt, data)
    end;
 
@@ -687,12 +932,14 @@ asserted procedure vsdt_cogaussposl(dt: VSdt, p: Position);
 asserted procedure vsdt_cogaussposl!-at(dt: VSdt, p: Position);
    % Compute positions of all co-Gauss prime constituents in atomic
    % formula. [p] is the position of atomic formula [vsdt_f dt].
-   begin scalar atf, op, lhs, data;
+   begin scalar atf, op, lhs, theo, data;
       atf := vsdt_f dt;
       op := rl_op atf;
       lhs := rl_arg2l atf;
-      if op eq 'neq and not domainp lhs and ldeg lhs <= rldegbound!* then  % position [p] is co-Gauss
-	 data := {{p, 'roots!-from . p, nil}};
+      if op eq 'neq and not domainp lhs and ldeg lhs <= rldegbound!* then <<  % position [p] is co-Gauss
+	 theo := append(vsdt_ptheo dt, vsdt_ttheo dt);
+	 data := {{p, vspr_at2prl(atf, vsdt_var dt, theo, 'vspr_at2prl!-ub), nil}}
+      >>;
       vsdt_putdata(dt, data)
    end;
 
