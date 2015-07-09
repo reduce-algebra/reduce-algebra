@@ -29,6 +29,11 @@ on echo,comp;
 
 nil
 
+% The procedures here will be compiled, but I switch off all
+% compiler messages because those messages are platform dependent
+% and so would show up as gratuitous differences between the log files
+% on differing machines.
+
 load compiler;
 
 
@@ -51,6 +56,14 @@ maxx := 1.797e+308;
 
 1.797e+308
 
+
+list(!!plumin,
+     !!plumax,
+     !!timmin,
+     !!timmax);
+
+
+(4.45015e-296 2.24712e+307 2.10954e-154 4.74038e+153)
 
 
 ll := v := nil;
@@ -369,10 +382,3 @@ nil
 end;
 
 nil
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 16 ms
-
-End of Lisp run after 0.01+0.06 seconds
-real 0.21
-user 0.03
-sys 0.04

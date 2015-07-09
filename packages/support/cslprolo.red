@@ -93,7 +93,6 @@ if memq('vsl, lispsystem!*) then
        ceiling floor round clrhash puthash gethash remhash
 % princ!-upcase princ!-downcase
        union intersection
-% safe!-fp!-plus safe!-fp!-times safe!-fp!-quot
        threevectorp
        sort
 % stable!-sort stable!-sortip
@@ -111,7 +110,7 @@ else
        logb log10 sec secd sech sin sind sinh sqrt tan tand tanh fix
        ceiling floor round clrhash puthash gethash remhash
        princ!-upcase princ!-downcase union intersection
-       safe!-fp!-plus safe!-fp!-times safe!-fp!-quot threevectorp
+       threevectorp
        sort stable!-sort stable!-sortip lengthc prin2 princ substq
        string!-store1 string!-store2 string!-store3 string!-store4), 'lose);
 

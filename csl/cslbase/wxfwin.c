@@ -113,12 +113,6 @@ extern char *getcwd(char *s, size_t n);
 #include <CoreServices/CoreServices.h>
 #endif /* MAC stuff */
 
-#ifdef _MSC_VER
-#define MS_CDECL __cdecl
-#else
-#define MS_CDECL
-#endif /* Microsoft C */
-
 #include "wxfwin.h"
 #include "termed.h"
 
@@ -761,7 +755,7 @@ int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
     return windowed_worker(argc, argv, fwin_main);
 }
 
-void MS_CDECL sigint_handler(int code)
+void sigint_handler(int code)
 {
 /* For debugging I may want to see when signals get caught... */
     FWIN_LOG(("sigint_handler called %d %#x\n", code, code));
@@ -1789,7 +1783,7 @@ static int more_files(void)
  * the type declared in the Microsoft header files for qsort insists
  * on a __cdecl here. Ugh.
  */
-int MS_CDECL alphasort_files(const void *a, const void *b)
+int alphasort_files(const void *a, const void *b)
 {
     const WIN32_FIND_DATA *fa = (const WIN32_FIND_DATA *)a,
                           *fb = (const WIN32_FIND_DATA *)b;

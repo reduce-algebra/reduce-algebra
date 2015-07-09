@@ -224,7 +224,7 @@ symbolic procedure safe!-crfp!-times(u,v);
       if not (a := safe!-fp!-times(ru,rv)) or
          not (b := safe!-fp!-times(iu,iv)) then return nil;
       if not(u := safe!-fp!-plus(a,-b)) then return nil;
-      u := rdzchk(u,a,-b);
+      u := rdzchk(u,a,safe!-fp!-minus b);
       if not (a := safe!-fp!-times(ru,iv)) or
          not (b := safe!-fp!-times(iu,rv)) then return nil;
       if not(v := safe!-fp!-plus(a,b)) then return nil;

@@ -535,6 +535,15 @@ symbolic procedure split!-str!-1 (string,separator,r);
       string . r ;
   end;
 
+% Some Lisp system might turn (sqrt -2.0) into a Lisp-level complex value
+% while others (including PSL) raise an error in such cases. The Reduce
+% code copes by testing the result at various places to verify that it is
+% not complex, using "complexp" as a predicate to detect Lisp complex numbers.
+% Where those do not exist this function can just return nil.
+
+symbolic procedure complexp u;
+   nil;
+
 % Support for CSL "verbos" that enables garbage collector messages.
 
 symbolic procedure verbos x;
@@ -546,7 +555,7 @@ symbolic procedure verbos x;
     return old
   end;
 
-% In tthe crack code it is essential that subst arranges to share some of
+% In the crack code it is essential that subst arranges to share some of
 % its output with its input. The same may be the case for sublist too?
 % The standard implementation of subst in PSL does not do this.
 

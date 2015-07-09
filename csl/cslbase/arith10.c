@@ -1,11 +1,11 @@
-/*  arith10.c                         Copyright (C) 1990-2013 Codemist Ltd */
+/*  arith10.c                         Copyright (C) 1990-2015 Codemist Ltd */
 
 /*
  * Arithmetic functions.
  */
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -51,6 +51,11 @@
  * used by Codemist with its Fortran compiler.
  */
 
+/*
+ * I think I should probably now view crlibm as something that will
+ * ALWAYS be in use...
+ */
+
 #ifndef HAVE_CRLIBM
 
 #ifdef WIN32
@@ -62,11 +67,11 @@
  * and so a calculation "sin(4.0*atan(1.0))" gives a bad result -
  * specifically one with a load of trailing zeros in its binary
  * representation. The code here does some more careful range reduction
- * and so calls the basic version only when it is safer.
+ * and so calls the basic version only when it is safer. 
  */
 
 
-static double MS_CDECL arg_reduce(double a, int *quadrant)
+static double arg_reduce(double a, int *quadrant)
 /*
  * Reduce argument to the range -pi/4 to pi/4, and set quadrant to the
  * relevant quadant.
@@ -95,7 +100,7 @@ static double MS_CDECL arg_reduce(double a, int *quadrant)
     return w;
 }
 
-double MS_CDECL my_sin(double x)
+double my_sin(double x)
 {
     int quadrant;
     x = arg_reduce(x, &quadrant);
@@ -109,7 +114,7 @@ case 3: return -cos(x);
     }
 }
 
-double MS_CDECL my_cos(double x)
+double my_cos(double x)
 {
     int quadrant;
     x = arg_reduce(x, &quadrant);
@@ -138,11 +143,17 @@ case 3: return sin(x);
 
 #define CSL_log_2 0.6931471805599453094
 
-#ifdef COMMON
+static Complex Cdiv_z(Complex, Complex);
 
-static Complex MS_CDECL Cdiv_z(Complex, Complex);
+/*
+ * Here I should review the C library complex elementary functions
+ * that are available with newer installations - but I may end up
+ * preferring to use my own versions to achieve absolute compatibility
+ * across platforms. However if I have my own code I need to review its
+ * behaviour on branch cuts and with regards to +0.0 and -0.0.
+ */
 
-static Complex MS_CDECL cpowi(Complex z, int n)
+static Complex CSLcpowi(Complex z, int n)
 {
 /*
  * Raises w complex number to an integer power by repeated squaring.
@@ -157,11 +168,11 @@ static Complex MS_CDECL cpowi(Complex z, int n)
     {   Complex one;
         one.real = 1.0;
         one.imag = 0.0;
-        return Cdiv_z(one, cpowi(z, -n));
+        return Cdiv_z(one, CSLcpowi(z, -n));
     }
     else if (n == 1) return z;
     else
-    {   Complex r = cpowi(z, n/2);
+    {   Complex r = CSLcpowi(z, n/2);
         double x1 = r.real, y1 = r.imag;
         double x2, y2;
         if (n & 1)
@@ -194,7 +205,7 @@ static Complex MS_CDECL cpowi(Complex z, int n)
     }
 }
 
-static Complex MS_CDECL csin(Complex z)
+static Complex CSLcsin(Complex z)
 {
     double x = z.real, y = z.imag;
 /*
@@ -225,11 +236,11 @@ static Complex MS_CDECL csin(Complex z)
 #define CSL_sqrt_starter 0.7071
 #define CSL_sqrt_iters   6
 
-static Complex MS_CDECL csqrt(Complex z)
+static Complex CSLcsqrt(Complex z)
 {
     double x = z.real, y = z.imag;
 /*
- *
+ * I believe that IEEE expect sqrt(-0.0 + 0.0*i) to be -0.0 + 0.0*i
  */
     int j, n;
     double scale;
@@ -280,7 +291,8 @@ static Complex MS_CDECL csqrt(Complex z)
  * that this code performs.  Experiment shows that the worst relative
  * error after 4 iterations is 1.3e-5, so after 6 it will be about
  * 3.0e-20, which is better than machine accuracy.  5 iterations would
- * not be enough.
+ * not be enough. I could perhaps use a look-up table to obtain a starting
+ * approximation that would save me a couple of iterations?
  */
     for (j=0; j<CSL_sqrt_iters; j++)
     {   double t = vx*vx + vy*vy;
@@ -299,7 +311,7 @@ static Complex MS_CDECL csqrt(Complex z)
 #undef CSL_sqrt_iters
 
 
-static Complex MS_CDECL ctan(Complex z)
+static Complex CSLctan(Complex z)
 {
     double x = z.real, y = z.imag;
 /*
@@ -314,7 +326,7 @@ static Complex MS_CDECL ctan(Complex z)
     return z;
 }
 
-static Complex MS_CDECL Cdiv_z(Complex p, Complex q)
+static Complex Cdiv_z(Complex p, Complex q)
 {
 /*
  * (p/q) as a complex number.  Note abominable issues about scaling so
@@ -408,37 +420,35 @@ static Lisp_Object make_complex_float(Complex v, Lisp_Object a)
     return onevalue(a1);
 }
 
-#endif
-
-static double MS_CDECL rln(double x)
+static double rln(double x)
 {
     if (!(x == x)) return x;   /* Ie a NaN */
     else if (x < 0.0) x = -x;
     return log(x);
 }
 
-static double MS_CDECL iln(double x)
+static double iln(double x)
 {
     if (!(x == x)) return x;   /* Ie a NaN */
     else if (x < 0.0) return _pi;
     else return 0.0;
 }
 
-static double MS_CDECL rsqrt(double x)
+static double rsqrt(double x)
 {
     if (!(x == x)) return x;   /* Ie a NaN */
     else if (x < 0.0) return 0.0;
     else return sqrt(x);
 }
 
-static double MS_CDECL isqrt(double x)
+static double isqrt(double x)
 {
     if (!(x == x)) return x;   /* Ie a NaN */
     if (x < 0.0) return sqrt(-x);
     else return 0.0;
 }
 
-static double MS_CDECL rasin(double x)
+static double rasin(double x)
 {
     if (1.0 < x) return _half_pi;
     else if (x <= -1.0) return -_half_pi;
@@ -446,7 +456,7 @@ static double MS_CDECL rasin(double x)
 }
 
 
-static double MS_CDECL iasin(double x)
+static double iasin(double x)
 {
     CSLbool sign;
     if (-1.0 <= x && x <= 1.0) return 0.0;
@@ -465,14 +475,14 @@ static double MS_CDECL iasin(double x)
     else return x;
 }
 
-static double MS_CDECL racos(double x)
+static double racos(double x)
 {
     if (x <= -1.0) return _pi;
     else if (1.0 <= x) return 0.0;
     else return acos(x);
 }
 
-static double MS_CDECL iacos(double x)
+static double iacos(double x)
 {
     CSLbool sign;
     if (x < -1.0) x = -x, sign = YES;
@@ -491,7 +501,7 @@ static double MS_CDECL iacos(double x)
     else return -x;
 }
 
-static double MS_CDECL CSLasinh(double x)
+static double CSLasinh(double x)
 {
     CSLbool sign;
     if (x < 0.0) x = -x, sign = YES;
@@ -526,7 +536,7 @@ static double acosh_coeffs[] =
 
 };
 
-static double MS_CDECL racosh(double x)
+static double racosh(double x)
 {
     CSLbool sign;
     if (x < -1.0) x = -x, sign = YES;
@@ -552,14 +562,14 @@ static double MS_CDECL racosh(double x)
     else return x;
 }
 
-static double MS_CDECL iacosh(double x)
+static double iacosh(double x)
 {
     if (1.0 <= x) return 0.0;
     else if (x <= -1.0) return _pi;
     else return acos(x);
 }
 
-static double MS_CDECL ratanh(double z)
+static double ratanh(double z)
 {
     if (z > -0.01 && z < -0.01)
     {   double zz = z*z;
@@ -570,7 +580,7 @@ static double MS_CDECL ratanh(double z)
     return log(z) / 2.0;
 }
 
-static double MS_CDECL iatanh(double x)
+static double iatanh(double x)
 {
     if (x < -1.0) return _half_pi;
     else if (1.0 < x) return -_half_pi;
@@ -590,7 +600,7 @@ static double MS_CDECL iatanh(double x)
 
 #define sqrthalf 0.7071                 /* sqrt(0.5), low accuracy OK */
 
-static double MS_CDECL racosd(double a)
+static double racosd(double a)
 {
     if (a <= -1.0) return 180.0;
     else if (a < -sqrthalf) return 180.0 - n180pi*acos(-a);
@@ -600,7 +610,7 @@ static double MS_CDECL racosd(double a)
     else return 0.0;
 }
 
-static double MS_CDECL iacosd(double a)
+static double iacosd(double a)
 /*
  * This version is only good enough for real-mode CSL, not for CCL
  */
@@ -609,7 +619,7 @@ static double MS_CDECL iacosd(double a)
     else return 1.0;
 }
 
-static double MS_CDECL racot(double a)
+static double racot(double a)
 {
     if (a >= 0.0)
         if (a > 1.0) return atan(1.0/a);
@@ -618,7 +628,7 @@ static double MS_CDECL racot(double a)
     else return _half_pi + atan(-a);
 }
 
-static double MS_CDECL racotd(double a)
+static double racotd(double a)
 {
     if (a >= 0.0)
         if (a > 1.0) return n180pi*atan(1.0/a);
@@ -627,7 +637,7 @@ static double MS_CDECL racotd(double a)
     else return 90.0 + n180pi*atan(-a);
 }
 
-static double MS_CDECL racoth(double a)
+static double racoth(double a)
 /*
  * No good in complex case
  */
@@ -636,25 +646,25 @@ static double MS_CDECL racoth(double a)
     else return ratanh(1.0/a);
 }
 
-static double MS_CDECL iacoth(double a)
+static double iacoth(double a)
 {
     if (a >= -1.0 && a <= 1.0) return 1.0;
     else return 0.0;
 }
 
-static double MS_CDECL racsc(double a)
+static double racsc(double a)
 {
     if (a > -1.0 && a < 1.0) return 0.0;
     else return asin(1.0/a);
 }
 
-static double MS_CDECL iacsc(double a)
+static double iacsc(double a)
 {
     if (a > -1.0 && a < 1.0) return 1.0;
     else return 0.0;
 }
 
-static double MS_CDECL racscd(double a)
+static double racscd(double a)
 {
     if (a > -1.0 && a < 1.0) return 0.0;
 /*
@@ -663,31 +673,31 @@ static double MS_CDECL racscd(double a)
     else return n180pi*asin(1.0/a);
 }
 
-static double MS_CDECL iacscd(double a)
+static double iacscd(double a)
 {
     if (a > -1.0 && a < 1.0) return 1.0;
     else return 0.0;
 }
 
-static double MS_CDECL racsch(double a)
+static double racsch(double a)
 {
     if (a == 0.0) return HUGE_VAL;
     else return CSLasinh(1.0/a);
 }
 
-static double MS_CDECL rasec(double a)
+static double rasec(double a)
 {
     if (a > -1.0 && a <= 1.0) return 0.0;
     else return acos(1.0/a);
 }
 
-static double MS_CDECL iasec(double a)
+static double iasec(double a)
 {
     if (a > -1.0 && a < 1.0) return 1.0;
     else return 0.0;
 }
 
-static double MS_CDECL rasecd(double a)
+static double rasecd(double a)
 {
     if (a > -1.0 && a <= 1.0) return 0.0;
 /*
@@ -696,25 +706,25 @@ static double MS_CDECL rasecd(double a)
     else return n180pi*acos(1.0/a);
 }
 
-static double MS_CDECL iasecd(double a)
+static double iasecd(double a)
 {
     if (a > -1.0 && a < 1.0) return 1.0;
     else return 0.0;
 }
 
-static double MS_CDECL rasech(double a)
+static double rasech(double a)
 {
     if (a <= 0.0 || a >= 1.0) return 0.0;
     else return racosh(1.0/a);
 }
 
-static double MS_CDECL iasech(double a)
+static double iasech(double a)
 {
     if (a <= 0.0 || a > 1.0) return 1.0;
     else return 0.0;
 }
 
-static double MS_CDECL rasind(double a)
+static double rasind(double a)
 {
     if (a <= -1.0) return -90.0;
     else if (a < -sqrthalf) return -90.0 + n180pi*acos(-a);
@@ -723,20 +733,20 @@ static double MS_CDECL rasind(double a)
     else return 90.0;
 }
 
-static double MS_CDECL iasind(double a)
+static double iasind(double a)
 {
     if (a >= -1.0 && a <= 1.0) return 0.0;
     else return 1.0;
 }
 
-static double MS_CDECL ratand(double a)
+static double ratand(double a)
 {
     if (a < -1.0) return -90.0 + n180pi*atan(-1.0/a);
     else if (a < 1.0) return n180pi*atan(a);
     else return 90.0 - n180pi*atan(1.0/a);
 }
 
-static double MS_CDECL rcbrt(double a)
+static double rcbrt(double a)
 {
     int xx, x, i, neg = 0;
     double b;
@@ -766,7 +776,7 @@ static double MS_CDECL rcbrt(double a)
     else return b;
 }
 
-static double MS_CDECL rcot(double a)
+static double rcot(double a)
 /*
  * Compare this code with rcotd(). Here I just compute a tangent and
  * form its reciprocal.  What about an arg of pi/2 then, where the
@@ -782,7 +792,7 @@ static double MS_CDECL rcot(double a)
     else return 1.0/tan(a);
 }
 
-static double MS_CDECL arg_reduce_degrees(double a, int *quadrant)
+static double arg_reduce_degrees(double a, int *quadrant)
 /*
  * Reduce argument to the range -45 to 45, and set quadrant to the
  * relevant quadant.  Returns arg converted to radians.
@@ -803,7 +813,7 @@ static double MS_CDECL arg_reduce_degrees(double a, int *quadrant)
     return pi180*w;
 }
 
-static double MS_CDECL rsind(double a)
+static double rsind(double a)
 {
     int quadrant;
     a = arg_reduce_degrees(a, &quadrant);
@@ -817,7 +827,7 @@ case 3: return -cos(a);
     }
 }
 
-static double MS_CDECL rcosd(double a)
+static double rcosd(double a)
 {
     int quadrant;
     a = arg_reduce_degrees(a, &quadrant);
@@ -831,7 +841,7 @@ case 3: return sin(a);
     }
 }
 
-static double MS_CDECL rtand(double a)
+static double rtand(double a)
 {
     int quadrant;
     a = arg_reduce_degrees(a, &quadrant);
@@ -845,7 +855,7 @@ case 3: return 1.0/tan(-a);
     }
 }
 
-static double MS_CDECL rcotd(double a)
+static double rcotd(double a)
 {
     int quadrant;
     a = arg_reduce_degrees(a, &quadrant);
@@ -860,27 +870,27 @@ case 3: return tan(-a);
 }
 
 
-static double MS_CDECL rcoth(double a)
+static double rcoth(double a)
 {
     if (a == 0.0) return HUGE_VAL;
     else return 1.0/tanh(a);
 }
 
-static double MS_CDECL rcsc(double a)
+static double rcsc(double a)
 {
     a = my_sin(a);
     if (a == 0.0) return HUGE_VAL;
     else return 1.0/a;
 }
 
-static double MS_CDECL rcscd(double a)
+static double rcscd(double a)
 {
     a = rsind(a);
     if (a == 0.0) return HUGE_VAL;
     else return 1.0/a;
 }
 
-static double MS_CDECL rcsch(double a)
+static double rcsch(double a)
 {
 /*
  * This code is imperfect in that (at least!) exp(-a) can underflow to zero
@@ -895,13 +905,13 @@ static double MS_CDECL rcsch(double a)
 
 #define CSL_log10 2.302585092994045684
 
-static double MS_CDECL rlog10(double a)
+static double rlog10(double a)
 {
     if (a > 0.0) return log(a)/CSL_log10;
     else return 0.0;
 }
 
-static double MS_CDECL ilog10(double a)
+static double ilog10(double a)
 {
     if (a <= 0) return 1.0;
     else return 0.0;
@@ -909,7 +919,7 @@ static double MS_CDECL ilog10(double a)
 
 #define CSL_log2 0.693147180559945309417
 
-static double MS_CDECL rlog2(double a)
+static double rlog2(double a)
 {
     if (a > 0.0)
     {   int x;
@@ -919,27 +929,27 @@ static double MS_CDECL rlog2(double a)
     else return 0.0;
 }
 
-static double MS_CDECL ilog2(double a)
+static double ilog2(double a)
 {
     if (a <= 0) return 1.0;
     else return 0.0;
 }
 
-static double MS_CDECL rsec(double a)
+static double rsec(double a)
 {
     a = my_cos(a);
     if (a == 0.0) return HUGE_VAL;
     else return 1.0/a;
 }
 
-static double MS_CDECL rsecd(double a)
+static double rsecd(double a)
 {
     a = rcosd(a);
     if (a == 0.0) return HUGE_VAL;
     else return 1.0/a;
 }
 
-static double MS_CDECL rsech(double a)
+static double rsech(double a)
 {
 /*
  * When |a| is big I ought to return 0.0
@@ -947,24 +957,19 @@ static double MS_CDECL rsech(double a)
     return 1.0/cosh(a);
 }
 
-#ifdef COMMON
-
 #define i_times(z) \
     { double temp = z.imag; z.imag = z.real; z.real = -temp; }
 
 #define m_i_times(z) \
     { double temp = z.imag; z.imag = -z.real; z.real = temp; }
 
-#endif
 
 /*
  * The calculations in the next few procedures are numerically
  * crummy, but they should get branch cuts correct.  Re-work later.
  */
 
-#ifdef COMMON
-
-static Complex MS_CDECL casinh(Complex z)
+static Complex CSLcasinh(Complex z)
 /* log(z + sqrt(1 + z^2)) */
 {
     int quadrant = 0;
@@ -981,7 +986,7 @@ static Complex MS_CDECL casinh(Complex z)
 /* /* The next line can overflow or lose precision */
     w.real = z.real*z.real - z.imag*z.imag + 1.0;
     w.imag = 2*z.real*z.imag;
-    w = csqrt(w);
+    w = CSLcsqrt(w);
     w.real += z.real;
     w.imag += z.imag;
     w = Cln(w);
@@ -990,15 +995,15 @@ static Complex MS_CDECL casinh(Complex z)
     return w;
 }
 
-static Complex MS_CDECL cacosh(Complex z)
+static Complex CSLcacosh(Complex z)
 /* 2*log(sqrt((z+1)/2) + sqrt((z-1)/2)) */
 {
     Complex w1, w2;
     w1.real = (z.real + 1.0)/2.0;
     w2.real = (z.real - 1.0)/2.0;
     w1.imag = w2.imag = z.imag/2.0;
-    w1 = csqrt(w1);
-    w2 = csqrt(w2);
+    w1 = CSLcsqrt(w1);
+    w2 = CSLcsqrt(w2);
     w1.real += w2.real;
     w1.imag += w2.imag;
     z = Cln(w1);
@@ -1007,7 +1012,7 @@ static Complex MS_CDECL cacosh(Complex z)
     return z;
 }
 
-static Complex MS_CDECL catanh(Complex z)
+static Complex CSLcatanh(Complex z)
 /* (log(1+z) - log(1-z))/2 */
 {
     Complex w1, w2;
@@ -1024,60 +1029,55 @@ static Complex MS_CDECL catanh(Complex z)
     return w1;
 }
 
-static Complex MS_CDECL casin(Complex z)
+static Complex CSLcasin(Complex z)
 {
     i_times(z);
-    z = casinh(z);
+    z = CSLcasinh(z);
     m_i_times(z);
     return z;
 }
 
-static Complex MS_CDECL cacos(Complex z)
+static Complex CSLcacos(Complex z)
 {
-/*  This is the code I had originally had...
-    z = cacosh(z);
-    m_i_times(z);
-    return z;
-*/
 /*
  * The following is asserted to behave better. I believe that the
  * calculation (pi/2 - z.real) is guaranteed to introduce severe error
  * when the answer is close to zero, and so this is probably not the ultimate
  * proper formula to use.
  */
-    z = casin(z);
+    z = CSLcasin(z);
     z.real = _half_pi - z.real;
     z.imag = - z.imag;
     return z;
    
 }
 
-static Complex MS_CDECL catan(Complex z)
+static Complex CSLcatan(Complex z)
 {
     i_times(z);
-    z = catanh(z);
+    z = CSLcatanh(z);
     m_i_times(z);
     return z;
 }
 
-static Complex MS_CDECL csinh(Complex z)
+static Complex CSLcsinh(Complex z)
 {
     i_times(z);
-    z = csin(z);
+    z = CSLcsin(z);
     m_i_times(z);
     return z;
 }
 
-static Complex MS_CDECL ccosh(Complex z)
+static Complex CSLccosh(Complex z)
 {
     i_times(z);
     return Ccos(z);
 }
 
-static Complex MS_CDECL ctanh(Complex z)
+static Complex CSLctanh(Complex z)
 {
     i_times(z);
-    z = ctan(z);
+    z = CSLctan(z);
     m_i_times(z);
     return z;
 }
@@ -1087,292 +1087,238 @@ static Complex MS_CDECL ctanh(Complex z)
  * but might be wanted in a full extended system.... maybe.
  */
 
-static Complex MS_CDECL cacosd(Complex a)
+static Complex CSLcacosd(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL cacot(Complex a)
+static Complex CSLcacot(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL cacotd(Complex a)
+static Complex CSLcacotd(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL cacoth(Complex a)
+static Complex CSLcacoth(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL cacsc(Complex a)
+static Complex CSLcacsc(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL cacscd(Complex a)
+static Complex CSLcacscd(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL cacsch(Complex a)
+static Complex CSLcacsch(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL casec(Complex a)
+static Complex CSLcasec(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL casecd(Complex a)
+static Complex CSLcasecd(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL casech(Complex a)
+static Complex CSLcasech(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL casind(Complex a)
+static Complex CSLcasind(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL catand(Complex a)
+static Complex CSLcatand(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL ccbrt(Complex a)
+static Complex ccbrt(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL ccosd(Complex a)
+static Complex CSLccosd(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL ccot(Complex a)
+static Complex CSLccot(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL ccotd(Complex a)
+static Complex CSLccotd(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL ccoth(Complex a)
+static Complex CSLccoth(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL ccsc(Complex a)
+static Complex CSLccsc(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL ccscd(Complex a)
+static Complex CSLccscd(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL ccsch(Complex a)
+static Complex CSLccsch(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL clog10(Complex a)
+static Complex CSLclog10(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL clog2(Complex a)
+static Complex CSLclog2(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL csec(Complex a)
+static Complex CSLcsec(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL csecd(Complex a)
+static Complex CSLcsecd(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL csech(Complex a)
+static Complex CSLcsech(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL csind(Complex a)
+static Complex CSLcsind(Complex a)
 {
     return a;
 }
 
 
-static Complex MS_CDECL ctand(Complex a)
+static Complex CSLctand(Complex a)
 {
     return a;
 }
 
-/* end of unimplemented bunch */
-
-#endif
 /*
  * Now the Lisp callable entrypoints for the above
  */
 
-typedef double MS_CDECL real_arg_fn(double);
-#ifdef COMMON
-typedef Complex MS_CDECL complex_arg_fn(Complex);
-#endif
+typedef double real_arg_fn(double);
+typedef Complex complex_arg_fn(Complex);
+
+/*
+ * Each trig function has three associated helpers.
+ * the first two are used for real arguments, and return the real and
+ * imaginary parts of the answer. If the function is always real for
+ * real input then the second function is gicen as NULL.
+ * The final case is for genuine complex arguments.
+ */
 
 typedef struct trigfn
-{   double (MS_CDECL *real)(double);
-    double (MS_CDECL *imag)(double);
-#ifdef COMMON
-    Complex (MS_CDECL *complex)(Complex);
-#endif
+{   double (*real)(double);
+    double (*imag)(double);
+    Complex (*complex)(Complex);
 } trigfn_record;
 
-#ifdef COMMON
 static trigfn_record const trig_functions[] =
 {
-    {racos,  iacos,  cacos},  /* acos   0  inverse cos, rads, [0, pi) */
-    {racosd, iacosd, cacosd}, /* acosd  1  inverse cos, degs, [0, 180) */
-    {racosh, iacosh, cacosh}, /* acosh  2  inverse hyperbolic cosine */
-    {racot,  0,      cacot},  /* acot   3  inverse cot, rads, (0, pi) */
-    {racotd, 0,      cacotd}, /* acotd  4  inverse cot, degs, (0, 180) */
-    {racoth, iacoth, cacoth}, /* acoth  5  inverse hyperbolic cotangent */
-    {racsc,  iacsc,  cacsc},  /* acsc   6  inverse cosec, [-pi/2, pi/2] */
-    {racscd, iacscd, cacscd}, /* acscd  7  inverse cosec, degs, [-90, 90] */
-    {racsch, 0,      cacsch}, /* acsch  8  inverse hyperbolic cosecant */
-    {rasec,  iasec,  casec},  /* asec   9  inverse sec, rads, [0, pi) */
-    {rasecd, iasecd, casecd}, /* asecd  10 inverse sec, degs, [0, 180) */
-    {rasech, iasech, casech}, /* asech  11 inverse hyperbolic secant */
-    {rasin,  iasin,  casin},  /* asin   12 inverse sin, rads, [-pi/2, pi/2] */
-    {rasind, iasind, casind}, /* asind  13 inverse sin, degs, [-90, 90] */
-    {CSLasinh, 0,    casinh}, /* asinh  14 inverse hyperbolic sin */
-    {atan,   0,      catan},  /* atan   15 1-arg inverse tan, (-pi/2, pi/2) */
-    {ratand, 0,      catand}, /* atand  16 inverse tan, degs, (-90, 90) */
-    {0,      0,      0},      /* atan2  17 2-arg inverse tan, [0, 2pi) */
-    {0,      0,      0},      /* atan2d 18 2-arg inverse tan, degs, [0, 360) */
-    {ratanh, iatanh, catanh}, /* atanh  19 inverse hyperbolic tan */
-    {rcbrt,  0,      ccbrt},  /* cbrt   20 cube root */
-    {my_cos  0,      Ccos},   /* cos    21 cosine, rads */
-    {rcosd,  0,      ccosd},  /* cosd   22 cosine, degs */
-    {cosh,   0,      ccosh},  /* cosh   23 hyperbolic cosine */
-    {rcot,   0,      ccot},   /* cot    24 cotangent, rads */
-    {rcotd,  0,      ccotd},  /* cotd   25 cotangent, degs */
-    {rcoth,  0,      ccoth},  /* coth   26 hyperbolic cotangent */
-    {rcsc,   0,      ccsc},   /* csc    27 cosecant, rads */
-    {rcscd,  0,      ccscd},  /* cscd   28 cosecant, degs */
-    {rcsch,  0,      ccsch},  /* csch   29 hyperbolic cosecant */
-    {exp,    0,      Cexp},   /* exp    30 exp(x) = e^z, e approx 2.71828 */
-    {0,      0,      0},      /* expt   31 expt(a,b) = a^b */
-    {0,      0,      0},      /* hypot  32 hypot(a,b) = sqrt(a^2+b^2) */
+    {racos,  iacos,  CSLcacos},  /* acos   0  inverse cos, rads, [0, pi) */
+    {racosd, iacosd, CSLcacosd}, /* acosd  1  inverse cos, degs, [0, 180) */
+    {racosh, iacosh, CSLcacosh}, /* acosh  2  inverse hyperbolic cosine */
+    {racot,  NULL,   CSLcacot},  /* acot   3  inverse cot, rads, (0, pi) */
+    {racotd, NULL,   CSLcacotd}, /* acotd  4  inverse cot, degs, (0, 180) */
+    {racoth, iacoth, CSLcacoth}, /* acoth  5  inverse hyperbolic cotangent */
+    {racsc,  iacsc,  CSLcacsc},  /* acsc   6  inverse cosec, [-pi/2, pi/2] */
+    {racscd, iacscd, CSLcacscd}, /* acscd  7  inverse cosec, degs, [-90, 90] */
+    {racsch, NULL,   CSLcacsch}, /* acsch  8  inverse hyperbolic coseCSLcant */
+    {rasec,  iasec,  CSLcasec},  /* asec   9  inverse sec, rads, [0, pi) */
+    {rasecd, iasecd, CSLcasecd}, /* asecd  10 inverse sec, degs, [0, 180) */
+    {rasech, iasech, CSLcasech}, /* asech  11 inverse hyperbolic seCSLcant */
+    {rasin,  iasin,  CSLcasin},  /* asin   12 inverse sin, rads, [-pi/2, pi/2] */
+    {rasind, iasind, CSLcasind}, /* asind  13 inverse sin, degs, [-90, 90] */
+    {CSLasinh, NULL, CSLcasinh}, /* asinh  14 inverse hyperbolic sin */
+    {atan,   NULL,   CSLcatan},  /* atan   15 1-arg inverse tan, (-pi/2, pi/2) */
+    {ratand, NULL,   CSLcatand}, /* atand  16 inverse tan, degs, (-90, 90) */
+    {NULL,   NULL,   NULL},   /* atan2  17 2-arg inverse tan, [0, 2pi) */
+    {NULL,   NULL,   NULL},   /* atan2d 18 2-arg inverse tan, degs, [0, 360) */
+    {ratanh, iatanh, CSLcatanh}, /* atanh  19 inverse hyperbolic tan */
+    {rcbrt,  NULL,   ccbrt},  /* cbrt   20 cube root */
+    {my_cos, NULL,   Ccos},   /* cos    21 cosine, rads */
+    {rcosd,  NULL,   CSLccosd},  /* cosd   22 cosine, degs */
+    {cosh,   NULL,   CSLccosh},  /* cosh   23 hyperbolic cosine */
+    {rcot,   NULL,   CSLccot},   /* cot    24 cotangent, rads */
+    {rcotd,  NULL,   CSLccotd},  /* cotd   25 cotangent, degs */
+    {rcoth,  NULL,   CSLccoth},  /* coth   26 hyperbolic cotangent */
+    {rcsc,   NULL,   CSLccsc},   /* csc    27 cosecant, rads */
+    {rcscd,  NULL,   CSLccscd},  /* cscd   28 cosecant, degs */
+    {rcsch,  NULL,   CSLccsch},  /* csch   29 hyperbolic cosecant */
+    {exp,    NULL,   Cexp},   /* exp    30 exp(x) = e^z, e approx 2.71828 */
+    {NULL,   NULL,   NULL},   /* expt   31 expt(a,b) = a^b */
+    {NULL,   NULL,   NULL},   /* hypot  32 hypot(a,b) = sqrt(a^2+b^2) */
     {rln,    iln,    Cln},    /* ln     33 log base e, e approx 2.71828 */
-    {0,      0,      0},      /* log    34 2-arg log */
-    {rlog10, ilog10, clog10}, /* log10  35 log to base 10 */
-    {rsec,   0,      csec},   /* sec    36 secant, rads */
-    {rsecd,  0,      csecd},  /* secd   37 secant, degs */
-    {rsech,  0,      csech},  /* sech   38 hyperbolic secant */
-    {my_sin, 0,      csin},   /* sin    39 sine, rads */
-    {rsind,  0,      csind},  /* sind   40 sine, degs */
-    {sinh,   0,      csinh},  /* sinh   41 hyperbolic sine */
-    {rsqrt,  isqrt,  csqrt},  /* sqrt   42 square root */
-    {tan,    0,      ctan},   /* tan    43 tangent, rads */
-    {rtand,  0,      ctand},  /* tand   44 tangent, degs */
-    {tanh,   0,      ctanh},  /* tanh   45 hyperbolic tangent */
-    {rlog2,  ilog2,  clog2}   /* log2   46 log to base 2 */
+    {NULL,   NULL,   NULL},   /* log    34 2-arg log */
+    {rlog10, ilog10, CSLclog10}, /* log10  35 log to base 10 */
+    {rsec,   NULL,   CSLcsec},   /* sec    36 secant, rads */
+    {rsecd,  NULL,   CSLcsecd},  /* secd   37 secant, degs */
+    {rsech,  NULL,   CSLcsech},  /* sech   38 hyperbolic secant */
+    {my_sin, NULL,   CSLcsin},   /* sin    39 sine, rads */
+    {rsind,  NULL,   CSLcsind},  /* sind   40 sine, degs */
+    {sinh,   NULL,   CSLcsinh},  /* sinh   41 hyperbolic sine */
+    {rsqrt,  isqrt,  CSLcsqrt},  /* sqrt   42 square root */
+    {tan,    NULL,   CSLctan},   /* tan    43 tangent, rads */
+    {rtand,  NULL,   CSLctand},  /* tand   44 tangent, degs */
+    {tanh,   NULL,   CSLctanh},  /* tanh   45 hyperbolic tangent */
+    {rlog2,  ilog2,  CSLclog2}   /* log2   46 log to base 2 */
 };
-
-#else
-static trigfn_record const trig_functions[] =
-{
-    {racos,  iacos},   /* acos   0  inverse cosine, rads, [0, pi) */
-    {racosd, iacosd},  /* acosd  1  inverse cosine, degs, [0, 180) */
-    {racosh, iacosh},  /* acosh  2  inverse hyperbolic cosine */
-    {racot,  0},       /* acot   3  inverse cotangent, rads, (0, pi) */
-    {racotd, 0},       /* acotd  4  inverse cotangent, degs, (0, 180) */
-    {racoth, iacoth},  /* acoth  5  inverse hyperbolic cotangent */
-    {racsc,  iacsc},   /* acsc   6  inverse cosecant, rads, [-pi/2, pi/2] */
-    {racscd, iacscd},  /* acscd  7  inverse cosecant, degs, [-90, 90] */
-    {racsch, 0},       /* acsch  8  inverse hyperbolic cosecant */
-    {rasec,  iasec},   /* asec   9  inverse secant, rads, [0, pi) */
-    {rasecd, iasecd},  /* asecd  10 inverse secant, degs, [0, 180) */
-    {rasech, iasech},  /* asech  11 inverse hyperbolic secant */
-    {rasin,  iasin},   /* asin   12 inverse sine, rads, [-pi/2, pi/2] */
-    {rasind, iasind},  /* asind  13 inverse sine, degs, [-90, 90] */
-    {CSLasinh,  0},    /* asinh  14 inverse hyperbolic sine */
-    {atan,   0},       /* atan   15 1-arg inverse tangent, (-pi/2, pi/2) */
-    {ratand, 0},       /* atand  16 1-arg inverse tangent, degs, (-90, 90) */
-    {0,      0},       /* atan2  17 2-arg inverse tangent, [0, 2pi) */
-    {0,      0},       /* atan2d 18 2-arg inverse tangent, degs, [0, 360) */
-    {ratanh, iatanh},  /* atanh  19 inverse hyperbolic tangent */
-    {rcbrt,  0},       /* cbrt   20 cube root */
-    {my_cos, 0},       /* cos    21 cosine, rads */
-    {rcosd,  0},       /* cosd   22 cosine, degs */
-    {cosh,   0},       /* cosh   23 hyperbolic cosine */
-    {rcot,   0},       /* cot    24 cotangent, rads */
-    {rcotd,  0},       /* cotd   25 cotangent, degs */
-    {rcoth,  0},       /* coth   26 hyperbolic cotangent */
-    {rcsc,   0},       /* csc    27 cosecant, rads */
-    {rcscd,  0},       /* cscd   28 cosecant, degs */
-    {rcsch,  0},       /* csch   29 hyperbolic cosecant */
-    {exp,    0},       /* exp    30 exp(x) = e^z, e approx 2.71828 */
-    {0,      0},       /* expt   31 expt(a,b) = a^b */
-    {0,      0},       /* hypot  32 hypot(a,b) = sqrt(a^2+b^2) */
-    {rln,    iln},     /* ln     33 log base e, e approx 2.71828 */
-    {0,      0},       /* log    34 2-arg log. log(a,b) is log of a base b */
-    {rlog10, ilog10},  /* log10  35 log to base 10 */
-    {rsec,   0},       /* sec    36 secant, rads */
-    {rsecd,  0},       /* secd   37 secant, degs */
-    {rsech,  0},       /* sech   38 hyperbolic secant */
-    {my_sin, 0},       /* sin    39 sine, rads */
-    {rsind,  0},       /* sind   40 sine, degs */
-    {sinh,   0},       /* sinh   41 hyperbolic sine */
-    {rsqrt,  isqrt},   /* sqrt   42 square root */
-    {tan,    0},       /* tan    43 tangent, rads */
-    {rtand,  0},       /* tand   44 tangent, degs */
-    {tanh,   0},       /* tanh   45 hyperbolic tangent */
-    {rlog2,  ilog2}    /* log2   46 log to base 2 */
-};
-
-#endif
 
 static Lisp_Object Ltrigfn(unsigned int which_one, Lisp_Object a)
 /*
@@ -1385,6 +1331,9 @@ static Lisp_Object Ltrigfn(unsigned int which_one, Lisp_Object a)
 #ifndef COMMON
     int32_t restype = TYPE_DOUBLE_FLOAT;
 #else
+/*
+ * single floats seem to me to be a bad idea!
+ */
     int32_t restype = TYPE_SINGLE_FLOAT;
 #endif
     if (which_one > 46) return aerror("trigfn internal error");
@@ -1393,7 +1342,6 @@ static Lisp_Object Ltrigfn(unsigned int which_one, Lisp_Object a)
 case TAG_FIXNUM:
         d = (double)int_of_fixnum(a);
         break;
-#ifdef COMMON
 case TAG_SFLOAT:
         {   Float_union aa;
             aa.i = a - TAG_SFLOAT;
@@ -1401,18 +1349,14 @@ case TAG_SFLOAT:
             restype = 0;
             break;
         }
-#endif
 case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {
         case TYPE_BIGNUM:
-#ifdef COMMON
         case TYPE_RATNUM:
-#endif
                 d = float_of_number(a);
                 break;
-#ifdef COMMON
         case TYPE_COMPLEX_NUM:
                 {   Complex c1, c2;
                     c1.real = float_of_number(real_part(a));
@@ -1421,7 +1365,6 @@ case TAG_NUMBERS:
 /* make_complex_float does the onevalue() for me */
                     return make_complex_float(c2, a);
                 }
-#endif
         default:
                 return aerror1("bad arg for trig function",  a);
             }
@@ -1434,16 +1377,20 @@ case TAG_BOXFLOAT:
 default:
         return aerror1("bad arg for trig function",  a);
     }
-    {   double (MS_CDECL *im)(double) = trig_functions[which_one].imag;
-        if (im == 0)
+    {   double (*im)(double) = trig_functions[which_one].imag;
+        if (im == NULL)
 /*
+ * If there is no function for giving the complex part of a result
+ * from a real argument then at this point I have a real input and
+ * so I just deal with it simply.
+ *
  * I really suspect I should do something writh errno here to
  * keep track of when things go wrong.  Doing so feels fairly
  * messy, but it is necessary if I am to raise exceptions for
  * Lisp if an elementary function leads to overflow.
  */
-        {   double (MS_CDECL *rl)(double) = trig_functions[which_one].real;
-            if (rl == 0) return aerror("unimplemented trig function");
+        {   double (*rl)(double) = trig_functions[which_one].real;
+            if (rl == NULL) return aerror("unimplemented trig function");
             d = (*rl)(d);
             a = make_boxfloat(d, restype);
             errexit();
@@ -1452,10 +1399,8 @@ default:
         else
         {   double c1r, c1i;
             Lisp_Object nil;
-#ifdef COMMON
             Lisp_Object rp, ip;
-#endif
-            double (MS_CDECL *rl)(double) = trig_functions[which_one].real;
+            double (*rl)(double) = trig_functions[which_one].real;
             if (rl == 0) return aerror("unimplemented trig function");
             c1r = (*rl)(d);
             c1i = (*im)(d);
@@ -1466,12 +1411,16 @@ default:
  * zero imaginary part remain complex.
  */
             if (c1i == 0.0)
-            {
-                a = make_boxfloat(c1r, restype);
+            {   a = make_boxfloat(c1r, restype);
                 errexit();
                 return onevalue(a);
             }
-#ifdef COMMON
+#ifndef COMMON
+/* For now at least I will keep raising an error in cases where the
+ * result would not be real
+ */
+            return aerror("Elementary function argugemt out of range");
+#endif
             rp = make_boxfloat(c1r, restype);
             errexit();
             ip = make_boxfloat(c1i, restype);
@@ -1479,9 +1428,6 @@ default:
             a = make_complex(rp, ip);
             errexit();
             return onevalue(a);
-#else
-            return aerror1("bad arg for trig function",  a);
-#endif
         }
     }
 }
@@ -1502,23 +1448,18 @@ static Lisp_Object makenum(Lisp_Object a, int32_t n)
     {
 case TAG_FIXNUM:
         return fixnum_of_int(n);
-#ifdef COMMON
 case TAG_SFLOAT:
         {   Float_union aa;
             aa.f = (float)n;
             return (aa.i & ~(int32_t)0xf) + TAG_SFLOAT;
         }
-#endif
 case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {
         case TYPE_BIGNUM:
-#ifdef COMMON
         case TYPE_RATNUM:
-#endif
                 return fixnum_of_int(n);
-#ifdef COMMON
         case TYPE_COMPLEX_NUM:
                 {   Lisp_Object rr, ii;
                     a = real_part(a);
@@ -1530,7 +1471,6 @@ case TAG_NUMBERS:
                     errexit();
                     return onevalue(a);
                 }
-#endif
             }
             return aerror1("bad arg for makenumber",  a);
         }
@@ -1572,8 +1512,7 @@ static Lisp_Object CSLpowi(Lisp_Object a, uint32_t n)
     }
 }
 
-#ifdef COMMON
-static Complex MS_CDECL complex_of_number(Lisp_Object a)
+static Complex complex_of_number(Lisp_Object a)
 {
     Complex z;
     if (is_numbers(a) && is_complex(a))
@@ -1586,7 +1525,6 @@ static Complex MS_CDECL complex_of_number(Lisp_Object a)
     }
     return z;
 }
-#endif
 
 static Lisp_Object Lhypot(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
@@ -1615,10 +1553,8 @@ Lisp_Object Lexpt(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
     double d, e;
     int32_t restype, n;
-#ifdef COMMON
     Lisp_Object w;
     Complex c1, c2, c3;
-#endif
 /*
  * I take special action on 1, 0 and -1 raised to a power that is an integer
  * or a bignum. In part this is because raising 1 to a power may be a fairly
@@ -1655,7 +1591,6 @@ Lisp_Object Lexpt(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
             }
         }
     }
-#ifdef COMMON
 /*
  * In a similar vein I will take special action on #C(0 1) and #C(0 -1)
  * raise to integer (including bignum) powers.
@@ -1680,7 +1615,6 @@ Lisp_Object Lexpt(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     default:  break;
         }
     }
-#endif
     if (is_fixnum(b))   /* bignum exponents would yield silly values! */
     {   n = int_of_fixnum(b);
         if (n < 0)
@@ -1695,7 +1629,6 @@ Lisp_Object Lexpt(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
         else a = CSLpowi(a, (uint32_t)n);
         return onevalue(a);
     }
-#ifdef COMMON
     if (is_numbers(a) && is_complex(a)) w = real_part(a);
     else w = a;
     if (is_sfloat(w)) restype = 0;
@@ -1711,10 +1644,6 @@ Lisp_Object Lexpt(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
             restype = n;
     }
     else if (restype == 0) restype = TYPE_SINGLE_FLOAT;
-#else
-    restype = TYPE_DOUBLE_FLOAT;
-#endif
-#ifdef COMMON
     if ((is_numbers(a) && is_complex(a)) ||
         (is_numbers(b) && is_complex(b)))
     {   c1 = complex_of_number(a);
@@ -1728,11 +1657,9 @@ Lisp_Object Lexpt(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
         errexit();
         return onevalue(a);
     }
-#endif
     d = float_of_number(a);
     e = float_of_number(b);
     if (d < 0.0)
-#ifdef COMMON
     {   c1.real = d; c1.imag = 0.0;
         c2.real = e; c2.imag = 0.0;
         c3 = Cpow(c1, c2);
@@ -1744,9 +1671,6 @@ Lisp_Object Lexpt(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
         errexit();
         return onevalue(a);
     }
-#else
-        return aerror1("bad arg for expt",  b);
-#endif
     d = pow(d, e);
     a = make_boxfloat(d, restype);
     errexit();
@@ -1768,8 +1692,6 @@ Lisp_Object Llog_2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     errexit();
     return quot2(a, b);
 }
-
-#ifdef COMMON
 
 static Lisp_Object Lisqrt(Lisp_Object nil, Lisp_Object a)
 {
@@ -1800,8 +1722,6 @@ default:
     return onevalue(fixnum_of_int((int32_t)d));
 }
 
-#endif
-
 Lisp_Object Labsval(Lisp_Object nil, Lisp_Object a)
 /*
  * I call this Labsval not Labs because a non-case-sensitive linker
@@ -1813,20 +1733,15 @@ Lisp_Object Labsval(Lisp_Object nil, Lisp_Object a)
     switch ((int)a & TAG_BITS)
     {
 case TAG_FIXNUM:
-#ifdef COMMON
 case TAG_SFLOAT:
-#endif
         break;
 case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {
         case TYPE_BIGNUM:
-#ifdef COMMON
         case TYPE_RATNUM:
-#endif
                 break;
-#ifdef COMMON
         case TYPE_COMPLEX_NUM:
                 {   Complex c1;
                     double d;
@@ -1839,7 +1754,6 @@ case TAG_NUMBERS:
                     errexit();
                     return onevalue(a);
                 }
-#endif
         default:
                 return aerror1("bad arg for abs",  a);
             }
@@ -1857,8 +1771,6 @@ default:
     errexit();
     return onevalue(a);
 }
-
-#ifdef COMMON
 
 static Lisp_Object Lphase(Lisp_Object nil, Lisp_Object a)
 {
@@ -1915,9 +1827,7 @@ static Lisp_Object Lcis(Lisp_Object env, Lisp_Object a)
     errexit();
     return Ltrigfn(30, a);     /* exp() */
 }
-#endif
 
-#ifdef COMMON
 Lisp_Object Latan(Lisp_Object env, Lisp_Object a)
 {
     CSL_IGNORE(env);
@@ -1929,86 +1839,48 @@ Lisp_Object Latan_2(Lisp_Object env, Lisp_Object a, Lisp_Object b)
     CSL_IGNORE(env);
     return Latan2(env, a, b);
 }
-#else
-Lisp_Object Latan(Lisp_Object env, Lisp_Object a)
-{
-    CSL_IGNORE(env);
-    return Ltrigfn(15, a);     /* atan() */
-}
-#endif
 
-Lisp_Object Latan2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
+Lisp_Object Latan2(Lisp_Object nil, Lisp_Object y, Lisp_Object x)
+{
+    double u, v, r;
+    u = float_of_number(x);
+    v = float_of_number(y);
+    if (u == 0.0 && v == 0.0) r = 0.0; /* really an error case */
+/*
+ * Here I am assuming IEEE arithmetic and hence that a division by zero
+ * just yields an infinity, not an error.
+ */
+    else if (u >= 0.0) r = atan(v/u);
+/*
+ * On the next line x was negative so I will be careful about the sign
+ * of a zero value for y because the negative real axis is a branch cut.
+ */
+    else if (v > 0.0 || (v == 0.0 && 1.0/v > 0.0))
+/*
+ * The adjustment here is done by computing pi/2+atan(-u/v) rather
+ * than as pi-atan(-v/u) to reduce risk of cancellation errors.
+ */
+        r = _half_pi + atan(-u/v);
+    else r = -_half_pi - atan(u/v);
+    x = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
+    errexit();
+    return onevalue(x);
+}
+
+Lisp_Object Latan2d(Lisp_Object nil, Lisp_Object y, Lisp_Object x)
 {
     double u, v, r;
     int q = 0;
-    v = float_of_number(a);
-    u = float_of_number(b);
-    if (u < 0.0) u = -u, q = 1;
-    if (v < 0.0) v = -v, q |= 2;
-    if (v > u) { r = u; u = v; v = r; q |= 4; }
-    if (u == 0.0 && v == 0.0) r = 0.0;
-    else
-    {   r = atan(v/u);
-        switch (q)
-        {
-    default:
-    case 0: break;
-    case 1: r = _pi - r;
-            break;
-    case 2: r = -r;
-            break;
-    case 3: r = -_pi + r;
-            break;
-    case 4: r = _half_pi - r;
-            break;
-    case 5: r = _half_pi + r;
-            break;
-    case 6: r = -_half_pi + r;
-            break;
-    case 7: r = -_half_pi - r;
-            break;
-        }
-    }
-    a = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
+    u = float_of_number(x);
+    v = float_of_number(y);
+    if (u == 0.0 && v == 0.0) r = 0.0; /* really an error case */
+    else if (u >= 0.0) r = n180pi*atan(v/u);
+    else if (v > 0.0 || (v == 0.0 && 1.0/v > 0.0))
+        r = 90.0 + n180pi*atan(-u/v);
+    else r = -90.0 - n180pi*atan(u/v);
+    x = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
     errexit();
-    return onevalue(a);
-}
-
-Lisp_Object Latan2d(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
-{
-    double u, v, r;
-    int q = 0;
-    v = float_of_number(a);
-    u = float_of_number(b);
-    if (u < 0.0) u = -u, q = 1;
-    if (v < 0.0) v = -v, q |= 2;
-    if (v > u) { r = u; u = v; v = r; q |= 4; }
-    if (u == 0.0 && v == 0.0) r = 0.0;
-    else
-    {   r = n180pi*atan(v/u);
-        switch (q)
-        {
-    default:
-    case 0: break;
-    case 1: r = 180.0 - r;
-            break;
-    case 2: r = -r;
-            break;
-    case 3: r = -180.0 + r;
-            break;
-    case 4: r = 90.0 - r;
-            break;
-    case 5: r = 90.0 + r;
-            break;
-    case 6: r = -90.0 + r;
-            break;
-    case 7: r = -90.0 - r;
-            break;
-        }
-    }
-    a = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
-    errexit();
-    return onevalue(a);
+    return onevalue(x);
 }
 
 Lisp_Object Lacos(Lisp_Object nil, Lisp_Object a)
@@ -2314,16 +2186,12 @@ setup_type const arith10_setup[] =
     {"tan",                     Ltan, too_many_1, wrong_no_1},
     {"tand",                    Ltand, too_many_1, wrong_no_1},
     {"tanh",                    Ltanh, too_many_1, wrong_no_1},
-#ifdef COMMON
     {"cis",                     Lcis, too_many_1, wrong_no_1},
     {"isqrt",                   Lisqrt, too_many_1, wrong_no_1},
     {"phase",                   Lphase, too_many_1, wrong_no_1},
     {"signum",                  Lsignum, too_many_1, wrong_no_1},
     {"atan",                    Latan, Latan_2, wrong_no_1},
-#else
-    {"atan",                    Latan, too_many_1, wrong_no_1},
     {"logb",                    too_few_2, Llog_2, wrong_no_2},
-#endif
     {NULL,                      0, 0, 0}
 };
 

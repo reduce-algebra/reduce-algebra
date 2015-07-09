@@ -1,11 +1,11 @@
-/*  fasl.c                          Copyright (C) 1990-2014 Codemist Ltd */
+/*  fasl.c                          Copyright (C) 1990-2015 Codemist Ltd */
 
 /*
  * Binary file support for faster loading of precompiled code etc.
  */
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -954,7 +954,6 @@ static Lisp_Object fastread(void)
                 continue;
             }
 
-#ifdef COMMON
     case F_RAT:
             w = fastread();
             errexit();
@@ -1003,7 +1002,6 @@ static Lisp_Object fastread(void)
             convert_fp_rep((char *)r + CELL - TAG_BOXFLOAT,
                            0, current_fp_rep, 1);
             return r;
-#endif
 
     case F_FPD:
             r = getvector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT,
@@ -1018,7 +1016,6 @@ static Lisp_Object fastread(void)
                            0, current_fp_rep, 2);
             return r;
 
-#ifdef COMMON
     case F_FPL:
             r = getvector(TAG_BOXFLOAT, TYPE_LONG_FLOAT, SIZEOF_LONG_FLOAT);
             errexit();
@@ -1031,7 +1028,6 @@ static Lisp_Object fastread(void)
             convert_fp_rep((char *)r + 8 - TAG_BOXFLOAT,
                            0, current_fp_rep, 3);
             return r;
-#endif
 
     case F_ID1:
     case F_ID2:
@@ -1349,7 +1345,7 @@ Lisp_Object Lbanner(Lisp_Object nil, Lisp_Object info)
     return onevalue(lisp_true);
 }
 
-Lisp_Object MS_CDECL Llist_modules(Lisp_Object nil, int nargs, ...)
+Lisp_Object Llist_modules(Lisp_Object nil, int nargs, ...)
 /*
  * display information about available modules
  */
@@ -1828,14 +1824,12 @@ static Lisp_Object write_module1(Lisp_Object a)
         {
     default:
             return aerror("unrecognized FP number type");
-#ifdef COMMON
     case TYPE_SINGLE_FLOAT:
             Iputc(F_FPF);
             bits[0] = ((uint32_t *)((char *)a + CELL - TAG_BOXFLOAT))[0];
             convert_fp_rep(bits, current_fp_rep, 0, 1);
             Iwrite(bits, 4);
             break;
-#endif
     case TYPE_DOUBLE_FLOAT:
             Iputc(F_FPD);
             /* nb offset here is 8 in both 32 and 64 bit modes */
@@ -1844,7 +1838,6 @@ static Lisp_Object write_module1(Lisp_Object a)
             convert_fp_rep(bits, current_fp_rep, 0, 2);
             Iwrite(bits, 8);
             break;
-#ifdef COMMON
     case TYPE_LONG_FLOAT:
             Iputc(F_FPL);
             bits[0] = ((uint32_t *)((char *)a + 8 - TAG_BOXFLOAT))[0];
@@ -1852,7 +1845,6 @@ static Lisp_Object write_module1(Lisp_Object a)
             convert_fp_rep(bits, current_fp_rep, 0, 3);
             Iwrite(bits, 8);
             break;
-#endif
         }
     }
     else if (is_char(a))
@@ -1919,7 +1911,6 @@ static Lisp_Object write_module1(Lisp_Object a)
  * extra types.  Until I do please note that Common Lisp arrays and
  * bit-vectors can not be coped with here.
  */
-#ifdef COMMON
     case TYPE_ARRAY:
     case TYPE_BITVEC1:
     case TYPE_BITVEC2:
@@ -1929,7 +1920,6 @@ static Lisp_Object write_module1(Lisp_Object a)
     case TYPE_BITVEC6:
     case TYPE_BITVEC7:
     case TYPE_BITVEC8:
-#endif
     case TYPE_MIXED1:
     case TYPE_MIXED2:
             return aerror("vector type unsupported by write-module");
@@ -2282,14 +2272,12 @@ static Lisp_Object write_module0(Lisp_Object nil, Lisp_Object a)
         {
     default:
             return aerror("unrecognized number type");
-#ifdef COMMON
     case TYPE_RATNUM:
             Iputc(F_RAT);
             break;
     case TYPE_COMPLEX_NUM:
             Iputc(F_CPX);
             break;
-#endif
     case TYPE_BIGNUM:
             len = length_of_header(h) - CELL;
             out_fasl_prefix(len >> 8);
@@ -2316,14 +2304,12 @@ static Lisp_Object write_module0(Lisp_Object nil, Lisp_Object a)
                            *(Lisp_Object *)((char *)a + 2*CELL - TAG_NUMBERS));
 #endif
     }
-#ifdef COMMON
     else if (is_sfloat(a))
     {   uint32_t w = (uint32_t)a;
         convert_fp_rep(&w, current_fp_rep, 0, 0);
         Iputc(F_FPS);
         Iwrite((char *)&w, 4);
     }
-#endif
     else write_module1(a);
     return onevalue(nil);
 }
@@ -2458,7 +2444,7 @@ typedef struct char_pair_hash
 
 #define PASS_COUNT 12
 
-static int MS_CDECL compare_char_counts(void const *aa, void const *bb)
+static int compare_char_counts(void const *aa, void const *bb)
 {
     return ((char_pair_hash *)bb)->count -
            ((char_pair_hash *)aa)->count;
@@ -3368,7 +3354,7 @@ Lisp_Object Lhelp_2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     return lisp_help(nil, b);
 }
 
-Lisp_Object MS_CDECL Lhelp_n(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lhelp_n(Lisp_Object nil, int nargs, ...)
 {
     if (nargs == 0) help("Top", 0);
     else
@@ -3404,7 +3390,7 @@ Lisp_Object Lhelp_2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     return Lhelp(nil, a);
 }
 
-Lisp_Object MS_CDECL Lhelp_n(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lhelp_n(Lisp_Object nil, int nargs, ...)
 {
     return Lhelp(nil, nil);
 }
@@ -3439,5 +3425,4 @@ Lisp_Object Lsetpchar(Lisp_Object nil, Lisp_Object a)
 }
 
 /* end of fasl.c */
-
 

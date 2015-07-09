@@ -1,4 +1,4 @@
-/*  eval3.c                          Copyright (C) 1991-2011 Codemist Ltd */
+/*  eval3.c                          Copyright (C) 1991-2015 Codemist Ltd */
 
 /*
  * Interpreter (part 3).
@@ -7,7 +7,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -41,7 +41,7 @@
 #include "headers.h"
 
 
-#ifndef COMMON
+#if 0
 
 static Lisp_Object plus_fn(Lisp_Object args, Lisp_Object env)
 {
@@ -162,6 +162,10 @@ static Lisp_Object noisy_times_fn(Lisp_Object args, Lisp_Object env)
     }
     return onevalue(r);   
 }
+
+#endif
+
+#ifndef COMMON
 
 static Lisp_Object list_fn(Lisp_Object args, Lisp_Object env)
 {
@@ -1860,7 +1864,7 @@ jmp_buf *errorset_buffer;
 char *errorset_msg;
 static char signal_msg[32];
 
-void MS_CDECL low_level_signal_handler(int code)
+void low_level_signal_handler(int code)
 {
 /*
  * Observe, if you will, that in the case of a SIGSEGV this function does
@@ -2199,7 +2203,7 @@ static Lisp_Object errorset3(volatile Lisp_Object env,
     }
 }
 
-Lisp_Object MS_CDECL Lerrorsetn(Lisp_Object env, int nargs, ...)
+Lisp_Object Lerrorsetn(Lisp_Object env, int nargs, ...)
 /*
  * This is not a special form, but is put into the code here because,
  * like unwind-protect, it has to re-gain control after an evaluation
@@ -2496,7 +2500,7 @@ static Lisp_Object resource_limit7(volatile Lisp_Object env,
     }
 }
 
-Lisp_Object MS_CDECL Lresource_limitn(Lisp_Object env, int nargs, ...)
+Lisp_Object Lresource_limitn(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object form, ltime, lspace, lio, lerrors, Csk, Lsk;
     va_list a;
@@ -2596,8 +2600,8 @@ setup_type const eval3_setup[] =
 #else
     {"list",                    list_fn, (two_args *)noisy_list_fn, bad_specialn},
     {"list*",                   liststar_fn, (two_args *)noisy_liststar_fn, bad_specialn},
-    {"plus",                    plus_fn, (two_args *)noisy_plus_fn, bad_specialn},
-    {"times",                   times_fn, (two_args *)noisy_times_fn, bad_specialn},
+//    {"plus",                    plus_fn, (two_args *)noisy_plus_fn, bad_specialn},
+//    {"times",                   times_fn, (two_args *)noisy_times_fn, bad_specialn},
 #endif
     {NULL,                      0, 0, 0}};
 

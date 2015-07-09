@@ -1,9 +1,5 @@
 package uk.co.codemist.jlisp.core;
 
-
-// $Id$
-
-
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
@@ -38,6 +34,9 @@ package uk.co.codemist.jlisp.core;
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
+
+// $Id$
+
 
 import java.io.*;
 
@@ -121,11 +120,12 @@ class LispOutputStream extends LispStream
         {   int p = 0;
             for (int i=0; i<v.length; i++)
             {   char c = v[i];
-// In counting columns here I do not take any account of
+// [In counting columns here I do not take any account of
 //   (a) tab
 //   (b) backspace
-//   (c) '\p' and any other oddities
+//   (c) '\p' and any other oddities]
 // in fact I just count anything apart from '\n' as one character position.
+// Ha ha I now need to allow for tabs and backspaces...
                 if (c == '\n') 
                 {   wr.write(v, p, i-p);
                     wr.write(eol);
@@ -145,6 +145,8 @@ class LispOutputStream extends LispStream
                     p = i+1;
                     column = 0;
                 }
+                else if (c == '\b') column--; // backspace
+                else if (c == '\t') column = (column + 8) & (~7);
                 else column++;
             }
             wr.write(v, p, v.length-p);

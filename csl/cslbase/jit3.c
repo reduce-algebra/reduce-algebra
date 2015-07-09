@@ -1,4 +1,4 @@
-/* jit3.c                   Copyright (C) 2006-2008, Codemist Ltd */
+/* jit3.c                   Copyright (C) 2006-2015, Codemist Ltd */
 /*                                                and J O'Connell */
 
 
@@ -11,7 +11,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -621,7 +621,7 @@ void Jpop_vecs()
 }
                                                 
 
-void MS_CDECL Jpush_stack(int nargs) //ifndef MEMORY_TRACE in externs.h
+void Jpush_stack(int nargs) //ifndef MEMORY_TRACE in externs.h
 {
         //must align stack correctly 4 bytes for 32bit, 8 bytes for 64bit
         //and check for BASE.  nil-4 in common lisp

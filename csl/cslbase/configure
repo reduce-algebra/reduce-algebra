@@ -10087,6 +10087,19 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: inttypes_header=$inttypes_header" >&5
 $as_echo "$as_me: inttypes_header=$inttypes_header" >&6;}
 
+for ac_header in complex.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "complex.h" "ac_cv_header_complex_h" "$ac_includes_default"
+if test "x$ac_cv_header_complex_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_COMPLEX_H 1
+_ACEOF
+
+fi
+
+done
+
+
 for ac_header in fcntl.h float.h malloc.h memory.h stdio.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
@@ -10585,6 +10598,20 @@ _ACEOF
 
 
 fi
+
+ac_fn_c_check_type "$LINENO" "complex double" "ac_cv_type_complex_double" "#ifdef HAVE_COMPLEX_H
+    #include <complex.h>
+    #endif
+"
+if test "x$ac_cv_type_complex_double" = xyes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_COMPLEX_DOUBLE 1
+_ACEOF
+
+
+fi
+
 
 
 # With luck the above types from newer C standards will ba available. If
@@ -11463,12 +11490,13 @@ _ACEOF
 fi
 done
 
-for ac_func in clock_gettime
+for ac_func in clock_gettime signbit
 do :
-  ac_fn_c_check_func "$LINENO" "clock_gettime" "ac_cv_func_clock_gettime"
-if test "x$ac_cv_func_clock_gettime" = xyes; then :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE_CLOCK_GETTIME 1
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
 _ACEOF
 
 fi
@@ -11493,6 +11521,21 @@ ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
 if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
   cat >>confdefs.h <<_ACEOF
 #define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+
+# I will view csqrt as representative of all the complex elementary functions
+# and if it is found I will assume that csin, clog and all the rest are
+# available.
+for ac_func in csqrt
+do :
+  ac_fn_c_check_func "$LINENO" "csqrt" "ac_cv_func_csqrt"
+if test "x$ac_cv_func_csqrt" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_CSQRT 1
 _ACEOF
 
 fi

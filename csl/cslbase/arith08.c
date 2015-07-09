@@ -1,11 +1,11 @@
-/*  arith08.c                         Copyright (C) 1990-2011 Codemist Ltd */
+/*  arith08.c                         Copyright (C) 1990-2015 Codemist Ltd */
 
 /*
  * Arithmetic functions.
  */
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -39,9 +39,7 @@
 #include "headers.h"
 
 
-#ifdef COMMON
-
-static Lisp_Object MS_CDECL Lboole(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lboole(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object r, op, a, b;
     va_list aa;
@@ -183,8 +181,11 @@ static Lisp_Object Ldenominator(Lisp_Object nil, Lisp_Object a)
     else return onevalue(fixnum_of_int(1));
 }
 
-static Lisp_Object MS_CDECL Ldeposit_field(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Ldeposit_field(Lisp_Object nil, int nargs, ...)
 {
+/*
+ * Not implemented yet!
+ */
     va_list aa;
     Lisp_Object a, b, c;
     CSL_IGNORE(nil);
@@ -197,8 +198,11 @@ static Lisp_Object MS_CDECL Ldeposit_field(Lisp_Object nil, int nargs, ...)
     return aerror("deposit-field");
 }
 
-static Lisp_Object MS_CDECL Ldpb(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Ldpb(Lisp_Object nil, int nargs, ...)
 {
+/*
+ * Not implemented yet!
+ */
     va_list aa;
     Lisp_Object a, b, c;
     CSL_IGNORE(nil);
@@ -213,13 +217,16 @@ static Lisp_Object MS_CDECL Ldpb(Lisp_Object nil, int nargs, ...)
 
 static Lisp_Object Lffloor(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
+/*
+ * Not implemented yet!
+ */
     CSL_IGNORE(nil);
     CSL_IGNORE(a);
     CSL_IGNORE(b);
     return aerror("ffloor");
 }
 
-Lisp_Object MS_CDECL Lgcd_n(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lgcd_n(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     int i;
@@ -273,13 +280,16 @@ static Lisp_Object Limagpart(Lisp_Object nil, Lisp_Object a)
 
 static Lisp_Object Lldb(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
+/*
+ * Not implemented yet!
+ */
     CSL_IGNORE(nil);
     CSL_IGNORE(a);
     CSL_IGNORE(b);
     return aerror("ldb");
 }
 
-Lisp_Object MS_CDECL Llcm_n(Lisp_Object nil, int nargs, ...)
+Lisp_Object Llcm_n(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     int i;
@@ -313,6 +323,9 @@ Lisp_Object Llcm_1(Lisp_Object nil, Lisp_Object a)
 
 static Lisp_Object Lldb_test(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
+/*
+ * Not implemented yet!
+ */
     CSL_IGNORE(nil);
     CSL_IGNORE(a);
     CSL_IGNORE(b);
@@ -337,36 +350,11 @@ static Lisp_Object Lrealpart(Lisp_Object nil, Lisp_Object a)
     else return onevalue(a);
 }
 
-#else /* COMMON */
-
-Lisp_Object Lgcd(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
-{
-    a = gcd(a, b);
-    errexit();
-    return onevalue(a);
-}
-
-Lisp_Object Llcm(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
-{
-    Lisp_Object g;
-    push2(b, a);
-    g = gcd(a, b);
-    errexitn(2);
-    pop(a);
-    a = quot2(a, g);
-    pop(b);
-    errexit();
-    a = times2(a, b);
-    errexit();
-    return onevalue(a);
-}
-
-#endif /* COMMON */
-
 /*
  * This now does special things for NaNs and infinities. For a NaN is just
  * returns nil. For an infinity a returns an exponent value that is 1000000,
  * much larger than any proper value.
+ * I iught to worry about negative zero tooo...
  */
 
 static Lisp_Object Ldecode_float(Lisp_Object nil, Lisp_Object a)
@@ -377,7 +365,7 @@ static Lisp_Object Ldecode_float(Lisp_Object nil, Lisp_Object a)
     if (!is_float(a)) return aerror("decode-float");
     d = float_of_number(a);
     if (!(d == d)) return onevalue(nil); /* a NaN */
-    if (d < 0.0) d = -d, neg = -1.0;
+    if (d < 0.0 || (d == 0.0 && 1.0/d < 0)) d = -d, neg = -1.0;
     if (d == 0.0) x = 0;
     else if (1.0/d == 0.0)               /* An infinity */
     {   x = 1000000;                     /* Extreme (arbitrary) value */
@@ -386,21 +374,19 @@ static Lisp_Object Ldecode_float(Lisp_Object nil, Lisp_Object a)
     {   d = frexp(d, &x);
         if (d == 1.0) d = 0.5, x++;
     }
-#ifdef COMMON
     if (is_sfloat(a)) sign = make_sfloat(neg);
-    else
-#endif
-        sign = make_boxfloat(neg, type_of_header(flthdr(a)));
+    else sign = make_boxfloat(neg, type_of_header(flthdr(a)));
     errexit();
     push(sign);
-#ifdef COMMON
     if (is_sfloat(a)) a = make_sfloat(d);
-    else
-#endif
-        a = make_boxfloat(d, type_of_header(flthdr(a)));
+    else a = make_boxfloat(d, type_of_header(flthdr(a)));
     pop(sign);
     errexit();
 #ifdef COMMON
+/*
+ * Until and unless Standard Lisp supports multiple values this has to
+ * return a list ion standard lisp mode.
+ */
     mv_2 = fixnum_of_int(x);
     mv_3 = sign;
     return nvalues(a, 3);
@@ -431,16 +417,13 @@ static Lisp_Object Lfloat_denormalized_p(Lisp_Object nil, Lisp_Object a)
     int x = 0;
     switch ((int)a & TAG_BITS)
     {
-#ifdef COMMON
 case TAG_SFLOAT:
         if ((a & 0x7fffffff) == TAG_SFLOAT) return onevalue(nil);  /* 0.0 */
         x = (int32_t)a & 0x7f800000;
         return onevalue(x == 0 ? lisp_true : nil);
-#endif
 case TAG_BOXFLOAT:
         switch (type_of_header(flthdr(a)))
         {
-#ifdef COMMON
     case TYPE_SINGLE_FLOAT:
             if (single_float_val(a) == 0.0) return onevalue(nil);
             x = ((Single_Float *)((char *)a-TAG_BOXFLOAT))->f.i & 0x7f800000;
@@ -450,7 +433,6 @@ case TAG_BOXFLOAT:
             x = ((int32_t *)long_float_addr(a))[
                     current_fp_rep&FP_WORD_ORDER ? 0 : 1] & 0x7ff00000;
             return onevalue(x == 0 ? lisp_true : nil);
-#endif
     case TYPE_DOUBLE_FLOAT:
             if (double_float_val(a) == 0.0) return onevalue(nil);
             x = ((int32_t *)double_float_addr(a))[
@@ -468,22 +450,18 @@ static Lisp_Object Lfloat_infinity_p(Lisp_Object nil, Lisp_Object a)
     int32_t x;
     switch ((int)a & TAG_BITS)
     {
-#ifdef COMMON
 case TAG_SFLOAT:
         x = (int32_t)a & 0x7f800000;
         return onevalue(x == 0x7f800000 ? lisp_true : nil);
-#endif
 case TAG_BOXFLOAT:
         switch (type_of_header(flthdr(a)))
         {
-#ifdef COMMON
     case TYPE_SINGLE_FLOAT:
             if (1.0 / single_float_val(a) != 0.0) return onevalue(nil);
             return onevalue(lisp_true);
     case TYPE_LONG_FLOAT:
             if (1.0 / long_float_val(a) != 0.0) return onevalue(nil);
             return onevalue(lisp_true);
-#endif
     case TYPE_DOUBLE_FLOAT:
             if (1.0 / double_float_val(a) != 0.0) return onevalue(nil);
             return onevalue(lisp_true);
@@ -513,22 +491,18 @@ static Lisp_Object Lfp_infinite(Lisp_Object nil, Lisp_Object a)
     int32_t x;
     switch ((int)a & TAG_BITS)
     {
-#ifdef COMMON
 case TAG_SFLOAT:
         x = (int32_t)a & 0x7f800000;
         return onevalue(x == 0x7f800000 ? lisp_true : nil);
-#endif
 case TAG_BOXFLOAT:
         switch (type_of_header(flthdr(a)))
         {
-#ifdef COMMON
     case TYPE_SINGLE_FLOAT:
             if (1.0 / single_float_val(a) != 0.0) return onevalue(nil);
             return onevalue(lisp_true);
     case TYPE_LONG_FLOAT:
             if (1.0 / long_float_val(a) != 0.0) return onevalue(nil);
             return onevalue(lisp_true);
-#endif
     case TYPE_DOUBLE_FLOAT:
             if (1.0 / double_float_val(a) != 0.0) return onevalue(nil);
             return onevalue(lisp_true);
@@ -548,17 +522,14 @@ static Lisp_Object Lfp_nan(Lisp_Object nil, Lisp_Object a)
     int32_t x;
     switch ((int)a & TAG_BITS)
     {
-#ifdef COMMON
 case TAG_SFLOAT:
         a &= 0x7fffffff;
         if (a == 0x7f800000) return onevalue(nil);
         x = (int32_t)a & 0x7f800000;
         return onevalue(x == 0x7f800000 ? lisp_true : nil);
-#endif
 case TAG_BOXFLOAT:
         switch (type_of_header(flthdr(a)))
         {
-#ifdef COMMON
     case TYPE_SINGLE_FLOAT:
             if (single_float_val(a) == single_float_val(a))
                 return onevalue(nil);
@@ -567,7 +538,6 @@ case TAG_BOXFLOAT:
             if (long_float_val(a) == long_float_val(a))
                 return onevalue(nil);
             return onevalue(lisp_true);
-#endif
     case TYPE_DOUBLE_FLOAT:
 /* a NaN should not be equal even to itself, but beware any compiler that
  * tries to be clever here and things otherwise!
@@ -593,15 +563,12 @@ static Lisp_Object Lfp_finite(Lisp_Object nil, Lisp_Object a)
     int32_t x;
     switch ((int)a & TAG_BITS)
     {
-#ifdef COMMON
 case TAG_SFLOAT:
         x = (int32_t)a & 0x7f800000;
         return onevalue(x != 0x7f800000 ? lisp_true : nil);
-#endif
 case TAG_BOXFLOAT:
         switch (type_of_header(flthdr(a)))
         {
-#ifdef COMMON
     case TYPE_SINGLE_FLOAT:
             {   float f = single_float_val(a);
                 if (f-f == 0.0)
@@ -614,7 +581,6 @@ case TAG_BOXFLOAT:
                     return onevalue(lisp_true);
             }
             return onevalue(nil);
-#endif
 /*
  * If something is infinite oa a NaN then subtracting it from itself yields
  * a NaN. For any finite value the subtraction should give zero.
@@ -644,16 +610,13 @@ static Lisp_Object Lfp_subnorm(Lisp_Object nil, Lisp_Object a)
     int32_t x = 0;
     switch ((int)a & TAG_BITS)
     {
-#ifdef COMMON
 case TAG_SFLOAT:
         if ((a & 0x7fffffff) == TAG_SFLOAT) return onevalue(nil);  /* 0.0 */
         x = (int32_t)a & 0x7f800000;
         return onevalue(x == 0 ? lisp_true : nil);
-#endif
 case TAG_BOXFLOAT:
         switch (type_of_header(flthdr(a)))
         {
-#ifdef COMMON
     case TYPE_SINGLE_FLOAT:
             if (single_float_val(a) == 0.0) return onevalue(nil);
             x = ((Single_Float *)((char *)a-TAG_BOXFLOAT))->f.i & 0x7f800000;
@@ -663,7 +626,6 @@ case TAG_BOXFLOAT:
             x = ((int32_t *)long_float_addr(a))[
                     current_fp_rep&FP_WORD_ORDER ? 0 : 1] & 0x7ff00000;
             return onevalue(x == 0 ? lisp_true : nil);
-#endif
     case TYPE_DOUBLE_FLOAT:
             if (double_float_val(a) == 0.0) return onevalue(nil);
             x = ((int32_t *)double_float_addr(a))[
@@ -676,6 +638,51 @@ default:
     return onevalue(nil);
 }
 
+/*
+ * This will return T if its argument has its sign bit set. Note that this
+ * NOT the same a test (x < 0) because this function returns T for -0.0.
+ */
+
+static Lisp_Object Lfp_signbit(Lisp_Object nil, Lisp_Object a)
+{
+    int32_t x = 0;
+    switch ((int)a & TAG_BITS)
+    {
+case TAG_SFLOAT:
+        if ((int32_t)a < 0) return onevalue(lisp_true);
+        else return onevalue(nil);
+case TAG_BOXFLOAT:
+        switch (type_of_header(flthdr(a)))
+        {
+    case TYPE_SINGLE_FLOAT:
+#ifdef HAVE_SIGNBIT
+            return onevalue(signbit(single_float_val(a)) ? lisp_true : nil);
+#else
+            x = ((Single_Float *)((char *)a-TAG_BOXFLOAT))->f.i;
+            return onevalue(x == 0x80000000 ? lisp_true : nil);
+#endif
+    case TYPE_LONG_FLOAT:
+#ifdef HAVE_SIGNBIT
+            return onevalue(signbit(long_float_val(a)) ? lisp_true : nil);
+#else
+            x = ((int32_t *)long_float_addr(a))[
+                    current_fp_rep&FP_WORD_ORDER ? 0 : 1];
+            return onevalue(x < 0 ? lisp_true : nil);
+#endif
+    case TYPE_DOUBLE_FLOAT:
+#ifdef HAVE_SIGNBIT
+            return onevalue(signbit(double_float_val(a)) ? lisp_true : nil);
+#else
+            x = ((int32_t *)double_float_addr(a))[
+                    current_fp_rep&FP_WORD_ORDER ? 0 : 1];
+            return onevalue(x < 0 ? lisp_true : nil);
+#endif
+        }
+default:
+        break;
+    }
+    return onevalue(nil);
+}
 
 
 /*
@@ -692,17 +699,13 @@ static Lisp_Object Lfloat_digits(Lisp_Object nil, Lisp_Object a)
     CSL_IGNORE(nil);
     switch (tag)
     {
-#ifdef COMMON
 case TAG_SFLOAT:
         return onevalue(fixnum_of_int(20));
-#endif
 case TAG_BOXFLOAT:
         switch (type_of_header(flthdr(a)))
         {
-#ifdef COMMON
     case TYPE_SINGLE_FLOAT:
             return onevalue(fixnum_of_int(24));
-#endif
     default:
             return onevalue(fixnum_of_int(53));
         }
@@ -720,17 +723,13 @@ static Lisp_Object Lfloat_precision(Lisp_Object nil, Lisp_Object a)
 /* /* I do not cope with de-normalised numbers here */
     switch (tag)
     {
-#ifdef COMMON
 case TAG_SFLOAT:
         return onevalue(fixnum_of_int(20));
-#endif
 case TAG_BOXFLOAT:
         switch (type_of_header(flthdr(a)))
         {
-#ifdef COMMON
     case TYPE_SINGLE_FLOAT:
             return onevalue(fixnum_of_int(24));
-#endif
     default:
             return onevalue(fixnum_of_int(53));
         }
@@ -750,11 +749,10 @@ static Lisp_Object Lfloat_sign2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
     double d = float_of_number(b);
     CSL_IGNORE(nil);
+/* Worry a bit about -0.0 here */
     if (float_of_number(a) < 0.0) d = -d;
-#ifdef COMMON
     if (is_sfloat(b)) return onevalue(make_sfloat(d));
     else
-#endif
     if (!is_bfloat(b)) return aerror1("bad arg for float-sign",  b);
     else return onevalue(make_boxfloat(d, type_of_header(flthdr(b))));
 }
@@ -763,11 +761,10 @@ static Lisp_Object Lfloat_sign1(Lisp_Object nil, Lisp_Object a)
 {
     double d = float_of_number(a);
     CSL_IGNORE(nil);
+/* worry a bit about -0.0 here */
     if (d < 0.0) d = -1.0; else d = 1.0;
-#ifdef COMMON
     if (is_sfloat(a)) return onevalue(make_sfloat(d));
     else
-#endif
     if (!is_bfloat(a)) return aerror1("bad arg for float-sign",  a);
     else return onevalue(make_boxfloat(d, type_of_header(flthdr(a))));
 }
@@ -795,9 +792,7 @@ static Lisp_Object Lftruncate(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 static Lisp_Object Linteger_decode_float(Lisp_Object nil, Lisp_Object a)
 {
     double d;
-#ifdef COMMON
     int tag = (int)a & TAG_BITS;
-#endif
     int x, neg = 0;
     int32_t a1, a2;
     CSL_IGNORE(nil);
@@ -814,7 +809,7 @@ static Lisp_Object Linteger_decode_float(Lisp_Object nil, Lisp_Object a)
         return list3(fixnum_of_int(0), fixnum_of_int(0),
                      fixnum_of_int(d<0 ? -1 : 1));
 #endif
-    if (d < 0.0) d = -d, neg = 1;
+    if (d < 0.0 || (d == 0.0 && 1.0/d < 0)) d = -d, neg = 1;
     if (1.0/d == 0.0)
     {   a = fixnum_of_int(1);
         x = 1000000;
@@ -822,7 +817,6 @@ static Lisp_Object Linteger_decode_float(Lisp_Object nil, Lisp_Object a)
     else
     {   d = frexp(d, &x);
         if (d == 1.0) d = 0.5, x++;
-#ifdef COMMON
         if (tag == TAG_SFLOAT)
         {   d *= TWO_20;
             x -= 20;
@@ -837,7 +831,6 @@ static Lisp_Object Linteger_decode_float(Lisp_Object nil, Lisp_Object a)
             a = fixnum_of_int(a1);
         }
         else
-#endif
         {   d *= TWO_22;
             a1 = (int32_t)d;
             d -= (double)a1;
@@ -902,10 +895,8 @@ static Lisp_Object Lscale_float(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     CSL_IGNORE(nil);
     if (!is_fixnum(b)) return aerror("scale-float");
     d = ldexp(d, int_of_fixnum(b));
-#ifdef COMMON
     if (is_sfloat(a)) return onevalue(make_sfloat(d));
     else
-#endif
     if (!is_bfloat(a)) return aerror1("bad arg for scale-float",  a);
     else return onevalue(make_boxfloat(d, type_of_header(flthdr(a))));
 }
@@ -1060,8 +1051,6 @@ static Lisp_Object lisp_fix_sub(Lisp_Object a, int roundmode)
     return make_n_word_bignum(a0, a1, a2, x1);
 }
 
-#ifdef COMMON
-
 static Lisp_Object lisp_fix_ratio(Lisp_Object a, int roundmode)
 /*
  * This converts from a ratio to a Lisp integer.  It has to apply
@@ -1110,8 +1099,6 @@ case FIX_CEILING:
     mv_2 = p;
     return nvalues(r, 2);
 }
-#endif
-
 
 static Lisp_Object lisp_fix(Lisp_Object a, int roundmode)
 {
@@ -1223,9 +1210,7 @@ static Lisp_Object Lceiling(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
     if (!is_number(a)) return aerror1("ceiling", a);
-#ifdef COMMON
     if (is_numbers(a) && is_ratio(a)) return lisp_fix_ratio(a, FIX_CEILING);
-#endif
     if (!is_float(a)) { mv_2 = fixnum_of_int(0); return nvalues(a, 2); }
     return lisp_fix(a, FIX_CEILING);
 }
@@ -1234,9 +1219,7 @@ static Lisp_Object Lfloor(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
     if (!is_number(a)) return aerror1("floor", a);
-#ifdef COMMON
     if (is_numbers(a) && is_ratio(a)) return lisp_fix_ratio(a, FIX_FLOOR);
-#endif
     if (!is_float(a)) { mv_2 = fixnum_of_int(0); return nvalues(a, 2); }
     return lisp_fix(a, FIX_FLOOR);
 }
@@ -1245,9 +1228,7 @@ static Lisp_Object Lround(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
     if (!is_number(a)) return aerror1("round", a);
-#ifdef COMMON
     if (is_numbers(a) && is_ratio(a)) return lisp_fix_ratio(a, FIX_ROUND);
-#endif
     if (!is_float(a)) { mv_2 = fixnum_of_int(0); return nvalues(a, 2); }
     return lisp_fix(a, FIX_ROUND);
 }
@@ -1256,355 +1237,17 @@ Lisp_Object Ltruncate(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
     if (!is_number(a)) return aerror1("fix", a);
-#ifdef COMMON
     if (is_numbers(a) && is_ratio(a)) return lisp_fix_ratio(a, FIX_TRUNCATE);
-#endif
     if (!is_float(a)) { mv_2 = fixnum_of_int(0); return nvalues(a, 2); }
     return lisp_fix(a, FIX_TRUNCATE);
 }
 
-/*
- * Commentary on these "safe" functions:
- *
- * The portable Reduce code is very conservative in the case of
- * multiplication and division, and this is perhaps the sort of
- * operation that can be speeded up by implementation at a kernel
- * level. But at present I am keeping C code that should EXACTLY
- * match the portable code in here - albeit "ifdef'd" out.
- */
-
-
-#ifdef MATCH_REDUCE_CODE_IN_ROUNDED_RED
-
-/*
- * This is the Reduce code - and perhaps I want to behave EXACTLY as it
- * indicates...
- *
- * symbolic procedure safe!-fp!-plus(x,y);
- *    if zerop x then y
- *     else if zerop y then x
- *     else if x>0.0 and y>0.0
- *      then if x<!!plumax and y<!!plumax then plus2(x,y) else nil
- *     else if x<0.0 and y<0.0
- *      then if -x<!!plumax and -y<!!plumax then plus2(x,y) else nil
- *     else if abs x<!!plumin and abs y<!!plumin then nil
- *     else (if u=0.0 then u else if abs u<!!fleps1*abs x then 0.0 else u)
- *          where u = plus2(x,y);
- */
-
-static Lisp_Object Lsafe_fp_plus(Lisp_Object env, Lisp_Object x, Lisp_Object y)
-{
-    Lisp_Object nil = C_nil;
-    double xx, yy, u;
-    double fleps1 = 5.6843418860808e-14,
-           plumax = 2.24711641857789e+307,
-           plumin = 4.4501477170144e-296;
-    Lisp_Object v;
-// zerop x => y     zeropy => x
-    if (!is_float(x) || !is_float(y)) return aerror2("safe-fp-plus", x, y);
-    if ((xx = double_float_val(x)) == 0.0) return onevalue(y);
-    if ((yy = double_float_val(y)) == 0.0) return onevalue(x);
-    if (is_cons(env))
-    {   if (is_symbol(v = qcar(env)) &&
-            is_float(v = qvalue(v))) fleps1 = double_float_val(v);
-        env = qcdr(env);
-        if (is_cons(env))
-        {   if (is_symbol(v = qcar(env)) &&
-                is_float(v = qvalue(v))) plumax = double_float_val(v);
-            if (is_symbol(v = qcdr(env)) &&
-                is_float(v = qvalue(v))) plumin = double_float_val(v);
-        }
-    }
-    if (xx > 0.0 && yy > 0.0)
-    {   if (xx < plumax && yy < plumax)
-        {   x = make_boxfloat(xx + yy, TYPE_DOUBLE_FLOAT);
-            errexit();
-            return onevalue(x);
-        }
-        else return onevalue(nil);
-    }
-    else if (xx < 0.0 && yy < 0.0)
-    {   if (-xx < plumax && -yy < plumax)
-        {   x = make_boxfloat(xx + yy, TYPE_DOUBLE_FLOAT);
-            errexit();
-            return onevalue(x);
-        }
-        else return onevalue(nil);
-
-    }
-    else if ((xx < 0.0 ? -xx : xx) < plumin &&
-             (yy < 0.0 ? -yy : yy) < plumin) return onevalue(nil);
-    u = xx + yy;
-    if ((u < 0.0 ? -u : u) < fleps1*(xx < 0.0 ? -xx : xx)) u = 0.0;
-    x = make_boxfloat(u, TYPE_DOUBLE_FLOAT);
-    errexit();
-    return onevalue(x);
-}
-
-
-/*
- *  symbolic procedure safe!-fp!-times(x,y);
- *   if zerop x or zerop y then 0.0
- *   else if x=1.0 then y else if y=1.0 then x else
- *     begin scalar u,v; u := abs x; v := abs y;
- *        if u>=1.0 and u<=!!timmax then
- *           if v<=!!timmax then go to ret else return nil;
- *        if u>!!timmax then if v<=1.0 then go to ret else return nil;
- *        if u<1.0 and u>=!!timmin then
- *           if v>=!!timmin then go to ret else return nil;
- *        if u<!!timmin and v<1.0 then return nil;
- *   ret: return times2(x,y) end;
- *
- * The new C code here is intended to match the above exactly!
- */
-
-static Lisp_Object Lsafe_fp_times(Lisp_Object env,
-                                  Lisp_Object x, Lisp_Object y)
-{
-    Lisp_Object nil = C_nil;
-    double xx, yy, uu, vv;
-    double timmax = 4.74037595405459e+153,
-           timmin = 2.1095373229726e-154;
-    Lisp_Object v;
-    if (!is_float(x) || !is_float(y)) return aerror2("safe-fp-times", x, y);
-    if ((xx = double_float_val(x)) == 0.0) return onevalue(x);
-    if ((yy = double_float_val(y)) == 0.0) return onevalue(y);
-    if (xx == 1.0) return onevalue(y);
-    if (yy == 1.0) return onevalue(x);
-    if (is_cons(env))
-    {   if (is_symbol(v = qcar(env)) &&
-            is_float(v = qvalue(v))) timmax = double_float_val(v);
-        if (is_symbol(v = qcdr(env)) &&
-            is_float(v = qvalue(v))) timmin = double_float_val(v);
-    }
-    uu = xx < 0.0 ? -xx : xx;
-    vv = yy < 0.0 ? -yy : yy;
-    if (uu >= 1.0 && uu <= timmax)
-    {   if (vv <= timmax) goto ret;
-        else return onevalue(nil);
-    }
-    if (uu > timmax)
-    {   if (vv <= 1.0) goto ret;
-        else return onevalue(nil);
-    }
-    if (uu < 1.0 && uu >= timmin)
-    {   if (vv >= timmin) goto ret;
-        else return onevalue(nil);
-    }
-    if (uu < timmin && vv < 1.0) return onevalue(nil);
-ret:
-    x = make_boxfloat(xx*yy, TYPE_DOUBLE_FLOAT);
-    errexit();
-    return onevalue(x);
-}
-
-
-/*
- *  symbolic procedure safe!-fp!-quot(x,y);
- *   if zerop y then rdqoterr()  % error(0, "zero divisor in quotient")
- *   else if zerop x then 0.0 else if y=1.0 then x else
- *     begin scalar u,v; u := abs x; v := abs y;
- *        if u>=1.0 and u<=!!timmax then
- *           if v>=!!timmin then go to ret else return nil;
- *        if u>!!timmax then if v>=1.0 then go to ret else return nil;
- *        if u<1.0 and u>=!!timmin then
- *           if v<=!!timmax then go to ret else return nil;
- *        if u<!!timmin and v>1.0 then return nil;
- *   ret: return quotient(x,y) end;
- *
- * New version intended to be exact match for above
- */
-
-static Lisp_Object Lsafe_fp_quot(Lisp_Object env, Lisp_Object x, Lisp_Object y)
-{
-    Lisp_Object nil = C_nil;
-    double xx, yy, uu, vv;
-    double timmax = 4.74037595405459e+153,
-           timmin = 2.1095373229726e-154;
-    Lisp_Object v;
-    if (!is_float(x) || !is_float(y)) return aerror2("safe-fp-quotient", x, y);
-    if ((yy = double_float_val(y)) == 0.0)
-        return aerror("zero divisor in quotient");
-    if ((xx = double_float_val(x)) == 0.0) return onevalue(x);
-    if (yy == 1.0) return onevalue(x);
-    if (is_cons(env))
-    {   if (is_symbol(v = qcar(env)) &&
-            is_float(v = qvalue(v))) timmax = double_float_val(v);
-        if (is_symbol(v = qcdr(env)) &&
-            is_float(v = qvalue(v))) timmin = double_float_val(v);
-    }
-    uu = xx < 0.0 ? -xx : xx;
-    vv = yy < 0.0 ? -yy : yy;
-    if (uu>=1.0 && uu<=timmax)
-    {   if (vv >= timmin) goto ret;
-        else return onevalue(nil);
-    }
-    if (uu>timmax)
-    {   if (vv >= 1.0) goto ret;
-        else return onevalue(nil);
-    }
-    if (uu < 1.0 && uu >= timmin)
-    {   if (vv <= timmax) goto ret;
-        else return onevalue(nil);
-    }
-    if (uu < timmin && vv > 1.0) return nil;
-ret:
-    x = make_boxfloat(xx/yy, TYPE_DOUBLE_FLOAT);
-    errexit();
-    return onevalue(x);
-}
-
-#else /* Portable old code */
-
-/*
- * Now some new code that is expected to manage to get closer to the
- * limit in exploiting the floating point hardware. Furthermore I hope
- * to bring PSL optimised versions and this code into exact agreement.
- */
-
-
-/*
- * The following macro is expected to select out the 32-bit word within a
- * floating point number that has the exponent field packed within it.
- * On IEEE-format machines I expect to find the exponent in the
- * 0x7ff00000 bits within this word. It sets i to the top half of the
- * floating value d, and worries somewhat about GCCs strict aliasing
- * optimisation!! Specifically it avoids the use of pointers in the
- * punning that has to go on.
- */
-
-#define top_half(ii, d)                          \
-  { union { double f; int32_t i[2]; } w;         \
-    w.f = d;                                     \
-    ii = w.i[(~current_fp_rep) & FP_WORD_ORDER]; \
-  }
-
-#define BIAS   1023
-/*
- * The MAX and MIN exponents indicated here are the limiting ones
- * for valid normalised numbers.
- */
-#define MAXEXP 1023
-#define MINEXP -1022
-
-static Lisp_Object Lsafe_fp_plus(Lisp_Object env, Lisp_Object a, Lisp_Object b)
-{
-    Lisp_Object nil = C_nil;
-    double aa, bb, cc;
-    int32_t ah, bh, ch, s;
-    if (!is_float(a) || !is_float(b)) return aerror2("safe-fp-plus", a, b);
-    if ((aa = double_float_val(a)) == 0.0) return onevalue(b);
-    if ((bb = double_float_val(b)) == 0.0) return onevalue(a);
-    top_half(ah, aa);
-    top_half(bh, bb);
-    s = (ah ^ bh) & 0x80000000;
-    ah = ((ah >> 20) & 0x7ff) - BIAS;
-    bh = ((bh >> 20) & 0x7ff) - BIAS;
-/* I will reject infinities, NaNs and sub-normal numbers here. */
-    if (ah == MAXEXP-1 || ah == MINEXP-1 ||
-        bh == MAXEXP+1 || bh == MINEXP+1) return onevalue(nil);
-/*
- * The sum of two numbers that have the same sign can overflow if either
- * has an exponent that is the maximum valid in a finite value. In
- * other cases I will always accept machine arithmetic.
- */
-    if (s == 0)
-    {   if (ah >= MAXEXP || bh >= MAXEXP) return onevalue(nil);
-        a = make_boxfloat(aa+bb, TYPE_DOUBLE_FLOAT);
-        errexit();
-        return onevalue(a);
-    }
-/*
- * Sum might underflow into the range of subnormal numbers if the
- * two inputs have different signs and both are small
- */
-    else if (ah <= MINEXP+52 && bh <= MINEXP+52) return onevalue(nil);
-/*
- * Now I have two numbers whose signs differ and neither is utterly tiny.
- * The code in Reduce asks me to force the result to zero prematurely
- * based on a value !!fleps1. This is around 44 bits below the inputs...
- */
-    cc = aa+bb;
-    top_half(ch, cc);
-    ch = ((ch >> 20) & 0x7ff) - BIAS;
-    if (ch < ah-44) cc = 0.0;
-    a = make_boxfloat(cc, TYPE_DOUBLE_FLOAT);
-    errexit();
-    return onevalue(a);
-}
-
-static Lisp_Object Lsafe_fp_times(Lisp_Object env, Lisp_Object a, Lisp_Object b)
-{
-    Lisp_Object nil = C_nil;
-    double aa, bb, cc;
-    int32_t ah, bh;
-    if (!is_float(a) || !is_float(b)) return aerror2("safe-fp-times", a, b);
-    if ((aa = double_float_val(a)) == 0.0) return onevalue(a);
-    if ((bb = double_float_val(b)) == 0.0) return onevalue(b);
-    if (aa == 1.0) return onevalue(b);
-    if (bb == 1.0) return onevalue(a);
-    top_half(ah, aa);
-    top_half(bh, bb);
-    ah = ((ah >> 20) & 0x7ff) - BIAS;
-    bh = ((bh >> 20) & 0x7ff) - BIAS;
-/* I will reject infinities, NaNs and sub-normal numbers here. */
-    if (ah == MAXEXP+1 || ah == MINEXP-1 ||
-        bh == MAXEXP+1 || bh == MINEXP-1) return onevalue(nil);
-    ah = ah + bh;
-/*
- * When multiplying, the exponent of the result can be one higher than
- * the sum of the exponents of the operands, so to be certain that
- * I will not get overflow I stop one early here.
- */
-    if (ah <= MINEXP+1 || ah >= MAXEXP-1) return onevalue(nil);
-    cc = aa * bb;
-    a = make_boxfloat(cc, TYPE_DOUBLE_FLOAT);
-    errexit();
-    return onevalue(a);
-}
-
-static Lisp_Object Lsafe_fp_quot(Lisp_Object env, Lisp_Object a, Lisp_Object b)
-{
-    Lisp_Object nil = C_nil;
-    double aa, bb, cc;
-    int32_t ah, bh;
-    if (!is_float(a) || !is_float(b)) return aerror2("safe-fp-quot", a, b);
-    if ((aa = double_float_val(a)) == 0.0) return onevalue(a);
-    if ((bb = double_float_val(b)) == 0.0)
-        return aerror("divisor is zero in quotient");
-    if (bb == 1.0) return onevalue(a);
-    top_half(ah, aa);
-    top_half(bh, bb);
-    ah = ((ah >> 20) & 0x7ff) - BIAS;
-    bh = ((bh >> 20) & 0x7ff) - BIAS;
-    if (ah == MAXEXP+1 || ah == MINEXP-1 ||
-        bh == MAXEXP+1 || bh == MINEXP-1) return onevalue(nil);
-    ah = ah - bh;
-    if (ah <= MINEXP+1 || ah >= MAXEXP-1) return onevalue(nil);
-    cc = aa / bb;
-    a = make_boxfloat(cc, TYPE_DOUBLE_FLOAT);
-    errexit();
-    return onevalue(a);
-}
-
-#endif /* Portable old code */
-
-
-
 setup_type const arith08_setup[] =
 {
-/*
- * The next few are JUST for REDUCE, but they are expected to speed up
- * rounded-mode arithmetic rather a lot. I want them to match the behaviour
- * or corresponding specialist code for PSL...
- */
-    {"safe-fp-plus",            too_few_2, Lsafe_fp_plus, wrong_no_2},
-    {"safe-fp-times",           too_few_2, Lsafe_fp_times, wrong_no_2},
-    {"safe-fp-quot",            too_few_2, Lsafe_fp_quot, wrong_no_2},
-/* End of REDUCE specialities */
     {"ceiling",                 Lceiling, Lceiling_2, wrong_no_1},
     {"floor",                   Lfloor, Lfloor_2, wrong_no_1},
     {"round",                   Lround, Lround_2, wrong_no_1},
+    {"fix",                     Ltruncate, Ltruncate_2, wrong_no_1},
     {"truncate",                Ltruncate, Ltruncate_2, wrong_no_1},
     {"decode-float",            Ldecode_float, too_many_1, wrong_no_1},
     {"float-denormalized-p",    Lfloat_denormalized_p, too_many_1, wrong_no_1},
@@ -1619,6 +1262,7 @@ setup_type const arith08_setup[] =
     {"fp-nan",                  Lfp_nan, too_many_1, wrong_no_1},
     {"fp-finite",               Lfp_finite, too_many_1, wrong_no_1},
     {"fp-subnorm",              Lfp_subnorm, too_many_1, wrong_no_1},
+    {"fp-signbit",              Lfp_signbit, too_many_1, wrong_no_1},
     {"integer-decode-float",    Linteger_decode_float, too_many_1, wrong_no_1},
     {"integer-length",          Linteger_length, too_many_1, wrong_no_1},
     {"float-digits",            Lfloat_digits, too_many_1, wrong_no_1},
@@ -1632,7 +1276,6 @@ setup_type const arith08_setup[] =
     {"logtest",                 too_few_2, Llogtest, wrong_no_2},
     {"mask-field",              too_few_2, Lmask_field, wrong_no_2},
     {"scale-float",             too_few_2, Lscale_float, wrong_no_2},
-#ifdef COMMON
     {"boole",                   wrong_no_na, wrong_no_nb, Lboole},
     {"byte",                    too_few_2, Lbyte, wrong_no_2},
     {"byte-position",           Lbyte_position, too_many_1, wrong_no_1},
@@ -1646,18 +1289,14 @@ setup_type const arith08_setup[] =
     {"deposit-field",           wrong_no_na, wrong_no_nb, Ldeposit_field},
     {"dpb",                     wrong_no_na, wrong_no_nb, Ldpb},
     {"ffloor",                  too_few_2, Lffloor, wrong_no_2},
-    {"gcd",                     Lgcd_1, Lgcd, Lgcd_n},
     {"imagpart",                Limagpart, too_many_1, wrong_no_1},
     {"ldb",                     too_few_2, Lldb, wrong_no_2},
     {"ldb-test",                too_few_2, Lldb_test, wrong_no_2},
-    {"lcm",                     Llcm_1, Llcm, Llcm_n},
     {"numerator",               Lnumerator, too_many_1, wrong_no_1},
     {"realpart",                Lrealpart, too_many_1, wrong_no_1},
-#else
-    {"fix",                     Ltruncate, too_many_1, wrong_no_1},
-    {"gcdn",                    too_few_2, Lgcd, wrong_no_2},
-    {"lcmn",                    too_few_2, Llcm, wrong_no_2},
-#endif
+    {"gcd",                     Lgcd_1, Lgcd, Lgcd_n},
+    {"gcdn",                    Lgcd_1, Lgcd, Lgcd_n},
+    {"lcmn",                    Llcm_1, Llcm, Llcm_n},
     {NULL,                      0,0,0}
 };
 

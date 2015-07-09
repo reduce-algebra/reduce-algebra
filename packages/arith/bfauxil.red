@@ -371,7 +371,7 @@ symbolic procedure gfsqrt x;
          if gfzerop x then return x;
          if bfminusp gfrl x
            then <<x := gfminus x; neg := t;
-                  if bfminusp gfim x then nil else negi := t >>;
+                  if special!_bfminusp gfim x then nil else negi := t >>;
          if bfzp gfim x then
             <<x := gfrl x;
               xn := rl2gfc(if atom x then sqrt x else bfsqrt x);

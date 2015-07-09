@@ -1,11 +1,11 @@
-/* fns1.c                           Copyright (C) 1989-2014 Codemist Ltd */
+/* fns1.c                           Copyright (C) 1989-2015 Codemist Ltd */
 
 /*
  * Basic functions part 1.
  */
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -783,7 +783,8 @@ Lisp_Object Lconstantp(Lisp_Object nil, Lisp_Object a)
 /*
  * Standard Lisp requires that I report that "Function Pointers" are
  * "constant" here. It is not at all clear that I have a way of
- * doing that. I will go some way my ensuring that code-vectors are.
+ * doing that. I will go some way by ensuring that code-vectors are
+ * reported as constant.
  */
 #ifdef COMMON
     return onevalue(Lispify_predicate(
@@ -833,16 +834,10 @@ Lisp_Object Leq_safe(Lisp_Object nil, Lisp_Object a)
  * things that are represented in "immediate" form... and ALSO of nil
  * and all other symbols.
  */
-#ifdef COMMON
     return onevalue(symbolp(a) ||
                     is_fixnum(a) ||
                     is_sfloat(a) ||
                     is_odds(a) ? lisp_true : nil);
-#else
-    return onevalue(symbolp(a) ||
-                    is_fixnum(a) ||
-                    is_odds(a) ? lisp_true : nil);
-#endif
 }
 
 Lisp_Object Lfixp(Lisp_Object nil, Lisp_Object a)
@@ -868,14 +863,10 @@ Lisp_Object Lfixp(Lisp_Object nil, Lisp_Object a)
 Lisp_Object Lfloatp(Lisp_Object nil, Lisp_Object p)
 {
     int tag = TAG_BITS & (int)p;
-#ifdef COMMON
     if (tag == TAG_SFLOAT) return onevalue(lisp_true);
-#endif
     if (tag == TAG_BOXFLOAT) return onevalue(lisp_true);
     else return onevalue(nil);
 }
-
-#ifdef COMMON
 
 static Lisp_Object Lshort_floatp(Lisp_Object nil, Lisp_Object p)
 {
@@ -926,6 +917,8 @@ Lisp_Object Lcomplexp(Lisp_Object nil, Lisp_Object a)
     CSL_IGNORE(nil);
     return onevalue(Lispify_predicate(is_numbers(a) && is_complex(a)));
 }
+
+#ifdef COMMON
 
 CSLbool complex_stringp(Lisp_Object a)
 /*
@@ -1020,8 +1013,6 @@ Lisp_Object Lhash_table_p(Lisp_Object nil, Lisp_Object a)
     else return onevalue(lisp_true);
 }
 
-#ifdef COMMON
-
 static Lisp_Object Lsimple_bit_vector_p(Lisp_Object nil,
                                         Lisp_Object a)
 /*
@@ -1031,8 +1022,6 @@ static Lisp_Object Lsimple_bit_vector_p(Lisp_Object nil,
     if (!(is_vector(a))) return onevalue(nil);
     else return onevalue(Lispify_predicate(header_of_bitvector(vechdr(a))));
 }
-
-#endif
 
 Lisp_Object Lsimple_vectorp(Lisp_Object nil, Lisp_Object a)
 /*
@@ -1166,7 +1155,7 @@ Lisp_Object Lmkquote(Lisp_Object nil, Lisp_Object a)
     return onevalue(a);
 }
 
-Lisp_Object MS_CDECL Llist2star(Lisp_Object nil, int nargs, ...)
+Lisp_Object Llist2star(Lisp_Object nil, int nargs, ...)
 {
     va_list aa;
     Lisp_Object a, b, c;
@@ -1181,7 +1170,7 @@ Lisp_Object MS_CDECL Llist2star(Lisp_Object nil, int nargs, ...)
     return onevalue(a);
 }
 
-Lisp_Object MS_CDECL Lacons(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lacons(Lisp_Object nil, int nargs, ...)
 {
     va_list aa;
     Lisp_Object a, b, c;
@@ -1196,7 +1185,7 @@ Lisp_Object MS_CDECL Lacons(Lisp_Object nil, int nargs, ...)
     return onevalue(a);
 }
 
-Lisp_Object MS_CDECL Llist3(Lisp_Object nil, int nargs, ...)
+Lisp_Object Llist3(Lisp_Object nil, int nargs, ...)
 {
     va_list aa;
     Lisp_Object a, b, c;
@@ -1211,7 +1200,7 @@ Lisp_Object MS_CDECL Llist3(Lisp_Object nil, int nargs, ...)
     return onevalue(a);
 }
 
-Lisp_Object MS_CDECL Llist3star(Lisp_Object nil, int nargs, ...)
+Lisp_Object Llist3star(Lisp_Object nil, int nargs, ...)
 {
     va_list aa;
     Lisp_Object a, b, c, d;
@@ -1227,7 +1216,7 @@ Lisp_Object MS_CDECL Llist3star(Lisp_Object nil, int nargs, ...)
     return onevalue(a);
 }
 
-Lisp_Object MS_CDECL Llist4(Lisp_Object nil, int nargs, ...)
+Lisp_Object Llist4(Lisp_Object nil, int nargs, ...)
 {
     va_list aa;
     Lisp_Object a, b, c, d;
@@ -1251,7 +1240,7 @@ Lisp_Object MS_CDECL Llist4(Lisp_Object nil, int nargs, ...)
  * rather than as functions, guessing that that will be more efficient.
  */
 
-Lisp_Object MS_CDECL Llist(Lisp_Object nil, int nargs, ...)
+Lisp_Object Llist(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object r = nil, w, w1;
     va_list a;
@@ -1272,7 +1261,7 @@ Lisp_Object MS_CDECL Llist(Lisp_Object nil, int nargs, ...)
     return onevalue(r);
 }
 
-static Lisp_Object MS_CDECL Lliststar(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lliststar(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object r, w, w1;
     va_list a;
@@ -1306,7 +1295,7 @@ static Lisp_Object MS_CDECL Lliststar(Lisp_Object nil, int nargs, ...)
  *       ...
  *       v)
  */
-static Lisp_Object MS_CDECL Lfill_vector(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lfill_vector(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object v, il;
@@ -1521,7 +1510,7 @@ Lisp_Object Lenable_backtrace(Lisp_Object nil, Lisp_Object a)
 
 #ifdef NAG
 
-Lisp_Object MS_CDECL Lunwind(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lunwind(Lisp_Object nil, int nargs, ...)
 {
     argcheck(nargs, 0, "unwind");
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
@@ -1542,7 +1531,7 @@ Lisp_Object MS_CDECL Lunwind(Lisp_Object nil, int nargs, ...)
  * the system will unwind in the usual manner.
  */
 
-Lisp_Object MS_CDECL Lerror(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lerror(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object w;
@@ -1636,7 +1625,7 @@ Lisp_Object Lerror2(Lisp_Object nil, Lisp_Object a1, Lisp_Object a2)
     return Lerror(nil, 2, a1, a2);
 }
 
-Lisp_Object MS_CDECL Lerror0(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lerror0(Lisp_Object nil, int nargs, ...)
 {
 /*
  * Silently provoked error - unwind to surrounding errorset level. Note that
@@ -2083,7 +2072,7 @@ double pop_clock(void)
     return delta + *clock_stack--;
 }
 
-Lisp_Object MS_CDECL Ltime(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ltime(Lisp_Object nil, int nargs, ...)
 {
     uint32_t tt, tthigh;
     double td;
@@ -2136,16 +2125,14 @@ Lisp_Object MS_CDECL Ltime(Lisp_Object nil, int nargs, ...)
     return onevalue(r);
 }
 
-Lisp_Object MS_CDECL Lgctime(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lgctime(Lisp_Object nil, int nargs, ...)
 {
     argcheck(nargs, 0, "gctime");
     CSL_IGNORE(nil);
     return onevalue(fixnum_of_int((int32_t)(1000.0 * gc_time)));
 }
 
-#ifdef COMMON
-
-Lisp_Object MS_CDECL Ldecoded_time(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ldecoded_time(Lisp_Object nil, int nargs, ...)
 {
     time_t t0 = time(NULL);
 /*
@@ -2175,10 +2162,13 @@ Lisp_Object MS_CDECL Ldecoded_time(Lisp_Object nil, int nargs, ...)
     *p++ = fixnum_of_int(w == 0 ? 6 : w-1);
     *p++ = tbuf->tm_isdst > 0 ? lisp_true : nil;
     *p++ = fixnum_of_int(0);  /* Time zone info not available? */
+/*
+ * Until and unless I implement multiple values in Standard Lisp mode this
+ * function will count as a bit silly in that most of its results will
+ * be just lost!
+ */
     return nvalues(r, 9);
 }
-
-#endif
 
 /*
  * (date)             "14-May-13"
@@ -2188,7 +2178,7 @@ Lisp_Object MS_CDECL Ldecoded_time(Lisp_Object nil, int nargs, ...)
  * argument will suffice).
  */
 
-Lisp_Object MS_CDECL Ldate(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ldate(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object w;
     time_t t = time(NULL);
@@ -2214,7 +2204,7 @@ Lisp_Object MS_CDECL Ldate(Lisp_Object nil, int nargs, ...)
     return onevalue(w);
 }
 
-Lisp_Object MS_CDECL Ldate1(Lisp_Object nil, Lisp_Object a1)
+Lisp_Object Ldate1(Lisp_Object nil, Lisp_Object a1)
 {
     Lisp_Object w;
     time_t t = time(NULL);
@@ -2227,7 +2217,7 @@ Lisp_Object MS_CDECL Ldate1(Lisp_Object nil, Lisp_Object a1)
     return onevalue(w);
 }
 
-Lisp_Object MS_CDECL Ldate_and_time(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ldate_and_time(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object w;
     time_t t = time(NULL);
@@ -2241,7 +2231,7 @@ Lisp_Object MS_CDECL Ldate_and_time(Lisp_Object nil, int nargs, ...)
     return onevalue(w);
 }
 
-Lisp_Object MS_CDECL Ldate_and_time1(Lisp_Object nil, Lisp_Object a1)
+Lisp_Object Ldate_and_time1(Lisp_Object nil, Lisp_Object a1)
 {
     Lisp_Object w;
     time_t t = time(NULL);
@@ -2265,7 +2255,7 @@ Lisp_Object MS_CDECL Ldate_and_time1(Lisp_Object nil, Lisp_Object a1)
     return onevalue(w);
 }
 
-Lisp_Object MS_CDECL Ldatestamp(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ldatestamp(Lisp_Object nil, int nargs, ...)
 /*
  * Returns date-stamp integer, which on many systems will be the
  * number of seconds between 1970.0.0 and now, but which could be
@@ -2287,7 +2277,7 @@ Lisp_Object MS_CDECL Ldatestamp(Lisp_Object nil, int nargs, ...)
     return onevalue(w);
 }
 
-Lisp_Object MS_CDECL Ltimeofday(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ltimeofday(Lisp_Object nil, int nargs, ...)
 /*
  * This is like datestamp, in that it returns information about the
  * current real time. However it returns a pair of two values, the
@@ -3795,18 +3785,20 @@ setup_type const funcs1_setup[] =
 /* I support the Common Lisp names here in both modes */
     {"simple-string-p",         Lstringp, too_many_1, wrong_no_1},
     {"simple-vector-p",         Lsimple_vectorp, too_many_1, wrong_no_1},
-#ifdef COMMON
-    {"fill-vector",             wrong_no_na, wrong_no_nb, Lfill_vector},
-    {"get",                     too_few_2, Lget, Lget_3},
     {"get-decoded-time",        wrong_no_0a, wrong_no_0b, Ldecoded_time},
-    {"arrayp",                  Larrayp, too_many_1, wrong_no_1},
-    {"complex-arrayp",          Lcomplex_arrayp, too_many_1, wrong_no_1},
     {"short-floatp",            Lshort_floatp, too_many_1, wrong_no_1},
     {"single-floatp",           Lsingle_floatp, too_many_1, wrong_no_1},
     {"double-floatp",           Ldouble_floatp, too_many_1, wrong_no_1},
     {"long-floatp",             Llong_floatp, too_many_1, wrong_no_1},
     {"rationalp",               Lrationalp, too_many_1, wrong_no_1},
     {"complexp",                Lcomplexp, too_many_1, wrong_no_1},
+    {"bit-vector-p",            Lsimple_bit_vector_p, too_many_1, wrong_no_1},
+    {"simple-bit-vector-p",     Lsimple_bit_vector_p, too_many_1, wrong_no_1},
+#ifdef COMMON
+    {"fill-vector",             wrong_no_na, wrong_no_nb, Lfill_vector},
+    {"get",                     too_few_2, Lget, Lget_3},
+    {"arrayp",                  Larrayp, too_many_1, wrong_no_1},
+    {"complex-arrayp",          Lcomplex_arrayp, too_many_1, wrong_no_1},
     {"consp",                   Lconsp, too_many_1, wrong_no_1},
     {"convert-to-array",        Lconvert_to_array, too_many_1, wrong_no_1},
     {"convert-to-struct",       Lconvert_to_struct, too_many_1, wrong_no_1},
@@ -3814,8 +3806,6 @@ setup_type const funcs1_setup[] =
     {"list",                    Lncons, Llist2, Llist},
     {"list*",                   Lidentity, Lcons, Lliststar},
     {"listp",                   Llistp, too_many_1, wrong_no_1},
-    {"bit-vector-p",            Lsimple_bit_vector_p, too_many_1, wrong_no_1},
-    {"simple-bit-vector-p",     Lsimple_bit_vector_p, too_many_1, wrong_no_1},
     {"stringp",                 Lc_stringp, too_many_1, wrong_no_1},
     {"structp",                 Lstructp, too_many_1, wrong_no_1},
     {"flag",                    too_few_2, Lflag, wrong_no_2},

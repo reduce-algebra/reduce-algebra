@@ -491,7 +491,7 @@ void lea_m32_r32_disp(int source, int dest, int disp)
 	else aerror("Error in lea. source is not a memory loc");
 }
 
-void MS_CDECL Jpush(int nargs, ...)
+void Jpush(int nargs, ...)
 {
 	va_list arg_ptr;
 	int i;
@@ -506,7 +506,7 @@ void MS_CDECL Jpush(int nargs, ...)
 	}
 }
 
-void MS_CDECL Jpop(int nargs, ...)
+void Jpop(int nargs, ...)
 {
         va_list arg_ptr;
         int i;

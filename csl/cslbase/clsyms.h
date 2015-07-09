@@ -1,4 +1,4 @@
-/* clsyms.h                          Copyright (C) Codemist Ltd, 1994-2008 */
+/* clsyms.h                          Copyright (C) Codemist Ltd, 1994-2015 */
 
 
 /*
@@ -7,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

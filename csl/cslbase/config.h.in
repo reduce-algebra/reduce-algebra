@@ -27,11 +27,20 @@
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
 
+/* Define to 1 if the system has the type `complex double'. */
+#undef HAVE_COMPLEX_DOUBLE
+
+/* Define to 1 if you have the <complex.h> header file. */
+#undef HAVE_COMPLEX_H
+
 /* Define to 1 if the system has the type `cpu_set_t'. */
 #undef HAVE_CPU_SET_T
 
 /* Correct Rounding maths library should be used */
 #undef HAVE_CRLIBM
+
+/* Define to 1 if you have the `csqrt' function. */
+#undef HAVE_CSQRT
 
 /* Define to 1 if you have the <curses.h> header file. */
 #undef HAVE_CURSES_H
@@ -213,6 +222,9 @@
 
 /* Define to 1 if you have the <signal.h> header file. */
 #undef HAVE_SIGNAL_H
+
+/* Define to 1 if you have the `signbit' function. */
+#undef HAVE_SIGNBIT
 
 /* sigsetjmp present */
 #undef HAVE_SIGSETJMP

@@ -1,4 +1,4 @@
-/*  arith02.c                         Copyright (C) 1990-2014 Codemist Ltd */
+/*  arith02.c                         Copyright (C) 1990-2015 Codemist Ltd */
 
 /*
  * Arithmetic functions.
@@ -8,7 +8,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -211,7 +211,6 @@ static Lisp_Object timesii(Lisp_Object a, Lisp_Object b)
     else return make_two_word_bignum(high, low);
 }
 
-#ifdef COMMON
 static Lisp_Object timesis(Lisp_Object a, Lisp_Object b)
 {
     Float_union bb;
@@ -219,7 +218,6 @@ static Lisp_Object timesis(Lisp_Object a, Lisp_Object b)
     bb.f = (float) ((float)int_of_fixnum(a) * bb.f);
     return (bb.i & ~(int32_t)0xf) + TAG_SFLOAT;
 }
-#endif
 
 /*
  * This code has existed since around 1990, but in January 2008 a bug
@@ -343,7 +341,6 @@ extend_by_one_word:
     return a;
 }
 
-#ifdef COMMON
 static Lisp_Object timesir(Lisp_Object a, Lisp_Object b)
 /*
  * multiply integer (fixnum or bignum) by ratio.
@@ -398,7 +395,6 @@ static Lisp_Object timesic(Lisp_Object a, Lisp_Object b)
     errexit();
     return make_complex(r, i);
 }
-#endif
 
 static Lisp_Object timesif(Lisp_Object a, Lisp_Object b)
 {
@@ -406,7 +402,6 @@ static Lisp_Object timesif(Lisp_Object a, Lisp_Object b)
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
-#ifdef COMMON
 #define timessi(a, b) timesis(b, a)
 
 static Lisp_Object timessb(Lisp_Object a, Lisp_Object b)
@@ -418,7 +413,6 @@ static Lisp_Object timessb(Lisp_Object a, Lisp_Object b)
 #define timessr(a, b) timessb(a, b)
 
 #define timessc(a, b) timesic(a, b)
-#endif
 
 static Lisp_Object timessf(Lisp_Object a, Lisp_Object b)
 {
@@ -428,9 +422,7 @@ static Lisp_Object timessf(Lisp_Object a, Lisp_Object b)
 
 #define timesbi(a, b) timesib(b, a)
 
-#ifdef COMMON
 #define timesbs(a, b) timessb(b, a)
-#endif
 
 /*
  * Now for bignum multiplication - made more than comfortably complicated
@@ -1604,15 +1596,12 @@ chop2:
     return c;
 }
 
-#ifdef COMMON
 #define timesbr(a, b) timesir(a, b)
 
 #define timesbc(a, b) timesic(a, b)
-#endif
 
 #define timesbf(a, b) timessf(a, b)
 
-#ifdef COMMON
 #define timesri(a, b) timesir(b, a)
 
 #define timesrs(a, b) timessr(b, a)
@@ -1730,41 +1719,30 @@ fail:
 }
 
 #define timescf(a, b) timesci(a, b)
-#endif
 
 #define timesfi(a, b) timesif(b, a)
 
-#ifdef COMMON
 #define timesfs(a, b) timessf(b, a)
-#endif
 
 #define timesfb(a, b) timesbf(b, a)
 
-#ifdef COMMON
 #define timesfr(a, b) timesrf(b, a)
 
 #define timesfc(a, b) timescf(b, a)
-#endif
 
 static Lisp_Object timesff(Lisp_Object a, Lisp_Object b)
 /*
  * multiply boxed floats - see commentary on plusff()
  */
 {
-#ifdef COMMON
     int32_t ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
-#endif
     double d = float_of_number(a) * float_of_number(b);
-#ifdef COMMON
     if (ha == TYPE_LONG_FLOAT || hb == TYPE_LONG_FLOAT)
         ha = TYPE_LONG_FLOAT;
     else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
         ha = TYPE_DOUBLE_FLOAT;
     else ha = TYPE_SINGLE_FLOAT;
     return make_boxfloat(d, ha);
-#else
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
-#endif
 }
 
 /*
@@ -1836,22 +1814,18 @@ case TAG_FIXNUM:
         {
     case TAG_FIXNUM:
             return timesii(a, b);
-#ifdef COMMON
     case TAG_SFLOAT:
             return timesis(a, b);
-#endif
     case TAG_NUMBERS:
             {   int32_t hb = type_of_header(numhdr(b));
                 switch (hb)
                 {
         case TYPE_BIGNUM:
                 return timesib(a, b);
-#ifdef COMMON
         case TYPE_RATNUM:
                 return timesir(a, b);
         case TYPE_COMPLEX_NUM:
                 return timesic(a, b);
-#endif
         default:
                 return aerror1("bad arg for times",  b);
                 }
@@ -1861,7 +1835,6 @@ case TAG_FIXNUM:
     default:
             return aerror1("bad arg for times",  b);
         }
-#ifdef COMMON
 case TAG_SFLOAT:
         switch (b & TAG_BITS)
         {
@@ -1893,7 +1866,6 @@ case TAG_SFLOAT:
     default:
             return aerror1("bad arg for times",  b);
         }
-#endif
 case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -1903,22 +1875,18 @@ case TAG_NUMBERS:
                 {
             case TAG_FIXNUM:
                     return timesbi(a, b);
-#ifdef COMMON
             case TAG_SFLOAT:
                     return timesbs(a, b);
-#endif
             case TAG_NUMBERS:
                     {   int32_t hb = type_of_header(numhdr(b));
                         switch (hb)
                         {
                 case TYPE_BIGNUM:
                         return timesbb(a, b);
-#ifdef COMMON
                 case TYPE_RATNUM:
                         return timesbr(a, b);
                 case TYPE_COMPLEX_NUM:
                         return timesbc(a, b);
-#endif
                 default:
                         return aerror1("bad arg for times",  b);
                         }
@@ -1928,7 +1896,6 @@ case TAG_NUMBERS:
             default:
                     return aerror1("bad arg for times",  b);
                 }
-#ifdef COMMON
     case TYPE_RATNUM:
                 switch (b & TAG_BITS)
                 {
@@ -1981,7 +1948,6 @@ case TAG_NUMBERS:
             default:
                     return aerror1("bad arg for times",  b);
                 }
-#endif
     default:    return aerror1("bad arg for times",  a);
             }
         }
@@ -1990,22 +1956,18 @@ case TAG_BOXFLOAT:
         {
     case TAG_FIXNUM:
             return timesfi(a, b);
-#ifdef COMMON
     case TAG_SFLOAT:
             return timesfs(a, b);
-#endif
     case TAG_NUMBERS:
             {   int32_t hb = type_of_header(numhdr(b));
                 switch (hb)
                 {
         case TYPE_BIGNUM:
                 return timesfb(a, b);
-#ifdef COMMON
         case TYPE_RATNUM:
                 return timesfr(a, b);
         case TYPE_COMPLEX_NUM:
                 return timesfc(a, b);
-#endif
         default:
                 return aerror1("bad arg for times",  b);
                 }

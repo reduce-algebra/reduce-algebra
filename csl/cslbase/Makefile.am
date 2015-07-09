@@ -268,7 +268,7 @@ endif !cygwin
 
 core_sources = arith01.c arith02.c arith03.c arith04.c arith05.c \
 		arith06.c arith07.c arith08.c arith09.c arith10.c arith11.c \
-		arith12.c bytes1.c char.c cslmpi.c eval1.c eval2.c \
+		arith12.c arith13.c bytes1.c char.c cslmpi.c eval1.c eval2.c \
 		eval3.c eval4.c fns1.c fns2.c fns3.c \
 		print.c cslread.c restart.c sysfwin.c
 
@@ -760,6 +760,7 @@ arith09.$(OBJEXT):	../include/crlibm.h
 arith10.$(OBJEXT):	../include/crlibm.h
 arith11.$(OBJEXT):	../include/crlibm.h
 arith12.$(OBJEXT):	../include/crlibm.h
+arith13.$(OBJEXT):	../include/crlibm.h
 bytes1.$(OBJEXT):	../include/crlibm.h
 char.$(OBJEXT):	../include/crlibm.h
 csl.$(OBJEXT):	../include/crlibm.h
@@ -801,6 +802,7 @@ csl-arith09.$(OBJEXT):	../include/crlibm.h
 csl-arith10.$(OBJEXT):	../include/crlibm.h
 csl-arith11.$(OBJEXT):	../include/crlibm.h
 csl-arith12.$(OBJEXT):	../include/crlibm.h
+csl-arith13.$(OBJEXT):	../include/crlibm.h
 csl-bytes1.$(OBJEXT):	../include/crlibm.h
 csl-char.$(OBJEXT):	../include/crlibm.h
 csl-csl.$(OBJEXT):	../include/crlibm.h
@@ -842,6 +844,7 @@ reduce-arith09.$(OBJEXT):	../include/crlibm.h
 reduce-arith10.$(OBJEXT):	../include/crlibm.h
 reduce-arith11.$(OBJEXT):	../include/crlibm.h
 reduce-arith12.$(OBJEXT):	../include/crlibm.h
+reduce-arith13.$(OBJEXT):	../include/crlibm.h
 reduce-bytes1.$(OBJEXT):	../include/crlibm.h
 reduce-char.$(OBJEXT):	../include/crlibm.h
 reduce-csl.$(OBJEXT):	../include/crlibm.h

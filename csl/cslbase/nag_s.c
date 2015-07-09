@@ -1,7 +1,7 @@
-/* This code wad contributed to CSL by NAG Ltd */
+/* This code was contributed to CSL by NAG Ltd */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -34,7 +34,7 @@
 
 
 #if 1
-Lisp_Object MS_CDECL Ls01eaf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ls01eaf(Lisp_Object nil, int nargs, ...)
 {
   va_list args;
   Lisp_Object Lzr, Lzi, Lifail, Lwr, Lwi;
@@ -119,7 +119,7 @@ Lisp_Object MS_CDECL Ls01eaf(Lisp_Object nil, int nargs, ...)
   return Llist(nil,3,Lwr,Lwi,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls13aaf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls13aaf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -183,7 +183,7 @@ Lisp_Object MS_CDECL Ls13aaf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
 }
 #endif
 
-Lisp_Object MS_CDECL Ls13acf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls13acf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -246,7 +246,7 @@ Lisp_Object MS_CDECL Ls13acf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls13adf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls13adf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -309,7 +309,7 @@ Lisp_Object MS_CDECL Ls13adf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls14aaf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls14aaf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -372,7 +372,7 @@ Lisp_Object MS_CDECL Ls14aaf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls14abf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls14abf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -435,7 +435,7 @@ Lisp_Object MS_CDECL Ls14abf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls14baf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ls14baf(Lisp_Object nil, int nargs, ...)
 {
   va_list args;
   Lisp_Object La, Lx, Ltol, Lp, Lq, Lifail;
@@ -522,7 +522,7 @@ Lisp_Object MS_CDECL Ls14baf(Lisp_Object nil, int nargs, ...)
   return Llist(nil,3,Lp,Lq,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls15adf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls15adf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -585,7 +585,7 @@ Lisp_Object MS_CDECL Ls15adf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls15aef(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls15aef(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -648,7 +648,7 @@ Lisp_Object MS_CDECL Ls15aef(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls17acf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls17acf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -711,7 +711,7 @@ Lisp_Object MS_CDECL Ls17acf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls17adf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls17adf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -774,7 +774,7 @@ Lisp_Object MS_CDECL Ls17adf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls17aef(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls17aef(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -837,7 +837,7 @@ Lisp_Object MS_CDECL Ls17aef(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls17aff(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls17aff(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -900,7 +900,7 @@ Lisp_Object MS_CDECL Ls17aff(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls17agf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls17agf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -963,7 +963,7 @@ Lisp_Object MS_CDECL Ls17agf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls17ahf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls17ahf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -1026,7 +1026,7 @@ Lisp_Object MS_CDECL Ls17ahf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls17ajf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls17ajf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -1089,7 +1089,7 @@ Lisp_Object MS_CDECL Ls17ajf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls17akf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls17akf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -1153,7 +1153,7 @@ Lisp_Object MS_CDECL Ls17akf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
 }
 
 #if 1
-Lisp_Object MS_CDECL Ls17dcf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ls17dcf(Lisp_Object nil, int nargs, ...)
 {							/* FIXME: strings */
   va_list args;
   Lisp_Object Lzr, Lzi, Lscale, Lifail, Ln, Lnz, Lfnu, Lcy;
@@ -1287,7 +1287,7 @@ Lisp_Object MS_CDECL Ls17dcf(Lisp_Object nil, int nargs, ...)
 #endif
 
 #if 1
-Lisp_Object MS_CDECL Ls17def(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ls17def(Lisp_Object nil, int nargs, ...)
 {							/* FIXME: strings */
   va_list args;
   Lisp_Object Lzr, Lzi, Lscale, Lifail, Ln, Lnz, Lfnu, Lcy;
@@ -1418,7 +1418,7 @@ Lisp_Object MS_CDECL Ls17def(Lisp_Object nil, int nargs, ...)
 }
 #endif
 
-Lisp_Object MS_CDECL Ls17dgf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ls17dgf(Lisp_Object nil, int nargs, ...)
 {							/* FIXME: strings */
   va_list args;
   Lisp_Object Lderiv, Lzr, Lzi, Lscale, Lifail, Lair, Laii, Lnz;
@@ -1525,7 +1525,7 @@ Lisp_Object MS_CDECL Ls17dgf(Lisp_Object nil, int nargs, ...)
   return Llist(nil,4,Lair,Laii,Lifail,Lnz);
 }
 
-Lisp_Object MS_CDECL Ls17dhf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ls17dhf(Lisp_Object nil, int nargs, ...)
 {							/* FIXME: strings */
   va_list args;
   Lisp_Object Lderiv, Lzr, Lzi, Lscale, Lifail, Lbir, Lbii;
@@ -1629,7 +1629,7 @@ Lisp_Object MS_CDECL Ls17dhf(Lisp_Object nil, int nargs, ...)
 }
 
 #if 1
-Lisp_Object MS_CDECL Ls17dlf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ls17dlf(Lisp_Object nil, int nargs, ...)
 {							/* FIXME: strings */
   va_list args;
   Lisp_Object Lzr, Lzi, Lscale, Lifail, Ln, Lnz, Lfnu, Lcy, Lm;
@@ -1767,7 +1767,7 @@ Lisp_Object MS_CDECL Ls17dlf(Lisp_Object nil, int nargs, ...)
 }
 #endif
 
-Lisp_Object MS_CDECL Ls18acf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls18acf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -1830,7 +1830,7 @@ Lisp_Object MS_CDECL Ls18acf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls18adf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls18adf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -1893,7 +1893,7 @@ Lisp_Object MS_CDECL Ls18adf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls18aef(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls18aef(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -1956,7 +1956,7 @@ Lisp_Object MS_CDECL Ls18aef(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls18aff(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls18aff(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -2020,7 +2020,7 @@ Lisp_Object MS_CDECL Ls18aff(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
 }
 
 #if 1
-Lisp_Object MS_CDECL Ls18dcf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ls18dcf(Lisp_Object nil, int nargs, ...)
 {							/* FIXME: strings */
   va_list args;
   Lisp_Object Lzr, Lzi, Lscale, Lifail, Ln, Lnz, Lfnu, Lcy;
@@ -2152,7 +2152,7 @@ Lisp_Object MS_CDECL Ls18dcf(Lisp_Object nil, int nargs, ...)
 #endif
 
 #if 1
-Lisp_Object MS_CDECL Ls18def(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ls18def(Lisp_Object nil, int nargs, ...)
 {							/* FIXME: strings */
   va_list args;
   Lisp_Object Lzr, Lzi, Lscale, Lifail, Ln, Lnz, Lfnu, Lcy;
@@ -2283,7 +2283,7 @@ Lisp_Object MS_CDECL Ls18def(Lisp_Object nil, int nargs, ...)
 }
 #endif
 
-Lisp_Object MS_CDECL Ls19aaf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls19aaf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -2346,7 +2346,7 @@ Lisp_Object MS_CDECL Ls19aaf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls19abf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls19abf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -2409,7 +2409,7 @@ Lisp_Object MS_CDECL Ls19abf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls19acf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls19acf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -2472,7 +2472,7 @@ Lisp_Object MS_CDECL Ls19acf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls19adf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls19adf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -2535,7 +2535,7 @@ Lisp_Object MS_CDECL Ls19adf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls20acf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls20acf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -2598,7 +2598,7 @@ Lisp_Object MS_CDECL Ls20acf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
   return Llist(nil,2,Ly,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls20adf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
+Lisp_Object Ls20adf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail)
 {
   Lisp_Object Ly;
   double x, y;
@@ -2662,7 +2662,7 @@ Lisp_Object MS_CDECL Ls20adf(Lisp_Object nil, Lisp_Object Lx, Lisp_Object Lifail
 }
 
 
-Lisp_Object MS_CDECL Ls21baf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ls21baf(Lisp_Object nil, int nargs, ...)
 {
   va_list args;
   Lisp_Object Lx, Ly, Lifail, Lrc;
@@ -2738,7 +2738,7 @@ Lisp_Object MS_CDECL Ls21baf(Lisp_Object nil, int nargs, ...)
   return Llist(nil,2,Lrc,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls21bbf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ls21bbf(Lisp_Object nil, int nargs, ...)
 {
   va_list args;
   Lisp_Object Lx, Ly, Lz, Lifail, Lrf;
@@ -2819,7 +2819,7 @@ Lisp_Object MS_CDECL Ls21bbf(Lisp_Object nil, int nargs, ...)
   return Llist(nil,2,Lrf,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls21bcf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ls21bcf(Lisp_Object nil, int nargs, ...)
 {
   va_list args;
   Lisp_Object Lx, Ly, Lz, Lifail, Lrd;
@@ -2900,7 +2900,7 @@ Lisp_Object MS_CDECL Ls21bcf(Lisp_Object nil, int nargs, ...)
   return Llist(nil,2,Lrd,Lifail);
 }
 
-Lisp_Object MS_CDECL Ls21bdf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ls21bdf(Lisp_Object nil, int nargs, ...)
 {
   va_list args;
   Lisp_Object Lx, Ly, Lz, Lr, Lifail, Lrj;
@@ -2987,3 +2987,5 @@ Lisp_Object MS_CDECL Ls21bdf(Lisp_Object nil, int nargs, ...)
   
   return Llist(nil,2,Lrj,Lifail);
 }
+
+/* end of nag_s.c */

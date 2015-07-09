@@ -19,6 +19,11 @@ on rounded;
 lisp;
 
 on echo,comp;
+% The procedures here will be compiled, but I switch off all
+% compiler messages because those messages are platform dependent
+% and so would show up as gratuitous differences between the log files
+% on differing machines.
+
 load compiler;
 off pwrds;
 
@@ -26,6 +31,10 @@ errs := 0;
 
 maxx := 1.797e+308;
 
+list(!!plumin,
+     !!plumax,
+     !!timmin,
+     !!timmax);
 
 ll := v := nil;
 for i := 0:20 do <<
@@ -129,5 +138,3 @@ for each x in ll do
 
 
 end;
-
-

@@ -56,14 +56,14 @@ flag('(cond),'eval);   % Enable conditional compilation.
 
 %-------------------------------------------------------------------
 
-% The following routines support fast float operations by exploiting
-% the IEEE number format explicitly.
-
-compiletime
- if 'ieee member lispsystem!* then
-   remflag('(safe!-fp!-plus safe!-fp!-times safe!-fp!-quot),'lose)
-     else
-   flag('(safe!-fp!-plus safe!-fp!-times safe!-fp!-quot),'lose);
+% % The following routines support fast float operations by exploiting
+% % the IEEE number format explicitly.
+%
+% compiletime
+%  if 'ieee member lispsystem!* then
+%    remflag('(safe!-fp!-plus safe!-fp!-times safe!-fp!-quot),'lose)
+%      else
+%    flag('(safe!-fp!-plus safe!-fp!-times safe!-fp!-quot),'lose);
 
 % Currently 32 and 64 bit IEEE machines are supported.
 %
@@ -161,91 +161,6 @@ symbolic inline procedure fp!-subnorm x;
   float!-is!-subnormal x;
 
 flag('(fp!-infinite fp!-nan fp!-finite fp!-subnorm),'lose);
-
-
-symbolic procedure safe!-fp!-plus(x,y);
-  begin
-    scalar ex,ey,sx,sy,z,ez;
-    if ieeezerop x then return y
-    else if ieeezerop y then return x;
-% "-0.0" will merely drop down into the general case... that is not
-% a disaster.
-    ex := ieeeexpt x;
-    ey := ieeeexpt y;
-    if ex = ieeemaxexp or ey = ieeemaxexp then return nil;
-    if (sx := ieeesign x) eq (sy := ieeesign y) then <<
-      if ex eq isub1 ieeemaxexp or
-         ey eq isub1 ieeemaxexp then return nil >>
-    else if ilessp(ex, iplus2(ieeeminexp, 54)) and
-            ilessp(ey, iplus2(ieeeminexp, 54)) then <<
-% -0.0 has a tiny exponent but adding it to a number (even if that
-% number is also very small) can not hurt.
-      if ieeezerop floatminus x then return y
-      else if ieeezerop floatminus y then return x
-      else return nil>> ;
-% The code in arith/rounded.red checks if there has been leading-digit
-% cancellation to an extent controlled by !!fleps1, and if so it
-% forces the answer returned to be zero. I believe that the code
-% here is simpler, faster and more accurate. But the discussions that
-% led to !!fleps1 lie in the past (around 2001 I believe) - I hope they
-% were mainly concerned with delivering more consistent results when
-% one could not be confident of having IEEE arithmetic...
-    z := floatplus2(x, y);
-    ez := ieeeexpt z;
-    if ilessp(ez, idifference(ex,44)) then return 0.0
-    else return z;
-  end;
-
-symbolic procedure safe!-fp!-times(x,y);
-  begin
-    scalar u,v,w;
-    if ieeezerop x or ieeezerop y then return 0.0
-    else if ieeeequal(x,1.0) then return y
-    else if ieeeequal(y,1.0) then return x;
-    u := ieeeexpt x;
-    v := ieeeexpt y;
-% filter out infinities and NaNs
-    if u = ieeemaxexp or u = ieeemaxexp then return nil;
-% filter out zero and denorms
-    if u = ieeeminexp or u = ieeeminexp then <<
-% Spot and handle -0.0
-      if ieeezerop floatminus x or ieeezerop floatminus y then return 0.0
-      else return nil >>;
-% I can estimate the magnitude of the result from the sum of exponents of
-% the input.
-    w := iplus2(u, v);
-    if ilessp(w, iplus2(ieeeminexp,3)) or
-       igreaterp(w, idifference(ieeemaxexp,3)) then return nil
-    else return floattimes2(x,y)
-  end;
-
-symbolic procedure safe!-fp!-quot(x,y);
-  begin
-    scalar u,v,w;
-    if ieeezerop y then rdqoterr()
-    else if ieeezerop x then return 0.0
-    else if ieeeequal(y,1.0) then return x;
-    u := ieeeexpt x;
-    v := ieeeexpt y;
-% filter out infinities and NaNs
-    if u = ieeemaxexp or u = ieeemaxexp then return nil;
-% filter out zero and denorms
-    if u = ieeeminexp or u = ieeeminexp then <<
-% Spot and handle -0.0
-      if ieeezerop floatminus x then return 0.0
-      else if ieeezerop floatminus y then rdqoterr()
-      else return nil >>;
-    w := idifference(u, v);
-    if ilessp(w, iplus2(ieeeminexp,3)) or
-       igreaterp(w, idifference(ieeemaxexp,3)) then return nil
-    else return floatquotient(x,y)
-  end;
-
-compiletime
- if 'ieee member lispsystem!* then
-  flag('(safe!-fp!-plus safe!-fp!-times safe!-fp!-quot),'lose)
-   else
-  remflag('(safe!-fp!-plus safe!-fp!-times safe!-fp!-quot),'lose);
 
 %---------------------------------------------------------------
 

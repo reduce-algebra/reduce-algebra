@@ -4,7 +4,7 @@
 
 # Usage:
 #   scripts/testall.sh [--noregressions]
-#                      [--install] [--keep]
+#                      [--install] [--keep] [--debug]
 #                      [--csl] [--psl] [--jlisp] [--cslboot] [--jlispboot]
 #
 # If present the argument "--noregressions" must come first and it
@@ -49,7 +49,7 @@ for a in $*
 do
   case $a
   in
-  --install | --keep)
+  --install | --keep | --debug)
     ;;
   --csl | --psl | --jlisp | --cslboot | --jlispboot)
     sys=`echo $a | sed 's/--//'`

@@ -1,4 +1,4 @@
-/* sysipaq.c                      Copyright (C) 1989-2013 Codemist Ltd */
+/* sysipaq.c                      Copyright (C) 1989-2015 Codemist Ltd */
 
 /*
  * System specific code. My objective is that this will subsume and replace
@@ -25,7 +25,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -298,14 +298,14 @@ int32_t ok_to_grab_memory(int32_t current)
 #endif
 }
 
-time_t MS_CDECL time(time_t *x)
+time_t time(time_t *x)
 {
     time_t r = 0;
     if (x != NULL) *x = r;
     return r;
 }
 
-clock_t MS_CDECL clock()
+clock_t clock()
 {
     return 0;
 }
@@ -337,7 +337,7 @@ void fwin_puts(const char *s)
 }
 
 
-void MS_CDECL fwin_printf(const char *fmt, ...)
+void fwin_printf(const char *fmt, ...)
 {
     va_list a;
     char s[200];

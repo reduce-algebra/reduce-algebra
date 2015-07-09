@@ -40,9 +40,7 @@
 #include "headers.h"
 
 
-#ifdef COMMON
 #include "clsyms.h"
-#endif
 
 /*
  * Common Lisp and Standard Lisp disagree about vector sizes.  Common
@@ -395,7 +393,7 @@ void simple_msg(const char *s, Lisp_Object x)
 
 #endif
 
-Lisp_Object MS_CDECL Lmkhash(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lmkhash(Lisp_Object nil, int nargs, ...)
 /*
  * (mkhash size flavour growth)
  *
@@ -534,7 +532,6 @@ static uint32_t hash_eql(Lisp_Object key)
         nasty_union.i[0] = nasty_union.i[1] = 0;
         switch (h)
         {
-#ifdef COMMON
     case TYPE_SINGLE_FLOAT:
             nasty_union.fp = (double)single_float_val(key);
 /*
@@ -544,17 +541,14 @@ static uint32_t hash_eql(Lisp_Object key)
  */
             if (nasty_union.fp == -0.0) nasty_union.fp = 0.0;
             break;
-#endif
     case TYPE_DOUBLE_FLOAT:
             nasty_union.fp = double_float_val(key);
             if (nasty_union.fp == -0.0) nasty_union.fp = 0.0;
             break;
-#ifdef COMMON
     case TYPE_LONG_FLOAT:
             nasty_union.fp = (double)long_float_val(key);
             if (nasty_union.fp == -0.0) nasty_union.fp = 0.0;
             break;
-#endif
     default:
             nasty_union.fp = 0.0;
         }
@@ -588,12 +582,10 @@ static uint32_t hash_eql(Lisp_Object key)
                 n--;
             }
             return r;
-#ifdef COMMON
     case TYPE_RATNUM:
     case TYPE_COMPLEX_NUM:
             return update_hash(hash_eql(numerator(key)),
                                hash_eql(denominator(key)));
-#endif
     default:
             return 0x12345678;  /* unknown type of number? */
         }
@@ -620,9 +612,7 @@ static uint32_t hash_cl_equal(Lisp_Object key, CSLbool descend)
     uint32_t r = 1, c;
     Lisp_Object nil = C_nil, w;
     int32_t len;
-#ifdef COMMON
     int32_t bitoff;
-#endif
     unsigned char *data;
     Header ha;
     simple_msg("hash_cl_equal: ", key);
@@ -666,7 +656,6 @@ static uint32_t hash_cl_equal(Lisp_Object key, CSLbool descend)
                     data = &ucelt(key, 0);
                     goto hash_as_string;
                 }
-#ifdef COMMON
 /*
  * I might need to re-check that Common Lisp EQUAL and hence this
  * version of hashing inspects the bits in a bit-vector.
@@ -678,7 +667,6 @@ static uint32_t hash_cl_equal(Lisp_Object key, CSLbool descend)
                     data = &ucelt(key, 0);
                     goto hash_as_bitvector;
                 }
-#endif
                 else if (len == TYPE_ARRAY)
                 {
 /*
@@ -705,12 +693,10 @@ static uint32_t hash_cl_equal(Lisp_Object key, CSLbool descend)
                     w = elt(key, 3);       /* displace adjustment */
                     key = elt(key, 2);     /* vector holding the actual data */
                     data = &ucelt(key, 0);
-#ifdef COMMON
                     if (ha)
                     {   bitoff = int_of_fixnum(w);
                         goto hash_as_bitvector;
                     }
-#endif
                     data += int_of_fixnum(w);
                     goto hash_as_string;
                 }
@@ -773,7 +759,6 @@ hash_as_string:
             r = update_hash(r, c);
         }
         return r;
-#ifdef COMMON
 hash_as_bitvector:
 /*
  * here len is the number of bits to scan, and bitoff is a BIT offset.
@@ -789,7 +774,6 @@ hash_as_bitvector:
             r = update_hash(r, c);
         }
         return r;
-#endif
     }
 }
 
@@ -850,14 +834,12 @@ static uint32_t hash_equal(Lisp_Object key)
                     /* and len is the length of the data in use */
                     goto hash_as_string;
                 }
-#ifdef COMMON
                 else if (header_of_bitvector(ha))
                 {   len = (len - 1)*8 + ((ha & 0x380) >> 7) + 1;
                     offset = 0;
                     data = &ucelt(key, 0);
                     goto hash_as_bitvector;
                 }
-#endif
 #ifdef COMMON
 /*
  * Common Lisp demands that pathname structures be compared and hashed in
@@ -893,12 +875,10 @@ static uint32_t hash_equal(Lisp_Object key)
                         {
                     case 0: data = &ucelt(key, int_of_fixnum(w));
                             goto hash_as_string;
-#ifdef COMMON
                     case 1:
                             data = &ucelt(key, 0);
                             offset = int_of_fixnum(w);
                             goto hash_as_bitvector;
-#endif
                     default:
 /* /* The code here can CRASH if asked to hash a general array that
  * has been represented in chunks because it has over 32K elements.
@@ -978,7 +958,6 @@ hash_as_string:
             if (w != 0) r = update_hash(r, w);
         }
         return r;
-#ifdef COMMON
 hash_as_bitvector:
 /* here len is the number of bits to scan, and offset is a BIT offset */
         len += offset;
@@ -989,7 +968,6 @@ hash_as_bitvector:
             r = update_hash(r, c);
         }
         return r;
-#endif
     }
 }
 
@@ -1045,14 +1023,12 @@ static uint32_t hash_equalp(Lisp_Object key)
                 {   data = &ucelt(key, 0);
                     goto hash_as_string;
                 }
-#ifdef COMMON
                 else if (header_of_bitvector(ha))
                 {   len = (len - 1)*8 + ((ha & 0x380) >> 7) + 1;
                     offset = 0;
                     data = &ucelt(key, 0);
                     goto hash_as_bitvector;
                 }
-#endif
 #ifdef COMMON
 /*
  * Common Lisp demands that pathname structures be compared and hashed in
@@ -1084,12 +1060,10 @@ static uint32_t hash_equalp(Lisp_Object key)
                         {
                     case 0: data = &ucelt(key, int_of_fixnum(w));
                             goto hash_nearly_as_string;
-#ifdef COMMON
                     case 1:
                             data = &ucelt(key, 0);
                             offset = int_of_fixnum(w);
                             goto hash_as_bitvector;
-#endif
                     default:
 /* /* Trouble if a general array with over 32K elements gets to here */
                             ha = vechdr(key);
@@ -1147,7 +1121,6 @@ static uint32_t hash_equalp(Lisp_Object key)
                 nil = C_nil;
                 if (exception_pending()) return 0;
             }
-#ifdef COMMON
             if (is_numbers(key))
             {   switch (type_of_header(numhdr(key)))
                 {
@@ -1160,7 +1133,6 @@ static uint32_t hash_equalp(Lisp_Object key)
                     break;
                 }
             }
-#endif
             return update_hash(r, hash_eql(key));
         }
 /*
@@ -1198,7 +1170,6 @@ hash_nearly_as_string:
             if (w != 0) r = update_hash(r, w);
         }
         return r;
-#ifdef COMMON
 hash_as_bitvector:
 /* here len is the number of bits to scan, and offset is a BIT offset */
         len += offset;
@@ -1209,7 +1180,6 @@ hash_as_bitvector:
             r = update_hash(r, update_hash(1, fixnum_of_int(c)));
         }
         return r;
-#endif
     }
 }
 
@@ -1227,7 +1197,7 @@ static CSLbool large_hash_table;
       &elt(elt((v), 2+(n)/HASH_CHUNK_WORDS), (n)%HASH_CHUNK_WORDS) : \
       &elt((v), (n))))
 
-Lisp_Object MS_CDECL Lget_hash(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lget_hash(Lisp_Object nil, int nargs, ...)
 {
     int32_t size, p, flavour = -1, hashstride, nprobes;
     va_list a;
@@ -1560,7 +1530,7 @@ Lisp_Object Lget_hash_2(Lisp_Object nil, Lisp_Object key, Lisp_Object tab)
 static int biggest_hash = 0;
 #endif
 
-Lisp_Object MS_CDECL Lput_hash(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lput_hash(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object key, tab, val;
@@ -1692,7 +1662,7 @@ Lisp_Object Lclr_hash(Lisp_Object nil, Lisp_Object tab)
     return tab;
 }
 
-Lisp_Object MS_CDECL Lclr_hash_0(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lclr_hash_0(Lisp_Object nil, int nargs, ...)
 {
     argcheck(nargs, 0, "clrhash");
     return Lclr_hash(nil, sys_hash_table);
@@ -1748,7 +1718,7 @@ Lisp_Object Lhash_flavour(Lisp_Object nil, Lisp_Object tab)
 }
 #endif
 
-Lisp_Object MS_CDECL Lputv(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lputv(Lisp_Object nil, int nargs, ...)
 {
     Header h;
     va_list a;
@@ -1948,7 +1918,7 @@ Lisp_Object simplify_string(Lisp_Object s)
     return onevalue(w);
 }
 
-Lisp_Object MS_CDECL Lsputv(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lsputv(Lisp_Object nil, int nargs, ...)
 {
     Header h;
     va_list a;
@@ -1985,7 +1955,7 @@ Lisp_Object MS_CDECL Lsputv(Lisp_Object nil, int nargs, ...)
  * was having to do mappings and conversions.
  */
 
-Lisp_Object MS_CDECL Lsputv2(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lsputv2(Lisp_Object nil, int nargs, ...)
 {
     Header h;
     va_list a;
@@ -2017,7 +1987,7 @@ Lisp_Object MS_CDECL Lsputv2(Lisp_Object nil, int nargs, ...)
     return onevalue(x2);
 }
 
-Lisp_Object MS_CDECL Lsputv3(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lsputv3(Lisp_Object nil, int nargs, ...)
 {
     Header h;
     va_list a;
@@ -2054,7 +2024,7 @@ Lisp_Object MS_CDECL Lsputv3(Lisp_Object nil, int nargs, ...)
     return onevalue(x3);
 }
 
-Lisp_Object MS_CDECL Lsputv4(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lsputv4(Lisp_Object nil, int nargs, ...)
 {
     Header h;
     va_list a;
@@ -2107,7 +2077,7 @@ Lisp_Object Lbpsupbv(Lisp_Object nil, Lisp_Object v)
     return onevalue(fixnum_of_int(n-1));
 }
 
-Lisp_Object MS_CDECL Lbpsputv(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lbpsputv(Lisp_Object nil, int nargs, ...)
 {
     Header h;
     va_list a;
@@ -2228,7 +2198,7 @@ Lisp_Object Lbpsgetv(Lisp_Object nil, Lisp_Object v, Lisp_Object n)
  * transferred.
  */
 
-Lisp_Object MS_CDECL Lnativeputv(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lnativeputv(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     int32_t o, v32, width;
@@ -2317,7 +2287,7 @@ Lisp_Object Lnativegetv(Lisp_Object nil, Lisp_Object v, Lisp_Object n)
     return onevalue(fixnum_of_int(o & 0xff));
 }
 
-Lisp_Object MS_CDECL Lnativegetvn(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lnativegetvn(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object v, n, w;
     int32_t o;
@@ -2358,7 +2328,7 @@ case 4:
     }
 }
 
-Lisp_Object MS_CDECL Lnative_type(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lnative_type(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil);
     CSL_IGNORE(nargs);
@@ -2631,7 +2601,7 @@ Lisp_Object Lnative_address1(Lisp_Object nil, Lisp_Object x)
  * in with the greater generality of vector structures.
  */
 
-Lisp_Object MS_CDECL Lputv8(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lputv8(Lisp_Object nil, int nargs, ...)
 {
     Header h;
     va_list a;
@@ -2668,7 +2638,7 @@ Lisp_Object Lgetv8(Lisp_Object nil, Lisp_Object v, Lisp_Object n)
     else return onevalue(fixnum_of_int(scelt(v, n1)));
 }
 
-Lisp_Object MS_CDECL Lputv16(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lputv16(Lisp_Object nil, int nargs, ...)
 {
     Header h;
     va_list a;
@@ -2706,7 +2676,7 @@ Lisp_Object Lgetv16(Lisp_Object nil, Lisp_Object v, Lisp_Object n)
     return onevalue(fixnum_of_int(n1));
 }
 
-Lisp_Object MS_CDECL Lputv32(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lputv32(Lisp_Object nil, int nargs, ...)
 {
     Header h;
     va_list a;
@@ -2744,7 +2714,7 @@ Lisp_Object Lgetv32(Lisp_Object nil, Lisp_Object v, Lisp_Object n)
     return make_lisp_integer32(n1);
 }
 
-Lisp_Object MS_CDECL Lfputv32(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lfputv32(Lisp_Object nil, int nargs, ...)
 {
     Header h;
     va_list a;
@@ -2789,7 +2759,7 @@ Lisp_Object Lfgetv32(Lisp_Object nil, Lisp_Object v, Lisp_Object n)
     return onevalue(v);
 }
 
-Lisp_Object MS_CDECL Lfputv64(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lfputv64(Lisp_Object nil, int nargs, ...)
 {
     Header h;
     va_list a;
@@ -2871,7 +2841,7 @@ Lisp_Object Llist_to_vector(Lisp_Object nil, Lisp_Object a)
  *       (t (putv v n x))))
  */
 
-static Lisp_Object MS_CDECL Lputvec(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lputvec(Lisp_Object nil, int nargs, ...)
 {
     Header h;
     va_list a;
@@ -2947,7 +2917,7 @@ static Lisp_Object MS_CDECL Lputvec(Lisp_Object nil, int nargs, ...)
  *    (aref (getv v 2) (+ (getv v 3) n1)))
  */
 
-Lisp_Object MS_CDECL Laref(Lisp_Object nil, int nargs, ...)
+Lisp_Object Laref(Lisp_Object nil, int nargs, ...)
 {
     Header h;
     Lisp_Object v, n, w;
@@ -3174,7 +3144,7 @@ Lisp_Object Lelt(Lisp_Object nil, Lisp_Object v, Lisp_Object n)
  * for AREF.
  */
 
-Lisp_Object MS_CDECL Laset(Lisp_Object nil, int nargs, ...)
+Lisp_Object Laset(Lisp_Object nil, int nargs, ...)
 {
     Header h;
     Lisp_Object v, n, w, x;
@@ -3315,7 +3285,7 @@ static Lisp_Object Laset2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     return Laset(nil, 2, a, b);
 }
 
-static Lisp_Object MS_CDECL Lsetelt(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lsetelt(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object v, n, x;
     Header h;
@@ -3471,7 +3441,7 @@ static Lisp_Object Lchar(Lisp_Object nil, Lisp_Object v, Lisp_Object n)
  *       (t (aset s n c))))
  */
 
-static Lisp_Object MS_CDECL Lcharset(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lcharset(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object v, n, c;
     Header h;
@@ -3507,7 +3477,7 @@ static Lisp_Object MS_CDECL Lcharset(Lisp_Object nil, int nargs, ...)
  *       s))
  */
 
-static Lisp_Object MS_CDECL Lmake_string(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmake_string(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object w, n, key, init;
@@ -3630,7 +3600,7 @@ static Lisp_Object Lcopy_vector(Lisp_Object nil, Lisp_Object a)
  *           (setq args (cdr args)))))
  */
 
-static Lisp_Object MS_CDECL Lvector(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lvector(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object r = nil, w;
     va_list a;
@@ -3682,6 +3652,8 @@ static Lisp_Object Lshrink_vector(Lisp_Object nil,
     return onevalue(v);
 }
 
+#endif /* COMMON */
+
 static Lisp_Object Lmake_simple_bitvector(Lisp_Object nil, Lisp_Object n)
 {
     int32_t bytes;
@@ -3702,7 +3674,7 @@ static Lisp_Object Lmake_simple_bitvector(Lisp_Object nil, Lisp_Object n)
     return onevalue(w);
 }
 
-static Lisp_Object MS_CDECL Lbputv(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lbputv(Lisp_Object nil, int nargs, ...)
 {
     Header h;
     va_list a;
@@ -3762,8 +3734,6 @@ static Lisp_Object Lbgetv(Lisp_Object nil, Lisp_Object v, Lisp_Object n)
         return onevalue(fixnum_of_int(0));
     else return onevalue(fixnum_of_int(1));
 }
-
-#endif /* COMMON */
 
 Lisp_Object Lupbv(Lisp_Object nil, Lisp_Object v)
 {
@@ -4005,7 +3975,7 @@ Lisp_Object Llist_subseq1(Lisp_Object nil, Lisp_Object seq, Lisp_Object start)
   return list_subseq(seq, first, last);
 }
 
-Lisp_Object MS_CDECL Llist_subseq2(Lisp_Object nil, int32_t nargs, ...)
+Lisp_Object Llist_subseq2(Lisp_Object nil, int32_t nargs, ...)
 {
   va_list args;
   int32_t first, last;
@@ -4046,7 +4016,7 @@ Lisp_Object Lvector_subseq1(Lisp_Object nil, Lisp_Object seq, Lisp_Object start)
   return vector_subseq(seq, first, last);
 }
 
-Lisp_Object MS_CDECL Lvector_subseq2(Lisp_Object nil, int32_t nargs, ...)
+Lisp_Object Lvector_subseq2(Lisp_Object nil, int32_t nargs, ...)
 {
   va_list args;
   int32_t first, last;
@@ -4134,14 +4104,14 @@ setup_type const funcs3_setup[] =
     {"hashcontents",            Lhashcontents, too_many_1, wrong_no_1},
     {"upbv",                    Lupbv, too_many_1, wrong_no_1},
     {"string-length",           Lstring_length, too_many_1, wrong_no_1},
-#ifdef COMMON
-    {"hashtable-flavour",       Lhash_flavour, too_many_1, wrong_no_1},
     {"getv-bit",                too_few_2, Lbgetv, wrong_no_2},
     {"sbit",                    too_few_2, Lbgetv, wrong_no_2},
     {"make-simple-bitvector",   Lmake_simple_bitvector, too_many_1, wrong_no_1},
-    {"make-simple-vector",      Lmksimplevec, too_many_1, wrong_no_1},
     {"putv-bit",                wrong_no_3a, wrong_no_3b, Lbputv},
     {"sbitset",                 wrong_no_3a, wrong_no_3b, Lbputv},
+#ifdef COMMON
+    {"hashtable-flavour",       Lhash_flavour, too_many_1, wrong_no_1},
+    {"make-simple-vector",      Lmksimplevec, too_many_1, wrong_no_1},
     {"svref",                   too_few_2, Lgetv, wrong_no_2},
     {"vector-bound",            Lvecbnd, too_many_1, wrong_no_1},
     {"putvec",                  wrong_no_3a, wrong_no_3b, Lputvec},

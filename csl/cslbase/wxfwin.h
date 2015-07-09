@@ -1,5 +1,5 @@
 /*
- * "wxfwin.h"                                     2003-2014, A C Norman
+ * "wxfwin.h"                                     2003-2015, A C Norman
  *
  * This defines the public interface supported by the "wxfwin" window
  * interface. Note that this should be functionally very similar to
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -69,18 +69,6 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-#ifndef MS_CDECL
-#ifdef _MSC_VER
-/*
- * With the Microsoft Compilers I may have set some other calling convention
- * as default, and then for these I must explicitly use the ordinary one.
- */
-#define MS_CDECL __cdecl
-#else
-#define MS_CDECL
-#endif
 #endif
 
 /*
@@ -254,7 +242,7 @@ extern void fwin_puts(const char *s);
  */
 extern void fwin_showmath(const char *s);
 
-extern void MS_CDECL fwin_printf(const char *fmt, ...);
+extern void fwin_printf(const char *fmt, ...);
 extern void fwin_vfprintf(const char *fmt, va_list a);
 
 /*
@@ -535,8 +523,8 @@ extern int fwin_plain_getchar();
 
 extern int texmacs_mode;
 
-extern void MS_CDECL sigint_handler(int code);
-extern void MS_CDECL sigbreak_handler(int code);
+extern void sigint_handler(int code);
+extern void sigbreak_handler(int code);
 
 extern int plain_worker(int argc, char *argv[], fwin_entrypoint *fwin_main);
 extern char fwin_prompt_string[MAX_PROMPT_LENGTH];

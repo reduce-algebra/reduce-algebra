@@ -1,4 +1,4 @@
-/*  arith03.c                         Copyright (C) 1990-2008 Codemist Ltd */
+/*  arith03.c                         Copyright (C) 1990-2015 Codemist Ltd */
 
 /*
  * Arithmetic functions.
@@ -7,7 +7,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -158,7 +158,6 @@ uint32_t Idivide(uint32_t *qp, uint32_t a, uint32_t b, uint32_t c)
 #endif
 #endif /* IDIVIDE */
 
-#ifdef COMMON
 static Lisp_Object quotis(Lisp_Object a, Lisp_Object b)
 {
     Float_union bb;
@@ -167,7 +166,6 @@ static Lisp_Object quotis(Lisp_Object a, Lisp_Object b)
     bb.f = (float) ((float)int_of_fixnum(a) / bb.f);
     return (bb.i & ~(int32_t)0xf) + TAG_SFLOAT;
 }
-#endif
 
 static Lisp_Object quotib(Lisp_Object a, Lisp_Object b)
 {
@@ -180,7 +178,6 @@ static Lisp_Object quotib(Lisp_Object a, Lisp_Object b)
     else return fixnum_of_int(0);
 }
 
-#ifdef COMMON
 static Lisp_Object CLquotib(Lisp_Object a, Lisp_Object b)
 {
     Lisp_Object g, nil = C_nil;
@@ -303,7 +300,6 @@ fail:
     popv(2);
     return nil;
 }
-#endif
 
 static Lisp_Object quotif(Lisp_Object a, Lisp_Object b)
 {
@@ -313,7 +309,6 @@ static Lisp_Object quotif(Lisp_Object a, Lisp_Object b)
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
-#ifdef COMMON
 static Lisp_Object quotsi(Lisp_Object a, Lisp_Object b)
 {
     Float_union aa;
@@ -334,7 +329,6 @@ static Lisp_Object quotsb(Lisp_Object a, Lisp_Object b)
 #define quotsr(a, b) quotsb(a, b)
 
 #define quotsc(a, b) quotic(a, b)
-#endif
 
 static Lisp_Object quotsf(Lisp_Object a, Lisp_Object b)
 {
@@ -621,9 +615,7 @@ static Lisp_Object quotbi(Lisp_Object a, Lisp_Object b)
     else return quotbn(a, int_of_fixnum(b));
 }
 
-#ifdef COMMON
 #define quotbs(a, b) quotsb(a, b)
-#endif
 
 Lisp_Object quotbb(Lisp_Object a, Lisp_Object b)
 /*
@@ -1085,15 +1077,12 @@ Lisp_Object quotbb(Lisp_Object a, Lisp_Object b)
     return a;
 }
 
-#ifdef COMMON
 #define quotbr(a, b) quotir(a, b)
 
 #define quotbc(a, b) quotic(a, b)
-#endif
 
 #define quotbf(a, b) quotsf(a, b)
 
-#ifdef COMMON
 static Lisp_Object quotri(Lisp_Object a, Lisp_Object b)
 {
     Lisp_Object w, nil;
@@ -1222,7 +1211,6 @@ static Lisp_Object quotci(Lisp_Object a, Lisp_Object b)
 #define quotcc(a, b) quotic(a, b)
 
 #define quotcf(a, b) quotci(a, b)
-#endif
 
 static Lisp_Object quotfi(Lisp_Object a, Lisp_Object b)
 {
@@ -1242,30 +1230,22 @@ static Lisp_Object quotfs(Lisp_Object a, Lisp_Object b)
 
 #define quotfb(a, b) quotfs(a, b)
 
-#ifdef COMMON
 #define quotfr(a, b) quotfs(a, b)
 
 #define quotfc(a, b) quotic(a, b)
-#endif
 
 static Lisp_Object quotff(Lisp_Object a, Lisp_Object b)
 {
-#ifdef COMMON
     int32_t ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
-#endif
     double d = float_of_number(b);
     if (d == 0.0) return aerror2("bad arg for quotient", a, b);
     d = float_of_number(a) / d;
-#ifdef COMMON
     if (ha == TYPE_LONG_FLOAT || hb == TYPE_LONG_FLOAT)
         ha = TYPE_LONG_FLOAT;
     else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
         ha = TYPE_DOUBLE_FLOAT;
     else ha = TYPE_SINGLE_FLOAT;
     return make_boxfloat(d, ha);
-#else
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
-#endif
 }
 
 Lisp_Object quot2(Lisp_Object a, Lisp_Object b)
@@ -1301,22 +1281,18 @@ case TAG_FIXNUM:
                 if (r != 0x08000000) return fixnum_of_int(r);
                 else return make_one_word_bignum(r);
             }
-#ifdef COMMON
     case TAG_SFLOAT:
             return quotis(a, b);
-#endif
     case TAG_NUMBERS:
             {   int32_t hb = type_of_header(numhdr(b));
                 switch (hb)
                 {
         case TYPE_BIGNUM:
                 return quotib(a, b);
-#ifdef COMMON
         case TYPE_RATNUM:
                 return quotir(a, b);
         case TYPE_COMPLEX_NUM:
                 return quotic(a, b);
-#endif
         default:
                 return aerror1("bad arg for quotient",  b);
                 }
@@ -1326,7 +1302,6 @@ case TAG_FIXNUM:
     default:
             return aerror1("bad arg for quotient",  b);
         }
-#ifdef COMMON
 case TAG_SFLOAT:
         switch ((int)b & TAG_BITS)
         {
@@ -1358,7 +1333,6 @@ case TAG_SFLOAT:
     default:
             return aerror1("bad arg for quotient",  b);
         }
-#endif
 case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -1368,22 +1342,18 @@ case TAG_NUMBERS:
                 {
             case TAG_FIXNUM:
                     return quotbi(a, b);
-#ifdef COMMON
             case TAG_SFLOAT:
                     return quotbs(a, b);
-#endif
             case TAG_NUMBERS:
                     {   int32_t hb = type_of_header(numhdr(b));
                         switch (hb)
                         {
                 case TYPE_BIGNUM:
                         return quotbb(a, b);
-#ifdef COMMON
                 case TYPE_RATNUM:
                         return quotbr(a, b);
                 case TYPE_COMPLEX_NUM:
                         return quotbc(a, b);
-#endif
                 default:
                         return aerror1("bad arg for quotient",  b);
                         }
@@ -1393,7 +1363,6 @@ case TAG_NUMBERS:
             default:
                     return aerror1("bad arg for quotient",  b);
                 }
-#ifdef COMMON
     case TYPE_RATNUM:
                 switch ((int)b & TAG_BITS)
                 {
@@ -1446,7 +1415,6 @@ case TAG_NUMBERS:
             default:
                     return aerror1("bad arg for quotient",  b);
                 }
-#endif
     default:    return aerror1("bad arg for quotient",  a);
             }
         }
@@ -1455,22 +1423,18 @@ case TAG_BOXFLOAT:
         {
     case TAG_FIXNUM:
             return quotfi(a, b);
-#ifdef COMMON
     case TAG_SFLOAT:
             return quotfs(a, b);
-#endif
     case TAG_NUMBERS:
             {   int32_t hb = type_of_header(numhdr(b));
                 switch (hb)
                 {
         case TYPE_BIGNUM:
                 return quotfb(a, b);
-#ifdef COMMON
         case TYPE_RATNUM:
                 return quotfr(a, b);
         case TYPE_COMPLEX_NUM:
                 return quotfc(a, b);
-#endif
         default:
                 return aerror1("bad arg for quotient",  b);
                 }
@@ -1485,8 +1449,6 @@ default:
     }
 }
 
-#ifdef COMMON
-
 /*
  * The above version of quot2 is as required for the Standard Lisp QUOTIENT
  * function, and it is called from various internal places in CSL/CCL, eg
@@ -1495,7 +1457,9 @@ default:
  * rational numbers when that is necessary.
  */
 
-/***** Not reconstructed yet!! */
+/***** Not reconstructed yet!!
+ * ie this would need testing and review before being used in anger.
+ */
 
 Lisp_Object CLquot2(Lisp_Object a, Lisp_Object b)
 {
@@ -1537,22 +1501,18 @@ case TAG_FIXNUM:
                 bb = bb / w;
                 return make_ratio(fixnum_of_int(aa), fixnum_of_int(bb));
             }
-#ifdef COMMON
     case TAG_SFLOAT:
             return quotis(a, b);
-#endif
     case TAG_NUMBERS:
             {   int32_t hb = type_of_header(numhdr(b));
                 switch (hb)
                 {
         case TYPE_BIGNUM:
                 return CLquotib(a, b);
-#ifdef COMMON
         case TYPE_RATNUM:
                 return quotir(a, b);
         case TYPE_COMPLEX_NUM:
                 return quotic(a, b);
-#endif
         default:
                 return aerror1("bad arg for /",  b);
                 }
@@ -1562,7 +1522,6 @@ case TAG_FIXNUM:
     default:
             return aerror1("bad arg for /",  b);
         }
-#ifdef COMMON
 case TAG_SFLOAT:
         switch ((int)b & TAG_BITS)
         {
@@ -1594,7 +1553,6 @@ case TAG_SFLOAT:
     default:
             return aerror1("bad arg for /",  b);
         }
-#endif
 case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -1604,22 +1562,18 @@ case TAG_NUMBERS:
                 {
             case TAG_FIXNUM:
                     return CLquotbi(a, b);
-#ifdef COMMON
             case TAG_SFLOAT:
                     return quotbs(a, b);
-#endif
             case TAG_NUMBERS:
                     {   int32_t hb = type_of_header(numhdr(b));
                         switch (hb)
                         {
                 case TYPE_BIGNUM:
                         return CLquotbb(a, b);
-#ifdef COMMON
                 case TYPE_RATNUM:
                         return quotbr(a, b);
                 case TYPE_COMPLEX_NUM:
                         return quotbc(a, b);
-#endif
                 default:
                         return aerror1("bad arg for /",  b);
                         }
@@ -1629,7 +1583,6 @@ case TAG_NUMBERS:
             default:
                     return aerror1("bad arg for /",  b);
                 }
-#ifdef COMMON
     case TYPE_RATNUM:
                 switch ((int)b & TAG_BITS)
                 {
@@ -1682,7 +1635,6 @@ case TAG_NUMBERS:
             default:
                     return aerror1("bad arg for /",  b);
                 }
-#endif
     default:    return aerror1("bad arg for /",  a);
             }
         }
@@ -1691,22 +1643,18 @@ case TAG_BOXFLOAT:
         {
     case TAG_FIXNUM:
             return quotfi(a, b);
-#ifdef COMMON
     case TAG_SFLOAT:
             return quotfs(a, b);
-#endif
     case TAG_NUMBERS:
             {   int32_t hb = type_of_header(numhdr(b));
                 switch (hb)
                 {
         case TYPE_BIGNUM:
                 return quotfb(a, b);
-#ifdef COMMON
         case TYPE_RATNUM:
                 return quotfr(a, b);
         case TYPE_COMPLEX_NUM:
                 return quotfc(a, b);
-#endif
         default:
                 return aerror1("bad arg for /",  b);
                 }
@@ -1721,6 +1669,5 @@ default:
     }
 }
 
-#endif
 
 /* end of arith03.c */

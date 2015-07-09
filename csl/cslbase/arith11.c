@@ -1,4 +1,4 @@
-/*  arith11.c                         Copyright (C) 1990-2008 Codemist Ltd */
+/*  arith11.c                         Copyright (C) 1990-2015 Codemist Ltd */
 
 /*
  * Arithmetic functions.
@@ -8,7 +8,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -65,8 +65,6 @@ Lisp_Object rembb(Lisp_Object a, Lisp_Object b)
     errexit();
     return mv_2;
 }
-
-#ifdef COMMON
 
 static Lisp_Object remis(Lisp_Object a, Lisp_Object b)
 {
@@ -168,8 +166,6 @@ static Lisp_Object remff(Lisp_Object a, Lisp_Object b)
     return aerror2("bad arg for remainder", a, b);
 }
 
-#endif /* COMMON */
-
 Lisp_Object Cremainder(Lisp_Object a, Lisp_Object b)
 {
     int32_t c;
@@ -201,16 +197,14 @@ case TAG_FIXNUM:
                 else if (c < 0) c += bb;
                 return fixnum_of_int(c);
             }
-#ifdef COMMON
 /*
  * Common Lisp defines a meaning for the remainder function when applied
  * to floating point values - so there is a whole pile of mess here to
  * support that.  Standard Lisp is only concerned with fixnums and
- * bignums.
+ * bignums, but can tolerate the extra generality.
  */
     case TAG_SFLOAT:
             return remis(a, b);
-#endif
     case TAG_NUMBERS:
             {   int32_t hb = type_of_header(numhdr(b));
                 switch (hb)
@@ -226,29 +220,25 @@ case TAG_FIXNUM:
                     bignum_digits(b)[0] == 0x08000000)
                         return fixnum_of_int(0);
                 else return a;
-#ifdef COMMON
         case TYPE_RATNUM:
                 return remir(a, b);
-#endif
         default:
                 return aerror1("Bad arg for remainder",  b);
                 }
             }
-#ifdef COMMON
     case TAG_BOXFLOAT:
             return remif(a, b);
-#else
+/*
     case TAG_BOXFLOAT:
         {   double v = (double) int_of_fixnum(a);
             double u = float_of_number(b);
             v = v - (v/u)*u;
             return make_boxfloat(v, TYPE_DOUBLE_FLOAT);
         }
-#endif
+ */
     default:
             return aerror1("Bad arg for remainder",  b);
         }
-#ifdef COMMON
 case TAG_SFLOAT:
         switch ((int)b & TAG_BITS)
         {
@@ -278,7 +268,6 @@ case TAG_SFLOAT:
     default:
             return aerror1("Bad arg for remainder",  b);
         }
-#endif
 case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -288,32 +277,25 @@ case TAG_NUMBERS:
                 {
             case TAG_FIXNUM:
                     return rembi(a, b);
-#ifdef COMMON
             case TAG_SFLOAT:
                     return rembs(a, b);
-#endif
             case TAG_NUMBERS:
                     {   int32_t hb = type_of_header(numhdr(b));
                         switch (hb)
                         {
                 case TYPE_BIGNUM:
                         return rembb(a, b);
-#ifdef COMMON
                 case TYPE_RATNUM:
                         return rembr(a, b);
-#endif
                 default:
                         return aerror1("Bad arg for remainder",  b);
                         }
                     }
-#ifdef COMMON
             case TAG_BOXFLOAT:
                     return rembf(a, b);
-#endif
             default:
                     return aerror1("Bad arg for remainder",  b);
                 }
-#ifdef COMMON
     case TYPE_RATNUM:
                 switch ((int)b & TAG_BITS)
                 {
@@ -338,14 +320,13 @@ case TAG_NUMBERS:
             default:
                     return aerror1("Bad arg for remainder",  b);
                 }
-#endif
     default:    return aerror1("Bad arg for remainder",  a);
             }
         }
 case TAG_BOXFLOAT:
         switch ((int)b & TAG_BITS)
         {
-#ifndef COMMON
+/*
     case TAG_FIXNUM:
             {   double u = (double) int_of_fixnum(b);
                 double v = float_of_number(a);
@@ -358,9 +339,7 @@ case TAG_BOXFLOAT:
                 v = v - (v/u)*u;
                 return make_boxfloat(v, TYPE_DOUBLE_FLOAT);
             }
-    default:
-            return aerror1("Bad arg for remainder",  b);
-#else
+ */
     case TAG_FIXNUM:
             return remfi(a, b);
     case TAG_SFLOAT:
@@ -381,7 +360,6 @@ case TAG_BOXFLOAT:
             return remff(a, b);
     default:
             return aerror1("Bad arg for remainder",  b);
-#endif
         }
 default:
         return aerror1("Bad arg for remainder",  a);
@@ -447,8 +425,6 @@ static Lisp_Object modbb(Lisp_Object a, Lisp_Object b)
 {
     return mod_by_rem(a, b);
 }
-
-#ifdef COMMON
 
 static Lisp_Object modis(Lisp_Object a, Lisp_Object b)
 {
@@ -550,8 +526,6 @@ static Lisp_Object ccl_modff(Lisp_Object a, Lisp_Object b)
     return mod_by_rem(a, b);
 }
 
-#endif /* COMMON */
-
 Lisp_Object modulus(Lisp_Object a, Lisp_Object b)
 {
     switch ((int)a & TAG_BITS)
@@ -575,7 +549,6 @@ case TAG_FIXNUM:
                 /* No overflow is possible in a modulus operation */
                 return fixnum_of_int(p);
             }
-#ifdef COMMON
 /*
  * Common Lisp defines a meaning for the modulus function when applied
  * to floating point values - so there is a whole pile of mess here to
@@ -584,29 +557,23 @@ case TAG_FIXNUM:
  */
     case TAG_SFLOAT:
             return modis(a, b);
-#endif
     case TAG_NUMBERS:
             {   int32_t hb = type_of_header(numhdr(b));
                 switch (hb)
                 {
         case TYPE_BIGNUM:
                 return modib(a, b);
-#ifdef COMMON
         case TYPE_RATNUM:
                 return modir(a, b);
-#endif
         default:
                 return aerror1("Bad arg for mod",  b);
                 }
             }
-#ifdef COMMON
     case TAG_BOXFLOAT:
             return modif(a, b);
-#endif
     default:
             return aerror1("Bad arg for mod",  b);
         }
-#ifdef COMMON
 case TAG_SFLOAT:
         switch ((int)b & TAG_BITS)
         {
@@ -636,7 +603,6 @@ case TAG_SFLOAT:
     default:
             return aerror1("Bad arg for mod",  b);
         }
-#endif
 case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -646,32 +612,25 @@ case TAG_NUMBERS:
                 {
             case TAG_FIXNUM:
                     return modbi(a, b);
-#ifdef COMMON
             case TAG_SFLOAT:
                     return modbs(a, b);
-#endif
             case TAG_NUMBERS:
                     {   int32_t hb = type_of_header(numhdr(b));
                         switch (hb)
                         {
                 case TYPE_BIGNUM:
                         return modbb(a, b);
-#ifdef COMMON
                 case TYPE_RATNUM:
                         return modbr(a, b);
-#endif
                 default:
                         return aerror1("Bad arg for mod",  b);
                         }
                     }
-#ifdef COMMON
             case TAG_BOXFLOAT:
                     return modbf(a, b);
-#endif
             default:
                     return aerror1("Bad arg for mod",  b);
                 }
-#ifdef COMMON
     case TYPE_RATNUM:
                 switch ((int)b & TAG_BITS)
                 {
@@ -696,11 +655,9 @@ case TAG_NUMBERS:
             default:
                     return aerror1("Bad arg for mod",  b);
                 }
-#endif
     default:    return aerror1("Bad arg for mod",  a);
             }
         }
-#ifdef COMMON
 case TAG_BOXFLOAT:
         switch ((int)b & TAG_BITS)
         {
@@ -725,7 +682,6 @@ case TAG_BOXFLOAT:
     default:
             return aerror1("Bad arg for mod",  b);
         }
-#endif
 default:
         return aerror1("Bad arg for mod",  a);
     }
@@ -737,7 +693,6 @@ CSLbool zerop(Lisp_Object a)
     {
 case TAG_FIXNUM:
         return (a == fixnum_of_int(0));
-#ifdef COMMON
 case TAG_NUMBERS:
         /* #C(r i) must satisfy zerop is r and i both do */
         if (is_complex(a) && zerop(real_part(a)))
@@ -750,7 +705,6 @@ case TAG_SFLOAT:
  * cautious way of coding things.
  */
         return ((a & 0x7ffffff8) == 0); /* Strip sign bit as well as tags */
-#endif
 case TAG_BOXFLOAT:
         return (float_of_number(a) == 0.0);
 default:
@@ -764,7 +718,6 @@ CSLbool onep(Lisp_Object a)
     {
 case TAG_FIXNUM:
         return (a == fixnum_of_int(1));
-#ifdef COMMON
 case TAG_NUMBERS:
         /* #C(r i) must satisfy onep(r) and zerop(i) */
         if (is_complex(a) && onep(real_part(a)))
@@ -775,7 +728,6 @@ case TAG_SFLOAT:
             w.f = (float)1.0;
             return (a == (w.i & ~(int32_t)0xf) + TAG_SFLOAT);
         }
-#endif
 case TAG_BOXFLOAT:
         return (float_of_number(a) == 1.0);
 default:
@@ -793,13 +745,11 @@ CSLbool minusp(Lisp_Object a)
     {
 case TAG_FIXNUM:
         return ((int32_t)a < 0);
-#ifdef COMMON
 case TAG_SFLOAT:
         {   Float_union aa;
             aa.i = a - TAG_SFLOAT;
             return (aa.f < 0.0);
         }
-#endif
 case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -808,10 +758,8 @@ case TAG_NUMBERS:
                 {   int32_t l = (bignum_length(a)-CELL-4)/4;
                     return ((int32_t)bignum_digits(a)[l] < (int32_t)0);
                 }
-#ifdef COMMON
     case TYPE_RATNUM:
                 return minusp(numerator(a));
-#endif
     default:
                 aerror1("Bad arg for minusp",  a);
                 return 0;
@@ -834,13 +782,11 @@ CSLbool plusp(Lisp_Object a)
     {
 case TAG_FIXNUM:
         return (a > fixnum_of_int(0));
-#ifdef COMMON
 case TAG_SFLOAT:
         {   Float_union aa;
             aa.i = a - TAG_SFLOAT;
             return (aa.f > 0.0);
         }
-#endif
 case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -850,10 +796,8 @@ case TAG_NUMBERS:
 /* This is OK because a bignum can never have the value zero */
                     return ((int32_t)bignum_digits(a)[l] >= (int32_t)0);
                 }
-#ifdef COMMON
     case TYPE_RATNUM:
                 return plusp(numerator(a));
-#endif
     default:
                 aerror1("Bad arg for plusp",  a);
                 return 0;
@@ -876,7 +820,6 @@ default:
  * this must be coded so that it never provokes garbage collection.
  */
 
-#ifdef COMMON
 static CSLbool numeqis(Lisp_Object a, Lisp_Object b)
 {
     Float_union bb;
@@ -889,13 +832,10 @@ static CSLbool numeqic(Lisp_Object a, Lisp_Object b)
     if (!zerop(imag_part(b))) return NO;
     else return numeq2(a, real_part(b));
 }
-#endif
 
 #define numeqif(a,b) ((double)int_of_fixnum(a) == float_of_number(b))
 
-#ifdef COMMON
 #define numeqsi(a, b) numeqis(b, a)
-#endif
 
 static CSLbool numeqsb(Lisp_Object a, Lisp_Object b)
 /*
@@ -938,7 +878,6 @@ static CSLbool numeqsb(Lisp_Object a, Lisp_Object b)
     return YES;
 }
 
-#ifdef COMMON
 static CSLbool numeqsr(Lisp_Object a, Lisp_Object b)
 /*
  * Here I will rely somewhat on the use of IEEE floating point values
@@ -1042,7 +981,6 @@ static CSLbool numeqsf(Lisp_Object a, Lisp_Object b)
 }
 
 #define numeqbs(a, b) numeqsb(b, a)
-#endif
 
 static CSLbool numeqbb(Lisp_Object a, Lisp_Object b)
 {
@@ -1056,13 +994,10 @@ static CSLbool numeqbb(Lisp_Object a, Lisp_Object b)
     return YES;
 }
 
-#ifdef COMMON
 #define numeqbc(a, b) numeqic(a, b)
-#endif
 
 #define numeqbf(a, b) numeqsb(b, a)
 
-#ifdef COMMON
 #define numeqrs(a, b) numeqsr(b, a)
 
 static CSLbool numeqrr(Lisp_Object a, Lisp_Object b)
@@ -1090,21 +1025,16 @@ static CSLbool numeqcc(Lisp_Object a, Lisp_Object b)
 }
 
 #define numeqcf(a, b) numeqic(b, a)
-#endif
 
 #define numeqfi(a, b) numeqif(b, a)
 
-#ifdef COMMON
 #define numeqfs(a, b) numeqsf(b, a)
-#endif
 
 #define numeqfb(a, b) numeqbf(b, a)
 
-#ifdef COMMON
 #define numeqfr(a, b) numeqrf(b, a)
 
 #define numeqfc(a, b) numeqic(a, b)
-#endif
 
 static CSLbool numeqff(Lisp_Object a, Lisp_Object b)
 {
@@ -1126,22 +1056,6 @@ static CSLbool numeqff(Lisp_Object a, Lisp_Object b)
 
 CSLbool numeq2(Lisp_Object a, Lisp_Object b)
 {
-#ifndef COMMON
-/*
- * Hmmm - arranging that numbers that are EQ are treated as being EQN
- * is possibly incorrect as regards floating point numbers that are
- * both NaNs. Hence I will not do this ever. The consequence is that cases
- * of comparisons that are EQ will neverthless need to go through the
- * type-dispatch code. This will notably apply to the case of fixnums
- * where "==" style equality testing would have been valid. So there is
- * a cost involved in gettiing answer correct! The Common Lisp variant
- * used to avoid the early test in order that it could check that the
- * operands really were numeric and complain if not. 
- */
-/*
- *  if (a == b) return YES;
- */
-#endif
     switch ((int)a & TAG_BITS)
     {
 case TAG_FIXNUM:
@@ -1149,22 +1063,18 @@ case TAG_FIXNUM:
         {
     case TAG_FIXNUM:
             return (a == b);
-#ifdef COMMON
     case TAG_SFLOAT:
             return numeqis(a, b);
-#endif
     case TAG_NUMBERS:
             {   int32_t hb = type_of_header(numhdr(b));
                 switch (hb)
                 {
         case TYPE_BIGNUM:
                 return 0; /* fixnum can not be equal to a bignum */
-#ifdef COMMON
         case TYPE_RATNUM:
                 return 0;
         case TYPE_COMPLEX_NUM:
                 return numeqic(a, b);   /* (= 2 #C(2.0 0.0))?  Yuk */
-#endif
         default:
                 differentb;
                 }
@@ -1174,7 +1084,6 @@ case TAG_FIXNUM:
     default:
             differentb;
         }
-#ifdef COMMON
 case TAG_SFLOAT:
         switch ((int)b & TAG_BITS)
         {
@@ -1207,7 +1116,6 @@ case TAG_SFLOAT:
     default:
             differentb;
         }
-#endif
 case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -1217,22 +1125,18 @@ case TAG_NUMBERS:
                 {
             case TAG_FIXNUM:
                     return 0;
-#ifdef COMMON
             case TAG_SFLOAT:
                     return numeqbs(a, b);
-#endif
             case TAG_NUMBERS:
                     {   int32_t hb = type_of_header(numhdr(b));
                         switch (hb)
                         {
                 case TYPE_BIGNUM:
                         return numeqbb(a, b);
-#ifdef COMMON
                 case TYPE_RATNUM:
                         return 0;
                 case TYPE_COMPLEX_NUM:
                         return numeqbc(a, b);
-#endif
                 default:
                         differentb;
                         }
@@ -1242,7 +1146,6 @@ case TAG_NUMBERS:
             default:
                     differentb;
                 }
-#ifdef COMMON
     case TYPE_RATNUM:
                 switch ((int)b & TAG_BITS)
                 {
@@ -1295,7 +1198,6 @@ case TAG_NUMBERS:
             default:
                     differentb;
                 }
-#endif
     default:    differenta;
             }
         }
@@ -1304,22 +1206,18 @@ case TAG_BOXFLOAT:
         {
     case TAG_FIXNUM:
             return numeqfi(a, b);
-#ifdef COMMON
     case TAG_SFLOAT:
             return numeqfs(a, b);
-#endif
     case TAG_NUMBERS:
             {   int32_t hb = type_of_header(numhdr(b));
                 switch (hb)
                 {
         case TYPE_BIGNUM:
                 return numeqfb(a, b);
-#ifdef COMMON
         case TYPE_RATNUM:
                 return numeqfr(a, b);
         case TYPE_COMPLEX_NUM:
                 return numeqfc(a, b);
-#endif
         default:
                 differentb;
                 }

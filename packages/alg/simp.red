@@ -337,8 +337,11 @@ symbolic procedure simpatom u;
        else if !*numval and dmode!* and flagp(u,'constant)
           and (z := get(u,dmode!*))
           and not errorp(z := errorset!*(list('lispapply,mkquote z,nil),
-                         nil))
-        then return !*d2q car z
+                         nil)) and
+% Beware Lisp systems that can deliver a native Lisp-level complex
+% result given a real argument to some function.
+          (not eqcar(z := car z, '!:rd!:) or not complexp cdr z)
+        then return !*d2q z
        else if getrtype u then typerr(u,'scalar)
        else return mksq(u,1) end;
 
@@ -1153,9 +1156,13 @@ symbolic procedure opfchk!! u;
  err: rerror(alg,18,list(fn1,"is not defined as complex function"));
    s: if not (u := apply1(sf, revlis u)) then return nil;
    a: u := errorset2 list('apply,mkquote fn,mkquote u);
-      if errorp u then
+% With any Lisp system that evaluates elementary functions on floating
+% inputs and is capable of generating a complex output (rather that raising
+% an exception) I need to take care. This would apply to Common Lisp and
+% is now the case for CSL.
+      if errorp u or (eqcar(u := car u, '!:rd!:) and complexp cdr u) then
          if ce then <<u := ce; ce := nil; go to evc>> else return nil
-       else return if int then intconv car u else car u
+       else return if int then intconv u else u
    end;
 
 symbolic procedure intconv x;

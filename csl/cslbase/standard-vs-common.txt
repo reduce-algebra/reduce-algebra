@@ -1,0 +1,81 @@
+                      Standard Lisp vs. Common Lisp
+
+
+
+The sources of CSL have many instances of "#ifdef COMMON" which guard
+a variant of the code that provides partial Common Lisp comatability.
+The amount of pain that would be involved in matching the full Common Lisp
+specifiaction would be large even if I did not really dislike many of the
+choices made by those who specified that. But here are some notes on
+the issues that are present and where I might at some stage consider
+better convergence:
+
+(1) Common Lisp supports more data types that Standard Lisp.
+  (1.1) short, single and long floats as well as doubles
+  (1.2) ratios and complex numbers
+  (1.3) vectors of bits
+I am in the process of making the code to support those work in the Standard
+Lisp version. The consequence is a marginal slow-down in some parts of (eg)
+generic arithmetic. However Common Lisp tends to default to single precision
+floats and that would be unacceptable for Standard Lisp.
+  (1.4) characters
+  (1.5) non-simple strings
+  (1.6) multi-dimensional arrays, offset arrays and other messy things
+  (1.7) the Common Lisp Object system
+I view these as either gratuitous complication, as clashing with Standard Lisp
+usage in a way that would eb hard to resolve or just too much work to support.
+
+(2) Multiple values, keyword arguments, local declarations, lexical scopes
+I probably now understand how to make an implementation of multiple values that
+has low overhead, and so should implement it. Keyword arguments make the
+interpreter much messier but with luck the costs only arise when they are
+used. Local declarations and lexical scoping for interpreted code have bad
+effects on the complication and probably the cost of the interpreter, but
+may now count as affordable. Full support for lexical closures when functions
+are passed as values is a mess but again one I should face up to. I am not
+working on these yet but might at some stage.
+
+(3) (car nil) = (cdr nil) = nil
+In the current code the Common Lisp insistence on this leads to a pile of
+ugly code that adds at least incremental inefficiency. I can probably re-work
+things so that the cost only hits in the case that somebody performs the bad
+operation. I think if I do that it will clean up the code somewhat, but I am
+not making it a priority.
+
+(4) Common Lisp and Standard Lisp have quite different understanding of
+just what EQ, EQUAL, READ and PRINT do. It is not going to be possible or
+sensible to bring them into agreement! The fact that in Common Lisp the names
+of all the built-in functions are spelt in upper case seems truly archaic
+and ugly these days and I really do not want to support that ever.
+
+(5) The Common Lisp package system is something that is simultaneously a real
+mess and at least an improvement on having a single flat name-space. I may
+wish to enable it for everybody?
+
+(6) in Common Lisp the default standard output may be a synonym stream and
+a variety of related bits of generality there risk adding overhead to
+all uses. I have mixed feelings!
+
+(7) Full Common Lisp specifies a HUGE number of functions that Standard Lisp
+does not, from the LOOP macro, through a complicated range of operations on
+sequences, printing controlled by format strings, ... and given that for Reduce
+purposes these are really not needed the effort in implementing them would be
+pretty much a waste. Also from my perspective many of them have ugly
+specifications (eg with many keyword arguments or gratuitous, unnecessary
+generality) so they feel offensive. Eg the ability to print not just Roman
+numerals but also old-style Roman numerals in the formatting code seems
+absurd, and the arrangements for LOOP are neither really consistent with the
+rest of Common Lisp nor very clearly specified.
+
+(8) There are cases where both Common and Standard Lisp provide a facility but
+the name of the function involved is different. Where I can support both names
+I will perhaps do so. But in some cases there are name clashes. If the name
+clash is one just withing the Reduce sources I may rename functions there to
+reduce pain.
+
+Anyway my general plan is to try to reduce the number of places that the
+source code here goes "#ifdef COMMON" both to tidy things up and move slightly
+towards compatibility. However the parallel system Jlisp (the Java-coded
+Standard Lisp) is less liable to pick up these developments...
+
+                                                                ACN July 2015

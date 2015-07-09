@@ -42,7 +42,7 @@ exports chkint!*, chkrn!*, convprec, convprec!*, deg2rad!*,
         rd!:onep, rd!:plus, rd!:prep, rd!:prin, rd!:quotient,
         rd!:simp, rd!:times, rd!:zerop, rdprep1, rdqoterr, rdzchk,
         rndbfon, round!*, roundbfoff, roundbfon, roundconstants,
-        safe!-fp!-times;
+        safe!-fp!-plus, safe!-fp!-times, safe!-fp!-quot;
 
 imports !*d2q, !:difference, !:minus, !:minusp, !:zerop, abs!:, aeval,
         apply1, bf2flr, bfdiffer, bfexplode0, bfinverse, bflessp,
@@ -262,6 +262,8 @@ minprec!# := min(6,!!flprec-2);
 
 precision1(!!flprec,nil);        % Initial value = effective float prec.
 
+%  !!fleps1 seems to be a fixed value 2^(-44) always...
+
 %!!fleps1 := 1.0/float(2.0**(!:bprec!: - 6));
 !!fleps1 := 2.0**(6 - !:bprec!:);
 !!fleps2 := !!fleps1**2;
@@ -362,7 +364,8 @@ symbolic procedure rd!:plus(u,v);
 
 symbolic procedure rd!:difference(u,v);
   (if not !*!*roundbf and atom cdr u and atom cdr v
-      and (z := safe!-fp!-plus(cdr u,-cdr v)) then make!:rd z else
+      and (z := safe!-fp!-plus(cdr u, safe!-fp!-minus cdr v)) then
+       make!:rd z else
    begin scalar x,y;
       x := convprc2(u,v); y := yy!!;
       u := if not atom x then difbf(x,y) else
@@ -423,53 +426,248 @@ symbolic procedure rd!:quotient(u,v);
 
 symbolic procedure rdqoterr; error(0,"zero divisor in quotient");
 
-% symbolic procedure safe!-fp!-plus(x,y);
-%    if zerop x then y else if zerop y then x else
-%    begin scalar u;
-%       if x>0.0 and y>0.0 then
-%          if x<!!plumax and y<!!plumax then go to ret else return nil;
-%       if x<0.0 and y<0.0 then
-%         if -x<!!plumax and -y<!!plumax then go to ret else return nil;
-%       if abs x<!!plumin and abs y<!!plumin then return nil;
-%  ret: return
-%         if (u := plus2(x,y))=0.0
-%            or x>0.0 and y>0.0 or x<0.0 and y<0.0 then u
-%         else if abs u<(abs x)*!!fleps1 then 0.0 else u end;
+% There are three functions here - safe-!fp!-plus, times and quot. They
+% must be given floating point arguments and they return the sum, product
+% or quotient of the arguments. If the result would either overflow to
+% yield an IEEE infinity or underflow to yield a sub-normalised number
+% then they return nil. I observe that sometimes even if a result is
+% too small to be normalised it can be 100% accurate. I will neverthless
+% reject all cases where the result is a non-zero sub-normalised value.
+%
+% Earlier versions of these procedures where to various extents built in to
+% PSL and CSL, and were more conservative, returning nil for some calculations
+% that fall well short of underflow or overflow. The versions here now
+% insist that 64-bit IEEE arithmetic is used, and build in definite ideas
+% related to the exact range of numbers supported there. A consequence is
+% that earlier (eg) VAX and IBM360 floating point models are no longer
+% supported. Also any Lisp that used 32-bit rather than 64-bit IEEE floats
+% would be out of luck.
+%
+% A real issue for the code here is that at the time that thie is being
+% written PSL treats overflow as and error (rather than generating an
+% IEEE infinity). I wish to avoid any such errors. So in the PSL case
+% I test the values of the operands. For addition there could only be
+% overflow if signs match (so I have two sign tests as overhead). For
+% multiplication and division I compare against 2^511, which is a value
+% whose square is still within range. The overall effect is a messy split
+% on cases, but each path through it has only 3 or 4 extra arithmetic
+% operations.
 
-symbolic procedure safe!-fp!-plus(x,y);
-   if zerop x then y
-    else if zerop y then x
-    else if x>0.0 and y>0.0
-     then if x<!!plumax and y<!!plumax then plus2(x,y) else nil
-    else if x<0.0 and y<0.0
-     then if -x<!!plumax and -y<!!plumax then plus2(x,y) else nil
-    else if abs x<!!plumin and abs y<!!plumin then nil
-    else (if u=0.0 then u else if abs u<!!fleps1*abs x then 0.0 else u)
-         where u = plus2(x,y);
+% The value "-0.0" can cause trouble as regards branch cuts for complex
+% functions, or at least its handling calls for care there. So FOR NOW I
+% will set !*nonegzero to true and these primitives will then not
+% create that value, and they will cause it to turn into a +0.0 on any
+% arithmetic. That should preserve old behaviour. But I hope that people
+% will experiment with switching this flag off and when eveything works well
+% without it then it can be removed.
+%
 
-symbolic procedure safe!-fp!-times(x,y);
- if zerop x or zerop y then 0.0
- else if x=1.0 then y else if y=1.0 then x else
-   begin scalar u,v; u := abs x; v := abs y;
-      if u>=1.0 and u<=!!timmax then
-         if v<=!!timmax then go to ret else return nil;
-      if u>!!timmax then if v<=1.0 then go to ret else return nil;
-      if u<1.0 and u>=!!timmin then
-         if v>=!!timmin then go to ret else return nil;
-      if u<!!timmin and v<1.0 then return nil;
- ret: return times2(x,y) end;
+global '(!*nonegzerominus !*nonegzerotimes);
+!*nonegzerominus := nil;
+!*nonegzerotimes := t;
 
-symbolic procedure safe!-fp!-quot(x,y);
- if zerop y then rdqoterr()
- else if zerop x then 0.0 else if y=1.0 then x else
-   begin scalar u,v; u := abs x; v := abs y;
-      if u>=1.0 and u<=!!timmax then
-         if v>=!!timmin then go to ret else return nil;
-      if u>!!timmax then if v>=1.0 then go to ret else return nil;
-      if u<1.0 and u>=!!timmin then
-         if v<=!!timmax then go to ret else return nil;
-      if u<!!timmin and v>1.0 then return nil;
- ret: return quotient(x,y) end;
+symbolic procedure safe!-fp!-minus u;
+  if !*nonegzerominus and u = 0.0 then 0.0
+  else -u;
+
+#if (memq 'csl lispsystem!*)
+
+symbolic procedure safe!-fp!-plus(u, v);
+  begin
+    scalar r;
+% CSL (and Jlisp, which uses this code too) add two huge numbers an IEEE
+% infinity is generated rather than an exception.
+    r := u + v;
+% If the result was exactly 0.0 all is well. Well there is hidden delicacy
+% here in that -0.0 + -0.0 will return -0.0 (but 0.0 + -0.0 and -0.0 + 0.0
+% both return 0.0). I do not have a !*nonegzeroplus because the only way that
+% safe!-fp!-add could possibly give a -0.0 input would be if both inputs
+% had been -0.0.
+    if r = 0.0 then return r
+% If the result is sub-normalised I reject it.
+    else if r < !!minnorm and r > !!minnegnorm then return nil
+% The next test is required if behaviour is to be close to that which
+% applied prior to this version of the code, but I view it as badly
+% arbitrary and rather unsatisfactory and would like to get rid of it! The
+% scheme checks if two values had just been subtracted in such a way that
+% about 44 leading bits cancel out. In the original code this had been
+% implemented as abs r < !!fleps1*abs u where !!fleps1 has the value
+% 2.0^(-44), but the test here that sees if adding a small fraction of
+% r to u makes no difference avoids the absolute value conversions.
+% The largest possible value for the LHS arises if u is the biggest possible
+% number and v the most negative possible balue. This is still in range
+% (ie it does not overflow to give an infinity). That is a plausible reason
+% for the test having a "-" not a "+" in it.
+% I *REALLY think that returning 0.0 here rather than the value that would
+% naturally be computed is WRONG.
+    else if u - r*0.001953125 = u then return 0.0
+% I want to test if the result is infinite. To do this I subtract it
+% fr4om itself. Any finite number will lead to 0.0, but (infinity-infinity)
+% yields a NaN which is not equal to 0.0.
+    else if r-r = 0.0 then return r
+% ... the result overflowed and r was an IEEE infinity.
+    else return nil;
+  end;
+
+symbolic procedure safe!-fp!-times(u, v);
+  begin
+    scalar r;
+    r := u * v;
+% If the result is sub-normalised or zero I reject it, unless either u or
+% v was zero in which case the zero result is proper.
+    if r < !!minnorm and r > !!minnegnorm and
+       u neq 0.0 and v neq 0.0 then return nil
+    else if !*nonegzerotimes and r = 0.0 then return 0.0
+% If r is infinite than r-r evaluates to a NaN which will not be equal to
+% 0.0.
+    else if r-r = 0.0 then return r
+    else return nil;
+  end;
+
+symbolic procedure safe!-fp!-quot(u, v);
+  begin
+    scalar r;
+    if v = 0.0 then return nil
+    else if !*nonegzerotimes and u = 0.0 then return 0.0;
+    r := u / v;
+    if r < !!minnorm and r > !!minnegnorm and u neq 0.0 then return nil
+    else if r-r = 0.0 then return r
+    else return nil;
+  end;
+
+#else
+
+global '(!!maxfloatq2 !!two511 !!two513);
+
+begin
+  scalar r, w;
+% I know the numeric value I want expressed in powers of 2, so I compute
+% it here building on initial values that are small enough that I can
+% be confident that they read in exactly.
+  r := 8388608.0;
+  w := r*r*r;
+  r := r*w*w;
+  r := r*r*r;
+  r := 8.0*r*r;
+% The value I produce here is 2^53-1 times a huge power of 2 and is the
+% largest finite IEEE double precision value.
+  !!maxfloatq2 := r*(134217728.0*134217728.0-2.0);
+  r := 2.0;
+  for i := 1:9 do r := r*r;
+  !!two511 := r/2.0;
+  !!two513 := 2.0*r
+end;
+
+put('!!maxfloatq2, 'constant!?, !!maxfloatq2);
+put('!!two511, 'constant!?, !!two511);
+put('!!two513, 'constant!?, !!two513);
+
+symbolic procedure safe!-fp!-plus(u, v);
+% I can only get overflow if u and v have the same sign. If u and
+% v are normalised to start with I can only end up with a sub-normal
+% number if their signs differ. Note that both +0.0 and -0.0 count as >= 0.0
+% and so do not go through the code that checks for underflow.
+  if u < 0.0 then
+    if v < 0.0 then <<
+% I want to see if u+v > would overflow. If u and v are large then I can
+% compute u/2 and v/2 with no loss of anything (if say u/2 was sub-normal
+% it might lose accuracy here). In this case both operands are negative
+% so comparing against half the most negative possible value does the
+% checking that I need. It I pass this test it will be safe to perform
+% a simple addition.
+      if 0.5*u + 0.5*v < -!!maxfloatq2 then nil
+      else u + v >>
+    else begin
+% u and v have different signs, so adding them can not lead to overflow
+% but might result in underflow. So so the arithmetic directly and check.
+      scalar r;
+      r := u + v;
+      if r < !!minnorm and r > !!minnegnorm then return nil
+% As in the CSL case I dislike and would like to remove this next line.
+% Note that in the CSL case I only make this extra test if u and v have
+% different signs. The calculation performed can never cause an overflow!
+% This premature underflow to 0.0 just loses accuracy in a way I find
+% really disturbing, but I am leaving the behaviour here as it is for
+% compatibility with older versions of the code.
+      else if u - r*0.001953125 = u then return 0.0
+      else return r
+    end
+  else if v < 0.0 then begin
+% A second case where signs differ. When writing this I felt that the
+% duplicated code here was ugly but that adjusting the tree of tests to
+% have just one copy of this led to worse mess.
+    scalar r;
+    r := u + v;
+    if r < !!minnorm and r > !!minnegnorm then return nil
+    else if u - r*0.001953125 = u then return 0.0
+    else return r
+  end
+  else <<
+% Adding two positive values.
+    if 0.5*u + 0.5*v > !!maxfloatq2 then nil
+    else u + v >>;
+    
+symbolic procedure safe!-fp!-times(u, v);
+  begin
+% Now the real business. I will have essentially three cases, based on
+% the magnitude of the numbers.
+% (a) numbers are big and I may risk overflow.
+% (b) numbers are small and I may risk underflow.
+% (c) numbers are such that I have no great risk.
+    scalar u1, v1;
+    if !*nonegzerotimes and (u = 0.0 or v = 0.0) then return 0.0;
+    if u < 0.0 then u1 := -u else u1 := u;
+    if v < 0.0 then v1 := -v else v1 := v;
+% I now have the absolute values of the operands. I will check for all
+% potential bad cases.
+    if u1 < !!two511 then
+      if v1 < !!two511 then <<
+% Here both numbers are fairly small, so I can afford to multiply them
+% directly. Since I have filtered out multiplication by zero I can then
+% detect (gradual) underflow with a simple comparison.
+        if u1*v1 < !!minnorm and u neq 0.0 and v neq 0.0 then return nil >>
+      else <<
+% Here u is small but v is big. If I divide v by 2^511 it ends up in the
+% range 1 to 2^513, and in particular multiplying by u will not overflow.
+% Furthermore it can not underflow either because (v/2^511) is at least 1.0.
+        if u1*(v1/!!two511) >= !!two513 then return nil >>
+    else if v1 < !!two511 then <<
+% Here u is large but v is not... so similar arguments apply.
+      if (u1/!!two511)*v1 >= !!two513 then return nil >>
+    else <<
+% Finally both u and v are less than 2^511 so overflow is not possible,
+% but underflow is a risk
+      if u1*v1 < !!minnorm and u neq 0.0 and v neq 0.0 then return nil >>;
+    return u*v
+  end;
+    
+symbolic procedure safe!-fp!-quot(u, v);
+% The logic for division is essentially the same as that for multiplication.
+  if v = 0.0 then nil
+  else begin
+    scalar u1, v1;
+    if !*nonegzerotimes and u = 0.0 then return 0.0;
+    if u < 0.0 then u1 := -u else u1 := u;
+    if v < 0.0 then v1 := -v else v1 := u;
+% I now have the absolute values of the operands.
+    if u1 < !!two511 then
+      if v1 > 1.0/!!two511 then <<
+% Divide a not huge number by a not tiny one, so quotient will not
+% overflow, but could underflow.
+        if u1/v1 < !!minnorm and u neq 0.0 then return nil >>
+      else <<
+% Here v is reasonable but v is tiny.
+        if u1/(v1*!!two511) >= !!two513 then return nil >>
+    else if v1 > 1.0/!!two511 then <<
+% Here u is large but v is not too tiny...
+      if (u1/!!two511)/v1 >= !!two513 then return nil >>
+    else <<
+% Finally u is big and v is tiny...
+      if u1/v1 < !!minnorm and u neq 0.0 then return nil >>;
+    return u/v;
+  end;
+    
+#endif % PSL
 
 symbolic procedure rd!:zerop u;
   % bfzp round!* u;
@@ -477,7 +675,7 @@ symbolic procedure rd!:zerop u;
 
 symbolic procedure rd!:minus u;
   % mkround bfminus round!* u;
-   if float!-bfp u then fl2rd (- rd2fl u) else minus!: u;
+   if float!-bfp u then fl2rd (safe!-fp!-minus rd2fl u) else minus!: u;
 
 symbolic procedure rd!:onep u;
    % We need the tolerance test since some LISPs (e.g. PSL) can print
@@ -579,7 +777,8 @@ symbolic procedure hexfloat1 w1;
   if floatp w1 then
     begin
       scalar w, s, x, m1, m2, m3, m4, n;
-      if w1 = 0.0 then return "0.0";
+      if not numberp w1 then return w1
+      else if w1 = 0.0 then return "0.0";
 % The test that follows appears to behave OK on at least CSL and PSL on
 % some Linux systems...
       if not eqn(w1, w1) then return "NaN"

@@ -1,4 +1,4 @@
-#/* sysfwin. c                      Copyright (C) 1989-2014 Codemist Ltd */
+#/* sysfwin. c                      Copyright (C) 1989-2015 Codemist Ltd */
 
 /*
  * System specific code. My objective is that this will subsume and replace
@@ -20,7 +20,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -785,11 +785,7 @@ int find_gnuplot(char *name)
 
 int32_t ok_to_grab_memory(int32_t current)
 {
-#ifdef COMMON
-    return current;
-#else
     return 3*current + 2;
-#endif
 }
 
 /*

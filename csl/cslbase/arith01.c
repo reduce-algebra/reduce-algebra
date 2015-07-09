@@ -1,4 +1,4 @@
-/*  arith01.c                      Copyright (C) 1990-2013 Codemist Ltd */
+/*  arith01.c                      Copyright (C) 1990-2015 Codemist Ltd */
 
 /*
  * Arithmetic functions.
@@ -8,7 +8,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -128,7 +128,6 @@ Lisp_Object make_three_word_bignum(int32_t a2, uint32_t a1, uint32_t a0)
     return w;
 }
 
-#ifdef COMMON
 Lisp_Object make_sfloat(double d)
 /*
  * Turn a regular floating point value into a Lisp "short float", which
@@ -143,7 +142,6 @@ Lisp_Object make_sfloat(double d)
     w.f = (float)d;
     return (w.i & ~(int32_t)0xf) + TAG_SFLOAT;
 }
-#endif
 
 Lisp_Object make_boxfloat(double a, int32_t type)
 /*
@@ -155,7 +153,6 @@ Lisp_Object make_boxfloat(double a, int32_t type)
 #ifndef COMMON
     CSL_IGNORE(type);
 #endif
-#ifdef COMMON
     switch (type)
     {
 case 0:
@@ -169,19 +166,16 @@ case TYPE_SINGLE_FLOAT:
         single_float_val(r) = (float)a;
         return r;
 default: /* TYPE_DOUBLE_FLOAT I hope */
-#endif
         r = getvector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT, SIZEOF_DOUBLE_FLOAT);
         errexit();
         double_float_val(r) = a;
         return r;
-#ifdef COMMON
 case TYPE_LONG_FLOAT:
         r = getvector(TAG_BOXFLOAT, TYPE_LONG_FLOAT, SIZEOF_LONG_FLOAT);
         errexit();
         long_float_val(r) = a;
         return r;
     }
-#endif
 }
 
 static double bignum_to_float(Lisp_Object v, int32_t h, int *xp)
@@ -223,27 +217,21 @@ double float_of_number(Lisp_Object a)
  */
 {
     if (is_fixnum(a)) return (double)int_of_fixnum(a);
-#ifdef COMMON
     else if (is_sfloat(a))
     {   Float_union w;
         w.i = a - TAG_SFLOAT;
         return (double)w.f;
     }
-#endif
     else if (is_bfloat(a))
     {   int32_t h = type_of_header(flthdr(a));
         switch (h)
         {
-#ifdef COMMON
     case TYPE_SINGLE_FLOAT:
             return (double)single_float_val(a);
-#endif
     case TYPE_DOUBLE_FLOAT:
             return double_float_val(a);
-#ifdef COMMON
     case TYPE_LONG_FLOAT:
             return (double)long_float_val(a);
-#endif
     default:
             return 0.0;
         }
@@ -257,7 +245,6 @@ double float_of_number(Lisp_Object a)
     case TYPE_BIGNUM:
             r1 = bignum_to_float(a, length_of_header(h), &x1);
             return ldexp(r1, x1);
-#ifdef COMMON
     case TYPE_RATNUM:
             {   int x2;
                 Lisp_Object na = numerator(a);
@@ -271,7 +258,6 @@ double float_of_number(Lisp_Object a)
 /* Floating point overflow can only arise in this ldexp() */
                 return ldexp(r1, x1 - x2);
             }
-#endif
     default:
 /*
  * If the value was non-numeric or a complex number I hand back 0.0,
@@ -353,7 +339,6 @@ default:
 
 #endif
 
-#ifdef COMMON
 Lisp_Object make_complex(Lisp_Object r, Lisp_Object i)
 {
     Lisp_Object v, nil = C_nil;
@@ -397,8 +382,6 @@ Lisp_Object make_ratio(Lisp_Object p, Lisp_Object q)
     return v;
 }
 
-#endif
-
 /*
  * The next bit of code seems pretty dreadful, but I think that is just
  * what generic arithmetic is all about.  The code for plus2 is written
@@ -430,8 +413,6 @@ Lisp_Object make_ratio(Lisp_Object p, Lisp_Object q)
  * total flexibility about coding various cases in-line.
  */
 
-#ifdef COMMON
-
 static Lisp_Object plusis(Lisp_Object a, Lisp_Object b)
 {
     Float_union bb;
@@ -439,7 +420,6 @@ static Lisp_Object plusis(Lisp_Object a, Lisp_Object b)
     bb.f = (float)((float)int_of_fixnum(a) + bb.f);
     return (bb.i & ~(int32_t)0xf) + TAG_SFLOAT;
 }
-#endif
 
 /*
  * Bignums are represented as vectors where the most significant 32-bit
@@ -577,7 +557,6 @@ static Lisp_Object plusib(Lisp_Object a, Lisp_Object b)
     }
 }
 
-#ifdef COMMON
 static Lisp_Object plusir(Lisp_Object a, Lisp_Object b)
 /*
  * fixnum and ratio, but also valid for bignum and ratio.
@@ -610,7 +589,6 @@ static Lisp_Object plusic(Lisp_Object a, Lisp_Object b)
  */
     return make_complex(a, imag_part(b));
 }
-#endif
 
 static Lisp_Object plusif(Lisp_Object a, Lisp_Object b)
 /*
@@ -621,7 +599,6 @@ static Lisp_Object plusif(Lisp_Object a, Lisp_Object b)
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
-#ifdef COMMON
 #define plussi(a, b) plusis(b, a)
 
 #define plussb(a, b) plusbs(b, a)
@@ -629,8 +606,6 @@ static Lisp_Object plusif(Lisp_Object a, Lisp_Object b)
 #define plussr(a, b) plusrs(b, a)
 
 #define plussc(a, b) plusic(a, b)
-
-#endif
 
 static Lisp_Object plussf(Lisp_Object a, Lisp_Object b)
 /*
@@ -644,15 +619,11 @@ static Lisp_Object plussf(Lisp_Object a, Lisp_Object b)
 
 #define plusbi(a, b) plusib(b, a)
 
-#ifdef COMMON
-
 static Lisp_Object plusbs(Lisp_Object a, Lisp_Object b)
 {
     double d = float_of_number(a) + float_of_number(b);
     return make_sfloat(d);
 }
-
-#endif
 
 Lisp_Object lengthen_by_one_bit(Lisp_Object a, int32_t msd)
 /*
@@ -861,15 +832,12 @@ static Lisp_Object plusbb(Lisp_Object a, Lisp_Object b)
     }
 }
 
-#ifdef COMMON
 #define plusbr(a, b) plusir(a, b)
 
 #define plusbc(a, b) plusic(a, b)
-#endif
 
 #define plusbf(a, b) plussf(a, b)
 
-#ifdef COMMON
 #define plusri(a, b) plusir(b, a)
 
 #define plusrs(a, b) plusbs(a, b)
@@ -971,21 +939,16 @@ static Lisp_Object pluscc(Lisp_Object a, Lisp_Object b)
 }
 
 #define pluscf(a, b) plusfc(b, a)
-#endif
 
 #define plusfi(a, b) plusif(b, a)
 
-#ifdef COMMON
 #define plusfs(a, b) plussf(b, a)
-#endif
 
 #define plusfb(a, b) plusbf(b, a)
 
-#ifdef COMMON
 #define plusfr(a, b) plusrf(b, a)
 
 #define plusfc(a, b) plusic(a, b)
-#endif
 
 static Lisp_Object plusff(Lisp_Object a, Lisp_Object b)
 /*
@@ -994,25 +957,19 @@ static Lisp_Object plusff(Lisp_Object a, Lisp_Object b)
  * messing about.
  */
 {
-#ifdef COMMON
     int32_t ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
-#endif
     double d;
 /*
  * This is written as a declaration followed by a separate assignment to
  * d because I hit a compiler bug on a VAX once otherwise.
  */
     d = float_of_number(a) + float_of_number(b);
-#ifdef COMMON
     if (ha == TYPE_LONG_FLOAT || hb == TYPE_LONG_FLOAT)
         ha = TYPE_LONG_FLOAT;
     else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
         ha = TYPE_DOUBLE_FLOAT;
     else ha = TYPE_SINGLE_FLOAT;
     return make_boxfloat(d, ha);
-#else
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
-#endif
 }
 
 /*
@@ -1102,22 +1059,18 @@ case TAG_FIXNUM:
                 if (t == 0 || t == fix_mask) return fixnum_of_int(r);
                 else return make_one_word_bignum(r);
             }
-#ifdef COMMON
     case TAG_SFLOAT:
             return plusis(a, b);
-#endif
     case TAG_NUMBERS:
             {   int32_t hb = type_of_header(numhdr(b));
                 switch (hb)
                 {
         case TYPE_BIGNUM:
                 return plusib(a, b);
-#ifdef COMMON
         case TYPE_RATNUM:
                 return plusir(a, b);
         case TYPE_COMPLEX_NUM:
                 return plusic(a, b);
-#endif
         default:
                 return aerror1("bad arg for plus", b);
                 }
@@ -1127,7 +1080,6 @@ case TAG_FIXNUM:
     default:
             return aerror1("bad arg for plus",  b);
         }
-#ifdef COMMON
 case TAG_SFLOAT:
         switch (b & TAG_BITS)
         {
@@ -1159,7 +1111,6 @@ case TAG_SFLOAT:
     default:
             return aerror1("bad arg for plus",  b);
         }
-#endif
 case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -1169,22 +1120,18 @@ case TAG_NUMBERS:
                 {
             case TAG_FIXNUM:
                     return plusbi(a, b);
-#ifdef COMMON
             case TAG_SFLOAT:
                     return plusbs(a, b);
-#endif
             case TAG_NUMBERS:
                     {   int32_t hb = type_of_header(numhdr(b));
                         switch (hb)
                         {
                 case TYPE_BIGNUM:
                         return plusbb(a, b);
-#ifdef COMMON
                 case TYPE_RATNUM:
                         return plusbr(a, b);
                 case TYPE_COMPLEX_NUM:
                         return plusbc(a, b);
-#endif
                 default:
                         return aerror1("bad arg for plus",  b);
                         }
@@ -1194,7 +1141,6 @@ case TAG_NUMBERS:
             default:
                     return aerror1("bad arg for plus",  b);
                 }
-#ifdef COMMON
     case TYPE_RATNUM:
                 switch (b & TAG_BITS)
                 {
@@ -1247,7 +1193,6 @@ case TAG_NUMBERS:
             default:
                     return aerror1("bad arg for plus",  b);
                 }
-#endif
     default:    return aerror1("bad arg for plus",  a);
             }
         }
@@ -1256,22 +1201,18 @@ case TAG_BOXFLOAT:
         {
     case TAG_FIXNUM:
             return plusfi(a, b);
-#ifdef COMMON
     case TAG_SFLOAT:
             return plusfs(a, b);
-#endif
     case TAG_NUMBERS:
             {   int32_t hb = type_of_header(numhdr(b));
                 switch (hb)
                 {
         case TYPE_BIGNUM:
                 return plusfb(a, b);
-#ifdef COMMON
         case TYPE_RATNUM:
                 return plusfr(a, b);
         case TYPE_COMPLEX_NUM:
                 return plusfc(a, b);
-#endif
         default:
                 return aerror1("bad arg for plus",  b);
                 }

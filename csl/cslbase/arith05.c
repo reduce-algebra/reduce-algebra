@@ -1,4 +1,4 @@
-/*  arith05.c                         Copyright (C) 1990-2008 Codemist Ltd */
+/*  arith05.c                         Copyright (C) 1990-2015 Codemist Ltd */
 
 /*
  * Arithmetic functions.
@@ -6,7 +6,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -166,18 +166,15 @@ uint32_t Idiv10_9(uint32_t *qp, uint32_t high, uint32_t low)
  * despite the vast cost thereof.
  */
 
-#ifdef COMMON
 static CSLbool lesseqis(Lisp_Object a, Lisp_Object b)
 {
     Float_union bb;
     bb.i = b - TAG_SFLOAT;
     return (double)int_of_fixnum(a) <= (double)bb.f;
 }
-#endif
 
 #define lesseqib(a, b) lesspib(a, b)
 
-#ifdef COMMON
 static CSLbool lesseqir(Lisp_Object a, Lisp_Object b)
 {
 /*
@@ -188,11 +185,9 @@ static CSLbool lesseqir(Lisp_Object a, Lisp_Object b)
     pop(b);
     return lesseq2(a, b);
 }
-#endif
 
 #define lesseqif(a, b) ((double)int_of_fixnum(a) <= float_of_number(b))
 
-#ifdef COMMON
 static CSLbool lesseqsi(Lisp_Object a, Lisp_Object b)
 {
     Float_union aa;
@@ -220,18 +215,15 @@ static CSLbool lesseqsf(Lisp_Object a, Lisp_Object b)
     aa.i = a - TAG_SFLOAT;
     return (double)aa.f <= float_of_number(b);
 }
-#endif
 
 #define lesseqbi(a, b) lesspbi(a, b)
 
-#ifdef COMMON
 static CSLbool lesseqbs(Lisp_Object a, Lisp_Object b)
 {
     Float_union bb;
     bb.i = b - TAG_SFLOAT;
     return !lesspdb((double)bb.f, a);
 }
-#endif
 
 static CSLbool lesseqbb(Lisp_Object a, Lisp_Object b)
 {
@@ -269,7 +261,6 @@ static CSLbool lesseqbb(Lisp_Object a, Lisp_Object b)
 
 #define lesseqbf(a, b) (!lesspdb(float_of_number(b), a))
 
-#ifdef COMMON
 static CSLbool lesseqri(Lisp_Object a, Lisp_Object b)
 {
     push(numerator(a));
@@ -301,18 +292,14 @@ static CSLbool lesseqrr(Lisp_Object a, Lisp_Object b)
 
 #define lesseqrf(a, b) (!lesspdr(float_of_number(b), a))
 
-#endif
-
 #define lesseqfi(a, b) (float_of_number(a) <= (double)int_of_fixnum(b))
 
-#ifdef COMMON
 static CSLbool lesseqfs(Lisp_Object a, Lisp_Object b)
 {
     Float_union bb;
     bb.i = b - TAG_SFLOAT;
     return float_of_number(a) <= (double)bb.f;
 }
-#endif
 
 #define lesseqfb(a, b) (!lesspbd(b, float_of_number(a)))
 
@@ -338,20 +325,16 @@ case TAG_FIXNUM:
     case TAG_FIXNUM:
 /* For fixnums the comparison can be done directly */
             return ((int32_t)a <= (int32_t)b);
-#ifdef COMMON
     case TAG_SFLOAT:
             return lesseqis(a, b);
-#endif
     case TAG_NUMBERS:
             {   int32_t hb = type_of_header(numhdr(b));
                 switch (hb)
                 {
         case TYPE_BIGNUM:
                 return lesseqib(a, b);
-#ifdef COMMON
         case TYPE_RATNUM:
                 return lesseqir(a, b);
-#endif
         default:
                 return (CSLbool)aerror2("bad arg for leq", a, b);
                 }
@@ -361,7 +344,6 @@ case TAG_FIXNUM:
     default:
             return (CSLbool)aerror2("bad arg for leq", a, b);
         }
-#ifdef COMMON
 case TAG_SFLOAT:
         switch (b & TAG_BITS)
         {
@@ -390,7 +372,6 @@ case TAG_SFLOAT:
     default:
             return (CSLbool)aerror2("bad arg for leq", a, b);
         }
-#endif
 case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -400,20 +381,16 @@ case TAG_NUMBERS:
                 {
             case TAG_FIXNUM:
                     return lesseqbi(a, b);
-#ifdef COMMON
             case TAG_SFLOAT:
                     return lesseqbs(a, b);
-#endif
             case TAG_NUMBERS:
                     {   int32_t hb = type_of_header(numhdr(b));
                         switch (hb)
                         {
                 case TYPE_BIGNUM:
                         return lesseqbb(a, b);
-#ifdef COMMON
                 case TYPE_RATNUM:
                         return lesseqbr(a, b);
-#endif
                 default:
                         return (CSLbool)aerror2("bad arg for leq", a, b);
                         }
@@ -423,7 +400,6 @@ case TAG_NUMBERS:
             default:
                     return (CSLbool)aerror2("bad arg for leq", a, b);
                 }
-#ifdef COMMON
     case TYPE_RATNUM:
                 switch (b & TAG_BITS)
                 {
@@ -448,7 +424,6 @@ case TAG_NUMBERS:
             default:
                     return (CSLbool)aerror2("bad arg for leq", a, b);
                 }
-#endif
     default:    return (CSLbool)aerror2("bad arg for leq", a, b);
             }
         }
@@ -457,20 +432,16 @@ case TAG_BOXFLOAT:
         {
     case TAG_FIXNUM:
             return lesseqfi(a, b);
-#ifdef COMMON
     case TAG_SFLOAT:
             return lesseqfs(a, b);
-#endif
     case TAG_NUMBERS:
             {   int32_t hb = type_of_header(numhdr(b));
                 switch (hb)
                 {
         case TYPE_BIGNUM:
                 return lesseqfb(a, b);
-#ifdef COMMON
         case TYPE_RATNUM:
                 return lesseqfr(a, b);
-#endif
         default:
                 return (CSLbool)aerror2("bad arg for leq", a, b);
                 }

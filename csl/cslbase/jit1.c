@@ -1,4 +1,4 @@
-/* jit1.c                      Copyright (C) 2006-2008, Codemist Ltd */
+/* jit1.c                      Copyright (C) 2006-2015, Codemist Ltd */
 /*                                                and J O'Connell    */
 
 /*
@@ -10,7 +10,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -92,7 +92,7 @@ int set_jit_mem(char *jitcode)
     return 0;
 }                                    
 
-Lisp_Object MS_CDECL jitcompileme0(Lisp_Object def, int nargs, ...)
+Lisp_Object jitcompileme0(Lisp_Object def, int nargs, ...)
 {
     Lisp_Object name = name_from(def);
     char *jitcode;
@@ -157,7 +157,7 @@ Lisp_Object jitcompileme2(Lisp_Object def, Lisp_Object a, Lisp_Object b)
     return qfn2(name)(qenv(name), a, b);
 }
 
-Lisp_Object MS_CDECL jitcompileme3(Lisp_Object def, int nargs, ...)
+Lisp_Object jitcompileme3(Lisp_Object def, int nargs, ...)
 {
     Lisp_Object name = name_from(def); 
     char *jitcode;
@@ -184,7 +184,7 @@ Lisp_Object MS_CDECL jitcompileme3(Lisp_Object def, int nargs, ...)
     return qfnn(name)(qenv(name), 3, a, b, c);
 }
 
-Lisp_Object MS_CDECL jitcompilemen(Lisp_Object def, int nargs, ...)
+Lisp_Object jitcompilemen(Lisp_Object def, int nargs, ...)
 {
     Lisp_Object name = name_from(def);
     va_list a;

@@ -754,12 +754,6 @@ flag('(mkquote spaces subla boundp error1),'lose);
 % to REDUCE.
 flag('(union intersection), 'lose);
 
-!#if (null (memq 'vsl lispsystem!*))
-
-flag('(safe!-fp!-plus safe!-fp!-times safe!-fp!-quot), 'lose);
-
-!#endif
-
 % I USED to flag ordp as LOSE, but there are three different definitions in
 % different places within Reduce and the LOSE mechanism is not quite
 % refined enough to allow for the single one of them that has a version

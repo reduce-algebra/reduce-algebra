@@ -954,7 +954,7 @@ void IreInit(void)
     CSL_MD5_Update((unsigned char *)"memory.u", 8);
 }
 
-static int MS_CDECL for_qsort(void const *aa, void const *bb)
+static int for_qsort(void const *aa, void const *bb)
 {
     directory_entry *a = (directory_entry *)aa,
                     *b = (directory_entry *)bb;
@@ -1391,7 +1391,7 @@ Lisp_Object Llibrary_members(Lisp_Object nil, Lisp_Object oo)
     return onevalue(r);
 }
 
-Lisp_Object MS_CDECL Llibrary_members0(Lisp_Object nil, int nargs, ...)
+Lisp_Object Llibrary_members0(Lisp_Object nil, int nargs, ...)
 /*
  * This returns a list of the modules in the first library on the current
  * search path.
@@ -2428,13 +2428,11 @@ static void unadjust_vecheap(void)
             }
             else switch (type_of_header(h))
             {
-#ifdef COMMON
         case TYPE_RATNUM:
         case TYPE_COMPLEX_NUM:
                 unadjust((Lisp_Object *)(low+CELL));
                 unadjust((Lisp_Object *)(low+2*CELL));
                 break;
-#endif
         case TYPE_HASH:
         case TYPE_SIMPLE_VEC:
         case TYPE_ARRAY:
@@ -2493,12 +2491,10 @@ static void unadjust_vecheap(void)
                 break;
         case TYPE_DOUBLE_FLOAT:
                 break;
-#ifdef COMMON
         case TYPE_SINGLE_FLOAT:
                 break;
         case TYPE_LONG_FLOAT:
                 break;
-#endif
         default:
                 break;
             }

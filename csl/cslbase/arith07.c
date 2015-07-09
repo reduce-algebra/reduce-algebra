@@ -1,4 +1,4 @@
-/*  arith07.c                         Copyright (C) 1990-2008 Codemist Ltd */
+/*  arith07.c                         Copyright (C) 1990-2015 Codemist Ltd */
 
 /*
  * Arithmetic functions.  negation plus a load of Common Lisp things
@@ -7,7 +7,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -127,9 +127,7 @@ Lisp_Object negateb(Lisp_Object a)
 
 Lisp_Object negate(Lisp_Object a)
 {
-#ifdef COMMON
     Lisp_Object nil;  /* needed for errexit() */
-#endif
     switch ((int)a & TAG_BITS)
     {
 case TAG_FIXNUM:
@@ -141,21 +139,18 @@ case TAG_FIXNUM:
             if (aa != 0x08000000) return fixnum_of_int(aa);
             else return make_one_word_bignum(aa);
         }
-#ifdef COMMON
 case TAG_SFLOAT:
         {   Float_union aa;
             aa.i = a - TAG_SFLOAT;
             aa.f = (float) (-aa.f);
             return (aa.i & ~(int32_t)0xf) + TAG_SFLOAT;
         }
-#endif
 case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {
     case TYPE_BIGNUM:
                 return negateb(a);
-#ifdef COMMON
     case TYPE_RATNUM:
                 {   Lisp_Object n = numerator(a),
                                 d = denominator(a);
@@ -178,7 +173,6 @@ case TAG_NUMBERS:
                     errexit();
                     return make_complex(r, i);
                 }
-#endif
     default:
                 return aerror1("bad arg for minus",  a);
             }
@@ -216,15 +210,26 @@ default:
 #define _fp_normalize(high, low)                                          \
     {   double temp;           /* access to representation     */         \
         temp = high;           /* take original number         */         \
-        ((int32_t *)&temp)[current_fp_rep & FP_WORD_ORDER] = 0;             \
+        ((int32_t *)&temp)[current_fp_rep & FP_WORD_ORDER] = 0;           \
                                /* make low part of mantissa 0  */         \
         low += (high - temp);  /* add into low-order result    */         \
         high = temp;                                                      \
     }
 
-#ifdef COMMON
+/*
+ * A modern C system will provide a datatype "complex double" which
+ * will (I hope) provide direct implementations of some things I need
+ * here. However in the end I may prefer not to use it because for
+ * real floating point I am using crlibm that implements correctly
+ * rounded and hence consistent across all platforms values. If I use
+ * that as a basis for my complex code I will at least get bit-for-bit
+ * identical results everywhere even if I do not manage to achieve
+ * correctly rounded last-bit performance in all cases.
+ * log, sqrt and all the inverse trig functions here need careful review
+ * as to their treatment of -0.0 on branch-cuts!
+ */
 
-double MS_CDECL Cabs(Complex z)
+double Cabs(Complex z)
 {
 /*
  * Obtain the absolute value of a complex number - note that the main
@@ -253,7 +258,7 @@ double MS_CDECL Cabs(Complex z)
     return scale * sqrt(x*x + y*y);
 }
 
-Complex MS_CDECL Ccos(Complex z)
+Complex Ccos(Complex z)
 {
     double x = z.real, y = z.imag;
 /*
@@ -344,7 +349,7 @@ int _reduced_exp(double x, double *r)
     return 11*n;
 }
 
-Complex MS_CDECL Cexp(Complex z)
+Complex Cexp(Complex z)
 {
     double x = z.real, y = z.imag;
 /*
@@ -377,7 +382,7 @@ Complex MS_CDECL Cexp(Complex z)
     }
 }
 
-Complex MS_CDECL Cln(Complex z)
+Complex Cln(Complex z)
 {
     double x = z.real, y = z.imag;
 /*
@@ -742,7 +747,7 @@ static void extended_log(int k, double a, double b,
 }
 
 
-Complex MS_CDECL Cpow(Complex z1, Complex z2)
+Complex Cpow(Complex z1, Complex z2)
 {
     double a = z1.real, b = z1.imag,
            c = z2.real, d = z2.imag;
@@ -895,7 +900,5 @@ case 3: cost = sw;  sint = -cw; break;
 /*
  * End of complex-to-complex-power code.
  */
-
-#endif
 
 /* end of arith07.c */

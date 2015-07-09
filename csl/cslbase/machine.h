@@ -61,16 +61,6 @@
 #endif
 #endif
 
-
-#ifndef MS_CDECL
-#ifdef _MSC_VER
-#  define MS_CDECL __cdecl
-#else
-#  define MS_CDECL
-#endif
-#endif
-
-
 #ifdef WIN32
 #  if defined WIN64 || defined __WIN64__
 #     define OPSYS           "win64"

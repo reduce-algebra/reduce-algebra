@@ -108,10 +108,10 @@
 (setq !!timmax 4.74037595405459e+153)
 (setq !!timmin 2.1095373229726e-154)
 
-(symbol!-set!-env 'safe!-fp!-plus '(!!fleps1 !!plumax . !!plumin))
-(symbol!-set!-env 'safe!-fp!-pl '(!!plumax . !!plumin))
-(symbol!-set!-env 'safe!-fp!-times '(!!timmax . !!timmin))
-(symbol!-set!-env 'safe!-fp!-quot '(!!timmax . !!timmin))
+%(symbol!-set!-env 'safe!-fp!-plus '(!!fleps1 !!plumax . !!plumin))
+%(symbol!-set!-env 'safe!-fp!-pl '(!!plumax . !!plumin))
+%(symbol!-set!-env 'safe!-fp!-times '(!!timmax . !!timmin))
+%(symbol!-set!-env 'safe!-fp!-quot '(!!timmax . !!timmin))
 
 (cond ((null (flagp 'printprompt 'lose))
        (de printprompt (u) nil)))

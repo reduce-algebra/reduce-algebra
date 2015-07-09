@@ -130,21 +130,21 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am__bootstrapreduce_SOURCES_DIST = arith01.c arith02.c arith03.c \
 	arith04.c arith05.c arith06.c arith07.c arith08.c arith09.c \
-	arith10.c arith11.c arith12.c bytes1.c char.c cslmpi.c eval1.c \
-	eval2.c eval3.c eval4.c fns1.c fns2.c fns3.c print.c cslread.c \
-	restart.c sysfwin.c csl.c fasl.c gc.c preserve.c fwin.c \
-	termed.c wxfwin.c wxterminal.cpp jit1.c jit2.c jit3.c jitx86.c \
-	x86defs.c wstring.c textdefs.c prefix.c operands.c insts.c \
-	instructions.c distorm.c decoder.c stubs.c
+	arith10.c arith11.c arith12.c arith13.c bytes1.c char.c \
+	cslmpi.c eval1.c eval2.c eval3.c eval4.c fns1.c fns2.c fns3.c \
+	print.c cslread.c restart.c sysfwin.c csl.c fasl.c gc.c \
+	preserve.c fwin.c termed.c wxfwin.c wxterminal.cpp jit1.c \
+	jit2.c jit3.c jitx86.c x86defs.c wstring.c textdefs.c prefix.c \
+	operands.c insts.c instructions.c distorm.c decoder.c stubs.c
 am__objects_1 = arith01.$(OBJEXT) arith02.$(OBJEXT) arith03.$(OBJEXT) \
 	arith04.$(OBJEXT) arith05.$(OBJEXT) arith06.$(OBJEXT) \
 	arith07.$(OBJEXT) arith08.$(OBJEXT) arith09.$(OBJEXT) \
 	arith10.$(OBJEXT) arith11.$(OBJEXT) arith12.$(OBJEXT) \
-	bytes1.$(OBJEXT) char.$(OBJEXT) cslmpi.$(OBJEXT) \
-	eval1.$(OBJEXT) eval2.$(OBJEXT) eval3.$(OBJEXT) \
-	eval4.$(OBJEXT) fns1.$(OBJEXT) fns2.$(OBJEXT) fns3.$(OBJEXT) \
-	print.$(OBJEXT) cslread.$(OBJEXT) restart.$(OBJEXT) \
-	sysfwin.$(OBJEXT)
+	arith13.$(OBJEXT) bytes1.$(OBJEXT) char.$(OBJEXT) \
+	cslmpi.$(OBJEXT) eval1.$(OBJEXT) eval2.$(OBJEXT) \
+	eval3.$(OBJEXT) eval4.$(OBJEXT) fns1.$(OBJEXT) fns2.$(OBJEXT) \
+	fns3.$(OBJEXT) print.$(OBJEXT) cslread.$(OBJEXT) \
+	restart.$(OBJEXT) sysfwin.$(OBJEXT)
 am__objects_2 = csl.$(OBJEXT) fasl.$(OBJEXT) gc.$(OBJEXT) \
 	preserve.$(OBJEXT)
 @fox_FALSE@@wx_FALSE@am__objects_3 = fwin.$(OBJEXT) termed.$(OBJEXT)
@@ -163,8 +163,8 @@ bootstrapreduce_OBJECTS = $(am_bootstrapreduce_OBJECTS)
 am__DEPENDENCIES_1 =
 am__csl_SOURCES_DIST = arith01.c arith02.c arith03.c arith04.c \
 	arith05.c arith06.c arith07.c arith08.c arith09.c arith10.c \
-	arith11.c arith12.c bytes1.c char.c cslmpi.c eval1.c eval2.c \
-	eval3.c eval4.c fns1.c fns2.c fns3.c print.c cslread.c \
+	arith11.c arith12.c arith13.c bytes1.c char.c cslmpi.c eval1.c \
+	eval2.c eval3.c eval4.c fns1.c fns2.c fns3.c print.c cslread.c \
 	restart.c sysfwin.c csl.c fasl.c gc.c preserve.c fwin.c \
 	termed.c wxfwin.c wxterminal.cpp jit1.c jit2.c jit3.c jitx86.c \
 	x86defs.c wstring.c textdefs.c prefix.c operands.c insts.c \
@@ -175,11 +175,12 @@ am__objects_6 = csl-arith01.$(OBJEXT) csl-arith02.$(OBJEXT) \
 	csl-arith07.$(OBJEXT) csl-arith08.$(OBJEXT) \
 	csl-arith09.$(OBJEXT) csl-arith10.$(OBJEXT) \
 	csl-arith11.$(OBJEXT) csl-arith12.$(OBJEXT) \
-	csl-bytes1.$(OBJEXT) csl-char.$(OBJEXT) csl-cslmpi.$(OBJEXT) \
-	csl-eval1.$(OBJEXT) csl-eval2.$(OBJEXT) csl-eval3.$(OBJEXT) \
-	csl-eval4.$(OBJEXT) csl-fns1.$(OBJEXT) csl-fns2.$(OBJEXT) \
-	csl-fns3.$(OBJEXT) csl-print.$(OBJEXT) csl-cslread.$(OBJEXT) \
-	csl-restart.$(OBJEXT) csl-sysfwin.$(OBJEXT)
+	csl-arith13.$(OBJEXT) csl-bytes1.$(OBJEXT) csl-char.$(OBJEXT) \
+	csl-cslmpi.$(OBJEXT) csl-eval1.$(OBJEXT) csl-eval2.$(OBJEXT) \
+	csl-eval3.$(OBJEXT) csl-eval4.$(OBJEXT) csl-fns1.$(OBJEXT) \
+	csl-fns2.$(OBJEXT) csl-fns3.$(OBJEXT) csl-print.$(OBJEXT) \
+	csl-cslread.$(OBJEXT) csl-restart.$(OBJEXT) \
+	csl-sysfwin.$(OBJEXT)
 am__objects_7 = csl-csl.$(OBJEXT) csl-fasl.$(OBJEXT) csl-gc.$(OBJEXT) \
 	csl-preserve.$(OBJEXT)
 @fox_FALSE@@wx_FALSE@am__objects_8 = csl-fwin.$(OBJEXT) \
@@ -211,8 +212,8 @@ am_fwindemo_OBJECTS = fwindemo.$(OBJEXT) $(am__objects_3)
 fwindemo_OBJECTS = $(am_fwindemo_OBJECTS)
 am__reduce_SOURCES_DIST = arith01.c arith02.c arith03.c arith04.c \
 	arith05.c arith06.c arith07.c arith08.c arith09.c arith10.c \
-	arith11.c arith12.c bytes1.c char.c cslmpi.c eval1.c eval2.c \
-	eval3.c eval4.c fns1.c fns2.c fns3.c print.c cslread.c \
+	arith11.c arith12.c arith13.c bytes1.c char.c cslmpi.c eval1.c \
+	eval2.c eval3.c eval4.c fns1.c fns2.c fns3.c print.c cslread.c \
 	restart.c sysfwin.c csl.c fasl.c gc.c preserve.c fwin.c \
 	termed.c wxfwin.c wxterminal.cpp jit1.c jit2.c jit3.c jitx86.c \
 	x86defs.c wstring.c textdefs.c prefix.c operands.c insts.c \
@@ -229,13 +230,14 @@ am__objects_11 = reduce-arith01.$(OBJEXT) reduce-arith02.$(OBJEXT) \
 	reduce-arith07.$(OBJEXT) reduce-arith08.$(OBJEXT) \
 	reduce-arith09.$(OBJEXT) reduce-arith10.$(OBJEXT) \
 	reduce-arith11.$(OBJEXT) reduce-arith12.$(OBJEXT) \
-	reduce-bytes1.$(OBJEXT) reduce-char.$(OBJEXT) \
-	reduce-cslmpi.$(OBJEXT) reduce-eval1.$(OBJEXT) \
-	reduce-eval2.$(OBJEXT) reduce-eval3.$(OBJEXT) \
-	reduce-eval4.$(OBJEXT) reduce-fns1.$(OBJEXT) \
-	reduce-fns2.$(OBJEXT) reduce-fns3.$(OBJEXT) \
-	reduce-print.$(OBJEXT) reduce-cslread.$(OBJEXT) \
-	reduce-restart.$(OBJEXT) reduce-sysfwin.$(OBJEXT)
+	reduce-arith13.$(OBJEXT) reduce-bytes1.$(OBJEXT) \
+	reduce-char.$(OBJEXT) reduce-cslmpi.$(OBJEXT) \
+	reduce-eval1.$(OBJEXT) reduce-eval2.$(OBJEXT) \
+	reduce-eval3.$(OBJEXT) reduce-eval4.$(OBJEXT) \
+	reduce-fns1.$(OBJEXT) reduce-fns2.$(OBJEXT) \
+	reduce-fns3.$(OBJEXT) reduce-print.$(OBJEXT) \
+	reduce-cslread.$(OBJEXT) reduce-restart.$(OBJEXT) \
+	reduce-sysfwin.$(OBJEXT)
 am__objects_12 = reduce-csl.$(OBJEXT) reduce-fasl.$(OBJEXT) \
 	reduce-gc.$(OBJEXT) reduce-preserve.$(OBJEXT)
 @fox_FALSE@@wx_FALSE@am__objects_13 = reduce-fwin.$(OBJEXT) \
@@ -631,7 +633,7 @@ RM = rm
 @wx_TRUE@bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT) wxpsl$(EXEEXT)
 core_sources = arith01.c arith02.c arith03.c arith04.c arith05.c \
 		arith06.c arith07.c arith08.c arith09.c arith10.c arith11.c \
-		arith12.c bytes1.c char.c cslmpi.c eval1.c eval2.c \
+		arith12.c arith13.c bytes1.c char.c cslmpi.c eval1.c eval2.c \
 		eval3.c eval4.c fns1.c fns2.c fns3.c \
 		print.c cslread.c restart.c sysfwin.c
 
@@ -1148,6 +1150,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/arith10.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/arith11.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/arith12.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/arith13.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bytes1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/char.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/charmetrics.Po@am__quote@
@@ -1163,6 +1166,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-arith10.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-arith11.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-arith12.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-arith13.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-bytes1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-char.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-csl.Po@am__quote@
@@ -1240,6 +1244,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-arith10.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-arith11.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-arith12.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-arith13.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-bytes1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-char.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-csl.Po@am__quote@
@@ -1535,6 +1540,20 @@ csl-arith12.obj: arith12.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='arith12.c' object='csl-arith12.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o csl-arith12.obj `if test -f 'arith12.c'; then $(CYGPATH_W) 'arith12.c'; else $(CYGPATH_W) '$(srcdir)/arith12.c'; fi`
+
+csl-arith13.o: arith13.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT csl-arith13.o -MD -MP -MF $(DEPDIR)/csl-arith13.Tpo -c -o csl-arith13.o `test -f 'arith13.c' || echo '$(srcdir)/'`arith13.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/csl-arith13.Tpo $(DEPDIR)/csl-arith13.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='arith13.c' object='csl-arith13.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o csl-arith13.o `test -f 'arith13.c' || echo '$(srcdir)/'`arith13.c
+
+csl-arith13.obj: arith13.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT csl-arith13.obj -MD -MP -MF $(DEPDIR)/csl-arith13.Tpo -c -o csl-arith13.obj `if test -f 'arith13.c'; then $(CYGPATH_W) 'arith13.c'; else $(CYGPATH_W) '$(srcdir)/arith13.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/csl-arith13.Tpo $(DEPDIR)/csl-arith13.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='arith13.c' object='csl-arith13.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o csl-arith13.obj `if test -f 'arith13.c'; then $(CYGPATH_W) 'arith13.c'; else $(CYGPATH_W) '$(srcdir)/arith13.c'; fi`
 
 csl-bytes1.o: bytes1.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT csl-bytes1.o -MD -MP -MF $(DEPDIR)/csl-bytes1.Tpo -c -o csl-bytes1.o `test -f 'bytes1.c' || echo '$(srcdir)/'`bytes1.c
@@ -2195,6 +2214,20 @@ reduce-arith12.obj: arith12.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='arith12.c' object='reduce-arith12.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reduce-arith12.obj `if test -f 'arith12.c'; then $(CYGPATH_W) 'arith12.c'; else $(CYGPATH_W) '$(srcdir)/arith12.c'; fi`
+
+reduce-arith13.o: arith13.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT reduce-arith13.o -MD -MP -MF $(DEPDIR)/reduce-arith13.Tpo -c -o reduce-arith13.o `test -f 'arith13.c' || echo '$(srcdir)/'`arith13.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/reduce-arith13.Tpo $(DEPDIR)/reduce-arith13.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='arith13.c' object='reduce-arith13.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reduce-arith13.o `test -f 'arith13.c' || echo '$(srcdir)/'`arith13.c
+
+reduce-arith13.obj: arith13.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT reduce-arith13.obj -MD -MP -MF $(DEPDIR)/reduce-arith13.Tpo -c -o reduce-arith13.obj `if test -f 'arith13.c'; then $(CYGPATH_W) 'arith13.c'; else $(CYGPATH_W) '$(srcdir)/arith13.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/reduce-arith13.Tpo $(DEPDIR)/reduce-arith13.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='arith13.c' object='reduce-arith13.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reduce-arith13.obj `if test -f 'arith13.c'; then $(CYGPATH_W) 'arith13.c'; else $(CYGPATH_W) '$(srcdir)/arith13.c'; fi`
 
 reduce-bytes1.o: bytes1.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT reduce-bytes1.o -MD -MP -MF $(DEPDIR)/reduce-bytes1.Tpo -c -o reduce-bytes1.o `test -f 'bytes1.c' || echo '$(srcdir)/'`bytes1.c
@@ -4156,6 +4189,7 @@ $(FOXDEPS):	$(srcdir)/../fox/CHANGED
 @crlibm_TRUE@arith10.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@arith11.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@arith12.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@arith13.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@bytes1.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@char.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@csl.$(OBJEXT):	../include/crlibm.h
@@ -4197,6 +4231,7 @@ $(FOXDEPS):	$(srcdir)/../fox/CHANGED
 @crlibm_TRUE@csl-arith10.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@csl-arith11.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@csl-arith12.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-arith13.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@csl-bytes1.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@csl-char.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@csl-csl.$(OBJEXT):	../include/crlibm.h
@@ -4238,6 +4273,7 @@ $(FOXDEPS):	$(srcdir)/../fox/CHANGED
 @crlibm_TRUE@reduce-arith10.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@reduce-arith11.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@reduce-arith12.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-arith13.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@reduce-bytes1.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@reduce-char.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@reduce-csl.$(OBJEXT):	../include/crlibm.h

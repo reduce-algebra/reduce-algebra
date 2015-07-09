@@ -1,9 +1,8 @@
-/* arith.h                         Copyright (C) Codemist Ltd, 1990-2013 */
-
+/* arith.h                         Copyright (C) Codemist Ltd, 1990-2015 */
 
 
 /**************************************************************************
- * Copyright (C) 2013, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -184,7 +183,11 @@ extern int _reduced_exp(double, double *);
 extern CSLbool lesspbi(Lisp_Object a, Lisp_Object b);
 extern CSLbool lesspib(Lisp_Object a, Lisp_Object b);
 
-#ifdef COMMON
+/*
+ * This is going to be a bit of a mess because I will want to use the C
+ * data-type "complex double" when that is available... what happens
+ * here will survive even without that.
+ */
 
 typedef struct Complex
 {
@@ -192,13 +195,11 @@ typedef struct Complex
     double imag;
 } Complex;
 
-extern Complex MS_CDECL Cln(Complex a);
-extern Complex MS_CDECL Ccos(Complex a);
-extern Complex MS_CDECL Cexp(Complex a);
-extern Complex MS_CDECL Cpow(Complex a, Complex b);
-extern double MS_CDECL Cabs(Complex a);
-
-#endif
+extern Complex Cln(Complex a);
+extern Complex Ccos(Complex a);
+extern Complex Cexp(Complex a);
+extern Complex Cpow(Complex a, Complex b);
+extern double Cabs(Complex a);
 
 #if defined HAVE_LIBPTHREAD || defined WIN32
 

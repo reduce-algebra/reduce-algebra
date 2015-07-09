@@ -189,9 +189,7 @@ typedef intptr_t Lisp_Object;
                             /* case of NIL */
 #define TAG_FIXNUM      1   /* 28-bit integers */
 #define TAG_ODDS        2   /* Char constants, BPS addresses, vechdrs etc */
-#ifdef COMMON
 #define TAG_SFLOAT      3   /* Short float, 28 bits of immediate data */
-#endif /* COMMON */
 #define TAG_SYMBOL      4   /* Symbols (maybe except for NIL) */
 #define TAG_NUMBERS     5   /* Bignum, Rational, Complex */
 #define TAG_VECTOR      6   /* Regular Lisp vectors (except BPS maybe?) */
@@ -321,9 +319,7 @@ extern Lisp_Object address_sign;  /* 0, 0x80000000 or 0x8000000000000000 */
 #define is_cons(p)   ((((int)(p)) & TAG_BITS) == TAG_CONS)
 #define is_fixnum(p) ((((int)(p)) & TAG_BITS) == TAG_FIXNUM)
 #define is_odds(p)   ((((int)(p)) & TAG_BITS) == TAG_ODDS) /* many subcases */
-#ifdef COMMON
 #define is_sfloat(p) ((((int)(p)) & TAG_BITS) == TAG_SFLOAT)
-#endif /* COMMON */
 #define is_symbol(p) ((((int)(p)) & TAG_BITS) == TAG_SYMBOL)
 #define is_numbers(p)((((int)(p)) & TAG_BITS) == TAG_NUMBERS)
 #define is_vector(p) ((((int)(p)) & TAG_BITS) == TAG_VECTOR)
@@ -434,7 +430,7 @@ typedef Lisp_Object Special_Form(Lisp_Object, Lisp_Object);
 
 typedef Lisp_Object one_args(Lisp_Object, Lisp_Object);
 typedef Lisp_Object two_args(Lisp_Object, Lisp_Object, Lisp_Object);
-typedef Lisp_Object MS_CDECL n_args(Lisp_Object, int, ...);
+typedef Lisp_Object n_args(Lisp_Object, int, ...);
 
 
 /*
@@ -511,15 +507,11 @@ typedef uintptr_t Header;
 #define header_fastget(h)   (((h) >> SYM_FASTGET_SHIFT) & 0x3f)
 
 #define TYPE_BIGNUM         0x020   /* low 2-bits = '10' for numbers */
-#ifdef COMMON
 #define TYPE_RATNUM         0x060
 #define TYPE_COMPLEX_NUM    0x0a0
 #define TYPE_SINGLE_FLOAT   0x120
-#endif /* COMMON */
 #define TYPE_DOUBLE_FLOAT   0x160
-#ifdef COMMON
 #define TYPE_LONG_FLOAT     0x1a0
-#endif /* COMMON */
 
 #ifdef MEMORY_TRACE
 #define numhdr(v) (*(Header *)memory_reference((intptr_t)((char *)(v) - \
@@ -534,7 +526,6 @@ typedef uintptr_t Header;
 #define is_numbers_header(h) (((int)(h) & 0x330) == 0x020)
 #define is_boxfloat_header(h)(((int)(h) & 0x330) == 0x120)
 
-#ifdef COMMON
 /*
  * The following tests are valid provided that n is already known to
  * have tag TAG_NUMBERS, i.e. it is a bignum, ratio or complex.
@@ -544,8 +535,6 @@ typedef uintptr_t Header;
 
 #define is_complex(n) \
     (type_of_header(numhdr(n)) == TYPE_COMPLEX_NUM)
-
-#endif /* COMMON */
 
 #define is_bignum_header(h) (type_of_header(h) == TYPE_BIGNUM)
 
@@ -622,12 +611,11 @@ typedef uintptr_t Header;
 #define delt(v, n)  (*(double *)((char *)(v) + \
                            (2*CELL-TAG_VECTOR)+(((intptr_t)(n))<<3)))
 
-#ifdef COMMON
 /*
  * Simple bit-vectors need extra information held here so that their exact
  * can be determined.  Generally headers hold length information measured
- * in bytes, so three more bits are required here. Bitvectors are not
- * supported in Standard Lisp mode.
+ * in bytes, so three more bits are required here. Bitvectors will now
+ * supported even in Standard Lisp mode.
  */
 
 #define TYPE_BITVEC1        0x030   /* subtypes encode length mod 8    */
@@ -640,7 +628,6 @@ typedef uintptr_t Header;
 #define TYPE_BITVEC8        0x3b0   /* rather than 0-7.                     */
 
 #define header_of_bitvector(h) (((h) & 0x70) == TYPE_BITVEC1)
-#endif /* COMMON */
 
 #define TYPE_STRING         0x070   /* simple character vector */
 #define TYPE_BPS            0x170   /* bytes of compiled code  */
@@ -649,11 +636,7 @@ typedef uintptr_t Header;
 #define TYPE_FOREIGN        TYPE_SPARE /* Also experimental for now */
 #define TYPE_SP             0x370   /* Encapsulated stack ptr  */
 
-#ifdef COMMON
 #define vector_holds_binary(h) (((h) & 0x80) == 0 || header_of_bitvector(h))
-#else
-#define vector_holds_binary(h) (((h) & 0x80) == 0)
-#endif
 
 #define TYPE_SIMPLE_VEC     0x0f0   /* simple general vector */
 #define TYPE_HASH           0x1f0   /* hash table */
@@ -928,13 +911,11 @@ typedef struct Symbol_Head
 
 #endif /* MEMORY_TRACE */
 
-#ifdef COMMON
 typedef union Float_union
 {
     float f;
     int32_t i;
 } Float_union;
-#endif
 
 typedef struct Big_Number
 {
@@ -960,7 +941,6 @@ typedef struct Big_Number
 #define make_bighdr(n)    (TAG_ODDS+TYPE_BIGNUM+(((intptr_t)(n))<<12))
 #define pack_hdrlength(n) (((intptr_t)(n))<<12)
 
-#ifdef COMMON
 typedef struct Rational_Number
 {
     Header header;
@@ -993,8 +973,6 @@ typedef struct Single_Float
 #define single_float_val(v) \
     (((Single_Float *)((char *)(v)-TAG_BOXFLOAT))->f.f)
 
-#endif /* COMMON */
-
 /*
  * The structures here are not actually used - because I can not get
  * as strong control of alignment as I would like. So I use macros that
@@ -1020,8 +998,6 @@ typedef struct Single_Float
 #define double_float_val(v)     (*(double *)((char *)(v) + \
                                    (8-TAG_BOXFLOAT)))
 
-#ifdef COMMON
-
 /*
  * Again I do not actually introduce the struct...
  *
@@ -1044,7 +1020,6 @@ typedef struct Single_Float
                                    (8-TAG_BOXFLOAT)))
 #define long_float_val(v)       (*(double *)((char *)(v) + \
                                    (8-TAG_BOXFLOAT)))
-#endif
 
 #define word_align_up(n) ((Lisp_Object)(((intptr_t)(n) + 3) & (-4)))
 

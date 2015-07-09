@@ -561,7 +561,7 @@ Lisp_Object Lget(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 
 #else
 
-Lisp_Object MS_CDECL Lget_3(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lget_3(Lisp_Object nil, int nargs, ...)
 {
     va_list aa;
     Lisp_Object a, b, c;
@@ -582,7 +582,7 @@ Lisp_Object Lget(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 
 #endif
 
-Lisp_Object MS_CDECL Lputprop(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lputprop(Lisp_Object nil, int nargs, ...)
 {
     va_list aa;
     Lisp_Object a, b, c;
@@ -1059,7 +1059,7 @@ static int increment_counter(Lisp_Object nil, int n)
 
 #endif
 
-Lisp_Object MS_CDECL bytecounts(Lisp_Object nil, int nargs, ...)
+Lisp_Object bytecounts(Lisp_Object nil, int nargs, ...)
 {
 #if !defined NO_BYTECOUNT || defined RECORD_GET
     int32_t i;

@@ -346,12 +346,14 @@ class LispFloat extends LispNumber
 
     boolean eqn(LispObject a) throws Exception
     {
-        return (value == a.doubleValue());
+        if (!(a instanceof LispNumber)) return false;
+        else return (value == a.doubleValue());
     }
 
     boolean neqn(LispObject a) throws Exception
     {
-        return (value != a.doubleValue());
+        if (!(a instanceof LispNumber)) return true;
+        else return (value != a.doubleValue());
     }
 
     boolean ge(LispObject a) throws Exception

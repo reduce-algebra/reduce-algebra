@@ -1,4 +1,4 @@
-/*  char.c                           Copyright (C) 1989-2014 Codemist Ltd */
+/*  char.c                           Copyright (C) 1989-2015 Codemist Ltd */
 
 /*
  * Character handling.
@@ -146,6 +146,8 @@ Lisp_Object char_to_id(int ch)
 /*
  * Characters have 3 bits of FONT, then 21 of CODE.
  * FONT information is only used in COMMON mode, if then.
+ * Indeed newer released on the Common Lisp standard give up on font
+ * as part of a character object.
  */
 
 static Lisp_Object Lchar_downcase(Lisp_Object nil, Lisp_Object a)
@@ -353,7 +355,7 @@ Lisp_Object Ldigitp(Lisp_Object nil, Lisp_Object a)
 
 #ifdef COMMON
 
-static Lisp_Object MS_CDECL Ldigit_char_n(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Ldigit_char_n(Lisp_Object nil, int nargs, ...)
 {
     va_list aa;
     Lisp_Object a, r, f;
@@ -572,7 +574,7 @@ Lisp_Object Lchar_code(Lisp_Object nil, Lisp_Object a)
     return onevalue(fixnum_of_int(code_of_char(a)));
 }
 
-static Lisp_Object MS_CDECL Lcode_charn(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lcode_charn(Lisp_Object nil, int nargs, ...)
 {
     va_list aa;
     Lisp_Object a, font;
@@ -625,7 +627,7 @@ static Lisp_Object Lint_char(Lisp_Object nil, Lisp_Object a)
     return onevalue(pack_char(0, n));
 }
 
-static Lisp_Object MS_CDECL Lmake_char(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmake_char(Lisp_Object nil, int nargs, ...)
 {
     va_list aa;
     Lisp_Object a, bits, font;
@@ -660,7 +662,7 @@ static CSLbool chartest(Lisp_Object c)
     else return NO;
 }
 
-static Lisp_Object MS_CDECL Lchar_eqn(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lchar_eqn(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object r;
@@ -694,7 +696,7 @@ static Lisp_Object Lchar_eqn_1(Lisp_Object nil, Lisp_Object a)
     return Lchar_eqn(nil, 1, a);
 }
 
-static Lisp_Object MS_CDECL Lchar_lessp(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lchar_lessp(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object r;
@@ -728,7 +730,7 @@ static Lisp_Object Lchar_lessp_1(Lisp_Object nil, Lisp_Object a)
     return Lchar_lessp(nil, 1, a);
 }
 
-static Lisp_Object MS_CDECL Lchar_greaterp(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lchar_greaterp(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object r;
@@ -762,7 +764,7 @@ static Lisp_Object Lchar_greaterp_1(Lisp_Object nil, Lisp_Object a)
     return Lchar_greaterp(nil, 1, a);
 }
 
-static Lisp_Object MS_CDECL Lchar_neq_n(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lchar_neq_n(Lisp_Object nil, int nargs, ...)
 /*
  * /= is supposed to check that NO pair of args match.
  * Because this involves multiple scanning of the vector of args it seems
@@ -802,7 +804,7 @@ static Lisp_Object Lchar_neq_1(Lisp_Object nil, Lisp_Object a)
     return Lchar_neq_n(nil, 1, a);
 }
 
-static Lisp_Object MS_CDECL Lchar_geq(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lchar_geq(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object r;
@@ -836,7 +838,7 @@ static Lisp_Object Lchar_geq_1(Lisp_Object nil, Lisp_Object a)
     return Lchar_geq(nil, 1, a);
 }
 
-static Lisp_Object MS_CDECL Lchar_leq(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lchar_leq(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object r;
@@ -889,7 +891,7 @@ static Lisp_Object casefold(Lisp_Object c)
     return onevalue(pack_char(font_of_char(c), cc));
 }
 
-static Lisp_Object MS_CDECL Lcharacter_eqn(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lcharacter_eqn(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object r;
@@ -927,7 +929,7 @@ static Lisp_Object Lcharacter_eqn_1(Lisp_Object nil, Lisp_Object a)
     return Lcharacter_eqn(nil, 1, a);
 }
 
-static Lisp_Object MS_CDECL Lcharacter_lessp(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lcharacter_lessp(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object r;
@@ -965,7 +967,7 @@ static Lisp_Object Lcharacter_lessp_1(Lisp_Object nil, Lisp_Object a)
     return Lcharacter_lessp(nil, 1, a);
 }
 
-static Lisp_Object MS_CDECL Lcharacter_greaterp(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lcharacter_greaterp(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object r;
@@ -1003,7 +1005,7 @@ static Lisp_Object Lcharacter_greaterp_1(Lisp_Object nil, Lisp_Object a)
     return Lcharacter_greaterp(nil, 1, a);
 }
 
-static Lisp_Object MS_CDECL Lcharacter_neq_n(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lcharacter_neq_n(Lisp_Object nil, int nargs, ...)
 /*
  * /= is supposed to check that NO pair of args match.
  * Because this involves multiple scanning of the vector of args it seems
@@ -1045,7 +1047,7 @@ static Lisp_Object Lcharacter_neq_1(Lisp_Object nil, Lisp_Object a)
     return Lcharacter_neq_n(nil, 1, a);
 }
 
-static Lisp_Object MS_CDECL Lcharacter_geq(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lcharacter_geq(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object r;
@@ -1083,7 +1085,7 @@ static Lisp_Object Lcharacter_geq_1(Lisp_Object nil, Lisp_Object a)
     return Lcharacter_geq(nil, 1, a);
 }
 
-static Lisp_Object MS_CDECL Lcharacter_leq(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lcharacter_leq(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object r;

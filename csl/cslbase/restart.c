@@ -55,6 +55,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include "md5.h"
+
 #ifdef HAVE_FWIN
 extern int showmathInitialised;
 #endif
@@ -354,7 +356,6 @@ int32_t new_heap_pages_count,
 
 char program_name[64] = {0};
 
-#ifndef COMMON
 #ifdef HAVE_FWIN
 
 /*
@@ -364,7 +365,6 @@ char program_name[64] = {0};
  */
 
 char **loadable_packages = NULL, **switches = NULL;
-#endif
 #endif
 
 int native_code_tag;
@@ -913,15 +913,12 @@ static void adjust(Lisp_Object *cp)
         *cp = (Lisp_Object)((char *)quadword_align_up(h) + p);
     }
     else if (is_immed_or_cons(p))
-    {
-#ifdef COMMON
-        if (is_sfloat(p))
+    {   if (is_sfloat(p))
         {   intptr_t w = flip_32(p);    /* delicate here!! */
             convert_fp_rep((void *)&w, old_fp_rep, current_fp_rep, 0);
             *cp = w;
-            continue;
+            return;
         }
-#endif
 /*
  * A further messiness here! If I am remapping from a 64 bit image to a
  * 32-bit one I will move all bps items down one word (leaving their
@@ -1330,7 +1327,7 @@ static struct entry_lookupn
     char *s;
 } entry_lookupn[entry_table_sizen];
 
-static int MS_CDECL order_lookup_entries(void const *aa, void const *bb)
+static int order_lookup_entries(void const *aa, void const *bb)
 {
 /*
  * I rely here on having entry_lookup[1,2,n] all the same shape so that
@@ -1480,7 +1477,7 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
                 *(Lisp_Object *)p = flip_32(h); /* write back header */
 /*
  * I do not know if I police it anywhere, but if one tried to mix images from
- * COMMON and plain mode the result would be a crash, if only because symbols
+ * Common and plain mode the result would be a crash, if only because symbols
  * are represented as a different length. That is because in Common Lisp mode
  * there has to be an extra field to hold the identity of the package that
  * a symbol lives in.
@@ -1517,10 +1514,8 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
  * depend on the word-length of the host machine. It seems fairly important
  * that I cover every possible sort of tag that could ever exist.
  */
-#ifdef COMMON
         case TYPE_RATNUM:
         case TYPE_COMPLEX_NUM:
-#endif
         case TYPE_HASH:
         case TYPE_SIMPLE_VEC:
         case TYPE_ARRAY:
@@ -1590,7 +1585,6 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
         case TYPE_BPS:
         case TYPE_SPARE:
         case TYPE_SP:
-#ifdef COMMON
         case TYPE_BITVEC1:
         case TYPE_BITVEC2:
         case TYPE_BITVEC3:
@@ -1600,9 +1594,8 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
         case TYPE_BITVEC7:
         case TYPE_BITVEC8:
         case TYPE_SINGLE_FLOAT:
-        case TYPE_LONG_FLOAT:
-#endif
         case TYPE_DOUBLE_FLOAT:
+        case TYPE_LONG_FLOAT:
         case TYPE_FLOAT32:
         case TYPE_FLOAT64:
                 len = doubleword_align_up(length_of_header(h));
@@ -1614,9 +1607,7 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
                 {
             case TYPE_DOUBLE_FLOAT:
             case TYPE_FLOAT64:
-#ifdef COMMON
             case TYPE_LONG_FLOAT:
-#endif
 /*
  * double precision floating point data has to remain 64-bit aligned, and so
  * when the header word shrinks the data remains where it was, with a zero
@@ -1730,7 +1721,7 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
                 *newp = flip_64(h); /* write back header */
 /*
  * I do not know if I police it anywhere, but if one tried to mix images from
- * COMMON and plain mode the result would be a crash, if only because symbols
+ * Common and plain mode the result would be a crash, if only because symbols
  * are represented as a different length. That is because in Common Lisp mode
  * there has to be an extra field to hold the identity of the package that
  * a symbol lives in.
@@ -1752,10 +1743,8 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
  * depend on the word-length of the host machine. It seems fairly important
  * that I cover every possible sort of tag that could ever exist.
  */
-#ifdef COMMON
         case TYPE_RATNUM:
         case TYPE_COMPLEX_NUM:
-#endif
         case TYPE_HASH:
         case TYPE_SIMPLE_VEC:
         case TYPE_ARRAY:
@@ -1792,10 +1781,8 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
                     oldp++;
                 }
                 break;
-#ifdef COMMON
-        case TYPE_LONG_FLOAT:
-#endif
         case TYPE_DOUBLE_FLOAT:
+        case TYPE_LONG_FLOAT:
         case TYPE_FLOAT64:
 /*
  * In these cases the representation on the 32-bit machine was
@@ -1844,7 +1831,6 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
         case TYPE_BPS:
         case TYPE_SPARE:
         case TYPE_SP:
-#ifdef COMMON
         case TYPE_BITVEC1:
         case TYPE_BITVEC2:
         case TYPE_BITVEC3:
@@ -1854,7 +1840,8 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
         case TYPE_BITVEC7:
         case TYPE_BITVEC8:
         case TYPE_SINGLE_FLOAT:
-#endif
+//        case TYPE_DOUBLE_FLOAT:
+//        case TYPE_LONG_FLOAT:
         case TYPE_FLOAT32:
 /*
  * The effects of alignment and passing here are distinctly odd. A 32-bit
@@ -2022,13 +2009,11 @@ static void adjust_vecheap(void)
             }
             else switch (type_of_header(h))
             {
-#ifdef COMMON
         case TYPE_RATNUM:
         case TYPE_COMPLEX_NUM:
                 adjust((Lisp_Object *)(low+CELL));
                 adjust((Lisp_Object *)(low+2*CELL));
                 break;
-#endif
         case TYPE_HASH:
         case TYPE_SIMPLE_VEC:
         case TYPE_ARRAY:
@@ -2086,7 +2071,6 @@ static void adjust_vecheap(void)
                 convert_fp_rep((void *)(low + 8),
                                old_fp_rep, current_fp_rep, 2);
                 break;
-#ifdef COMMON
         case TYPE_SINGLE_FLOAT:
                 convert_fp_rep((void *)(low + CELL),
                                old_fp_rep, current_fp_rep, 1);
@@ -2096,7 +2080,6 @@ static void adjust_vecheap(void)
                 convert_fp_rep((void *)(low + 8),
                                old_fp_rep, current_fp_rep, 3);
                 break;
-#endif
         case TYPE_FLOAT32:
                 for (i=CELL; i<doubleword_align_up(length_of_header(h)); i+=4)
                     convert_fp_rep((void *)(low+i),
@@ -2982,7 +2965,7 @@ setup_type const *setup_tables[] =
  */
     NULL,
     arith06_setup, arith08_setup, arith10_setup, arith12_setup,
-    char_setup, eval1_setup, eval2_setup, eval3_setup,
+    arith13_setup, char_setup, eval1_setup, eval2_setup, eval3_setup,
     funcs1_setup, funcs2_setup, funcs3_setup, print_setup,
     read_setup, mpi_setup,
     NULL
@@ -2996,7 +2979,7 @@ setup_type const *setup_tables[] =
  * performance issue.
  */
 
-static Lisp_Object MS_CDECL Lcheck_c_code(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lcheck_c_code(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object name, lc1, lc2, lc3;
     int32_t c1=-1, c2=-1, c3=-1;
@@ -3070,16 +3053,15 @@ static setup_type const restart_setup[] =
     {"mapstore",                Lmapstore, too_many_1, Lmapstore0},
     {"verbos",                  Lverbos, too_many_1, wrong_no_1},
 #ifdef COMMON
-    {"errorset",                Lerrorset1, Lerrorset2, Lerrorsetn},
     {"gc",                      Lgc, too_many_1, Lgc0},
 #else
-    {"errorset",                Lerrorset1, Lerrorset2, Lerrorsetn},
     {"reclaim",                 Lgc, too_many_1, Lgc0},
 #endif
     {"reclaim-trap",            Lreclaim_trap, too_many_1, wrong_no_1},
     {"reclaim-stack-limit",     Lreclaim_stack_limit, too_many_1, wrong_no_1},
     {"reclaim-method",          Lreclaim_method, too_many_1, wrong_no_1},
     {"resource-limit",          too_few_2, Lresource_limit2, Lresource_limitn},
+    {"errorset",                Lerrorset1, Lerrorset2, Lerrorsetn},
     {NULL,                      0, 0, 0}
 };
 
@@ -4540,7 +4522,7 @@ Lisp_Object Linstate_c_code(Lisp_Object nil, Lisp_Object name, Lisp_Object fns)
 
 static void cold_setup()
 {
-    Lisp_Object nil = C_nil;
+    Lisp_Object nil = C_nil, w;
     void *p;
     int i;
     p = vheap_pages[vheap_pages_count++] = allocate_page("vheap cold setup");
@@ -4747,19 +4729,17 @@ static void cold_setup()
     features_symbol     = make_undefined_symbol("*features*");
     qheader(cl_symbols)      |= SYM_SPECIAL_VAR;
     qheader(features_symbol) |= SYM_SPECIAL_VAR;
-    {   Lisp_Object w;
+#endif
 #define make_constant(name, value)       \
         w = make_undefined_symbol(name); \
         qheader(w) |= SYM_SPECIAL_VAR;   \
         qvalue(w) = value;
-        make_constant("most-positive-fixnum", fixnum_of_int(0x07ffffff));
-        make_constant("most-negative-fixnum", fixnum_of_int(0xf8000000));
+    make_constant("most-positive-fixnum", fixnum_of_int(0x07ffffff));
+    make_constant("most-negative-fixnum", fixnum_of_int(0xf8000000));
 /* #undef  TYPE_LONG_FLOAT                   */
 /* #define TYPE_LONG_FLOAT TYPE_DOUBLE_FLOAT */
-        make_constant("pi",
-            make_boxfloat(3.141592653589793238, TYPE_LONG_FLOAT));
-    }
-#endif
+    make_constant("pi",
+                  make_boxfloat(3.141592653589793238, TYPE_LONG_FLOAT));
     append_symbol       = make_undefined_symbol("append");
     raise_symbol        = make_undefined_symbol("*raise");
     lower_symbol        = make_undefined_symbol("*lower");
@@ -4920,6 +4900,7 @@ void set_up_functions(CSLbool restart_flag)
     create_symbols(arith08_setup, restart_flag);
     create_symbols(arith10_setup, restart_flag);
     create_symbols(arith12_setup, restart_flag);
+    create_symbols(arith13_setup, restart_flag);
     create_symbols(char_setup, restart_flag);
     create_symbols(eval1_setup, restart_flag);
     create_symbols(funcs1_setup, restart_flag);
@@ -4962,27 +4943,25 @@ void set_up_functions(CSLbool restart_flag)
 #endif
 }
 
-#ifndef COMMON
 #ifdef HAVE_FWIN
 
-static int MS_CDECL alpha1(const void *a, const void *b)
+static int alpha1(const void *a, const void *b)
 {
     return strcmp(1+*(const char **)a, 1+*(const char **)b);
 }
 
 #else
 
-static int MS_CDECL alpha0(const void *a, const void *b)
+static int alpha0(const void *a, const void *b)
 {
     return strcmp(*(const char **)a, *(const char **)b);
 }
 
 #endif
-#endif
 
 static void set_up_variables(CSLbool restart_flag)
 {
-    Lisp_Object nil = C_nil;
+    Lisp_Object nil = C_nil, w, w1;
     int i;
 #ifdef COMMON
     Lisp_Object saved_package = CP;
@@ -4999,7 +4978,7 @@ static void set_up_variables(CSLbool restart_flag)
     qvalue(output_library)  = output_directory < 0 ? nil :
                               SPID_LIBRARY + (((int32_t)output_directory)<<20);
 /*
- * The Lisp variable lispsystem* gets set here. (in COMMON mode it is
+ * The Lisp variable lispsystem* gets set here. (in Common mode it is
  * the variable *features*)
  * Its value is a list.
  *       csl                      says I am a CSL Lisp
@@ -5020,7 +4999,7 @@ static void set_up_variables(CSLbool restart_flag)
  *       texmacs                  "--texmacs" option on command line
  *       parallel                 the "parallel" experimental function exists
  *
- * In COMMON mode the tags on the *features* list are generally in the
+ * In Common mode the tags on the *features* list are generally in the
  * keyword package. Otherwise they are just regular symbols. This makes it
  * slightly hard to use code that tests this list in a generic environment!
  */
@@ -5049,7 +5028,6 @@ static void set_up_variables(CSLbool restart_flag)
     {
 #ifdef COMMON
         Lisp_Object n = features_symbol;
-        Lisp_Object w;
         char opsys[32];
         char *p1 = opsys, *p2 = OPSYS;
         int ii;
@@ -5227,7 +5205,7 @@ static void set_up_variables(CSLbool restart_flag)
  * Present if CSL is running in its own window rather than in console mode.
  */
 
-        Lisp_Object w = cons(make_keyword(OPSYS), nil), w1;
+        w = cons(make_keyword(OPSYS), nil);
         int ii;
 #if defined WIN64 || defined __WIN64__ || defined WIN32
 /*
@@ -5255,7 +5233,7 @@ static void set_up_variables(CSLbool restart_flag)
         for (i=0; setup_tables[i]!=NULL; i++) count_symbols(setup_tables[i]);
 #ifdef COMMON
 /*
- * A gratuitous misery here is the need to make COMMON words
+ * A gratuitous misery here is the need to make words
  * upper case.
  */
         w = acons(make_keyword("OPSYS"),
@@ -5305,7 +5283,11 @@ static void set_up_variables(CSLbool restart_flag)
         w = acons(make_keyword("VERSION"), make_string(VERSION), w);
         w = cons(make_keyword("CCL"), w);
         w = cons(make_keyword("COMMON-LISP"), w);
+
+
 #else /* !COMMON */
+
+
         w = acons(make_keyword("opsys"),
                   make_undefined_symbol(OPSYS), w);
         w = acons(make_keyword("native"),
@@ -5483,63 +5465,61 @@ static void set_up_variables(CSLbool restart_flag)
         qheader(n) |= SYM_SPECIAL_VAR;
         qvalue(n) = faa;
     }
-#ifdef COMMON
 /*
  * Floating point characteristics are taken from <float.h> where it is
  * supposed that the C compiler involved has got the values correct.
  * I do this every time the system is loaded rather than just when an
  * image is cold-created. This is because an image file may have been created
- * on a system differing from the one on which it is used. Mayve in fact
+ * on a system differing from the one on which it is used. Maybe in fact
  * IEEE arithmetic is ALMOST universal and I am being too cautious here?
  */
-    {   Lisp_Object w;
-        make_constant("short-float-epsilon",
-                      make_sfloat(16.0*FLT_EPSILON));
-        make_constant("single-float-epsilon",
-                      make_boxfloat(FLT_EPSILON, TYPE_SINGLE_FLOAT));
-        make_constant("double-float-epsilon",
-                      make_boxfloat(DBL_EPSILON, TYPE_DOUBLE_FLOAT));
+    make_constant("short-float-epsilon",
+                  make_sfloat(16.0*FLT_EPSILON));
+    make_constant("single-float-epsilon",
+                  make_boxfloat(FLT_EPSILON, TYPE_SINGLE_FLOAT));
+    make_constant("double-float-epsilon",
+                  make_boxfloat(DBL_EPSILON, TYPE_DOUBLE_FLOAT));
 /* For now "long" = "double" */
-        make_constant("long-float-epsilon",
-                      make_boxfloat(DBL_EPSILON, TYPE_LONG_FLOAT));
+    make_constant("long-float-epsilon",
+                  make_boxfloat(DBL_EPSILON, TYPE_LONG_FLOAT));
 /*
  * I assume that I have a radix 2 representation, and float-negative-epsilon
  * is just half float-epsilon. Correct me if I am wrong...
  */
-        make_constant("short-float-negative-epsilon",
-                      make_sfloat(16.0*FLT_EPSILON/2.0));
-        make_constant("single-float-negative-epsilon",
-                      make_boxfloat(FLT_EPSILON/2.0, TYPE_SINGLE_FLOAT));
-        make_constant("double-float-negative-epsilon",
-                      make_boxfloat(DBL_EPSILON/2.0, TYPE_DOUBLE_FLOAT));
+    make_constant("short-float-negative-epsilon",
+                  make_sfloat(16.0*FLT_EPSILON/2.0));
+    make_constant("single-float-negative-epsilon",
+                  make_boxfloat(FLT_EPSILON/2.0, TYPE_SINGLE_FLOAT));
+    make_constant("double-float-negative-epsilon",
+                  make_boxfloat(DBL_EPSILON/2.0, TYPE_DOUBLE_FLOAT));
 /* For now "long" = "double" */
-        make_constant("long-float-negative-epsilon",
-                      make_boxfloat(DBL_EPSILON/2.0, TYPE_LONG_FLOAT));
+    make_constant("long-float-negative-epsilon",
+                  make_boxfloat(DBL_EPSILON/2.0, TYPE_LONG_FLOAT));
 /*
  * I hope that the C header file gets extremal values correct. Note that
  * because make_sfloat() truncates (rather than rounding) it should give
  * correct values for most-positive-short-float etc
  */
-        make_constant("most-positive-short-float",
-                      make_sfloat(FLT_MAX));
-        make_constant("most-positive-single-float",
-                      make_boxfloat(FLT_MAX, TYPE_SINGLE_FLOAT));
-        make_constant("most-positive-double-float",
-                      make_boxfloat(DBL_MAX, TYPE_DOUBLE_FLOAT));
-        make_constant("most-positive-long-float",
-                      make_boxfloat(DBL_MAX, TYPE_LONG_FLOAT));
+    make_constant("most-positive-short-float",
+                  make_sfloat(FLT_MAX));
+    make_constant("most-positive-single-float",
+                  make_boxfloat(FLT_MAX, TYPE_SINGLE_FLOAT));
+    make_constant("most-positive-double-float",
+                  make_boxfloat(DBL_MAX, TYPE_DOUBLE_FLOAT));
+    make_constant("most-positive-long-float",
+                  make_boxfloat(DBL_MAX, TYPE_LONG_FLOAT));
 /*
  * Here I assume that the floating point representation is sign-and-magnitude
  * and hence symmetric about zero.
  */
-        make_constant("most-negative-short-float",
-                      make_sfloat(-FLT_MAX));
-        make_constant("most-negative-single-float",
-                      make_boxfloat(-FLT_MAX, TYPE_SINGLE_FLOAT));
-        make_constant("most-negative-double-float",
-                      make_boxfloat(-DBL_MAX, TYPE_DOUBLE_FLOAT));
-        make_constant("most-negative-long-float",
-                      make_boxfloat(-DBL_MAX, TYPE_LONG_FLOAT));
+    make_constant("most-negative-short-float",
+                  make_sfloat(-FLT_MAX));
+    make_constant("most-negative-single-float",
+                  make_boxfloat(-FLT_MAX, TYPE_SINGLE_FLOAT));
+    make_constant("most-negative-double-float",
+                  make_boxfloat(-DBL_MAX, TYPE_DOUBLE_FLOAT));
+    make_constant("most-negative-long-float",
+                  make_boxfloat(-DBL_MAX, TYPE_LONG_FLOAT));
 /*
  * The "least-xxx" set of values did not consider the case of denormalised
  * numbers too carefully in ClTl-1, so in ClTl-2 there are elaborations. I
@@ -5548,63 +5528,44 @@ static void set_up_variables(CSLbool restart_flag)
  * here will not be quite proper (ie there are smaller floats that are
  * un-normalised). But I will ignore that worry just for now.
  */
-        make_constant("least-positive-short-float",
-                      make_sfloat(FLT_MIN));
-        make_constant("least-positive-single-float",
-                      make_boxfloat(FLT_MIN, TYPE_SINGLE_FLOAT));
-        make_constant("least-positive-double-float",
-                      make_boxfloat(DBL_MIN, TYPE_DOUBLE_FLOAT));
-        make_constant("least-positive-long-float",
-                      make_boxfloat(DBL_MIN, TYPE_LONG_FLOAT));
-        make_constant("least-negative-short-float",
-                      make_sfloat(-FLT_MIN));
-        make_constant("least-negative-single-float",
-                      make_boxfloat(-FLT_MIN, TYPE_SINGLE_FLOAT));
-        make_constant("least-negative-double-float",
-                      make_boxfloat(-DBL_MIN, TYPE_DOUBLE_FLOAT));
-        make_constant("least-negative-long-float",
-                      make_boxfloat(-DBL_MIN, TYPE_LONG_FLOAT));
+    make_constant("least-positive-short-float",
+                  make_sfloat(FLT_MIN));
+    make_constant("least-positive-single-float",
+                  make_boxfloat(FLT_MIN, TYPE_SINGLE_FLOAT));
+    make_constant("least-positive-double-float",
+                  make_boxfloat(DBL_MIN, TYPE_DOUBLE_FLOAT));
+    make_constant("least-positive-long-float",
+                  make_boxfloat(DBL_MIN, TYPE_LONG_FLOAT));
+    make_constant("least-negative-short-float",
+                  make_sfloat(-FLT_MIN));
+    make_constant("least-negative-single-float",
+                  make_boxfloat(-FLT_MIN, TYPE_SINGLE_FLOAT));
+    make_constant("least-negative-double-float",
+                  make_boxfloat(-DBL_MIN, TYPE_DOUBLE_FLOAT));
+    make_constant("least-negative-long-float",
+                  make_boxfloat(-DBL_MIN, TYPE_LONG_FLOAT));
 /*
  * The bunch here are intended to be NORMALISED numbers, while the unqualified
  * ones above may not be.
  */
-        make_constant("least-positive-normalized-short-float",
-                      make_sfloat(FLT_MIN));
-        make_constant("least-positive-normalized-single-float",
-                      make_boxfloat(FLT_MIN, TYPE_SINGLE_FLOAT));
-        make_constant("least-positive-normalized-double-float",
-                      make_boxfloat(DBL_MIN, TYPE_DOUBLE_FLOAT));
-        make_constant("least-positive-normalized-long-float",
-                      make_boxfloat(DBL_MIN, TYPE_LONG_FLOAT));
-        make_constant("least-negative-normalized-short-float",
-                      make_sfloat(-FLT_MIN));
-        make_constant("least-negative-normalized-single-float",
-                      make_boxfloat(-FLT_MIN, TYPE_SINGLE_FLOAT));
-        make_constant("least-negative-normalized-double-float",
-                      make_boxfloat(-DBL_MIN, TYPE_DOUBLE_FLOAT));
-        make_constant("least-negative-normalized-long-float",
-                      make_boxfloat(-DBL_MIN, TYPE_LONG_FLOAT));
-#endif
-#ifdef UNIX_TIMES
-/* /*
- * ACN believes that the following is misguided, since the time-reading
- * function (defined in fns1.c) that CCL provides always returns its answer
- * in milliseconds. This the 1000 below is NOT as arbitrary as all that, it
- * represents the unit that CCL (across all platforms) returns time
- * measurements in. The UNIX_TIMES macro is set on Unix systems to
- * influence whether the times() function or clock() is used to read
- * time, where in the former case Unix makes it possible to separate
- * user and system time.
- */
-        /* UNIX_TIMES is set in machine.h and will usually be HZ. */
-        make_constant("internal-time-units-per-second",
-#ifdef UNIX_TIMES
-            fixnum_of_int(UNIX_TIMES));
-#else
-            fixnum_of_int(1000));
-#endif
-    }
-#endif
+    make_constant("least-positive-normalized-short-float",
+                  make_sfloat(FLT_MIN));
+    make_constant("least-positive-normalized-single-float",
+                  make_boxfloat(FLT_MIN, TYPE_SINGLE_FLOAT));
+    make_constant("least-positive-normalized-double-float",
+                  make_boxfloat(DBL_MIN, TYPE_DOUBLE_FLOAT));
+    make_constant("least-positive-normalized-long-float",
+                  make_boxfloat(DBL_MIN, TYPE_LONG_FLOAT));
+    make_constant("least-negative-normalized-short-float",
+                  make_sfloat(-FLT_MIN));
+    make_constant("least-negative-normalized-single-float",
+                  make_boxfloat(-FLT_MIN, TYPE_SINGLE_FLOAT));
+    make_constant("least-negative-normalized-double-float",
+                  make_boxfloat(-DBL_MIN, TYPE_DOUBLE_FLOAT));
+    make_constant("least-negative-normalized-long-float",
+                  make_boxfloat(-DBL_MIN, TYPE_LONG_FLOAT));
+    make_constant("internal-time-units-per-second",
+                  fixnum_of_int(1000));
 #ifdef MEMORY_TRACE
 #ifndef CHECK_ONLY
     memory_comment(3);  /* creating symbols */
@@ -5814,7 +5775,6 @@ static void set_up_variables(CSLbool restart_flag)
             qvalue(n) = v;
         }
     }
-#ifndef COMMON
 #ifdef HAVE_FWIN
 /*
  * Now if I have the FWIN windowed system I look in the Lisp variables
@@ -5835,9 +5795,7 @@ static void set_up_variables(CSLbool restart_flag)
         char *v;
         n = 0;
         for (w2=w1; consp(w2); w2=qcdr(w2)) n++; /* How many? */
-#ifdef HAVE_FWIN
         n = 2*n;
-#endif
         loadable_packages = (char **)(*malloc_hook)((n+1)*sizeof(char *));
         if (loadable_packages != NULL)
         {   n = 0;
@@ -5848,37 +5806,22 @@ static void set_up_variables(CSLbool restart_flag)
                 if (!is_vector(w3) ||
                     type_of_header(vechdr(w3)) != TYPE_STRING) break;
                 n1 = length_of_header(vechdr(w3))-CELL;
-#ifdef HAVE_FWIN
                 v = (char *)(*malloc_hook)(n1+2);
                 if (v == NULL) break;
                 v[0] = ' ';
                 memcpy(v+1, &celt(w3, 0), n1);
                 v[n1+1] = 0;
-#else
-                v = (char *)(*malloc_hook)(n1+1);
-                if (v == NULL) break;
-                memcpy(v, &celt(w3, 0), n1);
-                v[n1] = 0;
-#endif
                 loadable_packages[n++] = v;
-#ifdef HAVE_FWIN
                 loadable_packages[n++] = NULL;
-#endif
             }
-#ifdef HAVE_FWIN
             qsort(loadable_packages, n/2, 2*sizeof(char *), alpha1);
-#else
-            qsort(loadable_packages, n, sizeof(char *), alpha0);
-#endif
             loadable_packages[n] = NULL;   /* NULL-terminate the list */
         }
         w1 = qvalue(make_undefined_symbol("switches*"));
         n = 0;
         for (w2=w1; consp(w2); w2=qcdr(w2)) n++; /* How many? */
         n = (n+1)*sizeof(char *);
-#ifdef HAVE_FWIN
         n = 2*n;
-#endif
         switches = (char **)(*malloc_hook)(n);
         if (switches != NULL)
         {   n = 0;
@@ -5904,35 +5847,25 @@ static void set_up_variables(CSLbool restart_flag)
  * loaded. See the function review_switch_settings() the follows...
  */
                 if (qvalue(w4) == nil) v[0] = 'n';
-#ifdef HAVE_FWIN
                 else if (qvalue(w4) == unset_var) v[0] = 'x';
-#endif
                 else v[0] = 'y';
                 memcpy(v+1, &celt(w3, 0), n1);
                 v[n1+1] = 0;
                 switches[n++] = v;
-#ifdef HAVE_FWIN
                 switches[n++] = NULL;
-#endif
             }
-#ifdef HAVE_FWIN
             qsort(switches, n/2, 2*sizeof(char *), alpha1);
-#else
-            qsort(switches, n, sizeof(char *), alpha1);
-#endif
             switches[n] = NULL;
         }
     }
 
 #endif /* HAVE_FWIN */
-#endif /* COMMON */
 #ifdef COMMON
     CP = saved_package;
 #endif
 }
 
 #ifndef COMMON
-#ifdef HAVE_FWIN
 
 /*
  * This alse reviews the list of loaded packages...
@@ -6004,7 +5937,6 @@ void review_switch_settings()
     fwin_refresh_switches(switches, loadable_packages);
 }
 
-#endif
 #endif
 
 CSLbool CSL_MD5_busy;
@@ -6812,8 +6744,6 @@ void copy_out_of_nilseg(int fg)
 }
 
 
-#ifndef OLDER_VERSION
-
 /*
  * June 2015: I am now going to try MD5 code from Alexander Peslyak
  * (Solar Designer). The code is public domain and all I do here is provide
@@ -6832,7 +6762,6 @@ void copy_out_of_nilseg(int fg)
  * malic is the opponent.
  */
 
-#include "md5.h"
 #include "md5.c"
 
 MD5_CTX context;
@@ -6853,347 +6782,6 @@ void CSL_MD5_Final(unsigned char *md)
     MD5_Final(md, &context);
     CSL_MD5_busy = NO;
 }
-
-#else /* OLDER_VERSION */
-
-
-/*
- * For some of what follows I think I need to show that I have considered
- * the issue of export regulations.
- *
- * What I have here is MD5 (and when and if I feel keen SHA-1). I observe
- * that MD5, SHA-1 and DSA are made available as part of Sun's Java
- * Development Kit in the version that can be downloade freely from their
- * servers. They have a separate Java Cryptography Extension within which
- * they keep things that are subject to USA export regulations. I take this
- * as encouragement to believe that these three algorithms are not subject
- * to USA export limits. I believe such limits to be supersets (ie more
- * restrictive) than ones that apply in the UK and so feel happy about
- * including the implementations that I do here. Specifically, although I
- * have extracts from the SSL code which as a whole might give trouble if
- * importen to the USA and the re-exported I only have the message digest
- * bits that should not be so encumbered. I am aware that MD5 is now
- * considered weakish with SHA-1 the improved replacement, but will take the
- * view that I was not aiming for real security on anything anyway!
- */
-
-/*
- *  MD5 message digest code, adapted from Eric Young's version,
- *  for which the copyright and disclaimer notices follow. Observe that
- *  this code can be adapted and re-used subject to these terms being
- *  retained.
- *
- * NOTE that I have stuck "CSL_" on the front of names since in some cases
- * a crypto library may find itself getting linked in with bits of CSL code
- * and names could otehrwise clash. Specifically this could happen on
- * Mac/Darwin when CSL is built with a flat namespace ready for dynamically
- * loading modules.
- */
-
-
-/* crypto/md/md5.c and support files */
-/* Copyright (C) 1995-1997 Eric Young (eay@mincom.oz.au)
- * All rights reserved.
- *
- * This package is an SSL implementation written
- * by Eric Young (eay@mincom.oz.au).
- * The implementation was written so as to conform with Netscapes SSL.
- * 
- * This library is free for commercial and non-commercial use as long as
- * the following conditions are aheared to.  The following conditions
- * apply to all code found in this distribution, be it the RC4, RSA,
- * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
- * included with this distribution is covered by the same copyright terms
- * except that the holder is Tim Hudson (tjh@mincom.oz.au).
- * 
- * Copyright remains Eric Young's, and as such any Copyright notices in
- * the code are not to be removed.
- * If this package is used in a product, Eric Young should be given attribution
- * as the author of the parts of the library used.
- * This can be in the form of a textual message at program startup or
- * in documentation (online or textual) provided with the package.
- * 
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    "This product includes cryptographic software written by
- *     Eric Young (eay@mincom.oz.au)"
- *    The word 'cryptographic' can be left out if the routines from the library
- *    being used are not cryptographic related :-).
- * 4. If you include any Windows specific code (or a derivative thereof) from 
- *    the apps directory (application code) you must include an acknowledgement:
- *    "This product includes software written by Tim Hudson (tjh@mincom.oz.au)"
- * 
- * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- * 
- * The licence and distribution terms for any publically available version or
- * derivative of this code cannot be changed.  i.e. this code cannot simply be
- * copied and put under another distribution licence
- * [including the GNU Public Licence.]
- */
-
-/*
- * End of Eric Young's copyright and disclaimer notice.
- *
- * The changes made by A C Norman remove some optimisation to leave shorter
- * code (I will not be using this in speed-critical applications) and
- * adjusting the style and layout to agree with other Codemist utilities.
- */
-
-#define MD5_CBLOCK         64
-#define MD5_LBLOCK         16
-
-static uint32_t MD5_A, MD5_B, MD5_C, MD5_D;
-static uint32_t MD5_Nl;
-static int MD5_num;
-static uint32_t MD5_data[MD5_CBLOCK];
-
-#define F(x,y,z)        ((((y) ^ (z)) & (x)) ^ (z))
-#define G(x,y,z)        ((((x) ^ (y)) & (z)) ^ (y))
-#define H(x,y,z)        ((x) ^ (y) ^ (z))
-#define I(x,y,z)        (((x) | (~(z))) ^ (y))
-
-#define ROTATE(a,n)     (((a)<<(n))|((a)>>(32-(n))))
-
-
-#define R0(a,b,c,d,k,s,t) {          \
-        a+=((k)+(t)+F((b),(c),(d))); \
-        a=ROTATE(a,s);               \
-        a+=b; }
-
-#define R1(a,b,c,d,k,s,t) {          \
-        a+=((k)+(t)+G((b),(c),(d))); \
-        a=ROTATE(a,s);               \
-        a+=b; }
-
-#define R2(a,b,c,d,k,s,t) {          \
-        a+=((k)+(t)+H((b),(c),(d))); \
-        a=ROTATE(a,s);               \
-        a+=b; }
-
-#define R3(a,b,c,d,k,s,t) {          \
-        a+=((k)+(t)+I((b),(c),(d))); \
-        a=ROTATE(a,s);               \
-        a+=b; }
-
-
-/*
- * Implemented from RFC1321 The MD5 Message-Digest Algorithm
- */
-
-void CSL_MD5_Init(void)
-{
-    CSL_MD5_busy = YES;
-    MD5_A = 0x67452301;
-    MD5_B = 0xefcdab89;
-    MD5_C = 0x98badcfe;
-    MD5_D = 0x10325476;
-    MD5_Nl = 0;
-    MD5_num = 0;
-}
-
-/*
- * Use of "D" as a variable name clashes with a debugging-macro that I have!
- */
-
-#undef D
-
-static unsigned char byte_order_test[4] = {1, 0, 0, 0};
-
-static void md5_block(void)
-{
-    uint32_t A=MD5_A, B=MD5_B, C=MD5_C, D=MD5_D;
-    int i;
-/*
- * Here I re-write the buffer so that it now behaves as if it is
- * an array of 32-bit words in native computer representation. On
- * many machines the code here will have no effect at all apart from
- * consuming a little time. I do a little test first to see if
- * it is really needed.
- */
-    uint32_t *p = MD5_data;
-    unsigned char *q = (unsigned char *)p;
-    if (((uint32_t *)byte_order_test)[0] != 1)
-    {   for (i=0; i<MD5_LBLOCK; i++)
-        {   uint32_t w = *q++;
-            w |= *q++ << 8;
-            w |= *q++ << 16;
-            w |= *q++ << 24;
-            *p++ = w;
-        }
-    }
-    p = MD5_data;
-    /* Round 0 */
-    R0(A,B,C,D,p[ 0], 7,0xd76aa478); R0(D,A,B,C,p[ 1],12,0xe8c7b756);
-    R0(C,D,A,B,p[ 2],17,0x242070db); R0(B,C,D,A,p[ 3],22,0xc1bdceee);
-    R0(A,B,C,D,p[ 4], 7,0xf57c0faf); R0(D,A,B,C,p[ 5],12,0x4787c62a);
-    R0(C,D,A,B,p[ 6],17,0xa8304613); R0(B,C,D,A,p[ 7],22,0xfd469501);
-    R0(A,B,C,D,p[ 8], 7,0x698098d8); R0(D,A,B,C,p[ 9],12,0x8b44f7af);
-    R0(C,D,A,B,p[10],17,0xffff5bb1); R0(B,C,D,A,p[11],22,0x895cd7be);
-    R0(A,B,C,D,p[12], 7,0x6b901122); R0(D,A,B,C,p[13],12,0xfd987193);
-    R0(C,D,A,B,p[14],17,0xa679438e); R0(B,C,D,A,p[15],22,0x49b40821);
-    /* Round 1 */
-    R1(A,B,C,D,p[ 1], 5,0xf61e2562); R1(D,A,B,C,p[ 6], 9,0xc040b340);
-    R1(C,D,A,B,p[11],14,0x265e5a51); R1(B,C,D,A,p[ 0],20,0xe9b6c7aa);
-    R1(A,B,C,D,p[ 5], 5,0xd62f105d); R1(D,A,B,C,p[10], 9,0x02441453);
-    R1(C,D,A,B,p[15],14,0xd8a1e681); R1(B,C,D,A,p[ 4],20,0xe7d3fbc8);
-    R1(A,B,C,D,p[ 9], 5,0x21e1cde6); R1(D,A,B,C,p[14], 9,0xc33707d6);
-    R1(C,D,A,B,p[ 3],14,0xf4d50d87); R1(B,C,D,A,p[ 8],20,0x455a14ed);
-    R1(A,B,C,D,p[13], 5,0xa9e3e905); R1(D,A,B,C,p[ 2], 9,0xfcefa3f8);
-    R1(C,D,A,B,p[ 7],14,0x676f02d9); R1(B,C,D,A,p[12],20,0x8d2a4c8a);
-    /* Round 2 */
-    R2(A,B,C,D,p[ 5], 4,0xfffa3942); R2(D,A,B,C,p[ 8],11,0x8771f681);
-    R2(C,D,A,B,p[11],16,0x6d9d6122); R2(B,C,D,A,p[14],23,0xfde5380c);
-    R2(A,B,C,D,p[ 1], 4,0xa4beea44); R2(D,A,B,C,p[ 4],11,0x4bdecfa9);
-    R2(C,D,A,B,p[ 7],16,0xf6bb4b60); R2(B,C,D,A,p[10],23,0xbebfbc70);
-    R2(A,B,C,D,p[13], 4,0x289b7ec6); R2(D,A,B,C,p[ 0],11,0xeaa127fa);
-    R2(C,D,A,B,p[ 3],16,0xd4ef3085); R2(B,C,D,A,p[ 6],23,0x04881d05);
-    R2(A,B,C,D,p[ 9], 4,0xd9d4d039); R2(D,A,B,C,p[12],11,0xe6db99e5);
-    R2(C,D,A,B,p[15],16,0x1fa27cf8); R2(B,C,D,A,p[ 2],23,0xc4ac5665);
-    /* Round 3 */
-    R3(A,B,C,D,p[ 0], 6,0xf4292244); R3(D,A,B,C,p[ 7],10,0x432aff97);
-    R3(C,D,A,B,p[14],15,0xab9423a7); R3(B,C,D,A,p[ 5],21,0xfc93a039);
-    R3(A,B,C,D,p[12], 6,0x655b59c3); R3(D,A,B,C,p[ 3],10,0x8f0ccc92);
-    R3(C,D,A,B,p[10],15,0xffeff47d); R3(B,C,D,A,p[ 1],21,0x85845dd1);
-    R3(A,B,C,D,p[ 8], 6,0x6fa87e4f); R3(D,A,B,C,p[15],10,0xfe2ce6e0);
-    R3(C,D,A,B,p[ 6],15,0xa3014314); R3(B,C,D,A,p[13],21,0x4e0811a1);
-    R3(A,B,C,D,p[ 4], 6,0xf7537e82); R3(D,A,B,C,p[11],10,0xbd3af235);
-    R3(C,D,A,B,p[ 2],15,0x2ad7d2bb); R3(B,C,D,A,p[ 9],21,0xeb86d391);
-
-    MD5_A += A;
-    MD5_B += B;
-    MD5_C += C;
-    MD5_D += D;
-}
-
-void CSL_MD5_Update(const unsigned char *data, int len)
-{
-    unsigned char *p = (unsigned char *)MD5_data;
-/*
- * The full MD5 procedure allows for encoding strings of up to
- * around 2^64 bits. I will restrict myself to 2^32 so I can just ignore
- * the high word of the bit-count.
- */
-    MD5_Nl += len<<3;   /* Counts in BITS not BYTES here */
-    while (len != 0)
-    {   p[MD5_num++] = *data++;
-        len--;
-        if (MD5_num == MD5_CBLOCK)
-        {   md5_block();
-            MD5_num = 0;
-        }
-    }
-}
-
-void CSL_MD5_Final(unsigned char *md)
-{
-    uint32_t l = MD5_Nl;
-    unsigned char *p = (unsigned char *)MD5_data;
-    
-    p[MD5_num++] = 0x80;
-    if (MD5_num >= MD5_CBLOCK-8)
-    {   while (MD5_num < MD5_CBLOCK) p[MD5_num++] = 0;
-        md5_block();
-        MD5_num = 0;
-    }
-    while (MD5_num < MD5_CBLOCK-8) p[MD5_num++] = 0;
-    p[MD5_num++] = (unsigned char)l;
-    p[MD5_num++] = (unsigned char)(l>>8);
-    p[MD5_num++] = (unsigned char)(l>>16);
-    p[MD5_num++] = (unsigned char)(l>>24);
-    p[MD5_num++] = 0;
-    p[MD5_num++] = 0;
-    p[MD5_num++] = 0;
-    p[MD5_num++] = 0;
-    md5_block();
-    p = md;
-    l = MD5_A;
-    *p++ = (unsigned char)l;
-    *p++ = (unsigned char)(l>>8);
-    *p++ = (unsigned char)(l>>16);
-    *p++ = (unsigned char)(l>>24);
-    l = MD5_B;
-    *p++ = (unsigned char)l;
-    *p++ = (unsigned char)(l>>8);
-    *p++ = (unsigned char)(l>>16);
-    *p++ = (unsigned char)(l>>24);
-    l = MD5_C;
-    *p++ = (unsigned char)l;
-    *p++ = (unsigned char)(l>>8);
-    *p++ = (unsigned char)(l>>16);
-    *p++ = (unsigned char)(l>>24);
-    l = MD5_D;
-    *p++ = (unsigned char)l;
-    *p++ = (unsigned char)(l>>8);
-    *p++ = (unsigned char)(l>>16);
-    *p++ = (unsigned char)(l>>24);
-    CSL_MD5_busy = NO;
-}
-
-unsigned char *CSL_MD5(unsigned char *d, int n, unsigned char *md)
-{
-    if (n < 0) n = strlen((char *)d);
-    CSL_MD5_Init();
-    CSL_MD5_Update(d, n);
-    CSL_MD5_Final(md);
-    return md;
-}
-
-#ifdef STAND_ALONE_TESTING_OF_MD5_CODE
-
-int main(int argc, char *argv[])
-{
-    int i;
-    unsigned char mm[16];
-    CSL_MD5("", 0, mm);
-    for (i=0; i<16; i++) printf("%.2x", mm[i] & 0xff);
-    printf("\n");
-    CSL_MD5("a", 1, mm);
-    for (i=0; i<16; i++) printf("%.2x", mm[i] & 0xff);
-    printf("\n");
-    CSL_MD5("abc", 3, mm);
-    for (i=0; i<16; i++) printf("%.2x", mm[i] & 0xff);
-    printf("\n");
-    CSL_MD5("message digest", -1, mm);
-    for (i=0; i<16; i++) printf("%.2x", mm[i] & 0xff);
-    printf("\n");
-    CSL_MD5("abcdefghijklmnopqrstuvwxyz", -1, mm);
-    for (i=0; i<16; i++) printf("%.2x", mm[i] & 0xff);
-    printf("\n");
-    CSL_MD5("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", -1, mm);
-    for (i=0; i<16; i++) printf("%.2x", mm[i] & 0xff);
-    printf("\n");
-    CSL_MD5("12345678901234567890123456789012345678901234567890123456789012345678901234567890", -1, mm);
-    for (i=0; i<16; i++) printf("%.2x", mm[i] & 0xff);
-    printf("\n");
-    return 0;
-}
-
-#endif
-
-/*
- * This is the end of the Eric Young code - what follows is Codemist
- * original code again.
- */
-#endif /* OLDER_VERSION */
-
 
 
 /* end of restart.c */

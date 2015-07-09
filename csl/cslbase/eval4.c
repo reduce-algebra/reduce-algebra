@@ -1,11 +1,11 @@
-/* eval4.c                           Copyright (C) 1991-2011, Codemist Ltd */
+/* eval4.c                           Copyright (C) 1991-2015, Codemist Ltd */
 
 /*
  * Bytecode interpreter/main interpreter interfaces
  */
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -46,7 +46,7 @@ int trace_all = 0;
 
 #define name_from(def) elt(qcdr(def), 0)
 
-Lisp_Object MS_CDECL bytecoded0(Lisp_Object def, int nargs, ...)
+Lisp_Object bytecoded0(Lisp_Object def, int nargs, ...)
 {
     Lisp_Object nil=C_nil;
     if (nargs != 0) return error(2, err_wrong_no_args, name_from(def),
@@ -210,7 +210,7 @@ Lisp_Object bytecoded2(Lisp_Object def, Lisp_Object a, Lisp_Object b)
     return r;
 }
 
-Lisp_Object MS_CDECL bytecoded3(Lisp_Object def, int nargs, ...)
+Lisp_Object bytecoded3(Lisp_Object def, int nargs, ...)
 {
     va_list aa;
     Lisp_Object r, a, b, c;
@@ -277,7 +277,7 @@ Lisp_Object MS_CDECL bytecoded3(Lisp_Object def, int nargs, ...)
     return r;
 }
 
-Lisp_Object MS_CDECL bytecodedn(Lisp_Object def, int nargs, ...)
+Lisp_Object bytecodedn(Lisp_Object def, int nargs, ...)
 {
 /*
  * The messing about here is to get the (unknown number of) args
@@ -344,7 +344,7 @@ Lisp_Object unpack_mv(Lisp_Object nil, Lisp_Object r)
     return mv_1;
 }
 
-Lisp_Object MS_CDECL tracebytecoded0(Lisp_Object def, int nargs, ...)
+Lisp_Object tracebytecoded0(Lisp_Object def, int nargs, ...)
 {
     Lisp_Object r, nil=C_nil;
     if (nargs != 0) return error(2, err_wrong_no_args, name_from(def),
@@ -564,7 +564,7 @@ Lisp_Object tracebytecoded2(Lisp_Object def,
 
 #define TRACESET(s) ((Lisp_Object *)(((intptr_t)(s)) + 1))
 
-Lisp_Object MS_CDECL tracesetbytecoded3(Lisp_Object def, int nargs, ...)
+Lisp_Object tracesetbytecoded3(Lisp_Object def, int nargs, ...)
 {
     va_list aa;
     Lisp_Object r, a, b, c;
@@ -669,7 +669,7 @@ Lisp_Object MS_CDECL tracesetbytecoded3(Lisp_Object def, int nargs, ...)
     return r;
 }
 
-Lisp_Object MS_CDECL tracebytecodedn(Lisp_Object def, int nargs, ...)
+Lisp_Object tracebytecodedn(Lisp_Object def, int nargs, ...)
 {
 /*
  * The messing about here is to get the (unknown number of) args
@@ -749,7 +749,7 @@ Lisp_Object MS_CDECL tracebytecodedn(Lisp_Object def, int nargs, ...)
     return r;
 }
 
-Lisp_Object MS_CDECL tracesetbytecoded0(Lisp_Object def, int nargs, ...)
+Lisp_Object tracesetbytecoded0(Lisp_Object def, int nargs, ...)
 {
     Lisp_Object r, nil=C_nil;
     if (nargs != 0) return error(2, err_wrong_no_args, name_from(def),
@@ -967,7 +967,7 @@ Lisp_Object tracesetbytecoded2(Lisp_Object def,
     return r;
 }
 
-Lisp_Object MS_CDECL tracebytecoded3(Lisp_Object def, int nargs, ...)
+Lisp_Object tracebytecoded3(Lisp_Object def, int nargs, ...)
 {
     va_list aa;
     Lisp_Object r, a, b, c;
@@ -1072,7 +1072,7 @@ Lisp_Object MS_CDECL tracebytecoded3(Lisp_Object def, int nargs, ...)
     return r;
 }
 
-Lisp_Object MS_CDECL tracesetbytecodedn(Lisp_Object def, int nargs, ...)
+Lisp_Object tracesetbytecodedn(Lisp_Object def, int nargs, ...)
 {
 /*
  * The messing about here is to get the (unknown number of) args
@@ -1154,7 +1154,7 @@ Lisp_Object MS_CDECL tracesetbytecodedn(Lisp_Object def, int nargs, ...)
 
 int doubled_execution = 0;
 
-Lisp_Object MS_CDECL double_bytecoded0(Lisp_Object def, int nargs, ...)
+Lisp_Object double_bytecoded0(Lisp_Object def, int nargs, ...)
 {
     Lisp_Object nil=C_nil;
     if (nargs != 0) return error(2, err_wrong_no_args, name_from(def),
@@ -1254,7 +1254,7 @@ Lisp_Object double_bytecoded2(Lisp_Object def, Lisp_Object a, Lisp_Object b)
     return r;
 }
 
-Lisp_Object MS_CDECL double_bytecoded3(Lisp_Object def, int nargs, ...)
+Lisp_Object double_bytecoded3(Lisp_Object def, int nargs, ...)
 {
     va_list aa;
     Lisp_Object r, a, b, c;
@@ -1302,7 +1302,7 @@ Lisp_Object MS_CDECL double_bytecoded3(Lisp_Object def, int nargs, ...)
     return r;
 }
 
-Lisp_Object MS_CDECL double_bytecodedn(Lisp_Object def, int nargs, ...)
+Lisp_Object double_bytecodedn(Lisp_Object def, int nargs, ...)
 {
     Lisp_Object r;
     Lisp_Object nil = C_nil;
@@ -1405,7 +1405,7 @@ static Lisp_Object vbyteoptn(Lisp_Object def, int nargs,
     return r;
 }
 
-Lisp_Object MS_CDECL byteoptn(Lisp_Object def, int nargs, ...)
+Lisp_Object byteoptn(Lisp_Object def, int nargs, ...)
 {
     va_list a;
     va_start(a, nargs);
@@ -1422,7 +1422,7 @@ Lisp_Object hardopt2(Lisp_Object def, Lisp_Object a, Lisp_Object b)
     return hardoptn(def, 2, a, b);
 }
 
-Lisp_Object MS_CDECL hardoptn(Lisp_Object def, int nargs, ...)
+Lisp_Object hardoptn(Lisp_Object def, int nargs, ...)
 {
     va_list a;
     va_start(a, nargs);
@@ -1495,7 +1495,7 @@ static Lisp_Object vbyterestn(Lisp_Object def, int nargs,
     return r;
 }
 
-Lisp_Object MS_CDECL byteoptrestn(Lisp_Object def, int nargs, ...)
+Lisp_Object byteoptrestn(Lisp_Object def, int nargs, ...)
 {
     va_list a;
     va_start(a, nargs);
@@ -1512,7 +1512,7 @@ Lisp_Object hardoptrest2(Lisp_Object def, Lisp_Object a, Lisp_Object b)
     return hardoptrestn(def, 2, a, b);
 }
 
-Lisp_Object MS_CDECL hardoptrestn(Lisp_Object def, int nargs, ...)
+Lisp_Object hardoptrestn(Lisp_Object def, int nargs, ...)
 {
     va_list a;
     va_start(a, nargs);
@@ -1582,7 +1582,7 @@ static Lisp_Object double_vbyteoptn(Lisp_Object def, int nargs,
     return r;
 }
 
-Lisp_Object MS_CDECL double_byteoptn(Lisp_Object def, int nargs, ...)
+Lisp_Object double_byteoptn(Lisp_Object def, int nargs, ...)
 {
     va_list a;
     va_start(a, nargs);
@@ -1599,7 +1599,7 @@ Lisp_Object double_hardopt2(Lisp_Object def, Lisp_Object a, Lisp_Object b)
     return double_hardoptn(def, 2, a, b);
 }
 
-Lisp_Object MS_CDECL double_hardoptn(Lisp_Object def, int nargs, ...)
+Lisp_Object double_hardoptn(Lisp_Object def, int nargs, ...)
 {
     va_list a;
     va_start(a, nargs);
@@ -1673,7 +1673,7 @@ static Lisp_Object double_vbyterestn(Lisp_Object def, int nargs,
     return r;
 }
 
-Lisp_Object MS_CDECL double_byteoptrestn(Lisp_Object def, int nargs, ...)
+Lisp_Object double_byteoptrestn(Lisp_Object def, int nargs, ...)
 {
     va_list a;
     va_start(a, nargs);
@@ -1690,7 +1690,7 @@ Lisp_Object double_hardoptrest2(Lisp_Object def, Lisp_Object a, Lisp_Object b)
     return double_hardoptrestn(def, 2, a, b);
 }
 
-Lisp_Object MS_CDECL double_hardoptrestn(Lisp_Object def, int nargs, ...)
+Lisp_Object double_hardoptrestn(Lisp_Object def, int nargs, ...)
 {
     va_list a;
     va_start(a, nargs);
@@ -1800,7 +1800,7 @@ static Lisp_Object vtracebyteoptn(Lisp_Object def, int nargs,
     return r;
 }
 
-Lisp_Object MS_CDECL tracebyteoptn(Lisp_Object def, int nargs, ...)
+Lisp_Object tracebyteoptn(Lisp_Object def, int nargs, ...)
 {
     va_list a;
     va_start(a, nargs);
@@ -1910,7 +1910,7 @@ static Lisp_Object vtracesetbyteoptn(Lisp_Object def, int nargs,
     return r;
 }
 
-Lisp_Object MS_CDECL tracesetbyteoptn(Lisp_Object def, int nargs, ...)
+Lisp_Object tracesetbyteoptn(Lisp_Object def, int nargs, ...)
 {
     va_list a;
     va_start(a, nargs);
@@ -1927,7 +1927,7 @@ Lisp_Object tracehardopt2(Lisp_Object def, Lisp_Object a, Lisp_Object b)
     return tracehardoptn(def, 2, a, b);
 }
 
-Lisp_Object MS_CDECL tracehardoptn(Lisp_Object def, int nargs, ...)
+Lisp_Object tracehardoptn(Lisp_Object def, int nargs, ...)
 {
     va_list a;
     va_start(a, nargs);
@@ -2045,7 +2045,7 @@ static Lisp_Object vtracebyterestn(Lisp_Object def, int nargs,
     return r;
 }
 
-Lisp_Object MS_CDECL tracebyteoptrestn(Lisp_Object def, int nargs, ...)
+Lisp_Object tracebyteoptrestn(Lisp_Object def, int nargs, ...)
 {
     va_list a;
     va_start(a, nargs);
@@ -2062,7 +2062,7 @@ Lisp_Object tracehardoptrest2(Lisp_Object def, Lisp_Object a, Lisp_Object b)
     return tracehardoptrestn(def, 2, a, b);
 }
 
-Lisp_Object MS_CDECL tracehardoptrestn(Lisp_Object def, int nargs, ...)
+Lisp_Object tracehardoptrestn(Lisp_Object def, int nargs, ...)
 {
     va_list a;
     va_start(a, nargs);
@@ -2079,7 +2079,7 @@ Lisp_Object tracesethardopt2(Lisp_Object def, Lisp_Object a, Lisp_Object b)
     return tracesethardoptn(def, 2, a, b);
 }
 
-Lisp_Object MS_CDECL tracesethardoptn(Lisp_Object def, int nargs, ...)
+Lisp_Object tracesethardoptn(Lisp_Object def, int nargs, ...)
 {
     va_list a;
     va_start(a, nargs);
@@ -2197,7 +2197,7 @@ static Lisp_Object vtracesetbyterestn(Lisp_Object def, int nargs,
     return r;
 }
 
-Lisp_Object MS_CDECL tracesetbyteoptrestn(Lisp_Object def, int nargs, ...)
+Lisp_Object tracesetbyteoptrestn(Lisp_Object def, int nargs, ...)
 {
     va_list a;
     va_start(a, nargs);
@@ -2214,7 +2214,7 @@ Lisp_Object tracesethardoptrest2(Lisp_Object def, Lisp_Object a, Lisp_Object b)
     return tracesethardoptrestn(def, 2, a, b);
 }
 
-Lisp_Object MS_CDECL tracesethardoptrestn(Lisp_Object def, int nargs, ...)
+Lisp_Object tracesethardoptrestn(Lisp_Object def, int nargs, ...)
 {
     va_list a;
     va_start(a, nargs);
@@ -2232,7 +2232,7 @@ static Lisp_Object Lspid_to_nil(Lisp_Object nil, Lisp_Object a)
     return onevalue(a);
 }
 
-static Lisp_Object MS_CDECL Lload_spid(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lload_spid(Lisp_Object nil, int nargs, ...)
 {   /* Used in compilation of UNWIND-PROTECT */
     CSL_IGNORE(nil);
     CSL_IGNORE(nargs);

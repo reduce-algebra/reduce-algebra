@@ -102,7 +102,7 @@ extern Lisp_Object		om_cStringFromLispString(Lisp_Object lstr);
  * OpenMath Device manipulation functions.
  */
 
-extern Lisp_Object MS_CDECL om_openFileDev(Lisp_Object env, int nargs, ...);
+extern Lisp_Object om_openFileDev(Lisp_Object env, int nargs, ...);
 extern Lisp_Object om_openStrDev(Lisp_Object env, Lisp_Object lstr, Lisp_Object lenc);
 extern Lisp_Object om_closeDev(Lisp_Object env, Lisp_Object dev);
 
@@ -121,7 +121,7 @@ extern Lisp_Object om_getConnOutDev(Lisp_Object nil, Lisp_Object lconn);
  * OpenMath client/server functions.
  */
 
-extern Lisp_Object MS_CDECL om_connectTCP(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object om_connectTCP(Lisp_Object nil, int nargs, ...);
 extern Lisp_Object om_bindTCP(Lisp_Object nil, Lisp_Object lconn, Lisp_Object lport);
 /* TODO: prototypes for the other functions from OMconn.h */
 
@@ -151,7 +151,7 @@ extern Lisp_Object om_putByteArray(Lisp_Object nil, Lisp_Object ldev, Lisp_Objec
 extern Lisp_Object om_putVar(Lisp_Object nil, Lisp_Object ldev, Lisp_Object val);
 extern Lisp_Object om_putString(Lisp_Object nil, Lisp_Object ldev, Lisp_Object val);
 extern Lisp_Object om_putSymbol(Lisp_Object nil, Lisp_Object ldev, Lisp_Object val);
-extern Lisp_Object MS_CDECL om_putSymbol2(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object om_putSymbol2(Lisp_Object nil, int nargs, ...);
 
 extern Lisp_Object om_getApp(Lisp_Object nil, Lisp_Object ldev);
 extern Lisp_Object om_getEndApp(Lisp_Object nil, Lisp_Object ldev);

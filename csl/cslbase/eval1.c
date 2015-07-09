@@ -1,11 +1,11 @@
-/*  eval1.c                          Copyright (C) 1989-2014 Codemist Ltd */
+/*  eval1.c                          Copyright (C) 1989-2015 Codemist Ltd */
 
 /*
  * Interpreter (part 1).
  */
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -627,10 +627,8 @@ Lisp_Object apply_lambda(Lisp_Object def, int nargs,
 #define STATE_OPT1     2        /* after &optional + at least one var */
 #define STATE_REST     3        /* immediately after &rest */
 #define STATE_REST1    4        /* after &rest vv */
-#ifdef COMMON
 #define STATE_KEY      5        /* &key with no &rest */
 #define STATE_ALLOW    6        /* &allow-other-keys */
-#endif
 #define STATE_AUX      7        /* &aux */
 
     Lisp_Object nil = C_nil;
@@ -1184,7 +1182,7 @@ Lisp_Object Levlis(Lisp_Object nil, Lisp_Object a)
     return onevalue(nreverse(r));
 }
 
-Lisp_Object MS_CDECL Lapply_n(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lapply_n(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     int i;
@@ -1246,7 +1244,7 @@ Lisp_Object Lapply1(Lisp_Object nil, Lisp_Object fn, Lisp_Object a)
     return apply(fn, 1, C_nil, fn, 0);
 }
 
-Lisp_Object MS_CDECL Lapply2(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lapply2(Lisp_Object nil, int nargs, ...)
 {
     va_list aa;
     Lisp_Object fn, a, b;
@@ -1267,7 +1265,7 @@ Lisp_Object MS_CDECL Lapply2(Lisp_Object nil, int nargs, ...)
     return apply(fn, 2, C_nil, fn, 0);
 }
 
-Lisp_Object MS_CDECL Lapply3(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lapply3(Lisp_Object nil, int nargs, ...)
 {
     va_list aa;
     Lisp_Object fn, a, b, c;
@@ -1314,7 +1312,7 @@ Lisp_Object Lfuncall2(Lisp_Object nil, Lisp_Object fn, Lisp_Object a1)
     return apply(fn, 1, nil, fn, 0);
 }
 
-static Lisp_Object MS_CDECL Lfuncalln_sub(Lisp_Object nil, int nargs, va_list a)
+static Lisp_Object Lfuncalln_sub(Lisp_Object nil, int nargs, va_list a)
 {
     Lisp_Object *stack_save = stack, fn;
     fn = va_arg(a, Lisp_Object);
@@ -1326,7 +1324,7 @@ static Lisp_Object MS_CDECL Lfuncalln_sub(Lisp_Object nil, int nargs, va_list a)
     return apply(fn, nargs-1, nil, fn, 0);
 }
 
-Lisp_Object MS_CDECL Lfuncalln(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lfuncalln(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object fn, a1, a2, a3, a4;
@@ -1379,7 +1377,7 @@ default:
 
 #ifdef COMMON
 
-Lisp_Object MS_CDECL Lvalues(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lvalues(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object *p = &mv_2, w;
@@ -1477,7 +1475,7 @@ Lisp_Object interpreted2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
     return apply_lambda(def, 2, nil, def, 0);
 }
 
-Lisp_Object MS_CDECL interpretedn(Lisp_Object def, int nargs, ...)
+Lisp_Object interpretedn(Lisp_Object def, int nargs, ...)
 {
 /*
  * The messing about here is to get the (unknown number of) args
@@ -1512,7 +1510,7 @@ Lisp_Object funarged2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
     return apply_lambda(qcdr(def), 2, qcar(def), qcdr(def), 0);
 }
 
-Lisp_Object MS_CDECL funargedn(Lisp_Object def, int nargs, ...)
+Lisp_Object funargedn(Lisp_Object def, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object *stack_save = stack;
@@ -1545,7 +1543,7 @@ Lisp_Object double_interpreted2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
     return apply_lambda(def, 2, nil, def, 0);
 }
 
-Lisp_Object MS_CDECL double_interpretedn(Lisp_Object def, int nargs, ...)
+Lisp_Object double_interpretedn(Lisp_Object def, int nargs, ...)
 {
 /*
  * The messing about here is to get the (unknown number of) args
@@ -1580,7 +1578,7 @@ Lisp_Object double_funarged2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
     return apply_lambda(qcdr(def), 2, qcar(def), qcdr(def), 0);
 }
 
-Lisp_Object MS_CDECL double_funargedn(Lisp_Object def, int nargs, ...)
+Lisp_Object double_funargedn(Lisp_Object def, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object *stack_save = stack;
@@ -1653,7 +1651,7 @@ Lisp_Object traceinterpreted2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
     return r;
 }
 
-Lisp_Object MS_CDECL traceinterpretedn(Lisp_Object def, int nargs, ...)
+Lisp_Object traceinterpretedn(Lisp_Object def, int nargs, ...)
 /*
  * Like interpreted() but the definition has the fn name consed on the front
  */
@@ -1744,7 +1742,7 @@ Lisp_Object tracefunarged2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
     return r;
 }
 
-Lisp_Object MS_CDECL tracefunargedn(Lisp_Object def, int nargs, ...)
+Lisp_Object tracefunargedn(Lisp_Object def, int nargs, ...)
 /*
  * Like funarged() but with some printing
  */
@@ -1836,7 +1834,7 @@ Lisp_Object tracesetinterpreted2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2
     return r;
 }
 
-Lisp_Object MS_CDECL tracesetinterpretedn(Lisp_Object def, int nargs, ...)
+Lisp_Object tracesetinterpretedn(Lisp_Object def, int nargs, ...)
 /*
  * Like interpreted() but the definition has the fn name consed on the front
  */
@@ -1927,7 +1925,7 @@ Lisp_Object tracesetfunarged2(Lisp_Object def, Lisp_Object a1, Lisp_Object a2)
     return r;
 }
 
-Lisp_Object MS_CDECL tracesetfunargedn(Lisp_Object def, int nargs, ...)
+Lisp_Object tracesetfunargedn(Lisp_Object def, int nargs, ...)
 /*
  * Like funarged() but with some printing
  */
@@ -2130,7 +2128,7 @@ Lisp_Object autoload2(Lisp_Object fname, Lisp_Object a1, Lisp_Object a2)
     return apply(fname, 2, nil, fname, 0);
 }
 
-Lisp_Object MS_CDECL autoloadn(Lisp_Object fname, int nargs, ...)
+Lisp_Object autoloadn(Lisp_Object fname, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     va_list a;
@@ -2172,7 +2170,7 @@ Lisp_Object undefined2(Lisp_Object fname, Lisp_Object a1, Lisp_Object a2)
     return error(1, err_undefined_function_2, fname);
 }
 
-Lisp_Object MS_CDECL undefinedn(Lisp_Object fname, int nargs, ...)
+Lisp_Object undefinedn(Lisp_Object fname, int nargs, ...)
 {
     CSL_IGNORE(nargs);
     return error(1, err_undefined_function_n, fname);
@@ -2188,7 +2186,7 @@ Lisp_Object MS_CDECL undefinedn(Lisp_Object fname, int nargs, ...)
  *   (de funny_equal (a b c) (equal a b))
  */
 
-Lisp_Object MS_CDECL f0_as_0(Lisp_Object env, int nargs, ...)
+Lisp_Object f0_as_0(Lisp_Object env, int nargs, ...)
 {
     if (nargs != 0) return aerror1("wrong number of args (0->0)", env);
     debug_record_symbol(env);
@@ -2210,7 +2208,7 @@ Lisp_Object f2_as_0(Lisp_Object env, Lisp_Object a, Lisp_Object b)
     return (*qfnn(env))(qenv(env), 0);
 }
 
-Lisp_Object MS_CDECL f3_as_0(Lisp_Object env, int nargs, ...)
+Lisp_Object f3_as_0(Lisp_Object env, int nargs, ...)
 {
     if (nargs != 3) return aerror1("wrong number of args (3->0)", env);
     debug_record_symbol(env);
@@ -2230,7 +2228,7 @@ Lisp_Object f2_as_1(Lisp_Object env, Lisp_Object a, Lisp_Object b)
     return (*qfn1(env))(qenv(env), a);
 }
 
-Lisp_Object MS_CDECL f3_as_1(Lisp_Object env, int nargs, ...)
+Lisp_Object f3_as_1(Lisp_Object env, int nargs, ...)
 {
     va_list a;
     Lisp_Object a1;
@@ -2248,7 +2246,7 @@ Lisp_Object f2_as_2(Lisp_Object env, Lisp_Object a, Lisp_Object b)
     return (*qfn2(env))(qenv(env), a, b);
 }
 
-Lisp_Object MS_CDECL f3_as_2(Lisp_Object env, int nargs, ...)
+Lisp_Object f3_as_2(Lisp_Object env, int nargs, ...)
 {
     va_list a;
     Lisp_Object a1, a2;
@@ -2261,7 +2259,7 @@ Lisp_Object MS_CDECL f3_as_2(Lisp_Object env, int nargs, ...)
     return (*qfn2(env))(qenv(env), a1, a2);
 }
 
-Lisp_Object MS_CDECL f3_as_3(Lisp_Object env, int nargs, ...)
+Lisp_Object f3_as_3(Lisp_Object env, int nargs, ...)
 {
     va_list a;
     Lisp_Object a1, a2, a3;

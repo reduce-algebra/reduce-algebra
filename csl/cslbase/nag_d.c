@@ -4,7 +4,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 /* $Id$ */
 
 
-Lisp_Object MS_CDECL Ld01ajf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld01ajf(Lisp_Object nil, int nargs, ...)
 {
   va_list args;
   Lisp_Object La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
@@ -177,7 +177,7 @@ Lisp_Object MS_CDECL Ld01ajf(Lisp_Object nil, int nargs, ...)
   return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
 
-Lisp_Object MS_CDECL Ld01akf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld01akf(Lisp_Object nil, int nargs, ...)
 {
   va_list args;
   Lisp_Object La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
@@ -315,7 +315,7 @@ Lisp_Object MS_CDECL Ld01akf(Lisp_Object nil, int nargs, ...)
 }
 
 #if 1
-Lisp_Object MS_CDECL Ld01alf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld01alf(Lisp_Object nil, int nargs, ...)
 {
   va_list args;
   Lisp_Object La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
@@ -469,14 +469,14 @@ Lisp_Object MS_CDECL Ld01alf(Lisp_Object nil, int nargs, ...)
   return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
 #else
-Lisp_Object MS_CDECL Ld01alf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld01alf(Lisp_Object nil, int nargs, ...)
 {
   return Llist(nil, 0);
 }
 #endif
 
 #if 1
-Lisp_Object MS_CDECL Ld01amf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld01amf(Lisp_Object nil, int nargs, ...)
 {
   va_list args;
   Lisp_Object Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr, Lw, Liw,
@@ -618,14 +618,14 @@ Lisp_Object MS_CDECL Ld01amf(Lisp_Object nil, int nargs, ...)
   return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
 #else
-Lisp_Object MS_CDECL Ld01amf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld01amf(Lisp_Object nil, int nargs, ...)
 {
   return Llist(nil, 0);
 }
 #endif
 
 #if 1
-Lisp_Object MS_CDECL Ld01anf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld01anf(Lisp_Object nil, int nargs, ...)
 {
   va_list args;
   Lisp_Object La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
@@ -776,14 +776,14 @@ Lisp_Object MS_CDECL Ld01anf(Lisp_Object nil, int nargs, ...)
   return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
 #else
-Lisp_Object MS_CDECL Ld01anf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld01anf(Lisp_Object nil, int nargs, ...)
 {
   return Llist(nil, 0);
 }
 #endif
 
 #if 1
-Lisp_Object MS_CDECL Ld01apf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld01apf(Lisp_Object nil, int nargs, ...)
 {
   va_list args;
   Lisp_Object La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
@@ -942,14 +942,14 @@ Lisp_Object MS_CDECL Ld01apf(Lisp_Object nil, int nargs, ...)
   return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
 #else
-Lisp_Object MS_CDECL Ld01apf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld01apf(Lisp_Object nil, int nargs, ...)
 {
   return Llist(nil, 0);
 }
 #endif
 
 #if 1
-Lisp_Object MS_CDECL Ld01aqf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld01aqf(Lisp_Object nil, int nargs, ...)
 {
   va_list args;
   Lisp_Object La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
@@ -1093,14 +1093,14 @@ Lisp_Object MS_CDECL Ld01aqf(Lisp_Object nil, int nargs, ...)
   return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
 #else
-Lisp_Object MS_CDECL Ld01aqf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld01aqf(Lisp_Object nil, int nargs, ...)
 {
   return Llist(nil, 0);
 }
 #endif
 
 #if 1
-Lisp_Object MS_CDECL Ld01asf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld01asf(Lisp_Object nil, int nargs, ...)
 {
   va_list args;
   Lisp_Object La, Lepsabs, Llw, Lliw, Lifail, Lresult, Labserr, Liw, Lomega,
@@ -1268,14 +1268,14 @@ Lisp_Object MS_CDECL Ld01asf(Lisp_Object nil, int nargs, ...)
   return Llist(nil,8,Lierlst,Lresult,Labserr,Lerlst,Lifail,Liw,Llst,Lrslst);
 }
 #else
-Lisp_Object MS_CDECL Ld01asf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld01asf(Lisp_Object nil, int nargs, ...)
 {
   return Llist(nil, 0);
 }
 #endif
 
 #if 1
-Lisp_Object MS_CDECL Ld01bbf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld01bbf(Lisp_Object nil, int nargs, ...)
 {
   va_list args;
   Lisp_Object La, Lb, Litype, Ln, Lgtype, Lifail, Lweight, Labscis;
@@ -1402,7 +1402,7 @@ Lisp_Object MS_CDECL Ld01bbf(Lisp_Object nil, int nargs, ...)
 #endif
 
 #if 1
-Lisp_Object MS_CDECL Ld01fcf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld01fcf(Lisp_Object nil, int nargs, ...)
 {
   va_list args;
   Lisp_Object La, Lb, Lndim, Leps, Lminpts, Lmaxpts, Lifail, Lfinval, Lacc,
@@ -1555,7 +1555,7 @@ Lisp_Object MS_CDECL Ld01fcf(Lisp_Object nil, int nargs, ...)
 #endif
 
 #if 1
-Lisp_Object MS_CDECL Ld01gaf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld01gaf(Lisp_Object nil, int nargs, ...)
 {
   va_list args;
   Lisp_Object Lx, Ly, Ln, Lans, Ler, Lifail;
@@ -1656,7 +1656,7 @@ Lisp_Object MS_CDECL Ld01gaf(Lisp_Object nil, int nargs, ...)
 #endif
 
 #if 1
-Lisp_Object MS_CDECL Ld01gbf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld01gbf(Lisp_Object nil, int nargs, ...)
 {
   va_list args;
   Lisp_Object La, Lb, Lndim, Leps, Lmincls, Lmaxcls, Lifail, Lfinval, Lacc,
@@ -1816,7 +1816,7 @@ Lisp_Object MS_CDECL Ld01gbf(Lisp_Object nil, int nargs, ...)
 }
 #endif
 
-Lisp_Object MS_CDECL Ld02bbf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld02bbf(Lisp_Object nil, int nargs, ...)
 #if 0
 {
   va_list args;
@@ -1970,7 +1970,7 @@ Lisp_Object MS_CDECL Ld02bbf(Lisp_Object nil, int nargs, ...)
 }
 #endif
 
-Lisp_Object MS_CDECL Ld02bhf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld02bhf(Lisp_Object nil, int nargs, ...)
 #if 0
 {
   va_list args;
@@ -2119,7 +2119,7 @@ Lisp_Object MS_CDECL Ld02bhf(Lisp_Object nil, int nargs, ...)
 }
 #endif
 
-Lisp_Object MS_CDECL Ld02cjf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld02cjf(Lisp_Object nil, int nargs, ...)
 #if 0
 {							/* FIXME: strings */
   va_list args;
@@ -2279,7 +2279,7 @@ Lisp_Object MS_CDECL Ld02cjf(Lisp_Object nil, int nargs, ...)
 }
 #endif
 
-Lisp_Object MS_CDECL Ld02ejf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld02ejf(Lisp_Object nil, int nargs, ...)
 #if 0
 {							/* FIXME: strings */
   va_list args;
@@ -2458,37 +2458,39 @@ Lisp_Object MS_CDECL Ld02ejf(Lisp_Object nil, int nargs, ...)
 
 	/* ******************* GOT TO HERE ********************* */
 
-Lisp_Object MS_CDECL Ld02gaf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld02gaf(Lisp_Object nil, int nargs, ...)
 {
   return Llist(nil, 0);
 }
 
-Lisp_Object MS_CDECL Ld02gbf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld02gbf(Lisp_Object nil, int nargs, ...)
 {
   return Llist(nil, 0);
 }
 
-Lisp_Object MS_CDECL Ld02kef(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld02kef(Lisp_Object nil, int nargs, ...)
 {
   return Llist(nil, 0);
 }
 
-Lisp_Object MS_CDECL Ld02raf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld02raf(Lisp_Object nil, int nargs, ...)
 {
   return Llist(nil, 0);
 }
 
-Lisp_Object MS_CDECL Ld03edf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld03edf(Lisp_Object nil, int nargs, ...)
 {
   return Llist(nil, 0);
 }
 
-Lisp_Object MS_CDECL Ld03eef(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld03eef(Lisp_Object nil, int nargs, ...)
 {
   return Llist(nil, 0);
 }
 
-Lisp_Object MS_CDECL Ld03faf(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ld03faf(Lisp_Object nil, int nargs, ...)
 {
   return Llist(nil, 0);
 }
+
+/* end of nsg_d.c */

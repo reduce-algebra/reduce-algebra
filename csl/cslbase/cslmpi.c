@@ -7,7 +7,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -91,7 +91,7 @@ static Lisp_Object Lmpi_comm_size(Lisp_Object nil, Lisp_Object comm)
  * returns nil.
  */
 /*  Same assumption about comm. */
-static Lisp_Object MS_CDECL Lmpi_send(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmpi_send(Lisp_Object nil, int nargs, ...)
 {
   static char fun_name[] = "mpi_send";
 
@@ -114,7 +114,7 @@ static Lisp_Object MS_CDECL Lmpi_send(Lisp_Object nil, int nargs, ...)
  * (mpi_recv source tag comm)
  * returns (message (source tag error)).
  */
-static Lisp_Object MS_CDECL Lmpi_recv(Lisp_Object nil, int nargs, ...) 
+static Lisp_Object Lmpi_recv(Lisp_Object nil, int nargs, ...) 
 {
   static char fun_name[] = "mpi_recv";
 
@@ -154,7 +154,7 @@ static Lisp_Object MS_CDECL Lmpi_recv(Lisp_Object nil, int nargs, ...)
 /* THERE IS A LIMIT OF 1024 BYTES FOR THE RECEIVE BUFFER (sorry.)
  * THIS WILL BE REMOVED ASAP.
  */
-static Lisp_Object MS_CDECL Lmpi_sendrecv(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmpi_sendrecv(Lisp_Object nil, int nargs, ...)
 {
   static char fun_name[] = "mpi_sendrecv";
 
@@ -193,7 +193,7 @@ static Lisp_Object MS_CDECL Lmpi_sendrecv(Lisp_Object nil, int nargs, ...)
  * (mpi_isend message dest tag comm)
  * returns request handle
  */
-static Lisp_Object MS_CDECL Lmpi_isend(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmpi_isend(Lisp_Object nil, int nargs, ...)
 {
   static char fun_name[] = "mpi_isend";
 
@@ -236,7 +236,7 @@ struct dummy_request{
   int comm;
 };
 
-static Lisp_Object MS_CDECL Lmpi_irecv(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmpi_irecv(Lisp_Object nil, int nargs, ...)
 {
   static char fun_name[] = "mpi_irecv";
 
@@ -382,7 +382,7 @@ static Lisp_Object Lmpi_test(Lisp_Object nil, Lisp_Object request)
  * (mpi_iprobe source tag comm)
  * returns (flag (source tag error))
  */
-static Lisp_Object MS_CDECL Lmpi_iprobe(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmpi_iprobe(Lisp_Object nil, int nargs, ...)
 {
   static char fun_name[] = "impi_probe";
 
@@ -407,7 +407,7 @@ static Lisp_Object MS_CDECL Lmpi_iprobe(Lisp_Object nil, int nargs, ...)
  * (mpi_probe source tag comm)
  * returns (source tag error)
  */
-static Lisp_Object MS_CDECL Lmpi_probe(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmpi_probe(Lisp_Object nil, int nargs, ...)
 {
   static char fun_name[] = "mpi_probe";
 
@@ -447,7 +447,7 @@ static Lisp_Object Lmpi_barrier(Lisp_Object nil, Lisp_Object comm)
  * (mpi_bcast message root comm)  [message ignored if not root]
  * returns message
  */
-static Lisp_Object MS_CDECL Lmpi_bcast(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmpi_bcast(Lisp_Object nil, int nargs, ...)
 {
   static char fun_name[] = "mpi_bcast";
 
@@ -481,7 +481,7 @@ static Lisp_Object MS_CDECL Lmpi_bcast(Lisp_Object nil, int nargs, ...)
  * (mpi_gather message root comm)
  * returns vector of messages if root, else nil.
  */
-static Lisp_Object MS_CDECL Lmpi_gather(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmpi_gather(Lisp_Object nil, int nargs, ...)
 {
   static char fun_name[] = "mpi_gather";
 
@@ -539,7 +539,7 @@ static Lisp_Object MS_CDECL Lmpi_gather(Lisp_Object nil, int nargs, ...)
  * (mpi_scatter vector_of_messages root comm)  [messages ignored if not root]
  * returns message
  */
-static Lisp_Object MS_CDECL Lmpi_scatter(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmpi_scatter(Lisp_Object nil, int nargs, ...)
 {
   static char fun_name[] = "mpi_scatter";
   
@@ -728,35 +728,35 @@ static Lisp_Object Lmpi_comm_size(Lisp_Object nil, Lisp_Object comm)
     return aerror0("mpi support not built into this version of CSL");
 }
 
-static Lisp_Object MS_CDECL Lmpi_send(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmpi_send(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil);
     CSL_IGNORE(nargs);
     return aerror0("mpi support not built into this version of CSL");
 }
 
-static Lisp_Object MS_CDECL Lmpi_recv(Lisp_Object nil, int nargs, ...) 
+static Lisp_Object Lmpi_recv(Lisp_Object nil, int nargs, ...) 
 {
     CSL_IGNORE(nil);
     CSL_IGNORE(nargs);
     return aerror0("mpi support not built into this version of CSL");
 }
 
-static Lisp_Object MS_CDECL Lmpi_sendrecv(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmpi_sendrecv(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil);
     CSL_IGNORE(nargs);
     return aerror0("mpi support not built into this version of CSL");
 }
 
-static Lisp_Object MS_CDECL Lmpi_isend(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmpi_isend(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil);
     CSL_IGNORE(nargs);
     return aerror0("mpi support not built into this version of CSL");
 }
 
-static Lisp_Object MS_CDECL Lmpi_irecv(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmpi_irecv(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil);
     CSL_IGNORE(nargs);
@@ -778,14 +778,14 @@ static Lisp_Object Lmpi_test(Lisp_Object nil, Lisp_Object request)
     return aerror0("mpi support not built into this version of CSL");
 }
 
-static Lisp_Object MS_CDECL Lmpi_iprobe(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmpi_iprobe(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil);
     CSL_IGNORE(nargs);
     return aerror0("mpi support not built into this version of CSL");
 }
 
-static Lisp_Object MS_CDECL Lmpi_probe(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmpi_probe(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil);
     CSL_IGNORE(nargs);
@@ -799,21 +799,21 @@ static Lisp_Object Lmpi_barrier(Lisp_Object nil, Lisp_Object comm)
     return aerror0("mpi support not built into this version of CSL");
 }
 
-static Lisp_Object MS_CDECL Lmpi_bcast(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmpi_bcast(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil);
     CSL_IGNORE(nargs);
     return aerror0("mpi support not built into this version of CSL");
 }
 
-static Lisp_Object MS_CDECL Lmpi_gather(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmpi_gather(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil);
     CSL_IGNORE(nargs);
     return aerror0("mpi support not built into this version of CSL");
 }
 
-static Lisp_Object MS_CDECL Lmpi_scatter(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmpi_scatter(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil);
     CSL_IGNORE(nargs);

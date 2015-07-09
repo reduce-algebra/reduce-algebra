@@ -285,9 +285,7 @@ default:            /* The case-list is exhaustive! */
 case TAG_CONS:      /* Already processed */
 case TAG_FIXNUM:    /* Invalid here */
 case TAG_ODDS:      /* Invalid here */
-#ifdef COMMON
 case TAG_SFLOAT:    /* Invalid here */
-#endif /* COMMON */
         term_printf("\nBad object in VALIDATE (%.8lx)\n", (long)p);
         term_printf("Validation for %s at line %d of file %s (%d)\n",
                     validate_why, validate_line, validate_file, validate_line1);
@@ -314,18 +312,9 @@ case TAG_NUMBERS:
         if (bitmap_mark_vec(p)) return;
         h = numhdr(p);
         if (is_bignum_header(h)) return;
-#ifdef COMMON
         validate(real_part(p), __LINE__);
         validate(imag_part(p), __LINE__);
         return;
-#else /* COMMON */
-        term_printf("Bad numeric type found %.8lx\n", (long)h);
-        term_printf("Validation for %s at line %d of file %s (%d)\n",
-                    validate_why, validate_line, validate_file, validate_line1);
-        ensure_screen();
-        abort();
-        return;
-#endif /* COMMON */
 
 case TAG_BOXFLOAT:
         info = "boxfloat";
@@ -605,7 +594,6 @@ case TAG_NUMBERS:
             p = flip_mark_bit_h(h);
             goto ascend_from_vector;
         }
-#ifdef COMMON
         numhdr(p) = h = flip_mark_bit_h(h);
         w = real_part(p);   /* Or numerator of a ratio! */
         if (!is_immed(w))
@@ -627,11 +615,6 @@ case TAG_NUMBERS:
         q = &numhdr(p);
         p = h;
         goto ascend_from_vector;
-#else /* COMMON */
-        term_printf("Bad numeric code detected in GC\n");
-        ensure_screen();
-        abort(); /* Bad numeric type in CSL mode. */
-#endif /* COMMON */
 
 case TAG_BOXFLOAT:
         h = flthdr(p);
@@ -836,7 +819,6 @@ try_nothing:
         b = flip_mark_bit_p(w);
         goto ascend_from_vector;
 
-#ifdef COMMON
 case TAG_NUMBERS:
 /*
  * If I get back to a NUMBERS than it must have been a ratio or a complex.
@@ -863,7 +845,6 @@ case TAG_NUMBERS:
             p = w;
             goto descend;
         }
-#endif /* COMMON */
 
 case TAG_VECTOR:
 /*
@@ -1042,7 +1023,6 @@ case TAG_SYMBOL:
         ensure_screen();
         abort();
 
-#ifdef COMMON
 case TAG_NUMBERS:
 /*
  * If I get back to a NUMBERS than it must have been a ratio or a complex.
@@ -1072,7 +1052,6 @@ case TAG_NUMBERS:
             p = w;
             goto descend;
         }
-#endif /* COMMON */
 
 case TAG_VECTOR:
 /*
@@ -1208,9 +1187,7 @@ default:            /* The case-list is exhaustive! */
 case TAG_CONS:      /* Already processed */
 case TAG_FIXNUM:    /* Invalid here */
 case TAG_ODDS:      /* Invalid here */
-#ifdef COMMON
 case TAG_SFLOAT:    /* Invalid here */
-#endif /* COMMON */
         /* Fatal error really called for here */
         term_printf("\nBad object in GC (%.8lx)\n", (long)p);
         ensure_screen();
@@ -1287,7 +1264,6 @@ case TAG_NUMBERS:
             if (pp == NULL) return;
             else goto top;
         }
-#ifdef COMMON
         q = real_part(p);
         if (!is_immed(q))
         {   if (sp >= sl) non_recursive_mark(&real_part(p));
@@ -1295,12 +1271,6 @@ case TAG_NUMBERS:
         }
         pp = (Lisp_Object *)&imag_part(p);
         goto top;
-#else /* COMMON */
-        term_printf("Bad numeric type found %.8lx\n", (long)h);
-        ensure_screen();
-        abort();
-        return;
-#endif /* COMMON */
 
 case TAG_BOXFLOAT:
         if (is_marked_p(p)) p = flip_mark_bit_p(p);
@@ -1370,7 +1340,7 @@ in_vector:
     }
 }
 
-Lisp_Object MS_CDECL Lgc0(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lgc0(Lisp_Object nil, int nargs, ...)
 {
     argcheck(nargs, 0, "reclaim");
     return Lgc(nil, lisp_true);
@@ -1824,14 +1794,12 @@ static void relocate_vecheap(void)
             }
             else switch (type_of_header(h))
             {
-#ifdef COMMON
         case TYPE_RATNUM:
         case TYPE_COMPLEX_NUM:
                 relocate((Lisp_Object *)(low+CELL));
                 relocate((Lisp_Object *)(low+2*CELL));
                 other_mem += 2*CELL;
                 break;
-#endif /* COMMON */
         case TYPE_MIXED1:
         case TYPE_MIXED2:
         case TYPE_MIXED3:
@@ -1856,10 +1824,8 @@ static void relocate_vecheap(void)
         case TYPE_BIGNUM:
                 big_numbers += doubleword_align_up(length_of_header(h));
                 break;
-#ifdef COMMON
         case TYPE_SINGLE_FLOAT:
         case TYPE_LONG_FLOAT:
-#endif /* COMMON */
         case TYPE_DOUBLE_FLOAT:
                 box_floats += doubleword_align_up(length_of_header(h));
                 break;
@@ -2080,10 +2046,8 @@ static void copy(Lisp_Object *p)
                         strings += len; break;
                 case TYPE_BIGNUM:
                         big_numbers += len; break;
-#ifdef COMMON
                 case TYPE_SINGLE_FLOAT:
                 case TYPE_LONG_FLOAT:
-#endif /* COMMON */
                 case TYPE_DOUBLE_FLOAT:
                         box_floats += len; break;
                 case TYPE_SIMPLE_VEC:
@@ -2217,10 +2181,8 @@ static void copy(Lisp_Object *p)
 
                         switch (type_of_header(h))
                         {
-#ifdef COMMON
                     case TYPE_SINGLE_FLOAT:
                     case TYPE_LONG_FLOAT:
-#endif /* COMMON */
                     case TYPE_DOUBLE_FLOAT:
                     case TYPE_BIGNUM:
                             continue;
@@ -2241,10 +2203,8 @@ static void copy(Lisp_Object *p)
  */
                     default:
                             if (vector_holds_binary(h)) continue;
-#ifdef COMMON
                     case TYPE_RATNUM:
                     case TYPE_COMPLEX_NUM:
-#endif /* COMMON */
                             next = len - 2*CELL;
 #ifdef DEBUG_GC
                             term_printf("line %d next now %d\n", __LINE__, next);
@@ -2324,7 +2284,7 @@ typedef struct mapstore_item
 
 int profile_count_mode = 0;
 
-static int MS_CDECL profile_cf(const void *a, const void *b)
+static int profile_cf(const void *a, const void *b)
 {
     mapstore_item *aa = (mapstore_item *)a,
                   *bb = (mapstore_item *)b;
@@ -2507,7 +2467,7 @@ Lisp_Object Lmapstore(Lisp_Object nil, Lisp_Object a)
     return onevalue(res);
 }
 
-Lisp_Object MS_CDECL Lmapstore0(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lmapstore0(Lisp_Object nil, int nargs, ...)
 {
     argcheck(nargs, 0, "mapstore");
     return Lmapstore(nil, nil);
@@ -3524,4 +3484,3 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
 }
 
 /* end of file gc.c */
- 

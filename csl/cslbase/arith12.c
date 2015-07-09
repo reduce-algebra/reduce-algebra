@@ -1,4 +1,4 @@
-/*  arith12.c                         Copyright (C) 1990-2008 Codemist Ltd */
+/*  arith12.c                         Copyright (C) 1990-2015 Codemist Ltd */
 
 /*
  * Arithmetic functions... specials for Reduce (esp. factoriser)
@@ -7,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -401,7 +401,7 @@ Lisp_Object Lileq(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     return onevalue(Lispify_predicate(a <= b));
 }
 
-static Lisp_Object MS_CDECL Lilogand(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lilogand(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object r;
@@ -423,7 +423,7 @@ static Lisp_Object MS_CDECL Lilogand(Lisp_Object nil, int nargs, ...)
     return onevalue(r);
 }
 
-static Lisp_Object MS_CDECL Lilogor(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lilogor(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object r;
@@ -445,7 +445,7 @@ static Lisp_Object MS_CDECL Lilogor(Lisp_Object nil, int nargs, ...)
     return onevalue(r);
 }
 
-static Lisp_Object MS_CDECL Lilogxor(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lilogxor(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object r;
@@ -515,7 +515,7 @@ Lisp_Object Liminusp(Lisp_Object nil, Lisp_Object a)
     return onevalue(Lispify_predicate((int32_t)a < (int32_t)fixnum_of_int(0)));
 }
 
-static Lisp_Object MS_CDECL Liplus(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Liplus(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object r;
@@ -592,7 +592,7 @@ Lisp_Object Lisub1(Lisp_Object nil, Lisp_Object a)
     return onevalue((Lisp_Object)((int32_t)a - 0x10));
 }
 
-static Lisp_Object MS_CDECL Litimes(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Litimes(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object rr;

@@ -48,7 +48,10 @@ exports ashift, bfloat, bfminusp, bfnzp, bfp!:, bfzp, crim, crrl,
 
 imports eqcar, round!:mt;
 
+global '(!!minnorm !!minnegnorm);
+
 fluid '(!*noconvert !:bprec!: dmode!*);
+
 
 switch noconvert;
 
@@ -136,6 +139,25 @@ symbolic inline procedure timbf(u,v); rndpwr times!:(u,v);
 
 symbolic inline procedure bfminusp u;
   if atom u then minusp u else minusp!: u;
+
+% The following function is not intended for very general use - it should
+% only be needed within code that evaluates elementary functions of
+% complex arguments. It differs from the regulat bfminusp function in that
+% a native floating point value of -0.0 is reported as being negative.
+% checking for this may be expensive!
+
+symbolic procedure special_bfminusp u;
+  if atom u then
+    if floatp u and u = 0.0 then
+% If I am checking of a floating point zero is "negative" in thie special
+% manner I want to detect an IEEE "-0.0" value. At present the Lisp systems
+% I use do not provide direct ways of achieving this, however using atan2
+% does the job. I hope that this case arises infrequently so that the
+% apparent costs are unimportant.
+      atan2(1.0, u) < 0.0      % atan2(1.0, -0.0) => -pi/2, while
+                               % atan2(1.0, +0.0) => pi/2
+    else minusp u
+  else minusp!: u;
 
 symbolic inline procedure bfzp u;
   if atom u then zerop u else mt!: u=0;

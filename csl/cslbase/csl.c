@@ -1,4 +1,4 @@
-/* csl.c                            Copyright (C) 1989-2014 Codemist Ltd */
+/* csl.c                            Copyright (C) 1989-2015 Codemist Ltd */
 
 /*
  * This is Lisp system for use when delivering Lisp applications
@@ -7,7 +7,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -266,7 +266,7 @@ void show_stack()
 
 #define errcode(n) error_message_table[n]
 
-Lisp_Object MS_CDECL error(int nargs, int code, ...)
+Lisp_Object error(int nargs, int code, ...)
 /*
  * nargs indicates how many values have been provided AFTER the
  * code.  Thus nargs==0 will just display a simple message, nargs==1
@@ -321,7 +321,7 @@ Lisp_Object MS_CDECL error(int nargs, int code, ...)
     return nil;
 }
 
-Lisp_Object MS_CDECL cerror(int nargs, int code1, int code2, ...)
+Lisp_Object cerror(int nargs, int code1, int code2, ...)
 /*
  * nargs indicated the number of EXTRA args after code1 & code2.
  */
@@ -674,28 +674,28 @@ Lisp_Object wrong_no_nb(Lisp_Object env, Lisp_Object a1, Lisp_Object a2)
     else return aerror("function called with 2 args when 0 or >= 3 wanted");
 }
 
-Lisp_Object MS_CDECL wrong_no_1(Lisp_Object env, int nargs, ...)
+Lisp_Object wrong_no_1(Lisp_Object env, int nargs, ...)
 {
     CSL_IGNORE(env);
     CSL_IGNORE(nargs);
     return wrong(1, nargs, env);
 }
 
-Lisp_Object MS_CDECL wrong_no_2(Lisp_Object env, int nargs, ...)
+Lisp_Object wrong_no_2(Lisp_Object env, int nargs, ...)
 {
     CSL_IGNORE(env);
     CSL_IGNORE(nargs);
     return wrong(2, nargs, env);
 }
 
-Lisp_Object MS_CDECL bad_specialn(Lisp_Object env, int nargs, ...)
+Lisp_Object bad_specialn(Lisp_Object env, int nargs, ...)
 {
     CSL_IGNORE(env);
     CSL_IGNORE(nargs);
     return aerror("call to special form");
 }
 
-void MS_CDECL fatal_error(int code, ...)
+void fatal_error(int code, ...)
 {
 /*
  * Note that FATAL error messages are sent to the terminal, not to the
@@ -3243,10 +3243,8 @@ term_printf(
             if (errorset_min == 3) miscflags |= GC_MESSAGES | FASL_MESSAGES;
         }
 
-#ifndef COMMON
 #ifdef HAVE_FWIN
         fwin_menus(loadable_packages, switches, review_switch_settings);
-#endif
 #endif
 
 /*

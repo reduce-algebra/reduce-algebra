@@ -1,4 +1,4 @@
-/*  arith06.c                         Copyright (C) 1990-2008 Codemist Ltd */
+/*  arith06.c                         Copyright (C) 1990-2015 Codemist Ltd */
 
 /*
  * Arithmetic functions... lots of Lisp entrypoints.
@@ -6,7 +6,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -72,7 +72,6 @@ Lisp_Object Lsub1(Lisp_Object nil, Lisp_Object a)
     return onevalue(a);
 }
 
-#ifdef COMMON
 Lisp_Object Lfloat_2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
     CSL_IGNORE(nil);
@@ -86,7 +85,6 @@ Lisp_Object Lfloat_2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
         return onevalue(make_boxfloat(d, type_of_header(flthdr(b))));
     }
 }
-#endif
 
 Lisp_Object Lfloat(Lisp_Object nil, Lisp_Object a)
 {
@@ -95,7 +93,9 @@ Lisp_Object Lfloat(Lisp_Object nil, Lisp_Object a)
     if (!is_number(a)) return aerror1("bad arg for float", a);
     d = float_of_number(a);
 #ifdef COMMON
-/* Do we REALLY want single precision by default here? */
+/* Do we REALLY want single precision by default here?
+ * I count that as a stupid decision!
+ */
     return onevalue(make_boxfloat(d, TYPE_SINGLE_FLOAT));
 #else
     return onevalue(make_boxfloat(d, TYPE_DOUBLE_FLOAT));
@@ -397,13 +397,14 @@ Lisp_Object Linorm(Lisp_Object nil, Lisp_Object a, Lisp_Object k)
     return onevalue(a);
 }
 
-#ifdef COMMON
 /*
- * Implemented as a special form for Standard Lisp. Must be a regular
- * function in Common Lisp.
+ * Was once implemented as a special form for Standard Lisp. Must be a regular
+ * function in Common Lisp. The performance gains I thought I might see by
+ * using a special form in Standard Lisp certainly only apply in interpreted
+ * code and so I will not view them as at all important now.
  */
 
-static Lisp_Object MS_CDECL Lplus(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lplus(Lisp_Object nil, int nargs, ...)
 /*
  * This adds up a whole bunch of numbers together.
  *    (+ a1 a2 a3 a4 a5)                     is computed as
@@ -442,7 +443,7 @@ static Lisp_Object MS_CDECL Lplus(Lisp_Object nil, int nargs, ...)
     return onevalue(r);
 }
 
-static Lisp_Object MS_CDECL Ldifference(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Ldifference(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object r;
@@ -473,7 +474,7 @@ static Lisp_Object MS_CDECL Ldifference(Lisp_Object nil, int nargs, ...)
     return onevalue(r);
 }
 
-static Lisp_Object MS_CDECL Ltimes(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Ltimes(Lisp_Object nil, int nargs, ...)
 /*
  * This multiplies a whole bunch of numbers together.
  */
@@ -496,7 +497,7 @@ static Lisp_Object MS_CDECL Ltimes(Lisp_Object nil, int nargs, ...)
     return onevalue(r);
 }
 
-Lisp_Object MS_CDECL Lquotient_n(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lquotient_n(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object r;
@@ -522,29 +523,13 @@ Lisp_Object MS_CDECL Lquotient_n(Lisp_Object nil, int nargs, ...)
     return onevalue(r);
 }
 
-Lisp_Object Lquotient(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
+Lisp_Object LCLquotient(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
     a = CLquot2(a, b);
     errexit();
     return onevalue(a);
 }
 
-static Lisp_Object LSLquotient(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
-{
-    a = quot2(a, b);
-    errexit();
-    return onevalue(a);
-}
-
-Lisp_Object Lquotient_1(Lisp_Object nil, Lisp_Object b)
-{
-    b = CLquot2(fixnum_of_int(1), b);
-    errexit();
-    return onevalue(b);
-}
-
-#else  /* COMMON */
-
 Lisp_Object Lquotient(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
     a = quot2(a, b);
@@ -552,7 +537,19 @@ Lisp_Object Lquotient(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     return onevalue(a);
 }
 
-#endif /* COMMON */
+Lisp_Object LCLquotient_1(Lisp_Object nil, Lisp_Object b)
+{
+    b = CLquot2(fixnum_of_int(1), b);
+    errexit();
+    return onevalue(b);
+}
+
+Lisp_Object Lquotient_1(Lisp_Object nil, Lisp_Object b)
+{
+    b = quot2(fixnum_of_int(1), b);
+    errexit();
+    return onevalue(b);
+}
 
 Lisp_Object Ldivide(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
@@ -643,7 +640,7 @@ static struct bfz { boolopfn *fn; Lisp_Object base; } boolop_array[] =
 };
 
 
-static Lisp_Object MS_CDECL Lboolfn(Lisp_Object env, int nargs, ...)
+static Lisp_Object Lboolfn(Lisp_Object env, int nargs, ...)
 {
     va_list a;
     Lisp_Object nil = C_nil, r;
@@ -728,9 +725,7 @@ Lisp_Object Lplusp(Lisp_Object nil, Lisp_Object a)
  * Lisp mode but just 2 args in CSL.
  */
 
-#ifdef COMMON
-
-Lisp_Object MS_CDECL Leqn_n(Lisp_Object nil, int nargs, ...)
+Lisp_Object Leqn_n(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     int i;
@@ -770,7 +765,7 @@ Lisp_Object Leqn_1(Lisp_Object nil, Lisp_Object a)
     return onevalue(lisp_true);
 }
 
-Lisp_Object MS_CDECL Llessp_n(Lisp_Object nil, int nargs, ...)
+Lisp_Object Llessp_n(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     int i;
@@ -810,7 +805,7 @@ Lisp_Object Llessp_1(Lisp_Object nil, Lisp_Object a)
     return onevalue(lisp_true);
 }
 
-Lisp_Object MS_CDECL Lgreaterp_n(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lgreaterp_n(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     int i;
@@ -850,7 +845,7 @@ Lisp_Object Lgreaterp_1(Lisp_Object nil, Lisp_Object a)
     return onevalue(lisp_true);
 }
 
-static Lisp_Object MS_CDECL Lneqn(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lneqn(Lisp_Object nil, int nargs, ...)
 /*
  * /= is supposed to check that NO pair of args match.
  */
@@ -896,7 +891,7 @@ Lisp_Object Lneq_1(Lisp_Object nil, Lisp_Object a)
     return onevalue(lisp_true);
 }
 
-Lisp_Object MS_CDECL Lgeq_n(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lgeq_n(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     int i;
@@ -936,7 +931,7 @@ Lisp_Object Lgeq_1(Lisp_Object nil, Lisp_Object a)
     return onevalue(lisp_true);
 }
 
-Lisp_Object MS_CDECL Lleq_n(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lleq_n(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     int i;
@@ -976,63 +971,6 @@ Lisp_Object Lleq_1(Lisp_Object nil, Lisp_Object a)
     return onevalue(lisp_true);
 }
 
-#else /* COMMON */
-
-
-Lisp_Object Leqn(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
-{
-    CSLbool r;
-    r = numeq2(a, b);
-    errexit();
-    return onevalue(Lispify_predicate(r));
-}
-
-Lisp_Object Llessp(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
-{
-    CSLbool r;
-/*
- * I have strongish expectations that fixnum arithmetic is so imporant that
- * it is worth lifting the fixnum comparison up here.
- */
-    if (is_fixnum(a) && is_fixnum(b))
-        return onevalue(Lispify_predicate((int32_t)a<(int32_t)b));
-    r = lessp2(a, b);
-    errexit();
-    return onevalue(Lispify_predicate(r));
-}
-
-Lisp_Object Lgreaterp(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
-{
-    CSLbool r;
-    if (is_fixnum(a) && is_fixnum(b))
-        return onevalue(Lispify_predicate((int32_t)a>(int32_t)b));
-    r = lessp2(b, a);
-    errexit();
-    return onevalue(Lispify_predicate(r));
-}
-
-Lisp_Object Lgeq(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
-{
-    CSLbool r;
-    if (is_fixnum(a) && is_fixnum(b))
-        return onevalue(Lispify_predicate((int32_t)a>=(int32_t)b));
-    r = lessp2(a, b);
-    errexit();
-    return onevalue(Lispify_predicate(!r));
-}
-
-Lisp_Object Lleq(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
-{
-    CSLbool r;
-    if (is_fixnum(a) && is_fixnum(b))
-        return onevalue(Lispify_predicate((int32_t)a<=(int32_t)b));
-    r = lessp2(b, a);
-    errexit();
-    return onevalue(Lispify_predicate(!r));
-}
-
-#endif /* COMMON */
-
 Lisp_Object Lmax2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
     CSLbool w;
@@ -1057,7 +995,7 @@ Lisp_Object Lmin2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     else return onevalue(a);
 }
 
-Lisp_Object MS_CDECL Lmax(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lmax(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     int i;
@@ -1085,7 +1023,7 @@ Lisp_Object MS_CDECL Lmax(Lisp_Object nil, int nargs, ...)
     return onevalue(r);
 }
 
-Lisp_Object MS_CDECL Lmin(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lmin(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     int i;
@@ -1120,8 +1058,6 @@ Lisp_Object Lrational(Lisp_Object nil, Lisp_Object a)
     return onevalue(a);
 }
 
-#ifdef COMMON
-
 static Lisp_Object Lmanexp(Lisp_Object nil, Lisp_Object a)
 {
     int x;
@@ -1140,7 +1076,6 @@ static Lisp_Object Lrationalize(Lisp_Object nil, Lisp_Object a)
     errexit();
     return onevalue(a);
 }
-#endif
 
 /*
  * The following random number generator is taken from the Norcroft
@@ -1152,6 +1087,10 @@ static Lisp_Object Lrationalize(Lisp_Object nil, Lisp_Object a)
  * here! But it is tolerably fast and less dreadful than those old
  * 32-bit linear congruential mistakes. The initial values here
  * are a repeatable set of initial "random" values.
+ *
+ * Well this was now implemented quite a long while ago and the standards
+ * for pseudo-random sequences have probably moved on sunstantially. So this
+ * probably really deserves review!
  */
 
 static uint32_t random_number_seed[55] =
@@ -1293,7 +1232,7 @@ void Csrand(uint32_t seed, uint32_t seed2)
     CSL_MD5_Final((unsigned char *)&random_number_seed[0]);
 /*
  * The remainder of the vector gets filled using a simple linear
- * congruential scheme. Note that MD5 filled in BYTES andy what I need next
+ * congruential scheme. Note that MD5 filled in BYTES and what I need next
  * is an INTEGER, so to be byte-order insensitive I need to do things
  * the long way.
  */
@@ -1333,7 +1272,6 @@ void Csrand(uint32_t seed, uint32_t seed2)
 #endif
 }
 
-#ifdef COMMON
 Lisp_Object Lrandom_2(Lisp_Object nil, Lisp_Object a, Lisp_Object bb)
 {
     Lisp_Object b;
@@ -1443,7 +1381,6 @@ Lisp_Object Lrandom_2(Lisp_Object nil, Lisp_Object a, Lisp_Object bb)
     }
     return aerror1("random", a);
 }
-#endif
 
 Lisp_Object Lrandom(Lisp_Object nil, Lisp_Object a)
 {
@@ -1550,7 +1487,7 @@ Lisp_Object Lrandom(Lisp_Object nil, Lisp_Object a)
     return aerror1("random", a);
 }
 
-Lisp_Object MS_CDECL Lnext_random(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lnext_random(Lisp_Object nil, int nargs, ...)
 /*
  * Returns a random positive fixnum.  27 bits in this Lisp!
  */
@@ -1588,7 +1525,9 @@ Lisp_Object Lmake_random_state1(Lisp_Object nil, Lisp_Object a)
  * and it uses the md5 message digest algorithm to reduce it to a
  * numeric value in the range 0 to 2^128.
  * Well actually I will also allow an arbitrary expression, which I
- * will treat as if it has to be printed...
+ * will often treat as if it has to be printed... Note that these days
+ * md5 is not considered secure, and sha1 that followed it is also not
+ * considered secure, so anybody worried by security needs at least sha2!
  */
 
 Lisp_Object Lmd5(Lisp_Object env, Lisp_Object a)
@@ -1899,10 +1838,8 @@ setup_type const arith06_setup[] =
     {"msd",                     Lmsd, too_many_1, wrong_no_1},
     {"oddp",                    Loddp, too_many_1, wrong_no_1},
     {"onep",                    Lonep, too_many_1, wrong_no_1},
-    {"plus2",                   too_few_2, Lplus2, wrong_no_2},
     {"plusp",                   Lplusp, too_many_1, wrong_no_1},
     {"rational",                Lrational, too_many_1, wrong_no_1},
-    {"times2",                  too_few_2, Ltimes2, wrong_no_2},
     {"zerop",                   Lzerop, too_many_1, wrong_no_1},
     {"md5",                     Lmd5, too_many_1, wrong_no_1},
     {"md5string",               Lmd5string, too_many_1, wrong_no_1},
@@ -1911,7 +1848,7 @@ setup_type const arith06_setup[] =
     {"*",                       Lidentity, Ltimes2, Ltimes},
     {"+",                       Lidentity, Lplus2, Lplus},
     {"-",                       Lminus, Ldifference2, Ldifference},
-    {"/",                       Lquotient_1, Lquotient, Lquotient_n},
+    {"/",                       LCLquotient_1, LCLquotient, LCLquotient_n},
     {"/=",                      Lneq_1, Lneq_2, Lneqn},
     {"1+",                      Ladd1, too_many_1, wrong_no_1},
     {"1-",                      Lsub1, too_many_1, wrong_no_1},
@@ -1920,23 +1857,27 @@ setup_type const arith06_setup[] =
     {"=",                       Leqn_1, Leqn, Leqn_n},
     {">",                       Lgreaterp_1, Lgreaterp, Lgreaterp_n},
     {">=",                      Lgeq_1, Lgeq, Lgeq_n},
-    {"float",                   Lfloat, Lfloat_2, wrong_no_1},
     {"logior",                  Lidentity, Llogor2, Lboolfn},
     {"random",                  Lrandom, Lrandom_2, wrong_no_1},
     {"rationalize",             Lrationalize, too_many_1, wrong_no_1},
     {"manexp",                  Lmanexp, too_many_1, wrong_no_1},
+    {"next-random-number",      wrong_no_0a, wrong_no_0b, Lnext_random},
     {"rem",                     too_few_2, Lrem, wrong_no_2},
+#else
+    {"random-number",           Lrandom, too_many_1, wrong_no_1},
+    {"random-fixnum",           wrong_no_0a, wrong_no_0b, Lnext_random},
+#endif
 /*
- * I also provide the old style names to make porting code easier for me
+ * I always provide the old style names to make porting code easier for me
  */
+    {"float",                   Lfloat, Lfloat_2, wrong_no_1},
     {"times",                   Lidentity, Ltimes2, Ltimes},
     {"plus",                    Lidentity, Lplus2, Lplus},
     {"times2",                  too_few_2, Ltimes2, wrong_no_2},
     {"plus2",                   too_few_2, Lplus2, wrong_no_2},
-    {"minus",                   Lminus, too_many_1, wrong_no_1},
-    {"difference",              too_few_2, Ldifference2, Ldifference},
+    {"difference",              Lminus, Ldifference2, Ldifference},
 /* I leave QUOTIENT as the integer-truncating form, while "/" gives ratios */
-    {"quotient",                too_few_2, LSLquotient, wrong_no_2},
+    {"quotient",                Lquotient_1, Lquotient, Lquotient_n},
     {"remainder",               too_few_2, Lrem, wrong_no_2},
     {"add1",                    Ladd1, too_many_1, wrong_no_1},
     {"sub1",                    Lsub1, too_many_1, wrong_no_1},
@@ -1945,30 +1886,8 @@ setup_type const arith06_setup[] =
     {"eqn",                     Leqn_1, Leqn, Leqn_n},
     {"greaterp",                Lgreaterp_1, Lgreaterp, Lgreaterp_n},
     {"geq",                     Lgeq_1, Lgeq, Lgeq_n},
-    {"next-random-number",      wrong_no_0a, wrong_no_0b, Lnext_random},
     {"logor",                   Lidentity, Llogor2, Lboolfn},
     {"lor",                     Lidentity, Llogor2, Lboolfn},
-#else
-    {"add1",                    Ladd1, too_many_1, wrong_no_1},
-    {"difference",              too_few_2, Ldifference2, wrong_no_2},
-    {"eqn",                     too_few_2, Leqn, wrong_no_2},
-    {"float",                   Lfloat, too_many_1, wrong_no_1},
-    {"geq",                     too_few_2, Lgeq, wrong_no_2},
-    {"greaterp",                too_few_2, Lgreaterp, wrong_no_2},
-    {"leq",                     too_few_2, Lleq, wrong_no_2},
-    {"lessp",                   too_few_2, Llessp, wrong_no_2},
-    {"logor",                   Lidentity, Llogor2, Lboolfn},
-    {"quotient",                too_few_2, Lquotient, wrong_no_2},
-/*
- * I used to call these just random and next-random-number, but REDUCE
- * wants its own versions of those (for cross-Lisp consistency) so I use
- * alternative names here.
- */
-    {"random-number",           Lrandom, too_many_1, wrong_no_1},
-    {"random-fixnum",           wrong_no_0a, wrong_no_0b, Lnext_random},
-    {"remainder",               too_few_2, Lrem, wrong_no_2},
-    {"sub1",                    Lsub1, too_many_1, wrong_no_1},
-#endif
     {NULL,                      0, 0, 0}
 };
 

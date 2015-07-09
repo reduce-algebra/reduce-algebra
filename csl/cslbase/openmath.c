@@ -1,9 +1,9 @@
-/* openmath.c                                  Copyright (C) 1998 NAG Ltd. */
+/* openmath.c                                  Copyright (C) 2015 NAG Ltd. */
 
 /* This file was contributed to CSL by NAG Ltd */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -400,7 +400,7 @@ om_setLispProperty(Lisp_Object obj, Lisp_Object name, Lisp_Object val)
  * Exposed OpenMath Device manipulation functions.
  */
 
-Lisp_Object MS_CDECL
+Lisp_Object
 om_openFileDev(Lisp_Object nil, int nargs, ...)
 /* Opens a file and creates an OpenMath device for it. The return value is the
  * LISP object which wraps the created device. The parameters are:
@@ -651,7 +651,7 @@ om_getConnOutDev(Lisp_Object nil, Lisp_Object lconn)
  * Exposed OpenMath client/server functions.
  */
 
-Lisp_Object MS_CDECL
+Lisp_Object
 om_connectTCP(Lisp_Object nil, int nargs, ...)
 {
 	va_list args;
@@ -1176,7 +1176,7 @@ om_putSymbol(Lisp_Object nil, Lisp_Object ldev, Lisp_Object val)
 }
 
 
-Lisp_Object MS_CDECL
+Lisp_Object
 om_putSymbol2(Lisp_Object nil, int nargs, ...)
 /*
  * A different form of putSymbol, where the cd and symbol names are given as strings.

@@ -182,8 +182,8 @@ extern void mov_r32_addr(int dest, void *source);
 extern void mov_addr_r32(void *dest, int source);
 extern void lea_m32_r32_disp(int source, int dest, int disp);
 extern void lea_m32_r32_disp(int source, int dest, int disp);
-extern void MS_CDECL Jpush(int nargs, ...);
-extern void MS_CDECL Jpop(int nargs, ...);
+extern void Jpush(int nargs, ...);
+extern void Jpop(int nargs, ...);
 
 /* jit2.c */
 

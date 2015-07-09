@@ -12,6 +12,7 @@
 #     --install   copy CSL results back into the main source tree as
 #                 a fresh set of reference log files
 #
+#     --debug     pass "-g" flags to CSL and Jlisp to help debugging
 #     --csl       run tests using CSL
 #     --psl       run tests using PSL
 #     --jlisp     run tests using Jlisp
@@ -35,6 +36,7 @@ here=`dirname "$here"`
 install="no"
 keep="no"
 platform=""
+debug="no"
 
 csl="no"
 cslboot="no"
@@ -71,6 +73,10 @@ do
         exit 1
       fi
       keep="yes";
+      shift
+      ;;
+    --debug)
+      debug="yes"
       shift
       ;;
     --csl)
@@ -141,6 +147,13 @@ then
   csl="yes"
   psl="yes"
   platform=" csl psl"
+fi
+
+if test "$debug" = "yes"
+then
+  gflag="-g"
+else
+  gflag=""
 fi
 
 loader=""
@@ -276,6 +289,7 @@ SED1='/^Total time taken:/d;
       /^Step /d;
       /^time to formulate/d;
       /\*\*\* turned off switch/d;
+      /^>> accum\. cpu time :/d
       /^max_gc_int :/d;
       /^max_gc_fac :/d'
 
@@ -293,10 +307,11 @@ csltest() {
 name=$1
 command=$2
 showname=$3
+gflag=$4
 
 mkdir -p $name-times
 
-$timecmd sh -c "$here/bin/$command -k160m -v -w > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+$timecmd sh -c "$here/bin/$command -v -w $gflag > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -334,7 +349,7 @@ fi
 
 if test "$csl" = "yes"
 then
-  csltest "csl" "redcsl" "CSL"
+  csltest "csl" "redcsl" "CSL" "$gflag"
 
   if test "$install" = "yes"
   then
@@ -410,6 +425,7 @@ jlisptest() {
 name=$1
 command=$2
 showname=$3
+gflag=$4
 
 mkdir -p $name-times
 
@@ -419,7 +435,7 @@ then
   wh=`cygpath -m $wh`
 fi
 
-$timecmd sh -c "java -jar $wh/jlisp/$command -v -w > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+$timecmd sh -c "java -jar $wh/jlisp/$command -v -w $gflag > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -456,7 +472,7 @@ fi
 
 if test "$jlisp" = "yes"
 then
-  jlisptest "jlisp" "reduce.jar" "Jlisp"
+  jlisptest "jlisp" "reduce.jar" "Jlisp" "$gflag"
 fi
 
 if test "$jlispboot" = "yes"

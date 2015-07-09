@@ -26,7 +26,7 @@ module paraset;   % Parameter determining module.
 %
 
 
-% Last change date: 23 June 1993.
+% Last change date: 25 June 2015.
 
 % Paraset.red determines the parameters !!nfpd, !!nbfpd, and !!maxbflexp
 % for floating point numbers.  !!nfpd, !!nbfpd, and !!maxbflexp are
@@ -94,6 +94,7 @@ symbolic procedure find!!minnorm();
 % will end on an underflow with c zero.
      if c = 0.0 then !!minnorm := b
      else !!minnorm := c;
+     !!minnegnorm := -!!minnorm
    end;
 
 % I believe I might now retire this in favour of fp!-infinite but BEWARE
@@ -151,7 +152,7 @@ symbolic inline procedure fp!-finite x;
   eqn(x-x, 0.0);
 
 symbolic inline procedure fp!-subnorm x;
-  abs x < !!minnorm;
+  x < !!minnorm and x > !!minnegnorm;
 
 
 endmodule;

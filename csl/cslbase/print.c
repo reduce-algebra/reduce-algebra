@@ -37,9 +37,7 @@
 
 #include "headers.h"
 
-#ifdef COMMON
 #include "clsyms.h"
-#endif
 
 #ifdef WIN32
 #include <windows.h>
@@ -119,7 +117,7 @@ void ensure_screen()
     if (spool_file != NULL) fflush(spool_file);
 }
 
-void MS_CDECL term_printf(char *fmt, ...)
+void term_printf(char *fmt, ...)
 {
     va_list a;
     char print_temp[VPRINTF_CHUNK], *p;
@@ -131,7 +129,7 @@ void MS_CDECL term_printf(char *fmt, ...)
     va_end(a);
 }
 
-void MS_CDECL stdout_printf(char *fmt, ...)
+void stdout_printf(char *fmt, ...)
 {
     va_list a;
     char print_temp[VPRINTF_CHUNK], *p;
@@ -147,7 +145,7 @@ void MS_CDECL stdout_printf(char *fmt, ...)
     va_end(a);
 }
 
-void MS_CDECL err_printf(char *fmt, ...)
+void err_printf(char *fmt, ...)
 {
     va_list a;
     char print_temp[VPRINTF_CHUNK], *p;
@@ -163,7 +161,7 @@ void MS_CDECL err_printf(char *fmt, ...)
     va_end(a);
 }
 
-void MS_CDECL debug_printf(char *fmt, ...)
+void debug_printf(char *fmt, ...)
 {
     va_list a;
     char print_temp[VPRINTF_CHUNK], *p;
@@ -179,7 +177,7 @@ void MS_CDECL debug_printf(char *fmt, ...)
     va_end(a);
 }
 
-void MS_CDECL trace_printf(char *fmt, ...)
+void trace_printf(char *fmt, ...)
 {
     va_list a;
     char print_temp[VPRINTF_CHUNK], *p;
@@ -527,7 +525,7 @@ Lisp_Object make_stream_handle(void)
 
 #ifdef COMMON
 
-Lisp_Object MS_CDECL Lmake_broadcast_stream_n(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lmake_broadcast_stream_n(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object r = nil, w, w1;
     va_list a;
@@ -565,7 +563,7 @@ Lisp_Object Lmake_broadcast_stream_2(Lisp_Object nil, Lisp_Object a, Lisp_Object
     return Lmake_broadcast_stream_n(nil, 2, a, b);
 }
 
-Lisp_Object MS_CDECL Lmake_concatenated_stream_n(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lmake_concatenated_stream_n(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object r = nil, w, w1;
     va_list a;
@@ -656,7 +654,7 @@ Lisp_Object Lmake_echo_stream(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     return onevalue(w);
 }
 
-Lisp_Object MS_CDECL Lmake_string_input_stream_n(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lmake_string_input_stream_n(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil); CSL_IGNORE(nargs);
     return aerror("make-string-input-stream");
@@ -672,7 +670,7 @@ Lisp_Object Lmake_string_input_stream_2(Lisp_Object nil, Lisp_Object a, Lisp_Obj
     return Lmake_string_input_stream_n(nil, 2, a, b);
 }
 
-Lisp_Object MS_CDECL Lmake_string_output_stream(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lmake_string_output_stream(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object w;
     argcheck(nargs, 0, "make-string-output-stream");
@@ -741,6 +739,7 @@ int char_to_terminal(int c, Lisp_Object dummy)
         io_now++;
     }
     if (c == '\n' || c == '\f') terminal_column = 0;
+    else if (c == '\b') terminal_column--;
     else if (c == '\t') terminal_column = (terminal_column + 8) & ~7;
     else if ((c & 0xc0) == 0x80) /* do nothing */;
     else terminal_column++;
@@ -1051,7 +1050,7 @@ static int tmpSerial = 0;
 
 static char tempname[LONGEST_LEGAL_FILENAME];
 
-Lisp_Object MS_CDECL Ltmpnam1(Lisp_Object nil, Lisp_Object extn)
+Lisp_Object Ltmpnam1(Lisp_Object nil, Lisp_Object extn)
 /*
  * Returns a string that is suitable for use as the name of a temporary
  * file and that has the given extension. Note that this is generally NOT
@@ -1061,18 +1060,19 @@ Lisp_Object MS_CDECL Ltmpnam1(Lisp_Object nil, Lisp_Object extn)
  */
 {
     char *suffix;
+    const char *suffix1;
     int32_t suffixlen = 0;
     Lisp_Object r;
     suffix = get_string_data(extn, "tmpnam", &suffixlen);
     errexit();
-    suffix = CSLtmpnam(suffix, suffixlen);
-    if (suffix == NULL) return onevalue(nil);
-    r = make_string(suffix);
+    suffix1 = CSLtmpnam(suffix, suffixlen);
+    if (suffix1 == NULL) return onevalue(nil);
+    r = make_string(suffix1);
     errexit();
     return onevalue(r);
 }
 
-Lisp_Object MS_CDECL Ltmpnam(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ltmpnam(Lisp_Object nil, int nargs, ...)
 /*
  * Returns a string that is suitable for use as the name of a temporary
  * file. Note that this is generally NOT a comfortable thing to use,
@@ -1090,7 +1090,7 @@ Lisp_Object MS_CDECL Ltmpnam(Lisp_Object nil, int nargs, ...)
  * that are clearly intended to be useful but which are in fact a nuisance.
  */
 {
-    char *s;
+    const char *s;
     Lisp_Object r;
     argcheck(nargs, 0, "tmpnam");
     s = CSLtmpnam("tmp", 3);
@@ -1099,7 +1099,7 @@ Lisp_Object MS_CDECL Ltmpnam(Lisp_Object nil, int nargs, ...)
     return onevalue(r);
 }
 
-Lisp_Object MS_CDECL Ltmpdir(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ltmpdir(Lisp_Object nil, int nargs, ...)
 /*
  * Returns a string that is suitable for use as the name of a directory
  * to hold temporary files. Does not have a trailing "/", so will be
@@ -1711,7 +1711,7 @@ Lisp_Object Ldirectoryp(Lisp_Object nil, Lisp_Object name)
 }
 
 
-Lisp_Object MS_CDECL Lget_current_directory(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lget_current_directory(Lisp_Object nil, int nargs, ...)
 {
     char filename[LONGEST_LEGAL_FILENAME];
     int len;
@@ -1725,7 +1725,7 @@ Lisp_Object MS_CDECL Lget_current_directory(Lisp_Object nil, int nargs, ...)
     return onevalue(w);
 }
 
-Lisp_Object MS_CDECL Luser_homedir_pathname(Lisp_Object nil, int nargs, ...)
+Lisp_Object Luser_homedir_pathname(Lisp_Object nil, int nargs, ...)
 {
     char home[LONGEST_LEGAL_FILENAME];
     int len;
@@ -1739,7 +1739,7 @@ Lisp_Object MS_CDECL Luser_homedir_pathname(Lisp_Object nil, int nargs, ...)
     return onevalue(w);
 }
 
-Lisp_Object MS_CDECL Lget_lisp_directory(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lget_lisp_directory(Lisp_Object nil, int nargs, ...)
 {
     char filename[LONGEST_LEGAL_FILENAME];
     int len;
@@ -1758,7 +1758,7 @@ Lisp_Object MS_CDECL Lget_lisp_directory(Lisp_Object nil, int nargs, ...)
     return onevalue(w);
 }
 
-Lisp_Object MS_CDECL Lfind_gnuplot(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lfind_gnuplot(Lisp_Object nil, int nargs, ...)
 {
     char filename[LONGEST_LEGAL_FILENAME];
     Lisp_Object w;
@@ -1784,7 +1784,7 @@ Lisp_Object MS_CDECL Lfind_gnuplot(Lisp_Object nil, int nargs, ...)
     return onevalue(w);
 }
 
-Lisp_Object MS_CDECL Lgetpid(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lgetpid(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object w;
     argcheck(nargs, 0, "getpid");
@@ -2083,8 +2083,8 @@ void internal_prin(Lisp_Object u, int blankp)
     Lisp_Object w, nil = C_nil;
     int32_t len, lenchars, k;
     char my_buff[68];
-#ifdef COMMON
     int bl = blankp & 2;
+#ifdef COMMON
 /*
  * There is a fairly shameless FUDGE here. When I come to need to print
  * the package part of a symbol as in ppp:xxx (or even |)p(|::|.| if I
@@ -2152,14 +2152,12 @@ case TAG_CONS:
         putc_stream(')', active_stream);
         return;
 
-#ifdef COMMON
 case TAG_SFLOAT:
         {   Float_union uu;
             uu.i = u - TAG_SFLOAT;
             fp_sprint(my_buff, (double)uu.f, print_precision);
         }
         goto float_print_tidyup;
-#endif
 
 case TAG_FIXNUM:
         if (escaped_printing & escape_hex)
@@ -2398,8 +2396,6 @@ case TAG_VECTOR:
                                 slen += 6;  /* render as #hash;WORD; */
 #ifdef COMMON
                             else if (ch == '\\') slen += 2;
-#endif
-#ifdef COMMON
 /*
  * I now guard this with "#ifdef COMMON". It is associated with displaying
  * control characters within strings as escapes, as in a newline within a
@@ -2611,7 +2607,6 @@ case TAG_VECTOR:
                                  *(void **)&elt(u, 0));
                 goto print_my_buff;
 
-#ifdef COMMON
     case TYPE_BITVEC1:  bl = 1; break;
     case TYPE_BITVEC2:  bl = 2; break;
     case TYPE_BITVEC3:  bl = 3; break;
@@ -2620,7 +2615,6 @@ case TAG_VECTOR:
     case TYPE_BITVEC6:  bl = 6; break;
     case TYPE_BITVEC7:  bl = 7; break;
     case TYPE_BITVEC8:  bl = 8; break;
-#endif
 
 #ifndef COMMON
     case TYPE_STRUCTURE:
@@ -2820,7 +2814,6 @@ case TAG_VECTOR:
             return;
     default:goto error_case;
             }
-#ifdef COMMON
 /* Here for bit-vectors */
             outprefix(blankp, 2+8*(len-1)+bl);
             putc_stream('#', active_stream), putc_stream('*', active_stream);
@@ -2844,7 +2837,6 @@ case TAG_VECTOR:
             }
             popv(1);
             return;
-#endif
         }
 
 /*
@@ -3271,11 +3263,9 @@ case TAG_SYMBOL:
 case TAG_BOXFLOAT:
         switch (type_of_header(flthdr(u)))
         {
-#ifdef COMMON
     case TYPE_SINGLE_FLOAT:
             fp_sprint(my_buff, (double)single_float_val(u), print_precision);
             break;
-#endif
     case TYPE_DOUBLE_FLOAT:
 /*
  * Hexadecimal printing of floating point numbers is only provided for
@@ -3300,19 +3290,15 @@ case TAG_BOXFLOAT:
             }
             else fp_sprint(my_buff, double_float_val(u), print_precision);
             break;
-#ifdef COMMON
     case TYPE_LONG_FLOAT:
 /* This just uses a regular double... */
-            fo_sprint(my_buff, (double)long_float_val(u), print_precision);
+            fp_sprint(my_buff, (double)long_float_val(u), print_precision);
             break;
-#endif
     default:
             sprintf(my_buff, "?%.8lx?", (long)(uint32_t)u);
             break;
         }
-#ifdef COMMON
     float_print_tidyup:
-#endif
         break;
 
 case TAG_NUMBERS:
@@ -3335,7 +3321,6 @@ case TAG_NUMBERS:
                     (escaped_printing & escape_nolinebreak) || tmprint_flag);
             return;
         }
-#ifdef COMMON
         else if (is_ratio(u))
         {   push(u);
 /*
@@ -3365,7 +3350,6 @@ case TAG_NUMBERS:
             putc_stream(')', active_stream);
             return;
         }
-#endif
         /* Else drop through to treat as an error */
 default:
 error_case:
@@ -3997,13 +3981,13 @@ Lisp_Object Llinelength(Lisp_Object nil, Lisp_Object a)
     else return onevalue(fixnum_of_int(oll));
 }
 
-static Lisp_Object MS_CDECL Llinelength0(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Llinelength0(Lisp_Object nil, int nargs, ...)
 {
     argcheck(nargs, 0, "linelength");
     return Llinelength(nil, nil);
 }
 
-Lisp_Object MS_CDECL Lprint_imports(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lprint_imports(Lisp_Object nil, int nargs, ...)
 {
     char *p;
     const char *s;
@@ -4028,7 +4012,7 @@ Lisp_Object MS_CDECL Lprint_imports(Lisp_Object nil, int nargs, ...)
     return onevalue(nil);
 }
 
-Lisp_Object MS_CDECL Lprint_csl_headers(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lprint_csl_headers(Lisp_Object nil, int nargs, ...)
 {
     char *p;
     int i, ch;
@@ -4044,7 +4028,7 @@ Lisp_Object MS_CDECL Lprint_csl_headers(Lisp_Object nil, int nargs, ...)
     return onevalue(nil);
 }
 
-Lisp_Object MS_CDECL Lprint_config_header(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lprint_config_header(Lisp_Object nil, int nargs, ...)
 {
     char *p;
     int i, ch;
@@ -4147,7 +4131,7 @@ static Lisp_Object Lprinbinary2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     return onevalue(a);
 }
 
-Lisp_Object MS_CDECL Lposn(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lposn(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil);
     argcheck(nargs, 0, "posn");
@@ -4165,7 +4149,7 @@ Lisp_Object Lposn_1(Lisp_Object nil, Lisp_Object stream)
         other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, stream)));
 }
 
-Lisp_Object MS_CDECL Llposn(Lisp_Object nil, int nargs, ...)
+Lisp_Object Llposn(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil);
     argcheck(nargs, 0, "lposn");
@@ -4395,7 +4379,7 @@ Lisp_Object Lprintc(Lisp_Object nil, Lisp_Object a)
     return onevalue(a);
 }
 
-Lisp_Object MS_CDECL Lterpri(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lterpri(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object stream = qvalue(standard_output);
     argcheck(nargs, 0, "terpri");
@@ -4406,7 +4390,7 @@ Lisp_Object MS_CDECL Lterpri(Lisp_Object nil, int nargs, ...)
     return onevalue(nil);
 }
 
-Lisp_Object MS_CDECL Lflush(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lflush(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object stream = qvalue(standard_output);
 #ifdef COMMON
@@ -4457,7 +4441,7 @@ Lisp_Object Lxtab(Lisp_Object nil, Lisp_Object a)
     return onevalue(nil);
 }
 
-Lisp_Object MS_CDECL Leject(Lisp_Object nil, int nargs, ...)
+Lisp_Object Leject(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object stream = qvalue(standard_output);
     argcheck(nargs, 0, "eject");
@@ -4691,7 +4675,7 @@ static Lisp_Object Lbinary_prinfloat(Lisp_Object nil, Lisp_Object a)
     return onevalue(nil);
 }
 
-static Lisp_Object MS_CDECL Lbinary_terpri(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lbinary_terpri(Lisp_Object nil, int nargs, ...)
 {
     argcheck(nargs, 0, "binary_terpri");
     if (binary_outfile != NULL) PUTC('\n', binary_outfile);
@@ -4699,7 +4683,7 @@ static Lisp_Object MS_CDECL Lbinary_terpri(Lisp_Object nil, int nargs, ...)
     return onevalue(nil);
 }
 
-static Lisp_Object MS_CDECL Lbinary_close_output(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lbinary_close_output(Lisp_Object nil, int nargs, ...)
 {
     argcheck(nargs, 0, "binary-close-output");
     if (binary_outfile != NULL)
@@ -4733,7 +4717,7 @@ static Lisp_Object Lbinary_select_input(Lisp_Object nil, Lisp_Object a)
     return onevalue(nil);
 }
 
-static Lisp_Object MS_CDECL Lbinary_readbyte(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lbinary_readbyte(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil);
     argcheck(nargs, 0, "binary-readbyte");
@@ -4745,7 +4729,7 @@ static Lisp_Object MS_CDECL Lbinary_readbyte(Lisp_Object nil, int nargs, ...)
     return onevalue(fixnum_of_int((int32_t)GETC(binary_infile) & 0xff));
 }
 
-static Lisp_Object MS_CDECL Lbinary_read2(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lbinary_read2(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil);
     argcheck(nargs, 0, "binary-read2");
@@ -4761,7 +4745,7 @@ static Lisp_Object MS_CDECL Lbinary_read2(Lisp_Object nil, int nargs, ...)
     }
 }
 
-static Lisp_Object MS_CDECL Lbinary_read3(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lbinary_read3(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil);
     argcheck(nargs, 0, "binary-read3");
@@ -4778,7 +4762,7 @@ static Lisp_Object MS_CDECL Lbinary_read3(Lisp_Object nil, int nargs, ...)
     }
 }
 
-static Lisp_Object MS_CDECL Lbinary_read4(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lbinary_read4(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil);
     argcheck(nargs, 0, "binary-read4");
@@ -4797,7 +4781,7 @@ static Lisp_Object MS_CDECL Lbinary_read4(Lisp_Object nil, int nargs, ...)
     }
 }
 
-static Lisp_Object MS_CDECL Lbinary_readfloat(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lbinary_readfloat(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object r = make_boxfloat(0.0, TYPE_DOUBLE_FLOAT);
     uint32_t w;
@@ -4822,7 +4806,7 @@ static Lisp_Object MS_CDECL Lbinary_readfloat(Lisp_Object nil, int nargs, ...)
     return onevalue(r);
 }
 
-static Lisp_Object MS_CDECL Lbinary_close_input(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lbinary_close_input(Lisp_Object nil, int nargs, ...)
 {
     argcheck(nargs, 0, "binary-close-input");
     if (binary_infile != NULL)

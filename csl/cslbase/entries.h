@@ -1,9 +1,9 @@
-/* entries.h                            Copyright (C) Codemist 1991-2008 */
+/* entries.h                            Copyright (C) Codemist 1991-2015 */
 
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -44,30 +44,30 @@
 extern "C" {
 #endif
 
-extern Lisp_Object MS_CDECL Lbatchp(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL bytecounts(Lisp_Object nil, int nargs, ...);
-extern Lisp_Object MS_CDECL Ldate(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Ldatestamp(Lisp_Object nil, int nargs, ...);
-extern Lisp_Object MS_CDECL Leject(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lerror(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lerror0(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lflush(Lisp_Object nil, int nargs, ...);
-extern Lisp_Object MS_CDECL Lgc0(Lisp_Object nil, int nargs, ...);
-extern Lisp_Object MS_CDECL Lgctime(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lgensym(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Llist_modules(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Llibrary_members0(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Llposn(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lmapstore0(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lnext_random(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lposn(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lread(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lreadch(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lrtell(Lisp_Object nil, int nargs, ...);
-extern Lisp_Object MS_CDECL Lterpri(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Ltime(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Ltmpnam(Lisp_Object nil, int nargs, ...);
-extern Lisp_Object MS_CDECL Ltyi(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lbatchp(Lisp_Object env, int nargs, ...);
+extern Lisp_Object bytecounts(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object Ldate(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Ldatestamp(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object Leject(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lerror(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lerror0(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lflush(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object Lgc0(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object Lgctime(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lgensym(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Llist_modules(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Llibrary_members0(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Llposn(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lmapstore0(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lnext_random(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lposn(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lread(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lreadch(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lrtell(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object Lterpri(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Ltime(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Ltmpnam(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object Ltyi(Lisp_Object env, int nargs, ...);
 
 /*
  * things with one arg...
@@ -467,102 +467,102 @@ extern Lisp_Object Lunintern_2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
  * Things with three args or more args
  */
 
-extern Lisp_Object MS_CDECL autoloadn(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL bytecoded0(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL bytecoded3(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL bytecodedn(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL byteoptn(Lisp_Object def, int nargs, ...);
-extern Lisp_Object MS_CDECL byteoptrestn(Lisp_Object def, int nargs, ...);
-extern Lisp_Object MS_CDECL double_bytecoded0(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL double_bytecoded3(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL double_bytecodedn(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL double_byteoptn(Lisp_Object def, int nargs, ...);
-extern Lisp_Object MS_CDECL double_byteoptrestn(Lisp_Object def, int nargs, ...);
-extern Lisp_Object MS_CDECL double_funargedn(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL double_hardoptn(Lisp_Object def, int nargs, ...);
-extern Lisp_Object MS_CDECL double_hardoptrestn(Lisp_Object def, int nargs, ...);
-extern Lisp_Object MS_CDECL double_interpretedn(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL funargedn(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL tracefunargedn(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL tracesetfunargedn(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL hardoptn(Lisp_Object def, int nargs, ...);
-extern Lisp_Object MS_CDECL hardoptrestn(Lisp_Object def, int nargs, ...);
-extern Lisp_Object MS_CDECL interpretedn(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL tracebyteoptn(Lisp_Object def, int nargs, ...);
-extern Lisp_Object MS_CDECL tracesetbyteoptn(Lisp_Object def, int nargs, ...);
-extern Lisp_Object MS_CDECL tracebyteoptrestn(Lisp_Object def, int nargs, ...);
-extern Lisp_Object MS_CDECL tracesetbyteoptrestn(Lisp_Object def, int nargs, ...);
-extern Lisp_Object MS_CDECL tracebytecoded0(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL tracesetbytecoded0(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL tracebytecoded3(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL tracesetbytecoded3(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL tracebytecodedn(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL tracesetbytecodedn(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL jitcompileme0(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL jitcompileme3(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL jitcompilemen(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL traceinterpretedn(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL tracesetinterpretedn(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL tracehardoptn(Lisp_Object def, int nargs, ...);
-extern Lisp_Object MS_CDECL tracesethardoptn(Lisp_Object def, int nargs, ...);
-extern Lisp_Object MS_CDECL tracehardoptrestn(Lisp_Object def, int nargs, ...);
-extern Lisp_Object MS_CDECL tracesethardoptrestn(Lisp_Object def, int nargs, ...);
-extern Lisp_Object MS_CDECL undefinedn(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL f0_as_0(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL f3_as_0(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL f3_as_1(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL f3_as_2(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL f3_as_3(Lisp_Object env, int nargs, ...);
+extern Lisp_Object autoloadn(Lisp_Object env, int nargs, ...);
+extern Lisp_Object bytecoded0(Lisp_Object env, int nargs, ...);
+extern Lisp_Object bytecoded3(Lisp_Object env, int nargs, ...);
+extern Lisp_Object bytecodedn(Lisp_Object env, int nargs, ...);
+extern Lisp_Object byteoptn(Lisp_Object def, int nargs, ...);
+extern Lisp_Object byteoptrestn(Lisp_Object def, int nargs, ...);
+extern Lisp_Object double_bytecoded0(Lisp_Object env, int nargs, ...);
+extern Lisp_Object double_bytecoded3(Lisp_Object env, int nargs, ...);
+extern Lisp_Object double_bytecodedn(Lisp_Object env, int nargs, ...);
+extern Lisp_Object double_byteoptn(Lisp_Object def, int nargs, ...);
+extern Lisp_Object double_byteoptrestn(Lisp_Object def, int nargs, ...);
+extern Lisp_Object double_funargedn(Lisp_Object env, int nargs, ...);
+extern Lisp_Object double_hardoptn(Lisp_Object def, int nargs, ...);
+extern Lisp_Object double_hardoptrestn(Lisp_Object def, int nargs, ...);
+extern Lisp_Object double_interpretedn(Lisp_Object env, int nargs, ...);
+extern Lisp_Object funargedn(Lisp_Object env, int nargs, ...);
+extern Lisp_Object tracefunargedn(Lisp_Object env, int nargs, ...);
+extern Lisp_Object tracesetfunargedn(Lisp_Object env, int nargs, ...);
+extern Lisp_Object hardoptn(Lisp_Object def, int nargs, ...);
+extern Lisp_Object hardoptrestn(Lisp_Object def, int nargs, ...);
+extern Lisp_Object interpretedn(Lisp_Object env, int nargs, ...);
+extern Lisp_Object tracebyteoptn(Lisp_Object def, int nargs, ...);
+extern Lisp_Object tracesetbyteoptn(Lisp_Object def, int nargs, ...);
+extern Lisp_Object tracebyteoptrestn(Lisp_Object def, int nargs, ...);
+extern Lisp_Object tracesetbyteoptrestn(Lisp_Object def, int nargs, ...);
+extern Lisp_Object tracebytecoded0(Lisp_Object env, int nargs, ...);
+extern Lisp_Object tracesetbytecoded0(Lisp_Object env, int nargs, ...);
+extern Lisp_Object tracebytecoded3(Lisp_Object env, int nargs, ...);
+extern Lisp_Object tracesetbytecoded3(Lisp_Object env, int nargs, ...);
+extern Lisp_Object tracebytecodedn(Lisp_Object env, int nargs, ...);
+extern Lisp_Object tracesetbytecodedn(Lisp_Object env, int nargs, ...);
+extern Lisp_Object jitcompileme0(Lisp_Object env, int nargs, ...);
+extern Lisp_Object jitcompileme3(Lisp_Object env, int nargs, ...);
+extern Lisp_Object jitcompilemen(Lisp_Object env, int nargs, ...);
+extern Lisp_Object traceinterpretedn(Lisp_Object env, int nargs, ...);
+extern Lisp_Object tracesetinterpretedn(Lisp_Object env, int nargs, ...);
+extern Lisp_Object tracehardoptn(Lisp_Object def, int nargs, ...);
+extern Lisp_Object tracesethardoptn(Lisp_Object def, int nargs, ...);
+extern Lisp_Object tracehardoptrestn(Lisp_Object def, int nargs, ...);
+extern Lisp_Object tracesethardoptrestn(Lisp_Object def, int nargs, ...);
+extern Lisp_Object undefinedn(Lisp_Object env, int nargs, ...);
+extern Lisp_Object f0_as_0(Lisp_Object env, int nargs, ...);
+extern Lisp_Object f3_as_0(Lisp_Object env, int nargs, ...);
+extern Lisp_Object f3_as_1(Lisp_Object env, int nargs, ...);
+extern Lisp_Object f3_as_2(Lisp_Object env, int nargs, ...);
+extern Lisp_Object f3_as_3(Lisp_Object env, int nargs, ...);
 #ifdef CJAVA
-extern Lisp_Object MS_CDECL java0(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL java3(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL javan(Lisp_Object env, int nargs, ...);
+extern Lisp_Object java0(Lisp_Object env, int nargs, ...);
+extern Lisp_Object java3(Lisp_Object env, int nargs, ...);
+extern Lisp_Object javan(Lisp_Object env, int nargs, ...);
 #endif
 
-extern Lisp_Object MS_CDECL Lacons(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lapply_n(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lapply2(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lapply3(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lbpsputv(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lerrorset3(Lisp_Object nil, int nargs, ...);
-extern Lisp_Object MS_CDECL Lerrorsetn(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lfuncalln(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lhelp_n(Lisp_Object nil, int nargs, ...);
-extern Lisp_Object MS_CDECL Llist(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Llist2star(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Llist3(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Llogand(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Llogeqv(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Llogor(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Llogxor(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lmax(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lmin(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lmkhash(Lisp_Object nil, int nargs, ...);
-extern Lisp_Object MS_CDECL Lput_hash(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lputprop(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lputv(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lresource_limitn(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lsputv(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lsubst(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lvalues(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lacons(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lapply_n(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lapply2(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lapply3(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lbpsputv(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lerrorset3(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object Lerrorsetn(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lfuncalln(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lhelp_n(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object Llist(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Llist2star(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Llist3(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Llogand(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Llogeqv(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Llogor(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Llogxor(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lmax(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lmin(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lmkhash(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object Lput_hash(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lputprop(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lputv(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lresource_limitn(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lsputv(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lsubst(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lvalues(Lisp_Object env, int nargs, ...);
 
 #ifdef COMMON
-extern Lisp_Object MS_CDECL Lappend_n(Lisp_Object nil, int nargs, ...);
-extern Lisp_Object MS_CDECL Laref(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Laset(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Leqn_n(Lisp_Object nil, int nargs, ...);
-extern Lisp_Object MS_CDECL Lgcd_n(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lgeq_n(Lisp_Object nil, int nargs, ...);
-extern Lisp_Object MS_CDECL Lget_3(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lgreaterp_n(Lisp_Object nil, int nargs, ...);
-extern Lisp_Object MS_CDECL Llcm_n(Lisp_Object env, int nargs, ...);
-extern Lisp_Object MS_CDECL Lleq_n(Lisp_Object nil, int nargs, ...);
-extern Lisp_Object MS_CDECL Llessp_n(Lisp_Object nil, int nargs, ...);
-extern Lisp_Object MS_CDECL Lquotient_n(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object Lappend_n(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object Laref(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Laset(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Leqn_n(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object Lgcd_n(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lgeq_n(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object Lget_3(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lgreaterp_n(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object Llcm_n(Lisp_Object env, int nargs, ...);
+extern Lisp_Object Lleq_n(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object Llessp_n(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object Lquotient_n(Lisp_Object nil, int nargs, ...);
 #endif
 
 #ifdef OPENMATH
-extern Lisp_Object MS_CDECL om_openFileDev(Lisp_Object env, int nargs, ...);
+extern Lisp_Object om_openFileDev(Lisp_Object env, int nargs, ...);
 extern Lisp_Object om_openStringDev(Lisp_Object nil, Lisp_Object lstr, Lisp_Object lenc);
 extern Lisp_Object om_closeDev(Lisp_Object env, Lisp_Object dev);
 extern Lisp_Object om_setDevEncoding(Lisp_Object nil, Lisp_Object ldev, Lisp_Object lenc);
@@ -570,7 +570,7 @@ extern Lisp_Object om_makeConn(Lisp_Object nil, Lisp_Object ltimeout);
 extern Lisp_Object om_closeConn(Lisp_Object nil, Lisp_Object lconn);
 extern Lisp_Object om_getConnInDevice(Lisp_Object nil, Lisp_Object lconn);
 extern Lisp_Object om_getConnOutDevice(Lisp_Object nil, Lisp_Object lconn);
-extern Lisp_Object MS_CDECL om_connectTCP(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object om_connectTCP(Lisp_Object nil, int nargs, ...);
 extern Lisp_Object om_bindTCP(Lisp_Object nil, Lisp_Object lconn, Lisp_Object lport);
 extern Lisp_Object om_putApp(Lisp_Object nil, Lisp_Object ldev);
 extern Lisp_Object om_putEndApp(Lisp_Object nil, Lisp_Object ldev);
@@ -592,7 +592,7 @@ extern Lisp_Object om_putByteArray(Lisp_Object nil, Lisp_Object ldev, Lisp_Objec
 extern Lisp_Object om_putVar(Lisp_Object nil, Lisp_Object ldev, Lisp_Object val);
 extern Lisp_Object om_putString(Lisp_Object nil, Lisp_Object ldev, Lisp_Object val);
 extern Lisp_Object om_putSymbol(Lisp_Object nil, Lisp_Object ldev, Lisp_Object val);
-extern Lisp_Object MS_CDECL om_putSymbol2(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object om_putSymbol2(Lisp_Object nil, int nargs, ...);
 extern Lisp_Object om_getApp(Lisp_Object nil, Lisp_Object ldev);
 extern Lisp_Object om_getEndApp(Lisp_Object nil, Lisp_Object ldev);
 extern Lisp_Object om_getAtp(Lisp_Object nil, Lisp_Object ldev);
@@ -621,7 +621,7 @@ extern Lisp_Object om_stringPtrToString(Lisp_Object nil, Lisp_Object lpstr);
 extern Lisp_Object om_read(Lisp_Object nil, Lisp_Object dev);
 extern Lisp_Object om_supportsCD(Lisp_Object nil, Lisp_Object lcd);
 extern Lisp_Object om_supportsSymbol(Lisp_Object nil, Lisp_Object lcd, Lisp_Object lsym);
-extern Lisp_Object MS_CDECL om_listCDs(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object om_listCDs(Lisp_Object nil, int nargs, ...);
 extern Lisp_Object om_listSymbols(Lisp_Object nil, Lisp_Object lcd);
 extern Lisp_Object om_whichCDs(Lisp_Object nil, Lisp_Object lsym);
 #endif

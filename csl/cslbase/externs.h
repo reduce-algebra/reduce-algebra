@@ -516,7 +516,7 @@ extern Lisp_Object declare_symbol, special_symbol, large_modulus;
 extern Lisp_Object used_space, avail_space, eof_symbol, call_stack;
 
 #ifdef OPENMATH
-extern Lisp_Object MS_CDECL om_openFileDev(Lisp_Object env, int nargs, ...);
+extern Lisp_Object om_openFileDev(Lisp_Object env, int nargs, ...);
 extern Lisp_Object om_openStringDev(Lisp_Object nil, Lisp_Object lstr, Lisp_Object lenc);
 extern Lisp_Object om_closeDev(Lisp_Object env, Lisp_Object dev);
 extern Lisp_Object om_setDevEncoding(Lisp_Object nil, Lisp_Object ldev, Lisp_Object lenc);
@@ -524,7 +524,7 @@ extern Lisp_Object om_makeConn(Lisp_Object nil, Lisp_Object ltimeout);
 extern Lisp_Object om_closeConn(Lisp_Object nil, Lisp_Object lconn);
 extern Lisp_Object om_getConnInDevice(Lisp_Object nil, Lisp_Object lconn);
 extern Lisp_Object om_getConnOutDevice(Lisp_Object nil, Lisp_Object lconn);
-extern Lisp_Object MS_CDECL om_connectTCP(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object om_connectTCP(Lisp_Object nil, int nargs, ...);
 extern Lisp_Object om_bindTCP(Lisp_Object nil, Lisp_Object lconn, Lisp_Object lport);
 extern Lisp_Object om_putApp(Lisp_Object nil, Lisp_Object ldev);
 extern Lisp_Object om_putEndApp(Lisp_Object nil, Lisp_Object ldev);
@@ -546,7 +546,7 @@ extern Lisp_Object om_putByteArray(Lisp_Object nil, Lisp_Object ldev, Lisp_Objec
 extern Lisp_Object om_putVar(Lisp_Object nil, Lisp_Object ldev, Lisp_Object val);
 extern Lisp_Object om_putString(Lisp_Object nil, Lisp_Object ldev, Lisp_Object val);
 extern Lisp_Object om_putSymbol(Lisp_Object nil, Lisp_Object ldev, Lisp_Object val);
-extern Lisp_Object MS_CDECL om_putSymbol2(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object om_putSymbol2(Lisp_Object nil, int nargs, ...);
 extern Lisp_Object om_getApp(Lisp_Object nil, Lisp_Object ldev);
 extern Lisp_Object om_getEndApp(Lisp_Object nil, Lisp_Object ldev);
 extern Lisp_Object om_getAtp(Lisp_Object nil, Lisp_Object ldev);
@@ -575,7 +575,7 @@ extern Lisp_Object om_stringPtrToString(Lisp_Object nil, Lisp_Object lpstr);
 extern Lisp_Object om_read(Lisp_Object nil, Lisp_Object dev);
 extern Lisp_Object om_supportsCD(Lisp_Object nil, Lisp_Object lcd);
 extern Lisp_Object om_supportsSymbol(Lisp_Object nil, Lisp_Object lcd, Lisp_Object lsym);
-extern Lisp_Object MS_CDECL om_listCDs(Lisp_Object nil, int nargs, ...);
+extern Lisp_Object om_listCDs(Lisp_Object nil, int nargs, ...);
 extern Lisp_Object om_listSymbols(Lisp_Object nil, Lisp_Object lcd);
 extern Lisp_Object om_whichCDs(Lisp_Object nil, Lisp_Object lsym);
 #endif
@@ -849,12 +849,10 @@ extern FILE *binary_read_file;
 extern int boffop;
 extern void packbyte(int c);
 
-#ifndef COMMON
 #ifdef HAVE_FWIN
 extern char **loadable_packages;
 extern char **switches;
 extern void review_switch_settings();
-#endif
 #endif
 
 #ifdef SOCKETS
@@ -1043,9 +1041,9 @@ extern void unwind_stack(Lisp_Object *, CSLbool findcatch);
 extern CSLbool segvtrap;
 extern CSLbool batch_flag;
 extern int escaped_printing;
-extern void MS_CDECL low_level_signal_handler(int code);
+extern void low_level_signal_handler(int code);
 extern int async_interrupt(int a);
-extern void MS_CDECL sigint_handler(int code);
+extern void sigint_handler(int code);
 
 extern void record_get(Lisp_Object tag, CSLbool found);
 
@@ -1124,11 +1122,11 @@ extern Lisp_Object make_nstring(char *b, int32_t n);
 extern Lisp_Object make_undefined_symbol(char const *s);
 extern Lisp_Object make_symbol(char const *s, int restartp,
                                one_args *f1, two_args *f2, n_args *fn);
-extern void MS_CDECL  stdout_printf(char *fmt, ...);
-extern void MS_CDECL  term_printf(char *fmt, ...);
-extern void MS_CDECL  err_printf(char *fmt, ...);
-extern void MS_CDECL  debug_printf(char *fmt, ...);
-extern void MS_CDECL  trace_printf(char *fmt, ...);
+extern void stdout_printf(char *fmt, ...);
+extern void term_printf(char *fmt, ...);
+extern void err_printf(char *fmt, ...);
+extern void debug_printf(char *fmt, ...);
+extern void trace_printf(char *fmt, ...);
 extern char        *my_getenv(char *name);
 extern Lisp_Object ncons(Lisp_Object a);
 extern Lisp_Object ndelete(Lisp_Object a, Lisp_Object b);
@@ -1307,9 +1305,9 @@ typedef struct setup_type_1
 
 extern setup_type const
        arith06_setup[], arith08_setup[], arith10_setup[], arith12_setup[],
-       char_setup[], eval1_setup[], eval2_setup[], eval3_setup[],
-       funcs1_setup[], funcs2_setup[], funcs3_setup[], print_setup[],
-       read_setup[], mpi_setup[];
+       arith13_setup[], char_setup[], eval1_setup[], eval2_setup[],
+       eval3_setup[], funcs1_setup[], funcs2_setup[], funcs3_setup[],
+       print_setup[], read_setup[], mpi_setup[];
 extern setup_type const
                     u01_setup[], u02_setup[], u03_setup[], u04_setup[],
        u05_setup[], u06_setup[], u07_setup[], u08_setup[], u09_setup[],

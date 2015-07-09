@@ -1,4 +1,4 @@
-/*  arith04.c                         Copyright (C) 1991-2008 Codemist Ltd */
+/*  arith04.c                         Copyright (C) 1991-2015 Codemist Ltd */
 
 /*
  * Arithmetic functions.
@@ -7,7 +7,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -40,16 +40,6 @@
 
 #include "headers.h"
 
-
-#ifndef COMMON
-/*
- * In CSL mode I fudge make_ratio to be just cons, since it is ONLY
- * needed for (rational ...)
- */
-
-#define make_ratio(a, b) cons(a, b)
-
-#endif
 
 Lisp_Object make_n_word_bignum(int32_t a1, uint32_t a2, uint32_t a3, int32_t n)
 /*
@@ -201,8 +191,6 @@ Lisp_Object rationalf(double d)
     }
 }
 
-#ifdef COMMON
-
 static Lisp_Object rationalizef(double d)
 /*
  * This is expected to give a 'nice' rational approximation to the
@@ -231,7 +219,6 @@ static Lisp_Object rationalizef(double d)
     return make_ratio(p, q);
 }
 
-#endif
 
 Lisp_Object rational(Lisp_Object a)
 {
@@ -239,21 +226,17 @@ Lisp_Object rational(Lisp_Object a)
     {
 case TAG_FIXNUM:
         return a;
-#ifdef COMMON
 case TAG_SFLOAT:
         {   Float_union aa;
             aa.i = a - TAG_SFLOAT;
             return rationalf((double)aa.f);
         }
-#endif
 case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {
     case TYPE_BIGNUM:
-#ifdef COMMON
     case TYPE_RATNUM:
-#endif
                 return a;
     default:
                 return aerror1("bad arg for rational", a);
@@ -266,28 +249,23 @@ default:
     }
 }
 
-#ifdef COMMON
 Lisp_Object rationalize(Lisp_Object a)
 {
     switch (a & TAG_BITS)
     {
 case TAG_FIXNUM:
         return a;
-#ifdef COMMON
 case TAG_SFLOAT:
         {   Float_union aa;
             aa.i = a - TAG_SFLOAT;
             return rationalizef((double)aa.f);
         }
-#endif
 case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {
     case TYPE_BIGNUM:
-#ifdef COMMON
     case TYPE_RATNUM:
-#endif
                 return a;
     default:
                 return aerror1("bad arg for rationalize", a);
@@ -299,13 +277,11 @@ default:
         return aerror1("bad arg for rationalize", a);
     }
 }
-#endif
 
 /*
  * Arithmetic comparison: lessp
  */
 
-#ifdef COMMON
 static CSLbool lesspis(Lisp_Object a, Lisp_Object b)
 {
     Float_union bb;
@@ -316,7 +292,6 @@ static CSLbool lesspis(Lisp_Object a, Lisp_Object b)
  */
     return (double)int_of_fixnum(a) < (double)bb.f;
 }
-#endif
 
 CSLbool lesspib(Lisp_Object a, Lisp_Object b)
 /*
@@ -331,7 +306,6 @@ CSLbool lesspib(Lisp_Object a, Lisp_Object b)
     return (msd >= 0);
 }
 
-#ifdef COMMON
 static CSLbool lesspir(Lisp_Object a, Lisp_Object b)
 {
 /*
@@ -342,7 +316,6 @@ static CSLbool lesspir(Lisp_Object a, Lisp_Object b)
     pop(b);
     return lessp2(a, b);
 }
-#endif
 
 #define lesspif(a, b) ((double)int_of_fixnum(a) < float_of_number(b))
 
@@ -514,8 +487,6 @@ CSLbool lesspbd(Lisp_Object b, double a)
     }
 }
 
-#ifdef COMMON
-
 static CSLbool lessprr(Lisp_Object a, Lisp_Object b)
 {
     Lisp_Object c;
@@ -575,7 +546,6 @@ static CSLbool lesspsf(Lisp_Object a, Lisp_Object b)
     aa.i = a - TAG_SFLOAT;
     return (double)aa.f < float_of_number(b);
 }
-#endif
 
 CSLbool lesspbi(Lisp_Object a, Lisp_Object b)
 {
@@ -585,14 +555,12 @@ CSLbool lesspbi(Lisp_Object a, Lisp_Object b)
     return (msd < 0);
 }
 
-#ifdef COMMON
 static CSLbool lesspbs(Lisp_Object a, Lisp_Object b)
 {
     Float_union bb;
     bb.i = b - TAG_SFLOAT;
     return lesspbd(a, (double)bb.f);
 }
-#endif
 
 static CSLbool lesspbb(Lisp_Object a, Lisp_Object b)
 {
@@ -630,8 +598,6 @@ static CSLbool lesspbb(Lisp_Object a, Lisp_Object b)
 
 #define lesspbf(a, b) lesspbd(a, float_of_number(b))
 
-#ifdef COMMON
-
 static CSLbool lesspri(Lisp_Object a, Lisp_Object b)
 {
     push(numerator(a));
@@ -651,18 +617,14 @@ static CSLbool lessprs(Lisp_Object a, Lisp_Object b)
 
 #define lessprf(a, b) lessprd(a, float_of_number(b))
 
-#endif
-
 #define lesspfi(a, b) (float_of_number(a) < (double)int_of_fixnum(b))
 
-#ifdef COMMON
 static CSLbool lesspfs(Lisp_Object a, Lisp_Object b)
 {
     Float_union bb;
     bb.i = b - TAG_SFLOAT;
     return float_of_number(a) < (double)bb.f;
 }
-#endif
 
 #define lesspfb(a, b) lesspdb(float_of_number(a), b)
 
@@ -693,20 +655,16 @@ case TAG_FIXNUM:
     case TAG_FIXNUM:
 /* For fixnums the comparison happens directly */
             return ((int32_t)a < (int32_t)b);
-#ifdef COMMON
     case TAG_SFLOAT:
             return lesspis(a, b);
-#endif
     case TAG_NUMBERS:
             {   int32_t hb = type_of_header(numhdr(b));
                 switch (hb)
                 {
         case TYPE_BIGNUM:
                 return lesspib(a, b);
-#ifdef COMMON
         case TYPE_RATNUM:
                 return lesspir(a, b);
-#endif
         default:
                 return (CSLbool)aerror2("bad arg for lessp", a, b);
                 }
@@ -716,7 +674,6 @@ case TAG_FIXNUM:
     default:
             return (CSLbool)aerror2("bad arg for lessp", a, b);
         }
-#ifdef COMMON
 case TAG_SFLOAT:
         switch (b & TAG_BITS)
         {
@@ -745,7 +702,6 @@ case TAG_SFLOAT:
     default:
             return (CSLbool)aerror2("bad arg for lessp", a, b);
         }
-#endif
 case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -755,20 +711,16 @@ case TAG_NUMBERS:
                 {
             case TAG_FIXNUM:
                     return lesspbi(a, b);
-#ifdef COMMON
             case TAG_SFLOAT:
                     return lesspbs(a, b);
-#endif
             case TAG_NUMBERS:
                     {   int32_t hb = type_of_header(numhdr(b));
                         switch (hb)
                         {
                 case TYPE_BIGNUM:
                         return lesspbb(a, b);
-#ifdef COMMON
                 case TYPE_RATNUM:
                         return lesspbr(a, b);
-#endif
                 default:
                         return (CSLbool)aerror2("bad arg for lessp", a, b);
                         }
@@ -778,7 +730,6 @@ case TAG_NUMBERS:
             default:
                     return (CSLbool)aerror2("bad arg for lessp", a, b);
                 }
-#ifdef COMMON
     case TYPE_RATNUM:
                 switch (b & TAG_BITS)
                 {
@@ -803,7 +754,6 @@ case TAG_NUMBERS:
             default:
                     return (CSLbool)aerror2("bad arg for lessp", a, b);
                 }
-#endif
     default:    return (CSLbool)aerror2("bad arg for lessp", a, b);
             }
         }
@@ -812,20 +762,16 @@ case TAG_BOXFLOAT:
         {
     case TAG_FIXNUM:
             return lesspfi(a, b);
-#ifdef COMMON
     case TAG_SFLOAT:
             return lesspfs(a, b);
-#endif
     case TAG_NUMBERS:
             {   int32_t hb = type_of_header(numhdr(b));
                 switch (hb)
                 {
         case TYPE_BIGNUM:
                 return lesspfb(a, b);
-#ifdef COMMON
         case TYPE_RATNUM:
                 return lesspfr(a, b);
-#endif
         default:
                 return (CSLbool)aerror2("bad arg for lessp", a, b);
                 }

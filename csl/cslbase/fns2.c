@@ -1,11 +1,11 @@
-/*  fns2.c                          Copyright (C) 1989-2014 Codemist Ltd */
+/*  fns2.c                          Copyright (C) 1989-2015 Codemist Ltd */
 
 /*
  * Basic functions part 2.
  */
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -38,9 +38,7 @@
 #include "headers.h"
 
 
-#ifdef COMMON
 #include "clsyms.h"
-#endif
 
 #ifdef SOCKETS
 #include "sockhdr.h"
@@ -824,7 +822,7 @@ void lose_C_def(Lisp_Object a)
  * cayse UTTER havoc. Therefore I disable its use in server applications.
  */
 
-Lisp_Object MS_CDECL Lsymbol_set_native(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lsymbol_set_native(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object fn, args, bpsbase, offset, env, w1, w2, w3;
@@ -1428,7 +1426,7 @@ static Lisp_Object traced2_function(Lisp_Object env,
     return onevalue(r);
 }
 
-static Lisp_Object MS_CDECL tracedn_function(Lisp_Object env, int nargs, ...)
+static Lisp_Object tracedn_function(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object name, nil = C_nil;
     Lisp_Object r = nil;
@@ -2206,7 +2204,7 @@ static Lisp_Object Lrestart_lisp(Lisp_Object nil, Lisp_Object a)
     return Lrestart_lisp2(nil, a, SPID_NOARG);
 }
 
-static Lisp_Object MS_CDECL Lpreserve_03(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lpreserve_03(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object startup = nil, banner = nil, resume = nil;
     char filename[LONGEST_LEGAL_FILENAME];
@@ -2313,7 +2311,7 @@ static Lisp_Object Lcheckpoint(Lisp_Object nil,
     return onevalue(nil);
 }
 
-static Lisp_Object MS_CDECL Lcheckpoint_0(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lcheckpoint_0(Lisp_Object nil, int nargs, ...)
 {
     argcheck(nargs, 0, "checkpoint");
     return Lcheckpoint(nil, nil, nil);
@@ -2331,12 +2329,12 @@ static Lisp_Object Lcheckpoint_1(Lisp_Object nil, Lisp_Object startup)
  * been an overflow.
  */
 
-static Lisp_Object MS_CDECL Lresource_exceeded(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lresource_exceeded(Lisp_Object nil, int nargs, ...)
 {
     argcheck(nargs, 0, "resource-exceeded");
     return resource_exceeded();
 }
-#ifdef COMMON
+
 static CSLbool eql_numbers(Lisp_Object a, Lisp_Object b)
 /*
  * This is only called from eql, and then only when a and b are both tagged
@@ -2351,7 +2349,6 @@ static CSLbool eql_numbers(Lisp_Object a, Lisp_Object b)
     q = *(Lisp_Object *)(b + (2*CELL - TAG_NUMBERS));
     return eql(p, q);
 }
-#endif
 
 CSLbool eql_fn(Lisp_Object a, Lisp_Object b)
 /*
@@ -2367,19 +2364,15 @@ CSLbool eql_fn(Lisp_Object a, Lisp_Object b)
  * Actually in Common Lisp mode where I have short floats as immediate data
  * I have further pain here with (eql 0.0 -0.0).
  */
-#ifdef COMMON
     if ((a == TAG_SFLOAT && b == (TAG_SFLOAT|0x80000000)) ||
         (a == (TAG_SFLOAT|0x80000000) && b == TAG_SFLOAT)) return YES;
-#endif
     if (!is_number(a) || is_immed_or_cons(a)) return NO;
     if (is_bfloat(a))
     {   Header h = flthdr(a);
         if (h != flthdr(b)) return NO;
-#ifdef COMMON
         if (type_of_header(h) == TYPE_SINGLE_FLOAT)
             return (single_float_val(a) == single_float_val(b));
         else
-#endif
 /*
  * For the moment I view all non-single floats as double floats. Extra
  * stuff will be needed here if I ever implement long floats as 3-word
@@ -2400,11 +2393,7 @@ CSLbool eql_fn(Lisp_Object a, Lisp_Object b)
             }
             return YES;
         }
-#ifdef COMMON
         else return eql_numbers(a, b);
-#else
-        else return NO;
-#endif
     }
 }
 
@@ -2426,10 +2415,8 @@ static CSLbool cl_vec_equal(Lisp_Object a, Lisp_Object b)
     intptr_t offa = 0, offb = 0;
     int ta = type_of_header(ha), tb = type_of_header(hb);
     intptr_t la = length_of_header(ha), lb = length_of_header(hb);
-#ifdef COMMON
     if (header_of_bitvector(ha)) ta = TYPE_BITVEC1;
     if (header_of_bitvector(hb)) tb = TYPE_BITVEC1;
-#endif
     switch (ta)
     {
 /*
@@ -2450,7 +2437,6 @@ case TYPE_STRING:
             goto compare_strings;
     default:return NO;
         }
-#ifdef COMMON
 case TYPE_BITVEC1:
         switch (tb)
         {
@@ -2461,7 +2447,6 @@ case TYPE_BITVEC1:
             goto compare_bits;
     default:return NO;
         }
-#endif
 default: return (a == b);
     }
 compare_strings:
@@ -2472,7 +2457,6 @@ compare_strings:
             *((char *)b + la + offb - TAG_VECTOR)) return NO;
     }
     return YES;
-#ifdef COMMON
 compare_bits:
     if (la != lb) return NO;
     while (la > 0)
@@ -2481,7 +2465,6 @@ compare_bits:
             *((char *)b + la + offb - TAG_VECTOR)) return NO;
     }
     return YES;
-#endif
 }
 
 CSLbool cl_equal_fn(Lisp_Object a, Lisp_Object b)
@@ -2578,12 +2561,8 @@ CSLbool cl_equal_fn(Lisp_Object a, Lisp_Object b)
                                 }
                                 break;
                             }
-#ifdef COMMON
                             else if (!eql_numbers(ca, cb)) return NO;
                             else break;
-#else
-                            else return NO;
-#endif
                         }
                 case TAG_VECTOR:
                         if (!cl_vec_equal(ca, cb)) return NO;
@@ -2592,7 +2571,6 @@ CSLbool cl_equal_fn(Lisp_Object a, Lisp_Object b)
                 case TAG_BOXFLOAT:
                         {   Header h = flthdr(ca);
                             if (h != flthdr(cb)) return NO;
-#ifdef COMMON
                             if (type_of_header(h) == TYPE_SINGLE_FLOAT)
                             {
                                 if (single_float_val(ca) !=
@@ -2600,7 +2578,6 @@ CSLbool cl_equal_fn(Lisp_Object a, Lisp_Object b)
                                 else break;
                             }
                             else
-#endif
                             {
                                 if (double_float_val(ca) !=
                                      double_float_val(cb)) return NO;
@@ -2638,12 +2615,7 @@ CSLbool cl_equal_fn(Lisp_Object a, Lisp_Object b)
                     }
                     return YES;
                 }
-#ifdef COMMON
                 else return eql_numbers(a, b);
-
-#else
-                else return NO;
-#endif
             }
     case TAG_VECTOR:
             return cl_vec_equal(a, b);
@@ -2651,7 +2623,6 @@ CSLbool cl_equal_fn(Lisp_Object a, Lisp_Object b)
     case TAG_BOXFLOAT:
             {   Header h = flthdr(a);
                 if (h != flthdr(b)) return NO;
-#ifdef COMMON
                 if (type_of_header(h) == TYPE_SINGLE_FLOAT)
                 {
                     if (single_float_val(a) != single_float_val(b))
@@ -2659,7 +2630,6 @@ CSLbool cl_equal_fn(Lisp_Object a, Lisp_Object b)
                     else return YES;
                 }
                 else
-#endif
 /*
  * For the moment I view all non-single floats as double floats. Extra
  * stuff will be needed here if I ever implement long floats as 3-word
@@ -2858,12 +2828,8 @@ CSLbool equal_fn(Lisp_Object a, Lisp_Object b)
                                 }
                                 break;
                             }
-#ifdef COMMON
                             else if (!eql_numbers(ca, cb)) return NO;
                             else break;
-#else
-                            else return NO;
-#endif
                         }
                 case TAG_VECTOR:
                         if (!vec_equal(ca, cb)) return NO;
@@ -2872,7 +2838,6 @@ CSLbool equal_fn(Lisp_Object a, Lisp_Object b)
                 case TAG_BOXFLOAT:
                         {   Header h = flthdr(ca);
                             if (h != flthdr(cb)) return NO;
-#ifdef COMMON
                             if (type_of_header(h) == TYPE_SINGLE_FLOAT)
                             {
                                 if (single_float_val(ca) !=
@@ -2880,7 +2845,6 @@ CSLbool equal_fn(Lisp_Object a, Lisp_Object b)
                                 else break;
                             }
                             else
-#endif
                             {
                                 if (double_float_val(ca) !=
                                     double_float_val(cb)) return NO;
@@ -2913,12 +2877,7 @@ CSLbool equal_fn(Lisp_Object a, Lisp_Object b)
                     }
                     return YES;
                 }
-#ifdef COMMON
                 else return eql_numbers(a, b);
-
-#else
-                else return NO;
-#endif
             }
     case TAG_VECTOR:
             return vec_equal(a, b);
@@ -2926,7 +2885,6 @@ CSLbool equal_fn(Lisp_Object a, Lisp_Object b)
     case TAG_BOXFLOAT:
             {   Header h = flthdr(a);
                 if (h != flthdr(b)) return NO;
-#ifdef COMMON
                 if (type_of_header(h) == TYPE_SINGLE_FLOAT)
                 {
                     if (single_float_val(a) != single_float_val(b))
@@ -2934,7 +2892,6 @@ CSLbool equal_fn(Lisp_Object a, Lisp_Object b)
                     else return YES;
                 }
                 else
-#endif
 /*
  * For the moment I view all non-single floats as double floats. Extra
  * stuff will be needed here if I ever implement long floats as 3-word
@@ -3091,12 +3048,8 @@ CSLbool equalp(Lisp_Object a, Lisp_Object b)
                                 }
                                 break;
                             }
-#ifdef COMMON
                             else if (!eql_numbers(ca, cb)) return NO;
                             else break;
-#else
-                            else return NO;
-#endif
                         }
                 case TAG_VECTOR:
 /* /* At present vec_equal() is not right here */
@@ -3106,7 +3059,6 @@ CSLbool equalp(Lisp_Object a, Lisp_Object b)
                 case TAG_BOXFLOAT:
                         {   Header h = flthdr(ca);
                             if (h != flthdr(cb)) return NO;
-#ifdef COMMON
                             if (type_of_header(h) == TYPE_SINGLE_FLOAT)
                             {
                                 if (single_float_val(ca) !=
@@ -3114,7 +3066,6 @@ CSLbool equalp(Lisp_Object a, Lisp_Object b)
                                 else break;
                             }
                             else
-#endif
                             {
                                 if (double_float_val(ca) !=
                                     double_float_val(cb)) return NO;
@@ -3148,12 +3099,7 @@ CSLbool equalp(Lisp_Object a, Lisp_Object b)
                     }
                     return YES;
                 }
-#ifdef COMMON
                 else return eql_numbers(a, b);
-
-#else
-                else return NO;
-#endif
             }
     case TAG_VECTOR:
 /* /* wrong for Common Lisp */
@@ -3162,7 +3108,6 @@ CSLbool equalp(Lisp_Object a, Lisp_Object b)
     case TAG_BOXFLOAT:
             {   Header h = flthdr(a);
                 if (h != flthdr(b)) return NO;
-#ifdef COMMON
                 if (type_of_header(h) == TYPE_SINGLE_FLOAT)
                 {
                     if (single_float_val(a) != single_float_val(b))
@@ -3170,7 +3115,6 @@ CSLbool equalp(Lisp_Object a, Lisp_Object b)
                     else return YES;
                 }
                 else
-#endif
 /*
  * For the moment I view all non-single floats as double floats. Extra
  * stuff will be needed here if I ever implement long floats as 3-word
@@ -3687,7 +3631,7 @@ Lisp_Object Llength(Lisp_Object nil, Lisp_Object a)
 
 #ifdef COMMON
 
-Lisp_Object MS_CDECL Lappend_n(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lappend_n(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     int i;
@@ -4489,7 +4433,7 @@ Lisp_Object sublis(Lisp_Object a, Lisp_Object c)
 
 
 
-Lisp_Object MS_CDECL Lsubstq(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lsubstq(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object a, b, c;
     va_list aa;
@@ -4508,7 +4452,7 @@ Lisp_Object MS_CDECL Lsubstq(Lisp_Object nil, int nargs, ...)
     return substq(a, b, c);
 }
 
-Lisp_Object MS_CDECL Lsubst(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lsubst(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object a, b, c;
     va_list aa;

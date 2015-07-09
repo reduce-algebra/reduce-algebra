@@ -1,5 +1,5 @@
 /*
- * "fwin.c"                                 Copyright A C Norman 2003-2014
+ * "fwin.c"                                 Copyright A C Norman 2003-2015
  *
  *
  * Window interface for old-fashioned C applications. Intended to
@@ -13,7 +13,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -159,12 +159,6 @@ extern char *getcwd(char *s, size_t n);
 #include <Carbon/Carbon.h>
 #include <CoreServices/CoreServices.h>
 #endif /* MAC stuff */
-
-#ifdef _MSC_VER
-#define MS_CDECL __cdecl
-#else
-#define MS_CDECL
-#endif /* Microsoft C */
 
 #include "termed.h"
 
@@ -610,7 +604,7 @@ int main(int argc, char *argv[])
 #endif
 }
 
-void MS_CDECL sigint_handler(int code)
+void sigint_handler(int code)
 {
 #ifdef TEST_SIGNAL_CATCHER
 /* For debugging I may want to see when signals get caught... */
@@ -625,7 +619,7 @@ void MS_CDECL sigint_handler(int code)
 #endif /* EMBEDDED */
 
 #ifdef SIGBREAK
-void MS_CDECL sigbreak_handler(int code)
+void sigbreak_handler(int code)
 {
 #ifdef TEST_SIGNAL_CATCHER
     fprintf(stderr, "sigbreak_handler called %d %#x\n", code, code);
@@ -780,7 +774,7 @@ void fwin_puts(const char *s)
 }
 
 
-void MS_CDECL fwin_printf(const char *fmt, ...)
+void fwin_printf(const char *fmt, ...)
 {
     va_list a;
     va_start(a, fmt);
@@ -1817,7 +1811,7 @@ static int more_files(void)
  * the type declared in the Microsoft header files for qsort insists
  * on a __cdecl here. Ugh.
  */
-int MS_CDECL alphasort_files(const void *a, const void *b)
+int alphasort_files(const void *a, const void *b)
 {
     const WIN32_FIND_DATA *fa = (const WIN32_FIND_DATA *)a,
                           *fb = (const WIN32_FIND_DATA *)b;

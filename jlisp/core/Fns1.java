@@ -137,6 +137,7 @@ class Fns1
         {"clrhash",                     new ClrhashFn()},
         {"code-char",                   new Code_charFn()},
         {"codep",                       new CodepFn()},
+        ("complexp",                    new ComplexpFn()},
         {"compress",                    new CompressFn()},
         {"cons",                        new ConsFn()},
         {"consp",                       new ConspFn()},
@@ -1425,6 +1426,15 @@ class CodepFn extends BuiltinFunction
     {
         if (arg1 instanceof BuiltinFunction) return Jlisp.lispTrue;
         else return Jlisp.nil;
+    }
+}
+
+class ComplexpFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+// No complex data built into Jlisp so far!
+        return Jlisp.nil;
     }
 }
 

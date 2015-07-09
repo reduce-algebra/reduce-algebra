@@ -1,11 +1,11 @@
-/* cslread.c                        Copyright (C) 1990-2014 Codemist Ltd */
+/* cslread.c                        Copyright (C) 1990-2015 Codemist Ltd */
 
 /*
  * Reading and symbol-table support.
  */
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -38,9 +38,7 @@
 
 #include "headers.h"
 
-#ifdef COMMON
 #include "clsyms.h"
-#endif
 
 #ifdef SOCKETS
 #include "sockhdr.h"
@@ -161,7 +159,7 @@ static Lisp_Object copy_string(Lisp_Object str, int32_t n)
     return r;
 }
 
-Lisp_Object MS_CDECL Lbatchp(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lbatchp(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil);
     argcheck(nargs, 0, "batchp");
@@ -477,9 +475,7 @@ Lisp_Object intern(int len, CSLbool escaped)
  */
 {
     int i, numberp = escaped ? -1 : 0;
-#ifdef COMMON
     int fplength = 2, explicit_fp_format = 0;
-#endif
     Lisp_Object nil = C_nil;
     stackcheck0(0);
     for (i=0; i<len; i++)
@@ -510,9 +506,7 @@ Lisp_Object intern(int len, CSLbool escaped)
             if (c <= 0xff && isdigit(c)) continue;   /* *read-base* */
             switch (c)
             {
-#ifdef COMMON
         case '/':   numberp = 3;    continue;
-#endif
         case '.':   numberp = 5;    continue;
         case 'e': case 'E':
 /*
@@ -523,7 +517,6 @@ Lisp_Object intern(int len, CSLbool escaped)
  */
                     numberp = 9;
                     continue;
-#ifdef COMMON
         case 's': case 'S':
                     boffo_char(i) = 'e';
                     explicit_fp_format = 1;
@@ -547,13 +540,11 @@ Lisp_Object intern(int len, CSLbool escaped)
                     fplength = 3;
                     numberp = 9;
                     continue;
-#endif
         default:
                     numberp = -1;
                     break;
             }
             break;
-#ifdef COMMON
     case 3:
     case 4:
             if (c <= 0xff && isdigit(c))   /* *read-base* */
@@ -562,7 +553,6 @@ Lisp_Object intern(int len, CSLbool escaped)
             }
             numberp = -1;
             break;
-#endif
     case 5:
     case 8:
             if (c <= 0xff && isdigit(c))
@@ -574,7 +564,6 @@ Lisp_Object intern(int len, CSLbool escaped)
         case 'e': case 'E':
                     numberp = 9;
                     continue;
-#ifdef COMMON
         case 's': case 'S':
      /* Clobbering the string is a DISASTER if it is not in fact numeric */
                     boffo_char(i) = 'e';
@@ -599,7 +588,6 @@ Lisp_Object intern(int len, CSLbool escaped)
                     fplength = 3;
                     numberp = 9;
                     continue;
-#endif
         default:
                     numberp = -1;
                     break;
@@ -682,11 +670,16 @@ case 2:
             return v;
         }
 
-#ifdef COMMON
 case 4:
         {   int p, q, g;
             Lisp_Object r;
-/* Beware bignum issue here... but take view that ratios are not used! */
+/*
+ * Beware bignum issue here... but take view that ratios are not used!
+ * I think I am expressing concern that a this ONLY deals with rational
+ * number input where both numerator and denominator are small enough to
+ * end up as fixnums, and it does not check for overflow. Thius 22/7 will
+ * be OK but 12345678987654321/3 will not.
+ */
             boffo_char(boffop) = 0;
 /* p and q were made int not int32_t to match up with the %d in scanf ... */
             sscanf((char *)&boffo_char(0), "%d/%d", &p, &q);
@@ -705,12 +698,10 @@ case 4:
             denominator(r) = fixnum_of_int((int32_t)q);
             return r;
         }
-#endif
 case 8:
 case 11:
         {   double d;
             Lisp_Object r;
-#ifdef COMMON
             float f;
             if (!explicit_fp_format && is_symbol(read_float_format))
             {   Lisp_Object w = qvalue(read_float_format);
@@ -719,10 +710,8 @@ case 11:
 /*              else if (w == double_float) fplength = 2; */
                 else if (w == long_float) fplength = 3;
             }
-#endif
             boffo_char(boffop) = 0;
             d = atof((char *)&boffo_char(0));
-#ifdef COMMON
             switch (fplength)
             {
         case 0:
@@ -745,16 +734,6 @@ case 11:
                 double_float_val(r) = d;
                 return r;
             }
-#else
-/*
- * Only support double precision in CSL mode
- */
-            r = getvector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT,
-                          SIZEOF_DOUBLE_FLOAT);
-            errexit();
-            double_float_val(r) = d;
-            return r;
-#endif
         }
     }
 }
@@ -1600,7 +1579,7 @@ static Lisp_Object Lmake_symbol(Lisp_Object nil, Lisp_Object str)
 
 #endif
 
-Lisp_Object MS_CDECL Lgensym(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lgensym(Lisp_Object nil, int nargs, ...)
 /*
  * Lisp function (gensym) creates an uninterned symbol with odd name.
  */
@@ -2482,7 +2461,7 @@ Lisp_Object Lrtell_1(Lisp_Object nil, Lisp_Object stream)
     else return onevalue(fixnum_of_int(n));
 }
 
-Lisp_Object MS_CDECL Lrtell(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lrtell(Lisp_Object nil, int nargs, ...)
 /*
  * RTELL returns an integer that indicates the position of the current
  * input stream (as selected by RDS). If the position is not available
@@ -3710,7 +3689,7 @@ default:
 
 static int most_recent_read_point = 0;
 
-Lisp_Object MS_CDECL Lread(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lread(Lisp_Object nil, int nargs, ...)
 /*
  * The full version of read_s() has to support extra optional args
  * that deal with error and eof returns... and a recursive-p arg!
@@ -3751,7 +3730,7 @@ Lisp_Object MS_CDECL Lread(Lisp_Object nil, int nargs, ...)
     return onevalue(w);
 }
 
-static Lisp_Object MS_CDECL Lwhere_was_that(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lwhere_was_that(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object w;
     argcheck(nargs, 0, "where-was-that");
@@ -4406,7 +4385,7 @@ Lisp_Object Lrdf2(Lisp_Object nil, Lisp_Object file, Lisp_Object noisy)
     return Lrdf4(nil, file, noisy, lisp_true, lisp_true);
 }
 
-Lisp_Object MS_CDECL Lrdfn(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lrdfn(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object file, noisy, verbose, nofile = lisp_true;
@@ -4487,7 +4466,7 @@ Lisp_Object Lspool(Lisp_Object nil, Lisp_Object file)
     return onevalue(nil);
 }
 
-static Lisp_Object MS_CDECL Lspool0(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lspool0(Lisp_Object nil, int nargs, ...)
 {
     argcheck(nargs, 0, spool_name);
     return Lspool(nil, nil);
@@ -4662,7 +4641,7 @@ static Lisp_Object Luse_package(Lisp_Object nil, Lisp_Object uses,
     return onevalue(lisp_true);
 }
 
-static Lisp_Object MS_CDECL Lmake_package(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Lmake_package(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object name, nicknames = nil, uses = nil, w = nil, k;
     CSLbool has_use = NO;
@@ -4765,7 +4744,7 @@ static Lisp_Object Lmake_package_1(Lisp_Object nil, Lisp_Object a)
     return Lmake_package(nil, 1, a);
 }
 
-static Lisp_Object MS_CDECL Llist_all_packages(Lisp_Object nil, int nargs, ...)
+static Lisp_Object Llist_all_packages(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nargs);
     CSL_IGNORE(nil);
@@ -4774,7 +4753,7 @@ static Lisp_Object MS_CDECL Llist_all_packages(Lisp_Object nil, int nargs, ...)
 
 #endif
 
-Lisp_Object MS_CDECL Ltyi(Lisp_Object nil, int nargs, ...)
+Lisp_Object Ltyi(Lisp_Object nil, int nargs, ...)
 {
     int ch;
     argcheck(nargs, 0, "tyi");
@@ -4836,7 +4815,7 @@ Lisp_Object Lreadch1(Lisp_Object nil, Lisp_Object stream)
     return onevalue(w);
 }
 
-Lisp_Object MS_CDECL Lreadch(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lreadch(Lisp_Object nil, int nargs, ...)
 {
     argcheck(nargs, 0, "readch");
     return Lreadch1(nil, qvalue(standard_input));
@@ -4876,7 +4855,7 @@ Lisp_Object Lpeekch1(Lisp_Object nil, Lisp_Object type)
     return Lpeekch2(nil, type, qvalue(standard_input));
 }
 
-Lisp_Object MS_CDECL Lpeekch(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lpeekch(Lisp_Object nil, int nargs, ...)
 {
     argcheck(nargs, 0, "peekch");
     return Lpeekch2(nil, nil, qvalue(standard_input));
@@ -4930,7 +4909,7 @@ Lisp_Object Lreadline1(Lisp_Object nil, Lisp_Object stream)
     return nvalues(w, 2);
 }
 
-Lisp_Object MS_CDECL Lreadline(Lisp_Object nil, int nargs, ...)
+Lisp_Object Lreadline(Lisp_Object nil, int nargs, ...)
 {
     argcheck(nargs, 0, "readline");
     return Lreadline1(nil, qvalue(standard_input));

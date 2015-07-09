@@ -70,18 +70,6 @@
 extern "C" {
 #endif
 
-#ifndef MS_CDECL
-#ifdef _MSC_VER
-/*
- * With the Microsoft Compilers I may have set some other calling convention
- * as default, and then for these I must explicitly use the ordinary one.
- */
-#define MS_CDECL __cdecl
-#else
-#define MS_CDECL
-#endif
-#endif
-
 /*
  * Logging support. This will give a no-op unless the preprocessor symbol
  * DEBUG is defined at compile time.
@@ -216,7 +204,7 @@ extern void fwin_puts(const char *s);
 
 extern void fwin_showmath(const char *s);
 
-extern void MS_CDECL fwin_printf(const char *fmt, ...);
+extern void fwin_printf(const char *fmt, ...);
 extern void fwin_vfprintf(const char *fmt, va_list a);
 
 /*
@@ -493,8 +481,8 @@ extern int fwin_plain_getchar();
 
 extern int texmacs_mode;
 
-extern void MS_CDECL sigint_handler(int code);
-extern void MS_CDECL sigbreak_handler(int code);
+extern void sigint_handler(int code);
+extern void sigbreak_handler(int code);
 
 extern int plain_worker(int argc, char *argv[], fwin_entrypoint *fwin_main);
 extern char fwin_prompt_string[MAX_PROMPT_LENGTH];

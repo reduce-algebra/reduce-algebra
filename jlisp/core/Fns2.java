@@ -181,9 +181,6 @@ class Fns2
         {"rational",                    new RationalFn()},
         {"remainder",                   new RemainderFn()},
         {"round",                       new RoundFn()},
-        {"safe-fp-plus",                new Safe_fp_plusFn()},
-        {"safe-fp-quot",                new Safe_fp_quotFn()},
-        {"safe-fp-times",               new Safe_fp_timesFn()},
         {"sec",                         new SecFn()},
         {"secd",                        new SecdFn()},
         {"sech",                        new SechFn()},
@@ -1527,67 +1524,6 @@ class RoundFn extends BuiltinFunction
     public LispObject op1(LispObject arg1) throws Exception
     {
         return arg1.round();
-    }
-}
-
-class Safe_fp_plusFn extends BuiltinFunction
-{
-    public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
-    {
-	double a1 = ((LispFloat)arg1).value,
-               a2 = ((LispFloat)arg2).value;
-        if (a1 == 0.0) return arg2;
-        else if (a2 == 0.0) return arg1; // adding 0.0 never hurts!
-        else if (a1 == -a2) return new LispFloat(0.0);
-        long d1 = Double.doubleToLongBits(a1);
-        int x1 = (int)(d1 >> 52) & 0x7ff;
-        double r = a1+a2;
-        long r1 = Double.doubleToLongBits(r);
-        int x = (int)(r1 >> 52) & 0x7ff;
-// I return nil if either the result overflows, or if it becomes a denorm,
-// or if it is smaller than one of the inputs by 40 places. This last
-// case seems a bit curious but it is what the REDUCE code appears to
-// expect and I should not adjust it without making a major review of all
-// that REDUCE does...
-        if (x == 0x7ff || x == 0 || x < (x1-40)) return Jlisp.nil;
-        else return new LispFloat(r);
-    }
-}
-
-class Safe_fp_timesFn extends BuiltinFunction
-{
-    public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
-    {
-	double a1 = ((LispFloat)arg1).value,
-               a2 = ((LispFloat)arg2).value;
-// I accept that multiplying by 0.0 should return 0.0
-// The possibility that the calculation was 0.0*infinity or 0.0*NaN is
-// one I will ignore, since in the cases I use safe-fp-times values should
-// never degenerate into those special cases.
-        if (a1 == 0.0 || a2 == 0.0) return new LispFloat(0.0);
-        double r = a1*a2;
-// form tha product in the ordinary way and then see if the result is
-// denormalised or infinite.
-        long r1 = Double.doubleToLongBits(r);
-        int x = (int)(r1 >> 52) & 0x7ff;
-        if (x == 0x7ff || x == 0) return Jlisp.nil;
-        return new LispFloat(r);
-    }
-}
-
-class Safe_fp_quotFn extends BuiltinFunction
-{
-    public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
-    {
-	double a1 = ((LispFloat)arg1).value,
-               a2 = ((LispFloat)arg2).value;
-        if (a2 == 0.0) return Jlisp.nil;
-        else if (a1 == 0.0) return new LispFloat(0.0);
-        double r = a1/a2;
-        long r1 = Double.doubleToLongBits(r);
-        int x = (int)(r1 >> 52) & 0x7ff;
-        if (x == 0x7ff || x == 0) return Jlisp.nil;
-        return new LispFloat(r);
     }
 }
 

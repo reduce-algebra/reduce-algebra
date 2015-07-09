@@ -1144,6 +1144,8 @@ AC_CHECK_HEADER([inttypes.h],
                 [inttypes_header=n])
 AC_MSG_NOTICE([inttypes_header=$inttypes_header])
 
+AC_CHECK_HEADERS([complex.h])
+
 AC_CHECK_HEADERS([fcntl.h float.h malloc.h memory.h stdio.h])
 AC_CHECK_HEADERS([stddef.h stdlib.h string.h sys/resource.h time.h])
 AC_CHECK_HEADERS([sys/param.h sys/time.h sys/times.h unistd.h utime.h])
@@ -1185,6 +1187,11 @@ AC_CHECK_TYPES([u_int8_t,u_int16_t,u_int32_t,u_int64_t,u_intptr_t], [], [],
    [#ifdef HAVE_STDINT_H
     #include <stdint.h>
     #endif])
+AC_CHECK_TYPES([complex double], [], [],
+   [#ifdef HAVE_COMPLEX_H
+    #include <complex.h>
+    #endif])
+
 
 # With luck the above types from newer C standards will ba available. If
 # they are I can rely on them an I then do not need to worry about
@@ -1232,9 +1239,14 @@ AC_CHECK_FUNCS([strrchr strstr utime popen getrlimit])
 AC_CHECK_FUNCS([fork wait waitpid shmget shmat shmdt shmctl])
 AC_CHECK_FUNCS([vsnprintf sysctlbyname gettimeofday times])
 AC_CHECK_FUNCS([siglongjmp sigaltstack sigaction])
-AC_CHECK_FUNCS([clock_gettime])
+AC_CHECK_FUNCS([clock_gettime signbit])
 AC_CHECK_FUNCS([getc_unlocked putc_unlocked])
 AC_CHECK_FUNCS([_getc_nolock _putc_nolock])
+
+# I will view csqrt as representative of all the complex elementary functions
+# and if it is found I will assume that csin, clog and all the rest are
+# available.
+AC_CHECK_FUNCS([csqrt])
    
 if test x$ac_cv_header_sys_resource_h = "xyes"
 then

@@ -3257,25 +3257,25 @@ quote setq) (car v) (cdr v)) body))) (setq var1241 (cdr var1241)) (go lab1240
 (reverse n)) lab1242 (cond ((null var1243) (return (reversip var1244)))) (
 prog (v) (setq v (car var1243)) (setq var1244 (cons (car v) var1244))) (setq 
 var1243 (cdr var1243)) (go lab1242)) body)))))) (c!:printf 
-"static Lisp_Object ") (cond (varargs (c!:printf "MS_CDECL "))) (c!:printf 
-"%s(Lisp_Object env" c!:current_c_name) (setq env nil) (cond (varargs (
-c!:printf ", int nargs, ...")) (t (progn (setq n t) (prog (var1246) (setq 
-var1246 args) lab1245 (cond ((null var1246) (return nil))) (prog (x) (setq x 
-(car var1246)) (prog (aa) (c!:printf ",") (cond (n (progn (c!:printf 
-"\n                        ") (setq n nil))) (t (setq n t))) (setq aa (
-c!:my_gensym)) (setq env (cons (cons x aa) env)) (setq c!:registers (cons aa 
-c!:registers)) (setq args1 (cons aa args1)) (c!:printf " Lisp_Object %s" aa))
-) (setq var1246 (cdr var1246)) (go lab1245))))) (c!:printf ")\n{\n") (cond ((
-and varargs args) (prog (var1248) (setq var1248 args) lab1247 (cond ((null 
-var1248) (return nil))) (prog (x) (setq x (car var1248)) (prog (aa) (setq aa 
-(c!:my_gensym)) (setq env (cons (cons x aa) env)) (setq c!:registers (cons aa
-c!:registers)) (setq args1 (cons aa args1)))) (setq var1248 (cdr var1248)) (
-go lab1247)))) (c!:startblock (setq entrypoint (c!:my_gensym))) (setq 
-exitpoint c!:current_block) (c!:endblock (quote goto) (list (list (c!:cval 
-body (cons env nil))))) (c!:optimise_flowgraph entrypoint c!:all_blocks env (
-cons (length args) c!:current_procedure) args1 varargs) (c!:printf "}\n\n") (
-wrs O_file) (setq L_contents (cons (cons c!:current_procedure (cons 
-literal_vector checksum)) L_contents)) (return nil)))
+"static Lisp_Object %s(Lisp_Object env" c!:current_c_name) (setq env nil) (
+cond (varargs (c!:printf ", int nargs, ...")) (t (progn (setq n t) (prog (
+var1246) (setq var1246 args) lab1245 (cond ((null var1246) (return nil))) (
+prog (x) (setq x (car var1246)) (prog (aa) (c!:printf ",") (cond (n (progn (
+c!:printf "\n                        ") (setq n nil))) (t (setq n t))) (setq 
+aa (c!:my_gensym)) (setq env (cons (cons x aa) env)) (setq c!:registers (cons
+aa c!:registers)) (setq args1 (cons aa args1)) (c!:printf " Lisp_Object %s" 
+aa))) (setq var1246 (cdr var1246)) (go lab1245))))) (c!:printf ")\n{\n") (
+cond ((and varargs args) (prog (var1248) (setq var1248 args) lab1247 (cond ((
+null var1248) (return nil))) (prog (x) (setq x (car var1248)) (prog (aa) (
+setq aa (c!:my_gensym)) (setq env (cons (cons x aa) env)) (setq c!:registers 
+(cons aa c!:registers)) (setq args1 (cons aa args1)))) (setq var1248 (cdr 
+var1248)) (go lab1247)))) (c!:startblock (setq entrypoint (c!:my_gensym))) (
+setq exitpoint c!:current_block) (c!:endblock (quote goto) (list (list (
+c!:cval body (cons env nil))))) (c!:optimise_flowgraph entrypoint 
+c!:all_blocks env (cons (length args) c!:current_procedure) args1 varargs) (
+c!:printf "}\n\n") (wrs O_file) (setq L_contents (cons (cons 
+c!:current_procedure (cons literal_vector checksum)) L_contents)) (return nil
+)))
 
 (flag (quote (rds deflist flag fluid global remprop remflag unfluid unglobal 
 dm carcheck C!-end)) (quote eval))

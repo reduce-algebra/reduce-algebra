@@ -1,12 +1,10 @@
-/* headers.h                       Copyright (C) 2005-2010 Codemist Ltd */
+/* headers.h                       Copyright (C) 2005-2015 Codemist Ltd */
 
 #ifndef header_headers_h
 #define header_headers_h 1
 
-
-
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -42,6 +40,18 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
+
+/*
+ * If the header "complex.h" is available, the type "complex double" is
+ * accepted and the function "csqrt" is present I will assume I can use the
+ * standard C99 complex number support facilities.
+ */
+
+#if defined HAVE_COMPLEX_H && \
+    defined HAVE_COMPLEX_DOUBLE && \
+    defined HAVE_CSQRT
+#define HAVE_COMPLEX 1
 #endif
 
 /*

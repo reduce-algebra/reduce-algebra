@@ -680,9 +680,7 @@ symbolic procedure c!:cfndef(c!:current_procedure,
        for each v in n do
          body := list('setq, car v, cdr v) . body;
        body := 'prog . (for each v in reverse n collect car v) . body >>;
-    c!:printf "static Lisp_Object ";
-    if varargs then c!:printf("MS_CDECL ");
-    c!:printf("%s(Lisp_Object env", c!:current_c_name);
+    c!:printf("static Lisp_Object %s(Lisp_Object env", c!:current_c_name);
     env := nil;
     if varargs then c!:printf(", int nargs, ...")
     else <<
