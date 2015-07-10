@@ -462,7 +462,6 @@ end;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Inverse Functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% only log for now  -- really needs new rules for atan2 in elem.red
 
 put('log,'cmpxsplitfn,'reimlog);
 put('log10,'cmpxsplitfn,'reimlog);
@@ -481,6 +480,101 @@ symbolic procedure reimlog u;
    where op = car u,
          rearg = prepsq simprepart cdr u,
       	 imarg = prepsq simpimpart cdr u;
+
+% Subsidiary function called from next four split functions
+% Returns a dotted pair of the arguments for acos and acosh resp.
+% The first value is guaranteed to be in the range [-1, +1] 
+% and the second is always >= 1
+symbolic procedure invfn!-args(x, y);
+  if x=0 then 1 . {'plus, 1, {'times, 2, {'expt, y, 2}}}
+  else
+    begin scalar ssq, sroot;
+       ssq :=  simp {'plus, {'expt, x, 2}, {'expt, y, 2}};
+       if y=0 then 
+         sroot := simp {'abs, {'plus, prepsq ssq, -1}}
+       else
+         sroot := simp {'sqrt, {'plus, {'expt, {'plus, prepsq ssq, -1}, 2},
+                                       {'times, 4, {'expt, y, 2}}}};
+       return (prepsq addsq(sroot, negsq ssq)) . (prepsq addsq(ssq, sroot));
+end;
+
+put('asin, 'cmpxsplitfn, 'reimasin);
+
+symbolic procedure reimasin u;
+begin scalar rearg, imarg, x, y, sr, si;
+  rearg := prepsq simprepart cdr u;
+  imarg := prepsq simpimpart cdr u;
+  if rearg=0 then return simp {'times, 'i, {'asinh, imarg}};
+
+  y := invfn!-args(rearg, imarg);
+
+  x := simp {'quotient, {'acos, car y}, 2};
+  y := simp {'quotient, {'acosh, cdr y}, 2};  
+
+  sr := simp{'sign, rearg}; 
+  si :=simp {'sign, imarg};
+
+  % Multiply x by sr if sr neq 0 and by 1 if sr=0
+  x := multsq(x, addsq(simp 1, multsq(sr, addsq(simp 1, negsq sr)))); 
+  % Multiply y by si if si neq 0 and by -sr if si=0
+  y := multsq(y, addsq(si, 
+                       multsq(sr, addsq(multsq(si, si), simp(-1)))));
+
+  return addsq(x, multsq(simp 'i, y));
+end;
+
+put('acos, 'cmpxsplitfn, 'reimacos);
+
+symbolic procedure reimacos u;
+  addsq(simp {'quotient, 'pi, 2}, negsq reimasin u);
+
+put('asinh, 'cmpxsplitfn, 'reimasinh);
+
+symbolic procedure reimasinh u;
+begin scalar rearg, imarg, x, y, sr, si;
+  rearg := prepsq simprepart cdr u;
+  imarg := prepsq simpimpart cdr u;
+
+  if imarg=0 then return simp {'asinh, rearg};
+
+  x := invfn!-args(imarg, rearg);
+  y := simp {'quotient, {'acos, car x}, 2};
+  x := simp {'quotient, {'acosh, cdr x}, 2};
+
+  sr := simp {'sign, rearg}; 
+  si := simp {'sign, imarg};
+
+  % Multiply y by si if si neq 0 and by 1 if si=0
+  y := multsq(y, addsq(simp 1, multsq(si, addsq(simp 1, negsq si))));
+  % Multiply x by sr if sr neq 0 and by si if sr=0
+  x := multsq(x, addsq(sr, 
+                       multsq(si, addsq(negsq multsq(sr, sr), simp 1))));
+
+  return addsq(x, multsq(simp 'i, y));
+end;
+
+put('acosh, 'cmpxsplitfn, 'reimacosh);
+
+symbolic procedure reimacosh u;
+begin scalar rearg, imarg, x, y, sr, si;
+  rearg := prepsq simprepart cdr u;
+  imarg := prepsq simpimpart cdr u;
+  
+  x := invfn!-args(rearg, imarg);
+  y := simp {'quotient, {'acos, {'minus, car x}}, 2};
+  x := simp {'quotient, {'acosh, cdr x}, 2};
+
+  sr := simp {'sign, rearg}; 
+  si := simp {'sign, imarg};
+
+  % leave y unchanged when sr=1 or sr=0 else y := pi-y when sr=-1
+  y := addsq(y, (multsq(multsq(sr, addsq(sr, simp(-1))), 
+                        addsq(simp {'quotient, 'pi, 2}, negsq y))));
+  % Now multiply y by si if si neq 0 and by 1 if si=0 
+  y := multsq(y, addsq(simp 1, multsq(si, addsq(simp 1, negsq si))));
+
+  return addsq(x, multsq(simp 'i, y));
+end;
 
 %%% special cases
 
