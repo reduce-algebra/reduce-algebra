@@ -44,12 +44,13 @@ rldegbound!* := 3;
 %%% data types %%%
 
 struct Position checked by PositionP;  % position in formula
-
 struct VSsu checked by VSsuP;  % VS
 struct VSvs checked by VSvsP;  % VS: test point substitution
 struct VSdg checked by VSdgP;  % VS: degree shift
 struct VSar checked by VSarP;  % VS: arbitrary
 struct VSpr checked by VSprP;  % parametric root
+struct VSpc checked by VSpcP;  % annotated prime constituent (APC)
+struct VScs checked by VScsP;  % candidate solutions
 struct VStp checked by VStpP;  % test point
 struct VSnd checked by VSndP;  % QE tree node
 struct VSco checked by VScoP;  % container of nodes
@@ -58,6 +59,7 @@ struct VSdb checked by VSdbP;  % VS data for a block
 struct VSde checked by VSdeP;  % VS data for elimination set computation
 struct VSdt checked by VSdtP;  % VS data for formula traversal
 
+struct PositionL checked by PositionLP;  % list of Position
 struct VSprL checked by VSprLP;  % list of VSpr
 struct VStpL checked by VStpLP;  % list of VStp
 struct VSndL checked by VSndLP;  % list of VSnd
@@ -83,6 +85,12 @@ procedure VSarP(s);  % VS: arbitrary
 procedure VSprP(s);  % parametric root
    pairp s and car s eq 'vspr;
 
+procedure VSpcP(s);  % annotated prime constituent (APC)
+   pairp s and car s eq 'vspc;
+
+procedure VScsP(s);  % candidate solutions
+   list4p s;
+
 procedure VStpP(s);  % test point
    % TODO: Specify this data type.
    pairp s;
@@ -104,6 +112,9 @@ procedure VSdeP(s);  % VS data for elimination set computation
 
 procedure VSdtP(s);  % VS data for formula traversal
    vectorp s and getv(s, 0) eq 'vsdt;
+
+procedure PositionLP(s);
+   null s or (pairp s and PositionP car s and PositionLP cdr s);
 
 procedure VSprLP(s);
    null s or (pairp s and VSprP car s and VSprLP cdr s);
@@ -186,6 +197,68 @@ asserted procedure vspr_f(pr: VSpr): SF;
 asserted procedure vspr_rs(pr: VSpr): DottedPair;
    % Parametric root root specification.
    nth(pr, 4);
+
+%%% annotated prime constituent (APC) %%%
+
+asserted procedure vspc_mk(p: Position, type: Id, cs: VScs, gpl: PositionL, b: List): VSpc;
+   % Annotated prime constituent make. [p] is the position of the APC,
+   % [type] is one of ['(gauss cogauss at)]; [cs] are candidate
+   % solutions; [gpl] are positions of Gauss prime constituents; [b]
+   % is bound choice
+   {'vspc, p, type, cs, gpl, b};
+
+asserted procedure vspc_p(pc: VSpc): Position;
+   nth(pc, 2);
+
+asserted procedure vspc_type(pc: VSpc): Id;
+   nth(pc, 3);
+
+asserted procedure vspc_cs(pc: VSpc): VScs;
+   nth(pc, 4);
+
+asserted procedure vspc_gpl(pc: VSpc): PositionL;
+   nth(pc, 5);
+
+asserted procedure vspc_b(pc: VSpc): List;
+   nth(pc, 6);
+
+%%% candidate solutions %%%
+
+asserted procedure vscs_mk(lbprl: VSprL, lts: Theory, ubprl: VSprL, uts: Theory): VScs;
+   % Candidate solutions make.
+   {lbprl, lts, ubprl, uts};
+
+asserted procedure vscs_lprl(cs: VScs): VSprL;
+   % Candidate solutions lower bound parametric roots list.
+   nth(cs, 1);
+
+asserted procedure vscs_lts(cs: VScs): Theory;
+   % Candidate solutions lower bound theory supplement.
+   nth(cs, 2);
+
+asserted procedure vscs_uprl(cs: VScs): VSprL;
+   % Candidate solutions upper bound parametric roots list.
+   nth(cs, 3);
+
+asserted procedure vscs_uts(cs: VScs): Theory;
+   % Candidate solutions upper bound theory supplement.
+   nth(cs, 4);
+
+asserted procedure vscs_addlprl(cs: VScs, prl: VSprL): VScs;
+   {append(vscs_lprl cs, prl), vscs_lts cs, vscs_uprl cs, vscs_uts cs};
+
+asserted procedure vscs_addlts(cs: VScs, lts: Theory): VScs;
+   {vscs_lprl cs, append(vscs_lts cs, lts), vscs_uprl cs, vscs_uts cs};
+
+asserted procedure vscs_adduprl(cs: VScs, prl: VSprL): VScs;
+   {vscs_lprl cs, vscs_lts cs, append(vscs_uprl cs, prl), vscs_uts cs};
+
+asserted procedure vscs_adduts(cs: VScs, uts: Theory): VScs;
+   {vscs_lprl cs, vscs_lts cs, vscs_uprl cs, append(vscs_uts cs, uts)};
+
+asserted procedure vscs_merge(c1: VScs, c2: VScs): VScs;
+   {append(vscs_lprl c1, vscs_lprl c2), append(vscs_lts c1, vscs_lts c2),
+      append(vscs_uprl c1, vscs_uprl c2), append(vscs_uts c1, vscs_uts c2)};
 
 %%% QE tree node %%%
 
@@ -380,7 +453,7 @@ asserted procedure vsde_new(): VSde;
       putv(de, 2, 'undefined);        % [f]: quantifier-free formula
       putv(de, 3, 'undefined);        % [curtheo]: current background theory
       putv(de, 4, 'undefined);        % [bvl]: do not make assumptions on variables in [bvl]
-      putv(de, 5, 'undefined);        % [apcl]: list of atomic prime constituents
+      putv(de, 5, 'undefined);        % [pcl]: list of annotated prime constituents
       putv(de, 6, 'undefined);        % [tpl]: list of test points
       return de
    end;
@@ -389,14 +462,14 @@ procedure vsde_var(de);                         getv(de, 1);
 procedure vsde_f(de);                           getv(de, 2);
 procedure vsde_curtheo(de);                     getv(de, 3);
 procedure vsde_bvl(de);                         getv(de, 4);
-procedure vsde_apcl(de);                        getv(de, 5);
+procedure vsde_pcl(de);                         getv(de, 5);
 procedure vsde_tpl(de);                         getv(de, 6);
 
 procedure vsde_putvar(de, var);                 putv(de, 1, var);
 procedure vsde_putf(de, f);                     putv(de, 2, f);
 procedure vsde_putcurtheo(de, theo);            putv(de, 3, theo);
 procedure vsde_putbvl(de, bvl);                 putv(de, 4, bvl);
-procedure vsde_putapcl(de, apcl);               putv(de, 5, apcl);
+procedure vsde_putpcl(de, pcl);                 putv(de, 5, pcl);
 procedure vsde_puttpl(de, tpl);                 putv(de, 6, tpl);
 
 asserted procedure vsde_mk(var: Kernel, f: QfFormula, theo: Theory, bvl: KernelL): VSde;
@@ -406,7 +479,7 @@ asserted procedure vsde_mk(var: Kernel, f: QfFormula, theo: Theory, bvl: KernelL
       vsde_putf(de, f);
       vsde_putcurtheo(de, theo);
       vsde_putbvl(de, bvl);
-      vsde_putapcl(de, nil);
+      vsde_putpcl(de, nil);
       vsde_puttpl(de, nil);
       return de
    end;
@@ -421,12 +494,13 @@ asserted procedure vsdt_new(): VSdt;
       putv(dt, 3, 'undefined);        % [bvl]: do not make assumptions on variables in [bvl]
       putv(dt, 4, 'undefined);        % [ptheo]: persistent theory
       putv(dt, 5, 'undefined);        % [ttheo]: temporary theory
-      putv(dt, 6, 'undefined);        % [data]: list of collected data
+      putv(dt, 6, 'undefined);        % [data]: CollectedData
       return dt
    end;
 
 %DS
-% CollectedData ::= (Position, VSprL, persistent theory supplement)
+% CollectedData ::= AList of DottedPairs of the form (Position . VScs)
+% or (Position . 'degree!-too!-high)
 
 procedure vsdt_var(dt);                         getv(dt, 1);
 procedure vsdt_f(dt);                           getv(dt, 2);
@@ -519,13 +593,13 @@ asserted procedure vsar_apply(vs: VSar, f: QfFormula): QfFormula;
       f
    >>;
 
-asserted procedure vspr_at2prl(at: QfFormula, x: Kernel, theo: Theory, bndf: Id): VSprL;
-   % Atomic formula to list of parametric roots. [at] is an atomic
-   % formula of the form ([f] [op] [0]); [theo] is a theory that can
-   % be used to rule out some parametric roots. Returns a list of all
-   % possible parametric roots of [f] that represent some interesting
-   % point, i.e., a bound computed by procedure [bndf].
-   begin scalar f, op, lcf, finished, resl; integer d;
+asserted procedure vscs_at2cs(at: QfFormula, x: Kernel, theo: Theory): VScs;
+   % Atomic formula to candidate solutions. [at] is an atomic formula
+   % of the form ([f] [op] [0]); [theo] is a theory that can be used
+   % to rule out some parametric roots. Returns a VScs, which contains
+   % parametric roots of [f] that possibly represent lower/upper
+   % bounds.
+   begin scalar f, op, lcf, finished, cs;
       % This procedure uses local equational theory as follows: If [lc
       % f = 0] follows from [theo], then [f] is not considered. If [lc
       % f <> 0] follows from [theo], then [red f] is not considered.
@@ -535,203 +609,194 @@ asserted procedure vspr_at2prl(at: QfFormula, x: Kernel, theo: Theory, bndf: Id)
       if ldeg f > rldegbound!* then
       	 return 'degree!-too!-high;
       op := rl_op at;
+      cs := vscs_mk(nil, nil, nil, nil);
       repeat <<
       	 if sfto_mvartest(f, x) then <<
 	    lcf := lc f;
 	    if ofsf_surep(ofsf_0mk2('neq, lcf), theo) then <<
 	       finished := t;
-	       resl := append(resl, apply(bndf, {ofsf_0mk2(op, f), x}))
+      	       cs := vscs_at2csnz(at, x)
 	    >> else if not ofsf_surep(ofsf_0mk2('equal, lcf), theo) then <<
 	       push(ofsf_0mk2('equal, lcf), theo);
-	       resl := append(resl, apply(bndf, {ofsf_0mk2(op, f), x}))
+      	       cs := vscs_at2csnz(at, x)
 	    >>;
 	    f := red f
 	 >> else
 	    finished := t
       >> until finished;
-      return resl
+      return cs
    end;
 
-asserted procedure vspr_at2prl!-ub(at: QfFormula, x: Kernel): VSprL;
-   % Atomic formula to list of parametric roots: upper bounds.
-   begin scalar f, cfl, op; integer l;
+asserted procedure vscs_at2csnz(at: QfFormula, x: Kernel): VScs;
+   % Atomic formula to candidate solutions subprocedure. Returns a
+   % VScs, which contains parametric roots of [f] that represent
+   % lower/upper bounds under the assumption that the leading
+   % coefficient is non-zero.
+   begin scalar f, op;
       f := rl_arg2l at;
-      cfl := coeffs f;
-      l := length cfl;
       op := rl_op at;
-      if eqn(l, 2) then <<  % the linear case
-      	 if op memq '(equal neq) then
-	    return {vspr_mk(1, f, 1 . 1), vspr_mk(1, f, (-1) . 1)};
-      	 if op memq '(lessp leq) then
-	    return {vspr_mk(1, f, 1 . 1)};
-      	 if op eq '(geq greaterp) then
-	    return {vspr_mk(1, f, (-1) . 1)}
-      >>;
-      if eqn(l, 3) then <<  % the quadratic case
-	 if op memq '(equal neq) then
-	    return {
-	       vspr_mk(2, f, 1 . 1),
-	       vspr_mk(2, f, 1 . 2),
-	       vspr_mk(2, f, 2 . 1),
-	       vspr_mk(2, f, (-1) . 1),
-	       vspr_mk(2, f, (-1) . 2),
-	       vspr_mk(2, f, (-2) . 1)
-	       	  };
-      	 if op memq '(lessp leq) then
-	    return {
-	       vspr_mk(2, f, 1 . 2),
-	       vspr_mk(2, f, 2 . 1),
-	       vspr_mk(2, f, (-1) . 1),
-	       vspr_mk(2, f, (-2) . 1)
-	    	  };
-      	 if op eq '(geq greaterp) then
-	    return {
-	       vspr_mk(2, f, 1 . 1),
-	       vspr_mk(2, f, 2 . 1),
-	       vspr_mk(2, f, (-1) . 2),
-	       vspr_mk(2, f, (-2) . 1)
-	       	  }
-      >>;
-      if eqn(l, 4) then <<  % the cubic case
-      	 if op memq '(equal neq) then
-	    return {
-	       vspr_mk(3, f, 1 . 1),
-	       vspr_mk(3, f, 2 . 1),
-	       vspr_mk(3, f, 2 . 2),
-	       vspr_mk(3, f, 3 . 1),
-	       vspr_mk(3, f, 3 . 2),
-	       vspr_mk(3, f, 4 . 1),
-	       vspr_mk(3, f, 4 . 2),
-	       vspr_mk(3, f, 4 . 3),
-	       vspr_mk(3, f, (-1) . 1),
-	       vspr_mk(3, f, (-2) . 1),
-	       vspr_mk(3, f, (-2) . 2),
-	       vspr_mk(3, f, (-3) . 1),
-	       vspr_mk(3, f, (-3) . 2),
-	       vspr_mk(3, f, (-4) . 1),
-	       vspr_mk(3, f, (-4) . 2),
-	       vspr_mk(3, f, (-4) . 3)
-	       	  };
-      	 if op memq '(lessp leq) then
-	    return {
-	       vspr_mk(3, f, 1 . 1),
-	       vspr_mk(3, f, 2 . 1),
-	       vspr_mk(3, f, 2 . 2),
-	       vspr_mk(3, f, 3 . 1),
-	       vspr_mk(3, f, 3 . 2),
-	       vspr_mk(3, f, 4 . 1),
-	       vspr_mk(3, f, 4 . 3),
-	       vspr_mk(3, f, (-2) . 1),
-	       vspr_mk(3, f, (-3) . 2),
-	       vspr_mk(3, f, (-4) . 2)
-	       	  };
-      	 if op eq '(geq greaterp) then
-	    return {
-	       vspr_mk(3, f, 2 . 1),
-	       vspr_mk(3, f, 3 . 2),
-	       vspr_mk(3, f, 4 . 2),
-	       vspr_mk(3, f, (-1) . 1),
-	       vspr_mk(3, f, (-2) . 1),
-	       vspr_mk(3, f, (-2) . 2),
-	       vspr_mk(3, f, (-3) . 1),
-	       vspr_mk(3, f, (-3) . 2),
-	       vspr_mk(3, f, (-4) . 1),
-	       vspr_mk(3, f, (-4) . 3)
-	       	  }
-      >>;
-      % This should be unreachable.
-      assert(nil)
+      if op memq '(equal neq) then
+	 return vscs_at2csnz!-equal(f, x);
+      if op memq '(lessp leq) then
+	 return vscs_at2csnz!-leq(f, x);
+      if op memq '(geq greaterp) then
+	 return vscs_at2csnz!-geq(f, x)
    end;
 
-asserted procedure vspr_at2prl!-lb(at: QfFormula, x: Kernel): VSprL;
-   % Atomic formula to list of parametric roots: lower bounds.
-   begin scalar f, cfl, op; integer l;
-      f := rl_arg2l at;
-      cfl := coeffs f;
-      l := length cfl;
-      op := rl_op at;
-      if eqn(l, 2) then <<  % the linear case
-      	 if op memq '(equal neq) then
-	    return {vspr_mk(1, f, 1 . 1), vspr_mk(1, f, (-1) . 1)};
-      	 if op memq '(lessp leq) then
-	    return {vspr_mk(1, f, (-1) . 1)};
-      	 if op eq '(geq greaterp) then
-	    return {vspr_mk(1, f, 1 . 1)}
-      >>;
-      if eqn(l, 3) then <<  % the quadratic case
-      	 if op memq '(equal neq) then
-	    return {
+asserted procedure vscs_at2csnz!-equal(f: SF, x: Kernel): VScs;
+   begin scalar prl, cs; integer d;
+      assert(sfto_mvartest(f, x));
+      d := ldeg f;
+      if eqn(d, 1) then  % the linear case
+	 prl := {vspr_mk(1, f, 1 . 1), vspr_mk(1, f, (-1) . 1)}
+      else if eqn(d, 2) then  % the quadratic case
+	 prl := {
 	       vspr_mk(2, f, 1 . 1),
 	       vspr_mk(2, f, 1 . 2),
 	       vspr_mk(2, f, 2 . 1),
 	       vspr_mk(2, f, (-1) . 1),
 	       vspr_mk(2, f, (-1) . 2),
 	       vspr_mk(2, f, (-2) . 1)
-	       	  };
-      	 if op memq '(lessp leq) then
-	    return {
-	       vspr_mk(2, f, 1 . 1),
-	       vspr_mk(2, f, 2 . 1),
-	       vspr_mk(2, f, (-1) . 2),
-	       vspr_mk(2, f, (-2) . 1)
-	    	  };
-      	 if op eq '(geq greaterp) then
-	    return {
-	       vspr_mk(2, f, 1 . 2),
-	       vspr_mk(2, f, 2 . 1),
-	       vspr_mk(2, f, (-1) . 1),
-	       vspr_mk(2, f, (-2) . 1)
 	       	  }
-      >>;
-      if eqn(l, 4) then <<  % the cubic case
-      	 if op memq '(equal neq) then
-	    return {
-	       vspr_mk(3, f, 1 . 1),
-	       vspr_mk(3, f, 2 . 1),
-	       vspr_mk(3, f, 2 . 2),
-	       vspr_mk(3, f, 3 . 1),
-	       vspr_mk(3, f, 3 . 2),
-	       vspr_mk(3, f, 4 . 1),
-	       vspr_mk(3, f, 4 . 2),
-	       vspr_mk(3, f, 4 . 3),
-	       vspr_mk(3, f, (-1) . 1),
-	       vspr_mk(3, f, (-2) . 1),
-	       vspr_mk(3, f, (-2) . 2),
-	       vspr_mk(3, f, (-3) . 1),
-	       vspr_mk(3, f, (-3) . 2),
-	       vspr_mk(3, f, (-4) . 1),
-	       vspr_mk(3, f, (-4) . 2),
-	       vspr_mk(3, f, (-4) . 3)
-	       	  };
-      	 if op memq '(lessp leq) then
-	    return {
-	       vspr_mk(3, f, 2 . 1),
-	       vspr_mk(3, f, 3 . 2),
-	       vspr_mk(3, f, 4 . 2),
-	       vspr_mk(3, f, (-1) . 1),
-	       vspr_mk(3, f, (-2) . 1),
-	       vspr_mk(3, f, (-2) . 2),
-	       vspr_mk(3, f, (-3) . 1),
-	       vspr_mk(3, f, (-3) . 2),
-	       vspr_mk(3, f, (-4) . 1),
-	       vspr_mk(3, f, (-4) . 3)
-	       	  };
-      	 if op eq '(geq greaterp) then
-	    return {
-	       vspr_mk(3, f, 1 . 1),
-	       vspr_mk(3, f, 2 . 1),
-	       vspr_mk(3, f, 2 . 2),
-	       vspr_mk(3, f, 3 . 1),
-	       vspr_mk(3, f, 3 . 2),
-	       vspr_mk(3, f, 4 . 1),
-	       vspr_mk(3, f, 4 . 3),
-	       vspr_mk(3, f, (-2) . 1),
-	       vspr_mk(3, f, (-3) . 2),
-	       vspr_mk(3, f, (-4) . 2)
-	       	  }
-      >>;
-      % This should be unreachable.
-      assert(nil)
+      else if eqn(d, 3) then  % the cubic case
+	 prl := {
+	    vspr_mk(3, f, 1 . 1),
+	    vspr_mk(3, f, 2 . 1),
+	    vspr_mk(3, f, 2 . 2),
+	    vspr_mk(3, f, 3 . 1),
+	    vspr_mk(3, f, 3 . 2),
+	    vspr_mk(3, f, 4 . 1),
+	    vspr_mk(3, f, 4 . 2),
+	    vspr_mk(3, f, 4 . 3),
+	    vspr_mk(3, f, (-1) . 1),
+	    vspr_mk(3, f, (-2) . 1),
+	    vspr_mk(3, f, (-2) . 2),
+	    vspr_mk(3, f, (-3) . 1),
+	    vspr_mk(3, f, (-3) . 2),
+	    vspr_mk(3, f, (-4) . 1),
+	    vspr_mk(3, f, (-4) . 2),
+	    vspr_mk(3, f, (-4) . 3)
+	       }
+      else  % This should be unreachable.
+	 assert(nil);
+      cs := vscs_mk(nil, nil, nil, nil);
+      cs := vscs_addlprl(cs, prl);
+      cs := vscs_adduprl(cs, prl);
+      return cs
+   end;
+
+asserted procedure vscs_at2csnz!-leq(f: SF, x: Kernel): VScs;
+   begin scalar lprl, uprl, cs; integer d;
+      assert(sfto_mvartest(f, x));
+      d := ldeg f;
+      if eqn(d, 1) then <<  % the linear case
+	 lprl := {
+	    vspr_mk(1, f, (-1) . 1)
+	       };
+	 uprl := {
+	    vspr_mk(1, f, 1 . 1)
+	       }
+      >> else if eqn(d, 2) then <<  % the quadratic case
+	 lprl := {
+	    vspr_mk(2, f, 1 . 1),
+	    vspr_mk(2, f, 2 . 1),
+	    vspr_mk(2, f, (-1) . 2),
+	    vspr_mk(2, f, (-2) . 1)
+	       };
+	 uprl := {
+	    vspr_mk(2, f, 1 . 2),
+	    vspr_mk(2, f, 2 . 1),
+	    vspr_mk(2, f, (-1) . 1),
+	    vspr_mk(2, f, (-2) . 1)
+	       }
+      >> else if eqn(d, 3) then <<  % the cubic case
+	 lprl := {
+	    vspr_mk(3, f, 2 . 1),
+	    vspr_mk(3, f, 3 . 2),
+	    vspr_mk(3, f, 4 . 2),
+	    vspr_mk(3, f, (-1) . 1),
+	    vspr_mk(3, f, (-2) . 1),
+	    vspr_mk(3, f, (-2) . 2),
+	    vspr_mk(3, f, (-3) . 1),
+	    vspr_mk(3, f, (-3) . 2),
+	    vspr_mk(3, f, (-4) . 1),
+	    vspr_mk(3, f, (-4) . 3)
+	       };
+	 uprl := {
+	    vspr_mk(3, f, 1 . 1),
+	    vspr_mk(3, f, 2 . 1),
+	    vspr_mk(3, f, 2 . 2),
+	    vspr_mk(3, f, 3 . 1),
+	    vspr_mk(3, f, 3 . 2),
+	    vspr_mk(3, f, 4 . 1),
+	    vspr_mk(3, f, 4 . 3),
+	    vspr_mk(3, f, (-2) . 1),
+	    vspr_mk(3, f, (-3) . 2),
+	    vspr_mk(3, f, (-4) . 2)
+	       }
+      >> else  % This should be unreachable.
+	 assert(nil);
+      cs := vscs_mk(nil, nil, nil, nil);
+      cs := vscs_addlprl(cs, lprl);
+      cs := vscs_adduprl(cs, uprl);
+      return cs
+   end;
+
+asserted procedure vscs_at2csnz!-geq(f: SF, x: Kernel): VScs;
+   begin scalar lprl, uprl, cs; integer d;
+      assert(sfto_mvartest(f, x));
+      d := ldeg f;
+      if eqn(d, 1) then <<  % the linear case
+	 lprl := {
+	    vspr_mk(1, f, 1 . 1)
+	       };
+	 uprl := {
+	    vspr_mk(1, f, (-1) . 1)
+	       }
+      >> else if eqn(d, 2) then <<  % the quadratic case
+	 lprl := {
+	    vspr_mk(2, f, 1 . 2),
+	    vspr_mk(2, f, 2 . 1),
+	    vspr_mk(2, f, (-1) . 1),
+	    vspr_mk(2, f, (-2) . 1)
+	       };
+	 uprl := {
+	    vspr_mk(2, f, 1 . 1),
+	    vspr_mk(2, f, 2 . 1),
+	    vspr_mk(2, f, (-1) . 2),
+	    vspr_mk(2, f, (-2) . 1)
+	       }
+      >> else if eqn(d, 3) then <<  % the cubic case
+	 lprl := {
+	    vspr_mk(3, f, 1 . 1),
+	    vspr_mk(3, f, 2 . 1),
+	    vspr_mk(3, f, 2 . 2),
+	    vspr_mk(3, f, 3 . 1),
+	    vspr_mk(3, f, 3 . 2),
+	    vspr_mk(3, f, 4 . 1),
+	    vspr_mk(3, f, 4 . 3),
+	    vspr_mk(3, f, (-2) . 1),
+	    vspr_mk(3, f, (-3) . 2),
+	    vspr_mk(3, f, (-4) . 2)
+	       };
+	 uprl := {
+	    vspr_mk(3, f, 2 . 1),
+	    vspr_mk(3, f, 3 . 2),
+	    vspr_mk(3, f, 4 . 2),
+	    vspr_mk(3, f, (-1) . 1),
+	    vspr_mk(3, f, (-2) . 1),
+	    vspr_mk(3, f, (-2) . 2),
+	    vspr_mk(3, f, (-3) . 1),
+	    vspr_mk(3, f, (-3) . 2),
+	    vspr_mk(3, f, (-4) . 1),
+	    vspr_mk(3, f, (-4) . 3)
+	       }
+      >> else  % This should be unreachable.
+	 assert(nil);
+      cs := vscs_mk(nil, nil, nil, nil);
+      cs := vscs_addlprl(cs, lprl);
+      cs := vscs_adduprl(cs, uprl);
+      return cs
    end;
 
 asserted procedure vsdb_expandNode(db: VSdb, nd: VSnd);
@@ -856,6 +921,73 @@ asserted procedure vsde_compute(de: VSde);
       vsde_puttpl(de, ww)
    end;
 
+asserted procedure vsde_pclCompute(de: VSde);
+   % Annotated prime constituent list computation.
+   begin scalar f, gl, cgl, atl, gposl, pc, pcl;
+      % Replacement with [false] is done here only to mark subformulas
+      % that play no role (i.e. we do not need to look in to them).
+      % Simplification would NOT be semantically correct!
+      % Gauss part
+      f := vsde_f de;
+      gl := qff_gaussposl(vsde_var de, f, vsde_bvl de, vsde_curtheo de);
+      % TODO: Choose an efficient ordering of [gl].
+      % TODO: Here is the place for gentle simplification.
+      f := qff_replacel(f, for each pr in gl collect car pr, 'false);
+      cgl := qff_cogaussposl(vsde_var de, f, vsde_bvl de, vsde_curtheo de);
+      gl := pos_delsubposal(cgl, gl);
+      % atomic part
+      f := qff_replacel(f, for each pr in cgl collect car pr, 'false);
+      atl := qff_atposl(vsde_var de, f, vsde_bvl de, vsde_curtheo de);
+      for each pr in gl do <<
+	 pc := vspc_mk(car pr, 'gauss, cdr pr, gposl, nil);
+	 push(pc, pcl);
+	 push(car pr, gposl)
+      >>;
+      for each pr in cgl do <<
+	 pc := vspc_mk(car pr, 'cogauss, cdr pr, gposl, nil);
+	 push(pc, pcl)
+      >>;
+      for each pr in atl do <<
+	 pc := vspc_mk(car pr, 'at, cdr pr, gposl, nil);
+	 push(pc, pcl)
+      >>;
+      vsde_putpcl(de, pcl)
+   end;
+
+% TODO: Move this procedure to a right place.
+asserted procedure qff_replacel(f: QfFormula, pl: PositionL, rf: QfFormula): QfFormula;
+   % Quantifier-free formula replace positions with formula. The
+   % positions in [pl] have to be independent, i.e, each pair of
+   % positions is a pair of formulas that are not subformulas of each
+   % other. Returns the formula [f] with all positions in [pl]
+   % replaced with [rf].
+   begin scalar op, ncl, poscl; integer n;
+      if null pl then
+	 return f;
+      if pl = {{}} then
+	 return rf;
+      op := rl_op f;
+      assert(op eq 'and or op eq 'or);
+      ncl := for each c in rl_argn f collect <<
+	 n := n + 1;
+	 poscl := for each p in pl join
+	    if eqn(car p, n) then
+	       {cdr p};
+	 qff_replacel(c, poscl, rf)
+      >>;
+      return rl_mkn(op, ncl)
+   end;
+
+% TODO: Move this procedure to a right place.
+asserted procedure qff_gaussposl(var: Kernel, f: QfFormula, bvl: KernelL, theo: Theory): AList;
+   % wrapper
+   begin scalar gdt;
+      gdt := vsdt_mk(var, f, bvl, theo, nil);
+      vsdt_gaussposl(gdt, {});
+      return for each pr in vsdt_data gdt collect
+	 reverse car pr . cdr pr
+   end;
+
 asserted procedure vsdt_gaussposl(dt: VSdt, p: Position);
    % Compute positions of all Gauss prime constituents. [p] is the
    % position of [vsdt_f dt]. Positions are reversed, i.e., the last
@@ -889,21 +1021,41 @@ asserted procedure vsdt_gaussposl(dt: VSdt, p: Position);
 asserted procedure vsdt_gaussposl!-at(dt: VSdt, p: Position);
    % Compute positions of all Gauss prime constituents in atomic
    % formula. [p] is the position of atomic formula [vsdt_f dt].
-   begin scalar atf, op, lhs, theo, data;
+   begin scalar atf, op, lhs, v, theo, data;
       atf := vsdt_f dt;
+      % TODO: Think about whether it is OK to define [true] and
+      % [false] as not being Gauss constituents.
+      if rl_tvalp atf then <<
+	 vsdt_putdata(dt, nil);
+      	 return
+      >>;
       op := rl_op atf;
       lhs := rl_arg2l atf;
-      if op eq 'equal and not domainp lhs and ldeg lhs <= rldegbound!* then <<  % position [p] is Gauss
+      v := vsdt_var dt;
+      if op eq 'equal and sfto_mvartest(lhs, v) and ldeg lhs <= rldegbound!* then <<
 	 theo := append(vsdt_ptheo dt, vsdt_ttheo dt);
-	 data := {{p, vspr_at2prl(atf, vsdt_var dt, theo, 'vspr_at2prl!-ub), nil}}
+	 if ofsf_nonvanishp(lhs, v, theo) then  % position [p] is Gauss
+	    % TODO, THEO: In case the test fails we could add
+	    % something to the theory to make the formula co-Gauss.
+	    data := {p . vscs_at2cs(atf, v, theo)}
       >>;
       vsdt_putdata(dt, data)
+   end;
+
+% TODO: Move this procedure to a right place.
+asserted procedure qff_cogaussposl(var: Kernel, f: QfFormula, bvl: KernelL, theo: Theory): AList;
+   % wrapper
+   begin scalar cgdt;
+      cgdt := vsdt_mk(var, f, bvl, theo, nil);
+      vsdt_cogaussposl(cgdt, {});
+      return for each pr in vsdt_data cgdt collect
+	 reverse car pr . cdr pr
    end;
 
 asserted procedure vsdt_cogaussposl(dt: VSdt, p: Position);
    % Compute positions of all co-Gauss prime constituents. [p] is the
    % position of [vsdt_f dt]. Positions are reversed, i.e., the last
-   % entry in the list is the index of a child of the root. Position
+   % entry in the list is the index of a child of the root. Positions
    % of all co-Gauss prime constituents are stored in [vsdt_data dt].
    begin scalar op, cl, c, cdt, cdtl, pcl; integer i;
       op := rl_op vsdt_f dt;
@@ -932,13 +1084,23 @@ asserted procedure vsdt_cogaussposl(dt: VSdt, p: Position);
 asserted procedure vsdt_cogaussposl!-at(dt: VSdt, p: Position);
    % Compute positions of all co-Gauss prime constituents in atomic
    % formula. [p] is the position of atomic formula [vsdt_f dt].
-   begin scalar atf, op, lhs, theo, data;
+   begin scalar atf, op, lhs, v, theo, data;
       atf := vsdt_f dt;
+      % TODO: Think about whether it is OK to define [true] and
+      % [false] as not being co-Gauss constituents.
+      if rl_tvalp atf then <<
+	 vsdt_putdata(dt, data);
+	 return
+      >>;
       op := rl_op atf;
       lhs := rl_arg2l atf;
-      if op eq 'neq and not domainp lhs and ldeg lhs <= rldegbound!* then <<  % position [p] is co-Gauss
+      v := vsdt_var dt;
+      if op eq 'neq and sfto_mvartest(lhs, v) and ldeg lhs <= rldegbound!* then <<
 	 theo := append(vsdt_ptheo dt, vsdt_ttheo dt);
-	 data := {{p, vspr_at2prl(atf, vsdt_var dt, theo, 'vspr_at2prl!-ub), nil}}
+	 if ofsf_nonvanishp(lhs, v, theo) then  % position [p] is co-Gauss
+	    % TODO, THEO: In case the test fails we could add
+	    % something to the theory to make the formula co-Gauss.
+	    data := {p . vscs_at2cs(atf, vsdt_var dt, theo)}
       >>;
       vsdt_putdata(dt, data)
    end;
@@ -953,16 +1115,16 @@ asserted procedure vsdt_gaussposl!-gand(dt: VSdt, p: Position, cdtl: VSdtL);
       for each cdt in cdtl do <<
 	 i := i + 1;
       	 cdata := vsdt_data cdt;
-      	 if cdata and nth(car cdata, 1) = (i . p) then  % position [i . p] is (co)-Gauss
+      	 if cdata and caar cdata = (i . p) then  % position [i . p] is (co)-Gauss
 	    push(cdt, cdtgl)
       >>;
       if cdtgl then <<  % position [p] is (co)-Gauss
 	 bcdt := vsdt_gaussposl!-bestcdt(dt, p, reversip cdtgl);
 	 cdata := vsdt_data bcdt;
-	 data := {p, nth(car cdata, 2), nth(car cdata, 3)}
+	 data := {p .  cdar cdata}
       >> else  % position [p] is not (co)-Gauss
 	 for each cdt in cdtl do
-	    data := vsdt_mergedata(data, vsdt_data cdt);
+	    data := append(data, vsdt_data cdt);
       vsdt_putdata(dt, data)
    end;
 
@@ -972,21 +1134,20 @@ asserted procedure vsdt_gaussposl!-gor(dt: VSdt, p: Position, cdtl: VSdtL);
    % [cdtl] are VSdt for all children of [p] with pre-computed data.
    % This procedure merges these to obtain the list of all (co)-Gauss
    % prime constituents in formula [vsdt_f dt] at position [p].
-   begin scalar g, cdata, data, prl, ptl; integer i;
+   begin scalar g, cdata, data, cs; integer i;
       g := t;
       for each cdt in cdtl do <<
 	 i := i + 1;
 	 cdata := vsdt_data cdt;
-	 if null cdata or not (nth(car cdata, 1) = (i . p)) then  % position [i . p] is not (co)-Gauss
+	 if null cdata or not (caar cdata = (i . p)) then  % position [i . p] is not (co)-Gauss
 	    g := nil;
-	 data := vsdt_mergedata(data, cdata)
+	 data := append(data, cdata)
       >>;
       if g then <<  % position [p] is (co)-Gauss
-	 for each dt in data do <<
-	    prl := append(prl, nth(dt, 2));
-	    ptl := append(ptl, nth(dt, 3))
-	 >>;
-	 data := {p, prl, ptl}
+	 cs := vscs_mk(nil, nil, nil, nil);
+	 for each dt in data do
+	    cs := vscs_merge(cs, cdr dt);
+	 data := {p . cs}
       >>;
       vsdt_putdata(dt, data)
    end;
@@ -995,19 +1156,122 @@ asserted procedure vsdt_gaussposl!-bestcdt(dt: VSdt, p: Position, cdtgl: VSdtL):
    % Select the best child from children list [cdtgl].
    car cdtgl;
 
+asserted procedure qff_atposl(var: Kernel, f: QfFormula, bvl: KernelL, theo: Theory): AList;
+   % wrapper
+   begin scalar atdt;
+      atdt := vsdt_mk(var, f, bvl, theo, nil);
+      vsdt_atposl(atdt, {});
+      return for each pr in vsdt_data atdt collect
+	 reverse car pr . cdr pr
+   end;
+
+asserted procedure vsdt_atposl(dt: VSdt, p: Position);
+   % Compute positions of all atomic prime constituents. [p] is the
+   % position of [vsdt_f dt]. Positions are reversed, i.e., the last
+   % entry in the list is the index of a child of the root. Positions
+   % of all atomic prime constituents are stored in [vsdt_data dt].
+   begin scalar op, cl, c, cdt, cdtl, pcl, data; integer i;
+      op := rl_op vsdt_f dt;
+      if not rl_boolp op then <<
+	 vsdt_atposl!-at(dt, p);
+	 return
+      >>;
+      assert(op eq 'and or op eq 'or);
+      cl := rl_argn vsdt_f dt;
+      while cl do <<
+	 c := pop cl;
+	 i := i + 1;
+	 cdt := vsdt_mkfrom dt;
+	 vsdt_putf(cdt, c);
+	 vsdt_add2ttheo(cdt, append(pcl, cl), op eq 'or);
+	 vsdt_atposl(cdt, i . p);
+	 push(cdt, cdtl);
+	 push(c, pcl)
+      >>;
+      for each cdt in cdtl do
+	 data := append(data, vsdt_data cdt);
+      vsdt_putdata(dt, data)
+   end;
+
+asserted procedure vsdt_atposl!-at(dt: VSdt, p: Position);
+   % Compute positions of all atomic prime constituents in atomic
+   % formula. [p] is the position of [vsdt_f dt].
+   begin scalar atf, op, lhs, v, theo, data;
+      atf := vsdt_f dt;
+      % TODO: Think about whether it is OK to define [true] and
+      % [false] as not being atomic constituents.
+      if rl_tvalp atf then <<
+	 vsdt_putdata(dt, nil);
+	 return
+      >>;
+      op := rl_op atf;
+      lhs := rl_arg2l atf;
+      v := vsdt_var dt;
+      if not sfto_mvartest(lhs, v) then <<
+	 vsdt_putdata(dt, nil);
+	 return
+      >>;
+      if ldeg lhs > rldegbound!* then <<
+	 vsdt_putdata(dt, {p . 'degree!-too!-high});
+	 return
+      >>;
+      data := {p . vscs_at2cs(atf, v, theo)};
+      vsdt_putdata(dt, data)
+   end;
+
+asserted procedure pos_delsubposal(pal1: AList, pal2: AList): AList;
+   % Delete from [pal2] all positions, which are subpositions of a
+   % position from [pal1]. [pal1] and [pal2] are ALists containing
+   % pairs of the form [(Position . Any)].
+   begin scalar pl1, pl2, npl2;
+      pl1 := for each pr in pal1 collect
+	 car pr;
+      pl2 := for each pr in pal2 collect
+	 car pr;
+      npl2 := pos_delsubposl(pl1, pl2);
+      return for each np2 in npl2 collect
+	 assoc(np2, pal2)
+   end;
+
+asserted procedure pos_delsubposl(pl1: PositionL, pl2: PositionL): PositionL;
+   % Delete from [pl2] all positions, which are subpositions of a
+   % position from [pl1].
+   begin scalar w, c, p1, res;
+      for each p2 in pl2 do <<
+	 w := pl1;
+	 c := nil;
+	 while w and not c do <<
+	    p1 := pop w;
+	    c := pos_subposp(p1, p2)
+	 >>;
+	 if not c then
+	    push(p2, res)
+      >>;
+      return reversip res
+   end;
+
+asserted procedure pos_subposp(p1: Position, p2: Position): Boolean;
+   % Subposition predicate. Returns [t] iff [p2] is a subposition of
+   % [p1].
+      if null p1 then
+	 t
+      else if null p2 then
+	 nil
+      else if eqn(car p1, car p2) then
+	 pos_subposp(cdr p1, cdr p2)
+      else
+	 nil;
+
 asserted procedure vsdt_add2ttheo(dt: VSdt, fl: QfFormulaL, neg: Boolean);
    % Add to temporary theory. Some formulas from [fl] are added to
    % [vsdt_ttheo dt]. If [neg] is [t], then the formulas are negated
    % before adding them to [vsdt_ttheo dt]. The current criterion:
    % Atomic formulas not containing the variable [vsdt_var dt].
    for each f in fl do
-      % TODO: Write and use qff_atp f.
-      if (not rl_boolp rl_op f) and not (vsdt_var dt memq cl_fvarl f) then
+      if (not rl_boolp rl_op f) and
+      not rl_tvalp f and
+      not (vsdt_var dt memq cl_fvarl f) then
 	 vsdt_ttheoinsert(dt, if neg then rl_negateat f else f);
-
-asserted procedure vsdt_mergedata(data1: List, data2: List): List;
-   % Merge CollectedData.
-   append(data1, data2);
 
 asserted procedure vs_block(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
    % TODO: Update this old procedure description.
@@ -1099,6 +1363,30 @@ asserted procedure sfto_dgcdf(f: SF, v: Kernel): Integer;
       return g
    end;
 
+% TODO: Move the following procedure to a right place.
+asserted procedure ofsf_nonvanishp(f: SF, x: Kernel, theo: Theory): Boolean;
+   % Ordered field standard form non-vanishing predicate. [f] is SF
+   % with [mvar f eq x]; [theo] is a theory. Returns [t] if [f] cannot
+   % identically vanish under the theory [theo].
+   begin scalar w, finished, res;
+      assert(sfto_mvartest(f, x));
+      w := 'false;
+      repeat <<
+	 if sfto_mvartest(f, x) then <<
+	    w := rl_mkn('or, {w, ofsf_0mk2('neq, lc f)});
+	    w := cl_simpl(w, theo, -1);
+	    f := red f
+	 >> else <<
+	    w := rl_mkn('or, {w, ofsf_0mk2('neq, f)});
+	    w := cl_simpl(w, theo, -1);
+	    finished := t
+	 >>;
+	 if w eq 'true then
+	    res := t
+      >> until finished or res;
+      return res
+   end;
+
 % functions mainly for debugging purposes
 
 asserted procedure vsdb_printSummary(db: VSdb);
@@ -1131,14 +1419,32 @@ asserted procedure vssu_printSummary(vs: VSsu);
 
 asserted procedure vsdt_printSummary(dt: VSdt);
    <<
-      ioto_prin2 {"VSdt with ttheo:"};
-      for each f in vsdt_ttheo dt do
-      	 mathprint rl_prepfof f
-      % ioto_prin2 {"VSdt: "};
-      % ioto_prin2t {"f: ", vsdt_f dt,
-      % 	 " #ptheo: ", length vsdt_ptheo dt,
-      % 	 " #ttheo: ", length vsdt_ttheo dt,
-      % 	 " data: ", vsdt_data dt}
+      % ioto_prin2 {"VSdt with ttheo:"};
+      % for each f in vsdt_ttheo dt do
+      % 	 mathprint rl_prepfof f
+      ioto_prin2 {"VSdt: "};
+      ioto_prin2t {"f: ", vsdt_f dt,
+      	 " #ptheo: ", length vsdt_ptheo dt,
+      	 " #ttheo: ", length vsdt_ttheo dt,
+      	 " data: ", vsdt_data dt}
+   >>;
+
+asserted procedure vscs_printSummary(cs: VScs);
+   <<
+      ioto_prin2 {"VScs: "};
+      ioto_prin2t {"#lb: ", length vscs_lprl cs,
+      	 " #ub: ", length vscs_uprl cs}
+   >>;
+
+asserted procedure vspc_printSummary(pc: VSpc);
+   <<
+      ioto_prin2 {"VSpc: "};
+      ioto_prin2 {"type: ", vspc_type pc,
+      	 " pos: ", vspc_p pc,
+      	 " gpl: ", vspc_gpl pc,
+	 " bnds: ", vspc_b pc,
+      	 " cs: "};
+      vscs_printSummary vspc_cs pc
    >>;
 
 endmodule;  % ofsfvs
