@@ -72,11 +72,12 @@ symbolic procedure simp!-sign1 u;
  begin scalar s,n;
    s:=if atom u then
       << if !*modular then simpiden {'sign,u}
-          else if numberp u then (if u > 0 then 1 else if u < 0 then -1 else 0) ./ 1
+          else if numberp u then
+                  (if u > 0 then 1 else if u < 0 then -1 else nil) ./ 1
           else simp!-sign2 u >>
        else if car u eq '!:rd!: then
  	  (if rd!:zerop u then nil else if rd!:minusp u then -1 else 1) ./ 1
-       else if car u eq 'abs then '(1 . 1)
+       else if car u eq 'abs then 1 ./ 1 
        else if car u eq 'minus then negsq simp!-sign1 cadr u
        else if car u eq 'times then simp!-sign!-times u
        else if car u eq 'quotient then simp!-sign!-quot u
@@ -630,17 +631,24 @@ let df(atan2(~y,~x),~z) => (x*df(y, z)-y*df(x, z))/(x^2+y^2);
 
 symbolic procedure simp!-atan2 u;
    begin scalar x,y,z,v,w;
+      if length u neq 2 then
+         rerror(alg,17,list("Wrong number of arguments to", 'atan2));
+
       y := reval car u;
       x := reval cadr u;
-      if numberp x and zerop x
+      % forbid complex arguments (at least temporarily)
+      if not freeof(y, 'i) or not freeof(x, 'i) then
+        rerror(alg, 213, "atan2 currently only defined for real arguments");
+      if (z := valuechk('atan2, u)) then return z;
+
+      if x=0
         then << z := simp!-sign1 y;
-                if denr z = 1 and numberp numr z and not zerop numr z
- 		  then return multsq(z,simp '(quotient pi 2)) >>
-       else if numberp y and zerop y
+                if null numr z then rerror(alg, 211, "atan2(0, 0) formed") 
+                else return quotsq(simp {'quotient, 'pi, 2}, z)>>
+       else if y=0
          then << z := simp!-sign1 x;
-                 if denr z = 1
- 		   then << if numr z = 1 then return nil ./ 1
- 		            else if numr z = -1 then return simp 'pi >> >>
+                 return multsq(addsq(1 ./ 1, quotsq((-1) ./ 1, z)),
+                               simp {'quotient, 'pi, 2})>>
        else << z := simp!-sign1 x; v := simp!-sign1 y;
                if denr z=1 and fixp numr z and denr v=1 and fixp numr v
                  then << w := simp {'atan,{'quotient,y,x}};
