@@ -42,7 +42,7 @@ module ofsf;
 
 create!-package('(ofsf ofsfsiat ofsfsism ofsfbnf ofsfqe ofsfopt ofsfgs
    ofsfmisc ofsfcad ofsfcadproj ofsfanuex ofsfxopt ofsfdet ofsftfc ofsfhqe
-   ofsfdecdeg ofsfexfr ofsftrop ofsflp ofsfdpep ofsfvsl ofsfvs),
+   ofsfdecdeg ofsfexfr ofsftrop ofsflp ofsfdpep ofsfvsl ofsfvs ofsfvslists),
    nil);
 
 load!-package 'redlog;
@@ -105,6 +105,7 @@ fluid '(!*rlqegen1 !*rlpscsgen); % temporary for CAD
 fluid '(ofsf_hqetheo!* ofsf_hqexvars!*);         % temporary for HQE
 fluid '(anu_precision!*);  % precision of ANU approximation
 anu_precision!* := 2;
+fluid '(cs!-alist!* cs!-alist!-clustering!*);  % for ofsfvs submodule
 
 flag('(ofsf),'rl_package);
 
