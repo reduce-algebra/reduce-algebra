@@ -39,8 +39,9 @@ module ofsfvslists;
 
 cs!-alist!* := {
    % key: {degree, lc sign, op}
-   % value: AList [al] such that [car al] is one of ['(ip ep slb wlb
-   % sub wub)] and [cdr al] is a list of root specification lists
+   % value: AList [al] containing elements [pr] such that [car pr] is
+   % one of ['(ip ep slb wlb sub wub)] and [cdr pr] is a list of root
+   % specification lists
    {1, -1, 'equal} . {
       'ip . {
 	 {(-1) . 1}
@@ -672,8 +673,9 @@ cs!-alist!* := {
 
 cs!-alist!-clustering!* := {
    % key: {degree, lc sign, op}
-   % value: AList [al] such that [car al] is one of ['(ip ep slb wlb
-   % sub wub)] and [cdr al] is a list of root specification lists
+   % value: AList [al] containing elements [pr] such that [car pr] is
+   % one of ['(ip ep slb wlb sub wub)] and [cdr pr] is a list of root
+   % specification lists
    {1, -1, 'equal} . {
       'ip . {
       	 {(-1) . 1}
