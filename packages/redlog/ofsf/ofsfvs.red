@@ -94,8 +94,7 @@ procedure VScsP(s);  % candidate solutions
    pairp s;
 
 procedure VStpP(s);  % test point
-   % TODO ['minf] and ['pinf] should not be special test points
-   s eq 'minf or s eq 'pinf or (pairp s and car s eq 'vstp);
+   pairp s and car s eq 'vstp;
 
 procedure VSndP(s);  % QE tree node
    pairp s and car s eq 'vsnd;
@@ -1232,6 +1231,15 @@ asserted procedure pos_subposp(p1: Position, p2: Position): Boolean;
       else
 	 nil;
 
+asserted procedure pos_lca(p1: Position, p2: Position): Position;
+   % Lowest common ancestor of [p1] and [p2].
+      if null p1 or null p2 then
+	 nil
+      else if not eqn(car p1, car p2) then
+	 nil
+      else
+	 car p1 . pos_lca(cdr p1, cdr p2);
+
 asserted procedure vsdt_add2ttheo(dt: VSdt, fl: QfFormulaL, neg: Boolean);
    % Add to temporary theory. Some formulas from [fl] are added to
    % [vsdt_ttheo dt]. If [neg] is [t], then the formulas are negated
@@ -1297,10 +1305,57 @@ asserted procedure vsde_pcl2tpl(de: VSde);
 	 vsde_putcurtheo(de, append(vsde_curtheo de, vscs_ts cs))
       >>;
       if imi then
-	 push('minf, tpl);
+	 push(vstp_mk(nil, nil, 'minf, vspr_mk(0, nil, nil)), tpl);  % minus infinity
       if ipi then
-	 push('pinf, tpl);
+	 push(vstp_mk(nil, nil, 'pinf, vspr_mk(0, nil, nil)), tpl);  % plus infinity
       vsde_puttpl(de, tpl)
+   end;
+
+asserted procedure vsde_conflate!-tpl(de: VSde);
+   % Conflate test point list.
+   begin scalar tpl, ttpl, tp1, tp2, w, restpl;
+      tpl := vsde_tpl de;
+      while tpl do <<
+	 tp1 := pop tpl;
+	 ttpl := tpl;
+	 tpl := nil;
+	 while ttpl do <<
+	    tp2 := pop ttpl;
+	    w := vstp_conflate(tp1, tp2);
+	    if w then  % conflation was possible
+	       tp1 := w
+	    else
+	       push(tp2, tpl)
+	 >>;
+	 tpl := reverse tpl;  % This is not necessary. We just don't want to mix [tpl] too much.
+	 push(tp1, restpl)
+      >>;
+      vsde_puttpl(de, reversip restpl)
+   end;
+
+asserted procedure vstp_conflate(tp1: VStp, tp2: VStp): ExtraBoolean;
+   % Conflate [tp1] with [tp2] if this is possible. Returns [nil] when
+   % [tp1] cannot be conflated with [tp2]. If [tp1] and [tp2] can be
+   % conflated, then a test point representing a conflation of these
+   % two test points is returned.
+   begin scalar pr1, pr2;
+      pr1 := vstp_pr tp1;
+      pr2 := vstp_pr tp2;
+      if not eqn(vspr_d pr1, vspr_d pr2) then  % degree test
+	 return nil;
+      if not (vstp_it tp1 eq vstp_it tp2) then  % infinity type test
+	 return nil;
+      if not (vspr_f pr1 equal vspr_f pr2) then  % polynomial test
+	 return nil;
+      if lto_subset(vspr_rsl pr1, vspr_rsl pr2) then  % S1 subset of S2
+	 return vstp_mk(pos_lca(vstp_p tp1, vstp_p tp2),
+	    intersection(vstp_gpl tp1, vstp_gpl tp2),
+	    vstp_it tp2, pr2);
+      if lto_subset(vspr_rsl pr2, vspr_rsl pr1) then % S2 subset of S1
+	 return vstp_mk(pos_lca(vstp_p tp1, vstp_p tp2),
+	    intersection(vstp_gpl tp1, vstp_gpl tp2),
+	    vstp_it tp1, pr1);
+      return nil
    end;
 
 asserted procedure vs_block(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
