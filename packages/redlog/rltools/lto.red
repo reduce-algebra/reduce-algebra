@@ -409,8 +409,11 @@ procedure lto_hdelete1(item,hl,keyl);
       return hl
    end;
 
+procedure lto_subset(s1, s2);
+   null s1 or car s1 member s2 and lto_subset(cdr s1, s2);
+
 procedure lto_subsetq(s1, s2);
-   not s1 or car s1 memq s2 and lto_subset(cdr s1, s2);
+   null s1 or car s1 memq s2 and lto_subsetq(cdr s1, s2);
 
 procedure lto_zip(l1, l2, f);
    if l1 and l2 then
