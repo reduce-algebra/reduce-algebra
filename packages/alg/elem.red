@@ -77,7 +77,8 @@ symbolic procedure simp!-sign1 u;
           else simp!-sign2 u >>
        else if car u eq '!:rd!: then
  	  (if rd!:zerop u then nil else if rd!:minusp u then -1 else 1) ./ 1
-       else if car u eq 'abs then 1 ./ 1 
+%       This may be wrong in general, eg. sign(abs(y)) would always return 1, even if y is later set to 0.
+%       else if car u eq 'abs then 1 ./ 1 
        else if car u eq 'minus then negsq simp!-sign1 cadr u
        else if car u eq 'times then simp!-sign!-times u
        else if car u eq 'quotient then simp!-sign!-quot u
