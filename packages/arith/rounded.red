@@ -579,10 +579,11 @@ symbolic procedure safe!-fp!-plus(u, v);
       else u + v >>
     else begin
 % u and v have different signs, so adding them can not lead to overflow
-% but might result in underflow. So so the arithmetic directly and check.
+% but might result in underflow. So do the arithmetic directly and check.
       scalar r;
       r := u + v;
-      if r < !!minnorm and r > !!minnegnorm then return nil
+      if r = 0.0 then return r
+       else if r < !!minnorm and r > !!minnegnorm then return nil
 % As in the CSL case I dislike and would like to remove this next line.
 % Note that in the CSL case I only make this extra test if u and v have
 % different signs. The calculation performed can never cause an overflow!
@@ -598,7 +599,8 @@ symbolic procedure safe!-fp!-plus(u, v);
 % have just one copy of this led to worse mess.
     scalar r;
     r := u + v;
-    if r < !!minnorm and r > !!minnegnorm then return nil
+    if r = 0.0 then return r
+     else if r < !!minnorm and r > !!minnegnorm then return nil
     else if u - r*0.001953125 = u then return 0.0
     else return r
   end
@@ -711,6 +713,8 @@ symbolic procedure rdprep1 u;
    if float!-bfp u then u else round!:mt(u,!:bprec!:);
 
 symbolic procedure rd!:prin u;
+   if float!-bfp u and not fp!-finite rd2fl u then prin2!* rd2fl u
+   else 
   % Printed output is rounded to 2 fewer places than internal value.
    bfprin!: bftrim!: rd!:forcebf u;
 
