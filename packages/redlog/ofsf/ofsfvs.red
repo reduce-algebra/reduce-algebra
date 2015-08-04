@@ -1514,6 +1514,17 @@ asserted procedure vsdt_printSummary(dt: VSdt);
       	 " data: ", vsdt_data dt}
    >>;
 
+asserted procedure vscs_print(cs: VScs);
+   <<
+      ioto_prin2t {"VScs: "};
+      ioto_prin2t {"ip: ", vscs_ip cs};
+      ioto_prin2t {"ep: ", vscs_ep cs};
+      ioto_prin2t {"slb: ", vscs_slb cs};
+      ioto_prin2t {"wlb: ", vscs_wlb cs};
+      ioto_prin2t {"sub: ", vscs_sub cs};
+      ioto_prin2t {"wub: ", vscs_wub cs}
+   >>;
+
 asserted procedure vscs_printSummary(cs: VScs);
    <<
       ioto_prin2 {"VScs: "};
