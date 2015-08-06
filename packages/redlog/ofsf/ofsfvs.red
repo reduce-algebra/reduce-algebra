@@ -982,14 +982,14 @@ asserted procedure vsdt_gaussposl(dt: VSdt, p: Position);
 	 push(c, pcl)
       >>;
       if op eq 'and then
-	 vsdt_gaussposl!-gand(dt, p, reversip cdtl);
+	 vsdt_gaussposl!-and(dt, p, reversip cdtl);
       if op eq 'or then
-	 vsdt_gaussposl!-gor(dt, p, reversip cdtl)
+	 vsdt_gaussposl!-or(dt, p, reversip cdtl)
    end;
 
 asserted procedure vsdt_gaussposl!-at(dt: VSdt, p: Position);
-   % Compute positions of all Gauss prime constituents in atomic
-   % formula. [p] is the position of atomic formula [vsdt_f dt].
+   % Compute positions of all Gauss prime constituents: atomic formula
+   % subroutine. [p] is the position of atomic formula [vsdt_f dt].
    begin scalar atf, op, lhs, v, theo, data;
       atf := vsdt_f dt;
       % TODO: Think about whether it is OK to define [true] and
@@ -1004,12 +1004,63 @@ asserted procedure vsdt_gaussposl!-at(dt: VSdt, p: Position);
       if op eq 'equal and sfto_mvartest(lhs, v) and ldeg lhs <= rldegbound!* then <<
 	 theo := append(vsdt_ptheo dt, vsdt_ttheo dt);
 	 if ofsf_nonvanishp(lhs, v, theo) then  % position [p] is Gauss
-	    % TODO, THEO: In case the test fails we could add
+	    % TODO THEO: In case the test fails we could add
 	    % something to the theory to make the formula co-Gauss.
 	    data := {p . vscs_at2cs(atf, v, theo)}
       >>;
       vsdt_putdata(dt, data)
    end;
+
+asserted procedure vsdt_gaussposl!-and(dt: VSdt, p: Position, cdtl: VSdtL);
+   % Compute positions of all Gauss prime constituents: and formula
+   % subroutine. [p] is the position of [vsdt_f dt]. [cdtl] are VSdt
+   % for all children of [p] with pre-computed data. This procedure
+   % merges these to obtain the list of all Gauss prime constituents
+   % in formula [vsdt_f dt] at position [p].
+   begin scalar cdata, cdtgl, bcdt, data; integer i;
+      for each cdt in cdtl do <<
+	 i := i + 1;
+      	 cdata := vsdt_data cdt;
+      	 if cdata and caar cdata = (i . p) then  % position [i . p] is Gauss
+	    push(cdt, cdtgl)
+      >>;
+      if cdtgl then <<  % position [p] is Gauss
+	 bcdt := vsdt_gaussposl!-bestcdt(dt, p, reversip cdtgl);
+	 cdata := vsdt_data bcdt;
+	 data := {p .  cdar cdata}
+      >> else  % position [p] is not Gauss
+	 for each cdt in cdtl do
+	    data := append(data, vsdt_data cdt);
+      vsdt_putdata(dt, data)
+   end;
+
+asserted procedure vsdt_gaussposl!-or(dt: VSdt, p: Position, cdtl: VSdtL);
+   % Compute positions of all Gauss prime constituents: or formula
+   % subroutine. [p] is the position of [vsdt_f dt]. [cdtl] are VSdt
+   % for all children of [p] with pre-computed data. This procedure
+   % merges these to obtain the list of all Gauss prime constituents
+   % in formula [vsdt_f dt] at position [p].
+   begin scalar g, cdata, data, cs; integer i;
+      g := t;
+      for each cdt in cdtl do <<
+	 i := i + 1;
+	 cdata := vsdt_data cdt;
+	 if null cdata or not (caar cdata = (i . p)) then  % position [i . p] is not Gauss
+	    g := nil;
+	 data := append(data, cdata)
+      >>;
+      if g then <<  % position [p] is Gauss
+	 cs := vscs_mk(nil, nil);
+	 for each dt in data do
+	    cs := vscs_merge(cs, cdr dt);
+	 data := {p . cs}
+      >>;
+      vsdt_putdata(dt, data)
+   end;
+
+asserted procedure vsdt_gaussposl!-bestcdt(dt: VSdt, p: Position, cdtgl: VSdtL): VSdt;
+   % Select the best child from children list [cdtgl].
+   car cdtgl;
 
 % TODO: Move this procedure to a right place.
 asserted procedure qff_cogaussposl(var: Kernel, f: QfFormula, bvl: KernelL, theo: Theory): AList;
@@ -1045,14 +1096,15 @@ asserted procedure vsdt_cogaussposl(dt: VSdt, p: Position);
 	 push(c, pcl)
       >>;
       if op eq 'and then
-	 vsdt_gaussposl!-gor(dt, p, reversip cdtl);
+	 vsdt_cogaussposl!-and(dt, p, reversip cdtl);
       if op eq 'or then
-	 vsdt_gaussposl!-gand(dt, p, reversip cdtl)
+	 vsdt_cogaussposl!-or(dt, p, reversip cdtl)
    end;
 
 asserted procedure vsdt_cogaussposl!-at(dt: VSdt, p: Position);
-   % Compute positions of all co-Gauss prime constituents in atomic
-   % formula. [p] is the position of atomic formula [vsdt_f dt].
+   % Compute positions of all co-Gauss prime constituents: atomic
+   % formula subroutine. [p] is the position of atomic formula [vsdt_f
+   % dt].
    begin scalar atf, op, lhs, v, theo, data;
       atf := vsdt_f dt;
       % TODO: Think about whether it is OK to define [true] and
@@ -1067,52 +1119,29 @@ asserted procedure vsdt_cogaussposl!-at(dt: VSdt, p: Position);
       if op eq 'neq and sfto_mvartest(lhs, v) and ldeg lhs <= rldegbound!* then <<
 	 theo := append(vsdt_ptheo dt, vsdt_ttheo dt);
 	 if ofsf_nonvanishp(lhs, v, theo) then  % position [p] is co-Gauss
-	    % TODO, THEO: In case the test fails we could add
+	    % TODO THEO: In case the test fails we could add
 	    % something to the theory to make the formula co-Gauss.
 	    data := {p . vscs_at2cs(atf, vsdt_var dt, theo)}
       >>;
       vsdt_putdata(dt, data)
    end;
 
-asserted procedure vsdt_gaussposl!-gand(dt: VSdt, p: Position, cdtl: VSdtL);
-   % Compute positions of all (co)-Gauss prime constituents:
-   % generalized and subroutine. [p] is the position of [vsdt_f dt].
-   % [cdtl] are VSdt for all children of [p] with pre-computed data.
-   % This procedure merges these to obtain the list of all (co)-Gauss
-   % prime constituents in formula [vsdt_f dt] at position [p].
-   begin scalar cdata, cdtgl, bcdt, data; integer i;
-      for each cdt in cdtl do <<
-	 i := i + 1;
-      	 cdata := vsdt_data cdt;
-      	 if cdata and caar cdata = (i . p) then  % position [i . p] is (co)-Gauss
-	    push(cdt, cdtgl)
-      >>;
-      if cdtgl then <<  % position [p] is (co)-Gauss
-	 bcdt := vsdt_gaussposl!-bestcdt(dt, p, reversip cdtgl);
-	 cdata := vsdt_data bcdt;
-	 data := {p .  cdar cdata}
-      >> else  % position [p] is not (co)-Gauss
-	 for each cdt in cdtl do
-	    data := append(data, vsdt_data cdt);
-      vsdt_putdata(dt, data)
-   end;
-
-asserted procedure vsdt_gaussposl!-gor(dt: VSdt, p: Position, cdtl: VSdtL);
-   % Compute positions of all (co)-Gauss prime constituents:
-   % generalized or subroutine. [p] is the position of [vsdt_f dt].
-   % [cdtl] are VSdt for all children of [p] with pre-computed data.
-   % This procedure merges these to obtain the list of all (co)-Gauss
-   % prime constituents in formula [vsdt_f dt] at position [p].
+asserted procedure vsdt_cogaussposl!-and(dt: VSdt, p: Position, cdtl: VSdtL);
+   % Compute positions of all co-Gauss prime constituents: and formula
+   % subroutine. [p] is the position of [vsdt_f dt]. [cdtl] are VSdt
+   % for all children of [p] with pre-computed data. This procedure
+   % merges these to obtain the list of all (co)-Gauss prime
+   % constituents in formula [vsdt_f dt] at position [p].
    begin scalar g, cdata, data, cs; integer i;
       g := t;
       for each cdt in cdtl do <<
 	 i := i + 1;
 	 cdata := vsdt_data cdt;
-	 if null cdata or not (caar cdata = (i . p)) then  % position [i . p] is not (co)-Gauss
+	 if null cdata or not (caar cdata = (i . p)) then  % position [i . p] is not co-Gauss
 	    g := nil;
 	 data := append(data, cdata)
       >>;
-      if g then <<  % position [p] is (co)-Gauss
+      if g then <<  % position [p] is co-Gauss
 	 cs := vscs_mk(nil, nil);
 	 for each dt in data do
 	    cs := vscs_merge(cs, cdr dt);
@@ -1121,7 +1150,30 @@ asserted procedure vsdt_gaussposl!-gor(dt: VSdt, p: Position, cdtl: VSdtL);
       vsdt_putdata(dt, data)
    end;
 
-asserted procedure vsdt_gaussposl!-bestcdt(dt: VSdt, p: Position, cdtgl: VSdtL): VSdt;
+asserted procedure vsdt_cogaussposl!-or(dt: VSdt, p: Position, cdtl: VSdtL);
+   % Compute positions of all co-Gauss prime constituents: or formula
+   % subroutine. [p] is the position of [vsdt_f dt]. [cdtl] are VSdt
+   % for all children of [p] with pre-computed data. This procedure
+   % merges these to obtain the list of all (co)-Gauss prime
+   % constituents in formula [vsdt_f dt] at position [p].
+   begin scalar cdata, cdtgl, bcdt, data; integer i;
+      for each cdt in cdtl do <<
+	 i := i + 1;
+      	 cdata := vsdt_data cdt;
+      	 if cdata and caar cdata = (i . p) then  % position [i . p] is co-Gauss
+	    push(cdt, cdtgl)
+      >>;
+      if cdtgl then <<  % position [p] is co-Gauss
+	 bcdt := vsdt_cogaussposl!-bestcdt(dt, p, reversip cdtgl);
+	 cdata := vsdt_data bcdt;
+	 data := {p .  cdar cdata}
+      >> else  % position [p] is not co-Gauss
+	 for each cdt in cdtl do
+	    data := append(data, vsdt_data cdt);
+      vsdt_putdata(dt, data)
+   end;
+
+asserted procedure vsdt_cogaussposl!-bestcdt(dt: VSdt, p: Position, cdtgl: VSdtL): VSdt;
    % Select the best child from children list [cdtgl].
    car cdtgl;
 
