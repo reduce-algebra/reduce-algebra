@@ -37,7 +37,9 @@ lisp <<
 
 module ofsfvslists;
 
-cs!-alist!* := {
+fluid '(rsl!-alist!* rsl!-alist!-clustering!*);
+
+rsl!-alist!* := {
    % key: {degree, lc sign, op}
    % value: AList [al] containing elements [pr] such that [car pr] is
    % one of ['(ip ep slb wlb sub wub)] and [cdr pr] is a list of root
@@ -671,7 +673,7 @@ cs!-alist!* := {
 	       }
    	    	  };
 
-cs!-alist!-clustering!* := {
+rsl!-alist!-clustering!* := {
    % key: {degree, lc sign, op}
    % value: AList [al] containing elements [pr] such that [car pr] is
    % one of ['(ip ep slb wlb sub wub)] and [cdr pr] is a list of root
@@ -1156,6 +1158,32 @@ cs!-alist!-clustering!* := {
 	    }
 	       }
    		  };
+
+asserted procedure rsl!-compute(d: Integer, s: Any, op: Id): Any;
+   % Root specification list compute. [d] is the degree, [s] is the
+   % sign of the leading coefficient, [op] is the operation. Returns
+   % either ['fail] or an AList [al] containing elements [pr] such
+   % that [car pr] is one of ['(ip ep slb wlb sub wub)] and [cdr pr]
+   % is a list of root specification lists.
+   begin scalar w;
+      w := assoc({d, s, op}, rsl!-alist!*);
+      if w then
+	 return cdr w;
+      return 'fail
+   end;
+
+asserted procedure rsl!-compute!-clustering(d: Integer, s: Any, op: Id): Any;
+   % Root specification list compute, the clustering variant. [d] is
+   % the degree, [s] is the sign of the leading coefficient, [op] is
+   % the operation. Returns either ['fail] or an AList [al] containing
+   % elements [pr] such that [car pr] is one of ['(ip ep slb wlb sub
+   % wub)] and [cdr pr] is a list of root specification lists.
+   begin scalar w;
+      w := assoc({d, s, op}, rsl!-alist!-clustering!*);
+      if w then
+	 return cdr w;
+      return 'fail
+   end;
 
 endmodule;  % ofsfvslists
 

@@ -37,9 +37,8 @@ lisp <<
 
 module ofsfvs;
 
-fluid '(rlvarsellvl!* rldegbound!* rlclustering!* rlbndswithilp!*);
+fluid '(rlvarsellvl!* rlclustering!* rlbndswithilp!*);
 rlvarsellvl!* := 1;
-rldegbound!* := 3;
 rlclustering!* := t;
 rlbndswithilp!* := nil;
 
@@ -242,11 +241,15 @@ asserted procedure vspc_b(pc: VSpc): List;
 % sub: strict upper bound
 % wub: weak upper bound
 
-asserted procedure vscs_mk(ts: Theory, bal: AList): VScs;
-   % Candidate solutions make. [ts] is theory supplement; [bal] is an
-   % AList, keys in [bal] are from ['(ip ep slb wlb sub wub)], values
-   % are lists of parametric roots.
-   ts . bal;
+asserted procedure vscs_mk(ts: Theory, s: Any): VScs;
+   % Candidate solutions make. [ts] is theory supplement; [s] is
+   % either ['fail] or an AList. The keys in [s] are from ['(ip ep slb
+   % wlb sub wub)], values are lists of parametric roots.
+   ts . s;
+
+asserted procedure vscs_failp(cs: VScs): Boolean;
+   % Candidate solutions fail predicate.
+   cdr cs eq 'fail;
 
 asserted procedure vscs_ts(cs: VScs): Theory;
    % Candidate solutions theory supplement.
@@ -333,6 +336,10 @@ asserted procedure vscs_nwub(cs: VScs): Integer;
 asserted procedure vscs_merge(c1: VScs, c2: VScs): VScs;
    % Candidate solutions merge.
    begin scalar theo, al, w1, w2;
+      if vscs_failp c1 then
+	 return c1;
+      if vscs_failp c2 then
+	 return c2;
       theo := append(car c1, car c2);
       al := for each k in '(ip ep slb wlb sub wub) join <<
 	 w1 := atsoc(k, cdr c1);
@@ -342,7 +349,7 @@ asserted procedure vscs_merge(c1: VScs, c2: VScs): VScs;
 	 if w1 or w2 then
 	    {k . append(w1, w2)}
 	 else
-	    {}
+	    nil
       >>;
       return theo . al
    end;
@@ -612,7 +619,6 @@ asserted procedure vsdt_new(): VSdt;
 
 %DS
 % CollectedData ::= AList of DottedPairs of the form (Position . VScs)
-% or (Position . 'degree!-too!-high)
 
 procedure vsdt_var(dt);                         getv(dt, 1);
 procedure vsdt_f(dt);                           getv(dt, 2);
@@ -718,8 +724,6 @@ asserted procedure vscs_at2cs(at: QfFormula, x: Kernel, theo: Theory): VScs;
       % consider [red f].
       f := rl_arg2l at;
       assert(sfto_mvartest(f, x));
-      if ldeg f > rldegbound!* then
-      	 return 'degree!-too!-high;
       op := rl_op at;
       cs := vscs_mk(nil, nil);
       repeat <<
@@ -749,18 +753,15 @@ asserted procedure vscs_at2csnz(f: SF, op: Id, s: Any): VScs;
    % Returns a VScs, which contains parametric roots of [f] that
    % possibly represent ip, ep, slb, wlb, sub, or wub under the
    % assumption that [lc f] is non-zero.
-   begin scalar w, rsal, pral; integer d;
+   begin scalar w, pral; integer d;
       d := ldeg f;
-      if rlclustering!* then <<
-	 w := assoc({d, s, op}, cs!-alist!-clustering!*);
-	 assert(pairp w);
-	 rsal := cdr w
-      >> else <<
-	 w := assoc({d, s, op}, cs!-alist!*);
-	 assert(pairp w);
-	 rsal := cdr w
-      >>;
-      pral := for each pr in rsal collect
+      w := if rlclustering!* then
+	 rsl!-compute!-clustering(d, s, op)
+      else
+	 rsl!-compute(d, s, op);
+      if w eq 'fail then
+	 return vscs_mk(nil, 'fail);
+      pral := for each pr in w collect
 	 car pr . for each rs in cdr pr collect
 	    vspr_mk(d, f, rs);
       return vscs_mk(nil, pral)
@@ -907,18 +908,18 @@ asserted procedure vsde_compute!-pcl(de: VSde);
       % find atomic prime constituents
       f := qff_replacel(f, for each pr in cgl collect car pr, 'false);
       atl := qff_atposl(vsde_var de, f, vsde_bvl de, vsde_curtheo de);
-      for each pr in gl do <<
-	 pc := vspc_mk(car pr, 'gauss, cdr pr, gposl, nil);
-	 push(pc, pcl);
-	 push(car pr, gposl)
+      for each pr in atl do <<
+	 pc := vspc_mk(car pr, 'at, cdr pr, gposl, nil);
+	 push(pc, pcl)
       >>;
       for each pr in cgl do <<
 	 pc := vspc_mk(car pr, 'cogauss, cdr pr, gposl, nil);
 	 push(pc, pcl)
       >>;
-      for each pr in atl do <<
-	 pc := vspc_mk(car pr, 'at, cdr pr, gposl, nil);
-	 push(pc, pcl)
+      for each pr in gl do <<
+	 pc := vspc_mk(car pr, 'gauss, cdr pr, gposl, nil);
+	 push(pc, pcl);
+	 push(car pr, gposl)
       >>;
       vsde_putpcl(de, pcl)
    end;
@@ -933,7 +934,7 @@ asserted procedure qff_replacel(f: QfFormula, pl: PositionL, rf: QfFormula): QfF
    begin scalar op, ncl, poscl; integer n;
       if null pl then
 	 return f;
-      if pl = {{}} then
+      if pl = {nil} then
 	 return rf;
       op := rl_op f;
       assert(op eq 'and or op eq 'or);
@@ -952,7 +953,7 @@ asserted procedure qff_gaussposl(var: Kernel, f: QfFormula, bvl: KernelL, theo: 
    % wrapper
    begin scalar gdt;
       gdt := vsdt_mk(var, f, bvl, theo, nil);
-      vsdt_gaussposl(gdt, {});
+      vsdt_gaussposl(gdt, nil);
       return for each pr in vsdt_data gdt collect
 	 reverse car pr . cdr pr
    end;
@@ -1001,11 +1002,11 @@ asserted procedure vsdt_gaussposl!-at(dt: VSdt, p: Position);
       op := rl_op atf;
       lhs := rl_arg2l atf;
       v := vsdt_var dt;
-      if op eq 'equal and sfto_mvartest(lhs, v) and ldeg lhs <= rldegbound!* then <<
+      if op eq 'equal and sfto_mvartest(lhs, v) then <<
 	 theo := append(vsdt_ptheo dt, vsdt_ttheo dt);
 	 if ofsf_nonvanishp(lhs, v, theo) then  % position [p] is Gauss
 	    % TODO THEO: In case the test fails we could add
-	    % something to the theory to make the formula co-Gauss.
+	    % something to the theory to make the formula Gauss.
 	    data := {p . vscs_at2cs(atf, v, theo)}
       >>;
       vsdt_putdata(dt, data)
@@ -1067,7 +1068,7 @@ asserted procedure qff_cogaussposl(var: Kernel, f: QfFormula, bvl: KernelL, theo
    % wrapper
    begin scalar cgdt;
       cgdt := vsdt_mk(var, f, bvl, theo, nil);
-      vsdt_cogaussposl(cgdt, {});
+      vsdt_cogaussposl(cgdt, nil);
       return for each pr in vsdt_data cgdt collect
 	 reverse car pr . cdr pr
    end;
@@ -1116,7 +1117,7 @@ asserted procedure vsdt_cogaussposl!-at(dt: VSdt, p: Position);
       op := rl_op atf;
       lhs := rl_arg2l atf;
       v := vsdt_var dt;
-      if op eq 'neq and sfto_mvartest(lhs, v) and ldeg lhs <= rldegbound!* then <<
+      if op eq 'neq and sfto_mvartest(lhs, v) then <<
 	 theo := append(vsdt_ptheo dt, vsdt_ttheo dt);
 	 if ofsf_nonvanishp(lhs, v, theo) then  % position [p] is co-Gauss
 	    % TODO THEO: In case the test fails we could add
@@ -1181,7 +1182,7 @@ asserted procedure qff_atposl(var: Kernel, f: QfFormula, bvl: KernelL, theo: The
    % wrapper
    begin scalar atdt;
       atdt := vsdt_mk(var, f, bvl, theo, nil);
-      vsdt_atposl(atdt, {});
+      vsdt_atposl(atdt, nil);
       return for each pr in vsdt_data atdt collect
 	 reverse car pr . cdr pr
    end;
@@ -1230,10 +1231,6 @@ asserted procedure vsdt_atposl!-at(dt: VSdt, p: Position);
       v := vsdt_var dt;
       if not sfto_mvartest(lhs, v) then <<
 	 vsdt_putdata(dt, nil);
-	 return
-      >>;
-      if ldeg lhs > rldegbound!* then <<
-	 vsdt_putdata(dt, {p . 'degree!-too!-high});
 	 return
       >>;
       data := {p . vscs_at2cs(atf, v, theo)};
@@ -1304,7 +1301,8 @@ asserted procedure vsdt_add2ttheo(dt: VSdt, fl: QfFormulaL, neg: Boolean);
 	 vsdt_ttheoinsert(dt, if neg then rl_negateat f else f);
 
 asserted procedure vsde_select!-bounds(de: VSde);
-   % Select bounds of annotated prime constituents.
+   % Select bounds of annotated prime constituents. We assume that no
+   % APC in [vsde_pcl de] has ['fail] as candidate solutions.
    if rlbndswithilp!* then
       vsde_select!-bounds!-ilp de
    else
@@ -1326,7 +1324,9 @@ asserted procedure vsde_select!-bounds!-noilp(de: VSde);
    end;
 
 asserted procedure vsde_pcl2tpl(de: VSde);
-   % Annotated prime constituent list to test point list.
+   % Annotated prime constituent list to test point list. We assume
+   % that no APC in [vsde_pcl de] has ['fail] as candidate solutions,
+   % and that every APC in [vsde_pcl de] has some selected bounds.
    begin scalar pcl, cs, p, gpl, b, tpl, imi, ipi;
       pcl := vsde_pcl de;
       for each pc in pcl do <<
@@ -1567,7 +1567,9 @@ asserted procedure vsdt_printSummary(dt: VSdt);
    >>;
 
 asserted procedure vscs_print(cs: VScs);
-   <<
+   if vscs_failp cs then
+      ioto_prin2t {"VScs: fail"}
+   else <<
       ioto_prin2t {"VScs: "};
       ioto_prin2t {"ip: ", vscs_ip cs};
       ioto_prin2t {"ep: ", vscs_ep cs};
@@ -1578,7 +1580,9 @@ asserted procedure vscs_print(cs: VScs);
    >>;
 
 asserted procedure vscs_printSummary(cs: VScs);
-   <<
+   if vscs_failp cs then
+      ioto_prin2t {"VScs: fail"}
+   else <<
       ioto_prin2 {"VScs: "};
       ioto_prin2t {"#ip: ", length vscs_ip cs,
 	 " #ep: ", length vscs_ep cs,
