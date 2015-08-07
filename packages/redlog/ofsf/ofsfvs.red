@@ -710,34 +710,47 @@ asserted procedure vsar_apply(vs: VSar, f: QfFormula): QfFormula;
       f
    >>;
 
-asserted procedure vscs_at2cs(at: QfFormula, x: Kernel, theo: Theory): VScs;
-   % Atomic formula to candidate solutions. [at] is an atomic formula
-   % of the form ([f] [op] [0]); [theo] is a theory that can be used
-   % to rule out some parametric roots. Returns a VScs, which contains
-   % parametric roots of [f] that possibly represent ip, ep, slb, wlb,
-   % sub, or wub.
-   begin scalar f, op, lcf, finished, cs;
+asserted procedure vscs_fopll2cs(fopll: List, x: Kernel, theo: Theory): VScs;
+   % List of SF and operator list to candidate solutions. [fopll] is a
+   % List of dotted pairs of the form [f . opl], where [f] is a SF and
+   % [opl] is a (possibly empty) list of operators.
+   begin scalar cs, f, opl;
+      cs := vscs_mk(nil, nil);
+      while fopll do <<
+	 f . opl := pop fopll;
+	 for each op in opl do
+	    cs := vscs_merge(cs, vscs_fop2cs(f, op, x, theo))
+      >>;
+      return cs
+   end;
+
+asserted procedure vscs_fop2cs(f: SF, op: Id, x: Kernel, theo: Theory): VScs;
+   % SF and operator to candidate solutions. [f] is a SF; [op] is an
+   % operator, i.e., one of ['(equal neq lessp leq geq greaterp)];
+   % [theo] is a theory that can be used to rule out some parametric
+   % roots. Returns a VScs, which contains parametric roots of [f]
+   % that possibly represent ip, ep, slb, wlb, sub, or wub of the
+   % satisfying set of the atomic formula ([f] [op] [0]).
+   begin scalar lcf, finished, cs;
       % This procedure uses locally equational theory as follows: If
       % [lc f = 0] follows from [theo], then [f] is not considered. If
       % [lc f <> 0] follows from [theo], then [red f] is not
       % considered. Otherwise, we add [lc f = 0] to [theo], and
       % consider [red f].
-      f := rl_arg2l at;
       assert(sfto_mvartest(f, x));
-      op := rl_op at;
       cs := vscs_mk(nil, nil);
       repeat <<
       	 if sfto_mvartest(f, x) then <<
 	    lcf := lc f;
 	    if ofsf_surep(ofsf_0mk2('greaterp, lcf), theo) then <<
 	       finished := t;
-      	       cs := vscs_merge(cs, vscs_at2csnz(f, op, 1))
+      	       cs := vscs_merge(cs, vscs_fop2csnz(f, op, 1))
 	    >> else if ofsf_surep(ofsf_0mk2('lessp, lcf), theo) then <<
 	       finished := t;
-      	       cs := vscs_merge(cs, vscs_at2csnz(f, op, -1))
+      	       cs := vscs_merge(cs, vscs_fop2csnz(f, op, -1))
 	    >> else if not ofsf_surep(ofsf_0mk2('equal, lcf), theo) then <<
 	       push(ofsf_0mk2('equal, lcf), theo);
-      	       cs := vscs_merge(cs, vscs_at2csnz(f, op, nil))
+      	       cs := vscs_merge(cs, vscs_fop2csnz(f, op, nil))
 	    >>;
 	    f := red f
 	 >> else
@@ -746,13 +759,14 @@ asserted procedure vscs_at2cs(at: QfFormula, x: Kernel, theo: Theory): VScs;
       return cs
    end;
 
-asserted procedure vscs_at2csnz(f: SF, op: Id, s: Any): VScs;
-   % Atomic formula to candidate solutions subprocedure. [f] is a SF;
-   % [op] is one of ['(equal neq lessp leq geq greaterp)]; [s] is the
-   % sign of [lc f]; If [lc f] possibly vanishes, then [s] is [nil].
-   % Returns a VScs, which contains parametric roots of [f] that
-   % possibly represent ip, ep, slb, wlb, sub, or wub under the
-   % assumption that [lc f] is non-zero.
+asserted procedure vscs_fop2csnz(f: SF, op: Id, s: Any): VScs;
+   % SF and operator to candidate solutions subprocedure. [f] is a SF;
+   % [op] is an operator, i.e., one of ['(equal neq lessp leq geq
+   % greaterp)]; [s] is the sign of [lc f]; If [lc f] possibly
+   % vanishes, then [s] is [nil]. Returns a VScs, which contains
+   % parametric roots of [f] that possibly represent ip, ep, slb, wlb,
+   % sub, or wub of the satisfying set of the atomic formula ([f] [op]
+   % [0]) under the assumption that [lc f] is non-zero.
    begin scalar w, pral; integer d;
       d := ldeg f;
       w := if rlclustering!* then
@@ -991,10 +1005,8 @@ asserted procedure vsdt_gaussposl(dt: VSdt, p: Position);
 asserted procedure vsdt_gaussposl!-at(dt: VSdt, p: Position);
    % Compute positions of all Gauss prime constituents: atomic formula
    % subroutine. [p] is the position of atomic formula [vsdt_f dt].
-   begin scalar atf, op, lhs, v, theo, data;
+   begin scalar atf, op, lhs, v, cs, theo, w, fml, f; integer m;
       atf := vsdt_f dt;
-      % TODO: Think about whether it is OK to define [true] and
-      % [false] as not being Gauss constituents.
       if rl_tvalp atf then <<
 	 vsdt_putdata(dt, nil);
       	 return
@@ -1003,13 +1015,25 @@ asserted procedure vsdt_gaussposl!-at(dt: VSdt, p: Position);
       lhs := rl_arg2l atf;
       v := vsdt_var dt;
       if op eq 'equal and sfto_mvartest(lhs, v) then <<
+	 cs := vscs_mk(nil, nil);
 	 theo := append(vsdt_ptheo dt, vsdt_ttheo dt);
-	 if ofsf_nonvanishp(lhs, v, theo) then  % position [p] is Gauss
-	    % TODO THEO: In case the test fails we could add
-	    % something to the theory to make the formula Gauss.
-	    data := {p . vscs_at2cs(atf, v, theo)}
+	 w := fctrf lhs;  % TODO: store the factorization result.
+	 fml := cdr w;
+	 while fml and cs do <<
+	    f . m := pop fml;
+	    if not ofsf_nonvanishp(f, v, theo) then  % position [p] is not Gauss, exit
+	       % TODO THEO: In case we reach this position we could
+	       % add something to the theory to make the formula
+	       % Gauss.
+	       cs := nil
+	    else if sfto_mvartest(f, v) then
+	       cs := vscs_merge(cs, vscs_fop2cs(f, op, v, theo))
+	 >>
       >>;
-      vsdt_putdata(dt, data)
+      if cs then
+      	 vsdt_putdata(dt, {p . cs})
+      else
+	 vsdt_putdata(dt, nil)
    end;
 
 asserted procedure vsdt_gaussposl!-and(dt: VSdt, p: Position, cdtl: VSdtL);
@@ -1106,25 +1130,35 @@ asserted procedure vsdt_cogaussposl!-at(dt: VSdt, p: Position);
    % Compute positions of all co-Gauss prime constituents: atomic
    % formula subroutine. [p] is the position of atomic formula [vsdt_f
    % dt].
-   begin scalar atf, op, lhs, v, theo, data;
+   begin scalar atf, op, lhs, v, cs, theo, w, fml, f; integer m;
       atf := vsdt_f dt;
-      % TODO: Think about whether it is OK to define [true] and
-      % [false] as not being co-Gauss constituents.
       if rl_tvalp atf then <<
-	 vsdt_putdata(dt, data);
+	 vsdt_putdata(dt, nil);
 	 return
       >>;
       op := rl_op atf;
       lhs := rl_arg2l atf;
       v := vsdt_var dt;
       if op eq 'neq and sfto_mvartest(lhs, v) then <<
+	 cs := vscs_mk(nil, nil);
 	 theo := append(vsdt_ptheo dt, vsdt_ttheo dt);
-	 if ofsf_nonvanishp(lhs, v, theo) then  % position [p] is co-Gauss
-	    % TODO THEO: In case the test fails we could add
-	    % something to the theory to make the formula co-Gauss.
-	    data := {p . vscs_at2cs(atf, vsdt_var dt, theo)}
+	 w := fctrf lhs;  % TODO: store the factorization result.
+	 fml := cdr w;
+	 while fml and cs do <<
+	    f . m := pop fml;
+	    if not ofsf_nonvanishp(f, v, theo) then  % position [p] is not co-Gauss, exit
+	       % TODO THEO: In case we reach this position we could
+	       % add something to the theory to make the formula
+	       % co-Gauss.
+	       cs := nil
+	    else if sfto_mvartest(f, v) then
+	       cs := vscs_merge(cs, vscs_fop2cs(f, op, v, theo))
+	 >>
       >>;
-      vsdt_putdata(dt, data)
+      if cs then
+      	 vsdt_putdata(dt, {p . cs})
+      else
+	 vsdt_putdata(dt, nil)
    end;
 
 asserted procedure vsdt_cogaussposl!-and(dt: VSdt, p: Position, cdtl: VSdtL);
@@ -1216,12 +1250,10 @@ asserted procedure vsdt_atposl(dt: VSdt, p: Position);
    end;
 
 asserted procedure vsdt_atposl!-at(dt: VSdt, p: Position);
-   % Compute positions of all atomic prime constituents in atomic
-   % formula. [p] is the position of [vsdt_f dt].
-   begin scalar atf, op, lhs, v, theo, data;
+   % Compute positions of all atomic prime constituents: atomic
+   % formula subroutine. [p] is the position of [vsdt_f dt].
+   begin scalar atf, op, lhs, v, theo, w, fopll;
       atf := vsdt_f dt;
-      % TODO: Think about whether it is OK to define [true] and
-      % [false] as not being atomic constituents.
       if rl_tvalp atf then <<
 	 vsdt_putdata(dt, nil);
 	 return
@@ -1233,10 +1265,109 @@ asserted procedure vsdt_atposl!-at(dt: VSdt, p: Position);
 	 vsdt_putdata(dt, nil);
 	 return
       >>;
-      data := {p . vscs_at2cs(atf, v, theo)};
-      vsdt_putdata(dt, data)
+      theo := append(vsdt_ptheo dt, vsdt_ttheo dt);
+      w := fctrf lhs;  % TODO: store the factorization result.
+      fopll := ofsf_fml2fopll((car w . 1) . cdr w, op, v, theo);
+      vsdt_putdata(dt, {p . vscs_fopll2cs(fopll, v, theo)})
    end;
 
+asserted procedure ofsf_fml2fopll(fml: List, op: Id, v: Kernel, theo: Theory): List;
+   % Ordered field standard form factor multiplicity list to factor
+   % operation list. [fml] is a List of pairs [f . m], where [f] is a
+   % SF and [m] is the multiplicity of [f]; [op] is an operator, i.e.,
+   % one of ['(equal neq lessp leq geq greaterp)]; [v] is a Kernel.
+   % Returns a List of dotted pairs of the form [f . opl], where [f]
+   % is a SF and [opl] is a (possibly empty) list of operators.
+   begin scalar fmvl, fmnvl, s, f, wop, fopll; integer m;
+      fmvl . fmnvl := ofsf_sepfac(fml, v);
+      assert(fmvl);  % there is at least one irreducible factor containing [v]
+      if op memq '(equal neq) then
+	 return for each fmv in fmvl collect
+	    car fmv . {op};
+      assert(op memq '(leq geq lessp greaterp));
+      s := ofsf_definite(fmnvl, theo);
+      if s and null cdr fmvl then <<
+	 % - the sign of the factors not containing [v] is a non-zero constant
+	 % - there is exactly one irreducible factor containing [v]
+	 % TODO: If the sign of the factors not containing [v] is not
+	 % a non-zero constant we could multiply them with f and
+	 % continue. Investigate this.
+	 f . m := car fmvl;
+	 op := op_adjust(op, s);
+	 if evenp m then
+	    op := if op eq 'greaterp then 'neq else if op eq 'leq then 'equal;
+	 return {f . if op then {op}}
+      >>;
+      while fmvl do <<
+	 f . m := pop fmvl;
+	 if evenp m then <<
+	    wop := if op memq '(leq geq) then 'equal else 'neq;
+	    push(f . {wop}, fopll)
+	 >> else
+	    push(f . {op, op_adjust(op, -1)}, fopll)
+      >>;
+      return fopll
+   end;
+
+asserted procedure ofsf_sepfac(fml: List, v: Kernel): DottedPair;
+   % Ordered field standard form separate factors. [fml] is a List of
+   % pairs [f . m], where [f] is a SF and [m] is the multiplicity of
+   % [f]; [v] is a Kernel. Returns a DottedPair [fmvl . fdmvl] where
+   % [fmvl] contains factors with [v] and [fmnvl] contains factors
+   % without [v].
+   begin scalar f, fmvl, fmnvl; integer m;
+      while fml do <<
+	 f . m := pop fml;
+	 if sfto_mvartest(f, v) then
+	    push(f . m, fmvl)
+	 else
+	    push(f . m, fmnvl)
+      >>;
+      return fmvl . fmnvl
+   end;
+
+% TODO: Move the following procedure to a right place.
+asserted procedure ofsf_definite(fml: List, theo: Theory): ExtraBoolean;
+   % Ordered field standard form definiteness checking procedure.
+   % [fml] is a List of pairs [f . m], where [f] is a SF and [m] is
+   % the multiplicity of [f]; [theo] is a theory. Returns [1] iff the
+   % product of [fml] is positive definite, [-1] if the product of
+   % [fml] is negative definite, and [nil] if the product of [fml] can
+   % be zero w.r.t. [theo].
+   begin scalar s, f; integer m;
+      s := 1;
+      while fml and s do <<
+	 f . m := pop fml;
+	 if evenp m then <<
+	    if not ofsf_surep(ofsf_0mk2('neq, f), theo) then
+	       s := nil
+	 >> else
+	    if ofsf_surep(ofsf_0mk2('lessp, f), theo) then
+	       s := s * (-1)
+	    else if not ofsf_surep(ofsf_0mk2('greaterp, f), theo) then
+	       s := nil
+      >>;
+      return s
+   end;
+
+asserted procedure op_adjust(op: Id, s: Integer): Id;
+   % Adjust operation by multiplying it by [s].
+   begin
+      assert(eqn(s, 1) or eqn(s, -1));
+      assert(op memq '(equal neq lessp leq geq greaterp));
+      if op memq '(equal neq) or eqn(s, 1) then
+      	 return op;
+      if op eq 'lessp then
+	 return 'greaterp;
+      if op eq 'greaterp then
+	 return 'lessp;
+      if op eq 'geq then
+	 return 'leq;
+      if op eq 'leq then
+	 return 'geq
+   end;
+
+% TODO: Move this procedure to a right place.
 asserted procedure pos_delsubposal(pal1: AList, pal2: AList): AList;
    % Delete from [pal2] all positions, which are subpositions of a
    % position from [pal1]. [pal1] and [pal2] are ALists containing
@@ -1251,6 +1382,7 @@ asserted procedure pos_delsubposal(pal1: AList, pal2: AList): AList;
 	 assoc(np2, pal2)
    end;
 
+% TODO: Move this procedure to a right place.
 asserted procedure pos_delsubposl(pl1: PositionL, pl2: PositionL): PositionL;
    % Delete from [pl2] all positions, which are subpositions of a
    % position from [pl1].
@@ -1268,6 +1400,7 @@ asserted procedure pos_delsubposl(pl1: PositionL, pl2: PositionL): PositionL;
       return reversip res
    end;
 
+% TODO: Move this procedure to a right place.
 asserted procedure pos_subposp(p1: Position, p2: Position): Boolean;
    % Subposition predicate. Returns [t] iff [p2] is a subposition of
    % [p1].
@@ -1280,6 +1413,7 @@ asserted procedure pos_subposp(p1: Position, p2: Position): Boolean;
       else
 	 nil;
 
+% TODO: Move this procedure to a right place.
 asserted procedure pos_lca(p1: Position, p2: Position): Position;
    % Lowest common ancestor of [p1] and [p2].
       if null p1 or null p2 then
@@ -1502,11 +1636,12 @@ asserted procedure sfto_dgcdf(f: SF, v: Kernel): Integer;
 
 % TODO: Move the following procedure to a right place.
 asserted procedure ofsf_nonvanishp(f: SF, x: Kernel, theo: Theory): Boolean;
-   % Ordered field standard form non-vanishing predicate. [f] is SF
-   % with [mvar f eq x]; [theo] is a theory. Returns [t] if [f] cannot
-   % identically vanish under the theory [theo].
+   % Ordered field standard form non-vanishing predicate. [f] is a SF
+   % in the main variable [x], i.e., if [mvar f neq x], then [f] does
+   % not contain [x] and should be treated as a coefficient of [x^0];
+   % [theo] is a theory. Returns [t] if [f] cannot identically vanish
+   % under the theory [theo].
    begin scalar w, finished, res;
-      assert(sfto_mvartest(f, x));
       w := 'false;
       repeat <<
 	 if sfto_mvartest(f, x) then <<
