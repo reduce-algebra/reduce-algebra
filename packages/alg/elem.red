@@ -631,17 +631,16 @@ let df(acsc(~x),x) =>  -1/(x^2*sqrt(1-1/x^2)),
 let df(atan2(~y,~x),~z) => (x*df(y, z)-y*df(x, z))/(x^2+y^2);
 
 symbolic procedure simp!-atan2 u;
-   begin scalar x,y,z,v,w;
-      if length u neq 2 then
-         rerror(alg,17,list("Wrong number of arguments to", 'atan2));
+begin scalar x,y,z,v,w;
+   if length u neq 2 then
+     rerror(alg,17,list("Wrong number of arguments to", 'atan2));
+   if (z := valuechk('atan2, u)) then return z;
 
-      y := reval car u;
-      x := reval cadr u;
-      % forbid complex arguments (at least temporarily)
-      if not freeof(y, 'i) or not freeof(x, 'i) then
-        rerror(alg, 213, "atan2 currently only defined for real arguments");
-      if (z := valuechk('atan2, u)) then return z;
+   y := reval car u;
+   x := reval cadr u;
 
+   % No simplification implemented for complex arguments   
+   if freeof(y, 'i) and freeof(x, 'i) then
       if x=0
         then << z := simp!-sign1 y;
                 if null numr z then rerror(alg, 211, "atan2(0, 0) formed") 
@@ -654,10 +653,12 @@ symbolic procedure simp!-atan2 u;
                if denr z=1 and fixp numr z and denr v=1 and fixp numr v
                  then << w := simp {'atan,{'quotient,y,x}};
                          if numr z=1 then return w
-                          else if numr v=1 then return addsq(simp 'pi,w)
-                          else return subtrsq(w,simp 'pi) >> >>;
-       return simpiden {'atan2,y,x};
-   end;
+                         else if numr v=1 then return addsq(simp 'pi,w)
+                         else return subtrsq(w,simp 'pi) >>
+            >>;
+   return simpiden {'atan2,y,x};
+end;
+
 
 put('atan2,'simpfn,'simp!-atan2);
   
