@@ -1285,18 +1285,20 @@ asserted procedure ofsf_fml2fopll(fml: List, op: Id, v: Kernel, theo: Theory): L
 	 return for each fmv in fmvl collect
 	    car fmv . {op};
       assert(op memq '(leq geq lessp greaterp));
-      s := ofsf_definite(fmnvl, theo);
-      if s and null cdr fmvl then <<
-	 % - the sign of the factors not containing [v] is a non-zero constant
+      if null cdr fmvl then <<
 	 % - there is exactly one irreducible factor containing [v]
-	 % TODO: If the sign of the factors not containing [v] is not
-	 % a non-zero constant we could multiply them with f and
-	 % continue. Investigate this.
-	 f . m := car fmvl;
-	 op := op_adjust(op, s);
-	 if evenp m then
-	    op := if op eq 'greaterp then 'neq else if op eq 'leq then 'equal;
-	 return {f . if op then {op}}
+	 s := ofsf_definite(fmnvl, theo);
+	 if s then <<
+	    % - the sign of the factors not containing [v] is a non-zero constant
+	    % TODO: If the sign of the factors not containing [v] is not
+	    % a non-zero constant we could multiply them with f and
+	    % continue. Investigate this.
+	    f . m := car fmvl;
+	    op := op_adjust(op, s);
+	    if evenp m then
+	       op := if op eq 'greaterp then 'neq else if op eq 'leq then 'equal;
+	    return {f . if op then {op}}
+	 >>
       >>;
       while fmvl do <<
 	 f . m := pop fmvl;
