@@ -514,6 +514,52 @@ procedure ofsf_mkequation(lhs,rhs);
       rederr {"ofsf_mkequation: parametric denominator in",w}
    end;
 
+% ofsfform procedure definition
+
+put('ofsfform, 'stat, 'procstat);
+put('ofsfform, 'procfn, 'ofsf_procform);
+
+procedure ofsf_procform(name, arglist, body);
+   <<
+      if !*mode neq 'symbolic then
+	 rederr "ofsfform procedure declared outside symbolic mode";
+      {'progn,
+      	 {'put, mkquote name, ''number!-of!-args, length arglist},
+      	 {'de, name, arglist, ofsf_procform1 body}}
+   >>;
+
+procedure ofsf_procform1(u);
+   begin scalar op;
+      if atom u then
+	 return if u = 0 then nil else u;
+      if not pairp u then
+	 rederr "invalid form in ofsfform procedure";
+      op := car u;
+      if op eq 'difference then
+	 return {'addf, ofsf_procform1 cadr u, {'negf, ofsf_procform1 caddr u}};
+      if op eq 'plus then
+	 return ofsf_procform2('addf, for each v in cdr u collect ofsf_procform1 v);
+      if op eq 'plus2 then
+	 return {'addf, ofsf_procform1 cadr u, ofsf_procform1 caddr u};
+      if op eq 'times then
+      	 return ofsf_procform2('multf, for each v in cdr u collect ofsf_procform1 v);
+      if op eq 'times2 then
+      	 return {'multf, ofsf_procform1 cadr u, ofsf_procform1 caddr u};
+      if op eq 'expt then
+      	 return {'exptf, ofsf_procform1 cadr u, caddr u};
+      if op memq '(neq equal lessp geq leq greaterp) then
+	 return {'ofsf_0mk2, mkquote op, ofsf_procform1 cadr u};
+      if op memq '(and or) then
+      	 return {'rl_mkn, mkquote op, 'list . for each arg in cdr u collect ofsf_procform1 arg};
+      rederr {"invalid operation", op, "in ofsfform procedure"}
+   end;
+
+procedure ofsf_procform2(fn, l);
+   if null cdr l then
+      car l
+   else
+      {fn, car l, ofsf_procform2(fn, cdr l)};
+
 endmodule;  % [ofsf]
 
 end;  % of file

@@ -37,7 +37,7 @@ lisp <<
 
 module ofsfvslists;
 
-fluid '(rsl!-alist!* rsl!-alist!-clustering!*);
+fluid '(rsl!-alist!* rsl!-alist!-clustering!* guard!-fnalist!*);
 
 rsl!-alist!* := {
    % key: {degree, lc sign, op}
@@ -1159,6 +1159,23 @@ rsl!-alist!-clustering!* := {
 	       }
    		  };
 
+guard!-fnalist!* := {
+   % key: {degree, rtl}
+   % value: guard constructing function
+   {1, '(-1)} . 'guard1!-1,
+   {1, '(1)} . 'guard1!-2,
+   {1, '(-1 1)} . 'guard1!-3
+   };
+
+ofsfform procedure guard1!-1(a, b);
+   a < 0;
+
+ofsfform procedure guard1!-2(a, b);
+   a > 0;
+
+ofsfform procedure guard1!-3(a, b);
+   a <> 0;
+
 asserted procedure rsl!-compute(d: Integer, s: Any, op: Id): Any;
    % Root specification list compute. [d] is the degree, [s] is the
    % sign of the leading coefficient, [op] is the operation. Returns
@@ -1185,6 +1202,19 @@ asserted procedure rsl!-compute!-clustering(d: Integer, s: Any, op: Id): Any;
       return 'fail
    end;
 
-endmodule;  % ofsfvslists
+asserted procedure rsl!-guard(f: SF, x: Kernel, rtl: List): QfFormula;
+   % Root specification list guard. [f] is a SF; [x] is [mvar f];
+   % [rtl] is a list of real types of [f].
+   begin scalar w, fn;
+      assert(mvar f eq x);
+      rtl := sort(rtl, function(lambda(a, b); a < b));
+      w := assoc({ldeg f, rtl}, guard!-fnalist!*);
+      if null w then
+	 return 'fail;
+      fn := cdr w;
+      return apply(fn, coeffs f)
+   end;
+
+endmodule;  % [ofsfvslists]
 
 end;  % of file
