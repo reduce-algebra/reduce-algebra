@@ -243,13 +243,13 @@ asserted procedure vspc_b(pc: VSpc): List;
 
 asserted procedure vscs_mk(ts: Theory, s: Any): VScs;
    % Candidate solutions make. [ts] is theory supplement; [s] is
-   % either ['fail] or an AList. The keys in [s] are from ['(ip ep slb
-   % wlb sub wub)], values are lists of parametric roots.
+   % either ['failed] or an AList. The keys in [s] are from ['(ip ep
+   % slb wlb sub wub)], values are lists of parametric roots.
    ts . s;
 
-asserted procedure vscs_failp(cs: VScs): Boolean;
-   % Candidate solutions fail predicate.
-   cdr cs eq 'fail;
+asserted procedure vscs_failedp(cs: VScs): Boolean;
+   % Candidate solutions failed predicate.
+   cdr cs eq 'failed;
 
 asserted procedure vscs_ts(cs: VScs): Theory;
    % Candidate solutions theory supplement.
@@ -336,9 +336,9 @@ asserted procedure vscs_nwub(cs: VScs): Integer;
 asserted procedure vscs_merge(c1: VScs, c2: VScs): VScs;
    % Candidate solutions merge.
    begin scalar theo, al, w1, w2;
-      if vscs_failp c1 then
+      if vscs_failedp c1 then
 	 return c1;
-      if vscs_failp c2 then
+      if vscs_failedp c2 then
 	 return c2;
       theo := append(car c1, car c2);
       al := for each k in '(ip ep slb wlb sub wub) join <<
@@ -773,8 +773,8 @@ asserted procedure vscs_fop2csnz(f: SF, op: Id, s: Any): VScs;
 	 rsl!-compute!-clustering(d, s, op)
       else
 	 rsl!-compute(d, s, op);
-      if w eq 'fail then
-	 return vscs_mk(nil, 'fail);
+      if w eq 'failed then
+	 return vscs_mk(nil, 'failed);
       pral := for each pr in w collect
 	 car pr . for each rs in cdr pr collect
 	    vspr_mk(d, f, rs);
@@ -1438,7 +1438,7 @@ asserted procedure vsdt_add2ttheo(dt: VSdt, fl: QfFormulaL, neg: Boolean);
 
 asserted procedure vsde_select!-bounds(de: VSde);
    % Select bounds of annotated prime constituents. We assume that no
-   % APC in [vsde_pcl de] has ['fail] as candidate solutions.
+   % APC in [vsde_pcl de] has ['failed] as candidate solutions.
    if rlbndswithilp!* then
       vsde_select!-bounds!-ilp de
    else
@@ -1461,8 +1461,9 @@ asserted procedure vsde_select!-bounds!-noilp(de: VSde);
 
 asserted procedure vsde_pcl2tpl(de: VSde);
    % Annotated prime constituent list to test point list. We assume
-   % that no APC in [vsde_pcl de] has ['fail] as candidate solutions,
-   % and that every APC in [vsde_pcl de] has some selected bounds.
+   % that no APC in [vsde_pcl de] has ['failed] as candidate
+   % solutions, and that every APC in [vsde_pcl de] has some selected
+   % bounds.
    begin scalar pcl, cs, p, gpl, b, tpl, imi, ipi;
       pcl := vsde_pcl de;
       for each pc in pcl do <<
@@ -1704,8 +1705,8 @@ asserted procedure vsdt_printSummary(dt: VSdt);
    >>;
 
 asserted procedure vscs_print(cs: VScs);
-   if vscs_failp cs then
-      ioto_prin2t {"VScs: fail"}
+   if vscs_failedp cs then
+      ioto_prin2t {"VScs: failed"}
    else <<
       ioto_prin2t {"VScs: "};
       ioto_prin2t {"ip: ", vscs_ip cs};
@@ -1717,8 +1718,8 @@ asserted procedure vscs_print(cs: VScs);
    >>;
 
 asserted procedure vscs_printSummary(cs: VScs);
-   if vscs_failp cs then
-      ioto_prin2t {"VScs: fail"}
+   if vscs_failedp cs then
+      ioto_prin2t {"VScs: failed"}
    else <<
       ioto_prin2 {"VScs: "};
       ioto_prin2t {"#ip: ", length vscs_ip cs,
@@ -1764,6 +1765,6 @@ asserted procedure vstp_printSummary(tp: VStp);
       >>
    >>;
 
-endmodule;  % ofsfvs
+endmodule;  % [ofsfvs]
 
 end;  % of file

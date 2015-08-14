@@ -1184,9 +1184,9 @@ asserted procedure rsl!-compute(d: Integer, s: Any, op: Id): Any;
    % is a list of root specification lists.
    begin scalar w;
       w := assoc({d, s, op}, rsl!-alist!*);
-      if w then
-	 return cdr w;
-      return 'fail
+      if null w then
+	 return 'failed;
+      return cdr w
    end;
 
 asserted procedure rsl!-compute!-clustering(d: Integer, s: Any, op: Id): Any;
@@ -1197,9 +1197,9 @@ asserted procedure rsl!-compute!-clustering(d: Integer, s: Any, op: Id): Any;
    % wub)] and [cdr pr] is a list of root specification lists.
    begin scalar w;
       w := assoc({d, s, op}, rsl!-alist!-clustering!*);
-      if w then
-	 return cdr w;
-      return 'fail
+      if null w then
+	 return 'failed;
+      return cdr w
    end;
 
 asserted procedure rsl!-guard(f: SF, x: Kernel, rtl: List): QfFormula;
@@ -1210,7 +1210,7 @@ asserted procedure rsl!-guard(f: SF, x: Kernel, rtl: List): QfFormula;
       rtl := sort(rtl, function(lambda(a, b); a < b));
       w := assoc({ldeg f, rtl}, guard!-fnalist!*);
       if null w then
-	 return 'fail;
+	 return 'failed;
       fn := cdr w;
       return apply(fn, coeffs f)
    end;
