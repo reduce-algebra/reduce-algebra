@@ -537,6 +537,8 @@ procedure ofsf_procform1(u);
       op := car u;
       if op eq 'difference then
 	 return {'addf, ofsf_procform1 cadr u, {'negf, ofsf_procform1 caddr u}};
+      if op eq 'minus then
+	 return {'addf, nil, {'negf, ofsf_procform1 cadr u}};
       if op eq 'plus then
 	 return ofsf_procform2('addf, for each v in cdr u collect ofsf_procform1 v);
       if op eq 'plus2 then

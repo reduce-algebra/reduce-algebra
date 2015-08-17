@@ -199,6 +199,15 @@ asserted procedure vspr_rsl(pr: VSpr): List;
    % Parametric root root specification list.
    nth(pr, 4);
 
+asserted procedure vspr_guard(pr: VSpr): QfFormula;
+   % Parametric root guard.
+   begin scalar rtl;
+      rtl := for each w in vspr_rsl pr collect car w;
+      % TODO: There could be duplicates in [rtl] in the future. Then
+      % you will have to delete them here!
+      return rsl!-guard(vspr_f pr, rtl)
+   end;
+
 %%% annotated prime constituent (APC) %%%
 
 asserted procedure vspc_mk(p: Position, type: Id, cs: VScs, gpl: PositionL, b: List): VSpc;
@@ -378,6 +387,13 @@ asserted procedure vstp_it(tp: VStp): Id;
 asserted procedure vstp_pr(tp: VStp): VSpr;
    % Test point parametric root.
    nth(tp, 5);
+
+asserted procedure vstp_guard(tp: VStp): QfFormula;
+   % Test point guard.
+   if vstp_it tp memq '(minf pinf) then
+      'true
+   else
+      vspr_guard vstp_pr tp;
 
 %%% QE tree node %%%
 
@@ -1744,7 +1760,7 @@ asserted procedure vspc_printSummary(pc: VSpc);
 asserted procedure vspr_printSummary(pr: VSpr);
    <<
       ioto_prin2 {"VSpr: "};
-      ioto_prin2 {"poly: "};
+      ioto_prin2 {"poly:"};
       mathprint prepf vspr_f pr;
       ioto_prin2t {"root specs: ", vspr_rsl pr}
    >>;
@@ -1752,17 +1768,13 @@ asserted procedure vspr_printSummary(pr: VSpr);
 asserted procedure vstp_printSummary(tp: VStp);
    <<
       ioto_prin2 {"VStp: "};
-      if tp eq 'minf then
-	 ioto_prin2t tp
-      else if tp eq 'pinf then
-	 ioto_prin2t tp
-      else <<
-      	 ioto_prin2t {"pos: ", vstp_p tp,
-      	    " gpl: ", vstp_gpl tp,
-	    " it: ", vstp_it tp,
-	    " pr: "};
-	 vspr_printSummary vstp_pr tp
-      >>
+      ioto_prin2t {"pos: ", vstp_p tp,
+	 " gpl: ", vstp_gpl tp,
+	 " it: ", vstp_it tp,
+	 " pr: "};
+      vspr_printSummary vstp_pr tp;
+      ioto_prin2t {"guard:"};
+      mathprint rl_prepfof vstp_guard tp
    >>;
 
 endmodule;  % [ofsfvs]

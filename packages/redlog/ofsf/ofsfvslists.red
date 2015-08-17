@@ -1162,19 +1162,99 @@ rsl!-alist!-clustering!* := {
 guard!-fnalist!* := {
    % key: {degree, rtl}
    % value: guard constructing function
-   {1, '(-1)} . 'guard1!-1,
-   {1, '(1)} . 'guard1!-2,
-   {1, '(-1 1)} . 'guard1!-3
-   };
+   {1, '(-1)} . 'guard!-1!-1m,
+   {1, '(1)} . 'guard!-1!-1,
+   {1, '(-1 1)} . 'guard!-1!-2,
 
-ofsfform procedure guard1!-1(a, b);
+   {2, '(-2)} . 'guard!-2!-2m,
+   {2, '(-1)} . 'guard!-2!-1m,
+   {2, '(1)} . 'guard!-2!-1,
+   {2, '(2)} . 'guard!-2!-2,
+   {2, '(-2 -1)} . 'guard!-2!-3m,
+   {2, '(1 2)} . 'guard!-2!-3,
+   {2, '(-2 -1 1 2)} . 'guard!-2!-4,
+
+   {3, '(-4)} . 'guard!-3!-4m,
+   {3, '(-3)} . 'guard!-3!-3m,
+   {3, '(-2)} . 'guard!-3!-2m,
+   {3, '(-1)} . 'guard!-3!-1m,
+   {3, '(1)} . 'guard!-3!-1,
+   {3, '(2)} . 'guard!-3!-2,
+   {3, '(3)} . 'guard!-3!-3,
+   {3, '(4)} . 'guard!-3!-4,
+   {3, '(-2 -3 -4)} . 'guard!-3!-5m,
+   {3, '(2 3 4)} . 'guard!-3!-5
+      };
+
+ofsfform procedure guard!-1!-1m(a, b);
    a < 0;
 
-ofsfform procedure guard1!-2(a, b);
+ofsfform procedure guard!-1!-1(a, b);
    a > 0;
 
-ofsfform procedure guard1!-3(a, b);
+ofsfform procedure guard!-1!-2(a, b);
    a <> 0;
+
+ofsfform procedure guard!-2!-2m(a, b, c);
+   a < 0 and b^2 - 4*a*c = 0;
+
+ofsfform procedure guard!-2!-1m(a, b, c);
+   a < 0 and b^2 - 4*a*c > 0;
+
+ofsfform procedure guard!-2!-1(a, b, c);
+   a > 0 and b^2 - 4*a*c > 0;
+
+ofsfform procedure guard!-2!-2(a, b, c);
+   a > 0 and b^2 - 4*a*c = 0;
+
+ofsfform procedure guard!-2!-3m(a, b, c);
+   a < 0 and b^2 - 4*a*c >= 0;
+
+ofsfform procedure guard!-2!-3(a, b, c);
+   a > 0 and b^2 - 4*a*c >= 0;
+
+ofsfform procedure guard!-2!-4(a, b, c);
+   a <> 0 and b^2 - 4*a*c >= 0;
+
+ofsfform procedure guard!-3!-4m(a, b, c, d);
+   a < 0 and -b^2 + 3*a*c < 0 and
+      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d < 0;
+
+ofsfform procedure guard!-3!-3m(a, b, c, d);
+   a < 0 and -b^2 + 3*a*c < 0 and 2*b^3 + 27*d*a^2 - 9*a*b*c < 0 and
+      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d = 0;
+
+ofsfform procedure guard!-3!-2m(a, b, c, d);
+   a < 0 and -b^2 + 3*a*c < 0 and 2*b^3 + 27*d*a^2 - 9*a*b*c > 0 and
+      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d = 0;
+
+ofsfform procedure guard!-3!-1m(a, b, c, d);
+   a < 0 and (-b^2 + 3*a*c >= 0 or
+      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d > 0);
+
+ofsfform procedure guard!-3!-1(a, b, c, d);
+   a > 0 and (-b^2 + 3*a*c >= 0 or
+      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d > 0);
+
+ofsfform procedure guard!-3!-2(a, b, c, d);
+   a > 0 and -b^2 + 3*a*c < 0 and 2*b^3 + 27*d*a^2 - 9*a*b*c < 0 and
+      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d = 0;
+
+ofsfform procedure guard!-3!-3(a, b, c, d);
+   a > 0 and -b^2 + 3*a*c < 0 and 2*b^3 + 27*d*a^2 - 9*a*b*c > 0 and
+      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d = 0;
+
+ofsfform procedure guard!-3!-4(a, b, c, d);
+   a > 0 and -b^2 + 3*a*c < 0 and
+      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d < 0;
+
+ofsfform procedure guard!-3!-5m(a, b, c, d);
+   a < 0 and -b^2 + 3*a*c < 0 and
+      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d <= 0;
+
+ofsfform procedure guard!-3!-5(a, b, c, d);
+   a > 0 and -b^2 + 3*a*c < 0 and
+      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d <= 0;
 
 asserted procedure rsl!-compute(d: Integer, s: Any, op: Id): Any;
    % Root specification list compute. [d] is the degree, [s] is the
@@ -1202,11 +1282,10 @@ asserted procedure rsl!-compute!-clustering(d: Integer, s: Any, op: Id): Any;
       return cdr w
    end;
 
-asserted procedure rsl!-guard(f: SF, x: Kernel, rtl: List): QfFormula;
-   % Root specification list guard. [f] is a SF; [x] is [mvar f];
-   % [rtl] is a list of real types of [f].
+asserted procedure rsl!-guard(f: SF, rtl: List): QfFormula;
+   % Root specification list guard. [f] is a SF; [rtl] is a list of
+   % real type codes, which does not contain duplicates.
    begin scalar w, fn;
-      assert(mvar f eq x);
       rtl := sort(rtl, function(lambda(a, b); a < b));
       w := assoc({ldeg f, rtl}, guard!-fnalist!*);
       if null w then
