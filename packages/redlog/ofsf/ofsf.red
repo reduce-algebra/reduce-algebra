@@ -42,7 +42,8 @@ module ofsf;
 
 create!-package('(ofsf ofsfsiat ofsfsism ofsfbnf ofsfqe ofsfopt ofsfgs
    ofsfmisc ofsfcad ofsfcadproj ofsfanuex ofsfxopt ofsfdet ofsftfc ofsfhqe
-   ofsfdecdeg ofsfexfr ofsftrop ofsflp ofsfdpep ofsfvsl ofsfvs ofsfvslists),
+   ofsfdecdeg ofsfexfr ofsftrop ofsflp ofsfdpep ofsfvsl
+   ofsfvsblock ofsfvseset ofsfvssub ofsfvslists),
    nil);
 
 load!-package 'redlog;
@@ -319,7 +320,7 @@ if rl_texmacsp() then
 flag('(equal neq leq geq lessp greaterp),'spaced);
 flag('(ofsf_chsimpat),'full);
 
-% Ofsf Data Types
+% ofsf data types
 struct OfsfAtf asserted by list3p;
 struct OfsfAtfL asserted by listp;
 
@@ -392,6 +393,94 @@ procedure tganulistp(s);
 
 procedure irip(s);
    eqcar(s, 'iri);
+
+% ofsfvs data types
+% defined in module ofsfvsblock:
+struct VSnd checked by VSndP;  % QE tree node
+struct VSco checked by VScoP;  % container of nodes
+struct VSht checked by VShtP;  % hash table of quantifier-free formulas
+struct VSdb checked by VSdbP;  % VS data for a block
+% defined in module ofsfvseset:
+struct VSpr checked by VSprP;  % parametric root
+struct VSpc checked by VSpcP;  % annotated prime constituent (APC)
+struct VScs checked by VScsP;  % candidate solutions
+struct VStp checked by VStpP;  % test point
+struct VSde checked by VSdeP;  % VS data for elimination set computation
+struct VSdt checked by VSdtP;  % VS data for formula traversal
+% defined in module ofsfvssub:
+struct VSsu checked by VSsuP;  % VS
+struct VSar checked by VSarP;  % VS: arbitrary
+struct VSdg checked by VSdgP;  % VS: degree shift
+struct VSvs checked by VSvsP;  % VS: test point substitution
+% others:
+struct Position checked by PositionP;  % position in formula
+struct PositionL checked by PositionLP;  % list of Position
+struct VSprL checked by VSprLP;  % list of VSpr
+struct VStpL checked by VStpLP;  % list of VStp
+struct VSndL checked by VSndLP;  % list of VSnd
+struct VSdtL checked by VSdtLP;  % list of VSdt
+
+%%% checking procedures %%%
+
+procedure VSndP(s);  % QE tree node
+   pairp s and car s eq 'vsnd;
+
+procedure VScoP(s);  % container of nodes
+   listp s;
+
+procedure VShtP(s);  % hash table of quantifier-free formulas
+   pairp s and car s eq 'vsht;
+
+procedure VSdbP(s);  % VS data for a block
+   vectorp s and getv(s, 0) eq 'vsdb;
+
+procedure VSprP(s);  % parametric root
+   pairp s and car s eq 'vspr;
+
+procedure VSpcP(s);  % annotated prime constituent (APC)
+   pairp s and car s eq 'vspc;
+
+procedure VScsP(s);  % candidate solutions
+   pairp s;
+
+procedure VStpP(s);  % test point
+   pairp s and car s eq 'vstp;
+
+procedure VSdeP(s);  % VS data for elimination set computation
+   vectorp s and getv(s, 0) eq 'vsde;
+
+procedure VSdtP(s);  % VS data for formula traversal
+   vectorp s and getv(s, 0) eq 'vsdt;
+
+procedure VSsuP(s);  % VS
+   VSarP s or VSdgP s or VSvsP s;
+
+procedure VSarP(s);  % VS: arbitrary
+   pairp s and car s eq 'vsar;
+
+procedure VSdgP(s);  % VS: degree shift
+   pairp s and car s eq 'vsdg;
+
+procedure VSvsP(s);  % VS: test point substitution
+   pairp s and car s eq 'vsvs;
+
+procedure PositionP(s);  % position in formula
+   null s or (pairp s and fixp car s and PositionP cdr s);
+
+procedure PositionLP(s);
+   null s or (pairp s and PositionP car s and PositionLP cdr s);
+
+procedure VSprLP(s);
+   null s or (pairp s and VSprP car s and VSprLP cdr s);
+
+procedure VStpLP(s);
+   null s or (pairp s and VStpP car s and VStpLP cdr s);
+
+procedure VSndLP(s);
+   null s or (pairp s and VSndP car s and VSndLP cdr s);
+
+procedure VSdtLP(s);
+   null s or (pairp s and VSdtP car s and VSdtLP cdr s);
 
 % Access Functions
 inline procedure ofsf_op(atf);
