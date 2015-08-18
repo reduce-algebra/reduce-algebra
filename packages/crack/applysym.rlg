@@ -33,9 +33,6 @@ load crack,applysym$
 lisp(depl!*:=nil)$
 
      % clearing of all dependencies
-setcrackflags()$
-
-
 lisp(print_:=nil)$
 
    % to avoid printing the process of solving the char. sys.
@@ -543,10 +540,3 @@ lisp(depl!*:=nil)$
 
 end$
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 218 ms  plus GC time: 31 ms
-
-End of Lisp run after 0.21+0.09 seconds
-real 0.49
-user 0.00
-sys 0.09

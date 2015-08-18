@@ -112,7 +112,7 @@ begin scalar g,h,bak,kernlist!*bak,kord!*bak,mi,newp,p1,bakup_bak,s;
  for each pc in cdr newp do p1:=p1+get(pc,'terms);
  h:=for each pc in car newp collect
     if sqzerop pc then <<nequ_:=add1 nequ_;nil>> 
-                  else mkeqsq(pc,nil,nil,fctsort union(get(car  mi,'fcts),
+                  else mkeqSQ(pc,nil,nil,fctsort union(get(car  mi,'fcts),
                                                        get(cadr mi,'fcts)),
                               union(get(car  mi,'vars),
                                     get(cadr mi,'vars)),allflags_,t,list(0),nil,allpdes);
@@ -217,7 +217,7 @@ symbolic procedure shorten_pdes(des,p2)$
 if not pairp des or not pairp cdr des then (nil . nil) else
 begin scalar p2rl,p,pc,pcc,newp,ineq_pre$ %,p2_to_eval$
  for each p1 in ineq_ do
- if one_termpsf(numr p1) then ineq_pre:=cons(prepsq p1,ineq_pre)$
+ if one_termpSF(numr p1) then ineq_pre:=cons(prepsq p1,ineq_pre)$
  if alg_poly then ineq_pre:=sort_according_to(ineq_pre,ftem_)$
 
  % find the pair of pdes not yet reduced with each other
@@ -280,7 +280,7 @@ end$
 
 %-------------------
 
-symbolic procedure partition_3(de,anb,a)$
+symbolic procedure partition_3(de,AnB,A)$
 % l is an equation in SQ-form, 
 % returning {(#_of_terms_in_1         . (  1    . inhomog  )),
 %            (#_of_terms_in_SFcoeff_1 . (flin_1 . SFcoeff_1)),...}
@@ -290,11 +290,11 @@ symbolic procedure partition_3(de,anb,a)$
 %
 begin scalar l,l1,mv;
  l:=reorder numr get(de,'sqval);
- while l and not domainp l and member(mv:=mvar l,anb) do <<
+ while l and not domainp l and member(mv:=mvar l,AnB) do <<
   l1:=cons(cons(no_of_tm_sf lc l,cons(mv,lc l)), l1)$
   l:=red l
  >>;
- while l and not domainp l and member(mvar l,a) do l:=red l;  
+ while l and not domainp l and member(mvar l,A) do l:=red l;  
  return if l then cons(cons(no_of_tm_sf l,cons(1,l)), l1) % inhom case
              else l1                                      % homog case
 end$
@@ -403,14 +403,14 @@ symbolic procedure shorten(de1,de2,ineq_pre)$
 begin scalar a,b,r,l1,l2,nl1,nl2,l1ul2,l1ml2,l2ml1,l1il2,oldorder,
       de1p,de2p,termsof1,termsof2,flip,m1,m2,n1,n2,ql,ql1,ql2,maxcancel,
       take_first,tr_short_local,no_factors_x_1,no_factors_x_2,homo,
-      changed_korder,donotreplace1,donotreplace2,tryboth,replace1,bestq;
+      changed_korder,DoNotReplace1,DoNotReplace2,tryboth,replace1,bestq;
       % ,max_success; 
 
  % take_first:=t; 
  % =t is not so radical, --> resulting eqn.s may be longer in total 
  % so the complete crack computation tends to be slower.
 
- % tr_short_local:=t; 
+ %tr_short_local:=t; 
  if tr_short_local then deprint list({'!*sq,get(de1,'sqval),t},
                                      {'!*sq,get(de2,'sqval),t} )$
 
@@ -432,13 +432,13 @@ begin scalar a,b,r,l1,l2,nl1,nl2,l1ul2,l1ml2,l2ml1,l1il2,oldorder,
 
  if null flagp(de1,'to_eval) or  
     (homo and (cadr get(de1,'hom_deg)<cadr get(de2,'hom_deg))) or
-    (2*termsof1<termsof2) then donotreplace1:=t;
+    (2*termsof1<termsof2) then DoNotReplace1:=t;
 
  if null flagp(de2,'to_eval) or  
     (homo and (cadr get(de2,'hom_deg)<cadr get(de1,'hom_deg))) or
-    (2*termsof2<termsof1) then donotreplace2:=t;
+    (2*termsof2<termsof1) then DoNotReplace2:=t;
 
- if donotreplace1 and donotreplace2 then return nil$
+ if DoNotReplace1 and DoNotReplace2 then return nil$
 
  %---- determination of l1,l2 nl1,nl2
  % In the following l1 and l2 are all functions and their derivatives in 
@@ -449,8 +449,11 @@ begin scalar a,b,r,l1,l2,nl1,nl2,l1ul2,l1ml2,l2ml1,l1il2,oldorder,
  % nl1, nl2 are the kernels in d1,d2 which do involve ftem_ but not flin_
  % and not ineq_ kernels.
 
- nl1:=add_fct_kern(de1,ineq_pre)$   l1:=car nl1$   nl1:=cdr nl1$
- nl2:=add_fct_kern(de2,ineq_pre)$   l2:=car nl2$   nl2:=cdr nl2$
+ nl1:=add_fct_kern(de1,ineq_pre)$
+ nl2:=add_fct_kern(de2,ineq_pre)$
+ l1:=sort_according_to(car nl1,ftem_)$   nl1:=cdr nl1$
+ l2:=sort_according_to(car nl2,ftem_)$   nl2:=cdr nl2$
+ % NOTE: nl1,nl2 are currently NOT sorted as they are currently not used below.
 
  if l1 and l2 then << % fully linear or at least partially linear with flin_
 
@@ -468,21 +471,31 @@ begin scalar a,b,r,l1,l2,nl1,nl2,l1ul2,l1ml2,l2ml1,l1il2,oldorder,
   de2p:=partition_3(de2,l1il2,l2ml1)$
   setkorder oldorder;
 
-  %---- drop inhomogeneity part if only one equation is inhomogeneous
   if (null de1p) or (null de2p) then return nil;
-  if (cadar de1p = 1) and (cadar de2p neq 1) then 
-  if null de1p then return nil
-               else de1p:=cdr de1p;
-  if (cadar de2p = 1) and (cadar de1p neq 1) then 
-  if null de2p then return nil 
-               else de2p:=cdr de2p;
+  %---- drop inhomogeneity part if only one equation is inhomogeneous
+  %---- there is an inhom. part if cadar de?p = 1
+  if (cadar de1p = 1) and (cadar de2p neq 1) then de1p:=cdr de1p;
+  if (cadar de2p = 1) and (cadar de1p neq 1) then de2p:=cdr de2p;
 
   % Now comes a stronger restriction: The maximum that can be canceled
   % is sum of the minima of terms of each pair of the de1p,de2p sublists
   % corresponding to the coefficients of different ftem functions/deriv.
 
   a:=de1p; b:=de2p; n2:=nil;
-  while a do <<
+  while a and b do
+  if (cadar a) neq (cadar b) then <<
+   % This case should not happen but it can happen if flin_ is not nil
+   % but at least one equation is non-linear and then a function can appear
+   % in an equation but will only turn up as a coefficient of another function
+   % and not as cadar a or cadar b and then one must step forward in one of 
+   % the two lists a,b to get (cadar a) = (cadar b) 
+   r:=b; while r and ((cadar r) neq (cadar a)) do r:=cdr r;
+   if r then b:=r 
+        else <<
+    r:=a; while r and ((cadar r) neq (cadar b)) do r:=cdr r;
+    a:=r 
+   >>
+  >>                         else <<
    n1:=if (caar a)<(caar b) then caar a else caar b; 
    % n1 is min of terms of the coefficients of the same ftem function/der.
    n2:=cons(2*n1,n2);
@@ -545,10 +558,10 @@ begin scalar a,b,r,l1,l2,nl1,nl2,l1ul2,l1ml2,l2ml1,l1il2,oldorder,
                                   else {2*termsof2,0}
  >>$
 
- if ((car maxcancel)<termsof1) then if donotreplace1 then return nil
-                                                     else donotreplace2:=t$
- if ((car maxcancel)<termsof2) then if donotreplace2 then return nil
-                                                     else donotreplace1:=t$
+ if ((car maxcancel)<termsof1) then if DoNotReplace1 then return nil
+                                                     else DoNotReplace2:=t$
+ if ((car maxcancel)<termsof2) then if DoNotReplace2 then return nil
+                                                     else DoNotReplace1:=t$
 
  % flip is determined, so that after a flip (if necessary) de2 is replaced,
  % i.e. if n1 is the number of terms of de1 then at least n1 terms must be
@@ -557,7 +570,7 @@ begin scalar a,b,r,l1,l2,nl1,nl2,l1ul2,l1ml2,l2ml1,l1il2,oldorder,
 
  % Although nl1,2 are not used further below, the use of nconc instead of
  % append let once to a wrong 'fcts and 'fct_kern_nli property of an equation
- if donotreplace2 or (termsof2<termsof1) then <<
+ if DoNotReplace2 or (termsof2<termsof1) then <<
   flip:=t;
   a:=de1p; de1p:=de2p; de2p:=a;
   no_factors_x_2:=if l1 or null l2 then nl2 
@@ -575,7 +588,7 @@ begin scalar a,b,r,l1,l2,nl1,nl2,l1ul2,l1ml2,l2ml1,l1il2,oldorder,
   n2:=termsof2
  >>;
 
- if null donotreplace1 and null donotreplace2 then tryboth:=t;
+ if null DoNotReplace1 and null DoNotReplace2 then tryboth:=t;
 % max_success:=if tryboth then if termsof1<termsof2 then 2*termsof1 
 %                                                   else 2*termsof2
 %                         else 2*termsof1$
@@ -750,8 +763,8 @@ if null take_first and (r neq (m2:=no_of_tm_sf numr l2)) then <<
 %   if null car recycle_eqns then n1:=mkid(eqname_,nequ_)
 %                            else n1:=caar recycle_eqns$
 %   algebraic write "The new equation ",n1," = ",
-%   lisp {'DIFFERENCE,{'TIMES,!*f2a de2p,if flip then de2 else de1},
-%                     {'TIMES,!*f2a de1p,if flip then de1 else de2} },
+%   lisp {'difference,{'times,!*f2a de2p,if flip then de2 else de1},
+%                     {'times,!*f2a de1p,if flip then de1 else de2} },
 %   "  replaces  "
 %  >>$
 %  a:=subtrsq(if de2p=1 then a
@@ -890,7 +903,7 @@ symbolic procedure short(ql1,ql2,d1,d2,n1,n2,n1_now,max_save_now,max_save_later,
  % - if tryboth=t then try to shorten any one of both equations, else try only
  %                to shorten de2, i.e. the mother of d2.
 begin
- scalar lastqsuccess,d2cop,j1,j2,e1,e2,q,dcl,nu,ldcl,lnu,h,repl1,repl2,allowedq
+ scalar LastQSuccess,d2cop,j1,j2,e1,e2,q,dcl,nu,ldcl,lnu,h,repl1,repl2,allowedq
         ,max_coeff_len_reached
 %,bynow1,bynow2
 %,qisnumber,qcount
@@ -917,14 +930,14 @@ begin
 %bynow1:=0; bynow2:=0; qcount:=0;
  repeat <<  % for each term e1 of d1
   n1_now:=n1_now-2;                                                   
-  e1:=first_term_sf d1; d1:=subtrf(d1,e1);
+  e1:=first_term_SF d1; d1:=subtrf(d1,e1);
   %---- divide each term e1 of d1 through all terms e2 of d2 
   d2cop:=d2;
   %---- continue as long as possible and un-successful 
-  while d2cop and not(take_first and lastqsuccess) do << % correct version, 3% slower than:
+  while d2cop and not(take_first and LastQSuccess) do << % correct version, 3% slower than:
 % while d2cop and null LastQSuccess do << % The first quotient which proves to be
                                           % beneficial is nearly always the best
-   e2:=first_term_sf d2cop; d2cop:=subtrf(d2cop,e2);
+   e2:=first_term_SF d2cop; d2cop:=subtrf(d2cop,e2);
    q:=cancel(e1 ./ e2);         % otherwise already successful
 
 %qcount:=add1 qcount$
@@ -932,9 +945,9 @@ begin
 %write"###### q <> q !!!. "$terpri()$
 %write"qold=",q$terpri()$
 %write"qnew=",resimp quotsq((e1 . 1),(e2 . 1))$terpri()$
-%write"qnew=",simp reval {'!*SQ,quotsq((e1 . 1),(e2 . 1)),nil}$terpri()$
-%write"re1=",reval {'!*SQ,q,nil}$terpri()$
-%write"re2=",reval {'!*SQ,(e1 . 1),(e2 . 1),nil}$terpri()$
+%write"qnew=",simp reval {'!*sq,quotsq((e1 . 1),(e2 . 1)),nil}$terpri()$
+%write"re1=",reval {'!*sq,q,nil}$terpri()$
+%write"re2=",reval {'!*sq,(e1 . 1),(e2 . 1),nil}$terpri()$
 %>>$
 
 %if (denr q = 1) and (domainp numr q) then <<
@@ -999,18 +1012,18 @@ begin
    >>                                                                           else
 
    %---- Record the quotient, check whether it is successful
-   if null allowedq then lastqsuccess:=nil
+   if null allowedq then LastQSuccess:=nil
                     else 
    if repl1 and (null repl2 or (n1>n2)) then <<  % to replace de1
 %if qisnumber then write"###### wrongly adding to ql1!"$
     h:=add_quotient(ql1,nu,lnu,dcl,ldcl,j1)$
-    if car h > n2 then lastqsuccess:=t
-                  else lastqsuccess:=nil$
+    if car h > n2 then LastQSuccess:=t
+                  else LastQSuccess:=nil$
     ql1:=cdr h
    >>                                   else <<  % to replace de1
     h:=add_quotient(ql2,nu,lnu,dcl,ldcl,j2)$
-    if car h > n1 then lastqsuccess:=t
-                  else lastqsuccess:=nil$
+    if car h > n1 then LastQSuccess:=t
+                  else LastQSuccess:=nil$
     ql2:=cdr h
    >>
 
@@ -1030,7 +1043,7 @@ begin
 
  >>    % all terms of d1
  until (null d1                             ) or % everything divided
-       (take_first and lastqsuccess         ) or % successful: saving > cost 
+       (take_first and LastQSuccess         ) or % successful: saving > cost 
        (((null tryboth           ) or 
          ((j1 > 0) and (null ql1))    ) and 
         (  j2 > 0) and (null ql2)           )$   % all quotients are too rare 
@@ -1394,7 +1407,7 @@ begin scalar pdes,tr_drop,p,cp,incre,m,h,s,r,a,v,
      >>$
      success:=t$
      maxlen:=0$
-     s:=cdar s; % first solution (lin. system), dropping 'LIST
+     s:=cdar s; % first solution (lin. system), dropping 'list
 
      % now find the equation to be replaced by the 1-term-equation
      % find the non-vanishing m in s, such that the corresponding p in
@@ -1428,7 +1441,7 @@ begin scalar pdes,tr_drop,p,cp,incre,m,h,s,r,a,v,
      conli:=reverse newconli$
 
      % the new equation:
-     newp:=mkeqsq(nil,nil,newp,fl,vl,allflags_,t,list(0),nil,newpdes);
+     newp:=mkeqSQ(nil,nil,newp,fl,vl,allflags_,t,list(0),nil,newpdes);
      % last argument is nil as no new inequalities can result
      % if new equation has only one term
      % --> has been changed as this may change, e.g. ineq_or
@@ -1464,202 +1477,199 @@ endmodule$
 
 end$
 
-%-----------------------------------------------------------------------------------
-% (although this is after the "end$" I prefer that it is comment not raw text
-% so that simple source analysis tools do not get confused. ACN. March 2015)
-%
-%Possible Improvements:
-%
-% - auch subtrahieren, wenn 0 Gewinn (Zyklus!)
-% - kann Zyklus mit decoupling geben
-% - Erweiterung auf mehrere Gleichungen
-% - counter example:
-%   0 = +a+b+c
-%   0 =   -b  +d+e
-%   0 =     -c-d  +f
-%   0 = -a      -e-f
-%   combining any 2 gives a longer one, summing 3 an equally long one and
-%   the sum of all 4 is even zero.
-% - In order not to run into a cycle with decouple one could use
-%   dec_hist_list but that costs memory.
-% ---------
-%
-%    DONE
-%    - when a ftem_ function becomes non-zero then drop all equations from the rl_with lists
-%      which involve this function
-%
-%    DONE:
-%    - Another problem with allowing some non-zero multipliers and others not:
-%      0 =   a +   b +   c +   d + g
-%      0 = e*a + e*b + e*c + f*d
-%      Here the SHORTER one could and should be replaced by 0 = f*d - e*d - e*g using
-%      the longer first one.
-%
-% - Parallelize the shortening
-% - It could be beneficial to produce and ADD new equations if they are short, eg
-%   0 = a*g + a*h + b*c \____  b**2*c - a**2*c = c*(a-b)*(a+b) = 0
-%   0 = b*g + b*h + a*c /
-%   Disadvantage: Checking ALL quotients takes much longer.
-% - If a new equation is slightly longer than the one to be replaced (de2) then one
-%   could ADD this new equation and mark it as redundant (and check whether it has
-%   any useful properties, e.g. factorizability, involving only few ftem_, or being
-%   an ODE when de1,de2 were PDEs.
-% - perhaps return in shorten() and shorten_pdes() only a single new and to delete PDE,
-%   not lists with each only one element
-% - One probably could speed up the shortening of homogeneous polynomials
-%   if the degree of both polynomials are equal.
-%   This would need a modification of partition_3 and inputting all 'fcts as
-%   2nd parameter.
-% - test adding some extra length allowance to the new generated equation
-% - try take_first=t
-% - stop when take_first=nil and max_reduction = 2*min(n1,n2) is achieved
-%
-%    DONE:
-%    - When one equation has no flin_ and the other has then treat both as having
-%      no flin_.
-%
-% - How can the knowledge of factors be used for shortening, especially if they
-%   have more than one term?
-%   E.g. if both equations have common factors, or one is factorizable and the other
-%   not, or both are factorizable.
-% - Write procedures that plot the size of equations that were shortened over the step number,
-%   and `number of terms in all equations' over 'length interval of equations'
-% - produce plots for different degrees of overdetermination.
-%
-% - About rounding:
-%   "also im lisp mode macht quotient einfach division ohne rest
-%   und Ruecksicht auf Umstehende.Da ist ceiling auch simpel
-%   gestrickt.Das macht das LISP system.
-%
-%   Im Algebraic mode ist das anders. Da machen quotient
-%   und ceiling schon mehr.
-%
-%   Die Wandlung machst Du am einfachsten mit
-%
-%   simpquot '(quotient 4 5);
-%
-%   bzw round!* falls Du die nackte float haben willst.
-%
-%   round!*  '(!:rd!: . 0.8);
-%   "
-% - The memory to store which equation has already been length reduced wrt to which
-%   equation grows quadratically with the number of equations and becomes the more
-%   serious the more equations one has. Perhaps one could delete all rl_with entries
-%   of all equations coming in the list of equations before largest_fully_shortened.
-%   This has the consequence that one has to look up the rl_with information at the
-%   larger of both equations. But then, why not just storing this information only
-%   for the larger of both equations?
-%
-%    DONE:
-%    - When shortening a single equation wrt all others, then consider also longer equations
-%      which are less than 2 times as long as the equation to be shortened.
-%
-% - Because the order of pairing equations for shortening does depend on the number of terms
-%   and the place of the equation in the list pdes of equations, it should be fixed some
-%   time that when multi-term factors are dropped and the number of terms of the equation
-%   is dropped than they should get a new place in pdes, moving more to the start.
-%
-% - load trysub22
-%then do
-%
-% s 20 l 11 10 30 30 30 11 11 11 11 11 11 11 11 l 11 10 td 30)
-%
-%and get:
-%
-%next: tr_decouple is now on.
-%next: 30
-%
-%Step 41352:
-%*** Garbage collection starting
-%*** GC 679: 13-Jan-2008 02:09:54 (~ 11358250 ms cpu time, gc : 3 %)
-%*** time 1340 ms, 56164584 occupied, 318491626 recovered, 318491666 free
-%
-%  first pde e_1659:  6 terms, 28 factors, with derivatives
-% of functions of all variables:
-%
-%    3   2       2   7
-% (p9 ,p9 ,p9,p24 ,p3 ,p3)
-%
-%is not differentiated,  second pde e_837:  9 terms, 44 factors, with derivatives
-% of functions of all variables:
-%
-%    3   2       2   8   5   2
-% (p9 ,p9 ,p9,p24 ,p3 ,p3 ,p3 )
-%
-%is not differentiated, to eliminate
-%p9
-%
-%
-%e_1659 (resp its derivative) is multiplied with
-%***** Non-numeric argument in arithmetic
-%
-% - A serious problem is that numerical factors may grow too large.
-%   Maybe this is unavoidable. One should have a constant for the
-%   largest numerical factor so that one can change this easily.
-%
-% - Is there a bug when equations are shortened by 0 terms?
-%   Shall one ignore it, or use it for replacing the previous equation or add it?
-%
-% - Is it useful to add many short equations in order to reduce larger ones better?
-%
-% - maybe one should inspect new equations and stop shortening them it they have
-%   too long numerical coefficients? That would be better than trying to shorten
-%   this equation when there is not a chance anyway?
-%
-% - Or should one have a counter of how often a quotient is disregarded because of too
-%   large numerical coefficients and when this counter gets too large, then stop
-%   shortening this equation?
-%
-% - Larger equations are reduced for a while but then not anymore because their
-%   Num factors grow too large. But then they do not shrink and can not become
-%   very short to shorten other and/or to provide a breakthrough with very short
-%   equations.
-%
-% - When shortening a single equation, ak how often maximally.
-%
-%-----------------------------------------------------------------------------------
-%alg_length_reduction    % interface to crack
-%  err_catch_short       % wrap up
-%    mkeqSQ
-%    shorten_pdes        % find a pair of equations
-%      shorten           % shorten two pdes given by names with each other
-%			% returns a dotted pair, where car is a list of the values
-%                        % of new pdes (only one) and cdr is a list of names of pdes
-%                        % to be dropped (also only one)
-%        sort_partition  % in crint.red
-%        partition_1
-%        partition_2
-%        short
-%          clean_den(qc,j)$
-%            clean_num(qc,j)$
-%
-%
-%
-%alg_length_reduce_1  % Do one length-reducing combination of a single equation wrt all others
-%
-%  alg_length_reduction
-%
-%is_algebraic % very short test
-%
-%
-%drop_lin_dep(arglist)$       % module 12
-%% drops linear dependent equations
-%     Calls: drop_pde neq reval solveeval sort_partition !~prettyprint
-%
-%find_1_term_eqn(arglist)$    % module 13
-%% checks whether a linear combination of the equations can produce
-%% an equation with only one term
-%     Calls: aeval aeval!* assgnpri drop_pde mkeq neq reval
-%            solveeval sort_partition typeeq union !~prettyprint
-%
-%
-%tr alg_length_reduction
-%tr err_catch_short
-%tr mkeqSQ
-%tr shorten_pdes
-%tr shorten
-%tr sort_partition
-%tr short
-%tr clean_den
-%tr clean_num
-%
+-----------------------------------------------------------------------------------
+Possible Improvements:
+
+ - auch subtrahieren, wenn 0 Gewinn (Zyklus!)
+ - kann Zyklus mit decoupling geben
+ - Erweiterung auf mehrere Gleichungen
+ - counter example: 
+   0 = +a+b+c        
+   0 =   -b  +d+e
+   0 =     -c-d  +f
+   0 = -a      -e-f
+   combining any 2 gives a longer one, summing 3 an equally long one and 
+   the sum of all 4 is even zero.
+ - In order not to run into a cycle with decouple one could use
+   dec_hist_list but that costs memory.
+ ---------
+
+    DONE
+    - when a ftem_ function becomes non-zero then drop all equations from the rl_with lists
+      which involve this function
+
+    DONE:
+    - Another problem with allowing some non-zero multipliers and others not:
+      0 =   a +   b +   c +   d + g
+      0 = e*a + e*b + e*c + f*d
+      Here the SHORTER one could and should be replaced by 0 = f*d - e*d - e*g using
+      the longer first one.
+
+ - Parallelize the shortening
+ - It could be beneficial to produce and ADD new equations if they are short, eg
+   0 = a*g + a*h + b*c \____  b**2*c - a**2*c = c*(a-b)*(a+b) = 0
+   0 = b*g + b*h + a*c /
+   Disadvantage: Checking ALL quotients takes much longer.
+ - If a new equation is slightly longer than the one to be replaced (de2) then one
+   could ADD this new equation and mark it as redundant (and check whether it has
+   any useful properties, e.g. factorizability, involving only few ftem_, or being
+   an ODE when de1,de2 were PDEs.
+ - perhaps return in shorten() and shorten_pdes() only a single new and to delete PDE, 
+   not lists with each only one element
+ - One probably could speed up the shortening of homogeneous polynomials
+   if the degree of both polynomials are equal.
+   This would need a modification of partition_3 and inputting all 'fcts as
+   2nd parameter.
+ - test adding some extra length allowance to the new generated equation
+ - try take_first=t
+ - stop when take_first=nil and max_reduction = 2*min(n1,n2) is achieved
+
+    DONE:
+    - When one equation has no flin_ and the other has then treat both as having
+      no flin_.
+
+ - How can the knowledge of factors be used for shortening, especially if they
+   have more than one term?
+   E.g. if both equations have common factors, or one is factorizable and the other
+   not, or both are factorizable.
+ - Write procedures that plot the size of equations that were shortened over the step number,
+   and `number of terms in all equations' over 'length interval of equations'
+ - produce plots for different degrees of overdetermination.
+
+ - About rounding:
+   "also im lisp mode macht quotient einfach division ohne rest
+   und Ruecksicht auf Umstehende.Da ist ceiling auch simpel
+   gestrickt.Das macht das LISP system.
+
+   Im Algebraic mode ist das anders. Da machen quotient
+   und ceiling schon mehr.
+
+   Die Wandlung machst Du am einfachsten mit
+
+   simpquot '(quotient 4 5);
+
+   bzw round!* falls Du die nackte float haben willst.
+
+   round!*  '(!:rd!: . 0.8);
+   "
+ - The memory to store which equation has already been length reduced wrt to which
+   equation grows quadratically with the number of equations and becomes the more
+   serious the more equations one has. Perhaps one could delete all rl_with entries
+   of all equations coming in the list of equations before largest_fully_shortened.
+   This has the consequence that one has to look up the rl_with information at the
+   larger of both equations. But then, why not just storing this information only
+   for the larger of both equations?
+
+    DONE:
+    - When shortening a single equation wrt all others, then consider also longer equations
+      which are less than 2 times as long as the equation to be shortened.
+
+ - Because the order of pairing equations for shortening does depend on the number of terms
+   and the place of the equation in the list pdes of equations, it should be fixed some
+   time that when multi-term factors are dropped and the number of terms of the equation
+   is dropped than they should get a new place in pdes, moving more to the start.
+
+ - load trysub22
+then do
+
+ s 20 l 11 10 30 30 30 11 11 11 11 11 11 11 11 l 11 10 td 30)
+
+and get:
+
+next: tr_decouple is now on.
+next: 30
+
+Step 41352:
+*** Garbage collection starting
+*** GC 679: 13-Jan-2008 02:09:54 (~ 11358250 ms cpu time, gc : 3 %)
+*** time 1340 ms, 56164584 occupied, 318491626 recovered, 318491666 free
+
+  first pde e_1659:  6 terms, 28 factors, with derivatives
+ of functions of all variables:
+
+    3   2       2   7
+ (p9 ,p9 ,p9,p24 ,p3 ,p3)
+
+is not differentiated,  second pde e_837:  9 terms, 44 factors, with derivatives
+ of functions of all variables:
+
+    3   2       2   8   5   2
+ (p9 ,p9 ,p9,p24 ,p3 ,p3 ,p3 )
+
+is not differentiated, to eliminate
+p9
+
+
+e_1659 (resp its derivative) is multiplied with
+***** Non-numeric argument in arithmetic
+
+ - A serious problem is that numerical factors may grow too large.
+   Maybe this is unavoidable. One should have a constant for the
+   largest numerical factor so that one can change this easily.
+
+ - Is there a bug when equations are shortened by 0 terms?
+   Shall one ignore it, or use it for replacing the previous equation or add it?
+
+ - Is it useful to add many short equations in order to reduce larger ones better?
+
+ - maybe one should inspect new equations and stop shortening them it they have
+   too long numerical coefficients? That would be better than trying to shorten
+   this equation when there is not a chance anyway?
+
+ - Or should one have a counter of how often a quotient is disregarded because of too
+   large numerical coefficients and when this counter gets too large, then stop
+   shortening this equation?
+
+ - Larger equations are reduced for a while but then not anymore because their
+   Num factors grow too large. But then they do not shrink and can not become
+   very short to shorten other and/or to provide a breakthrough with very short
+   equations.
+
+ - When shortening a single equation, ak how often maximally.
+
+-----------------------------------------------------------------------------------
+alg_length_reduction    % interface to crack
+  err_catch_short       % wrap up
+    mkeqSQ
+    shorten_pdes        % find a pair of equations
+      shorten           % shorten two pdes given by names with each other
+			% returns a dotted pair, where car is a list of the values 
+                        % of new pdes (only one) and cdr is a list of names of pdes 
+                        % to be dropped (also only one)
+        sort_partition  % in crint.red
+        partition_1
+        partition_2
+        short
+          clean_den(qc,j)$
+            clean_num(qc,j)$
+
+
+
+alg_length_reduce_1  % Do one length-reducing combination of a single equation wrt all others
+
+  alg_length_reduction
+
+is_algebraic % very short test
+
+
+drop_lin_dep(arglist)$       % module 12
+% drops linear dependent equations
+     Calls: drop_pde neq reval solveeval sort_partition !~prettyprint 
+
+find_1_term_eqn(arglist)$    % module 13
+% checks whether a linear combination of the equations can produce
+% an equation with only one term
+     Calls: aeval aeval!* assgnpri drop_pde mkeq neq reval 
+            solveeval sort_partition typeeq union !~prettyprint 
+
+
+tr alg_length_reduction 
+tr err_catch_short      
+tr mkeqSQ
+tr shorten_pdes  
+tr shorten       
+tr sort_partition 
+tr short
+tr clean_den
+tr clean_num
+

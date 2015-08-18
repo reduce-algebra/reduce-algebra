@@ -30,44 +30,50 @@ module crackinit$
 %******************************************************************************
 
 % variables that can change during a computation, for example, interactively
-% and that are backed up in crackmain calls, i.e. they are ONLY passed on
+% and that are backed up in crackmain calls, i.e. they are passed on, NOT back
 
-pass_on:='( asymplis!* !*batch_mode !*complex !*iconic adjust_fnc alg_poly
-allflags_ auto_para_mode batchcount_ batch_mode_sub call_crack_out case_list
-choose_6_20_max_ftem choose_6_20_max_terms choose_27_8_16_max
-choose_30_47_21_max choose_70_65_8_47_origmem choose_70_65_8_47_origterms
-choose_70_65_8_47_ratiomem choose_70_65_8_47_ratioterms choose_30_47_72_eqn
-choose_11_30_max_11 choose_11_30_max_30 collect_sol confirm_subst cont_
-contradiction_ cost_limit5 depl!* crack_download_add crack_ini_file
-crack_load_command currently_to_be_substituted_in diffelim_steps eqn_input
-eqn_no eqname_ eqn_to_be_gen equations_file expert_mode explog_ facint_ fhom_
-flin_ fname_ fnew_ form_comp form_eqn_idx form_eqn_on_disk form_max_read
-freeabs_ freeint_ fsub_ ftem_ genint_ groeb_diff_max groeb_solve high_gensep
-idnties_ independence_ ineq_ ineq_or inter_divint keep_case_tree keep_parti
-kord!* largest_fully_shortened last_free_cells last_steps lazy_eval
-length_inc_alg length_inc_dec lex_df lex_fc lin_problem logoprint_ low_gensep
-max_coeff_len max_gc_elimin max_gc_fac max_gc_gb max_gc_int max_gc_minsub
-max_gc_ode max_gc_red_len max_gc_short max_gc_ss max_proc_no max_red_len
-maxalgsys_ max_term_to_fac_complex max_term_to_fac_real max_term_to_pred nequ_
-min_nu_of_eqn new_gensep odesolve_ paracrack_initialized poly_only potint_
-print_ print_all print_more proc_list_ process_counter pvm_able quick_decoup
-record_hist recycle_eqns recycle_fcts reduce_call repeat_mode safeint_ session_
-singular_call singular_lib singular_time size_watch solvealg_ stop_ 
+not_passed_back:='( asymplis!* !*batch_mode !*complex !*iconic adjust_fnc
+alg_poly allflags_ auto_para_mode batchcount_ batch_mode_sub
+call_crack_out case_list choose_6_20_max_ftem choose_6_20_max_terms
+choose_27_8_16_max choose_30_47_21_max choose_70_65_8_47_origmem
+choose_70_65_8_47_origterms choose_70_65_8_47_ratiomem
+choose_70_65_8_47_ratioterms choose_30_47_72_eqn choose_11_30_max_11
+choose_11_30_max_30 collect_sol confirm_subst cont_ contradiction_
+cost_limit5 depl!* crack_download_add crack_ini_file
+crack_load_command currently_to_be_substituted_in
+dec_depth_first_search diffelim_steps eqn_input eqn_no eqname_
+eqn_to_be_gen equations_file expert_mode explog_ facint_ fhom_ flin_
+fname_ fnew_ form_comp form_eqn_idx form_eqn_on_disk form_max_read
+freeabs_ freeint_ fsub_ ftem_ genint_ groeb_diff_max groeb_solve
+high_gensep idnties_ independence_ ineq_ ineq_or inter_divint
+keep_case_tree keep_parti kord!* largest_fully_shortened
+last_free_cells last_steps lazy_eval length_inc_alg length_inc_dec
+lex_df lex_fc lin_problem logoprint_ low_gensep max_coeff_len
+max_gc_elimin max_gc_fac max_gc_gb max_gc_int max_gc_minsub max_gc_ode
+max_gc_red_len max_gc_reval max_gc_short max_gc_ss max_proc_no
+max_red_len maxalgsys_ max_term_to_fac_complex max_term_to_fac_real
+max_term_to_pred nequ_ modular_comp new_gensep odesolve_
+paracrack_initialized poly_only potint_ print_ print_all print_more
+proc_list_ process_counter pvm_able quick_decoup record_hist
+recycle_eqns recycle_fcts reduce_call repeat_mode safeint_ session_
+singular_call singular_lib singular_time size_watch solvealg_ stop_
 struc_eqn subst_0 subst_1 subst_2 subst_3 subst_4 target_limit_0
-target_limit_1 target_limit_2 target_limit_3 time_ to_do_list tr_decouple
-tr_genint tr_gensep tr_main tr_orderings tr_short tr_redlength ud_1 ud_2 ud_3
-ud_4 userrules_ verify_end_of_parallel_run vl_)$
+target_limit_1 target_limit_2 target_limit_3 time_ to_do_list
+tr_decouple tr_genint tr_gensep tr_main tr_orderings tr_short
+tr_redlength ud_1 ud_2 ud_3 ud_4 userrules_ verify_end_of_parallel_run
+vl_)$
 
-% Variables in pass_back are backed up before recursive calls such that
+% Variables in passed_back are backed up before recursive calls such that
 % their value is available when reading a backup file with the rb 
 % command but when merging results from a sub-case (in restore_and_merge()
 % in crutil.red) then the current value from the sub-case computation
 % overwrites the backup value.
 
-pass_back:='(done_trafo history_ limit_time level_ nfct_ size_hist sol_list 
-             stepcounter_ time_limit inverse_trafo_list_incomplete)$
+passed_back:='(done_trafo history_ limit_time level_ nfct_ size_hist 
+             sol_list stepcounter_ time_limit inverse_trafo_list_incomplete 
+             sol_list_file_created)$
 
-COMMENT :
+comment :
 
 Variables not to be changed interactively are not updated:
    allflags_ crack_load_cmd default_proc_list_ full_proc_list_ 
@@ -76,10 +82,10 @@ Variables not to be changed interactively are not updated:
    algebraic mode: abs_ sqrt1_ sqrt2_ 
    trig1_ trig2_ trig3_ trig4_ trig5_ trig6_ trig7_ trig8_ 
    
-Variables in pass_on are needed in each case of a computation
+Variables in not_passed_back are needed in each case of a computation
 and they can be changed interactively but not to be passed back.
 Therefore they have to be backed up.
-Variables in pass_back can also be changed interactively but
+Variables in passed_back can also be changed interactively but
 are ment to be used continuously, so they are not backed up.
 
 These variables are separately backed up in crutil.red in backup_to_file()
@@ -94,14 +100,13 @@ adding their dependencies to the backup depl!*.
 
 An issue is that in parallel computations nothing is returned back
 currently (Sep 2003). This has consequences for each of the variables
-in pass_back.
+in passed_back.
 $
 
 global_list_integer := '(odesolve_ subst_0 subst_1 subst_2 subst_3
-   target_limit_0 target_limit_1 target_limit_2 cost_limit5 
-   max_gc_fac max_gc_gb max_gc_ode max_gc_red_len max_gc_short 
-   max_gc_ss  maxalgsys_ max_eqn_to_conti nfct_ nequ_ low_gensep 
-   high_gensep)$
+   target_limit_0 target_limit_1 target_limit_2 cost_limit5 max_gc_fac
+   max_gc_gb max_gc_ode max_gc_red_len max_gc_reval max_gc_short max_gc_ss
+   maxalgsys_ max_eqn_to_conti nfct_ nequ_ low_gensep high_gensep)$
 
 global_list_ninteger := '(genint_ facint_ new_gensep target_limit_0
    target_limit_1 target_limit_2 target_limit_3 print_ )$
@@ -130,13 +135,18 @@ begin
  %		    % for backup when case splitting
  setq(session_,bldmsg("%w%d-","bu",random 1000000));
 
+end$
+
+symbolic procedure start_sol_list_file$
+if null sol_list_file_created then begin
  % To allow parallel processes to add found solutions to the file
  % bu*sol_list, and because during adding this file does temporarily
  % not exist, the process which wants to add a solution name does have to
  % wait. If it failed to add the new solution name a couple of time it does
  % not know whether too many processes try to add solutions or whether the
- % bu*so_list file does not exist. Therefore the file bu*so_list has to be
- % created when session_ is assigned:
+ % bu*so_list file does not exist. Therefore there is the global variable
+ % sol_list_file_created necessary.
+ sol_list_file_created:=t$
  sol_list:=nil$
  save_sol_list()
 end$
@@ -155,20 +165,23 @@ reducefunctions_:=append(one_argument_functions_,
                          '(atan2 atan2d factorial plus difference df times 
                            quotient expt int))$
 
-allflags_:='(to_eval to_fullint to_int to_sep to_gensep to_casesep to_decoup 
-             to_diff to_under 
-             to_separant % =t if it is possible that the separant 
-               % (=df(eqn,lead_deriv)) vanishes, i.e. if it is known to 
-               % vanish or if nothing is known, i.e. =nil iff it is known 
-               % not to vanish. One would expect to give it 3 values: nil,0,1 
-               % for 'unknown, 'possibly_zero, 'non_zero but the value 0
-               % would constantly have to be set to nil when inequalities
-               % are updated, so the value 0 would be equivalent to nil
-               % which is why to_separant is chosen to be a flag which is
-               % still dependent on the ordering. Furthermore, in the
-               % March 07 version of dec.red when the separant is computed
-               % and found to be possibly zero then its vanishing is
-               % instantly investigated as a case next.
+allflags_:='(to_eval to_fullint to_int to_sep to_casesep to_gensep
+             to_casegensep to_decoup to_diff to_under 
+             to_separant % = t if it is possible that the separant 
+               % (=df(eqn,lead_deriv)) vanishes, i.e. if it is known
+               % that it could vanish or if nothing is known,
+               % i.e. =nil iff it is known not to vanish. One would
+               % expect to give it 3 values: nil,0,1 i.e. 0 for
+               % 'unknown, t for 'possibly_zero, nil for 'non_zero but
+               % the value 0 would constantly have to be set to nil
+               % when inequalities are updated, so the value 0 would
+               % be equivalent to nil which is why to_separant is
+               % chosen to be a flag which is still dependent on the
+               % ordering. Furthermore, in the March 07 version of
+               % dec.red when the separant is computed and found to be
+               % possibly zero then its vanishing is instantly
+               % investigated as a case next.
+
             )$
 
 % Most of the following properties are assigned in updateSQ() in crutil.red
@@ -223,13 +236,15 @@ prop_list:='(sqval  % the value of the equation in SQ form, always assigned
              rational    % list of all rationally occuring functions
              nonrational % list of all non-rationally occuring functions
              allvarfcts  % list of functions of all indep. variables
-             starde      % =nil if at lest one function of 'fcts depends 
-                         % on all variables 'vars, otherwise =(v . n) with 
-                         % v being a list of variables on which the fewest number of
-                         % functions depend on and n is that number of functions
+             starde      % =nil if at lest one function of 'fcts depends on
+                         % all variables 'vars, otherwise ={(n1 . v1),(n2 . v2),..}
+                         % with vi being a variable and ni the number of functions
+                         % that depend on vi but only if ni<# of all variables in eqn.
+                         % and sorted by n1<=n2<=n3<=..
              dec_with    % list of equations this equation has been paired with under 30
              dec_with_rl % list of equations this equation has been paired with under 27
              rl_with     % list of equations this equation has been paired with under 11
+             res_with    % list of equations this equation has been paired with under 86
              hom_deg     % = {total degree of flin_ functions, 
                          %    total degree of all other functions}
              split_test  % =nil if not tested, =1 iff all factors=0 yield 
@@ -239,7 +254,9 @@ prop_list:='(sqval  % the value of the equation in SQ form, always assigned
              not_to_eval % if not nil then a list of unknows which should not be 
                          % eliminated and substituted using this equation
              case2sep    % either nil or a standard quotient expression which if known to
-                         % be non-zero will lead to separations
+                         % be non-zero will lead to direct separation because then this
+                         % standard quotient is the only kernel depending on some 
+                         % independent variable
              %orderings   % list of orderings where the equations are valid
              %            % currently = list(0),  inactive
              % degrees
@@ -334,6 +351,10 @@ full_proc_list_:='(to_do                      % 1
                    solution_check3            % 82
                    sublinfct                  % 83
                    case_gen_separation        % 84
+                   replace_equation           % 85
+                   do_one_resultant           % 86
+                   inhom_decoupling           % 87
+                   linearize_bi_lin           % 88
                   )$ 
 
 for h:=1:length(full_proc_list_) do put(nth(full_proc_list_,h),'no,h)$
@@ -356,11 +377,11 @@ default_proc_list_:='(to_do
 		     subst_level_4
 		     gen_separation 
                      case_separation
+                     case_gen_separation
 		     integration             
 		     diff_length_reduction
 		     decoupling
                      undetlinode               
-		     add_diff_ise
                      try_other_ordering
 		     alg_solve_single
 		     undo_subst_derivative
@@ -398,8 +419,8 @@ put('lin_test_const,'description,list("a global variable used to determine linea
 put('max_eqn_to_conti,'description,list("the maximal number of equations to continue in batch_mode (automatic execution)"))$
 put('one_argument_functions,'description,list("list of functions iin REDUCE with one argument"))$
 put('paracrack_initialized,'description,list("=t if file .reducerc initializes parallelization"))$
-put('pass_on,'description,list("variable names whos values are only passed on to subcalls of crackmain"))$
-put('pass_back,'description,list("variable names with values passed back from subcalls of crackmain"))$
+put('not_passed_back,'description,list("variable names whos values are only passed on to subcalls of crackmain"))$
+put('passed_back,'description,list("variable names with values passed back from subcalls of crackmain"))$
 put('prop_list,'description,list("list of properties of equations"))$
 put('pvm_able,'description,list("flag whether current session runs in Parallel-Reduce"))$
 put('recycle_eqns,'description,list("list of re-usable equation names previously in use"))$
@@ -415,11 +436,24 @@ put('userrules_,'description,list("list of user defined LET-rules"))$
 put('vl_,'description,list("list of independent variables"))$
 put('default_proc_list_,'description,list("default priority list of procedures"))$
 
-verify_end_of_parallel_run:=t$ put('verify_end_of_parallel_run,'description,list("whether at the end a parallel run shall stop to verify the thhat all went well"))$
+verify_end_of_parallel_run:=t$ put('verify_end_of_parallel_run,'description,list("whether at the end a parallel run shall stop to verify the that all went well"))$
 
 proc_list_:=default_proc_list_$  put('proc_list_,'description,list("priority list of procedure in use"))$
 
-!*uncached:=t$     put('!*uncached,'description,list("if nil then any long computations with >10,000 algebraic mode steps or expressions read from files become extremely slow"))$
+!#if (memq 'csl lispsystem!*) 
+!*uncached:=nil$ % CSL uses a hash table and has an access time O(1)
+!#else
+!*uncached:=t$   % PSL uses an association list and has an access time O(n)
+% If there are very many assignments, like reading in millions of (short)
+% expressions from a file then !*uncached:=t is important otherwise even
+% shortest assignments take longer and longer.
+% On the other hand, there is a call of liepde where !*uncached:=nil
+% is necessary as otherwise reval and aeval of already simplified expressions
+% (lists of equations) take very long. A better strategy may be to have also
+% under PSL !*uncached:=nil and to set it to t only in very long computations.
+!#endif
+
+put('!*uncached,'description,list("if nil then any long computations with >10,000 algebraic mode steps or expressions read from files become extremely slow"))$
 
 !*batch_mode:=t$   put('!*batch_mode,'description,list("running crack in batchmode"))$
 
@@ -470,6 +504,8 @@ my_gc_counter:=0$  put('my_gc_counter,'description,list("initialization of my_gc
 
 max_gc_counter:=100000000$put('max_gc_counter,'description,list("max. number of garbage collections"))$
 
+max_gc_reval:=1$   put('my_gc_reval,'description,list("maximal number of garbage collections for simplification"))$
+
 max_gc_short:=40$  put('max_gc_short,'description,list("maximal number of garbage collections during shortening"))$
 
 max_gc_ss:=10$     put('max_gc_ss,'description,list("maximal number of garbage collections during search of sub_systems"))$
@@ -491,6 +527,8 @@ max_red_len:=1000000$  put('max_red_len,'description,list("max product of length
 max_eqn_to_conti:=0$ put('max_eqn_to_cont,'description,list("used in stop_batch() to stop only if more than max_eqn_to_conti equations are unsolved"))$
 
 max_gc_int:=1$     put('max_gc_int,'description,list("maximal number of garbage collections during integration"))$
+
+modular_comp:=nil$ put('modular_comp,'description,list("whether numerical coefficients in equations shall be computed modulo a prime number"))$
 
 subst_0:=2$        put('subst_0,'description,list("maximal printlength of an expression to be substituted in substitutions using this parameter"))$
 
@@ -623,8 +661,12 @@ groeb_solve:='reduce$  put('groeb_solve,'description,list("which Groebner packag
  'GB_REVGRAD for Faugere's GB in mode 'revgradlex
  'REDUCE  for the REDUCE package groebnerf"))$
 
-last_free_cells:=if boundp 'gcfree!* then gcfree!* 
-                                     else known!-free!-space()$
+!#if (memq 'psl lispsystem!*)
+ last_free_cells:=if boundp 'gcfree!* then gcfree!*               % for 32 bit PSL
+                                      else known!-free!-space()$  % for 32 bit PSL and 64 bit PSL
+!#else
+ last_free_cells:=1000000$ % just a high value, not updated under redcsl as heap is extended dynamically
+!#endif
 put('last_free_cells,'description,list("free cells after last garbage collections"))$
 
 choose_6_20_max_ftem:=20$   put('choose_6_20_max_ftem,'description,list("parameter in choose_6_20 when to switch between 6 and 20"))$
@@ -686,7 +728,7 @@ process_counter:="no_of_processes"$  put('process_counter,'description,list("nam
 
 max_proc_no:=5$       put('max_proc_no,'description,list("maximum number of parallel processes"))$
 
-batch_mode_sub:=t$    put('batch_mode_sub,'description,list("whether sub-calls of crack() should have batch_mode=t or nil. Such calls occur in find_trafo()/crtrafo.red, in dropredund(0)/crsimpso.red and solution_check1"))$
+batch_mode_sub:=t$  put('batch_mode_sub,'description,list("whether sub-calls of crack() should have batch_mode=t or nil. Such calls occur in find_trafo()/crtrafo.red, in dropredund(0)/crsimpso.red and solution_check1"))$
 
 max_term_to_fac_complex:=8$  put('max_term_to_fac_complex,'description,list("maximal number of terms to be factorized properly and automatically in updatesq() and simplifySQ()"))$
 
@@ -718,7 +760,31 @@ switch_list:=nil$     put('switch_list,'description,list("a list of switches cha
 
 para_case_dir:=""$    put('para_case_dir,'description,list("the directory in which the initialization files for all cases of a parallel computation shall be stored, this should be long enough until all cases are solved, if necessary in later runs, """" = current directory, =""/scratch/twolf/""$  on SharcNet"))$
 
-!*notseparate:=t$     put('!*notseparate,'description,list("This is a REDUCE flag which now prevents the simplification of x**(5/4) to x**(1/4)*x. Preventing this simplification is necessary for simplifications of, for example, (x**(5/4))**(4/5) to abs(x) {or x if let rule abs_ is active}. The disadvantage of !*notseparate:=t is that factorize (a*x**(5/4)+b*x); would not get x as a factor, but on combineexpt; does get the factorization right."))$
+!*notseparate:=t$     put('!*notseparate,'description,list("This is a REDUCE flag which when =t prevents the simplification of x**(5/4) to x**(1/4)*x. The default value of !*notseparate in REDUCE is nil. !*notseparate=t is necessary for simplifications of, for example, (x**(5/4))**(4/5) to abs(x) {or x if let rule abs_ is active}. The disadvantage of !*notseparate:=t is that factorize (a*x**(5/4)+b*x); would not get x as a factor, but on combineexpt; does get the factorization right. !*notseparate=t has the disadvantage that together with OFF COMBINEEXPT it will not recognize u**(3/2)-u*sqrt(u) as zero which can have catastrophic consequences."))$
+
+% off combineexpt$ 
+%
+% lisp(!*notseparate:=nil)$
+% u**(3/2)-u*sqrt(u);     --->   0
+% (x**(5/4))**(4/5) - x;  --->   (x**(1/4)*x)**(4/5) - x
+%
+% lisp(!*notseparate:=t)$
+% u**(3/2)-u*sqrt(u);     --->   sqrt(u)*(u - u)
+% (x**(5/4))**(4/5) - x;  --->   0
+%
+% on combineexpt$
+%
+% lisp(!*notseparate:=nil)$
+% u**(3/2)-u*sqrt(u);     --->   - u**(3/2) + u**(3/2)
+% (x**(5/4))**(4/5) - x;  --->   0
+%
+% lisp(!*notseparate:=t)$
+% u**(3/2)-u*sqrt(u);     --->   - u**(3/2) + u**(3/2)
+% (x**(5/4))**(4/5) - x;  --->   0
+
+
+version_date:="2015-08-17"$
+put('!*notseparate,'description,list("Date of last change."))$
 
 algebraic(off combineexpt)$ % put(','description,list(""))$
    %  see the above !*notseparate:=t$ assignment
@@ -729,14 +795,20 @@ algebraic(off combineexpt)$ % put(','description,list(""))$
    %  WARNING:  off combineexpt  has the effect that
    %  a:=( - 4*f1 + 4*f2 + 2*(f1 - f2))/(f1 - f2);
    %  is not simplified. (as of 28.4.2012)
+   %  or simpler: u**(3/2)-u*sqrt(u); is not zero as of 16.7.2014
+   %  when crack is loaded. The consequence of this error is catastrophic when
+   %  the coefficient of a function to be substituted is zero and then when
+   %  dividing through the coefficient gives 'Division by zero'.
    %
    %  The problem with ON COMBINEEXPT may be overcome with ON EZGCD
    %  as it is GCD related. An example where ON COMBINEEXPT fails is
    %  stored in the file ONCOMBINEEXPT-BUG
 
-currently_to_be_substituted_in:=nil$ put('currently_to_be_substituted_in,'description,list("The latest/largest equation in the list pdes of equations (when starting to count from the shortest) in which all possible substitutions of shorter equations have been done that do not lead to case distinctions (this variable was previously not in the list pass_on.)"))$
+currently_to_be_substituted_in:=nil$ put('currently_to_be_substituted_in,'description,list("The latest/largest equation in the list pdes of equations (when starting to count from the shortest) in which all possible substitutions of shorter equations have been done that do not lead to case distinctions (this variable was previously not in the list not_passed_back.)"))$
 
 put('sol_list,'description,list("list of file names each containing a solution"))$
+
+put('sol_list_file_created,'description,list("Whether a file listing all solution names has been created"))$
 
 reduce_call:=nil$     put('reduce_call,'description,list("The call of the current REDUCE session. In PSL-REDUCE this is stored in unixargs!* but not in CSL-REDUCE. It is needed to start parallel sessions."))$
 
@@ -748,11 +820,13 @@ singular_time:=20$    put('singular_time,'description,list("CPU time limit for a
 
 diffelim_steps:=10000$ put('diffelim_steps,'description,list("number of steps to be done in DiffElim"))$
 
-lazy_eval:=t$         put('lazy_eval,'description,list("In large non-linear calculations with many variables and many sub-cases which mostly have no solution a lot of time is wasted by substitutions being performed in forg when the case afterall has no solution. If lazy_eval=t then these substitutions are collected in fsub_ until a solution has been found and then they are performed. fsub_ has the form {(f . {'!*SQ,SQ,t})[,..]} Before a call of dropredundant() substitutions should have been made for dropredundant() to be efficient."))$
+lazy_eval:=nil$         put('lazy_eval,'description,list("In large non-linear calculations with many variables and many sub-cases which mostly have no solution a lot of time is wasted by substitutions being performed in forg when the case afterall has no solution. If lazy_eval=t then these substitutions are collected in fsub_ until a solution has been found and then they are performed. fsub_ has the form {(f . {'!*sq,SQ,t})[,..]} Before a call of dropredundant() substitutions should have been made for dropredundant() to be efficient."))$
 
 keep_case_tree:=t$    put('keep_case_tree,'description,list("whether the procedure CaseTree in crutil.red shall maintain a file ct??????- which stores and updates the tree of cases for re-starts."))$
 
-min_nu_of_eqn:=nil$   put('min_nu_of_eqn,'description,list("in decoupling: if t then prefer to start a case distinction rather than to add additional equations"))$
+dec_depth_first_search:=t$ put('dec_depth_first_search,'description,list("in decoupling: if t then the strategy is to make progress in lowering derivative no matter what the cost which is good if there are non-trivial solutions, i.e. there is a non-trivial differential Groebner Basis. Then adding more and more equations would not help. dec_depth_first_search=t alsso implies that any case distinctions are made to pair the 2 equations with the lowest degree of the least priority leading derivatives of the highest ranked functions."))$
+
+real_valued:=nil$     put('real_valued,'description,list("=t iff all unknowns and paprmeters and variables are real valued. Then all terms of a polynomial are set to zero if all exponents are even and coefficients are positive."))$
 
 %--------- Adding descriptions of methods 
 
@@ -948,6 +1022,14 @@ put('sublinfct,'description,
     list("Absorb non-linear factors in linear unknowns"))$
 put('case_gen_separation,'description,
     list("Normal generalized separation that may lead to case distinctions"))$
+put('replace_equation,'description,
+    list("Module induced replacement or adding of an equation"))$
+put('do_one_resultant,'description,list("Compute a resultant"))$
+put('inhom_decoupling,'description,
+    list("Decoupling of inhom. equations in otherwise homog. system"))$
+put('linearize_bi_lin,'description, 
+    list("Converting a homog. quadr. system into a lin. one of all products"))$
+
  % Check the installation of FORM
  % If later on : if form_comp and form_pipe then ./form_start
  % must start FORM.
@@ -957,6 +1039,150 @@ put('case_gen_separation,'description,
  % Check for 32-64 bit system
  % if and(member('csl,lispsystem!*), member('sixty!-four,lispsystem!*)) or
  %    and(member('psl,lispsystem!*), betap lshift(1,20)) then 64 else 32$
+
+%--------- Adding descriptions of methods 
+
+ put('i_hd,'description,list("Help to inspect data"))$
+ put('i_hp,'description,list("Help to proceed"))$
+ put('i_hf,'description,list("Help to change flags & parameters"))$
+ put('i_hc,'description,list("Help to change data of equations"))$
+ put('i_hi,'description,list("Help to work with identities"))$
+ put('i_hb,'description,list("Help to trace, debug and configure"))$
+ put('i_hl,'description,list("Help to duplicate and parallelize runs"))$
+ put('i_he,'description,list("Help to use external systems"))$
+
+ put('i_e ,'description,list("Print equations"))$
+ put('i_eo,'description,list("Print overview of functions in equations"))$
+ put('i_pi,'description,list("Print inequalities"))$
+ put('i_f ,'description,list("Print functions and variables"))$
+ put('i_v ,'description,list("Print all derivatives of all functions"))$
+ put('i_s ,'description,list("Print statistics"))$
+ put('i_fc,'description,list("Print no of free cells"))$
+ put('i_pe,'description,list("Print an algebraic expression"))$
+ put('i_ph,'description,list("Print history of interactive input"))$
+ put('i_pv,'description,list("Print value of any lisp variable"))$
+ put('i_pf,'description,list("Print no of occurences of each function"))$
+ put('i_po,'description,list("Print no of occurences of each factor"))$
+ put('i_pu,'description,list("Print no of occurences of each coefficient"))$
+ put('i_pr,'description,list("Print active substitution rules"))$
+ put('i_pd,'description,list("Plot the occurence of functions in equations"))$
+ put('i_ps,'description,list("Plot a statistical history"))$
+ put('i_lc,'description,list("List all case distinctions"))$
+ put('i_ca,'description,list("List all current case assumptions"))$
+ put('i_ws,'description,list("Write statistical history in file"))$
+ put('i_sn,'description,list("Show name of session"))$
+ put('i_ss,'description,list("Find and print sub-systems"))$
+ put('i_w ,'description,list("Write equations into a file"))$
+
+ put('i_a ,'description,list("Do one step automatically"))$
+ put('i_g ,'description,list("Go on for a number of steps automatically"))$
+ put('i_t ,'description,list("Toggle equation selection between AUTOMATIC and USER"))$
+ put('i_p1,'description,list("Print a list of all modules in batch mode"))$
+ put('i_p2,'description,list("Print a complete list of all modules"))$
+ put('i_!#,'description,list("Execute the module with the number # once"))$
+ put('i_l ,'description,list("Execute a specific module repeatedly"))$
+ put('i_sb,'description,list("Save complete backup to file"))$
+ put('i_rb,'description,list("Read backup from file"))$
+ put('i_bm,'description,list("Remove file stop_now to allow batch mode"))$
+ put('i_an,'description,list("Add non-triviality conditions for param. lin. sys."))$
+ put('i_rs,'description,list("Compute resultant of two polynomials"))$
+ put('i_x ,'description,list("Exit interactive mode for good"))$
+ put('i_q ,'description,list("Quit level or quit crack if in level 0"))$
+ put('i_qh,'description,list("Quit level hard and drop solutions"))$
+
+ put('i_pl,'description,list("Set maximal length of an expression to be printed"))$ % print_
+ put('i_pm,'description,list("Toggle extended printing about the success of methods ON/OFF"))$ % print_more
+ put('i_pa,'description,list("Toggle full printing of properties of equations with e-command ON/OFF"))$ % print_all
+ put('i_cp,'description,list("Change the priorities of procedures"))$ 
+ put('i_og,'description,list("Toggle decoupling priority between functions and derivativs"))$ % lex_fc
+ put('i_od,'description,list("Toggle decoupling priority between total and lex. ordering of derivatives"))$ % lex_df
+ put('i_oi,'description,list("Interactive change of lex. ordering on variables"))$ 
+ put('i_or,'description,list("Reverse the lex. ordering of independent variables"))$
+ put('i_om,'description,list("Mix randomly lex. ordering of independent variables"))$
+ put('i_of,'description,list("Interactive change of ordering on functions"))$
+ put('i_op,'description,list("Print current ordering"))$
+ put('i_ne,'description,list("Set root of the name of newly generated equations"))$ % eqname_
+ put('i_nf,'description,list("Set root of the name of newly generated functions/constants"))$ % fname_
+ put('i_ni,'description,list("Set root of the name of newly generated identities"))$ % idname_
+ put('i_na,'description,list("Toggle output between natural and machine readable"))$
+ put('i_as,'description,list("Making an assignment"))$
+ put('i_ke,'description,list("Toggle between keeping and not keeping a partitioned copy of each equation"))$ % keep_parti
+ put('i_fi,'description,list("Toggle between allowing and forbidding unresolved integrals"))$ % freeint_
+ put('i_fa,'description,list("Toggle between allowing and forbidding solutions of ODEs with ABS()"))$ % freeabs_
+ put('i_cs,'description,list("Toggle between interactive and automatic selection of substitutions"))$ % confirm_subst
+ put('i_fs,'description,list("Toggle between enforcing and not enforcing direct separation"))$ % force_sep
+ put('i_ll,'description,list("Changing the line length"))$
+ put('i_re,'description,list("Toggle between re-cycling and not re-cycling equation names"))$ % do_recycle_eqn
+ put('i_rf,'description,list("Toggle between re-cycling and not re-cycling function names"))$ % do_recycle_fnc
+ put('i_st,'description,list("Setting a CPU time limit for un-interrupted run"))$
+ put('i_cm,'description,list("Adding a comment to the history_ list"))$
+ put('i_lr,'description,list("Adding a LET-rule"))$
+ put('i_cr,'description,list("Clearing a LET-rule"))$
+ put('i_mo,'description,list("Starting/stopping modulo computations"))$
+ put('i_ap,'description,list("Adapting the priority of modules to the type of system to be solved"))$
+ put('i_ho,'description,list("Find all homogeneities of the system"))$
+
+ put('i_r,'description,list("Replace or add one equation"))$
+ put('i_rd,'description,list("Reduce an equation modulo LET rules"))$
+ put('i_n,'description,list("Add one inequality"))$
+ put('i_de,'description,list("Delete equations"))$
+ put('i_di,'description,list("Delete one inequality"))$
+ put('i_c,'description,list("Change a flag or property of one pde"))$
+ put('i_pt,'description,list("Perform a transformation of functions and variables"))$
+
+ put('i_i,'description,list("Print identities between equations"))$
+ put('i_id,'description,list("Delete redundand equations"))$
+ put('i_iw,'description,list("Write identities to a file"))$
+ put('i_ir,'description,list("Remove list of identities"))$
+ put('i_ia,'description,list("Add or replace an identity"))$
+ put('i_ih,'description,list("Start recording histories and identities"))$
+ put('i_is,'description,list("Stop recording histories and identities"))$
+ put('i_ii,'description,list("Integrate an identity"))$
+ put('i_ic,'description,list("Check the consistency of identity data"))$
+ put('i_iy,'description,list("Print the history of equations"))$
+
+ put('i_tm,'description,list("Toggle tracing of main procedure"))$
+ put('i_tg,'description,list("Toggle tracing of generalized separation"))$
+ put('i_ti,'description,list("Toggle tracing of generalized integration"))$
+ put('i_td,'description,list("Toggle tracing of decoupling process"))$
+ put('i_tl,'description,list("Toggle tracing of length reducing decoupling"))$
+ put('i_ts,'description,list("Toggle tracing of algebraic length reduction"))$
+ put('i_to,'description,list("Toggle tracing of ordering process"))$
+!#if (memq 'psl lispsystem!*)
+ put('i_tr,'description,list("Trace an arbitrary procedure"))$
+!#endif
+ put('i_ut,'description,list("Untrace a procedure"))$
+ put('i_br,'description,list("Break"))$
+ put('i_pc,'description,list("Do a function call"))$
+ put('i_in,'description,list("Reading in a REDUCE file"))$
+ put('i_cu,'description,list("Check uniqueness of all standard quotients"))$
+ put('i_qt,'description,list("Choose functions to profile"))$
+ put('i_pq,'description,list("Show profiling result"))$
+ put('i_so,'description,list("Turn a switch ON"))$
+ put('i_sf,'description,list("Turn a switch OFF"))$
+ put('i_ls,'description,list("List REDUCE switch settings"))$
+ put('i_lg,'description,list("List global CRACK variables"))$
+ put('i_dc,'description,list("Describe command|module|global variable"))$
+
+ put('i_xp,'description,list("Duplicate process under new xterm"))$
+ put('i_sp,'description,list("Duplicate process under new screen"))$
+ put('i_jp,'description,list("Duplicate process submitted as offline job"))$
+ put('i_pp,'description,list("Duplicate process under PVM"))$
+ put('i_wp,'description,list("Perform parallel case solving with xterm's"))$
+ put('i_yp,'description,list("Perform parallel case solving with screen's"))$
+ put('i_zp,'description,list("Perform parallel case solving with jobs"))$
+ put('i_vp,'description,list("Perform parallel case solving under PVM"))$
+ put('i_np,'description,list("Set counter of parallel processes to zero"))$
+ put('i_mp,'description,list("Specify max. number of parallel processes"))$
+ put('i_tp,'description,list("Specify directory for storing cases"))$
+ put('i_dp,'description,list("Disable parallel case solving"))$
+
+ put('i_fo,'description,list("Select FORM for computing S-polynomials"))$
+ put('i_ff,'description,list("Do not use FORM"))$
+ put('i_gs,'description,list("Select Singular for Groebner bases"))$
+ put('i_gg,'description,list("Select GB package of J.C.Faugere for Groebner b."))$
+ put('i_gr,'description,list("Select REDUCE package for Groebner bases"))$
+ put('i_df,'description,list("Select DiffElim for diff. Groebner bases"))$
 
  ini_let_rules()
 

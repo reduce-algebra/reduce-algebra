@@ -134,12 +134,12 @@ begin scalar h1,h2,deril,complaint,eqlist,ulist,ls,rs$
   ls:=simp cadr  e1;
   rs:=simp caddr e1;
   deril:=cons(
-  cons(                                         % lhs as {'!*SQ,..,t}
-       append(all_deriv_search_sf(numr ls,ulist),   
-              all_deriv_search_sf(denr ls,ulist) ),   
-                                                % rhs as {'!*SQ,..,t}
-       append(all_deriv_search_sf(numr rs,ulist),
-              all_deriv_search_sf(denr rs,ulist) ) ),  deril)
+  cons(                                         % lhs as {'!*sq,..,t}
+       append(all_deriv_search_SF(numr ls,ulist),   
+              all_deriv_search_SF(denr ls,ulist) ),   
+                                                % rhs as {'!*sq,..,t}
+       append(all_deriv_search_SF(numr rs,ulist),
+              all_deriv_search_SF(denr rs,ulist) ) ),  deril)
  >>;
 
  %--- Is for any equation a derivative on the rhs equal to the lhs
@@ -204,7 +204,7 @@ end$ % of listdifdif2
 % begin scalar a;
 %  a:=ldifftot(reval p,reval f);
 %  return
-%  cons(eval(cons('PLUS,ldiff1(car a,fctargs reval f))), cdr a)
+%  cons(eval(cons('plus,ldiff1(car a,fctargs reval f))), cdr a)
 % end$
 
 %-------------
@@ -450,7 +450,12 @@ begin scalar f,n,d,deltali,subli,lhs,rhs,cof,x,y,cpy,newpl,lowd,su,vle,
     su:=if lowd then {'times,cof,cons('df,cons(f,lowd))}
 		else {'times,cof,              f       }$
 
-    plist:=cons(reval reval {'difference,car plist,{'df,su,x}},cdr plist);
+    % plist:=cons(reval reval {'difference,car plist,{'df,su,x}},cdr plist); 
+    % 16 Aug 2015: one reval is dropped in the hope that either a fix
+    % has been made in REDUCE so that 2 x reval is not necessary
+    % anymore or that an example is found which makes 2 x reval
+    % necessary.
+    plist:=cons(reval {'difference,car plist,{'df,su,x}},cdr plist);
     while newpl do <<
      plist:=cons(car newpl,plist)$
      newpl:=cdr newpl
@@ -464,7 +469,12 @@ begin scalar f,n,d,deltali,subli,lhs,rhs,cof,x,y,cpy,newpl,lowd,su,vle,
      plist:=cdr plist;
      cpy:=cdr cpy
     >>$
-    plist:=cons(reval reval {'plus,car plist,{'df,su,y}},cdr plist);
+    % plist:=cons(reval reval {'plus,car plist,{'df,su,y}},cdr plist);
+    % 16 Aug 2015: one reval is dropped in the hope that either a fix
+    % has been made in REDUCE so that 2 x reval is not necessary
+    % anymore or that an example is found which makes 2 x reval
+    % necessary.
+    plist:=cons(reval {'plus,car plist,{'df,su,y}},cdr plist);
     while newpl do <<
      plist:=cons(car newpl,plist)$
      newpl:=cdr newpl
@@ -492,7 +502,12 @@ begin scalar f,n,d,deltali,subli,lhs,rhs,cof,x,y,cpy,newpl,lowd,su,vle,
  idty:={'difference,idty,{'df,nth(plist,n),nth(xlist,n)}}$
  % 4. separate idty into conditions with multiplicities
  sbrev:=cons('list,for each d in cdr sb collect {'equal,caddr d,cadr d})$
- idty:=reval reval idty$
+ % idty:=reval reval idty$
+ % 16 Aug 2015: one reval is dropped in the hope that either a fix
+ % has been made in REDUCE so that 2 x reval is not necessary
+ % anymore or that an example is found which makes 2 x reval
+ % necessary.
+ idty:=reval idty$
  dno:=algebraic den idty;
  if dno neq 1 then idty:=algebraic num idty$
 
@@ -655,12 +670,22 @@ begin scalar f,n,d,deltali,subli,lhs,rhs,cof,x,y,cpy,newpl,lowd,su,vle,
    if car d = nil then <<
     cof:=coeffn(y,car cpy,1);
     rhs:={'plus,{'times,x,cof,car cpy},rhs};
-    y:=reval reval {'difference,y,{'times,cof,car cpy}}
+    % y:=reval reval {'difference,y,{'times,cof,car cpy}}
+    % 16 Aug 2015: one reval is dropped in the hope that either a fix
+    % has been made in REDUCE so that 2 x reval is not necessary
+    % anymore or that an example is found which makes 2 x reval
+    % necessary.
+    y:=reval {'difference,y,{'times,cof,car cpy}}
    >>             else <<
     cof:=coeffn(y,cons('df,cons(car cpy,car d)),1);
     rhs:=reval {'plus,rhs,{'times,cons('df,cons({'times,x,cof},car d)),
                                   car cpy,{'expt,{'minus,1},absodeg(car d)}}};
-    y:=reval reval {'difference,y,{'times,cof,cons('df,cons(car cpy,car d))}}
+    % y:=reval reval {'difference,y,{'times,cof,cons('df,cons(car cpy,car d))}}
+    % 16 Aug 2015: one reval is dropped in the hope that either a fix
+    % has been made in REDUCE so that 2 x reval is not necessary
+    % anymore or that an example is found which makes 2 x reval
+    % necessary.
+    y:=reval {'difference,y,{'times,cof,cons('df,cons(car cpy,car d))}}
    >>
   >>
  >>$

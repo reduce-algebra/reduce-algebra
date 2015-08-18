@@ -99,9 +99,11 @@ begin scalar ft,a,fl,li,nc,nl,f,cpf,fv,fc,f_is_in_flin,flin_sub_found$
       >>
     >>$
     li:=nc:=nl:=nil$
-    for each f in ft do        
+    for each f in ft do 
+    if null member(f,get(p,'not_to_eval)) then % i.e. not a function just
+                                       % introduced through this equation
     if alg_linear_fct(p,f) then % i.e. only linear algebr. fcts
-    if (null flin_) or 
+    if confirm_subst or (null flin_) or 
        <<f_is_in_flin:=member(f,flin_)$
          if flin_sub_found and null f_is_in_flin then nil 
                                                  else <<
@@ -123,7 +125,7 @@ begin scalar ft,a,fl,li,nc,nl,f,cpf,fv,fc,f_is_in_flin,flin_sub_found$
                                       else simp a;
       if null (fl:=smemberl(delete(f,get(p,'fcts)),a)) then 
       li:=cons(cons(a,f),li)                           else
-      if can_not_become_zerosq(a,fl) then nc:=cons(cons(a,f),nc)
+      if can_not_become_zeroSQ(a,fl) then nc:=cons(cons(a,f),nc)
                                      else nl:=cons(cons(a,f),nl)
     >>$
 
@@ -248,7 +250,7 @@ begin scalar p,q,h,l1,l2,m,ntms,mdu,ineq_cp,rtn,lcop,fcteval_cop,necount,
       ineq_cp:=ineq_; ineq_:=nil;
       % partition of get(s,'fcteval_nli) into the above 4 cases
       for each l2 in h do <<
-        q:=mkeqsq(car l2,nil,nil,get(s,'fcts),get(s,'vars),allflags_,
+        q:=mkeqSQ(car l2,nil,nil,get(s,'fcts),get(s,'vars),allflags_,
 		  t,list(0),nil,nil);
 	% the pdes-argument in mkeqSQ() is nil to avoid lasting effect on pdes
 	necount:=add1 necount$
@@ -360,17 +362,47 @@ begin scalar p,q,h,l1,l2,m,ntms,mdu,ineq_cp,rtn,lcop,fcteval_cop,necount,
   >>
 end$
 
+symbolic procedure total_deg_of_first_tm(sf)$
+if domainp sf then 0 else
+ldeg sf + total_deg_of_first_tm lc sf$
+
+symbolic procedure nco_SF(sf)$
+% returns the numerical coefficient of the first term
+<< while pairp sf and not domainp sf and not domainp lc sf do sf:=lc sf; sf>>$
+
 symbolic procedure pick_fcteval(pdes,mdu,fctli)$ 
 if fctli then
 if (not expert_mode) or (length  fctli = 1) then 
 % automatic pick of all the possible substitutions
 if null cdr fctli then car fctli else
 if mdu<3 then begin % substitute the function coming first in ftem_
- scalar best;
- best:=car fctli; fctli:=cdr fctli;
+ scalar best, besth1, besth2, besth3, h1, h2, h3$
+
+ besth1:=100000000$
  while fctli do <<
-  if which_first(cdr best,cdar fctli,ftem_) neq cdr best 
-  then best:=car fctli;
+  if besth1 > (h1:=no_of_tm_sf numr caar fctli) then <<
+   best:=car fctli;
+   besth1:=h1;
+   if h1=1 then <<
+    besth2:=total_deg_of_first_tm numr caar fctli$ 
+    besth3:=nco_SF numr caar fctli
+   >>
+  >>                                            else
+  if besth1=h1 then % else car fctli is not better than best
+  if h1>1 then      % besth2 and besth3 are not determined
+  if which_first(cdr best,cdar fctli,ftem_) neq cdr best then best:=car fctli else
+          else      % besth1=h1=1, then besth2, besth3 are determined      
+  if besth2>(h2:=total_deg_of_first_tm numr caar fctli) then <<
+   best:=car fctli;
+   besth2:=h2;
+   besth3:=nco_SF numr caar fctli
+  >>                                                    else 
+  if besth2=h2 then % else car fctli is not better than best
+  if (fixp(h3:=nco_SF numr caar fctli) and not fixp besth3) or
+     (fixp h3 and fixp besth3 and (abs h3 < abs besth3)   ) then <<
+   best:=car fctli;
+   besth3:=h3
+  >>;
   fctli:=cdr fctli
  >>;
  return best
@@ -424,12 +456,11 @@ begin scalar l,l1,p,oldstarde$
  l:=get(a,'fac)$
  if not pairp l then l:={get(a,'sqval)}$
  oldstarde:=get(a,'starde)$
-
  while l do <<  % for each factor
   if smember(f,car l) then <<   
    % p:=subsq(car l,{(f . ex)})$ 
    p:=simp!* {'!*sq,subsq(car l,{(f . ex)}),nil}$ 
-   % - simp!* {'!*SQ,..,nil} to simplify poly using identities, like i^2 -> -1
+   % - simp!* {'!*sq,..,nil} to simplify poly using identities, like i^2 -> -1
    if sqzerop p then <<l:=list nil$l1:=list 0>>
                 else <<
     l1:=cons(p,l1)
@@ -440,7 +471,7 @@ begin scalar l,l1,p,oldstarde$
  l:=nil$
  while l1 do <<
   if not member(car l1,cdr l1) then
-  l:=union(simplifysq(car l1,ftem,t,nil,nil),l)$
+  l:=union(simplifySQ(car l1,ftem,t,nil,nil),l)$
   l1:=cdr l1
  >>$
  l:=delete((1 . 1),l)$  % delete all non-vanishing factors
@@ -464,16 +495,16 @@ begin scalar l,l1,p,oldstarde$
   drop_pde(a,nil,0)$
   a:=nil
  >>                     else << 
-%  if pairp cdr l then l:=cons('TIMES,l)
+%  if pairp cdr l then l:=cons('times,l)
 %                 else l:=car l$
   if get(a,'level) neq level then <<
    pdes:=drop_pde(a,pdes,0)$ % pdes updated as it is used in mkeqSQ:
-   a:=mkeqsq(nil,l,nil,ftem,vl,allflags_,nil,list(0),nil,pdes)
+   a:=mkeqSQ(nil,l,nil,ftem,vl,allflags_,nil,list(0),nil,pdes)
   >>                         else <<
    p:=get(a,'derivs);    % keep the leading derivative to check 
    if p then p:=caar p;  % whether it changed in the substitution
    for each b in allflags_ do flag(list a,b)$
-   if null updatesq(a,nil,l,nil,ftem,vl,nil,list(0),pdes) then <<
+   if null updateSQ(a,nil,l,nil,ftem,vl,nil,list(0),pdes) then <<
     % l is a list of sq-form factors 
     drop_pde(a,pdes,0)$
     a:=nil
@@ -504,7 +535,7 @@ end$
 
 symbolic procedure sub_in_forg(f,ex,forg);
 % f is the function to be substituted in forg
-% ex has form {'!*SQ,..,t}
+% ex has form {'!*sq,..,t}
 begin scalar fl,h,was_subst,dnr$
  % fl:=delete(f,smemberl(ftem_,ex))$ % functs occur. in ex, delete should not be necess.
  fl:=smemberl(append(ftem_,for each h in fsub_ collect car h),ex)$  % functions occuring in ex
@@ -527,8 +558,8 @@ begin scalar fl,h,was_subst,dnr$
         >>             else <<
          h:=list('equal,cadr h,
                  simp!* {'!*sq,quotsq(subf(numr caddr h,{(f . ex)}),dnr),nil});
-         % h:=list('EQUAL,cadr h,simp!* {'!*SQ,subsq(caddr h,{(f . ex)}),nil});
-         % - simp!* {'!*SQ,..,nil} to simplify poly using identities, like i^2 -> -1
+         % h:=list('equal,cadr h,simp!* {'!*sq,subsq(caddr h,{(f . ex)}),nil});
+         % - simp!* {'!*sq,..,nil} to simplify poly using identities, like i^2 -> -1
          put(cadr h,'fcts,
              smemberl(union(fl,delete(f,get(cadr h,'fcts))),caddr h));
          h
@@ -543,7 +574,7 @@ symbolic procedure do_subst(md,p,l,pde,forg,vl,plim,keep_eqn)$
 % Use equation p for substitution.
 % l incodes the substitution itself = (cf . f)
 % Substitute a function in all pdes.
-begin scalar f,fl,h,ex,res,slim,too_large,was_subst,
+begin scalar f,fl,h,ex,res,slim,too_large,was_subst,new_user_rules,
              ruli,ise,cf,vl,nof,stde,partial_subs,ineq_bak,ineq_or_bak$
 % l:=get(p,'fcteval_lin)$
 % if null l then l:=get(p,'fcteval_nca)$
@@ -569,11 +600,43 @@ begin scalar f,fl,h,ex,res,slim,too_large,was_subst,
   if get(p,'starde) then ise:=t;
   slim:=get(p,'length)$
   ruli:=start_let_rules()$
+  if modular_comp then on modular$
   ex:={'!*sq,subs2 quotsq(subtrsq(multsq(cf,simp f),get(p,'sqval)),cf),t};
-  % ex:={'!*SQ,simp!* {'!*SQ,quotsq(subtrsq(multsq(cf,simp f),get(p,'sqval)),cf),nil},t};
-  % - simp!* {'!*SQ,..,nil} to simplify poly using identities, like i^2 -> -1
+  % ex:={'!*sq,simp!* {'!*sq,quotsq(subtrsq(multsq(cf,simp f),get(p,'sqval)),cf),nil},t};
+  % - simp!* {'!*sq,..,nil} to simplify poly using identities, like i^2 -> -1
+
+  % When the right hand side of a substitution becomes identical to the left
+  % hand side due to LET rules then there is no point in performing the
+  % substitution. But the equation used to formulate the substitution 
+  % is deleted because it is used for the substitution so all that is left is
+  % the set of LET rules. :-(
+
+%#######################
+% CHECK WHETHER f==ex and then drop all LET RULES and add them as equations.
+%#######################
+
+  % This substitution might give a contradiction when being done to an
+  % equation. But if this equation is used as a LET rule then that
+  % contradicting substitution may turn a denominator of in forg to zero when
+  % the contradicted LET rule is used in the substitution in forg. To avoid
+  % the error message that a denominator in forg is zero, in the following 
+  % it is checked whether a LET rule is contradicted by the substitution.
+
+  for each h in cdr userrules_ do  %  h = {replaceby,cadr h,caddr h}, cadr h => caddr h
+  if not freeof(cdr h,f) and
+     ({(1 . 1)} = simplifySQ(subsq(subtrsq(simp cadr h,simp caddr h),
+                                   {(f . ex)}), ftem_, t, nil, nil)) then <<
+   contradiction_:=t$
+   if print_ then <<
+    write"The current substitution"$terpri()$
+    algebraic(write lisp f," = ", lisp ex)$
+    write"results in a contradiction in the LET rule:"$
+    algebraic (write lisp {'list,h})$
+   >> 
+  >>$
 
   %---- specification of substitution in case of expert_mode (user guided)
+  if not contradiction_ then 
   if expert_mode then <<
    terpri()$
    write"Enter a list of equations in which substitution should take place."$
@@ -595,11 +658,47 @@ begin scalar f,fl,h,ex,res,slim,too_large,was_subst,
     restore_interactive_prompt()
    >>
   >>             else l:=delete(p,pde)$
+
+  %---- substitution in LET-rules
+  if not contradiction_ then <<
+   for each h in cdr userrules_ do  %  h = {replaceby,cadr h,caddr h}, cadr h => caddr h
+   if freeof(cadr  h,f) then 
+   if freeof(caddr h,f) then new_user_rules:=cons(h,new_user_rules)
+                        else <<
+    if print_ then <<
+     terpri()$
+     write"The current substitution"$terpri()$
+     algebraic(write lisp f," = ", lisp ex)$
+     write"affects the following LET rule:"$terpri()$
+     algebraic (write lisp {'list,h})
+    >>$
+    algebraic(clearrules lisp {'list,h});
+    h:={car h, cadr h, mk!*sq subsq(simp caddr h,{(f . ex)})};
+    if print_ then <<
+     write"which therefore is modified to:"$
+     algebraic (write lisp {'list,h})$
+    >>$
+    new_user_rules:=cons(h,new_user_rules);
+    algebraic(let lisp {'list,h});
+   >>                   else <<
+   if print_ then <<
+     terpri()$
+     write"The current substitution affects the following LET rule"$terpri()$
+     write"which therefore has to be deleted:"$
+     algebraic (write lisp {'list,h})
+    >>$
+    pde:=moverule2eqn(h,pde)$ 
+   >>$
+   userrules_:=cons('list,reverse new_user_rules)$
+  >>$
+
   %---- substitution in inequalities
-  ineq_bak:=ineq_$             % for the case that no substitution is done
-  ineq_or_bak:=ineq_or$        %                   "
-  if (not ise) and ((not partial_subs) or h) then %ineqsubst(ex,f,ftem_,pde)$
-                                       simp_all_ineq_with_subst_sq(ex,f,pde)$
+  if not contradiction_ then <<
+   ineq_bak:=ineq_$             % for the case that no substitution is done
+   ineq_or_bak:=ineq_or$        %                   "
+   if (not ise) and ((not partial_subs) or h) then %ineqsubst(ex,f,ftem_,pde)$
+                                        simp_all_ineq_with_subst_SQ(ex,f,pde)$
+  >>$
 
   if not contradiction_ then <<
 
@@ -642,23 +741,24 @@ begin scalar f,fl,h,ex,res,slim,too_large,was_subst,
     h:=nil;
     vl:=get(p,'vars)$
     fl:=get(p,'fcts)$
-    nof:=cdr get(p,'starde)$
+    nof:=caar get(p,'starde)$
     while l do <<
      if (stde:=get(car l,'starde)) and
-        (nof<=cdr stde) and
+        (nof<=caar stde) and
         (not not_included(vl,get(car l,'vars))) and
         (not not_included(fl,get(car l,'fcts))) then h:=cons(car l,h);
      l:=cdr l
     >>$
     l:=h;
    >>$
+
    while l and not contradiction_ do <<
    if member(f,get(car l,'fcts)) then
     if not expert_mode and plim and (slim*get(car l,'length)>plim)
     then too_large:=t
     else <<
      pde:=eqinsert(do_one_subst(ex,f,car l,ftem_,union(vl,get(car l,'vars)),
-                   get(p,'level),p,pde),delete(car l,pde))$
+                                get(p,'level),p,pde),delete(car l,pde))$
      for each h in pde do drop_rl_with(car l,h);         
      put(car l,'rl_with,nil);
      for each h in pde do drop_dec_with(car l,h,'dec_with_rl);     
@@ -720,6 +820,7 @@ begin scalar f,fl,h,ex,res,slim,too_large,was_subst,
    % also if not used to delete the pde if the function to be
    % substituted does not appear anymore
   >>$
+  if modular_comp then off modular$
   stop_let_rules(ruli)$
 % >>$
  if null was_subst then <<ineq_:=ineq_bak; ineq_or:=ineq_or_bak>>$
@@ -732,17 +833,30 @@ symbolic procedure make_subst(pdes,forg,vl,l1,length_limit,pdelimit,
                               min_growth,cost_limit,keep_eqn,sub_fc)$
 % make a subst. 
 % l1 is the list of possible "candidates"
-begin scalar p,q,r,l,h,hh,h3,cases_,w,md,tempchng,plim$   % ,ineq,cop,newfdep
+begin scalar p,q,r,l,h,hh,h3,cases_,w,md,tempchng,plim,mod_switched$   % ,ineq,cop,newfdep
+
+  for each h in l1 do
+  if not freeof(pdes,h) then l:=cons(h,l);
+  if l1 and null l then return nil
+                   else l1:=reverse l$
+  l:=nil;
   if expert_mode then <<
    write"Which PDE should be used for substitution?"$ terpri()$
    l1:=selectpdes(pdes,1)$
   >>;
-
   % a fully specified substitution from to_do_list
   if sub_fc and % a specific function sub_fc is to be substituted using a
                 % specific equation car l1
      l1 and null cdr l1 then <<
    p:=car l1$
+
+   if null fcteval(p) then 
+   if print_ then <<
+    write"##### Strange: equation ",p," was to be solved for ",sub_fc,
+         " but facteval says that is not possible."$ 
+    terpri()
+   >>$
+
    h:=get(p,'fcteval_lin);
    while h and (sub_fc neq cdar h) do h:=cdr h;
    if h then hh:=1 
@@ -758,6 +872,7 @@ begin scalar p,q,r,l,h,hh,h3,cases_,w,md,tempchng,plim$   % ,ineq,cop,newfdep
    >>;
    if h then w:={hh,car l1,car h}
   >>;
+
   if sub_fc and null w then return nil;
 
 again:
@@ -767,6 +882,7 @@ again:
       (w:=get_subst(pdes,l1,length_limit,less_vars,no_df,no_cases))     ) then 
       % w has form {mdu,p,(cf . f)} , cf is in SQ form
   if null !*batch_mode and null expert_mode and confirm_subst and <<
+
     if print_ then <<
       terpri()$
       write"Proposal: Substitution of  ",cdaddr w$terpri()$
@@ -778,10 +894,10 @@ again:
     if car w<=2 then write"No case distinctions will be necessary."
                 else write"Case distinctions will be necessary."$
     terpri()$
-    write"The coefficient is:"$ mathprint {'!*sq,caaddr w,t}$
-    write"Accept? (Enter y or n or s for stopping substitution) "$
+    write"The coefficient is:"$ mathprint factorize {'!*sq,caaddr w,t}$
+    write"Accept? (Enter y or n or p for stopping substitution) "$
     change_prompt_to ""$ 
-    repeat h:=termread() until (h='y) or (h='n) or (h='s);
+    repeat h:=termread() until (h='y) or (h='n) or (h='p);
     restore_interactive_prompt()$ 
     if h='n then <<
       tempchng:=cons(w,tempchng);
@@ -817,8 +933,8 @@ again:
          null get(cadr w,'fcteval_nli) then remflag1(cadr w,'to_eval)
       % otherwise 'fcteval_lin,... will be reassigned
     >>;
-    if (h='s) then l1:=nil;
-    if (h='n) or (h='s) then t else nil 
+    if (h='p) then l1:=nil;
+    if (h='n) or (h='p) then t else nil 
   >> then goto again
      else
   if (   car w = 1)                             or
@@ -832,6 +948,7 @@ again:
                              % function, printlength of equation
    then plim:=nil
    else plim:=pdelimit;
+
    l:=do_subst(car w,cadr w,caddr w,pdes,forg,vl,plim,keep_eqn)$
    if l and null car l then << % not contradiction but not used
     l1:=delete(cadr w,l1);
@@ -858,14 +975,14 @@ again:
     backup_to_file(pdes,forg,nil)$
 
     % make an equation from the coefficient
-    q:=mkeqsq(car w,nil,nil,get(p,'fcts),get(p,'vars),allflags_,
+    q:=mkeqSQ(car w,nil,nil,get(p,'fcts),get(p,'vars),allflags_,
               t,list(0),nil,pdes)$
     % and an equation from the remainder
     r:=nil;
     if not contradiction_ then <<
       hh:=subtrsq(get(p,'sqval),multsq(car w,simp cdr w))$
       if not sqzerop hh then 
-      r:=mkeqsq(hh,nil,nil,get(p,'fcts),get(p,'vars),
+      r:=mkeqSQ(hh,nil,nil,get(p,'fcts),get(p,'vars),
                 allflags_,t,list(0),nil,pdes)
     >>;
     if contradiction_ then <<
@@ -885,7 +1002,7 @@ again:
        if not pairp h then h:={get(q,'sqval)}
       >>$
       for each l in h do % (was: .. in cdr h) % pdes:=  %  <=<=<=<=
-      addsqineq(pdes,l,if q then nil else t)$ % nil if l already simplified
+      addSQineq(pdes,l,if q then nil else t)$ % nil if l already simplified
       drop_pde(q,nil,nil)$
       if r then drop_pde(r,nil,nil)$
       l:=do_subst(md,p,w,pdes,forg,vl,pdelimit,keep_eqn)$
@@ -931,10 +1048,12 @@ again:
         pdes:= car h; 
         forg:=cadr h;
         delete_backup()$
+        if modular_comp and null !*modular then <<on modular$ mod_switched:=t>>$
         hh:=subtrsq(get(p,'sqval),multsq(car w,simp cdr w))$
+        if mod_switched then off modular$
         if sqzerop hh then <<drop_pde(p,pdes,nil); pdes:=delete(p,pdes)>>
                       else <<
-          updatesq(p,hh,nil,nil,get(p,'fcts),get(p,'vars),t,list(0),pdes)$
+          updateSQ(p,hh,nil,nil,get(p,'fcts),get(p,'vars),t,list(0),pdes)$
           drop_pde_from_idties(p,pdes,nil)$ % new history is nil as r has no history
           drop_pde_from_properties(p,pdes)
         >>$
@@ -954,9 +1073,7 @@ again:
           print_:=hh
         >>$
         % To try to use q=0 for a substitution if possible:
-        to_do_list:=cons(cons('subst_level_35,
-                              {{q}}),
-                         to_do_list)$
+        to_do_list:=cons(list('subst_level_35,{q}),to_do_list)$
         cp_sq2p_val(q)$
         h3:=get(q,'pval)$
         start_level(1,list {'equal,0,h3})$
@@ -977,7 +1094,7 @@ again:
 	  write "now back to the substitution of ",cdr w," by ",p$
         >>$
         for each h3 in h do % pdes:=  % <=<=<=<=
-        addsqineq(pdes,h3,nil); 
+        addSQineq(pdes,h3,nil); 
         fcteval p$ % fcteval_... properties were deleted in addSQineq
         if contradiction_ then <<cases_:=t$contradiction_:=nil>> % but no
                                % further investigation of this case
@@ -1021,7 +1138,7 @@ again:
 
 %         New, instead of substitution:
           to_do_list:=cons(cons('subst_level_35,
-                                if sub_fc then {{p},pdes,sub_fc}
+                                if sub_fc then {{p},sub_fc}
                                           else {{p}}),
                            to_do_list)$
 
@@ -1111,8 +1228,7 @@ end$
 
 
 symbolic procedure subst_level_0(arglist)$             % module 3
- make_subst(if length arglist > 4 then nth(arglist,5) 
-                                  else car arglist,    % all pdes
+make_subst( car arglist,                               % all pdes
             cadr arglist,caddr arglist,                % forg,vl
             cadddr arglist,                            % pdes to choose from
             subst_0,                                   % length_limit for pde to use
@@ -1124,13 +1240,12 @@ symbolic procedure subst_level_0(arglist)$             % module 3
             nil,                                       % min_growth
             nil,                                       % cost_limit
             nil,                                       % keep_eqn
-            if length arglist > 5 then nth(arglist,6) 
+            if length arglist > 4 then nth(arglist,5) 
                                   else nil             % sub_fc
            )$
 
 symbolic procedure subst_level_03(arglist)$            % module 4
- make_subst(if length arglist > 4 then nth(arglist,5) 
-                                  else car arglist,    % all pdes
+make_subst( car arglist,                               % all pdes
             cadr arglist,caddr arglist,                % forg,vl
             cadddr arglist,                            % pdes to choose from
             subst_0,                                   % length_limit for pde to use
@@ -1142,13 +1257,12 @@ symbolic procedure subst_level_03(arglist)$            % module 4
             nil,                                       % min_growth
             nil,                                       % cost_limit
             nil,                                       % keep_eqn
-            if length arglist > 5 then nth(arglist,6) 
+            if length arglist > 4 then nth(arglist,5) 
                                   else nil             % sub_fc
            )$
 
 symbolic procedure subst_level_04(arglist)$            % module 45
- make_subst(if length arglist > 4 then nth(arglist,5) 
-                                  else car arglist,    % all pdes
+make_subst( car arglist,                               % all pdes
             cadr arglist,caddr arglist,                % forg,vl
             cadddr arglist,                            % pdes to choose from
             subst_1,                                   % length_limit for pde to use
@@ -1160,13 +1274,12 @@ symbolic procedure subst_level_04(arglist)$            % module 45
             nil,                                       % min_growth
             nil,                                       % cost_limit
             nil,                                       % keep_eqn
-            if length arglist > 5 then nth(arglist,6) 
+            if length arglist > 4 then nth(arglist,5) 
                                   else nil             % sub_fc
            )$
 
 symbolic procedure subst_level_05(arglist)$            % module 5
- make_subst(if length arglist > 4 then nth(arglist,5) 
-                                  else car arglist,    % all pdes
+make_subst( car arglist,                               % all pdes
             cadr arglist,caddr arglist,                % forg,vl
             cadddr arglist,                            % pdes to choose from
             subst_3,                                   % length_limit for pde to use
@@ -1178,13 +1291,12 @@ symbolic procedure subst_level_05(arglist)$            % module 5
             nil,                                       % min_growth
             nil,                                       % cost_limit
             nil,                                       % keep_eqn
-            if length arglist > 5 then nth(arglist,6) 
+            if length arglist > 4 then nth(arglist,5) 
                                   else nil             % sub_fc
            )$
 
 symbolic procedure subst_level_1(arglist)$             % module 15
- make_subst(if length arglist > 4 then nth(arglist,5) 
-                                  else car arglist,    % all pdes
+make_subst( car arglist,                               % all pdes
             cadr arglist,caddr arglist,                % forg,vl
             cadddr arglist,                            % pdes to choose from
             subst_1,                                   % length_limit for pde to use
@@ -1196,13 +1308,12 @@ symbolic procedure subst_level_1(arglist)$             % module 15
             nil,                                       % min_growth
             nil,                                       % cost_limit
             nil,                                       % keep_eqn
-            if length arglist > 5 then nth(arglist,6) 
+            if length arglist > 4 then nth(arglist,5) 
                                   else nil             % sub_fc
            )$
 
 symbolic procedure subst_level_2(arglist)$             % module 18
- make_subst(if length arglist > 4 then nth(arglist,5) 
-                                  else car arglist,    % all pdes
+make_subst( car arglist,                               % all pdes
             cadr arglist,caddr arglist,                % forg,vl
             cadddr arglist,                            % pdes to choose from
             subst_3,                                   % length_limit for pde to use
@@ -1214,13 +1325,12 @@ symbolic procedure subst_level_2(arglist)$             % module 18
             nil,                                       % min_growth
             nil,                                       % cost_limit
             nil,                                       % keep_eqn
-            if length arglist > 5 then nth(arglist,6) 
+            if length arglist > 4 then nth(arglist,5) 
                                   else nil             % sub_fc
            )$
 
 symbolic procedure subst_level_3(arglist)$             % module 16
- make_subst(if length arglist > 4 then nth(arglist,5) 
-                                  else car arglist,    % all pdes
+make_subst( car arglist,                               % all pdes
             cadr arglist,caddr arglist,                % forg,vl
             cadddr arglist,                            % pdes to choose from
             subst_2,                                   % length_limit for pde to use
@@ -1232,13 +1342,12 @@ symbolic procedure subst_level_3(arglist)$             % module 16
             nil,                                       % min_growth
             nil,                                       % cost_limit
             nil,                                       % keep_eqn
-            if length arglist > 5 then nth(arglist,6) 
+            if length arglist > 4 then nth(arglist,5) 
                                   else nil             % sub_fc
            )$
 
 symbolic procedure subst_level_33(arglist)$            % module 19
- make_subst(if length arglist > 4 then nth(arglist,5) 
-                                  else car arglist,    % all pdes
+make_subst( car arglist,                               % all pdes
             cadr arglist,caddr arglist,                % forg,vl
             cadddr arglist,                            % pdes to choose from
             subst_3,                                   % length_limit for pde to use
@@ -1250,13 +1359,12 @@ symbolic procedure subst_level_33(arglist)$            % module 19
             nil,                                       % min_growth
             nil,                                       % cost_limit
             nil,                                       % keep_eqn
-            if length arglist > 5 then nth(arglist,6) 
+            if length arglist > 4 then nth(arglist,5) 
                                   else nil             % sub_fc
            )$
 
 symbolic procedure subst_level_35(arglist)$            % module 20
- make_subst(if length arglist > 4 then nth(arglist,5) 
-                                  else car arglist,    % all pdes
+make_subst( car arglist,                               % all pdes
             cadr arglist,caddr arglist,                % forg,vl
             cadddr arglist,                            % pdes to choose from
             subst_3,                                   % length_limit for pde to use
@@ -1268,13 +1376,12 @@ symbolic procedure subst_level_35(arglist)$            % module 20
             nil,                                       % min_growth
             nil,                                       % cost_limit
             nil,                                       % keep_eqn
-            if length arglist > 5 then nth(arglist,6) 
+            if length arglist > 4 then nth(arglist,5) 
                                   else nil             % sub_fc
            )$
 
 symbolic procedure subst_level_4(arglist)$             % module 21
- make_subst(if length arglist > 4 then nth(arglist,5) 
-                                  else car arglist,    % all pdes
+make_subst( car arglist,                               % all pdes
             cadr arglist,caddr arglist,                % forg,vl
             cadddr arglist,                            % pdes to choose from
             subst_3,                                   % length_limit for pde to use
@@ -1286,13 +1393,12 @@ symbolic procedure subst_level_4(arglist)$             % module 21
             nil,                                       % min_growth
             nil,                                       % cost_limit
             nil,                                       % keep_eqn
-            if length arglist > 5 then nth(arglist,6) 
+            if length arglist > 4 then nth(arglist,5) 
                                   else nil             % sub_fc
            )$
 
 symbolic procedure subst_level_45(arglist)$            % module 6
- make_subst(if length arglist > 4 then nth(arglist,5) 
-                                  else car arglist,    % all pdes
+make_subst( car arglist,                               % all pdes
             cadr arglist,caddr arglist,                % forg,vl
             cadddr arglist,                            % pdes to choose from
             subst_3,                                   % length_limit for pde to use
@@ -1304,13 +1410,12 @@ symbolic procedure subst_level_45(arglist)$            % module 6
             t,                                         % min_growth
             cost_limit5,                               % cost_limit
             nil,                                       % keep_eqn
-            if length arglist > 5 then nth(arglist,6) 
+            if length arglist > 4 then nth(arglist,5) 
                                   else nil             % sub_fc
            )$
 
 symbolic procedure subst_level_5(arglist)$             % module 17
- make_subst(if length arglist > 4 then nth(arglist,5) 
-                                  else car arglist,    % all pdes
+make_subst( car arglist,                               % all pdes
             cadr arglist,caddr arglist,                % forg,vl
             cadddr arglist,                            % pdes to choose from
             subst_3,                                   % length_limit for pde to use
@@ -1322,7 +1427,7 @@ symbolic procedure subst_level_5(arglist)$             % module 17
             t,                                         % min_growth
             nil,                                       % cost_limit
             nil,                                       % keep_eqn
-            if length arglist > 5 then nth(arglist,6) 
+            if length arglist > 4 then nth(arglist,5) 
                                   else nil             % sub_fc
            )$
 
@@ -1335,7 +1440,7 @@ begin scalar p,md,mdgr,mtm,f,dgr,f,tm,bestp;
   % compute the max degree of any factor
   mdgr:=0$ 
   for each f in get(p,'fac) do <<
-   dgr:=pde_degree_sq(f,smemberl(get(p,'rational),f))$
+   dgr:=pde_degree_SQ(f,smemberl(get(p,'rational),f))$
    if dgr>mdgr then mdgr:=dgr
   >>$
   tm:=get(p,'length)$
@@ -1349,7 +1454,7 @@ algebraic procedure start_let_rules$
 begin scalar ruli;
   lisp (oldrules!*:=nil)$  % to fix a REDUCE bug
   ruli:={};
-  let explog_$
+  if cot(!%x) neq (1/tan(!%x)) then let explog_$
   if lisp(userrules_) neq {} then let lisp userrules_$
   if sin(!%x)**2+cos(!%x)**2 neq 1         then <<ruli:=cons(1,ruli);let trig1_>> else ruli:=cons(0,ruli)$
   if cosh(!%x)**2 neq (sinh(!%x)**2 + 1)   then <<ruli:=cons(1,ruli);let trig2_>> else ruli:=cons(0,ruli)$
@@ -1383,7 +1488,6 @@ begin
   if first ruli = 1 then clearrules trig2_$ ruli:=rest ruli$
   if first ruli = 1 then clearrules trig1_$ ruli:=rest ruli$
 end$
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  procedures  for finding an optimal substitution  %
@@ -1639,24 +1743,24 @@ symbolic procedure bottom_up_subst(arglist)$
 % big and then it would be better to continue substituting in a 
 % different shorter equation.
 
-if currently_to_be_substituted_in neq '!*subst_done!* then
+if currently_to_be_substituted_in = '!*SUBST_DONE!* then nil else
 
-if (null car arglist) or (null cdar arglist)    then
-currently_to_be_substituted_in:='!*subst_done!* else
+if (null car arglist) or (null cdar arglist)            then
+<<currently_to_be_substituted_in:='!*SUBST_DONE!*;nil>> else
+
 begin scalar pcp,found,pdes,fns,p,a,h;
-
-currently_to_be_substituted_in:=nil; % <-- for now as not in list 
-                                     %     pass_on in crinit.red
+ currently_to_be_substituted_in:=nil; % <-- for now as not in list 
+                                      %     not_passed_back in crinit.red
  if null currently_to_be_substituted_in then
  currently_to_be_substituted_in:=cadar arglist;
  fns:=get(currently_to_be_substituted_in,'fcts);
 
  pcp:=car arglist;
- while (currently_to_be_substituted_in neq '!*subst_done!*) and
+ while (currently_to_be_substituted_in neq '!*SUBST_DONE!*) and
        null found do 
 
  if car pcp=currently_to_be_substituted_in then
- if null cdr pcp then currently_to_be_substituted_in:='!*subst_done!*
+ if null cdr pcp then currently_to_be_substituted_in:='!*SUBST_DONE!*
                  else <<
   currently_to_be_substituted_in:=cadr pcp;
   fns:=get(currently_to_be_substituted_in,'fcts);
@@ -1688,9 +1792,10 @@ currently_to_be_substituted_in:=nil; % <-- for now as not in list
  >> else pcp:=cdr pcp; % Check next equation for substitution
 
  return
- if currently_to_be_substituted_in='!*subst_done!* then nil 
+ if currently_to_be_substituted_in='!*SUBST_DONE!* then nil 
  else {pdes,cadr arglist}
 end$
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  procedures  for substitution of a derivative by a new function  %
@@ -1705,13 +1810,13 @@ begin scalar l,l1,l2,n,cp,not_to_substdf$
                                    collect car a,l)$    % all derivs
   for each s in forg do 
   if pairp s then 
-  l:=union(for each a in all_deriv_search_sf(numr caddr s,ftem_) collect car a,
-     union(for each a in all_deriv_search_sf(denr caddr s,ftem_) collect car a,
+  l:=union(for each a in all_deriv_search_SF(numr caddr s,ftem_) collect car a,
+     union(for each a in all_deriv_search_SF(denr caddr s,ftem_) collect car a,
      l))$
 
   for each s in fsub_ do 
-  l:=union(for each a in all_deriv_search_sf(numr cadr cdr s,ftem_) collect car a,
-     union(for each a in all_deriv_search_sf(denr cadr cdr s,ftem_) collect car a,
+  l:=union(for each a in all_deriv_search_SF(numr cadr cdr s,ftem_) collect car a,
+     union(for each a in all_deriv_search_SF(denr cadr cdr s,ftem_) collect car a,
      l))$
 
   l1:=df_min_list(l)$
@@ -1797,11 +1902,11 @@ if pairp h and member(d,get(cadr h,'fcts)) then <<
  put(cadr h,'fcts,fctinsert(p,delete(d,get(cadr h,'fcts))))$
  % reval subst(g,d,h)
  {'equal,cadr h,simp {'!*sq,subsq(caddr h,{(d . {'!*sq,g,t})}),nil}}
- % {'EQUAL,cadr h,simp!* {'!*SQ,subsq(caddr h,{(d . {'!*sq,g,t})}),nil}}
- % - simp!* {'!*SQ,..,nil} to simplify poly using identities, like i^2 -> -1
+ % {'equal,cadr h,simp!* {'!*sq,subsq(caddr h,{(d . {'!*sq,g,t})}),nil}}
+ % - simp!* {'!*sq,..,nil} to simplify poly using identities, like i^2 -> -1
 >>                                         else h$
 
-symbolic procedure expand_int(p,varlist)$  
+symbolic procedure expand_INT(p,varlist)$  
 if null varlist then p
 else begin scalar v,n$
   v:=car varlist$
@@ -1811,7 +1916,7 @@ else begin scalar v,n$
        varlist:=cdr varlist>>
   else n:=1$
   for i:=1:n do p:=list('int,p,v)$
-  return expand_int(p,varlist)
+  return expand_INT(p,varlist)
 end$
 
 symbolic procedure rational_less(a,b)$  
@@ -1853,7 +1958,7 @@ begin scalar h,h1,h4,h3$
   h4:=t$
   % make an equation from the coefficient
   while h1 and h4 do <<
-   h3:=mkeqsq(car h1,nil,nil,get(p,'fcts),get(p,'vars),allflags_,
+   h3:=mkeqSQ(car h1,nil,nil,get(p,'fcts),get(p,'vars),allflags_,
               t,list(0),nil,nil)$
    contradiction_:=nil$
    % the last argument is nil to avoid having a lasting effect on pdes
@@ -1874,18 +1979,20 @@ symbolic procedure get_fact_pde(pdes,aim_at_subst)$
 begin scalar p,pv,f,fcl,fcc,h,h1,h2,h3,h4,h5,h6,h7,h8,eql,tr_gf$
  % tr_gf:=t$
 
+ h1:=pdes;
+ if null aim_at_subst then
+
  % Highest priority has an equation with a case2sep entry, i.e. which
  % allows to conclude either the independence of a function on a
  % variable or allows to do a direct separation.
 
- h1:=pdes;
  while h1 and null h2 do <<
   h3:=get(car h1,'case2sep)$ 
   if h3 then if not member(h3,ineq_) then h2:=car h1
                                      else <<
    put(car h1,'case2sep,nil)$
    h4:=stardep3(get(car h1,'vars),get(car h1,'kern),get(car h1,'derivs))$
-   if h4 then <<put(car h1,'starde,({car h4} . 0))$  flag1(car h1,'to_sep)>>$
+   if h4 then <<put(car h1,'starde,{(0 . car h4)})$  flag1(car h1,'to_sep)>>$
    h1:=cdr h1
   >>    else h1:=cdr h1  
  >>$
@@ -1931,11 +2038,11 @@ begin scalar p,pv,f,fcl,fcc,h,h1,h2,h3,h4,h5,h6,h7,h8,eql,tr_gf$
     >>     else <<      % factor is new
      % Computing the total degree of the factor
      if fhom_ then <<
-      h2:=find_hom_deg_sf(numr f)$ 
+      h2:=find_hom_deg_SF(numr f)$ 
       h2:=(car h2) + (cadr h2)
      >>          else h2:=1;
      % If f is a function then counting in how many equations it appears
-     if no_number_atom_sq f then << % count in how many equations f does occur
+     if no_number_atom_SQ f then << % count in how many equations f does occur
       h5:=mvar numr f; % the function
       h3:=0;           % the counter
       h4:=pdes;
@@ -2011,13 +2118,13 @@ begin scalar p,pv,f,fcl,fcc,h,h1,h2,h3,h4,h5,h6,h7,h8,eql,tr_gf$
    h:=assoc(car pv,fcl);  % the properties of the factor
    if tr_gf then << write "h assoc= ",h$terpri()>>$
    h5:=cons(cons(reval cadr h,car h),h5); % cadr h is substitution_weight
-   % h6:={'PLUS,h6,cadr h}; % if adding up the weights for the factors and
+   % h6:={'plus,h6,cadr h}; % if adding up the weights for the factors and
    % then taking the equation with the minimal SUM of weights will
    % favour equations where the weight of the highest weight factor in
    % the equation is lowest. So, how good the best of the factors is
    % does little matter. We therefore change to product.
    h6:={'times,h6,cadr h}; 
-   %if not zerop nth(h,8) then h6:={'TIMES,30,h6};  
+   %if not zerop nth(h,8) then h6:={'times,30,h6};  
    % The following change was made to use an equation less 
    % if more flin_ functions appear.
    if (null lin_problem) and 
@@ -2061,7 +2168,7 @@ endmodule$
 end$
 
 ------------------------------------------------------------------------------------------------------
-substitutions with:
+Substitutions with:
 
 procedure       # length_li pdelimit less_vars no_df no_cases lin_subst min_growth cost_limit keep_eqn
 
@@ -2092,10 +2199,11 @@ target_limit_3:=nil$
 make_subst
   get_subst
   do_subst
+    simp_all_ineq_with_subst_SQ
     do_one_subst
-      mkeqsq
+      mkeqSQ
       updatesq
-  mkeqsq
+  mkeqSQ
     updatesq
 
 
@@ -2103,6 +2211,7 @@ tr make_subst
 tr get_subst 
 tr do_subst 
 tr do_one_subst 
-tr mkeqsq 
+tr mkeqSQ 
 tr updatesq 
 tr fcteval
+tr simp_all_ineq_with_subst_SQ

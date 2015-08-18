@@ -23,7 +23,6 @@ off echo;
 load crack ; % ,conlaw0,conlaw1,conlaw2,conlaw3,conlaw4$
 
 lisp(depl!*:=nil)$     % clearing of all dependencies
-%setcrackflags()$       % standart flags
 lisp(print_:=nil)$     % no output of the calculation
 
 %% off batch_mode$

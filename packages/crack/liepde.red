@@ -182,13 +182,13 @@ symbolic procedure totdf3(s,depli,x,n,sb,xlist,ordok,subordinc)$
 % depli is a list of lists, each being the list of jet-variables
 %   of order 0,1,2,..., such that s=s(xlist,depli), but
 %   as little as possible jet-variables in depli
-% xlist, depli are lisp lists, i.e. without 'LIST
+% xlist, depli are lisp lists, i.e. without 'list
 % - totdf3 calculates total derivative of s(xlist,depli) w.r.t. x which
 %   is the n'th variable, it returns (df(s,x), newdepli)
 % - totdf3 drops jet-variables on which s does not depend
 % - totdf3 automatically does substitutions using the list sb which
 %   is updated if prolongations of substitutions are calculated,
-%   i.e. sb is destructively changed!!
+%   i.e. sb is destructively changed!
 % - structure of sb: lisp list of lisp lists:
 %   ((to_be_replaced_jet_var_name, to_be_replaced_jet_var_deriv_1,..),
 %    subst_expr_in_jet_space_coord, list_of_jet_vars_in_subst_expr)
@@ -301,8 +301,8 @@ begin
   if (null indxlist) or ((length indxlist)=1) then
   <<cplist:=etalist;
     while u neq cadar cplist do cplist:=cdr cplist;
-    etam:=(simp!* caar cplist . caddar cplist) . nil;
-  >>                                           else
+    etam:=(caar cplist . caddar cplist) . nil;
+  >>                                          else
   etam:=etamn(u,cdr indxlist,xilist,etalist,ordok,truesub,
               subordinc,xlist)$
 
@@ -333,14 +333,13 @@ begin
       >>;
 
       ulist:=h1 . ulist;
-      if not zerop car el then <<
+      if not sqzerop car el then <<
 
         %--- substitution of h1?
         if h4:=subtest(h1,truesub,xlist,ordok,subordinc) 
         then <<h1:=car h4;depli:=mergedepli(depli,cdr h4)>>
         else h1:=simp!* h1;
-
-        r:=subtrsq(r,multsq(h1,<<h2:=totdf3(simp!* car el,cadddr el,car x,
+        r:=subtrsq(r,multsq(h1,<<h2:=totdf3(car el,cadddr el,car x,
                                             cadr x,truesub,xlist,0,0)$
                                  if car car h2 then % ie. car h2 neq 0
                                  <<if h4 then depli:=mergedepli(depli,cdr h4)
@@ -358,7 +357,7 @@ begin
       for h2:=1:(length indxlist) do h3:=nil . h3;
       depli:=mergedepli(depli,h3);
     >>;
-    % (if not full then drop(r,'LIST . car revdylist) else r) .
+    % (if not full then drop(r,'list . car revdylist) else r) .
     % (reverse ulist)
     h1:=(r . depli) . (reverse ulist)$
     if ordok=0 then etamn_al:=cons((h5 . h1),etamn_al);
@@ -399,9 +398,8 @@ begin
   <<h:=cadr h;
     symcon:=cdadr h$
     for each g in cdaddr h do <<
-
-      xilist :=subst(caddr g, cadr g,  xilist);
-      etalist:=subst(caddr g, cadr g, etalist);
+      xilist :=for each k in  xilist collect cons(subsq(car k,{(cadr g . caddr g)}),cdr k)$ %!!
+      etalist:=for each k in etalist collect cons(subsq(car k,{(cadr g . caddr g)}),cdr k)$ %!!
       inequ  :=subst(caddr g, cadr g,  inequ);
 %--> Erkennung von 'e, 'x siehe:
 
@@ -426,15 +424,16 @@ begin
       terpri()$
       fctprint flist;terpri()$terpri()>>;
   >>;
+
   return list(symcon,xilist,etalist,flist,inequ)
 end$ % of callcrack
 
 %---------------------
 
-symbolic operator  liepde$
-symbolic procedure liepde(problem,symtype,flist,inequ)$
+put('liepde,'psopfn,'liepde_psopfn)$
+symbolic procedure liepde_psopfn(inp)$
 
- COMMENT
+ comment
 
  problem:  {{eq1,eq2, ...},   % equations
 	    { y1, y2, ...},   % functions
@@ -593,16 +592,24 @@ begin
          etapqcop, etapq, oldbatch_mode, allsym, symcon_s, xilist_s, 
          etalist_s, inequ_s, flist_s, truesub_s, oldcollect_sol, 
          oldprint_, flist_slin, flist_snli, return_list, last_call, 
-         paralist, proc_list_bak, max_gc_fac_bak, flistorg;
- 
-%lietrace_:=t;
+         paralist, proc_list_bak, max_gc_fac_bak, flistorg,problem,
+         symtype,flist,inequ$
+
+% lietrace_:=t;
   backup_reduce_flags()$
   cpu:=time()$ gc:=gctime()$
   oldadj:=adjust_fnc; adjust_fnc:=nil;
   oldcollect_sol:=collect_sol; collect_sol:=t;
 
   %--------- extracting input data
-  eqlist:= cdr   maklist cadr   problem;
+  problem:=aeval car inp$
+  symtype:=reval cadr inp$
+  flist  :=reval caddr inp$
+  inequ  :=reval cadddr inp$
+  eqlist:= 
+  if atom cadr problem       then list cadr problem else
+  if car  cadr problem='list then  cdr cadr problem else
+                                  list cadr problem$
   ylist := reval maklist caddr  problem;
   xlist := reval maklist cadddr problem;
 
@@ -640,11 +647,18 @@ begin
   % if length(ylist)+length(xlist) neq length(symtype)+1 then  <--- taken out
   % rederr("Number of assignments in the ansatz is wrong.");   <--- taken out
 
+    % find the order of the ansatz
     symord:=0;
+    % at first the max order of derivatives of elements of ylist
     for each e1 in cdr symtype do
     for each e2 in cdr ylist do
     <<n:=totdeg(caddr e1,e2);
       if n>symord then symord:=n>>;
+    % then the max order of jet variables occuring in functions to be computed
+    for each e1 in flist do <<
+     e2:=fctargs e1$
+     for each h in e2 do <<n2:=-1+length combidif h;if n2>symord then symord:=n2>>$
+    >>$
     if  symord = 0                        then pointp  :=t else
     if (symord = 1) and (length(ylist)=2) then contactp:=t else
                                                generalp:=t;
@@ -724,14 +738,13 @@ begin
   if ordr>symord then jetord:=ordr
                  else jetord:=symord$
   sb:=subdif1(xlist,ylist,jetord)$
-
   eqlist:=cons('list,eqlist);
   if ansatzp then eqlist:=list('list,symtype,eqlist);
   if truesub then eqlist:=list('list,cons('list,truesub),eqlist);
   if inequ   then eqlist:=list('list,cons('list,inequ),eqlist);
 
   on evallhseqp;
-  eqlist:=transeq(eqlist,xlist,ylist,sb);
+  eqlist:=transeq(eqlist,xlist,ylist,sb); %<<<<<<----- slow
   off evallhseqp;
 
   if inequ   then <<inequ  :=cdadr eqlist;eqlist:=caddr eqlist>>;
@@ -762,7 +775,7 @@ begin
   xilist :=for each e1 in xlist collect
   <<n:=n+1;
     if pointp or ansatzp then <<
-      h:=mkid('xi_,e1);
+      h:=mkid('xi_,e1); %!!
       if not ansatzp then <<
         nodependlist {h};
         depnd(h,xlist . deplist);
@@ -771,29 +784,28 @@ begin
         depli:=deplist;
       >>             else depli:=nil
     >>                   else <<h:=0;depli:=nil>>;
-    {h,e1,n,depli}
+    {simp h,e1,n,depli}
   >>;
   depli:=if (not ansatzp) and (not generalp) then deplist
                                              else nil;
   n:=0;
   etalist:=for each e1 in ylist collect
   <<n:=n+1;
-    h:=mkid('eta_,e1);
+    h:=mkid('eta_,e1); %!!
     if not ansatzp then <<
       if not generalp then <<nodependlist {h};depnd(h,xlist . deplist)>>;
       % the generalp-case is done below when substitutions are known
       flist:=h . flist;
       flin_:=h . flin_;
     >>;
-    {h,e1,depli}
+    {simp h,e1,depli}
   >>;
   flistorg:=flist;
 
   if ansatzp then <<
     for each e1 in symtype do <<
-
-      xilist :=subst(caddr e1, cadr e1,  xilist);
-      etalist:=subst(caddr e1, cadr e1, etalist);
+      xilist :=for each k in  xilist collect cons(subsq(car k,{(cadr e1 . caddr e1)}),cdr k)$ %!!
+      etalist:=for each k in etalist collect cons(subsq(car k,{(cadr e1 . caddr e1)}),cdr k)$ %!!
       %--> Erkennung von 'e, 'x siehe:
       %      h:=intern car explode cadr e1;
       %write"h=",h;terpri()$
@@ -811,7 +823,7 @@ begin
   %---- from eqlist. Substitutions may not be optimal if starting
   %---- system is not in standard form
 
-  COMMENT: Counting in how many equations each highest
+  comment: Counting in how many equations each highest
   derivative occurs. Those which do not occur allow Stephani-Trick,
   those which do occur once and there linearly are substituted by that
   equation.
@@ -927,6 +939,10 @@ begin
 
   lhslist:=for each e1 in truesub collect cadr e1;
 
+  %------ check that functions to be computed do not depend on
+  %       lhs of the system
+  chkflist(cons('list,flist),cons('list,lhslist))$
+
   %-- Bringing truesub into a specific form: lisp list of lisp lists:
   %   ((to_be_replaced_jet_var_name, to_be_replaced_jet_var_deriv_1,..),
   %    subst_expr_in_jet_space_coord, list_of_jet_vars_in_subst_expr)
@@ -977,7 +993,6 @@ begin
                       terpri()$write"freelist=",freelist;
                       %terpri()$write"occurlist=",occurlist
                     >>;
-
   %--- To avoid non-uniqueness in the case of the investigation of
   %--- generalized symmetries let the characteristics eta_.. (xi_..=0)
   %--- not depend on substituted derivatives
@@ -991,8 +1006,9 @@ begin
              >>;
     for e1:=1:(length etalist) do <<
       h:=nth(etalist,e1);
-      nodependlist {car h};
-      depnd(car h,xlist . deplist);
+      e2:=prepsq car h$
+      nodependlist {e2};
+      depnd(e2,xlist . deplist);
       h:=pnth(h,3);
       rplaca(h,deplist)
     >>
@@ -1045,23 +1061,22 @@ begin
     if not freeof(depl!*,n4) then freelist:=delete(n4,freelist);
     if freelist then <<
       n:=nth(eqordr,n1);   % order of this equation
-      h:=simp!* 0;
+      h:=simp 0;
       for each e1 in xilist do
       if (cadddr e1) and ((length cadddr e1) > n) then
       % xi (=car e1) is of order n
       h:=addsq(h,
-               if car e1 = 0 then simp!* 0
-                             else <<n3:=mergedepli(n3,cadddr e1);
-                                    multsq(simp!* car e1,
-                                           simpdf {eqn,cadr e1})
-                                  >>         
-              );    
+               if sqzerop car e1 then simp 0
+                                 else <<n3:=mergedepli(n3,cadddr e1);
+                                        multsq(car e1,simpdf {eqn,cadr e1})
+                                      >>
+              );
       for each e2 in occli do
       h:=addsq(h,
                multsq(<<n5:=combidif(e2);     
                         n4:=car etamn(car n5,cdr n5,xilist,etalist,
                                       nth(eqordr,n1),truesub,subordinc,xlist);
-                        vl:=mergedepli(vl,cdr n4);  
+                        vl:=mergedepli(vl,cdr n4);
                         car n4
                       >>,
                       simpdf {eqn,e2}
@@ -1069,9 +1084,9 @@ begin
               );
       vl:=joinsublists(xlist . vl)$
 
-if n1>1 then
-for each e1 in reverse flistorg do
-if not freeof(symcon,e1) then flist:=union({e1},flist);
+      if n1>1 then
+      for each e1 in reverse flistorg do
+      if not freeof(symcon,e1) then flist:=union({e1},flist);
 
       for each e2 in freelist do
       <<e1:=((car diffsq(h,e2)) . 1);
@@ -1085,7 +1100,7 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
         % splitting
         if car e1 and (car e1 neq 0) then << % ie. e1<>0
 
-          e1:=cdr split_simplify({{'list,{'!*sq,e1,nil}},
+          e1:=cdr split_simplify({{'list, mk!*sq e1},
                                    'list . nil,
                                    'list . flist,
                                    'list . vl, nil
@@ -1116,23 +1131,22 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
     n2:=cadr adddepli(eqn,revdylist);
     n3:=n2;  % n3 are the variables in the new condition
 
-    h:=simp!* 0;
+    h:=simp 0;
     for each e1 in xilist do
-    h:=addsq(h,if car e1 = 0 then simp!* 0
-                             else <<n3:=mergedepli(n3,cadddr e1);
-                                    multsq(simp!* car e1,
-                                           simpdf {eqn,cadr e1})
-                                  >>);
-
+    h:=addsq(h,if sqzerop car e1 then simp 0
+                                 else <<n3:=mergedepli(n3,cadddr e1);
+                                        multsq(car e1,simpdf {eqn,cadr e1})
+                                      >>);
     for each e1 in n2 do
     for each e2 in e1 do
-    h:=addsq(h,multsq(<<n5:=combidif(e2);      
+    h:=addsq(h,multsq(<<  %<<<<<<----- slow?
+                        n5:=combidif(e2);      
                         n4:=car etamn(car n5,cdr n5,xilist,etalist,0,
                                       truesub,0,xlist);
                         n3:=mergedepli(n3,cdr n4);      
                         car n4
                       >>,
-                      simpdf {eqn,e2}
+                      simpdf {eqn,e2}   %<<<<<<----- slow
                      )
             );
     h:=(car h . 1);  % ie. take numerator
@@ -1146,13 +1160,13 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
     >>;
     vl:=union(vl,n3);
 
-if prelim_ or (n1>1) then
-for each e1 in reverse flistorg do
-if not freeof(symcon,e1) then flist:=union({e1},flist);
+    if prelim_ or (n1>1) then
+    for each e1 in reverse flistorg do
+    if not freeof(symcon,e1) then flist:=union({e1},flist);
 
     % splitting
     if car h and (car h neq 0) then <<
-      h:=cdr split_simplify({{'list,{'!*sq,h,nil}},
+      h:=cdr split_simplify({{'list,mk!*sq h},
                               'list . nil,
                               'list . flist,
                               'list . vl, nil
@@ -1207,11 +1221,11 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
      cons((length cdadr e1)+(length cdaddr e1),e1);
   h:=idx_sort h;
   allsym:=for each e1 in h collect cdr e1;
-
   while allsym do <<
 
     nodependlist ylist;
     symcon_s:=cdadar allsym;
+
     xilist_s :=xilist;
     etalist_s:=etalist;
     inequ_s  :=inequ;
@@ -1222,8 +1236,8 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
       truesub_s :=subst(caddr g, cadr g, truesub_s);
       paralist:=g . paralist
     >>                           else <<
-      xilist_s :=subst(caddr g, cadr g,  xilist_s);
-      etalist_s:=subst(caddr g, cadr g, etalist_s);
+      xilist_s :=for each k in  xilist_s collect cons(subsq(car k,{(cadr g . caddr g)}),cdr k)$ %!!
+      etalist_s:=for each k in etalist_s collect cons(subsq(car k,{(cadr g . caddr g)}),cdr k)$ %!!
       inequ_s  :=subst(caddr g, cadr g,   inequ_s);
     >>;
 
@@ -1234,7 +1248,7 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
     >>;
     flist_s:=cdr reval cadddr car allsym;
     allsym:=cdr allsym$
-    oldprint_:=print_; print_:=nil;
+    oldprint_:=print_; print_:=nil; 
     if print_ then <<terpri()$
       write"Remaining free functions after the last CRACK-run:";
       terpri()$
@@ -1242,18 +1256,19 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
     >>;
 
     %------- Calculation finished, simplification of the result
-    h:=append(for each el in  xilist_s collect car el,
-              for each el in etalist_s collect car el );
+    h:=append(for each el in  xilist_s collect mk!*sq car el,    %!!
+              for each el in etalist_s collect mk!*sq car el );  %!!
     if symcon_s then for each el in symcon_s do h:=cons(el,h);
-    h:=reval cons('list,h); 
+    h:=cons('list,h); 
 
     %------- droping redundant constants or functions
     flist_slin:=nil;  % flist_slin are the new lin. constants and functions
     flist_snli:=nil;  % flist_snli are the non-lin. parameters in equations
 
     for each e1 in flist_s do 
-    if freeof(eqlist,e1) then flist_slin:=e1 . flist_slin
-                         else flist_snli:=e1 . flist_snli;
+    if freeof(paralist,e1) then flist_slin:=e1 . flist_slin
+                           else flist_snli:=e1 . flist_snli;
+
     oldbatch_mode:=!*batch_mode$ !*batch_mode:=t$
     if print_ then <<
       write"***** START OF A COMPUTATION TO DROP REDUNDANT *****"$terpri()$
@@ -1285,14 +1300,14 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
       if print_ then <<terpri()$
         write"Free constants and/or functions have been rescaled. ">>$
       for each e1 in cdr sb do <<
-        xilist_s :=subst(caddr e1, reval cadr e1,  xilist_s);
-        etalist_s:=subst(caddr e1, reval cadr e1, etalist_s);
+        xilist_s :=for each k in  xilist_s collect cons(subsq(car k,{(reval cadr e1 . caddr e1)}),cdr k)$ %!!
+        etalist_s:=for each k in etalist_s collect cons(subsq(car k,{(reval cadr e1 . caddr e1)}),cdr k)$ %!!
         symcon_s :=cdr reval cons('list,subst(caddr e1,reval cadr e1,symcon_s));
       >>;
     >>;
 
     symcon_s := for each e1 in symcon_s collect 
-		car simplifypdesq(simp e1,append(flist_slin,flist_snli),t,nil,nil)$
+		car simplifypdeSQ(simp e1,append(flist_slin,flist_snli),t,nil,nil)$
     print_:=oldprint_;
 
     %------- Computing the prolongation of the symmetry vector
@@ -1314,7 +1329,7 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
 	h:=car etamn(car h,cdr h,xilist_s,etalist_s,0,truesub_s,0,xlist)$
 	n3:=(length cdr h) - 1;
 	if n3>jetord then jetord:=n3$
-	etapqlist:=cons(list('equal,n4,{'!*sq,car h,nil}),etapqlist);
+	etapqlist:=cons(list('equal,n4,mk!*sq car h),etapqlist);
       >>
     >>$
     revdylist:=nil;
@@ -1324,11 +1339,11 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
 			   else n:=nil;
     xilist_s:=for each el in  xilist_s collect
     <<e1:=mkid( 'xi_,cadr el);
-      e1:=list('equal,e1,reval car el);
+      e1:=list('equal,e1,prepsq car el); %!!
       e1>>;
     etalist_s:=for each el in etalist_s collect
     <<e1:=mkid('eta_,cadr el);
-      e1:=list('equal,e1,reval car el);
+      e1:=list('equal,e1,prepsq car el); %!!
       e1>>;
     %--- Backsubstitution of e.g. u`1`1 --> df(u,x,2) 
     for each e1 in ylist do depnd(e1,list(xlist));
@@ -1344,12 +1359,13 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
     xicop   := xilist_s$
     etacop  :=etalist_s$
     etapqcop:=etapqlist$
+
     sb:=nil$
     flcop:=flist_slin;
     % Drop constants/functions of integration which may have come up
     % when integrating parametric functions in the equation:
     for each e1 in flist_slin do
-    if freeof(xicop,e1) and freeof(etacop,e1) then flcop:=delete(e1,flcop);
+    if not freeof(eqlist,e1) then flcop:=delete(e1,flcop);
     for each e1 in flcop do 
     <<% if null n2 then n2:=freeof(xicop,e1) and freeof(etacop,e1)$ 
       if freeof(symcon_s,e1) then <<

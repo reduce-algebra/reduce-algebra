@@ -35,8 +35,8 @@ module reduce_patches$
 %%%>>>>>>>>>>  the next fixes some noncom bug
 %%
 %% symbolic procedure diffp(u,v);
-%%    % U is a standard power, V a kernel.
-%%    % Value is the standard quotient derivative of U wrt V.
+%%    % u is a standard power, v a kernel.
+%%    % Value is the standard quotient derivative of u wrt v.
 %%    begin scalar n,w,x,y,z; integer m;
 %%         n := cdr u;     % integer power.
 %%         u := car u;     % main variable.

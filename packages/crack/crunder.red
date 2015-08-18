@@ -131,7 +131,7 @@ begin scalar f1,f2,f1d,f2d,d1,d2,gd,phi,newf,q$
    newf:=newfct(fname_,nil,nfct_)$
    nfct_:=add1 nfct_;
    ftem_:=fctinsert(newf,ftem_)$
-   q:=mkeqsq(subtrsq(simp newf,phi),nil,nil,{newf,f1,f2},nil,allflags_,nil,
+   q:=mkeqSQ(subtrsq(simp newf,phi),nil,nil,{newf,f1,f2},nil,allflags_,nil,
              list(0),nil,pdes);
    put(q,'not_to_eval,{newf})$
    {q}
@@ -177,7 +177,7 @@ begin scalar h,f1,f2,f3,s,k,l,d,q$
    ftem_:=fctinsert(f3,ftem_)$ 
 
    % currently h={'equal,f1,rhs}
-   q:=mkeqsq(addsq(simp f3,subtrsq(simp cadr h,simp caddr h)),nil,nil,
+   q:=mkeqSQ(addsq(simp f3,subtrsq(simp cadr h,simp caddr h)),nil,nil,
 	     {f1,f2,f3},get(p,'vars),allflags_,t,list(0),nil,pdes)$
    put(q,'not_to_eval,{f3})$
    l:=cons(q,l)
@@ -376,7 +376,7 @@ begin
 
   drvs:=cdr drvs;
  >>$
- if ulode and null get(p,'linear_) and null lin_check_sq(get(p,'sqval),get(p,'allvarfcts))
+ if ulode and null get(p,'linear_) and null lin_check_SQ(get(p,'sqval),get(p,'allvarfcts))
  then ulode:=nil$
 
  if tr_ulode then <<
@@ -417,7 +417,7 @@ begin
    if f neq fn then pdo:=subsq(pdo,{(f . 0)});
 
    % Is pdo linear in fn?
-   if not lin_check_sq(pdo,{fn}) then <<
+   if not lin_check_SQ(pdo,{fn}) then <<
     if tr_ulpde then <<write"not linear in ",f$terpri()>>$
     ulpde:=nil
    >>                            else <<
@@ -655,7 +655,7 @@ begin
  >>$
  if tr_ulode then algebraic(write"rtnlist=",cons('list,rtnlist));
  h:=for each h in rtnlist collect
-    mkeqsq(nil,nil,h,union(get(p,'fcts),allvarf),vl,allflags_,t,
+    mkeqSQ(nil,nil,h,union(get(p,'fcts),allvarf),vl,allflags_,t,
            list(0),nil,pdes)$
  if print_ then terpri()$
  freeint_:=freeint_bak;
@@ -708,7 +708,7 @@ begin
   flin_:=sort_according_to(cons(h,flin_),ftem_)
  >>$
  h:=for each h in eqlist collect 
- mkeqsq(nil,nil,cdr h,car h,get(car pchar,'vars),allflags_,
+ mkeqSQ(nil,nil,cdr h,car h,get(car pchar,'vars),allflags_,
         t,list(0),nil,pdes)$
  if print_ then terpri()$
  return h

@@ -141,6 +141,11 @@ begin
   >>;
   if contrace then write"treqlist=",treqlist,
                         "nodep=",nodep;
+
+  %------ check that functions to be computed do not depend on
+  %       lhs of the system
+  chkflist(flist,nodep)$
+
   if cf0 then
   for n:=1:nde do <<
     h1:=mkid(q_,n);
@@ -288,7 +293,7 @@ begin
     inverse_trafo_list_incomplete:=nil;
     condi:=split_simp(condi,inequ,fl,vl,nil)$
     solns:=crack(condi,inequ,fl,vl);
-
+    save_all_sol(solns);
     %--- postprocessing
     lisp 
     if done_trafo and cdr done_trafo then <<
@@ -736,7 +741,7 @@ begin
           if paralist neq {} then 
           for each e2 in sqsecond soln do
           if not freeof(paralist,lhs e2) then 
-          <<write e2,",";lisp(terpri());
+          <<write e2;lisp(terpri());
             h2:=sub(e2,h2);
             h3:=sub(e2,h3)
           >>$

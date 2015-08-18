@@ -58,9 +58,9 @@ begin scalar p,ex$
  terpri()$
  write "If you want to add an identity then type `new_idty' <ENTER>. "$
  p:=termread()$
- if (p='new_idty) or member(p,idnties_) then
+ if (p='NEW_IDTY) or member(p,idnties_) then
   <<terpri()$write "Input of a value for "$
-  if p='new_idty then write "the new identity."
+  if p='NEW_IDTY then write "the new identity."
                  else write p,"."$
   terpri()$
   write "You can use names of other identities, e.g. 3*id_2 - df(id_1,x); "$
@@ -69,11 +69,11 @@ begin scalar p,ex$
   terpri()$
   ex:=termxread()$
   for each a in idnties_ do ex:=subst(get(a,'val),a,ex)$  % #?#
-  if p neq 'new_idty then drop_idty(p)$
+  if p neq 'NEW_IDTY then drop_idty(p)$
   new_idty(reval ex,nil,nil)$                             % #?#
 
   terpri()$write car idnties_$
-  if p='new_idty then write " is added"
+  if p='NEW_IDTY then write " is added"
                  else write " replaces ",p$
  >>
  else <<terpri()$
@@ -93,7 +93,7 @@ begin scalar id,idcp$
  if simplify then <<
   id:=contradiction_;
 % idty:=simplifypde(idty,pdes,t,nil)$
-  idty:=prepsq car simplifypdesq(simp idty,pdes,t,nil,nil)$ % ##### already SQ-updated, maybe drop prepsq
+  idty:=prepsq car simplifypdeSQ(simp idty,pdes,t,nil,nil)$ % ##### already SQ-updated, maybe drop prepsq
   contradiction_:=id
  >>$
  if not trivial_idty(pdes,idty) then <<
@@ -200,13 +200,17 @@ begin scalar pdes;
 end$
 
 symbolic procedure write_id_to_file(pdes)$
-begin scalar s,p,h,pl$
+begin scalar s,p,h,pl,a,save,ofl!*bak$
  if idnties_ then <<
   change_prompt_to ""$ 
   write"Please give the name of the file in double quotes"$terpri()$
   write"without `;' : "$
   s:=termread()$
-  out s;
+  a := open(s, 'output);
+  ofl!*bak:=ofl!*$
+  ofl!*:=s$ % any value neq nil, to avoid problem with redfront
+  save:=wrs a;
+  %out s;
   off nat$
 
   write"load crack$"$terpri()$
@@ -233,7 +237,11 @@ begin scalar s,p,h,pl$
   terpri()$
   terpri()$
   write"end$"$terpri()$
-  shut s;
+
+  wrs save$ 
+  ofl!*:=ofl!*bak$
+  close a;
+  %shut s;
   on nat;
   restore_interactive_prompt()$
  >>
@@ -251,7 +259,7 @@ begin scalar l$
  write"present decoupling information, i.e. `dec_with'"$ terpri()$
  write"would be set to nil. Please confirm (y/n). "$
  l:=termread()$
- if (l='y) or (l='y) then <<
+ if (l='y) or (l='Y) then <<
   record_hist:=t;
   for each l in pdes do put(l,'histry_,l)$
   for each l in pdes do put(l,'dec_with,nil)$
@@ -337,18 +345,18 @@ begin scalar cl,ncl,vlcp,xlist,eql,a,f,newpdes,ftem_bak,
 %  % Each component of the divergence is tried to be written as
 %  % a divergence in the other (right) variables
 %  while ncl do <<
-%   a:=intcurrent2(car ncl,cons('LIST,pdes),cons('LIST,cdr xlist))$
+%   a:=intcurrent2(car ncl,cons('list,pdes),cons('list,cdr xlist))$
 %   if not zerop caddr a then <<
 %    cl:=cons(car ncl,cl);       ncl:=cdr ncl;
 %    vlcp:=cons(car xlist,vlcp); xlist:=cdr xlist
 %   >>                   else <<
 %    % It was possible to integrate car ncl to div(cdadr a,cdr xlist).
-%    % distribute {'DF,car a,car xlist} to the divergence of cdr ncl
+%    % distribute {'df,car a,car xlist} to the divergence of cdr ncl
 %    ncl:=cdr ncl;
 %    a:=cdadr a;
 %    nclu:=nil;
 %    while ncl do <<
-%     nclu:=cons(reval {'PLUS,car ncl,{'DF,car a,car xlist}}, nclu);
+%     nclu:=cons(reval {'plus,car ncl,{'df,car a,car xlist}}, nclu);
 %     ncl:=cdr ncl;
 %     a:=cdr a
 %    >>;
@@ -367,7 +375,7 @@ begin scalar cl,ncl,vlcp,xlist,eql,a,f,newpdes,ftem_bak,
   ftem_bak:=ftem_;
   eql:=int_curl(reval cons('list,ncl),  cons('list,fl),
                       cons('list,xlist),cons('list,varslist(ncl,ftem_,vl)) )$
-  % eql has the form {'LIST,reval cons('LIST,resu),cons('LIST,neweq)}
+  % eql has the form {'list,reval cons('list,resu),cons('list,neweq)}
   if (null eql) or (null cdadr eql) or (zerop cadadr eql) then return nil;
   eql:=cdr eql;
   if print_ then <<
@@ -408,7 +416,7 @@ begin scalar cl,ncl,vlcp,xlist,eql,a,f,newpdes,ftem_bak,
    drop_idty(org_idty)$ 
    while eql do <<
     if not zerop car eql then <<
-     a:=mkeqsq(nil,nil,car eql,ftem_,vl,allflags_,nil,list(0),nil,allpdes);
+     a:=mkeqSQ(nil,nil,car eql,ftem_,vl,allflags_,nil,list(0),nil,allpdes);
      newpdes:=cons(a,newpdes);
     >>;
     eql:=cdr eql;
@@ -448,10 +456,9 @@ begin scalar cl,ncl,vlcp,xlist,eql,a,f,newpdes,ftem_bak,
    >>;
    eql:=nil;
    for each a in extrapdes do <<
-    a:=mkeqsq(nil,nil,a,ftem_,vl,allflags_,t,list(0),nil,allpdes);
+    a:=mkeqSQ(nil,nil,a,ftem_,vl,allflags_,t,list(0),nil,allpdes);
     allpdes:=eqinsert(a,allpdes);
-    to_do_list:=cons(list('subst_level_35,%allpdes,forg,vl_,
-                          list a),
+    to_do_list:=cons(list('subst_level_35,list a),
                      to_do_list);
     eql:=cons(a,eql)
    >>;

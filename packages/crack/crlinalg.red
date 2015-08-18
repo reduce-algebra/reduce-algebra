@@ -189,7 +189,7 @@ symbolic procedure flin_non_triv_cond(pdes)$
 % alg_poly=t, not null flin_, not null fhom_, hom_deg={1,..} .
 if alg_poly and flin_ and fhom_ then
 begin scalar oldorder,p,h,pcf,allcf,fl,u,v,tr_subsys,sysli,sy,r,s,ncondi,
-             some_new,no_of_pdes,umax,minsize,fi$
+             some_new,no_of_pdes,umax,minsize,fi,a,save,ofl!*bak,!*natbat$
 %tr_subsys:=t$ 
 
  % determination of all coefficients of all flin_ in all equations
@@ -239,7 +239,13 @@ begin scalar oldorder,p,h,pcf,allcf,fl,u,v,tr_subsys,sysli,sy,r,s,ncondi,
   r:=random 10$                                          %@@
   fi:=bldmsg("%w%d",fi,r)                                %@@
  >>$                                                     %@@
- algebraic <<off nat;out fi>>$                           %@@
+ %algebraic <<off nat;out fi>>$                           %@@
+ a:=open(fi,'output);
+ ofl!*bak:=ofl!*$
+ ofl!*:=fi$ % any value neq nil, to avoid problem with redfront
+ save:=wrs a;
+ !*natbat:=!*nat$                                                                
+ off nat$                                                                        
 
  while sysli and (u<umax) do <<
   sy:=car sysli; sysli:=cdr sysli;
@@ -265,7 +271,11 @@ begin scalar oldorder,p,h,pcf,allcf,fl,u,v,tr_subsys,sysli,sy,r,s,ncondi,
   setk('matrix_849,nil)
  >>;
  write"end$"$ terpri()$                                 %@@
- algebraic (shut fi)$                                   %@@
+ %algebraic (shut fi)$                                   %@@
+ wrs save$ 
+ ofl!*:=ofl!*bak$
+ close a;
+ if !*nat neq !*natbat then on nat$
  equations_file:=fi;                                    %@@
 
  if tr_subsys then <<write"ncondi=",ncondi$ terpri()>>$
@@ -273,7 +283,7 @@ begin scalar oldorder,p,h,pcf,allcf,fl,u,v,tr_subsys,sysli,sy,r,s,ncondi,
  no_of_pdes:=length pdes;
  s:=nil;
  for each h in ncondi do <<
-  r:=mkeqsq(h,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes);
+  r:=mkeqSQ(h,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes);
   pdes:=eqinsert(r,pdes)$
   s:=cons(r,s)
  >>;
@@ -341,7 +351,7 @@ begin scalar pdes,flcp,p,f,h,coefgcd,pdescp,casesub,nocasub,s,ff,q$
   if coefgcd neq 1 then <<
    if pairp coefgcd and car coefgcd='!*sq then 
 % better do a full factorization:
-   h:=simplifysq(cadr coefgcd,get(p,'fcts),t,nil,nil)
+   h:=simplifySQ(cadr coefgcd,get(p,'fcts),t,nil,nil)
                                           else h:=(1 . 1)$
 
    if h neq {(1 . 1)} then casesub:=cons((coefgcd . f),casesub)
@@ -397,14 +407,15 @@ begin scalar pdes,flcp,p,f,h,coefgcd,pdescp,casesub,nocasub,s,ff,q$
   fhom_:=sort_according_to(cons(ff,fhom_),ftem_)$  
 
   % new equation
-  q:=mkeqsq(subtrsq(multsq(cadar s,simp cdr s),simp ff),nil,nil,
+  q:=mkeqSQ(subtrsq(multsq(cadar s,simp cdr s),simp ff),nil,nil,
             ftem_,vl_,allflags_,nil,list(0),nil,pdes)$
   put(q,'not_to_eval,{ff})$
   pdes:=eqinsert(q,pdes)$
   fcteval q$
 
-  to_do_list:=cons(cons('subst_level_35,   % module 20
-                        {{q},pdes,cdr s}),to_do_list)$ 
+  to_do_list:=cons(cons('subst_level_35, 
+                        {{q},     cdr s}),to_do_list)$ 
+%                       {{q},pdes,cdr s}),to_do_list)$ 
 
  >>$
 

@@ -33,7 +33,7 @@ module simpsolution$
 symbolic operator dropredundant$
 
 symbolic procedure dropredundant(ex,fl,vl,unequ)$
-COMMENT
+comment
  All arguments are algebraic, ex is the list of expressions or
  equations from which the right side is taken, fl is the list of
  functions to be sorted out, vl the list of all extra independent variables,
@@ -48,7 +48,7 @@ begin scalar a;
                     if (pairp a) and (car a='equal) then caddr a else a,{},
                     cdr fl,for each a in cdr unequ collect simp a),nil,vl);
  % dropredund() returns 
- % {{{EQUAL,f,0},..},{SQ-exp,..},{{EQUAL,f,SQ-exp},..},
+ % {{{equal,f,0},..},{SQ-exp,..},{{equal,f,SQ-exp},..},
  %  union(nofl_arbit,flstart),{ineq_ in SQ-form}}
  return if a then 
  {'list,cons('list,car    a),
@@ -73,7 +73,7 @@ begin
 %
 % for each f in cadr arglist do 
 % if not pairp f then nofl:=cons(f,nofl) else
-% if car f='EQUAL then fli:=cons(f,fli)$
+% if car f='equal then fli:=cons(f,fli)$
 % fred:=setdiff(ftem_,nofl);
 
  % fsub_ substitutions are done in forg:
@@ -82,7 +82,7 @@ begin
  % i.e. for each f in forg
  if not pairp f then nofl:=cons(f,nofl) else
  if car f='equal then fli:=cons(f,fli)$  
- % fli has the form {{EQUAL,f,SQ-form},...}
+ % fli has the form {{equal,f,SQ-form},...}
  fred:=setdiff(ftem_,nofl);
  if null fred then return if null bak then nil
                                       else {car arglist,newforg}; 
@@ -102,16 +102,16 @@ begin
 
  redu:=
  dropredund({for each p in car  arglist collect get(p,'sqval),  
-             fli,      % all of form: {EQUAL,f,SQ-form}
+             fli,      % all of form: {equal,f,SQ-form}
              fred,     % functions that can be dropped
              ineq_},
             nofl,vl_);
  % dropredund() returns 
- % {{{EQUAL,f,0},..},{SQ-exp,..},{{EQUAL,f,SQ-exp},..},
+ % {{{equal,f,0},..},{SQ-exp,..},{{equal,f,SQ-exp},..},
  %  union(nofl_arbit,flstart),{ineq_ in SQ-form}}
 
  oldpdes:=car restore_pdes(bak)$
- % This restores pass_on AND pass_back values.
+ % This restores not_passed_back AND passed_back values.
  proc_list_:=prolibak;
  if redu and car redu then <<
   for each f in car redu do <<
@@ -128,7 +128,7 @@ begin
             then eqinsert(car oldpdes,newpdes) 
             else <<for each f in allflags_ do flag1(car oldpdes,f)$ 
                    % initialization before calling update
-                   p:=updatesq(car oldpdes,car newpval,nil,nil,get(car oldpdes,'fcts),
+                   p:=updateSQ(car oldpdes,car newpval,nil,nil,get(car oldpdes,'fcts),
                                get(car oldpdes,'vars),t,{0},newpdes)$
                    if null p then <<
                     drop_pde_from_idties(car oldpdes,car arglist,nil);
@@ -153,7 +153,7 @@ end$
 
 symbolic procedure dropredund(a,nofl,vl)$   
 % a has the structure of one solution of CRACK in symbolic mode,
-% {{SQ-expressions},{{EQUAL,f,SQ-form}},{f},{ineq_ in SQ-form}}
+% {{SQ-expressions},{{equal,f,SQ-form}},{f},{ineq_ in SQ-form}}
 % nofl is a list of functions not to be modified or dropped
 %
 % dropredund
@@ -277,7 +277,7 @@ begin
  collect_sol_bak:=collect_sol$collect_sol:=t$
  batchcount_bak :=batchcount_$  batchcount_:=-1$
  stepcounter_bak:=stepcounter_$ stepcounter_:=0$
- b:=crackmain(mkeqsqlist(condi,nil,nil,fl,vl_,allflags_,t,
+ b:=crackmain(mkeqSQlist(condi,nil,nil,fl,vl_,allflags_,t,
                          list(0),nil),fl);  %### each element of b has now 5 elements
  batchcount_:=batchcount_bak$
  stepcounter_:=stepcounter_bak$
@@ -336,7 +336,7 @@ begin
    redund:=for each el1 in fldrop collect list('equal,el1,0); 
 
    % `a' has the structure of one solution of CRACK in symbolic mode,
-   % {{SQ-expressions},{{EQUAL,f,SQ-form}},{f},{ineq_ in SQ-form}}
+   % {{SQ-expressions},{{equal,f,SQ-form}},{f},{ineq_ in SQ-form}}
 
    % substitution list for substitutions in SQ-expressions
    el2:=for each el1 in fldrop collect (el1 . 0);
@@ -652,7 +652,7 @@ begin
 end$ % of absorbconst
 
 algebraic procedure drop_const(oldsoln, vars, additive)$
-COMMENT
+comment
   oldsoln is the output of a CRACK call. In all solutions functions
   which are independent of all elements of vars are dropped from
   the list of free functions/constants and
@@ -713,7 +713,7 @@ begin
   return soln
 end$ % of drop_const
 
-COMMENT
+comment
  The following are routines to help finding bugs. 
  Advantages and disadvantages of current routines:
 
@@ -737,10 +737,10 @@ algebraic procedure sol_define1$
 begin scalar a,b,assi$
   % This procedure contains the statements that specify a solution
   %
-  %  %======= Example 1: Test whether s=hhh-y**2/t**2,  u=y/t 
-  %  %                   is a solution where hhh=h(t) 
+  %  %======= Example 1: Test whether u=h-y**2/t**2,  v=y/t 
+  %  %                   is a solution where h=h(t) 
   %
-  %  depend hhh,t$
+  %  depend c_7,t$
   %  % returned is a list of 
   %  % - a list of vanishing expressions defining the solution to be tested, 
   %  % - a list of free constants, functions which can have any value except
@@ -768,11 +768,11 @@ begin scalar a,b,assi$
   %    algebraic(depend(lisp(car a),lisp b));
   %
   %    a:=cdr backup_;  backup_:=nil$  % to free space
-  %    {'LIST,
-  %     cons('LIST,
+  %    {'list,
+  %     cons('list,
   %          append(car a,for each assi in cadr a 
   %	                  collect {'DIFFERENCE,caddr assi,cadr assi})),
-  %     cons('LIST, caddr a)}
+  %     cons('list, caddr a)}
   %  >>
 end$
 
@@ -835,7 +835,7 @@ begin scalar pdes,forg,a,fsub,solu,l1,l2,batch_bak,session_bak,
  % further necessary step to call crackmain():
  recycle_fcts:=nil$  % such that functions generated in the sub-call 
                      % will not clash with existing functions
- % solu should be in {LIST,!*SQ-form,...} but to make sure it is
+ % solu should be in {list,!*sq-form,...} but to make sure it is
  % evaluated with aeval again
  solu:=for each l1 in cdr aeval solu collect
        if pairp l1 and (car l1='!*sq) then cadr l1
@@ -853,9 +853,9 @@ begin scalar pdes,forg,a,fsub,solu,l1,l2,batch_bak,session_bak,
   a:=setdiff(a,freef)$
   for each l1 in pdes do solu:=cons(get(l1,'sqval),solu)$
   pdes:=nil$
-  pdes:=mkeqsqlist(solu,nil,nil,a,vl_,allflags_,t,list(0),pdes)$
+  pdes:=mkeqSQlist(solu,nil,nil,a,vl_,allflags_,t,list(0),pdes)$
  >>       else  
- pdes:=append(mkeqsqlist(solu,nil,nil,a,vl_,allflags_,t,list(0),pdes),pdes)$
+ pdes:=append(mkeqSQlist(solu,nil,nil,a,vl_,allflags_,t,list(0),pdes),pdes)$
  print_more:=nil$
  proc_list_:=delete('solution_check1,proc_list_);
  % It must be possible to specify the modules to be used with cp in order
@@ -905,7 +905,7 @@ begin
 %                  b11 b12 b13 b21 b22 b23 b31 b32 b33  
 %                  c11 c12 c13 c22 c23 c33 n1 n2 n3 m1 m2 m3),cadr h) then 
 %  hsub:=cons(h,hsub)$
-%  cons('LIST,hsub)
+%  cons('list,hsub)
 % >>
 end$
 
@@ -987,7 +987,7 @@ begin scalar a,b,c,h$
   %    algebraic(depend(lisp(car a),lisp b));
   %    h:=cdr backup_;   backup_:=nil;   % to free space
   %
-  %    {'LIST,cons('LIST,car h),cons('LIST,cadr h)}
+  %    {'list,cons('list,car h),cons('list,cadr h)}
 
   %  >>
 end$

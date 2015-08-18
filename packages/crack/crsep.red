@@ -37,7 +37,7 @@ begin scalar p,m$
     if (flagp(car pdes,'to_sep                    ) or 
         (force_sep and flagp(car pdes,'to_casesep))    ) and 
       get(car pdes,'starde)                              and 
-      (zerop cdr get(car pdes,'starde))                  and
+      (zerop caar get(car pdes,'starde))                 and
       ((null p                ) or 
        (get(car pdes,'nvars)<m)    ) then <<
       p:=car pdes$
@@ -62,8 +62,8 @@ if (flagp(de,'to_sep) or
     (force_sep and flagp(de,'to_casesep))) and get(de,'starde) then 
 begin scalar l$
 
- if (l:=splitsq de) then return <<
-   l:=mkeqsqlist(for each a in l collect (a . 1),nil,nil,get(de,'fcts),
+ if (l:=splitSQ de) then return <<
+   l:=mkeqSQlist(for each a in l collect (a . 1),nil,nil,get(de,'fcts),
                  get(de,'vars),delete('to_sep,allflags_),t,
                  get(de,'orderings),pdes)$
    if print_ then <<
@@ -84,7 +84,7 @@ begin scalar l$
    return 1
  >>     else 
  if (length l>1) or ((length l=1) and (caar l neq 1)) then <<
-   l:=mkeqsqlist(nil,nil,for each a in l collect cdr a,get(de,'fcts),
+   l:=mkeqSQlist(nil,nil,for each a in l collect cdr a,get(de,'fcts),
                  get(de,'vars),delete('to_sep,allflags_),t,
                  get(de,'orderings),pdes)$
    if print_ then <<
@@ -97,10 +97,15 @@ begin scalar l$
         if force_sep then remflag1(de,'to_casesep)>>
 end$
 
-symbolic procedure splitsq(de)$
-if 0 neq cdr get(de,'starde) then nil else 
+symbolic procedure splitSQ(de)$
+if 0 neq caar get(de,'starde) then nil else 
 begin scalar splitvar,fn,nrk,sv,v,nrkcp,ke,k$
- splitvar:=car get(de,'starde)$
+
+ sv:=get(de,'starde)$
+ while sv and zerop caar sv do <<
+  splitvar:=cons(cdar sv,splitvar)$
+  sv:=cdr sv
+ >>$
  fn:=get(de,'fcts);
 
  % We only split wrt variables that occur in kernels without unknown functions.
@@ -257,7 +262,7 @@ if pairp h and car h='expt and cadr h=x then caddr h else
 if pairp h and car h='times then 
 begin scalar g,s,k$
  s:=for each g in cdr h collect expon(g,x)$
- % if one of the factors is not 1 or x or {'EXPT,x,...} then k:=t
+ % if one of the factors is not 1 or x or {'expt,x,...} then k:=t
  for each g in s do if null g then k:=t$
  return if k then nil
              else cons('plus,s)
@@ -301,7 +306,7 @@ begin scalar a,ea,b,eb,lcp,h,s,print_bak,iq,nr$
       print_bak:=print_$
       print_:=nil$
 %     h:=simplifypde(h,nonrat,t,nil)$ % h,ftem,factorization,history recording 
-      h:=simplifypdesq(simp h,nonrat,t,nil,nil)$ 
+      h:=simplifypdeSQ(simp h,nonrat,t,nil,nil)$ 
                             % h,ftem,factorization,history recording,separation 
       % does car h contradict an inequality?
       print_:=print_bak$
@@ -310,7 +315,7 @@ begin scalar a,ea,b,eb,lcp,h,s,print_bak,iq,nr$
       if contradiction_ then contradiction_:=nil 
                         else 
 %      if follows_from(h,pdes) then % Is the new condition already in pdes?
-      if follows_fromsq(if pairp cdr h then cdr h
+      if follows_fromSQ(if pairp cdr h then cdr h
                                        else list car h,pdes) then 
       % Is the new condition already in pdes?
       % Then we are inside a case. The equation to be separated should first
@@ -464,7 +469,7 @@ begin scalar eql,eqlist,a,q$
   while eql do
   <<a:=caar eql$                  %   Listen der Var. streichen
     if cddr a then a:=cons(car a,cons('plus,cdr a))
-	      else a:=cons(car a,cadr a)$       %   PLUS eintragen
+	      else a:=cons(car a,cadr a)$       %   plus eintragen
     if car a then
     if cdar a then a:=cons(cons('times, car a),cdr a)
 	      else a:=cons(caar a,cdr a)
@@ -591,7 +596,7 @@ begin
  for each p in eqns do <<
   if (not fixp p) and (not pairp p or (car p neq '!*sq)) then <<
    write"THE ",q,". ELEMENT OF THE INPUT LIST OF EQUATIONS IS NOT IN STANDARD"$terpri()$
-   write"QUOTIENT FORM! THIS MAY HAVE BEEN CAUSED BY USING COMMANDS LIKE cons"$terpri()$
+   write"quotient FORM! THIS MAY HAVE BEEN CAUSED BY USING COMMANDS LIKE cons"$terpri()$
    write"IN ALGEBRAIC MODE. IN THAT CASE, USE sqcons, sqrest, sqfirst, sqsecond,"$terpri()$
    write"sqthird, sqpart INSTEAD."$terpri()$
   >>$
@@ -602,7 +607,6 @@ begin
   write((k:=time())-cpu)/1000," s: Determination of the splitting variables"$
   terpri()$ cpu:=k
  >>$
-
  % Are there any atomic variables in indepvar that are arguments to any 
  % functions in depl!* ? If yes, then determine all kernels depending
  % on these variables which do not involve fll functions
@@ -612,8 +616,7 @@ begin
  splitvar:=nil$
  q:=nil$
  for each h in indepvar do
- if  %  atom h and    % changed 1 Dec 08
-    my_freeof(fll,h) then << 
+ if my_freeof(fll,h) then << 
   splitvar:=union({h},splitvar);  % <-- at first collect suitable elements of indepvar
   for each p in depl!* do 
   if freeof(fll,car p) and (not freeof(cdr p,h)) then q:=union({car p},q);
@@ -624,13 +627,12 @@ begin
   k:=nil$
   for each p in eqns do if (pairp p) and (car p = '!*sq) then 
   k:=union(kernels numr cadr p,k);
-
   % then all kernels that depend on indepvar elements
-  for each p in k do % i.e. for each kernel
-  if (not freeoflist(p,q)) or (not freeoflist(p,indepvar)) and % changed 1 Dec 08
-          freeoflist(p,fll) then splitvar:=union({p},splitvar)
- >>$
 
+  for each p in k do % i.e. for each kernel
+  if ((not freeoflist(p,q)) or (not freeoflist(p,splitvar))) and 
+     my_freeof(fll,p) then splitvar:=union({p},splitvar)
+ >>$
  if null splitvar then 
  if null to_simplify then return cons('list,eqns) 
                      else <<h:=for each p in eqns collect 
@@ -640,7 +642,7 @@ begin
                   else <<
   if cdr splitvar then                                          % added 1 Dec 08
   % sorting the splitvar according to the current kernel ordering
-  % splitvar:=cdr reval cons('TIMES,splitvar)$  % does work too
+  % splitvar:=cdr reval cons('times,splitvar)$  % does work too
   splitvar:=kernel_sort(splitvar)$
 
   if not linearindeptest(splitvar,indepvar) then return cons('list,eqns);   % changed 1 Dec 08
@@ -651,7 +653,6 @@ begin
   h:=splitvar;
   while h and my_freeof(k,car h) do h:=cdr h$
   if h then return cons('list,eqns); 
-
   if !*time then <<
    write((k:=time())-cpu)/1000," s: Variables to be used for splitting: ",splitvar$
    terpri()$ cpu:=k;
@@ -665,7 +666,7 @@ begin
   setkorder k$
   le:=length h$
   % Print original number of equations and time for splitting
-  if print_ then <<write le," equations result"$terpri()>>$
+  if print_ then <<write le," equations result"$terpri()>>
  >>$
 
  if to_simplify then <<
@@ -715,7 +716,7 @@ begin
 	 % cdr       --> drop numerical factor
 
      if null p then %--> q not factorizable
-     eqns:=union({numr car simplifysq((q . 1),fll,nil,nil,nil)},eqns)
+     eqns:=union({numr car simplifySQ((q . 1),fll,nil,nil,nil)},eqns)
                else <<
       % drop all constant factors, i.e. which do no involve an element of fll
       % and all non-zero factors
@@ -735,7 +736,7 @@ begin
                       eqns:=union({h},eqns)
                     >> % multiplication of factors to give a standard form
 	       else <<
-       q:=numr car simplifysq(((car q) . 1),fll,nil,nil,nil)$ 
+       q:=numr car simplifySQ(((car q) . 1),fll,nil,nil,nil)$ 
        if pairp q then    % else q is a number, i.e. a contradiction
        if null cdr q  and % only one term
 	  cdar  q = 1 and % coefficient = 1
@@ -780,7 +781,7 @@ endmodule$
 
 end$
 
-tr splitsq
+tr splitSQ
 tr separation
 tr get_separ_pde
 tr separate

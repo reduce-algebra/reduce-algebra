@@ -155,6 +155,11 @@ begin
   >>$
   if contrace then write"treqlist=",treqlist," nodep=",nodep,
                         " subl=", subl;
+
+  %------ check that functions to be computed do not depend on
+  %       lhs of the system
+  chkflist(flist,nodep)$
+
   if cf0 then
   for n:=1:nx do <<
     % if the index of p_ should be a number then use n instead of h4
@@ -589,7 +594,7 @@ begin
             if paralist neq {} then 
             for each e2 in sqsecond soln do
             if not freeof(paralist,lhs e2) then 
-            <<write e2,",";lisp(terpri());
+            <<write e2;lisp(terpri());
               h2:=sub(e2,h2);
               h3:=sub(e2,h3)
             >>$

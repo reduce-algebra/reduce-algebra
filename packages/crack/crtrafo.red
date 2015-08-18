@@ -30,7 +30,7 @@ module transform$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
-symbolic procedure input_trafo(pdes)$
+symbolic procedure Input_Trafo(pdes)$
 begin scalar ulist,vlist,u,v,ylist,xlist,yslist,xslist,xl2,
              notallowed,full_simplify,singul,h,vl_bak,yplist,xplist$
  change_prompt_to ""$ 
@@ -64,7 +64,7 @@ begin scalar ulist,vlist,u,v,ylist,xlist,yslist,xslist,xl2,
  terpri()$
  terpri()$
  write"The old (i.e. current) list of functions is "$ terpri()$
- fctprint_sq(yplist)$ terpri()$
+ fctprint_SQ(yplist)$ terpri()$
  write"and the list of old (i.e. current) variables is "$ terpri()$
  fctprint(xplist)$terpri()$
 
@@ -381,7 +381,7 @@ end$
 %----------------------------
 
 %symbolic operator TransfoDf$
-symbolic procedure transfodf(dy,yslist,xlist,vlist)$
+symbolic procedure TransfoDf(dy,yslist,xlist,vlist)$
 % - dy is the derivative to be transformed
 % - yslist is a list of already computed substitutions for the old
 %   functions and their derivatives
@@ -411,7 +411,7 @@ begin
                                <<x:=cadr cpy; cons(sub1 car cpy,
                                                    cdr cpy)>>
   >>;
-  yslist:=transfodf(dym1,yslist,xlist,vlist);
+  yslist:=TransfoDf(dym1,yslist,xlist,vlist);
   dym1:=car yslist;      % dym1 is now a substitution rule for dym1 above
   dym1:=caddr dym1;      % dym1 is now the expression to be substituted
   yslist:=cdr yslist;    % the new substitution list
@@ -424,8 +424,8 @@ begin
    n:=0;
    for each v in vlist do <<
     n:=add1 n;
-    if not zerop algebraic(dv!/dx(n,m)) then 
-    newdy:=addsq(multsq(diffsq(dym1,v),simp algebraic(dv!/dx(n,m))),newdy)$
+    if not zerop algebraic(Dv!/Dx(n,m)) then 
+    newdy:=addsq(multsq(diffsq(dym1,v),simp algebraic(Dv!/Dx(n,m))),newdy)$
     % diffsq(dym1,v) is the full total derivative as it should be
     % provided all functions depend directly on v (as stored in depl!*)
     % or they do not depend on v but not like f(u(v)) with an
@@ -441,7 +441,7 @@ end$ % of TransfoDf
 
 %----------------------------
  
-symbolic procedure do_trafo(arglist,x)$
+symbolic procedure Do_Trafo(arglist,x)$
 % arglist={pdes,forg,vl_,pdes}
 % x      ={ulist,vlist,yslist,xslist,full_simplify}
 begin
@@ -463,7 +463,7 @@ begin
  % update of depl!*
  xlist:=      % becomes ((z x%1 y%1) (y x%1 z%1) (x x%1))
  for each e1 in cdr xslist collect <<
-  x:=caddr e1$  % x={'!*SQ,..,t}
+  x:=caddr e1$  % x={'!*sq,..,t}
   e3:=nil;
   for each e2 in cdr vlist do 
   if not freeof(x,e2) then e3:=cons(e2,e3);
@@ -474,9 +474,9 @@ begin
  algebraic <<
   % checking regularity of the transformation
   m:=length(xslist); n:=length(yslist)+m;
-  clear dyx!/duv,dv!/dx;
+  clear dyx!/duv,Dv!/Dx;
   matrix dyx!/duv(n,n);
-  matrix dv!/dx(m,m);
+  matrix Dv!/Dx(m,m);
   ovar:=append(yslist,xslist);
   nvar:=append(ulist,vlist);
   n:=0;
@@ -490,7 +490,14 @@ begin
 
   detpd:=det(dyx!/duv);
   if detpd=0 then return <<
-   write"The proposed transformation is not regular!"$
+   write"##### The proposed transformation is not regular!"$
+   write"The Jacobi matrix  J(i,j) := df(old_i,new_j) is"$
+   write"dyx!/duv = ",dyx!/duv$
+   write"where :"$
+   for each e1 in ovar do <<
+    for each e2 in nvar do write"df(",lhs e1,",",e2,") = ",df(rhs e1,e2)$
+    write" "
+   >>;
    lisp(depl!*:=depl!*bak);
    nil
   >>;
@@ -501,11 +508,11 @@ begin
    n:=n+1;m:=0;
    for each e2 in vlist do <<
     m:=m+1;
-    dv!/dx(n,m):=total_alg_mode_deriv(rhs e1,e2)
+    Dv!/Dx(n,m):=total_alg_mode_deriv(rhs e1,e2)
                 % It is assumed that ulist does depend on vlist
    >>
   >>;
-  dv!/dx:=dv!/dx**(-1)
+  Dv!/Dx:=Dv!/Dx**(-1)
  >>$
  xslist:=cdr xslist$
  yslist:=cdr yslist$
@@ -527,7 +534,7 @@ begin
  % adding extra equations due to making all old
  % functions to depend on all old variables
  if neweq then 
- neweq:=mkeqsqlist(nil,nil,neweq,ftem_,vl_,allflags_,t,
+ neweq:=mkeqSQlist(nil,nil,neweq,ftem_,vl_,allflags_,t,
                    %orderings_prop_list_all()
                    list(0),nil)$
 
@@ -538,7 +545,7 @@ begin
 
   drvs:=append(search_li2(hval,'df),ylist)$
   for each e3 in drvs do <<
-   trfo:=transfodf(e3,yslist,xlist,vlist)$
+   trfo:=TransfoDf(e3,yslist,xlist,vlist)$
    hval:=subsq(hval,{(cadar trfo . {'!*sq,caddar trfo,t})})$ 
    % #?# one may even change back TransfoDf if needed
    % but this version is probably faster
@@ -559,7 +566,7 @@ begin
   hval:=caddr e1;
   drvs:=append(search_li2(hval,'df),ylist)$
   for each e3 in drvs do <<
-   trfo:=transfodf(e3,yslist,xlist,vlist)$
+   trfo:=TransfoDf(e3,yslist,xlist,vlist)$
    hval:=subsq(hval,{(cadar trfo . {'!*sq,caddar trfo,t})});
    yslist:=cdr trfo
   >>$
@@ -587,7 +594,7 @@ begin
  for each e3 in e2 collect <<   % e3 is a factor in e2
   drvs:=append(search_li2(e3,'df),ylist)$
   for each e4 in drvs do <<
-   trfo:=transfodf(e4,yslist,xlist,vlist)$
+   trfo:=TransfoDf(e4,yslist,xlist,vlist)$
    e3:=subsq(e3,{(cadar trfo . {'!*sq,caddar trfo,t})});
    yslist:=cdr trfo
   >>$
@@ -596,14 +603,14 @@ begin
   e3:=subsq(e3,{(cadr e4 . reval caddr e4)});
   e3
  >>$
- simpsqineq_or_adhoc(pdes)$ 
+ simpSQineq_or_adhoc(pdes)$ 
 
  % update of ineq_
  newineq_:=nil;
  for each e1 in ineq_ do <<
   drvs:=append(search_li2(e1,'df),ylist)$
   for each e3 in drvs do <<
-   trfo:=transfodf(e3,yslist,xlist,vlist)$
+   trfo:=TransfoDf(e3,yslist,xlist,vlist)$
    e1:=subsq(e1,{(cadar trfo . {'!*sq,caddar trfo,t})});
    yslist:=cdr trfo
   >>$
@@ -613,7 +620,7 @@ begin
   newineq_:=cons((numr e1 . 1),newineq_)
  >>$
  ineq_:=nil;
- for each e1 in newineq_ do addsqineq(pdes,e1,t);
+ for each e1 in newineq_ do addSQineq(pdes,e1,t);
 
  xlist:=nil;
  for each e1 in xslist do
@@ -622,24 +629,24 @@ begin
 
  for each e1 in pdes do <<
   for each e2 in allflags_ do flag1(e1,e2)$
-  updatesq(e1,get(e1,'sqval),nil,nil,ftem_,vl_,full_simplify,list(0),pdes)$
+  updateSQ(e1,get(e1,'sqval),nil,nil,ftem_,vl_,full_simplify,list(0),pdes)$
   drop_pde_from_idties(e1,pdes,nil);
   drop_pde_from_properties(e1,pdes)
  >>$
 
  % cleanup
- algebraic clear dv!/dx;
+ algebraic clear Dv!/Dx;
  return {pdes,newforg,vl_}
 
 end$ % of Do_Trafo
 
 %----------------------------
- 
-symbolic procedure find_trafo(arglist)$
+
+symbolic procedure Find_Trafo(arglist)$
 begin 
  scalar dli,avf,f,sol,pde,pdes,forg,batch_bak,print_bak,vlist,
         xslist,vl,h1,h2,h3,h4,trtr,eligfncs,eligpdes,epdes,remain,
-        old_history_bak,proc_list_bak,epdescp,eligpdescp;
+        old_history_bak,proc_list_bak,epdescp,eligpdescp,fdvar;
 
 %       ,ps,maxvno;
 % trtr:=t$
@@ -688,9 +695,18 @@ begin
     % speaking not able to deal with funtions of functions.
     % Therefore only one function apart from constants is allowed.
     f:=car avf; 
+
+    % Other functions in this equation must not depend on any one of the
+    % differentiation variables of f. Otherwise after the transformation 
+    % the equation pde can be integrated easily but the PDE for that other
+    % functions would need a transformation which would reverse this
+    % transformation. 
+    for each h1 in get(pde,'derivs) do % h1 = ((c_10 u`1`1%1) . 1)
+    if caar h1 = f then fdvar:=union(fdvar,cdar h1);
     avf:=get(pde,'fcts)$  % (re-use avf)
     while avf and ((car avf=f) or 
-                   (null fctargs car avf)) do avf:=cdr avf$
+                   freeoflist(fctargs car avf,fdvar)) do avf:=cdr avf$
+
     if null avf then << % ie. only constants apart from the single fnc f
      dli:=get(pde,'derivs);
      h1:=t; h2:=0;  % h2 counts the first order derivatives of f
@@ -794,14 +810,13 @@ again:
  old_history_bak:=old_history; old_history:=nil;
  proc_list_bak:=proc_list_;    proc_list_:=default_proc_list_$
  print_bak:=print_;      
- if !*batch_mode and null batch_mode_sub then print_:=8
-                                         else print_:=nil$
  batch_bak:=!*batch_mode; !*batch_mode:=batch_mode_sub$
+ if null !*batch_mode then print_:=8$
  pdes:=car arglist$
  forg:=cadr arglist$
 
  h1:=level_string(session_)$
- h1:=bldmsg("%s%s",h1,"qlp")$
+ h1:=bldmsg("%s%s.",h1,"qlp")$
  backup_to_file(pdes,forg,h1)$ % moved before again:, should be ok
  if trtr then <<write"999"$terpri()>>$
 %sol:=reval algebraic(quasilinpde(lisp(get(pde,'val)),f,
@@ -810,7 +825,7 @@ again:
  % This provides the substitutions to be done in Do_Trafo which have
  % to be given in prefix form in the subsq statements --> sol:=reval ...
  restore_backup_from_file(pdes,forg,h1)$
- delete!-file!-exact h1;
+ system bldmsg ("rm '%s'",h1);
  if trtr then <<write"000"$terpri()>>$ 
  if trtr then <<write"sol0="$mathprint sol$terpri()>>$   
 
@@ -821,33 +836,41 @@ again:
 
  if null sol or null cdr sol or null cdadr sol then return nil$
 
- sol:=cdr sol$  % getting rid of 'LIST
+ sol:=cdr sol$  % getting rid of 'list
 
  % sol is a list of solutions of which the first will be used.  
  % If an unresolved integration occurs then this will give
  % too much trouble potentially everywhere, for example, in crint.red.
- if freeint_ and (null freeof(car sol,'int)) then <<
+what_next:
+ if freeint_ and (null freeof(car sol,'INT)) then <<
   write"The found point transformation includes an unperformed integration:"$
   mathprint car sol$
   if !*nat then <<
    algebraic(off nat);
-   write"and again in machine readable form:"$
-   mathprint car sol$
+   write"and again in machine readable form:"$terpri()$
+   mathprint car sol$terpri()$
    algebraic(on nat);
   >>$
   write"This will probably cause problems later on in the"$terpri()$
   write"computation. If you want to enforce using this"$terpri()$
   write"substitution you would have to set the flag"$terpri()$
   write"freeint_ to nil using the 'as' command and"$terpri()$
-  write"re-do this step."$terpri()$
-  goto again
+  write"re-do this step."$terpri()$terpri()$
+  write"Do you want to proceed with finding a transformations for this PDE (1)"$terpri()$
+  write"or try to find a transformation for another PDE                    (2)"$terpri()$
+  write"or stop finding transformations                                    (3)"$terpri()$
+  change_prompt_to ""$
+  h1:=termread()$
+  if h1=1 then   else
+  if h1=2 then goto again else
+  if h1=3 then return nil else goto what_next
  >>$
 
  % Would the transformation require inequalities?
  h1:=zero_den(sol,ftem_)$
  h3:=nil$
  for each h2 in h1 do 
- h3:=union(simplifysq(h2,ftem_,t,nil,t),h3)$
+ h3:=union(simplifySQ(h2,ftem_,t,nil,t),h3)$
  if h3 then return <<
   for each h2 in h3 do
   if h2 neq {(1 . 1)} then <<
@@ -864,7 +887,7 @@ again:
   nil
  >>$
 
- sol:=cdar sol;  % taking the first solution and dropping 'LIST   
+ sol:=cdar sol;  % taking the first solution and dropping 'list   
  
  h1:=sol;
  % We delete that single element which includes the function f of the PDE
@@ -976,7 +999,7 @@ again:
   mathprint xslist$
   if !*nat then <<
    algebraic(off nat);
-   write"and again in machine readable form:"$
+   write"and again in machine readable form:"$terpri()$
    mathprint xslist$
    algebraic(on nat);
   >>$
@@ -986,31 +1009,59 @@ again:
   goto again
  >>                         else 
  if not freeof(xslist,'root_of) then return <<
-  write"The following variable transformation expresses variables"$
-  terpri()$
-  listprint(h3);
-  write"  through variables  "$
+  write"The following variable transformation expresses variables"$terpri()$
+  listprint(h3);terpri()$
+  write"  through variables  "$terpri()$
   listprint(vlist); write" :"$terpri()$
   for each f in cdr car xslist do mathprint f$
+  if !*nat then <<
+   algebraic(off nat);
+   write"and again in machine readable form:"$terpri()$
+   for each f in cdr car xslist do mathprint f$
+   algebraic(on nat);
+  >>$
   write"BUT the transformation could not be done explicitly."$terpri()$
   write"The user is recommended to try finding a transformation"$terpri()$
-  write"manually and input it with the 'pt' command."$terpri()
+  write"manually and input it with the 'pt' command."$terpri()$
+  nil
  >>                             else
  xslist:=car xslist$
  
+what_next2:
  if trtr or print_ then <<
-  write"The following variable transformation expresses variables"$
-  terpri()$
-  listprint(h3);
-  write"  through variables  "$
+  write"The following variable transformation expresses variables"$terpri()$
+  listprint(h3);terpri()$
+  write"  through variables  "$terpri()$
   listprint(vlist); write" :"$terpri()$
-  for each f in cdr xslist do mathprint f
+  for each f in cdr xslist do mathprint f$
+  if !*nat then <<
+   algebraic(off nat);
+   write"and again in machine readable form:"$terpri()$
+   mathprint xslist$
+   % for each f in cdr xslist do mathprint f$
+   algebraic(on nat);
+  >>$
+
+  terpri()$
+  write"Do you want to proceed with this transformation  (1)"$terpri()$
+  write"or input a modified transformation               (2)"$terpri()$
+  write"or stop the whole transformation                 (3)"$terpri()$
+  change_prompt_to ""$
+  h1:=termread()$
+  if h1=1 then   else
+  if h1=2 then <<
+   write"Input the list of transformations in a form like"$terpri()$
+   write"{x=x!%1+y!%1, y=x!%1-y!%1};"$terpri()$
+   xslist:=termxread()$
+   goto what_next2
+  >>      else
+  if h1=3 then return nil else goto what_next2
  >>$
 
  h3:=for each h1 in vl collect {'equal,caddr h1,cadr h1};
  done_trafo:=cons('list,cons(cons('list,h3),cdr done_trafo));
- 
- return do_trafo(arglist,{'list,{'list},cons('list,vlist),
+
+ return Do_Trafo(arglist,{'list,{'list},cons('list,vlist),
                           {'list},xslist,t %full_simplify 
                          });
 
@@ -1018,7 +1069,7 @@ end$ % of Find_Trafo
 
 %----------------------------
 
-symbolic procedure general_trafo(arglist)$
+symbolic procedure General_Trafo(arglist)$
 % Doing a transformation for all data relevant in CRACK
 % Tramsformation rule for partial derivatives d using total
 % derivatives D:
@@ -1031,10 +1082,10 @@ symbolic procedure general_trafo(arglist)$
 %
 begin
  scalar x;
- x:=input_trafo(car arglist)$
+ x:=Input_Trafo(car arglist)$
  if null x then return 
  <<terpri()$write"No proper input --> no transformation"$nil>>$
- return do_trafo(arglist,x)
+ return Do_Trafo(arglist,x)
 end$
 
 %----------------------------
@@ -1043,26 +1094,26 @@ endmodule$
 
 end$
 
-general_trafo
-  input_trafo
-  do_trafo
+General_Trafo
+  Input_Trafo
+  Do_Trafo
 
-find_trafo
-  do_trafo
+Find_Trafo
+  Do_Trafo
    total_alg_mode_deriv  -> tot_alg_deri
-    mkeqsqlist
-    transfodf
+    mkeqSQlist
+    TransfoDf
      total_alg_mode_deriv  -> tot_alg_deri
-    simpsqineq_or_adhoc
-    updatesq
+    simpSQineq_or_adhoc
+    updateSQ
 
-tr find_trafo
+tr Find_Trafo
 tr quasilinpde
-tr do_trafo
+tr Do_Trafo
 tr total_alg_mode_deriv
 tr tot_alg_deri
-tr mkeqsqlist
-tr transfodf
-tr simpsqineq_or_adhoc
-tr updatesq
+tr mkeqSQlist
+tr TransfoDf
+tr simpSQineq_or_adhoc
+tr updateSQ
 

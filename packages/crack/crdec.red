@@ -30,6 +30,42 @@ module decoupling$
 
 symbolic fluid '(form_chnpair)$  % channel pair for piping into FORM
 
+symbolic procedure high_prio_decoupling(arglist)$
+% Do one decoupling step
+begin scalar l$
+ l:=dec_one_step(car arglist,car arglist,ftem_,%cadr arglist,
+                 caddr arglist,t,0)$ 
+ % 0 for ordering
+ if l then l:=list(l,cadr arglist)$
+ return l$
+end$
+
+symbolic procedure decoupling(arglist)$
+% Do one decoupling step
+begin scalar l$
+ l:=dec_one_step(car arglist,car arglist,ftem_,%cadr arglist,
+                 caddr arglist,nil,0)$ 
+ % 0 for ordering
+ if l then l:=list(l,cadr arglist)$
+ return l$
+end$
+
+symbolic procedure inhom_decoupling(arglist)$
+% Do one decoupling step if the system is homogeneous in a set of 
+% functions and there are at least 2 equations which do not contain 
+% these homogeneous functions.
+if fhom_ then
+begin scalar p,p1$
+ For each p in car arglist do
+ if freeoflist(get(p,'fcts),fhom_) then p1:=cons(p,p1);
+ if p1 and cdr p1 then return <<
+  p1:=dec_one_step(car arglist,reverse p1,ftem_,%cadr arglist,
+                   caddr arglist,nil,0)$ % 0 for ordering
+  if p1 then list(p1,cadr arglist)
+        else nil
+ >>
+end$
+
 symbolic procedure which_deriv(p,q)$    
 %  yields a list of variables and orders 
 %  such that one gets at least q by differentiating p w.r.t. the vars 
@@ -103,7 +139,7 @@ begin scalar s,l,l1,l1d,l2,l2d,vl1,vl2,d1,d2,ld1,ld2,wd1,wd2,
  % cdar a is the list of derivatives so we are making sure that our
  % list l1 has no repetitions
  %
- l1:=reverse l$   % e.g. l1  = ( (x 2 y)       (x y 2)      ...)
+ l1 :=reverse l$   % e.g. l1  = ( (x 2 y)       (x y 2)      ...)
  l1d:=reverse l1d$ % e.g. l1d = (((x 2 y),3,1) ((x y 2),3,2) ...)
 
  %
@@ -120,7 +156,7 @@ begin scalar s,l,l1,l1d,l2,l2d,vl1,vl2,d1,d2,ld1,ld2,wd1,wd2,
   l:=cons(cdar a,l)$
   l2d:=cons(list(cdar a,absodeg(cdar a),cdr a),l2d)
  >>$
- l2:=reverse l$   % e.g. l2 =  ( (x 2 y)       (x y 2)      ...)
+ l2 :=reverse l$   % e.g. l2 =  ( (x 2 y)       (x y 2)      ...)
  l2d:=reverse l2d$ % e.g. l2d = (((x 2 y),3,1) ((x y 2),3,2) ...)
 
  % At this point we have two lists, l1d and l2d resp. containing the
@@ -266,6 +302,7 @@ begin scalar rdif,rd,contradic,a,ad,b,bd,resu,must_be_subst$
                                    else resu . must_be_subst
 end$
 
+
 symbolic procedure read_sub_diff(p,q)$   
 begin scalar s,l0,l,m0,m1,f,sd,info_p,info_q,contradic,let_conflict$
   change_prompt_to ""$ 
@@ -334,7 +371,8 @@ begin scalar s,l0,l,m0,m1,f,sd,info_p,info_q,contradic,let_conflict$
                  else {car info_p,car info_q,l,s,nil} . 1
     % returns the same kind of result as dec_info
   >>                   else nil
-end$
+end$ % of read_sub_diff
+
 
 symbolic procedure dec_info(p,q,f,vl,rl,ordering)$ 
 % yields information for a decouple reduction step
@@ -344,12 +382,11 @@ symbolic procedure dec_info(p,q,f,vl,rl,ordering)$
 %        equ_to_be_subst 
 %        whether_one_equation_must_be_substituted % important for elim. techn.
 %       ).num_value)
-% where num_value is a measure of cost, e.g.
-% result has form (((e4 (x 2 y) (y z)) 
-%                   (e5 (z) (x 2 y 2)) (df f x 2 y 2 z) nil nil) . num_value)
-% Criteria:   a) the function f must depend on all vars
-%             b) the function and all their derivatives must occur
-%                polynomially
+% where num_value is a measure of cost, 
+% example if result: (((e4 (x 2 y) (y z)) 
+%                      (e5 (z) (x 2 y 2)) (df f x 2 y 2 z) nil nil) . num_value)
+% Criteria:   a) the function f must depend on all vars of at least one equation
+%             b) the function and all their derivatives must occur polynomially
 begin scalar a,b,l,l1,info,m,n,fp,fq,fpmq,fqmp,s,lenp,lenq,dp,dq,
              simpp,simpq,let_conflict$
   %
@@ -360,20 +397,27 @@ begin scalar a,b,l,l1,info,m,n,fp,fq,fpmq,fqmp,s,lenp,lenq,dp,dq,
   lenq:=get(q,'length)$
   if rl and ((lenp*lenq)>max_red_len) then return nil;
 
-  a:=get(p,'vars); b:=get(q,'vars);
+  % If f is not leading function in p then needs to be simplified
+  % through this computation and similarly with q.
   simpp:=(null get(p,'allvarfcts)) or (f neq caaar get(p,'derivs))$
   simpq:=(null get(q,'allvarfcts)) or (f neq caaar get(q,'derivs))$
          % star-equn. or f is not leading function
-  l:=dec_ld_info(p,q,simpp,simpq,f,vl,rl)$
+  l:=dec_ld_info(p,q,simpp,simpq,f,vl,rl)$ 
   if not l then <<
     add_both_dec_with(ordering,p,q,rl)$
     return nil
   >>$
+
+  % l:= dec_ld_info(p,q,f,vl,rl) returns 
+  % ( ( s  . ld(l1)) . (nil . ld(l2)) )           
+  %   if p needs to be differentiated by s to reach LD of q
+  % ( (nil . ld(l1)) . ( s  . ld(l2)) )   
+  %   if q needs to be differentiated by s to reach LD of p
+  % ( ( v  . ld(l1)) . ( w  . ld(l2)) ) if both need to be differentiated
   %
-  % l:= dec_ld_info(p,q,f,vl,rl) returns a list of lists, from which
-  % a:= caar l sets a to be the differentiations required to get
+  % a:= caar  l sets a to be the differentiations s required to get
   % the ld(p) w.r.t. f to match that of ld(q) w.r.t. f,
-  % b:= caadr l sets b to be the differentiations required to get
+  % b:= caadr l sets b to be the differentiations s required to get
   % the ld(q) w.r.t. f to match that of ld(q) w.r.t. f.
   %
   % l1:= cadadr l sets l1 to be the derivative in q which we
@@ -388,10 +432,11 @@ begin scalar a,b,l,l1,info,m,n,fp,fq,fpmq,fqmp,s,lenp,lenq,dp,dq,
       ((get(p,'no_derivs)=0) and (get(q,'no_derivs)>0))
       % not using algebr. conditions to simplify diff. cond.
      ) then return nil;
-  l1:=cddr l$
-  l:=cdar l$
+
   % Test whether there is a let-rule in operation which changes the
   % target derivative
+  l1:=cddr l$ % leading derivative of q
+  l :=cdar l$ % leading derivative of p
   if (null a) and (null l) then 
   if f neq reval f then let_conflict:=t
                    else    else <<
@@ -466,16 +511,25 @@ begin scalar a,b,l,l1,info,m,n,fp,fq,fpmq,fqmp,s,lenp,lenq,dp,dq,
   if (null a) and (null b) then <<
    dp:=get(p,'derivs)$ while dp and (caaar dp neq f) do dp:=cdr dp;
    dq:=get(q,'derivs)$ while dp and (caaar dq neq f) do dq:=cdr dq;
-   % the absolute value of the difference of leading degrees cdar dp - cdar dq:
-   m:=cdar dp - cdar dq$ if m<0 then m:=-m$
-   % the length of both equations:
-   m:=2^m*(lenq+lenp);
-   % the number of different powers of f in p and q:
-   while dp and (caaar dp = f) do <<m:=m*2$ dp:=cdr dp>>$
-   while dq and (caaar dq = f) do <<m:=m*2$ dq:=cdr dq>>$
-   % extra other functions in the other equation
-   if (fqmp>0) then m:=m*3**(2*fqmp);
-   if (fpmq>0) then m:=m*3**(2*fpmq);
+
+   if dec_depth_first_search then << 
+    m:=length get(p,'allvarfcts)$ 
+    n:=length get(q,'allvarfcts)$
+    m:=(if m>n then 10**m else 10**n)*
+       (if cdar dp > cdar dq then cdar dp 
+                             else cdar dq)
+   >>                        else <<
+    % the absolute value of the difference of leading degrees cdar dp - cdar dq:
+    m:=cdar dp - cdar dq$ if m<0 then m:=-m$
+    % the length of both equations:
+    m:=2^m*(lenq+lenp);
+    % the number of different powers of f in p and q:
+    while dp and (caaar dp = f) do <<m:=m*2$ dp:=cdr dp>>$
+    while dq and (caaar dq = f) do <<m:=m*2$ dq:=cdr dq>>$
+    % extra other functions in the other equation
+    if (fqmp>0) then m:=m*3**(2*fqmp);
+    if (fpmq>0) then m:=m*3**(2*fpmq);
+   >>
   >>                       else 
   m:=(1.5^absodeg(a)*lenp+1.5^absodeg(b)*lenq)*
      (length union(fp,fq))**20$ 
@@ -510,11 +564,12 @@ begin scalar a,b,l,l1,info,m,n,fp,fq,fpmq,fqmp,s,lenp,lenq,dp,dq,
                      (null l) then f
                               else reval cons('df,cons(f,append(l,a))),
                   s,
-                  simpp or simpq
+                  rl or simpp or simpq
                  ),
              m)$
   return info$
-end$
+end$ % of dec_info
+
 
 %symbolic procedure dec_put_info(l,rl)$   
 %% l has form ((e4 (x 2 y) (y z)) 
@@ -532,6 +587,7 @@ end$
 %  >>$
 %  return list(caddr l,caar l,caadr l,cadddr l)$
 %end$
+
 
 % symbolic procedure dec_put_info(f,l)$    
 % % put informations for decouple reduction step
@@ -555,6 +611,7 @@ end$
 % return list(caddr l,caar l,caadr l)$
 % end$
 
+
 %% symbolic procedure dec_info_leq(p,q)$    
 %% %  relation "<=" for decouple informations
 %% if p and q then 
@@ -565,11 +622,35 @@ end$
 %%                                 else nil
 %% else p$ 
 
-symbolic procedure dec_info_leq(p,q)$    
-%  relation "<=" for decouple informations
-if p and q then (cdr p<=cdr q)
-else if p then p
-else q$
+
+symbolic procedure dec_info_leq(ip,iq)$
+% relation "<=" for decoupling informations of two pairings ip,iq 
+% below (cdr ip <= cdr iq) compares the numerical values
+begin scalar h,dfp,dfq,fp,fq$
+ return
+ if ip and iq then if dec_depth_first_search then <<
+
+  dfp:=caddar ip; fp:=if pairp dfp then cadr dfp else dfp; 
+  % the function to be decoupled in pairing ip
+  dfq:=caddar iq; fq:=if pairp dfq then cadr dfq else dfq; 
+  % the function to be decoupled in pairing iq
+
+  if fp neq fq then
+  if fp=which_first(fp,fq,ftem_) then nil 
+                                 else t % fp is already decoupled from the two
+                                        % equations paird in iq, so the equations 
+                                        % in iq are already further processed
+               else <<
+   dfp:=if pairp dfp then cdr dfp else {dfp}$
+   dfq:=if pairp dfq then cdr dfq else {dfq}$
+   h:=total_less_dfrel(cons(dfp,1),cons(dfq,1),if fp=fq then {fp} else {fp,fq},vl_);
+   h=t or ((h=0) and (cdr ip <= cdr iq)) 
+  >>
+ >>                                          else cdr ip <= cdr iq
+              else if ip then ip
+                         else iq
+end$
+
 
 symbolic procedure dec_and_fct_select(pdes,vl,rl,hp,ordering)$  
 % select 2 pdes for decoupling
@@ -587,11 +668,17 @@ begin scalar min,f,l,l1,l2,done_pdes,car_pdes,len,
          ((length(allvarfl)<4) and (get(car_pdes,'terms)<10)) or
          (length(allvarfl)=1)
         )) then
+    % i.e. search for pairings of car_pdes unless there are 
+    % good reasons not to pair car_pdes
     <<f:=caaar get(car_pdes,'derivs)$
-      if not flin_ or (f_in_flin:=not freeof(flin_,f)) or
-         (     fhom_ and (zerop car get(car_pdes,'hom_deg))) or
+      if not flin_                                              or 
+         (f_in_flin:=not freeof(flin_,f)                      ) or
+         (     fhom_ and (zerop car get(car_pdes,'hom_deg))   ) or
          (null fhom_ and freeoflist(get(car_pdes,'fcts),flin_)) or
-         freeoflist(allvarfl,flin_) then <<
+         freeoflist(allvarfl,flin_) then << % i.e. try to pair this equation 
+       % only if decoupling the lexicographically leading function in car_pdes 
+       % does not contradict the rule to decouple a flin_function if possible.
+
        % initializations for the special case of car_pdes:  0=df(f,...)
        len:=get(car_pdes,'printlength)$
        if (null record_hist) and (len=1) then <<
@@ -609,12 +696,12 @@ begin scalar min,f,l,l1,l2,done_pdes,car_pdes,len,
        l:=assoc(ordering,get(car_pdes,'dec_with))$
        if rl then l:=append(l,assoc(ordering,get(car_pdes,'dec_with_rl)))$
        % unchecked pairings 
+
        for each p in cdr pdes do
-% It should be possible that f is leading function in car_pdes but not
-% in others
-%       if not flin_ or f_in_flin or
-%          (     fhom_ and (zerop car get(p,'hom_deg))) or
-%          (null fhom_ and freeoflist(get(p,'fcts),flin_)) then 
+       % No further flin_ conditions on the occurence of the function
+       % f in equation p because it should be possible that f is
+       % leading function in car_pdes but not in others.
+
        if expert_mode or
           (flagp(p,'to_decoup) and 
            member(f,get(p,'rational)) and
@@ -647,7 +734,7 @@ begin scalar min,f,l,l1,l2,done_pdes,car_pdes,len,
          if caaar val_p=f then d_p:=nil$
 
 %         if (pairp val_p) and 
-%            (car val_p = 'DF) and
+%            (car val_p = 'df) and
 %            (cadr val_p = f)    then 
 %         d_p:=cddr val_p else
 %         if val_p=f then d_p:=nil$
@@ -681,11 +768,9 @@ begin scalar min,f,l,l1,l2,done_pdes,car_pdes,len,
        % was tested before.
        if null rtn then
        for each p in done_pdes do
-% It should be possible that f is leading function in car_pdes but not
-% in others
-%       if not flin_ or f_in_flin or
-%          (     fhom_ and (zerop car get(p,'hom_deg))) or
-%          (null fhom_ and freeoflist(get(p,'fcts),flin_)) then 
+       % Also in this case f does not have to be the leading function 
+       % in p and therefore no flin_ considerations of p are necesssary
+
        if flagp(p,'to_decoup) and 
           member(f,get(p,'rational))       and
           ((null hp) or 
@@ -718,40 +803,53 @@ begin scalar min,f,l,l1,l2,done_pdes,car_pdes,len,
     done_pdes:=cons(car_pdes,done_pdes)$
     pdes:=cdr pdes
   >>$
+
   if rtn then return rtn$
- 
+
   %--- l2 is the list of possible pairings of 2 equations
   %--- pick one of these pairings
-  l1:=nil;  
+  l1:=nil;
   %--- l1 is the list of equations which still can be reduced
   %--- and where f=car get(equ,'allvarfcts), i.e. equations
   %--- which must not be used for generating new equations
   %
   %--- each l in l2 has the form
-  %--- (((e4 (x 2 y) (y z)) (e5 (z) (x 2 y 2)) 
-  %---  (df f x 2 y 2 z) nil nil) . num_value)
-  for each l in l2 do <<
+  %--- (((e4 (x 2 y) (y z)) 
+  %---   (e5 (z) (x 2 y 2)) 
+  %---   (df f x 2 y 2 z) nil nil
+  %---  )                         . num_value)
+
+  %--- At first determine l1:
+  for each l in l2 do 
+  if cadddr car l then <<
     f:=caddar l;
     if pairp f then f:=cadr f;
     if (caaar l = cadddr car l) and  % if caaar  l will be subst.
-       get(caaar l,'allvarfcts) and
+       get(caaar l,'allvarfcts) and  % f is the leading function in caaar l
        (f=car get(caaar l,'allvarfcts)) 
     then l1:=union(list(caaar l),l1);
     if (caadar l = cadddr car l) and % if caadar l will be subst.
-       get(caadar l,'allvarfcts) and
+       get(caadar l,'allvarfcts) and % f is the leading function in caadar l
        (f=car get(caadar l,'allvarfcts))
     then l1:=union(list(caadar l),l1);
   >>;
-  %--- Test that no new equation will be generated from an
+
+  %--- Now test that no new equation will be generated from an
   %--- equation from which the leading derivative can still be
   %--- reduced
-  for each l in l2 do
+  for each l in l2 do 
   if ((cadaar l = nil)                              or 
+      % i.e. the first equation is not differentiated
       (cadr cadar l = nil)                          or
-      (freeof(l1,caaar  l) and freeof(l1,caadar l))    ) and
-     dec_info_leq(l,min) 
+      % i.e. the second equation is not differentiated
+      (freeof(l1,caaar l) and freeof(l1,caadar l))    
+      % none of the two equations can be reduced
+     ) and dec_info_leq(l,min)
   then min:=l;
-  if min then <<
+
+  if min then <<  % This should always be the case because either there 
+   % are no reductions then l1=nil, freeof(l1,..)=t and pairs are found,
+   % i.e. min<>nil or there are reductions and then min<>nil too.
    l:=car min$
    if (cadar l) and (cadadr l) then << % if both eq. are diff.
      f:=caddr l;
@@ -762,14 +860,16 @@ begin scalar min,f,l,l1,l2,done_pdes,car_pdes,len,
   >>
 end$
 
-symbolic procedure err_catch_elimin(ddpcp,p,ltp,dgp,ddqcp,q,ltq,dgq,x,once)$  
+
+symbolic procedure err_catch_elimin(ddpcp,p,ltp,pmult,dgp,
+                                    ddqcp,q,ltq,qmult,dgq,x,once)$  
 begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak;
  bak:=max_gc_counter$ max_gc_counter:=my_gc_counter+max_gc_elimin;
  kernlist!*bak:=kernlist!*$
  kord!*bak:=kord!*$
  bakup_bak:=backup_;backup_:='max_gc_elimin$
- h:=errorset({'elimin,mkquote ddpcp,mkquote p,mkquote ltp,mkquote dgp,
-                      mkquote ddqcp,mkquote q,mkquote ltq,mkquote dgq,
+ h:=errorset({'elimin,mkquote ddpcp,mkquote p,mkquote ltp,mkquote pmult,mkquote dgp,
+                      mkquote ddqcp,mkquote q,mkquote ltq,mkquote qmult,mkquote dgq,
                       mkquote x,mkquote once},t,t) % t,t for backtrace and message if error 
     where !*protfg=t;
  kernlist!*:=kernlist!*bak$
@@ -780,6 +880,7 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak;
  return if errorp h then nil
                     else car h
 end$
+
 
 symbolic procedure err_catch_loadform2$
 begin scalar h$
@@ -795,10 +896,12 @@ begin scalar h$
  if atom h then form_pipe := nil;
 end$
 
-symbolic procedure elimin(ddpcp,p,ltp,dgp,ddqcp,q,ltq,dgq,x,once)$  
+
+symbolic procedure elimin(ddpcp,p,ltp,pmult,dgp,
+                          ddqcp,q,ltq,qmult,dgq,x,once)$
 % returns {resulting_eqn, multiplier_of_ddpcp, multiplier_of_ddqcp}
 begin
- scalar dgs,s,flg,quoti,lts,xsq,lco,natbak,formputfile,formszefile,
+ scalar dgs,s,quoti,flg,lts,xsq,lco,natbak,formputfile,formszefile,
         formgetfile,ss,sze,current_dir,t0,t1,t2,t3,t4,eqn_input,oldinpu,intbak,
         uncachedbak,fcpp,fcqp,fcsp,fcpq,fcqq,fcsq,h,klist,slist,flist,
         oprtch,chnout,all_rational_kernels,xtrnlcall$  %,form_handle$
@@ -809,14 +912,13 @@ begin
  fcqq:=simp 1; fcqp:=simp 0;
  xsq:=mksq(x,1);
 
-%algebraic write"p=",{'!*SQ,p,t}$algebraic write"ltp=",{'!*SQ,ltp,t}$
-%algebraic write"q=",{'!*SQ,q,t}$algebraic write"ltq=",{'!*SQ,ltq,t}$
+ %algebraic write"p=",{'!*sq,p,t}$algebraic write"ltp=",{'!*sq,ltp,t}$
+ %algebraic write"q=",{'!*sq,q,t}$algebraic write"ltq=",{'!*sq,ltq,t}$
 
  if null get(ddpcp,'non_rat_kern) and
     null get(ddqcp,'non_rat_kern) then all_rational_kernels:=t$
 
  while dgs neq 0 do <<
-  quoti:=quotsq(ltp,ltq);
 
   % !!! the most time-consuming statement (computation of the S-polynomial): !!!
   % to use FORM for it needs only: 
@@ -864,7 +966,7 @@ begin
    %   ofl!*:=formputfile$  % any value neq nil, to avoid problem with redfront 
    %   chnout:= wrs chnout;                                  
 
-   COMMENT
+   comment
    - All FORM related files are written in a dedicated directory.
    - How about working with expressions that involve derivatives, i.e. how can FORM
      be told the REDUCE kernel ordering of different derivatives? This would speed
@@ -936,11 +1038,11 @@ begin
    %--- Write the equations and multipliers (see module writefrm in crutil.red)
    write "L p ="$ writesqfrm p$  
    write ".sort"$                                               terpri()$
-   write "L mp="$ writesqfrm (cdr quoti ./ 1)$
+   write "L mp="$ writesqfrm pmult$
    write ".sort"$                                               terpri()$
    write "L q ="$ writesqfrm q$
    write ".sort"$                                               terpri()$
-   write "L mq="$ writesqfrm (car quoti ./ 1)$
+   write "L mq="$ writesqfrm qmult$
    write ".sort"$                                               terpri()$
    write "L rez=p*mp-q*mq;"$                                    terpri()$
    write ".sort"$                                     terpri()$ terpri()$
@@ -1049,7 +1151,8 @@ begin
    rds oldinpu; 
    if print_ then <<write"  FORM computed ",sze," term(s)."$terpri()>>$
    if not form_pipe then <<
-    delete!-file!-exact formszefile; 
+    setq(ss,bldmsg("rm %w",formszefile)); 
+    system ss    % delete the FORM size file
    >>;
    form_eqn_on_disk:=cons((sze . formgetfile),form_eqn_on_disk)$
 
@@ -1076,14 +1179,14 @@ begin
     write"is not read into REDUCE but also not computed in REDUCE --> different try."$terpri()$
    >>$
   >>                     else << % computing is faster than reading from file
-   s:=subtrsq(multsq(p,(cdr quoti . 1)), multsq(q,(car quoti . 1)))$           
+   s:=subtrsq(multsq(p,pmult), multsq(q,qmult))$           
    if null all_rational_kernels then s:=simp!* {'!*sq,s,nil}$
 
    % form file loeschen % If some interactive bookkeeping of long equations would
    if form_comp then << % be available then the file would not be deleted here.
     t4:=time()$
     %if print_ then <<write"  time for CRACK computation:  ",t4-t3," msec"$terpri()>>$
-    delete!-file!-exact formgetfile; % delete the FORM output file
+    setq(ss,bldmsg("rm %w",formgetfile));  system ss$ % delete the FORM output file
     form_eqn_on_disk:=cdr form_eqn_on_disk
    >>
   >>$
@@ -1103,10 +1206,10 @@ begin
                                    else write"FORM was WRONG!"$  terpri()$
   >>$
 
-  fcsp:=subtrsq(multsq(fcpp,(cdr quoti . 1)),
-                multsq(fcqp,(car quoti . 1)) )$
-  fcsq:=subtrsq(multsq(fcpq,(cdr quoti . 1)),
-                multsq(fcqq,(car quoti . 1)) )$
+  fcsp:=subtrsq(multsq(fcpp,pmult),
+                multsq(fcqp,qmult) )$
+  fcsq:=subtrsq(multsq(fcpq,pmult),
+                multsq(fcqq,qmult) )$
 
   if once                % doing only one step, i.e. eliminating only one leading derivative 
      or t then dgs:=0    % or t to do a slower decoupling of high degree but very overdetermined 
@@ -1133,18 +1236,18 @@ begin
     fcqp:=fcsp;                                                           % only for once=nil
     fcqq:=fcsq;                                                           % only for once=nil
     if dgp>dgq then flg:=t                                                % only for once=nil
-   >>
+   >>;
+   quoti:=quotsq(ltp,ltq);
+   qmult:=(car quoti . 1)$
+   pmult:=(cdr quoti . 1)
   >>
  >>;
- quoti:=err_catch_gcd({'!*sq,fcsp,t},{'!*sq,fcsq,t});  
- quoti:=if pairp quoti and (car quoti='!*sq) then cadr quoti % to get rid of '!*SQ
-                                             else simp quoti$
- return {quotsq(s   ,quoti),
-         quotsq(fcsp,quoti),
-         quotsq(fcsq,quoti) }
+
+ return {s,fcsp,fcsq}
+
 end$  % elimin
 
-symbolic procedure dec_new_equation(l,rl)$  
+symbolic procedure dec_new_equation(l,rl,pdes)$  
 % l has form ((e4 (x 2 y) (y z)) (e5 (z) (x 2 y 2)) (df f x 2 y 2 z) nil nil)
 % This means: e4 has df(f,y,z) and is differ. wrt. xxy
 %             e5 has df(f,x,2,y,2) and is diff. wrt. z 
@@ -1153,9 +1256,12 @@ symbolic procedure dec_new_equation(l,rl)$
 %             nil: do NOT stop after lowering the power of the leading deriv once
 % rl: do a length reduction decoupling step
 %
-begin scalar ld,f,ip,iq,s,nvl,lco,p,ddp,ddpcp,ldp,ldpsq,ltp,dgp,pfac,
-                                  q,ddq,ddqcp,ldq,ldqsq,ltq,dgq,qfac,
-             h,once$
+% returns nil if elimination is too costly
+%         0   (i.e. null pairp) if a case distinction is issued
+%         list(l,s,ddpcp,ddqcp,ddp,ddq,ld) otherwise
+begin scalar ld,f,ip,iq,s,nvl,lco,p,ddp,ddpcp,ldp,ldpsq,ltp,dgp,
+                                  q,ddq,ddqcp,ldq,ldqsq,ltq,dgq,
+             h,once,commfac,pmult,qmult$
   % ld       common leading derivative after differentiations
 
   % ddpcp    will be the name of the equation, e.g.  e4
@@ -1167,7 +1273,8 @@ begin scalar ld,f,ip,iq,s,nvl,lco,p,ddp,ddpcp,ldp,ldpsq,ltp,dgp,pfac,
   % ltp      at first the lead. term of p then is the leading term in df(p,ip)
   % dgp      at first highpow of ldp in p then highpow of df(ldp,ip) in ltp
   % lco      is the coefficient of ldp**dgp in ltp (and the same for q)
-  % pfac     an overall factor of p that has been dropped but that may vanish
+  % commfac  is the common factor of ldp and ldq
+  % pmult    =ldq/commfac is the multiplier of equation p
 
   % similar with q
 
@@ -1185,8 +1292,11 @@ begin scalar ld,f,ip,iq,s,nvl,lco,p,ddp,ddpcp,ldp,ldpsq,ltp,dgp,pfac,
   if record_hist then <<
    nvl:=get(ddp,'nvars)$
    if get(ddq,'nvars)<nvl then nvl:=get(ddq,'nvars)$
-   if s=ddp then ddp:=get(ddp,'histry_) else
-   if s=ddq then ddq:=get(ddq,'histry_)
+   if s=ddp then ddp:=get(ddp,'histry_) else  
+   if s=ddq then ddq:=get(ddq,'histry_)       
+   % Why is the history value only assigned if s<>nil and only for one of ddp, ddq?
+   % Maybe because doing in history values always the substitutions of eqution 
+   % names by their history gives very large expressions.
   >>$
   ddp:=simp ddp$
   ddq:=simp ddq$
@@ -1204,6 +1314,8 @@ begin scalar ld,f,ip,iq,s,nvl,lco,p,ddp,ddpcp,ldp,ldpsq,ltp,dgp,pfac,
     write"to eliminate "$mathprint ld$
   >>$
 
+  %===== preparation of equation p
+
   if atom ld then ldp:=ld else <<
    ldp:=cadr ld;
    if caddar l then ldp:=cons('df,cons(ldp,caddar l))
@@ -1213,36 +1325,19 @@ begin scalar ld,f,ip,iq,s,nvl,lco,p,ddp,ddpcp,ldp,ldpsq,ltp,dgp,pfac,
   lco:=coeff1({'!*sq,p,t},{'!*sq,ldpsq,t},nil)$
   dgp:=hipow!*$
 
-  pfac:=simp 1;
   if null ip then <<
     lco:=nth(cdr lco,add1 dgp)$
     lco:=if pairp lco and (car lco='!*sq) then cadr lco
                                           else simp lco; 
     ltp:=multsq(lco, mksq(ldp,dgp))$
-  >>         else 
-  if (dgp=1) and % (not fixp lco) 
-                  ((not fixp car lco) or (not fixp cdr lco)) % or should one test constancy?
-  then << 
-    lco:=nth(cdr lco,add1 dgp)$
-    lco:=if pairp lco and (car lco='!*sq) then cadr lco
-                                          else simp lco; 
-    ltp:=multsq(lco, mksq(ldp,dgp))$
-    p:=multiple_diffsq( quotsq( subtrsq(p,ltp), lco), ip)$
-    if record_hist then
-    ddp:=multiple_diffsq( quotsq(ddp,lco),ip);
-    h:=(cdr p . 1)$
-    pfac:=lco$ %quotsq(lco,h)$  may drop factors and solutions
-    if (not can_not_become_zerosq(pfac,get(ddpcp,'fcts))) and 
-       (s=ddqcp) then s:=nil;
-    ltp:=multsq(simp ld,h)$
-    p:=addsq(ltp, (car p . 1))$
-    if record_hist then ddp:=multsq(ddp,h)
-  >> else <<
+  >> else << 
     dgp:=1;
     ltp:=multsq(diffsq(p,mvar car mksq(ldp,1)),multiple_diffsq(ldpsq,ip)); 
     p:=multiple_diffsq(p,ip);
     if record_hist then ddp:=multiple_diffsq(ddp,ip)
   >>$
+
+  %===== preparation of equation q
 
   if atom ld then ldq:=ld else <<
    ldq:=cadr ld;
@@ -1253,56 +1348,50 @@ begin scalar ld,f,ip,iq,s,nvl,lco,p,ddp,ddpcp,ldp,ldpsq,ltp,dgp,pfac,
   lco:=coeff1({'!*sq,q,t},{'!*sq,ldqsq,t},nil)$
   dgq:=hipow!*$
 
-  qfac:=simp 1;
   if null iq then <<
     lco:=nth(cdr lco,add1 dgq)$
     lco:=if pairp lco and (car lco='!*sq) then cadr lco
                                           else simp lco; 
     ltq:=multsq(lco,mksq(ldq,dgq))$
-  >>         else
-  if (dgq=1) and % (not fixp lco) 
-                  ((not fixp car lco) or (not fixp cdr lco)) % or should one test constancy?
-  then << 
-    lco:=nth(cdr lco,add1 dgq)$
-    lco:=if pairp lco and (car lco='!*sq) then cadr lco
-                                          else simp lco; 
-    ltq:=multsq(lco,mksq(ldq,dgq))$
-    q:=multiple_diffsq( quotsq( subtrsq(q,ltq), lco), iq)$
-    if record_hist then
-    ddq:=multiple_diffsq( quotsq(ddq,lco),iq);
-    h:=(cdr q . 1)$       % the new lco
-    qfac:=lco$ % quotsq(lco,h)$ may drop factors and solutions
-    if (not can_not_become_zerosq(qfac,get(ddqcp,'fcts))) and 
-       (s=ddpcp) then s:=nil;
-    ltq:=multsq(simp ld,h)$
-    q:=addsq(ltq, (car q . 1))$
-    if record_hist then ddq:=multsq(ddq,h)
   >> else <<
     dgq:=1;
-    ltq:=multsq(diffsq(q,mvar car mksq(ldq,1)),multiple_diffsq(ldqsq,iq)); %##### does this work with resimp?
+    ltq:=multsq(diffsq(q,mvar car mksq(ldq,1)),multiple_diffsq(ldqsq,iq)); 
     q:=multiple_diffsq(q,iq);
     if record_hist then ddq:=multiple_diffsq(ddq,iq)
   >>$
 
-  % l:=list(caar l,caadr l)$
-  % if iq then q:=simplifypde(reval cons('DF,cons(q,iq)),ftem,nil,nil (?))$
-  % if ip then p:=simplifypde(reval cons('DF,cons(p,ip)),ftem,nil,nil (?))$
-  % contradiction_:=nil$
- 
-  % h:=reval !*q2a simpresultant list(p,q,ld)$
+  %===== check the need of issuing a case distinction or adding the new equation
+  commfac:=err_catch_gcd({'!*sq,ltp,t},{'!*sq,ltq,t});  
+  commfac:=if pairp commfac and (car commfac='!*sq) then cadr commfac % to get rid of '!*sq
+                                                    else simp commfac$
+  qmult:=quotsq(ltp,commfac)$ % the factor to be multiplied to q
+  pmult:=quotsq(ltq,commfac)$ % the factor to be multiplied to p
+
+  if (h:=not_necc_and_suff_eqn(l,pmult,qmult,pdes,ltp,ltq)) then 
+  if atom h then s:=nil % the new equation is added, no case distinction issued
+  else return 0$        % encoding that a case distinction has been issued 
+
   return 
-  if (l:=err_catch_elimin(ddpcp,p,ltp,dgp,ddqcp,q,ltq,dgq,ld,once)) then
-     list(l,s,ddpcp,ddqcp,ddp,ddq,ld,pfac,qfac)                     else nil$
+  %===== necessary substitution is not possible
+  if car cddddr l and null s then nil else
+  %===== ellimination result
+  % Although h:= simpresultant list({'!*sq,p,t},{'!*sq,q,nil},ld)$terpri()$
+  % computes a necessary condition for the existence of a solution for ld that
+  % does not involve ld, it will only return 0 if both equations have a common factor.
+
+  if (h:=err_catch_elimin(ddpcp,p,ltp,pmult,dgp,
+                          ddqcp,q,ltq,qmult,dgq,ld,once)) then
+     list(h,s,ddpcp,ddqcp,ddp,ddq,ld)                     else nil
 end$ % of dec_new_equation
 
-symbolic procedure dec_reduction(h,pdes,ftem,%forg,              
-                                 vl,rl,ordering)$
+
+symbolic procedure dec_reduction(h,pdes,ftem,vl,rl,ordering)$
 % do a reduction step or a cross differentiation either
 % h is the result of dec_new_equation() and has the structure
-%   list(elimin(p,ltp,dgp,q,ltq,dgq,ld),s,p,q,ddp,ddq,ld,pfac,qfac)$
+%   list(elimin(p,ltp,dgp,q,ltq,dgq,ld),s,p,q,ddp,ddq,ld)$
 % if rl then one pde must be simplified with the help of 
 % another one and reduce its length
-begin scalar s,p,q,ddp,ddq,ld,len,a,ip,iq,pfac,qfac,f$
+begin scalar s,p,q,ddp,ddq,ld,len,a,ip,iq,f$
  s:=cadr h$        % eg.  e_4 or nil
  p:=caddr h$       % eg.  e_5
  q:=cadddr h$      %    "
@@ -1310,19 +1399,11 @@ begin scalar s,p,q,ddp,ddq,ld,len,a,ip,iq,pfac,qfac,f$
  ddq:=nth(h,6)$    %    "
  ld:=nth(h,7)$     % eg. (df f x 2 y z)
  if pairp ld then f:=cadr ld else f:=ld;
- pfac:=nth(h,8)$   % in sq-form
- qfac:=nth(h,9)$   % in sq-form
  h:=car h$
  % If an equation is to be substituted then the new system must 
  % be sufficient after replacing one equations through another one.
  % --> the replaced equation must not have been multiplied with
  % possibly vanishing factors
-
- if s and (null rl) and % (sufficient_decouple) and
-    % for rl=t already checked
-    (((s=p) and not can_not_become_zerosq(cadr  h,get(q,'fcts))) or
-     ((s=q) and not can_not_become_zerosq(caddr h,get(p,'fcts)))    ) 
- then s:=nil$
 
  % tracing comments
  
@@ -1330,16 +1411,14 @@ begin scalar s,p,q,ddp,ddq,ld,len,a,ip,iq,pfac,qfac,f$
     (     rl and tr_redlength) then <<
   terpri()$
   write p," (resp its derivative) is multiplied with"$terpri()$
-  a:=if qfac=(1 . 1) then cadr h
-                     else multsq(qfac,cadr h)$ 
-  len:=delengthsq a$
+  a:=cadr h$
+  len:=delengthSQ a$
   if print_ and len<print_ then mathprint {'!*sq,a,t} 
                            else <<write "expr. with ",len," terms."$terpri()>>$
 
   write q," (resp its derivative) is multiplied with"$terpri()$
-  a:=if pfac=(1 . 1) then caddr h
-                     else multsq(pfac,caddr h)$ 
-  len:=delengthsq a$
+  a:=caddr h$
+  len:=delengthSQ a$
   if print_ and len<print_ then mathprint {'!*sq,a,t} 
                            else <<write "expr. with ",len," terms."$terpri()>>
  >>$
@@ -1395,11 +1474,7 @@ begin scalar s,p,q,ddp,ddq,ld,len,a,ip,iq,pfac,qfac,f$
   a:=nil;
   add_both_dec_with(ordering,p,q,rl);
  >>             else <<
-  a:=mkeqsq(if pfac neq (1 . 1) then if qfac neq (1 . 1) then multsq(multsq(pfac,qfac),car h)
-                                                         else multsq(pfac,car h)
-                                else if qfac neq (1 . 1) then multsq(qfac,car h)
-                                                         else                   car h ,
-            nil,nil,ftem,vl,allflags_,t,list(0),
+  a:=mkeqSQ(car h,nil,nil,ftem,vl,allflags_,t,list(0),
             prepsq addsq(multsq(cadr  h,ddp),
                          multsq(caddr h,ddq) ),pdes)$
   if print_ and ((null rl and tr_decouple ) or 
@@ -1408,7 +1483,7 @@ begin scalar s,p,q,ddp,ddq,ld,len,a,ip,iq,pfac,qfac,f$
  >>$
 
  if record_hist and (car h) and (sqzerop car h) then 
-%new_idty({'PLUS,{'TIMES,cadr  h,ddp},{'TIMES,caddr h,ddq} }, pdes, t);
+%new_idty({'plus,{'times,cadr  h,ddp},{'times,caddr h,ddq} }, pdes, t);
  new_idty(prepsq addsq( multsq(cadr  h,ddp), multsq(caddr h,ddq) ), pdes, t);
 
  % also if car h is not identical 0 but with less variables.
@@ -1509,6 +1584,7 @@ begin scalar s,p,q,ddp,ddq,ld,len,a,ip,iq,pfac,qfac,f$
  % a is either a new equation or nil if s has beed reduced to an identity
 end$ % of dec_reduction
 
+
 symbolic procedure dec_fct_check(a,l)$    
 % checks, if a function occurs in only one pde
 begin scalar ft,n$
@@ -1521,10 +1597,11 @@ begin scalar ft,n$
   while ft and (n<=length fctargs(car ft)) do ft:=cdr ft$
   if ft then remflag1(a,'to_decoup)$
   return ft$
-end$
+end$ % of dec_fct_check
 
-symbolic procedure check_cases_for_separant(l)$  % called only from one place  
-% l has form ( (e4 (x 2 y) (y z))   
+
+symbolic procedure not_necc_and_suff_eqn(l,pmult,qmult,pdes,ltp,ltq)$  % called only from one place  
+% l has form ( (e4 (x 2 y) (y z))
 %              (e5 (z) (x 2 y 2))   
 %              (df f x 2 y 2 z)    nil    nil)
 % This means: e4 has df(f,y,z) and is differ. wrt. xxy
@@ -1532,73 +1609,121 @@ symbolic procedure check_cases_for_separant(l)$  % called only from one place
 %             to eliminate df(f,x,2,y,2,z),  
 %             nil is substituted,
 %             substitution is not essential
-begin scalar s,h,lde,sy$
- % Is a case-distinction to be made about whether the separant
- % is zero or non-zero?
- s:=cadddr l;                 % the equation to be substituted
+% This procedure checks if a case-distinction is to be made about whether a multiplier can 
+% be zero or not. 
+%
+if lin_problem then nil else
+begin scalar s,h,hh,multpl,squ,q,pdescp,fctr,subtrahend$
+ s:=cadddr l;                % the equation to be substituted
+ if s=caar l then <<h:=cadr l$ multpl:=pmult>> % h are the data of the other (lower priority, e.g. lower
+             else <<h:=car  l$ multpl:=qmult>>$% order) equation that typically gets differentiated
+                                               % multpl is the multiplier to s which needs to be checked
+
+%write"l = ",l$terpri()$
+%write"multpl = "$mathprint {'!*sq,multpl,t}$
+%write"pmult = "$mathprint {'!*sq,pmult,t}$
+%write"qmult = "$mathprint {'!*sq,qmult,t}$
+%write"s = ",s$terpri()$
+%write"car h = ",car h$terpri()$
 
  return
- if lin_problem or            % then definitely no cases
-    (null s) or               % both equations are differentiated --> no cases
-    (not pairp caddr l) or    % purely algebraic decoupling
-                              % ### BUT THAT CAN LEAD TO CASES AS WELL, OR? 
-                              % ### but they are probably taken care of otherwise
-    (null flagp(if s=caar l then caadr l              % see comments on to_separant
-                            else caar  l,'to_separant)) % in crinit.red
- then nil                     % no case-distinction
- else <<
-  if s=caar l then h:=cadr l  % h are the data of the lower priority (e.g. order)
-              else h:=car  l$ % equation that gets differentiated
-  if min_nu_of_eqn or 
-     null cadr h then nil     % no differentiation -> no case-distinction
-                 else <<      % lower order equ. is not diff.
-   lde:=if null caddr h then cadr caddr l    % lead. deriv. is algebraic
-                        else cons('df,cons(cadr caddr l,caddr h));
-   sy:=diffsq(get(car h,'sqval),mvar car mksq(lde,1));  
+ if (null s) or              % no equation to be substituted as both equations are differentiated
+    get(car h,'linear_) or   % equation<>s is linear
+%    (null minimal_number_of_alg_eqn and (not pairp caddr l)) or % not aiming at minimal 
+%    % number of equations and algebraic reduction (no differentiation)
+    %% One may consider whether for purely algebraic problems one does
+    %% not want to issue cases (minimal_number_of_alg_eqn:=nil by
+    %% default =t).  One would surely not want to issue cases if one
+    %% does not use a purely lexicographical ordering of unknowns but
+    %% in crack currently there are only lexicographical orderings of
+    %% unknowns (functions) used.
+    (cadr h and null flagp(car h,'to_separant)) % i.e. car h is 
+    % differentiated and the separant of car h is known to be non-zero
+ then nil                    % no case-distinction or adding of equation necessary
+ else if can_not_become_zeroSQ(multpl,get(car h,'fcts)) then nil
+ % If car h is differentiiated and we would know that the multiplier (pmult or qmult) 
+ % is = the separant then we could set <<remflag1(car h,'to_separant)$ nil>>
+                                                        else 
+ if null dec_depth_first_search or car cddddr l then 0 % causing s:=nil, i.e.the new equation is added
+                                  % or if rl=car cddddr l=t then this is not a possible reduction step
+                                                else <<% a case distinction is issued
+  % Check whether multpl=0 is a known equation
+  hh:=simplifySQ(multpl,smemberl(ftem_,multpl),t,nil,t)$
+  squ:=car hh;
+  for each q in cdr hh do squ:=multsq(q,squ)$
 
-   if can_not_become_zerosq(sy,get(car h,'fcts)) then 
-   <<remflag1(car h,'to_separant)$ nil>>           else 
-   <<to_do_list:=cons(list('split_into_cases,sy),to_do_list); 
-    if print_ then <<
-     write"To reduce the leading derivative"$terpri()$
-     mathprint caddr l$
-     write"in ",s," using ",car h," a case distinction will be made."$terpri()
-    >>$
-    t
-   >>   
+  pdescp:=pdes$
+  while pdescp and get(car pdescp,'sqval) neq squ do pdescp:=cdr pdescp;
+  if pdescp then <<
+   if print_ then <<
+    write"When attempting to reduce equation ",s," with ",car h,
+         " it was realized that the multiplier "$
+    mathprint {'!*sq,multpl,t}$
+    write " to ",s," simplified to "$
+    mathprint {'!*sq,squ,t}$
+    write"must vanish due to equation ",car pdescp,". Therefore ",car h," is simplified next."$
+    terpri()
+   >>$
+   % replace car h by a reduction of car h
+
+   subtrahend:=if s=caar l then ltq else ltp$ 
+   squ:=subtrsq(get(car h,'sqval),subtrahend)$
+   fctr:=prepsq quotsq(subtrahend,get(car pdescp,'sqval))$
+
+   if print_ then <<
+    write""$
+
+   >>$
+   to_do_list:=cons(list('replace_equation,
+                         {car h,nil,squ,
+                          {'difference,car h,
+                           {'times,fctr,car pdescp}}}),to_do_list)$
+   {1} % returning a list to stop this decoupling step and count it as successful step
+  >>        else <<
+   if print_ then <<
+    write"To reduce the leading derivative"$terpri()$
+    mathprint caddr l$
+    write"in ",s," using ",car h," a case distinction will be made."$terpri()
+   >>$
+   to_do_list:=cons(list('split_into_cases,multpl),to_do_list)
   >>
  >>
-end$
+end$ % of not_necc_and_suff_eqn
 
-symbolic procedure dec_one_step(pdes,ftem,%forg,  
-                                vl,hp,ordering)$
+
+symbolic procedure dec_one_step(pdes,l,ftem,vl,hp,ordering)$
 % do one decouple step for 2 pdes from l, differentiate them
 % and add the new pde or replace an original one
-begin scalar l0,l1,l2,l,ruli,cntr$ %,f$
- l:=pdes;
+begin scalar l0,l1,l2,ruli,cntr,mod_switched$ %,f$
  if not expert_mode then l0:=l
                     else <<
   l0:=selectpdes(l,2)$
   drop_dec_with(car  l0,cadr l0,nil)$
   drop_dec_with(cadr l0,car  l0,nil)$
  >>$
+ if modular_comp and null !*modular then <<on modular$ mod_switched:=t>>$
  ruli:=start_let_rules()$
  cntr:=0$
 again:
  l1:=dec_and_fct_select(l0,vl,nil,hp,ordering)$
+ 
  if null l1 then l:=nil else 
- if check_cases_for_separant(l1) then return l 
- % i.e. dec_one_step pretends to have been successful even if only a
- % case splitting was written in the to_do list, so that to_do is done next
-                               else
- if null (l2:=dec_new_equation(l1,nil)) then         
- <<l:=nil;         % e.g. elimin too slow --> err_catch
+
+ if null (l2:=dec_new_equation(l1,nil,pdes)) then    
+ <<l:=nil;         % iff err_catch returns nil (e.g. elimin() did not complete) 
    add_both_dec_with(ordering,caar l1,caadr l1,nil)$
    cntr:=add1 cntr;
    if cntr<4 then goto again
- >>                                     else 
- if null (l2:=dec_reduction(l2,pdes,ftem,%forg,
-                        vl,nil,ordering)) then l:=nil else <<
+ >>                                     else
+
+ % Have case distinctions been initiated?
+ if not pairp l2 then  % i.e. leave l=pdes, i.e. dec_one_step pretends
+ % to have been successful even if only a case splitting was written
+ % into the to_do list, so that to_do step (i.e. case distinction) is done next
+                 else
+
+ if null (l2:=dec_reduction(l2,pdes,ftem,vl,nil,ordering)) then l:=nil 
+                                                           else <<
   l:=pdes;
   if (cadddr l1) and get(cadddr l1,'sqval)=nil then l:=delete(cadddr l1,l)$
   for each a in l2 do if a then <<
@@ -1617,11 +1742,13 @@ again:
   % for each a in l2 do dec_fct_check(a,l)$
  >>$
  stop_let_rules(ruli);
+ if mod_switched then off modular$ 
  % if anything has changed then l must be the new pde-list
  return l$
-end$
+end$ % of dec_one_step
 
-symbolic procedure dec_try_to_red_len(pdes_to_choose_from,vl,ordering)$  
+
+symbolic procedure dec_try_to_red_len(pdes,pdes_to_choose_from,vl,ordering)$  
 begin scalar l1,l2,l3,p,q,s,cntr$
  cntr:=0$
 again:
@@ -1636,7 +1763,8 @@ again:
    add_both_dec_with(ordering,caar l1,caadr l1,t)$
    goto again;
   >>;
-  l2:=dec_new_equation(l1,t)$
+  l2:=dec_new_equation(l1,t,pdes)$
+%@>@>@>@ ===> check null pairp l2 ===> case distinctions have been initiated
   % possible length measures to use:
   %    put(equ,'length,pdeweight(val,ftem))$    
   %    put(equ,'printlength,delength val)$
@@ -1653,26 +1781,27 @@ again:
        get(cadddr l1,'length)        ) or  % * length_inc
 %    ((s=p) and may_vanish( cadar l2)) or
 %    ((s=q) and may_vanish(caddar l2)) then <<
-     ((s=p) and not can_not_become_zerosq( cadar l2,l3)) or
-     ((s=q) and not can_not_become_zerosq(caddar l2,l3)) then <<
+%@>@>@>@ new casedistinction?
+     ((s=p) and not can_not_become_zeroSQ( cadar l2,l3)) or
+     ((s=q) and not can_not_become_zeroSQ(caddar l2,l3)) then <<
    if null l2 then cntr:=add1 cntr;
    l2:=nil;
    add_both_dec_with(ordering,p,q,t);
    last_steps:=cdr last_steps; % last_steps had already been updated
                                % in add_to_last_steps() in in_cycle()
-   if cntr<2 then goto again
+   if cntr<20000000 then goto again
   >>
  >>;
  return l2
-end$
+end$ % of dec_try_to_red_len
 
-symbolic procedure err_catch_red_len(a1,a2,a3)$        
+symbolic procedure err_catch_red_len(a1,a2,a3,a4)$
 begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak;
  bak:=max_gc_counter$ max_gc_counter:=my_gc_counter+max_gc_red_len;
  kernlist!*bak:=kernlist!*$
  kord!*bak:=kord!*$
  bakup_bak:=backup_;backup_:='max_gc_red_len$
- h:=errorset({'dec_try_to_red_len,mkquote a1,mkquote a2,mkquote a3},nil,nil) 
+ h:=errorset({'dec_try_to_red_len,mkquote a1,mkquote a2,mkquote a3,mkquote a4},nil,nil) 
     where !*protfg=t;
  kernlist!*:=kernlist!*bak$
  kord!*:=kord!*bak;
@@ -1683,12 +1812,11 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak;
                     else car h
 end$
 
-symbolic procedure dec_and_red_len_one_step(pdes,ftem,%forg, 
-                                            vl,ordering)$
+symbolic procedure dec_and_red_len_one_step(pdes,ftem,vl,ordering)$
 % do one length-reducing decouple step for 2 pdes from l, 
 % differentiate at most one and replace the other one which must
-% become shorter, the one replaced must not be multiplied with a 
-% potentially zero factor
+% become shorter, no generation of case distinctions --> the one
+% replaced must not be multiplied with a potentially zero factor
 begin scalar l,l1,l2,l3,ruli$ %,f$
   l:=pdes;
   if not expert_mode then l1:=l
@@ -1699,12 +1827,11 @@ begin scalar l,l1,l2,l3,ruli$ %,f$
   >>$
   ruli:=start_let_rules()$
 again:
-  l2:=err_catch_red_len(l1,vl,ordering)$
+  l2:=err_catch_red_len(pdes,l1,vl,ordering)$
 
   if null l2 then return nil;
 
-  if (l3:=dec_reduction(l2,pdes,ftem,%forg,
-                        vl,t,ordering)) then <<
+  if (l3:=dec_reduction(l2,pdes,ftem,vl,t,ordering)) then <<
    l:=delete(cadr l2,l)$
    for each a in l3 do if a then <<
     l:=eqinsert(a,l)$
@@ -1774,331 +1901,70 @@ end$
 
 endmodule$
 
-%********************************************************************
-module resultante$
-%********************************************************************
-%  Routines for computing the resultant as a list of factors
-%  Author: Eberhard Schruefer March 2008
-%
-
-% Routines for calculating the resultant using Bezout's method.
-% Whenever a row of the Bezout matrix is calculated a common
-% factor of the head polynomials is calculated and divided out.
-% Then a common factor of each Bezout polynomial and their
-% successive exterior product is determined and taken out.
-% Before calculating a common factor, a trial divison of previously
-% found factors is performed (suggested by Thomas).
-% A list of factors of the Resultant with their multiplicities is
-% returned. 
-% Note that it is not attempted to calculate a factorization
-% of the last factor.
-% For non square matrices the code still could be improved.
-
-% Author: Eberhard Schruefer, June 2008
-
-% Code status: experimental.
-
-% bresultant returns a list of lists. (The first element is a
-% numerical factor). I.e. 
-% {{num factor},{factor_1,multiplicity_1},....,{factor_n,multiplicity_n}}
-
-
-flag('(bresultant),'opfn)$
-
-%-------------------------------
-symbolic procedure err_catch_resul(l1,l2,v)$
-begin scalar h,bak,bakup_bak$
- bak:=max_gc_counter;max_gc_counter:=my_gc_counter+max_gc_elimin;
- bakup_bak:=backup_;backup_:='max_gc_elimin$
- h:=errorset({'bresultant,mkquote l1,mkquote l2,mkquote v},nil,nil)
-    where !*protfg=t;
- erfg!*:=nil; 
- max_gc_counter:=bak;
- backup_:=bakup_bak;
- return if errorp h then nil
-                    else car h  
-end$
-%-------------------------------
-
-symbolic procedure comp_resultant(pdes)$
-begin scalar s,l,h,ezgcd_bak,rational_bak,gcd_bak$%,bezout_bak;
- l:=selectpdes(pdes,2)$
-
- if length(s:=get(car  l,'derivs))=1 then <<
-  s:=caar s;
-  s:=if null cdr s then car s else cons('df,s);
-  if freeof(get(cadr l,'kern),s) then <<
-   write"No common kernel in both equations."$terpri()
-  >>
- >>                                  else
- if length(s:=get(cadr l,'derivs))=1 then <<
-  s:=caar s;
-  s:=if null cdr s then car s else cons('df,s);
-  if freeof(get(car l,'kern),s) then <<
-   write"No common kernel in both equations."$terpri()
-  >>
- >>                                 else <<
-  change_prompt_to "Which function/derivative shall be eliminated? "$ 
-  s:=termread()$
-  restore_interactive_prompt()$
-  if freeof(get(car  l,'kern),s) or
-     freeof(get(cadr l,'kern),s) then <<
-   write"This is not a kernel in both equations."$terpri()
-  >>
- >>$
-
- % The call of the resultant should be put into an call of errorset()
- % on ezgcd$ on gcd$ 
- on bezout$
-
- if !*rational then <<algebraic off rational;rational_bak:=t>>$
- if !*ezgcd  then  ezgcd_bak:=t else algebraic on  ezgcd$
- if !*gcd    then    gcd_bak:=t else algebraic on    gcd$
-% if !*bezout then bezout_bak:=t else algebraic on bezout$
-% !*b!:headpolys_red:=t$
- s:=bresultant({'!*sq,get(car  l,'sqval),nil},
-               {'!*sq,get(cadr l,'sqval),nil},s)$
-% s:=err_catch_resul({`!*SQ,get(car  l,'sqval),t},
-%                    {`!*SQ,get(cadr l,'sqval),t},s)$
- if null  ezgcd_bak then algebraic off  ezgcd$
- if null    gcd_bak then algebraic off    gcd$
-% if null bezout_bak then algebraic off bezout$
- if rational_bak then algebraic on rational$
-
- s:=for each h in cdr s collect simp!* cadr h;
- s:=mkeqsq(nil,s,nil,union(get(car l,'fcts),get(cadr l,'fcts)),
-           union(get(car l,'vars),get(cadr l,'vars)),allflags_,
-           t,list(0),nil,pdes)$
-
- return eqinsert(s,pdes)
-end$
-
-symbolic procedure bresultant(u,v,var)$
-   begin scalar x,!*exp;
-     !*exp := t;
-     u := numr simp!* u;
-     v := numr simp!* v;
-     var := !*a2k var;
-     if domainp u and domainp v
-      then return {'list,1};
-       kord!* := var . kord!*; 
-       if null domainp u and null(mvar u eq var)
-	 then u := reorder u;
-       if null domainp v and null(mvar v eq var)
-	 then v := reorder v;
-       x := bezout_resultant_fac(u,v,var);
-       setkorder cdr kord!*;
-       return x
-   end$
-
-symbolic procedure bezout_resultant_fac(u,v,w)$
-   % U and v are standard forms. Result is resultant of u and v
-   % w.r.t. kernel w. Method is Bezout's determinant using exterior
-   % multiplication for its calculation.
-   begin integer n,nm; scalar ap,ep,uh,ut,vh,vt,x,cx,cxf,cep,cuh,cvh;
-     write "entering bezout."; terpri();
-     !*exp := t;
-     if domainp u or null(mvar u eq w)
-        then return if not domainp v and mvar v eq w
-                       then {'list,mk!*sq(exptf(u,ldeg v) ./ 1)}
-                     else {'list,1}
-      else if domainp v or null(mvar v eq w)
-        then return if mvar u eq w then {'list,mk!*sq(exptf(v,ldeg u) ./ 1)} 
-                     else {'list,1};
-     n := ldeg v - ldeg u;
-     cxf := '(1);
-     if n < 0 then <<x := u; u := v; v := x; cxf := '(-1); n := -n>>;
-     ep := 1;
-     nm := ldeg v;
-     uh := lc u;
-     vh := lc v;
-     ut := if n neq 0 then multpf(w to n,red u) else red u;
-     vt := red v;
-     cx := 1;
-     cuh := uh;
-     cvh := vh;
-     cx := gcdf!*(uh,vh);
-     if cx = 1 then <<write "Found trivial factor from headpolys only. "; terpri()>>
-      else <<write "Found factor from headpolys with ",termsf cx," terms."; terpri();
-             cxf := fctrf cx>>;
-     ap := addf(multf(quotf1(uh,cx),vt),negf multf(quotf1(vh,cx),ut));
-     x := !*sf2exb(ap,w);
-     if cdr cxf then x := b!:try_previous_factors(x,cdr cxf);
-     cx := b!:comfac x;
-     if cx neq 1 then <<cxf := bfac!-merge(fctrf cx,cxf);
-                        write "commom factor cx found. ",tmsf cx," terms."; terpri()>>;
-     x := b!:cquot(x,cx);
-     ep := b!:extmult(x,ep);
-     ep := b!:try_previous_factors(ep,cdr cxf);
-     for j := (nm - 1) step -1 until (n + 1) do
-        <<if degr(ut,w) = j then
-             <<uh := addf(lc ut,multf(!*k2f w,uh));
-               if null(cuh = 1 or cvh = 1) then cuh := gcdf!*(lc ut,cuh);
-               ut := red ut>>
-           else uh := multf(!*k2f w,uh);
-          if degr(vt,w) = j then
-             <<vh := addf(lc vt,multf(!*k2f w,vh));
-               if null(cuh = 1 or cvh = 1) then cvh := gcdf!*(lc vt,cvh);
-               vt := red vt>>
-           else vh := multf(!*k2f w,vh);
-          cx := 1;
-          cx := gcdf!*(cuh,cvh); 
-          if cx = 1 then <<write "Found trivial factor from headpolys only. "; terpri()>>
-           else <<write "Found factor from headpolys with ",termsf cx," terms."; terpri();
-                  cxf := bfac!-merge(fctrf cx,cxf)>>;
-          x := !*sf2exb(addf(multf(quotf1(uh,cx),vt),
-                             negf multf(quotf1(vh,cx),ut)),w);
-          x := b!:try_previous_factors(x,cdr cxf);
-          cx := b!:comfac x;
-          if cx neq 1 then 
-             <<write "commom factor cx found. ",tmsf cx," terms."; 
-               cxf := bfac!-merge(fctrf cx,cxf);
-               terpri()>>;
-          x := b!:cquot(x,cx);
-          ep := b!:extmult(x,ep);
-          ep := b!:try_previous_factors(ep,cdr cxf);
-          if j neq 1 then
-             <<cep := b!:comfac ep;
-               if cep neq 1 then 
-                  <<cxf := bfac!-merge(fctrf cep,cxf);
-                    write "commom factor cep found. ",tmsf cep," terms."; terpri()>>;
-                ep := b!:cquot(ep,cep)>>
-                                       >>;
-      if n neq 0
-         then <<x := !*sf2exb(u,w);
-                cx := b!:comfac x;
-                if cx neq 1 then 
-                   <<write "commom factor cx found.",tmsf cx," terms"; terpri();
-                     cxf := bfac!-merge(fctrf cx,cxf)>>;
-                x := b!:cquot(x,cx);
-                ep := b!:extmult(x,ep);
-          cep := b!:comfac ep;
-          if cep neq 1 then 
-             <<write "commom factor cep found. ",tmsf cep," terms."; terpri();
-               cxf := bfac!-merge(fctrf cep,cxf)>>;
-          ep := b!:cquot(ep,cep);
-                for j := 1:(n-1) do
-                  <<x := !*sf2exb(multpf(w to j,u),w);
-                    cx := b!:comfac x;
-                    if cx neq 1 then 
-                       <<write "commom factor cx found. ",tmsf cx," terms."; terpri();
-                         cxf := bfac!-merge(fctrf cx,cxf)>>;
-                    x := b!:cquot(x,cx);
-                    ep := b!:extmult(x,ep);
-                    cep := b!:comfac ep;
-                    if cep neq 1 then 
-                       <<cxf := bfac!-merge(fctrf cep,cxf);
-                         write "commom factor cep found. ",tmsf cep," terms."; terpri()>>;
-                    ep := b!:cquot(ep,cep);
-                    >>>>; 
-      return if null ep then {'list,0} 
-              else if domainp lc ep
-                then 'list . {'list,multf(car cxf,lc ep)} .
-                               for each j in cdr cxf 
-                                   collect {'list,mk!*sq(car j ./ 1),cdr j}
-              else 'list . {'list,car cxf} . {'list,mk!*sq(lc ep ./ 1),1} . 
-                    for each j in cdr cxf collect {'list,mk!*sq(car j ./ 1),cdr j}
-   end$
-
-symbolic procedure b!:comfac u$
-   begin scalar !*ezgcd,x;
-     write "entered comfac."; terpri();
-     !*ezgcd := t;
-     if null u then return 1;
-     x := lc u;
-     a: u := red u;
-        if null u then <<write "left comfac."; terpri(); return x>>;
-        x := gcdf!*(lc u,x);
-        go to a
-   end$
-
-symbolic procedure b!:cquot(u,v)$
-   if null u then nil
-    else lpow u .* quotf1(lc u,v) .+ b!:cquot(red u,v)$
-
-symbolic procedure b!:try_previous_factors(u,v)$
-   begin scalar x;
-     if null v then return u;
-     b: x := b!:ctrialdiv(u,caar v);
-        if null x then go to a;
-        write "successful trial div. "; terpri();
-        u := x;
-        rplacd(car v,cdar v + 1);
-        go to b;
-     a: v := cdr v;
-        if null v then return u;
-        go to b
-   end$
-
-symbolic procedure b!:ctrialdiv(u,v)$
-   begin scalar res,w,x;
-     if domainp u then return quotf1(u,v);
-     if x := quotf1(lc u,v) then res := w := lpow u .* x .+ nil
-      else return nil;
-     a: u := red u;
-        if null u then return res;
-        if domainp u then if x := quotf1(u,v) then <<rplacd(w,x); return res>>
-                           else return nil;
-        if x := quotf1(lc u,v) then rplacd(w,lpow u .* x .+ nil)
-         else return nil;
-        w := red w;
-       go to a;
-   end$
-
-symbolic procedure bfac!-merge(u,v)$
-   if null cdr v then multf(car u,car v) . cdr u 
-    else multf(car u,car v) . bfac!-merge2(cdr u,cdr v)$
-
-symbolic procedure bfac!-merge2(u,v)$
-   begin scalar x,y,r;
-     if null u then return v;
-     c: x := car u;
-        y := v;
-     b: if car x = caar y 
-           then <<rplacd(car y,cdar y + cdr x);
-                  go to a>>;
-        y := cdr y;
-        if y then go to b;
-        r := x . r;
-     a: u := cdr u;
-        if null u then return append(v,r);
-        go to c;
-   end$
-
-endmodule$
-
 end$
 
 ----------------------------
-decoupling 
+decoupling (30) 
+high_prio_decoupling (57)
   dec_one_step
     dec_and_fct_select
       dec_info
         dec_ld_info
-    check_cases_for_separant
-      can_not_become_zerosq
     dec_new_equation
-      can_not_become_zerosq
+      err_catch_gcd
       coeff1
+      not_necc_and_suff_eqn
+        can_not_become_zeroSQ
       err_catch_elimin
         elimin
-        err_catch_gcd
+        coeff1
     dec_reduction
-      mkeqsq
+      mkeqSQ
     eqinsert
+
+diff_length_reduction (27)
+  dec_and_red_len_one_step
+    err_catch_red_len
+      dec_try_to_red_len
+        dec_and_fct_select
+          dec_info
+            dec_ld_info
+        dec_new_equation
+          err_catch_gcd
+          coeff1
+          not_necc_and_suff_eqn
+            can_not_become_zeroSQ
+          err_catch_elimin
+            elimin
+            coeff1
+    dec_reduction
+      mkeqSQ
+    eqinsert
+
 ------------------------------------------------
 tr decoupling
 tr dec_one_step
 tr dec_and_fct_select
 tr dec_info
 tr dec_ld_info
-tr check_cases_for_separant
-tr can_not_become_zerosq
+tr not_necc_and_suff_eqn
+tr can_not_become_zeroSQ
 tr dec_new_equation
 tr err_catch_elimin
 tr elimin
 tr err_catch_gcd
 tr dec_reduction
-tr mkeqsq
+tr mkeqSQ
 tr eqinsert
+
+tr diff_length_reduction
+tr dec_and_red_len_one_step
+tr err_catch_red_len
 tr dec_try_to_red_len
+
+tr err_catch_resul
+tr comp_resultant
+tr bresultant
+tr bezout_resultant_fac
+tr b!:comfac
+

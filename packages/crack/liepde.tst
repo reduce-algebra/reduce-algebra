@@ -32,7 +32,6 @@ load liepde;
 %*******************************************************************%
 
 lisp(depl!*:=nil)$     % clearing of all dependences
-setcrackflags()$
 lisp(print_:=nil)$       
 on dfprint$
 

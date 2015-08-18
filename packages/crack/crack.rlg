@@ -29,9 +29,6 @@
 lisp(depl!*:=nil)$
 
            % clearing of all dependencies
-setcrackflags()$
-
-             % use standard flag-setting
 lisp(print_:=nil)$
 
            % to suppress printing the computation
@@ -513,7 +510,9 @@ lisp(proc_list_ := '(to_do subst_level_3 separation
 de:=crack({de},{},{f,g,h},{});
 
 
-de := {{{},
+de := {{{},{h=0,f=0},{g},{g}},
+
+       {{},
 
         {h=c_14*z,
 
@@ -527,14 +526,14 @@ de := {{{},
 
         {c_15,c_14}},
 
-       {{},{h=0,f=0},{g},{g}},
-
        {{},{g=0,f=0},{h},{}}}
 
 de;
 
 
-{{{},
+{{{},{h=0,f=0},{g},{g}},
+
+ {{},
 
                c_15
   {h=c_14*z,g=------,f= - c_15*y},
@@ -544,15 +543,13 @@ de;
 
   {c_15,c_14}},
 
- {{},{h=0,f=0},{g},{g}},
-
  {{},{g=0,f=0},{h},{}}}
 
 
 fdep append(third first ws,third second ws,third third ws)$
 
 
-c_14, c_15, g=g(x)
+g=g(x), c_14, c_15
 
 nodependlist {f,g,h}$
 
@@ -1041,10 +1038,3 @@ lisp(depl!*:=nil)$
 
 end$
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 15 ms
-
-End of Lisp run after 0.31+0.10 seconds
-real 0.62
-user 0.03
-sys 0.03

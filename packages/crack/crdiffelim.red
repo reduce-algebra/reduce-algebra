@@ -71,7 +71,7 @@ fluid '(!*allfac !*nat depl!* !*msg !*int semic!* !*echo !*diffelimverbosity!*
 
 symbolic procedure call_diffelim(u,v,n,l)$
    begin scalar res,tmpf,tmpff,ichan,oldichan,semic,!*msg,!*int,
-                xtrnlcall,sl;
+                xtrnlcall,sl,a,save,ofl!*bak;
 
      % Check the installation of DiffElim
      % DiffElim is distributed together with Crack and is called by 
@@ -113,9 +113,18 @@ symbolic procedure call_diffelim(u,v,n,l)$
                                       else " > /dev/null");
      tmpf:=if getenv "windir" then "DiffElimIn.tmp" else
            bldmsg("%w%w%w","/tmp/DiffElimIn_",level_string(session_),"tmp");
-     out tmpf;
+
+     a := open(tmpf, 'output);
+     ofl!*bak:=ofl!*$
+     ofl!*:=tmpf$  % any value neq nil, to avoid problem with redfront
+     save:=wrs a;
+     %out tmpf;
      sl := gen_diffelim_input(u,n,v)$
-     shut tmpf;     
+     %shut tmpf;     
+     wrs save$
+     ofl!*:=ofl!*bak$
+     close a;
+
      if sl then unmkallfunstrs sl;
      xtrnlcall := bldmsg("%w%w%w",xtrnlcall," -f ",tmpf);
      if l then xtrnlcall := bldmsg("%w%w%w",xtrnlcall," -haltiter ",l);

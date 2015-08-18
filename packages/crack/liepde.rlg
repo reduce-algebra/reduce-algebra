@@ -328,7 +328,9 @@ for the function(s) :
 
 u(t,x)
 
-
+##### The function eta_u that is to be computed depends on (u`2`2)
+ which is a left hand side of the input system or a 
+derivative of a left hand side of the input system
 -------- 1. Symmetry:
 
 xi_t=0
@@ -843,6 +845,86 @@ r(z,y,t,x), f(z,y,t,x), v(z,y,t,x)
 
 xi_x=0
 
+xi_y=1
+
+xi_z=0
+
+xi_t=0
+
+eta_r=0
+
+eta_f=0
+
+eta_v=0
+
+-------- 2. Symmetry:
+
+xi_x= - y
+
+xi_y=x
+
+xi_z=0
+
+xi_t=0
+
+eta_r=0
+
+eta_f=0
+
+eta_v=0
+
+-------- 3. Symmetry:
+
+xi_x=0
+
+xi_y=0
+
+xi_z=0
+
+xi_t=1
+
+eta_r=0
+
+eta_f=0
+
+eta_v=0
+
+-------- 4. Symmetry:
+
+xi_x=1
+
+xi_y=0
+
+xi_z=0
+
+xi_t=0
+
+eta_r=0
+
+eta_f=0
+
+eta_v=0
+
+-------- 5. Symmetry:
+
+xi_x=0
+
+xi_y=0
+
+xi_z=1
+
+xi_t=0
+
+eta_r=0
+
+eta_f=0
+
+eta_v=0
+
+-------- 6. Symmetry:
+
+xi_x=0
+
 xi_y=0
 
 xi_z=0
@@ -855,7 +937,7 @@ eta_f=1
 
 eta_v=0
 
--------- 2. Symmetry:
+-------- 7. Symmetry:
 
 xi_x=0
 
@@ -874,7 +956,7 @@ eta_f= - t
 eta_v=-----
        a1
 
--------- 3. Symmetry:
+-------- 8. Symmetry:
 
 xi_x=0
 
@@ -892,71 +974,7 @@ eta_f= - t
 eta_v=----
        a1
 
--------- 4. Symmetry:
-
-xi_x=0
-
-xi_y=1
-
-xi_z=0
-
-xi_t=0
-
-eta_r=0
-
-eta_f=0
-
-eta_v=0
-
--------- 5. Symmetry:
-
-xi_x= - y
-
-xi_y=x
-
-xi_z=0
-
-xi_t=0
-
-eta_r=0
-
-eta_f=0
-
-eta_v=0
-
--------- 6. Symmetry:
-
-xi_x=0
-
-xi_y=0
-
-xi_z=1
-
-xi_t=0
-
-eta_r=0
-
-eta_f=0
-
-eta_v=0
-
--------- 7. Symmetry:
-
-xi_x=1
-
-xi_y=0
-
-xi_z=0
-
-xi_t=0
-
-eta_r=0
-
-eta_f=0
-
-eta_v=0
-
--------- 8. Symmetry:
+-------- 9. Symmetry:
 
 xi_x=0
 
@@ -964,13 +982,33 @@ xi_y=0
 
 xi_z=0
 
-xi_t=1
+xi_t=0
 
 eta_r=0
 
 eta_f=0
 
 eta_v=0
+
+with c_176(t)
+
+-------- 10. Symmetry:
+
+xi_x=0
+
+xi_y=0
+
+xi_z=0
+
+xi_t=0
+
+eta_r=0
+
+eta_f=0
+
+eta_v=0
+
+with c_166(t)
 
 
 -------- 
@@ -1202,25 +1240,6 @@ eta_yxx=--------------------------
 n= - ----
       7
 
-             6/7
-xi_x= - 343*x
-
-              1/7
-        - 12*x    - 147*y
-eta_y=--------------------
-               1/7
-              x
-
-eta_yx=0
-
-eta_yxx=0
-
--------- 5. Symmetry:
-
-      15
-n= - ----
-      7
-
 xi_x=7*x
 
 eta_y=y
@@ -1240,6 +1259,24 @@ eta_yxx=--------------------------
                       5
                  n + ---
                       2
+
+-------- 5. Symmetry:
+
+      15
+n= - ----
+      7
+
+          6/7
+xi_x=343*x
+
+            6/7
+       147*x   *y + 12*x
+eta_y=-------------------
+               x
+
+eta_yx=0
+
+eta_yxx=0
 
 
 -------- 6. Symmetry:
@@ -1323,22 +1360,6 @@ eta_yxx=--------------------------
 n= - ----
       7
 
-             8/7
-xi_x= - 343*x
-
-              1/7
-eta_y= - 196*x   *y + 12*x
-
-eta_yx=0
-
-eta_yxx=0
-
--------- 11. Symmetry:
-
-      20
-n= - ----
-      7
-
 xi_x=7*x
 
 eta_y=6*y
@@ -1358,6 +1379,24 @@ eta_yxx=--------------------------
                       5
                  n + ---
                       2
+
+-------- 11. Symmetry:
+
+      20
+n= - ----
+      7
+
+          8/7
+xi_x=343*x
+
+            8/7         2
+       196*x   *y - 12*x
+eta_y=--------------------
+               x
+
+eta_yx=0
+
+eta_yxx=0
 
 
 -------- 12. Symmetry:
@@ -1396,7 +1435,7 @@ xi_x=2*x
 eta_y=y
 
             1                3
-         - ---*y *c_194*n - ---*y *c_194
+         - ---*y *c_197*n - ---*y *c_197
             2   x            2   x
 eta_yx=----------------------------------
                          5
@@ -1404,7 +1443,7 @@ eta_yx=----------------------------------
                          2
 
              1   n          2      n        2
-          - ---*x *c_194*n*y  - 2*x *c_194*y
+          - ---*x *c_197*n*y  - 2*x *c_197*y
              2
 eta_yxx=--------------------------------------
                             5
@@ -1423,10 +1462,3 @@ lisp(prolong_order:=0)$
 
 end$
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 16 ms
-
-End of Lisp run after 1.51+0.12 seconds
-real 1.88
-user 0.00
-sys 0.06

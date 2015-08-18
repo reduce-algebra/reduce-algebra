@@ -33,29 +33,128 @@ symbolic fluid '(tr_hom_alg)$
 
 lisp(tr_hom_alg:=t)$
 
+symbolic procedure linearize_bi_lin(arglist)$
+if null fhom_  then
+if print_ then <<
+ write"To use this module, you need functions (in fhom_) that occur homogeneously."$
+ terpri()
+>>        else else
+if null car arglist or null cdar arglist then
+if print_ then <<
+ write"To use this module, you need at least 2 equations."$
+ terpri()
+>>        else                           else
+
+begin scalar pdes, newpdes1, sb, sb2, sb3, h, pf, newp, tm, tmcp,
+             s, newp, print_bak, fcp, f1, f2, fhomtem$
+ % fl: list of new unknowns
+ % sb: substitution list
+ print_bak:=print_; print_:=nil$
+ pdes:=car arglist$
+
+ % At first we generate substitution lists
+ fhomtem:=intersection(fhom_,ftem_);
+ fhomtem:=kernel_sort fhomtem;
+
+ % at first a substitution list for squares of fhomtem functions:
+ write"Formulating a substitution list for squares"$terpri()$
+ sb2:=for each f in fhomtem collect <<
+  h:=intern gensym()$
+  % adding h to ftem_, fhom_, flin_ (?)
+  ftem_:=fctinsert(h,ftem_)$
+  flin_:=cons(h,flin_)$
+  flin_:=sort_according_to(flin_,ftem_);
+  % Adding the new 2-term equation to pdes
+  newp:=subtrsq(mksq(f,2),mksq(h,1));
+  newpdes1:=cons(mkeqSQ(newp,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes),newpdes1)$
+  (f . h)
+ >>$
+
+ % then a substitution list for products
+ write"Formulating a substitution list for products"$terpri()$
+ fcp:=fhomtem;
+ while cdr fcp do <<
+  sb3:=for each f in cdr fcp collect <<
+   h:=intern gensym()$
+   % adding h to ftem_, fhom_, flin_ (?)
+   ftem_:=fctinsert(h,ftem_)$
+   flin_:=cons(h,flin_)$
+   flin_:=sort_according_to(flin_,ftem_);
+   % Adding the new 2-term equation to pdes
+   newp:=subtrsq(multsq(mksq(car fcp,1),mksq(f,1)),mksq(h,1));
+   newpdes1:=cons(mkeqSQ(newp,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes),newpdes1)$
+   (f . h) 
+  >>;
+  sb:=cons(((car fcp) . sb3),sb);
+  fcp:=cdr fcp;
+ >>$
+
+ % now conversion of equations
+ write"Conversion of equations"$terpri()$
+
+ for each p in pdes do 
+ if get(p,'fct_hom) and (h:=get(p,'hom_deg)) and 
+    (( car h=2) or ( car h=0)) and 
+    ((cadr h=2) or (cadr h=0)) then << % convert this equation
+  newp:=simp 0$
+  pf:=numr get(p,'sqval);
+  while pf do <<
+   tm:=first_term_SF pf$
+   pf:=subtrf(pf,tm);
+   tmcp:=tm;
+   while not member(mvar tmcp,fhomtem) do tmcp:=lc tmcp;
+   f1:=mvar tmcp$
+   if ldeg tmcp = 2 then <<
+    s:=assoc(f1,sb2);
+    newp:=addsq(newp,multsq(quotsq((tm . 1),mksq(f1,2)),mksq(cdr s,1)));
+   >>        else <<
+    tmcp:=lc tmcp;
+    while not member(mvar tmcp,fhomtem) do tmcp:=lc tmcp;
+    f2:=mvar tmcp$
+    s:=assoc(f1,sb);    % cdr s is an association list for the 2nd factor
+    s:=assoc(f2,cdr s);% cdr s is the new variable
+    newp:=addsq(newp,multsq(quotsq(quotsq((tm . 1),mksq(f1,1)),mksq(f2,1)),mksq(cdr s,1)));
+   >>
+  >>;
+
+  % Adding the new linear equations
+  pdes:=drop_pde(p,pdes,nil)$
+  pdes:=eqinsert(mkeqSQ(newp,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes),pdes)$
+
+ >>;
+ pdes:=append(newpdes1,pdes);
+ print_:=print_bak;
+
+ return cons(pdes,cdr arglist)
+
+end$ % of linearize_bi_lin
+
+
 algebraic procedure bi_lin_expt(p)$
 if p=1 then 0 else
 if  arglength(p)<2 then 1 else
 if (arglength(p)=2) and (part(p,0)=expt) then part(p,2)
                                          else write"error!"$
 
-symbolic procedure find_hom_deg_sf(p)$
+symbolic procedure find_hom_deg_SF(p)$
 % p is supposed to be a standard form,
 % returns {total degree of flin_ functions,
 %          total degree of all other functions}
 % in first term of p.
-begin scalar tm,f,sb,l1,l2$
- tm:=first_term_sf p$
+begin scalar tm,f,sb,l1,l2,mod_switched$
+ tm:=first_term_SF p$
  l1:=gensym()$
  l2:=gensym()$
  for each f in flin_ do 
     sb:=cons((f . {'times,f,l1}), sb)$
  for each f in setdiff(fhom_,flin_) do 
     sb:=cons((f . {'times,f,l2}), sb)$
+ if modular_comp and null !*modular then <<on modular$ mod_switched:=t>>$
  tm:=numr quotsq(simp {'!*sq,subf(tm,sb),nil}, (tm . 1))$
+ if mod_switched then off modular$
 
  return
- if not pairp tm then {0,0} else
+ if not pairp tm or domainp tm then {0,0} else
  if mvar tm = l1 then if (domainp lc tm) or
                          ((pairp tm) and (car tm = '!:gi!:))
                       then {ldeg tm, 0        }
@@ -75,8 +174,8 @@ end$
 %                                             else tm:=part(p,1)$
 % l1:=lisp gensym()$
 % l2:=lisp gensym()$
-% sb:=append(for each f in lisp(cons('LIST,              flin_ )) collect f=f*l1,
-%            for each f in lisp(cons('LIST,setdiff(ftem_,flin_))) collect f=f*l2)$
+% sb:=append(for each f in lisp(cons('list,              flin_ )) collect f=f*l1,
+%            for each f in lisp(cons('list,setdiff(ftem_,flin_))) collect f=f*l2)$
 % tm:=sub(sb,tm)/tm$
  
 % if freeof(tm,l1) then <<
@@ -87,7 +186,7 @@ end$
 %  dg1:=bi_lin_expt(tm);
 %  dg2:=0;
 % >>               else
-% if (arglength(tm)=2) and (part(tm,0)=TIMES) then 
+% if (arglength(tm)=2) and (part(tm,0)=times) then 
 % if freeof(part(tm,1),l2) then <<dg1:=bi_lin_expt(part(tm,1));
 %                                 dg2:=bi_lin_expt(part(tm,2)) >>
 %                          else <<dg1:=bi_lin_expt(part(tm,2));
@@ -128,7 +227,7 @@ $
   sf:=numr get(p,'sqval);   % sf is the numerator of the equation
   wtli:=nil;
   while sf do <<
-   tf:=first_term_sf sf; sf:=subtrf(sf,tf); % tf is the first term
+   tf:=first_term_SF sf; sf:=subtrf(sf,tf); % tf is the first term
 
    wt:=nil;
    while tf and not domainp tf do <<
@@ -207,25 +306,25 @@ end$
 %   if print_ then write "Separation wrt. ",f1,". "$
 %   su:=nil;
 %   for each f in fl_1 do 
-%   su:=cons(if f=f1 then {'EQUAL,f,1}
-%		     else {'EQUAL,f,0},su);
-%   su:=cons('LIST,su);
+%   su:=cons(if f=f1 then {'equal,f,1}
+%		     else {'equal,f,0},su);
+%   su:=cons('list,su);
 %   pcp:=algebraic(sub(su,p));
 %   if print_ then <<write "Substitution done."$terpri()>>$
 %
 %   for each f2 in fl_2 do <<
 %    su:=nil;
 %    for each f in fl_2 do 
-%    su:=cons(if f=f2 then {'EQUAL,f,1}
-%		      else {'EQUAL,f,0},su);
-%    su:=cons('LIST,su);
+%    su:=cons(if f=f2 then {'equal,f,1}
+%		      else {'equal,f,0},su);
+%    su:=cons('list,su);
 %    cnd:=algebraic(sub(su,pcp));
-%    if pairp cnd and car cnd='MINUS then cnd:=cadr cnd;
+%    if pairp cnd and car cnd='minus then cnd:=cadr cnd;
 %    sepli:=union(list cnd,sepli);
 %
 %   >>$
 %  >>$
-%  return cons('LIST,sepli)
+%  return cons('list,sepli)
 % end$
 
 symbolic procedure bi_lin_eqn_lin_comb(pdes)$
@@ -240,11 +339,11 @@ begin scalar p,fl,rs,h$
  for each p in pdes do
  <<h:=gensym()$  %p$  % gensym()$    %#?#
    fl:=cons(h,fl)$
-%  rs:=cons({'TIMES,h,get(p,'val)},rs)
+%  rs:=cons({'times,h,get(p,'val)},rs)
    rs:=addsq(multsq(simp h,get(p,'sqval)),rs)
  >>$
-%rs:=cons('PLUS,rs)$
-%return {'LIST,reval rs,cons('LIST,fl)}
+%rs:=cons('plus,rs)$
+%return {'list,reval rs,cons('list,fl)}
  return {'list,{'!*sq,rs,t},cons('list,fl)}
 end$
 
@@ -257,8 +356,8 @@ begin scalar pdes,cnd,fl,f,cndcp,c,linde,again$
   cnd:=bi_lin_eqn_lin_comb(pdes)$
   fl:=caddr cnd$
 % cnd:=bi_lin_sep(cadr cnd,fl_1,fl_2)$ 
-%  cnd:=split_simplify({{'LIST,cadr cnd},{'LIST},
-%                       cons('LIST,append(fl_1,fl_2)),{'LIST},t})$
+%  cnd:=split_simplify({{'list,cadr cnd},{'list},
+%                       cons('list,append(fl_1,fl_2)),{'list},t})$
   cnd:=split_simplify({{'list,cadr cnd},{'list},
                        fl,cons('list,ftem_),t})$
 
@@ -309,7 +408,7 @@ begin scalar h,pdes,fc,rhs,lhs,lhsfl,cnd,cndcp,fl,fl_1,fl_2,
 
  change_prompt_to ""$ 
  repeat h:=termread() until (h='y) or (h='n)$
- if h='n then arglist:=drop_dep_bi_lin(arglist)$
+ If h='n then arglist:=drop_dep_bi_lin(arglist)$
  terpri()$
 
  fl_1:=flin_;
@@ -328,7 +427,7 @@ begin scalar h,pdes,fc,rhs,lhs,lhsfl,cnd,cndcp,fl,fl_1,fl_2,
    rhs:=cadr rhs;  % expression
   >>$
 
-  hdg:=find_hom_deg_sf(numr simp fc)$
+  hdg:=find_hom_deg_SF(numr simp fc)$
   dg1:=1-car  hdg$
   dg2:=1-cadr hdg$
   lhs:=make_hom_ansatz(fl_1,fl_2,dg1,dg2)$
@@ -336,8 +435,8 @@ begin scalar h,pdes,fc,rhs,lhs,lhsfl,cnd,cndcp,fl,fl_1,fl_2,
   lhs:=cadr lhs$
 
 % cnd:=bi_lin_sep(algebraic(fc*lhs-rhs),fl_1,fl_2)$ 
-%  cnd:=split_simplify({{'LIST,algebraic(fc*lhs-rhs)},{'LIST},
-%                       cons('LIST,append(fl_1,fl_2)),{'LIST},t})$
+%  cnd:=split_simplify({{'list,algebraic(fc*lhs-rhs)},{'list},
+%                       cons('list,append(fl_1,fl_2)),{'list},t})$
   cnd:=split_simplify({{'list,algebraic(fc*lhs-rhs)},{'list},
                        fl,cons('list,ftem_),t})$
 
@@ -355,10 +454,10 @@ begin scalar h,pdes,fc,rhs,lhs,lhsfl,cnd,cndcp,fl,fl_1,fl_2,
     if indx2 neq indx1 then cndcp:=algebraic(sub(arbcomplex(indx2)=0,cndcp))
                        else cndcp:=algebraic(sub(arbcomplex(indx2)=1,cndcp))$
     if not zerop cndcp then <<
-%    cndcp:={'TIMES,fc,cndcp}$
+%    cndcp:={'times,fc,cndcp}$
      cndcp:={'!*sq,multsq(simp fc,cndcp),t}$
 
-     pdes:=eqinsert(h:=mkeqsq(cndcp,nil,nil,ftem_,vl_,
+     pdes:=eqinsert(h:=mkeqSQ(cndcp,nil,nil,ftem_,vl_,
                               allflags_,t,list(0),nil,pdes),pdes)$
      if h and not freeof(pdes,h) then <<
 
@@ -375,7 +474,7 @@ begin scalar h,pdes,fc,rhs,lhs,lhsfl,cnd,cndcp,fl,fl_1,fl_2,
   write"Do you want to find further factorizable equations ",
        "with other factors? (y/n) "$
   repeat h:=termread() until (h='y) or (h='n)$
-  if h='y then again:=t
+  If h='y then again:=t
           else again:=nil$
  >> until null again$
 
@@ -446,7 +545,7 @@ begin scalar p,h,f,fp,bestf,l1,pdes,forg,nzf,allnzf,
  if expert_mode then l1:=selectpdes(pdes,1)
                 else l1:=cadddr arglist$
  for each p in ineq_ do
- if no_number_atom_sq p then allnzf:=cons(mvar numr p,allnzf);
+ if no_number_atom_SQ p then allnzf:=cons(mvar numr p,allnzf);
 
  % Find a rational equation with only 2 or 3 functions of all variables
  % with homogeneity degree (0 n). Find a case where one of the 
@@ -500,13 +599,13 @@ begin scalar p,h,f,fp,bestf,l1,pdes,forg,nzf,allnzf,
  if f neq bestf then <<
   newf:=newfct(fname_,vl,nfct_)$  nfct_:=add1 nfct_$
   ftem_:=append(ftem_,list newf)$
-  newe:=mkeqsq(simp {'difference,f,{'times,newf,bestf}},nil,nil,
+  newe:=mkeqSQ(simp {'difference,f,{'times,newf,bestf}},nil,nil,
                {f,newf,bestf},vl,allflags_,t,list(0),nil,pdes);
   pdes:=eqinsert(newe,pdes)$ 
   % The substitution f=>newf*bestf is (unfortunately) done in all
   % equations, also in equations where bestf does initially not occur,
   % i.e. where
-  to_do_list:=cons(list('subst_level_35,list newe),to_do_list)$
+  to_do_list:=cons(list('subst_level_35,list newe,f),to_do_list)$
  >>$
 
  return list(pdes,forg)

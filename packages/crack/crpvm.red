@@ -1,5 +1,5 @@
 %**********************************************************************
-module crackpvm;
+module crackpvm$
 %**********************************************************************
 %  Procedures to support parallel computing on PVM
 %  Authors: Thomas Wolf and Winfried Neun 2002, 2006
@@ -33,22 +33,21 @@ symbolic fluid '(loaddirectories!* loadextensions!* !*lower unixargs!*
 
 !#if (memq 'csl lispsystem!*)
 
-symbolic procedure pwd;
-  bldmsg("%w/", getenv "PWD");
+symbolic procedure pwd$ bldmsg("%w/",getenv "PWD")$
 
 !#endif
 
-% symbolic fluid '(lock_);
+% symbolic fluid '(lock_)$
 % lock_ := gtwarray 4$     % see /usr/include/sys/fnctl.h
 
-% symbolic procedure mklockstruct(lock);
+% symbolic procedure mklockstruct(lock)$
 % << wputv(lock,0,lshift (1,32)); % 64 bits
 %    wputv(lock,1,0);
 %    wputv(lock,2,lshift (512,32));
 %    wputv(lock,3,0);
-% >>;
+% >>$
 
-% lisp mklockstruct(lock_);
+% lisp mklockstruct(lock_)$
 
 % symbolic procedure proczaehler0(file,action)$  % Winfried's version
 % % 'file' is the counter file which must already exist.
@@ -56,7 +55,7 @@ symbolic procedure pwd;
 % begin scalar fd,fl,zahl,chn;
 %  if not filestatus(file,nil) then <<
 %   write"file does not exist at START"$terpri()$fd:=termread()
-%  >>;
+%  >>$
 %  wputv(lock_,0,lshift (1,32));         % f_unlck
 %  fd := Linux_open (file,O_RDWR);
 %  if (fd < 0) then error(4711," with_lock: File cannot be opened");
@@ -79,107 +78,137 @@ symbolic procedure pwd;
 %  fd := Linux_close fd;
 %  if (fd < 0) then error(4711," with_lock: File cannot be closed");
 %
-% end;
+% end$
 
 symbolic procedure proczaehler(file,action)$  % Sergey's version
-  begin scalar fl,fpid,!*echo,semic!*;
-    fpid := bldmsg("%s.%w",file,getpid());
-    if action='init then backup_:=0
-    else <<
-      fl:=1;
-      repeat <<
-        fl := rename!-file(file, fpid);
-        if not fl then sleep 1
-      >> until fl;
-%we have successfully renamed the file
-    semic!*:='!$;
-    in fpid >>;
+begin scalar fl,fpid,!*echo,semic!*,a,save,ofl!*bak;
 
-    if (action neq 'init) and (not numberp backup_) then <<
-      write"pwd = ",pwd()$terpri();
-      write"***** ERROR: file ",process_counter," does not contain a number: ";
-      write backup_$terpri();
-      error(1000,"We stop now!") >>;
-    if backup_<0 then <<
-      write"pwd = ",pwd()$terpri();
-      write"***** ERROR: file ",process_counter," contains a number <0 : ";
-      write backup_$terpri();
-      error(1001,"We stop now!") >>;
-    out fpid;
-    if action='plus  then write "lisp (backup_ := ",backup_+1,")$ end$";
-    if action='minus then write "lisp (backup_ := ",backup_-1,")$ end$";
-    if action='init  then write "lisp (backup_ := ",0,")$ end$";
-    shut fpid;
-    fl:=1;
-    repeat <<
-      fl := rename!-file(fpid, file);
-      if null fl then sleep 1
-    >> until fl;
-  end;
+ fpid := bldmsg("%s.%w",file,getpid());
+ 
+ if action='init then backup_:=0
+                 else <<
+  fl:=1;
+  repeat <<
+   fl := rename!-file(file, fpid);
+   if null fl then system"sleep 1"
+  >> until fl;
+  % the following one would be unix specific:
+  % repeat <<
+   % fl := system bldmsg ("mv %s %s",file,fpid)$
+   % if fl neq 0 then system"sleep 1"
+  % >> until fl=0;
+  %we have successfully renamed the file
+  semic!*:='!$;
+  in fpid 
+ >>$
 
-symbolic procedure ini_check_of_parallel_crack;
+ if (action neq 'init) and (not numberp backup_) then <<
+  write"pwd = ",pwd()$terpri()$
+  write"***** ERROR: file ",process_counter," does not contain a number: "$
+  write backup_$terpri()$
+  error(1000,"We stop now!")
+ >>$
+ if backup_<0 then <<
+  write"pwd = ",pwd()$terpri()$
+  write"***** ERROR: file ",process_counter," contains a number <0 : "$
+  write backup_$terpri()$
+  error(1001,"We stop now!")
+ >>$
+ %out fpid;
+ a := open(fpid, 'output);
+ ofl!*bak:=ofl!*$
+ ofl!*:=fpid$ % any value neq nil, to avoid problem with redfront
+ save:=wrs a;
+
+ if action='plus  then write "lisp (backup_ := ",backup_+1,")$ end$";
+ if action='minus then write "lisp (backup_ := ",backup_-1,")$ end$";
+ if action='init  then write "lisp (backup_ := ",0,")$ end$";
+ %shut fpid;
+ wrs save$ 
+ ofl!*:=ofl!*bak$
+ close a;
+
+ fl:=1;
+
+ repeat <<
+  fl := rename!-file(fpid,file);
+  if null fl then system"sleep 1"
+ >> until fl;
+
+ % old, only for unix:
+ % repeat <<
+  % fl := system bldmsg ("mv %s %s",fpid,file);
+  % if fl neq 0 then system"sleep 1"
+ % >> until fl=0;
+
+end$
+
+symbolic procedure ini_check_of_parallel_crack$
 if paracrack_initialized then t else
-begin scalar os;
+begin scalar os$ 
 
  if reducerc_initialized neq 13112006 then return <<
-  write"##### To run this parallelization, a certain file .reducerc has to be";
-  terpri();
-  write"##### placed in your home directory! This file comes with all crack";
-  terpri();
-  write"##### files. To see it under unix do:  ls -a  . If it is not in your";
-  terpri();
-  write"##### CRACK directory you can download it together with the latest";
-  terpri();
-  write"##### version of CRACK from ",crack_download_add,"crack.tar.gz ";
-  terpri();
-  write"##### or as a single file ",crack_download_add,".reducerc ";
-  terpri();
-  write"##### and afterwards copy it into your home directory and restart REDUCE.";
-  terpri();
+  write"##### To run this parallelization, a certain file .reducerc has to be"$
+  terpri()$
+  write"##### placed in your home directory! This file comes with all crack"$
+  terpri()$
+  write"##### files. To see it under unix do:  ls -a  . If it is not in your"$
+  terpri()$
+  write"##### CRACK directory you can download it together with the latest"$
+  terpri()$
+  write"##### version of CRACK from ",crack_download_add,"crack.tar.gz "$
+  terpri()$
+  write"##### or as a single file ",crack_download_add,".reducerc "$
+  terpri()$
+  write"##### and afterwards copy it into your home directory and restart REDUCE."$
+  terpri()$
   nil
- >>;
+ >>$
 
  % Check for unix
- if memq('linux     ,lispsystem!*) or
-    memq('unix      ,lispsystem!*) or
-    memq('linux!-gnu,lispsystem!*) then os := 'linux;
+ if memq('linux         ,lispsystem!*) or
+    memq('unix          ,lispsystem!*) or
+    memq('darwin13!.4!.0,lispsystem!*) or
+    memq('linux!-gnu    ,lispsystem!*) then os := 'linux;
  if os neq 'linux then <<
-  write"### WARNING:"$ terpri();
-  write"Currently only the operating system linux is supported.";
-  write"Parallel execution on your ",os," system may not be possible."$terpri();
- >>;
+  write"### WARNING:"$ terpri()$
+  write"Currently only the operating system linux is supported."$
+  write"Parallel execution on your ",os," system may not be possible."$terpri()$
+ >>$
 
  % Create file process_counter for counting processes if it does not exist yet
  % and initialize to zero in that case.
- if not filep process_counter then proczaehler(process_counter,'init);
+ if not filep process_counter then proczaehler(process_counter,'init)$  
 
  % verify the end of each run?
- change_prompt_to "";
- write"Shall each parallel process ask for verification at the end? (y/n) ";
- repeat os:=termread() until (os='y) or (os='n);
- verify_end_of_parallel_run:=if os='y then t else nil;
- restore_interactive_prompt();
-if null session_ then name_session()$
+ change_prompt_to ""$ 
+ write"Shall each parallel process ask for verification at the end? (y/n) "$
+ repeat os:=termread() until (os='y) or (os='n)$
+ verify_end_of_parallel_run:=if os='y then t else nil$
+ restore_interactive_prompt()$ 
+
+ start_sol_list_file()$ 
+
  return (paracrack_initialized:=t)
-end;
+end$
 
-symbolic procedure pvm_activate;
+symbolic procedure pvm_activate$
 if getd('pvm_mytid) then pvm_able:=t
-                    else pvm_able:=nil;
+                    else pvm_able:=nil$
 
-symbolic procedure pvm_active;
+symbolic procedure pvm_active$
 if pvm_able then t else <<
- terpri()$write"PVM is either not active on this computer";
- terpri()$write"or interactively switched off. Try 'vp'.";
- terpri();
+ terpri()$write"PVM is either not active on this computer"$
+ terpri()$write"or interactively switched off. Try 'vp'."$
+ terpri()$
  nil
->>;
+>>$
 
-%symbolic procedure pvm_try;
+%symbolic procedure pvm_try$
 %if pvm_able and (read_proczaehler()<max_proc_no) then t
-%                                                 else nil;
+%                                                 else nil$
 
-symbolic procedure crload();
+symbolic procedure crload()$
 % find the path from where crack.b was loaded
 begin scalar found, u, ld, le;
  ld := loaddirectories!*;
@@ -196,13 +225,16 @@ begin scalar found, u, ld, le;
    ld := rest ld;
   >>) where !*lower := t;
  return found
-end;
+end$
 
-symbolic procedure crack_load_cmd;
+symbolic procedure crack_load_cmd$
 % Determines the path of the first load of CRACK. This is to be used in automatic
 % further loads of CRACK in parallel computations
 if null crack_load_command then
-begin scalar h,s,found;
+
+!#if (memq 'psl lispsystem!*)
+
+begin scalar h,s,found$
  h:=options!*;
  while h and not found do <<
   s:=reverse explode car h;
@@ -216,27 +248,43 @@ begin scalar h,s,found;
      (cadddr s = 'r) and (car cddddr s = 'c)
   then found:=t
   else h:=cdr h
- >>;
+ >>$
  crack_load_command:=
  if found and (length s > 4) then bldmsg("%w",car h)
                              else <<
-  %write"##### REQUIRED INPUT: #####"$terpri();
-  write"The directory from where the package CRACK was loaded can not be found."$terpri();
-  write"Reasons can be that"$terpri();
-  write"- a file ~./reducerc is missing which should initialize the variable options!*"$terpri();
-  write"- CSL-Reduce is running and when starting Reduce the file .reducerc does not"$terpri();
-  write"  initialize the variable options!*,"$terpri();
-  write"- CRACK was not loaded with one of the files crack.b, crpsl.b, crcsl.b, crall.b ."$terpri();
-  write"To continue, please enter the loading command of CRACK, "$terpri();
-  write"for example, ""~/red/src6/crall""  : ";
-  change_prompt_to " ";
-  h:=termread();
-  restore_interactive_prompt();
+  %write"##### REQUIRED INPUT: #####"$terpri()$
+  write"The directory from where the package CRACK was loaded can not be found."$terpri()$
+  write"Reasons can be that"$terpri()$
+  write"- a file ~./reducerc is missing which should initialize the variable options!*"$terpri()$
+  write"- CSL-Reduce is running and when starting Reduce the file .reducerc does not"$terpri()$
+  write"  initialize the variable options!*,"$terpri()$
+  write"- CRACK was not loaded with one of the files crack.b, crpsl.b, crcsl.b, crall.b ."$terpri()$
+  write"To continue, please enter the loading command of CRACK, "$terpri()$
+  write"for example, ""~/red/src6/crall""  : "$
+  change_prompt_to " "$  
+  h:=termread()$
+  restore_interactive_prompt()$ 
   bldmsg("%w",h)
  >>
-end;
+end$
 
-symbolic procedure reduce_call_cmd;
+!#else
+ 
+begin scalar h$ 
+ write"If this session was started by loading ""crack"" then enter  1  else "$terpri()$
+ write"If this session was started by loading ""crall"" then enter  2  else "$terpri()$
+ write"enter the load command in "" ""."$terpri()$
+ change_prompt_to " "$  
+ h:=termread()$
+ crack_load_command:=
+ if h=1 then "crack" else
+ if h=2 then "crall" else bldmsg("%w",h)$
+ restore_interactive_prompt()
+end$
+
+!#endif
+
+symbolic procedure reduce_call_cmd$
 % Determines the path of the first load of CRACK. This is to be used in automatic
 % further loads of CRACK in parallel computations
 if null reduce_call then <<
@@ -247,145 +295,197 @@ if null reduce_call then <<
   %  "/usr/local/reduce37d/lisp/psl/linux/red/reduce.img"]
 
   if null unixargs!* or (size unixargs!* < 4) then <<
-   write"The variable unixargs!* has less than 5 arguments:"$terpri();
-   write"unixargs!* = ",unixargs!*$ terpri();
-   write"and does therefore not specify properly the command"$terpri();
-   write"with which this session was invoked."$terpri();
+   write"The variable unixargs!* has less than 5 arguments:"$terpri()$
+   write"unixargs!* = ",unixargs!*$ terpri()$
+   write"and does therefore not specify properly the command"$terpri()$
+   write"with which this session was invoked."$terpri()$
   >>                                          else <<
-   reduce_call:="";
+   reduce_call:=""$
    for n:=0:4 do setq(reduce_call,bldmsg("%w %w",reduce_call,getv(unixargs!*,n)))
-  >>;
+  >>$
 !#endif
 
   if null reduce_call then <<
-    write"For calling REDUCE the program needs to know the calling command."$terpri();
-    write"Please input this call. Examples:"$terpri()$terpri();
+    write"For calling REDUCE the program needs to know the calling command."$terpri()$
+    write"Please input this call. Examples:"$terpri()$terpri()$
 
-    write"PSL-REDUCE on Eee: "$terpri();
-    write"""/home/thomas/reduce-algebra/trunk/scripts/../pslbuild/i686-unknown-ubuntu10.04/psl/bpsl -td 16000000 -f /home/thomas/reduce-algebra/trunk/scripts/../pslbuild/i686-unknown-ubuntu10.04/red/reduce.img"""$terpri()$terpri();
+    write"PSL-REDUCE on Eee: "$terpri()$
+    write"""/home/thomas/reduce-algebra/trunk/bin/redpsl"""$terpri()$terpri()$
 
-    write"CSL-REDUCE on Eee: "$terpri();
-    write"""/home/thomas/reduce-algebra/trunk/bin/redcsl -w -i /home/thomas/reduce-algebra/trunk/cslbuild/i686-unknown-ubuntu10.04-nogui/csl/reduce.img -o /home/thomas/red/src6/cr32.img"""$terpri()$terpri();
+    write"CSL-REDUCE on Eee: "$terpri()$
+    write"""/home/thomas/reduce-algebra/trunk/bin/redcsl -w -i /home/thomas/reduce-algebra/trunk/cslbuild/i686-unknown-ubuntu10.04-nogui/csl/reduce.img -o /home/thomas/red/src6/cr32.img"""$terpri()$terpri()$
 
-    write"PSL-REDUCE on sente: "$terpri();
-    write"""/homes/reduce/reduce-algebra/trunk/bin/redpsl -td 200"""$terpri()$terpri();
+    write"PSL-REDUCE on sente: "$terpri()$
+    write"""/homes/reduce/reduce-algebra/trunk/bin/redpsl -td 200"""$terpri()$terpri()$
 
-    write"CSL-REDUCE on sente: "$terpri();
-    write"""/homes/reduce/reduce-algebra/trunk/bin/redcsl -w -i /homes/reduce/reduce-algebra/trunk/cslbuild/i686-unknown-suse11.4/csl/reduce.img -o ~/red/src6/cr32.img"""$terpri()$terpri();
+    write"CSL-REDUCE on sente: "$terpri()$
+    write"""/homes/reduce/reduce-algebra/trunk/bin/redcsl -w -i /homes/reduce/reduce-algebra/trunk/cslbuild/i686-unknown-suse11.4/csl/reduce.img -o ~/red/src6/cr32.img"""$terpri()$terpri()$
 
-    write"CSL-REDUCE on lie: "$terpri();
-    write"""/homes/reduce/reduce-algebra/trunk/bin/redcsl -w -i /homes/reduce/reduce-algebra/trunk/cslbuild/x86_64-unknown-rh6.3-nogui/csl/reduce.img -o ~/red/src6/cr64.img"""$terpri()$terpri();
+    write"CSL-REDUCE on lie: "$terpri()$
+    write"""/homes/reduce/reduce-algebra/trunk/bin/redcsl -w -i /homes/reduce/reduce-algebra/trunk/cslbuild/x86_64-unknown-rh6.3-nogui/csl/reduce.img -o ~/red/src6/cr64.img"""$terpri()$terpri()$
 
-    change_prompt_to "";
-    reduce_call:=termread();
-    restore_interactive_prompt();
-    reduce_call:=bldmsg("%w",reduce_call);
+    write"PSL-REDUCE on goedel: "$terpri()$
+    write"""/home/eschruefer/Reduce-Algebra/trunk/bin/redpsl -td 8000"""$terpri()$terpri()$
+
+    write"CSL-REDUCE on goedel: "$terpri()$
+    write"""/home/reduce/Reduce-Algebra/trunk/bin/redcsl -w -i /home/reduce/Reduce-Algebra/trunk/cslbuild/x86_64-unknown-suse13.1/csl/reduce.img -o ~/moyo/red/src6/crgd.img"""$terpri()$terpri()$    
+
+    write"PSL-REDUCE on sharc-198: "$terpri()$
+    write"""/home/twolf/reduce-algebra/trunk/bin/redpsl -td 8000"""$terpri()$terpri()$
+
+    write"CSL-REDUCE on sharc-198: "$terpri()$
+    write"""/home/twolf/reduce-algebra/trunk/bin/redcsl -w -i /home/twolf/reduce-algebra/trunk/cslbuild/x86_64-unknown-linux-gnu/csl/reduce.img -o ~/red/src6/cr.img"""$terpri()$terpri()$
+
+    write"PSL-REDUCE on ProMac: "$terpri()$
+    write"""/Users/eberhardschruefer/Reduce-Algebra/trunk/bin/redpsl -td 8000"""$terpri()$terpri()$
+
+    write"CSL-REDUCE on ProMac: "$terpri()$
+    write"""/Users/eberhardschruefer/Reduce-Algebra/trunk/bin/redcsl -w -i /Users/eberhardschruefer/Reduce-Algebra/trunk/cslbuild/x86_64-mac_10.9_mavericks-darwin13.4.0-nogui/csl/reduce.img -o ~/red/src6/cr.img"""$terpri()$terpri()$
+
+    write"PSL-REDUCE on Sharcnet (with 160 GB): "$terpri()$
+    write"""/work/neun/hound/reduce-algebra/trunk/bin/redpsl -td 160000"""$terpri()$terpri()$
+
+    write"CSL-REDUCE on Sharcnet: "$terpri()$
+    write"""/work/schrufer/hound/Reduce-Algebra/trunk/bin/redcsl -w -i /work/schrufer/hound/Reduce-Algebra/trunk/cslbuild/x86_64-unknown-linux-gnu/csl/reduce.img -o ~/red/src6/cr64.img"""$terpri()$terpri()$
+
+    change_prompt_to ""$
+    reduce_call:=termread()$
+    restore_interactive_prompt()$
+    reduce_call:=bldmsg("%w",reduce_call)$
   >>
->>;
+>>$
 
-% symbolic procedure inc_session;
-% begin scalar sess;
+% symbolic procedure inc_session$
+% begin scalar sess,a,save,ofl!*bak$
 %  setq(sess,bldmsg("%w%w",session_,"processes"));
 %  lock sess;
 %  in sess;
 %  backup_:=add1 backup_;
-%  out sess;
-%  write "off echo$backup_:=",backup_,"$ end$";
-%  terpri();
-%  shut sess;
+%  %out sess;
+%  a := open(sess, 'output);
+%  ofl!*bak:=ofl!*$
+%  ofl!*:=sess$ % any value neq nil, to avoid problem with redfront
+%  save:=wrs a;
+%  write "off echo$backup_:=",backup_,"$ end$"$
+%  terpri()$
+%  %shut sess;
+%  wrs save$ 
+%  ofl!*:=ofl!*bak$
+%  close a;
 %  unlock sess;
-% end;
+% end$
 
-symbolic procedure read_proczaehler;
-  begin
-    scalar fl,fpid,!*echo,semic!*;
-    fpid := bldmsg("%s.%w",process_counter,getpid());
-    fl:=1;
-    repeat <<
-      fl := copy!-file(process_counter, fpid);
-      if null fl then sleep 1
-    >> until fl;
-    semic!*:='!$;
-    in fpid;
-    delete!-file!-exact fpid;
-    if not fixp backup_ then backup_:=1000000;
-    return backup_
-  end;
+symbolic procedure read_proczaehler$
+begin 
+ scalar fl,fpid,!*echo,semic!*;
+ fpid := bldmsg("%s.%w",process_counter,getpid());
+ fl:=1;
 
-% fluid '(backup_);
+ repeat << 
+  fl := copy!-file(process_counter, fpid);
+  if null fl then sleep 1
+ >> until fl;
+ % old only for unix:
+ % repeat << 
+  % fl := system bldmsg ("cp %s %s",process_counter,fpid);
+  % if fl neq 0 then system"sleep 1"
+ % >> until fl=0;
+ 
+% while not fd do <<
+%  fd := filestatus(process_counter,nil);
+%  if not fd then sleep 1
+%  else << fl := system bldmsg ("cp %s %s",process_counter,fpid);
+%	  fd := if fl = 0 then t else nil; 
+%	  if fd then fd := filestatus(fpid,nil);
+%       >>
+% >>;
+
+% zaef:=open(fpid,'input);
+% zae:=channelread(zaef);
+% close(zaef);
+
+ semic!*:='!$;in fpid$
+
+ system bldmsg ("rm %s",fpid);
+ if not fixp backup_ then backup_:=1000000$
+ return backup_
+end$
+
+% fluid '(backup_)$
 
 %symbolic procedure install_pass_on(x,y,z);
-%begin scalar !*comp;   putd(x,y,z); end;
+%begin scalar !*comp;   putd(x,y,z); end$
 %
 %lisp install_pass_on( 'pass_on_switches, 'expr,
 %     '(lambda (!*!*s!*!*) (mapobl (function (lambda
 %(x) (cond ((flagp x (quote switch)) ((lambda (xx) (progn
 %(setq xx (intern (compress (append (explode (quote !*))
 %(explode x))))) (cond ((boundp xx) (remote_call!* !*!*s!*!*
-%(quote onoff) (list x (eval xx)) 0))))) 0))))))));
+%(quote onoff) (list x (eval xx)) 0))))) 0))))))))$
 
-%symbolic procedure pass_on_switches(backup_);
+%symbolic procedure pass_on_switches(backup_)$
 %mapobl function(lambda(x);
 %if flagp(x,'switch) then
 %  << xx := intern compress append(explode '!*,explode x);
 %     if boundp xx then
-%         remote_call!*(backup_,'onoff,{x,eval xx},0) >> where xx :=0);
+%         remote_call!*(backup_,'onoff,{x,eval xx},0) >> where xx :=0)$
 
-%symbolic procedure pass_on_switches;
+%symbolic procedure pass_on_switches$
 % mapobl function(lambda(x);
 % if flagp(x,'switch) then
 %    << xx := intern compress append(explode '!*,explode x);
 %       if boundp xx then
-%           remote_call!*(backup_,'onoff,{x,eval xx},0) >> where xx :=0);
+%           remote_call!*(backup_,'onoff,{x,eval xx},0) >> where xx :=0)$
 
-%symbolic procedure pass_on_switches(s);
+%symbolic procedure pass_on_switches(s)$
 %begin
 % mapobl function(lambda(x);
 % if flagp(x,'switch) then
 %    << xx := intern compress append(explode '!*,explode x);
 %       if boundp xx then
-%           remote_call!*(s,'onoff,{x,eval xx},0) >> where xx :=0);
-%end;
+%           remote_call!*(s,'onoff,{x,eval xx},0) >> where xx :=0)$
+%end$
 
-symbolic procedure add_session(pdes,forg,para_mode);
+symbolic procedure add_session(pdes,forg,para_mode)$
 % symbolic fluid variables that matter: !*iconic, inter_para_mode
-begin scalar s,ss,h,current_dir,startup,p,id$   % ,crpath;
+begin scalar s,ss,h,current_dir,startup,p,id,a,save,ofl!*bak$   % ,crpath$
 
  %----- generating the file name of current data
- ss:=level_string(session_);
+ ss:=level_string(session_)$
  current_dir:=if para_case_dir neq "" then para_case_dir
-                                      else pwd();
+                                      else pwd()$
  setq(h,bldmsg("%w%w%w",current_dir,ss,"tmp"));
  % In the new process the input file is not opened, so eqn_input
  % should there be nil:
- s:=eqn_input;
- if eqn_input='done then <<equations_file:="";eqn_no:=0>>;
+ s:=eqn_input$ 
+ if eqn_input='done then <<equations_file:="";eqn_no:=0>>$ 
  % otherwise the new process will try to start reading the file
  % equations_file until equation eqn_no but this file should not
  % be read and does even not exist anymore
- eqn_input:=nil;
+ eqn_input:=nil$  
 
  %----- prepare crack load command (before backup_to_file()
  %      to pass on crack_load_command
  crack_load_cmd()$ % assigning crack_load_command if not already done
  if crack_load_command="not found" then return <<
-  shut startup;
-  delete!-file!-exact startup;
-  write"##### This parallelization could not be started as the call of crack";
-  terpri();
-  write"##### could not be found. Please have at the start of your computation";
-  terpri();
-  write"##### a line     load ""path/crack""$         with suitable path, if";
-  terpri();
-  write"##### necessary  load ""./crack""$ when loaded from active directory.";
-  terpri();
+  shut startup$ 
+  s:=bldmsg("rm %w",startup)$
+  system s$
+  write"##### This parallelization could not be started as the call of crack"$
+  terpri()$
+  write"##### could not be found. Please have at the start of your computation"$
+  terpri()$
+  write"##### a line     load ""path/crack""$         with suitable path, if"$
+  terpri()$
+  write"##### necessary  load ""./crack""$ when loaded from active directory."$
+  terpri()$
   nil
- >>;
+ >>$
 
- reduce_call_cmd();
+ reduce_call_cmd()$
 
  backup_to_file(pdes,forg,h);
- eqn_input:=s;
+ eqn_input:=s$
  %!*iconic:=nil$  %t;  %not !*batch_mode;
  % =t --> only an icon opens, =nil --> a window opens
 
@@ -393,85 +493,89 @@ begin scalar s,ss,h,current_dir,startup,p,id$   % ,crpath;
  setq(startup,bldmsg("%w%w%w",current_dir,ss,"sup"));
 
  %----- prepare startup file
- out startup;
- write"lisp$"$    terpri();
-% write"off int$"$ terpri();
+ %out startup$
+ a := open(startup, 'output);
+ ofl!*bak:=ofl!*$
+ ofl!*:=startup$ % any value neq nil, to avoid problem with redfront
+ save:=wrs a;
+
+ write"lisp$"$    terpri()$
+% write"off int$"$ terpri()$
  %----- if started under screen then check whether environment
  %      variable reduce is assigned
  if nil then
  if para_mode=2 then <<
-  write"if null getenv ""reduce"" then <<"$  terpri();
-  write" write""##### To start REDUCE automatically in a new screen window""$"$ terpri();
-  write" terpri()$"$  terpri();
-  write" write""##### the environment variable   reduce   must be assigned""$"$ terpri();
-  write" terpri()$"$  terpri();
-  write" write""##### the name of the REDUCE directory. For a bash shell this""$"$ terpri();
-  write" terpri()$"$  terpri();
-  write" write""##### could be done by adding once a line like""$"$ terpri();
-  write" terpri()$"$  terpri();
-  write" write""##### export reduce=/home/twolf/newreduce""$"$ terpri();
-  write" terpri()$"$  terpri();
-  write" write""##### For a c shell the line would be like this""$"$ terpri();
-  write" terpri()$"$  terpri();
-  write" write""##### setenv reduce /home/twolf/newreduce""$"$ terpri();
-  write" terpri()$"$  terpri();
-  write">>$"$         terpri();
- >>;
+  write"if null getenv ""reduce"" then <<"$  terpri()$
+  write" write""##### To start REDUCE automatically in a new screen window""$"$ terpri()$
+  write" terpri()$"$  terpri()$
+  write" write""##### the environment variable   reduce   must be assigned""$"$ terpri()$
+  write" terpri()$"$  terpri()$
+  write" write""##### the name of the REDUCE directory. For a bash shell this""$"$ terpri()$
+  write" terpri()$"$  terpri()$
+  write" write""##### could be done by adding once a line like""$"$ terpri()$
+  write" terpri()$"$  terpri()$
+  write" write""##### export reduce=/home/twolf/newreduce""$"$ terpri()$
+  write" terpri()$"$  terpri()$
+  write" write""##### For a c shell the line would be like this""$"$ terpri()$
+  write" terpri()$"$  terpri()$
+  write" write""##### setenv reduce /home/twolf/newreduce""$"$ terpri()$
+  write" terpri()$"$  terpri()$
+  write">>$"$         terpri()$
+ >>$
  %----- print the new level
- write"write"" Session-level: ",ss," ""$terpri()$"$        terpri();
+ write"write"" Session-level: ",ss," ""$terpri()$"$        terpri()$
  %----- change directory
-% write "cd """,current_dir,"""$"$                          terpri();
+% write "cd """,current_dir,"""$"$                          terpri()$
  %----- if necessary, switch off int (when reading equations from a file)
- if null !*int then <<write"off int$"$                     terpri()>>;
- if      !*gc  then <<write"on gc$"$                       terpri()>>;
+ if null !*int then <<write"off int$"$                     terpri()>>$
+ if      !*gc  then <<write"on gc$"$                       terpri()>>$
  %----- load Crack
- write"load_package """,crack_load_command,""" $"$          terpri();
-%write"load debug$"$   terpri();
+ write"load_package """,crack_load_command,""" $"$          terpri()$
+%write"load debug$"$   terpri()$ 
  %----- read in a file setting up the problem
  if crack_ini_file then <<
-  % write"err_catch_readin(""",crack_ini_file,""",algebraic)$"$terpri();
-  write"load """,crack_ini_file,"""$"$                      terpri();
- >>;
+  % write"err_catch_readin(""",crack_ini_file,""",algebraic)$"$terpri()$
+  write"load """,crack_ini_file,"""$"$                      terpri()$
+ >>$
  %----- specify what crack should load (and do)
  p:=linelength(500)$ % so that filenames are printed on one line
- write"old_history:='(rb "$terpri();
+ write"old_history:='(rb "$terpri()$
  if !*batch_mode then write"""",h,""")$"
-                 else write"""",h,""" s)$"$terpri();
- linelength(p);
- write"off batch_mode$"$                                    terpri();
+                 else write"""",h,""" s)$"$terpri()$
+ linelength(p)$
+ write"off batch_mode$"$                                    terpri()$
  %----- start Crack
- write"crackshell()$"$                                      terpri();
+ write"crackshell()$"$                                      terpri()$
  %----- decrement the number of generated processes
- write"proczaehler(""",process_counter,""",'minus)$"$       terpri();
+ write"proczaehler(""",process_counter,""",'minus)$"$       terpri()$
  if % null !*iconic
     verify_end_of_parallel_run then << % ask whether computation was ok.
-  write"write""Is the computation ok and can the input files be deleted?""$";
-  terpri();
-  write"terpri()$"$terpri();
-  write"write""Please input Y/N : ""$"$                     terpri();
-  write"change_prompt_to """"$"$                            terpri();
+  write"write""Is the computation ok and can the input files be deleted?""$"$ 
+  terpri()$
+  write"terpri()$"$terpri()$
+  write"write""Please input Y/N : ""$"$                     terpri()$
+  write"change_prompt_to """"$"$                            terpri()$ 
 
-  write"if 'y=termread() then <<"$ terpri();
+  write"if 'y=termread() then <<"$ terpri()$
   %----- remove the data file showing that the computation is completed
-% Will somebody judge whether this should really be
-%   write "delete!-file!-exact """, h, """$"$  terpri();
-% rather than something using "system and assuming that a command called
-% "rm" exists... ?
-  write"  system ""rm ",h,"""$"$                            terpri();
-  write"  system ""rm ",startup,"""$"$                      terpri();
-  write">> else <<"$terpri();
-  write"  write""Files ",h,", ",startup," will not be deleted.""$"$ terpri();
-  write"  system""sleep 5""$ "$                             terpri();
-  write">>$";
+  write"  system ""rm ",h,"""$"$                            terpri()$
+  write"  system ""rm ",startup,"""$"$                      terpri()$
+  write">> else <<"$terpri()$
+  write"  write""Files ",h,", ",startup," will not be deleted.""$"$ terpri()$
+  write"  system""sleep 5""$ "$                             terpri()$
+  write">>$"$
  >>               else <<
   %----- remove the data file showing that the computation is completed
-  write"system ""rm ",h,"""$"$                              terpri();
-  write"system ""rm ",startup,"""$"$                        terpri();
- >>;
+  write"system ""rm ",h,"""$"$                              terpri()$
+  write"system ""rm ",startup,"""$"$                        terpri()$
+ >>$
  %----- close the REDUCE session when crackshell() finished
- write"eval '(bye)$"$                                       terpri();
- write"end$"$                                               terpri();
- shut startup;
+ write"eval '(bye)$"$                                       terpri()$
+ write"end$"$                                               terpri()$
+ %shut startup$
+ wrs save$ 
+ ofl!*:=ofl!*bak$
+ close a;
 
  %----- start new process
  if para_mode=1 then
@@ -494,105 +598,99 @@ begin scalar s,ss,h,current_dir,startup,p,id$   % ,crpath;
  %   bldmsg("rm %w%wout",current_dir,ss)
 
  %----- increment the counter of reduce processes
- proczaehler(process_counter,'plus);
+ proczaehler(process_counter,'plus)$
 
  if para_mode=3 then <<
   p := pipe!-open(s,'input);
-  id:="";
+  id:=""$
   repeat <<
    h:=channelreadchar(p);
    if (h>47) and (h<58) then id:=bldmsg("%w%w",id,int2id h)
   >> until h=4;
   close p;
-  % write"process id=",id$terpri();
- >>             else system s;  %##### collecting process id for xterm, screen ?
+  % write"process id=",id$terpri()$
+ >>             else system s$  %##### collecting process id for xterm, screen ?
 
  %----- print the new level
- write" A process for case ",ss," has been started.";
- terpri();
+ write" A process for case ",ss," has been started."$
+ terpri()$
 
 % return ###### process ID
 
-end;
+end$
 
-symbolic procedure add_process(processes,pdes,forg);
+symbolic procedure add_process(processes,pdes,forg)$
 % symbolic fluid variables that matter: !*iconic
-begin scalar s,ss,h,current_dir;
+begin scalar s,ss,h,current_dir$
  %----- start PVM if it is not already started
- system"pvm";
+ system"pvm"$
 
  %----- passing on the current status
- ss:=level_string(session_);
+ ss:=level_string(session_)$
  current_dir:=if para_case_dir neq "" then para_case_dir
-                                      else pwd();
+                                      else pwd()$
  setq(h,bldmsg("%w%w%w",current_dir,ss,"tmp"));
  % In the new proxess the input file is not opened, so eqn_input
  % should there be nil.
- s:=eqn_input$ eqn_input:=nil;
+ s:=eqn_input$ eqn_input:=nil$
  backup_to_file(pdes,forg,h);
- eqn_input:=s;
+ eqn_input:=s$
  %!*iconic:=nil$  %t;  %not !*batch_mode;
  % =t --> only an icon opens, =nil --> a window opens
 
  %----- start new process
-% remote_process, remote_call!* etc are PSL-specific features that
-% support distributed computing - until there is a nice explanation of
-% them somewhere it is hard to know whether they could be incorporated
-% into CSL - so at present this whole part of the crack package is to
-% be seen as only supported by PSL.
  s:=remote_process("");
  processes:=cons(s,processes);
 
  %----- update the counting of processes
- proczaehler(process_counter,'plus);
+ proczaehler(process_counter,'plus)$
 
  %----- print the new level
  remote_write(s,{'list,"Process id: ",s," level: ",ss});
- terpri()$write"A process with id no ",s," has been started.";
+ terpri()$write"A process with id no ",s," has been started."$
 
  %----- change directory
- remote_call!*(s,'cd,{current_dir},0);
+ remote_call!*(s,'cd,{current_dir},0)$
 
  %----- if necessary, switch off int (when reading equations from a file)
  if null !*int then remote_call!*(s, 'onoff,{'int,nil},0);
  if !*gc then remote_call!*(s, 'onoff,{'gc,t},0);
 
  %----- load crack
- crack_load_cmd();
+ crack_load_cmd()$
  if crack_load_command="not found" then return <<
-  write"##### This parallelization could not be started as the call of crack";
-  terpri();
-  write"##### could not be found. Please have at the start of your computation";
-  terpri();
-  write"##### a line     load ""path/crack""$         with suitable path, if";
-  terpri();
-  write"##### necessary  load ""./crack""$ when loaded from active directory.";
-  terpri();
-% Note that "exitlisp" is not partable between Lisp systems...
-  remote_call!*(s,'exitlisp,{'list},0);
+  write"##### This parallelization could not be started as the call of crack"$
+  terpri()$
+  write"##### could not be found. Please have at the start of your computation"$
+  terpri()$
+  write"##### a line     load ""path/crack""$         with suitable path, if"$
+  terpri()$
+  write"##### necessary  load ""./crack""$ when loaded from active directory."$
+  terpri()$
+  remote_call!*(s,'exitlisp,{'list},0)$
   nil
- >>;
- remote_call!*(s,'load_package,{{crack_load_command}},0);
+ >>$
+ remote_call!*(s,'load_package,{{crack_load_command}},0)$
 
  %----- read in a file setting up the problem
  if crack_ini_file then
- remote_call!*(s,'err_catch_readin,{crack_ini_file,'algebraic},0);
+ remote_call!*(s,'err_catch_readin,{crack_ini_file,'algebraic},0)$
 
  %----- copy all switch settings
-% backup_:=s;
-% pass_on_switches(backup_);
+% backup_:=s$
+% pass_on_switches(backup_)$
 
 % mapobl function(lambda(x);
 % if flagp(x,'switch) then
 %    << xx := intern compress append(explode '!*,explode x);
 %       if boundp xx then
-%           remote_call!*(s,'onoff,{x,eval xx},0) >> where xx :=0);
+%           remote_call!*(s,'onoff,{x,eval xx},0) >> where xx :=0)$
 
  %----- specify what crack should load (and do)
  remote_call!*(s,'set,{'old_history,{'rb,h}},0);
 
  %----- start Crack
- remote_call(s,'crackshell,{'list},0);
+ remote_call(s,'crackshell,{'list},0)$
 
  %----- if interactive then not instant closure of window
  %----- when computation is finished to inspect the result
@@ -600,78 +698,87 @@ begin scalar s,ss,h,current_dir;
  if null !*iconic then remote_call!*(s,'system,{"sleep 1000"},0);
 
  %----- close the REDUCE session when crackshell() finished
- % remote_call!*(s,'system,{"/home/twolf/proczaehler minus"},0);
- proczaehler(process_counter,'minus);
+ proczaehler(process_counter,'minus)$
 
 %lisp<<if not pairp
-% Note possible use of delete!-file!-exact here?
- remote_call!*(s,'system,{bldmsg("%w%w","rm ",h)},0);
+
+ remote_call!*(s,'system,{bldmsg("%w%w","rm ",h)},0)$
 
 % for debugging:
 %if null !*iconic then remote_call!*(s,'system,{"sleep 1000"},0);
 
-% Note exitlisp not portable here.
  remote_call!*(s,'exitlisp,{'list},0)$ % or remote_call!*(s,'exitlisp,{},0)$ (?)
 
  return processes
-end;
+end$
 
-symbolic procedure drop_process(processes);
-begin scalar s;
-  terpri()$write"The following processes had been activated in this order: ";
-  listprint(reverse processes);
-  terpri()$write"To kill ALL remote processes that have been";
-  terpri()$write"generated by this process enter -1,";
-  terpri()$write"to kill a single process enter its process id: ";
-  change_prompt_to "";
-  s:=termread();
-  restore_interactive_prompt();
+symbolic procedure drop_process(processes)$
+begin scalar s$
+  terpri()$write"The following processes had been activated in this order: "$
+  listprint(reverse processes)$
+  terpri()$write"To kill ALL remote processes that have been"$
+  terpri()$write"generated by this process enter -1,"$
+  terpri()$write"to kill a single process enter its process id: "$
+  change_prompt_to ""$ 
+  s:=termread()$
+  restore_interactive_prompt()$
   if s=-1 then <<
     processes:=nil;
-    proczaehler(process_counter,'init);
+    proczaehler(process_counter,'init)$
   >>      else <<
     processes:=delete(s,processes);
-    proczaehler(process_counter,'minus);
-  >>;
+    proczaehler(process_counter,'minus)$
+  >>$
   remote_kill(s);
   return processes
-end;
+end$
 
-%symbolic procedure remote_crackmain(pdes,forg);
-symbolic procedure crackmain_if_possible_remote(pdes,forg);
+%symbolic procedure remote_crackmain(pdes,forg)$
+symbolic procedure crackmain_if_possible_remote(pdes,forg)$
 
 if collect_sol or
    null auto_para_mode or
    (read_proczaehler() geq max_proc_no) then <<
  if collect_sol and auto_para_mode then <<
-   write"Currently is collect_sol=t. Therefore parallel case"$terpri();
-   write"solving is not enabled because solutions would not"$terpri();
-   write"be collected even though auto_para_mode<>nil."$terpri();
-   write"Therefore, either set collect_sol to nil using"$terpri();
-   write"'as {collect_sol,nil};' or disable parallelism with 'dp' .";
-   terpri();
+   write"Currently is collect_sol=t. Therefore parallel case"$terpri()$
+   write"solving is not enabled because solutions would not"$terpri()$
+   write"be collected even though auto_para_mode<>nil."$terpri()$
+   write"Therefore, either set collect_sol to nil using"$terpri()$
+   write"'as {collect_sol,nil};' or disable parallelism with 'dp' ."$
+   terpri()$
  >>;
- if null batch_mode_sub then !*batch_mode:=nil;
+ if null batch_mode_sub then !*batch_mode:=nil$ 
  crackmain(pdes,forg)
 >>                                      else
 begin scalar processes,s;
 
  % Feature: As currently nothing is passed back, variables
- % in pass_back, like history_ or size_hist or sol_list
+ % in passed_back, like history_ or size_hist or sol_list
  % have a limited meaning in the mother process.
 
- if null batch_mode_sub then !*batch_mode:=nil;
+ if null batch_mode_sub then !*batch_mode:=nil$ 
  if auto_para_mode<4 then add_session(pdes,forg,auto_para_mode)        % non-PVM
                      else processes:=add_process(processes,pdes,forg)$ % PVM
  %----- changes done at the end of crackmain(), e.g. delete property lists
  finish_level(0)$ % 0 solutions as # of solutions is unknown
- drop_all_pdes(pdes);
+ drop_all_pdes(pdes)$
  for each s in forg do
  if pairp s then setprop(cadr s,nil)
-            else setprop(     s,nil);
-end;
+            else setprop(     s,nil)$
+end$
 
-endmodule;
+endmodule$
 
-end;
+end$
 
+tr proczaehler
+tr ini_check_of_parallel_crack
+tr pvm_activate
+tr pvm_active
+tr crload
+tr crack_load_cmd
+tr read_proczaehler
+tr add_session
+tr add_process
+tr drop_process
+tr crackmain_if_possible_remote

@@ -201,7 +201,7 @@ begin scalar osof,nsof,odet,h,n0flin_,n0flin_cp,ncondi,de,u,v,sysli,sy,
     >>
    >>
   >>$
-%write"NOW INEQ_OR"$terpri()$
+%write"NOW ineq_OR"$terpri()$
 
   % then find an OR-inequality in ineq_or which would be violated
   for each h in ineq_or do <<  % h is one OR-inequality  
@@ -273,7 +273,7 @@ begin scalar osof,nsof,odet,h,n0flin_,n0flin_cp,ncondi,de,u,v,sysli,sy,
  no_of_pdes:=length pdes;
  s:=nil;
  for each h in ncondi do <<
-  r:=mkeqsq(h,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes);
+  r:=mkeqSQ(h,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes);
   pdes:=eqinsert(r,pdes)$
   s:=cons(r,s)
  >>;

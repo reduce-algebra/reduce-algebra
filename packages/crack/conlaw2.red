@@ -51,7 +51,7 @@ begin
          facold:=facint_;       facint_:=1000>>;
 
   cpustart:=lisp time()$ gcstart:=lisp gctime()$
-% contrace:=t;
+  %contrace:=t;
 
   %--- extracting input data
   eqlist:= sqreverse maklist sqfirst problem;
@@ -137,6 +137,7 @@ begin
 
   %------ all transformations into jet-space
   sb:=subdif1(xlist,ulist,eqord)$
+
   if contrace then write"sb=",sb;
   treqlist:=eqlist;
   for each e1 in sb do <<
@@ -146,6 +147,11 @@ begin
   >>$
   if contrace then write"treqlist=",treqlist," nodep=",nodep,
                         " subl=", subl;
+
+  %------ check that functions to be computed do not depend on
+  %       lhs of the system
+  chkflist(flist,nodep)$
+
   if cf0 then
   for n:=1:nde do <<
     h1:=mkid(q_,n);
@@ -276,6 +282,7 @@ begin
       h1:=sqrest h1;
       h2:=sqrest h2;
     >>;
+
     %--- then their derivatives
     for each e1 in vl do lisp <<
       e1:=reval e1;
@@ -731,7 +738,7 @@ begin
           if paralist neq {} then 
           for each h3 in sqsecond soln do
           if not freeof(paralist,lhs h3) then 
-          <<write h3,",";lisp(terpri())>>;
+          <<write h3;lisp(terpri())>>;
 
           %--- Backsubstitution of e.g. u`1`1 --> df(u,x,2) 
           for each e1 in ulist do dependlist(e1,{xlist});

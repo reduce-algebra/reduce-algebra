@@ -29,37 +29,10 @@ module crackstar$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
-% In earlier versions of crack the operation of copying a file was
-% performed as (system bldmsg("cp %w %w", n1, n2)) which is concise,
-% however I believe that the overhead in calling "system" can be extreme
-% and the issues of Windows vs Unix/Linux/MacOSX comaptibility can be
-% bad, so this might be safer and could even end up faster.
-
-% This returns T on success or NIL on failure...
-
-symbolic procedure copy!-file(n1, n2);
-  begin
-    scalar f1, f2, c, saveraise;
-    saveraise := !*raise . !*lower;
-    !*raise := !*lower := nil;
-    if null (f1 := open(f1, 'input)) then return nil;
-    if null (f2 := open(f2, 'output)) then <<
-      close f1;
-      return nil >>;
-    f1 := rds f1;
-    f2 := wrs f2;
-    while (c := readch()) neq !$eof!$ do prin2 c;
-    close rds f1;
-    close wrs f2;
-    !*raise := car saveraise;
-    !*lower := cdr saveraise;
-    return t;
-  end;
-
 symbolic operator crackshell$
 symbolic procedure crackshell$
 begin scalar s$ 
- if null proc_list_ then setcrackflags()$ % to make sure crack is
+% if null full_proc_list_ then setcrackflags()$ % to make sure crack is
                                % initialized if CSL Reduce is run
  terpri()$
  if null old_history then <<
@@ -82,6 +55,17 @@ begin scalar s$
  return algebraic(crack({},{},{},{})); 
 end$
 
+algebraic procedure crtest$
+% A procedure that starts crack interactively to test it's interface.
+begin scalar h1,h2,h3$
+%lisp( if null full_proc_list_ then setcrackflags())$
+ h1:=lisp intern gensym()$
+ h2:=lisp intern gensym()$
+ h3:=lisp intern gensym()$
+ off batch_mode$
+ crack({h1+1,h2+3+h1**2,h3**3+h2+7,h1**2*h2+h3+8},{h1},{h1,h2,h3},{})$
+end$
+
 symbolic operator nodepnd$
 symbolic procedure nodepnd(fl)$
 for each f in cdr fl do
@@ -94,7 +78,7 @@ symbolic procedure sq!*crack(inp)$
 % before calling crack.
 begin scalar el,il,fl,vl,l,l1,l2,a,b,n,m,k,p,pdes$
 
- if null proc_list_ then setcrackflags()$ % to make sure crack is
+%if null full_proc_list_ then setcrackflags()$ % to make sure crack is
                                % initialized if CSL Reduce is run
  if l:=check_globals() then <<
    write"The global variable ",l," has an incorrect value, please check!"$
@@ -185,7 +169,7 @@ begin scalar el,il,fl,vl,l,l1,l2,a,b,n,m,k,p,pdes$
       if null !*complex and
          ((not freeof(numr p,'i)) or (not freeof(numr p,'!:gi!:))) then
       algebraic(on complex)$
-      if not freeoflist(denr p,ftem_) then addsqineq(nil,(denr p ./ 1),t)$
+      if not freeoflist(denr p,ftem_) then addSQineq(nil,(denr p ./ 1),t)$
       (numr p ./ 1)
      >>$
  for each p in il do 
@@ -206,11 +190,11 @@ begin scalar el,il,fl,vl,l,l1,l2,a,b,n,m,k,p,pdes$
   if null l then contradiction_:=t  % all expressions are zero
             else
   if cdr l then ineq_or:=cons(l,ineq_or)
-           else addsqineq(nil,caar l,t)   
+           else addSQineq(nil,caar l,t)   
  >>                             else 
- addsqineq(nil,if pairp p and (car p='!*sq) then cadr p
+ addSQineq(nil,if pairp p and (car p='!*sq) then cadr p
                                             else simp p,t); 
- simpsqineq_or_adhoc(nil)$  % the initial simplification of ineq_or
+ simpSQineq_or_adhoc(nil)$  % the initial simplification of ineq_or
                             % nil because no pdes (yet) assigned
  il:=nil$
  history_:=nil;
@@ -224,7 +208,7 @@ begin scalar el,il,fl,vl,l,l1,l2,a,b,n,m,k,p,pdes$
  % are in all orderings
 
  % each equation gets a property list
- pdes:=mkeqsqlist(el,nil,nil,ftem_,vl_,
+ pdes:=mkeqSQlist(el,nil,nil,ftem_,vl_,
                   allflags_,t,%orderings_prop_list_all(),
                   list(0),nil)$
  if contradiction_ then return {'list}$
@@ -234,7 +218,24 @@ begin scalar el,il,fl,vl,l,l1,l2,a,b,n,m,k,p,pdes$
   while l and get(car l,'linear_) do l:=cdr l;
   if l then lin_problem:=nil else lin_problem:=t;
   if lin_problem and null flin_ then flin_:=ftem_; 
+
+  % Check that the input has no syntax error f(...) when f is a 
+  % function to be computed
+  l:=pdes;
+  while l and null contradiction_ do <<
+   a:=get(car l,'kern); l:=cdr l;
+   while a and null contradiction_ do << 
+    b:=car a; a:=cdr a;
+    if pairp b and car b='df then b:=cadr b;
+    if pairp b and member(car b,ftem_) then contradiction_:=t
+   >>$
+   if contradiction_ then <<
+    write"##### Error: The input contains ",car b,cdr b," instead of ",car b$ 
+    terpri()
+   >>
+  >>
  >>$
+ if contradiction_ then return {'list}$
 
  % Is the system algebraic and polynomial?
  l:=pdes$
@@ -255,8 +256,15 @@ begin scalar el,il,fl,vl,l,l1,l2,a,b,n,m,k,p,pdes$
  % size_hist:=if size_watch then {cons(0,get_statistic(pdes,ftem_))}
  %                          else nil$
 
-if (null collect_sol) and (null paracrack_initialized) then
  name_session()$
+ if (null collect_sol) and (null paracrack_initialized) then
+ start_sol_list_file()$
+
+ if filep "stop_now" and old_history then <<
+  write"######## WARNING: The file 'stop_now' exists already at the start of the "$terpri()$
+  write"######## computation which will set the variable old_history to nil ! "$terpri()$
+  write"######## --> delete 'stop_now' if old_history should be used. "$terpri()
+ >>$
 
  % the computation:
  l:=crackmain(pdes,ftem_)$
@@ -306,7 +314,6 @@ if (null collect_sol) and (null paracrack_initialized) then
  recycle_eqns:=nil . nil$
  recycle_fcts:=nil$
  recycle_ids:=nil$
- old_history:=nil$
  flin_:=nil$
 
  % close the equation input file
@@ -314,6 +321,23 @@ if (null collect_sol) and (null paracrack_initialized) then
  if eqn_input then <<close eqn_input; eqn_input:=nil>>;
 
  recover_reduce_flags()$   % giving the REDUCE flags their backup value
+ 
+ % deleting spurious un-needed files
+ if print_ and (null collect_sol) and (null paracrack_initialized) then <<
+  change_prompt_to ""$ 
+  write"!!!!! Delete generated files including solutions? (Y/N) "$terpri()$
+  repeat p:=termread() until (p='y) or (p='n)$
+  if p='y then <<
+   write"!!!!! Are you sure you want to delete all files generated in this session? (Y/N) "$terpri()$
+   repeat p:=termread() until (p='y) or (p='n)$
+   if p='y then <<
+    p:=bldmsg("rm ??%w*",compress cons('!",cdddr explode session_))$
+    system p
+   >>
+  >>;
+  restore_interactive_prompt()$ 
+ >>$
+ old_history:=nil$
 
  % Stop of the FORM computer algebra system which was
  % started at the start of this procedure. Either send:
@@ -338,6 +362,30 @@ end$
 symbolic fluid '(!*used!-space!* !*avail!-space!*)$ 
 !#endif
 
+symbolic operator save_all_sol$
+symbolic procedure save_all_sol(sol)$
+begin scalar s,n$
+ if null sol_list_file_created then start_sol_list_file()$
+ n:=0;
+ for each s in cdr sol do << % i.e. for each solution
+  n:=n+1;
+  level_:={n};
+  s:=cdr s$ % drop 'list
+  save_solution(
+   cdr reval car s, % list of equations
+   cdr reval cadr s, % list of assignments
+   cdr reval caddr s, % list of free or unresolved functions
+   cdr reval cadddr s, % list of non-vanishing expressions.
+   nil, % list of or-lists. Each or-list has elements
+        % that are factor-list, such that for each 
+        % or-list at least from one factor-list all 
+        % elements must be non-zero.
+   nil
+  )
+ >>$
+ save_sol_list()
+end$ % of save_all_sol
+
 symbolic procedure crackmain(pdes,forg)$
 % Main program
 % > not to be called from algebraic mode
@@ -353,10 +401,10 @@ symbolic procedure crackmain(pdes,forg)$
 %                      append(ineq_,
 %                             if null ineq_or then nil 
 %                                             else for each a in ineq_or 
-%                                                  collect cons('LIST,a)))
+%                                                  collect cons('list,a)))
 %   The reason for this format is such that the result can be passed on as the
 %   result of crack() to algebraic mode. The left hand side of equations
-%   {'EQUAL,..,..} in forg is converted to {!*sq,..,t} automatically when
+%   {'equal,..,..} in forg is converted to {!*sq,..,t} automatically when
 %   the result is passed on to algebraic mode.
 % > The result that is returned is contained completely in the
 %   returned value (list) only apart from the variable dependencies
@@ -391,7 +439,7 @@ begin scalar result,l,carpl,unsolvable, % dec_hist_list_copy,
     <<terpri()$write "start of the main procedure">>$
   % depl_copy_:=depl!*$
   % dec_hist_list_copy:=dec_hist_list$
-  fnc_to_adjust:=adjust_fnc;
+  fnc_to_adjust:=adjust_fnc$
   if contradiction_ then rederr"** CONTRADICTION_ AT START OF CRACKMAIN()! **"$
   contradiction_:=nil$
   f_update(pdes,forg)$     % global list of free functions
@@ -406,7 +454,6 @@ again:
   repeat <<
     stop_:=nil$
     check_stop()$ 
-%    if to_do_list then batchcount_:=add1 batchcount_$  % moved here from below
     f_update(pdes,forg)$   % ############# should only be done if necessary, expensive?
     vl_:=var_list(pdes,forg,vl_)$
     if not (pt2ineq equal ineq_) then <<
@@ -454,8 +501,11 @@ again:
           write " : "
         >>                                    else 
         write "trying ",carpl," : "$
-        l:=apply(carpl,list list(pdes,forg,vl_,pdes))$  % ###### vl_ for historical reasons, 
-                                                        %        to be cleaned up some time 
+        l:=apply(carpl,list list(pdes,forg,vl_,pdes))$  
+        % vl_ for historical reasons, to be cleaned up some time 
+        % the 1st arg. pdes for all current equations
+        % the 4th arg. pdes for all applicable equations
+
         if size_watch and (contradiction_ or (l and (length l > 1))) then
         size_hist:=cons(cons(get(carpl,'no),si_hi),size_hist);
         if (fixp size_watch) and  
@@ -515,7 +565,8 @@ again:
       else if (s='hi) and (getd 'show_id) then print_hi()
       else if s='hb then print_hb()      
       else if (s='hl) and (memq('unix,lispsystem!*) or
-                           memq('linux!-gnu,lispsystem!*)) then print_hl()
+                           memq('linux!-gnu,lispsystem!*) or
+                           memq('darwin13!.4!.0,lispsystem!*)) then print_hl()
       else if s='he then print_he()
       % to inspect data -----------------------
       else if s='e then 
@@ -575,15 +626,8 @@ again:
       >>
       else if s='ph then <<
         terpri()$
-        l:=reverse history_;
-        while l do 
-        if cdr l and (cadr l = 'ig) then <<
-         terpri()$ 
-         prin1 car l$ prin2 " "$ prin1 cadr l$ prin2 " "$ prin1 caddr l$terpri()$  
-         l:=cdddr l
-        >>                          else <<
-         prin1 car l$ prin2 " "$ l:=cdr l
-        >>
+        % pri_hist history_
+        pri_hist(clean_hist())
       >>
       else if s='pv then <<
         write "Type in a variable from which you want to know its value: ";
@@ -595,6 +639,7 @@ again:
       >>
       else if s='pf then how_often(pdes)
       else if s='po then print_factors(pdes)
+      else if s='pu then print_coefficients(pdes)
       else if s='pr then <<
         write"The currently active substitution rules: "$ terpri()$
         algebraic (write lisp userrules_); terpri()
@@ -602,6 +647,7 @@ again:
       else if s='pd then plot_dependencies(pdes)
       else if s='ps then plot_statistics(size_hist) 
       else if s='lc then list_cases(size_hist) 
+      else if s='ca then list_current_case_assumptions() 
       else if s='ws then write_stat_in_file()
       else if s='sn then <<write"The name of this session is: """,session_,""""$
                            terpri()>>
@@ -619,9 +665,9 @@ again:
       else if s='t then <<
         expert_mode:=not expert_mode$
         if expert_mode then 
-        write"The user will choose equations from now on."
+        write"From now on the USER will choose equations."
                        else
-        write"The program will choose equations from now on.";
+        write"From now on the COMPUTER will choose equations.";
         expert_mode_copy:=expert_mode
       >>
       else if s='p1 then printproclist()
@@ -661,8 +707,7 @@ again:
           write"The number must be in 1 .. ",full_proc_list_length," ."$
           terpri()
         >>        else                         else
-        <<
-          loopcount:=0; 
+        <<loopcount:=0; 
           if size_watch then 
           si_hi:=get_statistic(pdes,append(forg,setdiff(ftem_,forg)))$
           stepcounter_:=add1 stepcounter_$
@@ -675,8 +720,8 @@ again:
                               else nth(full_proc_list_,s);
             l:=apply(ps,list list(pdes,forg,vl_,pdes))$
 
-            if (repeat_mode neq t) and null l and null contradiction_ and 
-               size_watch and not fixp size_watch then % otherwise avoid growth
+            if (repeat_mode neq t) and null l and null contradiction_ 
+               and null to_do_list and size_watch and not fixp size_watch then 
             history_:=cons(bldmsg("*** %w un-succ.",ps),cons('ig,history_))$
 
             if size_watch and (l or contradiction_) then 
@@ -732,6 +777,7 @@ again:
         if null auto_para_mode then  % assumed not to be started from PVM
         batchcount_:=sub1 stepcounter_
       >>
+      else if s='bm then system "rm stop_now" 
       else if s='an then pdes:=flin_non_triv_cond pdes
       else if s='rs then pdes:=comp_resultant(pdes)
       else if (s='x) or (s=int2id 4) % i.e. if interactive session is submitted
@@ -741,6 +787,13 @@ again:
        if eqn_to_be_gen and eqn_input and (eqn_input neq 'done) then <<
         close eqn_input; eqn_input:='done
        >>$
+       stop_:=t
+      >>
+      else if s='qh then << % quit hard, i.e. drop possible solutions
+       if eqn_to_be_gen and eqn_input and (eqn_input neq 'done) then <<
+        close eqn_input; eqn_input:='done
+       >>$
+       contradiction_:=t;
        stop_:=t
       >>
       % to change flags & parameters -----------------------
@@ -919,12 +972,12 @@ again:
         change_prompt_to "Please terminate this input with ';'  : "$ 
         l:=termxread()$
 
-        if s='collect_sol and l=nil and collect_sol then
-        if null session_ then name_session()
+        if s='collect_sol and l=nil and collect_sol then 
+        if null session_ then start_sol_list_file() 
                          else save_sol_list()       else
         if s='session_ then
            copy!-file(bldmsg("%wsol_list", session_),
-                      bldmsg("%wsol_list", l));
+                      bldmsg("%ssol_list", l));
         % i.e. create a sol_list file
         set(s,reval l)$
       >> 
@@ -1022,77 +1075,12 @@ again:
       >>
       else if s='ig then % ignore (starts automatic comments written into history_)
       else if s='lr then <<
-        change_prompt_to ""$ 
-        write"In the LET-rule you are going to add you can not introduce "$
-        terpri()$
-        write"new functions to be computed. If your LET-rules involve "$
-        terpri()$
-        write"such functions then you have to add equations before which "$
-        terpri()$
-        write"involve these functions in order to introduce the functions "$
-        terpri()$
-        write"to the program. "$terpri()$ terpri()$
-        write"You can either"$ terpri()$
-        write"- give the name (terminated by ;) of a rule list to be "$terpri()$
-        write"  activated that has been defined before the call of CRACK, or"$
-        terpri()$
-        write"- give the name (terminated by ;) of an equation which "$terpri()$
-        write"  is to be converted to a LET rule, or"$terpri()$
-        write"- type in the new LET-rule in the form like"$terpri()$
-        write"  sqrt(e)**(-~x*log(~y)/~z) => y**(-x/z/2);   : "$terpri()$
-        l:=termxread()$
-        if atom l then 
-        if member(l,pdes) then rule_from_pde(l)
-                          else algebraic(let lisp l) 
-                  else <<
-         userrules_:=cons('list,cons(l,cdr userrules_))$
-         algebraic (write "The new list of user defined rules: ",
-                          lisp userrules_)$
-         terpri()$
-        >>$
-        write"Shall all current LET-rules be applied to all current ",
-             "equations (y/n)? "$
-        l:=termread()$
-        if (l='y) or (l='y) then <<
-         algebraic(let lisp userrules_);
-         s:=pdes;
-         for each h in s do <<
-          l:=mkeqsq(get(h,'sqval),nil,nil,get(h,'fcts),get(h,'vars),
-                    allflags_,t,list(0),nil,pdes)$
-          pdes:=drop_pde(h,pdes,nil)$
-          pdes:=eqinsert(l,pdes)
-         >>$
-         algebraic(clearrules lisp userrules_)
-        >>$
-        write"Warning: Changes of equations based on LET-rules"$terpri()$
-        write"are not recorded in the history of equations."$terpri()$
+        pdes:=add_a_rule(pdes,forg)$       % in crutil.red, module let_rule_handling
+        forg:=cadr pdes;
+        pdes:=car pdes
       >>
-      else if s='cr then <<
-        change_prompt_to ""$ 
-        write"These are all the user defined rules: "$      terpri()$
-        algebraic (write lisp userrules_);
-        write"You can either"$ terpri()$
-        write"- give the number of a rule above to be dropped, or "$ terpri()$
-        write"- give the name of a rule list activated before "$ terpri()$
-        write"  the call of CRACK which should be disabled: "$
-        l:=termread()$
-        if not fixp l then <<
-         algebraic(clearrules lisp l)$
-         write"Rule list ",l," has been disabled."$terpri()
-        >>            else
-        if l > sub1 length userrules_ then <<
-         write"This number is too big."$terpri()
-        >>                            else <<
-         s:=nil;userrules_:=cdr userrules_;
-         while l>1 do <<
-          l:=sub1 l;s:=cons(car userrules_,s);userrules_:=cdr userrules_
-         >>;
-         algebraic(clearrules lisp {'list,car userrules_});
-         userrules_:=cons('list,append(reverse s,cdr userrules_));
-         algebraic (write lisp userrules_);
-         terpri()$
-        >>
-      >>
+      else if s='cr then pdes:=clear_a_rule(pdes) %        "          "         "
+      else if s='mo then start_stop_modulo()
       else if s='ap then 
       if alg_poly then
       <<        change_prompt_to ""$ 
@@ -1120,7 +1108,7 @@ again:
           if null fhom_ then fhom_:=ftem_;
           for each s in pdes do <<
            put(s,'fct_hom,smemberl(get(s,'fcts),fhom_));
-           put(s,'hom_deg,find_hom_deg_sf(numr get(s,'sqval)))
+           put(s,'hom_deg,find_hom_deg_SF(numr get(s,'sqval)))
           >>
          >>      else fhom_:=nil
         >>$
@@ -1222,7 +1210,7 @@ again:
       else if s='de then pdes:=deletepde(pdes)
       else if s='di then delete_ineq(pdes)
       else if s='c then change_pde_flag(pdes)
-      else if s='pt then <<l:=general_trafo({pdes,forg})$
+      else if s='pt then <<l:=General_Trafo({pdes,forg})$
                            if l then <<pdes:=car l$ forg:=cadr l>> >>
       % else if s='se then pdes:=sort_eq_by_length pdes
       % (not needed anymore, done by default more efficiently)
@@ -1276,7 +1264,7 @@ again:
         write"Please type the name of the procedure to trace: "$
         l:=termread()$
         terpri()$
-        evuntr list l
+        eval {'untr,l} 
       >>
       else if s='br then <<
         terpri()$write"This is Standard Lisp. Return to Reduce by Ctrl D."$
@@ -1300,7 +1288,7 @@ again:
         terpri()$
         in l
       >>
-      else if s='cu then interntest(pdes,forg)
+      else if s='cu then InternTest(pdes,forg)
       else if s='qt then <<
         change_prompt_to ""$ 
         terpri()$
@@ -1308,9 +1296,9 @@ again:
         terpri()$
         write "which should be profiled: "$  terpri()$
         l:=termlistread()$
-%        for each h in l do apply('qualtime,h)
-%write"h=",h$
-%qualtime bldmsg("%w",h)
+        % for each h in l do apply('qualtime,h)
+        % write"h=",h$
+        % qualtime bldmsg("%w",h)
       >>
       else if s='pq then 
         if getd 'print!-qualtime then print!-qualtime()
@@ -1343,6 +1331,7 @@ again:
       else if s='ls then for each x in oblist() do switchp x
 !#endif
       else if s='lg then list_global_crack_variables() 
+      else if s='dc then describe_id()
       % to parallelize -----------------------
       else if (s='xp) or (s='sp) or (s='jp) or (s='pp) then 
       if ini_check_of_parallel_crack() then <<
@@ -1433,7 +1422,7 @@ again:
        terpri()$
        write"in the file ",process_counter," is set to zero."$
        terpri()$
-% The next line needs review - it is certainly not portable (eg to Windows).
+       % The next line needs review - it is certainly not portable (eg to Windows). "@"
        system bldmsg("touch %w",process_counter)$ % creating file if necessary
        proczaehler(process_counter,'init)$        % setting counter to zero
       >>
@@ -1473,7 +1462,7 @@ again:
       else if s='gs then groeb_solve:=<<
        change_prompt_to ""$ 
 
-       find_singular()$
+       find_Singular()$
        if singular_call and singular_lib then <<
         repeat <<
          write"What is the max time allowed in seconds? "$ 
@@ -1528,17 +1517,17 @@ again:
         or (not pdes and not fnc_to_adjust and not eqn_to_be_gen 
             and ((equations_file="") or (eqn_input='done)))$
 
-  % This is not needed anymore as ineq_ gets constantly updated:
-  %  ineq_:=drop_triv_ineq(ineq_);
-
   if not (contradiction_ or result) then <<
-    if (print_ or null collect_sol) and not stop_ then <<terpri()$
+    if (print_ % or null collect_sol % commented out on 24.5.2013
+                                    ) and not stop_ then <<terpri()$
       terpri()$ write">>>>>>>>> Solution"$
       if level_ then write" of level ",level_string(nil)$
       write" : "$
     >>$
-
     forg:=sub_fsub_in_itself_and_in_forg(forg)$ 
+
+    % moving LET-rules into pdes
+    while cdr userrules_ do pdes:=moverule2eqn(cadr userrules_,pdes)$
 
     % updating ftem_, flin_, fhom_:
     f_update(pdes,forg)$
@@ -1582,7 +1571,7 @@ again:
 
         % the original PDEs under the current case conditions
         for each l in pdes do <<
-         h:=simplifypdesq(get(l,'sqval),ftem_,t,l,t)$
+         h:=simplifypdeSQ(get(l,'sqval),ftem_,t,l,t)$
          put(l,'sqval,car h)$
          put(l,'fac,cdr h)
         >>$
@@ -1590,7 +1579,7 @@ again:
         % the conditions returned from crack_out()
         pl:=pdes;        
         for each l in cdr s do
-        pdes:=eqinsert(mkeqsq(<<h:=aeval l;
+        pdes:=eqinsert(mkeqSQ(<<h:=aeval l;
                                 if pairp h and (car h='!*sq) then cadr h
                                                              else simp h>>,
                               nil,nil,ftem_,vl_,allflags_,
@@ -1644,7 +1633,6 @@ again:
   if tr_main and print_ then
      <<terpri()$write "end of the main procedure"$terpri()>>$
   l:=(length level_)+1-level_length;
-
   for s:=1:l do if level_ then 
   finish_level(%  the # of solutions
                if null result then 0 else
@@ -1659,6 +1647,9 @@ again:
   % for l:=1:(sub1 nequ_) do drop_pde(mkid(eqname_,l),pdes,nil)$
   drop_all_pdes(pdes)$
 
+  % delete case tree when all computation is completed, not at the end of side calculations
+  if (level_length=0) and (null paracrack_initialized) then delete_case_tree()$
+
   %<<<<<<< To be replaced by a check whether any of these PDEs
   % has still any property
   for l:=1:(sub1 nequ_) do <<
@@ -1668,7 +1659,6 @@ again:
     setprop(s,nil)
    >>
   >>$ 
-
   for each l in forg do
   if pairp l then setprop(cadr l,nil)
              else setprop(     l,nil)$
@@ -1685,7 +1675,7 @@ begin scalar l,s$
  while cdr l do << % use substitution car l in all of cdr l
   s:=cdr l;
   while s do <<
-   rplaca(s,(caar s . {'!*sq,subsq(cadr cdar s,{car l}),t}))$
+   rplaca(s,(caar s . {'!*sq,subsq(cadr cdar s,{car l}),nil}))$
    s:=cdr s
   >>$
   l:=cdr l
@@ -1832,216 +1822,101 @@ end$
 
 symbolic procedure printmainmenu()$
 <<terpri()$
-  write "hd : Help to inspect data"$terpri()$
-  write "hp : Help to proceed"$terpri()$
-  write "hf : Help to change flags & parameters"$terpri()$
-  write "hc : Help to change data of equations"$terpri()$
-  if getd 'show_id then 
-  write "hi : Help to work with identities"$terpri()$
-  write "hb : Help to trace, debug and configure"$terpri()$
-  write "hl : Help to duplicate and parallelize runs"$terpri()$
-  write "he : Help to use external systems"$terpri()$
+  for each h in '(i_hd i_hp i_hf i_hc i_hi i_hb i_hl i_he) do <<
+    write compress cddr explode h," : ",car get(h,'description)$ terpri() 
+  >>
 >>$
 
 symbolic procedure print_hd()$
 <<terpri()$
-  write "e  : Print equations"$                             terpri()$
-  write "eo : Print overview of functions in equations"$    terpri()$
-  write "pi : Print inequalities"$                          terpri()$
-  write "f  : Print functions and variables"$               terpri()$
-  write "v  : Print all derivatives of all functions"$      terpri()$
-  write "s  : Print statistics"$                            terpri()$
-  write "fc : Print no of free cells"$                      terpri()$
-  write "pe : Print an algebraic expression"$               terpri()$
-  write "ph : Print history of interactive input"$          terpri()$
-  write "pv : Print value of any lisp variable"$            terpri()$
-  write "pf : Print no of occurences of each function"$     terpri()$
-  write "po : Print no of occurences of each factor"$       terpri()$
-  write "pr : Print active substitution rules"$             terpri()$
-  write "pd : Plot the occurence of functions in equations"$terpri()$
-  write "ps : Plot a statistical history"$                  terpri()$
-  write "lc : List all case distinctions"$                  terpri()$
-  write "ws : Write statistical history in file"$           terpri()$
-  write "sn : Show name of session"$                        terpri()$
-  write "ss : Find and print sub-systems"$                  terpri()$
-  write "w  : Write equations into a file"$                 terpri()$
+  for each h in '(i_e i_eo i_pi i_f i_v i_s i_fc i_pe i_ph i_pv i_pf 
+                  i_po i_pu i_pr i_pd i_ps i_lc i_ca i_ws i_sn i_ss i_w) do <<
+    if length explode h<4 then
+    write compress cddr explode h,"  : ",car get(h,'description)
+                          else
+    write compress cddr explode h, " : ",car get(h,'description)$ 
+    terpri()
+  >>
 >>$
 
 symbolic procedure print_hp()$
 <<terpri()$
-  write "a  : Do one step automatically"$                   terpri()$
-  write "g  : Go on for a number of steps automatically"$   terpri()$
-  write "t  : Toggle equation selection to : "$
-              if expert_mode then write "AUTOMATIC"
-                             else write "USER"$             terpri()$
-  write "p1 : Print a list of all modules in batch mode"$   terpri()$
-  write "p2 : Print a complete list of all modules"$        terpri()$
-  write "#  : Execute the module with the number `#' once"$ terpri()$
-  write "l  : Execute a specific module repeatedly"$        terpri()$
-  write "sb : Save complete backup to file"$                terpri()$
-  write "rb : Read backup from file"$                       terpri()$
-%  write "ep : Enable parallelism"$                          terpri()$
-%  write "dp : Disable parallelism"$                         terpri()$
-%  write "pp : Start an identical parallel process"$         terpri()$
-%  write "kp : Kill a parallel process"$                     terpri()$
-  write "an : Add non-triviality conditions for param. lin. sys."$
-                                                            terpri()$
-  write "rs : Compute resultant of two polynomials"$        terpri()$
-  write "x  : Exit interactive mode for good"$              terpri()$
-  write "q  : Quit current level or crack if in level 0"$   terpri()$
+  for each h in '(i_a i_g i_t i_p1 i_p2 i_!# i_l i_sb i_rb i_bm
+                  i_an i_rs i_x i_q i_qh) do <<
+    if (length explode h<4) or (h='i_!#) then
+    write compress cddr explode h,"  : ",car get(h,'description)
+                                         else
+    write compress cddr explode h, " : ",car get(h,'description)$
+    terpri() 
+  >>
 >>$
 
 symbolic procedure print_hf()$
 <<terpri()$
-  write "pl : Maximal length of an expression to be printed (",
-              print_,")"$                                   terpri()$
-  write "pm : ",if print_more then "Do not p" else "P",
-              "rint more information about the pdes"$       terpri()$
-  write "pa : ",if print_all then "Do not p" else "P",
-              "rint all information about the pdes"$        terpri()$
-  write "cp : Change the priorities of procedures"$         terpri()$
-  write "og : Toggle ordering to ",
-              if lex_fc then "derivatives > functions" 
-                        else "functions > derivatives"$     terpri()$
-  write "od : Toggle ordering of derivatives to ",
-              if lex_df then "total-degree" 
-                        else "lexicographic"$               terpri()$
-  write "oi : Interactive change of ordering on variables"$ terpri()$
-  write "or : Reverse ordering on variables"$               terpri()$
-  write "om : Mix randomly ordering on variables"$          terpri()$
-  write "of : Interactive change of ordering on functions"$ terpri()$
-  write "op : Print current ordering"$  terpri()$
-  write "ne : Root of the name of new generated equations (",
-              eqname_,")"$                                  terpri()$
-  write "nf : Root of the name of new functions and constants (",
-              fname_,")"$                                   terpri()$
-  write "ni : Root of the name of new identities (",
-              idname_,")"$                                  terpri()$
-  write "na : Change output to "$
-              if !*nat then write "OFF NAT"
-                       else write "ON NAT"$                 terpri()$
-  write "as : Input of an assignment"$                      terpri()$
-%  write "kp : ",if keep_parti then "Do not keep"
-  write "ke : ",if keep_parti then "Do not keep"
-                              else "Keep",
-              " a partitioned copy of each equation"$       terpri()$
-  write "fi : ",if freeint_ then "Allow unresolved integrals"
-              else "Forbid unresolved integrals"$           terpri()$
-  write "fa : ",if freeabs_ then "Allow solutions of ODEs with ABS()"
-              else "Forbid solutions of ODEs with ABS()"$   terpri()$
-  write "cs : ",if confirm_subst then 
-              "No confirmation of intended substitutions/factorizations"
-                                 else 
-              "Confirmation of intended substitutions/factorizations"$
-                                                            terpri()$
-  write "fs : ",if force_sep
-                then "Do not enforce direct separation"
-                else "Enforce direct separation"$           terpri()$
-  write "ll : change of the line length"$                   terpri()$
-  write "re : ",if do_recycle_eqn then "Do not re-cycle equation names."
-                                  else "Do re-cycle equation names."$
-                                                            terpri()$
-  write "rf : ",if do_recycle_fnc then "Do not re-cycle function names."
-                                  else "Do re-cycle function names."$
-                                                            terpri()$
-  write "st : Setting a CPU time limit for un-interrupted run"$ 
-                                                            terpri()$
-  write "cm : Adding a comment to the history_ list"$       terpri()$
-  write "lr : Adding a LET-rule"$                           terpri()$
-  write "cr : Clearing a LET-rule"$                         terpri()$
-  write "ap : Adapting the setting to the system to be solved"$ terpri()$
-  write "ho : Find all homogeneities of the system"$        terpri()$
+  for each h in '(i_pl i_pm i_pa i_cp i_og i_od i_oi i_or i_om i_of
+                  i_op i_ne i_nf i_ni i_na i_as i_ke i_fi i_fa i_cs
+                  i_fs i_ll i_re i_rf i_st i_cm i_lr i_cr i_mo i_ap i_ho) do <<
+    if length explode h<4 then
+    write compress cddr explode h,"  : ",car get(h,'description)
+                          else
+    write compress cddr explode h, " : ",car get(h,'description)$
+    terpri()
+  >>
 >>$
 
 symbolic procedure print_hc()$
 <<terpri()$
-  write "r  : Replace or add one equation"$                 terpri()$
-  write "rd : Reduce an equation modulo LET rules"$         terpri()$
-  write "n  : Add one inequality"$                          terpri()$
-  write "de : Delete equations"$                            terpri()$
-  write "di : Delete one inequality"$                       terpri()$
-  write "c  : Change a flag or property of one pde"$        terpri()$
-  write "pt : Perform a transformation of functions and variables"$ 
-                                                            terpri()$
-  % write "se : Sort equation list by size"$                  terpri()$
+  for each h in '(i_r i_rd i_n i_de i_di i_c i_pt % i_se
+                 ) do <<
+    if length explode h<4 then
+    write compress cddr explode h,"  : ",car get(h,'description)
+                          else
+    write compress cddr explode h, " : ",car get(h,'description)$
+    terpri()
+  >>
 >>$
 
 symbolic procedure print_hi()$
-if getd 'show_id then 
 <<terpri()$
-  write "i  : Print identities between equations"$          terpri()$
-  write "id : Delete redundand equations"$                  terpri()$
-  write "iw : Write identities to a file"$                  terpri()$
-  write "ir : Remove list of identities"$                   terpri()$
-  write "ia : Add or replace an identity"$                  terpri()$
-  write "ih : Start recording histories and identities"$    terpri()$
-  write "is : Stop recording histories and identities"$     terpri()$
-  write "ii : Integrate an identity"$                       terpri()$
-  write "ic : Check the consistency of identity data"$      terpri()$
-  write "iy : Print the history of equations"$              terpri()$
+  for each h in '(i_i i_id i_iw i_ir i_ia i_ih i_is i_ii i_ic i_iy) do <<
+    if length explode h<4 then
+    write compress cddr explode h,"  : ",car get(h,'description)
+                          else
+    write compress cddr explode h, " : ",car get(h,'description)$
+    terpri() 
+  >>
 >>$
 
 symbolic procedure print_hb()$
 <<terpri()$
-  write "tm : ",if tr_main then "Do not t" else "T",
-              "race main procedure"$                        terpri()$
-  write "tg : ",if tr_gensep then "Do not t" else "T",
-              "race generalized separation"$                terpri()$
-  write "ti : ",if tr_genint then "Do not t" else "T",
-              "race generalized integration"$               terpri()$
-  write "td : ",if tr_decouple then "Do not t" else "T",
-              "race decoupling process"$                    terpri()$
-  write "tl : ",if tr_redlength then "Do not t" else "T",
-              "race decoupling length reduction"$           terpri()$
-  write "ts : ",if tr_short then "Do not t" else "T",
-              "race algebraic length reduction"$            terpri()$
-  write "to : ",if tr_orderings then "Do not t" else "T",
-              "race orderings process"$                     terpri()$
+  for each h in 
 !#if (memq 'psl lispsystem!*)
-  write "tr : Trace an arbitrary procedure"$                terpri()$
+                '(i_tm i_tg i_ti i_td i_tl i_ts i_to i_ut i_br i_pc i_in i_cu
+                  i_tr
+                  i_qt i_pq i_so i_sf i_ls i_lg i_dc) 
 !#endif
-  write "ut : Untrace a procedure"$                         terpri()$
-  write "br : Break"$                                       terpri()$
-  write "pc : Do a function call"$                          terpri()$
-  write "in : Reading in a REDUCE file"$                    terpri()$
-  write "cu : Check uniqueness of all standard quotients"$  terpri()$
-  write "qt : Choose functions to profile"$                 terpri()$
-  write "pq : Show profiling result"$                       terpri()$
-  write "so : Switch a switch ON"$                          terpri()$
-  write "sf : Switch a switch OFF"$                         terpri()$
-  write "ls : List REDUCE switch settings"$                 terpri()$
-  write "lg : List global CRACK variables"$                 terpri()$
+!#if (memq 'csl lispsystem!*)
+                '(i_tm i_tg i_ti i_td i_tl i_ts i_to i_ut i_br i_pc i_in i_cu
+                  i_qt i_pq i_so i_sf i_ls i_lg i_dc) 
+!#endif
+  do <<
+    write compress cddr explode h," : ",car get(h,'description)$ terpri()
+  >>
 >>$
 
 symbolic procedure print_hl()$
 <<terpri()$
-  write "xp : Duplicate process under new xterm"$           terpri()$
-  write "sp : Duplicate process under new screen"$          terpri()$
-  write "jp : Duplicate process submitted as offline job"$  terpri()$
-  write "pp : Duplicate process under PVM"$                 terpri()$
-
-  write "wp : Perform parallel case solving with xterm's"$  terpri()$
-  write "yp : Perform parallel case solving with screen's"$ terpri()$
-  write "zp : Perform parallel case solving with jobs"$     terpri()$
-  write "vp : Perform parallel case solving under PVM"$     terpri()$
-
-  write "np : Set counter of parallel processes to zero"$   terpri()$
-  write "mp : Specify max. number of parallel processes"$   terpri()$
-  write "tp : Specify directory for storing cases"$         terpri()$
-  write "dp : Disable parallel case solving"$               terpri()$
-%  write "kp : Kill a parallel PVM process"$                 terpri()$
-% not working as 'processes' is not global variable and not yet
-% supported by auto_para_mode=1..3
+  for each h in '(i_xp i_sp i_jp i_pp i_wp i_yp i_zp i_vp i_np i_mp i_tp i_dp % i_kp
+                 ) do <<
+    write compress cddr explode h," : ",car get(h,'description)$ terpri()
+  >>
 >>$
 
 symbolic procedure print_he()$
 <<terpri()$
-  write "fo : Select FORM for computing S-polynomials"$     terpri()$
-  write "ff : Do not use FORM"$                             terpri()$
-  write "gs : Select Singular for Groebner bases"$          terpri()$
-  write "gg : Select GB package of J.C.Faugere for Groebner b."$terpri()$
-  write "gr : Select REDUCE package for Groebner bases"$    terpri()$
-  write "df : Select DiffElim for diff. Groebner bases"$    terpri()$
+  for each h in '(i_fo i_ff i_gs i_gg i_gr i_df) do <<
+    write compress cddr explode h," : ",car get(h,'description)$ terpri()
+  >>
 >>$
 
 symbolic procedure to_do(arglist)$
@@ -2103,8 +1978,8 @@ begin scalar f,l,q,g,h,pdes,forg,found_sub$
 
     if member(cadr d,forg) then <<
        ftem_:=fctinsert(cadr d,ftem_)$ % puting cadr d back into ftem_
-       q:=mkeqsq(subtrsq(simp d,simp f),nil,nil,
-                   %list('PLUS,d,list('MINUS,f)),
+       q:=mkeqSQ(subtrsq(simp d,simp f),nil,nil,
+                   %list('plus,d,list('minus,f)),
                    list(f,cadr d),fctargs f,allflags_,nil,list(0),nil,pdes)$
        remflag1(q,'to_eval)$
        put(q,'not_to_eval,cons(f,get(q,'not_to_eval)))$
@@ -2184,7 +2059,7 @@ begin scalar pdes,s,a,al,d,f,p,q,newf,sb,new_eq,old_eq,ok;
   while p and ok do 
   if freeof(get(car p,'fcts),f) then p:=cdr p
                                 else <<
-   q:=mkeqsq(get(car p,'sqval),nil,nil,cons(newf,get(car p,'fcts)),
+   q:=mkeqSQ(get(car p,'sqval),nil,nil,cons(newf,get(car p,'fcts)),
              get(car p,'vars),allflags_,t,list(0),nil,pdes);
    if not freeof(get(q,'fcts),f) then ok:=nil
                                  else <<
@@ -2237,9 +2112,11 @@ begin scalar l$
  if expert_mode then l:=selectpdes(car arglist,1)
                 else l:=cadddr arglist$
  l:=get_fact_pde(l,t)$
+
  return 
- if l then split_into_cases {car arglist, cadr arglist, caddr arglist, car get(l,'fac)}
+ if l then split_into_cases {car arglist, cadr arglist, caddr arglist, car get(l,'fac)} 
       else nil
+
 end$
 
 symbolic procedure separation(arglist)$
@@ -2318,9 +2195,9 @@ begin scalar pdes,l1,l2,l3,l4,l5,l6,fl,vl,zd,pdes2$
     l4:=car l3;             % the solution
     pdes2:=pdes;
     for each l5 in l4 do <<
-     l5:=if zd then mkeqsq(nil,cons(simp l5,zd),nil,
+     l5:=if zd then mkeqSQ(nil,cons(simp l5,zd),nil,
                            fl,vl,allflags_,nil,list(0),nil,pdes)
-               else mkeqsq(nil,nil,l5,
+               else mkeqSQ(nil,nil,l5,
                            fl,vl,allflags_,nil,list(0),nil,pdes)$
      pdes:=eqinsert(l5,pdes)$
     >>;
@@ -2431,7 +2308,7 @@ begin scalar d,p,q,drop,fctrl$
                             else q:=cdr q;
 
    if null drop then <<
-    q:=search_li2(d,'expt)$ % Find all sublists which have 'EXPT as car
+    q:=search_li2(d,'expt)$ % Find all sublists which have 'expt as car
     while q and null drop do
     if not fixp caddar q and pairp cadar q then <<drop:=t;q:=car q>>
                                            else q:=cdr q
@@ -2470,10 +2347,10 @@ begin scalar d,p,q,drop,fctrl$
   >>                                          else d:=nil;
 
   if d then <<
-%   d:=cons('TIMES,p);
+%   d:=cons('times,p);
    d:=p;
    p:=car l;
-   d:=mkeqsq(d,fctrl,nil,get(p,'fcts),get(p,'vars),allflags_,
+   d:=mkeqSQ(d,fctrl,nil,get(p,'fcts),get(p,'vars),allflags_,
              nil,get(p,'orderings),nil,pdes)$
    % last argument is nil as no new inequalities are to be expected.
    % but that has been changed as one never knows and it does not do
@@ -2497,9 +2374,7 @@ begin scalar l,l1,pdes,forg$
     <<pdes:=delete(car l,pdes)$
       for each s in l do pdes:=eqinsert(s,pdes)$
       for each s in l do 
-        to_do_list:=cons(list('subst_level_35,%pdes,forg,caddr arglist,
-                              list s),
-                         to_do_list)$
+        to_do_list:=cons(list('subst_level_35,list s),to_do_list)$
       l:=list(pdes,forg)>>$
  if null l and to_do_list then << % case invest. issued in odeconvert 
   l:=arglist$
@@ -2523,8 +2398,7 @@ begin scalar l,l1,pdes,forg$
       for each s in l do pdes:=eqinsert(s,pdes)$
       for each s in l do 
       if not freeof(pdes,s) then 
-        to_do_list:=cons(list('subst_level_35,%pdes,forg,caddr arglist,
-                              list s),
+        to_do_list:=cons(list('subst_level_35,list s),
                          to_do_list)$
       l:=list(pdes,forg)>>$
  if null l and to_do_list then << % case invest. issued in odeconvert 
@@ -2548,9 +2422,7 @@ begin scalar l,l1,pdes,forg$
       for each s in l do pdes:=eqinsert(s,pdes)$
       for each s in cdr l do 
       if not freeof(pdes,s) then 
-        to_do_list:=cons(list('subst_level_35,%pdes,forg,caddr arglist,
-                              list s),
-                         to_do_list)$
+        to_do_list:=cons(list('subst_level_35,list s),to_do_list)$
       l:=list(pdes,forg)>>$
  if null l and to_do_list then << % case invest. issued in odeconvert 
   l:=arglist$
@@ -2583,7 +2455,7 @@ begin scalar pdes,forg,l,stem,ftem,vl,vl1$
         ftem_:=fctinsert(f,ftem_)$
       ftem:=union(fnew_,ftem)$
       fnew_:=nil$
-      pdes:=eqinsert(mkeqsq(nil,nil,l,smemberl(ftem_,ftem),vl,
+      pdes:=eqinsert(mkeqSQ(nil,nil,l,smemberl(ftem_,ftem),vl,
                             allflags_,t,list(0),nil,pdes),
                      pdes)$
       vl1:=nil$ 
@@ -2602,26 +2474,6 @@ begin scalar l$
  return l$
 end$
 
-symbolic procedure high_prio_decoupling(arglist)$
-% Do one decoupling step
-begin scalar l$
- l:=dec_one_step(car arglist,ftem_,%cadr arglist,
-                 caddr arglist,t,0)$ 
- % 0 for ordering
- if l then l:=list(l,cadr arglist)$
- return l$
-end$
-
-symbolic procedure decoupling(arglist)$
-% Do one decoupling step
-begin scalar l$
- l:=dec_one_step(car arglist,ftem_,%cadr arglist,
-                 caddr arglist,nil,0)$ 
- % 0 for ordering
- if l then l:=list(l,cadr arglist)$
- return l$
-end$
-
 symbolic procedure clean_dec(p,pdes,flg)$
 begin scalar propty,el,nl,newpropty$
  propty:=get(p,flg)$
@@ -2633,13 +2485,16 @@ begin scalar propty,el,nl,newpropty$
 end$
 
 symbolic procedure clean_prop_list(pdes)$ 
+% pdes is the list of equation names that are still in use.
+% All equations from the list should have equation names that 
+% are not in pdes deleted from their property lists
 if null car recycle_eqns          and 
         cdr recycle_eqns          and 
    (length cdr recycle_eqns > 50) then 
 <<for each p in pdes do <<
     clean_dec(p,pdes,'dec_with)$
     clean_dec(p,pdes,'dec_with_rl)$
-  % clean_rl(p,pdes) :
+    clean_dec(p,pdes,'res_with)$
     put(p,'rl_with,intersection(pdes,get(p,'rl_with)))$
   >>$
   % recycle_eqns is a pair of 2 lists: 
@@ -2693,7 +2548,7 @@ begin scalar pdes,l,l1,l2,q$
          write " we get the new equations : "
        >>$
        for each v in fctargs f do <<
-         q:=mkeqsq(diffsq(get(p,'sqval),v),nil,nil,get(p,'fcts),get(p,'vars),
+         q:=mkeqSQ(diffsq(get(p,'sqval),v),nil,nil,get(p,'fcts),get(p,'vars),
                    delete('to_diff,allflags_),t,list(0),nil,pdes)$
          if q then <<
            if get(q,'terms)>1 then <<
@@ -2715,6 +2570,7 @@ end$
 
 symbolic procedure add_diff_ise(arglist)$
 % a star-pde is differentiated and then added
+if expert_mode or not in_cycle({32,stepcounter_}) then 
 begin scalar pdes,l,l1,q,vli$
   pdes:=car arglist$
   if expert_mode then l1:=selectpdes(pdes,1)
@@ -2733,7 +2589,7 @@ begin scalar pdes,l,l1,q,vli$
       write " we get the new equations : "
     >>$
     for each v in vli do
-    <<q:=mkeqsq(diffsq(get(p,'sqval),v),nil,nil,get(p,'fcts),get(p,'vars),
+    <<q:=mkeqSQ(diffsq(get(p,'sqval),v),nil,nil,get(p,'fcts),get(p,'vars),
                 delete('to_fullint,delete('to_int,allflags_)),
                 t,get(p,'orderings),nil,pdes)$
       if null get(q,'starde) then <<
@@ -2793,7 +2649,6 @@ begin scalar h,hh,s,pdes,forg,contrad,n,pf,q,sqf,l1,l2,result,intact,
     % bracket from below under the (checked) assumption that h can involve
     % equation names only if h is specified interactively.
   >>$  
-
   % Preliminary contradiction tests
 
   %% 20.11.2006: One should have only simplifypde() OR may_vanish()
@@ -2802,7 +2657,7 @@ begin scalar h,hh,s,pdes,forg,contrad,n,pf,q,sqf,l1,l2,result,intact,
 
   print_bak:=print_$ print_:=nil$ % not to print the finding of a contradiction
 % h:=simplifypde(h,smemberl(ftem_,h),t,nil)$     % (h,ftem,tofactor,eqn_name)$
-  hh:=simplifysq(h,smemberl(ftem_,h),t,nil,t)$ % (p,ftem,fctr,en,sep)$ 
+  hh:=simplifySQ(h,smemberl(ftem_,h),t,nil,t)$ % (p,ftem,fctr,en,sep)$ 
   if hh={(1 . 1)} then contradiction_:=t$
   print_:=print_bak$
 
@@ -2816,8 +2671,8 @@ begin scalar h,hh,s,pdes,forg,contrad,n,pf,q,sqf,l1,l2,result,intact,
       write" --> Back to main menu."$terpri()$
       nil
     >>        else <<
-      for each l2 in hh do if l2 neq (1 . 1) then addsqineq(pdes,l2,nil)$ 
-      addsqineq(pdes,h,nil)$  % no simplification as simplification
+      for each l2 in hh do if l2 neq (1 . 1) then addSQineq(pdes,l2,nil)$ 
+      addSQineq(pdes,h,nil)$  % no simplification as simplification
                               % obviously simplifies to (1 . 1) whereas
                               % it was obviously not known that h neq 0
       {pdes,forg}  
@@ -2875,28 +2730,27 @@ again:
         % addSQineq that a factor of sqf must vanish which has not been recorded
       >>$
       q:=l1:=l2:=nil$ % should not be necessary
-    >>                  else <<
-      q:=mkeqsq(sqf,hh,pf,ftem_,vl_,allflags_,t,list(0),nil,pdes)$
-      if print_ then 
-      if contradiction_ then <<
-        write "The case"$
-        deprint(list pf)$
-        write "contradicts inequalities and is not further investigated."$
-      >>                else <<
-        write "CRACK is now called with the assumption 0 = ",q," : "$
-        deprint(list pf)$
-      >>
+    >>$
+    q:=mkeqSQ(sqf,hh,pf,ftem_,vl_,allflags_,t,list(0),nil,pdes)$
+    if print_ then 
+    if contradiction_ then <<
+      write "The case"$
+      deprint(list pf)$
+      write "contradicts inequalities and is not further investigated."$
+    >>                else <<
+      write "CRACK is now called with the assumption 0 = ",q," : "$
+      deprint(list pf)$
     >>
   >>   else <<   %====== the case that h does not vanish identically
     start_level(n,list {'ineq,0,pf})$
     if print_ then <<
       terpri()$
       write "CRACK is now called with assuming  "$terpri()$
-      mathprint pf$
+      eqprint pf$
       write" to be nonzero. "$
     >>$
 
-    for each l2 in hh do addsqineq(pdes,l2,nil)$ 
+    for each l2 in hh do addSQineq(pdes,l2,nil)$ 
     if contradiction_ then <<
       if print_ then 
       write"According to the system of equations, this expression must be zero!"$
@@ -2917,9 +2771,8 @@ again:
   >>                      else <<
     recycle_fcts:=nil$  % such that functions generated in the sub-call 
                         % will not clash with existing functions
-    l1:=crackmain_if_possible_remote(if null s or sqf_must_be_zero
-                                     then pdes 
-                                     else eqinsert(q,pdes),forg)
+    l1:=crackmain_if_possible_remote(if null s then pdes 
+                                               else eqinsert(q,pdes),forg)
   >>;
 
   forg:=restore_and_merge(l1,pdes,forg)$  % also necessary if l1=nil
@@ -2988,67 +2841,66 @@ end$
 symbolic procedure back_up(arglist)$
 backup_to_file(car arglist,cadr arglist,nil)$
 
-
-symbolic procedure sub_problem(arglist)$
-begin scalar s,h,fl,newpdes,sol,pdes,bak,newfdep,f,sub_afterwards,
-      session_bak,level_bak,lazy_eval_bak$
-
- if !*batch_mode then return nil;
+symbolic procedure sub_problem_input(pdes)$
+begin scalar s,h,newpdes,sub_afterwards$
  terpri()$
  change_prompt_to ""$
- if null lin_problem then <<
-  write"This module so far works only if the solution of the"$terpri()$
-  write"sub-problem does not lead into case distinctions."$terpri()$
-  write"Do you want to continue (Y/N)? "$
-  repeat s:=termread() until (s='y) or (s='n)$
-  if s='n then <<
-   restore_interactive_prompt()$ 
-   return nil
-  >>
- >>$
+
+% if null lin_problem then <<
+%  write"This module so far works only if the solution of the"$terpri()$
+%  write"sub-problem does not lead into case distinctions."$terpri()$
+%  write"Do you want to continue (Y/N)? "$
+%  repeat s:=termread() until (s='y) or (s='n)$
+%  if s='n then <<
+%   restore_interactive_prompt()$ 
+%   return {nil,nil}
+%  >>
+% >>$
  terpri()$
  % Choice
  write"Do you want all linear equations to be solved first    --> Enter 1"$
  terpri()$
  write"Do you want to specify a set of equations to be solved --> Enter 2"$
  terpri()$
- write"or a set of functions (and then all equations containing"$
+ write"or a set of functions (and then all equations ONLY containing"$
  terpri()$
- write"ONLY these functions are selected)                     --> Enter 3"$
+ write"these functions are selected)                          --> Enter 3"$
  terpri()$
- write"or a set of functions (and then all equations containing"$
+ write"or a set of functions (and then all equations NOT containing"$
  terpri()$
- write"NOT these functions are selected)                      --> Enter 4"$
+ write"these functions are selected)                          --> Enter 4"$
  write"or a set of variables (and then all equations containing"$
  terpri()$
- write"only derivatives w.r.t. these variables are selected)  --> Enter 5: "$
+ write"or a set of functions (and then all equations containing"$
+ terpri()$
+ write"these functions linearly)                              --> Enter 5"$
+ write"or a set of variables (and then all equations containing"$
+ terpri()$
+ write"only derivatives w.r.t. these variables are selected)  --> Enter 6: "$
 
  repeat h:=termread() until ((fixp h) and (1<=h) and (h<=5))$
 
  terpri()$
  if h=1 then <<  %------ subset of all linear equations
-  for each s in car arglist do
+  for each s in pdes do
   if get(s,'linear_) then newpdes:=cons(s,newpdes)$
   newpdes:=reverse newpdes;
   if null newpdes then <<
    write"There are no linear equations in the system."$
    terpri()
-  >>              else
-  for each s in newpdes do fl:=union(fl,get(s,'fcts));
+  >>
  >>     else
  if h=2 then <<  %------ Input of a subset of equations
   write"Specify a subset of equations to be solved in the form:  "$
-  listprint(car arglist)$
+  listprint(pdes)$
   write";"$ terpri()$ 
-  s:=termlistread()$
-  h:=setdiff(s,car arglist);
-  if s=nil then newpdes:=nil else 
-  if h then <<
-   write"Equations ",h," are not valid."$ terpri()$
-   newpdes:=nil
-  >>                             else <<
-   for each h in s do fl:=union(fl,get(h,'fcts));
-   newpdes:=s
+  newpdes:=termlistread()$
+  if newpdes then << % else no equations specified
+   h:=setdiff(newpdes,pdes);
+   if h then <<               % equations were specified that do not exist
+    write"Equations ",h," are not valid."$ terpri()$
+    newpdes:=nil
+   >>
   >>
  >>     else 
  if h=3 then <<  %------ Input of a subset of functions to occur
@@ -3056,20 +2908,18 @@ begin scalar s,h,fl,newpdes,sol,pdes,bak,newfdep,f,sub_afterwards,
   listprint(ftem_)$
   write";"$ terpri()$ 
   s:=termlistread()$
-  h:=setdiff(s,ftem_);
-  if s=nil then newpdes:=nil else 
-  if h then <<
-   write"Functions ",h," are not valid."$
-   terpri()$
-   newpdes:=nil
-  >>                             else <<
-   fl:=s;
-   % Determining a subset of equations containing only these functions
-   for each s in car arglist do
-   if null setdiff(get(s,'fcts),fl) then newpdes:=cons(s,newpdes)$
-   if null newpdes then <<
-    write"There is no subset of equations containing only these functions."$
-    terpri()
+  if s then << % else no functions specified to occur
+   h:=setdiff(s,ftem_);
+   if h then << % non-exiting functions specified
+    write"Functions ",h," are not valid."$ terpri()
+   >>   else <<
+    % Determining a subset of equations containing only these functions s
+    for each h in pdes do
+    if null setdiff(get(h,'fcts),s) then newpdes:=cons(h,newpdes)$
+    if null newpdes then << % too restrictive
+     write"There is no subset of equations containing only these functions."$
+     terpri()
+    >>              else newpdes:=reverse newpdes
    >>
   >>
  >>     else   
@@ -3078,124 +2928,238 @@ begin scalar s,h,fl,newpdes,sol,pdes,bak,newfdep,f,sub_afterwards,
   listprint(ftem_)$
   write";"$ terpri()$ 
   s:=termlistread()$
-  h:=setdiff(s,ftem_);
-  if s=nil then newpdes:=nil else 
-  if h then <<
-   write"Functions ",h," are not valid."$
-   terpri()$
-   newpdes:=nil
-  >>                             else <<
-   fl:=s;
-   % Determining a subset of equations not containing these functions
-   for each s in car arglist do
-   if freeoflist(get(s,'fcts),fl) then newpdes:=cons(s,newpdes)$
-   if null newpdes then <<
-    write"There is no subset of equations not containing these functions."$
-    terpri()
+  if s then << % else no functions specified --> no restriction --> no reall subset
+   h:=setdiff(s,ftem_);
+   if h then << % non-occuring functions specified
+    write"Functions ",h," are not valid."$ terpri()$
+   >>                             else <<
+    % Determining a subset of equations not containing these functions
+    for each h in pdes do
+    if freeoflist(get(h,'fcts),s) then newpdes:=cons(h,newpdes)$
+    if null newpdes then <<
+     write"There is no subset of equations not containing these functions."$
+     terpri()
+    >>              else newpdes:=reverse newpdes
    >>
   >>
- >>     else <<
-  write"Specify a subset of variables in the form:  "$
+ >>     else
+ if h=5 then <<  %------ Input of a subset of functions to occur
+  write"Specify a subset of functions in the form:  "$
+  listprint(ftem_)$
+  write";"$ terpri()$ 
+  s:=termlistread()$
+  if s then << % else no functions specified to occur
+   h:=setdiff(s,ftem_);
+   if h then << % non-exiting functions specified
+    write"Functions ",h," are not valid."$ terpri()
+   >>   else <<
+    % Determining a subset of equations containing only these functions s
+    for each h in pdes do
+    if freeoflist(get(h,'fcts),s) or % s do not occur
+       lin_check_SQ(get(h,'sqval),s) % s occur only linearly
+    then newpdes:=cons(h,newpdes)$
+    if null newpdes then << % too restrictive
+     write"There is no subset of equations containing only these functions."$
+     terpri()
+    >>              else newpdes:=reverse newpdes
+   >>
+  >>
+ >>     else << % h=6
+  write"Specify a subset of variables that may come up in derivatives in the form:  "$
   listprint(vl_)$
   write";"$ terpri()$ 
   s:=termlistread()$
-  h:=setdiff(s,vl_);
-  if s=nil then newpdes:=nil else 
-  if h then <<
-   write"Variables ",h," are not valid."$
-   terpri()$
-   newpdes:=nil
+  h:=setdiff(s,vl_);  
+  if h then << % non-occuring variables specified
+   write"Variables ",h," are not variables."$ terpri()
   >>   else <<
-   fl:=setdiff(vl_,s);
+   h:=setdiff(vl_,s); % h are forbidden differentiation variables
    % Determining a subset of equations containing only derivatives wrt. these variables
-   for each s in car arglist do
-   if freeoflist(get(s,'derivs),fl) then newpdes:=cons(s,newpdes)$
+   for each s in pdes do
+   if freeoflist(get(s,'derivs),h) then newpdes:=cons(s,newpdes)$
    if null newpdes then <<
     write"There is no subset of equations containing only derivatives wrt. these variables."$
     terpri()
-   >>;
-   fl:=nil$
-   for each s in newpdes do fl:=union(fl,get(s,'fcts));
+   >>              else newpdes:=reverse newpdes
   >>
  >>;
- if null newpdes then return nil;
+ if null newpdes then <<sub_afterwards:=nil$ restore_interactive_prompt()>>
+                 else <<
+  terpri()$
+  write "Do you want an automatic substitution "$            terpri()$
+  write "of computed functions afterwards           (Y/N)? "$terpri()$
+  write "If not then the subsystem will be replaced"$        terpri()$
+  write "by its equivalent solutions."$                      terpri()$
 
- terpri()$
- write "Do you want an automatic substitution "$terpri()$
- write "of computed functions afterwards (Y/N)? "$
- repeat s:=termread() until (s='y) or (s='n)$
- if s='y then sub_afterwards:=t
-         else sub_afterwards:=nil;
+  repeat s:=termread() until (s='y) or (s='n)$
+  if s='y then sub_afterwards:=t
+          else sub_afterwards:=nil;
 
- restore_interactive_prompt()$ 
- write"CRACK is now called with the following subset of equations"$
- terpri()$
- write newpdes$ terpri()$
- write"!!!!! HINT: "$ terpri()$
- write"Because the current system to solve is only a subsystem,"$terpri()$
- write"--> it may have more solutions --> it is harder to solve"$terpri()$
- write"--> do not try to solve it completely using decoupling"$terpri()$
- write"--> use CP to change the priority list and use only fast"$terpri()$
- write"    and safe steps and use 38 as last step."$terpri()$
- write"--> Example: cp   1,2,3,4,20,7,24,27,38;"$terpri()$terpri()$
+  restore_interactive_prompt()$ 
+  write"CRACK is now called with the following subset of equations"$
+  terpri()$
+  write newpdes$ terpri()$
+  write"!!!!! HINT: "$ terpri()$
+  write"Because the current system to solve is only a subsystem,"$terpri()$
+  write"--> it may have more solutions --> it is harder to solve"$terpri()$
+  write"--> do not try to solve it completely using decoupling"$terpri()$
+  write"--> use CP to change the priority list and use only fast"$terpri()$
+  write"    and safe steps and use 38 as last step."$terpri()$
+  write"--> Example: cp   1,2,3,4,20,7,24,27,38;"$terpri()$terpri()$
+ >>$
 
- bak:=backup_pdes(car arglist,cadr arglist)$
- collect_sol:=t$ % is backed up
+ return {newpdes,sub_afterwards}
+end$ % of sub_problem_input
+
+symbolic procedure sub_problem(arglist)$
+if !*batch_mode then nil else 
+begin scalar s,h,fl,nonfl,newpdes,sol,pdes,forg,f,sub_afterwards, %bak,
+      session_bak,level_bak,lazy_eval_bak,so,solutionlist,singlesol,
+      keep_case_tree_bak,solno$ %,verb$
+
+% verb:=t;
+
+ h:=sub_problem_input(car arglist)$
+ newpdes:=car h$
+ if null newpdes then return nil$
+ sub_afterwards:=cadr h$
+
+ % Below we use backup_to_file(pdes,forg,nil) instead of backup_pdes because we want to 
+ % keep the pass_back values, like history_ after the solution of the subsystem to be 
+ % able to repeat an interactive solution of the subsystem
+
+ backup_to_file(car arglist,cadr arglist,nil)$
+ collect_sol:=t$ % because we need the solutions below and want to
+                 % avoid their cumbersome collection from files
  session_bak:=session_$
  session_:=nil$  % to prevent interference with solutions and the casetree
  level_bak:=level_$
  lazy_eval_bak:=lazy_eval; lazy_eval:=nil;
+ keep_case_tree_bak:=keep_case_tree$ keep_case_tree:=nil$
 
- % After solving the subsystem, the modified inequalities are currently (May 2012)
- % discarted, and currently only linear subsystems are solved so to speed up
- % the solution of the subsystem, ineq_ and ineq_or are set to nil.
- ineq_:=ineq_or:=nil$
-
- % reduce ftem_ to only the unknowns that appear
- h:=nil;
- for each s in newpdes do h:=union(h,get(s,'fcts))$
- ftem_:=sort_according_to(h,ftem_)$
+ % determine all functions occuring in the subsystem
+ for each s in newpdes do fl:=union(fl,get(s,'fcts))$
  fl:=sort_according_to(fl,ftem_)$
- lin_problem:=t$
- flin_:=nil$ 
- fhom_:=nil$
+
+ % To speed up computation only ineq_, ineq_or are used that only contain the
+ % functions that occur.
+ nonfl:=setdiff(ftem_,fl)$
+ if nonfl then <<
+  h:=nil; for each s in ineq_   do if freeof(s,nonfl) then h:=cons(s,h); ineq_  :=h;
+  h:=nil; for each s in ineq_or do if freeof(s,nonfl) then h:=cons(s,h); ineq_or:=h;
+ >>$
+
+ ftem_:=fl$  % reduce ftem_ to only the unknowns that appear
+ % check whether the problem is now linear and if so 
+% lin_problem:=t$   %@@@@@@ needs to be re-determined
+% flin_:=nil$       %@@@@@@ needs to be re-determined
+% fhom_:=nil$       %@@@@@@ needs to be re-determined
 
  sol:=crackmain(newpdes,fl)$
- % Returned inequalities are currently not taken care of!
- newfdep:=nil$
- batchcount_:=sub1 stepcounter_$
 
- for each s in sol do
- if pairp s then <<
-  for each f in caddr s do 
-  if h:=assoc(f,depl!*) then newfdep:=cons(h,newfdep);
- >>;
+ % delete all non-solutions
+ h:=nil; for each so in sol do if pairp so then h:=cons(so,h); sol:=h;
+
+ if print_ then <<
+  terpri()$
+  write"----------------------"$ terpri()$
+  write"The solution of the sub-system is completed."$ terpri()$
+  write"The subsystem has "$
+  if null sol then write"no solution." else
+  if cdr sol then write length sol," solutions." 
+             else write "1 solution."$ terpri()$
+  write"----------------------"$ terpri()$
+ >>$
+
+ % Returned inequalities are currently not taken care of!
+ batchcount_:=sub1 stepcounter_$ % not to inherit any batch_mode steps
  session_:=session_bak$
  level_:=level_bak$
  lazy_eval:=lazy_eval_bak;
 
- % newfdep are additional dependencies of the new functions in l1
- pdes:=car restore_pdes(bak)$   % to restore all global variables and pdes
- depl!*:=append(depl!*,newfdep);
- ftem_:=union(ftem_,caddar sol)$
- % Test for contradiction or more than one solution
- % to be investigated further
- for each s in caar  sol do 
- pdes:=eqinsert(mkeqsq(s,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes),
-                pdes)$
- for each s in cadar sol do 
- if pairp s and (car s='equal) then <<
-  h:=mkeqsq(subtrsq(caddr s,simp cadr s),nil,nil,
-            ftem_,vl_,allflags_,t,list(0),nil,pdes);
-  pdes:=eqinsert(h,pdes)$
-  if sub_afterwards then  
-  to_do_list:=cons(list('subst_level_35,%pdes,cadr arglist,caddr arglist,
-                        list h),
-                   to_do_list)
- >>$
- ftem_:=union(ftem_,caddar sol)$
+ if null sol then return <<keep_case_tree:=keep_case_tree_bak;contradiction_:=t;nil>> 
+             else singlesol:=null cdr sol;
 
- return {pdes,cadr arglist}
+ solno:=0$
+ for each so in sol do <<
+  h:=restore_and_merge({so},pdes,forg)$ % {so} as first argument because variable dependencies 
+                                        % of new functions of only so to be added
+  pdes:=car h$ forg:=cadr h$ h:=nil$
+  keep_case_tree:=nil$
+
+  % if solutions are not used for substitutions then the used equations are
+  % replaced by the new ones
+  if null sub_afterwards then
+  for each h in newpdes do pdes:=drop_pde(h,pdes,nil)$
+
+  % adding the new functions to ftem_
+  for each f in caddr so do <<
+   ftem_:=fctinsert(f,ftem_)$
+%   flin_:=union({f},flin_)  %@@@@@@@ not clear whether f occurs only linearly
+  >>$
+%  flin_:=sort_according_to(flin_,ftem_); %@@@@@@@ not clear whether f occurs only linearly
+
+  % adding unsolved equations from run of subsystem
+  for each s in car so do 
+  if null contradiction_ then
+  pdes:=eqinsert(mkeqSQ(s,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes),
+                 pdes)$
+
+  % adding new inequalities because otherwise some substitutions generated 
+  % by the new forg may generate case distinctions and would therefore not 
+  % be done if sub_afterwards=t
+  % currently ineq_ and ineq_or are the old values from before the sub-problem run
+  % and cadddr so, car cadddr so are the values from the sub-problem run
+  ineq_  :=union(    cadddr so,ineq_  )$
+  ineq_or:=union(car cddddr so,ineq_or)$
+
+  % adding computed assignments to old equations
+  for each s in cadr so do  % s is a computed value in the form (equal f ...)
+  if null contradiction_ then
+  if pairp s and (car s='equal) then <<
+   h:=mkeqSQ(subtrsq(caddr s,simp cadr s),nil,nil,
+             ftem_,vl_,allflags_,t,list(0),nil,pdes);
+   pdes:=eqinsert(h,pdes)$
+
+   % Now add computed assignments as substitutions to to_do_list.
+   % This is strictly speaking not necessary if the solution has
+   % been added as an equation, although new inequalities have not been
+   % utilized and therefore no case generating substitutions may
+   % become case generating substitutions and take effort.
+
+   if sub_afterwards then <<
+    to_do_list:=cons(list('subst_level_35,list h,cadr s),to_do_list);
+    if not freeoflist(denr caddr s,ftem_) then
+    ineq_:=union({(denr caddr s . 1)},ineq_ )$
+   >>
+  >>$
+
+  if null singlesol then % else contradiction_ is returned unchanged
+  if contradiction_ then contradiction_:=nil % case will not be investigated
+                    else <<
+   solno:=solno+1$
+
+   if print_ then <<
+    terpri()$
+    write"----------------------"$ terpri()$
+    write"The ",solno,". solution of the sub-system has been substituted into ",
+         "the original system and is to be investigated further in the ",
+         "following sub-case computation."$ terpri()$
+    write"----------------------"$ terpri()$
+   >>$
+   start_level(solno,nil)$
+
+   h:=crackmain_if_possible_remote(pdes,cadr arglist)$
+
+   if contradiction_ then contradiction_:=nil % case will not be returned
+                     else solutionlist:=merge_crack_returns(h,solutionlist)
+  >>
+ >>$
+
+ keep_case_tree:=keep_case_tree_bak;
+ return if singlesol then {pdes,cadr arglist}
+                     else list solutionlist
+
 end$
 
 

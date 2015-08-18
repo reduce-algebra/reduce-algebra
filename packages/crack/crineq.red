@@ -28,7 +28,7 @@ module inequalities$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
-symbolic procedure simplifysq(p,ftem,fctr,en,sepa)$ 
+symbolic procedure simplifySQ(p,ftem,fctr,en,sepa)$ 
 %
 % - p is a standard quotient which is simplified so that the 
 %   new expression=0 iff p=0, so p can be an equation or an inequality.
@@ -55,11 +55,11 @@ begin scalar enhi,si,sf,s,print_bak;
                    else list simp p else
  if denr p neq 1 then <<              % drop non-zero denominator
   if enhi then put(en,'histry_,{'times,enhi,prepf denr p});
-  simplifysq((numr p . 1),ftem,fctr,en,sepa) 
+  simplifySQ((numr p . 1),ftem,fctr,en,sepa) 
  >>              else 
  if minusf numr p then <<             % drop leading minus
   if enhi then put(en,'histry_,{'minus,enhi});
-  simplifysq(negsq p,ftem,fctr,en,sepa)
+  simplifySQ(negsq p,ftem,fctr,en,sepa)
  >>               else
  if freeoflist(p,ftem) or 
     member(p,ineq_) then list simp 1  % contradiction if p is an equation
@@ -69,7 +69,7 @@ begin scalar enhi,si,sf,s,print_bak;
 
   if 1 neq ldeg numr p then <<    % leading degree (integer>0) neq 1
    if enhi then put(en,'histry_,{'expt,enhi,{'quotient,1,ldeg numr p}});
-   simplifysq(mksq(mvar numr p,1),ftem,fctr,en,sepa)
+   simplifySQ(mksq(mvar numr p,1),ftem,fctr,en,sepa)
   >>		       else 
   if not pairp mvar numr p then list p % p = an element of ftem as SQ 
                            else        % i.e. no value change
@@ -77,7 +77,7 @@ begin scalar enhi,si,sf,s,print_bak;
   if car mvar numr p = 'expt then
   if freeoflist(caddr mvar numr p,ftem) then <<  % drop constant exponents
    if enhi then put(en,'histry_,{'expt,enhi,{'quotient,1,caddr mvar numr p}});
-   simplifysq(simp cadr mvar numr p,ftem,fctr,en,sepa) 
+   simplifySQ(simp cadr mvar numr p,ftem,fctr,en,sepa) 
   >>                                    else     % drop term is base is const
   if freeoflist(cadr mvar numr p,ftem) then list simp 1
                                        else list p
@@ -85,11 +85,11 @@ begin scalar enhi,si,sf,s,print_bak;
   if (car mvar numr p = 'log) or 
      (car mvar numr p = 'ln)    then <<
    if enhi then put(en,'histry_,reval {'plus,{'expt,'e,enhi},-1});
-   simplifysq(simp {'difference,cadr mvar numr p,1},ftem,fctr,en,sepa) 
+   simplifySQ(simp {'difference,cadr mvar numr p,1},ftem,fctr,en,sepa) 
   >>                            else 
   if (car mvar numr p = 'log10) then <<
    if enhi then put(en,'histry_,reval {'plus,{'expt,10,enhi},-1});   
-   simplifysq(simp {'difference,cadr mvar numr p,1},ftem,fctr,en,sepa) 
+   simplifySQ(simp {'difference,cadr mvar numr p,1},ftem,fctr,en,sepa) 
   >>                            else list p % unknown, like sin(f)
 
                     else <<
@@ -116,7 +116,7 @@ begin scalar enhi,si,sf,s,print_bak;
      sf:=numr sf$
      for n:=1:(caddar s) do si:=cons(sf,si);  
      % We consider all factors, even numbers. 
-     % works if cadar s={'!*SQ,..} or =integer
+     % works if cadar s={'!*sq,..} or =integer
      s:=cdr s
     >>
    >>;
@@ -128,7 +128,7 @@ begin scalar enhi,si,sf,s,print_bak;
      % We want to simplify car si but not to factorize it again, and the 
      % update of history is to be done in this routine, not the subcall.
      % so we call simplifySQ(..,nil,nil,sepa).
-     s:=simplifysq((car si . 1),ftem,nil,nil,sepa); % s is a list with 1 element
+     s:=simplifySQ((car si . 1),ftem,nil,nil,sepa); % s is a list with 1 element
                                                    % as called with fctr=nil
      if car s = (1 . 1) then 
      if enhi then put(en,'histry_,{'quotient,get(en,'histry_),prepf car si}) else
@@ -163,7 +163,7 @@ begin scalar enhi,si,sf,s,print_bak;
    si:=separ(reval {'!*sq,car sf,nil},ftem,vl_,nil,nil);% nonrat=nil, ie. no cases
    if cdr si then                              % otherwise no splitting occured
    while si do % si is a list of pairs (explicit_x_dep_factor . x_indep_factor)
-   if {(1 . 1)}=simplifysq(simp cdar si,ftem,t,nil,nil) then 
+   if {(1 . 1)}=simplifySQ(simp cdar si,ftem,t,nil,nil) then 
    <<si:=nil; sf:={(1 . 1)}>>                           else si:=cdr si;
    print_:=print_bak
   >>;
@@ -174,7 +174,7 @@ end$
 
 %------------------------------- 
 
-symbolic procedure simplifypdesq(p,ftem,fctr,en,sepa)$ 
+symbolic procedure simplifypdeSQ(p,ftem,fctr,en,sepa)$ 
 % expects p to represent an equation p=0, p is in standard quotient form,
 % returns r with: 
 %     car r = the simplified expression in standard quotient form
@@ -185,7 +185,7 @@ symbolic procedure simplifypdesq(p,ftem,fctr,en,sepa)$
 % and assigns contradiction_:=t if p is known to be non-zero.
 % This is done by multiplying the factors returned by simplifySQ.
 begin scalar l$
- l:=simplifysq(subs2 p,ftem,fctr,en,sepa)$
+ l:=simplifySQ(subs2 p,ftem,fctr,en,sepa)$
  return
  if l={(1 . 1)} then <<contradiction_:=t; (car l . 1)>>
                      % raise_contradiction({'!*sq,p,t},nil)$ % with print
@@ -200,8 +200,8 @@ end$
 
 %-------------------------------
 
-symbolic procedure can_not_become_zerosq(p,ftem)$ 
-if simplifysq(p,ftem,t,nil,t)={(1 . 1)} then t
+symbolic procedure can_not_become_zeroSQ(p,ftem)$ 
+if simplifySQ(p,ftem,t,nil,t)={(1 . 1)} then t
                                         else nil$
 
 %-------------------------------
@@ -225,7 +225,7 @@ end$
 
 %-------------------------------
 
-symbolic procedure simpsqineq_or_adhoc(pdes)$  
+symbolic procedure simpSQineq_or_adhoc(pdes)$  
 % ineq_or is a list of lists of expressions, not factorized yet
 % they will be factorized and non-zero factors dropped,...
 
@@ -247,7 +247,7 @@ begin scalar l1,l1cp,l2,l2cp,l3,icp,keep_l1,new_scalar_ineq,is_zero;
    l2cp:=nil; % l2cp becomes a list of factors of l2
    is_zero:=nil;
    for each l3 in l2 do <<
-    l3:=simplifysq(l3,ftem_,t,nil,t);
+    l3:=simplifySQ(l3,ftem_,t,nil,t);
     if l3 = {(nil . 1)} then is_zero:=t$             % l3 = 0
     if l3 neq {(1 . 1)} then l2cp:=union(l3,l2cp)    % l3 = 1
    >>$
@@ -276,14 +276,14 @@ begin scalar l1,l1cp,l2,l2cp,l3,icp,keep_l1,new_scalar_ineq,is_zero;
  >>;
  if null contradiction_ then 
  for each l2 in new_scalar_ineq do % pdes:= %<=<=<=<=
- addsqineq(pdes,l2,nil)  
+ addSQineq(pdes,l2,nil)  
 
  % return pdes  %<=<=<=<=
 end$
 
 %-------------------------------
 
-symbolic procedure simpsqineq_or(pdes,newin)$  
+symbolic procedure simpSQineq_or(pdes,newin)$  
 % newin is a new (scalar) already simplified inequality which is used
 % to simplify ineq_or, simply by checking whether factors can be dropped
 % in factor lists of expression lists in each single or-inequality
@@ -330,7 +330,7 @@ begin scalar l1,l1cp,l2,l2cp,l3,icp,keep_l1,new_scalar_ineq;
                  else ineq_or:=cons(l1,ineq_or)
  >>;
  for each l2 in new_scalar_ineq do % pdes:=  %<=<=<=<=
- addsqineq(pdes,l2,nil);  
+ addSQineq(pdes,l2,nil);  
 
  % return pdes  %<=<=<=<=
 end$
@@ -338,7 +338,7 @@ end$
 %-------------------------------
 
 symbolic procedure all_sub_derivatives(a)$
-% a has the form {'DF,f,x,...}
+% a has the form {'df,f,x,...}
 % returns a (lisp) list of all derivatives of f of lower order including f
 if null cddr a then list cadr a else 
 begin
@@ -373,7 +373,7 @@ begin scalar h,p$
   put(p,'case2sep,nil);
   h:=stardep3(get(p,'vars),get(p,'kern),get(p,'derivs))$
   if h then <<
-   put(p,'starde,({car h} . 0))$
+   put(p,'starde,{(0 . car h)})$
    flag1(p,'to_sep)
   >>
  >>
@@ -381,17 +381,28 @@ end$
 
 %-------------------------------
 
-symbolic procedure addsqineq(pdes,newineq,simpli)$
+symbolic procedure addSQineq(pdes,newineq,simpli)$
 begin scalar h1,h2,h3,p,q$
  % - adds newineq as new inequality and simplifies it iff simpli=t
  % - it can be assumed that none of the expressions of ineq_ factorize
  %   as they have already been factorized
  % - may change contradiction_
- if simpli then h1:=simplifysq(newineq,ftem_,t,nil,t) % h1 is a list of factors
+
+ % If an indirectly separabe equation is non-linear and not all required 
+ % inequalities are available then module 26 will recommend module 84 and 
+ % module 84 will start a case distinction. For module 26 then being applicable,
+ % the flag to_gensep must be set. This flag is set in the following lines
+ % whenever a new inequality is known.
+ if null lin_problem then
+ for each h2 in pdes do
+ if null get(h2,'linear_) and 
+    null flagp(h2,'to_gensep) and 
+    get(h2,'starde) then flag1(h2,'to_gensep)$
+
+ if simpli then h1:=simplifySQ(newineq,ftem_,t,nil,t) % h1 is a list of factors
            else h1:=list newineq$
  % trivial cases:
  if null cdr h1 then % just one factor
- if car h1=(1 . 1) then return nil else
  if sqzerop car h1 then return <<
   if print_ then <<
    write"Added inequality is actually zero --> contradiction"$
@@ -399,14 +410,16 @@ begin scalar h1,h2,h3,p,q$
   >>$
   contradiction_:=t;
   nil
- >>$
+ >>                else
+ if domainp car h1 then return nil$
+
  
  % If a high order derivative is non-zero then all corresponding lower order
  % derivatives must be non-zero and are added to h1.
  h3:=nil;
  if vl_ then
  for each h2 in h1 do 
- if (one_termpsf numr h2) and (lc numr h2 = 1) then <<
+ if (one_termpSF numr h2) and (pairp numr h2) and (lc numr h2 = 1) then <<
   checkcase2sep(pdes,h2)$
   if pairp mvar numr h2 and
      car mvar numr h2='df then h3:=union(cdr all_sub_derivatives mvar numr h2,h3)$
@@ -426,17 +439,17 @@ begin scalar h1,h2,h3,p,q$
   terpri()$ % was commended out but is needed, e.g. after: new constant: ...
   write"The list of inequalities got extended by: "$ 
   for each h2 in h3 do
-  if delengthsq h2 > print_ then <<terpri()$
+  if delengthSQ h2 > print_ then <<terpri()$
    write "An expression with ",no_of_terms h2," terms"$ terpri()
   >>                        else mathprint {'!*sq,h2,t}
  >>$
 
  if pdes then for each h2 in h3 do % pdes:=  %<=<=<=<=
- updatesqfcteval(pdes,h2); 
+ updateSQfcteval(pdes,h2); 
 
  if pdes and null lin_problem then
  for each h2 in h3 do
- if no_number_atom_sq h2 and member((h1:=mvar numr h2),ftem_) then <<
+ if no_number_atom_SQ h2 and member((h1:=mvar numr h2),ftem_) then <<
 
   % h3 is the list of all new non-zero expressions
   % if any one of these expressions is an element of ftem_ then it
@@ -472,8 +485,8 @@ begin scalar h1,h2,h3,p,q$
    if (length q=2) and (fixp get(p,'fac)) and  
       (length get(p,'fcts)=2) and  % <-- in case fhom_ neq ftem_
       (car get(p,'hom_deg)=0) then 
-   if h1=car q then addsqineq(pdes,simp cadr q,nil) else % h1=cadr q (see above test)
-                    addsqineq(pdes,simp car  q,nil)
+   if h1=car q then addSQineq(pdes,simp cadr q,nil) else % h1=cadr q (see above test)
+                    addSQineq(pdes,simp car  q,nil)
   >>
 
  >>$
@@ -483,11 +496,11 @@ begin scalar h1,h2,h3,p,q$
  % If one term of the equation is non-zero then the sum of the 
  % remaining terms has to be non-zero too
  if h3 and pdes then for each h2 in pdes do 
- if get(h2,'terms)=2 then new_ineq_from_equ_sq(h2,pdes)$ 
+ if get(h2,'terms)=2 then new_ineq_from_equ_SQ(h2,pdes)$ 
 
  % Update ineq_or
  if ineq_or then
- for each h2 in h3 do simpsqineq_or(pdes,h2)
+ for each h2 in h3 do simpSQineq_or(pdes,h2)
 
  % return pdes %<=<=<=<=
 end$
@@ -501,7 +514,7 @@ symbolic procedure simp_ineq_with_pdes(a1,avoid,pdes)$
 if a1 then
 if sqzerop car a1 then list car a1  % full contradiction, checked outside
                   else 
-begin scalar a,a2,occur,p,k,fns,KernelList,akernels,ftem_cp,ok,ak$
+begin scalar a,a2,occur,p,k,fns,kernellist,akernels,ftem_cp,ok,ak$
 
  % so far only limited further reduction:
  for each a in a1 do 
@@ -543,7 +556,7 @@ begin scalar a,a2,occur,p,k,fns,KernelList,akernels,ftem_cp,ok,ak$
    if not alg_poly then <<
     fns:=get(p,'fcts);
     for each k in get(p,'kern) do 
-    if not freeoflist(k,fns) then KernelList:=union({k},KernelList)
+    if not freeoflist(k,fns) then kernellist:=union({k},kernellist)
    >>$
    occur:=cons({'!*sq,get(p,'sqval),t},occur)$
   >>$
@@ -551,14 +564,14 @@ begin scalar a,a2,occur,p,k,fns,KernelList,akernels,ftem_cp,ok,ak$
    if alg_poly then algebraic torder(lisp(cons('list,ftem_)),lex)
                else <<
     for each k in akernels do
-    if not freeoflist(k,ftem_) then KernelList:=union({k},KernelList)$
-    algebraic(torder(lisp cons('list,KernelList),lex))$
+    if not freeoflist(k,ftem_) then kernellist:=union({k},kernellist)$
+    algebraic(torder(lisp cons('list,kernellist),lex))$
    >>$
    p:=err_catch_preduce({'!*sq,a,nil},cons('list,occur))$
-   a2:=if p then append(simplifysq(simp p,ftem_,t,nil,t),a2)
+   a2:=if p then append(simplifySQ(simp p,ftem_,t,nil,t),a2)
             else cons(a,a2)
-%   a2:=append(simplifySQ(simp algebraic (preduce(lisp {'!*SQ,a,nil},
-%                                                 lisp cons('LIST,occur))),
+%   a2:=append(simplifySQ(simp algebraic (preduce(lisp {'!*sq,a,nil},
+%                                                 lisp cons('list,occur))),
 %                         ftem_,t,nil,t),a2)
   >>       else a2:=cons(a,a2)
  >>$
@@ -567,7 +580,7 @@ end$
 
 %-------------------------------
 
-symbolic procedure simp_ineq_with_equ_sq(l,eqn,pdes)$
+symbolic procedure simp_ineq_with_equ_SQ(l,eqn,pdes)$
 % l is a list of expressions, each of which must not vanish
 % eqn is a new equation that should be used to simplify each element of l
 % This procedure returns a pair (kept . newin) where kept is a list of 
@@ -584,12 +597,12 @@ symbolic procedure simp_ineq_with_equ_sq(l,eqn,pdes)$
 % If eqn consists of nothing but a function=0 then do this substitution   
 % in all inequalities:                                                    
 if (get(eqn,'terms)=1) and                                                
-   no_number_atom_sf numr get(eqn,'sqval) then                            
-   simp_ineq_with_subst_sq(l,0,mvar numr get(eqn,'sqval),pdes)      
+   no_number_atom_SF numr get(eqn,'sqval) then                            
+   simp_ineq_with_subst_SQ(l,0,mvar numr get(eqn,'sqval),pdes)      
                                           else                            
 
 %if (get(eqn,'terms) > max_term_to_pred) or
-%    not freeof(get(eqn,'kern),'EXPT) % to avoid: ***** p invalid as distributive 
+%    not freeof(get(eqn,'kern),'expt) % to avoid: ***** p invalid as distributive 
 %                                     % polynomial exponent (in preduce)
 %then (l . nil)      % already tested in simp_all_ineq_with_equ_SQ
 %else 
@@ -600,7 +613,7 @@ begin scalar f,a,a1,a2,kept,newin$
  while l do <<
 
   if freeof(car l, f) or 
-     (one_termpsf numr car l and
+     (one_termpSF numr car l and
       (2<get(eqn,'terms))        ) or  
      (more_than_x_terms(numr car l,max_term_to_pred) = nil)
   then kept:=cons(car l,kept)
@@ -610,11 +623,11 @@ begin scalar f,a,a1,a2,kept,newin$
    % the leading term of the equation does appear in the inequality
 
    a1:=err_catch_preduce({'!*sq,car l,t},{'list,{'!*sq,get(eqn,'sqval),t}})$
-   a1:=simplifysq(if a1 then simp a1
+   a1:=simplifySQ(if a1 then simp a1
                         else car l,ftem_,t,nil,t)$
 %   a1:=simplifySQ(simp algebraic   % simp needed to convert prefix into sq-form
-%      preduce(lisp        {'!*SQ,car l,          t},
-%              lisp {'LIST,{'!*SQ,get(eqn,'sqval),t}}),ftem_,t,nil,t)$
+%      preduce(lisp        {'!*sq,car l,          t},
+%              lisp {'list,{'!*sq,get(eqn,'sqval),t}}),ftem_,t,nil,t)$
 
    % `a1' is a list of possibly more than one inequality
 
@@ -648,7 +661,7 @@ end$
 
 %-------------------------------
 
-symbolic procedure simp_all_ineq_with_equ_sq(eqn,pdes)$
+symbolic procedure simp_all_ineq_with_equ_SQ(eqn,pdes)$
 % Use a new equation eqn to reduce all inequalities.
 % This procedure is very similar to ineqsubst.
 % This procedure can give contradiction_:=t which has to be tested afterwards
@@ -674,12 +687,12 @@ begin scalar l,l1,l2,a,newor$
  % at first normal inequalities
  l1:=ineq_;ineq_:=nil; % inequ_ is set temporarily to nil so that inequalities
  % are not simplified to 1 in simplifySQ() in the following simp_ineq_with_subst_SQ()
- l:=simp_ineq_with_equ_sq(l1,eqn,pdes)$
+ l:=simp_ineq_with_equ_SQ(l1,eqn,pdes)$
  if cdr l = {(0 . 1)} then <<ineq_:=l1;contradiction_:=t>> % complete stop of procedure
                       else <<
   ineq_:=car l;
   for each a in cdr l do % pdes:= %<=<=<=<=
-  addsqineq(pdes,a,nil)$  
+  addSQineq(pdes,a,nil)$  
 
   % now OR-inequalities
   l:=ineq_or; ineq_or:=nil;
@@ -689,7 +702,7 @@ begin scalar l,l1,l2,a,newor$
    while l1 do << % all elements of the single or-inequality
     l2:=car l1;   % l2 is a list of factors which all must be non-zero.
     l1:=cdr l1;   
-    l2:=simp_ineq_with_equ_sq(l2,eqn,pdes)$  % Returns: 
+    l2:=simp_ineq_with_equ_SQ(l2,eqn,pdes)$  % Returns: 
 				  % - if contradiction:       (nil . {(0 . 1)})
 				  % - if simplification to 1: (nil .    nil   )
 				  % - else                    (kept . newin)
@@ -719,7 +732,7 @@ begin scalar l,l1,l2,a,newor$
      terpri()$write"following factors must not vanish: "$
      mathprint cons('list,for each l2 in car newor collect {'!*sq,l2,t})$
     >>$
-    for each l2 in car newor do addsqineq(pdes,l2,nil) 
+    for each l2 in car newor do addSQineq(pdes,l2,nil) 
    >>                         else % or-inequality is satisfied
                      else ineq_or:=cons(newor,ineq_or);
    l:=cdr l
@@ -729,7 +742,7 @@ end$
 
 %-------------------------------
 
-symbolic procedure new_ineq_from_equ_sq(equ,pdes)$
+symbolic procedure new_ineq_from_equ_SQ(equ,pdes)$
 % currently only effective for equations with 2 terms
 % If one term of the equation is non-zero then the sum of the 
 % remaining terms has to be non-zero too
@@ -739,42 +752,42 @@ if pdes and
 if get(equ,'terms)=2 then    % if there are two terms
 begin scalar sf,t1,t2;
  sf:=numr get(equ,'sqval)$
- t1:=first_term_sf sf$
- t2:=if red sf then first_term_sf red sf
-               else first_term_sf addf(sf,negf t1)$
+ t1:=first_term_SF sf$
+ t2:=if red sf then first_term_SF red sf
+               else first_term_SF addf(sf,negf t1)$
 
- t1:=simplifysq((t1 . 1),get(equ,'fcts),t,nil,nil); 
- t2:=simplifysq((t2 . 1),get(equ,'fcts),t,nil,nil);
+ t1:=simplifySQ((t1 . 1),get(equ,'fcts),t,nil,nil); 
+ t2:=simplifySQ((t2 . 1),get(equ,'fcts),t,nil,nil);
  % Last argument is nil as no separability of a single term.
 
  if t1  =  {(1 . 1)} then 
- if t2 neq {(1 . 1)} then for each h in t2 do addsqineq(pdes,h,nil) else
+ if t2 neq {(1 . 1)} then for each h in t2 do addSQineq(pdes,h,nil) else
                      else 
- if t2  =  {(1 . 1)} then for each h in t1 do addsqineq(pdes,h,nil)
+ if t2  =  {(1 . 1)} then for each h in t1 do addSQineq(pdes,h,nil)
 end                  else
 if null get(equ,'fct_hom) and  % only if no homogeneous unknowns occur
    (get(equ,'nvars)=0) then    % only for algebraic problems (not necessary)
 begin scalar sf,t1,t2,h;
  sf:=numr get(equ,'sqval)$
- t1:=num_term_sf sf$
+ t1:=num_term_SF sf$
  if t1 then <<
   t2:=addf(sf,negf t1);
-  t2:=simplifysq((t2 . 1),get(equ,'fcts),t,nil,nil);
+  t2:=simplifySQ((t2 . 1),get(equ,'fcts),t,nil,nil);
   if % t2 neq {(1 . 1)} and
      cdr t2                    % i.e. more than one factor
   then for each h in t2 do 
-  if no_of_tm_sf h < 5 then addsqineq(pdes,h,nil)
+  if no_of_tm_sf h < 5 then addSQineq(pdes,h,nil)
  >>
 end$
 
 %-------------------------------
 
-symbolic procedure simp_ineq_with_subst_sq(l,new,old,pdes)$
+symbolic procedure simp_ineq_with_subst_SQ(l,new,old,pdes)$
 % - l is a list of expressions, each of which must not vanish
 %   In calls is either l=ineq_ or l is one non-vanishing list which is
 %   element on one or-inequality which is one element of ineq_or
 % - old must be a kernel
-% - new is either in prefix form or prefixed SQ: {'!*SQ, .. ,t}
+% - new is either in prefix form or prefixed SQ: {'!*sq, .. ,t}
 % - new --> old is a substitution to be done in l
 % This procedure returns a pair (kept . newin) where kept is a list of 
 % remaining unchanged inequalities and newin is the list of new inequalities.
@@ -792,9 +805,9 @@ begin scalar a,a1,a2,kept,newin$
  while l do <<
   if freeof(car l, old) then kept:=cons(car l,kept)
                         else <<
-   a1:=simplifysq(subsq(car l,{(old . new)}),ftem_,t,nil,t)$
-   % a1:=simplifySQ(simp!* {'!*SQ,subsq(car l,{(old . new)}),nil},ftem_,t,nil,t)$  
-   % - simp!* {'!*SQ,..,nil} to simplify poly using identities, like i^2 -> -1
+   a1:=simplifySQ(subsq(car l,{(old . new)}),ftem_,t,nil,t)$
+   % a1:=simplifySQ(simp!* {'!*sq,subsq(car l,{(old . new)}),nil},ftem_,t,nil,t)$  
+   % - simp!* {'!*sq,..,nil} to simplify poly using identities, like i^2 -> -1
    % - `a1' is a list of possibly more than one inequality
    if cdr a1 or (car a1 neq (1 . 1)) then << % something new resulted
                                    % else car l = 1 mod ineq_ + eqn
@@ -825,10 +838,10 @@ end$
 
 %-------------------------------
 
-symbolic procedure simp_all_ineq_with_subst_sq(new,old,pdes)$
+symbolic procedure simp_all_ineq_with_subst_SQ(new,old,pdes)$
 % - substitutes old by new in ineq_ and ineq_or
 % - old must be a kernel
-% - new is either in prefix form or prefixed SQ: {'!*SQ, .. ,t}
+% - new is either in prefix form or prefixed SQ: {'!*sq, .. ,t}
 % - new --> old is a substitution to be done in l
 %
 
@@ -841,11 +854,11 @@ begin scalar l,l1,l2,l3,a,newor$
  % at first normal inequalities
  l1:=ineq_;ineq_:=nil; % inequ_ is set temporarily to nil so that inequalities
  % are not simplified to 1 in simplifySQ() in the following simp_ineq_with_subst_SQ()
- l:=simp_ineq_with_subst_sq(l1,new,old,pdes)$
+ l:=simp_ineq_with_subst_SQ(l1,new,old,pdes)$
  if cdr l = {(0 . 1)} then <<ineq_:=l1;contradiction_:=t>> % complete stop of procedure
                       else <<
   ineq_:=car l; 
-  for each a in cdr l do addsqineq(pdes,a,nil)$
+  for each a in cdr l do addSQineq(pdes,a,nil)$
 
   % now OR-inequalities
   l:=ineq_or; ineq_or:=nil;
@@ -861,7 +874,7 @@ begin scalar l,l1,l2,l3,a,newor$
     while l1 do << % all elements of the single or-inequality
      l2:=car l1;   % l2 is a list of factors which all must be non-zero.
      l1:=cdr l1;   
-     l2:=simp_ineq_with_subst_sq(l2,new,old,pdes)$ % Returns: 
+     l2:=simp_ineq_with_subst_SQ(l2,new,old,pdes)$ % Returns: 
 	 		   % - if contradiction:       (nil . {(0 . 1)})
 			   % - if simplification to 1: (nil .    nil   )
 			   % - else                    (kept . newin)
@@ -893,7 +906,7 @@ begin scalar l,l1,l2,l3,a,newor$
      terpri()$write"following factors must not vanish: "$
      mathprint cons('list,for each l2 in car newor collect {'!*sq,l2,t})$
     >>$
-    for each l2 in car newor do addsqineq(pdes,l2,nil) 
+    for each l2 in car newor do addSQineq(pdes,l2,nil) 
    >>                         else % or-inequality is satisfied
                      else ineq_or:=cons(newor,ineq_or);
    l:=cdr l
@@ -914,11 +927,11 @@ begin scalar ex$
  terpri()$
  ex:=simp termxread()$
  for each a in pdes do ex:=subsq(ex,{(a . {'!*sq,get(a,'sqval),t})})$
- % for each a in pdes do ex:=simp!* {'!*SQ,subsq(ex,{(a . {'!*sq,get(a,'sqval),t})}),nil}$
- % - simp!* {'!*SQ,..,nil} to simplify poly using identities, like i^2 -> -1
+ % for each a in pdes do ex:=simp!* {'!*sq,subsq(ex,{(a . {'!*sq,get(a,'sqval),t})}),nil}$
+ % - simp!* {'!*sq,..,nil} to simplify poly using identities, like i^2 -> -1
  terpri()$
  restore_interactive_prompt()$ 
- addsqineq(pdes,ex,t)
+ addSQineq(pdes,ex,t)
 end$
 
 %-------------------------------
@@ -1042,64 +1055,64 @@ endmodule$
 
 end$
 
-can_not_become_zerosq
-  simplifysq
+can_not_become_zeroSQ
+  simplifySQ
 
-simplifypdesq
-  simplifysq
+simplifypdeSQ
+  simplifySQ
 
-simplifysq
+simplifySQ
   separ
   err_catch_fac2
   sffac
 
 simp_ineq_with_pdes
-  simplifysq
+  simplifySQ
   preduce
 
-simpsqineq_or_adhoc
-  simplifysq
-  addsqineq
+simpSQineq_or_adhoc
+  simplifySQ
+  addSQineq
 
-simpsqineq_or
-  addsqineq
+simpSQineq_or
+  addSQineq
 
-addsqineq
-  simplifysq
-  updatesqfcteval
-  new_ineq_from_equ_sq
-  simpsqineq_or
+addSQineq
+  simplifySQ
+  updateSQfcteval
+  new_ineq_from_equ_SQ
+  simpSQineq_or
 
 simp_ineq_with_pdes
   torder
   preduce
-  simplifysq
+  simplifySQ
 
-simp_ineq_with_equ_sq
-  simplifysq
+simp_ineq_with_equ_SQ
+  simplifySQ
   preduce
   simp_ineq_with_pdes
   
-simp_all_ineq_with_equ_sq
+simp_all_ineq_with_equ_SQ
   torder
-  simp_ineq_with_equ_sq
-  addsqineq
+  simp_ineq_with_equ_SQ
+  addSQineq
   
-new_ineq_from_equ_sq
-  simplifysq
-  addsqineq
+new_ineq_from_equ_SQ
+  simplifySQ
+  addSQineq
 
-simp_ineq_with_subst_sq
-  simplifysq
+simp_ineq_with_subst_SQ
+  simplifySQ
   simp_ineq_with_pdes
   
-simp_all_ineq_with_subst_sq
+simp_all_ineq_with_subst_SQ
   torder
-  simp_ineq_with_subst_sq
-  addsqineq
+  simp_ineq_with_subst_SQ
+  addSQineq
   
 newinequ
-  addsqineq
+  addSQineq
 
 preduce_list
   preduce
@@ -1114,18 +1127,18 @@ tr delete_ineq
 tr check_ineq
 tr preduce_list
 tr newinequ
-tr simp_all_ineq_with_subst_sq
-tr simp_ineq_with_subst_sq
-tr new_ineq_from_equ_sq
-tr simp_all_ineq_with_equ_sq
-tr simp_ineq_with_equ_sq
+tr simp_all_ineq_with_subst_SQ
+tr simp_ineq_with_subst_SQ
+tr new_ineq_from_equ_SQ
+tr simp_all_ineq_with_equ_SQ
+tr simp_ineq_with_equ_SQ
 tr simp_ineq_with_pdes
-tr addsqineq
-tr simpsqineq_or
-tr simpsqineq_or_adhoc
+tr addSQineq
+tr simpSQineq_or
+tr simpSQineq_or_adhoc
 tr simp_ineq_with_pdes
-tr simplifysq
-tr can_not_become_zerosq
+tr simplifySQ
+tr can_not_become_zeroSQ
 tr more_than_x_terms
 tr updatesqfctevalo
 tr give_low_priority

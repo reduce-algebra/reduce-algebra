@@ -29,7 +29,6 @@ load crack,applysym$
 %*******************************************************************%
 
 lisp(depl!*:=nil)$     % clearing of all dependencies
-setcrackflags()$
 lisp(print_:=nil)$   % to avoid printing the process of solving the char. sys.
 lisp(print_more:=t)$ % to print some verbal comments about the solution  
 on dfprint$          % to print derivatives as subscripts

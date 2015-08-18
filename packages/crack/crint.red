@@ -305,7 +305,8 @@ begin
 
     if zerop nmax then intlist:=cons(nil,intlist)
                   else
-    <<if pri then write"anf: intvar=",intvar," vari=",vari,"    q=",q$
+    <<if pri then write"anf: intvar=",intvar," vari=",vari," q=",q,
+                       " v =",v," vl =",vl$
       if vari and (not member(v,vl)) then
       <<%qh :=reval list('INT,qh,v)$
         qh :=err_catch_int(qh,v)$          % changed 23.1.08
@@ -476,7 +477,7 @@ begin
   return h1  % updated listoflds
 end$ % of uplistoflds
 
-symbolic procedure proportionalityconditions(ex,fl,x)$
+symbolic procedure ProportionalityConditions(ex,fl,x)$
 % This procedure collects cases that lead to at least
 % two coefficients of two elements of fl in ex being
 % proportional to each other by an x-independent multiplier.
@@ -495,7 +496,7 @@ begin scalar flo,f1,f2,flc,s1,s2,c1,condi$
 
      % condition for checking a special case:
      c1:=reval {'df,{'quotient,s1,s2},x};
-     c1:=simplifysq(simp c1,ftem_,t,nil,t)$
+     c1:=simplifySQ(simp c1,ftem_,t,nil,t)$
      if (c1 neq {(1 . 1)}) and (not freeoflist(c1,ftem_)) then
      condi:=union(c1,condi)
     >>
@@ -524,9 +525,9 @@ begin scalar v,f,l,vl1,j,ftemcp,fnewcp;
       % constant(function) of integration, the factor will dissappear when
       % a substitution will be made. This may be dangerous because it
       % may hide the case when the factor becomes zero (although no division
-      % may be performed through a factor which might become zero). But
-      % even when no division is performed then the constant of integration
-      % may dissappear when this factor becomes zero and thus solutions be lost.
+      % may be performed through a factor which might become zero). But even
+      % when no division is performed then the constant of integration may
+      % dissappear when this factor becomes zero and thus solutions be lost.
       % Therefore:
       if not freeoflist(l,ftem) then l:=1
     >>   else l:=1
@@ -551,7 +552,7 @@ begin scalar v,f,l,vl1,j,ftemcp,fnewcp;
       % singularity check:
       j:=zero_den(q,ftemcp); 
       % proportionality check:
-      if null j then j:=proportionalityconditions(q,setdiff(fnew_,fnewcp),v)$
+      if null j then j:=ProportionalityConditions(q,setdiff(fnew_,fnewcp),v)$
 
       ifac:=cdr ifac; 
     >>
@@ -560,6 +561,10 @@ begin scalar v,f,l,vl1,j,ftemcp,fnewcp;
   return 
   if null j then reval q
             else <<      % case distinctions need to be made
+   if freeoflist(j,fnew_) then
+   % Otherwise conditions contain new constants of integration which
+   % are not known later after the integration module is left
+   % (see 30.1.2015)
    for each h in j do 
    to_do_list:=cons(list('split_into_cases,h),to_do_list);
    nil
@@ -879,7 +884,7 @@ end$
 
 symbolic procedure drop_x_dif(der,x)$
 begin scalar dv,newdv$
- % der is a derivative like {'DF,f,u,2,x,3,y,z,2} or {'DF,f,u,2,x,y,z,2}
+ % der is a derivative like {'df,f,u,2,x,3,y,z,2} or {'df,f,u,2,x,y,z,2}
  % drops the x-derivative(s)
  dv:=cddr der;
  while dv do <<
@@ -1000,11 +1005,7 @@ begin scalar f,ft,l,l1,l2,l3,l4,vl,k,s,a,iflag,flag$
         iflag:=intlintest(l,x);
         if (iflag='noxdrv) or (iflag='nodrv) then <<
           l2:=start_let_rules()$
-!#if (equal version!* "REDUCE 3.6")
-          p:=reval aeval p$
-!#else          
           p:=reval p$
-!#endif
           stop_let_rules(l2)$
           l:=lderiv(p,f,vl)$
           iflag:=intlintest(l,x)
@@ -1024,35 +1025,27 @@ begin scalar f,ft,l,l1,l2,l3,l4,vl,k,s,a,iflag,flag$
         k:=reval coeffn(p,car l,cdr l)$
         if intcoefftest(car lderiv(k,f,vl),car l,vl) then
         <<a:=decderiv(car l,x)$
-          %k:=reval list('INT,subst('v_a_r_,a,k),'v_a_r_)$   
+          %k:=reval list('int,subst('v_a_r_,a,k),'v_a_r_)$   
           k:=err_catch_int(subst('v_a_r_,a,k),'v_a_r_)$   
           if null k then <<k:=0;flag:='too_slow>>;
           if lin_problem then l4:=nil
                          else l4:=zero_den(k,ft);
-%          if lin_problem then l2:=nil
-%                         else l2:=zero_den(k,ft);
-%          l4:=nil;
-%          for each l3 in l2 do 
-%          if not can_not_become_zeroSQ(simp l3,ftem_) then l4:=cons(l3,l4);
           if l4 then <<
-%             to_do_list:=union(list(list('split_into_cases,
-%                        if cdr l4 then cons('TIMES,l4) else car l4)),to_do_list);
+            % no constants of integration have been added yet so 
+            % added cases do not involve constants of integration
             for each l2 in l4 do 
-             to_do_list:=union(list(list('split_into_cases,l2)),to_do_list);
+            % <<write"BBBB"$terpri()$
+            to_do_list:=union(list(list('split_into_cases,l2)),to_do_list);
+            % >>$
             flag:='needs_case_split
           >>    else <<
             k:=reval subst(a,'v_a_r_,k)$
             s:=cons(k,s)$
-!#if (equal version!* "REDUCE 3.6")
-            p:=reval aeval list('difference,p,list('df,k,x))$
-!#else          
-            %p:=reval list('DIFFERENCE,p,list('DF,k,x))$             %################  THIS CAN TAKE LONG
-            p:=list('difference,p,list('df,k,x))$            
-            p:=err_catch_reval p$           
+            p:=list('difference,p,list('df,k,x))$  %#####  This can take long to simplify
+            p:=err_catch_reval p$
             if null p then flag:='reval_too_slow else
-!#endif
             if diffrelp(l1,(l:=lderiv(p,f,vl)),vl) then flag:='neverending
-                                                  else l1:=l
+                                                   else l1:=l
           >>
         >>                                        else
         flag:='coeffld
@@ -1061,6 +1054,11 @@ begin scalar f,ft,l,l1,l2,l3,l4,vl,k,s,a,iflag,flag$
       % the non-integrable cases are: flag neq nil,
       % (iflag neq nil) and (iflag neq 'nofct), an exception to the
       % second case is potint where non-integrable rests are allowed
+      if (flag neq 'reval_too_slow) and
+         (flag neq 'neverending)    then % because in these cases p is lost,
+                                         % it would need to be programmed that 
+                                         % a trial integration is done. 
+                                         % no time for doing that now (19.4.2014)
       if iflag='nofct then ftem:=smemberl(ftem,p)
                       else if potint or (fctlength f<length vl) then
                            <<ftem:=cdr ftem$flag:=nil>>         else
@@ -1070,51 +1068,36 @@ begin scalar f,ft,l,l1,l2,l3,l4,vl,k,s,a,iflag,flag$
   >>$
   return
   if flag then nil else
-  <<l:=explicitpart(p,ft,x)$
+  <<
+    l:=explicitpart(p,ft,x)$
     %l1:=list('INT,l,x)$
     l1:=err_catch_int(l,x)$
     if null l1 then nil
                else <<
-!#if (equal version!* "REDUCE 3.6")
-      s:=reval aeval cons('plus,cons(l1,s))$
-!#else          
       s:=reval cons('plus,cons(l1,s))$
-!#endif
       if lin_problem then l4:=nil
                      else l4:=zero_den(s,ft);
-%     if lin_problem then l2:=nil
-%                    else l2:=zero_den(s,ft);
-%     l4:=nil;
-%     for each l3 in l2 do 
-%     if not can_not_become_zeroSQ(simp l3,ftem_) then l4:=cons(l3,l4);
       if l4 then <<
-%       to_do_list:=union(list(list('split_into_cases,
-%        if cdr l4 then cons('TIMES,l4) else car l4)),to_do_list);
+        % no constants of integration have been added yet so 
+        % added cases do not involve constants of integration
         for each l2 in l4 do 
+        % <<write"CCCC"$terpri()$
         to_do_list:=union(list(list('split_into_cases,l2)),to_do_list);
+        % >>$
         nil
       >>    else
-      if freeint_ and (null freeof(s,'int)) then nil else
-      if freeabs_ and (null freeof(s,'abs)) then nil else <<
+      if freeint_ and (null freeof(s,'INT)) then nil else
+      if freeabs_ and (null freeof(s,'ABS)) then nil else <<
         k:=start_let_rules()$
-!#if (equal version!* "REDUCE 3.6")
-        l2:=reval aeval list('df,l1,x)$
-        if 0 neq reval reval aeval list('difference,l,l2) then <<
-!#else          
         l2 := reval {'df,l1,x} where !*precise=nil;
         if 0 neq (reval {'difference,l,l2} where !*precise=nil) then <<
-!#endif
           write"REDUCE integrator error:"$terpri()$
           algebraic write "int(",l,",",x,") neq ",l1;terpri()$
           write"Result ignored.";terpri()$
           stop_let_rules(k)$
           nil
         >> else <<
-!#if (equal version!* "REDUCE 3.6")
-          p:=reval reval aeval list('difference,p,l2)$
-!#else          
           p:=reval list('difference,p,l2)$
-!#endif
           stop_let_rules(k)$
           if poly_only then if ratexp(s,ft) then list(s,p)
                                             else nil
@@ -1128,19 +1111,17 @@ end$ % of intpde_
 symbolic procedure explicitpart(p,ft,x)$
 % part of a sum p which only explicitly depends on a variable x
 begin scalar l$
-if not member(x,argset smemberl(ft,p)) then l:=p
-else if pairp p then
-   <<if car p='minus then
-        l:=reval list('minus,explicitpart(cadr p,ft,x))$
-   if (car p='quotient) and not member(x,argset smemberl(ft,caddr p))
-   then
-      l:=reval list('quotient,explicitpart(cadr p,ft,x),caddr p)$
-   if car p='plus then
-      <<for each a in cdr p do
-          if not member(x,argset smemberl(ft,a)) then l:=cons(a,l)$
+  if not member(x,argset smemberl(ft,p)) then l:=p
+                                         else if pairp p then
+  <<if car p='minus then l:=reval list('minus,explicitpart(cadr p,ft,x))$
+    if (car p='quotient) and not member(x,argset smemberl(ft,caddr p)) then
+       l:=reval list('quotient,explicitpart(cadr p,ft,x),caddr p)$
+    if car p='plus then <<
+      for each a in cdr p do
+      if not member(x,argset smemberl(ft,a)) then l:=cons(a,l)$
       if pairp l then l:=reval cons('plus,l)>> >>$
-if not l then l:=0$
-return l$
+  if not l then l:=0$
+  return l$
 end$
 
 symbolic procedure intconst(co,vl,x,ifalist)$
@@ -1250,7 +1231,7 @@ begin scalar l,l1,l2,fl,ltdl$
  if l1:=integrateode(q,car l1,cadr l1,caddr l1,ftem) then
                                        % trying to integrate it
  <<l:=append(cdr l1,l);
-   q:=prepsq car simplifypdesq(simp car l1,ftem,nil,nil,nil)$  
+   q:=prepsq car simplifypdeSQ(simp car l1,ftem,nil,nil,nil)$  
    ftem:=smemberl(union(fnew_,ftem),q)$
    fl:=t
  >>                                                  else 
@@ -1352,7 +1333,7 @@ begin scalar l,fli,fnew_old,h,loftolist$
                h:=coeffn(car l,car fli,1);
                if domainp h then nil 
                             else <<
-                 h:=simplifysq(cadr h,get(q,'fcts),t,nil,t)$
+                 h:=simplifySQ(cadr h,get(q,'fcts),t,nil,t)$
                  if h={(1 . 1)} then t else nil
                >>
              >>
@@ -1383,7 +1364,7 @@ begin scalar l,fli,fnew_old,h,loftolist$
         while h and (car h neq get(q,'pval)) do h:=cdr h;
         if h then << % equation q is to be kept
           l:=delete(get(q,'pval),l);
-          l:=cons(q,mkeqsqlist(nil,nil,l,ftem_,get(q,'vars),
+          l:=cons(q,mkeqSQlist(nil,nil,l,ftem_,get(q,'vars),
                                allflags_,t,get(q,'orderings),pdes))$
           if print_ then <<
             terpri()$
@@ -1398,10 +1379,10 @@ begin scalar l,fli,fnew_old,h,loftolist$
           >>
         >>   else <<
           flag1(q,'to_eval)$
-          updatesq(q,nil,nil,car l,ftem_,get(q,'vars),t,list(0),nil)$
+          updateSQ(q,nil,nil,car l,ftem_,get(q,'vars),t,list(0),nil)$
           drop_pde_from_idties(q,pdes,nil)$
           drop_pde_from_properties(q,pdes)$
-          l:=cons(q,mkeqsqlist(nil,nil,cdr l,ftem_,get(q,'vars),
+          l:=cons(q,mkeqSQlist(nil,nil,cdr l,ftem_,get(q,'vars),
                                allflags_,t,get(q,'orderings),pdes))$
           put(q,'dec_with,nil);     % 23.3.99 added --> cycling?
           put(q,'dec_with_rl,nil);  %    "    added --> cycling?
@@ -1415,6 +1396,9 @@ begin scalar l,fli,fnew_old,h,loftolist$
             terpri()
           >>
         >>$
+
+        % In order not to re-investigate q for integrability either
+        % new cases have been added or the integrability is decided:
         if loftolist=length to_do_list then <<
           remflag1(q,'to_fullint)$
           remflag1(q,'to_int)
@@ -1497,7 +1481,7 @@ begin scalar l,l1,m,p,pdescp$ % ,nvmax,h,f$
        (null fullint or lin_problem or
         get(car pdescp,'linear_) or 
 %       not pairp get(car pdescp,'val) or 
-%       car get(car pdescp,'val) neq 'TIMES
+%       car get(car pdescp,'val) neq 'times
         not pairp get(car pdescp,'fac)
        ) then <<
       l:=cons(car pdescp,l);
@@ -1557,7 +1541,7 @@ begin scalar l,l1,q,m,b,c,q1,q2$
   while p do
   <<l1:=gintorder1(car p,x,nil)$
 %  <<l1:=gintorder1(car p,ftem,x,nil)$
-    if deponallvars(if q1=1 then car l1
+    if DepOnAllVars(if q1=1 then car l1
                             else cons('times,
                     append(if pairp q1 and car q1='times then cdr q1 
                                                          else list q1,
@@ -1586,7 +1570,7 @@ begin scalar l,l1,q,m,b,c,q1,q2$
 return l$
 end$
 
-symbolic procedure deponallvars(c,x,vl)$
+symbolic procedure DepOnAllVars(c,x,vl)$
 % tests for occurence of vars from vl in factors of c depending on x
 begin scalar l$
 if pairp c and (car c='times) then c:=cdr c
@@ -1731,19 +1715,19 @@ module intfactor$
 %
 %write"p=",p;
 %
-% if car p='MINUS then <<neg:=t;p:=cdr p>>$
+% if car p='minus then <<neg:=t;p:=cdr p>>$
 % return
 % if not pairp p then if my_freeof(p,v) and (not freeoflist(p,vl)) then
 %                     list(p,1,neg)                             else
 %                     list(1,p,neg)
-%                else if car p='PLUS then list(1,p,neg)
+%                else if car p='plus then list(1,p,neg)
 %                                    else
-% if car p='TIMES then
+% if car p='times then
 % <<for each el in cdr p do if my_freeof(el,v) and (not freeoflist(p,vl)) then
 %   fl1:=cons(el,fl1)                                                  else
 %   fl2:=cons(el,fl2);
-%   if pairp fl1 then fl1:=cons('TIMES,fl1);
-%   if pairp fl2 then fl2:=cons('TIMES,fl2);
+%   if pairp fl1 then fl1:=cons('times,fl1);
+%   if pairp fl2 then fl2:=cons('times,fl2);
 %   if not fl1 then fl1:=1;
 %   if not fl2 then fl2:=1;
 %   list(fl1,fl2,neg)
@@ -1801,7 +1785,7 @@ begin scalar res,pri$
  if (car ex='minus) or 
     ((car ex='expt)    and 
 %    (numberp caddr ex)) then % not for e.g. (quotient,2,3)
-     (cadr ex neq 'e)  and 
+     (cadr ex neq 'E)  and 
      (cadr ex neq 'e)  and 
      (not fixp cadr ex)   ) then res:=get_kernels cadr ex
                             else res:=list ex
@@ -1919,7 +1903,7 @@ begin
  if p then <<
   % possibly investigating linear dependencies of different caar p
   % solve(lasse x-abhaengige und nl-unabhaengige faktoren fallen von
-  %       factorize df(reval list('QUOTIENT, caar p1, caar p2),x),nl).
+  %       factorize df(reval list('quotient, caar p1, caar p2),x),nl).
   while p do 
   if freeoflist(cdar p,nl) then <<eqs:=nil;p:=nil>>
   % singular system --> no solution 
@@ -2089,13 +2073,16 @@ begin
 
  if factr then <<
   h:=cdr err_catch_fac(tozero)$
-  if pri then <<terpri()$write"The factors of tozero:",h>>;
-  tozero:=nil;
-  for each e1 in h do
-  if smemberl(fl,e1) then tozero:=cons(e1,tozero)$
-  tozero:= reval if length tozero > 1 then cons('times,tozero)
-                                      else car tozero;
+  if h then << % else factorization too long
+   if pri then <<terpri()$write"The factors of tozero:",h>>;
+   tozero:=nil;
+   for each e1 in h do
+   if smemberl(fl,e1) then tozero:=cons(e1,tozero)$
+   tozero:= reval if length tozero > 1 then cons('times,tozero)
+                                       else car tozero
+  >>
  >>;
+
  if nil and pri then <<write"tozero =";eqprint tozero >>;
  h:=nil;
  % actually only those f in ftem, in which pl is nonlinear, but also
@@ -2144,8 +2131,12 @@ begin
  % test for zero denominators
  zd:=zero_den(h,ftem); 
  if zd then return <<
+  % no constants of integration have been added yet so 
+  % added cases do not involve constants of integration
   for each e1 in zd do 
+  % <<write"DDDD"$terpri()$
   to_do_list:=union({list('split_into_cases,e1)},to_do_list);
+  % >>$
   nil
  >>$
 
@@ -2180,12 +2171,12 @@ begin scalar newde,newnewde,l,h,newcond$
    % potentially loose cases for non-linear problems.
    % It definitely drops constant ftem-dependent factors which
    % correspond to a loss of cases which could be fixed through
-   % testing : if pairp de and car de = 'TIMES then newde:=de else ...
+   % testing : if pairp de and car de = 'times then newde:=de else ...
 
    %newde:=cadr solveeval list(de,fold)$
    %if not freeof(newde,'ROOT_OF) then nil
    %                                  else <<
-   % newde:=reval list('PLUS,cadr newde,list('MINUS,caddr newde))$
+   % newde:=reval list('plus,cadr newde,list('minus,caddr newde))$
    % if (l:=integratepde(newde,ftem,nil,genint_,nil)) then 
 
     if (l:=integratepde(de,ftem,nil,genint_,nil)) then 
@@ -2208,7 +2199,7 @@ begin scalar newde,newnewde,l,h,newcond$
      % solveeval is commented out
 
      % newnewde:=cadr solveeval list(newde,fold)$
-     % newnewde:=reval list('PLUS,cadr newnewde,list('MINUS,
+     % newnewde:=reval list('plus,cadr newnewde,list('minus,
      %                                                   caddr newnewde))$
      ftem:=union(fnew_,ftem)$
      % newnewde:=integratede(newnewde,ftem,nil)$
@@ -2225,8 +2216,8 @@ begin scalar newde,newnewde,l,h,newcond$
 end$  % of integrateode
 
 symbolic procedure odecheck(ex,fint,ftem)$
-% assumes an revaled expression ex
-% Does wrong if car ex is a list!
+% assumes an reval'ed expression ex
+% Goes wrong if car ex is a list of expressions!
 begin scalar a,b,op,ex1$
                    %***** ex is a ftem-function *****
  if ex=fint then             % list(ex,0,0,..)
@@ -2366,13 +2357,13 @@ begin scalar dif,a$
 end$
 
 symbolic procedure odeconvert(de,ford,xnew,ordr,ftem)$
-begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli$
+begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli,ld$
 %             trig1,trig2,trig3,trig4,trig5,trig6,zd$
  ford_:=gensym()$
  depl!*:=delete(assoc(ford_,depl!*),depl!*)$
  depend1(ford_,xnew,t)$
  oldde:=reval subst(ford_,reval ford,de)$
- if pairp ford then                 % i.e.  (car ford) eq 'DF then
+ if pairp ford then                 % i.e.  (car ford) eq 'df then
  << for j:=1:ordr do
    oldde:= reval subst( reval list('df,ford_,xnew,j),
                         reval list('df,ford,xnew,j), oldde)>>$
@@ -2380,6 +2371,23 @@ begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli$
  %newde:=algebraic(first odesolve(symbolic oldde,symbolic ford_,symbolic xnew))$
  newde:=algebraic(first lisp err_catch_odesolve(oldde,ford_,xnew))$
  if null newde then return nil;
+
+ % Check that the coefficient of the highest power of the highest derivative
+ % is not free of ftem functions/constants as there can be cases when
+ % ford_ can have an arbitrary value because all terms with ford_ or a
+ % derivative of ford_ vanishes and the solution of the ODE does not 
+ % involve quotients or logarithms so special cases would not be found to
+ % be investigated.
+ ld:=reval {'df,ford_,xnew,ordr}$
+ h:=algebraic(coeff(lisp oldde,lisp ld));
+ while cdr h do h:=cdr h$
+ h:=simp car h;
+ if not freeoflist(h,ftem) and not member(h,ineq_) then return <<
+  % This case can be added because h does not contain new
+  % constants of integration.
+  to_do_list:=cons(list('split_into_cases,h),to_do_list);
+  nil
+ >>$
 
  % Check the case that newde has the form
  % (equal ford_ (equal .. ..)) 
@@ -2405,7 +2413,8 @@ begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli$
      (caadr h = 'equal) and (cadadr h = ford_) then newde:=cadr h
  >>$
 
- % if newde has the form (LIST (EQUAL ford_ ...) (EQUAL xnew ...) arbparam(1))
+ % if newde is a parametric solution, i.e. has the form 
+ % (list (equal ford_ ...) (equal xnew ...) arbparam(1))
  if pairp newde and
     car newde = 'list and
 
@@ -2429,39 +2438,108 @@ begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli$
   if pairp h and (car h = 'list) and (pairp cadr h) and 
      (caadr h = 'equal) and (cadadr h = cadddr newde) then 
   newde:={'equal,ford_,subst(car cddadr h,cadadr h,car cddadr newde)}
-
  >>;
+
+ % if the solution is a list of 2 solutions, i.e. a case distinction 
+ % would be necessary then currently these solutions are only printed 
+ % and can not be used.
+ if pairp newde and
+    car newde = 'list and
+
+    pairp cdr newde and 
+    pairp cadr newde and
+    caadr newde = 'equal and
+%    cadadr newde = ford_ and 
+
+    pairp cddr newde and
+    pairp caddr newde and
+    caaddr newde = 'equal and
+%    car cdaddr newde = xnew 
+    car cdaddr newde = cadadr newde 
+
+ then return <<
+  if print_ then <<terpri()$
+   write "The ode has more than one solution."$
+   algebraic write "Equation is: ",algebraic symbolic oldde$
+   algebraic write "Solution is: ",algebraic symbolic newde
+  >>;
+  nil
+ >>$
 
  ruli:= start_let_rules()$
 
+ if newde then 
  if !*rational then << off rational; newde:=reval newde; on rational>>
  else newde:=reval newde;
- 
- % It the solution has the form {'EQUAL,expression,0} then solve the
+
+ % It the solution has the form {'equal,expression,0} then solve the
  % numerator of expression for ford_ .
 
  if newde and 
     (car newde='equal) and 
     (caddr newde=0) then newde:={'equal,reval num cadr newde,0};
 
- j:=zero_den(subst(ford,ford_,newde),cons(ford_,ftem)); %,argset ftem
- if null j and not freeoflist(caddr newde,ftem_) then
- j:=proportionalityconditions(caddr newde,
-                              for h1:= 1 : (algebraic !!arbconst)
-                              collect list('arbconst,h1), xnew)$
- if j then return <<
-  for each h in j do 
-  to_do_list:=cons(list('split_into_cases,h),to_do_list);
-  nil
+ % Update of flin_
+ if flin_ and
+    newde and
+    (car newde='equal) then 
+
+ if not freeoflist(cadr newde,flin_) then <<
+  % The function that is solved for is a non-linearly occuring function
+  % and therefore all occuring functions are now deleted from flin_.
+  h1:=flin_;
+  for each h in h1 do 
+  if not freeof(newde,h) then flin_:=delete(h,flin_)
+ >>                                  else << 
+
+  % Are there flin_ constants/functions which do not occure linearly anymore?
+  j:=nil;
+  h1:=flin_;
+  for each h in h1 do 
+  if not freeof(newde,h) then 
+  if null lin_check(caddr newde,{h}) then flin_:=delete(h,flin_)
+                                     else j:=cons(h,j);
+  if j and cdr j then 
+  if null lin_check(caddr newde,j) then 
+  for each h in j do flin_:=delete(h,flin_)$
  >>$
 
-% for each h in j do 
-% if not can_not_become_zeroSQ(simp h,ftem_) then zd:=cons(h,zd);
-% if zd then return <<
-%  to_do_list:=cons(list('split_into_cases,
-%              if cdr zd then cons('TIMES,zd) else car zd),to_do_list);
-%  nil
-% >>$
+ j:=zero_den(subst(ford,ford_,newde),cons(ford_,ftem)); %,argset ftem
+ if null j and not freeoflist(caddr newde,ftem_) then
+ j:=ProportionalityConditions(caddr newde,
+                              for h1:= 1 : (algebraic !!arbconst)
+                              collect list('arbconst,h1), xnew)$
+ if j then return 
+ if t then nil 
+      else <<
+
+  % The following makes only sense if the special case to be investigated
+  % involves constants of integration. But then these case distinctions
+  % can not be set up because the the new constants of integration are not
+  % known after leaving this integration module.
+  % possible solution: either adding fnew_ to ftem even if no integrated
+  % equation is returned, or returning a product of the integrated
+  % equation and the expressions in j.
+
+  newvl:=delete(xnew,if (pairp ford and (car ford='df))
+                        then fctargs cadr ford
+                        else fctargs ford)$
+
+  for h1:=1 : algebraic !!arbconst do 
+  if not freeof(j,list('arbconst,h1)) then <<
+   newco:=newfct(fname_,newvl,nfct_)$
+   nfct_:=add1 nfct_$
+   fnew_:=cons(newco,fnew_)$
+   j:=for each h in j collect subst(newco,list('arbconst,h1),h)
+  >>$
+
+  while j do <<
+   if freeoflist(car j,fnew_) and not member(car j,cdr j) then
+   to_do_list:=cons(list('split_into_cases,car j),to_do_list);
+   j:=cdr j
+  >>$
+  nil
+ >>$
 
  % if safeint_ and zero_den(newde,ftem,argset ftem) then newde:=nil;
  if freeint_ and null freeof(newde,'int) then newde:=nil;
@@ -2525,7 +2603,7 @@ begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli$
      deprint list oldde$
      write "to"$
      eqprint newde$
-     write "which inserted in the equation yields "$
+     Write "which inserted in the equation yields "$
      eqprint {'!*sq,null_,t}
     >>
    >>
@@ -2537,7 +2615,7 @@ begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli$
    if zerop reval list('plus,newde,list('minus,oldde)) then newde:=nil$
    % not anymore needed after writing to to_do_list
    % if newde and (zd neq nil) then 
-   % newde:=cons('TIMES,append(zd,list newde))$
+   % newde:=cons('times,append(zd,list newde))$
  >>$
 
  depl!*:=delete(assoc(ford_,depl!*),depl!*)$
@@ -2558,12 +2636,8 @@ begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli$
     nfct_:=add1 nfct_$
     fnew_:=cons(newco,fnew_)$
     newde:=subst(newco,list('arbconst,j),newde)$
-%    newde:=subst(newco, prepf !*kk2f list('arbconst,j),newde)
-%    newde:=reval subst(newco,list('arbconst,j),newde)
-%    newde:=reval subst(newco, prepf !*kk2f list('arbconst,j),newde)
     if lin_check(newde,{newco}) then flin_:=fctinsert(newco,flin_)$
    >>$
-   % if zd then {newde,de} else % <-- not anymore needed
    {newde}
  >>
 end$
@@ -2665,9 +2739,9 @@ symbolic procedure ldifftot1(p,f,vl)$
 begin scalar a$
   a:=cons(nil,0)$
   if not atom p then
-%    if member(car p,list('EXPT,'PLUS,'MINUS,'TIMES,
-%                         'QUOTIENT,'DF,'EQUAL)) then
-    if member(car p,reducefunctions_) then
+%    if member(car p,list('expt,'plus,'minus,'times,
+%                         'quotient,'df,'equal)) then
+    if member(car p,REDUCEFUNCTIONS_) then
                                         %  erlaubte Funktionen
     <<if (car p='plus) or (car p='times) or 
          (car p='quotient) or (car p='equal) then
@@ -3001,9 +3075,9 @@ begin scalar ii,il,h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,contrace,u,
 %    h6:=nil;
     if contrace then <<write"h6-1=", list('df,divp,h5);
                        terpri()>>;
-%    h6:=cons(reval list('QUOTIENT,list('DF,divp,h5),h11), h6);
+%    h6:=cons(reval list('quotient,list('df,divp,h5),h11), h6);
 %    if nde=1 then h6:=car h6
-%             else h6:=cons('PLUS,h6);
+%             else h6:=cons('plus,h6);
     h6:=reval list('quotient,list('df,divp,h5),h11);
     if contrace then <<write"h6=",h6;terpri()>>;
     nega:=nil;
@@ -3192,21 +3266,21 @@ end$ % of select_indep_var
 algebraic procedure charsyscrack(xlist,cqlist,s,scal,u,ode)$
 % formulation and solution of the characteristic ODE-system
 begin
-  scalar lcopy,x,cs,flist,soln,printold,timeold,facintold,
+  scalar lcopy,x,cS,flist,soln,printold,timeold,facintold,
          adjustold,safeintold,freeintold,odesolveold,
          e1,e2,e3,e4,n,nmax,dff,proclistold,flin_old,
          lin_problem_old,session_old,level_old;
   % formulating the ode/pde - system .
   lcopy := cqlist ;
-  cs := {} ;
+  cS := {} ;
   for each x in xlist do
   << cq := first lcopy ; lcopy := rest lcopy ;
      if x neq s then
      << depend x,s;
-        cs := .(scal*df(x,s)-cq,cs) >>
+        cS := .(scal*df(x,s)-cq,cS) >>
   >>;
   if s neq u then <<flist:={u}; depend u,s;
-                    cs := .(scal*df(u,s)+ode,cs) >>
+                    cS := .(scal*df(u,s)+ode,cS) >>
              else flist:={};
   for each x in xlist do
   if s neq x then flist:=.(x,flist);
@@ -3225,17 +3299,18 @@ begin
     session_old:=session_$
     level_:=level_old;
   >>$
-
   % solving the odes using crack.
   if lisp(print_ neq nil) then
   lisp <<
     write "The equivalent characteristic system:";terpri();
-    deprint cdr algebraic cs$
+    deprint cdr algebraic cS$
     %terpri()$
     write "for the functions: ";
     fctprint( cdr reval algebraic flist);write".";
+%    write"---------------------------------------------------------------------------"$terpri()$
+    write"A new CRACK computation will start now to solve a characteristic ODE system."$terpri()$
   >>;
-  soln:=crack(cs,flist,flist,{});
+  soln:=crack(cS,flist,flist,{});
   lcopy:={};
   for each x in soln do <<
    e1:=first x;
@@ -3245,7 +3320,7 @@ begin
     e2:=length third x;
     for each e3 in flist do
     if not freeof(third x,e3) then e2:=e2-1;
-    if e2=length cs then << % enough constants
+    if e2=length cS then << % enough constants
 
      % all remaining conditions are algebraic (non-differential) in all the
      % functions of flist?
@@ -3253,7 +3328,7 @@ begin
      e3:={};
      for each e4 in third x do if freeof(flist,e4) then e3:=e4 . e3
                                                    else e2:=e4 . e2;
-     if (length cs) = (length e3) then << % sufficiently many integrations done
+     if (length cS) = (length e3) then << % sufficiently many integrations done
       for each e4 in e2 do
       for each e5 in e1 do
       if lisp(not freeof(lderiv(reval algebraic e5,
@@ -3294,7 +3369,7 @@ begin
      >>
     >>
    >>                                                              else 
-   if (first x = {}) and (length cs = length third x) then 
+   if (first x = {}) and (length cS = length third x) then 
    lcopy:=cons({second x,third x},lcopy)
   >>;
 
@@ -3382,7 +3457,7 @@ begin
  scalar n,nu,de;
  return
  if not pairp q then q else 
- if member(car q,one_argument_functions_) or
+ if member(car q,ONE_ARGUMENT_FUNCTIONS_) or
     (member(car q,{'expt}) and 
      dropable(caddr q,fl,allowed_to_drop)) then simplifiziere(cadr q,fl,allowed_to_drop) 
                                            else 
@@ -3529,6 +3604,9 @@ integration
     integrate
       integratede
         integrableode
+          integrableode1
+            odecheck
+              odetest
         integrateode 
           odeconvert
             odesolve
@@ -3545,8 +3623,12 @@ tr integrate_one_pde
 tr integrate
 tr integratede
 tr integrableode
+tr integrableode1
+tr odecheck
+tr odetest
 tr integrateode 
 tr odeconvert
+tr err_catch_odesolve
 tr odesolve
 tr integratepde
 tr addintco 
@@ -3555,3 +3637,20 @@ tr potintegrable
 tr multipleint
 tr intpde
 tr intpde_
+
+30.1.2015: 
+
+ - It can not be that case conditions are added which involve new functions
+   which are not passed on and which are not available after the end of this
+   integration module.
+   --> check all places
+
+ - It must not happen, that a sub-case is started which does not change the
+   equation from which the case distinction resulted and then integration is
+   tried again and the same case distinction with new and different constants
+   of integration is started again and again. What is needed is that before
+   case distinctions are written into to_do_list, to check that these
+   conditions are not already satisfied.
+
+ - A fix could be to return the integrated equation multiplied by all cases
+   Which changes are needed for that?

@@ -1,5 +1,5 @@
 %**********************************************************************
-module poly_gb$
+module poly_GB$
 %**********************************************************************
 %  Interface subroutines to the F4 package of J P Faugere
 %  Authors: Winfried Neun, May 2003, Thomas Wolf since 2003
@@ -28,7 +28,7 @@ module poly_gb$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
-symbolic procedure find_singular$
+symbolic procedure find_Singular$
    % Check the installation of Singular
    % Singular is not distributed together with Crack and thus the
    % installation directory is not known to Crack unlike the package
@@ -42,16 +42,34 @@ begin scalar h1$
  >>$
 !#endif  
 
- if null singular_call then <<
-  write"For calling Singular the program needs to know the calling command."$terpri()$
-  write"The command 'which Singular' gives:"$terpri()$
-  system"which Singular"$
-  write"Please input this call if it is valid or another working call, like ""/usr/bin/Singular"": "$
-  terpri()$
+ % as getenv does currently (May 2014) not exist for redcsl:
+ if null singular_call then 
+ if null filep (singular_call:="/usr/bin/Singular") then % lie, Eee, sente, gote, miai, tenuki, silo
+ if null filep (singular_call:="/home/syam/Singular/3-0-4/x86_64-Linux/Singular") then % on SharcNet
+ if null filep (singular_call:="/usr/local/share/Singular/3-1-6/x86_64-Linux/Singular") then % on sharc-198
+ if null filep (singular_call:="/usr/local/Singular4/bin/Singular") then % goedel
+ if null filep (singular_call:="/usr/local/bin/Singular") then % power mac
+ singular_call:=nil;
+
+ if singular_call then <<
+  if print_ or null old_history then <<
+   write"Singular will be called by ",singular_call$ terpri()$
+   write"If this is not the correct call then input the command: "$terpri()$
+   write"as  singular_call  ""path/Singular"""$terpri()$terpri()
+  >>
+ >>               else <<
+  if print_ or null old_history then <<
+   write"For calling Singular the program needs to know the calling command."$terpri()$
+   write"The command 'which Singular' gives:"$terpri()$
+   system"which Singular"$
+   write"Please input this call if it is valid or another working call, like ""/usr/bin/Singular"": "$
+   terpri()$
+  >>$
   change_prompt_to ""$
   h1:=termread()$
   restore_interactive_prompt()$
   singular_call:=bldmsg("%w",h1)$
+  restore_interactive_prompt()$ 
  >>$
 
 !#if (memq 'psl lispsystem!*)
@@ -61,36 +79,35 @@ begin scalar h1$
  >>$
 !#endif  
 
- if null singular_lib then <<
-  write"For Singular to access its libraries it needs to know the library address."$
-  terpri()$
-  write"Please input the library directory with its path, e.g. ""/usr/share/Singular/LIB"". "$
-  terpri()$
-  write"A different suggestion is to replace in the Singular call something like"$terpri()$
-  write"Singular/3-0-4/x86_64-Linux/Singular"$terpri()$
-  write"by"$terpri()$
-  write"Singular/3-0-4/LIB"$terpri()$
-  write"If you do not know it, then input """"."$terpri()$
+ % as getenv does currently (May 2014) not exist for redcsl:
+ if null singular_lib then 
+ if null filep (singular_lib:="/usr/share/Singular/LIB") then % on Eee PC, sente, gote, tenuki, silo
+ if null filep (singular_lib:="/usr/share/singular/LIB") then % miai
+ if null filep (singular_lib:="/home/syam/Singular/3-0-4/LIB") then % on SharcNet
+ if null filep (singular_lib:="/usr/local/share/Singular/3-1-6/LIB") then % on sharc-198
+ if null filep (singular_lib:="/usr/local/Singular4/share/singular/LIB") then % on goedel
+ if null filep (singular_lib:="/usr/local/share/singular/LIB") then % on power mac
+ singular_lib:=nil;
+
+ if singular_lib then <<
+  if print_ or null old_history then <<
+   write"The Singular library is assumed to be in ",singular_lib$ terpri()$
+   write"If this is not the correct path then input the command: "$terpri()$
+   write"as  singular_lib  ""path/LIB"""$terpri()$terpri()
+  >>
+ >>              else <<
+  if print_ or null old_history then <<
+   terpri()$
+   write"For Singular to access its libraries it needs to know the library address."$
+   terpri()$
+   write"Please input the library directory with its path, e.g."$terpri()$
+   write"If you do not know it, then input """"."$terpri()$
+  >>;
   change_prompt_to ""$
   h1:=termread()$
   restore_interactive_prompt()$
   singular_lib:=bldmsg("%w",h1)$
  >>$
-
- % Examples, where the Singular resides on a few computers:
- %       write" # Singular on SHARCNET: in the script: /home/twolf/newreduce/reduce64"$terpri()$
- %       write" #                       and thus using 'setenv':"$terpri()$
- %       write" setenv SingularLib  /home/syam/Singular/3-0-4/LIB"$terpri()$
- %       write" setenv SingularCall /home/syam/Singular/3-0-4/x86_64-Linux/Singular"$terpri()$
- %       write" # Singular on lie.math.brocku.ca: in the script: /home/twolf/reduce3.8"$terpri()$
- %       write" setenv SingularLib  /usr/share/Singular"$terpri()$
- %       write" setenv SingularCall /usr/bin/Singular"$terpri()$
- %       write" # Singular on the Brock beowulf cluster: in the script ~twolf/reducemaster"$terpri()$
- %       write" setenv SingularLib  /usr/local/Singular/2-0-4/LIB"$terpri()$
- %       write" setenv SingularCall /usr/local/Singular/2-0-4/ix86-Linux/Singular"$terpri()$
- %       write" # Singular on Eee PC: in .bashrc and thus using 'export':"$terpri()$
- %       write" export SingularLib=/usr/share/Singular/LIB"$terpri()$
- %       write" export SingularCall=/usr/bin/Singular"$terpri()$terpri()$
 
 end$ % of find_Singular
 
@@ -111,7 +128,7 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
 
   for each p in h1 do <<
    if get(p,'non_rat_kern) then use:=nil else 
-   if (null vl_) or (groeb_solve = 'diffelim) then use:=t else <<
+   if (null vl_) or (groeb_solve = 'DiffElim) then use:=t else <<
     h2:=get(p,'kern);
     while h2 and not pairp car h2 do h2:=cdr h2;
     if null h2 then use:=t else use:=nil
@@ -131,7 +148,7 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
   >>$
 
   sol:=
-  if groeb_solve = 'diffelim then <<
+  if groeb_solve = 'DiffElim then <<
    % The environment variable DiffElimCall has to be set.
    rational_bak:=!*rational; 
    if !*rational then <<resimpli:=t;algebraic (off rational)>>;
@@ -201,7 +218,7 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
    % here added to ineq_ and not below because the packages Singular,
    % GB (?) and groebner (REDUCE) to not generate new inequalities.
 
-   for each h2 in caddr h1 do addsqineq(pdes,h2,t)$ % adding potentially new inequalities
+   for each h2 in caddr h1 do addSQineq(pdes,h2,t)$ % adding potentially new inequalities
    h1:={'list,cons('list,nconc(car h1,nconc(cadr h1,
                          nconc(cadddr h1,car cddddr h1))))}$
    h1
@@ -211,7 +228,7 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
       (groeb_solve = 'sl_grad) or
       (groeb_solve = 'sl_revgrad)) then <<
 
-   find_singular()$
+   find_Singular()$
    if (null singular_call) or (null singular_lib) then nil else 
    if groeb_solve = 'sl_lex     then call_sing(ftem_,psys,'lex) else 
    if groeb_solve = 'sl_grad    then call_sing(ftem_,psys,'gradlex) else 
@@ -236,7 +253,7 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
 
   if print_ then <<
    terpri()$
-   if groeb_solve = 'diffelim                        then 
+   if groeb_solve = 'DiffElim                        then 
    write"A differential Groebner basis computation " else 
    write"An algebraic Groebner basis computation "
   >>$
@@ -269,11 +286,11 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
         terpri()$
         write"The new equations are:"$
       >>$
-      if groeb_solve = 'diffelim then % call_diffelim
-      pdes:=mkeqsqlist(sol,nil,nil,ftem_,vl_,allflags_,t,
+      if groeb_solve = 'DiffElim then % call_diffelim
+      pdes:=mkeqSQlist(sol,nil,nil,ftem_,vl_,allflags_,t,
                        list(0),nil)
                  else % algebraic system
-      pdes:=mkeqsqlist(nil,nil,sol,ftem_,vl_,allflags_,t,
+      pdes:=mkeqSQlist(nil,nil,sol,ftem_,vl_,allflags_,t,
                        list(0),nil)$
 
       % take those functions out of flin_ which are 
@@ -283,8 +300,8 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
        if null get(p,'linear_) then
        for each h1 in get(p,'fcts) do 
        if member(h1,flin_) and
-	  (null lin_check_sq(((first_term_sf numr get(p,'sqval)) . 1),{h1}) or
-	   null lin_check_sq(get(p,'sqval),{h1})) then
+	  (null lin_check_SQ(((first_term_SF numr get(p,'sqval)) . 1),{h1}) or
+	   null lin_check_SQ(get(p,'sqval),{h1})) then
        flin_:=delete(h1,flin_)
       >>$
 
@@ -313,11 +330,11 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
         % further necessary step to call crackmain():
         recycle_fcts:=nil$  % such that functions generated in the sub-call 
                             % will not clash with existing functions
-        if groeb_solve = 'diffelim then % call_diffelim
-        pdes:=mkeqsqlist(nil,nil,cdar sol,ftem_,vl_,allflags_,t,
+        if groeb_solve = 'DiffElim then % call_diffelim
+        pdes:=mkeqSQlist(nil,nil,cdar sol,ftem_,vl_,allflags_,t,
                          list(0),nil)
                                    else % algebraic problem
-        pdes:=mkeqsqlist(nil,nil,cdar sol,ftem_,vl_,allflags_,t,
+        pdes:=mkeqSQlist(nil,nil,cdar sol,ftem_,vl_,allflags_,t,
                          list(0),nil)$
 
         % take those functions out of flin_ which are 
@@ -327,8 +344,8 @@ begin scalar pdes,forg,sol,n,result,l1,h1,h2,psys,kept_pdes,use,
          if null get(p,'linear_) then
          for each h1 in get(p,'fcts) do 
          if member(h1,flin_) and
-	    (null lin_check_sq(((first_term_sf numr get(p,'sqval)) . 1),{h1}) or
-	     null lin_check_sq(get(p,'sqval),{h1})) then
+	    (null lin_check_SQ(((first_term_SF numr get(p,'sqval)) . 1),{h1}) or
+	     null lin_check_SQ(get(p,'sqval),{h1})) then
          flin_:=delete(h1,flin_)
         >>$
 
@@ -350,7 +367,7 @@ end$
 endmodule$
 
 %**********************************************************************
-module faugere$
+module Faugere$
 %**********************************************************************
 %  Interface subroutines to the F4 package of J P Faugere
 %  Author: Winfried Neun, May 2003 
