@@ -130,17 +130,17 @@ procedure VSdtLP(s);
 
 %%% VS %%%
 
-asserted procedure vssu_vpp(vs: VSsu): Boolean;
-   % VS test point substitution predicate.
-   pairp vs and car vs eq 'vsvs;
+asserted procedure vssu_arp(vs: VSsu): Boolean;
+   % VS arbitrary predicate.
+   pairp vs and car vs eq 'vsar;
 
 asserted procedure vssu_dgp(vs: VSsu): Boolean;
    % VS degree shift predicate.
    pairp vs and car vs eq 'vsdg;
 
-asserted procedure vssu_arp(vs: VSsu): Boolean;
-   % VS arbitrary predicate.
-   pairp vs and car vs eq 'vsar;
+asserted procedure vssu_vpp(vs: VSsu): Boolean;
+   % VS test point substitution predicate.
+   pairp vs and car vs eq 'vsvs;
 
 asserted procedure vsvs_mk(v: Kernel, tp: VStp): VSsu;
    % VS test point substitution make.
@@ -684,21 +684,19 @@ asserted procedure vsdt_ttheoinsert(dt: VSdt, f: QfFormula);
 
 asserted procedure vssu_apply(vs: VSsu, f: QfFormula): QfFormula;
    % VS apply.
-   if vssu_vpp vs then
-      vsvs_apply(vs, f)
+   if vssu_arp vs then
+      vsar_apply(vs, f)
    else if vssu_dgp vs then
       vsdg_apply(vs, f)
-   else if vssu_arp vs then
-      vsar_apply(vs, f);
+   else if vssu_vpp vs then
+      vsvs_apply(vs, f);
 
-asserted procedure vsvs_apply(vs: VSvs, f: QfFormula): QfFormula;
-   % VS test point substitution apply.
-   % TEMPORARY! Using old code to have something runnable.
-   begin scalar v, tp;
-      v := vsvs_v vs;
-      tp := vsvs_tp vs;
-      return cdr apply(car tp, nil . nil . f . v . cdr tp)
-   end;
+asserted procedure vsar_apply(vs: VSar, f: QfFormula): QfFormula;
+   % VS arbitrary apply. It should be never needed to apply this VS.
+   <<
+      assert(nil);
+      f
+   >>;
 
 asserted procedure vsdg_apply(vs: VSdg, f: QfFormula): QfFormula;
    % VS degree shift apply.
@@ -707,6 +705,15 @@ asserted procedure vsdg_apply(vs: VSdg, f: QfFormula): QfFormula;
       if not evenp vsdg_g vs then
 	 return f;
       return rl_mk2('and, ofsf_0mk2('geq, vsdg_sv vs), f)
+   end;
+
+asserted procedure vsvs_apply(vs: VSvs, f: QfFormula): QfFormula;
+   % VS test point substitution apply.
+   % TEMPORARY! Using old code to have something runnable.
+   begin scalar v, tp;
+      v := vsvs_v vs;
+      tp := vsvs_tp vs;
+      return cdr apply(car tp, nil . nil . f . v . cdr tp)
    end;
 
 asserted procedure vsdg_decdeg(at: QfFormula, v: Kernel, g: Integer, sv: Kernel): QfFormula;
@@ -718,13 +725,6 @@ asserted procedure vsdg_decdeg(at: QfFormula, v: Kernel, g: Integer, sv: Kernel)
       f := sfto_decdegf(f, v, g);
       return ofsf_0mk2(rl_op at, sfto_renamef(f, v, sv))
    end;
-
-asserted procedure vsar_apply(vs: VSar, f: QfFormula): QfFormula;
-   % VS arbitrary apply. It should be never needed to apply this VS.
-   <<
-      assert(nil);
-      f
-   >>;
 
 asserted procedure vscs_fopll2cs(fopll: List, x: Kernel, theo: Theory): VScs;
    % List of SF and operator list to candidate solutions. [fopll] is a
@@ -1587,11 +1587,11 @@ asserted procedure vs_mainloop(db: VSdb);
 	 varl := vsnd_varl nd;
 	 f := vsnd_f nd;
 	 su := vsnd_su nd;
-	 if vsnd_flg nd then  % substitution has not been done yet
+	 if vsnd_flg nd then  % substitution has not been applied yet
 	    for each ff in vs_splitor vssu_apply(su, f) do
 	       vsdb_wcinsert(db,
 		  vsnd_mk(nil, su, varl, ff, vsnd_parent nd))
-	 else <<  % substitution was already done
+	 else <<  % substitution was already applied
 	    mbr := vsdb_htmember(db, f);
 	    if not mbr or vssu_arp su then <<
 	       if not mbr then
