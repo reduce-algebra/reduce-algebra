@@ -37,9 +37,9 @@ lisp <<
 
 module ofsfcad;
 
-fluid '(qepcad_wd!*);
+fluid '(ofsf_wd!*);
 
-qepcad_wd!* := "/tmp/";  % will be concatenated - use trailing slash
+ofsf_wd!* := "/tmp/";  % will be concatenated - use trailing slash
 
 switch rlqegen1,rlcadans,rlcadtree2dot,rlcadrmwc;
 
@@ -293,9 +293,9 @@ asserted procedure ofsf_cadextension(cd: CadData): Any;
 	 ioto_prin2t length atree_childrenatlevel(dd, r)
       >>;
       if !*rlcadtree2dot then <<
-	 atree_2dot(dd, lto_sconcat{qepcad_wd!*, "cadtree.dot"});
-	 atree_2tgf(dd, lto_sconcat{qepcad_wd!*, "cadtree.tgf"});
-	 atree_2gml(dd, lto_sconcat{qepcad_wd!*, "cadtree.gml"})
+	 atree_2dot(dd, lto_sconcat{ofsf_wd!*, "cadtree.dot"});
+	 atree_2tgf(dd, lto_sconcat{ofsf_wd!*, "cadtree.tgf"});
+	 atree_2gml(dd, lto_sconcat{ofsf_wd!*, "cadtree.gml"})
       >>;
       caddata_putdd(cd, dd);
       % if !*rlverbose then <<
