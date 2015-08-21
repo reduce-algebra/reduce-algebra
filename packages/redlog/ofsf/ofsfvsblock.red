@@ -184,8 +184,7 @@ asserted procedure vsdb_mk(varl: KernelL, f: QfFormula, theo: Theory, bvl: Kerne
    end;
 
 asserted procedure vsdb_todop(db: VSdb): ExtraBoolean;
-   % Todo predicate. Checks whether the working nodes container is
-   % empty.
+   % Todo predicate. Checks whether the working container is empty.
    vsco_nonemptyp vsdb_wc db;
 
 asserted procedure vsdb_wcget(db: VSdb): VSnd;
@@ -247,19 +246,16 @@ asserted procedure vs_blockmainloop(db: VSdb);
    % Quantifier elimination for one block subroutine. This procedure
    % realizes the main loop of QE for a single block of quantifiers.
    % No meaningful return value. [db] is modified in-place.
-   begin scalar nd, varl, f, su, mbr;
+   begin scalar nd, varl, f, mbr;
       while vsdb_todop db do <<
 	 nd := vsdb_wcget db;
 	 varl := vsnd_varl nd;
 	 f := vsnd_f nd;
-	 su := vsnd_su nd;
 	 if vsnd_flg nd then  % substitution has not been applied yet
-	    for each ff in vs_splitor vssu_apply(su, f) do
-	       vsdb_wcinsert(db,
-		  vsnd_mk(nil, su, varl, ff, vsnd_parent nd))
+	    vsdb_applySub(db, nd)
 	 else <<  % substitution was already applied
 	    mbr := vsdb_htmember(db, f);
-	    if not mbr or vssu_arp su then <<
+	    if not mbr or vssu_arp vsnd_su nd then <<
 	       if not mbr then
 	       	  vsdb_htinsert(db, f);
 	       if f eq 'true then
@@ -273,9 +269,20 @@ asserted procedure vs_blockmainloop(db: VSdb);
       >>
    end;
 
+asserted procedure vsdb_applySub(db: VSdb, nd: VSnd);
+   % Apply substitution. No meaningful return value; [db] is modified
+   % in-place so that the subsitution in [nd] is applied, i.e., a list
+   % of nodes is added to the working container.
+   begin scalar su, ffl;
+      su := vsnd_su nd;
+      ffl := qff_applysub(su, vsnd_f nd, vsdb_bvl db, vsdb_curtheo db);
+      for each ff in ffl do
+	 vsdb_wcinsert(db, vsnd_mk(nil, su, vsnd_varl nd, ff, vsnd_parent nd))
+   end;
+
 asserted procedure vsdb_expandNode(db: VSdb, nd: VSnd);
-   % Expand node. No meaningful return value. [db] is modified in
-   % place so that [nd] is properly expanded at the end of the
+   % Expand node. No meaningful return value; [db] is modified
+   % in-place so that [nd] is properly expanded at the end of the
    % procedure, i.e., either a list of children is added to the
    % working container, or [nd] is added to the failure container.
    begin
@@ -384,13 +391,6 @@ asserted procedure vsdb_insertaec(db: VSdb, nd: VSnd, de: VSde);
    end;
 
 %%% other procedures %%%
-
-% TODO: Move the following procedure to cl.
-asserted procedure vs_splitor(f: QfFormula): QfFormulaL;
-   if rl_op f eq 'or then
-      rl_argn f
-   else
-      {f};
 
 % TODO: Move the following procedure to cl.
 asserted procedure vs_shadow(v: Kernel): Kernel;

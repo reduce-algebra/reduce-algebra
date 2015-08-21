@@ -412,6 +412,7 @@ struct VSsu checked by VSsuP;  % VS
 struct VSar checked by VSarP;  % VS: arbitrary
 struct VSdg checked by VSdgP;  % VS: degree shift
 struct VSvs checked by VSvsP;  % VS: test point substitution
+struct VSds checked by VSdsP;  % VS data for virtual substitution
 % others:
 struct Position checked by PositionP;  % position in formula
 struct PositionL checked by PositionLP;  % list of Position
@@ -463,6 +464,9 @@ procedure VSdgP(s);  % VS: degree shift
 
 procedure VSvsP(s);  % VS: test point substitution
    pairp s and car s eq 'vsvs;
+
+procedure VSdsP(s);  % VS data for virtual substitution
+   vectorp s and getv(s, 0) eq 'vsds;
 
 procedure PositionP(s);  % position in formula
    null s or (pairp s and fixp car s and PositionP cdr s);

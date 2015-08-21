@@ -88,17 +88,89 @@ asserted procedure vsvs_tp(vs: VSvs): VStp;
    % VS test point substitution test point.
    nth(vs, 3);
 
+%%% VS data for virtual subsitution %%%
+% constructors and access functions
+
+asserted procedure vsds_new(): VSds;
+   % VS data for virtual substitution new.
+   begin scalar ds;
+      ds := mkvect(6);
+      putv(ds, 0, 'vsds);
+      putv(ds, 1, 'undefined);        % [vs]: virtual substitution
+      putv(ds, 2, 'undefined);        % [f]: quantifier-free formula
+      putv(ds, 3, 'undefined);        % [bvl]: do not make assumptions on variables in [bvl]
+      putv(ds, 4, 'undefined);        % [ptheo]: persistent theory
+      putv(ds, 5, 'undefined);        % [ttheo]: temporary theory
+      putv(ds, 6, 'undefined);        % [data]: CollectedData
+      return ds
+   end;
+
+%DS
+% CollectedData ::= QfFormula
+
+procedure vsds_vs(ds);                          getv(ds, 1);
+procedure vsds_f(ds);                           getv(ds, 2);
+procedure vsds_bvl(ds);                         getv(ds, 3);
+procedure vsds_ptheo(ds);                       getv(ds, 4);
+procedure vsds_ttheo(ds);                       getv(ds, 5);
+procedure vsds_data(ds);                        getv(ds, 6);
+
+procedure vsds_putvs(ds, vs);                   putv(ds, 1, vs);
+procedure vsds_putf(ds, f);                     putv(ds, 2, f);
+procedure vsds_putbvl(ds, bvl);                 putv(ds, 3, bvl);
+procedure vsds_putptheo(ds, ptheo);             putv(ds, 4, ptheo);
+procedure vsds_putttheo(ds, ttheo);             putv(ds, 5, ttheo);
+procedure vsds_putdata(ds, data);               putv(ds, 6, data);
+
+asserted procedure vsds_mk(vs: VSsu, f: QfFormula, bvl: KernelL, ptheo: Theory, ttheo: Theory): VSds;
+   begin scalar ds;
+      ds := vsds_new();
+      vsds_putvs(ds, vs);
+      vsds_putf(ds, f);
+      vsds_putbvl(ds, bvl);
+      vsds_putptheo(ds, ptheo);
+      vsds_putttheo(ds, ttheo);
+      vsds_putdata(ds, nil);
+      return ds
+   end;
+
+asserted procedure vsds_mkfrom(ds: VSds): VSds;
+   begin scalar nds;
+      nds := vsds_new();
+      vsds_putvs(nds, vsds_vs ds);
+      vsds_putf(nds, vsds_f ds);
+      vsds_putbvl(nds, vsds_bvl ds);
+      vsds_putptheo(nds, vsds_ptheo ds);
+      vsds_putttheo(nds, vsds_ttheo ds);
+      vsds_putdata(nds, vsds_data ds);
+      return nds
+   end;
+
 %%% "real" procedures %%%
 
-asserted procedure vssu_apply(vs: VSsu, f: QfFormula): QfFormula;
+asserted procedure qff_applysub(vs: VSsu, f: QfFormula, bvl: KernelL, theo: Theory): QfFormulaL;
    % This is the usual entry point.
-   % VS apply.
-   if vssu_arp vs then
-      vsar_apply(vs, f)
-   else if vssu_dgp vs then
-      vsdg_apply(vs, f)
-   else if vssu_vpp vs then
-      vsvs_apply(vs, f);
+   % wrapper
+   begin scalar ds, ff;
+      ds := vsds_mk(vs, f, bvl, theo, nil);
+      vsds_apply ds;
+      ff := vsds_data ds;
+      % TODO: Simplify [f] here!
+      return vs_splitor ff
+   end;
+
+asserted procedure vsds_apply(ds: VSds);
+   begin scalar vs, f, ff;
+      vs := vsds_vs ds;
+      f := vsds_f ds;
+      ff := if vssu_arp vs then
+      	 vsar_apply(vs, f)
+      else if vssu_dgp vs then
+      	 vsdg_apply(vs, f)
+      else if vssu_vpp vs then
+      	 vsvs_apply(vs, f);
+      vsds_putdata(ds, ff)
+   end;
 
 asserted procedure vsar_apply(vs: VSar, f: QfFormula): QfFormula;
    % VS arbitrary apply. It should be never needed to apply this VS.
@@ -134,6 +206,13 @@ asserted procedure vsdg_decdeg(at: QfFormula, v: Kernel, g: Integer, sv: Kernel)
       f := sfto_decdegf(f, v, g);
       return ofsf_0mk2(rl_op at, sfto_renamef(f, v, sv))
    end;
+
+% TODO: Move the following procedure to cl.
+asserted procedure vs_splitor(f: QfFormula): QfFormulaL;
+   if rl_op f eq 'or then
+      rl_argn f
+   else
+      {f};
 
 % functions mainly for debugging purposes
 
