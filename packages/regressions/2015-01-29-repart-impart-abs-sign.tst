@@ -3,8 +3,6 @@
 
 repart exp x;
 
-repart(5^x);
-
 impart(log(5));
 
 repart sinh x;

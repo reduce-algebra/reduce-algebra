@@ -1,0 +1,175 @@
+%%
+%% Regression test files for improved trigonometric simplication
+%%
+% new rules for atan2
+{atan2(1,0), atan2(-1,0), atan2(0, 1), atan2(0, -1)};
+
+
+  pi    - pi
+{----,-------,0,pi}
+  2      2
+
+{atan2(1,1), atan2(1,-1), atan2(-1, 1), atan2(-1, -1)};
+
+
+  pi   3*pi    - pi    - 3*pi
+{----,------,-------,---------}
+  4     4       4        4
+
+
+{atan2(i, 0), atan2(-2i, 0), atan2(0, 2+i), atan2(0, -3+i)};
+
+
+  pi    - pi
+{----,-------,0,pi}
+  2      2
+
+r1:={atan2(2+i, 3+5i),atan2(-2-i, 3+5i),atan2(-2+i, 3+5i),atan2(-2+i, -3-5i)};
+
+
+                7*i - 11
+r1 := { - atan(----------),
+                   34
+
+             7*i - 11
+       atan(----------),
+                34
+
+             13*i - 1
+       atan(----------),
+                34
+
+                 13*i - 1
+        - (atan(----------) + pi)}
+                    34
+ 
+
+on complex, rounded;
+
+
+*** Domain mode complex changed to complex-rounded 
+
+r1;
+
+
+{0.324497779498 - 0.187854022171*i, - 0.324497779498 + 0.187854022171*i,
+
+  - 0.0344282446505 + 0.402359478109*i, - 3.10716440894 - 0.402359478109*i}
+
+{atan2(2+i, 3+5i), atan2(-2-i, 3+5i), atan2(-2+i, 3+5i), atan2(-2+i, -3-5i)};
+
+
+{0.324497779498 - 0.187854022171*i, - 0.324497779498 + 0.187854022171*i,
+
+  - 0.0344282446505 + 0.402359478109*i, - 3.10716440894 - 0.402359478109*i}
+ 
+off complex, rounded;
+
+
+*** Domain mode complex-rounded changed to rounded 
+
+
+realvalued x,y;
+
+
+atan2(y^2, -x^2);
+
+
+          2
+         y
+ - atan(----) + pi
+          2
+         x
+  
+
+atan2(x^2, 2i*x^2);
+
+
+          1
+ - atanh(---)*i
+          2
+
+
+% so re/impart of log useful 
+{repart log(x+i*y), impart log(x+i*y)};
+
+
+       2    2
+  log(x  + y )
+{--------------,atan2(y,x)}
+       2
+
+{repart log(x^2+i*y^2), impart log(x^2+i*y^2)};
+
+
+       4    4          2
+  log(x  + y )        y
+{--------------,atan(----)}
+       2               2
+                      x
+
+{repart log(-1), impart log(-1)};
+
+
+{0,pi}
+
+{repart log(i), impart log i, impart log(-i)};
+
+
+    pi    - pi
+{0,----,-------}
+    2      2
+
+{repart log(1+i), impart log(1+i), repart log(-1-i), impart log(-1-i)};
+
+
+  log(2)   pi   log(2)    - 3*pi
+{--------,----,--------,---------}
+    2      4      2         4
+
+
+% new rules involving atan
+r1:= sin(atan x/2);
+
+
+                          2
+            abs(x)*(sqrt(x  + 1) - 1)
+r1 := --------------------------------------
+                       2           2
+       sqrt( - 2*sqrt(x  + 1) + 2*x  + 2)*x
+
+r2:= cos(atan x/2);
+
+
+                     abs(x)
+r2 := ------------------------------------
+                       2           2
+       sqrt( - 2*sqrt(x  + 1) + 2*x  + 2)
+
+r1^2+r2^2;
+
+
+       2
+ abs(x)
+---------
+    2
+   x
+
+
+sin(atan(4/3)/2);
+
+
+    1
+---------
+ sqrt(5)
+
+cos(atan(4/3)/2);
+
+
+    2
+---------
+ sqrt(5)
+
+
+end;
+

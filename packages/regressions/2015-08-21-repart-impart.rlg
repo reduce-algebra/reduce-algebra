@@ -1,0 +1,219 @@
+
+% Testing repart/impart
+
+repart exp x;
+
+
+ repart(x)
+e         *cos(impart(x))
+
+
+repart(5^x);
+
+
+ repart(x)
+5         *cos(impart(x)*log(5))
+
+
+repart(i^i);
+
+
+   1
+-------
+  pi/2
+ e
+
+impart((-1)^i);
+
+
+0
+
+
+{repart sqrt(3+4i), impart sqrt(3+4i)};
+
+
+{2,1}
+
+{repart sqrt(3+2i), impart sqrt(3+2i)};
+
+
+                 1/4
+       sqrt(2)*13
+{--------------------------,
+  sqrt( - 3*sqrt(13) + 13)
+
+            1/4
+  sqrt(2)*13   *(sqrt(13) - 3)
+ ------------------------------}
+   2*sqrt( - 3*sqrt(13) + 13)
+
+
+{repart((2+i)^(3+i)), impart((2+i)^(3+i))};
+
+
+         log(5)             log(5)
+  2*cos(--------) - 11*sin(--------)
+           2                  2
+{------------------------------------,
+               atan(1/2)
+              e
+
+          log(5)            log(5)
+  11*cos(--------) + 2*sin(--------)
+            2                 2
+ ------------------------------------}
+               atan(1/2)
+              e
+
+{repart((-2+i)^(3+i)), impart((-2+i)^(3+i))};
+
+
+   atan(1/2)            log(5)             log(5)
+  e         *( - 2*cos(--------) - 11*sin(--------))
+                          2                  2
+{----------------------------------------------------,
+                          pi
+                         e
+
+   atan(1/2)          log(5)            log(5)
+  e         *(11*cos(--------) - 2*sin(--------))
+                        2                 2
+ -------------------------------------------------}
+                         pi
+                        e
+
+
+realvalued u,v;
+
+
+z:={repart((u+i*v)^(1/3)), impart((u+i*v)^(1/3))}$
+
+
+z where u=>-8, v=>0;
+
+
+{1,sqrt(3)}
+
+{repart((-8)^(1/3)), impart((-8)^(1/3))};
+
+
+{-2,0}
+
+
+impart(log(5));
+
+
+0
+
+
+repart sinh x;
+
+
+cos(impart(x))*sinh(repart(x))
+
+impart sinh x;
+
+
+cosh(repart(x))*sin(impart(x))
+
+repart cosh x;
+
+
+cos(impart(x))*cosh(repart(x))
+
+impart cosh x;
+
+
+sin(impart(x))*sinh(repart(x))
+
+
+repart tanh(u+i*v);
+
+
+  cosh(u)*sinh(u)
+--------------------
+       2          2
+ cos(v)  + sinh(u)
+
+impart tan(u+i*v);
+
+
+  cosh(v)*sinh(v)
+--------------------
+       2          2
+ cos(u)  + sinh(v)
+
+repart asech(2+i);
+
+
+        sqrt(5) + 10
+ acosh(--------------)
+         5*sqrt(5)
+-----------------------
+           2
+
+impart acsc(3+4i);
+
+
+           sqrt(5) + 40*sqrt(2)
+  - acosh(----------------------)
+                25*sqrt(5)
+----------------------------------
+                2
+
+
+repart asin(u+i*v);
+
+
+            4      2  2      2    4      2         2    2
+(acos(sqrt(u  + 2*u *v  - 2*u  + v  + 2*v  + 1) - u  - v )
+
+             2
+ *( - sign(u)  + sign(u) + 1))/2
+
+impart atanh(u+i*v);
+
+
+                 2    2              2                     2
+(2*atan2(2*v, - u  - v  + 1) + sign(u  - 1)*sign(u)*sign(v) *pi
+
+          2                         2             2            2
+  - sign(u  - 1)*sign(u)*pi + sign(u  - 1)*sign(v) *pi - sign(u  - 1)*pi
+
+                   2                          2
+  + sign(u)*sign(v) *pi - sign(u)*pi + sign(v) *pi - pi)/4
+
+
+{repart asinh(2+3i), impart asinh(2+3i)};
+
+
+  acosh(4*sqrt(10) + 13)   acos(4*sqrt(10) - 13)
+{------------------------,-----------------------}
+            2                        2
+
+{repart acosh(1/2), impart acosh(1/2), repart acosh(-1/2), impart acosh(-1/2)};
+
+
+    pi     2*pi
+{0,----,0,------}
+    3       3
+
+{repart atanh(2), impart atanh(2)};
+
+
+  log(3)    - pi
+{--------,-------}
+    2        2
+
+{repart atan(3+4i), impart atan(3+4i)};
+
+
+           1                  9
+   - atan(---) + pi    - log(----)
+           4                  17
+{-------------------,--------------}
+          2                4
+
+
+end;
+

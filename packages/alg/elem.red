@@ -630,38 +630,82 @@ let df(acsc(~x),x) =>  -1/(x^2*sqrt(1-1/x^2)),
 % rules for atan2  
 let df(atan2(~y,~x),~z) => (x*df(y, z)-y*df(x, z))/(x^2+y^2);
 
+% This procedure now works for complex arguments and gives results compatible 
+% with the numerical results returned by cratan2!* (and rdatan2!*)
+% It may currently be somewhat inefficient as it frequently inter-converts
+% between prefix and standard quotient forms 
 symbolic procedure simp!-atan2 u;
-begin scalar x,y,z,v,w;
-   if length u neq 2 then
-     rerror(alg,17,list("Wrong number of arguments to", 'atan2));
-   if (z := valuechk('atan2, u)) then return z;
+<< if length u neq 2 then  
+      rerror(alg,17,list("Wrong number of arguments to", 'atan2));
+   (if val then val    % where val=valuechk('atan2, u)
+    else % NB some simplifications seem to fail if !*complex=t
+    begin scalar x,y,z,v,w, !*complex; 
+       y := reval car u;
+       x := reval cadr u;
 
-   y := reval car u;
-   x := reval cadr u;
+       % deal with usual case of real arguments separately as more
+       % simp!-sign1 succeeds more often with simpler arguments
+       if null numr simpimpart list x and null numr simpimpart list y then
+          return simpatan2r(y, x);
 
-   % No simplification implemented for complex arguments   
-   if freeof(y, 'i) and freeof(x, 'i) then
-      if x=0
-        then << z := simp!-sign1 y;
-                if null numr z then rerror(alg, 211, "atan2(0, 0) formed") 
-                else return quotsq(simp {'quotient, 'pi, 2}, z)>>
-       else if y=0
-         then << z := simp!-sign1 x;
-                 return multsq(addsq(1 ./ 1, quotsq((-1) ./ 1, z)),
-                               simp {'quotient, 'pi, 2})>>
-       else << z := simp!-sign1 x; v := simp!-sign1 y;
-               if denr z=1 and fixp numr z and denr v=1 and fixp numr v
-                 then << w := simp {'atan,{'quotient,y,x}};
-                         if numr z=1 then return w
-                         else if numr v=1 then return addsq(simp 'pi,w)
-                         else return subtrsq(w,simp 'pi) >>
-            >>;
-   return simpiden {'atan2,y,x};
-end;
+       % save simplified original arguments for default return value
+       u := {y, x};  
 
+       if x=0 then <<
+      	  z:= simp!-sign1 prepsq simprepart list y;
+      	  if null numr z then z:= simp!-sign1 reval {'quotient, y, 'i};
+      	  if denr z=1 and fixp numr z then 
+	     return multsq(z, simp {'quotient,'pi, 2})>>
+       else if y=0 then <<
+      	  z:= simp!-sign1 prepsq simprepart list x;
+      	  if null numr z then z:= simp!-sign1 reval {'quotient, x, 'i};
+      	  if denr z=1 and fixp numr z then 
+	     if numr z=1 then return nil ./ 1
+	     else return simp 'pi>>
+       else <<
+      	  z := simp!* {'plus, {'expt, x, 2}, {'expt, y, 2}};
+      	  if null numr z then 
+	     rerror(alg, 212, "Essential singularity encountered in atan");
+      	  x := {'quotient, x, {'sqrt, z:=prepsq z}};
+      	  y := {'quotient, y, {'sqrt, z}};
+	  z:= simp!-sign1 prepsq simprepart list x;
+      	  if null numr z then z := simp!-sign1  reval {'quotient, x, 'i};
+	  v := simp!-sign1 prepsq simprepart list y;
+      	  if null numr v then v := simp!-sign1 reval {'quotient, y, 'i};
+      	  if denr z=1 and fixp numr z and denr v=1 and fixp numr v then <<
+	     w := simp {'atan, prepsq rationalizesq simp {'quotient, y, x}};
+	     if numr z=1 then return w
+	     else if numr v=1 then return addsq(simp 'pi, w)
+	     else return subtrsq(w, simp 'pi) >>
+       >>;
+       return simpiden {'atan2, car u, cadr u}
+    end) where val = valuechk('atan2, u)
+>>;
 
 put('atan2,'simpfn,'simp!-atan2);
   
+symbolic procedure simpatan2r(y, x);
+begin scalar z,v,w;
+% Arguments are real and simplified
+   if x=0 then << 
+      z := simp!-sign1 y;
+      if null numr z then rerror(alg, 211, "atan2(0, 0) formed") 
+      else return quotsq(simp {'quotient, 'pi, 2}, z)>>
+   else if y=0 then <<
+      z := simp!-sign1 x;
+      return multsq(addsq(1 ./ 1, quotsq((-1) ./ 1, z)),
+	            simp {'quotient, 'pi, 2})>>
+   else << 
+      z := simp!-sign1 x; v := simp!-sign1 y;
+      if denr z=1 and fixp numr z and denr v=1 and fixp numr v then <<
+       	 w := simp {'atan, {'quotient, y, x}};
+	 if numr z=1 then return w
+	 else if numr v=1 then return addsq(simp 'pi, w)
+	 else return subtrsq(w, simp 'pi) >>
+   >>;
+   return simpiden {'atan2, y, x};
+end;
+
 
 %for all x let e**log x=x;   % Requires every power to be checked.
 
@@ -766,6 +810,16 @@ invtrigrules := {
 %             when symbolic(not !*complex) and x^2 neq -1
 %                   and acos((1-x^2)/(1+x^2)) freeof acos
 }$
+
+% The following are useful for simplifying sqrts of complex values
+% Added by A Barnes, Aug 2015
+invtrigrules2 := {
+    sin(atan(~x)/2) => sin(atan((sqrt(1+x^2)-1)/x)),
+    cos(atan(~x)/2) => cos(atan((sqrt(1+x^2)-1)/x))
+%    tan(atan(~x)/2) => (sqrt(1+x^2)-1)/x
+}$
+
+let invtrigrules2;
 
 invhyprules := {
   sinh(atanh ~u)   => u/sqrt(1-u^2),

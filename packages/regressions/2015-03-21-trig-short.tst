@@ -131,10 +131,10 @@ off complex, rational;
 % new rules for atan2
 {atan2(1,0), atan2(-1,0), atan2(0, 1), atan2(0, -1)};
 {atan2(1,1), atan2(1,-1), atan2(-1, 1), atan2(-1, -1)};
-atan2(y^2, -x^2);
 
-% so re/impart of log useful 
 realvalued x,y;
+atan2(y^2, -x^2);
+% so re/impart of log useful 
 {repart log(x+i*y), impart log(x+i*y)};
 {repart log(x^2+i*y^2), impart log(x^2+i*y^2)};
 {repart log(-1), impart log(-1)};

@@ -8,13 +8,6 @@ repart exp x;
 e         *cos(impart(x))
 
 
-repart(5^x);
-
-
-        x
-repart(5 )
-
-
 impart(log(5));
 
 
@@ -70,4 +63,3 @@ e
 
 
 end;
-

@@ -298,21 +298,53 @@ symbolic procedure reimcosh u;
       
 put('expt,'cmpxsplitfn,'reimexpt);
 
+% symbolic procedure reimexpt u;
+%    if cadr u eq 'e %or numberp cadr u
+%      then multsq(simp {'exp,{'times,{'log,cadr u},prepsq simprepart cddr u}},
+%                  addsq(reimcos {'cos,imarg},
+%                        multsq(simp 'i,reimsin {'sin,imarg})))
+%             where imarg = {'times,{'log,cadr u},prepsq simpimpart cddr u}
+% %     then addsq(reimcos list('cos,reval list('times,'i,caddr u)),
+% %                multsq(simp list('minus,'i),
+% %                    reimsin list('sin,reval list('times,'i,caddr u))))
+%     else if fixp cadr u and cadr u > 0
+%               and eqcar(caddr u,'quotient)
+%               and fixp cadr caddr u
+%               and fixp caddr caddr u
+%      then mksq(u,1)
+%     else addsq(mkrepart u,multsq(simp 'i,mkimpart u));
+
+% This normally returns the principal value for complex arguments including
+% cases with a rational real exponent. However, for (powers of) the nth root 
+% (n odd) of a real negative number, it returns a real value.
+% This is due to simplifications performed by simpexpt prior to the call
+% of reimexpt.
+%
+% Thus, for example, 
+%     x := repart((-2)^(u+i*v)); x where u => 1/3, v=>0;
+% produces the real part of  the (complex) principal value whereas
+%     x := repart((-2)^(1/3));
+% produces the real negative cube root.
+% cf the numerical evaluation od (-2)^(1/3) after on rounded; 
+%   compared with the behaviour after on rounded, complex;
 symbolic procedure reimexpt u;
-   if cadr u eq 'e %or numberp cadr u
-     then multsq(simp {'exp,{'times,{'log,cadr u},prepsq simprepart cddr u}},
-                 addsq(reimcos {'cos,imarg},
-                       multsq(simp 'i,reimsin {'sin,imarg})))
-            where imarg = {'times,{'log,cadr u},prepsq simpimpart cddr u}
-%     then addsq(reimcos list('cos,reval list('times,'i,caddr u)),
-%                multsq(simp list('minus,'i),
-%                    reimsin list('sin,reval list('times,'i,caddr u))))
-    else if fixp cadr u and cadr u > 0
-              and eqcar(caddr u,'quotient)
-              and fixp cadr caddr u
-              and fixp caddr caddr u
-     then mksq(u,1)
-    else addsq(mkrepart u,multsq(simp 'i,mkimpart u));
+  begin scalar x, y, v, w, z1, z2;
+    x := reimlog{'log, cadr u};
+    y := prepsq take!-impart x;
+    x := prepsq take!-realpart x;
+    v := prepsq simprepart cddr u;
+    w := prepsq simpimpart cddr u;
+    z1 := simp {'exp, {'difference, {'times, x, v}, {'times, y, w}}};
+    z2 := {'plus, {'times, x, w}, {'times, y, v}};
+    return
+      multsq(z1, addsq(simp{'cos, z2}, multsq(simp 'i, simp{'sin, z2}))); 
+  end;
+
+put('sqrt, 'cmpxsplitfn, 'reimsqrt);
+
+% only called when !*keepsqrts is true
+symbolic procedure reimsqrt u;
+   reimexpt {'expt, cadr u, {'quotient, 1, 2}};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The procedures below were added by Alan Barnes to handle tan, tanh, cot,
@@ -792,6 +824,7 @@ end;
 %%% special cases
 
 put('arbint,'cmpxsplitfn,'simp);
+
 
 endmodule;
 

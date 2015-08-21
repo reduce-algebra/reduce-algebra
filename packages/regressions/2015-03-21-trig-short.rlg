@@ -1092,6 +1092,10 @@ off complex, rational;
 {----,------,-------,---------}
   4     4       4        4
 
+
+realvalued x,y;
+
+
 atan2(y^2, -x^2);
 
 
@@ -1101,11 +1105,7 @@ atan2(y^2, -x^2);
           2
          x
 
-
 % so re/impart of log useful 
-realvalued x,y;
-
-
 {repart log(x+i*y), impart log(x+i*y)};
 
 
@@ -1564,4 +1564,3 @@ coth(-5/7*i*pi);
 
 
 end;
-
