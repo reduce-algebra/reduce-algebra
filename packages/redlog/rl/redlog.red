@@ -69,11 +69,11 @@ switch rlsism,rlsichk,rlsiidem,rlsiatadv,rlsipd,rlsiexpl,rlsiexpla,rlsiso,
    rlbnfsm,rlsimpl,rlsifac,rlqegsd,rlgserf,rlbnfsac,rlgsvb,rlqesr,rlqeheu,
    rldavgcd,rlsitsqspl,rlgsbnf,rlgsutord,rlqegenct,rltnft,rlnzden,rlposden,
    rladdcond,rlqevarsel,rlqeqsc,rlqesqsc,rlsusi,rlsusimult,rlsusigs,rlsusiadd,
-   rlcadfac,rlcaddnfformula,rlcadprojonly,rlcadpreponly,rlcadbaseonly,
-   rlcadextonly,rlcadverbose,rlcadfasteval,rlcaddebug,rlcadpartial,
-   rlcadfulldimonly,rlcadtrimtree,rlcadrawformula,rlcadisoallroots,rlcadaproj,
-   rlcadaprojalways,rlcadhongproj,rlanuexverbose,rlanuexdifferentroots,
-   rlanuexpsremseq,rlanuexgcdnormalize,rlanuexsgnopt,rlcaddecdeg,
+   rlcaddnfformula,rlcadprojonly,rlcadpreponly,
+   rlcadextonly,rlcadverbose,rlcadfasteval,
+   rlcadfulldimonly,rlcadtrimtree,rlcadrawformula,
+   rlanuexverbose,
+   rlanuexgcdnormalize,rlanuexsgnopt,rlcaddecdeg,
    rlcadte,rlcadpbfvs,rlqefb,rlxopt,rlxoptsb,rlxoptpl,rlxoptri,rlxoptric,
    rlxoptses,rlxoptrir,rlourdet,rlvmatvb,rlhqetfcsplit,rlhqetfcfullsplit,
    rlhqetfcfast,rlhqevb,rlhqevarsel,rlhqevarselx,rlhqedim0,rlhqetheory,
@@ -132,26 +132,16 @@ off1 'rlsusi;
 off1 'rlsusimult;
 off1 'rlsusigs;
 on1 'rlsusiadd;
-on1  'rlcadfac;
 on1 'rlcaddnfformula;
 off1 'rlcadpreponly;
 off1 'rlcadprojonly;
-off1 'rlcadbaseonly;
 off1 'rlcadextonly;
 on1 'rlcadverbose;
 on1  'rlcadfasteval;
-off1 'rlcaddebug;
-on1 'rlcadpartial;
 off1 'rlcadfulldimonly;
 on1  'rlcadtrimtree;
 off1 'rlcadrawformula;
-off1 'rlcadisoallroots;
-off1 'rlcadaproj;
-off1 'rlcadaprojalways;
-on1 'rlcadhongproj;
 off1 'rlanuexverbose;
-on1 'rlanuexdifferentroots;
-off1 'rlanuexpsremseq;
 on1 'rlanuexgcdnormalize;
 off1 'rlanuexsgnopt;
 off1 'rlcaddecdeg;

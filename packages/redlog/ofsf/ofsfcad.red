@@ -936,8 +936,6 @@ asserted procedure caddata_printsome(cd: CadData): Any;
 	 ioto_prin2t{"oldorder := ", caddata_oldorder cd}
    end;
 
-% TODO: Switches !*rlcadhongproj and !*rlcadfac are not used. Remove them.
-
 asserted procedure ofsf_printcadswitches(): Any;
    % Prints the status of all switches relevant to CAD.
    <<
@@ -949,8 +947,6 @@ asserted procedure ofsf_printcadswitches(): Any;
       % ioto_tprin2 "+ preparation phase switches:";
       ofsf_cadswitchprint !*rlcaddecdeg; ioto_prin2 "rlcaddecdeg;";
       % ioto_tprin2 "+ projection phase switches:";
-      ofsf_cadswitchprint !*rlcadhongproj; ioto_prin2 "rlcadhongproj;";
-      ofsf_cadswitchprint !*rlcadfac; ioto_prin2 "rlcadfac;";
       % ioto_tprin2 "+ extension phase switches";
       ofsf_cadswitchprint !*rlcadte; ioto_prin2 "rlcadte;";
       ofsf_cadswitchprint !*rlcadpbfvs; ioto_prin2 "rlcadpbfvs;";
