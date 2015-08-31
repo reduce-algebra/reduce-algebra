@@ -43,7 +43,7 @@ rlvarsellvl!* := 1;
 %%% QE tree node %%%
 % constructors and access functions
 
-asserted procedure vsnd_mk(flg: Boolean, vs: VSsu, varl: KernelL, f: QfFormula, p: VSnd): VSnd;
+asserted procedure vsnd_mk(flg: Boolean, vs: VSvs, varl: KernelL, f: QfFormula, p: VSnd): VSnd;
    % QE tree node make. [flg] denotes whether VS [vs] needs to be
    % applied; [varl] is a list of variables to be eliminated; [f] is a
    % quantifier-free formula; [p] is the parent QE tree node.
@@ -53,7 +53,7 @@ asserted procedure vsnd_flg(nd: VSnd): Boolean;
    % QE tree node flag.
    nth(nd, 2);
 
-asserted procedure vsnd_su(nd: VSnd): VSsu;
+asserted procedure vsnd_vs(nd: VSnd): VSvs;
    % QE tree node VS.
    nth(nd, 3);
 
@@ -252,10 +252,10 @@ asserted procedure vs_blockmainloop(db: VSdb);
 	 varl := vsnd_varl nd;
 	 f := vsnd_f nd;
 	 if vsnd_flg nd then  % substitution has not been applied yet
-	    vsdb_applySub(db, nd)
+	    vsdb_applyvs(db, nd)
 	 else <<  % substitution was already applied
 	    mbr := vsdb_htmember(db, f);
-	    if not mbr or vssu_arp vsnd_su nd then <<
+	    if not mbr or vsvs_arp vsnd_vs nd then <<
 	       if not mbr then
 	       	  vsdb_htinsert(db, f);
 	       if f eq 'true then
@@ -269,15 +269,15 @@ asserted procedure vs_blockmainloop(db: VSdb);
       >>
    end;
 
-asserted procedure vsdb_applySub(db: VSdb, nd: VSnd);
+asserted procedure vsdb_applyvs(db: VSdb, nd: VSnd);
    % Apply substitution. No meaningful return value; [db] is modified
    % in-place so that the subsitution in [nd] is applied, i.e., a list
    % of nodes is added to the working container.
-   begin scalar su, ffl;
-      su := vsnd_su nd;
-      ffl := qff_applysub(su, vsnd_f nd, vsdb_bvl db, vsdb_curtheo db);
+   begin scalar vs, ffl;
+      vs := vsnd_vs nd;
+      ffl := qff_applyvs(vs, vsnd_f nd, vsdb_bvl db, vsdb_curtheo db);
       for each ff in ffl do
-	 vsdb_wcinsert(db, vsnd_mk(nil, su, vsnd_varl nd, ff, vsnd_parent nd))
+	 vsdb_wcinsert(db, vsnd_mk(nil, vs, vsnd_varl nd, ff, vsnd_parent nd))
    end;
 
 asserted procedure vsdb_expandNode(db: VSdb, nd: VSnd);
@@ -328,8 +328,8 @@ asserted procedure vsdb_tryExpandDG(db: VSdb, nd: VSnd): Boolean;
    begin scalar vl, f, res, v, sv; integer g;
       vl := vsnd_varl nd;
       f := vsnd_f nd;
-      if vssu_dgp vsnd_su nd then
-	 vl := delq(vsdg_sv vsnd_su nd, vl);  % We need not to try degree shift w.r.t. the most recent shadow variable.
+      if vsvs_dgp vsnd_vs nd then
+	 vl := delq(vsdg_sv vsnd_vs nd, vl);  % We need not to try degree shift w.r.t. the most recent shadow variable.
       while vl and not res do <<
 	 v := pop vl;
 	 g := vs_dgcd(f, v);
@@ -387,7 +387,7 @@ asserted procedure vsdb_insertaec(db: VSdb, nd: VSnd, de: VSde);
       v := vsde_var de;
       nvarl := delq(v, vsnd_varl nd);
       for each tp in tpl do
-	 vsdb_wcinsert(db, vsnd_mk(t, vsvs_mk(v, tp), nvarl, f, nd))
+	 vsdb_wcinsert(db, vsnd_mk(t, vsts_mk(v, tp), nvarl, f, nd))
    end;
 
 %%% other procedures %%%

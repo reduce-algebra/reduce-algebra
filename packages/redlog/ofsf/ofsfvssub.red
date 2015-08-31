@@ -40,19 +40,19 @@ module ofsfvssub;
 %%% VS %%%
 % constructors and access functions
 
-asserted procedure vssu_arp(vs: VSsu): Boolean;
+asserted procedure vsvs_arp(vs: VSvs): Boolean;
    % VS arbitrary predicate.
-   pairp vs and car vs eq 'vsar;
+   VSarP vs;
 
-asserted procedure vssu_dgp(vs: VSsu): Boolean;
+asserted procedure vsvs_dgp(vs: VSvs): Boolean;
    % VS degree shift predicate.
-   pairp vs and car vs eq 'vsdg;
+   VSdgP vs;
 
-asserted procedure vssu_vpp(vs: VSsu): Boolean;
+asserted procedure vsvs_tsp(vs: VSvs): Boolean;
    % VS test point substitution predicate.
-   pairp vs and car vs eq 'vsvs;
+   VStsP vs;
 
-asserted procedure vsar_mk(v: Kernel): VSsu;
+asserted procedure vsar_mk(v: Kernel): VSvs;
    % VS arbitrary make.
    {'vsar, v};
 
@@ -60,7 +60,7 @@ asserted procedure vsar_v(vs: VSar): Kernel;
    % VS arbitrary variable.
    nth(vs, 2);
 
-asserted procedure vsdg_mk(v: Kernel, g: Integer, sv: Kernel): VSsu;
+asserted procedure vsdg_mk(v: Kernel, g: Integer, sv: Kernel): VSvs;
    % VS degree shift make.
    {'vsdg, v, g, sv};
 
@@ -76,15 +76,15 @@ asserted procedure vsdg_sv(vs: VSdg): Kernel;
    % VS degree shift shadow variable.
    nth(vs, 4);
 
-asserted procedure vsvs_mk(v: Kernel, tp: VStp): VSsu;
+asserted procedure vsts_mk(v: Kernel, tp: VStp): VSvs;
    % VS test point substitution make.
-   {'vsvs, v, tp};
+   {'vsts, v, tp};
 
-asserted procedure vsvs_v(vs: VSvs): Kernel;
+asserted procedure vsts_v(vs: VSts): Kernel;
    % VS test point substitution variable.
    nth(vs, 2);
 
-asserted procedure vsvs_tp(vs: VSvs): VStp;
+asserted procedure vsts_tp(vs: VSts): VStp;
    % VS test point substitution test point.
    nth(vs, 3);
 
@@ -122,7 +122,7 @@ procedure vsds_putptheo(ds, ptheo);             putv(ds, 4, ptheo);
 procedure vsds_putttheo(ds, ttheo);             putv(ds, 5, ttheo);
 procedure vsds_putdata(ds, data);               putv(ds, 6, data);
 
-asserted procedure vsds_mk(vs: VSsu, f: QfFormula, bvl: KernelL, ptheo: Theory, ttheo: Theory): VSds;
+asserted procedure vsds_mk(vs: VSvs, f: QfFormula, bvl: KernelL, ptheo: Theory, ttheo: Theory): VSds;
    begin scalar ds;
       ds := vsds_new();
       vsds_putvs(ds, vs);
@@ -148,27 +148,28 @@ asserted procedure vsds_mkfrom(ds: VSds): VSds;
 
 %%% "real" procedures %%%
 
-asserted procedure qff_applysub(vs: VSsu, f: QfFormula, bvl: KernelL, theo: Theory): QfFormulaL;
+asserted procedure qff_applyvs(vs: VSvs, f: QfFormula, bvl: KernelL, theo: Theory): QfFormulaL;
    % This is the usual entry point.
    % wrapper
    begin scalar ds, ff;
       ds := vsds_mk(vs, f, bvl, theo, nil);
-      vsds_apply ds;
+      vsds_applyvs ds;
       ff := vsds_data ds;
-      % TODO: Simplify [f] here!
       return vs_splitor ff
    end;
 
-asserted procedure vsds_apply(ds: VSds);
+asserted procedure vsds_applyvs(ds: VSds);
+   % VS data for virtual substitution apply VS.
    begin scalar vs, f, ff;
       vs := vsds_vs ds;
       f := vsds_f ds;
-      ff := if vssu_arp vs then
+      ff := if vsvs_arp vs then
       	 vsar_apply(vs, f)
-      else if vssu_dgp vs then
+      else if vsvs_dgp vs then
       	 vsdg_apply(vs, f)
-      else if vssu_vpp vs then
-      	 vsvs_apply(vs, f);
+      else if vsvs_tsp vs then
+      	 vsts_apply(vs, f);
+      % TODO: Simplify [ff] here!
       vsds_putdata(ds, ff)
    end;
 
@@ -188,15 +189,6 @@ asserted procedure vsdg_apply(vs: VSdg, f: QfFormula): QfFormula;
       return rl_mk2('and, ofsf_0mk2('geq, vsdg_sv vs), f)
    end;
 
-asserted procedure vsvs_apply(vs: VSvs, f: QfFormula): QfFormula;
-   % VS test point substitution apply.
-   % TEMPORARY! Using old code to have something runnable.
-   begin scalar v, tp;
-      v := vsvs_v vs;
-      tp := vsvs_tp vs;
-      return cdr apply(car tp, nil . nil . f . v . cdr tp)
-   end;
-
 asserted procedure vsdg_decdeg(at: QfFormula, v: Kernel, g: Integer, sv: Kernel): QfFormula;
    % Decrement degree of atomic formula. Replace each occurence of
    % [v^n] by [sv^(n/g)].
@@ -205,6 +197,15 @@ asserted procedure vsdg_decdeg(at: QfFormula, v: Kernel, g: Integer, sv: Kernel)
       f := rl_arg2l at;
       f := sfto_decdegf(f, v, g);
       return ofsf_0mk2(rl_op at, sfto_renamef(f, v, sv))
+   end;
+
+asserted procedure vsts_apply(vs: VSts, f: QfFormula): QfFormula;
+   % VS test point substitution apply.
+   % TEMPORARY! Using old code to have something runnable.
+   begin scalar v, tp;
+      v := vsts_v vs;
+      tp := vsts_tp vs;
+      return cdr apply(car tp, nil . nil . f . v . cdr tp)
    end;
 
 % TODO: Move the following procedure to cl.
@@ -216,14 +217,14 @@ asserted procedure vs_splitor(f: QfFormula): QfFormulaL;
 
 % functions mainly for debugging purposes
 
-asserted procedure vssu_printSummary(vs: VSsu);
+asserted procedure vsvs_printSummary(vs: VSvs);
    <<
       ioto_prin2 {"VS: "};
-      if vssu_vpp vs then
-      	 ioto_prin2t {vsvs_v vs, " = test point"}
-      else if vssu_dgp vs then
+      if vsvs_tsp vs then
+      	 ioto_prin2t {vsts_v vs, " = test point"}
+      else if vsvs_dgp vs then
       	 ioto_prin2t {vsdg_v vs, " = ", vsdg_g vs, "-th root of ", vsdg_sv vs}
-      else if vssu_arp vs then
+      else if vsvs_arp vs then
       	 ioto_prin2t {vsar_v vs, " = arbitrary"}
    >>;
 

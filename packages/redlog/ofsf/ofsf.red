@@ -408,10 +408,10 @@ struct VStp checked by VStpP;  % test point
 struct VSde checked by VSdeP;  % VS data for elimination set computation
 struct VSdt checked by VSdtP;  % VS data for formula traversal
 % defined in module ofsfvssub:
-struct VSsu checked by VSsuP;  % VS
+struct VSvs checked by VSvsP;  % VS
 struct VSar checked by VSarP;  % VS: arbitrary
 struct VSdg checked by VSdgP;  % VS: degree shift
-struct VSvs checked by VSvsP;  % VS: test point substitution
+struct VSts checked by VStsP;  % VS: test point substitution
 struct VSds checked by VSdsP;  % VS data for virtual substitution
 % others:
 struct Position checked by PositionP;  % position in formula
@@ -453,8 +453,8 @@ procedure VSdeP(s);  % VS data for elimination set computation
 procedure VSdtP(s);  % VS data for formula traversal
    vectorp s and getv(s, 0) eq 'vsdt;
 
-procedure VSsuP(s);  % VS
-   VSarP s or VSdgP s or VSvsP s;
+procedure VSvsP(s);  % VS
+   VSarP s or VSdgP s or VStsP s;
 
 procedure VSarP(s);  % VS: arbitrary
    pairp s and car s eq 'vsar;
@@ -462,8 +462,8 @@ procedure VSarP(s);  % VS: arbitrary
 procedure VSdgP(s);  % VS: degree shift
    pairp s and car s eq 'vsdg;
 
-procedure VSvsP(s);  % VS: test point substitution
-   pairp s and car s eq 'vsvs;
+procedure VStsP(s);  % VS: test point substitution
+   pairp s and car s eq 'vsts;
 
 procedure VSdsP(s);  % VS data for virtual substitution
    vectorp s and getv(s, 0) eq 'vsds;
