@@ -52,9 +52,8 @@ struct CadData checked by CadDataP;
 struct Acell checked by AcellP;
 struct Atree checked by AtreeP;
 
-% TODO: Is there a LISP function checking whether its input is a vector?
 procedure CadDataP(s);
-   atom s and getv(s, 0) eq 'caddata;
+   vectorp s and getv(s, 0) eq 'caddata;
 
 procedure AcellP(s);
    pairp s and car s eq 'acell;

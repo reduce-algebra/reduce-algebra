@@ -790,9 +790,9 @@ asserted procedure ofsf_fml2fopll(fml: List, op: Id, v: Kernel, theo: Theory): L
 	 s := ofsf_definite(fmnvl, theo);
 	 if s then <<
 	    % - the sign of the factors not containing [v] is a non-zero constant
-	    % TODO: If the sign of the factors not containing [v] is not
-	    % a non-zero constant we could multiply them with f and
-	    % continue. Investigate this.
+	    % TODO: If the sign of the factors not containing [v] is
+	    % not a non-zero constant, then we could multiply them
+	    % with f and continue. Investigate this.
 	    f . m := car fmvl;
 	    op := op_adjust(op, s);
 	    if evenp m then

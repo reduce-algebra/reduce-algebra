@@ -1030,8 +1030,10 @@ asserted procedure aex_gcdext(f: Aex, g: Aex, x: Kernel): AexList;
    end;
 
 asserted procedure aex_sqfree(f: Aex, x: Kernel): Aex;
-   % Square-free part. TODO: Think about precise specification, i.e.: Do we need
-   % [lc f] non-zero? Do we need [f] reduced?
+   % Square-free part.
+   % TODO: Think about precise specification, i.e.:
+   % 1. Do we need [lc f] non-zero?
+   % 2. Do we need [f] reduced?
    if aex_deg(f, x) < 2 then
       f
    else
