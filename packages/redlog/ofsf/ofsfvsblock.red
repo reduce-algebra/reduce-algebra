@@ -380,7 +380,7 @@ asserted procedure vsdb_insertaec(db: VSdb, nd: VSnd, de: VSde);
    begin scalar tpl, f, v, nvarl;
       tpl := vsde_tpl de;
       if null vsde_tpl de then <<
-	 vsdb_finsert(db, nd);
+	 vsdb_fcinsert(db, nd);
 	 return
       >>;
       f := vsde_f de;

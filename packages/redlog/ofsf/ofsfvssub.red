@@ -159,34 +159,36 @@ asserted procedure qff_applyvs(vs: VSvs, f: QfFormula, bvl: KernelL, theo: Theor
    end;
 
 asserted procedure vsds_applyvs(ds: VSds);
-   % VS data for virtual substitution apply VS.
-   begin scalar vs, f, ff;
+   % VS data for virtual substitution apply VS. [ds] is modified
+   % in-place.
+   begin scalar vs;
       vs := vsds_vs ds;
-      f := vsds_f ds;
-      ff := if vsvs_arp vs then
-      	 vsar_apply(vs, f)
-      else if vsvs_dgp vs then
-      	 vsdg_apply(vs, f)
-      else if vsvs_tsp vs then
-      	 vsts_apply(vs, f);
-      % TODO: Simplify [ff] here!
-      vsds_putdata(ds, ff)
+      if vsvs_arp vs then
+	 vsds_applyvsar ds;
+      if vsvs_dgp vs then
+	 vsds_applyvsdg ds;
+      if vsvs_tsp vs then
+	 vsds_applyvsts ds
    end;
 
-asserted procedure vsar_apply(vs: VSar, f: QfFormula): QfFormula;
-   % VS arbitrary apply. It should be never needed to apply this VS.
+asserted procedure vsds_applyvsar(ds: VSds);
+   % VS data for virtual substitution apply VSar. [ds] is modified
+   % in-place. It should be never needed to apply VSar.
    <<
       assert(nil);
-      f
+      vsds_putdata(ds, nil)
    >>;
 
-asserted procedure vsdg_apply(vs: VSdg, f: QfFormula): QfFormula;
-   % VS degree shift apply.
-   begin
+asserted procedure vsds_applyvsdg(ds: VSds);
+   % VS data for virtual substitution apply VSdg. [ds] is modified
+   % in-place.
+   begin scalar vs, f;
+      vs := vsds_vs ds;
+      f := vsds_f ds;
       f := cl_apply2ats1(f, 'vsdg_decdeg, {vsdg_v vs, vsdg_g vs, vsdg_sv vs});
-      if not evenp vsdg_g vs then
-	 return f;
-      return rl_mk2('and, ofsf_0mk2('geq, vsdg_sv vs), f)
+      if evenp vsdg_g vs then
+	 f := rl_mk2('and, ofsf_0mk2('geq, !*k2f vsdg_sv vs), f);
+      vsds_putdata(ds, f)
    end;
 
 asserted procedure vsdg_decdeg(at: QfFormula, v: Kernel, g: Integer, sv: Kernel): QfFormula;
@@ -199,14 +201,77 @@ asserted procedure vsdg_decdeg(at: QfFormula, v: Kernel, g: Integer, sv: Kernel)
       return ofsf_0mk2(rl_op at, sfto_renamef(f, v, sv))
    end;
 
-asserted procedure vsts_apply(vs: VSts, f: QfFormula): QfFormula;
-   % VS test point substitution apply.
-   % TEMPORARY! Using old code to have something runnable.
-   begin scalar v, tp;
-      v := vsts_v vs;
+asserted procedure vsds_applyvsts(ds: VSds);
+   % VS data for virtual substitution apply VSdg. [ds] is modified
+   % in-place. [vsds_vs ds] is a test point substitution [x // tp],
+   % where [tp] is a test point computed from formula [vsds_f ds].
+   begin scalar vs, f, tp, theo, g;
+      vs := vsds_vs ds;
+      f := vsds_f ds;
       tp := vsts_tp vs;
-      return cdr apply(car tp, nil . nil . f . v . cdr tp)
+      theo := append(vsds_ptheo ds, vsds_ttheo ds);
+      g := cl_simpl(vstp_guard tp, theo, -1);
+      if g eq 'false then <<
+	 vsds_putdata(ds, 'false);
+	 return
+      >>;
+      f := qff_replacel(f, vstp_gpl tp, 'false);
+      % TODO: Here we will replace something with ['true].
+      f := qff_condense(f, vstp_p tp);
+      f := cl_apply2ats1(f, 'vsds_applyvsts!-at, {vs});
+      f := cl_simpl(rl_mk2('and, g, f), theo, -1);
+      vsds_putdata(ds, f)
    end;
+
+% THE FOLLOWING PROCEDURE IS TEMPORARY! It uses old code to have something runnable.
+% asserted procedure vsds_applyvsts(ds: VSds);
+%    % VS data for virtual substitution apply VSts. [ds] is modified
+%    % in-place.
+%    begin scalar vs, f, v, tp;
+%       vs := vsds_vs ds;
+%       f := vsds_f ds;
+%       v := vsts_v vs;
+%       tp := vsts_tp vs;
+%       vsds_putdata(ds, cdr apply(car tp, nil . nil . f . v . cdr tp))
+%    end;
+
+asserted procedure qff_condense(f: QfFormula, p: Position): QfFormula;
+   % Quantifier-free formula condense with respect to position [p].
+   % Returns a formula, which is obtained from [f] by replacing each
+   % position disjunctively associated with [p] replaced with
+   % ['false].
+   begin scalar op, ncl; integer n, i;
+      if null p then
+	 return f;
+      op := rl_op f;
+      assert(op eq 'and or op eq 'or);
+      n := car p;
+      if op eq 'and then <<
+	 for each c in rl_argn f do <<
+	    i := i + 1;
+	    if eqn(i, n) then
+	       push(qff_condense(c, cdr p), ncl)
+	    else
+	       push(c, ncl)
+	 >>;
+      	 return rl_mkn(op, reversip ncl)
+      >>;
+      % we know that [op eq 'or]
+      for each c in rl_argn f collect <<
+	 i := i + 1;
+	 if eqn(i, n) then
+	    push(qff_condense(c, cdr p), ncl)
+	 else
+	    push('false, ncl)
+      >>;
+      return rl_mkn(op, reversip ncl)
+   end;
+
+asserted procedure vsds_applyvsts!-at(at: QfFormula, vs: VSts): QfFormula;
+   % VS test point substitution apply to atomic formula. [vs] is a
+   % substitution [x // tp], where [tp] is a test point.
+   % TODO: Write a real version of this procedure.
+   'true;
 
 % TODO: Move the following procedure to cl.
 asserted procedure vs_splitor(f: QfFormula): QfFormulaL;

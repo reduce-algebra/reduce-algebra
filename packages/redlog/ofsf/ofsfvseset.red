@@ -294,6 +294,7 @@ procedure vsde_putpcl(de, pcl);                 putv(de, 5, pcl);
 procedure vsde_puttpl(de, tpl);                 putv(de, 6, tpl);
 
 asserted procedure vsde_mk(var: Kernel, f: QfFormula, theo: Theory, bvl: KernelL): VSde;
+   % VS data for elimination set computation make.
    begin scalar de;
       de := vsde_new();
       vsde_putvar(de, var);
@@ -383,25 +384,25 @@ asserted procedure vsdt_add2ttheo(dt: VSdt, fl: QfFormulaL, neg: Boolean);
 %%% "real" procedures %%%
 
 asserted procedure vsde_compute(de: VSde);
-   % Compute elimination set.
-   % TEMPORARY! Using old code to obtain something runnable.
-   begin scalar alp, w, ww;
-      alp := cl_qeatal(vsde_f de, vsde_var de, nil, nil);
-      w := ofsf_elimset(vsde_var de, alp);
-      ww := for each hu in w join
-	 for each huhu in cdr hu collect
-	    car hu . huhu;
-      vsde_puttpl(de, ww)
-   end;
+   % This is the usual entry point.
+   % Compute an elimination set.
+   <<
+      vsde_compute!-pcl de;  % TODO: Handle ['failed] here.
+      vsde_select!-bounds de;
+      vsde_pcl2tpl de;
+      vsde_conflate!-tpl de
+   >>;
 
+% THE FOLLOWING PROCEDURE IS TEMPORARY! It uses old code to have something runnable.
 % asserted procedure vsde_compute(de: VSde);
-%    % This is the usual entry point.
-%    % Compute elimination set.
-%    begin
-%       vsde_compute!-pcl de;  % TODO: Handle ['failed] here.
-%       vsde_select!-bounds de;
-%       vsde_pcl2tpl de;
-%       vsde_conflate!-tpl de
+%    % Compute an elimination set.
+%    begin scalar alp, w, ww;
+%       alp := cl_qeatal(vsde_f de, vsde_var de, nil, nil);
+%       w := ofsf_elimset(vsde_var de, alp);
+%       ww := for each hu in w join
+% 	 for each huhu in cdr hu collect
+% 	    car hu . huhu;
+%       vsde_puttpl(de, ww)
 %    end;
 
 %%% annotated prime constitutents computation submodule %%%
