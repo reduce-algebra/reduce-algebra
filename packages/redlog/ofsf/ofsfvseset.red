@@ -63,6 +63,10 @@ asserted procedure vspr_rsl(pr: VSpr): List;
    % Parametric root root specification list.
    nth(pr, 4);
 
+asserted procedure vspr_reorder(pr: VSpr): VSpr;
+   % Parametric root reorder.
+   {'vspr, vspr_d pr, reorder vspr_f pr, vspr_rsl pr};
+
 asserted procedure vspr_guard(pr: VSpr): QfFormula;
    % Parametric root guard.
    begin scalar rtl;
@@ -254,6 +258,17 @@ asserted procedure vstp_it(tp: VStp): Id;
 asserted procedure vstp_pr(tp: VStp): VSpr;
    % Test point parametric root.
    nth(tp, 5);
+
+asserted procedure vstp_reorder(tp: VStp): VStp;
+   % Test point reorder.
+   if vstp_it tp memq '(minf pinf) then
+      tp
+   else
+      {'vstp, vstp_p tp, vstp_gpl tp, vstp_it tp, vspr_reorder vstp_pr tp};
+
+% THE FOLLOWING PROCEDURE IS TEMPORARY! It uses old code to have something runnable.
+% asserted procedure vstp_reorder(tp: VStp): VStp;
+%    tp;
 
 asserted procedure vstp_guard(tp: VStp): QfFormula;
    % Test point guard.

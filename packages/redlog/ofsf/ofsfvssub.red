@@ -52,21 +52,17 @@ asserted procedure vsvs_tsp(vs: VSvs): Boolean;
    % VS test point substitution predicate.
    VStsP vs;
 
+asserted procedure vsvs_v(vs: VSvs): Kernel;
+   % VS variable.
+   nth(vs, 2);
+
 asserted procedure vsar_mk(v: Kernel): VSvs;
    % VS arbitrary make.
    {'vsar, v};
 
-asserted procedure vsar_v(vs: VSar): Kernel;
-   % VS arbitrary variable.
-   nth(vs, 2);
-
 asserted procedure vsdg_mk(v: Kernel, g: Integer, sv: Kernel): VSvs;
    % VS degree shift make.
    {'vsdg, v, g, sv};
-
-asserted procedure vsdg_v(vs: VSdg): Kernel;
-   % VS degree shift variable.
-   nth(vs, 2);
 
 asserted procedure vsdg_g(vs: VSdg): Integer;
    % VS degree shift gcd.
@@ -80,13 +76,16 @@ asserted procedure vsts_mk(v: Kernel, tp: VStp): VSvs;
    % VS test point substitution make.
    {'vsts, v, tp};
 
-asserted procedure vsts_v(vs: VSts): Kernel;
-   % VS test point substitution variable.
-   nth(vs, 2);
-
 asserted procedure vsts_tp(vs: VSts): VStp;
    % VS test point substitution test point.
    nth(vs, 3);
+
+asserted procedure vsvs_reorder(vs: VSvs): VSvs;
+   % VS reorder.
+   if vsvs_tsp vs then
+      {'vsts, vsvs_v vs, vstp_reorder vsts_tp vs}
+   else
+      vs;
 
 %%% VS data for virtual subsitution %%%
 % constructors and access functions
@@ -185,7 +184,7 @@ asserted procedure vsds_applyvsdg(ds: VSds);
    begin scalar vs, f;
       vs := vsds_vs ds;
       f := vsds_f ds;
-      f := cl_apply2ats1(f, 'vsdg_decdeg, {vsdg_v vs, vsdg_g vs, vsdg_sv vs});
+      f := cl_apply2ats1(f, 'vsdg_decdeg, {vsvs_v vs, vsdg_g vs, vsdg_sv vs});
       if evenp vsdg_g vs then
 	 f := rl_mk2('and, ofsf_0mk2('geq, !*k2f vsdg_sv vs), f);
       vsds_putdata(ds, f)
@@ -230,7 +229,7 @@ asserted procedure vsds_applyvsts(ds: VSds);
 %    begin scalar vs, f, v, tp;
 %       vs := vsds_vs ds;
 %       f := vsds_f ds;
-%       v := vsts_v vs;
+%       v := vsvs_v vs;
 %       tp := vsts_tp vs;
 %       vsds_putdata(ds, cdr apply(car tp, nil . nil . f . v . cdr tp))
 %    end;
@@ -286,11 +285,11 @@ asserted procedure vsvs_printSummary(vs: VSvs);
    <<
       ioto_prin2 {"VS: "};
       if vsvs_tsp vs then
-      	 ioto_prin2t {vsts_v vs, " = test point"}
+      	 ioto_prin2t {vsvs_v vs, " = test point"}
       else if vsvs_dgp vs then
-      	 ioto_prin2t {vsdg_v vs, " = ", vsdg_g vs, "-th root of ", vsdg_sv vs}
+      	 ioto_prin2t {vsvs_v vs, " = ", vsdg_g vs, "-th root of ", vsdg_sv vs}
       else if vsvs_arp vs then
-      	 ioto_prin2t {vsar_v vs, " = arbitrary"}
+      	 ioto_prin2t {vsvs_v vs, " = arbitrary"}
    >>;
 
 endmodule;  % [ofsfvssub]

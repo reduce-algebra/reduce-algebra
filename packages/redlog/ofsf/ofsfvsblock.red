@@ -273,9 +273,14 @@ asserted procedure vsdb_applyvs(db: VSdb, nd: VSnd);
    % Apply substitution. No meaningful return value; [db] is modified
    % in-place so that the subsitution in [nd] is applied, i.e., a list
    % of nodes is added to the working container.
-   begin scalar vs, ffl;
+   begin scalar vs, v, oo, ffl;
+      % TODO: more liberal kernel reordering policy
       vs := vsnd_vs nd;
-      ffl := qff_applyvs(vs, vsnd_f nd, vsdb_bvl db, vsdb_curtheo db);
+      v := vsvs_v vs;
+      oo := updkorder v;
+      ffl := qff_applyvs(vsvs_reorder vs,
+	 ofsf_reorder vsnd_f nd, vsdb_bvl db, ofsf_reorderl vsdb_curtheo db);
+      setkorder oo;
       for each ff in ffl do
 	 vsdb_wcinsert(db, vsnd_mk(nil, vs, vsnd_varl nd, ff, vsnd_parent nd))
    end;
@@ -345,22 +350,31 @@ asserted procedure vsdb_tryExpandDG(db: VSdb, nd: VSnd): Boolean;
 
 asserted procedure vsdb_expandNode1(db: VSdb, nd: VSnd);
    % Expand node using strategy 1: Use the first variable.
-   begin scalar de, v;
+   begin scalar v, oo, de;
+      % TODO: more liberal kernel reordering policy
       v := car vsnd_varl nd;
-      de := vsde_mk(v, vsnd_f nd, vsdb_curtheo db, vsdb_bvl db);
+      oo := updkorder v;
+      de := vsde_mk(v,
+	 ofsf_reorder vsnd_f nd, ofsf_reorderl vsdb_curtheo db, vsdb_bvl db);
       vsde_compute de;
+      setkorder oo;
       vsdb_insertaec(db, nd, de)
    end;
 
 asserted procedure vsdb_expandNode2(db: VSdb, nd: VSnd);
    % Expand node using strategy 2: Use the first feasible variable.
-   begin scalar varl, f, v, de;
+   begin scalar varl, f, theo, v, oo, de;
+      % TODO: more liberal kernel reordering policy
       varl := vsnd_varl nd;
       f := vsnd_f nd;
+      theo := vsdb_curtheo db;
       repeat <<
 	 v := pop varl;
-      	 de := vsde_mk(v, vsnd_f nd, vsdb_curtheo db, vsdb_bvl db);
+	 oo := updkorder v;
+      	 de := vsde_mk(v,
+	    ofsf_reorder f, ofsf_reorderl theo, vsdb_bvl db);
 	 vsde_compute de;
+      	 setkorder oo
       >> until null varl or vsde_tpl de;
       vsdb_insertaec(db, nd, de)
    end;
@@ -423,7 +437,7 @@ asserted procedure sfto_dgcdf(f: SF, v: Kernel): Integer;
 	 return 0;
       oo := setkorder {v};
       f := reorder f;
-      while not domainp f and mvar f eq v and not eqn(g, 1) do <<
+      while sfto_mvartest(f, v) and not eqn(g, 1) do <<
 	 g := gcdn(g, ldeg f);
 	 f := red f
       >>;
@@ -440,6 +454,15 @@ asserted procedure vsdb_printSummary(db: VSdb);
       	    " #S: ", length vsdb_sc db,
       	    " #F: ", length vsdb_fc db,
       	    " #H: ", length cadr vsdb_ht db}
+   >>;
+
+asserted procedure vsnd_print(nd: VSnd);
+   <<
+      ioto_prin2t {"VS node:"};
+      ioto_prin2 {"FORMULA:"};
+      mathprint rl_prepfof vsnd_f nd;
+      ioto_prin2t {"FLAG: ", vsnd_flg nd,
+      	 " VARL: ", vsnd_varl nd}
    >>;
 
 asserted procedure vsnd_printSummary(nd: VSnd);

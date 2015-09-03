@@ -354,6 +354,14 @@ asserted procedure ofsf_restorekord(cd: CadData): Any;
       return nil
    end;
 
+% TODO: Move the following procedure to a right place.
+asserted procedure ofsf_reorderl(fl: FormulaL): FormulaL;
+   % Reorder formula list. Reorders all polynomials occurring in [fl]
+   % w.r.t. the current kernel order.
+   for each f in fl collect
+      ofsf_reorder f;
+
+% TODO: Move the following procedure to a right place.
 asserted procedure ofsf_reorder(f: Formula): Formula;
    % Reorder formula. Reorders all polynomials occurring in [f] w.r.t. the
    % current kernel order.

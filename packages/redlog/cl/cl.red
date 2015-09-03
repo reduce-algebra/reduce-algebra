@@ -69,6 +69,7 @@ fluid '(cl_identify!-atl!* cl_pal!* cl_lps!* cl_theo!*
    !*rlqeaprecise !*rlqestdans !*slat);
 
 struct Formula;
+struct FormulaL asserted by listp;
 struct QfFormula;
 struct QfFormulaL asserted by listp;
 struct TruthValue asserted by rl_tvalp;
