@@ -37,7 +37,7 @@ lisp <<
 
 module ofsfvslists;
 
-fluid '(rsl!-alist!* rsl!-alist!-clustering!* guard!-fnalist!*);
+fluid '(rsl!-alist!* rsl!-alist!-clustering!* guard!-fnalist!* vsub!-fnalist!*);
 
 rsl!-alist!* := {
    % key: {degree, lc sign, op}
@@ -1256,6 +1256,188 @@ ofsfform procedure guard!-3!-5(a, b, c, d);
    a > 0 and -b^2 + 3*a*c < 0 and
       -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d <= 0;
 
+vsub!-fnalist!* := {
+   % key: {degf, rsl, degg, op}
+   % value: virtual substitution constructing function
+   {2, {(-2) . 1}, 1, 'equal} . 'vsub!-2!-equal!-1,
+   {2, {(-1) . 1}, 1, 'equal} . 'vsub!-2!-equal!-2,
+   {2, {(-1) . 2}, 1, 'equal} . 'vsub!-2!-equal!-3,
+   {2, {1 . 1}, 1, 'equal} . 'vsub!-2!-equal!-4,
+   {2, {1 . 2}, 1, 'equal} . 'vsub!-2!-equal!-5,
+   {2, {2 . 1}, 1, 'equal} . 'vsub!-2!-equal!-6,
+
+   {2, {(-2) . 1}, 1, 'neq} . 'vsub!-2!-neq!-1,
+   {2, {(-1) . 1}, 1, 'neq} . 'vsub!-2!-neq!-2,
+   {2, {(-1) . 2}, 1, 'neq} . 'vsub!-2!-neq!-3,
+   {2, {1 . 1}, 1, 'neq} . 'vsub!-2!-neq!-4,
+   {2, {1 . 2}, 1, 'neq} . 'vsub!-2!-neq!-5,
+   {2, {2 . 1}, 1, 'neq} . 'vsub!-2!-neq!-6,
+
+   {2, {(-2) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-1,
+   {2, {(-1) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-2,
+   {2, {(-1) . 2}, 1, 'lessp} . 'vsub!-2!-lessp!-3,
+   {2, {1 . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-4,
+   {2, {1 . 2}, 1, 'lessp} . 'vsub!-2!-lessp!-5,
+   {2, {2 . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-6,
+
+   {2, {(-2) . 1}, 1, 'leq} . 'vsub!-2!-leq!-1,
+   {2, {(-1) . 1}, 1, 'leq} . 'vsub!-2!-leq!-2,
+   {2, {(-1) . 2}, 1, 'leq} . 'vsub!-2!-leq!-3,
+   {2, {1 . 1}, 1, 'leq} . 'vsub!-2!-leq!-4,
+   {2, {1 . 2}, 1, 'leq} . 'vsub!-2!-leq!-5,
+   {2, {2 . 1}, 1, 'leq} . 'vsub!-2!-leq!-6,
+
+   {2, {(-2) . 1}, 1, 'geq} . 'vsub!-2!-geq!-1,
+   {2, {(-1) . 1}, 1, 'geq} . 'vsub!-2!-geq!-2,
+   {2, {(-1) . 2}, 1, 'geq} . 'vsub!-2!-geq!-3,
+   {2, {1 . 1}, 1, 'geq} . 'vsub!-2!-geq!-4,
+   {2, {1 . 2}, 1, 'geq} . 'vsub!-2!-geq!-5,
+   {2, {2 . 1}, 1, 'geq} . 'vsub!-2!-geq!-6,
+
+   {2, {(-2) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-1,
+   {2, {(-1) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-2,
+   {2, {(-1) . 2}, 1, 'greaterp} . 'vsub!-2!-greaterp!-3,
+   {2, {1 . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-4,
+   {2, {1 . 2}, 1, 'greaterp} . 'vsub!-2!-greaterp!-5,
+   {2, {2 . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-6
+      };
+
+% equal
+
+ofsfform procedure vsub!-2!-equal!-1(a, b, c, aa, bb);
+   2*a*bb - aa*b = 0;
+
+ofsfform procedure vsub!-2!-equal!-2(a, b, c, aa, bb);
+   2*a*aa*bb - aa**2*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb = 0;
+
+ofsfform procedure vsub!-2!-equal!-3(a, b, c, aa, bb);
+   2*a*aa*bb - aa**2*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb = 0;
+
+ofsfform procedure vsub!-2!-equal!-4(a, b, c, aa, bb);
+   2*a*aa*bb - aa**2*b >= 0 and a*bb**2 + aa**2*c - aa*b*bb = 0;
+
+ofsfform procedure vsub!-2!-equal!-5(a, b, c, aa, bb);
+   2*a*aa*bb - aa**2*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb = 0;
+
+ofsfform procedure vsub!-2!-equal!-6(a, b, c, aa, bb);
+   2*a*bb - aa*b = 0;
+
+% neq
+
+ofsfform procedure vsub!-2!-neq!-1(a, b, c, aa, bb);
+   2*a*bb - aa*b <> 0;
+
+ofsfform procedure vsub!-2!-neq!-2(a, b, c, aa, bb);
+   2*a*aa*bb - aa**2*b > 0 or a*bb**2 + aa**2*c - aa*b*bb <> 0;
+
+ofsfform procedure vsub!-2!-neq!-3(a, b, c, aa, bb);
+   2*a*aa*bb - aa**2*b < 0 or a*bb**2 + aa**2*c - aa*b*bb <> 0;
+
+ofsfform procedure vsub!-2!-neq!-4(a, b, c, aa, bb);
+   2*a*aa*bb - aa**2*b < 0 or a*bb**2 + aa**2*c - aa*b*bb <> 0;
+
+ofsfform procedure vsub!-2!-neq!-5(a, b, c, aa, bb);
+   2*a*aa*bb - aa**2*b > 0 or a*bb**2 + aa**2*c - aa*b*bb <> 0;
+
+ofsfform procedure vsub!-2!-neq!-6(a, b, c, aa, bb);
+   2*a*bb - aa*b <> 0;
+
+% lessp
+
+ofsfform procedure vsub!-2!-lessp!-1(a, b, c, aa, bb);
+   2*a*bb - aa*b > 0;
+
+ofsfform procedure vsub!-2!-lessp!-2(a, b, c, aa, bb);
+   2*a*bb - aa*b > 0 and a*bb**2 + aa**2*c - aa*b*bb < 0 or
+      aa >= 0 and (2*a*bb - aa*b > 0 or a*bb**2 + aa**2*c - aa*b*bb > 0);
+
+ofsfform procedure vsub!-2!-lessp!-3(a, b, c, aa, bb);
+   2*a*bb - aa*b > 0 and a*bb**2 + aa**2*c - aa*b*bb < 0 or
+      aa <= 0 and (2*a*bb - aa*b > 0 or a*bb**2 + aa**2*c - aa*b*bb > 0);
+
+ofsfform procedure vsub!-2!-lessp!-4(a, b, c, aa, bb);
+   2*a*bb - aa*b < 0 and a*bb**2 + aa**2*c - aa*b*bb > 0 or
+      aa >= 0 and (2*a*bb - aa*b < 0 or a*bb**2 + aa**2*c - aa*b*bb < 0);
+
+ofsfform procedure vsub!-2!-lessp!-5(a, b, c, aa, bb);
+   2*a*bb - aa*b < 0 and a*bb**2 + aa**2*c - aa*b*bb > 0 or
+      aa <= 0 and (2*a*bb - aa*b < 0 or a*bb**2 + aa**2*c - aa*b*bb < 0);
+
+ofsfform procedure vsub!-2!-lessp!-6(a, b, c, aa, bb);
+   2*a*bb - aa*b < 0;
+
+% leq
+
+ofsfform procedure vsub!-2!-leq!-1(a, b, c, aa, bb);
+   2*a*bb - aa*b >= 0;
+
+ofsfform procedure vsub!-2!-leq!-2(a, b, c, aa, bb);
+   2*a**2*bb - a*aa*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb <= 0 or
+      aa >= 0 and a*bb**2 + aa**2*c - aa*b*bb >= 0;
+
+ofsfform procedure vsub!-2!-leq!-3(a, b, c, aa, bb);
+   2*a**2*bb - a*aa*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb <= 0 or
+      aa <= 0 and a*bb**2 + aa**2*c - aa*b*bb >= 0;
+
+ofsfform procedure vsub!-2!-leq!-4(a, b, c, aa, bb);
+   2*a**2*bb - a*aa*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb >= 0 or
+      aa >= 0 and a*bb**2 + aa**2*c - aa*b*bb <= 0;
+
+ofsfform procedure vsub!-2!-leq!-5(a, b, c, aa, bb);
+   2*a**2*bb - a*aa*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb >= 0 or
+      aa <= 0 and a*bb**2 + aa**2*c - aa*b*bb <= 0;
+
+ofsfform procedure vsub!-2!-leq!-6(a, b, c, aa, bb);
+   2*a*bb - aa*b <= 0;
+
+% geq
+
+ofsfform procedure vsub!-2!-geq!-1(a, b, c, aa, bb);
+   2*a*bb - aa*b <= 0;
+
+ofsfform procedure vsub!-2!-geq!-2(a, b, c, aa, bb);
+   a*bb**2 - aa**2*c - aa*b*bb >= 0 and 2*a**2*bb - a*aa*b <= 0 or
+      aa >= 0 and a*bb**2 - aa**2*c - aa*b*bb <= 0;
+
+ofsfform procedure vsub!-2!-geq!-3(a, b, c, aa, bb);
+   a*bb**2 - aa**2*c - aa*b*bb >= 0 and 2*a**2*bb - a*aa*b <= 0 or
+      aa <= 0 and a*bb**2 - aa**2*c - aa*b*bb <= 0;
+
+ofsfform procedure vsub!-2!-geq!-4(a, b, c, aa, bb);
+   a*bb**2 - aa**2*c - aa*b*bb <= 0 and 2*a**2*bb - a*aa*b <= 0 or
+      aa >= 0 and a*bb**2 - aa**2*c - aa*b*bb >= 0;
+
+ofsfform procedure vsub!-2!-geq!-5(a, b, c, aa, bb);
+   a*bb**2 - aa**2*c - aa*b*bb <= 0 and 2*a**2*bb - a*aa*b <= 0 or
+      aa <= 0 and a*bb**2 - aa**2*c - aa*b*bb >= 0;
+
+ofsfform procedure vsub!-2!-geq!-6(a, b, c, aa, bb);
+   2*a*bb - aa*b >= 0;
+
+% greaterp
+
+ofsfform procedure vsub!-2!-greaterp!-1(a, b, c, aa, bb);
+   2*a*bb - aa*b < 0;
+
+ofsfform procedure vsub!-2!-greaterp!-2(a, b, c, aa, bb);
+   2*a*bb - aa*b < 0 and a*bb**2 - aa**2*c - aa*b*bb > 0 or
+      aa >= 0 and (2*a*bb - aa*b < 0 or a*bb**2 - aa**2*c - aa*b*bb < 0);
+
+ofsfform procedure vsub!-2!-greaterp!-3(a, b, c, aa, bb);
+   2*a*bb - aa*b < 0 and a*bb**2 - aa**2*c - aa*b*bb > 0 or
+      aa <= 0 and (2*a*bb - aa*b < 0 or a*bb**2 - aa**2*c - aa*b*bb < 0);
+
+ofsfform procedure vsub!-2!-greaterp!-4(a, b, c, aa, bb);
+   2*a*bb - aa*b > 0 and a*bb**2 - aa**2*c - aa*b*bb < 0 or
+      aa >= 0 and (2*a*bb - aa*b > 0 or a*bb**2 - aa**2*c - aa*b*bb > 0);
+
+ofsfform procedure vsub!-2!-greaterp!-5(a, b, c, aa, bb);
+   2*a*bb - aa*b > 0 and a*bb**2 - aa**2*c - aa*b*bb < 0 or
+      aa <= 0 and (2*a*bb - aa*b > 0 or a*bb**2 - aa**2*c - aa*b*bb > 0);
+
+ofsfform procedure vsub!-2!-greaterp!-6(a, b, c, aa, bb);
+   2*a*bb - aa*b > 0;
+
 asserted procedure rsl!-compute(d: Integer, s: Any, op: Id): Any;
    % Root specification list compute. [d] is the degree, [s] is the
    % sign of the leading coefficient, [op] is the operation. Returns
@@ -1284,14 +1466,45 @@ asserted procedure rsl!-compute!-clustering(d: Integer, s: Any, op: Id): Any;
 
 asserted procedure rsl!-guard(f: SF, rtl: List): QfFormula;
    % Root specification list guard. [f] is a SF; [rtl] is a list of
-   % real type codes, which does not contain duplicates.
-   begin scalar w, fn;
+   % real type codes, which does not contain duplicates. Returns a
+   % guard of (f, rtl).
+   begin scalar w;
       rtl := sort(rtl, function(lambda(a, b); a < b));
       w := assoc({ldeg f, rtl}, guard!-fnalist!*);
-      if null w then
-	 return 'failed;
-      fn := cdr w;
-      return apply(fn, coeffs f)
+      if null w then <<
+	 assert(nil);
+	 return 'failed
+      >>;
+      return apply(cdr w, coeffs f)
+   end;
+
+asserted procedure rsl!-vsub(g: SF, op: Id, f: SF, rtl: List): QfFormula;
+   % Root specification list virtual substitution. [g] is a SF; [op]
+   % is an operator; [f] is a SF; [rtl] is a list of real type codes,
+   % which does not contain duplicates. Returns an equivalent of the
+   % formula (g op 0)[x // (f, rtl)].
+   begin scalar x, w;
+      x := mvar f;
+      if not sfto_mvartest(g, x) then
+	 return ofsf_0mk2(op, g);
+      w := assoc({ldeg f, rtl, ldeg g, op}, vsub!-fnalist!*);
+      if null w then <<
+	 assert(nil);
+	 return 'failed
+      >>;
+      return apply(cdr w, append(coeffs f, hu!-coeffs(g, ldeg f)))
+   end;
+
+asserted procedure coeffs!-len(f: SF, k: Integer): SFList;
+   % Returns the list of coefficients of [f] of length at least [k].
+   begin scalar cfl; integer l;
+      cfl := coeffs f;
+      l := length cfl;
+      while l < k do <<
+	 cfl := nil . cfl;
+	 l := l + 1
+      >>;
+      return cfl
    end;
 
 endmodule;  % [ofsfvslists]

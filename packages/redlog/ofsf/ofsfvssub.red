@@ -217,7 +217,7 @@ asserted procedure vsds_applyvsts(ds: VSds);
       f := qff_replacel(f, vstp_gpl tp, 'false);
       % TODO: Here we will replace something with ['true].
       f := qff_condense(f, vstp_p tp);
-      f := cl_apply2ats1(f, 'vsds_applyvsts!-at, {vs});
+      f := cl_apply2ats1(f, 'vsds_applyvsts!-at, {ds});
       f := cl_simpl(rl_mk2('and, g, f), theo, -1);
       vsds_putdata(ds, f)
    end;
@@ -266,11 +266,75 @@ asserted procedure qff_condense(f: QfFormula, p: Position): QfFormula;
       return rl_mkn(op, reversip ncl)
    end;
 
-asserted procedure vsds_applyvsts!-at(at: QfFormula, vs: VSts): QfFormula;
+asserted procedure vsds_applyvsts!-at(at: QfFormula, ds: VSds): QfFormula;
    % VS test point substitution apply to atomic formula. [vs] is a
    % substitution [x // tp], where [tp] is a test point.
+   begin scalar vs, it;
+      if rl_tvalp at then
+	 return at;
+      vs := vsds_vs ds;
+      assert(vsvs_tsp vs);
+      if not sfto_mvartest(rl_arg2l at, vsvs_v vs) then
+      	 return at;
+      it := vstp_it vsts_tp vs;
+      if it memq '(meps peps) then
+	 return vsds_applyvsts!-at!-eps(at, ds);
+      if it memq '(minf pinf) then
+	 return vsds_applyvsts!-at!-inf(at, ds);
+      assert(null it);
+      return vsds_applyvsts!-at!-pr(at, ds)
+   end;
+
+asserted procedure vsds_applyvsts!-at!-eps(at: QfFormula, ds: VSds): QfFormula;
+   % VS test point substitution apply to atomic formula +- epsilon.
    % TODO: Write a real version of this procedure.
    'true;
+
+asserted procedure vsds_applyvsts!-at!-inf(at: QfFormula, ds: VSds): QfFormula;
+   % VS test point substitution apply to atomic formula +- infinity.
+   % TODO: Write a real version of this procedure.
+   'true;
+
+asserted procedure vsds_applyvsts!-at!-pr(at: QfFormula, ds: VSds): QfFormula;
+   % VS test point substitution apply to atomic formula parametric
+   % root description.
+   begin scalar g, pr, f, v;
+      g := rl_arg2l at;
+      pr := vstp_pr vsts_tp vsds_vs ds;
+      f := vspr_f pr;
+      v := vsvs_v vsds_vs ds;
+      g := sfto_psrem!-sgn(g, f, v, append(vsds_ptheo ds, vsds_ttheo ds));
+      return rsl!-vsub(g, rl_op at, f, vspr_rsl pr)
+   end;
+
+% TODO: Rename and move this procedure to the sfto module.
+
+asserted procedure sfto_psrem!-sgn(g: SF, f: SF, x: Kernel, theo: Theory): SF;
+   % Polynomial sign-equivalent to the pseudo remainder of [g] and
+   % [f]. Returns a polynomial [h] such that:
+   % (i) the degree of [h] is smaller than the degree of [f],
+   % (ii) [h] has the same sign at a root of [f] as [g] for any choice
+   % of parameters (variables other than [x])
+   begin scalar lcf, sure, w, lcg, qlc; integer degf, degg;
+      assert(sfto_mvartest(f, x));
+      degf := ldeg f;
+      lcf := lc f;
+      sure := ofsf_surep(ofsf_0mk2('geq, lcf), theo);
+      degg := sfto_vardeg(g, x);
+      while degg >= degf do <<
+	 w := multf(sfto_kexp(x, degg - degf), red f);
+      	 lcg := lc g;
+	 qlc := quotf(lcg, lcf);
+	 g := if qlc then
+	    addf(red g, negf multf(qlc, w))
+	 else if sure then
+	    addf(multf(lcf, red g), negf multf(lcg, w))
+	 else
+	    addf(multf(multf(lcf, lcf), red g), negf multf(multf(lcf, lcg), w));
+	 degg := sfto_vardeg(g, x)
+      >>;
+      return g
+   end;
 
 % TODO: Move the following procedure to cl.
 asserted procedure vs_splitor(f: QfFormula): QfFormulaL;
