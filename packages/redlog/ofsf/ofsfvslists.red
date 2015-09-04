@@ -1478,13 +1478,12 @@ asserted procedure rsl!-guard(f: SF, rtl: List): QfFormula;
       return apply(cdr w, coeffs f)
    end;
 
-asserted procedure rsl!-vsub(g: SF, op: Id, f: SF, rtl: List): QfFormula;
-   % Root specification list virtual substitution. [g] is a SF; [op]
-   % is an operator; [f] is a SF; [rtl] is a list of real type codes,
-   % which does not contain duplicates. Returns an equivalent of the
-   % formula (g op 0)[x // (f, rtl)].
-   begin scalar x, w;
-      x := mvar f;
+asserted procedure rsl!-vsub(op: Id, g: SF, f: SF, x: Kernel, rtl: List): QfFormula;
+   % Root specification list virtual substitution. [op] is an
+   % operator; [g] is a SF; [f] is a SF; [rtl] is a list of real type
+   % codes, which does not contain duplicates. Returns an equivalent
+   % of the formula (g op 0)[x // (f, rtl)].
+   begin scalar w;
       if not sfto_mvartest(g, x) then
 	 return ofsf_0mk2(op, g);
       w := assoc({ldeg f, rtl, ldeg g, op}, vsub!-fnalist!*);
@@ -1492,19 +1491,7 @@ asserted procedure rsl!-vsub(g: SF, op: Id, f: SF, rtl: List): QfFormula;
 	 assert(nil);
 	 return 'failed
       >>;
-      return apply(cdr w, append(coeffs f, hu!-coeffs(g, ldeg f)))
-   end;
-
-asserted procedure coeffs!-len(f: SF, k: Integer): SFList;
-   % Returns the list of coefficients of [f] of length at least [k].
-   begin scalar cfl; integer l;
-      cfl := coeffs f;
-      l := length cfl;
-      while l < k do <<
-	 cfl := nil . cfl;
-	 l := l + 1
-      >>;
-      return cfl
+      return apply(cdr w, append(coeffs f, coeffs g))
    end;
 
 endmodule;  % [ofsfvslists]

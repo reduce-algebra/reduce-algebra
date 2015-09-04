@@ -269,46 +269,93 @@ asserted procedure qff_condense(f: QfFormula, p: Position): QfFormula;
 asserted procedure vsds_applyvsts!-at(at: QfFormula, ds: VSds): QfFormula;
    % VS test point substitution apply to atomic formula. [vs] is a
    % substitution [x // tp], where [tp] is a test point.
-   begin scalar vs, it;
+   begin scalar vs, g, it;
       if rl_tvalp at then
 	 return at;
       vs := vsds_vs ds;
       assert(vsvs_tsp vs);
-      if not sfto_mvartest(rl_arg2l at, vsvs_v vs) then
+      g := rl_arg2l at;
+      if not sfto_mvartest(g, vsvs_v vs) then
       	 return at;
       it := vstp_it vsts_tp vs;
-      if it memq '(meps peps) then
-	 return vsds_applyvsts!-at!-eps(at, ds);
       if it memq '(minf pinf) then
-	 return vsds_applyvsts!-at!-inf(at, ds);
+	 return vsds_applyvsts!-at!-inf(rl_op at, g, ds);
+      if it memq '(meps peps) then
+	 return vsds_applyvsts!-at!-eps(rl_op at, g, ds);
       assert(null it);
       return vsds_applyvsts!-at!-pr(at, ds)
    end;
 
-asserted procedure vsds_applyvsts!-at!-eps(at: QfFormula, ds: VSds): QfFormula;
-   % VS test point substitution apply to atomic formula +- epsilon.
-   % TODO: Write a real version of this procedure.
-   'true;
-
-asserted procedure vsds_applyvsts!-at!-inf(at: QfFormula, ds: VSds): QfFormula;
+asserted procedure vsds_applyvsts!-at!-inf(op: Id, g: SF, ds: VSds): QfFormula;
    % VS test point substitution apply to atomic formula +- infinity.
-   % TODO: Write a real version of this procedure.
-   'true;
+   if op eq 'equal then
+      rl_mkn('and, for each c in coeffs g collect ofsf_0mk2('equal, c))
+   else if op eq 'neq then
+      rl_mkn('or, for each c in coeffs g collect ofsf_0mk2('neq, c))
+   else if op eq 'leq then
+      rl_mkn('or, {vsds_applyvsts!-at!-inf('equal, g, ds),
+   	 vsds_applyvsts!-at!-inf('lessp, g, ds)})
+   else if op eq 'geq then
+      rl_mkn('or, {vsds_applyvsts!-at!-inf('equal, g, ds),
+   	 vsds_applyvsts!-at!-inf('greaterp, g, ds)})
+   else if op memq '(lessp greaterp) then
+      vsds_expand!-at!-inf(op, g, mvar g, vstp_it vsts_tp vsds_vs ds);
+
+asserted procedure vsds_expand!-at!-inf(op: Id, g: SF, x: Kernel, it: Id): QfFormula;
+   % VS test point substitution apply to atomic formula +- infinity expand.
+   begin scalar w;
+      assert(it memq '(minf pinf));
+      if not sfto_mvartest(g, x) then
+	 return ofsf_0mk2(op, g);
+      w := if it eq 'minf and not evenp ldeg g then
+	 negf lc g
+      else
+	 lc g;
+      return rl_mkn('or, {ofsf_0mk2(op, w),
+	 rl_mkn('and, {ofsf_0mk2('equal, w), vsds_expand!-at!-inf(op, red g, x, it)})})
+   end;
+
+asserted procedure vsds_applyvsts!-at!-eps(op: Id, g: SF, ds: VSds): QfFormula;
+   % VS test point substitution apply to atomic formula +- epsilon.
+   begin scalar w;
+      if op eq 'equal then
+	 return rl_mkn('and, for each c in coeffs g collect ofsf_0mk2('equal, c));
+      if op eq 'neq then
+	 return rl_mkn('or, for each c in coeffs g collect ofsf_0mk2('neq, c));
+      if op eq 'leq then
+	 return rl_mkn('or, {vsds_applyvsts!-at!-eps('equal, g, ds),
+ 	    vsds_applyvsts!-at!-eps('lessp, g, ds)});
+      if op eq 'geq then
+	 return rl_mkn('or, {vsds_applyvsts!-at!-eps('equal, g, ds),
+ 	    vsds_applyvsts!-at!-eps('greaterp, g, ds)});
+      assert(op memq '(lessp greaterp));
+      w := vsds_expand!-at!-eps(op, g, mvar g, vstp_it vsts_tp vsds_vs ds);
+      return cl_apply2ats1(w, 'vsds_applyvsts!-at!-pr, {ds})
+   end;
+
+asserted procedure vsds_expand!-at!-eps(op: Id, g: SF, x: Kernel, it: Id): QfFormula;
+   % VS test point substitution apply to atomic formula +- epsilon expand.
+   begin scalar wop, edg;
+      assert(it memq '(meps peps));
+      if not sfto_mvartest(g, x) then
+	 return ofsf_0mk2(op, g);
+      wop := if it eq 'peps then op else op_adjust(op, -1);
+      edg := vsds_expand!-at!-eps(wop, diff(g, x), x, it);
+      return rl_mkn('or, {ofsf_0mk2(op, g), rl_mkn('and, {ofsf_0mk2('equal, g), edg})})
+   end;
 
 asserted procedure vsds_applyvsts!-at!-pr(at: QfFormula, ds: VSds): QfFormula;
    % VS test point substitution apply to atomic formula parametric
    % root description.
-   begin scalar g, pr, f, v;
-      g := rl_arg2l at;
+   begin scalar pr, f, v, g;
       pr := vstp_pr vsts_tp vsds_vs ds;
       f := vspr_f pr;
       v := vsvs_v vsds_vs ds;
-      g := sfto_psrem!-sgn(g, f, v, append(vsds_ptheo ds, vsds_ttheo ds));
-      return rsl!-vsub(g, rl_op at, f, vspr_rsl pr)
+      g := sfto_psrem!-sgn(rl_arg2l at, f, v, append(vsds_ptheo ds, vsds_ttheo ds));
+      return rsl!-vsub(rl_op at, g, f, v, vspr_rsl pr)
    end;
 
 % TODO: Rename and move this procedure to the sfto module.
-
 asserted procedure sfto_psrem!-sgn(g: SF, f: SF, x: Kernel, theo: Theory): SF;
    % Polynomial sign-equivalent to the pseudo remainder of [g] and
    % [f]. Returns a polynomial [h] such that:
