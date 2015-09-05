@@ -14,32 +14,20 @@ AR PL New Sung (Fireflysung)
 Unicode. My thoughts are that I would just use it to extend coverage to
 those parts of the Unicode range.
 
-STIXxxx
-    A range of 29 serif fonts, with Bold, Italic and BoldItalic variants.
+cslSTIXxxx
+    A range of serif fonts, with Bold, Italic and BoldItalic variants.
 The initial parts of the font are along the lines of Times or Computer
 Modern Roman, but the coverage extents well into the rest of Unicode.
 Character shapes as from many TeX mathematical fonts (eg maths italic,
 blackboard, gothic, script) are provided in the block from U+1d400. Note that
 that is not in the basic multilingual plane. A wide range of mathematical
-symbols are present in STIXGeneral-Regular. STIXSizeOneSym and others include
-the building blocks that might otherwise have been in "cmex10" for creation
-of big delimiters, and cope with the provision of parantheses, brackets and
-braces in a range of sizes. This will be the workhouse font set for typesetting
-mathematics.
+symbols are present in cslSTIXMath-Regular. These fonts were originally
+just STIX-Regular etc (from the STID-Word set) but those versions rely on
+advanced rendering APIs to access glyphs that have apparent codepoints
+above U+10ffff, ie that are outside the valid Unicode range. To ease
+portability to multiple platforms I have made versions that also make those
+special glyphs available from U+108000 onwards (ie in a Provate Use Area) so
+that legacy rendering can display them.
 
 
-
-In previous revisions of the font-set here I had included variants on the
-BaKoMa tex fonts - I now hope to use STIX instead. I had included some
-of the Latin Modern fonts - same explanation of why they are no longer here.
-Deja Vu Sans Mono might have been a sans-serif alternative to CMU Typewriter
-and the two fonts do not have quite the same coverage so use of both could
-fill some gaps - but for now I count that as more complication than it is
-worth. I used to have some sazanami CJK fonts but keeping just fireflysung
-simplifies things for me... for instance Debian now lists the Sazanami fonts
-as legacy and deprecated. In the future I should probably transition to using
-the Source Han Solo (aka Noto) CJK fonts which were releqased in mid 2014.
-However at a first try fontforge can not access the bulk of the characters in
-them (!) so that will have to wait.
-
-                                                  A C Norman. January 2015
+                                                  A C Norman. September 2015

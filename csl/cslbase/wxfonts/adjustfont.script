@@ -1,0 +1,96 @@
+# This script starts from the distributes fonts in STIX-Word. These have
+# a number of glyphs at codepoints U+110000 and up that are outside the
+# Unicode range. They are expected to be activated using modern methods
+# of rendering .otf text that count as "advanced typography". It seems
+# hard to access the relevant APIs in a comfortable cross-platform manner,
+# and in particular wxWidgets does not support it. So here I make all
+# the extra glyphs appear at codepoinst in the private use are starting
+# at U+108000, where UTF-16 can refer to them etc.
+# The License for the STIX fonts makes it legal to alter them and
+# redistribute the result provided that the license terms are also
+# distribute and that font names are changes to avoid confusion. Furthermore
+# the altered fonts may only be distributed as part of some larger
+# project not purely on their own. All these are easy to accept in the
+# context of Reduce - but this is why the file-names and font-names here
+# are changed to be "cslSTIX*.otf".
+#
+# The range of characters remapped here are ones observed (using fontforge)
+# to be present, so this is fragile if newer versions of the fonts were to
+# be adopted.
+
+Open("STIX-Bold.otf");
+i=0x110000
+while (i <= 0x11003e)
+  Select(i)
+  CopyReference()
+  Select(i-0x8000)
+  Paste()
+  i=i+1
+endloop
+
+SetFontNames("cslStixBold", "cslSTIX", "cslSTIX Bold")
+Generate("cslSTIX-Bold.otf", "", 0x281);
+Generate("cslSTIX-Bold.ttf");
+Generate("cslSTIX-Bold.ps", 0x281);
+
+Open("STIX-BoldItalic.otf");
+i=0x110000
+while (i <= 0x110001)
+  Select(i)
+  CopyReference()
+  Select(i-0x8000)
+  Paste()
+  i=i+1
+endloop
+
+SetFontNames("cslStixBoldItalic", "cslSTIX", "cslSTIX Bold Italic")
+Generate("cslSTIX-BoldItalic.otf", "", 0x281);
+Generate("cslSTIX-BoldItalic.ttf");
+Generate("cslSTIX-BoldItalic.ps", 0x281);
+
+Open("STIX-Italic.otf");
+i=0x110000
+while (i <= 0x110001)
+  Select(i)
+  CopyReference()
+  Select(i-0x8000)
+  Paste()
+  i=i+1
+endloop
+
+SetFontNames("cslStixItalic", "cslSTIX", "cslSTIX Italic")
+Generate("cslSTIX-Italic.otf", "", 0x281);
+Generate("cslSTIX-Italic.ttf");
+Generate("cslSTIX-Italic.ps", 0x281);
+
+Open("STIX-Regular.otf");
+i=0x110000
+while (i <= 0x11007c)
+  Select(i)
+  CopyReference()
+  Select(i-0x8000)
+  Paste()
+  i=i+1
+endloop
+
+SetFontNames("cslStix-Regular", "cslSTIX", "cslSTIX Regular")
+Generate("cslSTIX-Regular.otf", "", 0x281);
+Generate("cslSTIX-Regular.ttf");
+Generate("cslSTIX-Regular.ps", 0x281);
+
+Open("STIXMath-Regular.otf");
+i=0x110000
+while (i <= 0x11039d)
+  Select(i)
+  CopyReference()
+  Select(i-0x8000)
+  Paste()
+  i=i+1
+endloop
+
+SetFontNames("cslStixMath-Regular", "cslSTIX Math", "cslSTIX Math Regular")
+Generate("cslSTIXMath-Regular.otf", "", 0x281);
+Generate("cslSTIXMath-Regular.ttf");
+Generate("cslSTIXMath-Regular.ps", 0x281);
+
+Quit(0);
