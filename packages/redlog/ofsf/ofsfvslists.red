@@ -1259,47 +1259,96 @@ ofsfform procedure guard!-3!-5(a, b, c, d);
 vsub!-fnalist!* := {
    % key: {degf, rsl, degg, op}
    % value: virtual substitution constructing function
+
+   % equal
    {2, {(-2) . 1}, 1, 'equal} . 'vsub!-2!-equal!-1,
    {2, {(-1) . 1}, 1, 'equal} . 'vsub!-2!-equal!-2,
    {2, {(-1) . 2}, 1, 'equal} . 'vsub!-2!-equal!-3,
    {2, {1 . 1}, 1, 'equal} . 'vsub!-2!-equal!-4,
    {2, {1 . 2}, 1, 'equal} . 'vsub!-2!-equal!-5,
    {2, {2 . 1}, 1, 'equal} . 'vsub!-2!-equal!-6,
+   % for clustering:
+   {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'equal} . 'vsub!-2!-equal!-7,
+   {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'equal} . 'vsub!-2!-equal!-8,
+   {2, {(-1) . 1, (-2) . 1}, 1, 'equal} . 'vsub!-2!-equal!-2,
+   {2, {(-1) . 2, (-2) . 1}, 1, 'equal} . 'vsub!-2!-equal!-3,
+   {2, {1 . 1, 2 . 1}, 1, 'equal} . 'vsub!-2!-equal!-4,
+   {2, {1 . 2, 2 . 1}, 1, 'equal} . 'vsub!-2!-equal!-5,
 
+   % neq
    {2, {(-2) . 1}, 1, 'neq} . 'vsub!-2!-neq!-1,
    {2, {(-1) . 1}, 1, 'neq} . 'vsub!-2!-neq!-2,
    {2, {(-1) . 2}, 1, 'neq} . 'vsub!-2!-neq!-3,
    {2, {1 . 1}, 1, 'neq} . 'vsub!-2!-neq!-4,
    {2, {1 . 2}, 1, 'neq} . 'vsub!-2!-neq!-5,
    {2, {2 . 1}, 1, 'neq} . 'vsub!-2!-neq!-6,
+   % for clustering:
+   {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'neq} . 'vsub!-2!-neq!-7,
+   {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'neq} . 'vsub!-2!-neq!-8,
+   {2, {(-1) . 1, (-2) . 1}, 1, 'neq} . 'vsub!-2!-neq!-2,
+   {2, {(-1) . 2, (-2) . 1}, 1, 'neq} . 'vsub!-2!-neq!-3,
+   {2, {1 . 1, 2 . 1}, 1, 'neq} . 'vsub!-2!-neq!-4,
+   {2, {1 . 2, 2 . 1}, 1, 'neq} . 'vsub!-2!-neq!-5,
 
+   % lessp
    {2, {(-2) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-1,
    {2, {(-1) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-2,
    {2, {(-1) . 2}, 1, 'lessp} . 'vsub!-2!-lessp!-3,
    {2, {1 . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-4,
    {2, {1 . 2}, 1, 'lessp} . 'vsub!-2!-lessp!-5,
    {2, {2 . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-6,
+   % for clustering:
+   {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-7,
+   {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-8,
+   {2, {(-1) . 1, (-2) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-2,
+   {2, {(-1) . 2, (-2) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-3,
+   {2, {1 . 1, 2 . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-4,
+   {2, {1 . 2, 2 . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-5,
 
+   % leq
    {2, {(-2) . 1}, 1, 'leq} . 'vsub!-2!-leq!-1,
    {2, {(-1) . 1}, 1, 'leq} . 'vsub!-2!-leq!-2,
    {2, {(-1) . 2}, 1, 'leq} . 'vsub!-2!-leq!-3,
    {2, {1 . 1}, 1, 'leq} . 'vsub!-2!-leq!-4,
    {2, {1 . 2}, 1, 'leq} . 'vsub!-2!-leq!-5,
    {2, {2 . 1}, 1, 'leq} . 'vsub!-2!-leq!-6,
+   % for clustering:
+   {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'leq} . 'vsub!-2!-leq!-7,
+   {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'leq} . 'vsub!-2!-leq!-8,
+   {2, {(-1) . 1, (-2) . 1}, 1, 'leq} . 'vsub!-2!-leq!-2,
+   {2, {(-1) . 2, (-2) . 1}, 1, 'leq} . 'vsub!-2!-leq!-3,
+   {2, {1 . 1, 2 . 1}, 1, 'leq} . 'vsub!-2!-leq!-4,
+   {2, {1 . 2, 2 . 1}, 1, 'leq} . 'vsub!-2!-leq!-5,
 
+   % geq
    {2, {(-2) . 1}, 1, 'geq} . 'vsub!-2!-geq!-1,
    {2, {(-1) . 1}, 1, 'geq} . 'vsub!-2!-geq!-2,
    {2, {(-1) . 2}, 1, 'geq} . 'vsub!-2!-geq!-3,
    {2, {1 . 1}, 1, 'geq} . 'vsub!-2!-geq!-4,
    {2, {1 . 2}, 1, 'geq} . 'vsub!-2!-geq!-5,
    {2, {2 . 1}, 1, 'geq} . 'vsub!-2!-geq!-6,
+   % for clustering:
+   {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'geq} . 'vsub!-2!-geq!-7,
+   {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'geq} . 'vsub!-2!-geq!-8,
+   {2, {(-1) . 1, (-2) . 1}, 1, 'geq} . 'vsub!-2!-geq!-2,
+   {2, {(-1) . 2, (-2) . 1}, 1, 'geq} . 'vsub!-2!-geq!-3,
+   {2, {1 . 1, 2 . 1}, 1, 'geq} . 'vsub!-2!-geq!-4,
+   {2, {1 . 2, 2 . 1}, 1, 'geq} . 'vsub!-2!-geq!-5,
 
+   % greaterp
    {2, {(-2) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-1,
    {2, {(-1) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-2,
    {2, {(-1) . 2}, 1, 'greaterp} . 'vsub!-2!-greaterp!-3,
    {2, {1 . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-4,
    {2, {1 . 2}, 1, 'greaterp} . 'vsub!-2!-greaterp!-5,
-   {2, {2 . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-6
+   {2, {2 . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-6,
+   % for clustering:
+   {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-7,
+   {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-8,
+   {2, {(-1) . 1, (-2) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-2,
+   {2, {(-1) . 2, (-2) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-3,
+   {2, {1 . 1, 2 . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-4,
+   {2, {1 . 2, 2 . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-5
       };
 
 % equal
@@ -1322,6 +1371,12 @@ ofsfform procedure vsub!-2!-equal!-5(a, b, c, aa, bb);
 ofsfform procedure vsub!-2!-equal!-6(a, b, c, aa, bb);
    2*a*bb - aa*b = 0;
 
+ofsfform procedure vsub!-2!-equal!-7(a, b, c, aa, bb);
+   2*a*aa*bb - aa**2*b >= 0 and a*bb**2 + aa**2*c - aa*b*bb = 0;
+
+ofsfform procedure vsub!-2!-equal!-8(a, b, c, aa, bb);
+   2*a*aa*bb - aa**2*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb = 0;
+
 % neq
 
 ofsfform procedure vsub!-2!-neq!-1(a, b, c, aa, bb);
@@ -1341,6 +1396,12 @@ ofsfform procedure vsub!-2!-neq!-5(a, b, c, aa, bb);
 
 ofsfform procedure vsub!-2!-neq!-6(a, b, c, aa, bb);
    2*a*bb - aa*b <> 0;
+
+ofsfform procedure vsub!-2!-neq!-7(a, b, c, aa, bb);
+   2*a*aa*bb - aa**2*b < 0 or a*bb**2 + aa**2*c - aa*b*bb <> 0;
+
+ofsfform procedure vsub!-2!-neq!-8(a, b, c, aa, bb);
+   2*a*aa*bb - aa**2*b > 0 or a*bb**2 + aa**2*c - aa*b*bb <> 0;
 
 % lessp
 
@@ -1366,6 +1427,14 @@ ofsfform procedure vsub!-2!-lessp!-5(a, b, c, aa, bb);
 ofsfform procedure vsub!-2!-lessp!-6(a, b, c, aa, bb);
    2*a*bb - aa*b < 0;
 
+ofsfform procedure vsub!-2!-lessp!-7(a, b, c, aa, bb);
+   2*a**2*bb - a*aa*b < 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb > 0 or
+      a*aa >= 0 and (2*a**2*bb - a*aa*b < 0 or a**2*bb**2 + a*aa**2*c - a*aa*b*bb < 0);
+
+ofsfform procedure vsub!-2!-lessp!-8(a, b, c, aa, bb);
+   2*a**2*bb - a*aa*b < 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb > 0 or
+      a*aa <= 0 and (2*a**2*bb - a*aa*b < 0 or a**2*bb**2 + a*aa**2*c - a*aa*b*bb < 0);
+
 % leq
 
 ofsfform procedure vsub!-2!-leq!-1(a, b, c, aa, bb);
@@ -1389,6 +1458,14 @@ ofsfform procedure vsub!-2!-leq!-5(a, b, c, aa, bb);
 
 ofsfform procedure vsub!-2!-leq!-6(a, b, c, aa, bb);
    2*a*bb - aa*b <= 0;
+
+ofsfform procedure vsub!-2!-leq!-7(a, b, c, aa, bb);
+   2*a**2*bb - a*aa*b <= 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb >= 0 or
+      a*aa >= 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb <= 0;
+
+ofsfform procedure vsub!-2!-leq!-8(a, b, c, aa, bb);
+   2*a**2*bb - a*aa*b <= 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb >= 0 or
+      a*aa <= 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb <= 0;
 
 % geq
 
@@ -1414,6 +1491,14 @@ ofsfform procedure vsub!-2!-geq!-5(a, b, c, aa, bb);
 ofsfform procedure vsub!-2!-geq!-6(a, b, c, aa, bb);
    2*a*bb - aa*b >= 0;
 
+ofsfform procedure vsub!-2!-geq!-7(a, b, c, aa, bb);
+   2*a**2*bb - a*aa*b <= 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb >= 0 or
+      a*aa <= 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb <= 0;
+
+ofsfform procedure vsub!-2!-geq!-8(a, b, c, aa, bb);
+   2*a**2*bb - a*aa*b <= 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb >= 0 or
+      a*aa >= 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb <= 0;
+
 % greaterp
 
 ofsfform procedure vsub!-2!-greaterp!-1(a, b, c, aa, bb);
@@ -1437,6 +1522,14 @@ ofsfform procedure vsub!-2!-greaterp!-5(a, b, c, aa, bb);
 
 ofsfform procedure vsub!-2!-greaterp!-6(a, b, c, aa, bb);
    2*a*bb - aa*b > 0;
+
+ofsfform procedure vsub!-2!-greaterp!-7(a, b, c, aa, bb);
+   2*a**2*bb - a*aa*b < 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb > 0 or
+      a*aa <= 0 and (2*a**2*bb - a*aa*b < 0 or a**2*bb**2 - a*aa**2*c - a*aa*b*bb < 0);
+
+ofsfform procedure vsub!-2!-greaterp!-8(a, b, c, aa, bb);
+   2*a**2*bb - a*aa*b < 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb > 0 or
+      a*aa >= 0 and (2*a**2*bb - a*aa*b < 0 or a**2*bb**2 - a*aa**2*c - a*aa*b*bb < 0);
 
 asserted procedure rsl!-compute(d: Integer, s: Any, op: Id): Any;
    % Root specification list compute. [d] is the degree, [s] is the
