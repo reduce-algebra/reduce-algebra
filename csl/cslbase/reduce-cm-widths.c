@@ -19,12 +19,12 @@
  * This file is basically my code as in get-computer-modern-widths.c
  * adapted so as to create a Reduce file not one in C
  *
- *                                      A C Norman.  March 2011
+ *                                      A C Norman.  March 2015
  */
 
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

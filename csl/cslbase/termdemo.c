@@ -1,4 +1,4 @@
-/* termdemo.c                       Copyright (C) 2004-2014 Codemist Ltd */
+/* termdemo.c                       Copyright (C) 2004-2015 Codemist Ltd */
 
 
 /*
@@ -9,7 +9,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

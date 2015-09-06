@@ -156,26 +156,26 @@
 // check all the limits before running anything.
 
 // My code here is also not especially tidy, and it uses C-99 style "//"
-// comments (as here!) and <stding.h> with uint64_t, UINT64_C() and their
+// comments (as here!) and <stdint.h> with uint64_t, UINT64_C() and their
 // friends. In fact gcc has supported both of these for some time now and
 // since this is a run-once sort of program I feel I can rely on using
 // either a tolerably recent gcc or some other C compiler that supports
 // C-99.
 
-// "wx -L" tells me that all my font-metric files have lines that are
+// "wc -L" tells me that all my font-metric files have lines that are
 // less than 750 characters long. The worst case is for the cmuntt font
 // where thare are a large number of ligatures specified for "space"
 // followed by various characters (that I believe are probably all the
-// combining characters present, so that putting a space ahead of any of then
+// combining characters present, so that putting a space ahead of any of them
 // can lead to a comversion to a non-combining variant.
 
 // Having statically fixed limits here simplifies my coding.
 
 #define MAXFONTS 32
-#define MAXCHARS 32000
-#define MAXKERNS 5000
-#define MAXLIGATURES 100
-#define MAXLINE  750
+#define MAXCHARS 40000
+#define MAXKERNS 10000
+#define MAXLIGATURES 500
+#define MAXLINE  1000
 
 #else // CREATE
 #ifdef TEST
@@ -197,47 +197,13 @@
 // of names in the table.
 
 #define F_cmuntt                      0
-
-#define F_General                     1
-#define F_General_Bold                2
-#define F_General_Italic              3
-#define F_General_BoldItalic          4
-
-#define F_IntegralsD                  5
-#define F_IntegralsD_Bold             6
-
-#define F_IntegralsSm                 7
-#define F_IntegralsSm_Bold            8
-
-#define F_IntegralsUp                 9
-#define F_IntegralsUp_Bold            10
-
-#define F_IntegralsUpD                11
-#define F_IntegralsUpD_Bold           12
-
-#define F_IntegralsUpSm               13
-#define F_IntegralsUpSm_Bold          14
-
-#define F_NonUnicode                  15
-#define F_NonUnicode_Bold             16
-#define F_NonUnicode_Italic           17
-#define F_NonUnicode_BoldItalic       18
-
-#define F_SizeOneSym                  19
-#define F_SizeOneSym_Bold             20
-#define F_SizeTwoSym                  21
-#define F_SizeTwoSym_Bold             22
-#define F_SizeThreeSym                23
-#define F_SizeThreeSym_Bold           24
-#define F_SizeFourSym                 25
-#define F_SizeFourSym_Bold            26
-#define F_SizeFiveSym                 27
-
-#define F_Variants                    28
-#define F_Variants_Bold               29
-
-#define F_fireflysung                 30
-#define F_end                         31
+#define F_fireflysung                 1
+#define F_General                     2
+#define F_General_Bold                3
+#define F_General_Italic              4
+#define F_General_BoldItalic          5
+#define F_Math                        6
+#define F_end                         7
 
 // In the ".afm" files and hence the main metrics I work with each
 // character is measured and positioned relative to a base-line. However
@@ -287,151 +253,45 @@ const uint16_t *chardepth = NULL;
 const uint16_t chardepth_WIN32[] =
 {
     1027,           // cmuntt
+    885,            // fireflysung
     1055,           // General
     1055,           // General-Bold
     1055,           // General-Italic
     1055,           // General-BoldItalic
-    2182,           // IntegralsD
-    2182,           // IntegralsD-Bold
-    1055,           // IntegralsSm
-    1055,           // IntegralsSm-Bold
-    1055,           // IntegralsUp
-    1055,           // IntegralsUp-Bold
-    2182,           // IntegralsUpD
-    2182,           // IntegralsUpD-Bold
-    1055,           // IntegralsUpSm
-    1055,           // IntegralsUpSm-Bold
-    1450,           // NonUnicode
-    1450,           // NonUnicode-Bold
-    1450,           // NonUnicode-Italic
-    1450,           // NonUnicode-BoldItalic
-    1588,           // SizeOneSym
-    1588,           // SizeOneSym-Bold
-    2095,           // SizeTwoSym
-    2095,           // SizeTwoSym-Bold
-    2604,           // SizeThreeSym
-    2604,           // SizeThreeSym-Bold
-    2604,           // SizeFourSym
-    2604,           // SizeFourSym-Bold
-    960,            // SizeFiveSym
-    1055,           // Variants
-    1055,           // Variants-Bold
-    885             // fireflysung
+    2182            // Math
 };
 
 const uint16_t chardepth_X11[] =
 {
     1027,           // cmuntt
+    928,            // fireflysung
     1055,           // General
     1055,           // General-Bold
     1055,           // General-Italic
     1042,           // General-BoldItalic
-    2182,           // IntegralsD
-    2182,           // IntegralsD-Bold
-    1055,           // IntegralsSm
-    1055,           // IntegralsSm-Bold
-    1055,           // IntegralsUp
-    1055,           // IntegralsUp-Bold
-    2182,           // IntegralsUpD
-    2182,           // IntegralsUpD-Bold
-    1055,           // IntegralsUpSm
-    1055,           // IntegralsUpSm-Bold
-    1450,           // NonUnicode
-    1450,           // NonUnicode-Bold
-    1450,           // NonUnicode-Italic
-    1450,           // NonUnicode-BoldItalic
-    1588,           // SizeOneSym
-    1588,           // SizeOneSym-Bold
-    2095,           // SizeTwoSym
-    2095,           // SizeTwoSym-Bold
-    2604,           // SizeThreeSym
-    2604,           // SizeThreeSym-Bold
-    2604,           // SizeFourSym
-    2604,           // SizeFourSym-Bold
-    960,            // SizeFiveSym
-    1055,           // Variants
-    1055,           // Variants-Bold
-    928             // fireflysung
+    2182            // Math
 };
 
 const uint16_t chardepth_OSX[] =
 {
     1027,           // cmuntt
+    885,            // fireflysung
     1055,           // General
     1055,           // General-Bold
     1055,           // General-Italic
     1042,           // General-BoldItalic
-    967,            // IntegralsD
-    967,            // IntegralsD-Bold
-    967,            // IntegralsSm
-    967,            // IntegralsSm-Bold
-    967,            // IntegralsUp
-    967,            // IntegralsUp-Bold
-    967,            // IntegralsUpD
-    967,            // IntegralsUpD-Bold
-    967,            // IntegralsUpSm
-    967,            // IntegralsUpSm-Bold
-    967,            // NonUnicode
-    967,            // NonUnicode-Bold
-    967,            // NonUnicode-Italic
-    967,            // NonUnicode-BoldItalic
-    1588,           // SizeOneSym
-    1588,           // SizeOneSym-Bold
-    2095,           // SizeTwoSym
-    2095,           // SizeTwoSym-Bold
-    2604,           // SizeThreeSym
-    2604,           // SizeThreeSym-Bold
-    2604,           // SizeFourSym
-    2604,           // SizeFourSym-Bold
-    967,            // SizeFiveSym
-    967,            // Variants
-    967,            // Variants-Bold
-    885             // fireflysung
+    967             // Math
 };
 
 const char *fontnames[31] =
 {
     "cmuntt",
-
-    "STIXGeneral-Regular",
-    "STIXGeneral-Bold",
-    "STIXGeneral-Italic",
-    "STIXGeneral-BoldItalic",
-
-    "STIXIntegralsD-Regular",
-    "STIXIntegralsD-Bold",
-
-    "STIXIntegralsSm-Regular",
-    "STIXIntegralsSm-Bold",
-
-    "STIXIntegralsUp-Regular",
-    "STIXIntegralsUp-Bold",
-
-    "STIXIntegralsUpD-Regular",
-    "STIXIntegralsUpD-Bold",
-
-    "STIXIntegralsUpSm-Regular",
-    "STIXIntegralsUpSm-Bold",
-
-    "STIXNonUnicode-Regular",
-    "STIXNonUnicode-Bold",
-    "STIXNonUnicode-Italic",
-    "STIXNonUnicode-BoldItalic",
-
-    "STIXSizeOneSym-Regular",
-    "STIXSizeOneSym-Bold",
-    "STIXSizeTwoSym-Regular",
-    "STIXSizeTwoSym-Bold",
-    "STIXSizeThreeSym-Regular",
-    "STIXSizeThreeSym-Bold",
-    "STIXSizeFourSym-Regular",
-    "STIXSizeFourSym-Bold",
-    "STIXSizeFiveSym-Regular",
-
-    "STIXVariants-Regular",
-    "STIXVariants-Bold",
-
-    "fireflysung"
+    "fireflysung",
+    "cslSTIX-Regular",
+    "cslSTIX-Bold",
+    "cslSTIX-Italic",
+    "cslSTIX-BoldItalic",
+    "cslSTIXMath-Regular"
 };
 
 // The font metric information I use will be quite bulky, so I will be
@@ -455,13 +315,20 @@ static int pack_character(int font, int codepoint)
 //              these would be Hangul syllables but same are not present
 //              in cmuntt. The above are the only characters present in
 //              cmuntt that have codes over U+ffff.
-//    STIXGeneral-Regular and -Bold   U+1d400 - U+1d7ff to U+d400 - U+d7ff 
+//    calSTIX*  U+1d400:U+1d7ff to U+d400:U+d7ff
+//              U+108xxx        to 
 //              The first character present above U+ffff is U+1d400 and the
 //              last is U+1d7f5. The region U+d400 to U+dfff  is not
 //              populated.
-//   All the other fints here seem to stick to the basic multilingual plane.
+//              U+110xxx (outside Unicode!) exists also as U+108xxx in these
+//              fonts, with 0x0:0x39d the biggest block (in cslSTIXMath)
+//              I will map these to U+d800 (high surrogates) since that should
+//              never be in use for real characters.
+//   All the other fonts here seem to stick to the basic multilingual plane.
 // If at any stage I added more fonts I would need to review this!
-    if (codepoint >= 0x10000)
+    if (codepoint >= 0x108000)
+        codepoint = 0xd800 + (codepoint & 0x3ff);
+    else if (codepoint >= 0x10000)
         codepoint = 0xd000 + (codepoint & 0xfff);
 // I need the bottom two bits of this packed code to be the bottom
 // two bits of the codepoint because my hash table will be using
@@ -1327,54 +1194,20 @@ fprintf(dest, "#define __STDC_CONSTANT_MACROS 1\n");
 fprintf(dest, "#endif\n");
 fprintf(dest, "\n#include <stdint.h>\n\n");
 fprintf(dest, "// Character metric hash table created using the program charmetrics.c\n");
-fprintf(dest, "// sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfonts\n");
+fprintf(dest, "// sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfontxs\n");
 fprintf(dest, "// contains README files with full credits to the fonts this is used with\n");
 fprintf(dest, "\n\n");
 fprintf(dest, "// The list of font codes here must be kept in step with the list\n");
 fprintf(dest, "// of names in the table.\n");
 fprintf(dest, "\n");
 fprintf(dest, "#define F_cmuntt                      0\n");
-fprintf(dest, "\n");
-fprintf(dest, "#define F_General                     1\n");
-fprintf(dest, "#define F_General_Bold                2\n");
-fprintf(dest, "#define F_General_Italic              3\n");
-fprintf(dest, "#define F_General_BoldItalic          4\n");
-fprintf(dest, "\n");
-fprintf(dest, "#define F_IntegralsD                  5\n");
-fprintf(dest, "#define F_IntegralsD_Bold             6\n");
-fprintf(dest, "\n");
-fprintf(dest, "#define F_IntegralsSm                 7\n");
-fprintf(dest, "#define F_IntegralsSm_Bold            8\n");
-fprintf(dest, "\n");
-fprintf(dest, "#define F_IntegralsUp                 9\n");
-fprintf(dest, "#define F_IntegralsUp_Bold            10\n");
-fprintf(dest, "\n");
-fprintf(dest, "#define F_IntegralsUpD                11\n");
-fprintf(dest, "#define F_IntegralsUpD_Bold           12\n");
-fprintf(dest, "\n");
-fprintf(dest, "#define F_IntegralsUpSm               13\n");
-fprintf(dest, "#define F_IntegralsUpSm_Bold          14\n");
-fprintf(dest, "\n");
-fprintf(dest, "#define F_NonUnicode                  15\n");
-fprintf(dest, "#define F_NonUnicode_Bold             16\n");
-fprintf(dest, "#define F_NonUnicode_Italic           17\n");
-fprintf(dest, "#define F_NonUnicode_BoldItalic       18\n");
-fprintf(dest, "\n");
-fprintf(dest, "#define F_SizeOneSym                  19\n");
-fprintf(dest, "#define F_SizeOneSym_Bold             20\n");
-fprintf(dest, "#define F_SizeTwoSym                  21\n");
-fprintf(dest, "#define F_SizeTwoSym_Bold             22\n");
-fprintf(dest, "#define F_SizeThreeSym                23\n");
-fprintf(dest, "#define F_SizeThreeSym_Bold           24\n");
-fprintf(dest, "#define F_SizeFourSym                 25\n");
-fprintf(dest, "#define F_SizeFourSym_Bold            26\n");
-fprintf(dest, "#define F_SizeFiveSym                 27\n");
-fprintf(dest, "\n");
-fprintf(dest, "#define F_Variants                    28\n");
-fprintf(dest, "#define F_Variants_Bold               29\n");
-fprintf(dest, "\n");
-fprintf(dest, "#define F_fireflysung                 30\n");
-fprintf(dest, "#define F_end                         31\n");
+fprintf(dest, "#define F_fireflysung                 1\n");
+fprintf(dest, "#define F_General                     2\n");
+fprintf(dest, "#define F_General_Bold                3\n");
+fprintf(dest, "#define F_General_Italic              4\n");
+fprintf(dest, "#define F_General_BoldItalic          5\n");
+fprintf(dest, "#define F_Math                        6\n");
+fprintf(dest, "#define F_end                         7\n");
 fprintf(dest, "\n");
 fprintf(dest, "#ifdef __cplusplus\n");
 fprintf(dest, "extern \"C\" {\n");
@@ -1465,46 +1298,12 @@ fprintf(rdest, "\n");
 fprintf(rdest, "#endif\n");
 fprintf(rdest, "\n");
 fprintf(rdest, "put('cmuntt, 'font_number,                      0)$\n");
-
-fprintf(rdest, "put('General, 'font_number,                     1)$\n");
-fprintf(rdest, "put('General_Bold, 'font_number,                2)$\n");
-fprintf(rdest, "put('General_Italic, 'font_number,              3)$\n");
-fprintf(rdest, "put('General_BoldItalic, 'font_number,          4)$\n");
-
-fprintf(rdest, "put('IntegralsD, 'font_number,                  5)$\n");
-fprintf(rdest, "put('IntegralsD_Bold, 'font_number,             6)$\n");
-
-fprintf(rdest, "put('IntegralsSm, 'font_number,                 7)$\n");
-fprintf(rdest, "put('IntegralsSm_Bold, 'font_number,            8)$\n");
-
-fprintf(rdest, "put('IntegralsUp, 'font_number,                 9)$\n");
-fprintf(rdest, "put('IntegralsUp_Bold, 'font_number,            10)$\n");
-
-fprintf(rdest, "put('IntegralsUpD, 'font_number,                11)$\n");
-fprintf(rdest, "put('IntegralsUpD_Bold, 'font_number,           12)$\n");
-
-fprintf(rdest, "put('IntegralsUpSm, 'font_number,               13)$\n");
-fprintf(rdest, "put('IntegralsUpSm_Bold, 'font_number,          14)$\n");
-
-fprintf(rdest, "put('NonUnicode, 'font_number,                  15)$\n");
-fprintf(rdest, "put('NonUnicode_Bold, 'font_number,             16)$\n");
-fprintf(rdest, "put('NonUnicode_Italic, 'font_number,           17)$\n");
-fprintf(rdest, "put('NonUnicode_BoldItalic, 'font_number,       18)$\n");
-
-fprintf(rdest, "put('SizeOneSym, 'font_number,                  19)$\n");
-fprintf(rdest, "put('SizeOneSym_Bold, 'font_number,             20)$\n");
-fprintf(rdest, "put('SizeTwoSym, 'font_number,                  21)$\n");
-fprintf(rdest, "put('SizeTwoSym_Bold, 'font_number,             22)$\n");
-fprintf(rdest, "put('SizeThreeSym, 'font_number,                23)$\n");
-fprintf(rdest, "put('SizeThreeSym_Bold, 'font_number,           24)$\n");
-fprintf(rdest, "put('SizeFourSym, 'font_number,                 25)$\n");
-fprintf(rdest, "put('SizeFourSym_Bold, 'font_number,            26)$\n");
-fprintf(rdest, "put('SizeFiveSym, 'font_number,                 27)$\n");
-
-fprintf(rdest, "put('Variants, 'font_number,                    28)$\n");
-fprintf(rdest, "put('Variants_Bold, 'font_number,               29)$\n");
-
-fprintf(rdest, "put('fireflysung, 'font_number,                 30)$\n");
+fprintf(rdest, "put('fireflysung, 'font_number,                 1)$\n");
+fprintf(rdest, "put('Regular, 'font_number,                     2)$\n");
+fprintf(rdest, "put('Bold, 'font_number,                        3)$\n");
+fprintf(rdest, "put('Italic, 'font_number,                      4)$\n");
+fprintf(rdest, "put('BoldItalic, 'font_number,                  5)$\n");
+fprintf(rdest, "put('Math, 'font_number,                        6)$\n");
 fprintf(rdest, "\n");
 fprintf(rdest, "symbolic procedure list_to_vec16 l;\n");
 fprintf(rdest, "  begin\n");

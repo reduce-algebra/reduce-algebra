@@ -1,7 +1,7 @@
 #define DEBUG 1   /* regardless of build mode for now! */
 
 /*
- * "wxfwin.c"                                    Copyright A C Norman 2014
+ * "wxfwin.c"                                    Copyright A C Norman 2015
  *
  *
  * Window interface for old-fashioned C applications. Intended to
@@ -20,7 +20,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

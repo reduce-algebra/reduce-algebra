@@ -1348,15 +1348,10 @@ if windows
 # have the .otf version, so I will copy the .ttf version as well rather then
 # instead of the .otf file.
 	$(CP) $(srcdir)/cm-unicode/cmuntt.ttf reduce.$(fontsdir)
-	$(CP) $(srcdir)/$(fontsdir)/STIX*.ttf reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/cslSTIX*.ttf reduce.$(fontsdir)
 endif windows
 	$(CP) $(srcdir)/cm-unicode/cmuntt.otf reduce.$(fontsdir)
-	$(CP) $(srcdir)/$(fontsdir)/STIX*.otf reduce.$(fontsdir)
-## The DejaVu Sans Mono font covers a range of characters that CMTT does not..
-#	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/LICENSE reduce.$(fontsdir)/LICENSE.dejavu-fonts-ttf-2.32
-#	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/README reduce.$(fontsdir)/README.dejavu-fonts-ttf-2.32
-#	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/AUTHORS reduce.$(fontsdir)/AUTHORS.dejavu-fonts-ttf-2.32
-#	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/ttf/DejaVuSansMono.ttf reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/cslSTIX*.otf reduce.$(fontsdir)
 # I will use fireflysung to cover the CJK range.
 # I list every file I am copying individually to avoid (eg) any backups or
 # subversion admin files ending up where I do not want them.

@@ -18,6 +18,10 @@
 # to be present, so this is fragile if newer versions of the fonts were to
 # be adopted.
 
+# The fonts created can then be opened using the names
+#       cslSTIX      (optionally with bold or italic attributes)
+# end   cslSTIXMath
+
 Open("STIX-Bold.otf");
 i=0x110000
 while (i <= 0x11003e)
@@ -31,7 +35,7 @@ endloop
 SetFontNames("cslStixBold", "cslSTIX", "cslSTIX Bold")
 Generate("cslSTIX-Bold.otf", "", 0x281);
 Generate("cslSTIX-Bold.ttf");
-Generate("cslSTIX-Bold.ps", 0x281);
+Generate("cslSTIX-Bold.ps", "", 0x281);
 
 Open("STIX-BoldItalic.otf");
 i=0x110000
@@ -46,7 +50,7 @@ endloop
 SetFontNames("cslStixBoldItalic", "cslSTIX", "cslSTIX Bold Italic")
 Generate("cslSTIX-BoldItalic.otf", "", 0x281);
 Generate("cslSTIX-BoldItalic.ttf");
-Generate("cslSTIX-BoldItalic.ps", 0x281);
+Generate("cslSTIX-BoldItalic.ps", "", 0x281);
 
 Open("STIX-Italic.otf");
 i=0x110000
@@ -61,7 +65,7 @@ endloop
 SetFontNames("cslStixItalic", "cslSTIX", "cslSTIX Italic")
 Generate("cslSTIX-Italic.otf", "", 0x281);
 Generate("cslSTIX-Italic.ttf");
-Generate("cslSTIX-Italic.ps", 0x281);
+Generate("cslSTIX-Italic.ps", "", 0x281);
 
 Open("STIX-Regular.otf");
 i=0x110000
@@ -76,7 +80,7 @@ endloop
 SetFontNames("cslStix-Regular", "cslSTIX", "cslSTIX Regular")
 Generate("cslSTIX-Regular.otf", "", 0x281);
 Generate("cslSTIX-Regular.ttf");
-Generate("cslSTIX-Regular.ps", 0x281);
+Generate("cslSTIX-Regular.ps", "", 0x281);
 
 Open("STIXMath-Regular.otf");
 i=0x110000
@@ -88,9 +92,9 @@ while (i <= 0x11039d)
   i=i+1
 endloop
 
-SetFontNames("cslStixMath-Regular", "cslSTIX Math", "cslSTIX Math Regular")
+SetFontNames("cslStixMath-Regular", "cslSTIXMath", "cslSTIX Math Regular")
 Generate("cslSTIXMath-Regular.otf", "", 0x281);
 Generate("cslSTIXMath-Regular.ttf");
-Generate("cslSTIXMath-Regular.ps", 0x281);
+Generate("cslSTIXMath-Regular.ps", "", 0x281);
 
 Quit(0);

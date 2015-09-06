@@ -446,7 +446,8 @@ global '(s!:native_file);
 
 fluid '(s!:current_function s!:current_label s!:current_block s!:current_size
         s!:current_procedure s!:other_defs s!:lexical_env s!:has_closure
-        s!:recent_literals s!:used_lexicals s!:a_reg_values s!:current_count);
+        s!:recent_literals s!:used_lexicals s!:a_reg_values s!:current_count
+        s!:maybe_values);
 
 %
 % s!:current_procedure is a list of basic blocks, with the entry-point
@@ -1657,6 +1658,9 @@ symbolic procedure s!:expand_jump(op, offset);
 % and not just in the final position.  For COMMON Lisp GO and
 % RETURN-FROM statements can appear pretty-well anywhere.
 
+% Note that the case context=0 is one where a ONEVALUE opcode might need
+% to be issued ahead of the very final load or call.
+
 symbolic procedure s!:comval(x, env, context);
 % s!:comval is the central dispatch procedure in the compiler - calling
 % it will generate code to load the value of x into the A register,
@@ -2013,6 +2017,8 @@ symbolic procedure s!:comlambda(bvl, body, args, env, context);
 % process out the keywords here.
   begin
     scalar s, nbvl, fluids, fl1, w, local_decs;
+    if context = 0 and s!:maybe_values then
+      s!:outopcode0('ONEVALUE, '(onevalue));
     nbvl := s := cdr env;
     body := s!:find_local_decs(body, nil);
     local_decs := car body; body := cdr body;
@@ -2066,7 +2072,9 @@ symbolic procedure s!:loadliteral(x, env);
     s!:a_reg_values := list list('quote, x) >>;
 
 symbolic procedure s!:comquote(x, env, context);
-  if context <= 1 then s!:loadliteral(cadr x, env);
+<<if context = 0 and s!:maybe_values then
+    s!:outopcode0('ONEVALUE, '(onevalue));
+  if context <= 1 then s!:loadliteral(cadr x, env) >>;
 
 put('quote, 's!:compfn, function s!:comquote);
 
@@ -2127,6 +2135,8 @@ symbolic procedure s!:local_macro fn;
 !#endif
 
 symbolic procedure s!:comfunction(x, env, context);
+<<if context = 0 and s!:maybe_values then
+    s!:outopcode0('ONEVALUE, '(onevalue));
   if context <= 1 then
   << x := cadr x;
      if eqcar(x, 'lambda) then begin
@@ -2165,7 +2175,7 @@ symbolic procedure s!:comfunction(x, env, context);
         if atom cdr context then s!:comatom(cdr context, env, 1)
         else error(0, "(function <local macro>) is illegal") >>
 !#endif
-     else s!:loadliteral(x, env) >>;
+     else s!:loadliteral(x, env) >> >>;
 
 put('function, 's!:compfn, function s!:comfunction);
 
@@ -2207,6 +2217,8 @@ s!:loadlocs := s!:vecof '(LOADLOC0 LOADLOC1 LOADLOC2 LOADLOC3
 symbolic procedure s!:comatom(x, env, context);
   begin
     scalar n, w;
+    if context = 0 and s!:maybe_values then
+       s!:outopcode0('ONEVALUE, '(onevalue));
     if context > 1 then return nil
     else if null x or not symbolp x then return s!:loadliteral(x, env);
 !#if common!-lisp!-mode
@@ -2384,9 +2396,13 @@ symbolic procedure s!:comcall(x, env, context);
         prin s!:current_function;
         terpri() >>;
     s := cdr env;
+    if context = 0 and s!:maybe_values then
+      s!:outopcode0('ONEVALUE, '(onevalue));
     if nargs = 0 then
        if (w2 := get(fn, 's!:builtin0)) then s!:outopcode1('BUILTIN0, w2, fn)
-       else s!:outopcode1lit('CALL0, fn, env)
+       else <<
+         s!:outopcode1lit('CALL0, fn, env);
+         if fn neq s!:current_function then s!:maybe_values := t >>
     else if nargs = 1 then <<
        if fn = 'car and
           (w2 := s!:islocal(car args, env)) < 12 then
@@ -2398,11 +2414,16 @@ symbolic procedure s!:comcall(x, env, context);
           (w2 := s!:islocal(car args, env)) < 4 then
           s!:outopcode0(getv(s!:caarlocs, w2), list('caarloc, car args))
        else <<
+% What about multiple values in the evaluation of the function? ?????
           s!:comval(car args, env, 1);
           if flagp(fn, 's!:onearg) then s!:outopcode0(fn, list fn)
           else if (w2 := get(fn, 's!:builtin1)) then
             s!:outopcode1('BUILTIN1, w2, fn)
-          else s!:outopcode1lit('CALL1, fn, env) >> >>
+          else <<
+            if context = 0 and s!:maybe_values then
+              s!:outopcode0('ONEVALUE, '(onevalue));
+            s!:outopcode1lit('CALL1, fn, env);
+            if fn neq s!:current_function then s!:maybe_values := t >> >> >>
     else if nargs = 2 then <<
         sw := s!:load2(car args, cadr args, env);
         if flagp(fn, 's!:symmetric) then sw := nil;
@@ -2415,7 +2436,11 @@ symbolic procedure s!:comcall(x, env, context);
               if w3 then s!:outopcode1('BUILTIN2R, w3, fn)
               else s!:outopcode1lit('CALL2R, fn, env) >>
           else if w3 then s!:outopcode1('BUILTIN2, w3, fn)
-          else s!:outopcode1lit('CALL2, fn, env) >> >>
+          else <<
+            if context = 0 and s!:maybe_values then
+              s!:outopcode0('ONEVALUE, '(onevalue));
+            s!:outopcode1lit('CALL2, fn, env);
+            if fn neq s!:current_function then s!:maybe_values := t >> >> >>
     else if nargs = 3 then <<
         if car args = nil then s!:outstack 1
         else <<
@@ -2429,7 +2454,11 @@ symbolic procedure s!:comcall(x, env, context);
            s!:outopcode0(if fn = 'list2!* then 'list2star else fn, list fn)
         else if w2 := get(fn, 's!:builtin3) then
            s!:outopcode1('BUILTIN3, w2, fn)
-        else s!:outopcode1lit('CALL3, fn, env);
+        else <<
+          if context = 0 and s!:maybe_values then
+            s!:outopcode0('ONEVALUE, '(onevalue));
+          s!:outopcode1lit('CALL3, fn, env);
+          if fn neq s!:current_function then s!:maybe_values := t >>;
         rplacd(env, cddr env) >>
     else begin
 % Functions with 4 or more arguments are called by pushing all their
@@ -2450,7 +2479,11 @@ symbolic procedure s!:comcall(x, env, context);
 %     else if fn = 'apply4 and nargs = 5 then   % Not yet implemented.
 %        s!:outopcode0('APPLY4, '(APPLY4));
       else if nargs > 255 then error(0, "Over 255 args in a function call")
-      else s!:outopcode2lit('CALLN, fn, nargs, list(nargs, fn), env);
+      else <<
+        if context = 0 and s!:maybe_values then
+          s!:outopcode0('ONEVALUE, '(onevalue));
+        s!:outopcode2lit('CALLN, fn, nargs, list(nargs, fn), env);
+        if fn neq s!:current_function then s!:maybe_values := t >>;
       rplacd(env, s) end
   end;
 
@@ -4932,7 +4965,7 @@ symbolic procedure s!:compile1(name, args, body, s!:lexical_env);
            s!:current_size, s!:current_procedure, s!:current_exitlab,
            s!:current_proglabels, s!:other_defs, local_decs, s!:has_closure,
            s!:local_macros, s!:recent_literals, s!:a_reg_values, w1, w2,
-           s!:current_count, s!:env_alist, checksum;
+           s!:current_count, s!:env_alist, s!:maybe_values, checksum;
 % If there is a lexical environment present I will set the checksum to 0
 % and thus prevent any native compilation (for now at least)
     if s!:lexical_env then checksum := 0

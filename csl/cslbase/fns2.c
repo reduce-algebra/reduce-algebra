@@ -2224,7 +2224,7 @@ static Lisp_Object Lpreserve_03(Lisp_Object nil, int nargs, ...)
     term_printf("\nThe system will be preserved on file \"%s\"\n", filename);
     if (failed) return aerror("preserve");
     ensure_screen();
-    exit_count = 0;
+    exit_count = 0;  /* no value at all returned */
     nil = C_nil;
     exit_value = banner;
     exit_tag = resume == nil ? fixnum_of_int(1) : /* Flag to say "preserve" */

@@ -1,5 +1,5 @@
 /*
- * "showmem.c"        A C Norman,               1996-2008
+ * "showmem.c"        A C Norman,               1996-2015
  *
  * This program processes a "memory.use" log file created by CSL
  * in a variant compiled with MEMORY_TRACE defined. It displays the
@@ -15,7 +15,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

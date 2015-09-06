@@ -670,86 +670,21 @@ IMPLEMENT_APP_NO_MAIN(fontApp)
 static const char *fontNames[] =
 {
 // This adds the fonts that I expect to be used in my wxWidgets code.
-    "cmuntt.ttf",          // CMU Typewriter Text
     "fireflysung.ttf",     // AR PL New Sung
 #ifdef WIN32
-    "STIXGeneral-Regular.ttf",
-    "STIXGeneral-Bold.ttf",
-    "STIXGeneral-Italic.ttf",
-    "STIXGeneral-BoldItalic.ttf",
-
-    "STIXIntegralsD-Regular.ttf",
-    "STIXIntegralsD-Bold.ttf",
-
-    "STIXIntegralsSm-Regular.ttf",
-    "STIXIntegralsSm-Bold.ttf",
-
-    "STIXIntegralsUp-Regular.ttf",
-    "STIXIntegralsUp-Bold.ttf",
-
-    "STIXIntegralsUpD-Regular.ttf",
-    "STIXIntegralsUpD-Bold.ttf",
-
-    "STIXIntegralsUpSm-Regular.ttf",
-    "STIXIntegralsUpSm-Bold.ttf",
-
-    "STIXNonUnicode-Regular.ttf",
-    "STIXNonUnicode-Bold.ttf",
-    "STIXNonUnicode-Italic.ttf",
-    "STIXNonUnicode-BoldItalic.ttf",
-
-    "STIXSizeOneSym-Regular.ttf",
-    "STIXSizeTwoSym-Regular.ttf",
-    "STIXSizeThreeSym-Regular.ttf",
-    "STIXSizeFourSym-Regular.ttf",
-    "STIXSizeFiveSym-Regular.ttf",
-
-    "STIXSizeOneSym-Bold.ttf",
-    "STIXSizeTwoSym-Bold.ttf",
-    "STIXSizeThreeSym-Bold.ttf",
-    "STIXSizeFourSym-Bold.ttf",
-
-    "STIXVariants-Regular.ttf"
-    "STIXVariants-Bold.ttf",
+    "cmuntt.ttf",          // CMU Typewriter Text
+    "cslSTIX-Regular.ttf",
+    "cslSTIX-Bold.ttf",
+    "cslSTIX-Italic.ttf",
+    "cslSTIX-BoldItalic.ttf",
+    "cslSTIXMath-Regular.ttf"
 #else
-    "STIXGeneral-Regular.otf",
-    "STIXGeneral-Bold.otf",
-    "STIXGeneral-Italic.otf",
-    "STIXGeneral-BoldItalic.otf",
-
-    "STIXIntegralsD-Regular.otf",
-    "STIXIntegralsD-Bold.otf",
-
-    "STIXIntegralsSm-Regular.otf",
-    "STIXIntegralsSm-Bold.otf",
-
-    "STIXIntegralsUp-Regular.otf",
-    "STIXIntegralsUp-Bold.otf",
-
-    "STIXIntegralsUpD-Regular.otf",
-    "STIXIntegralsUpD-Bold.otf",
-
-    "STIXIntegralsUpSm-Regular.otf",
-    "STIXIntegralsUpSm-Bold.otf",
-
-    "STIXNonUnicode-Regular.otf",
-    "STIXNonUnicode-Bold.otf",
-    "STIXNonUnicode-Italic.otf",
-    "STIXNonUnicode-BoldItalic.otf",
-
-    "STIXSizeOneSym-Regular.otf",
-    "STIXSizeTwoSym-Regular.otf",
-    "STIXSizeThreeSym-Regular.otf",
-    "STIXSizeFourSym-Regular.otf",
-    "STIXSizeFiveSym-Regular.otf",
-
-    "STIXSizeOneSym-Bold.otf",
-    "STIXSizeTwoSym-Bold.otf",
-    "STIXSizeThreeSym-Bold.otf",
-    "STIXSizeFourSym-Bold.otf",
-
-    "STIXVariants-Regular.otf"
-    "STIXVariants-Bold.otf",
+    "cmuntt.otf",          // CMU Typewriter Text
+    "cslSTIX-Regular.otf",
+    "cslSTIX-Bold.otf",
+    "cslSTIX-Italic.otf",
+    "cslSTIX-BoldItalic.otf",
+    "cslSTIXMath-Regular.otf"
 #endif
 };
 
@@ -936,6 +871,10 @@ void fontPanel::OnKeyDown(wxKeyEvent &event)
     case 'X':
         page ^= 0x10000/0x80; // Second plane
         break;
+    case 'y':
+    case 'Y':
+        page ^= 0x100000/0x80; // Final plane
+        break;
     case '+':
     case '=':              // "+" key but without shift pressed...
         page = page + 8;
@@ -974,7 +913,7 @@ void fontPanel::OnMouse(wxMouseEvent &event)
     Refresh();
 }
 
-// The following function will catalogue the fonts I expectr to allow
+// The following function will catalogue the fonts I expect to allow
 int find_fontnum(const char *s)
 {
     if (strcmp(s, "CMU Typewriter Text") == 0) return F_cmuntt;

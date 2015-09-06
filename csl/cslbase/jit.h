@@ -1,11 +1,11 @@
-/* jit.h               Copyright (C) 2006-2008 J O'Connell & Codemist Ltd */
+/* jit.h               Copyright (C) 2006-2015 J O'Connell & Codemist Ltd */
 
 #ifndef header_jit_h
 #define header_jit_h 1
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

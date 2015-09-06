@@ -1,12 +1,12 @@
 /*
- * "tagifs.c"     A C Norman, 2008
+ * "tagifs.c"     A C Norman, 2015
  *
  * Re-words C/C++ code to add comments to #else and #endif lines to show
  * the #if/#ifdef that they refer to.
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

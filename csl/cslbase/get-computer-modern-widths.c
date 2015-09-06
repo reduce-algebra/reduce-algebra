@@ -17,12 +17,12 @@
  * quick and dirty hack is not that important.
  *
  *
- *                                      A C Norman.  November 2010
+ *                                      A C Norman.  November 2015
  */
 
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
     fprintf(out, " * Widths for characters in Computer Modern Fonts\n *\n");
     fprintf(out, " * extracted from %s\n *\n", FONT_PATH);
     fprintf(out, " */\n");
-    fprintf(out, "\n\n/* Signature: 00000000 06-Nov-2010 */\n\n\n");
+    fprintf(out, "\n\n/* Signature: 00000000 06-Nov-2015 */\n\n\n");
     fprintf(out, "#include <stdint.h>\n\n");
     fprintf(out, "typedef struct font_width {\n");
     fprintf(out, "   const char *name;\n");

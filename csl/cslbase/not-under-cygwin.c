@@ -1,8 +1,8 @@
-/* not-under-cygwin.c                   Copyright (C) 2012 Codemist Ltd */
+/* not-under-cygwin.c                   Copyright (C) 2015 Codemist Ltd */
 
 
 /**************************************************************************
- * Copyright (C) 2012, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -85,3 +85,4 @@ int main(int argc, char *argv[])
             t1==FILE_TYPE_DISK) ? 0 : 1;
 }
 
+/* end of not-under-cygwin.c */

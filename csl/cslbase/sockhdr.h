@@ -1,4 +1,4 @@
-/*  sockhdr.h                        Copyright (C) 1997-2008 Codemist Ltd */
+/*  sockhdr.h                        Copyright (C) 1997-2015 Codemist Ltd */
 
 /*
  * pull in headers suitable for socket-related code.
@@ -6,7 +6,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

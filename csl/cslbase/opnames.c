@@ -1,7 +1,7 @@
-/* opnames.c                           Copyright (C) Codemist 1993-2008 */
+/* opnames.c                           Copyright (C) Codemist 1993-2015 */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -34,6 +34,11 @@
 
 /*
  * table giving printable names for all 256 byte opcodes.
+ *
+ * I am going to annotate this table with a comment containg just "@" in
+ * places where a future possible reorganisation could free up bytecode
+ * values for extension. I still have ONE spare code before I have to go
+ * down that route!
  */
 
 static char *opnames[256] =
@@ -132,13 +137,21 @@ static char *opnames[256] =
    "CALL2_4",                   /* 0x5b */
    "BUILTIN0",                  /* 0x5c */
    "BUILTIN1",                  /* 0x5d */
-   "BUILTIN2",                  /* 0x5e */
-   "BUILTIN2R",                 /* 0x5f */
-   "BUILTIN3",                  /* 0x60 */
+/*
+ * I do not have anything like 256 built in functions in any of these cases
+ * so I could consolidate BUILTIN0/1/3 into one opcode and BUILTIN2/2R into
+ * another with only a modest run-time overhead.
+ */
+   "BUILTIN2",                  /* 0x5e */ /*@*/
+   "BUILTIN2R",                 /* 0x5f */ /*@*/
+   "BUILTIN3",                  /* 0x60 */ /*@*/
    "APPLY1",                    /* 0x61 */
    "APPLY2",                    /* 0x62 */
    "APPLY3",                    /* 0x63 */
-   "APPLY4",                    /* 0x64 */
+/* APPLY4 is not even implemented yet! So removing it could not hurt!
+ * Maybe implementing it might help?
+ */
+   "APPLY4",                    /* 0x64 */ /*@*/
    "JCALL",                     /* 0x65 */
    "JCALLN",                    /* 0x66 */
    "JUMP",                      /* 0x67 */
@@ -147,36 +160,40 @@ static char *opnames[256] =
    "JUMP_BL",                   /* 0x6a */
    "JUMPNIL",                   /* 0x6b */
    "JUMPNIL_B",                 /* 0x6c */
-   "JUMPNIL_L",                 /* 0x6d */
-   "JUMPNIL_BL",                /* 0x6e */
+/* Conditional jumps could all be such that they only supported
+ * a short range. For long jumps I could go to only allowing a 32K span
+ * not a 64K one and consilidate the _L and _BL cases.
+ */
+   "JUMPNIL_L",                 /* 0x6d */ /*@?*/
+   "JUMPNIL_BL",                /* 0x6e */ /*@?*/
    "JUMPT",                     /* 0x6f */
    "JUMPT_B",                   /* 0x70 */
-   "JUMPT_L",                   /* 0x71 */
-   "JUMPT_BL",                  /* 0x72 */
+   "JUMPT_L",                   /* 0x71 */ /*@?*/
+   "JUMPT_BL",                  /* 0x72 */ /*@?*/
    "JUMPATOM",                  /* 0x73 */
    "JUMPATOM_B",                /* 0x74 */
-   "JUMPATOM_L",                /* 0x75 */
-   "JUMPATOM_BL",               /* 0x76 */
+   "JUMPATOM_L",                /* 0x75 */ /*@?*/
+   "JUMPATOM_BL",               /* 0x76 */ /*@?*/
    "JUMPNATOM",                 /* 0x77 */
    "JUMPNATOM_B",               /* 0x78 */
-   "JUMPNATOM_L",               /* 0x79 */
-   "JUMPNATOM_BL",              /* 0x7a */
+   "JUMPNATOM_L",               /* 0x79 */ /*@?*/
+   "JUMPNATOM_BL",              /* 0x7a */ /*@?*/
    "JUMPEQ",                    /* 0x7b */
    "JUMPEQ_B",                  /* 0x7c */
-   "JUMPEQ_L",                  /* 0x7d */
-   "JUMPEQ_BL",                 /* 0x7e */
+   "JUMPEQ_L",                  /* 0x7d */ /*@?*/
+   "JUMPEQ_BL",                 /* 0x7e */ /*@?*/
    "JUMPNE",                    /* 0x7f */
    "JUMPNE_B",                  /* 0x80 */
-   "JUMPNE_L",                  /* 0x81 */
-   "JUMPNE_BL",                 /* 0x82 */
+   "JUMPNE_L",                  /* 0x81 */ /*@?*/
+   "JUMPNE_BL",                 /* 0x82 */ /*@?*/
    "JUMPEQUAL",                 /* 0x83 */
    "JUMPEQUAL_B",               /* 0x84 */
-   "JUMPEQUAL_L",               /* 0x85 */
-   "JUMPEQUAL_BL",              /* 0x86 */
+   "JUMPEQUAL_L",               /* 0x85 */ /*@?*/
+   "JUMPEQUAL_BL",              /* 0x86 */ /*@?*/
    "JUMPNEQUAL",                /* 0x87 */
    "JUMPNEQUAL_B",              /* 0x88 */
-   "JUMPNEQUAL_L",              /* 0x89 */
-   "JUMPNEQUAL_BL",             /* 0x8a */
+   "JUMPNEQUAL_L",              /* 0x89 */ /*@?*/
+   "JUMPNEQUAL_BL",             /* 0x8a */ /*@?*/
    "JUMPL0NIL",                 /* 0x8b */
    "JUMPL0T",                   /* 0x8c */
    "JUMPL1NIL",                 /* 0x8d */
@@ -231,8 +248,9 @@ static char *opnames[256] =
    "JUMPNEQCAR",                /* 0xbe */
    "CATCH",                     /* 0xbf */
    "CATCH_B",                   /* 0xc0 */
-   "CATCH_L",                   /* 0xc1 */
-   "CATCH_BL",                  /* 0xc2 */
+/* Use a trampoline-jump if necessary for catches with huge span? */
+   "CATCH_L",                   /* 0xc1 */ /*@*/
+   "CATCH_BL",                  /* 0xc2 */ /*@*/
    "UNCATCH",                   /* 0xc3 */
    "THROW",                     /* 0xc4 */
    "PROTECT",                   /* 0xc5 */
@@ -292,8 +310,12 @@ static char *opnames[256] =
    "BIGCALL",                   /* 0xfb */
    "ICASE",                     /* 0xfc */
    "FASTGET",                   /* 0xfd */
-   "SPARE1",                    /* 0xfe */
-   "SPARE2",                    /* 0xff */
+   "ONEVALUE",                  /* 0xfe */
+/*
+ * I could have a prefix byte that caused the byte following it to have
+ * multiple uses big-time.
+ */
+   "SPARE",                     /* 0xff */
 };
 
 /* end of opnames.c */

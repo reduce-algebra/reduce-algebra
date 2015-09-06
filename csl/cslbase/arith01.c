@@ -51,9 +51,6 @@
 Lisp_Object make_lisp_integer64(int64_t n)
 {
     int64_t n1;
-#ifdef COMMON
-    exit_count = 1;
-#endif
     if (n < 0x08000000 && n >= -0x08000000) return fixnum_of_int((int32_t)n);
     n1 = n >> 4;
     if (n1 < 0x08000000 && n1 >= -0x08000000)
@@ -71,9 +68,6 @@ Lisp_Object make_lisp_integer64(int64_t n)
 Lisp_Object make_lisp_integer32(int32_t n)
 {
     int32_t n1;
-#ifdef COMMON
-    exit_count = 1;
-#endif
     if (n < 0x08000000 && n >= -0x08000000) return fixnum_of_int(n);
     n1 = n >> 4;
     if (n1 < 0x08000000 && n1 >= -0x08000000)

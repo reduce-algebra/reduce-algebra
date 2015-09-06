@@ -1622,8 +1622,7 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
  * clever compiler can understand that there is no "default" that can possibly
  * be activated.
  */
-    case OP_SPARE1:
-    case OP_SPARE2:
+    case OP_SPARE:
     default:
 /*
  * Here I have an unrecognised opcode - the result of a compiler error
@@ -1634,25 +1633,12 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             C_stack = stack;
             goto error_exit;
 
+    case OP_ONEVALUE:
+            exit_count = 1;
+            continue;
 
     case OP_LOC0EXIT:
             A_reg = stack[0];
-#ifdef COMMON
-/*
- * At a load of places here I set exit_count to 1 so that if I then return
- * it will be clear how many values are involved. As currently organized
- * this FAILS to set the number of values in cases like
- *    (setq a (values 1 2 3))
- * and
- *    (cond
- *      ((values 1 2 3)))
- * where in each case the 3 values shown will be (improperly) preserved.
- * I suspect that hardly anybody minds if too many values are occasionally
- * returned, and so will NOT put the overhead of extra reference to
- * exit_count after STORE instructions or conditional branches.
- */
-            exit_count = 1;
-#endif
             C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
             if (callstack != nil) callstack = qcdr(callstack);
@@ -1663,9 +1649,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
 
     case OP_LOC1EXIT:
             A_reg = stack[-1];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
             if (callstack != nil) callstack = qcdr(callstack);
@@ -1676,9 +1659,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
 
     case OP_LOC2EXIT:
             A_reg = stack[-2];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             C_stack = ((Lisp_Object *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
             if (callstack != nil) callstack = qcdr(callstack);
@@ -1804,18 +1784,12 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
     case OP_VNIL:
             B_reg = A_reg;
             A_reg = nil;
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_SWOP:
             r1 = B_reg;
             B_reg = A_reg;
             A_reg = r1;
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_NCONS:                          /* A_reg = cons(A_reg, nil); */
@@ -1854,9 +1828,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             restore_pc();
             pop(B_reg);
 #endif
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_XCONS:                          /* A_reg = cons(A_reg, B_reg); */
@@ -1884,9 +1855,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             if (exception_pending()) goto error_exit;
             stack = C_stack;        /* may have been changed by GC */
             restore_pc();
-#endif
-#ifdef COMMON
-            exit_count = 1;
 #endif
             continue;
 
@@ -1918,9 +1886,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             if (exception_pending()) goto error_exit;
             stack = C_stack;        /* may have been changed by GC */
             restore_pc();
-#endif
-#ifdef COMMON
-            exit_count = 1;
 #endif
             continue;
 
@@ -1955,9 +1920,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             stack = C_stack;        /* may have been changed by GC */
             restore_pc();
 #endif
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
 /*
@@ -1974,9 +1936,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             w = next_byte;             /* Number of levels to chain */
             while (w != 0) r1 = ((Lisp_Object *)r1)[1], w--;
             A_reg = ((Lisp_Object *)r1)[next_byte];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_STORELEX:
@@ -2014,9 +1973,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
                 B_reg = A_reg;
                 w = (w & 0x3f) << 8;
                 A_reg = stack[-(int)(w + next_byte)];
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
         case 0x40:                  /* STORELOC extended */
                 w = (w & 0x3f) << 8;
@@ -2035,12 +1991,7 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
                 B_reg = A_reg;
                 n = w & 0x1f;
                 while (n != 0) r1 = ((Lisp_Object *)r1)[1], n--;
-                if ((w & 0x20) == 0)
-                {   A_reg = ((Lisp_Object *)r1)[k];
-#ifdef COMMON
-                    exit_count = 1;
-#endif
-                }
+                if ((w & 0x20) == 0) A_reg = ((Lisp_Object *)r1)[k];
                 else ((Lisp_Object *)r1)[k] = A_reg;
                 continue;
             }
@@ -2075,9 +2026,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             if (exception_pending()) goto error_exit;
             stack = C_stack;        /* may have been changed by GC */
             restore_pc();
-#endif
-#ifdef COMMON
-            exit_count = 1;
 #endif
             continue;
 
@@ -2116,18 +2064,11 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             stack = C_stack;        /* may have been changed by GC */
             restore_pc();
 #endif
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_ADD1:
             if (is_fixnum(A_reg) && A_reg != fixnum_of_int(0x07ffffff))
-            {   
-                A_reg += 0x10;
-#ifdef COMMON
-                exit_count = 1;
-#endif
+            {   A_reg += 0x10;
                 continue;
             }
 /*
@@ -2140,9 +2081,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             if (exception_pending()) goto error_exit;
             stack = C_stack;
             restore_pc();
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_PLUS2:
@@ -2151,9 +2089,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
                 k = n & fix_mask;
                 if (k == 0 || k == fix_mask)
                 {   A_reg = fixnum_of_int(n);
-#ifdef COMMON
-                    exit_count = 1;
-#endif
                     continue;
                 }
             }
@@ -2167,18 +2102,11 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             if (exception_pending()) goto error_exit;
             stack = C_stack;
             restore_pc();
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_SUB1:
             if (is_fixnum(A_reg) && A_reg != fixnum_of_int(~0x07ffffff))
-            {   
-                A_reg -= 0x10;
-#ifdef COMMON
-                exit_count = 1;
-#endif
+            {   A_reg -= 0x10;
                 continue;
             }
 /*
@@ -2191,9 +2119,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             if (exception_pending()) goto error_exit;
             stack = C_stack;
             restore_pc();
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_DIFFERENCE:
@@ -2202,9 +2127,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
                 k = n & fix_mask;
                 if (k == 0 || k == fix_mask)
                 {   A_reg = fixnum_of_int(n);
-#ifdef COMMON
-                    exit_count = 1;
-#endif
                     continue;
                 }
             }
@@ -2227,9 +2149,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             if (exception_pending()) goto error_exit;
             stack = C_stack;
             restore_pc();
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_TIMES2:
@@ -2244,9 +2163,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             if (exception_pending()) goto error_exit;
             stack = C_stack;
             restore_pc();
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LESSP:
@@ -2261,9 +2177,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
                 restore_pc();
             }
             A_reg = Lispify_predicate(w);
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_GREATERP:
@@ -2278,9 +2191,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
                 restore_pc();
             }
             A_reg = Lispify_predicate(w);
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_FLAGP:                                  /* A = flagp(B, A) */
@@ -2292,7 +2202,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             stack = C_stack; restore_pc();
             if (A_reg == unset_var) A_reg = nil;
             else A_reg = lisp_true;
-            exit_count = 1;
             continue;
 #else
 #ifndef OUT_OF_LINE
@@ -2440,7 +2349,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = Lflagp(nil, B_reg, A_reg);
             nil = C_nil;
             if (exception_pending()) goto error_exit;
-            exit_count = 1;
             continue;
 #endif
 #endif
@@ -2574,24 +2482,15 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = EQUAL(B_reg, A_reg) ? lisp_true : nil;
             nil = C_nil;
             if (exception_pending()) goto error_exit;
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_EQ:                                     /* A = eq(B, A) */
             if (A_reg == B_reg) A_reg = lisp_true;
             else A_reg = nil;
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_NUMBERP:                                /* A = numberp(A) */
             A_reg = Lispify_predicate(is_number(A_reg));
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_QGETV:                          /* A_reg = getv(B_reg, A_reg) */
@@ -2606,9 +2505,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
                 (char *)B_reg +
                  (CELL - TAG_VECTOR) +
                  (CELL*int_of_fixnum(A_reg)));
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_GETV:                           /* A_reg = getv(B_reg, A_reg) */
@@ -2644,9 +2540,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             stack = C_stack;        /* may have been changed by GC */
             restore_pc();
 #endif
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_QGETVN:                         /* A_reg = getv(A_reg, n) */
@@ -2659,17 +2552,11 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
  */
             A_reg = *(Lisp_Object *)(
                 (char *)A_reg + (CELL - TAG_VECTOR) + (CELL*(next_byte)));
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_EQCAR:
             if (car_legal(B_reg) && A_reg == qcar(B_reg)) A_reg = lisp_true;
             else A_reg = nil;
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LENGTH:
@@ -2680,9 +2567,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             if (exception_pending()) goto error_exit;
             stack = C_stack;
             restore_pc();
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
 /*
@@ -2693,49 +2577,31 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
     case OP_LOC0LOC1:
             B_reg = stack[-0];
             A_reg = stack[-1];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOC1LOC2:
             B_reg = stack[-1];
             A_reg = stack[-2];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOC2LOC3:
             B_reg = stack[-2];
             A_reg = stack[-3];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOC1LOC0:
             B_reg = stack[-1];
             A_reg = stack[-0];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOC2LOC1:
             B_reg = stack[-2];
             A_reg = stack[-1];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOC3LOC2:
             B_reg = stack[-3];
             A_reg = stack[-2];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_CDRLOC0:
@@ -2743,9 +2609,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = stack[-0];
             if (car_legal(A_reg))
             {   A_reg = qcdr(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_cdr;
@@ -2757,9 +2620,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = stack[-1];
             if (car_legal(A_reg))
             {   A_reg = qcdr(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_cdr;
@@ -2771,9 +2631,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = stack[-2];
             if (car_legal(A_reg))
             {   A_reg = qcdr(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_cdr;
@@ -2785,9 +2642,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = stack[-3];
             if (car_legal(A_reg))
             {   A_reg = qcdr(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_cdr;
@@ -2799,9 +2653,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = stack[-4];
             if (car_legal(A_reg))
             {   A_reg = qcdr(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_cdr;
@@ -2813,9 +2664,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = stack[-5];
             if (car_legal(A_reg))
             {   A_reg = qcdr(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_cdr;
@@ -2854,9 +2702,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             }
             if (car_legal(A_reg))
             {   A_reg = qcar(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_car;
@@ -2872,9 +2717,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             }
             if (car_legal(A_reg))
             {   A_reg = qcdr(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_cdr;
@@ -2890,9 +2732,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             }
             if (car_legal(A_reg))
             {   A_reg = qcdr(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_cdr;
@@ -4175,9 +4014,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
         case 6:
             B_reg = A_reg;
             A_reg = qvalue(elt(litvec, fname));
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
         case 7:
             qvalue(elt(litvec, fname)) = A_reg;  /* store into special var */
@@ -4203,9 +4039,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
  */
         case 15:B_reg = A_reg;
                 A_reg = elt(litvec, fname);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
 
@@ -4388,113 +4221,71 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
      case OP_LOADLOC:
             B_reg = A_reg;
             A_reg = stack[-(int)next_byte];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLOC0:
             B_reg = A_reg;
             A_reg = stack[-0];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLOC1:
             B_reg = A_reg;
             A_reg = stack[-1];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLOC2:
             B_reg = A_reg;
             A_reg = stack[-2];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLOC3:
             B_reg = A_reg;
             A_reg = stack[-3];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLOC4:
             B_reg = A_reg;
             A_reg = stack[-4];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLOC5:
             B_reg = A_reg;
             A_reg = stack[-5];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLOC6:
             B_reg = A_reg;
             A_reg = stack[-6];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLOC7:
             B_reg = A_reg;
             A_reg = stack[-7];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLOC8:
             B_reg = A_reg;
             A_reg = stack[-8];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLOC9:
             B_reg = A_reg;
             A_reg = stack[-9];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLOC10:
             B_reg = A_reg;
             A_reg = stack[-10];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLOC11:
             B_reg = A_reg;
             A_reg = stack[-11];
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_CAR:
             if (car_legal(A_reg))
             {   A_reg = qcar(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_car;
@@ -4506,9 +4297,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = stack[-0];
             if (car_legal(A_reg))
             {   A_reg = qcar(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_car;
@@ -4520,9 +4308,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = stack[-1];
             if (car_legal(A_reg))
             {   A_reg = qcar(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_car;
@@ -4534,9 +4319,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = stack[-2];
             if (car_legal(A_reg))
             {   A_reg = qcar(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_car;
@@ -4548,9 +4330,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = stack[-3];
             if (car_legal(A_reg))
             {   A_reg = qcar(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_car;
@@ -4562,9 +4341,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = stack[-4];
             if (car_legal(A_reg))
             {   A_reg = qcar(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_car;
@@ -4576,9 +4352,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = stack[-5];
             if (car_legal(A_reg))
             {   A_reg = qcar(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_car;
@@ -4590,9 +4363,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = stack[-6];
             if (car_legal(A_reg))
             {   A_reg = qcar(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_car;
@@ -4604,9 +4374,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = stack[-7];
             if (car_legal(A_reg))
             {   A_reg = qcar(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_car;
@@ -4618,9 +4385,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = stack[-8];
             if (car_legal(A_reg))
             {   A_reg = qcar(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_car;
@@ -4632,9 +4396,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = stack[-9];
             if (car_legal(A_reg))
             {   A_reg = qcar(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_car;
@@ -4646,9 +4407,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = stack[-10];
             if (car_legal(A_reg))
             {   A_reg = qcar(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_car;
@@ -4660,9 +4418,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
             A_reg = stack[-11];
             if (car_legal(A_reg))
             {   A_reg = qcar(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_car;
@@ -4672,9 +4427,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
     case OP_CDR:
             if (car_legal(A_reg))
             {   A_reg = qcdr(A_reg);
-#ifdef COMMON
-                exit_count = 1;
-#endif
                 continue;
             }
             CSLerrcode = err_bad_cdr;
@@ -4726,65 +4478,41 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
  */
             B_reg = A_reg;
             A_reg = elt(litvec, next_byte);
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLIT1:
             B_reg = A_reg;
             A_reg = elt(litvec, 1);
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLIT2:
             B_reg = A_reg;
             A_reg = elt(litvec, 2);
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLIT3:
             B_reg = A_reg;
             A_reg = elt(litvec, 3);
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLIT4:
             B_reg = A_reg;
             A_reg = elt(litvec, 4);
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLIT5:
             B_reg = A_reg;
             A_reg = elt(litvec, 5);
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLIT6:
             B_reg = A_reg;
             A_reg = elt(litvec, 6);
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADLIT7:
             B_reg = A_reg;
             A_reg = elt(litvec, 7);
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADFREE:
@@ -4793,41 +4521,26 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
  */
             B_reg = A_reg;
             A_reg = qvalue(elt(litvec, next_byte));
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADFREE1:
             B_reg = A_reg;
             A_reg = qvalue(elt(litvec, 1));
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADFREE2:
             B_reg = A_reg;
             A_reg = qvalue(elt(litvec, 2));
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADFREE3:
             B_reg = A_reg;
             A_reg = qvalue(elt(litvec, 3));
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOADFREE4:
             B_reg = A_reg;
             A_reg = qvalue(elt(litvec, 4));
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_JUMPNIL:
@@ -5013,9 +4726,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
     case OP_POP:
             B_reg = A_reg;
             pop(A_reg);
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
 
     case OP_LOSE:
@@ -5066,9 +4776,6 @@ Lisp_Object bytestream_interpret1(Lisp_Object code, Lisp_Object lit,
                 ensure_screen();
                 abort();
             }
-#endif
-#ifdef COMMON
-            exit_count = 1;
 #endif
             continue;
 
@@ -5137,7 +4844,6 @@ perform_get:
         nil = C_nil;
         if (exception_pending()) goto error_exit;
         stack = C_stack; restore_pc();
-        exit_count = 1;
         continue;
 #else
 #ifndef OUT_OF_LINE
@@ -5296,7 +5002,6 @@ perform_get:
         nil = C_nil;
         if (exception_pending()) goto error_exit;
         stack = C_stack; restore_pc();
-        exit_count = 1;
         continue;
 #endif
 #endif
@@ -5310,9 +5015,6 @@ caar:
         }
         if (car_legal(A_reg))
         {   A_reg = qcar(A_reg);
-#ifdef COMMON
-            exit_count = 1;
-#endif
             continue;
         }
         CSLerrcode = err_bad_car;

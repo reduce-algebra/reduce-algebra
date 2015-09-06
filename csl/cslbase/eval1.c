@@ -1104,7 +1104,8 @@ case STATE_AUX:
         if (exception_pending()) return qname;
         return bodyx;
     }
-    {   body = noisy ? noisy_progn_fn(body, env) : progn_fn(body, env);
+    {   exit_count = 1;
+        body = noisy ? noisy_progn_fn(body, env) : progn_fn(body, env);
         nil = C_nil;
         if (exception_pending()) goto unwind_special_bindings;
         while (specenv != nil)
@@ -1118,7 +1119,7 @@ case STATE_AUX:
 /*
  * note that exit_count has not been disturbed since I called progn_fn,
  * so the number of values that will be returned remains correctly
- * established (in Common Lisp mode where it is needed).
+ * established.
  */
             return bodyx;
         }
@@ -1429,6 +1430,7 @@ Lisp_Object mv_call_fn(Lisp_Object args, Lisp_Object env)
     {   Lisp_Object r1;
         push2(args, env);
         r1 = qcar(args);
+        exit_count = 1;
         r1  = eval(r1, env);
         nil = C_nil;
         if (exception_pending())

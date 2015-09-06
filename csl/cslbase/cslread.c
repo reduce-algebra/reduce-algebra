@@ -2310,6 +2310,9 @@ static int raw_char_from_terminal()
                         (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                         UNWIND_UNWIND;
                     exit_value = exit_tag = nil;
+/*
+ * In this case I return no values at all.
+ */
                     exit_count = 0;
                     flip_exception();
                 }
@@ -4100,7 +4103,7 @@ void read_eval_print(int noisy)
         if (!setjmp(this_level))
 #endif
 #endif
-        {
+        {   exit_count = 1; /* Because I care how many results are returned */
             u = eval(u, nil);
             nil = C_nil;
             if (exception_pending())
@@ -4122,7 +4125,7 @@ void read_eval_print(int noisy)
             if (noisy)
             {
 #ifndef COMMON
-                print(u);   /* Always exactly one value */
+                print(u);
                 stdout_printf("\n");
                 nil = C_nil;
                 if (exception_pending()) flip_exception();
@@ -4145,6 +4148,11 @@ void read_eval_print(int noisy)
                 if (exception_pending()) flip_exception();
                 mv_2 = u;
                 miscflags |= (HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG);
+/*
+ * Here I will demand that the print code does not use multiple-value
+ * procedures because if it did it might clobber the information stored in
+ * mv_2[] that is accessed here.
+ */
                 for (i=2; i<=nvals; i++)
                 {   print((&mv_2)[i-2]);
                     nil = C_nil;

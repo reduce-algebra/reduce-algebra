@@ -1,8 +1,8 @@
-/*  babyreduce.c                            Copyright (C) 2012 Codemist Ltd */
+/*  babyreduce.c                            Copyright (C) 2015 Codemist Ltd */
 
 
 /**************************************************************************
- * Copyright (C) 2012, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

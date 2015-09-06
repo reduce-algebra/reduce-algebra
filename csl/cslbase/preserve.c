@@ -691,7 +691,7 @@ void Iinit(void)
                                      i == output_directory ? PDS_OUTPUT :
                                                              PDS_INPUT);
     }
-    CSL_MD5_Update((unsigned char *)"Copyright 2008 Codemist Ltd", 24);
+    CSL_MD5_Update((unsigned char *)"Copyright 2015 Codemist Ltd", 24);
 }
 
 void Icontext(Ihandle *where)
@@ -950,7 +950,7 @@ static CSLbool open_input(directory *d, char *name, int len,
 
 void IreInit(void)
 {
-    CSL_MD5_Update((unsigned char *)"Copyright 2008 Codemist Ltd", 24);
+    CSL_MD5_Update((unsigned char *)"Copyright 2015 Codemist Ltd", 24);
     CSL_MD5_Update((unsigned char *)"memory.u", 8);
 }
 

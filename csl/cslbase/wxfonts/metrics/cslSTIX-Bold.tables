@@ -1,14 +1,14 @@
 version='OTTO', numtables=17, searchRange=256 entrySel=4 rangeshift=16
 File Checksum =b1b0afba (should be 0xb1b0afba), diff=0
 CFF  checksum=60ae40c1 actual=60ae40c1 diff=0 offset=17244 len=184168
-FFTM checksum=69af7e1d actual=69af7e1d diff=0 offset=222636 len=28
+FFTM checksum=69afa814 actual=69afa814 diff=0 offset=222636 len=28
 GDEF checksum=25512cf8 actual=25512cf8 diff=0 offset=201412 len=98
 GPOS checksum=0c9ce5b8 actual=0c9ce5b8 diff=0 offset=202388 len=4354
 GSUB checksum=8991c7a7 actual=8991c7a7 diff=0 offset=201512 len=876
 OS/2 checksum=cf214b07 actual=cf214b07 diff=0 offset=384 len=96
 cmap checksum=98710d8f actual=98710d8f diff=0 offset=12068 len=5142
 feat checksum=802c0b3f actual=802c0b3f diff=0 offset=206744 len=84
-head checksum=072b0bb7 actual=445ba86f diff=4370a3d8 offset=284 len=54
+head checksum=072b5fa5 actual=445b0093 diff=43705f36 offset=284 len=54
 hhea checksum=080c0b69 actual=080c0b69 diff=0 offset=340 len=36
 hmtx checksum=71bc9513 actual=71bc9513 diff=0 offset=214672 len=7964
 kern checksum=baf0affc actual=baf0affc diff=0 offset=208640 len=6030
@@ -21,22 +21,22 @@ prop checksum=99b33581 actual=99b33581 diff=0 offset=222664 len=536
 
 Created by FontForge 2:10 27-August-2015
 	Font created: Mon Jan 19 20:26:30 2009
-	Font modified: Sat Sep  5 18:32:17 2015
+	Font modified: Sat Sep  5 21:31:20 2015
 
 
 HEAD table (at 284)
 	Version=1
 	fontRevision=1.09999
-	checksumAdj=3d309cb8
+	checksumAdj=3d2fa0ee
 	magicNumber=5f0f3cf5 (0x5f0f3cf5, diff=0)
 	flags=b baseline_at_0 lsb_at_0 ppem_to_int 
 	unitsPerEm=1000
 	create[0]=0
-	 create[1]=d210d7a1
-	File created: Sat Sep  5 18:32:17 2015
+	 create[1]=d2110198
+	File created: Sat Sep  5 21:31:20 2015
 	modtime[0]=0
-	 modtime[1]=d210d7a1
-	File modified: Sat Sep  5 18:32:17 2015
+	 modtime[1]=d2110198
+	File modified: Sat Sep  5 21:31:20 2015
 	xmin=-998
 	ymin=-552
 	xmax=2000

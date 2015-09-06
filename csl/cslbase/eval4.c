@@ -2243,10 +2243,18 @@ Lisp_Object Lmv_list(Lisp_Object nil, Lisp_Object a)
 /*
  * This does a (multiple-value-list A) on just one form.  It must be used
  * carefully so that the value-count information does not get lost between
- * the evaluation of A and calling this code.
+ * the evaluation of A and calling this code. For this to work the variable
+ * exit_count must have been set to 1 before the call that evaluated the
+ * argument! Ensuring that all the time may be tough and may mean that
+ * non-compiled code has to set exit_count rather often "just to be sure".
+ * It also makes the case of (apply #'mv!-list ...) seem slightly scary,
+ * because normally arguments only generate one value each. Hmmm maybe this
+ * would be best implemented as a special form.
+ * Haha (multiple-value-list V) may be implemented as
+ * (multiple-value-call #'list V) and multiple-value-call is a special form.
+ * so what I have here is in fact unsupportable!
  */
 {
-#ifdef COMMON
     Lisp_Object r, *save_stack = stack;
     int i, x = exit_count;
     stackcheck1(0, a);
@@ -2264,10 +2272,6 @@ Lisp_Object Lmv_list(Lisp_Object nil, Lisp_Object a)
         }
     }
     return onevalue(r);
-#else
-    CSL_IGNORE(nil);
-    return ncons(a);
-#endif
 }
 
 /*

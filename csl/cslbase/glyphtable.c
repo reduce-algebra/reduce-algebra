@@ -1,4 +1,4 @@
-/* glyphtable.c                          Copyright (C) 2014 Codemist Ltd */
+/* glyphtable.c                          Copyright (C) 2015 Codemist Ltd */
 
 #error DEFUNCT
 
@@ -9,7 +9,7 @@
 /* Build bitmap tables relating to characters present in fonts */
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
     char *p;
     uint32_t map[65536/32];
     out = fopen("coverage.c", "w");
-fprintf(out, "/* coverage.c                                   Copyright A C Norman 2014 */\n");
+fprintf(out, "/* coverage.c                                   Copyright A C Norman 2015 */\n");
 fprintf(out, "\n");
 fprintf(out, "\n");
 fprintf(out, "/*\n");

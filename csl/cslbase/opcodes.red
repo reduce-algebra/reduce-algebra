@@ -157,9 +157,10 @@ ICASE
 % Speed-up support for compiled GET and FLAGP when tag is important
 FASTGET
 
+% Multiple-value support
+ONEVALUE
 % Opcodes that have not yet been allocated.
-SPARE1
-SPARE2
+SPARE
 )$
 
 end;

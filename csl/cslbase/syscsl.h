@@ -1,4 +1,4 @@
-/*  syscsl.h                      Copyright (C) 1992-2014 Codemist Ltd */
+/*  syscsl.h                      Copyright (C) 1992-2015 Codemist Ltd */
 
 /*
  * This file should contain a list of all the functions in CSL that have
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -458,5 +458,4 @@ extern void pause_for_user(void);
 #endif /* header_syscsl_h */
 
 /* end of syscsl.h */
-
 

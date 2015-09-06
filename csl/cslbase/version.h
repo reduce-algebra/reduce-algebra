@@ -1,4 +1,4 @@
-/* version.h                  Copyright (C) 1990-2008 Codemist Ltd */
+/* version.h                  Copyright (C) 1990-2015 Codemist Ltd */
 
 #ifndef header_version_h
 #define header_version_h 1
@@ -7,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -49,7 +49,7 @@
  */
 
 #ifndef VERSION
-#define VERSION     "6.04"
+#define VERSION     "6.05"
 #endif
 
 #endif /* header_version_h */

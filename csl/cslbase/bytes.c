@@ -1,5 +1,5 @@
 /*
- * bytes.c                           Copyright (C) 1991-2014, Codemist Ltd
+ * bytes.c                           Copyright (C) 1991-2015, Codemist Ltd
  *
  *
  * version of bytes1.c that does not keep counts of how many
@@ -9,7 +9,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -42,8 +42,8 @@
 
 /*
  * This file is in the process of being removed. Its sole purpose is to
- * be like "bytes1.c" but with NO_BYTECOUNT defined. I am nor arrangin that
- * using Makefile.am.
+ * be like "bytes1.c" but with NO_BYTECOUNT defined. I am not arranging that
+ * using Makefile.am, but possibly I should.
  * I will, however, leave this file present for a possibly extended period
  * to cope with any alternate or old build setups.
  */

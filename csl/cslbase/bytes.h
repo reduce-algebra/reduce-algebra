@@ -1,9 +1,9 @@
-/* bytes.h                             Copyright (C) Codemist 1993-2008 */
+/* bytes.h                             Copyright (C) Codemist 1993-2015 */
 
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -298,8 +298,8 @@
 #define OP_BIGCALL              0xfb
 #define OP_ICASE                0xfc
 #define OP_FASTGET              0xfd
-#define OP_SPARE1               0xfe
-#define OP_SPARE2               0xff
+#define OP_ONEVALUE             0xfe
+#define OP_SPARE                0xff
 
 #endif /* header_bytes_h */
 
