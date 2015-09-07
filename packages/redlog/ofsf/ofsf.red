@@ -643,8 +643,12 @@ procedure ofsf_procform1(u);
       if op eq 'expt then
       	 return {'exptf, ofsf_procform1 cadr u, caddr u};
       if op memq '(neq equal lessp geq leq greaterp) then
+	 % return applsmacro(get('ofsf_0mk2, 'inline),
+      	 %    {mkquote op, ofsf_procform1 cadr u}, 'ofsf_0mk2);
 	 return {'ofsf_0mk2, mkquote op, ofsf_procform1 cadr u};
       if op memq '(and or) then
+	 % return applsmacro(get('rl_mkn, 'inline),
+	 %    {mkquote op, 'list . for each arg in cdr u collect ofsf_procform1 arg}, 'rl_mkn);
       	 return {'rl_mkn, mkquote op, 'list . for each arg in cdr u collect ofsf_procform1 arg};
       rederr {"invalid operation", op, "in ofsfform procedure"}
    end;
@@ -654,6 +658,61 @@ procedure ofsf_procform2(fn, l);
       car l
    else
       {fn, car l, ofsf_procform2(fn, cdr l)};
+
+% ofsf_iparse definition
+
+put('ofsf_iparse, 'stat, 'ofsf_iparsestat);
+put('ofsf_iparse, 'formfn, 'ofsf_iparseform);
+
+procedure ofsf_iparsestat();
+   {'ofsf_iparse, xread t};
+
+procedure ofsf_iparseform(s, varal, mode);
+   begin scalar w;
+      if mode neq 'symbolic then
+      	 rederr "ofsf_iparse used outside symbolic mode";
+      if car s neq 'ofsf_iparse then
+      	 rederr "invalid form in ofsf_iparse";
+      return ofsf_iparseform1 cadr s
+   end;
+
+procedure ofsf_iparseform1(u);
+   begin scalar op;
+      if atom u then
+	 return if u = 0 then nil else u;
+      if not pairp u then
+	 rederr "invalid form in ofsf_iparse";
+      op := car u;
+      if op eq 'difference then
+	 return {'addf, ofsf_iparseform1 cadr u, {'negf, ofsf_iparseform1 caddr u}};
+      if op eq 'minus then
+	 return {'addf, nil, {'negf, ofsf_iparseform1 cadr u}};
+      if op eq 'plus then
+	 return ofsf_iparseform2('addf, for each v in cdr u collect ofsf_iparseform1 v);
+      if op eq 'plus2 then
+	 return {'addf, ofsf_iparseform1 cadr u, ofsf_iparseform1 caddr u};
+      if op eq 'times then
+      	 return ofsf_iparseform2('multf, for each v in cdr u collect ofsf_iparseform1 v);
+      if op eq 'times2 then
+      	 return {'multf, ofsf_iparseform1 cadr u, ofsf_iparseform1 caddr u};
+      if op eq 'expt then
+      	 return {'exptf, ofsf_iparseform1 cadr u, caddr u};
+      if op memq '(neq equal lessp geq leq greaterp) then
+      	 % return applsmacro(get('ofsf_0mk2, 'inline),
+      	 %    {mkquote op, ofsf_iparseform1 cadr u}, 'ofsf_0mk2);
+      	 return {'ofsf_0mk2, mkquote op, ofsf_iparseform1 cadr u};
+      if op memq '(and or not impl repl equiv) then
+	 % return applsmacro(get('rl_mkn, 'inline),
+	 %    {mkquote op, 'list . for each arg in cdr u collect ofsf_iparseform1 arg}, 'rl_mkn);
+	 return {'rl_mkn, mkquote op, 'list . for each arg in cdr u collect ofsf_iparseform1 arg};
+      rederr {"invalid operation", op, "in ofsf_iparse"}
+   end;
+
+procedure ofsf_iparseform2(fn, l);
+   if null cdr l then
+      car l
+   else
+      {fn, car l, ofsf_iparseform2(fn, cdr l)};
 
 endmodule;  % [ofsf]
 
