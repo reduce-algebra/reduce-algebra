@@ -36,6 +36,7 @@ SetFontNames("cslStixBold", "cslSTIX", "cslSTIX Bold")
 Generate("cslSTIX-Bold.otf", "", 0x281);
 Generate("cslSTIX-Bold.ttf");
 Generate("cslSTIX-Bold.ps", "", 0x281);
+Close();
 
 Open("STIX-BoldItalic.otf");
 i=0x110000
@@ -51,6 +52,7 @@ SetFontNames("cslStixBoldItalic", "cslSTIX", "cslSTIX Bold Italic")
 Generate("cslSTIX-BoldItalic.otf", "", 0x281);
 Generate("cslSTIX-BoldItalic.ttf");
 Generate("cslSTIX-BoldItalic.ps", "", 0x281);
+Close();
 
 Open("STIX-Italic.otf");
 i=0x110000
@@ -66,6 +68,7 @@ SetFontNames("cslStixItalic", "cslSTIX", "cslSTIX Italic")
 Generate("cslSTIX-Italic.otf", "", 0x281);
 Generate("cslSTIX-Italic.ttf");
 Generate("cslSTIX-Italic.ps", "", 0x281);
+Close();
 
 Open("STIX-Regular.otf");
 i=0x110000
@@ -81,6 +84,7 @@ SetFontNames("cslStix-Regular", "cslSTIX", "cslSTIX Regular")
 Generate("cslSTIX-Regular.otf", "", 0x281);
 Generate("cslSTIX-Regular.ttf");
 Generate("cslSTIX-Regular.ps", "", 0x281);
+Close();
 
 Open("STIXMath-Regular.otf");
 i=0x110000
@@ -96,5 +100,6 @@ SetFontNames("cslStixMath-Regular", "cslSTIXMath", "cslSTIX Math Regular")
 Generate("cslSTIXMath-Regular.otf", "", 0x281);
 Generate("cslSTIXMath-Regular.ttf");
 Generate("cslSTIXMath-Regular.ps", "", 0x281);
+Close();
 
 Quit(0);

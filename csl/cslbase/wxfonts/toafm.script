@@ -10,4 +10,5 @@ Print("Opening "+$1);
 Open($1);
 Print("Saving "+$1:r+".ps");
 Generate($1:r+".ps","",0x281);
+Close();
 Quit(0);

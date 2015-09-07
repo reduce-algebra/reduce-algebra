@@ -1,8 +1,8 @@
 // showttf.c
 
-// $Id: $
+// $Id$
 
-// The comments here that relate to liucensing were added by Arthur Norman
+// The comments here that relate to licensing were added by Arthur Norman
 // in September 2015. I hope that they are valid - anybody who knows otherwise
 // should please inform me.
 
