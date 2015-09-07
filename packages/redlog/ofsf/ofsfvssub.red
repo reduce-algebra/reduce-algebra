@@ -56,13 +56,13 @@ asserted procedure vsvs_v(vs: VSvs): Kernel;
    % VS variable.
    nth(vs, 2);
 
-asserted procedure vsar_mk(v: Kernel): VSvs;
+asserted procedure vsar_mk(x: Kernel): VSvs;
    % VS arbitrary make.
-   {'vsar, v};
+   {'vsar, x};
 
-asserted procedure vsdg_mk(v: Kernel, g: Integer, sv: Kernel): VSvs;
+asserted procedure vsdg_mk(x: Kernel, g: Integer, sv: Kernel): VSvs;
    % VS degree shift make.
-   {'vsdg, v, g, sv};
+   {'vsdg, x, g, sv};
 
 asserted procedure vsdg_g(vs: VSdg): Integer;
    % VS degree shift gcd.
@@ -72,9 +72,9 @@ asserted procedure vsdg_sv(vs: VSdg): Kernel;
    % VS degree shift shadow variable.
    nth(vs, 4);
 
-asserted procedure vsts_mk(v: Kernel, tp: VStp): VSvs;
+asserted procedure vsts_mk(x: Kernel, tp: VStp): VSvs;
    % VS test point substitution make.
-   {'vsts, v, tp};
+   {'vsts, x, tp};
 
 asserted procedure vsts_tp(vs: VSts): VStp;
    % VS test point substitution test point.
@@ -190,14 +190,14 @@ asserted procedure vsds_applyvsdg(ds: VSds);
       vsds_putdata(ds, f)
    end;
 
-asserted procedure vsdg_decdeg(at: QfFormula, v: Kernel, g: Integer, sv: Kernel): QfFormula;
+asserted procedure vsdg_decdeg(at: QfFormula, x: Kernel, g: Integer, y: Kernel): QfFormula;
    % Decrement degree of atomic formula. Replace each occurence of
-   % [v^n] by [sv^(n/g)].
+   % [x^n] by [y^(n/g)].
    begin scalar f;
       % assert(at is atomic);
       f := rl_arg2l at;
-      f := sfto_decdegf(f, v, g);
-      return ofsf_0mk2(rl_op at, sfto_renamef(f, v, sv))
+      f := sfto_decdegf(f, x, g);
+      return ofsf_0mk2(rl_op at, sfto_renamef(f, x, y))
    end;
 
 asserted procedure vsds_applyvsts(ds: VSds);

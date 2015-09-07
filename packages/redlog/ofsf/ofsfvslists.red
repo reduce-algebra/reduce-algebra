@@ -37,10 +37,13 @@ lisp <<
 
 module ofsfvslists;
 
+fluid '(rlclustering!*);
+rlclustering!* := t;
+
 fluid '(rsl!-alist!* rsl!-alist!-clustering!* guard!-fnalist!* vsub!-fnalist!*);
 
 rsl!-alist!* := {
-   % key: {degree, lc sign, op}
+   % key: {ldeg f, sign of lc f, op}
    % value: AList [al] containing elements [pr] such that [car pr] is
    % one of ['(ip ep slb wlb sub wub)] and [cdr pr] is a list of root
    % specification lists
@@ -674,7 +677,7 @@ rsl!-alist!* := {
    	    	  };
 
 rsl!-alist!-clustering!* := {
-   % key: {degree, lc sign, op}
+   % key: {ldeg f, sign of lc f, op}
    % value: AList [al] containing elements [pr] such that [car pr] is
    % one of ['(ip ep slb wlb sub wub)] and [cdr pr] is a list of root
    % specification lists
@@ -1160,7 +1163,7 @@ rsl!-alist!-clustering!* := {
    		  };
 
 guard!-fnalist!* := {
-   % key: {degree, rtl}
+   % key: {ldeg f, rtl}
    % value: guard constructing function
    {1, '(-1)} . 'guard!-1!-1m,
    {1, '(1)} . 'guard!-1!-1,
@@ -1257,7 +1260,7 @@ ofsfform procedure guard!-3!-5(a, b, c, d);
       -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d <= 0;
 
 vsub!-fnalist!* := {
-   % key: {degf, rsl, degg, op}
+   % key: {ldeg f, rsl, ldeg g, op}
    % value: virtual substitution constructing function
 
    % equal
@@ -1531,37 +1534,31 @@ ofsfform procedure vsub!-2!-greaterp!-8(a, b, c, aa, bb);
    2*a**2*bb - a*aa*b < 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb > 0 or
       a*aa >= 0 and (2*a**2*bb - a*aa*b < 0 or a**2*bb**2 - a*aa**2*c - a*aa*b*bb < 0);
 
-asserted procedure rsl!-compute(d: Integer, s: Any, op: Id): Any;
-   % Root specification list compute. [d] is the degree, [s] is the
-   % sign of the leading coefficient, [op] is the operation. Returns
-   % either ['fail] or an AList [al] containing elements [pr] such
-   % that [car pr] is one of ['(ip ep slb wlb sub wub)] and [cdr pr]
-   % is a list of root specification lists.
+asserted procedure rsl!-compute(op: Id, f: SF, x: Kernel, s: Any): Any;
+   % Root specification list compute. [op] is an operator, [x] is
+   % [mvar f], [s] is the sign of [lc f]. Returns either ['fail] or an
+   % AList [al] containing elements [pr] such that [car pr] is one of
+   % ['(ip ep slb wlb sub wub)] and [cdr pr] is a list of root
+   % specification lists.
    begin scalar w;
-      w := assoc({d, s, op}, rsl!-alist!*);
+      assert(sfto_mvartest(f, x));
+      w := if rlclustering!* then
+	 assoc({ldeg f, s, op}, rsl!-alist!-clustering!*)
+      else
+      	 assoc({ldeg f, s, op}, rsl!-alist!*);
       if null w then
 	 return 'failed;
       return cdr w
    end;
 
-asserted procedure rsl!-compute!-clustering(d: Integer, s: Any, op: Id): Any;
-   % Root specification list compute, the clustering variant. [d] is
-   % the degree, [s] is the sign of the leading coefficient, [op] is
-   % the operation. Returns either ['fail] or an AList [al] containing
-   % elements [pr] such that [car pr] is one of ['(ip ep slb wlb sub
-   % wub)] and [cdr pr] is a list of root specification lists.
-   begin scalar w;
-      w := assoc({d, s, op}, rsl!-alist!-clustering!*);
-      if null w then
-	 return 'failed;
-      return cdr w
-   end;
-
-asserted procedure rsl!-guard(f: SF, rtl: List): QfFormula;
-   % Root specification list guard. [f] is a SF; [rtl] is a list of
-   % real type codes, which does not contain duplicates. Returns a
-   % guard of (f, rtl).
-   begin scalar w;
+asserted procedure rsl!-guard(f: SF, x: Kernel, rsl: List): QfFormula;
+   % Root specification list guard. [x] is [mvar f]; [rsl] is a list
+   % of root specifications. Returns a guard of [(f, rsl)].
+   begin scalar rtl, w;
+      assert(sfto_mvartest(f, x));
+      rtl := for each rs in rsl collect car rs;
+      % TODO: There could be duplicates in [rtl] in the future. Then
+      % you will have to delete them here!
       rtl := sort(rtl, function(lambda(a, b); a < b));
       w := assoc({ldeg f, rtl}, guard!-fnalist!*);
       if null w then <<
@@ -1571,15 +1568,14 @@ asserted procedure rsl!-guard(f: SF, rtl: List): QfFormula;
       return apply(cdr w, coeffs f)
    end;
 
-asserted procedure rsl!-vsub(op: Id, g: SF, f: SF, x: Kernel, rtl: List): QfFormula;
+asserted procedure rsl!-vsub(op: Id, g: SF, f: SF, x: Kernel, rsl: List): QfFormula;
    % Root specification list virtual substitution. [op] is an
-   % operator; [g] is a SF; [f] is a SF; [rtl] is a list of real type
-   % codes, which does not contain duplicates. Returns an equivalent
-   % of the formula (g op 0)[x // (f, rtl)].
+   % operator; [rsl] is a list of root specifications of [f]. Returns
+   % an equivalent of (g op 0)[x // (f, rsl)].
    begin scalar w;
       if not sfto_mvartest(g, x) then
 	 return ofsf_0mk2(op, g);
-      w := assoc({ldeg f, rtl, ldeg g, op}, vsub!-fnalist!*);
+      w := assoc({ldeg f, rsl, ldeg g, op}, vsub!-fnalist!*);
       if null w then <<
 	 assert(nil);
 	 return 'failed

@@ -37,44 +37,47 @@ lisp <<
 
 module ofsfvseset;
 
-fluid '(rlclustering!* rlbndswithilp!*);
-rlclustering!* := t;
+fluid '(rlbndswithilp!*);
 rlbndswithilp!* := nil;
 
 %%% parametric root %%%
 % constructors and access functions
 
-asserted procedure vspr_mk(d: Integer, f: SF, rsl: List): VSpr;
-   % Parametric root make. [d] is the degree of [f]; [rs] is a list of
-   % root specifications, whereas root specification is a pair [(type
-   % . index)], where [type] is a real type and [index] is a root
-   % index.
-   {'vspr, d, f, rsl};
-
-asserted procedure vspr_d(pr: VSpr): Integer;
-   % Parametric root degree.
-   nth(pr, 2);
+asserted procedure vspr_mk(f: SF, x: Kernel, rsl: List): VSpr;
+   % Parametric root make. If [f] is [nil], then [x] is [nil].
+   % Otherwise [x] is [mvar f]; [rsl] is a list of root
+   % specifications, whereas a root specification is a pair [(type .
+   % index)], where [type] is a real type and [index] is a root index.
+   {'vspr, f, x, rsl};
 
 asserted procedure vspr_f(pr: VSpr): SF;
    % Parametric root polynomial.
+   nth(pr, 2);
+
+asserted procedure vspr_v(pr: VSpr): SF;
+   % Parametric root variable.
    nth(pr, 3);
 
 asserted procedure vspr_rsl(pr: VSpr): List;
    % Parametric root root specification list.
    nth(pr, 4);
 
+asserted procedure vspr_d(pr: VSpr): Integer;
+   % Parametric root degree.
+   begin scalar f;
+      f := vspr_f pr;
+      if f then
+	 return ldeg f;
+      return 0
+   end;
+
 asserted procedure vspr_reorder(pr: VSpr): VSpr;
    % Parametric root reorder.
-   {'vspr, vspr_d pr, reorder vspr_f pr, vspr_rsl pr};
+   vspr_mk(reorder vspr_f pr, vspr_v pr, vspr_rsl pr);
 
 asserted procedure vspr_guard(pr: VSpr): QfFormula;
    % Parametric root guard.
-   begin scalar rtl;
-      rtl := for each w in vspr_rsl pr collect car w;
-      % TODO: There could be duplicates in [rtl] in the future. Then
-      % you will have to delete them here!
-      return rsl!-guard(vspr_f pr, rtl)
-   end;
+   rsl!-guard(vspr_f pr, vspr_v pr, vspr_rsl pr);
 
 %%% annotated prime constituent (APC) %%%
 % constructors and access functions
@@ -285,7 +288,7 @@ asserted procedure vsde_new(): VSde;
    begin scalar de;
       de := mkvect(6);
       putv(de, 0, 'vsde);
-      putv(de, 1, 'undefined);        % [var]: variable to compute elimset for
+      putv(de, 1, 'undefined);        % [v]: variable to compute elimset for
       putv(de, 2, 'undefined);        % [f]: quantifier-free formula
       putv(de, 3, 'undefined);        % [curtheo]: current background theory
       putv(de, 4, 'undefined);        % [bvl]: do not make assumptions on variables in [bvl]
@@ -294,14 +297,14 @@ asserted procedure vsde_new(): VSde;
       return de
    end;
 
-procedure vsde_var(de);                         getv(de, 1);
+procedure vsde_v(de);                           getv(de, 1);
 procedure vsde_f(de);                           getv(de, 2);
 procedure vsde_curtheo(de);                     getv(de, 3);
 procedure vsde_bvl(de);                         getv(de, 4);
 procedure vsde_pcl(de);                         getv(de, 5);
 procedure vsde_tpl(de);                         getv(de, 6);
 
-procedure vsde_putvar(de, var);                 putv(de, 1, var);
+procedure vsde_putv(de, x);                     putv(de, 1, x);
 procedure vsde_putf(de, f);                     putv(de, 2, f);
 procedure vsde_putcurtheo(de, theo);            putv(de, 3, theo);
 procedure vsde_putbvl(de, bvl);                 putv(de, 4, bvl);
@@ -312,7 +315,7 @@ asserted procedure vsde_mk(var: Kernel, f: QfFormula, theo: Theory, bvl: KernelL
    % VS data for elimination set computation make.
    begin scalar de;
       de := vsde_new();
-      vsde_putvar(de, var);
+      vsde_putv(de, var);
       vsde_putf(de, f);
       vsde_putcurtheo(de, theo);
       vsde_putbvl(de, bvl);
@@ -329,7 +332,7 @@ asserted procedure vsdt_new(): VSdt;
    begin scalar dt;
       dt := mkvect(6);
       putv(dt, 0, 'vsdt);
-      putv(dt, 1, 'undefined);        % [var]: variable
+      putv(dt, 1, 'undefined);        % [v]: variable
       putv(dt, 2, 'undefined);        % [f]: quantifier-free formula
       putv(dt, 3, 'undefined);        % [bvl]: do not make assumptions on variables in [bvl]
       putv(dt, 4, 'undefined);        % [ptheo]: persistent theory
@@ -341,14 +344,14 @@ asserted procedure vsdt_new(): VSdt;
 %DS
 % CollectedData ::= AList of DottedPairs of the form (Position . VScs)
 
-procedure vsdt_var(dt);                         getv(dt, 1);
+procedure vsdt_v(dt);                           getv(dt, 1);
 procedure vsdt_f(dt);                           getv(dt, 2);
 procedure vsdt_bvl(dt);                         getv(dt, 3);
 procedure vsdt_ptheo(dt);                       getv(dt, 4);
 procedure vsdt_ttheo(dt);                       getv(dt, 5);
 procedure vsdt_data(dt);                        getv(dt, 6);
 
-procedure vsdt_putvar(dt, var);                 putv(dt, 1, var);
+procedure vsdt_putv(dt, x);                     putv(dt, 1, x);
 procedure vsdt_putf(dt, f);                     putv(dt, 2, f);
 procedure vsdt_putbvl(dt, bvl);                 putv(dt, 3, bvl);
 procedure vsdt_putptheo(dt, ptheo);             putv(dt, 4, ptheo);
@@ -358,7 +361,7 @@ procedure vsdt_putdata(dt, data);               putv(dt, 6, data);
 asserted procedure vsdt_mk(var: Kernel, f: QfFormula, bvl: KernelL, ptheo: Theory, ttheo: Theory): VSdt;
    begin scalar dt;
       dt := vsdt_new();
-      vsdt_putvar(dt, var);
+      vsdt_putv(dt, var);
       vsdt_putf(dt, f);
       vsdt_putbvl(dt, bvl);
       vsdt_putptheo(dt, ptheo);
@@ -370,7 +373,7 @@ asserted procedure vsdt_mk(var: Kernel, f: QfFormula, bvl: KernelL, ptheo: Theor
 asserted procedure vsdt_mkfrom(dt: VSdt): VSdt;
    begin scalar ndt;
       ndt := vsdt_new();
-      vsdt_putvar(ndt, vsdt_var dt);
+      vsdt_putv(ndt, vsdt_v dt);
       vsdt_putf(ndt, vsdt_f dt);
       vsdt_putbvl(ndt, vsdt_bvl dt);
       vsdt_putptheo(ndt, vsdt_ptheo dt);
@@ -389,11 +392,11 @@ asserted procedure vsdt_add2ttheo(dt: VSdt, fl: QfFormulaL, neg: Boolean);
    % Add to temporary theory. Some formulas from [fl] are added to
    % [vsdt_ttheo dt]. If [neg] is [t], then the formulas are negated
    % before adding them to [vsdt_ttheo dt]. The current criterion:
-   % Atomic formulas not containing the variable [vsdt_var dt].
+   % Atomic formulas not containing the variable [vsdt_v dt].
    for each f in fl do
       if (not rl_boolp rl_op f) and
       not rl_tvalp f and
-      not (vsdt_var dt memq cl_fvarl f) then
+      not (vsdt_v dt memq cl_fvarl f) then
 	 vsdt_ttheoinsert(dt, if neg then rl_negateat f else f);
 
 %%% "real" procedures %%%
@@ -412,8 +415,8 @@ asserted procedure vsde_compute(de: VSde);
 % asserted procedure vsde_compute(de: VSde);
 %    % Compute an elimination set.
 %    begin scalar alp, w, ww;
-%       alp := cl_qeatal(vsde_f de, vsde_var de, nil, nil);
-%       w := ofsf_elimset(vsde_var de, alp);
+%       alp := cl_qeatal(vsde_f de, vsde_v de, nil, nil);
+%       w := ofsf_elimset(vsde_v de, alp);
 %       ww := for each hu in w join
 % 	 for each huhu in cdr hu collect
 % 	    car hu . huhu;
@@ -431,16 +434,16 @@ asserted procedure vsde_compute!-pcl(de: VSde);
       % semantically correct!
       % find Gauss prime constituents
       f := vsde_f de;
-      gl := qff_gaussposl(vsde_var de, f, vsde_bvl de, vsde_curtheo de);
+      gl := qff_gaussposl(vsde_v de, f, vsde_bvl de, vsde_curtheo de);
       % TODO: Choose an efficient ordering of [gl].
       % TODO: Here is the place for gentle simplification.
       f := qff_replacel(f, for each pr in gl collect car pr, 'false);
       % find co-Gauss prime constituents
-      cgl := qff_cogaussposl(vsde_var de, f, vsde_bvl de, vsde_curtheo de);
+      cgl := qff_cogaussposl(vsde_v de, f, vsde_bvl de, vsde_curtheo de);
       gl := pos_delsubposal(cgl, gl);
       % find atomic prime constituents
       f := qff_replacel(f, for each pr in cgl collect car pr, 'false);
-      atl := qff_atposl(vsde_var de, f, vsde_bvl de, vsde_curtheo de);
+      atl := qff_atposl(vsde_v de, f, vsde_bvl de, vsde_curtheo de);
       for each pr in atl do <<
 	 pc := vspc_mk(car pr, 'at, cdr pr, gposl, nil);
 	 push(pc, pcl)
@@ -548,7 +551,7 @@ asserted procedure vsdt_gaussposl!-at(dt: VSdt, p: Position);
       >>;
       op := rl_op atf;
       lhs := rl_arg2l atf;
-      v := vsdt_var dt;
+      v := vsdt_v dt;
       if op eq 'equal and sfto_mvartest(lhs, v) then <<
 	 cs := vscs_mk(nil, nil);
 	 theo := append(vsdt_ptheo dt, vsdt_ttheo dt);
@@ -562,7 +565,7 @@ asserted procedure vsdt_gaussposl!-at(dt: VSdt, p: Position);
 	       % Gauss.
 	       cs := nil
 	    else if sfto_mvartest(f, v) then
-	       cs := vscs_merge(cs, vscs_fop2cs(f, op, v, theo))
+	       cs := vscs_merge(cs, vscs_fop2cs(f, v, op, theo))
 	 >>
       >>;
       if cs then
@@ -663,7 +666,7 @@ asserted procedure vsdt_cogaussposl!-at(dt: VSdt, p: Position);
       >>;
       op := rl_op atf;
       lhs := rl_arg2l atf;
-      v := vsdt_var dt;
+      v := vsdt_v dt;
       if op eq 'neq and sfto_mvartest(lhs, v) then <<
 	 cs := vscs_mk(nil, nil);
 	 theo := append(vsdt_ptheo dt, vsdt_ttheo dt);
@@ -677,7 +680,7 @@ asserted procedure vsdt_cogaussposl!-at(dt: VSdt, p: Position);
 	       % co-Gauss.
 	       cs := nil
 	    else if sfto_mvartest(f, v) then
-	       cs := vscs_merge(cs, vscs_fop2cs(f, op, v, theo))
+	       cs := vscs_merge(cs, vscs_fop2cs(f, v, op, theo))
 	 >>
       >>;
       if cs then
@@ -776,7 +779,7 @@ asserted procedure vsdt_atposl!-at(dt: VSdt, p: Position);
       >>;
       op := rl_op atf;
       lhs := rl_arg2l atf;
-      v := vsdt_var dt;
+      v := vsdt_v dt;
       if not sfto_mvartest(lhs, v) then <<
 	 vsdt_putdata(dt, nil);
 	 return
@@ -787,37 +790,37 @@ asserted procedure vsdt_atposl!-at(dt: VSdt, p: Position);
       vsdt_putdata(dt, {p . vscs_fopll2cs(fopll, v, theo)})
    end;
 
-asserted procedure ofsf_fml2fopll(fml: List, op: Id, v: Kernel, theo: Theory): List;
+asserted procedure ofsf_fml2fopll(fml: List, op: Id, x: Kernel, theo: Theory): List;
    % Ordered field standard form factor multiplicity list to factor
    % operation list. [fml] is a list of pairs [f . m], where [f] is a
    % SF and [m] is the multiplicity of [f]; [op] is an operator, i.e.,
-   % one of ['(equal neq lessp leq geq greaterp)]; [v] is a Kernel.
+   % one of ['(equal neq lessp leq geq greaterp)]; [x] is a Kernel.
    % Returns a List of dotted pairs of the form [f . opl], where [f]
    % is a SF and [opl] is a (possibly empty) list of operators.
-   begin scalar fmvl, fmnvl, s, f, wop, fopll; integer m;
-      fmvl . fmnvl := ofsf_sepfac(fml, v);
-      assert(fmvl);  % there is at least one irreducible factor containing [v]
+   begin scalar fmxl, fmnxl, s, f, wop, fopll; integer m;
+      fmxl . fmnxl := ofsf_sepfac(fml, x);
+      assert(fmxl);  % there is at least one irreducible factor containing [x]
       if op memq '(equal neq) then
-	 return for each fmv in fmvl collect
-	    car fmv . {op};
+	 return for each fmx in fmxl collect
+	    car fmx . {op};
       assert(op memq '(leq geq lessp greaterp));
-      if null cdr fmvl then <<
-	 % - there is exactly one irreducible factor containing [v]
-	 s := ofsf_definite(fmnvl, theo);
+      if null cdr fmxl then <<
+	 % - there is exactly one irreducible factor containing [x]
+	 s := ofsf_definite(fmnxl, theo);
 	 if s then <<
-	    % - the sign of the factors not containing [v] is a non-zero constant
-	    % TODO: If the sign of the factors not containing [v] is
+	    % - the sign of the factors not containing [x] is a non-zero constant
+	    % TODO: If the sign of the factors not containing [x] is
 	    % not a non-zero constant, then we could multiply them
 	    % with f and continue. Investigate this.
-	    f . m := car fmvl;
+	    f . m := car fmxl;
 	    op := op_adjust(op, s);
 	    if evenp m then
 	       op := if op eq 'greaterp then 'neq else if op eq 'leq then 'equal;
 	    return {f . if op then {op}}
 	 >>
       >>;
-      while fmvl do <<
-	 f . m := pop fmvl;
+      while fmxl do <<
+	 f . m := pop fmxl;
 	 if evenp m then <<
 	    wop := if op memq '(leq geq) then 'equal else 'neq;
 	    push(f . {wop}, fopll)
@@ -836,12 +839,12 @@ asserted procedure vscs_fopll2cs(fopll: List, x: Kernel, theo: Theory): VScs;
       while fopll do <<
 	 f . opl := pop fopll;
 	 for each op in opl do
-	    cs := vscs_merge(cs, vscs_fop2cs(f, op, x, theo))
+	    cs := vscs_merge(cs, vscs_fop2cs(f, x, op, theo))
       >>;
       return cs
    end;
 
-asserted procedure vscs_fop2cs(f: SF, op: Id, x: Kernel, theo: Theory): VScs;
+asserted procedure vscs_fop2cs(f: SF, x: Kernel, op: Id, theo: Theory): VScs;
    % SF and operator to candidate solutions. [f] is a SF; [op] is an
    % operator, i.e., one of ['(equal neq lessp leq geq greaterp)];
    % [theo] is a theory that can be used to rule out some parametric
@@ -861,13 +864,13 @@ asserted procedure vscs_fop2cs(f: SF, op: Id, x: Kernel, theo: Theory): VScs;
 	    lcf := lc f;
 	    if ofsf_surep(ofsf_0mk2('greaterp, lcf), theo) then <<
 	       finished := t;
-      	       cs := vscs_merge(cs, vscs_fop2csnz(f, op, 1))
+      	       cs := vscs_merge(cs, vscs_fop2csnz(f, x, op, 1))
 	    >> else if ofsf_surep(ofsf_0mk2('lessp, lcf), theo) then <<
 	       finished := t;
-      	       cs := vscs_merge(cs, vscs_fop2csnz(f, op, -1))
+      	       cs := vscs_merge(cs, vscs_fop2csnz(f, x, op, -1))
 	    >> else if not ofsf_surep(ofsf_0mk2('equal, lcf), theo) then <<
 	       push(ofsf_0mk2('equal, lcf), theo);
-      	       cs := vscs_merge(cs, vscs_fop2csnz(f, op, nil))
+      	       cs := vscs_merge(cs, vscs_fop2csnz(f, x, op, nil))
 	    >>;
 	    f := red f
 	 >> else
@@ -876,25 +879,23 @@ asserted procedure vscs_fop2cs(f: SF, op: Id, x: Kernel, theo: Theory): VScs;
       return cs
    end;
 
-asserted procedure vscs_fop2csnz(f: SF, op: Id, s: Any): VScs;
-   % SF and operator to candidate solutions subprocedure. [f] is a SF;
-   % [op] is an operator, i.e., one of ['(equal neq lessp leq geq
+asserted procedure vscs_fop2csnz(f: SF, x: Kernel, op: Id, s: Any): VScs;
+   % SF and operator to candidate solutions subprocedure. [x] is [mvar
+   % f]; [op] is an operator, i.e., one of ['(equal neq lessp leq geq
    % greaterp)]; [s] is the sign of [lc f]; If [lc f] possibly
    % vanishes, then [s] is [nil]. Returns a VScs, which contains
    % parametric roots of [f] that possibly represent ip, ep, slb, wlb,
    % sub, or wub of the satisfying set of the atomic formula ([f] [op]
    % [0]) under the assumption that [lc f] is non-zero.
    begin scalar w, pral; integer d;
+      assert(sfto_mvartest(f, x));
       d := ldeg f;
-      w := if rlclustering!* then
-	 rsl!-compute!-clustering(d, s, op)
-      else
-	 rsl!-compute(d, s, op);
+      w := rsl!-compute(op, f, x, s);
       if w eq 'failed then
 	 return vscs_mk(nil, 'failed);
       pral := for each pr in w collect
 	 car pr . for each rs in cdr pr collect
-	    vspr_mk(d, f, rs);
+	    vspr_mk(f, x, rs);
       return vscs_mk(nil, pral)
    end;
 
@@ -945,21 +946,21 @@ asserted procedure ofsf_definite(fml: List, theo: Theory): ExtraBoolean;
       return s
    end;
 
-asserted procedure ofsf_sepfac(fml: List, v: Kernel): DottedPair;
+asserted procedure ofsf_sepfac(fml: List, x: Kernel): DottedPair;
    % Ordered field standard form separate factors. [fml] is a List of
    % pairs [f . m], where [f] is a SF and [m] is the multiplicity of
-   % [f]; [v] is a Kernel. Returns a DottedPair [fmvl . fdmvl] where
-   % [fmvl] contains factors with [v] and [fmnvl] contains factors
-   % without [v].
-   begin scalar f, fmvl, fmnvl; integer m;
+   % [f]; [x] is a Kernel. Returns a DottedPair [fmxl . fdmxl] where
+   % [fmxl] contains factors with [x] and [fmnxl] contains factors
+   % without [x].
+   begin scalar f, fmxl, fmnxl; integer m;
       while fml do <<
 	 f . m := pop fml;
-	 if sfto_mvartest(f, v) then
-	    push(f . m, fmvl)
+	 if sfto_mvartest(f, x) then
+	    push(f . m, fmxl)
 	 else
-	    push(f . m, fmnvl)
+	    push(f . m, fmnxl)
       >>;
-      return fmvl . fmnvl
+      return fmxl . fmnxl
    end;
 
 %%% bound selection submodule %%%
@@ -1024,9 +1025,9 @@ asserted procedure vsde_pcl2tpl(de: VSde);
 	 vsde_putcurtheo(de, append(vsde_curtheo de, vscs_ts cs))
       >>;
       if imi then
-	 push(vstp_mk(nil, nil, 'minf, vspr_mk(0, nil, nil)), tpl);  % minus infinity
+	 push(vstp_mk(nil, nil, 'minf, vspr_mk(nil, nil, nil)), tpl);  % minus infinity
       if ipi then
-	 push(vstp_mk(nil, nil, 'pinf, vspr_mk(0, nil, nil)), tpl);  % plus infinity
+	 push(vstp_mk(nil, nil, 'pinf, vspr_mk(nil, nil, nil)), tpl);  % plus infinity
       vsde_puttpl(de, tpl)
    end;
 

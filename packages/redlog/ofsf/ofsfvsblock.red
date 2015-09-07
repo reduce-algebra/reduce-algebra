@@ -43,11 +43,11 @@ rlvarsellvl!* := 1;
 %%% QE tree node %%%
 % constructors and access functions
 
-asserted procedure vsnd_mk(flg: Boolean, vs: VSvs, varl: KernelL, f: QfFormula, p: VSnd): VSnd;
+asserted procedure vsnd_mk(flg: Boolean, vs: VSvs, vl: KernelL, f: QfFormula, p: VSnd): VSnd;
    % QE tree node make. [flg] denotes whether VS [vs] needs to be
-   % applied; [varl] is a list of variables to be eliminated; [f] is a
+   % applied; [vl] is a list of variables to be eliminated; [f] is a
    % quantifier-free formula; [p] is the parent QE tree node.
-   {'vsnd, flg, vs, varl, f, p};
+   {'vsnd, flg, vs, vl, f, p};
 
 asserted procedure vsnd_flg(nd: VSnd): Boolean;
    % QE tree node flag.
@@ -57,7 +57,7 @@ asserted procedure vsnd_vs(nd: VSnd): VSvs;
    % QE tree node VS.
    nth(nd, 3);
 
-asserted procedure vsnd_varl(nd: VSnd): KernelL;
+asserted procedure vsnd_vl(nd: VSnd): KernelL;
    % QE tree node variable list.
    nth(nd, 4);
 
@@ -123,7 +123,7 @@ asserted procedure vsdb_new(): VSdb;
       putv(db, 0, 'vsdb);
       % The following fields are constant, i.e., assigned exactly once
       % after the creation of VSdb:
-      putv(db, 1, 'undefined);        % [varl]: variables to be eliminated
+      putv(db, 1, 'undefined);        % [vl]: variables to be eliminated
       putv(db, 2, 'undefined);        % [f]: matrix formula of the current block
       putv(db, 3, 'undefined);        % [theo]: global background theory
       putv(db, 4, 'undefined);        % [bvl]: do not make assumptions on variables in [bvl]
@@ -143,7 +143,7 @@ asserted procedure vsdb_new(): VSdb;
       return db
    end;
 
-procedure vsdb_varl(db);                         getv(db, 1);
+procedure vsdb_vl(db);                           getv(db, 1);
 procedure vsdb_f(db);                            getv(db, 2);
 procedure vsdb_theo(db);                         getv(db, 3);
 procedure vsdb_bvl(db);                          getv(db, 4);
@@ -154,7 +154,7 @@ procedure vsdb_fc(db);                           getv(db, 8);
 procedure vsdb_ht(db);                           getv(db, 9);
 procedure vsdb_curtheo(db);                      getv(db, 10);
 
-procedure vsdb_putvarl(db, varl);                putv(db, 1, varl);
+procedure vsdb_putvl(db, vl);                    putv(db, 1, vl);
 procedure vsdb_putf(db, f);                      putv(db, 2, f);
 procedure vsdb_puttheo(db, theo);                putv(db, 3, theo);
 procedure vsdb_putbvl(db, bvl);                  putv(db, 4, bvl);
@@ -165,11 +165,11 @@ procedure vsdb_putfc(db, fc);                    putv(db, 8, fc);
 procedure vsdb_putht(db, ht);                    putv(db, 9, ht);
 procedure vsdb_putcurtheo(db, theo);             putv(db, 10, theo);
 
-asserted procedure vsdb_mk(varl: KernelL, f: QfFormula, theo: Theory, bvl: KernelL, ans: Boolean): VSdb;
+asserted procedure vsdb_mk(vl: KernelL, f: QfFormula, theo: Theory, bvl: KernelL, ans: Boolean): VSdb;
    % VS data for a block make initial VSdb.
    begin scalar db;
       db := vsdb_new();
-      vsdb_putvarl(db, varl);
+      vsdb_putvl(db, vl);
       vsdb_putf(db, f);
       vsdb_puttheo(db, theo);
       vsdb_putbvl(db, bvl);
@@ -179,7 +179,7 @@ asserted procedure vsdb_mk(varl: KernelL, f: QfFormula, theo: Theory, bvl: Kerne
       vsdb_putfc(db, vsco_mk());
       vsdb_putht(db, vsht_mk());
       vsdb_putcurtheo(db, theo);
-      vsdb_wcinsert(db, vsnd_mk(nil, nil, varl, f, nil));
+      vsdb_wcinsert(db, vsnd_mk(nil, nil, vl, f, nil));
       return db
    end;
 
@@ -227,7 +227,7 @@ asserted procedure vsdb_htinsert(db: VSdb, f: QfFormula);
 
 %%% "real" procedures %%%
 
-asserted procedure vs_block(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
+asserted procedure vs_block(f: QfFormula, vl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
    % This is the usual entry point.
    % TODO: Update this old procedure description.
    % Quantifier elimination for one block subroutine. The result
@@ -235,21 +235,21 @@ asserted procedure vs_block(f: QfFormula, varl: KernelL, theo: Theory, ans: Bool
    % (possibly partial) possibly negated elimination result as a
    % JunctionL, and the new theory.
    begin scalar db;
-      db := vsdb_mk(varl, f, theo, bvl, ans);
+      db := vsdb_mk(vl, f, theo, bvl, ans);
       vs_blockmainloop db;
       ioto_prin2t nil;
       vsdb_printSummary db;
-      return {varl, {f . nil}, theo}
+      return {vl, {f . nil}, theo}
    end;
 
 asserted procedure vs_blockmainloop(db: VSdb);
    % Quantifier elimination for one block subroutine. This procedure
    % realizes the main loop of QE for a single block of quantifiers.
    % No meaningful return value. [db] is modified in-place.
-   begin scalar nd, varl, f, mbr;
+   begin scalar nd, vl, f, mbr;
       while vsdb_todop db do <<
 	 nd := vsdb_wcget db;
-	 varl := vsnd_varl nd;
+	 vl := vsnd_vl nd;
 	 f := vsnd_f nd;
 	 if vsnd_flg nd then  % substitution has not been applied yet
 	    vsdb_applyvs(db, nd)
@@ -260,7 +260,7 @@ asserted procedure vs_blockmainloop(db: VSdb);
 	       	  vsdb_htinsert(db, f);
 	       if f eq 'true then
 	       	  vsdb_dropall db;
-	       if null varl then
+	       if null vl then
 	       	  vsdb_scinsert(db, nd)
 	       else
 		  vsdb_expandNode(db, nd)
@@ -282,7 +282,7 @@ asserted procedure vsdb_applyvs(db: VSdb, nd: VSnd);
 	 ofsf_reorder vsnd_f nd, vsdb_bvl db, ofsf_reorderl vsdb_curtheo db);
       setkorder oo;
       for each ff in ffl do
-	 vsdb_wcinsert(db, vsnd_mk(nil, vs, vsnd_varl nd, ff, vsnd_parent nd))
+	 vsdb_wcinsert(db, vsnd_mk(nil, vs, vsnd_vl nd, ff, vsnd_parent nd))
    end;
 
 asserted procedure vsdb_expandNode(db: VSdb, nd: VSnd);
@@ -291,7 +291,7 @@ asserted procedure vsdb_expandNode(db: VSdb, nd: VSnd);
    % procedure, i.e., either a list of children is added to the
    % working container, or [nd] is added to the failure container.
    begin
-      assert(vsnd_varl nd);
+      assert(vsnd_vl nd);
       assert(not vsnd_flg nd);
       if vsdb_tryExpandNO(db, nd) then
 	 return;
@@ -311,16 +311,16 @@ asserted procedure vsdb_expandNode(db: VSdb, nd: VSnd);
 asserted procedure vsdb_tryExpandNO(db: VSdb, nd: VSnd): Boolean;
    % Try to expand node by non-occurring variable. Returns whether
    % this was successful. [nil] is returned iff every variable from
-   % [vsnd_varl nd] occurs in [vsnd_f nd].
+   % [vsnd_vl nd] occurs in [vsnd_f nd].
    begin scalar vl, rvl, res, v;
-      vl := vsnd_varl nd;
+      vl := vsnd_vl nd;
       rvl := cl_fvarl1 vsnd_f nd;
       while vl and not res do <<
 	 v := pop vl;
 	 if not (v memq rvl) then <<
 	    res := t;
 	    vsdb_wcinsert(db,
-	       vsnd_mk(nil, vsar_mk v, delq(v, vsnd_varl nd), vsnd_f nd, nd))
+	       vsnd_mk(nil, vsar_mk v, delq(v, vsnd_vl nd), vsnd_f nd, nd))
 	 >>
       >>;
       return res
@@ -329,9 +329,9 @@ asserted procedure vsdb_tryExpandNO(db: VSdb, nd: VSnd): Boolean;
 asserted procedure vsdb_tryExpandDG(db: VSdb, nd: VSnd): Boolean;
    % Try to expand node by degree shift. Returns whether this was
    % successful. [nil] is returned iff degree shift is not possible
-   % w.r.t. no variable in [vsnd_varl nd].
+   % w.r.t. no variable in [vsnd_vl nd].
    begin scalar vl, f, res, v, sv; integer g;
-      vl := vsnd_varl nd;
+      vl := vsnd_vl nd;
       f := vsnd_f nd;
       if vsvs_dgp vsnd_vs nd then
 	 vl := delq(vsdg_sv vsnd_vs nd, vl);  % We need not to try degree shift w.r.t. the most recent shadow variable.
@@ -342,7 +342,7 @@ asserted procedure vsdb_tryExpandDG(db: VSdb, nd: VSnd): Boolean;
 	    res := t;
 	    sv := vs_shadow v;
 	    vsdb_wcinsert(db, vsnd_mk(t,
-	       vsdg_mk(v, g, sv), subst(sv, v, vsnd_varl nd), vsnd_f nd, nd))
+	       vsdg_mk(v, g, sv), subst(sv, v, vsnd_vl nd), vsnd_f nd, nd))
 	 >>
       >>;
       return res
@@ -352,7 +352,7 @@ asserted procedure vsdb_expandNode1(db: VSdb, nd: VSnd);
    % Expand node using strategy 1: Use the first variable.
    begin scalar v, oo, de;
       % TODO: more liberal kernel reordering policy
-      v := car vsnd_varl nd;
+      v := car vsnd_vl nd;
       oo := updkorder v;
       de := vsde_mk(v,
 	 ofsf_reorder vsnd_f nd, ofsf_reorderl vsdb_curtheo db, vsdb_bvl db);
@@ -363,19 +363,19 @@ asserted procedure vsdb_expandNode1(db: VSdb, nd: VSnd);
 
 asserted procedure vsdb_expandNode2(db: VSdb, nd: VSnd);
    % Expand node using strategy 2: Use the first feasible variable.
-   begin scalar varl, f, theo, v, oo, de;
+   begin scalar vl, f, theo, v, oo, de;
       % TODO: more liberal kernel reordering policy
-      varl := vsnd_varl nd;
+      vl := vsnd_vl nd;
       f := vsnd_f nd;
       theo := vsdb_curtheo db;
       repeat <<
-	 v := pop varl;
+	 v := pop vl;
 	 oo := updkorder v;
       	 de := vsde_mk(v,
 	    ofsf_reorder f, ofsf_reorderl theo, vsdb_bvl db);
 	 vsde_compute de;
       	 setkorder oo
-      >> until null varl or vsde_tpl de;
+      >> until null vl or vsde_tpl de;
       vsdb_insertaec(db, nd, de)
    end;
 
@@ -391,53 +391,53 @@ asserted procedure vsdb_expandNode4(db: VSdb, nd: VSnd);
 
 asserted procedure vsdb_insertaec(db: VSdb, nd: VSnd, de: VSde);
    % Insert node after elimination set computation.
-   begin scalar tpl, f, v, nvarl;
+   begin scalar tpl, f, v, nvl;
       tpl := vsde_tpl de;
       if null vsde_tpl de then <<
 	 vsdb_fcinsert(db, nd);
 	 return
       >>;
       f := vsde_f de;
-      v := vsde_var de;
-      nvarl := delq(v, vsnd_varl nd);
+      v := vsde_v de;
+      nvl := delq(v, vsnd_vl nd);
       for each tp in tpl do
-	 vsdb_wcinsert(db, vsnd_mk(t, vsts_mk(v, tp), nvarl, f, nd))
+	 vsdb_wcinsert(db, vsnd_mk(t, vsts_mk(v, tp), nvl, f, nd))
    end;
 
 %%% other procedures %%%
 
 % TODO: Move the following procedure to cl.
-asserted procedure vs_shadow(v: Kernel): Kernel;
-   % Create shadow variable for [v].
+asserted procedure vs_shadow(x: Kernel): Kernel;
+   % Create shadow variable for [x].
    begin scalar res;
       res := gensym();
-      put(res, 'shadow, v);
+      put(res, 'shadow, x);
       return res
    end;
 
 % TODO: Move the following procedure to cl.
-asserted procedure vs_dgcd(f: QfFormula, v: Kernel): Integer;
-   % Degree gcd. Returns the gcd of the exponents of [v] in [f]. If
-   % [v] does not occur in [f], then [0] is returned.
+asserted procedure vs_dgcd(f: QfFormula, x: Kernel): Integer;
+   % Degree gcd. Returns the gcd of the exponents of [x] in [f]. If
+   % [x] does not occur in [f], then [0] is returned.
    begin scalar atl, at; integer g;
       atl := cl_atl1 f;
       while atl and not eqn(g, 1) do <<
 	 at := pop atl;
-	 g := gcdn(g, sfto_dgcdf(ofsf_arg2l at, v))
+	 g := gcdn(g, sfto_dgcdf(ofsf_arg2l at, x))
       >>;
       return g
    end;
 
 % TODO: Move the following procedure to sfto.
-asserted procedure sfto_dgcdf(f: SF, v: Kernel): Integer;
-   % Degree gcd. Returns the gcd of the exponents of [v] in [f]. If
-   % [v] does not occur in [f], then [0] is returned.
+asserted procedure sfto_dgcdf(f: SF, x: Kernel): Integer;
+   % Degree gcd. Returns the gcd of the exponents of [x] in [f]. If
+   % [x] does not occur in [f], then [0] is returned.
    begin scalar oo; integer g;
       if domainp f then
 	 return 0;
-      oo := setkorder {v};
+      oo := setkorder {x};
       f := reorder f;
-      while sfto_mvartest(f, v) and not eqn(g, 1) do <<
+      while sfto_mvartest(f, x) and not eqn(g, 1) do <<
 	 g := gcdn(g, ldeg f);
 	 f := red f
       >>;
@@ -462,13 +462,13 @@ asserted procedure vsnd_print(nd: VSnd);
       ioto_prin2 {"FORMULA:"};
       mathprint rl_prepfof vsnd_f nd;
       ioto_prin2t {"FLAG: ", vsnd_flg nd,
-      	 " VARL: ", vsnd_varl nd}
+      	 " VL: ", vsnd_vl nd}
    >>;
 
 asserted procedure vsnd_printSummary(nd: VSnd);
    ioto_prin2t {"VS node:",
       " FLAG: ", vsnd_flg nd,
-      " VARL: ", vsnd_varl nd};
+      " VL: ", vsnd_vl nd};
 
 asserted procedure vsndl_printLength(ndl: VSndL);
    ioto_prin2t {"VS node list of length ", length ndl};
