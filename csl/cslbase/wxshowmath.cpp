@@ -36,9 +36,6 @@
 // Without the fullowing things like UINT64_C will not be available.
 #define __STDC_CONSTANT_MACROS 1
 
-// The first few lines are essentially taken from the wxWidgets documentation
-// and will be the same for almost all wxWidgets code.
-
 #include"wx/wxprec.h"
 
 #ifndef WX_PRECOMP
@@ -102,7 +99,7 @@ extern char *getcwd(char *s, size_t n);
 #endif
 
 // I have a generated file that contains the widths of all the fonts
-// I am willing to use here.
+// that I am willing to use here.
 
 #include"uninames.h"
 #include"charmetrics.h"
@@ -169,7 +166,7 @@ private:
     double DVItoScreen(int n);  // map coordinates
     double DVItoScreenUP(int n);// ditto but used for rule widths
 
-#define MAX_FONTS 32
+#define MAX_FONTS 16
     wxGraphicsFont graphicsFont[MAX_FONTS];       // the fonts I use here
     double graphicsBaseline[MAX_FONTS];
     bool graphicsFontValid[MAX_FONTS];            // the fonts I use here
@@ -675,48 +672,12 @@ IMPLEMENT_APP_NO_MAIN(showmathApp)
 static const char *fontNames[] =
 {
     "cmuntt",
-// It appears (empirically) that I NEED to add the Regular font before
-// the Bold one for Windows (at least) to be able to find it.
-    "STIXGeneral-Regular",
-    "STIXGeneral-Bold",
-    "STIXGeneral-Italic",
-    "STIXGeneral-BoldItalic",
-
-    "STIXIntegralsD-Regular",
-    "STIXIntegralsD-Bold",
-
-    "STIXIntegralsSm-Regular",
-    "STIXIntegralsSm-Bold",
-
-    "STIXIntegralsUp-Regular",
-    "STIXIntegralsUp-Bold",
-
-    "STIXIntegralsUpD-Regular",
-    "STIXIntegralsUpD-Bold",
-
-    "STIXIntegralsUpSm-Regular",
-    "STIXIntegralsUpSm-Bold",
-
-    "STIXNonUnicode-Regular",
-    "STIXNonUnicode-Bold",
-    "STIXNonUnicode-Italic",
-    "STIXNonUnicode-BoldItalic",
-
-    "STIXSizeOneSym-Regular",
-    "STIXSizeTwoSym-Regular",
-    "STIXSizeThreeSym-Regular",
-    "STIXSizeFourSym-Regular",
-    "STIXSizeFiveSym-Regular",
-
-    "STIXSizeOneSym-Bold",
-    "STIXSizeTwoSym-Bold",
-    "STIXSizeThreeSym-Bold",
-    "STIXSizeFourSym-Bold",
-
-    "STIXVariants-Regular",
-    "STIXVariants-Bold",
-
-    "fireflysung" 
+    "odokai",
+    "cslSTIX-Regular",
+    "cslSTIX-Bold",
+    "cslSTIX-Italic",
+    "cslSTIX-BoldItalic",
+    "cslSTIXMath-Regular"
 };
 
 #ifndef fontsdir
@@ -736,8 +697,9 @@ void add_custom_fonts()
         sprintf(nn,"%s/%s/%s.ttf",
                     programDir, toString(fontsdir), fontNames[i]);
 #else
-        sprintf(nn,"%s/%s/%s.otf",
-                    programDir, toString(fontsdir), fontNames[i]);
+        sprintf(nn,"%s/%s/%s.%s",
+            programDir, toString(fontsdir), fontNames[i],
+            (strcmp(fontNames[i], "odokai") == 0 ? "ttf" : "otf"));
 #endif
         wxString widename(nn);
         if (!wxFont::AddPrivateFont(widename))
@@ -1063,45 +1025,44 @@ void showmathPanel::OnMouse(wxMouseEvent &event)
 
 static int32_t convert_font_name(char *dest, char *src)
 {
+// The font name passed should be one of
+//    cmuntt
+//    odokai
+//    math
+//    <anything else>
+//    <anything else>-Bold
+//    <anything else>-Italic
+//    <anything else>-BoldItalic
+//    
     int32_t r = wxFONTFLAG_DEFAULT;
     int len;
 logprintf("convert %s\n", src); fflush(stdout);
     if (strcmp(src, "cmuntt") == 0) strcpy(dest, "CMU Typewriter Text");
-    else if (strcmp(src, "fireflysung") == 0) strcpy(dest, "AR PL New Sung");
-    else sprintf(dest, "STIX%s", src);
+    else if (strcmp(src, "odokai") == 0) strcpy(dest, "AR PL New Kai");
+    else if (strcmp(src, "Math") == 0) strcpy(dest, "cslSTIXMath");
+    else sprintf(dest, "cslSTIX");
 // Here if the font name is suffixed as "-Bold" or "-Italic" or "-BoldItalic"
-// I remove that from the name of the font that I will try to open and
-// migrate the information into fontflags.
+// I will try to migrate the information into fontflags.
 logprintf("Need to process %s\n", dest); fflush(stdout);
     len = strlen(dest);
-    if (strcmp(dest+len-8, "-Regular") == 0)
-    {   dest[len-8] = 0;
-        len -= 8;
-    }
-    if (strcmp(dest+len-7, "-Italic") == 0)
-    {   r = wxFONTFLAG_ITALIC;
-        dest[len-7] = 0;
-        len -= 7;
-    }
-    if (strcmp(dest+len-5, "-Bold") == 0)
-    {   r = wxFONTFLAG_BOLD;
-        dest[len-5] = 0;
-        len -= 5;
-    }
-    if (strcmp(dest+len-11, "-BoldItalic") == 0)
-    {   r = (wxFontFlag)(wxFONTFLAG_BOLD + wxFONTFLAG_ITALIC);
-        dest[len-11] = 0;
-        len -= 11;
-    }
-    if (strcmp(dest, "CMU Typewriter Text") == 0) r |= (F_cmuntt<<16);
-    else if (strcmp(dest, "STIXGeneral") == 0) r |= (F_General<<16);
-    else if (strcmp(dest, "STIXSizeOneSym") == 0) r |= (F_SizeOneSym<<16);
-    else if (strcmp(dest, "STIXSizeTwoSym") == 0) r |= (F_SizeTwoSym<<16);
-    else if (strcmp(dest, "STIXSizeThreeSym") == 0) r |= (F_SizeThreeSym<<16);
-    else if (strcmp(dest, "STIXSizeFourSym") == 0) r |= (F_SizeFourSym<<16);
-    else if (strcmp(dest, "STIXSizeFiveSym") == 0) r |= (F_SizeFiveSym<<16);
+    if (strstr(src, "BoldItalic") != NULL)
+        r = (wxFontFlag)(wxFONTFLAG_BOLD + wxFONTFLAG_ITALIC);
+    else if (strstr(src, "Bold") != NULL)
+        r = (wxFontFlag)wxFONTFLAG_BOLD;
+    else if (strstr(src, "Italic") != NULL)
+        r = (wxFontFlag)wxFONTFLAG_ITALIC;
 
-// ETC.
+    if (strcmp(dest, "CMU Typewriter Text") == 0) r |= (F_cmuntt<<16);
+    else if (strcmp(dest, "AR PL New Kai") == 0) r |= (F_odokai<<16);
+    else if (strcmp(dest, "cslSTIXMath") == 0) r |= (F_Math<<16);
+    else if ((r & (wxFONTFLAG_BOLD + wxFONTFLAG_ITALIC)) ==
+             (wxFONTFLAG_BOLD + wxFONTFLAG_ITALIC)) r |= (F_BoldItalic<<16);
+    else if ((r & wxFONTFLAG_BOLD) ==
+             wxFONTFLAG_BOLD) r |= (F_Bold<<16);
+    else if ((r & wxFONTFLAG_ITALIC) ==
+             wxFONTFLAG_ITALIC) r |= (F_Italic<<16);
+    else r |= (F_Regular<<16);
+
 logprintf("Gives %s with flags %x\n", dest, r); fflush(stdout);
     return r;
 }
@@ -1162,8 +1123,7 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
     for (;;)
     {   int ddd;
         wxGraphicsFont tf1 =
-            gc->CreateFont(10000.0,
-                           "STIXGeneral",
+            gc->CreateFont(10000.0, "cslSTIX",
                            wxFONTFLAG_BOLD + wxFONTFLAG_ITALIC);
         gc->SetFont(tf1);
         gc->GetTextExtent(wxString((wchar_t)'X'),
@@ -1171,37 +1131,33 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
         logprintf("%.6g %.6g [%.6g]\n",
             dheight, ddepth, dheight-ddepth);
         ddd = (int)((dheight - ddepth)/10.0 + 0.5);
-        if (ddd == chardepth_WIN32[F_General_BoldItalic])
+        if (ddd == chardepth_WIN32[F_BoldItalic])
         {   chardepth = chardepth_WIN32;
             tf1 = graphicsFixedPitch;
             break;
         }
         tf1 =
-            gc->CreateFont(10000.0,
-                           "AR PL New Sung",
-                           wxFONTFLAG_DEFAULT);
+            gc->CreateFont(10000.0, "AR PL New Kai", wxFONTFLAG_DEFAULT);
         gc->SetFont(tf1);
         gc->GetTextExtent(wxString((wchar_t)'X'),
             &dwidth, &dheight, &ddepth, &dleading);
         logprintf("%.6g %.6g [%.6g]\n",
             dheight, ddepth, dheight-ddepth);
         ddd = (int)((dheight - ddepth)/10.0 + 0.5);
-        if (ddd == chardepth_X11[F_fireflysung])
+        if (ddd == chardepth_X11[F_odokai])
         {   chardepth = chardepth_X11;
             tf1 = graphicsFixedPitch;
             break;
         }
         tf1 =
-            gc->CreateFont(10000.0,
-                           "IntegralsD",
-                           wxFONTFLAG_DEFAULT);
+            gc->CreateFont(10000.0, "cslSTIXMath", wxFONTFLAG_DEFAULT);
         gc->SetFont(tf1);
         gc->GetTextExtent(wxString((wchar_t)unicode_INTEGRAL),
             &dwidth, &dheight, &ddepth, &dleading);
         logprintf("%.6g %.6g [%.6g]\n",
             dheight, ddepth, dheight-ddepth);
         ddd = (int)((dheight - ddepth)/10.0 + 0.5);
-        if (ddd == chardepth_OSX[F_IntegralsD])
+        if (ddd == chardepth_OSX[F_Math])
         {   chardepth = chardepth_OSX;
             tf1 = graphicsFixedPitch;
             break;
@@ -1236,16 +1192,16 @@ logprintf("Fixed Pitch Baseline = %.6g\n", height-descent);
 
 // Now I need to do something more serious!
     wxGraphicsFont general =
-        gc->CreateFont(wxFont(wxFontInfo(24).FaceName(wxT("STIXGeneral"))));
-    if (general.IsNull()) logprintf("STIXGeneral font not created\n");
+        gc->CreateFont(wxFont(wxFontInfo(24).FaceName(wxT("cslSTIX"))));
+    if (general.IsNull()) logprintf("cslSTIX font not created\n");
     gc->SetFont(general);
     gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
     logprintf("%.6g %.6g %.6g %.6g general\n", width, height, descent, xleading);
     double generalBaseline = height - descent;
     logprintf("general baseline = %.6g\n", height-descent);
     wxGraphicsFont symbols =
-        gc->CreateFont(wxFont(wxFontInfo(24).FaceName(wxT("STIXSizeOneSym"))));
-    if (symbols.IsNull()) logprintf("STIXSizeOneSym font not created\n");
+        gc->CreateFont(wxFont(wxFontInfo(24).FaceName(wxT("cslSTIXMath"))));
+    if (symbols.IsNull()) logprintf("cslSTIXMath font not created\n");
     else logprintf("Sym font should be OK\n");
     gc->SetFont(symbols);
     gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
@@ -1261,13 +1217,13 @@ logprintf("Fixed Pitch Baseline = %.6g\n", height-descent);
     logprintf("(D)em=%#.3g\n", dwidth);
     logprintf("(D)height = %#.3g total height = %#.3g leading = %#.3g\n",
         dheight-ddepth-dleading, dheight, dleading);
-    lookupchar(F_SizeOneSym, unicode_LEFT_CURLY_BRACKET_UPPER_HOOK);
+    lookupchar(F_Math, unicode_LEFT_CURLY_BRACKET_UPPER_HOOK);
     logprintf("upper hook   %d %d\n", c_lly, c_ury);
-    lookupchar(F_SizeOneSym, unicode_LEFT_CURLY_BRACKET_MIDDLE_PIECE);
+    lookupchar(F_Math, unicode_LEFT_CURLY_BRACKET_MIDDLE_PIECE);
     logprintf("middle piece %d %d\n", c_lly, c_ury);
-    lookupchar(F_SizeOneSym, unicode_LEFT_CURLY_BRACKET_LOWER_HOOK);
+    lookupchar(F_Math, unicode_LEFT_CURLY_BRACKET_LOWER_HOOK);
     logprintf("lower hook   %d %d\n", c_lly, c_ury);
-    lookupchar(F_SizeOneSym, unicode_CURLY_BRACKET_EXTENSION);
+    lookupchar(F_Math, unicode_CURLY_BRACKET_EXTENSION);
     logprintf("extension    %d %d\n", c_lly, c_ury);
 #define H (24.0)
 #define XX 120.0
@@ -1318,13 +1274,30 @@ logprintf("Fixed Pitch Baseline = %.6g\n", height-descent);
                 (double)size * (double)chardepth[(flags >> 16) & 0x1f] / 1000.0;
             logprintf("from table baseline offset = %.6g\n", graphicsBaseline[n]);
         }
-        else if (sscanf(in, "put %d %d %d %d;", &n, &x, &y, &cp) == 4)
+        else if (sscanf(in, "put %d %d %d 0x%x;", &n, &x, &y, &cp) == 4 ||
+                 sscanf(in, "put %d %d %d %d;", &n, &x, &y, &cp) == 4)
         {
 // put fontnum xpos ypos codepoint;  dump character onto screen
 // note x & y in units of 1/1000 point.
-            logprintf("Font %d (%d,%d) char %d\n", n, x, y, cp);
+            logprintf("Font %d (%d,%d) char %d = %#x\n", n, x, y, cp, cp);
             gc->SetFont(graphicsFont[n]);
-            gc->DrawText(wxString((wchar_t)cp),
+            wchar_t ccc[4];
+// For the benefit of Windows I need to represent code points in other
+// then the basic multilingual pane as surrogate pairs. Well that will
+// probably apply anywhere where sizeof(wchar_t) < 4.
+            if (sizeof(wchar_t) == 4 ||
+                cp <= 0xffff)
+            {   ccc[0] = cp;
+                ccc[1] = 0;
+            }
+            else
+            {   cp = (cp - 0x10000) & 0xfffff;
+                ccc[0] = 0xd800 + (cp >> 10);
+                ccc[1] = 0xdc00 + (cp & 0x3ff);
+                logprintf("Char mapped to %x %x\n", ccc[0], ccc[1]);
+                ccc[2] = 0;
+            }
+            gc->DrawText(wxString(ccc),
                          x/1000, 400-y/1000-graphicsBaseline[n]);
         }
         else logprintf("\nLine <%.32s> unrecognised\n", in);

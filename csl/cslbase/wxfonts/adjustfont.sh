@@ -11,6 +11,16 @@
 # the standard way. If your system is set up differently you will need
 # to edit this!
 
+case "x$1"
+in
+*keep*)
+  keeptemp="yes"
+  ;;
+*)
+  keeptemp="no"
+  ;;
+esac
+
 if which fontforge > /dev/null 2> /dev/null
 then
   ff=fontforge
@@ -50,7 +60,10 @@ gcc fixafm.c -o fixafm
 for x in *.afm
 do
   ./fixafm $x metrics/$x
-  rm $x
+  if test "$keeptemp" = "no"
+  then
+    rm $x
+  fi
 done
 rm fixafm
 

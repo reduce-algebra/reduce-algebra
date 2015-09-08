@@ -143,7 +143,7 @@
 
 // I have inspected the fonts that concern me and the sizes
 // shown here will suffice. There are less than 32000 characters in
-// total defined in all of the fonts I have (fireflysung is by far
+// total defined in all of the fonts I have (odokai is by far
 // the biggest with over 17K characters defined). There are also less
 // then 5000 kerning pairs listed. I will in fact have 31 distinct fonts.
 
@@ -197,11 +197,11 @@
 // of names in the table.
 
 #define F_cmuntt                      0
-#define F_fireflysung                 1
-#define F_General                     2
-#define F_General_Bold                3
-#define F_General_Italic              4
-#define F_General_BoldItalic          5
+#define F_odokai                      1
+#define F_Regular                     2
+#define F_Bold                        3
+#define F_Italic                      4
+#define F_BoldItalic                  5
 #define F_Math                        6
 #define F_end                         7
 
@@ -253,40 +253,40 @@ const uint16_t *chardepth = NULL;
 const uint16_t chardepth_WIN32[] =
 {
     1027,           // cmuntt
-    885,            // fireflysung
-    1055,           // General
-    1055,           // General-Bold
-    1055,           // General-Italic
-    1055,           // General-BoldItalic
+    885,            // odokai
+    1055,           // Regular
+    1055,           // Bold
+    1055,           // Italic
+    1055,           // BoldItalic
     2182            // Math
 };
 
 const uint16_t chardepth_X11[] =
 {
     1027,           // cmuntt
-    928,            // fireflysung
-    1055,           // General
-    1055,           // General-Bold
-    1055,           // General-Italic
-    1042,           // General-BoldItalic
+    928,            // odokai
+    1055,           // Regular
+    1055,           // Bold
+    1055,           // Italic
+    1042,           // BoldItalic
     2182            // Math
 };
 
 const uint16_t chardepth_OSX[] =
 {
     1027,           // cmuntt
-    885,            // fireflysung
-    1055,           // General
-    1055,           // General-Bold
-    1055,           // General-Italic
-    1042,           // General-BoldItalic
+    885,            // odokai
+    1055,           // Regular
+    1055,           // Bold
+    1055,           // Italic
+    1042,           // BoldItalic
     967             // Math
 };
 
 const char *fontnames[31] =
 {
     "cmuntt",
-    "fireflysung",
+    "odokai",
     "cslSTIX-Regular",
     "cslSTIX-Bold",
     "cslSTIX-Italic",
@@ -296,40 +296,40 @@ const char *fontnames[31] =
 
 // The font metric information I use will be quite bulky, so I will be
 // trying to balance speed, compactness and simplicity here.
-// I will only need to support the 31 fonts listed above, so I will
-// exploit some observed features. The first is that I only need to
-// map U+000000 to U+01ffff and hence I can use just 17 bits to specify
-// a code-point. Since I have (just) under than 32 fonts I can use 5 bits
-// to indicate a font.
-// However I only use a modest range of codes over 0xffff so I will map them
-// onto otherwise unused codes (in these fonts) for the purposes of my
-// tables. Because I am always carrying my font identifier it is only
-// necessary to arrange to be clash-free within a single font. Whew.
-// A conseqence will be that I can use just 16-bit "adjusted
-// codepoints" and that plus 5 bits of font leaves me needing 21 bits.
+// I will only need to support the fonts listed above, so I will
+// exploit some observed features. The first is that cmuntt and odokai
+// (almost)  only use the Basic Multilingual Plane (ie U+0000 to U+FFFF).
+// The STIX fonts use nothing in the range U+4000 to U+A000. But then
+// STIXMath uses code in the range U+1D400 to U+1D800 and U+108000 to
+// U+108400.
+// The other STIX fonts have subsets of the same use. So there I will map
+// U+1Dxxx to U+4xxx and U+108xxx to U+5xxx, having mapped anthing in either
+// of those ranges to the illegal code U+FFFF. That leaves all codes as
+// just 16 bits.
+// Since I have under than 16 fonts I can use 4 bits to indicate a font.
+// codepoints" and that plus 4 bits of font leaves me needing 20 bits.
 
 static int pack_character(int font, int codepoint)
 {
 // The cases that apply here are
-//    cmuntt    U+10144 - U+10147    map to U+d144 - U+d147
-//              these would be Hangul syllables but same are not present
-//              in cmuntt. The above are the only characters present in
+//    cmuntt    U+10144 - U+10147
+//              The above are the only characters present in
 //              cmuntt that have codes over U+ffff.
-//    calSTIX*  U+1d400:U+1d7ff to U+d400:U+d7ff
-//              U+108xxx        to 
-//              The first character present above U+ffff is U+1d400 and the
-//              last is U+1d7f5. The region U+d400 to U+dfff  is not
-//              populated.
-//              U+110xxx (outside Unicode!) exists also as U+108xxx in these
-//              fonts, with 0x0:0x39d the biggest block (in cslSTIXMath)
-//              I will map these to U+d800 (high surrogates) since that should
-//              never be in use for real characters.
-//   All the other fonts here seem to stick to the basic multilingual plane.
-// If at any stage I added more fonts I would need to review this!
-    if (codepoint >= 0x108000)
-        codepoint = 0xd800 + (codepoint & 0x3ff);
-    else if (codepoint >= 0x10000)
-        codepoint = 0xd000 + (codepoint & 0xfff);
+//    cslSTIX*  U+1d4xxx to U+4xxx
+//              U+108xxx to U+5xxx
+    if (font < 2)
+    {   if ((codepoint & 0xd800) == 0xd800) codepoint = 0xffff;
+        else if (codepoint >= 0x10000)
+        {   if (codepoint <= 0x107ff) codepoint = 0xd800 + (codepoint & 0x7ff);
+            else codepoint = 0xffff;
+        }
+    }
+    else if (codepoint >= 0x4000 && codepoint < 0x8000) codepoint = 0xffff;
+    else if (codepoint >= 0x1d000 && codepoint <= 0x1dfff)
+        codepoint = 0x4000 + (codepoint & 0xfff);
+    else if (codepoint >= 0x108000 && codepoint <= 0x108fff)
+        codepoint = 0x5000 + (codepoint & 0xfff);
+    else if (codepoint >= 0x10000) codepoint = 0xffff;
 // I need the bottom two bits of this packed code to be the bottom
 // two bits of the codepoint because my hash table will be using
 // buckets of four adjacent codepoints.
@@ -393,12 +393,12 @@ static int pack_character(int font, int codepoint)
 //    "CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS WITH
 //     CIRCLED ONE OVERLAY"
 // however the fonts I use here all have embedded names that are reasonably
-// short. I would detect it if any were longer than 31 characters and stop.
+// short. I would detect it if any were longer than 60 characters and stop.
 // If that happened I would merely increase MAXUNILEN here. The names present
 // while processing fonts here are purely local to the treatment here (they
 // are used to link kerning tables).
 
-#define MAXUNILEN 32
+#define MAXUNILEN 60
 
 static int       charcount = 0;
 static int       fontkey[MAXCHARS];
@@ -475,7 +475,7 @@ int32_t decodename(int fontnum, const char *name)
 int HASHTABLESIZE = START;
 
 // This is around 400 Kbytes... I tend to count that as quite large.
-// By far the largest contribution to it is data from fireflysung.afm.
+// By far the largest contribution to it is data from odokai.afm.
 // Although almost all characters there are specified with a width of 1000
 // the character bounding boxes are all individual and varied, and so trying
 // to save space by having an index of bounding boxes does not appear to be
@@ -584,7 +584,7 @@ int report(char *flag)
         for (i=0; i<charcount; i++)
         {   int font = fontkey[i];
             int cp = codepoint[i];
-            int fullkey = pack_character(font, cp); // 21-bit key
+            int fullkey = pack_character(font, cp); // 20-bit key
             int key = fullkey >> 2; // because my hash table has line-size 4
             int w;
             if (cp == 0) continue;
@@ -592,7 +592,7 @@ int report(char *flag)
             {
         case 0: if (cp >= 0x80) continue;
                 break;
-        case 1: if (font == F_fireflysung) continue;
+        case 1: if (font == F_odokai) continue;
                 break;
         default:break;
             }
@@ -749,6 +749,7 @@ int main(int argc, char *argv[])
                     }
                     if (strlen(unn) >= MAXUNILEN)
                     {   printf("Unicode name length = %d\n", (int)strlen(unn));
+                        printf("%d: %s\n", (int)strlen(unn), unn);
                         exit(EXIT_FAILURE);
                     }
                     if (cp == -1)
@@ -808,16 +809,17 @@ int main(int argc, char *argv[])
 // The information I now have is
 // fontnum, cp                          key
 // wid, bb1, bb2, bb3, bb4, unn         data
-            if (cp < 0 || cp > 0x01ffff)
+            if (cp < 0 || cp > 0x10ffff)
             {   if (strcmp(unn, ".notdef") != 0)
-                    printf("Discarding character <%s> with codepoint %d\n",
-                           unn, cp);
+                    printf("Discarding character <%s> with codepoint %#x = %d\n",
+                           unn, cp, cp);
                 continue;
             }
             if (cp >= 0xd000 && cp < 0xe000)
                 printf("Codepoint %d %x noted\n", cp, cp);
             if (cp > 0xffff &&
-                !(cp >= 0x1d000 && cp < 0x1e000))
+                !(cp >= 0x1d000 && cp < 0x1e000) &&
+                !(cp >= 0x108000 && cp < 0x109000))
                 printf("Codepoint %d %x noted\n", cp, cp);
             fontkey[charcount] = fontnum;
             codepoint[charcount] = cp;
@@ -924,7 +926,7 @@ int main(int argc, char *argv[])
             fail = 0;
             for (pass=0; pass<2; pass++)
             for (i=0; i<charcount; i++)
-            {   int fullkey = pack_character(fontkey[i], codepoint[i]); // 21-bit key
+            {   int fullkey = pack_character(fontkey[i], codepoint[i]); // 20-bit key
                 int key = fullkey >> 2; // because my hash table has line-size 4
                 int h1;
                 if (codepoint[i] == 0) continue;
@@ -975,7 +977,7 @@ int main(int argc, char *argv[])
             {   int key = hashtable[i][0] & 0x1fffff;
                 int font = key >> 14;
                 int codepoint = 4*(key & 0x3fff);
-                if (font == F_fireflysung || codepoint == 0) continue;
+                if (font == F_odokai || codepoint == 0) continue;
                 pinned[i] = 1;
             }
             printf("About to optimise\n");
@@ -988,7 +990,7 @@ int main(int argc, char *argv[])
                     int w;
                     int aim = qq > 9 ? 1 : 0;
                     uint32_t p[3];
-                    if (font == F_fireflysung || codepoint == 0) continue;
+                    if (font == F_odokai || codepoint == 0) continue;
 // Now I have a Western/Mathematical character.
                     calcplaces(key, p);
                     if (i == p[0]) continue; // Already in the right place!
@@ -1041,7 +1043,7 @@ int main(int argc, char *argv[])
 //=====================================================================
     printf("\nNow I want to put data into the hash table.\n");
     for (i=0; i<charcount; i++)
-    {   int fullkey = pack_character(fontkey[i], codepoint[i]); // 21-bit key
+    {   int fullkey = pack_character(fontkey[i], codepoint[i]); // 20-bit key
         int key = fullkey >> 2; // because my hash table has line-size 4
         if (codepoint[i] == 0) continue;
         int h1;
@@ -1099,7 +1101,7 @@ int main(int argc, char *argv[])
             int pp[3];
             calcplaces(key, pp);
             if (codepoint[i] == 0) continue;
-            if (pass == 1 && fontkey[i] == F_fireflysung) continue;
+            if (pass == 1 && fontkey[i] == F_odokai) continue;
             if (pass == 0 && codepoint[i] >= 0x80) continue;
             h1 = key % HASHTABLESIZE;
             if (h1 != pp[0])
@@ -1201,11 +1203,11 @@ fprintf(dest, "// The list of font codes here must be kept in step with the list
 fprintf(dest, "// of names in the table.\n");
 fprintf(dest, "\n");
 fprintf(dest, "#define F_cmuntt                      0\n");
-fprintf(dest, "#define F_fireflysung                 1\n");
-fprintf(dest, "#define F_General                     2\n");
-fprintf(dest, "#define F_General_Bold                3\n");
-fprintf(dest, "#define F_General_Italic              4\n");
-fprintf(dest, "#define F_General_BoldItalic          5\n");
+fprintf(dest, "#define F_odokai                      1\n");
+fprintf(dest, "#define F_Regular                     2\n");
+fprintf(dest, "#define F_Bold                        3\n");
+fprintf(dest, "#define F_Italic                      4\n");
+fprintf(dest, "#define F_BoldItalic                  5\n");
 fprintf(dest, "#define F_Math                        6\n");
 fprintf(dest, "#define F_end                         7\n");
 fprintf(dest, "\n");
@@ -1298,7 +1300,7 @@ fprintf(rdest, "\n");
 fprintf(rdest, "#endif\n");
 fprintf(rdest, "\n");
 fprintf(rdest, "put('cmuntt, 'font_number,                      0)$\n");
-fprintf(rdest, "put('fireflysung, 'font_number,                 1)$\n");
+fprintf(rdest, "put('odokai, 'font_number,                      1)$\n");
 fprintf(rdest, "put('Regular, 'font_number,                     2)$\n");
 fprintf(rdest, "put('Bold, 'font_number,                        3)$\n");
 fprintf(rdest, "put('Italic, 'font_number,                      4)$\n");
@@ -1552,7 +1554,7 @@ int c_width, c_llx, c_lly, c_urx, c_ury, c_kerninfo;
 
 int lookupchar(int fontnum, int codepoint)
 {
-    int fullkey = pack_character(fontnum, codepoint); // 21-bit key
+    int fullkey = pack_character(fontnum, codepoint); // 20-bit key
     int key = fullkey >> 2; // because my hash table has line-size 4
 // I compute two hash values - one for the initial probe position and
 // the second to give an stride,

@@ -49,7 +49,7 @@
 
 // Driving instructions:
 //
-//   ./wxfontdemo "fontname" [--italic] [--bold] [--regular] [--tex]
+//   ./wxfontdemo "fontname" [--italic] [--bold] [--regular]
 //
 // The fontname is either the name of a font installed on the system
 // or is one of the private fonts provided here (and those are the cases
@@ -57,15 +57,13 @@
 // private fonts differ as between Macintosh and other platforms.
 // Eg "CMU Typewriter Text" or "CMU Typewriter Text Regular", ...
 //
-// The flag --tex adjusts for a private adjustment to the TeX character
-// encoding and is only for use with the fonts csl-cmr10 and so on...
-//
 // When displaying a font you can type 0-9 or a-f to move to a display
 // that starts at unicode code point (eg) U+3000 (that would obviously be
 // by typeing a "3"). You can then type "x" to flip the U+10000 bit and
-// get better access to the second plane. "+" and "-" move you forward and
-// back by several blocks while "<" and ">" give finer movement. Other
-// characters just move you on a section. Mouse click near the top and
+// get better access to the second plane, while "y" flips the U+100000 bit
+// to get close to the end of the whole Unicode range. "+" and "-" move you
+// forward and back by several blocks while "<" and ">" give finer movement.
+// Other characters just move you on a section. Mouse click near the top and
 // bottom on the screen also change which block of characters are displayed.
 //
 // The code is intended to allow me to check that I can in fact access the
@@ -91,6 +89,10 @@
 // invalid code-points. This really is deliberate! So if you spot something
 // that looks truly weird be aware it may be a feature not a bug. 
 
+// For the STIX fonts the official versions use glyphs that have to be
+// accessed using advanced typography methods that I can not easily access
+// in a fully cross-platform manner and with wxWidgets, so I have some
+// "cslSTIX" fonts that map those glyphs to a range starting at U+108000.
 
 #define __STDC_CONSTANT_MACROS 1
 
@@ -236,7 +238,7 @@ BEGIN_EVENT_TABLE(fontFrame, wxFrame)
     EVT_MENU(wxID_ABOUT, fontFrame::OnAbout)
 END_EVENT_TABLE()
 
-int tex, page, regular, bold, italic;
+int page, regular, bold, italic;
 
 int get_current_directory(char *s, int n)
 {
@@ -661,18 +663,15 @@ int main(int argc, char *argv[])
 
 IMPLEMENT_APP_NO_MAIN(fontApp)
 
-// Pretty much everything so far has been uttery stylised and the contents
-// are forced by the structure that wxWidgets requires!
-
 
 #ifndef MACINTOSH
 
 static const char *fontNames[] =
 {
 // This adds the fonts that I expect to be used in my wxWidgets code.
-    "fireflysung.ttf",     // AR PL New Sung
 #ifdef WIN32
     "cmuntt.ttf",          // CMU Typewriter Text
+    "odokai.ttf",          // a succesor to AR PL New Sung
     "cslSTIX-Regular.ttf",
     "cslSTIX-Bold.ttf",
     "cslSTIX-Italic.ttf",
@@ -680,6 +679,7 @@ static const char *fontNames[] =
     "cslSTIXMath-Regular.ttf"
 #else
     "cmuntt.otf",          // CMU Typewriter Text
+    "odokai.ttf",          // a succesor to AR PL New Sung
     "cslSTIX-Regular.otf",
     "cslSTIX-Bold.otf",
     "cslSTIX-Italic.otf",
@@ -689,15 +689,6 @@ static const char *fontNames[] =
 };
 
 #endif
-
-
-// A brief comment here. The DEFAULT build of wxWidgets on Windows supports
-// Unicode by using wide characters and strings. That causes me some pain
-// but I NEED to accept it because the character that has code 0x14 in TeX
-// encoding gets mapped to character code 0x2219 in the Bakoma fonts, and it
-// is not at all clear that I have any way to access that glyph if I do
-// not build in Unicode mode.
-
 
 #ifndef fontsdir
 #define fontsdir reduce.wxfonts
@@ -709,7 +700,8 @@ static const char *fontNames[] =
 void add_custom_fonts()
 {
 #ifndef MACINTOSH
-// Note that on a Mac I put the required fonts in the Application Bundle.
+// Note that on a Mac I put the required fonts in the Application Bundle,
+// and so I do not need to take run-time action to make them available.
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char nn[LONGEST_LEGAL_FILENAME];
         sprintf(nn, "%s/%s/%s",
@@ -726,9 +718,6 @@ void add_custom_fonts()
     else printf("Activation failed\n");
     fflush(stdout);
 #endif // MACINTOSH
-// I find that the following commented out enumerations crash for me
-// at least on some platforms.
-    fflush(stdout);
 }
 
 
@@ -751,7 +740,6 @@ bool fontApp::OnInit()
 // I find that the real type of argv is NOT "char **" but it supports
 // the cast indicated here to turn it into what I expect.
     char **myargv = (char **)argv;
-    tex = 0;
     page = 0;
     regular = bold = italic = 0;
     const char *font = "CMU Typewriter Text";  // A default font name to ask for.
@@ -759,7 +747,6 @@ bool fontApp::OnInit()
     for (int i=1; i<argc; i++)
     {
         printf("Arg%d: %s\n", i, myargv[i]);
-        if (strcmp(myargv[i], "--tex") == 0) tex = 1;
         if (strcmp(myargv[i], "--regular") == 0) regular = 1;
         if (strcmp(myargv[i], "--bold") == 0) bold = 1;
         if (strcmp(myargv[i], "--italic") == 0) italic = 1;
@@ -917,22 +904,11 @@ void fontPanel::OnMouse(wxMouseEvent &event)
 int find_fontnum(const char *s)
 {
     if (strcmp(s, "CMU Typewriter Text") == 0) return F_cmuntt;
+    if (strcmp(s, "odokai") == 0) return F_odokai;
 // Note that Bold and Italic are picked up by options --bold and --italic
 // not through the font name.
-    if (strcmp(s, "STIXGeneral") == 0) return F_General;
-    if (strcmp(s, "STIXIntegralsD") == 0) return F_IntegralsD;
-    if (strcmp(s, "STIXIntegralsSm") == 0) return F_IntegralsSm;
-    if (strcmp(s, "STIXIntegralsUpD") == 0) return F_IntegralsUpD;
-    if (strcmp(s, "STIXIntegralsUp") == 0) return F_IntegralsUp;
-    if (strcmp(s, "STIXIntegralsUpSm") == 0) return F_IntegralsUpSm;
-    if (strcmp(s, "STIXNonUnicode") == 0) return F_NonUnicode;
-    if (strcmp(s, "STIXSizeOneSym") == 0) return F_SizeOneSym;
-    if (strcmp(s, "STIXSizeTwoSym") == 0) return F_SizeTwoSym;
-    if (strcmp(s, "STIXSizeThreeSym") == 0) return F_SizeThreeSym;
-    if (strcmp(s, "STIXSizeFourSym") == 0) return F_SizeFourSym;
-    if (strcmp(s, "STIXSizeFiveSym") == 0) return F_SizeFiveSym;
-    if (strcmp(s, "STIXVariants") == 0) return F_Variants;
-    if (strcmp(s, "AR PL New Sung") == 0) return F_fireflysung;
+    if (strcmp(s, "STIX") == 0) return F_Regular;
+    if (strcmp(s, "STIXMath") == 0) return F_Math;
     return -1;
 }
 
@@ -940,6 +916,7 @@ static int once = 0;
 
 void fontPanel::OnPaint(wxPaintEvent &event)
 {
+printf("OnPaint invoked\n");
     wxPaintDC dc(this);
     wxGraphicsContext *gc = wxGraphicsContext::Create(dc);
     if (gc)
@@ -1042,7 +1019,7 @@ void fontPanel::OnPaint(wxPaintEvent &event)
                 gc->SetTransform(save);
                 int k = i + j;
                 k += 0x80*page;
-                if (fontnum >= 0 && lookupchar(fontnum, k) == 0)
+                if (0 && fontnum >= 0 && lookupchar(fontnum, k) == 0)
                 {   gc->DrawRectangle(
                        (double)CELLWIDTH*(j+1)+CELLWIDTH/3.0,
                        (double)CELLHEIGHT*(i/32+1)+CELLHEIGHT/3.0,

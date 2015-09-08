@@ -1339,32 +1339,21 @@ if mac_framework
 else !mac_framework
 	-$(TRACE)$(RM) -rf reduce.$(fontsdir)
 	-mkdir -p reduce.$(fontsdir)
-	$(CP) $(srcdir)/cm-unicode/LICENSE reduce.$(fontsdir)/LICENSE.cm-unicode
-	$(CP) $(srcdir)/cm-unicode/README.cm-unicode reduce.$(fontsdir)/README.cm-unicode
+	$(CP) $(srcdir)/$(fontsdir)/LICENSE.cmuntt reduce.$(fontsdir)
 	$(CP) $(srcdir)/$(fontsdir)/STIX*.pdf reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/LICENSE-fireflysung-odokai.txt reduce.$(fontsdir)
+# odokai only seems to come in .ttf form.
+	$(CP) $(srcdir)/$(fontsdir)/odokai.ttf reduce.$(fontsdir)
 if windows
 # With Windows I will want a .ttf version for any time I am using gdiplus.
 # However on a Windows platform under Cygwin and using X11 I would rather
 # have the .otf version, so I will copy the .ttf version as well rather then
 # instead of the .otf file.
-	$(CP) $(srcdir)/cm-unicode/cmuntt.ttf reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/cmuntt.ttf reduce.$(fontsdir)
 	$(CP) $(srcdir)/$(fontsdir)/cslSTIX*.ttf reduce.$(fontsdir)
 endif windows
-	$(CP) $(srcdir)/cm-unicode/cmuntt.otf reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/cmuntt.otf reduce.$(fontsdir)
 	$(CP) $(srcdir)/$(fontsdir)/cslSTIX*.otf reduce.$(fontsdir)
-# I will use fireflysung to cover the CJK range.
-# I list every file I am copying individually to avoid (eg) any backups or
-# subversion admin files ending up where I do not want them.
-	$(CP) $(srcdir)/fireflysung-1.3.0/fireflysung.ttf reduce.$(fontsdir)
-	$(CP) $(srcdir)/fireflysung-1.3.0/AUTHORS reduce.$(fontsdir)/AUTHORS.fireflysung
-	$(CP) $(srcdir)/fireflysung-1.3.0/COPYRIGHT reduce.$(fontsdir)/COPYRIGHT.fireflysung
-	mkdir -p reduce.$(fontsdir)/license.fireflysung
-	mkdir -p reduce.$(fontsdir)/license.fireflysung/big5
-	mkdir -p reduce.$(fontsdir)/license.fireflysung/english
-	mkdir -p reduce.$(fontsdir)/license.fireflysung/gb
-	$(CP) $(srcdir)/fireflysung-1.3.0/license/big5/ARPHICPL.TXT reduce.$(fontsdir)/license.fireflysung/big5
-	$(CP) $(srcdir)/fireflysung-1.3.0/license/english/ARPHICPL.TXT reduce.$(fontsdir)/license.fireflysung/english
-	$(CP) $(srcdir)/fireflysung-1.3.0/license/gb/ARPHICPL.TXT reduce.$(fontsdir)/license.fireflysung/gb
 
 endif !mac_framework
 else !wx

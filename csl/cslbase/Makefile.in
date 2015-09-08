@@ -4547,30 +4547,19 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 @mac_framework_TRUE@@wx_TRUE@	echo reduce.wxfonts not used on the Mac with wxWidgets
 @mac_framework_FALSE@@wx_TRUE@	-$(TRACE)$(RM) -rf reduce.$(fontsdir)
 @mac_framework_FALSE@@wx_TRUE@	-mkdir -p reduce.$(fontsdir)
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/LICENSE reduce.$(fontsdir)/LICENSE.cm-unicode
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/README.cm-unicode reduce.$(fontsdir)/README.cm-unicode
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/LICENSE.cmuntt reduce.$(fontsdir)
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/STIX*.pdf reduce.$(fontsdir)
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/LICENSE-fireflysung-odokai.txt reduce.$(fontsdir)
+# odokai only seems to come in .ttf form.
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/odokai.ttf reduce.$(fontsdir)
 # With Windows I will want a .ttf version for any time I am using gdiplus.
 # However on a Windows platform under Cygwin and using X11 I would rather
 # have the .otf version, so I will copy the .ttf version as well rather then
 # instead of the .otf file.
-@mac_framework_FALSE@@windows_TRUE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/cmuntt.ttf reduce.$(fontsdir)
+@mac_framework_FALSE@@windows_TRUE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/cmuntt.ttf reduce.$(fontsdir)
 @mac_framework_FALSE@@windows_TRUE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/cslSTIX*.ttf reduce.$(fontsdir)
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/cmuntt.otf reduce.$(fontsdir)
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/cmuntt.otf reduce.$(fontsdir)
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/cslSTIX*.otf reduce.$(fontsdir)
-# I will use fireflysung to cover the CJK range.
-# I list every file I am copying individually to avoid (eg) any backups or
-# subversion admin files ending up where I do not want them.
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/fireflysung-1.3.0/fireflysung.ttf reduce.$(fontsdir)
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/fireflysung-1.3.0/AUTHORS reduce.$(fontsdir)/AUTHORS.fireflysung
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/fireflysung-1.3.0/COPYRIGHT reduce.$(fontsdir)/COPYRIGHT.fireflysung
-@mac_framework_FALSE@@wx_TRUE@	mkdir -p reduce.$(fontsdir)/license.fireflysung
-@mac_framework_FALSE@@wx_TRUE@	mkdir -p reduce.$(fontsdir)/license.fireflysung/big5
-@mac_framework_FALSE@@wx_TRUE@	mkdir -p reduce.$(fontsdir)/license.fireflysung/english
-@mac_framework_FALSE@@wx_TRUE@	mkdir -p reduce.$(fontsdir)/license.fireflysung/gb
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/fireflysung-1.3.0/license/big5/ARPHICPL.TXT reduce.$(fontsdir)/license.fireflysung/big5
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/fireflysung-1.3.0/license/english/ARPHICPL.TXT reduce.$(fontsdir)/license.fireflysung/english
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/fireflysung-1.3.0/license/gb/ARPHICPL.TXT reduce.$(fontsdir)/license.fireflysung/gb
 
 @wx_FALSE@	-$(TRACE)$(RM) -rf reduce.$(fontsdir)
 @wx_FALSE@	-mkdir reduce.$(fontsdir)
