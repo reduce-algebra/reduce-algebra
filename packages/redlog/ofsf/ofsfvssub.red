@@ -172,7 +172,8 @@ asserted procedure vsds_applyvs(ds: VSds);
 
 asserted procedure vsds_applyvsar(ds: VSds);
    % VS data for virtual substitution apply VSar. [ds] is modified
-   % in-place. It should be never needed to apply VSar.
+   % in-place. [vsds_vs ds] is an arbitrary substitution [x //
+   % arbitrary]. It should be never needed to apply VSar.
    <<
       assert(nil);
       vsds_putdata(ds, nil)
@@ -180,7 +181,8 @@ asserted procedure vsds_applyvsar(ds: VSds);
 
 asserted procedure vsds_applyvsdg(ds: VSds);
    % VS data for virtual substitution apply VSdg. [ds] is modified
-   % in-place.
+   % in-place. [vsds_vs ds] is a degree shift substitution [x^n //
+   % x^(n/d)].
    begin scalar vs, f;
       vs := vsds_vs ds;
       f := vsds_f ds;
@@ -201,7 +203,7 @@ asserted procedure vsdg_decdeg(at: QfFormula, x: Kernel, g: Integer, y: Kernel):
    end;
 
 asserted procedure vsds_applyvsts(ds: VSds);
-   % VS data for virtual substitution apply VSdg. [ds] is modified
+   % VS data for virtual substitution apply VSts. [ds] is modified
    % in-place. [vsds_vs ds] is a test point substitution [x // tp],
    % where [tp] is a test point computed from formula [vsds_f ds].
    begin scalar vs, f, tp, theo, g;
@@ -267,92 +269,103 @@ asserted procedure qff_condense(f: QfFormula, p: Position): QfFormula;
    end;
 
 asserted procedure vsds_applyvsts!-at(at: QfFormula, ds: VSds): QfFormula;
-   % VS test point substitution apply to atomic formula. [vs] is a
-   % substitution [x // tp], where [tp] is a test point.
-   begin scalar vs, g, it;
-      if rl_tvalp at then
-	 return at;
-      vs := vsds_vs ds;
-      assert(vsvs_tsp vs);
-      g := rl_arg2l at;
-      if not sfto_mvartest(g, vsvs_v vs) then
-      	 return at;
-      it := vstp_it vsts_tp vs;
+   % VS data for virtual substitution apply VSts: atomic formula
+   % subroutine. [vsds_vs ds] is a test point substitution [x // tp],
+   % where [tp] is a test point computed from formula [vsds_f ds].
+   begin scalar x, it, w, pr, theo;
+      x := vsvs_v vsds_vs ds;
+      it := vstp_it vsts_tp vsds_vs ds;
+      w := if it memq '(minf pinf) then
+	 vsds_expand!-at!-inf(at, x, it)
+      else if it memq '(meps peps) then
+	 vsds_expand!-at!-inf(at, x, it)
+      else
+	 at;
       if it memq '(minf pinf) then
-	 return vsds_applyvsts!-at!-inf(rl_op at, g, ds);
-      if it memq '(meps peps) then
-	 return vsds_applyvsts!-at!-eps(rl_op at, g, ds);
-      assert(null it);
-      return vsds_applyvsts!-at!-pr(at, ds)
+	 return w;
+      pr := vstp_pr vsts_tp vsds_vs ds;
+      theo := append(vsds_ptheo ds, vsds_ttheo ds);
+      return cl_apply2ats1(w, 'vsds_applyvsts!-at!-pr, {x, pr, theo})
    end;
 
-asserted procedure vsds_applyvsts!-at!-inf(op: Id, g: SF, ds: VSds): QfFormula;
-   % VS test point substitution apply to atomic formula +- infinity.
-   if op eq 'equal then
-      rl_mkn('and, for each c in coeffs g collect ofsf_0mk2('equal, c))
-   else if op eq 'neq then
-      rl_mkn('or, for each c in coeffs g collect ofsf_0mk2('neq, c))
-   else if op eq 'leq then
-      rl_mkn('or, {vsds_applyvsts!-at!-inf('equal, g, ds),
-   	 vsds_applyvsts!-at!-inf('lessp, g, ds)})
-   else if op eq 'geq then
-      rl_mkn('or, {vsds_applyvsts!-at!-inf('equal, g, ds),
-   	 vsds_applyvsts!-at!-inf('greaterp, g, ds)})
-   else if op memq '(lessp greaterp) then
-      vsds_expand!-at!-inf(op, g, mvar g, vstp_it vsts_tp vsds_vs ds);
-
-asserted procedure vsds_expand!-at!-inf(op: Id, g: SF, x: Kernel, it: Id): QfFormula;
-   % VS test point substitution apply to atomic formula +- infinity expand.
-   begin scalar w;
+asserted procedure vsds_expand!-at!-inf(at: QfFormula, x: Kernel, it: Id): QfFormula;
+   % Expand atomic formula at +- infinity.
+   <<
       assert(it memq '(minf pinf));
+      if rl_tvalp at then
+	 at
+      else
+      	 vsds_expand!-at!-inf1(rl_op at, rl_arg2l at, x, it)
+   >>;
+
+asserted procedure vsds_expand!-at!-inf1(op: Id, g: SF, x: Kernel, it: Id): QfFormula;
+   % Expand atomic formula at +- infinity subroutine.
+   begin scalar w;
       if not sfto_mvartest(g, x) then
 	 return ofsf_0mk2(op, g);
+      if op eq 'equal then
+      	 return rl_mkn('and, for each c in coeffs g collect ofsf_0mk2('equal, c));
+      if op eq 'neq then
+      	 return rl_mkn('or, for each c in coeffs g collect ofsf_0mk2('neq, c));
+      if op eq 'leq then
+      	 return rl_mkn('or, {vsds_expand!-at!-inf1('equal, g, x, it),
+   	    vsds_expand!-at!-inf1('lessp, g, x, it)});
+      if op eq 'geq then
+      	 return rl_mkn('or, {vsds_expand!-at!-inf1('equal, g, x, it),
+   	    vsds_expand!-at!-inf1('greaterp, g, x, it)});
+      assert(op memq '(lessp greaterp));
       w := if it eq 'minf and not evenp ldeg g then
 	 negf lc g
       else
 	 lc g;
       return rl_mkn('or, {ofsf_0mk2(op, w),
-	 rl_mkn('and, {ofsf_0mk2('equal, w), vsds_expand!-at!-inf(op, red g, x, it)})})
+	 rl_mkn('and, {ofsf_0mk2('equal, w), vsds_expand!-at!-inf1(op, red g, x, it)})})
    end;
 
-asserted procedure vsds_applyvsts!-at!-eps(op: Id, g: SF, ds: VSds): QfFormula;
-   % VS test point substitution apply to atomic formula +- epsilon.
-   begin scalar w;
+asserted procedure vsds_expand!-at!-eps(at: QfFormula, x: Kernel, it: Id): QfFormula;
+   % Expand atomic formula at test point +- eps.
+   <<
+      assert(it memq '(meps peps));
+      if rl_tvalp at then
+	 at
+      else
+      	 vsds_expand!-at!-eps1(rl_op at, rl_arg2l at, x, it)
+   >>;
+
+asserted procedure vsds_expand!-at!-eps1(op: Id, g: SF, x: Kernel, it: Id): QfFormula;
+   % Expand atomic formula at test point +- eps subroutine.
+   begin scalar wop, edg;
+      if not sfto_mvartest(g, x) then
+	 return ofsf_0mk2(op, g);
       if op eq 'equal then
 	 return rl_mkn('and, for each c in coeffs g collect ofsf_0mk2('equal, c));
       if op eq 'neq then
 	 return rl_mkn('or, for each c in coeffs g collect ofsf_0mk2('neq, c));
       if op eq 'leq then
-	 return rl_mkn('or, {vsds_applyvsts!-at!-eps('equal, g, ds),
- 	    vsds_applyvsts!-at!-eps('lessp, g, ds)});
+	 return rl_mkn('or, {vsds_expand!-at!-eps1('equal, g, x, it),
+ 	    vsds_expand!-at!-eps1('lessp, g, x, it)});
       if op eq 'geq then
-	 return rl_mkn('or, {vsds_applyvsts!-at!-eps('equal, g, ds),
- 	    vsds_applyvsts!-at!-eps('greaterp, g, ds)});
+	 return rl_mkn('or, {vsds_expand!-at!-eps1('equal, g, x, it),
+ 	    vsds_expand!-at!-eps1('greaterp, g, x, it)});
       assert(op memq '(lessp greaterp));
-      w := vsds_expand!-at!-eps(op, g, mvar g, vstp_it vsts_tp vsds_vs ds);
-      return cl_apply2ats1(w, 'vsds_applyvsts!-at!-pr, {ds})
-   end;
-
-asserted procedure vsds_expand!-at!-eps(op: Id, g: SF, x: Kernel, it: Id): QfFormula;
-   % VS test point substitution apply to atomic formula +- epsilon expand.
-   begin scalar wop, edg;
-      assert(it memq '(meps peps));
-      if not sfto_mvartest(g, x) then
-	 return ofsf_0mk2(op, g);
       wop := if it eq 'peps then op else op_adjust(op, -1);
-      edg := vsds_expand!-at!-eps(wop, diff(g, x), x, it);
+      edg := vsds_expand!-at!-eps1(wop, diff(g, x), x, it);
       return rl_mkn('or, {ofsf_0mk2(op, g), rl_mkn('and, {ofsf_0mk2('equal, g), edg})})
    end;
 
-asserted procedure vsds_applyvsts!-at!-pr(at: QfFormula, ds: VSds): QfFormula;
-   % VS test point substitution apply to atomic formula parametric
-   % root description.
-   begin scalar pr, f, v, g;
-      pr := vstp_pr vsts_tp vsds_vs ds;
+asserted procedure vsds_applyvsts!-at!-pr(at: QfFormula, x: Kernel, pr: VSpr, theo: Theory): QfFormula;
+   % Apply to atomic formula substitution given by a parametric root
+   % description.
+   begin scalar g, f;
+      assert(x eq vspr_v pr);
+      if rl_tvalp at then
+	 return at;
+      g := rl_arg2l at;
+      if not sfto_mvartest(g, x) then
+	 return at;
       f := vspr_f pr;
-      v := vsvs_v vsds_vs ds;
-      g := sfto_psrem!-sgn(rl_arg2l at, f, v, append(vsds_ptheo ds, vsds_ttheo ds));
-      return rsl!-vsub(rl_op at, g, f, v, vspr_rsl pr)
+      g := sfto_psrem!-sgn(g, f, x, theo);
+      return rsl!-vsub(rl_op at, g, f, x, vspr_rsl pr)
    end;
 
 % TODO: Rename and move this procedure to the sfto module.

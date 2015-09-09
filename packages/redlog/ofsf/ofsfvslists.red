@@ -1573,6 +1573,7 @@ asserted procedure rsl!-vsub(op: Id, g: SF, f: SF, x: Kernel, rsl: List): QfForm
    % operator; [rsl] is a list of root specifications of [f]. Returns
    % an equivalent of (g op 0)[x // (f, rsl)].
    begin scalar w;
+      assert(sfto_mvartest(f, x));
       if not sfto_mvartest(g, x) then
 	 return ofsf_0mk2(op, g);
       w := assoc({ldeg f, rsl, ldeg g, op}, vsub!-fnalist!*);
