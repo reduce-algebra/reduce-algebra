@@ -1364,99 +1364,123 @@ vsub!-fnalist!* := {
    % value: virtual substitution constructing function
 
    % 2, 1, equal
-   {2, {(-2) . 1}, 1, 'equal} . 'vsub!-2!-equal!-1,
-   {2, {(-1) . 1}, 1, 'equal} . 'vsub!-2!-equal!-2,
-   {2, {(-1) . 2}, 1, 'equal} . 'vsub!-2!-equal!-3,
-   {2, {1 . 1}, 1, 'equal} . 'vsub!-2!-equal!-4,
-   {2, {1 . 2}, 1, 'equal} . 'vsub!-2!-equal!-5,
-   {2, {2 . 1}, 1, 'equal} . 'vsub!-2!-equal!-6,
+   {2, {(-2) . 1}, 1, 'equal} . 'vsub!-2!-1!-equal!-1,
+   {2, {(-1) . 1}, 1, 'equal} . 'vsub!-2!-1!-equal!-2,
+   {2, {(-1) . 2}, 1, 'equal} . 'vsub!-2!-1!-equal!-3,
+   {2, {1 . 1}, 1, 'equal} . 'vsub!-2!-1!-equal!-4,
+   {2, {1 . 2}, 1, 'equal} . 'vsub!-2!-1!-equal!-5,
+   {2, {2 . 1}, 1, 'equal} . 'vsub!-2!-1!-equal!-6,
    % 2, 1, equal, clustering
-   {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'equal} . 'vsub!-2!-equal!-7,
-   {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'equal} . 'vsub!-2!-equal!-8,
-   {2, {(-1) . 1, (-2) . 1}, 1, 'equal} . 'vsub!-2!-equal!-2,
-   {2, {(-1) . 2, (-2) . 1}, 1, 'equal} . 'vsub!-2!-equal!-3,
-   {2, {1 . 1, 2 . 1}, 1, 'equal} . 'vsub!-2!-equal!-4,
-   {2, {1 . 2, 2 . 1}, 1, 'equal} . 'vsub!-2!-equal!-5,
+   {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'equal} . 'vsub!-2!-1!-equal!-7,
+   {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'equal} . 'vsub!-2!-1!-equal!-8,
+   {2, {(-1) . 1, (-2) . 1}, 1, 'equal} . 'vsub!-2!-1!-equal!-2,
+   {2, {(-1) . 2, (-2) . 1}, 1, 'equal} . 'vsub!-2!-1!-equal!-3,
+   {2, {1 . 1, 2 . 1}, 1, 'equal} . 'vsub!-2!-1!-equal!-4,
+   {2, {1 . 2, 2 . 1}, 1, 'equal} . 'vsub!-2!-1!-equal!-5,
 
    % 2, 1, neq
-   {2, {(-2) . 1}, 1, 'neq} . 'vsub!-2!-neq!-1,
-   {2, {(-1) . 1}, 1, 'neq} . 'vsub!-2!-neq!-2,
-   {2, {(-1) . 2}, 1, 'neq} . 'vsub!-2!-neq!-3,
-   {2, {1 . 1}, 1, 'neq} . 'vsub!-2!-neq!-4,
-   {2, {1 . 2}, 1, 'neq} . 'vsub!-2!-neq!-5,
-   {2, {2 . 1}, 1, 'neq} . 'vsub!-2!-neq!-6,
+   {2, {(-2) . 1}, 1, 'neq} . 'vsub!-2!-1!-neq!-1,
+   {2, {(-1) . 1}, 1, 'neq} . 'vsub!-2!-1!-neq!-2,
+   {2, {(-1) . 2}, 1, 'neq} . 'vsub!-2!-1!-neq!-3,
+   {2, {1 . 1}, 1, 'neq} . 'vsub!-2!-1!-neq!-4,
+   {2, {1 . 2}, 1, 'neq} . 'vsub!-2!-1!-neq!-5,
+   {2, {2 . 1}, 1, 'neq} . 'vsub!-2!-1!-neq!-6,
    % 2, 1, neq, clustering
-   {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'neq} . 'vsub!-2!-neq!-7,
-   {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'neq} . 'vsub!-2!-neq!-8,
-   {2, {(-1) . 1, (-2) . 1}, 1, 'neq} . 'vsub!-2!-neq!-2,
-   {2, {(-1) . 2, (-2) . 1}, 1, 'neq} . 'vsub!-2!-neq!-3,
-   {2, {1 . 1, 2 . 1}, 1, 'neq} . 'vsub!-2!-neq!-4,
-   {2, {1 . 2, 2 . 1}, 1, 'neq} . 'vsub!-2!-neq!-5,
+   {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'neq} . 'vsub!-2!-1!-neq!-7,
+   {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'neq} . 'vsub!-2!-1!-neq!-8,
+   {2, {(-1) . 1, (-2) . 1}, 1, 'neq} . 'vsub!-2!-1!-neq!-2,
+   {2, {(-1) . 2, (-2) . 1}, 1, 'neq} . 'vsub!-2!-1!-neq!-3,
+   {2, {1 . 1, 2 . 1}, 1, 'neq} . 'vsub!-2!-1!-neq!-4,
+   {2, {1 . 2, 2 . 1}, 1, 'neq} . 'vsub!-2!-1!-neq!-5,
 
    % 2, 1, lessp
-   {2, {(-2) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-1,
-   {2, {(-1) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-2,
-   {2, {(-1) . 2}, 1, 'lessp} . 'vsub!-2!-lessp!-3,
-   {2, {1 . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-4,
-   {2, {1 . 2}, 1, 'lessp} . 'vsub!-2!-lessp!-5,
-   {2, {2 . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-6,
+   {2, {(-2) . 1}, 1, 'lessp} . 'vsub!-2!-1!-lessp!-1,
+   {2, {(-1) . 1}, 1, 'lessp} . 'vsub!-2!-1!-lessp!-2,
+   {2, {(-1) . 2}, 1, 'lessp} . 'vsub!-2!-1!-lessp!-3,
+   {2, {1 . 1}, 1, 'lessp} . 'vsub!-2!-1!-lessp!-4,
+   {2, {1 . 2}, 1, 'lessp} . 'vsub!-2!-1!-lessp!-5,
+   {2, {2 . 1}, 1, 'lessp} . 'vsub!-2!-1!-lessp!-6,
    % 2, 1, lessp, clustering
-   {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-7,
-   {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-8,
-   {2, {(-1) . 1, (-2) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-2,
-   {2, {(-1) . 2, (-2) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-3,
-   {2, {1 . 1, 2 . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-4,
-   {2, {1 . 2, 2 . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-5,
+   {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'lessp} . 'vsub!-2!-1!-lessp!-7,
+   {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'lessp} . 'vsub!-2!-1!-lessp!-8,
+   {2, {(-1) . 1, (-2) . 1}, 1, 'lessp} . 'vsub!-2!-1!-lessp!-2,
+   {2, {(-1) . 2, (-2) . 1}, 1, 'lessp} . 'vsub!-2!-1!-lessp!-3,
+   {2, {1 . 1, 2 . 1}, 1, 'lessp} . 'vsub!-2!-1!-lessp!-4,
+   {2, {1 . 2, 2 . 1}, 1, 'lessp} . 'vsub!-2!-1!-lessp!-5,
 
    % 2, 1, leq
-   {2, {(-2) . 1}, 1, 'leq} . 'vsub!-2!-leq!-1,
-   {2, {(-1) . 1}, 1, 'leq} . 'vsub!-2!-leq!-2,
-   {2, {(-1) . 2}, 1, 'leq} . 'vsub!-2!-leq!-3,
-   {2, {1 . 1}, 1, 'leq} . 'vsub!-2!-leq!-4,
-   {2, {1 . 2}, 1, 'leq} . 'vsub!-2!-leq!-5,
-   {2, {2 . 1}, 1, 'leq} . 'vsub!-2!-leq!-6,
+   {2, {(-2) . 1}, 1, 'leq} . 'vsub!-2!-1!-leq!-1,
+   {2, {(-1) . 1}, 1, 'leq} . 'vsub!-2!-1!-leq!-2,
+   {2, {(-1) . 2}, 1, 'leq} . 'vsub!-2!-1!-leq!-3,
+   {2, {1 . 1}, 1, 'leq} . 'vsub!-2!-1!-leq!-4,
+   {2, {1 . 2}, 1, 'leq} . 'vsub!-2!-1!-leq!-5,
+   {2, {2 . 1}, 1, 'leq} . 'vsub!-2!-1!-leq!-6,
    % 2, 1, leq, clustering
-   {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'leq} . 'vsub!-2!-leq!-7,
-   {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'leq} . 'vsub!-2!-leq!-8,
-   {2, {(-1) . 1, (-2) . 1}, 1, 'leq} . 'vsub!-2!-leq!-2,
-   {2, {(-1) . 2, (-2) . 1}, 1, 'leq} . 'vsub!-2!-leq!-3,
-   {2, {1 . 1, 2 . 1}, 1, 'leq} . 'vsub!-2!-leq!-4,
-   {2, {1 . 2, 2 . 1}, 1, 'leq} . 'vsub!-2!-leq!-5,
+   {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'leq} . 'vsub!-2!-1!-leq!-7,
+   {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'leq} . 'vsub!-2!-1!-leq!-8,
+   {2, {(-1) . 1, (-2) . 1}, 1, 'leq} . 'vsub!-2!-1!-leq!-2,
+   {2, {(-1) . 2, (-2) . 1}, 1, 'leq} . 'vsub!-2!-1!-leq!-3,
+   {2, {1 . 1, 2 . 1}, 1, 'leq} . 'vsub!-2!-1!-leq!-4,
+   {2, {1 . 2, 2 . 1}, 1, 'leq} . 'vsub!-2!-1!-leq!-5,
 
    % 2, 1, geq
-   {2, {(-2) . 1}, 1, 'geq} . 'vsub!-2!-geq!-1,
-   {2, {(-1) . 1}, 1, 'geq} . 'vsub!-2!-geq!-2,
-   {2, {(-1) . 2}, 1, 'geq} . 'vsub!-2!-geq!-3,
-   {2, {1 . 1}, 1, 'geq} . 'vsub!-2!-geq!-4,
-   {2, {1 . 2}, 1, 'geq} . 'vsub!-2!-geq!-5,
-   {2, {2 . 1}, 1, 'geq} . 'vsub!-2!-geq!-6,
+   {2, {(-2) . 1}, 1, 'geq} . 'vsub!-2!-1!-geq!-1,
+   {2, {(-1) . 1}, 1, 'geq} . 'vsub!-2!-1!-geq!-2,
+   {2, {(-1) . 2}, 1, 'geq} . 'vsub!-2!-1!-geq!-3,
+   {2, {1 . 1}, 1, 'geq} . 'vsub!-2!-1!-geq!-4,
+   {2, {1 . 2}, 1, 'geq} . 'vsub!-2!-1!-geq!-5,
+   {2, {2 . 1}, 1, 'geq} . 'vsub!-2!-1!-geq!-6,
    % 2, 1, geq, clustering
-   {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'geq} . 'vsub!-2!-geq!-7,
-   {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'geq} . 'vsub!-2!-geq!-8,
-   {2, {(-1) . 1, (-2) . 1}, 1, 'geq} . 'vsub!-2!-geq!-2,
-   {2, {(-1) . 2, (-2) . 1}, 1, 'geq} . 'vsub!-2!-geq!-3,
-   {2, {1 . 1, 2 . 1}, 1, 'geq} . 'vsub!-2!-geq!-4,
-   {2, {1 . 2, 2 . 1}, 1, 'geq} . 'vsub!-2!-geq!-5,
+   {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'geq} . 'vsub!-2!-1!-geq!-7,
+   {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'geq} . 'vsub!-2!-1!-geq!-8,
+   {2, {(-1) . 1, (-2) . 1}, 1, 'geq} . 'vsub!-2!-1!-geq!-2,
+   {2, {(-1) . 2, (-2) . 1}, 1, 'geq} . 'vsub!-2!-1!-geq!-3,
+   {2, {1 . 1, 2 . 1}, 1, 'geq} . 'vsub!-2!-1!-geq!-4,
+   {2, {1 . 2, 2 . 1}, 1, 'geq} . 'vsub!-2!-1!-geq!-5,
 
    % 2, 1, greaterp
-   {2, {(-2) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-1,
-   {2, {(-1) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-2,
-   {2, {(-1) . 2}, 1, 'greaterp} . 'vsub!-2!-greaterp!-3,
-   {2, {1 . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-4,
-   {2, {1 . 2}, 1, 'greaterp} . 'vsub!-2!-greaterp!-5,
-   {2, {2 . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-6,
+   {2, {(-2) . 1}, 1, 'greaterp} . 'vsub!-2!-1!-greaterp!-1,
+   {2, {(-1) . 1}, 1, 'greaterp} . 'vsub!-2!-1!-greaterp!-2,
+   {2, {(-1) . 2}, 1, 'greaterp} . 'vsub!-2!-1!-greaterp!-3,
+   {2, {1 . 1}, 1, 'greaterp} . 'vsub!-2!-1!-greaterp!-4,
+   {2, {1 . 2}, 1, 'greaterp} . 'vsub!-2!-1!-greaterp!-5,
+   {2, {2 . 1}, 1, 'greaterp} . 'vsub!-2!-1!-greaterp!-6,
    % 2, 1, greaterp, clustering
-   {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-7,
-   {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-8,
-   {2, {(-1) . 1, (-2) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-2,
-   {2, {(-1) . 2, (-2) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-3,
-   {2, {1 . 1, 2 . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-4,
-   {2, {1 . 2, 2 . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-5
+   {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'greaterp} . 'vsub!-2!-1!-greaterp!-7,
+   {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'greaterp} . 'vsub!-2!-1!-greaterp!-8,
+   {2, {(-1) . 1, (-2) . 1}, 1, 'greaterp} . 'vsub!-2!-1!-greaterp!-2,
+   {2, {(-1) . 2, (-2) . 1}, 1, 'greaterp} . 'vsub!-2!-1!-greaterp!-3,
+   {2, {1 . 1, 2 . 1}, 1, 'greaterp} . 'vsub!-2!-1!-greaterp!-4,
+   {2, {1 . 2, 2 . 1}, 1, 'greaterp} . 'vsub!-2!-1!-greaterp!-5,
+
+   % 3, 1, equal
+   {3, {1 . 1}, 1, 'equal} . 'vsub!-3!-1!-equal!-1,
+   {3, {2 . 1}, 1, 'equal} . 'vsub!-3!-1!-equal!-2,
+   {3, {2 . 2}, 1, 'equal} . 'vsub!-3!-1!-equal!-3,
+   {3, {3 . 1}, 1, 'equal} . 'vsub!-3!-1!-equal!-4,
+   {3, {3 . 2}, 1, 'equal} . 'vsub!-3!-1!-equal!-5,
+   {3, {4 . 1}, 1, 'equal} . 'vsub!-3!-1!-equal!-6,
+   {3, {4 . 2}, 1, 'equal} . 'vsub!-3!-1!-equal!-7,
+   {3, {4 . 3}, 1, 'equal} . 'vsub!-3!-1!-equal!-8,
+   % TODO: negative real types
+
+   % TODO: 3, 1, neq
+
+   % 3, 1, lessp
+   {3, {1 . 1}, 1, 'lessp} . 'vsub!-3!-1!-lessp!-1,
+   {3, {2 . 1}, 1, 'lessp} . 'vsub!-3!-1!-lessp!-2,
+   {3, {2 . 2}, 1, 'lessp} . 'vsub!-3!-1!-lessp!-3,
+   {3, {3 . 1}, 1, 'lessp} . 'vsub!-3!-1!-lessp!-4,
+   {3, {3 . 2}, 1, 'lessp} . 'vsub!-3!-1!-lessp!-5,
+   {3, {4 . 1}, 1, 'lessp} . 'vsub!-3!-1!-lessp!-6,
+   {3, {4 . 2}, 1, 'lessp} . 'vsub!-3!-1!-lessp!-7,
+   {3, {4 . 3}, 1, 'lessp} . 'vsub!-3!-1!-lessp!-8
+   % TODO: negative real types
       };
 
 % 2, 1, equal
 
-procedure vsub!-2!-equal!-1(g, f, x, theo);
+procedure vsub!-2!-1!-equal!-1(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1465,7 +1489,7 @@ procedure vsub!-2!-equal!-1(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-equal!-2(g, f, x, theo);
+procedure vsub!-2!-1!-equal!-2(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1474,7 +1498,7 @@ procedure vsub!-2!-equal!-2(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-equal!-3(g, f, x, theo);
+procedure vsub!-2!-1!-equal!-3(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1483,7 +1507,7 @@ procedure vsub!-2!-equal!-3(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-equal!-4(g, f, x, theo);
+procedure vsub!-2!-1!-equal!-4(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1492,7 +1516,7 @@ procedure vsub!-2!-equal!-4(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-equal!-5(g, f, x, theo);
+procedure vsub!-2!-1!-equal!-5(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1501,7 +1525,7 @@ procedure vsub!-2!-equal!-5(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-equal!-6(g, f, x, theo);
+procedure vsub!-2!-1!-equal!-6(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1510,7 +1534,7 @@ procedure vsub!-2!-equal!-6(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-equal!-7(g, f, x, theo);
+procedure vsub!-2!-1!-equal!-7(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1519,7 +1543,7 @@ procedure vsub!-2!-equal!-7(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-equal!-8(g, f, x, theo);
+procedure vsub!-2!-1!-equal!-8(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1530,7 +1554,7 @@ procedure vsub!-2!-equal!-8(g, f, x, theo);
 
 % 2, 1, neq
 
-procedure vsub!-2!-neq!-1(g, f, x, theo);
+procedure vsub!-2!-1!-neq!-1(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1539,7 +1563,7 @@ procedure vsub!-2!-neq!-1(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-neq!-2(g, f, x, theo);
+procedure vsub!-2!-1!-neq!-2(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1548,7 +1572,7 @@ procedure vsub!-2!-neq!-2(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-neq!-3(g, f, x, theo);
+procedure vsub!-2!-1!-neq!-3(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1557,7 +1581,7 @@ procedure vsub!-2!-neq!-3(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-neq!-4(g, f, x, theo);
+procedure vsub!-2!-1!-neq!-4(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1566,7 +1590,7 @@ procedure vsub!-2!-neq!-4(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-neq!-5(g, f, x, theo);
+procedure vsub!-2!-1!-neq!-5(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1575,7 +1599,7 @@ procedure vsub!-2!-neq!-5(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-neq!-6(g, f, x, theo);
+procedure vsub!-2!-1!-neq!-6(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1584,7 +1608,7 @@ procedure vsub!-2!-neq!-6(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-neq!-7(g, f, x, theo);
+procedure vsub!-2!-1!-neq!-7(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1593,7 +1617,7 @@ procedure vsub!-2!-neq!-7(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-neq!-8(g, f, x, theo);
+procedure vsub!-2!-1!-neq!-8(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1604,7 +1628,7 @@ procedure vsub!-2!-neq!-8(g, f, x, theo);
 
 % 2, 1, lessp
 
-procedure vsub!-2!-lessp!-1(g, f, x, theo);
+procedure vsub!-2!-1!-lessp!-1(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1613,7 +1637,7 @@ procedure vsub!-2!-lessp!-1(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-lessp!-2(g, f, x, theo);
+procedure vsub!-2!-1!-lessp!-2(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1623,7 +1647,7 @@ procedure vsub!-2!-lessp!-2(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-lessp!-3(g, f, x, theo);
+procedure vsub!-2!-1!-lessp!-3(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1633,7 +1657,7 @@ procedure vsub!-2!-lessp!-3(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-lessp!-4(g, f, x, theo);
+procedure vsub!-2!-1!-lessp!-4(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1643,7 +1667,7 @@ procedure vsub!-2!-lessp!-4(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-lessp!-5(g, f, x, theo);
+procedure vsub!-2!-1!-lessp!-5(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1653,7 +1677,7 @@ procedure vsub!-2!-lessp!-5(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-lessp!-6(g, f, x, theo);
+procedure vsub!-2!-1!-lessp!-6(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1662,7 +1686,7 @@ procedure vsub!-2!-lessp!-6(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-lessp!-7(g, f, x, theo);
+procedure vsub!-2!-1!-lessp!-7(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1672,7 +1696,7 @@ procedure vsub!-2!-lessp!-7(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-lessp!-8(g, f, x, theo);
+procedure vsub!-2!-1!-lessp!-8(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1684,7 +1708,7 @@ procedure vsub!-2!-lessp!-8(g, f, x, theo);
 
 % 2, 1, leq
 
-procedure vsub!-2!-leq!-1(g, f, x, theo);
+procedure vsub!-2!-1!-leq!-1(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1693,7 +1717,7 @@ procedure vsub!-2!-leq!-1(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-leq!-2(g, f, x, theo);
+procedure vsub!-2!-1!-leq!-2(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1703,7 +1727,7 @@ procedure vsub!-2!-leq!-2(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-leq!-3(g, f, x, theo);
+procedure vsub!-2!-1!-leq!-3(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1713,7 +1737,7 @@ procedure vsub!-2!-leq!-3(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-leq!-4(g, f, x, theo);
+procedure vsub!-2!-1!-leq!-4(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1723,7 +1747,7 @@ procedure vsub!-2!-leq!-4(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-leq!-5(g, f, x, theo);
+procedure vsub!-2!-1!-leq!-5(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1733,7 +1757,7 @@ procedure vsub!-2!-leq!-5(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-leq!-6(g, f, x, theo);
+procedure vsub!-2!-1!-leq!-6(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1742,7 +1766,7 @@ procedure vsub!-2!-leq!-6(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-leq!-7(g, f, x, theo);
+procedure vsub!-2!-1!-leq!-7(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1752,7 +1776,7 @@ procedure vsub!-2!-leq!-7(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-leq!-8(g, f, x, theo);
+procedure vsub!-2!-1!-leq!-8(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1764,7 +1788,7 @@ procedure vsub!-2!-leq!-8(g, f, x, theo);
 
 % 2, 1, geq
 
-procedure vsub!-2!-geq!-1(g, f, x, theo);
+procedure vsub!-2!-1!-geq!-1(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1773,7 +1797,7 @@ procedure vsub!-2!-geq!-1(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-geq!-2(g, f, x, theo);
+procedure vsub!-2!-1!-geq!-2(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1783,7 +1807,7 @@ procedure vsub!-2!-geq!-2(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-geq!-3(g, f, x, theo);
+procedure vsub!-2!-1!-geq!-3(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1793,7 +1817,7 @@ procedure vsub!-2!-geq!-3(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-geq!-4(g, f, x, theo);
+procedure vsub!-2!-1!-geq!-4(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1803,7 +1827,7 @@ procedure vsub!-2!-geq!-4(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-geq!-5(g, f, x, theo);
+procedure vsub!-2!-1!-geq!-5(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1813,7 +1837,7 @@ procedure vsub!-2!-geq!-5(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-geq!-6(g, f, x, theo);
+procedure vsub!-2!-1!-geq!-6(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1822,7 +1846,7 @@ procedure vsub!-2!-geq!-6(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-geq!-7(g, f, x, theo);
+procedure vsub!-2!-1!-geq!-7(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1832,7 +1856,7 @@ procedure vsub!-2!-geq!-7(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-geq!-8(g, f, x, theo);
+procedure vsub!-2!-1!-geq!-8(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1844,7 +1868,7 @@ procedure vsub!-2!-geq!-8(g, f, x, theo);
 
 % 2, 1, greaterp
 
-procedure vsub!-2!-greaterp!-1(g, f, x, theo);
+procedure vsub!-2!-1!-greaterp!-1(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1853,7 +1877,7 @@ procedure vsub!-2!-greaterp!-1(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-greaterp!-2(g, f, x, theo);
+procedure vsub!-2!-1!-greaterp!-2(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1863,7 +1887,7 @@ procedure vsub!-2!-greaterp!-2(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-greaterp!-3(g, f, x, theo);
+procedure vsub!-2!-1!-greaterp!-3(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1873,7 +1897,7 @@ procedure vsub!-2!-greaterp!-3(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-greaterp!-4(g, f, x, theo);
+procedure vsub!-2!-1!-greaterp!-4(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1883,7 +1907,7 @@ procedure vsub!-2!-greaterp!-4(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-greaterp!-5(g, f, x, theo);
+procedure vsub!-2!-1!-greaterp!-5(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1893,7 +1917,7 @@ procedure vsub!-2!-greaterp!-5(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-greaterp!-6(g, f, x, theo);
+procedure vsub!-2!-1!-greaterp!-6(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1902,7 +1926,7 @@ procedure vsub!-2!-greaterp!-6(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-greaterp!-7(g, f, x, theo);
+procedure vsub!-2!-1!-greaterp!-7(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
@@ -1912,13 +1936,161 @@ procedure vsub!-2!-greaterp!-7(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-greaterp!-8(g, f, x, theo);
+procedure vsub!-2!-1!-greaterp!-8(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
       return ofsf_iparse(
    	 2*a**2*bb - a*aa*b < 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb > 0 or
       	 a*aa >= 0 and (2*a**2*bb - a*aa*b < 0 or a**2*bb**2 - a*aa**2*c - a*aa*b*bb < 0)
+	    )
+   end;
+
+% 3, 1, equal
+
+procedure vsub!-3!-1!-equal!-1(g, f, x, theo);
+   begin scalar beta;
+      beta := vspr_mk(g, x, {1 . 1});
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta, theo)
+   end;
+
+procedure vsub!-3!-1!-equal!-2(g, f, x, theo);
+   begin scalar alpha1;
+      alpha1 := vspr_mk(diff(f, x), x, {1 . 1});
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, g), x, alpha1, theo)
+   end;
+
+procedure vsub!-3!-1!-equal!-3(g, f, x, theo);
+   begin scalar beta, alpha2, w1, w2;
+      beta := vspr_mk(g, x, {1 . 1});
+      alpha2 := vspr_mk(diff(f, x), x, {1 . 2});
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
+      return ofsf_iparse(
+	 w1 and w2
+	    )
+   end;
+
+procedure vsub!-3!-1!-equal!-4(g, f, x, theo);
+   begin scalar beta, alpha1, w1, w2;
+      beta := vspr_mk(g, x, {1 . 1});
+      alpha1 := vspr_mk(diff(f, x), x, {1 . 1});
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, g), x, alpha1, theo);
+      return ofsf_iparse(
+	 w1 and w2
+	    )
+   end;
+
+procedure vsub!-3!-1!-equal!-5(g, f, x, theo);
+   begin scalar alpha2;
+      alpha2 := vspr_mk(diff(f, x), x, {1 . 2});
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, g), x, alpha2, theo)
+   end;
+
+procedure vsub!-3!-1!-equal!-6(g, f, x, theo);
+   begin scalar beta, alpha1, w1, w2;
+      beta := vspr_mk(g, x, {1 . 1});
+      alpha1 := vspr_mk(diff(f, x), x, {1 . 1});
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, g), x, alpha1, theo);
+      return ofsf_iparse(
+	 w1 and w2
+	    )
+   end;
+
+procedure vsub!-3!-1!-equal!-7(g, f, x, theo);
+   begin scalar beta, alpha1, alpha2, w1, w2, w3;
+      beta := vspr_mk(g, x, {1 . 1});
+      alpha1 := vspr_mk(diff(f, x), x, {1 . 1});
+      alpha2 := vspr_mk(diff(f, x), x, {1 . 2});
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, g), x, alpha2, theo);
+      return ofsf_iparse(
+	 w1 and w2 and w3
+	    )
+   end;
+
+procedure vsub!-3!-1!-equal!-8(g, f, x, theo);
+   begin scalar beta, alpha1, alpha2, w1, w2;
+      beta := vspr_mk(g, x, {1 . 1});
+      alpha1 := vspr_mk(diff(f, x), x, {1 . 1});
+      alpha2 := vspr_mk(diff(f, x), x, {1 . 2});
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
+      return ofsf_iparse(
+	 w1 and w2
+	    )
+   end;
+
+procedure vsub!-3!-1!-lessp!-1(g, f, x, theo);
+   begin scalar beta;
+      beta := vspr_mk(g, x, {1 . 1});
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta, theo)
+   end;
+
+procedure vsub!-3!-1!-lessp!-2(g, f, x, theo);
+   begin scalar alpha1;
+      alpha1 := vspr_mk(diff(f, x), x, {1 . 1});
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), x, alpha1, theo)
+   end;
+
+procedure vsub!-3!-1!-lessp!-3(g, f, x, theo);
+   begin scalar beta;
+      beta := vspr_mk(g, x, {1 . 1});
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta, theo)
+   end;
+
+procedure vsub!-3!-1!-lessp!-4(g, f, x, theo);
+   begin scalar beta, alpha2, w1, w2;
+      beta := vspr_mk(g, x, {1 . 1});
+      alpha2 := vspr_mk(diff(f, x), x, {1 . 2});
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, g), x, alpha2, theo);
+      return ofsf_iparse(
+	 w1 or w2
+	    )
+   end;
+
+procedure vsub!-3!-1!-lessp!-5(g, f, x, theo);
+   begin scalar alpha2;
+      alpha2 := vspr_mk(diff(f, x), x, {1 . 2});
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), x, alpha2, theo)
+   end;
+
+procedure vsub!-3!-1!-lessp!-6(g, f, x, theo);
+   begin scalar beta, alpha1, w1, w2;
+      beta := vspr_mk(g, x, {1 . 1});
+      alpha1 := vspr_mk(diff(f, x), x, {1 . 1});
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha1, theo);
+      return ofsf_iparse(
+	 w1 or w2
+	    )
+   end;
+
+procedure vsub!-3!-1!-lessp!-7(g, f, x, theo);
+   begin scalar beta, alpha1, alpha2, w1, w2, w3;
+      beta := vspr_mk(g, x, {1 . 1});
+      alpha1 := vspr_mk(diff(f, x), x, {1 . 1});
+      alpha2 := vspr_mk(diff(f, x), x, {1 . 2});
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), x, beta, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha1, theo);
+      return ofsf_iparse(
+	 w1 or (w2 and w3)
+	    )
+   end;
+
+procedure vsub!-3!-1!-lessp!-8(g, f, x, theo);
+   begin scalar beta, alpha2, w1, w2;
+      beta := vspr_mk(g, x, {1 . 1});
+      alpha2 := vspr_mk(diff(f, x), x, {1 . 2});
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
+      return ofsf_iparse(
+	 w1 and w2
 	    )
    end;
 
