@@ -365,7 +365,7 @@ asserted procedure vsds_applyvsts!-at!-pr(at: QfFormula, x: Kernel, pr: VSpr, th
 	 return at;
       f := vspr_f pr;
       g := sfto_psrem!-sgn(g, f, x, theo);
-      return rsl!-vsub(rl_op at, g, f, x, vspr_rsl pr)
+      return vsub_vsub(rl_op at, g, x, pr, theo)
    end;
 
 % TODO: Rename and move this procedure to the sfto module.

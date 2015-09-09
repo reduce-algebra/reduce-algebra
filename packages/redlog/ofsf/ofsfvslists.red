@@ -1189,88 +1189,188 @@ guard!-fnalist!* := {
    {3, '(2 3 4)} . 'guard!-3!-5
       };
 
-ofsfform procedure guard!-1!-1m(a, b);
-   a < 0;
+procedure guard!-1!-1m(f);
+   begin scalar a;
+      a := lc f;
+      return ofsf_iparse(
+      	 a < 0
+	    )
+   end;
 
-ofsfform procedure guard!-1!-1(a, b);
-   a > 0;
+procedure guard!-1!-1(f);
+   begin scalar a;
+      a := lc f;
+      return ofsf_iparse(
+      	 a > 0
+	    )
+   end;
 
-ofsfform procedure guard!-1!-2(a, b);
-   a <> 0;
+procedure guard!-1!-2(f);
+   begin scalar a;
+      a := lc f;
+      return ofsf_iparse(
+      	 a <> 0
+	    )
+   end;
 
-ofsfform procedure guard!-2!-2m(a, b, c);
-   a < 0 and b^2 - 4*a*c = 0;
+procedure guard!-2!-2m(f);
+   begin scalar a, b, c;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 a < 0 and b^2 - 4*a*c = 0
+	    )
+   end;
 
-ofsfform procedure guard!-2!-1m(a, b, c);
-   a < 0 and b^2 - 4*a*c > 0;
+procedure guard!-2!-1m(f);
+   begin scalar a, b, c;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 a < 0 and b^2 - 4*a*c > 0
+	    )
+   end;
 
-ofsfform procedure guard!-2!-1(a, b, c);
-   a > 0 and b^2 - 4*a*c > 0;
+procedure guard!-2!-1(f);
+   begin scalar a, b, c;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 a > 0 and b^2 - 4*a*c > 0
+	    )
+   end;
 
-ofsfform procedure guard!-2!-2(a, b, c);
-   a > 0 and b^2 - 4*a*c = 0;
+procedure guard!-2!-2(f);
+   begin scalar a, b, c;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 a > 0 and b^2 - 4*a*c = 0
+	    )
+   end;
 
-ofsfform procedure guard!-2!-3m(a, b, c);
-   a < 0 and b^2 - 4*a*c >= 0;
+procedure guard!-2!-3m(f);
+   begin scalar a, b, c;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 a < 0 and b^2 - 4*a*c >= 0
+	    )
+   end;
 
-ofsfform procedure guard!-2!-3(a, b, c);
-   a > 0 and b^2 - 4*a*c >= 0;
+procedure guard!-2!-3(f);
+   begin scalar a, b, c;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 a > 0 and b^2 - 4*a*c >= 0
+	    )
+   end;
 
-ofsfform procedure guard!-2!-4(a, b, c);
-   a <> 0 and b^2 - 4*a*c >= 0;
+procedure guard!-2!-4(f);
+   begin scalar a, b, c;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+      	 a <> 0 and b^2 - 4*a*c >= 0
+	    )
+   end;
 
-ofsfform procedure guard!-3!-4m(a, b, c, d);
-   a < 0 and -b^2 + 3*a*c < 0 and
-      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d < 0;
+procedure guard!-3!-4m(f);
+   begin scalar a, b, c, d;
+      {a, b, c, d} := coeffs f;
+      return ofsf_iparse(
+   	 a < 0 and -b^2 + 3*a*c < 0 and
+   	 -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d < 0
+	    )
+   end;
 
-ofsfform procedure guard!-3!-3m(a, b, c, d);
-   a < 0 and -b^2 + 3*a*c < 0 and 2*b^3 + 27*d*a^2 - 9*a*b*c < 0 and
-      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d = 0;
+procedure guard!-3!-3m(f);
+   begin scalar a, b, c, d;
+      {a, b, c, d} := coeffs f;
+      return ofsf_iparse(
+   	 a < 0 and -b^2 + 3*a*c < 0 and 2*b^3 + 27*d*a^2 - 9*a*b*c < 0 and
+      	 -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d = 0
+	    )
+   end;
 
-ofsfform procedure guard!-3!-2m(a, b, c, d);
-   a < 0 and -b^2 + 3*a*c < 0 and 2*b^3 + 27*d*a^2 - 9*a*b*c > 0 and
-      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d = 0;
+procedure guard!-3!-2m(f);
+   begin scalar a, b, c, d;
+      {a, b, c, d} := coeffs f;
+      return ofsf_iparse(
+   	 a < 0 and -b^2 + 3*a*c < 0 and 2*b^3 + 27*d*a^2 - 9*a*b*c > 0 and
+      	 -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d = 0
+	    )
+   end;
 
-ofsfform procedure guard!-3!-1m(a, b, c, d);
-   a < 0 and (-b^2 + 3*a*c >= 0 or
-      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d > 0);
+procedure guard!-3!-1m(f);
+   begin scalar a, b, c, d;
+      {a, b, c, d} := coeffs f;
+      return ofsf_iparse(
+   	 a < 0 and (-b^2 + 3*a*c >= 0 or
+      	    -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d > 0)
+	    )
+   end;
 
-ofsfform procedure guard!-3!-1(a, b, c, d);
-   a > 0 and (-b^2 + 3*a*c >= 0 or
-      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d > 0);
+procedure guard!-3!-1(f);
+   begin scalar a, b, c, d;
+      {a, b, c, d} := coeffs f;
+      return ofsf_iparse(
+   	 a > 0 and (-b^2 + 3*a*c >= 0 or
+      	    -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d > 0)
+	    )
+   end;
 
-ofsfform procedure guard!-3!-2(a, b, c, d);
-   a > 0 and -b^2 + 3*a*c < 0 and 2*b^3 + 27*d*a^2 - 9*a*b*c < 0 and
-      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d = 0;
+procedure guard!-3!-2(f);
+   begin scalar a, b, c, d;
+      {a, b, c, d} := coeffs f;
+      return ofsf_iparse(
+   	 a > 0 and -b^2 + 3*a*c < 0 and 2*b^3 + 27*d*a^2 - 9*a*b*c < 0 and
+      	 -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d = 0
+	    )
+   end;
 
-ofsfform procedure guard!-3!-3(a, b, c, d);
-   a > 0 and -b^2 + 3*a*c < 0 and 2*b^3 + 27*d*a^2 - 9*a*b*c > 0 and
-      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d = 0;
+procedure guard!-3!-3(f);
+   begin scalar a, b, c, d;
+      {a, b, c, d} := coeffs f;
+      return ofsf_iparse(
+   	 a > 0 and -b^2 + 3*a*c < 0 and 2*b^3 + 27*d*a^2 - 9*a*b*c > 0 and
+      	 -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d = 0
+	    )
+   end;
 
-ofsfform procedure guard!-3!-4(a, b, c, d);
-   a > 0 and -b^2 + 3*a*c < 0 and
-      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d < 0;
+procedure guard!-3!-4(f);
+   begin scalar a, b, c, d;
+      {a, b, c, d} := coeffs f;
+      return ofsf_iparse(
+   	 a > 0 and -b^2 + 3*a*c < 0 and
+      	 -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d < 0
+	    )
+   end;
 
-ofsfform procedure guard!-3!-5m(a, b, c, d);
-   a < 0 and -b^2 + 3*a*c < 0 and
-      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d <= 0;
+procedure guard!-3!-5m(f);
+   begin scalar a, b, c, d;
+      {a, b, c, d} := coeffs f;
+      return ofsf_iparse(
+   	 a < 0 and -b^2 + 3*a*c < 0 and
+      	 -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d <= 0
+	    )
+   end;
 
-ofsfform procedure guard!-3!-5(a, b, c, d);
-   a > 0 and -b^2 + 3*a*c < 0 and
-      -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d <= 0;
+procedure guard!-3!-5(f);
+   begin scalar a, b, c, d;
+      {a, b, c, d} := coeffs f;
+      return ofsf_iparse(
+   	 a > 0 and -b^2 + 3*a*c < 0 and
+      	 -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d <= 0
+	    )
+   end;
 
 vsub!-fnalist!* := {
    % key: {ldeg f, rsl, ldeg g, op}
    % value: virtual substitution constructing function
 
-   % equal
+   % 2, 1, equal
    {2, {(-2) . 1}, 1, 'equal} . 'vsub!-2!-equal!-1,
    {2, {(-1) . 1}, 1, 'equal} . 'vsub!-2!-equal!-2,
    {2, {(-1) . 2}, 1, 'equal} . 'vsub!-2!-equal!-3,
    {2, {1 . 1}, 1, 'equal} . 'vsub!-2!-equal!-4,
    {2, {1 . 2}, 1, 'equal} . 'vsub!-2!-equal!-5,
    {2, {2 . 1}, 1, 'equal} . 'vsub!-2!-equal!-6,
-   % for clustering:
+   % 2, 1, equal, clustering
    {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'equal} . 'vsub!-2!-equal!-7,
    {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'equal} . 'vsub!-2!-equal!-8,
    {2, {(-1) . 1, (-2) . 1}, 1, 'equal} . 'vsub!-2!-equal!-2,
@@ -1278,14 +1378,14 @@ vsub!-fnalist!* := {
    {2, {1 . 1, 2 . 1}, 1, 'equal} . 'vsub!-2!-equal!-4,
    {2, {1 . 2, 2 . 1}, 1, 'equal} . 'vsub!-2!-equal!-5,
 
-   % neq
+   % 2, 1, neq
    {2, {(-2) . 1}, 1, 'neq} . 'vsub!-2!-neq!-1,
    {2, {(-1) . 1}, 1, 'neq} . 'vsub!-2!-neq!-2,
    {2, {(-1) . 2}, 1, 'neq} . 'vsub!-2!-neq!-3,
    {2, {1 . 1}, 1, 'neq} . 'vsub!-2!-neq!-4,
    {2, {1 . 2}, 1, 'neq} . 'vsub!-2!-neq!-5,
    {2, {2 . 1}, 1, 'neq} . 'vsub!-2!-neq!-6,
-   % for clustering:
+   % 2, 1, neq, clustering
    {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'neq} . 'vsub!-2!-neq!-7,
    {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'neq} . 'vsub!-2!-neq!-8,
    {2, {(-1) . 1, (-2) . 1}, 1, 'neq} . 'vsub!-2!-neq!-2,
@@ -1293,14 +1393,14 @@ vsub!-fnalist!* := {
    {2, {1 . 1, 2 . 1}, 1, 'neq} . 'vsub!-2!-neq!-4,
    {2, {1 . 2, 2 . 1}, 1, 'neq} . 'vsub!-2!-neq!-5,
 
-   % lessp
+   % 2, 1, lessp
    {2, {(-2) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-1,
    {2, {(-1) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-2,
    {2, {(-1) . 2}, 1, 'lessp} . 'vsub!-2!-lessp!-3,
    {2, {1 . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-4,
    {2, {1 . 2}, 1, 'lessp} . 'vsub!-2!-lessp!-5,
    {2, {2 . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-6,
-   % for clustering:
+   % 2, 1, lessp, clustering
    {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-7,
    {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-8,
    {2, {(-1) . 1, (-2) . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-2,
@@ -1308,14 +1408,14 @@ vsub!-fnalist!* := {
    {2, {1 . 1, 2 . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-4,
    {2, {1 . 2, 2 . 1}, 1, 'lessp} . 'vsub!-2!-lessp!-5,
 
-   % leq
+   % 2, 1, leq
    {2, {(-2) . 1}, 1, 'leq} . 'vsub!-2!-leq!-1,
    {2, {(-1) . 1}, 1, 'leq} . 'vsub!-2!-leq!-2,
    {2, {(-1) . 2}, 1, 'leq} . 'vsub!-2!-leq!-3,
    {2, {1 . 1}, 1, 'leq} . 'vsub!-2!-leq!-4,
    {2, {1 . 2}, 1, 'leq} . 'vsub!-2!-leq!-5,
    {2, {2 . 1}, 1, 'leq} . 'vsub!-2!-leq!-6,
-   % for clustering:
+   % 2, 1, leq, clustering
    {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'leq} . 'vsub!-2!-leq!-7,
    {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'leq} . 'vsub!-2!-leq!-8,
    {2, {(-1) . 1, (-2) . 1}, 1, 'leq} . 'vsub!-2!-leq!-2,
@@ -1323,14 +1423,14 @@ vsub!-fnalist!* := {
    {2, {1 . 1, 2 . 1}, 1, 'leq} . 'vsub!-2!-leq!-4,
    {2, {1 . 2, 2 . 1}, 1, 'leq} . 'vsub!-2!-leq!-5,
 
-   % geq
+   % 2, 1, geq
    {2, {(-2) . 1}, 1, 'geq} . 'vsub!-2!-geq!-1,
    {2, {(-1) . 1}, 1, 'geq} . 'vsub!-2!-geq!-2,
    {2, {(-1) . 2}, 1, 'geq} . 'vsub!-2!-geq!-3,
    {2, {1 . 1}, 1, 'geq} . 'vsub!-2!-geq!-4,
    {2, {1 . 2}, 1, 'geq} . 'vsub!-2!-geq!-5,
    {2, {2 . 1}, 1, 'geq} . 'vsub!-2!-geq!-6,
-   % for clustering:
+   % 2, 1, geq, clustering
    {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'geq} . 'vsub!-2!-geq!-7,
    {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'geq} . 'vsub!-2!-geq!-8,
    {2, {(-1) . 1, (-2) . 1}, 1, 'geq} . 'vsub!-2!-geq!-2,
@@ -1338,14 +1438,14 @@ vsub!-fnalist!* := {
    {2, {1 . 1, 2 . 1}, 1, 'geq} . 'vsub!-2!-geq!-4,
    {2, {1 . 2, 2 . 1}, 1, 'geq} . 'vsub!-2!-geq!-5,
 
-   % greaterp
+   % 2, 1, greaterp
    {2, {(-2) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-1,
    {2, {(-1) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-2,
    {2, {(-1) . 2}, 1, 'greaterp} . 'vsub!-2!-greaterp!-3,
    {2, {1 . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-4,
    {2, {1 . 2}, 1, 'greaterp} . 'vsub!-2!-greaterp!-5,
    {2, {2 . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-6,
-   % for clustering:
+   % 2, 1, greaterp, clustering
    {2, {1 . 1, 2 . 1, (-1) . 2, (-2) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-7,
    {2, {1 . 2, 2 . 1, (-1) . 1, (-2) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-8,
    {2, {(-1) . 1, (-2) . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-2,
@@ -1354,188 +1454,476 @@ vsub!-fnalist!* := {
    {2, {1 . 2, 2 . 1}, 1, 'greaterp} . 'vsub!-2!-greaterp!-5
       };
 
-% equal
+% 2, 1, equal
 
-ofsfform procedure vsub!-2!-equal!-1(a, b, c, aa, bb);
-   2*a*bb - aa*b = 0;
+procedure vsub!-2!-equal!-1(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b = 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-equal!-2(a, b, c, aa, bb);
-   2*a*aa*bb - aa**2*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb = 0;
+procedure vsub!-2!-equal!-2(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*aa*bb - aa**2*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb = 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-equal!-3(a, b, c, aa, bb);
-   2*a*aa*bb - aa**2*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb = 0;
+procedure vsub!-2!-equal!-3(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*aa*bb - aa**2*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb = 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-equal!-4(a, b, c, aa, bb);
-   2*a*aa*bb - aa**2*b >= 0 and a*bb**2 + aa**2*c - aa*b*bb = 0;
+procedure vsub!-2!-equal!-4(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*aa*bb - aa**2*b >= 0 and a*bb**2 + aa**2*c - aa*b*bb = 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-equal!-5(a, b, c, aa, bb);
-   2*a*aa*bb - aa**2*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb = 0;
+procedure vsub!-2!-equal!-5(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*aa*bb - aa**2*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb = 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-equal!-6(a, b, c, aa, bb);
-   2*a*bb - aa*b = 0;
+procedure vsub!-2!-equal!-6(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b = 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-equal!-7(a, b, c, aa, bb);
-   2*a*aa*bb - aa**2*b >= 0 and a*bb**2 + aa**2*c - aa*b*bb = 0;
+procedure vsub!-2!-equal!-7(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*aa*bb - aa**2*b >= 0 and a*bb**2 + aa**2*c - aa*b*bb = 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-equal!-8(a, b, c, aa, bb);
-   2*a*aa*bb - aa**2*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb = 0;
+procedure vsub!-2!-equal!-8(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*aa*bb - aa**2*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb = 0
+	    )
+   end;
 
-% neq
+% 2, 1, neq
 
-ofsfform procedure vsub!-2!-neq!-1(a, b, c, aa, bb);
-   2*a*bb - aa*b <> 0;
+procedure vsub!-2!-neq!-1(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b <> 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-neq!-2(a, b, c, aa, bb);
-   2*a*aa*bb - aa**2*b > 0 or a*bb**2 + aa**2*c - aa*b*bb <> 0;
+procedure vsub!-2!-neq!-2(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*aa*bb - aa**2*b > 0 or a*bb**2 + aa**2*c - aa*b*bb <> 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-neq!-3(a, b, c, aa, bb);
-   2*a*aa*bb - aa**2*b < 0 or a*bb**2 + aa**2*c - aa*b*bb <> 0;
+procedure vsub!-2!-neq!-3(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*aa*bb - aa**2*b < 0 or a*bb**2 + aa**2*c - aa*b*bb <> 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-neq!-4(a, b, c, aa, bb);
-   2*a*aa*bb - aa**2*b < 0 or a*bb**2 + aa**2*c - aa*b*bb <> 0;
+procedure vsub!-2!-neq!-4(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*aa*bb - aa**2*b < 0 or a*bb**2 + aa**2*c - aa*b*bb <> 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-neq!-5(a, b, c, aa, bb);
-   2*a*aa*bb - aa**2*b > 0 or a*bb**2 + aa**2*c - aa*b*bb <> 0;
+procedure vsub!-2!-neq!-5(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*aa*bb - aa**2*b > 0 or a*bb**2 + aa**2*c - aa*b*bb <> 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-neq!-6(a, b, c, aa, bb);
-   2*a*bb - aa*b <> 0;
+procedure vsub!-2!-neq!-6(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b <> 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-neq!-7(a, b, c, aa, bb);
-   2*a*aa*bb - aa**2*b < 0 or a*bb**2 + aa**2*c - aa*b*bb <> 0;
+procedure vsub!-2!-neq!-7(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*aa*bb - aa**2*b < 0 or a*bb**2 + aa**2*c - aa*b*bb <> 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-neq!-8(a, b, c, aa, bb);
-   2*a*aa*bb - aa**2*b > 0 or a*bb**2 + aa**2*c - aa*b*bb <> 0;
+procedure vsub!-2!-neq!-8(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*aa*bb - aa**2*b > 0 or a*bb**2 + aa**2*c - aa*b*bb <> 0
+	    )
+   end;
 
-% lessp
+% 2, 1, lessp
 
-ofsfform procedure vsub!-2!-lessp!-1(a, b, c, aa, bb);
-   2*a*bb - aa*b > 0;
+procedure vsub!-2!-lessp!-1(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b > 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-lessp!-2(a, b, c, aa, bb);
-   2*a*bb - aa*b > 0 and a*bb**2 + aa**2*c - aa*b*bb < 0 or
-      aa >= 0 and (2*a*bb - aa*b > 0 or a*bb**2 + aa**2*c - aa*b*bb > 0);
+procedure vsub!-2!-lessp!-2(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b > 0 and a*bb**2 + aa**2*c - aa*b*bb < 0 or
+      	 aa >= 0 and (2*a*bb - aa*b > 0 or a*bb**2 + aa**2*c - aa*b*bb > 0)
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-lessp!-3(a, b, c, aa, bb);
-   2*a*bb - aa*b > 0 and a*bb**2 + aa**2*c - aa*b*bb < 0 or
-      aa <= 0 and (2*a*bb - aa*b > 0 or a*bb**2 + aa**2*c - aa*b*bb > 0);
+procedure vsub!-2!-lessp!-3(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b > 0 and a*bb**2 + aa**2*c - aa*b*bb < 0 or
+      	 aa <= 0 and (2*a*bb - aa*b > 0 or a*bb**2 + aa**2*c - aa*b*bb > 0)
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-lessp!-4(a, b, c, aa, bb);
-   2*a*bb - aa*b < 0 and a*bb**2 + aa**2*c - aa*b*bb > 0 or
-      aa >= 0 and (2*a*bb - aa*b < 0 or a*bb**2 + aa**2*c - aa*b*bb < 0);
+procedure vsub!-2!-lessp!-4(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b < 0 and a*bb**2 + aa**2*c - aa*b*bb > 0 or
+      	 aa >= 0 and (2*a*bb - aa*b < 0 or a*bb**2 + aa**2*c - aa*b*bb < 0)
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-lessp!-5(a, b, c, aa, bb);
-   2*a*bb - aa*b < 0 and a*bb**2 + aa**2*c - aa*b*bb > 0 or
-      aa <= 0 and (2*a*bb - aa*b < 0 or a*bb**2 + aa**2*c - aa*b*bb < 0);
+procedure vsub!-2!-lessp!-5(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b < 0 and a*bb**2 + aa**2*c - aa*b*bb > 0 or
+      	 aa <= 0 and (2*a*bb - aa*b < 0 or a*bb**2 + aa**2*c - aa*b*bb < 0)
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-lessp!-6(a, b, c, aa, bb);
-   2*a*bb - aa*b < 0;
+procedure vsub!-2!-lessp!-6(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b < 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-lessp!-7(a, b, c, aa, bb);
-   2*a**2*bb - a*aa*b < 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb > 0 or
-      a*aa >= 0 and (2*a**2*bb - a*aa*b < 0 or a**2*bb**2 + a*aa**2*c - a*aa*b*bb < 0);
+procedure vsub!-2!-lessp!-7(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a**2*bb - a*aa*b < 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb > 0 or
+      	 a*aa >= 0 and (2*a**2*bb - a*aa*b < 0 or a**2*bb**2 + a*aa**2*c - a*aa*b*bb < 0)
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-lessp!-8(a, b, c, aa, bb);
-   2*a**2*bb - a*aa*b < 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb > 0 or
-      a*aa <= 0 and (2*a**2*bb - a*aa*b < 0 or a**2*bb**2 + a*aa**2*c - a*aa*b*bb < 0);
+procedure vsub!-2!-lessp!-8(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a**2*bb - a*aa*b < 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb > 0 or
+      	 a*aa <= 0 and (2*a**2*bb - a*aa*b < 0 or a**2*bb**2 + a*aa**2*c - a*aa*b*bb < 0)
+	    )
+   end;
 
-% leq
+% 2, 1, leq
 
-ofsfform procedure vsub!-2!-leq!-1(a, b, c, aa, bb);
-   2*a*bb - aa*b >= 0;
+procedure vsub!-2!-leq!-1(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b >= 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-leq!-2(a, b, c, aa, bb);
-   2*a**2*bb - a*aa*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb <= 0 or
-      aa >= 0 and a*bb**2 + aa**2*c - aa*b*bb >= 0;
+procedure vsub!-2!-leq!-2(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a**2*bb - a*aa*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb <= 0 or
+      	 aa >= 0 and a*bb**2 + aa**2*c - aa*b*bb >= 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-leq!-3(a, b, c, aa, bb);
-   2*a**2*bb - a*aa*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb <= 0 or
-      aa <= 0 and a*bb**2 + aa**2*c - aa*b*bb >= 0;
+procedure vsub!-2!-leq!-3(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a**2*bb - a*aa*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb <= 0 or
+      	 aa <= 0 and a*bb**2 + aa**2*c - aa*b*bb >= 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-leq!-4(a, b, c, aa, bb);
-   2*a**2*bb - a*aa*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb >= 0 or
-      aa >= 0 and a*bb**2 + aa**2*c - aa*b*bb <= 0;
+procedure vsub!-2!-leq!-4(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a**2*bb - a*aa*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb >= 0 or
+      	 aa >= 0 and a*bb**2 + aa**2*c - aa*b*bb <= 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-leq!-5(a, b, c, aa, bb);
-   2*a**2*bb - a*aa*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb >= 0 or
-      aa <= 0 and a*bb**2 + aa**2*c - aa*b*bb <= 0;
+procedure vsub!-2!-leq!-5(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a**2*bb - a*aa*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb >= 0 or
+      	 aa <= 0 and a*bb**2 + aa**2*c - aa*b*bb <= 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-leq!-6(a, b, c, aa, bb);
-   2*a*bb - aa*b <= 0;
+procedure vsub!-2!-leq!-6(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b <= 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-leq!-7(a, b, c, aa, bb);
-   2*a**2*bb - a*aa*b <= 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb >= 0 or
-      a*aa >= 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb <= 0;
+procedure vsub!-2!-leq!-7(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a**2*bb - a*aa*b <= 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb >= 0 or
+      	 a*aa >= 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb <= 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-leq!-8(a, b, c, aa, bb);
-   2*a**2*bb - a*aa*b <= 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb >= 0 or
-      a*aa <= 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb <= 0;
+procedure vsub!-2!-leq!-8(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a**2*bb - a*aa*b <= 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb >= 0 or
+      	 a*aa <= 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb <= 0
+	    )
+   end;
 
-% geq
+% 2, 1, geq
 
-ofsfform procedure vsub!-2!-geq!-1(a, b, c, aa, bb);
-   2*a*bb - aa*b <= 0;
+procedure vsub!-2!-geq!-1(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b <= 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-geq!-2(a, b, c, aa, bb);
-   a*bb**2 - aa**2*c - aa*b*bb >= 0 and 2*a**2*bb - a*aa*b <= 0 or
-      aa >= 0 and a*bb**2 - aa**2*c - aa*b*bb <= 0;
+procedure vsub!-2!-geq!-2(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 a*bb**2 - aa**2*c - aa*b*bb >= 0 and 2*a**2*bb - a*aa*b <= 0 or
+      	 aa >= 0 and a*bb**2 - aa**2*c - aa*b*bb <= 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-geq!-3(a, b, c, aa, bb);
-   a*bb**2 - aa**2*c - aa*b*bb >= 0 and 2*a**2*bb - a*aa*b <= 0 or
-      aa <= 0 and a*bb**2 - aa**2*c - aa*b*bb <= 0;
+procedure vsub!-2!-geq!-3(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 a*bb**2 - aa**2*c - aa*b*bb >= 0 and 2*a**2*bb - a*aa*b <= 0 or
+      	 aa <= 0 and a*bb**2 - aa**2*c - aa*b*bb <= 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-geq!-4(a, b, c, aa, bb);
-   a*bb**2 - aa**2*c - aa*b*bb <= 0 and 2*a**2*bb - a*aa*b <= 0 or
-      aa >= 0 and a*bb**2 - aa**2*c - aa*b*bb >= 0;
+procedure vsub!-2!-geq!-4(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 a*bb**2 - aa**2*c - aa*b*bb <= 0 and 2*a**2*bb - a*aa*b <= 0 or
+      	 aa >= 0 and a*bb**2 - aa**2*c - aa*b*bb >= 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-geq!-5(a, b, c, aa, bb);
-   a*bb**2 - aa**2*c - aa*b*bb <= 0 and 2*a**2*bb - a*aa*b <= 0 or
-      aa <= 0 and a*bb**2 - aa**2*c - aa*b*bb >= 0;
+procedure vsub!-2!-geq!-5(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 a*bb**2 - aa**2*c - aa*b*bb <= 0 and 2*a**2*bb - a*aa*b <= 0 or
+      	 aa <= 0 and a*bb**2 - aa**2*c - aa*b*bb >= 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-geq!-6(a, b, c, aa, bb);
-   2*a*bb - aa*b >= 0;
+procedure vsub!-2!-geq!-6(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b >= 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-geq!-7(a, b, c, aa, bb);
-   2*a**2*bb - a*aa*b <= 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb >= 0 or
-      a*aa <= 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb <= 0;
+procedure vsub!-2!-geq!-7(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a**2*bb - a*aa*b <= 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb >= 0 or
+      	 a*aa <= 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb <= 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-geq!-8(a, b, c, aa, bb);
-   2*a**2*bb - a*aa*b <= 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb >= 0 or
-      a*aa >= 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb <= 0;
+procedure vsub!-2!-geq!-8(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a**2*bb - a*aa*b <= 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb >= 0 or
+      	 a*aa >= 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb <= 0
+	    )
+   end;
 
-% greaterp
+% 2, 1, greaterp
 
-ofsfform procedure vsub!-2!-greaterp!-1(a, b, c, aa, bb);
-   2*a*bb - aa*b < 0;
+procedure vsub!-2!-greaterp!-1(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b < 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-greaterp!-2(a, b, c, aa, bb);
-   2*a*bb - aa*b < 0 and a*bb**2 - aa**2*c - aa*b*bb > 0 or
-      aa >= 0 and (2*a*bb - aa*b < 0 or a*bb**2 - aa**2*c - aa*b*bb < 0);
+procedure vsub!-2!-greaterp!-2(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b < 0 and a*bb**2 - aa**2*c - aa*b*bb > 0 or
+      	 aa >= 0 and (2*a*bb - aa*b < 0 or a*bb**2 - aa**2*c - aa*b*bb < 0)
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-greaterp!-3(a, b, c, aa, bb);
-   2*a*bb - aa*b < 0 and a*bb**2 - aa**2*c - aa*b*bb > 0 or
-      aa <= 0 and (2*a*bb - aa*b < 0 or a*bb**2 - aa**2*c - aa*b*bb < 0);
+procedure vsub!-2!-greaterp!-3(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b < 0 and a*bb**2 - aa**2*c - aa*b*bb > 0 or
+      	 aa <= 0 and (2*a*bb - aa*b < 0 or a*bb**2 - aa**2*c - aa*b*bb < 0)
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-greaterp!-4(a, b, c, aa, bb);
-   2*a*bb - aa*b > 0 and a*bb**2 - aa**2*c - aa*b*bb < 0 or
-      aa >= 0 and (2*a*bb - aa*b > 0 or a*bb**2 - aa**2*c - aa*b*bb > 0);
+procedure vsub!-2!-greaterp!-4(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b > 0 and a*bb**2 - aa**2*c - aa*b*bb < 0 or
+      	 aa >= 0 and (2*a*bb - aa*b > 0 or a*bb**2 - aa**2*c - aa*b*bb > 0)
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-greaterp!-5(a, b, c, aa, bb);
-   2*a*bb - aa*b > 0 and a*bb**2 - aa**2*c - aa*b*bb < 0 or
-      aa <= 0 and (2*a*bb - aa*b > 0 or a*bb**2 - aa**2*c - aa*b*bb > 0);
+procedure vsub!-2!-greaterp!-5(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b > 0 and a*bb**2 - aa**2*c - aa*b*bb < 0 or
+      	 aa <= 0 and (2*a*bb - aa*b > 0 or a*bb**2 - aa**2*c - aa*b*bb > 0)
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-greaterp!-6(a, b, c, aa, bb);
-   2*a*bb - aa*b > 0;
+procedure vsub!-2!-greaterp!-6(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a*bb - aa*b > 0
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-greaterp!-7(a, b, c, aa, bb);
-   2*a**2*bb - a*aa*b < 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb > 0 or
-      a*aa <= 0 and (2*a**2*bb - a*aa*b < 0 or a**2*bb**2 - a*aa**2*c - a*aa*b*bb < 0);
+procedure vsub!-2!-greaterp!-7(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a**2*bb - a*aa*b < 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb > 0 or
+      	 a*aa <= 0 and (2*a**2*bb - a*aa*b < 0 or a**2*bb**2 - a*aa**2*c - a*aa*b*bb < 0)
+	    )
+   end;
 
-ofsfform procedure vsub!-2!-greaterp!-8(a, b, c, aa, bb);
-   2*a**2*bb - a*aa*b < 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb > 0 or
-      a*aa >= 0 and (2*a**2*bb - a*aa*b < 0 or a**2*bb**2 - a*aa**2*c - a*aa*b*bb < 0);
+procedure vsub!-2!-greaterp!-8(g, f, x, theo);
+   begin scalar aa, bb, a, b, c;
+      {aa, bb} := coeffs g;
+      {a, b, c} := coeffs f;
+      return ofsf_iparse(
+   	 2*a**2*bb - a*aa*b < 0 and a**2*bb**2 - a*aa**2*c - a*aa*b*bb > 0 or
+      	 a*aa >= 0 and (2*a**2*bb - a*aa*b < 0 or a**2*bb**2 - a*aa**2*c - a*aa*b*bb < 0)
+	    )
+   end;
 
-asserted procedure rsl!-compute(op: Id, f: SF, x: Kernel, s: Any): Any;
-   % Root specification list compute. [op] is an operator, [x] is
+asserted procedure vsub_compute!-rsl(op: Id, f: SF, x: Kernel, s: Any): Any;
+   % Compute root specification list. [op] is an operator, [x] is
    % [mvar f], [s] is the sign of [lc f]. Returns either ['fail] or an
    % AList [al] containing elements [pr] such that [car pr] is one of
    % ['(ip ep slb wlb sub wub)] and [cdr pr] is a list of root
@@ -1551,37 +1939,35 @@ asserted procedure rsl!-compute(op: Id, f: SF, x: Kernel, s: Any): Any;
       return cdr w
    end;
 
-asserted procedure rsl!-guard(f: SF, x: Kernel, rsl: List): QfFormula;
-   % Root specification list guard. [x] is [mvar f]; [rsl] is a list
-   % of root specifications. Returns a guard of [(f, rsl)].
-   begin scalar rtl, w;
-      assert(sfto_mvartest(f, x));
-      rtl := for each rs in rsl collect car rs;
-      % TODO: There could be duplicates in [rtl] in the future. Then
-      % you will have to delete them here!
-      rtl := sort(rtl, function(lambda(a, b); a < b));
+asserted procedure vsub_guard(pr: VSpr): QfFormula;
+   % Guard. Returns a guard of [pr].
+   begin scalar f, rtl, w;
+      f := vspr_f pr;
+      assert(sfto_mvartest(f, vspr_v pr));
+      rtl := vspr_rtl pr;
       w := assoc({ldeg f, rtl}, guard!-fnalist!*);
       if null w then <<
 	 assert(nil);
 	 return 'failed
       >>;
-      return apply(cdr w, coeffs f)
+      return apply(cdr w, {f})
    end;
 
-asserted procedure rsl!-vsub(op: Id, g: SF, f: SF, x: Kernel, rsl: List): QfFormula;
-   % Root specification list virtual substitution. [op] is an
-   % operator; [rsl] is a list of root specifications of [f]. Returns
-   % an equivalent of (g op 0)[x // (f, rsl)].
-   begin scalar w;
+asserted procedure vsub_vsub(op: Id, g: SF, x: Kernel, pr: VSpr, theo: Theory): QfFormula;
+   % Virtual substitution. [op] is an operator. Returns an equivalent
+   % of (g op 0)[x // (f, S)], where (f, S) is a parametric root
+   % specification described by [pr].
+   begin scalar f, w;
+      f := vspr_f pr;
       assert(sfto_mvartest(f, x));
       if not sfto_mvartest(g, x) then
 	 return ofsf_0mk2(op, g);
-      w := assoc({ldeg f, rsl, ldeg g, op}, vsub!-fnalist!*);
+      w := assoc({ldeg f, vspr_rsl pr, ldeg g, op}, vsub!-fnalist!*);
       if null w then <<
 	 assert(nil);
 	 return 'failed
       >>;
-      return apply(cdr w, append(coeffs f, coeffs g))
+      return apply(cdr w, {g, f, x, theo})
    end;
 
 endmodule;  % [ofsfvslists]

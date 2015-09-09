@@ -71,13 +71,23 @@ asserted procedure vspr_d(pr: VSpr): Integer;
       return 0
    end;
 
+asserted procedure vspr_rtl(pr: VSpr): List;
+   % Parametric root root type list.
+   begin scalar rtl;
+      rtl := for each rs in vspr_rsl pr collect
+	 car rs;
+      % TODO: There could be duplicates in [rtl] in the future. Then
+      % you will have to delete them here!
+      return sort(rtl, function(lambda(a, b); a < b))
+   end;
+
 asserted procedure vspr_reorder(pr: VSpr): VSpr;
    % Parametric root reorder.
    vspr_mk(reorder vspr_f pr, vspr_v pr, vspr_rsl pr);
 
 asserted procedure vspr_guard(pr: VSpr): QfFormula;
    % Parametric root guard.
-   rsl!-guard(vspr_f pr, vspr_v pr, vspr_rsl pr);
+   vsub_guard pr;
 
 %%% annotated prime constituent (APC) %%%
 % constructors and access functions
@@ -890,7 +900,7 @@ asserted procedure vscs_fop2csnz(f: SF, x: Kernel, op: Id, s: Any): VScs;
    begin scalar w, pral; integer d;
       assert(sfto_mvartest(f, x));
       d := ldeg f;
-      w := rsl!-compute(op, f, x, s);
+      w := vsub_compute!-rsl(op, f, x, s);
       if w eq 'failed then
 	 return vscs_mk(nil, 'failed);
       pral := for each pr in w collect
