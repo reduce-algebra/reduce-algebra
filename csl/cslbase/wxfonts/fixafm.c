@@ -45,17 +45,50 @@
 static int isSTIX = 0;
 
 #define NMOVED 10000
-#define MAXNEWNAME 20
+#define MAXNEWNAME 120
 
 static int nmoved = 0;
 char movedname[NMOVED][MAXNEWNAME];
 int movedwidth[NMOVED];
 
+// If the any strings of the form "unixxxx" for hex digits xxxx are present
+// and if I know a name for U+xxxx then I will re-write the input in
+// linebuffer. Note that this can lead to long names and in cmuntt the line
+// giving ligatures with SPACE ends up almost 2000 characters long. Ugh!
+
+static void adjustuninames(char *linebuffer)
+{
+    char newlinebuffer[2000], *p, *q;
+    const char *r;
+    int code;
+    p = linebuffer;
+    q = newlinebuffer;
+    while (*p != 0)
+    {   if (p[0] == 'u' &&
+            p[1] == 'n' &&
+            p[2] == 'i' &&
+            isxdigit(p[3]) &&
+            isxdigit(p[4]) &&
+            isxdigit(p[5]) &&
+            isxdigit(p[6]) &&
+            !isxdigit(p[7]) &&
+            sscanf(p, "uni%x", &code) == 1 &&
+            (r = uniname(code)) != NULL)
+        {   strcpy(q, r);
+            p += 7;
+            q += strlen(r);
+        }
+        else *q++ = *p++;
+    }
+    *q = 0; 
+    strcpy(linebuffer, newlinebuffer);
+}
+
 int main(int argc, char *argv[])
 {
     FILE *src = fopen(argv[1], "r");
     FILE *dest = fopen(argv[2], "w"); // No check for errors here!
-    char linebuffer[1000];            // Fixed buffer with no overflow checks!
+    char linebuffer[2000];            // Fixed buffer with no overflow checks!
     if (strstr(argv[1], "STIX") != NULL) isSTIX = 1;
     if (isSTIX)
     {    int private_area = 0;
@@ -67,6 +100,7 @@ int main(int argc, char *argv[])
                  linebuffer[i++] = c;
              linebuffer[i] = 0;
              if (i == 0 && c == EOF) break;
+             adjustuninames(linebuffer);
 // For the STIX fonts that I am using the glyph that fontforge displays as
 // if it had been at U+110000 is named ".notdef". Here I collect the
 // names that have been provided for all those out-of-range glyphs.
@@ -95,6 +129,7 @@ int main(int argc, char *argv[])
             linebuffer[i++] = c;
         linebuffer[i] = 0;
         if (i == 0 && c == EOF) break;
+        adjustuninames(linebuffer);
         if (strncmp(linebuffer, "C -1 ; ", 7) == 0)
         {   int width, code;
             if (sscanf(linebuffer, "C -1 ; WX %d ; N u%x ;",
