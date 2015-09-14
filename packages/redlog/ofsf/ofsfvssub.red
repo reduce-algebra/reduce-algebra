@@ -278,7 +278,7 @@ asserted procedure vsds_applyvsts!-at(at: QfFormula, ds: VSds): QfFormula;
       w := if it memq '(minf pinf) then
 	 vsds_expand!-at!-inf(at, x, it)
       else if it memq '(meps peps) then
-	 vsds_expand!-at!-inf(at, x, it)
+	 vsds_expand!-at!-eps(at, x, it)
       else
 	 at;
       if it memq '(minf pinf) then
