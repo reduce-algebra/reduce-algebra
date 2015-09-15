@@ -360,8 +360,10 @@ rsl!-alist!* := {
       'sub . {
 	 {1 . 1}
 	    }
-	       },
+	       }
 
+#if (not memq 'psl lispsystem!*)
+,
    {3, -1, 'equal} . {
       'ip . {
 	 {(-1) . 1},
@@ -674,6 +676,9 @@ rsl!-alist!* := {
       	 {4 . 2}
 	    }
 	       }
+
+#endif
+
    	    	  };
 
 rsl!-alist!-clustering!* := {
@@ -949,8 +954,10 @@ rsl!-alist!-clustering!* := {
       'sub . {
 	 {1 . 1, 2 . 1}
 	    }
-	       },
+	       }
 
+#if (not memq 'psl lispsystem!*)
+,
    {3, -1, 'equal} . {
       'ip . {
 	 {(-1) . 1},
@@ -1160,6 +1167,9 @@ rsl!-alist!-clustering!* := {
 	 {2 . 1, 3 . 2, 4 . 2}
 	    }
 	       }
+
+#endif
+
    		  };
 
 guard!-fnalist!* := {

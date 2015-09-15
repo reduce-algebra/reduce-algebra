@@ -414,12 +414,16 @@ asserted procedure vsdt_add2ttheo(dt: VSdt, fl: QfFormulaL, neg: Boolean);
 asserted procedure vsde_compute(de: VSde);
    % This is the usual entry point.
    % Compute an elimination set.
-   <<
-      vsde_compute!-pcl de;  % TODO: Handle ['failed] here.
+   begin
+      vsde_compute!-pcl de;
+      if null vsde_pcl de then <<
+	 vsde_puttpl(de, nil);
+	 return
+      >>;
       vsde_select!-bounds de;
       vsde_pcl2tpl de;
       vsde_conflate!-tpl de
-   >>;
+   end;
 
 % THE FOLLOWING PROCEDURE IS TEMPORARY! It uses old code to have something runnable.
 % asserted procedure vsde_compute(de: VSde);
@@ -437,7 +441,6 @@ asserted procedure vsde_compute(de: VSde);
 
 asserted procedure vsde_compute!-pcl(de: VSde);
    % Compute annotated prime constituent list.
-   % TODO: Handle failed [gl], [cgl], and [atl] in this procedure.
    begin scalar f, gl, cgl, atl, gposl, pc, pcl;
       % Replacement with [false] is done here only to mark subformulas
       % that play no role (i.e. we do not need to look into them).
@@ -446,15 +449,27 @@ asserted procedure vsde_compute!-pcl(de: VSde);
       % find Gauss prime constituents
       f := vsde_f de;
       gl := qff_gaussposl(vsde_v de, f, vsde_bvl de, vsde_curtheo de);
+      if vsde_failedalp gl then <<
+	 vsde_putpcl(de, nil);
+	 return
+      >>;
       % TODO: Choose an efficient ordering of [gl].
       % TODO: Here is the place for gentle simplification.
       f := qff_replacel(f, for each pr in gl collect car pr, 'false);
       % find co-Gauss prime constituents
       cgl := qff_cogaussposl(vsde_v de, f, vsde_bvl de, vsde_curtheo de);
+      if vsde_failedalp cgl then <<
+	 vsde_putpcl(de, nil);
+	 return
+      >>;
       gl := pos_delsubposal(cgl, gl);
       % find atomic prime constituents
       f := qff_replacel(f, for each pr in cgl collect car pr, 'false);
       atl := qff_atposl(vsde_v de, f, vsde_bvl de, vsde_curtheo de);
+      if vsde_failedalp atl then <<
+	 vsde_putpcl(de, nil);
+	 return
+      >>;
       for each pr in atl do <<
 	 pc := vspc_mk(car pr, 'at, cdr pr, gposl, nil);
 	 push(pc, pcl)
@@ -470,6 +485,9 @@ asserted procedure vsde_compute!-pcl(de: VSde);
       >>;
       vsde_putpcl(de, pcl)
    end;
+
+asserted procedure vsde_failedalp(al: AList);
+   al and null caar al and vscs_failedp cdar al;
 
 asserted procedure qff_gaussposl(var: Kernel, f: QfFormula, bvl: KernelL, theo: Theory): AList;
    % wrapper
