@@ -31,7 +31,7 @@ printf "Using %s for fontforge\n" "$ff"
 
 # Now run the main adjustments.
 
-"$ff" -script adjustfont.script
+"$ff" -script adjustfonts.script
 "$ff" -script toafm.script cmuntt.otf
 "$ff" -script toafm.script odokai.ttf
 
@@ -56,27 +56,23 @@ rm *.ps
 # line. The program I use to do this is not robust, but it should only need
 # to be run once!
 
+# For the STIXMath font I need to extract some maths tables. I will
+# arrange that fixafm merges the information into the .afm file in this
+# case.
+
+gcc showttf.c -o showttf
+./showttf STIXMath-Regular.otf > STIXMath.tables
+
 gcc fixafm.c -o fixafm
+
 for x in *.afm
 do
   ./fixafm $x metrics/$x
-  if test "$keeptemp" = "no"
-  then
-    rm $x
-  fi
 done
-rm fixafm
 
-gcc showttf.c -o showttf
-for x in cmuntt cslSTIX-Regular cslSTIX-Bold cslSTIX-Italic \
-                cslSTIX-BoldItalic cslSTIXMath-Regular
-do
-  printf "Using showttf on %s\n" "$x"
-  ./showttf $x.otf > metrics/$x.tables
-done
-printf "Using showttf on odokai\n"
-./showttf odokai.ttf > metrics/odokai.tables
-
-rm showttf
+if test "$keeptemp" = "no"
+then
+  rm fixafm showttf *.afm STIXMath.tables
+fi
 
 printf "Conversion complete\n"

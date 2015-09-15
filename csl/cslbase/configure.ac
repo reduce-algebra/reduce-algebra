@@ -112,21 +112,16 @@ AC_ARG_WITH(cygbuild64,
 
 AC_SUBST(with_cygbuild64)
 
-# I need a bit more commentary to explain this. On some platforms the default
-# C and C++ compilers are based on LLVM/clang. For Reduce and as of March 2015
-# using clang rather than gcc leads to a roughly 25% performance hit. On
-# OSX oen can go "sudo port install gcc49" and on (free)BSD something like
-# "sudo pkg install gcc4.9" and install a fully up to date gcc. If I find that
-# this has been done I will try to use it to compile key parts of Reduce.
-# You can go "--without-gcc" or "--with-gcc=no" to disable this, or
-# if you want to use a specific version you can try "--with-gcc=gcc-mp-4.7"
-# (and I will then also expect to be able to use g++-mp-4.7). For this to
-# behave it is going to be essential the code compiled with clang and gcc
-# can end up mixed.
-AC_ARG_WITH(gcc,
-   AC_HELP_STRING([--without-gcc], [used on OSX and BSD where clang is default to use clang for everything]),
-   [],
-   [with_gcc="yes"])
+# For aq short while I provided a way to use gcc rather than clang on the Mac
+# because it seemed to give a rioughtly 25% speed boost. But in September 2015
+# I find that trying to do that causes real pain as regards versions of
+# libc++ (at least) so I simplify the scheme away and accept that on a
+# Macintosh REDUCE will run slower than it might until and unless the standard
+# toolchains there catch up.
+#AC_ARG_WITH(gcc,
+#   AC_HELP_STRING([--without-gcc], [used on OSX and BSD where clang is default to use clang for everything]),
+#   [],
+#   [with_gcc="yes"])
 
 AC_SUBST(with_cygbuild64)
 
@@ -592,57 +587,6 @@ AC_MSG_NOTICE([Looking for C++ compiler])
 AC_PROG_CXX
 CFLAGS="$old_CFLAGS"
 CXXFLAGS="$old_CXXFLAGS"
-
-if test "x$with_gcc" != "xno"
-then
-  if test "x$with_gcc" = "xyes"
-  then
-# Here is the default situation where I will check if the current compilers
-# are really clang (note that on OSX the command "gcc" invokes clang, so merely
-# looking at the compiler name is not clever enough). I then try all variants
-# of names for the optional gcc that I can think of.
-    case `$CC -v 2>&1` in
-    *clang*)
-      AC_MSG_NOTICE([Default compiler is clang so check for gcc alternative])
-      AC_MSG_NOTICE([PATH=$PATH])
-      AC_CHECK_PROGS(altGCC,[gcc49 gcc-4.9 gcc-mp-4.9 gcc48 gcc-4.8 gcc-mp-4.8 gcc47 gcc-4.7 gcc-mp-4.7 gcc46 gcc-4.6 gcc-mp-4.6 gcc])
-      AC_MSG_NOTICE([Found $altGCC for GNU C compiler])
-      AC_CHECK_PROGS(altGXX,[g++49 g++-4.9 g++-mp-4.9 g++48 g++-4.8 g++-mp-4.8 g++47 g++-4.7 g++-mp-4.7 g++46 g++-4.6 g++-mp-4.6 g++])
-      AC_MSG_NOTICE([Found $altGXX for GNU C++ compiler])
-      ;;
-      *)
-      AC_MSG_NOTICE([Normal compiler is not clang])
-      ;;
-    esac
-  else
-# Now the user has said something like "--with-gcc=gcc-mp-4.7" to pick
-# a particular alternative compiler to use. If they have gone to the trouble
-# to do that I will use it regardless of whether it is clang that I am
-# overriding. But I will check if their pick seems to be available.
-    AC_CHECK_PROGS([altGCC], $with_gcc)
-    with_gxx=`echo $with_gcc | sed  -e 's/gcc/g++/'`
-    AC_MSG_NOTICE([altGCC = $altGCC. Try $with_gxx for g++ compiler])
-    if test "x$with_gcc" = "x$with_gxx" || test $altGCC = "no"
-    then
-      AC_MSG_ERROR([--with-gcc=$with_gcc is invalid])
-    fi
-    AC_CHECK_PROGS([altGXX], $with_gxx)
-  fi
-fi
-
-ORIGCC="$CC"
-ORIGCXX="$CXX"
-if test "x$altGCC" != "xno" && test "x$altGXX" != "xno" && \
-   test "x$altGCC" != "x"   && test "x$altGXX" != "x"
-then
-  CC="$altGCC"
-  CXX="$altGXX"
-  AC_MSG_NOTICE([Found $altGCC and $altGXX])
-else
-  AC_MSG_NOTICE([Will use standard compilers])
-fi
-AC_SUBST(ORIGCC)
-AC_SUBST(ORIGCXX)
 
 if test "x$XLIBS" != "x"
 then
@@ -1446,8 +1390,6 @@ then
   fi
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
-  ORIGCC="$ENVP $ORIGCC"
-  ORIGCXX="$ENVP $ORIGCXX"
 fi
 
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
@@ -1485,7 +1427,6 @@ AM_CONDITIONAL(canrun,test "x$can_run_executables" = "xyes")
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")
 AM_CONDITIONAL(valgrind, test "x$VALGRIND" = "xvalgrind")
 AM_CONDITIONAL(crlibm, test "x$crlibm" != "xno")
-AM_CONDITIONAL(altgcc, test "x$altGCC" != "xno")
 
 AC_OUTPUT
 

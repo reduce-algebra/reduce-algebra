@@ -171,11 +171,11 @@
 
 // Having statically fixed limits here simplifies my coding.
 
-#define MAXFONTS 32
-#define MAXCHARS 40000
+#define MAXFONTS 16
+#define MAXCHARS 50000
 #define MAXKERNS 10000
-#define MAXLIGATURES 500
-#define MAXLINE  1000
+#define MAXLIGATURES 1000
+#define MAXLINE  2000
 
 #else // CREATE
 #ifdef TEST
@@ -213,21 +213,21 @@
 // file so I file values by running a wxWidgets program and seeing what
 // it reports and put in a table of values here...
 
-// To re-calculate these values you could check out revision 2916 of
+// To re-calculate these values you could check out a current of
 // Reduce, configure "--with-csl --with-wx", make wxshowmath and run
-// wxshowmath or wxdata/fontsizes.dat. The trace output should include
+// wxshowmath on wxdata/fontsizes.dat. The trace output should include
 //....        Need to process CMU Typewriter Text
 //....        Gives CMU Typewriter Text with flags 0
 //....        font[0] = "CMU Typewriter Text" size 10000
 //....        ( CMU Typewriter Text/10000: 12597.7 2330 [10267.7]
 //....            1027,           // cmuntt
 //....        from table baseline offset = 10270
-//....        convert General
-//....        Need to process STIXGeneral
-//....        Gives STIXGeneral with flags 10000
-//....        font[1] = "STIXGeneral" size 10000
-//....        ( STIXGeneral/10000: 15097.7 4550 [10547.7]
-//....            1055,           // General
+//....        convert odokai
+//....        Need to process AR PL New Kai
+//....        Gives AR PL New Kai with flags 10000
+//....        font[1] = "AR PL New Kai" size 10000
+//....        ( AR Pl New Kai/10000: 10693.4 1210.94 [9482.42]
+//....            1055,           // odokai
 // and I extracted the information I need here using
 //    grep "    // " wxshowmath.log > DESTINATION
 // I edited the file to remove a comma after the final entry...
@@ -238,49 +238,50 @@
 
 // I note with some distress that the adjustments needed here differ
 // across operating systems. That backs up the fact that this data can not
-// be deduced from a set of Adobe Font Metrics. So although in many cases
-// the numbers match up, for General-BoldItalic the win32 case is out of
-// line with the other two platforms. For all the Integrals fonts the
-// Macintosh offset is odd man out. Fireflysung makes Linux the exceptional
-// case. 
+// be deduced from a set of Adobe Font Metrics.
+//
 // So I provide three versions of this table (it is not very large) and
 // a tolerably cheap run-time test can pick which one to use. I feel it is
 // nicer for my runtime code to check no more than 3 cases to choose between
-// these tables rather than getting it to measure all 31 fonts.
+// these tables rather than getting it to measure all the fonts.
+//
+// With cstSTIX it seems that the X11 and OS/X measurements match - but
+// I will nevertheless provide three versions here just in a spirit of
+// caution. 
 
 const uint16_t *chardepth = NULL;
 
 const uint16_t chardepth_WIN32[] =
 {
     1027,           // cmuntt
-    885,            // odokai
-    1055,           // Regular
-    1055,           // Bold
-    1055,           // Italic
-    1055,           // BoldItalic
-    2182            // Math
+    948,            // odokai
+    1023,           // Regular
+    1023,           // Bold
+    1023,           // Italic
+    1023,           // BoldItalic
+    2566            // Math
 };
 
 const uint16_t chardepth_X11[] =
 {
     1027,           // cmuntt
-    928,            // odokai
-    1055,           // Regular
+    885,            // odokai
+    1023,           // Regular
     1055,           // Bold
-    1055,           // Italic
-    1042,           // BoldItalic
-    2182            // Math
+    1023,           // Italic
+    1004,           // BoldItalic
+    2566            // Math
 };
 
 const uint16_t chardepth_OSX[] =
 {
     1027,           // cmuntt
     885,            // odokai
-    1055,           // Regular
+    1023,           // Regular
     1055,           // Bold
-    1055,           // Italic
-    1042,           // BoldItalic
-    967             // Math
+    1023,           // Italic
+    1004,           // BoldItalic
+    2566,           // Math
 };
 
 const char *fontnames[31] =
@@ -341,14 +342,14 @@ static int pack_character(int font, int codepoint)
 // The first will contain the key and some information to help with kerning
 // and ligatures. Because I will have a line size of 4 I only need to use 19
 // bits of key. That leaves me with space to put four 11-bit kern entries
-// in, one for each of the 4 codepoints covered. There will be a 31-entry
+// in, one for each of the 4 codepoints covered. There will be a 16-entry
 // table indexed by font that gives a value to be added to one of these
 // offsets. That allows for up to 2048 kern entries per font. I count 1016
-// kern declarations and 16 ligature declarations for STIXGeneral-Regular
+// kern declarations and 16 ligature declarations for STIX-Regular
 // and those together add up to 1032 which fits reasonably.
 //
 // I assessed having individual entries is the hash table and line sizes
-// of 2 and 8 as well as 4. A line size of 8 saves a small emount of space
+// of 2 and 8 as well as 4. A line size of 8 saves a small amount of space
 // but at the cost of seeming noticably messier. A line size of only 2
 // consumes distinctly more memory.
 //
@@ -356,10 +357,10 @@ static int pack_character(int font, int codepoint)
 // bit one. These store the character width and its bounding box. For my
 // fonts I observe
 //     0   <=   width   <=  3238        use 13 bits unsigned
-//   -3000 <=   llx     <=  930         use 13 bits unsigned offset by -3000
-//    -522 <=   lly     <=  820         use *12* bits unsigned offset by -1000
-//    -234 <=   urx     <=  3472        use 13 bits unsigned offset by -500
-//    -166 <=   ury     <=  2604        use 13 bits unsigned offset by -1000
+//    -998 <=   llx     <=  929         use 13 bits unsigned offset by -3000
+//    -524 <=   lly     <=  843         use *12* bits unsigned offset by -1000
+//    -234 <=   urx     <=  3238        use 13 bits unsigned offset by -500
+//    -141 <=   ury     <=  1055        use 13 bits unsigned offset by -1000
 // that packing is a bit ugly but ends up using exactly 64 bits which is
 // really convenient.
 
@@ -393,12 +394,12 @@ static int pack_character(int font, int codepoint)
 //    "CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS WITH
 //     CIRCLED ONE OVERLAY"
 // however the fonts I use here all have embedded names that are reasonably
-// short. I would detect it if any were longer than 60 characters and stop.
+// short. I would detect it if any were longer than 120 characters and stop.
 // If that happened I would merely increase MAXUNILEN here. The names present
 // while processing fonts here are purely local to the treatment here (they
 // are used to link kerning tables).
 
-#define MAXUNILEN 60
+#define MAXUNILEN 120
 
 static int       charcount = 0;
 static int       fontkey[MAXCHARS];
@@ -1626,7 +1627,7 @@ int32_t lookupkernandligature(int codepoint)
     int i;
     if ((i = c_kerninfo) == 0) return 0;  // No info based on current start.
 // The worst cases I can see in my fonts is the kern information for "W"
-// in STIXGeneral where around 50 characters following "W" get their spacing
+// in STIX-Regular where around 50 characters following "W" get their spacing
 // adjusted. That gives some impression of the most extreme number of
 // times this loop will be traversed. For many characters there will be no
 // kern information at all, and when there is any it will usually be
@@ -1709,7 +1710,7 @@ int32_t lookupligature(int codepoint)
 //    Kern/ligature data for sequence f-i is 14 64257
 //    Kern/ligature data for sequence f-l is 44 64258
 //
-// The last two lines say that if in font STIXGeneral-Regular an "f" is
+// The last two lines say that if in font STIX-Regular an "f" is
 // followed by an "i" then either the two may have their spacing adjusted
 // by 14 units or the pair may be replaced by the character at codepoint
 // 64257 (which is "fi")... and similarly for "f" followed by "l". The output
@@ -1726,13 +1727,13 @@ int main(int argc, char *argv[])
     printf("Second modulus %d (%d)\n", (int)SECONDHASHMODULUS,
            (int)(HASHTABLESIZE-SECONDHASHMODULUS));
     for (i='e'; i<'n'; i++)
-    {   r = lookupchar(F_General, i);
+    {   r = lookupchar(F_Regular, i);
         if (r) printf("\"%c\": width %d   BB %d %d %d %d  (%d)\n",
                       i, c_width, c_llx, c_lly, c_urx, c_ury, c_kerninfo);
         else printf("\"%c\" char not found\n", i);
         fflush(stdout);
     }
-    if (!lookupchar(F_General, 'f')) printf("Character \"f\" not found\n");
+    if (!lookupchar(F_Regular, 'f')) printf("Character \"f\" not found\n");
     else
     {   int32_t k = lookupkernandligature('i');
         printf("Kern/ligature data for sequence f-i is %d %d\n",

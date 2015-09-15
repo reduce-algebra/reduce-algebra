@@ -94,7 +94,7 @@
 // in a fully cross-platform manner and with wxWidgets, so I have some
 // "cslSTIX" fonts that map those glyphs to a range starting at U+108000.
 
-#define __STDC_CONSTANT_MACROS 1
+#define __STDC_CONSTANT_MACROS
 
 #include "wx/wxprec.h"
 
@@ -1019,7 +1019,9 @@ printf("OnPaint invoked\n");
                 gc->SetTransform(save);
                 int k = i + j;
                 k += 0x80*page;
-                if (0 && fontnum >= 0 && lookupchar(fontnum, k) == 0)
+                if (k < 0 ||
+                    k >= 0x110000 ||
+                    (fontnum >= 0 && lookupchar(fontnum, k) == 0))
                 {   gc->DrawRectangle(
                        (double)CELLWIDTH*(j+1)+CELLWIDTH/3.0,
                        (double)CELLHEIGHT*(i/32+1)+CELLHEIGHT/3.0,

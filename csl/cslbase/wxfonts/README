@@ -9,7 +9,7 @@ Computer Modern Unicode Typewriter
 The shapes are as for the Computer Modern typewriter face, but this has
 a good range of accented, Greek, Cyrilic  and special characters.
 
-AR PL New Sung (Fireflysung)
+AR PL New Kai (related to Fireflysung)
     A serif font that provides respectable coverage of the CJK pages of
 Unicode. My thoughts are that I would just use it to extend coverage to
 those parts of the Unicode range.
@@ -22,12 +22,16 @@ Character shapes as from many TeX mathematical fonts (eg maths italic,
 blackboard, gothic, script) are provided in the block from U+1d400. Note that
 that is not in the basic multilingual plane. A wide range of mathematical
 symbols are present in cslSTIXMath-Regular. These fonts were originally
-just STIX-Regular etc (from the STID-Word set) but those versions rely on
+just STIX-Regular etc (from the STIX-Word set) but those versions rely on
 advanced rendering APIs to access glyphs that have apparent codepoints
 above U+10ffff, ie that are outside the valid Unicode range. To ease
 portability to multiple platforms I have made versions that also make those
-special glyphs available from U+108000 onwards (ie in a Provate Use Area) so
-that legacy rendering can display them.
+special glyphs available from U+108000 onwards (ie in a Private Use Area) so
+that legacy rendering can display them. I have also created and adjusted
+".afm" files for them.
+
+Of the STIX fonts only STIXMath has the opentype maths tables. I will extract
+some information from them too.
 
 
                                                   A C Norman. September 2015

@@ -33,8 +33,12 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-#ifdef __cplusplus
-#define __STDC_CONSTANT_MACROS 1
+// Well hat is impicit here is that stdint.h had better not have been
+// included before this, or else __STDC_CONSTANT_MACROS needed defining
+// before i8ts inclusion elsewhere!
+
+#if defined __cplusplus && !defined __STDC_CONSTANT_MACROS
+#define __STDC_CONSTANT_MACROS
 #endif
 
 #include <stdint.h>
@@ -20824,91 +20828,91 @@ const int16_t fontkern[] =
 const uint32_t kerntable[] = 
 {
     0x00200309,   // [0:1] space + hookabovecomb ligature #0 (cmuntt)
-    0x00a00489,   // [1:2] space + uni0489 ligature #1 (cmuntt)
-    0x01200488,   // [2:3] space + uni0488 ligature #2 (cmuntt)
-    0x01a00486,   // [3:4] space + uni0486 ligature #3 (cmuntt)
-    0x02200485,   // [4:5] space + uni0485 ligature #4 (cmuntt)
-    0x02a00484,   // [5:6] space + uni0484 ligature #5 (cmuntt)
-    0x0320034d,   // [6:7] space + uni034D ligature #6 (cmuntt)
-    0x03a0033c,   // [7:8] space + uni033C ligature #7 (cmuntt)
-    0x0420033b,   // [8:9] space + uni033B ligature #8 (cmuntt)
-    0x04a0033a,   // [9:10] space + uni033A ligature #9 (cmuntt)
-    0x05200337,   // [10:11] space + uni0337 ligature #10 (cmuntt)
-    0x05a00335,   // [11:12] space + uni0335 ligature #11 (cmuntt)
-    0x0620032b,   // [12:13] space + uni032B ligature #12 (cmuntt)
-    0x06a0032a,   // [13:14] space + uni032A ligature #13 (cmuntt)
-    0x07200322,   // [14:15] space + uni0322 ligature #14 (cmuntt)
-    0x07a00321,   // [15:16] space + uni0321 ligature #15 (cmuntt)
-    0x08200311,   // [16:17] space + uni0311 ligature #16 (cmuntt)
-    0x08a0030f,   // [17:18] space + uni030F ligature #17 (cmuntt)
-    0x0920030e,   // [18:19] space + uni030E ligature #18 (cmuntt)
-    0x09a0030d,   // [19:20] space + uni030D ligature #19 (cmuntt)
-    0x0a200303,   // [20:21] space + uni0303 ligature #20 (cmuntt)
-    0x0aa01dc9,   // [21:22] space + uni1DC9 ligature #21 (cmuntt)
-    0x0b201dc8,   // [22:23] space + uni1DC8 ligature #22 (cmuntt)
-    0x0ba01dc5,   // [23:24] space + uni1DC5 ligature #23 (cmuntt)
-    0x0c601dc4,   // [24:25] space + uni1DC4 ligature #24 (cmuntt) ;;
+    0x00a00489,   // [1:2] space + COMBINING_CYRILLIC_MILLIONS_SIGN ligature #1 (cmuntt)
+    0x01200488,   // [2:3] space + COMBINING_CYRILLIC_HUNDRED_THOUSANDS_SIGN ligature #2 (cmuntt)
+    0x01a00486,   // [3:4] space + COMBINING_CYRILLIC_PSILI_PNEUMATA ligature #3 (cmuntt)
+    0x02200485,   // [4:5] space + COMBINING_CYRILLIC_DASIA_PNEUMATA ligature #4 (cmuntt)
+    0x02a00484,   // [5:6] space + COMBINING_CYRILLIC_PALATALIZATION ligature #5 (cmuntt)
+    0x0320034d,   // [6:7] space + COMBINING_LEFT_RIGHT_ARROW_BELOW ligature #6 (cmuntt)
+    0x03a0033c,   // [7:8] space + COMBINING_SEAGULL_BELOW ligature #7 (cmuntt)
+    0x0420033b,   // [8:9] space + COMBINING_SQUARE_BELOW ligature #8 (cmuntt)
+    0x04a0033a,   // [9:10] space + COMBINING_INVERTED_BRIDGE_BELOW ligature #9 (cmuntt)
+    0x05200337,   // [10:11] space + COMBINING_SHORT_SOLIDUS_OVERLAY ligature #10 (cmuntt)
+    0x05a00335,   // [11:12] space + COMBINING_SHORT_STROKE_OVERLAY ligature #11 (cmuntt)
+    0x0620032b,   // [12:13] space + COMBINING_INVERTED_DOUBLE_ARCH_BELOW ligature #12 (cmuntt)
+    0x06a0032a,   // [13:14] space + COMBINING_BRIDGE_BELOW ligature #13 (cmuntt)
+    0x07200322,   // [14:15] space + COMBINING_RETROFLEX_HOOK_BELOW ligature #14 (cmuntt)
+    0x07a00321,   // [15:16] space + COMBINING_PALATALIZED_HOOK_BELOW ligature #15 (cmuntt)
+    0x08200311,   // [16:17] space + COMBINING_INVERTED_BREVE ligature #16 (cmuntt)
+    0x08a0030f,   // [17:18] space + COMBINING_DOUBLE_GRAVE_ACCENT ligature #17 (cmuntt)
+    0x0920030e,   // [18:19] space + COMBINING_DOUBLE_VERTICAL_LINE_ABOVE ligature #18 (cmuntt)
+    0x09a0030d,   // [19:20] space + COMBINING_VERTICAL_LINE_ABOVE ligature #19 (cmuntt)
+    0x0a200303,   // [20:21] space + COMBINING_TILDE ligature #20 (cmuntt)
+    0x0aa01dc9,   // [21:22] space + COMBINING_ACUTE_GRAVE_ACUTE ligature #21 (cmuntt)
+    0x0b201dc8,   // [22:23] space + COMBINING_GRAVE_ACUTE_GRAVE ligature #22 (cmuntt)
+    0x0ba01dc5,   // [23:24] space + COMBINING_GRAVE_MACRON ligature #23 (cmuntt)
+    0x0c601dc4,   // [24:25] space + COMBINING_MACRON_ACUTE ligature #24 (cmuntt) ;;
     0x0ce0004a,   // [25:26] I + J ligature #25 (cmuntt) ;;
     0x0d20006c,   // [26:27] f + l ligature #26 (cmuntt)
     0x0da00069,   // [27:28] f + i ligature #27 (cmuntt)
     0x0e600066,   // [28:29] f + f ligature #28 (cmuntt) ;;
     0x0ee0006a,   // [29:30] i + j ligature #29 (cmuntt) ;;
     0x0f600074,   // [30:31] longs + t ligature #30 (cmuntt) ;;
-    0x2b800295,   // [31:32] uni0188 + uni0295 : 87 (cmuntt)
-    0x2bc00294,   // [32:33] uni0188 + uni0294 : 87 (cmuntt) ;;
-    0x2b800295,   // [33:34] uni0236 + uni0295 : 87 (cmuntt)
-    0x2bc00294,   // [34:35] uni0236 + uni0294 : 87 (cmuntt) ;;
-    0x2b80f147,   // [35:36] uni0256 + beta.ipa : 87 (cmuntt)
-    0x2b80029d,   // [36:37] uni0256 + uni029D : 87 (cmuntt)
-    0x2b800283,   // [37:38] uni0256 + uni0283 : 87 (cmuntt)
-    0x2b800272,   // [38:39] uni0256 + uni0272 : 87 (cmuntt)
-    0x0e800261,   // [39:40] uni0256 + uni0261 : 29 (cmuntt)
-    0x2bc0025f,   // [40:41] uni0256 + uni025F : 87 (cmuntt) ;;
-    0x2b800295,   // [41:42] uni0257 + uni0295 : 87 (cmuntt)
-    0x2bc00294,   // [42:43] uni0257 + uni0294 : 87 (cmuntt) ;;
-    0x2b800295,   // [43:44] uni0260 + uni0295 : 87 (cmuntt)
-    0x2bc00294,   // [44:45] uni0260 + uni0294 : 87 (cmuntt) ;;
-    0x2b80f147,   // [45:46] uni026D + beta.ipa : 87 (cmuntt)
-    0x2b80029d,   // [46:47] uni026D + uni029D : 87 (cmuntt)
-    0x2b800283,   // [47:48] uni026D + uni0283 : 87 (cmuntt)
-    0x2b800272,   // [48:49] uni026D + uni0272 : 87 (cmuntt)
-    0x0e800261,   // [49:50] uni026D + uni0261 : 29 (cmuntt)
-    0x2bc0025f,   // [50:51] uni026D + uni025F : 87 (cmuntt) ;;
-    0x2b80f147,   // [51:52] uni0273 + beta.ipa : 87 (cmuntt)
-    0x2b80029d,   // [52:53] uni0273 + uni029D : 87 (cmuntt)
-    0x2b800283,   // [53:54] uni0273 + uni0283 : 87 (cmuntt)
-    0x2b800272,   // [54:55] uni0273 + uni0272 : 87 (cmuntt)
-    0x0e800261,   // [55:56] uni0273 + uni0261 : 29 (cmuntt)
-    0x2bc0025f,   // [56:57] uni0273 + uni025F : 87 (cmuntt) ;;
-    0x2b80f147,   // [57:58] uni027B + beta.ipa : 87 (cmuntt)
-    0x2b80029d,   // [58:59] uni027B + uni029D : 87 (cmuntt)
-    0x2b800283,   // [59:60] uni027B + uni0283 : 87 (cmuntt)
-    0x2b800272,   // [60:61] uni027B + uni0272 : 87 (cmuntt)
-    0x0e800261,   // [61:62] uni027B + uni0261 : 29 (cmuntt)
-    0x2bc0025f,   // [62:63] uni027B + uni025F : 87 (cmuntt) ;;
-    0x2b800295,   // [63:64] uni0283 + uni0295 : 87 (cmuntt)
-    0x2bc00294,   // [64:65] uni0283 + uni0294 : 87 (cmuntt) ;;
-    0x2b800295,   // [65:66] uni0284 + uni0295 : 87 (cmuntt)
-    0x2bc00294,   // [66:67] uni0284 + uni0294 : 87 (cmuntt) ;;
-    0x2b80f147,   // [67:68] uni0290 + beta.ipa : 87 (cmuntt)
-    0x2b80029d,   // [68:69] uni0290 + uni029D : 87 (cmuntt)
-    0x2b800283,   // [69:70] uni0290 + uni0283 : 87 (cmuntt)
-    0x2b800272,   // [70:71] uni0290 + uni0272 : 87 (cmuntt)
-    0x0e800261,   // [71:72] uni0290 + uni0261 : 29 (cmuntt)
-    0x2bc0025f,   // [72:73] uni0290 + uni025F : 87 (cmuntt) ;;
-    0x2b800295,   // [73:74] uni029B + uni0295 : 87 (cmuntt)
-    0x2bc00294,   // [74:75] uni029B + uni0294 : 87 (cmuntt) ;;
-    0x2b800295,   // [75:76] uni02A0 + uni0295 : 87 (cmuntt)
-    0x2bc00294,   // [76:77] uni02A0 + uni0294 : 87 (cmuntt) ;;
-    0x2b800295,   // [77:78] uni02A7 + uni0295 : 87 (cmuntt)
-    0x2bc00294,   // [78:79] uni02A7 + uni0294 : 87 (cmuntt) ;;
-    0xd4c002bb,   // [79:80] uni02BB + uni02BB : -87 (cmuntt) ;;
-    0xd480f130,   // [80:81] uni1FCD + uni1FBC.alt : -87 (cmuntt)
-    0xf180039f,   // [81:82] uni1FCD + Omicron : -29 (cmuntt)
-    0xd4c00391,   // [82:83] uni1FCD + Alpha : -87 (cmuntt) ;;
-    0xd480f130,   // [83:84] uni1FDD + uni1FBC.alt : -87 (cmuntt)
-    0xf180039f,   // [84:85] uni1FDD + Omicron : -29 (cmuntt)
-    0xd4c00391,   // [85:86] uni1FDD + Alpha : -87 (cmuntt) ;;
+    0x2b800295,   // [31:32] LATIN_SMALL_LETTER_C_WITH_HOOK + LATIN_LETTER_PHARYNGEAL_VOICED_FRICATIVE : 87 (cmuntt)
+    0x2bc00294,   // [32:33] LATIN_SMALL_LETTER_C_WITH_HOOK + LATIN_LETTER_GLOTTAL_STOP : 87 (cmuntt) ;;
+    0x2b800295,   // [33:34] LATIN_SMALL_LETTER_T_WITH_CURL + LATIN_LETTER_PHARYNGEAL_VOICED_FRICATIVE : 87 (cmuntt)
+    0x2bc00294,   // [34:35] LATIN_SMALL_LETTER_T_WITH_CURL + LATIN_LETTER_GLOTTAL_STOP : 87 (cmuntt) ;;
+    0x2b80f147,   // [35:36] LATIN_SMALL_LETTER_D_WITH_TAIL + beta.ipa : 87 (cmuntt)
+    0x2b80029d,   // [36:37] LATIN_SMALL_LETTER_D_WITH_TAIL + LATIN_SMALL_LETTER_J_WITH_CROSSED_TAIL : 87 (cmuntt)
+    0x2b800283,   // [37:38] LATIN_SMALL_LETTER_D_WITH_TAIL + LATIN_SMALL_LETTER_ESH : 87 (cmuntt)
+    0x2b800272,   // [38:39] LATIN_SMALL_LETTER_D_WITH_TAIL + LATIN_SMALL_LETTER_N_WITH_LEFT_HOOK : 87 (cmuntt)
+    0x0e800261,   // [39:40] LATIN_SMALL_LETTER_D_WITH_TAIL + LATIN_SMALL_LETTER_SCRIPT_G : 29 (cmuntt)
+    0x2bc0025f,   // [40:41] LATIN_SMALL_LETTER_D_WITH_TAIL + LATIN_SMALL_LETTER_DOTLESS_J_WITH_STROKE : 87 (cmuntt) ;;
+    0x2b800295,   // [41:42] LATIN_SMALL_LETTER_D_WITH_HOOK + LATIN_LETTER_PHARYNGEAL_VOICED_FRICATIVE : 87 (cmuntt)
+    0x2bc00294,   // [42:43] LATIN_SMALL_LETTER_D_WITH_HOOK + LATIN_LETTER_GLOTTAL_STOP : 87 (cmuntt) ;;
+    0x2b800295,   // [43:44] LATIN_SMALL_LETTER_G_WITH_HOOK + LATIN_LETTER_PHARYNGEAL_VOICED_FRICATIVE : 87 (cmuntt)
+    0x2bc00294,   // [44:45] LATIN_SMALL_LETTER_G_WITH_HOOK + LATIN_LETTER_GLOTTAL_STOP : 87 (cmuntt) ;;
+    0x2b80f147,   // [45:46] LATIN_SMALL_LETTER_L_WITH_RETROFLEX_HOOK + beta.ipa : 87 (cmuntt)
+    0x2b80029d,   // [46:47] LATIN_SMALL_LETTER_L_WITH_RETROFLEX_HOOK + LATIN_SMALL_LETTER_J_WITH_CROSSED_TAIL : 87 (cmuntt)
+    0x2b800283,   // [47:48] LATIN_SMALL_LETTER_L_WITH_RETROFLEX_HOOK + LATIN_SMALL_LETTER_ESH : 87 (cmuntt)
+    0x2b800272,   // [48:49] LATIN_SMALL_LETTER_L_WITH_RETROFLEX_HOOK + LATIN_SMALL_LETTER_N_WITH_LEFT_HOOK : 87 (cmuntt)
+    0x0e800261,   // [49:50] LATIN_SMALL_LETTER_L_WITH_RETROFLEX_HOOK + LATIN_SMALL_LETTER_SCRIPT_G : 29 (cmuntt)
+    0x2bc0025f,   // [50:51] LATIN_SMALL_LETTER_L_WITH_RETROFLEX_HOOK + LATIN_SMALL_LETTER_DOTLESS_J_WITH_STROKE : 87 (cmuntt) ;;
+    0x2b80f147,   // [51:52] LATIN_SMALL_LETTER_N_WITH_RETROFLEX_HOOK + beta.ipa : 87 (cmuntt)
+    0x2b80029d,   // [52:53] LATIN_SMALL_LETTER_N_WITH_RETROFLEX_HOOK + LATIN_SMALL_LETTER_J_WITH_CROSSED_TAIL : 87 (cmuntt)
+    0x2b800283,   // [53:54] LATIN_SMALL_LETTER_N_WITH_RETROFLEX_HOOK + LATIN_SMALL_LETTER_ESH : 87 (cmuntt)
+    0x2b800272,   // [54:55] LATIN_SMALL_LETTER_N_WITH_RETROFLEX_HOOK + LATIN_SMALL_LETTER_N_WITH_LEFT_HOOK : 87 (cmuntt)
+    0x0e800261,   // [55:56] LATIN_SMALL_LETTER_N_WITH_RETROFLEX_HOOK + LATIN_SMALL_LETTER_SCRIPT_G : 29 (cmuntt)
+    0x2bc0025f,   // [56:57] LATIN_SMALL_LETTER_N_WITH_RETROFLEX_HOOK + LATIN_SMALL_LETTER_DOTLESS_J_WITH_STROKE : 87 (cmuntt) ;;
+    0x2b80f147,   // [57:58] LATIN_SMALL_LETTER_TURNED_R_WITH_HOOK + beta.ipa : 87 (cmuntt)
+    0x2b80029d,   // [58:59] LATIN_SMALL_LETTER_TURNED_R_WITH_HOOK + LATIN_SMALL_LETTER_J_WITH_CROSSED_TAIL : 87 (cmuntt)
+    0x2b800283,   // [59:60] LATIN_SMALL_LETTER_TURNED_R_WITH_HOOK + LATIN_SMALL_LETTER_ESH : 87 (cmuntt)
+    0x2b800272,   // [60:61] LATIN_SMALL_LETTER_TURNED_R_WITH_HOOK + LATIN_SMALL_LETTER_N_WITH_LEFT_HOOK : 87 (cmuntt)
+    0x0e800261,   // [61:62] LATIN_SMALL_LETTER_TURNED_R_WITH_HOOK + LATIN_SMALL_LETTER_SCRIPT_G : 29 (cmuntt)
+    0x2bc0025f,   // [62:63] LATIN_SMALL_LETTER_TURNED_R_WITH_HOOK + LATIN_SMALL_LETTER_DOTLESS_J_WITH_STROKE : 87 (cmuntt) ;;
+    0x2b800295,   // [63:64] LATIN_SMALL_LETTER_ESH + LATIN_LETTER_PHARYNGEAL_VOICED_FRICATIVE : 87 (cmuntt)
+    0x2bc00294,   // [64:65] LATIN_SMALL_LETTER_ESH + LATIN_LETTER_GLOTTAL_STOP : 87 (cmuntt) ;;
+    0x2b800295,   // [65:66] LATIN_SMALL_LETTER_DOTLESS_J_WITH_STROKE_AND_HOOK + LATIN_LETTER_PHARYNGEAL_VOICED_FRICATIVE : 87 (cmuntt)
+    0x2bc00294,   // [66:67] LATIN_SMALL_LETTER_DOTLESS_J_WITH_STROKE_AND_HOOK + LATIN_LETTER_GLOTTAL_STOP : 87 (cmuntt) ;;
+    0x2b80f147,   // [67:68] LATIN_SMALL_LETTER_Z_WITH_RETROFLEX_HOOK + beta.ipa : 87 (cmuntt)
+    0x2b80029d,   // [68:69] LATIN_SMALL_LETTER_Z_WITH_RETROFLEX_HOOK + LATIN_SMALL_LETTER_J_WITH_CROSSED_TAIL : 87 (cmuntt)
+    0x2b800283,   // [69:70] LATIN_SMALL_LETTER_Z_WITH_RETROFLEX_HOOK + LATIN_SMALL_LETTER_ESH : 87 (cmuntt)
+    0x2b800272,   // [70:71] LATIN_SMALL_LETTER_Z_WITH_RETROFLEX_HOOK + LATIN_SMALL_LETTER_N_WITH_LEFT_HOOK : 87 (cmuntt)
+    0x0e800261,   // [71:72] LATIN_SMALL_LETTER_Z_WITH_RETROFLEX_HOOK + LATIN_SMALL_LETTER_SCRIPT_G : 29 (cmuntt)
+    0x2bc0025f,   // [72:73] LATIN_SMALL_LETTER_Z_WITH_RETROFLEX_HOOK + LATIN_SMALL_LETTER_DOTLESS_J_WITH_STROKE : 87 (cmuntt) ;;
+    0x2b800295,   // [73:74] LATIN_LETTER_SMALL_CAPITAL_G_WITH_HOOK + LATIN_LETTER_PHARYNGEAL_VOICED_FRICATIVE : 87 (cmuntt)
+    0x2bc00294,   // [74:75] LATIN_LETTER_SMALL_CAPITAL_G_WITH_HOOK + LATIN_LETTER_GLOTTAL_STOP : 87 (cmuntt) ;;
+    0x2b800295,   // [75:76] LATIN_SMALL_LETTER_Q_WITH_HOOK + LATIN_LETTER_PHARYNGEAL_VOICED_FRICATIVE : 87 (cmuntt)
+    0x2bc00294,   // [76:77] LATIN_SMALL_LETTER_Q_WITH_HOOK + LATIN_LETTER_GLOTTAL_STOP : 87 (cmuntt) ;;
+    0x2b800295,   // [77:78] LATIN_SMALL_LETTER_TESH_DIGRAPH + LATIN_LETTER_PHARYNGEAL_VOICED_FRICATIVE : 87 (cmuntt)
+    0x2bc00294,   // [78:79] LATIN_SMALL_LETTER_TESH_DIGRAPH + LATIN_LETTER_GLOTTAL_STOP : 87 (cmuntt) ;;
+    0xd4c002bb,   // [79:80] MODIFIER_LETTER_TURNED_COMMA + MODIFIER_LETTER_TURNED_COMMA : -87 (cmuntt) ;;
+    0xd480f130,   // [80:81] GREEK_PSILI_AND_VARIA + GREEK_CAPITAL_LETTER_ALPHA_WITH_PROSGEGRAMMENI.alt : -87 (cmuntt)
+    0xf180039f,   // [81:82] GREEK_PSILI_AND_VARIA + Omicron : -29 (cmuntt)
+    0xd4c00391,   // [82:83] GREEK_PSILI_AND_VARIA + Alpha : -87 (cmuntt) ;;
+    0xd480f130,   // [83:84] GREEK_DASIA_AND_VARIA + GREEK_CAPITAL_LETTER_ALPHA_WITH_PROSGEGRAMMENI.alt : -87 (cmuntt)
+    0xf180039f,   // [84:85] GREEK_DASIA_AND_VARIA + Omicron : -29 (cmuntt)
+    0xd4c00391,   // [85:86] GREEK_DASIA_AND_VARIA + Alpha : -87 (cmuntt) ;;
     0xd480f51a,   // [86:87] Alpha.sc + Upsilondieresis.sc : -87 (cmuntt)
     0xd480f517,   // [87:88] Alpha.sc + Psi.sc : -87 (cmuntt)
     0xe300f515,   // [88:89] Alpha.sc + Phi.sc : -58 (cmuntt)
@@ -20916,10 +20920,10 @@ const uint32_t kerntable[] =
     0xe300f513,   // [90:91] Alpha.sc + Tau.sc : -58 (cmuntt)
     0xe300f50e,   // [91:92] Alpha.sc + Omicron.sc : -58 (cmuntt)
     0xe340f507,   // [92:93] Alpha.sc + Theta.sc : -58 (cmuntt) ;;
-    0xd480f514,   // [93:94] uni0394.sc + Upsilon.sc : -87 (cmuntt)
-    0xf7c0f50e,   // [94:95] uni0394.sc + Omicron.sc : -17 (cmuntt) ;;
+    0xd480f514,   // [93:94] GREEK_CAPITAL_LETTER_DELTA.sc + Upsilon.sc : -87 (cmuntt)
+    0xf7c0f50e,   // [94:95] GREEK_CAPITAL_LETTER_DELTA.sc + Omicron.sc : -17 (cmuntt) ;;
     0xcb80f50a,   // [95:96] Gamma.sc + Lambda.sc : -105 (cmuntt)
-    0xd480f502,   // [96:97] Gamma.sc + uni0394.sc : -87 (cmuntt)
+    0xd480f502,   // [96:97] Gamma.sc + GREEK_CAPITAL_LETTER_DELTA.sc : -87 (cmuntt)
     0xc5c0f500,   // [97:98] Gamma.sc + Alpha.sc : -117 (cmuntt) ;;
     0xe340f500,   // [98:99] Theta.sc + Alpha.sc : -58 (cmuntt) ;;
     0xe340f50e,   // [99:100] Kappa.sc + Omicron.sc : -58 (cmuntt) ;;
@@ -20932,12 +20936,12 @@ const uint32_t kerntable[] =
     0xf640f500,   // [106:107] Sigma.sc + Alpha.sc : -20 (cmuntt) ;;
     0xe340f500,   // [107:108] Tau.sc + Alpha.sc : -58 (cmuntt) ;;
     0xd480f50a,   // [108:109] Upsilon.sc + Lambda.sc : -87 (cmuntt)
-    0xd480f502,   // [109:110] Upsilon.sc + uni0394.sc : -87 (cmuntt)
+    0xd480f502,   // [109:110] Upsilon.sc + GREEK_CAPITAL_LETTER_DELTA.sc : -87 (cmuntt)
     0xd4c0f500,   // [110:111] Upsilon.sc + Alpha.sc : -87 (cmuntt) ;;
     0xe340f500,   // [111:112] Phi.sc + Alpha.sc : -58 (cmuntt) ;;
     0xd4c0f500,   // [112:113] Psi.sc + Alpha.sc : -87 (cmuntt) ;;
     0xd480f50a,   // [113:114] Upsilondieresis.sc + Lambda.sc : -87 (cmuntt)
-    0xd480f502,   // [114:115] Upsilondieresis.sc + uni0394.sc : -87 (cmuntt)
+    0xd480f502,   // [114:115] Upsilondieresis.sc + GREEK_CAPITAL_LETTER_DELTA.sc : -87 (cmuntt)
     0xd4c0f500,   // [115:116] Upsilondieresis.sc + Alpha.sc : -87 (cmuntt) ;;
     0x0fa0006c,   // [116:117] ff + l ligature #31 (cmuntt)
     0x10600069,   // [117:118] ff + i ligature #32 (cmuntt) ;;
@@ -26020,76 +26024,76 @@ const uint32_t kerntable[] =
 const uint32_t ligaturetable[] = 
 {
     62083,    // [0] space + hookabovecomb => space_hookabovecomb (cmuntt)
-    61877,    // [1] space + uni0489 => space_uni0489 (cmuntt)
-    61876,    // [2] space + uni0488 => space_uni0488 (cmuntt)
-    61875,    // [3] space + uni0486 => space_uni0486 (cmuntt)
-    61874,    // [4] space + uni0485 => space_uni0485 (cmuntt)
-    61873,    // [5] space + uni0484 => space_uni0484 (cmuntt)
-    61872,    // [6] space + uni034D => space_uni034D (cmuntt)
-    61871,    // [7] space + uni033C => space_uni033C (cmuntt)
-    61870,    // [8] space + uni033B => space_uni033B (cmuntt)
-    61869,    // [9] space + uni033A => space_uni033A (cmuntt)
-    61868,    // [10] space + uni0337 => space_uni0337 (cmuntt)
-    61867,    // [11] space + uni0335 => space_uni0335 (cmuntt)
-    61866,    // [12] space + uni032B => space_uni032B (cmuntt)
-    61865,    // [13] space + uni032A => space_uni032A (cmuntt)
-    61864,    // [14] space + uni0322 => space_uni0322 (cmuntt)
-    61863,    // [15] space + uni0321 => space_uni0321 (cmuntt)
-    61862,    // [16] space + uni0311 => space_uni0311 (cmuntt)
-    61861,    // [17] space + uni030F => space_uni030F (cmuntt)
-    61860,    // [18] space + uni030E => space_uni030E (cmuntt)
-    61859,    // [19] space + uni030D => space_uni030D (cmuntt)
-    61858,    // [20] space + uni0303 => space_uni0303 (cmuntt)
-    61794,    // [21] space + uni1DC9 => space_uni1DC9 (cmuntt)
-    61793,    // [22] space + uni1DC8 => space_uni1DC8 (cmuntt)
-    61792,    // [23] space + uni1DC5 => space_uni1DC5 (cmuntt)
-    61791,    // [24] space + uni1DC4 => space_uni1DC4 (cmuntt)
+    61877,    // [1] space + COMBINING_CYRILLIC_MILLIONS_SIGN => space_COMBINING_CYRILLIC_MILLIONS_SIGN (cmuntt)
+    61876,    // [2] space + COMBINING_CYRILLIC_HUNDRED_THOUSANDS_SIGN => space_COMBINING_CYRILLIC_HUNDRED_THOUSANDS_SIGN (cmuntt)
+    61875,    // [3] space + COMBINING_CYRILLIC_PSILI_PNEUMATA => space_COMBINING_CYRILLIC_PSILI_PNEUMATA (cmuntt)
+    61874,    // [4] space + COMBINING_CYRILLIC_DASIA_PNEUMATA => space_COMBINING_CYRILLIC_DASIA_PNEUMATA (cmuntt)
+    61873,    // [5] space + COMBINING_CYRILLIC_PALATALIZATION => space_COMBINING_CYRILLIC_PALATALIZATION (cmuntt)
+    61872,    // [6] space + COMBINING_LEFT_RIGHT_ARROW_BELOW => space_COMBINING_LEFT_RIGHT_ARROW_BELOW (cmuntt)
+    61871,    // [7] space + COMBINING_SEAGULL_BELOW => space_COMBINING_SEAGULL_BELOW (cmuntt)
+    61870,    // [8] space + COMBINING_SQUARE_BELOW => space_COMBINING_SQUARE_BELOW (cmuntt)
+    61869,    // [9] space + COMBINING_INVERTED_BRIDGE_BELOW => space_COMBINING_INVERTED_BRIDGE_BELOW (cmuntt)
+    61868,    // [10] space + COMBINING_SHORT_SOLIDUS_OVERLAY => space_COMBINING_SHORT_SOLIDUS_OVERLAY (cmuntt)
+    61867,    // [11] space + COMBINING_SHORT_STROKE_OVERLAY => space_COMBINING_SHORT_STROKE_OVERLAY (cmuntt)
+    61866,    // [12] space + COMBINING_INVERTED_DOUBLE_ARCH_BELOW => space_COMBINING_INVERTED_DOUBLE_ARCH_BELOW (cmuntt)
+    61865,    // [13] space + COMBINING_BRIDGE_BELOW => space_COMBINING_BRIDGE_BELOW (cmuntt)
+    61864,    // [14] space + COMBINING_RETROFLEX_HOOK_BELOW => space_COMBINING_RETROFLEX_HOOK_BELOW (cmuntt)
+    61863,    // [15] space + COMBINING_PALATALIZED_HOOK_BELOW => space_COMBINING_PALATALIZED_HOOK_BELOW (cmuntt)
+    61862,    // [16] space + COMBINING_INVERTED_BREVE => space_COMBINING_INVERTED_BREVE (cmuntt)
+    61861,    // [17] space + COMBINING_DOUBLE_GRAVE_ACCENT => space_COMBINING_DOUBLE_GRAVE_ACCENT (cmuntt)
+    61860,    // [18] space + COMBINING_DOUBLE_VERTICAL_LINE_ABOVE => space_COMBINING_DOUBLE_VERTICAL_LINE_ABOVE (cmuntt)
+    61859,    // [19] space + COMBINING_VERTICAL_LINE_ABOVE => space_COMBINING_VERTICAL_LINE_ABOVE (cmuntt)
+    61858,    // [20] space + COMBINING_TILDE => space_COMBINING_TILDE (cmuntt)
+    61794,    // [21] space + COMBINING_ACUTE_GRAVE_ACUTE => space_COMBINING_ACUTE_GRAVE_ACUTE (cmuntt)
+    61793,    // [22] space + COMBINING_GRAVE_ACUTE_GRAVE => space_COMBINING_GRAVE_ACUTE_GRAVE (cmuntt)
+    61792,    // [23] space + COMBINING_GRAVE_MACRON => space_COMBINING_GRAVE_MACRON (cmuntt)
+    61791,    // [24] space + COMBINING_MACRON_ACUTE => space_COMBINING_MACRON_ACUTE (cmuntt)
     306,      // [25] I + J => IJ (cmuntt)
     64258,    // [26] f + l => fl (cmuntt)
     64257,    // [27] f + i => fi (cmuntt)
     64256,    // [28] f + f => ff (cmuntt)
     307,      // [29] i + j => ij (cmuntt)
-    64261,    // [30] longs + t => uniFB05 (cmuntt)
+    64261,    // [30] longs + t => LATIN_SMALL_LIGATURE_LONG_S_T (cmuntt)
     64260,    // [31] ff + l => ffl (cmuntt)
     64259,    // [32] ff + i => ffi (cmuntt)
-    306,      // [33] I + J => uni0132 (cslSTIX-Regular)
+    306,      // [33] I + J => LATIN_CAPITAL_LIGATURE_IJ (cslSTIX-Regular)
     1081345,   // [34] f + j => f_j (cslSTIX-Regular)
     64258,    // [35] f + l => fl (cslSTIX-Regular)
     64257,    // [36] f + i => fi (cslSTIX-Regular)
     64256,    // [37] f + f => ff (cslSTIX-Regular)
-    307,      // [38] i + j => uni0133 (cslSTIX-Regular)
+    307,      // [38] i + j => LATIN_SMALL_LIGATURE_IJ (cslSTIX-Regular)
     64259,    // [39] ff + i => ffi (cslSTIX-Regular)
     64260,    // [40] ff + l => ffl (cslSTIX-Regular)
-    306,      // [41] I + J => uni0132 (cslSTIX-Bold)
+    306,      // [41] I + J => LATIN_CAPITAL_LIGATURE_IJ (cslSTIX-Bold)
     1081345,   // [42] f + j => f_j (cslSTIX-Bold)
     64258,    // [43] f + l => fl (cslSTIX-Bold)
     64257,    // [44] f + i => fi (cslSTIX-Bold)
     64256,    // [45] f + f => ff (cslSTIX-Bold)
-    307,      // [46] i + j => uni0133 (cslSTIX-Bold)
+    307,      // [46] i + j => LATIN_SMALL_LIGATURE_IJ (cslSTIX-Bold)
     64259,    // [47] ff + i => ffi (cslSTIX-Bold)
     64260,    // [48] ff + l => ffl (cslSTIX-Bold)
-    306,      // [49] I + J => uni0132 (cslSTIX-Italic)
+    306,      // [49] I + J => LATIN_CAPITAL_LIGATURE_IJ (cslSTIX-Italic)
     1081345,   // [50] f + j => f_j (cslSTIX-Italic)
     64258,    // [51] f + l => fl (cslSTIX-Italic)
     64257,    // [52] f + i => fi (cslSTIX-Italic)
     64256,    // [53] f + f => ff (cslSTIX-Italic)
-    307,      // [54] i + j => uni0133 (cslSTIX-Italic)
+    307,      // [54] i + j => LATIN_SMALL_LIGATURE_IJ (cslSTIX-Italic)
     64259,    // [55] ff + i => ffi (cslSTIX-Italic)
     64260,    // [56] ff + l => ffl (cslSTIX-Italic)
-    306,      // [57] I + J => uni0132 (cslSTIX-BoldItalic)
+    306,      // [57] I + J => LATIN_CAPITAL_LIGATURE_IJ (cslSTIX-BoldItalic)
     1081345,   // [58] f + j => f_j (cslSTIX-BoldItalic)
     64258,    // [59] f + l => fl (cslSTIX-BoldItalic)
     64257,    // [60] f + i => fi (cslSTIX-BoldItalic)
     64256,    // [61] f + f => ff (cslSTIX-BoldItalic)
-    307,      // [62] i + j => uni0133 (cslSTIX-BoldItalic)
+    307,      // [62] i + j => LATIN_SMALL_LIGATURE_IJ (cslSTIX-BoldItalic)
     64259,    // [63] ff + i => ffi (cslSTIX-BoldItalic)
     64260,    // [64] ff + l => ffl (cslSTIX-BoldItalic)
-    306,      // [65] I + J => uni0132 (cslSTIXMath-Regular)
+    306,      // [65] I + J => LATIN_CAPITAL_LIGATURE_IJ (cslSTIXMath-Regular)
     1081345,   // [66] f + j => uniE0B3 (cslSTIXMath-Regular)
     64258,    // [67] f + l => fl (cslSTIXMath-Regular)
     64257,    // [68] f + i => fi (cslSTIXMath-Regular)
     64256,    // [69] f + f => ff (cslSTIXMath-Regular)
-    307,      // [70] i + j => uni0133 (cslSTIXMath-Regular)
+    307,      // [70] i + j => LATIN_SMALL_LIGATURE_IJ (cslSTIXMath-Regular)
     64259,    // [71] ff + i => ffi (cslSTIXMath-Regular)
     64260     // [72] ff + l => ffl (cslSTIXMath-Regular)
 };

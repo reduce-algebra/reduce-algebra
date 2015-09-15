@@ -1641,33 +1641,6 @@ endif !windows
 
 default:	reduce$(EXEEXT) reduce.img
 
-if mac_framework
-if altgcc
-
-# On OSX I will sometimes try to compile almost all of Reduce using a version
-# if (genuine) gcc, but this one file needs compiling using clang (and on
-# OSX the command "gcc" in fact invoked clang). I could find myself forced
-# to do similar things on other platforms where clang may be the default
-# C compiler...
-# There is no point in trying this if I did not have two C compilers in play!
-# Because this is at present ONLY done on the Mac I am copying the expansion
-# of how fwin.o is made. If automake is updated this could need review!
-
-fwin.o: fwin.c
-	$(AM_V_CC)$(ORIGCC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fwin.o -MD -MP -MF $(DEPDIR)/fwin.Tpo -c -o fwin.o `test -f 'fwin.c' || echo '$(srcdir)/'`fwin.c
-	$(AM_V_at)$(am__mv) $(DEPDIR)/fwin.Tpo $(DEPDIR)/fwin.Po
-
-csl-fwin.o: fwin.c
-	$(AM_V_CCn)$(ORIGCC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT csl-fwin.o -MD -MP -MF $(DEPDIR)/csl-fwin.Tpo -c -o csl-fwin.o `test -f 'fwin.c' || echo '$(srcdir)/'`fwin.c
-	$(AM_V_at)$(am__mv) $(DEPDIR)/csl-fwin.Tpo $(DEPDIR)/csl-fwin.Po
-
-reduce-fwin.o: fwin.c
-	$(AM_V_CC)$(ORIGCC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT reduce-fwin.o -MD -MP -MF $(DEPDIR)/reduce-fwin.Tpo -c -o reduce-fwin.o `test -f 'fwin.c' || echo '$(srcdir)/'`fwin.c
-	$(AM_V_at)$(am__mv) $(DEPDIR)/reduce-fwin.Tpo $(DEPDIR)/reduce-fwin.Po
-
-endif altgcc
-endif mac_framework
-
 # This is the command needed to compile a module for use as a DLL or other
 # dynamically loaded module
 

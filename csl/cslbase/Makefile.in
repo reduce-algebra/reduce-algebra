@@ -454,8 +454,6 @@ MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
-ORIGCC = @ORIGCC@
-ORIGCXX = @ORIGCXX@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -481,8 +479,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
-altGCC = @altGCC@
-altGXX = @altGXX@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -1807,9 +1803,7 @@ csl-preserve.obj: preserve.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o csl-preserve.obj `if test -f 'preserve.c'; then $(CYGPATH_W) 'preserve.c'; else $(CYGPATH_W) '$(srcdir)/preserve.c'; fi`
 
-@altgcc_FALSE@csl-fwin.o: fwin.c
-
-@mac_framework_FALSE@csl-fwin.o: fwin.c
+csl-fwin.o: fwin.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT csl-fwin.o -MD -MP -MF $(DEPDIR)/csl-fwin.Tpo -c -o csl-fwin.o `test -f 'fwin.c' || echo '$(srcdir)/'`fwin.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/csl-fwin.Tpo $(DEPDIR)/csl-fwin.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fwin.c' object='csl-fwin.o' libtool=no @AMDEPBACKSLASH@
@@ -2481,9 +2475,7 @@ reduce-preserve.obj: preserve.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reduce-preserve.obj `if test -f 'preserve.c'; then $(CYGPATH_W) 'preserve.c'; else $(CYGPATH_W) '$(srcdir)/preserve.c'; fi`
 
-@altgcc_FALSE@reduce-fwin.o: fwin.c
-
-@mac_framework_FALSE@reduce-fwin.o: fwin.c
+reduce-fwin.o: fwin.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT reduce-fwin.o -MD -MP -MF $(DEPDIR)/reduce-fwin.Tpo -c -o reduce-fwin.o `test -f 'fwin.c' || echo '$(srcdir)/'`fwin.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/reduce-fwin.Tpo $(DEPDIR)/reduce-fwin.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fwin.c' object='reduce-fwin.o' libtool=no @AMDEPBACKSLASH@
@@ -4745,27 +4737,6 @@ install-data-local: $(image_files)
 #=============================================================================
 
 default:	reduce$(EXEEXT) reduce.img
-
-# On OSX I will sometimes try to compile almost all of Reduce using a version
-# if (genuine) gcc, but this one file needs compiling using clang (and on
-# OSX the command "gcc" in fact invoked clang). I could find myself forced
-# to do similar things on other platforms where clang may be the default
-# C compiler...
-# There is no point in trying this if I did not have two C compilers in play!
-# Because this is at present ONLY done on the Mac I am copying the expansion
-# of how fwin.o is made. If automake is updated this could need review!
-
-@altgcc_TRUE@@mac_framework_TRUE@fwin.o: fwin.c
-@altgcc_TRUE@@mac_framework_TRUE@	$(AM_V_CC)$(ORIGCC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fwin.o -MD -MP -MF $(DEPDIR)/fwin.Tpo -c -o fwin.o `test -f 'fwin.c' || echo '$(srcdir)/'`fwin.c
-@altgcc_TRUE@@mac_framework_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/fwin.Tpo $(DEPDIR)/fwin.Po
-
-@altgcc_TRUE@@mac_framework_TRUE@csl-fwin.o: fwin.c
-@altgcc_TRUE@@mac_framework_TRUE@	$(AM_V_CCn)$(ORIGCC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT csl-fwin.o -MD -MP -MF $(DEPDIR)/csl-fwin.Tpo -c -o csl-fwin.o `test -f 'fwin.c' || echo '$(srcdir)/'`fwin.c
-@altgcc_TRUE@@mac_framework_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/csl-fwin.Tpo $(DEPDIR)/csl-fwin.Po
-
-@altgcc_TRUE@@mac_framework_TRUE@reduce-fwin.o: fwin.c
-@altgcc_TRUE@@mac_framework_TRUE@	$(AM_V_CC)$(ORIGCC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT reduce-fwin.o -MD -MP -MF $(DEPDIR)/reduce-fwin.Tpo -c -o reduce-fwin.o `test -f 'fwin.c' || echo '$(srcdir)/'`fwin.c
-@altgcc_TRUE@@mac_framework_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/reduce-fwin.Tpo $(DEPDIR)/reduce-fwin.Po
 
 dynmodule.$(DLLEXT):	$(srcdir)/dynmodule.c $(dyndep)
 	$(COMPILE_DLL) $(srcdir)/dynmodule.c $(dyndep) $(DEST)dynmodule.$(DLLEXT)

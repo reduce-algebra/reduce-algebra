@@ -34,7 +34,7 @@
 
 
 // Without the fullowing things like UINT64_C will not be available.
-#define __STDC_CONSTANT_MACROS 1
+#define __STDC_CONSTANT_MACROS
 
 #include"wx/wxprec.h"
 
@@ -840,7 +840,7 @@ showmathFrame::showmathFrame(const char *showmathfilename)
 
 
 static char default_data[4096] =
-    "deffont 1 General 24;"
+    "deffont 1 Regular 24;"
     "put 1 -408 0 84;"
     "put 1 14256 0 104;"
     "put 1 26256 0 101;"
@@ -1035,16 +1035,12 @@ static int32_t convert_font_name(char *dest, char *src)
 //    <anything else>-BoldItalic
 //    
     int32_t r = wxFONTFLAG_DEFAULT;
-    int len;
-logprintf("convert %s\n", src); fflush(stdout);
     if (strcmp(src, "cmuntt") == 0) strcpy(dest, "CMU Typewriter Text");
     else if (strcmp(src, "odokai") == 0) strcpy(dest, "AR PL New Kai");
     else if (strcmp(src, "Math") == 0) strcpy(dest, "cslSTIXMath");
     else sprintf(dest, "cslSTIX");
 // Here if the font name is suffixed as "-Bold" or "-Italic" or "-BoldItalic"
 // I will try to migrate the information into fontflags.
-logprintf("Need to process %s\n", dest); fflush(stdout);
-    len = strlen(dest);
     if (strstr(src, "BoldItalic") != NULL)
         r = (wxFontFlag)(wxFONTFLAG_BOLD + wxFONTFLAG_ITALIC);
     else if (strstr(src, "Bold") != NULL)
@@ -1065,6 +1061,22 @@ logprintf("Need to process %s\n", dest); fflush(stdout);
 
 logprintf("Gives %s with flags %x\n", dest, r); fflush(stdout);
     return r;
+}
+
+static void allow_for_utf16(wchar_t *ccc, int cp)
+{
+    if (sizeof(wchar_t) == 4 ||
+        cp <= 0xffff)
+    {   ccc[0] = cp;
+        ccc[1] = 0;
+    }
+    else
+    {   cp = (cp - 0x10000) & 0xfffff;
+        ccc[0] = 0xd800 + (cp >> 10);
+        ccc[1] = 0xdc00 + (cp & 0x3ff);
+        logprintf("Char mapped to %x %x\n", ccc[0], ccc[1]);
+        ccc[2] = 0;
+    }
 }
 
 void showmathPanel::OnPaint(wxPaintEvent &event)
@@ -1191,50 +1203,68 @@ logprintf("Fixed Pitch Baseline = %.6g\n", height-descent);
 
 
 // Now I need to do something more serious!
-    wxGraphicsFont general =
+    wxGraphicsFont regular =
         gc->CreateFont(wxFont(wxFontInfo(24).FaceName(wxT("cslSTIX"))));
-    if (general.IsNull()) logprintf("cslSTIX font not created\n");
-    gc->SetFont(general);
+    if (regular.IsNull()) logprintf("cslSTIX font not created\n");
+    gc->SetFont(regular);
     gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
-    logprintf("%.6g %.6g %.6g %.6g general\n", width, height, descent, xleading);
-    double generalBaseline = height - descent;
-    logprintf("general baseline = %.6g\n", height-descent);
-    wxGraphicsFont symbols =
+    logprintf("%.6g %.6g %.6g %.6g regular\n", width, height, descent, xleading);
+    double regularBaseline = height - descent;
+    logprintf("regular baseline = %.6g\n", height-descent);
+    wxGraphicsFont math =
         gc->CreateFont(wxFont(wxFontInfo(24).FaceName(wxT("cslSTIXMath"))));
-    if (symbols.IsNull()) logprintf("cslSTIXMath font not created\n");
+    if (math.IsNull()) logprintf("cslSTIXMath font not created\n");
     else logprintf("Sym font should be OK\n");
-    gc->SetFont(symbols);
+    gc->SetFont(math);
     gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
-    logprintf("%.6g %.6g %.6g %.6g symbols\n", width, height, descent, xleading);
+    logprintf("%.6g %.6g %.6g %.6g math\n", width, height, descent, xleading);
     gc->GetTextExtent(wxString((wchar_t)'M'), &width, &height, &descent, &xleading);
-    logprintf("%.6g %.6g %.6g %.6g symbols\n", width, height, descent, xleading);
+    logprintf("%.6g %.6g %.6g %.6g math\n", width, height, descent, xleading);
     gc->GetTextExtent(wxString((wchar_t)'j'), &width, &height, &descent, &xleading);
-    logprintf("%.6g %.6g %.6g %.6g symbols\n", width, height, descent, xleading);
+    logprintf("%.6g %.6g %.6g %.6g math\n", width, height, descent, xleading);
     double symbolsBaseline = height - descent;
 
-    gc->SetFont(symbols);
+// cslSTIXMath puts the glyphs used to build up huge delimiters in a
+// private use area. It expects the code to use maths tables to discover
+// where they are rather than mere unicode names.
+
+#define stix_LEFT_CURLY_BRACKET_UPPER_HOOK    0x10821c
+#define stix_LEFT_CURLY_BRACKET_MIDDLE_PIECE  0x10821d
+#define stix_CURLY_BRACKET_EXTENSION          0x10821f
+#define stix_LEFT_CURLY_BRACKET_LOWER_HOOK    0x10821e
+    gc->SetFont(math);
     gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
     logprintf("(D)em=%#.3g\n", dwidth);
     logprintf("(D)height = %#.3g total height = %#.3g leading = %#.3g\n",
         dheight-ddepth-dleading, dheight, dleading);
-    lookupchar(F_Math, unicode_LEFT_CURLY_BRACKET_UPPER_HOOK);
+    lookupchar(F_Math, stix_LEFT_CURLY_BRACKET_UPPER_HOOK);
     logprintf("upper hook   %d %d\n", c_lly, c_ury);
-    lookupchar(F_Math, unicode_LEFT_CURLY_BRACKET_MIDDLE_PIECE);
+    lookupchar(F_Math, stix_LEFT_CURLY_BRACKET_MIDDLE_PIECE);
     logprintf("middle piece %d %d\n", c_lly, c_ury);
-    lookupchar(F_Math, unicode_LEFT_CURLY_BRACKET_LOWER_HOOK);
+    lookupchar(F_Math, stix_LEFT_CURLY_BRACKET_LOWER_HOOK);
     logprintf("lower hook   %d %d\n", c_lly, c_ury);
-    lookupchar(F_Math, unicode_CURLY_BRACKET_EXTENSION);
+    lookupchar(F_Math, stix_CURLY_BRACKET_EXTENSION);
     logprintf("extension    %d %d\n", c_lly, c_ury);
 #define H (24.0)
 #define XX 120.0
 #define YY 100.0
-    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_UPPER_HOOK),   XX, YY-H-symbolsBaseline);
-    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_MIDDLE_PIECE), XX, YY-symbolsBaseline);
-    gc->DrawText(wxString((wchar_t)unicode_CURLY_BRACKET_EXTENSION),         XX, YY+H-symbolsBaseline);
-    gc->DrawText(wxString((wchar_t)unicode_LEFT_CURLY_BRACKET_LOWER_HOOK),   XX, YY+2.0*H-symbolsBaseline);
-    gc->SetFont(general);
-    gc->DrawText(wxString((wchar_t)unicode_GREEK_SMALL_LETTER_OMEGA),        XX, YY+100.0-generalBaseline);
-    gc->DrawText(wxString((wchar_t)unicode_RIGHT_ANGLE_WITH_DOWNWARDS_ZIGZAG_ARROW), XX+100.0, YY+100.0-generalBaseline);
+
+    {   wchar_t ccc[4];
+        allow_for_utf16(ccc, stix_LEFT_CURLY_BRACKET_UPPER_HOOK);
+        gc->DrawText(wxString(ccc), XX, YY-H-symbolsBaseline);
+        allow_for_utf16(ccc, stix_LEFT_CURLY_BRACKET_MIDDLE_PIECE);
+        gc->DrawText(wxString(ccc), XX, YY-symbolsBaseline);
+        allow_for_utf16(ccc, stix_CURLY_BRACKET_EXTENSION);
+        gc->DrawText(wxString(ccc), XX, YY+H-symbolsBaseline);
+        allow_for_utf16(ccc, stix_LEFT_CURLY_BRACKET_LOWER_HOOK);
+        gc->DrawText(wxString(ccc), XX, YY+2.0*H-symbolsBaseline);
+    }
+// The next two have codepoints in the Basic Multilingual Plane so
+// I do not need to messa round with encoding even on platforms like
+// Windows that use UTF16 internally.
+    gc->SetFont(regular);
+    gc->DrawText(wxString((wchar_t)unicode_GREEK_SMALL_LETTER_OMEGA),        XX, YY+100.0-regularBaseline);
+    gc->DrawText(wxString((wchar_t)unicode_RIGHT_ANGLE_WITH_DOWNWARDS_ZIGZAG_ARROW), XX+100.0, YY+100.0-regularBaseline);
 
     char *in = showmathData;
     logprintf("About to process data:\n\"%.70s\"... ...\n\n", in);
@@ -1285,18 +1315,7 @@ logprintf("Fixed Pitch Baseline = %.6g\n", height-descent);
 // For the benefit of Windows I need to represent code points in other
 // then the basic multilingual pane as surrogate pairs. Well that will
 // probably apply anywhere where sizeof(wchar_t) < 4.
-            if (sizeof(wchar_t) == 4 ||
-                cp <= 0xffff)
-            {   ccc[0] = cp;
-                ccc[1] = 0;
-            }
-            else
-            {   cp = (cp - 0x10000) & 0xfffff;
-                ccc[0] = 0xd800 + (cp >> 10);
-                ccc[1] = 0xdc00 + (cp & 0x3ff);
-                logprintf("Char mapped to %x %x\n", ccc[0], ccc[1]);
-                ccc[2] = 0;
-            }
+            allow_for_utf16(ccc, cp);
             gc->DrawText(wxString(ccc),
                          x/1000, 400-y/1000-graphicsBaseline[n]);
         }
