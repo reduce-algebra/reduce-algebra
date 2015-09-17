@@ -3579,8 +3579,10 @@ asserted procedure vsub_compute!-rsl(op: Id, f: SF, x: Kernel, s: Any): Any;
 	 assoc({ldeg f, s, op}, rsl!-alist!-clustering!*)
       else
       	 assoc({ldeg f, s, op}, rsl!-alist!*);
-      if null w then
-	 return 'failed;
+      if null w then <<
+	 assert(nil);
+	 return 'failed
+      >>;
       return cdr w
    end;
 
@@ -3612,7 +3614,7 @@ asserted procedure vsub_vsub(op: Id, g: SF, x: Kernel, pr: VSpr, theo: Theory): 
 	 assert(nil);
 	 return 'failed
       >>;
-      return apply(cdr w, {g, f, x, theo})
+      return cl_nnf apply(cdr w, {g, f, x, theo})
    end;
 
 endmodule;  % [ofsfvslists]
