@@ -449,13 +449,15 @@ asserted procedure vsde_compute!-pcl(de: VSde);
       % find Gauss prime constituents
       f := vsde_f de;
       gl := qff_gaussposl(vsde_v de, f, vsde_bvl de, vsde_curtheo de);
-      if vsde_failedalp gl then <<
-	 vsde_putpcl(de, nil);
-	 return
-      >>;
-      % TODO: Choose an efficient ordering of [gl].
-      % TODO: Here is the place for gentle simplification.
-      f := qff_replacel(f, for each pr in gl collect car pr, 'false);
+      if not vsde_failedalp gl then <<
+      	 % TODO: Choose an efficient ordering of [gl].
+      	 % TODO: Here is the place for gentle simplification.
+      	 f := qff_replacel(f, for each pr in gl collect car pr, 'false)
+      >> else
+	 % It makes sense to continue in the failed case, because the
+	 % subformula causing the failure can become part of a
+	 % co-Gauss prime constituent.
+	 gl := nil;
       % find co-Gauss prime constituents
       cgl := qff_cogaussposl(vsde_v de, f, vsde_bvl de, vsde_curtheo de);
       if vsde_failedalp cgl then <<
