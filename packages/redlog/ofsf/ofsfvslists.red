@@ -362,7 +362,7 @@ rsl!-alist!* := {
 	    }
 	       }
 
-#if (not memq 'psl lispsystem!*)
+#if (not (memq 'psl lispsystem!*))
 ,
    {3, -1, 'equal} . {
       'ip . {
@@ -956,7 +956,7 @@ rsl!-alist!-clustering!* := {
 	    }
 	       }
 
-#if (not memq 'psl lispsystem!*)
+#if (not (memq 'psl lispsystem!*))
 ,
    {3, -1, 'equal} . {
       'ip . {
@@ -1185,8 +1185,10 @@ guard!-fnalist!* := {
    {2, '(2)} . 'guard!-2!-2,
    {2, '(-2 -1)} . 'guard!-2!-3m,
    {2, '(1 2)} . 'guard!-2!-3,
-   {2, '(-2 -1 1 2)} . 'guard!-2!-4,
+   {2, '(-2 -1 1 2)} . 'guard!-2!-4
 
+#if (not (memq 'psl lispsystem!*))
+,
    {3, '(-4)} . 'guard!-3!-4m,
    {3, '(-3)} . 'guard!-3!-3m,
    {3, '(-2)} . 'guard!-3!-2m,
@@ -1197,6 +1199,9 @@ guard!-fnalist!* := {
    {3, '(4)} . 'guard!-3!-4,
    {3, '(-4 -3 -2)} . 'guard!-3!-5m,
    {3, '(2 3 4)} . 'guard!-3!-5
+
+#endif
+
       };
 
 procedure guard!-1!-1m(f);
