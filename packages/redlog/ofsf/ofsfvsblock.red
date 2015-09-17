@@ -238,7 +238,8 @@ asserted procedure vs_block(f: QfFormula, vl: KernelL, theo: Theory, ans: Boolea
       db := vsdb_mk(vl, f, theo, bvl, ans);
       vs_blockmainloop db;
       ioto_prin2t nil;
-      vsdb_printSummary db;
+      % vsdb_printSummary db;
+      vsdb_print db;
       return {vl, {f . nil}, theo}
    end;
 
@@ -446,6 +447,32 @@ asserted procedure sfto_dgcdf(f: SF, x: Kernel): Integer;
    end;
 
 % functions mainly for debugging purposes
+
+asserted procedure vsdb_print(db: VSdb);
+   begin scalar wc, sc, fc;
+      wc := vsdb_wc db;
+      sc := vsdb_sc db;
+      fc := vsdb_fc db;
+      ioto_prin2t {"VSdb:"};
+      ioto_prin2t {"Working nodes: "};
+      if null wc then
+      	 ioto_prin2t {"none"}
+      else
+	 for each nd in wc do
+	    vsnd_print nd;
+      ioto_prin2t {"Success nodes: "};
+      if null sc then
+      	 ioto_prin2t {"none"}
+      else
+	 for each nd in sc do
+	    vsnd_print nd;
+      ioto_prin2t {"Failure nodes: "};
+      if null fc then
+      	 ioto_prin2t {"none"}
+      else
+	 for each nd in fc do
+	    vsnd_print nd
+   end;
 
 asserted procedure vsdb_printSummary(db: VSdb);
    <<
