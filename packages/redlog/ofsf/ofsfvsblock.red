@@ -234,13 +234,15 @@ asserted procedure vs_block(f: QfFormula, vl: KernelL, theo: Theory, ans: Boolea
    % contains the list of variables for which elimination failed, the
    % (possibly partial) possibly negated elimination result as a
    % JunctionL, and the new theory.
-   begin scalar db;
+   begin scalar db, rf, rvl;
       db := vsdb_mk(vl, f, theo, bvl, ans);
       vs_blockmainloop db;
       ioto_prin2t nil;
       % vsdb_printSummary db;
-      vsdb_print db;
-      return {vl, {f . nil}, theo}
+      % vsdb_print db;
+      % return {vl, {f . nil}, theo}
+      rf . rvl := vsdb_collectResult db;
+      return {rvl, {rf . nil}, theo}
    end;
 
 asserted procedure vs_blockmainloop(db: VSdb);
@@ -403,6 +405,24 @@ asserted procedure vsdb_insertaec(db: VSdb, nd: VSnd, de: VSde);
       nvl := delq(v, vsnd_vl nd);
       for each tp in tpl do
 	 vsdb_wcinsert(db, vsnd_mk(t, vsts_mk(v, tp), nvl, f, nd))
+   end;
+
+asserted procedure vsdb_collectResult(db: VSdb): DottedPair;
+   % Collect the result of elimination stored in [db]. Returns a pair
+   % [f . vl], where [f] is the resulting formula and [vl] is the list
+   % of variables that were not eliminated.
+   begin scalar fl, vl;
+      assert(not vsdb_todop db);
+      for each nd in vsdb_sc db do <<
+	 assert(not vsnd_flg nd);
+	 push(vsnd_f nd, fl)
+      >>;
+      for each nd in vsdb_fc db do <<
+	 assert(not vsnd_flg nd);
+	 push(vsnd_f nd, fl);
+	 vl := union(vl, vsnd_vl nd)
+      >>;
+      return cl_simpl(rl_mkn('or, fl), vsdb_theo db, -1) . vl
    end;
 
 %%% other procedures %%%
