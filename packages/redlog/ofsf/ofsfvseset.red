@@ -1258,7 +1258,8 @@ asserted procedure pos_lca(p1: Position, p2: Position): Position;
 
 % functions mainly for debugging purposes
 
-asserted procedure vsdt_printSummary(dt: VSdt);
+asserted procedure vsdt_prints(dt: VSdt);
+   % VSdt print summary.
    <<
       % ioto_prin2 {"VSdt with ttheo:"};
       % for each f in vsdt_ttheo dt do
@@ -1270,20 +1271,8 @@ asserted procedure vsdt_printSummary(dt: VSdt);
       	 " data: ", vsdt_data dt}
    >>;
 
-asserted procedure vscs_print(cs: VScs);
-   if vscs_failedp cs then
-      ioto_prin2t {"VScs: failed"}
-   else <<
-      ioto_prin2t {"VScs: "};
-      ioto_prin2t {"ip: ", vscs_ip cs};
-      ioto_prin2t {"ep: ", vscs_ep cs};
-      ioto_prin2t {"slb: ", vscs_slb cs};
-      ioto_prin2t {"wlb: ", vscs_wlb cs};
-      ioto_prin2t {"sub: ", vscs_sub cs};
-      ioto_prin2t {"wub: ", vscs_wub cs}
-   >>;
-
-asserted procedure vscs_printSummary(cs: VScs);
+asserted procedure vscs_prints(cs: VScs);
+   % VScs print summary.
    if vscs_failedp cs then
       ioto_prin2t {"VScs: failed"}
    else <<
@@ -1296,7 +1285,22 @@ asserted procedure vscs_printSummary(cs: VScs);
 	 " #wub: ", length vscs_wub cs}
    >>;
 
-asserted procedure vspc_printSummary(pc: VSpc);
+asserted procedure vscs_print(cs: VScs);
+   % VScs print.
+   if vscs_failedp cs then
+      ioto_prin2t {"VScs: failed"}
+   else <<
+      ioto_prin2t {"VScs: "};
+      ioto_prin2t {"ip: ", vscs_ip cs};
+      ioto_prin2t {"ep: ", vscs_ep cs};
+      ioto_prin2t {"slb: ", vscs_slb cs};
+      ioto_prin2t {"wlb: ", vscs_wlb cs};
+      ioto_prin2t {"sub: ", vscs_sub cs};
+      ioto_prin2t {"wub: ", vscs_wub cs}
+   >>;
+
+asserted procedure vspc_prints(pc: VSpc);
+   % VSpc print summary.
    <<
       ioto_prin2 {"VSpc: "};
       ioto_prin2t {"type: ", vspc_type pc,
@@ -1304,10 +1308,11 @@ asserted procedure vspc_printSummary(pc: VSpc);
       	 " gpl: ", vspc_gpl pc,
 	 " bndch: ", vspc_b pc,
       	 " cs: "};
-      vscs_printSummary vspc_cs pc
+      vscs_prints vspc_cs pc
    >>;
 
-asserted procedure vspr_printSummary(pr: VSpr);
+asserted procedure vspr_prints(pr: VSpr);
+   % VSpr print summary.
    <<
       ioto_prin2 {"VSpr: "};
       ioto_prin2 {"poly:"};
@@ -1315,14 +1320,15 @@ asserted procedure vspr_printSummary(pr: VSpr);
       ioto_prin2t {"root specs: ", vspr_rsl pr}
    >>;
 
-asserted procedure vstp_printSummary(tp: VStp);
+asserted procedure vstp_prints(tp: VStp);
+   % VStp print summary.
    <<
       ioto_prin2 {"VStp: "};
       ioto_prin2t {"pos: ", vstp_p tp,
 	 " gpl: ", vstp_gpl tp,
 	 " it: ", vstp_it tp,
-	 " pr: "};
-      vspr_printSummary vstp_pr tp;
+	 " pr:"};
+      vspr_prints vstp_pr tp;
       ioto_prin2t {"guard:"};
       mathprint rl_prepfof vstp_guard tp
    >>;

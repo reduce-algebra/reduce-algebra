@@ -405,12 +405,14 @@ asserted procedure vs_splitor(f: QfFormula): QfFormulaL;
 
 % functions mainly for debugging purposes
 
-asserted procedure vsvs_printSummary(vs: VSvs);
+asserted procedure vsvs_prints(vs: VSvs);
+   % VSvs print summary.
    <<
-      ioto_prin2 {"VS: "};
-      if vsvs_tsp vs then
-      	 ioto_prin2t {vsvs_v vs, " = test point"}
-      else if vsvs_dgp vs then
+      ioto_prin2 {"VSvs: "};
+      if vsvs_tsp vs then <<
+      	 ioto_prin2t {vsvs_v vs, " = tp"};
+	 vstp_prints vsts_tp vs
+      >> else if vsvs_dgp vs then
       	 ioto_prin2t {vsvs_v vs, " = ", vsdg_g vs, "-th root of ", vsdg_sv vs}
       else if vsvs_arp vs then
       	 ioto_prin2t {vsvs_v vs, " = arbitrary"}
