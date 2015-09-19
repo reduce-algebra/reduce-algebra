@@ -1270,7 +1270,9 @@ static void long_times2(uint32_t *c, uint32_t *a, uint32_t *b,
     }
 }
 
+#if defined HAVE_LIBPTHREAD || defined WIN32
 int karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
+#endif
 
 static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
                        uint32_t *d, int32_t lena, int32_t lenb, int32_t lenc)
