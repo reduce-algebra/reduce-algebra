@@ -290,12 +290,14 @@ asserted procedure vsds_applyvsts!-at(at: QfFormula, ds: VSds): QfFormula;
 
 asserted procedure vsds_expand!-at!-inf(at: QfFormula, x: Kernel, it: Id): QfFormula;
    % Expand atomic formula at +- infinity.
-   begin scalar op, g;
+   begin scalar g, op;
       assert(it memq '(minf pinf));
       if rl_tvalp at then
 	 return at;
-      op := rl_op at;
       g := rl_arg2l at;
+      if not sfto_mvartest(g, x) then
+	 return at;
+      op := rl_op at;
       if op eq 'equal then
       	 return rl_mkn('and, for each c in coeffs g collect ofsf_0mk2('equal, c));
       if op eq 'neq then
