@@ -538,22 +538,32 @@ asserted procedure vsdb_2gmln!-printe(nd: VSnd, ss: Integer, tt: Integer);
       ioto_prin2t "label """;
       if vsvs_tsp vs then <<
 	 tp := vsts_tp vs;
-	 if vstp_it tp eq 'minf then
-      	    ioto_prin2t {vsvs_v vs, " = - inf"}
-	 else if vstp_it tp eq 'pinf then
-      	    ioto_prin2t {vsvs_v vs, " = + inf"}
-	 else if vstp_it tp eq 'meps then <<
+	 if vstp_it tp eq 'minf then <<
+      	    ioto_prin2t {vsvs_v vs, " = - inf"};
+	    ioto_prin2 "guard:";
+	    mathprint rl_prepfof vstp_guard tp
+	 >> else if vstp_it tp eq 'pinf then <<
+      	    ioto_prin2t {vsvs_v vs, " = + inf"};
+	    ioto_prin2 "guard:";
+	    mathprint rl_prepfof vstp_guard tp
+	 >> else if vstp_it tp eq 'meps then <<
       	    ioto_prin2t {vsvs_v vs, " = tp - eps"};
 	    mathprint prepf vspr_f vstp_pr tp;
-	    ioto_prin2t vspr_rsl vstp_pr tp
+	    ioto_prin2t vspr_rsl vstp_pr tp;
+	    ioto_prin2 "guard:";
+	    mathprint rl_prepfof vstp_guard tp
       	 >> else if vstp_it tp eq 'peps then <<
       	    ioto_prin2t {vsvs_v vs, " = tp + eps"};
 	    mathprint prepf vspr_f vstp_pr tp;
-	    ioto_prin2t vspr_rsl vstp_pr tp
+	    ioto_prin2t vspr_rsl vstp_pr tp;
+	    ioto_prin2 "guard:";
+	    mathprint rl_prepfof vstp_guard tp
 	 >> else <<
       	    ioto_prin2t {vsvs_v vs, " = tp"};
 	    mathprint prepf vspr_f vstp_pr tp;
-	    ioto_prin2t vspr_rsl vstp_pr tp
+	    ioto_prin2t vspr_rsl vstp_pr tp;
+	    ioto_prin2 "guard:";
+	    mathprint rl_prepfof vstp_guard tp
 	 >>
       >> else if vsvs_dgp vs then
       	 ioto_prin2t {vsvs_v vs, " = ", vsdg_g vs, "-th root of ", vsdg_sv vs}
