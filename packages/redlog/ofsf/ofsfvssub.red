@@ -290,35 +290,30 @@ asserted procedure vsds_applyvsts!-at(at: QfFormula, ds: VSds): QfFormula;
 
 asserted procedure vsds_expand!-at!-inf(at: QfFormula, x: Kernel, it: Id): QfFormula;
    % Expand atomic formula at +- infinity.
-   <<
+   begin scalar op, g;
       assert(it memq '(minf pinf));
       if rl_tvalp at then
-	 at
-      else
-      	 vsds_expand!-at!-inf1(rl_op at, rl_arg2l at, x, it)
-   >>;
+	 return at;
+      op := rl_op at;
+      g := rl_arg2l at;
+      if op eq 'equal then
+      	 return rl_mkn('and, for each c in coeffs g collect ofsf_0mk2('equal, c));
+      if op eq 'neq then
+      	 return rl_mkn('or, for each c in coeffs g collect ofsf_0mk2('neq, c));
+      assert(op memq '(lessp leq geq greaterp));
+      return vsds_expand!-at!-inf1(op, g, x, it)
+   end;
 
 asserted procedure vsds_expand!-at!-inf1(op: Id, g: SF, x: Kernel, it: Id): QfFormula;
    % Expand atomic formula at +- infinity subroutine.
    begin scalar w;
       if not sfto_mvartest(g, x) then
 	 return ofsf_0mk2(op, g);
-      if op eq 'equal then
-      	 return rl_mkn('and, for each c in coeffs g collect ofsf_0mk2('equal, c));
-      if op eq 'neq then
-      	 return rl_mkn('or, for each c in coeffs g collect ofsf_0mk2('neq, c));
-      if op eq 'leq then
-      	 return rl_mkn('or, {vsds_expand!-at!-inf1('equal, g, x, it),
-   	    vsds_expand!-at!-inf1('lessp, g, x, it)});
-      if op eq 'geq then
-      	 return rl_mkn('or, {vsds_expand!-at!-inf1('equal, g, x, it),
-   	    vsds_expand!-at!-inf1('greaterp, g, x, it)});
-      assert(op memq '(lessp greaterp));
       w := if it eq 'minf and not evenp ldeg g then
 	 negf lc g
       else
 	 lc g;
-      return rl_mkn('or, {ofsf_0mk2(op, w),
+      return rl_mkn('or, {ofsf_0mk2(ofsf_mkstrict op, w),
 	 rl_mkn('and, {ofsf_0mk2('equal, w), vsds_expand!-at!-inf1(op, red g, x, it)})})
    end;
 
