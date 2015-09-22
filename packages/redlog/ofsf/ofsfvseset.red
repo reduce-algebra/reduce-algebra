@@ -40,30 +40,37 @@ module ofsfvseset;
 fluid '(rlbndswithilp!*);
 rlbndswithilp!* := nil;
 
-%%% parametric root %%%
+%%% parametric root description %%%
 % constructors and access functions
 
-asserted procedure vspr_mk(f: SF, x: Kernel, rsl: List): VSpr;
-   % Parametric root make. If [f] is [nil], then [x] is [nil].
-   % Otherwise [x] is [mvar f]; [rsl] is a list of root
+asserted procedure vspr_mk(f: SF, x: Kernel, rsl: List, c: QfFormula): VSpr;
+   % Parametric root description make. If [f] is [nil], then [x] is
+   % [nil]. Otherwise [x] is [mvar f]; [rsl] is a list of root
    % specifications, whereas a root specification is a pair [(type .
-   % index)], where [type] is a real type and [index] is a root index.
-   {'vspr, f, x, rsl};
+   % index)], where [type] is a real type and [index] is a root index;
+   % [c] is a condition (not containing [x]) under which it is needed
+   % to substitute this parametric root description. It will be
+   % conjuncted with the guard.
+   {'vspr, f, x, rsl, c};
 
 asserted procedure vspr_f(pr: VSpr): SF;
-   % Parametric root polynomial.
+   % Parametric root description polynomial.
    nth(pr, 2);
 
 asserted procedure vspr_v(pr: VSpr): SF;
-   % Parametric root variable.
+   % Parametric root description variable.
    nth(pr, 3);
 
 asserted procedure vspr_rsl(pr: VSpr): List;
-   % Parametric root root specification list.
+   % Parametric root description root specification list.
    nth(pr, 4);
 
+asserted procedure vspr_c(pr: VSpr): QfFormula;
+   % Parametric root description condition.
+   nth(pr, 5);
+
 asserted procedure vspr_d(pr: VSpr): Integer;
-   % Parametric root degree.
+   % Parametric root description degree.
    begin scalar f;
       f := vspr_f pr;
       if f then
@@ -72,7 +79,7 @@ asserted procedure vspr_d(pr: VSpr): Integer;
    end;
 
 asserted procedure vspr_rtl(pr: VSpr): List;
-   % Parametric root root type list.
+   % Parametric root description root type list.
    begin scalar rtl;
       rtl := for each rs in vspr_rsl pr collect
 	 car rs;
@@ -82,12 +89,15 @@ asserted procedure vspr_rtl(pr: VSpr): List;
    end;
 
 asserted procedure vspr_reorder(pr: VSpr): VSpr;
-   % Parametric root reorder.
-   vspr_mk(reorder vspr_f pr, vspr_v pr, vspr_rsl pr);
+   % Parametric root description reorder.
+   vspr_mk(reorder vspr_f pr, vspr_v pr, vspr_rsl pr, vspr_c pr);
 
 asserted procedure vspr_guard(pr: VSpr): QfFormula;
-   % Parametric root guard.
-   vsub_guard pr;
+   % Parametric root description guard.
+   if vspr_c pr eq 'true then
+      vsub_guard pr
+   else
+      rl_mk2('and, vsub_guard pr, vspr_c pr);
 
 %%% annotated prime constituent (APC) %%%
 % constructors and access functions
@@ -136,7 +146,8 @@ asserted procedure vspc_b(pc: VSpc): List;
 asserted procedure vscs_mk(ts: Theory, s: Any): VScs;
    % Candidate solutions make. [ts] is theory supplement; [s] is
    % either ['failed] or an AList. The keys in [s] are from ['(ip ep
-   % slb wlb sub wub)], values are lists of parametric roots.
+   % slb wlb sub wub)], values are lists of parametric root
+   % descriptions.
    ts . s;
 
 asserted procedure vscs_failedp(cs: VScs): Boolean;
@@ -254,6 +265,7 @@ asserted procedure vstp_mk(p: Position, gpl: PositionL, it: Id, pr: VSpr): VStp;
    % that generated this test point; [gpl] is a list of positions of
    % Gauss prime constituents; [it] is infinity type, it is one of
    % ['(nil minf pinf meps peps)]; [pr] is a parametric root
+   % description.
    {'vstp, p, gpl, it, pr};
 
 asserted procedure vstp_p(tp: VStp): Position;
@@ -269,7 +281,7 @@ asserted procedure vstp_it(tp: VStp): Id;
    nth(tp, 4);
 
 asserted procedure vstp_pr(tp: VStp): VSpr;
-   % Test point parametric root.
+   % Test point parametric root description.
    nth(tp, 5);
 
 asserted procedure vstp_reorder(tp: VStp): VStp;
@@ -953,15 +965,18 @@ asserted procedure vscs_fop2cs(f: SF, x: Kernel, op: Id, theo: Theory): VScs;
    % SF and operator to candidate solutions. [f] is a SF; [op] is an
    % operator, i.e., one of ['(equal neq lessp leq geq greaterp)];
    % [theo] is a theory that can be used to rule out some parametric
-   % roots. Returns a VScs, which contains parametric roots of [f]
-   % that possibly represent ip, ep, slb, wlb, sub, or wub of the
-   % satisfying set of the atomic formula ([f] [op] [0]).
-   begin scalar lcf, finished, cs;
+   % root descriptions. Returns a VScs, which contains parametric
+   % root descriptions of [f] that possibly represent ip, ep, slb,
+   % wlb, sub, or wub of the satisfying set of the atomic formula ([f]
+   % [op] [0]).
+   begin scalar lcf, finished, cs, c, cl;
       % This procedure uses locally equational theory as follows: If
       % [lc f = 0] follows from [theo], then [f] is not considered. If
       % [lc f <> 0] follows from [theo], then [red f] is not
       % considered. Otherwise, we add [lc f = 0] to [theo], and
-      % consider [red f].
+      % consider [red f]. Equations added in this way to the theory
+      % are also used in the condition of created parametric root
+      % descriptions.
       assert(sfto_mvartest(f, x));
       cs := vscs_mk(nil, nil);
       repeat <<
@@ -969,13 +984,15 @@ asserted procedure vscs_fop2cs(f: SF, x: Kernel, op: Id, theo: Theory): VScs;
 	    lcf := lc f;
 	    if ofsf_surep(ofsf_0mk2('greaterp, lcf), theo) then <<
 	       finished := t;
-      	       cs := vscs_merge(cs, vscs_fop2csnz(f, x, op, 1))
+      	       cs := vscs_merge(cs, vscs_fop2csnz(f, x, op, 1, cl))
 	    >> else if ofsf_surep(ofsf_0mk2('lessp, lcf), theo) then <<
 	       finished := t;
-      	       cs := vscs_merge(cs, vscs_fop2csnz(f, x, op, -1))
+      	       cs := vscs_merge(cs, vscs_fop2csnz(f, x, op, -1, cl))
 	    >> else if not ofsf_surep(ofsf_0mk2('equal, lcf), theo) then <<
-	       push(ofsf_0mk2('equal, lcf), theo);
-      	       cs := vscs_merge(cs, vscs_fop2csnz(f, x, op, nil))
+      	       cs := vscs_merge(cs, vscs_fop2csnz(f, x, op, nil, cl));
+	       c := ofsf_0mk2('equal, lcf);
+	       push(c, theo);
+	       push(c, cl)
 	    >>;
 	    f := red f
 	 >> else
@@ -984,14 +1001,16 @@ asserted procedure vscs_fop2cs(f: SF, x: Kernel, op: Id, theo: Theory): VScs;
       return cs
    end;
 
-asserted procedure vscs_fop2csnz(f: SF, x: Kernel, op: Id, s: Any): VScs;
+asserted procedure vscs_fop2csnz(f: SF, x: Kernel, op: Id, s: Any, cl: QfFormulaL): VScs;
    % SF and operator to candidate solutions subprocedure. [x] is [mvar
    % f]; [op] is an operator, i.e., one of ['(equal neq lessp leq geq
    % greaterp)]; [s] is the sign of [lc f]; If [lc f] possibly
-   % vanishes, then [s] is [nil]. Returns a VScs, which contains
-   % parametric roots of [f] that possibly represent ip, ep, slb, wlb,
-   % sub, or wub of the satisfying set of the atomic formula ([f] [op]
-   % [0]) under the assumption that [lc f] is non-zero.
+   % vanishes, then [s] is [nil]; Formulas in [cl] are used in the
+   % condition of the created parametric root descriptions. Returns a
+   % VScs, which contains parametric root descriptions of [f] that
+   % possibly represent ip, ep, slb, wlb, sub, or wub of the
+   % satisfying set of the atomic formula ([f] [op] [0]) under the
+   % assumption that [lc f] is non-zero.
    begin scalar w, pral; integer d;
       assert(sfto_mvartest(f, x));
       d := ldeg f;
@@ -1000,7 +1019,7 @@ asserted procedure vscs_fop2csnz(f: SF, x: Kernel, op: Id, s: Any): VScs;
 	 return vscs_mk(nil, 'failed);
       pral := for each pr in w collect
 	 car pr . for each rs in cdr pr collect
-	    vspr_mk(f, x, rs);
+	    vspr_mk(f, x, rs, vs_mkand cl);
       return vscs_mk(nil, pral)
    end;
 
@@ -1130,9 +1149,9 @@ asserted procedure vsde_pcl2tpl(de: VSde);
 	 vsde_putcurtheo(de, append(vsde_curtheo de, vscs_ts cs))
       >>;
       if imi then
-	 push(vstp_mk(nil, nil, 'minf, vspr_mk(nil, nil, nil)), tpl);  % minus infinity
+	 push(vstp_mk(nil, nil, 'minf, vspr_mk(nil, nil, nil, 'true)), tpl);  % minus infinity
       if ipi then
-	 push(vstp_mk(nil, nil, 'pinf, vspr_mk(nil, nil, nil)), tpl);  % plus infinity
+	 push(vstp_mk(nil, nil, 'pinf, vspr_mk(nil, nil, nil, 'true)), tpl);  % plus infinity
       vsde_puttpl(de, tpl)
    end;
 
@@ -1177,11 +1196,15 @@ asserted procedure vstp_conflate(tp1: VStp, tp2: VStp): ExtraBoolean;
       if lto_subset(vspr_rsl pr1, vspr_rsl pr2) then  % S1 subset of S2
 	 return vstp_mk(pos_lca(vstp_p tp1, vstp_p tp2),
 	    intersection(vstp_gpl tp1, vstp_gpl tp2),
-	    vstp_it tp2, pr2);
+	    vstp_it tp2,
+	    vspr_mk(vspr_f pr2, vspr_v pr2, vspr_rsl pr2, rl_mk2('or, vspr_c pr1, vspr_c pr2))
+	       );
       if lto_subset(vspr_rsl pr2, vspr_rsl pr1) then % S2 subset of S1
 	 return vstp_mk(pos_lca(vstp_p tp1, vstp_p tp2),
 	    intersection(vstp_gpl tp1, vstp_gpl tp2),
-	    vstp_it tp1, pr1);
+	    vstp_it tp1,
+	    vspr_mk(vspr_f pr1, vspr_v pr1, vspr_rsl pr1, rl_mk2('or, vspr_c pr1, vspr_c pr2))
+	       );
       return nil
    end;
 
@@ -1255,6 +1278,15 @@ asserted procedure pos_lca(p1: Position, p2: Position): Position;
 	 nil
       else
 	 car p1 . pos_lca(cdr p1, cdr p2);
+
+% TODO: Move the following procedure to cl.
+asserted procedure vs_mkand(fl: QfFormulaL): QfFormula;
+   if null fl then
+      'true
+   else if null cdr fl then
+      car fl
+   else
+      rl_mkn('and, fl);
 
 % functions mainly for debugging purposes
 
