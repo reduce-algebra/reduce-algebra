@@ -668,8 +668,8 @@ asserted procedure vsdt_gaussposl!-or(dt: VSdt, p: Position);
       >>;
       if g then <<  % position [p] is Gauss
 	 cs := vscs_mk(nil, nil);
-	 for each al in al do
-	    cs := vscs_merge(cs, cdr dt);
+	 for each e in al do
+	    cs := vscs_merge(cs, cdr e);
 	 al := {p . cs}
       >>;
       vsdt_putdata(dt, al)
@@ -771,8 +771,8 @@ asserted procedure vsdt_cogaussposl!-and(dt: VSdt, p: Position);
       >>;
       if g then <<  % position [p] is co-Gauss
 	 cs := vscs_mk(nil, nil);
-	 for each dt in al do
-	    cs := vscs_merge(cs, cdr dt);
+	 for each e in al do
+	    cs := vscs_merge(cs, cdr e);
 	 al := {p . cs}
       >>;
       vsdt_putdata(dt, al)
