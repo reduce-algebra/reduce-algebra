@@ -372,11 +372,12 @@ asserted procedure sfto_psrem!-sgn(g: SF, f: SF, x: Kernel, theo: Theory): SF;
    % (i) the degree of [h] is smaller than the degree of [f],
    % (ii) [h] has the same sign at a root of [f] as [g] for any choice
    % of parameters (variables other than [x])
-   begin scalar lcf, sure, w, lcg, qlc; integer degf, degg;
+   begin scalar lcf, srp, srm, w, lcg, qlc; integer degf, degg;
       assert(sfto_mvartest(f, x));
       degf := ldeg f;
       lcf := lc f;
-      sure := ofsf_surep(ofsf_0mk2('geq, lcf), theo);
+      srp := ofsf_surep(ofsf_0mk2('geq, lcf), theo);
+      srm := ofsf_surep(ofsf_0mk2('leq, lcf), theo);
       degg := sfto_vardeg(g, x);
       while degg >= degf do <<
 	 w := multf(sfto_kexp(x, degg - degf), red f);
@@ -384,8 +385,10 @@ asserted procedure sfto_psrem!-sgn(g: SF, f: SF, x: Kernel, theo: Theory): SF;
 	 qlc := quotf(lcg, lcf);
 	 g := if qlc then
 	    addf(red g, negf multf(qlc, w))
-	 else if sure then
+	 else if srp then
 	    addf(multf(lcf, red g), negf multf(lcg, w))
+	 else if srm then
+	    negf addf(multf(lcf, red g), negf multf(lcg, w))
 	 else
 	    addf(multf(multf(lcf, lcf), red g), negf multf(multf(lcf, lcg), w));
 	 degg := sfto_vardeg(g, x)
