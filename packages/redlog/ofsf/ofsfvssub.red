@@ -206,22 +206,43 @@ asserted procedure vsds_applyvsts(ds: VSds);
    % VS data for virtual substitution apply VSts. [ds] is modified
    % in-place. [vsds_vs ds] is a test point substitution [x // tp],
    % where [tp] is a test point computed from formula [vsds_f ds].
-   begin scalar vs, f, tp, theo, g;
+   begin scalar vs, f, tp, ttheo, theo, g;
       vs := vsds_vs ds;
       f := vsds_f ds;
       tp := vsts_tp vs;
-      theo := append(vsds_ptheo ds, vsds_ttheo ds);
-      g := cl_simpl(vstp_guard tp, theo, -1);
+      ttheo := vsds_ttheo ds;
+      theo := append(vsds_ptheo ds, ttheo);
+      g . ttheo := vsds_g2gtt(vstp_guard tp, theo, ttheo);
       if g eq 'false then <<
 	 vsds_putdata(ds, 'false);
 	 return
       >>;
+      vsds_putttheo(ds, ttheo);
       f := qff_replacel(f, vstp_gpl tp, 'false);
       % TODO: Here we will replace something with ['true].
       f := qff_condense(f, vstp_p tp);
       f := cl_apply2ats1(f, 'vsds_applyvsts!-at, {ds});
       f := cl_simpl(rl_mk2('and, g, f), theo, -1);
       vsds_putdata(ds, f)
+   end;
+
+asserted procedure vsds_g2gtt(g: QfFormula, theo: Theory, ttheo: Theory): DottedPair;
+   % Guard to guard and ttheo. [ttheo] is contained in [theo]. Returns
+   % a pair [gg . ttheo], where [gg] is a simplified [g] and [ttheo]
+   % is a new temporary theory.
+   begin scalar op;
+      g := cl_simpl(g, theo, -1);
+      if rl_tvalp g then
+	 return g . ttheo;
+      op := rl_op g;
+      if not rl_boolp op then
+	 return g . append(ttheo, {g});
+      if op eq 'and then <<
+	 return g . append(ttheo,
+	    for each f in rl_argn g join
+	       if not rl_boolp rl_op f then {f})
+      >>;
+      return g . ttheo
    end;
 
 % THE FOLLOWING PROCEDURE IS TEMPORARY! It uses old code to have something runnable.
