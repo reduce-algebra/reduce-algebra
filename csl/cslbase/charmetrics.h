@@ -33,12 +33,8 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// Well hat is impicit here is that stdint.h had better not have been
-// included before this, or else __STDC_CONSTANT_MACROS needed defining
-// before i8ts inclusion elsewhere!
-
-#if defined __cplusplus && !defined __STDC_CONSTANT_MACROS
-#define __STDC_CONSTANT_MACROS
+#ifdef __cplusplus
+#define __STDC_CONSTANT_MACROS 1
 #endif
 
 #include <stdint.h>

@@ -36,6 +36,12 @@
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
+#include <math.h>
+
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+// or on newer systems maybe "#include <sys/select.h>
 
 #include "cuckoo.h"
 
@@ -49,46 +55,49 @@
 // not functions because they use a number of values not explicitly passed
 // to them as arguments.
 
-#define cuckoo_item(n) \
-    ((char *)table + hash_item_size*(n))
+// The following definitions are in the header file, but are repeated here
+// as comment for (what I hope is) clarity.
 
-#define cuckoo_key(n) \
-    ((*get_key)(cuckoo_item(n)))
-
-#define cuckoo_set_key(n, v) \
-    ((*set_key)(cuckoo_item(n), v))
-
-uint32_t cuckoo_lookup(
-    uint32_t key,             // integer key to look up
-    void *table,              // base of the hash table
-    size_t hash_item_size,    // size of each item in the table,
-                              // must be <= MAX_CUCKOO_ITEM_SIZE
-    uint32_t table_size,      // number of entries in the hash table
-    cuckoo_get_key *get_key,  // function to retrieve keys from table
-    uint32_t modulus2,        // used to give a secondary hash function
-    uint32_t offset2)         // used to give a secondary hash function
-{
-// My initial hash value is merely the key reduced modulo the size of
-// the table.
-    uint32_t hash1 = key % table_size;
-    uint32_t hash2;
-    if (cuckoo_key(hash1) == key) return hash1;
-// I have a secondary hash function that will not map onto the whole
-// of the table - it uses a second smaller modulus and an offset. The
-// sum of these must not exceed the table size (so as to avoid running
-// over the end) but should probably be an appreciable fraction of it.
-    hash2 = (key % modulus2) + offset2;
-    if (cuckoo_key(hash2) == key) return hash2;
-// The third and final place I look is found by adding the two previous
-// hash values (and reducing modulo the table size). If the modulus operation
-// was expensive but conditional branches were cheap then
-//       if ((hash1 += hash2) >= table_size) hash1 -= table_size;
-// could be used here.
-    hash1 = (hash1 + hash2) % table_size;
-    if (cuckoo_key(hash1) == key) return hash1;
-// If the key is not found in any of those three locations I just return -1.
-    return -1;
-}
+//- #define cuckoo_item(n) \
+//-     ((char *)table + hash_item_size*(n))
+//-
+//- #define cuckoo_key(n) \
+//-     ((*get_key)(cuckoo_item(n)))
+//-
+//- #define cuckoo_set_key(n, v) \
+//-     ((*set_key)(cuckoo_item(n), v))
+//-
+//- uint32_t cuckoo_lookup(
+//-     uint32_t key,             // integer key to look up
+//-     void *table,              // base of the hash table
+//-     size_t hash_item_size,    // size of each item in the table,
+//-                               // must be <= MAX_CUCKOO_ITEM_SIZE
+//-     uint32_t table_size,      // number of entries in the hash table
+//-     cuckoo_get_key *get_key,  // function to retrieve keys from table
+//-     uint32_t modulus2,        // used to give a secondary hash function
+//-     uint32_t offset2)         // used to give a secondary hash function
+//- {
+//- // My initial hash value is merely the key reduced modulo the size of
+//- // the table.
+//-     uint32_t hash1 = key % table_size;
+//-     uint32_t hash2;
+//-     if (cuckoo_key(hash1) == key) return hash1;
+//- // I have a secondary hash function that will not map onto the whole
+//- // of the table - it uses a second smaller modulus and an offset. The
+//- // sum of these must not exceed the table size (so as to avoid running
+//- // over the end) but should probably be an appreciable fraction of it.
+//-     hash2 = (key % modulus2) + offset2;
+//-     if (cuckoo_key(hash2) == key) return hash2;
+//- // The third and final place I look is found by adding the two previous
+//- // hash values (and reducing modulo the table size). If the modulus operation
+//- // was expensive but conditional branches were cheap then
+//- //       if ((hash1 += hash2) >= table_size) hash1 -= table_size;
+//- // could be used here.
+//-     hash1 = (hash1 + hash2) % table_size;
+//-     if (cuckoo_key(hash1) == key) return hash1;
+//- // If the key is not found in any of those three locations I just return -1.
+//-     return -1;
+//- }
 
 // I am expecting that insertion in these tables will not be done at
 // all often, so having a somewhat clumsy-looking interface here does
@@ -98,15 +107,20 @@ uint32_t cuckoo_lookup(
 // then be necessary to use this offset to put associated payload into
 // the table.
 
+// If an attempt to insert fails then in general the key that was being
+// inserted will have been, but some other one will have been ejected. The
+// ejected item ends up in cuckoo_pending_item.
+
 // When shuffling the table I need a temporary location large enough to
 // hold a single hash table entry. Here I bound the size.
 
 #define MAX_CUCKOO_ITEM_SIZE 100
 char cuckoo_pending_item[MAX_CUCKOO_ITEM_SIZE] = "";
-char cuckoo_ejected_item[MAX_CUCKOO_ITEM_SIZE] = "";
+static char cuckoo_ejected_item[MAX_CUCKOO_ITEM_SIZE] = "";
 
 uint32_t cuckoo_insert(
     uint32_t key,             // integer key to look up
+    cuckoo_importance *importance, // "importance" measure or NULL
     void *table,              // base of the hash table
     size_t hash_item_size,    // size of each item in the table,
                               // must be <= MAX_CUCKOO_ITEM_SIZE
@@ -123,8 +137,12 @@ uint32_t cuckoo_insert(
     uint32_t hash1 = key % table_size;
     uint32_t hash2, hash3;
     uint32_t w, where;
-    int tries;
-// Start by lookin in the primary location, ie hash1.
+    int tries, imp;
+    if (hash_item_size > MAX_CUCKOO_ITEM_SIZE)
+    {   printf("Item size too large in cuckoo hashing code\n");
+        exit(1);
+    }
+// Start by looking in the primary location, ie hash1.
     if ((w = cuckoo_key(hash1)) == key) return hash1;
 // If that was a vacant location then the key could not be present anywhere
 // and it can be inserted here.
@@ -132,23 +150,28 @@ uint32_t cuckoo_insert(
     {   cuckoo_set_key(hash1, key);
         return hash1;
     }
-// Now similarly for the second possible location...
-    hash2 = (key % modulus2) + offset2;
-    if ((w = cuckoo_key(hash2)) == key) return hash2;
-    else if (w == 0)
-    {   cuckoo_set_key(hash2, key);
-        return hash2;
-    }
+    imp = (importance == NULL) ? CUCKOO_STANDARD : (*importance)(key);
+// Now similarly for the second possible location... if that is permitted.
+    if (imp != CUCKOO_VITAL)
+    {   hash2 = (key % modulus2) + offset2;
+        if ((w = cuckoo_key(hash2)) == key) return hash2;
+        else if (w == 0)
+        {   cuckoo_set_key(hash2, key);
+            return hash2;
+        }
+        if (imp != CUCKOO_IMPORTANT)
 // ... and the third. Note that the calculation of hash values here must
 // be an exact match for that used in the code for cuckoo_lookup.
-    hash3 = (hash1 + hash2) % table_size;
-    if ((w = cuckoo_key(hash3)) == key) return hash3;
-    else if (w == 0)
-    {   cuckoo_set_key(hash3, key);
-        return hash3;
+        {   hash3 = (hash1 + hash2) % table_size;
+            if ((w = cuckoo_key(hash3)) == key) return hash3;
+            else if (w == 0)
+            {   cuckoo_set_key(hash3, key);
+                return hash3;
+            }
+        }
     }
 // We now have the situation where the item of interest is not already
-// in the table but the three places it would like to live are all
+// in the table but the valid places it would like to live are all
 // already full. In this case I will force it to be inserted in its
 // first choice location, ejecting whatever had been there previously.
 // I put the item that is being inserted into cuckoo_pending_item and
@@ -178,6 +201,7 @@ uint32_t cuckoo_insert(
 // Identify the three places that the ejected item could poptentially
 // live. One of these must be where it is at present being kicked out of!
         key = (*get_key)(&cuckoo_pending_item);
+        imp = (importance == NULL) ? CUCKOO_STANDARD : (*importance)(key);
         hash1 = key % table_size;
         hash2 = (key % modulus2) + offset2;
         hash3 = (hash1 + hash2) % table_size;
@@ -187,7 +211,7 @@ uint32_t cuckoo_insert(
 // slot in the hash table is filled it always remains filled (albeit
 // sometimes with something other than the item initially placed there).
 // I will leave this code in as a comment to back up this observation!
-        if ((w = cuckoo_key(hash1)) == 0)
+        if (cuckoo_key(hash1) == 0)
         {   memcpy(cuckoo_item(hash1), &cuckoo_pending_item, hash_item_size);
 // When I return I want to return the location of the newly inserted
 // item. This may have been shuffled around somewhat since it was initially
@@ -198,23 +222,36 @@ uint32_t cuckoo_insert(
                                  hash_item_size, table_size,
                                  get_key, modulus2, offset2);
         }
-        if ((w = cuckoo_key(hash2)) == 0)
+        if (imp != CUCKOO_VITAL && cuckoo_key(hash2) == 0)
         {   memcpy(cuckoo_item(hash2), &cuckoo_pending_item, hash_item_size);
             return cuckoo_lookup(original_key, table,
                                  hash_item_size, table_size,
                                  get_key, modulus2, offset2);
         }
-        if ((w = cuckoo_key(hash3)) == 0)
+        if (imp == CUCKOO_STANDARD && cuckoo_key(hash3) == 0)
         {   memcpy(cuckoo_item(hash3), &cuckoo_pending_item, hash_item_size);
             return cuckoo_lookup(original_key, table,
                                  hash_item_size, table_size,
                                  get_key, modulus2, offset2);
         }
 // Now I am going to have to do a cascading ejection, and this is where I
-// arrange to cycle around the three potential positions for each item.
-        where = where == hash1 ? hash2 :
-                where == hash2 ? hash3 :
-                hash1;
+// arrange to cycle around the potential positions for each item.
+        switch (imp)
+        {
+    default:
+    case CUCKOO_STANDARD:
+            where = where == hash1 ? hash2 :
+                    where == hash2 ? hash3 :
+                    hash1;
+            break;
+    case CUCKOO_IMPORTANT:
+            where = where == hash1 ? hash2 :
+                    hash1;
+            break;
+    case CUCKOO_VITAL:
+            where = hash1;
+            break;
+        }
     }
     return -1;
 }
@@ -233,33 +270,39 @@ uint32_t cuckoo_insert(
 #endif
 
 
-cuckoo_parameters cuckoo_try_options(
+static cuckoo_parameters cuckoo_try_options(
     int myid,
     uint32_t *items,
     int item_count,
+    cuckoo_importance *importance,
     void *table,
     int hash_item_size,
     int initial_table_size,
     int max_table_size,
     cuckoo_get_key *get_key,
-    cuckoo_set_key *set_key,
-    cuckoo_set_data *set_data)
+    cuckoo_set_key *set_key)
 {
     cuckoo_parameters r;
-    int i;
+    int i, probe_count;
     uint32_t table_size, modulus2, offset2;
     for (table_size = initial_table_size; table_size<max_table_size; table_size++)
     {   printf("Trial with table_size = %d\n", table_size);
         fflush(stdout);
         for (modulus2=(3*table_size)/4; modulus2<table_size; modulus2++)
-        {   if (modulus2 % 100 == 0) printf("modulus2 = %d\n", modulus2);
+        {
+// I print a message every so often - the "% 500" here tries to get a
+// decent balance between generating a swamping amount of rubbish and keeping
+// observers happy that there is progress being made.
+            if (modulus2 % 500 == 0) printf("modulus2 = %d\n", modulus2);
             for (offset2=1+myid;
                  offset2<=table_size-modulus2;
                  offset2+=PROCESSCOUNT)
             {   memset(table, 0, hash_item_size*table_size);
                 for (i=0; i<item_count; i++)
-                {   uint32_t r = cuckoo_insert(
+                {   uint32_t r;
+                    if (items[i] != 0) r = cuckoo_insert(
                         items[i],
+                        importance,
                         table,
                         hash_item_size,
                         table_size,
@@ -268,8 +311,6 @@ cuckoo_parameters cuckoo_try_options(
                         modulus2,
                         offset2);
                     if (r == -1) break;
-// Here I would merge in payload for the newly inserted key
-                    (*set_data)((char *)table + r*hash_item_size, i);
                 }
 // If the loop ran to completion then I had managed to insert every
 // single item, and so I do not need to look at the next possible larger
@@ -281,8 +322,7 @@ cuckoo_parameters cuckoo_try_options(
         if (modulus2 < table_size) break;
     }
     if (!(table_size < max_table_size))
-    {   printf("Failed even at largest possible table size\n");
-        r.table_size = -1;
+    {   r.table_size = -1;
         r.modulus2 = r.offset2 = 0;
         return r;
     }
@@ -302,6 +342,7 @@ cuckoo_parameters cuckoo_try_options(
                           offset2) == -1)
         {   printf("Failed to find an item (%x) in the table\n", items[i]);
             printf("table_size = %d modulus2 = %d offset2 = %d\n", table_size, modulus2, offset2);
+#ifdef VERBOSE
             for (i=0; i<item_count; i++)
             {   uint64_t x = items[i];
                 printf("Item %x   %d %d %d\n",
@@ -310,23 +351,41 @@ cuckoo_parameters cuckoo_try_options(
             }
             for (i=0; i<table_size; i++)
                 printf("%5d: %x\n", i, (int)cuckoo_key(i));
+#endif
             r.table_size = -1;
             r.modulus2 = r.offset2 = 0;
             return r;
         }
     }
+// I will record the average number of probes needed to retrieve
+// items. If each of the three possible locations for an iten ended up
+// equally used then this would be 2.0 probes, but I hope that more
+// keys end up in their first choice location than need to go in their
+// third, and that hence the actual average will be lower than that. I
+// further hope that the items I insert into the table first will tend to
+// be especially favoured.
+    probe_count = 0;
+    for (i=0; i<item_count; i++)
+    {   uint32_t key = items[i];
+        uint32_t h1 = key % table_size;
+        uint32_t h2 = key % modulus2 + offset2;
+        if (key == cuckoo_key(h1)) probe_count += 1;
+        else if (key == cuckoo_key(h2)) probe_count += 2;
+        else probe_count += 3;
+        if (i == (int)sqrt((double)item_count) ||
+            i == item_count/4 ||
+            i == item_count/2 ||
+            i == (3*item_count)/4)
+            printf("Average probes after %d items = %.2f\n",
+                   i,  probe_count/(double)i);
+    }
+    printf("Average probes after %d items = %.2f\n",
+           item_count,  probe_count/(double)item_count);
     r.table_size = table_size;
     r.modulus2 = modulus2;
     r.offset2 = offset2;
     return r;
 }
-
-// Get rid of the C macros so that they can not confuse others later on.
-
-#undef cuckoo_item
-#undef cuckoo_key
-#undef cuckoo_set_key
-#undef CUCKOO_MAX_ITEM_SIZE
 
 // With multiple threads there is not going to be a guarantee that I
 // find the smallest table, because it could be that one thread hogs
@@ -344,15 +403,17 @@ cuckoo_parameters cuckoo_try_options(
 // unnecessary for now.
 
 #if PROCESSCOUNT != 1
+
 #include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/wait.h>
-#endif
 
-int to_parent_fd;
+#endif // PROCESSCOUNT != 1
+
+static int to_parent_fd;
 
 // This seeks a (near) optimal hash table. By default it will do the search
 // using 8 parallel processes (created using "fork"). These are not kept
@@ -372,15 +433,17 @@ int to_parent_fd;
 cuckoo_parameters cuckoo_optimise(
     uint32_t *items,
     int item_count,
+    cuckoo_importance *importance,
     void *table,
     int hash_item_size,
     int initial_table_size,
     int max_table_size,
     cuckoo_get_key *get_key,
-    cuckoo_set_key *set_key,
-    cuckoo_set_data *set_data)
+    cuckoo_set_key *set_key)
 {
     cuckoo_parameters r;
+    r.table_size = -1;
+    r.modulus2 = r.offset2 = 2;
 #if PROCESSCOUNT != 1
 // Here I create a bunch of child threads... and I will also need pipes
 // for each to use to send data back to me.
@@ -395,7 +458,6 @@ cuckoo_parameters cuckoo_optimise(
             if (p != 0)
             {   pids[i] = p;
                 close(pipefd[2*i+1]);
-                fcntl(pipefd[2*i], F_SETFL, O_NONBLOCK);
             }
             else
             {   myid = i;   // in a child
@@ -405,44 +467,79 @@ cuckoo_parameters cuckoo_optimise(
             }
         }
     }
-// The parent will poll to see if it is getting data back from any of the
-// child tasks. I could arrange that the tasts signalled it when they had
-// something, but this seems easier. Note that when a task completes, whether
-// with a successful allocation, because it did not find one within the
-// specified table size limit or because of internal failure it will post back
-// some data. So I keep a count of how many responses I have had, and if
-// I eventually run out without getting a useful response I have to declare
-// failure.
+// The parent will use select() to detect when at least one of the sub-tasks
+// has returned some information. Note that that could be that the task
+// terminated without finding a solution.
 //
     if (parent)
     {   int status, live_count;
         uint32_t table_size, modulus2, offset2;
+// The loop here is because I may have multiple responses that are merely
+// records of failure...
         for (live_count = PROCESSCOUNT; live_count>0;)
         {   char buffer[4];
-            sleep(1);  // only poll once per second
+            fd_set rdfs;
+            int r, maxfd = 0, fd;
+            FD_ZERO(&rdfs);
+            table_size = -1;
             for (i=0; i<PROCESSCOUNT; i++)
-            {   int r = read(pipefd[2*i], &table_size, sizeof(table_size));
-                if (r == -1 && errno == EAGAIN) continue;
-                live_count--;
-                if (table_size == -1) continue;
-                printf("table_size %d reported from task %d\n", table_size, i);
-                read(pipefd[2*i], &modulus2, sizeof(modulus2));
-                read(pipefd[2*i], &offset2, sizeof(offset2));
-                read(pipefd[2*i], table, table_size*hash_item_size);
-                printf("modulus2 = %d offset2 = %d\n", modulus2, offset2);
-                break;
+            {   if (pipefd[2*i] != -1)
+                {   FD_SET(pipefd[2*i], &rdfs);
+                    if (pipefd[2*i] > maxfd) maxfd = pipefd[2*i];
+                }
             }
-            if (i<PROCESSCOUNT) break;
+            r = select(maxfd+1, &rdfs, NULL, NULL, NULL);
+            if (r == -1)
+            {   printf("Calamity : select failed with code %d\n", errno);
+                exit(1);
+            }
+            for (i=0; i<PROCESSCOUNT; i++)
+                if (pipefd[2*i] != -1 &&
+                    FD_ISSET(pipefd[2*i], &rdfs)) break;
+            if (i >= PROCESSCOUNT)
+            {   printf("Calamity : select reported data but none found\n");
+                exit(1);
+            }
+            fd = pipefd[2*i]; // the fd to read from now!
+            pipefd[2*i] = -1;
+            r = read(fd, &table_size, sizeof(table_size));
+            if (r == -1)
+            {   printf("Calamity : read failed on %d with code %d\n", fd, errno);
+                exit(1);
+            }
+            live_count--;
+// Sometimes the report is merely a task indicating that they finished
+// without getting anywhere much.
+            if (table_size == -1)
+            {   close(fd);
+                continue;
+            }
+            printf("table_size %d reported from task %d\n", table_size, i);
+            r = read(fd, &modulus2, sizeof(modulus2));
+            if (r == -1)
+            {   printf("Calamity : read failed on %d with code %d\n", fd, errno);
+                exit(1);
+            }
+            r = read(fd, &offset2, sizeof(offset2));
+            if (r == -1)
+            {   printf("Calamity : read failed on %d with code %d\n", fd, errno);
+                exit(1);
+            }
+            r = read(fd, table, table_size*hash_item_size);
+            if (r == -1)
+            {   printf("Calamity : read failed on %d with code %d\n", fd, errno);
+                exit(1);
+            }
+            printf("modulus2 = %d offset2 = %d\n", (int)modulus2, (int)offset2);
+            break;
         }
 // I may exit the above loop because all the processes have terminated, but
-// none delivered a useful result.
-        if (i>=PROCESSCOUNT)
-        {   table_size = -1;
-            modulus2 = offset2 = 0;
-        }
+// none delivered a useful result. In thet case tyable_size will have been
+// left at -1.
+        if (table_size == -1) modulus2 = offset2 = 0;
 // Kill all the child processes, and do a wait operation on each so that
-// it can be really fully tidied up. If the processe has already terminated
-// the kill operation is not needed, but iot should not hurt.
+// it can be really fully tidied up. If the process has already terminated
+// the kill operation is not needed, but not should not hurt.
         for (i=0; i<PROCESSCOUNT; i++)
         {   kill(pids[i], SIGKILL);
             waitpid(pids[i], &status, 0);
@@ -454,7 +551,7 @@ cuckoo_parameters cuckoo_optimise(
         return r;
     }
     else
-#else
+#else  // PROCESSCOUNT
     int myid = 0;
 #endif
 // A child (or only) thread runs the search procedure to seek a nice
@@ -463,13 +560,17 @@ cuckoo_parameters cuckoo_optimise(
             myid,
             items,
             item_count,
+            importance,
             table,
             hash_item_size,
             initial_table_size,
             max_table_size,
             get_key,
-            set_key,
-            set_data);
+            set_key);
+#if PROCESSCOUNT != 1
+        printf("Task %d sending %d %d %d to parent (%d)\n",
+               myid, (int)r.table_size, (int)r.modulus2, (int)r.offset2,
+               (int)to_parent_fd);
         write(to_parent_fd, &r.table_size, sizeof(r.table_size));
         write(to_parent_fd, &r.modulus2, sizeof(r.modulus2));
         write(to_parent_fd, &r.offset2, sizeof(r.offset2));
@@ -479,7 +580,97 @@ cuckoo_parameters cuckoo_optimise(
 // A child processes just terminate when complete. It does not need to
 // return a value in any ordinary way.
         exit(0);
+#else
+        return r;
+#endif
     }
+}
+
+// Now the sensible function for users! This will use binary-chop to
+// identify an optimal solution. I suggest that it be passed the number of
+// (distinct) keys as its minimum table size (minus one just to be completely
+// certain it is not feasible) , and say twice that as the maximum.
+//
+// Note that the search will be from [min..max), ie the minimum size quoted
+// will be tested by the largest acceptable size will be one lower than the
+// one given. This is so that teh max can be passed as the size of the
+// hash table (and is because of zero-based array addresses).
+//
+// I am generally going to expect that the search will fail fairly promptly
+// for a table-size that is significantly too low, and succeed very repidly
+// for table-sises even modestly greater than the threshold.
+//
+// This will create and destroy a load of processes for each search it
+// performs, and for small tables that will represent bad overhead. But
+// for large tables it will not matter at all. Also this code should
+// always find a strictly smallest table regardless of how cpu time is
+// allocated to each of the sub-processes.
+//
+// It will report failure if either the minimum specified table size has
+// a succesfull allocation or the maximum one does not.
+
+
+cuckoo_parameters cuckoo_binary_optimise(
+    uint32_t *items,
+    int item_count,
+    cuckoo_importance *importance,
+    void *table,
+    int hash_item_size,
+    int min_table_size,
+    int max_table_size,
+    cuckoo_get_key *get_key,
+    cuckoo_set_key *set_key)
+{
+    cuckoo_parameters r, r1;
+// First verify that the low limit does not lead to success.
+    r = cuckoo_optimise(    
+        items,
+        item_count,
+        importance,
+        table,
+        hash_item_size,
+        min_table_size,
+        min_table_size+1,
+        get_key,
+        set_key);
+    if (r.table_size != -1)
+    {   r.table_size = -1;
+// the "1" is the following two fields perhaps marks what went wrong!
+        r.modulus2 = r.offset2 = 1;
+        return r;
+    }
+// Next confirm that the high limit does lead to success.
+    r = cuckoo_optimise(    
+        items,
+        item_count,
+        importance,
+        table,
+        hash_item_size,
+        max_table_size-1,
+        max_table_size,
+        get_key,
+        set_key);
+// Oops - it did not!
+    if (r.table_size == -1) return r;
+    while (max_table_size > min_table_size+1)
+    {   int mid = (min_table_size + max_table_size)/2;
+        r1 = cuckoo_optimise(    
+            items,
+            item_count,
+            importance,
+            table,
+            hash_item_size,
+            mid,
+            mid+1,
+            get_key,
+            set_key);
+        if (r1.table_size == -1) min_table_size = mid;
+        else
+        {   max_table_size = mid;
+            r = r1;
+        }
+    }
+    return r;
 }
 
 // end of cuckoo.c

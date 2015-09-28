@@ -31,6 +31,9 @@
 
 // $Id$
 
+#ifndef __cuckoo_h
+#define __cuckoo_h
+
 // "Cuckoo hashing" is a scheme where each key has a small fixed number
 // of locations in a hash table that it can occupy. Hash insertion works by
 // trying to place an item in one of these, and if all of those are already
@@ -43,6 +46,9 @@
 // that amazingly high load factors can be achieved. With three probes it
 // will normally be possible to fill a table around 91% full before an
 // attempted insert fails.
+//
+// Ny code here merely positions keys in tha table. A subsequent pass
+// should be used to insert any associated data.
 //
 // Here I am most interested in statically-created tables, and by trying to
 // fit keys into the tables using a range of different (But all very simple)
@@ -57,8 +63,6 @@
 //
 // The hash tables I use here are required to have keys that fit within
 // uint32_t.
-
-
 
 // The hash table will be an array, but my code will not know
 // exactly what its internal format is. In relevant places I will
@@ -81,21 +85,42 @@ typedef uint32_t cuckoo_get_key(void *p);
 
 typedef void     cuckoo_set_key(void *p, uint32_t key);
 
-// set_data is given a reference into the hash table together with the index
-// number of an item in the table of data used to create it. It should be used
-// where the entry pointed at is the one that the creation data hashed to. It
-// then merges in the payload data there - ie everything beyond the mere hash
-// key.
+// I can (optionally) pass a function of this type to the code that creates
+// a table. It gets handed a key. If it returns CUCKOO_VITAL the table will
+// be built such that that key is found on the first probe. If there are n
+// keys in the table and no other special circumstances it is probably going
+// to lead to trouble if more than around sqrt(n) keys are given this extreme
+// priority.
+// Keys that return CUCKOO_IMPORTANT will be found in one or two probes, and
+// it may perhaps be acceptable to allow up to 20% or even 25% of the keys
+// to specify this. Otherwise search can involve up to three probes. The
+// lookup code does not need to be aware of any of this, just the code that
+// creates the hash table.
 
-typedef void     cuckoo_set_data(void *p, int n);
+// Note of course that without this everything would have an expected cost
+// of only 2 probes, so VITAL reduces that to 1 and IMPORTANT to 1.5.
+// Thus savings from use of the scheme can never be huge. But this gives
+// you an opportunity to experiment! I found in one test that tagging every
+// key as IMPORTANT (which reduces behaviour to 2-place cuckoo hashing, which
+// expects to fail when the table becomes over 50% full) allowed me to find
+// parameters giving a table-occupancy of better than 80% and an average
+// access in around 1.3 probes. That convinces me that careful tuning of
+// what is "important" can lead to good balances between compact tables and
+// access speed.
 
 
+#define CUCKOO_STANDARD  0
+#define CUCKOO_IMPORTANT 1
+#define CUCKOO_VITAL     2
 
+typedef int      cuckoo_importance(uint32_t key);
 
-// Now the generic function for retrieving data from a hash table.
+// Now the generic function for retrieving information from a hash table.
 // It is passed a key and a table. It then needs a load more arguments that
 // characterize the table! It returns the offset in the table where the
-// key is present, or -1 if it is not present.
+// key is present, or (uint32_t)(-1) if it is not present. Thus the user then
+// needs to understand the format of table entries and take responsibiliry
+// for unpacking whatever data is required.
 
 // It is possible that if all this was implemented in C++ rather than C
 // that templates and classes could wrap up all the information passed
@@ -103,7 +128,44 @@ typedef void     cuckoo_set_data(void *p, int n);
 // complication and overhead would mean that things ended up almost as
 // bad.
 
-extern uint32_t cuckoo_lookup(
+// If I am using gcc I can use inline functions here for improved
+// performance. You can predefine FORCE_INLINE to enable this, NEVER_INLINE
+// to disable it. The default behaviour is to check if we are using gcc
+// with inline capability available.
+
+#if defined FORCE_INLINE
+#define cuckoo_inline inline
+#elif !defined NEVER_INLINE && \
+      (defined __GNUC_STDC_INLINE__ || defined __GNUC_GNU_INLINE__)
+#define cuckoo_inline inline
+#else
+#define cuckoo_inline
+#endif
+
+// Because the table was passed as a "void *" and we do not have
+// a single type that maps the entries it is not feasible to use direct
+// array access (as in "table[n]") to retrieve and update items in it.
+// So here I have two macros that use the explicitly passed item size
+// and accress arithmetic to create a pointer to the nth item in the
+// table, and then the user-supplied functions to deal with just the
+// part of the thing there that represents the key. These are macros
+// not functions because they use a number of values not explicitly passed
+// to them as arguments.
+
+// The three access macros are not inline functions because they need to
+// reference the (local) variables table and hash_item_size that their
+// user has.
+
+#define cuckoo_item(n) \
+    ((char *)table + hash_item_size*(n))
+
+#define cuckoo_key(n) \
+    ((*get_key)(cuckoo_item(n)))
+
+#define cuckoo_set_key(n, v) \
+    ((*set_key)(cuckoo_item(n), v))
+
+static cuckoo_inline uint32_t cuckoo_lookup(
     uint32_t key,             // integer key to look up
     void *table,              // base of the hash table
     size_t hash_item_size,    // size of each item in the table,
@@ -111,12 +173,39 @@ extern uint32_t cuckoo_lookup(
     uint32_t table_size,      // number of entries in the hash table
     cuckoo_get_key *get_key,  // function to retrieve keys from table
     uint32_t modulus2,        // used to give a secondary hash function
-    uint32_t offset2);        // used to give a secondary hash function
+    uint32_t offset2)         // used to give a secondary hash function
+{
+// My initial hash value is merely the key reduced modulo the size of
+// the table.
+    uint32_t hash1 = key % table_size;
+    uint32_t hash2;
+    if (cuckoo_key(hash1) == key) return hash1;
+// I have a secondary hash function that will not map onto the whole
+// of the table - it uses a second smaller modulus and an offset. The
+// sum of these must not exceed the table size (so as to avoid running
+// over the end) but should probably be an appreciable fraction of it.
+    hash2 = (key % modulus2) + offset2;
+    if (cuckoo_key(hash2) == key) return hash2;
+// The third and final place I look is found by adding the two previous
+// hash values (and reducing modulo the table size). If the modulus operation
+// was expensive but conditional branches were cheap then
+//       if ((hash1 += hash2) >= table_size) hash1 -= table_size;
+// could be used here.
+    hash1 = (hash1 + hash2) % table_size;
+    if (cuckoo_key(hash1) == key) return hash1;
+// If the key is not found in any of those three locations I just return -1.
+    return (uint32_t)(-1);
+}
 
 // The function cuckoo_insert inserts a single item into a table and returns
 // the location where it was placed. It does not fill in any associated
 // data - just the key. If it fails after a large number of operations that
-// shuffle the table it returns (uint32_t)(-1).
+// shuffle the table it returns (uint32_t)(-1). If it does that then it will
+// leave a hash-table entry in cuckoo_pending_item. Note verey well that in
+// general that will be one of they keys that had previously been inserted
+// rather than the new one. One possible use for this would be to fix a table
+// size and insert all your keys - some may fail so you collect them so they
+// can be handled by some secondary process.
 //
 // For cuckoo hashing one used three hash functions. The ones used here
 // are
@@ -124,8 +213,11 @@ extern uint32_t cuckoo_lookup(
 //     h2 = key % modulus2 + offset2
 //     h3 = (h1 + h2) % table_size
 
+extern char cuckoo_pending_item[];
+
 extern uint32_t cuckoo_insert(
     uint32_t key,             // integer key to look up
+    cuckoo_importance *importance, // how important are various keys?
     void *table,              // base of the hash table
     size_t hash_item_size,    // size of each item in the table,
                               // must be <= MAX_CUCKOO_ITEM_SIZE
@@ -146,17 +238,80 @@ typedef struct __cuckoo_parameters
 // modulus2 and offset2. It does this by a brute-force search starting at
 // initial_table_size and keeping going up to max_table_size. If it fails
 // it will return a record with the table_size entry (uint32_t)(-1).
+//
+
+// If the associated file cuckoo.c is compiled with default options it uses
+// "fork" to set up 8 sub-tasks that run parts of the seatch. Synchromisation
+// between them is light and this could mean that two consecutive runs with
+// exactly the same data yield different results. amounts up data up to say
+// a couple of thousand keys the time all this takes is not too painful. In
+// my application I have around 10000 keys. So (at least notionally) I run
+// the parallel seach once with an initial table size equal to the number of
+// keys I have (i.e. just checking that I can not achieve the utter perfection
+// of no wasted space at all). Having done that I then know (well certainly
+// very closely) how large a table will be needed, so I re-run the scan with
+// initial_table_size just below that and with cuckoo.c compiled with
+// "-DSEQUENTIAL" which disables the parallel search and guarantees consistent
+// results.
+// In practise a more realistic scheme is to start a try with a large
+// table and observe success, then START a try with a small one, but interrupt
+// it as soon as it reports no solutions for that size table, and perform
+// a binary chop from there. Hmmm perhaps that is what I ought to do
+// here!
+// I might also note that the parallel search can represent something
+// of a CPU stress test - at one stage it crashed my computer and I needed
+// to adjust BIOS settings to be more conservative!
+// It mey be reasonable to set max_table_size so that if that table were to
+// grow to that size it would only be say 85% full. Given that with cuckoo
+// hashing with 3 probes one expects to achieve better than 90% occupancy
+// failure to achieve 85% might signal either overenthusiastic use of
+// the "importance" function or a pathological interaction between you set of
+// keys and the very simple hash functions used here. I think in that case
+// I will leave you to find your own resolution!
+
+// With sample data and 1000 keys on a 4-core CPU that pretends to have 8
+// cores using hyperthreading I observed a sequential search taking close to
+// 2 minutes, and the parallel one 23 seconds.
+
 
 extern cuckoo_parameters cuckoo_optimise(
-    uint32_t *items,
-    int item_count,
-    void *table,
-    int hash_item_size,
-    int initial_table_size,
-    int max_table_size,
-    cuckoo_get_key *get_key,
-    cuckoo_set_key *set_key,
-    cuckoo_set_data *set_data);
+    uint32_t *items,               // table of keys
+    int item_count,                // number of keys
+    cuckoo_importance *importance, // importance judgement on keys
+    void *table,                   // hash table to create
+    int hash_item_size,            // size of each entry in hash table
+    int initial_table_size,        // initial number of entries in table ...
+    int max_table_size,            // ... and limit on how large it may grow
+    cuckoo_get_key *get_key,       // access functions for hash table.
+    cuckoo_set_key *set_key);
+
+// cuckoo_optimise as above increases the table-size that it tries linearly
+// and can hence be very slow indeed. In cases other than rather small ones
+// people should use cuckoo_binary_optimise. When it is called the value
+// of min_table_size should be such that a solution can not be found. Using
+// a value one less than the number of distinct keys should be reasonable!
+// The value for max_table_size must be such that a solution is available
+// by then - and perhaps twice min_table_size is a safe and conservative
+// choice.
+// I rather expect that if either of these are set to somewhat extreme values
+// it will not hurt much, because for table sizes that are much too small
+// the code should report failure rapidly, while for table sizes thar are
+// generous it will be able to report success equally rapidly. The high
+// costs are most liable to arise once the search has narrowed close to the
+// critical size
+
+extern cuckoo_parameters cuckoo_binary_optimise(
+    uint32_t *items,               // table of keys
+    int item_count,                // number of keys
+    cuckoo_importance *importance, // importance judgement on keys
+    void *table,                   // hash table to create
+    int hash_item_size,            // size of each entry in hash table
+    int min_table_size,            // minimum table size
+    int max_table_size,            // maximum table size
+    cuckoo_get_key *get_key,       // access functions for hash table.
+    cuckoo_set_key *set_key);
+
+#endif // __cuckoo_h
 
 // End of cuckoo.h
 

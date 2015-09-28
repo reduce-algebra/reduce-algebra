@@ -68,65 +68,21 @@
 // file generated here that contains metrics is not subject to any
 // severe limits on its use.
 
-// You can also pass -DSTART=nnn and -DBEST=m. That will start checking
-// for a hash table of size nnn and investigate upwards from there until
-// it finds the m-th one that it can pack all the data in.
+// You can also pass -DSTART=nnn for a hash table of size nnn and
+// investigate upwards from there until it finds one that it can pack
+// all the data in.
 //
-// I ran this code with a small value of START so it ran for a VERY long time
-// and the setting that using -DCOMPACT=1 gives as a default is the one
-// that uses the smallest tables I know of. Obviously no table can be
-// smaller than the number of hash cells that will be used (10042) so
-// starting my scan from there will find the most compact arrangement
-// that the very cheap and simple hash functions used here offer - and the
-// search with START=10042 runs for around a day of CPU time. The default
-// setting here slightly larger tables but ends up with lower costs. The
-// choice between these (and many other options) is a micro-optimisation
-// that hardly matters except as a matter of neurosis and pride.
-
-#ifdef COMPACT
-
-#ifndef BEST
-#define BEST 1
-#endif
 
 #ifndef START
-#define START 10289
+#define START 10000
 #endif
 
-#else
+// I need my cuckoo-hashing library. One sane thing to do would be to
+// link to that as a separately compiled component, but here I will just
+// include its source! See cuckoo.h and cuckoo.c for commantary and
+// explanation.
 
-#ifndef BEST
-#define BEST 4
-#endif
-
-#ifndef START
-#define START 10361
-#endif
-
-#endif
-
-// The default setting creates a table of size 10361 which is 96.9% full.
-// All Basic Latin codepoints are looked up in just one probe. On average
-// Western and Mathematical characters are found in 1.591 probes, while
-// overall including all the CJK characters the average for a successful
-// lookup is 1.724 probes. The worst case lookup and all unsuccessful
-// cases are 3 probes.
-// Note that for a common or gerden hash table the average cost of a
-// successful lookup would be ln(1/(1-alpha)/alpha if hashing was perfectly
-// uniform: that would give the same performance for Western characters at
-// a loading of 63.7% and overall at around 70% so what I have done here
-// mainly saves space by allowing a hash table loading of almost 97% rather
-// then 70% - this saving is around 150 Kbytes (in the C code version of the
-// tables). 
-//
-// The COMPACT case make the table just slightly smaller at 10289, which
-// means that the occupancy is 97.6%. To put things in numbers that saves
-// 2880 bytes when the full table size is a little over 400 Kbytes in size.
-// Again all Basic Latin characters (ie those with code U+0000 to U+007f) that
-// are present in the fonts are found on the first probe. This time Western
-// and Maths characters average out at 1.764 and the full character set at
-// 1.852. Worst case remains at 3 probes.
-
+#include "cuckoo.c"
 
 // I also generate a charmetrics.red that can give access to the same
 // information from within Reduce... I am considering use from Java as well
@@ -145,7 +101,7 @@
 // shown here will suffice. There are less than 32000 characters in
 // total defined in all of the fonts I have (odokai is by far
 // the biggest with over 17K characters defined). There are also less
-// then 5000 kerning pairs listed. I will in fact have 31 distinct fonts.
+// then 5000 kerning pairs listed. I will in fact have 7 distinct fonts.
 
 // The code to create the font data tables is very careless and would
 // be thoroughly succeptible to all sorts of bad effects from buffer overflow
@@ -163,7 +119,7 @@
 // C-99.
 
 // "wc -L" tells me that all my font-metric files have lines that are
-// less than 750 characters long. The worst case is for the cmuntt font
+// less than 1750 characters long. The worst case is for the cmuntt font
 // where thare are a large number of ligatures specified for "space"
 // followed by various characters (that I believe are probably all the
 // combining characters present, so that putting a space ahead of any of them
@@ -176,6 +132,7 @@
 #define MAXKERNS 10000
 #define MAXLIGATURES 1000
 #define MAXLINE  2000
+#define MAXMATHSYMS 200
 
 #else // CREATE
 #ifdef TEST
@@ -183,8 +140,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include "cuckoo.h"
 #else // TEST
 #include "headers.h"
+#include "cuckoo.h"
 #endif // TEST
 
 #include "charmetrics.h"  // A file I must have created earlier
@@ -245,7 +204,7 @@
 // nicer for my runtime code to check no more than 3 cases to choose between
 // these tables rather than getting it to measure all the fonts.
 //
-// With cstSTIX it seems that the X11 and OS/X measurements match - but
+// With cslSTIX it seems that the X11 and OS/X measurements match - but
 // I will nevertheless provide three versions here just in a spirit of
 // caution. 
 
@@ -308,7 +267,8 @@ const char *fontnames[31] =
 // of those ranges to the illegal code U+FFFF. That leaves all codes as
 // just 16 bits.
 // Since I have under than 16 fonts I can use 4 bits to indicate a font.
-// codepoints" and that plus 4 bits of font leaves me needing 20 bits.
+// and the squashed 16-bit "remapped codepoint" plus 4 bits of font leaves
+// me needing 20 bits.in all.
 
 static int pack_character(int font, int codepoint)
 {
@@ -404,6 +364,8 @@ static int pack_character(int font, int codepoint)
 static int       charcount = 0;
 static int       fontkey[MAXCHARS];
 static int32_t   codepoint[MAXCHARS];
+static int       mainkeycount;
+static uint32_t  mainkey[MAXCHARS];
 static int32_t   width[MAXCHARS];
 static int32_t   llx[MAXCHARS];
 static int32_t   lly[MAXCHARS];
@@ -451,7 +413,46 @@ static char ltfirst[MAXLIGATURES][MAXUNILEN],
             ltname[MAXLIGATURES][MAXUNILEN],
             ltfont[MAXLIGATURES][32];
 
-// It will be necessary at times to look up a name given its name
+static int accentp = 0;
+static char accentname[MAXMATHSYMS][MAXUNILEN];
+static uint32_t accentnum[MAXMATHSYMS];
+static int32_t  accentval[MAXMATHSYMS];
+
+static int variantp = 0;
+static int variantdirection[MAXMATHSYMS];
+static char variantname[MAXMATHSYMS][MAXUNILEN];
+static char v1[MAXMATHSYMS][MAXUNILEN]; // size 1 (just bigger than basic)
+static char v2[MAXMATHSYMS][MAXUNILEN]; // size 2
+static char v3[MAXMATHSYMS][MAXUNILEN]; // size 3
+static char v4[MAXMATHSYMS][MAXUNILEN]; // size 4
+static char v5[MAXMATHSYMS][MAXUNILEN]; // size 5 (biggest)
+static char P1[MAXMATHSYMS][MAXUNILEN]; // top        top        top
+static char P2[MAXMATHSYMS][MAXUNILEN]; // extension  extension  extension
+static char P3[MAXMATHSYMS][MAXUNILEN]; // middle     bottom
+static char P4[MAXMATHSYMS][MAXUNILEN]; // extension
+static char P5[MAXMATHSYMS][MAXUNILEN]; // bottom
+// Now the same converted to codepoints rather than names.
+static int32_t variantcode[MAXMATHSYMS];
+static int32_t nv1[MAXMATHSYMS]; // size 1 (just bigger than basic)
+static int32_t nv2[MAXMATHSYMS]; // size 2
+static int32_t nv3[MAXMATHSYMS]; // size 3
+static int32_t nv4[MAXMATHSYMS]; // size 4
+static int32_t nv5[MAXMATHSYMS]; // size 5 (biggest)
+static int32_t np1[MAXMATHSYMS]; // top        top        top
+static int32_t np2[MAXMATHSYMS]; // extension  extension  extension
+static int32_t np3[MAXMATHSYMS]; // middle     bottom
+static int32_t np4[MAXMATHSYMS]; // extension
+static int32_t np5[MAXMATHSYMS]; // bottom
+static int vdata1[MAXMATHSYMS][4];   // start end full flag
+static int vdata2[MAXMATHSYMS][4];
+static int vdata3[MAXMATHSYMS][4];
+static int vdata4[MAXMATHSYMS][4];
+static int vdata5[MAXMATHSYMS][4];
+
+
+// It will be necessary at times to look up a name given its name. I will do
+// that with a crude linear search because I do not expect this to be a
+// performance-limiting part of this whole program.
 
 int32_t decodename(int fontnum, const char *name)
 {
@@ -472,7 +473,7 @@ int32_t decodename(int fontnum, const char *name)
 // The hashing scheme I use will guarantee that not many probes are
 // needed even at this high loading level!!!
 
-#define MAXHASHTABLESIZE 10505
+#define MAXHASHTABLESIZE 20000
 int HASHTABLESIZE = START;
 
 // This is around 400 Kbytes... I tend to count that as quite large.
@@ -484,145 +485,47 @@ int HASHTABLESIZE = START;
 
 static uint64_t hashtable[MAXHASHTABLESIZE][5];
 
-// In my hashing schere I sometimes relocate items. An entry in
-// pinned that is non-zero will inhibit this. This marking is only
-// relevant while creating the table.
-//
-int pinned[MAXHASHTABLESIZE];
-
-
-//==================================================================
-
-static int probes = 0, occupancy = 0;
-
-// I do some breadth-first (well iterative deepening) search when trying
-// to insert characters in the table. This parameter limits the depth of
-// the search.
-#define MAXDEPTH 13
-
-// calcplaces selects the three locations that a key might hash to.
-// It is desirable to balance how well it spreads things out against
-// how costly it might be to compute, and you can see here that it
-// is seriously simple here. Because my hashing will be limited to
-// just three probes all issues of having a probe sequence that eventually
-// visits everywhere do not apply. I can even survive if the stride is
-// sometimes zero since in those cases all that happens is that the
-// key concerned will have to end up in its home position!
-
-int secondhash = 2;
-
-#define SECONDHASHMODULUS (HASHTABLESIZE-secondhash)
-
-static void calcplaces(uint32_t key, uint32_t *p)
+static int main_importance(uint32_t key)
 {
-    int base = key % HASHTABLESIZE;
-    int stride = key % (HASHTABLESIZE-secondhash);
-    p[0] = base;
-    p[1] = (base + stride) % HASHTABLESIZE;
-    p[2] = (2*base + stride) % HASHTABLESIZE;
+// I will refine this one later on!
+    return CUCKOO_STANDARD;
 }
 
-// hashinsert will return -1 on failure, otherwise the index into the
-// hash table where the item was inserted.
-// I think I view it as a little amazing that the code here is as compact
-// as it is!
-
-int hashinsert(uint32_t key, int depth)
+static uint32_t main_get(void *p)
 {
-    uint32_t p[5], r;
-    uint32_t d[5];
-    int i, depth1;
-    calcplaces(key, p);
-// If the key is already in the table just return
-    for (i=0; i<3; i++)
-        if ((hashtable[p[i]][0] & 0x7ffff) == key) return p[i];
-// If one of the preferred gaps is free then use it. To start with I will use
-// insertions in order of preference.
-    for (i=0; i<3; i++)
-    {   if (hashtable[p[i]][0] == 0)
-        {   hashtable[p[i]][0] = key;
-// There is a delicacy here. When I FIRST insert an entry I can afford to
-// write the whole of the word in the hashtable not just the field within
-// that that could hold a key...
-            return p[i];
-        }
-    }
-// Now I need to move something that has previously been inserted in order
-// to make space for the new item. If the depth parameter says I have run
-// our of energy to search then just report failure.
-    if (depth <= 0) return -1;
-// ... otherwise try in turn seeing if it is possible to clear each of
-// the places this item would like to go. I do this in a spirit of
-// iterative deepening so I prefer adjustments that only move a small
-// number of items. Ie this is a breadth-first search.
-//
-// An alternative sceheme would be a random walk...
-    for (depth1=0; depth1<depth; depth1++)
-    {   for (i=0; i<3; i++)
-        {   int w;
-            if (pinned[p[i]]) continue;  // do not move pinned thing
-            w = hashtable[p[i]][0];      // displaced key
-            hashtable[p[i]][0] = key;    // put this in where it would like to go
-            if (hashinsert(w, depth1)>=0) return p[i];
-            hashtable[p[i]][0] = w;      // re-insert failed so restore things
-        }
-    }
-// If none of the re-works help then I give up.
-    return -1;
+    return *(uint32_t *)p & 0x001fffff;
 }
-
-// Display information on how many of each categroy of character will end
-// up needing 1, 2 or 3 probes.
-
-int report(char *flag)
+static void main_set(void *p, uint32_t key)
 {
-    int i, k, pins = 0, r = 0;
-    for (i=0; i<HASHTABLESIZE; i++)
-        if (pinned[i]) pins++;
-    for (k=0; k<3; k++)
-    {   uint32_t p[5];
-        uint32_t n1=0, n2=0, n3=0;
-        for (i=0; i<charcount; i++)
-        {   int font = fontkey[i];
-            int cp = codepoint[i];
-            int fullkey = pack_character(font, cp); // 20-bit key
-            int key = fullkey >> 2; // because my hash table has line-size 4
-            int w;
-            if (cp == 0) continue;
-            switch (k)
-            {
-        case 0: if (cp >= 0x80) continue;
-                break;
-        case 1: if (font == F_odokai) continue;
-                break;
-        default:break;
-            }
-            calcplaces(key, p);
-            if (key == hashtable[p[0]][0]) n1++;
-            else if (key == hashtable[p[1]][0]) n2++;
-            else if (key == hashtable[p[2]][0]) n3++;
-            else printf("Error data not found\n");
-        }
-        switch (k)
-        {
-    case 0: printf("%sU+0000-U+007f ", flag);
-            r = n2 + n3;
-            break;
-    case 1: printf("%sWestern fonts ", flag);
-            break;
-    default:printf("%sEverything    ", flag);
-            break;
-        }
-        printf("%5d %5d %5d: %6.3f", n1, n2, n3,
-           (double)(1*n1+2*n2+3*n3)/
-           (double)(n1+n2+n3));
-        if (k == 2) printf(" pins=%d", pins);
-        printf("\n");
-    }
-    return r;
+    *(uint32_t *)p = key;
 }
 
 
+// I will have a separate hash table to map cslSTIXMath-Regular characters
+// onto signed 10-bit values that give information about the horizontal
+// placement for accents to be places above characters. This is just for
+// cstSTIXMath-Regular because that is the only font that I am using that
+// has this information embedded within it. Both key and value can pack
+// into a 32-bit integere here.
+
+#define MAXTOPCENTRESIZE 500
+static int32_t topcentre[MAXTOPCENTRESIZE];
+
+
+static int accent_importance(uint32_t key)
+{
+    return CUCKOO_IMPORTANT;
+}
+
+
+static uint32_t accent_get(void *p)
+{
+    return *(uint32_t *)p;
+}
+static void accent_set(void *p, uint32_t key)
+{
+    *(uint32_t *)p = key;
+}
 
 
 static char      line[MAXLINE];
@@ -639,6 +542,8 @@ int main(int argc, char *argv[])
     char *p, *q;
     int relevant = 0;
     int kerndata = 0;
+    int topaccent = 0;
+    int variant = 0;
     FILE *src;
     time_t ttt;
     char filename[100];
@@ -654,7 +559,7 @@ int main(int argc, char *argv[])
     for (fontnum=0; fontnum<F_end; fontnum++)
     {   f = fontnames[fontnum];
         printf("Process font %s\n", f);
-        relevant = kerndata = 0;
+        relevant = kerndata = topaccent = variant = 0;
         sprintf(filename, "wxfonts/metrics/%s.afm", f);
         if ((src = fopen(filename, "r")) == NULL)
         {   printf("Unable to access %s\n", filename);
@@ -693,6 +598,22 @@ int main(int argc, char *argv[])
             {   kerndata = 0;
                 continue;
             }
+            if (strncmp(line, "StartTopAccent", 14) == 0)
+            {   topaccent = 1;
+                continue;
+            }
+            if (strncmp(line, "EndTopAccent", 12) == 0)
+            {   topaccent = 0;
+                continue;
+            }
+            if (strncmp(line, "StartVariations", 15) == 0)
+            {   variant = 1;
+                continue;
+            }
+            if (strncmp(line, "EndVariations", 13) == 0)
+            {   variant = 0;
+                continue;
+            }
             if (kerndata)
             {   if (sscanf(line, "KPX %s %s %d", lig1, lig2, &ia) == 3)
                 {   kernfont[nkerns] = fontnum;
@@ -707,6 +628,125 @@ int main(int argc, char *argv[])
                 else
                 {   printf("Dubious kerning data %s\n", line);
                     continue;
+                }
+                continue;
+            }
+            if (topaccent)
+            {   if (sscanf(line, "N %s ; DX %d", accentname[accentp], &accentval[accentp]) == 2)
+                    accentp++;
+                printf("%d: %s\n", accentp, line);
+                continue;
+            }
+            if (variant)
+            {   int some = 0;
+// Variant lines can be horribly long! They start VX or HX for vertical
+// or horizontal variations.
+                if (sscanf(line, "VX %s ;", variantname[variantp]) == 1)
+                    variantdirection[variantp] = 1;
+                if (sscanf(line, "HX %s ;", variantname[variantp]) == 1)
+                    variantdirection[variantp] = 0;
+                else continue;
+// before collecting data I zero out all the relevant fields so that
+// when data is not present I end up in a sane state.
+                v1[variantp][0] = 0;
+                v2[variantp][0] = 0;
+                v3[variantp][0] = 0;
+                v4[variantp][0] = 0;
+                v5[variantp][0] = 0;
+                P1[variantp][0] = 0;
+                P2[variantp][0] = 0;
+                P3[variantp][0] = 0;
+                P4[variantp][0] = 0;
+                P5[variantp][0] = 0;
+                for (i=0; i<4; i++) vdata1[variantp][i] = 0;
+                for (i=0; i<4; i++) vdata2[variantp][i] = 0;
+                for (i=0; i<4; i++) vdata3[variantp][i] = 0;
+                for (i=0; i<4; i++) vdata4[variantp][i] = 0;
+                for (i=0; i<4; i++) vdata5[variantp][i] = 0;
+                p = strchr(line, ';');
+                if (p!=NULL & sscanf(p, "; V1 %s ;", v1[variantp]) == 1)
+                {   p = strchr(p+1, ';');
+                    some = 1;
+                }
+                if (p!=NULL & sscanf(p, "; V2 %s ;", v2[variantp]) == 1)
+                {   p = strchr(p+1, ';');
+                    some = 1;
+                }
+                if (p!=NULL & sscanf(p, "; V3 %s ;", v3[variantp]) == 1)
+                {   p = strchr(p+1, ';');
+                    some = 1;
+                }
+                if (p!=NULL & sscanf(p, "; V4 %s ;", v4[variantp]) == 1)
+                {   p = strchr(p+1, ';');
+                    some = 1;
+                }
+                if (p!=NULL & sscanf(p, "; V5 %s ;", v5[variantp]) == 1)
+                {   p = strchr(p+1, ';');
+                    some = 1;
+                }
+                if (p!=NULL & sscanf(p, "; P1 %s %d %d %d %d ;",
+                           P1[variantp],
+                           &vdata1[variantp][0], &vdata1[variantp][1],
+                           &vdata1[variantp][2], &vdata1[variantp][3]) == 5)
+                {   p = strchr(p+1, ';');
+                    some = 1;
+                }
+                if (p!=NULL & sscanf(p, "; P2 %s %d %d %d %d ;",
+                           P2[variantp],
+                           &vdata2[variantp][0], &vdata2[variantp][1],
+                           &vdata2[variantp][2], &vdata2[variantp][3]) == 5)
+                {   p = strchr(p+1, ';');
+                    some = 1;
+                }
+                if (p!=NULL & sscanf(p, "; P3 %s %d %d %d %d ;",
+                           P3[variantp],
+                           &vdata3[variantp][0], &vdata3[variantp][1],
+                           &vdata3[variantp][2], &vdata3[variantp][3]) == 5)
+                {   p = strchr(p+1, ';');
+                    some = 1;
+                }
+                if (p!=NULL & sscanf(p, "; P4 %s %d %d %d %d ;",
+                           P4[variantp],
+                           &vdata4[variantp][0], &vdata4[variantp][1],
+                           &vdata4[variantp][2], &vdata4[variantp][3]) == 5)
+                {   p = strchr(p+1, ';');
+                    some = 1;
+                }
+                if (p!=NULL & sscanf(p, "; P5 %s %d %d %d %d ;",
+                           P5[variantp],
+                           &vdata4[variantp][0], &vdata4[variantp][1],
+                           &vdata4[variantp][2], &vdata4[variantp][3]) == 5)
+                {   p = strchr(p+1, ';');
+                    some = 1;
+                }
+                if (some)
+                {   printf("%d: (%d) %s\n", variantp,
+                            variantdirection[variantp], variantname[variantp]);
+                    printf(" sizes: %s %s %s %s %s\n",
+                           v1[variantp], v2[variantp],
+                           v3[variantp], v4[variantp],
+                           v5[variantp]);
+                    if (P1[0] != 0) printf(" huge1: %s %d %d %d %d\n",
+                       P1[variantp], vdata1[variantp][0],
+                       vdata1[variantp][1], vdata1[variantp][2],
+                       vdata1[variantp][3]);
+                    if (P2[0] != 0) printf(" huge2: %s %d %d %d %d\n",
+                       P2[variantp], vdata2[variantp][0],
+                       vdata2[variantp][1], vdata2[variantp][2],
+                       vdata2[variantp][3]);
+                    if (P3[0] != 0) printf(" huge3: %s %d %d %d %d\n",
+                       P3[variantp], vdata3[variantp][0],
+                       vdata3[variantp][1], vdata3[variantp][2],
+                       vdata3[variantp][3]);
+                    if (P4[0] != 0) printf(" huge4: %s %d %d %d %d\n",
+                       P4[variantp], vdata4[variantp][0],
+                       vdata4[variantp][1], vdata4[variantp][2],
+                       vdata4[variantp][3]);
+                    if (P5[0] != 0) printf(" huge5: %s %d %d %d %d\n",
+                       P5[variantp], vdata5[variantp][0],
+                       vdata5[variantp][1], vdata5[variantp][2],
+                       vdata5[variantp][3]);
+                    variantp++;
                 }
                 continue;
             }
@@ -817,11 +857,11 @@ int main(int argc, char *argv[])
                 continue;
             }
             if (cp >= 0xd000 && cp < 0xe000)
-                printf("Codepoint %d %x noted\n", cp, cp);
+                printf("Codepoint %d %x noted : probably invalid\n", cp, cp);
             if (cp > 0xffff &&
                 !(cp >= 0x1d000 && cp < 0x1e000) &&
                 !(cp >= 0x108000 && cp < 0x109000))
-                printf("Codepoint %d %x noted\n", cp, cp);
+                printf("Codepoint %d %x noted : pr9obably invalid\n", cp, cp);
             fontkey[charcount] = fontnum;
             codepoint[charcount] = cp;
             width[charcount] = wid;
@@ -847,6 +887,36 @@ int main(int argc, char *argv[])
         ligfollowcode[i] = decodename(ligfont[i], ligfollow[i]);
     for (i=0; i<nligatures; i++)
         ligreplacementcode[i] = decodename(ligfont[i], ligreplacement[i]);
+
+// Now I will try to do something about the topcentre table...
+    for (i=0; i<accentp; i++)
+        accentnum[i] = decodename(F_Math, accentname[i]);
+    printf("Accent position tables processed\n");
+    for (i=0; i<variantp; i++)
+    {   variantcode[i] = decodename(F_Math, variantname[i]);
+        if (v1[i][0] != 0) nv1[i] = decodename(F_Math, v1[i]);
+        else nv1[i] = 0;
+        if (v2[i][0] != 0) nv2[i] = decodename(F_Math, v2[i]);
+        else nv2[i] = 0;
+        if (v3[i][0] != 0) nv3[i] = decodename(F_Math, v3[i]);
+        else nv3[i] = 0;
+        if (v4[i][0] != 0) nv4[i] = decodename(F_Math, v4[i]);
+        else nv4[i] = 0;
+        if (v5[i][0] != 0) nv5[i] = decodename(F_Math, v5[i]);
+        else nv5[i] = 0;
+        if (P1[i][0] != 0) np1[i] = decodename(F_Math, P1[i]);
+        else np1[i] = 0;
+        if (P2[i][0] != 0) np2[i] = decodename(F_Math, P2[i]);
+        else np2[i] = 0;
+        if (P3[i][0] != 0) np3[i] = decodename(F_Math, P3[i]);
+        else np3[i] = 0;
+        if (P4[i][0] != 0) np4[i] = decodename(F_Math, P4[i]);
+        else np4[i] = 0;
+        if (P5[i][0] != 0) np5[i] = decodename(F_Math, P5[i]);
+        else np5[i] = 0;
+    }
+    printf("Larger symbols tables processed\n");
+
 // Now I have read everything.
 //
 // Before I fill in the main hash table I need to collect kern and ligature
@@ -901,14 +971,6 @@ int main(int argc, char *argv[])
 // with this character. Noticing that here means I can look back and
 // be certain that the previous block just ended.
             if (v && kernp!=0) kerntable[kernp-1] |= IS_BLOCKEND;
-#if 1
-            if (kkk != 0)
-                printf("Setting kernreference %d (cp=%d/%c) to %d\n",
-                       i, codepoint[i],
-                       ((33 <= codepoint[i] && codepoint[i] < 0x7f) ?
-                        codepoint[i] : '?'),
-                       kkk & 0x7fffffff);
-#endif
             kernreference[i] = kkk;
         }
     }
@@ -916,9 +978,95 @@ int main(int argc, char *argv[])
     if (kernp!=0) kerntable[kernp-1] |= IS_BLOCKEND;
 
     printf("charcount = %d\n", charcount);
+
+// Well because it will be a cheaper process I will set up the small hash-
+// tables for accent placement and large-characters first...
+    for (i=0; i<accentp; i++)
+        printf("    %#.8x,\n", accentnum[i]);
+
+    cuckoo_parameters r =
+        cuckoo_binary_optimise(
+            accentnum,
+            accentp,
+            accent_importance,
+            topcentre,
+            sizeof(topcentre[0]),
+            accentp-1,
+            sizeof(topcentre)/sizeof(topcentre[0]),
+            accent_get,
+            accent_set);
+    for (i=0; i<accentp; i++)
+    {   int w = cuckoo_lookup(
+            accentnum[i],
+            topcentre,
+            sizeof(topcentre[0]),
+            r.table_size,
+            accent_get,
+            r.modulus2,
+            r.offset2);
+        if (w == -1)
+        {   printf("failure!\n");
+            exit(1);
+        }
+        topcentre[w] |= accentval[i] << 21;
+    }
+    printf("top-centre table set up with %d words for %d chars (%.2f)\n",
+        r.table_size, accentp, (100.0*accentp)/r.table_size);
+                
+
+
+
+
+
 //==========================================================================
 // (2) Try inserting everything in to the hash table
 //==========================================================================
+
+// I will remove duplicate keys here first...
+    mainkeycount = 0;
+    for (i=0; i<charcount; i++)
+    {   int j;
+        uint32_t k = pack_character(fontkey[i], codepoint[i]) >> 2;
+        if (k == 0) continue;
+        for (j=0; j<mainkeycount; j++)
+            if (k == mainkey[j]) break;
+        if (j<mainkeycount) continue;
+        mainkey[mainkeycount++] = k;
+    }
+
+    printf("About to try to optimise for %d entries\n", mainkeycount);
+// In my case 10019...
+
+    r = cuckoo_binary_optimise(
+            mainkey,
+            mainkeycount,
+            main_importance,
+            hashtable,
+            sizeof(hashtable[0]),
+            mainkeycount-1,
+            sizeof(hashtable)/sizeof(hashtable[0]),
+            main_get,
+            main_set);
+    printf("Whooeeee! %d %d %d %.2f\n",
+        r.table_size, r.modulus2, r.offset2, (100.0*mainkeycount)/r.table_size);
+    for (i=0; i<charcount; i++)
+    {   uint32_t k = pack_character(fontkey[i], codepoint[i]) >> 2;
+        int w = cuckoo_lookup(
+            k,
+            hashtable,
+            sizeof(hashtable[0]),
+            r.table_size,
+            main_get,
+            r.modulus2,
+            r.offset2);
+        if (w == -1)
+        {   printf("failure!\n");
+            exit(1);
+        }
+//--- fill in rest of the data here...
+    }
+    exit(1);
+#if 0
     best = BEST;
     for (HASHTABLESIZE=START; HASHTABLESIZE<MAXHASHTABLESIZE; HASHTABLESIZE++)
     {   for (secondhash=1; secondhash<100; secondhash++)
@@ -1155,7 +1303,8 @@ int main(int argc, char *argv[])
     printf("%d of %d entries (%d of %d bytes) used: %.4f\n",
         p1, HASHTABLESIZE, 40*p1, 40*HASHTABLESIZE, (double)p1/(double)HASHTABLESIZE);
 
-    {   FILE *dest = fopen("charmetrics.h", "w");
+
+    {   FILE *dest = fopen("charmetrics.h1", "w");
         FILE *rdest = fopen("charmetrics.red", "w");
 fprintf(dest, "// charmetrics.h                           Copyright (C) 2015 Codemist Ltd\n");
 fprintf(dest, "\n");
@@ -1219,7 +1368,8 @@ fprintf(dest, "extern int c_width, c_llx, c_lly, c_urx, c_ury, c_kerninfo;\n");
 fprintf(dest, "extern int lookupchar(int fontnum, int codepoint);\n");
 fprintf(dest, "extern int32_t lookupkernandligature(int codepoint);\n");
 fprintf(dest, "extern int32_t lookupkernadjustment(int codepoint);\n");
-fprintf(dest, "extern int32_t lookupligature(int codepoint);\n\n");
+fprintf(dest, "extern int32_t lookupligature(int codepoint);\n");
+fprintf(dest, "extern int accentposition(int codepoint)\;\n\n";
 fprintf(dest, "extern const uint16_t chardepth_WIN32[31];\n");
 fprintf(dest, "extern const uint16_t chardepth_X11[31];\n");
 fprintf(dest, "extern const uint16_t chardepth_OSX[31];\n");
@@ -1533,6 +1683,7 @@ fprintf(rdest, "\n");
         fclose(dest);
         fclose(rdest);
     }
+#endif // Major block commented out
     return 0;
 }
 
@@ -1691,6 +1842,18 @@ int32_t lookupligature(int codepoint)
             (w & IS_LIGATURE) != 0) return ligaturetable[w >> 23];
     } while ((w & IS_BLOCKEND) == 0);
     return 0;
+}
+
+int accentposition(int code)
+{
+    int hash1 = code % TOPCENTRESIZE, hash2;
+    int32_t r;
+    if (((r = table[hash1]) & MASK) == code) return r;
+    hash2 = 1 + (code % (TOPCENTRESIZE - TOPCENTRESHIFT));    
+    if (((r = table[hash2]) & MASK) == code) return r;
+    hash1 = (hash1 + hash2) % TOPCENTRESIZE;
+    if (((r = table[hash1]) & MASK) == code) return r;
+    else return 0;
 }
 
 #ifdef TEST

@@ -36,6 +36,23 @@
 // basic multilingual plane and where I have remapped some glyphs from
 // outside the Unicode range to be at U+108xxx).
 
+// For cslSTIXMath-Regular this also scans the ouput from a program that
+// displays the opentype tables, and extracts some of the MATHS tables.
+// Specifically three sorts of information are grabbed:
+// (1) information about the horizontal position to be used for an
+//     accent placed above a character.
+// (2) variant glyphs that can be used to display a variety of sizes
+//     of the base character. Eg "(" is associated with a number of
+//     glyphs that each represent gradually larger left parentheses.
+// (3) up to five glyphs that can be used (sometimes horizontally, sometimes
+//     vertically) to build up even larger versions of the symbol. For
+//     instance "{" comes with a top-hook, an extension piece, a middle
+//     unit, a lower extension and a botto, hook.
+// The information about these is written in a style somewhat similar
+// to that used for the standard information in an ".afm" file, but is
+// custom and private for my own use.
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -256,7 +273,7 @@ int main(int argc, char *argv[])
     if (isMath)
     {   src = fopen("STIXMath.tables", "r");
         int topAccent = 0, Variants = 0, offset;
-        int anything = 0, num = 0, vertical = 0, pass;
+        int anything = 0, num = 0;
         int partcount=0, partnumber=0;
         int start, end, full, flags;
         if (src == NULL)
@@ -298,7 +315,6 @@ int main(int argc, char *argv[])
             if (Variants)
             {   if (sscanf(linebuffer, " V Glyph %s", name) == 1)
                 {   variations(dest, num, n1, n2, n3, n4, n5, p1, p2, p3, p4, p5);
-                    vertical = 1;
                     num = 0;
                     if (!anything)
                     {   fprintf(dest, "StartVariations\n");
@@ -307,12 +323,11 @@ int main(int argc, char *argv[])
                     else fprintf(dest, "\n");
                     p = strchr(name, '(');
                     if (p != NULL) *p = 0;
-                    fprintf(dest, "VX %s ;", name);
+                    fprintf(dest, "VX %s ;" , name);
                     continue;
                 }
                 if (sscanf(linebuffer, " H Glyph %s", name) == 1)
                 {   variations(dest, num, n1, n2, n3, n4, n5, p1, p2, p3, p4, p5);
-                    vertical = 0;
                     num = 0;
                     if (!anything)
                     {   fprintf(dest, "StartVariations\n");
@@ -321,11 +336,9 @@ int main(int argc, char *argv[])
                     else fprintf(dest, "\n");
                     p = strchr(name, '(');
                     if (p != NULL) *p = 0;
-                    fprintf(dest, "VX %s ;", name);
+                    fprintf(dest, "HX %s ;", name);
                     continue;
                 }
-// Now vertical tells us if we are V or H, and name is the name of the
-// base character.
                 if (sscanf(linebuffer, " Variant Count = %d", &num) == 1)
                     continue;
                 switch (num)
@@ -380,9 +393,9 @@ int main(int argc, char *argv[])
                         xflags[4] = flags;
                         break;
                     }
-                    printf("Part %d has name %s (%d %d %d %d %s\n",
-                           ++partnumber, partname,
-                           start, end, full, flags, junk);
+                    printf("Part %4d (%4d %4d %4d %4d %s has name %s \n",
+                           ++partnumber,
+                           start, end, full, flags, junk, partname);
                 }
             }
         }

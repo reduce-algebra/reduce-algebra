@@ -249,19 +249,14 @@ uint32_t items[] =
 };
 
 
-uint32_t get_key(void *p)
+static uint32_t cuckoo_inline get_key(void *p)
 {
     return (*(uintptr_t *)p) & 0x0007ffff;
 }
 
-void set_key(void *p, uint32_t v)
+static void cuckoo_inline set_key(void *p, uint32_t v)
 {
     *(uint32_t *)p = (v & 0x0007ffff) | (*(uint32_t *)p & 0xfff80000);
-}
-
-void set_data(void *p, int n)
-{
-    *(uint32_t *)p = (n << 20) | (*(uint32_t *)p & 0x0007ffff);
 }
 
 // Here I make my largest possible table size such that it would only
@@ -269,19 +264,30 @@ void set_data(void *p, int n)
 
 uint32_t table[2*sizeof(items)/sizeof(items[0])];
 
+static int cuckoo_inline importance(uint32_t key)
+{
+    if (key <= 0x40) return CUCKOO_VITAL;
+    else if (key <= 0x4000 || key >= 0x010000 ) return CUCKOO_IMPORTANT;
+    else return CUCKOO_STANDARD;
+}
+
 int main(int argc, char *argv[])
 {
     int i;
-    cuckoo_parameters r = cuckoo_optimise(
+    cuckoo_parameters r = cuckoo_binary_optimise(
         items,
         sizeof(items)/sizeof(items[0]),
+        importance,
         table,
         sizeof(table[0]),
-        sizeof(items)/sizeof(items[0]),  // initial table size = item_count
-        sizeof(table)/sizeof(table[0]),  // max table size
+        sizeof(items)/sizeof(items[0])-1, // initial table size = item_count-1
+        sizeof(table)/sizeof(table[0]),   // max table size
         get_key,
-        set_key,
-        set_data);
+        set_key);
+    if (r.table_size == -1)
+    {   printf("Failed. Extra info = %d\n", r.modulus2);
+        return 1;
+    }
     printf("For %d items the table is %d long (%.2f%% full)\n",
            sizeof(items)/sizeof(items[0]),
            r.table_size,
