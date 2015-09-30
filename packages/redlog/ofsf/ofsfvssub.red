@@ -366,7 +366,7 @@ asserted procedure vsds_expand!-at!-eps1(op: Id, g: SF, x: Kernel, it: Id): QfFo
 	 return rl_mkn('or, {vsds_expand!-at!-eps1('equal, g, x, it),
  	    vsds_expand!-at!-eps1('greaterp, g, x, it)});
       assert(op memq '(lessp greaterp));
-      wop := if it eq 'peps then op else op_adjust(op, -1);
+      wop := if it eq 'peps then op else ofsf_adjustop(op, -1);
       edg := vsds_expand!-at!-eps1(wop, diff(g, x), x, it);
       return rl_mkn('or, {ofsf_0mk2(op, g), rl_mkn('and, {ofsf_0mk2('equal, g), edg})})
    end;
