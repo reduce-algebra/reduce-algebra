@@ -195,6 +195,9 @@ else
         *Mac*OS*X*ProductVersion*\<string\>10.10*)
           os="mac_10.10_yosemite"
           ;;
+        *Mac*OS*X*ProductVersion*\<string\>10.11*)
+          os="mac_10.11_elcapitan"
+          ;;
         *Mac*OS*X*ProductVersion*\<string\>*)
           os="mac_unknown_version"
           ;;

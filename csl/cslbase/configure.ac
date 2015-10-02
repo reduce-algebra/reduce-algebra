@@ -1379,6 +1379,7 @@ then
 #                       Apple made that are triggered by (merely) setting
 #                       an earlier deployment target appear to cause trouble.
 # 10.10 Yosemite        My test machine runs this.
+# 10.11 El Capitan     ... I will now be moving to test on this
 
 # Well now that 10.10 has been (nearly been) released I will always target
 # 10.8 and support for earlier versions is no longer guaranteed.
