@@ -88,7 +88,7 @@ off1 'rlbnfsm;
 on1 'rlbnfsac;
 on1 'rlqepnf;
 on1 'rlsiso;
-off1 'rlsisocx;
+on1 'rlsisocx;  % simplifier sort complex subformulas
 on1 'rlsiidem;
 off1 'rlidentify;
 off1 'rlrealtime;
