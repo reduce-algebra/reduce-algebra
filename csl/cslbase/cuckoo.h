@@ -1,4 +1,4 @@
-// cuckoo.h                                      A C Norman, September 2015
+// cuckoo.h                                        A C Norman, October 2015
 
 /**************************************************************************
  * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
@@ -106,7 +106,8 @@ typedef void     cuckoo_set_key(void *p, uint32_t key);
 // parameters giving a table-occupancy of better than 80% and an average
 // access in around 1.3 probes. That convinces me that careful tuning of
 // what is "important" can lead to good balances between compact tables and
-// access speed.
+// access speed. My current suggestion is that around 10% items being
+// IMPORTANT and a really small number VITAL may be about right.
 
 
 #define CUCKOO_STANDARD  0
@@ -164,6 +165,13 @@ typedef int      cuckoo_importance(uint32_t key);
 
 #define cuckoo_set_key(n, v) \
     ((*set_key)(cuckoo_item(n), v))
+
+// Im any concrete instance it may be sensible to transcribe this
+// into the code that uses it, putting in direct code in place of the
+// access function "get_key" and writing in the constant values for
+// hash_item_size, table_size, modulus2 and offset2. If a (probably
+// small) table had been set up with everything IMPORTANT then the
+// third probe can be removed.
 
 static cuckoo_inline uint32_t cuckoo_lookup(
     uint32_t key,             // integer key to look up
@@ -256,8 +264,10 @@ typedef struct __cuckoo_parameters
 // In practise a more realistic scheme is to start a try with a large
 // table and observe success, then START a try with a small one, but interrupt
 // it as soon as it reports no solutions for that size table, and perform
-// a binary chop from there. Hmmm perhaps that is what I ought to do
-// here!
+// a binary chop from there. Hmmm see later for cuckoo_binary_optimise that
+// does just that. But this entrypoint is useful either as a sub-function
+// called by the binary chop code or if there is any external reason to
+// want to do a crude linear search.
 // I might also note that the parallel search can represent something
 // of a CPU stress test - at one stage it crashed my computer and I needed
 // to adjust BIOS settings to be more conservative!
@@ -295,10 +305,35 @@ extern cuckoo_parameters cuckoo_optimise(
 // choice.
 // I rather expect that if either of these are set to somewhat extreme values
 // it will not hurt much, because for table sizes that are much too small
-// the code should report failure rapidly, while for table sizes thar are
+// the code should report failure rapidly, while for table sizes that are
 // generous it will be able to report success equally rapidly. The high
 // costs are most liable to arise once the search has narrowed close to the
-// critical size
+// critical size. Well that is the ideal! For large tables it would be
+// a good idea to have the min and max sizes as sharp as possible. The
+// "ideal" case is when min indicates the largest table where the information
+// can not be fitted and max is just one higher and is the smallest size
+// where things do fit. Calling cuckoo_binary_optimise then merely verifies
+// this.
+// If one makes modest changes to the "importance" function or small changes
+// to the data it may be possible to have good early estimates of suitable
+// limits.
+// I have a test case with around 10000 keys, and simple use of
+// cuckoo_binary_optimise ran for a real time of 4.5 hours and a "user"
+// time of 35 hours...
+//
+// Note that in this application binary search is not perfect. Eg it could
+// be that if the table size was an exact power of 2 then the trivial hash
+// scheme I use here might perform very badly. Hence if the search range
+// included such a case (or other anomalous one) the attempt to pack that
+// particular table might fail even though some smaller case might in fact
+// have succeeded. Similarly there could be a small table with a very special
+// size that would be usable even though all those close to it are not, and
+// binary search may not find that. Use of the simpler but slower
+// cuckoo_optimise avoids these risks. My guess is that in practical terms
+// the search inadequacies here are not important, but those who are ultra
+// cautious will run this binary search first, and then run the linear search
+// as a low priority long-running background task just to verify that nothing
+// better is available. 
 
 extern cuckoo_parameters cuckoo_binary_optimise(
     uint32_t *items,               // table of keys

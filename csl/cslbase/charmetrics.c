@@ -53,6 +53,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
+#include <limits.h>
 
 // This takes a bunch of font information files and creates some C
 // tables that can be used to access the information rapidly.
@@ -67,15 +68,6 @@
 // permit re-distribution and so even more so I will hold that the
 // file generated here that contains metrics is not subject to any
 // severe limits on its use.
-
-// You can also pass -DSTART=nnn for a hash table of size nnn and
-// investigate upwards from there until it finds one that it can pack
-// all the data in.
-//
-
-#ifndef START
-#define START 10000
-#endif
 
 // I need my cuckoo-hashing library. One sane thing to do would be to
 // link to that as a separately compiled component, but here I will just
@@ -266,9 +258,12 @@ const char *fontnames[31] =
 // U+1Dxxx to U+4xxx and U+108xxx to U+5xxx, having mapped anthing in either
 // of those ranges to the illegal code U+FFFF. That leaves all codes as
 // just 16 bits.
-// Since I have under than 16 fonts I can use 4 bits to indicate a font.
-// and the squashed 16-bit "remapped codepoint" plus 4 bits of font leaves
-// me needing 20 bits.in all.
+// Since I have under than 8 fonts I can use 3 bits to indicate a font.
+// and the squashed 16-bit "remapped codepoint" plus 3 bits of font leaves
+// me needing 19 bits in all.
+// My hash table format could cope even if I needed up to 21-bits of
+// full key... so I have some slack available if needed (eg if I wanted to
+// support more fonts).
 
 static int pack_character(int font, int codepoint)
 {
@@ -473,8 +468,7 @@ int32_t decodename(int fontnum, const char *name)
 // The hashing scheme I use will guarantee that not many probes are
 // needed even at this high loading level!!!
 
-#define MAXHASHTABLESIZE 20000
-int HASHTABLESIZE = START;
+#define MAXCHAR_METRICS_TABLE_SIZE 20000
 
 // This is around 400 Kbytes... I tend to count that as quite large.
 // By far the largest contribution to it is data from odokai.afm.
@@ -483,21 +477,45 @@ int HASHTABLESIZE = START;
 // to save space by having an index of bounding boxes does not appear to be
 // useful.
 
-static uint64_t hashtable[MAXHASHTABLESIZE][5];
+static uint64_t hashtable[MAXCHAR_METRICS_TABLE_SIZE][5];
 
 static int main_importance(uint32_t key)
 {
-// I will refine this one later on!
+    int font = key >> 16;
+    if (font != F_cmuntt && font != F_Math) return CUCKOO_STANDARD;
+    key &= 0xffff;
+// codepoints U+0000 to U+007f have a very special status, and
+// I will insist that they are always processed in one probe.
+    if ((key & 0xffff) < 0x80/4) return CUCKOO_VITAL;
+// The fixed pitch font used for most input and the Maths font used for
+// most output will be encouraged to use at most two probes.
+    if (font == F_cmuntt)
+    {   if (key < 0x0600/4 ||
+            (0x2000/4 <= key && key < 0x3000/4) ||
+            (0xfb00/4 <= key && key < 0xfc00/4))  return CUCKOO_IMPORTANT;
+    }   
+    else if (font == F_Math)
+    {   if (key < 0x0600/4 ||
+            (0x2000/4 <= key && key < 0x2400/4) ||
+            (0x2900/4 <= key && key < 0x2c00/4) ||
+            (0x4000/4 <= key && key < 0x6000/4) ||
+            (0xfb00/4 <= key && key < 0xfc00/4))  return CUCKOO_IMPORTANT;
+    }   
+// Other characters get standard treatment and are allowed up to three probes.
     return CUCKOO_STANDARD;
 }
 
 static uint32_t main_get(void *p)
 {
-    return *(uint32_t *)p & 0x001fffff;
+// The FULL key may be up to 21-bits but because I then have hash-table lines
+// with 4 items in I only use 19-bit keys here. In reality with the packing
+// scheme used at present I only ise 19-bit full keys and hence 17 bits here,
+// so there are two bits available for future expansion if necessary.
+    return *(uint32_t *)p & 0x0007ffff;
 }
 static void main_set(void *p, uint32_t key)
 {
-    *(uint32_t *)p = key;
+    *(uint32_t *)p = (*(uint32_t *)p & 0xfff80000) | (key & 0x0007ffff);
 }
 
 
@@ -550,6 +568,8 @@ int main(int argc, char *argv[])
     int i, probes  = 0, p1 = 0, p2 = 0, n1 = 0, n2 = 0,
         occupancy = 0, fail, qq;
     setvbuf(stdout, NULL, _IONBF, 1);
+    printf("SSIZE_MAX = %d\n", SSIZE_MAX);
+    printf("PIPE_BUF = %d\n", PIPE_BUF);
 //==========================================================================
 // (1) Read in all the metrics
 //==========================================================================
@@ -852,16 +872,23 @@ int main(int argc, char *argv[])
 // wid, bb1, bb2, bb3, bb4, unn         data
             if (cp < 0 || cp > 0x10ffff)
             {   if (strcmp(unn, ".notdef") != 0)
-                    printf("Discarding character <%s> with codepoint %#x = %d\n",
+                    printf("Discarding character <%s>"
+                           " with codepoint %#x = %d\n",
                            unn, cp, cp);
                 continue;
             }
             if (cp >= 0xd000 && cp < 0xe000)
-                printf("Codepoint %d %x noted : probably invalid\n", cp, cp);
+                printf("Codepoint %d U+%x noted : probably invalid in %s\n",
+                       cp, cp, f);
+// Note that cmuntt has 4 characters beyond the basic multilingual pane -
+// for GREEK ACROPHONIC ATTIC FIFTY etc at U+10144. They look like capitals
+// Delta, H, X and M each with a border to left, right and top. I will
+// detect these here but then not support their use!
             if (cp > 0xffff &&
                 !(cp >= 0x1d000 && cp < 0x1e000) &&
                 !(cp >= 0x108000 && cp < 0x109000))
-                printf("Codepoint %d %x noted : pr9obably invalid\n", cp, cp);
+                printf("Codepoint %d U+%x noted : probably invalid in %s\n",
+                       cp, cp, f);
             fontkey[charcount] = fontnum;
             codepoint[charcount] = cp;
             width[charcount] = wid;
@@ -870,9 +897,6 @@ int main(int argc, char *argv[])
             lly[charcount] = bb2;
             urx[charcount] = bb3;
             ury[charcount] = bb4;
-{ int height = bb4 - bb2;
-  if (height == 1000) printf("Font %d code %d\n", fontnum, cp);
-} // @@@
             charcount++;
         }
         fclose(src);
@@ -984,7 +1008,7 @@ int main(int argc, char *argv[])
     for (i=0; i<accentp; i++)
         printf("    %#.8x,\n", accentnum[i]);
 
-    cuckoo_parameters r =
+    cuckoo_parameters topcentre_r =
         cuckoo_binary_optimise(
             accentnum,
             accentp,
@@ -995,23 +1019,32 @@ int main(int argc, char *argv[])
             sizeof(topcentre)/sizeof(topcentre[0]),
             accent_get,
             accent_set);
+    printf("Table size = %d (%d %d)\n", topcentre_r.table_size,
+            topcentre_r.modulus2, topcentre_r.offset2);
+    for (i=0; i<topcentre_r.table_size; i++)
+        printf("%4d: %d/%x\n", i, topcentre[i], topcentre[i]);
+    printf("Now put in accent positions\n");
     for (i=0; i<accentp; i++)
     {   int w = cuckoo_lookup(
             accentnum[i],
             topcentre,
             sizeof(topcentre[0]),
-            r.table_size,
+            topcentre_r.table_size,
             accent_get,
-            r.modulus2,
-            r.offset2);
+            topcentre_r.modulus2,
+            topcentre_r.offset2);
         if (w == -1)
-        {   printf("failure!\n");
+        {   printf("failure of lookup in topaccent table!\n");
+            printf("%d: %d/%x\n", i, accentnum[i], accentnum[i]);
+            for (i=0; i<topcentre_r.table_size; i++)
+                printf("%4d: %x\n", i, topcentre[i]);
             exit(1);
         }
         topcentre[w] |= accentval[i] << 21;
     }
     printf("top-centre table set up with %d words for %d chars (%.2f)\n",
-        r.table_size, accentp, (100.0*accentp)/r.table_size);
+        topcentre_r.table_size, accentp,
+        (100.0*accentp)/topcentre_r.table_size);
                 
 
 
@@ -1022,7 +1055,9 @@ int main(int argc, char *argv[])
 // (2) Try inserting everything in to the hash table
 //==========================================================================
 
-// I will remove duplicate keys here first...
+// I will remove duplicate keys here first... I will cheerfully use
+// a quadratic cost filtering process here because other things are so much
+// more expensive.
     mainkeycount = 0;
     for (i=0; i<charcount; i++)
     {   int j;
@@ -1030,161 +1065,26 @@ int main(int argc, char *argv[])
         if (k == 0) continue;
         for (j=0; j<mainkeycount; j++)
             if (k == mainkey[j]) break;
-        if (j<mainkeycount) continue;
+        if (j<mainkeycount) continue;   // discard repeat key.
         mainkey[mainkeycount++] = k;
     }
 
     printf("About to try to optimise for %d entries\n", mainkeycount);
 // In my case 10019...
 
-    r = cuckoo_binary_optimise(
-            mainkey,
-            mainkeycount,
-            main_importance,
-            hashtable,
-            sizeof(hashtable[0]),
-            mainkeycount-1,
-            sizeof(hashtable)/sizeof(hashtable[0]),
-            main_get,
-            main_set);
+    cuckoo_parameters main_r = cuckoo_binary_optimise(
+        mainkey,
+        mainkeycount,
+        main_importance,
+        hashtable,
+        sizeof(hashtable[0]),
+        mainkeycount-1,
+        sizeof(hashtable)/sizeof(hashtable[0]),
+        main_get,
+        main_set);
     printf("Whooeeee! %d %d %d %.2f\n",
-        r.table_size, r.modulus2, r.offset2, (100.0*mainkeycount)/r.table_size);
-    for (i=0; i<charcount; i++)
-    {   uint32_t k = pack_character(fontkey[i], codepoint[i]) >> 2;
-        int w = cuckoo_lookup(
-            k,
-            hashtable,
-            sizeof(hashtable[0]),
-            r.table_size,
-            main_get,
-            r.modulus2,
-            r.offset2);
-        if (w == -1)
-        {   printf("failure!\n");
-            exit(1);
-        }
-//--- fill in rest of the data here...
-    }
-    exit(1);
-#if 0
-    best = BEST;
-    for (HASHTABLESIZE=START; HASHTABLESIZE<MAXHASHTABLESIZE; HASHTABLESIZE++)
-    {   for (secondhash=1; secondhash<100; secondhash++)
-        {   memset(hashtable, 0, sizeof(hashtable));
-            memset(pinned, 0, sizeof(pinned));
-            fail = 0;
-            for (pass=0; pass<2; pass++)
-            for (i=0; i<charcount; i++)
-            {   int fullkey = pack_character(fontkey[i], codepoint[i]); // 20-bit key
-                int key = fullkey >> 2; // because my hash table has line-size 4
-                int h1;
-                if (codepoint[i] == 0) continue;
-                if (pass == 0 && codepoint[i] > 0x7f) continue;
-                if (key != (key & 0x7ffff) ||
-                    key == 0)
-                {   printf("key = %x disaster\n", key);
-                    exit(1);
-                }
-                h1 = hashinsert(key, MAXDEPTH);
-                if (h1 < 0)
-                {
-#if 0
-                    printf("hash table creation failed on %d of %d chars (%d)\n",
-                           i, charcount, __LINE__);
-                    printf("After %d of %d Failed to insert %d\n",
-                        i, charcount, pack_character(fontkey[i], codepoint[i])/4);
-#endif
-                    fail = 1;
-                    break;;
-                }
-                else if (pass == 0) pinned[h1] = 1;
-            }
-            if (fail)
-            {
-#if 0
-                printf("tablesize %d failed at %.3f%%\n",
-                    HASHTABLESIZE, (100.0*(double)i)/(double)charcount);
-#endif
-                printf("."); // So I see at least something!
-                continue;
-            }
-            occupancy = 0;
-            for (i=0; i<HASHTABLESIZE; i++)
-                if (hashtable[i][0] != 0) occupancy++;
-            printf("tablesize %d, 2hash=%d success with occupancy %.3f%%\n",
-                    HASHTABLESIZE, secondhash,
-                   (100.0*(double)occupancy)/(double)HASHTABLESIZE);
-            if (report("") != 0) continue;
-//=====================================================
-// Here everything is in the hash table and everything
-// in Basic Latin is in its home position. So I will
-// try to optimise Western and Mathematical characters.
-// Start by pinning them all.
-//=====================================================
-            ttt = time(NULL) + 20;
-            for (i=0; i<HASHTABLESIZE; i++)
-            {   int key = hashtable[i][0] & 0x1fffff;
-                int font = key >> 14;
-                int codepoint = 4*(key & 0x3fff);
-                if (font == F_odokai || codepoint == 0) continue;
-                pinned[i] = 1;
-            }
-            printf("About to optimise\n");
-            for (qq=0; qq<20; qq++)
-            {   printf("{%d}", qq);
-                for (i=0; i<HASHTABLESIZE; i++)
-                {   int key = hashtable[i][0] & 0x1fffff;
-                    int font = key >> 14;
-                    int codepoint = 4*(key & 0x3fff);
-                    int w;
-                    int aim = qq > 9 ? 1 : 0;
-                    uint32_t p[3];
-                    if (font == F_odokai || codepoint == 0) continue;
-// Now I have a Western/Mathematical character.
-                    calcplaces(key, p);
-                    if (i == p[0]) continue; // Already in the right place!
-#if 0
-                    if (pinned[p[aim]])
-                        printf("Can not move because destination is pinned\n");
-#endif
-                    if (pinned[p[aim]]) continue;
-                    w = hashtable[p[aim]][0]; // thing that is in its way!
-                    hashtable[i][0] = 0;       // gap where lifted item was
-                    hashtable[p[aim]][0] = key;
-                    pinned[i] = 0;
-                    pinned[p[aim]] = 1;
-                    if (hashinsert(w, MAXDEPTH)>=0)
-                    {   printf("[%.2f%%] Moved %d/%d to better location\n",
-                               100.0*((double)qq + (double)i/(double)HASHTABLESIZE)/20.0,
-                               font, codepoint);
-                        continue;
-                    }
-                    if (time(NULL) > ttt)
-                    {   printf("[%.2f%%] still working\n",
-                               100.0*((double)qq +
-                                      (double)i/(double)HASHTABLESIZE)/20.0);
-                        ttt = time(NULL) + 20;
-                    }
-                    hashtable[p[aim]][0] = w;      // re-insert failed so restore things
-                    hashtable[i][0] = key;
-                    pinned[i] = 1;
-                    pinned[p[aim]] = 0;
-                }
-            }
-            printf("Western things moved to better positions where possible\n");
-// I arrange that the definitive report for this case has "@" characters at
-// the start of each line.
-            printf("@tablesize %d, 2hash=%d success with occupancy %.3f%%\n",
-                    HASHTABLESIZE, secondhash,
-                   (100.0*(double)occupancy)/(double)HASHTABLESIZE);
-            printf("@empty lines in hash consume %d bytes\n",
-                   40*(HASHTABLESIZE-occupancy));
-            report("@");
-            if (--best <= 0) break;
-        }
-        printf(":%d", HASHTABLESIZE); // Outer loop marker
-        if (best <= 0) break;
-    }
+        main_r.table_size, main_r.modulus2, main_r.offset2,
+        (100.0*mainkeycount)/main_r.table_size);
 
 //=====================================================================
 // Now the table should have everything in it and so I can merely fill
@@ -1197,21 +1097,27 @@ int main(int argc, char *argv[])
         if (codepoint[i] == 0) continue;
         int h1;
         uint64_t w;
-// This call should not actually INSERT since the key should already be
-// present!
-        h1 = hashinsert(key, MAXDEPTH);
-        if (h1 < 0)
-        {   uint32_t pp[3];
-            printf("hash table creation failed on %d of %d chars (%d)\n",
-                   i, charcount, __LINE__);
-            printf("Failed to insert %d\n,",
-                pack_character(fontkey[i], codepoint[i])/4);
-            calcplaces(key, pp);
-            printf("%d: %d\n", pp[0], (int)(hashtable[pp[0]][0] & 0x7ffff));
-            printf("%d: %d\n", pp[1], (int)(hashtable[pp[1]][0] & 0x7ffff));
-            printf("%d: %d\n", pp[2], (int)(hashtable[pp[2]][0] & 0x7ffff));
+        h1 = cuckoo_lookup(
+            key,
+            hashtable,
+            sizeof(hashtable[0]),
+            main_r.table_size,
+            main_get,
+            main_r.modulus2,
+            main_r.offset2);
+        if (h1 == -1)
+        {   int j;
+            printf("failure at line %d!\n", __LINE__);
+            printf("Problem with character %d font %d codepoint %d/%x\n",
+                   i, fontkey[i], codepoint[i], codepoint[i]);
+            printf("Full key = %d/%x key = %d/%x\n",
+                    fullkey, fullkey, key, key);
+            for (j=0; j<main_r.table_size; j++)
+                printf("%7d: %" PRIx64 "\n", j, hashtable[j][0]);
+
             exit(1);
         }
+
 // Pack and write in the messy information about width and bounding boxes.
         w = ((uint64_t)width[i] & 0x1fff) << 51 |
             ((uint64_t)(llx[i]+3000) & 0x1fff) << 38 |
@@ -1238,73 +1144,17 @@ int main(int argc, char *argv[])
     printf("urx %d %d (%d)\n", minurx, maxurx, maxurx-minurx);
     printf("ury %d %d (%d)\n", minury, maxury, maxury-minury);
 
-// Assess hash table performance just to be cautious!
-    for (pass=0; pass<3; pass++)
-    {   p1 = n1 = 0;
-        printf("Start pass %d\n", pass);
-        for (i=0; i<charcount; i++)
-        {   int v, probes;
-            int fullkey = pack_character(fontkey[i], codepoint[i]);
-            int key = fullkey>>2;
-            int h1, h2, h3;
-            int pp[3];
-            calcplaces(key, pp);
-            if (codepoint[i] == 0) continue;
-            if (pass == 1 && fontkey[i] == F_odokai) continue;
-            if (pass == 0 && codepoint[i] >= 0x80) continue;
-            h1 = key % HASHTABLESIZE;
-            if (h1 != pp[0])
-            {   printf("Disaster 1\n");
-                exit(1);
-            }
-            v = (int)hashtable[h1][0] & 0x7ffff;
-            if (v != key)
-            {   h2 = h1 + (key % (SECONDHASHMODULUS));
-                if (h2 >= HASHTABLESIZE) h2 = h2 - HASHTABLESIZE;
-                if (h2 != pp[1])
-                {   printf("Disaster 2\n");
-                    printf("key=%d h1=%d h2=%d\n", key, h1, h2);
-                    printf("%d %d %d\n", pp[0], pp[1], pp[2]);
-                    printf("HTS=%d 2MOD=%d off=%d\n", HASHTABLESIZE, SECONDHASHMODULUS,
-                           HASHTABLESIZE-SECONDHASHMODULUS);
-                    exit(1);
-                }
-                v = (int)hashtable[h2][0] & 0x7ffff;
-                if (v != key)
-                {   h3 = h1 + h2;
-                    if (h3 >= HASHTABLESIZE) h3 = h3 - HASHTABLESIZE;
-                    if (h3 != pp[2])
-                    {   printf("Disaster 3\n");
-                        exit(1);
-                    }
-                    v = (int)hashtable[h3][0] & 0x7ffff;
-                    p1 += 3;
-                    if (v != key)
-                    {   printf("Searching case %d for font %d char %d key %x\n",
-                            i, fontkey[i], codepoint[i], key);
-                        printf("Failed!!\n");
-                        exit(1);
-                    }
-                }
-                else p1 += 2;
-            }
-            else p1 += 1;
-            n1++;
-        }
-        printf("probes:%d / chars:%d\n", p1, n1);
-        printf("Probe count averages = %.2f (pass %d)\n",
-               (double)p1/(double)n1, pass);
-    }
-    printf("Total space = %d\n", HASHTABLESIZE*(5*8));
+    printf("Total space = %d\n", main_r.table_size*(5*8));
     p1 = 0;
-    for (i=0; i<HASHTABLESIZE; i++)
+    for (i=0; i<main_r.table_size; i++)
     {   if (hashtable[i][0] != 0) p1++;
     }
     printf("%d of %d entries (%d of %d bytes) used: %.4f\n",
-        p1, HASHTABLESIZE, 40*p1, 40*HASHTABLESIZE, (double)p1/(double)HASHTABLESIZE);
+        p1, main_r.table_size, 40*p1, 40*main_r.table_size,
+        (double)p1/(double)main_r.table_size);
 
 
-    {   FILE *dest = fopen("charmetrics.h1", "w");
+    {   FILE *dest = fopen("charmetrics.h", "w");
         FILE *rdest = fopen("charmetrics.red", "w");
 fprintf(dest, "// charmetrics.h                           Copyright (C) 2015 Codemist Ltd\n");
 fprintf(dest, "\n");
@@ -1369,7 +1219,7 @@ fprintf(dest, "extern int lookupchar(int fontnum, int codepoint);\n");
 fprintf(dest, "extern int32_t lookupkernandligature(int codepoint);\n");
 fprintf(dest, "extern int32_t lookupkernadjustment(int codepoint);\n");
 fprintf(dest, "extern int32_t lookupligature(int codepoint);\n");
-fprintf(dest, "extern int accentposition(int codepoint)\;\n\n";
+fprintf(dest, "extern int accentposition(int codepoint);\n\n");
 fprintf(dest, "extern const uint16_t chardepth_WIN32[31];\n");
 fprintf(dest, "extern const uint16_t chardepth_X11[31];\n");
 fprintf(dest, "extern const uint16_t chardepth_OSX[31];\n");
@@ -1493,11 +1343,12 @@ fprintf(rdest, "  end;\n");
 fprintf(rdest, "\n");
 fprintf(rdest, "fluid '(hashsize!* metrics_hash!* fontkern!* kerntable!* ligaturetable!*);\n");
 fprintf(rdest, "\n");
-fprintf(rdest, "symbolic (hashsize!* := %d);\n", HASHTABLESIZE);
+fprintf(rdest, "symbolic (hashsize!* := %d);\n", main_r.table_size);
 fprintf(rdest, "\n");
-        fprintf(dest, "const uint64_t charmetrics[%d][5] = \n{", HASHTABLESIZE);
+        fprintf(dest, "const uint64_t charmetrics[%d][5] = \n{",
+            main_r.table_size);
         fprintf(rdest, "#eval (setq metrics_hash!* (list_to_metric_table '\n    (");
-        for (i=0; i<HASHTABLESIZE; i++)
+        for (i=0; i<main_r.table_size; i++)
         {   if (i != 0) fprintf(dest, ",");
             fprintf(dest,
                 "\n    {UINT64_C(0x%.16" PRIx64 "), UINT64_C(0x%.16" PRIx64 "), UINT64_C(0x%.16" PRIx64 "),"
@@ -1515,7 +1366,8 @@ fprintf(rdest, "\n");
                 (int)hashtable[i][4], (int)(hashtable[i][4]>>32));
         }
         fprintf(dest, "\n};\n\n");
-        fprintf(dest, "#define SECONDHASHMODULUS %d\n\n", HASHTABLESIZE-secondhash);
+        fprintf(dest, "#define CHAR_METRICS_MODULUS %d\n\n", main_r.modulus2);
+        fprintf(dest, "#define CHAR_METRICS_OFFSET %d\n\n", main_r.offset2);
         fprintf(rdest, "\n    )))\n\n");
         fprintf(dest, "const int16_t fontkern[] = \n{");
         fprintf(rdest, "#eval (setq fontkern!* (list_to_vec16 '\n    (");
@@ -1612,21 +1464,31 @@ fprintf(rdest, "\n");
         fprintf(rdest, "symbolic procedure lookupchar(fontnum, codepoint);\n");
         fprintf(rdest, "  begin\n");
         fprintf(rdest, "    scalar v, h1, h2, w, whi, wlo, fullkey, key;\n");
-        fprintf(rdest, "    fullkey := lshift(fontnum, 16) +\n");
-        fprintf(rdest, "      (if codepoint >= 0x10000 then 0xd000 + land(codepoint, 0xfff)\n");
-        fprintf(rdest, "       else codepoint);\n");
+        fprintf(rdest, "% pack codes into fewer bits\n");
+        fprintf(rdest, "    if fontnum < 2 then <<\n");
+        fprintf(rdest, "      if land(codepoint, 0xd800) = 0xd800 then codepoint := 0xffff\n");
+        fprintf(rdest, "      else if codepoint >= 0x10000 then <<\n");
+        fprintf(rdest, "        if codepoint < 0x10800 then codepoint := 0xd800 + land(codepoint, 0xfff)\n");
+        fprintf(rdest, "        else codepoint := 0xffff >> >>\n");
+        fprintf(rdest, "    else if codepoint >= 0x4000 and codepoint < 0x8000 then codepoint := 0xffff\n");
+        fprintf(rdest, "    else if codepoint >= 0x1d000 and codepoint < 0x1e000 then\n");
+        fprintf(rdest, "      codepoint = 0x4000 + land(codepoint, 0xfff)\n");
+        fprintf(rdest, "    else if codepoint >= 0x108000 and codepoint < 0x109000 then\n");
+        fprintf(rdest, "      codepoint = 0x5000 + land(codepoint, 0xfff)\n");
+        fprintf(rdest, "    else if codepoint >= 0x10000 then codepoint := 0xffff;\n");
+        fprintf(rdest, "    fullkey := lshift(fontnum, 16) + codepoint\n");
         fprintf(rdest, "    key := lshift(fullkey, -2);\n");
-        fprintf(rdest, "    h1 := remainder(land(key, 0x7fffffff), %d);\n", HASHTABLESIZE);
+// I REALLY want the key to be positive here!
+        fprintf(rdest, "    h1 := remainder(key, %d);\n", main_r.table_size);
         fprintf(rdest, "    %% Hash table probe 1.\n");
         fprintf(rdest, "    v := land(getv32(w := getv(metrics_hash!*, h1), 0), 0x7ffff);\n");
         fprintf(rdest, "    if not (v = key) then <<\n");
-        fprintf(rdest, "      h2 := h1 + remainder(key, %d);\n", HASHTABLESIZE-secondhash);
-        fprintf(rdest, "      if h2 >= %d then h2 := h2 - %d;\n", HASHTABLESIZE, HASHTABLESIZE);
+        fprintf(rdest, "      h2 := remainder(key, %d) + %d;\n", main_r.modulus2, main_r.offset2);
         fprintf(rdest, "      %% Hash table probe 2.\n");
         fprintf(rdest, "      v := land(getv32(w := getv(metrics_hash!*, h2), 0), 0x7ffff);\n");
         fprintf(rdest, "      if not (v = key) then <<\n");
         fprintf(rdest, "        h1 := h1 + h2;\n");
-        fprintf(rdest, "        if h1 >= %d then h1 := h1 - %d;\n", HASHTABLESIZE, HASHTABLESIZE);
+        fprintf(rdest, "        if h1 >= %d then h1 := h1 - %d;\n", main_r.table_size, main_r.table_size);
         fprintf(rdest, "        %% Hash table probe 3.\n");
         fprintf(rdest, "        v := land(getv32(w := getv(metrics_hash!*, h1), 0), 0x7ffff);\n");
         fprintf(rdest, "        if not (v = key) then return nil >> >>;\n");
@@ -1683,7 +1545,6 @@ fprintf(rdest, "\n");
         fclose(dest);
         fclose(rdest);
     }
-#endif // Major block commented out
     return 0;
 }
 
@@ -1700,34 +1561,30 @@ fprintf(rdest, "\n");
 // it will have left information about the character in a number of
 // variables that can then be inspected.
 
-#define HASHTABLESIZE (sizeof(charmetrics)/sizeof(charmetrics[0]))
+#define CHAR_METRICS_TABLE_SIZE (sizeof(charmetrics)/sizeof(charmetrics[0]))
 
 int c_width, c_llx, c_lly, c_urx, c_ury, c_kerninfo;
 
 int lookupchar(int fontnum, int codepoint)
 {
-    int fullkey = pack_character(fontnum, codepoint); // 20-bit key
+    int fullkey = pack_character(fontnum, codepoint); // 21-bit key
     int key = fullkey >> 2; // because my hash table has line-size 4
-// I compute two hash values - one for the initial probe position and
-// the second to give an stride,
     int v, h1, h2;
     uint64_t w;
-    h1 = key % HASHTABLESIZE;
+    h1 = key % CHAR_METRICS_TABLE_SIZE;
     v = (int)charmetrics[h1][0] & 0x7ffff;
     if (v != key)
-    {   h2 = key % SECONDHASHMODULUS;
-        h1 += h2;
-        if (h1 >= HASHTABLESIZE) h1 -= HASHTABLESIZE;
-        v = (int)charmetrics[h1][0] & 0x7ffff;
+    {   h2 = (key % CHAR_METRICS_MODULUS) + CHAR_METRICS_OFFSET;
+        v = (int)charmetrics[h2][0] & 0x7ffff;
         if (v != key)
         {   h1 += h2;
-            if (h1 >= HASHTABLESIZE) h1 -= HASHTABLESIZE;
+            if (h1 >= CHAR_METRICS_TABLE_SIZE) h1 -= CHAR_METRICS_TABLE_SIZE;
             v = (int)charmetrics[h1][0] & 0x7ffff;
             if (v != key) return 0;
         }
     }
     w = charmetrics[h1][1+(fullkey&3)];
-// Even though the cache line exists this entry in it may be unused.
+// Even though the hash line exists this entry in it may be unused.
     if (w == 0) return 0;
     c_width = (int)(w >> 51) & 0x1fff;
     c_llx = ((int)(w >> 38) & 0x1fff) - 3000;
@@ -1844,17 +1701,19 @@ int32_t lookupligature(int codepoint)
     return 0;
 }
 
+#define TOPCENTRE_TABLE_SIZE (sizeof(topcentre)/sizeof(topcentre[0]))
+
+#if 0 // @@@@
 int accentposition(int code)
 {
-    int hash1 = code % TOPCENTRESIZE, hash2;
+    int hash1 = code % TOPCENTRE_TABLE_SIZE, hash2;
     int32_t r;
-    if (((r = table[hash1]) & MASK) == code) return r;
-    hash2 = 1 + (code % (TOPCENTRESIZE - TOPCENTRESHIFT));    
-    if (((r = table[hash2]) & MASK) == code) return r;
-    hash1 = (hash1 + hash2) % TOPCENTRESIZE;
-    if (((r = table[hash1]) & MASK) == code) return r;
+    if (((r = topcentre[hash1]) & MASK) == code) return r;
+    hash2 = (code % TOPCENTRE_MODULUS) + TOPCENTRE_OFFSET;    
+    if (((r = topcentre[hash2]) & MASK) == code) return r;
     else return 0;
 }
+#endif // @@@@
 
 #ifdef TEST
 // If TEST is defined then this code will try some very minimal tests.
@@ -1886,9 +1745,9 @@ int main(int argc, char *argv[])
 {
     int i, r;
     printf("====== Test program starting ======\n");
-    printf("Hash table size was %d\n", (int)HASHTABLESIZE);
-    printf("Second modulus %d (%d)\n", (int)SECONDHASHMODULUS,
-           (int)(HASHTABLESIZE-SECONDHASHMODULUS));
+    printf("Hash table size was %d\n", (int)CHAR_METRICS_TABLE_SIZE);
+    printf("Second modulus, offset %d (%d)\n", (int)CHAR_METRICS_MODULUS,
+                                               (int)CHAR_METRICS_OFFSET);
     for (i='e'; i<'n'; i++)
     {   r = lookupchar(F_Regular, i);
         if (r) printf("\"%c\": width %d   BB %d %d %d %d  (%d)\n",
