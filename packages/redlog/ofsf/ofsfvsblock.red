@@ -38,7 +38,7 @@ lisp <<
 module ofsfvsblock;
 
 fluid '(rlvarsellvl!*);
-rlvarsellvl!* := 1;
+rlvarsellvl!* := 3;
 
 switch ofsfvsqetree2gml;
 off1 'ofsfvsqetree2gml;
@@ -363,8 +363,7 @@ asserted procedure vsdb_expandNode1(db: VSdb, nd: VSnd);
       % TODO: more liberal kernel reordering policy
       v := car vsnd_vl nd;
       oo := updkorder v;
-      de := vsde_mk(v,
-	 ofsf_reorder vsnd_f nd, ofsf_reorderl vsdb_curtheo db, vsdb_bvl db);
+      de := vsde_mk(v, ofsf_reorder vsnd_f nd, ofsf_reorderl vsdb_curtheo db, vsdb_bvl db);
       vsde_compute de;
       setkorder oo;
       vsdb_insertaec(db, nd, de)
@@ -372,16 +371,16 @@ asserted procedure vsdb_expandNode1(db: VSdb, nd: VSnd);
 
 asserted procedure vsdb_expandNode2(db: VSdb, nd: VSnd);
    % Expand node using strategy 2: Use the first feasible variable.
-   begin scalar vl, f, theo, v, oo, de;
+   begin scalar vl, f, theo, bvl, v, oo, de;
       % TODO: more liberal kernel reordering policy
       vl := vsnd_vl nd;
       f := vsnd_f nd;
       theo := vsdb_curtheo db;
+      bvl := vsdb_bvl db;
       repeat <<
 	 v := pop vl;
 	 oo := updkorder v;
-      	 de := vsde_mk(v,
-	    ofsf_reorder f, ofsf_reorderl theo, vsdb_bvl db);
+      	 de := vsde_mk(v, ofsf_reorder f, ofsf_reorderl theo, bvl);
 	 vsde_compute de;
       	 setkorder oo
       >> until null vl or vsde_tpl de;
@@ -391,7 +390,69 @@ asserted procedure vsdb_expandNode2(db: VSdb, nd: VSnd);
 asserted procedure vsdb_expandNode3(db: VSdb, nd: VSnd);
    % Expand node using strategy 3: Use the variable with the best
    % elimination set.
-   ;
+   begin scalar vl, f, theo, bvl, sltd, v, oo, de, del;
+      vl := vsnd_vl nd;
+      f := vsnd_f nd;
+      theo := vsdb_curtheo db;
+      bvl := vsdb_bvl db;
+      % Try to select a variable with a linear elimset w.r.t. [bvl].
+      while vl and not sltd do <<
+	 v := pop vl;
+	 oo := updkorder v;
+	 de := vsde_mk(v, ofsf_reorder f, ofsf_reorderl theo, bvl);
+	 vsde_compute de;
+	 if vsde_tpllinp(de, bvl) then  % If there is a variable with a linear elimset, then take it.
+	    sltd := t;
+	 push(de, del);
+	 setkorder oo
+      >>;
+      if sltd then <<
+      	 vsdb_insertaec(db, nd, de);
+	 return
+      >>;
+      de := vsdb_expandNode3!-selectBestDE reversip del;
+      vsdb_insertaec(db, nd, de)
+   end;
+
+asserted procedure vsdb_expandNode3!-selectBestDE(del: List): VSde;
+   begin scalar tmpdel, sltd, de, oo;
+      assert(del);
+      % Try to select a variable with an elimset of degree 1.
+      tmpdel := del;
+      while tmpdel and not sltd do <<
+	 de := pop tmpdel;
+	 oo := updkorder vsde_v de;
+      	 if vsde_tplldp(de, 1) then
+	    sltd := t;
+	 setkorder oo
+      >>;
+      if sltd then
+	 return de;
+      % Try to select a variable with an elimset of degree 2.
+      tmpdel := del;
+      while tmpdel and not sltd do <<
+	 de := pop tmpdel;
+	 oo := updkorder vsde_v de;
+      	 if vsde_tplldp(de, 2) then
+	    sltd := t;
+	 setkorder oo
+      >>;
+      if sltd then
+	 return de;
+      % Try to select a variable with some non-failed elimset.
+      tmpdel := del;
+      while tmpdel and not sltd do <<
+	 de := pop tmpdel;
+	 oo := updkorder vsde_v de;
+      	 if vsde_tpl de then
+	    sltd := t;
+	 setkorder oo
+      >>;
+      if sltd then
+	 return de;
+      % Select the first variable.
+      return car del
+   end;
 
 asserted procedure vsdb_expandNode4(db: VSdb, nd: VSnd);
    % Expand node using strategy 4: Use the variable with the best
@@ -402,7 +463,7 @@ asserted procedure vsdb_insertaec(db: VSdb, nd: VSnd, de: VSde);
    % Insert node after elimination set computation.
    begin scalar tpl, f, v, nvl;
       tpl := vsde_tpl de;
-      if null vsde_tpl de then <<
+      if null vsde_tpl de then <<  % An elimination set has to be non-empty.
 	 vsdb_fcinsert(db, nd);
 	 return
       >>;

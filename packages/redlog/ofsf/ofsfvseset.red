@@ -1208,6 +1208,75 @@ asserted procedure vstp_conflate(tp1: VStp, tp2: VStp): ExtraBoolean;
 
 %%% other procedures %%%
 
+asserted procedure vsde_tpllinp(de: VSde, vl: KernelL): Boolean;
+   % VS data for elimination set computation test point list linear
+   % predicate. Returns [t] if [vsde_tpl de] is an elimination set
+   % containing only linear test points.
+   begin scalar tpl, ok, tp;
+      tpl := vsde_tpl de;
+      if null tpl then  % An elimination set has to be non-empty.
+	 return nil;
+      ok := t;
+      while tpl and ok do <<
+	 tp := pop tpl;
+	 ok := vstp_linp(tp, vl)
+      >>;
+      return ok
+   end;
+
+asserted procedure vstp_linp(tp: VStp, vl: KernelL): Boolean;
+   % Test point linear predicate. Returns [t] if the test point [tp]
+   % contains a parametric root of a polynomial [f] that is linear
+   % w.r.t. [vl], i.e., the total degree of [f] is 1 and the leading
+   % coefficient contains no variables from [vl].
+   begin scalar pr, f, x;
+      pr := vstp_pr tp;
+      f := vspr_f pr;
+      x := vspr_v pr;
+      if null f then <<
+	 assert(vstp_it tp memq '(minf pinf));
+	 return t
+      >>;
+      assert(sfto_mvartest(f, x));
+      if eqn(ldeg f, 1) and null intersection(kernels lc f, vl) then
+ 	 return t;
+      return nil
+   end;
+
+asserted procedure vsde_tplldp(de: VSde, n: Integer): Boolean;
+   % VS data for elimination set computation test point list low
+   % degree predicate. Returns [t] if [vsde_tpl de] is an elimination
+   % set containing only test points of degree at most [n].
+   begin scalar tpl, ok, tp;
+      tpl := vsde_tpl de;
+      if null tpl then  % An elimination set is non-empty.
+	 return nil;
+      ok := t;
+      while tpl and ok do <<
+	 tp := pop tpl;
+	 ok := vstp_ldp(tp, n)
+      >>;
+      return ok
+   end;
+
+asserted procedure vstp_ldp(tp: VStp, n: Integer): Boolean;
+   % Test point low degree predicate. Returns [t] if the test point
+   % [tp] contains a parametric root of a polynomial [f] that is of
+   % degree at most [n].
+   begin scalar pr, f, x;
+      pr := vstp_pr tp;
+      f := vspr_f pr;
+      x := vspr_v pr;
+      if null f then <<
+	 assert(vstp_it tp memq '(minf pinf));
+	 return t
+      >>;
+      assert(sfto_mvartest(f, x));
+      if ldeg f <= n then
+	 return t;
+      return nil
+   end;
+
 asserted procedure ofsf_adjustop(op: Id, s: Integer): Id;
    % Ordered field standard form adjust operator. Returns [op]
    % adjusted by multiplying it with [s].
