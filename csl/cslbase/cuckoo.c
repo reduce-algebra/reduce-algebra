@@ -31,6 +31,21 @@
 
 // $Id$
 
+// The code here is for the offline creation of a hash table that will
+// follow in the spirit of cuckoo hashing using 1, 2 or 3 probes (but
+// never more) to retrieve information. It tries a potentially large
+// number of hash functions and picks one that optimises table occupancy.
+// I use this for building a hash table that holds metrics for characters,
+// and (to my amazement) acheive around 99% table occupancy with a worst
+// case access cost of 3 probes.
+//
+// A central part of the process of setting up the hash table involves
+// finding matchings in bipartite graphs. The Hopcroft-Karp algorithm is
+// used for this.
+//
+// On Linux/Unix/BSD etc systems the code uses "fork" to runs its search
+// using multiple processes in parallel.
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -41,7 +56,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
-// or on newer systems maybe "#include <sys/select.h>
+// ... or on newer systems maybe "#include <sys/select.h>
 
 #include "cuckoo.h"
 
@@ -276,41 +291,10 @@ uint32_t cuckoo_insert(
 #endif
 
 // This tries to insert all the keys in "items" into the hash-table "table"
-// and it returns a non-zero result if it succeeds.
+// and it returns a non-zero result if it succeeds. I put the code for this
+// in a separate file because I feel it could be independently useful.
 
-static int cuckoo_insert_all(
-    uint32_t *items,
-    int item_count,
-    cuckoo_importance *importance,
-    void * table,
-    int hash_item_size,
-    int table_size,
-    cuckoo_get_key *get_key,
-    cuckoo_set_key *set_key,
-    uint32_t modulus2,
-    uint32_t offset2)
-{
-    int i;
-// Clear the hash table before starting.
-    memset(table, 0, hash_item_size*table_size);
-// Do not attempt to any keys that are zero, since that is a reserved
-// value.
-    for (i=0; i<item_count; i++)
-    {   if (items[i] != 0 &&
-            cuckoo_insert(
-            items[i],
-            importance,
-            table,
-            hash_item_size,
-            table_size,
-            get_key,
-            set_key,
-            modulus2,
-            offset2) == -1) return 0;
-    }
-// success.
-    return 1;
-}
+#include "hopkar.c"
 
 static cuckoo_parameters cuckoo_simple_search(
     int myid,
@@ -335,7 +319,14 @@ static cuckoo_parameters cuckoo_simple_search(
 // such good solutions.
 #define MODULUS_LIMIT (table_size-128)
 #else
-#define MODULUS_LIMIT ((3*table_size)/4)
+#ifdef SLOW
+// predefining SLOW leads to an increased search through values for modulus2. I
+// rather fully expect that most of the extra search will not be useful.
+#define MODULUS_LIMIT (table_size/8)
+#else
+// By defauly I try to find a decent balance.
+#define MODULUS_LIMIT ((5*table_size)/6)
+#endif
 #endif
         for (modulus2=table_size-1; modulus2>MODULUS_LIMIT; modulus2--)
         {
@@ -380,6 +371,7 @@ solution_found:
     printf("Success for %d items and table_size %d (%.2f%%)\n",
            item_count, table_size, (100.0*item_count)/table_size);
     printf("modulus2 = %d, offset2 = %d\n", modulus2, offset2);
+#ifdef CAUTIOUS
 // I will now try looking up each item to verify that the table can
 // retrieve all I need it to. This is only to confirm correctness and
 // if I was 100% confident in my code I could remove it!
@@ -430,7 +422,7 @@ solution_found:
         if (key == cuckoo_key(h1)) probe_count += 1;
         else if (key == cuckoo_key(h2)) probe_count += 2;
         else probe_count += 3;
-        if (i == (int)sqrt((double)item_count) ||
+        if ((i*i >= item_count && (i-1)*(i-1) < item_count) ||
             i == item_count/4 ||
             i == item_count/2 ||
             i == (3*item_count)/4)
@@ -439,6 +431,7 @@ solution_found:
     }
     printf("Average probes after %d items = %.2f\n",
            item_count,  probe_count/(double)item_count);
+#endif // CAUTIOUS
 #ifdef VERBOSE
 // Here I will display the table...
     printf("++++ %d %d %d ++++\n", table_size, modulus2, offset2);
@@ -517,7 +510,11 @@ cuckoo_parameters cuckoo_optimise(
     int pipefd[2*PROCESSCOUNT];
     int i, parent = 1, myid;
     for (i=0; i<8; i++)
-        pipe(&pipefd[2*i]);
+    {   if (pipe(&pipefd[2*i]) != 0)
+        {   printf("Failed to create pipes - code %d\n", errno);
+            exit(1);
+        }
+    }
     for (i = 0; i<PROCESSCOUNT; i++)
     {   if (parent)
         {   pid_t p = fork();
@@ -595,13 +592,11 @@ cuckoo_parameters cuckoo_optimise(
             {   printf("Calamity : read failed on %d with code %d\n", fd, errno);
                 exit(1);
             }
-printf("Reading %d bytes\n", table_size*hash_item_size);
             rc = fread(table, hash_item_size, table_size, f);
             if (rc < table_size)
             {   printf("Calamity : read failed on %d with code %d\n", fd, errno);
                 exit(1);
             }
-printf("rc from read = %d\n", rc);
             printf("modulus2 = %d offset2 = %d\n", (int)modulus2, (int)offset2);
             break;
         }
@@ -648,9 +643,7 @@ printf("rc from read = %d\n", rc);
         if (r.table_size != -1)
         {   fwrite(&r.modulus2, sizeof(r.modulus2), 1, f);
             fwrite(&r.offset2, sizeof(r.offset2), 1, f);
-printf("Writing %d bytes\n", r.table_size*hash_item_size);
-printf("rc from fwrite = %d\n",
-            fwrite(table, hash_item_size, r.table_size, f));
+            fwrite(table, hash_item_size, r.table_size, f);
         }
         fclose(f);
         fflush(stdout);
@@ -714,22 +707,27 @@ cuckoo_parameters cuckoo_binary_optimise(
         r.modulus2 = r.offset2 = 3;
         return r;
     }
-// First verify that the low limit does not lead to success.
-    r = cuckoo_optimise(    
-        items,
-        item_count,
-        importance,
-        table,
-        hash_item_size,
-        min_table_size,
-        min_table_size+1,
-        get_key,
-        set_key);
-    if (r.table_size != -1)
-    {   r.table_size = -1;
+// First verify that the low limit does not lead to success. Doing this
+// is pretty cautious! I am going to ASSUME that the table of keys to be
+// inserted has no duplicates, and hence if there is more data than could
+// fit into the table there is no chance of success.
+    if (min_table_size >= item_count)
+    {   r = cuckoo_optimise(
+            items,
+            item_count,
+            importance,
+            table,
+            hash_item_size,
+            min_table_size,
+            min_table_size+1,
+            get_key,
+            set_key);
+        if (r.table_size != -1)
+        {   r.table_size = -1;
 // the "1" is the following two fields perhaps marks what went wrong!
-        r.modulus2 = r.offset2 = 1;
-        return r;
+            r.modulus2 = r.offset2 = 1;
+            return r;
+        }
     }
 // Next confirm that the high limit does lead to success.
     rhi = cuckoo_optimise(    

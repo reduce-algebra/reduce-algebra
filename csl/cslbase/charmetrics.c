@@ -110,6 +110,22 @@
 // either a tolerably recent gcc or some other C compiler that supports
 // C-99.
 
+// The slowest part of the code here is finding a good hawsh regime
+// to obtain good occupancy for the main character metrics table.
+// Telling the code where to look can help speed it up. But of you
+// have changed things then please predefine CONSERVATIVE to do a
+// broad search.
+
+#ifdef CONSERVATIVE
+#define MAIN_LOW        (mainkeycount-1)
+#define MAIN_HIGH       (sizeof(hashtable)/sizeof(hashtable[0]))
+#else
+// The values here are tolerably close to the expected best answer!
+#define MAIN_LOW        10056
+#define MAIN_HIGH       10173
+#endif
+
+
 // "wc -L" tells me that all my font-metric files have lines that are
 // less than 1750 characters long. The worst case is for the cmuntt font
 // where thare are a large number of ligatures specified for "space"
@@ -568,8 +584,6 @@ int main(int argc, char *argv[])
     int i, probes  = 0, p1 = 0, p2 = 0, n1 = 0, n2 = 0,
         occupancy = 0, fail, qq;
     setvbuf(stdout, NULL, _IONBF, 1);
-    printf("SSIZE_MAX = %d\n", SSIZE_MAX);
-    printf("PIPE_BUF = %d\n", PIPE_BUF);
 //==========================================================================
 // (1) Read in all the metrics
 //==========================================================================
@@ -1021,8 +1035,6 @@ int main(int argc, char *argv[])
             accent_set);
     printf("Table size = %d (%d %d)\n", topcentre_r.table_size,
             topcentre_r.modulus2, topcentre_r.offset2);
-    for (i=0; i<topcentre_r.table_size; i++)
-        printf("%4d: %d/%x\n", i, topcentre[i], topcentre[i]);
     printf("Now put in accent positions\n");
     for (i=0; i<accentp; i++)
     {   int w = cuckoo_lookup(
@@ -1046,10 +1058,6 @@ int main(int argc, char *argv[])
         topcentre_r.table_size, accentp,
         (100.0*accentp)/topcentre_r.table_size);
                 
-
-
-
-
 
 //==========================================================================
 // (2) Try inserting everything in to the hash table
@@ -1078,8 +1086,8 @@ int main(int argc, char *argv[])
         main_importance,
         hashtable,
         sizeof(hashtable[0]),
-        mainkeycount-1,
-        sizeof(hashtable)/sizeof(hashtable[0]),
+        MAIN_LOW,
+        MAIN_HIGH,
         main_get,
         main_set);
     printf("Whooeeee! %d %d %d %.2f\n",
@@ -1341,7 +1349,7 @@ fprintf(rdest, "       l := cdr l >>;\n");
 fprintf(rdest, "    return r\n");
 fprintf(rdest, "  end;\n");
 fprintf(rdest, "\n");
-fprintf(rdest, "fluid '(hashsize!* metrics_hash!* fontkern!* kerntable!* ligaturetable!*);\n");
+fprintf(rdest, "fluid '(hashsize!* metrics_hash!* topcentre_hash!* fontkern!* kerntable!* ligaturetable!*);\n");
 fprintf(rdest, "\n");
 fprintf(rdest, "symbolic (hashsize!* := %d);\n", main_r.table_size);
 fprintf(rdest, "\n");
@@ -1366,8 +1374,19 @@ fprintf(rdest, "\n");
                 (int)hashtable[i][4], (int)(hashtable[i][4]>>32));
         }
         fprintf(dest, "\n};\n\n");
-        fprintf(dest, "#define CHAR_METRICS_MODULUS %d\n\n", main_r.modulus2);
+        fprintf(dest, "#define CHAR_METRICS_MODULUS %d\n", main_r.modulus2);
         fprintf(dest, "#define CHAR_METRICS_OFFSET %d\n\n", main_r.offset2);
+        fprintf(dest, "const uint32_t topcentre[%d] = \n{",
+            topcentre_r.table_size);
+        fprintf(rdest, "#eval (setq topcentre_hash!* (list_to_vec32 '\n    (");
+        for (i=0; i<topcentre_r.table_size; i++)
+        {   if (i != 0) fprintf(dest, ",");
+            fprintf(dest, "\n    UINT32_C(0x%.8" PRIx32 ")", topcentre[i]);
+            fprintf(rdest, "\n     0x%.8" PRIx32, topcentre[i]);
+        }
+        fprintf(dest, "\n};\n\n");
+        fprintf(dest, "#define TOPCENTRE_MODULUS %d\n", topcentre_r.modulus2);
+        fprintf(dest, "#define TOPCENTRE_OFFSET %d\n\n", topcentre_r.offset2);
         fprintf(rdest, "\n    )))\n\n");
         fprintf(dest, "const int16_t fontkern[] = \n{");
         fprintf(rdest, "#eval (setq fontkern!* (list_to_vec16 '\n    (");
@@ -1464,7 +1483,7 @@ fprintf(rdest, "\n");
         fprintf(rdest, "symbolic procedure lookupchar(fontnum, codepoint);\n");
         fprintf(rdest, "  begin\n");
         fprintf(rdest, "    scalar v, h1, h2, w, whi, wlo, fullkey, key;\n");
-        fprintf(rdest, "% pack codes into fewer bits\n");
+        fprintf(rdest, "%% pack codes into fewer bits\n");
         fprintf(rdest, "    if fontnum < 2 then <<\n");
         fprintf(rdest, "      if land(codepoint, 0xd800) = 0xd800 then codepoint := 0xffff\n");
         fprintf(rdest, "      else if codepoint >= 0x10000 then <<\n");
@@ -1538,6 +1557,20 @@ fprintf(rdest, "\n");
         fprintf(rdest, "    else if not zerop land(w, 0x00400000) then return nil;\n");
         fprintf(rdest, "    i := add1 i;\n");
         fprintf(rdest, "    go to a\n");
+        fprintf(rdest, "  end;\n");
+        fprintf(rdest, "\n");
+        fprintf(rdest, "symbolic procedure accentposition codepoint;\n");
+        fprintf(rdest, "  begin\n");
+        fprintf(rdest, "    scalar v, h1, h2, w, whi, wlo, fullkey, key;\n");
+        fprintf(rdest, "    h1 := remainder(codepoint, %d);\n", topcentre_r.table_size);
+        fprintf(rdest, "    %% Hash table probe 1.\n");
+        fprintf(rdest, "    v := land(w := getv32(topcentre_hash!*, h1), 0x1fffff);\n");
+        fprintf(rdest, "    if not (v = key) then <<\n");
+        fprintf(rdest, "      h2 := remainder(key, %d) + %d;\n", topcentre_r.modulus2, topcentre_r.offset2);
+        fprintf(rdest, "      %% Hash table probe 2.\n");
+        fprintf(rdest, "      v := land(w := getv32(topcentre_hash!*, h2), 0x7ffff);\n");
+        fprintf(rdest, "      if not (v = key) then return 0 >>;\n");
+        fprintf(rdest, "    return lshift(w, -21)\n");
         fprintf(rdest, "  end;\n");
         fprintf(rdest, "\n");
         fprintf(rdest, "end;\n\n");
@@ -1703,32 +1736,30 @@ int32_t lookupligature(int codepoint)
 
 #define TOPCENTRE_TABLE_SIZE (sizeof(topcentre)/sizeof(topcentre[0]))
 
-#if 0 // @@@@
 int accentposition(int code)
 {
     int hash1 = code % TOPCENTRE_TABLE_SIZE, hash2;
     int32_t r;
-    if (((r = topcentre[hash1]) & MASK) == code) return r;
+    if (((r = topcentre[hash1]) & 0x001fffff) == code) return ((int32_t)r)>>21;
     hash2 = (code % TOPCENTRE_MODULUS) + TOPCENTRE_OFFSET;    
-    if (((r = topcentre[hash2]) & MASK) == code) return r;
+    if (((r = topcentre[hash2]) & 0x001fffff) == code) return ((int32_t)r)>>21;
     else return 0;
 }
-#endif // @@@@
 
 #ifdef TEST
 // If TEST is defined then this code will try some very minimal tests.
 // Expected output is
 //
-//    Hash table size was 10883
-//    "e": width 444   BB 25 -10 424 460  (3656)
-//    "f": width 333   BB 20 0 383 683  (3662)
-//    "g": width 500   BB 28 -218 470 460  (3689)
-//    "h": width 500   BB 9 0 487 683  (3702)
-//    "i": width 278   BB 16 0 253 683  (3704)
+//    Hash table size was 10xxx
+//    "e": width 444   BB 25 -10 424 460  (xxx)
+//    "f": width 333   BB 20 0 383 683  (xxx)
+//    "g": width 500   BB 28 -218 470 460  (xxx)
+//    "h": width 500   BB 9 0 487 683  (xxx)
+//    "i": width 278   BB 16 0 253 683  (xxx)
 //    "j": width 278   BB -70 -218 194 683  (0)
-//    "k": width 500   BB 7 0 505 683  (3707)
-//    "l": width 278   BB 19 0 257 683  (3725)
-//    "m": width 778   BB 16 0 775 460  (3727)
+//    "k": width 500   BB 7 0 505 683  (xxx)
+//    "l": width 278   BB 19 0 257 683  (xxx)
+//    "m": width 778   BB 16 0 775 460  (xxx)
 //    Kern/ligature data for sequence f-i is 14 64257
 //    Kern/ligature data for sequence f-l is 44 64258
 //
@@ -1736,10 +1767,14 @@ int accentposition(int code)
 // followed by an "i" then either the two may have their spacing adjusted
 // by 14 units or the pair may be replaced by the character at codepoint
 // 64257 (which is "fi")... and similarly for "f" followed by "l". The output
-// higher up tells us that in this font there are no special cases involving
-// a "j" followed by something else. "BB" is for "Bounding Box" and the
+// higher up tells us that in this font there are no kerning involving
+// a "j" followed by something else, while the (xxx) values are offsets
+// into a table of kerning information. "BB" is for "Bounding Box" and the
 // four numbers are for lower-left-x, lower-left-y, upper-right-x and
 // upper-right-y in that order.
+// Where the above sample output shows "xxx" that stands for numeric values
+// that depend in delicate ways on everything but should not influence eventual
+// useful output.
 
 int main(int argc, char *argv[])
 {
