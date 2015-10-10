@@ -614,9 +614,17 @@ algebraic operator taylorsingularity;
 if null get('psi,'simpfn) then algebraic operator psi;
 
 algebraic let {
-  taylorsingularity(dilog(~x),~y,~y0) => pi^2/6 - log(x)*log(1-x),
-  taylorsingularity(Ei(~x),~y,~y0) => log(x) - psi(1)
+  taylorsingularity(dilog(~x),~y,~y0) => pi^2/6 - log(x)*log(1-x) when sub(foreach y1 in y collect y1=y0,x)=0,
+  taylorsingularity(Ei(~x),~y,~y0) => (log(x)-log(1/x))/2 - psi(1) when sub(foreach y1 in y collect y1=y0,x)=0
 };
+
+%% The following do not really work
+%%
+%%  taylorsingularity(gamma(~x),~y,~y0) => 1/x + psi(1) when sub(foreach y1 in y collect y1=y0,x)=0
+%%  taylorsingularity(psi(~x),~y,~y0) => -1/x + psi(1) when sub(foreach y1 in y collect y1=y0,x)=0,
+%%  taylorsingularity(polygamma(~n,~x),~y,~y0) => (if evenp n then -1 else 1)*factorial(n)/x^(n+1) + polygamma(n,1) 
+%%     	      	       	     	      	       	  when fixp n and n>0 and sub(foreach y1 in y collect y1=y0,x)=0
+
 
 symbolic procedure taylorexpand!-samevar(u,ll,flg);
   taylor!:

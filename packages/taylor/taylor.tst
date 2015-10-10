@@ -408,7 +408,15 @@ taylor(exp sub(x=x^15,ss),x,0,2);
 
 taylor(dilog(x),x,0,4);
 
+taylor(dilog(x),x,1,4);
+
+taylor(dilog(x),x,-1,4);
+
 taylor(Ei(x),x,0,4);
+
+taylor(Ei(x),x,1,4);
+
+taylor(Ei(x),x,-1,4);
 
 COMMENT In the following we demonstrate the possibiblity to compute the
         expansion of a function which is given by a simple first order

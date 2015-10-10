@@ -73,7 +73,10 @@ symbolic procedure preptaylor!*2 (coeff, template);
 
 
 symbolic procedure checkdifference (var, var0);
-  if var0 = 0 then var else {'difference, var, var0};
+  if var0 = 0 then var
+   else if numberp var0 and var0 < 0 then {'plus, var, -var0}
+    else {'difference, var, var0};
+%   else {'difference, var, if numberp var0 and var0 < 0 then {'minus, -var0} else var0};
 
 symbolic procedure checkexp(bas,exp);
   if exp = 0 then 1
