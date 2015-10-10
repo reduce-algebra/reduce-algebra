@@ -702,6 +702,13 @@ case 8:
 case 11:
         {   double d;
             Lisp_Object r;
+#ifdef COMMON
+/*
+ * I want to enable this all the time, but if I am not in COMMON mode
+ * then before I do I need to get read_float_format set up properly.
+ * At the time of writing it is an entry in cl_symbols which must be a
+ * vector, but is only set up as such in COMMON mode.
+ */
             float f;
             if (!explicit_fp_format && is_symbol(read_float_format))
             {   Lisp_Object w = qvalue(read_float_format);
@@ -710,6 +717,7 @@ case 11:
 /*              else if (w == double_float) fplength = 2; */
                 else if (w == long_float) fplength = 3;
             }
+#endif
             boffo_char(boffop) = 0;
             d = atof((char *)&boffo_char(0));
             switch (fplength)

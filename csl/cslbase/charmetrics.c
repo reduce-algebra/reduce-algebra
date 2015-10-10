@@ -562,6 +562,30 @@ static void accent_set(void *p, uint32_t key)
 }
 
 
+// Another table will take characters to "larger variants". So for instance
+// a left parenthesis will have five gradually larger versions.
+
+
+static int variantsize = MAXMATHSYMS;
+static int64_t variant_table[MAXMATHSYMS][2];
+
+
+static int variant_importance(uint32_t key)
+{
+    return CUCKOO_IMPORTANT;
+}
+
+
+static uint32_t variant_get(void *p)
+{
+    return (uint32_t)(*(uint64_t *)p & 0x001fffff);
+}
+static void variant_set(void *p, uint32_t key)
+{
+    *(uint64_t *)p = (*(uint64_t *)p & ~(uint64_t)0x001fffff) | key;
+}
+
+
 static char      line[MAXLINE];
 static char      saveline[MAXLINE];
 static char      segment[MAXLINE];
@@ -1058,6 +1082,44 @@ int main(int argc, char *argv[])
         topcentre_r.table_size, accentp,
         (100.0*accentp)/topcentre_r.table_size);
                 
+    cuckoo_parameters variant_r =
+        cuckoo_binary_optimise(
+            variantcode,
+            variantp,
+            variant_importance,
+            variant_table,
+            sizeof(variant_table[0]),
+            variantp-1,
+            sizeof(variant_table)/sizeof(variant_table[0]),
+            variant_get,
+            variant_set);
+    printf("Table size = %d (%d %d)\n", variant_r.table_size,
+            variant_r.modulus2, variant_r.offset2);
+    printf("Now put in variant info for (, ), [, ] etc.\n");
+    for (i=0; i<variantp; i++)
+    {   int w = cuckoo_lookup(
+            variantcode[i],
+            variant_table,
+            sizeof(variant_table[0]),
+            variant_r.table_size,
+            variant_get,
+            variant_r.modulus2,
+            variant_r.offset2);
+        if (w == -1)
+        {   printf("failure of lookup in varinat table!\n");
+            printf("%d: %d/%x\n", i, variantcode[i], variantcode[i]);
+            for (i=0; i<variant_r.table_size; i++)
+                printf("%4d: %" PRIx64 "\n", i, variant_table[i][0]);
+            exit(1);
+        }
+// @@@@@@@@
+        variant_table[w][0] |= 0x10000000;
+        variant_table[w][1] |= 0x20000000;
+    }
+    printf("variant table set up with %d entries for %d chars (%.2f)\n",
+        variant_r.table_size, variantp,
+        (100.0*variantp)/variant_r.table_size);
+                
 
 //==========================================================================
 // (2) Try inserting everything in to the hash table
@@ -1078,9 +1140,36 @@ int main(int argc, char *argv[])
     }
 
     printf("About to try to optimise for %d entries\n", mainkeycount);
-// In my case 10019...
+// In my case there are 10019 keys to consider, If I do a proper search
+// that can take quite a while - say 45 minutes on a reasonably fast desktop
+// system. So as I cunning ploy I will first try the parameters that
+// are a known solution, and if nothing has changed at all that will
+// succeed (very rapidly) and I can use it. If that fails I will drop back
+// to the more expensive search
 
-    cuckoo_parameters main_r = cuckoo_binary_optimise(
+#define EXPECTED_TABLESIZE   10057
+#define EXPECTED_MODULUS2     8729
+#define EXPECTED_OFFSET2      1108
+
+    cuckoo_parameters main_r;
+
+    if (cuckoo_insert_all(
+        mainkey,
+        mainkeycount,
+        main_importance,
+        hashtable,
+        sizeof(hashtable[0]),
+        EXPECTED_TABLESIZE,
+        main_get,
+        main_set,
+        EXPECTED_MODULUS2,
+        EXPECTED_OFFSET2))
+    {   main_r.table_size = EXPECTED_TABLESIZE;
+        main_r.modulus2 = EXPECTED_MODULUS2;
+        main_r.offset2 = EXPECTED_OFFSET2;
+        printf("Built-in table parameters successfully used\n");
+    }
+    else main_r = cuckoo_binary_optimise(
         mainkey,
         mainkeycount,
         main_importance,
@@ -1136,7 +1225,7 @@ int main(int argc, char *argv[])
 // Finally merge in an offset to any kern info that might be available
         if (kernreference[i] != 0)
         {   int64_t q = (kernreference[i] & 0x7fffffff)-fontkern[fontkey[i]];
-#if 1
+#if 0
             printf("Fill in kern ref %d as %d\n",
                    kernreference[i] & 0x7fffffff, (int)q);
 #endif
@@ -1374,6 +1463,7 @@ fprintf(rdest, "\n");
                 (int)hashtable[i][4], (int)(hashtable[i][4]>>32));
         }
         fprintf(dest, "\n};\n\n");
+        fprintf(rdest, "\n    )))\n\n");
         fprintf(dest, "#define CHAR_METRICS_MODULUS %d\n", main_r.modulus2);
         fprintf(dest, "#define CHAR_METRICS_OFFSET %d\n\n", main_r.offset2);
         fprintf(dest, "const uint32_t topcentre[%d] = \n{",
