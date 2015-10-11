@@ -1,8 +1,9 @@
 % This is a start at a sample of tall delimiters built up out of
 % piles of tops, tails and extensions
 
+% The code sto be used can come from the extension tables in the font.
 
-deffont 1 SizeOneSym 24;
+deffont 1 Math 24;
 
 put 1 10000 0 9128;
 put 1 10000 24240 9130;

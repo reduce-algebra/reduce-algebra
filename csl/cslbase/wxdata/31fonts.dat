@@ -1,5 +1,12 @@
-% I have exactly 31 fonts that I am willing to use (at present) and
-% sets a character from each.
+% I used to have exactly 31 fonts that I was willing to use, hence the name
+% of the file. But now I have only 7 that cover all I need:
+%   cmuntt              fixed pitch "computer modern unicode typewriter"
+%   odokai              for some amount of CJK coverage
+%   General             cslSTIX-Regular - a plausible serif face
+%   General-Bold        variations on the above
+%   General-Italic      ditto
+%   General-BoldItalic  ditto
+%   Math                cslSTIXMath-Regular with many extra maths symbols.
 
 % for STIXGeneral I will set "A"
 deffont 1 General 60;
@@ -17,6 +24,8 @@ put 1 120000 0 65;
 % The Symbol fonts provide a range of sizes of "("
 deffont 1 Math 60;
 put 1 160000 0 40;    % "("
+% the codes for these larger parens can come from the "variants" tables
+% as extracted form the font.
 put 1 200000 0 0x1081e2;
 put 1 240000 0 0x10824e;
 put 1 280000 0 0x108287;

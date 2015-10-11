@@ -567,22 +567,20 @@ static void accent_set(void *p, uint32_t key)
 
 
 static int variantsize = MAXMATHSYMS;
-static int64_t variant_table[MAXMATHSYMS][2];
-
+static uint32_t variant_table[MAXMATHSYMS][6];
 
 static int variant_importance(uint32_t key)
 {
-    return CUCKOO_IMPORTANT;
+    return CUCKOO_STANDARD;
 }
-
 
 static uint32_t variant_get(void *p)
 {
-    return (uint32_t)(*(uint64_t *)p & 0x001fffff);
+    return 0x003fffff & *(uint32_t *)p;
 }
 static void variant_set(void *p, uint32_t key)
 {
-    *(uint64_t *)p = (*(uint64_t *)p & ~(uint64_t)0x001fffff) | key;
+    *(uint32_t *)p = (*(uint32_t *)p & ~0x003fffff) | key;
 }
 
 
@@ -698,12 +696,13 @@ int main(int argc, char *argv[])
             if (variant)
             {   int some = 0;
 // Variant lines can be horribly long! They start VX or HX for vertical
-// or horizontal variations.
+// or horizontal variations. I used code 1 for horizontal, 0 for vertical.
                 if (sscanf(line, "VX %s ;", variantname[variantp]) == 1)
-                    variantdirection[variantp] = 1;
-                if (sscanf(line, "HX %s ;", variantname[variantp]) == 1)
                     variantdirection[variantp] = 0;
+                else if (sscanf(line, "HX %s ;", variantname[variantp]) == 1)
+                    variantdirection[variantp] = 1;
                 else continue;
+printf("Variant record %d (%d) for %s\n", variantp, variantdirection[variantp], variantname[variantp]); // @@@
 // before collecting data I zero out all the relevant fields so that
 // when data is not present I end up in a sane state.
                 v1[variantp][0] = 0;
@@ -955,7 +954,8 @@ int main(int argc, char *argv[])
         accentnum[i] = decodename(F_Math, accentname[i]);
     printf("Accent position tables processed\n");
     for (i=0; i<variantp; i++)
-    {   variantcode[i] = decodename(F_Math, variantname[i]);
+    {   variantcode[i] = decodename(F_Math, variantname[i]) |
+                         (variantdirection[i] << 21);
         if (v1[i][0] != 0) nv1[i] = decodename(F_Math, v1[i]);
         else nv1[i] = 0;
         if (v2[i][0] != 0) nv2[i] = decodename(F_Math, v2[i]);
@@ -1106,17 +1106,30 @@ int main(int argc, char *argv[])
             variant_r.modulus2,
             variant_r.offset2);
         if (w == -1)
-        {   printf("failure of lookup in varinat table!\n");
+        {   printf("failure of lookup in variant table!\n");
             printf("%d: %d/%x\n", i, variantcode[i], variantcode[i]);
             for (i=0; i<variant_r.table_size; i++)
-                printf("%4d: %" PRIx64 "\n", i, variant_table[i][0]);
+                printf("%4d: %" PRIx32 "\n", i, variant_table[i][0]);
             exit(1);
         }
-// @@@@@@@@
-        variant_table[w][0] |= 0x10000000;
-        variant_table[w][1] |= 0x20000000;
+// Put the five gradually larger variants of the character in place. These
+// are stored in a really simple way since the total amount of data involved
+// is not huge. Maybe the only thing to note here is that variable_table[*][0]
+// has the codepoint of the basic character with 0x00200000 added in if the
+// variants will be for horiziontal use (eg gradually wider circumflex
+// accents), rather than for vertical use (eg progressivly taller parentheses).
+// When a size is not provided the entry with contain U+0000.
+        if (variant_table[w][0] != variantcode[i])
+        {   printf("Messed up at line %d\n", __LINE__);
+            exit(1);
+        }
+        variant_table[w][1] |= nv1[i];
+        variant_table[w][2] |= nv2[i];
+        variant_table[w][3] |= nv3[i];
+        variant_table[w][4] |= nv4[i];
+        variant_table[w][5] |= nv5[i];
     }
-    printf("variant table set up with %d entries for %d chars (%.2f)\n",
+    printf("variant table set up with %d entries for %d chars (%.2f%%)\n",
         variant_r.table_size, variantp,
         (100.0*variantp)/variant_r.table_size);
                 
@@ -1425,7 +1438,7 @@ fprintf(rdest, "       l := cdr l >>;\n");
 fprintf(rdest, "    return r\n");
 fprintf(rdest, "  end;\n");
 fprintf(rdest, "\n");
-fprintf(rdest, "%% This one will take a list whose elements are thenselves 10-element lists\n");
+fprintf(rdest, "%% This one will take a list whose elements are themselves lists\n");
 fprintf(rdest, "%% of 32-bit integers.\n");
 fprintf(rdest, "%%\n");
 fprintf(rdest, "symbolic procedure list_to_metric_table l;\n");
@@ -1438,7 +1451,7 @@ fprintf(rdest, "       l := cdr l >>;\n");
 fprintf(rdest, "    return r\n");
 fprintf(rdest, "  end;\n");
 fprintf(rdest, "\n");
-fprintf(rdest, "fluid '(hashsize!* metrics_hash!* topcentre_hash!* fontkern!* kerntable!* ligaturetable!*);\n");
+fprintf(rdest, "fluid '(hashsize!* metrics_hash!* topcentre_hash!* variant_hash!* fontkern!* kerntable!* ligaturetable!*);\n");
 fprintf(rdest, "\n");
 fprintf(rdest, "symbolic (hashsize!* := %d);\n", main_r.table_size);
 fprintf(rdest, "\n");
@@ -1477,6 +1490,24 @@ fprintf(rdest, "\n");
         fprintf(dest, "\n};\n\n");
         fprintf(dest, "#define TOPCENTRE_MODULUS %d\n", topcentre_r.modulus2);
         fprintf(dest, "#define TOPCENTRE_OFFSET %d\n\n", topcentre_r.offset2);
+        fprintf(rdest, "\n    )))\n\n");
+        fprintf(dest, "const uint32_t variant_table[%d][6] = \n{",
+            variant_r.table_size);
+        fprintf(rdest, "#eval (setq variant_hash!* (list_to_metric_table '\n    (");
+        for (i=0; i<variant_r.table_size; i++)
+        {   if (i != 0) fprintf(dest, ",");
+            fprintf(dest, "\n    {0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x}",
+                variant_table[i][0], variant_table[i][1],
+                variant_table[i][2], variant_table[i][3],
+                variant_table[i][4], variant_table[i][5]);
+            fprintf(rdest, "\n     (0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x)" ,
+                variant_table[i][0], variant_table[i][1],
+                variant_table[i][2], variant_table[i][3],
+                variant_table[i][4], variant_table[i][5]);
+        }
+        fprintf(dest, "\n};\n\n");
+        fprintf(dest, "#define VARIANT_MODULUS %d\n", variant_r.modulus2);
+        fprintf(dest, "#define VARIANT_OFFSET %d\n\n", variant_r.offset2);
         fprintf(rdest, "\n    )))\n\n");
         fprintf(dest, "const int16_t fontkern[] = \n{");
         fprintf(rdest, "#eval (setq fontkern!* (list_to_vec16 '\n    (");
@@ -1651,16 +1682,36 @@ fprintf(rdest, "\n");
         fprintf(rdest, "\n");
         fprintf(rdest, "symbolic procedure accentposition codepoint;\n");
         fprintf(rdest, "  begin\n");
-        fprintf(rdest, "    scalar v, h1, h2, w, whi, wlo, fullkey, key;\n");
+        fprintf(rdest, "    scalar h1, h2, v, w;\n");
         fprintf(rdest, "    h1 := remainder(codepoint, %d);\n", topcentre_r.table_size);
         fprintf(rdest, "    %% Hash table probe 1.\n");
         fprintf(rdest, "    v := land(w := getv32(topcentre_hash!*, h1), 0x1fffff);\n");
         fprintf(rdest, "    if not (v = key) then <<\n");
         fprintf(rdest, "      h2 := remainder(key, %d) + %d;\n", topcentre_r.modulus2, topcentre_r.offset2);
         fprintf(rdest, "      %% Hash table probe 2.\n");
-        fprintf(rdest, "      v := land(w := getv32(topcentre_hash!*, h2), 0x7ffff);\n");
+        fprintf(rdest, "      v := land(w := getv32(topcentre_hash!*, h2), 0x1fffff);\n");
         fprintf(rdest, "      if not (v = key) then return 0 >>;\n");
         fprintf(rdest, "    return lshift(w, -21)\n");
+        fprintf(rdest, "  end;\n");
+        fprintf(rdest, "\n");
+        fprintf(rdest, "end;\n\n");
+        fprintf(rdest, "%% Note that variants must be passed a codepount and direction flag\n");
+        fprintf(rdest, "symbolic procedure variants key;\n");
+        fprintf(rdest, "  begin\n");
+        fprintf(rdest, "    scalar h1, h2, h3, v, w;\n");
+        fprintf(rdest, "    h1 := remainder(key, %d);\n", variant_r.table_size);
+        fprintf(rdest, "    %% Hash table probe 1.\n");
+        fprintf(rdest, "    v := getv32(w := getv(variants_hash!*, h1), 0);\n");
+        fprintf(rdest, "    if not (v = key) then <<\n");
+        fprintf(rdest, "      h2 := remainder(key, %d) + %d;\n", variant_r.modulus2, topcentre_r.offset2);
+        fprintf(rdest, "      %% Hash table probe 2.\n");
+        fprintf(rdest, "      v := getv32(w := getv(topcentre_hash!*, h2), 0);\n");
+        fprintf(rdest, "      if not (v = key) then <<\n");
+        fprintf(rdest, "         h3 := remainder(h1 + h2, %d);\n", variant_r.table_size);
+        fprintf(rdest, "         %% Hash table probe 3.\n");
+        fprintf(rdest, "         v := getv32(w := getv(topcentre_hash!*, h3), 0);\n");
+        fprintf(rdest, "         if not (v = key) then return nil >> >>;\n");
+        fprintf(rdest, "    return w\n");
         fprintf(rdest, "  end;\n");
         fprintf(rdest, "\n");
         fprintf(rdest, "end;\n\n");
@@ -1826,6 +1877,12 @@ int32_t lookupligature(int codepoint)
 
 #define TOPCENTRE_TABLE_SIZE (sizeof(topcentre)/sizeof(topcentre[0]))
 
+// accentposition only applies to characters in STIXMath. It gives a horizontal
+// offset to be used when positioning an accent above a character. I *believe*
+// the intent is to use both the position information from the base character
+// and the accent and line them up... The code here returns 0 if no special
+// information is available.
+
 int accentposition(int code)
 {
     int hash1 = code % TOPCENTRE_TABLE_SIZE, hash2;
@@ -1836,22 +1893,50 @@ int accentposition(int code)
     else return 0;
 }
 
+#define VARIANT_TABLE_SIZE (sizeof(variant_table)/sizeof(variant_table[0]))
+
+// Some characters have variants that represent gradually larger versions
+// of the same thing. A good example can be seen in the variations on
+// parenthesis, brackets and braces. There can also be horizontal size
+// varients such as wide overbars and circumflex accents that may be used to
+// go above wide items of various sorts. The code passed to character_variants
+// is the code point of the base character plus 0x00200000 if a horizontal
+// expansion is needed. The result is NULL if nothing is available, or a
+// pointer to a block of 6 words otherwise. If this pointer is r, then r[0]
+// is the base character passed, but then r[1] tp r[5] are gradually larger
+// versions, or U+0000 when no further large versions are available.
+
+const uint32_t *character_variants(int code)
+{
+    int hash1 = code % VARIANT_TABLE_SIZE, hash2, hash3;
+    int32_t r;
+    if (variant_table[hash1][0] == code) return &variant_table[hash1][0];
+    hash2 = (code % VARIANT_MODULUS) + VARIANT_OFFSET;    
+    if (variant_table[hash2][0] == code) return &variant_table[hash2][0];
+    hash3 = (hash1 + hash2) % VARIANT_TABLE_SIZE;
+    if (variant_table[hash3][0] == code) return &variant_table[hash3][0];
+    return NULL;
+}
+
 #ifdef TEST
 // If TEST is defined then this code will try some very minimal tests.
 // Expected output is
 //
-//    Hash table size was 10xxx
-//    "e": width 444   BB 25 -10 424 460  (xxx)
-//    "f": width 333   BB 20 0 383 683  (xxx)
-//    "g": width 500   BB 28 -218 470 460  (xxx)
-//    "h": width 500   BB 9 0 487 683  (xxx)
-//    "i": width 278   BB 16 0 253 683  (xxx)
+//    Hash table size was 10057
+// Second modulus, offset 8729 (1108)
+//    "e": width 444   BB 25 -10 424 460  (630)
+//    "f": width 333   BB 20 0 383 683  (636)
+//    "g": width 500   BB 28 -218 470 460  (663)
+//    "h": width 500   BB 9 0 487 683  (0)
+//    "i": width 278   BB 16 0 253 683  (0)
 //    "j": width 278   BB -70 -218 194 683  (0)
-//    "k": width 500   BB 7 0 505 683  (xxx)
-//    "l": width 278   BB 19 0 257 683  (xxx)
-//    "m": width 778   BB 16 0 775 460  (xxx)
+//    "k": width 500   BB 7 0 505 683  (0)
+//    "l": width 278   BB 19 0 257 683  (669)
+//    "m": width 778   BB 16 0 775 460  (701)
 //    Kern/ligature data for sequence f-i is 14 64257
 //    Kern/ligature data for sequence f-l is 44 64258
+//    Top accent shift A=361 combining circumflex=-230
+//    Paren sizes = U+000028, U+000028, U+1081e2, U+10824e, U+108287, U+1082bf
 //
 // The last two lines say that if in font STIX-Regular an "f" is
 // followed by an "i" then either the two may have their spacing adjusted
@@ -1869,6 +1954,7 @@ int accentposition(int code)
 int main(int argc, char *argv[])
 {
     int i, r;
+    const uint32_t *p;
     printf("====== Test program starting ======\n");
     printf("Hash table size was %d\n", (int)CHAR_METRICS_TABLE_SIZE);
     printf("Second modulus, offset %d (%d)\n", (int)CHAR_METRICS_MODULUS,
@@ -1891,6 +1977,12 @@ int main(int argc, char *argv[])
                (int)(k >> 23), (int)(k & 0x001fffff));
         fflush(stdout);
     }
+    printf("Top accent shift A=%d combining circumflex=%d\n",
+           accentposition('A'), accentposition(770));
+    p = character_variants('(');
+    if (p == NULL) printf("Failed to find paren sizes\n");
+    else printf("Paren sizes = U+%.6x, U+%.6x, U+%.6x, U+%.6x, U+%.6x, U+%.6x\n",
+        p[0], p[1], p[2], p[3], p[4], p[5]);
     return 0;
 }
 
