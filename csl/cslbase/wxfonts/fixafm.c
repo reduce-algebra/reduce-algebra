@@ -340,7 +340,9 @@ int main(int argc, char *argv[])
                     continue;
                 }
                 if (sscanf(linebuffer, " Variant Count = %d", &num) == 1)
+                {   n1[0] = n2[0] = n3[0] = n4[0] = n5[0] = 0;
                     continue;
+                }
                 switch (num)
                 {
             case 1: if (sscanf(linebuffer, " Variants: %s",
@@ -356,6 +358,7 @@ int main(int argc, char *argv[])
                 }
                 if (sscanf(linebuffer, " Part Count=%d", &partcount) == 1)
                 {   partnumber = 0;
+                    p1[0] = p2[0] = p3[0] = p4[0] = p5[0] = 0;
                     continue;
                 }
                 if (sscanf(linebuffer, " %s start=%d end=%d full=%d flags=%d(%s",

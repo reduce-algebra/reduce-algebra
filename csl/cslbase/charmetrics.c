@@ -131,7 +131,7 @@
 // where thare are a large number of ligatures specified for "space"
 // followed by various characters (that I believe are probably all the
 // combining characters present, so that putting a space ahead of any of them
-// can lead to a comversion to a non-combining variant.
+// can lead to a conversion to a non-combining variant.
 
 // Having statically fixed limits here simplifies my coding.
 
@@ -444,16 +444,16 @@ static char P4[MAXMATHSYMS][MAXUNILEN]; // extension
 static char P5[MAXMATHSYMS][MAXUNILEN]; // bottom
 // Now the same converted to codepoints rather than names.
 static int32_t variantcode[MAXMATHSYMS];
-static int32_t nv1[MAXMATHSYMS]; // size 1 (just bigger than basic)
-static int32_t nv2[MAXMATHSYMS]; // size 2
-static int32_t nv3[MAXMATHSYMS]; // size 3
-static int32_t nv4[MAXMATHSYMS]; // size 4
-static int32_t nv5[MAXMATHSYMS]; // size 5 (biggest)
-static int32_t np1[MAXMATHSYMS]; // top        top        top
-static int32_t np2[MAXMATHSYMS]; // extension  extension  extension
-static int32_t np3[MAXMATHSYMS]; // middle     bottom
-static int32_t np4[MAXMATHSYMS]; // extension
-static int32_t np5[MAXMATHSYMS]; // bottom
+static int32_t nv1[MAXMATHSYMS];     // size 1 (just bigger than basic)
+static int32_t nv2[MAXMATHSYMS];     // size 2
+static int32_t nv3[MAXMATHSYMS];     // size 3
+static int32_t nv4[MAXMATHSYMS];     // size 4
+static int32_t nv5[MAXMATHSYMS];     // size 5 (biggest)
+static int32_t np1[MAXMATHSYMS];     // bottom piece
+static int32_t np2[MAXMATHSYMS];     // extension
+static int32_t np3[MAXMATHSYMS];     // middle piece
+static int32_t np4[MAXMATHSYMS];     // extension
+static int32_t np5[MAXMATHSYMS];     // top piece 
 static int vdata1[MAXMATHSYMS][4];   // start end full flag
 static int vdata2[MAXMATHSYMS][4];
 static int vdata3[MAXMATHSYMS][4];
@@ -565,7 +565,6 @@ static void accent_set(void *p, uint32_t key)
 // Another table will take characters to "larger variants". So for instance
 // a left parenthesis will have five gradually larger versions.
 
-
 static int variantsize = MAXMATHSYMS;
 static uint32_t variant_table[MAXMATHSYMS][6];
 
@@ -576,11 +575,31 @@ static int variant_importance(uint32_t key)
 
 static uint32_t variant_get(void *p)
 {
-    return 0x003fffff & *(uint32_t *)p;
+    return *(uint32_t *)p;
 }
 static void variant_set(void *p, uint32_t key)
 {
-    *(uint32_t *)p = (*(uint32_t *)p & ~0x003fffff) | key;
+    *(uint32_t *)p = key;
+}
+
+// Yet another is for the ways to build up huge symbols out of multiple
+// glyphs.
+
+static int extensionsize = MAXMATHSYMS;
+static uint32_t extension_table[MAXMATHSYMS][11];
+
+static int extension_importance(uint32_t key)
+{
+    return CUCKOO_STANDARD;
+}
+
+static uint32_t extension_get(void *p)
+{
+    return *(uint32_t *)p;
+}
+static void extension_set(void *p, uint32_t key)
+{
+    *(uint32_t *)p = key;
 }
 
 
@@ -771,8 +790,8 @@ printf("Variant record %d (%d) for %s\n", variantp, variantdirection[variantp], 
                 }
                 if (p!=NULL & sscanf(p, "; P5 %s %d %d %d %d ;",
                            P5[variantp],
-                           &vdata4[variantp][0], &vdata4[variantp][1],
-                           &vdata4[variantp][2], &vdata4[variantp][3]) == 5)
+                           &vdata5[variantp][0], &vdata5[variantp][1],
+                           &vdata5[variantp][2], &vdata5[variantp][3]) == 5)
                 {   p = strchr(p+1, ';');
                     some = 1;
                 }
@@ -1081,23 +1100,36 @@ printf("Variant record %d (%d) for %s\n", variantp, variantdirection[variantp], 
     printf("top-centre table set up with %d words for %d chars (%.2f)\n",
         topcentre_r.table_size, accentp,
         (100.0*accentp)/topcentre_r.table_size);
-                
-    cuckoo_parameters variant_r =
-        cuckoo_binary_optimise(
-            variantcode,
-            variantp,
+
+    cuckoo_parameters variant_r;
+    int usefulp = 0;
+// I will only put characters that actually have variants in here
+    {   int32_t usefulcode[MAXMATHSYMS];
+        for (i=0; i<variantp; i++)
+        {   if (nv1[i] != 0 || nv2[i] != 0 || nv3[i] != 0 ||
+                nv4[i] != 0 || nv5[i] != 0)
+                usefulcode[usefulp++] = variantcode[i];
+        }
+        variant_r = cuckoo_binary_optimise(
+            usefulcode,
+            usefulp,
             variant_importance,
             variant_table,
             sizeof(variant_table[0]),
-            variantp-1,
+            usefulp-1,
             sizeof(variant_table)/sizeof(variant_table[0]),
             variant_get,
             variant_set);
-    printf("Table size = %d (%d %d)\n", variant_r.table_size,
-            variant_r.modulus2, variant_r.offset2);
+        printf("Variant table size = %d (%d %d)\n", variant_r.table_size,
+                variant_r.modulus2, variant_r.offset2);
+    }
     printf("Now put in variant info for (, ), [, ] etc.\n");
     for (i=0; i<variantp; i++)
-    {   int w = cuckoo_lookup(
+    {   int w;
+// If there are no variants then do not bother!
+        if (nv1[i] == 0 && nv2[i] == 0 && nv3[i] == 0 &&
+                nv4[i] == 0 && nv5[i] == 0) continue;
+        w = cuckoo_lookup(
             variantcode[i],
             variant_table,
             sizeof(variant_table[0]),
@@ -1130,8 +1162,72 @@ printf("Variant record %d (%d) for %s\n", variantp, variantdirection[variantp], 
         variant_table[w][5] |= nv5[i];
     }
     printf("variant table set up with %d entries for %d chars (%.2f%%)\n",
-        variant_r.table_size, variantp,
-        (100.0*variantp)/variant_r.table_size);
+        variant_r.table_size, usefulp,
+        (100.0*usefulp)/variant_r.table_size);
+                
+    cuckoo_parameters extension_r;
+    usefulp = 0;
+// I will only put characters that actually have variants in here
+    {   int32_t usefulcode[MAXMATHSYMS];
+        for (i=0; i<variantp; i++)
+        {   if (np1[i] != 0 || np2[i] != 0 || np3[i] != 0 ||
+                np4[i] != 0 || np5[i] != 0)
+                usefulcode[usefulp++] = variantcode[i];
+        }
+        extension_r = cuckoo_binary_optimise(
+            usefulcode,
+            usefulp,
+            extension_importance,
+            extension_table,
+            sizeof(extension_table[0]),
+            usefulp-1,
+            sizeof(extension_table)/sizeof(extension_table[0]),
+            extension_get,
+            extension_set);
+        printf("Extension table size = %d (%d %d)\n", extension_r.table_size,
+                extension_r.modulus2, extension_r.offset2);
+    }
+    printf("Now put in extension info for (, ), [, ] etc.\n");
+    for (i=0; i<variantp; i++)
+    {   int w;
+// If there are no extensions then do not bother!
+        if (np1[i] == 0 && np2[i] == 0 && np3[i] == 0 &&
+                np4[i] == 0 && np5[i] == 0) continue;
+        w = cuckoo_lookup(
+            variantcode[i],
+            extension_table,
+            sizeof(extension_table[0]),
+            extension_r.table_size,
+            extension_get,
+            extension_r.modulus2,
+            extension_r.offset2);
+        if (w == -1)
+        {   printf("failure of lookup in extension table!\n");
+            printf("%d: %d/%x\n", i, variantcode[i], variantcode[i]);
+            for (i=0; i<extension_r.table_size; i++)
+                printf("%4d: %" PRIx32 "\n", i, extension_table[i][0]);
+            exit(1);
+        }
+// Put the components used to build up huge characters into the table.
+// When one is not provided the entry with contain U+0000.
+        if (extension_table[w][0] != variantcode[i])
+        {   printf("Messed up at line %d\n", __LINE__);
+            exit(1);
+        }
+        extension_table[w][1] |= np1[i] | (vdata1[i][0]<<21);
+        extension_table[w][2] |= vdata1[i][1] | (vdata1[i][2]<<16) | (vdata1[i][3]<<31);
+        extension_table[w][3] |= np2[i] | (vdata2[i][0]<<21);
+        extension_table[w][4] |= vdata2[i][1] | (vdata2[i][2]<<16) | (vdata2[i][3]<<31);
+        extension_table[w][5] |= np3[i] | (vdata3[i][0]<<21);
+        extension_table[w][6] |= vdata3[i][1] | (vdata3[i][2]<<16) | (vdata3[i][3]<<31);
+        extension_table[w][7] |= np4[i] | (vdata4[i][0]<<21);
+        extension_table[w][8] |= vdata4[i][1] | (vdata4[i][2]<<16) | (vdata4[i][3]<<31);
+        extension_table[w][9] |= np5[i] | (vdata5[i][0]<<21);
+        extension_table[w][10]|= vdata5[i][1] | (vdata5[i][2]<<16) | (vdata5[i][3]<<31);
+    }
+    printf("extension table set up with %d entries for %d chars (%.2f%%)\n",
+        extension_r.table_size, usefulp,
+        (100.0*usefulp)/extension_r.table_size);
                 
 
 //==========================================================================
@@ -1451,7 +1547,7 @@ fprintf(rdest, "       l := cdr l >>;\n");
 fprintf(rdest, "    return r\n");
 fprintf(rdest, "  end;\n");
 fprintf(rdest, "\n");
-fprintf(rdest, "fluid '(hashsize!* metrics_hash!* topcentre_hash!* variant_hash!* fontkern!* kerntable!* ligaturetable!*);\n");
+fprintf(rdest, "fluid '(hashsize!* metrics_hash!* topcentre_hash!* variant_hash!* extension_hash!* fontkern!* kerntable!* ligaturetable!*);\n");
 fprintf(rdest, "\n");
 fprintf(rdest, "symbolic (hashsize!* := %d);\n", main_r.table_size);
 fprintf(rdest, "\n");
@@ -1508,6 +1604,34 @@ fprintf(rdest, "\n");
         fprintf(dest, "\n};\n\n");
         fprintf(dest, "#define VARIANT_MODULUS %d\n", variant_r.modulus2);
         fprintf(dest, "#define VARIANT_OFFSET %d\n\n", variant_r.offset2);
+        fprintf(rdest, "\n    )))\n\n");
+        fprintf(dest, "const uint32_t extension_table[%d][11] = \n{",
+            extension_r.table_size);
+        fprintf(rdest, "#eval (setq extension_hash!* (list_to_metric_table '\n    (");
+        for (i=0; i<extension_r.table_size; i++)
+        {   if (i != 0) fprintf(dest, ",");
+            fprintf(dest,
+                "\n    {0x%.8x,\n     0x%.8x, 0x%.8x,\n     0x%.8x, 0x%.8x,\n"
+                "     0x%.8x, 0x%.8x,\n     0x%.8x, 0x%.8x,\n"
+                "     0x%.8x, 0x%.8x}",
+                extension_table[i][0], extension_table[i][1],
+                extension_table[i][2], extension_table[i][3],
+                extension_table[i][4], extension_table[i][5],
+                extension_table[i][6], extension_table[i][7],
+                extension_table[i][8], extension_table[i][9],
+                extension_table[i][10]);
+            fprintf(rdest, "\n     (0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x\n"
+                           "                 0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x)" ,
+                extension_table[i][0], extension_table[i][1],
+                extension_table[i][2], extension_table[i][3],
+                extension_table[i][4], extension_table[i][5],
+                extension_table[i][6], extension_table[i][7],
+                extension_table[i][8], extension_table[i][9],
+                extension_table[i][10]);
+        }
+        fprintf(dest, "\n};\n\n");
+        fprintf(dest, "#define EXTENSION_MODULUS %d\n", extension_r.modulus2);
+        fprintf(dest, "#define EXTENSION_OFFSET %d\n\n", extension_r.offset2);
         fprintf(rdest, "\n    )))\n\n");
         fprintf(dest, "const int16_t fontkern[] = \n{");
         fprintf(rdest, "#eval (setq fontkern!* (list_to_vec16 '\n    (");
@@ -1695,21 +1819,39 @@ fprintf(rdest, "\n");
         fprintf(rdest, "  end;\n");
         fprintf(rdest, "\n");
         fprintf(rdest, "end;\n\n");
-        fprintf(rdest, "%% Note that variants must be passed a codepount and direction flag\n");
+        fprintf(rdest, "%% Note that variants must be passed a codepoint and direction flag\n");
         fprintf(rdest, "symbolic procedure variants key;\n");
         fprintf(rdest, "  begin\n");
         fprintf(rdest, "    scalar h1, h2, h3, v, w;\n");
         fprintf(rdest, "    h1 := remainder(key, %d);\n", variant_r.table_size);
         fprintf(rdest, "    %% Hash table probe 1.\n");
-        fprintf(rdest, "    v := getv32(w := getv(variants_hash!*, h1), 0);\n");
+        fprintf(rdest, "    v := getv32(w := getv(variant_hash!*, h1), 0);\n");
         fprintf(rdest, "    if not (v = key) then <<\n");
-        fprintf(rdest, "      h2 := remainder(key, %d) + %d;\n", variant_r.modulus2, topcentre_r.offset2);
+        fprintf(rdest, "      h2 := remainder(key, %d) + %d;\n", variant_r.modulus2, variant_r.offset2);
         fprintf(rdest, "      %% Hash table probe 2.\n");
-        fprintf(rdest, "      v := getv32(w := getv(topcentre_hash!*, h2), 0);\n");
+        fprintf(rdest, "      v := getv32(w := getv(variant_hash!*, h2), 0);\n");
         fprintf(rdest, "      if not (v = key) then <<\n");
         fprintf(rdest, "         h3 := remainder(h1 + h2, %d);\n", variant_r.table_size);
         fprintf(rdest, "         %% Hash table probe 3.\n");
-        fprintf(rdest, "         v := getv32(w := getv(topcentre_hash!*, h3), 0);\n");
+        fprintf(rdest, "         v := getv32(w := getv(variant_hash!*, h3), 0);\n");
+        fprintf(rdest, "         if not (v = key) then return nil >> >>;\n");
+        fprintf(rdest, "    return w\n");
+        fprintf(rdest, "  end;\n");
+        fprintf(rdest, "\n");
+        fprintf(rdest, "symbolic procedure extension key;\n");
+        fprintf(rdest, "  begin\n");
+        fprintf(rdest, "    scalar h1, h2, h3, v, w;\n");
+        fprintf(rdest, "    h1 := remainder(key, %d);\n", extension_r.table_size);
+        fprintf(rdest, "    %% Hash table probe 1.\n");
+        fprintf(rdest, "    v := getv32(w := getv(extension_hash!*, h1), 0);\n");
+        fprintf(rdest, "    if not (v = key) then <<\n");
+        fprintf(rdest, "      h2 := remainder(key, %d) + %d;\n", extension_r.modulus2, extension_r.offset2);
+        fprintf(rdest, "      %% Hash table probe 2.\n");
+        fprintf(rdest, "      v := getv32(w := getv(extension_hash!*, h2), 0);\n");
+        fprintf(rdest, "      if not (v = key) then <<\n");
+        fprintf(rdest, "         h3 := remainder(h1 + h2, %d);\n", extension_r.table_size);
+        fprintf(rdest, "         %% Hash table probe 3.\n");
+        fprintf(rdest, "         v := getv32(w := getv(extension_hash!*, h3), 0);\n");
         fprintf(rdest, "         if not (v = key) then return nil >> >>;\n");
         fprintf(rdest, "    return w\n");
         fprintf(rdest, "  end;\n");
@@ -1918,6 +2060,24 @@ const uint32_t *character_variants(int code)
     return NULL;
 }
 
+#define EXTENSION_TABLE_SIZE (sizeof(extension_table)/sizeof(extension_table[0]))
+
+// A characters such as "{" is associated with (up to) 5 other characters that
+// can be placed together to ranfer a huge version of it. This retrieves
+// a table showing how to do that.
+
+const uint32_t *character_extension(int code)
+{
+    int hash1 = code % EXTENSION_TABLE_SIZE, hash2, hash3;
+    int32_t r;
+    if (extension_table[hash1][0] == code) return &extension_table[hash1][0];
+    hash2 = (code % EXTENSION_MODULUS) + EXTENSION_OFFSET;    
+    if (extension_table[hash2][0] == code) return &extension_table[hash2][0];
+    hash3 = (hash1 + hash2) % EXTENSION_TABLE_SIZE;
+    if (extension_table[hash3][0] == code) return &extension_table[hash3][0];
+    return NULL;
+}
+
 #ifdef TEST
 // If TEST is defined then this code will try some very minimal tests.
 // Expected output is
@@ -1937,8 +2097,19 @@ const uint32_t *character_variants(int code)
 //    Kern/ligature data for sequence f-l is 44 64258
 //    Top accent shift A=361 combining circumflex=-230
 //    Paren sizes = U+000028, U+000028, U+1081e2, U+10824e, U+108287, U+1082bf
+//    For { bottom U+10821e 0 600 1005 0
+//    lower extender U+10821f 600 500 1010 1
+//    middle piece U+10821d 200 200 1010 0
+//    upper extender U+10821f 500 600 1010 1
+//    top piece U+10821c 600 0 1005 0
+//    For | bottom U+00007c 0 600 1380 0
+//    extender U+00007c 600 0 1380 1
+//    unused U+000000 0 0 0 0
+//    unused U+000000 0 0 0 0
+//    unused U+000000 0 0 0 0
 //
-// The last two lines say that if in font STIX-Regular an "f" is
+//
+// The Kerm/ligature lines say that if in font STIX-Regular an "f" is
 // followed by an "i" then either the two may have their spacing adjusted
 // by 14 units or the pair may be replaced by the character at codepoint
 // 64257 (which is "fi")... and similarly for "f" followed by "l". The output
@@ -1947,9 +2118,9 @@ const uint32_t *character_variants(int code)
 // into a table of kerning information. "BB" is for "Bounding Box" and the
 // four numbers are for lower-left-x, lower-left-y, upper-right-x and
 // upper-right-y in that order.
-// Where the above sample output shows "xxx" that stands for numeric values
-// that depend in delicate ways on everything but should not influence eventual
-// useful output.
+// The lower block is from the maths tables showing codepoints for a range
+// of sizes of left parentheses, and for ways to build up huge "{" and "|"
+// symbols.
 
 int main(int argc, char *argv[])
 {
@@ -1983,6 +2154,54 @@ int main(int argc, char *argv[])
     if (p == NULL) printf("Failed to find paren sizes\n");
     else printf("Paren sizes = U+%.6x, U+%.6x, U+%.6x, U+%.6x, U+%.6x, U+%.6x\n",
         p[0], p[1], p[2], p[3], p[4], p[5]);
+    p = character_extension('{');
+    if (p == NULL) printf("Failed to find left brace extension data\n");
+    else
+    {   printf("For { bottom U+%.6x %d %d %d %d\n",
+            p[1] & 0x001fffff, p[1]>>21,
+            p[2] & 0x0000ffff, (p[2]>>16) & 0x00007fff,
+            p[2]>>31);
+        printf("lower extender U+%.6x %d %d %d %d\n",
+            p[3] & 0x001fffff, p[3]>>21,
+            p[4] & 0x0000ffff, (p[4]>>16) & 0x00007fff,
+            p[4]>>31);
+        printf("middle piece U+%.6x %d %d %d %d\n",
+            p[5] & 0x001fffff, p[5]>>21,
+            p[6] & 0x0000ffff, (p[6]>>16) & 0x00007fff,
+            p[6]>>31);
+        printf("upper extender U+%.6x %d %d %d %d\n",
+            p[7] & 0x001fffff, p[7]>>21,
+            p[8] & 0x0000ffff, (p[8]>>16) & 0x00007fff,
+            p[8]>>31);
+        printf("top piece U+%.6x %d %d %d %d\n",
+            p[9] & 0x001fffff, p[9]>>21,
+            p[10] & 0x0000ffff, (p[10]>>16) & 0x00007fff,
+            p[10]>>31);
+    }
+    p = character_extension('|');
+    if (p == NULL) printf("Failed to find vertical bar extension data\n");
+    else
+    {   printf("For | bottom U+%.6x %d %d %d %d\n",
+            p[1] & 0x001fffff, p[1]>>21,
+            p[2] & 0x00007fff, (p[2]>>15) & 0x0000ffff,
+            p[2]>>31);
+        printf("extender U+%.6x %d %d %d %d\n",
+            p[3] & 0x001fffff, p[3]>>21,
+            p[4] & 0x00007fff, (p[4]>>15) & 0x0000ffff,
+            p[4]>>31);
+        printf("unused U+%.6x %d %d %d %d\n",
+            p[5] & 0x001fffff, p[5]>>21,
+            p[6] & 0x00007fff, (p[6]>>15) & 0x0000ffff,
+            p[6]>>31);
+        printf("unused U+%.6x %d %d %d %d\n",
+            p[7] & 0x001fffff, p[7]>>21,
+            p[8] & 0x00007fff, (p[8]>>15) & 0x0000ffff,
+            p[8]>>31);
+        printf("unused U+%.6x %d %d %d %d\n",
+            p[9] & 0x001fffff, p[9]>>21,
+            p[10] & 0x00007fff, (p[10]>>15) & 0x0000ffff,
+            p[10]>>31);
+    }
     return 0;
 }
 
