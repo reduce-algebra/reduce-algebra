@@ -366,77 +366,24 @@ vsub!-fnalist!* := '(
    ((2 1 equal ((1 . 1))) . vsub!-2!-1!-equal!-1)
    ((2 1 equal ((1 . 2))) . vsub!-2!-1!-equal!-2)
    ((2 1 equal ((2 . 1))) . vsub!-2!-1!-equal!-3)
-   ((2 1 equal ((-1 . 1))) . vsub!-2!-1!-equal!-1m)
-   ((2 1 equal ((-1 . 2))) . vsub!-2!-1!-equal!-2m)
-   ((2 1 equal ((-2 . 1))) . vsub!-2!-1!-equal!-3m)
    ((2 1 equal ((1 . 1) (2 . 1) (-1 . 2) (-2 . 1))) . vsub!-2!-1!-equal!-4)
    ((2 1 equal ((1 . 2) (2 . 1) (-1 . 1) (-2 . 1))) . vsub!-2!-1!-equal!-5)
    ((2 1 equal ((1 . 1) (2 . 1))) . vsub!-2!-1!-equal!-1)
    ((2 1 equal ((1 . 2) (2 . 1))) . vsub!-2!-1!-equal!-2)
-   ((2 1 equal ((-1 . 1) (-2 . 1))) . vsub!-2!-1!-equal!-1m)
-   ((2 1 equal ((-1 . 2) (-2 . 1))) . vsub!-2!-1!-equal!-2m)
    ((2 1 lessp ((1 . 1))) . vsub!-2!-1!-lessp!-1)
    ((2 1 lessp ((1 . 2))) . vsub!-2!-1!-lessp!-2)
    ((2 1 lessp ((2 . 1))) . vsub!-2!-1!-lessp!-3)
-   ((2 1 lessp ((-1 . 1))) . vsub!-2!-1!-lessp!-1m)
-   ((2 1 lessp ((-1 . 2))) . vsub!-2!-1!-lessp!-2m)
-   ((2 1 lessp ((-2 . 1))) . vsub!-2!-1!-lessp!-3m)
    ((2 1 lessp ((1 . 1) (2 . 1) (-1 . 2) (-2 . 1))) . vsub!-2!-1!-lessp!-4)
    ((2 1 lessp ((1 . 2) (2 . 1) (-1 . 1) (-2 . 1))) . vsub!-2!-1!-lessp!-5)
    ((2 1 lessp ((1 . 1) (2 . 1))) . vsub!-2!-1!-lessp!-1)
    ((2 1 lessp ((1 . 2) (2 . 1))) . vsub!-2!-1!-lessp!-2)
-   ((2 1 lessp ((-1 . 1) (-2 . 1))) . vsub!-2!-1!-lessp!-1m)
-   ((2 1 lessp ((-1 . 2) (-2 . 1))) . vsub!-2!-1!-lessp!-2m)
    ((2 1 leq ((1 . 1))) . vsub!-2!-1!-leq!-1)
    ((2 1 leq ((1 . 2))) . vsub!-2!-1!-leq!-2)
    ((2 1 leq ((2 . 1))) . vsub!-2!-1!-leq!-3)
-   ((2 1 leq ((-1 . 1))) . vsub!-2!-1!-leq!-1m)
-   ((2 1 leq ((-1 . 2))) . vsub!-2!-1!-leq!-2m)
-   ((2 1 leq ((-2 . 1))) . vsub!-2!-1!-leq!-3m)
    ((2 1 leq ((1 . 1) (2 . 1) (-1 . 2) (-2 . 1))) . vsub!-2!-1!-leq!-4)
    ((2 1 leq ((1 . 2) (2 . 1) (-1 . 1) (-2 . 1))) . vsub!-2!-1!-leq!-5)
    ((2 1 leq ((1 . 1) (2 . 1))) . vsub!-2!-1!-leq!-1)
    ((2 1 leq ((1 . 2) (2 . 1))) . vsub!-2!-1!-leq!-2)
-   ((2 1 leq ((-1 . 1) (-2 . 1))) . vsub!-2!-1!-leq!-1m)
-   ((2 1 leq ((-1 . 2) (-2 . 1))) . vsub!-2!-1!-leq!-2m)
-   ((2 1 neq ((1 . 1))) . vsub!-2!-1!-neq!-1)
-   ((2 1 neq ((1 . 2))) . vsub!-2!-1!-neq!-2)
-   ((2 1 neq ((2 . 1))) . vsub!-2!-1!-neq!-3)
-   ((2 1 neq ((-1 . 1))) . vsub!-2!-1!-neq!-1m)
-   ((2 1 neq ((-1 . 2))) . vsub!-2!-1!-neq!-2m)
-   ((2 1 neq ((-2 . 1))) . vsub!-2!-1!-neq!-3m)
-   ((2 1 neq ((1 . 1) (2 . 1) (-1 . 2) (-2 . 1))) . vsub!-2!-1!-neq!-4)
-   ((2 1 neq ((1 . 2) (2 . 1) (-1 . 1) (-2 . 1))) . vsub!-2!-1!-neq!-5)
-   ((2 1 neq ((1 . 1) (2 . 1))) . vsub!-2!-1!-neq!-1)
-   ((2 1 neq ((1 . 2) (2 . 1))) . vsub!-2!-1!-neq!-2)
-   ((2 1 neq ((-1 . 1) (-2 . 1))) . vsub!-2!-1!-neq!-1m)
-   ((2 1 neq ((-1 . 2) (-2 . 1))) . vsub!-2!-1!-neq!-2m)
-   ((2 1 greaterp ((1 . 1))) . vsub!-2!-1!-greaterp!-1)
-   ((2 1 greaterp ((1 . 2))) . vsub!-2!-1!-greaterp!-2)
-   ((2 1 greaterp ((2 . 1))) . vsub!-2!-1!-greaterp!-3)
-   ((2 1 greaterp ((-1 . 1))) . vsub!-2!-1!-greaterp!-1m)
-   ((2 1 greaterp ((-1 . 2))) . vsub!-2!-1!-greaterp!-2m)
-   ((2 1 greaterp ((-2 . 1))) . vsub!-2!-1!-greaterp!-3m)
-   ((2 1 greaterp ((1 . 1) (2 . 1) (-1 . 2) (-2 . 1)))
-      . vsub!-2!-1!-greaterp!-4)
-   ((2 1 greaterp ((1 . 2) (2 . 1) (-1 . 1) (-2 . 1)))
-      . vsub!-2!-1!-greaterp!-5)
-   ((2 1 greaterp ((1 . 1) (2 . 1))) . vsub!-2!-1!-greaterp!-1)
-   ((2 1 greaterp ((1 . 2) (2 . 1))) . vsub!-2!-1!-greaterp!-2)
-   ((2 1 greaterp ((-1 . 1) (-2 . 1))) . vsub!-2!-1!-greaterp!-1m)
-   ((2 1 greaterp ((-1 . 2) (-2 . 1))) . vsub!-2!-1!-greaterp!-2m)
-   ((2 1 geq ((1 . 1))) . vsub!-2!-1!-geq!-1)
-   ((2 1 geq ((1 . 2))) . vsub!-2!-1!-geq!-2)
-   ((2 1 geq ((2 . 1))) . vsub!-2!-1!-geq!-3)
-   ((2 1 geq ((-1 . 1))) . vsub!-2!-1!-geq!-1m)
-   ((2 1 geq ((-1 . 2))) . vsub!-2!-1!-geq!-2m)
-   ((2 1 geq ((-2 . 1))) . vsub!-2!-1!-geq!-3m)
-   ((2 1 geq ((1 . 1) (2 . 1) (-1 . 2) (-2 . 1))) . vsub!-2!-1!-geq!-4)
-   ((2 1 geq ((1 . 2) (2 . 1) (-1 . 1) (-2 . 1))) . vsub!-2!-1!-geq!-5)
-   ((2 1 geq ((1 . 1) (2 . 1))) . vsub!-2!-1!-geq!-1)
-   ((2 1 geq ((1 . 2) (2 . 1))) . vsub!-2!-1!-geq!-2)
-   ((2 1 geq ((-1 . 1) (-2 . 1))) . vsub!-2!-1!-geq!-1m)
-   ((2 1 geq ((-1 . 2) (-2 . 1))) . vsub!-2!-1!-geq!-2m)
    ((3 1 equal ((1 . 1))) . vsub!-3!-1!-equal!-1)
    ((3 1 equal ((2 . 1))) . vsub!-3!-1!-equal!-2)
    ((3 1 equal ((2 . 2))) . vsub!-3!-1!-equal!-3)
@@ -445,20 +392,9 @@ vsub!-fnalist!* := '(
    ((3 1 equal ((4 . 1))) . vsub!-3!-1!-equal!-6)
    ((3 1 equal ((4 . 2))) . vsub!-3!-1!-equal!-7)
    ((3 1 equal ((4 . 3))) . vsub!-3!-1!-equal!-8)
-   ((3 1 equal ((-1 . 1))) . vsub!-3!-1!-equal!-1m)
-   ((3 1 equal ((-2 . 1))) . vsub!-3!-1!-equal!-2m)
-   ((3 1 equal ((-2 . 2))) . vsub!-3!-1!-equal!-3m)
-   ((3 1 equal ((-3 . 1))) . vsub!-3!-1!-equal!-4m)
-   ((3 1 equal ((-3 . 2))) . vsub!-3!-1!-equal!-5m)
-   ((3 1 equal ((-4 . 1))) . vsub!-3!-1!-equal!-6m)
-   ((3 1 equal ((-4 . 2))) . vsub!-3!-1!-equal!-7m)
-   ((3 1 equal ((-4 . 3))) . vsub!-3!-1!-equal!-8m)
    ((3 1 equal ((2 . 1) (3 . 1) (4 . 1))) . vsub!-3!-1!-equal!-9)
    ((3 1 equal ((2 . 1) (3 . 2) (4 . 2))) . vsub!-3!-1!-equal!-10)
    ((3 1 equal ((2 . 2) (3 . 2) (4 . 3))) . vsub!-3!-1!-equal!-11)
-   ((3 1 equal ((-2 . 1) (-3 . 1) (-4 . 1))) . vsub!-3!-1!-equal!-9m)
-   ((3 1 equal ((-2 . 1) (-3 . 2) (-4 . 2))) . vsub!-3!-1!-equal!-10m)
-   ((3 1 equal ((-2 . 2) (-3 . 2) (-4 . 3))) . vsub!-3!-1!-equal!-11m)
    ((3 1 lessp ((1 . 1))) . vsub!-3!-1!-lessp!-1)
    ((3 1 lessp ((2 . 1))) . vsub!-3!-1!-lessp!-2)
    ((3 1 lessp ((2 . 2))) . vsub!-3!-1!-lessp!-3)
@@ -467,20 +403,9 @@ vsub!-fnalist!* := '(
    ((3 1 lessp ((4 . 1))) . vsub!-3!-1!-lessp!-6)
    ((3 1 lessp ((4 . 2))) . vsub!-3!-1!-lessp!-7)
    ((3 1 lessp ((4 . 3))) . vsub!-3!-1!-lessp!-8)
-   ((3 1 lessp ((-1 . 1))) . vsub!-3!-1!-lessp!-1m)
-   ((3 1 lessp ((-2 . 1))) . vsub!-3!-1!-lessp!-2m)
-   ((3 1 lessp ((-2 . 2))) . vsub!-3!-1!-lessp!-3m)
-   ((3 1 lessp ((-3 . 1))) . vsub!-3!-1!-lessp!-4m)
-   ((3 1 lessp ((-3 . 2))) . vsub!-3!-1!-lessp!-5m)
-   ((3 1 lessp ((-4 . 1))) . vsub!-3!-1!-lessp!-6m)
-   ((3 1 lessp ((-4 . 2))) . vsub!-3!-1!-lessp!-7m)
-   ((3 1 lessp ((-4 . 3))) . vsub!-3!-1!-lessp!-8m)
    ((3 1 lessp ((2 . 1) (3 . 1) (4 . 1))) . vsub!-3!-1!-lessp!-9)
    ((3 1 lessp ((2 . 1) (3 . 2) (4 . 2))) . vsub!-3!-1!-lessp!-10)
    ((3 1 lessp ((2 . 2) (3 . 2) (4 . 3))) . vsub!-3!-1!-lessp!-11)
-   ((3 1 lessp ((-2 . 1) (-3 . 1) (-4 . 1))) . vsub!-3!-1!-lessp!-9m)
-   ((3 1 lessp ((-2 . 1) (-3 . 2) (-4 . 2))) . vsub!-3!-1!-lessp!-10m)
-   ((3 1 lessp ((-2 . 2) (-3 . 2) (-4 . 3))) . vsub!-3!-1!-lessp!-11m)
    ((3 1 leq ((1 . 1))) . vsub!-3!-1!-leq!-1)
    ((3 1 leq ((2 . 1))) . vsub!-3!-1!-leq!-2)
    ((3 1 leq ((2 . 2))) . vsub!-3!-1!-leq!-3)
@@ -489,86 +414,9 @@ vsub!-fnalist!* := '(
    ((3 1 leq ((4 . 1))) . vsub!-3!-1!-leq!-6)
    ((3 1 leq ((4 . 2))) . vsub!-3!-1!-leq!-7)
    ((3 1 leq ((4 . 3))) . vsub!-3!-1!-leq!-8)
-   ((3 1 leq ((-1 . 1))) . vsub!-3!-1!-leq!-1m)
-   ((3 1 leq ((-2 . 1))) . vsub!-3!-1!-leq!-2m)
-   ((3 1 leq ((-2 . 2))) . vsub!-3!-1!-leq!-3m)
-   ((3 1 leq ((-3 . 1))) . vsub!-3!-1!-leq!-4m)
-   ((3 1 leq ((-3 . 2))) . vsub!-3!-1!-leq!-5m)
-   ((3 1 leq ((-4 . 1))) . vsub!-3!-1!-leq!-6m)
-   ((3 1 leq ((-4 . 2))) . vsub!-3!-1!-leq!-7m)
-   ((3 1 leq ((-4 . 3))) . vsub!-3!-1!-leq!-8m)
    ((3 1 leq ((2 . 1) (3 . 1) (4 . 1))) . vsub!-3!-1!-leq!-9)
    ((3 1 leq ((2 . 1) (3 . 2) (4 . 2))) . vsub!-3!-1!-leq!-10)
    ((3 1 leq ((2 . 2) (3 . 2) (4 . 3))) . vsub!-3!-1!-leq!-11)
-   ((3 1 leq ((-2 . 1) (-3 . 1) (-4 . 1))) . vsub!-3!-1!-leq!-9m)
-   ((3 1 leq ((-2 . 1) (-3 . 2) (-4 . 2))) . vsub!-3!-1!-leq!-10m)
-   ((3 1 leq ((-2 . 2) (-3 . 2) (-4 . 3))) . vsub!-3!-1!-leq!-11m)
-   ((3 1 neq ((1 . 1))) . vsub!-3!-1!-neq!-1)
-   ((3 1 neq ((2 . 1))) . vsub!-3!-1!-neq!-2)
-   ((3 1 neq ((2 . 2))) . vsub!-3!-1!-neq!-3)
-   ((3 1 neq ((3 . 1))) . vsub!-3!-1!-neq!-4)
-   ((3 1 neq ((3 . 2))) . vsub!-3!-1!-neq!-5)
-   ((3 1 neq ((4 . 1))) . vsub!-3!-1!-neq!-6)
-   ((3 1 neq ((4 . 2))) . vsub!-3!-1!-neq!-7)
-   ((3 1 neq ((4 . 3))) . vsub!-3!-1!-neq!-8)
-   ((3 1 neq ((-1 . 1))) . vsub!-3!-1!-neq!-1m)
-   ((3 1 neq ((-2 . 1))) . vsub!-3!-1!-neq!-2m)
-   ((3 1 neq ((-2 . 2))) . vsub!-3!-1!-neq!-3m)
-   ((3 1 neq ((-3 . 1))) . vsub!-3!-1!-neq!-4m)
-   ((3 1 neq ((-3 . 2))) . vsub!-3!-1!-neq!-5m)
-   ((3 1 neq ((-4 . 1))) . vsub!-3!-1!-neq!-6m)
-   ((3 1 neq ((-4 . 2))) . vsub!-3!-1!-neq!-7m)
-   ((3 1 neq ((-4 . 3))) . vsub!-3!-1!-neq!-8m)
-   ((3 1 neq ((2 . 1) (3 . 1) (4 . 1))) . vsub!-3!-1!-neq!-9)
-   ((3 1 neq ((2 . 1) (3 . 2) (4 . 2))) . vsub!-3!-1!-neq!-10)
-   ((3 1 neq ((2 . 2) (3 . 2) (4 . 3))) . vsub!-3!-1!-neq!-11)
-   ((3 1 neq ((-2 . 1) (-3 . 1) (-4 . 1))) . vsub!-3!-1!-neq!-9m)
-   ((3 1 neq ((-2 . 1) (-3 . 2) (-4 . 2))) . vsub!-3!-1!-neq!-10m)
-   ((3 1 neq ((-2 . 2) (-3 . 2) (-4 . 3))) . vsub!-3!-1!-neq!-11m)
-   ((3 1 greaterp ((1 . 1))) . vsub!-3!-1!-greaterp!-1)
-   ((3 1 greaterp ((2 . 1))) . vsub!-3!-1!-greaterp!-2)
-   ((3 1 greaterp ((2 . 2))) . vsub!-3!-1!-greaterp!-3)
-   ((3 1 greaterp ((3 . 1))) . vsub!-3!-1!-greaterp!-4)
-   ((3 1 greaterp ((3 . 2))) . vsub!-3!-1!-greaterp!-5)
-   ((3 1 greaterp ((4 . 1))) . vsub!-3!-1!-greaterp!-6)
-   ((3 1 greaterp ((4 . 2))) . vsub!-3!-1!-greaterp!-7)
-   ((3 1 greaterp ((4 . 3))) . vsub!-3!-1!-greaterp!-8)
-   ((3 1 greaterp ((-1 . 1))) . vsub!-3!-1!-greaterp!-1m)
-   ((3 1 greaterp ((-2 . 1))) . vsub!-3!-1!-greaterp!-2m)
-   ((3 1 greaterp ((-2 . 2))) . vsub!-3!-1!-greaterp!-3m)
-   ((3 1 greaterp ((-3 . 1))) . vsub!-3!-1!-greaterp!-4m)
-   ((3 1 greaterp ((-3 . 2))) . vsub!-3!-1!-greaterp!-5m)
-   ((3 1 greaterp ((-4 . 1))) . vsub!-3!-1!-greaterp!-6m)
-   ((3 1 greaterp ((-4 . 2))) . vsub!-3!-1!-greaterp!-7m)
-   ((3 1 greaterp ((-4 . 3))) . vsub!-3!-1!-greaterp!-8m)
-   ((3 1 greaterp ((2 . 1) (3 . 1) (4 . 1))) . vsub!-3!-1!-greaterp!-9)
-   ((3 1 greaterp ((2 . 1) (3 . 2) (4 . 2))) . vsub!-3!-1!-greaterp!-10)
-   ((3 1 greaterp ((2 . 2) (3 . 2) (4 . 3))) . vsub!-3!-1!-greaterp!-11)
-   ((3 1 greaterp ((-2 . 1) (-3 . 1) (-4 . 1))) . vsub!-3!-1!-greaterp!-9m)
-   ((3 1 greaterp ((-2 . 1) (-3 . 2) (-4 . 2))) . vsub!-3!-1!-greaterp!-10m)
-   ((3 1 greaterp ((-2 . 2) (-3 . 2) (-4 . 3))) . vsub!-3!-1!-greaterp!-11m)
-   ((3 1 geq ((1 . 1))) . vsub!-3!-1!-geq!-1)
-   ((3 1 geq ((2 . 1))) . vsub!-3!-1!-geq!-2)
-   ((3 1 geq ((2 . 2))) . vsub!-3!-1!-geq!-3)
-   ((3 1 geq ((3 . 1))) . vsub!-3!-1!-geq!-4)
-   ((3 1 geq ((3 . 2))) . vsub!-3!-1!-geq!-5)
-   ((3 1 geq ((4 . 1))) . vsub!-3!-1!-geq!-6)
-   ((3 1 geq ((4 . 2))) . vsub!-3!-1!-geq!-7)
-   ((3 1 geq ((4 . 3))) . vsub!-3!-1!-geq!-8)
-   ((3 1 geq ((-1 . 1))) . vsub!-3!-1!-geq!-1m)
-   ((3 1 geq ((-2 . 1))) . vsub!-3!-1!-geq!-2m)
-   ((3 1 geq ((-2 . 2))) . vsub!-3!-1!-geq!-3m)
-   ((3 1 geq ((-3 . 1))) . vsub!-3!-1!-geq!-4m)
-   ((3 1 geq ((-3 . 2))) . vsub!-3!-1!-geq!-5m)
-   ((3 1 geq ((-4 . 1))) . vsub!-3!-1!-geq!-6m)
-   ((3 1 geq ((-4 . 2))) . vsub!-3!-1!-geq!-7m)
-   ((3 1 geq ((-4 . 3))) . vsub!-3!-1!-geq!-8m)
-   ((3 1 geq ((2 . 1) (3 . 1) (4 . 1))) . vsub!-3!-1!-geq!-9)
-   ((3 1 geq ((2 . 1) (3 . 2) (4 . 2))) . vsub!-3!-1!-geq!-10)
-   ((3 1 geq ((2 . 2) (3 . 2) (4 . 3))) . vsub!-3!-1!-geq!-11)
-   ((3 1 geq ((-2 . 1) (-3 . 1) (-4 . 1))) . vsub!-3!-1!-geq!-9m)
-   ((3 1 geq ((-2 . 1) (-3 . 2) (-4 . 2))) . vsub!-3!-1!-geq!-10m)
-   ((3 1 geq ((-2 . 2) (-3 . 2) (-4 . 3))) . vsub!-3!-1!-geq!-11m)
    ((3 2 equal ((1 . 1))) . vsub!-3!-2!-equal!-1)
    ((3 2 equal ((2 . 1))) . vsub!-3!-2!-equal!-2)
    ((3 2 equal ((2 . 2))) . vsub!-3!-2!-equal!-3)
@@ -577,20 +425,9 @@ vsub!-fnalist!* := '(
    ((3 2 equal ((4 . 1))) . vsub!-3!-2!-equal!-6)
    ((3 2 equal ((4 . 2))) . vsub!-3!-2!-equal!-7)
    ((3 2 equal ((4 . 3))) . vsub!-3!-2!-equal!-8)
-   ((3 2 equal ((-1 . 1))) . vsub!-3!-2!-equal!-1m)
-   ((3 2 equal ((-2 . 1))) . vsub!-3!-2!-equal!-2m)
-   ((3 2 equal ((-2 . 2))) . vsub!-3!-2!-equal!-3m)
-   ((3 2 equal ((-3 . 1))) . vsub!-3!-2!-equal!-4m)
-   ((3 2 equal ((-3 . 2))) . vsub!-3!-2!-equal!-5m)
-   ((3 2 equal ((-4 . 1))) . vsub!-3!-2!-equal!-6m)
-   ((3 2 equal ((-4 . 2))) . vsub!-3!-2!-equal!-7m)
-   ((3 2 equal ((-4 . 3))) . vsub!-3!-2!-equal!-8m)
    ((3 2 equal ((2 . 1) (3 . 1) (4 . 1))) . vsub!-3!-2!-equal!-9)
    ((3 2 equal ((2 . 1) (3 . 2) (4 . 2))) . vsub!-3!-2!-equal!-10)
    ((3 2 equal ((2 . 2) (3 . 2) (4 . 3))) . vsub!-3!-2!-equal!-11)
-   ((3 2 equal ((-2 . 1) (-3 . 1) (-4 . 1))) . vsub!-3!-2!-equal!-9m)
-   ((3 2 equal ((-2 . 1) (-3 . 2) (-4 . 2))) . vsub!-3!-2!-equal!-10m)
-   ((3 2 equal ((-2 . 2) (-3 . 2) (-4 . 3))) . vsub!-3!-2!-equal!-11m)
    ((3 2 lessp ((1 . 1))) . vsub!-3!-2!-lessp!-1)
    ((3 2 lessp ((2 . 1))) . vsub!-3!-2!-lessp!-2)
    ((3 2 lessp ((2 . 2))) . vsub!-3!-2!-lessp!-3)
@@ -599,20 +436,9 @@ vsub!-fnalist!* := '(
    ((3 2 lessp ((4 . 1))) . vsub!-3!-2!-lessp!-6)
    ((3 2 lessp ((4 . 2))) . vsub!-3!-2!-lessp!-7)
    ((3 2 lessp ((4 . 3))) . vsub!-3!-2!-lessp!-8)
-   ((3 2 lessp ((-1 . 1))) . vsub!-3!-2!-lessp!-1m)
-   ((3 2 lessp ((-2 . 1))) . vsub!-3!-2!-lessp!-2m)
-   ((3 2 lessp ((-2 . 2))) . vsub!-3!-2!-lessp!-3m)
-   ((3 2 lessp ((-3 . 1))) . vsub!-3!-2!-lessp!-4m)
-   ((3 2 lessp ((-3 . 2))) . vsub!-3!-2!-lessp!-5m)
-   ((3 2 lessp ((-4 . 1))) . vsub!-3!-2!-lessp!-6m)
-   ((3 2 lessp ((-4 . 2))) . vsub!-3!-2!-lessp!-7m)
-   ((3 2 lessp ((-4 . 3))) . vsub!-3!-2!-lessp!-8m)
    ((3 2 lessp ((2 . 1) (3 . 1) (4 . 1))) . vsub!-3!-2!-lessp!-9)
    ((3 2 lessp ((2 . 1) (3 . 2) (4 . 2))) . vsub!-3!-2!-lessp!-10)
    ((3 2 lessp ((2 . 2) (3 . 2) (4 . 3))) . vsub!-3!-2!-lessp!-11)
-   ((3 2 lessp ((-2 . 1) (-3 . 1) (-4 . 1))) . vsub!-3!-2!-lessp!-9m)
-   ((3 2 lessp ((-2 . 1) (-3 . 2) (-4 . 2))) . vsub!-3!-2!-lessp!-10m)
-   ((3 2 lessp ((-2 . 2) (-3 . 2) (-4 . 3))) . vsub!-3!-2!-lessp!-11m)
    ((3 2 leq ((1 . 1))) . vsub!-3!-2!-leq!-1)
    ((3 2 leq ((2 . 1))) . vsub!-3!-2!-leq!-2)
    ((3 2 leq ((2 . 2))) . vsub!-3!-2!-leq!-3)
@@ -621,86 +447,9 @@ vsub!-fnalist!* := '(
    ((3 2 leq ((4 . 1))) . vsub!-3!-2!-leq!-6)
    ((3 2 leq ((4 . 2))) . vsub!-3!-2!-leq!-7)
    ((3 2 leq ((4 . 3))) . vsub!-3!-2!-leq!-8)
-   ((3 2 leq ((-1 . 1))) . vsub!-3!-2!-leq!-1m)
-   ((3 2 leq ((-2 . 1))) . vsub!-3!-2!-leq!-2m)
-   ((3 2 leq ((-2 . 2))) . vsub!-3!-2!-leq!-3m)
-   ((3 2 leq ((-3 . 1))) . vsub!-3!-2!-leq!-4m)
-   ((3 2 leq ((-3 . 2))) . vsub!-3!-2!-leq!-5m)
-   ((3 2 leq ((-4 . 1))) . vsub!-3!-2!-leq!-6m)
-   ((3 2 leq ((-4 . 2))) . vsub!-3!-2!-leq!-7m)
-   ((3 2 leq ((-4 . 3))) . vsub!-3!-2!-leq!-8m)
    ((3 2 leq ((2 . 1) (3 . 1) (4 . 1))) . vsub!-3!-2!-leq!-9)
    ((3 2 leq ((2 . 1) (3 . 2) (4 . 2))) . vsub!-3!-2!-leq!-10)
-   ((3 2 leq ((2 . 2) (3 . 2) (4 . 3))) . vsub!-3!-2!-leq!-11)
-   ((3 2 leq ((-2 . 1) (-3 . 1) (-4 . 1))) . vsub!-3!-2!-leq!-9m)
-   ((3 2 leq ((-2 . 1) (-3 . 2) (-4 . 2))) . vsub!-3!-2!-leq!-10m)
-   ((3 2 leq ((-2 . 2) (-3 . 2) (-4 . 3))) . vsub!-3!-2!-leq!-11m)
-   ((3 2 neq ((1 . 1))) . vsub!-3!-2!-neq!-1)
-   ((3 2 neq ((2 . 1))) . vsub!-3!-2!-neq!-2)
-   ((3 2 neq ((2 . 2))) . vsub!-3!-2!-neq!-3)
-   ((3 2 neq ((3 . 1))) . vsub!-3!-2!-neq!-4)
-   ((3 2 neq ((3 . 2))) . vsub!-3!-2!-neq!-5)
-   ((3 2 neq ((4 . 1))) . vsub!-3!-2!-neq!-6)
-   ((3 2 neq ((4 . 2))) . vsub!-3!-2!-neq!-7)
-   ((3 2 neq ((4 . 3))) . vsub!-3!-2!-neq!-8)
-   ((3 2 neq ((-1 . 1))) . vsub!-3!-2!-neq!-1m)
-   ((3 2 neq ((-2 . 1))) . vsub!-3!-2!-neq!-2m)
-   ((3 2 neq ((-2 . 2))) . vsub!-3!-2!-neq!-3m)
-   ((3 2 neq ((-3 . 1))) . vsub!-3!-2!-neq!-4m)
-   ((3 2 neq ((-3 . 2))) . vsub!-3!-2!-neq!-5m)
-   ((3 2 neq ((-4 . 1))) . vsub!-3!-2!-neq!-6m)
-   ((3 2 neq ((-4 . 2))) . vsub!-3!-2!-neq!-7m)
-   ((3 2 neq ((-4 . 3))) . vsub!-3!-2!-neq!-8m)
-   ((3 2 neq ((2 . 1) (3 . 1) (4 . 1))) . vsub!-3!-2!-neq!-9)
-   ((3 2 neq ((2 . 1) (3 . 2) (4 . 2))) . vsub!-3!-2!-neq!-10)
-   ((3 2 neq ((2 . 2) (3 . 2) (4 . 3))) . vsub!-3!-2!-neq!-11)
-   ((3 2 neq ((-2 . 1) (-3 . 1) (-4 . 1))) . vsub!-3!-2!-neq!-9m)
-   ((3 2 neq ((-2 . 1) (-3 . 2) (-4 . 2))) . vsub!-3!-2!-neq!-10m)
-   ((3 2 neq ((-2 . 2) (-3 . 2) (-4 . 3))) . vsub!-3!-2!-neq!-11m)
-   ((3 2 greaterp ((1 . 1))) . vsub!-3!-2!-greaterp!-1)
-   ((3 2 greaterp ((2 . 1))) . vsub!-3!-2!-greaterp!-2)
-   ((3 2 greaterp ((2 . 2))) . vsub!-3!-2!-greaterp!-3)
-   ((3 2 greaterp ((3 . 1))) . vsub!-3!-2!-greaterp!-4)
-   ((3 2 greaterp ((3 . 2))) . vsub!-3!-2!-greaterp!-5)
-   ((3 2 greaterp ((4 . 1))) . vsub!-3!-2!-greaterp!-6)
-   ((3 2 greaterp ((4 . 2))) . vsub!-3!-2!-greaterp!-7)
-   ((3 2 greaterp ((4 . 3))) . vsub!-3!-2!-greaterp!-8)
-   ((3 2 greaterp ((-1 . 1))) . vsub!-3!-2!-greaterp!-1m)
-   ((3 2 greaterp ((-2 . 1))) . vsub!-3!-2!-greaterp!-2m)
-   ((3 2 greaterp ((-2 . 2))) . vsub!-3!-2!-greaterp!-3m)
-   ((3 2 greaterp ((-3 . 1))) . vsub!-3!-2!-greaterp!-4m)
-   ((3 2 greaterp ((-3 . 2))) . vsub!-3!-2!-greaterp!-5m)
-   ((3 2 greaterp ((-4 . 1))) . vsub!-3!-2!-greaterp!-6m)
-   ((3 2 greaterp ((-4 . 2))) . vsub!-3!-2!-greaterp!-7m)
-   ((3 2 greaterp ((-4 . 3))) . vsub!-3!-2!-greaterp!-8m)
-   ((3 2 greaterp ((2 . 1) (3 . 1) (4 . 1))) . vsub!-3!-2!-greaterp!-9)
-   ((3 2 greaterp ((2 . 1) (3 . 2) (4 . 2))) . vsub!-3!-2!-greaterp!-10)
-   ((3 2 greaterp ((2 . 2) (3 . 2) (4 . 3))) . vsub!-3!-2!-greaterp!-11)
-   ((3 2 greaterp ((-2 . 1) (-3 . 1) (-4 . 1))) . vsub!-3!-2!-greaterp!-9m)
-   ((3 2 greaterp ((-2 . 1) (-3 . 2) (-4 . 2))) . vsub!-3!-2!-greaterp!-10m)
-   ((3 2 greaterp ((-2 . 2) (-3 . 2) (-4 . 3))) . vsub!-3!-2!-greaterp!-11m)
-   ((3 2 geq ((1 . 1))) . vsub!-3!-2!-geq!-1)
-   ((3 2 geq ((2 . 1))) . vsub!-3!-2!-geq!-2)
-   ((3 2 geq ((2 . 2))) . vsub!-3!-2!-geq!-3)
-   ((3 2 geq ((3 . 1))) . vsub!-3!-2!-geq!-4)
-   ((3 2 geq ((3 . 2))) . vsub!-3!-2!-geq!-5)
-   ((3 2 geq ((4 . 1))) . vsub!-3!-2!-geq!-6)
-   ((3 2 geq ((4 . 2))) . vsub!-3!-2!-geq!-7)
-   ((3 2 geq ((4 . 3))) . vsub!-3!-2!-geq!-8)
-   ((3 2 geq ((-1 . 1))) . vsub!-3!-2!-geq!-1m)
-   ((3 2 geq ((-2 . 1))) . vsub!-3!-2!-geq!-2m)
-   ((3 2 geq ((-2 . 2))) . vsub!-3!-2!-geq!-3m)
-   ((3 2 geq ((-3 . 1))) . vsub!-3!-2!-geq!-4m)
-   ((3 2 geq ((-3 . 2))) . vsub!-3!-2!-geq!-5m)
-   ((3 2 geq ((-4 . 1))) . vsub!-3!-2!-geq!-6m)
-   ((3 2 geq ((-4 . 2))) . vsub!-3!-2!-geq!-7m)
-   ((3 2 geq ((-4 . 3))) . vsub!-3!-2!-geq!-8m)
-   ((3 2 geq ((2 . 1) (3 . 1) (4 . 1))) . vsub!-3!-2!-geq!-9)
-   ((3 2 geq ((2 . 1) (3 . 2) (4 . 2))) . vsub!-3!-2!-geq!-10)
-   ((3 2 geq ((2 . 2) (3 . 2) (4 . 3))) . vsub!-3!-2!-geq!-11)
-   ((3 2 geq ((-2 . 1) (-3 . 1) (-4 . 1))) . vsub!-3!-2!-geq!-9m)
-   ((3 2 geq ((-2 . 1) (-3 . 2) (-4 . 2))) . vsub!-3!-2!-geq!-10m)
-   ((3 2 geq ((-2 . 2) (-3 . 2) (-4 . 3))) . vsub!-3!-2!-geq!-11m));
+   ((3 2 leq ((2 . 2) (3 . 2) (4 . 3))) . vsub!-3!-2!-leq!-11));
 
 %%% guard procedures %%%
 
@@ -905,15 +654,6 @@ procedure vsub!-2!-1!-equal!-3(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-1!-equal!-1m(g, f, x, theo);
-   vsub!-2!-1!-equal!-1(g, negf f, x, theo);
-
-procedure vsub!-2!-1!-equal!-2m(g, f, x, theo);
-   vsub!-2!-1!-equal!-2(g, negf f, x, theo);
-
-procedure vsub!-2!-1!-equal!-3m(g, f, x, theo);
-   vsub!-2!-1!-equal!-3(g, negf f, x, theo);
-
 procedure vsub!-2!-1!-equal!-4(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
@@ -962,15 +702,6 @@ procedure vsub!-2!-1!-lessp!-3(g, f, x, theo);
    	 2*a*bb - aa*b < 0
 	    )
    end;
-
-procedure vsub!-2!-1!-lessp!-1m(g, f, x, theo);
-   vsub!-2!-1!-lessp!-1(g, negf f, x, theo);
-
-procedure vsub!-2!-1!-lessp!-2m(g, f, x, theo);
-   vsub!-2!-1!-lessp!-2(g, negf f, x, theo);
-
-procedure vsub!-2!-1!-lessp!-3m(g, f, x, theo);
-   vsub!-2!-1!-lessp!-3(g, negf f, x, theo);
 
 procedure vsub!-2!-1!-lessp!-4(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
@@ -1023,15 +754,6 @@ procedure vsub!-2!-1!-leq!-3(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-1!-leq!-1m(g, f, x, theo);
-   vsub!-2!-1!-leq!-1(g, negf f, x, theo);
-
-procedure vsub!-2!-1!-leq!-2m(g, f, x, theo);
-   vsub!-2!-1!-leq!-2(g, negf f, x, theo);
-
-procedure vsub!-2!-1!-leq!-3m(g, f, x, theo);
-   vsub!-2!-1!-leq!-3(g, negf f, x, theo);
-
 procedure vsub!-2!-1!-leq!-4(g, f, x, theo);
    begin scalar aa, bb, a, b, c;
       {aa, bb} := coeffs g;
@@ -1051,84 +773,6 @@ procedure vsub!-2!-1!-leq!-5(g, f, x, theo);
       	 a*aa <= 0 and a**2*bb**2 + a*aa**2*c - a*aa*b*bb <= 0
 	    )
    end;
-
-% 2, 1, neq
-
-procedure vsub!-2!-1!-neq!-1(g, f, x, theo);
-   rl_mkn('not, {vsub!-2!-1!-equal!-1(g, f, x, theo)});
-
-procedure vsub!-2!-1!-neq!-2(g, f, x, theo);
-   rl_mkn('not, {vsub!-2!-1!-equal!-2(g, f, x, theo)});
-
-procedure vsub!-2!-1!-neq!-3(g, f, x, theo);
-   rl_mkn('not, {vsub!-2!-1!-equal!-3(g, f, x, theo)});
-
-procedure vsub!-2!-1!-neq!-1m(g, f, x, theo);
-   vsub!-2!-1!-neq!-1(g, negf f, x, theo);
-
-procedure vsub!-2!-1!-neq!-2m(g, f, x, theo);
-   vsub!-2!-1!-neq!-2(g, negf f, x, theo);
-
-procedure vsub!-2!-1!-neq!-3m(g, f, x, theo);
-   vsub!-2!-1!-neq!-3(g, negf f, x, theo);
-
-procedure vsub!-2!-1!-neq!-4(g, f, x, theo);
-   rl_mkn('not, {vsub!-2!-1!-equal!-4(g, f, x, theo)});
-
-procedure vsub!-2!-1!-neq!-5(g, f, x, theo);
-   rl_mkn('not, {vsub!-2!-1!-equal!-5(g, f, x, theo)});
-
-% 2, 1, greaterp
-
-procedure vsub!-2!-1!-greaterp!-1(g, f, x, theo);
-   rl_mkn('not, {vsub!-2!-1!-leq!-1(g, f, x, theo)});
-
-procedure vsub!-2!-1!-greaterp!-2(g, f, x, theo);
-   rl_mkn('not, {vsub!-2!-1!-leq!-2(g, f, x, theo)});
-
-procedure vsub!-2!-1!-greaterp!-3(g, f, x, theo);
-   rl_mkn('not, {vsub!-2!-1!-leq!-3(g, f, x, theo)});
-
-procedure vsub!-2!-1!-greaterp!-1m(g, f, x, theo);
-   vsub!-2!-1!-greaterp!-1(g, negf f, x, theo);
-
-procedure vsub!-2!-1!-greaterp!-2m(g, f, x, theo);
-   vsub!-2!-1!-greaterp!-2(g, negf f, x, theo);
-
-procedure vsub!-2!-1!-greaterp!-3m(g, f, x, theo);
-   vsub!-2!-1!-greaterp!-3(g, negf f, x, theo);
-
-procedure vsub!-2!-1!-greaterp!-4(g, f, x, theo);
-   rl_mkn('not, {vsub!-2!-1!-leq!-4(g, f, x, theo)});
-
-procedure vsub!-2!-1!-greaterp!-5(g, f, x, theo);
-   rl_mkn('not, {vsub!-2!-1!-leq!-5(g, f, x, theo)});
-
-% 2, 1, geq
-
-procedure vsub!-2!-1!-geq!-1(g, f, x, theo);
-   rl_mkn('not, {vsub!-2!-1!-lessp!-1(g, f, x, theo)});
-
-procedure vsub!-2!-1!-geq!-2(g, f, x, theo);
-   rl_mkn('not, {vsub!-2!-1!-lessp!-2(g, f, x, theo)});
-
-procedure vsub!-2!-1!-geq!-3(g, f, x, theo);
-   rl_mkn('not, {vsub!-2!-1!-lessp!-3(g, f, x, theo)});
-
-procedure vsub!-2!-1!-geq!-1m(g, f, x, theo);
-   vsub!-2!-1!-geq!-1(g, negf f, x, theo);
-
-procedure vsub!-2!-1!-geq!-2m(g, f, x, theo);
-   vsub!-2!-1!-geq!-2(g, negf f, x, theo);
-
-procedure vsub!-2!-1!-geq!-3m(g, f, x, theo);
-   vsub!-2!-1!-geq!-3(g, negf f, x, theo);
-
-procedure vsub!-2!-1!-geq!-4(g, f, x, theo);
-   rl_mkn('not, {vsub!-2!-1!-lessp!-4(g, f, x, theo)});
-
-procedure vsub!-2!-1!-geq!-5(g, f, x, theo);
-   rl_mkn('not, {vsub!-2!-1!-lessp!-5(g, f, x, theo)});
 
 % 3, 1, equal
 
@@ -1215,30 +859,6 @@ procedure vsub!-3!-1!-equal!-8(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-3!-1!-equal!-1m(g, f, x, theo);
-   vsub!-3!-1!-equal!-1(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-equal!-2m(g, f, x, theo);
-   vsub!-3!-1!-equal!-2(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-equal!-3m(g, f, x, theo);
-   vsub!-3!-1!-equal!-3(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-equal!-4m(g, f, x, theo);
-   vsub!-3!-1!-equal!-4(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-equal!-5m(g, f, x, theo);
-   vsub!-3!-1!-equal!-5(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-equal!-6m(g, f, x, theo);
-   vsub!-3!-1!-equal!-6(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-equal!-7m(g, f, x, theo);
-   vsub!-3!-1!-equal!-7(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-equal!-8m(g, f, x, theo);
-   vsub!-3!-1!-equal!-8(g, negf f, x, theo);
-
 procedure vsub!-3!-1!-equal!-9(g, f, x, theo);
    begin scalar df, beta, alpha1, w1, w2;
       df := diff(f, x);
@@ -1274,15 +894,6 @@ procedure vsub!-3!-1!-equal!-11(g, f, x, theo);
 	 w1 and w2 and w3
 	    )
    end;
-
-procedure vsub!-3!-1!-equal!-9m(g, f, x, theo);
-   vsub!-3!-1!-equal!-9(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-equal!-10m(g, f, x, theo);
-   vsub!-3!-1!-equal!-10(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-equal!-11m(g, f, x, theo);
-   vsub!-3!-1!-equal!-11(g, negf f, x, theo);
 
 % 3, 1, lessp
 
@@ -1362,30 +973,6 @@ procedure vsub!-3!-1!-lessp!-8(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-3!-1!-lessp!-1m(g, f, x, theo);
-   vsub!-3!-1!-lessp!-1(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-lessp!-2m(g, f, x, theo);
-   vsub!-3!-1!-lessp!-2(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-lessp!-3m(g, f, x, theo);
-   vsub!-3!-1!-lessp!-3(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-lessp!-4m(g, f, x, theo);
-   vsub!-3!-1!-lessp!-4(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-lessp!-5m(g, f, x, theo);
-   vsub!-3!-1!-lessp!-5(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-lessp!-6m(g, f, x, theo);
-   vsub!-3!-1!-lessp!-6(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-lessp!-7m(g, f, x, theo);
-   vsub!-3!-1!-lessp!-7(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-lessp!-8m(g, f, x, theo);
-   vsub!-3!-1!-lessp!-8(g, negf f, x, theo);
-
 procedure vsub!-3!-1!-lessp!-9(g, f, x, theo);
    begin scalar df, beta, alpha1, w1, w2;
       df := diff(f, x);
@@ -1423,15 +1010,6 @@ procedure vsub!-3!-1!-lessp!-11(g, f, x, theo);
 	 w1 and w2
 	    )
    end;
-
-procedure vsub!-3!-1!-lessp!-9m(g, f, x, theo);
-   vsub!-3!-1!-lessp!-9(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-lessp!-10m(g, f, x, theo);
-   vsub!-3!-1!-lessp!-10(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-lessp!-11m(g, f, x, theo);
-   vsub!-3!-1!-lessp!-11(g, negf f, x, theo);
 
 % 3, 1, leq
 
@@ -1511,30 +1089,6 @@ procedure vsub!-3!-1!-leq!-8(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-3!-1!-leq!-1m(g, f, x, theo);
-   vsub!-3!-1!-leq!-1(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-leq!-2m(g, f, x, theo);
-   vsub!-3!-1!-leq!-2(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-leq!-3m(g, f, x, theo);
-   vsub!-3!-1!-leq!-3(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-leq!-4m(g, f, x, theo);
-   vsub!-3!-1!-leq!-4(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-leq!-5m(g, f, x, theo);
-   vsub!-3!-1!-leq!-5(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-leq!-6m(g, f, x, theo);
-   vsub!-3!-1!-leq!-6(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-leq!-7m(g, f, x, theo);
-   vsub!-3!-1!-leq!-7(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-leq!-8m(g, f, x, theo);
-   vsub!-3!-1!-leq!-8(g, negf f, x, theo);
-
 procedure vsub!-3!-1!-leq!-9(g, f, x, theo);
    begin scalar df, beta, alpha1, w1, w2;
       df := diff(f, x);
@@ -1572,219 +1126,6 @@ procedure vsub!-3!-1!-leq!-11(g, f, x, theo);
 	 w1 and w2
 	    )
    end;
-
-procedure vsub!-3!-1!-leq!-9m(g, f, x, theo);
-   vsub!-3!-1!-leq!-9(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-leq!-10m(g, f, x, theo);
-   vsub!-3!-1!-leq!-10(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-leq!-11m(g, f, x, theo);
-   vsub!-3!-1!-leq!-11(g, negf f, x, theo);
-
-% 3, 1, neq
-
-procedure vsub!-3!-1!-neq!-1(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-1(g, f, x, theo)});
-
-procedure vsub!-3!-1!-neq!-2(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-2(g, f, x, theo)});
-
-procedure vsub!-3!-1!-neq!-3(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-3(g, f, x, theo)});
-
-procedure vsub!-3!-1!-neq!-4(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-4(g, f, x, theo)});
-
-procedure vsub!-3!-1!-neq!-5(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-5(g, f, x, theo)});
-
-procedure vsub!-3!-1!-neq!-6(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-6(g, f, x, theo)});
-
-procedure vsub!-3!-1!-neq!-7(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-7(g, f, x, theo)});
-
-procedure vsub!-3!-1!-neq!-8(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-8(g, f, x, theo)});
-
-procedure vsub!-3!-1!-neq!-1m(g, f, x, theo);
-   vsub!-3!-1!-neq!-1(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-neq!-2m(g, f, x, theo);
-   vsub!-3!-1!-neq!-2(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-neq!-3m(g, f, x, theo);
-   vsub!-3!-1!-neq!-3(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-neq!-4m(g, f, x, theo);
-   vsub!-3!-1!-neq!-4(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-neq!-5m(g, f, x, theo);
-   vsub!-3!-1!-neq!-5(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-neq!-6m(g, f, x, theo);
-   vsub!-3!-1!-neq!-6(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-neq!-7m(g, f, x, theo);
-   vsub!-3!-1!-neq!-7(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-neq!-8m(g, f, x, theo);
-   vsub!-3!-1!-neq!-8(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-neq!-9(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-9(g, f, x, theo)});
-
-procedure vsub!-3!-1!-neq!-10(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-10(g, f, x, theo)});
-
-procedure vsub!-3!-1!-neq!-11(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-11(g, f, x, theo)});
-
-procedure vsub!-3!-1!-neq!-9m(g, f, x, theo);
-   vsub!-3!-1!-neq!-9(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-neq!-10m(g, f, x, theo);
-   vsub!-3!-1!-neq!-10(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-neq!-11m(g, f, x, theo);
-   vsub!-3!-1!-neq!-11(g, negf f, x, theo);
-
-% 3, 1, greaterp
-
-procedure vsub!-3!-1!-greaterp!-1(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-1(g, f, x, theo)});
-
-procedure vsub!-3!-1!-greaterp!-2(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-2(g, f, x, theo)});
-
-procedure vsub!-3!-1!-greaterp!-3(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-3(g, f, x, theo)});
-
-procedure vsub!-3!-1!-greaterp!-4(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-4(g, f, x, theo)});
-
-procedure vsub!-3!-1!-greaterp!-5(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-5(g, f, x, theo)});
-
-procedure vsub!-3!-1!-greaterp!-6(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-6(g, f, x, theo)});
-
-procedure vsub!-3!-1!-greaterp!-7(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-7(g, f, x, theo)});
-
-procedure vsub!-3!-1!-greaterp!-8(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-8(g, f, x, theo)});
-
-procedure vsub!-3!-1!-greaterp!-1m(g, f, x, theo);
-   vsub!-3!-1!-greaterp!-1(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-greaterp!-2m(g, f, x, theo);
-   vsub!-3!-1!-greaterp!-2(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-greaterp!-3m(g, f, x, theo);
-   vsub!-3!-1!-greaterp!-3(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-greaterp!-4m(g, f, x, theo);
-   vsub!-3!-1!-greaterp!-4(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-greaterp!-5m(g, f, x, theo);
-   vsub!-3!-1!-greaterp!-5(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-greaterp!-6m(g, f, x, theo);
-   vsub!-3!-1!-greaterp!-6(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-greaterp!-7m(g, f, x, theo);
-   vsub!-3!-1!-greaterp!-7(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-greaterp!-8m(g, f, x, theo);
-   vsub!-3!-1!-greaterp!-8(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-greaterp!-9(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-9(g, f, x, theo)});
-
-procedure vsub!-3!-1!-greaterp!-10(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-10(g, f, x, theo)});
-
-procedure vsub!-3!-1!-greaterp!-11(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-11(g, f, x, theo)});
-
-procedure vsub!-3!-1!-greaterp!-9m(g, f, x, theo);
-   vsub!-3!-1!-greaterp!-9(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-greaterp!-10m(g, f, x, theo);
-   vsub!-3!-1!-greaterp!-10(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-greaterp!-11m(g, f, x, theo);
-   vsub!-3!-1!-greaterp!-11(g, negf f, x, theo);
-
-% 3, 1, geq
-
-procedure vsub!-3!-1!-geq!-1(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-1(g, f, x, theo)});
-
-procedure vsub!-3!-1!-geq!-2(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-2(g, f, x, theo)});
-
-procedure vsub!-3!-1!-geq!-3(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-3(g, f, x, theo)});
-
-procedure vsub!-3!-1!-geq!-4(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-4(g, f, x, theo)});
-
-procedure vsub!-3!-1!-geq!-5(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-5(g, f, x, theo)});
-
-procedure vsub!-3!-1!-geq!-6(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-6(g, f, x, theo)});
-
-procedure vsub!-3!-1!-geq!-7(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-7(g, f, x, theo)});
-
-procedure vsub!-3!-1!-geq!-8(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-8(g, f, x, theo)});
-
-procedure vsub!-3!-1!-geq!-1m(g, f, x, theo);
-   vsub!-3!-1!-geq!-1(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-geq!-2m(g, f, x, theo);
-   vsub!-3!-1!-geq!-2(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-geq!-3m(g, f, x, theo);
-   vsub!-3!-1!-geq!-3(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-geq!-4m(g, f, x, theo);
-   vsub!-3!-1!-geq!-4(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-geq!-5m(g, f, x, theo);
-   vsub!-3!-1!-geq!-5(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-geq!-6m(g, f, x, theo);
-   vsub!-3!-1!-geq!-6(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-geq!-7m(g, f, x, theo);
-   vsub!-3!-1!-geq!-7(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-geq!-8m(g, f, x, theo);
-   vsub!-3!-1!-geq!-8(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-geq!-9(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-9(g, f, x, theo)});
-
-procedure vsub!-3!-1!-geq!-10(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-10(g, f, x, theo)});
-
-procedure vsub!-3!-1!-geq!-11(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-11(g, f, x, theo)});
-
-procedure vsub!-3!-1!-geq!-9m(g, f, x, theo);
-   vsub!-3!-1!-geq!-9(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-geq!-10m(g, f, x, theo);
-   vsub!-3!-1!-geq!-10(g, negf f, x, theo);
-
-procedure vsub!-3!-1!-geq!-11m(g, f, x, theo);
-   vsub!-3!-1!-geq!-11(g, negf f, x, theo);
 
 % 3, 2, equal
 
@@ -1895,30 +1236,6 @@ procedure vsub!-3!-2!-equal!-8(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-3!-2!-equal!-1m(g, f, x, theo);
-   vsub!-3!-2!-equal!-1(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-equal!-2m(g, f, x, theo);
-   vsub!-3!-2!-equal!-2(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-equal!-3m(g, f, x, theo);
-   vsub!-3!-2!-equal!-3(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-equal!-4m(g, f, x, theo);
-   vsub!-3!-2!-equal!-4(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-equal!-5m(g, f, x, theo);
-   vsub!-3!-2!-equal!-5(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-equal!-6m(g, f, x, theo);
-   vsub!-3!-2!-equal!-6(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-equal!-7m(g, f, x, theo);
-   vsub!-3!-2!-equal!-7(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-equal!-8m(g, f, x, theo);
-   vsub!-3!-2!-equal!-8(g, negf f, x, theo);
-
 procedure vsub!-3!-2!-equal!-9(g, f, x, theo);
    begin scalar df, ddf, beta1, beta2, guard, w1, w2, w3, w4, w5, w6;
       df := diff(f, x);
@@ -1969,15 +1286,6 @@ procedure vsub!-3!-2!-equal!-11(g, f, x, theo);
 	 guard and ((w1 and w2 and w3) or (w4 and w5 and w6))
 	    )
    end;
-
-procedure vsub!-3!-2!-equal!-9m(g, f, x, theo);
-   vsub!-3!-2!-equal!-9(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-equal!-10m(g, f, x, theo);
-   vsub!-3!-2!-equal!-10(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-equal!-11m(g, f, x, theo);
-   vsub!-3!-2!-equal!-11(g, negf f, x, theo);
 
 % 3, 2, lessp
 
@@ -2088,30 +1396,6 @@ procedure vsub!-3!-2!-lessp!-8(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-3!-2!-lessp!-1m(g, f, x, theo);
-   vsub!-3!-2!-lessp!-1(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-lessp!-2m(g, f, x, theo);
-   vsub!-3!-2!-lessp!-2(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-lessp!-3m(g, f, x, theo);
-   vsub!-3!-2!-lessp!-3(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-lessp!-4m(g, f, x, theo);
-   vsub!-3!-2!-lessp!-4(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-lessp!-5m(g, f, x, theo);
-   vsub!-3!-2!-lessp!-5(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-lessp!-6m(g, f, x, theo);
-   vsub!-3!-2!-lessp!-6(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-lessp!-7m(g, f, x, theo);
-   vsub!-3!-2!-lessp!-7(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-lessp!-8m(g, f, x, theo);
-   vsub!-3!-2!-lessp!-8(g, negf f, x, theo);
-
 procedure vsub!-3!-2!-lessp!-9(g, f, x, theo);
    begin scalar df, ddf, beta1, beta2, alpha1, guard, w1, w2, w3, w4, w5;
       df := diff(f, x);
@@ -2164,15 +1448,6 @@ procedure vsub!-3!-2!-lessp!-11(g, f, x, theo);
 	 guard and (w1 or w2) and (w3 and w4 and w5)
 	    )
    end;
-
-procedure vsub!-3!-2!-lessp!-9m(g, f, x, theo);
-   vsub!-3!-2!-lessp!-9(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-lessp!-10m(g, f, x, theo);
-   vsub!-3!-2!-lessp!-10(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-lessp!-11m(g, f, x, theo);
-   vsub!-3!-2!-lessp!-11(g, negf f, x, theo);
 
 % 3, 2, leq
 
@@ -2282,30 +1557,6 @@ procedure vsub!-3!-2!-leq!-8(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-3!-2!-leq!-1m(g, f, x, theo);
-   vsub!-3!-2!-leq!-1(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-leq!-2m(g, f, x, theo);
-   vsub!-3!-2!-leq!-2(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-leq!-3m(g, f, x, theo);
-   vsub!-3!-2!-leq!-3(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-leq!-4m(g, f, x, theo);
-   vsub!-3!-2!-leq!-4(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-leq!-5m(g, f, x, theo);
-   vsub!-3!-2!-leq!-5(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-leq!-6m(g, f, x, theo);
-   vsub!-3!-2!-leq!-6(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-leq!-7m(g, f, x, theo);
-   vsub!-3!-2!-leq!-7(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-leq!-8m(g, f, x, theo);
-   vsub!-3!-2!-leq!-8(g, negf f, x, theo);
-
 procedure vsub!-3!-2!-leq!-9(g, f, x, theo);
    begin scalar df, ddf, beta1, beta2, alpha1, guard, w1, w2, w3, w4, w5;
       df := diff(f, x);
@@ -2360,218 +1611,26 @@ procedure vsub!-3!-2!-leq!-11(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-3!-2!-leq!-9m(g, f, x, theo);
-   vsub!-3!-2!-leq!-9(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-leq!-10m(g, f, x, theo);
-   vsub!-3!-2!-leq!-10(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-leq!-11m(g, f, x, theo);
-   vsub!-3!-2!-leq!-11(g, negf f, x, theo);
-
-% 3, 2, neq
-
-procedure vsub!-3!-2!-neq!-1(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-1(g, f, x, theo)});
-
-procedure vsub!-3!-2!-neq!-2(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-2(g, f, x, theo)});
-
-procedure vsub!-3!-2!-neq!-3(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-3(g, f, x, theo)});
-
-procedure vsub!-3!-2!-neq!-4(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-4(g, f, x, theo)});
-
-procedure vsub!-3!-2!-neq!-5(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-5(g, f, x, theo)});
-
-procedure vsub!-3!-2!-neq!-6(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-6(g, f, x, theo)});
-
-procedure vsub!-3!-2!-neq!-7(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-7(g, f, x, theo)});
-
-procedure vsub!-3!-2!-neq!-8(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-8(g, f, x, theo)});
-
-procedure vsub!-3!-2!-neq!-1m(g, f, x, theo);
-   vsub!-3!-2!-neq!-1(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-neq!-2m(g, f, x, theo);
-   vsub!-3!-2!-neq!-2(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-neq!-3m(g, f, x, theo);
-   vsub!-3!-2!-neq!-3(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-neq!-4m(g, f, x, theo);
-   vsub!-3!-2!-neq!-4(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-neq!-5m(g, f, x, theo);
-   vsub!-3!-2!-neq!-5(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-neq!-6m(g, f, x, theo);
-   vsub!-3!-2!-neq!-6(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-neq!-7m(g, f, x, theo);
-   vsub!-3!-2!-neq!-7(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-neq!-8m(g, f, x, theo);
-   vsub!-3!-2!-neq!-8(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-neq!-9(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-9(g, f, x, theo)});
-
-procedure vsub!-3!-2!-neq!-10(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-10(g, f, x, theo)});
-
-procedure vsub!-3!-2!-neq!-11(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-equal!-11(g, f, x, theo)});
-
-procedure vsub!-3!-2!-neq!-9m(g, f, x, theo);
-   vsub!-3!-2!-neq!-9(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-neq!-10m(g, f, x, theo);
-   vsub!-3!-2!-neq!-10(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-neq!-11m(g, f, x, theo);
-   vsub!-3!-2!-neq!-11(g, negf f, x, theo);
-
-% 3, 2, greaterp
-
-procedure vsub!-3!-2!-greaterp!-1(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-1(g, f, x, theo)});
-
-procedure vsub!-3!-2!-greaterp!-2(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-2(g, f, x, theo)});
-
-procedure vsub!-3!-2!-greaterp!-3(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-3(g, f, x, theo)});
-
-procedure vsub!-3!-2!-greaterp!-4(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-4(g, f, x, theo)});
-
-procedure vsub!-3!-2!-greaterp!-5(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-5(g, f, x, theo)});
-
-procedure vsub!-3!-2!-greaterp!-6(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-6(g, f, x, theo)});
-
-procedure vsub!-3!-2!-greaterp!-7(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-7(g, f, x, theo)});
-
-procedure vsub!-3!-2!-greaterp!-8(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-8(g, f, x, theo)});
-
-procedure vsub!-3!-2!-greaterp!-1m(g, f, x, theo);
-   vsub!-3!-2!-greaterp!-1(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-greaterp!-2m(g, f, x, theo);
-   vsub!-3!-2!-greaterp!-2(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-greaterp!-3m(g, f, x, theo);
-   vsub!-3!-2!-greaterp!-3(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-greaterp!-4m(g, f, x, theo);
-   vsub!-3!-2!-greaterp!-4(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-greaterp!-5m(g, f, x, theo);
-   vsub!-3!-2!-greaterp!-5(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-greaterp!-6m(g, f, x, theo);
-   vsub!-3!-2!-greaterp!-6(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-greaterp!-7m(g, f, x, theo);
-   vsub!-3!-2!-greaterp!-7(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-greaterp!-8m(g, f, x, theo);
-   vsub!-3!-2!-greaterp!-8(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-greaterp!-9(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-9(g, f, x, theo)});
-
-procedure vsub!-3!-2!-greaterp!-10(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-10(g, f, x, theo)});
-
-procedure vsub!-3!-2!-greaterp!-11(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-leq!-11(g, f, x, theo)});
-
-procedure vsub!-3!-2!-greaterp!-9m(g, f, x, theo);
-   vsub!-3!-2!-greaterp!-9(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-greaterp!-10m(g, f, x, theo);
-   vsub!-3!-2!-greaterp!-10(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-greaterp!-11m(g, f, x, theo);
-   vsub!-3!-2!-greaterp!-11(g, negf f, x, theo);
-
-% 3, 2, geq
-
-procedure vsub!-3!-2!-geq!-1(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-1(g, f, x, theo)});
-
-procedure vsub!-3!-2!-geq!-2(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-2(g, f, x, theo)});
-
-procedure vsub!-3!-2!-geq!-3(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-3(g, f, x, theo)});
-
-procedure vsub!-3!-2!-geq!-4(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-4(g, f, x, theo)});
-
-procedure vsub!-3!-2!-geq!-5(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-5(g, f, x, theo)});
-
-procedure vsub!-3!-2!-geq!-6(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-6(g, f, x, theo)});
-
-procedure vsub!-3!-2!-geq!-7(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-7(g, f, x, theo)});
-
-procedure vsub!-3!-2!-geq!-8(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-8(g, f, x, theo)});
-
-procedure vsub!-3!-2!-geq!-1m(g, f, x, theo);
-   vsub!-3!-2!-geq!-1(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-geq!-2m(g, f, x, theo);
-   vsub!-3!-2!-geq!-2(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-geq!-3m(g, f, x, theo);
-   vsub!-3!-2!-geq!-3(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-geq!-4m(g, f, x, theo);
-   vsub!-3!-2!-geq!-4(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-geq!-5m(g, f, x, theo);
-   vsub!-3!-2!-geq!-5(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-geq!-6m(g, f, x, theo);
-   vsub!-3!-2!-geq!-6(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-geq!-7m(g, f, x, theo);
-   vsub!-3!-2!-geq!-7(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-geq!-8m(g, f, x, theo);
-   vsub!-3!-2!-geq!-8(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-geq!-9(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-9(g, f, x, theo)});
-
-procedure vsub!-3!-2!-geq!-10(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-10(g, f, x, theo)});
-
-procedure vsub!-3!-2!-geq!-11(g, f, x, theo);
-   rl_mkn('not, {vsub!-3!-1!-lessp!-11(g, f, x, theo)});
-
-procedure vsub!-3!-2!-geq!-9m(g, f, x, theo);
-   vsub!-3!-2!-geq!-9(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-geq!-10m(g, f, x, theo);
-   vsub!-3!-2!-geq!-10(g, negf f, x, theo);
-
-procedure vsub!-3!-2!-geq!-11m(g, f, x, theo);
-   vsub!-3!-2!-geq!-11(g, negf f, x, theo);
+asserted procedure vsub_nrsl(rsl: List): List;
+   % Negate rsl.
+   for each rs in rsl collect
+      (- car rs) . cdr rs;
+
+asserted procedure ofsf_negateop(op: Id): Id;
+   % Ordered field standard negate operator. Returns [op] after
+   % negation.
+   if op eq 'equal then
+      'neq
+   else if op eq 'neq then
+      'equal
+   else if op eq 'lessp then
+      'geq
+   else if op eq 'leq then
+      'greaterp
+   else if op eq 'geq then
+      'lessp
+   else if op eq 'greaterp then
+      'leq;
 
 asserted procedure vsub_compute!-rsl(op: Id, f: SF, x: Kernel, s: Any): Any;
    % Compute root specification list. [op] is an operator, [x] is
@@ -2585,11 +1644,9 @@ asserted procedure vsub_compute!-rsl(op: Id, f: SF, x: Kernel, s: Any): Any;
 	 assoc({ldeg f, s, op}, rsl!-alist!-clustering!*)
       else
       	 assoc({ldeg f, s, op}, rsl!-alist!*);
-      if null w then <<
-	 assert(nil);
-	 return 'failed
-      >>;
-      return cdr w
+      if w then
+      	 return cdr w;
+      return 'failed
    end;
 
 asserted procedure vsub_guard(pr: VSpr): QfFormula;
@@ -2599,11 +1656,9 @@ asserted procedure vsub_guard(pr: VSpr): QfFormula;
       assert(sfto_mvartest(f, vspr_v pr));
       rtl := vspr_rtl pr;
       w := assoc({ldeg f, rtl}, guard!-fnalist!*);
-      if null w then <<
-	 assert(nil);
-	 return 'failed
-      >>;
-      return apply(cdr w, {f})
+      if w then
+      	 return apply(cdr w, {f});
+      rederr "no appropriate entry in guard!-fnalist!*"
    end;
 
 asserted procedure vsub_vsub(op: Id, g: SF, x: Kernel, pr: VSpr, theo: Theory): QfFormula;
@@ -2616,11 +1671,18 @@ asserted procedure vsub_vsub(op: Id, g: SF, x: Kernel, pr: VSpr, theo: Theory): 
       if not sfto_mvartest(g, x) then
 	 return ofsf_0mk2(op, g);
       w := assoc({ldeg f, ldeg g, op, vspr_rsl pr}, vsub!-fnalist!*);
-      if null w then <<
-	 assert(nil);
-	 return 'failed
-      >>;
-      return cl_nnf apply(cdr w, {g, f, x, theo})
+      if w then
+      	 return cl_nnf apply(cdr w, {g, f, x, theo});
+      w := assoc({ldeg f, ldeg g, op, vsub_nrsl vspr_rsl pr}, vsub!-fnalist!*);
+      if w then
+      	 return cl_nnf apply(cdr w, {g, negf f, x, theo});
+      w := assoc({ldeg f, ldeg g, ofsf_negateop op, vspr_rsl pr}, vsub!-fnalist!*);
+      if w then
+	 return cl_nnf rl_mk1('not, apply(cdr w, {g, f, x, theo}));
+      w := assoc({ldeg f, ldeg g, ofsf_negateop op, vsub_nrsl vspr_rsl pr}, vsub!-fnalist!*);
+      if w then
+	 return cl_nnf rl_mk1('not, apply(cdr w, {g, negf f, x, theo}));
+      rederr "no appropriate entry in vsub!-fnalist!*"
    end;
 
 endmodule;  % [ofsfvslists]
