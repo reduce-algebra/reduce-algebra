@@ -627,8 +627,10 @@ procedure guard!-3!-5(f);
 
 % 2, 1, equal
 
-procedure vsub!-2!-1!-equal!-1(g, f, x, theo);
-   begin scalar aa, bb, a, b, c;
+asserted procedure vsub!-2!-1!-equal!-1(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, aa, bb, a, b, c;
+      g := rl_arg2l at;
+      f := vspr_f pr;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
       return ofsf_iparse(
@@ -636,8 +638,10 @@ procedure vsub!-2!-1!-equal!-1(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-1!-equal!-2(g, f, x, theo);
-   begin scalar aa, bb, a, b, c;
+asserted procedure vsub!-2!-1!-equal!-2(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, aa, bb, a, b, c;
+      g := rl_arg2l at;
+      f := vspr_f pr;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
       return ofsf_iparse(
@@ -645,8 +649,10 @@ procedure vsub!-2!-1!-equal!-2(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-1!-equal!-3(g, f, x, theo);
-   begin scalar aa, bb, a, b, c;
+asserted procedure vsub!-2!-1!-equal!-3(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, aa, bb, a, b, c;
+      g := rl_arg2l at;
+      f := vspr_f pr;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
       return ofsf_iparse(
@@ -654,8 +660,10 @@ procedure vsub!-2!-1!-equal!-3(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-1!-equal!-4(g, f, x, theo);
-   begin scalar aa, bb, a, b, c;
+asserted procedure vsub!-2!-1!-equal!-4(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, aa, bb, a, b, c;
+      g := rl_arg2l at;
+      f := vspr_f pr;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
       return ofsf_iparse(
@@ -663,8 +671,10 @@ procedure vsub!-2!-1!-equal!-4(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-1!-equal!-5(g, f, x, theo);
-   begin scalar aa, bb, a, b, c;
+asserted procedure vsub!-2!-1!-equal!-5(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, aa, bb, a, b, c;
+      g := rl_arg2l at;
+      f := vspr_f pr;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
       return ofsf_iparse(
@@ -674,8 +684,10 @@ procedure vsub!-2!-1!-equal!-5(g, f, x, theo);
 
 % 2, 1, lessp
 
-procedure vsub!-2!-1!-lessp!-1(g, f, x, theo);
-   begin scalar aa, bb, a, b, c;
+asserted procedure vsub!-2!-1!-lessp!-1(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, aa, bb, a, b, c;
+      g := rl_arg2l at;
+      f := vspr_f pr;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
       return ofsf_iparse(
@@ -684,8 +696,10 @@ procedure vsub!-2!-1!-lessp!-1(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-1!-lessp!-2(g, f, x, theo);
-   begin scalar aa, bb, a, b, c;
+asserted procedure vsub!-2!-1!-lessp!-2(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, aa, bb, a, b, c;
+      g := rl_arg2l at;
+      f := vspr_f pr;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
       return ofsf_iparse(
@@ -694,8 +708,10 @@ procedure vsub!-2!-1!-lessp!-2(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-1!-lessp!-3(g, f, x, theo);
-   begin scalar aa, bb, a, b, c;
+asserted procedure vsub!-2!-1!-lessp!-3(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, aa, bb, a, b, c;
+      g := rl_arg2l at;
+      f := vspr_f pr;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
       return ofsf_iparse(
@@ -703,8 +719,10 @@ procedure vsub!-2!-1!-lessp!-3(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-1!-lessp!-4(g, f, x, theo);
-   begin scalar aa, bb, a, b, c;
+asserted procedure vsub!-2!-1!-lessp!-4(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, aa, bb, a, b, c;
+      g := rl_arg2l at;
+      f := vspr_f pr;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
       return ofsf_iparse(
@@ -713,8 +731,10 @@ procedure vsub!-2!-1!-lessp!-4(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-1!-lessp!-5(g, f, x, theo);
-   begin scalar aa, bb, a, b, c;
+asserted procedure vsub!-2!-1!-lessp!-5(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, aa, bb, a, b, c;
+      g := rl_arg2l at;
+      f := vspr_f pr;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
       return ofsf_iparse(
@@ -725,8 +745,10 @@ procedure vsub!-2!-1!-lessp!-5(g, f, x, theo);
 
 % 2, 1, leq
 
-procedure vsub!-2!-1!-leq!-1(g, f, x, theo);
-   begin scalar aa, bb, a, b, c;
+asserted procedure vsub!-2!-1!-leq!-1(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, aa, bb, a, b, c;
+      g := rl_arg2l at;
+      f := vspr_f pr;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
       return ofsf_iparse(
@@ -735,8 +757,10 @@ procedure vsub!-2!-1!-leq!-1(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-1!-leq!-2(g, f, x, theo);
-   begin scalar aa, bb, a, b, c;
+asserted procedure vsub!-2!-1!-leq!-2(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, aa, bb, a, b, c;
+      g := rl_arg2l at;
+      f := vspr_f pr;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
       return ofsf_iparse(
@@ -745,8 +769,10 @@ procedure vsub!-2!-1!-leq!-2(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-1!-leq!-3(g, f, x, theo);
-   begin scalar aa, bb, a, b, c;
+asserted procedure vsub!-2!-1!-leq!-3(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, aa, bb, a, b, c;
+      g := rl_arg2l at;
+      f := vspr_f pr;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
       return ofsf_iparse(
@@ -754,8 +780,10 @@ procedure vsub!-2!-1!-leq!-3(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-1!-leq!-4(g, f, x, theo);
-   begin scalar aa, bb, a, b, c;
+asserted procedure vsub!-2!-1!-leq!-4(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, aa, bb, a, b, c;
+      g := rl_arg2l at;
+      f := vspr_f pr;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
       return ofsf_iparse(
@@ -764,8 +792,10 @@ procedure vsub!-2!-1!-leq!-4(g, f, x, theo);
 	    )
    end;
 
-procedure vsub!-2!-1!-leq!-5(g, f, x, theo);
-   begin scalar aa, bb, a, b, c;
+asserted procedure vsub!-2!-1!-leq!-5(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, aa, bb, a, b, c;
+      g := rl_arg2l at;
+      f := vspr_f pr;
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
       return ofsf_iparse(
@@ -776,120 +806,153 @@ procedure vsub!-2!-1!-leq!-5(g, f, x, theo);
 
 % 3, 1, equal
 
-procedure vsub!-3!-1!-equal!-1(g, f, x, theo);
-   begin scalar beta;
+asserted procedure vsub!-3!-1!-equal!-1(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, beta;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       beta := vspr_mk(g, x, {1 . 1}, 'true);
-      return vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta, theo)
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta, theo)
    end;
 
-procedure vsub!-3!-1!-equal!-2(g, f, x, theo);
-   begin scalar df, alpha1;
+asserted procedure vsub!-3!-1!-equal!-2(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, alpha1;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
-      return vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, g), x, alpha1, theo)
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, g), alpha1, theo)
    end;
 
-procedure vsub!-3!-1!-equal!-3(g, f, x, theo);
-   begin scalar df, beta, alpha2, w1, w2;
+asserted procedure vsub!-3!-1!-equal!-3(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha2, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha2, theo);
       return ofsf_iparse(
 	 w1 and w2
 	    )
    end;
 
-procedure vsub!-3!-1!-equal!-4(g, f, x, theo);
-   begin scalar df, beta, alpha1, w1, w2;
+asserted procedure vsub!-3!-1!-equal!-4(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha1, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, g), x, alpha1, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, g), alpha1, theo);
       return ofsf_iparse(
 	 w1 and w2
 	    )
    end;
 
-procedure vsub!-3!-1!-equal!-5(g, f, x, theo);
-   begin scalar df, alpha2;
+asserted procedure vsub!-3!-1!-equal!-5(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, alpha2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      return vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, g), x, alpha2, theo)
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, g), alpha2, theo)
    end;
 
-procedure vsub!-3!-1!-equal!-6(g, f, x, theo);
-   begin scalar df, beta, alpha1, w1, w2;
+asserted procedure vsub!-3!-1!-equal!-6(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha1, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, g), x, alpha1, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, g), alpha1, theo);
       return ofsf_iparse(
 	 w1 and w2
 	    )
    end;
 
-procedure vsub!-3!-1!-equal!-7(g, f, x, theo);
-   begin scalar df, beta, alpha1, alpha2, w1, w2, w3;
+asserted procedure vsub!-3!-1!-equal!-7(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha1, alpha2, w1, w2, w3;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, g), x, alpha2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, g), alpha2, theo);
       return ofsf_iparse(
 	 w1 and w2 and w3
 	    )
    end;
 
-procedure vsub!-3!-1!-equal!-8(g, f, x, theo);
-   begin scalar df, beta, alpha1, alpha2, w1, w2;
+asserted procedure vsub!-3!-1!-equal!-8(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha1, alpha2, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha2, theo);
       return ofsf_iparse(
 	 w1 and w2
 	    )
    end;
 
-procedure vsub!-3!-1!-equal!-9(g, f, x, theo);
-   begin scalar df, beta, alpha1, w1, w2;
+asserted procedure vsub!-3!-1!-equal!-9(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha1, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, g), x, alpha1, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, g), alpha1, theo);
       return ofsf_iparse(
 	 w1 and w2
 	    )
    end;
 
-procedure vsub!-3!-1!-equal!-10(g, f, x, theo);
-   begin scalar df, beta, w1, w2;
+asserted procedure vsub!-3!-1!-equal!-10(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, df), x, beta, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, df), beta, theo);
       return ofsf_iparse(
 	 w1 and w2
 	    )
    end;
 
-procedure vsub!-3!-1!-equal!-11(g, f, x, theo);
-   begin scalar df, ddf, beta, w1, w2, w3;
+asserted procedure vsub!-3!-1!-equal!-11(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, ddf, beta, w1, w2, w3;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       ddf := diff(df, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), x, beta, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), x, beta, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), beta, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), beta, theo);
       return ofsf_iparse(
 	 w1 and w2 and w3
 	    )
@@ -897,115 +960,148 @@ procedure vsub!-3!-1!-equal!-11(g, f, x, theo);
 
 % 3, 1, lessp
 
-procedure vsub!-3!-1!-lessp!-1(g, f, x, theo);
-   begin scalar beta;
+asserted procedure vsub!-3!-1!-lessp!-1(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, beta;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       beta := vspr_mk(g, x, {1 . 1}, 'true);
-      return vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta, theo)
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), beta, theo)
    end;
 
-procedure vsub!-3!-1!-lessp!-2(g, f, x, theo);
-   begin scalar df, alpha1;
+asserted procedure vsub!-3!-1!-lessp!-2(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, alpha1;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
-      return vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), x, alpha1, theo)
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), alpha1, theo)
    end;
 
-procedure vsub!-3!-1!-lessp!-3(g, f, x, theo);
-   begin scalar beta;
+asserted procedure vsub!-3!-1!-lessp!-3(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, beta;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       beta := vspr_mk(g, x, {1 . 1}, 'true);
-      return vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta, theo)
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), beta, theo)
    end;
 
-procedure vsub!-3!-1!-lessp!-4(g, f, x, theo);
-   begin scalar df, beta, alpha2, w1, w2;
+asserted procedure vsub!-3!-1!-lessp!-4(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha2, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, g), x, alpha2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, g), alpha2, theo);
       return ofsf_iparse(
 	 w1 or w2
 	    )
    end;
 
-procedure vsub!-3!-1!-lessp!-5(g, f, x, theo);
-   begin scalar df, alpha2;
+asserted procedure vsub!-3!-1!-lessp!-5(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, alpha2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      return vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), x, alpha2, theo)
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), alpha2, theo)
    end;
 
-procedure vsub!-3!-1!-lessp!-6(g, f, x, theo);
-   begin scalar df, beta, alpha1, w1, w2;
+asserted procedure vsub!-3!-1!-lessp!-6(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha1, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha1, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha1, theo);
       return ofsf_iparse(
 	 w1 or w2
 	    )
    end;
 
-procedure vsub!-3!-1!-lessp!-7(g, f, x, theo);
-   begin scalar df, beta, alpha1, alpha2, w1, w2, w3;
+asserted procedure vsub!-3!-1!-lessp!-7(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha1, alpha2, w1, w2, w3;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), x, beta, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha1, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha2, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), beta, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha1, theo);
       return ofsf_iparse(
 	 w1 or (w2 and w3)
 	    )
    end;
 
-procedure vsub!-3!-1!-lessp!-8(g, f, x, theo);
-   begin scalar df, beta, alpha2, w1, w2;
+asserted procedure vsub!-3!-1!-lessp!-8(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha2, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha2, theo);
       return ofsf_iparse(
 	 w1 and w2
 	    )
    end;
 
-procedure vsub!-3!-1!-lessp!-9(g, f, x, theo);
-   begin scalar df, beta, alpha1, w1, w2;
+asserted procedure vsub!-3!-1!-lessp!-9(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha1, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), x, alpha1, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), alpha1, theo);
       return ofsf_iparse(
 	 w1 or w2
 	    )
    end;
 
-procedure vsub!-3!-1!-lessp!-10(g, f, x, theo);
-   begin scalar df, beta, alpha1, alpha2, w1, w2, w3;
+asserted procedure vsub!-3!-1!-lessp!-10(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha1, alpha2, w1, w2, w3;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), x, alpha2, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), x, beta, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), x, alpha1, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), alpha2, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), beta, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), alpha1, theo);
       return ofsf_iparse(
 	 w1 or (w2 and w3)
 	    )
    end;
 
-procedure vsub!-3!-1!-lessp!-11(g, f, x, theo);
-   begin scalar df, beta, alpha2, w1, w2;
+asserted procedure vsub!-3!-1!-lessp!-11(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha2, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), x, alpha2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), alpha2, theo);
       return ofsf_iparse(
 	 w1 and w2
 	    )
@@ -1013,115 +1109,148 @@ procedure vsub!-3!-1!-lessp!-11(g, f, x, theo);
 
 % 3, 1, leq
 
-procedure vsub!-3!-1!-leq!-1(g, f, x, theo);
-   begin scalar beta;
+asserted procedure vsub!-3!-1!-leq!-1(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, beta;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       beta := vspr_mk(g, x, {1 . 1}, 'true);
-      return vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), x, beta, theo)
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), beta, theo)
    end;
 
-procedure vsub!-3!-1!-leq!-2(g, f, x, theo);
-   begin scalar df, alpha1;
+asserted procedure vsub!-3!-1!-leq!-2(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, alpha1;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
-      return vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha1, theo)
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha1, theo)
    end;
 
-procedure vsub!-3!-1!-leq!-3(g, f, x, theo);
-   begin scalar df, beta, alpha2, w1, w2;
+asserted procedure vsub!-3!-1!-leq!-3(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha2, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), x, beta, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha2, theo);
       return ofsf_iparse(
 	 w1 and w2
 	    )
    end;
 
-procedure vsub!-3!-1!-leq!-4(g, f, x, theo);
-   begin scalar beta;
+asserted procedure vsub!-3!-1!-leq!-4(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, beta;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       beta := vspr_mk(g, x, {1 . 1}, 'true);
-      return vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), x, beta, theo)
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), beta, theo)
    end;
 
-procedure vsub!-3!-1!-leq!-5(g, f, x, theo);
-   begin scalar df, alpha2;
+asserted procedure vsub!-3!-1!-leq!-5(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, alpha2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      return vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo)
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha2, theo)
    end;
 
-procedure vsub!-3!-1!-leq!-6(g, f, x, theo);
-   begin scalar df, beta, alpha1, w1, w2;
+asserted procedure vsub!-3!-1!-leq!-6(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha1, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), x, beta, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha1, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha1, theo);
       return ofsf_iparse(
 	 w1 or w2
 	    )
    end;
 
-procedure vsub!-3!-1!-leq!-7(g, f, x, theo);
-   begin scalar df, beta, alpha1, alpha2, w1, w2, w3;
+asserted procedure vsub!-3!-1!-leq!-7(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha1, alpha2, w1, w2, w3;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), x, beta, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha1, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha2, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), beta, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha1, theo);
       return ofsf_iparse(
 	 w1 or (w2 and w3)
 	    )
    end;
 
-procedure vsub!-3!-1!-leq!-8(g, f, x, theo);
-   begin scalar df, beta, alpha2, w1, w2;
+asserted procedure vsub!-3!-1!-leq!-8(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha2, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), x, beta, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha2, theo);
       return ofsf_iparse(
 	 w1 and w2
 	    )
    end;
 
-procedure vsub!-3!-1!-leq!-9(g, f, x, theo);
-   begin scalar df, beta, alpha1, w1, w2;
+asserted procedure vsub!-3!-1!-leq!-9(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha1, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), x, beta, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha1, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha1, theo);
       return ofsf_iparse(
 	 w1 or w2
 	    )
    end;
 
-procedure vsub!-3!-1!-leq!-10(g, f, x, theo);
-   begin scalar df, beta, alpha1, alpha2, w1, w2, w3;
+asserted procedure vsub!-3!-1!-leq!-10(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha1, alpha2, w1, w2, w3;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), x, beta, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha1, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha2, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), beta, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha1, theo);
       return ofsf_iparse(
 	 w1 or (w2 and w3)
 	    )
    end;
 
-procedure vsub!-3!-1!-leq!-11(g, f, x, theo);
-   begin scalar df, beta, alpha2, w1, w2;
+asserted procedure vsub!-3!-1!-leq!-11(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta, alpha2, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta := vspr_mk(g, x, {1 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), x, beta, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), beta, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha2, theo);
       return ofsf_iparse(
 	 w1 and w2
 	    )
@@ -1129,159 +1258,192 @@ procedure vsub!-3!-1!-leq!-11(g, f, x, theo);
 
 % 3, 2, equal
 
-procedure vsub!-3!-2!-equal!-1(g, f, x, theo);
-   begin scalar beta1, beta2, guard, w1, w2;
+asserted procedure vsub!-3!-2!-equal!-1(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, beta1, beta2, guard, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta2, theo);
       return ofsf_iparse(
 	 guard and (w1 or w2)
 	    )
    end;
 
-procedure vsub!-3!-2!-equal!-2(g, f, x, theo);
-   begin scalar df, alpha1;
+asserted procedure vsub!-3!-2!-equal!-2(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, alpha1;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
-      return vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, g), x, alpha1, theo)
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, g), alpha1, theo)
    end;
 
-procedure vsub!-3!-2!-equal!-3(g, f, x, theo);
-   begin scalar ddf, beta1, beta2, guard, w1, w2, w3, w4;
+asserted procedure vsub!-3!-2!-equal!-3(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, ddf, beta1, beta2, guard, w1, w2, w3, w4;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       ddf := diff(diff(f, x), x);
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), x, beta1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta2, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), beta1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta2, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), beta2, theo);
       return ofsf_iparse(
 	 guard and ((w1 and w2) or (w3 and w4))
 	    )
    end;
 
-procedure vsub!-3!-2!-equal!-4(g, f, x, theo);
-   begin scalar ddf, beta1, beta2, guard, w1, w2, w3, w4;
+asserted procedure vsub!-3!-2!-equal!-4(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, ddf, beta1, beta2, guard, w1, w2, w3, w4;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       ddf := diff(diff(f, x), x);
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), x, beta1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta2, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), beta1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta2, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), beta2, theo);
       return ofsf_iparse(
 	 guard and ((w1 and w2) or (w3 and w4))
 	    )
    end;
 
-procedure vsub!-3!-2!-equal!-5(g, f, x, theo);
-   begin scalar df, alpha2;
+asserted procedure vsub!-3!-2!-equal!-5(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, alpha2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      return vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, g), x, alpha2, theo)
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, g), alpha2, theo)
    end;
 
-procedure vsub!-3!-2!-equal!-6(g, f, x, theo);
-   begin scalar df, ddf, beta1, beta2, guard, w1, w2, w3, w4, w5, w6;
+asserted procedure vsub!-3!-2!-equal!-6(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, ddf, beta1, beta2, guard, w1, w2, w3, w4, w5, w6;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       ddf := diff(df, x);
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), x, beta1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), x, beta1, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta2, theo);
-      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), x, beta2, theo);
-      w6 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), beta1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), beta1, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta2, theo);
+      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), beta2, theo);
+      w6 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), beta2, theo);
       return ofsf_iparse(
 	 guard and ((w1 and w2 and w3) or (w4 and w5 and w6))
 	    )
    end;
 
-procedure vsub!-3!-2!-equal!-7(g, f, x, theo);
-   begin scalar df, beta1, beta2, guard, w1, w2, w3, w4;
+asserted procedure vsub!-3!-2!-equal!-7(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta1, beta2, guard, w1, w2, w3, w4;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, df), x, beta1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta2, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, df), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, df), beta1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta2, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, df), beta2, theo);
       return ofsf_iparse(
 	 guard and ((w1 and w2) or (w3 and w4))
 	    )
    end;
 
-procedure vsub!-3!-2!-equal!-8(g, f, x, theo);
-   begin scalar df, ddf, beta1, beta2, guard, w1, w2, w3, w4, w5, w6;
+asserted procedure vsub!-3!-2!-equal!-8(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, ddf, beta1, beta2, guard, w1, w2, w3, w4, w5, w6;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       ddf := diff(df, x);
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), x, beta1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), x, beta1, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta2, theo);
-      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), x, beta2, theo);
-      w6 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), beta1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), beta1, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta2, theo);
+      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), beta2, theo);
+      w6 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), beta2, theo);
       return ofsf_iparse(
 	 guard and ((w1 and w2 and w3) or (w4 and w5 and w6))
 	    )
    end;
 
-procedure vsub!-3!-2!-equal!-9(g, f, x, theo);
-   begin scalar df, ddf, beta1, beta2, guard, w1, w2, w3, w4, w5, w6;
+asserted procedure vsub!-3!-2!-equal!-9(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, ddf, beta1, beta2, guard, w1, w2, w3, w4, w5, w6;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       ddf := diff(df, x);
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), x, beta1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), x, beta1, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta2, theo);
-      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), x, beta2, theo);
-      w6 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), beta1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), beta1, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta2, theo);
+      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), beta2, theo);
+      w6 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), beta2, theo);
       return ofsf_iparse(
 	 guard and ((w1 and w2 and w3) or (w4 and w5 and w6))
 	    )
    end;
 
-procedure vsub!-3!-2!-equal!-10(g, f, x, theo);
-   begin scalar df, beta1, beta2, guard, w1, w2, w3, w4;
+asserted procedure vsub!-3!-2!-equal!-10(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta1, beta2, guard, w1, w2, w3, w4;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, df), x, beta1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta2, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, df), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, df), beta1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta2, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, df), beta2, theo);
       return ofsf_iparse(
 	 guard and ((w1 and w2) or (w3 and w4))
 	    )
    end;
 
-procedure vsub!-3!-2!-equal!-11(g, f, x, theo);
-   begin scalar df, ddf, beta1, beta2, guard, w1, w2, w3, w4, w5, w6;
+asserted procedure vsub!-3!-2!-equal!-11(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, ddf, beta1, beta2, guard, w1, w2, w3, w4, w5, w6;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       ddf := diff(df, x);
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), x, beta1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), x, beta1, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), x, beta2, theo);
-      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), x, beta2, theo);
-      w6 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), beta1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), beta1, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, f), beta2, theo);
+      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), beta2, theo);
+      w6 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), beta2, theo);
       return ofsf_iparse(
 	 guard and ((w1 and w2 and w3) or (w4 and w5 and w6))
 	    )
@@ -1289,161 +1451,194 @@ procedure vsub!-3!-2!-equal!-11(g, f, x, theo);
 
 % 3, 2, lessp
 
-procedure vsub!-3!-2!-lessp!-1(g, f, x, theo);
-   begin scalar beta1, beta2, guard, w1, w2;
+asserted procedure vsub!-3!-2!-lessp!-1(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, beta1, beta2, guard, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       beta1 := vspr_mk(g, x, {1 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), beta2, theo);
       return ofsf_iparse(
 	 guard and w1 and w2
 	    )
    end;
 
-procedure vsub!-3!-2!-lessp!-2(g, f, x, theo);
-   begin scalar df, alpha1;
+asserted procedure vsub!-3!-2!-lessp!-2(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, alpha1;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
-      return vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), x, alpha1, theo)
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), alpha1, theo)
    end;
 
-procedure vsub!-3!-2!-lessp!-3(g, f, x, theo);
-   begin scalar df, beta1, beta2, guard, w1, w2, w3;
+asserted procedure vsub!-3!-2!-lessp!-3(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta1, beta2, guard, w1, w2, w3;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta1 := vspr_mk(g, x, {1 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, df), x, beta1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, df), beta1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), beta2, theo);
       return ofsf_iparse(
 	 guard and (w1 or w2) and w3
 	    )
    end;
 
-procedure vsub!-3!-2!-lessp!-4(g, f, x, theo);
-   begin scalar df, beta1, beta2, guard, w1, w2, w3;
+asserted procedure vsub!-3!-2!-lessp!-4(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta1, beta2, guard, w1, w2, w3;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta1 := vspr_mk(g, x, {1 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta2, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, df), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), beta2, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('equal, df), beta2, theo);
       return ofsf_iparse(
 	 guard and w1 and (w2 or w3)
 	    )
    end;
 
-procedure vsub!-3!-2!-lessp!-5(g, f, x, theo);
-   begin scalar df, alpha2;
+asserted procedure vsub!-3!-2!-lessp!-5(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, alpha2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      return vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), x, alpha2, theo)
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), alpha2, theo)
    end;
 
-procedure vsub!-3!-2!-lessp!-6(g, f, x, theo);
-   begin scalar df, ddf, beta1, beta2, alpha1, guard, w1, w2, w3, w4, w5;
+asserted procedure vsub!-3!-2!-lessp!-6(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, ddf, beta1, beta2, alpha1, guard, w1, w2, w3, w4, w5;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       ddf := diff(df, x);
       beta1 := vspr_mk(g, x, {1 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), x, beta1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), x, beta1, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta2, theo);
-      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha1, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), beta1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), beta1, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), beta2, theo);
+      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha1, theo);
       return ofsf_iparse(
 	 guard and w1 and w2 and w3 and (w4 or w5)
 	    )
    end;
 
-procedure vsub!-3!-2!-lessp!-7(g, f, x, theo);
-   begin scalar df, beta1, beta2, alpha1, alpha2, guard, w1, w2, w3, w4;
+asserted procedure vsub!-3!-2!-lessp!-7(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta1, beta2, alpha1, alpha2, guard, w1, w2, w3, w4;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta1 := vspr_mk(g, x, {1 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), x, beta2, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), beta2, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha2, theo);
       return ofsf_iparse(
 	 guard and (w1 or w2) and (w3 or w4)
 	    )
    end;
 
-procedure vsub!-3!-2!-lessp!-8(g, f, x, theo);
-   begin scalar df, ddf, beta1, beta2, alpha2, guard, w1, w2, w3, w4, w5;
+asserted procedure vsub!-3!-2!-lessp!-8(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, ddf, beta1, beta2, alpha2, guard, w1, w2, w3, w4, w5;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       ddf := diff(df, x);
       beta1 := vspr_mk(g, x, {1 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta2, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), x, beta2, theo);
-      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha2, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), beta2, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), beta2, theo);
+      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), beta2, theo);
       return ofsf_iparse(
 	 guard and (w1 or w2) and (w3 and w4 and w5)
 	    )
    end;
 
-procedure vsub!-3!-2!-lessp!-9(g, f, x, theo);
-   begin scalar df, ddf, beta1, beta2, alpha1, guard, w1, w2, w3, w4, w5;
+asserted procedure vsub!-3!-2!-lessp!-9(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, ddf, beta1, beta2, alpha1, guard, w1, w2, w3, w4, w5;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       ddf := diff(df, x);
       beta1 := vspr_mk(g, x, {1 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), x, beta1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), x, beta1, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta2, theo);
-      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), x, alpha1, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), beta1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), beta1, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), beta2, theo);
+      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), alpha1, theo);
       return ofsf_iparse(
 	 guard and (w1 and w2 and w3) and (w4 or w5)
 	    )
    end;
 
-procedure vsub!-3!-2!-lessp!-10(g, f, x, theo);
-   begin scalar df, beta1, beta2, alpha1, alpha2, guard, w1, w2, w3, w4;
+asserted procedure vsub!-3!-2!-lessp!-10(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta1, beta2, alpha1, alpha2, guard, w1, w2, w3, w4;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta1 := vspr_mk(g, x, {1 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), x, alpha1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), x, beta2, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), x, alpha2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), alpha1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), beta2, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), alpha2, theo);
       return ofsf_iparse(
 	 guard and (w1 or w2) and (w3 or w4)
 	    )
    end;
 
-procedure vsub!-3!-2!-lessp!-11(g, f, x, theo);
-   begin scalar df, ddf, beta1, beta2, alpha2, guard, w1, w2, w3, w4, w5;
+asserted procedure vsub!-3!-2!-lessp!-11(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, ddf, beta1, beta2, alpha2, guard, w1, w2, w3, w4, w5;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       ddf := diff(df, x);
       beta1 := vspr_mk(g, x, {1 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), x, alpha2, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), x, beta2, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), x, beta2, theo);
-      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('lessp, g), alpha2, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('greaterp, f), beta2, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), beta2, theo);
+      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), beta2, theo);
       return ofsf_iparse(
 	 guard and (w1 or w2) and (w3 and w4 and w5)
 	    )
@@ -1451,161 +1646,194 @@ procedure vsub!-3!-2!-lessp!-11(g, f, x, theo);
 
 % 3, 2, leq
 
-procedure vsub!-3!-2!-leq!-1(g, f, x, theo);
-   begin scalar beta1, beta2, guard, w1, w2;
+asserted procedure vsub!-3!-2!-leq!-1(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, beta1, beta2, guard, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), beta2, theo);
       return ofsf_iparse(
 	 guard and w1 and w2
 	    )
    end;
 
-procedure vsub!-3!-2!-leq!-2(g, f, x, theo);
-   begin scalar df, alpha1;
+asserted procedure vsub!-3!-2!-leq!-2(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, alpha1;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
-      return vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha1, theo)
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha1, theo)
    end;
 
-procedure vsub!-3!-2!-leq!-3(g, f, x, theo);
-   begin scalar beta1, beta2, guard, w1, w2;
+asserted procedure vsub!-3!-2!-leq!-3(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, beta1, beta2, guard, w1, w2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), beta2, theo);
       return ofsf_iparse(
 	 guard and w1 and w2
 	    )
    end;
 
-procedure vsub!-3!-2!-leq!-4(g, f, x, theo);
-   begin scalar ddf, beta1, beta2, guard, w1, w2, w3;
+asserted procedure vsub!-3!-2!-leq!-4(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, ddf, beta1, beta2, guard, w1, w2, w3;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       ddf := diff(diff(f, x), x);
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), x, beta1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), beta1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), beta2, theo);
       return ofsf_iparse(
 	 guard and w1 and w2 and w3
 	    )
    end;
 
-procedure vsub!-3!-2!-leq!-5(g, f, x, theo);
-   begin scalar df, alpha2;
+asserted procedure vsub!-3!-2!-leq!-5(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, alpha2;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
-      return vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo)
+      return vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha2, theo)
    end;
 
-procedure vsub!-3!-2!-leq!-6(g, f, x, theo);
-   begin scalar df, ddf, beta1, beta2, alpha1, guard, w1, w2, w3, w4, w5;
+asserted procedure vsub!-3!-2!-leq!-6(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, ddf, beta1, beta2, alpha1, guard, w1, w2, w3, w4, w5;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       ddf := diff(df, x);
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), x, beta1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), x, beta1, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), x, beta2, theo);
-      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha1, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), beta1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), beta1, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), beta2, theo);
+      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha1, theo);
       return ofsf_iparse(
 	 guard and w1 and w2 and w3 and (w4 or w5)
 	    )
    end;
 
-procedure vsub!-3!-2!-leq!-7(g, f, x, theo);
-   begin scalar df, beta1, beta2, alpha1, alpha2, guard, w1, w2, w3, w4, w5;
+asserted procedure vsub!-3!-2!-leq!-7(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta1, beta2, alpha1, alpha2, guard, w1, w2, w3, w4, w5;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, df), x, beta1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha1, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), x, beta2, theo);
-      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, df), beta1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha1, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), beta2, theo);
+      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha2, theo);
       return ofsf_iparse(
 	 guard and ((w1 and w2) or w3) and (w4 or w5)
 	    )
    end;
 
-procedure vsub!-3!-2!-leq!-8(g, f, x, theo);
-   begin scalar df, ddf, beta1, beta2, alpha2, guard, w1, w2, w3, w4, w5;
+asserted procedure vsub!-3!-2!-leq!-8(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, ddf, beta1, beta2, alpha2, guard, w1, w2, w3, w4, w5;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       ddf := diff(df, x);
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), x, beta2, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), x, beta2, theo);
-      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha2, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), beta2, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), beta2, theo);
+      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), beta2, theo);
       return ofsf_iparse(
 	 guard and (w1 or w2) and w3 and w4 and w5
 	    )
    end;
 
-procedure vsub!-3!-2!-leq!-9(g, f, x, theo);
-   begin scalar df, ddf, beta1, beta2, alpha1, guard, w1, w2, w3, w4, w5;
+asserted procedure vsub!-3!-2!-leq!-9(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, ddf, beta1, beta2, alpha1, guard, w1, w2, w3, w4, w5;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       ddf := diff(df, x);
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), x, beta1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), x, beta1, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), x, beta2, theo);
-      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha1, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), beta1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, ddf), beta1, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), beta2, theo);
+      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha1, theo);
       return ofsf_iparse(
 	 guard and w1 and w2 and w3 and (w4 or w5)
 	    )
    end;
 
-procedure vsub!-3!-2!-leq!-10(g, f, x, theo);
-   begin scalar df, beta1, beta2, alpha1, alpha2, guard, w1, w2, w3, w4, w5;
+asserted procedure vsub!-3!-2!-leq!-10(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, beta1, beta2, alpha1, alpha2, guard, w1, w2, w3, w4, w5;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
       alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, df), x, beta1, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha1, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), x, beta2, theo);
-      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, df), beta1, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha1, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), beta2, theo);
+      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha2, theo);
       return ofsf_iparse(
 	 guard and ((w1 and w2) or w3) and (w4 or w5)
 	    )
    end;
 
-procedure vsub!-3!-2!-leq!-11(g, f, x, theo);
-   begin scalar df, ddf, beta1, beta2, alpha2, guard, w1, w2, w3, w4, w5;
+asserted procedure vsub!-3!-2!-leq!-11(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, f, x, df, ddf, beta1, beta2, alpha2, guard, w1, w2, w3, w4, w5;
+      g := rl_arg2l at;
+      f := vspr_f pr;
+      x := vspr_v pr;
       df := diff(f, x);
       ddf := diff(df, x);
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
       alpha2 := vspr_mk(df, x, {1 . 2}, 'true);
       guard := vsub_guard beta1;
-      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), x, beta1, theo);
-      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), x, alpha2, theo);
-      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), x, beta2, theo);
-      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), x, beta2, theo);
-      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), x, beta2, theo);
+      w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), beta1, theo);
+      w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, g), alpha2, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), beta2, theo);
+      w4 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, df), beta2, theo);
+      w5 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, ddf), beta2, theo);
       return ofsf_iparse(
 	 guard and (w1 or w2) and w3 and w4 and w5
 	    )
@@ -1661,27 +1889,41 @@ asserted procedure vsub_guard(pr: VSpr): QfFormula;
       rederr "no appropriate entry in guard!-fnalist!*"
    end;
 
-asserted procedure vsub_vsub(op: Id, g: SF, x: Kernel, pr: VSpr, theo: Theory): QfFormula;
+asserted procedure vsub_vsub(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    % Virtual substitution. [op] is an operator. Returns an equivalent
    % of (g op 0)[x // (f, S)], where (f, S) is a parametric root
    % description described by [pr].
-   begin scalar f, w;
-      f := vspr_f pr;
-      assert(sfto_mvartest(f, x));
+   begin scalar g, x, f, op, rsl, w;
+      g := rl_arg2l at;
+      x := vspr_v pr;
       if not sfto_mvartest(g, x) then
-	 return ofsf_0mk2(op, g);
-      w := assoc({ldeg f, ldeg g, op, vspr_rsl pr}, vsub!-fnalist!*);
+	 return at;
+      f := vspr_f pr;
+      op := rl_op at;
+      rsl := vspr_rsl pr;
+      % case 1
+      w := assoc({ldeg f, ldeg g, op, rsl}, vsub!-fnalist!*);
       if w then
-      	 return cl_nnf apply(cdr w, {g, f, x, theo});
-      w := assoc({ldeg f, ldeg g, op, vsub_nrsl vspr_rsl pr}, vsub!-fnalist!*);
-      if w then
-      	 return cl_nnf apply(cdr w, {g, negf f, x, theo});
-      w := assoc({ldeg f, ldeg g, ofsf_negateop op, vspr_rsl pr}, vsub!-fnalist!*);
-      if w then
-	 return cl_nnf rl_mk1('not, apply(cdr w, {g, f, x, theo}));
-      w := assoc({ldeg f, ldeg g, ofsf_negateop op, vsub_nrsl vspr_rsl pr}, vsub!-fnalist!*);
-      if w then
-	 return cl_nnf rl_mk1('not, apply(cdr w, {g, negf f, x, theo}));
+      	 return cl_nnf apply(cdr w, {at, pr, theo});
+      % case 2
+      w := assoc({ldeg f, ldeg g, op, vsub_nrsl rsl}, vsub!-fnalist!*);
+      if w then <<
+	 pr := vspr_mk(negf vspr_f pr, vspr_v pr, vsub_nrsl rsl, vspr_c pr);
+      	 return cl_nnf apply(cdr w, {at, pr, theo})
+      >>;
+      % case 3
+      w := assoc({ldeg f, ldeg g, ofsf_negateop op, rsl}, vsub!-fnalist!*);
+      if w then <<
+	 at := ofsf_0mk2(ofsf_negateop op, g);
+	 return cl_nnf rl_mk1('not, apply(cdr w, {at, pr, theo}))
+      >>;
+      % case 4
+      w := assoc({ldeg f, ldeg g, ofsf_negateop op, vsub_nrsl rsl}, vsub!-fnalist!*);
+      if w then <<
+	 at := ofsf_0mk2(ofsf_negateop op, g);
+	 pr := vspr_mk(negf vspr_f pr, vspr_v pr, vsub_nrsl rsl, vspr_c pr);
+	 return cl_nnf rl_mk1('not, apply(cdr w, {at, pr, theo}))
+      >>;
       rederr "no appropriate entry in vsub!-fnalist!*"
    end;
 

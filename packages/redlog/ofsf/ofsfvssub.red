@@ -306,7 +306,7 @@ asserted procedure vsds_applyvsts!-at(at: QfFormula, ds: VSds): QfFormula;
 	 return w;
       pr := vstp_pr vsts_tp vsds_vs ds;
       theo := append(vsds_ptheo ds, vsds_ttheo ds);
-      return cl_apply2ats1(w, 'vsds_applyvsts!-at!-pr, {x, pr, theo})
+      return cl_apply2ats1(w, 'vsds_applyvsts!-at!-pr, {pr, theo})
    end;
 
 asserted procedure vsds_expand!-at!-inf(at: QfFormula, x: Kernel, it: Id): QfFormula;
@@ -371,19 +371,18 @@ asserted procedure vsds_expand!-at!-eps1(op: Id, g: SF, x: Kernel, it: Id): QfFo
 	 rl_mkn('and, {ofsf_0mk2('equal, g), vsds_expand!-at!-eps1(op, dg, x, it)})})
    end;
 
-asserted procedure vsds_applyvsts!-at!-pr(at: QfFormula, x: Kernel, pr: VSpr, theo: Theory): QfFormula;
-   % Apply to atomic formula substitution given by a parametric root
-   % description.
-   begin scalar g, f;
-      assert(x eq vspr_v pr);
+asserted procedure vsds_applyvsts!-at!-pr(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   % Apply virtual substitution to an atomic formula.
+   begin scalar g, x, f;
       if rl_tvalp at then
 	 return at;
       g := rl_arg2l at;
+      x := vspr_v pr;
       if not sfto_mvartest(g, x) then
 	 return at;
       f := vspr_f pr;
       g := sfto_psrem!-sgn(g, f, x, theo);
-      return vsub_vsub(rl_op at, g, x, pr, theo)
+      return vsub_vsub(ofsf_0mk2(rl_op at, g), pr, theo)
    end;
 
 % TODO: Rename and move this procedure to the sfto module.
