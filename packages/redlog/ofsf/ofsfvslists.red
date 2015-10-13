@@ -807,6 +807,21 @@ asserted procedure vsub!-2!-1!-leq!-5(at: QfFormula, pr: VSpr, theo: Theory): Qf
 % 3, 1, equal
 
 asserted procedure vsub!-3!-1!-equal!-1(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-equal!-1p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-equal!-1p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-equal!-1p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, beta;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -816,6 +831,21 @@ asserted procedure vsub!-3!-1!-equal!-1(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-1!-equal!-2(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-equal!-2p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-equal!-2p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-equal!-2p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, alpha1;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -826,6 +856,21 @@ asserted procedure vsub!-3!-1!-equal!-2(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-1!-equal!-3(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-equal!-3p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-equal!-3p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-equal!-3p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha2, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -841,6 +886,21 @@ asserted procedure vsub!-3!-1!-equal!-3(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-1!-equal!-4(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-equal!-4p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-equal!-4p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-equal!-4p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha1, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -856,6 +916,21 @@ asserted procedure vsub!-3!-1!-equal!-4(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-1!-equal!-5(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-equal!-5p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-equal!-5p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-equal!-5p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, alpha2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -866,6 +941,21 @@ asserted procedure vsub!-3!-1!-equal!-5(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-1!-equal!-6(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-equal!-6p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-equal!-6p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-equal!-6p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha1, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -881,6 +971,21 @@ asserted procedure vsub!-3!-1!-equal!-6(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-1!-equal!-7(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-equal!-7p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-equal!-7p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-equal!-7p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha1, alpha2, w1, w2, w3;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -898,6 +1003,21 @@ asserted procedure vsub!-3!-1!-equal!-7(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-1!-equal!-8(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-equal!-8p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-equal!-8p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-equal!-8p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha1, alpha2, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -914,6 +1034,21 @@ asserted procedure vsub!-3!-1!-equal!-8(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-1!-equal!-9(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-equal!-9p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-equal!-9p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-equal!-9p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha1, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -929,6 +1064,21 @@ asserted procedure vsub!-3!-1!-equal!-9(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-1!-equal!-10(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-equal!-10p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-equal!-10p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-equal!-10p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -943,6 +1093,21 @@ asserted procedure vsub!-3!-1!-equal!-10(at: QfFormula, pr: VSpr, theo: Theory):
    end;
 
 asserted procedure vsub!-3!-1!-equal!-11(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-equal!-11p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-equal!-11p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-equal!-11p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, ddf, beta, w1, w2, w3;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -961,6 +1126,21 @@ asserted procedure vsub!-3!-1!-equal!-11(at: QfFormula, pr: VSpr, theo: Theory):
 % 3, 1, lessp
 
 asserted procedure vsub!-3!-1!-lessp!-1(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-lessp!-1p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-lessp!-1p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-lessp!-1p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, beta;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -970,6 +1150,21 @@ asserted procedure vsub!-3!-1!-lessp!-1(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-1!-lessp!-2(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-lessp!-2p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-lessp!-2p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-lessp!-2p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, alpha1;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -980,6 +1175,21 @@ asserted procedure vsub!-3!-1!-lessp!-2(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-1!-lessp!-3(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-lessp!-3p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-lessp!-3p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-lessp!-3p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, beta;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -989,6 +1199,21 @@ asserted procedure vsub!-3!-1!-lessp!-3(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-1!-lessp!-4(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-lessp!-4p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-lessp!-4p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-lessp!-4p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha2, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1004,6 +1229,21 @@ asserted procedure vsub!-3!-1!-lessp!-4(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-1!-lessp!-5(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-lessp!-5p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-lessp!-5p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-lessp!-5p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, alpha2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1014,6 +1254,21 @@ asserted procedure vsub!-3!-1!-lessp!-5(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-1!-lessp!-6(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-lessp!-6p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-lessp!-6p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-lessp!-6p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha1, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1029,6 +1284,21 @@ asserted procedure vsub!-3!-1!-lessp!-6(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-1!-lessp!-7(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-lessp!-7p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-lessp!-7p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-lessp!-7p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha1, alpha2, w1, w2, w3;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1046,6 +1316,21 @@ asserted procedure vsub!-3!-1!-lessp!-7(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-1!-lessp!-8(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-lessp!-8p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-lessp!-8p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-lessp!-8p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha2, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1061,6 +1346,21 @@ asserted procedure vsub!-3!-1!-lessp!-8(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-1!-lessp!-9(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-lessp!-9p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-lessp!-9p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-lessp!-9p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha1, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1076,6 +1376,21 @@ asserted procedure vsub!-3!-1!-lessp!-9(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-1!-lessp!-10(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-lessp!-10p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-lessp!-10p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-lessp!-10p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha1, alpha2, w1, w2, w3;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1093,6 +1408,21 @@ asserted procedure vsub!-3!-1!-lessp!-10(at: QfFormula, pr: VSpr, theo: Theory):
    end;
 
 asserted procedure vsub!-3!-1!-lessp!-11(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-lessp!-11p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-lessp!-11p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-lessp!-11p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha2, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1110,6 +1440,21 @@ asserted procedure vsub!-3!-1!-lessp!-11(at: QfFormula, pr: VSpr, theo: Theory):
 % 3, 1, leq
 
 asserted procedure vsub!-3!-1!-leq!-1(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-leq!-1p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-leq!-1p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-leq!-1p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, beta;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1119,6 +1464,21 @@ asserted procedure vsub!-3!-1!-leq!-1(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-1!-leq!-2(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-leq!-2p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-leq!-2p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-leq!-2p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, alpha1;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1129,6 +1489,21 @@ asserted procedure vsub!-3!-1!-leq!-2(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-1!-leq!-3(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-leq!-3p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-leq!-3p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-leq!-3p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha2, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1144,6 +1519,21 @@ asserted procedure vsub!-3!-1!-leq!-3(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-1!-leq!-4(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-leq!-4p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-leq!-4p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-leq!-4p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, beta;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1153,6 +1543,21 @@ asserted procedure vsub!-3!-1!-leq!-4(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-1!-leq!-5(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-leq!-5p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-leq!-5p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-leq!-5p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, alpha2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1163,6 +1568,21 @@ asserted procedure vsub!-3!-1!-leq!-5(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-1!-leq!-6(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-leq!-6p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-leq!-6p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-leq!-6p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha1, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1178,6 +1598,21 @@ asserted procedure vsub!-3!-1!-leq!-6(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-1!-leq!-7(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-leq!-7p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-leq!-7p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-leq!-7p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha1, alpha2, w1, w2, w3;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1195,6 +1630,21 @@ asserted procedure vsub!-3!-1!-leq!-7(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-1!-leq!-8(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-leq!-8p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-leq!-8p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-leq!-8p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha2, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1210,6 +1660,21 @@ asserted procedure vsub!-3!-1!-leq!-8(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-1!-leq!-9(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-leq!-9p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-leq!-9p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-leq!-9p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha1, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1225,6 +1690,21 @@ asserted procedure vsub!-3!-1!-leq!-9(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-1!-leq!-10(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-leq!-10p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-leq!-10p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-leq!-10p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha1, alpha2, w1, w2, w3;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1242,6 +1722,21 @@ asserted procedure vsub!-3!-1!-leq!-10(at: QfFormula, pr: VSpr, theo: Theory): Q
    end;
 
 asserted procedure vsub!-3!-1!-leq!-11(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-1!-leq!-11p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-1!-leq!-11p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-1!-leq!-11p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta, alpha2, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1259,6 +1754,21 @@ asserted procedure vsub!-3!-1!-leq!-11(at: QfFormula, pr: VSpr, theo: Theory): Q
 % 3, 2, equal
 
 asserted procedure vsub!-3!-2!-equal!-1(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-equal!-1p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-equal!-1p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-equal!-1p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, beta1, beta2, guard, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1274,6 +1784,21 @@ asserted procedure vsub!-3!-2!-equal!-1(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-2!-equal!-2(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-equal!-2p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-equal!-2p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-equal!-2p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, alpha1;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1284,6 +1809,21 @@ asserted procedure vsub!-3!-2!-equal!-2(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-2!-equal!-3(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-equal!-3p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-equal!-3p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-equal!-3p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, ddf, beta1, beta2, guard, w1, w2, w3, w4;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1302,6 +1842,21 @@ asserted procedure vsub!-3!-2!-equal!-3(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-2!-equal!-4(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-equal!-4p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-equal!-4p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-equal!-4p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, ddf, beta1, beta2, guard, w1, w2, w3, w4;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1320,6 +1875,21 @@ asserted procedure vsub!-3!-2!-equal!-4(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-2!-equal!-5(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-equal!-5p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-equal!-5p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-equal!-5p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, alpha2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1330,6 +1900,21 @@ asserted procedure vsub!-3!-2!-equal!-5(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-2!-equal!-6(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-equal!-6p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-equal!-6p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-equal!-6p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, ddf, beta1, beta2, guard, w1, w2, w3, w4, w5, w6;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1351,6 +1936,21 @@ asserted procedure vsub!-3!-2!-equal!-6(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-2!-equal!-7(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-equal!-7p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-equal!-7p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-equal!-7p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta1, beta2, guard, w1, w2, w3, w4;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1369,6 +1969,21 @@ asserted procedure vsub!-3!-2!-equal!-7(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-2!-equal!-8(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-equal!-8p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-equal!-8p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-equal!-8p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, ddf, beta1, beta2, guard, w1, w2, w3, w4, w5, w6;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1390,6 +2005,21 @@ asserted procedure vsub!-3!-2!-equal!-8(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-2!-equal!-9(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-equal!-9p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-equal!-9p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-equal!-9p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, ddf, beta1, beta2, guard, w1, w2, w3, w4, w5, w6;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1411,6 +2041,21 @@ asserted procedure vsub!-3!-2!-equal!-9(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-2!-equal!-10(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-equal!-10p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-equal!-10p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-equal!-10p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta1, beta2, guard, w1, w2, w3, w4;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1429,6 +2074,21 @@ asserted procedure vsub!-3!-2!-equal!-10(at: QfFormula, pr: VSpr, theo: Theory):
    end;
 
 asserted procedure vsub!-3!-2!-equal!-11(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-equal!-11p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-equal!-11p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-equal!-11p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, ddf, beta1, beta2, guard, w1, w2, w3, w4, w5, w6;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1452,6 +2112,21 @@ asserted procedure vsub!-3!-2!-equal!-11(at: QfFormula, pr: VSpr, theo: Theory):
 % 3, 2, lessp
 
 asserted procedure vsub!-3!-2!-lessp!-1(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-lessp!-1p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-lessp!-1p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-lessp!-1p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, beta1, beta2, guard, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1467,6 +2142,21 @@ asserted procedure vsub!-3!-2!-lessp!-1(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-2!-lessp!-2(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-lessp!-2p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-lessp!-2p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-lessp!-2p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, alpha1;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1477,6 +2167,21 @@ asserted procedure vsub!-3!-2!-lessp!-2(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-2!-lessp!-3(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-lessp!-3p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-lessp!-3p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-lessp!-3p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta1, beta2, guard, w1, w2, w3;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1494,6 +2199,21 @@ asserted procedure vsub!-3!-2!-lessp!-3(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-2!-lessp!-4(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-lessp!-4p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-lessp!-4p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-lessp!-4p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta1, beta2, guard, w1, w2, w3;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1511,6 +2231,21 @@ asserted procedure vsub!-3!-2!-lessp!-4(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-2!-lessp!-5(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-lessp!-5p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-lessp!-5p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-lessp!-5p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, alpha2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1521,6 +2256,21 @@ asserted procedure vsub!-3!-2!-lessp!-5(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-2!-lessp!-6(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-lessp!-6p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-lessp!-6p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-lessp!-6p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, ddf, beta1, beta2, alpha1, guard, w1, w2, w3, w4, w5;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1542,6 +2292,21 @@ asserted procedure vsub!-3!-2!-lessp!-6(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-2!-lessp!-7(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-lessp!-7p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-lessp!-7p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-lessp!-7p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta1, beta2, alpha1, alpha2, guard, w1, w2, w3, w4;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1562,6 +2327,21 @@ asserted procedure vsub!-3!-2!-lessp!-7(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-2!-lessp!-8(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-lessp!-8p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-lessp!-8p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-lessp!-8p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, ddf, beta1, beta2, alpha2, guard, w1, w2, w3, w4, w5;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1583,6 +2363,21 @@ asserted procedure vsub!-3!-2!-lessp!-8(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-2!-lessp!-9(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-lessp!-9p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-lessp!-9p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-lessp!-9p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, ddf, beta1, beta2, alpha1, guard, w1, w2, w3, w4, w5;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1604,6 +2399,21 @@ asserted procedure vsub!-3!-2!-lessp!-9(at: QfFormula, pr: VSpr, theo: Theory): 
    end;
 
 asserted procedure vsub!-3!-2!-lessp!-10(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-lessp!-10p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-lessp!-10p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-lessp!-10p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta1, beta2, alpha1, alpha2, guard, w1, w2, w3, w4;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1624,6 +2434,21 @@ asserted procedure vsub!-3!-2!-lessp!-10(at: QfFormula, pr: VSpr, theo: Theory):
    end;
 
 asserted procedure vsub!-3!-2!-lessp!-11(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-lessp!-11p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-lessp!-11p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-lessp!-11p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, ddf, beta1, beta2, alpha2, guard, w1, w2, w3, w4, w5;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1647,6 +2472,21 @@ asserted procedure vsub!-3!-2!-lessp!-11(at: QfFormula, pr: VSpr, theo: Theory):
 % 3, 2, leq
 
 asserted procedure vsub!-3!-2!-leq!-1(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-leq!-1p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-leq!-1p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-leq!-1p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, beta1, beta2, guard, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1662,6 +2502,21 @@ asserted procedure vsub!-3!-2!-leq!-1(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-2!-leq!-2(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-leq!-2p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-leq!-2p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-leq!-2p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, alpha1;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1672,6 +2527,21 @@ asserted procedure vsub!-3!-2!-leq!-2(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-2!-leq!-3(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-leq!-3p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-leq!-3p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-leq!-3p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, beta1, beta2, guard, w1, w2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1687,6 +2557,21 @@ asserted procedure vsub!-3!-2!-leq!-3(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-2!-leq!-4(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-leq!-4p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-leq!-4p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-leq!-4p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, ddf, beta1, beta2, guard, w1, w2, w3;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1704,6 +2589,21 @@ asserted procedure vsub!-3!-2!-leq!-4(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-2!-leq!-5(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-leq!-5p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-leq!-5p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-leq!-5p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, alpha2;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1714,6 +2614,21 @@ asserted procedure vsub!-3!-2!-leq!-5(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-2!-leq!-6(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-leq!-6p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-leq!-6p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-leq!-6p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, ddf, beta1, beta2, alpha1, guard, w1, w2, w3, w4, w5;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1735,6 +2650,21 @@ asserted procedure vsub!-3!-2!-leq!-6(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-2!-leq!-7(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-leq!-7p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-leq!-7p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-leq!-7p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta1, beta2, alpha1, alpha2, guard, w1, w2, w3, w4, w5;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1756,6 +2686,21 @@ asserted procedure vsub!-3!-2!-leq!-7(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-2!-leq!-8(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-leq!-8p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-leq!-8p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-leq!-8p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, ddf, beta1, beta2, alpha2, guard, w1, w2, w3, w4, w5;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1777,6 +2722,21 @@ asserted procedure vsub!-3!-2!-leq!-8(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-2!-leq!-9(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-leq!-9p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-leq!-9p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-leq!-9p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, ddf, beta1, beta2, alpha1, guard, w1, w2, w3, w4, w5;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1798,6 +2758,21 @@ asserted procedure vsub!-3!-2!-leq!-9(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-2!-leq!-10(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-leq!-10p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-leq!-10p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-leq!-10p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, beta1, beta2, alpha1, alpha2, guard, w1, w2, w3, w4, w5;
       g := rl_arg2l at;
       f := vspr_f pr;
@@ -1819,6 +2794,21 @@ asserted procedure vsub!-3!-2!-leq!-10(at: QfFormula, pr: VSpr, theo: Theory): Q
    end;
 
 asserted procedure vsub!-3!-2!-leq!-11(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
+   begin scalar g, lcg, wpos, wneg, wnull;
+      g := ofsf_arg2l at;
+      lcg := lc g;
+      wpos := vsub!-3!-2!-leq!-11p(
+	 at, pr, ofsf_0mk2('greaterp, lcg) . theo);
+      wneg := vsub!-3!-2!-leq!-11p(
+	 ofsf_0mk2(rl_op at, negf g), pr, ofsf_0mk2('lessp, lcg) . theo);
+      wnull := vsub_vsub(
+	 ofsf_0mk2(rl_op at, red g), pr, ofsf_0mk2('equal, lcg) . theo);
+      return ofsf_iparse(
+	 (lcg > 0 and wpos) or (lcg < 0 and wneg) or (lcg = 0 and wnull)
+	    )
+   end;
+
+asserted procedure vsub!-3!-2!-leq!-11p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
    begin scalar g, f, x, df, ddf, beta1, beta2, alpha2, guard, w1, w2, w3, w4, w5;
       g := rl_arg2l at;
       f := vspr_f pr;
