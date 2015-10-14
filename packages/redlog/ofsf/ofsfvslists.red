@@ -454,12 +454,7 @@ vsub!-fnalist!* := '(
 %%% guard procedures %%%
 
 procedure guard!-1!-1m(f);
-   begin scalar a;
-      a := lc f;
-      return ofsf_iparse(
-      	 a < 0
-	    )
-   end;
+   guard!-1!-1 negf f;
 
 procedure guard!-1!-1(f);
    begin scalar a;
@@ -478,20 +473,10 @@ procedure guard!-1!-2(f);
    end;
 
 procedure guard!-2!-2m(f);
-   begin scalar a, b, c;
-      {a, b, c} := coeffs f;
-      return ofsf_iparse(
-   	 a < 0 and b^2 - 4*a*c = 0
-	    )
-   end;
+   guard!-2!-2 negf f;
 
 procedure guard!-2!-1m(f);
-   begin scalar a, b, c;
-      {a, b, c} := coeffs f;
-      return ofsf_iparse(
-   	 a < 0 and b^2 - 4*a*c > 0
-	    )
-   end;
+   guard!-2!-1 negf f;
 
 procedure guard!-2!-1(f);
    begin scalar a, b, c;
@@ -510,12 +495,7 @@ procedure guard!-2!-2(f);
    end;
 
 procedure guard!-2!-3m(f);
-   begin scalar a, b, c;
-      {a, b, c} := coeffs f;
-      return ofsf_iparse(
-   	 a < 0 and b^2 - 4*a*c >= 0
-	    )
-   end;
+   guard!-2!-3 negf f;
 
 procedure guard!-2!-3(f);
    begin scalar a, b, c;
@@ -534,46 +514,22 @@ procedure guard!-2!-4(f);
    end;
 
 procedure guard!-3!-4m(f);
-   begin scalar a, b, c, d;
-      {a, b, c, d} := coeffs f;
-      return ofsf_iparse(
-   	 a < 0 and -b^2 + 3*a*c < 0 and
-   	 -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d < 0
-	    )
-   end;
+   guard!-3!-4 negf f;
 
 procedure guard!-3!-3m(f);
-   begin scalar a, b, c, d;
-      {a, b, c, d} := coeffs f;
-      return ofsf_iparse(
-   	 a < 0 and -b^2 + 3*a*c < 0 and 2*b^3 + 27*d*a^2 - 9*a*b*c < 0 and
-      	 -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d = 0
-	    )
-   end;
+   guard!-3!-3 negf f;
 
 procedure guard!-3!-2m(f);
-   begin scalar a, b, c, d;
-      {a, b, c, d} := coeffs f;
-      return ofsf_iparse(
-   	 a < 0 and -b^2 + 3*a*c < 0 and 2*b^3 + 27*d*a^2 - 9*a*b*c > 0 and
-      	 -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d = 0
-	    )
-   end;
+   guard!-3!-2 negf f;
 
 procedure guard!-3!-1m(f);
-   begin scalar a, b, c, d;
-      {a, b, c, d} := coeffs f;
-      return ofsf_iparse(
-   	 a < 0 and (-b^2 + 3*a*c >= 0 or
-      	    -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d > 0)
-	    )
-   end;
+   guard!-3!-1 negf f;
 
 procedure guard!-3!-1(f);
    begin scalar a, b, c, d;
       {a, b, c, d} := coeffs f;
       return ofsf_iparse(
-   	 a > 0 and (-b^2 + 3*a*c >= 0 or
+   	 a > 0 and (-b^2 + 3*a*c = 0 or
       	    -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d > 0)
 	    )
    end;
@@ -606,13 +562,7 @@ procedure guard!-3!-4(f);
    end;
 
 procedure guard!-3!-5m(f);
-   begin scalar a, b, c, d;
-      {a, b, c, d} := coeffs f;
-      return ofsf_iparse(
-   	 a < 0 and -b^2 + 3*a*c < 0 and
-      	 -b^2*c^2 + 4*c^3*a + 4*b^3*d + 27*d^2*a^2 - 18*a*b*c*d <= 0
-	    )
-   end;
+   guard!-3!-5 negf f;
 
 procedure guard!-3!-5(f);
    begin scalar a, b, c, d;
