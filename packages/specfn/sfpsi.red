@@ -185,7 +185,7 @@ symbolic procedure cr_euler!*;
 % The specfn package does not currently provide the required
 % simplifications.
 
-algebraic;
+%% algebraic;
 
 % Simplify to "standard form" in which argument is allowed a numeric
 % shift in the range 0 <= shift < 1:
@@ -216,19 +216,23 @@ algebraic;
 %%
 %%let psi_rules;
 
-symbolic;
+%%symbolic;
 
 %
 % Rules for initial manipulation of polygamma functions.
 %
 
 symbolic (operator polygamma!*calc, trigamma!*halves, polygamma!:error,
-        polygamma_aux);
+        polygamma_aux, psi!:error);
 
+symbolic procedure psi!:error(x);
+    rerror('specfn,0,{"Psi undefined for nonpositive integer argument",x});
 
 symbolic procedure polygamma!:error(n,x);
-   rerror('specfn,0,
-         {"Index of Polygamma must be an integer >= 0, not",n});
+   if not fixp n then rerror('specfn,0,
+                             {"Index of Polygamma must be an integer >= 0, not",n})
+    else rerror('specfn,0,
+                {"Polygamma undefined for nonpositive integer argument",x});
 
 algebraic procedure polygamma_aux(n,m);
         for ii:=1:(n-1) sum (1/ii**(m+1));
@@ -633,7 +637,8 @@ flag('(dummy!*arg),'reserved);
 %
 
 algebraic procedure polygamma!*calc(n,z);
-   begin scalar result, z0, prepre, precom;
+  if fixp z and z<=0 then polygamma!:error(n,z)
+   else begin scalar result, z0, prepre, precom;
       precom := complex!*off!*switch();
       prepre := precision 0;
       if prepre < !!nfpd then precision (!!nfpd + 3)

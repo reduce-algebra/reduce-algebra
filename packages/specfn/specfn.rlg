@@ -1017,11 +1017,9 @@ off rounded;
 do!*one!*psi(3);
 
 
-                             1
-             2*log(2) + psi(---) + psi(1) + 3
-                             2
-Psi of 3 is ----------------------------------
-                            2
+              - 2*euler_gamma + 3
+Psi of 3 is ----------------------
+                      2
 
 do!*one!*psi(pi);
 
@@ -1047,13 +1045,7 @@ Psi of ----- is ------------------------------------------
 do!*one!*psi(74);
 
 
-Psi of 74 is (269426837164032294756360054754050*log(2)
-
-                                                        1
-               + 134713418582016147378180027377025*psi(---)
-                                                        2
-
-               + 2138308231460573767907619482175*psi(1)
+Psi of 74 is ( - 136851726813476721146087646859200*euler_gamma
 
                + 667084944417653637854891458725877)/13685172681347672114608764\
              6859200
@@ -1061,14 +1053,15 @@ Psi of 74 is (269426837164032294756360054754050*log(2)
 do!*one!*psi(-1/2);
 
 
-         - 1          1
-Psi of ------ is psi(---) + 2
-         2            2
+         - 1
+Psi of ------ is  - 2*log(2) - euler_gamma + 2
+         2
 
 do!*one!*psi(-3);
 
 
-Psi of -3 is infinity
+
+***** Psi undefined for nonpositive integer argument -3 
 
 do!*one!*psi(z);
 
@@ -1141,7 +1134,8 @@ Psi of  - 0.5 is
 do!*one!*psi(-3);
 
 
-Psi of -3 is infinity
+
+***** Psi undefined for nonpositive integer argument -3 
 
 do!*one!*psi(z);
 
@@ -1542,12 +1536,14 @@ Polygamma (4) of ------- is polygamma(4,-------)
 do!*one!*pg(5,0);
 
 
-Polygamma (5) of 0 is infinity
+
+***** Polygamma undefined for nonpositive integer argument 0 
 
 do!*one!*pg(6,-5);
 
 
-Polygamma (6) of -5 is infinity
+
+***** Polygamma undefined for nonpositive integer argument -5 
 
 do!*one!*pg(7,200);
 
@@ -1668,12 +1664,14 @@ Polygamma (4) of  - 8.2 is
 do!*one!*pg(5,0);
 
 
-Polygamma (5) of 0 is infinity
+
+***** Polygamma undefined for nonpositive integer argument 0 
 
 do!*one!*pg(6,-5);
 
 
-Polygamma (6) of -5 is infinity
+
+***** Polygamma undefined for nonpositive integer argument -5 
 
 do!*one!*pg(7,200);
 

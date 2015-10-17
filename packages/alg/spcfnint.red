@@ -400,11 +400,11 @@ psi!*rules := {
 
    psi(~n,~z) => polygamma(n,z),
 
-   psi(~z)  =>  infinity
+   psi(~z)  =>  psi!:error(z)
       when repart z = floor repart z and impart z = 0 and z < 1,
 
-%   psi(1)   =>  -Euler_gamma,
-%   psi(1/2) =>  -Euler_gamma - 2 * log(2),
+   psi(1)   =>  -Euler_gamma,
+   psi(1/2) =>  -Euler_gamma - 2 * log(2),
 
 %   psi(~z)  =>  -Euler_gamma
 %      when numberp z and z = 1
@@ -428,7 +428,7 @@ psi!*rules := {
 
    psi(~z)  =>  psi(1-z) + pi*cot(pi*(1-z))
       when numberp z and impart z = 0
-               and (z < 0 or z > 1/2 and z < 1), % and not symbolic !*rounded,
+               and (z < 0 and not fixp z or z > 1/2 and z < 1), % and not symbolic !*rounded,
 
    df(psi(~z),z)  =>  polygamma(1, z),
 
@@ -472,10 +472,11 @@ polygamma!*rules := {
    polygamma(~n,~x)  =>  polygamma!:error(n,x)
         when numberp n and (not fixp n or n < -1),
 
-   polygamma(~n,~x)  =>  psi(x)
-      when numberp n and n = 0,
+   polygamma(0,~x) => psi(x),
+%   polygamma(~n,~x)  =>  psi(x)
+%      when numberp n and n = 0,
 
-   polygamma(~n,~x)  =>  infinity
+   polygamma(~n,~x)  =>  polygamma!:error(n,x)
       when numberp x and impart x = 0 and x = floor x and x < 1,
 
    polygamma(~n,~x)  =>  do!*trigamma!*halves(x)
@@ -492,6 +493,7 @@ polygamma!*rules := {
 
    polygamma(~n,~x)  =>  do!*polygamma(n,x)
       when numberp x and symbolic !*rounded
+               and not (fixp x and x <= 0)
                and numberp n and impart n = 0 and n = floor n,
 
    df(polygamma(~n,~x), ~x)  =>  polygamma(n+1, x),
