@@ -127,7 +127,9 @@ log(abs(y))
 impart(log(y));
 
 
-atan2(0,y)
+ pi*(sign(y) - 1)
+------------------
+    2*sign(y)
 
 repart(log(i*y));
 
@@ -137,7 +139,9 @@ log(abs(y))
 impart(log(i*y));
 
 
-atan2(y,0)
+    pi
+-----------
+ 2*sign(y)
 
 off precise;
 
@@ -220,7 +224,9 @@ log(abs(y))
 impart(log(y));
 
 
-atan2(0,y)
+ pi*(sign(y) - 1)
+------------------
+    2*sign(y)
 
 repart(log(i*y));
 
@@ -230,7 +236,9 @@ log(abs(y))
 impart(log(i*y));
 
 
-atan2(y,0)
+    pi
+-----------
+ 2*sign(y)
 
 
 on rational;
