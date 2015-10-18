@@ -2231,6 +2231,9 @@ static int raw_char_from_terminal()
  * If the user provokes an interrupt (^C, or ESC or whatever) while I am
  * in here I will try to return promptly with an empty buffer and
  * some indication of an exception.
+ *
+ * Because I use setjmp here and to be really cautious I am making all local
+ * variables volatile.
  */
 {
 /*
@@ -2239,8 +2242,8 @@ static int raw_char_from_terminal()
  * reads a single character.  When I use this option I will NOT generate
  * prompts.
  */
-    int c;
-    Lisp_Object nil = C_nil;
+    volatile int c;
+    volatile Lisp_Object nil = C_nil;
     if (++kilo >= 1024)
     {   kilo = 0;
         io_now++;
@@ -2419,7 +2422,7 @@ static int raw_char_from_terminal()
     inject_randomness(c);
     if (c == EOF || c == CTRL_D) return EOF;
     if (qvalue(echo_symbol) != nil)
-    {   Lisp_Object stream = qvalue(standard_output);
+    {   volatile Lisp_Object stream = qvalue(standard_output);
         if (!is_stream(stream)) stream = qvalue(terminal_io);
         if (!is_stream(stream)) stream = lisp_terminal_io;
         putc_stream(c, stream);
@@ -3542,7 +3545,7 @@ int32_t read_action_illegal(int32_t op, Lisp_Object f)
 int32_t read_action_file(int32_t op, Lisp_Object f)
 {
     if (op < -1) return fseek(stream_file(f), op & 0x7fffffff, SEEK_SET);
-    else if (op <= 0xffff) return (stream_pushed_char(f) = op);
+    else if (op <= 0x10ffff) return (stream_pushed_char(f) = op);
     else switch (op)
     {
 case READ_CLOSE:
@@ -3573,7 +3576,7 @@ default:
 int32_t read_action_output_file(int32_t op, Lisp_Object f)
 {
     if (op < -1) return fseek(stream_file(f), op & 0x7fffffff, SEEK_SET);
-    else if (op <= 0xffff) return 0;
+    else if (op <= 0x10ffff) return 0;
     else switch (op)
     {
 case READ_TELL:
@@ -3590,7 +3593,7 @@ int32_t read_action_terminal(int32_t op, Lisp_Object f)
 {
     CSL_IGNORE(f);
     if (op < -1) return 1;
-    else if (op <= 0xffff) return (terminal_pushed = op);
+    else if (op <= 0x10ffff) return (terminal_pushed = op);
     else switch (op)
     {
 case READ_CLOSE:
@@ -3653,7 +3656,7 @@ int32_t read_action_concatenated(int32_t c, Lisp_Object f)
 int32_t read_action_list(int32_t op, Lisp_Object f)
 {
     if (op < -1) return 1;
-    else if (op <= 0xffff) return (stream_pushed_char(f) = op);
+    else if (op <= 0x10ffff) return (stream_pushed_char(f) = op);
     else switch (op)
     {
 case READ_CLOSE:
@@ -3677,7 +3680,7 @@ default:
 int32_t read_action_vector(int32_t op, Lisp_Object f)
 {
     if (op < -1) return 1;
-    else if (op <= 0xffff) return (stream_pushed_char(f) = op);
+    else if (op <= 0x10ffff) return (stream_pushed_char(f) = op);
     else switch (op)
     {
 case READ_CLOSE:
@@ -3805,7 +3808,7 @@ int char_from_list(Lisp_Object f)
     Lisp_Object nil = C_nil;
 #endif
     Lisp_Object ch = stream_pushed_char(f);
-    int r;
+    int r = (int)ch; /* -1 for EOF else a Unicode value */
     if (ch == NOT_CHAR)
     {   if (!consp(stream_read_data(f))) ch = EOF;
         else
@@ -3973,19 +3976,19 @@ Lisp_Object Lstring2list(Lisp_Object nil, Lisp_Object a)
 
 void read_eval_print(int noisy)
 {
-    Lisp_Object nil = C_nil, *save = stack;
+    volatile Lisp_Object nil = C_nil, *save = stack;
 #ifndef __cplusplus
 #ifdef USE_SIGALTSTACK
-    sigjmp_buf this_level, *saved_buffer = errorset_buffer;
+    volatile sigjmp_buf this_level, *saved_buffer = errorset_buffer;
 #else
-    jmp_buf this_level, *saved_buffer = errorset_buffer;
+    volatile jmp_buf this_level, *saved_buffer = errorset_buffer;
 #endif
 #endif
     push2(codevec, litvec);
     for (;;)        /* Loop for each s-expression found */
-    {   Lisp_Object u;
+    {   volatile Lisp_Object u;
 #ifdef COMMON
-        int32_t nvals, i;
+        volatile int32_t nvals, i;
 #endif
         miscflags |= (HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG);
         errorset_msg = NULL;
@@ -4020,7 +4023,7 @@ void read_eval_print(int noisy)
             signal(SIGFPE, low_level_signal_handler);
 #ifdef USE_SIGALTSTACK
 /* SIGSEGV will be handled on the alternative stack */
-            {   struct sigaction sa;
+            {   volatile struct sigaction sa;
                 sa.sa_handler = low_level_signal_handler;
                 sigemptyset(&sa.sa_mask);
                 sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
@@ -4188,7 +4191,7 @@ void read_eval_print(int noisy)
             signal(SIGFPE, low_level_signal_handler);
 #ifdef USE_SIGALTSTACK
 /* SIGSEGV will be handled on the alternative stack */
-            {   struct sigaction sa;
+            {   volatile struct sigaction sa;
                 sa.sa_handler = low_level_signal_handler;
                 sigemptyset(&sa.sa_mask);
                 sa.sa_flags = SA_ONSTACK | SA_RESETHAND;

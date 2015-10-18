@@ -194,7 +194,7 @@ static int submain(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-    int res;
+    volatile int res;
     if (find_program_directory(argv[0]))
     {   fprintf(stderr, "Unable to identify program name and directory\n");
         return 1;

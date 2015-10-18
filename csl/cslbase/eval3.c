@@ -1960,28 +1960,25 @@ void unwind_stack(Lisp_Object *entry_stack, CSLbool findcatch)
  * that version of gcc failed with an internal error! While that state
  * will get fixed it was still convenient as a short term measure and
  * harmless longer term to do things this way! Furthermore I am tagging
- * form and env "volatile" purely to get rid of a warning that gcc
- * produces re potential consequences of longjmp. Not that I believe there
- * ever could be issues since I never rely on the value in either of these
- * variable after setjmp has caught anything! But getting rid of the warning
- * may be good policy...
+ * all locals as "volatile" in the presence of setjmp.
  */
 
 static Lisp_Object errorset3(volatile Lisp_Object env,
                              volatile Lisp_Object form,
-                             Lisp_Object fg1, Lisp_Object fg2)
+                             volatile Lisp_Object fg1,
+                             volatile Lisp_Object fg2)
 {
-    Lisp_Object nil = C_nil, r;
-    uint32_t flags = miscflags;
+    volatile Lisp_Object nil = C_nil, r;
+    volatile uint32_t flags = miscflags;
 #ifndef __cplusplus
 #ifdef SIGALTSTACK
-    sigjmp_buf this_level;
-    sigjmp_buf *saved_buffer = errorset_buffer;
+    volatile sigjmp_buf this_level;
+    volatile sigjmp_buf *saved_buffer = errorset_buffer;
 #else
-    jmp_buf this_level, *saved_buffer = errorset_buffer;
+    volatile jmp_buf this_level, *saved_buffer = errorset_buffer;
 #endif
 #endif
-    Lisp_Object *save;
+    volatile Lisp_Object *save;
 
 /*
  * See also (ENABLE-BACKTRACE level) and (ENABLE-ERROSET min max)
@@ -2027,7 +2024,7 @@ static Lisp_Object errorset3(volatile Lisp_Object env,
  * to its prior value.
  */
 
-    {   int n;
+    {   volatile int n;
         if (fg1 == nil) n = 0;
         else if (fg1 == fixnum_of_int(0) ||
                  fg1 == fixnum_of_int(1) ||
@@ -2180,7 +2177,7 @@ static Lisp_Object errorset3(volatile Lisp_Object env,
         signal(SIGFPE, low_level_signal_handler);
 #ifdef USE_SIGALTSTACK
 /* SIGSEGV will be handled on the alternative stack */
-            {   struct sigaction sa;
+            {   volatile struct sigaction sa;
                 sa.sa_handler = low_level_signal_handler;
                 sigemptyset(&sa.sa_mask);
                 sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
@@ -2282,29 +2279,36 @@ int64_t Cstack_limit = -1, Lispstack_limit = -1;
 
 static Lisp_Object resource_limit7(volatile Lisp_Object env,
                              volatile Lisp_Object form,
-                             Lisp_Object ltime, Lisp_Object lspace,
-                             Lisp_Object lio, Lisp_Object lerrors,
-                             Lisp_Object Csk, Lisp_Object Lsk)
+                             volatile Lisp_Object ltime,
+                             volatile Lisp_Object lspace,
+                             volatile Lisp_Object lio,
+                             volatile Lisp_Object lerrors,
+                             volatile Lisp_Object Csk,
+                             volatile Lisp_Object Lsk)
 {
 /*
  * This is being extended to make it possible to limit the C and Lisp stack
  * usage. At present the controls for that are not in place!
  */
-    Lisp_Object nil = C_nil, r;
-    int64_t lltime, llspace, llio, llerrors;
-    int64_t save_time_base  = time_base,  save_space_base   = space_base,
-            save_io_base    = io_base,    save_errors_base  = errors_base;
-    int64_t save_time_limit = time_limit, save_space_limit  = space_limit,
-            save_io_limit   = io_limit,   save_errors_limit = errors_limit;
-    int64_t r0=0, r1=0, r2=0, r3=0;
+    volatile Lisp_Object nil = C_nil, r;
+    volatile int64_t lltime, llspace, llio, llerrors;
+    volatile int64_t save_time_base   = time_base,
+                     save_space_base  = space_base,
+                     save_io_base     = io_base,
+                     save_errors_base = errors_base;
+    volatile int64_t save_time_limit  = time_limit,
+                     save_space_limit = space_limit,
+                     save_io_limit    = io_limit,
+                     save_errors_limit= errors_limit;
+    volatile int64_t r0=0, r1=0, r2=0, r3=0;
 #ifndef __cplusplus
 #ifdef USE_SIGALTSTACK
-    sigjmp_buf this_level, *saved_buffer = errorset_buffer;
+    volatile sigjmp_buf this_level, *saved_buffer = errorset_buffer;
 #else
-    jmp_buf this_level, *saved_buffer = errorset_buffer;
+    volatile jmp_buf this_level, *saved_buffer = errorset_buffer;
 #endif
 #endif
-    Lisp_Object *save;
+    volatile Lisp_Object *save;
     push2(codevec, litvec);
     save = stack;
     stackcheck2(2, form, env);
@@ -2342,7 +2346,7 @@ static Lisp_Object resource_limit7(volatile Lisp_Object env,
         io_base     = io_now;
         errors_base = errors_now;
         if (lltime >= 0)
-        {   int w;
+        {   volatile int w;
 /*
  * I make 2 seconds the smallest I can specify as a timeout because with
  * my clock resolution at 1 sec if I specified "1" I could do so just a
@@ -2354,7 +2358,7 @@ static Lisp_Object resource_limit7(volatile Lisp_Object env,
             time_limit = w;
         }
         if (llspace >= 0)
-        {   int w;
+        {   volatile int w;
 /*
  * I make 2 megaconses the smallest request here for much the same
  * reason I put a lower limit on time. Actually if go further and make
@@ -2372,14 +2376,14 @@ static Lisp_Object resource_limit7(volatile Lisp_Object env,
             space_limit = w;
         }
         if (llio >= 0)
-        {   int w;
+        {   volatile int w;
             if (llio == 0 || llio == 1) llio = 2;
             w = io_base + llio;
             if (io_limit >= 0 && io_limit < w) w = io_limit;
             io_limit = w;
         }
         if (llerrors >= 0)
-        {   int w;
+        {   volatile int w;
             w = errors_base + llerrors;
             if (errors_limit >= 0 && errors_limit < w) w = errors_limit;
             errors_limit = w;
@@ -2473,7 +2477,7 @@ static Lisp_Object resource_limit7(volatile Lisp_Object env,
         signal(SIGFPE, low_level_signal_handler);
 #ifdef USE_SIGALTSTACK
 /* SIGSEGV will be handled on the alternative stack */
-            {   struct sigaction sa;
+            {   volatile struct sigaction sa;
                 sa.sa_handler = low_level_signal_handler;
                 sigemptyset(&sa.sa_mask);
                 sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
@@ -2489,10 +2493,10 @@ static Lisp_Object resource_limit7(volatile Lisp_Object env,
         if (segvtrap) signal(SIGILL, low_level_signal_handler);
 #endif
 #endif
-        {   Lisp_Object r = list4(fixnum_of_int(r0),
-                                  fixnum_of_int(r1),
-                                  fixnum_of_int(r2),
-                                  fixnum_of_int(r3));
+        {   volatile Lisp_Object r = list4(fixnum_of_int(r0),
+                                           fixnum_of_int(r1),
+                                           fixnum_of_int(r2),
+                                           fixnum_of_int(r3));
             errexit();
             qvalue(resources) = r;
         }

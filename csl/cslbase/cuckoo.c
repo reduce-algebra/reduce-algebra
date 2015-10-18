@@ -59,6 +59,7 @@
 // ... or on newer systems maybe "#include <sys/select.h>
 
 #include "cuckoo.h"
+#include "hungarian.h"
 
 // Because the table was passed as a "void *" and we do not have
 // a single type that maps the entries it is not feasible to use direct
@@ -296,6 +297,12 @@ uint32_t cuckoo_insert(
 
 #include "hopkar.c"
 
+// While I am at it I will include code that implements the Hungarian
+// Algorithm for finding not just matchings but ones that have minimal cost
+// for a perfect matching on a weighted graph.
+
+#include "hungarian.c"
+
 static cuckoo_parameters cuckoo_simple_search(
     int myid,
     uint32_t *items,
@@ -360,9 +367,9 @@ static cuckoo_parameters cuckoo_simple_search(
     r.table_size = -1;
     r.modulus2 = r.offset2 = 0;
     return r;
-// Using a GOTO to transfet to where I deal with success seems nicest to me.
+// Using a GOTO to transfer to where I deal with success seems nicest to me.
 // could have used a RETURN instead and bundled all that follows within a
-// separate function, but in many respects the RETUREN from the middle of
+// separate function, but in many respects the RETURN from the middle of
 // a nest of loops is as objectionable as the GOTO, and I would have needed
 // to pass many values as arguments to the somewhat artificial new funstion.
 // Well if I called it a "continuation" then perhaps it would have sounded

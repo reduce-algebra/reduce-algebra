@@ -228,18 +228,18 @@ extern char memory_print_buffer[MAX_PROMPT_LENGTH];
 #define WRITE_SET_LINELENGTH_DEFAULT 0x50000000
 
 /*
- * For other_read_action() if the operand is in the range -1 to 65535 then 
+ * For other_read_action() if the operand is in the range -1 to 0x10ffff then 
  * it is a character to be unread (-1 is used for EOF). Otherwise if the most
  * significant bit is a "1" then the request is a seek (with a 31-bit address
  * within the stream to go to).  The remaining few cases are things that do
  * not need additional data passed.
  */
 #define READ_SEEK          0x80000000
-#define READ_TELL          0x00010000
-#define READ_CLOSE         0x00010001
-#define READ_FLUSH         0x00010002
-#define READ_IS_CONSOLE    0x00010003
-#define READ_END           0x00010004
+#define READ_TELL          0x40000000
+#define READ_CLOSE         0x40000001
+#define READ_FLUSH         0x40000002
+#define READ_IS_CONSOLE    0x40000003
+#define READ_END           0x40000004
 
 extern Lisp_Object make_stream_handle(void);
 extern CSLbool use_wimp, sigint_must_longjmp;
