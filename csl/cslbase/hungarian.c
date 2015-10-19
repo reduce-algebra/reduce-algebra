@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "hungarian.h"
+#include "cuckoo.h"
 
 #define INF (0x7FFFFFFF)
 #define verbose (0)
@@ -40,7 +41,9 @@ void hungarian_print_matrix(int** C, int rows, int cols) {
   for(i=0; i<rows; i++) {
     fprintf(stderr, " [");
     for(j=0; j<cols; j++) {
-      fprintf(stderr, "%5d ",C[i][j]);
+      int n = C[i][j];
+      if (n == INF) n = -1;
+      fprintf(stderr, "%3d ",n);
     }
     fprintf(stderr, "]\n");
   }
@@ -417,3 +420,189 @@ void hungarian_solve(hungarian_problem_t* p)
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+// what follows has been added by ACN
+
+// Now an adapter that takes my hashing problem and maps it onto the
+// calls needed here. The input is a set of keys, a table size and two
+// parameters that control details of the hashing. It then has the hash
+// table it is tryng to create, which it fills in if it can find a perfect
+// way to do so.
+
+// This tries to insert all the keys in "items" into the hash-table "table"
+// and it returns a non-zero result if it succeeds.
+
+int **adjacency_matrix = NULL;
+
+int cuckoo_insert_all(
+    uint32_t *items,
+    int item_count,
+    cuckoo_importance *importance,
+    void *table,
+    int hash_item_size,
+    int table_size,
+    cuckoo_get_key *get_key,
+    cuckoo_set_key *set_key,
+    uint32_t modulus2,
+    uint32_t offset2)
+{
+    int i, j, size;
+    hungarian_problem_t p;
+    adjacency_matrix = (int **)calloc(table_size, sizeof(int *));
+    hungarian_test_alloc(adjacency_matrix);
+    for (i=0; i<table_size; i++)
+    {   adjacency_matrix[i] = (int *)calloc(item_count, sizeof(int));
+        hungarian_test_alloc(adjacency_matrix[i]);
+        for (j=0; j<item_count; j++)
+            adjacency_matrix[i][j] = INF;
+    }
+    for (i=0; i<item_count; i++)
+    {   uint32_t key = items[i];
+        uint32_t h1 = key % table_size;
+        uint32_t h2 = key % modulus2 + offset2;
+        uint32_t h3 = (h1 + h2) % table_size;
+        int imp = (*importance)(key);
+        switch (imp)
+        {
+    default:
+            adjacency_matrix[h1][i] = 0;
+            adjacency_matrix[h2][i] = 1;
+            adjacency_matrix[h3][i] = 2;
+            break;
+    case CUCKOO_IMPORTANT:
+            adjacency_matrix[h1][i] = 0;
+            adjacency_matrix[h2][i] = 1000;
+            break;
+    case CUCKOO_VITAL:
+            adjacency_matrix[h1][i] = 0;
+            break;
+        }
+    }
+    size = hungarian_init(&p,
+                          adjacency_matrix,
+                          table_size,
+                          item_count,
+                          HUNGARIAN_MODE_MINIMIZE_COST);
+    printf("table_size = %d item_count = %d size = %d line=%d\n",
+           table_size, item_count, size, __LINE__);
+    hungarian_solve(&p);
+    hungarian_print_assignment(&p);
+    hungarian_free(&p);
+    for (i=0; i<table_size; i++)
+        free(adjacency_matrix[i]);
+    free(adjacency_matrix);
+    return 0; // Report failure for now.
+#if DEBUG
+// Now in a spirit of neurosis I will check whether everything can be
+// looked up happily...
+    for (i=0; i<item_count; i++)
+    {   uint32_t key = items[i];
+        uint32_t h1 = key % table_size;
+        uint32_t h2 = key % modulus2 + offset2;
+        uint32_t h3 = (h1 + h2) % table_size;
+        uint32_t k1;
+        if (used[i] &&
+            (key == get_key((char *)table + hash_item_size*h1) ||
+             key == get_key((char *)table + hash_item_size*h2) ||
+             key == get_key((char *)table + hash_item_size*h3))) continue;
+        printf("Key %d/%x not found in table\n");
+        printf("%d %d %d\n", table_size, modulus2, offset2);
+        for (i=0; i<table_size; i++)
+            printf("%d: %d\n", i, get_key((char *)table + hash_item_size*i));
+        exit(1);
+    }
+#endif
+    return 1;
+}
+
+
+#ifdef TEST
+
+// The code here can be compiled with "TEST" predefined and that will
+// set up a small test of its behaviour... and the code for the test can
+// also serve as an illustration of how it could be used.
+
+uint32_t keys[] =
+{
+    1,
+    3,
+    9,
+    27,
+    81,
+    243,
+    729,
+    2187,
+    6561,
+    19683,
+    59049
+};
+
+uint32_t hash[1000];
+
+int importance(uint32_t key)
+{
+    if ((key % 10) == 3) return CUCKOO_IMPORTANT;
+    else return CUCKOO_STANDARD;
+}
+
+uint32_t get_key(void *p)
+{
+    return *(uint32_t *)p;
+}
+
+void set_key(void *p, uint32_t k)
+{
+    *(uint32_t *)p = k;
+}
+
+int main(int argc, char *argv[])
+{
+    int keycount = sizeof(keys)/sizeof(keys[0]);
+    int hashsize = keycount+3;
+    int i;
+    int modulus2, offset2;
+    for (modulus2 = 3; modulus2 < hashsize; modulus2++)
+        for (offset2 = 0; modulus2+offset2<hashsize; offset2++)
+        {   printf("Test with modulus2=%d, offset2=%d\n", modulus2, offset2);
+            if (cuckoo_insert_all(
+                keys,
+                keycount,
+                importance,
+                hash,
+                sizeof(hash[0]),
+                hashsize,
+                get_key,
+                set_key,
+                modulus2,
+                offset2) != 0) goto found;
+        }
+    printf("No solution found\n");
+    exit(0);
+found:
+    printf("OK with modulus2 = %d offset2 = %d\n", modulus2, offset2);
+// Display everything...
+    for (i=0; i<keycount; i++)
+    {   uint32_t key = keys[i];
+        uint32_t h1 = key % hashsize;
+        uint32_t h2 = key % modulus2 + offset2;
+        uint32_t h3 = (h1 + h2) % hashsize;
+// Each key and the three locations that the key could legally be placed.
+        printf("%d: %d... %d %d %d\n", i, key, h1, h2, h3);
+    }
+#ifdef PENDING
+// The internal tables left behind by the code that found a match.
+    for (i=0; i<n1; i++)
+        printf("%d: last:%d dist:%d Q:%d used:%d vis:%d\n",
+            i, last[i], dist[i], Q[i], used[i], vis[i]);
+    for (i=0; i<n2; i++)
+        printf("%d: matching:%d\n", i, matching[i]);
+    for (i=0; i<edges; i++)
+        printf("%d: head:%d prev:%d\n", i, head[i], prev[i]);
+#endif
+    printf("Done\n");
+    return 0;
+}
+
+#endif // TEST
+
+// end of hungarian.c

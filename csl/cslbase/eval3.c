@@ -1971,14 +1971,15 @@ static Lisp_Object errorset3(volatile Lisp_Object env,
     volatile Lisp_Object nil = C_nil, r;
     volatile uint32_t flags = miscflags;
 #ifndef __cplusplus
-#ifdef SIGALTSTACK
-    volatile sigjmp_buf this_level;
-    volatile sigjmp_buf *saved_buffer = errorset_buffer;
+#ifdef USE_SIGALTSTACK
+    sigjmp_buf this_level;
+    sigjmp_buf * volatile saved_buffer = errorset_buffer;
 #else
-    volatile jmp_buf this_level, *saved_buffer = errorset_buffer;
+    jmp_buf this_level;
+    jmp_buf * volatile saved_buffer = errorset_buffer;
 #endif
 #endif
-    volatile Lisp_Object *save;
+    Lisp_Object * volatile save;
 
 /*
  * See also (ENABLE-BACKTRACE level) and (ENABLE-ERROSET min max)
@@ -2024,7 +2025,7 @@ static Lisp_Object errorset3(volatile Lisp_Object env,
  * to its prior value.
  */
 
-    {   volatile int n;
+    {   int n;
         if (fg1 == nil) n = 0;
         else if (fg1 == fixnum_of_int(0) ||
                  fg1 == fixnum_of_int(1) ||
@@ -2164,7 +2165,7 @@ static Lisp_Object errorset3(volatile Lisp_Object env,
  * forced unwinding.  All pretty dreadful, I think.
  */
         unwind_stack(save, NO);
-/* /*
+/*
  * I also suspect I should restore miscflags from flags...
  */
         stack = save;
@@ -2177,7 +2178,7 @@ static Lisp_Object errorset3(volatile Lisp_Object env,
         signal(SIGFPE, low_level_signal_handler);
 #ifdef USE_SIGALTSTACK
 /* SIGSEGV will be handled on the alternative stack */
-            {   volatile struct sigaction sa;
+            {   struct sigaction sa;
                 sa.sa_handler = low_level_signal_handler;
                 sigemptyset(&sa.sa_mask);
                 sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
@@ -2303,12 +2304,14 @@ static Lisp_Object resource_limit7(volatile Lisp_Object env,
     volatile int64_t r0=0, r1=0, r2=0, r3=0;
 #ifndef __cplusplus
 #ifdef USE_SIGALTSTACK
-    volatile sigjmp_buf this_level, *saved_buffer = errorset_buffer;
+    sigjmp_buf this_level;
+    sigjmp_buf * volatile saved_buffer = errorset_buffer;
 #else
-    volatile jmp_buf this_level, *saved_buffer = errorset_buffer;
+    jmp_buf this_level;
+    jmp_buf * volatile saved_buffer = errorset_buffer;
 #endif
 #endif
-    volatile Lisp_Object *save;
+    Lisp_Object * volatile save;
     push2(codevec, litvec);
     save = stack;
     stackcheck2(2, form, env);
@@ -2346,7 +2349,7 @@ static Lisp_Object resource_limit7(volatile Lisp_Object env,
         io_base     = io_now;
         errors_base = errors_now;
         if (lltime >= 0)
-        {   volatile int w;
+        {   int w;
 /*
  * I make 2 seconds the smallest I can specify as a timeout because with
  * my clock resolution at 1 sec if I specified "1" I could do so just a
@@ -2358,7 +2361,7 @@ static Lisp_Object resource_limit7(volatile Lisp_Object env,
             time_limit = w;
         }
         if (llspace >= 0)
-        {   volatile int w;
+        {   int w;
 /*
  * I make 2 megaconses the smallest request here for much the same
  * reason I put a lower limit on time. Actually if go further and make
@@ -2376,14 +2379,14 @@ static Lisp_Object resource_limit7(volatile Lisp_Object env,
             space_limit = w;
         }
         if (llio >= 0)
-        {   volatile int w;
+        {   int w;
             if (llio == 0 || llio == 1) llio = 2;
             w = io_base + llio;
             if (io_limit >= 0 && io_limit < w) w = io_limit;
             io_limit = w;
         }
         if (llerrors >= 0)
-        {   volatile int w;
+        {   int w;
             w = errors_base + llerrors;
             if (errors_limit >= 0 && errors_limit < w) w = errors_limit;
             errors_limit = w;
@@ -2477,7 +2480,7 @@ static Lisp_Object resource_limit7(volatile Lisp_Object env,
         signal(SIGFPE, low_level_signal_handler);
 #ifdef USE_SIGALTSTACK
 /* SIGSEGV will be handled on the alternative stack */
-            {   volatile struct sigaction sa;
+            {   struct sigaction sa;
                 sa.sa_handler = low_level_signal_handler;
                 sigemptyset(&sa.sa_mask);
                 sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
@@ -2493,10 +2496,10 @@ static Lisp_Object resource_limit7(volatile Lisp_Object env,
         if (segvtrap) signal(SIGILL, low_level_signal_handler);
 #endif
 #endif
-        {   volatile Lisp_Object r = list4(fixnum_of_int(r0),
-                                           fixnum_of_int(r1),
-                                           fixnum_of_int(r2),
-                                           fixnum_of_int(r3));
+        {   Lisp_Object r = list4(fixnum_of_int(r0),
+                                  fixnum_of_int(r1),
+                                  fixnum_of_int(r2),
+                                  fixnum_of_int(r3));
             errexit();
             qvalue(resources) = r;
         }

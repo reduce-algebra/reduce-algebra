@@ -2422,7 +2422,7 @@ static int raw_char_from_terminal()
     inject_randomness(c);
     if (c == EOF || c == CTRL_D) return EOF;
     if (qvalue(echo_symbol) != nil)
-    {   volatile Lisp_Object stream = qvalue(standard_output);
+    {   Lisp_Object stream = qvalue(standard_output);
         if (!is_stream(stream)) stream = qvalue(terminal_io);
         if (!is_stream(stream)) stream = lisp_terminal_io;
         putc_stream(c, stream);
@@ -3976,12 +3976,13 @@ Lisp_Object Lstring2list(Lisp_Object nil, Lisp_Object a)
 
 void read_eval_print(int noisy)
 {
-    volatile Lisp_Object nil = C_nil, *save = stack;
+    volatile Lisp_Object nil = C_nil;
+    Lisp_Object * volatile save = stack;
 #ifndef __cplusplus
 #ifdef USE_SIGALTSTACK
-    volatile sigjmp_buf this_level, *saved_buffer = errorset_buffer;
+    sigjmp_buf this_level, *saved_buffer = errorset_buffer;
 #else
-    volatile jmp_buf this_level, *saved_buffer = errorset_buffer;
+    jmp_buf this_level, *saved_buffer = errorset_buffer;
 #endif
 #endif
     push2(codevec, litvec);
@@ -4023,7 +4024,7 @@ void read_eval_print(int noisy)
             signal(SIGFPE, low_level_signal_handler);
 #ifdef USE_SIGALTSTACK
 /* SIGSEGV will be handled on the alternative stack */
-            {   volatile struct sigaction sa;
+            {   struct sigaction sa;
                 sa.sa_handler = low_level_signal_handler;
                 sigemptyset(&sa.sa_mask);
                 sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
@@ -4191,7 +4192,7 @@ void read_eval_print(int noisy)
             signal(SIGFPE, low_level_signal_handler);
 #ifdef USE_SIGALTSTACK
 /* SIGSEGV will be handled on the alternative stack */
-            {   volatile struct sigaction sa;
+            {   struct sigaction sa;
                 sa.sa_handler = low_level_signal_handler;
                 sigemptyset(&sa.sa_mask);
                 sa.sa_flags = SA_ONSTACK | SA_RESETHAND;

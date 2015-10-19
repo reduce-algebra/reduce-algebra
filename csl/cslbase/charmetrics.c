@@ -1272,7 +1272,7 @@ printf("Variant record %d (%d) for %s\n", variantp, variantdirection[variantp], 
         main_get,
         main_set,
         EXPECTED_MODULUS2,
-        EXPECTED_OFFSET2))
+        EXPECTED_OFFSET2) != -1)
     {   main_r.table_size = EXPECTED_TABLESIZE;
         main_r.modulus2 = EXPECTED_MODULUS2;
         main_r.offset2 = EXPECTED_OFFSET2;

@@ -143,7 +143,8 @@ int maxMatching()
 // way to do so.
 
 // This tries to insert all the keys in "items" into the hash-table "table"
-// and it returns a non-zero result if it succeeds.
+// and it returns -1 if it fails. A fuller variant would return a (non-
+// negative) score on success, with smaller values better.
 
 int cuckoo_insert_all(
     uint32_t *items,
@@ -181,7 +182,7 @@ int cuckoo_insert_all(
     i = maxMatching();
 //  printf("Found matching of size %d (wanted %d) m = %d o = %d\n",
 //         i, item_count, (int)modulus2, (int)offset2);
-    if (i != item_count) return 0;
+    if (i != item_count) return -1;
 //
 // Extract details of the matching and put into the hash table
     memset(table, 0, hash_item_size*table_size);

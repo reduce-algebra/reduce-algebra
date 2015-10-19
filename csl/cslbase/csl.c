@@ -991,7 +991,7 @@ static void lisp_main(void)
     volatile Lisp_Object nil;
     volatile int i;
 #if defined __linux__ && defined DEBUG
-    volatile struct itimerval tv;
+    struct itimerval tv;
     blipflag = 0;
     blipcount = 0;
     signal(SIGALRM, alarm_handler);
@@ -1035,7 +1035,13 @@ static void lisp_main(void)
  * The sole purpose of the while loop here is to allow me to proceed
  * for a second try if I get a (cold-start) call.
  */
-    {   volatile Lisp_Object *save = stack;
+    {
+/*
+ * Note the placement of the keyword "volatile" here to make the local
+ * variable "save" safe across setjmp. This is not about assynchronous
+ * tasks messing with the data pointed at.
+ */
+        Lisp_Object * volatile save = stack;
         nil = C_nil;
 #ifndef __cplusplus
         errorset_buffer = &this_level;
@@ -1058,7 +1064,7 @@ static void lisp_main(void)
  * Here I reconstruct the argument that I passed in (restart_csl f a).
  */
                 if (exit_charvec != NULL)
-                {   volatile Lisp_Object a = read_from_vector(exit_charvec);
+                {   Lisp_Object a = read_from_vector(exit_charvec);
                     nil = C_nil;
                     if (exception_pending())
                     {   flip_exception();
@@ -1103,7 +1109,7 @@ static void lisp_main(void)
             signal(SIGFPE, low_level_signal_handler);
 #ifdef USE_SIGALTSTACK
 /* SIGSEGV will be handled on the alternative stack */
-            {   volatile struct sigaction sa;
+            {   struct sigaction sa;
                 sa.sa_handler = low_level_signal_handler;
                 sigemptyset(&sa.sa_mask);
                 sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
@@ -1127,8 +1133,8 @@ static void lisp_main(void)
             {   if (exit_tag == fixnum_of_int(0))      /* "stop" */
                     return_code = (int)int_of_fixnum(exit_value);
                 else if (exit_tag == fixnum_of_int(1)) /* "preserve" */
-                {   volatile char *msg = "";
-                    volatile int len = 0;
+                {   char *msg = "";
+                    int len = 0;
                     return_code = EXIT_SUCCESS;
                     compression_worth_while = 128;
                     if (is_vector(exit_value) &&
@@ -1144,9 +1150,9 @@ static void lisp_main(void)
                     }
                 }
                 else if (exit_tag == fixnum_of_int(3)) /* "preserve & restart" */
-                {   volatile char *msg = "";
-                    volatile int len = 0;
-                    volatile int32_t fd = stream_pushed_char(lisp_terminal_io);
+                {   char *msg = "";
+                    int len = 0;
+                    int32_t fd = stream_pushed_char(lisp_terminal_io);
                     Lrds(nil, nil);
                     Lwrs(nil, nil);
                     return_code = EXIT_SUCCESS;
@@ -1205,10 +1211,9 @@ static void lisp_main(void)
                     continue;
                 }
                 else                                   /* "restart" */
-                {   volatile int32_t fd = stream_pushed_char(lisp_terminal_io);
-                
-                    volatile char new_module[64], new_fn[64]; /* Limited name length */
-                    volatile int cold_start;
+                {   int32_t fd = stream_pushed_char(lisp_terminal_io);
+                    char new_module[64], new_fn[64]; /* Limited name length */
+                    int cold_start;
                     cold_start = (exit_value == nil);
 /*
  * Of course a tick may very well have happened rather recently - so
@@ -1279,7 +1284,7 @@ static void lisp_main(void)
  * any contiguous pages from the list of ones marked as free...
  */
                     for (i=0; i<pages_count; i++)
-                    {   volatile char *w = (char *)pages[i];
+                    {   char *w = (char *)pages[i];
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             continue;
 /*
@@ -1293,25 +1298,25 @@ static void lisp_main(void)
  * Next recycle all the non-contiguous pages that have been in use.
  */
                     while (vheap_pages_count != 0)
-                    {   volatile char *w = (char *)vheap_pages[--vheap_pages_count];
+                    {   char *w = (char *)vheap_pages[--vheap_pages_count];
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             pages[pages_count++] = w;
                     }
                     while (heap_pages_count != 0)
-                    {   volatile char *w = (char *)heap_pages[--heap_pages_count];
+                    {   char *w = (char *)heap_pages[--heap_pages_count];
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             pages[pages_count++] = w;
                     }
                     while (bps_pages_count != 0)
-                    {   volatile char *w = (char *)bps_pages[--bps_pages_count];
+                    {   char *w = (char *)bps_pages[--bps_pages_count];
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             pages[pages_count++] = w;
                     }
 /*
  * Finally rebuild a contiguous block of pages from the wholesale block.
  */
-                    {   volatile char *w = big_chunk_start + NIL_SEGMENT_SIZE;
-                        volatile char *w1 = w + CSL_PAGE_SIZE + 16;
+                    {   char *w = big_chunk_start + NIL_SEGMENT_SIZE;
+                        char *w1 = w + CSL_PAGE_SIZE + 16;
                         while (w1 <= big_chunk_end)
                         {   if (w != (char *)stacksegment)
                                 pages[pages_count++] = w;
@@ -1335,7 +1340,7 @@ static void lisp_main(void)
                     interrupt_pending = already_in_gc = NO;
                     tick_pending = tick_on_gc_exit  = NO;
                     if (!cold_start && new_fn[0] != 0)
-                    {   volatile Lisp_Object w;
+                    {   Lisp_Object w;
                         if (new_module[0] != 0)
                         {   w = make_undefined_symbol(new_module);
                             Lload_module(nil, w);
@@ -1592,6 +1597,13 @@ void cslstart(int argc, char *argv[], character_writer *wout)
 {
     int i;
     double store_size = 0.0;
+/*
+ * I make "sp" volatile - it is a variable I declare here but then only use by
+ * taking its address to get a pointer into the current stack-frame. When it
+ * is volatile my compiler will not be entitles to moan about the lack of
+ * assignment to it and will not be entitles to optimise it out of existance
+ * or otherwise do things that run against my intent!
+ */
     volatile Lisp_Object sp;
 #ifdef CONSERVATIVE
     C_stackbase = (Lisp_Object *)&sp;
@@ -3186,7 +3198,7 @@ term_printf(
  * I thought/hoped that doing it this way would be safer than relying on having
  * pre-defined symbols that tracked the machine architecture.
  */
-        {   volatile union fpch { double d; unsigned char c[8]; } d;
+        {   union fpch { double d; unsigned char c[8]; } d;
 /*
  * The following looks at the floating point representation of the
  * number 1/7 (in double precision) and picks out two bytes from
@@ -3678,7 +3690,7 @@ int main(int argc, char *argv[])
 
 int ENTRYPOINT(int argc, char *argv[])
 {
-    volatile int res;
+    int res;
 #ifdef EMBEDDED
     if (find_program_directory(argv[0]))
     {   fprintf(stderr, "Unable to identify program name and directory\n");

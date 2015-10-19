@@ -59,7 +59,6 @@
 // ... or on newer systems maybe "#include <sys/select.h>
 
 #include "cuckoo.h"
-#include "hungarian.h"
 
 // Because the table was passed as a "void *" and we do not have
 // a single type that maps the entries it is not feasible to use direct
@@ -294,14 +293,22 @@ uint32_t cuckoo_insert(
 // This tries to insert all the keys in "items" into the hash-table "table"
 // and it returns a non-zero result if it succeeds. I put the code for this
 // in a separate file because I feel it could be independently useful.
+//
+// If "HUNGARIAN" is defined I will use an algorithm that weights edges in the
+// graph I seek a matching in, otherwise I will accept any matching that places
+// all keys in the table. The effect should be to trade between speed of
+// building the table and its efficiency in use.
+
+#ifdef HUNGARIAN
+
+#include "hungarian.h"
+#include "hungarian.c"
+
+#else
 
 #include "hopkar.c"
 
-// While I am at it I will include code that implements the Hungarian
-// Algorithm for finding not just matchings but ones that have minimal cost
-// for a perfect matching on a weighted graph.
-
-#include "hungarian.c"
+#endif
 
 static cuckoo_parameters cuckoo_simple_search(
     int myid,
