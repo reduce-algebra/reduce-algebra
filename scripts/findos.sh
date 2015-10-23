@@ -56,6 +56,9 @@ then
   *Gentoo*)
     vendor="gentoo"
     ;;
+  *Raspbian*)
+    vendor="raspbian"
+    ;;
 # Add more distributions here please!
   *)
     vendor="unknown"

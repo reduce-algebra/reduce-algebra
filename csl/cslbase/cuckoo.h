@@ -235,11 +235,27 @@ extern uint32_t cuckoo_insert(
     uint32_t modulus2,        // used to give a secondary hash function
     uint32_t offset2);        // used to give a secondary hash function
 
+// Some functions return a "cuckoo_parameters" value. This gives the
+// size of the hash table in use, values for modulus2 and offset2 (ie
+// details of the hash function selected) and, in some cases, a figure
+// of merit that is best if it is a low value, and that represents an
+// estimate for the number of probes needed to look things up, with
+// higher importance given to IMPORTANT cases. It should always be
+// between 10000 and 30000, where 10000 would indicate that all keys
+// had been so positioned that they were accessed in only one probe, while
+// 30000 would suggest that every key needed 3 probes. If all keys where
+// tagged as IMPORTANT than a merit of 15000 would be the target to be beaten,
+// while if many of STANDARD anything better than 20000 counts as good.
+//
+// If table_size is set to (uint32_t)(-1) in a cuckoo_parameters that marks
+// failure to set up the table.
+
 typedef struct __cuckoo_parameters
 {
     uint32_t table_size;
     uint32_t modulus2;
     uint32_t offset2;
+    uint32_t merit;
 } cuckoo_parameters;
 
 // cuckoo_optimise seeks a near-optimal hash table by picking values for

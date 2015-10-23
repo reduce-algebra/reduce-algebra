@@ -112,7 +112,7 @@ March 2015: increase the pool size in FXShowMath.cpp because when it overflows
 
 April 2015: A proper fix (I hope) for the issue noted from March 2015.
 
-July 2015: adjustment to characters use din the display of \left| and
+July 2015: adjustment to characters used in the display of \left| and
            \right|, plus a spelling fix.
 
 <end of CHANGED>

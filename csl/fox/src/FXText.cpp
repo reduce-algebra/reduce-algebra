@@ -968,7 +968,7 @@ FXint FXText::measureText(FXint start,FXint end,FXint& wmax,FXint& hmax) const {
       if (c==0x0e) shifted=true;
       else if (c==0x0f) shifted=false;
       else if (!shifted && c=='\n') c=' '; // defeat line-break.
-#endif ORIGINAL_VERSION
+#endif // ORIGINAL_VERSION
       if(c=='\n'){                      // Break at newline
         if(w>wmax) wmax=w;
         nr++;

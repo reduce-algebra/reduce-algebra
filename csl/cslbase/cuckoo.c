@@ -295,20 +295,20 @@ uint32_t cuckoo_insert(
 // in a separate file because I feel it could be independently useful.
 //
 // If "HUNGARIAN" is defined I will use an algorithm that weights edges in the
-// graph I seek a matching in, otherwise I will accept any matching that places
-// all keys in the table. The effect should be to trade between speed of
-// building the table and its efficiency in use.
+// graph I seek a matching in as a way to find the best matching of the size
+// I select using Hopcroft-Karp. That is a sensible thing to try because
+// merely finding a matching does not do anything to favour first choice
+// placement for keys in the hash table over third choice. However the
+// more elaborate optimisation code adds to cost.
 
 #ifdef HUNGARIAN
 
 #include "hungarian.h"
 #include "hungarian.c"
 
-#else
+#endif
 
 #include "hopkar.c"
-
-#endif
 
 static cuckoo_parameters cuckoo_simple_search(
     int myid,
@@ -329,32 +329,35 @@ static cuckoo_parameters cuckoo_simple_search(
     {   printf("Trial with table_size = %d\n", table_size);
         fflush(stdout);
 #ifdef FAST
-// predefining FAST saves a lot of space at the cost of (probably) not finding
+// predefining FAST saves a lot of time at the cost of (probably) not finding
 // such good solutions.
 #define MODULUS_LIMIT (table_size-128)
 #else
-#ifdef SLOW
-// predefining SLOW leads to an increased search through values for modulus2. I
-// rather fully expect that most of the extra search will not be useful.
-#define MODULUS_LIMIT (table_size/8)
-#else
-// By defauly I try to find a decent balance.
-#define MODULUS_LIMIT ((5*table_size)/6)
+// By default I will search all potentially valid values for modulus2 and
+// offset2, icnluding many that are really terribly unlikely to be useful.
+#define MODULUS_LIMIT 0
 #endif
-#endif
+        int blip = 0;
         for (modulus2=table_size-1; modulus2>MODULUS_LIMIT; modulus2--)
-        {
-// For very small tables this could include searches using a degenerate small
-// second modulus, so filter that case out.
-            if (modulus2 < 10) continue;
-// I print a message every so often - the "% 500" here tries to get a
-// decent balance between generating a swamping amount of rubbish and keeping
-// observers happy that there is progress being made.
-            if (modulus2 % 500 == 0) printf("modulus2 = %d\n", modulus2);
-            for (offset2=1+myid;
-                 offset2<=table_size-modulus2;
+        {   for (offset2=1+myid;
+// Nota that (key%modulus2)+offset2 is at most modulus2-1+offset2, so this
+// is what I need to lie within the table.
+                 modulus2-1+offset2<table_size;
                  offset2+=PROCESSCOUNT)
-            {   if (cuckoo_insert_all(
+            {
+// I want to keep the observer informed about progress, so every so often I
+// will display a message to show how far I have got. I will want to
+// adjust MESSAGE_FREQUENCY so as to balance being informative against
+// swamping the user with too much output. Perhaps a message every 10 seconds
+// on a plausibly fast computer when solving a large problem will feel about
+// right to me?
+#define MESSAGE_FREQUENCY 100000
+                if (++blip % MESSAGE_FREQUENCY == 0)
+                {   printf("Trying modulus2=%d offset2=%d\n",
+                           (int)modulus2, (int)offset2);
+                    fflush(stdout);
+                }
+                if (cuckoo_insert_all(
                     items,
                     item_count,
                     importance,
@@ -371,8 +374,8 @@ static cuckoo_parameters cuckoo_simple_search(
     }
 // Here my search through table_size, modulus2 and offset2 has all been to no
 // avail, so I need to report failure.
-    r.table_size = -1;
-    r.modulus2 = r.offset2 = 0;
+    r.table_size = (uint32_t)(-1);
+    r.modulus2 = r.offset2 = r.merit = 0;
     return r;
 // Using a GOTO to transfer to where I deal with success seems nicest to me.
 // could have used a RETURN instead and bundled all that follows within a
@@ -411,8 +414,8 @@ solution_found:
 #endif
             printf("Exiting\n");
             exit(1); // This is an internal error
-            r.table_size = -1;
-            r.modulus2 = r.offset2 = 0;
+            r.table_size = (uint32_t)(-1);
+            r.modulus2 = r.offset2 = r.merit = 0;
             return r;
         }
     }
@@ -456,6 +459,7 @@ solution_found:
     r.table_size = table_size;
     r.modulus2 = modulus2;
     r.offset2 = offset2;
+    r.merit = 0;         // not measured here
     return r;
 }
 
@@ -515,8 +519,8 @@ cuckoo_parameters cuckoo_optimise(
 {
     cuckoo_parameters r;
     FILE *f;
-    r.table_size = -1;
-    r.modulus2 = r.offset2 = 2;
+    r.table_size = (uint32_t)(-1);
+    r.modulus2 = r.offset2 = r.merit = 2;
 #if PROCESSCOUNT != 1
 // Here I create a bunch of child processes... and I will also need pipes
 // for each to use to send data back to me.
@@ -629,6 +633,7 @@ cuckoo_parameters cuckoo_optimise(
         r.table_size = table_size;
         r.modulus2 = modulus2;
         r.offset2 = offset2;
+        r.merit = 0;           // not measured here
         return r;
     }
     else
@@ -717,8 +722,8 @@ cuckoo_parameters cuckoo_binary_optimise(
 {
     cuckoo_parameters r, rhi;
     if (min_table_size >= max_table_size)
-    {   r.table_size = -1;
-        r.modulus2 = r.offset2 = 3;
+    {   r.table_size = (uint32_t)(-1);
+        r.modulus2 = r.offset2 = r.merit = 3;
         return r;
     }
 // First verify that the low limit does not lead to success. Doing this
@@ -736,10 +741,10 @@ cuckoo_parameters cuckoo_binary_optimise(
             min_table_size+1,
             get_key,
             set_key);
-        if (r.table_size != -1)
-        {   r.table_size = -1;
+        if (r.table_size != (uint32_t)(-1))
+        {   r.table_size = (uint32_t)(-1);
 // the "1" is the following two fields perhaps marks what went wrong!
-            r.modulus2 = r.offset2 = 1;
+            r.modulus2 = r.offset2 = r.merit = 1;
             return r;
         }
     }
@@ -755,7 +760,7 @@ cuckoo_parameters cuckoo_binary_optimise(
         get_key,
         set_key);
 // Oops - it did not!
-    if (rhi.table_size == -1) return r;
+    if (rhi.table_size == (uint32_t)(-1)) return r;
     while (max_table_size > min_table_size+1)
     {   int mid = (min_table_size + max_table_size)/2;
         r = cuckoo_optimise(    
@@ -768,7 +773,7 @@ cuckoo_parameters cuckoo_binary_optimise(
             mid+1,
             get_key,
             set_key);
-        if (r.table_size == -1) min_table_size = mid;
+        if (r.table_size == (uint32_t)(-1)) min_table_size = mid;
         else
         {   max_table_size = mid;
             rhi = r;

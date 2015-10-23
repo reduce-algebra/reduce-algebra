@@ -692,8 +692,8 @@ static final int BIGSTACK      =     0xfa - 0x100;
 static final int BIGCALL       =     0xfb - 0x100;
 static final int ICASE         =     0xfc - 0x100;
 static final int FASTGET       =     0xfd - 0x100;
-static final int SPARE1        =     0xfe - 0x100;
-static final int SPARE2        =     0xff - 0x100;
+static final int ONEVALUE      =     0xfe - 0x100;
+static final int SPARE         =     0xff - 0x100;
 
 // The table of names is just for debugging - but that is of course
 // very important!
@@ -763,7 +763,7 @@ static final int SPARE2        =     0xff - 0x100;
 //-     "SUB1         ", "TIMES2       ", "GREATERP     ", "LESSP        ",
 //-     "FLAGP        ", "GET          ", "LITGET       ", "GETV         ",
 //-     "QGETV        ", "QGETVN       ", "BIGSTACK     ", "BIGCALL      ",
-//-     "ICASE        ", "FASTGET      ", "SPARE1       ", "SPARE2       "
+//-     "ICASE        ", "FASTGET      ", "ONEVALUE     ", "SPARE        "
 //- };
 
 static int stack_size = 5000;

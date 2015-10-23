@@ -23,35 +23,51 @@
  ********************************************************************
  ********************************************************************/
 
+// The version here has been adapted by A C Norman (October 2015) for use
+// in creating matchings for use in a "cuckoo hashing" scheme that sets up
+// hash tables for static data.
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include "hungarian.h"
 #include "cuckoo.h"
 
 #define INF (0x7FFFFFFF)
+#define BIG (0x10000000)
 #define verbose (0)
 
-#define hungarian_test_alloc(X) do {if ((void *)(X) == NULL) fprintf(stderr, "Out of memory in %s, (%s, line %d).\n", __FUNCTION__, __FILE__, __LINE__); } while (0)
-
+#define hungarian_test_alloc(X)                              \
+  do { if ((void *)(X) == NULL)                              \
+       printf("Out of memory in %s, (%s, line %d).\n",       \
+              __FUNCTION__, __FILE__, __LINE__); } while (0)
 
 void hungarian_print_matrix(int** C, int rows, int cols) {
   int i,j;
   fprintf(stderr , "\n");
   for(i=0; i<rows; i++) {
-    fprintf(stderr, " [");
-    for(j=0; j<cols; j++) {
-      int n = C[i][j];
-      if (n == INF) n = -1;
-      fprintf(stderr, "%3d ",n);
-    }
-    fprintf(stderr, "]\n");
+    printf(" [");
+    for(j=0; j<cols; j++)
+      printf("%3d ",C[i][j]==BIG ? -1 : C[i][j]);
+    printf("]\n");
   }
-  fprintf(stderr, "\n");
+  printf("\n");
+}
+
+void hungarian_print_byte_matrix(char** C, int rows, int cols) {
+  int i,j;
+  fprintf(stderr , "\n");
+  for(i=0; i<rows; i++) {
+    printf(" [");
+    for(j=0; j<cols; j++)
+      printf("%d ",C[i][j]);
+    printf("]\n");
+  }
+  printf("\n");
 }
 
 void hungarian_print_assignment(hungarian_problem_t* p) {
-  hungarian_print_matrix(p->assignment, p->num_rows, p->num_cols) ;
+  hungarian_print_byte_matrix(p->assignment, p->num_rows, p->num_cols) ;
 }
 
 void hungarian_print_costmatrix(hungarian_problem_t* p) {
@@ -59,20 +75,18 @@ void hungarian_print_costmatrix(hungarian_problem_t* p) {
 }
 
 void hungarian_print_status(hungarian_problem_t* p) {
-  
   fprintf(stderr,"cost:\n");
   hungarian_print_costmatrix(p);
-
   fprintf(stderr,"assignment:\n");
   hungarian_print_assignment(p);
-  
 }
 
 int hungarian_imax(int a, int b) {
   return (a<b)?b:a;
 }
 
-int hungarian_init(hungarian_problem_t* p, int** cost_matrix, int rows, int cols, int mode) {
+int hungarian_init(hungarian_problem_t* p, int** cost_matrix,
+                   int rows, int cols, int mode) {
 
   int i,j, org_cols, org_rows;
   int max_cost;
@@ -91,17 +105,17 @@ int hungarian_init(hungarian_problem_t* p, int** cost_matrix, int rows, int cols
 
   p->cost = (int**)calloc(rows,sizeof(int*));
   hungarian_test_alloc(p->cost);
-  p->assignment = (int**)calloc(rows,sizeof(int*));
+  p->assignment = (char**)calloc(rows,sizeof(char*));
   hungarian_test_alloc(p->assignment);
 
   for(i=0; i<p->num_rows; i++) {
     p->cost[i] = (int*)calloc(cols,sizeof(int));
     hungarian_test_alloc(p->cost[i]);
-    p->assignment[i] = (int*)calloc(cols,sizeof(int));
+    p->assignment[i] = (char*)calloc(cols,sizeof(char));
     hungarian_test_alloc(p->assignment[i]);
     for(j=0; j<p->num_cols; j++) {
       p->cost[i][j] =  (i < org_rows && j < org_cols) ? cost_matrix[i][j] : 0;
-      p->assignment[i][j] = 0;
+      p->assignment[i][j] = HUNGARIAN_NOT_ASSIGNED;
 
       if (max_cost < p->cost[i][j])
 	max_cost = p->cost[i][j];
@@ -124,8 +138,6 @@ int hungarian_init(hungarian_problem_t* p, int** cost_matrix, int rows, int cols
   
   return rows;
 }
-
-
 
 
 void hungarian_free(hungarian_problem_t* p) {
@@ -195,7 +207,7 @@ void hungarian_solve(hungarian_problem_t* p)
 
   // Begin subtract column minima in order to start with lots of zeroes 12
   if (verbose)
-    fprintf(stderr, "Using heuristic\n");
+    printf("Using heuristic\n");
   for (l=0;l<n;l++)
     {
       s=p->cost[0][l];
@@ -204,6 +216,7 @@ void hungarian_solve(hungarian_problem_t* p)
 	  s=p->cost[k][l];
       cost+=s;
       if (s!=0)
+  // I might like to leave entries that are INF unchanged here?
 	for (k=0;k<m;k++)
 	  p->cost[k][l]-=s;
     }
@@ -231,12 +244,12 @@ void hungarian_solve(hungarian_problem_t* p)
 	    col_mate[k]=l;
 	    row_mate[l]=k;
 	    if (verbose)
-	      fprintf(stderr, "matching col %d==row %d\n",l,k);
+	      printf("matching col %d==row %d\n",l,k);
 	    goto row_done;
 	  }
       col_mate[k]= -1;
       if (verbose)
-	fprintf(stderr, "node %d: unmatched row %d\n",t,k);
+	printf("node %d: unmatched row %d\n",t,k);
       unchosen_row[t++]=k;
     row_done:
       ;
@@ -250,7 +263,7 @@ void hungarian_solve(hungarian_problem_t* p)
   while (1)
     {
       if (verbose)
-	fprintf(stderr, "Matched %d rows.\n",m-t);
+	printf("Matched %d rows.\n",m-t);
       q=0;
       while (1)
 	{
@@ -274,7 +287,7 @@ void hungarian_solve(hungarian_problem_t* p)
 			      slack[l]=0;
 			      parent_row[l]=k;
 			      if (verbose)
-				fprintf(stderr, "node %d: row %d==col %d--row %d\n",
+				printf("node %d: row %d==col %d--row %d\n",
 				       t,row_mate[l],l,k);
 			      unchosen_row[t++]=row_mate[l];
 			    }
@@ -306,7 +319,7 @@ void hungarian_solve(hungarian_problem_t* p)
 		    // Begin look at a new zero 22
 		    k=slack_row[l];
 		    if (verbose)
-		      fprintf(stderr, 
+		      printf(
 			     "Decreasing uncovered elements by %d produces zero at [%d,%d]\n",
 			     s,k,l);
 		    if (row_mate[l]<0)
@@ -320,7 +333,7 @@ void hungarian_solve(hungarian_problem_t* p)
 		      {
 			parent_row[l]=k;
 			if (verbose)
-			  fprintf(stderr, "node %d: row %d==col %d--row %d\n",t,row_mate[l],l,k);
+			  printf("node %d: row %d==col %d--row %d\n",t,row_mate[l],l,k);
 			unchosen_row[t++]=row_mate[l];
 		      }
 		    // End look at a new zero 22
@@ -333,14 +346,14 @@ void hungarian_solve(hungarian_problem_t* p)
     breakthru:
       // Begin update the matching 20
       if (verbose)
-	fprintf(stderr, "Breakthrough at node %d of %d!\n",q,t);
+	printf("Breakthrough at node %d of %d!\n",q,t);
       while (1)
 	{
 	  j=col_mate[k];
 	  col_mate[k]=l;
 	  row_mate[l]=k;
 	  if (verbose)
-	    fprintf(stderr, "rematching col %d==row %d\n",l,k);
+	    printf("rematching col %d==row %d\n",l,k);
 	  if (j<0)
 	    break;
 	  k=parent_row[j];
@@ -360,7 +373,7 @@ void hungarian_solve(hungarian_problem_t* p)
 	if (col_mate[k]<0)
 	  {
 	    if (verbose)
-	      fprintf(stderr, "node %d: unmatched row %d\n",t,k);
+	      printf("node %d: unmatched row %d\n",t,k);
 	    unchosen_row[t++]=k;
 	  }
       // End get ready for another stage 17
@@ -371,19 +384,25 @@ void hungarian_solve(hungarian_problem_t* p)
   for (k=0;k<m;k++)
     for (l=0;l<n;l++)
       if (p->cost[k][l]<row_dec[k]-col_inc[l])
+      { printf("Error detected line %d\n", __LINE__);
 	exit(0);
+      }
   for (k=0;k<m;k++)
     {
       l=col_mate[k];
       if (l<0 || p->cost[k][l]!=row_dec[k]-col_inc[l])
+      { printf("Error detected line %d\n", __LINE__);
 	exit(0);
+      }
     }
   k=0;
   for (l=0;l<n;l++)
     if (col_inc[l])
       k++;
   if (k>m)
+  { printf("Error detected line %d\n", __LINE__);
     exit(0);
+  }
   // End doublecheck the solution 23
   // End Hungarian algorithm 18
 
@@ -397,6 +416,7 @@ void hungarian_solve(hungarian_problem_t* p)
       for (l=0;l<n;++l)
 	{
 	  /*TRACE("%d ",p->cost[k][l]-row_dec[k]+col_inc[l]);*/
+  // I might like to leave entries that are INF unchanged here?
 	  p->cost[k][l]=p->cost[k][l]-row_dec[k]+col_inc[l];
 	}
       /*TRACE("\n");*/
@@ -406,7 +426,7 @@ void hungarian_solve(hungarian_problem_t* p)
   for (i=0;i<n;i++)
     cost-=col_inc[i];
   if (verbose)
-    fprintf(stderr, "Cost is %d\n",cost);
+    printf("Cost is %d\n",cost);
 
 
   free(slack);
@@ -421,7 +441,7 @@ void hungarian_solve(hungarian_problem_t* p)
 
 
 //////////////////////////////////////////////////////////////////////////
-// what follows has been added by ACN
+// what follows has been added by ACN... ... ...
 
 // Now an adapter that takes my hashing problem and maps it onto the
 // calls needed here. The input is a set of keys, a table size and two
@@ -434,19 +454,17 @@ void hungarian_solve(hungarian_problem_t* p)
 
 int **adjacency_matrix = NULL;
 
-int cuckoo_insert_all(
+uint32_t hungarian_insert_all(
     uint32_t *items,
     int item_count,
     cuckoo_importance *importance,
-    void *table,
-    int hash_item_size,
+    uint32_t *table,
     int table_size,
-    cuckoo_get_key *get_key,
-    cuckoo_set_key *set_key,
     uint32_t modulus2,
-    uint32_t offset2)
+    uint32_t offset2,
+    uint32_t target_merit)
 {
-    int i, j, size;
+    int i, j, k, size;
     hungarian_problem_t p;
     adjacency_matrix = (int **)calloc(table_size, sizeof(int *));
     hungarian_test_alloc(adjacency_matrix);
@@ -454,7 +472,7 @@ int cuckoo_insert_all(
     {   adjacency_matrix[i] = (int *)calloc(item_count, sizeof(int));
         hungarian_test_alloc(adjacency_matrix[i]);
         for (j=0; j<item_count; j++)
-            adjacency_matrix[i][j] = INF;
+          adjacency_matrix[i][j] = BIG;
     }
     for (i=0; i<item_count; i++)
     {   uint32_t key = items[i];
@@ -471,7 +489,7 @@ int cuckoo_insert_all(
             break;
     case CUCKOO_IMPORTANT:
             adjacency_matrix[h1][i] = 0;
-            adjacency_matrix[h2][i] = 1000;
+            adjacency_matrix[h2][i] = 10;
             break;
     case CUCKOO_VITAL:
             adjacency_matrix[h1][i] = 0;
@@ -483,15 +501,89 @@ int cuckoo_insert_all(
                           table_size,
                           item_count,
                           HUNGARIAN_MODE_MINIMIZE_COST);
-    printf("table_size = %d item_count = %d size = %d line=%d\n",
-           table_size, item_count, size, __LINE__);
     hungarian_solve(&p);
-    hungarian_print_assignment(&p);
+// Next I will extract the assignment found and put it in my hash table.
+// While I am about it I will collect some statistics.
+    int nvital = 0;
+    int nimportant1 = 0, nimportant2 = 0;
+    int nstandard1 = 0, nstandard2 = 0, nstandard3 = 0;
+    for (i=0; i<item_count; i++)
+    {   uint32_t key = items[i];
+        uint32_t h1 = key % table_size;
+        uint32_t h2 = key % modulus2 + offset2;
+        uint32_t h3 = (h1 + h2) % table_size;
+        int imp = (*importance)(key);
+        switch (imp)
+        {
+    case CUCKOO_VITAL:
+            if (p.assignment[h1][i])
+            {   table[h1] = key;
+                nvital++;
+                break;
+            }
+            else return (uint32_t)(-1);
+    case CUCKOO_IMPORTANT:
+            if (p.assignment[h1][i])
+            {   table[h1] = key;
+                nimportant1++;
+                break;
+            }
+            else if (p.assignment[h2][i])
+            {   table[h2] = key;
+                nimportant2++;
+                break;
+            }
+            else return (uint32_t)(-1);
+    case CUCKOO_STANDARD:
+            if (p.assignment[h1][i])
+            {   table[h1] = key;
+                nstandard1++;
+                break;
+            }
+            else if (p.assignment[h2][i])
+            {   table[h2] = key;
+                nstandard2++;
+                break;
+            }
+            else if (p.assignment[h3][i])
+            {   table[h3] = key;
+                nstandard3++;
+                break;
+            }
+            else return (uint32_t)(-1);
+        }
+    }
+    double avimportant =
+       (nimportant1+2.0*nimportant2)/(nimportant1+nimportant2);
+    double avstandard =
+       (nstandard1+2.0*nstandard2+3.0*nstandard3)/
+       (nstandard1+nstandard2+nstandard3);
+// I weight IMPORTANT things as 4 times as relevant as STANDARD ones when it
+// comes to an eventual figure of merit.
+    uint32_t merit = (uint32_t)(10000.0*(0.8*avimportant + 0.2*avstandard));
+// But I will also compute an average that shows the expected number of
+// probes if all keys are accessed with equal probability.
+    double average =
+       (nvital + nimportant1 + 2.0*nimportant2 +
+        nstandard1 + 2.0*nstandard2 + 3.0*nstandard3) / item_count;
+    if (merit < target_merit)
+    {   printf("\ntable_size = %u modulus2 = %u offset2 = %u occupancy %.2f\n",
+               table_size, modulus2, offset2,
+               (100.0*item_count)/table_size);
+        if (nvital != 0)
+            printf("VITAL:     %u      1.0 average probes\n", nvital);
+        if (nimportant1!=0 || nimportant2 != 0)
+            printf("IMPORTANT: %u %u   %.2f average probes\n",
+                nimportant1, nimportant2, avimportant);
+        if (nstandard1!=0 || nstandard2 != 0)
+            printf("STANDARD:  %u %u %u  %.2f average probes\n",
+                nstandard1, nstandard2, nstandard3, avstandard);
+        printf("Figure of merit = %u flat average = %.2f\n", merit, average);
+    }
     hungarian_free(&p);
     for (i=0; i<table_size; i++)
         free(adjacency_matrix[i]);
     free(adjacency_matrix);
-    return 0; // Report failure for now.
 #if DEBUG
 // Now in a spirit of neurosis I will check whether everything can be
 // looked up happily...
@@ -500,21 +592,69 @@ int cuckoo_insert_all(
         uint32_t h1 = key % table_size;
         uint32_t h2 = key % modulus2 + offset2;
         uint32_t h3 = (h1 + h2) % table_size;
-        uint32_t k1;
-        if (used[i] &&
-            (key == get_key((char *)table + hash_item_size*h1) ||
-             key == get_key((char *)table + hash_item_size*h2) ||
-             key == get_key((char *)table + hash_item_size*h3))) continue;
-        printf("Key %d/%x not found in table\n");
-        printf("%d %d %d\n", table_size, modulus2, offset2);
+        if (key == table[h1] ||
+            key == table[h2] ||
+            key == table[h3]) continue;
+        printf("Key %u/%x not found in table\n", key, key);
+        printf("%u %u %u\n", table_size, modulus2, offset2);
         for (i=0; i<table_size; i++)
-            printf("%d: %d\n", i, get_key((char *)table + hash_item_size*i));
+            printf("%u: %u\n", i, table[i]);
         exit(1);
     }
 #endif
-    return 1;
+    return merit;
 }
 
+cuckoo_parameters hungarian_try_all_hash_functions(
+    uint32_t *keys,
+    int keycount,
+    cuckoo_importance *importance,
+    void *hash,
+    int hash_item_size,
+    int hashsize,
+    cuckoo_set_key *set_key)
+{
+    int i;
+    cuckoo_parameters r;
+    uint32_t modulus2, offset2, merit;
+    uint32_t best_merit = 0x7fffffff, best_modulus2 = 0, best_offset2 = 0;
+    uint32_t *table = (uint32_t *)calloc(hashsize, sizeof(uint32_t));
+    hungarian_test_alloc(table);
+    for (modulus2 = 1; modulus2 < hashsize; modulus2++)
+    {   for (offset2 = 0; modulus2+offset2 <= hashsize; offset2++)
+        {   if ((merit = hungarian_insert_all(
+                keys,
+                keycount,
+                importance,
+                table,
+                hashsize,
+                modulus2,
+                offset2,
+                best_merit)) != (uint32_t)(-1))
+            {   if (merit < best_merit)
+                {   best_modulus2 = modulus2;
+                    best_offset2 = offset2;
+                    best_merit = merit;
+// Each time I get a new best assignment I transcribe it into the main
+// official hash-table.
+                    for (i=0; i<hashsize; i++)
+                        (*set_key)(hash_item_size*i+(char *)hash, table[i]);
+                }
+            }
+        }
+    }
+    free(table);
+    if (best_merit == 0x7fffffff)
+    {   r.table_size = (uint32_t)(-1);
+        r.modulus2 = r.offset2 = r.merit = 4;
+        return r;
+    }
+    r.table_size = hashsize;
+    r.modulus2 = best_modulus2;
+    r.offset2 = best_offset2;
+    r.merit = best_merit;
+    return r;
+}
 
 #ifdef TEST
 
@@ -522,26 +662,18 @@ int cuckoo_insert_all(
 // set up a small test of its behaviour... and the code for the test can
 // also serve as an illustration of how it could be used.
 
-uint32_t keys[] =
-{
-    1,
-    3,
-    9,
-    27,
-    81,
-    243,
-    729,
-    2187,
-    6561,
-    19683,
-    59049
-};
+#define PROBSIZE 140
+uint32_t keys[PROBSIZE];
 
-uint32_t hash[1000];
+#define MAXHASHSIZE 2000
+uint32_t hash[MAXHASHSIZE];
 
 int importance(uint32_t key)
 {
-    if ((key % 10) == 3) return CUCKOO_IMPORTANT;
+// I will make around 14% of the keys "important", meaning that they
+// have to be accessed in at most two probes. The rest can be allowed
+// three probes.
+    if ((key % 7) == 3) return CUCKOO_IMPORTANT;
     else return CUCKOO_STANDARD;
 }
 
@@ -558,47 +690,69 @@ void set_key(void *p, uint32_t k)
 int main(int argc, char *argv[])
 {
     int keycount = sizeof(keys)/sizeof(keys[0]);
-    int hashsize = keycount+3;
+// SLACK is used here to specify how many vacant slots can be left
+// in the hash table.
+#define SLACK 7
+    int hashsize = keycount+SLACK;
     int i;
-    int modulus2, offset2;
-    for (modulus2 = 3; modulus2 < hashsize; modulus2++)
-        for (offset2 = 0; modulus2+offset2<hashsize; offset2++)
-        {   printf("Test with modulus2=%d, offset2=%d\n", modulus2, offset2);
-            if (cuckoo_insert_all(
-                keys,
-                keycount,
-                importance,
-                hash,
-                sizeof(hash[0]),
-                hashsize,
-                get_key,
-                set_key,
-                modulus2,
-                offset2) != 0) goto found;
+    uint32_t modulus2, offset2;
+// I set up some (dummy) data to be inserted into the hash table. Just to
+// provide something that can be used as an illustration I will use the
+// Fibonacci sequence.
+    {   uint32_t a = 1, b = 2, c;
+        for (i=0; i<keycount; i++)
+        {   keys[i] = a;
+            c = a + b;
+            a = b;
+            b = c;
         }
-    printf("No solution found\n");
-    exit(0);
-found:
-    printf("OK with modulus2 = %d offset2 = %d\n", modulus2, offset2);
-// Display everything...
+    }
+// The next call will systematically try all hash options based on
+// what I call modulus2 and offset2, and return (if possible) a hash table
+// that is filled so as to minimise the number of probes to retrieve data. It
+// will view IMPORTANT data as higher priority.
+    cuckoo_parameters r = hungarian_try_all_hash_functions(
+        keys,
+        keycount,
+        importance,
+        hash,
+        sizeof(hash[0]),
+        hashsize,
+        set_key);
+// It could be that if there is not enough SLACK that a placement is not
+// possible, so in that case I will report that and quit.
+    if (r.table_size == (uint32_t)(-1))
+    {   printf("No solution found\n");
+        exit(1);
+    }
+// Report the success I have had.
+    printf("\nOK with size = %u modulus2 = %u offset2 = %u merit = %u\n",
+           hashsize, r.modulus2, r.offset2, r.merit);
+// Display everything every key and indicate which position it has ended up in
     for (i=0; i<keycount; i++)
     {   uint32_t key = keys[i];
         uint32_t h1 = key % hashsize;
-        uint32_t h2 = key % modulus2 + offset2;
+// I access the hash table here using get_key to show how that is used
+// in general, because although the tash table entried here are simple
+// integers one could have structs with bitfield components or other
+// messy schemes that need the abstraction of get_key to handle them
+// safely.
+        int p1 = get_key(sizeof(hash[0])*h1 + (char *)hash) == key;
+        uint32_t h2 = key % r.modulus2 + r.offset2;
+        int p2 = get_key(sizeof(hash[0])*h2 + (char *)hash) == key;
         uint32_t h3 = (h1 + h2) % hashsize;
+        int p3 = get_key(sizeof(hash[0])*h3 + (char *)hash) == key;
 // Each key and the three locations that the key could legally be placed.
-        printf("%d: %d... %d %d %d\n", i, key, h1, h2, h3);
+        printf("%5u: %10u... %3u%s %3u%s %3u%s\n",
+            i, key,
+            h1, p1 ? "*" : " ",
+            h2, p2 ? "*" : " ",
+            h3, p3 ? "*" : " ");
+        if (!p1 && !p2 && !p3)
+        {   printf("No placement found for key %u\n", key);
+            exit(1);
+        }
     }
-#ifdef PENDING
-// The internal tables left behind by the code that found a match.
-    for (i=0; i<n1; i++)
-        printf("%d: last:%d dist:%d Q:%d used:%d vis:%d\n",
-            i, last[i], dist[i], Q[i], used[i], vis[i]);
-    for (i=0; i<n2; i++)
-        printf("%d: matching:%d\n", i, matching[i]);
-    for (i=0; i<edges; i++)
-        printf("%d: head:%d prev:%d\n", i, head[i], prev[i]);
-#endif
     printf("Done\n");
     return 0;
 }
