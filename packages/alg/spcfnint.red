@@ -396,6 +396,8 @@ flag('(psi polygamma),'realvalued);
 put('psi,'!:rd!:,'rdpsi!*);
 put('psi,'!:cr!:,'crpsi!*);
 
+symbolic operator psi!:error;
+
 psi!*rules := {
 
    psi(~n,~z) => polygamma(n,z),
