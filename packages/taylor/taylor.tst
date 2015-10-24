@@ -429,7 +429,7 @@ taylor(myexp(x),x,0,5);
 taylor(myerf(x),x,0,5);
 clear {df(myexp(~x),~x) => -2*x*myexp(x), myexp(0) => 1,
        df(myerf(~x),~x) => 2/sqrt(pi)*myexp(x), myerf(0) => 0};
-clear myexp,erf;
+clear myexp,myerf;
 
 %%% showtime;
 
@@ -862,6 +862,16 @@ taylorcombine(hugo^2 + otto^2);
 clearrules elliptic_rules;
 
 clear sn, cn, dn, epsilon;
+
+COMMENT Examples of gamma function and its derivatives;
+
+taylor(gamma(x),x,1,3);
+
+taylor(gamma(x),x,1/2,3);
+
+taylor(gamma(x),x,a,3);
+
+taylor(gamma(x),x,-1,3);
 
 %%% showtime;
 

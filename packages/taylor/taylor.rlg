@@ -1575,7 +1575,7 @@ clear {df(myexp(~x),~x) => -2*x*myexp(x), myexp(0) => 1,
        df(myerf(~x),~x) => 2/sqrt(pi)*myexp(x), myerf(0) => 0};
 
 
-clear myexp,erf;
+clear myexp,myerf;
 
 
 
@@ -2531,6 +2531,94 @@ clearrules elliptic_rules;
 
 clear sn, cn, dn, epsilon;
 
+
+
+COMMENT Examples of gamma function and its derivatives;
+
+
+taylor(gamma(x),x,1,3);
+
+
+                                        2     2
+                           6*euler_gamma  + pi          2
+1 - euler_gamma*(x - 1) + ----------------------*(x - 1)
+                                    12
+
+                                3                 2
+     - 4*zeta(3) - 2*euler_gamma  - euler_gamma*pi          3            4
+ + -------------------------------------------------*(x - 1)  + O((x - 1) )
+                          12
+
+
+taylor(gamma(x),x,1/2,3);
+
+
+                                                      1
+sqrt(pi) + sqrt(pi)*( - 2*log(2) - euler_gamma)*(x - ---) + 
+                                                      2
+
+                   2                                       1                2
+ sqrt(pi)*(4*log(2)  + 4*log(2)*euler_gamma + polygamma(1,---) + euler_gamma )
+                                                           2
+-------------------------------------------------------------------------------
+                                       2
+
+       1  2                         3            2
+*(x - ---)  + (sqrt(pi)*( - 8*log(2)  - 12*log(2) *euler_gamma
+       2
+
+                                           1                         2
+                   - 6*log(2)*polygamma(1,---) - 6*log(2)*euler_gamma
+                                           2
+
+                                  1                    1
+                   + polygamma(2,---) - 3*polygamma(1,---)*euler_gamma
+                                  2                    2
+
+                                3           1  3           1  4
+                   - euler_gamma ))/6*(x - ---)  + O((x - ---) )
+                                            2              2
+
+
+taylor(gamma(x),x,a,3);
+
+
+gamma(a) + gamma(a)*psi(a)*(x - a)
+
+                                     2
+    gamma(a)*(polygamma(1,a) + psi(a) )         2
+ + -------------------------------------*(x - a)
+                     2
+
+                                                               3
+    gamma(a)*(polygamma(2,a) + 3*polygamma(1,a)*psi(a) + psi(a) )         3
+ + ---------------------------------------------------------------*(x - a)
+                                  6
+
+            4
+ + O((x - a) )
+
+
+taylor(gamma(x),x,-1,3);
+
+
+***** Psi undefined for nonpositive integer argument -1 
+
+***** Psi undefined for nonpositive integer argument -1 
+
+***** Error during expansion (possible singularity!) 
+
+***** Psi undefined for nonpositive integer argument -1 
+
+***** Error during expansion (possible singularity!) 
+
+***** Psi undefined for nonpositive integer argument -1 
+
+***** Error during expansion (possible singularity!) 
+
+***** Psi undefined for nonpositive integer argument -1 
+
+***** Error during expansion (possible singularity!) 
 
 
 %%% showtime;

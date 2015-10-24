@@ -81,6 +81,11 @@ module taylor;
 %*****************************************************************
 %
 %
+% 17-Oct-2015    2.2f
+%   Protect computation of implicit_taylor against error during substitution.
+%   Corrected handling of singularities for dilog and Ei.
+%   Improved printing when expansion point is on negative real axis.
+%
 % 25-Jul-2014    2.2e
 %   Set default value for switches.
 %
@@ -943,8 +948,8 @@ taylorprintterms := 5;         % Only this nubmer of non-zero terms
                                % in progress to indicate that the error
                                % might disappear if the order is
                                % increased.
-taylor!:version := "2.2e";      % version number of the package
-taylor!:date!* := "25-Aug-2014"; % release date
+taylor!:version := "2.2f";     % version number of the package
+taylor!:date!* := "17-Oct-2015"; % release date
 
 if !*verboseload then
   << terpri ();
