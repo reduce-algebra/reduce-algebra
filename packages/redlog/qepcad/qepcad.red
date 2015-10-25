@@ -107,7 +107,8 @@ procedure qepcad_qepcad1(f,fn);
 	 oldutf8,narg,larg,call,rnd;
       oldutf8 := !*utf8;
       scsemic := semic!*;
-      rnd := lto_at2str random(10^5);
+      % rnd := lto_at2str random(10^5);
+      rnd := lto_at2str getpid();
       fn1 := fn or lto_sconcat{qepcad_wd!*,getenv "USER",rnd,".qepcad"};
       if null fn then
       	 fn2 := lto_sconcat{qepcad_wd!*,getenv "USER",rnd,".red"};
@@ -285,7 +286,8 @@ procedure qepcad_slfq(f,fn);
 
 procedure qepcad_slfq1(f,fn);
    begin scalar rnd,w,fn1,fn2,fh,result,oldecho,narg,larg,call;
-      rnd := lto_at2str random(10^5);
+      % rnd := lto_at2str random(10^5);
+      rnd := lto_at2str getpid();
       fn1 := fn or lto_sconcat{qepcad_wd!*,getenv "USER",rnd,".slfq"};
       if null fn then
       	 fn2 := lto_sconcat{qepcad_wd!*,getenv "USER",rnd,".red"};
