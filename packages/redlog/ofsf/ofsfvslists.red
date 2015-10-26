@@ -2318,17 +2318,20 @@ asserted procedure vsub!-3!-2!-leq!-3(at: QfFormula, pr: VSpr, theo: Theory): Qf
    end;
 
 asserted procedure vsub!-3!-2!-leq!-3p(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
-   begin scalar g, f, x, beta1, beta2, guard, w1, w2;
+   begin scalar g, f, x, df, beta1, beta2, alpha1, guard, w1, w2, w3;
       g := rl_arg2l at;
       f := vspr_f pr;
       x := vspr_v pr;
+      df := diff(f, x);
       beta1 := vspr_mk(g, x, {1 . 1, 2 . 1}, 'true);
       beta2 := vspr_mk(g, x, {1 . 2, 2 . 1}, 'true);
+      alpha1 := vspr_mk(df, x, {1 . 1}, 'true);
       guard := vsub_guard beta1;
       w1 := vsds_applyvsts!-at!-pr(ofsf_0mk2('leq, f), beta1, theo);
       w2 := vsds_applyvsts!-at!-pr(ofsf_0mk2('geq, f), beta2, theo);
+      w3 := vsds_applyvsts!-at!-pr(ofsf_0mk2('neq, g), alpha1, theo);
       return ofsf_iparse(
-	 guard and w1 and w2
+	 guard and w1 and w2 and w3
 	    )
    end;
 
