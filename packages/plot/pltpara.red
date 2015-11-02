@@ -45,7 +45,7 @@ symbolic procedure plotevalpara1(x);
        pts:=plotevalpara11(fcn,x,xlo,xhi).pts;
      >>;
      if length fcn=2 then  plotdriver(plot!-2exp,'x,'y,list pts,nil)
-        else plotdriver(plot!-3exp!-reg,'x,'y,'z,list pts) % WN list added
+        else plotdriver(plot!-3exp!-reg,'x,'y,'z,list list pts)
    end;
 
 symbolic procedure plotevalpara11(fm,x,xlo,xhi);
@@ -78,7 +78,7 @@ symbolic procedure plotevalpara2(x,y);
      fcn := cddar fcns; fcns := cdr fcns;
      if length fcn neq 3 then typerr(cdar fcns,"function to plot");
      pts:=plotevalpara21(fcn,x,xlo,xhi,y,ylo,yhi);
-     plotdriver(plot!-3exp!-reg,'x,'y,'z,list pts)  % WN list added
+     plotdriver(plot!-3exp!-reg,'x,'y,'z,list list pts)
    end;
 
 symbolic procedure plotevalpara21(fm,x,xlo,xhi,y,ylo,yhi);

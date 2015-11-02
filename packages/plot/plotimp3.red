@@ -29,15 +29,16 @@ module plotimp3; % Implicit plot: compute the varity {x,y,z|f(x,y,z)=0}.
 % data structure: cubes.
 
 symbolic procedure ploteval3impl(x,y,z);
-  begin scalar rx,ry,rz,f,fcn;
+  begin scalar rx,ry,rz,f,fcns;
      rx:=plotrange(x,
       reval(plot_xrange or '(!*interval!* -10 10)));
      ry:=plotrange(y,
       reval(plot_yrange or '(!*interval!* -10 10)));
      rz:=plotrange(z,
       reval(plot_zrange or '(!*interval!* -10 10)));
-     fcn := car reverse plotfunctions!*;
-     f:= ploteval3impl1(cdar plotfunctions!*,
+     fcns := reverse plotfunctions!*;
+     f:= for each fcn in fcns collect
+       ploteval3impl1(cdar plotfunctions!*,
          x,car rx,cadr rx,
          y,car ry,cadr ry,
          z,car rz,cadr rz);
