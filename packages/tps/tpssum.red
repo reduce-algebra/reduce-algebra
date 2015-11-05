@@ -35,7 +35,8 @@ module tpssum;
 %     <depvar>    expansion variable of series        (a kernel)
 %     <about>     expansion point of series           (algebraic)
 %     <power>     general exponent of power series    (algebraic)
-% <power> must be a strictly increasing function of <sumvar>
+
+%     <power> must be a strictly increasing function of <sumvar>
 %         this is now partially checked by the system
 
 
@@ -53,12 +54,12 @@ begin scalar power, coeff,sumvar,current!-index,last!-exp,current!-exp;
      if  current!-exp < n then <<
          ps!:set!-term(ps,current!-exp,
                         simp!* subst(current!-index,sumvar,coeff));
-         rplaca(cddr a,current!-index)>>;
+         rplaca(cddr a, current!-index)>>;
      last!-exp:=current!-exp>>
    until current!-exp geq n;
    return if current!-exp = n then <<
-              rplaca(cddr a,current!-index);
-              simp!* subst(current!-index,sumvar,coeff) >>
+              rplaca(cddr a, current!-index);
+              simp!* subst(current!-index, sumvar, coeff) >>
           else (nil ./ 1)
 end;
 
@@ -108,6 +109,77 @@ begin scalar !*nosubs,from,sumvar,lowlim,coeff,
    return (ps ./ 1)
 end;
 
-endmodule;
+% Written by Alan Barnes.  November 2015
+% Produces an extendible Taylor series using the classic method.
+%
+%   pstaylor(<function, <depvar>, <about>);
+%
+%     <function>  the function to be expanded         (algebraic)
+%     <depvar>    expansion variable of series        (a kernel)
+%     <about>     expansion point of series           (algebraic)
 
+
+symbolic procedure ps!:taylor!-erule(a,n);
+% one esential rplacd operation in this procedure
+ begin scalar deriv, term, depvar, about;
+   depvar := cadr a;
+   about := caddr a;
+   deriv := cadddr a;
+
+   deriv := prepsq simp list('quotient, list('df, deriv, depvar), n);
+   term := simp subst(about, depvar, deriv);
+   rplacd(cddr a, list(deriv));
+   return term
+ end;
+
+put('ps!:taylor, 'ps!:erule, 'ps!:taylor!-erule);
+% put('ps!:taylor, 'simpfn, 'simpiden);
+put('pstaylor, 'simpfn, 'simppstay);
+
+symbolic procedure simppstay a;
+  if length a = 3 then apply('simppstay1, a)
+  else rerror(tps,5,
+          "Args should be <FORM>,<depvar>, and <point>:  simppstay");
+
+symbolic procedure simppstay1(form, depvar, about);
+  if form=nil then
+     rerror(tps,6,"Args should be <FORM>,<depvar>, and <point>: simppstay")
+  else if not kernp simp!* depvar then
+     typerr(depvar, "kernel:  simppstay")
+  else if  smember(depvar,(about:=prepsqxx simp!* about)) then
+     rerror(tps,7,"Expansion point depends on dependent variable:  simppstay")
+  else simppstay2(ps!:presimp form, depvar, 
+                  if about='infinity then 'ps!:inf else about) ./ 1;
+
+symbolic procedure simppstay2(form, depvar, about);
+   if idp form then make!-ps!-id(form,depvar,about)
+   else if ps!:numberp form then form
+   else if ps!:p form then
+       if (ps!:expansion!-point form=about) and (ps!:depvar form=depvar)
+       then form 
+       else simppstay2(ps!:value form, depvar, about)
+   else begin scalar ps, deriv, psord, term, ept, evar;
+       psord := 0;
+       if about = 'ps!:inf then 
+          << evar := gensym(); ept := 0; 
+             deriv :=
+                prepsq simp subst(list('quotient, 1, evar), depvar, form)>>
+       else 
+          << deriv := form; ept := about; evar := depvar>>;
+       term := simp subst(ept, evar, deriv);
+       while numr term = nil and deriv neq 0 do <<
+          psord := psord + 1;
+          deriv := prepsq simp
+                        list('quotient, list('df, deriv, evar), psord);
+          term := simp subst(ept, evar, deriv);
+       >>;
+       if deriv=0 then return nil;
+       ps := make!-ps(list('ps!:taylor, evar, ept, deriv), 
+                      form, depvar, about);
+       ps!:set!-order(ps, psord);
+       ps!:set!-term(ps, psord, term);
+       return ps
+       end;
+
+endmodule;
 end;

@@ -426,6 +426,36 @@ LOWLIM to {\tt INFINITY}.
    % to +infinity of x**(2n**2+3n).
 \end{verbatim}
 
+
+\subsection{PSTAYLOR Operator}
+
+Syntax:
+
+\noindent{\tt PSTAYLOR}(EXPRN:{\em algebraic},DEPVAR:{\em kernel},
+ABOUT:{\em algebraic}):{\em ps object}
+
+\index{PSTAYLOR operator}
+The {\tt PSTAYLOR} operator returns a  power series object
+(a tagged domain element)
+representing the univariate formal Taylor series expansion of EXPRN with
+respect to the dependent variable DEPVAR about the expansion point
+ABOUT.  Unlike the operator PS it directly evaluates the nth derivative of the 
+expression  EXPRN wrt the variable DEPVAR at the expansion point ABOUT to find
+the nth term of the series.   Poles (and other singularities) at the expansion 
+point will cause an error -- PS and TAYLOR are more robust in this respect.
+The PSTAYLOR operator may be useful in contexts where PS fails to build a suitable
+ recurrence relation automatically and reports too deep a recursion in 
+{\tt ps!:unknown!-crule}. A typical example is the expansion of the $\Gamma$ 
+function about an expansion point which is not a non-positive integer.
+
+The algebraic expression ABOUT should simplify to an expression
+which is independent of the dependent variable DEPVAR, otherwise
+an error will result.  
+
+If ABOUT is the identifier {\tt INFINITY}
+then the power series expansion about DEPVAR = $\infty$ is
+obtained in ascending powers of 1/DEPVAR.
+
 \subsection{PSCOPY Operator}
 
 \index{PSCOPY operator}
