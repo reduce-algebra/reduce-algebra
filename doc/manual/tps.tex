@@ -1,7 +1,22 @@
-
-\index{Power series} \index{truncated power series}
+\documentstyle[11pt,reduce]{article}
+\title{Truncated Power Series}
+\date{}
+\author{Alan Barnes \\
+School of Engineering \& Applied Science  \\
+Aston University, Aston Triangle, \\
+Birmingham B4 7ET \\ GREAT BRITAIN  (now retired)\\
+Email: Alan.Barnes45678@gmail.com \\[0.1in]
+and \\[0.1in]
+Julian Padget \\
+School of Mathematics, University of Bath \\
+Claverton Down, Bath, BA2 7AY \\
+GREAT BRITAIN \\
+Email: jap@maths.bath.ac.uk}
+\begin{document}
+\maketitle
+\index{power series} \index{truncated power series}
 \index{Barnes, Alan} \index{Padget, Julian}
-\subsection{Introduction}
+\section{Introduction}
 \index{Power series expansions}
 This package implements formal power series expansions in one
 variable using the domain mechanism of REDUCE. This means that power
@@ -25,7 +40,7 @@ Syntax:
 \noindent{\tt PS}(EXPRN:{\em algebraic},DEPVAR:{\em kernel},
 ABOUT:{\em algebraic}):{\em ps object}
 
-\ttindextype{PS}{operator}
+\index{PS operator}
 The {\tt PS} operator returns a  power series object
 (a tagged domain element)
 representing the univariate formal power series expansion of EXPRN with
@@ -38,7 +53,7 @@ an error will result.  If ABOUT is the identifier {\tt INFINITY}
 then the power series expansion about DEPVAR = $\infty$ is
 obtained in ascending powers of 1/DEPVAR.
 
-\ttindextype{PSEXPLIM}{operator}
+\index{PSEXPLIM operator}
 If the command is terminated by a semi-colon, a power series object
 representing EXPRN is compiled and then a number of terms of the
 power series expansion are evaluated and printed.  The expansion is
@@ -63,7 +78,7 @@ Laurent series expansion will be produced.
     ps(sin x/(1-cos x),x,0);
 \end{verbatim}
 
-\index{Power series! of user defined function}
+\index{power series ! of user defined function}
 New user-defined functions may be expanded provided the user provides
 LET rules giving
 
@@ -80,7 +95,7 @@ LET rules giving
     ps(sech(x**2),x,0);
 \end{verbatim}
  
-\index{Power series! of integral}
+\index{power series ! of integral}
 The power series expansion of an integral may also be obtained (even if
 REDUCE cannot evaluate the integral in closed form).  An example of
 this is
@@ -98,7 +113,7 @@ default.
  
 \subsection{PSEXPLIM Operator}
 
-\ttindextype{PSEXPLIM}{Operator}
+\index{PSEXPLIM Operator}
 Syntax:
 
 \hspace*{2em} {\tt PSEXPLIM}(UPTO:{\em integer}):{\em integer}
@@ -109,17 +124,16 @@ Syntax:
 
 Calling this operator sets an internal variable of the
 TPS package to the value of UPTO (which should evaluate to an integer).
-
 This internal variable controls how many terms of a power series are printed.
 The value returned by {\tt PSEXPLIM} is the previous value of this variable.
 The default value is six.
  
 If {\tt PSEXPLIM} is called with no argument, the current value for
 the expansion limit is returned.
-
+ 
 \subsection{PSPRINTORDER Switch}
 
-\ttindextype{PSPRINTORDER}{Switch}
+\index{PSPRINTORDER Switch}
 Syntax:
 
 \hspace*{2em} {\tt ON PSPRINTORDER}
@@ -134,7 +148,7 @@ to be printed in big-O notation.   Otherwise, three dots are printed.
 
 \subsection{PSORDLIM Operator}
 
-\ttindextype{PSORDLIM}{operator}
+\index{PSORDLIM operator}
 Syntax:
 
 \hspace*{2em} {\tt PSORDLIM}(UPTO:{\em integer}):{\em integer}
@@ -167,7 +181,7 @@ recognized as such by REDUCE.
 
 \subsection{PSTERM Operator}
 
-\ttindextype{PSTERM}{operator}
+\index{PSTERM operator}
 Syntax:
 
 \hspace*{2em} {\tt PSTERM}(TPS:{\em power series object},
@@ -181,7 +195,7 @@ should be noted that an integer is treated as a power series.
 
 \subsection{PSORDER Operator}
 
-\ttindextype{PSORDER}{operator}
+\index{PSORDER operator}
 Syntax:
 
 \hspace*{2em} {\tt PSORDER}(TPS:{\em power series object}):{\em integer}
@@ -193,7 +207,7 @@ TPS is zero, the identifier {\tt UNDEFINED} is returned.
 
 \subsection{PSSETORDER Operator}
 
-\ttindextype{PSSETORDER}{operator}
+\index{PSSETORDER operator}
 Syntax:
 
 \hspace*{2em} {\tt PSSETORDER}(TPS:{\em power series object},
@@ -211,7 +225,7 @@ series package is inadequate to determine the order automatically.
 
 \subsection{PSDEPVAR Operator}
 
-\ttindextype{PSDEPVAR}{operator}
+\index{PSDEPVAR operator}
 Syntax:
 
 \hspace*{2em} {\tt PSDEPVAR}(TPS:{\em power series object})
@@ -224,7 +238,7 @@ is an integer, the identifier {\tt UNDEFINED} is returned.
 
 \subsection{PSEXPANSIONPT operator}
 
-\ttindextype{PSEXPANSIONPT}{operator}
+\index{PSEXPANSIONPT operator}
 Syntax:
 
 \hspace*{2em}
@@ -239,7 +253,7 @@ returned.
 
 \subsection{PSFUNCTION Operator}
 
-\ttindextype{PSFUNCTION}{operator}
+\index{PSFUNCTION operator}
 Syntax:
 
 \hspace*{2em}
@@ -252,7 +266,7 @@ results.
 
 \subsection{PSCHANGEVAR Operator}
 
-\ttindextype{PSCHANGEVAR}{operator}
+\index{PSCHANGEVAR operator}
 Syntax:
 
 \hspace*{2em} {\tt PSCHANGEVAR}(TPS:{\em power series object},
@@ -267,7 +281,7 @@ variable is returned.
 
 \subsection{PSREVERSE Operator}
 
-\ttindextype{PSREVERSE}{operator}
+\index{PSREVERSE operator}
 Syntax:
 
 \hspace*{2em}
@@ -309,13 +323,13 @@ If TPS is not a power series object after evaluation an error results.
 
 \subsection{PSCOMPOSE Operator}
 
-\ttindextype{PSCOMPOSE}{operator}
+\index{PSCOMPOSE operator}
 Syntax:
 
 \hspace*{2em} {\tt PSCOMPOSE}(TPS1:{\em power series},
 TPS2:{\em power series}):{\em power series}
 
-\index{Power series! composition}
+\index{power series ! composition}
 {\tt PSCOMPOSE} performs power series composition.
 The power series TPS1 and TPS2 are functionally composed.
 That is to say that TPS2 is substituted for the expansion
@@ -362,7 +376,7 @@ infinite sums) and a REDUCE error occurs.
 
 \subsection{PSSUM Operator}
 
-\ttindextype{PSSUM}{operator}
+\index{PSSUM operator}
 Syntax:
 
 \begin{tabbing}
@@ -412,9 +426,39 @@ LOWLIM to {\tt INFINITY}.
    % to +infinity of x**(2n**2+3n).
 \end{verbatim}
 
+
+\subsection{PSTAYLOR Operator}
+
+Syntax:
+
+\noindent{\tt PSTAYLOR}(EXPRN:{\em algebraic},DEPVAR:{\em kernel},
+ABOUT:{\em algebraic}):{\em ps object}
+
+\index{PSTAYLOR operator}
+The {\tt PSTAYLOR} operator returns a  power series object
+(a tagged domain element)
+representing the univariate formal Taylor series expansion of EXPRN with
+respect to the dependent variable DEPVAR about the expansion point
+ABOUT.  Unlike the operator PS it directly evaluates the nth derivative of the 
+expression  EXPRN wrt the variable DEPVAR at the expansion point ABOUT to find
+the nth term of the series.   Poles (and other singularities) at the expansion 
+point will cause an error -- PS and TAYLOR are more robust in this respect.
+The PSTAYLOR operator may be useful in contexts where PS fails to build a suitable
+ recurrence relation automatically and reports too deep a recursion in 
+{\tt ps!:unknown!-crule}. A typical example is the expansion of the $\Gamma$ 
+function about an expansion point which is not a non-positive integer.
+
+The algebraic expression ABOUT should simplify to an expression
+which is independent of the dependent variable DEPVAR, otherwise
+an error will result.  
+
+If ABOUT is the identifier {\tt INFINITY}
+then the power series expansion about DEPVAR = $\infty$ is
+obtained in ascending powers of 1/DEPVAR.
+
 \subsection{PSCOPY Operator}
 
-\ttindextype{PSCOPY}{operator}
+\index{PSCOPY operator}
 Syntax:
 
 \hspace*{2em} {\tt PSCOPY}(TPS:{\em power series}):{\em power series}
@@ -444,7 +488,7 @@ substitution, thus:
 
 \subsection{PSTRUNCATE Operator}
 
-\ttindextype{PSTRUNCATE}{operator}
+\index{PSTRUNCATE operator}
 Syntax:
 
 \hspace*{2em} {\tt PSTRUNCATE}(TPS:{\em power series} POWER: {\em integer)}
@@ -470,7 +514,7 @@ returned.  If {\tt POWER} does not simplify to an integer or if
 
 \subsection{Arithmetic Operations}
 
-\index{Power series! arithmetic}
+\index{power series ! arithmetic}
 As power series objects are domain elements they may be combined
 together in algebraic expressions in algebraic mode of REDUCE in the
 normal way.
@@ -478,9 +522,9 @@ normal way.
 For example if A and B are power series objects then the commands
 such as:
 
-\ttindextype{+}{!power series} \ttindextype{-}{!power series}
-\ttindextype{/}{!power series} \ttindextype{*}{!power series}
-\ttindextype{**}{!power series}
+\index{+ ! power series} \index{- ! power series}
+\index{/ ! power series} \index{* ! power series}
+\index{** ! power series}
 \begin{verbatim}
     a*b;
     a/b;
@@ -493,7 +537,7 @@ respectively.
  
 \subsection{Differentiation}
 
-\index{Power series! differentiation}
+\index{power series ! differentiation}
 If A is a power series object depending on X then the input
 {\tt df(a, x);} will produce the power series expansion of the
 derivative of A with respect to X.
@@ -504,7 +548,7 @@ not work as intended; instead one must input
 in order to obtain the power series expansion of the integral of
 {\tt a}.
 
-\subsection{Restrictions and Known Bugs}
+\section{Restrictions and Known Bugs}
 
 If A is a power series object and X is a variable
 which evaluates to itself then currently expressions such as {\tt a*x}
@@ -555,4 +599,4 @@ overflow may occur.
 There is no simple way to write the results of power series
 calculation to a file and read them back into REDUCE at a later
 stage.
-
+\end{document}
