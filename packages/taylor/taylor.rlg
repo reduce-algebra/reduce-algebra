@@ -2621,6 +2621,59 @@ taylor(gamma(x),x,-1,3);
 ***** Error during expansion (possible singularity!) 
 
 
+taylor(gamma(1+x),x,0, 6);
+
+
+                                  2     2
+                     6*euler_gamma  + pi    2
+1 - euler_gamma*x + ----------------------*x
+                              12
+
+                                3                 2
+     - 4*zeta(3) - 2*euler_gamma  - euler_gamma*pi    3
+ + -------------------------------------------------*x
+                          12
+
+                                            4                 2   2       4
+    160*zeta(3)*euler_gamma + 20*euler_gamma  + 20*euler_gamma *pi  + 3*pi    4
+ + -------------------------------------------------------------------------*x
+                                      480
+
+                  7
+ + (2 terms) + O(x )
+
+
+COMMENT Test printing for negative expansion point;
+
+
+taylor(sin x,x, -1, 6);
+
+
+                              sin(1)         2    cos(1)         3
+ - sin(1) + cos(1)*(x + 1) + --------*(x + 1)  - --------*(x + 1)
+                                2                   6
+
+    sin(1)         4                        7
+ - --------*(x + 1)  + (2 terms) + O((x + 1) )
+      24
+
+
+taylor(sin x,x, -1/2, 6);
+
+
+                                         1                       1
+                                    sin(---)                cos(---)
+        1          1         1           2          1  2         2          1  3
+ - sin(---) + cos(---)*(x + ---) + ----------*(x + ---)  - ----------*(x + ---)
+        2          2         2         2            2          6            2
+
+         1
+    sin(---)
+         2          1  4                       1  7
+ - ----------*(x + ---)  + (2 terms) + O((x + ---) )
+       24           2                          2
+
+
 %%% showtime;
 
 COMMENT That's all, folks;

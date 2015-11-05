@@ -873,6 +873,14 @@ taylor(gamma(x),x,a,3);
 
 taylor(gamma(x),x,-1,3);
 
+taylor(gamma(1+x),x,0, 6);
+
+COMMENT Test printing for negative expansion point;
+
+taylor(sin x,x, -1, 6);
+
+taylor(sin x,x, -1/2, 6);
+
 %%% showtime;
 
 COMMENT That's all, folks;

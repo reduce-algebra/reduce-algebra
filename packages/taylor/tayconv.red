@@ -75,6 +75,8 @@ symbolic procedure preptaylor!*2 (coeff, template);
 symbolic procedure checkdifference (var, var0);
   if var0 = 0 then var
    else if numberp var0 and var0 < 0 then {'plus, var, -var0}
+   else if eqcar(var0,'quotient) and eqcar(cadr var0,'minus)
+    then {'plus, var, {'quotient,cadr cadr var0,caddr var0}}
     else {'difference, var, var0};
 %   else {'difference, var, if numberp var0 and var0 < 0 then {'minus, -var0} else var0};
 

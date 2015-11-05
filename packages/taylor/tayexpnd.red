@@ -119,9 +119,10 @@ symbolic procedure taylorexpand(sq,tp);
       !*tayexpanding!* := t;
     restart:
       !*tayrestart!* := nil;
-      result := errorset!*({'taylorexpand1,mkquote sq,mkquote ll,'t},
-                           !*trtaylor);
-      put('taylor!*,'klist,oldklist);
+      unwind!-protect(
+      	 result := errorset!*({'taylorexpand1,mkquote sq,mkquote ll,'t},
+	                      !*trtaylor),
+         put('taylor!*,'klist,oldklist));
       if null errorp result
         then <<result := car result;
                if cycles>0 and taylor!-kernel!-sq!-p result
@@ -498,7 +499,7 @@ COMMENT The cache maintained in !*!*taylorexpand!-diff!-cache!*!* is
 fluid '(!*!*taylorexpand!-diff!-cache!*!*);
 
 symbolic procedure taylorexpand!-diff(krnl,ll,flg);
-  begin scalar result;
+  begin scalar result,gammaflg;
     %
     % We use a very simple strategy: if we know a partial derivative
     %  of the kernel, we pass the problem to taylorexpand!-diff1 which
@@ -509,12 +510,21 @@ symbolic procedure taylorexpand!-diff(krnl,ll,flg);
     %        removing it seems to slow down processing
     %
     if null atom krnl and get(car krnl,dfn_prop krnl)
-      then
-        (result := errorset!*({'taylorexpand!-diff1,
-                                 mkquote krnl,mkquote ll,mkquote flg},
-                                !*backtrace)
-           where !*!*taylorexpand!-diff!-cache!*!* :=
-                   !*!*taylorexpand!-diff!-cache!*!*);
+      then <<
+	 %
+	 % Remove shift rules for psi as they
+	 % interfere with the expansion process
+	 %
+	 gammaflg := smemqlp('(gamma psi polygamma),krnl);
+	 if gammaflg then rule!-list('(psi_rules),nil);
+	 unwind!-protect(
+            (result := errorset!*({'taylorexpand!-diff1,
+	                          mkquote krnl,mkquote ll,mkquote flg},
+                                  !*backtrace)
+               where !*!*taylorexpand!-diff!-cache!*!* :=
+                   !*!*taylorexpand!-diff!-cache!*!*),
+	    if gammaflg then rule!-list('(psi_rules),t))
+        >>;
     %
     % If this fails we fall back to simple differentiation and
     %  substitution at the expansion point.

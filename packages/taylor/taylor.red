@@ -7,7 +7,7 @@ module taylor;
 %
 %****************************************************************
 %
-%  Copyright (C) 1989--2014 by Rainer M. Schoepf, all rights reserved.
+%  Copyright (C) 1989--2015 by Rainer M. Schoepf, all rights reserved.
 %
 %
 %  Error reports please to: <reduce-algebra-developers@lists.sourceforge.net>
@@ -81,10 +81,13 @@ module taylor;
 %*****************************************************************
 %
 %
-% 17-Oct-2015    2.2f
+% 05-Nov-2015    2.2f
 %   Protect computation of implicit_taylor against error during substitution.
 %   Corrected handling of singularities for dilog and Ei.
 %   Improved printing when expansion point is on negative real axis.
+%   First attempt at Taylor expansion of gamma function: removing shift rules
+%    for psi function during expansion allows computation of gamma's Taylor series
+%    via differentiation.
 %
 % 25-Jul-2014    2.2e
 %   Set default value for switches.
@@ -949,7 +952,7 @@ taylorprintterms := 5;         % Only this nubmer of non-zero terms
                                % might disappear if the order is
                                % increased.
 taylor!:version := "2.2f";     % version number of the package
-taylor!:date!* := "17-Oct-2015"; % release date
+taylor!:date!* := "05-Nov-2015"; % release date
 
 if !*verboseload then
   << terpri ();
