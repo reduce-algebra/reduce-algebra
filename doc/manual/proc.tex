@@ -181,6 +181,39 @@ recurrence relation to compute only those polynomials that have not already
 been derived. We leave it as an exercise for the reader to write such a
 definition.
 
+\section{Matrix-valued Procedures}
+\ttindex{MATRIXPROC}
+\hypertarget{command:MATRIXPROC}{}
+
+Normally, procedures can only return scalar values. In order for a procedure to
+return a mtrix, it has to be declared of type \texttt{MATRIXPROC}:
+\begin{verbatim}
+        matrixproc SkewSym1 (w);
+           mat((0,-w(3,1),w(2,1)),
+               (w(3,1),0,-w(1,1)),
+               (-w(2,1), w(1,1), 0));
+\end{verbatim}
+Following this declaration, the call to \texttt{SkewSym1} can be used as a matrix, e.g.
+\begin{verbatim}
+        X := SkewSym1(mat((qx),(qy),(qz)));
+
+
+             [  0     - qz   qy  ]
+             [                   ]
+        x := [ qz      0     - qx]
+             [                   ]
+             [ - qy   qx      0  ]
+
+        X * mat((rx),(ry),(rz));
+
+
+        [ qy*rz - qz*ry  ]
+        [                ]
+        [ - qx*rz + qz*rx]
+        [                ]
+        [ qx*ry - qy*rx  ]
+\end{verbatim}
+
 
 \section{Using LET Inside Procedures}
 
