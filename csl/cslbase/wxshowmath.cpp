@@ -34,7 +34,9 @@
 
 
 // Without the fullowing things like UINT64_C will not be available.
-#define __STDC_CONSTANT_MACROS
+#if defined __cplusplus && !defined __STDC_CONSTANT_MACROS
+#define __STDC_CONSTANT_MACROS 1
+#endif
 
 #include"wx/wxprec.h"
 

@@ -818,6 +818,24 @@ int number_of_processors()
 }
 
 #else
+#ifdef __SC_NPROCESSORS_CONF
+
+/*
+ * If I am using gcc/libc then this easy way out should be available
+ */
+
+int number_of_processors()
+{
+    return sysconf(_SC_NPROCESSORS_CONF);
+}
+
+#else
+
+/*
+ * The above two rather simple fragments seem to work on Windows, Linux
+ * and OSX, so the older options below remain as mere fallbacks.
+ */
+
 #if defined HAVE_SYS_SYSCTL_H && defined HAVE_SYSCTLBYNAME
 
 /*
@@ -831,7 +849,6 @@ int number_of_processors()
     if (sysctlbyname("hw.ncpu", &n, &len, NULL, 0) != 0) return 1;
     return n;
 }
-
 
 #else
 #if defined HAVE_SYSCALL_H && \
@@ -879,6 +896,7 @@ int number_of_processors()
     return 1;  /* Have not detected a way that I can tell better */
 }
 
+#endif
 #endif
 #endif
 #endif

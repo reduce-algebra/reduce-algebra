@@ -241,11 +241,11 @@ extern uint32_t cuckoo_insert(
 // of merit that is best if it is a low value, and that represents an
 // estimate for the number of probes needed to look things up, with
 // higher importance given to IMPORTANT cases. It should always be
-// between 10000 and 30000, where 10000 would indicate that all keys
+// between 1.0 and 3.0, where 1.0 would indicate that all keys
 // had been so positioned that they were accessed in only one probe, while
-// 30000 would suggest that every key needed 3 probes. If all keys where
-// tagged as IMPORTANT than a merit of 15000 would be the target to be beaten,
-// while if many of STANDARD anything better than 20000 counts as good.
+// 3.0 would suggest that every key needed 3 probes. If all keys where
+// tagged as IMPORTANT than a merit of 1.5 would be the target to be beaten,
+// while if many of STANDARD anything better than 2.0 counts as good.
 //
 // If table_size is set to (uint32_t)(-1) in a cuckoo_parameters that marks
 // failure to set up the table.
@@ -255,7 +255,7 @@ typedef struct __cuckoo_parameters
     uint32_t table_size;
     uint32_t modulus2;
     uint32_t offset2;
-    uint32_t merit;
+    double   merit;
 } cuckoo_parameters;
 
 // cuckoo_optimise seeks a near-optimal hash table by picking values for
@@ -360,7 +360,39 @@ extern cuckoo_parameters cuckoo_binary_optimise(
     int min_table_size,            // minimum table size
     int max_table_size,            // maximum table size
     cuckoo_get_key *get_key,       // access functions for hash table.
+    cuckoo_set_key *set_key,
+    double merit_target);          // target for table merit
+
+// This function takes a size and values of modulus2 and offset2 and
+// finds the best assignment corresponding to them. It returns a figure of
+// merit in the range 1.0 to 3.0 on success, and -1.0 on failure. Note that
+// low values of merit are good.
+// If the merit found here is < target_merit it displays trace output.
+// The hash table it builds up is a simple array of unsigned integers, so that
+// the extra overhead of the getter and setter functions is avoided.
+
+extern double hungarian_insert_all(
+    uint32_t *items,
+    int item_count,
+    cuckoo_importance *importance,
+    uint32_t *table,
+    int table_size,
+    uint32_t modulus2,
+    uint32_t offset2,
+    double target_merit);
+
+// For a given table size try all values of modulus2 and offset2 and
+// return information about the best assignment found.
+
+extern cuckoo_parameters hungarian_try_all_hash_functions(
+    uint32_t *keys,
+    int keycount,
+    cuckoo_importance *importance,
+    void *hash,
+    int hash_item_size,
+    int hashsize,
     cuckoo_set_key *set_key);
+
 
 #endif // __cuckoo_h
 

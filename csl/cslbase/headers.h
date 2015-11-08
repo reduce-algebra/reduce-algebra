@@ -75,7 +75,7 @@
 #include <time.h>
 #include <stdarg.h>
 
-#ifdef __cplusplus
+#if defined __cplusplus && !defined __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS 1
 #endif
 

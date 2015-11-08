@@ -30,7 +30,12 @@
 //@ For more information, please refer to <http://unlicense.org>
 //
 // "indy256" is otherwise Andrey Naumenko, and this comment is to thank
-// him for making his code available.   A C Norman, October 2015.
+// him for making his code available. I changed the file to include the
+// above copyright/license statement and have make the static variable
+// thread local. I added the subversion "Id" line too. But the guts of the
+// code is just as it originally was.
+//
+//                                    A C Norman, October 2015.
 
 // $Id$
 
@@ -44,9 +49,10 @@
 #define MAXN2  50000   // limit size of second set (B)
 #define MAXM  150000   // limit the number of edges joining A to B.
 
-static int n1, n2, edges, last[MAXN1], prev[MAXM], head[MAXM];
-static int matching[MAXN2], dist[MAXN1], Q[MAXN1];
-static int used[MAXN1], vis[MAXN1];
+// ACN has made these variable Thread Local.
+static __thread int n1, n2, edges, last[MAXN1], prev[MAXM], head[MAXM];
+static __thread int matching[MAXN2], dist[MAXN1], Q[MAXN1];
+static __thread int used[MAXN1], vis[MAXN1];
 
 // A trivial library routine. In the C++ code thas was provided by the STL.
 static void fill(int *p, int *q, int val)
@@ -135,175 +141,5 @@ int maxMatching()
         res += f;
     }
 }
-
-// Now an adapter that takes my hashing problem and maps it onto the
-// calls needed here. The input is a set of keys, a table size and two
-// parameters that control details of the hashing. It then has the hash
-// table it is tryng to create, which it fills in if it can find a perfect
-// way to do so.
-
-// This tries to insert all the keys in "items" into the hash-table "table"
-// and it returns -1 if it fails. A fuller variant would return a (non-
-// negative) score on success, with smaller values better.
-
-int cuckoo_insert_all(
-    uint32_t *items,
-    int item_count,
-    cuckoo_importance *importance,
-    void *table,
-    int hash_item_size,
-    int table_size,
-    cuckoo_get_key *get_key,
-    cuckoo_set_key *set_key,
-    uint32_t modulus2,
-    uint32_t offset2)
-{
-    int i;
-    init(item_count, table_size);
-    for (i=0; i<item_count; i++)
-    {   uint32_t key = items[i];
-        uint32_t h1 = key % table_size;
-        uint32_t h2 = key % modulus2 + offset2;
-        uint32_t h3 = (h1 + h2) % table_size;
-        int imp = (*importance)(key);
-        switch (imp)
-        {
-    default:
-            addEdge(i, (int)h3);
-            // drop through
-    case CUCKOO_IMPORTANT:
-            addEdge(i, (int)h2);
-            // drop through
-    case CUCKOO_VITAL:
-            addEdge(i, (int)h1);
-            break;
-        }
-    }
-    i = maxMatching();
-//  printf("Found matching of size %d (wanted %d) m = %d o = %d\n",
-//         i, item_count, (int)modulus2, (int)offset2);
-    if (i != item_count) return -1;
-//
-// Extract details of the matching and put into the hash table
-    memset(table, 0, hash_item_size*table_size);
-    fill(used, used + n1, 0);
-    for (i=0; i<n2; i++)
-    {   int j = matching[i], k;
-        if (j == -1) continue;
-        if (j >= n1)
-        {   printf("internal failure, j > %d\n", n1);
-            exit(1);
-        }
-        used[j] = 1;
-        k = items[j];
-//      printf("Set hash table entry %d to %d/%x\n", j, k, k);
-        set_key((char *)table + hash_item_size*i, k);
-    }
-#if DEBUG
-// Now in a spirit of neurosis I will check whether everything can be
-// looked up happily...
-    for (i=0; i<item_count; i++)
-    {   uint32_t key = items[i];
-        uint32_t h1 = key % table_size;
-        uint32_t h2 = key % modulus2 + offset2;
-        uint32_t h3 = (h1 + h2) % table_size;
-        uint32_t k1;
-        if (used[i] &&
-            (key == get_key((char *)table + hash_item_size*h1) ||
-             key == get_key((char *)table + hash_item_size*h2) ||
-             key == get_key((char *)table + hash_item_size*h3))) continue;
-        printf("Key %d/%x not found in table\n");
-        printf("%d %d %d\n", table_size, modulus2, offset2);
-        for (i=0; i<table_size; i++)
-            printf("%d: %d\n", i, get_key((char *)table + hash_item_size*i));
-        exit(1);
-    }
-#endif
-    return 1;
-}
-
-#ifdef TEST
-
-// The code here can be compiled with "TEST" predefined and that will
-// set up a small test of its behaviour... and the code for the test can
-// also serve as an illustration of how it could be used.
-
-uint32_t keys[] =
-{
-    1,
-    3,
-    9,
-    27,
-    81,
-    243,
-    729,
-    2187,
-    6561,
-    19683,
-    59049
-};
-
-uint32_t hash[1000];
-
-int importance(uint32_t key)
-{
-    return CUCKOO_STANDARD;
-}
-
-uint32_t get_key(void *p)
-{
-    return *(uint32_t *)p;
-}
-
-void set_key(void *p, uint32_t k)
-{
-    *(uint32_t *)p = k;
-}
-
-int main(int argc, char *argv[])
-{
-    int keycount = sizeof(keys)/sizeof(keys[0]);
-    int hashsize = keycount+7;
-    int i;
-    int modulus2, offset2;
-    for (modulus2 = 3; modulus2 < hashsize; modulus2++)
-        for (offset2 = 0; modulus2+offset2<hashsize; offset2++)
-            if (cuckoo_insert_all(
-                keys,
-                keycount,
-                importance,
-                hash,
-                sizeof(hash[0]),
-                hashsize,
-                get_key,
-                set_key,
-                modulus2,
-                offset2) != 0) goto found;
-    printf("No solution found\n");
-    exit(0);
-found:
-    printf("OK with modulus2 = %d offset2 = %d\n", modulus2, offset2);
-// Display everything...
-    for (i=0; i<keycount; i++)
-    {   uint32_t key = keys[i];
-        uint32_t h1 = key % hashsize;
-        uint32_t h2 = key % modulus2 + offset2;
-        uint32_t h3 = (h1 + h2) % hashsize;
-// Each key and the three locations that the key could legally be placed.
-        printf("%d: %d... %d %d %d\n", i, key, h1, h2, h3);
-    }
-// The internal tables left behind by the code that found a match.
-    for (i=0; i<n1; i++)
-        printf("%d: last:%d dist:%d Q:%d used:%d vis:%d\n",
-            i, last[i], dist[i], Q[i], used[i], vis[i]);
-    for (i=0; i<n2; i++)
-        printf("%d: matching:%d\n", i, matching[i]);
-    for (i=0; i<edges; i++)
-        printf("%d: head:%d prev:%d\n", i, head[i], prev[i]);
-    printf("Done\n");
-    return 0;
-}
-
-#endif // TEST
 
 // end of hopkar.c

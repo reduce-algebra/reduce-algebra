@@ -46,6 +46,94 @@
 
 
 #ifdef CREATE
+
+// The slowest part of the code here is finding a good hash regime
+// to obtain good occupancy for the main character metrics table.
+// Telling the code where to look can help speed it up. So if you
+// predefined RESTRICTED_SEARCH at compile time this will avoid a lengthy
+// search, but if you ever alter the fonts used or any other things
+// that can inclfluence how the hash table might pack you will need to
+// to run at least once without that and transcribe the new optimum
+// information to here.
+
+#ifdef RESTRICTED_SEARCH
+// The values here are tolerably close to the expected best answer!
+#define MAIN_LOW        10056
+#define MAIN_HIGH       10080
+#else
+#define MAIN_LOW        (mainkeycount-1)
+#define MAIN_HIGH       (sizeof(hashtable)/sizeof(hashtable[0]))
+#endif
+
+// Even if I am going to do a full search (ie regardless of the setting
+// of RESTRICTED_SEARCH) I will check if a matching is available with the following
+// parameters. If it is then I do not need to do any more searching at all,
+// and the code here will run really fast! as with RESTRICTED_SEARCH and
+// if you feed really cautious you should set these to ridiculous values
+// (eg EXPECTED_TABLESIZE smaller than the amount of data in use so that
+// things can not possibly fit) after altering font details.
+
+#ifndef EXPECTED_TABLESIZE
+#define EXPECTED_TABLESIZE   10057
+#endif
+#ifndef EXPECTED_MODULUS2
+#define EXPECTED_MODULUS2     4955
+#endif
+#ifndef EXPECTED_OFFSET2
+#define EXPECTED_OFFSET2      5000
+#endif
+
+// After having used a simple matching process to identify the smallest
+// hash table that could be used the code will proceed to try all
+// configurations of that size and find for each the matching that has
+// lowest weight - in a sense that means it should create a hash table
+// where as large a proportion of the keys as possible go in the location
+// that means that access to them only takes one probe.
+// This uses the "Hungarian" (sometimes known as Munkres) algorithm, and to
+// avoid the substantial cost I can specify a target figure of merit (ie a
+// target for the average number of probes that accessing keys will involve.
+// If the assignment established by EXPECTED_TABLESIZE etc attains this
+// limit the heavy search for an optimum will not be activated.
+//
+// A "merit" value is an floating point value showing the average number
+// of probes a lookup might take, assuming (in a fairly arbitrary way) that
+// there are 4 times as many lookups of "IMPORTANT" keys as "STANDARD"
+// ones. If every key ended up in its first choice position (possible with
+// a really lightly loaded table) it would end up as 1.0. The worst imaginable
+// case would have every key in its third choice position and a merit 0f 3.0,
+// but it is hard to see how to force every key to avoid choices 1 and 2, so
+// this is an upper bound not to be attained. If keys ended up evenly
+// distributed across the three places that they could go the overall merit
+// would be 2.0. If everything was IMPORTANT so all keys took either 1 or 2
+// probes and those two cases were equally likely then the overall value would
+// be 1.5. 
+//
+// If you set TARGET_MERIT to 4.0 (ie 4 probes per key) then any matching
+// at all will beat that and so first solution tried will be accepted.
+// If on the other hand you set it to 0.0 then no assignment can achieve
+// that so all possible hash options will be tried to find the best
+// merit possible. Running the expensive search once and putting the merit
+// found my it in here will keep you safe and fast!
+
+#ifndef TARGET_MERIT
+// The merit score for my "EXPECTED" hash parameters is 1.472.
+// None of the "important" keys need more than one probe, and for the
+// "standard" cases there are 5904 cases using 1 probe, 2291 needing 2
+// and only 1489 that use the full 3 probes. So for all the common keys
+// access is in just 1 probe, and even if you were to suppose that all
+// keys were equally probable the average would only be 1.526 probes
+// per access.
+//
+// Finding the values for modulus2 and offset2 took a three of days of CPU
+// time (albeit mostly not exploiting any parallelism) but now the good
+// EXPECTED parameters are provided the hash arrangement can be reconstructed
+// and verified fairly fast.
+//
+#define TARGET_MERIT       1.473
+#endif
+
+
+
 #include <stdio.h>
 #include <stdint.h>
 #include <inttypes.h>
@@ -109,21 +197,6 @@
 // since this is a run-once sort of program I feel I can rely on using
 // either a tolerably recent gcc or some other C compiler that supports
 // C-99.
-
-// The slowest part of the code here is finding a good hawsh regime
-// to obtain good occupancy for the main character metrics table.
-// Telling the code where to look can help speed it up. But of you
-// have changed things then please predefine CONSERVATIVE to do a
-// broad search.
-
-#ifdef CONSERVATIVE
-#define MAIN_LOW        (mainkeycount-1)
-#define MAIN_HIGH       (sizeof(hashtable)/sizeof(hashtable[0]))
-#else
-// The values here are tolerably close to the expected best answer!
-#define MAIN_LOW        10056
-#define MAIN_HIGH       10173
-#endif
 
 
 // "wc -L" tells me that all my font-metric files have lines that are
@@ -494,6 +567,8 @@ int32_t decodename(int fontnum, const char *name)
 // useful.
 
 static uint64_t hashtable[MAXCHAR_METRICS_TABLE_SIZE][5];
+// The following smaller array is used with the Hungarian algorithm...
+static uint32_t uint32hashtable[MAXCHAR_METRICS_TABLE_SIZE];
 
 static int main_importance(uint32_t key)
 {
@@ -709,7 +784,9 @@ int main(int argc, char *argv[])
             if (topaccent)
             {   if (sscanf(line, "N %s ; DX %d", accentname[accentp], &accentval[accentp]) == 2)
                     accentp++;
+#if 0
                 printf("%d: %s\n", accentp, line);
+#endif
                 continue;
             }
             if (variant)
@@ -721,7 +798,7 @@ int main(int argc, char *argv[])
                 else if (sscanf(line, "HX %s ;", variantname[variantp]) == 1)
                     variantdirection[variantp] = 1;
                 else continue;
-printf("Variant record %d (%d) for %s\n", variantp, variantdirection[variantp], variantname[variantp]); // @@@
+// printf("Variant record %d (%d) for %s\n", variantp, variantdirection[variantp], variantname[variantp]);
 // before collecting data I zero out all the relevant fields so that
 // when data is not present I end up in a sane state.
                 v1[variantp][0] = 0;
@@ -796,32 +873,35 @@ printf("Variant record %d (%d) for %s\n", variantp, variantdirection[variantp], 
                     some = 1;
                 }
                 if (some)
-                {   printf("%d: (%d) %s\n", variantp,
+                {
+#if 0
+                    printf("%d: (%d) %s\n", variantp,
                             variantdirection[variantp], variantname[variantp]);
                     printf(" sizes: %s %s %s %s %s\n",
                            v1[variantp], v2[variantp],
                            v3[variantp], v4[variantp],
                            v5[variantp]);
-                    if (P1[0] != 0) printf(" huge1: %s %d %d %d %d\n",
+                    if (P1[variantp] != 0) printf(" huge1: %s %d %d %d %d\n",
                        P1[variantp], vdata1[variantp][0],
                        vdata1[variantp][1], vdata1[variantp][2],
                        vdata1[variantp][3]);
-                    if (P2[0] != 0) printf(" huge2: %s %d %d %d %d\n",
+                    if (P2[variantp] != 0) printf(" huge2: %s %d %d %d %d\n",
                        P2[variantp], vdata2[variantp][0],
                        vdata2[variantp][1], vdata2[variantp][2],
                        vdata2[variantp][3]);
-                    if (P3[0] != 0) printf(" huge3: %s %d %d %d %d\n",
+                    if (P3[variantp] != 0) printf(" huge3: %s %d %d %d %d\n",
                        P3[variantp], vdata3[variantp][0],
                        vdata3[variantp][1], vdata3[variantp][2],
                        vdata3[variantp][3]);
-                    if (P4[0] != 0) printf(" huge4: %s %d %d %d %d\n",
+                    if (P4[variantp] != 0) printf(" huge4: %s %d %d %d %d\n",
                        P4[variantp], vdata4[variantp][0],
                        vdata4[variantp][1], vdata4[variantp][2],
                        vdata4[variantp][3]);
-                    if (P5[0] != 0) printf(" huge5: %s %d %d %d %d\n",
+                    if (P5[variantp] != 0) printf(" huge5: %s %d %d %d %d\n",
                        P5[variantp], vdata5[variantp][0],
                        vdata5[variantp][1], vdata5[variantp][2],
                        vdata5[variantp][3]);
+#endif
                     variantp++;
                 }
                 continue;
@@ -1062,9 +1142,12 @@ printf("Variant record %d (%d) for %s\n", variantp, variantdirection[variantp], 
 
 // Well because it will be a cheaper process I will set up the small hash-
 // tables for accent placement and large-characters first...
+#if 0
     for (i=0; i<accentp; i++)
         printf("    %#.8x,\n", accentnum[i]);
+#endif
 
+    printf("About to do topaccent table creation with %d keys\n", accentp);
     cuckoo_parameters topcentre_r =
         cuckoo_binary_optimise(
             accentnum,
@@ -1075,7 +1158,8 @@ printf("Variant record %d (%d) for %s\n", variantp, variantdirection[variantp], 
             accentp-1,
             sizeof(topcentre)/sizeof(topcentre[0]),
             accent_get,
-            accent_set);
+            accent_set,
+            1.0);
     printf("Table size = %d (%d %d)\n", topcentre_r.table_size,
             topcentre_r.modulus2, topcentre_r.offset2);
     printf("Now put in accent positions\n");
@@ -1119,7 +1203,8 @@ printf("Variant record %d (%d) for %s\n", variantp, variantdirection[variantp], 
             usefulp-1,
             sizeof(variant_table)/sizeof(variant_table[0]),
             variant_get,
-            variant_set);
+            variant_set,
+            0.0);
         printf("Variant table size = %d (%d %d)\n", variant_r.table_size,
                 variant_r.modulus2, variant_r.offset2);
     }
@@ -1183,7 +1268,8 @@ printf("Variant record %d (%d) for %s\n", variantp, variantdirection[variantp], 
             usefulp-1,
             sizeof(extension_table)/sizeof(extension_table[0]),
             extension_get,
-            extension_set);
+            extension_set,
+            0.0);
         printf("Extension table size = %d (%d %d)\n", extension_r.table_size,
                 extension_r.modulus2, extension_r.offset2);
     }
@@ -1229,9 +1315,8 @@ printf("Variant record %d (%d) for %s\n", variantp, variantdirection[variantp], 
         extension_r.table_size, usefulp,
         (100.0*usefulp)/extension_r.table_size);
                 
-
 //==========================================================================
-// (2) Try inserting everything in to the hash table
+// (2) Try inserting everything in to the main metrics hash table
 //==========================================================================
 
 // I will remove duplicate keys here first... I will cheerfully use
@@ -1249,6 +1334,7 @@ printf("Variant record %d (%d) for %s\n", variantp, variantdirection[variantp], 
     }
 
     printf("About to try to optimise for %d entries\n", mainkeycount);
+
 // In my case there are 10019 keys to consider, If I do a proper search
 // that can take quite a while - say 45 minutes on a reasonably fast desktop
 // system. So as I cunning ploy I will first try the parameters that
@@ -1256,41 +1342,81 @@ printf("Variant record %d (%d) for %s\n", variantp, variantdirection[variantp], 
 // succeed (very rapidly) and I can use it. If that fails I will drop back
 // to the more expensive search
 
-#define EXPECTED_TABLESIZE   10057
-#define EXPECTED_MODULUS2     8729
-#define EXPECTED_OFFSET2      1108
+//#define EXPECTED_TABLESIZE   10057
+//#define EXPECTED_MODULUS2     8729
+//#define EXPECTED_OFFSET2      1108
 
     cuckoo_parameters main_r;
+    double mm;
+printf("static uint32_t keys[] = \n{       \n");
+for (i=0; i<mainkeycount; i++)
+{   printf("%#8x,", mainkey[i]);
+    if (i % 8 == 7) printf("\n    ");
+}
+printf("};\n\n");
 
-    if (cuckoo_insert_all(
-        mainkey,
-        mainkeycount,
-        main_importance,
-        hashtable,
-        sizeof(hashtable[0]),
-        EXPECTED_TABLESIZE,
-        main_get,
-        main_set,
-        EXPECTED_MODULUS2,
-        EXPECTED_OFFSET2) != -1)
+// If the Hungarian method shows that there is an assignment with
+// exactly my expected parameters that meets my target merit then I
+// will just accept it.
+    if ((mm = find_best_assignment(
+            mainkey,
+            mainkeycount,
+            main_importance,
+            uint32hashtable,
+            EXPECTED_TABLESIZE,
+            EXPECTED_MODULUS2,
+            EXPECTED_OFFSET2)) > 0.0 &&
+        mm <= TARGET_MERIT)
     {   main_r.table_size = EXPECTED_TABLESIZE;
         main_r.modulus2 = EXPECTED_MODULUS2;
         main_r.offset2 = EXPECTED_OFFSET2;
+        main_r.merit = mm;
+// Transfer allocation to the main hash table
+        for (i=0; i<main_r.table_size; i++)
+            main_set(&hashtable[i], uint32hashtable[i]);
         printf("Built-in table parameters successfully used\n");
     }
-    else main_r = cuckoo_binary_optimise(
-        mainkey,
-        mainkeycount,
-        main_importance,
-        hashtable,
-        sizeof(hashtable[0]),
-        MAIN_LOW,
-        MAIN_HIGH,
-        main_get,
-        main_set);
-    printf("Whooeeee! %d %d %d %.2f\n",
+// Otherwise if there is an assignment at that table size I do not need to
+// do elaborate searches to identify it, but I will want to run the Hungarian
+// algorithm for all possible values of modulus2 and offset2 at that table
+// size.
+    else if (mm > 0.0)
+    {   main_r.table_size = EXPECTED_TABLESIZE;
+        main_r.modulus2 = EXPECTED_MODULUS2;
+        main_r.offset2 = EXPECTED_OFFSET2;
+        main_r.merit = mm;
+    }
+    else
+    {   main_r = cuckoo_binary_optimise(
+            mainkey,
+            mainkeycount,
+            main_importance,
+            hashtable,
+            sizeof(hashtable[0]),
+            MAIN_LOW,
+            MAIN_HIGH,
+            main_get,
+            main_set,
+            TARGET_MERIT);
+        main_r.merit = 4.0;
+    }
+    printf("Whooeeee! %d %d %d %.2f%%  merit=%.4f\n",
         main_r.table_size, main_r.modulus2, main_r.offset2,
-        (100.0*mainkeycount)/main_r.table_size);
+        (100.0*mainkeycount)/main_r.table_size, main_r.merit);
+
+// Now unless the current merit is good enough I will optimise by
+// trying all possible hash options at this table size.
+
+    if (main_r.merit > TARGET_MERIT)
+        main_r = try_all_hash_functions(
+            mainkey,
+            mainkeycount,
+            main_importance,
+            hashtable,
+            sizeof(hashtable[0]),
+            main_r.table_size,
+            main_set,
+            1);
 
 //=====================================================================
 // Now the table should have everything in it and so I can merely fill
@@ -1397,7 +1523,7 @@ fprintf(dest, " * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY O
 fprintf(dest, " * DAMAGE.                                                                *\n");
 fprintf(dest, " *************************************************************************/\n");
 fprintf(dest, "\n");
-fprintf(dest, "#ifdef __cplusplus\n");
+fprintf(dest, "#if defined __cplusplus && !defined __STDC_CONSTANT_MACROS\n");
 fprintf(dest, "#define __STDC_CONSTANT_MACROS 1\n");
 fprintf(dest, "#endif\n");
 fprintf(dest, "\n#include <stdint.h>\n\n");

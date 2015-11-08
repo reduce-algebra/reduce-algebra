@@ -94,7 +94,9 @@
 // in a fully cross-platform manner and with wxWidgets, so I have some
 // "cslSTIX" fonts that map those glyphs to a range starting at U+108000.
 
-#define __STDC_CONSTANT_MACROS
+#if defined __cplusplus && !defined __STDC_CONSTANT_MACROS
+#define __STDC_CONSTANT_MACROS 1
+#endif
 
 #include "wx/wxprec.h"
 

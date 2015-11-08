@@ -43,20 +43,155 @@
 // finding matchings in bipartite graphs. The Hopcroft-Karp algorithm is
 // used for this.
 //
-// On Linux/Unix/BSD etc systems the code uses "fork" to runs its search
-// using multiple processes in parallel.
+// This version uses threads to do some of its searching in parallel, and
+// should work on Linux, Windows and OS/X, checking for the number of
+// CPUs and using them all.
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdarg.h>
 #include <errno.h>
 #include <math.h>
 
-#include <sys/time.h>
-#include <sys/types.h>
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <pthread.h>
 #include <unistd.h>
-// ... or on newer systems maybe "#include <sys/select.h>
+#endif
+
+
+// I now try to encapsulate the variations between thread support across
+// Windows and the rest of the world...
+// The macros here are not very syntactically safe, but I will be using
+// them in very stylised manners so I am not too worried.
+
+#ifdef WIN32
+
+// On Windows I can use CRITICAL_SECTIONs rather than real mutexes, and the
+// performance difference is quite substantial when contention is reasonably
+// low. The key issue is that a CRITICAL_SECTION does its initial checks in
+// user-mode and only upgrades to kernel mode in the complicated cases. A
+// side effect of this is that all use of one of these locks must occur
+// within a single process, while more general mutexes support use even
+// when multiple processes are present.
+
+static CRITICAL_SECTION critical_section, logmutex;
+// in Windows the initialization of a CriticalSection can never fail
+#define CREATEMUTEX_FAILED InitializeCriticalSection(&critical_section), 0
+#define LOCKMUTEX          EnterCriticalSection(&critical_section)
+#define UNLOCKMUTEX        LeaveCriticalSection(&critical_section)
+#define DESTROYMUTEX       DeleteCriticalSection(&critical_section)
+
+#define CREATELOGMUTEX        InitializeCriticalSection(&logmutex)
+#define LOCKLOGMUTEX          EnterCriticalSection(&logmutex)
+#define UNLOCKLOGMUTEX        LeaveCriticalSection(&logmutex)
+
+
+static int number_of_processors()
+{
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+    return (int)si.dwNumberOfProcessors;
+}
+
+// In very old versions of Windows one needed to use _beingthreadx rather
+// than CreateThread here, but that is no longer the case (as best I can
+// discern!).
+
+// The function that implements a thread will return a value THREAD_RESULT
+// of type THREAD_RESULT_T.
+
+#define THREAD_RESULT_T DWORD __stdcall 
+#define THREAD_RESULT   0
+
+// I will have a limit on the maximum number of threads I will ever
+// create - and at present I am not expecting to find that I have
+// a shared-memory cpu with more than 32 CPUs.
+
+#define MAX_CPU_COUNT 32
+static HANDLE thread[MAX_CPU_COUNT];
+
+#define CREATETHREAD_FAILED(i, p) \
+    (thread[i] = CreateThread(NULL, 0, &p, NULL, 0, NULL)) == NULL
+#define SLEEP Sleep(5000)
+#define JOINTHREAD_FAILED(i) \
+    WaitForSingleObject(thread[i], INFINITE) != WAIT_OBJECT_0 || \
+    CloseHandle(thread[i]) != 0
+
+#else // Now for the pthreads version for Linux, Unix, BSD, OS/X etc.
+
+static pthread_mutex_t mutex, logmutex;
+#define CREATEMUTEX_FAILED pthread_mutex_init(&mutex, NULL)
+#define LOCKMUTEX          pthread_mutex_lock(&mutex)
+#define UNLOCKMUTEX        pthread_mutex_unlock(&mutex)
+#define DESTROYMUTEX       pthread_mutex_destroy(&mutex)
+
+#define CREATELOGMUTEX     pthread_mutex_init(&logmutex, NULL)
+#define LOCKLOGMUTEX       pthread_mutex_lock(&logmutex)
+#define UNLOCKLOGMUTEX     pthread_mutex_unlock(&logmutex)
+
+#ifdef _SC_NPROCESSORS_ONLN
+// _SC_NPROCESSORS_ONLN is not a proper POSIX enquiry to send to sysconf,
+// but it is available on Linux, cygwin and OS/X and so is worth using here,
+// perhaps especially since an #ifdef can easily check for it. I use ONLN
+// not CONF because some processors may have many cores but leave some of
+// then disabled - I see reports that in particular big/little ARM chips
+// do this. Note that for hyperthreaded CPUs this returns the number of
+// threads I can run in parallel, not the number of raw cores. I also ignore
+// issues of load and permit my code to use all available resources.
+
+static int number_of_processors()
+{
+    return sysconf(_SC_NPROCESSORS_ONLN);
+}
+
+#else // sysconf option to check CPU count
+
+static int number_of_processors()
+{
+    printf("_SC_NPROCESSORS_CONF not defined\n");
+    return 1;
+}
+
+#endif // sysconf option to check CPU count
+
+#define THREAD_RESULT_T void *
+#define THREAD_RESULT   NULL
+
+#define MAX_CPU_COUNT 32
+static pthread_t thread[MAX_CPU_COUNT];
+
+#define CREATETHREAD_FAILED(i, p) pthread_create(&thread[i], NULL, &p, NULL)
+#define SLEEP sleep(5)
+#define JOINTHREAD_FAILED(i)      pthread_join(thread[i], NULL)
+
+#endif // Windows vs pthreads.
+
+
+// logging in a way that is thread-safe
+
+static int logmutex_created = 0;
+
+void logprintf(const char *s, ...)
+{
+    va_list a;
+// I will never destroy the mutex used here - I will let it get cancelled
+// when the program terminates.
+    if (!logmutex_created) CREATELOGMUTEX;
+    va_start(a, s);
+    LOCKLOGMUTEX;
+    vfprintf(stdout, s, a);
+    va_end(a);
+    fflush(stdout);
+    UNLOCKLOGMUTEX;
+}
+
+
+// See workfarm.c for a small program illustrating use of threads to attack
+// a problem exploiting concurrency.
 
 #include "cuckoo.h"
 
@@ -111,205 +246,623 @@
 //-     hash1 = (hash1 + hash2) % table_size;
 //-     if (cuckoo_key(hash1) == key) return hash1;
 //- // If the key is not found in any of those three locations I just return -1.
-//-     return -1;
+//-     return (uint32_t)(-1);
 //- }
 
 // I am expecting that insertion in these tables will not be done at
 // all often, so having a somewhat clumsy-looking interface here does
 // not worry me too much, and I will even accept code that is not
-// terribly neat! cuckoo_insert will return either the offset in the
-// table of the inserted item, or -1 if insetion failed. It will normally
-// then be necessary to use this offset to put associated payload into
-// the table.
+// terribly neat!
 
-// If an attempt to insert fails then in general the key that was being
-// inserted will have been, but some other one will have been ejected. The
-// ejected item ends up in cuckoo_pending_item.
 
-// When shuffling the table I need a temporary location large enough to
-// hold a single hash table entry. Here I bound the size.
+// I use the Hopcroft-Karp maximum matching algorithm to determine if there
+// is any way of using a particular size of hash table. Once I know how large
+// a hash table to use I can use the Hungarian algorithm to find an assignment
+// to favours placing keys in positions that minimise the average number
+// of probes that lookup will need.
 
-#define MAX_CUCKOO_ITEM_SIZE 100
-char cuckoo_pending_item[MAX_CUCKOO_ITEM_SIZE] = "";
-static char cuckoo_ejected_item[MAX_CUCKOO_ITEM_SIZE] = "";
+// The Hopcroft-Karp code I use is imported, but had been been placed under
+// very flexible license terms. See the top of the source code for details.
 
-uint32_t cuckoo_insert(
-    uint32_t key,             // integer key to look up
-    cuckoo_importance *importance, // "importance" measure or NULL
-    void *table,              // base of the hash table
-    size_t hash_item_size,    // size of each item in the table,
-                              // must be <= MAX_CUCKOO_ITEM_SIZE
-    uint32_t table_size,      // number of entries in the hash table
-    cuckoo_get_key *get_key,  // function to retrieve keys from table
-    cuckoo_set_key *set_key,  // function to set a key in the table
-    uint32_t modulus2,        // used to give a secondary hash function
-    uint32_t offset2)         // used to give a secondary hash function
-{
-// The first thing I will do is to check if the item is already in the
-// hash table. I will suppose that it can never be the case that a
-// preferred position is empty but the key is still present.
-    uint32_t original_key;
-    uint32_t hash1 = key % table_size;
-    uint32_t hash2, hash3;
-    uint32_t w, where;
-    int tries, imp;
-    if (hash_item_size > MAX_CUCKOO_ITEM_SIZE)
-    {   printf("Item size too large in cuckoo hashing code\n");
-        exit(1);
-    }
-// Start by looking in the primary location, ie hash1. If the key is
-// already present I will just return.
-    if ((w = cuckoo_key(hash1)) == key) return hash1;
-// If that was a vacant location then the key could not be present anywhere
-// and it can be inserted here. Specifically if the first choice position for
-// a key is empty it is not possible that the key had been inserted earlier
-// and somehow ended up in its second or third choice location.
-    else if (w == 0)
-    {   cuckoo_set_key(hash1, key);
-        return hash1;
-    }
-    imp = (importance == NULL) ? CUCKOO_STANDARD : (*importance)(key);
-// Now similarly for the second possible location... if that is permitted.
-    if (imp != CUCKOO_VITAL)
-    {   hash2 = (key % modulus2) + offset2;
-        if ((w = cuckoo_key(hash2)) == key) return hash2;
-        else if (w == 0)
-        {   cuckoo_set_key(hash2, key);
-            return hash2;
-        }
-        if (imp != CUCKOO_IMPORTANT)
-// ... and the third. Note that the calculation of hash values here must
-// be an exact match for that used in the code for cuckoo_lookup.
-        {   hash3 = (hash1 + hash2) % table_size;
-            if ((w = cuckoo_key(hash3)) == key) return hash3;
-            else if (w == 0)
-            {   cuckoo_set_key(hash3, key);
-                return hash3;
-            }
-        }
-    }
-// We now have the situation where the item of interest is not already
-// in the table but the valid places it would like to live are all
-// already full. In this case I will force it to be inserted in its
-// first choice location, ejecting whatever had been there previously.
-// I put the item that is being inserted into cuckoo_pending_item and
-// set a variable "where" to the place it needs to be put. 
-    (*set_key)(&cuckoo_pending_item, key);
-    where = hash1;
-    original_key = key;
-// When attemping an insert I may have a cascade of relocations. I will
-// give up when the length of such a chain exceeds the size of the table.
-// I do not view this as a totally rational perfect cut-off, but I believe
-// it will at least come close: it allows any one insert to cause everything
-// in the table to move!
-    for (tries=0; tries<table_size; tries++)
-    {
-// At this point I am want to insert the item in pending_item at the
-// location called where. I will arrange that when I get here that
-// location is always in use, and so the item there will need to be ejected.
-// The ejected item will then become the one that needs inserting, and I
-// will investigate the three places that it might possibly live. If
-// any one of them is empty I will put it there. Otherwise I because it
-// was in the table already it must be in one of those locations. If it was
-// in the first such I next try it in the second. If it was in the second
-// I try the third, while if it was in the third I try in the first again.
-        memcpy(&cuckoo_ejected_item, cuckoo_item(where),   hash_item_size);
-        memcpy(cuckoo_item(where),   &cuckoo_pending_item, hash_item_size);
-        memcpy(&cuckoo_pending_item, &cuckoo_ejected_item, hash_item_size);
-// Identify the three places that the ejected item could poptentially
-// live. One of these must be where it is at present being kicked out of!
-        key = (*get_key)(&cuckoo_pending_item);
-        imp = (importance == NULL) ? CUCKOO_STANDARD : (*importance)(key);
-        hash1 = key % table_size;
-        hash2 = (key % modulus2) + offset2;
-        hash3 = (hash1 + hash2) % table_size;
-// If one of those locations is at present empty then I can merely put
-// the item there and I am done. Well actually if I am ejecting something
-// then its first choice position can never be empty, since once a
-// slot in the hash table is filled it always remains filled (albeit
-// sometimes with something other than the item initially placed there).
-// I will leave this code in as a comment to back up this observation!
-        if (cuckoo_key(hash1) == 0)
-        {   memcpy(cuckoo_item(hash1), &cuckoo_pending_item, hash_item_size);
-// When I return I want to return the location of the newly inserted
-// item. This may have been shuffled around somewhat since it was initially
-// put somewhere (but in fact only between three candidate locations). The
-// simplest code I can use here merely does a cuckoo_lookup to find
-// it. It is for this purpose that I saved the original_key value.
-            return cuckoo_lookup(original_key, table,
-                                 hash_item_size, table_size,
-                                 get_key, modulus2, offset2);
-        }
-        if (imp != CUCKOO_VITAL && cuckoo_key(hash2) == 0)
-        {   memcpy(cuckoo_item(hash2), &cuckoo_pending_item, hash_item_size);
-            return cuckoo_lookup(original_key, table,
-                                 hash_item_size, table_size,
-                                 get_key, modulus2, offset2);
-        }
-        if (imp == CUCKOO_STANDARD && cuckoo_key(hash3) == 0)
-        {   memcpy(cuckoo_item(hash3), &cuckoo_pending_item, hash_item_size);
-            return cuckoo_lookup(original_key, table,
-                                 hash_item_size, table_size,
-                                 get_key, modulus2, offset2);
-        }
-// Now I am going to have to do a cascading ejection, and this is where I
-// arrange to cycle around the potential positions for each item. The
-// STANDARD case cycles amomgst three locations. IMPORTANT only uses locations
-// 1 and 2, while VITAL things are forced to remain put.
+#include "hopkar.c"
 
+// Now an adapter that takes my hashing problem and maps it onto the
+// an instance of a matching problem. The input is a set of keys, a table
+// size and two parameters that control details of the hashing. It then has
+// the hash table it is tryng to create, which it fills in if it can find
+// a perfect way to do so. Here the table is whatevver final native-shape
+// hash table will be required, and the procedures get_key and set_key
+// access the keys in it.
+
+// This tries to insert all the keys in "items" into the hash-table "table"
+// and it returns 0 if it fails. Because it is just finding a matching (ANY
+// matching) it will be useful for discovering what the smallest possible
+// table size is. But it will not take any steps at all to pick a matching
+// that prefers first choice placements for keys over the other two
+// possibilities. For that see the Hungarian algorith below which will be
+// able to perform further optimisation but which is expected to be slower.
+
+int find_any_assignment(
+    uint32_t *items,
+    int item_count,
+    cuckoo_importance *importance,
+    void *table,
+    int hash_item_size,
+    int table_size,
+    cuckoo_get_key *get_key,
+    cuckoo_set_key *set_key,
+    uint32_t modulus2,
+    uint32_t offset2)
+{   int i;
+    init(item_count, table_size);
+    for (i=0; i<item_count; i++)
+    {   uint32_t key = items[i];
+        uint32_t h1 = key % table_size;
+        uint32_t h2 = key % modulus2 + offset2;
+        uint32_t h3 = (h1 + h2) % table_size;
+        int imp = (*importance)(key);
         switch (imp)
         {
     default:
-    case CUCKOO_STANDARD:
-            where = where == hash1 ? hash2 :
-                    where == hash2 ? hash3 :
-                    hash1;
-            break;
+            addEdge(i, (int)h3);
+            // drop through
     case CUCKOO_IMPORTANT:
-            where = where == hash1 ? hash2 :
-                    hash1;
-            break;
+            addEdge(i, (int)h2);
+            // drop through
     case CUCKOO_VITAL:
-            where = hash1;
+            addEdge(i, (int)h1);
             break;
         }
     }
-    return -1;
+logprintf("in find_any_matching\n");
+    i = maxMatching();
+logprintf("maxMatching returns %d/%d, need = %d\n", i, table_size, item_count);
+    if (i != item_count) return 0;
+    return 1;
 }
 
-// If I am compiling with one of the mingw32 compilers the fork() and wait()
-// functions I use to implement parallel searches here are not available,
-// so I will default to no parallelism. Otherwise I will use 8 processes,
-// which will keep most desktop systems saturated! I will also allow for
-// compilation with SEQUENTIAL defined to force non-parallel searches, if only
-// in order to make it easier to check that branch of the code.
+// Once a table has been set up this function checks that each key is properly
+// present and it computes a figure of merit for it... This code may in
+// fact not be used!
 
-#if defined __MSVCRT__ || defined SEQUENTIAL
-#define PROCESSCOUNT 1
-#else
-#define PROCESSCOUNT 8
-#endif
+double cuckoo_merit(
+    uint32_t *items,
+    int item_count,
+    cuckoo_importance *importance,
+    void *table,
+    int hash_item_size,
+    int table_size,
+    cuckoo_get_key *get_key,
+    uint32_t modulus2,
+    uint32_t offset2)
+{
+    int i;
+    int nvital = 0;
+    int nimportant = 0, nimp1 = 0, nimp2 = 0;
+    int nstandard = 0, nstand1 = 0, nstand2 = 0, nstand3 = 0;
+    for (i=0; i<item_count; i++)
+    {   uint32_t key = items[i];
+        uint32_t h1 = key % table_size;
+        uint32_t h2 = key % modulus2 + offset2;
+        uint32_t h3 = (h1 + h2) % table_size;
+        int imp = (*importance)(key);
+        switch (imp)
+        {
+    default:
+            nstandard++;
+            if (key == (*get_key)(h1*hash_item_size+(char *)table))
+            {   nstand1++;
+                break;
+            }
+            else if (key == (*get_key)(h2*hash_item_size+(char *)table))
+            {   nstand2++;
+                break;
+            }
+            else if (key == (*get_key)(h3*hash_item_size+(char *)table))
+            {   nstand3++;
+                break;
+            }
+            else
+            {   printf("Failed to find item %d (%u/%x)\n", i, key, key);
+                exit(1);
+            }
+    case CUCKOO_IMPORTANT:
+            nimportant++;
+            if (key == (*get_key)(h1*hash_item_size+(char *)table))
+            {   nimp1++;
+                break;
+            }
+            else if (key == (*get_key)(h2*hash_item_size+(char *)table))
+            {   nimp2++;
+                break;
+            }
+            else
+            {   printf("Failed to find item %d (%u/%x)\n", i, key, key);
+                exit(1);
+            }
+    case CUCKOO_VITAL:
+            nvital++;
+            if (key == (*get_key)(h1*hash_item_size+(char *)table))
+                break;
+            else
+            {   printf("Failed to find item %d (%u/%x)\n", i, key, key);
+                exit(1);
+            }
+        }
+    }
+// The "figure of merit" is a weighted average that scores each VITAL key
+// as worth 10, each IMPORTANT ones as 4 and the rest as worth 1 each. Smaller
+// values are better.
+    return (10.0*nvital +
+            4.0*(nimp1 + 2.0*nimp2) +
+            (nstand1 + 2.0*nstand2 + 3.0*nstand3)) /
+           (10.0*nvital + 4.0*nimportant + nstandard);
+}
 
-// This tries to insert all the keys in "items" into the hash-table "table"
-// and it returns a non-zero result if it succeeds. I put the code for this
-// in a separate file because I feel it could be independently useful.
-//
-// If "HUNGARIAN" is defined I will use an algorithm that weights edges in the
-// graph I seek a matching in as a way to find the best matching of the size
-// I select using Hopcroft-Karp. That is a sensible thing to try because
-// merely finding a matching does not do anything to favour first choice
-// placement for keys in the hash table over third choice. However the
-// more elaborate optimisation code adds to cost.
+// As well as being able to find assignments I need to be able to find the
+// BEST assignments, and the following imported code that implements the
+// Hungarian algorith sorts that out. It uses a quite different interface
+// from the Hopcroft-Karp code - which is reasonable since its source was
+// different. I then need to write code to link it to the problems that I
+// wish to solve.
 
-#ifdef HUNGARIAN
+// The code I have imported deals with general matchings and represents the
+// bipartite graph as a full matrix. In my case the graph that I wish to
+// process is spares - it has at most three edges for each vertex in the
+// set A. I MAY at some stage rework the code to use ajcacency lists to
+// represent the sparse array. If I do so it will certainly save a lot of
+// space and may speed things up too. But that is for the future!
 
 #include "hungarian.h"
 #include "hungarian.c"
 
+// Now an adapter that takes my hashing problem and maps it onto the
+// calls to the hungarian problem solver. The input is a set of keys,
+// a table size and two parameters that control details of the hashing.
+// It then has the hash table it is trying to create, which it fills in
+// if it can find a perfect way to do so. For the code here the hash table
+// is merely an array of uint32_t values.
+//
+// The target merit passed here only has an effect on printing. If an
+// assigment is found that beats it a trace message is displayed.
+
+// This tries to insert all the keys in "items" into the hash-table "table"
+// and it returns a positive "merit" value on success, or -1.0 on failure
+//
+
+static __thread int **adjacency_matrix = NULL;
+
+double find_best_assignment(
+    uint32_t *items,
+    int item_count,
+    cuckoo_importance *importance,
+    uint32_t *table,
+    int table_size,
+    uint32_t modulus2,
+    uint32_t offset2)
+{
+    int i, j;
+    hungarian_problem_t p;
+logprintf("starting find_best_assignment %d %d\n", item_count, table_size);
+logprintf("m2=%d o2=%d\n", modulus2, offset2);
+    adjacency_matrix = (int **)calloc(table_size, sizeof(int *));
+    hungarian_test_alloc(adjacency_matrix);
+    for (i=0; i<table_size; i++)
+    {   adjacency_matrix[i] = (int *)calloc(item_count, sizeof(int));
+        hungarian_test_alloc(adjacency_matrix[i]);
+// I put in a value that is not "infinite" but is such that any assignment
+// that uses an edge of this length will be pretty bad.
+        for (j=0; j<item_count; j++)
+          adjacency_matrix[i][j] = 0x00010000;
+    }
+logprintf("about to put in weights %p\n", items);
+    for (i=0; i<item_count; i++)
+    {   uint32_t key = items[i];
+logprintf("Ok at %d\n", i);
+        uint32_t h1 = key % table_size;
+        uint32_t h2 = key % modulus2 + offset2;
+        uint32_t h3 = (h1 + h2) % table_size;
+logprintf("hashes are %d %d %d\n", h1, h2, h3);
+        int imp = (*importance)(key);
+// I have thought a bit about the weights I use here, but to a large extent
+// they are a bit of an arbitrary choice.
+        switch (imp)
+        {
+    default:
+            adjacency_matrix[h1][i] = 0;
+            adjacency_matrix[h2][i] = 1;
+            adjacency_matrix[h3][i] = 2;
+            break;
+    case CUCKOO_IMPORTANT:
+            adjacency_matrix[h1][i] = 0;
+            adjacency_matrix[h2][i] = 10;
+            break;
+    case CUCKOO_VITAL:
+            adjacency_matrix[h1][i] = 0;
+            break;
+        }
+    }
+logprintf("call hungarian_init\n");
+    hungarian_init(&p,
+                   adjacency_matrix,
+                   table_size,
+                   item_count,
+                   HUNGARIAN_MODE_MINIMIZE_COST);
+logprintf("call hungarian_solve\n");
+    hungarian_solve(&p);
+logprintf("hungarian_solve returned\n");
+// Next I will extract the assignment found and put it in my hash table.
+// While I am about it I will collect some statistics.
+    int nvital = 0;
+    int nimportant = 0, nimportant1 = 0, nimportant2 = 0;
+    int nstandard = 0, nstandard1 = 0, nstandard2 = 0, nstandard3 = 0;
+    for (i=0; i<item_count; i++)
+    {   uint32_t key = items[i];
+        uint32_t h1 = key % table_size;
+        uint32_t h2 = key % modulus2 + offset2;
+        uint32_t h3 = (h1 + h2) % table_size;
+        int imp = (*importance)(key);
+        switch (imp)
+        {
+    case CUCKOO_VITAL:
+            if (p.assignment[h1][i])
+            {   table[h1] = key;
+                nvital++;
+                break;
+            }
+            else
+            {   hungarian_free(&p);
+                for (i=0; i<table_size; i++)
+                    free(adjacency_matrix[i]);
+                free(adjacency_matrix);
+                return -1.0;
+            }
+    case CUCKOO_IMPORTANT:
+            if (p.assignment[h1][i])
+            {   table[h1] = key;
+                nimportant++;
+                nimportant1++;
+                break;
+            }
+            else if (p.assignment[h2][i])
+            {   table[h2] = key;
+                nimportant++;
+                nimportant2++;
+                break;
+            }
+            else
+            {   hungarian_free(&p);
+                for (i=0; i<table_size; i++)
+                    free(adjacency_matrix[i]);
+                free(adjacency_matrix);
+                return -1.0;
+            }
+    case CUCKOO_STANDARD:
+            if (p.assignment[h1][i])
+            {   table[h1] = key;
+                nstandard++;
+                nstandard1++;
+                break;
+            }
+            else if (p.assignment[h2][i])
+            {   table[h2] = key;
+                nstandard++;
+                nstandard2++;
+                break;
+            }
+            else if (p.assignment[h3][i])
+            {   table[h3] = key;
+                nstandard++;
+                nstandard3++;
+                break;
+            }
+            else
+            {   hungarian_free(&p);
+                for (i=0; i<table_size; i++)
+                    free(adjacency_matrix[i]);
+                free(adjacency_matrix);
+                return -1.0;
+            }
+        }
+    }
+logprintf("transferred to hash table\n");
+    double merit = (10.0*nvital +
+            4.0*(nimportant1 + 2.0*nimportant2) +
+            (nstandard1 + 2.0*nstandard2 + 3.0*nstandard3)) /
+           (10.0*nvital + 4.0*nimportant + nstandard);
+#define VERBOSE
+#ifdef VERBOSE
+    double avimportant = 
+       (nimportant1+2.0*nimportant2)/nimportant;
+    double avstandard =
+       (nstandard1+2.0*nstandard2+3.0*nstandard3)/nstandard;
+// But I will also compute an average that shows the expected number of
+// probes if all keys are accessed with equal probability.
+    double average =
+       (nvital + nimportant1 + 2.0*nimportant2 +
+        nstandard1 + 2.0*nstandard2 + 3.0*nstandard3) / item_count;
+    {   logprintf("\ntable_size = %u modulus2 = %u offset2 = %u occupancy %.2f\n",
+               table_size, modulus2, offset2,
+               (100.0*item_count)/table_size);
+        if (nvital != 0)
+            logprintf("VITAL:     %u      1.0 average probes\n", nvital);
+        if (nimportant1!=0 || nimportant2 != 0)
+            logprintf("IMPORTANT: %u %u   %.3f average probes\n",
+                nimportant1, nimportant2, avimportant);
+        if (nstandard1!=0 || nstandard2 != 0)
+            logprintf("STANDARD:  %u %u %u  %.3f average probes\n",
+                nstandard1, nstandard2, nstandard3, avstandard);
+        logprintf("Figure of merit = %.3f flat average = %.3f\n", merit, average);
+    }
 #endif
+    hungarian_free(&p);
+    for (i=0; i<table_size; i++)
+        free(adjacency_matrix[i]);
+    free(adjacency_matrix);
+    return merit;
+}
 
-#include "hopkar.c"
+uint32_t int32_get_key(void *p)
+{
+    return *(uint32_t *)p;
+}
 
+void int32_set_key(void *p, uint32_t v)
+{
+    *(uint32_t *)p = v;
+}
+
+// To perform a parallel search I need to be able to distribute cases
+// that need analysis to the various threads. A test case is a pair
+// of a value for modulus2 and one for offset2.
+
+typedef struct __mod_and_off
+{
+    uint32_t modulus2;
+    uint32_t offset2;
+} mod_and_off;
+
+
+// I have some data that is common to all the threads....
+
+static int       shared_use_hungarian;
+static uint32_t *shared_keys;
+static int       shared_key_count;
+static uint32_t *shared_table;
+static int       shared_table_size;
+static cuckoo_importance *shared_importance;
+static uint32_t  shared_modulus2;
+static uint32_t  shared_offset2;
+static uint32_t  best_modulus2;
+static uint32_t  best_offset2;
+static double    best_merit;
+static int       tries;
+static int       successes;
+
+// This should return the next mod_and_off, or one with values (0,0)
+// when there are no more left.
+ 
+mod_and_off hungarian_next_case()
+{
+    mod_and_off r;
+    LOCKMUTEX;
+    tries++;
+    r.modulus2 = shared_modulus2;
+    r.offset2 = shared_offset2;
+    if (shared_modulus2 != (uint32_t)(-1))
+    {   if (shared_modulus2 != 0 &&
+            shared_modulus2 + shared_offset2 < shared_table_size)
+            shared_offset2++;
+        else
+        {   shared_modulus2++;
+            shared_offset2 = 0;
+            if (shared_modulus2 >= shared_table_size) shared_modulus2 = 0;
+        }
+    }
+    UNLOCKMUTEX;
+    return r;
+}
+
+// Here is a function that implements what a thread should do. I have just one
+// variable called thread_finished and if a thread is ending it will set it
+// to 1. I will not worry about locks since this only needs to notice if at
+// least one thread is done.
+//
+// If shared_use_hungarian is true this considers ALL the possible values for
+// modulus2 and offset2 and constructs a proper hash-table allocation for the
+// configuration that delivers the best figure of merit. Otherwise it merely
+// seeks a valid assigment and arranges that all threads stop once one of
+// them has found one. It does not return a figure of merit and does not
+// fill in a detailed hash assignment (even though it could).
+
+static int thread_finished;
+
+THREAD_RESULT_T hungarian_thread(void *arg)
+{
+    mod_and_off mo;
+    uint32_t *table = (uint32_t *)calloc(shared_table_size, sizeof(uint32_t));
+    logprintf("Thread starting\n");
+    while ((mo = hungarian_next_case()).modulus2 != 0)
+    {   double merit;
+        logprintf("Thread considering %d:%d\n", mo.modulus2, mo.offset2);
+// Before I try the (possibly expensive) Hungarian method I will filter
+// by using Hopcroft-Karp so that I at least know that there is some feasible
+// allocation.
+        if (find_any_assignment(
+            shared_keys,
+            shared_key_count,
+            shared_importance,
+            table,
+            sizeof(uint32_t),
+            shared_table_size,
+            int32_get_key,
+            int32_set_key,
+            mo.modulus2,
+            mo.offset2))
+        {   logprintf("Found assignment for %d : %d\n", mo.modulus2, mo.offset2);
+            logprintf("shared_use_hungarian = %d\n", shared_use_hungarian);
+            if (!shared_use_hungarian)
+            {   logprintf("Report back to owner and set quit flag\n");
+                LOCKMUTEX;
+                successes++;
+                best_modulus2 = mo.modulus2;
+                best_offset2 = mo.offset2;
+                best_merit = 0.0;
+// Arrange that the next use of hungarian_next_case reports no more cases
+// need investigation, and so all other threads will soon terminate too.
+                shared_modulus2 = 0;
+                shared_offset2 = 0;
+                UNLOCKMUTEX;
+                break;
+            }
+            else if ((merit = find_best_assignment(
+                shared_keys,
+                shared_key_count,
+                shared_importance,
+                table,
+                shared_table_size,
+                mo.modulus2,
+                mo.offset2)) >= 0.0)
+            {   LOCKMUTEX;
+                successes++;
+                logprintf("successes=%d: M=%d O=%d => %.4f%%\n", successes,
+                        mo.modulus2, mo.offset2, merit);
+                if (merit < best_merit)
+                {   int i;
+                    logprintf("+++ New best\n");
+                    best_modulus2 = mo.modulus2;
+                    best_offset2 = mo.offset2;
+                    best_merit = merit;
+// Each time I get a new best assignment I transcribe it into the main
+// official hash-table.
+                    for (i=0; i<shared_table_size; i++)
+                        shared_table[i] = table[i];
+                }
+                UNLOCKMUTEX;
+            }
+        }
+    }
+    free(table);
+    logprintf("Thread finishing\n");
+    thread_finished = 1;
+    return THREAD_RESULT;
+}
+
+// This routine is used to analyse tables of some specified size. If its
+// last argument is false it merely checks if an assignment to a table
+// of that size is possible, and returns if it manages to find one. If
+// on the other hand the final argument is true then it will run the
+// Hungarian algorithm on ALL possible hash functions at that size and
+// return information about the one that gives the best packing. It
+// does all this using multiple threads so that the often-expensive
+// search takes less real time than might otherwise have been the case
+// when you have a multi-core computer.
+//
+
+cuckoo_parameters try_all_hash_functions(
+    uint32_t *keys,
+    int key_count,
+    cuckoo_importance *importance,
+    void *hash,
+    int hash_item_size,
+    int hashsize,
+    cuckoo_set_key *set_key,
+    int use_hungarian)
+{
+    int cpu_count, i;
+    cuckoo_parameters r;
+    uint32_t *table = (uint32_t *)calloc(hashsize, sizeof(uint32_t));
+    hungarian_test_alloc(table);
+    shared_use_hungarian = use_hungarian;
+    shared_keys = keys;
+    shared_key_count = key_count;
+    shared_importance = importance;
+    shared_table = table;
+    shared_table_size = hashsize;
+    shared_modulus2 = 1;
+    shared_offset2 = 0;
+    best_modulus2 = 0;
+    best_offset2 = 0;
+    best_merit = 4.0;
+    tries = successes = 0;
+
+    logprintf("try_all with table size %d and use_h=%d\n", hashsize, use_hungarian);
+
+    cpu_count = number_of_processors();
+cpu_count = 1; // to run sequentially!
+    logprintf("I seem to have %d processors\n", cpu_count);
+    if (cpu_count > MAX_CPU_COUNT) cpu_count = MAX_CPU_COUNT;
+    if (CREATEMUTEX_FAILED)
+    {   fprintf(stderr, "Unable to create mutex\n");
+        exit(1);
+    }
+    thread_finished = 0;
+    for (i=0; i<cpu_count; i++)
+    {   if (CREATETHREAD_FAILED(i, hungarian_thread))
+        {   fprintf(stderr, "Unable to create thread\n");
+            exit(1);
+        }
+    }
+    logprintf("All threads created\n");
+// I will do a wait loop here that arranges that once every 5 seconds
+// it checks whether at least one thread has finished and displays a
+// message that tries to give some idea of how far it has got through the
+// search. My ESTIMATE is that for a full search the code may run for
+// around 9 hours on an 8-core machine and so there would be of the order
+// of 6000 lines of trace output - rather a lot but not enough to be
+// a complete embarassment. Perhaps.
+    while (!thread_finished)
+    {   SLEEP;
+        LOCKMUTEX;
+        logprintf("%d:%d => %.4f now at %d:%d\n",
+            best_modulus2, best_offset2, best_merit,
+            shared_modulus2, shared_offset2);
+        UNLOCKMUTEX;
+    }
+    logprintf("At least one thread complete\n");
+    for (i=0; i<cpu_count-1; i++)
+    {   if (JOINTHREAD_FAILED(i))
+        {   fprintf(stderr, "Unable to join thread\n");
+            exit(1);
+        }
+    }
+    logprintf("All threads now finished\n");
+    DESTROYMUTEX;
+    logprintf("finished: final result is %d : %d   %.4f\n",
+        best_modulus2, best_offset2, best_merit);
+    if (successes == 0) // Failure!
+    {   r.table_size = (uint32_t)(-1);
+        r.modulus2 = r.offset2 = 4;
+        r.merit = 4.0;
+        free(table);
+        return r;
+    }
+    logprintf("%d assignments for %d tries (%.3f%%)\n",
+        successes, tries, (100.0*successes)/tries);
+    r.table_size = hashsize;
+    r.modulus2 = best_modulus2;
+    r.offset2 = best_offset2;
+    r.merit = best_merit;
+    if (use_hungarian)
+        for (i=0; i<r.table_size; i++)
+            (*set_key)(hash_item_size*i+(char *)hash, shared_table[i]);
+    free(table);
+    return r;
+}
+
+
+
+// This tries all table sized starting from initial_table_size up to
+// max_table_size and returns information about the first one for which
+// a valid assignment is possible. I provide this because the subsequent
+// faster version that uses binary search is based on an expectation that
+// there will be assignments usable for every hash table size larger than
+// the smallest one where there is any assignment at all. That is plausible
+// but not guaranteed! Having a larger hash table should reduce pressure
+// and increase flexibility so in general it ought never to make life harder,
+// but it is imaginable that the very smallest usable hash table has an
+// assignment that is basically an accident...
+//
 static cuckoo_parameters cuckoo_simple_search(
     int myid,
     uint32_t *items,
@@ -322,388 +875,41 @@ static cuckoo_parameters cuckoo_simple_search(
     cuckoo_get_key *get_key,
     cuckoo_set_key *set_key)
 {
-    cuckoo_parameters r;
+    cuckoo_parameters r = {(uint32_t)(-1), 0, 0, 4.0};
     int i, probe_count;
     uint32_t table_size, modulus2, offset2;
     for (table_size = initial_table_size; table_size<max_table_size; table_size++)
-    {   printf("Trial with table_size = %d\n", table_size);
-        fflush(stdout);
-#ifdef FAST
-// predefining FAST saves a lot of time at the cost of (probably) not finding
-// such good solutions.
-#define MODULUS_LIMIT (table_size-128)
-#else
-// By default I will search all potentially valid values for modulus2 and
-// offset2, icnluding many that are really terribly unlikely to be useful.
-#define MODULUS_LIMIT 0
-#endif
-        int blip = 0;
-        for (modulus2=table_size-1; modulus2>MODULUS_LIMIT; modulus2--)
-        {   for (offset2=1+myid;
-// Nota that (key%modulus2)+offset2 is at most modulus2-1+offset2, so this
-// is what I need to lie within the table.
-                 modulus2-1+offset2<table_size;
-                 offset2+=PROCESSCOUNT)
-            {
-// I want to keep the observer informed about progress, so every so often I
-// will display a message to show how far I have got. I will want to
-// adjust MESSAGE_FREQUENCY so as to balance being informative against
-// swamping the user with too much output. Perhaps a message every 10 seconds
-// on a plausibly fast computer when solving a large problem will feel about
-// right to me?
-#define MESSAGE_FREQUENCY 100000
-                if (++blip % MESSAGE_FREQUENCY == 0)
-                {   printf("Trying modulus2=%d offset2=%d\n",
-                           (int)modulus2, (int)offset2);
-                    fflush(stdout);
-                }
-                if (cuckoo_insert_all(
-                    items,
-                    item_count,
-                    importance,
-                    table,
-                    hash_item_size,
-                    table_size,
-                    get_key,
-                    set_key,
-                    modulus2,
-                    offset2)) goto solution_found;
-            }
-        }
-        if (modulus2>MODULUS_LIMIT) break;
-    }
-// Here my search through table_size, modulus2 and offset2 has all been to no
-// avail, so I need to report failure.
-    r.table_size = (uint32_t)(-1);
-    r.modulus2 = r.offset2 = r.merit = 0;
-    return r;
-// Using a GOTO to transfer to where I deal with success seems nicest to me.
-// could have used a RETURN instead and bundled all that follows within a
-// separate function, but in many respects the RETURN from the middle of
-// a nest of loops is as objectionable as the GOTO, and I would have needed
-// to pass many values as arguments to the somewhat artificial new funstion.
-// Well if I called it a "continuation" then perhaps it would have sounded
-// respectable!
-solution_found:
-    printf("Success for %d items and table_size %d (%.2f%%)\n",
-           item_count, table_size, (100.0*item_count)/table_size);
-    printf("modulus2 = %d, offset2 = %d\n", modulus2, offset2);
-#ifdef CAUTIOUS
-// I will now try looking up each item to verify that the table can
-// retrieve all I need it to. This is only to confirm correctness and
-// if I was 100% confident in my code I could remove it!
-    for (i=0; i<item_count; i++)
-    {   if (cuckoo_lookup(items[i],
-                          table,
-                          hash_item_size,
-                          table_size,
-                          get_key,
-                          modulus2,
-                          offset2) == -1)
-        {   printf("Failed to find an item (%x) in the table\n", items[i]);
-            printf("table_size = %d modulus2 = %d offset2 = %d\n", table_size, modulus2, offset2);
-#ifdef VERBOSE
-            for (i=0; i<item_count; i++)
-            {   uint64_t x = items[i];
-                printf("Item %x   %d %d %d\n",
-                    (int)x, (int)(x % table_size), (int)((x % modulus2) + offset2),
-                       (int)((x + (x % modulus2) + offset2) % table_size));
-            }
-            for (i=0; i<table_size; i++)
-                printf("%5d: %x\n", i, (int)cuckoo_key(i));
-#endif
-            printf("Exiting\n");
-            exit(1); // This is an internal error
-            r.table_size = (uint32_t)(-1);
-            r.modulus2 = r.offset2 = r.merit = 0;
-            return r;
-        }
-    }
-// I will record the average number of probes needed to retrieve
-// items. If each of the three possible locations for an iten ended up
-// equally used then this would be 2.0 probes, but I hope that more
-// keys end up in their first choice location than need to go in their
-// third, and that hence the actual average will be lower than that. I
-// further hope that the items I insert into the table first will tend to
-// be especially favoured. Hmm in reality when I have optimised the table
-// size down towards its minimum it seems that keys tend to be
-// distributed almost evenly between the places they are allowed to go.
-// However if you build a table with significantly more slack that can
-// help speed of access by favouring first-choice locations. All these
-// issues represent trade-offs between space and time!
-    probe_count = 0;
-    for (i=0; i<item_count; i++)
-    {   uint32_t key = items[i];
-        uint32_t h1 = key % table_size;
-        uint32_t h2 = key % modulus2 + offset2;
-        if (key == cuckoo_key(h1)) probe_count += 1;
-        else if (key == cuckoo_key(h2)) probe_count += 2;
-        else probe_count += 3;
-        if ((i*i >= item_count && (i-1)*(i-1) < item_count) ||
-            i == item_count/4 ||
-            i == item_count/2 ||
-            i == (3*item_count)/4)
-            printf("Average probes after %d items = %.2f\n",
-                   i,  probe_count/(double)i);
-    }
-    printf("Average probes after %d items = %.2f\n",
-           item_count,  probe_count/(double)item_count);
-#endif // CAUTIOUS
-#ifdef VERBOSE
-// Here I will display the table...
-    printf("++++ %d %d %d ++++\n", table_size, modulus2, offset2);
-    for (i=0; i<table_size; i++)
-        printf("%d: %d/%x\n", i, cuckoo_key(i), cuckoo_key(i));
-    printf("==== %d %d %d ====\n", table_size, modulus2, offset2);
-#endif
-    r.table_size = table_size;
-    r.modulus2 = modulus2;
-    r.offset2 = offset2;
-    r.merit = 0;         // not measured here
-    return r;
-}
-
-// With multiple threads there is not going to be a guarantee that I
-// find the smallest table, because it could be that one thread hogs
-// all the available CPU time while happening to be "unlucky" and so
-// when it finds a solution it is not a terribly good one. Meanwhile
-// the other threads that would have found better solutions are just
-// not very active and so never deliver. But my expectation is that
-// on any reasonable computer the various searches will tend to run
-// sufficiently closely in step that any effect at all of this sort
-// will have only minimal effect. Imbalance can arise not just because of
-// unfair thread scheduling, but because the searching done in each thread
-// will not always take the same amount of time. This could all be
-// addressed by implementing a search farm so that different search
-// parameters were distributed in a careful way - I am viewing that as
-// unnecessary for now.
-
-#if PROCESSCOUNT != 1
-
-#include <unistd.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/wait.h>
-
-#endif // PROCESSCOUNT != 1
-
-static int to_parent_fd;
-
-// This seeks a (near) optimal hash table. By default it will do the search
-// using 8 parallel processes (created using "fork"). These are not kept
-// in step in any special way, and so it could be that speed variations
-// between them lead to one having run ahead, and then managing to find a
-// solution that is larger than the optimum. Defining SEQUENTIAL at compile
-// time avoids use of parallelism, but can be around 8 times slower.
-
-// The code here accepts a simple C array of uint32_t key values which it
-// builds the table from.  You can specify an initial table size. The
-// conservative choice is the same as the number of items to be stored,
-// i.e. hoping for 100% occupancy. Once you have run a search once (probably
-// using parallel search) it may make sense to give an initial size just
-// below or at the expected optimum so as to avoid re-trying too many
-// hopeless cases.
-
-cuckoo_parameters cuckoo_optimise(
-    uint32_t *items,
-    int item_count,
-    cuckoo_importance *importance,
-    void *table,
-    int hash_item_size,
-    int initial_table_size,
-    int max_table_size,
-    cuckoo_get_key *get_key,
-    cuckoo_set_key *set_key)
-{
-    cuckoo_parameters r;
-    FILE *f;
-    r.table_size = (uint32_t)(-1);
-    r.modulus2 = r.offset2 = r.merit = 2;
-#if PROCESSCOUNT != 1
-// Here I create a bunch of child processes... and I will also need pipes
-// for each to use to send data back to me.
-    pid_t pids[PROCESSCOUNT];
-    int pipefd[2*PROCESSCOUNT];
-    int i, parent = 1, myid;
-    for (i=0; i<8; i++)
-    {   if (pipe(&pipefd[2*i]) != 0)
-        {   printf("Failed to create pipes - code %d\n", errno);
-            exit(1);
-        }
-    }
-    for (i = 0; i<PROCESSCOUNT; i++)
-    {   if (parent)
-        {   pid_t p = fork();
-            if (p != 0)
-            {   pids[i] = p;
-                close(pipefd[2*i+1]);
-            }
-            else
-            {   myid = i;   // in a child
-                close(pipefd[2*i]);
-                to_parent_fd = pipefd[2*i+1];
-                parent = 0;
-            }
-        }
-    }
-// The parent will use select() to detect when at least one of the sub-tasks
-// has returned some information. Note that that could be that the task
-// terminated without finding a solution.
-//
-    if (parent)
-    {   int status, live_count;
-        uint32_t table_size, modulus2, offset2;
-// The loop here is because I may have multiple responses that are merely
-// records of failure...
-        for (live_count = PROCESSCOUNT; live_count>0;)
-        {   char buffer[4];
-            fd_set rdfs;
-            int rc, maxfd = 0, fd;
-            FD_ZERO(&rdfs);
-            table_size = -1;
-            for (i=0; i<PROCESSCOUNT; i++)
-            {   if (pipefd[2*i] != -1)
-                {   FD_SET(pipefd[2*i], &rdfs);
-                    if (pipefd[2*i] > maxfd) maxfd = pipefd[2*i];
-                }
-            }
-            rc = select(maxfd+1, &rdfs, NULL, NULL, NULL);
-            if (rc == -1)
-            {   printf("Calamity : select failed with code %d\n", errno);
-                exit(1);
-            }
-            for (i=0; i<PROCESSCOUNT; i++)
-                if (pipefd[2*i] != -1 &&
-                    FD_ISSET(pipefd[2*i], &rdfs)) break;
-            if (i >= PROCESSCOUNT)
-            {   printf("Calamity : select reported data but none found\n");
-                exit(1);
-            }
-            fd = pipefd[2*i]; // the fd to read from now!
-            pipefd[2*i] = -1;
-// When I am going to read from an fd I convert it to a FILE, mainly because
-// read (as distinct from fread) can deliver only partial data.
-            f = fdopen(fd, "rb");
-            rc = fread(&table_size, sizeof(table_size), 1, f);
-            if (rc < 1)
-            {   printf("Calamity : read failed on %d with code %d\n", fd, errno);
-                exit(1);
-            }
-            live_count--;
-// Sometimes the report is merely a task indicating that they finished
-// without getting anywhere much.
-            if (table_size == -1)
-            {   close(fd);
-                continue;
-            }
-// I will only read more data in the case of a success.
-            printf("table_size %d reported from task %d\n", table_size, i);
-            rc = fread(&modulus2, sizeof(modulus2), 1, f);
-            if (rc < 1)
-            {   printf("Calamity : read failed on %d with code %d\n", fd, errno);
-                exit(1);
-            }
-            rc = fread(&offset2, sizeof(offset2), 1, f);
-            if (rc < 1)
-            {   printf("Calamity : read failed on %d with code %d\n", fd, errno);
-                exit(1);
-            }
-            rc = fread(table, hash_item_size, table_size, f);
-            if (rc < table_size)
-            {   printf("Calamity : read failed on %d with code %d\n", fd, errno);
-                exit(1);
-            }
-            printf("modulus2 = %d offset2 = %d\n", (int)modulus2, (int)offset2);
-            break;
-        }
-// I may exit the above loop because all the processes have terminated, but
-// none delivered a useful result. In that case table_size will have been
-// left at -1.
-        if (table_size == -1) modulus2 = offset2 = 0;
-// Kill all the child processes, and do a wait operation on each so that
-// it can be really fully tidied up. If the process has already terminated
-// the kill operation is not needed, but not should not hurt.
-        for (i=0; i<PROCESSCOUNT; i++)
-        {   kill(pids[i], SIGKILL);
-            waitpid(pids[i], &status, 0);
-            close(pipefd[2*i]);
-        }
-        r.table_size = table_size;
-        r.modulus2 = modulus2;
-        r.offset2 = offset2;
-        r.merit = 0;           // not measured here
-        return r;
-    }
-    else
-#else  // PROCESSCOUNT
-    int myid = 0;
-#endif
-// A child (or only) thread runs the search procedure to seek a nice
-// arrangement of the hash table.
-    {   r = cuckoo_simple_search(
-            myid,
+    {   logprintf("Trial with table_size = %d\n", table_size);
+        r = try_all_hash_functions(
             items,
             item_count,
             importance,
             table,
             hash_item_size,
-            initial_table_size,
-            max_table_size,
-            get_key,
-            set_key);
-#if PROCESSCOUNT != 1
-        printf("Task %d sending %d %d %d to parent (%d)\n",
-               myid, (int)r.table_size, (int)r.modulus2, (int)r.offset2,
-               (int)to_parent_fd);
-        f = fdopen(to_parent_fd, "wb");
-        fwrite(&r.table_size, sizeof(r.table_size), 1, f);
-        if (r.table_size != -1)
-        {   fwrite(&r.modulus2, sizeof(r.modulus2), 1, f);
-            fwrite(&r.offset2, sizeof(r.offset2), 1, f);
-            fwrite(table, hash_item_size, r.table_size, f);
+            table_size,
+            set_key,
+            0);        // Merely check if there is an allocation
+        if (r.table_size != (uint32_t)(-1))
+        {   logprintf("Success for %d items and table_size %d (%.2f%%)\n",
+                item_count, r.table_size, (100.0*item_count)/table_size);
+            logprintf("modulus2 = %d, offset2 = %d\n", r.modulus2, r.offset2);
+            break;
         }
-        fclose(f);
-        fflush(stdout);
-// A child processes just terminate when complete. It does not need to
-// return a value in any ordinary way.
-        exit(0);
-#else
-        return r;
-#endif
     }
+    return r;
 }
 
-// Now the sensible function for users! This will use binary-chop to
-// identify an optimal solution. I suggest that it be passed the number of
-// (distinct) keys as its minimum table size (minus one just to be completely
-// certain it is not feasible) , and say twice that as the maximum.
-//
-// For binary search to be a proper search process the problem being solved
-// ough to be monotonic, and in this case it may not be and hence the solution
-// found may be WRONG. For instance if an exact power of two lies within the
-// search range it could be that that will fail to yield a good table while
-// some smaller size would. Anybody concerned about that can drop back and
-// use cuckoo_optimise that does a simple linear search - perhaps less
-// efficient but in odd cases safer.
-//
-//
+// This seeks a (near) optimal hash table using binary search to sort out the
+// size. Note again that this does not guarantee to find the best solution
+// because the mapping table_size -> number of assignments is not guaranteed
+// to be monotonic. However if you do not know what size is going to be best
+// this can be MUCH faster than a simple linear search, and it is really
+// improbable that it will get a very wrong answer!
+
 // Note that the search will be from [min..max), ie the minimum size quoted
 // will be tested by the largest acceptable size will be one lower than the
 // one given. This is so that the max can be passed as the size of the
 // hash table (and is because of zero-based array addresses).
-//
-// I am generally going to expect that the search will fail fairly promptly
-// for a table-size that is significantly too low, and succeed very repidly
-// for table-sises even modestly greater than the threshold, but for large
-// cases that is not as true as I had hoped!
-//
-// This will create and destroy a load of processes for each search it
-// performs, and for small tables that will represent bad overhead. But
-// for large tables it will not matter at all. Also this code should
-// always find a strictly smallest table regardless of how cpu time is
-// allocated to each of the sub-processes.
 //
 // It will report failure if either the minimum specified table size has
 // a succesfull allocation or the maximum one does not.
@@ -718,12 +924,14 @@ cuckoo_parameters cuckoo_binary_optimise(
     int min_table_size,
     int max_table_size,
     cuckoo_get_key *get_key,
-    cuckoo_set_key *set_key)
+    cuckoo_set_key *set_key,
+    double merit_target)
 {
     cuckoo_parameters r, rhi;
     if (min_table_size >= max_table_size)
     {   r.table_size = (uint32_t)(-1);
-        r.modulus2 = r.offset2 = r.merit = 3;
+        r.modulus2 = r.offset2 = 3;
+        r.merit = 3.0;
         return r;
     }
 // First verify that the low limit does not lead to success. Doing this
@@ -731,73 +939,69 @@ cuckoo_parameters cuckoo_binary_optimise(
 // inserted has no duplicates, and hence if there is more data than could
 // fit into the table there is no chance of success.
     if (min_table_size >= item_count)
-    {   r = cuckoo_optimise(
+    {   r = try_all_hash_functions(
             items,
             item_count,
             importance,
             table,
             hash_item_size,
             min_table_size,
-            min_table_size+1,
-            get_key,
-            set_key);
+            set_key,
+            0);        // Merely check if there is an allocation
         if (r.table_size != (uint32_t)(-1))
         {   r.table_size = (uint32_t)(-1);
-// the "1" is the following two fields perhaps marks what went wrong!
-            r.modulus2 = r.offset2 = r.merit = 1;
+            logprintf("Minimum size passed to binary search is too large\n");
+            r.modulus2 = r.offset2 = 0;
+            r.merit = 4.0;
             return r;
         }
     }
+    else logprintf("Low limit on table size smaller than item count\n");
 // Next confirm that the high limit does lead to success.
-    rhi = cuckoo_optimise(    
+    rhi = try_all_hash_functions(
         items,
         item_count,
         importance,
         table,
         hash_item_size,
         max_table_size-1,
-        max_table_size,
-        get_key,
-        set_key);
-// Oops - it did not!
-    if (rhi.table_size == (uint32_t)(-1)) return r;
+        set_key,
+        0);        // Merely check if there is an allocation
+logprintf("rhi: %d %d %d\n", rhi.table_size, rhi.modulus2, rhi.offset2);
+    if (rhi.table_size == (uint32_t)(-1))
+    {   logprintf("Failed to fit into largest table size\n");
+        return r;
+    }
     while (max_table_size > min_table_size+1)
     {   int mid = (min_table_size + max_table_size)/2;
-        r = cuckoo_optimise(    
+        r = try_all_hash_functions(
             items,
             item_count,
             importance,
             table,
             hash_item_size,
             mid,
-            mid+1,
-            get_key,
-            set_key);
+            set_key,
+            0);        // Merely check if there is an allocation
         if (r.table_size == (uint32_t)(-1)) min_table_size = mid;
         else
         {   max_table_size = mid;
             rhi = r;
         }
     }
-// I want the table to be filled in with a valid arrangement matching the
-// parameters in rhi... but the binary search loop could have terminated
-// with its last probe being one that was a failure not a success. In such
-// a case I need to repeat the final successful search to reconstruct the
-// hash table. I choose to do this rather than using memory to store a copy
-// of it.
-    if (r.table_size != rhi.table_size)
-        rhi = cuckoo_optimise(    
-            items,
-            item_count,
-            importance,
-            table,
-            hash_item_size,
-            rhi.table_size,
-            rhi.table_size+1,
-            get_key,
-            set_key);
-    return rhi;
+// So far I have just identified the best size table to use, but I
+// have neither optimised moduls2/offset2 nor recorded a particular
+// allocation of keys. So here I use a more expensive search.
+    logprintf("Table will be of size %d\n", rhi.table_size);
+    return try_all_hash_functions(
+        items,
+        item_count,
+        importance,
+        table,
+        hash_item_size,
+        rhi.table_size,
+        set_key,
+        1);        // Now do the full job!
 }
 
 // end of cuckoo.c
-

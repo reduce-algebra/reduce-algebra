@@ -77,7 +77,7 @@
 // I may be old fashioned, but I will be happier using C rather than C++
 // libraries here.
 
-#ifdef __cplusplus
+#if defined __cplusplus && !defined __STDC_CONTANT_MACROS
 #define __STDC_CONSTANT_MACROS 1
 #endif
 
