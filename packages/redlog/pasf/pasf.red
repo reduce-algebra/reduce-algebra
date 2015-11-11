@@ -42,7 +42,7 @@ module pasf;
 % [greaterp]. Ternary relations are [cong] and [ncong].
 
 create!-package('(pasf pasfbnf pasfmisc pasfnf pasfsiat
-   pasfqe pasfsism pasfopt pasfresolve),nil);
+   pasfqe pasfsism pasfresolve),nil);
 
 fluid '(!*rlnzden !*rlposden !*rladdcond !*rlqeasri !*rlsusi !*rlsifac !*rlbrkcxk !*utf8);
 
@@ -182,7 +182,6 @@ put('pasf,'rl_services,'(
    (rl_dnf!* . pasf_dnf)
    (rl_cnf!* . pasf_cnf)
    (rl_nnf!* . cl_nnf)
-   (rl_opt!* . pasf_opt)
    (rl_qea!* . pasf_qea)
    (rl_pqea!* . pasf_pqea)
    (rl_wqea!* . pasf_wqea)
