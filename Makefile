@@ -4,7 +4,7 @@
 .PHONY: dist all csl psl
 
 VERBOSE =
-# When debugging it may be useful to invole scripts/make.sh in a noisy way...
+# When debugging it may be useful to invoke scripts/make.sh in a noisy way...
 #VERBOSE = -v
 
 all:
@@ -21,6 +21,7 @@ dist:
 # run this test step by step manually.
 
 csltest:
+	if which cygcheck > /dev/null; then $(SHELL) $(VERBOSE) scripts/cygwin-sanity-check.sh ; fi
 	$(SHELL) $(VERBOSE) scripts/csl-sanity-check.sh
 
 # I have csl and psl as special targets here because those names are

@@ -312,26 +312,87 @@ symbolic procedure glsoleig(u,v,w,arbvars);
 % Manifolds and Lie Groups" (Springer) Chapter 2. (Or any other book
 % on differential geometry or multilinear algebra
 
+% This version led to over-deep recursion in some case, hence the uglier
+% alternative below.
+%
+
+%@@ symbolic procedure c!:extmult(u,v);
+%@@    % Special exterior multiplication routine. Degree of form v is
+%@@    % arbitrary, u is a one-form.
+%@@    if null u or null v then  nil
+%@@     else if v = 1 then u                   %unity
+%@@ %   else (if x then cdr x .* (if car x
+%@@ %                        then negf c!:subs2multf(lc u,lc v)
+%@@ %          else c!:subs2multf(lc u,lc v))
+%@@ %             .+ c!:extadd(c!:extmult(!*t2f lt u,red v),
+%@@ %             ^^ this is bogus: .+ may not be valid in this circumstance
+%@@ %                      c!:extmult(red u,v))
+%@@     else (if x then
+%@@              c!:extadd(cdr x .* (if car x
+%@@                                  then negf c!:subs2multf(lc u,lc v)
+%@@                    else c!:subs2multf(lc u,lc v)) .+ nil,
+%@@                        c!:extadd(c!:extmult(!*t2f lt u,red v),
+%@@                                  c!:extmult(red u,v)))
+%@@        else c!:extadd(c!:extmult(!*t2f lt u,red v),
+%@@               c1!:extmult(red u,v)))
+%@@       where x = c!:ordexn(car lpow u,lpow v);
+
 symbolic procedure c!:extmult(u,v);
    % Special exterior multiplication routine. Degree of form v is
-   % arbitrary, u is a one-form.
-   if null u or null v then  nil
-    else if v = 1 then u                   %unity
-%   else (if x then cdr x .* (if car x
-%                        then negf c!:subs2multf(lc u,lc v)
-%          else c!:subs2multf(lc u,lc v))
-%             .+ c!:extadd(c!:extmult(!*t2f lt u,red v),
-%             ^^ this is bogus: .+ may not be valid in this circumstance
-%                      c!:extmult(red u,v))
-    else (if x then
-             c!:extadd(cdr x .* (if car x
-                                 then negf c!:subs2multf(lc u,lc v)
-                   else c!:subs2multf(lc u,lc v)) .+ nil,
-                       c!:extadd(c!:extmult(!*t2f lt u,red v),
-                                 c!:extmult(red u,v)))
-       else c!:extadd(c!:extmult(!*t2f lt u,red v),
-              c!:extmult(red u,v)))
-      where x = c!:ordexn(car lpow u,lpow v);
+   % arbitrary, u is a one-form. Re-implemented to replace explicit
+   % recursion with code that uses a stack that gets allocated in the
+   % heap (using CONS) and which is therefor less liable to overflow
+   % than the stack that involves raw Lisp recursion.
+  begin
+    scalar stack, w, x, r, r1;
+    stack := nil;
+ top:
+    if null u or null v then << r := nil; go to done >>
+    else if v = 1 then << r := u ; go to done >>;
+    x := c!:ordexn(car lpow u,lpow v);
+    if x then <<
+      stack := (1 . x . u . v) . stack;
+      u := red u;
+      go to top >>
+    else <<
+      stack := (2 . u . v) . stack;
+      u := red u;
+      go to top >>;
+ done:
+    if null stack then return r;
+% Here r is the result of the recursive call and the top item on the stack
+% gives me a continuation.
+    w := car stack;
+    stack := cdr stack;
+    if car w = 1 then <<
+       w := cdr w;
+       x := car w; w := cdr w;
+       u := car w; v := cdr w;
+       stack := (3 . r . x . u . v) . stack;
+       u := !*t2f lt u;
+       v := red v;
+       go to top >>       
+    else if car w = 2 then <<
+       w := cdr w;
+       u := car w; v := cdr w;
+       stack := (4 . r) . stack;
+       u := !*t2f lt u;
+       v := red v;
+       go to top >>
+    else if car w = 3 then <<
+      w := cdr w;
+      r1 := car w; w := cdr w;
+      x := car w; w := cdr w;
+      u := car w; v := cdr w;
+      w := c!:subs2multf(lc u,lc v);
+      if car x then w := negf w;
+      r := c!:extadd(cdr x .* w .+ nil, c!:extadd(r, r1));
+      go to done >>
+    else if car w = 4 then <<
+      r := c!:extadd(r, cdr w);
+      go to done >>;
+    rederr "should never get here"
+  end;
 
 symbolic procedure c!:subs2multf(u,v);
    (if denr x neq 1 then rerror(matrix,14,"Sub error in glnrsolve")
@@ -339,14 +400,48 @@ symbolic procedure c!:subs2multf(u,v);
    where x = subs2(multf(u,v) ./ 1) where !*sub2 = !*sub2;
 
 
+% Also reworked in an ugly manner to avoid excessive recursion...
+
+%@@ symbolic procedure c!:extadd(u,v);
+%@@    if null u then v
+%@@     else if null v then u
+%@@     else if lpow u = lpow v then
+%@@             (lambda x,y; if null x then y else lpow u .* x .+ y)
+%@@         (addf(lc u,lc v),c!:extadd(red u,red v))
+%@@     else if c!:ordexp(lpow u,lpow v) then lt u .+ c!:extadd(red u,v)
+%@@     else lt v .+ c!:extadd(u,red v);
+
 symbolic procedure c!:extadd(u,v);
-   if null u then v
-    else if null v then u
-    else if lpow u = lpow v then
-            (lambda x,y; if null x then y else lpow u .* x .+ y)
-        (addf(lc u,lc v),c!:extadd(red u,red v))
-    else if c!:ordexp(lpow u,lpow v) then lt u .+ c!:extadd(red u,v)
-    else lt v .+ c!:extadd(u,red v);
+  begin
+    scalar x, r, w;
+ top:
+    if null u then << r := v; go to done >>
+    else if null v then << r := u; go to done >>
+    else if lpow u = lpow v then <<
+      x := addf(lc u, lc v);
+      if null x then <<
+         u := red u;
+         v := red v;
+         go to top >>
+      else <<
+        w := (lpow u .* x) . w;
+        u := red u;
+        v := red v;
+        go to top >> >>
+    else if c!:ordexp(lpow u,lpow v) then <<
+      w := lt u . w;
+      u := red u;
+      go to top >>
+    else <<
+      w := lt v . w;
+      v := red v;
+      go to top >>;
+ done:
+    while w do <<
+      r := car w .+ r;
+      w := cdr w >>;
+    return r
+  end;
 
 symbolic procedure c!:ordexp(u,v);
    if null u then t
