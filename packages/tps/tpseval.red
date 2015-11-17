@@ -460,6 +460,42 @@ end;
 put('exp,'ps!:erule, 'ps!:exp!-erule);
 put('exp,'ps!:order!-fn,'ps!:exp!-orderfn);
 
+
+% Support for classic Taylor expansion and gamma functions
+% added November 2015 by Alan Barnes
+
+symbolic procedure ps!:taylor!-erule(a,n);
+% one esential rplacd operation in this procedure
+ begin scalar deriv, term, depvar, about;
+   depvar := cadr a;
+   about := caddr a;
+   deriv := cadddr a;
+   deriv := prepsq simp list('quotient, list('df, deriv, depvar), n);
+   term := simp subst(about, depvar, deriv);
+   rplacd(cddr a, list(deriv));
+   return term
+ end;
+
+put('ps!:taylor, 'ps!:erule, 'ps!:taylor!-erule);
+
+symbolic procedure ps!:gamma!-erule(a,n);
+% one esential rplacd operation in this procedure
+ begin scalar deriv, term, depvar, about;
+   depvar := cadr a;
+   about := caddr a;
+   deriv := cadddr a;
+   rule!-list('(psi_rules), nil);
+   deriv := prepsq simp list('quotient, list('df, deriv, depvar), n);
+   rule!-list('(psi_rules), t);
+   term := simp subst(about, depvar, deriv);
+   rplacd(cddr a, list(deriv));
+   return term
+ end;
+
+put('ps!:gamma, 'ps!:erule, 'ps!:gamma!-erule);
+
+
+
 endmodule;
 
 end;

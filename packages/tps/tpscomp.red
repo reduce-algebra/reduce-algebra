@@ -64,7 +64,6 @@ symbolic procedure ps!:compile(form,depvar,about);
          else if get(car form,'ps!:crule) then
                 apply(get(car form,'ps!:crule),list(form,depvar,about))
          else (if tmp then '!:ps!:  .  cdr tmp
-%               else ps!:unknown!-crule(form, depvar, about))
                else ps!:unknown!-crule((car form) .
                                        foreach arg in cdr form collect
                                           ps!:compile(arg,depvar,about),
@@ -449,6 +448,170 @@ begin scalar eflg,exp1,exp2,b,psvalue;
 end;
 
 put('expt,'ps!:crule,'ps!:expt!-crule);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Added by Alan Barnes.  November 2015
+% Produces an extendible Taylor series using the classic method.
+%
+%   pstaylor(<function, <depvar>, <about>);
+%
+%     <function>  the function to be expanded         (algebraic)
+%     <depvar>    expansion variable of series        (a kernel)
+%     <about>     expansion point of series           (algebraic)
+
+
+
+symbolic procedure simppstay a;
+  if length a = 3 then apply('simppstay1, a)
+  else rerror(tps,5,
+          "Args should be <FORM>,<depvar>, and <point>:  simppstay");
+
+put('pstaylor, 'simpfn, 'simppstay);
+
+symbolic procedure simppstay1(form, depvar, about);
+  if form=nil then
+     rerror(tps,6,"Args should be <FORM>,<depvar>, and <point>: simppstay")
+  else if not kernp simp!* depvar then
+     typerr(depvar, "kernel:  simppstay")
+  else if  smember(depvar,(about:=prepsqxx simp!* about)) then
+     rerror(tps,7,"Expansion point depends on dependent variable:  simppstay")
+  else simppstay2(ps!:presimp form, depvar, 
+                  if about='infinity then 'ps!:inf else about, nil) ./ 1;
+
+
+symbolic procedure simppstay2(form, depvar, about, gammaflg);
+% gammaflg is a boolean argument which causes psi_rules to be turned off
+% during the evaluation of derivatives of the gamma function & friends 
+
+   if idp form then make!-ps!-id(form,depvar,about)
+   else if ps!:numberp form then form
+   else if ps!:p form then
+       if (ps!:expansion!-point form=about) and (ps!:depvar form=depvar)
+       then form 
+       else simppstay2(ps!:value form, depvar, about, gammaflg)
+   else begin scalar ps, deriv, psord, term, ept, evar;
+       psord := 0;
+       if about = 'ps!:inf then 
+          << evar := gensym(); ept := 0; 
+       	     if gammaflg then rule!-list('(psi_rules), nil);
+             deriv :=
+                prepsq simp subst(list('quotient, 1, evar), depvar, form);
+       	     if gammaflg then rule!-list('(psi_rules), t)>>
+       else 
+          << deriv := form; ept := about; evar := depvar>>;
+       if gammaflg then rule!-list('(psi_rules), t);
+       term := simp subst(ept, evar, deriv);
+       while numr term = nil and deriv neq 0 do <<
+          psord := psord + 1;
+     	  if gammaflg then rule!-list('(psi_rules), nil);
+          deriv := prepsq simp
+                        list('quotient, list('df, deriv, evar), psord);
+     	  if gammaflg then rule!-list('(psi_rules), t);
+          term := simp subst(ept, evar, deriv);
+       >>;
+       if deriv=0 then return nil;
+       ps := make!-ps(list(if gammaflg then 'ps!:gamma else 'ps!:taylor, 
+                           evar, ept, deriv), 
+                      form, depvar, about);
+       ps!:set!-order(ps, psord);
+       ps!:set!-term(ps, psord, term);
+       return ps
+       end;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Compilation rules for the gamma function & friends.
+% Written by Alan Barnes November 2015
+
+symbolic procedure ps!:gamma!-crule(a,d,n);
+% For generic expansion points we use classic Taylor expansion 
+% via simppstay2.
+% For expansion about zero we use the shift formula
+%    Gamma(z) = Gamma(z+1)/z
+% For expansion about a negative integer we use the shift formula
+% repeatedly and then recurse via ps!:compile and simppstay2.
+%
+if n = 'ps!:inf then
+     rerror(tps,106,
+            "Expansion of gamma function about infinity not yet supported.")
+else begin scalar arg, exppt, res, fn;
+  arg := rand1 a;
+  fn := if ps!:p arg then ps!:value arg 
+        else if pairp arg then ps!:arg!-values arg 
+        else arg;
+  exppt := reval subst(n, d, fn);
+
+  if not fixp exppt or exppt>0 then 
+    return  simppstay2(list('gamma, fn), d, n, t)  
+  else  << res := simppstay2(list('gamma, reval list('plus, fn, 1-exppt)), 
+                             d, n, t);
+     arg := if ps!:p arg then arg else ps!:compile(arg,d,n);
+     res := ps!:compile(list('quotient, res, arg),d,n);
+     for i:=1:-exppt do 
+          res :=ps!:compile(list('quotient, res, list('plus, arg, i)), d, n);
+  >>;
+  ps!:set!-value(res, ps!:arg!-values a);
+  return res;
+end;
+
+symbolic procedure ps!:polygamma!-crule(a,d,n);
+% For generic expansion points we use classic Taylor expansion 
+% via simppstay2.
+% For polygamma about non-positive integer expansion points 
+% (repeated) differentiation of the series for psi is used.
+%
+% For expansion of psi about zero we use the shift formula
+%    psi(z) = psi(z+1) - 1/z
+% For expansion of psi about a negative integer the shift formula is used 
+% repeatedly and then we recurse via ps!:compile and simppstay2.
+%
+if n = 'ps!:inf then
+   rerror(tps,107,
+          "Expansion of polygamma function about infinity not yet supported.")
+else
+begin scalar exppt, op, arg, fn, res, divisor, constflg;
+  op := rator a;
+  arg := if op='polygamma then rand2 a else rand1 a;
+  fn := if ps!:p arg then ps!:value arg 
+        else if pairp arg then ps!:arg!-values arg 
+        else arg;
+  exppt := reval subst(n,d,fn);
+
+  if not fixp exppt or exppt>0 then return
+     simppstay2(if op='psi or rand1 a=0 then list('psi, arg)
+                else list('polygamma, rand1 a, arg), d, n, t)  
+  else << 
+    res := simppstay2(list('psi, reval list('plus, fn, 1-exppt)), 
+                            d, n, t);
+     arg := if ps!:p arg then arg else ps!:compile(arg,d,n);
+     res := ps!:compile(list('difference, res, 
+	                      list('quotient, 1, arg)), d, n);
+     for i:=1:-exppt do 
+          res :=ps!:compile(list('difference, res, 
+                                 list('quotient, 1, list('plus, arg, i))),
+	     d, n)
+  >>;
+
+  if op='psi or rand1 a=0 then << 
+     ps!:set!-value(res, ps!:arg!-values a);
+     return res>>;
+  divisor := prepsqxx simp!* list('df, arg, d);
+  if null numr simp!* list('df, divisor, d) then constflg:=t
+  else divisor := ps!:compile(divisor, d, n);
+  for i:=1:rand1 a do <<
+     res := car ps!:diff!:(res, d);
+     if not constflg then  
+     	res := ps!:compile(list('quotient, res, divisor), d, n)
+  >>;
+  if constflg then 
+     res := ps!:compile(list('quotient, res, list('expt, divisor, rand1 a)),
+                        d, n);
+  ps!:set!-value(res, ps!:arg!-values a);
+  return res;
+end;
+
+put('gamma,'ps!:crule,'ps!:gamma!-crule);
+put('psi,'ps!:crule,'ps!:polygamma!-crule);
+put('polygamma,'ps!:crule,'ps!:polygamma!-crule);
 
 endmodule;
 

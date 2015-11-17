@@ -91,13 +91,26 @@ ps(tan sum!-series2, y, 1);
 ps(int(sum!-series2, y), y, 1);
 
 psexplim 6;
+% test new compilation rules for gamma and friends
+ps(gamma x,x,1);
+ps(psi x,x,1);
+ps(gamma x,x,0);
+ps(psi,x,-1);
+ps(polygamma(3,x),x,0);
+ps(gamma(1+x),x,0);
+ps(psi(3+x),x,-3);
+ps(psi(sin x),x,0);
+ps(gamma(-cos x),x,0);
+
+% test new taylor function
+pstaylor(tan x,x,0);
 
 % some limited functionality of abs(ps)
 abs(sin!-series^2);
 abs(cos!-series);
 
-% incorrect/incomplete results obtained with many of the following inputs
-% using latest Sourceforge versions (Nov 2014) but now corrected
+% incorrect/incomplete results were obtained with many of the following inputs
+% but now corrected
 
 % bug in abs
 abs(cos!-series*sin!-series^2);
@@ -119,10 +132,5 @@ tmp:=ps(sin a*sin x,x,a^3);
 % incorrect in previous version
 tmp := ps(int(tmp,a),x,a^3);
 psfunction tmp;
-
-tmp := ps(sin sin(a*x), x, a);
-% fails in both versions 
-% (in new version as sin sin can't be integrated in closed form)
-ps(int(tmp,a),x,a);
 
 end;

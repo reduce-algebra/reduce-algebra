@@ -492,6 +492,219 @@ psexplim 6;
 
 20
 
+% test new compilation rules for gamma and friends
+ps(gamma x,x,1);
+
+
+                                        2     2
+                           6*euler_gamma  + pi          2
+1 - euler_gamma*(x - 1) + ----------------------*(x - 1)
+                                    12
+
+                                3                 2
+     - 4*zeta(3) - 2*euler_gamma  - euler_gamma*pi          3
+ + -------------------------------------------------*(x - 1)  + 
+                          12
+
+                                         4                 2   2       4
+ 160*zeta(3)*euler_gamma + 20*euler_gamma  + 20*euler_gamma *pi  + 3*pi
+-------------------------------------------------------------------------
+                                   480
+
+        4                                            2                2
+*(x - 1)  + ( - 288*zeta(5) - 240*zeta(3)*euler_gamma  - 40*zeta(3)*pi
+
+                              5                 3   2                   4
+              - 12*euler_gamma  - 20*euler_gamma *pi  - 9*euler_gamma*pi )/1440
+
+        5                                            2
+*(x - 1)  + (24192*zeta(5)*euler_gamma + 6720*zeta(3)
+
+                                        3                              2
+              + 6720*zeta(3)*euler_gamma  + 3360*zeta(3)*euler_gamma*pi
+
+                               6                  4   2                  2   4
+              + 168*euler_gamma  + 420*euler_gamma *pi  + 378*euler_gamma *pi
+
+                     6                6            7
+              + 61*pi )/120960*(x - 1)  + O((x - 1) )
+
+ps(psi x,x,1);
+
+
+                    2                                  4
+                  pi                            2    pi          3
+ - euler_gamma + -----*(x - 1) - zeta(3)*(x - 1)  + -----*(x - 1)
+                   6                                 90
+
+                         6
+                  4    pi          5                  6            7
+ - zeta(5)*(x - 1)  + -----*(x - 1)  - zeta(7)*(x - 1)  + O((x - 1) )
+                       945
+
+ps(gamma x,x,0);
+
+
+                                  2     2
+ -1                  6*euler_gamma  + pi
+x   - euler_gamma + ----------------------*x
+                              12
+
+                                3                 2
+     - 4*zeta(3) - 2*euler_gamma  - euler_gamma*pi    2
+ + -------------------------------------------------*x
+                          12
+
+                                            4                 2   2       4
+    160*zeta(3)*euler_gamma + 20*euler_gamma  + 20*euler_gamma *pi  + 3*pi    3
+ + -------------------------------------------------------------------------*x  
+                                      480
+
+                                           2                2                 5
++ ( - 288*zeta(5) - 240*zeta(3)*euler_gamma  - 40*zeta(3)*pi  - 12*euler_gamma
+
+                    3   2                   4        4
+    - 20*euler_gamma *pi  - 9*euler_gamma*pi )/1440*x  + (
+
+                                           2                           3
+   24192*zeta(5)*euler_gamma + 6720*zeta(3)  + 6720*zeta(3)*euler_gamma
+
+                                 2                  6                  4   2
+    + 3360*zeta(3)*euler_gamma*pi  + 168*euler_gamma  + 420*euler_gamma *pi
+
+                     2   4        6          5
+    + 378*euler_gamma *pi  + 61*pi )/120960*x  + ( - 17280*zeta(7)
+
+                               2                  2               2
+    - 12096*zeta(5)*euler_gamma  - 2016*zeta(5)*pi  - 6720*zeta(3) *euler_gamma
+
+                              4                           2   2
+    - 1680*zeta(3)*euler_gamma  - 1680*zeta(3)*euler_gamma *pi
+
+                    4                 7                 5   2
+    - 252*zeta(3)*pi  - 24*euler_gamma  - 84*euler_gamma *pi
+
+                     3   4                    6          6      7
+    - 126*euler_gamma *pi  - 61*euler_gamma*pi )/120960*x  + O(x )
+
+ps(psi,x,-1);
+
+
+               7
+psi + O((x + 1) )
+
+ps(polygamma(3,x),x,0);
+
+
+           4                        6                           8
+   -4    pi                     4*pi    2                3    pi    4
+6*x   + ----- - 24*zeta(5)*x + -------*x  - 120*zeta(7)*x  + -----*x
+         15                      63                           45
+
+                         10
+                5    8*pi     6      7
+ - 336*zeta(9)*x  + --------*x  + O(x )
+                      1485
+
+ps(gamma(1+x),x,0);
+
+
+                                  2     2
+                     6*euler_gamma  + pi    2
+1 - euler_gamma*x + ----------------------*x
+                              12
+
+                                3                 2
+     - 4*zeta(3) - 2*euler_gamma  - euler_gamma*pi    3
+ + -------------------------------------------------*x
+                          12
+
+                                            4                 2   2       4
+    160*zeta(3)*euler_gamma + 20*euler_gamma  + 20*euler_gamma *pi  + 3*pi    4
+ + -------------------------------------------------------------------------*x  
+                                      480
+
+                                           2                2                 5
++ ( - 288*zeta(5) - 240*zeta(3)*euler_gamma  - 40*zeta(3)*pi  - 12*euler_gamma
+
+                    3   2                   4        5
+    - 20*euler_gamma *pi  - 9*euler_gamma*pi )/1440*x  + (
+
+                                           2                           3
+   24192*zeta(5)*euler_gamma + 6720*zeta(3)  + 6720*zeta(3)*euler_gamma
+
+                                 2                  6                  4   2
+    + 3360*zeta(3)*euler_gamma*pi  + 168*euler_gamma  + 420*euler_gamma *pi
+
+                     2   4        6          6      7
+    + 378*euler_gamma *pi  + 61*pi )/120960*x  + O(x )
+
+ps(psi(3+x),x,-3);
+
+
+                                2                                  4
+          -1                  pi                            2    pi          3
+ - (x + 3)   - euler_gamma + -----*(x + 3) - zeta(3)*(x + 3)  + -----*(x + 3)
+                               6                                 90
+
+                         6
+                  4    pi          5                  6            7
+ - zeta(5)*(x + 3)  + -----*(x + 3)  - zeta(7)*(x + 3)  + O((x + 3) )
+                       945
+
+ps(psi(sin x),x,0);
+
+
+                          2                            4        2
+    -1                  pi  - 1               2    4*pi  - 10*pi  - 7   3
+ - x   - euler_gamma + ---------*x - zeta(3)*x  + --------------------*x
+                           6                              360
+
+                                       6        4        2
+     - 3*zeta(5) + zeta(3)   4    16*pi  - 84*pi  + 21*pi  - 31   5
+ + ------------------------*x  + -------------------------------*x
+              3                               15120
+
+     - 45*zeta(7) + 30*zeta(5) - 2*zeta(3)   6      7
+ + ----------------------------------------*x  + O(x )
+                      45
+
+ps(gamma(-cos x),x,0);
+
+
+      -2    6*euler_gamma - 7
+ - 2*x   + -------------------
+                    6
+
+                     2                        2
+     - 30*euler_gamma  + 60*euler_gamma - 5*pi  - 61   2
+ + --------------------------------------------------*x  + (504*zeta(3)
+                          120
+
+                     3                  2                     2
+    + 252*euler_gamma  - 630*euler_gamma  + 126*euler_gamma*pi
+
+                               2               4
+    + 1260*euler_gamma - 105*pi  - 1262)/6048*x  + ( - 7200*zeta(3)*euler_gamma
+
+                                    4                   3                  2   2
+    + 4800*zeta(3) - 900*euler_gamma  + 2400*euler_gamma  - 900*euler_gamma *pi
+
+                      2                      2                             4
+    - 7320*euler_gamma  + 1200*euler_gamma*pi  + 14640*euler_gamma - 135*pi
+
+             2                  6      7
+    - 1220*pi  - 14642)/172800*x  + O(x )
+
+
+% test new taylor function
+pstaylor(tan x,x,0);
+
+
+     1   3    2    5      7
+x + ---*x  + ----*x  + O(x )
+     3        15
+
 
 % some limited functionality of abs(ps)
 abs(sin!-series^2);
@@ -509,8 +722,8 @@ abs(cos!-series);
      2        24        720
 
 
-% incorrect/incomplete results obtained with many of the following inputs
-% using latest Sourceforge versions (Nov 2014) but now corrected
+% incorrect/incomplete results were obtained with many of the following inputs
+% but now corrected
 
 % bug in abs
 abs(cos!-series*sin!-series^2);
@@ -636,34 +849,4 @@ psfunction tmp;
  - cos(a)*sin(x)
 
 
-tmp := ps(sin sin(a*x), x, a);
-
-
-                2          2           2
-tmp := sin(sin(a )) + cos(a )*cos(sin(a ))*a*(x - a)
-
-            2       2 2          2              2        2
-           a *(cos(a ) *sin(sin(a )) + cos(sin(a ))*sin(a ))         2
-        - ---------------------------------------------------*(x - a)  + (
-                                   2
-
-               2   3
-          cos(a )*a
-
-                    2 2          2              2            2           2
-          *( - cos(a ) *cos(sin(a )) - cos(sin(a )) + 3*sin(a )*sin(sin(a ))))/6
-
-               3            4
-       *(x - a)  + O((x - a) )
-
-% fails in both versions 
-% (in new version as sin sin can't be integrated in closed form)
-ps(int(tmp,a),x,a);
-
-
-***** Can't integrate this series (expansion pt depends on integration variable)
- 
-
-
 end;
-
