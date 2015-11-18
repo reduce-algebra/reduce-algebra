@@ -68,6 +68,7 @@ void init(int _n1, int _n2)
     n1 = _n1;
     n2 = _n2;
     edges = 0;
+    if (DEBUG) logprintf("Hopcroft-Karp with size = %d by %d\n", n1, n2);
     fill(last, last + n1, -1);
 }
 
@@ -77,6 +78,7 @@ void addEdge(int u, int v)
 {
     head[edges] = v;
     prev[edges] = last[u];
+    if (DEBUG) logprintf("addEdge %d from %d to %d\n", edges, u, v);
     last[u] = edges++;
 }
 

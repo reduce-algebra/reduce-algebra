@@ -230,14 +230,15 @@ int check_stack(char *file, int line)
         term_printf("c_stack_ptr = %d\n", c_stack_ptr);
         for (i=c_stack_ptr; i>=0; i--)
         {   if (first || stack_file[i][0] != '@')
-                term_printf(" %s:%d", stack_file[i], stack_line[i]);
+                term_printf(" %s:%d:%" PRIxPTR,
+                  stack_file[i], stack_line[i], stack_depth[i]);
             if (stack_file[i][0] != '@') first = 0;
             if ((++j)%5 ==4) term_printf("\n");
         }
         term_printf("\n");
         spmin = temp;
         if (temp < spbase-C_STACK_ALLOCATION ||
-            temp < C_stack_limit) return 1;
+            temp < (uintptr_t)C_stack_limit) return 1;
     }
     return 0;
 }
@@ -968,7 +969,8 @@ void debug_show_trail_raw(const char *msg, const char *file, int line)
 {
     int i;
     const char *f1 = strrchr(file, '/');
-    if (f1 != NULL) f1++;
+    if (f1 == NULL) f1 = "?";
+    else f1++;
     printf("\n+++++ Debug trail %s\n", msg);
     for (i=0; i<32; i++)
     {   if (debug_trail[debug_trailp][0] == 0) continue;
@@ -976,7 +978,7 @@ void debug_show_trail_raw(const char *msg, const char *file, int line)
             debug_trail_file[debug_trailp], debug_trail_line[debug_trailp]);
         debug_trailp = (debug_trailp+1)%32;
     }
-    printf("Current at %d:%d", f1, line);
+    printf("Current at %s:%d", f1, line);
     fflush(stdout);
 }
 

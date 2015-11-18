@@ -1,0 +1,188 @@
+\documentclass [a4paper,11pt]{article}
+\title{Packing static tables for compactness and rapid access}
+\author{Arthur C Norman}
+\begin{document}
+\maketitle
+\section{Synopsis}
+\section{Introduction}
+This is a message to record some of the fun I have been having recently, 
+in case anybody else ends up interested.
+
+I want to be able to display mathematical formulae nicely. To that end I 
+need access to character metrics. In my most recent investigation I am 
+expecting you use seven fonts
+   Computer Modern Unicode Typewriter Text  (fixed pitch)
+   "Odokai" [AR PL New Kai]                 (a range of CJK characters)
+   STIX in Regular, Bold, Italic and BoldItalic (a serif face)
+   STIX-Math                                (mathematical symbol support)
+Between these I am faced with just over 33000 characters. I want tables 
+that give character sizes, kern and ligature information and various extra 
+stuff relating to the typesetting of mathematics. I would like the tables 
+to be compact but fast to access. I am prepared to take the view that I 
+will only use these particular fonts - so a user is not entitles to bring 
+in another without needing to do substantial revision and rebuilding of 
+everything.
+
+By far the biggest table is one one giving character sizes and providing 
+indirections into ligature and kern tables. To support fast access I make 
+this a hash table. If I hashed each character individually then I would 
+have 33000 entries in my table each using space to hold the hash key. For 
+the data concerned most characters are arrange in blocks, so I use one 
+hash table entry for every run of four characters. This wastes some space 
+where the fonts have isolated characters in them, but saves repetition of 
+hash keys. I end up with just over 10000 lines active in the hash table, 
+so on average each line has three of the four positions in it ii use. It 
+happens that using this arrangement also gives me a neat number of bits to 
+be used for each hash table entry - 40 bytes which I store as five 64-bit 
+words.
+
+\section{Approach}
+When establishing a hash table there are typically messy compromises to 
+make. One would like a hash function that is cheap and simple to compute 
+to save time there, but something too simple may compromise the efficiency 
+of the table. One would like as small a table as possible to save space, 
+but that will tend to lead to the need for a large number of probes to 
+retrieve information. I use a variant of cuckoo hashing, and the main 
+point of this note is to record what I view as the amazing way in which 
+this lets me meet all my objectives simultaneously.
+
+I introduce three separate hash functions and for any character I insist 
+that it end up at one of the locations that these propose for it. Of 
+course in unlucky cases two or even all of the functions will yield the 
+same value and then the character concerned does not have as much 
+flexibility about where it goes. Accepting that as a fact of life, I go 
+further. Characters in the typewriter and the mathematical font whose 
+codes are in the range U+0000 to U+007f (ie the basic latin alphabet in 
+the two fonts I expect to be most heavily used) are treated so that only a 
+single hash value is used. Then in the typewriter font I make it such that 
+all characters at codepoints up to U+0600 (this covers a serious range of 
+European alphabets) and the main range from the Maths font that cover 
+European letters and mathematical sumbols only have two distinct hash 
+values. Characters expected to arise less commonly - bold, italic, CJK and 
+a whole raft of Unicode oddities - are allowed the full three 
+possibilities.
+
+The one, two or three locations in the hash table that each character is 
+allowed to reside can be thought of as a bipartite graph, and standard 
+algorithms (eg Hopcroft-Karp) can seek a maximum matching. If the one that 
+is found manages to allocate a location for every single character one has
+a hash table where the most important latin characters can be found in one 
+probe, essentially all symbols used in mathematics in two (and hance in an 
+average of around 1.5), while every character can be looked up in at worst 
+three probes (and so in an average of around 2). An unsuccessful search 
+for a character not present in any of the fonts only needs three probes. I 
+feel that this allows one to believe that performance is good.
+
+The remaining challenge is to ensure that the hash functions used are 
+cheap to compute and the table is acceptably compact. I will start with 
+the first of these, assuming that the hash table is of size N. The three
+hash functions I use are
+    h1(k) = k mod N
+    h2(k) = k mod N2 + O2  [for some constants N2 and O2]
+    h3(k) = (h1(k) + h2(k)) mod N
+and if I arrange that N2+O2<=N I can be confident that h2(k) yields a 
+value that will lie within table bounds. Especially given that faily often 
+only the first one or two of these will need to be computed, and in the 
+light of the fact that modern machines compute remainders reasonably fast 
+these seem good and simple to implement and not unduly expensive. Observe 
+that there is a lot of flexibility in the choice of the constants N2 and 
+O2 as well as in choosing the table size N.
+
+Because the font data is static and not expected to change at all often I 
+can afford a potentially expensive search to pick N, N2 and O2 so as to 
+find a small table. Existing known results about cuckoo hashing indicate 
+that for variants like this with three probes one should expect that with 
+good has functions it will usually be possible to have a table occupancy 
+of around 91%. Here one can worry that the blocky allocation of codes in 
+the fonts and the really naive hash functions might make things worst than 
+that.
+
+In its most direct form I start with a small table size N and try running 
+the maximum matching process for all plausible values of N2 and O2, 
+gradually increasing N until I am first able to create a complete table.
+When doing this I judge that a tiny value of the secondary modulus N2 is 
+not at all liable to be useful since it would not lead to data being 
+spread out, so I scan for N2 from 2N/3 up to N-1. I then try all legal 
+values of the offset O2 that will avoid h2(k) ever ending up too large. 
+This is quite a painfully large search space. To speed it up my code has 
+two tricks, both of which introduce risks. The first is that I create 8 
+sub-processes and each investigate part of the search space in parallel. I 
+avoid heavy duty synchronisation and an effect is that hypothetically one 
+part of the search could run ahead and find a packing in a slightly larger 
+size hash table before another had complete analysis of a smaller table 
+size. Even though that might happen it would probably at worst lead to 
+issue of a hash table just one larger than perfection. My other speed-up 
+is to use binary search between a tiny table size that is clearly 
+impossible to use and a large one where it is easy to fit everything in. 
+This obviously speeds things up very usefully, but the binary search 
+process really relies on having a monotonic function to investigate if it 
+is to guarantee to find the smallest feasible table. Again I have not 
+found this to be a big problem in practise. My code is such that a 
+complile time option can be used to disable use of parallel search, and an 
+alternative entrypoint into the code performs the original naive search 
+and so can be used to check solutions found using the optimisations.
+
+\section{Initial results}
+
+With this strategy - and let me remind you that it allows the most 
+important characters to be looked up in one probe and almost all the 
+relevant rest in only 2 - I find that to store the 10019 keys for my 
+characters I end up with a table size of 10057. This is a 99.62% 
+occupancy! My metrics table still ends up consuming around 400 Kbytes, but 
+I am amazed by how little waste there is.
+
+I have other hash tables to record information about variant and extended 
+characters and to help position accents. So for instance a left 
+parenthesis need to be associated with four of five characters 
+representing gradually larger versions of itself, and then with individual 
+characters that can be places adjacent to build up truly huge versions. 
+A typical result here is that I have 141 characters for which "extended 
+forms" are available, and the hash table set up much as described above 
+ends up being of size 143. Again cuckoo hashing with an exhaustive search 
+through a range of trivial hash functions has allowed an almost perfect 
+hashing scheme to be created.
+
+On a reasonably fast desktop machine running a complete sequential search 
+for a good hash table for the 10000 entries I am working with takes of the 
+order of a day. The binary search reduces this to a bit under an hour and 
+for greater convenience I then seed in and merely verify the best solution 
+- and the code that creates the tables then runs in seconds.
+
+A further refinement could be to use not just a simple maximum matching 
+algorithm, but one based on weighted graphs so that matchings that 
+correspond to placing kets in their first choics position was 
+systematically preferred. At present my expectation is that at the high 
+table occupancies I am working with the fact that everything fits is 
+essentially a fluke based on the exact particular hash parameters in use, 
+and that this would not improve things much, but if one backed off to 
+lower hash occupancy regimes it might be useful.
+
+My code for all this is in a file "charmetrics.c" and when compiled with a 
+"CREATE" flag it can be run to create "charmetrics.h" which contains the 
+tables for use with C or C++ and also "charmetrics.red" so that metrics 
+could be used directly from Reduce. All these in the csl/cslbase directory 
+of the Reduce source tree at sourceforge.
+
+\section{Refinements}
+
+Parallel search using work-farm model
+
+Use linear strong component decomposition before Hopcroft Karp
+
+Strong component with more in A then B must fail
+
+Strong component with only 1 or 2 in B must succeed
+
+If at any stage more items remain in A than in B then failure is certain.
+
+Keep largest component until end in case an earlier one proves impossibility.
+
+Adapt Hungarian code to use spare data representation
+
+
+\section{Final results}
+\section{Conclusions}
+
+\section{References}
+
+\end{document}

@@ -50,6 +50,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <string.h>
 #include <stdarg.h>
 #include <errno.h>
@@ -62,33 +63,20 @@
 #include <unistd.h>
 #endif
 
+#include "cuckoo.h"
+
+#include "memorysize.c"
 
 // I now try to encapsulate the variations between thread support across
 // Windows and the rest of the world...
 // The macros here are not very syntactically safe, but I will be using
 // them in very stylised manners so I am not too worried.
 
+static __thread int threadnumber = -1;
+
 #ifdef WIN32
 
-// On Windows I can use CRITICAL_SECTIONs rather than real mutexes, and the
-// performance difference is quite substantial when contention is reasonably
-// low. The key issue is that a CRITICAL_SECTION does its initial checks in
-// user-mode and only upgrades to kernel mode in the complicated cases. A
-// side effect of this is that all use of one of these locks must occur
-// within a single process, while more general mutexes support use even
-// when multiple processes are present.
-
-static CRITICAL_SECTION critical_section, logmutex;
-// in Windows the initialization of a CriticalSection can never fail
-#define CREATEMUTEX_FAILED InitializeCriticalSection(&critical_section), 0
-#define LOCKMUTEX          EnterCriticalSection(&critical_section)
-#define UNLOCKMUTEX        LeaveCriticalSection(&critical_section)
-#define DESTROYMUTEX       DeleteCriticalSection(&critical_section)
-
-#define CREATELOGMUTEX        InitializeCriticalSection(&logmutex)
-#define LOCKLOGMUTEX          EnterCriticalSection(&logmutex)
-#define UNLOCKLOGMUTEX        LeaveCriticalSection(&logmutex)
-
+CRITICAL_SECTION critical_section, logmutex;
 
 static int number_of_processors()
 {
@@ -115,23 +103,27 @@ static int number_of_processors()
 static HANDLE thread[MAX_CPU_COUNT];
 
 #define CREATETHREAD_FAILED(i, p) \
-    (thread[i] = CreateThread(NULL, 0, &p, NULL, 0, NULL)) == NULL
-#define SLEEP Sleep(5000)
+    (thread[i] = CreateThread(NULL, 0, &p, \
+        (void *)(intptr_t)i, 0, NULL)) == NULL
+// On Windows I will use a time-limited wait for my first worker
+// thread to terminate as my "sleep" operation - that means that as soon
+// as that thread terminates I wake up... and I should find the
+// thread_finished variable has been set.
+#define SLEEP if (WaitForSingleObject(thread[0], 5000) == WAIT_OBJECT_0) \
+    {   CloseHandle(thread[0]); \
+        thread[0] = NULL; \
+    }
 #define JOINTHREAD_FAILED(i) \
-    WaitForSingleObject(thread[i], INFINITE) != WAIT_OBJECT_0 || \
-    CloseHandle(thread[i]) != 0
+    (thread[i] != NULL && \
+     (WaitForSingleObject(thread[i], INFINITE) != WAIT_OBJECT_0 || \
+      CloseHandle(thread[i]) == 0))
 
 #else // Now for the pthreads version for Linux, Unix, BSD, OS/X etc.
 
-static pthread_mutex_t mutex, logmutex;
-#define CREATEMUTEX_FAILED pthread_mutex_init(&mutex, NULL)
-#define LOCKMUTEX          pthread_mutex_lock(&mutex)
-#define UNLOCKMUTEX        pthread_mutex_unlock(&mutex)
-#define DESTROYMUTEX       pthread_mutex_destroy(&mutex)
-
-#define CREATELOGMUTEX     pthread_mutex_init(&logmutex, NULL)
-#define LOCKLOGMUTEX       pthread_mutex_lock(&logmutex)
-#define UNLOCKLOGMUTEX     pthread_mutex_unlock(&logmutex)
+pthread_mutex_t mutex     = PTHREAD_MUTEX_INITIALIZER,
+                logmutex  = PTHREAD_MUTEX_INITIALIZER,
+                condmutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t  cond      = PTHREAD_COND_INITIALIZER;
 
 #ifdef _SC_NPROCESSORS_ONLN
 // _SC_NPROCESSORS_ONLN is not a proper POSIX enquiry to send to sysconf,
@@ -164,36 +156,44 @@ static int number_of_processors()
 #define MAX_CPU_COUNT 32
 static pthread_t thread[MAX_CPU_COUNT];
 
-#define CREATETHREAD_FAILED(i, p) pthread_create(&thread[i], NULL, &p, NULL)
-#define SLEEP sleep(5)
-#define JOINTHREAD_FAILED(i)      pthread_join(thread[i], NULL)
+#define CREATETHREAD_FAILED(i, p) \
+    pthread_create(&thread[i], NULL, &p, (void *)(intptr_t)i)
+#define SLEEP \
+    {   struct timespec ts; \
+        clock_gettime(CLOCK_REALTIME, &ts); \
+        ts.tv_sec += 5; \
+        pthread_cond_timedwait(&cond, &condmutex, &ts); \
+    }
+#define JOINTHREAD_FAILED(i) \
+    pthread_join(thread[i], NULL)
 
 #endif // Windows vs pthreads.
 
 
 // logging in a way that is thread-safe
 
-static int logmutex_created = 0;
+#define DEBUG (0)
 
 void logprintf(const char *s, ...)
 {
     va_list a;
-// I will never destroy the mutex used here - I will let it get cancelled
-// when the program terminates.
-    if (!logmutex_created) CREATELOGMUTEX;
-    va_start(a, s);
     LOCKLOGMUTEX;
+    va_start(a, s);
+#ifndef SEQUENTIAL
+    fprintf(stdout, "{%d:", threadnumber);
+#endif
     vfprintf(stdout, s, a);
-    va_end(a);
+#ifndef SEQUENTIAL
+    fprintf(stdout, ":%d}", threadnumber);
+#endif
     fflush(stdout);
+    va_end(a);
     UNLOCKLOGMUTEX;
 }
 
 
 // See workfarm.c for a small program illustrating use of threads to attack
 // a problem exploiting concurrency.
-
-#include "cuckoo.h"
 
 // Because the table was passed as a "void *" and we do not have
 // a single type that maps the entries it is not feasible to use direct
@@ -204,50 +204,6 @@ void logprintf(const char *s, ...)
 // part of the thing there that represents the key. These are macros
 // not functions because they use a number of values not explicitly passed
 // to them as arguments.
-
-// The following definitions are in the header file, but are repeated here
-// as comment for (what I hope is) clarity.
-
-//- #define cuckoo_item(n) \
-//-     ((char *)table + hash_item_size*(n))
-//-
-//- #define cuckoo_key(n) \
-//-     ((*get_key)(cuckoo_item(n)))
-//-
-//- #define cuckoo_set_key(n, v) \
-//-     ((*set_key)(cuckoo_item(n), v))
-//-
-//- uint32_t cuckoo_lookup(
-//-     uint32_t key,             // integer key to look up
-//-     void *table,              // base of the hash table
-//-     size_t hash_item_size,    // size of each item in the table,
-//-                               // must be <= MAX_CUCKOO_ITEM_SIZE
-//-     uint32_t table_size,      // number of entries in the hash table
-//-     cuckoo_get_key *get_key,  // function to retrieve keys from table
-//-     uint32_t modulus2,        // used to give a secondary hash function
-//-     uint32_t offset2)         // used to give a secondary hash function
-//- {
-//- // My initial hash value is merely the key reduced modulo the size of
-//- // the table.
-//-     uint32_t hash1 = key % table_size;
-//-     uint32_t hash2;
-//-     if (cuckoo_key(hash1) == key) return hash1;
-//- // I have a secondary hash function that will not map onto the whole
-//- // of the table - it uses a second smaller modulus and an offset. The
-//- // sum of these must not exceed the table size (so as to avoid running
-//- // over the end) but should probably be an appreciable fraction of it.
-//-     hash2 = (key % modulus2) + offset2;
-//-     if (cuckoo_key(hash2) == key) return hash2;
-//- // The third and final place I look is found by adding the two previous
-//- // hash values (and reducing modulo the table size). If the modulus operation
-//- // was expensive but conditional branches were cheap then
-//- //       if ((hash1 += hash2) >= table_size) hash1 -= table_size;
-//- // could be used here.
-//-     hash1 = (hash1 + hash2) % table_size;
-//-     if (cuckoo_key(hash1) == key) return hash1;
-//- // If the key is not found in any of those three locations I just return -1.
-//-     return (uint32_t)(-1);
-//- }
 
 // I am expecting that insertion in these tables will not be done at
 // all often, so having a somewhat clumsy-looking interface here does
@@ -282,6 +238,19 @@ void logprintf(const char *s, ...)
 // possibilities. For that see the Hungarian algorith below which will be
 // able to perform further optimisation but which is expected to be slower.
 
+#define LARGEST_MATCHING 20000
+
+static __thread int u_used[LARGEST_MATCHING+1];
+static __thread int QQ[9*LARGEST_MATCHING+1];
+static __thread int u_edge1[LARGEST_MATCHING];
+static __thread int u_edge2[LARGEST_MATCHING];
+static __thread int u_edge3[LARGEST_MATCHING];
+static __thread int v_used[LARGEST_MATCHING];
+static __thread int v_edgemap[LARGEST_MATCHING];
+static __thread int v_edgecount[LARGEST_MATCHING];
+static __thread int vu_edges[3*LARGEST_MATCHING];
+
+
 int find_any_assignment(
     uint32_t *items,
     int item_count,
@@ -292,32 +261,171 @@ int find_any_assignment(
     cuckoo_get_key *get_key,
     cuckoo_set_key *set_key,
     uint32_t modulus2,
-    uint32_t offset2)
-{   int i;
-    init(item_count, table_size);
+    uint32_t offset2,
+    int noisy)
+{   int i, j, k, l, Qin, Qout;
+    int ucount, vcount, uchain;
+    int uremaining = item_count, vremaining = table_size;
+    if (DEBUG) logprintf("find_any_assignment %d items in table of size %d\n",
+        item_count, table_size);
+    if (DEBUG) logprintf("modulus2 = %d offset2 = %d\n", modulus2, offset2);
+// First I will construct a representation of the sparse graph;
+    for (i=0; i<item_count; i++)
+    {   u_edge1[i] = u_edge2[i] = u_edge3[i] = -1;
+        u_used[i] = -1;
+    }
+    u_used[item_count] = -1; // a sentinel
+    for (i=0; i<table_size; i++)
+    {   v_edgemap[i] = v_edgecount[i] = 0;
+        v_used[i] = -1;
+    }
     for (i=0; i<item_count; i++)
     {   uint32_t key = items[i];
         uint32_t h1 = key % table_size;
         uint32_t h2 = key % modulus2 + offset2;
         uint32_t h3 = (h1 + h2) % table_size;
         int imp = (*importance)(key);
+// Get rid of double edges... if an entry in the table is "-1" that
+// means "no edge here".
+        if (h3 == h2 || h3 == h1) h3 = -1;
+        if (h2 == h1)
+        {   h2 = h3;
+            h3 = -1;
+        }
         switch (imp)
         {
     default:
-            addEdge(i, (int)h3);
+            u_edge3[i] = (int)h3;
+            if (h3 != -1) v_edgecount[h3]++; // count edges out from h3
             // drop through
     case CUCKOO_IMPORTANT:
-            addEdge(i, (int)h2);
+            u_edge2[i] = (int)h2;
+            if (h2 != -1) v_edgecount[h2]++;
             // drop through
     case CUCKOO_VITAL:
-            addEdge(i, (int)h1);
+            u_edge1[i] = (int)h1;
+            if (h1 != -1) v_edgecount[h1]++;
             break;
         }
+        if (DEBUG) logprintf("%4d: (%5d)  %5d %5d %5d\n", i, items[i], u_edge1[i], u_edge2[i], u_edge3[i]); 
     }
-logprintf("in find_any_matching\n");
-    i = maxMatching();
-logprintf("maxMatching returns %d/%d, need = %d\n", i, table_size, item_count);
-    if (i != item_count) return 0;
+// I have counted how many edges are incident at each vertex in set V so
+// I can now put in pointers to the general table of edges V to U.
+    j = 0;
+    for (i=0; i<table_size; i++)
+    {   v_edgemap[i] = j;
+        if (DEBUG) logprintf("table entry %d is pointed at by %d items at %d\n",
+            i, v_edgecount[i], v_edgemap[i]);
+        j += v_edgecount[i];
+    }
+// Fill in the edges.
+    for (i=0; i<item_count; i++)
+    {   if ((j = u_edge1[i]) >= 0) vu_edges[v_edgemap[j]++] = i;
+        if ((j = u_edge2[i]) >= 0) vu_edges[v_edgemap[j]++] = i;
+        if ((j = u_edge3[i]) >= 0) vu_edges[v_edgemap[j]++] = i;
+    }
+// Restore the pointers to where they are.
+    j = 0;
+    for (i=0; i<table_size; i++)
+    {   v_edgemap[i] = j;
+        if (DEBUG) logprintf("V[%d] ->", i);
+        if (DEBUG) for (k=0; k<v_edgecount[i]; k++) logprintf(" %d", vu_edges[j+k]);
+        if (DEBUG) logprintf("\n");
+        j += v_edgecount[i];
+    }
+    i = 0;
+    while (i<item_count)
+    {
+// Here I want to collect all the vertexes reachable from U[i]. I will
+// need to know how many there are in U and how many in V, and only when I
+// have got those counts can I try using Hopcroft-Karp to process them.
+// I will chain up the locations in U that I find.
+        ucount = 0;
+        vcount = 0;
+        uchain = -2;   // a terminator for the chain.
+        Qin = Qout = 0;
+        QQ[Qin++] = i;
+        if (DEBUG) logprintf("Seed search for component with %d (Qin=%d Qout=%d)\n", i, Qin, Qout);
+        while (Qin != Qout)
+        {   j = QQ[Qout++];
+            if (u_used[j] != -1)
+            {   if (DEBUG) logprintf("U[%d] already processed\n", j);
+                continue; // already processed
+            }
+            if (DEBUG) logprintf("spread from U[%d], chain to %d\n", j, uchain);
+// Record U[j] as having been used.
+            u_used[j] = uchain;
+            uchain = j;
+            ucount++;
+            if (DEBUG) logprintf("chain up U. Now have %d vertices in A\n", ucount);
+// Now try visiting each vertex in V that is joined to j...
+            if ((k = u_edge1[j]) != -1 && v_used[k] == -1)
+            {   v_used[k] = vcount++;
+                if (DEBUG) logprintf("visit V[%d] for first time and name it %d\n",
+                    k, v_used[k]);
+                for (l=0; l<v_edgecount[k]; l++)
+                {   int m = vu_edges[v_edgemap[k] + l];
+                    if (DEBUG) logprintf("edge goes back to %d\n", m);
+                    if (u_used[m] == -1) QQ[Qin++] = m;
+                }
+            }
+            if ((k = u_edge2[j]) != -1 && v_used[k] == -1)
+            {   v_used[k] = vcount++;
+                if (DEBUG) logprintf("visit V[%d] for first time and name it %d\n",
+                    k, v_used[k]);
+                for (l=0; l<v_edgecount[k]; l++)
+                {   int m = vu_edges[v_edgemap[k] + l];
+                    if (DEBUG) logprintf("edge goes back to %d\n", m);
+                    if (u_used[m] == -1) QQ[Qin++] = m;
+                }
+            }
+            if ((k = u_edge3[j]) != -1 && v_used[k] == -1)
+            {   v_used[k] = vcount++;
+                if (DEBUG) logprintf("visit V[%d] for first time and name it %d\n",
+                    k, v_used[k]);
+                for (l=0; l<v_edgecount[k]; l++)
+                {   int m = vu_edges[v_edgemap[k] + l];
+                    if (DEBUG) logprintf("edge goes back to %d\n", m);
+                    if (u_used[m] == -1) QQ[Qin++] = m;
+                }
+            }
+            if (DEBUG) logprintf("Now Qin=%d Qout=%d\n", Qin, Qout);
+        }
+        if (DEBUG) logprintf("Component found with size %d by %d\n", ucount, vcount);
+// If there are too many items in set U in this component then report
+// failure. I could also report failure if the number of vertices left over
+// were then out of balance.
+        uremaining -= ucount;
+        vremaining -= vcount;
+        if (ucount > vcount ||
+            uremaining > vremaining)
+        {   if (DEBUG) logprintf("Early exit\n");
+            return 0;
+        }
+// If I have a string component with only 1 or 2 vertices in set B then
+// there has to be a complete matching. If the component is larger I will
+// use Hopcroft-Karp to assess it.
+        else if (vcount >= 3)
+        {   init(ucount, vcount);
+            i = 0;
+            while (uchain != -2)
+            {   if (DEBUG) logprintf("i = %d uchain = %d\n", i, uchain);
+                if ((j = u_edge1[uchain]) != -1) addEdge(i, v_used[j]);
+                if ((j = u_edge2[uchain]) != -1) addEdge(i, v_used[j]);
+                if ((j = u_edge3[uchain]) != -1) addEdge(i, v_used[j]);
+                uchain = u_used[uchain];
+                if (i++ > ucount)
+                {   logprintf("uchain too long\n");
+                    exit(1);
+                }
+            }
+            if (maxMatching() != ucount) return 0;
+        }
+// I have put a -1 just after the end of the useful data so that the
+// loop here that skips to the next un-visited vertex is certain to
+// terminate nicely for me.
+        while (u_used[i] != -1) i++;
+    }
     return 1;
 }
 
@@ -363,7 +471,7 @@ double cuckoo_merit(
                 break;
             }
             else
-            {   printf("Failed to find item %d (%u/%x)\n", i, key, key);
+            {   logprintf("Failed to find item %d (%u/%x)\n", i, key, key);
                 exit(1);
             }
     case CUCKOO_IMPORTANT:
@@ -377,7 +485,7 @@ double cuckoo_merit(
                 break;
             }
             else
-            {   printf("Failed to find item %d (%u/%x)\n", i, key, key);
+            {   logprintf("Failed to find item %d (%u/%x)\n", i, key, key);
                 exit(1);
             }
     case CUCKOO_VITAL:
@@ -385,7 +493,7 @@ double cuckoo_merit(
             if (key == (*get_key)(h1*hash_item_size+(char *)table))
                 break;
             else
-            {   printf("Failed to find item %d (%u/%x)\n", i, key, key);
+            {   logprintf("Failed to find item %d (%u/%x)\n", i, key, key);
                 exit(1);
             }
         }
@@ -408,13 +516,15 @@ double cuckoo_merit(
 
 // The code I have imported deals with general matchings and represents the
 // bipartite graph as a full matrix. In my case the graph that I wish to
-// process is spares - it has at most three edges for each vertex in the
-// set A. I MAY at some stage rework the code to use ajcacency lists to
-// represent the sparse array. If I do so it will certainly save a lot of
-// space and may speed things up too. But that is for the future!
+// process is sparse - it has at most three edges for each vertex in the
+// set A. I am reworking the code to use adjcacency lists to
+// represent the sparse array. Predefine SPARSE to try that version.
 
-#include "hungarian.h"
+#ifdef SPARSE
+#include "hunsparse.c"
+#else
 #include "hungarian.c"
+#endif
 
 // Now an adapter that takes my hashing problem and maps it onto the
 // calls to the hungarian problem solver. The input is a set of keys,
@@ -423,9 +533,6 @@ double cuckoo_merit(
 // if it can find a perfect way to do so. For the code here the hash table
 // is merely an array of uint32_t values.
 //
-// The target merit passed here only has an effect on printing. If an
-// assigment is found that beats it a trace message is displayed.
-
 // This tries to insert all the keys in "items" into the hash-table "table"
 // and it returns a positive "merit" value on success, or -1.0 on failure
 //
@@ -442,27 +549,27 @@ double find_best_assignment(
     uint32_t offset2)
 {
     int i, j;
+    int *mem;
     hungarian_problem_t p;
-logprintf("starting find_best_assignment %d %d\n", item_count, table_size);
-logprintf("m2=%d o2=%d\n", modulus2, offset2);
-    adjacency_matrix = (int **)calloc(table_size, sizeof(int *));
+    logprintf("starting find_best_assignment %d %d\n", item_count, table_size);
+    logprintf("m2=%d o2=%d\n", modulus2, offset2);
+    adjacency_matrix = (int **)malloc(
+        table_size*sizeof(int *) + table_size*item_count*sizeof(int) + 8);
     hungarian_test_alloc(adjacency_matrix);
+    mem = (int *)&adjacency_matrix[table_size];
     for (i=0; i<table_size; i++)
-    {   adjacency_matrix[i] = (int *)calloc(item_count, sizeof(int));
-        hungarian_test_alloc(adjacency_matrix[i]);
+    {   adjacency_matrix[i] = mem;
+        mem += item_count;
 // I put in a value that is not "infinite" but is such that any assignment
 // that uses an edge of this length will be pretty bad.
         for (j=0; j<item_count; j++)
           adjacency_matrix[i][j] = 0x00010000;
     }
-logprintf("about to put in weights %p\n", items);
     for (i=0; i<item_count; i++)
     {   uint32_t key = items[i];
-logprintf("Ok at %d\n", i);
         uint32_t h1 = key % table_size;
         uint32_t h2 = key % modulus2 + offset2;
         uint32_t h3 = (h1 + h2) % table_size;
-logprintf("hashes are %d %d %d\n", h1, h2, h3);
         int imp = (*importance)(key);
 // I have thought a bit about the weights I use here, but to a large extent
 // they are a bit of an arbitrary choice.
@@ -482,15 +589,14 @@ logprintf("hashes are %d %d %d\n", h1, h2, h3);
             break;
         }
     }
-logprintf("call hungarian_init\n");
     hungarian_init(&p,
                    adjacency_matrix,
                    table_size,
                    item_count,
                    HUNGARIAN_MODE_MINIMIZE_COST);
-logprintf("call hungarian_solve\n");
+    logprintf("call hungarian_solve\n");
     hungarian_solve(&p);
-logprintf("hungarian_solve returned\n");
+    logprintf("hungarian_solve returned\n");
 // Next I will extract the assignment found and put it in my hash table.
 // While I am about it I will collect some statistics.
     int nvital = 0;
@@ -512,8 +618,6 @@ logprintf("hungarian_solve returned\n");
             }
             else
             {   hungarian_free(&p);
-                for (i=0; i<table_size; i++)
-                    free(adjacency_matrix[i]);
                 free(adjacency_matrix);
                 return -1.0;
             }
@@ -532,8 +636,6 @@ logprintf("hungarian_solve returned\n");
             }
             else
             {   hungarian_free(&p);
-                for (i=0; i<table_size; i++)
-                    free(adjacency_matrix[i]);
                 free(adjacency_matrix);
                 return -1.0;
             }
@@ -558,14 +660,12 @@ logprintf("hungarian_solve returned\n");
             }
             else
             {   hungarian_free(&p);
-                for (i=0; i<table_size; i++)
-                    free(adjacency_matrix[i]);
                 free(adjacency_matrix);
                 return -1.0;
             }
         }
     }
-logprintf("transferred to hash table\n");
+    logprintf("transferred to hash table\n");
     double merit = (10.0*nvital +
             4.0*(nimportant1 + 2.0*nimportant2) +
             (nstandard1 + 2.0*nstandard2 + 3.0*nstandard3)) /
@@ -592,12 +692,10 @@ logprintf("transferred to hash table\n");
         if (nstandard1!=0 || nstandard2 != 0)
             logprintf("STANDARD:  %u %u %u  %.3f average probes\n",
                 nstandard1, nstandard2, nstandard3, avstandard);
-        logprintf("Figure of merit = %.3f flat average = %.3f\n", merit, average);
+        logprintf("Figure of merit = %.4f flat average = %.3f\n", merit, average);
     }
 #endif
     hungarian_free(&p);
-    for (i=0; i<table_size; i++)
-        free(adjacency_matrix[i]);
     free(adjacency_matrix);
     return merit;
 }
@@ -620,6 +718,7 @@ typedef struct __mod_and_off
 {
     uint32_t modulus2;
     uint32_t offset2;
+    int noisy;
 } mod_and_off;
 
 
@@ -649,9 +748,8 @@ mod_and_off hungarian_next_case()
     tries++;
     r.modulus2 = shared_modulus2;
     r.offset2 = shared_offset2;
-    if (shared_modulus2 != (uint32_t)(-1))
-    {   if (shared_modulus2 != 0 &&
-            shared_modulus2 + shared_offset2 < shared_table_size)
+    if (shared_modulus2 != 0)
+    {   if (shared_modulus2 + shared_offset2 < shared_table_size)
             shared_offset2++;
         else
         {   shared_modulus2++;
@@ -659,6 +757,8 @@ mod_and_off hungarian_next_case()
             if (shared_modulus2 >= shared_table_size) shared_modulus2 = 0;
         }
     }
+    if (tries % 1000 == 0) r.noisy = 1;
+    else r.noisy = 0;
     UNLOCKMUTEX;
     return r;
 }
@@ -681,10 +781,10 @@ THREAD_RESULT_T hungarian_thread(void *arg)
 {
     mod_and_off mo;
     uint32_t *table = (uint32_t *)calloc(shared_table_size, sizeof(uint32_t));
-    logprintf("Thread starting\n");
+    threadnumber = (int)(intptr_t)arg;
+//  logprintf("Thread %d starting\n", threadnumber);
     while ((mo = hungarian_next_case()).modulus2 != 0)
     {   double merit;
-        logprintf("Thread considering %d:%d\n", mo.modulus2, mo.offset2);
 // Before I try the (possibly expensive) Hungarian method I will filter
 // by using Hopcroft-Karp so that I at least know that there is some feasible
 // allocation.
@@ -698,11 +798,12 @@ THREAD_RESULT_T hungarian_thread(void *arg)
             int32_get_key,
             int32_set_key,
             mo.modulus2,
-            mo.offset2))
-        {   logprintf("Found assignment for %d : %d\n", mo.modulus2, mo.offset2);
-            logprintf("shared_use_hungarian = %d\n", shared_use_hungarian);
+            mo.offset2,
+            mo.noisy))
+        {   logprintf("Found assignment for m2=%d : o2=%d for table size %d\n",
+                mo.modulus2, mo.offset2, shared_table_size);
             if (!shared_use_hungarian)
-            {   logprintf("Report back to owner and set quit flag\n");
+            {   // logprintf("Report back to owner and set quit flag\n");
                 LOCKMUTEX;
                 successes++;
                 best_modulus2 = mo.modulus2;
@@ -725,7 +826,7 @@ THREAD_RESULT_T hungarian_thread(void *arg)
                 mo.offset2)) >= 0.0)
             {   LOCKMUTEX;
                 successes++;
-                logprintf("successes=%d: M=%d O=%d => %.4f%%\n", successes,
+                logprintf("success count=%d: M=%d O=%d => %.4f\n", successes,
                         mo.modulus2, mo.offset2, merit);
                 if (merit < best_merit)
                 {   int i;
@@ -744,7 +845,25 @@ THREAD_RESULT_T hungarian_thread(void *arg)
     }
     free(table);
     logprintf("Thread finishing\n");
-    thread_finished = 1;
+    LOCKMUTEX;
+    logprintf("Thread finishing\n");
+    if (!thread_finished)
+    {
+//@     logprintf("This is the first thread to finish: lock condmutex\n");
+#ifndef WIN32
+// The first thread to finish will signal the main one to that effect.
+        pthread_mutex_lock(&condmutex);
+        thread_finished = 1;
+//@     logprintf("First thread to finish: broadcast\n");
+        pthread_cond_broadcast(&cond);
+//@     logprintf("First thread to finish: unlock\n");
+        pthread_mutex_unlock(&condmutex);
+//@     logprintf("First thread to finish: done\n");
+#else
+        thread_finished = 1;
+#endif
+    }
+    UNLOCKMUTEX;
     return THREAD_RESULT;
 }
 
@@ -772,6 +891,7 @@ cuckoo_parameters try_all_hash_functions(
     int cpu_count, i;
     cuckoo_parameters r;
     uint32_t *table = (uint32_t *)calloc(hashsize, sizeof(uint32_t));
+    uint64_t memsize;
     hungarian_test_alloc(table);
     shared_use_hungarian = use_hungarian;
     shared_keys = keys;
@@ -780,22 +900,29 @@ cuckoo_parameters try_all_hash_functions(
     shared_table = table;
     shared_table_size = hashsize;
     shared_modulus2 = 1;
+    if (hashsize > 7000) shared_modulus2 = 4500; // Start some way in (@@@)
     shared_offset2 = 0;
     best_modulus2 = 0;
     best_offset2 = 0;
     best_merit = 4.0;
     tries = successes = 0;
 
-    logprintf("try_all with table size %d and use_h=%d\n", hashsize, use_hungarian);
+    logprintf("try_all with table size %d and use_h=%d\n",
+        hashsize, use_hungarian);
 
     cpu_count = number_of_processors();
-cpu_count = 1; // to run sequentially!
-    logprintf("I seem to have %d processors\n", cpu_count);
+    logprintf("About to try to read memory size\n");
+    memsize = (uint64_t)getMemorySize();
+    logprintf("Have %.2fGiB memory\n", (double)memsize/(1024.0*1024.0*1024.0));
+#ifdef SEQUENTIAL
+    cpu_count = 1;
+#endif
+    if (memsize <= 8LU*1024L*1024L*1024L && cpu_count > 6) cpu_count = 6;
+    if (memsize <= 4LU*1024L*1024L*1024L && cpu_count > 3) cpu_count = 3;
+    if (memsize <= 2LU*1024L*1024L*1024L && cpu_count > 1) cpu_count = 1;
+    logprintf("I will use %d processors\n", cpu_count);
     if (cpu_count > MAX_CPU_COUNT) cpu_count = MAX_CPU_COUNT;
-    if (CREATEMUTEX_FAILED)
-    {   fprintf(stderr, "Unable to create mutex\n");
-        exit(1);
-    }
+cpu_count = 1;
     thread_finished = 0;
     for (i=0; i<cpu_count; i++)
     {   if (CREATETHREAD_FAILED(i, hungarian_thread))
@@ -803,7 +930,7 @@ cpu_count = 1; // to run sequentially!
             exit(1);
         }
     }
-    logprintf("All threads created\n");
+//  logprintf("All threads created\n");
 // I will do a wait loop here that arranges that once every 5 seconds
 // it checks whether at least one thread has finished and displays a
 // message that tries to give some idea of how far it has got through the
@@ -812,22 +939,27 @@ cpu_count = 1; // to run sequentially!
 // of 6000 lines of trace output - rather a lot but not enough to be
 // a complete embarassment. Perhaps.
     while (!thread_finished)
-    {   SLEEP;
+    {   double ww;
+        SLEEP;
         LOCKMUTEX;
-        logprintf("%d:%d => %.4f now at %d:%d\n",
+        ww = (double)(shared_table_size - shared_modulus2);
+        logprintf("%d:%d => %.4f now at m2=%d:o2=%d %.2f%% (limit m2=%d)\n",
             best_modulus2, best_offset2, best_merit,
-            shared_modulus2, shared_offset2);
+            shared_modulus2, shared_offset2,
+               100.0-(((100.0*ww)*ww)/shared_table_size)/shared_table_size,
+               shared_table_size);
         UNLOCKMUTEX;
     }
-    logprintf("At least one thread complete\n");
+//  logprintf("At least one thread complete\n");
     for (i=0; i<cpu_count-1; i++)
-    {   if (JOINTHREAD_FAILED(i))
+    {   // logprintf("Try to join with %d\n", i);
+        if (JOINTHREAD_FAILED(i))
         {   fprintf(stderr, "Unable to join thread\n");
             exit(1);
         }
+        // logprintf("Join with %d OK\n", i);
     }
-    logprintf("All threads now finished\n");
-    DESTROYMUTEX;
+//  logprintf("All threads now finished\n");
     logprintf("finished: final result is %d : %d   %.4f\n",
         best_modulus2, best_offset2, best_merit);
     if (successes == 0) // Failure!
@@ -967,7 +1099,7 @@ cuckoo_parameters cuckoo_binary_optimise(
         max_table_size-1,
         set_key,
         0);        // Merely check if there is an allocation
-logprintf("rhi: %d %d %d\n", rhi.table_size, rhi.modulus2, rhi.offset2);
+    logprintf("rhi: %d %d %d\n", rhi.table_size, rhi.modulus2, rhi.offset2);
     if (rhi.table_size == (uint32_t)(-1))
     {   logprintf("Failed to fit into largest table size\n");
         return r;

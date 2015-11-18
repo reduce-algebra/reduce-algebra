@@ -242,8 +242,8 @@ uint32_t items[] =
     0x0151ec,    0x0054d9,    0x0054da,    0x0151ed,    0x0054dc,
     0x0054dd,    0x0151ee,    0x0054df,    0x0066e3,    0x0151ef,
     0x010846,    0x0054e3,    0x0054e4,    0x0054e5,    0x010848,
-#endif
     0x0054e7,    0x0054e8,    0x0054e9,    0x0151f2,    0x0054eb,
+#endif
     0x0054ec,    0x0054ed,    0x0054ee,    0x0054ef,    0x01084d,
     0x0054f2,    0x0054f3,    0x0054f4,    0x0054f5,    0x0054f6
 };
@@ -274,6 +274,8 @@ static int cuckoo_inline importance(uint32_t key)
 int main(int argc, char *argv[])
 {
     int i;
+    CREATEMUTEX;
+    CREATELOGMUTEX;
     cuckoo_parameters r = cuckoo_binary_optimise(
         items,
         sizeof(items)/sizeof(items[0]),
@@ -283,13 +285,14 @@ int main(int argc, char *argv[])
         sizeof(items)/sizeof(items[0])-1, // initial table size = item_count-1
         sizeof(table)/sizeof(table[0]),   // max table size
         get_key,
-        set_key);
+        set_key,
+        1);
     if (r.table_size == -1)
     {   printf("Failed. Extra info = %d\n", r.modulus2);
         return 1;
     }
     printf("For %d items the table is %d long (%.2f%% full)\n",
-           sizeof(items)/sizeof(items[0]),
+           (int)(sizeof(items)/sizeof(items[0])),
            r.table_size,
            (100.0*sizeof(items))/(r.table_size*sizeof(items[0])));
     printf("modulus2 = %d offset2 = %d\n", r.modulus2, r.offset2);

@@ -699,6 +699,11 @@ int main(int argc, char *argv[])
     char filename[100];
     int i, probes  = 0, p1 = 0, p2 = 0, n1 = 0, n2 = 0,
         occupancy = 0, fail, qq;
+    CREATEMUTEX;
+    CREATELOGMUTEX;
+#ifndef _WIN32
+    pthread_mutex_lock(&condmutex);
+#endif
     setvbuf(stdout, NULL, _IONBF, 1);
 //==========================================================================
 // (1) Read in all the metrics
@@ -1348,12 +1353,12 @@ int main(int argc, char *argv[])
 
     cuckoo_parameters main_r;
     double mm;
-printf("static uint32_t keys[] = \n{       \n");
-for (i=0; i<mainkeycount; i++)
-{   printf("%#8x,", mainkey[i]);
-    if (i % 8 == 7) printf("\n    ");
-}
-printf("};\n\n");
+    printf("static uint32_t keys[] = \n{       \n");
+    for (i=0; i<mainkeycount; i++)
+    {   printf("%#8x,", mainkey[i]);
+        if (i % 8 == 7) printf("\n    ");
+    }
+    printf("};\n\n");
 
 // If the Hungarian method shows that there is an assignment with
 // exactly my expected parameters that meets my target merit then I
@@ -2330,7 +2335,6 @@ int main(int argc, char *argv[])
     }
     return 0;
 }
-
 
 #endif // TEST
 #endif // CREATE

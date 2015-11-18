@@ -34,6 +34,65 @@
 #ifndef __cuckoo_h
 #define __cuckoo_h
 
+// While testing I will arrange to be ale to use either an original
+// or a spare version of the Hungarian algorithm for best matchings in
+// weighted bipartite graphs.
+
+#ifdef SPARSE
+#include "hunsparse.h"
+#else
+#include "hungarian.h"
+#endif
+
+
+#ifdef WIN32
+
+#include <windows.h>
+
+// On Windows I can use CRITICAL_SECTIONs rather than real mutexes, and the
+// performance difference is quite substantial when contention is reasonably
+// low. The key issue is that a CRITICAL_SECTION does its initial checks in
+// user-mode and only upgrades to kernel mode in the complicated cases. A
+// side effect of this is that all use of one of these locks must occur
+// within a single process, while more general mutexes support use even
+// when multiple processes are present.
+
+// I will not destroy mutexes at the end of a run - they can be cleaned up
+// as the application exits.
+
+extern CRITICAL_SECTION critical_section, logmutex;
+
+#define CREATEMUTEX        InitializeCriticalSection(&critical_section)
+#define LOCKMUTEX          EnterCriticalSection(&critical_section)
+#define UNLOCKMUTEX        LeaveCriticalSection(&critical_section)
+
+#define CREATELOGMUTEX     InitializeCriticalSection(&logmutex)
+#define LOCKLOGMUTEX       EnterCriticalSection(&logmutex)
+#define UNLOCKLOGMUTEX     LeaveCriticalSection(&logmutex)
+
+#else
+
+#include <pthread.h>
+#include <unistd.h>
+
+extern pthread_mutex_t mutex, logmutex, condmutex;
+extern pthread_cond_t  cond;
+
+// Using Posix threads I initialise the mutexes statically.
+
+#define CREATEMUTEX        /* Nothing */
+#define LOCKMUTEX          pthread_mutex_lock(&mutex)
+#define UNLOCKMUTEX        pthread_mutex_unlock(&mutex)
+
+#define CREATELOGMUTEX     /* Nothing */
+#define LOCKLOGMUTEX       if (pthread_mutex_lock(&logmutex) != 0) \
+                           { fprintf(stderr, "locking failed\n"); exit(1); }
+#define UNLOCKLOGMUTEX     if (pthread_mutex_unlock(&logmutex) != 0) \
+                           { fprintf(stderr, "locking failed\n"); exit(1); }
+
+
+#endif
+
 // "Cuckoo hashing" is a scheme where each key has a small fixed number
 // of locations in a hash table that it can occupy. Hash insertion works by
 // trying to place an item in one of these, and if all of those are already

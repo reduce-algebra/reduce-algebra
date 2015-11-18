@@ -86,6 +86,8 @@ int hungarian_init(hungarian_problem_t* p, int** cost_matrix, int rows, int cols
 
   int i,j, org_cols, org_rows;
   int max_cost;
+  int memsize, memp;
+  char *mem;
   max_cost = 0;
   
   org_cols = cols;
@@ -98,16 +100,23 @@ int hungarian_init(hungarian_problem_t* p, int** cost_matrix, int rows, int cols
   
   p->num_rows = rows;
   p->num_cols = cols;
-
-  p->cost = (int**)calloc(rows,sizeof(int*));
-  hungarian_test_alloc(p->cost);
-  p->assignment = (char**)calloc(rows,sizeof(char*));
-  hungarian_test_alloc(p->assignment);
+// ACN has changed this to do one large calloc() rather than one per
+// row of the matrix. In a multi-thread environment and for a large matrix
+// this may make a significant difference.
+#define ROUNDUP(n) (((n) + 7) & ~7)
+  memsize = ROUNDUP(rows*sizeof(int *)) +
+            ROUNDUP(rows*sizeof(char *)) +
+            rows*(ROUNDUP(cols*sizeof(int)) + ROUNDUP(cols*sizeof(char)));
+  mem = (char *)malloc(memsize);
+  hungarian_test_alloc(mem);
+  memset(mem, 0, memsize);
+  memp = 0;
+  p->cost = (int**)&mem[memp]; memp += ROUNDUP(rows*sizeof(int*));
+  p->assignment = (char**)&mem[memp]; memp += ROUNDUP(rows*sizeof(char*));
 
   for(i=0; i<p->num_rows; i++) {
-    p->cost[i] = (int*)calloc(cols,sizeof(int));
-    hungarian_test_alloc(p->cost[i]);
-    p->assignment[i] = (char*)calloc(cols,sizeof(char));
+    p->cost[i] = (int*)&mem[memp]; memp += ROUNDUP(cols*sizeof(int));
+    p->assignment[i] = (char*)&mem[memp]; memp += ROUNDUP(cols*sizeof(char));
     hungarian_test_alloc(p->assignment[i]);
     for(j=0; j<p->num_cols; j++) {
       p->cost[i][j] =  (i < org_rows && j < org_cols) ? cost_matrix[i][j] : 0;
@@ -140,12 +149,13 @@ int hungarian_init(hungarian_problem_t* p, int** cost_matrix, int rows, int cols
 
 void hungarian_free(hungarian_problem_t* p) {
   int i;
-  for(i=0; i<p->num_rows; i++) {
-    free(p->cost[i]);
-    free(p->assignment[i]);
-  }
+//  for(i=0; i<p->num_rows; i++) {
+//    free(p->cost[i]);
+//    free(p->assignment[i]);
+//  }
+  logprintf("hungarian_free about to free %p\n", p->cost);
   free(p->cost);
-  free(p->assignment);
+//  free(p->assignment);
   p->cost = NULL;
   p->assignment = NULL;
 }
@@ -163,28 +173,29 @@ void hungarian_solve(hungarian_problem_t* p)
   int* col_inc;
   int* slack;
   int* slack_row;
+  char *mem;
+  int memsize, memptr = 0;
 
   cost=0;
   m =p->num_rows;
   n =p->num_cols;
 
-  col_mate = (int*)calloc(p->num_rows,sizeof(int));
-  hungarian_test_alloc(col_mate);
-  unchosen_row = (int*)calloc(p->num_rows,sizeof(int));
-  hungarian_test_alloc(unchosen_row);
-  row_dec  = (int*)calloc(p->num_rows,sizeof(int));
-  hungarian_test_alloc(row_dec);
-  slack_row  = (int*)calloc(p->num_rows,sizeof(int));
-  hungarian_test_alloc(slack_row);
+  memsize = 4*ROUNDUP(p->num_rows*sizeof(int)) +
+            4*ROUNDUP(p->num_cols*sizeof(int));
+  mem = (char *)malloc(memsize);
+  hungarian_test_alloc(mem);
+  memset(mem, 0, memsize);
+//@logprintf("line %d file %S mem=%p\n", __LINE__, __FILE__, mem);
+  
+  col_mate = (int*)&mem[memptr]; memptr += ROUNDUP(p->num_rows*sizeof(int));
+  unchosen_row = (int*)&mem[memptr]; memptr += ROUNDUP(p->num_rows*sizeof(int));
+  row_dec  = (int*)&mem[memptr]; memptr += ROUNDUP(p->num_rows*sizeof(int));
+  slack_row  = (int*)&mem[memptr]; memptr += ROUNDUP(p->num_rows*sizeof(int));
 
-  row_mate = (int*)calloc(p->num_cols,sizeof(int));
-  hungarian_test_alloc(row_mate);
-  parent_row = (int*)calloc(p->num_cols,sizeof(int));
-  hungarian_test_alloc(parent_row);
-  col_inc = (int*)calloc(p->num_cols,sizeof(int));
-  hungarian_test_alloc(col_inc);
-  slack = (int*)calloc(p->num_cols,sizeof(int));
-  hungarian_test_alloc(slack);
+  row_mate = (int*)&mem[memptr]; memptr += ROUNDUP(p->num_cols*sizeof(int));
+  parent_row = (int*)&mem[memptr]; memptr += ROUNDUP(p->num_cols*sizeof(int));
+  col_inc = (int*)&mem[memptr]; memptr += ROUNDUP(p->num_cols*sizeof(int));
+  slack = (int*)&mem[memptr]; memptr += ROUNDUP(p->num_cols*sizeof(int));
 
   for (i=0;i<p->num_rows;i++) {
     col_mate[i]=0;
@@ -424,15 +435,8 @@ void hungarian_solve(hungarian_problem_t* p)
   if (verbose)
     fprintf(stderr, "Cost is %d\n",cost);
 
-
-  free(slack);
-  free(col_inc);
-  free(parent_row);
-  free(row_mate);
-  free(slack_row);
-  free(row_dec);
-  free(unchosen_row);
-  free(col_mate);
+//@logprintf("%s:%d free %p\n", __FILE__, __LINE__, mem);
+  free(mem);
 }
 
 
