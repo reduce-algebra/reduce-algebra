@@ -525,29 +525,37 @@ symbolic procedure simppstay2(form, depvar, about, gammaflg);
 symbolic procedure ps!:gamma!-crule(a,d,n);
 % For generic expansion points we use classic Taylor expansion 
 % via simppstay2.
-% For expansion about zero we use the shift formula
+% For expansion of Gamma about zero we use the shift formula
 %    Gamma(z) = Gamma(z+1)/z
+% For expansion of psi about zero we use the shift formula
+%    psi(z) = psi(z+1) - 1/z
 % For expansion about a negative integer we use the shift formula
 % repeatedly and then recurse via ps!:compile and simppstay2.
 %
 if n = 'ps!:inf then
      rerror(tps,106,
-            "Expansion of gamma function about infinity not yet supported.")
-else begin scalar arg, exppt, res, fn;
-  arg := rand1 a;
+            "Expansion of gamma functions about infinity not yet supported.")
+else begin scalar op, arg, exppt, res, fn, gam;
+  op := rator a; arg := rand1 a;
   fn := if ps!:p arg then ps!:value arg 
         else if pairp arg then ps!:arg!-values arg 
         else arg;
   exppt := reval subst(n, d, fn);
 
   if not fixp exppt or exppt>0 then 
-    return  simppstay2(list('gamma, fn), d, n, t)  
-  else  << res := simppstay2(list('gamma, reval list('plus, fn, 1-exppt)), 
-                             d, n, t);
+    return  simppstay2(list(op, fn), d, n, t)  
+  else << 
+     gam := simppstay2(list(op, reval list('plus, fn, 1-exppt)), d, n, t);
      arg := if ps!:p arg then arg else ps!:compile(arg,d,n);
-     res := ps!:compile(list('quotient, res, arg),d,n);
-     for i:=1:-exppt do 
-          res :=ps!:compile(list('quotient, res, list('plus, arg, i)), d, n);
+     if op = 'gamma then <<
+	res := ps!:compile(list('quotient, gam, arg),d,n);
+        for i:=1:-exppt do 
+          res :=ps!:compile(list('quotient, res, list('plus, arg, i)), d, n)>>
+     else << res := for i:=1:-exppt collect 
+	        ps!:compile(list('quotient, 1, list('plus, arg, i)), d, n);
+	     res := ps!:compile(list('quotient, 1, arg), d, n) . res;
+             res := if exppt=0 then car res else 'plus . res;
+             res := ps!:compile(list('difference, gam, res), d, n)>>
   >>;
   ps!:set!-value(res, ps!:arg!-values a);
   return res;
@@ -556,61 +564,46 @@ end;
 symbolic procedure ps!:polygamma!-crule(a,d,n);
 % For generic expansion points we use classic Taylor expansion 
 % via simppstay2.
-% For polygamma about non-positive integer expansion points 
-% (repeated) differentiation of the series for psi is used.
-%
-% For expansion of psi about zero we use the shift formula
-%    psi(z) = psi(z+1) - 1/z
-% For expansion of psi about a negative integer the shift formula is used 
-% repeatedly and then we recurse via ps!:compile and simppstay2.
+% For polygamma about zero the shift formula 
+%      polygamma(n, z) := polygamma(n, z+1)+ n!/(-z)^(n+1)
+% is used. For non-positive integer expansion points 
+% repeated use of the shift formula is used.
 %
 if n = 'ps!:inf then
    rerror(tps,107,
           "Expansion of polygamma function about infinity not yet supported.")
 else
-begin scalar exppt, op, arg, fn, res, divisor, constflg;
-  op := rator a;
-  arg := if op='polygamma then rand2 a else rand1 a;
+begin scalar exppt, ord, arg, fn, gam, res, fac;
+  ord := reval rand1 a;
+  if not fixp ord or ord <0 then
+    rerror(tps,108,
+           "First argument of polygamma must be a non-negative integer.");
+  arg := rand2 a;
   fn := if ps!:p arg then ps!:value arg 
         else if pairp arg then ps!:arg!-values arg 
         else arg;
   exppt := reval subst(n,d,fn);
 
   if not fixp exppt or exppt>0 then return
-     simppstay2(if op='psi or rand1 a=0 then list('psi, arg)
-                else list('polygamma, rand1 a, arg), d, n, t)  
+     simppstay2(list('polygamma, ord, fn), d, n, t)  
   else << 
-    res := simppstay2(list('psi, reval list('plus, fn, 1-exppt)), 
-                            d, n, t);
-     arg := if ps!:p arg then arg else ps!:compile(arg,d,n);
-     res := ps!:compile(list('difference, res, 
-	                      list('quotient, 1, arg)), d, n);
-     for i:=1:-exppt do 
-          res :=ps!:compile(list('difference, res, 
-                                 list('quotient, 1, list('plus, arg, i))),
-	     d, n)
-  >>;
-
-  if op='psi or rand1 a=0 then << 
+     gam := simppstay2(list('polygamma, ord, reval list('plus, fn, 1-exppt)), 
+                       d, n, t);
+     arg := ps!:compile(list('minus, arg), d, n);
+     fac := factorial ord;
+     ord := -(ord+1);
+     res := for i:=1:-exppt collect 
+	      ps!:compile(list('times, fac, 
+                               list('expt, list('plus, arg, -i), ord)), d, n);
+     res := ps!:compile(list('times, fac, list('expt, arg, ord)), d, n) . res;
+     res := ps!:compile('plus .  (gam . res), d, n);
      ps!:set!-value(res, ps!:arg!-values a);
-     return res>>;
-  divisor := prepsqxx simp!* list('df, arg, d);
-  if null numr simp!* list('df, divisor, d) then constflg:=t
-  else divisor := ps!:compile(divisor, d, n);
-  for i:=1:rand1 a do <<
-     res := car ps!:diff!:(res, d);
-     if not constflg then  
-     	res := ps!:compile(list('quotient, res, divisor), d, n)
+     return res
   >>;
-  if constflg then 
-     res := ps!:compile(list('quotient, res, list('expt, divisor, rand1 a)),
-                        d, n);
-  ps!:set!-value(res, ps!:arg!-values a);
-  return res;
 end;
 
 put('gamma,'ps!:crule,'ps!:gamma!-crule);
-put('psi,'ps!:crule,'ps!:polygamma!-crule);
+put('psi,'ps!:crule,'ps!:gamma!-crule);
 put('polygamma,'ps!:crule,'ps!:polygamma!-crule);
 
 endmodule;
