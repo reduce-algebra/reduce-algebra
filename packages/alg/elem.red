@@ -214,6 +214,10 @@ let i**2= -1;
 
 flag('(e i nil pi),'reserved);   % Leave out T for now.
 
+% Some more reserved ids (for realroot)
+
+flag('(positive negative infinity),'reserved);
+
 % Logarithms.
 
 %%let log(e)= 1,

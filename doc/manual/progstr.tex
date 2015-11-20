@@ -155,6 +155,8 @@ expression.  In the absence of such a value, they stand for themselves.
 \hypertarget{reserved:GOLDEN_RATIO}{}
 \hypertarget{reserved:CATALAN}{}
 \hypertarget{reserved:KHINCHIN}{}
+\hypertarget{reserved:NEGATIVE}{}
+\hypertarget{reserved:POSITIVE}{}
 
 Several variables\index{Reserved variable} in {\REDUCE} have particular
 properties which should not be changed by the user.  These variables
@@ -194,7 +196,7 @@ the context \texttt{for i:= ...}.
 
 \item[INFINITY] Intended to represent $\infty$
 \ttindex{INFINITY}
-in limit and power series calculations for example, as well as in dfeinite integration.
+in limit and power series calculations for example, as well as in definite integration.
 Note however that the
 current system does \emph{not} do proper arithmetic on $\infty$.  For example,
 \texttt{infinity + infinity} is \texttt{2*infinity}.
@@ -206,6 +208,7 @@ current system does \emph{not} do proper arithmetic on $\infty$.  For example,
 %, as defined in
 \ttindex{KHINCHIN}%\cite{Khinchin:64}. 
 
+\item[NEGATIVE] Used in the \hyperlink{package:ROOTS}{Roots package}.
 
 \item[NIL] In {\REDUCE} (algebraic mode only)
 taken as a synonym for zero.  Therefore \texttt{NIL} cannot be used as a
@@ -215,6 +218,8 @@ variable.
 \ttindex{PI}
 constant.  With \sw{ROUNDED} on, it is replaced by the value of $\pi$ to
 the current degree of floating point precision.
+
+\item[POSITIVE] Used in the \hyperlink{package:ROOTS}{Roots package}.
 
 \item[T] Must not be used as a formal
 \ttindex{T}
