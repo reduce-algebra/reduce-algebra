@@ -3320,7 +3320,7 @@ $as_echo "$as_me: with_fox=$with_fox, with_wx=$with_wx" >&6;}
 
   case $host in
   *darwin* | *Darwin*)
-    CPPFLAGS="$CPPFLAGS -I/opt/local/include"
+    CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.9 -I/opt/local/include"
     LDFLAGS="$LDFLAGS -L/opt/local/lib"
     ;;
   esac

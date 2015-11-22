@@ -100,7 +100,7 @@ int32_t terminal_line_length = (int32_t)0x80000000;
  *
  * The 1999 C standard introduced vsnprintf and solves this worry!
  */
-#define VPRINTF_CHUNK 256
+#define VPRINTF_CHUNK 2048
 
 void ensure_screen()
 {

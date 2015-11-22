@@ -744,7 +744,7 @@ then
 
   case $host in
   *darwin* | *Darwin*)
-    CPPFLAGS="$CPPFLAGS -I/opt/local/include"
+    CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.9 -I/opt/local/include"
     LDFLAGS="$LDFLAGS -L/opt/local/lib"
     ;;
   esac
