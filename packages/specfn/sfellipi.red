@@ -192,7 +192,7 @@ jacobierules :=
         elliptice(~phi,1)   => sin(phi),
         elliptice(i*~phi,1) => i*sinh phi,
         elliptice(-~phi,~m) => -elliptice(phi,m),
-        elliptice(~phi,-~m) =>  ellpitice(phi,m),
+        elliptice(~phi,-~m) =>  elliptice(phi,m),
 
         df(elliptice(~phi,~m),~phi) => jacobidn(phi,m)^2,
         df(elliptice(~phi,~m),~m)   =>
