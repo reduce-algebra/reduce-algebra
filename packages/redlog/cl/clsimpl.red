@@ -385,6 +385,13 @@ procedure cl_sordp(f1,f2);
 	    return not(ordp(rl_var f1,rl_var f2) and rl_var f1 neq rl_var f2)
 	 else
 	    return cl_sordp(rl_mat f1,rl_mat f2);
+      if rl_bquap op1 then
+	 if rl_var f1 neq rl_var f2 then
+	    return not(ordp(rl_var f1,rl_var f2) and rl_var f1 neq rl_var f2)
+	 else if rl_b f1 neq rl_b f2 then
+	    return cl_sordp(rl_b f1,rl_b f2)
+	 else
+      	    return cl_sordp(rl_mat f1,rl_mat f2);
       return cl_sordpl(rl_argn f1,rl_argn f2)
    end;
 
@@ -401,7 +408,8 @@ procedure cl_sordpl(fl1,fl2);
 procedure cl_ordopp(op1,op2);
    % Operator less predicate. [op1] and [op2] are first-order operators. Returns
    % [t] iff $[op1] < [op2]$.
-   op2 memq cdr (op1 memq '(and or not impl repl equiv ex all true false));
+   op2 memq cdr (op1 memq
+      '(and or not impl repl equiv bex ball ex all true false));
 
 procedure cl_smsimpl!-imprep(prem,concl,knowl,n);
    % Common logic smart simplify implication/replication. [prem] and
