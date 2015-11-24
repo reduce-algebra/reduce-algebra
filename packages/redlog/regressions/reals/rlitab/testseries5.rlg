@@ -62,53 +62,59 @@ rlitab testseries5;
 
 (i2 = 0 and ((250*p1 + 2*q - 1377 > 0 and ((250*p1 + 2*q - 1457 > 0 and ((
 
-250*p1 + 2*q - 1697 < 0 and ((2*p1 - 7 >= 0 and ((q >= 0 and q - 40 <= 0
+250*p1 + 2*q - 1697 < 0 and ((2*p1 - 7 >= 0 and ((td - 450 >= 0
 
- and n >= 0 and ((9*td - 20050 <= 0 and q = 0) or (9*td - 20050 = 0 and q > 0)))
+ and 9*td - 20050 <= 0 and q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 >= 0
 
- or (q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 <= 0 and 9*n - 380*q >= 0) 
-
-or (td - 450 >= 0 and 9*td - 20050 <= 0 and q >= 0 and q - 40 <= 0
-
- and 400*q + 9*td - 20050 >= 0 and 180*n + 171*td - 380950 >= 0))))))) or (
-
-250*p1 + 2*q - 1457 <= 0 and ((2*p1 - 7 >= 0 and ((q >= 0 and q - 40 <= 0
-
- and n >= 0 and ((9*td - 20050 <= 0 and q = 0) or (9*td - 20050 = 0 and q > 0)))
+ and 180*n + 171*td - 380950 >= 0)
 
  or (q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 <= 0 and 9*n - 380*q >= 0) 
 
-or (td - 450 >= 0 and 9*td - 20050 <= 0 and q >= 0 and q - 40 <= 0
+or (q >= 0 and q - 40 <= 0 and n >= 0
 
- and 400*q + 9*td - 20050 >= 0 and 180*n + 171*td - 380950 >= 0))))))) or (
+ and ((9*td - 20050 = 0 and q > 0) or (9*td - 20050 <= 0 and q = 0))))))))) or (
 
-250*p1 + 2*q - 1377 = 0 and ((2*p1 - 7 >= 0 and ((q >= 0 and q - 40 <= 0
+250*p1 + 2*q - 1457 <= 0 and ((2*p1 - 7 >= 0 and ((td - 450 >= 0
 
- and n >= 0 and ((9*td - 20050 <= 0 and q = 0) or (9*td - 20050 = 0 and q > 0)))
+ and 9*td - 20050 <= 0 and q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 >= 0
+
+ and 180*n + 171*td - 380950 >= 0)
 
  or (q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 <= 0 and 9*n - 380*q >= 0) 
 
-or (td - 450 >= 0 and 9*td - 20050 <= 0 and q >= 0 and q - 40 <= 0
+or (q >= 0 and q - 40 <= 0 and n >= 0
 
- and 400*q + 9*td - 20050 >= 0 and 180*n + 171*td - 380950 >= 0))))) or (
+ and ((9*td - 20050 = 0 and q > 0) or (9*td - 20050 <= 0 and q = 0))))))))) or (
+
+250*p1 + 2*q - 1377 = 0 and ((2*p1 - 7 >= 0 and ((td - 450 >= 0
+
+ and 9*td - 20050 <= 0 and q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 >= 0
+
+ and 180*n + 171*td - 380950 >= 0)
+
+ or (q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 <= 0 and 9*n - 380*q >= 0) 
+
+or (q >= 0 and q - 40 <= 0 and n >= 0
+
+ and ((9*td - 20050 = 0 and q > 0) or (9*td - 20050 <= 0 and q = 0))))))) or (
 
 250*p1 + 2*q - 1377 < 0 and ((250*p1 + 2*q - 1057 > 0 and ((2*p1 - 7 >= 0 and ((
 
-q >= 0 and q - 40 <= 0 and n >= 0
+td - 450 >= 0 and 9*td - 20050 <= 0 and q >= 0 and q - 40 <= 0
 
- and ((9*td - 20050 <= 0 and q = 0) or (9*td - 20050 = 0 and q > 0)))
+ and 400*q + 9*td - 20050 >= 0 and 180*n + 171*td - 380950 >= 0)
 
  or (q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 <= 0 and 9*n - 380*q >= 0) 
 
-or (td - 450 >= 0 and 9*td - 20050 <= 0 and q >= 0 and q - 40 <= 0
+or (q >= 0 and q - 40 <= 0 and n >= 0
 
- and 400*q + 9*td - 20050 >= 0 and 180*n + 171*td - 380950 >= 0)))))))))
+ and ((9*td - 20050 = 0 and q > 0) or (9*td - 20050 <= 0 and q = 0)))))))))))
 
 
 end;
 
-Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
-Time (counter 1): 220 ms  plus GC time: 46 ms
-1: real 0.48
-user 0.39
-sys 0.03
+Tested on alfred running Linux 3.18.18.1.amd64-smp x86_64 CSL
+Time (counter 1): 150 ms  plus GC time: 60 ms
+1: real 0.55
+user 0.42
+sys 0.04

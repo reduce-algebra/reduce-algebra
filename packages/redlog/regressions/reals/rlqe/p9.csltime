@@ -1,5 +1,5 @@
-Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
-Time (counter 1): 154 ms  plus GC time: 46 ms
-1: real 0.43
-user 0.30
-sys 0.05
+Tested on alfred running Linux 3.18.18.1.amd64-smp x86_64 CSL
+Time (counter 1): 119 ms  plus GC time: 40 ms
+1: real 0.50
+user 0.38
+sys 0.04

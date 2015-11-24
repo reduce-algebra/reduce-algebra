@@ -32,69 +32,63 @@ v + y2 <= 0 and - d2 + v - y2 < 0)))))))))$
 rlqe rp2;
 
 
-(d1 > 0 and b > 0 and b - 2*d1 > 0 and b - d1 >= 0 and a > 0 and a - d1 = 0
+(d1 > 0 and b > 0 and b - 2*d1 > 0 and b - d1 = 0 and a > 0 and a - d1 = 0
 
- and a - b + d1 = 0) or (d1 > 0 and b > 0 and b - d1 = 0 and a > 0
+ and a - b = 0) or (d1 > 0 and b > 0 and b - 2*d1 > 0 and b - d1 = 0 and a > 0
 
- and a - 2*d1 > 0 and a - d1 >= 0 and a - b - d1 = 0) or (d1 > 0 and b > 0
-
- and b - 2*d1 > 0 and b - d1 = 0 and a > 0 and a - d1 = 0 and a - b >= 0) or (
-
-d1 > 0 and b > 0 and b - 2*d1 > 0 and b - d1 = 0 and a > 0 and a - d1 = 0
-
- and a - b + d1 = 0) or (d1 > 0 and b > 0 and b - 2*d1 > 0 and b - d1 = 0
-
- and a > 0 and a - d1 = 0 and a - b = 0) or (d1 > 0 and b > 0 and b - d1 = 0
-
- and a > 0 and a - 2*d1 > 0 and a - d1 >= 0 and a - b <= 0 and a - b - d1 <= 0
-
- and (a - d1 = 0 or a - b - d1 = 0) and (a - b = 0 or a - b - d1 = 0)) or (
-
-d1 > 0 and b > 0 and b - d1 > 0 and a > 0 and a - b = 0 and a - b - d1 >= 0) or 
-
-(d1 > 0 and b > 0 and b - d1 > 0 and a > 0 and a - d1 >= 0 and a - b = 0
-
- and a - b - d1 >= 0 and (a - d1 = 0 or a - b - d1 = 0)) or (d1 > 0 and b > 0
-
- and b - d1 > 0 and a > 0 and a - d1 > 0 and a - b = 0 and a - b - d1 = 0) or (
-
-d1 > 0 and b > 0 and b - 2*d1 > 0 and b - d1 >= 0 and a > 0 and a - d1 = 0
-
- and a - b + d1 >= 0 and (b - d1 = 0 or a - b + d1 > 0)
-
- and (a - b + d1 = 0 or (b - d1 = 0 and a - b <= 0))) or (d1 > 0 and b > 0
-
- and b - d1 = 0 and a > 0 and a - 2*d1 > 0 and a - d1 = 0 and a - b = 0) or (
-
-d1 > 0 and b > 0 and b - d1 = 0 and a > 0 and a - 2*d1 > 0 and a - d1 = 0
-
- and a - b - d1 = 0)
-
- or (d1 > 0 and b > 0 and b - d1 = 0 and a > 0 and a - 2*d1 > 0 and a - d1 = 0) 
-
-or (d1 > 0 and b > 0 and b - d1 > 0 and a > 0 and a - d1 > 0 and a - b = 0
-
- and a - b + d1 = 0) or (d1 > 0 and b > 0 and b - d1 >= 0 and a > 0
-
- and a - d1 > 0 and a - b = 0 and a - b + d1 <= 0
-
- and (b - d1 = 0 or a - b + d1 = 0)) or (d1 > 0 and b > 0 and b - 2*d1 > 0
+ and a - d1 = 0 and a - b + d1 = 0) or (d1 > 0 and b > 0 and b - 2*d1 > 0
 
  and b - d1 >= 0 and a > 0 and a - d1 = 0 and a - b >= 0 and a - b + d1 >= 0
 
- and (a - b = 0 or a - b + d1 = 0) and (b - d1 = 0 or a - b + d1 = 0)) or (
+ and (b - d1 = 0 or a - b + d1 = 0) and (a - b = 0 or a - b + d1 = 0)) or (
 
-d1 > 0 and b > 0 and a > 0 and a - d1 > 0 and a - b = 0 and a - b + d1 <= 0) or 
+d1 > 0 and b > 0 and b - 2*d1 > 0 and b - d1 >= 0 and a > 0 and a - d1 = 0
 
-(d1 > 0 and b > 0 and b - d1 = 0 and a > 0 and a - 2*d1 > 0 and a - d1 = 0
+ and a - b + d1 = 0) or (d1 > 0 and b > 0 and b - 2*d1 > 0 and b - d1 >= 0
 
- and a - b - d1 <= 0)
+ and a > 0 and a - d1 = 0 and a - b + d1 >= 0 and (b - d1 = 0 or a - b + d1 > 0)
+
+ and (a - b + d1 = 0 or (b - d1 = 0 and a - b <= 0)))
+
+ or (d1 > 0 and b > 0 and b - d1 = 0 and a > 0 and a - 2*d1 > 0 and a - d1 = 0) 
+
+or (d1 > 0 and b > 0 and b - d1 = 0 and a > 0 and a - 2*d1 > 0 and a - d1 = 0
+
+ and a - b = 0) or (d1 > 0 and b > 0 and b - d1 = 0 and a > 0 and a - 2*d1 > 0
+
+ and a - d1 = 0 and a - b - d1 = 0) or (d1 > 0 and b > 0 and b - d1 = 0
+
+ and a > 0 and a - 2*d1 > 0 and a - d1 = 0 and a - b - d1 <= 0) or (d1 > 0
+
+ and b > 0 and b - d1 = 0 and a > 0 and a - 2*d1 > 0 and a - d1 >= 0
+
+ and a - b <= 0 and a - b - d1 <= 0 and (a - d1 = 0 or a - b - d1 = 0)
+
+ and (a - b = 0 or a - b - d1 = 0)) or (d1 > 0 and b > 0 and b - d1 = 0
+
+ and a > 0 and a - 2*d1 > 0 and a - d1 >= 0 and a - b - d1 = 0) or (d1 > 0
+
+ and b > 0 and b - d1 >= 0 and a > 0 and a - d1 > 0 and a - b = 0
+
+ and a - b + d1 <= 0 and (b - d1 = 0 or a - b + d1 = 0)) or (d1 > 0 and b > 0
+
+ and b - d1 > 0 and a > 0 and a - d1 >= 0 and a - b = 0 and a - b - d1 >= 0
+
+ and (a - d1 = 0 or a - b - d1 = 0)) or (d1 > 0 and b > 0 and b - d1 > 0
+
+ and a > 0 and a - d1 > 0 and a - b = 0 and a - b - d1 = 0) or (d1 > 0 and b > 0
+
+ and b - d1 > 0 and a > 0 and a - d1 > 0 and a - b = 0 and a - b + d1 = 0) or (
+
+d1 > 0 and b > 0 and b - d1 > 0 and a > 0 and a - b = 0 and a - b - d1 >= 0) or 
+
+(d1 > 0 and b > 0 and a > 0 and a - d1 > 0 and a - b = 0 and a - b + d1 <= 0)
 
 
 end;
 
-Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
-Time (counter 1): 142 ms  plus GC time: 47 ms
-1: real 0.40
-user 0.30
-sys 0.03
+Tested on alfred running Linux 3.18.18.1.amd64-smp x86_64 CSL
+Time (counter 1): 90 ms  plus GC time: 50 ms
+1: real 0.48
+user 0.34
+sys 0.05

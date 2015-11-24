@@ -93,25 +93,47 @@ and td - 990 < 0 and 2*td - 300*z + 1015 = 0 or td = 0 and z = 0) and (2
 rlitab testseries4;
 
 
-(td - 990 < 0 and ((i2 = 0 and ((n - td = 0 and ((q = 0 and 250*p1 - 1697 < 0
+(td - 990 < 0 and ((i2 = 0 and ((n - td = 0 and ((td - 450 >= 0 and q >= 0
 
- and 250*p1 - 1457 > 0 and n >= 0 and (
+ and q - 40 <= 0 and 400*q + 9*td - 20050 >= 0 and 2*p1 - 7 >= 0
 
-(td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
+ and 250*p1 + 2*q - 1697 < 0 and 250*p1 + 2*q - 1457 > 0
 
- or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0) or (z = 0 and td = 0))) or (
+ and 180*n + 171*td - 380950 >= 0 and (
 
-q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 <= 0 and 2*p1 - 7 >= 0
+(td - 700 < 0 and 3*td + 400*z - 5320 = 0)
 
- and 250*p1 + 2*q - 1697 < 0 and 250*p1 + 2*q - 1457 > 0 and 9*n - 380*q >= 0 
+ or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0))) or (td - 450 >= 0 and q >= 0
 
-and ((td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
+ and q - 40 <= 0 and 400*q + 9*td - 20050 >= 0 and 2*p1 - 7 >= 0
 
- or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0) or (z = 0 and td = 0))) or (
+ and 250*p1 + 2*q - 1457 = 0 and 180*n + 171*td - 380950 >= 0 and (
 
-td - 450 >= 0 and q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 >= 0
+(td - 700 < 0 and 3*td + 400*z - 5320 = 0)
 
- and 2*p1 - 7 >= 0 and 250*p1 + 2*q - 1697 < 0 and 250*p1 + 2*q - 1457 > 0
+ or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0))) or (td - 450 >= 0 and q >= 0
+
+ and q - 40 <= 0 and 400*q + 9*td - 20050 >= 0 and 2*p1 - 7 >= 0
+
+ and 250*p1 + 2*q - 1457 <= 0 and 250*p1 + 2*q - 1377 > 0
+
+ and 180*n + 171*td - 380950 >= 0 and (
+
+(td - 700 < 0 and 3*td + 400*z - 5320 = 0)
+
+ or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0))) or (td - 450 >= 0 and q >= 0
+
+ and q - 40 <= 0 and 400*q + 9*td - 20050 >= 0 and 2*p1 - 7 >= 0
+
+ and 250*p1 + 2*q - 1377 = 0 and 180*n + 171*td - 380950 >= 0 and (
+
+(td - 700 < 0 and 3*td + 400*z - 5320 = 0)
+
+ or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0))) or (td - 450 >= 0 and q >= 0
+
+ and q - 40 <= 0 and 400*q + 9*td - 20050 >= 0 and 2*p1 - 7 >= 0
+
+ and 250*p1 + 2*q - 1377 <= 0 and 250*p1 + 2*q - 1057 > 0
 
  and 180*n + 171*td - 380950 >= 0 and (
 
@@ -119,103 +141,81 @@ td - 450 >= 0 and q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 >= 0
 
  or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0))) or (q = 0
 
- and 250*p1 - 1457 = 0 and n >= 0 and (
+ and 250*p1 - 1697 < 0 and 250*p1 - 1457 > 0 and n >= 0 and ((z = 0 and td = 0)
 
-(td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
-
- or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0) or (z = 0 and td = 0))) or (
-
-q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 <= 0 and 2*p1 - 7 >= 0
-
- and 250*p1 + 2*q - 1457 = 0 and 9*n - 380*q >= 0 and (
-
-(td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
-
- or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0) or (z = 0 and td = 0))) or (
-
-td - 450 >= 0 and q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 >= 0
-
- and 2*p1 - 7 >= 0 and 250*p1 + 2*q - 1457 = 0 and 180*n + 171*td - 380950 >= 0 
-
-and ((td - 700 < 0 and 3*td + 400*z - 5320 = 0)
+ or (td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
 
  or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0))) or (q = 0
 
- and 250*p1 - 1457 <= 0 and 250*p1 - 1377 > 0 and n >= 0 and (
+ and 250*p1 - 1457 = 0 and n >= 0 and ((z = 0 and td = 0)
 
-(td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
-
- or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0) or (z = 0 and td = 0))) or (
-
-q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 <= 0 and 2*p1 - 7 >= 0
-
- and 250*p1 + 2*q - 1457 <= 0 and 250*p1 + 2*q - 1377 > 0 and 9*n - 380*q >= 0 
-
-and ((td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
-
- or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0) or (z = 0 and td = 0))) or (
-
-td - 450 >= 0 and q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 >= 0
-
- and 2*p1 - 7 >= 0 and 250*p1 + 2*q - 1457 <= 0 and 250*p1 + 2*q - 1377 > 0
-
- and 180*n + 171*td - 380950 >= 0 and (
-
-(td - 700 < 0 and 3*td + 400*z - 5320 = 0)
+ or (td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
 
  or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0))) or (q = 0
 
- and 250*p1 - 1377 = 0 and n >= 0 and (
+ and 250*p1 - 1457 <= 0 and 250*p1 - 1377 > 0 and n >= 0 and ((z = 0 and td = 0)
 
-(td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
-
- or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0) or (z = 0 and td = 0))) or (
-
-q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 <= 0 and 2*p1 - 7 >= 0
-
- and 250*p1 + 2*q - 1377 = 0 and 9*n - 380*q >= 0 and (
-
-(td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
-
- or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0) or (z = 0 and td = 0))) or (
-
-td - 450 >= 0 and q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 >= 0
-
- and 2*p1 - 7 >= 0 and 250*p1 + 2*q - 1377 = 0 and 180*n + 171*td - 380950 >= 0 
-
-and ((td - 700 < 0 and 3*td + 400*z - 5320 = 0)
+ or (td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
 
  or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0))) or (q = 0
 
- and 250*p1 - 1377 <= 0 and 250*p1 - 1057 > 0 and n >= 0 and (
+ and 250*p1 - 1377 = 0 and n >= 0 and ((z = 0 and td = 0)
 
-(td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
+ or (td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
 
- or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0) or (z = 0 and td = 0))) or (
+ or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0))) or (q = 0
 
-q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 <= 0 and 2*p1 - 7 >= 0
+ and 250*p1 - 1377 <= 0 and 250*p1 - 1057 > 0 and n >= 0 and ((z = 0 and td = 0)
 
- and 250*p1 + 2*q - 1377 <= 0 and 250*p1 + 2*q - 1057 > 0 and 9*n - 380*q >= 0 
+ or (td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
 
-and ((td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
+ or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0))) or (q >= 0 and q - 40 <= 0
 
- or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0) or (z = 0 and td = 0))) or (
+ and 400*q + 9*td - 20050 <= 0 and 2*p1 - 7 >= 0 and 250*p1 + 2*q - 1697 < 0
 
-td - 450 >= 0 and q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 >= 0
+ and 250*p1 + 2*q - 1457 > 0 and 9*n - 380*q >= 0 and ((z = 0 and td = 0)
 
- and 2*p1 - 7 >= 0 and 250*p1 + 2*q - 1377 <= 0 and 250*p1 + 2*q - 1057 > 0
+ or (td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
 
- and 180*n + 171*td - 380950 >= 0 and (
+ or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0))) or (q >= 0 and q - 40 <= 0
 
-(td - 700 < 0 and 3*td + 400*z - 5320 = 0)
+ and 400*q + 9*td - 20050 <= 0 and 2*p1 - 7 >= 0 and 250*p1 + 2*q - 1457 = 0
+
+ and 9*n - 380*q >= 0 and ((z = 0 and td = 0)
+
+ or (td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
+
+ or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0))) or (q >= 0 and q - 40 <= 0
+
+ and 400*q + 9*td - 20050 <= 0 and 2*p1 - 7 >= 0 and 250*p1 + 2*q - 1457 <= 0
+
+ and 250*p1 + 2*q - 1377 > 0 and 9*n - 380*q >= 0 and ((z = 0 and td = 0)
+
+ or (td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
+
+ or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0))) or (q >= 0 and q - 40 <= 0
+
+ and 400*q + 9*td - 20050 <= 0 and 2*p1 - 7 >= 0 and 250*p1 + 2*q - 1377 = 0
+
+ and 9*n - 380*q >= 0 and ((z = 0 and td = 0)
+
+ or (td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
+
+ or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0))) or (q >= 0 and q - 40 <= 0
+
+ and 400*q + 9*td - 20050 <= 0 and 2*p1 - 7 >= 0 and 250*p1 + 2*q - 1377 <= 0
+
+ and 250*p1 + 2*q - 1057 > 0 and 9*n - 380*q >= 0 and ((z = 0 and td = 0)
+
+ or (td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
 
  or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0)))))))))
 
 
 end;
 
-Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
-Time (counter 1): 712 ms  plus GC time: 69 ms
-1: real 1.02
-user 0.90
+Tested on alfred running Linux 3.18.18.1.amd64-smp x86_64 CSL
+Time (counter 1): 480 ms  plus GC time: 70 ms
+1: real 0.92
+user 0.79
 sys 0.05

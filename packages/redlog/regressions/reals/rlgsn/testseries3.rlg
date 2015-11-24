@@ -35,33 +35,31 @@ and z = 0) and (400*q + 9*td - 20050 <= 0 and q - 40 = 0 or 400*q + 9*td
 rlgsn testseries3;
 
 
-(10*z - 103 <= 0 and 20*z - 161 > 0 and 3*td + 400*z - 5320 = 0 and q >= 0
+(z = 0 and td = 0 and q >= 0 and q - 40 <= 0 and n = 0 and i2 = 0)
 
- and q - 40 <= 0 and 40*q - 120*z - 409 <= 0 and 3*n + 400*z - 5320 = 0
+ or (z = 0 and td = 0 and q - 40 = 0 and n = 0 and i2 = 0) or (10*z - 103 <= 0
 
- and i2 = 0)
+ and 20*z - 161 > 0 and 3*td + 400*z - 5320 = 0 and q >= 0 and q - 40 <= 0
 
- or (z = 0 and td = 0 and q >= 0 and q - 40 <= 0 and n = 0 and i2 = 0) or (
-
-20*z - 161 > 0 and 40*z - 397 <= 0 and 3*td + 400*z - 5320 = 0 and q >= 0
-
- and q - 40 <= 0 and 40*q - 120*z - 409 >= 0 and 3*n + 400*z - 5320 = 0
-
- and i2 = 0) or (20*z - 161 >= 0 and 60*z - 599 < 0 and 2*td - 300*z + 1015 = 0
-
- and q >= 0 and q - 40 <= 0 and 2*n - 300*z + 1015 = 0 and i2 = 0) or (
+ and 40*q - 120*z - 409 <= 0 and 3*n + 400*z - 5320 = 0 and i2 = 0) or (
 
 10*z - 103 <= 0 and 40*z - 397 >= 0 and 3*td + 400*z - 5320 = 0 and q - 40 = 0
 
- and 3*n + 400*z - 5320 = 0 and i2 = 0)
+ and 3*n + 400*z - 5320 = 0 and i2 = 0) or (20*z - 161 >= 0 and 60*z - 599 < 0
 
- or (z = 0 and td = 0 and q - 40 = 0 and n = 0 and i2 = 0)
+ and 2*td - 300*z + 1015 = 0 and q >= 0 and q - 40 <= 0
+
+ and 2*n - 300*z + 1015 = 0 and i2 = 0) or (20*z - 161 > 0 and 40*z - 397 <= 0
+
+ and 3*td + 400*z - 5320 = 0 and q >= 0 and q - 40 <= 0
+
+ and 40*q - 120*z - 409 >= 0 and 3*n + 400*z - 5320 = 0 and i2 = 0)
 
 
 end;
 
-Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
-Time (counter 1): 14 ms  plus GC time: 47 ms
-1: real 0.28
-user 0.18
-sys 0.02
+Tested on alfred running Linux 3.18.18.1.amd64-smp x86_64 CSL
+Time (counter 1): 10 ms  plus GC time: 60 ms
+1: real 0.39
+user 0.26
+sys 0.05

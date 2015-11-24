@@ -23,19 +23,19 @@ rlwqe phi;
 bex g0002 [ - a  + 2*a*b - b  - 2 <= g0002 <= a  - 2*a*b + b  + 2] (a - b < 0
 
                   2
- and a - b + g0002  = 0 and a + b ~2~ 0 and a + b - 2*g0002 = 0) or bex g0001 [
+ and a - b + g0002  = 0 and a + b #2# 0 and a + b - 2*g0002 + 1 = 0) or bex 
 
-    2            2                  2            2
- - a  + 2*a*b - b  - 2 <= g0001 <= a  - 2*a*b + b  + 2] (a - b < 0
+           2            2                  2            2
+g0001 [ - a  + 2*a*b - b  - 2 <= g0001 <= a  - 2*a*b + b  + 2] (a - b < 0
 
                   2
- and a - b + g0001  = 0 and a + b #2# 0 and a + b - 2*g0001 + 1 = 0)
+ and a - b + g0001  = 0 and a + b ~2~ 0 and a + b - 2*g0001 = 0)
 
 
 end;
 
-Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
-Time (counter 1): 6 ms  plus GC time: 32 ms
-1: real 0.25
-user 0.14
-sys 0.04
+Tested on alfred running Linux 3.18.18.1.amd64-smp x86_64 CSL
+Time (counter 1): 10 ms  plus GC time: 30 ms
+1: real 0.34
+user 0.22
+sys 0.03

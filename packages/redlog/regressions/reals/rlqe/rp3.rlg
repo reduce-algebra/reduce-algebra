@@ -50,51 +50,335 @@ v + y1 > 0 and u - x1 >= 0 and v - y1 >= 0 or d2 - u + x2 > 0 and d2 - v
 rlqe rp3;
 
 
-(d1 > 0 and d1 - 1 <= 0 and a - 1 > 0 and a - d1 = 0 and a + d1 - 1 = 0
+(d1 = 0 and d1 < 0 and d1 > 0 and d1 - 1 < 0 and a - 1 = 0) or (d1 <= 0
 
- and a + 2*d1 - 2 < 0 and a + 2*d1 - 1 >= 0 and (d1 - 1 = 0 or 2*d1 - 1 < 0)) or
+ and d1 < 0 and d1 > 0 and 2*d1 - 1 < 0 and a - 1 = 0
 
- (d1 > 0 and 4*d1 - 1 < 0 and a > 0 and a - 1 <= 0 and a - 2*d1 = 0
+ and (d1 >= 0 or 2*d1 + 1 <= 0)) or (d1 > 0 and d1 - 1 <= 0 and a > 0
 
- and a - d1 >= 0 and a - d1 - 1 < 0 and a + d1 - 1 = 0
+ and a - 2 <= 0 and a - d1 - 1 > 0 and 2*a - d1 - 1 <= 0
 
- and (a - 1 = 0 or a - d1 > 0) and (a - 1 = 0 or a - d1 = 0)) or (d1 > 0
+ and (d1 - 1 = 0 or a - 1 < 0) and (d1 - 1 = 0 or a - 1 > 0)
 
- and d1 - 1 <= 0 and a > 0 and a - 2 <= 0 and a - d1 - 1 > 0
+ and (d1 - 1 < 0 or a - 2 < 0) and (a - 2 = 0 or a - 1 < 0)
 
- and 2*a - d1 - 1 < 0 and (d1 - 1 < 0 or a - 2 < 0)
+ and (a - 1 > 0 or (d1 - 1 = 0 and a - 1 = 0))) or (d1 > 0 and d1 - 1 <= 0
+
+ and a > 0 and a - 2 <= 0 and a - d1 - 1 > 0 and 2*a - d1 - 1 < 0
+
+ and (d1 - 1 = 0 or a - 1 < 0) and (d1 - 1 = 0 or a - 1 > 0)
+
+ and (d1 - 1 < 0 or a - 2 < 0) and (a - 2 = 0 or a - 1 < 0)
+
+ and (a - 1 > 0 or (d1 - 1 = 0 and a - 1 = 0))) or (d1 > 0 and d1 - 1 <= 0
+
+ and a > 0 and a - 2 <= 0 and a - d1 - 1 > 0 and 2*a - d1 - 1 < 0
+
+ and (d1 - 1 = 0 or a - 1 < 0) and (d1 - 1 < 0 or a - 2 < 0)
 
  and (d1 - 1 < 0 or a - 1 <= 0) and (a - 2 = 0 or a - 1 < 0)
 
- and (d1 - 1 = 0 or a - 1 < 0) and (a - 1 > 0 or (d1 - 1 = 0 and a - 1 = 0))) or
+ and (a - 1 > 0 or (d1 - 1 = 0 and a - 1 = 0))) or (d1 > 0 and d1 - 1 <= 0
 
- (d1 > 0 and d1 - 1 < 0 and a > 0 and a - 1 <= 0 and a - 2*d1 > 0
+ and a > 0 and a - 2 <= 0 and a - d1 - 1 > 0 and 2*a - d1 - 1 < 0
+
+ and (d1 - 1 = 0 or a - 1 < 0) and (d1 - 1 < 0 or a - 2 < 0)
+
+ and (a - 2 = 0 or a - 1 < 0) and (a - 1 > 0 or (d1 - 1 = 0 and a - 1 = 0))) or 
+
+(d1 > 0 and d1 - 1 <= 0 and a > 0 and a - 1 <= 0 and a - 2*d1 - 1 > 0
+
+ and a - d1 - 1 >= 0 and 2*a - d1 - 2 <= 0 and (d1 - 1 = 0 or a + d1 - 1 >= 0)
+
+ and (a - 1 = 0 or (a - d1 - 1 > 0 and 2*a - d1 - 2 = 0))
+
+ and (a - d1 - 1 = 0 or a + d1 - 1 <= 0)) or (d1 > 0 and d1 - 1 <= 0 and a > 0
+
+ and a - 1 < 0 and a - 2*d1 > 0 and a - d1 = 0 and a + d1 - 1 >= 0
+
+ and (d1 - 1 = 0 or 2*d1 - 1 < 0) and (d1 - 1 = 0 or a + d1 - 1 = 0)
+
+ and (2*d1 - 1 > 0 or a + d1 - 1 = 0)) or (d1 > 0 and d1 - 1 <= 0 and a > 0
+
+ and a - 2*d1 > 0 and a - d1 = 0 and a + d1 - 1 >= 0 and 2*a - d1 - 1 < 0
+
+ and (d1 - 1 = 0 or a - 1 < 0) and (d1 - 1 = 0 or a + d1 - 1 = 0)
+
+ and (d1 - 1 < 0 or a - 1 = 0) and (d1 - 1 < 0 or a - 1 >= 0)
+
+ and (a - 1 = 0 or a + d1 - 1 = 0) and (a - 1 >= 0 or a + d1 - 1 > 0)) or (
+
+d1 > 0 and d1 - 1 <= 0 and a > 0 and a - 2*d1 > 0 and a - d1 = 0
+
+ and a + d1 - 1 >= 0 and 2*a - d1 - 1 < 0 and (d1 - 1 = 0 or a - 1 < 0)
+
+ and (d1 - 1 = 0 or a + d1 - 1 = 0) and (d1 - 1 < 0 or a - 1 >= 0)
+
+ and (a - 1 = 0 or a + d1 - 1 = 0) and (a - 1 >= 0 or a + d1 - 1 > 0)
+
+ and ((d1 - 1 = 0 and a - 1 = 0) or (d1 - 1 < 0 and a - 1 < 0))) or (d1 > 0
+
+ and d1 - 1 <= 0 and a > 0 and a - 2*d1 > 0 and a - d1 = 0 and 2*a - 1 < 0
+
+ and 2*a - d1 < 0) or (d1 > 0 and d1 - 1 <= 0 and a > 0 and a - 2*d1 > 0
+
+ and a - d1 >= 0 and a - d1 - 1 < 0 and 2*a - 1 < 0 and 2*a - d1 < 0
+
+ and (d1 - 1 = 0 or a - d1 = 0)) or (d1 > 0 and d1 - 1 <= 0 and a > 0
+
+ and a - d1 >= 0 and a + d1 - 2 <= 0 and a + d1 - 1 >= 0 and a + 3*d1 - 2 < 0
+
+ and 2*a + 3*d1 - 3 > 0 and (d1 - 1 = 0 or 2*d1 - 1 <= 0 or a + 2*d1 - 2 < 0)
+
+ and (d1 - 1 = 0 or 2*d1 - 1 < 0 or a + 2*d1 - 2 <= 0)
+
+ and (d1 - 1 = 0 or a + d1 - 1 = 0) and (d1 - 1 = 0 or a + 2*d1 - 2 <= 0)
+
+ and (2*d1 - 1 >= 0 or a - d1 = 0 or a + d1 - 1 = 0)
+
+ and (2*d1 - 1 > 0 or a - 1 >= 0 or a + 2*d1 - 2 >= 0)
+
+ and (a - 1 >= 0 or a + d1 - 2 < 0)
+
+ and (a - 1 > 0 or a + d1 - 1 = 0 or a + 2*d1 - 2 <= 0) and (a - d1 = 0
+
+ or a + d1 - 2 = 0 or (2*d1 - 1 < 0 and a - 1 <= 0 and a + 2*d1 - 2 < 0))
+
+ and (a - d1 = 0 or (2*d1 - 1 >= 0 and a + 2*d1 - 2 > 0))
+
+ and (a - d1 > 0 or a + 2*d1 - 2 <= 0) and (a - d1 - 1 >= 0 or a + d1 - 2 < 0)
+
+ and (a + d1 - 2 = 0 or a + d1 - 1 = 0 or a + 2*d1 - 2 >= 0)
+
+ and (a + d1 - 2 = 0 or a + d1 - 1 = 0 or (2*d1 - 1 > 0 and a + 2*d1 - 2 >= 0))
+
+ and (a + d1 - 1 = 0 or a + 2*d1 - 2 <= 0)) or (d1 > 0 and d1 - 1 <= 0 and a > 0
+
+ and a - d1 >= 0 and a + d1 - 2 < 0 and a + d1 - 1 >= 0 and a + 2*d1 - 2 <= 0
+
+ and a + 3*d1 - 2 < 0 and 2*a + 3*d1 - 3 > 0
+
+ and (d1 - 1 = 0 or a - 1 <= 0 or a + 2*d1 - 2 < 0)
+
+ and (d1 - 1 = 0 or a - d1 = 0) and (d1 - 1 = 0 or a + d1 - 1 = 0)
+
+ and (d1 - 1 = 0 or a + d1 - 1 = 0 or a + 2*d1 - 2 < 0)
+
+ and (d1 - 1 = 0 or a + d1 - 1 > 0 or a + 2*d1 - 2 = 0)
+
+ and (2*d1 - 1 >= 0 or a - 1 > 0 or a + 2*d1 - 2 = 0)
+
+ and (a + d1 - 1 = 0 or (a - 1 <= 0 and a + 2*d1 - 2 = 0))
+
+ and (a + d1 - 1 = 0 or (a - d1 = 0 and a + 2*d1 - 2 = 0))) or (d1 > 0
+
+ and d1 - 1 <= 0 and a - 2 <= 0 and a - 1 >= 0 and a - 2*d1 - 1 > 0
+
+ and a - d1 >= 0 and a - d1 - 1 < 0 and a + d1 - 1 >= 0 and 2*a - d1 - 3 < 0
+
+ and 2*a - d1 - 2 >= 0 and (d1 - 1 = 0 or a - 1 = 0)
+
+ and (d1 - 1 < 0 or a - 1 = 0 or 2*a - 3 > 0) and (d1 - 1 < 0 or a - 1 > 0)
+
+ and (a - 2 = 0 or a - d1 = 0 or 2*a - d1 - 2 = 0) and (a - 1 = 0 or a - d1 = 0)
+
+ and (a - 1 = 0 or a - d1 > 0) and (a - 1 = 0 or 2*a - d1 - 2 > 0)) or (d1 > 0
+
+ and d1 - 1 <= 0 and a - 1 <= 0 and a - 2*d1 > 0 and a - d1 = 0 and 2*a - 1 >= 0
+
+ and 2*a - d1 - 1 < 0 and (d1 - 1 = 0 or a - 1 < 0)
+
+ and (d1 - 1 = 0 or 2*a - 1 = 0) and (d1 - 1 = 0 or 2*a - 1 > 0)) or (d1 > 0
+
+ and d1 - 1 <= 0 and a - 1 <= 0 and a - d1 > 0 and a + d1 - 1 <= 0
+
+ and 2*a - 1 >= 0 and 2*a + d1 - 1 < 0 and (d1 - 1 = 0 or a + d1 - 1 = 0)
+
+ and (d1 - 1 < 0 or 2*a - 1 > 0) and (2*d1 - 1 < 0 or 2*a - 1 > 0)
+
+ and (a - 1 = 0 or a + d1 - 1 = 0) and (a - 1 = 0 or 2*a - 1 = 0)) or (d1 > 0
+
+ and d1 - 1 <= 0 and a - 1 <= 0 and a + d1 - 1 = 0 and a + 2*d1 - 1 < 0
+
+ and 2*a - 1 >= 0 and (d1 - 1 < 0 or 2*a - 1 > 0)
+
+ and (2*d1 - 1 < 0 or 2*a - 1 > 0) and (a - 1 = 0 or 2*a - 1 = 0)) or (d1 > 0
+
+ and d1 - 1 <= 0 and a - 1 <= 0 and a + d1 - 1 <= 0 and a + 2*d1 - 1 < 0
+
+ and 2*a - 1 >= 0 and 2*a + d1 - 1 > 0 and (d1 - 1 = 0 or a + d1 - 1 = 0)
+
+ and (d1 - 1 < 0 or 2*a - 1 > 0) and (2*d1 - 1 < 0 or 2*a - 1 > 0)
+
+ and (a - 1 = 0 or a + d1 - 1 = 0) and (a - 1 = 0 or 2*a - 1 = 0)) or (d1 > 0
+
+ and d1 - 1 <= 0 and a - 1 <= 0 and a + d1 - 1 <= 0 and a + 2*d1 - 1 < 0
+
+ and 2*a - 1 >= 0 and (d1 - 1 = 0 or a + d1 - 1 = 0)
+
+ and (d1 - 1 < 0 or 2*a - 1 > 0) and (2*d1 - 1 < 0 or 2*a - 1 > 0)
+
+ and (a - 1 = 0 or a + d1 - 1 = 0) and (a - 1 = 0 or 2*a - 1 = 0)) or (d1 > 0
+
+ and d1 - 1 <= 0 and a - 1 > 0 and a - d1 = 0 and a + d1 - 1 = 0
+
+ and a + 2*d1 - 2 < 0 and a + 2*d1 - 1 >= 0) or (d1 > 0 and d1 - 1 <= 0
+
+ and a - 1 > 0 and a - d1 = 0 and a + d1 - 1 = 0 and a + 2*d1 - 2 < 0
+
+ and a + 2*d1 - 1 >= 0 and (d1 - 1 = 0 or 2*d1 - 1 < 0)) or (d1 > 0
+
+ and d1 - 1 <= 0 and a - 1 > 0 and a - d1 >= 0 and a + d1 - 2 <= 0
+
+ and a + d1 - 1 >= 0 and 2*a + 3*d1 - 3 < 0
+
+ and (d1 - 1 = 0 or 2*d1 - 1 <= 0 or a + 2*d1 - 2 < 0)
+
+ and (d1 - 1 = 0 or 2*d1 - 1 < 0 or a + 2*d1 - 2 <= 0)
+
+ and (d1 - 1 = 0 or a + d1 - 1 = 0) and (d1 - 1 = 0 or a + 2*d1 - 2 <= 0)
+
+ and (2*d1 - 1 <= 0 or a + d1 - 2 < 0) and (a - d1 = 0 or a + d1 - 2 = 0) and (
+
+a - d1 = 0 or (2*d1 - 1 < 0 and a + d1 - 1 = 0)
+
+ or (2*d1 - 1 >= 0 and a + d1 - 1 > 0))
+
+ and (a - d1 = 0 or (2*d1 - 1 >= 0 and a + 2*d1 - 2 > 0))
+
+ and (a - d1 > 0 or a + 2*d1 - 2 <= 0)
+
+ and (a + d1 - 2 = 0 or a + d1 - 1 = 0 or (2*d1 - 1 > 0 and a + 2*d1 - 2 >= 0))
+
+ and (a + d1 - 2 = 0 or a + 2*d1 - 2 >= 0 or (d1 - 1 < 0 and a + d1 - 1 = 0))
+
+ and (a + d1 - 1 = 0 or a + 2*d1 - 2 <= 0)) or (d1 > 0 and d1 - 1 <= 0
+
+ and a - 1 > 0 and a - d1 >= 0 and a + d1 - 1 = 0 and a + 2*d1 - 2 <= 0
+
+ and 2*a + 3*d1 - 3 < 0 and (d1 - 1 = 0 or a - d1 = 0)
+
+ and (d1 - 1 = 0 or a + 2*d1 - 2 = 0) and (d1 - 1 = 0 or a + 2*d1 - 2 < 0)
+
+ and ((d1 - 1 < 0 and a + 2*d1 - 2 < 0) or (a - d1 = 0 and a + 2*d1 - 2 = 0))) 
+
+or (d1 > 0 and d1 - 1 < 0 and a > 0 and a - 1 <= 0 and a - 2*d1 > 0
 
  and a - d1 >= 0 and a - d1 - 1 < 0 and a + d1 - 1 = 0 and 2*a - d1 - 1 = 0
 
- and (a - 1 = 0 or a - d1 > 0) and (a - 1 = 0 or a - d1 = 0)) or (d1 > 0
+ and (a - 1 = 0 or a - d1 = 0) and (a - 1 = 0 or a - d1 > 0)) or (d1 > 0
 
- and a - 1 <= 0 and a - 2*d1 > 0 and a - d1 = 0 and 2*a - 1 >= 0
+ and d1 - 1 < 0 and a > 0 and a - 1 <= 0 and a - d1 >= 0 and a + d1 - 1 = 0
 
- and 2*a - d1 - 1 < 0 and (a - 1 = 0 or a + d1 - 1 < 0)
+ and a + 2*d1 - 1 < 0 and 2*a + d1 - 2 = 0 and (a - 1 = 0 or a - d1 = 0)
 
- and (a - 1 = 0 or 2*a - 1 = 0) and (a + d1 - 1 > 0 or 2*a - 1 = 0)) or (d1 > 0
+ and (a - 1 = 0 or a - d1 > 0)) or (d1 > 0 and d1 - 1 < 0 and a > 0
+
+ and a - 1 <= 0 and a - d1 >= 0 and a + d1 - 1 = 0 and a + 2*d1 - 1 < 0
+
+ and 2*a + d1 - 1 > 0 and (a - 1 = 0 or a - d1 = 0)
+
+ and (a - 1 = 0 or a - d1 > 0)) or (d1 > 0 and d1 - 1 < 0 and a > 0
+
+ and a - 1 < 0 and a - 3*d1 > 0 and a - 2*d1 - 1 >= 0 and a - d1 = 0
+
+ and a + d1 - 2 = 0) or (d1 > 0 and d1 - 1 < 0 and a > 0 and a - 1 < 0
+
+ and a - 3*d1 > 0 and a - d1 = 0 and a + d1 - 2 >= 0 and a + 3*d1 - 2 = 0) or (
+
+d1 > 0 and d1 - 1 < 0 and a > 0 and a - 1 < 0 and a - d1 = 0 and a + d1 - 1 = 0
+
+ and a + 2*d1 - 2 <= 0 and a + 3*d1 - 2 < 0 and 2*a + 3*d1 - 3 > 0
+
+ and (a + 2*d1 - 2 = 0 or 2*a + d1 - 2 >= 0)) or (d1 > 0 and d1 - 1 < 0
+
+ and a - 2 <= 0 and a - 1 >= 0 and a - 2*d1 - 1 > 0 and 2*a - d1 - 3 < 0
+
+ and 2*a - d1 - 2 >= 0 and (a - 2 = 0 or a - 1 = 0)
+
+ and (a - 2 = 0 or a - 1 = 0 or (a - d1 - 1 < 0 and 2*a - d1 - 2 = 0))
+
+ and (a - 1 = 0 or a - d1 - 1 <= 0 or a + d1 - 1 > 0)
+
+ and (a - 1 = 0 or a - d1 - 1 < 0) and (a - 1 = 0 or a - d1 - 1 > 0)
+
+ and (a - 1 = 0 or 2*a - d1 - 2 = 0)
+
+ and (a - d1 - 1 < 0 or (a - d1 - 1 = 0 and a + d1 - 1 <= 0))
+
+ and (a - d1 - 1 >= 0 or a + d1 - 1 >= 0)) or (d1 > 0 and d1 - 1 < 0
+
+ and a - 2 > 0 and a - 2*d1 - 2 > 0 and a - d1 = 0 and a + d1 - 2 < 0
+
+ and a + 2*d1 - 4 = 0) or (d1 > 0 and d1 - 1 < 0 and a - 1 <= 0
+
+ and a + d1 - 1 = 0 and a + 2*d1 - 1 < 0 and 2*a - 1 >= 0 and 2*a + d1 - 1 > 0
+
+ and (2*d1 - 1 < 0 or 2*a - 1 > 0) and (a - 1 = 0 or 2*a - 1 = 0)) or (d1 > 0
+
+ and d1 - 1 < 0 and a - 1 > 0 and a + d1 - 1 = 0 and a + 2*d1 - 2 = 0
+
+ and a + 3*d1 - 2 = 0 and 2*a + 3*d1 - 3 < 0 and 2*a + 3*d1 - 2 > 0) or (d1 > 0
+
+ and 2*d1 - 1 <= 0 and a > 0 and a - 1 <= 0 and a - d1 > 0 and a + d1 - 1 = 0
+
+ and 2*a + d1 - 1 < 0 and (2*d1 - 1 = 0 or a - 1 = 0 or a + 2*d1 - 1 < 0)
+
+ and (2*d1 - 1 < 0 or a - 1 = 0) and (a - 1 = 0 or a + 2*d1 - 1 > 0)) or (d1 > 0
+
+ and 2*d1 - 1 < 0 and a > 0 and a - 1 <= 0 and a - d1 = 0 and a + d1 - 1 = 0
+
+ and a + 2*d1 - 2 > 0) or (d1 > 0 and 2*d1 - 1 < 0 and a - 1 > 0
+
+ and a - 2*d1 < 0 and a - d1 = 0 and a + d1 - 1 = 0) or (d1 > 0 and 2*d1 - 1 < 0
+
+ and a - 1 > 0 and a - 2*d1 < 0 and a - d1 = 0 and a + d1 - 1 = 0
+
+ and 2*a - d1 - 1 <= 0) or (d1 > 0 and 4*d1 - 1 < 0 and a > 0 and a - 1 <= 0
+
+ and a - 2*d1 = 0 and a - d1 >= 0 and a - d1 - 1 < 0 and a + d1 - 1 = 0
+
+ and (a - 1 = 0 or a - d1 = 0) and (a - 1 = 0 or a - d1 > 0)) or (d1 > 0
 
  and a > 0 and a - 1 <= 0 and a - 2*d1 > 0 and a - d1 = 0 and a + d1 - 1 >= 0
 
- and 2*a - d1 - 1 < 0 and (a - 1 = 0 or a + d1 - 1 > 0)
+ and 2*a - d1 - 1 < 0 and (d1 - 1 < 0 or a - 1 = 0)
 
- and (d1 - 1 > 0 or a - 1 = 0 or a + d1 - 1 = 0) and (d1 - 1 < 0 or a - 1 = 0)) 
+ and (d1 - 1 > 0 or a - 1 = 0 or a + d1 - 1 = 0)
 
-or (d1 > 0 and a > 0 and a - 1 <= 0 and a - 2*d1 > 0 and a - d1 = 0
+ and (a - 1 = 0 or a + d1 - 1 > 0)) or (d1 > 0 and a > 0 and a - 1 <= 0
 
- and a + d1 - 1 > 0 and 2*a - d1 - 1 < 0 and (d1 - 1 > 0 or a - 1 = 0)
+ and a - 2*d1 > 0 and a - d1 = 0 and a + d1 - 1 > 0 and 2*a - d1 - 1 < 0
 
- and (d1 - 1 < 0 or a - 1 = 0)) or (d1 > 0 and a - 1 > 0 and a - 2*d1 - 1 > 0
+ and (d1 - 1 < 0 or a - 1 = 0) and (d1 - 1 > 0 or a - 1 = 0)) or (d1 > 0
 
- and a - d1 - 1 = 0 and 2*a - 3*d1 - 2 < 0) or (d1 > 0 and a - 1 >= 0
+ and a > 0 and a - 1 <= 0 and a - 2*d1 > 0 and a - d1 >= 0 and a - d1 - 1 <= 0
 
- and a - 2*d1 - 1 > 0 and a - d1 - 1 = 0 and 2*a - 3*d1 - 2 < 0) or (d1 > 0
+ and (d1 - 1 = 0 or a - 1 < 0) and (a - 1 = 0 or a - d1 = 0 or 2*a - 1 < 0)
+
+ and (a - 1 = 0 or 2*a - 1 < 0) and (a - 1 = 0
+
+ or (a - d1 = 0 and 2*a - 1 >= 0 and 2*a - d1 - 1 < 0)
+
+ or (a - d1 > 0 and 2*a - d1 - 1 >= 0))
+
+ and (a - 1 = 0 or (2*a - 1 >= 0 and 2*a - d1 - 1 < 0))
+
+ and (a - d1 = 0 or a - d1 - 1 = 0 or 2*a - d1 - 1 < 0)
+
+ and (a - d1 = 0 or 2*a - d1 - 1 > 0) and (a - d1 - 1 = 0 or 2*a - d1 - 1 < 0)
+
+ and (2*a - 1 <= 0 or 2*a - d1 - 1 > 0)) or (d1 > 0 and a > 0 and a - 1 <= 0
+
+ and a - 2*d1 - 1 > 0 and a - d1 > 0 and a - d1 - 2 <= 0 and a + d1 - 1 <= 0
+
+ and 2*a - d1 - 2 <= 0
+
+ and (a - 1 = 0 or a - d1 - 2 = 0 or a - d1 - 1 < 0 or 2*a - d1 - 2 = 0)
+
+ and (a - 1 = 0 or a - d1 - 1 > 0) and (a - 1 = 0 or a + d1 - 1 = 0)
+
+ and (a - d1 - 2 = 0 or a - d1 - 1 < 0 or 2*a - d1 - 2 = 0)) or (d1 > 0
 
  and a - 2 <= 0 and a - 1 >= 0 and a - 2*d1 - 1 > 0 and a - d1 - 1 = 0
 
@@ -104,349 +388,61 @@ or (d1 > 0 and a > 0 and a - 1 <= 0 and a - 2*d1 > 0 and a - d1 = 0
 
  and a - 2*d1 - 1 > 0 and a - d1 - 1 = 0 and (d1 - 1 < 0 or a - 2 < 0)
 
- and (a - 2 = 0 or a - 1 = 0)) or (d1 > 0 and d1 - 1 < 0 and a - 2 >= 0
+ and (a - 2 = 0 or a - 1 = 0)) or (d1 > 0 and a - 1 <= 0 and a - 2*d1 > 0
 
- and a - 2*d1 - 2 > 0 and a - d1 = 0 and a + d1 - 2 < 0 and a + 2*d1 - 4 = 0) or
+ and a - d1 = 0 and 2*a - 1 >= 0 and 2*a - d1 - 1 < 0
 
- (d1 > 0 and d1 - 1 < 0 and a > 0 and a - 1 < 0 and a - 3*d1 > 0
+ and (a - 1 = 0 or a + d1 - 1 < 0) and (a - 1 = 0 or 2*a - 1 = 0)
 
- and a - 2*d1 - 1 >= 0 and a - d1 = 0 and a + d1 - 2 = 0) or (d1 > 0
+ and (a + d1 - 1 > 0 or 2*a - 1 = 0)) or (d1 > 0 and a - 1 >= 0
 
- and d1 - 1 <= 0 and a > 0 and a - 1 < 0 and a - 2*d1 > 0 and a - d1 = 0
+ and a - 2*d1 - 1 > 0 and a - d1 - 1 = 0 and 2*a - 3*d1 - 2 < 0) or (d1 > 0
 
- and a + d1 - 1 >= 0 and (d1 - 1 = 0 or 2*d1 - 1 < 0)
+ and a - 1 > 0 and a - 2*d1 - 1 > 0 and a - d1 - 1 = 0 and 2*a - 3*d1 - 2 < 0) 
 
- and (d1 - 1 = 0 or a + d1 - 1 = 0) and (2*d1 - 1 > 0 or a + d1 - 1 = 0)) or (
+or (d1 - 1 = 0 and a > 0 and a - 2 > 0 and a - 1 = 0 and a - 1 <= 0
+
+ and a - 1 < 0 and 2*a - 1 > 0) or (d1 - 1 <= 0 and 2*d1 - 1 > 0 and a > 0
+
+ and a - 1 < 0 and a - 2*d1 > 0 and a - d1 = 0 and a + d1 - 1 = 0) or (
+
+d1 - 1 <= 0 and 2*d1 - 1 > 0 and a > 0 and a - 1 < 0 and a - 2*d1 > 0
+
+ and a - d1 = 0 and a + d1 - 1 >= 0 and (d1 - 1 = 0 or a + d1 - 1 = 0)) or (
+
+d1 - 1 < 0 and 2*d1 - 1 >= 0 and a > 0 and a - d1 = 0 and a + d1 - 1 = 0
+
+ and a + 2*d1 - 2 = 0 and a + 3*d1 - 2 < 0 and 2*a + 3*d1 - 3 > 0) or (
+
+d1 - 1 < 0 and 2*d1 - 1 >= 0 and a - 1 > 0 and a - d1 = 0 and a + d1 - 1 = 0
+
+ and a + 2*d1 - 2 = 0 and 2*a + 3*d1 - 3 < 0) or (d1 - 1 < 0 and 2*d1 - 1 > 0
+
+ and a - 1 > 0 and a - d1 = 0 and a + d1 - 1 = 0 and a + 2*d1 - 2 < 0) or (
 
 d1 - 1 > 0 and a - 2 <= 0 and a - 1 >= 0 and a - 2*d1 - 1 >= 0
 
  and a - d1 - 1 >= 0 and a + d1 - 2 < 0 and 2*a - d1 - 3 <= 0
 
- and 2*a - d1 - 2 >= 0 and (2*a - 2*d1 - 3 >= 0 or 2*a - d1 - 3 < 0)
+ and 2*a - d1 - 2 >= 0 and (a - 2 = 0 or a - 1 = 0) and (a - 2 = 0 or a - 1 = 0
 
- and (a - 1 = 0 or (a - d1 - 1 = 0 and 2*a - d1 - 2 > 0))
-
- and (a - 2 = 0 or a - 1 = 0) and (a - 1 = 0 or 2*a - d1 - 2 = 0)
+ or (a - 2*d1 - 1 = 0 and a - d1 - 1 > 0 and 2*a - d1 - 2 = 0))
 
  and (a - 1 = 0 or 2*a - d1 - 3 = 0)
 
- and (a - 1 = 0 or 2*a - d1 - 3 = 0 or 2*a - d1 - 2 = 0) and (a - 2 = 0
-
- or a - 1 = 0 or (a - 2*d1 - 1 = 0 and a - d1 - 1 > 0 and 2*a - d1 - 2 = 0))) or
-
- (d1 > 0 and 2*d1 - 1 <= 0 and a > 0 and a - 1 <= 0 and a - d1 > 0
-
- and a + d1 - 1 = 0 and 2*a + d1 - 1 < 0 and (2*d1 - 1 < 0 or a - 1 = 0)
-
- and (2*d1 - 1 = 0 or a - 1 = 0 or a + 2*d1 - 1 < 0)
-
- and (a - 1 = 0 or a + 2*d1 - 1 > 0)) or (d1 > 0 and d1 - 1 <= 0 and a > 0
-
- and a - 2 <= 0 and a - d1 - 1 > 0 and 2*a - d1 - 1 < 0
-
- and (d1 - 1 < 0 or a - 2 < 0) and (d1 - 1 = 0 or a - 1 < 0)
-
- and (a - 1 > 0 or (d1 - 1 = 0 and a - 1 = 0)) and (a - 2 = 0 or a - 1 < 0)) or 
-
-(d1 > 0 and a > 0 and a - 1 <= 0 and a - 2*d1 - 1 > 0 and a - d1 > 0
-
- and a - d1 - 2 <= 0 and a + d1 - 1 <= 0 and 2*a - d1 - 2 <= 0
-
- and (a - 1 = 0 or a - d1 - 1 > 0) and (a - 1 = 0 or a + d1 - 1 = 0)
-
- and (a - d1 - 2 = 0 or a - d1 - 1 < 0 or 2*a - d1 - 2 = 0)
-
- and (a - 1 = 0 or a - d1 - 2 = 0 or a - d1 - 1 < 0 or 2*a - d1 - 2 = 0)) or (
-
-d1 > 0 and d1 - 1 <= 0 and a - 1 <= 0 and a - d1 > 0 and a + d1 - 1 <= 0
-
- and 2*a - 1 >= 0 and 2*a + d1 - 1 < 0 and (d1 - 1 < 0 or 2*a - 1 > 0)
-
- and (2*d1 - 1 < 0 or 2*a - 1 > 0) and (a - 1 = 0 or 2*a - 1 = 0)
-
- and (a - 1 = 0 or a + d1 - 1 = 0) and (d1 - 1 = 0 or a + d1 - 1 = 0)) or (
-
-d1 - 1 <= 0 and 2*d1 - 1 > 0 and a > 0 and a - 1 < 0 and a - 2*d1 > 0
-
- and a - d1 = 0 and a + d1 - 1 >= 0 and (d1 - 1 = 0 or a + d1 - 1 = 0))
-
- or (d1 <= 0 and d1 < 0 and d1 > 0 and 2*d1 - 1 < 0 and a - 1 = 0) or (d1 > 0
-
- and d1 - 1 < 0 and a > 0 and a - 1 <= 0 and a - d1 >= 0 and a + d1 - 1 = 0
-
- and a + 2*d1 - 1 < 0 and 2*a + d1 - 2 = 0 and (a - 1 = 0 or a - d1 > 0)
-
- and (a - 1 = 0 or a - d1 = 0)) or (d1 > 0 and d1 - 1 <= 0 and a - 1 > 0
-
- and a - d1 >= 0 and a + d1 - 1 = 0 and a + 2*d1 - 2 <= 0 and 2*a + 3*d1 - 3 < 0
-
- and (d1 - 1 = 0 or a + 2*d1 - 2 < 0) and (d1 - 1 = 0 or a + 2*d1 - 2 = 0)
-
- and ((a - d1 = 0 and a + 2*d1 - 2 = 0) or (d1 - 1 < 0 and a + 2*d1 - 2 < 0))
-
- and (d1 - 1 = 0 or a - d1 = 0)) or (d1 > 0 and d1 - 1 <= 0 and a - 1 > 0
-
- and a - d1 >= 0 and a + d1 - 2 <= 0 and a + d1 - 1 >= 0 and 2*a + 3*d1 - 3 < 0
-
- and (2*d1 - 1 <= 0 or a + d1 - 2 < 0)
-
- and (d1 - 1 = 0 or 2*d1 - 1 <= 0 or a + 2*d1 - 2 < 0)
-
- and (a - d1 > 0 or a + 2*d1 - 2 <= 0)
-
- and (d1 - 1 = 0 or 2*d1 - 1 < 0 or a + 2*d1 - 2 <= 0)
-
- and (d1 - 1 = 0 or a + 2*d1 - 2 <= 0) and (a + d1 - 1 = 0 or a + 2*d1 - 2 <= 0)
-
- and (a - d1 = 0 or (2*d1 - 1 >= 0 and a + d1 - 1 > 0)
-
- or (2*d1 - 1 < 0 and a + d1 - 1 = 0)) and (d1 - 1 = 0 or a + d1 - 1 = 0)
-
- and (a + d1 - 2 = 0 or a + d1 - 1 = 0 or (2*d1 - 1 > 0 and a + 2*d1 - 2 >= 0))
-
- and (a - d1 = 0 or a + d1 - 2 = 0)
-
- and (a + d1 - 2 = 0 or a + 2*d1 - 2 >= 0 or (d1 - 1 < 0 and a + d1 - 1 = 0))
-
- and (a - d1 = 0 or (2*d1 - 1 >= 0 and a + 2*d1 - 2 > 0))) or (d1 > 0
-
- and d1 - 1 <= 0 and a > 0 and a - 2*d1 > 0 and a - d1 = 0 and a + d1 - 1 >= 0
-
- and 2*a - d1 - 1 < 0 and (a - 1 >= 0 or a + d1 - 1 > 0)
-
- and (d1 - 1 = 0 or a + d1 - 1 = 0) and (d1 - 1 = 0 or a - 1 < 0)
-
- and ((d1 - 1 = 0 and a - 1 = 0) or (d1 - 1 < 0 and a - 1 < 0))
-
- and (a - 1 = 0 or a + d1 - 1 = 0) and (d1 - 1 < 0 or a - 1 >= 0)) or (d1 > 0
-
- and d1 - 1 < 0 and a > 0 and a - 1 < 0 and a - 3*d1 > 0 and a - d1 = 0
-
- and a + d1 - 2 >= 0 and a + 3*d1 - 2 = 0) or (d1 > 0 and d1 - 1 < 0
-
- and a - 1 > 0 and a + d1 - 1 = 0 and a + 2*d1 - 2 = 0 and a + 3*d1 - 2 = 0
-
- and 2*a + 3*d1 - 3 < 0 and 2*a + 3*d1 - 2 > 0) or (d1 - 1 < 0 and 2*d1 - 1 >= 0
-
- and a - 1 > 0 and a - d1 = 0 and a + d1 - 1 = 0 and a + 2*d1 - 2 = 0
-
- and 2*a + 3*d1 - 3 < 0) or (d1 > 0 and d1 - 1 <= 0 and a > 0 and a - 2*d1 > 0
-
- and a - d1 = 0 and a + d1 - 1 >= 0 and 2*a - d1 - 1 < 0
-
- and (a - 1 >= 0 or a + d1 - 1 > 0) and (d1 - 1 = 0 or a + d1 - 1 = 0)
-
- and (d1 - 1 = 0 or a - 1 < 0) and (d1 - 1 < 0 or a - 1 = 0)
-
- and (a - 1 = 0 or a + d1 - 1 = 0) and (d1 - 1 < 0 or a - 1 >= 0)) or (d1 > 0
-
- and d1 - 1 < 0 and a - 1 <= 0 and a + d1 - 1 = 0 and a + 2*d1 - 1 < 0
-
- and 2*a - 1 >= 0 and 2*a + d1 - 1 > 0 and (2*d1 - 1 < 0 or 2*a - 1 > 0)
-
- and (a - 1 = 0 or 2*a - 1 = 0)) or (d1 > 0 and d1 - 1 < 0 and a - 2 <= 0
-
- and a - 1 >= 0 and a - 2*d1 - 1 > 0 and 2*a - d1 - 3 < 0 and 2*a - d1 - 2 >= 0
-
- and (a - d1 - 1 >= 0 or a + d1 - 1 >= 0)
-
- and (a - 1 = 0 or a - d1 - 1 <= 0 or a + d1 - 1 > 0)
-
- and (a - 1 = 0 or a - d1 - 1 < 0) and (a - 2 = 0 or a - 1 = 0)
+ and (a - 1 = 0 or 2*a - d1 - 3 = 0 or 2*a - d1 - 2 = 0)
 
  and (a - 1 = 0 or 2*a - d1 - 2 = 0)
 
- and (a - d1 - 1 < 0 or (a - d1 - 1 = 0 and a + d1 - 1 <= 0))
+ and (a - 1 = 0 or (a - d1 - 1 = 0 and 2*a - d1 - 2 > 0))
 
- and (a - 1 = 0 or a - d1 - 1 > 0)
-
- and (a - 2 = 0 or a - 1 = 0 or (a - d1 - 1 < 0 and 2*a - d1 - 2 = 0))) or (
-
-d1 > 0 and d1 - 1 <= 0 and a - 2 <= 0 and a - 1 >= 0 and a - 2*d1 - 1 > 0
-
- and a - d1 >= 0 and a - d1 - 1 < 0 and a + d1 - 1 >= 0 and 2*a - d1 - 3 < 0
-
- and 2*a - d1 - 2 >= 0 and (d1 - 1 < 0 or a - 1 > 0)
-
- and (d1 - 1 < 0 or a - 1 = 0 or 2*a - 3 > 0) and (a - 1 = 0 or a - d1 > 0)
-
- and (a - 1 = 0 or 2*a - d1 - 2 > 0) and (a - 1 = 0 or a - d1 = 0)
-
- and (d1 - 1 = 0 or a - 1 = 0) and (a - 2 = 0 or a - d1 = 0 or 2*a - d1 - 2 = 0)
-
-) or (d1 > 0 and d1 - 1 <= 0 and a > 0 and a - 1 <= 0 and a - 2*d1 - 1 > 0
-
- and a - d1 - 1 >= 0 and 2*a - d1 - 2 <= 0
-
- and (a - d1 - 1 = 0 or a + d1 - 1 <= 0)
-
- and (a - 1 = 0 or (a - d1 - 1 > 0 and 2*a - d1 - 2 = 0))
-
- and (d1 - 1 = 0 or a + d1 - 1 >= 0)) or (d1 > 0 and d1 - 1 <= 0 and a - 1 >= 0
-
- and a - d1 - 1 = 0 and a + d1 - 1 < 0 and (d1 - 1 < 0 or a - 2 > 0)
-
- and (d1 - 1 = 0 or a - 1 = 0) and (a - 2 > 0 or a - 1 = 0)) or (d1 > 0
-
- and d1 - 1 < 0 and a > 0 and a - 1 < 0 and a - d1 = 0 and a + d1 - 1 = 0
-
- and a + 2*d1 - 2 <= 0 and a + 3*d1 - 2 < 0 and 2*a + 3*d1 - 3 > 0
-
- and (a + 2*d1 - 2 = 0 or 2*a + d1 - 2 >= 0)) or (d1 > 0 and d1 - 1 <= 0
-
- and a > 0 and a - d1 >= 0 and a + d1 - 2 < 0 and a + d1 - 1 >= 0
-
- and a + 2*d1 - 2 <= 0 and a + 3*d1 - 2 < 0 and 2*a + 3*d1 - 3 > 0
-
- and (d1 - 1 = 0 or a + d1 - 1 > 0 or a + 2*d1 - 2 = 0)
-
- and (2*d1 - 1 >= 0 or a - 1 > 0 or a + 2*d1 - 2 = 0)
-
- and (d1 - 1 = 0 or a + d1 - 1 = 0 or a + 2*d1 - 2 < 0)
-
- and (d1 - 1 = 0 or a - 1 <= 0 or a + 2*d1 - 2 < 0)
-
- and (d1 - 1 = 0 or a + d1 - 1 = 0) and (d1 - 1 = 0 or a - d1 = 0)
-
- and (a + d1 - 1 = 0 or (a - 1 <= 0 and a + 2*d1 - 2 = 0))
-
- and (a + d1 - 1 = 0 or (a - d1 = 0 and a + 2*d1 - 2 = 0))) or (d1 > 0
-
- and d1 - 1 <= 0 and a > 0 and a - d1 >= 0 and a + d1 - 2 <= 0
-
- and a + d1 - 1 >= 0 and a + 3*d1 - 2 < 0 and 2*a + 3*d1 - 3 > 0
-
- and (2*d1 - 1 > 0 or a - 1 >= 0 or a + 2*d1 - 2 >= 0)
-
- and (a - d1 - 1 >= 0 or a + d1 - 2 < 0) and (a - 1 >= 0 or a + d1 - 2 < 0)
-
- and (d1 - 1 = 0 or 2*d1 - 1 <= 0 or a + 2*d1 - 2 < 0)
-
- and (a - 1 > 0 or a + d1 - 1 = 0 or a + 2*d1 - 2 <= 0)
-
- and (d1 - 1 = 0 or a + 2*d1 - 2 <= 0) and (a + d1 - 1 = 0 or a + 2*d1 - 2 <= 0)
-
- and (a - d1 > 0 or a + 2*d1 - 2 <= 0)
-
- and (d1 - 1 = 0 or 2*d1 - 1 < 0 or a + 2*d1 - 2 <= 0)
-
- and (2*d1 - 1 >= 0 or a - d1 = 0 or a + d1 - 1 = 0)
-
- and (d1 - 1 = 0 or a + d1 - 1 = 0)
-
- and (a - d1 = 0 or (2*d1 - 1 >= 0 and a + 2*d1 - 2 > 0))
-
- and (a + d1 - 2 = 0 or a + d1 - 1 = 0 or (2*d1 - 1 > 0 and a + 2*d1 - 2 >= 0)) 
-
-and (a - d1 = 0 or a + d1 - 2 = 0
-
- or (2*d1 - 1 < 0 and a - 1 <= 0 and a + 2*d1 - 2 < 0))
-
- and (a + d1 - 2 = 0 or a + d1 - 1 = 0 or a + 2*d1 - 2 >= 0)) or (d1 > 0
-
- and d1 - 1 <= 0 and a > 0 and a - 2 <= 0 and a - d1 - 1 > 0
-
- and 2*a - d1 - 1 < 0 and (d1 - 1 < 0 or a - 2 < 0)
-
- and (d1 - 1 = 0 or a - 1 > 0) and (d1 - 1 = 0 or a - 1 < 0)
-
- and (a - 1 > 0 or (d1 - 1 = 0 and a - 1 = 0)) and (a - 2 = 0 or a - 1 < 0)) or 
-
-(d1 - 1 < 0 and 2*d1 - 1 > 0 and a - 1 > 0 and a - d1 = 0 and a + d1 - 1 = 0
-
- and a + 2*d1 - 2 < 0) or (d1 > 0 and d1 - 1 <= 0 and a - 1 >= 0
-
- and a - d1 - 1 = 0 and a + d1 - 1 < 0 and (d1 - 1 < 0 or a - 2 > 0)
-
- and (d1 - 1 = 0 or a - 1 = 0)) or (d1 > 0 and d1 - 1 <= 0 and a > 0
-
- and a - 2 <= 0 and a - d1 - 1 > 0 and 2*a - d1 - 1 <= 0
-
- and (d1 - 1 < 0 or a - 2 < 0) and (d1 - 1 = 0 or a - 1 > 0)
-
- and (d1 - 1 = 0 or a - 1 < 0) and (a - 1 > 0 or (d1 - 1 = 0 and a - 1 = 0))
-
- and (a - 2 = 0 or a - 1 < 0)) or (d1 > 0 and 2*d1 - 1 < 0 and a > 0
-
- and a - 1 <= 0 and a - d1 = 0 and a + d1 - 1 = 0 and a + 2*d1 - 2 > 0) or (
-
-d1 > 0 and 2*d1 - 1 < 0 and a - 1 > 0 and a - 2*d1 < 0 and a - d1 = 0
-
- and a + d1 - 1 = 0) or (d1 > 0 and 2*d1 - 1 < 0 and a - 1 > 0 and a - 2*d1 < 0
-
- and a - d1 = 0 and a + d1 - 1 = 0 and 2*a - d1 - 1 <= 0)
-
- or (d1 = 0 and d1 < 0 and d1 > 0 and d1 - 1 < 0 and a - 1 = 0) or (d1 > 0
-
- and d1 - 1 <= 0 and a - 1 > 0 and a - d1 = 0 and a + d1 - 1 = 0
-
- and a + 2*d1 - 2 < 0 and a + 2*d1 - 1 >= 0)
-
- or (d1 - 1 = 0 and a = 0 and a > 0 and a - 2 > 0 and a - 1 = 0 and 2*a - 1 < 0)
-
- or (d1 > 0 and d1 - 1 < 0 and a > 0 and a - 1 <= 0 and a - d1 >= 0
-
- and a + d1 - 1 = 0 and a + 2*d1 - 1 < 0 and 2*a + d1 - 1 > 0
-
- and (a - 1 = 0 or a - d1 > 0) and (a - 1 = 0 or a - d1 = 0)) or (d1 - 1 < 0
-
- and 2*d1 - 1 >= 0 and a > 0 and a - d1 = 0 and a + d1 - 1 = 0
-
- and a + 2*d1 - 2 = 0 and a + 3*d1 - 2 < 0 and 2*a + 3*d1 - 3 > 0) or (d1 > 0
-
- and d1 - 1 <= 0 and a - 1 <= 0 and a + d1 - 1 <= 0 and a + 2*d1 - 1 < 0
-
- and 2*a - 1 >= 0 and (d1 - 1 < 0 or 2*a - 1 > 0)
-
- and (2*d1 - 1 < 0 or 2*a - 1 > 0) and (a - 1 = 0 or 2*a - 1 = 0)
-
- and (a - 1 = 0 or a + d1 - 1 = 0) and (d1 - 1 = 0 or a + d1 - 1 = 0)) or (
-
-d1 > 0 and d1 - 1 <= 0 and a - 1 <= 0 and a + d1 - 1 <= 0 and a + 2*d1 - 1 < 0
-
- and 2*a - 1 >= 0 and 2*a + d1 - 1 > 0 and (d1 - 1 < 0 or 2*a - 1 > 0)
-
- and (2*d1 - 1 < 0 or 2*a - 1 > 0) and (a - 1 = 0 or 2*a - 1 = 0)
-
- and (a - 1 = 0 or a + d1 - 1 = 0) and (d1 - 1 = 0 or a + d1 - 1 = 0)) or (
-
-d1 > 0 and d1 - 1 <= 0 and a - 1 <= 0 and a - 2*d1 > 0 and a - d1 = 0
-
- and 2*a - 1 >= 0 and 2*a - d1 - 1 < 0 and (d1 - 1 = 0 or 2*a - 1 > 0)
-
- and (d1 - 1 = 0 or 2*a - 1 = 0) and (d1 - 1 = 0 or a - 1 < 0)) or (d1 > 0
-
- and a > 0 and a - 1 <= 0 and a - 2*d1 > 0 and a - d1 >= 0 and a - d1 - 1 <= 0
-
- and (a - d1 - 1 = 0 or 2*a - d1 - 1 < 0) and (a - 1 = 0 or 2*a - 1 < 0)
-
- and (a - 1 = 0 or a - d1 = 0 or 2*a - 1 < 0) and (d1 - 1 = 0 or a - 1 < 0)
-
- and (a - d1 = 0 or a - d1 - 1 = 0 or 2*a - d1 - 1 < 0)
-
- and (2*a - 1 <= 0 or 2*a - d1 - 1 > 0) and (a - d1 = 0 or 2*a - d1 - 1 > 0)
-
- and (a - 1 = 0 or (2*a - 1 >= 0 and 2*a - d1 - 1 < 0)) and (a - 1 = 0
-
- or (a - d1 = 0 and 2*a - 1 >= 0 and 2*a - d1 - 1 < 0)
-
- or (a - d1 > 0 and 2*a - d1 - 1 >= 0))) or (d1 > 0 and d1 - 1 <= 0 and a > 0
-
- and a - 2*d1 > 0 and a - d1 = 0 and 2*a - 1 < 0 and 2*a - d1 < 0) or (d1 > 0
-
- and d1 - 1 <= 0 and a > 0 and a - 2*d1 > 0 and a - d1 >= 0 and a - d1 - 1 < 0
-
- and 2*a - 1 < 0 and 2*a - d1 < 0 and (d1 - 1 = 0 or a - d1 = 0)) or (
-
-d1 - 1 <= 0 and 2*d1 - 1 > 0 and a > 0 and a - 1 < 0 and a - 2*d1 > 0
-
- and a - d1 = 0 and a + d1 - 1 = 0)
+ and (2*a - 2*d1 - 3 >= 0 or 2*a - d1 - 3 < 0))
 
 
 end;
 
-Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
-Time (counter 1): 66723 ms  plus GC time: 12606 ms
-1: real 81.92
-user 81.51
-sys 0.19
+Tested on alfred running Linux 3.18.18.1.amd64-smp x86_64 CSL
+Time (counter 1): 42780 ms  plus GC time: 13830 ms
+1: real 58.89
+user 58.50
+sys 0.35

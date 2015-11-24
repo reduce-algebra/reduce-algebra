@@ -20,11 +20,7 @@ x11+x21+x31=b1 and x12+x22+x32=b2 and x13+x23+x33=b3 and
 rlqe mtp2;
 
 
-(b2 >= 0 and a3 >= 0 and a3 - b3 <= 0 and a2 - b2 >= 0 and a1 + a3 - b3 >= 0
-
- and a1 + a2 + a3 - b1 - b2 - b3 = 0) or (a3 >= 0 and a3 - b3 <= 0 and a2 >= 0
-
- and a2 - b2 <= 0 and a1 + a2 + a3 - b2 - b3 >= 0
+(b3 >= 0 and b2 >= 0 and a3 - b2 - b3 >= 0 and a2 >= 0 and a1 >= 0
 
  and a1 + a2 + a3 - b1 - b2 - b3 = 0) or (b3 >= 0 and a3 - b3 >= 0
 
@@ -34,21 +30,23 @@ rlqe mtp2;
 
  and a2 + a3 - b2 - b3 <= 0 and a1 + a2 + a3 - b2 - b3 >= 0
 
- and a1 + a2 + a3 - b1 - b2 - b3 = 0) or (b3 >= 0 and b2 >= 0
+ and a1 + a2 + a3 - b1 - b2 - b3 = 0) or (b2 >= 0 and a3 >= 0 and a3 - b3 <= 0
 
- and a3 - b2 - b3 >= 0 and a2 >= 0 and a1 >= 0
+ and a2 - b2 >= 0 and a1 + a3 - b3 >= 0 and a1 + a2 + a3 - b1 - b2 - b3 = 0) or 
 
- and a1 + a2 + a3 - b1 - b2 - b3 = 0) or (b2 >= 0 and a3 >= 0 and a1 >= 0
+(b2 >= 0 and a3 >= 0 and a1 >= 0 and a1 + a3 - b3 <= 0
 
- and a1 + a3 - b3 <= 0 and a1 + a2 + a3 - b2 - b3 >= 0
+ and a1 + a2 + a3 - b2 - b3 >= 0 and a1 + a2 + a3 - b1 - b2 - b3 = 0) or (
 
- and a1 + a2 + a3 - b1 - b2 - b3 = 0)
+a3 >= 0 and a3 - b3 <= 0 and a2 >= 0 and a2 - b2 <= 0
+
+ and a1 + a2 + a3 - b2 - b3 >= 0 and a1 + a2 + a3 - b1 - b2 - b3 = 0)
 
 
 end;
 
-Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
-Time (counter 1): 6 ms  plus GC time: 46 ms
-1: real 0.26
-user 0.17
-sys 0.02
+Tested on alfred running Linux 3.18.18.1.amd64-smp x86_64 CSL
+Time (counter 1): 10 ms  plus GC time: 50 ms
+1: real 0.38
+user 0.26
+sys 0.04
