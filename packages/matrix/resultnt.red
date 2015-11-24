@@ -290,25 +290,51 @@ symbolic procedure b!:extadd(u,v);
     return w;
   end;
 
-symbolic procedure b!:ordexp(u,v);
-   if null u then t
-    else if car u > car v then t
-    else if car u = car v then b!:ordexp(cdr u,cdr v)
-    else nil;
+% symbolic procedure b!:ordexp(u,v);
+%    if null u then t
+%     else if car u > car v then t
+%     else if car u = car v then b!:ordexp(cdr u,cdr v)
+%     else nil;
 
-symbolic procedure b!:ordexn(u,v);
-   %u is a single integer, v a list. Returns nil if u is a member
-   %of v or a dotted pair of a permutation indicator and the ordered
-   %list of u merged into v.
-   begin scalar s,x;
-     a: if null v then return(s . reverse(u . x))
-     else if u = car v then return nil
-     else if u and u > car v then
-                 return(s . append(reverse(u . x),v))
-         else  <<x := car v . x;
-                 v := cdr v;
-                 s := not s>>;
-         go to a
+symbolic procedure b!:ordexp(ul, vl);
+   % We feel uncomfortable about an implicit assumption that [vl] is
+   % not shorter than [ul]. MK+TS
+   null ul or car ul > car vl or
+      (car ul = car vl and b!:ordexp(cdr ul, cdr vl));
+
+% symbolic procedure b!:ordexn(u,v);
+%    %u is a single integer, v a list. Returns nil if u is a member
+%    %of v or a dotted pair of a permutation indicator and the ordered
+%    %list of u merged into v.
+%    begin scalar s,x;
+%      a: if null v then return(s . reverse(u . x))
+%      else if u = car v then return nil
+%      else if u and u > car v then
+%                  return(s . append(reverse(u . x),v))
+%          else  <<x := car v . x;
+%                  v := cdr v;
+%                  s := not s>>;
+%          go to a
+%    end;
+
+symbolic procedure b!:ordexn(u, vl);
+   % [u] is an integer, [vl] is a list of integers in descending
+   % order. Returns [nil] if [u] is a member of [vl]. Otherwise
+   % returns a pair [s . vl'], where [s] is Boolean and [vl'] is a
+   % list of integers in descending order. [vl'] is obtained from
+   % merging [u] into [vl], and [s] is the parity of the position of
+   % [u] in [vl'].
+   begin scalar s, wl;
+      while vl and u < car vl do <<
+	 wl := car vl . wl;
+	 vl := cdr vl;
+	 s := not s
+      >>;
+      if null vl then
+	 return s . reversip(u . wl);
+      if eqn(u, car vl) then
+	 return nil;
+      return s . nconc(reversip(u . wl), vl)
    end;
 
 endmodule;
