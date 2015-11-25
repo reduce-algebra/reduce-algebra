@@ -104,14 +104,15 @@ procedure qepcad_qepcad(f,fn);
 
 procedure qepcad_qepcad1(f,fn);
    begin scalar w,free,oldprtch,oldpprifn,fn1,fn2,fh,result,oldecho,scsemic,
-	 oldutf8,narg,larg,call,rnd;
+	 oldutf8,narg,larg,call,rnd,user;
+      user := lto_sconcat {"rlqepcad-", getenv "USER" or "unknown", "-"};
       oldutf8 := !*utf8;
       scsemic := semic!*;
       % rnd := lto_at2str random(10^5);
       rnd := lto_at2str getpid();
-      fn1 := fn or lto_sconcat{qepcad_wd!*,getenv "USER",rnd,".qepcad"};
+      fn1 := fn or lto_sconcat{qepcad_wd!*,user,rnd,".qepcad"};
       if null fn then
-      	 fn2 := lto_sconcat{qepcad_wd!*,getenv "USER",rnd,".red"};
+      	 fn2 := lto_sconcat{qepcad_wd!*,user,rnd,".red"};
       if !*rlverbose then ioto_prin2 {"+++ creating ",fn1," ... "};
       oldpprifn := get('times,'pprifn);
       put('times,'pprifn,'qepcad_ppricadtimes);
