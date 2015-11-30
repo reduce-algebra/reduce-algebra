@@ -177,7 +177,7 @@ put ('set_tempvar_prefix, 'psopfn, 'def!-tmpvar);
 
 symbolic procedure def!-targetlang u;
   if length u neq 1 then rederr "invalid call to SET_TARGET_LANGUAGE"
-   else if not (car u memq '(C FORTRAN RATFOR PASCAL))
+   else if not (car u memq '(c fortran ratfor pascal))
     then rederr list("unknown language", car u)
    else !*oc!-target!-lang!* := car u;
 

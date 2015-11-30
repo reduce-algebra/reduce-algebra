@@ -118,7 +118,7 @@ fauss2(car arglist,cadr arglist,5)$
 symbolic procedure determinante(matr)$
 begin scalar d$
  d:=aeval list('det, matr)$
- return if pairp d and (car d='!*SQ) then cadr d
+ return if pairp d and (car d='!*sq) then cadr d
                                      else simp d
 end$
 
@@ -273,7 +273,7 @@ begin scalar osof,nsof,odet,h,n0flin_,n0flin_cp,ncondi,de,u,v,sysli,sy,
  no_of_pdes:=length pdes;
  s:=nil;
  for each h in ncondi do <<
-  r:=mkeqSQ(h,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes);
+  r:=mkeqsq(h,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes);
   pdes:=eqinsert(r,pdes)$
   s:=cons(r,s)
  >>;

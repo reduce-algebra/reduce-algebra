@@ -35,9 +35,14 @@
 (setq !*savedef (and (not (memq 'embedded lispsystem!*))
                      (zerop (cdr (assoc 'c!-code lispsystem!*)))))
 
-(cond  % When I have a bootstrap image I will get to see all backtraces
-       % since sometimes that is valuable for debugging messy cases!
-   (!*savedef (enable!-errorset 3 3)))
+%-- I once had this - these days I will feel I want more consistency between
+%-- the main and bootstrap version and I can use enable!-errorset to be able
+%-- to see backtraces if I need to. Or I can implement a "-g2" (or some such)
+%-- command line option to support it...
+%--
+%-- (cond  % When I have a bootstrap image I will get to see all backtraces
+%--        % since sometimes that is valuable for debugging messy cases!
+%--    (!*savedef (enable!-errorset 3 3)))
 
 (make!-special '!*native_code)
 (setq !*native_code nil)
@@ -644,7 +649,10 @@ symbolic procedure get_configuration_data();
             put(r1, 'folder, "regressions");
             reduce_regression_tests :=
                r1 . reduce_regression_tests >> >>;
-    reduce_test_cases := append(reduce_test_cases, reduce_regression_tests);
+% I will run the "alg" test twice! This is for the benefit of Java where the
+% first time will be seriously slowed down by the need to JIT almost
+% everything.
+    reduce_test_cases := 'alg . append(reduce_test_cases, reduce_regression_tests);
     for each x in w do
        if member('csl, cddr x) then put(car x, 'folder, cadr x);
 %   princ "reduce_base_modules: "; print reduce_base_modules;

@@ -58,7 +58,11 @@ procedure cl_simpl(f,atl,n);
 	 return 'inctheo;
       w := rl_smupdknowl('and,atl,nil,n+1);
       if w eq 'false then return 'inctheo;
-      return cl_simpl1(f,w,n,nil)
+      if !*rlqeicsimpl then <<%%%%%%%MAX
+      	 w:=cl_simpl1tagged(f,w,n,nil);
+	 ic_settaglist(rlqeicdata!*,nil)
+      >> else w:=cl_simpl1(f,w,n,nil);
+      return w;
    end;
 
 procedure cl_sitheo(atl);
@@ -137,6 +141,64 @@ procedure cl_simpl1(f,knowl,n,sop);
 	 if newknowl eq 'false then return 'false;
 	 w := rl_smmkatl('and,knowl,newknowl,n);
 	 return if w eq 'false then 'false else rl_smkn('and,w)
+      >>;
+      if w then return w;
+      rederr {"cl_simpl1(): unknown operator",op}
+   end;
+
+%%%%%%%MAX
+procedure cl_simpl1tagged(f,knowl,n,sop);
+   % Common logic simplify. [f] is a formula; [knowl] is an IRL; [n]
+   % is an integer; [sop] is a CL operator. Depends on switches
+   % [!*rlsism], [!*rlsichk], [!*rlsiso], [!*rlsiidem]. Returns a
+   % formula. Simplifies [f] recursively using [knowl].
+   begin scalar op,result,w,newknowl;
+      if eqn(n,0) then return {f,nil};
+      op := rl_op f;
+      if rl_tvalp op then
+	 if n=-1 then return {f,0 . nil} else return {f,nil};
+      if rl_junctp op then <<
+	    w:=cl_smsimpl!-junttagged(op,rl_argn f,knowl,n);
+      	    return {rl_smkn(op,car w),cadr w}
+      >>;
+      if op eq 'not then <<
+	 %CHANGED TO n FROM n-1
+    	 result := cl_simpl1tagged(rl_arg1 f,knowl,n,'not);
+    	 if rl_tvalp car result then return {cl_flip car result,cadr result};
+	 if cl_atfp car result then return {rl_negateat car result,cadr result};
+    	 return {cl_negate!-invol(car result),cadr result}
+      >>;
+      if rl_quap op then <<
+	 if !*rlsism then knowl := rl_smrmknowl(knowl,rl_var f);
+	 %CHANGED TO n FROM n-1
+    	 result := cl_simpl1tagged(rl_mat f,knowl,n,op);
+    	 if rl_tvalp car result then return result;
+	 if not (rl_var f memq cl_fvarl car result) then
+	    return result;
+    	 return {rl_mkq(op,rl_var f,car result),cadr result}
+      >>;
+      if rl_bquap op then <<
+	 if !*rlsism then knowl := rl_smrmknowl(knowl,rl_var f);
+       	 return cl_simplbq(f,knowl,n)
+      >>;
+      if (w := rl_external(op,'cl_simpl)) then
+	 return apply(w,{f});
+      w := cl_simplat(f,sop);
+      if !*rlsism then <<
+	 op := rl_op w;
+	 if rl_junctp op then <<
+	    w:=cl_smsimpl!-junttagged(op,rl_argn w,knowl,n);
+	    return {rl_smkn(op,car w),cadr w};
+	 >>;
+	 if rl_tvalp op then
+ 	    if n=-1 then return {w,{0}} else return {w,{{0},'arb,n}};
+	 % [w] is atomic.
+	 newknowl := ofsf_smupdknowltagged('and,w,{-1},rl_smcpknowl knowl,n);
+	 if newknowl eq 'false then <<
+	    if n=-1 then return {{'false},extracttags(prunetag(ic_taglistremfalse(rlqeicdata!*)))} else return {{'false},ic_taglistremfalse(rlqeicdata!*)}
+      	 >>;
+ 	 w := ofsf_smmkatltagged('and,knowl,newknowl,n);
+	 return if car w eq 'false then w else {rl_smkn('and,car w),cadr w};
       >>;
       if w then return w;
       rederr {"cl_simpl1(): unknown operator",op}
@@ -288,8 +350,207 @@ procedure cl_smsimpl!-junct(op,junct,knowl,n);
 	 if cl_atfp w then atl := w . atl else col := w . col
       >>;
       newknowl := rl_smupdknowl(op,atl,newknowl,n);
-      if newknowl eq 'false then return {break};
+      if newknowl eq 'false then <<
+	 return {break};
+      >>;
       return cl_smsimpl!-junct1(op,atl,reversip col,knowl,newknowl,n,break)
+   end;
+
+%%%%%%%MAX
+procedure cl_smsimpl!-junttagged(op,junct,knowl,n);
+   % Common logic smart simplify. [op] is one of [and], [or]; [junct]
+   % is a list of formulas; [knowl] is an IRL; [n] is an integer.
+   % Returns a list of formulas. Accesses the switch [!*rlsism]. With
+   % [!*rlsism] on sophisticated simplifications are applied to
+   % [junct].
+   begin scalar break,w,atl,col,newknowl,k,atflist,l,l2,l3,rel,at;
+      %if not !*rlsism then
+      % return cl_gand!-col(junct,n,op,nil);
+      newknowl := rl_smcpknowl knowl;
+      break := cl_cflip('false,op eq 'and);
+      k:=0;
+      for each subf in junct do <<
+	 w := if cl_atfp subf then
+	    cl_simplat(subf,op)
+	 else subf;
+	 if cl_atfp w then <<
+	    atflist:=w . atflist;
+	    newknowl:=ofsf_smupdknowltagged(op,w,{k},newknowl,n);
+	 >>
+	 else
+	    col := {w,{{{k},{'arb},n}}} . col;
+	 k:=k+1
+      >>;
+      if newknowl eq 'false then
+	 if n=-1 then return {{break},extracttags(prunetag(ic_taglistremfalse(rlqeicdata!*)))} else return {{break},ic_taglistremfalse(rlqeicdata!*)};
+      w:= cl_smsimpl!-junt1tagged(op,atl,reversip col,knowl,newknowl,n,break);
+      if caar w neq 'false and !*icinitsimpl and n=-1 then <<
+      	 l2:=nil;
+      	 k:=0;
+      	 for each subf in car w do <<
+	    rel:=nil;
+	    if cl_atfp subf then <<
+ 	       at:= ofsf_at2ir(subf,n);
+	       l:=inittps(cdr assoc(car at,ic_taglist rlqeicdata!*),cdadr at);
+	       if (cadadr at eq 'leq) or (cadadr at eq 'lessp) then <<
+	       	  if caadr car l eq 'leq then rel:= nth(l,4);
+      	       	  if rel then <<
+		     l3:= tagnumbers(caaar rel);
+		     for each i in tagnumbers(car l) do l3:=i.l3;
+		     l:=l3
+	       	  >> else l:=tagnumbers(car l)
+	       >> else if (cadadr at eq 'equal) then <<
+	       	  rel:=caddr l;
+       	       	  if not rel then <<
+		     l3:= tagnumbers(car rel);
+		     for each i in tagnumbers(cadr l) do l3:=i.l3;
+		     l:=l3
+	       	  >> else l:=tagnumbers(caddr l)
+	       >> else if (cadadr at eq 'geq) or (cadadr at eq 'greaterp) then <<
+	       	  if caadr cadr l eq 'geq then rel:= nth(l,4);
+	       	  if rel then <<
+		     l3:= tagnumbers(caar rel);
+		     for each i in tagnumbers(cadr l) do l3:=i.l3;
+		     l:=l3
+	       	  >> else l:=tagnumbers(cadr l)
+	       >> else <<
+	       	  l:=for each i in nth(l,4) collect car i;
+	       	  l:=for each i in l join tagnumbers l;
+	       >>
+	    >> else l:=tagnumbers(cadr assoc(subf,ic_taglist rlqeicdata!*));
+	    l2:={k,l} . l2;
+	    k:=k+1
+	 >>;
+	 ic_setoffsetlist(rlqeicdata!*,l2)
+      >>;
+      if n=-1 then return {car w, extracttags(prunetag(cadr w))} else return w
+   end;
+
+%%%%%%%MAX
+procedure tagnumbers(tag);
+   begin scalar l;
+      if listp tag then <<
+ 	 if cdr tag and not atom cadr tag then <<
+	    if caadr tag eq 'arb or caadr tag eq 'neq or caadr tag eq 'leq or
+   	       caadr tag eq 'lessp or caadr tag eq 'geq or caadr tag eq 'greaterp or
+   	       caadr tag eq 'equal then 
+		  return tagnumbers car tag
+	    else
+	       return for each i in tag join tagnumbers i
+	 >> else
+	       return for each i in tag join tagnumbers i
+      >> else return {tag}
+   end;
+
+% Replace each entry in tagl with depth <= n with the entries in tags. If there
+% is no entry with depth <=n, then just add tags to tagl.
+%%%%%%%MAX
+procedure tagrepl(tagl,tags,n);
+begin scalar tagl2,found;
+   for each i in tagl do 
+      if caddr i <= n then <<
+	 if null found then <<
+	    found:=T;
+	    for each j in tags do tagl2:=j.tagl2
+	 >>
+      >> else tagl2:=i.tagl2;
+   if null found then for each j in tags do tagl2:=j.tagl2;
+   return tagl2
+end;
+
+% Probably exists already. Checks if an entry e is in a list l with =.
+%%%%%%%MAX
+procedure containsp(l,e);
+begin scalar found;
+   while l do
+      if e = car l then <<
+	 found:=t;
+	 l:=nil
+      >> else l:=cdr l;
+   return found
+end;
+
+% extract only the tags in the taglist.
+%%%%%%%MAX
+procedure extracttags(tagl);
+begin scalar l;
+   for each i in tagl do
+      for each j in car i do 
+	 if not (containsp(l,j)) then l:=j.l;
+   return l
+end;
+
+% Remove duplicates in taglists
+%%%%%%%MAX
+procedure prunetag(tagl);
+begin scalar found,tagl2;
+   for each i in tagl do <<
+      found:=nil;
+      for each j in tagl2 do if j=i then found:=t;
+      if null found then tagl2:=i.tagl2
+   >>;
+   return tagl2
+end;
+
+%%%%%%%MAX
+procedure cl_smsimpl!-junt1tagged(op,atl,col,knowl,newknowl,n,break);
+   % Common logic smart simplify. [op] is one of [and], [or]; [atl] is
+   % a list of atomic formulas; [col] is a list of complex formulas;
+   % [knowl] and [newknowl] are IRL's; [n] is an integer; [break] is
+   % one of [true], [false] corresponding to [op]. Returns a list of
+   % formulas.
+   begin scalar a,w,wop,argl,sicol,natl,tag,w2,tagl,ttagl,tagcopy;
+      while col do <<
+	 a := pop col;
+	 tag:=cadr a;
+	 a:=car a;
+	 tagcopy:=copy(ic_taglist(rlqeicdata!*));
+	 w2 := cl_simpl1tagged(a,newknowl,n-1,op);
+	 w:=car w2;
+	 ic_settaglist(rlqeicdata!*,tagcopy);
+	 tagl:=tagrepl(cadr w2,tag,n-1);
+	 tagl:=prunetag(tagl);
+	 wop := rl_op w;
+	 if wop eq break then <<
+	    a := break;
+	    col := nil
+	 >> else 
+	    if wop eq op then <<
+	    argl := rl_argn w;
+	    while argl and cl_atfp car argl do <<
+	       natl:= {car argl,tagl} . natl;
+	       argl := cdr argl
+	    >>;
+	    if !*rlsiidem and natl then <<
+	       col := nconc(reversip sicol,col);
+	       sicol := nil
+	    >>;
+ 	    if argl then
+	       sicol := nconc(sicol,for each x in reverse argl collect {x,tagl});
+	 >> else if rl_cxp wop then <<
+	    (if wop neq cl_flip break then sicol := {w,tagl}
+	       . sicol else ttagl:=append(tagl,ttagl))
+	 >>
+	 else <<  % [w] is atomic.
+	    if !*rlsiidem then <<
+	       col := nconc(reversip sicol,col);
+	       sicol := nil
+	    >>;
+	    natl := {{w,tagl}}
+	 >>;
+	 if natl then <<
+	    for each sf in natl do 
+	       newknowl := ofsf_smupdknowltagged(op,car sf,cadr sf,newknowl,n);
+	    if newknowl eq 'false then <<
+	       tagl:=ic_taglistremfalse(rlqeicdata!*);
+	       a := break;
+	       col := nil
+	    >>;
+	    natl := nil
+	 >>
+      >>;
+      if a eq break then return {{break},tagl};
+      return cl_smsimpl!-junt2tagged(op,sicol,knowl,newknowl,n,break,append(ttagl,tagl))
    end;
 
 procedure cl_smsimpl!-junct1(op,atl,col,knowl,newknowl,n,break);
@@ -301,17 +562,13 @@ procedure cl_smsimpl!-junct1(op,atl,col,knowl,newknowl,n,break);
    begin scalar a,w,wop,argl,sicol,natl;
       while col do <<
 	 a := pop col;
-	 % Turn off infeasible core computation for higher depth.
-	 if !*rlqeicsimpl then <<
- 	    !*rlqeicsimpl:=nil;
-	    w := cl_simpl1(a,newknowl,n-1,op);
- 	    !*rlqeicsimpl:=T;
-	 >> else w := cl_simpl1(a,newknowl,n-1,op);
+	 w := cl_simpl1(a,newknowl,n-1,op);
 	 wop := rl_op w;
 	 if wop eq break then <<
 	    a := break;
 	    col := nil
-	 >> else if wop eq op then <<
+	 >> else 
+	    if wop eq op then <<
 	    argl := rl_argn w;
 	    while argl and cl_atfp car argl do <<
 	       natl := car argl . natl;
@@ -321,9 +578,10 @@ procedure cl_smsimpl!-junct1(op,atl,col,knowl,newknowl,n,break);
 	       col := nconc(reversip sicol,col);
 	       sicol := nil
 	    >>;
-	    sicol := nconc(sicol,reverse argl)  % necessarily constructive!
-	 >> else if rl_cxp wop then
-	    (if wop neq cl_flip break then sicol := w . sicol)
+	    sicol := nconc(sicol,reverse argl);  % necessarily constructive!
+	    >> else if rl_cxp wop then <<
+ 	    (if wop neq cl_flip break then sicol := w . sicol);
+	 >>
 	 else <<  % [w] is atomic.
 	    if !*rlsiidem then <<
 	       col := nconc(reversip sicol,col);
@@ -335,7 +593,7 @@ procedure cl_smsimpl!-junct1(op,atl,col,knowl,newknowl,n,break);
 	    newknowl := rl_smupdknowl(op,natl,newknowl,n);
 	    if newknowl eq 'false then <<
 	       a := break;
-	       col := nil
+	       col := nil;
 	    >>;
 	    natl := nil
 	 >>
@@ -344,15 +602,54 @@ procedure cl_smsimpl!-junct1(op,atl,col,knowl,newknowl,n,break);
       return cl_smsimpl!-junct2(op,sicol,knowl,newknowl,n,break)
    end;
 
-procedure cl_smsimpl!-junct2(op,sicol,knowl,newknowl,n,break);
+% Insert x in l unless car x is already among the car i of the i in l
+%%%%%%%MAX
+procedure carinsert(x,l);
+   if car x member for each i in l collect car i then l else x . l;
+
+%%%%%%%MAX
+procedure cl_smsimpl!-junt2tagged(op,sicol,knowl,newknowl,n,break,tagl);
    % Common logic smart simplify. [op] is one of [and], [or]; [sicol] is a list
    % of complex formulas; [knowl] and [newknowl] are IRL's; [n] is an integer;
    % [break] is one of [true], [false] corresponding to [op]. Returns a list of
    % formulas.
    begin scalar atl,w;
+      atl := ofsf_smmkatltagged(op,knowl,newknowl,n);
+      tagl:=append(cadr atl,tagl);
+      atl:= car atl;
+      if atl eq break then 
+	 return {{break},tagl};
+      if !*rlsichk then <<
+      	 w := sicol;
+	 sicol := nil;
+	 for each x in w do sicol := carinsert(x,sicol)
+      >> else
+	 sicol := reversip sicol;
+      if !*rlsiso then <<
+	 atl := sort(atl,'rl_ordatp);
+	 if !*rlsisocx then
+	    sicol := sort(sicol,'cl_sordp)
+      >>;
+      w := nconc(atl,for each i in sicol collect car i);
+      for each i in sicol do <<
+	 if !*icinitsimpl and n=-1 then ic_appendtaglist(rlqeicdata!*,car i . {cadr i});
+	 tagl:=append(cadr i,tagl)
+      >>;
+      if w then return {w,tagl};
+      return {{cl_flip break},tagl}
+   end;
+
+
+procedure cl_smsimpl!-junct2(op,sicol,knowl,newknowl,n,break);
+   % Common logic smart simplify. [op] is one of [and], [or]; [sicol] is a list
+   % of complex formulas; [knowl] and [newknowl] are IRL's; [n] is an integer;
+   % [break] is one of [true], [false] corresponding to [op]. Returns a list of
+   % formulas.
+   begin scalar atl,w,tagl,loctagl;
       atl := rl_smmkatl(op,knowl,newknowl,n);
-      if atl eq break then
+      if atl eq break then <<
 	 return {break};
+      >>;
       if !*rlsichk then <<
       	 w := sicol;
 	 sicol := nil;

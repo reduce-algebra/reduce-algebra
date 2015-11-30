@@ -77,13 +77,13 @@ symbolic procedure diff!-kernel(k,var);
 
 
 symbolic procedure make!-ptr!-param x;
-   if !*oc!-target!-lang!* eq 'C then {x, '(range 0 0)} else x;
+   if !*oc!-target!-lang!* eq 'c then {x, '(range 0 0)} else x;
 
 symbolic procedure make!-array!-decl(aname,len);
    {aname,{'range,'0,len - 1}};
 
 symbolic procedure make!-ptr!-ref x;
-   if !*oc!-target!-lang!* eq 'C then !*a2k {x, '0} else x;
+   if !*oc!-target!-lang!* eq 'c then !*a2k {x, '0} else x;
 
 symbolic procedure make!-filename(base,count,ext);
    compress append('!" . explode2 base,
@@ -105,13 +105,13 @@ symbolic procedure generate!-procedure(name,params,decls,forms);
         'rblock . nil . {'declare,decls} . forms}>>;
 
 
-algebraic operator ya,yb,x,dx,w,A,B,dfdx,dfdtau,tau;
+algebraic operator ya,yb,x,dx,w,a,b,dfdx,dfdtau,tau;
 
-flag ('(ya yb x dx w A B tau), 'noreplace);
+flag ('(ya yb x dx w a b tau), 'noreplace);
 
 global '(clinelen!*);
 
-symbolic procedure generate!-program (count, bcs, H, forms, swfs);
+symbolic procedure generate!-program (count, bcs, h, forms, swfs);
   begin scalar x, dx, r, l, el, kl, filename, bcname, fname,
                dforms, dtforms, dfname, locals, timelen,
                vars, bcdecls,fdecls, dfdecls, olddb, oldrd;
@@ -120,7 +120,7 @@ symbolic procedure generate!-program (count, bcs, H, forms, swfs);
     filename := make!-filename(!*oc!-name!*,
                                count,
            get (!*oc!-target!-lang!*, 'file!-extension) or '!c);
-    if !*oc!-target!-lang!* eq 'C then clinelen!* := 60;
+    if !*oc!-target!-lang!* eq 'c then clinelen!* := 60;
     bcname := intern compress ('!r . explode count);
     fname := intern compress append ('(!f !c !n), explode count);
     dfname := intern compress append ('(!d !f !c !n), explode count);
@@ -133,7 +133,7 @@ symbolic procedure generate!-program (count, bcs, H, forms, swfs);
       cl := for each x in !*oc!-constants!* collect
               (car x . reval cdr x);
       bcs := subsql(bcs,cl);
-      H := subsq(H,cl);
+      h := subsq(h,cl);
       forms := subsql(forms,cl);
     end;
 
@@ -144,8 +144,8 @@ symbolic procedure generate!-program (count, bcs, H, forms, swfs);
     if !*oc!-is!-free!* then <<
       timelen := !*a2k timelen;
       l := for each el in vars collect (el . !*a2k {el, cadr !*oc!-boundaries!*});
-      H := sublis (l, H);
-      bcs := H . bcs
+      h := sublis (l, h);
+      bcs := h . bcs
       >>;
 
     l := for each el in vars conc
@@ -295,7 +295,7 @@ symbolic procedure generate!-program (count, bcs, H, forms, swfs);
     system bldmsg ("rm -f %w", filename);
     sym!-gentranout filename;
     sym!-gentran '(literal cr!*);
-    if !*oc!-target!-lang!* eq 'C then <<
+    if !*oc!-target!-lang!* eq 'c then <<
       sym!-gentran '(literal "#include <math.h>" cr!*);
       sym!-gentran '(literal cr!*);
       for each x in !*oc!-constants!* do

@@ -26,7 +26,7 @@ module symaux;  %  Data for symmetry package.
 %
 
 
-CREATE!-PACKAGE('(symaux
+create!-package('(symaux
                   symatvec
                   symcheck
                   symchrep
@@ -373,7 +373,7 @@ scalar replist,type;
    writepri("Rsetrepresentation finished",'only);
 end;
 
-put('Rsetrepresentation,'psopfn,'set!_real!_rep);
+put('rsetrepresentation,'psopfn,'set!_real!_rep);
 
 symbolic procedure set!_complex!_rep(arg);
 % store the complex irreducible representations
@@ -391,7 +391,7 @@ scalar replist;
    writepri("Csetrepresentation finished",'only);
 end;
 
-put('Csetrepresentation,'psopfn,'set!_complex!_rep);
+put('csetrepresentation,'psopfn,'set!_complex!_rep);
 
 symbolic procedure mk!_available(arg);
 % group is only then made available, if all information was given

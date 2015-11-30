@@ -56,10 +56,6 @@ module ofsfanuex;
 % 2) If a variable x is bound to an Anu, the main variable of the algebraic
 % polynomial defining this number is x.
 
-% precision of approximation used in procedure [anu_evalf]:
-fluid '(anu_precision!*);
-anu_precision!* := 2;
-
 fluid '(bigvarpref!* bigvarcount!* smallvarpref!* smallvarcount!*);
 bigvarpref!* := 'zzzzz;
 bigvarcount!* := 0;
@@ -394,10 +390,10 @@ asserted procedure sfto_psquotrem(f: SF, g: SF, x: Kernel): DottedPair;
 asserted procedure ctx_new(): AexCtx;
    {'ctx, nil};
 
-asserted procedure ctx_fromial(ial: AList): AexCtx;
-   {'ctx, sort(ial, function(lambda(x, y); ordop(car x, car y)))};
+asserted procedure ctx_fromial(ial: Alist): AexCtx;
+   {'ctx, sort(ial, function ordopcar)};
 
-asserted procedure ctx_ial(c: AexCtx): AList;
+asserted procedure ctx_ial(c: AexCtx): Alist;
    cadr c;
 
 asserted procedure ctx_idl(c: AexCtx): List;
@@ -463,9 +459,8 @@ asserted procedure ctx_union(c1: AexCtx, c2: AexCtx): AexCtx;
    begin scalar ial1, ial2, w;
       ial1 := for each pr in ctx_ial c1 collect car pr . cdr pr;
       ial2 := for each pr in ctx_ial c2 collect car pr . cdr pr;
-      w := lto_almerge({ial1, ial2}, function(lambda(x, y); x));
-      w := sort(w, function(lambda(x, y); ordop(car x, car y)));
-      return {'ctx, w}
+      w := lto_almerge({ial1, ial2}, function arg1of2);
+      return {'ctx, sort(w, function ordopcar)}
    end;
 
 % Aex functions.
@@ -1720,9 +1715,9 @@ asserted procedure anu_badp(anu: Anu): ExtraBoolean;
       iv := caddr anu;
       if not pairp iv then
 	 return 12;
-      if not pairp car iv or not RationalP car iv then
+      if not pairp car iv or not rationalp car iv then
 	 return 13;
-      if not pairp cdr iv or not RationalP cdr iv then
+      if not pairp cdr iv or not rationalp cdr iv then
 	 return 14;
       if not sfto_lessq(car iv, cdr iv) then
 	 return 15;

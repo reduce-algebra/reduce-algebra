@@ -28,7 +28,7 @@ module edscfrm;
 %
 
 
-Comment. An EDS coframing is stored in a list:
+COMMENT. An EDS coframing is stored in a list:
 
         cfrm    ::= {'!!cfrm!!,cob,crd,drv,rsx}
         cob     ::= list of kernel
@@ -322,13 +322,13 @@ symbolic procedure !*rule2prefix r;
 
 symbolic procedure texpricfrm(u,v,w);
    % Have to hide coframing from TRI's makeprefix
-   texvarpri('texpriedsop . !*cfrm2a u,v,w);
+   TeXvarpri('texpriedsop . !*cfrm2a u,v,w);
 
 
 symbolic procedure texpricfrm(u,v,w);
    % Have to hide the coframing from TRI's makeprefix
    % but not from TRIX's makeprefix.
-   texvarpri(
+   TeXvarpri(
       if get('hodge,'texname) then !*cfrm2a u
       else 'texpriedsop . !*cfrm2a u,v,w);
 
@@ -706,7 +706,7 @@ symbolic procedure simpdim u;
 % Auxiliary routines
 
 
-Comment.  The following routines are for testing whether an expression
+COMMENT.  The following routines are for testing whether an expression
 is nowhere zero on a restricted coframing specified by some coordinates
 and some expressions assumed not to vanish.  Expressions with unknown
 (explicit or implicit) dependence on the coordinates are not nowhere

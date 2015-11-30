@@ -42,7 +42,7 @@ symbolic procedure simpdet u;
 
 % The hashing and determinant routines below are due to M. L. Griss.
 
-Comment Some general purpose hashing functions;
+COMMENT Some general purpose hashing functions;
 
 flag('(array),'eval);      % Declared again for bootstrapping purposes.
 
@@ -88,7 +88,7 @@ symbolic procedure matrix_clrhash;
 
 #endif
 
-Comment Determinant Routines;
+COMMENT Determinant Routines;
 
 symbolic procedure detq u;
    % Top level determinant function.

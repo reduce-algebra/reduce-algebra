@@ -31,7 +31,7 @@ module complxp; % Support for complex polynomial solution.
 %
 
 
-Comment   support for modules allroot and realroot;
+COMMENT   support for modules allroot and realroot;
 
 exports a2gf, a2rat, accupr, bdstest, bfprim, bfrndem, calcprec, csep,
         cvt2, cvt5, deflate1, deflate1c, dsply, getroot, gffinitr,

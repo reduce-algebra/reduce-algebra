@@ -84,16 +84,16 @@ symbolic procedure rtr!*(trfn, fns);
 %% The following are Lisp functions that accept quoted lists of
 %% procedure names, cf. traceset in
 %% /reduce/lisp/csl/cslbase/compat.lsp:
-symbolic procedure rtrace L;
-   mapcar(L, function rtrace1)$
-symbolic procedure unrtrace L;
-   mapcar(L, function unrtrace1)$
+symbolic procedure rtrace l;
+   mapcar(l, function rtrace1)$
+symbolic procedure unrtrace l;
+   mapcar(l, function unrtrace1)$
 
 fluid '(!*rtrace!-setq)$
 % !*comp is pre-declared, to be fluid in CSL and fluid in PSL!
 
-symbolic procedure rtraceset L;
-   mapcar(L, function rtrace1) where !*rtrace!-setq = t$
+symbolic procedure rtraceset l;
+   mapcar(l, function rtrace1) where !*rtrace!-setq = t$
 
 symbolic procedure rtrace1(name);
    %% Trace or traceset the specified procedure.
@@ -206,7 +206,7 @@ symbolic procedure run!-rtraced!-procedure(name, argnames, args);
       %% result := apply(cdr get(name, 'rtraced!-procedure), args);
       result :=
          errorset!*({'apply, mkquote result, mkquote args}, nil);
-      if errorp result then rederr EMSG!* else result := car result;
+      if errorp result then rederr emsg!* else result := car result;
       wrs rtrout!*;
       write "Leave (", rtrace!-depth, ") ", name, " = ";
       rtrace!-print result;

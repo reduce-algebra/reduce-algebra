@@ -235,10 +235,10 @@ begin scalar rdif,rd,contradic,a,ad,b,bd,resu,must_be_subst$
     rd:=cdr rd$
     if f=car a then <<
       ad:=cdr a$
-      if cdr a then a:=cons('DF,a) 
+      if cdr a then a:=cons('df,a) 
                else a:=car a; % a is now the function/full derivative
       if null rdif then b:=a else 
-                        b:=reval cons('DF,cons(a,rdif));
+                        b:=reval cons('df,cons(a,rdif));
       if pairp b then bd:=cddr b
                  else bd:=nil$
       % There must not result a derivative from differentiating
@@ -278,7 +278,7 @@ begin scalar s,l0,l,m0,m1,f,sd,info_p,info_q,contradic,let_conflict$
   if null l then return nil else
   if not pairp l then if l0 neq l then let_conflict:=t else
                  else % pairp l
-  if car l neq 'DF then if car l0 neq 'DF then <<
+  if car l neq 'df then if car l0 neq 'df then <<
     write"Not a derivative!"$ terpri()$
     return nil
   >>                                      else let_conflict:=t 
@@ -395,9 +395,9 @@ begin scalar a,b,l,l1,info,m,n,fp,fq,fpmq,fqmp,s,lenp,lenq,dp,dq,
   if (null a) and (null l) then 
   if f neq reval f then let_conflict:=t
                    else    else <<
-   m:=reval cons('DF,cons(f,append(l,a)));
+   m:=reval cons('df,cons(f,append(l,a)));
    if (not pairp m) or 
-      (car m neq 'DF) or 
+      (car m neq 'df) or 
       (cadr m neq f) then let_conflict:=t
                      else <<
     m:=cddr m$
@@ -508,7 +508,7 @@ begin scalar a,b,l,l1,info,m,n,fp,fq,fpmq,fqmp,s,lenp,lenq,dp,dq,
                   list(q,b,l1),
                   if (null a) and 
                      (null l) then f
-                              else reval cons('DF,cons(f,append(l,a))),
+                              else reval cons('df,cons(f,append(l,a))),
                   s,
                   simpp or simpq
                  ),
@@ -600,7 +600,7 @@ begin scalar min,f,l,l1,l2,done_pdes,car_pdes,len,
             cdar val_car_pdes eq 1 and   % 2nd factor is 1     ### needed??
             cdaar val_car_pdes eq 1 and  % ie exponent is one  ### needed??
             pairp caaar val_car_pdes and
-            (caaaar val_car_pdes='DF) and 
+            (caaaar val_car_pdes='df) and 
             (cadr caaar val_car_pdes=f) then
          d_car_pdes:=cddr caaar val_car_pdes else 
          if caaar val_car_pdes=f then d_car_pdes:=nil
@@ -641,7 +641,7 @@ begin scalar min,f,l,l1,l2,done_pdes,car_pdes,len,
             cdar val_p eq 1 and  % 2nd factor is 1     ### needed??
             cdaar val_p eq 1 and % ie exponent is one  ### needed??
             pairp caaar val_p and
-            (caaaar val_p='DF) and 
+            (caaaar val_p='df) and 
             (cadr caaar val_p=f) then
          d_p:=cddr caaar val_p else 
          if caaar val_p=f then d_p:=nil$
@@ -864,7 +864,7 @@ begin
    %   ofl!*:=formputfile$  % any value neq nil, to avoid problem with redfront 
    %   chnout:= wrs chnout;                                  
 
-   comment
+   COMMENT
    - All FORM related files are written in a dedicated directory.
    - How about working with expressions that involve derivatives, i.e. how can FORM
      be told the REDUCE kernel ordering of different derivatives? This would speed
@@ -915,7 +915,7 @@ begin
    for each h in klist do
    if atom h then slist:=union({h},slist)
              else <<
-    if car h = 'DF then slist:=union({cadr h},slist)$
+    if car h = 'df then slist:=union({cadr h},slist)$
     flist:=union({car h},flist);
    >>$
    slist:=kernel_sort union(vl_,slist);  
@@ -1077,7 +1077,7 @@ begin
    >>$
   >>                     else << % computing is faster than reading from file
    s:=subtrsq(multsq(p,(cdr quoti . 1)), multsq(q,(car quoti . 1)))$           
-   if null all_rational_kernels then s:=simp!* {'!*SQ,s,nil}$
+   if null all_rational_kernels then s:=simp!* {'!*sq,s,nil}$
 
    % form file loeschen % If some interactive bookkeeping of long equations would
    if form_comp then << % be available then the file would not be deleted here.
@@ -1115,7 +1115,7 @@ begin
    lco:=coeff1({'!*sq,s,t},{'!*sq,xsq,t},nil)$  
    dgs:=hipow!*$ 
    lco:=nth(cdr lco,add1 dgs)$ 
-   lco:=if pairp lco and (car lco='!*SQ) then cadr lco 
+   lco:=if pairp lco and (car lco='!*sq) then cadr lco 
                                          else simp lco; 
    lts:=multsq(lco, mksq(x,dgs))$ 
 
@@ -1137,7 +1137,7 @@ begin
   >>
  >>;
  quoti:=err_catch_gcd({'!*sq,fcsp,t},{'!*sq,fcsq,t});  
- quoti:=if pairp quoti and (car quoti='!*SQ) then cadr quoti % to get rid of '!*SQ
+ quoti:=if pairp quoti and (car quoti='!*sq) then cadr quoti % to get rid of '!*SQ
                                              else simp quoti$
  return {quotsq(s   ,quoti),
          quotsq(fcsp,quoti),
@@ -1206,7 +1206,7 @@ begin scalar ld,f,ip,iq,s,nvl,lco,p,ddp,ddpcp,ldp,ldpsq,ltp,dgp,pfac,
 
   if atom ld then ldp:=ld else <<
    ldp:=cadr ld;
-   if caddar l then ldp:=cons('DF,cons(ldp,caddar l))
+   if caddar l then ldp:=cons('df,cons(ldp,caddar l))
   >>;
 
   ldpsq:=mksq(ldp,1)$
@@ -1216,7 +1216,7 @@ begin scalar ld,f,ip,iq,s,nvl,lco,p,ddp,ddpcp,ldp,ldpsq,ltp,dgp,pfac,
   pfac:=simp 1;
   if null ip then <<
     lco:=nth(cdr lco,add1 dgp)$
-    lco:=if pairp lco and (car lco='!*SQ) then cadr lco
+    lco:=if pairp lco and (car lco='!*sq) then cadr lco
                                           else simp lco; 
     ltp:=multsq(lco, mksq(ldp,dgp))$
   >>         else 
@@ -1224,7 +1224,7 @@ begin scalar ld,f,ip,iq,s,nvl,lco,p,ddp,ddpcp,ldp,ldpsq,ltp,dgp,pfac,
                   ((not fixp car lco) or (not fixp cdr lco)) % or should one test constancy?
   then << 
     lco:=nth(cdr lco,add1 dgp)$
-    lco:=if pairp lco and (car lco='!*SQ) then cadr lco
+    lco:=if pairp lco and (car lco='!*sq) then cadr lco
                                           else simp lco; 
     ltp:=multsq(lco, mksq(ldp,dgp))$
     p:=multiple_diffsq( quotsq( subtrsq(p,ltp), lco), ip)$
@@ -1232,7 +1232,7 @@ begin scalar ld,f,ip,iq,s,nvl,lco,p,ddp,ddpcp,ldp,ldpsq,ltp,dgp,pfac,
     ddp:=multiple_diffsq( quotsq(ddp,lco),ip);
     h:=(cdr p . 1)$
     pfac:=lco$ %quotsq(lco,h)$  may drop factors and solutions
-    if (not can_not_become_zeroSQ(pfac,get(ddpcp,'fcts))) and 
+    if (not can_not_become_zerosq(pfac,get(ddpcp,'fcts))) and 
        (s=ddqcp) then s:=nil;
     ltp:=multsq(simp ld,h)$
     p:=addsq(ltp, (car p . 1))$
@@ -1246,7 +1246,7 @@ begin scalar ld,f,ip,iq,s,nvl,lco,p,ddp,ddpcp,ldp,ldpsq,ltp,dgp,pfac,
 
   if atom ld then ldq:=ld else <<
    ldq:=cadr ld;
-   if caddar cdr l then ldq:=cons('DF,cons(ldq,caddar cdr l))
+   if caddar cdr l then ldq:=cons('df,cons(ldq,caddar cdr l))
   >>;
 
   ldqsq:=mksq(ldq,1)$
@@ -1256,7 +1256,7 @@ begin scalar ld,f,ip,iq,s,nvl,lco,p,ddp,ddpcp,ldp,ldpsq,ltp,dgp,pfac,
   qfac:=simp 1;
   if null iq then <<
     lco:=nth(cdr lco,add1 dgq)$
-    lco:=if pairp lco and (car lco='!*SQ) then cadr lco
+    lco:=if pairp lco and (car lco='!*sq) then cadr lco
                                           else simp lco; 
     ltq:=multsq(lco,mksq(ldq,dgq))$
   >>         else
@@ -1264,7 +1264,7 @@ begin scalar ld,f,ip,iq,s,nvl,lco,p,ddp,ddpcp,ldp,ldpsq,ltp,dgp,pfac,
                   ((not fixp car lco) or (not fixp cdr lco)) % or should one test constancy?
   then << 
     lco:=nth(cdr lco,add1 dgq)$
-    lco:=if pairp lco and (car lco='!*SQ) then cadr lco
+    lco:=if pairp lco and (car lco='!*sq) then cadr lco
                                           else simp lco; 
     ltq:=multsq(lco,mksq(ldq,dgq))$
     q:=multiple_diffsq( quotsq( subtrsq(q,ltq), lco), iq)$
@@ -1272,7 +1272,7 @@ begin scalar ld,f,ip,iq,s,nvl,lco,p,ddp,ddpcp,ldp,ldpsq,ltp,dgp,pfac,
     ddq:=multiple_diffsq( quotsq(ddq,lco),iq);
     h:=(cdr q . 1)$       % the new lco
     qfac:=lco$ % quotsq(lco,h)$ may drop factors and solutions
-    if (not can_not_become_zeroSQ(qfac,get(ddqcp,'fcts))) and 
+    if (not can_not_become_zerosq(qfac,get(ddqcp,'fcts))) and 
        (s=ddpcp) then s:=nil;
     ltq:=multsq(simp ld,h)$
     q:=addsq(ltq, (car q . 1))$
@@ -1320,8 +1320,8 @@ begin scalar s,p,q,ddp,ddq,ld,len,a,ip,iq,pfac,qfac,f$
 
  if s and (null rl) and % (sufficient_decouple) and
     % for rl=t already checked
-    (((s=p) and not can_not_become_zeroSQ(cadr  h,get(q,'fcts))) or
-     ((s=q) and not can_not_become_zeroSQ(caddr h,get(p,'fcts)))    ) 
+    (((s=p) and not can_not_become_zerosq(cadr  h,get(q,'fcts))) or
+     ((s=q) and not can_not_become_zerosq(caddr h,get(p,'fcts)))    ) 
  then s:=nil$
 
  % tracing comments
@@ -1332,15 +1332,15 @@ begin scalar s,p,q,ddp,ddq,ld,len,a,ip,iq,pfac,qfac,f$
   write p," (resp its derivative) is multiplied with"$terpri()$
   a:=if qfac=(1 . 1) then cadr h
                      else multsq(qfac,cadr h)$ 
-  len:=delengthSQ a$
-  if print_ and len<print_ then mathprint {'!*SQ,a,t} 
+  len:=delengthsq a$
+  if print_ and len<print_ then mathprint {'!*sq,a,t} 
                            else <<write "expr. with ",len," terms."$terpri()>>$
 
   write q," (resp its derivative) is multiplied with"$terpri()$
   a:=if pfac=(1 . 1) then caddr h
                      else multsq(pfac,caddr h)$ 
-  len:=delengthSQ a$
-  if print_ and len<print_ then mathprint {'!*SQ,a,t} 
+  len:=delengthsq a$
+  if print_ and len<print_ then mathprint {'!*sq,a,t} 
                            else <<write "expr. with ",len," terms."$terpri()>>
  >>$
 
@@ -1353,7 +1353,7 @@ begin scalar s,p,q,ddp,ddq,ld,len,a,ip,iq,pfac,qfac,f$
     (car h) and s and ((null struc_eqn) or (atom ld)) 
  then <<
   len:=no_of_terms(car h);
-  if pairp(ld) and (car ld = 'DF) then ld:=cdr ld
+  if pairp(ld) and (car ld = 'df) then ld:=cdr ld
                                   else ld:=list ld;
   if ((s=p) and 
       (ld neq caar get(p,'derivs)) and
@@ -1369,7 +1369,7 @@ begin scalar s,p,q,ddp,ddq,ld,len,a,ip,iq,pfac,qfac,f$
    add_both_dec_with(ordering,p,q,rl);
    list(nil)
   >>;
-  if cdr ld then ld:=cons('DF,ld)
+  if cdr ld then ld:=cons('df,ld)
             else ld:=car ld;
  >>$
 
@@ -1395,7 +1395,7 @@ begin scalar s,p,q,ddp,ddq,ld,len,a,ip,iq,pfac,qfac,f$
   a:=nil;
   add_both_dec_with(ordering,p,q,rl);
  >>             else <<
-  a:=mkeqSQ(if pfac neq (1 . 1) then if qfac neq (1 . 1) then multsq(multsq(pfac,qfac),car h)
+  a:=mkeqsq(if pfac neq (1 . 1) then if qfac neq (1 . 1) then multsq(multsq(pfac,qfac),car h)
                                                          else multsq(pfac,car h)
                                 else if qfac neq (1 . 1) then multsq(qfac,car h)
                                                          else                   car h ,
@@ -1404,7 +1404,7 @@ begin scalar s,p,q,ddp,ddq,ld,len,a,ip,iq,pfac,qfac,f$
                          multsq(caddr h,ddq) ),pdes)$
   if print_ and ((null rl and tr_decouple ) or 
                  (     rl and tr_redlength)    ) then
-  <<terpri()$mathprint reval {'EQUAL,a,get(a,'histry_)}>>
+  <<terpri()$mathprint reval {'equal,a,get(a,'histry_)}>>
  >>$
 
  if record_hist and (car h) and (sqzerop car h) then 
@@ -1433,9 +1433,9 @@ begin scalar s,p,q,ddp,ddq,ld,len,a,ip,iq,pfac,qfac,f$
  if print_ then <<
   write"Eliminate "$
   mathprint ld$
-  write"from ",if ip then cons('DF,cons(p,ip))
+  write"from ",if ip then cons('df,cons(p,ip))
                      else p, " and ",
-               if iq then cons('DF,cons(q,iq))
+               if iq then cons('df,cons(q,iq))
                      else q, ". "$
   if a then <<
    if s then << 
@@ -1553,10 +1553,10 @@ begin scalar s,h,lde,sy$
      null cadr h then nil     % no differentiation -> no case-distinction
                  else <<      % lower order equ. is not diff.
    lde:=if null caddr h then cadr caddr l    % lead. deriv. is algebraic
-                        else cons('DF,cons(cadr caddr l,caddr h));
+                        else cons('df,cons(cadr caddr l,caddr h));
    sy:=diffsq(get(car h,'sqval),mvar car mksq(lde,1));  
 
-   if can_not_become_zeroSQ(sy,get(car h,'fcts)) then 
+   if can_not_become_zerosq(sy,get(car h,'fcts)) then 
    <<remflag1(car h,'to_separant)$ nil>>           else 
    <<to_do_list:=cons(list('split_into_cases,sy),to_do_list); 
     if print_ then <<
@@ -1653,8 +1653,8 @@ again:
        get(cadddr l1,'length)        ) or  % * length_inc
 %    ((s=p) and may_vanish( cadar l2)) or
 %    ((s=q) and may_vanish(caddar l2)) then <<
-     ((s=p) and not can_not_become_zeroSQ( cadar l2,l3)) or
-     ((s=q) and not can_not_become_zeroSQ(caddar l2,l3)) then <<
+     ((s=p) and not can_not_become_zerosq( cadar l2,l3)) or
+     ((s=q) and not can_not_become_zerosq(caddar l2,l3)) then <<
    if null l2 then cntr:=add1 cntr;
    l2:=nil;
    add_both_dec_with(ordering,p,q,t);
@@ -1826,14 +1826,14 @@ begin scalar s,l,h,ezgcd_bak,rational_bak,gcd_bak$%,bezout_bak;
 
  if length(s:=get(car  l,'derivs))=1 then <<
   s:=caar s;
-  s:=if null cdr s then car s else cons('DF,s);
+  s:=if null cdr s then car s else cons('df,s);
   if freeof(get(cadr l,'kern),s) then <<
    write"No common kernel in both equations."$terpri()
   >>
  >>                                  else
  if length(s:=get(cadr l,'derivs))=1 then <<
   s:=caar s;
-  s:=if null cdr s then car s else cons('DF,s);
+  s:=if null cdr s then car s else cons('df,s);
   if freeof(get(car l,'kern),s) then <<
    write"No common kernel in both equations."$terpri()
   >>
@@ -1856,8 +1856,8 @@ begin scalar s,l,h,ezgcd_bak,rational_bak,gcd_bak$%,bezout_bak;
  if !*gcd    then    gcd_bak:=t else algebraic on    gcd$
 % if !*bezout then bezout_bak:=t else algebraic on bezout$
 % !*b!:headpolys_red:=t$
- s:=bresultant({'!*SQ,get(car  l,'sqval),nil},
-               {'!*SQ,get(cadr l,'sqval),nil},s)$
+ s:=bresultant({'!*sq,get(car  l,'sqval),nil},
+               {'!*sq,get(cadr l,'sqval),nil},s)$
 % s:=err_catch_resul({`!*SQ,get(car  l,'sqval),t},
 %                    {`!*SQ,get(cadr l,'sqval),t},s)$
  if null  ezgcd_bak then algebraic off  ezgcd$
@@ -1866,7 +1866,7 @@ begin scalar s,l,h,ezgcd_bak,rational_bak,gcd_bak$%,bezout_bak;
  if rational_bak then algebraic on rational$
 
  s:=for each h in cdr s collect simp!* cadr h;
- s:=mkeqSQ(nil,s,nil,union(get(car l,'fcts),get(cadr l,'fcts)),
+ s:=mkeqsq(nil,s,nil,union(get(car l,'fcts),get(cadr l,'fcts)),
            union(get(car l,'vars),get(cadr l,'vars)),allflags_,
            t,list(0),nil,pdes)$
 
@@ -2076,15 +2076,15 @@ decoupling
       dec_info
         dec_ld_info
     check_cases_for_separant
-      can_not_become_zeroSQ
+      can_not_become_zerosq
     dec_new_equation
-      can_not_become_zeroSQ
+      can_not_become_zerosq
       coeff1
       err_catch_elimin
         elimin
         err_catch_gcd
     dec_reduction
-      mkeqSQ
+      mkeqsq
     eqinsert
 ------------------------------------------------
 tr decoupling
@@ -2093,12 +2093,12 @@ tr dec_and_fct_select
 tr dec_info
 tr dec_ld_info
 tr check_cases_for_separant
-tr can_not_become_zeroSQ
+tr can_not_become_zerosq
 tr dec_new_equation
 tr err_catch_elimin
 tr elimin
 tr err_catch_gcd
 tr dec_reduction
-tr mkeqSQ
+tr mkeqsq
 tr eqinsert
 tr dec_try_to_red_len

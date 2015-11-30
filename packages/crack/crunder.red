@@ -126,12 +126,12 @@ begin scalar f1,f2,f1d,f2d,d1,d2,gd,phi,newf,q$
    
   if not sqzerop subtrsq(diffsq(d1,f2d),diffsq(d2,f1d)) then nil
                                                         else <<
-   phi:=simp reval list('INT,prepsq d1,f1)$
-   phi:=addsq(phi,simp reval list('INT,prepsq subtrsq(d2,diffsq(phi,f2d)),f2));
+   phi:=simp reval list('int,prepsq d1,f1)$
+   phi:=addsq(phi,simp reval list('int,prepsq subtrsq(d2,diffsq(phi,f2d)),f2));
    newf:=newfct(fname_,nil,nfct_)$
    nfct_:=add1 nfct_;
    ftem_:=fctinsert(newf,ftem_)$
-   q:=mkeqSQ(subtrsq(simp newf,phi),nil,nil,{newf,f1,f2},nil,allflags_,nil,
+   q:=mkeqsq(subtrsq(simp newf,phi),nil,nil,{newf,f1,f2},nil,allflags_,nil,
              list(0),nil,pdes);
    put(q,'not_to_eval,{newf})$
    {q}
@@ -151,8 +151,8 @@ begin scalar h,f1,f2,f3,s,k,l,d,q$
  s:=gensym()$
  k:=setkorder {s}$
  h:=simp!* {'!*sq,subsq(get(p,'sqval),
-		        {(f1 . {'TIMES,f1,s}), 
-			 (f2 . {'TIMES,f2,s}) }),nil}$
+		        {(f1 . {'times,f1,s}), 
+			 (f2 . {'times,f2,s}) }),nil}$
  setkorder k$
 
  return
@@ -160,7 +160,7 @@ begin scalar h,f1,f2,f3,s,k,l,d,q$
     (ldeg numr h neq 2) then nil
                         else << % the equation is of 2nd degree
   h:=mksq(lc numr h,1);         % the sum of the quadratic terms
-  d:=solveeval list({'!*SQ,h,t},f1);
+  d:=solveeval list({'!*sq,h,t},f1);
 
   if not freeof(d,'abs) then <<
    algebraic (let abs_);
@@ -169,7 +169,7 @@ begin scalar h,f1,f2,f3,s,k,l,d,q$
   >>$
 
   l:=nil;
-  if d and (car d='LIST) then for each h in cdr d do <<
+  if d and (car d='list) then for each h in cdr d do <<
    % i.e. for each of the two equalities f1=.., f1=..
 
    f3:=newfct(fname_,get(p,'vars),nfct_)$
@@ -177,7 +177,7 @@ begin scalar h,f1,f2,f3,s,k,l,d,q$
    ftem_:=fctinsert(f3,ftem_)$ 
 
    % currently h={'equal,f1,rhs}
-   q:=mkeqSQ(addsq(simp f3,subtrsq(simp cadr h,simp caddr h)),nil,nil,
+   q:=mkeqsq(addsq(simp f3,subtrsq(simp cadr h,simp caddr h)),nil,nil,
 	     {f1,f2,f3},get(p,'vars),allflags_,t,list(0),nil,pdes)$
    put(q,'not_to_eval,{f3})$
    l:=cons(q,l)
@@ -376,7 +376,7 @@ begin
 
   drvs:=cdr drvs;
  >>$
- if ulode and null get(p,'linear_) and null lin_check_SQ(get(p,'sqval),get(p,'allvarfcts))
+ if ulode and null get(p,'linear_) and null lin_check_sq(get(p,'sqval),get(p,'allvarfcts))
  then ulode:=nil$
 
  if tr_ulode then <<
@@ -417,7 +417,7 @@ begin
    if f neq fn then pdo:=subsq(pdo,{(f . 0)});
 
    % Is pdo linear in fn?
-   if not lin_check_SQ(pdo,{fn}) then <<
+   if not lin_check_sq(pdo,{fn}) then <<
     if tr_ulpde then <<write"not linear in ",f$terpri()>>$
     ulpde:=nil
    >>                            else <<
@@ -590,7 +590,7 @@ begin
    h:=nil;
    for each f in allvarf do if not freeof(cadr adj,f) then h:=cons(f,h);
    if null h then  % exact ode --> should do better then what is done now
-   ode:=reval {'TIMES,x,ode};
+   ode:=reval {'times,x,ode};
   >> until h;
 
   minordf:=cadr min_ord_f(ode,h,vl)$
@@ -600,11 +600,11 @@ begin
   nfct_:=add1 nfct_;
 
   if tr_ulode then <<
-   algebraic write"eqn=",{'LIST,{'PLUS,{'DF,newf,x},lisp cadr adj}}$
-   algebraic write"var=",{'LIST,minordf                      }
+   algebraic write"eqn=",{'list,{'plus,{'df,newf,x},lisp cadr adj}}$
+   algebraic write"var=",{'list,minordf                      }
   >>$
-  sol:=cadr solveeval list({'LIST,{'PLUS,{'DF,newf,x},cadr adj}},
-                           {'LIST,minordf                      } );
+  sol:=cadr solveeval list({'list,{'plus,{'df,newf,x},cadr adj}},
+                           {'list,minordf                      } );
   allvarf:=delete(minordf,allvarf)$
   allvarf:=cons(newf,allvarf)$
   % assuming that there is exacly one solution to the lin. alg. equation
@@ -615,14 +615,14 @@ begin
   >>$
   sublist:=cons(sol,sublist)$
   ode:=reval num reval 
-       {'PLUS,newf,{'MINUS,subst(caddr sol,cadr sol,car adj)}}$
+       {'plus,newf,{'minus,subst(caddr sol,cadr sol,car adj)}}$
   if tr_ulode then algebraic(write"ode=",ode)$
 
   h:=min_ord_f(ode,allvarf,vl)$
   minord:=car h; minordf:=cadr h; allvarf:=caddr h;
 
   if minord=0 then 
-  sublist:=cons(cadr solveeval list({'LIST,ode},{'LIST,minordf}),sublist)$
+  sublist:=cons(cadr solveeval list({'list,ode},{'list,minordf}),sublist)$
 
   if tr_ulode then <<
    write"allvarf=",allvarf,"  minord=",minord,"  minordf=",minordf$
@@ -634,14 +634,14 @@ begin
  if (minord neq 0) and (not zerop ode) then rtnlist:=list ode;
  ode:=nil;
  if tr_ulode then <<write"rtnlist=", rtnlist;terpri()>>$
- if tr_ulode then algebraic(write"sublist=",cons('LIST,sublist));
+ if tr_ulode then algebraic(write"sublist=",cons('list,sublist));
  while sublist do <<
   if member(cadar sublist,orgallvarf) then 
-  rtnlist:=cons(reval num reval {'PLUS,cadar sublist,
-                                 {'MINUS,caddar sublist}},rtnlist)$
-  sublist:=cdr reval cons('LIST,
+  rtnlist:=cons(reval num reval {'plus,cadar sublist,
+                                 {'minus,caddar sublist}},rtnlist)$
+  sublist:=cdr reval cons('list,
                           subst(caddar sublist,cadar sublist,cdr sublist))$
-  if tr_ulode then algebraic(write"sublist=",cons('LIST,sublist))
+  if tr_ulode then algebraic(write"sublist=",cons('list,sublist))
  >>$
 
  allvarf:=smemberl(allvarf,rtnlist)$
@@ -653,9 +653,9 @@ begin
   ftem_:=fctinsert(h,ftem_)$
   flin_:=sort_according_to(cons(h,flin_),ftem_)
  >>$
- if tr_ulode then algebraic(write"rtnlist=",cons('LIST,rtnlist));
+ if tr_ulode then algebraic(write"rtnlist=",cons('list,rtnlist));
  h:=for each h in rtnlist collect
-    mkeqSQ(nil,nil,h,union(get(p,'fcts),allvarf),vl,allflags_,t,
+    mkeqsq(nil,nil,h,union(get(p,'fcts),allvarf),vl,allflags_,t,
            list(0),nil,pdes)$
  if print_ then terpri()$
  freeint_:=freeint_bak;
@@ -693,12 +693,12 @@ begin
   if print_ then terpri()$
   fl:=cons(h,fl)$
   eqlist:=cons(cons({cadr difop,h}, 
-                    reval {'DIFFERENCE,cadr difop,subst(h,fn,prepsq car ldo)}),
+                    reval {'difference,cadr difop,subst(h,fn,prepsq car ldo)}),
                eqlist)$
   lcond:=cons(subst(h,cadr difop,prepsq car difop),lcond)
  >>$
  eqlist:=cons(cons(append(get(car pchar,'fcts),fl),
-                   cons('PLUS,lcond)),eqlist)$
+                   cons('plus,lcond)),eqlist)$
  if tr_ulpde then <<
   write"eqlist="$prettyprint eqlist$
  >>$
@@ -708,7 +708,7 @@ begin
   flin_:=sort_according_to(cons(h,flin_),ftem_)
  >>$
  h:=for each h in eqlist collect 
- mkeqSQ(nil,nil,cdr h,car h,get(car pchar,'vars),allflags_,
+ mkeqsq(nil,nil,cdr h,car h,get(car pchar,'vars),allflags_,
         t,list(0),nil,pdes)$
  if print_ then terpri()$
  return h

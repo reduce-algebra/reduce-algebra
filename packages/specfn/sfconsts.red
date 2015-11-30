@@ -41,7 +41,7 @@ module sfconsts; % Constants from pecial functions such as Euler_Gamma,
 
 fluid '(intlog!:rem);
 
-Comment this program is taken from:
+COMMENT this program is taken from:
 
 COMPUTATION OF CATALAN'S CONSTANT USING RAMANUJAN'S FORMULA
 
@@ -117,7 +117,7 @@ algebraic <<
 
 symbolic operator compute!:intlog;
 
-procedure compute!:Khinchin1();
+procedure compute!:khinchin1();
   begin scalar term,summ,acc,k,ln2,ln3,oldprec,zp;
      if evenp(oldprec := precision 0) then
              precision (oldprec+13) else
@@ -128,7 +128,7 @@ procedure compute!:Khinchin1();
      k:=2;
      term :=1; summ :=0;
      while abs(term) > acc do <<
-        zp := compute!:Zetaprime(k);
+        zp := compute!:zetaprime(k);
         term :=(-1)^k*(2*zp-2^k*(zp+ln2/2^k+ln3/3^k))/k;
         summ := summ + term;
         k:=k+1   >>;
@@ -139,7 +139,7 @@ procedure compute!:Khinchin1();
   end;
 
 % derivative of the Riemann Zeta Function
-procedure compute!:Zetaprime (u);
+procedure compute!:zetaprime (u);
 
   begin scalar term,summ,n,acc,f,j,logm,m,oldprec;
      oldprec := precision 0;
@@ -155,7 +155,7 @@ procedure compute!:Zetaprime (u);
      summ := -(for ii:=2:(fix m -1) sum compute!:intlog(ii)/ii^n) -
         (logm+1/(n-1))/m^(n-1)/(n-1)-logm/2/m^n;
      while abs(term) > acc do
-          << term := Bernoulli(2*j) * sub(log(x)=logm,x=m,f);
+          << term := bernoulli(2*j) * sub(log(x)=logm,x=m,f);
              f := df(f,x,x)/((4j+6)*j +2);
              summ := summ -term;
              j:= j+1;
@@ -189,8 +189,4 @@ symbolic procedure compute!:intlog1 (n);
 endmodule;
 
 end;
-
-
-
-
 

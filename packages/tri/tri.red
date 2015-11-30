@@ -98,9 +98,9 @@ fluid '(
 % -----------------+---------------------------------------------------+
 % FLUID VARIABLES  | EXPLANATION                                       |
 % -----------------+---------------------------------------------------+
-  !*tex            % flag to be switched ON and OFF (TeX Output Mode)
-  !*texbreak       % flag to be switched ON and OFF (Break Facility)
-  !*texindent      % flag to be switched ON and OFF (Indentation Mode)
+  !*TeX            % flag to be switched ON and OFF (TeX Output Mode)
+  !*TeXbreak       % flag to be switched ON and OFF (Break Facility)
+  !*TeXindent      % flag to be switched ON and OFF (Indentation Mode)
   texstack!*       % stack to save expressions for an unfilled line
   hsize!*          % total page width in scaled points (sp)
                    % note: 65536sp = 1pt = 1/72.27 inch
@@ -122,14 +122,14 @@ global '(
 );
 
 % declare switches:
-switch tex,texbreak,texindent;
+switch TeX,TeXbreak,TeXindent;
 
 % declare switch dependencies:
-put('texindent,'simpfg,'((t (progn (setq !*tex t)
-                                   (setq !*texbreak t)))  ));
-put('texbreak,'simpfg,'((t (setq !*tex t)) ));
-put('tex,'simpfg,'((nil (progn (setq !*texbreak nil)
-                               (setq !*texindent nil))) ));
+put('TeXindent,'simpfg,'((t (progn (setq !*TeX t)
+                                   (setq !*TeXbreak t)))  ));
+put('TeXbreak,'simpfg,'((t (setq !*TeX t)) ));
+put('TeX,'simpfg,'((nil (progn (setq !*TeXbreak nil)
+                               (setq !*TeXindent nil))) ));
 
 symbolic procedure tri!-error(strlst,errclass);
 << for each x in strlst do prin2 x; terpri();
@@ -139,21 +139,21 @@ symbolic procedure tri!-error(strlst,errclass);
 
 % Code called by ASSGNPRI.
 
-symbolic procedure texpri(u,v,w);
+symbolic procedure TeXpri(u,v,w);
    (if x and get(x,'texprifn) then apply3(get(x,'texprifn),u,v,w)
-     else texvarpri(u,v,w)) where x = getrtype u;
+     else TeXvarpri(u,v,w)) where x = getrtype u;
 
-symbolic procedure texvarpri(u,v,w); % same parameters as above
+symbolic procedure TeXvarpri(u,v,w); % same parameters as above
 begin scalar !*lower;
    if w memq '(first only) then texstack!*:=nil;
    if v then for each x in reverse v do u:=list('setq,x,u);
    texstack!* := nconc(texstack!*,mktag(u,0,nil));
    if (w=t) or (w='only) or (w='last) then
-   << if !*texbreak then
+   << if !*TeXbreak then
       << texstack!* := insertglue(texstack!*);
          texstack!* := trybreak(texstack!*,breaklist(texstack!*))
       >>;
-      texout(texstack!*,!*texbreak); texstack!*:=nil
+      TeXout(texstack!*,!*TeXbreak); texstack!*:=nil
    >>;
    %if (null w) or (w eq 'first) then
    %  texstack!* := nconc(texstack!*,list '!\!q!u!a!d! );
@@ -163,9 +163,9 @@ end;
 % The following procedure interfaces to E. Schruefer's EXCALC package.
 % Courtesy: E. Schruefer.
 
-put('form!-with!-free!-indices,'texprifn,'texindxpri);
+put('form!-with!-free!-indices,'texprifn,'TeXindxpri);
 
-symbolic procedure texindxpri(u,v,w);
+symbolic procedure TeXindxpri(u,v,w);
    begin scalar metricu,il,dnlist,uplist,r,x,y,z;
      if v then go to a;
      metricu := metricu!*;
@@ -185,7 +185,7 @@ symbolic procedure texindxpri(u,v,w);
        <<x := pair(y,j);
      z := exc!-mk!*sq2 multsq(subfindices(numr r,x),1 ./ denr r);
         if null(!*nero and (z = 0))
-          then texvarpri(z,list subla(x,'ns . il),'only)>>;
+          then TeXvarpri(z,list subla(x,'ns . il),'only)>>;
      return u;
   a: v := car v;
      y := flatindxl allindk v;
@@ -195,7 +195,7 @@ symbolic procedure texindxpri(u,v,w);
        <<x := pair(y,j);
          z := aeval subla(x,v);
          if null(!*nero and (z = 0))
-            then texvarpri(z,list subla(x,v),'only)>>;
+            then TeXvarpri(z,list subla(x,v),'only)>>;
       return u
     end;
 %ff
@@ -315,7 +315,7 @@ symbolic procedure mktag(tag,prec,assf);
 %             prec ...... outer precedence
 %             assf ...... outer associativity flag
 if null tag then nil else
-if atom tag then texexplode(tag) else
+if atom tag then TeXexplode(tag) else
 begin
   scalar tagprec,term;
   tagprec:=get(car tag,'texprec) or 999; % get the operator's precedence
@@ -357,8 +357,8 @@ begin
      else if tri_istag(tag,'f) then
        % test for unary to binary operator interchange
        if arg and (not atom car arg) and uby and (caar arg=tri_unary(uby))
-       then << a:=texexplode(tri_binary(uby)); arg:=cadar arg.cdr arg >>
-       else a:=texexplode(op)
+       then << a:=TeXexplode(tri_binary(uby)); arg:=cadar arg.cdr arg >>
+       else a:=TeXexplode(op)
      else if tri_istag(tag,'apply)
           then << a:=apply3(cadr tag,op,arg,prec); arg:=nil >>
      else if null arg then a:=nil
@@ -389,11 +389,11 @@ symbolic procedure make!*sq(op,arg,prec);
 symbolic procedure makedf(op,arg,prec); % DF operators are tricky
 begin
   scalar dfx,f,vvv; integer degree;
-  dfx:=tri_lcopy(f:=texexplode op); degree:=0;
+  dfx:=tri_lcopy(f:=TeXexplode op); degree:=0;
   nconc(dfx,mktag(car arg,prec,nil)); dfx:=nconc(dfx,list '!}!{);
   for each item in cdr arg do
     if numberp(item) then
-    << dfx:= nconc(dfx,'!^!{ .texexplode(item));
+    << dfx:= nconc(dfx,'!^!{ .TeXexplode(item));
        dfx:= nconc(dfx,list '!});
        degree:=degree+item-1;
     >>
@@ -401,7 +401,7 @@ begin
     << dfx:= nconc(dfx,append(f,mktag(item,prec,nil))); degree:=degree+1
     >>;
   if degree>1 then
-  << vvv:=nconc(texexplode(degree), '!} . cdr dfx);
+  << vvv:=nconc(TeXexplode(degree), '!} . cdr dfx);
      rplacd(dfx,'!^!{ . vvv)
   >>;
   return ('!\!f!r!a!c!{ . nconc(dfx, list '!}))
@@ -414,11 +414,11 @@ else ('!_!{ . nconc(mktag(car arg,prec,nil), list '!}));
 
 % This uses "result" free, so has to be an smacro.
 smacro procedure inxextend(item,ld,rd);
-  nconc(result,ld.nconc(texexplode(item),list rd));
+  nconc(result,ld.nconc(TeXexplode(item),list rd));
 
 symbolic procedure makeexcinx(op,arg,prec); % EXCALC extension
 begin scalar result;
-  result:=nconc('!{.nil,texexplode(op));
+  result:=nconc('!{.nil,TeXexplode(op));
   for each item in arg do
     if numberp item then
        if minusp item then  inxextend(-item,'!{!}!_!{,'!})
@@ -459,7 +459,7 @@ symbolic procedure makelimit(op,arg,prec);
    % for operators like limit, sum and prod which may have limit scripts
    begin scalar a,term,limits;
    if arg then limits := cdr arg;
-   term := texexplode(op);
+   term := TeXexplode(op);
    if limits then
    << a := '!_!{ . mktag(car limits,0,nil);
       limits := cdr limits;
@@ -483,7 +483,7 @@ symbolic procedure makelimit(op,arg,prec);
    return term;
    end;
 
-symbolic procedure texgroup u;
+symbolic procedure TeXgroup u;
    % surround u by TeX {}
    % NB Destructive!!
    nconc('!{ . if null u or listp u then u else {u},'!} . nil);
@@ -492,18 +492,18 @@ symbolic procedure makeint(op,arg,prec);
    % for operators like int which may have limit scripts
    begin scalar a,term,limits;
    if arg and cdr arg then limits := cddr arg;
-   term := texexplode(op);
+   term := TeXexplode(op);
    if limits then
-   << a := '!_!{ . cdr texgroup mktag(car limits,0,nil);
+   << a := '!_!{ . cdr TeXgroup mktag(car limits,0,nil);
       limits := cdr limits;
       term := nconc(term,a) >>;
    if limits then
-   << a := '!^!{ . cdr texgroup mktag(car limits,0,nil);
+   << a := '!^!{ . cdr TeXgroup mktag(car limits,0,nil);
       limits := cdr limits;
       term := nconc(term,a) >>;
    a := if arg then mktag(car arg,0,nil);
    a := nconc(a,if arg and cdr arg then '!\!, . '!d . mktag(cadr arg,0,nil));
-   term := nconc(term,texgroup a);
+   term := nconc(term,TeXgroup a);
    return term;
    end;
 
@@ -658,9 +658,9 @@ inline procedure tri_retract(name); put(name,'texname,nil);
 inline procedure tri_retractl(l); for each v in l do tri_retract(car v);
 inline procedure tri_gettexitem(a); get(a,'texname) or (get(a,'class)and a);
 
-put ('texitem,'stat,'rlis); % handle argument passing for func. TeXitem
+put ('TeXitem,'stat,'rlis); % handle argument passing for func. TeXitem
 
-symbolic procedure texitem(arglist);
+symbolic procedure TeXitem(arglist);
 begin scalar x,ok,item,class,tag;
   if length arglist neq 3
   then rederr "Usage: TeXitem(item,class,width-list);";
@@ -699,18 +699,18 @@ symbolic procedure unknownitem(a);
    '!? . '!_!{ . nconc(explode texunknowncounter!*, list '!})
 >>;
 
-symbolic procedure texexplode(a);
+symbolic procedure TeXexplode(a);
 begin scalar b;
   b:=if a and (atom a) then
      (tri_gettexitem(a)
-      or if numberp(a) then texcollect(explode(a))
+      or if numberp(a) then TeXcollect(explode(a))
          else if stringp(a) then strcollect(explode2(a))
-         else texexplist(texcollect(explode2(a))));
+         else TeXexplist(TeXcollect(explode2(a))));
    b:=if null b then list '!  else if not atom b then b else list b;
    return b
 end;
 
-symbolic procedure texcollect(l);
+symbolic procedure TeXcollect(l);
   for each el in l join
     if null tri_gettexitem(el) then unknownitem(el)
     else tri_gettexitem(el).nil;
@@ -725,7 +725,7 @@ inline procedure strtexitem(e);
 symbolic procedure strcollect(l);
   for each el in l join strtexitem el;
 
-symbolic procedure texexplist(r);
+symbolic procedure TeXexplist(r);
 begin scalar r,v;
   v:=nil;
   for each rl on r do
@@ -976,9 +976,9 @@ makeitems('(
 %    *     LOWERCASE: roman lowercase letters
 % ----------------------------------------------------------------------
 % handle argument passing
-deflist( '((texassertset rlis) (texretractset rlis)), 'stat);
+deflist( '((TeXassertset rlis) (TeXretractset rlis)), 'stat);
 
-symbolic procedure texassertset(arglist);
+symbolic procedure TeXassertset(arglist);
 if length arglist neq 1 then rederr "Usage: TeXassertset(setname);"
 else begin scalar sym; sym:= car arglist;
   if get('texsym,sym) then
@@ -987,7 +987,7 @@ else begin scalar sym; sym:= car arglist;
   >> else << prin2 "% no such set"; terpri() >>
 end;
 
-symbolic procedure texretractset(arglist);
+symbolic procedure TeXretractset(arglist);
 if length arglist neq 1 then rederr "Usage: TeXretractset(setname);"
 else begin scalar sym; sym := car arglist;
   if get('texsym,sym) then
@@ -1487,7 +1487,7 @@ begin
                  << % save the pointer to best breakpoint to come from
                     % and the minimum demerits to reach it
                     rplaca(pred,id); rplaca(cdr pred,dm);
-                    if !*texindent then % save the current indentation
+                    if !*TeXindent then % save the current indentation
                     << if offset>total
                        then indent:=offset-total+baseindent
                        else if offset<baseoffset
@@ -1499,7 +1499,7 @@ begin
               >>
               else             % create a new delta node
               << feasible:=feasible+1;
-                 if !*texindent then
+                 if !*TeXindent then
                    if offset>total
                    then indent:=offset-total+baseindent
                    else if offset<baseoffset
@@ -1591,7 +1591,7 @@ end;
 % Section 4 : Output of TeX-Code
 % ----------------------------------------------------------------------
 
-symbolic procedure texstrlen(s);
+symbolic procedure TeXstrlen(s);
 begin
   integer length;
   scalar flag;
@@ -1607,7 +1607,7 @@ inline procedure tri_newline();
   else if (cc>indent) then << terpri(); cc:=indent; nlflag:=t >>;
 
 %ff
-symbolic procedure texout(itemlist,flag);
+symbolic procedure TeXout(itemlist,flag);
 if null itemlist then nil else
 begin
    integer cc,len,indent,ccmax,lines;
@@ -1619,7 +1619,7 @@ begin
    terpri();                               % start new line
    while itemlist do
    << item:=car itemlist; itemlist:=cdr itemlist;
-      len:=texstrlen(explode(item)); oldtag:=nil; lasttag:=tag or class;
+      len:=TeXstrlen(explode(item)); oldtag:=nil; lasttag:=tag or class;
       class:=classof(item); tag:=(class='inn)and(kindof(item));
       %ispd:=(class='ORD)and itemlist and(classof(car itemlist)='OPN);
       if (tag='mat)or(tag='frc)or(class='opn) %or ispd
@@ -1664,13 +1664,13 @@ end;
 % ----------------------------------------------------------------------
 % handle argument passing for following the functions, compelling that
 % properties are used during compile time
-deflist( '((texdisplay rlis) (texlet rlis)), 'stat);
+deflist( '((TeXdisplay rlis) (TeXlet rlis)), 'stat);
 
-algebraic procedure texsetbreak(hsize,tol); lisp setbreak(hsize,tol);
-algebraic procedure textolerance(tol); lisp settolerance(tol);
-algebraic procedure texpagewidth(hsize); lisp setpagewidth(hsize);
+algebraic procedure TeXsetbreak(hsize,tol); lisp setbreak(hsize,tol);
+algebraic procedure TeXtolerance(tol); lisp settolerance(tol);
+algebraic procedure TeXpagewidth(hsize); lisp setpagewidth(hsize);
 
-symbolic procedure texlet(arglist);
+symbolic procedure TeXlet(arglist);
 begin scalar class,sym,item;
   if length arglist neq 2 then rederr "Usage: TeXlet(symbol,item);";
   sym:= car arglist; item:=intern cadr arglist; class:=classof(item);
@@ -1684,7 +1684,7 @@ begin scalar class,sym,item;
   return nil
 end;
 
-symbolic procedure texdisplay(arglist);
+symbolic procedure TeXdisplay(arglist);
 begin scalar item,tag,class;
   if length arglist neq 1 then rederr "Usage: TeXdisplay(item);";
   item:=get(car arglist,'texname);
@@ -1702,18 +1702,18 @@ end;
 
 % ----------------------- share name between both modes ----------------
 
-symbolic operator texlet;
-symbolic operator texitem;
-symbolic operator texdisplay;
-symbolic operator texassertset;
-symbolic operator texretractset;
+symbolic operator TeXlet;
+symbolic operator TeXitem;
+symbolic operator TeXdisplay;
+symbolic operator TeXassertset;
+symbolic operator TeXretractset;
 
 % ------------------------ Default Initializations ---------------------
 
 << prin2 "% TeX-REDUCE-Interface 0.71"; terpri() >>;
-texassertset(greek); texassertset(lowercase);
-texassertset '!Greek; texassertset '!Uppercase;
-textolerance(10); texpagewidth(150);
+TeXassertset(greek); TeXassertset(lowercase);
+TeXassertset '!Greek; TeXassertset '!Uppercase;
+TeXtolerance(10); TeXpagewidth(150);
 
 endmodule;
 

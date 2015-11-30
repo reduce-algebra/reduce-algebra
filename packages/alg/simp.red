@@ -826,7 +826,7 @@ symbolic procedure mkrootsql(u,n);
     else multsq(mkrootsq(caar u,n),mkrootsql(cdr u,n));
 
 
-comment The following four procedures return a partitioned root
+COMMENT The following four procedures return a partitioned root
     expression, which is a dotted pair of integral part (a standard
     form) and radical part (a list of prefix expressions). The whole
     structure represents U**(1/N);
@@ -1414,8 +1414,9 @@ remflag('(!?a2bf),'lose);   % Until things stabilize.
 % This is now in csl.red and psl.red in the support directory.
 %symbolic inline procedure make!:ibf (mt, ep);
 %   '!:rd!: . (mt . ep);
-
-symbolic inline procedure i2bf!: u; make!:ibf (u, 0);
+%
+% And i2bf is then in arith.red...
+% symbolic inline procedure i2bf!: u; make!:ibf (u, 0);
 
 symbolic procedure !?a2bf a;
    % Convert decimal or integer to bfloat.

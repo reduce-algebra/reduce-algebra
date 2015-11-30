@@ -33,10 +33,10 @@ module contfrac;  % Continued fractions.
 % polynomials and rational functions
 % by Winfried Neun
 
-symbolic procedure PolynomQQQ (x);
+symbolic procedure polynomqqq (x);
 
 (if fixp xx then 1 else
- if not onep denr (xx := cadr xx) then NIL
+ if not onep denr (xx := cadr xx) then nil
  else begin scalar kerns,kern,aa,var,fform,mvv,degg;
 
  fform := sfp  mvar  numr xx;
@@ -55,17 +55,17 @@ symbolic procedure PolynomQQQ (x);
      kern := first kerns;
      kerns := cdr kerns;
      if not(eq (kern, var)) and depends(kern,var)
-                then return NIL else go aa;
+                then return nil else go aa;
 end) where xx = aeval(car x);
 
-put('PolynomQQ,'psopfn,'polynomQQQ);
+put('polynomqq,'psopfn,'polynomqqq);
 
 symbolic procedure ttttype_ratpoly(u);
   ( if fixp xx then 1 else
         if not eqcar (xx , '!*sq) then nil
-          else and(polynomQQQ(list(mk!*sq (numr cadr xx ./ 1),
+          else and(polynomqqq(list(mk!*sq (numr cadr xx ./ 1),
                    reval cadr u)),
-                  polynomQQQ(list(mk!*sq (denr cadr xx ./ 1),
+                  polynomqqq(list(mk!*sq (denr cadr xx ./ 1),
                    reval cadr u)))
  ) where xx = aeval(car u);
 
@@ -183,7 +183,7 @@ cfracrules :=
                                       append({part(pt2,1)},res));
                       end)
                      when numberp c and  vari b
-                      and NOT(type_ratpoly(a,b))%,
+                      and not(type_ratpoly(a,b))%,
 
 };
 
@@ -277,7 +277,7 @@ procedure longdiv(poly1, poly2,x);
     then rem := numer
     else
     <<
-    while (longdivdeg(numer,x) >= longdivdeg(denom,x)) AND flag neq 1 do
+    while (longdivdeg(numer,x) >= longdivdeg(denom,x)) and flag neq 1 do
      <<
         if longdivlterm(numer,x) = 0
         then

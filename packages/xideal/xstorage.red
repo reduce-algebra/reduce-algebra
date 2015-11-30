@@ -28,7 +28,7 @@ module xstorage;
 %
 
 
-Comment. Critical pairs and polynomials are stored in a search tree,
+COMMENT. Critical pairs and polynomials are stored in a search tree,
          called an xset here:
 
         xset            ::= empty_xset | item . xset

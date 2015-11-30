@@ -28,25 +28,25 @@ module specbess;  % Special functions package; Bessel and relatives.
 %
 
 
-remprop('besseli,'simpfn);
-remprop('besselj,'simpfn);
-remprop('bessely,'simpfn);
-remprop('besseli,'simpfn);
-remprop('besselk,'simpfn);
+remprop('BesselI,'simpfn);
+remprop('BesselJ,'simpfn);
+remprop('BesselY,'simpfn);
+remprop('BesselI,'simpfn);
+remprop('BesselK,'simpfn);
 remprop('hankel1,'simpfn);
 remprop('hankel2,'simpfn);
-remprop('kummerM,'simpfn);
-remprop('kummerU,'simpfn);
-remprop('struveh,'simpfn);
-remprop('struvel,'simpfn);
+remprop('KummerM,'simpfn);
+remprop('KummerU,'simpfn);
+remprop('StruveH,'simpfn);
+remprop('StruveL,'simpfn);
 remprop('lommel1,'simpfn);
 remprop('lommel2,'simpfn);
-remprop('whittakerm,'simpfn);
-remprop('whittakerw,'simpfn);
+remprop('WhittakerM,'simpfn);
+remprop('WhittakerW,'simpfn);
 remprop('Airy_Ai,'simpfn);
 remprop('Airy_Bi,'simpfn);
-remprop('Airy_AiPrime,'simpfn);
-remprop('Airy_biprime,'simpfn);
+remprop('Airy_Aiprime,'simpfn);
+remprop('Airy_Biprime,'simpfn);
 
 
 create!-package ('(specbess sfbes sfkummer sfother sfairy),

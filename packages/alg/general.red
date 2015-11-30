@@ -233,6 +233,30 @@ symbolic procedure revalnuminterval(u,num);
 symbolic procedure alistp l;
    null l or (pairp l and pairp car l and alistp cdr l);
 
+symbolic procedure greaterpcar(u, v);
+  car u > car v;
+
+symbolic procedure lesspcar(u, v);
+  car u < car v;
+
+symbolic procedure greaterpcdr(u, v);
+  cdr u > cdr v;
+
+symbolic procedure lesspcdr(u, v);
+  cdr u < cdr v;
+
+symbolic procedure identity!-function x;
+  x;
+
+symbolic procedure ordpcadr(u, v);
+  ordp(cadr u, cadr v);
+
+symbolic procedure ordopcadr(u, v);
+  ordop(cadr u, cadr v);
+
+symbolic procedure arg1of2(u, v); u;
+
+symbolic procedure arg2of2(u, v); v;
 
 endmodule;
 

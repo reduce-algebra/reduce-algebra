@@ -334,10 +334,10 @@ symbolic procedure mk!_side!_to!_list(identifiers);
 begin
 scalar i;
   if idp(identifiers) then return list(identifiers);
-  if eqcar(identifiers,'Plus) then rederr("no addition in this group");
-  if eqcar(identifiers,'EXPT) then
+  if eqcar(identifiers,'plus) then rederr("no addition in this group");
+  if eqcar(identifiers,'expt) then
      return for i:=1:(caddr identifiers) collect (cadr identifiers);
-  if eqcar(identifiers,'TIMES) then
+  if eqcar(identifiers,'times) then
      rederr("no multiplication with * in this group");
 if eqcar(identifiers,'!@) then
      return append(mk!_side!_to!_list(cadr identifiers),

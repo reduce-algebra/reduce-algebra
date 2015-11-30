@@ -95,7 +95,7 @@ begin
   if not lisp(null get(mkid('q_,n),'avalue)) then cf0:=t;
 
   eqlist:=sqreverse for each e1 in eqlist collect 
-          if part(e1,0)=EQUAL then lhs e1 - rhs e1 
+          if part(e1,0)=equal then lhs e1 - rhs e1 
                               else e1;
 
   if contrace then write"ulist=",ulist,"    eqlist=",eqlist;
@@ -197,7 +197,7 @@ begin
                  else fl:=flist;
 
     %--- initializing characteristic functions cf, the list of functions fl
-    deplist:=lisp(cons('LIST,setdiff(cdr ulist,cdr nodep))) . 
+    deplist:=lisp(cons('list,setdiff(cdr ulist,cdr nodep))) . 
              for n:=1:densord collect listdifdif2(nodep,sqpart(dulist,n+1));
     if expl then deplist:=xlist . deplist;
     deplist:=sqreverse deplist;
@@ -238,7 +238,7 @@ begin
             dequ:=e2;
             e2:=1;
             for each e3 in lisp
-            cons('LIST,cdr combidif(algebraic e1)) do
+            cons('list,cdr combidif(algebraic e1)) do
             <<dequ:=totdif(dequ,sqpart(xlist,e3),e3,dulist)$
               e2:=-e2;
               if contrace then write"dequ=",dequ," e3=",e3>>;
@@ -274,7 +274,7 @@ begin
     if contrace then write"inequ=",inequ;
 
     if (not lisp(null get('cl_condi,'avalue))) and
-       (part(cl_condi,0)=LIST) then 
+       (part(cl_condi,0)=list) then 
     condi:=sqappend(condi,cl_condi)$
 
     %--- freeing some space
@@ -479,7 +479,7 @@ begin
            for each h6 in cdr h3 collect cadr h6$
 
        % h2 collects all derivatives 
-       h2:=search_li2(cllist,'DF)$
+       h2:=search_li2(cllist,'df)$
 
        % h3 all derivatives wrt. new variables
        h3:=nil;
@@ -547,7 +547,7 @@ begin
           h7:=divlist;
           if h6 then 
           while cdr h6 do 
-          if freeoflist(search_li(cdadr h6,'DF),new_var_fnc) then 
+          if freeoflist(search_li(cdadr h6,'df),new_var_fnc) then 
           <<h6:=cdr h6;h7:=cdr h7>>                          else <<
             print_dropping_notice(cadr h6)$
             rplacd(h6,cddr h6)$
@@ -582,7 +582,7 @@ begin
           cllist:=sub(sb,cllist);
           h2:=sub(sb,h1);   h1:={}$   non_int:={}$                     
           for each e1 in h2 do
-          if lisp(freeof(e1,'SUB)) then h1:=sqcons(e1,h1)                   
+          if lisp(freeof(e1,'sub)) then h1:=sqcons(e1,h1)                   
                                    else non_int:=sqcons(sqsecond e1,non_int);
           h2:=0$
           if h1 neq {} then <<
@@ -592,7 +592,7 @@ begin
               h10:={}$
               for each e2 in h1 do <<
                 h8:=sub(e1=h2*e1,e2);
-                if lisp freeof(h8,'SUB) then h10:=sqcons(h8,h10)
+                if lisp freeof(h8,'sub) then h10:=sqcons(h8,h10)
                                         else non_int:=sqcons(sqsecond h8,non_int)
               >>$
               h1:=h10$
@@ -626,7 +626,7 @@ begin
                     if contrace then write"h10-2=",h10$ 
                     %--- the following is to catch errors in: 
                     %--- int(h10*h2**(nx-1),h2)
-                    h10:=if not lisp freeof(h10,'SUB) then nil 
+                    h10:=if not lisp freeof(h10,'sub) then nil 
                          else err_catch_int(h10*h2**(nx-1),h2)$
                     if contrace then write"h10-3=",h10$ 
                     if h10 eq nil then h6:=nil

@@ -44,17 +44,20 @@ procedure lto_insert(x,l);
    % [x] to [l] if [x] is not already member of [l].
    if x member l then l else x . l;
 
+
 procedure lto_insertq(x,l);
    % List tools insert testing with memq. [x] is any S-expression, [l]
    % is a list. Conses [x] to [l] if [x] is not already [memq].
    if x memq l then l else x . l;
 
-procedure lto_insertqcar(x,l);                                                    
-begin;                                                                            
-   if not l then return (x . nil);                                                
-   if car x = caar l then return l;                                               
-   return car l . lto_insertqcar(x,cdr l);                                        
-end;  
+procedure lto_insertqcar(x,l);
+   begin;
+      if not l then 
+	 return (x . nil);
+      if car x = caar l then 
+	 return l;
+      return car l . lto_insertqcar(x,cdr l);
+   end;
 
 procedure lto_quicksort(l,sortp);
    % List tools quick sort. [l] is a list; [sortp] is a function that
@@ -472,6 +475,7 @@ procedure lto_apply2nthip(l, n, fun, xargl);
    procedure lto_hashid(id);
       sxhash id;
 #endif
+
 
 #if (memq 'psl lispsystem!*)
    procedure lto_hashid(id);

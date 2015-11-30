@@ -85,7 +85,7 @@ procedure pident_pident(sys,ivl,ovl,pvl);
    % variables, the internal functions, the input and output functions, and the
    % real parameters, resp.
    begin scalar context,theo,sol,dsol,casel,vl,res;
-      pident_checkVars(sys,ivl,ovl,pvl);
+      pident_checkvars(sys,ivl,ovl,pvl);
       theo := for each p in pvl collect dcfsf_0mk2('equal,numr simp {'d,p,1});
       for each x in ivl do
 	 sys := rl_mkq('ex,x,sys);
@@ -98,7 +98,7 @@ procedure pident_pident(sys,ivl,ovl,pvl);
       return res
    end;
 
-procedure pident_checkVars(sys,ivl,ovl,pvl);
+procedure pident_checkvars(sys,ivl,ovl,pvl);
    for each v in rl_fvarl sys do
       if not (member(v,ivl) or member(v,ovl) or member(v,pvl)) then
 	 rederr {"unspecified variable", v};

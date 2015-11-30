@@ -4,7 +4,7 @@
 % Original Author: M. A. H. MacCallum
 % Maintainer: F.J.Wright@Maths.QMW.ac.uk
 
-ODESolve_version;
+odesolve_version;
 on trode, combinelogs;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

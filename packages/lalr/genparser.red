@@ -328,7 +328,7 @@ symbolic procedure lalr_set_grammar g;
     princ tnum; printc " semantic actions";
     action_fn := mkvect sub1 tnum;
     action_n := mkvect8 sub1 tnum;
-    action_A := mkvect16 sub1 tnum;
+    action_a := mkvect16 sub1 tnum;
     action_first_error := tnum;
     if !*lalr_verbose then lalr_print_action_map();
 
@@ -762,7 +762,7 @@ symbolic procedure lalr_make_actions c;
     for each x in action_table do <<
       putv16(action_index, car x, j);
       for each y on cdr x do begin
-        scalar tt, rr, rx, ff, fn, rn, rA;
+        scalar tt, rr, rx, ff, fn, rn, ra;
 % The final terminal in each search-chunk will be stored as
 % "-1" which is a wild-card. This will then be the action that is
 % carried out if a syntax error is present.
@@ -791,7 +791,7 @@ symbolic procedure lalr_make_actions c;
             putd(fn, 'expr, ff) where !*pwrds = nil;
             putv(action_fn, rx-1, fn) >>;
           putv8(action_n, rx-1, rn);
-          putv16(action_A, rx-1, get(ra, 'non_terminal_code));
+          putv16(action_a, rx-1, get(ra, 'non_terminal_code));
           rr := -rx >>;
           w := (tt . rr) . w;
           j := j + 1 end >>;
@@ -941,7 +941,7 @@ symbolic procedure lalr_most_common_dest p;
     return car w
   end;
 
-symbolic procedure printvec v;
+symbolic procedure lalr_print_generic_vector v;
   begin
     scalar ch;
     ch := '![;
@@ -963,7 +963,7 @@ symbolic procedure printvec v;
 % however I can use regular Lisp arrays instead with only modest waste of
 % space and that is what I do on PSL.
 
-symbolic procedure print8 v;
+symbolic procedure lalr_print_byte_vector v;
   begin
     scalar ch;
     ch := '!#!V8![;
@@ -976,7 +976,7 @@ symbolic procedure print8 v;
     return v
   end;
 
-symbolic procedure print16 v;
+symbolic procedure lalr_print_shortnum_vector v;
   begin
     scalar ch;
     ch := '!#!V16![;
@@ -1020,9 +1020,9 @@ symbolic procedure lalr_make_gotos();
       putv16(goto_new_state, p, cdar r);
       r := cdr r >>;
     if !*lalr_verbose then <<
-      princ "goto_index: ";     print16 goto_index;
-      princ "goto_old_state: "; print16 goto_old_state;
-      princ "goto_new_state: "; print16 goto_new_state >>
+      princ "goto_index: ";     lalr_print_shortnum_vector goto_index;
+      princ "goto_old_state: "; lalr_print_shortnum_vector goto_old_state;
+      princ "goto_new_state: "; lalr_print_shortnum_vector goto_new_state >>
   end;
 
 fluid '(pending_rules!*);
@@ -1137,12 +1137,12 @@ symbolic procedure lalr_construct_parser g;
     if !*lalr_verbose then lalr_print_items("Merged Items:", cc);
     lalr_make_actions cc;
     if !*lalr_verbose then <<
-      princ "action_index "; print16 action_index;
-      princ "action_terminal "; print16 action_terminal;
-      princ "action_result "; print16 action_result;
-      princ "action_fn "; printvec action_fn;
-      princ "action_n "; print8 action_n;
-      princ "action_A "; print16 action_A >>;
+      princ "action_index "; lalr_print_shortnum_vector action_index;
+      princ "action_terminal "; lalr_print_shortnum_vector action_terminal;
+      princ "action_result "; lalr_print_shortnum_vector action_result;
+      princ "action_fn "; lalr_print_generic_vector action_fn;
+      princ "action_n "; lalr_print_byte_vector action_n;
+      princ "action_A "; lalr_print_shortnum_vector action_a >>;
     lalr_make_gotos();
     lalr_cleanup()
   end;

@@ -57,7 +57,7 @@ flag('(!*allbranch multiplicities!* assumptions requirements),
 %                       this.  With the decompose code, this should
 %                       only occur with expressions of form x^n + c.
 
-Comment most of these procedures return a list of "solve solutions".  A
+COMMENT most of these procedures return a list of "solve solutions".  A
    solve solution is a list with three fields: the list of solutions,
    the corresponding variables (or NIL if the equations could not be
    solved --- in which case there is only one solution in the first
@@ -283,7 +283,7 @@ symbolic procedure adjustmul(u,n);
     else for each x in u collect list(car x,cadr x,n*caddr x);
 
 symbolic procedure solve1(e1,x1,var,mu);
-   Comment e1 is a standard form, non-trivial in the kernel x1, which
+   COMMENT e1 is a standard form, non-trivial in the kernel x1, which
       is itself a function of var, mu is an integer.  Uses roots of
       unity, known solutions, inverses, together with quadratic, cubic
       and quartic formulas, treating other cases as unsolvable.
@@ -684,7 +684,7 @@ symbolic procedure solveroots(ex,var,mu);
 
 % ***** Procedures for solving a system of eqns *****
 
-Comment. The routines for solving systems of equations return a "tagged
+COMMENT. The routines for solving systems of equations return a "tagged
 solution list", where
 
         tagged solution list ::= tag . list of solve solution

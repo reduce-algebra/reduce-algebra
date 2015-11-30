@@ -35,29 +35,29 @@ int(sin(x^2),x,0,infinity);
 
 int(sin(x^(3/2)),x,0,infinity);
 
-int(besselj(2,x),x,0,infinity);
+int(BesselJ(2,x),x,0,infinity);
 
-int(besselj(2,y^(5/4)),y,0,infinity);
+int(BesselJ(2,y^(5/4)),y,0,infinity);
 
-int(x^(-1)*besselj(2,sqrt(x)),x,0,infinity);
+int(x^(-1)*BesselJ(2,sqrt(x)),x,0,infinity);
 
-int(bessely(2,x),x,0,infinity);
+int(BesselY(2,x),x,0,infinity);
 
-int(x*besseli(2,x),x,0,infinity);
+int(x*BesselI(2,x),x,0,infinity);
 
-int(besselk(0,x),x,0,infinity);
+int(BesselK(0,x),x,0,infinity);
 
-int(x^2*besselk(2,x),x,0,infinity);
+int(x^2*BesselK(2,x),x,0,infinity);
 
 int(sinh(x),x,0,infinity);
 
 int(cosh(2*x),x,0,infinity);
 
-int(-3*ei(-x),x,0,infinity);
+int(-3*Ei(-x),x,0,infinity);
 
 int(x*shi(x),x,0,infinity);
 
-int(x*fresnel_c(x),x,0,infinity);
+int(x*Fresnel_C(x),x,0,infinity);
 
 int(x^3*e^(-2*x),x,0,infinity);
 
@@ -69,7 +69,7 @@ int(2*x^(-1/2)*cos(x),x,0,infinity);
 
 int(sin x + cos x,x,0,infinity);
 
-int(ei(-x) + sin(x^2),x,0,infinity);
+int(Ei(-x) + sin(x^2),x,0,infinity);
 
 int(x^(-1)*(sin (-2*x) + sin(x^2)),x,0,infinity);
 
@@ -95,13 +95,13 @@ int(3/x^2*sin(x)*e^(-x),x,0,infinity);
 
 int(cos(sqrt(x))*e^(-x),x,0,infinity);
 
-int(e^(-x)*besselj(2,x),x,0,infinity);
+int(e^(-x)*BesselJ(2,x),x,0,infinity);
 
 int(cos(x^2)*e^(-x),x,0,infinity);
 
 int(erf(x)*e^(-x),x,0,infinity);
 
-int(besseli(2,x)*e^(-x),x,0,infinity);
+int(BesselI(2,x)*e^(-x),x,0,infinity);
 
 int(e^(-x^2)*cos(x),x,0,infinity);
 
@@ -125,11 +125,11 @@ int(-3*x*e^(-1/2x),x,0,infinity);
 
 int(x*e^(-1/2*x^2),x,0,infinity);
 
-int(x^2*besselj(2,x),x,0,infinity);
+int(x^2*BesselJ(2,x),x,0,infinity);
 
-int(x*besselk(1,x),x,0,infinity);
+int(x*BesselK(1,x),x,0,infinity);
 
-int(-3*ei(-x),x,0,infinity);
+int(-3*Ei(-x),x,0,infinity);
 
 int(x^3*e^(-2*x^2),x,0,infinity);
 
@@ -153,9 +153,9 @@ int(e^(-1/2x),x,0,y);
 
 int(si(x),x,0,y);
 
-int(besselj(2,x^(1/4)),x,0,y);
+int(BesselJ(2,x^(1/4)),x,0,y);
 
-int(x*besseli(2,x),x,0,y);
+int(x*BesselI(2,x),x,0,y);
 
 int(x^(3/2)*e^(-x),x,0,y);
 
@@ -175,7 +175,7 @@ int(sin x + sin(-2*x),x,0,y);
 
 int(sin(n*x),x,0,y);
 
-int(heaviside(x-1),x,0,y);
+int(Heaviside(x-1),x,0,y);
 
 
 % Tests of transformations defined in defint package.
@@ -198,7 +198,7 @@ laplace_transform(1/(a^2),1-cos(a*x),x);
 
 laplace_transform(1/(b^2-a^2),cos(a*x)-cos(b*x),x);
 
-laplace_transform(besselj(0,2*sqrt(k*x)),x);	
+laplace_transform(BesselJ(0,2*sqrt(k*x)),x);	
 
 laplace_transform(Heaviside(x-1),x);
 
@@ -208,13 +208,13 @@ laplace_transform(1/(k*sqrt(pi)),e^(-x^2/(4*k^2)),x);
 
 laplace_transform(1/k,e^(-k^2/(4*x)),x);
 
-laplace_transform(2/(sqrt(pi*x)),besselk(0,2*sqrt(2*k*x)),x);	
+laplace_transform(2/(sqrt(pi*x)),BesselK(0,2*sqrt(2*k*x)),x);	
 
 hankel_transform(x,x);	
 
-Y_transform(x,x);	
+y_transform(x,x);	
 
-K_transform(x,x);	
+k_transform(x,x);	
 
 struveh_transform(x,x);
 
@@ -228,7 +228,7 @@ fourier_sin(x^k,x);
 
 fourier_sin(1/(b-a),(e^(-a*x)-e^(-b*x)),x);
 
-fourier_sin(besselj(0,a*x),x);
+fourier_sin(BesselJ(0,a*x),x);
 
 fourier_sin(1/sqrt(pi*x),cos(2*sqrt(k*x)),x);
 
@@ -260,7 +260,7 @@ laplace_transform(x^n/factorial(n)*e^(-a*x),x);
 
 laplace_transform(1/(2*a^2)*(cosh(a*x)-cos(a*x)),x);
 
-laplace_transform(k*a^k/x*besselj(k,a*x),x);	
+laplace_transform(k*a^k/x*BesselJ(k,a*x),x);	
 
 fourier_sin(1/x*e^(-3*x),x);	
 

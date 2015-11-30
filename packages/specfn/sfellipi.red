@@ -33,182 +33,182 @@ algebraic <<
 
 procedure landentrans(phi,alpha);
 
-   begin scalar alpha_n!+1, alpha_n, phi_n!+1, phi_n, aNtoa0, pNtop0,
-                a0toaN, p0topN;
+   begin scalar alpha_n!+1, alpha_n, phi_n!+1, phi_n, antoa0, pntop0,
+                a0toan, p0topn;
 
         alpha_n := alpha;
         phi_n   := phi;
-        aNtoa0 := {alpha_n};
-        pNtop0 := {phi_n};
+        antoa0 := {alpha_n};
+        pntop0 := {phi_n};
 
-        while alpha_n > 10^(-(Symbolic !:prec!:)) do
+        while alpha_n > 10^(-(symbolic !:prec!:)) do
            <<
                 alpha_n!+1:= asin(2/(1+cos(alpha_n)) -1);
                 phi_n!+1 := phi_n + (atan(cos(alpha_n)*tan(phi_n)))
                             + floor((floor(phi_n/(pi/2))+1)/2)*pi;
 
-                aNtoa0 := alpha_n!+1.aNtoa0;
-                pNtop0 := phi_n!+1.pNtop0;
+                antoa0 := alpha_n!+1.antoa0;
+                pntop0 := phi_n!+1.pntop0;
 
                 alpha_n := alpha_n!+1;
                 phi_n   := phi_n!+1
            >>;
 
-                a0toaN := reverse(aNtoa0);
-                p0topN := reverse(pNtop0);
-                return list(p0topN, a0toaN)
+                a0toan := reverse(antoa0);
+                p0topn := reverse(pntop0);
+                return list(p0topn, a0toan)
    end;
 
 %######################################################################
 %VALUE OF EllipticF(phi,m)
 
-procedure F_function(phi,m);
+procedure f_function(phi,m);
 
-   begin scalar alpha, bothlists, a0toaN, a1toaN, p0topN, phi_n, y,
-                elptF;
+   begin scalar alpha, bothlists, a0toan, a1toan, p0topn, phi_n, y,
+                elptf;
 
         alpha  := asin(sqrt(m));
         bothlists := landentrans(phi,alpha);
-        a0toaN := PART(bothlists,2);
-        a1toaN := REST(a0toaN);
-        p0topN := PART(bothlists,1);
-        phi_n  := PART(reverse(p0topN),1);
+        a0toan := part(bothlists,2);
+        a1toan := rest(a0toan);
+        p0topn := part(bothlists,1);
+        phi_n  := part(reverse(p0topn),1);
 
         if phi = (pi/2)
            then
-                elptF := K_function(m)
+                elptf := k_function(m)
            else
-                elptF :=
-                phi_n *for each y in a1toaN PRODUCT(1/2)*(1+sin(y));
-        return elptF
+                elptf :=
+                phi_n *for each y in a1toan product(1/2)*(1+sin(y));
+        return elptf
    end;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %EllipticF definition
 %====================
 
-operator EllipticF;
+operator ellipticf;
 
-EllipticFrules :=
+ellipticfrules :=
 {
-        EllipticF(~phi,0)   => phi,
-        EllipticF(i*~phi,0) => i*phi,
-        EllipticF(~phi,1)   => ln(sec(phi)+tan(phi)),
-        EllipticF(i*~phi,1) => i*atan(sinh(phi)),
-        EllipticF(~phi,~m)  => Num_Elliptic(F_function,phi,m)
+        ellipticf(~phi,0)   => phi,
+        ellipticf(i*~phi,0) => i*phi,
+        ellipticf(~phi,1)   => ln(sec(phi)+tan(phi)),
+        ellipticf(i*~phi,1) => i*atan(sinh(phi)),
+        ellipticf(~phi,~m)  => num_elliptic(f_function,phi,m)
                               when lisp !*rounded and numberp phi
                               and numberp m
 };
-let EllipticFrules;
+let ellipticfrules;
 
 %######################################################################
 %VALUE OF K(m)
 
-procedure K_function(m);
+procedure k_function(m);
 
-   begin scalar AGM, aN;
+   begin scalar agm, an;
 
-        AGM := AGM_function(1,sqrt(1-m),sqrt(m));
-        aN  := PART(AGM,2);
-        return (pi / (2*aN));
+        agm := agm_function(1,sqrt(1-m),sqrt(m));
+        an  := part(agm,2);
+        return (pi / (2*an));
    end;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %EllipticK definition
 %====================
 
-EllipticKrules :=
+elliptickrules :=
 
 {
-        EllipticK(~m)   => K_function(m)   when lisp !*rounded
+        elliptick(~m)   => k_function(m)   when lisp !*rounded
                                                  and numberp m,
 
-        EllipticK!'(~m) => K_function(1-m) when lisp !*rounded
+        elliptick!'(~m) => k_function(1-m) when lisp !*rounded
                                                  and numberp m
 };
-let EllipticKrules;
+let elliptickrules;
 
 %######################################################################
 %VALUE OF EllipticE(phi,m)
 
-procedure E_function(phi,m);
+procedure e_function(phi,m);
 
-   begin scalar F, N, alpha, bothlists, a0toaN, p0topN, a1toaN, p1topN,
+   begin scalar f, n, alpha, bothlists, a0toan, p0topn, a1toan, p1topn,
                 sinalist, sinplist, b, s, blist, c, allz, w, z, allx,
-                h, x, elptE;
+                h, x, elpte;
 
-        F := F_function(phi,m);
+        f := f_function(phi,m);
         alpha := asin(sqrt(m));
 
         bothlists := landentrans(phi,alpha);
-        a0toaN := PART(bothlists, 2);
-        p0topN := PART(bothlists, 1);
-        a1toaN := REST(a0toaN);
-        p1topN := REST(p0topN);
+        a0toan := part(bothlists, 2);
+        p0topn := part(bothlists, 1);
+        a1toan := rest(a0toan);
+        p1topn := rest(p0topn);
 
-        N := LENGTH(a1toaN);
+        n := length(a1toan);
 
-        sinalist := sin(a1toaN);
-        sinplist := sin(p1topN);
+        sinalist := sin(a1toan);
+        sinplist := sin(p1topn);
 
-        b := PART(sinalist,1);
+        b := part(sinalist,1);
         s := b;
         blist := for each c in rest sinalist collect << b := b*c >>;
         blist := s.blist;
 
         allz := 0;
-        for w := 1:N do
+        for w := 1:n do
            <<
-                z := (1/(2^w))*PART(blist,w);
+                z := (1/(2^w))*part(blist,w);
                 allz := allz + z
            >>;
 
         allx := 0;
-        for h := 1:N do
+        for h := 1:n do
            <<
-                x := (1/(2^h))*((PART(blist,h))^(1/2))
-                              *  PART(sinplist,h);
+                x := (1/(2^h))*((part(blist,h))^(1/2))
+                              *  part(sinplist,h);
 
                 allx := allx + x
            >>;
 
-        elptE := F * (1 - (1/2)*((sin(PART(a0toaN,1)))^2)*(1 + allz))
-                                           + sin(PART(a0toaN,1))*allx ;
-        return elptE;
+        elpte := f * (1 - (1/2)*((sin(part(a0toan,1)))^2)*(1 + allz))
+                                           + sin(part(a0toan,1))*allx ;
+        return elpte;
    end;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %EllipticE(phi,m) definition
 %====================
 
-operator EllipticE;
+operator elliptice;
 
-JacobiErules :=
+jacobierules :=
 
 {
-        EllipticE(0,~m)     => 0,
-        EllipticE(~phi,0)   => phi,
-        EllipticE(i*~phi,0) => i*phi,
-        EllipticE(~phi,1)   => sin(phi),
-        EllipticE(i*~phi,1) => i*sinh phi,
-        EllipticE(-~phi,~m) => -EllipticE(phi,m),
-        EllipticE(~phi,-~m) =>  EllpiticE(phi,m),
+        elliptice(0,~m)     => 0,
+        elliptice(~phi,0)   => phi,
+        elliptice(i*~phi,0) => i*phi,
+        elliptice(~phi,1)   => sin(phi),
+        elliptice(i*~phi,1) => i*sinh phi,
+        elliptice(-~phi,~m) => -elliptice(phi,m),
+        elliptice(~phi,-~m) =>  ellpitice(phi,m),
 
-        df(EllipticE(~phi,~m),~phi) => Jacobidn(phi,m)^2,
-        df(EllipticE(~phi,~m),~m)   =>
+        df(elliptice(~phi,~m),~phi) => jacobidn(phi,m)^2,
+        df(elliptice(~phi,~m),~m)   =>
 
-               m * (Jacobisn(phi,m) * Jacobicn(phi,m) * Jacobidn(phi,m)
-                     -  EllipticE(phi,m) * Jacobicn(phi,m)^2) / (1-m^2)
-                     -  m * phi * Jacobisn(phi,m)^2,
+               m * (jacobisn(phi,m) * jacobicn(phi,m) * jacobidn(phi,m)
+                     -  elliptice(phi,m) * jacobicn(phi,m)^2) / (1-m^2)
+                     -  m * phi * jacobisn(phi,m)^2,
 
-        EllipticE(~phi,~m) => Num_Elliptic(E_function,phi,m)
+        elliptice(~phi,~m) => num_elliptic(e_function,phi,m)
                               when lisp !*rounded and numberp phi
                               and numberp m,
 
-        EllipticE(~m) => Num_Elliptic(E_function,pi/2,m)
+        elliptice(~m) => num_elliptic(e_function,pi/2,m)
                          when lisp !*rounded and numberp m
 };
-let JacobiErules;
+let jacobierules;
 
 %######################################################################
 %CALCULATING THE FOUR THETA FUNCTIONS
@@ -224,10 +224,10 @@ procedure num_theta(a,u,m);
         n := if a>2 then 1 else 0;
         new := 100;                     % To initiate loop
         all := 0;
-        z := (pi*u)/(2*EllipticK(m));
-        q := EXP(-pi*EllipticK(1-m)/EllipticK(m));
+        z := (pi*u)/(2*elliptick(m));
+        q := exp(-pi*elliptick(1-m)/elliptick(m));
 
-        while new > 10^(-(Symbolic !:prec!:)) do
+        while new > 10^(-(symbolic !:prec!:)) do
           << new := if a =1 then
                         ((-1)^n)*(q^(n*(n+1)))*sin((2*n+1)*z)
                 else if a=2 then (q^(n*(n+1)))*cos((2*n+1)*z)
@@ -243,150 +243,150 @@ procedure num_theta(a,u,m);
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Theta Functions
 
-operator EllipticTheta;
+operator elliptictheta;
 
 
-EllipticTHETArules :=
+ellipticthetarules :=
 {
 %Theta1rules
 %-----------
-        EllipticTheta(1,~u,~m) =>
-                 Num_Elliptic(num_theta,1,u,m) when lisp !*rounded
+        elliptictheta(1,~u,~m) =>
+                 num_elliptic(num_theta,1,u,m) when lisp !*rounded
                                   and numberp u and numberp m,
 
-        EllipticTheta(1,-~u,~m) => -EllipticTheta(1,u,m),
+        elliptictheta(1,-~u,~m) => -elliptictheta(1,u,m),
 
-        EllipticTheta(1,~u+EllipticK(~m),~m) =>  EllipticTheta(2,u,m),
+        elliptictheta(1,~u+elliptick(~m),~m) =>  elliptictheta(2,u,m),
 
-        EllipticTheta(1,~u+(2*EllipticK(~m)),~m) =>
-                                                -EllipticTheta(1,u,m),
+        elliptictheta(1,~u+(2*elliptick(~m)),~m) =>
+                                                -elliptictheta(1,u,m),
 
-        EllipticTheta(1,~u+i*EllipticK!'(~m),~m) =>
-                         i*(EXP(-i*pi*0.5*u/EllipticK(m)))*(nome_q^(-1/2))
-                                                *EllipticTheta(4,u,m),
+        elliptictheta(1,~u+i*elliptick!'(~m),~m) =>
+                         i*(exp(-i*pi*0.5*u/elliptick(m)))*(nome_q^(-1/2))
+                                                *elliptictheta(4,u,m),
 
-        EllipticTheta(1,~u+2*i*EllipticK!'(~m),~m) =>
-                                  -(EXP(-i*pi*u/EllipticK(m)))*(nome_q^-1)
-                                                *EllipticTheta(1,u,m),
+        elliptictheta(1,~u+2*i*elliptick!'(~m),~m) =>
+                                  -(exp(-i*pi*u/elliptick(m)))*(nome_q^-1)
+                                                *elliptictheta(1,u,m),
 
-        EllipticTheta(1,~u+EllipticK(~m)+i*EllipticK!'(~m),~m) =>
-                           (EXP(-i*pi*0.5*u/EllipticK(m)))*(nome_q^(-1/2))
-                                                *EllipticTheta(3,u,m),
+        elliptictheta(1,~u+elliptick(~m)+i*elliptick!'(~m),~m) =>
+                           (exp(-i*pi*0.5*u/elliptick(m)))*(nome_q^(-1/2))
+                                                *elliptictheta(3,u,m),
 
-        EllipticTheta(1,~u+2*EllipticK(~m)+2*i*EllipticK!'(~m),~m) =>
-                                   (EXP(-i*pi*u/EllipticK(m)))*(nome_q^-1)
-                                                *EllipticTheta(1,u,m),
+        elliptictheta(1,~u+2*elliptick(~m)+2*i*elliptick!'(~m),~m) =>
+                                   (exp(-i*pi*u/elliptick(m)))*(nome_q^-1)
+                                                *elliptictheta(1,u,m),
 
 %Theta2rules
 %-----------
-        EllipticTheta(2,~u,~m) =>
-                 Num_Elliptic(num_theta,2,u,m) when lisp !*rounded
+        elliptictheta(2,~u,~m) =>
+                 num_elliptic(num_theta,2,u,m) when lisp !*rounded
                                   and numberp u and numberp m,
 
-        EllipticTheta(2,-~u,~m) =>  EllipticTheta(2,u,m),
+        elliptictheta(2,-~u,~m) =>  elliptictheta(2,u,m),
 
-        EllipticTheta(2,~u+EllipticK(~m),~m) => -EllipticTheta(1,u,m),
+        elliptictheta(2,~u+elliptick(~m),~m) => -elliptictheta(1,u,m),
 
-        EllipticTheta(2,~u+(2*EllipticK(~m)),~m) =>
-                                                -EllipticTheta(2,u,m),
+        elliptictheta(2,~u+(2*elliptick(~m)),~m) =>
+                                                -elliptictheta(2,u,m),
 
-        EllipticTheta(2,~u+i*EllipticK!'(~m),~m) =>
-                           (EXP(-i*pi*0.5*u/EllipticK(m)))*(nome_q^(-1/2))
-                                                *EllipticTheta(3,u,m),
+        elliptictheta(2,~u+i*elliptick!'(~m),~m) =>
+                           (exp(-i*pi*0.5*u/elliptick(m)))*(nome_q^(-1/2))
+                                                *elliptictheta(3,u,m),
 
-        EllipticTheta(2,~u+2*i*EllipticK!'(~m),~m) =>
-                                   (EXP(-i*pi*u/EllipticK(m)))*(nome_q^-1)
-                                                *EllipticTheta(2,u,m),
+        elliptictheta(2,~u+2*i*elliptick!'(~m),~m) =>
+                                   (exp(-i*pi*u/elliptick(m)))*(nome_q^-1)
+                                                *elliptictheta(2,u,m),
 
-        EllipticTheta(2,~u+EllipticK(~m)+i*EllipticK!'(~m),~m) =>
-                        -i*(EXP(-i*pi*0.5*u/EllipticK(m)))*(nome_q^(-1/2))
-                                                *EllipticTheta(4,u,m),
+        elliptictheta(2,~u+elliptick(~m)+i*elliptick!'(~m),~m) =>
+                        -i*(exp(-i*pi*0.5*u/elliptick(m)))*(nome_q^(-1/2))
+                                                *elliptictheta(4,u,m),
 
-        EllipticTheta(2,~u+2*EllipticK(~m)+2*i*EllipticK!'(~m),~m) =>
-                                  -(EXP(-i*pi*u/EllipticK(m)))*(nome_q^-1)
-                                                *EllipticTheta(2,u,m),
+        elliptictheta(2,~u+2*elliptick(~m)+2*i*elliptick!'(~m),~m) =>
+                                  -(exp(-i*pi*u/elliptick(m)))*(nome_q^-1)
+                                                *elliptictheta(2,u,m),
 
 %Theta3rules
 %-----------
-        EllipticTheta(3,~u,~m) =>
-                 Num_Elliptic(num_theta,3,u,m) when lisp !*rounded
+        elliptictheta(3,~u,~m) =>
+                 num_elliptic(num_theta,3,u,m) when lisp !*rounded
                                   and numberp u and numberp m,
 
-        EllipticTheta(3,-~u,~m) =>  EllipticTheta(3,u,m),
+        elliptictheta(3,-~u,~m) =>  elliptictheta(3,u,m),
 
-        EllipticTheta(3,~u+EllipticK(~m),~m) =>  EllipticTheta(4,u,m),
+        elliptictheta(3,~u+elliptick(~m),~m) =>  elliptictheta(4,u,m),
 
-        EllipticTheta(3,~u+(2*EllipticK(~m)),~m) =>
-                                                 EllipticTheta(3,u,m),
+        elliptictheta(3,~u+(2*elliptick(~m)),~m) =>
+                                                 elliptictheta(3,u,m),
 
-        EllipticTheta(3,~u+i*EllipticK!'(~m),~m) =>
-                           (EXP(-i*pi*0.5*u/EllipticK(m)))*(nome_q^(-1/2))
-                                                *EllipticTheta(2,u,m),
-        EllipticTheta(3,~u+2*i*EllipticK!'(~m),~m) =>
-                                   (EXP(-i*pi*u/EllipticK(m)))*(nome_q^-1)
-                                                *EllipticTheta(3,u,m),
+        elliptictheta(3,~u+i*elliptick!'(~m),~m) =>
+                           (exp(-i*pi*0.5*u/elliptick(m)))*(nome_q^(-1/2))
+                                                *elliptictheta(2,u,m),
+        elliptictheta(3,~u+2*i*elliptick!'(~m),~m) =>
+                                   (exp(-i*pi*u/elliptick(m)))*(nome_q^-1)
+                                                *elliptictheta(3,u,m),
 
-        EllipticTheta(3,~u+EllipticK(~m)+i*EllipticK!'(~m),~m) =>
-                         i*(EXP(-i*pi*0.5*u/EllipticK(m)))*(nome_q^(-1/2))
-                                                *EllipticTheta(1,u,m),
+        elliptictheta(3,~u+elliptick(~m)+i*elliptick!'(~m),~m) =>
+                         i*(exp(-i*pi*0.5*u/elliptick(m)))*(nome_q^(-1/2))
+                                                *elliptictheta(1,u,m),
 
-        EllipticTheta(3,~u+2*EllipticK(~m)+2*i*EllipticK!'(~m),~m) =>
-                                   (EXP(-i*pi*u/EllipticK(m)))*(nome_q^-1)
-                                                *EllipticTheta(3,u,m),
+        elliptictheta(3,~u+2*elliptick(~m)+2*i*elliptick!'(~m),~m) =>
+                                   (exp(-i*pi*u/elliptick(m)))*(nome_q^-1)
+                                                *elliptictheta(3,u,m),
 
 %Theta4rules
 %-----------
-        EllipticTheta(4,~u,~m) =>
-                 Num_Elliptic(num_theta,4,u,m) when lisp !*rounded
+        elliptictheta(4,~u,~m) =>
+                 num_elliptic(num_theta,4,u,m) when lisp !*rounded
                                   and numberp u and numberp m,
 
-        EllipticTheta(4,-~u,~m) =>  EllipticTheta(4,u,m),
+        elliptictheta(4,-~u,~m) =>  elliptictheta(4,u,m),
 
-        EllipticTheta(4,~u+EllipticK(~m),~m) =>  EllipticTheta(3,u,m),
+        elliptictheta(4,~u+elliptick(~m),~m) =>  elliptictheta(3,u,m),
 
-        EllipticTheta(4,~u+(2*EllipticK(~m)),~m)=>EllipticTheta(4,u,m),
+        elliptictheta(4,~u+(2*elliptick(~m)),~m)=>elliptictheta(4,u,m),
 
-        EllipticTheta(4,~u+i*EllipticK!'(~m),~m) =>
-                         i*(EXP(-i*pi*0.5*u/EllipticK(m)))*(nome_q^(-1/2))
-                                                *EllipticTheta(1,u,m),
-        EllipticTheta(4,~u+2*i*EllipticK!'(~m),~m) =>
-                                  -(EXP(-i*pi*u/EllipticK(m)))*(nome_q^-1)
-                                                *EllipticTheta(4,u,m),
+        elliptictheta(4,~u+i*elliptick!'(~m),~m) =>
+                         i*(exp(-i*pi*0.5*u/elliptick(m)))*(nome_q^(-1/2))
+                                                *elliptictheta(1,u,m),
+        elliptictheta(4,~u+2*i*elliptick!'(~m),~m) =>
+                                  -(exp(-i*pi*u/elliptick(m)))*(nome_q^-1)
+                                                *elliptictheta(4,u,m),
 
-        EllipticTheta(4,~u+EllipticK(~m)+i*EllipticK!'(~m),~m) =>
-                           (EXP(-i*pi*0.5*u/EllipticK(m)))*(nome_q^(-1/2))
-                                                *EllipticTheta(2,u,m),
+        elliptictheta(4,~u+elliptick(~m)+i*elliptick!'(~m),~m) =>
+                           (exp(-i*pi*0.5*u/elliptick(m)))*(nome_q^(-1/2))
+                                                *elliptictheta(2,u,m),
 
-        EllipticTheta(4,~u+2*EllipticK(~m)+2*i*EllipticK!'(~m),~m) =>
-                                  -(EXP(-i*pi*u/EllipticK(m)))*(nome_q^-1)
-                                                *EllipticTheta(4,u,m),
+        elliptictheta(4,~u+2*elliptick(~m)+2*i*elliptick!'(~m),~m) =>
+                                  -(exp(-i*pi*u/elliptick(m)))*(nome_q^-1)
+                                                *elliptictheta(4,u,m),
 %Error
 %-----
-        EllipticTheta(~a,~u,~m) =>
+        elliptictheta(~a,~u,~m) =>
 
             printerr ("In EllipticTheta(a,u,m);   a = 1,2,3 or 4.")
                          when numberp a
                                     and not(fixp a and a<5 and a>0)
 };
-let EllipticTHETArules;
+let ellipticthetarules;
 
 %######################################################################
 %CALCULATING ZETA
 
-procedure JacobiZeta!:numeric(u,m);
+procedure jacobizeta!:numeric(u,m);
   % computes the JacobiZeta function for numeric u,m in rounded mode
 
-   begin scalar phi_list, clist, L, j, z, cn, phi_n;
+   begin scalar phi_list, clist, l, j, z, cn, phi_n;
 
-        phi_list := PHI_function(1,sqrt(1-m),sqrt(m),u);
-        clist := PART(AGM_function(1,sqrt(1-m),sqrt(m)),5);
-        L := LENGTH(phi_list);
+        phi_list := phi_function(1,sqrt(1-m),sqrt(m),u);
+        clist := part(agm_function(1,sqrt(1-m),sqrt(m)),5);
+        l := length(phi_list);
         j := 1;
         z := 0;
-        while j < L do
+        while j < l do
            <<
-                cn    := PART(clist,L-j);
-                phi_n := PART(phi_list,1+j);
+                cn    := part(clist,l-j);
+                phi_n := part(phi_list,1+j);
                 z := cn*sin(phi_n) + z;
                 j := j+1
            >>;
@@ -397,32 +397,32 @@ procedure JacobiZeta!:numeric(u,m);
 %JacobiZETA definition
 %=====================
 
-operator JacobiZeta;
+operator jacobizeta;
 
-JacobiZETArules :=
+jacobizetarules :=
 
 {
 
-        JacobiZeta(~u,0)     => 0,
-        JacobiZeta(~u,1)     => tanh(u),
-        JacobiZeta(-~u,~m)   => -JacobiZeta(u,m),
-        JacobiZeta(~u+~v,~m) => JacobiZeta(u,m) + JacobiZeta(v,m) -
-                                (m*Jacobisn(u,m)*Jacobisn(v,m)
-                                                 *Jacobisn(u+v,m)),
+        jacobizeta(~u,0)     => 0,
+        jacobizeta(~u,1)     => tanh(u),
+        jacobizeta(-~u,~m)   => -jacobizeta(u,m),
+        jacobizeta(~u+~v,~m) => jacobizeta(u,m) + jacobizeta(v,m) -
+                                (m*jacobisn(u,m)*jacobisn(v,m)
+                                                 *jacobisn(u+v,m)),
 
-        JacobiZeta(~u+2*EllipticK(~m),m) => JacobiZeta(u,m),
-        JacobiZeta(EllipticK(~m) - ~u,m) =>
-                                        -JacobiZeta(EllipticK(m)+u,m),
+        jacobizeta(~u+2*elliptick(~m),m) => jacobizeta(u,m),
+        jacobizeta(elliptick(~m) - ~u,m) =>
+                                        -jacobizeta(elliptick(m)+u,m),
 
 %       JacobiZeta(~u,~m) => JacobiZeta(u - EllipticK(m),m) -
 %                            m * Jacobisn(u - EllipticK(m),m)
 %                              * Jacobicd(u - EllipticK(m),m),
 
-        JacobiZeta(~u,~m) => Num_Elliptic(JacobiZeta!:numeric,u,m)
+        jacobizeta(~u,~m) => num_elliptic(jacobizeta!:numeric,u,m)
                              when lisp !*rounded and numberp u
                              and numberp m
 };
-let JacobiZETArules;
+let jacobizetarules;
 %######################################################################
 >>;
 endmodule;

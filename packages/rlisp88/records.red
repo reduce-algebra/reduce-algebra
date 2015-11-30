@@ -39,61 +39,61 @@ module records; % A record package for RLISP using MSTRUCT.
 %      RECORD Declaration
 %-----------------------------------------------------------------------
 
-Expr PROCEDURE RecordStat();
+expr procedure recordstat();
 % RECORD <struct-name>
 %  { /* <annotation> */ }
 %  { WITH <field> := <expression> { , <field> := <expression> }... }
 %  { HAS <option> { , <option> }... } ;
    begin scalar f, stat;
-      f := FlagP('HAS,'DELIM);
-      Flag('(HAS),'DELIM);
-      stat := Errorset('(RecordStat1),NIL,nil);
-      if not f then RemFlag('(HAS),'DELIM);
-      if errorp stat THEN while cursym!* neq '!*SEMICOL!* do scan()
+      f := flagp('has,'delim);
+      flag('(has),'delim);
+      stat := errorset('(recordstat1),nil,nil);
+      if not f then remflag('(has),'delim);
+      if errorp stat then while cursym!* neq '!*semicol!* do scan()
        else return car stat
    end;
 
 expr procedure recordstat1();
    begin scalar structname, annotation, fields, options;
-      structname := Scan();
-      if not idp structname then symerr('RECORD, T);
-      if eqcar(scan(), '!*COMMENT!*) then
-         <<annotation := cadr cursym!*; Scan()>>;
-       if cursym!* eq 'WITH then fields := remcomma xread nil;
-       if cursym!* eq 'HAS then options := remcomma xread NIL;
-       if cursym!* eq '!*SEMICOL!* then
-         return {'RECORD, structname, annotation, fields, options}
-       else symerr('RECORD, T)
-   END;
+      structname := scan();
+      if not idp structname then symerr('record, t);
+      if eqcar(scan(), '!*comment!*) then
+         <<annotation := cadr cursym!*; scan()>>;
+       if cursym!* eq 'with then fields := remcomma xread nil;
+       if cursym!* eq 'has then options := remcomma xread nil;
+       if cursym!* eq '!*semicol!* then
+         return {'record, structname, annotation, fields, options}
+       else symerr('record, t)
+   end;
 
-Put('RECORD,'STAT,'RecordStat);
+put('record,'stat,'recordstat);
 
 expr procedure formrecord(u, vars, mode);
 apply(form_function, cdr u)
 where form_function =
   function(lambda(record_name, annotation, fields, options);
      begin scalar structspec, fieldspecs, constructor, form;
-       structspec := Form_structure_specification(record_name, options);
-       fieldspecs := Form_field_specifications(fields);
-       constructor := Cdr Atsoc('CONSTRUCTOR,
-                                Get_defstruct_options structspec);
-       form := {NIL};
-       tconc(form, 'PROGN);
+       structspec := form_structure_specification(record_name, options);
+       fieldspecs := form_field_specifications(fields);
+       constructor := cdr atsoc('constructor,
+                                get_defstruct_options structspec);
+       form := {nil};
+       tconc(form, 'progn);
       if constructor then
          << tconc(form,
                   {'put, mkquote constructor,
-                         '(QUOTE FORMFN),
-                         '(QUOTE FORM_RECORD_CONSTRUCTOR)});
-             put(constructor, 'FORMFN, 'FORM_RECORD_CONSTRUCTOR) >>;
+                         '(quote formfn),
+                         '(quote form_record_constructor)});
+             put(constructor, 'formfn, 'form_record_constructor) >>;
       if annotation then
-         tconc(form, {'PUT, mkquote record_name,
-                            '(QUOTE ANNOTATION),
+         tconc(form, {'put, mkquote record_name,
+                            '(quote annotation),
                             annotation});
-      tconc(form, 'DEFSTRUCT . structspec . fieldspecs);
-      return Car form
+      tconc(form, 'defstruct . structspec . fieldspecs);
+      return car form
       end);
 
-Put('RECORD, 'FORMFN, 'FormRecord);
+put('record, 'formfn, 'formrecord);
 
 expr procedure tconc(ptr,elem);
    % ACONC with pointer to end of list.  Ptr is (list . last CDR of
@@ -104,31 +104,31 @@ expr procedure tconc(ptr,elem);
       else if null cdr ptr then rplaca(rplacd(ptr,elem),elem)
       else <<rplacd(cdr ptr,elem); rplacd(ptr,elem)>>>>;
 
-expr procedure Form_structure_specification(record_name, options);
+expr procedure form_structure_specification(record_name, options);
 append(defaults,
        for each entry in options
             collect if atom entry then entry
-                    else if eqcar(entry, 'NO) and length entry=2 then
-                         {cadr entry, NIL}
-                    else if car entry eq 'EQUAL and length entry=3 then
+                    else if eqcar(entry, 'no) and length entry=2 then
+                         {cadr entry, nil}
+                    else if car entry eq 'equal and length entry=3 then
                          {cadr entry, caddr entry}
                     else error(0, {"Bad RECORD option:", entry}))
-     where defaults = {record_name,{'CONSTRUCTOR, record_name},
+     where defaults = {record_name,{'constructor, record_name},
                        'predicate};
 
 expr procedure form_field_specifications field_list;
 for each entry in field_list
     join
-       if eqcar(entry, 'SETQ)
-         then {{cadr(entry), form1(caddr entry, NIL, 'SYMBOLIC)}}
+       if eqcar(entry, 'setq)
+         then {{cadr(entry), form1(caddr entry, nil, 'symbolic)}}
         else nil;
 
 expr procedure form_record_constructor(u, vars, mode);
 begin scalar constructor, arglist;
   constructor := car u;
-  arglist := {NIL};
+  arglist := {nil};
   for each arg in cdr u
-    do if eqcar(arg, 'SETQ) then
+    do if eqcar(arg, 'setq) then
            << tconc(arglist, cadr arg);
               tconc(arglist, form1(caddr arg, vars, mode)) >>
        else rederr {arg, "is not a proper initialization form for",
@@ -139,3 +139,4 @@ end;
 endmodule;
 
 end;
+

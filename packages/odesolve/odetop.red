@@ -40,7 +40,7 @@ module odetop$  % Top level ODESolve routines, exact ODEs, general
 
 % To do: Run hooks within an errorset for extra security?
 
-symbolic procedure ODESolve!-Run!-Hook(hook, args);
+symbolic procedure odesolve!-run!-hook(hook, args);
    %% HOOK is the *name* of a hook; ARGS is a *list* of arguments.
    %% If HOOK is a function or is bound to a function then apply it to
    %% ARGS; if HOOK is bound to a list of functions then apply them in
@@ -68,21 +68,21 @@ symbolic procedure ODESolve!-Run!-Hook(hook, args);
 
 fluid '(odesolve!-interchange!-list!* !*odesolve!-norecurse)$
 
-global '(ODESolve!-Standard!-x ODESolve!-Standard!-y)$
+global '(odesolve!-standard!-x odesolve!-standard!-y)$
 
-ODESolve!-Standard!-x := gensym()$
-ODESolve!-Standard!-y := gensym()$
+odesolve!-standard!-x := gensym()$
+odesolve!-standard!-y := gensym()$
 
-symbolic procedure ODESolve!-Standardize(ode, y, x);
+symbolic procedure odesolve!-standardize(ode, y, x);
    %% Return the numerator of ode in true prefix form and with
    %% standardized variable names.  (What about sign, etc.?)
-   subst(ODESolve!-Standard!-y, y,
-      subst(ODESolve!-Standard!-x, x, prepf numr simp!* ode))$
+   subst(odesolve!-standard!-y, y,
+      subst(odesolve!-standard!-x, x, prepf numr simp!* ode))$
 
-symbolic procedure ODESimp!-Interrupt(ode, y, x);
+symbolic procedure odesimp!-interrupt(ode, y, x);
    begin scalar std_ode;
       ode := num !*eqn2a ode;           % Returns ode as expression.
-      if member(std_ode:=ODESolve!-Standardize(ode, y, x),
+      if member(std_ode:=odesolve!-standardize(ode, y, x),
          odesolve!-interchange!-list!*) then <<
             traceode "ODE simplifier loop interrupted! ";
             return t
@@ -97,10 +97,10 @@ symbolic procedure ODESimp!-Interrupt(ode, y, x);
 % Top-level classification of an ODE, primarily as linear or
 % nonlinear.
 
-global '(ODESolve_Before_Hook ODESolve_After_Hook)$
-global '(ODESolve_Before_Non_Hook ODESolve_After_Non_Hook)$
+global '(odesolve_before_hook odesolve_after_hook)$
+global '(odesolve_before_non_hook odesolve_after_non_hook)$
 
-algebraic procedure ODESolve!*0(ode, y, x);
+algebraic procedure odesolve!*0(ode, y, x);
    %% Top-level general ODE solver.  If no derivatives call solve?
    %% ***** DO NOT CALL RECURSIVELY *****
    symbolic begin scalar !*precise, solution, !*odesolve!-norecurse,
@@ -109,28 +109,28 @@ algebraic procedure ODESolve!*0(ode, y, x);
       %% are used to prevent infinite loops.)
       ode := num !*eqn2a ode;           % returns ode as expression
       if (solution := or(
-         ODESolve!-Run!-Hook('ODESolve_Before_Hook, {ode,y,x}),
-         ODESolve!*1(ode, y, x),
+         odesolve!-run!-hook('odesolve_before_hook, {ode,y,x}),
+         odesolve!*1(ode, y, x),
          %% Call ODESolve!-Diff once only, not in recursive loop?
          %% SHOULD apply only to nonlinear ODEs?
-         not !*odesolve_fast and ODESolve!-Diff(ode, y, x),
-         ODESolve!-Run!-Hook('ODESolve_After_Hook, {ode,y,x})))
+         not !*odesolve_fast and odesolve!-diff(ode, y, x),
+         odesolve!-run!-hook('odesolve_after_hook, {ode,y,x})))
       then return solution;
       traceode "ODESolve cannot solve this ODE!"
    end$
 
-algebraic procedure ODESolve!*1(ode, y, x);
+algebraic procedure odesolve!*1(ode, y, x);
    %% Top-level discrimination between linear and nonlinear ODEs.
    %% May be called recursively.
    %% (NB: A product of linear factors is NONLINEAR!)
    symbolic if !*odesolve!-norecurse then
       traceode "ODESolve terminated: no recursion mode!"
-   else if ODESimp!-Interrupt(ode, y, x) then nil else
+   else if odesimp!-interrupt(ode, y, x) then nil else
    <<
       !*odesolve!-norecurse := !*odesolve_norecurse;
       traceode1 "Entering top-level general recursive solver ...";
-      if ODE!-Linearp(ode, y) then      % linear
-         ODESolve!-linear(ode, y, x)
+      if ode!-linearp(ode, y) then      % linear
+         odesolve!-linear(ode, y, x)
       else  % nonlinear -- turn off basis solution
       algebraic begin scalar !*odesolve_basis, ode_factors, solns;
          %% Split into algebraic factors (which may lose exactness).
@@ -142,7 +142,7 @@ algebraic procedure ODESolve!*1(ode, y, x);
          %% { {factor, multiplicity}, ... }
          if length ode_factors = 1 and second first ode_factors = 1 then
             %% Guaranteed algebraically-irreducible nonlinear ODE ...
-            return ODESolve!-nonlinear(ode, y, x);
+            return odesolve!-nonlinear(ode, y, x);
          traceode "This is a nonlinear ODE that factorizes algebraically ",
             "and each distinct factor ODE will be solved separately ...";
          solns := {};
@@ -152,24 +152,24 @@ algebraic procedure ODESolve!*1(ode, y, x);
             if smember(y, fac := first first ode_factors) then
                %% Guaranteed algebraically-irreducible -- may be
                %% either algebraic or linear or nonlinear ODE ...
-               if (fac := ODESolve!*2!*(fac, y, x)) then <<
+               if (fac := odesolve!*2!*(fac, y, x)) then <<
                   solns := append(solns, fac);
                   ode_factors := rest ode_factors
                >>  else solns := ode_factors := {}
             else <<
                if depends(fac, x) or depends(fac, y) then
-                  symbolic MsgPri("ODE factor", fac, "ignored", nil, nil);
+                  symbolic msgpri("ODE factor", fac, "ignored", nil, nil);
                ode_factors := rest ode_factors
             >>;
          end;
          %% Finally check whether the UNFACTORIZED ode was exact:
          return
-            if solns = {} then Odesolve!-Exact!*(ode, y, x)
+            if solns = {} then odesolve!-exact!*(ode, y, x)
             else solns
       end
    >>$
 
-algebraic procedure ODESolve!-FirstOrder(ode, y, x);
+algebraic procedure odesolve!-firstorder(ode, y, x);
    %% Solve an ARBITRARY first-order ODE.
    %% (Called from various other modules.)
    symbolic <<
@@ -181,28 +181,28 @@ algebraic procedure ODESolve!-FirstOrder(ode, y, x);
       %% A nonlinear first-order ODE may need the full solver ...
       %% but could later arrange to pass the order rather than
       %% recompute it.
-      ODESolve!*1(ode, y, x)
+      odesolve!*1(ode, y, x)
    >>$
 
-algebraic procedure ODESolve!*2!*(ode, y, x);
+algebraic procedure odesolve!*2!*(ode, y, x);
    %% Internal discrimination between algebraic or differential factor.
    if smember(df, ode) then             % ODE
-      ODESolve!*2(ode, y, x)
+      odesolve!*2(ode, y, x)
    else if ode = y then                 % Common special algebraic case,
       {y = 0}                           % e.g. solving autonomous ODEs.
    else solve(ode, y)$                  % General algebraic case.
 
-algebraic procedure ODESolve!*2(ode, y, x);
+algebraic procedure odesolve!*2(ode, y, x);
    %% Internal discrimination between linear and nonlinear ODEs.  Like
    %% ODESolve!*1 but does not attempt any algebraic factorization.
    symbolic <<
       traceode1 "Entering top-level recursive solver ",
          "without algebraic factorization ...";
       traceode ode=0;
-      if ODE!-Linearp(ode, y) then      % linear
-         ODESolve!-linear(ode, y, x)
+      if ode!-linearp(ode, y) then      % linear
+         odesolve!-linear(ode, y, x)
       else                              % nonlinear
-         ODESolve!-nonlinear(ode, y, x)
+         odesolve!-nonlinear(ode, y, x)
    >>$
 
 
@@ -211,28 +211,28 @@ algebraic procedure ODESolve!*2(ode, y, x);
 % The entry point to the non-trivially nonlinear ODE solver
 % =========================================================
 
-algebraic procedure ODESolve!-nonlinear(ode, y, x);
+algebraic procedure odesolve!-nonlinear(ode, y, x);
    %% Attempt to solve an algebraically-irreducible nonlinear ODE.
    symbolic %% if ODESimp!-Interrupt(ode, y, x) then nil else
       begin scalar ode_order;
-         ode_order := ODE!-Order(ode, y);
+         ode_order := ode!-order(ode, y);
          traceode "This is a nonlinear ODE of order ", ode_order, ".";
          return or(
-            ODESolve!-Run!-Hook(
-               'ODESolve_Before_Non_Hook, {ode,y,x,ode_order}),
+            odesolve!-run!-hook(
+               'odesolve_before_non_hook, {ode,y,x,ode_order}),
             (if ode_order = 1 then
-               ODESolve!-nonlinear1(ode, y, x)
+               odesolve!-nonlinear1(ode, y, x)
             else
                %% ODESolve!-Diff(ode, y, x) or % TEMPORARY
-               ODESolve!-nonlinearn(ode, y, x)),
-            ODESolve!-Exact(ode, y, x, ode_order),
-            not !*odesolve_fast and ODESolve!-Alg!-Solve(ode, y, x),
-            not !*odesolve_fast and ODESolve!-Interchange(ode, y, x),
-            ODESolve!-Run!-Hook(
-               'ODESolve_After_Non_Hook, {ode,y,x,ode_order}))
+               odesolve!-nonlinearn(ode, y, x)),
+            odesolve!-exact(ode, y, x, ode_order),
+            not !*odesolve_fast and odesolve!-alg!-solve(ode, y, x),
+            not !*odesolve_fast and odesolve!-interchange(ode, y, x),
+            odesolve!-run!-hook(
+               'odesolve_after_non_hook, {ode,y,x,ode_order}))
       end$
 
-symbolic procedure ODESolve!-Interchange(ode, y, x);
+symbolic procedure odesolve!-interchange(ode, y, x);
    %% Interchange x <--> y and try to solve.
    %% PROBABLY NOT DESIRABLE FOR LINEAR ODES!
    if !*odesolve_noswap then
@@ -266,7 +266,7 @@ symbolic procedure ODESolve!-Interchange(ode, y, x);
 %%          %% Give up -- we have already interchanged variables in this
 %%          %% ode once!
 %%          << !*odesolve_failed := t;  return algebraic {ode=0} >>;
-      ode := ODESolve!*1(ode, x, y);    % Try again ..
+      ode := odesolve!*1(ode, x, y);    % Try again ..
       if ode then return
          makelist for each soln in cdr ode join
             if smember(y, soln) then {soln} else {}
@@ -287,12 +287,12 @@ symbolic procedure ODESolve!-Interchange(ode, y, x);
 
 % The first-order code is based on code by Malcolm MacCallum.
 
-algebraic procedure ODESolve!-Exact!*(ode, y, x);
+algebraic procedure odesolve!-exact!*(ode, y, x);
    %% Solve an exact first or second order nonlinear ODE of unknown
    %% order.
-   ODESolve!-Exact(ode, y, x, ODE!-Order(ode, y))$
+   odesolve!-exact(ode, y, x, ode!-order(ode, y))$
 
-algebraic procedure ODESolve!-Exact(ode, y, x, ode_order);
+algebraic procedure odesolve!-exact(ode, y, x, ode_order);
    %% Solve an exact first or second order nonlinear ODE of known
    %% order.
    begin scalar c, den_ode, result;
@@ -306,36 +306,36 @@ algebraic procedure ODESolve!-Exact(ode, y, x, ode_order);
       %% interchange at present.  But smember nearly suffices anyway!
       if length c neq 2 or smember(df(y,x,ode_order), c) then return;
       return if ode_order = 1 then
-         symbolic ODESolve!-Exact!-1(c, den_ode, y, x)
+         symbolic odesolve!-exact!-1(c, den_ode, y, x)
       else if ode_order = 2 then
-         symbolic ODESolve!-Exact!-2(c, den_ode, y, x)
+         symbolic odesolve!-exact!-2(c, den_ode, y, x)
    end$
 
-symbolic procedure ODESolve!-Exact!-1(c, den_ode, y, x);
+symbolic procedure odesolve!-exact!-1(c, den_ode, y, x);
    %% Solves the ode if it is an exact (nonlinear) first order ode of
    %% the form = N dy/dx + M.
-   ( algebraic begin scalar M, N;
-      M := first c;  N := second c;
+   ( algebraic begin scalar m, n;
+      m := first c;  n := second c;
       symbolic depend1(y, x, nil);      % all derivatives partial
-      if df(M,y) - df(N,x) and
-         (not den_ode or df(M:=M/den_ode,y) - df(N:=N/den_ode,x))
+      if df(m,y) - df(n,x) and
+         (not den_ode or df(m:=m/den_ode,y) - df(n:=n/den_ode,x))
       then return;
       %% traceode "This is an exact first-order ODE.";
       traceode "It is exact and is solved by quadrature.";
-      return {exact1_pde(M, N, y, x) = 0}
+      return {exact1_pde(m, n, y, x) = 0}
    end ) where depl!* = depl!*$
 
-algebraic procedure exact1_pde(M, N, y, x);
+algebraic procedure exact1_pde(m, n, y, x);
    %% Return phi(x,y) such that df(phi,x) = M(x,y), df(phi,y) =
    %% N(x,y), required to integrate first and second order exact odes.
-   begin scalar int_M;  int_M := int(M, x);
+   begin scalar int_m;  int_m := int(m, x);
       %% phi = int_M + f(y)
       %% => df(phi,y) = df(int_M,y) + df(f,y) = N
       %% => f = int(N - df(int_M,y), y)
-      return num(int_M + int(N - df(int_M,y), y) + newarbconst())
+      return num(int_m + int(n - df(int_m,y), y) + newarbconst())
    end$
 
-symbolic procedure ODESolve!-Exact!-2(c, den_ode, y, x);
+symbolic procedure odesolve!-exact!-2(c, den_ode, y, x);
    %% Computes a first integral of ODE if it is an exact (nonlinear)
    %% second order ODE of the form f(x,y,y') y'' + g(x,y,y') = 0.
    %% *** EXTEND THIS GENERAL CODE TO HIGHER ORDER ??? ***
@@ -344,9 +344,9 @@ symbolic procedure ODESolve!-Exact!-2(c, den_ode, y, x);
       f := sub(df(y,x) = p, second c);
       g := sub(df(y,x) = p, first c);
       symbolic depend1(y, x, nil);      % all derivatives partial
-      if ODESolve!-Exact!-2!-test(f, g, p, y, x)
+      if odesolve!-exact!-2!-test(f, g, p, y, x)
          and (not den_ode or
-            ODESolve!-Exact!-2!-test(f:=f/den_ode, g:=g/den_ode, p, y, x))
+            odesolve!-exact!-2!-test(f:=f/den_ode, g:=g/den_ode, p, y, x))
       then return;
       %% ODE is exact
       %% traceode "This is an exact second-order ODE for which ",
@@ -367,13 +367,13 @@ symbolic procedure ODESolve!-Exact!-2(c, den_ode, y, x);
       symbolic depend1(y, x, t);
       first_int := sub(h = h_x, p = df(y,x), first_int);
       %% traceode first_int = 0;
-      first_int := ODESolve!-FirstOrder(first_int, y, x);
+      first_int := odesolve!-firstorder(first_int, y, x);
       return
-         if first_int then ODESolve!-Simp!-ArbConsts(first_int, y, x)
+         if first_int then odesolve!-simp!-arbconsts(first_int, y, x)
          else traceode "But ODESolve cannot solve it!"
    end ) where depl!* = depl!*$
 
-algebraic procedure ODESolve!-Exact!-2!-test(f, g, p, y, x);
+algebraic procedure odesolve!-exact!-2!-test(f, g, p, y, x);
    if ( (df(f,x,2) + 2p*df(f,x,y) + p^2*df(f,y,2)) -
       (df(g,x,p) + p*df(g,y,p) - df(g,y)) or
          (df(f,x,p) + p*df(f,y,p) + 2df(f,y)) - df(g,p,2) ) then 1$
@@ -386,7 +386,7 @@ symbolic(!*odesolve_diff := t)$         % TEMPORARY?
 
 fluid '(!*arbvars)$
 
-algebraic procedure ODESolve!-Diff(ode, y, x);
+algebraic procedure odesolve!-diff(ode, y, x);
    %% If the derivative of ode factorizes then try to solve each
    %% factor and return the solutions, otherwise return nil.
    %% This is the inverse of detecting an exact ode!
@@ -412,7 +412,7 @@ algebraic procedure ODESolve!-Diff(ode, y, x);
             for each s in solve(fac, y) do
                if sub(s, ode) = 0 then solns := (s = 0) . solns;
          first!!arbconst := !!arbconst + 1;
-         fac := ODESolve!*2(fac, y, x); % to avoid nasty loops
+         fac := odesolve!*2(fac, y, x); % to avoid nasty loops
          if not fac then return solns := ode_factors := {};
          arbconsts :=
             for i := first!!arbconst : !!arbconst collect arbconst i;
@@ -425,10 +425,10 @@ algebraic procedure ODESolve!-Diff(ode, y, x);
       traceode "... but cannot solve all factor ODEs.";
    end$
 
-algebraic procedure ODESolve!-Alg!-Solve(ode, y, x);
+algebraic procedure odesolve!-alg!-solve(ode, y, x);
    %% Try to solve algebraically for a single derivative and then
    %% solve each solution ode directly.
-   begin scalar deriv, L, R, d, root_odes, solns;
+   begin scalar deriv, l, r, d, root_odes, solns;
       scalar !*fullroots, !*trigform, !*precise;
       %% symbolic(!*fullroots := t);       % Can be VERY slow!
       traceode1
@@ -439,13 +439,13 @@ algebraic procedure ODESolve!-Alg!-Solve(ode, y, x);
       %% derivatives.  Try to solve it algebraically for the
       %% derivative.
       deriv := df(y, x, first deriv);
-      if not( smember(deriv, L:=lcof(ode,deriv)) or
-              smember(deriv, R:=reduct(ode,deriv)) ) then
+      if not( smember(deriv, l:=lcof(ode,deriv)) or
+              smember(deriv, r:=reduct(ode,deriv)) ) then
          if (d:=deg(ode,deriv)) = 1 then
             return                      % linear in single deriv
          else
             root_odes :=                % single integer power
-               { num(deriv - (-R/L)^(1/d)*newroot_of_unity(d)) }
+               { num(deriv - (-r/l)^(1/d)*newroot_of_unity(d)) }
                %% Expand roots of unity later.
       else <<
          root_odes := solve(ode, deriv);
@@ -464,7 +464,7 @@ algebraic procedure ODESolve!-Alg!-Solve(ode, y, x);
       solns := {};
       while root_odes neq {} do
       begin scalar soln;
-         if (soln := ODESolve!*2(first root_odes, y, x)) then <<
+         if (soln := odesolve!*2(first root_odes, y, x)) then <<
             solns := append(solns, soln);
             root_odes := rest root_odes
          >> else solns := root_odes := {}
@@ -482,20 +482,20 @@ algebraic procedure ODESolve!-Alg!-Solve(ode, y, x);
 
 %% NB: smember in ODE!-Linearp should probably be depends!
 
-symbolic operator ODE!-Linearp$
-symbolic procedure ODE!-Linearp(ode, y);
+symbolic operator ode!-linearp$
+symbolic procedure ode!-linearp(ode, y);
    %% ODE is assumed to be an expression (not an equation).
    %% Returns t if ODE is linear in y, nil otherwise.
    %% Assumes on exp, mcd.
-   ODE!-Lin!-Form!-p(numr simp!* ode, !*a2k y)$
+   ode!-lin!-form!-p(numr simp!* ode, !*a2k y)$
 
-symbolic procedure ODE!-Lin!-Form!-p(sf, y);
+symbolic procedure ode!-lin!-form!-p(sf, y);
    %% A standard (polynomial) form `sf' is linear if each of its terms
    %% is linear:
    domainp sf or
-      (ODE!-Lin!-Term!-p(lt sf, y) and ODE!-Lin!-Form!-p(red sf, y))$
+      (ode!-lin!-term!-p(lt sf, y) and ode!-lin!-form!-p(red sf, y))$
 
-symbolic procedure ODE!-Lin!-Term!-p(st, y);
+symbolic procedure ode!-lin!-term!-p(st, y);
    %% A standard (polynomial) term `st' is linear if either (a) its
    %% leading power is linear and its coefficient is independent of y,
    %% or (b) its leading power is independent of y and its coefficient
@@ -504,12 +504,12 @@ symbolic procedure ODE!-Lin!-Term!-p(st, y);
       return if knl eq y or (eqcar(knl, 'df) and cadr knl eq y) then
          %% Kernel knl is either y or a derivative of y (df y ...)
          tdeg st eq 1 and not depends(tc st, y)
-      else if not depends(knl, y) then ODE!-Lin!-Form!-p(tc st, y)
+      else if not depends(knl, y) then ode!-lin!-form!-p(tc st, y)
    end$
 
 
-symbolic operator ODE!-Order$
-symbolic procedure ODE!-Order(u, y);
+symbolic operator ode!-order$
+symbolic procedure ode!-order(u, y);
    %% u is initially an ODE, assumed to be an expression (not an
    %% equation).  Returns its order wrt. y.
    if atom u then 0
@@ -517,7 +517,7 @@ symbolic procedure ODE!-Order(u, y);
       %% u = (df y x n) or (df y x)
       (if cdddr u then cadddr u else 1)
    else
-      max(ODE!-Order(car u, y), ODE!-Order(cdr u, y))$
+      max(ode!-order(car u, y), ode!-order(cdr u, y))$
 
 
 symbolic operator get_deriv_orders$
@@ -569,7 +569,7 @@ algebraic let (plus_or_minus(~tag))^2 => 1 when symbolic not !*intflag!*,
 %    (root_of_unity(~n, ~tag))^nn => 1 when fixp(nn/n)
 
 algebraic procedure newroot_of_unity(n);
-   if n = 0 then RedErr "zeroth roots of unity undefined"
+   if n = 0 then rederr "zeroth roots of unity undefined"
    else if numberp n and (n:=abs num n) = 1 then 1
    else if n = 2 then
       plus_or_minus(newroot_of_unity_tag())
@@ -606,7 +606,7 @@ symbolic procedure expand_roots_of_unity1 u; % u is an rlist
       else
       begin scalar n, n!-1;
          if not fixp(n := numr simp!* cadr r) then
-            TypErr(n, "root of unity");
+            typerr(n, "root of unity");
          n!-1 := sub1 n;
          return for m := 1 : n!-1 join
             cdr algebraic sub(r = exp(i*2*pi*m/n), u)

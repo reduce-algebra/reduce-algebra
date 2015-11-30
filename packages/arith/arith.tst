@@ -378,7 +378,7 @@ off complex;
 
 % Tests of some elementary functions.
 
-comment Integer functions that work in all domain modes, independent of
+COMMENT Integer functions that work in all domain modes, independent of
 switch NUMVAL, so long as their arguments evaluate to real numbers.
 
 Functions of one argument:
@@ -414,7 +414,7 @@ floor 12.5;
 % irootn(72,3/2); % This will not evaluate.
 
 
-comment   Functions which require arguments which evaluate to integers.
+COMMENT   Functions which require arguments which evaluate to integers.
 
 Function of one argument:  FACTORIAL
 
@@ -427,7 +427,7 @@ perm(5,10);  % Permutations of 5 out of 10.
 choose(5,10);  % Choose 5 out of 10.
 
 
-comment
+COMMENT
 
 These functions are evaluated in dmodes ROUNDED and COMPLEX-ROUNDED
 (ON ROUNDED,COMPLEX) so long as their arguments and values evaluate
@@ -557,7 +557,7 @@ asin ws;
 
 precision 6;
 
-comment   If argument or value are complex, functions are not computed
+COMMENT   If argument or value are complex, functions are not computed
 when dmode is ROUNDED; $
 
 sin(1+i);  % Complex argument.
@@ -566,7 +566,7 @@ asin 2;  % Value would be complex.
 
 on complex; % Now complex arguments and complex results will be handled.
 
-comment   Complex functions of one argument:
+COMMENT   Complex functions of one argument:
 EXP, LOG, NORM, ARG, SQRT,
 SIN, ASIN, COS, ACOS, TAN, ATAN, COT, ACOT, SEC, ASEC, CSC, ACSC,
 SINH, ASINH, COSH. ACOSH, TANH, ATANH, COTH, ACOTH, SECH, ASECH,

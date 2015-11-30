@@ -105,10 +105,10 @@ symbolic procedure poly!-divide!*(u, fn, pseudo);  % u = (p, q, x)
    % If specified, x is made the leading variable before dividing,
    % otherwise the first variable found is used.
    begin scalar p, q, x, new_kord;
-      if null cdr u then RedErr "Divisor required";
+      if null cdr u then rederr "Divisor required";
       if length u > 3 then
-         RedErr "Division operators take 2 or 3 arguments.";
-      if null (q := !*a2f cadr u) then RedErr "Zero divisor";
+         rederr "Division operators take 2 or 3 arguments.";
+      if null (q := !*a2f cadr u) then rederr "Zero divisor";
       p := !*a2f car u;
       if cddr u and (x := !*a2k caddr u) and
          not(kord!* and x eq car kord!*) then <<

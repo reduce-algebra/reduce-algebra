@@ -34,7 +34,7 @@ remflag('(i),'reserved);  % This package uses I as a global index!!
 remprop('gamma,'simpfn);  % These routines clash with SPECFN.
 
 
-Comment This is a fairly basic set of definitions for Ap, Map and Ar.
+COMMENT This is a fairly basic set of definitions for Ap, Map and Ar.
         It needs some work. The routine Ar is particularly bad;
 
 % Pattern directed application.

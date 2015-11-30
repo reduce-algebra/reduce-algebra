@@ -98,11 +98,11 @@ begin scalar vars,w,y,z,x,np,oldorder,groetags!*,tagvars;
       w:=pair(for each x in u collect car x,w);
       w:=for each j in w collect
       <<z:= f2vdp cdr j;vdpputprop(z,'cofact,car j)>>;
-      if not !*vdpInteger then
+      if not !*vdpinteger then
       <<np:=t;
          for each p in w do
           np:=if np then vdpcoeffcientsfromdomain!? p else nil;
-        if not np then <<!*vdpModular:= nil;!*vdpinteger:=t>>>>;
+        if not np then <<!*vdpmodular:= nil;!*vdpinteger:=t>>>>;
       w:=groebtra2 w;
       w:=if mod1 then groebnermodres(w,nmod,tagvars)else
                        groebnertrares w;
@@ -309,7 +309,7 @@ begin scalar c,vev,divisor,break,f1;
        if divisor and !*trgroebs then
        <<prin2 "//-";prin2 vdpnumber divisor>>;
        if divisor then
-       <<if !*vdpInteger  then
+       <<if !*vdpinteger  then
             f:=trareduceonestepint(f,nil,c,vev,divisor)
            else
             f:=trareduceonesteprat(f,nil,c,vev,divisor);
@@ -332,7 +332,7 @@ begin scalar vevlcm,a,b,cg,x,fcofa,gcofa;
  gcofa:=vdpgetprop(g1,'cofact);
  if null gcofa then gcofa:=nil ./ 1;
  vevlcm:=vevdif(vev,vdpevlmon g1);
- cg:=vdpLbc g1;
+ cg:=vdplbc g1;
             % Calculate coefficient factors .
  x:=vbcgcd(c,cg);a:=vbcquot(cg,x);b:=vbcquot(c,x);
  f:=vdpilcomb1(f,a,vevzero(),g1,vbcneg b,vevlcm);
@@ -392,7 +392,7 @@ begin scalar res,num,cofac;
  cofac:=vdpgetprop(p,'cofact);
  num:=car vdpcontenti p;
  if not vbcplus!? num then num:=vbcneg num;
- if not vbcplus!? vdpLbc p then num:=vbcneg num;
+ if not vbcplus!? vdplbc p then num:=vbcneg num;
  if vbcone!? num then return p;
  res:=vdpreduceconti(p,num,nil);
  cofac:=vdpreducecontitra(cofac,num,nil);

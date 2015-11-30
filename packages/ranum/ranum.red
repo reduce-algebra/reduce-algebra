@@ -60,14 +60,14 @@ module ranum;
 load!-package 'assert;
 load!-package 'rltools;
 
-struct RA asserted by RAp;
+struct RA asserted by rap;
 
-procedure RAp(s);
+procedure rap(s);
    null s or eqcar(s, '!:ra!:);
 
-struct IV checked by IVp;
+struct IV checked by ivp;
 
-procedure IVp(s);
+procedure ivp(s);
    eqcar(s, 'iv);
 
 create!-package('(ranum raarith rarcount raiv), nil);

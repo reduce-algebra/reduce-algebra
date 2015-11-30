@@ -1,4 +1,4 @@
-MODULE ALGNUMS;
+module algnums;
 
 % Author: James H. Davenport.
 
@@ -26,98 +26,99 @@ MODULE ALGNUMS;
 %
 
 
-EXPORTS DENR!-ALGNO;
+exports denr!-algno;
 
 
-SYMBOLIC PROCEDURE DENR!-ALGNO U;
+symbolic procedure denr!-algno u;
 % Returns the true denominator of the algebraic number u.
-BEGIN
-  SCALAR SQLIST,N,M,U!*!*J,D;
-  U!*!*J:=1 ./ 1;
-  SQLIST:=SQRTSINSQ(U,NIL);
-  SQLIST:=MULTBYALLCOMBINATIONS(LIST(1 ./ 1),
-                               FOR EACH U IN SQLIST
-                                 COLLECT !*KK2Q U);
-  N:=0;
-  SQLIST:=FOR EACH U IN SQLIST COLLECT
-    (NUMR U) . (N:=IADD1 N);
+begin
+  scalar sqlist,n,m,u!*!*j,d;
+  u!*!*j:=1 ./ 1;
+  sqlist:=sqrtsinsq(u,nil);
+  sqlist:=multbyallcombinations(list(1 ./ 1),
+                               for each u in sqlist
+                                 collect !*kk2q u);
+  n:=0;
+  sqlist:=for each u in sqlist collect
+    (numr u) . (n:=iadd1 n);
     % format is of an associtaion list.
-  N:=LENGTH SQLIST;
-  M:=MKVECT N;
-  FOR I:=0:N DO
-    PUTV(M,I,MKVECT2(N,NIL ./ 1));
-  PUTV(GETV(M,0),CDR ASSOC(1,SQLIST),1 ./ 1);
+  n:=length sqlist;
+  m:=mkvect n;
+  for i:=0:n do
+    putv(m,i,mkvect2(n,nil ./ 1));
+  putv(getv(m,0),cdr assoc(1,sqlist),1 ./ 1);
   % initial matrix is now set up.
-  FOR J:=1:N DO BEGIN
-    SCALAR V,W;
-    U!*!*J:=!*MULTSQ(U!*!*J,U);
-    DUMP!-SQRTS!-COEFFS(U!*!*J,SQLIST,GETV(M,J));
-    V:=FIRSTLINEARRELATION(M,N);
-    IF NULL V
-      THEN RETURN;
-    IF LAST!-NON!-ZERO V > J
-      THEN RETURN;
-    IF (W:=GETV(V,J)) NEQ (1 ./ 1)
-      THEN <<
-        W:=!*INVSQ W;
-        FOR I:=0:J DO
-          PUTV(V,I,!*MULTSQ(W,GETV(V,I))) >>;
-    M:=V;
-    N:=J;
-    RETURN
-    END;
+  for j:=1:n do begin
+    scalar v,w;
+    u!*!*j:=!*multsq(u!*!*j,u);
+    dump!-sqrts!-coeffs(u!*!*j,sqlist,getv(m,j));
+    v:=firstlinearrelation(m,n);
+    if null v
+      then return;
+    if last!-non!-zero v > j
+      then return;
+    if (w:=getv(v,j)) neq (1 ./ 1)
+      then <<
+        w:=!*invsq w;
+        for i:=0:j do
+          putv(v,i,!*multsq(w,getv(v,i))) >>;
+    m:=v;
+    n:=j;
+    return
+    end;
   % Now m is a monic polynomial, minimal for u, of degree n.
-  D:=1;
-  FOR I:=0:ISUB1 N DO BEGIN
-    SCALAR V,PRIME;
-    V:=DENR GETV(M,I);
-    PRIME:=2;
-LOOP:
-    IF V = 1
-      THEN RETURN;
-    IF CDR DIVIDE(V,PRIME) neq 0 THEN PRIME:=NEXTPRIME(PRIME)
-      ELSE <<
-        D:=D*PRIME;
-        FOR I:=0:N DO
-          PUTV(V,I,MULTSQ(GETV(V,I),1 ./ (PRIME ** (N-I)) )) >>;
-    GO TO LOOP;
-    END;
-  RETURN D;
-  END;
+  d:=1;
+  for i:=0:isub1 n do begin
+    scalar v,prime;
+    v:=denr getv(m,i);
+    prime:=2;
+loop:
+    if v = 1
+      then return;
+    if cdr divide(v,prime) neq 0 then prime:=nextprime(prime)
+      else <<
+        d:=d*prime;
+        for i:=0:n do
+          putv(v,i,multsq(getv(v,i),1 ./ (prime ** (n-i)) )) >>;
+    go to loop;
+    end;
+  return d;
+  end;
 
 
-SYMBOLIC PROCEDURE DUMP!-SQRTS!-COEFFS(U,SQLIST,VEC);
-BEGIN
-  SCALAR W;
-  DUMP!-SQRTS!-COEFFS2(NUMR U,SQLIST,VEC,1);
-  U:=1 ./ DENR U;
-  IF DENR U NEQ 1
-    THEN FOR I:=0:UPBV VEC DO
-      IF NUMR(W:=GETV(VEC,I))
-        THEN PUTV(VEC,I,!*MULTSQ(U,W));
-  END;
+symbolic procedure dump!-sqrts!-coeffs(u,sqlist,vec);
+begin
+  scalar w;
+  dump!-sqrts!-coeffs2(numr u,sqlist,vec,1);
+  u:=1 ./ denr u;
+  if denr u neq 1
+    then for i:=0:upbv vec do
+      if numr(w:=getv(vec,i))
+        then putv(vec,i,!*multsq(u,w));
+  end;
 
 
-SYMBOLIC PROCEDURE DUMP!-SQRTS!-COEFFS2(U,SQLIST,VEC,SQRTSSOFAR);
-IF NULL U
-  THEN NIL
-  ELSE IF NUMBERP U
-    THEN PUTV(VEC,CDR ASSOC(SQRTSSOFAR,SQLIST),U)
-    ELSE <<
-      DUMP!-SQRTS!-COEFFS2(RED U,SQLIST,VEC,SQRTSSOFAR);
-      DUMP!-SQRTS!-COEFFS2(LC U,SQLIST,VEC,!*MULTF(SQRTSSOFAR,
-                                                   !*K2F MVAR U)) >>;
+symbolic procedure dump!-sqrts!-coeffs2(u,sqlist,vec,sqrtssofar);
+if null u
+  then nil
+  else if numberp u
+    then putv(vec,cdr assoc(sqrtssofar,sqlist),u)
+    else <<
+      dump!-sqrts!-coeffs2(red u,sqlist,vec,sqrtssofar);
+      dump!-sqrts!-coeffs2(lc u,sqlist,vec,!*multf(sqrtssofar,
+                                                   !*k2f mvar u)) >>;
 
 
-SYMBOLIC PROCEDURE LAST!-NON!-ZERO VEC;
-BEGIN
-  SCALAR N;
-  FOR I:=0:UPBV VEC DO
-    IF NUMR GETV(VEC,I)
-      THEN N:=I;
-  RETURN N
-  END;
+symbolic procedure last!-non!-zero vec;
+begin
+  scalar n;
+  for i:=0:upbv vec do
+    if numr getv(vec,i)
+      then n:=i;
+  return n
+  end;
 
-ENDMODULE;
+endmodule;
 
-END;
+end;
+

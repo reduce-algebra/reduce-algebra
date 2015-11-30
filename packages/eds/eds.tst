@@ -34,7 +34,7 @@
 on evallhseqp,edssloppy,edsverbose;
 off arbvars,edsdebug;
 
-pform {F,x,Delta,gamma,v,y,u}=0;
+pform {f,x,delta,gamma,v,y,u}=0;
 pform v(i)=0,omega(i)=1;
 indexrange {i,j,k,l}={1,2,3};
 
@@ -42,93 +42,93 @@ indexrange {i,j,k,l}={1,2,3};
 % statement to get v eliminated in favour of x where possible.
 % NB Coordinate change cc1 is invertible only when x(-1) neq 0.
 
-J1 := contact(1,{v,y,u},{x});
+j1 := contact(1,{v,y,u},{x});
 korder x(-1),x(-2),v(-3);
 cc1 :=	{x(-v) = x(-1),
 	 x(-y) = x(-2),
 	 x(-u) = -x(-1)*v(-3)};
-J1 := restrict(pullback(J1,cc1),{x(-1) neq 0});
+j1 := restrict(pullback(j1,cc1),{x(-1) neq 0});
 
 % Set up anholonomic cobasis
 
 bc1 :=	{omega(1) = d v - v(-3)*d u,
 	 omega(2) = d y,
 	 omega(3) = d u};
-J1 := transform(J1,bc1);
+j1 := transform(j1,bc1);
 
 % Prolong to J421: 4th order in x, 2nd in F and 1st in rest
 
-J2 := prolong J1$
-J20 := J2 cross {F}$
-J31 := prolong J20$
-J310 := J31 cross {Delta,gamma}$
-J421 := prolong J310$
+j2 := prolong j1$
+j20 := j2 cross {f}$
+j31 := prolong j20$
+j310 := j31 cross {delta,gamma}$
+j421 := prolong j310$
 cc4 := first pullback_maps;
 
 % Apply first order de and restrictions
 
-de1 :=	{Delta(-3) = 0,
+de1 :=	{delta(-3) = 0,
 	 gamma(-2) = 0,
-	 Delta(-1) neq 0,
+	 delta(-1) neq 0,
 	 gamma(-1) neq 0};
 
-J421 := pullback(J421,de1)$
+j421 := pullback(j421,de1)$
 
 % Main de in original coordinates 
 
-de2 :=	{F(-3,-3) - gamma*F,
-	 x(-1)*F(-2,-2) + 2*x(-1,-2)*F(-2)
-		 + (x(-1,-2,-2) - x(-1)*Delta)*F,
-	 x(-2,-3)*(F(-2,-3)+F(-3,-2)) + x(-2,-2,-3)*F(-3)
-		 + x(-2,-3,-3)*F(-2) + (1/2)*x(-2,-2,-3,-3)*F};
+de2 :=	{f(-3,-3) - gamma*f,
+	 x(-1)*f(-2,-2) + 2*x(-1,-2)*f(-2)
+		 + (x(-1,-2,-2) - x(-1)*delta)*f,
+	 x(-2,-3)*(f(-2,-3)+f(-3,-2)) + x(-2,-2,-3)*f(-3)
+		 + x(-2,-3,-3)*f(-2) + (1/2)*x(-2,-2,-3,-3)*f};
 
 % This is not expressed in terms of current coordinates.
 % Missing coordinates are seen from 1-form variables in following
 
-d de2 xmod cobasis J421;
+d de2 xmod cobasis j421;
 
 % The necessary equation is contained in the last prolongation
 
-pullback(d de2,cc4) xmod cobasis J421;
+pullback(d de2,cc4) xmod cobasis j421;
 
 % Apply main de
 
-pb1 := first solve(pullback(de2,cc4),{F(-3,-3),F(-2,-2),F(-2,-3)});
-Y421 := pullback(J421,pb1)$
+pb1 := first solve(pullback(de2,cc4),{f(-3,-3),f(-2,-2),f(-2,-3)});
+y421 := pullback(j421,pb1)$
 
 % Check involution
 
 on ranpos;
-characters Y421;
-dim_grassmann_variety Y421;
+characters y421;
+dim_grassmann_variety y421;
 
 % 15+2*7 = 29 > 28: Y421 not involutive, so prolong
 
-Y532 := prolong Y421$
+y532 := prolong y421$
 
-characters Y532;
-dim_grassmann_variety Y532;
+characters y532;
+dim_grassmann_variety y532;
 
 % 22+2*6 = 34: just need to check for integrability conditions
 
-torsion Y532;
+torsion y532;
 
 % Y532 involutive. Dimensions?
 
-dim Y532;
-length one_forms Y532;
+dim y532;
+length one_forms y532;
 
 % The following puts in part of Hauser's solution and ends up with an ODE
 % system (all characters 0), so no more solutions, as described by Finley
 % at MG6.
 
 hauser := {x=-v+(1/2)*(y+u)**2,delta=3/(8x),gamma=3/(8v)};
-H532 := pullback(Y532,hauser)$
+h532 := pullback(y532,hauser)$
 lift ws;
 characters ws;
 
 clear v(i),omega(i);
-clear F,x,Delta,gamma,v,y,u,omega;
+clear f,x,delta,gamma,v,y,u,omega;
 off ranpos;
 
 
@@ -173,38 +173,38 @@ flat_no_torsion := {d e(p) => -o(p,-q)^e(q),
 
 % Coframing structure
 
-ISO := coframing({e(p),o(p,q)},flat_no_torsion)$
-dim ISO;
+iso := coframing({e(p),o(p,q)},flat_no_torsion)$
+dim iso;
 
 % 4d curvature 2-forms
 
-pform F(i,j)=2;
-index_symmetries F(i,j):antisymmetric;
-F(-i,-j) := -g(-i,-k)*o(k,-a)^o(a,-j);
+pform f(i,j)=2;
+index_symmetries f(i,j):antisymmetric;
+f(-i,-j) := -g(-i,-k)*o(k,-a)^o(a,-j);
 
 % EDS for vacuum GR (Ricci-flat) in 4d
 
-GR0 := eds({e(a),epsilon(i,j,k,l)*F(-j,-k)^e(-l)},
+gr0 := eds({e(a),epsilon(i,j,k,l)*f(-j,-k)^e(-l)},
 	   {e(i)},
-      	   ISO)$
+      	   iso)$
 
 % Find an integral element, and linearise
 
-Z := integral_element GR0$
-GRZ := linearise(GR0,Z)$
+z := integral_element gr0$
+grz := linearise(gr0,z)$
 
 % This actually tells us the characters already:
 %  {45-39,39-29,29-21,21} = {6,10,8,21}
 
 % Get the characters and dimension at Z
 
-characters GRZ;
-dim_grassmann_variety GRZ;
+characters grz;
+dim_grassmann_variety grz;
 
 % 6+2*10+3*8+4*21 = 134, so involutive
 
-clear e(r),o(r,s),g(p,q),epsilon(i,j,k,l),F(i,j);
-clear e,o,g,epsilon,F,Z;
+clear e(r),o(r,s),g(p,q),epsilon(i,j,k,l),f(i,j);
+clear e,o,g,epsilon,f,z;
 indexrange 0;
 
 			%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -246,16 +246,16 @@ length one_forms janet;
 
 % So there are 12 constants in the solution: there should be 12 invariants
 
-length(C := invariants janet);
-solve(for i:=1:length C collect
-         part(C,i) = mkid(k,i),coordinates janet \ {x,y,z})$
-S := select(lhs ~q = u,first ws);
+length(c := invariants janet);
+solve(for i:=1:length c collect
+         part(c,i) = mkid(k,i),coordinates janet \ {x,y,z})$
+s := select(lhs ~q = u,first ws);
 
 % Check solution
 mkdepend dependencies;
-sub(S,{@(u,y,y),@(u,z,z)-y*@(u,x,x)});
+sub(s,{@(u,y,y),@(u,z,z)-y*@(u,x,x)});
 
 clear u(i,j),v(i,j),w(i,j),u(i),v(i),w(i);
-clear x,y,z,u,v,w,C,S;
+clear x,y,z,u,v,w,c,s;
 
 end;

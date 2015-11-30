@@ -30,17 +30,17 @@ module hsub;
 fluid '(!*trharm);
 switch trham;
 
-symbolic procedure hsub1(x,u,v,A,n);
+symbolic procedure hsub1(x,u,v,a,n);
 %% Substitute v+A for u in x to order n
 begin scalar ans, c, tmp, fs!:zero!-generated;
 %%    fs!:zero!-generated := 0;
     ans := fs!:subang(x, u, v);
 %    c := ensure!-fourier A;
-    c := car A;
+    c := car a;
     if c then c := cdr c;
-    A := c;
+    a := c;
     if !*trham
-      then << print "A"; if null A then print 0 else fs!:prin A >>;
+      then << print "A"; if null a then print 0 else fs!:prin a >>;
     for i:=1:n do <<
         if !*trham then << print "i="; print i >>;
         x := hdiff(x, u);
@@ -55,7 +55,7 @@ begin scalar ans, c, tmp, fs!:zero!-generated;
         ans := fs!:plus(ans, tmp);
         if !*trham
           then << prin2!* "partial sum ="; fs!:prin ans; terpri!* t>>;
-        if not(i=n) then c := fs!:times(c,A);
+        if not(i=n) then c := fs!:times(c,a);
     >>;
     return ans
 end;
@@ -85,13 +85,13 @@ begin scalar ans;
 end;
 
 symbolic procedure simphsub uu;
-begin scalar x, u, v, vv, A, n, dmode!*;
+begin scalar x, u, v, vv, a, n, dmode!*;
     dmode!* := '!:fs!:;
     if (length uu = 5) then <<
         x := car uu; uu := cdr uu;
         u := car uu; uu := cdr uu;
         v := car uu; uu := cdr uu;
-        A := car uu; uu := cdr uu;
+        a := car uu; uu := cdr uu;
         n := car uu
     >>
     else if (length uu = 3) then <<
@@ -99,12 +99,12 @@ begin scalar x, u, v, vv, A, n, dmode!*;
         u := car uu; uu := cdr uu;
         v := car uu; uu := cdr uu;
         if not harmonicp u then <<
-            A := ( ((get('fourier, 'tag) .
+            a := ( ((get('fourier, 'tag) .
                          fs!:sub(cdar simp x, list(u . v))) ./ 1)
             )  where wtl!*=delasc(u,wtl!*);
-            return A;
+            return a;
         >>;
-        A := 0;
+        a := 0;
         n := 0
     >>;
     if not harmonicp u then
@@ -115,14 +115,14 @@ begin scalar x, u, v, vv, A, n, dmode!*;
     vv := mkvect 7;
     for i:=0:7 do putv!.unsafe(vv,i,0);
     compile!-angle!-expression(v, vv);
-    A := simp!* A;
+    a := simp!* a;
     n := simp!* n;
     if null car n then n := 0 ./ 1
     else if not(fixp car n and cdr n = 1)  then
         rerror(fourier, 9, "Non integer expansion in HSUB");
     n := car n;
     return (get('fourier, 'tag) .
-           hsub1(x,get(u,'fourier!-angle),vv,A,n)) ./ 1;
+           hsub1(x,get(u,'fourier!-angle),vv,a,n)) ./ 1;
 end;
 
 put('hsub, 'simpfn, 'simphsub);

@@ -52,7 +52,7 @@ module specfn2;  % Part 2 of the Special functions package for REDUCE.
 %  ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  %
 
 
-create!-package ('(specfn2 ghyper meijerg),
+create!-package ('(specfn2 ghyper MeijerG),
                  '(contrib specfn));
 
 load_package specfn;
@@ -68,7 +68,7 @@ symbolic inline procedure mksqnew u;
   !*p2q(car fkern(u) .* 1);
 
 symbolic inline procedure gamsq(u);
- mksqnew('GAMMA . list(prepsq u));
+ mksqnew('gamma . list(prepsq u));
 
 symbolic inline procedure multgamma u;
    %u -- list of SQ.
@@ -167,15 +167,15 @@ symbolic procedure parfool u;
  symbolic procedure znak u;
  % u -- SQ.
   if numberp u then
-     if u > 0 then T else NIL
+     if u > 0 then t else nil
                else
   if numberp car u then
-     if car u > 0 then T else NIL
+     if car u > 0 then t else nil
                    else
-  if not null cdar u then T
+  if not null cdar u then t
                      else
   if numberp cdaar u then
-     if cdaar u > 0 then T else NIL
+     if cdaar u > 0 then t else nil
                      else
      znak(cdaar u ./ 1)$
 
@@ -257,25 +257,25 @@ symbolic procedure redpar (l1,l2);
    return list (l1,reverse l3);
    end;
 
-algebraic operator Lommel,Heaviside;
+algebraic operator lommel,Heaviside;
 
 symbolic inline procedure heavisidesq(u);
  mksqnew('Heaviside . list(prepsq u));
 
-symbolic inline procedure StruveLsq(v,u);
+symbolic inline procedure struvelsq(v,u);
  mksqnew('StruveL . list(prepsq v,prepsq u));
 
-symbolic inline procedure StruveHsq(v,u);
+symbolic inline procedure struvehsq(v,u);
  mksqnew('StruveH . list(prepsq v,prepsq u));
 
 symbolic inline procedure neumsq(v,u);
  mksqnew('BesselY . list(prepsq v,prepsq u));
 
 symbolic inline procedure dfpsisq(v,u);
- mksqnew('Polygamma . list(prepsq u,prepsq v));
+ mksqnew('polygamma . list(prepsq u,prepsq v));
 
 symbolic inline procedure Lommel2sq (u,v,w);
- mksqnew('Lommel2  . list(prepsq u,prepsq v,prepsq w));
+ mksqnew('lommel2  . list(prepsq u,prepsq v,prepsq w));
 
 symbolic inline procedure tricomisq (u,v,w);
  mksqnew('KummerU . list(prepsq u,prepsq v,prepsq w));

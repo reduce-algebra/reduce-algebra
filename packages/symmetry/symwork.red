@@ -339,7 +339,7 @@ scalar unitlist, veclist2, mapping, v;
   mapping:=mk!_proj!_iso(representation,nr);
   veclist2:= for each v in unitlist collect
              mk!+mat!+mult!+vec(mapping,v);
-  return mk!+internal!+mat(Gram!+Schmid(veclist2));
+  return mk!+internal!+mat(gram!+schmid(veclist2));
 end;
 
 symbolic procedure mk!_part!_sym1 (representation,nr);
@@ -359,7 +359,7 @@ scalar unitlist, veclist2, mapping, v,group;
   veclist2:= for each v in unitlist collect
              mk!+mat!+mult!+vec(mapping,v);
   veclist2:=mk!+resimp!+mat(veclist2);
-  return mk!+internal!+mat(Gram!+Schmid(veclist2));
+  return mk!+internal!+mat(gram!+schmid(veclist2));
 end;
 
 symbolic procedure mk!_part!_symnext (representation,nr,count,mat1);

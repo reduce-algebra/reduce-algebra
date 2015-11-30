@@ -106,7 +106,7 @@ symbolic procedure onespace u;
 % one or several spaces are active.
 % By default, a UNIQUE space is supposed.
  if  u eq '? then
-       if !*onespace then symb_to_alg 'YES else symb_to_alg 'NO
+       if !*onespace then symb_to_alg 'yes else symb_to_alg 'no
        else nil;
 
 

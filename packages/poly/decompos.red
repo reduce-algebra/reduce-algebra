@@ -75,11 +75,11 @@ symbolic procedure decomposef2(f,msg);
                                      if not(x=reval x) then x := nil>>
                       else x:=decomposegensym();
                   u := prepsq subsq(car r,list(mvar numr car r . x));
-                  if d neq 1 then<<u:=list('QUOTIENT,u,prepf d);d:=1>>;
-                  rr := (if y then list('EQUAL,y,u) else u) . rr>>
+                  if d neq 1 then<<u:=list('quotient,u,prepf d);d:=1>>;
+                  rr := (if y then list('equal,y,u) else u) . rr>>
           else <<u := prepsq car r;
                  y := x;
-                 rr := (if y then list('EQUAL,y,u) else u) . rr>>;
+                 rr := (if y then list('equal,y,u) else u) . rr>>;
          r := cdr r>>;
       rr := subla(pair(newvars,vars),car rr) . cdr rr;
       return rr

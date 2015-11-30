@@ -55,7 +55,7 @@ procedure talp_qea(phi,theo);
    % to [phi] and sample points for an outermost existential
    % quantifier block.
    begin scalar !*rlqeans;
-      !*rlqeans := T;
+      !*rlqeans := t;
       phi := cl_simpl(cl_pnf phi,nil,-1);
       return talp_qe1 phi
    end;
@@ -113,13 +113,13 @@ procedure talp_qeblock(qtf,bvarl,mtrx,ansp);
 	 tmp := talp_qeblock1(bvarl,blk,ansp);
 	 if ansp then <<
 	    if cdr tmp eq 'true then <<
-	       stop := T;
+	       stop := t;
 	       result := car tmp
 	    >> else if cdr tmp neq 'false then
 	       result := if result then append(result,car tmp) else car tmp;
       	 >> else result := cl_simpl(
 	    if result then rl_mk2('or,result,cdr tmp) else cdr tmp,nil,-1);
-	 if result eq 'true then stop := T;
+	 if result eq 'true then stop := t;
 	 nosp := nosp - 1
       >>;
       if null result then result := if ansp then {nil . 'false} else 'false;
@@ -173,7 +173,7 @@ procedure talp_qeexblock(bvl,mtrx,ans,ansp);
 	 tmp := cdr tmp;
 	 tmp2 := talp_qeexblock(cdr bvl,cdr new,car new,ansp);
 	 if cdr tmp2 eq 'true then <<
-	    stop := T;
+	    stop := t;
 	    result := 'true;
 	    aset := car tmp2
 	 >> else if cdr tmp2 neq 'false then
@@ -216,7 +216,7 @@ procedure talp_qevar(bvar,mtrx,ansp);
 	    tmp2 := talp_qevar1(bvar,new,ansp,fvarl,maxd)
 	 >>;
 	 if cdr tmp2 eq 'true then <<
-	    stop := T;
+	    stop := t;
 	    aset := car tmp2;
 	    result := 'true
 	 >> else if cdr tmp2 neq 'false then <<
@@ -225,7 +225,7 @@ procedure talp_qevar(bvar,mtrx,ansp);
 	    else <<
 	       result := cl_simpl(if result then 
 	       	  rl_mk2('or,cdr tmp2,result) else cdr tmp2,nil,-1);
-	       if result eq 'true then stop := T
+	       if result eq 'true then stop := t
 	    >>
 	 >>
       >>;
@@ -251,7 +251,7 @@ procedure talp_qevar1(bvar,mtrx,ansp,fvarl,maxd);
 	 if tmp eq 'true then <<
 	    if ansp then answer := subpair;
 	    result := tmp;
-	    stop := T
+	    stop := t
 	 >> else if tmp neq 'false then <<
 	    if ansp then <<
 	       answer := subpair . answer;
@@ -259,7 +259,7 @@ procedure talp_qevar1(bvar,mtrx,ansp,fvarl,maxd);
 	    >> else <<
 	       result := cl_simpl(
 		  if result then rl_mk2('or,result,tmp) else tmp,nil,-1);
-	       if result eq 'true then stop := T
+	       if result eq 'true then stop := t
 	    >>
 	 >>;
 	 new := talp_copy t2sub;
@@ -410,7 +410,7 @@ procedure talp_gettype();
       unacount := 0;
       lang := talp_getl();
       while lang and not done do <<
-	 if cdar lang > 1 then done := T;
+	 if cdar lang > 1 then done := t;
 	 if cdar lang eq 1 then unacount := unacount + 1;
 	 lang := cdr lang
       >>;
@@ -694,7 +694,7 @@ procedure talp_trygauss1(es,f,ansp);
 	 if tmp eq 'true then <<
 	    if ansp then answer := subpair;
 	    result := tmp;
-	    stop := T
+	    stop := t
 	 >> else if tmp neq 'false then <<
 	    if ansp then <<
 	       answer := subpair . answer;
@@ -702,7 +702,7 @@ procedure talp_trygauss1(es,f,ansp);
 	    >> else <<
 	       result := cl_simpl(if result then 
 		  rl_mk2('or,result,tmp) else tmp,nil,-1);
-	       if result eq 'true then stop := T
+	       if result eq 'true then stop := t
 	    >>
 	 >>;
 	 es := cdr es
@@ -756,7 +756,7 @@ procedure talp_gaussand(v,fl,ansp);
       	 while fl and not stop do <<
 	    w := talp_trygaussvar(v,car fl,ansp);
 	    if w neq 'failed and w neq 'ignore then <<
-	       stop := T;
+	       stop := t;
 	       curr := w
 	    >>;
 	    fl := cdr fl
@@ -776,7 +776,7 @@ procedure talp_gaussor(v,fl,ansp);
 	    w := talp_trygaussvar(v,car fl,ansp);
 	    if w eq 'failed then <<
 	       curr := nil;
-	       stop := T;
+	       stop := t;
 	    >> else if w neq 'ignore then 
 	       curr := if curr neq 'ignore then w . {curr} else w;
 	    fl := cdr fl;

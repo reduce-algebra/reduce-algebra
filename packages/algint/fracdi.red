@@ -1,4 +1,4 @@
-MODULE FRACDI;
+module fracdi;
 
 % Author: James H. Davenport.
 
@@ -26,154 +26,155 @@ MODULE FRACDI;
 %
 
 
-FLUID '(BASIC!-LISTOFALLSQRTS BASIC!-LISTOFNEWSQRTS EXPSUB INTVAR
-    SQRT!-INTVAR);
+fluid '(basic!-listofallsqrts basic!-listofnewsqrts expsub intvar
+    sqrt!-intvar);
 
-GLOBAL '(COATES!-FDI);
+global '(coates!-fdi);
 
-EXPORTS FDI!-PRINT,FDI!-REVERTSQ,FDI!-UPGRADE,
-   FRACTIONAL!-DEGREE!-AT!-INFINITY;
+exports fdi!-print,fdi!-revertsq,fdi!-upgrade,
+   fractional!-degree!-at!-infinity;
 
 % internal!-fluid '(expsub);
 
-SYMBOLIC PROCEDURE FDI!-PRINT();
-<< PRINC "We substitute ";
-   PRINC INTVAR;
-   PRINC "**";
-   PRINC COATES!-FDI;
-   PRINC " for ";
-   PRINC INTVAR;
-   PRINTC " in order to avoid fractional degrees at infinity" >>;
+symbolic procedure fdi!-print();
+<< princ "We substitute ";
+   princ intvar;
+   princ "**";
+   princ coates!-fdi;
+   princ " for ";
+   princ intvar;
+   printc " in order to avoid fractional degrees at infinity" >>;
 
 
-SYMBOLIC PROCEDURE FDI!-REVERTSQ U;
-IF COATES!-FDI IEQUAL 1
-  THEN U
-  ELSE (FDI!-REVERT NUMR U) ./ (FDI!-REVERT DENR U);
+symbolic procedure fdi!-revertsq u;
+if coates!-fdi iequal 1
+  then u
+  else (fdi!-revert numr u) ./ (fdi!-revert denr u);
 
 
-SYMBOLIC PROCEDURE FDI!-REVERT U;
-IF NOT INVOLVESF(U,INTVAR)
-  THEN U
-  ELSE ADDF(FDI!-REVERT RED U,
-        !*MULTF(FDI!-REVERTPOW LPOW U,
-            FDI!-REVERT LC U));
+symbolic procedure fdi!-revert u;
+if not involvesf(u,intvar)
+  then u
+  else addf(fdi!-revert red u,
+        !*multf(fdi!-revertpow lpow u,
+            fdi!-revert lc u));
 
 
-SYMBOLIC PROCEDURE FDI!-REVERTPOW POW;
-IF NOT DEPENDSP(CAR POW,INTVAR)
-  THEN (POW .* 1) .+ NIL
-  ELSE IF CAR POW EQ INTVAR
-    THEN BEGIN
-      SCALAR V;
-      V:=DIVIDE(CDR POW,COATES!-FDI);
-      IF CDR POW=0
-        THEN RETURN (MKSP(INTVAR,CAR POW) .* 1) .+ NIL
-    ELSE INTERR "Unable to revert fdi";
-      END
-    ELSE IF EQ(CAR POW,'SQRT)
-      THEN SIMPSQRT2 FDI!-REVERT !*Q2F SIMP ARGOF CAR POW
-      ELSE INTERR "Unrecognised term to revert";
+symbolic procedure fdi!-revertpow pow;
+if not dependsp(car pow,intvar)
+  then (pow .* 1) .+ nil
+  else if car pow eq intvar
+    then begin
+      scalar v;
+      v:=divide(cdr pow,coates!-fdi);
+      if cdr pow=0
+        then return (mksp(intvar,car pow) .* 1) .+ nil
+    else interr "Unable to revert fdi";
+      end
+    else if eq(car pow,'sqrt)
+      then simpsqrt2 fdi!-revert !*q2f simp argof car pow
+      else interr "Unrecognised term to revert";
 
 
-SYMBOLIC PROCEDURE FDI!-UPGRADE PLACE;
-BEGIN
-  SCALAR ANS,U,EXPSUB,N;
-  N:=COATES!-FDI;
-  FOR EACH U IN PLACE DO
-    IF EQCAR(U:=RSUBS U,'EXPT)
-      THEN N:=N / CADDR U;
+symbolic procedure fdi!-upgrade place;
+begin
+  scalar ans,u,expsub,n;
+  n:=coates!-fdi;
+  for each u in place do
+    if eqcar(u:=rsubs u,'expt)
+      then n:=n / caddr u;
       % if already upgraded, we must take account of this.
-  IF N = 1
-    THEN RETURN PLACE;
-  EXPSUB:=LIST(INTVAR,'EXPT,INTVAR,N);
-  ANS:=NCONC(BASICPLACE PLACE,LIST EXPSUB);
-  EXPSUB:=LIST EXPSUB; % this prevents later nconc from causing trouble.
-  U:=EXTENPLACE PLACE;
-  WHILE U DO BEGIN
-    SCALAR V,W,RFU;
-    V:=FDI!-UPGR2 LFIRSTSUBS U;
-    IF V IEQUAL 1
-      THEN RETURN (U:=CDR U);
-    IF EQCAR(RFU:=RFIRSTSUBS U,'MINUS)
-      THEN W:=ARGOF RFU
-      ELSE IF EQCAR(RFU,'SQRT)
-        THEN W:=RFU
-    ELSE INTERR "Unknown place format";
-    W:=FDI!-UPGR2 W;
-    IF W IEQUAL 1
-      THEN INTERR "Place collapses under rewriting";
-    IF EQCAR(RFU,'MINUS)
-      THEN ANS:=NCONC(ANS,LIST LIST(V,'MINUS,W))
-      ELSE ANS:=NCONC(ANS,LIST(V.W));
-    U:=CDR U;
-    RETURN
-    END;
-  SQRTSAVE(BASIC!-LISTOFALLSQRTS,
-       BASIC!-LISTOFNEWSQRTS,
-           BASICPLACE ANS);
-  RETURN ANS
-  END;
+  if n = 1
+    then return place;
+  expsub:=list(intvar,'expt,intvar,n);
+  ans:=nconc(basicplace place,list expsub);
+  expsub:=list expsub; % this prevents later nconc from causing trouble.
+  u:=extenplace place;
+  while u do begin
+    scalar v,w,rfu;
+    v:=fdi!-upgr2 lfirstsubs u;
+    if v iequal 1
+      then return (u:=cdr u);
+    if eqcar(rfu:=rfirstsubs u,'minus)
+      then w:=argof rfu
+      else if eqcar(rfu,'sqrt)
+        then w:=rfu
+    else interr "Unknown place format";
+    w:=fdi!-upgr2 w;
+    if w iequal 1
+      then interr "Place collapses under rewriting";
+    if eqcar(rfu,'minus)
+      then ans:=nconc(ans,list list(v,'minus,w))
+      else ans:=nconc(ans,list(v.w));
+    u:=cdr u;
+    return
+    end;
+  sqrtsave(basic!-listofallsqrts,
+       basic!-listofnewsqrts,
+           basicplace ans);
+  return ans
+  end;
 
 
-SYMBOLIC PROCEDURE FDI!-UPGR2 U;
-BEGIN
-  SCALAR V,MV;
+symbolic procedure fdi!-upgr2 u;
+begin
+  scalar v,mv;
 % V:=SUBSTITUTESQ(SIMP U,EXPSUB);
 % The above line doesn't work due to int(sqrt(x-1)/sqrt(x+1),x);
 % where the attempt to make sqrt(x^2-1) is frustrated by the presence of
 % sqrt(x-1) and sqrt(x+1) which get SIMPed (even after we allow for the
 % NEWPLACE call in COATES
-  V:=XSUBSTITUTEP(U,EXPSUB);
-  IF DENR V NEQ 1
-    THEN GOTO ERROR;
-  V:=NUMR V;
-LOOP:
-  IF ATOM V
-    THEN RETURN V;
-  IF RED V
-    THEN GO TO ERROR;
-  MV:=MVAR V;
-  IF (NOT DEPENDSP(MV,INTVAR)) OR (MV EQ INTVAR)
-    THEN <<
-      V:=LC V;
-      GOTO LOOP >>;
-  IF EQCAR(MV,'SQRT) AND NOT SQRTSINSF(LC V,NIL,INTVAR)
-      THEN RETURN MV;
-ERROR:
-  PRINTC "*** Format error ***";
-  PRINC "unable to go x:=x**";
-  PRINTC COATES!-FDI;
-  SUPERPRINT U;
+  v:=xsubstitutep(u,expsub);
+  if denr v neq 1
+    then goto error;
+  v:=numr v;
+loop:
+  if atom v
+    then return v;
+  if red v
+    then go to error;
+  mv:=mvar v;
+  if (not dependsp(mv,intvar)) or (mv eq intvar)
+    then <<
+      v:=lc v;
+      goto loop >>;
+  if eqcar(mv,'sqrt) and not sqrtsinsf(lc v,nil,intvar)
+      then return mv;
+error:
+  printc "*** Format error ***";
+  princ "unable to go x:=x**";
+  printc coates!-fdi;
+  superprint u;
   interr "Failure to make integral at infinity"
-  END;
+  end;
 
 
-SYMBOLIC PROCEDURE FRACTIONAL!-DEGREE!-AT!-INFINITY SQRTS;
-IF SQRTS
-  THEN LCMN(FDI2 CAR SQRTS,FRACTIONAL!-DEGREE!-AT!-INFINITY CDR SQRTS)
-  ELSE 1;
+symbolic procedure fractional!-degree!-at!-infinity sqrts;
+if sqrts
+  then lcmn(fdi2 car sqrts,fractional!-degree!-at!-infinity cdr sqrts)
+  else 1;
 
 
-SYMBOLIC PROCEDURE FDI2 U;
+symbolic procedure fdi2 u;
    % Returns the denominator of the degree of x at infinity
    % in the sqrt expression u.
-BEGIN
-  SCALAR N;
-  U:=SUBSTITUTESQ(SIMP U,LIST LIST(INTVAR,'QUOTIENT,1,INTVAR));
-  N:=0;
-  WHILE INVOLVESQ(U,SQRT!-INTVAR) DO <<
-    N:=IADD1 N;
-    U:=SUBSTITUTESQ(U,LIST LIST(INTVAR,'EXPT,INTVAR,2)) >>;
-  RETURN (2**N)
-  END;
+begin
+  scalar n;
+  u:=substitutesq(simp u,list list(intvar,'quotient,1,intvar));
+  n:=0;
+  while involvesq(u,sqrt!-intvar) do <<
+    n:=iadd1 n;
+    u:=substitutesq(u,list list(intvar,'expt,intvar,2)) >>;
+  return (2**n)
+  end;
 
 
-SYMBOLIC PROCEDURE LCMN(I,J);
-  I*J/GCDN(I,J);
+symbolic procedure lcmn(i,j);
+  i*j/gcdn(i,j);
 
 % unfluid '(expsub);
 
-ENDMODULE;
+endmodule;
 
-END;
+end;
+

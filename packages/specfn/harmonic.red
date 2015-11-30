@@ -93,44 +93,44 @@ module harmonic; % Solid & spherical harmonics.
 
 %       S(n,m,x,y,z) = (-1)^m * S(n,-m,x,-y,z);
 
-algebraic procedure SolidHarmonicY(n,m,x,y,z,r2);
-begin scalar mp, v, Y0, Y1, Y2;
+algebraic procedure solidharmonicy(n,m,x,y,z,r2);
+begin scalar mp, v, y0, y1, y2;
 
  if not (fixp(n) and fixp(m)) then  return
     rederr " SolidHarmonicY : n and m must be integers";
  if (n < 0) then return 0;
  mp := abs(m);
  if (n < mp ) then return 0;
- Y0 := 1/sqrt(4*Pi);
- if (n = 0) then return Y0;
+ y0 := 1/sqrt(4*pi);
+ if (n = 0) then return y0;
  if (mp > 0) then
  << if m > 0 then v:=x+i*y else v:=x-i*y;
-  for k:=1:mp do Y0 := - sqrt((2*k+1)/(2*k))*v*Y0;
+  for k:=1:mp do y0 := - sqrt((2*k+1)/(2*k))*v*y0;
   if (n > mp) then <<
    k := mp + 1;
-   Y1 := Y0;
-   Y0 := z*sqrt(2*k+1)*Y1;
+   y1 := y0;
+   y0 := z*sqrt(2*k+1)*y1;
    if (n > mp + 1) then for k:=mp+2:n do <<
-            Y2 := Y1;
-            Y1 := Y0;
-            Y0 := z*sqrt((4*k*k-1)/(k*k-mp*mp))*Y1
+            y2 := y1;
+            y1 := y0;
+            y0 := z*sqrt((4*k*k-1)/(k*k-mp*mp))*y1
                    -r2*sqrt(((2*k+1)*(k-mp-1)*(k+mp-1))/
-                   ((2*k-3)*(k*k-mp*mp)))*Y2 >>;
+                   ((2*k-3)*(k*k-mp*mp)))*y2 >>;
                   >>;
- >> else << Y1 := Y0;
-            Y0 := z*sqrt(3)*Y1;
+ >> else << y1 := y0;
+            y0 := z*sqrt(3)*y1;
             if n > 1 then for k:=2:n do <<
-                   Y2 := Y1;
-                   Y1 := Y0;
-                   Y0 := ( z*sqrt(4*k*k-1)*Y1 - r2*(k-1)*
-                         sqrt((2*k+1)/(2*k-3))*Y2)/k >>;
+                   y2 := y1;
+                   y1 := y0;
+                   y0 := ( z*sqrt(4*k*k-1)*y1 - r2*(k-1)*
+                         sqrt((2*k+1)/(2*k-3))*y2)/k >>;
          >>;
- if m < 0 and not evenp mp then Y0 := - Y0;
- return Y0
+ if m < 0 and not evenp mp then y0 := - y0;
+ return y0
 end;
 
-algebraic procedure SphericalHarmonicY(n,m,theta,phi);
-        SolidHarmonicY(n,m,sin(theta)*cos(phi),
+algebraic procedure sphericalharmonicy(n,m,theta,phi);
+        solidharmonicy(n,m,sin(theta)*cos(phi),
                 sin(theta)*sin(phi),cos(theta),1)$
 
 endmodule;

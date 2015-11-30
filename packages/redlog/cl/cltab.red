@@ -72,7 +72,7 @@ procedure cl_mktf(resl);
       while w do
 	 if (rl_tvalp caar w) or (cl_atfp caar w) then <<
 	    w := nil;
-	    flg := T
+	    flg := t
 	 >> else
 	    w := cdr w;
       return
@@ -202,7 +202,7 @@ procedure cl_gentheo1(f,bvl);
  	 if not cl_cmpfp(result,car nres) then <<
     	    result := car nres;
 	    theo := cdr nres;
-	    flag := T
+	    flag := t
  	 >>
       >>;
       return flag . (result . theo)

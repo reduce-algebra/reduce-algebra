@@ -41,14 +41,14 @@ algebraic operator Fresnel_C, Fresnel_S;%, erfc,erfi;
 
 algebraic operator s_i, shi, chi, li;
 
-algebraic let limit(Si(~tt),~tt,infinity) => Pi/2;
+algebraic let limit(si(~tt),~tt,infinity) => pi/2;
 
 algebraic
-let { int(sin(~tt)/~tt,~tt,0,~z) => Si (z),
-      int(cos(~a*~x)*sin(~b*~x)/x,x) => 1/2*Si(a*x+b*x)-1/2*Si(a*x-b*x),
-      int(cos(~a*~x)*sin(~x)/x,x) => 1/2*Si(a*x+x)-1/2*Si(a*x-x),
-      int(cos(~x)*sin(~b*~x)/x,x) => 1/2*Si(x+b*x)-1/2*Si(x-b*x),
-     int(cos(~x)*sin(~x)/x,x) => 1/2*Si(2*x)
+let { int(sin(~tt)/~tt,~tt,0,~z) => si (z),
+      int(cos(~a*~x)*sin(~b*~x)/x,x) => 1/2*si(a*x+b*x)-1/2*si(a*x-b*x),
+      int(cos(~a*~x)*sin(~x)/x,x) => 1/2*si(a*x+x)-1/2*si(a*x-x),
+      int(cos(~x)*sin(~b*~x)/x,x) => 1/2*si(x+b*x)-1/2*si(x-b*x),
+     int(cos(~x)*sin(~x)/x,x) => 1/2*si(2*x)
 %      Si(0) => 0,
 %      Si(-~x) => (- Si(x)),
 %      df(Si(~x),~x) => sin(x)/x  ,
@@ -59,7 +59,7 @@ let { int(sin(~tt)/~tt,~tt,0,~z) => Si (z),
 algebraic
 let { int(sin(~tt)/~tt,~tt,~z,infinity) => - s_i (z),
       limit(s_i(~tt),x,infinity) => 0,
-      s_i(~x) => Si(x) - pi/2,
+      s_i(~x) => si(x) - pi/2,
       df(s_i(~x),~x) => sin(x)/x
     };
 
@@ -76,8 +76,8 @@ let { int(1/ln(~tt),~tt,0,~z) =>  li (z),
     };
 
 algebraic
-let { int(cos(~tt)/~tt,~tt,~z,infinity) => - Ci (z),
-      int((cos(~tt) -1)/~tt,~tt,0,~z) => Ci (z) + psi(1) -log(z)
+let { int(cos(~tt)/~tt,~tt,~z,infinity) => - ci (z),
+      int((cos(~tt) -1)/~tt,~tt,0,~z) => ci (z) + psi(1) -log(z)
 % psi(1) may be replaced by euler_gamma one day ...
 
 %      Ci(-~x) => - Ci(x) -i*pi,
@@ -88,34 +88,34 @@ let { int(cos(~tt)/~tt,~tt,~z,infinity) => - Ci (z),
 
 algebraic
 let { int(sinh(~tt)/~tt,~tt,0,~z) => shi (z),
-      df(Shi(~x),~x) => sinh(x)/x  ,
+      df(shi(~x),~x) => sinh(x)/x  ,
       shi(~x) => compute!:int!:functions(x,shi)
          when numberp x and abs(x) <= 20 and lisp !*rounded
     };
 
 algebraic
-let { int((cosh(~tt) -1)/~tt,~tt,0,~z) => Chi (z) + psi(1) -log(z),
+let { int((cosh(~tt) -1)/~tt,~tt,0,~z) => chi (z) + psi(1) -log(z),
 % psi(1) may be replaced by euler_gamma one day ...
-      df(Chi(~x),~x) => cosh(x)/x  ,
-      Chi(~x) => compute!:int!:functions(x,Chi)
+      df(chi(~x),~x) => cosh(x)/x  ,
+      chi(~x) => compute!:int!:functions(x,chi)
          when numberp x and abs(x) <= 20 and lisp !*rounded
     };
 
 algebraic
-let { int(sin(Pi/2*~tt^2),~tt,0,~z) => Fresnel_S (z),
+let { int(sin(pi/2*~tt^2),~tt,0,~z) => Fresnel_S (z),
       Fresnel_S(-~x) => (- Fresnel_S (x)),
       Fresnel_S(i* ~x) => (-i*Fresnel_S (x)),
       limit(Fresnel_S(~tt),~tt,infinity) => 1/2,
-      df(Fresnel_S(~x),~x) => sin(Pi/2*x^2) ,
+      df(Fresnel_S(~x),~x) => sin(pi/2*x^2) ,
       Fresnel_S (~x) => compute!:int!:functions(x,Fresnel_S)
               when numberp x and abs(x) <= 10 and lisp !*rounded };
 
 algebraic
-let { int(cos(Pi/2*~tt^2),~tt,0,~z) => Fresnel_C (z),
+let { int(cos(pi/2*~tt^2),~tt,0,~z) => Fresnel_C (z),
       Fresnel_C(-~x) => (- Fresnel_C (x)),
       Fresnel_C(i* ~x) => (i*Fresnel_C (x)),
       limit(Fresnel_C(~tt),~tt,infinity) => 1/2,
-      df(Fresnel_C(~x),~x) => cos(Pi/2*x^2) ,
+      df(Fresnel_C(~x),~x) => cos(pi/2*x^2) ,
       Fresnel_C (~x) => compute!:int!:functions(x,Fresnel_C)
                when numberp x and abs(x) <= 10 and lisp !*rounded };
 
@@ -137,7 +137,7 @@ algebraic procedure compute!:int!:functions(x,f);
    pre := precision 0; precision pre;
    precis := 10^(-2 * pre);
    lisp (!*uncached := t);
-   if f = Si then
+   if f = si then
            if x < 0 then result :=
                         - compute!:int!:functions(-x,f) else
             << n:=1; term := x; result := x;
@@ -145,28 +145,28 @@ algebraic procedure compute!:int!:functions(x,f);
                  << term := -1 * (term * x*x)/(2n * (2n+1));
                     result := result + term/(2n+1);
                     n := n + 1>>; >>
-    else if f = Ci then
+    else if f = ci then
            if x < 0 then result :=
                          - compute!:int!:functions(-x,f) -i*pi else
-              << n:=1; term := 1; result := euler_gamma + log(x);
+              << n:=1; term := 1; result := Euler_gamma + log(x);
                while abs(term) > precis do
                  << term := -1 * (term * x*x)/((2n-1) * 2n);
                     result := result + term/(2n);
                     n := n + 1>>; >>
     else  if f = Ei then
-          << n:=1; term := 1; result := euler_gamma + log(x);
+          << n:=1; term := 1; result := Euler_gamma + log(x);
                while abs(term) > precis do
                  << term := (term * x)/n;
                     result := result + term/n;
                     n := n + 1>>; >>
-    else  if f = Shi then
+    else  if f = shi then
             << n:=1; term := x; result := x;
                while abs(term) > precis do
                  << term := (term * x*x)/(2n * (2n+1));
                     result := result + term/(2n+1);
                     n := n + 1>>; >>
-    else  if f = Chi then
-            << n:=1; term := 1; result := euler_gamma + log(x);
+    else  if f = chi then
+            << n:=1; term := 1; result := Euler_gamma + log(x);
                while abs(term) > precis do
                  << term := (term * x*x)/((2n-1) * 2n);
                     result := result + term/(2n);

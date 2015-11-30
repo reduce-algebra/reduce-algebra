@@ -983,7 +983,7 @@ laplace(x/sin(-3*a**2),x,p);
 % laplace(sin(x+1),x+1,p);
 
 
-Comment  Examples of Inverse Laplace transformations;
+COMMENT  Examples of Inverse Laplace transformations;
 
 
 symbolic(ordl!* := nil);

@@ -53,7 +53,7 @@ symbolic procedure getrtypecadr u; getrtype cadr u;
 symbolic procedure map!-eval u;
   <<if length u neq 2 then rederr "illegal number of arguments for map";
     map!-eval1(reval cadr u,car u,
-         function(lambda y;y),'aeval)>>;
+         function identity!-function,'aeval)>>;
 
 symbolic procedure !~map(b,a);
  % Called only inside matrix expressions.
@@ -114,7 +114,7 @@ symbolic procedure select!-eval u;
   w:=freequote formbool(w,nil,'algebraic);
   if v then w:={'replaceby,v,w};
   r:=for each q in
-        pair(cdr map!-eval1(l,w,function(lambda y;y),'lispeval),cdr l)
+        pair(cdr map!-eval1(l,w,function identity!-function,'lispeval),cdr l)
       join if car q and car q neq 0 then {cdr q};
   if r then return car l . r;
   if (r:=atsoc(car l,'((plus . 0)

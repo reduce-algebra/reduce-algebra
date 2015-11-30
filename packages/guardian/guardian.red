@@ -198,7 +198,7 @@ procedure gd_casesimpll(case);
 
 procedure gd_simpl(f);
    rl_prepfof rl_simpl(rl_simp f,nil,-1)
-      where !*guardian=nil,!*rlnzden=T,!*rladdcond=nil;
+      where !*guardian=nil,!*rlnzden=t,!*rladdcond=nil;
 
 procedure gd_eta(ge);
    % The algebraic evaluator.
@@ -214,7 +214,7 @@ procedure gd_revalsimplcc(ge);
    begin scalar nw,sc,c;
       for each case in cdr cdr ge do <<
       	 sc := nw;
-      	 c := T; while sc and c do <<
+      	 c := t; while sc and c do <<
 	    if caddr car sc = caddr case then <<
 	       cadr car sc := gd_simpl {'or,cadr car sc,cadr case};
 	       c := nil
@@ -267,7 +267,7 @@ procedure gd_truep(f);
    % [f] is a quantifier-free formula in Lisp prefix.
    begin scalar !*guardian,!*rlverbose;
       if f eq 'true then
-	 return T;
+	 return t;
       if null !*gdqe or gd_ckernp f then
 	 return nil;
       return rl_prepfof rl_qe(rl_all(rl_simp f,nil),nil) eq 'true
@@ -281,7 +281,7 @@ procedure gd_ckernp(f);
       while vl do
 	 if pairp car vl then <<
 	    vl := nil;
-	    ckern := T
+	    ckern := t
 	 >> else
 	    vl := cdr vl;
       return ckern

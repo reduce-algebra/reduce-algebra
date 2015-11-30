@@ -23,13 +23,13 @@ lisp if memq('fmprint ,options!*) then on looking_good;
 
 
 
-procedure test(tmp,A);
+procedure test(tmp,a);
   % 
   % Checks that P * N * P^-1 = A where tmp is the output {P,N,P^-1} 
   % of the Normal form calculation on A.
   %
   begin
-    if second tmp * first tmp * third tmp = A then
+    if second tmp * first tmp * third tmp = a then
     write "Seems O.K." else rederr "something isn't working.";
   end;
 
@@ -40,7 +40,7 @@ test
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% Smithex %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  A := mat((3*x,x^2+x),(0,x^2));
+  a := mat((3*x,x^2+x),(0,x^2));
 
 
      [3*x  x*(x + 1)]
@@ -49,7 +49,7 @@ a := [         2    ]
      [ 0      x     ]
 
 
-  answer := smithex(A,x);
+  answer := smithex(a,x);
 
 
 answer := {
@@ -75,7 +75,7 @@ answer := {
 
            }
 
-  test(answer,A);
+  test(answer,a);
 
 
 Seems O.K.
@@ -90,7 +90,7 @@ Seems O.K.
   defpoly sqrt2**2-2;
 
 
-  A := mat((sqrt2*y^2,y+1),(3*sqrt2,y^3+y*sqrt2));
+  a := mat((sqrt2*y^2,y+1),(3*sqrt2,y^3+y*sqrt2));
 
 
      [       2                ]
@@ -100,7 +100,7 @@ a := [                        ]
      [3*sqrt2   y*(y  + sqrt2)]
 
 
-  answer := smithex(A,y);
+  answer := smithex(a,y);
 
 
 answer := {
@@ -130,7 +130,7 @@ answer := {
 
            }
 
-  test(answer,A);
+  test(answer,a);
 
 
 Seems O.K.
@@ -145,7 +145,7 @@ Seems O.K.
   % polynomials in x over a field F (the rationals unless the field has 
   % been extended). For calculations over the integers use smithex_int.
   %
-  A := mat((9,-36,30),(-36,192,-180),(30,-180,180));
+  a := mat((9,-36,30),(-36,192,-180),(30,-180,180));
 
 
      [ 9   -36    30 ]
@@ -155,7 +155,7 @@ a := [-36  192   -180]
      [30   -180  180 ]
 
 
-  answer := smithex(A,x);
+  answer := smithex(a,x);
 
 
 *** WARNING: all matrix entries are integers.
@@ -193,7 +193,7 @@ answer := {
 
            }
 
-  test(answer,A);
+  test(answer,a);
 
 
 Seems O.K.
@@ -201,7 +201,7 @@ Seems O.K.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% Smithex_int %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  A := mat((1,2,3),(4,5,6),(7,8,x));
+  a := mat((1,2,3),(4,5,6),(7,8,x));
 
 
      [1  2  3]
@@ -211,13 +211,13 @@ a := [4  5  6]
      [7  8  x]
 
 
-  answer := smithex_int(A);
+  answer := smithex_int(a);
 
 
 ***** ERROR: matrix contains non_integer entries. Try smithex.  
 
 
-  A := mat((9,-36,30),(-36,192,-180),(30,-180,180));
+  a := mat((9,-36,30),(-36,192,-180),(30,-180,180));
 
 
      [ 9   -36    30 ]
@@ -227,7 +227,7 @@ a := [-36  192   -180]
      [30   -180  180 ]
 
 
-  answer := smithex_int(A);
+  answer := smithex_int(a);
 
 
 answer := {
@@ -258,7 +258,7 @@ answer := {
 
            }
 
-  test(answer,A);
+  test(answer,a);
 
 
 Seems O.K.
@@ -267,7 +267,7 @@ Seems O.K.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Frobenius %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  A := mat(((y+y^2-x^2)/y,(x-x^2-y+y^2)/y,(x^2-y^2)/y),(1+x+y,
+  a := mat(((y+y^2-x^2)/y,(x-x^2-y+y^2)/y,(x^2-y^2)/y),(1+x+y,
             (x-y+y^2+x*y)/y,-x-y),((y-x+y^2-x^2)/y,(x-y+y^2-x^2)/y,
             (x+x^2-y^2)/y));
 
@@ -288,7 +288,7 @@ a := [     x + y + 1         ------------------     - (x + y)  ]
      [         y                     y                  y      ]
 
 
-  answer := frobenius(A);
+  answer := frobenius(a);
 
 
 answer := {
@@ -340,7 +340,7 @@ answer := {
 
 }
 
-  test(answer,A);
+  test(answer,a);
 
 
 Seems O.K.
@@ -353,7 +353,7 @@ Seems O.K.
     defpoly i^2+1;
 
 
-    A := mat((-3-i,1,2+i,7-9*i),(-2,1,1,5-i),(-2-2*i,1,2+2*i,4-2*i),
+    a := mat((-3-i,1,2+i,7-9*i),(-2,1,1,5-i),(-2-2*i,1,2+2*i,4-2*i),
              (2,0,-1,-2+8*i));
 
 
@@ -366,7 +366,7 @@ a := [                                      ]
      [     2        0    -1       8*i - 2   ]
 
 
-    answer := frobenius(A);
+    answer := frobenius(a);
 
 
 answer := {
@@ -423,7 +423,7 @@ answer := {
 
 
 
-  A := mat((10,-5,-5,8,3,0),(-4,2,-10,-7,-5,-5),(-8,2,7,3,7,5),
+  a := mat((10,-5,-5,8,3,0),(-4,2,-10,-7,-5,-5),(-8,2,7,3,7,5),
            (-6,-7,-7,-7,10,7),(-4,-3,-3,-6,8,-9),(-2,5,-5,9,7,-4));
 
 
@@ -440,7 +440,7 @@ a := [                       ]
      [-2  5   -5   9   7   -4]
 
 
-  F := first frobenius(A);
+  f := first frobenius(a);
 
 
      [0  0  0  0  0  -867960]
@@ -468,7 +468,7 @@ f := [                      ]
 
 1
 
-    F_mod := first frobenius(A);
+    f_mod := first frobenius(a);
 
 
          [0  17  0  0  0  0 ]
@@ -491,7 +491,7 @@ f_mod := [                  ]
     on balanced_mod;
 
 
-    F_bal_mod := first frobenius(A);
+    f_bal_mod := first frobenius(a);
 
 
              [0   - 6  0  0  0   0  ]
@@ -517,7 +517,7 @@ f_bal_mod := [                      ]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Ratjordan %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  A := mat(((y+y^2-x^2)/y,(x-x^2-y+y^2)/y,(x^2-y^2)/y),(1+x+y,
+  a := mat(((y+y^2-x^2)/y,(x-x^2-y+y^2)/y,(x^2-y^2)/y),(1+x+y,
             (x-y+y^2+x*y)/y,-x-y),((y-x+y^2-x^2)/y,(x-y+y^2-x^2)/y,
             (x+x^2-y^2)/y));
 
@@ -538,7 +538,7 @@ a := [     x + y + 1         ------------------     - (x + y)  ]
      [         y                     y                  y      ]
 
 
-  answer := ratjordan(A);
+  answer := ratjordan(a);
 
 
 answer := {
@@ -603,7 +603,7 @@ mat((0,-------,1),
 
 }
 
-  test(answer,A);
+  test(answer,a);
 
 
 Seems O.K.
@@ -616,7 +616,7 @@ Seems O.K.
     defpoly sqrt2**2-2;
 
 
-    A:= mat((4*sqrt2-6,-4*sqrt2+7,-3*sqrt2+6),(3*sqrt2-6,-3*sqrt2+7,
+    a:= mat((4*sqrt2-6,-4*sqrt2+7,-3*sqrt2+6),(3*sqrt2-6,-3*sqrt2+7,
             -3*sqrt2+6),(3*sqrt2,1-3sqrt2,-2*sqrt2));
 
 
@@ -627,7 +627,7 @@ a := [3*sqrt2 - 6   - (3*sqrt2 - 7)   - (3*sqrt2 - 6)]
      [  3*sqrt2     - (3*sqrt2 - 1)      - 2*sqrt2   ]
 
 
-    answer := ratjordan(A);
+    answer := ratjordan(a);
 
 
 answer := {
@@ -666,7 +666,7 @@ answer := {
 
            }
 
-    test(answer,A);
+    test(answer,a);
 
 
 Seems O.K.
@@ -675,7 +675,7 @@ Seems O.K.
 
 
 
-  A := mat((-12752,-6285,-9457,-7065,-4939,-5865,-3769),(13028,6430,
+  a := mat((-12752,-6285,-9457,-7065,-4939,-5865,-3769),(13028,6430,
            9656, 7213,5041,5984,3841),(16425,8080,12192,9108,6370,7569,
            4871), (-6065,-2979,-4508,-3364,-2354,-2801,-1803),(2968,
            1424,2231, 1664,1171,1404,919),(-22762,-11189,-16902,-12627,
@@ -698,7 +698,7 @@ a := [-6065   -2979   -4508   -3364   -2354  -2801   -1803]
      [23112   11400   17135   12799   8946   10622   6821 ]
 
 
-  R := first ratjordan(A);
+  r := first ratjordan(a);
 
 
      [0  2  0  0  0  0  0 ]
@@ -728,7 +728,7 @@ r := [0  0  1  0  0  0  0 ]
 
 23
 
-    R_mod := first ratjordan(A);
+    r_mod := first ratjordan(a);
 
 
          [19  0   0   0  0  0  0 ]
@@ -753,7 +753,7 @@ r_mod := [0   0   0   5  0  0  0 ]
     on balanced_mod;
 
 
-    R_bal_mod := first ratjordan(A);
+    r_bal_mod := first ratjordan(a);
 
 
              [5   0     0     0    0  0   0  ]
@@ -781,7 +781,7 @@ r_bal_mod := [0   0     0     - 6  0  0   0  ]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% jordansymbolic %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  A := mat(((y+y^2-x^2)/y,(x-x^2-y+y^2)/y,(x^2-y^2)/y),(1+x+y,
+  a := mat(((y+y^2-x^2)/y,(x-x^2-y+y^2)/y,(x^2-y^2)/y),(1+x+y,
             (x-y+y^2+x*y)/y,-x-y),((y-x+y^2-x^2)/y,(x-y+y^2-x^2)/y,
             (x+x^2-y^2)/y));
 
@@ -802,7 +802,7 @@ a := [     x + y + 1         ------------------     - (x + y)  ]
      [         y                     y                  y      ]
 
 
-  answer := jordansymbolic(A);
+  answer := jordansymbolic(a);
 
 
 answer := {
@@ -882,7 +882,7 @@ mat((0,-------,1),
     defpoly b^3-2*b+b-5;
 
 
-    A := mat((1-b,2+b^2),(3+b-2*b^2,3));
+    a := mat((1-b,2+b^2),(3+b-2*b^2,3));
 
 
      [                    2    ]
@@ -892,7 +892,7 @@ a := [                         ]
      [ - (2*b  - b - 3)    3   ]
 
 
-    answer := jordansymbolic(A);
+    answer := jordansymbolic(a);
 
 
 answer := {
@@ -945,7 +945,7 @@ answer := {
 
 
 
-  A := mat((-9,21,-15,4,2,0),(-10,21,-14,4,2,0),(-8,16,-11,4,2,0),
+  a := mat((-9,21,-15,4,2,0),(-10,21,-14,4,2,0),(-8,16,-11,4,2,0),
            (-6,12,-9,3,3,0),(-4,8,-6,0,5,0),(-2,4,-3,0,1,3));
 
 
@@ -962,7 +962,7 @@ a := [                     ]
      [-2   4   -3   0  1  3]
 
 
-  answer := jordansymbolic(A);
+  answer := jordansymbolic(a);
 
 
 answer := {
@@ -1042,20 +1042,20 @@ answer := {
     % solve.
     %
     solve(lambda_^2-4*lambda_+5,lambda_);
-    J := sub({lambda31=i + 2,lambda32= - i + 2},first answer);
-    P := sub({lambda31=i + 2,lambda32= - i + 2},third answer);
-    Pinv :=sub({lambda31=i + 2,lambda32= - i + 2},third rest answer);
+    j := sub({lambda31=i + 2,lambda32= - i + 2},first answer);
+    p := sub({lambda31=i + 2,lambda32= - i + 2},third answer);
+    pinv :=sub({lambda31=i + 2,lambda32= - i + 2},third rest answer);
   >>
   else 
   <<
     solve(xi^2-4*xi+5,xi);
-    J := sub({xi(3,1)=i + 2,xi(3,2)= - i + 2},first answer);
-    P := sub({xi(3,1)=i + 2,xi(3,2)= - i + 2},third answer);
-    Pinv := sub({xi(3,1)=i + 2,xi(3,2)= - i + 2},third rest answer);
+    j := sub({xi(3,1)=i + 2,xi(3,2)= - i + 2},first answer);
+    p := sub({xi(3,1)=i + 2,xi(3,2)= - i + 2},third answer);
+    pinv := sub({xi(3,1)=i + 2,xi(3,2)= - i + 2},third rest answer);
   >>;
 
 
-  test({J,P,Pinv},A);
+  test({j,p,pinv},a);
 
 
 Seems O.K.
@@ -1072,10 +1072,10 @@ Seems O.K.
 
 23
 
-    answer := jordansymbolic(A)$
+    answer := jordansymbolic(a)$
 
 
-    J_mod := {first answer, second answer};
+    j_mod := {first answer, second answer};
 
 
 j_mod := {
@@ -1104,10 +1104,10 @@ j_mod := {
     on balanced_mod;
 
 
-    answer := jordansymbolic(A)$
+    answer := jordansymbolic(a)$
 
 
-    J_bal_mod := {first answer, second answer};
+    j_bal_mod := {first answer, second answer};
 
 
 j_bal_mod := {
@@ -1139,7 +1139,7 @@ j_bal_mod := {
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% jordan %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  A := mat((1,y),(y^2,3));
+  a := mat((1,y),(y^2,3));
 
 
      [1   y]
@@ -1148,7 +1148,7 @@ a := [ 2   ]
      [y   3]
 
 
-  answer := jordan(A);
+  answer := jordan(a);
 
 
 answer := {
@@ -1185,13 +1185,13 @@ answer := {
 
            }
 
-  test(answer,A);
+  test(answer,a);
 
 
 Seems O.K.
 
 
-  A := mat((-12752,-6285,-9457,-7065,-4939,-5865,-3769),(13028,6430,
+  a := mat((-12752,-6285,-9457,-7065,-4939,-5865,-3769),(13028,6430,
           9656, 7213,5041,5984,3841),(16425,8080,12192,9108,6370,7569,
           4871), (-6065,-2979,-4508,-3364,-2354,-2801,-1803),(2968,
           1424,2231, 1664,1171,1404,919),(-22762,-11189,-16902,-12627,
@@ -1217,7 +1217,7 @@ a := [-6065   -2979   -4508   -3364   -2354  -2801   -1803]
   on rounded;
 
 
-  J := first jordan(A);
+  j := first jordan(a);
 
 
 *** Domain mode rounded changed to rational 
@@ -1254,7 +1254,7 @@ j := mat((1.41421356237,0,0,0,0,0,0),
     defpoly b^3-2*b+b-5;
 
 
-    A := mat((1-b,2+b^2),(3+b-2*b^2,3));
+    a := mat((1-b,2+b^2),(3+b-2*b^2,3));
 
 
      [                    2    ]
@@ -1264,7 +1264,7 @@ a := [                         ]
      [ - (2*b  - b - 3)    3   ]
 
 
-    J := first jordan(A);
+    j := first jordan(a);
 
 
                 11   2                   1

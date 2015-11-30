@@ -385,7 +385,7 @@ symbolic procedure solvenonlnrsys2();
         then load!-package 'groebner;
       for each x in iv!* do if not member(x,last!-vars!*) then
         for each y in last!-vars!* do depend1(x,y,t);
-      iv!* := sort(iv!*,function (lambda(a,b);depends(a,b)));
+      iv!* := sort(iv!*,function depends);
       if !*trnonlnr then
       <<  prin2t "Entering Groebner for system";
           writepri(mkquote system!*,'only);
@@ -1025,7 +1025,7 @@ symbolic procedure solvenonlnrtansolve(u,x,w);
    <<z:=reval caddr q;
      z:=reval sublis(solvenonlnrtansolve1 z,z);
      !!arbint:=ar;
-     y:=solve0({'equal,{'tan,{'quotient,V,2}},z},x);
+     y:=solve0({'equal,{'tan,{'quotient,v,2}},z},x);
      r:=union(y,r)>>;
     % Test for the special cases x=pi(not covered by tangent substitution).
    y := errorset2 {'subf,mkquote w,mkquote{x . 'pi}};

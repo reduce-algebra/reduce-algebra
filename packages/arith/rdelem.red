@@ -54,7 +54,7 @@ imports !*f2q, abs!:, acos, acos!*, acosd, acosh, acot, acotd, acoth,
 fluid '(!:prec!: !:bprec!: !*!*roundbf);
 
 global '(bfz!* bfone!* bften!* bfhalf!* !:180!* !:bf1!.5!* bfthree!*
- !:bf60!* epsqrt!* bftwo!* !!pii !!flprec !!rdprec !!shbinfl
+ !:bf60!* epsqrt!* bftwo!* !!pii !!pii2 !!flprec !!rdprec !!shbinfl
  pi!/180 !180!/pi !!ee !!maxarg);
 
 pi!/180 := !!pii/180;  !180!/pi := 180/!!pii;
@@ -84,9 +84,9 @@ deflist('((exp rdexp!*) (expt rdexpt!*) (log rdlog!*) (sin rdsin!*)
 
 for each n in '(exp sin cos tan asin acos atan sinh cosh  % log
     sec csc cot tanh coth sech csch asinh acosh acot asec acsc atanh
-    acoth asech acsch logb log10 ln atan2 hypot
+    acoth asech acsch ln hypot % logb log10
 %   sind cosd asind acosd tand cotd atand acotd secd cscd asecd acscd
-%   atan2d cbrt
+%   atan2 atan2d cbrt
     deg2rad rad2deg deg2dms rad2dms dms2deg dms2rad norm arg argd)
        do put(n,'simpfn,'simpiden);
 
@@ -160,7 +160,8 @@ symbolic procedure rde!*; mkround if !*!*roundbf then e!*() else !!ee;
 symbolic procedure rdpi!*;
    mkround if !*!*roundbf then pi!*() else !!pii;
 
-symbolic procedure pi!/2!*; timbf(bfhalf!*,pi!*());
+symbolic procedure pi!/2!*; 
+   mkround if !*!*roundbf then timbf(bfhalf!*,pi!*()) else !!pii2;
 
 symbolic procedure deg2rad!* u;
    mkround(if atom x then deg2rad x else deg2rad!: x)

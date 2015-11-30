@@ -85,7 +85,7 @@ flag('(!a!lp!h!a !b!e!t!a !g!a!m!m!a !d!e!l!t!a !e!p!s!i!l!o!n
        !h!b!a!r !n!a!b!l!a !p!e!r!p alpha beta gamma delta epsilon
        varepsilon zeta eta theta vartheta iota kappa lambda mu nu xi pi
        varpi rho varrho sigma varsigma tau upsilon phi varphi chi psi
-       omega Gamma Delta Theta Lambda Xi Pi Sigma Upsilon Phi Psi Omega
+       omega gamma delta theta lambda xi pi sigma upsilon phi psi omega
        infty hbar nabla perp),'symbol);
 
 flag('(cdots), 'symbol);  % added by A Barnes for Taylor and TPS
@@ -163,20 +163,20 @@ symbolic put('verbatim,'simpfg,'((t (verbatimon)) (nil (verbatimoff))));
 
 symbolic procedure latexon;
 % Procedure called after ON LATEX
-<<!*!*a2sfn:='texaeval;
+<<!*!*a2sfn:='TeXaeval;
   !*raise:=nil;
   prin2t "\documentstyle{article}";
   prin2t "\begin{document}";
   if !*verbatim then
       <<prin2t "\begin{verbatim}";
         prin2t "REDUCE Input:">>;
-  put('tex,'rtypefn,'(lambda(x) 'tex)) >>;
+  put('TeX,'rtypefn,'(lambda(x) 'TeX)) >>;
 
 symbolic procedure latexoff;
 % Procedure called after OFF LATEX
 <<!*!*a2sfn:='aeval;
   !*raise:=t;
-  remprop('tex,'rtypefn);
+  remprop('TeX,'rtypefn);
   if !*verbatim then
       <<terpri();
         prin2t "\end{verbatim}" >>;
@@ -195,23 +195,23 @@ procedure verbatimoff;
         prin2t "\end{verbatim}">>;
   !*echo:=nil >>;
 
-symbolic procedure texaeval u;
+symbolic procedure TeXaeval u;
 % Procedure replaces the AEVAL procedure in the LATEX mode
-if !*lasimp then list('tex,aeval u)
-  else list('tex,u);
+if !*lasimp then list('TeX,aeval u)
+  else list('TeX,u);
 
 % deklarace latex modu;
-put('tex,'tag,'tex);
-put('tex,'simpfn,'simpcar);
-put('tex,'typeletfn,'texlet);
-put('tex,'prifn,'latexprint);
-put('tex,'setprifn,'setlaprin);
-flag('(tex),'sprifn);
+put('TeX,'tag,'TeX);
+put('TeX,'simpfn,'simpcar);
+put('TeX,'typeletfn,'TeXlet);
+put('TeX,'prifn,'latexprint);
+put('TeX,'setprifn,'setlaprin);
+flag('(TeX),'sprifn);
 
-symbolic procedure texlet(u,v,tu,b,tv);
+symbolic procedure TeXlet(u,v,tu,b,tv);
 % Assignment procedure for LATEX mode
 % !!! match can be evaluated like let!!!!;
-if eqcar(v,'tex) then let2(u,cadr v,nil,b)
+if eqcar(v,'TeX) then let2(u,cadr v,nil,b)
   else msgpri(" value for ",u," not assigned ",v,nil);
 
 symbolic procedure latexprint u;
@@ -267,13 +267,13 @@ symbolic procedure prinlaend;
 
 symbolic procedure latexprin u;
 % Prints expression U in the LaTeX syntax
-if eqcar(u,'tex) then maprintla(cadr u,0)
+if eqcar(u,'TeX) then maprintla(cadr u,0)
   else maprintla(u,0);
 
 symbolic procedure texprla(u,p);
 maprintla(car u,p);
 
-put('tex,'laprifn,'texprla);
+put('TeX,'laprifn,'texprla);
 
 symbolic procedure maprintla(l,p);
 % L is printed expression, P is the infix precedence of infix operator
@@ -670,9 +670,9 @@ symbolic procedure ps!:prla(arg, p);
 put('!:ps!:, 'laprifn, 'ps!:prla);
 
 symbolic procedure tayprla(arg, p);
-  maprintla(Taylor!*print1 cons('taylor!*, arg), p);
+  maprintla(taylor!*print1 cons('taylor!*, arg), p);
 
-put('Taylor!*, 'laprifn, 'tayprla);
+put('taylor!*, 'laprifn, 'tayprla);
 
 symbolic procedure dfprla(dfex,p);
 % Prints derivaves

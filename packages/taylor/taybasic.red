@@ -1,4 +1,4 @@
-module TayBasic;
+module taybasic;
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -44,14 +44,14 @@ imports
 
 % from the header module:
         !*tay2q, common!-increment, get!-degree, invert!-powerlist,
-        make!-Taylor!*, multintocoefflist, prune!-coefflist,
-        smallest!-increment, subtr!-degrees, subs2coefflist, TayCfPl,
-        TayCfSq, TayCoeffList, TayFlags, TayFlagsCombine, TayGetCoeff,
-        Taylor!-kernel!-sq!-p, Taylor!:, TayMakeCoeff, TayOrig,
-        TayTemplate, TayTpElVars, TpDegreeList, TpNextList,
+        make!-taylor!*, multintocoefflist, prune!-coefflist,
+        smallest!-increment, subtr!-degrees, subs2coefflist, taycfpl,
+        taycfsq, taycoefflist, tayflags, tayflagscombine, taygetcoeff,
+        taylor!-kernel!-sq!-p, taylor!:, taymakecoeff, tayorig,
+        taytemplate, taytpelvars, tpdegreelist, tpnextlist,
 
 % from module Tayintro:
-        confusion, Taylor!-error, Taylor!-error!*,
+        confusion, taylor!-error, taylor!-error!*,
 
 % from module Tayutils:
         add!.comp!.tp!., add!-degrees, enter!-sorted, exceeds!-order,
@@ -68,13 +68,13 @@ symbolic procedure multtaylorsq (tay, sq);
   % no check for variable dependency is done!
   %
   if null tay or null numr sq then nil
-   else make!-Taylor!* (
-              multintocoefflist (TayCoeffList tay, sq),
-              TayTemplate tay,
-              if !*taylorkeeporiginal and TayOrig tay
-                then multsq (sq, TayOrig tay)
+   else make!-taylor!* (
+              multintocoefflist (taycoefflist tay, sq),
+              taytemplate tay,
+              if !*taylorkeeporiginal and tayorig tay
+                then multsq (sq, tayorig tay)
                else nil,
-              TayFlags tay)$
+              tayflags tay)$
 
 
 symbolic inline procedure degree!-union (u, v);
@@ -93,59 +93,59 @@ symbolic procedure addtaylor(u,v);
 symbolic procedure addtaylor!-as!-sq(u,v);
    begin scalar tp;
      return
-       if Taylor!-kernel!-sq!-p u and Taylor!-kernel!-sq!-p v and
+       if taylor!-kernel!-sq!-p u and taylor!-kernel!-sq!-p v and
           (tp := add!.comp!.tp!.(mvar numr u,mvar numr v))
          then !*tay2q addtaylor!*(mvar numr u,mvar numr v,car tp)
         else addsq(u,v)
    end;
 
 symbolic procedure addtaylor!*(u,v,tp);
-   make!-Taylor!*
+   make!-taylor!*
            (cdr z,replace!-next(tp,car z),
-            if !*taylorkeeporiginal and TayOrig u and TayOrig v
-              then addsq(TayOrig u,TayOrig v)
+            if !*taylorkeeporiginal and tayorig u and tayorig v
+              then addsq(tayorig u,tayorig v)
              else nil,
-            TayFlagsCombine(u,v))
-       where z := addtaylor1(tp,TayCoeffList u,TayCoeffList v);
+            tayflagscombine(u,v))
+       where z := addtaylor1(tp,taycoefflist u,taycoefflist v);
 
 symbolic procedure addtaylor1(tmpl,l1,l2);
   %
   % Returns the coefflist that is the sum of coefflists l1, l2.
   %
   begin scalar cff,clist,tn,tp;
-    tp := TpDegreeList tmpl;
-    tn := TpNextList tmpl;
+    tp := tpdegreelist tmpl;
+    tn := tpnextlist tmpl;
     %
     % The following is necessary to ensure that the rplacd below
     %  doesn't do any harm to the list in l1.
     %
     clist := for each cc in l1 join
-               if not null numr TayCfSq cc
-                 then if not exceeds!-order(tn,TayCfPl cc)
-                        then {TayMakeCoeff(TayCfPl cc,TayCfSq cc)}
-                       else <<tn := min2!-order(tn,tp,TayCfPl cc);nil>>;
+               if not null numr taycfsq cc
+                 then if not exceeds!-order(tn,taycfpl cc)
+                        then {taymakecoeff(taycfpl cc,taycfsq cc)}
+                       else <<tn := min2!-order(tn,tp,taycfpl cc);nil>>;
     for each cc in l2 do
-      if not null numr TayCfSq cc
-        then if not exceeds!-order(tn,TayCfPl cc)
-               then <<cff := assoc(TayCfPl cc,clist);
+      if not null numr taycfsq cc
+        then if not exceeds!-order(tn,taycfpl cc)
+               then <<cff := assoc(taycfpl cc,clist);
                       if null cff then clist := enter!-sorted(cc,clist)
-                       else rplacd(cff,addsq(TayCfSq cff,TayCfSq cc))>>
-              else tn := min2!-order(tn,tp,TayCfPl cc);
+                       else rplacd(cff,addsq(taycfsq cff,taycfsq cc))>>
+              else tn := min2!-order(tn,tp,taycfpl cc);
     return tn . subs2coefflist clist
   end;
 
 
 symbolic procedure negtaylor u;
-  make!-Taylor!* (
-         negtaylor1 TayCoeffList u,
-         TayTemplate u,
-         if !*taylorkeeporiginal and TayOrig u
-           then negsq TayOrig u else nil,
-         TayFlags u)$
+  make!-taylor!* (
+         negtaylor1 taycoefflist u,
+         taytemplate u,
+         if !*taylorkeeporiginal and tayorig u
+           then negsq tayorig u else nil,
+         tayflags u)$
 
 symbolic procedure negtaylor1 tcl;
   for each cc in tcl collect
-    TayMakeCoeff (TayCfPl cc, negsq TayCfSq cc)$
+    taymakecoeff (taycfpl cc, negsq taycfsq cc)$
 
 symbolic procedure multtaylor(u,v);
   %
@@ -159,20 +159,20 @@ symbolic procedure multtaylor(u,v);
 symbolic procedure multtaylor!-as!-sq(u,v);
    begin scalar tps;
      return
-       if Taylor!-kernel!-sq!-p u and Taylor!-kernel!-sq!-p v and
+       if taylor!-kernel!-sq!-p u and taylor!-kernel!-sq!-p v and
           (tps := mult!.comp!.tp!.(mvar numr u,mvar numr v,nil))
          then !*tay2q multtaylor!*(mvar numr u,mvar numr v,tps)
         else multsq(u,v)
    end;
 
 symbolic procedure multtaylor!*(u,v,tps);
-   make!-Taylor!*
+   make!-taylor!*
         (cdr z,replace!-next(car tps,car z),
-         if !*taylorkeeporiginal and TayOrig u and TayOrig v
-           then multsq (TayOrig u, TayOrig v)
+         if !*taylorkeeporiginal and tayorig u and tayorig v
+           then multsq (tayorig u, tayorig v)
           else nil,
-         TayFlagsCombine(u,v))
-     where z := multtaylor1(car tps,TayCoeffList u,TayCoeffList v);
+         tayflagscombine(u,v))
+     where z := multtaylor1(car tps,taycoefflist u,taycoefflist v);
 
 symbolic procedure multtaylor1(tmpl,l1,l2);
   %
@@ -180,23 +180,23 @@ symbolic procedure multtaylor1(tmpl,l1,l2);
   %  with respect to Taylor template tp.
   %
   begin scalar cff,pl,rlist,sq,tn,tp;
-    tp := TpDegreeList tmpl;
-    tn := TpNextList tmpl;
+    tp := tpdegreelist tmpl;
+    tn := tpnextlist tmpl;
     for each cf1 in l1 do
       for each cf2 in l2 do <<
-        pl := add!-degrees(TayCfPl cf1,TayCfPl cf2);
+        pl := add!-degrees(taycfpl cf1,taycfpl cf2);
         if not exceeds!-order(tn,pl) then <<
-          sq := multsq(TayCfSq cf1,TayCfSq cf2);
+          sq := multsq(taycfsq cf1,taycfsq cf2);
           if not null numr sq then <<
             cff := assoc(pl,rlist);
             if null cff
-              then rlist := enter!-sorted(TayMakeCoeff(pl,sq),rlist)
-             else rplacd(cff,addsq(TayCfSq cff,sq))>>>>
+              then rlist := enter!-sorted(taymakecoeff(pl,sq),rlist)
+             else rplacd(cff,addsq(taycfsq cff,sq))>>>>
          else tn := min2!-order(tn,tp,pl)>>;
     return tn . subs2coefflist rlist
   end;
 
-comment Implementation of Taylor division.
+COMMENT Implementation of Taylor division.
         We use the following algorithm:
         Suppose the numerator and denominator are of the form
 
@@ -286,58 +286,58 @@ symbolic procedure quottaylor(u,v);
 symbolic procedure quottaylor!-as!-sq(u,v);
    begin scalar tps;
      return
-       if Taylor!-kernel!-sq!-p u and Taylor!-kernel!-sq!-p v and
+       if taylor!-kernel!-sq!-p u and taylor!-kernel!-sq!-p v and
           (tps := mult!.comp!.tp!.(mvar numr u,mvar numr v,t))
          then !*tay2q quottaylor!*(mvar numr u,mvar numr v,tps)
         else quotsq(u,v)
    end;
 
 symbolic procedure quottaylor!*(u,v,tps);
-   make!-Taylor!*(
+   make!-taylor!*(
       cdr z,replace!-next(car tps,car z),
-      if !*taylorkeeporiginal and TayOrig u and TayOrig v
-        then quotsq (TayOrig u, TayOrig v)
+      if !*taylorkeeporiginal and tayorig u and tayorig v
+        then quotsq (tayorig u, tayorig v)
        else nil,
-      TayFlagsCombine(u,v))
-    where z := quottaylor1(car tps,TayCoeffList u,TayCoeffList v);
+      tayflagscombine(u,v))
+    where z := quottaylor1(car tps,taycoefflist u,taycoefflist v);
 
 symbolic procedure quottaylor1(tay,lu,lv);
   %
   % Does the real work, called also by the expansion procedures.
   % Returns the coefflist.
   %
-  Taylor!:
+  taylor!:
   begin scalar clist,il,lminu,lminv,aminu,aminv,ccmin,coefflis,tp,tn;
-    tp := TpDegreeList tay;
-    tn := TpNextList tay;
+    tp := tpdegreelist tay;
+    tn := tpnextlist tay;
     lu := prune!-coefflist lu;
     if null lu then return tn . nil;
-    lminu := TayCfPl car lu;
+    lminu := taycfpl car lu;
     for each el in cdr lu do
-      if not null numr TayCfSq el then
-        lminu := taydegree!-min2(lminu,TayCfPl el);
-    aminu := if lminu neq TayCfPl car lu then TayGetCoeff(lminu,lu)
-              else TayCfSq car lu;
+      if not null numr taycfsq el then
+        lminu := taydegree!-min2(lminu,taycfpl el);
+    aminu := if lminu neq taycfpl car lu then taygetcoeff(lminu,lu)
+              else taycfsq car lu;
     lv := prune!-coefflist lv;
-    if null lv then Taylor!-error!*('not!-a!-unit,'quottaylor);
+    if null lv then taylor!-error!*('not!-a!-unit,'quottaylor);
     il := common!-increment(smallest!-increment lu,
                             smallest!-increment lv);
-    aminv := TayCfSq car lv;   % first element is that of lowest degree
-    lminv := TayCfPl car lv;
+    aminv := taycfsq car lv;   % first element is that of lowest degree
+    lminv := taycfpl car lv;
     for each cf in cdr lv do
-      if not taydegree!-strict!<!=(lminv,TayCfPl cf)
-        then Taylor!-error('not!-a!-unit,'quottaylor);
+      if not taydegree!-strict!<!=(lminv,taycfpl cf)
+        then taylor!-error('not!-a!-unit,'quottaylor);
     ccmin := subtr!-degrees(lminu,lminv);
-    clist := {TayMakeCoeff(ccmin,quotsq(aminu,aminv))};
+    clist := {taymakecoeff(ccmin,quotsq(aminu,aminv))};
     coefflis := makecoeffs(ccmin,tn,il);
     if null coefflis then return tn . clist;
     for each cc in cdr coefflis do begin scalar sq;
-      sq := subtrsq(TayGetCoeff(add!-degrees(cc,lminv),lu),
+      sq := subtrsq(taygetcoeff(add!-degrees(cc,lminv),lu),
                     addcoeffs(clist,lv,ccmin,cc));
       if exceeds!-order(tn,cc)
         then tn := min2!-order(tn,tp,cc)
        else if not null numr sq
-        then clist := TayMakeCoeff(cc,quotsq(sq,aminv)) . clist;
+        then clist := taymakecoeff(cc,quotsq(sq,aminv)) . clist;
      end;
     return tn . subs2coefflist reversip clist
   end;
@@ -353,19 +353,19 @@ symbolic procedure taydegree!-min2(u,v);
     l2 := nth(v,i);
     return
       for j := 1 : length l1 collect
-        Taylor!: min2(nth(l1,j),nth(l2,j))
+        taylor!: min2(nth(l1,j),nth(l2,j))
   end;
 
 symbolic procedure makecoeffshom(cmin,lastterm,incr);
   if null cmin then '(nil)
-   else Taylor!:
+   else taylor!:
      for i := 0 step incr until lastterm join
        for each l in makecoeffshom(cdr cmin,lastterm - i,incr) collect
               (car cmin + i) . l;
 
 symbolic procedure makecoeffshom0(nvars,lastterm,incr);
   if nvars=0 then '(nil)
-   else Taylor!:
+   else taylor!:
      for i := 0 step incr until lastterm join
        for each l in makecoeffshom0(nvars - 1,lastterm - i,incr) collect
              i . l;
@@ -377,7 +377,7 @@ symbolic procedure makecoeffs(plmin,dgl,il);
   % It returns an ordered list of all index lists matching this
   % requirement.
   %
-  Taylor!:
+  taylor!:
   if null plmin then '(nil)
    else for each l1 in makecoeffs(cdr plmin,cdr dgl,cdr il) join
         for each l2 in makecoeffshom(
@@ -395,16 +395,16 @@ symbolic procedure makecoeffs0(tp,dgl,il);
   % requirement that for every element ni: 0 <= ni < mi and ni is
   % a multiple of i1
   %
-  Taylor!:
+  taylor!:
   if null tp then '(nil)
    else for each l1 in makecoeffs0(cdr tp,cdr dgl,cdr il) join
-        for each l2 in makecoeffshom0(length TayTpElVars car tp,
+        for each l2 in makecoeffshom0(length taytpelvars car tp,
                                       car dgl - car il,
                                       car il)
                  collect (l2 . l1);
 
 symbolic procedure makecoeffpairs1(plmin,pl,lmin,il);
-  Taylor!:
+  taylor!:
   if null pl then '((nil))
    else for each l1 in makecoeffpairs1(
                          cdr plmin,
@@ -418,7 +418,7 @@ symbolic procedure makecoeffpairs(plmin,pl,lmin,il);
 
 symbolic procedure makecoeffpairshom(clow,chigh,clmin,inc);
   if null clmin then '((nil))
-   else Taylor!:
+   else taylor!:
     for i := car chigh step inc until car clow join
       for each l in makecoeffpairshom(cdr clow,cdr chigh,cdr clmin,inc)
           collect (i . car l) . ((car chigh + car clmin - i) . cdr l);
@@ -429,8 +429,8 @@ symbolic procedure addcoeffs(cl1,cl2,pllow,plhigh);
     il := common!-increment(smallest!-increment cl1,
                             smallest!-increment cl2);
     for each p in makecoeffpairs(pllow,plhigh,caar cl2,il) do
-        s := addsq(s,multsq(TayGetCoeff(car p,cl1),
-                            TayGetCoeff(cdr p,cl2)));
+        s := addsq(s,multsq(taygetcoeff(car p,cl1),
+                            taygetcoeff(cdr p,cl2)));
     return s
 %    return for each p in makecoeffpairs(ccmin,cc,caar cl2,dl) addsq
 %             multsq(TayGetCoeff(car p,cl1),TayGetCoeff(cdr p,cl2));
@@ -445,13 +445,13 @@ symbolic procedure invtaylor u;
   if null u then confusion 'invtaylor
    else begin scalar tps;
      tps := inv!.tp!. u;
-     return make!-Taylor!*(
-               invtaylor1(car tps,TayCoeffList u),
+     return make!-taylor!*(
+               invtaylor1(car tps,taycoefflist u),
                car tps,
-               if !*taylorkeeporiginal and TayOrig u
-                then invsq TayOrig u
+               if !*taylorkeeporiginal and tayorig u
+                then invsq tayorig u
                  else nil,
-               TayFlags u);
+               tayflags u);
    end;
 
 symbolic procedure invtaylor1(tay,l);
@@ -459,24 +459,24 @@ symbolic procedure invtaylor1(tay,l);
   % Does the real work, called also by the expansion procedures.
   % Returns the coefflist.
   %
-  Taylor!:
+  taylor!:
   begin scalar clist,amin,ccmin,coefflis,il;
     l := prune!-coefflist l;
-    if null l then Taylor!-error!*('not!-a!-unit,'invtaylor);
-    amin := TayCfSq car l;  % first element must have lowest degree
-    ccmin := TayCfPl car l;
+    if null l then taylor!-error!*('not!-a!-unit,'invtaylor);
+    amin := taycfsq car l;  % first element must have lowest degree
+    ccmin := taycfpl car l;
     for each cf in cdr l do
-      if not taydegree!-strict!<!=(ccmin,TayCfPl cf)
-        then Taylor!-error('not!-a!-unit,'invtaylor);
+      if not taydegree!-strict!<!=(ccmin,taycfpl cf)
+        then taylor!-error('not!-a!-unit,'invtaylor);
     il := smallest!-increment l;
     ccmin := invert!-powerlist ccmin;
-    clist := {TayMakeCoeff(ccmin,invsq amin)};
-    coefflis := makecoeffs(ccmin,TpNextList tay,il);
+    clist := {taymakecoeff(ccmin,invsq amin)};
+    coefflis := makecoeffs(ccmin,tpnextlist tay,il);
     if not null coefflis
       then for each cc in cdr coefflis do begin scalar sq;
              sq := addcoeffs(clist,l,ccmin,cc);
              if not null numr sq
-               then clist := TayMakeCoeff(cc,negsq quotsq(sq,amin))
+               then clist := taymakecoeff(cc,negsq quotsq(sq,amin))
                                . clist;
      end;
     return subs2coefflist reversip clist

@@ -45,12 +45,12 @@ module ratjord; %Computation of rational Jordan normal form of a matrix.
 null(load!-package 'specfn);  % To use binomial, but not load during
                               % compilation.
 
-symbolic procedure ratjordan(A);
+symbolic procedure ratjordan(a);
   begin
-    scalar AA,tmp,ans,P,Pinv,full_coeff_list,rule_list,input_mode;
+    scalar aa,tmp,ans,p,pinv,full_coeff_list,rule_list,input_mode;
 
-    matrix_input_test(A);
-    if (car size_of_matrix(A)) neq (cadr size_of_matrix(A))
+    matrix_input_test(a);
+    if (car size_of_matrix(a)) neq (cadr size_of_matrix(a))
      then rederr "ERROR: expecting a square matrix. ";
 
     input_mode := get(dmode!*,'dname);
@@ -62,14 +62,14 @@ symbolic procedure ratjordan(A);
      input_mode neq 'rational then on rational;
     on combineexpt;
 
-    tmp := nest_input(A);
-    AA := car tmp;
+    tmp := nest_input(a);
+    aa := car tmp;
     full_coeff_list := cadr tmp;
 
-    tmp := ratjordanform(AA,full_coeff_list);
+    tmp := ratjordanform(aa,full_coeff_list);
     ans := car tmp;
-    P := cadr tmp;
-    Pinv := caddr tmp;
+    p := cadr tmp;
+    pinv := caddr tmp;
     %
     %  Set up rule list for removing nests.
     %
@@ -84,8 +84,8 @@ symbolic procedure ratjordan(A);
     %
     let rule_list;
     ans := de_nest_mat(ans);
-    P := de_nest_mat(P);
-    Pinv := de_nest_mat(Pinv);
+    p := de_nest_mat(p);
+    pinv := de_nest_mat(pinv);
     clearrules rule_list;
     %
     % Return to original mode.
@@ -99,7 +99,7 @@ symbolic procedure ratjordan(A);
        >>;
     off combineexpt;
 
-    return {'list,ans,P,Pinv};
+    return {'list,ans,p,pinv};
   end;
 
 flag ('(ratjordan),'opfn);  %  So it can be used from
@@ -107,28 +107,28 @@ flag ('(ratjordan),'opfn);  %  So it can be used from
 
 
 
-symbolic procedure ratjordanform(A,full_coeff_list);
+symbolic procedure ratjordanform(a,full_coeff_list);
   begin
-    scalar tmp,F,TT,Tinv,prim_inv,S,Sinv,P,Pinv,x;
+    scalar tmp,f,tt,tinv,prim_inv,s,sinv,p,pinv,x;
 
     x := mkid('x,0);
 
-    tmp := frobeniusform(A);
-    F := car tmp;
-    TT := cadr tmp;
-    Tinv := caddr tmp;
+    tmp := frobeniusform(a);
+    f := car tmp;
+    tt := cadr tmp;
+    tinv := caddr tmp;
 
-    tmp := frobenius_to_ratjordan(F,full_coeff_list,x);
+    tmp := frobenius_to_ratjordan(f,full_coeff_list,x);
     prim_inv := car tmp;
-    S := cadr tmp;
-    Sinv := caddr tmp;
+    s := cadr tmp;
+    sinv := caddr tmp;
 
-    P := reval {'times,TT,S};
-    Pinv := reval {'times,Sinv,Tinv};
+    p := reval {'times,tt,s};
+    pinv := reval {'times,sinv,tinv};
 
     prim_inv := priminv_to_ratjordan(prim_inv,x);
 
-    return {prim_inv,P,Pinv};
+    return {prim_inv,p,pinv};
   end;
 
 
@@ -232,8 +232,8 @@ symbolic procedure ratjordanform(A,full_coeff_list);
 symbolic procedure companion_to_ratjordan(fact_list,f,x);
   begin
     scalar g_list,u_list,bbasis,q1,e,qpower,diffq,part_basis,
-           ratj_basis,s,tt,g,rowQinv,pol_lincomb,qq,rr,lincomb,index1,v,
-           u,a,tmp,Qinv,Q,sum1;
+           ratj_basis,s,tt,g,rowqinv,pol_lincomb,qq,rr,lincomb,index1,v,
+           u,a,tmp,qinv,q,sum1;
     integer r,n,d;
 
     r := length fact_list;
@@ -272,10 +272,10 @@ symbolic procedure companion_to_ratjordan(fact_list,f,x);
     %%%%%%%%%%%%%%%%%%%
 
     bbasis := {};    %  Basis will contain a K-basis of K[x]/f.
-    rowQinv := 0;
+    rowqinv := 0;
 
-    Q := mkmatrix(n,n);
-    Qinv := mkmatrix(n,n);
+    q := mkmatrix(n,n);
+    qinv := mkmatrix(n,n);
 
     for i:=1:r do
     <<
@@ -405,8 +405,8 @@ symbolic procedure companion_to_ratjordan(fact_list,f,x);
 
       for u:=1:e*d do
       <<
-        rowQinv:=rowQinv+1;
-        setmat(Qinv,rowQinv,1,getv(lincomb,u));
+        rowqinv:=rowqinv+1;
+        setmat(qinv,rowqinv,1,getv(lincomb,u));
       >>;
       %%%%%%%%%%%%%%%%%%%
 
@@ -452,11 +452,11 @@ symbolic procedure companion_to_ratjordan(fact_list,f,x);
                {'minus,coeffn(q1,x,k-1)},getv(a,e*d)}});
         >>;
 
-        rowQinv := rowQinv-e*d;
+        rowqinv := rowqinv-e*d;
         for u:=1:e*d do
         <<
-          rowQinv := rowQinv +1;
-          setmat(Qinv,rowQinv,v,getv(lincomb,u));
+          rowqinv := rowqinv +1;
+          setmat(qinv,rowqinv,v,getv(lincomb,u));
         >>;
 
       >>;
@@ -472,12 +472,12 @@ symbolic procedure companion_to_ratjordan(fact_list,f,x);
     <<
       for k:=1:n do
       <<
-        setmat(Q,k,j,coeffn(nth(bbasis,j),x,k-1));
+        setmat(q,k,j,coeffn(nth(bbasis,j),x,k-1));
       >>;
     >>;
     %%%%%%%%%%%%%%%%%%%
 
-    return {Q,Qinv};
+    return {q,qinv};
   end;
 
 
@@ -548,7 +548,7 @@ symbolic procedure convert_to_mult(faclist,x);
 
 
 
-symbolic procedure copyinto(BB,AA,p,q);
+symbolic procedure copyinto(bb,aa,p,q);
   %
   % Copies matrix BB into AA with BB(1,1) at AA(p,q).
   % Returns newly formed matrix A.
@@ -556,32 +556,32 @@ symbolic procedure copyinto(BB,AA,p,q);
   % Can be used independently from algebraic mode.
   %
   begin
-    scalar A,B;
+    scalar a,b;
     integer m,n,r,c;
 
-    matrix_input_test(AA);
-    matrix_input_test(BB);
+    matrix_input_test(aa);
+    matrix_input_test(bb);
 
     if p = 0 or q = 0 then
      rederr "     0 is out of bounds for matrices.
      The top left element is labelled (1,1) and not (0,0).";
 
-    m := car size_of_matrix(AA);
-    n := cadr size_of_matrix(AA);
-    r := car size_of_matrix(BB);
-    c := cadr size_of_matrix(BB);
+    m := car size_of_matrix(aa);
+    n := cadr size_of_matrix(aa);
+    r := car size_of_matrix(bb);
+    c := cadr size_of_matrix(bb);
 
     if r+p-1>m or c+q-1>n then rederr
-     {"The matrix",BB,"does not fit into",AA,"at position",p,q,"."};
+     {"The matrix",bb,"does not fit into",aa,"at position",p,q,"."};
 
-    A := mkmatrix(m,n);
-    B := mkmatrix(r,c);
+    a := mkmatrix(m,n);
+    b := mkmatrix(r,c);
 
     for i:=1:m do
     <<
       for j:=1:n do
       <<
-        setmat(A,i,j,getmat(AA,i,j));
+        setmat(a,i,j,getmat(aa,i,j));
       >>;
     >>;
 
@@ -589,7 +589,7 @@ symbolic procedure copyinto(BB,AA,p,q);
     <<
       for j:=1:c do
       <<
-        setmat(B,i,j,getmat(BB,i,j));
+        setmat(b,i,j,getmat(bb,i,j));
       >>;
     >>;
 
@@ -597,11 +597,11 @@ symbolic procedure copyinto(BB,AA,p,q);
     <<
       for j:=1:c do
       <<
-        setmat(A,p+i-1,q+j-1,getmat(B,i,j));
+        setmat(a,p+i-1,q+j-1,getmat(b,i,j));
       >>;
     >>;
 
-    return A;
+    return a;
   end;
 
 flag ('(copyinto),'opfn);  %  So it can be used independently
@@ -693,7 +693,7 @@ flag ('(deg_sort),'opfn);  %  So it can be used independently from
 
 
 
-symbolic procedure frobenius_to_invfact(F,x);
+symbolic procedure frobenius_to_invfact(f,x);
   %
   % For a matrix F in Frobenius normal form, frobenius_to_invfact(F,x)
   % computes inv_fact := {p1,..,pr} such that
@@ -703,7 +703,7 @@ symbolic procedure frobenius_to_invfact(F,x);
     scalar p,inv_fact;
     integer row_dim,m,k;
 
-    row_dim := car size_of_matrix(F);
+    row_dim := car size_of_matrix(f);
     inv_fact := {};
     k := 1;
 
@@ -711,10 +711,10 @@ symbolic procedure frobenius_to_invfact(F,x);
     <<
       p := 0;
       m := k+1;
-      while m<=row_dim and getmat(F,m,m-1)=1 do m:=m+1;
+      while m<=row_dim and getmat(f,m,m-1)=1 do m:=m+1;
       for j:=k:m-1 do
       <<
-        p := reval{'plus,p,{'times,{'minus,getmat(F,j,m-1)},
+        p := reval{'plus,p,{'times,{'minus,getmat(f,j,m-1)},
                    {'expt,x,j-k}}};
       >>;
       p := reval{'plus,p,{'expt,x,m-k}};
@@ -728,7 +728,7 @@ symbolic procedure frobenius_to_invfact(F,x);
 
 
 
-symbolic procedure frobenius_to_ratjordan(F,full_coeff_list,x);
+symbolic procedure frobenius_to_ratjordan(f,full_coeff_list,x);
   %
   % frobenius_to_ratjordan computes the rational Jordan form R of a
   % matrix F which is in Frobenius normal form. Say F=diag(C1,..,Cr),
@@ -745,13 +745,13 @@ symbolic procedure frobenius_to_ratjordan(F,full_coeff_list,x);
   % prim_inv is returned by frobenius_to_ratjordan.
   %
   begin
-    scalar inv_fact,gg,l,m,h,p,Fact_mat,G,ii,pp,ff,j,t_list,tinv_list,
-           facts,tmp,q,qinv,degp,D,TT,S,cols,count,Tinv,Sinv,exp_list,
+    scalar inv_fact,gg,l,m,h,p,Fact_mat,g,ii,pp,ff,j,t_list,tinv_list,
+           facts,tmp,q,qinv,degp,d,tt,s,cols,count,tinv,sinv,exp_list,
            prim_inv,nn,prod;
     integer r,n;
 
     %  Compute p1,..,pr.
-    inv_fact := frobenius_to_invfact(F,x);
+    inv_fact := frobenius_to_invfact(f,x);
     r := length inv_fact;
 
     %%%%%%%%%%%%%%%%%%%
@@ -821,7 +821,7 @@ symbolic procedure frobenius_to_ratjordan(F,full_coeff_list,x);
 
     p := deg_sort(for i:=1:length l collect nth(nth(l,i),2),x);
     n := length p;
-    G := mkmatrix(r,n);
+    g := mkmatrix(r,n);
     Fact_mat := mkmatrix(r,n);
 
     for k:=1:length l do
@@ -831,16 +831,16 @@ symbolic procedure frobenius_to_ratjordan(F,full_coeff_list,x);
       ff := nth(nth(l,k),3);
       j := 1;
       while pp neq nth(p,j) and j<=n do j:=j+1;
-      setmat(G,ii,j,ff);
+      setmat(g,ii,j,ff);
     >>;
 
-    for j:=1:n do setmat(Fact_mat,1,j,getmat(G,1,j));
+    for j:=1:n do setmat(Fact_mat,1,j,getmat(g,1,j));
     for i:=2:r do
     <<
       for j:=1:n do
       <<
         setmat(Fact_mat,i,j,{'plus,getmat(Fact_mat,i-1,j),
-               getmat(G,i,j)});
+               getmat(g,i,j)});
       >>;
     >>;
     %%%%%%%%%%%%%%%%%%%
@@ -864,10 +864,10 @@ symbolic procedure frobenius_to_ratjordan(F,full_coeff_list,x);
       >>;
 
       tmp := companion_to_ratjordan(facts,nth(inv_fact,i),x);
-      Q := car tmp;
-      Qinv := cadr tmp;
-      tinv_list := append(tinv_list,{Qinv});
-      t_list := append(t_list,{Q});
+      q := car tmp;
+      qinv := cadr tmp;
+      tinv_list := append(tinv_list,{qinv});
+      t_list := append(t_list,{q});
     >>;
     %%%%%%%%%%%%%%%%%%%
 
@@ -875,13 +875,13 @@ symbolic procedure frobenius_to_ratjordan(F,full_coeff_list,x);
     % Compute transition matrix by permuting diag(t_list(1),..,
     % t_list(r)).
     %%%%%%%%%%%%%%%%%%%
-    D := mkmatrix(r,n);
+    d := mkmatrix(r,n);
     degp := mkvect(r);
     for i:=1:r do
     <<
       for j:=1:n do
       <<
-        setmat(d,i,j,{'times,deg(nth(p,j),x),getmat(fact_mat,i,j)});
+        setmat(d,i,j,{'times,deg(nth(p,j),x),getmat(Fact_mat,i,j)});
       >>;
       putv(degp,i,for j:=1:n sum off_mod_reval(getmat(d,i,j)));
     >>;
@@ -901,24 +901,24 @@ symbolic procedure frobenius_to_ratjordan(F,full_coeff_list,x);
       >>;
     >>;
 
-    TT := reval{'diagi,t_list};
-    nn := car size_of_matrix(TT);
-    S := mkmatrix(nn,nn);
+    tt := reval{'diagi,t_list};
+    nn := car size_of_matrix(tt);
+    s := mkmatrix(nn,nn);
     for i:=1:nn do
     <<
       for j:=1:nn do
       <<
-        setmat(S,i,j,getmat(TT,i,nth(cols,j)));
+        setmat(s,i,j,getmat(tt,i,nth(cols,j)));
       >>;
     >>;
 
-    Tinv := reval{'diagi,tinv_list};
-    Sinv := mkmatrix(nn,nn);
+    tinv := reval{'diagi,tinv_list};
+    sinv := mkmatrix(nn,nn);
     for i:=1:nn do
     <<
       for j:=1:nn do
       <<
-        setmat(Sinv,i,j,getmat(Tinv,nth(cols,i),j));
+        setmat(sinv,i,j,getmat(tinv,nth(cols,i),j));
       >>;
     >>;
     %%%%%%%%%%%%%%%%%%%
@@ -932,14 +932,14 @@ symbolic procedure frobenius_to_ratjordan(F,full_coeff_list,x);
       exp_list:={};
       for i:=1:r do
       <<
-        if getmat(fact_mat,i,j) neq 0
-         then exp_list := append(exp_list,{getmat(fact_mat,i,j)});
+        if getmat(Fact_mat,i,j) neq 0
+         then exp_list := append(exp_list,{getmat(Fact_mat,i,j)});
       >>;
       prim_inv := append(prim_inv,{{nth(p,j),exp_list}});
     >>;
     %%%%%%%%%%%%%%%%%%%
 
-    return {prim_inv,S,Sinv};
+    return {prim_inv,s,sinv};
   end;
 
 symbolic procedure get_den(input);
@@ -960,27 +960,27 @@ symbolic procedure make_ratj_block(p,e,x);
   % make_ratj_block(p,e,x) returns the matrix ratj(p,e).
   %
   begin
-    scalar C,J_block;
+    scalar c,j_block;
     integer d,n;
 
-    C := companion(p,x);
+    c := companion(p,x);
 
     d := deg(p,x);
     e := off_mod_reval(e);
     n := d*e;
-    J_block  := mkmatrix(n,n);
+    j_block  := mkmatrix(n,n);
 
     for i:=1:e do
     <<
-      J_block := copyinto(C,J_block,(i-1)*d+1,(i-1)*d+1);
+      j_block := copyinto(c,j_block,(i-1)*d+1,(i-1)*d+1);
     >>;
 
     for i:=1:n-d do
     <<
-      setmat(J_block,i,i+d,1);
+      setmat(j_block,i,i+d,1);
     >>;
 
-    return J_block;
+    return j_block;
   end;
 
 

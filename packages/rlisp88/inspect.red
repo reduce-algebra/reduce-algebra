@@ -359,10 +359,10 @@ fluid '(!*saveactives);
 switch saveactives;
 
 
-expr procedure i!&makeComment;
+expr procedure i!&makecomment;
 % I!&MAKECOMMENT() - returns (comment line file) for packing active
 %  annotation data away.
-mkquote {cadr Comment!*, curline!*,
+mkquote {cadr comment!*, curline!*,
          if ifl!* then car ifl!* else "unknown"};
 
 
@@ -390,7 +390,7 @@ expr procedure formmodule(u, vars, mode);
 % FORMMODULE(U,VARS,MODE) - Save any active annotation on the property
 %  of the module. Clear comment after use.
 begin scalar x;
-  x := if !*saveactives and Comment!* then
+  x := if !*saveactives and comment!* then
      {'progn, {'cond, {'!*saveactives,
                        {'put, mkquote cadr u,
                          mkquote 'active!-annotation,
@@ -398,7 +398,7 @@ begin scalar x;
               {'flag, mkquote {cadr u}, mkquote 'MODULE},
               {'module, mkquote{cdr u}}}
   else {'module, mkquote cdr u};
-  Comment!* := nil;
+  comment!* := nil;
   return x
 end;
 
@@ -408,7 +408,7 @@ end;
 expr procedure formglobalfluid(u, vars, mode);
 % FORMGLOBALFLUID(U, VARS, MODE) -- Attach active annotation to the
 %  variables declared.
-if !*saveactives and Comment!* then
+if !*saveactives and comment!* then
  {{'lambda, {'!$v!$},
      {'progn,
        {'cond, {'!*saveactives,
@@ -416,7 +416,7 @@ if !*saveactives and Comment!* then
                    {'function,
                      {'lambda, {'!$u!$}, {'put, '!$u!$,
                                            mkquote 'active!-annotation,
-                                           i!&makeComment()}}}}}},
+                                           i!&makecomment()}}}}}},
        {car u, '!$v!$}}}, formc(cadr u, vars, mode)}
  else {car u, formc(cadr u, vars, mode)};
 

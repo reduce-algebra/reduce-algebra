@@ -310,7 +310,7 @@ asserted procedure ofsf_cadprojection1(cd: CadData): Any;
       >>
    end;
 
-asserted procedure ofsf_distribute(fl: SfList, ff: Atom, varl: KernelList): Any;
+asserted procedure ofsf_distribute(fl: SFList, ff: Atom, varl: KernelList): Any;
    % [ff] is changed in place.
    begin integer l;
       for each f in fl do <<

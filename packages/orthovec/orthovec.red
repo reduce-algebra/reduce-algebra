@@ -412,15 +412,15 @@ procedure vptaylor(sex,vx,vpt,vorder);
     if vectorp(vpt) then
 %vector order
       if vectorp(vorder) then
-        taylor(
-          taylor(
-            taylor(sex, getv(vx,0), getv(vpt,0), getv(vorder,0)),
+        ov!-taylor(
+          ov!-taylor(
+            ov!-taylor(sex, getv(vx,0), getv(vpt,0), getv(vorder,0)),
             getv(vx,1), getv(vpt,1), getv(vorder,1)),
           getv(vx,2), getv(vpt,2), getv(vorder,2))
       else
-        taylor(
-          taylor(
-            taylor(sex, getv(vx,0), getv(vpt,0), vorder),
+        ov!-taylor(
+          ov!-taylor(
+            ov!-taylor(sex, getv(vx,0), getv(vpt,0), vorder),
             getv(vx,1), getv(vpt,1), vorder),
          getv(vx,2), getv(vpt,2), vorder)
     else rerror(orthovec,10,"VTAYLOR: vector VX mismatches scalar VPT")
@@ -429,11 +429,11 @@ procedure vptaylor(sex,vx,vpt,vorder);
     rerror(orthovec,11,"VTAYLOR: scalar VX mismatches vector VPT")
   else if vectorp(vorder) then
     rerror(orthovec,12,"VTAYLOR: scalar VX mismatches vector VORDER")
-  else taylor(sex,vx,vpt,vorder)$
+  else ov!-taylor(sex,vx,vpt,vorder)$
 
 %Scalar Taylor expansion of ex wrt x about point pt to order n
 %=============================================================
-procedure taylor(ex,x,pt,n);
+procedure ov!-taylor(ex,x,pt,n);
   begin
     scalar term,series,dx,mfac;
     if numberp n then <<

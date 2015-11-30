@@ -470,7 +470,7 @@ mkfratwrite cdr stmt$
 % properties being evaluated in certain circumstances.  MCD 28.3.94
 symbolic inline procedure ratexp_name(u);
    if atom u then list(u)
-    else rplaca(ratexp ('dummyArrayToken . cdr u), car u)$
+    else rplaca(ratexp ('dummyarraytoken . cdr u), car u)$
 
 procedure mkfratassign(lhs, rhs);
 append(append(mkrattab() . ratexp_name lhs, '!= . ratexp rhs),
@@ -647,11 +647,11 @@ for each elt in lst do
         if floatp elt then
            if !*double then
               if memq('!e,str)
-                 then str:=subst('D,'!e,str)
-                 else if memq('E,str)   % Some LISPs use E not e
-                      then str:=subst('D,'E,str)
-                      else str:=append(str,'(D !0))
-           else str:=subst('E,'!e,str);
+                 then str:=subst('d,'!e,str)
+                 else if memq('e,str)   % Some LISPs use E not e
+                      then str:=subst('d,'e,str)
+                      else str:=append(str,'(d !0))
+           else str:=subst('e,'!e,str);
                 % get the casing conventions correct
         if !*posn!* + length str > ratlinelen!* then
             ratcontline();

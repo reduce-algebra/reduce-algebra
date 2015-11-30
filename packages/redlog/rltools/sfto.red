@@ -40,16 +40,16 @@ module sfto;
 fluid '(!*ezgcd !*gcd !*rldavgcd !*rational);
 
 switch sfto_yun,sfto_tobey,sfto_musser;
-!*sfto_yun := T;
+!*sfto_yun := t;
 
 put('sqfpart,'polyfn,'sfto_sqfpartf);
 put('dprpart,'polyfn,'sfto_dprpartf);
 put('tsqsum,'psopfn,'sfto_tsqsum!$);
 put('sqfdec,'psopfn,'sfto_sqfdec!$);
 put('pdec,'psopfn,'sfto_pdec!$);
-put('sfto_yun,'simpfg,'((T (setq !*sfto_tobey nil) (setq !*sfto_musser nil))));
-put('sfto_tobey,'simpfg,'((T (setq !*sfto_yun nil) (setq !*sfto_musser nil))));
-put('sfto_musser,'simpfg,'((T (setq !*sfto_tobey nil) (setq !*sfto_yun nil))));
+put('sfto_yun,'simpfg,'((t (setq !*sfto_tobey nil) (setq !*sfto_musser nil))));
+put('sfto_tobey,'simpfg,'((t (setq !*sfto_yun nil) (setq !*sfto_musser nil))));
+put('sfto_musser,'simpfg,'((t (setq !*sfto_tobey nil) (setq !*sfto_yun nil))));
 
 operator exteuc;
 operator degree;
@@ -137,7 +137,7 @@ asserted procedure sfto_tsqsumf(u: SF): Id;
 asserted procedure sfto_tsqsum!$(argl: List): Id;
    sfto_tsqsumf(numr simp car argl);
 
-asserted procedure sfto_sqfdecf(u: SF): AList;
+asserted procedure sfto_sqfdecf(u: SF): Alist;
    % Multivariate square-free decomposition standard form. Returns a (dense)
    % list $((q_1 . 1),(q_2 . 2),...,(q_n . n))$ such that $\prod q_i^i = u$ with
    % the $q_i$ square-free and pairwise relatively prime. The (integer) content
@@ -171,7 +171,7 @@ asserted procedure sfto_usqfdecf(u: SF): Alist;
    else
       rederr {"sfto_usqfdecf: select a decomposition method"};
 
-asserted procedure sfto_yun!-usqfdecf(p: SF): AList;
+asserted procedure sfto_yun!-usqfdecf(p: SF): Alist;
    % Univariate square-free decomposition after Yun. [p] is treated as a
    % univariate Polynomial in its [mvar] over the polynomial ring in all other
    % variables; in this sense, [p] must be primitive. Returns the square-free
@@ -179,7 +179,7 @@ asserted procedure sfto_yun!-usqfdecf(p: SF): AList;
    % n))$ such that $\prod q_i^i = u$ with the $q_i$ square-free and pairwise
    % relatively prime.
    begin scalar !*gcd,x,g,c,d,w,l; integer n;
-      !*gcd := T;
+      !*gcd := t;
       x := mvar p;
       g := sfto_gcdf(p,w := diff(p,x));
       c := quotf(p,g);
@@ -193,7 +193,7 @@ asserted procedure sfto_yun!-usqfdecf(p: SF): AList;
       return reversip l
    end;
 
-asserted procedure sfto_musser!-usqfdecf(u: SF): AList;
+asserted procedure sfto_musser!-usqfdecf(u: SF): Alist;
    % Univariate square-free decomposition after Musser. [u] is treated as a
    % univariate Polynomial in its [mvar] over the polynomial ring in all other
    % variables; in this sense, [p] must be primitive. Returns the square-free
@@ -201,7 +201,7 @@ asserted procedure sfto_musser!-usqfdecf(u: SF): AList;
    % n))$ such that $\prod q_i^i = u$ with the $q_i$ square-free and pairwise
    % relatively prime.
    begin scalar !*gcd,v,u1,sqfp,sqfp1,l; integer n;
-      !*gcd := T;
+      !*gcd := t;
       v := mvar u;
       u1 := sfto_gcdf(u,diff(u,v));
       sqfp := quotf(u,u1);
@@ -223,7 +223,7 @@ asserted procedure sfto_tobey!-usqfdecf(u: SF): Alist;
    % 2),...,(q_n . n))$ such that $\prod q_i^i = u$ with the $q_i$ square-free
    % and pairwise relatively prime.
    begin scalar !*gcd,v,h,q1,q2,l; integer n;
-      !*gcd := T;
+      !*gcd := t;
       v := mvar u;
       h := sfto_gcdf(u,diff(u,v));
       q2 := quotf(u,h);
@@ -277,7 +277,7 @@ asserted procedure sfto_updecf(u: SF): DottedPair;
 asserted procedure sfto_yun!-updecf(p: SF): DottedPair;
    % Univeriate parity decomposition after Yun..
    begin scalar !*gcd,x,g,c,d,w,l,od;
-      !*gcd := T;
+      !*gcd := t;
       l := 1 . 1;
       x := mvar p;
       g := sfto_gcdf(p,w := diff(p,x));
@@ -296,8 +296,8 @@ asserted procedure sfto_yun!-updecf(p: SF): DottedPair;
 asserted procedure sfto_musser!-updecf(u: SF): DottedPair;
    % Univariate parity decomposition after Musser.
    begin scalar !*gcd,od,v,u1,sqfp,sqfp1,l;
-      !*gcd := T;
-      od := T;
+      !*gcd := t;
+      od := t;
       l := 1 . 1;
       v := mvar u;
       u1 := sfto_gcdf(u,diff(u,v));
@@ -422,7 +422,7 @@ asserted procedure sfto_gcdf!*(f: SF, g: SF): SF;
    % Compute the GCD of [f] and [g] via [gcdf!*] or [ezgcdf] according to
    % Davenport's criterion: If, in one polynomial, the number of variables of a
    % degree greater than 2 is greater than 1, then use [ezgcd].
-   sfto_gcdf(f,g) where !*gcd=T;
+   sfto_gcdf(f,g) where !*gcd=t;
 
 asserted procedure sfto_gcdf(f: SF, g: SF): SF;
    % Greatest common divisor of standard forms. Returns the GCD of [f] and [g]
@@ -441,7 +441,7 @@ asserted procedure sfto_davp(f: SF, badv: ExtraBoolean): Boolean;
    % Davenport predicate. [v] is a kernel or [nil]. Returns [t] if [gcdf] if
    % heuristically considered more efficient than [ezgcdf].
    if domainp f then
-      T
+      t
    else if ldeg f > 2 then
       if badv and mvar f neq badv then
 	 nil
@@ -798,7 +798,7 @@ asserted procedure sfto_renamef(f: SF, vold: Kernel, vnew: Kernel): SF;
 	 sfto_renamef(red f, vold, vnew))
    end;
 
-asserted procedure sfto_renamealf(f: SF, al: AList): SF;
+asserted procedure sfto_renamealf(f: SF, al: Alist): SF;
    % TODO: More efficient with sorted [al].
    begin scalar mv, w, al1;
       if domainp f then
@@ -901,10 +901,10 @@ asserted procedure sfto_mirror(f: SF): SF;
    else
       sfto_fsub1(f, {mvar f . negf !*k2f mvar f});
 
-asserted procedure sfto_qsub(f: SF, al: AList): SQ;
-   sfto_qsub1(f, sort(al, function(lambda(x,y); ordop(car x, car y))));
+asserted procedure sfto_qsub(f: SF, al: Alist): SQ;
+   sfto_qsub1(f, sort(al, function ordopcar));
 
-asserted procedure sfto_qsub1(f: SF, al: AList): SQ;
+asserted procedure sfto_qsub1(f: SF, al: Alist): SQ;
    begin scalar mv, nredq, nlcq, nhtq;
       if domainp f then
 	 return !*f2q f;
@@ -924,10 +924,10 @@ asserted procedure sfto_qsub1(f: SF, al: AList): SQ;
       return addsq(multsq(nlcq, nhtq), nredq)
    end;
 
-asserted procedure sfto_fsub(f: SF, al: AList): SF;
+asserted procedure sfto_fsub(f: SF, al: Alist): SF;
    sfto_fsub1(f, sort(al, function(lambda(x,y); ordop(car x, car y))));
 
-asserted procedure sfto_fsub1(f: SF, al: AList): SF;
+asserted procedure sfto_fsub1(f: SF, al: Alist): SF;
    begin scalar mv, nred, nlc, nht;
       if domainp f then
 	 return f;
@@ -981,7 +981,7 @@ asserted procedure sfto_qsubhor1(f: SF, x: Kernel, q: SQ): SQ;
       return !*f2q sfto_dprpartksf res
    end;
 
-asserted procedure sfto_floatsub(f: SF, subl: AList): Floating;
+asserted procedure sfto_floatsub(f: SF, subl: Alist): Floating;
    % All kernels in f must be bound to a lisp float in subl.
    if domainp f then
       f or 0.0
@@ -1154,11 +1154,11 @@ asserted procedure sfto_rootq(x: SQ, n: Integer, p: Integer): SQ;
       return w
    end;
 
-asserted procedure sfto_fsubq(x: SQ, al: AList): SQ;
+asserted procedure sfto_fsubq(x: SQ, al: Alist): SQ;
    % Substitute SFs into SQ to obtain SQ.
    quotsq(!*f2q sfto_fsub(numr x, al), !*f2q sfto_fsub(denr x, al));
 
-asserted procedure sfto_qsubq(x: SQ, al: AList): SQ;
+asserted procedure sfto_qsubq(x: SQ, al: Alist): SQ;
    % Substitute SQs into SQ to obtain SQ.
    quotsq(sfto_qsub(numr x, al), sfto_qsub(denr x, al));
 

@@ -25,18 +25,18 @@ module invbcomp;
 
 
 %----------------------------------------------------------------------
-symbolic proceDURE C_ZERO();  nil$           %  REPRESENTATION OF ZERO
+symbolic procedure c_zero();  nil$           %  REPRESENTATION OF ZERO
 %----------------------------------------------------------------------
-symbolic procedure CNEG(C);                  %  - C
+symbolic procedure cneg(c);                  %  - C
 negf c$
 %----------------------------------------------------------------------
-symbolic procedure CSUM(C1,C2);              %   C1 + C2
+symbolic procedure csum(c1,c2);              %   C1 + C2
 addf(c1,c2);
 %----------------------------------------------------------------------
-symbolic procedure CPROD(C1,C2);             %   C1 * C2
+symbolic procedure cprod(c1,c2);             %   C1 * C2
 multf(c1,c2);
 %----------------------------------------------------------------------
-symbolic procedure CDIV(C1,C2);               %   C1/C2
+symbolic procedure cdiv(c1,c2);               %   C1/C2
 numr resimp(c1 . c2);
 %----------------------------------------------------------------------
 symbolic procedure trass(id,value);  % tracing of assignments
@@ -78,11 +78,11 @@ symbolic procedure addnew(f,ind,ff);
    else ff := insert(ind . ljet f, ff)
 >>$
 %----------------------------------------------------------------------
-symbolic procedure dlesslex(D1,D2);
+symbolic procedure dlesslex(d1,d2);
 %%%%  RETURNS T IF D1 < D2 (lex), NIL OTHERWISE
-IF NULL D1 THEN NIL ELSE
-IF CAR D1 #> CAR D2 THEN NIL ELSE
-IF CAR D1 #< CAR D2 THEN T ELSE dlesslex(CDR D1,CDR D2);
+if null d1 then nil else
+if car d1 #> car d2 then nil else
+if car d1 #< car d2 then t else dlesslex(cdr d1,cdr d2);
 %----------------------------------------------------------------------
 symbolic procedure dless(d1,d2);   % --> T if d1 < d2 , NIL otherwise
 if ordering = 'lex then dlesslex(d1,d2) else
@@ -90,61 +90,61 @@ if car d1 #< car d2 then t else if car d1 #> car d2 then nil
 else if ordering = 'glex then dlesslex(cdr d1,cdr d2)
 else if ordering = 'grev then dlesslex(reverse cdr d2, reverse cdr d1);
 %-----------------------------------------------------------------------
-symbolic procedure DDMULT(D1,D2);
-IF NULL D1 THEN NIL ELSE (CAR D1 #+ CAR D2) . DDMULT(CDR D1,CDR D2);
+symbolic procedure ddmult(d1,d2);
+if null d1 then nil else (car d1 #+ car d2) . ddmult(cdr d1,cdr d2);
 %-----------------------------------------------------------------------
-symbolic procedure DQUOT(D2,D1);
+symbolic procedure dquot(d2,d1);
 %%%%  RETURNS D2-D1 IF D1 DIVIDES D2, NIL OTHERWISE
-BEGIN SCALAR D3; INTEGER N;
-L1:N:=CAR(D2)-CAR(D1);
-   IF N #< 0 THEN RETURN NIL;
-   D3:=N . D3;
-   D1:=CDR D1; D2:=CDR D2;
-   IF D1 THEN GOTO L1;
-   RETURN REVERSIP D3;
+begin scalar d3; integer n;
+l1:n:=car(d2)-car(d1);
+   if n #< 0 then return nil;
+   d3:=n . d3;
+   d1:=cdr d1; d2:=cdr d2;
+   if d1 then goto l1;
+   return reversip d3;
 end;
 %-----------------------------------------------------------------------
-symbolic procedure PCMULT(P,C);              %  P*C  (C IS NOT ZERO)
-FOR EACH X IN P COLLECT CAR X.CPROD(C,CDR X);
+symbolic procedure pcmult(p,c);              %  P*C  (C IS NOT ZERO)
+for each x in p collect car x.cprod(c,cdr x);
 %-----------------------------------------------------------------------
 symbolic procedure pcdiv(p,c);               %  P/C  (division in ring)
 for each x in p collect car x . cdiv(cdr x,c);
 %-----------------------------------------------------------------------
-symbolic procedure PDMULT(P,D);              %  P*< D >
-FOR EACH X IN P COLLECT
- (FOR EACH Y IN PAIR(CAR X,D) COLLECT CAR(Y)#+CDR(Y)).CDR X$
+symbolic procedure pdmult(p,d);              %  P*< D >
+for each x in p collect
+ (for each y in pair(car x,d) collect car(y)#+cdr(y)).cdr x$
 %-----------------------------------------------------------------------
-symbolic procedure PSUM(P1,P2);              %  P1 + P2
-BEGIN SCALAR T1,T2,D2,C3,P3,SUM,RET;
-   IF NULL P1 THEN SUM:=P2 ELSE
-   IF NULL P2 THEN SUM:=P1 ELSE
-   WHILE P2 AND NOT RET DO
-   << T2:=CAR P2; D2:=CAR T2;
-      WHILE P1 AND DLESS(D2,CAAR P1) DO
-      << P3:=CAR(P1).P3; P1:=CDR P1 >>;
-      IF NULL P1 THEN
-      << SUM:=APPEND(REVERSE P3,P2); RET:=T >> ELSE
-      << T1:=CAR P1;
-         IF D2=CAR T1 THEN                     %%%%  NOW T1<=T2
-         << C3:=CSUM(CDR T1,CDR T2);           %%%%  LIKE TERM
-            IF C3 neq C_ZERO() THEN P3:=(D2.C3).P3;
-            P1:=CDR P1;
-            T1:=IF P1 THEN CAR P1;              %%%%  NEW T1
+symbolic procedure psum(p1,p2);              %  P1 + P2
+begin scalar t1,t2,d2,c3,p3,sum,ret;
+   if null p1 then sum:=p2 else
+   if null p2 then sum:=p1 else
+   while p2 and not ret do
+   << t2:=car p2; d2:=car t2;
+      while p1 and dless(d2,caar p1) do
+      << p3:=car(p1).p3; p1:=cdr p1 >>;
+      if null p1 then
+      << sum:=append(reverse p3,p2); ret:=t >> else
+      << t1:=car p1;
+         if d2=car t1 then                     %%%%  NOW T1<=T2
+         << c3:=csum(cdr t1,cdr t2);           %%%%  LIKE TERM
+            if c3 neq c_zero() then p3:=(d2.c3).p3;
+            p1:=cdr p1;
+            t1:=if p1 then car p1;              %%%%  NEW T1
          >>
-         ELSE P3:=T2.P3;                        %%%%  OLD T1
-         P2:=CDR P2;                            %%%%  NEW T2
-         IF NULL P2 THEN SUM:= APPEND(REVERSE P3,P1)
+         else p3:=t2.p3;                        %%%%  OLD T1
+         p2:=cdr p2;                            %%%%  NEW T2
+         if null p2 then sum:= append(reverse p3,p1)
    >> >>;
-   RETURN SUM
+   return sum
 end;
 %-----------------------------------------------------------------------
-symbolic procedure PNEG(P);                  %  - P
-FOR EACH X IN P COLLECT CAR(X).CNEG(CDR(X));
+symbolic procedure pneg(p);                  %  - P
+for each x in p collect car(x).cneg(cdr(x));
 %-----------------------------------------------------------------------
-symbolic procedure PDIF(P1,P2);              %  P1 - P2
-PSUM(P1,PNEG P2);
+symbolic procedure pdif(p1,p2);              %  P1 - P2
+psum(p1,pneg p2);
 %-----------------------------------------------------------------------
-symbolic procedure DD(D1,D2);   %  uses fluid vjets!*
+symbolic procedure dd(d1,d2);   %  uses fluid vjets!*
 begin scalar dq,lz;
    dq:=dquot(d2,d1);
    if not dq then return if dless(d1,d2) then 1  % D1 < D2
@@ -163,36 +163,36 @@ symbolic procedure dlcm(d1,d2);
 if ordering='lex then for each x in pair(d1,d2) collect max(car x,cdr x)
 else addgt( for each x in pair(cdr d1,cdr d2) collect max(car x,cdr x));
 %-----------------------------------------------------------------------
-symbolic procedure NF(H,gg!*,sw);
+symbolic procedure nf(h,gg!*,sw);
 %%%%  H = NORMALIZED POLYNOMIAL
 %%%%  gg!* = LIST OF KEYED LPP'S OF gg!*-SET
 %%%%  RETURNS NORMAL FORM OF H WITH RESPECT TO gg!*-SET
 %%%%  ===============================================
-IF NULL gg!* THEN H ELSE
-BEGIN SCALAR F,LPF,g,c,cf,cg,NF,G1,G2,U,nr; nr:=0;
-   F:=H; G1:=gg!*;
-NEXTLPF: IF NULL F THEN goto EXIT;
-   LPF:=caar F;
+if null gg!* then h else
+begin scalar f,lpf,g,c,cf,cg,nf,g1,g2,u,nr; nr:=0;
+   f:=h; g1:=gg!*;
+nextlpf: if null f then goto exit;
+   lpf:=caar f;
 
 %  diminish G1 so that LPF >= G1 (and might be reduced !)
 %  ------------------------------------------------------
-   WHILE NOT NULL G1 AND DLESS(LPF,CDAR G1) DO G1:=CDR G1;
-   IF NULL G1 THEN goto EXIT;
-   G2:=G1;                                     % NOW LPF >= G2
+   while not null g1 and dless(lpf,cdar g1) do g1:=cdr g1;
+   if null g1 then goto exit;
+   g2:=g1;                                     % NOW LPF >= G2
 
 %  reduction of LPF
 %  ----------------
-   WHILE G2 AND DD(CDAR G2,LPF) #< sw + 2 DO G2:=CDR G2;
+   while g2 and dd(cdar g2,lpf) #< sw + 2 do g2:=cdr g2;
 
-   IF NULL G2 THEN                             % LPF NOT REDUCED
-   ( if redtails then << NF:=(LPF.CDAR F).NF; F:=CDR F >>
-     else goto EXIT )
-   ELSE                                        % REDUCTION OF LPF
-   << G:=getv(gv!*,caar g2);
-      C:=gcdf!*(cdar F, cdar G);
+   if null g2 then                             % LPF NOT REDUCED
+   ( if redtails then << nf:=(lpf.cdar f).nf; f:=cdr f >>
+     else goto exit )
+   else                                        % REDUCTION OF LPF
+   << g:=getv(gv!*,caar g2);
+      c:=gcdf!*(cdar f, cdar g);
       cf:=cdiv(cdar f,c); cg:=cdiv(cdar g,c);
       f:=pcmult(f,cg); nf:=pcmult(nf,cg); g:=pcmult(g,cf);
-      U:=PDMULT(CDR G, DQUOT(LPF,CDAR G2));
+      u:=pdmult(cdr g, dquot(lpf,cdar g2));
       if tred then
       << terpri();
          write "r e d u c t i o n :  ",lpf,"/",cdar g2;
@@ -200,10 +200,10 @@ NEXTLPF: IF NULL F THEN goto EXIT;
       >>;
       if stars then write "*";
       nr := nr #+ 1;
-      F:=PDIF(CDR F,U);
+      f:=pdif(cdr f,u);
    >>;
-   GOTO NEXTLPF;
-EXIT:
+   goto nextlpf;
+exit:
    reductions!* := reductions!* #+ nr;
    nforms!* := nforms!* #+ 1;
    u:= gcdout append(reversip nf,f);
@@ -221,15 +221,15 @@ begin scalar c,p1;
    return if c = 1 then p else pcdiv(p,c);
 end;
 %-----------------------------------------------------------------------
-expr PROCEDURE NEWBASIS(gg!*,sw)$
+symbolic procedure newbasis(gg!*,sw)$
 %%%% SIDE EFFECT:   CHANGES CDR'S OF gv!*(K);
-BEGIN SCALAR G1,G2;
-   G1:=reverse gg!*;
-   WHILE G1 DO
-   << PUTV(gv!*,caar g1,NF(GETV(gv!*,caar g1),G2,sw));
+begin scalar g1,g2;
+   g1:=reverse gg!*;
+   while g1 do
+   << putv(gv!*,caar g1,nf(getv(gv!*,caar g1),g2,sw));
       g2:=(car g1).g2; g1:=cdr g1;
    >>;
-END$
+end$
 %-----------------------------------------------------------------------
 symbolic procedure !*f2di(f,varlist!*);
 %%% f: st.f., varlist!*: kernel list --> f in distributive form
@@ -263,7 +263,7 @@ else algebraic write str," := ",
 lisp prepsq !*di2q(list car p, varlist!*)," + ",
 lisp prepsq !*di2q(cdr p, varlist!*);
 %----------------------------------------------------------------------
-LISP procedure ADDGT(U);
+symbolic procedure addgt(u);
 if ordering = 'lex then u else eval('plus.u) . u$
 %-----------------------------------------------------------------------
 symbolic procedure printsys(str,gg!*);
@@ -533,3 +533,4 @@ lisp operator readsys$
 endmodule;
 
 end;
+

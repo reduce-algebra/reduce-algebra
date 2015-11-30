@@ -41,10 +41,10 @@ symbolic(!*taylor!-max!-precision!-cycles!* := 20);
 % polynomials and rational functions
 % by Winfried Neun
 
-symbolic procedure PolynomQQQ (x);
+symbolic procedure polynomqqq (x);
 
 (if fixp xx then 1 else
- if not onep denr (xx := cadr xx) then NIL
+ if not onep denr (xx := cadr xx) then nil
  else begin scalar kerns,kern,aa,var,fform,mvv,degg;
 
  fform := sfp  mvar  numr xx;
@@ -63,16 +63,16 @@ symbolic procedure PolynomQQQ (x);
      kern := first kerns;
      kerns := cdr kerns;
      if not(eq (kern, var)) and depends(kern,var)
-                then return NIL else go aa;
+                then return nil else go aa;
 end) where xx = aeval(car x);
 
-put('PolynomQQ,'psopfn,'polynomQQQ);
+put('polynomqq,'psopfn,'polynomqqq);
 
 symbolic procedure ttttype_ratpoly(u);
   ( if fixp xx then 1 else
         if not eqcar (xx , '!*sq) then nil
-          else polynomQQQ(list(mk!*sq(numr cadr xx ./ 1),reval cadr u))
-            and polynomQQQ(list(mk!*sq(denr cadr xx ./ 1),reval cadr u))
+          else polynomqqq(list(mk!*sq(numr cadr xx ./ 1),reval cadr u))
+            and polynomqqq(list(mk!*sq(denr cadr xx ./ 1),reval cadr u))
  ) where xx = aeval(car u);
 
 flag ('(type_ratpoly),'boolean);
@@ -90,10 +90,10 @@ scalar tmp,numerator,denominator,numcof,dencof;
   if not freeof(f,factorial) then rederr("not yet implemented");
   if not freeof(f,gamma) then rederr("not yet implemented");
   if not freeof(f,binomial) then rederr("not yet implemented");
-  if not freeof(f,pochhammer) then rederr("not yet implemented");
+  if not freeof(f,Pochhammer) then rederr("not yet implemented");
   tmp:=taylortostandard(taylor(f,x,a,0));
   if a=infinity then tmp:=-sub(x=1/x,tmp);
-  if PolynomQQ(tmp,x) then return(0);
+  if polynomqq(tmp,x) then return(0);
   if part(tmp,0)=taylor then rederr("taylor fails");
   if not type_ratpoly(tmp,x) then return(nil);
   tmp:=sub(x=x+a,tmp);
@@ -116,10 +116,10 @@ begin
   if not freeof(f,factorial) then rederr("not yet implemented");
   if not freeof(f,gamma) then rederr("not yet implemented");
   if not freeof(f,binomial) then rederr("not yet implemented");
-  if not freeof(f,pochhammer) then rederr("not yet implemented");
+  if not freeof(f,Pochhammer) then rederr("not yet implemented");
   tmp:=taylortostandard(taylor(f,x,a,0));
   if a=infinity then tmp:=-sub(x=1/x,tmp);
-  if PolynomQQ(tmp,x) then return(0);
+  if polynomqq(tmp,x) then return(0);
   denominator:=den(tmp);
   return(deg(denominator,x));
 end$

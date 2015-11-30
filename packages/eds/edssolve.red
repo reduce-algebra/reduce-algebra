@@ -28,7 +28,7 @@ module edssolve;
 %
 
 
-Comment. The EDS solve routines are interfaces to the general REDUCE
+COMMENT. The EDS solve routines are interfaces to the general REDUCE
 solver, presenting the results in a form more useful in EDS. The most
 primitive is edssolve, which basically just turns off arbvars and
 reorganises the answer, and the most sophisticated is edssolvegraded,
@@ -248,13 +248,12 @@ symbolic procedure edsgradecoords(crd,jet0);
          if j0 := assoc(length c0,u) then nconc(j0,{c})
          else u := (length c0 . {c}) . u;
          end;
-      u := sort(u,function(lambda x,y; car x > car y));
-      return foreach v in u collect cdr v;
+      return foreach v in sort(u,function greaterpcar) collect cdr v;
       end;
 
 
 
-Comment. The routine solvepfsys tries to bring a system into solved form
+COMMENT. The routine solvepfsys tries to bring a system into solved form
 in the current environment specified by cfrmcrd!* and cfrmrsx!*.
 
 endcomment;

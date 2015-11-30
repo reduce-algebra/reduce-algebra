@@ -118,13 +118,13 @@ switch looking_good;
 
 
 switch balanced_was_on;
-symbolic procedure jordansymbolic(A);
+symbolic procedure jordansymbolic(a);
   begin
-    scalar AA,P,Pinv,tmp,ans_mat,ans_list,full_coeff_list,rule_list,
+    scalar aa,p,pinv,tmp,ans_mat,ans_list,full_coeff_list,rule_list,
            output,input_mode;
 
-    matrix_input_test(A);
-    if (car size_of_matrix(A)) neq (cadr size_of_matrix(A))
+    matrix_input_test(a);
+    if (car size_of_matrix(a)) neq (cadr size_of_matrix(a))
      then rederr "ERROR: expecting a square matrix. ";
 
     if !*balanced_mod then
@@ -142,15 +142,15 @@ symbolic procedure jordansymbolic(A);
      input_mode neq 'rational then on rational;
     on combineexpt;
 
-    tmp := nest_input(A);
-    AA := car tmp;
+    tmp := nest_input(a);
+    aa := car tmp;
     full_coeff_list := cadr tmp;
 
-    tmp := jordansymbolicform(AA,full_coeff_list);
+    tmp := jordansymbolicform(aa,full_coeff_list);
     ans_mat := car tmp;
     ans_list := cadr tmp;
-    P := caddr tmp;
-    Pinv := caddr rest tmp;
+    p := caddr tmp;
+    pinv := caddr rest tmp;
     %
     %  Set up rule list for removing nests.
     %
@@ -168,8 +168,8 @@ symbolic procedure jordansymbolic(A);
     car ans_list := append({'list},car ans_list);
     ans_list := append({'list},ans_list);
     cadr ans_list := for each elt in cadr ans_list collect reval elt;
-    P := de_nest_mat(P);
-    Pinv := de_nest_mat(Pinv);
+    p := de_nest_mat(p);
+    pinv := de_nest_mat(pinv);
     clearrules rule_list;
     %
     % Return to original mode.
@@ -184,7 +184,7 @@ symbolic procedure jordansymbolic(A);
     if !*balanced_was_on then on balanced_mod;
     off combineexpt;
 
-    output := {'list,ans_mat,ans_list,P,Pinv};
+    output := {'list,ans_mat,ans_list,p,pinv};
     if !*looking_good then output := looking_good(output);
     return output;
   end;
@@ -194,45 +194,45 @@ flag ('(jordansymbolic),'opfn);  %  So it can be used from
 
 
 
-symbolic procedure jordansymbolicform(A,full_coeff_list);
+symbolic procedure jordansymbolicform(a,full_coeff_list);
   begin
-    scalar l,R,TT,Tinv,S,Sinv,tmp,P,Pinv,invariant;
+    scalar l,r,tt,tinv,s,sinv,tmp,p,pinv,invariant;
 
-    tmp := ratjordanform(A,full_coeff_list);
-    R := car tmp;
-    TT := cadr tmp;
-    Tinv := caddr tmp;
+    tmp := ratjordanform(a,full_coeff_list);
+    r := car tmp;
+    tt := cadr tmp;
+    tinv := caddr tmp;
 
-    tmp := ratjordan_to_jordan(R);
+    tmp := ratjordan_to_jordan(r);
     l := car tmp;
-    S := cadr tmp;
-    Sinv := caddr tmp;
+    s := cadr tmp;
+    sinv := caddr tmp;
 
-    P := off_mod_reval {'times,TT,S};
-    Pinv := off_mod_reval {'times,Sinv,Tinv};
+    p := off_mod_reval {'times,tt,s};
+    pinv := off_mod_reval {'times,sinv,tinv};
 
     invariant := invariant_to_jordan(nth(l,1));
 
-    return {invariant,nth(l,2),P,Pinv};
+    return {invariant,nth(l,2),p,pinv};
   end;
 
 
 
 
-symbolic procedure find_companion(R,rr,x);
+symbolic procedure find_companion(r,rr,x);
   begin
     scalar  p;
     integer row_dim,k;
 
-    row_dim := car size_of_matrix(R);
+    row_dim := car size_of_matrix(r);
     k := rr+1;
 
-    while k<=row_dim and getmat(R,k,k-1)=1 do k:=k+1;
+    while k<=row_dim and getmat(r,k,k-1)=1 do k:=k+1;
 
     p := 0;
     for j:=rr:k-1 do
     <<
-      p:={'plus,p,{'times,{'minus,getmat(R,j,k-1)},{'expt,x,j-rr}}};
+      p:={'plus,p,{'times,{'minus,getmat(r,j,k-1)},{'expt,x,j-rr}}};
     >>;
     p := {'plus,p,{'expt,x,k-rr}};
 
@@ -242,13 +242,13 @@ symbolic procedure find_companion(R,rr,x);
 
 
 
-symbolic procedure find_ratjblock(R,rr,x);
+symbolic procedure find_ratjblock(r,rr,x);
   begin
     scalar p,continue;
     integer k,e,row_dim;
 
-    row_dim := car size_of_matrix(R);
-    p := reval find_companion(R,rr,x);
+    row_dim := car size_of_matrix(r);
+    p := reval find_companion(r,rr,x);
     e := 1;
     k:= off_mod_reval({'plus,rr,deg(p,x)});
 
@@ -256,7 +256,7 @@ symbolic procedure find_ratjblock(R,rr,x);
     while continue do
     <<
       if k>row_dim then continue := nil;
-      if identitymatrix(R,k-deg(p,x),k,deg(p,x)) then
+      if identitymatrix(r,k-deg(p,x),k,deg(p,x)) then
       <<
         e:=e+1;
         k:=k+deg(p,x);
@@ -273,7 +273,7 @@ symbolic procedure find_ratjblock(R,rr,x);
 
 
 
-symbolic procedure identitymatrix(A,i,j,m);
+symbolic procedure identitymatrix(a,i,j,m);
   %
   % Tests if the submatrix of A, starting at position (i,j) and of
   % square size m, is an identity matrix.
@@ -281,11 +281,11 @@ symbolic procedure identitymatrix(A,i,j,m);
   begin
     integer row_dim;
 
-    row_dim := car size_of_matrix(A);
+    row_dim := car size_of_matrix(a);
     if i+m-1>row_dim or j+m-1>row_dim then return nil
     else
     <<
-      if submatrix(A,{i,i+m-1},{j,j+m-1}) = make_identity(m,m) then
+      if submatrix(a,{i,i+m-1},{j,j+m-1}) = make_identity(m,m) then
          return t
       else return nil;
     >>;
@@ -327,22 +327,22 @@ symbolic procedure jordanblock(const,mat_dim);
   % Can be used independently from algebraic mode.
   %
   begin
-    scalar JB;
+    scalar jb;
 
-    JB := mkmatrix(mat_dim,mat_dim);
+    jb := mkmatrix(mat_dim,mat_dim);
     for i:=1:mat_dim do
     <<
       for j:=1:mat_dim do
       <<
         if i=j then
         <<
-          setmat(JB,i,j,const);
-          if i<mat_dim then setmat(JB,i,j+1,1);
+          setmat(jb,i,j,const);
+          if i<mat_dim then setmat(jb,i,j+1,1);
         >>;
       >>;
     >>;
 
-    return JB;
+    return jb;
   end;
 
 flag ('(jordanblock),'opfn); %  So it can be used independently
@@ -351,10 +351,10 @@ flag ('(jordanblock),'opfn); %  So it can be used independently
 
 
 switch mod_was_on;
-symbolic procedure ratjordan_to_jordan(R);
+symbolic procedure ratjordan_to_jordan(r);
   begin
-    scalar prim_inv,TT,Tinv,Tinvlist,Tlist,exp_list,invariant,p,partT,
-           partTinv,s1,t1,v,w,sum1,tmp,S,Sinv,x;
+    scalar prim_inv,tt,tinv,tinvlist,tlist,exp_list,invariant,p,partt,
+           parttinv,s1,t1,v,w,sum1,tmp,s,sinv,x;
     integer nn,n,d;
     %
     % lambda would be better but as yet reduce can't output lambda with
@@ -365,11 +365,11 @@ symbolic procedure ratjordan_to_jordan(R);
     if !*looking_good then x := 'xi
     else x := 'lambda;
 
-    prim_inv := ratjordan_to_priminv(R,x);
+    prim_inv := ratjordan_to_priminv(r,x);
 
     invariant := {};
-    Tlist := {};
-    Tinvlist := {};
+    tlist := {};
+    tinvlist := {};
 
     nn := length prim_inv;
     for i:=1:nn do
@@ -415,16 +415,16 @@ symbolic procedure ratjordan_to_jordan(R);
       >>;
       n := sum1;
 
-      partT := mkmatrix(n*d,n);
+      partt := mkmatrix(n*d,n);
       for j:=1:n do
       <<
         for k:=1:d do
         <<
-          setmat(partT,(j-1)*d+k,j,getv(v,k));
+          setmat(partt,(j-1)*d+k,j,getv(v,k));
         >>;
       >>;
 
-      TT := mkmatrix(n*d,n*d);
+      tt := mkmatrix(n*d,n*d);
       if d=1 then
       <<
         %
@@ -432,8 +432,8 @@ symbolic procedure ratjordan_to_jordan(R);
         % in modular mode.
         %
         if !*modular then << off modular; on mod_was_on; >>;
-        TT := copyinto(algebraic (sub({x=-coeffn(p,x,0)},partT)),
-                       TT,1,1);
+        tt := copyinto(algebraic (sub({x=-coeffn(p,x,0)},partt)),
+                       tt,1,1);
         if !*mod_was_on then << on modular; off mod_was_on; >>;
       >>
       else for j:=1:d do
@@ -443,11 +443,11 @@ symbolic procedure ratjordan_to_jordan(R);
         % in modular mode.
         %
         if !*modular then << off modular; on mod_was_on; >>;
-        TT := copyinto(algebraic sub(x=mkid(x,off_mod_reval{'plus,
-                       {'times,10,i},j}),partT),TT,1,(j-1)*n+1);
+        tt := copyinto(algebraic sub(x=mkid(x,off_mod_reval{'plus,
+                       {'times,10,i},j}),partt),tt,1,(j-1)*n+1);
         if !*mod_was_on then << on modular; off mod_was_on; >>;
       >>;
-      Tlist := append(Tlist,{TT});
+      tlist := append(tlist,{tt});
 
       tmp := algebraic df(p,x);
       tmp := calc_exgcd(p,tmp,x);
@@ -461,16 +461,16 @@ symbolic procedure ratjordan_to_jordan(R);
         putv(w,j,get_rem(reval{'times,x,getv(w,j-1)},p));
       >>;
 
-      partTinv := mkmatrix(n,n*d);
+      parttinv := mkmatrix(n,n*d);
       for j:=1:n do
       <<
         for k:=1:d do
         <<
-          setmat(partTinv,j,(j-1)*d+k,getv(w,k));
+          setmat(parttinv,j,(j-1)*d+k,getv(w,k));
         >>;
       >>;
 
-      Tinv := mkmatrix(n*d,n*d);
+      tinv := mkmatrix(n*d,n*d);
       if d=1 then
       <<
         %
@@ -478,8 +478,8 @@ symbolic procedure ratjordan_to_jordan(R);
         % in modular mode.
         %
         if !*modular then << off modular; on mod_was_on; >>;
-        Tinv := reval copyinto(algebraic sub(x=-coeffn(p,x,0),partTinv)
-                               ,Tinv,1,1);
+        tinv := reval copyinto(algebraic sub(x=-coeffn(p,x,0),parttinv)
+                               ,tinv,1,1);
         if !*mod_was_on then << on modular; off mod_was_on; >>;
       >>
       else for j:=1:d do
@@ -489,27 +489,27 @@ symbolic procedure ratjordan_to_jordan(R);
         % in modular mode.
         %
         if !*modular then << off modular;  on mod_was_on; >>;
-        Tinv := reval copyinto(algebraic sub(x=mkid(x,off_mod_reval
-                {'plus,{'times,10,i},j}),partTinv),Tinv,(j-1)*n+1,1);
+        tinv := reval copyinto(algebraic sub(x=mkid(x,off_mod_reval
+                {'plus,{'times,10,i},j}),parttinv),tinv,(j-1)*n+1,1);
         if !*mod_was_on then << on modular; off mod_was_on; >>;
       >>;
-      Tinvlist := append(Tinvlist,{Tinv});
+      tinvlist := append(tinvlist,{tinv});
 
     >>;
 
-    S := reval{'diagi,Tlist};
-    Sinv := reval{'diagi,Tinvlist};
+    s := reval{'diagi,tlist};
+    sinv := reval{'diagi,tinvlist};
     tmp := {for i:=1:nn collect nth(nth(prim_inv ,i),1)};
     tmp := append(tmp,{x});
     tmp := append({invariant},{tmp});
 
-    return {tmp,S,Sinv};
+    return {tmp,s,sinv};
   end;
 
 
 
 
-symbolic procedure ratjordan_to_priminv(R,x);
+symbolic procedure ratjordan_to_priminv(r,x);
   %
   % ratjordan_to_priminv(R,x) computes the primary invariant of a matrix
   % R which is in rational Jordan normal form.
@@ -518,13 +518,13 @@ symbolic procedure ratjordan_to_priminv(R,x);
     scalar p,plist,exp_list,l,prim_inv;
     integer n,rr,ii,nn;
 
-    n := car size_of_matrix(R);
+    n := car size_of_matrix(r);
     rr := 1;
 
     plist := {};
     while rr<=n do
     <<
-      l := find_ratjblock(R,rr,x);
+      l := find_ratjblock(r,rr,x);
       plist := append(plist,{l});
       rr := off_mod_reval({'plus,rr,{'times,nth(l,2),deg(nth(l,1),x)}});
     >>;
@@ -556,7 +556,7 @@ symbolic procedure ratjordan_to_priminv(R,x);
 
 
 
-symbolic procedure submatrix(A,row_list,col_list);
+symbolic procedure submatrix(a,row_list,col_list);
   %
   % Creates the submatrix of A from rows  p to q (row_list = {p,q})
   % and columns r to s (col_list = {r,s}).
@@ -564,11 +564,11 @@ symbolic procedure submatrix(A,row_list,col_list);
   % Can be used independently from algebraic mode.
   %
   begin
-    scalar AA;
+    scalar aa;
     integer row_dim,col_dim,car_row,last_row,car_col,last_col,
-            A_row_dim,A_col_dim;
+            a_row_dim,a_col_dim;
 
-    matrix_input_test(A);
+    matrix_input_test(a);
 
     %  If algebraic input remove 'list.
     if car row_list = 'list then row_list := cdr row_list;
@@ -581,31 +581,31 @@ symbolic procedure submatrix(A,row_list,col_list);
     last_col := cadr col_list;
     col_dim := last_col - car_col + 1;
 
-    A_row_dim := car size_of_matrix(A);
-    A_col_dim := cadr size_of_matrix(A);
+    a_row_dim := car size_of_matrix(a);
+    a_col_dim := cadr size_of_matrix(a);
     if car_row = 0 or last_row = 0 then rederr
-     {"0 is out of range for ",A,". The car row is labelled 1."};
+     {"0 is out of range for ",a,". The car row is labelled 1."};
     if car_col = 0 or last_col = 0 then rederr
-     {"0 is out of range for",A,". The car column is labelled 1."};
-    if car_row > A_row_dim then rederr
-     {A,"doesn't have",car_row,"rows."};
-    if last_row > A_row_dim then rederr
-     {A,"doesn't have",last_row,"rows."};
-    if car_col > A_col_dim then rederr
-     {A,"doesn't have",car_col,"columns."};
-    if last_col > A_col_dim then rederr
-     {A,"doesn't have",last_col,"columns."};
+     {"0 is out of range for",a,". The car column is labelled 1."};
+    if car_row > a_row_dim then rederr
+     {a,"doesn't have",car_row,"rows."};
+    if last_row > a_row_dim then rederr
+     {a,"doesn't have",last_row,"rows."};
+    if car_col > a_col_dim then rederr
+     {a,"doesn't have",car_col,"columns."};
+    if last_col > a_col_dim then rederr
+     {a,"doesn't have",last_col,"columns."};
 
-    AA := mkmatrix(row_dim,col_dim);
+    aa := mkmatrix(row_dim,col_dim);
     for i:=1:row_dim do
     <<
       for j:=1:col_dim do
       <<
-        setmat(AA,i,j,getmat(A,i+car_row-1,j+car_col-1));
+        setmat(aa,i,j,getmat(a,i+car_row-1,j+car_col-1));
       >>;
     >>;
 
-    return AA;
+    return aa;
   end;
 
 flag ('(submatrix),'opfn);  %  So it can be used independently

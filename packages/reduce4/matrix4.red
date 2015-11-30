@@ -56,12 +56,12 @@ end;
 
 symbolic procedure matprixxx(u,v); matpri1(u,v,nil);
 
-% SYMBOLIC PROCEDURE nFORMMAT(U,VARS,MODE);
-%    'LIST . MKQUOTE '!*MATrix!* . list('list .
-%       FOR EACH X IN CDR U COLLECT
-%            ('LIST . nFORMLIS(X,VARS,MODE)));
+% symbolic procedure nformmat(u,vars,mode);
+%    'list . mkquote '!*matrix!* . list('list .
+%       for each x in cdr u collect
+%            ('list . nformlis(x,vars,mode)));
 
-% PUT('MAT,'nFORMFN,'nFORMMAT);
+% put('mat,'nformfn,'nformmat);
 
 %symbolic procedure nformmatrix(u,vars,mode);
 %    if mode eq 'symbolic then rederr "no symbolic matrices supported"
@@ -73,39 +73,39 @@ symbolic procedure matprixxx(u,v); matpri1(u,v,nil);
 %                                if atom j then mkquote j
 %                                 else mkmatel(j,vars,mode)>>);
 
-% SYMBOLIC PROCEDURE MATRIXfn U;
+% symbolic procedure matrixfn u;
 %    for each j in u do
 %     if null atom j then
 %        begin scalar v,w;
 %              v := cdr j;
-%              FOR N := 1:CAR V DO W := NtaggedZERO CADR V . W;
-%              return PUT(CAR J,'matVALUE,list('!*matrix!*,W))
+%              for n := 1:car v do w := ntaggedzero cadr v . w;
+%              return put(car j,'matvalue,list('!*matrix!*,w))
 %        end;
 
    %declares list U as matrices;
-%  BEGIN SCALAR V,W,X;
-%       FOR EACH J IN U DO
-%       IF ATOM J THEN IF NULL (X := rTYPE J)
-%                            THEN PUT(J,'RTYPE,'MAT)
-%                           ELSE IF X EQ 'MAT
-%                THEN <<LPRIM LIST(X,J,"redefined");
-%                                   PUT(J,'RTYPE,'MAT)>>
-%               ELSE TYPERR(LIST(X,J),"matrix")
-%            ELSE IF NOT IDP CAR J
-%             THEN ERRPRI2(J,'HOLD)
-%        ELSE IF NOT (X := rTYPE CAR J) OR X EQ 'MAT
-%             THEN <<v := nformmatel(j,vars,mode);
+%  begin scalar v,w,x;
+%       for each j in u do
+%       if atom j then if null (x := rtype j)
+%                            then put(j,'rtype,'mat)
+%                           else if x eq 'mat
+%                then <<lprim list(x,j,"redefined");
+%                                   put(j,'rtype,'mat)>>
+%               else typerr(list(x,j),"matrix")
+%            else if not idp car j
+%             then errpri2(j,'hold)
+%        else if not (x := rtype car j) or x eq 'mat
+%             then <<v := nformmatel(j,vars,mode);
 %                    v := list(lispeval cadadr v,lispeval car cdaddr v);
-%                    W := NIL;
-%                    FOR N := 1:CAR V DO W := NtaggedZERO CADR V . W;
-%                    PUT(CAR J,'RTYPE,'MAT);
-%            PUT(CAR J,'matVALUE,'!*matrix!* . W)>>
-%        ELSE TYPERR(LIST(X,CAR J),"matrix")
-%  END;
+%                    w := nil;
+%                    for n := 1:car v do w := ntaggedzero cadr v . w;
+%                    put(car j,'rtype,'mat);
+%            put(car j,'matvalue,'!*matrix!* . w)>>
+%        else typerr(list(x,car j),"matrix")
+%  end;
 
-% SYMBOLIC PROCEDURE NtaggedZERO N;
+% symbolic procedure ntaggedzero n;
 %    % Returns a list of N zeros.
-%    IF N=0 THEN NIL ELSE list('!*integer!*,0) . NtaggedZERO(N-1);
+%    if n=0 then nil else list('!*integer!*,0) . ntaggedzero(n-1);
 
 % put('matrix,'nformfn,'nformmatrix);
 
@@ -120,11 +120,11 @@ symbolic procedure matprixxx(u,v); matpri1(u,v,nil);
 
 % put('mat,'generic,'!*matrix!*);
 
-% FLAG('(MAT),'STRUCT);      % for parsing
+% flag('(mat),'struct);      % for parsing
 
-% PUT('MAT,'RTYPEFN,'(LAMBDA (X) 'MAT));
+% put('mat,'rtypefn,'(lambda (x) 'mat));
 
-% PUT('!*MATrix!*,'RTYPEFN,'(LAMBDA (X) 'MAT));
+% put('!*matrix!*,'rtypefn,'(lambda (x) 'mat));
 
 put('!*matrix!*,'rtype,'mat);
 
@@ -141,15 +141,15 @@ symbolic procedure !*matrixdifference!*(u,v);
                       collect addm1(car j,cdr j,
                                     function !*difference!*));
 
-SYMBOLIC PROCEDURE ADDM(U,V);
+symbolic procedure addm(u,v);
    %returns sum of two matrix canonical forms U and V;
-   FOR EACH J IN ADDM1(U,V,FUNCTION CONS)
-      COLLECT ADDM1(CAR J,CDR J,FUNCTION ADDSQ);
+   for each j in addm1(u,v,function cons)
+      collect addm1(car j,cdr j,function addsq);
 
-SYMBOLIC PROCEDURE ADDM1(U,V,W);
-   IF NULL U AND NULL V THEN NIL
-    ELSE IF NULL U OR NULL V THEN REDERR "Matrix mismatch"
-    ELSE APPLY(W,LIST(CAR U,CAR V)) . ADDM1(CDR U,CDR V,W);
+symbolic procedure addm1(u,v,w);
+   if null u and null v then nil
+    else if null u or null v then rederr "Matrix mismatch"
+    else apply(w,list(car u,car v)) . addm1(cdr u,cdr v,w);
 
 symbolic procedure !*matrixtimes2!*(u,v);
    list('!*matrix!*,for each j in rvalue u collect
@@ -296,20 +296,20 @@ symbolic procedure mat2q u;
    for each j in rvalue u collect
      for each k in j collect schk sq k;
 
-SYMBOLIC PROCEDURE TP1 U;
+symbolic procedure tp1 u;
    %returns transpose of the matrix canonical form U;
    %U is destroyed in the process;
-   BEGIN SCALAR V,W,X,Y,Z;
-    V := W := LIST NIL;
-    WHILE CAR U DO
-     <<X := U;
-       Y := Z := LIST NIL;
-       WHILE X DO
-         <<Z := CDR RPLACD(Z,LIST CAAR X);
-           X := CDR RPLACA(X,CDAR X)>>;
-       W := CDR RPLACD(W,LIST CDR Y)>>;
-    RETURN CDR V
-   END;
+   begin scalar v,w,x,y,z;
+    v := w := list nil;
+    while car u do
+     <<x := u;
+       y := z := list nil;
+       while x do
+         <<z := cdr rplacd(z,list caar x);
+           x := cdr rplaca(x,cdar x)>>;
+       w := cdr rplacd(w,list cdr y)>>;
+    return cdr v
+   end;
 
 
 add!-generic!-table!-entry('print,'(setmat),'(lambda (x)
@@ -338,22 +338,22 @@ symbolic procedure mkmatel(u,vars,mode);
 
 
 
-SYMBOLIC PROCEDURE GETMATELEM U;
-   BEGIN SCALAR X;
-      X := rvalue GET(CAR U,'matVALUE);
-      IF NOT x THEN REDERR LIST("Matrix",CAR U,"not set");
+symbolic procedure getmatelem u;
+   begin scalar x;
+      x := rvalue get(car u,'matvalue);
+      if not x then rederr list("Matrix",car u,"not set");
       u := cdr u;
-      RETURN NTH(NTH(X,CAR U),CADR U)
-   END;
+      return nth(nth(x,car u),cadr u)
+   end;
 
-SYMBOLIC PROCEDURE LETMTR(U,V,Y);
+symbolic procedure letmtr(u,v,y);
    %substitution for matrix elements;
-   BEGIN SCALAR Z;
-        z := cdr u;
-    IF NOT Y THEN REDERR LIST("Matrix",CAR U,"not set");
-    RPLACA(PNTH(NTH(rvalue Y,CAR Z),CADR Z),V);
-        return v
-   END;
+   begin scalar z;
+    z := cdr u;
+    if not y then rederr list("Matrix",car u,"not set");
+    rplaca(pnth(nth(rvalue y,car z),cadr z),v);
+    return v
+   end;
 
 symbolic procedure setmat(u,v);
    'setmat . u . list put(u,'matvalue,mateval v);

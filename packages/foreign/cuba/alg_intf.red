@@ -39,10 +39,10 @@ module alg_intf;
 %%   (a) INVOKED within 'on rounded'.
 %%   (b) its result must be USED within that environment also!
 %% See the comments in procedure cuba_int() in cuba/cuba_main.red.
-procedure alg_to_lisp_list(A);
-   begin scalar y, L;
+procedure alg_to_lisp_list(a);
+   begin scalar y, l;
       % the cdr removes the top-level list tag:
-      L := for each x in cdr A collect <<
+      l := for each x in cdr a collect <<
 	 y := numr simp x;
       	 % Handle 0, which is represented by the standard quotient (nil . 1).
       	 y :=
@@ -50,7 +50,7 @@ procedure alg_to_lisp_list(A);
 	       (if y = nil then 0 else y)
       	    else cdr y  % no ; here!
       >>;
-      return L;
+      return l;
    end;
 
 

@@ -1,4 +1,4 @@
-module TayDiff;
+module taydiff;
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -40,10 +40,10 @@ imports
         nth, over,
 
 % from the header module:
-        !*tay2q, !*TayExp2q, make!-cst!-coefflis, make!-Taylor!*,
-        TayCfPl, TayCfSq, TayCoeffList, TayFlags, Taylor!:,
-        TayMakeCoeff, TayOrig, TayTemplate, TayTpElNext, TayTpElOrder,
-        TayTpElPoint, TayTpElVars, TayVars,
+        !*tay2q, !*TayExp2q, make!-cst!-coefflis, make!-taylor!*,
+        taycfpl, taycfsq, taycoefflist, tayflags, taylor!:,
+        taymakecoeff, tayorig, taytemplate, taytpelnext, taytpelorder,
+        taytpelpoint, taytpelvars, tayvars,
 
 % from module Tayintro:
         replace!-nth, replace!-nth!-nth, var!-is!-nth,
@@ -71,22 +71,22 @@ symbolic procedure taydiffp(u,v,n);
 
 symbolic procedure difftaylor (u,kernel);
   begin scalar d;
-    d := if not ldepends(TayVars u,kernel)
-           then make!-Taylor!*(
-                  for each cc in TayCoeffList u collect
-                    TayMakeCoeff(TayCfPl cc,
-                                 diffsq(TayCfSq cc,kernel)),
-                    TayTemplate u,
-                    if !*taylorkeeporiginal and TayOrig u
-                      then diffsq(TayOrig u,kernel)
+    d := if not ldepends(tayvars u,kernel)
+           then make!-taylor!*(
+                  for each cc in taycoefflist u collect
+                    taymakecoeff(taycfpl cc,
+                                 diffsq(taycfsq cc,kernel)),
+                    taytemplate u,
+                    if !*taylorkeeporiginal and tayorig u
+                      then diffsq(tayorig u,kernel)
                      else nil,
-                    TayFlags u)
+                    tayflags u)
           else difftaylorwrttayvar(u,kernel);
-    for each el in TayTemplate u do
-      if depends(TayTpElPoint el,kernel)
+    for each el in taytemplate u do
+      if depends(taytpelpoint el,kernel)
         then begin scalar f;
-               f := negsq diffsq(!*k2q TayTpElPoint el,kernel);
-               for each var in TayTpElVars el do
+               f := negsq diffsq(!*k2q taytpelpoint el,kernel);
+               for each var in taytpelvars el do
                  d := addtaylor(d,
                         multtaylorsq(difftaylorwrttayvar(u,var),f));
              end;
@@ -98,43 +98,43 @@ symbolic procedure difftaylorwrttayvar(u,kernel);
   % kernel is one of the Taylor variables
   % differentiates Taylor kernel u wrt kernel
   %
-  Taylor!:
+  taylor!:
   begin scalar v,w,w1; integer n,m;
-    v := TayTemplate u;
+    v := taytemplate u;
     w := var!-is!-nth(v,kernel);
     n := car w;
     m := cdr w;
-    w := for each x in TayCoeffList u join <<
-           w := nth(TayCfPl x,n);
+    w := for each x in taycoefflist u join <<
+           w := nth(taycfpl x,n);
            w1 := nth(w,m);
            if w1 = 0 then nil
             else list
-              if TayTpElPoint nth(v,n) eq 'infinity
-                then TayMakeCoeff(
-                        replace!-nth!-nth(TayCfPl x,n,m,w1 + 1),
-                        multsq(TayCfSq x,!*TayExp2q (-w1)))
-               else TayMakeCoeff(
-                        replace!-nth!-nth(TayCfPl x,n,m,w1 - 1),
-                        multsq (TayCfSq x,!*TayExp2q w1))>>;
+              if taytpelpoint nth(v,n) eq 'infinity
+                then taymakecoeff(
+                        replace!-nth!-nth(taycfpl x,n,m,w1 + 1),
+                        multsq(taycfsq x,!*TayExp2q (-w1)))
+               else taymakecoeff(
+                        replace!-nth!-nth(taycfpl x,n,m,w1 - 1),
+                        multsq (taycfsq x,!*TayExp2q w1))>>;
     return
-      make!-Taylor!*(
+      make!-taylor!*(
             if null w
               then make!-cst!-coefflis(nil ./ 1,v)
              else w,
             replace!-nth (v,n,
-                          ({TayTpElVars w1,
-                            TayTpElPoint w1,
-                            if TayTpElPoint w1 eq 'infinity
-                              then TayTpElOrder w1 + 1
-                             else TayTpElOrder w1 - 1,
-                            if TayTpElPoint w1 eq 'infinity
-                              then TayTpElNext w1 + 1
-                             else TayTpElNext w1 - 1}
+                          ({taytpelvars w1,
+                            taytpelpoint w1,
+                            if taytpelpoint w1 eq 'infinity
+                              then taytpelorder w1 + 1
+                             else taytpelorder w1 - 1,
+                            if taytpelpoint w1 eq 'infinity
+                              then taytpelnext w1 + 1
+                             else taytpelnext w1 - 1}
                               where w1 := nth(v,n))),
-            if !*taylorkeeporiginal and TayOrig u
-              then diffsq(TayOrig u,kernel)
+            if !*taylorkeeporiginal and tayorig u
+              then diffsq(tayorig u,kernel)
              else nil,
-            TayFlags u)
+            tayflags u)
   end;
 
 endmodule;

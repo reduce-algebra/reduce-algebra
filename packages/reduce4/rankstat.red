@@ -360,7 +360,7 @@ symbolic procedure form_module(u,vars,mode);
      terpri(); prettyprint sequations
    end;
 
-put('theory,'formfn,'form_theory);
+put('Theory,'formfn,'form_theory);
 
 symbolic procedure type_qual(u,v); subla(u,v);
 

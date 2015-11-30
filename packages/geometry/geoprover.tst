@@ -98,18 +98,18 @@ algebraic procedure geo_eval(con,sol);
 % 
 % The solution:
 
-vars_:=List(x1, x2, x3);
+vars_:=list(x1, x2, x3);
 % Points
-A__:=Point(0,0); B__:=Point(1,0); P__:=Point(x1,x2);
+a__:=point(0,0); b__:=point(1,0); p__:=point(x1,x2);
 % coordinates
-D__:=rotate(A__,B__,1/2);
-C__:=par_point(D__,A__,B__); 
-Q__:=varpoint(D__,C__,x3);
+d__:=rotate(a__,b__,1/2);
+c__:=par_point(d__,a__,b__); 
+q__:=varpoint(d__,c__,x3);
 % polynomials
-polys_:=List(on_line(P__,par_line(C__,pp_line(B__,D__))),
-  eq_dist(B__,D__,B__,P__), on_line(Q__,pp_line(B__,P__)));
+polys_:=list(on_line(p__,par_line(c__,pp_line(b__,d__))),
+  eq_dist(b__,d__,b__,p__), on_line(q__,pp_line(b__,p__)));
 % conclusion
-con_:=eq_dist(D__,P__,D__,Q__);
+con_:=eq_dist(d__,p__,d__,q__);
 % solution
 gb_:=geo_gbasis(polys_,vars_);
 result_:=geo_normalf(con_,gb_,vars_);
@@ -123,16 +123,16 @@ result_:=geo_normalf(con_,gb_,vars_);
 % 
 % The solution:
 
-parameters_:=List(a1, a2, b1, b2, c1, c2);
+parameters_:=list(a1, a2, b1, b2, c1, c2);
 % Points
-A__:=Point(a1,a2);
-B__:=Point(b1,b2);
-C__:=Point(c1,c2);
+a__:=point(a1,a2);
+b__:=point(b1,b2);
+c__:=point(c1,c2);
 % coordinates
-M__:=intersection_point(p_bisector(A__,B__),
-  p_bisector(B__,C__));
+m__:=intersection_point(p_bisector(a__,b__),
+  p_bisector(b__,c__));
 % conclusion
-result_:=List( eq_dist(M__,A__,M__,B__), eq_dist(M__,A__,M__,C__) );
+result_:=list( eq_dist(m__,a__,m__,b__), eq_dist(m__,a__,m__,c__) );
 
 
 % Example EulerLine_1
@@ -144,18 +144,18 @@ result_:=List( eq_dist(M__,A__,M__,B__), eq_dist(M__,A__,M__,C__) );
 % 
 % The solution:
 
-parameters_:=List(a1, a2, b1, b2, c1, c2);
+parameters_:=list(a1, a2, b1, b2, c1, c2);
 % Points
-A__:=Point(a1,a2);
-B__:=Point(b1,b2);
-C__:=Point(c1,c2);
+a__:=point(a1,a2);
+b__:=point(b1,b2);
+c__:=point(c1,c2);
 % coordinates
-S__:=intersection_point(median(A__,B__,C__),median(B__,C__,A__));
-M__:=intersection_point(p_bisector(A__,B__),
-  p_bisector(B__,C__));
-H__:=intersection_point(altitude(A__,B__,C__),altitude(B__,C__,A__));
+s__:=intersection_point(median(a__,b__,c__),median(b__,c__,a__));
+m__:=intersection_point(p_bisector(a__,b__),
+  p_bisector(b__,c__));
+h__:=intersection_point(altitude(a__,b__,c__),altitude(b__,c__,a__));
 % conclusion
-result_:=List(is_collinear(M__,H__,S__), sqrdist(S__,fixedpoint(M__,H__,1/3)));
+result_:=list(is_collinear(m__,h__,s__), sqrdist(s__,fixedpoint(m__,h__,1/3)));
 
 
 % Example Brocard_3
@@ -169,21 +169,21 @@ result_:=List(is_collinear(M__,H__,S__), sqrdist(S__,fixedpoint(M__,H__,1/3)));
 % 
 % The solution:
 
-parameters_:=List(u1, u2);
+parameters_:=list(u1, u2);
 % Points
-A__:=Point(0,0);
-B__:=Point(1,0);
-C__:=Point(u1,u2);
+a__:=point(0,0);
+b__:=point(1,0);
+c__:=point(u1,u2);
 % coordinates
-M_1_:=intersection_point(altitude(A__,A__,C__),p_bisector(A__,B__));
-M_2_:=intersection_point(altitude(B__,B__,A__),p_bisector(B__,C__));
-M_3_:=intersection_point(altitude(C__,C__,B__),p_bisector(A__,C__));
-c1_:=pc_circle(M_1_,A__);
-c2_:=pc_circle(M_2_,B__);
-c3_:=pc_circle(M_3_,C__);
-P__:=other_cc_point(B__,c1_,c2_);
+m_1_:=intersection_point(altitude(a__,a__,c__),p_bisector(a__,b__));
+m_2_:=intersection_point(altitude(b__,b__,a__),p_bisector(b__,c__));
+m_3_:=intersection_point(altitude(c__,c__,b__),p_bisector(a__,c__));
+c1_:=pc_circle(m_1_,a__);
+c2_:=pc_circle(m_2_,b__);
+c3_:=pc_circle(m_3_,c__);
+p__:=other_cc_point(b__,c1_,c2_);
 % conclusion
-result_:= on_circle(P__,c3_);
+result_:= on_circle(p__,c3_);
 
 
 % Example Feuerbach_1
@@ -196,21 +196,21 @@ result_:= on_circle(P__,c3_);
 % 
 % The solution:
 
-parameters_:=List(u1, u2, u3);
+parameters_:=list(u1, u2, u3);
 % Points
-A__:=Point(0,0);
-B__:=Point(u1,0);
-C__:=Point(u2,u3);
+a__:=point(0,0);
+b__:=point(u1,0);
+c__:=point(u2,u3);
 % coordinates
-H__:=intersection_point(altitude(A__,B__,C__),altitude(B__,C__,A__));
-D__:=intersection_point(pp_line(A__,B__),pp_line(H__,C__));
-M__:=intersection_point(p_bisector(A__,B__),
-  p_bisector(B__,C__));
-N__:=midpoint(M__,H__);
+h__:=intersection_point(altitude(a__,b__,c__),altitude(b__,c__,a__));
+d__:=intersection_point(pp_line(a__,b__),pp_line(h__,c__));
+m__:=intersection_point(p_bisector(a__,b__),
+  p_bisector(b__,c__));
+n__:=midpoint(m__,h__);
 % conclusion
-result_:=List( eq_dist(N__,midpoint(A__,B__),N__,midpoint(B__,C__)),
-  eq_dist(N__,midpoint(A__,B__),N__,midpoint(H__,C__)),
-  eq_dist(N__,midpoint(A__,B__),N__,D__) );
+result_:=list( eq_dist(n__,midpoint(a__,b__),n__,midpoint(b__,c__)),
+  eq_dist(n__,midpoint(a__,b__),n__,midpoint(h__,c__)),
+  eq_dist(n__,midpoint(a__,b__),n__,d__) );
 
 
 % Example FeuerbachTangency_1
@@ -221,23 +221,23 @@ result_:=List( eq_dist(N__,midpoint(A__,B__),N__,midpoint(B__,C__)),
 % 
 % The solution:
 
-vars_:=List(x1, x2);
-parameters_:=List(u1, u2);
+vars_:=list(x1, x2);
+parameters_:=list(u1, u2);
 % Points
-A__:=Point(0,0);
-B__:=Point(2,0);
-C__:=Point(u1,u2);
-P__:=Point(x1,x2);
+a__:=point(0,0);
+b__:=point(2,0);
+c__:=point(u1,u2);
+p__:=point(x1,x2);
 % coordinates
-M__:=intersection_point(p_bisector(A__,B__), p_bisector(B__,C__));
-H__:=intersection_point(altitude(A__,B__,C__),altitude(B__,C__,A__));
-N__:=midpoint(M__,H__);
-c1_:=pc_circle(N__,midpoint(A__,B__));
-Q__:=pedalpoint(P__,pp_line(A__,B__));
+m__:=intersection_point(p_bisector(a__,b__), p_bisector(b__,c__));
+h__:=intersection_point(altitude(a__,b__,c__),altitude(b__,c__,a__));
+n__:=midpoint(m__,h__);
+c1_:=pc_circle(n__,midpoint(a__,b__));
+q__:=pedalpoint(p__,pp_line(a__,b__));
 % polynomials
-polys_:=List(on_bisector(P__,A__,B__,C__), on_bisector(P__,B__,C__,A__));
+polys_:=list(on_bisector(p__,a__,b__,c__), on_bisector(p__,b__,c__,a__));
 % conclusion
-con_:=is_cc_tangent(pc_circle(P__,Q__),c1_);
+con_:=is_cc_tangent(pc_circle(p__,q__),c1_);
 % solution
 gb_:=geo_gbasis(polys_,vars_);
 result_:=geo_normalf(con_,gb_,vars_);
@@ -254,23 +254,23 @@ result_:=geo_normalf(con_,gb_,vars_);
 % 
 % The solution:
 
-vars_:=List(x1, x2, x3, x4, x5);
-parameters_:=List(u1, u2, u3);
+vars_:=list(x1, x2, x3, x4, x5);
+parameters_:=list(u1, u2, u3);
 % Points
-A__:=Point(0,0);
-B__:=Point(2,0);
-C__:=Point(u1,u2);
-P__:=Point(x1,x2);
-Q__:=Point(x3,x4);
-R__:=Point(x5,u3);
+a__:=point(0,0);
+b__:=point(2,0);
+c__:=point(u1,u2);
+p__:=point(x1,x2);
+q__:=point(x3,x4);
+r__:=point(x5,u3);
 % polynomials
-polys_:=List(eq_dist(P__,B__,P__,C__), 
-  eq_dist(Q__,A__,Q__,C__),  
-  eq_dist(R__,A__,R__,B__), 
-  eq_angle(R__,A__,B__,P__,B__,C__), 
-  eq_angle(Q__,C__,A__,P__,B__,C__));
+polys_:=list(eq_dist(p__,b__,p__,c__), 
+  eq_dist(q__,a__,q__,c__),  
+  eq_dist(r__,a__,r__,b__), 
+  eq_angle(r__,a__,b__,p__,b__,c__), 
+  eq_angle(q__,c__,a__,p__,b__,c__));
 % conclusion
-con_:=is_concurrent(pp_line(A__,P__), pp_line(B__,Q__), pp_line(C__,R__));
+con_:=is_concurrent(pp_line(a__,p__), pp_line(b__,q__), pp_line(c__,r__));
 % solution
 sol_:=geo_solve(polys_,vars_);
 result_:=geo_eval(con_,sol_);
@@ -286,25 +286,25 @@ result_:=geo_eval(con_,sol_);
 % 
 % The solution:
 
-parameters_:=List(u1, u2, u3);
+parameters_:=list(u1, u2, u3);
 % Points
-A__:=Point(u1,0);
-B__:=Point(u2,0);
-C__:=Point(0,u3);
+a__:=point(u1,0);
+b__:=point(u2,0);
+c__:=point(0,u3);
 % coordinates
-P__:=pedalpoint(A__,pp_line(B__,C__));
-Q__:=pedalpoint(B__,pp_line(A__,C__));
-R__:=pedalpoint(C__,pp_line(A__,B__));
-P_1_:=pedalpoint(P__,pp_line(A__,B__));
-P_2_:=pedalpoint(P__,pp_line(A__,C__));
-Q_1_:=pedalpoint(Q__,pp_line(A__,B__));
-Q_2_:=pedalpoint(Q__,pp_line(B__,C__));
-R_1_:=pedalpoint(R__,pp_line(A__,C__));
-R_2_:=pedalpoint(R__,pp_line(B__,C__));
+p__:=pedalpoint(a__,pp_line(b__,c__));
+q__:=pedalpoint(b__,pp_line(a__,c__));
+r__:=pedalpoint(c__,pp_line(a__,b__));
+p_1_:=pedalpoint(p__,pp_line(a__,b__));
+p_2_:=pedalpoint(p__,pp_line(a__,c__));
+q_1_:=pedalpoint(q__,pp_line(a__,b__));
+q_2_:=pedalpoint(q__,pp_line(b__,c__));
+r_1_:=pedalpoint(r__,pp_line(a__,c__));
+r_2_:=pedalpoint(r__,pp_line(b__,c__));
 % conclusion
-result_:=List( is_concyclic(P_1_,P_2_,Q_1_,Q_2_), 
-  is_concyclic(P_1_,P_2_,Q_1_,R_1_),
-  is_concyclic(P_1_,P_2_,Q_1_,R_2_));
+result_:=list( is_concyclic(p_1_,p_2_,q_1_,q_2_), 
+  is_concyclic(p_1_,p_2_,q_1_,r_1_),
+  is_concyclic(p_1_,p_2_,q_1_,r_2_));
 
 
 % Example Miquel_1
@@ -317,18 +317,18 @@ result_:=List( is_concyclic(P_1_,P_2_,Q_1_,Q_2_),
 % 
 % The solution:
 
-parameters_:=List(c1, c2, u1, u2, u3);
+parameters_:=list(c1, c2, u1, u2, u3);
 % Points
-A__:=Point(0,0);
-B__:=Point(1,0);
-C__:=Point(c1,c2);
+a__:=point(0,0);
+b__:=point(1,0);
+c__:=point(c1,c2);
 % coordinates
-P__:=varpoint(A__,B__,u1);
-Q__:=varpoint(B__,C__,u2);
-R__:=varpoint(A__,C__,u3);
-X__:=other_cc_point(P__,p3_circle(A__,P__,R__),p3_circle(B__,P__,Q__));
+p__:=varpoint(a__,b__,u1);
+q__:=varpoint(b__,c__,u2);
+r__:=varpoint(a__,c__,u3);
+x__:=other_cc_point(p__,p3_circle(a__,p__,r__),p3_circle(b__,p__,q__));
 % conclusion
-result_:=on_circle(X__,p3_circle(C__,Q__,R__));
+result_:=on_circle(x__,p3_circle(c__,q__,r__));
 
 
 % Example PappusPoint_1
@@ -343,19 +343,19 @@ result_:=on_circle(X__,p3_circle(C__,Q__,R__));
 % 
 % The solution:
 
-parameters_:=List(u1, u2, u3, u4, u5, u6, u7, u8);
+parameters_:=list(u1, u2, u3, u4, u5, u6, u7, u8);
 % Points
-A__:=Point(u1,0);
-B__:=Point(u2,0);
-P__:=Point(u4,u5);
-Q__:=Point(u6,u7);
+a__:=point(u1,0);
+b__:=point(u2,0);
+p__:=point(u4,u5);
+q__:=point(u6,u7);
 % coordinates
-C__:=varpoint(A__,B__,u3);
-R__:=varpoint(P__,Q__,u8);
+c__:=varpoint(a__,b__,u3);
+r__:=varpoint(p__,q__,u8);
 % conclusion
-result_:=is_concurrent(pappus_line(A__,B__,C__,P__,Q__,R__),
-  pappus_line(A__,B__,C__,Q__,R__,P__), 
-  pappus_line(A__,B__,C__,R__,P__,Q__));
+result_:=is_concurrent(pappus_line(a__,b__,c__,p__,q__,r__),
+  pappus_line(a__,b__,c__,q__,r__,p__), 
+  pappus_line(a__,b__,c__,r__,p__,q__));
 
 
 % Example IMO/36_1
@@ -371,29 +371,29 @@ result_:=is_concurrent(pappus_line(A__,B__,C__,P__,Q__,R__),
 % 
 % The solution:
 
-vars_:=List(x1, x2, x3, x4, x5, x6);
-parameters_:=List(u1, u2, u3);
+vars_:=list(x1, x2, x3, x4, x5, x6);
+parameters_:=list(u1, u2, u3);
 % Points
-X__:=Point(0,1);
-Y__:=Point(0,-1);
-M__:=Point(x1,x2);
-N__:=Point(x3,x4);
+x__:=point(0,1);
+y__:=point(0,-1);
+m__:=point(x1,x2);
+n__:=point(x3,x4);
 % coordinates
-P__:=varpoint(X__,Y__,u3);
-Z__:=midpoint(X__,Y__);
-l_:=p_bisector(X__,Y__);
-B__:=line_slider(l_,u1);
-C__:=line_slider(l_,u2);
-A__:=line_slider(l_,x5);
-D__:=line_slider(l_,x6);
+p__:=varpoint(x__,y__,u3);
+z__:=midpoint(x__,y__);
+l_:=p_bisector(x__,y__);
+b__:=line_slider(l_,u1);
+c__:=line_slider(l_,u2);
+a__:=line_slider(l_,x5);
+d__:=line_slider(l_,x6);
 % polynomials
-polys_:=List(is_concyclic(X__,Y__,B__,N__), is_concyclic(X__,Y__,C__,M__),
-  is_concyclic(X__,Y__,B__,D__), is_concyclic(X__,Y__,C__,A__),
-  is_collinear(B__,P__,N__), is_collinear(C__,P__,M__));
+polys_:=list(is_concyclic(x__,y__,b__,n__), is_concyclic(x__,y__,c__,m__),
+  is_concyclic(x__,y__,b__,d__), is_concyclic(x__,y__,c__,a__),
+  is_collinear(b__,p__,n__), is_collinear(c__,p__,m__));
 % constraints
-nondeg_:=List(x5-u2,x1-u2,x6-u1,x3-u1);
+nondeg_:=list(x5-u2,x1-u2,x6-u1,x3-u1);
 % conclusion
-con_:=is_concurrent(pp_line(A__,M__),pp_line(D__,N__),pp_line(X__,Y__));
+con_:=is_concurrent(pp_line(a__,m__),pp_line(d__,n__),pp_line(x__,y__));
 % solution
 sol_:=geo_solveconstrained(polys_,vars_,nondeg_);
 result_:=geo_eval(con_,sol_);
@@ -407,29 +407,29 @@ result_:=geo_eval(con_,sol_);
 % 
 % The solution:
 
-vars_:=List(x1, x2);
-parameters_:=List(u1);
+vars_:=list(x1, x2);
+parameters_:=list(u1);
 % Points
-B__:=Point(-1,0);
-C__:=Point(1,0);
+b__:=point(-1,0);
+c__:=point(1,0);
 % coordinates
-O__:=midpoint(B__,C__);
-gamma_:=pc_circle(O__,B__);
-D__:=circle_slider(O__,B__,u1);
-E__:=circle_slider(O__,B__,x1);
-F__:=circle_slider(O__,B__,x2);
-A__:=sym_point(B__,pp_line(O__,D__));
-J__:=intersection_point(pp_line(A__,C__), par_line(O__, pp_line(A__,D__)));
-m_:=p_bisector(O__,A__);
-P_1_:=pedalpoint(J__,m_);
-P_2_:=pedalpoint(J__,pp_line(C__,E__));
-P_3_:=pedalpoint(J__,pp_line(C__,F__));
+o__:=midpoint(b__,c__);
+gamma_:=pc_circle(o__,b__);
+d__:=circle_slider(o__,b__,u1);
+e__:=circle_slider(o__,b__,x1);
+f__:=circle_slider(o__,b__,x2);
+a__:=sym_point(b__,pp_line(o__,d__));
+j__:=intersection_point(pp_line(a__,c__), par_line(o__, pp_line(a__,d__)));
+m_:=p_bisector(o__,a__);
+p_1_:=pedalpoint(j__,m_);
+p_2_:=pedalpoint(j__,pp_line(c__,e__));
+p_3_:=pedalpoint(j__,pp_line(c__,f__));
 % polynomials
-polys_:=List(on_line(E__,m_), on_line(F__,m_));
+polys_:=list(on_line(e__,m_), on_line(f__,m_));
 % constraints
-nondegs_:=List(x1-x2);
+nondegs_:=list(x1-x2);
 % conclusion
-con_:=List(eq_dist(J__,P_1_,J__,P_2_), eq_dist(J__,P_1_,J__,P_3_));
+con_:=list(eq_dist(j__,p_1_,j__,p_2_), eq_dist(j__,p_1_,j__,p_3_));
 % solution
 sol_:=geo_solveconstrained(polys_,vars_,nondegs_); 
 result_:=geo_simplify(geo_eval(con_,sol_));

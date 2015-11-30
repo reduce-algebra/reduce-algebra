@@ -80,6 +80,7 @@ struct Container asserted by pairp;
 
 struct Point asserted by listp;
 
+%%%%%%%MAX
 %DS
 % InfCoreData ::= [InfCore, FalseVect, EvTPList, MaxFalse, Coverage,
 %                  CurrentFVect, GuardList, Knowl, EssentialVect, VarList, CADCellList]
@@ -96,115 +97,170 @@ struct Point asserted by listp;
 % VarList ::= VariableL
 % CADCellList ::= (ACell,...)
 
+
 struct InfCoreData asserted by listp;
 
 asserted procedure ic_init(f: Formula): InfCoreData;
    % Infeasible Core Initialize. Create, initialize and return
    % infeasible core data from a fully existentially quantified
    % formula [f].
-   begin scalar icdata,fList,k;
-      icdata := mkvect(11);
-      fList := rl_argn(caddr cl_split f);
+   begin scalar icdata, fList, k;
+      icdata := mkvect 14;
+      fList :=cl_ftol(f);
       k := length fList - 1;
-      putv(icdata,1,list2vector(for i:=0:k collect 0));
-      putv(icdata,4,0);
-      putv(icdata,5,list2vector(flist));
-      putv(icdata,6,mkvect(k));
-      putv(icdata,8,mkvect(k));
-      return icdata;
+      putv(icdata, 1, list2vector for i := 0 : k collect 0);
+      putv(icdata, 4, 0);
+      putv(icdata, 5, list2vector flist);
+      %putv(icdata, 6, mkvect k);
+      putv(icdata, 8, mkvect k);
+      putv(icdata, 12, list2vector flist);
+      return icdata
    end;
+
+procedure cl_ftol(f);
+   begin scalar flist;
+      fList :=caddr cl_split(f);
+      if rl_op fList = 'and  then
+      	 return rl_argn fList
+      else return {fList}
+   end;
+
+asserted procedure ic_setoffsetlist(icdata: InfCoreData, l:List): Any;
+   putv(icdata, 13, l);
+
+asserted procedure ic_offsetlist(icdata: InfCoreData): List;
+   getv(icdata, 13);
+
 
 asserted procedure ic_infcore(icdata: InfCoreData): List;
    % Infeasible Core Data Infeasible Core. Contains a subset of the
    % elements in the formula vector which, at the end of the
    % computation, will be unsatisfiable.
-   getv(icdata,0);
+   getv(icdata, 0);
+
+asserted procedure ic_setinfcore(icdata: InfCoreData, l: List): List;
+   % Infeasible Core Data Infeasible Core. Contains a subset of the
+   % elements in the formula vector which, at the end of the
+   % computation, will be unsatisfiable.
+   putv(icdata, 0,l);
+
+asserted procedure ic_taglist(icdata: InfCoreData): List;
+   getv(icdata, 11);
+
+asserted procedure ic_originalfvect(icdata: InfCoreData): List;
+   getv(icdata, 12);
+
+
+asserted procedure ic_taglistremfalse(icdata: InfCoreData): List;
+begin scalar l;
+   l := getv(icdata,11);
+   if caar l = 'false then <<
+      putv(icdata,11,cdr l);
+      return cdar l
+   >>;
+   return nil
+end;
+
+asserted procedure ic_settaglist(icdata: InfCoreData, l): List;
+   putv(icdata, 11,l);
+
+asserted procedure ic_appendtaglist(icdata: InfCoreData, p): List;
+   putv(icdata, 11, p . getv(icdata, 11));
 
 asserted procedure ic_appendinfcore(icdata: InfCoreData, k:Integer);
-   putv(icdata,0,k . getv(icdata,0));
+   putv(icdata, 0, k . getv(icdata, 0));
 
 asserted procedure ic_falsevect(icdata: InfCoreData): Vector;
    % Infeasible Core Data False Vector. The Vector contains the number
    % of test points that evaluate to false for each formula in the
    % formula vector.
-   getv(icdata,1);
+   getv(icdata, 1);
 
-asserted procedure ic_addtofalsevect(icdata: InfCoreData,k,j): Vector;
-   putv(ic_falseVect(rlqeicdata!*),k,getv(ic_falsevect(rlqeicdata!*),k)+j);
+asserted procedure ic_addtofalsevect(icdata: InfCoreData, k: Integer, j:Integer): Vector;
+   putv(ic_falseVect rlqeicdata!*, k,
+      getv(ic_falsevect rlqeicdata!*, k) + j);
 
 asserted procedure ic_evtplist(icdata: InfCoreData): List;
    % Infeasible Core Evaluated Test Point List. Each test point
    % consists of a vector of truth values. The ith truth value is T if
    % the ith formula in the formula vector gives true when evaluated
    % at the test point represented by this list.
-   getv(icdata,2);
+   getv(icdata, 2);
 
-asserted procedure ic_appendevtplist(icdata: InfcoreData, tpl: List);
-   putv(icdata,2,tpl.getv(icdata,2));
+asserted procedure ic_appendevtplist(icdata: InfcoreData, tpl: List): Any;
+   putv(icdata, 2, tpl . getv(icdata, 2));
 
 asserted procedure ic_maxfalseel(icdata: InfCoreData): Integer;
    % Infeasible Maximal False Element. Index of the formula in the
    % formula vector that gives false for the most test points that are
    % not yet covered by the current infeasible core.
-   getv(icdata,3);
+   getv(icdata, 3);
 
 asserted procedure ic_coverage(icdata: InfCoreData): Integer;
    % Infeasible Core Coverage. The number of test points that have yet
    % to be covered by the infeasible core.
-   getv(icdata,4);
+   getv(icdata, 4);
 
-asserted procedure ic_addcoverage(icdata:InfCoreData, k:Integer);
-   putv(icdata,4,getv(icdata,4)+k);
+asserted procedure ic_addcoverage(icdata: InfCoreData, k: Integer): Any;
+   putv(icdata, 4, getv(icdata, 4) + k);
 
 asserted procedure ic_currentfvect(icdata: InfCoreData): Vector;
    % Infeasible Core Current Formula Vector. Each entry represents one
    % of the input constraints at the current virtual substitution step.
-   getv(icdata,5);
+   getv(icdata, 5);
 
-asserted procedure ic_setcurrentfvect(icdata: InfCoreData,v);
-   putv(icdata,5,v);
+asserted procedure ic_setcurrentfvect(icdata: InfCoreData, v: Vector): Any;
+   putv(icdata, 5, v);
 
 asserted procedure ic_guardList(icdata: InfCoreData): List;
    % Infeasible Core Guard List. An AList which associates guards with
    % the formulas from which they emerged.
-   getv(icdata,6);
+   getv(icdata, 6);
 
-asserted procedure ic_appendguardlist(icdata: InfcoreData, el);
-   putv(icdata,6,el.getv(icdata,6));
+asserted procedure ic_clearguardList(icdata: InfCoreData): List;
+   % Infeasible Core Guard List. An AList which associates guards with
+   % the formulas from which they emerged.
+   putv(icdata, 6, nil);
+
+asserted procedure ic_appendguardlist(icdata: InfcoreData, el: Any): Any;
+   putv(icdata, 6, el . getv(icdata, 6));
 
 asserted procedure ic_knowl(icdata: InfCoreData): List;
    % Infeasible Core Knowledge. Contains currently known bounds for
    % the simplification process.
-   getv(icdata,7);
+   getv(icdata, 7);
 
-asserted procedure ic_setknowl(icdata: InfCoreData, knowl): List;
-   putv(icdata,7,knowl);
+asserted procedure ic_setknowl(icdata: InfCoreData, knowl: Any): List;
+   putv(icdata, 7, knowl);
 
 asserted procedure ic_essentialvect(icdata: InfCoreData): Vector;
    % Infeasible Core Essential List. Contains indices of formulas in
    % the formula vector that are known to be a necessary part of the
    % infeasible core.
-   getv(icdata,8);
+   getv(icdata, 8);
 
 asserted procedure ic_varlist(icdata: InfCoreData): List;
    % Infeasible Core Variable List.
-   getv(icdata,9);
+   getv(icdata, 9);
+
+asserted procedure ic_setvarlist(icdata: InfCoreData, l: List): List;
+   putv(icdata,9,l);
 
 asserted procedure ic_insertvarlist(icdata: InfCoreData, v: Pair): List;
-   putv(icdata,9,lto_insertqcar(v,getv(icdata,9)));
+   putv(icdata, 9, lto_insertqcar(v, getv(icdata, 9)));
 
-asserted procedure ic_resetcadcellList(icdata: InfCoreData);
-   putv(icdata,10,nil);
+asserted procedure ic_resetcadcellList(icdata: InfCoreData): Any;
+   putv(icdata, 10, nil);
 
 asserted procedure ic_cadcellList(icdata: InfCoreData): List;
    % Infeasible Core CAD Cell List. Contains all the leafs of the CAD tree
    % after a CAD call.
-   getv(icdata,10);
+   getv(icdata, 10);
 
-asserted procedure ic_appendcadcellList(icdata: InfCoreData, cell): List;
+asserted procedure ic_appendcadcellList(icdata: InfCoreData, cell: Any): List;
    % Infeasible Core CAD Cell List. Contains all the leafs of the CAD tree
    % after a CAD call.
-   putv(icdata,10,cell.getv(icdata,10));
+   putv(icdata, 10, cell . getv(icdata, 10));
 
 %DS
 % EliminationResult ::= (Theory . ExtendedQeResult)
@@ -215,7 +271,7 @@ struct EliminationResult asserted by pairp;
 struct ExtendedQeResult asserted by alistp;
 
 declare ce_mk: (VarList, QfFormula, Kernel, List, Answer, List) -> ContainerElement;
-inline procedure ce_mk(vl, f, v, eterm, an, fvect);
+inline procedure ce_mk(vl, f, v, eterm, an, fvect); %%%%%%%MAX
    % Container element make.
    {'ce, vl, f, v, eterm, an, fvect};
 
@@ -244,7 +300,7 @@ inline procedure ce_ans(x);
    % Container element answer.
    nth(cdr x, 5);
 
-declare ce_fvect: (ContainerElement) -> Vector;
+declare ce_fvect: (ContainerElement) -> Vector;%%%%%%%MAX
 inline procedure ce_fvect(x);
    % Container element formula vector. Only used for infeasible core computation.
    nth(cdr x, 6);
@@ -314,12 +370,13 @@ asserted procedure co_push1(co: Container, ce: ContainerElement): Container;
    co_setData(co,co_push2(co_data co,ce));
 
 asserted procedure co_push2(co: Container, ce: ContainerElement): Container;
+   %TODO: REENABLE %%%%%%%MAX
    % Insert 1 element into container.
-   if co_member(ce,co) then <<
-      if !*rlverbose and !*rlqevb and !*rlqevbold then
-	 ioto_prin2 "@";
-      co
-   >> else
+   % if co_member(ce,co) then <<
+   %    if !*rlverbose and !*rlqevb and !*rlqevbold then
+   % 	 ioto_prin2 "@";
+   %    co
+   % >> else
       ce . co;
 
 asserted procedure co_enqueue(co: Container, dol: ContainerElementL): Container;
@@ -557,91 +614,152 @@ asserted procedure cl_qea(f: Formula, theo: Theory): ExtendedQeResult;
    % of the parameters, [f] holds, and $A_i$ describes a satisfying sample
    % point. Accesses the switch [rlqepnf]; if [rlqepnf] is on, then [f] has to
    % be prenex.
-   begin scalar er,!*rlsipw,!*rlsipo,!*rlqeans;
+   begin scalar er,!*rlsipw,!*rlsipo,!*rlqeans,ic;
       !*rlsipw := !*rlsipo := !*rlqeans := T;
+      !*rlqestdans:=T;
       % Initialize infeasible core data structure
-      if !*rlqeinfcore then <<
-	 !*rlqesr:=T;
-	 rlqeicdata!*:=ic_init(f);
-	 !*rlqeans:=nil;
-	 %TODO: Fix answers
+      if !*rlqeinfcore then << %%%%%%%MAX
+	 !*rlqesr := t;
+	 !*rlataltheo:=nil;
+	 !*rlqestdans:=T;
+	 rlqeicdata!* := ic_init f;
+	 %TODO: REENABLE
+	 !*rlqedyn:=nil
       >>;
       er := cl_qe1(f,theo,nil);
       if rl_exceptionp er then
 	 return er;
       % Infeasible core computation
-      if !*rlqeinfcore and caadr er eq 'false then <<
-	 ic_computeinfcore(rlqeicdata!*);
-	 ioto_tprin2t{"infcore: ", ic_infcore(rlqeicdata!*)};
-      >>;
+      if !*rlqeinfcore then %%%%%%%MAX
+	 if er={nil} or caadr er eq 'false then <<
+	    ic_computeinfcore rlqeicdata!*;
+	    ic := ic_infcore rlqeicdata!*;
+	    ioto_tprin2t {"infcore: ", ic_infcore rlqeicdata!*};
+	    ioto_tprin2t {"infcore length: ", length ic_infcore rlqeicdata!*};
+	    rlqeicdata!* := ic_init f;
+	    ioto_tprin2t {"input length: ",upbv(ic_currentfvect rlqeicdata!*)+1};
+      	    % newF:=nil;
+	    % for each n in ic do <<
+	    %    newF:=getv(ic_currentfvect rlqeicdata!*,n) . newF;
+	    % >>;
+	    % newF:=rl_ex(rl_smkn('and,newF),nil);
+	    % !*rlqeinfcore:=nil;
+	    % ioto_tprin2t{"test: ",cl_qea(newF,nil)}
+      	 >> else ioto_tprin2t{"model: ",cadar cl_erEQR er};
       return cl_erEQR er
    end;
 
-asserted procedure ic_computeInfCore(icdata: InfCoreData);
-   begin scalar essential;
+%%%%%%%MAX
+asserted procedure ic_computeInfCore(icdata: InfCoreData): Any;
+   begin scalar essential,l;
       integer k,chosen;
-      essential:=ic_essentialvect(icdata);
-      for i:=0:upbv(essential) do
-	 if getv(essential,i) then <<
-	    chosen:=getv(ic_falsevect(icdata),i);
-	    ic_addcoverage(icdata,-chosen);
-	    ic_appendinfcore(icdata,i);
- 	    ic_updateevtpList(icdata,chosen,i);
-	    ic_updatefalsevect(icdata);
+      essential := ic_essentialvect icdata;
+      for i := 0 : upbv essential do
+	 if getv(essential, i) then <<
+	    chosen := getv(ic_falsevect icdata, i);
+	    ic_addcoverage(icdata, -chosen);
+	    ic_appendinfcore(icdata, i);
+ 	    ic_updateevtpList(icdata, chosen, i);
+	    ic_updatefalsevect(icdata)
 	 >>;
-      while ic_coverage(icdata) > 0 do <<
-	 {chosen,k} := ic_maxfalse(icdata);
-	 ic_addcoverage(icdata,-chosen);
-	 ic_appendinfcore(icdata,k);
-	 ic_updateevtplist(icdata,chosen,k);
-	 ic_updatefalsevect(icdata);
+      while ic_coverage icdata > 0 do <<
+	 {chosen,k} := ic_maxfalse icdata;
+	 ic_addcoverage(icdata, -chosen);
+	 ic_appendinfcore(icdata, k);
+	 ic_updateevtplist(icdata, chosen, k);
+	 ic_updatefalsevect icdata
       >>;
+      l:=nil;
+      if ic_offsetlist icdata then <<
+      	 for each e in ic_infcore icdata do 
+      	    for each n in cadr assoc(e,ic_offsetlist(icdata)) do l:=lto_insertq(n,l);
+      	 ic_setinfcore(icdata,l);
+      >>
    end;
 
-asserted procedure ic_updateevtplist(icdata: InfCoreData, chosen:
-   Integer, k: Integer);
+asserted procedure ic_updateevtplist(icdata: InfCoreData, chosen: Integer, k: Integer): Any;
    begin scalar evtplist;
       for each tp in ic_evtplist(rlqeicdata!*) do
-	 if not (getv(tp,k) eq 'false) then evtpList:=tp.evtplist;
-      putv(icdata,2,evtplist);
+	 if not (getv(tp, k) eq 'false) then 
+	    evtpList := tp . evtplist;
+      putv(icdata, 2, evtplist)
    end;
 
-asserted procedure ic_updatefalsevect(icdata: InfCoreData);
-   begin;
-      putv(icdata,1,list2vector(for i:=0:upbv(ic_falsevect(icdata))
-   	 collect 0));
-      for each tp in ic_evtplist(icdata) do
-	 for i:=0:upbv(tp) do
-	    if getv(tp,i) eq 'false then
-	       ic_addtofalsevect(icdata,i,1);
+asserted procedure ic_updatefalsevect(icdata: InfCoreData): Any;
+   begin
+      putv(icdata, 1, list2vector for i := 0 : upbv ic_falsevect icdata collect 0);
+      for each tp in ic_evtplist icdata do
+	 for i := 0 : upbv tp do
+	    if getv(tp, i) eq 'false then
+	       ic_addtofalsevect(icdata, i, 1)
    end;
 
 asserted procedure ic_maxfalse(icdata: InfCoreData): List;
    begin scalar falsevect; integer chosen,k,current;
-      falsevect:=ic_falsevect(icdata);
-      for i:=0:upbv(falsevect) do <<
-	 current:=getv(falsevect,i);
+      falsevect := ic_falsevect icdata;
+      for i := 0 : upbv falsevect do <<
+	 current := getv(falsevect, i);
 	 if current > chosen then <<
-	    chosen:=current;
-	    k:=i;
+	    chosen := current;
+	    k := i
 	 >>
       >>;
-      return {chosen,k};
+      return {chosen, k}
    end;
-
 
 asserted procedure cl_qe1(f: Formula, theo: Theory, xbvl: KernelL): EliminationResult;
    % Quantifier elimination. [f] must be prenex if the switch [rlqepnf] is off;
    % [theo] serves as background theory.
-   begin scalar q,ql,varl,varll,bvl,svf,result,w,rvl,jl; integer n;
+   begin scalar q,ql,varl,varll,bvl,svf,result,w,ww,k,rvl,jl,f2,offset,offset2; integer n;
       if !*rlqepnf then
 	 f := rl_pnf f;
-      f := rl_simpl(f,theo,-1);
+      f2:=f;
+      if !*rlqeinfcore then << %%%%%%%MAX
+      	 !*rlqeicsimpl:=T;
+	 !*icinitsimpl:=T;
+      	 f:={f};
+      	 f2:={{}};
+      	 while not (car f2 = car f or car f eq 'false) do <<
+      	    f2:=f;
+      	    f := cl_simpl(car f2,theo,-1);
+	    if offset then <<
+	       if not (car f2 = car f) and not (car f = 'false) then <<
+	       	  if not (car f2 = car f or car f eq 'false) then <<
+	    	     offset2:=ic_offsetlist(rlqeicdata!*);
+	    	     for each i in offset2 do <<
+	    	     	w:= cadr i;
+	    	     	ww:=nil;
+	    	     	for each j in w do <<
+	    		   for each k in cadr assoc(j,offset) do ww:=k.ww;
+	    	     	>>;
+	    	    	cadr i:=ww
+	    	     >>
+	       	  >>;
+		  offset:=offset2
+	       >>
+	    >> else <<
+ 	       offset:=ic_offsetlist(rlqeicdata!*)
+	    >>;
+	    ic_setoffsetlist(rlqeicdata!*,nil)
+      	 >>;
+      	 !*rlqeicsimpl:=nil;
+	 !*icinitsimpl:=nil;
+      	 if car f eq 'false and cdr f then <<
+      	    rlqeicdata!*:=ic_init(car f2);
+      	    cl_filterlocalcore(list2vector(cl_ftol(car f2)),cadr f);
+	    ic_setoffsetlist(rlqeicdata!*, offset);
+      	    f:= car f
+      	 >> else <<
+      	    rlqeicdata!*:=ic_init(car f);
+	    ic_setoffsetlist(rlqeicdata!*, offset);
+	    f:=car f;
+      	    if f eq ' false then putv(ic_essentialvect(rlqeicdata!*),0,T)
+      	 >>
+      >> else f:=rl_simpl(f,theo,-1);
       if f eq 'inctheo then
 	 return rl_exception 'inctheo;
       if not rl_quap rl_op f then
 	 return cl_mkER(theo,cl_mk1EQR(f,nil));
-      if !*rlqeinfcore then rlqeicdata!*:=ic_init(f);
       {ql,varll,f,bvl} := cl_split f;
       % Remove from the theory atomic formulas containing quantified variables:
       theo := for each atf in theo join
@@ -782,7 +900,7 @@ asserted procedure cl_qeblock(f: QfFormula, q: Quantifier, varl: KernelL, theo: 
    % result as a JunctionL, and the new theory.
    begin scalar rvl,jl;
       if q eq 'ex then
- 	 return cl_qeblock1(rl_simpl(f,theo,-1),varl,theo,ans,bvl);
+	 return cl_qeblock1(rl_simpl(f,theo,-1),varl,theo,ans,bvl);
       % [q eq 'all]
       {rvl,jl,theo} := cl_qeblock1(rl_simpl(rl_nnfnot f,theo,-1),varl,theo,ans,bvl);
       return {rvl, for each x in jl collect rl_nnfnot car x . cdr x, theo}
@@ -836,22 +954,21 @@ asserted procedure cl_qeblock3(f: QfFormula, varl: KernelL, theo: Theory, ans: B
 asserted procedure cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL, dpth: Integer, vlv: Integer): List3;
    % Quantifier elimination for one block soubroutine. Arguments are as in
    % [cl_qeblock], where [q] has been dropped. Return value as well.
-   begin scalar w,co,remvl,newj,cvl,coe,ww,cadf,cadcells,cadres,celleval,fvect,sf,!*rlcadans;
-      integer c,count,delc,oldcol,comax,comaxn;
+   begin scalar w,co,remvl,newj,cvl,coe,ww,cadf,cadcells,cadres,celleval,fvect,sf,!*rlcadans,falseFound;
+      integer c,count,delc,oldcol,comax,comaxn,vl,vl2,subst;
       if !*rlqegsd then
  	 f := rl_gsd(f,theo);
       cvl := varl;
       co := co_new();
       if rl_op f eq 'or then
-	 for each x in rl_argn f do
-	    co := co_save(co,{ce_mk(cvl,x,nil,nil,nil,nil)})
-      else if !*rlqeinfcore then
+	    for each x in rl_argn f do
+	    co := co_save(co,{ce_mk(cvl,x,nil,nil,nil,ic_currentfvect rlqeicdata!*)})
+      else if !*rlqeinfcore then %%%%%%%MAX
 	 % If we compute an infeasible core, the list of input
 	 % constraints is added to the container.
-	 co :=
-	    co_save(co,{ce_mk(cvl,f,nil,nil,nil,ic_currentfvect(rlqeicdata!*))})
+	 co := co_save(co, {ce_mk(cvl, f, nil, nil, nil, ic_currentfvect rlqeicdata!*)})
       else
-      	 co := co_save(co,{ce_mk(cvl,f,nil,nil,nil,nil)});
+      	 co := co_save(co, {ce_mk(cvl, f, nil, nil, nil, nil)});
       while co_data co do <<
 	 if !*rlverbose and !*rlqedfs and not !*rlqevbold then <<
 	    ww := car co_stat co;
@@ -867,8 +984,8 @@ asserted procedure cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory, ans: B
 	 coe . co := co_get co;
 	 % If we compute an infeasible core, then get the current
 	 % formula vector from the container element.
-	 if !*rlqeinfcore then
-	    ic_setcurrentfvect(rlqeicdata!*,ce_fvect(coe));
+	 if !*rlqeinfcore then %%%%%%%MAX
+	    ic_setcurrentfvect(rlqeicdata!*, ce_fvect coe);
     	 cvl := ce_vl coe;
 	 count := count + 1;
          if !*rlverbose then
@@ -904,36 +1021,59 @@ asserted procedure cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory, ans: B
 	 >> else <<
 	    % There is no eliminable variable. Invalidate this entry, and save
 	    % its variables for later requantification.
-	    if !*rlqeinfcore then <<
-	       ioto_tprin2t{"Switch to CAD."};
-	       cadf:=rl_ex(ce_f coe,nil);
-	       !*rlcadans:=T;
-	       !*rlcadtrimtree:=nil;
-	       ic_resetcadcelllist(rlqeicdata!*);
-	       cadres:=ofsf_cad(cadf, ofsf_cadporder cadf,theo);
-	       if cdr cadres eq 'false then
-	       	  for each cell in ic_cadcelllist(rlqeicdata!*) do <<
-	    	     ic_addcoverage(rlqeicdata!*,1);
-		     fvect:=ce_fvect coe;
-	       	     celleval:=mkvect(upbv(fvect));
-	       	     for i:=0:upbv(fvect) do <<
-		     	sf:=getv(fvect,i);
-			%Can this be done faster? with evalqff?
-			cadres:=ofsf_trialeval(sf,acell_getsp cell);
-			if not (cadres memq '(true false)) then
-			   cadres:='true;
-		     	putv(celleval,i,cadres);
-	       	     	if cadres eq 'false then ic_addtofalsevect(rlqeicdata!*,i,1);
+	    if !*rlqeinfcore then << %%%%%%%MAX
+	       cadf := rl_ex(rl_smkn('and, vector2list (ce_fvect coe)),nil);
+	       !*rlcadtrimtree := nil;
+	       ic_resetcadcelllist rlqeicdata!*;
+	       cadres := ofsf_cad(cadf, ofsf_cadporder cadf, theo);
+	       if cdr cadres eq 'false then <<
+	    	  fvect := ce_fvect coe;
+	       	  for each cell in ic_cadcelllist rlqeicdata!* do <<
+	       	     falseFound := nil;
+	       	     celleval := mkvect upbv fvect;
+	       	     for i := 0 : upbv fvect do <<
+	       	     	sf := getv(fvect, i);
+			vl:=cl_fvarl sf;
+			subst:=T;
+			vl2:=nil;
+			for each sp in acell_getsp cell do 
+	      		   for each vari in aex_fvarl cadr sp do
+			      vl2:=vari.vl2;
+			for each vari in vl do
+			   if not (vari memq vl2) then subst:=nil;
+			for each vari in vl2 do
+			   if not (vari memq vl) then <<
+			      vl:= vari . vl;
+			      sf:= rl_smkn('and,{sf,{'geq,((((vari . 1) . 1)).1),nil}})
+			   >>;
+			if subst then 
+			   cadres:=ofsf_trialeval(sf, acell_getsp cell)
+			else cadres:='true;
+	       	     	putv(celleval, i, cadres);
+	       	     	if cadres eq 'false then <<
+	       		    falseFound := t;
+	       		    ic_addtofalsevect(rlqeicdata!*, i, 1)
+	       		>>
 	       	     >>;
-		     ic_appendevtplist(rlqeicdata!*,celleval);
+	       	     if falseFound then <<
+	    		for i:=0:upbv(celleval) do 
+	    		   if not (getv(celleval,i) eq 'false) then putv(celleval,i,'true);
+	    		ic_addcoverage(rlqeicdata!*, 1);
+	       	     	ic_appendevtplist(rlqeicdata!*, celleval)
+	    	     >> else <<
+	    		!*rlqeicsimpl:=T;
+	    		cl_filterlocalcore(fvect,cadr
+	    		   rl_simpl(rl_smkn('and,vector2list celleval), nil,
+	    		      -1));
+	    		!*rlqeicsimpl:=nil
+	       	     >>
 	       	  >>
+	       >>
 	       else if cdr cadres eq 'true then <<
 	       	  co := co_new();
 	       	  newJ := {'true . nil}
-	       >>;
-	       ioto_tprin2t{"Done. Back to VS."};
-	       ioto_tprin2t{" "};
-	    >> else <<
+	       >>
+   	    >> else <<
 	       if !*rlverbose then ioto_prin2 append("[Failed:" . cdr w,{"] "});
 	       remvl := union(cvl,remvl);
 	       newj := lto_insert(cl_co2J coe,newj);
@@ -941,8 +1081,8 @@ asserted procedure cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory, ans: B
 		  ioto_prin2 "] ";
 		  if !*rlqedfs and null cvl then ioto_prin2 ". "
 	       >>
-	    >>;
-	 >>;
+	    >>
+	 >>
       >>;
       if !*rlverbose then ioto_prin2{"[DEL:",delc,"/",count,"]"};
       if ans then return {remvl, newj, theo};
@@ -960,13 +1100,13 @@ asserted procedure cl_qevar(f: QfFormula, vl: KernelL, an: Answer, theo: Theory,
    % and $p$ is an error message. If there is a container element with ['break]
    % as varlist, this is the only one.
    begin scalar w,candvl,status; integer len;
-      % Infeasible core computation is not yet implemented for the methods.
+      % Infeasible core computation is not yet implemented for the methods. %%%%%%%MAX
       if not !*rlqeinfcore and (w := cl_transform(f,vl,an,theo,ans,bvl)) then
-      	 {f,vl,an,theo,ans,bvl} := w;
+       	 {f,vl,an,theo,ans,bvl} := w;
       if not !*rlqeinfcore and (w := cl_gauss(f,vl,an,theo,ans,bvl)) then
-	 return w;
+       	 return w;
       if not !*rlqeinfcore and (w := rl_specelim(f,vl,theo,ans,bvl)) neq 'failed then
-	 return w;
+       	 return w;
       % Elimination set method
       candvl := cl_varsel(f,vl,theo);
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold)
@@ -1026,16 +1166,53 @@ asserted procedure cl_varsel(f: QfFormula, vl: KernelL, theo: Theory): KernelL;
       return candvl
    end;
 
+% reduce local core by repeated simplification. unoptimized
+procedure cl_filterlocalcore(fl,core);%%%%%%%MAX
+   begin scalar f,l,ww,evect;
+      evect:=ic_essentialvect(rlqeicdata!*);
+      for i:=0:upbv(evect) do
+	 if getv(evect,i) then 
+	    f:=getv(fl,i).f;
+      if f then f:=cl_simpl(rl_smkn('and,f),nil,-1);
+      if not (f eq 'false) then <<
+	 l:=length(core)+1;
+	 ww:=copy(core);
+	 while length(core) < l do <<
+	    l:=length(core);
+	    f:=nil;
+	    while not (null core) do <<
+	       f:=getv(fl,car core) . f;
+	       core:=cdr core
+	    >>;
+	    f:=rl_smkn('and,reverse f);
+	    !*rlqeicsimpl := t;
+	    f := cl_simpl(f, nil, -1);
+	    !*rlqeicsimpl := nil;
+	    core:=list2vector(ww);
+	    ww:=nil;
+	    for each i in cadr f do ww:=getv(core,i) . ww;
+	    core:=ww
+	 >>;
+	 while not (null core) do <<
+	    putv(evect,car core,T);
+	    core:=cdr core
+	 >>
+      >>
+   end;
+
 asserted procedure cl_process!-candvl(f: QfFormula, vl: KernelL, an: Answer, theo: Theory, ans: Boolean, bvl: KernelL, candvl: KernelL): TaggedContainerElementL;
-   begin scalar w,ww,v,alp,hit,ww,status,falseFound,newForm,sf,ww2,elimset;
+   begin scalar
+      w,ww,v,alp,hit,ww,status,newForm,sf,ww2,elimset,ww3,l,wwt,tpl;
       while candvl do <<
 	 v := pop candvl;
       	 alp := cl_qeatal(f,v,theo,ans);
       	 if alp = '(nil . nil) then <<  % [v] does not occur in [f].
       	    if !*rlverbose and (not !*rlqedfs or !*rlqevbold) then
  	       ioto_prin2 "*";
-      	    if !*rlqeinfcore then w := {ce_mk(delq(v,vl),f,nil,nil,ans and cl_updans(v,'arbitrary,nil,nil,an,ans),ic_currentfvect(rlqeicdata!*))}
-      	    else  w := {ce_mk(delq(v,vl),f,nil,nil,ans and cl_updans(v,'arbitrary,nil,nil,an,ans),nil)};
+      	    if !*rlqeinfcore then %%%%%%%MAX
+	       w := {ce_mk(delq(v, vl), f, nil, nil, ans and cl_updans(v, 'arbitrary, nil, nil, an, ans), ic_currentfvect rlqeicdata!*)}
+      	    else  
+	       w := {ce_mk(delq(v,vl),f,nil,nil,ans and cl_updans(v,'arbitrary,nil,nil,an,ans),nil)};
 	    status := 'nonocc;
 	    candvl := nil
       	 >> else if car alp = 'failed then
@@ -1044,51 +1221,48 @@ asserted procedure cl_process!-candvl(f: QfFormula, vl: KernelL, an: Answer, the
 	       status := 'failed
 	    >>)
 	 else <<
-	    if !*rlqeinfcore then <<
-	       elimset:=rl_elimset(v,alp);
-	       ww:=cl_esetvectsubst(ic_currentfvect(rlqeicdata!*),v,elimset,delq(v,vl),an,ans,bvl);
-	       vl:=cadr ww;
-	       ww:=car ww;
-	       for each tpl in ww do <<
-	       	  newForm:=nil;
-	       	  falseFound:=nil;
-	       	  ic_setcurrentfvect(rlqeicdata!*,tpl);
-	       	  %TODO: Move to eval
-	       	  for i:=0:upbv(tpl) do <<
-		     sf:=getv(tpl,i);
-	       	     if sf eq 'false then <<
-	       	     	if not falseFound then
-   			   ic_addcoverage(rlqeicdata!*,1);
-	       	     	falseFound:=T;
-			ic_addtofalsevect(rlqeicdata!*,i,1);
-	       	     >>;
-	       	  >>;
-	       	  if falseFound then <<
-		     newForm:='false;
- 		     ic_appendevtplist(rlqeicdata!*,tpl);
-	       	  >> else newForm:=rl_smkn('and,vector2list(tpl));
-	       	  !*rlqeicsimpl:=T;
-		  %TODO: Extend to higher depth
-	       	  newForm:=rl_simpl(newForm,theo,1);
-	       	  !*rlqeicsimpl:=nil;
-	       	  if rl_op newForm eq 'or then
-	       	     for each subf in rl_argn newForm do
-	       	     	if subf eq 'true then
-		     	   ww2 := {ce_mk('break,'true,nil,nil,an,nil)}
-	       	     	else
-		     	   ww2:=ce_mk(vl,subf,nil,nil,ans,tpl) . ww2
-	       	  else
-	       	     if newForm eq 'true then
-		     	ww2 := {ce_mk('break,'true,nil,nil,an,nil)}
-	       	     else if not (newForm eq 'false) then
-		     	ww2:=ce_mk(vl,newForm,nil,nil,ans,tpl) . ww2;
-	       >>;
-	       ww:={ww2};
+	    if !*rlqeinfcore then << %%%%%%%MAX
+   	       elimset := rl_elimset(v, alp);
+	       while alp do
+	       	  if caar alp eq 'equal1 then <<
+		     if not ('(ofsf_qesubi (pinf)) member elimset) then
+   			elimset:='(ofsf_qesubi (pinf)) . elimset;
+		     if not ('(ofsf_qesubi (minf)) member elimset) then
+   			elimset:='(ofsf_qesubi (minf)) . elimset;
+	       	     alp:=nil
+	       	  >> else alp:=cdr alp;
+   	       ww := cl_esetvectsubst(f, ic_currentfvect rlqeicdata!*, v, elimset,
+   		  delq(v, vl), an, ans, bvl);
+	       ic_clearguardList(rlqeicdata!*);
+	       if car ww then <<
+	       	  if cadaar ww eq 'true then <<
+		     candvl:=nil;
+		     ww:={{ce_mk('break, 'true, nil, nil, car cddaar ww, nil)}}
+	       	  >> else <<
+   	       	     vl := cadr ww;
+   	       	     ww := car ww;
+   	       	     for each triple in ww do <<
+		     	tpl := car triple;
+   	       	     	newForm := cadr triple;
+		     	an := caddr triple;
+   	       	     	ic_setcurrentfvect(rlqeicdata!*, tpl);
+   	       	     	if rl_op newForm eq 'or then
+   	       	     	   for each subf in rl_argn newForm do
+   		     	      ww2 := ce_mk(vl, subf, nil, nil, an, tpl) . ww2
+   	       	     	else
+			   if not (newForm eq 'false) then
+   		     	      ww2 := ce_mk(vl, newForm, nil, nil, an, tpl) . ww2
+   	       	     >>;
+   	       	     ww := {ww2}
+	       	  >>
+	       >> else <<
+		  ww:={nil}
+	       >>
 	    >> else <<
       	       if !*rlverbose and (not !*rlqedfs or !*rlqevbold) then
  	       	  ioto_prin2 "e";
       	       ww := cl_esetsubst(f,v,rl_elimset(v,alp),delq(v,vl),an,
-	       	  theo,ans,bvl);
+	       	  theo,ans,bvl)
 	    >>;
 	    if !*rlqelocal then <<
 	       candvl := nil;
@@ -1103,68 +1277,89 @@ asserted procedure cl_process!-candvl(f: QfFormula, vl: KernelL, an: Answer, the
       return status . w
    end;
 
-asserted procedure cl_esetvectsubst(fvect: Vector, v: Kernel, eset:
+%%%%%%%MAX
+asserted procedure cl_esetvectsubst(form, fvect: Vector, v: Kernel, eset:
    List, vl: KernelL, an: List, ans: Boolean, bvl:
       KernelL): DottedPair;
    % Elimination Set Vector Substitution. For infeasible core
    % computation only. [fvect] is a vector of quantifier-free formula;
    % [v] is a kernel; [eset] is an elimination set; [an] is an answer;
    % [ans] is Boolean. Returns a pair $l . nvl$, where $nvl$ is the
-   % new variable list and $l$ is a list of Vectors, eacg representing
+   % new variable list and $l$ is a list of Vectors, each representing
    % an elimination term. A vector contains the elimination results
    % for the specific elimination term when substituted into the
    % formulas of the formula vector. Guards are only added to the
    % formulas from which the elimination term emerged.
-   begin scalar a,d,u,elimres,junct,w,f,u2,sf,resvect;
+   begin scalar a, d, u, elimres, junct, w, f, u2, sf, resvect,res,falseFound;
       while eset do <<
 	 a . d := pop eset;
 	 while d do <<
 	    u := pop d;
-	    f:=nil;
 	    if cdr u then <<
-	      f:=assoc(u,ic_guardList(rlqeicdata!*));
-	      if f then f:=cadr f;
-	      u2:='true . cdr u;
-	    >> else <<
-	      f:=nil;
-	      u2:=u;
-	    >>;
-	    resvect:=mkvect(upbv(fvect));
-	    for i:=0:upbv(fvect) do <<
-	       sf:=getv(fvect,i);
-	       if f and cl_subformulap(sf,f) then <<
-		 w := apply(a,bvl . nil . sf . v . u);
-		 f:=nil;
-	       >> else w := apply(a,bvl . nil . sf . v . u2);
-	       elimres := rl_simpl(cdr w,nil,-1);
+	      f := assoc(u, ic_guardList rlqeicdata!*);
+	      if f then 
+	    	 f := cadr f;
+	      u2 := 'true . cdr u
+	    >> else u2 := u;
+	    resvect := mkvect upbv fvect;
+	    falseFound:=nil;
+	    for i := 0 : upbv fvect do <<
+	       sf := getv(fvect, i);
+	       if f and cl_subformulap(sf, f) then <<
+	       	 w := apply(a, bvl . nil . sf . v . u);
+	       	 f := nil
+	       >> else 
+		  w := apply(a, bvl . nil . sf . v . u2);
+	       elimres := rl_simpl(cdr w, nil, -1);
 	       if !*rlqegsd then
-		  elimres := rl_gsd(elimres,nil);
-	       putv(resvect,i,elimres);
+		  elimres := rl_gsd(elimres, nil);
+	       if elimres eq 'false then <<
+		  if not falseFound then <<
+		     ic_addcoverage(rlqeicdata!*, 1);
+		     falseFound := t
+	       	  >>;
+		  ic_addtofalsevect(rlqeicdata!*, i, 1)
+	       >>;
+	       putv(resvect, i, elimres)
 	    >>;
-	    junct:=resvect . junct;
-	 >>;
+	    if falseFound then ic_appendevtplist(rlqeicdata!*, resvect);
+	    !*rlqeicsimpl := t;
+	    res := cl_simpl(rl_smkn('and, vector2list resvect), nil, -1);
+	    !*rlqeicsimpl := nil;
+	    if car res eq 'false then <<
+	       if not falseFound then cl_filterlocalcore(resvect,cadr res);
+	    >> else <<
+	       res:=car res;
+	       if res eq 'true then <<
+	       	  eset:=d:=nil;
+		  an:=cl_updans(v,a,u,form,an,ans);
+		  for each vv in vl do
+		     an := cl_updans(vv,'arbitrary,nil,nil,an,ans);
+	       	  junct:={{resvect,'true,an}};
+	       >> else junct := {resvect,res,cl_updans(v,a,u,form,an,ans)}
+   		  . junct
+	    >>
+	 >>
       >>;
       return junct . {vl}
    end;
 
-procedure cl_subformulap(sf,f);
-begin scalar w;
-   if not (sf eq 'true) then <<
-      if (car sf eq 'or) or (car sf eq 'and) then  <<
-	 w:=nil;
-	 for each ssf in rl_argn sf do <<
-	    if not w then <<
-	       w:=cl_subformulap(ssf,f);
-	    >>;
-	 >>;
-	 return w;
-      >> else <<
-      	 w:=car ofsf_at2ir(sf,-1);
-      	 return (f = w or find(f,w));
+%%%%%%%MAX
+procedure cl_subformulap(sf, f);
+   begin scalar w;
+      if not (sf eq 'true) then <<
+      	 if (car sf eq 'or) or (car sf eq 'and) then  <<
+	    for each ssf in rl_argn sf do
+	       if not w then 
+ 		  w := cl_subformulap(ssf, f);
+	    return w
+      	 >> else <<
+      	    w := car ofsf_at2ir(sf, -1);
+      	    return (f = sf)
+      	 >>
       >>;
-   >>;
-   return nil;
-end;
+      return nil
+   end;
 
 asserted procedure cl_esetsubst(f: QfFormula, v: Kernel, eset: List, vl: KernelL, an: List, theo: Theory, ans: Boolean, bvl: KernelL): DottedPair;
    % Elimination set substitution. [f] is a quantifier-free formula; [v] is a
@@ -1194,7 +1389,9 @@ asserted procedure cl_esetsubst(f: QfFormula, v: Kernel, eset: List, vl: KernelL
 		  for each subf in rl_argn elimres do
 		     junct := ce_mk(vl,subf,nil,nil,cl_updans(v,a,u,f,an,ans),nil) . junct
 	       else
-		  junct := ce_mk(vl,elimres,nil,nil,cl_updans(v,a,u,f,an,ans),nil) . junct;
+		  junct :=
+		     ce_mk(vl,elimres,nil,nil,cl_updans(v,a,u,f,an,ans),nil)
+			. junct;
       	 >>
       >>;
       return junct . theo
@@ -1250,17 +1447,18 @@ procedure cl_qeatal1(f,v,theo,flg,ans);
       else if rl_quap op then
 	 rederr "argument formula not prenex"
       else  % [f] is an atomic formula.
-      	 if !*rlqeinfcore then <<
+      	 if !*rlqeinfcore then <<%%%%%%%MAX
 	    ww:=rl_translat(f,v,theo,flg,ans);
 	    if not (car ww eq 'failed) then <<
 	       for each a in car ww do <<
-	       	  %TODO: durch das cadr wird die ungleichungsrichtung
-	       	  %ignoriert. gut?
-	       	  if cdr a then ic_appendguardList(rlqeicdata!*,cadr a.{f});
+	       	  for each g in cdr a do <<
+		     ic_appendguardList(rlqeicdata!*,g.{f});
+		  >>;
 	       >>;
 	    >>;
 	    {ww}
-	 >> else {rl_translat(f,v,theo,flg,ans)};
+	 >> else
+   	 {rl_translat(f,v,theo,flg,ans)};
       if (ww := atsoc('failed,w)) then return ww;
       return cl_alpunion w
    end;

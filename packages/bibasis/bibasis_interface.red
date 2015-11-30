@@ -33,64 +33,64 @@ module bibasis_interface;
 % POSSIBILITY OF SUCH DAMAGE.
 
 
-inline procedure mk_sq(a); list('!*SQ, a, t);
+inline procedure mk_sq(a); list('!*sq, a, t);
 
 
-expr procedure bibasis(initialSet, variablesList, monomialOrder, toGroebner);
-begin scalar result, polynomList;
-    if and(initialSet, car(initialSet) neq 'list) then 
+expr procedure bibasis(initialset, variableslist, monomialorder, togroebner);
+begin scalar result, polynomlist;
+    if and(initialset, car(initialset) neq 'list) then 
     << 
-        mathprint(initialSet);
+        mathprint(initialset);
         rederr "is not a polynomial list";
     >>;
-    if null(cdr(initialSet)) then 
+    if null(cdr(initialset)) then 
     <<
-        mathprint(initialSet);
+        mathprint(initialset);
         rederr "polynomial list is empty";
     >>;
-    if and(variablesList, car(variablesList) neq 'list) then 
+    if and(variableslist, car(variableslist) neq 'list) then 
     << 
-        mathprint(variablesList);
+        mathprint(variableslist);
         rederr "is not a variable list";
     >>;
-    if null(cdr(variablesList)) then 
+    if null(cdr(variableslist)) then 
     <<
-        mathprint(variablesList);
+        mathprint(variableslist);
         rederr "variable list is empty";
     >>;
-    if and(monomialOrder neq 'Lex,
-           monomialOrder neq 'DegLex,
-           monomialOrder neq 'DegRevLex) then
+    if and(monomialorder neq 'lex,
+           monomialorder neq 'deglex,
+           monomialorder neq 'degrevlex) then
     <<
-        mathprint(monomialOrder);
+        mathprint(monomialorder);
         rederr " is unsupported monomial ordering";
     >>;
   
-    FluidBibasisVariables := cdr(variablesList);
-    FluidBibasisMonomialOrder := monomialOrder;
-    Init();
+    fluidbibasisvariables := cdr(variableslist);
+    fluidbibasismonomialorder := monomialorder;
+    init();
     
-    polynomList := (nil . nil);
-    if initialSet then
+    polynomlist := (nil . nil);
+    if initialset then
     <<
-        for each polynom in cdr(initialSet) do
+        for each polynom in cdr(initialset) do
         <<
-            SortedPolynomListInsert(polynomList, PolynomRead(numr(simp(reval(polynom)))));
+            sortedpolynomlistinsert(polynomlist, polynomread(numr(simp(reval(polynom)))));
         >>;
     >>;
     
-    FluidBibasisRunningTime := time();
-    FluidBibasisGCTime := gctime();
+    fluidbibasisrunningtime := time();
+    fluidbibasisgctime := gctime();
 
-    polynomList := ConstructInvolutiveBasis(polynomList, toGroebner);
+    polynomlist := constructinvolutivebasis(polynomlist, togroebner);
 
-    FluidBibasisGCTime := gctime() - FluidBibasisGCTime;
-    FluidBibasisRunningTime := time() - FluidBibasisRunningTime - FluidBibasisGCTime;
+    fluidbibasisgctime := gctime() - fluidbibasisgctime;
+    fluidbibasisrunningtime := time() - fluidbibasisrunningtime - fluidbibasisgctime;
     
-    while car(polynomList) do
+    while car(polynomlist) do
     <<
-        result := mk_sq(!*f2q PolynomWrite(car(polynomList))) . result;
-        polynomList := cdr(polynomList);
+        result := mk_sq(!*f2q polynomwrite(car(polynomlist))) . result;
+        polynomlist := cdr(polynomlist);
     >>;
   
     return 'list . reverse(result);
@@ -98,21 +98,21 @@ end;
 
 
 expr procedure bibasis_print_statistics();
-if car(FluidBibasisSetQ) = nil then
+if car(fluidbibasissetq) = nil then
 begin
     terpri();
-    write "        Variables order = ", car(FluidBibasisVariables);
-    for each x in cdr(FluidBibasisVariables) do 
+    write "        Variables order = ", car(fluidbibasisvariables);
+    for each x in cdr(fluidbibasisvariables) do 
     <<
         write " > ", x;
     >>;
     terpri();
     
-    write "Normal forms calculated = ", FluidBibasisNormalForms; terpri();
-    write "  Non-zero normal forms = ", FluidBibasisNonZeroNormalForms; terpri();
-    write "        Reductions made = ", FluidBibasisReductionsMade; terpri();
-    write "Time: ", FluidBibasisRunningTime, " ms"; terpri();
-    write "GC time: ", FluidBibasisGCTime, " ms"; terpri();
+    write "Normal forms calculated = ", fluidbibasisnormalforms; terpri();
+    write "  Non-zero normal forms = ", fluidbibasisnonzeronormalforms; terpri();
+    write "        Reductions made = ", fluidbibasisreductionsmade; terpri();
+    write "Time: ", fluidbibasisrunningtime, " ms"; terpri();
+    write "GC time: ", fluidbibasisgctime, " ms"; terpri();
 end;
 
 

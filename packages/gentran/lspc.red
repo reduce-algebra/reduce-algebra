@@ -500,7 +500,7 @@ end$
 % properties being evaluated in certain circumstances.  MCD 28.3.94
 symbolic inline procedure cexp_name(u);
    if atom u then list(u)
-    else rplaca(cexp ('dummyArrayToken . cdr u), car u)$
+    else rplaca(cexp ('dummyarraytoken . cdr u), car u)$
 
 symbolic procedure mkfcassign(lhs, rhs);
 begin

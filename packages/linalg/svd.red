@@ -49,7 +49,7 @@ symbolic inline procedure my_minus(u);
 
 
 
-symbolic procedure svd(A);
+symbolic procedure svd(a);
   %
   % Computation of the singular values and complete orthogonal
   % decomposition of a real rectangular matrix A.
@@ -63,14 +63,14 @@ symbolic procedure svd(A);
   %                      J.H.Wilkinson & C.Reinsch
   %
   begin
-    scalar ee,U,V,g,x,eps,tolerance,q,s,f,h,y,test_f_splitting,
+    scalar ee,u,v,g,x,eps,tolerance,q,s,f,h,y,test_f_splitting,
            cancellation,test_f_convergence,convergence,c,z,denom,q_mat,
-           I_rounded_turned_on,trans_done;
+           i_rounded_turned_on,trans_done;
     integer i,j,k,l,l1,m,n;
-    trans_done := I_rounded_turned_on := nil;
-    if not !*rounded then << on rounded; I_rounded_turned_on := t; >>;
+    trans_done := i_rounded_turned_on := nil;
+    if not !*rounded then << on rounded; i_rounded_turned_on := t; >>;
 
-    if not matrixp(A) then
+    if not matrixp(a) then
      rederr "Error in svd: non matrix input.";
 
     % The value of eps can be decreased to increase accuracy.
@@ -82,14 +82,14 @@ symbolic procedure svd(A);
     % Algorithm requires m >= n. If this is not the case then transpose
     % the input and swap U and V in the output (as A = tp(U) diag(q) V
     % but tp(A) = tp(V) diag(q) U  ).
-    if row_dim(A) < column_dim(A) then
-    << A := algebraic tp(A); trans_done := t; >>;
+    if row_dim(a) < column_dim(a) then
+    << a := algebraic tp(a); trans_done := t; >>;
 
-    m := row_dim(A);
-    n := column_dim(A);
+    m := row_dim(a);
+    n := column_dim(a);
 
-    U := rd_copy_mat(A);
-    V := mkmatrix(n,n);
+    u := rd_copy_mat(a);
+    v := mkmatrix(n,n);
     ee := mkvect(n);
     q := mkvect(n);
 
@@ -100,47 +100,47 @@ symbolic procedure svd(A);
       putv(ee,i,g);
       s := 0;
       l := i+1;
-      for j:=i:m do s := specrd!:plus(s,specrd!:expt(getmat(U,j,i),2));
+      for j:=i:m do s := specrd!:plus(s,specrd!:expt(getmat(u,j,i),2));
       if get_num_part(s) < tolerance then g := 0
       else
       <<
-        f := getmat(U,i,i);
+        f := getmat(u,i,i);
         if get_num_part(f)<0 then g := specrd!:sqrt(s)
          else g := my_minus(specrd!:sqrt(s));
         h := specrd!:plus(specrd!:times(f,g),my_minus(s));
-        setmat(U,i,i,specrd!:plus(f,my_minus(g)));
+        setmat(u,i,i,specrd!:plus(f,my_minus(g)));
         for j:=l:n do
         <<
           s := 0;
           for k:=i:m do
-           s := specrd!:plus(s,specrd!:times(getmat(U,k,i),
-                                             getmat(U,k,j)));
+           s := specrd!:plus(s,specrd!:times(getmat(u,k,i),
+                                             getmat(u,k,j)));
           f := specrd!:quotient(s,h);
           for k:=i:m do
-           setmat(U,k,j,specrd!:plus(getmat(U,k,j),
-                        specrd!:times(f,getmat(U,k,i))));
+           setmat(u,k,j,specrd!:plus(getmat(u,k,j),
+                        specrd!:times(f,getmat(u,k,i))));
         >>;
       >>;
       putv(q,i,g);
       s := 0;
-      for j:=l:n do s := specrd!:plus(s,specrd!:expt(getmat(U,i,j),2));
+      for j:=l:n do s := specrd!:plus(s,specrd!:expt(getmat(u,i,j),2));
       if get_num_part(s) < tolerance then g := 0
       else
       <<
-        f := getmat(U,i,i+1);
+        f := getmat(u,i,i+1);
         if get_num_part(f)<0 then g := specrd!:sqrt(s)
          else g := my_minus(specrd!:sqrt(s));
         h := specrd!:plus(specrd!:times(f,g),my_minus(s));
-        setmat(U,i,i+1,specrd!:plus(f,my_minus(g)));
-        for j:=l:n do putv(ee,j,specrd!:quotient(getmat(U,i,j),h));
+        setmat(u,i,i+1,specrd!:plus(f,my_minus(g)));
+        for j:=l:n do putv(ee,j,specrd!:quotient(getmat(u,i,j),h));
         for j:=l:m do
         <<
           s := 0;
           for k:=l:n do
-           s := specrd!:plus(s,specrd!:times(getmat(U,j,k),
-                                             getmat(U,i,k)));
+           s := specrd!:plus(s,specrd!:times(getmat(u,j,k),
+                                             getmat(u,i,k)));
           for k:=l:n do
-           setmat(U,j,k,specrd!:plus(getmat(U,j,k),
+           setmat(u,j,k,specrd!:plus(getmat(u,j,k),
                         specrd!:times(s,getv(ee,k))));
         >>;
       >>;
@@ -154,21 +154,21 @@ symbolic procedure svd(A);
     <<
       if get_num_part(g) neq 0 then
       <<
-        h := specrd!:times(getmat(U,i,i+1),g);
-        for j:=l:n do setmat(V,j,i,specrd!:quotient(getmat(U,i,j),h));
+        h := specrd!:times(getmat(u,i,i+1),g);
+        for j:=l:n do setmat(v,j,i,specrd!:quotient(getmat(u,i,j),h));
         for j:=l:n do
         <<
           s := 0;
           for k:=l:n do
-           s := specrd!:plus(s,specrd!:times(getmat(U,i,k),
-                                             getmat(V,k,j)));
+           s := specrd!:plus(s,specrd!:times(getmat(u,i,k),
+                                             getmat(v,k,j)));
           for k:=l:n do
-           setmat(V,k,j,specrd!:plus(getmat(V,k,j),
-                        specrd!:times(s,getmat(V,k,i))));
+           setmat(v,k,j,specrd!:plus(getmat(v,k,j),
+                        specrd!:times(s,getmat(v,k,i))));
         >>;
       >>;
-      for j:=l:n do << setmat(V,i,j,0); setmat(V,j,i,0); >>;
-      setmat(V,i,i,1);
+      for j:=l:n do << setmat(v,i,j,0); setmat(v,j,i,0); >>;
+      setmat(v,i,i,1);
       g := getv(ee,i);
       l := i;
     >>;
@@ -178,25 +178,25 @@ symbolic procedure svd(A);
     <<
       l := i+1;
       g := getv(q,i);
-      for j:=l:n do setmat(U,i,j,0);
+      for j:=l:n do setmat(u,i,j,0);
       if get_num_part(g) neq 0 then
       <<
-        h := specrd!:times(getmat(U,i,i),g);
+        h := specrd!:times(getmat(u,i,i),g);
         for j:=l:n do
         <<
           s := 0;
           for k:=l:m do
-           s := specrd!:plus(s,specrd!:times(getmat(U,k,i),
-                                             getmat(U,k,j)));
+           s := specrd!:plus(s,specrd!:times(getmat(u,k,i),
+                                             getmat(u,k,j)));
           f := specrd!:quotient(s,h);
           for k:=i:m do
-           setmat(U,k,j,specrd!:plus(getmat(U,k,j),
-                        specrd!:times(f,getmat(U,k,i))));
+           setmat(u,k,j,specrd!:plus(getmat(u,k,j),
+                        specrd!:times(f,getmat(u,k,i))));
         >>;
-        for j:=i:m do setmat(U,j,i,specrd!:quotient(getmat(U,j,i),g));
+        for j:=i:m do setmat(u,j,i,specrd!:quotient(getmat(u,j,i),g));
       >>
-      else for j:=i:m do setmat(U,j,i,0);
-      setmat(U,i,i,specrd!:plus(getmat(U,i,i),1));
+      else for j:=i:m do setmat(u,j,i,0);
+      setmat(u,i,i,specrd!:plus(getmat(u,i,i),1));
     >>;
 
     % Diagonalisation of the bidiagonal form:
@@ -241,11 +241,11 @@ symbolic procedure svd(A);
             s := specrd!:quotient(my_minus(f),h);
             for j:=1:m do
             <<
-              y := getmat(U,j,l1);
-              z := getmat(U,j,i);
-              setmat(U,j,l1,specrd!:plus(specrd!:times(y,c),
+              y := getmat(u,j,l1);
+              z := getmat(u,j,i);
+              setmat(u,j,l1,specrd!:plus(specrd!:times(y,c),
                                          specrd!:times(z,s)));
-              setmat(U,j,i,specrd!:difference(specrd!:times(z,c),
+              setmat(u,j,i,specrd!:difference(specrd!:times(z,c),
                                               specrd!:times(y,s)));
             >>;
             i := i+1;
@@ -297,11 +297,11 @@ symbolic procedure svd(A);
           y := specrd!:times(y,c);
           for j:=1:n do
           <<
-            x := getmat(V,j,i-1);
-            z := getmat(V,j,i);
-            setmat(V,j,i-1,specrd!:plus(specrd!:times(x,c),
+            x := getmat(v,j,i-1);
+            z := getmat(v,j,i);
+            setmat(v,j,i-1,specrd!:plus(specrd!:times(x,c),
                                         specrd!:times(z,s)));
-            setmat(V,j,i,specrd!:difference(specrd!:times(z,c),
+            setmat(v,j,i,specrd!:difference(specrd!:times(z,c),
                                             specrd!:times(x,s)));
           >>;
           z := specrd!:sqrt(specrd!:plus(specrd!:times(f,f),
@@ -314,11 +314,11 @@ symbolic procedure svd(A);
                             specrd!:times(c,y));
           for j:=1:m do
           <<
-                y := getmat(U,j,i-1);
-                z := getmat(U,j,i);
-            setmat(U,j,i-1,specrd!:plus(specrd!:times(y,c),
+                y := getmat(u,j,i-1);
+                z := getmat(u,j,i);
+            setmat(u,j,i-1,specrd!:plus(specrd!:times(y,c),
                                         specrd!:times(z,s)));
-            setmat(U,j,i,specrd!:difference(specrd!:times(z,c),
+            setmat(u,j,i,specrd!:difference(specrd!:times(z,c),
                                             specrd!:times(y,s)));
           >>;
         >>;
@@ -332,17 +332,17 @@ symbolic procedure svd(A);
         <<
           % q[k] is made non-negative:
           putv(q,k,my_minus(z));
-          for j:=1:n do setmat(V,j,k,my_minus(getmat(V,j,k)));
+          for j:=1:n do setmat(v,j,k,my_minus(getmat(v,j,k)));
         >>;
         k := k-1;
       >>;
     >>;
 
     q_mat := q_to_diag_matrix(q);
-    if I_rounded_turned_on then off rounded;
+    if i_rounded_turned_on then off rounded;
     if trans_done then
-     return {'list,algebraic tp V,q_mat,algebraic tp U}
-      else return {'list,algebraic tp U,q_mat,algebraic tp V};
+     return {'list,algebraic tp v,q_mat,algebraic tp u}
+      else return {'list,algebraic tp u,q_mat,algebraic tp v};
   end;
 
 flag('(svd),'opfn); % To make it available from algebraic (user) mode.
@@ -386,27 +386,28 @@ symbolic procedure pseudo_inverse(in_mat);
 
 flag('(pseudo_inverse),'opfn);
 
+rtypecar pseudo_inverse;
 
 
-symbolic procedure rd_copy_mat(A);
+symbolic procedure rd_copy_mat(a);
   %
   % Creates a copy of the input matrix and returns it aswell as
   % reval-ing each elt to get them in !:rd!: form;
   %
   begin
-    scalar C;
+    scalar c;
     integer row_dim,column_dim;
-    row_dim := first size_of_matrix(A);
-    column_dim := second size_of_matrix(A);
-    C := mkmatrix(row_dim,column_dim);
+    row_dim := first size_of_matrix(a);
+    column_dim := second size_of_matrix(a);
+    c := mkmatrix(row_dim,column_dim);
     for i:=1:row_dim do
     <<
       for j:=1:column_dim do
       <<
-        setmat(C,i,j,my_reval(getmat(A,i,j)));
+        setmat(c,i,j,my_reval(getmat(a,i,j)));
       >>;
     >>;
-    return C;
+    return c;
   end;
 
 

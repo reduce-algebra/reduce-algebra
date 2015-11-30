@@ -20,13 +20,13 @@ iteration as do most traditional programming languages. As a trivial
 example, if we invariably wanted to replace cotangents with the
 corresponding tangents, we could type;
 
-ALGEBRAIC PROCEDURE COT(X); 1/TAN(X);
+algebraic procedure cot(x); 1/tan(x);
 
 COMMENT As an example of the use of this function, we have;
 
-COT(LOG(F));
+cot(log(f));
 
-PAUSE;
+pause;
 COMMENT Note:
    1.  The procedure definition automatically declares the procedure
        name as an operator.
@@ -41,9 +41,9 @@ COMMENT Note:
 
 We can replace this definition with a different one;
 
-ALGEBRAIC PROCEDURE COT(Y); COS(Y)/SIN(Y);
+algebraic procedure cot(y); cos(y)/sin(y);
 
-G1:= COT(LOG(F));
+g1:= cot(log(f));
 
 COMMENT In place of the word ALGEBRAIC, we can optionally use the
 word INTEGER when a function always returns an integer value, or we
@@ -53,12 +53,12 @@ floating-point value.
 Try writing a procedure definition for the sine in terms of the
 cosine, then type G1;
 
-PAUSE;
+pause;
 
 COMMENT Here is a more complicated function which introduces the
 notion of a conditional expression;
 
-ALGEBRAIC PROCEDURE SUMCHECK(AJ, J, M, N, S);
+algebraic procedure sumcheck(aj, j, m, n, s);
    COMMENT  J is an indeterminate and the other parameters are
       expressions.  This function returns the global variable named
       PROVED if the function can inductively verify that S equals the
@@ -68,24 +68,24 @@ ALGEBRAIC PROCEDURE SUMCHECK(AJ, J, M, N, S);
       the influence of ON EXP, ON MCD, and any other user-supplied
       simplification rules relevant to the expression classes of AJ
       and S;
-   IF SUB(J=M,AJ)-SUB(N=M,S) NEQ 0
-       OR S+SUB(J=N+1,AJ)-SUB(N=N+1,S) NEQ 0 THEN UNPROVED
-    ELSE PROVED;
+   if sub(j=m,aj)-sub(n=m,s) neq 0
+       or s+sub(j=n+1,aj)-sub(n=n+1,s) neq 0 then unproved
+    else proved;
 
-ON EXP, MCD;
+on exp, mcd;
 
-CLEAR X, J, N;
+clear x, j, n;
 
-SUMCHECK(J, J, 1, N, N*(N+1)/2);
+sumcheck(j, j, 1, n, n*(n+1)/2);
 
-SUMCHECK(X**J, J, 0, N, (X**(N+1)-1)/(X-1));
+sumcheck(x**j, j, 0, n, (x**(n+1)-1)/(x-1));
 
 COMMENT Within procedures of this sort a global variable is any
 variable which is not one of the parameters, and a global variable
 has the value, if any, which is current for that name at the point
 from where the procedure is used.
 
-;PAUSE; COMMENT
+;pause; COMMENT
 Conditional expressions have the form
 
    IF condition THEN expression1 ELSE expression2.
@@ -108,7 +108,7 @@ COS(N*X) equals the product of COS(J*X)/COS(J*X-X) for J ranging from
 describing parameters and the returned value until you learn how to
 use a text editor;
 
-PAUSE;
+pause;
 
 COMMENT Most REDUCE statements are also expressions because they have
 a value. The value is usually 0 if nothing else makes sense, but I
@@ -125,7 +125,7 @@ such as X*(Y:=5). Such assignments must usually be parenthesized
 because of the low precedence of the assignment operator, and
 excessive use of this construct tends to make programs confusing.
 
-;PAUSE;COMMENT
+;pause;COMMENT
 
 REDUCE treats as a single expression any sequence of statements
 preceded by the pair of adjacent characters << and followed by the
@@ -152,7 +152,7 @@ of using local variables for temporary variables is that the perhaps
 large amount of storage occupied by their values can be reclaimed
 after leaving their block.
 
-;PAUSE;COMMENT
+;pause;COMMENT
 A BEGIN-block consists of the word BEGIN, followed by optional
 declarations, followed by a sequence of statements, followed by the
 word END.  Within BEGIN-blocks, it is often convenient to return
@@ -169,10 +169,10 @@ the value of the last statement.  If a value is to be returned RETURN
 must be used.  These features and others are illustrated by the
 following function;
 
-PAUSE;
+pause;
 
-ALGEBRAIC PROCEDURE LIMIT(EX, INDET, PNT);
-   BEGIN COMMENT This function uses up through 4 iterations of
+algebraic procedure limit(ex, indet, pnt);
+   begin COMMENT This function uses up through 4 iterations of
       L'Hospital's rule to attempt determination of the limit of
       expression EX as indeterminate INDET approaches expression
       PNT.  This function is intended for the case where
@@ -186,44 +186,44 @@ ALGEBRAIC PROCEDURE LIMIT(EX, INDET, PNT);
       under the influence of ON EXP, ON MCD, and any user-supplied
       simplification rules appropriate to the expression classes of
       EX and PNT;
-   INTEGER ITERATION;
-   SCALAR N, D, NLIM, DLIM;
-   ITERATION := 0;
-   N := NUM(EX);
-   D := DEN(EX);
-   NLIM := SUB(INDET=PNT, N);
-   DLIM := SUB(INDET=PNT, D);
-   WHILE NLIM=0 AND DLIM=0 AND ITERATION<5 DO <<
-      N := DF(N, INDET);
-      D := DF(D, INDET);
-      NLIM := SUB(INDET=PNT, N);
-      DLIM := SUB(INDET=PNT, D);
-      ITERATION := ITERATION + 1 >>;
-   RETURN (IF NLIM=0 THEN
-              IF DLIM=0 THEN UNKNOWN
-              ELSE 0
-           ELSE IF DLIM=0 THEN UNDEFINED
-           ELSE NLIM/DLIM)
-   END;
+   integer iteration;
+   scalar n, d, nlim, dlim;
+   iteration := 0;
+   n := num(ex);
+   d := den(ex);
+   nlim := sub(indet=pnt, n);
+   dlim := sub(indet=pnt, d);
+   while nlim=0 and dlim=0 and iteration<5 do <<
+      n := df(n, indet);
+      d := df(d, indet);
+      nlim := sub(indet=pnt, n);
+      dlim := sub(indet=pnt, d);
+      iteration := iteration + 1 >>;
+   return (if nlim=0 then
+              if dlim=0 then unknown
+              else 0
+           else if dlim=0 then undefined
+           else nlim/dlim)
+   end;
 
 % Examples follow..
-PAUSE;
+pause;
 
-G1 := (E**X-1)/X;
-
-% Evaluation at 1, causes Zero denominator error at top level, continue
-% anyway.
-SUB(X=0, G1);
-
-LIMIT(G1, X, 0);
-
-G1:= ((1-X)/LOG(X))**2;
+g1 := (e**x-1)/x;
 
 % Evaluation at 1, causes Zero denominator error at top level, continue
 % anyway.
-SUB(X=1, G1);
+sub(x=0, g1);
 
-LIMIT(G1, X, 1);
+limit(g1, x, 0);
+
+g1:= ((1-x)/log(x))**2;
+
+% Evaluation at 1, causes Zero denominator error at top level, continue
+% anyway.
+sub(x=1, g1);
+
+limit(g1, x, 1);
 
 COMMENT  Note:
    1.  The idea behind L'Hospital's rule is that as long as the
@@ -264,7 +264,7 @@ COMMENT  Note:
        them primarily to explain WHILE-loops in terms of a more
        primitive notion.
 
-;PAUSE;COMMENT
+;pause;COMMENT
    7.  The LIMIT function provides a good illustration of nested
        conditional expressions.  Proceeding sequentially through such
        nests, each ELSE clause is matched with the nearest preceding
@@ -288,7 +288,7 @@ COMMENT  Note:
        conditional expressions, an inappropriate semicolon after an
        END, a >>, or an ELSE-clause is likely to be one of your most
        prevalent mistakes.;
-PAUSE;
+pause;
 
 COMMENT The next exercise is based on the above LIMIT function:
 
@@ -306,7 +306,7 @@ After writing such a function to perform the ratio test, test it on
 the examples AJ=J/2**J, AJ=1/J**2, AJ=2**J/J**10, and AJ=1/J.  (The
 first two converge and the second two diverge);
 
-PAUSE;
+pause;
 
 COMMENT  Groups or blocks can be used wherever any arbitrary
 expression is allowed, including the right-hand side of a LET rule.
@@ -332,7 +332,7 @@ is equivalent to
    RETURN 0
    END .
 
-;PAUSE;COMMENT
+;pause;COMMENT
 Note:
    1.  The index variable is automatically declared local to the FOR-
        loop.
@@ -361,10 +361,10 @@ is convenient for debugging, because the word is then easily deleted
 afterward. These features and others are illustrated by the following
 equation solver;
 
-PAUSE;
-OPERATOR SOLVEFOR, SOLN;
+pause;
+operator solvefor, soln;
 
-FOR ALL X, LHS, RHS LET SOLVEFOR(X, LHS, RHS) = SOLVEFOR(X, LHS-RHS);
+for all x, lhs, rhs let solvefor(x, lhs, rhs) = solvefor(x, lhs-rhs);
 
 COMMENT LHS and RHS are expressions such that P=NUM(LHS-RHS) is a
 polynomial of degree at most 2 in the indeterminate or functional
@@ -382,62 +382,62 @@ deserved warning message if the denominator of LHS-RHS contains X. If
 LHS-RHS is not polynomial in X, it is wise to execute this function
 under the influence of ON GCD;
 
-PAUSE;
-FOR ALL X, LHSMRHS LET SOLVEFOR(X, LHSMRHS) =
-   BEGIN INTEGER HIPOW;  SCALAR TEMP, CFLIST, CF0, CF1, CF2;
-   IF LHSMRHS = 0 THEN <<
-      SOLN(1) := ARBITRARY;
-      RETURN 1 >>;
-   CFLIST :=  COEFF(LHSMRHS, X);
-   HIPOW := HIPOW!*;
-   IF HIPOW = 0 THEN <<
-      SOLN(1) := NONE;
-      RETURN 1 >>;
-   IF HIPOW > 2 THEN <<
-      SOLN(1) := UNKNOWN;
-      RETURN 1 >>;
-   IF HIPOW = 1 THEN <<
-      SOLN(1) := FIRST(CFLIST)/SECOND(CFLIST);
-      IF DF(SUB(X=!*FOO, SOLN(1)), !*FOO) NEQ 0 THEN
-         SOLN(1) := UNKNOWN;
-      RETURN 1 >>;
-   CF0 := FIRST(CFLIST)/THIRD(CFLIST);
-   CF1 := -SECOND(CFLIST)/THIRD(CFLIST)/2;
-   IF DF(SUB(X=!*FOO, CF0), !*FOO) NEQ 0
-         OR DF(SUB(X=!*FOO, CF1), !*FOO) NEQ 0  THEN <<
-      SOLN(1) := UNKNOWN;
-      RETURN 1 >>;
-   TEMP := (CF1**2 - CF0)**(1/2);
-   SOLN(1) := CF1 + TEMP;
-   SOLN(2) := CF1 - TEMP;
-   RETURN 2
-   END;
+pause;
+for all x, lhsmrhs let solvefor(x, lhsmrhs) =
+   begin integer hipow;  scalar temp, cflist, cf0, cf1, cf2;
+   if lhsmrhs = 0 then <<
+      soln(1) := arbitrary;
+      return 1 >>;
+   cflist :=  coeff(lhsmrhs, x);
+   hipow := hipow!*;
+   if hipow = 0 then <<
+      soln(1) := none;
+      return 1 >>;
+   if hipow > 2 then <<
+      soln(1) := unknown;
+      return 1 >>;
+   if hipow = 1 then <<
+      soln(1) := first(cflist)/second(cflist);
+      if df(sub(x=!*foo, soln(1)), !*foo) neq 0 then
+         soln(1) := unknown;
+      return 1 >>;
+   cf0 := first(cflist)/third(cflist);
+   cf1 := -second(cflist)/third(cflist)/2;
+   if df(sub(x=!*foo, cf0), !*foo) neq 0
+         or df(sub(x=!*foo, cf1), !*foo) neq 0  then <<
+      soln(1) := unknown;
+      return 1 >>;
+   temp := (cf1**2 - cf0)**(1/2);
+   soln(1) := cf1 + temp;
+   soln(2) := cf1 - temp;
+   return 2
+   end;
 
 COMMENT And some examples;
-PAUSE;
+pause;
 
-FOR K:=1:SOLVEFOR(X, A*X**2, -B*X-C) DO WRITE SOLN(K) := SOLN(K);
+for k:=1:solvefor(x, a*x**2, -b*x-c) do write soln(k) := soln(k);
 
-FOR K:=1:SOLVEFOR(LOG(X), 5*LOG(X)-7) DO WRITE SOLN(K) := SOLN(K);
+for k:=1:solvefor(log(x), 5*log(x)-7) do write soln(k) := soln(k);
 
-FOR K:=1:SOLVEFOR(X, X, X) DO WRITE SOLN(K) := SOLN(K);
+for k:=1:solvefor(x, x, x) do write soln(k) := soln(k);
 
-FOR K:= 1:SOLVEFOR(X, 5) DO WRITE SOLN(K) := SOLN(K);
+for k:= 1:solvefor(x, 5) do write soln(k) := soln(k);
 
-FOR K:=1:SOLVEFOR(X, X**3+X+1) DO WRITE SOLN(K) := SOLN(K);
+for k:=1:solvefor(x, x**3+x+1) do write soln(k) := soln(k);
 
-FOR K:=1:SOLVEFOR(X, X*E**X, 1) DO WRITE SOLN(K) := SOLN(K);
+for k:=1:solvefor(x, x*e**x, 1) do write soln(k) := soln(k);
 
-G1 := X/(E**X-1);
+g1 := x/(e**x-1);
 
 %Results in 'invalid as POLYNOMIAL' error, continue anyway;
-FOR K:=1:SOLVEFOR(X, G1) DO WRITE SOLN(K) := SOLN(K);
+for k:=1:solvefor(x, g1) do write soln(k) := soln(k);
 
-SUB(X=SOLN(1), G1);
+sub(x=soln(1), g1);
 
-LIMIT(G1, X, SOLN(1));
+limit(g1, x, soln(1));
 
-PAUSE;
+pause;
 
 COMMENT Here we have used LET rules to permit the user the
 convenience of omitting default arguments. (Function definitions have
@@ -471,7 +471,7 @@ most appropriate for a particular application:
        indeterminate such as having an answer be "A(M,N) + B(3,4)".
    7.  Only functional forms can be used alone in the LHS of LET
        substitutions.
-;PAUSE; COMMENT
+;pause; COMMENT
    8.  All arrays, matrices, and operators are global regardless
        of where they are declared, so declaring them within a BEGIN
        block does not afford the protection and automatic storage
@@ -498,7 +498,7 @@ most appropriate for a particular application:
        polynomial coefficients, then transfer the values to a matrix
        for inversion.
 
-;PAUSE;COMMENT
+;pause;COMMENT
 The COEFF function is the remaining new feature in our SOLVEFOR
 example.  The first argument is a polynomial expression in the
 indeterminate or functional form which is the second argument.  The
@@ -513,15 +513,15 @@ braces.  The elements can be accessed with the functions FIRST,
 SECOND, THIRD, PART(i) which returns the i-th element, and REST, which
 returns a list of all but the first element.  For example;
 
-CLEAR X;
+clear x;
 
-COEFF(X**5+2, X);
+coeff(x**5+2, x);
 
-LOWPOW!*;
+lowpow!*;
 
-HIPOW!*;
+hipow!*;
 
-PAUSE;
+pause;
 
 COMMENT COEFF does not check to make sure that the coefficients do not
 contain its second argument within a functional form, so that is the
@@ -551,4 +551,4 @@ are automatically printed.
 This is the end of lesson 4. When you are ready to run lesson 5,
 start a new REDUCE job.
 
-;END;
+;end;

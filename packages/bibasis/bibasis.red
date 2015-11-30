@@ -39,21 +39,21 @@ create!-package('(bibasis bibasis_monom bibasis_polynom
                 
 
 fluid '(
-         FluidBibasisVariables
-         FluidBibasisReversedVariables
-         FluidBibasisMonomialOrder
-         FluidBibasisSingleVariableMonomialsA
-         FluidBibasisSingleVariableMonomialsS
-         FluidBibasisNumberOfVariables
-         FluidBibasisSetQ
-         FluidBibasisSetT
-         FluidBibasisTripleID
-         FluidBibasisJanetTreeRootNode
-         FluidBibasisReductionsMade
-         FluidBibasisNormalForms
-         FluidBibasisNonZeroNormalForms
-         FluidBibasisRunningTime
-         FluidBibasisGCTime
+         fluidbibasisvariables
+         fluidbibasisreversedvariables
+         fluidbibasismonomialorder
+         fluidbibasissinglevariablemonomialsa
+         fluidbibasissinglevariablemonomialss
+         fluidbibasisnumberofvariables
+         fluidbibasissetq
+         fluidbibasissett
+         fluidbibasistripleid
+         fluidbibasisjanettreerootnode
+         fluidbibasisreductionsmade
+         fluidbibasisnormalforms
+         fluidbibasisnonzeronormalforms
+         fluidbibasisrunningtime
+         fluidbibasisgctime
 );
 
 

@@ -67,7 +67,7 @@ procedure cl_nnf(f);
    % Common logic negation normal form. [f] is a formula. Returns a
    % formula equivalent to [f] that does not contain the operator
    % [not].
-   cl_nnf1(f,T);
+   cl_nnf1(f,t);
 
 procedure cl_nnfnot(f);
    % Common logic negation normal form not. [f] is a formula. Returns
@@ -159,11 +159,11 @@ procedure cl_pnf2!-junctor(phi);
    begin scalar junctor,e,l1,l2,onlyex,onlyall,phi1,phi2; integer m,qb;
       junctor := rl_op phi;
       e := for each f in rl_argn phi collect cl_pnf2(f);
-      onlyex := T; onlyall := T;
+      onlyex := t; onlyall := t;
       for each ej in e do <<
     	 qb := cl_qb car ej;
     	 if qb > m then <<
- 	    m := qb; onlyex := T; onlyall := T
+ 	    m := qb; onlyex := t; onlyall := t
  	 >>;
     	 if cdr ej then <<
  	    l1 := (car ej) . l1;
@@ -452,7 +452,7 @@ procedure cl_freevp(var,phi);
       argl := rl_argn phi;
       while argl do
 	 if cl_freevp(var,car argl) then <<
-	    flag := T;
+	    flag := t;
 	    argl := nil
 	 >> else
 	    argl := cdr argl;

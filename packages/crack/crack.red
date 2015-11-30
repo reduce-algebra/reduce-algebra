@@ -1,6 +1,6 @@
 module crack$  
 
-comment
+COMMENT
 
 This is the top level CRACK module. (It may require more than one run to
 compile using Win32-PSL.)
@@ -57,33 +57,33 @@ other packages$
 %******************************************************************************
 
 !#if (null(getd 'setprop))
-symbolic procedure setprop(U, L)$
+symbolic procedure setprop(u, l)$
    %% Store item L as the property list of U.
    %% FJW: Defined (but NOT flagged lose) in PSL only.
    %% FJW: A crude implementation for CSL.
    %% Note that in CSL flags are properties with value t.
-   << for each p in plist U do remprop(U, car p)$
-      for each p in L do put(U, car p, cdr p) >>$
+   << for each p in plist u do remprop(u, car p)$
+      for each p in l do put(u, car p, cdr p) >>$
 !#endif
 
 % The following smacro definitions MUST be in this header file!
 
 !#if (null(getd 'flag1))
-symbolic inline procedure flag1(U, V)$
+symbolic inline procedure flag1(u, v)$
    %% smacro is replaced by inline as new policy in sourceforge Reduce
    %% The identifier U is flagged V.
    %% FJW: Defined and flagged lose in PSL only.
    %% FJW: This implementation based on the PSL manual.
-   flag({U}, V)$
+   flag({u}, v)$
 !#endif
 
 !#if (null(getd 'remflag1))
-symbolic inline procedure remflag1(U, V)$
+symbolic inline procedure remflag1(u, v)$
    %% smacro is replaced by inline as new policy in sourceforge Reduce
    %% Remove V from the property list of identifier U.
    %% FJW: Defined and flagged lose in PSL only.
    %% FJW: This implementation based on the PSL manual.
-   remflag({U}, V)$
+   remflag({u}, v)$
 !#endif
 
 if lisp(null(getd 'redfront_color) ) then

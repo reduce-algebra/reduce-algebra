@@ -504,9 +504,9 @@ x  - ---*x  + ----*x  + O(x )
 abs(cos!-series);
 
 
-         1   2    1    4     1    6      7
-abs(1 - ---*x  + ----*x  - -----*x  + O(x ))
-         2        24        720
+     1   2    1    4     1    6      7
+1 - ---*x  + ----*x  - -----*x  + O(x )
+     2        24        720
 
 
 % incorrect/incomplete results obtained with many of the following inputs
@@ -516,9 +516,9 @@ abs(1 - ---*x  + ----*x  - -----*x  + O(x ))
 abs(cos!-series*sin!-series^2);
 
 
-     2    5   4    91    6      7
-abs(x  - ---*x  + -----*x  + O(x ))
-          6        360
+ 2    5   4    91    6      7
+x  - ---*x  + -----*x  + O(x )
+      6        360
 
 
 % bug in fancy printing of constant power series in big O term
@@ -666,3 +666,4 @@ ps(int(tmp,a),x,a);
 
 
 end;
+

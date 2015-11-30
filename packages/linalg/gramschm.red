@@ -205,7 +205,7 @@ symbolic procedure mk!+normalize!+vector(vector1);
 
 
 
-symbolic procedure mk!+Gram!+Schmid(vectorlist,vector1);
+symbolic procedure mk!+gram!+schmid(vectorlist,vector1);
   %
   % returns a vectorlist of orthonormal vectors
   % assumptions: vectorlist is orthonormal basis, internal structure
@@ -227,7 +227,7 @@ symbolic procedure mk!+Gram!+Schmid(vectorlist,vector1);
 
 
 
-symbolic procedure Gram!+Schmid(vectorlist);
+symbolic procedure gram!+schmid(vectorlist);
   %
   % returns a vectorlist of orthonormal vectors
   %
@@ -238,7 +238,7 @@ symbolic procedure Gram!+Schmid(vectorlist);
     if vector!+p(car vectorlist) then ortholist:=nil
      else rederr "Error in Gram_schmidt: empty input.";
     for i:=1:length(vectorlist) do
-     ortholist:=mk!+Gram!+Schmid(ortholist,nth(vectorlist,i));
+     ortholist:=mk!+gram!+schmid(ortholist,nth(vectorlist,i));
     return ortholist;
   end;
 

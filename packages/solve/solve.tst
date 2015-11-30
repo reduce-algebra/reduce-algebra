@@ -281,7 +281,7 @@ solve({ -22319*x0+25032*x1-83247*x2+67973*x3+54189*x4
 
 % Problem 2.
 
-comment
+COMMENT
 solve({ 81*x30-96*x21-45, -36*x4+59*x29+26,
        -59*x26+5*x3-33, -81*x19-92*x23-21*x17-9, -46*x29-
        13*x22+22*x24+83, 47*x4-47*x14-15*x26-40, 83*x30+70*x17+56*x10-
@@ -298,7 +298,7 @@ solve({ 81*x30-96*x21-45, -36*x4+59*x29+26,
 
 
 % Problem 3.
-comment
+COMMENT
 solve({ 115*x40+566*x41-378*x42+11401086415/6899901,
        560*x0-45*x1-506*x2-11143386403/8309444, -621*x1-
        328*x2+384*x3+1041841/64675, -856*x2+54*x3+869*x4-41430291/24700,
@@ -543,7 +543,7 @@ solve(e^(y^4+3y^2+y)-1,y);
 % Transcendental equations proposed by Roger Germundsson
 % <roger@isy.liu.se>
 
-eq1 := 2*asin(x) + asin(2*x) - PI/2;
+eq1 := 2*asin(x) + asin(2*x) - pi/2;
 eq2 := 2*asin(x) - acos(3*x);
 eq3 := acos(x) - atan(x);
 eq4 := acos(2*x**2 - 4*x -x) - 2*asin(x);
@@ -576,7 +576,7 @@ clear w;
 % The following examples come from Daniel Lichtblau of WRI and were
 % communicated by Laurent.Bernardin from ETH Zuerich.
 
-solve(x-Pi/2 = cos(x+Pi),x);
+solve(x-pi/2 = cos(x+pi),x);
 
 solve(exp(x^2+x+2)-1,x);
 
@@ -596,11 +596,11 @@ solve(log(x/y)=1/y^2*(x+(1/x)),y);
 
 solve(exp(z)=w*z^(-n),z);
 
-solve(-log(3)+log(2+y/3)/2-log(y/3)/2=(-I)/2*Pi,y);
+solve(-log(3)+log(2+y/3)/2-log(y/3)/2=(-i)/2*pi,y);
 
-solve(-log(x)-log(y/x)/2+log(2+y/x)/2=(-3*I)/2*Pi,y);
+solve(-log(x)-log(y/x)/2+log(2+y/x)/2=(-3*i)/2*pi,y);
 
-solve((I+1)*log(x)+(3*I+3)*log(x+3)=7,x);
+solve((i+1)*log(x)+(3*i+3)*log(x+3)=7,x);
 
 solve(x+sqrt(x)=1,x);
 

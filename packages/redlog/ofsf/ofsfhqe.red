@@ -48,7 +48,7 @@ procedure ofsf_ghqe(f);
    begin scalar res,ofsf_hqetheo!*,ofsf_hqexvars!*,!*rlhqegen;
       ofsf_hqetheo!* := nil;
       ofsf_hqexvars!* := nil;
-      !*rlhqegen := T;
+      !*rlhqegen := t;
       res := ofsf_hqe f;
       !*rlhqegen := nil;
       ofsf_hqexvars!* := nil;

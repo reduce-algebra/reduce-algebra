@@ -275,7 +275,7 @@ sub({e^x=x,x=log(x)},exp);
 %off mcd;
 algebraic;
 expr procedure rewrite(m);
-begin scalar ans_list,summ,k,g,c,A;
+begin scalar ans_list,summ,k,g,c,a;
 
 ans_list:={};
 g:=part(m,1); write length g;
@@ -289,8 +289,8 @@ write "g is ", g;
 for each f in m do
   <<
     c:=limit(log(f)/log(g),x,infinity);
-    A:=e^(log(f)-c*log(g));
-    f:=A*w^c;
+    a:=e^(log(f)-c*log(g));
+    f:=a*w^c;
     ans_list:=append({f}, ans_list);
   >>;
 return ans_list;

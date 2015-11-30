@@ -1,4 +1,4 @@
-MODULE FINDMAGC;
+module findmagc;
 
 % Author: James H. Davenport.
 
@@ -26,70 +26,71 @@ MODULE FINDMAGC;
 %
 
 
-FLUID '(!*tra MAGICLIST);
+fluid '(!*tra magiclist);
 
-SYMBOLIC PROCEDURE FINDMAGIC L;
-BEGIN
-  SCALAR P,N,PVEC,M,INTVEC,MCOUNT,TEMP;
+symbolic procedure findmagic l;
+begin
+  scalar p,n,pvec,m,intvec,mcount,temp;
   % L is a list of things which must be made non-zero by means of
 %   a suitable choice of values for the variables in MAGICLIST;
-  L:=FOR EACH U IN L COLLECT
-     << MAPC(MAGICLIST,FUNCTION (LAMBDA V;
-                                 IF INVOLVESF(DENR U,V)
-                                   THEN INTERR "Hard findmagic"));
-        NUMR U >>;
-  IF !*TRA THEN <<
-    PRINTC "We must make the following non-zero:";
-    MAPC(L,FUNCTION PRINTSF);
-    PRINC "by suitable choice of ";
-    PRINTC MAGICLIST >>;
+  l:=for each u in l collect
+     << mapc(magiclist,function (lambda v;
+                                 if involvesf(denr u,v)
+                                   then interr "Hard findmagic"));
+        numr u >>;
+  if !*tra then <<
+    printc "We must make the following non-zero:";
+    mapc(l,function printsf);
+    princ "by suitable choice of ";
+    printc magiclist >>;
   % Strategy is random choice in a space which has only finitely
 %   many singular points;
-  P:=0;
-  N:=ISUB1 LENGTH MAGICLIST;
-  PVEC:=MKVECT N;
-  PUTV(PVEC,0,2);
-  FOR I:=1:N DO
-    PUTV(PVEC,I,NEXTPRIME GETV(PVEC,ISUB1 I));
+  p:=0;
+  n:=isub1 length magiclist;
+  pvec:=mkvect n;
+  putv(pvec,0,2);
+  for i:=1:n do
+    putv(pvec,i,nextprime getv(pvec,isub1 i));
   % Tactics are based on Godel (is this a mistake ??) and let P run
 %   through numbers and take the prime factorization of them;
-  INTVEC:=MKVECT N;
-LOOP:
-  P:=IADD1 P;
-  IF !*TRA THEN <<
-    PRINC "We try the number ";
-    PRINTC P >>;
-  M:=P;
-  FOR I:=0:N DO <<
-    MCOUNT:=0;
-    WHILE CDR(TEMP:=DIVIDE(M,GETV(PVEC,I)))=0 DO <<
-      MCOUNT:=IADD1 MCOUNT;
-      M:=CAR TEMP >>;
-    PUTV(INTVEC,I,MCOUNT) >>;
-  IF M NEQ 1
-    THEN GO TO LOOP;
-  IF !*TRA THEN <<
-    PRINTC "which corresponds to ";
-    SUPERPRINT INTVEC >>;
-  M:=NIL;
-  TEMP:=MAGICLIST;
-  FOR I:=0:N DO <<
-    M:=((CAR TEMP).GETV(INTVEC,I)).M;
-    TEMP:=CDR TEMP >>;
+  intvec:=mkvect n;
+loop:
+  p:=iadd1 p;
+  if !*tra then <<
+    princ "We try the number ";
+    printc p >>;
+  m:=p;
+  for i:=0:n do <<
+    mcount:=0;
+    while cdr(temp:=divide(m,getv(pvec,i)))=0 do <<
+      mcount:=iadd1 mcount;
+      m:=car temp >>;
+    putv(intvec,i,mcount) >>;
+  if m neq 1
+    then go to loop;
+  if !*tra then <<
+    printc "which corresponds to ";
+    superprint intvec >>;
+  m:=nil;
+  temp:=magiclist;
+  for i:=0:n do <<
+    m:=((car temp).getv(intvec,i)).m;
+    temp:=cdr temp >>;
   % M is the list of substitutions corresponding to this value of P;
-  TEMP:=L;
-LOOP2:
-  IF NULL NUMR algint!-SUBF(CAR TEMP,M)
-    THEN GO TO LOOP;
-  TEMP:=CDR TEMP;
-  IF TEMP
-    THEN GO TO LOOP2;
-  IF !*TRA THEN <<
-    PRINTC "which corresponds to the values:";
-    SUPERPRINT M >>;
-  RETURN M
-  END;
+  temp:=l;
+loop2:
+  if null numr algint!-subf(car temp,m)
+    then go to loop;
+  temp:=cdr temp;
+  if temp
+    then go to loop2;
+  if !*tra then <<
+    printc "which corresponds to the values:";
+    superprint m >>;
+  return m
+  end;
 
-ENDMODULE;
+endmodule;
 
-END;
+end;
+

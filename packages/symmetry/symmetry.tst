@@ -4,23 +4,23 @@
 
 availablegroups();
 
-printgroup(D4);
+printgroup(d4);
 
-generators(D4);
+generators(d4);
 
-charactertable(D4);
+charactertable(d4);
 
-characternr(D4,1);
-characternr(D4,2);
-characternr(D4,3);
-characternr(D4,4);
-characternr(D4,5);
-irreduciblereptable(D4);
-irreduciblerepnr(D4,1);
-irreduciblerepnr(D4,2);
-irreduciblerepnr(D4,3);
-irreduciblerepnr(D4,4);
-irreduciblerepnr(D4,5);
+characternr(d4,1);
+characternr(d4,2);
+characternr(d4,3);
+characternr(d4,4);
+characternr(d4,5);
+irreduciblereptable(d4);
+irreduciblerepnr(d4,1);
+irreduciblerepnr(d4,2);
+irreduciblerepnr(d4,3);
+irreduciblerepnr(d4,4);
+irreduciblerepnr(d4,5);
 
 
 rr:=mat((1,0,0,0,0),
@@ -35,7 +35,7 @@ sp:=mat((1,0,0,0,0),
         (0,0,0,0,1),
         (0,0,0,1,0));
 
-rep:={D4,rD4=rr,sD4=sp};
+rep:={d4,rd4=rr,sd4=sp};
 
 canonicaldecomposition(rep);
 
@@ -67,18 +67,18 @@ r1:=mat((0,1,0),
         (0,0,1),
         (1,0,0));
 
-repC3:={C3,rC3=r1};
+repc3:={c3,rc3=r1};
 
-mC3:=mat((a,b,c),
+mc3:=mat((a,b,c),
          (c,a,b),
          (b,c,a));
 
-diagonalize(mC3,repC3); 
+diagonalize(mc3,repc3); 
 
 % note difference between real and complex case
 
 on complex;
-diagonalize(mC3,repC3); 
+diagonalize(mc3,repc3); 
 off complex;
 
 end;

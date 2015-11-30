@@ -99,7 +99,7 @@ Note:
        appropriately chosen file name and using semicolons rather
        than commas.  Afterwards, to return to the lesson, type CONT;
 
-PAUSE;
+pause;
 
 COMMENT Suppose you and your colleagues developed or obtained a set
 of REDUCE files containing supplementary packages such as trigono-
@@ -120,20 +120,20 @@ definition, with one or more of the indeterminates therein as
 parameters.  This can be done as follows (say yes to the define
 operator prompt);
 
-(1-(V/C)**2)**(1/2);
-FOR ALL V SAVEAS F(V);
-F(5);
+(1-(v/c)**2)**(1/2);
+for all v saveas f(v);
+f(5);
 
 COMMENT Here the indeterminate V became a parameter of F.
 Alternatively, we can save the previous expression as an indeterminate;
 
-SAVEAS FOF5;
-FOF5;
+saveas fof5;
+fof5;
 
 COMMENT I find this technique more convenient than referring to the
 special variable WS;
 
-PAUSE;
+pause;
 
 COMMENT The FOR-loop provides a convenient way to form finite sums or
 products with specific integer index limits.  However, this need is
@@ -149,19 +149,19 @@ an example of their use, here is a very concise definition of a
 function which computes Taylor-series expansions of symbolic
 expressions:;
 
-ALGEBRAIC PROCEDURE TAYLOR(EX, X, PT, N);
+algebraic procedure taylor(ex, x, pt, n);
    COMMENT This function returns the degree N Taylor-series
       expansion of expression EX with respect to indeterminate X,
       expanded about expression PT.  For a series-like appearance,
       display the answer under the influence of FACTOR X, ON RAT,
       and perhaps also ON DIV;
-   SUB(X=PT, EX) + FOR K:=1:N SUM(SUB(X=PT, DF(EX,X,K))*(X-PT)**K
-                 / FOR J:=1:K PRODUCT J);
-CLEAR A, X;  FACTOR X;  ON RAT, DIV;
-G1 := TAYLOR(E**X, X, 0, 4);
-G2 := TAYLOR(E**COS(X)*COS(SIN(X)), X, 0, 3);
+   sub(x=pt, ex) + for k:=1:n sum(sub(x=pt, df(ex,x,k))*(x-pt)**k
+                 / for j:=1:k product j);
+clear a, x;  factor x;  on rat, div;
+g1 := taylor(e**x, x, 0, 4);
+g2 := taylor(e**cos(x)*cos(sin(x)), x, 0, 3);
 %This illustrates the Zero denominator limitation, continue anyway;
-TAYLOR(LOG(X), X, 0, 4);
+taylor(log(x), x, 0, 4);
 
 COMMENT  It would, of course, be more efficient to compute each
 derivative and factorial from the preceding one.  (Similarly for
@@ -172,7 +172,7 @@ is  1 + cos(x) + cos(2*x)/2 + cos(3*x)/(3*2) + ... .
 Use the above SUM and PRODUCT features to generate the partial sum of
 this series through terms of order COS(6*X);
 
-PAUSE;
+pause;
 
 COMMENT Closed-form solutions are often unobtainable for nontrivial
 problems, even using computer algebra.  When this is the case,
@@ -186,8 +186,8 @@ truncated series G1 and G2 generated above, there is no point in
 retaining terms higher than third degree in X.  We can avoid even
 generating such terms as follows;
 
-LET X**4 = 0;
-G3 := G1*G2;
+let x**4 = 0;
+g3 := g1*g2;
 
 COMMENT Replacing X**4 with 0 has the effect of also replacing all
 higher powers of X with 0.  We could, of course, use our TAYLOR
@@ -199,15 +199,15 @@ series solutions even when we have no such closed form.
 
 Now consider the truncated series;
 
-CLEAR Y;  FACTOR Y;
-H1 := TAYLOR(COS Y, Y, 0, 6);
+clear y;  factor y;
+h1 := taylor(cos y, y, 0, 6);
 
 COMMENT Suppose we regard terms of order X**N in G1 as being
 comparable to terms of order Y**(2*N) in H1, and we want to form
 (G1*H1)**2.  This can be done as follows;
 
-LET Y**7 = 0;
-F1 := (G1*H1)**2;
+let y**7 = 0;
+f1 := (g1*h1)**2;
 
 COMMENT  Note however that any terms of the form C*X**M*Y**N with
 2*M+N > 6 are inconsistent with the accuracy of the constituent
@@ -218,14 +218,14 @@ weighted sum of exponents of specified indeterminates and functional
 forms exceeds a specified weight level.  In our example this is done
 as follows;
 
-WEIGHT X=2, Y=1;
-WTLEVEL 6;
-F1 := F1;
+weight x=2, y=1;
+wtlevel 6;
+f1 := f1;
 
 COMMENT  variables not mentioned in a WEIGHT declaration have a
 weight of 0, and the default weight-level is 2;
 
-PAUSE;
+pause;
 
 COMMENT  In lesson 2 I promised to show you ways to overcome the lack
 in most REDUCE implementations of automatic numerical techniques
@@ -235,13 +235,13 @@ for numerical arguments.  For example, since our TAYLOR function
 would reveal that the Taylor series for cos x is
 1 - x**2/2! + x**4/4! - ...;
 
-FOR ALL X SUCH THAT NUMBERP X LET ABS(X)=X,ABS(-X)=X;
-EPSRECIP := 1024 $
-ON ROUNDED;
-WHILE 1.0 + 1.0/EPSRECIP NEQ 1.0 DO
-   EPSRECIP := EPSRECIP + EPSRECIP;
-FOR ALL X SUCH THAT NUMBERP NUM X AND NUMBERP DEN X LET COS X =
-   BEGIN COMMENT X is integer, real, or a rational number.  This rule
+for all x such that numberp x let abs(x)=x,abs(-x)=x;
+epsrecip := 1024 $
+on rounded;
+while 1.0 + 1.0/epsrecip neq 1.0 do
+   epsrecip := epsrecip + epsrecip;
+for all x such that numberp num x and numberp den x let cos x =
+   begin COMMENT X is integer, real, or a rational number.  This rule
       returns the Taylor-series approximation to COS X, truncated when
       the last included term is less than (1/EPSRECIP) of the returned
       answer.  EPSRECIP is a global variable initialized to a value
@@ -249,27 +249,27 @@ FOR ALL X SUCH THAT NUMBERP NUM X AND NUMBERP DEN X LET COS X =
       Arbitrarily larger values are justifiable when X is exact and
       ROUNDED is off.  No angle reduction is performed, so this
       function is not recommended for ABS(X) >= about PI/2;
-   INTEGER K;  SCALAR MXSQ, TERM, ANS;
-   K := 1;
-   MXSQ := -X*X;
-   TERM := MXSQ/2;
-   ANS := TERM + 1;
-   WHILE ABS(NUM TERM)*EPSRECIP*DEN(ANS)-ABS(NUM ANS)*DEN(TERM)>0 DO
-      << TERM:= TERM*MXSQ/K/(K+1);
-         ANS:= TERM + ANS;
-         K := K+2 >>;
-   RETURN ANS
-   END;
-COS(F) + COS(1/2);
-OFF ROUNDED;
-COS(1/2);
+   integer k;  scalar mxsq, term, ans;
+   k := 1;
+   mxsq := -x*x;
+   term := mxsq/2;
+   ans := term + 1;
+   while abs(num term)*epsrecip*den(ans)-abs(num ans)*den(term)>0 do
+      << term:= term*mxsq/k/(k+1);
+         ans:= term + ans;
+         k := k+2 >>;
+   return ans
+   end;
+cos(f) + cos(1/2);
+off rounded;
+cos(1/2);
 
 COMMENT  As an exercise, write a similar rule for the SIN or LOG, or
 replace the COS rule with an improved one which uses angle reduction
 so that angles outside a modest range are represented as equivalent
 angles within the range, before computing the Taylor series;
 
-PAUSE;
+pause;
 
 COMMENT  There is a REDUCE compiler, and you may wish to learn the
 local incantations for using it.  However, even if rules such as
@@ -315,8 +315,8 @@ Try executing the above sequence, using an appropriate filename and
 using semicolons rather than commas at the end of the lines, then
 print the file after the lesson to see how it worked;
 
-PAUSE;
-OFF FORT, ROUNDED;
+pause;
+off fort, rounded;
 
 COMMENT To make this technique usable by non-REDUCE programmers, we
 could write a more general REDUCE program which given merely the
@@ -336,13 +336,13 @@ of REDUCE.  For example:
 
 Such lexical macros can be established by the DEFINE declaration:;
 
-CLEAR X,J;
-DEFINE J=I, LN=LOG, DERIV=DF;
+clear x,j;
+define j=i, ln=log, deriv=df;
 
 COMMENT  Now watch!;
 
-N := 3;
-G1 := SUB(X=LN(J**3*X), DERIV(X**2,X));
+n := 3;
+g1 := sub(x=ln(j**3*x), deriv(x**2,x));
 
 COMMENT Each "equation" in a DEFINE declaration must be of the form
 "name = item", where each item is an expression, an operator, or a
@@ -351,7 +351,7 @@ during the lexical scanning, before any evaluation, LET rules, or
 built-in simplification.  Think of a good application for this
 facility, then try it;
 
-PAUSE;
+pause;
 
 COMMENT  When REDUCE is being run in batch mode, it is preferable to
 have REDUCE make reasonable decisions and proceed when it encounters
@@ -373,7 +373,7 @@ storage by executing a command of the form
 where the number is an integer specifying the total desired core in
 some units such as bytes, words, kilobytes, or kilowords;
 
-PAUSE;
+pause;
 
 COMMENT  Some implementations have a trace command for debugging,
 which employs the syntax
@@ -383,7 +383,7 @@ which employs the syntax
 An analogous command named UNTR removes function names from trace
 status;
 
-PAUSE;
+pause;
 
 COMMENT  Some implementations have an assignment-tracing command for
 debugging, which employs the syntax
@@ -398,7 +398,7 @@ both TRST and TR to a function simultaneously, it is crucial to
 request them in that order, and it is necessary to relinquish the two
 kinds of tracing in the opposite order;
 
-PAUSE;
+pause;
 
 COMMENT The REDUCE algebraic algorithms are written in a subset of
 REDUCE called RLISP. In turn, the more sophisticated features of
@@ -457,4 +457,4 @@ a RLISP job than from a REDUCE job.  Also, don't forget to print your
 newly generated FORTRAN file and to delete any temporary files created
 by this lesson.
 
-;END;
+;end;

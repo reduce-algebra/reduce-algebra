@@ -55,7 +55,7 @@ begin scalar lde;
  if a=nil then a else
  <<lisp(lde:=reval algebraic a);
   if lisp(atom lde) then a else num
-  if lisp(car lde = 'EQUAL) then lhs a - rhs a
+  if lisp(car lde = 'equal) then lhs a - rhs a
 	      else a
  >>
 end$ % of equ_to_expr
@@ -271,12 +271,12 @@ symbolic operator  drop$
 symbolic procedure drop(a,vl)$
 % liefert summe aller terme aus a, die von elementen von vl abhaengen
 begin scalar b$
-  if not((pairp a) and (car a='PLUS)) then b:=a
+  if not((pairp a) and (car a='plus)) then b:=a
 				      else
   <<vl:=cdr vl;             % because vl is an algebraic list
     for each c in cdr a do
     if not freeoflist(c,vl) then b:=cons(c,b)$
-    if b then b:=cons('PLUS,reverse b)>>$
+    if b then b:=cons('plus,reverse b)>>$
   return b$
 end$
 
@@ -378,7 +378,7 @@ begin
   >>;
   if lietrace_ then algebraic <<
     write"Symmetry conditions before CRACK: ";
-    write lisp ('LIST . symcon);
+    write lisp ('list . symcon);
   >>;
   % oldbatch_mode:=!*batch_mode$
   !*batch_mode:=batch_mode_sub$
@@ -389,13 +389,13 @@ begin
   % end if necessary
   if freeof(proc_list_,'try_other_ordering) then 
   proc_list_:=append(proc_list_,list 'try_other_ordering)$
-  h:=sq!*crack({'LIST . symcon,'LIST . inequ,'LIST . flist,'LIST . vl});
+  h:=sq!*crack({'list . symcon,'list . inequ,'list . flist,'list . vl});
 
   !*batch_mode:=oldbatch_mode$
 
   if last_call then return h;
 
-  if h neq list('LIST) then
+  if h neq list('list) then
   <<h:=cadr h;
     symcon:=cdadr h$
     for each g in cdaddr h do <<
@@ -434,7 +434,7 @@ end$ % of callcrack
 symbolic operator  liepde$
 symbolic procedure liepde(problem,symtype,flist,inequ)$
 
- comment
+ COMMENT
 
  problem:  {{eq1,eq2, ...},   % equations
 	    { y1, y2, ...},   % functions
@@ -649,14 +649,14 @@ begin
     if (symord = 1) and (length(ylist)=2) then contactp:=t else
                                                generalp:=t;
     sb:=nil;
-    for each e1 in flist do if freeof(eqlist,e1) then sb:=cons({'EQUAL,e1,0},sb)$
-    sb:=cons('LIST,sb);
+    for each e1 in flist do if freeof(eqlist,e1) then sb:=cons({'equal,e1,0},sb)$
+    sb:=cons('list,sb);
     h:=nil;
     for each e1 in cdr symtype do <<
       n1:=algebraic(sub(lisp sb,lisp caddr e1))$ % substitution on the rhs of the sym.ansatz
       if not zerop n1 and 
          (not pairp n1 or
-          (pairp n1 and ((car n1 neq 'EQUAL) or (not zerop caddr n1)))) then <<
+          (pairp n1 and ((car n1 neq 'equal) or (not zerop caddr n1)))) then <<
         h:=0;
         write"Your ansatz for the symmetry needs to be homogeneous, i.e. ",
              "substituting all unknown functions and constants to be computed ",
@@ -665,7 +665,7 @@ begin
              "the case because the list of substitutions:"$
         algebraic(write lisp sb)$
         write"leaves this right hand side non-zero:"$
-        algebraic(write lisp {'EQUAL,cadr e1,n1})$
+        algebraic(write lisp {'equal,cadr e1,n1})$
         write"To fix your ansatz you could, for example, simply multiply all ",
              "non-vanishing parts on all right hand sides in your ansatz with one ",
              "and the same unknown constant, say cc, and add cc to the list of unknowns ",
@@ -679,8 +679,8 @@ begin
 
   %---- Are substitutions already given in the input?
   eqcopy1:=eqlist;
-  while eqcopy1 and (pairp car eqcopy1) and (caar eqcopy1='EQUAL) and
-        (pairp cadar eqcopy1) and (caadar eqcopy1='DF) do
+  while eqcopy1 and (pairp car eqcopy1) and (caar eqcopy1='equal) and
+        (pairp cadar eqcopy1) and (caadar eqcopy1='df) do
   eqcopy1:=cdr eqcopy1;
   if null eqcopy1 then truesub:=eqlist;
   eqcopy1:=nil;
@@ -725,10 +725,10 @@ begin
                  else jetord:=symord$
   sb:=subdif1(xlist,ylist,jetord)$
 
-  eqlist:=cons('LIST,eqlist);
-  if ansatzp then eqlist:=list('LIST,symtype,eqlist);
-  if truesub then eqlist:=list('LIST,cons('LIST,truesub),eqlist);
-  if inequ   then eqlist:=list('LIST,cons('LIST,inequ),eqlist);
+  eqlist:=cons('list,eqlist);
+  if ansatzp then eqlist:=list('list,symtype,eqlist);
+  if truesub then eqlist:=list('list,cons('list,truesub),eqlist);
+  if inequ   then eqlist:=list('list,cons('list,inequ),eqlist);
 
   on evallhseqp;
   eqlist:=transeq(eqlist,xlist,ylist,sb);
@@ -750,7 +750,7 @@ begin
 
   vl:=xlist;
   for each e1 in dylist do vl:=append(e1,vl);
-  vl:='LIST . vl;
+  vl:='list . vl;
 
   if not ansatzp then
   deplist:=for n:=0:symord collect nth(dylist,n+1);
@@ -811,7 +811,7 @@ begin
   %---- from eqlist. Substitutions may not be optimal if starting
   %---- system is not in standard form
 
-  comment: Counting in how many equations each highest
+  COMMENT: Counting in how many equations each highest
   derivative occurs. Those which do not occur allow Stephani-Trick,
   those which do occur once and there linearly are substituted by that
   equation.
@@ -889,8 +889,8 @@ begin
             %--- equation is not used yet and of the right order
             <<e2:=cdr algebraic coeff(lisp nth(eqlist,n3),lisp e1);
               if hipow!*=1 then
-              subdy:=list(n1,n3,list('EQUAL,e1,list('MINUS,
-                          list('QUOTIENT, car e2, cadr e2)))) . subdy
+              subdy:=list(n1,n3,list('equal,e1,list('minus,
+                          list('quotient, car e2, cadr e2)))) . subdy
             >>
           >>;
           if n2=0 then if no=1 then freelist:=e1 . freelist else
@@ -1043,7 +1043,7 @@ begin
     % It must be possible to separate wrt freelist variables
     for each n4 in freelist do
     if not freeof(depl!*,n4) then freelist:=delete(n4,freelist);
-    If freelist then <<
+    if freelist then <<
       n:=nth(eqordr,n1);   % order of this equation
       h:=simp!* 0;
       for each e1 in xilist do
@@ -1085,10 +1085,10 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
         % splitting
         if car e1 and (car e1 neq 0) then << % ie. e1<>0
 
-          e1:=cdr split_simplify({{'LIST,{'!*sq,e1,nil}},
-                                   'LIST . nil,
-                                   'LIST . flist,
-                                   'LIST . vl, nil
+          e1:=cdr split_simplify({{'list,{'!*sq,e1,nil}},
+                                   'list . nil,
+                                   'list . flist,
+                                   'list . vl, nil
                                  })$
           symcon:=nconc(e1,symcon)
         >>
@@ -1152,10 +1152,10 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
 
     % splitting
     if car h and (car h neq 0) then <<
-      h:=cdr split_simplify({{'LIST,{'!*sq,h,nil}},
-                              'LIST . nil,
-                              'LIST . flist,
-                              'LIST . vl, nil
+      h:=cdr split_simplify({{'list,{'!*sq,h,nil}},
+                              'list . nil,
+                              'list . flist,
+                              'list . vl, nil
                              })$
       symcon:=nconc(h,symcon)
     >>$
@@ -1199,7 +1199,7 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
 
   n1:=0;
   %  allsym is a list of solutions of crack
-  if allsym and car allsym='LIST then allsym:=cdr allsym;
+  if allsym and car allsym='list then allsym:=cdr allsym;
 
   % Sort the symmetries from most general to most special by
   % picking the most special first
@@ -1245,7 +1245,7 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
     h:=append(for each el in  xilist_s collect car el,
               for each el in etalist_s collect car el );
     if symcon_s then for each el in symcon_s do h:=cons(el,h);
-    h:=reval cons('LIST,h); 
+    h:=reval cons('list,h); 
 
     %------- droping redundant constants or functions
     flist_slin:=nil;  % flist_slin are the new lin. constants and functions
@@ -1259,7 +1259,7 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
       write"***** START OF A COMPUTATION TO DROP REDUNDANT *****"$terpri()$
       write"*****  CONSTANTS AND FUNCTIONS OF INTEGRATION  *****"$terpri()$
     >>$
-    sb:=reval dropredundant(h,'LIST . flist_slin,'LIST . vl,list('LIST));
+    sb:=reval dropredundant(h,'list . flist_slin,'list . vl,list('list));
     if print_ then <<
       write"***** THE COMPUTATION TO DROP REDUNDANT CONSTANTS *****"$terpri()$
       write"*****    AND FUNCTIONS OF INTEGRATION FINISHED    *****"$terpri()$
@@ -1276,9 +1276,9 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
     %------- absorbing numerical constants into free constants
     if (not freeoflist( xilist_s,flist)) or 
        (not freeoflist(etalist_s,flist)) then h:=nil else
-    h:=reval absorbconst(h,'LIST . flist_slin);
+    h:=reval absorbconst(h,'list . flist_slin);
     if h then if sb then sb:=append(sb,cdr h)
-                    else sb:='LIST . cdr h;
+                    else sb:='list . cdr h;
 
     %------- doing the substitutions to drop and absorb 
     if sb then <<
@@ -1287,12 +1287,12 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
       for each e1 in cdr sb do <<
         xilist_s :=subst(caddr e1, reval cadr e1,  xilist_s);
         etalist_s:=subst(caddr e1, reval cadr e1, etalist_s);
-        symcon_s :=cdr reval cons('LIST,subst(caddr e1,reval cadr e1,symcon_s));
+        symcon_s :=cdr reval cons('list,subst(caddr e1,reval cadr e1,symcon_s));
       >>;
     >>;
 
     symcon_s := for each e1 in symcon_s collect 
-		car simplifypdeSQ(simp e1,append(flist_slin,flist_snli),t,nil,nil)$
+		car simplifypdesq(simp e1,append(flist_slin,flist_snli),t,nil,nil)$
     print_:=oldprint_;
 
     %------- Computing the prolongation of the symmetry vector
@@ -1301,7 +1301,7 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
       % We can not do "for each e1 in ylist do depnd(e1,list(xlist));"
       % because otherwise the formulas generated by etamn are wrong
       %    on evallhseqp; % left hand sides not needed
-      sb:=subdif1(cons('LIST,xlist),cons('LIST,ylist),prolong_order)$
+      sb:=subdif1(cons('list,xlist),cons('list,ylist),prolong_order)$
       % sb is a list of substitutions, like df(y,x) = y`1
       % but with lhs=0 because y is x-independent
 
@@ -1314,7 +1314,7 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
 	h:=car etamn(car h,cdr h,xilist_s,etalist_s,0,truesub_s,0,xlist)$
 	n3:=(length cdr h) - 1;
 	if n3>jetord then jetord:=n3$
-	etapqlist:=cons(list('EQUAL,n4,{'!*sq,car h,nil}),etapqlist);
+	etapqlist:=cons(list('equal,n4,{'!*sq,car h,nil}),etapqlist);
       >>
     >>$
     revdylist:=nil;
@@ -1324,23 +1324,23 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
 			   else n:=nil;
     xilist_s:=for each el in  xilist_s collect
     <<e1:=mkid( 'xi_,cadr el);
-      e1:=list('EQUAL,e1,reval car el);
+      e1:=list('equal,e1,reval car el);
       e1>>;
     etalist_s:=for each el in etalist_s collect
     <<e1:=mkid('eta_,cadr el);
-      e1:=list('EQUAL,e1,reval car el);
+      e1:=list('equal,e1,reval car el);
       e1>>;
     %--- Backsubstitution of e.g. u`1`1 --> df(u,x,2) 
     for each e1 in ylist do depnd(e1,list(xlist));
     on evallhseqp;
-    sb:=subdif1(cons('LIST,xlist),cons('LIST,ylist),jetord)$
+    sb:=subdif1(cons('list,xlist),cons('list,ylist),jetord)$
     algebraic(
     sb:=for each e1 in sb join
         for each e2 in e1 collect(rhs e2 = lhs e2));
     off evallhseqp;
-    xilist_s :=cdr algebraic(sub(sb,cons('LIST, xilist_s)));
-    etalist_s:=cdr algebraic(sub(sb,cons('LIST,etalist_s)));
-    etapqlist:=cdr algebraic(sub(sb,cons('LIST,etapqlist)));
+    xilist_s :=cdr algebraic(sub(sb,cons('list, xilist_s)));
+    etalist_s:=cdr algebraic(sub(sb,cons('list,etalist_s)));
+    etapqlist:=cdr algebraic(sub(sb,cons('list,etapqlist)));
     xicop   := xilist_s$
     etacop  :=etalist_s$
     etapqcop:=etapqlist$
@@ -1362,10 +1362,10 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
         if null cdr fargs e1 then
         <<xi:=subst(1,e2,xi);eta:=subst(1,e2,eta);etapq:=subst(1,e2,etapq)>>;
         terpri()$write"-------- ",n1,". Symmetry:";terpri()$
-        for each e2 in paralist do algebraic write lisp {'EQUAL,cadr e2,reval caddr e2};
-        for each e2 in xi       do algebraic write lisp {'EQUAL,cadr e2,reval caddr e2};
-        for each e2 in eta      do algebraic write lisp {'EQUAL,cadr e2,reval caddr e2};
-        for each e2 in etapq    do algebraic write lisp {'EQUAL,cadr e2,reval caddr e2};
+        for each e2 in paralist do algebraic write lisp {'equal,cadr e2,reval caddr e2};
+        for each e2 in xi       do algebraic write lisp {'equal,cadr e2,reval caddr e2};
+        for each e2 in eta      do algebraic write lisp {'equal,cadr e2,reval caddr e2};
+        for each e2 in etapq    do algebraic write lisp {'equal,cadr e2,reval caddr e2};
         if cdr fargs e1 then <<terpri()$write"with ";fctprint list(e1);
                                terpri()>>$
         xicop   :=subst(0,e1,xicop   );
@@ -1384,22 +1384,22 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
                           else write"-------- Further s";
       write"ymmetr",if n then "ies:" else "y:"$
       terpri()$
-      for each e1 in paralist do algebraic write lisp {'EQUAL,cadr e1,reval caddr e1};
-      for each e1 in xicop    do algebraic write lisp {'EQUAL,cadr e1,reval caddr e1};
-      for each e1 in etacop   do algebraic write lisp {'EQUAL,cadr e1,reval caddr e1};
-      for each e1 in etapqcop do algebraic write lisp {'EQUAL,cadr e1,reval caddr e1}
+      for each e1 in paralist do algebraic write lisp {'equal,cadr e1,reval caddr e1};
+      for each e1 in xicop    do algebraic write lisp {'equal,cadr e1,reval caddr e1};
+      for each e1 in etacop   do algebraic write lisp {'equal,cadr e1,reval caddr e1};
+      for each e1 in etapqcop do algebraic write lisp {'equal,cadr e1,reval caddr e1}
     >>;
 
     terpri()$
     if flcop then
-    <<write"with ";fctprint cdr reval ('LIST . append(flcop,flist_snli))>>;
+    <<write"with ";fctprint cdr reval ('list . append(flcop,flist_snli))>>;
 
     if null symcon_s then if flcop then
     <<write" which ",if n then "are" else "is"," free. ";
       terpri()>>                 else
                    else
     <<h:=print_;print_:=50$
-      symcon_s:=for each a in symcon_s collect {'!*SQ,a,t}$
+      symcon_s:=for each a in symcon_s collect {'!*sq,a,t}$
       if print_ then
       <<terpri()$
         write"which still ",if n then "have" else "has"," to satisfy: ";
@@ -1416,10 +1416,10 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
       >>;
       print_:=h
     >>;
-    return_list:=list('LIST,
-                      'LIST . symcon_s,
-                      'LIST . append(paralist,append(xilist_s,etalist_s)),
-                      'LIST . append(flist_slin,flist_snli)) . return_list;
+    return_list:=list('list,
+                      'list . symcon_s,
+                      'list . append(paralist,append(xilist_s,etalist_s)),
+                      'list . append(flist_slin,flist_snli)) . return_list;
     nodependlist ylist
   >>;
 
@@ -1436,7 +1436,7 @@ if not freeof(symcon,e1) then flist:=union({e1},flist);
   collect_sol:=oldcollect_sol;
   adjust_fnc:=oldadj;
 
-  return 'LIST . return_list
+  return 'list . return_list
 end$ % of liepde
 
 endmodule$

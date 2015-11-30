@@ -36,14 +36,14 @@ module bibasis_monom;
 inline procedure bibasis_insert(y, x); rplaca(rplacd(y, car(y) . cdr(y)), x);
 inline procedure bibasis_remove(y); rplacd(rplaca(y, cadr(y)), cddr(y));
 
-expr procedure PushBack(list, value);
-begin scalar listIterator;
-    listIterator := list;
-    while car(listIterator) do
+expr procedure pushback(list, value);
+begin scalar listiterator;
+    listiterator := list;
+    while car(listiterator) do
     <<
-        listIterator := cdr(listIterator);
+        listiterator := cdr(listiterator);
     >>;
-    bibasis_insert(listIterator, value);
+    bibasis_insert(listiterator, value);
 end;
 
 
@@ -53,28 +53,28 @@ end;
 % 1 - k_1 . ... . k_n . (nil . nil)
 
 
-expr procedure InitMonomials();
+expr procedure initmonomials();
 begin
-    FluidBibasisNumberOfVariables := length(FluidBibasisVariables);
-    FluidBibasisSingleVariableMonomialsS := mkvect(FluidBibasisNumberOfVariables);
-    for i:=1:FluidBibasisNumberOfVariables do
+    fluidbibasisnumberofvariables := length(fluidbibasisvariables);
+    fluidbibasissinglevariablemonomialss := mkvect(fluidbibasisnumberofvariables);
+    for i:=1:fluidbibasisnumberofvariables do
     <<
-        putv(FluidBibasisSingleVariableMonomialsS, i, CreateSingleVariableMonom(i));
+        putv(fluidbibasissinglevariablemonomialss, i, createsinglevariablemonom(i));
     >>;
-    FluidBibasisTripleID := 0; %move somewhere else
+    fluidbibasistripleid := 0; %move somewhere else
 end;
 
 
-inline procedure GetVariable(variable); getv(FluidBibasisSingleVariableMonomialsS, variable);
-inline procedure MonomGetDegree(monom); getv(monom, 0);
-inline procedure MonomSetDegree(monom, degree); putv(monom, 0, degree);
-inline procedure MonomGetExponent(monom); getv(monom, 1);
-inline procedure MonomSetExponent(monom, exponent); putv(monom, 1, exponent);
+inline procedure getvariable(variable); getv(fluidbibasissinglevariablemonomialss, variable);
+inline procedure monomgetdegree(monom); getv(monom, 0);
+inline procedure monomsetdegree(monom, degree); putv(monom, 0, degree);
+inline procedure monomgetexponent(monom); getv(monom, 1);
+inline procedure monomsetexponent(monom, exponent); putv(monom, 1, exponent);
 
 
-expr procedure MonomGetVariableDegree(monom, variable); 
+expr procedure monomgetvariabledegree(monom, variable); 
 begin scalar exponent;
-    exponent := MonomGetExponent(monom);
+    exponent := monomgetexponent(monom);
     while and(car(exponent),
               car(exponent) > variable) do
     <<
@@ -91,44 +91,44 @@ begin scalar exponent;
 end;
 
 
-expr procedure CreateMonomUnit();
-begin scalar tmpMonom;
-    tmpMonom := mkvect(1);
-    MonomSetDegree(tmpMonom, 0);
-    MonomSetExponent(tmpMonom, (nil . nil));
-    return tmpMonom;
+expr procedure createmonomunit();
+begin scalar tmpmonom;
+    tmpmonom := mkvect(1);
+    monomsetdegree(tmpmonom, 0);
+    monomsetexponent(tmpmonom, (nil . nil));
+    return tmpmonom;
 end;
 
 
-expr procedure CreateSingleVariableMonom(variable);
-begin scalar tmpMonom;
-    tmpMonom := mkvect(1);
-    MonomSetDegree(tmpMonom, 1);
-    MonomSetExponent(tmpMonom, (variable . nil . nil));
-    return tmpMonom;;
+expr procedure createsinglevariablemonom(variable);
+begin scalar tmpmonom;
+    tmpmonom := mkvect(1);
+    monomsetdegree(tmpmonom, 1);
+    monomsetexponent(tmpmonom, (variable . nil . nil));
+    return tmpmonom;;
 end;
 
 
-expr procedure MonomClone(monom);
+expr procedure monomclone(monom);
 if null(monom) then
     nil
-else begin scalar tmpMonom, exponent, tmpExponent;
-    tmpMonom := mkvect(1);
-    MonomSetDegree(tmpMonom, MonomGetDegree(monom));
-    exponent := MonomGetExponent(monom);
+else begin scalar tmpmonom, exponent, tmpexponent;
+    tmpmonom := mkvect(1);
+    monomsetdegree(tmpmonom, monomgetdegree(monom));
+    exponent := monomgetexponent(monom);
     while exponent do
     <<
-        tmpExponent := car(exponent) . tmpExponent;
+        tmpexponent := car(exponent) . tmpexponent;
         exponent := cdr(exponent);
     >>;
-    MonomSetExponent(tmpMonom, reverse(tmpExponent));
-    return tmpMonom;
+    monomsetexponent(tmpmonom, reverse(tmpexponent));
+    return tmpmonom;
 end;
 
 
-expr procedure MonomMultiplyByVariable(monom, variable);
+expr procedure monommultiplybyvariable(monom, variable);
 begin scalar exponent;
-    exponent := MonomGetExponent(monom);
+    exponent := monomgetexponent(monom);
     while and(car(exponent),
               car(exponent) > variable) do
     <<
@@ -137,15 +137,15 @@ begin scalar exponent;
     if not(car(exponent) and car(exponent) = variable) then
     <<
         bibasis_insert(exponent, variable);
-        MonomSetDegree(monom, MonomGetDegree(monom) + 1);
+        monomsetdegree(monom, monomgetdegree(monom) + 1);
     >>;
 end;
 
 
-expr procedure MonomCompareLex(monom1, monom2);
+expr procedure monomcomparelex(monom1, monom2);
 begin scalar exponent1, exponent2; integer i;
-    exponent1 := cdr(reverse(nil . MonomGetExponent(monom1)));
-    exponent2 := cdr(reverse(nil . MonomGetExponent(monom2)));
+    exponent1 := cdr(reverse(nil . monomgetexponent(monom1)));
+    exponent2 := cdr(reverse(nil . monomgetexponent(monom2)));
     i := 0;   
     while car(exponent1) and car(exponent2) do
     <<
@@ -179,21 +179,21 @@ begin scalar exponent1, exponent2; integer i;
 end;
 
 
-expr procedure MonomCompareDegLex(monom1, monom2);
+expr procedure monomcomparedeglex(monom1, monom2);
 begin scalar exponent1, exponent2; integer i;
     i := 0;
-    if igreaterp(MonomGetDegree(monom1), MonomGetDegree(monom2)) then
+    if igreaterp(monomgetdegree(monom1), monomgetdegree(monom2)) then
     <<
         i := 1
     >>
-    else if ilessp(MonomGetDegree(monom1), MonomGetDegree(monom2)) then
+    else if ilessp(monomgetdegree(monom1), monomgetdegree(monom2)) then
     <<
         i := -1
     >>
     else 
     <<
-        exponent1 := cdr(reverse(nil . MonomGetExponent(monom1)));
-        exponent2 := cdr(reverse(nil . MonomGetExponent(monom2)));
+        exponent1 := cdr(reverse(nil . monomgetexponent(monom1)));
+        exponent2 := cdr(reverse(nil . monomgetexponent(monom2)));
         while car(exponent1) and car(exponent2) do
         <<
             if car(exponent1) < car(exponent2) then
@@ -217,20 +217,20 @@ begin scalar exponent1, exponent2; integer i;
 end;
 
 
-expr procedure MonomCompareDegRevLex(monom1, monom2);
+expr procedure monomcomparedegrevlex(monom1, monom2);
 begin scalar exponent1, exponent2; integer i;
-    if MonomGetDegree(monom1) > MonomGetDegree(monom2) then
+    if monomgetdegree(monom1) > monomgetdegree(monom2) then
     <<
         i := 1;
     >>
-    else if MonomGetDegree(monom1) < MonomGetDegree(monom2) then
+    else if monomgetdegree(monom1) < monomgetdegree(monom2) then
     <<
         i := -1;
     >>
     else 
     <<
-        exponent1 := MonomGetExponent(monom1);
-        exponent2 := MonomGetExponent(monom2);
+        exponent1 := monomgetexponent(monom1);
+        exponent2 := monomgetexponent(monom2);
         while car(exponent1) do
         <<
             if car(exponent1) < car(exponent2) then
@@ -258,27 +258,27 @@ begin scalar exponent1, exponent2; integer i;
 end;
 
 
-expr procedure MonomCompare(monom1, monom2);
+expr procedure monomcompare(monom1, monom2);
 begin
-    if (eq(FluidBibasisMonomialOrder, 'Lex)) then
+    if (eq(fluidbibasismonomialorder, 'lex)) then
     <<
-        return MonomCompareLex(monom1, monom2);
+        return monomcomparelex(monom1, monom2);
     >>
-    else if (eq(FluidBibasisMonomialOrder, 'DegLex)) then
+    else if (eq(fluidbibasismonomialorder, 'deglex)) then
     <<
-        return MonomCompareDegLex(monom1, monom2);
+        return monomcomparedeglex(monom1, monom2);
     >>
     else
     <<
-        return MonomCompareDegRevLex(monom1, monom2);
+        return monomcomparedegrevlex(monom1, monom2);
     >>    
 end;
 
 
-expr procedure MonomIsDivisibleBy(monom1, monom2);
+expr procedure monomisdivisibleby(monom1, monom2);
 begin scalar exponent1, exponent2;
-    exponent1 := MonomGetExponent(monom1);
-    exponent2 := MonomGetExponent(monom2);
+    exponent1 := monomgetexponent(monom1);
+    exponent2 := monomgetexponent(monom2);
     while and(car(exponent1),
               car(exponent2)) do
     <<
@@ -300,10 +300,10 @@ begin scalar exponent1, exponent2;
 end;
 
 
-expr procedure MonomIsPommaretDivisibleBy(monom1, monom2);
+expr procedure monomispommaretdivisibleby(monom1, monom2);
 begin scalar exponent1, exponent2, break;
-    exponent1 := MonomGetExponent(monom1);
-    exponent2 := MonomGetExponent(monom2);
+    exponent1 := monomgetexponent(monom1);
+    exponent2 := monomgetexponent(monom2);
     while and(car(exponent1),
               car(exponent1) > car(exponent2)) do
     <<
@@ -328,12 +328,12 @@ begin scalar exponent1, exponent2, break;
 end;
 
 
-expr procedure MonomDivide(monom1, monom2);
-begin scalar tmpMonom, exponent1, exponent2, tmpExponent;
-    tmpMonom := mkvect(1);
-    MonomSetDegree(tmpMonom, MonomGetDegree(monom1) - MonomGetDegree(monom2));
-    exponent1 := MonomGetExponent(monom1);
-    exponent2 := MonomGetExponent(monom2);
+expr procedure monomdivide(monom1, monom2);
+begin scalar tmpmonom, exponent1, exponent2, tmpexponent;
+    tmpmonom := mkvect(1);
+    monomsetdegree(tmpmonom, monomgetdegree(monom1) - monomgetdegree(monom2));
+    exponent1 := monomgetexponent(monom1);
+    exponent2 := monomgetexponent(monom2);
     while car(exponent1) do
     <<
         if car(exponent1) = car(exponent2) then
@@ -343,34 +343,34 @@ begin scalar tmpMonom, exponent1, exponent2, tmpExponent;
         >>
         else
         <<
-            tmpExponent := car(exponent1) . tmpExponent;
+            tmpexponent := car(exponent1) . tmpexponent;
             exponent1 := cdr(exponent1);
         >>;
     >>;
-    tmpExponent := nil . tmpExponent;
-    MonomSetExponent(tmpMonom, reverse(tmpExponent));
-    return tmpMonom;
+    tmpexponent := nil . tmpexponent;
+    monomsetexponent(tmpmonom, reverse(tmpexponent));
+    return tmpmonom;
 end;
 
 
-expr procedure MonomGetFirstMultiVar(monom);
+expr procedure monomgetfirstmultivar(monom);
 begin
     return if car(getv(monom, 1)) then car(getv(monom, 1)) else 1;
 end;
 
 
-expr procedure MonomWrite(monom);
-begin scalar result, variables, exponent; integer previousVariable;
-    previousVariable := FluidBibasisNumberOfVariables;
-    variables := FluidBibasisReversedVariables;
-    exponent := MonomGetExponent(monom);
+expr procedure monomwrite(monom);
+begin scalar result, variables, exponent; integer previousvariable;
+    previousvariable := fluidbibasisnumberofvariables;
+    variables := fluidbibasisreversedvariables;
+    exponent := monomgetexponent(monom);
     while car(exponent) do
     <<
-        for i:=1:(previousVariable - car(exponent)) do
+        for i:=1:(previousvariable - car(exponent)) do
         <<
             variables := cdr(variables);
         >>;
-        previousVariable := car(exponent);
+        previousvariable := car(exponent);
 
         if result then
         <<
@@ -386,32 +386,32 @@ begin scalar result, variables, exponent; integer previousVariable;
 end;
 
 
-expr procedure MonomPrint(monom);
-begin scalar variables, exponent; integer previousVariable;
-    if MonomGetDegree(monom) = 0 then
+expr procedure monomprint(monom);
+begin scalar variables, exponent; integer previousvariable;
+    if monomgetdegree(monom) = 0 then
     <<
         prin2 "1";
     >>
     else
     <<
-        previousVariable := 1;
-        variables := FluidBibasisVariables;
-        exponent := cdr(reverse(nil . MonomGetExponent(monom)));
-        for i:=1:(car(exponent) - previousVariable) do
+        previousvariable := 1;
+        variables := fluidbibasisvariables;
+        exponent := cdr(reverse(nil . monomgetexponent(monom)));
+        for i:=1:(car(exponent) - previousvariable) do
         <<
             variables := cdr(variables);
         >>;
-        previousVariable := car(exponent);
+        previousvariable := car(exponent);
         prin2 car(variables);
         exponent := cdr(exponent);
 
         while car(exponent) do
         <<
-            for i:=1:(car(exponent) - previousVariable) do
+            for i:=1:(car(exponent) - previousvariable) do
             <<
                 variables := cdr(variables);
             >>;
-            previousVariable := car(exponent);
+            previousvariable := car(exponent);
             prin2 "*"; prin2 car(variables);
             exponent := cdr(exponent);
         >>;

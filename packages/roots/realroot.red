@@ -32,7 +32,7 @@ module realroot; % Routines for finding real roots of polynomials,
 %
 
 
-Comment   modules bfauxil, bfdoer, bfdoer2, complxp, allroot and rootaux
+COMMENT   modules bfauxil, bfdoer, bfdoer2, complxp, allroot and rootaux
  needed also;
 
 exports accupr1, bfnewton, isolatep, schinf, schplus, sgn1, sturm,

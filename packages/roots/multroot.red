@@ -31,7 +31,7 @@ module multroot;  % Code for solving polynomial sets solvable by
 %
 
 
-Comment  modules allroot, bfauxil, bfdoer, bfdoer2, complxp, rootaux and
+COMMENT  modules allroot, bfauxil, bfdoer, bfdoer2, complxp, rootaux and
          realroot needed also;
 
 
@@ -72,7 +72,7 @@ symbolic procedure multroot0(pr,pl);
 share npoly!*,pr!*,pl!*;
 
 algebraic procedure multroot01(pr,pl);
-comment
+COMMENT
 pl is a list of n polynomials in a tree containing branches each one of
 which contains one univariate polynomial, one bivariate polynomial, ...
 one n-variable polynomial in which each successive polynomial adds one
@@ -200,7 +200,7 @@ algebraic procedure multroot2 paths;
      return if fl then {} else combinesolns() end;
 
 algebraic procedure combinesolns();
-comment
+COMMENT
  We have all of the separate solutions in solns!* and a list of the
 independent variables in vlist!* and the root values of the base
 variables in the list rlist!*.  So we can use this information to

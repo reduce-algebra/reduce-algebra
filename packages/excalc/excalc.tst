@@ -405,7 +405,7 @@ laglanc := (1/2)*(inv1 - 4*inv2 + riccisc**2);
 pform {einst(a,b),hlang(a,b)}=0;
 
 hlang(-i,-j) := 2*(riemc3(-i,-j) - riemri(-i,-j) -
-		   2*ricci(-i,-k)*ricci(-j,K) +
+		   2*ricci(-i,-k)*ricci(-j,k) +
 		   riccisc*ricci(-i,-j) - (1/2)*laglanc*g(-i,-j));
 
 % The complete Einstein tensor: 

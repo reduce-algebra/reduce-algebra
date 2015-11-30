@@ -235,7 +235,7 @@ symbolic procedure intf!=resolve m;
   m:=car m; c1:=intf_get m;
   if ((c:=get(m,'resolution)) and (car c >= d)) then
         return makelist for each x in cdr c collect dpmat_2a x;
-  c:=Resolve!*(c1,d);
+  c:=resolve!*(c1,d);
   put(m,'resolution,d.c);
   if not get(m,'syzygies) then put(m,'syzygies,cadr c);
   return makelist for each x in c collect dpmat_2a x;
@@ -316,20 +316,20 @@ symbolic procedure intf!=codim m;
 % Returns the codimension of coker m.
   length ring_names cali!=basering - intf!=dim m;
 
-put('BettiNumbers,'psopfn,'intf!=BettiNumbers);
-symbolic procedure intf!=BettiNumbers m;
+put('bettinumbers,'psopfn,'intf!=bettinumbers);
+symbolic procedure intf!=bettinumbers m;
   begin scalar c;
   intf_test m; m:=car m; intf_get m;
-  if (c:=get(m,'resolution)) then return makelist BettiNumbers!* cdr c
+  if (c:=get(m,'resolution)) then return makelist bettinumbers!* cdr c
   else rederr"Compute a resolution first";
   end;
 
-put('GradedBettiNumbers,'psopfn,'intf!=GradedBettiNumbers);
-symbolic procedure intf!=GradedBettiNumbers m;
+put('gradedbettinumbers,'psopfn,'intf!=gradedbettinumbers);
+symbolic procedure intf!=gradedbettinumbers m;
   begin scalar c;
   intf_test m; m:=car m; intf_get m;
   if (c:=get(m,'resolution)) then return
-    makelist for each x in GradedBettiNumbers!* cdr c collect makelist x
+    makelist for each x in gradedbettinumbers!* cdr c collect makelist x
   else rederr"Compute a resolution first";
   end;
 

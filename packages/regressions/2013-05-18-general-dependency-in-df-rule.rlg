@@ -8,12 +8,12 @@ let df(pp,x(~j))=>pp(j);
 
 *** x declared operator 
 
-thisIsOK:=df(pp^2,x(1));
+thisisok:=df(pp^2,x(1));
 
 
 thisisok := 0
 
-shouldBeZero:=df(pp^2,t);
+shouldbezero:=df(pp^2,t);
 
 
 shouldbezero := 0
@@ -23,14 +23,14 @@ for j:=1:2 do depend pp,x(j);
 
 
 
-thisIsOK:=df(pp^2,x(1));
+thisisok:=df(pp^2,x(1));
 
 
 *** pp declared operator 
 
 thisisok := 2*pp(1)*pp
 
-shouldBeZero:=df(pp^2,t);
+shouldbezero:=df(pp^2,t);
 
 
 shouldbezero := 0

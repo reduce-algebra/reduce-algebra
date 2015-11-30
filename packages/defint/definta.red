@@ -33,7 +33,7 @@ transform_lst := '();
 algebraic operator f1$
 algebraic operator f2$
 
-fluid '(MELLINCOEF);
+fluid '(mellincoef);
 
 fluid '(plotsynerr!*);
 
@@ -83,17 +83,17 @@ if numberp f then float f
   else if f='pi then 3.141592653589793238462643
   else if f='e then 2.7182818284590452353602987
   else if atom f then f
-  else if eqcar(f, '!:RD!:) then
+  else if eqcar(f, '!:rd!:) then
           if atom cdr f then cdr f else bf2flr f
-  else if eqcar(f, '!:DN!:) then defint_rdwrap2 cdr f
-  else if eqcar(f, 'MINUS) then
+  else if eqcar(f, '!:dn!:) then defint_rdwrap2 cdr f
+  else if eqcar(f, 'minus) then
     begin scalar x;
        x := defint_rdwrap cadr f;
-       return if numberp x then minus float x else {'MINUS, x}
+       return if numberp x then minus float x else {'minus, x}
     end
-  else if get(car f, 'DNAME) then
+  else if get(car f, 'dname) then
     << plotsynerr!*:=t;
-       rerror(PLOTPACKAGE, 32, {get(car f, 'DNAME),
+       rerror(plotpackage, 32, {get(car f, 'dname),
                                 "illegal domain for PLOT"})
     >>
   else if eqcar(f,'expt) then defint_rdwrap!-expt f
@@ -138,12 +138,12 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
 
 
 % Cases for the integration of a single Meijer G-function
- if equal(get('F1,'G),'(1 . 1)) and
-                 equal(get('F2,'G),'(1 . 1)) then
+ if equal(get('f1,'g),'(1 . 1)) and
+                 equal(get('f2,'g),'(1 . 1)) then
 
-         return simp 'UNKNOWN
+         return simp 'unknown
 
- else if equal(get('F1,'G),'(1 . 1)) then
+ else if equal(get('f1,'g),'(1 . 1)) then
 
 % Obtain the appropriate Meijer G-function
 
@@ -151,7 +151,7 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
 
       v:= trpar(car cddddr s1, cadr u2, u4);
       on allfac;
-      if v='FAIL then return simp 'FAIL;
+      if v='fail then return simp 'fail;
 
 % Substitute in the correct variable value
 
@@ -196,19 +196,19 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
       if transform_tst = 't then
           test := 't;
 
-      if test neq 'T then
-          return simp 'UNKNOWN;
+      if test neq 't then
+          return simp 'unknown;
 
       coef:=simp!* cadddr s1;
 
       s1:=list(v,car s1,listsq cadr s1,
                listsq caddr s1,simp!*(subpref(cadr u2,1,u4)));
       s3:=addsq(simp!* u3,'(1 . 1));
-      RETURN intg(s1,s3,coef)
+      return intg(s1,s3,coef)
 
     >>
 
- else if equal(get('F2,'G),'(1 . 1)) then
+ else if equal(get('f2,'g),'(1 . 1)) then
 
 % Obtain the appropriate Meijer G-function
 
@@ -216,7 +216,7 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
 
       v:= trpar(car cddddr s1, cadr u1, u4);
       on allfac;
-      if v='FAIL then return simp 'FAIL;
+      if v='fail then return simp 'fail;
 
 % Substitute in the correct variable value
 
@@ -263,15 +263,15 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
 
       if transform_tst = 't then
           test := 't;
-      if test neq 'T then
-         return simp 'UNKNOWN;
+      if test neq 't then
+         return simp 'unknown;
 
       coef:=simp!* cadddr s1;
 
       s1:=list(v,car s1,listsq cadr s1,
                listsq caddr s1,simp!*(subpref(cadr u1,1,u4)));
       s3:=addsq(simp!* u3,'(1 . 1));
-      RETURN intg(s1,s3,coef)
+      return intg(s1,s3,coef)
 
     >>;
 
@@ -286,15 +286,15 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
   coef:=multsq(simp!* cadddr s1,simp!* cadddr s2);
 
   v1:= trpar(car cddddr s1, cadr u1, u4);
-  if v1='FAIL then
+  if v1='fail then
   << on allfac;
-     return simp 'FAIL >>;
+     return simp 'fail >>;
 
 
   v2:= trpar(car cddddr s2, cadr u2, u4);
-  if v2='FAIL then
+  if v2='fail then
   << on allfac;
-     return simp 'FAIL >>;
+     return simp 'fail >>;
 
   on allfac;
 
@@ -321,13 +321,13 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
   s3:=addsq(simp!* u3,'(1 . 1));
 
   if not numberp(defint_gl s1) or not numberp(defint_gl s2) then
-        RETURN simp 'FAIL
+        return simp 'fail
   else
   if defint_gl s1<0 then s1:=cong s1 else
   if defint_gl s2<0 then s2:=cong s2 else
 
 
-  if defint_gl s1=defint_gk s1 then GOTO A  else      % No reduction is necessary if
+  if defint_gl s1=defint_gk s1 then goto a  else      % No reduction is necessary if
                                                                      % it is not a meijer G-function
                                                                      % of a power of x
   if defint_gl s2=defint_gk s2 then
@@ -339,7 +339,7 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
                                                           %premultiply by inverse of power
   v:=modintgg(s3,s1,s2);
   s3:=car v;    s1:=cadr v;   s2:=caddr v;
-  A:
+  a:
 
 % Test for validity of the integral
 
@@ -347,7 +347,7 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
   test := validity_check(s1,s2,u3);
 
   if test neq 't then
-      return simp 'UNKNOWN;
+      return simp 'unknown;
 
   coef := multsq(if numberp(mellincoef) then simp(mellincoef)
                                      else cadr mellincoef,
@@ -355,7 +355,7 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
 
   v := deltagg(s1,s2,s3);
   v := redpargf(list(arggf(s1,s2),indgf(s1,s2),car v,cadr v));
-  v := ('meijerg . mgretro (cadr v,caddr v,car v));
+  v := ('MeijerG . mgretro (cadr v,caddr v,car v));
   v := aeval v;
 
   if eqcar(v,'!*sq) then
@@ -363,8 +363,8 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
   else if fixp v then
       v := simp v;
 
-  if v='FAIL then
-      return simp 'FAIL
+  if v='fail then
+      return simp 'fail
   else
       return multsq(coef,v);
 
@@ -594,7 +594,7 @@ if transform_tst neq 't then
 
       if car temp = 'nil or car temp1 = 'nil
        or car temp > 0 or car temp1> 0 then
-          return 'FAIL
+          return 'fail
 
       else
           return test2(s,cadr v,caddr v)>>
@@ -604,20 +604,20 @@ if transform_tst neq 't then
    << temp := subtrsq(b_min,s);
 
       if car temp = 'nil or car temp > 0 then
-          return 'FAIL
+          return 'fail
 
        else
-          return 'T>>
+          return 't>>
 
    else if b_min = nil then
 
    << temp :=  subtrsq(s,diffsq(a_max,1));
 
       if car temp = 'nil or car temp > 0 then
-          return 'FAIL
+          return 'fail
 
       else
-          return 'T>>;
+          return 't>>;
 
 >>
 
@@ -664,9 +664,9 @@ if transform_tst neq 't then
    temp2 := reval algebraic((q-p)*s);
    diff := simp!* reval algebraic(temp1 - temp2);
 
-   if car diff ='nil then return 'FAIL
+   if car diff ='nil then return 'fail
 
-   else if car diff < 0 then return 'FAIL else return T>>
+   else if car diff < 0 then return 'fail else return t>>
 
 else
 << transform_lst := cons (('tst2 . '(list 'greaterp (list 'plus
@@ -764,7 +764,7 @@ test_12 := tst12(omega,epsilon);
 test_13 := tst13(omega,epsilon);
 test_14 := tst14(u,v,alpha,mu,rho,delta,epsilon,sigma,omega,r,phi,r1,
                                r2);
-if p = q or u = v then test_15 := 'FAIL
+if p = q or u = v then test_15 := 'fail
         else test_15 := tst15(m,n,p,q,k,l,u,v,sigma,omega,eta);
 
 test := {'test_cases2,m,n,p,q,k,l,u,v,delta,epsilon,sigma,omega,rho,
@@ -802,7 +802,7 @@ for each i in a_new do
           and cdr temp = 1 then
           fail_test := t>>;
 >>;
-if fail_test = t then return 'FAIL else return t;
+if fail_test = t then return 'fail else return t;
 end;
 
 symbolic procedure tst1b(k,l,c,d);
@@ -828,7 +828,7 @@ for each i in c_new do
           and cdr temp = 1 then
           fail_test := t>>;
 >>;
-if fail_test = t then return 'FAIL else return t;
+if fail_test = t then return 'fail else return t;
 end;
 
 symbolic procedure tst2(m,k,b,d,alpha,r);
@@ -863,7 +863,7 @@ if transform_tst neq t then
          if car temp = 'nil or car temp < 0 then
              fail_test := 't>>;
    >>;
-   if fail_test = t then return 'FAIL else return t>>
+   if fail_test = t then return 'fail else return t>>
 else
 << transform_lst := cons (('test2 . '(list 'greaterp
   (list 'repart (list 'plus 'alpha (list 'times 'r 'bi) 'dj))
@@ -903,7 +903,7 @@ if transform_tst neq 't then
          if car temp = 'nil or car temp > 0 then
              fail_test := 't>>;
    >>;
-   if fail_test = 't then return 'FAIL else return t>>
+   if fail_test = 't then return 'fail else return t>>
 else
 
 << transform_lst := cons (('test3 . '(list 'lessp (list 'repart
@@ -938,7 +938,7 @@ if transform_tst neq 't then
       if car temp = 'nil or car temp < 0 then fail_test := t;
    >>;
 
-   if fail_test = t then return 'FAIL else return t>>
+   if fail_test = t then return 'fail else return t>>
 else
 << transform_lst := cons (('test4 . '(list 'greaterp (list 'difference
  (list 'times (list 'difference 'p 'q) (list 'repart (list 'plus 'alpha
@@ -978,7 +978,7 @@ if transform_tst neq t then
       if car temp = 'nil or car temp < 0 then fail_test := 't;
    >>;
 
-   if fail_test = t then return 'FAIL else return t>>
+   if fail_test = t then return 'fail else return t>>
 else
 << transform_lst := cons (('test5 .'(list 'greaterp (list 'difference
    (list 'times(list 'difference 'p 'q)
@@ -1019,7 +1019,7 @@ if transform_tst neq 't then
       if car temp = 'nil or car temp < 0 then fail_test := 't;
    >>;
 
-  if fail_test = 't then return 'FAIL else return 't>>
+  if fail_test = 't then return 'fail else return 't>>
 else
 << transform_lst := cons (('test6 . '(list 'greaterp (list 'difference
   (list 'times (list 'difference 'u 'v) (list 'repart
@@ -1060,7 +1060,7 @@ if transform_tst neq 't then
       if car temp = 'nil or car temp < 0 then fail_test := 't;
    >>;
 
-   if fail_test = t then return 'FAIL else return t>>
+   if fail_test = t then return 'fail else return t>>
 else
 
 << transform_lst := cons (('test7 . '(list 'greaterp (list 'difference
@@ -1094,7 +1094,7 @@ if transform_tst neq 't then
 
    temp := simp!* reval algebraic(abs phi + sum);
    if car temp = 'nil or car temp < 0 then fail_test := 't;
-   if fail_test = t then return 'FAIL else return t>>
+   if fail_test = t then return 'fail else return t>>
 
 else
 
@@ -1138,7 +1138,7 @@ if transform_tst neq 't then
 
    if car temp = 'nil or car temp < 0 then fail_test := 't;
 
-   if fail_test = t then return 'FAIL else return t>>
+   if fail_test = t then return 'fail else return t>>
 else
 
 << transform_lst := cons (('test9 . '(list 'greaterp (list 'difference
@@ -1179,7 +1179,7 @@ if transform_tst neq 't then
 
    off rounded;
 
-   if fail_test = t then return reval 'FAIL else return reval t>>
+   if fail_test = t then return reval 'fail else return reval t>>
 
 else
 
@@ -1208,7 +1208,7 @@ if transform_tst neq 't then
 << arg_sigma := abs(atan(impart sigma/repart sigma));
    pro := delta*pi;
    if arg_sigma neq pro then fail_test := 't;
-   if fail_test = 't then return reval 'FAIL else return reval 't>>
+   if fail_test = 't then return reval 'fail else return reval 't>>
 else
 
 << symbolic(transform_lst := cons (('test11 .
@@ -1242,7 +1242,7 @@ if transform_tst neq 't then
 
    off rounded;
 
-   if fail_test = 't then return reval 'FAIL else return reval 't>>
+   if fail_test = 't then return reval 'fail else return reval 't>>
 
 else
 
@@ -1272,7 +1272,7 @@ if transform_tst neq 't then
 << arg_omega := abs(atan(impart omega/repart omega));
    pro := epsilon*pi;
    if arg_omega neq pro then fail_test := 't;
-   if fail_test = t then return reval 'FAIL else return reval 't>>
+   if fail_test = t then return reval 'fail else return reval 't>>
 else
 
 << symbolic(transform_lst := cons (('test13 .
@@ -1313,7 +1313,7 @@ if transform_tst neq 't then
    else if numberp (mu + rho + alpha*(v - u)) and
                         repart(mu + rho + alpha*(v - u)) < 1 then
        z := sigma^r2*omega^(-r1)
-   else return reval 'FAIL; % Wn
+   else return reval 'fail; % Wn
    arg := 1 - z*sigma^(-r2)*omega^r1;
 
    if arg = 0 then arg_test := 0
@@ -1321,7 +1321,7 @@ if transform_tst neq 't then
 
    if numberp arg_test and arg_test < pi then
                 << off rounded; return reval 't>>
-   else     << off rounded; return reval 'FAIL>>;
+   else     << off rounded; return reval 'fail>>;
 >>
 
 else
@@ -1434,12 +1434,12 @@ if null u then nil else
      subpref(car u,v,z) . defint_sublist(cdr u,v,z)$
 
 symbolic procedure trpar(u1,u2,u3);
-  if not numberp u2 and not atom u2 and car(u2)='plus then 'FAIL else
+  if not numberp u2 and not atom u2 and car(u2)='plus then 'fail else
   begin scalar a!3,l!1,v1,v2,v3,v4;
-   if (v1:=dubdeg(car simp u1,'x))='FAIL or
-           (v2:=dubdeg(cdr simp u1,'x))='FAIL or
-           (v3:=dubdeg(car simp u2,u3))='FAIL or
-           (v4:=dubdeg(cdr simp u2,u3))='FAIL then return 'FAIL;
+   if (v1:=dubdeg(car simp u1,'x))='fail or
+           (v2:=dubdeg(cdr simp u1,'x))='fail or
+           (v3:=dubdeg(car simp u2,u3))='fail or
+           (v4:=dubdeg(cdr simp u2,u3))='fail then return 'fail;
    a!3:=multsq(subtrsq(v1,v2), subtrsq(v3,v4));
    l!1:=subpref(u1,u2,'x);
    l!1:=subpref(l!1,1,u3);
@@ -1567,12 +1567,12 @@ symbolic procedure dubdeg(x,y);
 % y -- atom.
 begin scalar c,b,a1,a3;
 if numberp x or null x then return '(nil . 1);
-if not null cdr(x) then return 'FAIL;
+if not null cdr(x) then return 'fail;
 lb1: a1:=caar x;a3:=car a1;
   if atom a3 and a3=y then b:=cdr a1 . 1 ;
   if not atom a3 then
     if cadr a3=y then
-     if null cddr(a3) then return 'FAIL else
+     if null cddr(a3) then return 'fail else
        if not nump(simp caddr a3) then return simp(caddr a3)
                                 else
           c:=times(cdr a1,cadr caddr a3).caddr caddr a3;

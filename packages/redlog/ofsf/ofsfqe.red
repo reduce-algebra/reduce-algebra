@@ -204,7 +204,7 @@ procedure ofsf_linp(atl,v,vl);
    % degree of [v] is 1 and no coefficient from [v] contains variables
    % from [vl].
    begin scalar linp,w,u,g;
-      linp := T;
+      linp := t;
       w := setkorder {v};
       while atl and linp do <<
 	 u := reorder ofsf_arg2l car atl;
@@ -235,7 +235,7 @@ procedure ofsf_qscp(atl,v);
 	    if hit then
 	       atl := hit := nil
 	    else
-	       hit := T
+	       hit := t
       >>;
       return hit
    end;
@@ -246,7 +246,7 @@ procedure ofsf_pseudp(ifacl,v,n);
    % non-negative integer. Returns [T] if the degree of each SF in
    % [ifacl] wrt. [v] is less than or equal to [n].
    begin scalar ok;
-      ok := T;
+      ok := t;
       while ifacl and ok do
 	 if degreef(car ifacl,v) > n then
 	    ok := nil
@@ -655,7 +655,7 @@ procedure ofsf_qesubrpe(f,v,r);
    % root plus epsilon. [f] is a quantifier-free formula; [v] is a
    % variable; [r] is a root expression- Returns a formula equivalent
    % to $[f]([v]/[r]+\epsilon)$ provided that [r] is valid.
-   cl_apply2ats1(f,'ofsf_qesubpmeat,{v,r,'ofsf_qesubr,T});
+   cl_apply2ats1(f,'ofsf_qesubpmeat,{v,r,'ofsf_qesubr,t});
 
 procedure ofsf_qesubrme(f,v,r);
    % Ordered field standard form quantifier elimination substitute
@@ -702,7 +702,7 @@ procedure ofsf_qesubqpe(f,v,q);
    % variable; [q] is an SQ. Returns a quantifier-free formula
    % equivalent to $[f]([v]/[q]+\epsilon)$ provided that the
    % denominator of [q] is nonzero.
-   cl_apply2ats1(f,'ofsf_qesubpmeat,{v,q,'ofsf_qesubq,T});
+   cl_apply2ats1(f,'ofsf_qesubpmeat,{v,q,'ofsf_qesubq,t});
 
 procedure ofsf_qesubqme(f,v,q);
    % Ordered field standard form quantifier elimination substitute
@@ -1593,7 +1593,7 @@ procedure ofsf_elimsetlin1s(atfal);
       if !*rlqelog then
 	 cadddr car rlqelog!* := cadr car rlqelog!*;
       qesubil := '(ofsf_qesubi . ((minf)));
-      return T . {qesubcql,esubl,qesubil}
+      return t . {qesubcql,esubl,qesubil}
    end;
 
 procedure ofsf_filterbounds(l);
@@ -1696,7 +1696,7 @@ procedure ofsf_bettergaussp(grv1,grv2);
       if car grv1 eq 'failed then
       	 return nil;
       if car grv2 eq 'failed then
-      	 return T;
+      	 return t;
       w1 := cadar grv1;
       w2 := cadar grv2;
       if w1 neq w2 then
@@ -1779,7 +1779,7 @@ procedure ofsf_findeqsol(a,v,theo,ans,bvl);
       if cdr w then
       	 theop := {cdr w};
       d := degreef(ofsf_arg2l a,v);
-      w := ofsf_gelimset ofsf_translat(a,v,theo,T,ans);
+      w := ofsf_gelimset ofsf_translat(a,v,theo,t,ans);
       if w eq 'failed then return '(failed . nil);
       return ofsf_mkgtag(d,tag,w,theo) . (w . theop)
    end;
@@ -1926,8 +1926,7 @@ procedure ofsf_qemkans(an,svf);
 	 ofsf_qebacksub res
       else
 	 ofsf_qenobacksub res;
-      if !*rlqebacksub then
-	 res := sort(res, function(lambda(x,y); ordp(cadr x,cadr y)));
+      if !*rlqebacksub then res := sort(res, function ordpcadr);
       if !*rlverbose then <<
 	 ioto_tprin2 {"++++ Time for answer processing: ", time() - time, " ms"};
 	 gctime := gctime() - gctime;
@@ -2173,7 +2172,7 @@ procedure ofsf_r2anu(r, anunan);
 
 procedure aex_fromsfial(f, ial);
    begin scalar rial, aex;
-      rial := sort(ial, function(lambda(x, y); ordop(car y, car x)));
+      rial := sort(ial, function ordopcar);
       aex := aex_fromsf f;
       for each pr in rial do
 	 aex := aex_bind(aex, car pr, cdr pr);
@@ -2573,7 +2572,7 @@ procedure ofsf_thsimpl(atl);
    % theory. Returns an equivalent theory. The returned theory is
    % hopefully somehow simpler than the original one.
    begin scalar !*rlsiexpla,!*rlsipo;
-      !*rlsiexpla := T;
+      !*rlsiexpla := t;
       return sort(ofsf_thregen cl_simpl(rl_smkn('and,atl),nil,-1),'rl_ordatp)
    end;
 

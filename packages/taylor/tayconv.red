@@ -1,4 +1,4 @@
-module TayConv;
+module tayconv;
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -31,8 +31,8 @@ module TayConv;
 %*****************************************************************
 
 
-exports prepTaylor!*!*, prepTaylor!*, prepTaylor!*1,
-        Taylor!-gen!-big!-O;
+exports preptaylor!*!*, preptaylor!*, preptaylor!*1,
+        taylor!-gen!-big!-o;
 
 imports
 
@@ -40,36 +40,36 @@ imports
         eqcar, lastpair, prepsq!*, replus, retimes, reval,
 
 % from the header module:
-        prepTayExp, TayCfPl, TayCfSq, TayCoeffList, TayTemplate,
-        TayTpElNext, TayTpElPoint, TayTpElVars;
+        preptayexp, taycfpl, taycfsq, taycoefflist, taytemplate,
+        taytpelnext, taytpelpoint, taytpelvars;
 
 
-fluid '(convert!-Taylor!*
-        TaylorPrintTerms
-        Taylor!-truncation!-flag);
+fluid '(convert!-taylor!*
+        taylorprintterms
+        taylor!-truncation!-flag);
 
 
-symbolic procedure prepTaylor!*1 (coefflist, template, no!-of!-terms);
+symbolic procedure preptaylor!*1 (coefflist, template, no!-of!-terms);
   replus for each cc in coefflist join
     begin scalar x; integer count;
-      if Taylor!-truncation!-flag then return nil;
-      x := prepTaylor!*2 (cc, template);
+      if taylor!-truncation!-flag then return nil;
+      x := preptaylor!*2 (cc, template);
       if null x or null no!-of!-terms then return x;
       no!-of!-terms := no!-of!-terms - 1;
       if no!-of!-terms < 0
-        then << Taylor!-truncation!-flag := t;
+        then << taylor!-truncation!-flag := t;
                 return nil >>;
       return x
     end;
 
-symbolic procedure prepTaylor!*2 (coeff, template);
+symbolic procedure preptaylor!*2 (coeff, template);
   (lambda (pc);
     if pc = 0 then nil
      else {retimes (
             (if eqcar (pc, 'quotient) and eqcar (cadr pc, 'minus)
                then {'minus, {'quotient, cadr cadr pc, caddr pc}}
-              else pc) . preptaycoeff (TayCfPl coeff, template))})
-    (prepsq!* TayCfSq coeff);
+              else pc) . preptaycoeff (taycfpl coeff, template))})
+    (prepsq!* taycfsq coeff);
 
 
 symbolic procedure checkdifference (var, var0);
@@ -78,7 +78,7 @@ symbolic procedure checkdifference (var, var0);
 symbolic procedure checkexp(bas,exp);
   if exp = 0 then 1
    else if exp = 1 then bas
-   else {'expt,bas,prepTayExp exp};
+   else {'expt,bas,preptayexp exp};
 
 symbolic inline procedure checkpower (var, var0, n);
   if var0 eq 'infinity
@@ -90,8 +90,8 @@ symbolic procedure preptaycoeff (cc, template);
   begin scalar result;
     while not null template do begin scalar ccl;
       ccl := car cc;
-      for each var in TayTpElVars car template do <<
-        result := checkpower (var, TayTpElPoint car template, car ccl)
+      for each var in taytpelvars car template do <<
+        result := checkpower (var, taytpelpoint car template, car ccl)
                     . result;
         ccl := cdr ccl >>;
       cc := cdr cc;
@@ -102,31 +102,31 @@ symbolic procedure preptaycoeff (cc, template);
 
 put ('taylor!*, 'prepfn2, 'preptaylor!*!*);
 
-symbolic procedure prepTaylor!*!* u;
+symbolic procedure preptaylor!*!* u;
    if null convert!-taylor!* then u else preptaylor!* u;
 
-symbolic procedure prepTaylor!* u;
-   prepTaylor!*1 (TayCoeffList u, TayTemplate u, nil);
+symbolic procedure preptaylor!* u;
+   preptaylor!*1 (taycoefflist u, taytemplate u, nil);
 
-symbolic procedure Taylor!-gen!-big!-O tp;
+symbolic procedure taylor!-gen!-big!-o tp;
   %
   % Generates a big-O notation for the Taylor template tp
   %
   "O" . for each el in tp collect
-          if null cdr TayTpElVars el
-            then checkpower(car TayTpElVars el,TayTpElPoint el,
-                            TayTpElNext el)
+          if null cdr taytpelvars el
+            then checkpower(car taytpelvars el,taytpelpoint el,
+                            taytpelnext el)
            else begin scalar var0;
-             var0 := reval TayTpElPoint el;
+             var0 := reval taytpelpoint el;
              return
                if var0 eq 'infinity
                  then {'quotient,1,
-                       checkexp('list . TayTpElVars el,TayTpElNext el)}
+                       checkexp('list . taytpelvars el,taytpelnext el)}
                 else checkexp(
                  'list .
-                   for each krnl in TayTpElVars el collect
+                   for each krnl in taytpelvars el collect
                      checkdifference(krnl,var0),
-                 TayTpElNext el)
+                 taytpelnext el)
            end;
 
 endmodule;

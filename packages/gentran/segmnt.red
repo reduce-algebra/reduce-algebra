@@ -478,23 +478,23 @@ else
 
 procedure tempvar type;
 %                                                             %
-%  IF type Member '(NIL 0) THEN type <- TEMPVARTYPE!*         %
+%  if type member '(nil 0) then type <- tempvartype!*         %
 %                                                             %
-%  IF type Neq 'NIL And type Neq 'UNKNOWN THEN                %
-%    var <- 1st unmarked tvar of VType type or of VType NIL   %
+%  if type neq 'nil And type neq 'unknown then                %
+%    var <- 1st unmarked tvar of vtype type or of vtype nil   %
 %           which isn't in the symbol table                   %
-%    put type on var's VType property list                    %
+%    put type on var's vtype property list                    %
 %    put declaration in symbol table                          %
-%  ELSE IF type = NIL THEN                                    %
-%    var <- 1st unmarked tvar of type NIL which isn't in the  %
+%  else if type = nil then                                    %
+%    var <- 1st unmarked tvar of type nil which isn't in the  %
 %           symbol table                                      %
-%  ELSE type = 'UNKNOWN                                       %
-%    var <- 1st unmarked tvar of type NIL which isn't in the  %
+%  else type = 'unknown                                       %
+%    var <- 1st unmarked tvar of type nil which isn't in the  %
 %           symbol table                                      %
-%    put 'UNKNOWN on var's VType property list                %
+%    put 'unknown on var's vtype property list                %
 %    print warning - "undeclared"                             %
 %                                                             %
-%  RETURN var                                                 %
+%  return var                                                 %
 %                                                             %
 begin
 scalar tvar, xname, num;

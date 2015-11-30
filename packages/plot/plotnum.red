@@ -113,10 +113,10 @@ if numberp f then float f
   else if f='i and !*complex then rederr "i not LISP evaluable"
   else if atom f then f
   else if get(car f,'dname) then rdwrap!-dm f
-  else if eqcar(f, 'MINUS) then
+  else if eqcar(f, 'minus) then
     begin scalar x;
        x := rdwrap1 cadr f;
-       return if numberp x then minus float x else {'MINUS, x}
+       return if numberp x then minus float x else {'minus, x}
     end
   else if eqcar(f,'expt) then rdwrap!-expt f
   else
@@ -135,14 +135,14 @@ symbolic procedure rdwrapn(f,a);
 
 symbolic procedure rdwrap!-dm f;
  % f is a domain element.
-  if car f eq '!:RD!: then
+  if car f eq '!:rd!: then
           if atom cdr f then cdr f else bf2flr f
-  else if car f eq '!:CR!: then rdwrap!-cr f
-  else if car f eq '!:GI!:
+  else if car f eq '!:cr!: then rdwrap!-cr f
+  else if car f eq '!:gi!:
    then rdwrap!-cmplex(f,float cadr f,float cddr f)
-  else if car f eq '!:DN!: then rdwrap2 cdr f
+  else if car f eq '!:dn!: then rdwrap2 cdr f
   else << plotsynerr!*:=t;
-       rerror(PLOTPACKAGE, 32, {get(car f, 'DNAME),
+       rerror(plotpackage, 32, {get(car f, 'dname),
                                 "illegal domain for PLOT"})
     >>;
 

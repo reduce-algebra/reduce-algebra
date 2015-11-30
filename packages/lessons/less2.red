@@ -40,37 +40,37 @@ pick a character other than "*", which is used for many internal
 REDUCE names.  Otherwise, if most of us use "*" the purpose will be
 defeated;
 
-G+!%H;
-WS;
-PAUSE;
+g+!%h;
+ws;
+pause;
 
 COMMENT You can also name the expression in the workspace by using
 the command SAVEAS, for example:;
 
-SAVEAS GPLUSH;
-GPLUSH;
-PAUSE;
+saveas gplush;
+gplush;
+pause;
 
 COMMENT You may have noticed that REDUCE imposes its own order on the
 indeterminates and functional forms that appear in results, and that
 this ordering can strongly affect the intelligibility of the results.
 For example:;
 
-G1:= 2*H*G + E + F1 + F + F**2 + F2 + 5 + LOG(F1) + SIN(F1);
+g1:= 2*h*g + e + f1 + f + f**2 + f2 + 5 + log(f1) + sin(f1);
 
 COMMENT The ORDER declaration permits us to order indeterminates and
 functional forms as we choose. For example, to order F2 before F1,
 and to order F1 before all remaining variables:;
 
-ORDER F2, F1;
-G1;
-PAUSE;
+order f2, f1;
+g1;
+pause;
 
 COMMENT Now suppose we partially change our mind and decide to
 order LOG(F1) ahead of F1;
 
-ORDER LOG(F1), F1;
-G1;
+order log(f1), f1;
+g1;
 
 COMMENT Note that any other indeterminates or functional forms under
 the influence of a previous ORDER declaration, such as F2, rank
@@ -79,15 +79,15 @@ the default ordering algorithm used in your REDUCE implementation, and
 try  to achieve some delicate  rearrangements using the ORDER
 declaration.;
 
-PAUSE;
+pause;
 
 COMMENT You may have also noticed that REDUCE factors out any
 number, indeterminate, functional form, or the largest integer power
 thereof which exactly divides every term of a result or every term of
 a parenthesized subexpression of a result. For example:;
 
-ON EXP, MCD;
-G1:= F**2*(G**2 + 2*G) + F*(G**2+H)/(2*F1);
+on exp, mcd;
+g1:= f**2*(g**2 + 2*g) + f*(g**2+h)/(2*f1);
 
 COMMENT This process usually leads to more compact expressions and
 reveals important structural information. However, the process can
@@ -97,9 +97,9 @@ desirable to see a fully expanded result to facilitate direct
 comparison of all terms. To suppress this monomial factoring, we can
 turn off an output control switch named ALLFAC;
 
-OFF ALLFAC;
-G1;
-PAUSE;
+off allfac;
+g1;
+pause;
 
 COMMENT The ALLFAC monomial-factorization process is strongly
 dependent upon the ordering.  We can achieve a more selective monomial
@@ -112,21 +112,21 @@ power is factored out.  Terms containing two or more indeterminates or
 functional forms under FACTOR status are not included in this monomial
 factorization process.  For example:;
 
-OFF ALLFAC; FACTOR F; G1;
-FACTOR G; G1; PAUSE;
+off allfac; factor f; g1;
+factor g; g1; pause;
 
 COMMENT We can use the REMFAC command to remove items from factor
 status;
 
-REMFAC F;
-G1;
+remfac f;
+g1;
 
 COMMENT ALLFAC can still have an effect on the coefficients of the
 monomials that have been factored out under the influence of FACTOR:;
 
-ON ALLFAC;
-G1;
-PAUSE;
+on allfac;
+g1;
+pause;
 
 COMMENT It is often desirable to distribute denominators over all
 factored subexpressions generated under the influence of a FACTOR
@@ -136,9 +136,9 @@ with  coefficients which are rational  functions of any other
 indeterminates or functional forms.  (A mnemonic aid is: think RAT
 for RATional-function coefficients.) For example:;
 
-ON RAT;
-G1;
-PAUSE;
+on rat;
+g1;
+pause;
 
 COMMENT RAT has no effect on expressions which have no
 indeterminates or functional forms under the influence of FACTOR.
@@ -150,23 +150,23 @@ aid: DIV DIVides by monomials.) The overall effect can also depend
 strongly on whether the RAT switch is on or off.  Series and
 polynomials are often most attractive with RAT and DIV both on;
 
-ON DIV, RAT;
-G1;
-OFF RAT;
-G1;
-PAUSE;
+on div, rat;
+g1;
+off rat;
+g1;
+pause;
 
-REMFAC G;
-G1;
-PAUSE;
+remfac g;
+g1;
+pause;
 
 COMMENT With a very complicated result, detailed study of the result
 is often facilitated by having each new term begin on a new line,
 which can be accomplished using the LIST switch:;
 
-ON LIST;
-G1;
-PAUSE;
+on list;
+g1;
+pause;
 
 COMMENT  In various combinations, ORDER, FACTOR, the computational
 switches EXP, MCD, GCD, and ROUNDED, together with the output control
@@ -177,9 +177,9 @@ which is far more acceptable than the one produced by the default
 settings.  I encourage you to experiment with various combinations
 while this information is fresh in your mind;
 
-PAUSE;
-OFF LIST, RAT, DIV, GCD, ROUNDED;
-ON ALLFAC, MCD, EXP;
+pause;
+off list, rat, div, gcd, rounded;
+on allfac, mcd, exp;
 
 COMMENT You may have wondered whether or not an assignment to a
 variable, say F1, automatically updates the value of a bound
@@ -196,16 +196,16 @@ containing F1. The answer is:
 
 These phenomena are illustrated by the following sequence:;
 
-PAUSE;
-F2 := F;
-G1 := F1 + F2;
-F2 := G;
-G1;
-F1 := G;
-F1 := H;
-G1;
-F1 := G;
-G1;
+pause;
+f2 := f;
+g1 := f1 + f2;
+f2 := g;
+g1;
+f1 := g;
+f1 := h;
+g1;
+f1 := g;
+g1;
 
 COMMENT  Experience indicates that it is well worth studying this
 sequence and experimenting with others until these phenomena are
@@ -214,7 +214,7 @@ example, but with another level of evaluation included by inserting a
 statement analogous to "Q9:=G1" after "F2:=G", and inserting an
 expression analogous to "Q9" at the end, to compare with G1. ;
 
-PAUSE;
+pause;
 COMMENT Note also, that if an indeterminate is used directly, or
 indirectly through another expression, in evaluating itself, this will
 lead to an infinite recursion.  For example, the following expression
@@ -232,9 +232,9 @@ using the substitute function, SUB.
 
 G1 := F1 + F2;
 
-H1 := SUB(F1=H, G1);
-F1 := G;
-H1;
+h1 := sub(f1=h, g1);
+f1 := g;
+h1;
 
 COMMENT Note the use of "=" rather than ":=" in SUB. This function
 is also valuable for achieving the effect of a local assignment
@@ -250,4 +250,4 @@ parallel, or unpredictably.
 This is the end of lesson 2. To execute lesson 3, start a fresh
 REDUCE job.
 
-;END;
+;end;

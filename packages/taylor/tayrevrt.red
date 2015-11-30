@@ -1,4 +1,4 @@
-module TayRevrt;
+module tayrevrt;
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -40,15 +40,15 @@ imports
         reval, simp!*, typerr,
 
 % from the header module:
-        !*TayExp2q, cst!-Taylor!*, make!-cst!-coefficient,
-        make!-taylor!*, multtaylorsq, prepTayExp, prune!-coefflist,
-        set!-TayTemplate, TayCfPl, TayCfSq, TayCoeffList,
-        TayExp!-Quotient, Taylor!:, TayMakeCoeff,
-        Taylor!-kernel!-sq!-p, TayTemplate, TayTpElNext, TayTpElOrder,
-        TayTpElPoint, TayTpElVars,
+        !*TayExp2q, cst!-taylor!*, make!-cst!-coefficient,
+        make!-taylor!*, multtaylorsq, preptayexp, prune!-coefflist,
+        set!-taytemplate, taycfpl, taycfsq, taycoefflist,
+        tayexp!-quotient, taylor!:, taymakecoeff,
+        taylor!-kernel!-sq!-p, taytemplate, taytpelnext, taytpelorder,
+        taytpelpoint, taytpelvars,
 
 % from module Tayintro:
-        delete!-nth, Taylor!-error,
+        delete!-nth, taylor!-error,
 
 % from module Taybasic:
         addtaylor, invtaylor, multtaylor, negtaylor,
@@ -69,8 +69,8 @@ symbolic procedure tayrevert (tay, okrnl, krnl);
   %  is valid for this operation and calls tayrevert1 to do the work.
   %
   begin scalar tp, cfl, x; integer i;
-    cfl := TayCoeffList tay;
-    tp := TayTemplate tay;
+    cfl := taycoefflist tay;
+    tp := taytemplate tay;
     x := tp;
     i := 1;
     %
@@ -78,9 +78,9 @@ symbolic procedure tayrevert (tay, okrnl, krnl);
     %  okrnl is present and not part of a homogeneous template.
     %
    loop:
-    if okrnl member TayTpElVars car x then <<
-      if not null cdr TayTpElVars car x then <<
-        Taylor!-error ('tayrevert,
+    if okrnl member taytpelvars car x then <<
+      if not null cdr taytpelvars car x then <<
+        taylor!-error ('tayrevert,
                        {"Kernel", okrnl,
                         "appears in homogenous template", car x});
         return
@@ -92,7 +92,7 @@ symbolic procedure tayrevert (tay, okrnl, krnl);
        i := i + 1;
        if not null x then goto loop
        >>;
-    Taylor!-error
+    taylor!-error
       ('tayrevert, {"Kernel", okrnl, "not found in template"});
     return;
    found:
@@ -108,10 +108,10 @@ symbolic procedure tayrevertreorder (cf, i);
   %
   begin scalar cf1, pl, sq;
     for each pp in cf do <<
-      pl := TayCfPl pp;
-      sq := TayCfSq pp;
+      pl := taycfpl pp;
+      sq := taycfsq pp;
       pl := nth (pl, i) . delete!-nth (pl, i);
-      cf1 := enter!-sorted (TayMakeCoeff (pl, sq), cf1)
+      cf1 := enter!-sorted (taymakecoeff (pl, sq), cf1)
       >>;
     return cf1
   end;
@@ -122,8 +122,8 @@ symbolic procedure tayrevertfirstdegreecoeffs (cf, n);
   %  of (the first kernel in the template) ** n.
   %
   for each el in cf join
-    if car car TayCfPl el = n and not null numr TayCfSq el
-     then {TayMakeCoeff (cdr TayCfPl el, TayCfSq el)} else nil;
+    if car car taycfpl el = n and not null numr taycfsq el
+     then {taymakecoeff (cdr taycfpl el, taycfsq el)} else nil;
 
 symbolic procedure tayrevert1(tp,cf,el,i,okrnl,krnl);
   %
@@ -135,7 +135,7 @@ symbolic procedure tayrevert1(tp,cf,el,i,okrnl,krnl);
   %  okrnl the old kernel,
   %  krnl the new kernel.
   %
-  Taylor!:
+  taylor!:
   begin scalar first,incr,newtp,newcf,newpoint,newel,u,u!-k,v,w,x,x1,n,
                expo,upper;
     %
@@ -153,7 +153,7 @@ symbolic procedure tayrevert1(tp,cf,el,i,okrnl,krnl);
     %  For +1, we use the algorithm quoted by Knuth,
     %   in: The Art of Computer Programming, vol2. p. 508.
     %
-    n := car car TayCfPl car newcf;
+    n := car car taycfpl car newcf;
     if n < 0
       then tayrevert1pole(tp,cf,el,i,okrnl,krnl,newcf,newtp);
     if n = 0
@@ -161,42 +161,42 @@ symbolic procedure tayrevert1(tp,cf,el,i,okrnl,krnl);
              then begin scalar xx;
                xx := tayrevertfirstdegreecoeffs(newcf,0);
                if length xx > 1
-                 then Taylor!-error
+                 then taylor!-error
                        ('tayrevert,
                         "Term with power 0 is a Taylor series");
                xx := car xx;
-               for each el in TayCfPl xx do
+               for each el in taycfpl xx do
                  for each el2 in el do
                    if el2 neq 0
-                     then Taylor!-error
+                     then taylor!-error
                            ('tayrevert,
                             "Term with power 0 is a Taylor series");
-               newpoint := !*q2a TayCfSq xx;
+               newpoint := !*q2a taycfsq xx;
               end
-            else <<newpoint := !*q2a TayCfSq car newcf;
+            else <<newpoint := !*q2a taycfsq car newcf;
                    newcf := prune!-coefflist cdr newcf;
-                   n := car car TayCfPl car newcf>>
+                   n := car car taycfpl car newcf>>
      else newpoint := 0;
-    tp := {{krnl},newpoint,TayTpElOrder el,TayTpElNext el} . newtp;
-    first := TayExp!-quotient(1,n);
+    tp := {{krnl},newpoint,taytpelorder el,taytpelnext el} . newtp;
+    first := tayexp!-quotient(1,n);
     incr := car smallest!-increment newcf;
     expo := first * incr;
     if not(expo=1)
-      then (<<newcf := TayCoeffList newtay;
-              tp := TayTemplate newtay;
+      then (<<newcf := taycoefflist newtay;
+              tp := taytemplate newtay;
               newtp := cdr tp;
-              tp := {TayTpElVars car tp,
-                     reval {'expt,TayTpElPoint car tp,prepTayExp expo},
-                     TayTpElOrder car tp * expo,
-                     TayTpElNext car tp * expo}
+              tp := {taytpelvars car tp,
+                     reval {'expt,taytpelpoint car tp,preptayexp expo},
+                     taytpelorder car tp * expo,
+                     taytpelnext car tp * expo}
                     . newtp>>
-            where newtay := expttayrat(Make!-Taylor!*(newcf,tp,nil,nil),
+            where newtay := expttayrat(make!-taylor!*(newcf,tp,nil,nil),
                                        !*TayExp2q expo));
-    upper := TayExp!-quotient(TayTpElNext car tp,incr) - 1;
+    upper := tayexp!-quotient(taytpelnext car tp,incr) - 1;
     x := tayrevertfirstdegreecoeffs(newcf,incr);
-    x1 := x := invtaylor make!-Taylor!*(x,newtp,nil,nil);
-    w := for each pp in TayCoeffList x1 collect
-           TayMakeCoeff({expo} . TayCfPl pp,TayCfSq pp);
+    x1 := x := invtaylor make!-taylor!*(x,newtp,nil,nil);
+    w := for each pp in taycoefflist x1 collect
+           taymakecoeff({expo} . taycfpl pp,taycfsq pp);
 
     v := mkvect upper;
 
@@ -204,12 +204,12 @@ symbolic procedure tayrevert1(tp,cf,el,i,okrnl,krnl);
       putv(v,j,
            multtaylor(
                x,
-               make!-Taylor!*(tayrevertfirstdegreecoeffs(newcf,j*incr),
+               make!-taylor!*(tayrevertfirstdegreecoeffs(newcf,j*incr),
                               newtp,nil,nil)));
 
     u := mkvect upper;
 
-    putv(u,0,cst!-Taylor!*(1 ./ 1,newtp));
+    putv(u,0,cst!-taylor!*(1 ./ 1,newtp));
     for j := 2 : upper do <<
       for k := 1 : j - 2 do begin
         u!-k := getv(u,k);
@@ -234,53 +234,53 @@ symbolic procedure tayrevert1(tp,cf,el,i,okrnl,krnl);
       putv(u,j - 1,u!-k);
 %
       x1 := multtaylor(x1,x);            % x1 is now x ** j
-      for each pp in TayCoeffList
+      for each pp in taycoefflist
              multtaylor(multtaylorsq
                            (getv(u,j - 1),
                             invsq !*TayExp2q j),x1) do
-        w := enter!-sorted (TayMakeCoeff({j * expo}
-                         . TayCfPl pp,TayCfSq pp),
+        w := enter!-sorted (taymakecoeff({j * expo}
+                         . taycfpl pp,taycfsq pp),
                             w);
       >>;
 %
       newtp := (car tp) . newtp;
       w := enter!-sorted(
-             make!-cst!-coefficient(simp!* TayTpElPoint el,newtp),
+             make!-cst!-coefficient(simp!* taytpelpoint el,newtp),
              w);
 
-    w := Make!-taylor!*(w,newtp,nil,nil);
+    w := make!-taylor!*(w,newtp,nil,nil);
     return if incr = 1 then w
             else expttayrat(w,invsq !*TayExp2q incr)
   end;
 
-comment The mechanism for a first order pole is very simple:
+COMMENT The mechanism for a first order pole is very simple:
         This corresponds to a first order zero at infinity,
         so we invert the original kernel and revert the result;
 
 symbolic procedure tayrevert1pole (tp, cf, el, i, okrnl, krnl,
                                    newcf, newtp);
   begin scalar x, y, z;
-    cf := TayCoeffList invtaylor make!-Taylor!*(cf,tp,nil,nil);
+    cf := taycoefflist invtaylor make!-taylor!*(cf,tp,nil,nil);
     x := tayrevert1 (tp, cf, el, i, okrnl, krnl);
-    y := TayTemplate x;
-    if TayTpElPoint car y neq 0
-      then Taylor!-error ('not!-implemented,
+    y := taytemplate x;
+    if taytpelpoint car y neq 0
+      then taylor!-error ('not!-implemented,
                           "(Taylor series reversion)")
      else <<
-       set!-TayTemplate (x, {{krnl}, 'infinity, TayTpElOrder car y}
+       set!-taytemplate (x, {{krnl}, 'infinity, taytpelorder car y}
                               . cdr y);
        return x >>
   end;
 
-comment The driver routine;
+COMMENT The driver routine;
 
-symbolic procedure TaylorRevert (u, okrnl, nkrnl);
-  (if not Taylor!-kernel!-sq!-p sq
+symbolic procedure taylorrevert (u, okrnl, nkrnl);
+  (if not taylor!-kernel!-sq!-p sq
      then typerr (u, "Taylor kernel")
     else tayrevert (mvar numr sq, !*a2k okrnl, !*a2k nkrnl))
      where sq := simp!* u$
 
-flag ('(TaylorRevert), 'opfn);
+flag ('(taylorrevert), 'opfn);
 
 endmodule;
 

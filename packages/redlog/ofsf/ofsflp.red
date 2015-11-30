@@ -63,7 +63,7 @@ procedure lp_newmodel(n, m);
 procedure lp_addconstraint(rel, l, r);
    begin scalar lhs, vl;
       if !*rlgurobi and !*rlffi and !*lp_cslp then <<
-      	 gurobi_addconstraintFast(rel, l, r);
+      	 gurobi_addconstraintfast(rel, l, r);
       	 return
       >>;
       vl := lp_varl!*;

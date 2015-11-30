@@ -226,12 +226,12 @@ symbolic procedure tanh x;
 
 % ***** REMOVE THE FOLLOWING LINE WHEN FLOAT.C/EXTERNALS.SL UPDATED.
 
-REMFLAG('(HYPOT COSH SINH TANH),'LOSE);
+remflag('(hypot cosh sinh tanh),'lose);
 
 % ***** REMOVE THE FOLLOWING LINE WHEN WE KNOW HOW TO HANDLE COMPLEX
 %       VALUES FOR ACOS, ASIN.
 
-REMFLAG('(ACOS ASIN),'LOSE);
+remflag('(acos asin),'lose);
 
 remflag('(cond),'eval);
 

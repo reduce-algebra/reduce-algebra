@@ -3,12 +3,12 @@ symbolic;
 on1 'assert;
 
 struct Tag;
-struct PosNumber asserted by PosNumberP;
+struct Posnumber asserted by posnumberp;
 
-procedure PosNumberP(s);
+procedure posnumberp(s);
    numberp s and s > 0;
 
-asserted procedure hugo(x1: Number, x2: PosNumber, x3: Tag): DottedPair;
+asserted procedure hugo(x1: Number, x2: Posnumber, x3: Tag): DottedPair;
    x3 . (x1 + x2);
 
 hugo(1, 1, 'y);

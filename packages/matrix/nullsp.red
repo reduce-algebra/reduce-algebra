@@ -34,11 +34,11 @@ symbolic procedure nullspace!-eval u;
    % interface for the nullspace calculation.
    begin scalar v,n,matinput;
      v := reval car u;
-     if eqcar(v,'MAT) then
+     if eqcar(v,'mat) then
         <<matinput:=t; v := cdr v>>
-     else if eqcar(v,'LIST) then
+     else if eqcar(v,'list) then
       v := for each row in cdr v collect
-        if not eqcar(row,'LIST) then typerr ("matrix",u) else
+        if not eqcar(row,'list) then typerr ("matrix",u) else
         <<row := cdr row;
           if null n then n := length row else
           if n neq length row
@@ -46,8 +46,8 @@ symbolic procedure nullspace!-eval u;
           row>> else rerror(matrix,16,"Not a matrix");
      v := nullspace!-alg v;
      return 'list . for each vect in v collect
-         if matinput then 'MAT . for each x in vect collect list x
-           else 'LIST . vect;
+         if matinput then 'mat . for each x in vect collect list x
+           else 'list . vect;
    end;
 
 symbolic procedure nullspace!-alg(m);

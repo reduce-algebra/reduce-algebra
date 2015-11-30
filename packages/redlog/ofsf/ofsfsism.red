@@ -92,6 +92,40 @@ procedure ofsf_smcpknowl(knowl);
    for each ir in knowl collect
       car ir . append(cdr ir,nil);
 
+%%%%%%%MAX
+procedure ofsf_smupdknowltagged(op,a,tag,knowl,n);
+   % Ordered field standard form update knowledge. [op] is one of
+   % [and], [or]; [atl] is a list of (simplified) atomic formulas;
+   % [knowl] is a conjunctive IRL; [n] is the current level. Returns
+   % an IRL. Destructively updates [knowl] wrt. the [atl] information.
+   begin scalar w,w2,ir,taglist;
+      	 if knowl='false then return knowl;
+	 a := if op eq 'and then a else ofsf_negateat a;
+	 ir := ofsf_at2ir(a,n);
+	 if w := assoc(car ir,knowl) then <<
+	    w2 := for each j in w collect j;
+	    cdr w := ofsf_sminsert(cadr ir,cdr w);
+	    if not (cdr w = cdr w2 and n=caadr w) then <<
+	       taglist:=ic_taglist(rlqeicdata!*);
+	       w2 := assoc(car w, taglist);
+	       cdr w2 := {tag,cdadr ir,n} . cdr w2
+	    >>;
+	    if cdr w eq 'false then <<
+	       knowl := 'false;
+	       ic_appendtaglist(rlqeicdata!*, ('false . threepointsearch(cdr
+		  w2)))
+	    >>  % else [ofsf_sminsert] has updated [cdr w] destructively.
+	 >> else <<
+	    ic_appendtaglist(rlqeicdata!*,(car ir . {tag,cdadr ir,n} . nil));
+	    knowl := ir . knowl
+	 >>;
+      return knowl
+   end;
+
+%%%%%%%MAX
+procedure tagflat(tag);
+   if listp caar tag then {for each j in car tag join if listp car j then copy(car j) else {copy(car j)},cadr tag, caddr tag} else tag;
+
 procedure ofsf_smupdknowl(op,atl,knowl,n);
    % Ordered field standard form update knowledge. [op] is one of
    % [and], [or]; [atl] is a list of (simplified) atomic formulas;
@@ -105,9 +139,6 @@ procedure ofsf_smupdknowl(op,atl,knowl,n);
 	 if w := assoc(car ir,knowl) then <<
 	    cdr w := ofsf_sminsert(cadr ir,cdr w);
 	    if cdr w eq 'false then <<
-	       % If we have found false, we can compute a locally
-	       % infeasible core
-	       if !*rlqeicsimpl then ofsf_infcore(ir);
 	       atl := nil;
 	       knowl := 'false
 	    >>  % else [ofsf_sminsert] has updated [cdr w] destructively.
@@ -117,155 +148,125 @@ procedure ofsf_smupdknowl(op,atl,knowl,n);
       return knowl
    end;
 
-procedure ofsf_infcore(ir);
-begin scalar sf,fvect,essential; integer a,b,c;
-   ic_setknowl(rlqeicdata!*,ir . nil);
-   a:=nil;
-   b:=nil;
-   c:=nil;
-   fvect:=ic_currentfvect(rlqeicdata!*);
-   essential:=ic_essentialvect(rlqeicdata!*);
-   for i:=0:upbv(fvect) do 
-      if getv(essential,i) then <<
-      	 sf:=getv(fvect,i);
-      	 if not (sf eq 'true) then {a,b,c} := ofsf_infcore1(sf,i,a,b,c);
+%%%%%%%MAX
+procedure threepointsearch(v);
+begin scalar u,l,e,n,lb,ub,eb,eberror,nb,val;
+   for each i in v do <<
+      val:=if cadadr i then {if (cdr cdadr i) < 0 then cadadr i else - cadadr i,if (cdr cdadr i < 0) then -cdr cdadr i
+      else cdr cdadr i} else {0,1};
+      if caadr i eq 'leq then <<
+      	 if null ub then ub:=val;
+	 if not u or (cadr val) * (car ub) > (cadr ub) * (car val) then <<
+	    u:=i;
+	    ub:=val
+	 >>
       >>;
-   for i:=0:upbv(fvect) do
-      if not getv(essential,i) then <<
-      	 sf:=getv(fvect,i);
-      	 if not (sf eq 'true) then {a,b,c} := ofsf_infcore1(sf,i,a,b,c);
+      if caadr i eq 'lessp then <<
+      	 if null ub then ub:=val;
+	 if (cadr val) * (car ub)>=(cadr ub) * (car val) then <<
+	    u:=i;
+	    ub:=val
+	 >>
       >>;
-   putv(ic_essentialvect(rlqeicdata!*),a,T);
-   putv(ic_essentialvect(rlqeicdata!*),c,T);
-   if b and b>0 then putv(ic_essentialvect(rlqeicdata!*),b,T);
-end;
-
-procedure ofsf_infcore1(sf,k,a,b,c);
-begin;
-   if (car sf eq 'and) then  <<
-      for each ssf in rl_argn sf do {a,b,c} := ofsf_threepointsearch(ssf,k,a,b,c,car ssf);
-      return {a,b,c};
-   >> else return ofsf_threepointsearch(sf,k,a,b,c,car sf);
-   return {a,b,c};
-end;
-
-procedure ofsf_threepointsearch(sf,k,a,b,c,op);
-begin scalar ir2,knowl,knowl2,wt,new,foundBreak; integer na,nb,nc;
-   if op eq 'or then <<
-      na:=a;
-      nb:=b;
-      nc:=c;
-      foundBreak:=nil;
-      for each ssf in rl_argn(sf) do <<
-	 {na,nb,nc} := ofsf_threepointsearch(ssf,k,na,nb,nc,car ssf);
-	 foundBreak := (a=na) and (b=nb) and (c=nc);
-	 na:=a;
-	 nb:=b;
-	 nc:=c;
+      if caadr i eq 'geq then <<
+	 if null lb then lb:=val;
+	 if null l or (cadr val) * (car lb) < (cadr lb) * (car val) then <<
+	    lb:=val;
+	    l:=i
+	 >>
       >>;
-      if foundBreak then return {a,b,c} else return {na,nb,nc};
-   >>;
-   if op eq 'and then <<
-      na:=a;
-      nb:=b;
-      nc:=c;
-      foundBreak:=nil;
-      for each ssf in rl_argn(sf) do
-	 if not foundBreak then {na,nb,nc} := ofsf_threepointsearch(ssf,k,na,nb,nc,car ssf);
-      if foundBReak then return {na,nb,nc} else return {a,b,c};
-   >>;
-   ir2 := ofsf_at2ir(sf,1);
-   knowl:=ic_knowl(rlqeicdata!*);
-   knowl2:=for each j in knowl collect for each l in j collect l;
-   if assoc(car ir2,knowl2) then <<
-      if (ir2 = car knowl) and not a then a:=k
-      else <<
-   	 wt:= assoc(car ir2,knowl);
-      	 cdr wt := ofsf_sminsert(cadr ir2,cdr wt);
-   	 if cdr wt eq 'false then <<
-   	    if not (b and b eq -1) then <<
-   	       c:=k;
-   	       b:=-1;
-   	    >>;
-   	 >> else if car cdadar knowl2 eq 'neq then <<
-	    if not b then <<
-	       if (cadadr wt eq 'lessp) then b:=k;
-     	    >>;
-	    if not c then <<
-	       if (cadadr wt eq 'greaterp) then c:=k;
-	    >>;
-   	 >> else if not cddr wt then <<
-	    if not b then <<
-	       if ((car cdadar knowl2 eq 'leq) and (cadadr wt eq
-		  'lessp)) or ((car cdadar knowl2 eq 'geq) and
-		     (cadadr wt eq 'greaterp)) then <<
-		     b:=k;
-		  >>;
-	    >>;
-	    if not c then <<
-	       if ((car cdadar knowl2 eq 'leq) and (cadadr wt eq
-		  'equal)) or ((car cdadar knowl2 eq 'geq) and (cadadr
-		     wt eq 'equal)) then <<
-			c:=k;
-		     >>;
-	    >>
-	 >>;
+      if caadr i eq 'greaterp then <<
+      	 if null lb then lb:=val;
+	 if (cadr val) * (car lb) <= (cadr lb) * (car val) then <<
+	    lb:=val;
+	    l:=i
+	 >>
+      >>;
+      if caadr i eq 'neq then n:={i,val}.n;
+      if caadr i eq 'equal then <<
+	 if eb and (not ((cadr val) * (car eb) = (cadr eb) * (car val))) then
+	    eberror:={tagflat(e),tagflat(i)};
+	 e:=i;
+	 eb:=val
       >>
    >>;
-   ic_setknowl(rlqeicdata!*,knowl2);
-   return {a,b,c};
-end;
-
-procedure ofsf_boundinfcore(ir);
-begin scalar knowl,b,fvect,essential,sf;
-   fvect:=ic_currentfvect(rlqeicdata!*);
-   essential:=ic_essentialvect(rlqeicdata!*);
-   for i:=0:upbv(fvect) do 
-      if getv(essential,i) then <<
-      	 sf:=getv(fvect,i);
-      	 {b,knowl} := ofsf_boundinfcore1(sf,ir,knowl,b,i);
-      >>;
-   for i:=0:upbv(fvect) do
-      if not getv(essential,i) then <<
-      	 sf:=getv(fvect,i);
-      	 {b,knowl} := ofsf_boundinfcore1(sf,ir,knowl,b,i);
-      >>;
-   ic_setknowl(rlqeicdata!*,knowl);
-end;
-
-procedure ofsf_boundinfcore1(sf,ir,knowl,b,k);
-begin scalar fir,w,w2;
-   fir:=ofsf_subformulap(sf,ir);
-   if fir and not b then  <<
-      if not knowl then <<
-	 knowl:=fir . knowl;
-	 putv(ic_essentialvect(rlqeicdata!*),k,T);
-      >> else <<
-	 w:=assoc(car fir, knowl);
-	 w2 := for each j in w collect j;
-	 cdr w := ofsf_sminsert(cadr fir,cdr w);
-	 if not (cdr w2 = cdr w) then putv(ic_essentialvect(rlqeicdata!*),k,T);
-      >>;
-      if car knowl = ir then b:=T;
+   if eberror then return eberror;
+   if ub and lb then <<
+      if (cadr lb) * (car ub) < (cadr ub) * (car lb) then return {tagflat(l),tagflat(u)};
+      if (cadr lb) * (car ub) = (cadr ub) * (car lb) and (caadr l eq 'greaterp or caadr u eq 'lessp) then return
+	 {tagflat(l),tagflat(u)}
    >>;
-   return {b,knowl};
+   if eb then <<
+      if ub and (cadr ub) * (car eb) > (cadr eb) * (car ub) then return {tagflat(e),tagflat(u)};
+      if ub and (cadr ub) * (car eb) = (cadr eb) * (car ub) and caadr u eq 'lessp then return {tagflat(e),tagflat(u)};
+      if lb and (cadr lb) * (car eb) = (cadr eb) * (car lb) and caadr l eq 'greaterp then return {tagflat(e),tagflat(l)};
+      if lb and (cadr lb) * (car eb) < (cadr eb) * (car lb) then return {tagflat(e),tagflat(l)}
+   >>;
+   if n then <<
+      for each p in n do <<
+	 nb:=cadr p;
+      	 if lb and ub and (cadr lb) * (car ub)=(cadr ub) * (car lb) and (cadr ub) * (car
+	    nb)=(cadr nb) * (car ub) then eberror:={tagflat(l),tagflat(car p),tagflat(u)};
+      	 if eb and (cadr eb) * (car nb)=(cadr nb) * (car eb) then eberror:={tagflat(car p),tagflat(e)}
+      >>;
+      return eberror
+   >>;
+   ioto_tprin2t{" "};
+   ioto_tprin2t{"v: ",v};
+   ioto_tprin2t{"u: ",u};
+   ioto_tprin2t{"ub: ",ub};
+   ioto_tprin2t{"l: ",l};
+   ioto_tprin2t{"lb: ",lb};
+   ioto_tprin2t{"e: ",e};
+   ioto_tprin2t{"n: ",n};
+   rederr "Error in threepointsearch";
 end;
 
-procedure ofsf_subformulap(sf,f);
-begin scalar w;
-   if not (sf eq 'true) then <<
-      if (car sf eq 'or) then return;
-      if (car sf eq 'and) then  <<
-	 w:=nil;
-	 for each ssf in rl_argn sf do
-	    if not w then w:=ofsf_subformulap(ssf,f);
-	 return w;
-      >> else <<
-	 w:=ofsf_at2ir(sf,1);
-	 if car f = car w then return w;
+%%%%%%%MAX
+procedure inittps(v,value);
+begin scalar u,l,e,n,lb,ub,eb,eberror,nb,val;
+   for each i in v do <<
+      val:=if cadadr i then {if (cdr cdadr i) < 0 then cadadr i else - cadadr i,if (cdr cdadr i < 0) then -cdr cdadr i
+      else cdr cdadr i} else {0,1};
+      if caadr i eq 'leq then <<
+      	 if null ub then ub:=val;
+	 if not u or (cadr val) * (car ub) > (cadr ub) * (car val) then <<
+	    u:=i;
+	    ub:=val
+	 >>
       >>;
+      if caadr i eq 'lessp then <<
+      	 if null ub then ub:=val;
+	 if (cadr val) * (car ub)>=(cadr ub) * (car val) then <<
+	    u:=i;
+	    ub:=val
+	 >>
+      >>;
+      if caadr i eq 'geq then <<
+	 if null lb then lb:=val;
+	 if null l or (cadr val) * (car lb) < (cadr lb) * (car val) then <<
+	    lb:=val;
+	    l:=i
+	 >>
+      >>;
+      if caadr i eq 'greaterp then <<
+      	 if null lb then lb:=val;
+	 if (cadr val) * (car lb) <= (cadr lb) * (car val) then <<
+	    lb:=val;
+	    l:=i
+	 >>
+      >>;
+      if caadr i eq 'neq then n:={i,val}.n;
+      if caadr i eq 'equal then <<
+	 if eb and (not ((cadr val) * (car eb) = (cadr eb) * (car val))) then
+	    eberror:={tagflat(e),tagflat(i)};
+	 if not (e and cadr e = value) then <<
+	    e:=i;
+	    eb:=val
+	 >>
+      >>
    >>;
-   return nil;
+   return {u,l,e,n}
 end;
 
 switch rlsippatl, rlsippsubst, rlsippsignchk;
@@ -279,6 +280,13 @@ procedure ofsf_smmkatl(op,oldknowl,newknowl,n);
    else
       ofsf_smmkatl1(op,oldknowl,newknowl,n);
 
+%%%%%%%MAX
+procedure ofsf_smmkatltagged(op,oldknowl,newknowl,n);
+   if !*rlsippatl then
+      ofsf_sippatltagged(op,ofsf_smmkatl1tagged(op,oldknowl,newknowl,n),newknowl,n)
+   else 
+      ofsf_smmkatl1tagged(op,oldknowl,newknowl,n);
+
 procedure ofsf_smmkatl1(op,oldknowl,newknowl,n);
    % Ordered field standard form make atomic formula list. [op] is one
    % of [and], [or]; [oldknowl] and [newknowl] are IRL's; [n] is an
@@ -289,6 +297,18 @@ procedure ofsf_smmkatl1(op,oldknowl,newknowl,n);
    else  % [op eq 'or]
       ofsf_smmkatl!-or(oldknowl,newknowl,n);
 
+%%%%%%%MAX
+procedure ofsf_smmkatl1tagged(op,oldknowl,newknowl,n);
+   % Ordered field standard form make atomic formula list. [op] is one
+   % of [and], [or]; [oldknowl] and [newknowl] are IRL's; [n] is an
+   % integer. Returns a list of atomic formulas. Depends on switch
+   % [rlsipw].
+   if op eq 'and then
+      ofsf_smmkatl!-andtagged(oldknowl,newknowl,n)
+   else  % [op eq 'or]
+      ofsf_smmkatl!-ortagged(oldknowl,newknowl,n);
+
+
 procedure ofsf_smmkatl!-and(oldknowl,newknowl,n);
    begin scalar w;
       if not !*rlsipw and !*rlsipo then
@@ -296,6 +316,21 @@ procedure ofsf_smmkatl!-and(oldknowl,newknowl,n);
       return for each ir in newknowl join <<
 	 w := atsoc(car ir,oldknowl);
 	 if null w then ofsf_ir2atl('and,ir,n) else ofsf_smmkatl!-and1(w,ir,n)
+      >>;
+   end;
+
+%%%%%%%MAX
+procedure ofsf_smmkatl!-andtagged(oldknowl,newknowl,n);
+   begin scalar w,tag;
+      if not !*rlsipw and !*rlsipo then <<
+	 w:=for each i in newknowl collect {ofsf_ir2atl('and,i,n),cdr assoc(car
+   i,ic_taglist(rlqeicdata!*))};
+	return w;
+      >>;
+      return for each ir in newknowl collect <<
+	 w := atsoc(car ir,oldknowl);
+	 tag:=cdr assoc(car ir,ic_taglist(rlqeicdata!*));
+	 if null w then {ofsf_ir2atl('and,ir,n),tag} else {ofsf_smmkatl!-and1(w,ir,n),tag}
       >>;
    end;
 
@@ -330,6 +365,16 @@ procedure ofsf_smmkat!-and2(odb,ne,parasq);
       else if w memq '(leq geq) then
 	 if not !*rlsipo then
  	    return ofsf_entry2at('and,'neq . cdr ne,parasq)
+   end;
+
+%%%%%%%MAX
+procedure ofsf_smmkatl!-ortagged(oldknowl,newknowl,n);
+   begin scalar w,tag;
+      return for each ir in newknowl collect <<
+	 w := atsoc(car ir,oldknowl);
+	 tag:=cdr assoc(car ir,ic_taglist(rlqeicdata!*));
+	 if null w then {ofsf_ir2atl('or,ir,n),tag} else {ofsf_smmkatl!-or1(w,ir,n),tag}
+      >>;
    end;
 
 procedure ofsf_smmkatl!-or(oldknowl,newknowl,n);
@@ -393,15 +438,6 @@ procedure ofsf_sippatl(op,atl,newknowl);
 	    if !*rlsippsignchk and not sfto_varIsNumP ofsf_arg2l at then
 	       at := ofsf_sippsignchk(at, zvl, posvl, negvl, geqvl, leqvl, neqvl);
 	 if at eq gfalse then <<
-	    if !*rlqeicsimpl then <<
-	       vl := rl_varlat at2;
-	       for each v in vl do <<
-	    	  m := assoc(v,ic_varList(rlqeicdata!*));
-	    	  if m then fl := (cdr m) . fl;
-	       >>;
-	       fl := ofsf_at2ir(at2,1) . fl;
-	       for each ir in fl do ofsf_boundinfcore(ir);
-	    >>;
 	    natl := gfalse;
 	    atl := nil
 	 >> else if at neq gtrue then
@@ -409,6 +445,117 @@ procedure ofsf_sippatl(op,atl,newknowl);
       >>;
       return natl
    end;
+
+%%%%%%%MAX
+procedure ofsf_sippatltagged(op,atl,newknowl,n);
+   begin scalar gtrue, gfalse, gequal, subal, zvl, posvl, negvl, geqvl, leqvl,
+   	 neqvl, at, natl, atl2, at2, ir, vl, m, tagl,w,loctag,asc,newt,found,tmp;
+      gtrue := cl_cflip('true, op eq 'and);
+      gfalse := cl_cflip('false, op eq 'and);
+      gequal := ofsf_clnegrel('equal, op eq 'and);
+      {subal, zvl, posvl, negvl, geqvl, leqvl, neqvl} :=
+ 	 ofsf_exploitKnowl newknowl;
+      while atl do <<
+	 loctag:=nil;
+	 atl2 := pop atl;
+	 if caddr caadr atl2 eq n then for each i in cadr atl2 do 
+	    if listp caar i then for each j in car i do <<
+	       loctag:=lto_insertq(j,loctag);
+	       tagl:=j . tagl;
+	    >> else <<
+	       loctag:=lto_insertq(i,loctag);
+	       tagl:=i. tagl;
+	    >>;
+	 for each at in car atl2 do <<
+	    if not null at then <<
+	       at2:=copy(at);
+	       if !*rlsippsubst and not ofsf_vareqnp(gequal, at) then <<
+	       	  vl := rl_varlat at;
+		  for each v in (for each i in subal collect car i) do <<
+		     if containsp(vl,v) then <<
+	    	     	m := assoc(v,ic_varList(rlqeicdata!*));
+		     	w:=cdr assoc(cadr m,ic_taglist(rlqeicdata!*));
+		     	for each i in w do <<
+			   if listp caar i then for each j in car i do <<
+			      loctag:=lto_insertq(j,loctag);
+			      tagl:=j . tagl
+			   >> else <<
+			      loctag:=lto_insertq(i,loctag);
+			      tagl:=i. tagl;
+			   >>
+		     	>>;
+		     >>;
+		  >>;
+	       	  at := ofsf_sippsubst(at, subal);
+	       	  at := ofsf_simplat1(at,op) where !*rlsiatadv=nil;
+	       >>;
+	       if not rl_tvalp at then
+	       	  if !*rlsippsignchk and not sfto_varIsNumP ofsf_arg2l at then
+	       	     at := ofsf_sippsignchk(at, zvl, posvl, negvl, geqvl, leqvl,
+   			neqvl);
+	       if not ((at eq gfalse) or (at = at2)) then <<
+	       	  vl := rl_varlat at2;
+	       	  for each v in vl do <<
+		     m := assoc(v,ic_varList(rlqeicdata!*));
+		     if m then <<
+		     	w:=cdr assoc(cadr m,ic_taglist(rlqeicdata!*));
+		     	for each i in w do <<
+			   if listp caar i then for each j in car i do <<
+			      loctag:=lto_insertq(j,loctag);
+			      tagl:=j . tagl;
+			   >> else <<
+			      loctag:=lto_insertq(i,loctag);
+			      tagl:=i. tagl;
+			   >>
+		     	>>;
+		     >>;
+	       	  >>;
+	       >>;
+	       if n=-1 and not (at eq gtrue or at eq gfalse
+		  ) then <<
+		  ir:=ofsf_at2ir(at,n);
+		  asc:=assoc(car ir,ic_taglist rlqeicdata!*);
+		  newt:={for each i in loctag join tagnumbers(i),cdadr ir,-1};
+		  if asc then <<
+		     found:=nil;
+		     tmp:=asc;
+		     while tmp and not found do <<
+			if car tmp = newt then found:=T;
+			tmp:=cdr tmp;
+		     >>;
+		     if not found then cdr asc:=newt . cdr asc;
+		  >> else <<
+		     ic_appendtaglist(rlqeicdata!*,car ir . {{for each i in loctag join tagnumbers(i),cdadr ir,-1}});
+		  >>;
+	       >>;
+	       if at eq gfalse then <<
+		  tagl:=nil;
+	 	  if caddr caadr atl2 eq n then for each i in cadr atl2 do 
+	   		      if listp caar i then for each j in car i do tagl:=j . tagl else
+   	      			 tagl:=i. tagl; 
+	       	  vl := rl_varlat at2;
+	       	  for each v in vl do <<
+	    	     m := assoc(v,ic_varList(rlqeicdata!*));
+	    	     if m then <<
+		     	w:=cdr assoc(cadr m,ic_taglist(rlqeicdata!*));
+			for each i in w do <<
+	   		      if listp caar i then for each j in car i do tagl:=j . tagl else
+   	      			 tagl:=i. tagl;
+			>>;
+		     >>;
+		  >>;
+	       	  natl := gfalse;
+	       	  atl := nil
+	       >> else if at neq gtrue then <<
+	       	  natl := lto_insert(at, natl)
+	       >>;
+	    >>;
+	 >>;
+      >>;
+      ic_setvarlist(rlqeicdata!*,nil);
+      return {natl,tagl};
+   end;
+
 
 procedure ofsf_vareqnp(gequal, at);
    % The original idea here was to check also that [ofsf_op at] is [gequal] but
@@ -550,6 +697,7 @@ procedure ofsf_updSignMult(old,new);
    else
       'unknown;
 
+%%%%%%%MAX
 procedure ofsf_exploitKnowl(knowl);
    begin
       scalar subal, zvl, posvl, negvl, geqvl, leqvl, neqvl, v, rel, a;
@@ -563,7 +711,8 @@ procedure ofsf_exploitKnowl(knowl);
 	       if rel eq 'equal then
 		  if !*rlsippsubst then <<
 		     subal := (v . a) . subal;
-		     if !*rlqeicsimpl then ic_insertvarlist(rlqeicdata!*,v . ir);
+		     if !*rlqeicsimpl then 
+			ic_insertvarlist(rlqeicdata!*,v . ir);
 		  >>
 		  else
 	       	     (if n > 0 then
@@ -574,33 +723,41 @@ procedure ofsf_exploitKnowl(knowl);
  		     	zvl := lto_insertq(v, zvl))
 	       else if rel eq 'greaterp then
 		  (if n >= 0 then <<
-		     if !*rlqeicsimpl then ic_insertvarlist(rlqeicdata!*,v . ir);
+		     if !*rlqeicsimpl then 
+			ic_insertvarlist(rlqeicdata!*,v . ir);
 		     posvl := lto_insertq(v, posvl)>>)
 	       else if rel eq 'geq then
  		  (if n > 0 then <<
-		     if !*rlqeicsimpl then ic_insertvarlist(rlqeicdata!*,v . ir);
+		     if !*rlqeicsimpl then 
+			ic_insertvarlist(rlqeicdata!*,v . ir);
 		     posvl := lto_insertq(v, posvl)
 		  >> else if eqn(n,0) then <<
-		     if !*rlqeicsimpl then ic_insertvarlist(rlqeicdata!*,v . ir);
+		     if !*rlqeicsimpl then 
+			ic_insertvarlist(rlqeicdata!*,v . ir);
 		     geqvl := lto_insertq(v, geqvl)>>)
 	       else if rel eq 'lessp then
 		  (if n <= 0 then <<
-		     if !*rlqeicsimpl then ic_insertvarlist(rlqeicdata!*,v . ir);
+		     if !*rlqeicsimpl then 
+			ic_insertvarlist(rlqeicdata!*,v . ir);
 		  negvl := lto_insertq(v, negvl)>>)
 	       else if rel eq 'leq then
  		  (if n < 0 then <<
-		     if !*rlqeicsimpl then ic_insertvarlist(rlqeicdata!*,v . ir);
+		     if !*rlqeicsimpl then 
+			ic_insertvarlist(rlqeicdata!*,v . ir);
 		     negvl := lto_insertq(v, negvl)
 		  >> else if eqn(n,0) then <<
-		     if !*rlqeicsimpl then ic_insertvarlist(rlqeicdata!*,v . ir);
+		     if !*rlqeicsimpl then 
+			ic_insertvarlist(rlqeicdata!*,v . ir);
 		     leqvl := lto_insertq(v, leqvl)>>)
 	       else if rel eq 'neq then
  		  (if eqn(n,0) then <<
-		     if !*rlqeicsimpl then ic_insertvarlist(rlqeicdata!*,v . ir);
+		     if !*rlqeicsimpl then 
+			ic_insertvarlist(rlqeicdata!*,v . ir);
 		     neqvl := lto_insertq(v, neqvl)>>)
       	    >>;
       return {subal, zvl, posvl, negvl, geqvl, leqvl, neqvl}
    end;
+
 
 procedure ofsf_sippsubst(f,al);
    if al then ofsf_sippsubst1(f,al) else f;

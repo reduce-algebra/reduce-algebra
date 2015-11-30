@@ -37,171 +37,171 @@ module bibasis_polynom;
 % poly k_1 + ... k_n = k_1 . ... . k_n . (nil . nil)
 
 
-accessors (PolynomGetLm . _);
+accessors (polynomgetlm . _);
 
-expr procedure PolynomClone(polynom);
-begin scalar tmpPolynom, polynomIterator;
-    polynomIterator := polynom;
-    while polynomIterator do
+expr procedure polynomclone(polynom);
+begin scalar tmppolynom, polynomiterator;
+    polynomiterator := polynom;
+    while polynomiterator do
     <<
-        tmpPolynom := MonomClone(car(polynomIterator)) . tmpPolynom;
-        polynomIterator := cdr(polynomIterator);
+        tmppolynom := monomclone(car(polynomiterator)) . tmppolynom;
+        polynomiterator := cdr(polynomiterator);
     >>;
-    return reverse(tmpPolynom);
+    return reverse(tmppolynom);
 end;
 
 
 % writes result in polynom
-expr procedure PolynomMultiplyByVariable(polynom, variable);
-begin scalar tmpPolynomNoVariable, polynomIterator;
-    polynomIterator := polynom;
-    while car(polynomIterator) do
+expr procedure polynommultiplybyvariable(polynom, variable);
+begin scalar tmppolynomnovariable, polynomiterator;
+    polynomiterator := polynom;
+    while car(polynomiterator) do
     <<
-        if eqn(MonomGetVariableDegree(car(polynomIterator), variable), 0) then
+        if eqn(monomgetvariabledegree(car(polynomiterator), variable), 0) then
         <<
-            tmpPolynomNoVariable := car(polynomIterator) . tmpPolynomNoVariable;
-            bibasis_remove(polynomIterator);
+            tmppolynomnovariable := car(polynomiterator) . tmppolynomnovariable;
+            bibasis_remove(polynomiterator);
         >>
         else
         <<
-            polynomIterator := cdr(polynomIterator);
+            polynomiterator := cdr(polynomiterator);
         >>;
     >>;
-    tmpPolynomNoVariable := nil . tmpPolynomNoVariable;
-    tmpPolynomNoVariable := reverse(tmpPolynomNoVariable);
+    tmppolynomnovariable := nil . tmppolynomnovariable;
+    tmppolynomnovariable := reverse(tmppolynomnovariable);
     
-    polynomIterator := tmpPolynomNoVariable;
-    while car(polynomIterator) do
+    polynomiterator := tmppolynomnovariable;
+    while car(polynomiterator) do
     <<
-        MonomMultiplyByVariable(car(polynomIterator), variable);
-        polynomIterator := cdr(polynomIterator);
+        monommultiplybyvariable(car(polynomiterator), variable);
+        polynomiterator := cdr(polynomiterator);
     >>;
     
-    PolynomAdd(polynom, tmpPolynomNoVariable);
+    polynomadd(polynom, tmppolynomnovariable);
 end;
 
 
 % returns new polynom
-expr procedure PolynomMultiplyByMonom(polynom, monom);
+expr procedure polynommultiplybymonom(polynom, monom);
 if null(polynom) then
     nil
-else begin scalar tmpPolynom, exponent;
-    tmpPolynom := PolynomClone(polynom);
-    exponent := MonomGetExponent(monom);
+else begin scalar tmppolynom, exponent;
+    tmppolynom := polynomclone(polynom);
+    exponent := monomgetexponent(monom);
     while car(exponent) do
     <<
-        PolynomMultiplyByVariable(tmpPolynom, car(exponent));
+        polynommultiplybyvariable(tmppolynom, car(exponent));
         exponent := cdr(exponent);
     >>;
-    return tmpPolynom;
+    return tmppolynom;
 end;
 
 
 % writes result in polynom1
-expr procedure PolynomAdd(polynom1, polynom2);
-begin scalar tmpPolynom1, tmpPolynom2; integer monomCompare;
-    tmpPolynom1 := polynom1;
-    tmpPolynom2 := polynom2;
-    while and(PolynomGetLm(tmpPolynom1), PolynomGetLm(tmpPolynom2)) do 
+expr procedure polynomadd(polynom1, polynom2);
+begin scalar tmppolynom1, tmppolynom2; integer monomcompare;
+    tmppolynom1 := polynom1;
+    tmppolynom2 := polynom2;
+    while and(polynomgetlm(tmppolynom1), polynomgetlm(tmppolynom2)) do 
     <<
-        monomCompare := MonomCompare(PolynomGetLm(tmpPolynom1), PolynomGetLm(tmpPolynom2));
-        if monomCompare = 1 then
+        monomcompare := monomcompare(polynomgetlm(tmppolynom1), polynomgetlm(tmppolynom2));
+        if monomcompare = 1 then
         <<
-            tmpPolynom1 := cdr(tmpPolynom1);
+            tmppolynom1 := cdr(tmppolynom1);
         >>
-        else if monomCompare = -1 then 
+        else if monomcompare = -1 then 
         <<
-            bibasis_insert(tmpPolynom1, car(tmpPolynom2));
-            tmpPolynom1 := cdr(tmpPolynom1);
-            tmpPolynom2 := cdr(tmpPolynom2);
+            bibasis_insert(tmppolynom1, car(tmppolynom2));
+            tmppolynom1 := cdr(tmppolynom1);
+            tmppolynom2 := cdr(tmppolynom2);
         >>
         else
         <<
-            bibasis_remove(tmpPolynom1);
-            tmpPolynom2 := cdr(tmpPolynom2);
+            bibasis_remove(tmppolynom1);
+            tmppolynom2 := cdr(tmppolynom2);
         >>;
     >>;
-    if car(tmpPolynom2) then
+    if car(tmppolynom2) then
     <<
-        bibasis_remove(rplacd(tmpPolynom1, tmpPolynom2));
+        bibasis_remove(rplacd(tmppolynom1, tmppolynom2));
     >>;
     return polynom1;
 end;
 
 
 % writes result in polynom1
-expr procedure PolynomReduceBy(polynom1, polynom2);
-begin scalar break, tmpMonom, tmpPolynom;
+expr procedure polynomreduceby(polynom1, polynom2);
+begin scalar break, tmpmonom, tmppolynom;
     while (not break) do
     <<
-        tmpPolynom := polynom1;
-        while and(PolynomGetLm(tmpPolynom),
-                  not MonomIsDivisibleBy(PolynomGetLm(tmpPolynom), PolynomGetLm(polynom2))) do
+        tmppolynom := polynom1;
+        while and(polynomgetlm(tmppolynom),
+                  not monomisdivisibleby(polynomgetlm(tmppolynom), polynomgetlm(polynom2))) do
         <<
-            tmpPolynom := cdr(tmpPolynom);
+            tmppolynom := cdr(tmppolynom);
         >>;
         
-        if not PolynomGetLm(tmpPolynom) then
+        if not polynomgetlm(tmppolynom) then
         <<
             break := t;
         >>
         else
         <<
-            tmpMonom := MonomDivide(PolynomGetLm(tmpPolynom), PolynomGetLm(polynom2));
-            PolynomAdd(polynom1, PolynomMultiplyByMonom(polynom2, tmpMonom));
+            tmpmonom := monomdivide(polynomgetlm(tmppolynom), polynomgetlm(polynom2));
+            polynomadd(polynom1, polynommultiplybymonom(polynom2, tmpmonom));
         >>;
     >>;
-    FluidBibasisReductionsMade := iadd1(FluidBibasisReductionsMade);
+    fluidbibasisreductionsmade := iadd1(fluidbibasisreductionsmade);
 end;
 
 
 % writes result in polynom1
-expr procedure PolynomHeadReduceBy(polynom1, polynom2);
-begin scalar break, tmpMonom;
-    while and(PolynomGetLm(polynom1), not break) do
+expr procedure polynomheadreduceby(polynom1, polynom2);
+begin scalar break, tmpmonom;
+    while and(polynomgetlm(polynom1), not break) do
     <<
-        if MonomIsDivisibleBy(PolynomGetLm(polynom1), PolynomGetLm(polynom2)) then
+        if monomisdivisibleby(polynomgetlm(polynom1), polynomgetlm(polynom2)) then
         <<
-            tmpMonom := MonomDivide(PolynomGetLm(polynom1), PolynomGetLm(polynom2));
-            PolynomAdd(polynom1, PolynomMultiplyByMonom(polynom2, tmpMonom));
+            tmpmonom := monomdivide(polynomgetlm(polynom1), polynomgetlm(polynom2));
+            polynomadd(polynom1, polynommultiplybymonom(polynom2, tmpmonom));
         >>
         else
         <<
             break := t;
         >>;
     >>;
-    FluidBibasisReductionsMade := iadd1(FluidBibasisReductionsMade);
+    fluidbibasisreductionsmade := iadd1(fluidbibasisreductionsmade);
 end;
 
 
-expr procedure PolynomCompare(polynom1, polynom2);
-begin scalar tmpPolyIterator1, tmpPolyIterator2; integer monomCompare;
-    tmpPolyIterator1 := polynom1;
-    tmpPolyIterator2 := polynom2;
+expr procedure polynomcompare(polynom1, polynom2);
+begin scalar tmppolyiterator1, tmppolyiterator2; integer monomcompare;
+    tmppolyiterator1 := polynom1;
+    tmppolyiterator2 := polynom2;
     
-    while car(tmpPolyIterator1) and car(tmpPolyIterator2) do
+    while car(tmppolyiterator1) and car(tmppolyiterator2) do
     <<
-        monomCompare := MonomCompare(car(tmpPolyIterator1), car(tmpPolyIterator2));
-        if monomCompare = 1 then
+        monomcompare := monomcompare(car(tmppolyiterator1), car(tmppolyiterator2));
+        if monomcompare = 1 then
         <<
-            tmpPolyIterator2 := (nil . nil);
+            tmppolyiterator2 := (nil . nil);
         >>
-        else if monomCompare = -1 then
+        else if monomcompare = -1 then
         <<
-            tmpPolyIterator1 := (nil . nil);
+            tmppolyiterator1 := (nil . nil);
         >>
         else
         <<
-            tmpPolyIterator1 := cdr(tmpPolyIterator1);
-            tmpPolyIterator2 := cdr(tmpPolyIterator2);
+            tmppolyiterator1 := cdr(tmppolyiterator1);
+            tmppolyiterator2 := cdr(tmppolyiterator2);
         >>;
     >>;
     
-    if car(tmpPolyIterator1) then
+    if car(tmppolyiterator1) then
     <<
         return 1;
     >>
-    else if car(tmpPolyIterator2) then
+    else if car(tmppolyiterator2) then
     <<
         return -1;
     >>
@@ -212,7 +212,7 @@ begin scalar tmpPolyIterator1, tmpPolyIterator2; integer monomCompare;
 end;
 
 
-expr procedure PolynomRead(polynom);
+expr procedure polynomread(polynom);
 if null(polynom) then 
 <<
     (nil . nil)
@@ -221,56 +221,56 @@ else if domainp(polynom) then
 <<
     if eqn(remainder(polynom, 2), 1) then
     <<
-        (CreateMonomUnit() . (nil . nil))
+        (createmonomunit() . (nil . nil))
     >>
     else
     <<
         (nil . nil)
     >>
 >>
-else if member(mvar(polynom), FluidBibasisVariables) then
+else if member(mvar(polynom), fluidbibasisvariables) then
 <<
-    PolynomAdd(PolynomMultiplyByMonom(PolynomRead(lc(polynom)), 
-                                      cdr(assoc(mvar(polynom), FluidBibasisSingleVariableMonomialsA))),
-               PolynomRead(red(polynom)))
+    polynomadd(polynommultiplybymonom(polynomread(lc(polynom)), 
+                                      cdr(assoc(mvar(polynom), fluidbibasissinglevariablemonomialsa))),
+               polynomread(red(polynom)))
 >>
 else
 <<
-    PolynomAdd(PolynomMultiplyByMonom(PolynomRead(lc(polynom)), CreateMonomUnit()), PolynomRead(red(polynom)));
+    polynomadd(polynommultiplybymonom(polynomread(lc(polynom)), createmonomunit()), polynomread(red(polynom)));
 >>;
 
 
-expr procedure PolynomWrite(polynom);
-if null(PolynomGetLm(polynom)) then
+expr procedure polynomwrite(polynom);
+if null(polynomgetlm(polynom)) then
 <<
     nil
 >>
-else if MonomGetDegree(PolynomGetLm(polynom)) = 0 then
+else if monomgetdegree(polynomgetlm(polynom)) = 0 then
 <<
     1
 >>
 else
 <<
-    (MonomWrite(PolynomGetLm(polynom)) . PolynomWrite(cdr(polynom)))
+    (monomwrite(polynomgetlm(polynom)) . polynomwrite(cdr(polynom)))
 >>;
 
 
-expr procedure PolynomPrint(polynom);
-begin scalar currentMonom;
-    currentMonom := polynom;
-    if null(car(currentMonom)) then
+expr procedure polynomprint(polynom);
+begin scalar currentmonom;
+    currentmonom := polynom;
+    if null(car(currentmonom)) then
     <<
         prin2 "0";
     >>
     else
     <<
-        MonomPrint(car(currentMonom));
-        currentMonom := cdr(currentMonom);
-        while car(currentMonom) do
+        monomprint(car(currentmonom));
+        currentmonom := cdr(currentmonom);
+        while car(currentmonom) do
         <<
             prin2 " + ";
-            MonomPrint(car(currentMonom));
-            currentMonom := cdr(currentMonom);
+            monomprint(car(currentmonom));
+            currentmonom := cdr(currentmonom);
         >>;
     >>;
 end;

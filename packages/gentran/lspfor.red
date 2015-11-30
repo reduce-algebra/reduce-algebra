@@ -69,7 +69,7 @@ switch double;
 % GENTRAN Global Variables %
 
 global '(!*notfortranfuns!* !*endofloopstack!* !*subprogname!*)$
-!*notfortranfuns!*:= '(acosh asinh atanh cot dilog ei erf sec)$
+!*notfortranfuns!*:= '(acosh asinh atanh cot dilog Ei erf sec)$
                         %mcd 10/11/87
 !*endofloopstack!* := nil$
 !*subprogname!*    := nil$  %name of subprogram being generated
@@ -251,12 +251,12 @@ else
         fortexp1(!*gi2cr exp,wtin)
     else if car exp eq '!:cr!: then
         if !*double and !*f90 then
-            ('CMPLX!().append(fortexp1(cons('!:rd!:,cadr exp),wtin),
+            ('cmplx!().append(fortexp1(cons('!:rd!:,cadr exp),wtin),
               ('!,).append(fortexp1(cons('!:rd!:,cddr exp),wtin),
-              list( '!, , 'KIND!(!1!.!0!D!0!) , '!) ))
+              list( '!, , 'kind!(!1!.!0!D!0!) , '!) ))
             )
         else
-            ('CMPLX!().append(fortexp1(cons('!:rd!:,cadr exp),wtin),
+            ('cmplx!().append(fortexp1(cons('!:rd!:,cadr exp),wtin),
               ('!,).append(fortexp1(cons('!:rd!:,cddr exp),wtin),
                            list '!)))
                % We must make this list up at run time, since there's
@@ -632,7 +632,7 @@ mkffortwrite cdr stmt$
 % properties being evaluated in certain circumstances.  MCD 28.3.94
 symbolic inline procedure fortexp_name(u);
    if atom u then list(u)
-    else rplaca(fortexp ('dummyArrayToken . cdr u), car u)$
+    else rplaca(fortexp ('dummyarraytoken . cdr u), car u)$
 
 symbolic procedure mkffortassign(lhs, rhs);
 append(append(mkforttab() . fortexp_name lhs, '!= . fortexp rhs),
@@ -784,7 +784,7 @@ for each elt in lst do
                  then str:=subst('!D,'!e,str)
                  else if memq('!E,str) % some LISPs use E not e
                       then str:=subst('!D,'!E,str)
-                      else str:=append(str,'(D !0))
+                      else str:=append(str,'(d !0))
            else if memq('!e,str) then
                    str:=subst('!E,'!e,str);
            % get the casing conventions correct

@@ -33,81 +33,81 @@ module bibasis_involutive;
 % POSSIBILITY OF SUCH DAMAG
 
 
-expr procedure Init();
+expr procedure init();
 begin integer i;
-    FluidBibasisReversedVariables := reverse(FluidBibasisVariables);
+    fluidbibasisreversedvariables := reverse(fluidbibasisvariables);
     
-    InitMonomials();
+    initmonomials();
     
     i := 0;
-    FluidBibasisSingleVariableMonomialsA := for each v in FluidBibasisVariables collect(v . getv(FluidBibasisSingleVariableMonomialsS, i := i+1));
+    fluidbibasissinglevariablemonomialsa := for each v in fluidbibasisvariables collect(v . getv(fluidbibasissinglevariablemonomialss, i := i+1));
     
-    SetTReset();
-    SetQReset();
+    settreset();
+    setqreset();
     
-    FluidBibasisReductionsMade := 0;
-    FluidBibasisNormalForms := 0;
-    FluidBibasisNonZeroNormalForms := 0;
+    fluidbibasisreductionsmade := 0;
+    fluidbibasisnormalforms := 0;
+    fluidbibasisnonzeronormalforms := 0;
 end;
 
 
-expr procedure SortedPolynomListInsert(polynomList, polynom);
-begin scalar polynomListIterator;
-    polynomListIterator := polynomList;
-    while and(car(polynomListIterator),
-              neq(PolynomCompare(car(polynomListIterator), polynom), -1)) do
+expr procedure sortedpolynomlistinsert(polynomlist, polynom);
+begin scalar polynomlistiterator;
+    polynomlistiterator := polynomlist;
+    while and(car(polynomlistiterator),
+              neq(polynomcompare(car(polynomlistiterator), polynom), -1)) do
     <<
-        polynomListIterator := cdr(polynomListIterator);
+        polynomlistiterator := cdr(polynomlistiterator);
     >>;
-    bibasis_insert(polynomListIterator, polynom);
+    bibasis_insert(polynomlistiterator, polynom);
 end;
 
 
-expr procedure PolynomListFindDivisor(polynomList, polynom, toGroebner);
-if or(null(PolynomGetLm(polynom)),
-      null(car(polynomList))) then
+expr procedure polynomlistfinddivisor(polynomlist, polynom, togroebner);
+if or(null(polynomgetlm(polynom)),
+      null(car(polynomlist))) then
     nil
-else begin scalar tmpMonom, currentPolynom, break;
-    tmpMonom := PolynomGetLm(polynom);
-    currentPolynom := polynomList;
+else begin scalar tmpmonom, currentpolynom, break;
+    tmpmonom := polynomgetlm(polynom);
+    currentpolynom := polynomlist;
     
-    while and(car(currentPolynom), not(break)) do
+    while and(car(currentpolynom), not(break)) do
     <<
-        if or(and(toGroebner, MonomIsDivisibleBy(tmpMonom, PolynomGetLm(car(currentPolynom)))),
-              and(not(toGroebner), MonomIsPommaretDivisibleBy(tmpMonom, PolynomGetLm(car(currentPolynom))))
+        if or(and(togroebner, monomisdivisibleby(tmpmonom, polynomgetlm(car(currentpolynom)))),
+              and(not(togroebner), monomispommaretdivisibleby(tmpmonom, polynomgetlm(car(currentpolynom))))
               ) then
         <<
             break := t;
         >>
         else
         <<
-            currentPolynom := cdr(currentPolynom);
+            currentpolynom := cdr(currentpolynom);
         >>;
     >>;
-    return car(currentPolynom);
+    return car(currentpolynom);
 end;
 
 
 %returns new polynom, the argument polynom itself will be destroyed
-expr procedure PolynomListReduce(polynomList, polynom, toGroebner);
+expr procedure polynomlistreduce(polynomlist, polynom, togroebner);
 begin scalar result, divisor;
     result := (nil . nil);
-    if null(PolynomGetLm(polynom)) then
+    if null(polynomgetlm(polynom)) then
     <<
         return result;
     >>;
     
-    while PolynomGetLm(polynom) do
+    while polynomgetlm(polynom) do
     <<
-        divisor := PolynomListFindDivisor(polynomList, polynom, toGroebner);
+        divisor := polynomlistfinddivisor(polynomlist, polynom, togroebner);
         while divisor do
         <<
-            PolynomReduceBy(polynom, divisor);
-            divisor := PolynomListFindDivisor(polynomList, polynom, toGroebner);
+            polynomreduceby(polynom, divisor);
+            divisor := polynomlistfinddivisor(polynomlist, polynom, togroebner);
         >>;
-        if PolynomGetLm(polynom) then
+        if polynomgetlm(polynom) then
         <<
-            PolynomAdd(result, (PolynomGetLm(polynom) . (nil . nil)));
+            polynomadd(result, (polynomgetlm(polynom) . (nil . nil)));
             bibasis_remove(polynom);
         >>;
     >>;
@@ -116,158 +116,158 @@ begin scalar result, divisor;
 end;
 
 
-expr procedure PolynomListAutoReduce(polynomList, toGroebner);
-begin scalar tmpPolynomList, tmpPolynom, tmpMonom, tmpPolynomIterator;
-    tmpPolynomList := (nil . nil);
+expr procedure polynomlistautoreduce(polynomlist, togroebner);
+begin scalar tmppolynomlist, tmppolynom, tmpmonom, tmppolynomiterator;
+    tmppolynomlist := (nil . nil);
     
-    while car(polynomList) do
+    while car(polynomlist) do
     <<
-        tmpPolynom := PolynomListReduce(tmpPolynomList, car(polynomList), toGroebner);
-        bibasis_remove(polynomList);
+        tmppolynom := polynomlistreduce(tmppolynomlist, car(polynomlist), togroebner);
+        bibasis_remove(polynomlist);
         
-        if PolynomGetLm(tmpPolynom) then
+        if polynomgetlm(tmppolynom) then
         <<
-            tmpMonom := PolynomGetLm(tmpPolynom);
-            tmpPolynomIterator := tmpPolynomList;
-            while car(tmpPolynomIterator) do
+            tmpmonom := polynomgetlm(tmppolynom);
+            tmppolynomiterator := tmppolynomlist;
+            while car(tmppolynomiterator) do
             <<
-                if MonomIsDivisibleBy(PolynomGetLm(car(tmpPolynomIterator)), tmpMonom) then
+                if monomisdivisibleby(polynomgetlm(car(tmppolynomiterator)), tmpmonom) then
                 <<
-                    PushBack(polynomList, car(tmpPolynomIterator));
-                    bibasis_remove(tmpPolynomIterator);
+                    pushback(polynomlist, car(tmppolynomiterator));
+                    bibasis_remove(tmppolynomiterator);
                 >>
                 else
                 <<
-                    tmpPolynomIterator := cdr(tmpPolynomIterator);
+                    tmppolynomiterator := cdr(tmppolynomiterator);
                 >>;
             >>;
-            PushBack(tmpPolynomList, tmpPolynom);
+            pushback(tmppolynomlist, tmppolynom);
         >>;
     >>;
 
-    tmpPolynomIterator := tmpPolynomList;
-    while car(tmpPolynomIterator) do
+    tmppolynomiterator := tmppolynomlist;
+    while car(tmppolynomiterator) do
     <<
-        tmpPolynom := car(tmpPolynomIterator);
-        bibasis_remove(tmpPolynomIterator);
+        tmppolynom := car(tmppolynomiterator);
+        bibasis_remove(tmppolynomiterator);
 
-        tmpPolynom := PolynomListReduce(tmpPolynomList, tmpPolynom, toGroebner);
+        tmppolynom := polynomlistreduce(tmppolynomlist, tmppolynom, togroebner);
 
-        if tmpPolynom and PolynomGetLm(tmpPolynom) then
+        if tmppolynom and polynomgetlm(tmppolynom) then
         <<
-            bibasis_insert(tmpPolynomIterator, tmpPolynom);
-            tmpPolynomIterator := cdr(tmpPolynomIterator);
+            bibasis_insert(tmppolynomiterator, tmppolynom);
+            tmppolynomiterator := cdr(tmppolynomiterator);
         >>;
     >>;
 
-    return tmpPolynomList;
+    return tmppolynomlist;
 end;
 
 
 %returns new polynom, the argument polynom itself will be destroyed
-expr procedure NormalForm(polynom);
-begin scalar involutiveDivisor, normalForm;
-    normalForm := (nil . nil);
-    if null(PolynomGetLm(polynom)) then
+expr procedure normalform(polynom);
+begin scalar involutivedivisor, normalform;
+    normalform := (nil . nil);
+    if null(polynomgetlm(polynom)) then
     <<
-        return normalForm;
+        return normalform;
     >>;
-    FluidBibasisNormalForms := iadd1(FluidBibasisNormalForms);
+    fluidbibasisnormalforms := iadd1(fluidbibasisnormalforms);
 
-    while PolynomGetLm(polynom) do
+    while polynomgetlm(polynom) do
     <<
-        involutiveDivisor := JanetTreeFind(PolynomGetLm(polynom));
-        while involutiveDivisor do
+        involutivedivisor := janettreefind(polynomgetlm(polynom));
+        while involutivedivisor do
         <<
-            PolynomHeadReduceBy(polynom, TripleGetPolynom(involutiveDivisor));
-            if PolynomGetLm(polynom) then
+            polynomheadreduceby(polynom, triplegetpolynom(involutivedivisor));
+            if polynomgetlm(polynom) then
             <<
-                involutiveDivisor := JanetTreeFind(PolynomGetLm(polynom));
+                involutivedivisor := janettreefind(polynomgetlm(polynom));
             >>
             else
             <<
-                involutiveDivisor := nil;
+                involutivedivisor := nil;
             >>;
         >>;
-        if PolynomGetLm(polynom) then
+        if polynomgetlm(polynom) then
         <<
-            PolynomAdd(normalForm, (PolynomGetLm(polynom) . (nil . nil)));
+            polynomadd(normalform, (polynomgetlm(polynom) . (nil . nil)));
             bibasis_remove(polynom);
         >>;
     >>;
 
-    return normalForm;
+    return normalform;
 end;
 
 
-expr procedure ConstructInvolutiveBasis(polynomList, toGroebner);
-begin scalar tmpTriple, tmpMonom, normalForm, normalFormLm, setTIterator, newTripleList;
-    polynomList := PolynomListAutoReduce(polynomList, t);
-    while car(polynomList) do
+expr procedure constructinvolutivebasis(polynomlist, togroebner);
+begin scalar tmptriple, tmpmonom, normalform, normalformlm, settiterator, newtriplelist;
+    polynomlist := polynomlistautoreduce(polynomlist, t);
+    while car(polynomlist) do
     <<
-        SetQInsert(CreateTriple(car(polynomList)));
-        polynomList := cdr(polynomList);
+        setqinsert(createtriple(car(polynomlist)));
+        polynomlist := cdr(polynomlist);
     >>;
 
-    while not(SetQIsEmpty()) do
+    while not(setqisempty()) do
     <<
-        tmpTriple := SetQGet();
-        tmpMonom := TripleGetLm(tmpTriple);
-        normalForm := NormalForm(TripleGetPolynom(tmpTriple));
-        normalFormLm := PolynomGetLm(normalForm);
+        tmptriple := setqget();
+        tmpmonom := triplegetlm(tmptriple);
+        normalform := normalform(triplegetpolynom(tmptriple));
+        normalformlm := polynomgetlm(normalform);
 
-        if normalFormLm then
+        if normalformlm then
         <<
-            FluidBibasisNonZeroNormalForms := iadd1(FluidBibasisNonZeroNormalForms);
+            fluidbibasisnonzeronormalforms := iadd1(fluidbibasisnonzeronormalforms);
             
-            newTripleList := (nil . nil);
-            setTIterator := FluidBibasisSetT;
-            while car(setTIterator) do
+            newtriplelist := (nil . nil);
+            settiterator := fluidbibasissett;
+            while car(settiterator) do
             <<
-                if MonomIsDivisibleBy(TripleGetLm(car(setTIterator)), normalFormLm) then
+                if monomisdivisibleby(triplegetlm(car(settiterator)), normalformlm) then
                 <<
-                    SetQDeleteDescendants(TripleGetID(car(setTIterator)));
-                    SortedTripleListInsert(newTripleList, car(setTIterator));
-                    JanetTreeDelete(TripleGetLm(car(setTIterator)));
-                    bibasis_remove(setTIterator);
+                    setqdeletedescendants(triplegetid(car(settiterator)));
+                    sortedtriplelistinsert(newtriplelist, car(settiterator));
+                    janettreedelete(triplegetlm(car(settiterator)));
+                    bibasis_remove(settiterator);
                 >>
                 else
                 <<
-                    setTIterator := cdr(setTIterator);
+                    settiterator := cdr(settiterator);
                 >>;
             >>;
 
-            if eq(tmpMonom, normalFormLm) then
+            if eq(tmpmonom, normalformlm) then
             <<
-                SetTInsert(CreateTripleWithAncestor(normalForm, TripleGetAncestorID(tmpTriple)));
-                TripleSetProlongSet(car(FluidBibasisSetT), TripleGetProlongSet(tmpTriple));
+                settinsert(createtriplewithancestor(normalform, triplegetancestorid(tmptriple)));
+                triplesetprolongset(car(fluidbibasissett), triplegetprolongset(tmptriple));
             >>
             else
             <<
-                SetTInsert(CreateTriple(normalForm));
+                settinsert(createtriple(normalform));
             >>;
-            SetTCollectNonMultiProlongations(newTripleList);
+            settcollectnonmultiprolongations(newtriplelist);
             
-            if eqn(MonomGetDegree(normalFormLm), 0) then
+            if eqn(monomgetdegree(normalformlm), 0) then
             <<
-                SetQReset();
+                setqreset();
             >>
             else
             <<
-                SetQInsertList(newTripleList);
+                setqinsertlist(newtriplelist);
             >>;
         >>;
     >>;
 
-    polynomList := (nil . nil);
-    setTIterator := FluidBibasisSetT;
-    while car(setTIterator) do
+    polynomlist := (nil . nil);
+    settiterator := fluidbibasissett;
+    while car(settiterator) do
     <<
-        SortedPolynomListInsert(polynomList, TripleGetPolynom(car(setTIterator)));
-        setTIterator := cdr(setTIterator);
+        sortedpolynomlistinsert(polynomlist, triplegetpolynom(car(settiterator)));
+        settiterator := cdr(settiterator);
     >>;
-    polynomList := PolynomListAutoReduce(polynomList, toGroebner);
-    return polynomList;
+    polynomlist := polynomlistautoreduce(polynomlist, togroebner);
+    return polynomlist;
 end;
 
 

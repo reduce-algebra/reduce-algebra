@@ -345,7 +345,7 @@ procedure dvfsf_ppolyp(f);
    % containing only the variable ['p] otherwise [nil] is returned.
    begin scalar w;
       if domainp f then
-	 return T;
+	 return t;
       w := kernels f;
       return null cdr w and car w eq 'p
    end;
@@ -380,7 +380,7 @@ procedure dvfsf_vsimpf(f);
       c := car w;
       if (c = 1) or (c = -1) then
 	 return numr simp {'expt,'p,n};
-      cdc := sort(zfactor c,function(lambda(x,y); (cdr x > cdr y)));
+      cdc := sort(zfactor c,function greaterpcdr);
       if n + cdr car cdc < cdr car fdc then
 	 return numr simp {'times,c,{'expt,'p,n}};
       while cdc do <<

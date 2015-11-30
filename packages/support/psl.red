@@ -290,7 +290,7 @@ symbolic inline procedure ff1 (ww,nn);
 %          else ff0 (lo,wquotient(n,2)) ;
 %  end;
 
-comment ff0 determines the number of 0 bits at the least significant
+COMMENT ff0 determines the number of 0 bits at the least significant
         end of an integer, ie. the largest power of two by which the
         integer is divisible;
 
@@ -312,7 +312,7 @@ symbolic inline procedure ff0 (ww,nn);
 % is open compiled
 
 
-comment we split msd!: into two parts: one for bignums, one for
+COMMENT we split msd!: into two parts: one for bignums, one for
         machine words. That will greatly reduce the size of preci!:
         below;
 
@@ -543,12 +543,12 @@ loadtime if not getd 'delete!-file then copyd('delete!-file,'delete!-file!-slow)
 % HP-Risc and IBM RS architectures need special handling of fltinf in
 % fastmath.red
 
-if 'HP!-Risc member lispsystem!* then
+if 'hp!-risc member lispsystem!* then
    <<remflag('(fltinf),'lose);
      ds(fltinf,x(),mkitem(vector!-tag,x));
      flag('(fltinf),'lose)>>;
 
-if 'IBMRS member lispsystem!* then
+if 'ibmrs member lispsystem!* then
    <<remflag('(fltinf),'lose);
      ds(fltinf,x(),mkstr x);
      flag('(fltinf),'lose)>>;

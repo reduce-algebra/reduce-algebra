@@ -568,7 +568,7 @@ put('polynorm,'polyfn,'polynorm);
 
 %*** support functions ***;
 
-comment the function ilnrsolve and others are identical to the
+COMMENT the function ilnrsolve and others are identical to the
     %ones in matr except they work only on integers here;
         %there should be better algorithms;
 

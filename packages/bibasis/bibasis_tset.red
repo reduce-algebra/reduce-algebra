@@ -36,51 +36,51 @@ module bibasis_tset;
 % T = triple_1 . ... . triple_n . (nil . nil) and triple_i >= triple_(i+1)
 
 
-expr procedure SetTReset();
+expr procedure settreset();
 begin
-    JanetTreeReset();
-    FluidBibasisSetT := (nil . nil);
+    janettreereset();
+    fluidbibasissett := (nil . nil);
 end;
 
 
-expr procedure SetTInsert(triple);
+expr procedure settinsert(triple);
 begin
-    JanetTreeInsert(triple);
-    FluidBibasisSetT := (triple . FluidBibasisSetT);
+    janettreeinsert(triple);
+    fluidbibasissett := (triple . fluidbibasissett);
 end;
 
 
-expr procedure SetTCollectNonMultiProlongations(tripleList);
-if car(FluidBibasisSetT) then
-begin scalar lastTriple, tmpPolynom, tmpTriple; integer lastNonMultiVar;
-    lastTriple := car(FluidBibasisSetT);
-    lastNonMultiVar := isub1(MonomGetFirstMultiVar(TripleGetLm(lastTriple)));
-    for i:=1:lastNonMultiVar do
+expr procedure settcollectnonmultiprolongations(triplelist);
+if car(fluidbibasissett) then
+begin scalar lasttriple, tmppolynom, tmptriple; integer lastnonmultivar;
+    lasttriple := car(fluidbibasissett);
+    lastnonmultivar := isub1(monomgetfirstmultivar(triplegetlm(lasttriple)));
+    for i:=1:lastnonmultivar do
     <<
-        if not(TripleIsProlongedBy(lastTriple, i)) then
+        if not(tripleisprolongedby(lasttriple, i)) then
         <<
-            tmpPolynom := PolynomMultiplyByMonom(TripleGetPolynom(lastTriple), GetVariable(i));
-            TripleSetProlongedBy(lastTriple, i);
-            if PolynomGetLm(tmpPolynom) then
+            tmppolynom := polynommultiplybymonom(triplegetpolynom(lasttriple), getvariable(i));
+            triplesetprolongedby(lasttriple, i);
+            if polynomgetlm(tmppolynom) then
             <<
-                tmpTriple := CreateTripleWithAncestor(tmpPolynom, TripleGetAncestorID(lastTriple));
-                TripleSetProlongSet(tmpTriple, TripleGetProlongSet(lastTriple));
-                SortedTripleListInsert(tripleList, tmpTriple);
+                tmptriple := createtriplewithancestor(tmppolynom, triplegetancestorid(lasttriple));
+                triplesetprolongset(tmptriple, triplegetprolongset(lasttriple));
+                sortedtriplelistinsert(triplelist, tmptriple);
             >>;
         >>;
     >>;
 end;
 
 
-expr procedure SetTPrint();
-begin scalar currentTriple;
+expr procedure settprint();
+begin scalar currenttriple;
     prin2 "SetT( ";
-    currentTriple := FluidBibasisSetT;
-    while car(currentTriple) do
+    currenttriple := fluidbibasissett;
+    while car(currenttriple) do
     <<
-        prin2 car(currentTriple);
+        prin2 car(currenttriple);
         prin2 ", ";
-        currentTriple := cdr(currentTriple);
+        currenttriple := cdr(currenttriple);
     >>;
     prin2 " )"; 
     terpri();

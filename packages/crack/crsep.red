@@ -62,8 +62,8 @@ if (flagp(de,'to_sep) or
     (force_sep and flagp(de,'to_casesep))) and get(de,'starde) then 
 begin scalar l$
 
- if (l:=splitSQ de) then return <<
-   l:=mkeqSQlist(for each a in l collect (a . 1),nil,nil,get(de,'fcts),
+ if (l:=splitsq de) then return <<
+   l:=mkeqsqlist(for each a in l collect (a . 1),nil,nil,get(de,'fcts),
                  get(de,'vars),delete('to_sep,allflags_),t,
                  get(de,'orderings),pdes)$
    if print_ then <<
@@ -84,7 +84,7 @@ begin scalar l$
    return 1
  >>     else 
  if (length l>1) or ((length l=1) and (caar l neq 1)) then <<
-   l:=mkeqSQlist(nil,nil,for each a in l collect cdr a,get(de,'fcts),
+   l:=mkeqsqlist(nil,nil,for each a in l collect cdr a,get(de,'fcts),
                  get(de,'vars),delete('to_sep,allflags_),t,
                  get(de,'orderings),pdes)$
    if print_ then <<
@@ -97,7 +97,7 @@ begin scalar l$
         if force_sep then remflag1(de,'to_casesep)>>
 end$
 
-symbolic procedure splitSQ(de)$
+symbolic procedure splitsq(de)$
 if 0 neq cdr get(de,'starde) then nil else 
 begin scalar splitvar,fn,nrk,sv,v,nrkcp,ke,k$
  splitvar:=car get(de,'starde)$
@@ -144,8 +144,8 @@ symbolic procedure termsep(a,x,nonrat)$
 begin scalar l,p,q,sig,l1,l2,carl$
  if my_freeof(a,x) then l:=list(1,a) else       % a unabh. von x
  if atom a         then l:=list(a,1) else <<    % Variable oder Funktion von x
-  if car a='MINUS then<<a:=cadr a$sig:=not sig>>$
-  if pairp a and (car a='TIMES) then l:=cdr a  
+  if car a='minus then<<a:=cadr a$sig:=not sig>>$
+  if pairp a and (car a='times) then l:=cdr a  
 			        else l:=list a$ % l Liste der Faktoren
    p:=nil$                                      % Liste der x-abhaeng. Faktoren
    q:=nil$                                      % Liste der x-unabhae. Faktoren
@@ -153,23 +153,23 @@ begin scalar l,p,q,sig,l1,l2,carl$
     if my_freeof(car l,x) then q:=cons(car l,q)	%   Faktor enth. x nicht
                           else <<
      carl:=car l$
-     if pairp carl and car carl='SQRT then 
-     carl:={'EXPT,cadr carl,{'QUOTIENT,1,2}};
+     if pairp carl and car carl='sqrt then 
+     carl:={'expt,cadr carl,{'quotient,1,2}};
 
-     if pairp carl and (car carl='EXPT) and 
+     if pairp carl and (car carl='expt) and 
 	my_freeof(cadr carl,x) and                 % Basis x-unabhaengig
 	(pairp caddr carl) and                     % Exponent ist
-	(car caddr carl='PLUS) then <<             % eine Summe
+	(car caddr carl='plus) then <<             % eine Summe
       for each s in cdr caddr carl do if my_freeof(s,x) then l1:=cons(s,l1)
 						        else l2:=cons(s,l2)$
       if l1 then <<
-       if cdr l1 then l1:=cons('PLUS,l1)
+       if cdr l1 then l1:=cons('plus,l1)
 		 else l1:=car l1$
-       q:=cons(list('EXPT,cadr carl,l1),q)
+       q:=cons(list('expt,cadr carl,l1),q)
       >>$
-      if l2 and cdr l2 then l2:=cons('PLUS,l2)
+      if l2 and cdr l2 then l2:=cons('plus,l2)
 		       else l2:=car l2$
-      p:=cons(list('EXPT,cadr carl,l2),p)
+      p:=cons(list('expt,cadr carl,l2),p)
      >>                      else p:=cons(carl,p)$
     >>$    
     l:=cdr l
@@ -177,16 +177,16 @@ begin scalar l,p,q,sig,l1,l2,carl$
 
    if p then if null force_sep and
                 not freeoflist(p,nonrat) then <<p:=q:=l:=nil>> else
-		p:=if length p>1 then cons('TIMES,p)
+		p:=if length p>1 then cons('times,p)
                                  else car p$
-   if q then if length q>1 then q:=cons('TIMES,q)
+   if q then if length q>1 then q:=cons('times,q)
 		           else q:=car q$
    if p or q then                          %   war Sep. moegl.?
-   if null p then if sig then l:=list(1,list('MINUS,q))
+   if null p then if sig then l:=list(1,list('minus,q))
 	                 else l:=list(1,q)
-             else if q then if sig then l:=list(p,list('MINUS,q))
+             else if q then if sig then l:=list(p,list('minus,q))
 		                   else l:=list(p,q)
-                       else if sig then l:=list(p,list('MINUS,1))
+                       else if sig then l:=list(p,list('minus,1))
 			           else l:=list(p,1)>>$
  return l
 end$
@@ -199,15 +199,15 @@ symbolic procedure sumsep(l,x,nonrat,pdes)$
 %   sonst Liste von Listen von Summanden
 begin scalar cl,p,q,s$
 while l do
-    if pairp car l and (caar l='QUOTIENT) then
+    if pairp car l and (caar l='quotient) then
       <<p:=termsep(cadar l,x,nonrat)$
 	if not q then q:=termsep(caddar l,x,nonrat);  % Quotient immer gleich
 	if p and q then
 	   <<l:=cdr l$
 	   if car q=1 then s:=car p
-		      else s:=list('QUOTIENT,car p,car q)$
+		      else s:=list('quotient,car p,car q)$
 	   if cadr q=1 then p:=list(s,cadr p)
-		       else p:=list(s,list('QUOTIENT,cadr p,cadr q))$
+		       else p:=list(s,list('quotient,cadr p,cadr q))$
 	   cl:=termsort(cl,p)>>
 	else
 	   <<l:=nil$
@@ -229,7 +229,7 @@ while l do
   while s and freeoflist(caar s,nonrat) do s:=cdr s$
   s
  >> then << % find two caar cl which could be potentially equal
-  if pairp caar cl and (caaar cl='QUOTIENT) 
+  if pairp caar cl and (caaar cl='quotient) 
   then l:=for each s in cl collect cadar s
   else l:=for each s in cl collect car   s$
   s:=equality_assumption(l,x,nonrat,pdes)$
@@ -239,7 +239,7 @@ while l do
  >>         else <<
   if print_ then <<terpri()$write "separation w.r.t. "$fctprint list x$write" . ">>$
 					%   of linear independence
-  if pairp caar cl and (caaar cl='QUOTIENT) then
+  if pairp caar cl and (caaar cl='quotient) then
        l:=for each s in cl collect cadar s
   else l:=for each s in cl collect car s$
   if not linearindeptest(l,list x) then cl:=nil
@@ -253,14 +253,14 @@ end$
 symbolic procedure expon(h,x)$
 if h=1 then 0 else
 if h=x then 1 else
-if pairp h and car h='EXPT and cadr h=x then caddr h else 
-if pairp h and car h='TIMES then 
+if pairp h and car h='expt and cadr h=x then caddr h else 
+if pairp h and car h='times then 
 begin scalar g,s,k$
  s:=for each g in cdr h collect expon(g,x)$
  % if one of the factors is not 1 or x or {'EXPT,x,...} then k:=t
  for each g in s do if null g then k:=t$
  return if k then nil
-             else cons('PLUS,s)
+             else cons('plus,s)
 end                         else nil$
 
 symbolic procedure equality_assumption(l,x,nonrat,pdes)$
@@ -297,11 +297,11 @@ begin scalar a,ea,b,eb,lcp,h,s,print_bak,iq,nr$
                              else s:=nil % non-exponential expression in x
                                          % not sure how to solve -> non-separable
                 else <<  
-      h:=reval {'DIFFERENCE,ea,eb}$
+      h:=reval {'difference,ea,eb}$
       print_bak:=print_$
       print_:=nil$
 %     h:=simplifypde(h,nonrat,t,nil)$ % h,ftem,factorization,history recording 
-      h:=simplifypdeSQ(simp h,nonrat,t,nil,nil)$ 
+      h:=simplifypdesq(simp h,nonrat,t,nil,nil)$ 
                             % h,ftem,factorization,history recording,separation 
       % does car h contradict an inequality?
       print_:=print_bak$
@@ -310,7 +310,7 @@ begin scalar a,ea,b,eb,lcp,h,s,print_bak,iq,nr$
       if contradiction_ then contradiction_:=nil 
                         else 
 %      if follows_from(h,pdes) then % Is the new condition already in pdes?
-      if follows_fromSQ(if pairp cdr h then cdr h
+      if follows_fromsq(if pairp cdr h then cdr h
                                        else list car h,pdes) then 
       % Is the new condition already in pdes?
       % Then we are inside a case. The equation to be separated should first
@@ -324,7 +324,7 @@ begin scalar a,ea,b,eb,lcp,h,s,print_bak,iq,nr$
 
        s:=nil$ nr:=nonrat$
        while nr and null s do <<
-        s:=err_catch_solve({'LIST,{'!*SQ,h,t}},list('LIST,car nr))$
+        s:=err_catch_solve({'list,{'!*sq,h,t}},list('list,car nr))$
         % Does the solution violate any identity?
         % One could run new_ineq_from_pde or ineqreduct but that could
         % change pdes so one needs backup,... . We instead check directly:
@@ -358,7 +358,7 @@ l1:=l$flag:=t$
 while flag and pairp l1 do
 	if freeoflist(car l1,vl) then l1:=cdr l1
 	else if member(car l1,vl) then l1:=cdr l1
-	else if (pairp car l1) and (caar l1='EXPT) and
+	else if (pairp car l1) and (caar l1='expt) and
 		(numberp caddar l1) and member(cadar l1,vl) then l1:=cdr l1
 	else flag:=nil$
 if not flag then <<
@@ -442,19 +442,19 @@ symbolic procedure sep(p,ftem,varl,nonrat,pdes)$
 %  the cdr is what is to be set to zero.
 %  It may return 1. Then case distinctions have been written into todo-list
 begin scalar eql,eqlist,a,q$
-  if pairp p and (car p='QUOTIENT) then
+  if pairp p and (car p='quotient) then
   <<q:=cdr err_catch_fac(caddr p)$
-    if length q>1 then q:=cons('TIMES,q)
+    if length q>1 then q:=cons('times,q)
 		  else q:=car q$
     p:=cadr p
   >>$
-  if pairp p and (car p='PLUS) then
+  if pairp p and (car p='plus) then
   a:=cons(nil,if not q then cdr p
 		       else for each b in cdr p
-			    collect list('QUOTIENT,b,q))
+			    collect list('quotient,b,q))
 			       else
   if not q then a:=list(nil,p)
-	   else a:=list(nil,List('QUOTIENT,p,q))$
+	   else a:=list(nil,list('quotient,p,q))$
 				       %   Gl. als Liste von Summanden
   eql:=list(list(a,nil,varl))$
 				       %   Listen der Var. anhaengen
@@ -463,10 +463,10 @@ begin scalar eql,eqlist,a,q$
 
   while eql do
   <<a:=caar eql$                  %   Listen der Var. streichen
-    if cddr a then a:=cons(car a,cons('PLUS,cdr a))
+    if cddr a then a:=cons(car a,cons('plus,cdr a))
 	      else a:=cons(car a,cadr a)$       %   PLUS eintragen
     if car a then
-    if cdar a then a:=cons(cons('TIMES, car a),cdr a)
+    if cdar a then a:=cons(cons('times, car a),cdr a)
 	      else a:=cons(caar a,cdr a)
 	     else a:=cons(1,cdr a)$
     eqlist:=cons(a,eqlist)$
@@ -483,7 +483,7 @@ symbolic procedure separ2(p,ftem,varl)$
 %  Die Gl. p (in LISP-Notation) wird nach den Var. aus varl separiert
 begin scalar eqlist$
   if p and not zerop p then
-  if not (pairp p and (car p='QUOTIENT) and
+  if not (pairp p and (car p='quotient) and
 	 intersection(argset smemberl(ftem,cadr p),varl)) then
   <<eqlist:=sep(p,ftem,varl,nil,nil)$
 %##### if eqlist=1 then case distinctions have been written into
@@ -507,11 +507,11 @@ begin scalar eql,eqlist,a,b,l,s$
 
   if null p or zerop p then eqlist:=list cons(0,0) else
 
-  if pairp p and (car p='QUOTIENT) and
+  if pairp p and (car p='quotient) and
      intersection(argset smemberl(ftem,caddr p),varl) then % FTEM in DENR of p
   eqlist:=list cons(1,p)                              else
 
-  <<if (pairp p) and (car p = 'TIMES) then p:=reval p$
+  <<if (pairp p) and (car p = 'times) then p:=reval p$
     eqlist:=sep(p,ftem,varl,nonrat,pdes)$
     if eqlist neq 1 then <<  % if eqlist=1 then case distinctions
       if eqlist then eql:=union(cdr eqlist,list car eqlist)$
@@ -521,10 +521,10 @@ begin scalar eql,eqlist,a,b,l,s$
 	l:=eql:=cdr eql$
 
 	for each b in l do
-	<<s:=reval list('QUOTIENT,cdr b,cdr a)$
+	<<s:=reval list('quotient,cdr b,cdr a)$
 	  if not smemberl(append(varl,ftem),s) then
 	  <<eql:=delete(b,eql)$
-	    a:=cons(reval list('PLUS,car a,list('TIMES,s,car b)),cdr a)>>
+	    a:=cons(reval list('plus,car a,list('times,s,car b)),cdr a)>>
 	>>$
 	eqlist:=cons(a,eqlist)
       >>
@@ -632,7 +632,7 @@ begin
  >>$
 
  if null splitvar then 
- if null to_simplify then return cons('LIST,eqns) 
+ if null to_simplify then return cons('list,eqns) 
                      else <<h:=for each p in eqns collect 
                                if pairp p then numr cadr p
                                           else p;
@@ -643,14 +643,14 @@ begin
   % splitvar:=cdr reval cons('TIMES,splitvar)$  % does work too
   splitvar:=kernel_sort(splitvar)$
 
-  if not linearindeptest(splitvar,indepvar) then return cons('LIST,eqns);   % changed 1 Dec 08
+  if not linearindeptest(splitvar,indepvar) then return cons('list,eqns);   % changed 1 Dec 08
 
   % Do not split an expression that includes powers depending on splitvar
   % and have non-integer exponents
-  k:=search_li2(eqns,'EXPT)$
+  k:=search_li2(eqns,'expt)$
   h:=splitvar;
   while h and my_freeof(k,car h) do h:=cdr h$
-  if h then return cons('LIST,eqns); 
+  if h then return cons('list,eqns); 
 
   if !*time then <<
    write((k:=time())-cpu)/1000," s: Variables to be used for splitting: ",splitvar$
@@ -715,7 +715,7 @@ begin
 	 % cdr       --> drop numerical factor
 
      if null p then %--> q not factorizable
-     eqns:=union({numr car simplifySQ((q . 1),fll,nil,nil,nil)},eqns)
+     eqns:=union({numr car simplifysq((q . 1),fll,nil,nil,nil)},eqns)
                else <<
       % drop all constant factors, i.e. which do no involve an element of fll
       % and all non-zero factors
@@ -735,7 +735,7 @@ begin
                       eqns:=union({h},eqns)
                     >> % multiplication of factors to give a standard form
 	       else <<
-       q:=numr car simplifySQ(((car q) . 1),fll,nil,nil,nil)$ 
+       q:=numr car simplifysq(((car q) . 1),fll,nil,nil,nil)$ 
        if pairp q then    % else q is a number, i.e. a contradiction
        if null cdr q  and % only one term
 	  cdar  q = 1 and % coefficient = 1
@@ -769,7 +769,7 @@ begin
   write(time()-cpu)/1000," s: The system is formulated."$terpri()
  >>$
   
- return cons('LIST,for each k in h collect list('!*sq, (k . 1) ,nil))
+ return cons('list,for each k in h collect list('!*sq, (k . 1) ,nil))
 
 end$
 
@@ -780,7 +780,7 @@ endmodule$
 
 end$
 
-tr splitSQ
+tr splitsq
 tr separation
 tr get_separ_pde
 tr separate

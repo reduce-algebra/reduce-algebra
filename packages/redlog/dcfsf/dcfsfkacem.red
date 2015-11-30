@@ -97,12 +97,12 @@ procedure dqe_isatomarp(phi);
 symbolic procedure dqe_isquantfree(phi);
    begin scalar erg;
       if atom phi or (not phi) or dqe_isatomarp phi then
-	 return T;
+	 return t;
       if car phi = 'nott  then
 	 return dqe_isquantfree cadr phi;      
       if car phi eq 'or or car phi eq 'and then <<
 	 phi := cdr phi;
-	 erg := T;
+	 erg := t;
 	 while erg and phi do <<
 	    erg := dqe_isquantfree car phi;
 	    phi := cdr phi
@@ -2722,8 +2722,8 @@ procedure dqe_elimopt!-oneeq(phi,diffequaliste,var);
       >>;
       erg := dqe_termcoefkt( equ,var);
       equ := dqe_simplify {'equal,reval car erg,0};   % Warning: Must return eq
-      if equ = T then
-	 return T;
+      if equ = t then
+	 return t;
       erg := cdr erg;
       erg := dqe_neqnullfkt erg ;
       res := dqe_andorvaleur {'or,equ,erg};

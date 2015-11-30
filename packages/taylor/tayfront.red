@@ -1,4 +1,4 @@
-module TayFront;
+module tayfront;
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -40,18 +40,18 @@ imports
         eqcar, mk!*sq, mvar, numr, prepsq, simp!*, typerr,
 
 % from the header module:
-        Taylor!-kernel!-sq!-p, TayOrig, TayTemplate, TayTpElOrder,
-        TayTpElPoint, TayTpElVars,
+        taylor!-kernel!-sq!-p, tayorig, taytemplate, taytpelorder,
+        taytpelpoint, taytpelvars,
 
 % from module Tayintro:
-        Taylor!-error,
+        taylor!-error,
 
 % from module Taysimp:
         taysimpsq;
 
 
 symbolic procedure taylorseriesp u;
-  (Taylor!-kernel!-sq!-p sq)
+  (taylor!-kernel!-sq!-p sq)
       where sq := simp!* u;
 
 symbolic procedure taylorcombine u;
@@ -59,26 +59,26 @@ symbolic procedure taylorcombine u;
 
 symbolic procedure taylortostandard u;
   (prepsq if not eqcar (u, '!*sq) then simp!* u else cadr u)
-          where convert!-Taylor!* := t;
+          where convert!-taylor!* := t;
 
 symbolic procedure taylororiginal u;
-  (if not Taylor!-kernel!-sq!-p sq
+  (if not taylor!-kernel!-sq!-p sq
      then typerr (u, "Taylor kernel")
-    else (if TayOrig tay then mk!*sq TayOrig tay
-        else Taylor!-error ('no!-original, 'taylororiginal))
+    else (if tayorig tay then mk!*sq tayorig tay
+        else taylor!-error ('no!-original, 'taylororiginal))
            where tay := mvar numr sq)
      where sq := simp!* u;
 
 symbolic procedure taylortemplate u;
-  (if not Taylor!-kernel!-sq!-p sq
+  (if not taylor!-kernel!-sq!-p sq
      then typerr (u, "Taylor kernel")
-    else 'list . for each quartet in TayTemplate mvar numr sq collect
+    else 'list . for each quartet in taytemplate mvar numr sq collect
               {'list,
-               if null cdr TayTpElVars quartet
-                 then car TayTpElVars quartet
-                else 'list . TayTpElVars quartet,
-               TayTpElPoint quartet,
-               TayTpElOrder quartet})
+               if null cdr taytpelvars quartet
+                 then car taytpelvars quartet
+                else 'list . taytpelvars quartet,
+               taytpelpoint quartet,
+               taytpelorder quartet})
      where sq := simp!* u;
 
 flag ('(taylorseriesp taylorcombine taylortostandard taylororiginal

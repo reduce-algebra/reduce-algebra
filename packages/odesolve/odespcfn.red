@@ -38,7 +38,7 @@ module odespcfn$  % Linear special function ODEs
 
 algebraic operator odesolve!-specfn!*$  % internal wrapper function
 
-algebraic procedure ODESolve!-Specfn(odecoeffs1, driver1, x);
+algebraic procedure odesolve!-specfn(odecoeffs1, driver1, x);
    %% Using monic coeffs for uniqueness.
    begin scalar ode, rules, soln;
       traceode1 "Looking for special-function solutions ...";
@@ -103,17 +103,17 @@ algebraic procedure ODESolve!-Specfn(odecoeffs1, driver1, x);
          return if driver1 then
             %% BEWARE: This driver code is not well tested!
             %% traceode "But cannot currently handle the driver term! "
-            { soln, ODESolve!-PI(soln, driver1, x) }
+            { soln, odesolve!-pi(soln, driver1, x) }
          else { soln }
       >>
    end$
 
-algebraic operator ODESolve!-Solns!*$
-listargp ODESolve!-Solns!*$
+algebraic operator odesolve!-solns!*$
+listargp odesolve!-solns!*$
 
-put('ODESolve!-Solns, 'psopfn, 'ODESolve!-Solns)$
+put('odesolve!-solns, 'psopfn, 'odesolve!-solns)$
 
-symbolic procedure ODESolve!-Solns u; % (solns, subs)
+symbolic procedure odesolve!-solns u; % (solns, subs)
    %% Avoid invalid lists on right of replacement rule, and build full
    %% optionally substituted basis data structure:
    begin scalar solns;
@@ -123,7 +123,7 @@ symbolic procedure ODESolve!-Solns u; % (solns, subs)
          u := if cdr u then 'list . u else car u;
          solns := algebraic sub(u, solns)
       >>;
-      return {'ODESolve!-Solns!*, solns}
+      return {'odesolve!-solns!*, solns}
    end$
 
 endmodule$

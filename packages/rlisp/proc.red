@@ -34,7 +34,7 @@ fluid '(!*noinlines !*loginlines !*redeflg!* fname!* ftype!*
 % !*loginlines will cause a compile-time report of patterns of inline usage.
 !*loginlines := t;
 
-global '(!*argnochk !*lose !*micro!-version cursym!* erfg!*
+global '(!*argnochk !*lose !*micro!-version cursym!* curescaped!* erfg!*
          ftypes!*);
 
 fluid '(!*defn new_inline_definitions);
@@ -216,7 +216,8 @@ symbolic procedure procstat1 mode;
       if cursym!* eq '!*colon!* then mode := read_type();
   a2: if idp fname!* and not getd fname!* then flag(list fname!*,'fnc);
          % To prevent invalid use of function name in body.
-  a3: if eof!*>0 then progn(cursym!* := '!*semicol!*, go to a4);
+  a3: if eof!*>0 then
+        progn(cursym!* := '!*semicol!*, curescaped!* := nil, go to a4);
       z := errorset!*('(xread t),nil);
       if not errorp z then z := car z;
 %     if not atom z and eqcar(car z,'!*comment!*) then z := cadr z;

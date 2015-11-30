@@ -712,7 +712,7 @@ procedure dcfsf_cl1(f,v);
    % Returns a pair $a . d$, where $a$ is a list of SFs and $d$ is an
    % SF. In the result $d$ is absolute summand of [f] as a differential
    % polynomial in [v], and $a$ is the list of all other coefficients.
-   dcfsf_cl2(f,v,T);
+   dcfsf_cl2(f,v,t);
 
 procedure dcfsf_cl2(f,v,flg);
    begin scalar w;
@@ -722,7 +722,7 @@ procedure dcfsf_cl2(f,v,flg);
       	 else
       	    {f} . nil
       else <<
-	 w := dcfsf_cl2(red f,v,T);
+	 w := dcfsf_cl2(red f,v,t);
       	 return nconc(car dcfsf_cl2(lc f,v,nil),car w) . cdr w
       >>
    end;

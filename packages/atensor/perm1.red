@@ -42,44 +42,44 @@ global '(!*ppacked)$
 %
 %-------------------------------------------------------
 
-procedure GPerm n$        % order of symmetric group.
+procedure gperm n$        % order of symmetric group.
   %       Return all pertmutation of S(n).
   begin scalar l$
 %    if n>9 then rederr list('GPerm,": ",n," is too high order (<=9).")$
     while n>0 do << l:=n . l$ n:=n-1 >>$
-    return for each x in GPerm0 l collect pkp x$
+    return for each x in gperm0 l collect pkp x$
 end$
 
- procedure GPerm0(OLst)$
+ procedure gperm0(olst)$
    %       OLst    - list of objects.
    %       Return  - list of permutation of these objects.
-   if null OLst then nil
-   else GPerm3(cdr OLst,list list car OLst)$
+   if null olst then nil
+   else gperm3(cdr olst,list list car olst)$
 
- procedure GPerm3(OList,Res)$
+ procedure gperm3(olist,res)$
    %       OList   - list of objects,
    %       Res     - list of perm. of objects.
-   if null OList then Res
-   else GPerm3(cdr OList,GPerm2(Res,car OList,nil))$
+   if null olist then res
+   else gperm3(cdr olist,gperm2(res,car olist,nil))$
 
- procedure GPerm2(PLst,Obj,Res)$
+ procedure gperm2(plst,obj,res)$
    %       Obj     - object,
    %       PLst    - permutation list,
    %       Res     - list of perm. included Obj.
-   if null PLst then Res
-   else GPerm2(cdr PLst,Obj,GPerm1(Rev(car PLst,nil),Obj,nil,Res))$
+   if null plst then res
+   else gperm2(cdr plst,obj,gperm1(rev(car plst,nil),obj,nil,res))$
 
- procedure GPerm1(L,Obj,R,Res)$
+ procedure gperm1(l,obj,r,res)$
    %       Obj     - object,
    %    L,R     - left(reverse form) and right(direct form) part of
    %                 permutation.
    %       Res     - list of permutation.
-   if null L then (Obj . R) . Res
-   else GPerm1(cdr L,Obj,car L . R,Rev(L,Obj . R) . Res)$
+   if null l then (obj . r) . res
+   else gperm1(cdr l,obj,car l . r,rev(l,obj . r) . res)$
 
- procedure Rev(Lst,RLst)$
-   if null Lst then RLst
-   else Rev(cdr Lst, car Lst . RLst)$
+ procedure rev(lst,rlst)$
+   if null lst then rlst
+   else rev(cdr lst, car lst . rlst)$
 
 %-------------------------------------------------------
 

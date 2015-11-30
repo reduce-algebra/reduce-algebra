@@ -79,7 +79,10 @@ xWindows_NT)
       versions="x86_64-pc-cygwin x86_64-pc-cygwin-wx \
             x86_64-pc-cygwin-nogui \
             x86_64-pc-cygwin-debug x86_64-pc-window-wx-debug \
-            x86_64-pc-cygwin-nogui-debug"
+            x86_64-pc-cygwin-nogui-debug \
+            i686-pc-cygwin i686-pc-cygwin-wx i686-pc-cygwin-nogui \
+            i686-pc-cygwin-debug i686-pc-cygwin-wx-debug \
+            i686-pc-cygwin-nogui-debug"
     else
       versions="x86_64-pc-windows x86_64-pc-windows-wx \
             x86_64-pc-windows-nogui \
@@ -87,7 +90,14 @@ xWindows_NT)
             x86_64-pc-windows-debug x86_64-pc-window-wx-debug \
             x86_64-pc-windows-nogui-debug \
             i686-pc-windows-debug i686-pc-windows-wx-debug \
-            i686-pc-windows-nogui-debug"
+            i686-pc-windows-nogui-debug \
+            x86_64-pc-cygwin x86_64-pc-cygwin-wx \
+            x86_64-pc-cygwin-nogui \
+            x86_64-pc-cygwin-debug x86_64-pc-window-wx-debug \
+            x86_64-pc-cygwin-nogui-debug \
+            i686-pc-cygwin i686-pc-cygwin-wx i686-pc-cygwin-nogui \
+            i686-pc-cygwin-debug i686-pc-cygwin-wx-debug \
+            i686-pc-cygwin-nogui-debug"
     fi
   else
     if test "x$cygwin" = "xyes"
@@ -98,7 +108,10 @@ xWindows_NT)
     else
       versions="i686-pc-windows i686-pc-window-wx i686-pc-windows-nogui \
             i686-pc-windows-debug i686-pc-windows-wx-debug \
-            i686-pc-windows-nogui-debug"
+            i686-pc-windows-nogui-debug \
+            i686-pc-cygwin i686-pc-cygwin-wx i686-pc-cygwin-nogui \
+            i686-pc-cygwin-debug i686-pc-cygwin-wx-debug \
+            i686-pc-cygwin-nogui-debug"
     fi
   fi
   for hx in $versions
@@ -107,6 +120,18 @@ xWindows_NT)
     if test -x $here/../cslbuild/$hx/csl/$pre$ap$suffix
     then
       exec $here/../cslbuild/$hx/csl/$pre$ap$suffix $xtra $*
+      exit 0
+    fi
+  done
+# If only a cygwin version has been built this next fragment (which looks
+# for eg reduce.exe rather than either cygwin-reduce.exe or reduce.com)
+# may sometimes help.
+  for hx in $versions
+  do
+#   echo Try: -x $here/../cslbuild/$hx/csl/$ap.exe
+    if test -x $here/../cslbuild/$hx/csl/$ap.exe
+    then
+      exec $here/../cslbuild/$hx/csl/$ap.exe $xtra $*
       exit 0
     fi
   done

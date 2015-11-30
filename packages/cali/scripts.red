@@ -64,9 +64,7 @@ symbolic procedure varopt!* m;
   for each x in dpmat_list m do
     for each y in bas_dpoly x do c:=mo_lcm(c,car y);
   return
-    for each x in
-        sort(mo_2list c,function(lambda(x,y); cdr x>cdr y)) collect
-        car x;
+    for each x in sort(mo_2list c,function greaterpcdr) collect car x;
   end;
 
 % ----- Certain stuff on maps -------------
@@ -174,16 +172,16 @@ symbolic procedure proj_points1!* m;
 % ----- Affine and proj. monomial curves ------------
 
 symbolic operator affine_monomial_curve;
-symbolic procedure affine_monomial_curve(l,R);
+symbolic procedure affine_monomial_curve(l,r);
 % l is a list of integers, R contains length l ring var. names.
 % Returns the generators of the monomial curve (t^i : i\in l) in R.
   if !*mode='algebraic then
-        dpmat_2a affine_monomial_curve!*(cdr reval l,cdr reval R)
-  else affine_monomial_curve!*(l,R);
+        dpmat_2a affine_monomial_curve!*(cdr reval l,cdr reval r)
+  else affine_monomial_curve!*(l,r);
 
-symbolic procedure affine_monomial_curve!*(l,R);
+symbolic procedure affine_monomial_curve!*(l,r);
   if not numberlistp l then typerr(l,"number list")
-  else if length l neq length R then
+  else if length l neq length r then
         rederr"number of variables doesn't match"
   else begin scalar u,t0,v;
     v:=list make_cali_varname();
@@ -199,17 +197,17 @@ symbolic procedure affine_monomial_curve!*(l,R);
     end;
 
 symbolic operator proj_monomial_curve;
-symbolic procedure proj_monomial_curve(l,R);
+symbolic procedure proj_monomial_curve(l,r);
 % l is a list of integers, R contains length l ring var. names.
 % Returns the generators of the monomial curve
 % (s^(d-i)*t^i : i\in l) in R where d = max { x : x \in l}
   if !*mode='algebraic then
-        dpmat_2a proj_monomial_curve!*(cdr reval l,cdr reval R)
-  else proj_monomial_curve!*(l,R);
+        dpmat_2a proj_monomial_curve!*(cdr reval l,cdr reval r)
+  else proj_monomial_curve!*(l,r);
 
-symbolic procedure proj_monomial_curve!*(l,R);
+symbolic procedure proj_monomial_curve!*(l,r);
   if not numberlistp l then typerr(l,"number list")
-  else if length l neq length R then
+  else if length l neq length r then
         rederr"number of variables doesn't match"
   else begin scalar u,t0,t1,v,d;
     t0:=make_cali_varname(); t1:=make_cali_varname(); v:={t0,t1};
@@ -239,9 +237,9 @@ symbolic procedure blowup(m,n,vars);
   if !*mode='algebraic then
         dpmat_2a blowup!*(dpmat_from_a reval m,dpmat_from_a reval n,
                 cdr reval vars)
-  else blowup!*(M,N,vars);
+  else blowup!*(m,n,vars);
 
-symbolic procedure blowup!*(M,N,vars);
+symbolic procedure blowup!*(m,n,vars);
   if (dpmat_cols m > 0)or(dpmat_cols n > 0) then
         rederr"BLOWUP defined only for ideals"
   else if not !*noetherian then
@@ -277,9 +275,9 @@ symbolic procedure assgrad(m,n,vars);
   if !*mode='algebraic then
         dpmat_2a assgrad!*(dpmat_from_a reval m,dpmat_from_a reval n,
                 cdr reval vars)
-  else assgrad!*(M,N,vars);
+  else assgrad!*(m,n,vars);
 
-symbolic procedure assgrad!*(M,N,vars);
+symbolic procedure assgrad!*(m,n,vars);
   if (dpmat_cols m > 0)or(dpmat_cols n > 0) then
         rederr"ASSGRAD defined only for ideals"
   else begin scalar u;
@@ -303,7 +301,7 @@ symbolic procedure analytic_spread!* m;
    end) where cali!=basering=cali!=basering;
 
 symbolic operator sym;
-symbolic procedure sym(M,vars);
+symbolic procedure sym(m,vars);
 % vars is a list of var. names for the ring R
 %       of the same length as dpmat_list M.
 % Returns an ideal J such that (S+R)/J == Sym(M)
@@ -311,7 +309,7 @@ symbolic procedure sym(M,vars);
 % is the symmetric algebra of M over S.
 % (S+R) is the new current ring.
   if !*mode='algebraic then
-        dpmat_2a sym!*(dpmat_from_a M,cdr reval vars)
+        dpmat_2a sym!*(dpmat_from_a m,cdr reval vars)
   else sym!*(m,vars);
 
 symbolic procedure sym!*(m,vars);

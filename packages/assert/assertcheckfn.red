@@ -39,7 +39,7 @@ struct Id checked by idp;
 struct String checked by stringp;
 struct DottedPair checked by pairp;
 struct Vector checked by vectorp;
-struct FunctionPointer checked by codep;
+struct Functionpointer checked by codep;
 
 % Classes of Primitive Data Types (2.2. of the SL Report)
 struct Boolean checked by booleanp;
@@ -53,8 +53,8 @@ struct Atom checked by atom;
 % Structures (2.3 of SL Report)
 struct List checked by listp;
 struct Alist checked by alistp;
-struct CondForm checked by condformp;
-struct LambdaExpression checked by lambdap;
+struct Condform checked by condformp;
+struct Lambdaexpression checked by lambdap;
 struct Function checked by functionp;
 
 % Lists of Fixed Length:

@@ -43,7 +43,7 @@ put('acsc,'inverse,'csc);
 
 algebraic;
 
-Comment Rules for reducing the number of distinct kernels in an
+COMMENT Rules for reducing the number of distinct kernels in an
    equation;
 
 operator sol;

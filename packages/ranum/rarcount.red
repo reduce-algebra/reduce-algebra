@@ -29,8 +29,23 @@
 module raiv;
 
 asserted procedure ra_isolate0(f: SF, lb: Any, ub: Any): List;
-   for each iv in ra_isolatingivl0(f, lb, ub) collect
-      ra_simpl0 ra_normalize0 ra_qmk(f, car iv, cdr iv);
+   begin scalar ivl, l, u, ff;
+      f . ivl := ra_isolatingivl0(f, lb, ub);
+      return for each iv in ivl collect <<
+	 l := car iv;
+	 u := cdr iv;
+      	 if l = u then <<
+	    ff := if null numr l then
+	       !*k2f ra_x()
+	    else
+	       ((ra_x() .** 1) .* denr l) .* negf numr l;
+	    l := subtrsq(car iv, 1 ./ 1);
+	    u := addsq(car iv, 1 ./ 1);
+	    ra_qmk(ff, l, u)
+      	 >> else
+      	    ra_simpl0 ra_normalize0 ra_qmk(f, l, u)
+      >>
+   end;
 
 ra_wrap(ra_isolate0, ra_isolate, 3);
 
@@ -55,23 +70,37 @@ put('isolate, 'psopfn, 'ra_isolate!$);
 asserted procedure ra_ratnump(q: SQ): ExtraBoolean;
    (null numr q or numberp numr q) and numberp denr q;
 
-asserted procedure ra_isolatingivl0(f: SF, lb: Any, ub: Any): List;
+asserted procedure ra_isolatingivl0(f: SF, lb: Any, ub: Any): DottedPair;
    % If [lb] is [nil], then a suitable lower bound on the zeros is computed.
    % Analogously for ub.
-   begin scalar ivl;
+   begin scalar ivl, z;
       f := sfto_dprpartf sfto_sqfpartf f;
+      if null sfto_abssummand f then <<
+	 f := quotf(f, !*k2f ra_x());
+	 z := t
+      >>;
       if null ub then
-      	 ub := sfto_lmq f;
+      	 ub := addsq(sfto_lmq f, 1 ./ 1);
       if null lb then
-      	 lb := negsq sfto_lmq ra_mirror f;
-      ivl := ra_vca(f, lb , ub);
-      return ivl
+      	 lb := negsq addsq(sfto_lmq ra_mirror f, 1 ./ 1);
+      ivl := ra_vca(f, lb, ub);
+      if z then
+	 ivl := ra_insertzero ivl;
+      return f . ivl
    end;
 
 ra_wrap(ra_isolatingivl0, ra_isolatingivl, 3);
 
+asserted procedure ra_insertzero(ivl: List): List;
+   if null ivl then
+      '(((nil . 1) . (nil . 1)))
+   else if minusf numr car car ivl then
+      car ivl . ra_insertzero cdr ivl
+   else
+      '((nil . 1) . (nil . 1)) . ivl;
+
 asserted procedure ra_isolatingivl!$(argl: List): List;
-   'list . for each iv in ra_isolatingivl(numr simp car argl, nil, nil) collect
+   'list . for each iv in cdr ra_isolatingivl(numr simp car argl, nil, nil) collect
       {'list, mk!*sq car iv, mk!*sq cdr iv};
 
 put('isolatingivl, 'psopfn, 'ra_isolatingivl!$);
@@ -87,6 +116,7 @@ asserted procedure ra_help(ivl: List): List;
       {float(caar pr or 0) / float(cdar pr), float(cadr pr or 0)/float(cddr pr)};
 
 asserted procedure ra_vca(f: SF, l: SQ, u: SQ): List;
+   % f must be squarefree with f(0) <> 0.
    ra_vca1(ra_transform(f, l, u), l, u);
 
 asserted procedure ra_transform(f: SF, l: SQ, u: SQ): SQ;
@@ -133,7 +163,7 @@ asserted procedure ra_vcatransform1(f: SF): DottedPair;
 	 f := red f
       >>;
       c := c * 2 ^ d;
-      cc := c * f;
+      cc := c * sfto_sf2int f;
       ff := addf(ff, cc);
       fff := addf(multf(fff, exptf(xp1, d)), cc);
       return ff . fff

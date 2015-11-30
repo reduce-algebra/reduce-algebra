@@ -48,12 +48,12 @@ symbolic procedure groebnonneg(h,arg);
             else
         if vevzero!? vdpevlmon h then goto finish;
                  % first test the coefficients
-        if vdpredZero!? h then return nil;   % simple monomial
+        if vdpredzero!? h then return nil;   % simple monomial
         break := nil;
         x := h;
         while not vdpzero!? x and not break do
            <<vev1 := vdpevlmon x;
-             if not vbcplus!? vdpLbc x then break := t;
+             if not vbcplus!? vdplbc x then break := t;
              if not break then x := vdpred x>>;
         if break then return nil;     % at least one negative coeff
         if vevzero!? vev1 then goto finish; % nonneg. solution imposs.
@@ -87,7 +87,7 @@ symbolic procedure groebnonneg(h,arg);
                                 % rule out some by cdr
         problems1 := nil;
         while problems do
-          <<if vdpDisjoint!? (car problems,arg)
+          <<if vdpdisjoint!? (car problems,arg)
                then problems1 := car problems . problems1;
             problems := cdr problems >>;
   finish:
@@ -105,13 +105,13 @@ symbolic procedure groebpos(h,dummy);
             else
         if vevzero!? vdpevlmon h then return nil;
                      % a simple monomial can never have pos. zeros
-        if vdpredzero!? h then return groebposcancel(h);
+        if vdpredzero!? h then return groebPosCancel(h);
         break := nil;
         x := h;
                      % test coefficients
         while not vdpzero!? x and not break do
            <<vev1 := vdpevlmon x;
-             if not vbcplus!? vdpLbc x then break := t;
+             if not vbcplus!? vdplbc x then break := t;
              if not break then x := vdpred x>>;
         if not break then return groebPosCancel(h);
         if not groebposvevaluate h then groebPosCancel(h);
@@ -128,7 +128,7 @@ symbolic procedure groebzero(h,dummy);
      if l and vevzero!? cdr l then return groebPosCancel h;
      return nil end;
 
-symbolic procedure groebposcancel(h);
+symbolic procedure groebPosCancel(h);
        <<groebmess24(h,nil,nil); 'cancel>>;
 
 endmodule;;end;

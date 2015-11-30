@@ -36,8 +36,8 @@ algebraic procedure lieclass(dim);
 begin
  if not(dim=1 or dim=2 or dim=3 or dim=4) then
   symbolic rederr "dimension out of range";
- symbolic(if gettype 'liestrin neq 'ARRAY then
-          rederr "liestrin not ARRAY");
+ symbolic(if gettype 'liestrin neq 'array then
+          rederr "liestrin not array");
  if length liestrin neq {dim+1,dim+1,dim+1} then
   symbolic rederr "dimension of liestrin out of range";
  if dim=1 then <<if symbolic !*tr_lie then
@@ -56,1238 +56,1239 @@ begin
 end;
 
 algebraic procedure lie2(f,g);
-BEGIN
-  IF G=0 THEN
-   IF F=0 THEN liemat:=MAT((1,0),(0,1))
-   ELSE liemat:=MAT((0,-1/F),(F,0))
-  ELSE liemat:=MAT((1/G,0),(F,G));
-  IF (F=0 AND G=0) THEN <<if symbolic !*tr_lie then
-   WRITE "The given Lie algebra is commutative";
+begin
+  if g=0 then
+   if f=0 then liemat:=mat((1,0),(0,1))
+   else liemat:=mat((0,-1/f),(f,0))
+  else liemat:=mat((1/g,0),(f,g));
+  if (f=0 and g=0) then <<if symbolic !*tr_lie then
+   write "The given Lie algebra is commutative";
    lie_class:={liealg(2),comtab(0)}>>
-  ELSE <<if symbolic !*tr_lie then
+  else <<if symbolic !*tr_lie then
          write "[X,Y]=Y";lie_class:={liealg(2),comtab(1)}>>
-END;
+end;
 
 algebraic procedure lie3(ff);
-BEGIN
-      MATRIX liemat(3,3),l_f(3,3);
-      ARRAY l_jj(3);
+begin
+  matrix liemat(3,3),l_f(3,3);
+  array l_jj(3);
   l_f:=ff;
-  FOR N:=1:3 DO
-      l_jj(N):=l_f(1,N)*(-l_f(2,1)-l_f(3,2))+
-            l_f(2,N)*(l_f(1,1)-l_f(3,3))+
-            l_f(3,N)*(l_f(1,2)+l_f(2,3));
-  IF NOT(l_jj(1)=0 AND l_jj(2)=0 AND l_jj(3)=0) THEN
+  for n:=1:3 do
+      l_jj(n):=l_f(1,n)*(-l_f(2,1)-l_f(3,2))+
+            l_f(2,n)*(l_f(1,1)-l_f(3,3))+
+            l_f(3,n)*(l_f(1,2)+l_f(2,3));
+  if not(l_jj(1)=0 and l_jj(2)=0 and l_jj(3)=0) then
      <<clear lie3_ff,liemat,l_f,l_jj;
        symbolic rederr "not a Lie algebra">>;
-    IF l_f=MAT((0,0,0),(0,0,0),(0,0,0)) THEN
-    <<if symbolic !*tr_lie then WRITE "Your Lie algebra is commutative";
-         lie_class:={liealg(3),comtab(0)};liemat:=liemat**0>> ELSE
-      IF DET(l_f) NEQ 0 THEN com3(ff) ELSE
-        IF independ(1,2,ff)=1 THEN com2(ff,1,2) ELSE
-         IF independ(1,3,ff)=1 THEN com2(ff,1,3) ELSE
-          IF independ(2,3,ff)=1 THEN com2(ff,2,3) ELSE
+    if l_f=mat((0,0,0),(0,0,0),(0,0,0)) then
+    <<if symbolic !*tr_lie then write "Your Lie algebra is commutative";
+         lie_class:={liealg(3),comtab(0)};liemat:=liemat**0>> else
+      if det(l_f) neq 0 then com3(ff) else
+        if independ(1,2,ff)=1 then com2(ff,1,2) else
+         if independ(1,3,ff)=1 then com2(ff,1,3) else
+          if independ(2,3,ff)=1 then com2(ff,2,3) else
            com1(ff);
-CLEAR l_jj,l_f
-END;
+   clear l_jj,l_f
+end;
 
 
-algebraic procedure independ(I,J,F0);
-BEGIN MATRIX F1(3,3);
-  F1:=F0;
-  IF (F1(I,1)*F1(J,2)-F1(I,2)*F1(J,1)=0 AND
-      F1(I,2)*F1(J,3)-F1(I,3)*F1(J,2)=0 AND
-      F1(I,1)*F1(J,3)-F1(I,3)*F1(J,1)=0) THEN RETURN 0
-  ELSE RETURN 1
-END;
+algebraic procedure independ(i,j,f0);
+begin matrix f1(3,3);
+  f1:=f0;
+  if (f1(i,1)*f1(j,2)-f1(i,2)*f1(j,1)=0 and
+      f1(i,2)*f1(j,3)-f1(i,3)*f1(j,2)=0 and
+      f1(i,1)*f1(j,3)-f1(i,3)*f1(j,1)=0) then return 0
+  else return 1
+end;
 
-algebraic procedure com1(F2);
-BEGIN
-      SCALAR ALPHA,AA,BB;
-      INTEGER R,I,J,M,N,Z1;
-      MATRIX F3(3,3);
-      ARRAY l_C(3,3,3);
-  F3:=F2;
-  FOR M:=3 STEP -1 UNTIL 1 DO
-   FOR N:=3 STEP -1 UNTIL 1 DO
-   IF F3(M,N) NEQ 0 THEN I:=M;
-  IF I=1 THEN <<I:=1;J:=2>> ELSE
-   IF I=2 THEN <<I:=1;J:=3>> ELSE <<I:=2;J:=3>>;
-  FOR K:=1:3 DO
-   <<l_C(1,2,K):=F3(1,K);l_C(2,1,K):=-F3(1,K);
-     l_C(1,3,K):=F3(2,K);l_C(3,1,K):=-F3(2,K);
-     l_C(2,3,K):=F3(3,K);l_C(3,2,K):=-F3(3,K)>>;
-  Z1:=0;
-  FOR U:=3 STEP -1 UNTIL 1 DO
-   FOR V:=3 STEP -1 UNTIL 1 DO
-   IF l_C(I,J,1)*l_C(V,1,U)+l_C(I,J,2)*l_C(V,2,U)+
-   l_C(I,J,3)*l_C(V,3,U) NEQ 0
-  THEN <<M:=U;N:=V;Z1:=1>>;
-  IF Z1=0 THEN
-    <<A1:=MAT((1,0,0),(0,1,0),(l_C(1,2,1),l_C(1,2,2),l_C(1,2,3)));
-      A2:=MAT((1,0,0),(0,0,1),(l_C(1,3,1),l_C(1,3,2),l_C(1,3,3)));
-      A3:=MAT((0,1,0),(0,0,1),(l_C(2,3,1),l_C(2,3,2),l_C(2,3,3)));
-      IF DET(A1) NEQ 0 THEN liemat:=A1 ELSE
-       IF DET(A2) NEQ 0 THEN liemat:=A2 ELSE liemat:=A3;
+algebraic procedure com1(f2);
+begin
+  scalar alpha,aa,bb;
+  integer r,i,j,m,n,z1;
+  matrix f3(3,3);
+  array l_c(3,3,3);
+  f3:=f2;
+  for m:=3 step -1 until 1 do
+   for n:=3 step -1 until 1 do
+   if f3(m,n) neq 0 then i:=m;
+  if i=1 then <<i:=1;j:=2>> else
+   if i=2 then <<i:=1;j:=3>> else <<i:=2;j:=3>>;
+  for k:=1:3 do
+   <<l_c(1,2,k):=f3(1,k);l_c(2,1,k):=-f3(1,k);
+     l_c(1,3,k):=f3(2,k);l_c(3,1,k):=-f3(2,k);
+     l_c(2,3,k):=f3(3,k);l_c(3,2,k):=-f3(3,k)>>;
+  z1:=0;
+  for u:=3 step -1 until 1 do
+   for v:=3 step -1 until 1 do
+   if l_c(i,j,1)*l_c(v,1,u)+l_c(i,j,2)*l_c(v,2,u)+
+   l_c(i,j,3)*l_c(v,3,u) neq 0
+  then <<m:=u;n:=v;z1:=1>>;
+  if z1=0 then
+    <<a1:=mat((1,0,0),(0,1,0),(l_c(1,2,1),l_c(1,2,2),l_c(1,2,3)));
+      a2:=mat((1,0,0),(0,0,1),(l_c(1,3,1),l_c(1,3,2),l_c(1,3,3)));
+      a3:=mat((0,1,0),(0,0,1),(l_c(2,3,1),l_c(2,3,2),l_c(2,3,3)));
+      if det(a1) neq 0 then liemat:=a1 else
+       if det(a2) neq 0 then liemat:=a2 else liemat:=a3;
       if symbolic !*tr_lie then
-      WRITE "[X,Y]=Z";lie_class:={liealg(3),comtab(1)}>> ELSE
-    <<ALPHA:=(l_C(I,J,1)*l_C(N,1,M)+l_C(I,J,2)*l_C(N,2,M)+
-              l_C(I,J,3)*l_C(N,3,M))/l_C(I,J,M);
-      A1:=MAT((0,0,0),(0,0,0),(l_C(I,J,1),l_C(I,J,2),l_C(I,J,3)));
-      A1(1,N):=1/ALPHA;A1(2,1):=1;
-      IF DET(A1) NEQ 0 THEN R:=1 ELSE
-      <<A1(2,1):=0;A1(2,2):=1;
-        IF DET(A1) NEQ 0 THEN R:=2 ELSE
-        <<A1(2,2):=0;A1(2,3):=1;R:=3>>>>;
-      AA:=l_C(N,R,M)/(ALPHA*l_C(I,J,M));
-      BB:=(l_C(I,J,1)*l_C(R,1,M)+l_C(I,J,2)*l_C(R,2,M)+
-           l_C(I,J,3)*l_C(R,3,M))/l_C(I,J,M);
-      IF AA=0 THEN liemat:=MAT((1,0,0),(-BB,1,0),(0,0,1))*A1 ELSE
-        liemat:=MAT((1,0,0),(BB/AA,-1/AA,1),(0,0,1))*A1;
+      write "[X,Y]=Z";lie_class:={liealg(3),comtab(1)}>> else
+    <<alpha:=(l_c(i,j,1)*l_c(n,1,m)+l_c(i,j,2)*l_c(n,2,m)+
+              l_c(i,j,3)*l_c(n,3,m))/l_c(i,j,m);
+      a1:=mat((0,0,0),(0,0,0),(l_c(i,j,1),l_c(i,j,2),l_c(i,j,3)));
+      a1(1,n):=1/alpha;a1(2,1):=1;
+      if det(a1) neq 0 then r:=1 else
+      <<a1(2,1):=0;a1(2,2):=1;
+        if det(a1) neq 0 then r:=2 else
+        <<a1(2,2):=0;a1(2,3):=1;r:=3>>>>;
+      aa:=l_c(n,r,m)/(alpha*l_c(i,j,m));
+      bb:=(l_c(i,j,1)*l_c(r,1,m)+l_c(i,j,2)*l_c(r,2,m)+
+           l_c(i,j,3)*l_c(r,3,m))/l_c(i,j,m);
+      if aa=0 then liemat:=mat((1,0,0),(-bb,1,0),(0,0,1))*a1 else
+        liemat:=mat((1,0,0),(bb/aa,-1/aa,1),(0,0,1))*a1;
       if symbolic !*tr_lie then
-      WRITE "[X,Z]=Z";lie_class:={liealg(3),comtab(2)}>>;
-  CLEAR A1,A2,A3,l_C,F3
-END;
+      write "[X,Z]=Z";lie_class:={liealg(3),comtab(2)}>>;
+  clear a1,a2,a3,l_c,f3
+end;
 
-algebraic procedure com2(F2,M,N);
-BEGIN SCALAR Z1,ALPHA,ALPHA1,ALPHA2,BETA,BETA1,BETA2;
-      MATRIX F3(3,3);
-  F3:=F2;
-  A1:=MAT((F3(M,1),F3(M,2),F3(M,3)),
-          (F3(N,1),F3(N,2),F3(N,3)),(0,0,0));
-  A1(3,1):=1;Z1:=DET(A1);
-  IF Z1 NEQ 0 THEN
-   <<ALPHA1:=(-F3(N,3)*(F3(M,2)*F3(1,2)+F3(M,3)*F3(2,2))+
-               F3(N,2)*(F3(M,2)*F3(1,3)+F3(M,3)*F3(2,3)))/Z1;
-     ALPHA2:=(-F3(N,3)*(F3(N,2)*F3(1,2)+F3(N,3)*F3(2,2))+
-               F3(N,2)*(F3(N,2)*F3(1,3)+F3(N,3)*F3(2,3)))/Z1;
-     BETA1:=(F3(M,3)*(F3(M,2)*F3(1,2)+F3(M,3)*F3(2,2))-
-             F3(M,2)*(F3(M,2)*F3(1,3)+F3(M,3)*F3(2,3)))/Z1;
-     BETA2:=(F3(M,3)*(F3(N,2)*F3(1,2)+F3(N,3)*F3(2,2))-
-             F3(M,2)*(F3(N,2)*F3(1,3)+F3(N,3)*F3(2,3)))/Z1>>
-   ELSE
-   <<A1(3,1):=0;A1(3,2):=1;Z1:=DET(A1);
-   IF Z1 NEQ 0 THEN
-    <<ALPHA1:=(-F3(N,3)*(F3(M,1)*F3(1,1)-F3(M,3)*F3(3,1))+
-                F3(N,1)*(F3(M,1)*F3(1,3)-F3(M,3)*F3(3,3)))/Z1;
-      ALPHA2:=(-F3(N,3)*(F3(N,1)*F3(1,1)-F3(N,3)*F3(3,1))+
-                F3(N,1)*(F3(N,1)*F3(1,3)-F3(N,3)*F3(3,3)))/Z1;
-      BETA1:=(F3(M,3)*(F3(M,1)*F3(1,1)-F3(M,3)*F3(3,1))-
-              F3(M,1)*(F3(M,1)*F3(1,3)-F3(M,3)*F3(3,3)))/Z1;
-      BETA2:=(F3(M,3)*(F3(N,1)*F3(1,1)-F3(N,3)*F3(3,1))-
-              F3(M,1)*(F3(N,1)*F3(1,3)-F3(N,3)*F3(3,3)))/Z1>>
-   ELSE
-   <<A1(3,2):=0;A1(3,3):=1;Z1:=DET(A1);
-      ALPHA1:=(F3(N,2)*(F3(M,1)*F3(2,1)+F3(M,2)*F3(3,1))-
-               F3(N,1)*(F3(M,1)*F3(2,2)+F3(M,2)*F3(3,2)))/Z1;
-      ALPHA2:=(F3(N,2)*(F3(N,1)*F3(2,1)+F3(N,2)*F3(3,1))-
-               F3(N,1)*(F3(N,1)*F3(2,2)+F3(N,2)*F3(3,2)))/Z1;
-      BETA1:=(-F3(M,2)*(F3(M,1)*F3(2,1)+F3(M,2)*F3(3,1))+
-               F3(M,1)*(F3(M,1)*F3(2,2)+F3(M,2)*F3(3,2)))/Z1;
-      BETA2:=(-F3(M,2)*(F3(N,1)*F3(2,1)+F3(N,2)*F3(3,1))+
-               F3(M,1)*(F3(N,1)*F3(2,2)+F3(N,2)*F3(3,2)))/Z1>>>>;
-  IF (ALPHA2=0 AND BETA1=0 AND ALPHA1=BETA2) THEN
-   <<liemat:=MAT((1,0,0),(0,1,0),(0,0,1/ALPHA1))*A1;
+algebraic procedure com2(f2,m,n);
+begin scalar z1,alpha,alpha1,alpha2,beta,beta1,beta2;
+  matrix f3(3,3);
+  f3:=f2;
+  a1:=mat((f3(m,1),f3(m,2),f3(m,3)),
+          (f3(n,1),f3(n,2),f3(n,3)),(0,0,0));
+  a1(3,1):=1;z1:=det(a1);
+  if z1 neq 0 then
+   <<alpha1:=(-f3(n,3)*(f3(m,2)*f3(1,2)+f3(m,3)*f3(2,2))+
+               f3(n,2)*(f3(m,2)*f3(1,3)+f3(m,3)*f3(2,3)))/z1;
+     alpha2:=(-f3(n,3)*(f3(n,2)*f3(1,2)+f3(n,3)*f3(2,2))+
+               f3(n,2)*(f3(n,2)*f3(1,3)+f3(n,3)*f3(2,3)))/z1;
+     beta1:=(f3(m,3)*(f3(m,2)*f3(1,2)+f3(m,3)*f3(2,2))-
+             f3(m,2)*(f3(m,2)*f3(1,3)+f3(m,3)*f3(2,3)))/z1;
+     beta2:=(f3(m,3)*(f3(n,2)*f3(1,2)+f3(n,3)*f3(2,2))-
+             f3(m,2)*(f3(n,2)*f3(1,3)+f3(n,3)*f3(2,3)))/z1>>
+   else
+   <<a1(3,1):=0;a1(3,2):=1;z1:=det(a1);
+   if z1 neq 0 then
+    <<alpha1:=(-f3(n,3)*(f3(m,1)*f3(1,1)-f3(m,3)*f3(3,1))+
+                f3(n,1)*(f3(m,1)*f3(1,3)-f3(m,3)*f3(3,3)))/z1;
+      alpha2:=(-f3(n,3)*(f3(n,1)*f3(1,1)-f3(n,3)*f3(3,1))+
+                f3(n,1)*(f3(n,1)*f3(1,3)-f3(n,3)*f3(3,3)))/z1;
+      beta1:=(f3(m,3)*(f3(m,1)*f3(1,1)-f3(m,3)*f3(3,1))-
+              f3(m,1)*(f3(m,1)*f3(1,3)-f3(m,3)*f3(3,3)))/z1;
+      beta2:=(f3(m,3)*(f3(n,1)*f3(1,1)-f3(n,3)*f3(3,1))-
+              f3(m,1)*(f3(n,1)*f3(1,3)-f3(n,3)*f3(3,3)))/z1>>
+   else
+   <<a1(3,2):=0;a1(3,3):=1;z1:=det(a1);
+      alpha1:=(f3(n,2)*(f3(m,1)*f3(2,1)+f3(m,2)*f3(3,1))-
+               f3(n,1)*(f3(m,1)*f3(2,2)+f3(m,2)*f3(3,2)))/z1;
+      alpha2:=(f3(n,2)*(f3(n,1)*f3(2,1)+f3(n,2)*f3(3,1))-
+               f3(n,1)*(f3(n,1)*f3(2,2)+f3(n,2)*f3(3,2)))/z1;
+      beta1:=(-f3(m,2)*(f3(m,1)*f3(2,1)+f3(m,2)*f3(3,1))+
+               f3(m,1)*(f3(m,1)*f3(2,2)+f3(m,2)*f3(3,2)))/z1;
+      beta2:=(-f3(m,2)*(f3(n,1)*f3(2,1)+f3(n,2)*f3(3,1))+
+               f3(m,1)*(f3(n,1)*f3(2,2)+f3(n,2)*f3(3,2)))/z1>>>>;
+  if (alpha2=0 and beta1=0 and alpha1=beta2) then
+   <<liemat:=mat((1,0,0),(0,1,0),(0,0,1/alpha1))*a1;
      if symbolic !*tr_lie then
-     WRITE "[X,Z]=X, [Y,Z]=Y";lie_class:={liealg(3),comtab(3)}>> ELSE
-   <<IF ALPHA2 NEQ 0 THEN
-     <<ALPHA:=ALPHA1+BETA2;BETA:=ALPHA2*BETA1-ALPHA1*BETA2;
-       A2:=MAT((0,BETA1-ALPHA1*BETA2/ALPHA2,0),
-               (1,-ALPHA1/ALPHA2,0),(0,0,1))>> ELSE
-      IF BETA1 NEQ 0 THEN
-       <<ALPHA:=1+ALPHA1/BETA2;BETA:=-ALPHA1/BETA2;
-         A2:=MAT((-ALPHA1*BETA2/BETA1,0,0),
-                 (-(BETA2**2)/BETA1,BETA2,0),(0,0,1/BETA2))>> ELSE
-        <<ALPHA:=ALPHA1+BETA2;BETA:=-ALPHA1*BETA2;
-          A2:=MAT((1,1,0),(1/ALPHA1,1/BETA2,0),(0,0,1))>>;
-     IF ALPHA=0 THEN
-      <<liemat:=MAT((1,0,0),(0,SQRT(ABS(BETA)),0),
-               (0,0,1/SQRT(ABS(BETA))))*A2*A1;
+     write "[X,Z]=X, [Y,Z]=Y";lie_class:={liealg(3),comtab(3)}>> else
+   <<if alpha2 neq 0 then
+     <<alpha:=alpha1+beta2;beta:=alpha2*beta1-alpha1*beta2;
+       a2:=mat((0,beta1-alpha1*beta2/alpha2,0),
+               (1,-alpha1/alpha2,0),(0,0,1))>> else
+      if beta1 neq 0 then
+       <<alpha:=1+alpha1/beta2;beta:=-alpha1/beta2;
+         a2:=mat((-alpha1*beta2/beta1,0,0),
+                 (-(beta2**2)/beta1,beta2,0),(0,0,1/beta2))>> else
+        <<alpha:=alpha1+beta2;beta:=-alpha1*beta2;
+          a2:=mat((1,1,0),(1/alpha1,1/beta2,0),(0,0,1))>>;
+     if alpha=0 then
+      <<liemat:=mat((1,0,0),(0,sqrt(abs(beta)),0),
+               (0,0,1/sqrt(abs(beta))))*a2*a1;
         if symbolic !*tr_lie then
-        WRITE "[X,Z]=",BETA/ABS(BETA),"Y, [Y,Z]=X";
-        if BETA>0 then lie_class:={liealg(3),comtab(4)} else
+        write "[X,Z]=",beta/abs(beta),"Y, [Y,Z]=X";
+        if beta>0 then lie_class:={liealg(3),comtab(4)} else
                        lie_class:={liealg(3),comtab(5)}>>
-                 ELSE
-      <<liemat:=MAT((1,0,0),(0,-ALPHA,0),(0,0,-1/ALPHA))*A2*A1;
+                 else
+      <<liemat:=mat((1,0,0),(0,-alpha,0),(0,0,-1/alpha))*a2*a1;
         if symbolic !*tr_lie then
-        WRITE "[X,Z]=-X+",BETA/(ALPHA**2),"Y, [Y,Z]=X";
-        lie_class:={liealg(3),comtab(6),BETA/(ALPHA**2)}>>>>;
-  CLEAR A1,A2,F3
-END;
+        write "[X,Z]=-X+",beta/(alpha**2),"Y, [Y,Z]=X";
+        lie_class:={liealg(3),comtab(6),beta/(alpha**2)}>>>>;
+  clear a1,a2,f3
+end;
 
-algebraic procedure com3(F2);
-BEGIN MATRIX l_K(3,3),F3(3,3);
-  F3:=F2;
-  l_K(1,1):=F3(1,2)**2+2*F3(1,3)*F3(2,2)+F3(2,3)**2;
-  l_K(1,2):=-F3(1,1)*F3(1,2)+F3(1,3)*F3(3,2)-
-           F3(2,1)*F3(1,3)+F3(2,3)*F3(3,3);
-  l_K(1,3):=-F3(1,1)*F3(2,2)-F3(1,2)*F3(3,2)-
-           F3(2,1)*F3(2,3)-F3(2,2)*F3(3,3);
-  l_K(2,1):=l_K(1,2);
-  l_K(2,2):=F3(1,1)**2-2*F3(1,3)*F3(3,1)+F3(3,3)**2;
-  l_K(2,3):=F3(1,1)*F3(2,1)+F3(1,2)*F3(3,1)-
-          F3(3,1)*F3(2,3)-F3(3,2)*F3(3,3);
-  l_K(3,1):=l_K(1,3);
-  l_K(3,2):=l_K(2,3);
-  l_K(3,3):=F3(2,1)**2+2*F3(2,2)*F3(3,1)+F3(3,2)**2;
-  IF NOT(NUMBERP(l_K(1,1)) AND
-   NUMBERP(l_K(1,1)*l_K(2,2)-l_K(1,2)*l_K(2,1)) AND
-         NUMBERP(DET(l_K))) THEN
-  <<WRITE "Is ",-l_K(1,1),">0 and ",
-     l_K(1,1)*l_K(2,2)-l_K(1,2)*l_K(2,1),">0 and ",
-      -DET(l_K),">0 ? (y/n) and press <RETURN>";
-    HE:=SYMBOLIC READ();
-    IF HE=y THEN so3(F2) ELSE so21(F2)>> ELSE
-  IF (-l_K(1,1)>0 AND l_K(1,1)*l_K(2,2)-l_K(1,2)*l_K(2,1)>0 AND
-      -DET(l_K)>0) THEN so3(F2) ELSE so21(F2);
-  CLEAR l_K,F3
-END;
+algebraic procedure com3(f2);
+begin matrix l_k(3,3),f3(3,3);
+  f3:=f2;
+  l_k(1,1):=f3(1,2)**2+2*f3(1,3)*f3(2,2)+f3(2,3)**2;
+  l_k(1,2):=-f3(1,1)*f3(1,2)+f3(1,3)*f3(3,2)-
+           f3(2,1)*f3(1,3)+f3(2,3)*f3(3,3);
+  l_k(1,3):=-f3(1,1)*f3(2,2)-f3(1,2)*f3(3,2)-
+           f3(2,1)*f3(2,3)-f3(2,2)*f3(3,3);
+  l_k(2,1):=l_k(1,2);
+  l_k(2,2):=f3(1,1)**2-2*f3(1,3)*f3(3,1)+f3(3,3)**2;
+  l_k(2,3):=f3(1,1)*f3(2,1)+f3(1,2)*f3(3,1)-
+          f3(3,1)*f3(2,3)-f3(3,2)*f3(3,3);
+  l_k(3,1):=l_k(1,3);
+  l_k(3,2):=l_k(2,3);
+  l_k(3,3):=f3(2,1)**2+2*f3(2,2)*f3(3,1)+f3(3,2)**2;
+  if not(numberp(l_k(1,1)) and
+   numberp(l_k(1,1)*l_k(2,2)-l_k(1,2)*l_k(2,1)) and
+         numberp(det(l_k))) then
+  <<write "Is ",-l_k(1,1),">0 and ",
+     l_k(1,1)*l_k(2,2)-l_k(1,2)*l_k(2,1),">0 and ",
+      -det(l_k),">0 ? (y/n) and press <RETURN>";
+    he:=symbolic read();
+    if he=y then so3(f2) else so21(f2)>> else
+  if (-l_k(1,1)>0 and l_k(1,1)*l_k(2,2)-l_k(1,2)*l_k(2,1)>0 and
+      -det(l_k)>0) then so3(f2) else so21(f2);
+  clear l_k,f3
+end;
 
-algebraic procedure so3(F4);
-BEGIN SCALAR S,TT,Q,R,ALPHA;
-      MATRIX F5(3,3);
-  F5:=F4;
-  S:=F5(2,2)/ABS(F5(2,2));
-  TT:=ABS(F5(1,2)**2+F5(1,3)*F5(2,2));
-  R:=F5(1,1)-F5(1,2)*F5(2,1)/F5(2,2);
-  ALPHA:=TT*(-R*R-((F5(2,1)/F5(2,2))**2+F5(3,1)/F5(2,2))*TT);
-  Q:=1/SQRT(ALPHA);
-  liemat(1,1):=1/(S*SQRT(TT));
+algebraic procedure so3(f4);
+begin scalar s,tt,q,r,alpha;
+      matrix f5(3,3);
+  f5:=f4;
+  s:=f5(2,2)/abs(f5(2,2));
+  tt:=abs(f5(1,2)**2+f5(1,3)*f5(2,2));
+  r:=f5(1,1)-f5(1,2)*f5(2,1)/f5(2,2);
+  alpha:=tt*(-r*r-((f5(2,1)/f5(2,2))**2+f5(3,1)/f5(2,2))*tt);
+  q:=1/sqrt(alpha);
+  liemat(1,1):=1/(s*sqrt(tt));
   liemat(1,2):=0;
   liemat(1,3):=0;
-  liemat(2,1):=Q*R;
+  liemat(2,1):=q*r;
   liemat(2,2):=0;
-  liemat(2,3):=-Q*TT/F5(2,2);
-  liemat(3,1):=-Q*S*SQRT(TT)*F5(2,1)/F5(2,2);
-  liemat(3,2):=-Q*S*SQRT(TT);
-  liemat(3,3):=Q*S*SQRT(TT)*F5(1,2)/F5(2,2);
+  liemat(2,3):=-q*tt/f5(2,2);
+  liemat(3,1):=-q*s*sqrt(tt)*f5(2,1)/f5(2,2);
+  liemat(3,2):=-q*s*sqrt(tt);
+  liemat(3,3):=q*s*sqrt(tt)*f5(1,2)/f5(2,2);
   if symbolic !*tr_lie then
-  WRITE "[X,Y]=Z, [X,Z]=-Y, [Y,Z]=X";lie_class:={liealg(3),comtab(7)};
-  CLEAR F5;
-END;
+  write "[X,Y]=Z, [X,Z]=-Y, [Y,Z]=X";lie_class:={liealg(3),comtab(7)};
+  clear f5;
+end;
 
-algebraic procedure so21(F4);
-BEGIN SCALAR GAM,EPS,S,TT,Q,R,ALPHA;
-      MATRIX l_G(3,3),F5(3,3);
-  F5:=F4;
-  liemat:=MAT((1,0,0),(0,1,0),(0,0,1));
-  IF F5(2,2)=0 THEN
-   IF F5(1,3) NEQ 0 THEN <<liemat:=MAT((1,0,0),(0,0,1),(0,1,0));
-    l_G(1,1):=F5(2,1);l_G(1,2):=F5(2,3);l_G(1,3):=F5(2,2);
-    l_G(2,1):=F5(1,1);l_G(2,2):=F5(1,3);l_G(2,3):=F5(1,2);
-    l_G(3,1):=-F5(3,1);l_G(3,2):=-F5(3,3);l_G(3,3):=-F5(3,2);
-    F5:=l_G>> ELSE
-    IF F5(3,1) NEQ 0 THEN <<liemat:=MAT((0,1,0),(1,0,0),(0,0,1));
-     l_G(1,1):=-F5(1,2);l_G(1,2):=-F5(1,1);l_G(1,3):=-F5(1,3);
-     l_G(2,1):=F5(3,2);l_G(2,2):=F5(3,1);l_G(2,3):=F5(3,3);
-     l_G(3,1):=F5(2,2);l_G(3,2):=F5(2,1);l_G(3,3):=F5(2,3);
-     F5:=l_G>> ELSE
-      <<liemat:=MAT((1,0,1),(1,0,0),(0,1,0));
-        l_G(1,1):=-F5(2,3);l_G(1,2):=F5(2,3)-F5(2,1);l_G(1,3):=0;
-        l_G(2,1):=-F5(3,3);l_G(2,2):=2*F5(1,1);
-        l_G(2,3):=F5(1,2)-F5(3,2);
-        l_G(3,1):=0;l_G(3,2):=F5(1,1);l_G(3,3):=F5(1,2);
-        F5:=l_G>>;
-  IF F5(1,2)**2+F5(1,3)*F5(2,2)=0 THEN
-   <<GAM:=-F5(1,2)/F5(2,2);EPS:=F5(1,1)-F5(1,2)*F5(2,1)/F5(2,2);
-     IF 1/4*(F5(3,2)**2+F5(3,1)*F5(2,2))-EPS*F5(2,2)/2=0 THEN
-      <<liemat:=MAT((0,0,1),(0,2/EPS,2*GAM/EPS),(1,0,0))*liemat;
-        l_G(1,1):=2*GAM*F5(3,2)/EPS-F5(3,3);
-        l_G(1,2):=-F5(3,2);l_G(1,3):=-2*F5(3,1)/EPS;
-        l_G(2,1):=0;l_G(2,2):=-EPS*F5(2,2)/2;l_G(2,3):=-F5(2,1);
-        l_G(3,1):=0;l_G(3,2):=0;l_G(3,3):=-2;F5:=l_G>> ELSE
-      <<liemat:=MAT((1/2,0,1/2),(0,1/EPS,GAM/EPS),(-1/2,0,1/2))*liemat;
-        l_G(1,1):=-F5(3,1)/(2*EPS);l_G(1,2):=-F5(3,2)/2;
-        l_G(1,3):=F5(3,1)/(2*EPS)-1;
-        l_G(2,1):=F5(2,1)/2;l_G(2,2):=F5(2,2)*EPS/2;
-        l_G(2,3):=-F5(2,1)/2;l_G(3,1):=F5(3,1)/(2*EPS)+1;
-        l_G(3,2):=F5(3,2)/2;l_G(3,3):=-F5(3,1)/(2*EPS);F5:=l_G>>>>;
-  IF NOT(NUMBERP(F5(1,2)**2+F5(1,3)*F5(2,2))) THEN
- <<WRITE "Is ",F5(1,2)**2+F5(1,3)*F5(2,2),
+algebraic procedure so21(f4);
+begin scalar gam,eps,s,tt,q,r,alpha;
+      matrix l_g(3,3),f5(3,3);
+  f5:=f4;
+  liemat:=mat((1,0,0),(0,1,0),(0,0,1));
+  if f5(2,2)=0 then
+   if f5(1,3) neq 0 then <<liemat:=mat((1,0,0),(0,0,1),(0,1,0));
+    l_g(1,1):=f5(2,1);l_g(1,2):=f5(2,3);l_g(1,3):=f5(2,2);
+    l_g(2,1):=f5(1,1);l_g(2,2):=f5(1,3);l_g(2,3):=f5(1,2);
+    l_g(3,1):=-f5(3,1);l_g(3,2):=-f5(3,3);l_g(3,3):=-f5(3,2);
+    f5:=l_g>> else
+    if f5(3,1) neq 0 then <<liemat:=mat((0,1,0),(1,0,0),(0,0,1));
+     l_g(1,1):=-f5(1,2);l_g(1,2):=-f5(1,1);l_g(1,3):=-f5(1,3);
+     l_g(2,1):=f5(3,2);l_g(2,2):=f5(3,1);l_g(2,3):=f5(3,3);
+     l_g(3,1):=f5(2,2);l_g(3,2):=f5(2,1);l_g(3,3):=f5(2,3);
+     f5:=l_g>> else
+      <<liemat:=mat((1,0,1),(1,0,0),(0,1,0));
+        l_g(1,1):=-f5(2,3);l_g(1,2):=f5(2,3)-f5(2,1);l_g(1,3):=0;
+        l_g(2,1):=-f5(3,3);l_g(2,2):=2*f5(1,1);
+        l_g(2,3):=f5(1,2)-f5(3,2);
+        l_g(3,1):=0;l_g(3,2):=f5(1,1);l_g(3,3):=f5(1,2);
+        f5:=l_g>>;
+  if f5(1,2)**2+f5(1,3)*f5(2,2)=0 then
+   <<gam:=-f5(1,2)/f5(2,2);eps:=f5(1,1)-f5(1,2)*f5(2,1)/f5(2,2);
+     if 1/4*(f5(3,2)**2+f5(3,1)*f5(2,2))-eps*f5(2,2)/2=0 then
+      <<liemat:=mat((0,0,1),(0,2/eps,2*gam/eps),(1,0,0))*liemat;
+        l_g(1,1):=2*gam*f5(3,2)/eps-f5(3,3);
+        l_g(1,2):=-f5(3,2);l_g(1,3):=-2*f5(3,1)/eps;
+        l_g(2,1):=0;l_g(2,2):=-eps*f5(2,2)/2;l_g(2,3):=-f5(2,1);
+        l_g(3,1):=0;l_g(3,2):=0;l_g(3,3):=-2;f5:=l_g>> else
+      <<liemat:=mat((1/2,0,1/2),(0,1/eps,gam/eps),(-1/2,0,1/2))*liemat;
+        l_g(1,1):=-f5(3,1)/(2*eps);l_g(1,2):=-f5(3,2)/2;
+        l_g(1,3):=f5(3,1)/(2*eps)-1;
+        l_g(2,1):=f5(2,1)/2;l_g(2,2):=f5(2,2)*eps/2;
+        l_g(2,3):=-f5(2,1)/2;l_g(3,1):=f5(3,1)/(2*eps)+1;
+        l_g(3,2):=f5(3,2)/2;l_g(3,3):=-f5(3,1)/(2*eps);f5:=l_g>>>>;
+  if not(numberp(f5(1,2)**2+f5(1,3)*f5(2,2))) then
+ <<write "Is ",f5(1,2)**2+f5(1,3)*f5(2,2),
          "<0 ? (y/n) and press <RETURN>";
-    HE:=SYMBOLIC READ();
-    IF HE=y THEN
-    <<S:=F5(2,2)/ABS(F5(2,2));
-     TT:=ABS(F5(1,2)**2+F5(1,3)*F5(2,2));
-     R:=F5(1,1)-F5(1,2)*F5(2,1)/F5(2,2);
-     ALPHA:=TT*(-R*R-((F5(2,1)/F5(2,2))**2+F5(3,1)/F5(2,2))*TT);
-     Q:=1/SQRT(ABS(ALPHA));
-     l_G(1,1):=-Q*S*SQRT(TT)*F5(2,1)/F5(2,2);
-     l_G(1,2):=-Q*S*SQRT(TT);
-     l_G(1,3):=Q*S*SQRT(TT)*F5(1,2)/F5(2,2);
-     l_G(2,1):=1/(S*SQRT(TT));
-     l_G(2,2):=0;
-     l_G(2,3):=0;
-     l_G(3,1):=Q*R;
-     l_G(3,2):=0;
-     l_G(3,3):=-Q*TT/F5(2,2);
-     liemat:=l_G*liemat>> ELSE
-   <<S:=F5(2,2)/ABS(F5(2,2));
-     TT:=F5(1,2)**2+F5(1,3)*F5(2,2);
-     R:=F5(1,1)-F5(1,2)*F5(2,1)/F5(2,2);
-     ALPHA:=TT*(R*R-((F5(2,1)/F5(2,2))**2+F5(3,1)/F5(2,2))*TT);
-     Q:=1/SQRT(ABS(ALPHA));
-     IF NOT(NUMBERP(ALPHA)) THEN
-     <<WRITE "Is ",ALPHA,">0 ? (y/n) and press <RETURN>";
-       HE:=SYMBOLIC READ();
-       IF HE=y THEN
-       <<l_G(1,1):=1/(S*SQRT(TT));
-         l_G(1,2):=0;
-         l_G(1,3):=0;
-         l_G(2,1):=Q*R;
-         l_G(2,2):=0;
-         l_G(2,3):=Q*TT/F5(2,2);
-         l_G(3,1):=Q*S*SQRT(TT)*F5(2,1)/F5(2,2);
-         l_G(3,2):=Q*S*SQRT(TT);
-         l_G(3,3):=-Q*S*SQRT(TT)*F5(1,2)/F5(2,2);
-         liemat:=l_G*liemat>> ELSE
-       <<l_G(1,1):=1/(S*SQRT(TT));
-         l_G(1,2):=0;
-         l_G(1,3):=0;
-         l_G(2,1):=Q*S*SQRT(TT)*F5(2,1)/F5(2,2);
-         l_G(2,2):=Q*S*SQRT(TT);
-         l_G(2,3):=-Q*S*SQRT(TT)*F5(1,2)/F5(2,2);
-         l_G(3,1):=Q*R;
-         l_G(3,2):=0;
-         l_G(3,3):=Q*TT/F5(2,2);
-         liemat:=l_G*liemat>>>> ELSE
-     IF ALPHA>0 THEN
-      <<l_G(1,1):=1/(S*SQRT(TT));
-        l_G(1,2):=0;
-        l_G(1,3):=0;
-        l_G(2,1):=Q*R;
-        l_G(2,2):=0;
-        l_G(2,3):=Q*TT/F5(2,2);
-        l_G(3,1):=Q*S*SQRT(TT)*F5(2,1)/F5(2,2);
-        l_G(3,2):=Q*S*SQRT(TT);
-        l_G(3,3):=-Q*S*SQRT(TT)*F5(1,2)/F5(2,2);
-        liemat:=l_G*liemat>> ELSE
-      <<l_G(1,1):=1/(S*SQRT(TT));
-        l_G(1,2):=0;
-        l_G(1,3):=0;
-        l_G(2,1):=Q*S*SQRT(TT)*F5(2,1)/F5(2,2);
-        l_G(2,2):=Q*S*SQRT(TT);
-        l_G(2,3):=-Q*S*SQRT(TT)*F5(1,2)/F5(2,2);
-        l_G(3,1):=Q*R;
-        l_G(3,2):=0;
-        l_G(3,3):=Q*TT/F5(2,2);
-        liemat:=l_G*liemat>>>>>> ELSE
-  IF F5(1,2)**2+F5(1,3)*F5(2,2)<0 THEN
-   <<S:=F5(2,2)/ABS(F5(2,2));
-     TT:=ABS(F5(1,2)**2+F5(1,3)*F5(2,2));
-     R:=F5(1,1)-F5(1,2)*F5(2,1)/F5(2,2);
-     ALPHA:=TT*(-R*R-((F5(2,1)/F5(2,2))**2+F5(3,1)/F5(2,2))*TT);
-     Q:=1/SQRT(ABS(ALPHA));
-     l_G(1,1):=-Q*S*SQRT(TT)*F5(2,1)/F5(2,2);
-     l_G(1,2):=-Q*S*SQRT(TT);
-     l_G(1,3):=Q*S*SQRT(TT)*F5(1,2)/F5(2,2);
-     l_G(2,1):=1/(S*SQRT(TT));
-     l_G(2,2):=0;
-     l_G(2,3):=0;
-     l_G(3,1):=Q*R;
-     l_G(3,2):=0;
-     l_G(3,3):=-Q*TT/F5(2,2);
-     liemat:=l_G*liemat>> ELSE
-   <<S:=F5(2,2)/ABS(F5(2,2));
-     TT:=F5(1,2)**2+F5(1,3)*F5(2,2);
-     R:=F5(1,1)-F5(1,2)*F5(2,1)/F5(2,2);
-     ALPHA:=TT*(R*R-((F5(2,1)/F5(2,2))**2+F5(3,1)/F5(2,2))*TT);
-     Q:=1/SQRT(ABS(ALPHA));
-     IF NOT(NUMBERP(ALPHA)) THEN
-     <<WRITE "Is ",ALPHA,">0 ? (y/n) and press <RETURN>";
-       HE:=SYMBOLIC READ();
-       IF HE=y THEN
-       <<l_G(1,1):=1/(S*SQRT(TT));
-         l_G(1,2):=0;
-         l_G(1,3):=0;
-         l_G(2,1):=Q*R;
-         l_G(2,2):=0;
-         l_G(2,3):=Q*TT/F5(2,2);
-         l_G(3,1):=Q*S*SQRT(TT)*F5(2,1)/F5(2,2);
-         l_G(3,2):=Q*S*SQRT(TT);
-         l_G(3,3):=-Q*S*SQRT(TT)*F5(1,2)/F5(2,2);
-         liemat:=l_G*liemat>> ELSE
-       <<l_G(1,1):=1/(S*SQRT(TT));
-         l_G(1,2):=0;
-         l_G(1,3):=0;
-         l_G(2,1):=Q*S*SQRT(TT)*F5(2,1)/F5(2,2);
-         l_G(2,2):=Q*S*SQRT(TT);
-         l_G(2,3):=-Q*S*SQRT(TT)*F5(1,2)/F5(2,2);
-         l_G(3,1):=Q*R;
-         l_G(3,2):=0;
-         l_G(3,3):=Q*TT/F5(2,2);
-         liemat:=l_G*liemat>>>> ELSE
-     IF ALPHA>0 THEN
-      <<l_G(1,1):=1/(S*SQRT(TT));
-        l_G(1,2):=0;
-        l_G(1,3):=0;
-        l_G(2,1):=Q*R;
-        l_G(2,2):=0;
-        l_G(2,3):=Q*TT/F5(2,2);
-        l_G(3,1):=Q*S*SQRT(TT)*F5(2,1)/F5(2,2);
-        l_G(3,2):=Q*S*SQRT(TT);
-        l_G(3,3):=-Q*S*SQRT(TT)*F5(1,2)/F5(2,2);
-        liemat:=l_G*liemat>> ELSE
-      <<l_G(1,1):=1/(S*SQRT(TT));
-        l_G(1,2):=0;
-        l_G(1,3):=0;
-        l_G(2,1):=Q*S*SQRT(TT)*F5(2,1)/F5(2,2);
-        l_G(2,2):=Q*S*SQRT(TT);
-        l_G(2,3):=-Q*S*SQRT(TT)*F5(1,2)/F5(2,2);
-        l_G(3,1):=Q*R;
-        l_G(3,2):=0;
-        l_G(3,3):=Q*TT/F5(2,2);
-        liemat:=l_G*liemat>>>>;
+    he:=symbolic read();
+    if he=y then
+    <<s:=f5(2,2)/abs(f5(2,2));
+     tt:=abs(f5(1,2)**2+f5(1,3)*f5(2,2));
+     r:=f5(1,1)-f5(1,2)*f5(2,1)/f5(2,2);
+     alpha:=tt*(-r*r-((f5(2,1)/f5(2,2))**2+f5(3,1)/f5(2,2))*tt);
+     q:=1/sqrt(abs(alpha));
+     l_g(1,1):=-q*s*sqrt(tt)*f5(2,1)/f5(2,2);
+     l_g(1,2):=-q*s*sqrt(tt);
+     l_g(1,3):=q*s*sqrt(tt)*f5(1,2)/f5(2,2);
+     l_g(2,1):=1/(s*sqrt(tt));
+     l_g(2,2):=0;
+     l_g(2,3):=0;
+     l_g(3,1):=q*r;
+     l_g(3,2):=0;
+     l_g(3,3):=-q*tt/f5(2,2);
+     liemat:=l_g*liemat>> else
+   <<s:=f5(2,2)/abs(f5(2,2));
+     tt:=f5(1,2)**2+f5(1,3)*f5(2,2);
+     r:=f5(1,1)-f5(1,2)*f5(2,1)/f5(2,2);
+     alpha:=tt*(r*r-((f5(2,1)/f5(2,2))**2+f5(3,1)/f5(2,2))*tt);
+     q:=1/sqrt(abs(alpha));
+     if not(numberp(alpha)) then
+     <<write "Is ",alpha,">0 ? (y/n) and press <RETURN>";
+       he:=symbolic read();
+       if he=y then
+       <<l_g(1,1):=1/(s*sqrt(tt));
+         l_g(1,2):=0;
+         l_g(1,3):=0;
+         l_g(2,1):=q*r;
+         l_g(2,2):=0;
+         l_g(2,3):=q*tt/f5(2,2);
+         l_g(3,1):=q*s*sqrt(tt)*f5(2,1)/f5(2,2);
+         l_g(3,2):=q*s*sqrt(tt);
+         l_g(3,3):=-q*s*sqrt(tt)*f5(1,2)/f5(2,2);
+         liemat:=l_g*liemat>> else
+       <<l_g(1,1):=1/(s*sqrt(tt));
+         l_g(1,2):=0;
+         l_g(1,3):=0;
+         l_g(2,1):=q*s*sqrt(tt)*f5(2,1)/f5(2,2);
+         l_g(2,2):=q*s*sqrt(tt);
+         l_g(2,3):=-q*s*sqrt(tt)*f5(1,2)/f5(2,2);
+         l_g(3,1):=q*r;
+         l_g(3,2):=0;
+         l_g(3,3):=q*tt/f5(2,2);
+         liemat:=l_g*liemat>>>> else
+     if alpha>0 then
+      <<l_g(1,1):=1/(s*sqrt(tt));
+        l_g(1,2):=0;
+        l_g(1,3):=0;
+        l_g(2,1):=q*r;
+        l_g(2,2):=0;
+        l_g(2,3):=q*tt/f5(2,2);
+        l_g(3,1):=q*s*sqrt(tt)*f5(2,1)/f5(2,2);
+        l_g(3,2):=q*s*sqrt(tt);
+        l_g(3,3):=-q*s*sqrt(tt)*f5(1,2)/f5(2,2);
+        liemat:=l_g*liemat>> else
+      <<l_g(1,1):=1/(s*sqrt(tt));
+        l_g(1,2):=0;
+        l_g(1,3):=0;
+        l_g(2,1):=q*s*sqrt(tt)*f5(2,1)/f5(2,2);
+        l_g(2,2):=q*s*sqrt(tt);
+        l_g(2,3):=-q*s*sqrt(tt)*f5(1,2)/f5(2,2);
+        l_g(3,1):=q*r;
+        l_g(3,2):=0;
+        l_g(3,3):=q*tt/f5(2,2);
+        liemat:=l_g*liemat>>>>>> else
+  if f5(1,2)**2+f5(1,3)*f5(2,2)<0 then
+   <<s:=f5(2,2)/abs(f5(2,2));
+     tt:=abs(f5(1,2)**2+f5(1,3)*f5(2,2));
+     r:=f5(1,1)-f5(1,2)*f5(2,1)/f5(2,2);
+     alpha:=tt*(-r*r-((f5(2,1)/f5(2,2))**2+f5(3,1)/f5(2,2))*tt);
+     q:=1/sqrt(abs(alpha));
+     l_g(1,1):=-q*s*sqrt(tt)*f5(2,1)/f5(2,2);
+     l_g(1,2):=-q*s*sqrt(tt);
+     l_g(1,3):=q*s*sqrt(tt)*f5(1,2)/f5(2,2);
+     l_g(2,1):=1/(s*sqrt(tt));
+     l_g(2,2):=0;
+     l_g(2,3):=0;
+     l_g(3,1):=q*r;
+     l_g(3,2):=0;
+     l_g(3,3):=-q*tt/f5(2,2);
+     liemat:=l_g*liemat>> else
+   <<s:=f5(2,2)/abs(f5(2,2));
+     tt:=f5(1,2)**2+f5(1,3)*f5(2,2);
+     r:=f5(1,1)-f5(1,2)*f5(2,1)/f5(2,2);
+     alpha:=tt*(r*r-((f5(2,1)/f5(2,2))**2+f5(3,1)/f5(2,2))*tt);
+     q:=1/sqrt(abs(alpha));
+     if not(numberp(alpha)) then
+     <<write "Is ",alpha,">0 ? (y/n) and press <RETURN>";
+       he:=symbolic read();
+       if he=y then
+       <<l_g(1,1):=1/(s*sqrt(tt));
+         l_g(1,2):=0;
+         l_g(1,3):=0;
+         l_g(2,1):=q*r;
+         l_g(2,2):=0;
+         l_g(2,3):=q*tt/f5(2,2);
+         l_g(3,1):=q*s*sqrt(tt)*f5(2,1)/f5(2,2);
+         l_g(3,2):=q*s*sqrt(tt);
+         l_g(3,3):=-q*s*sqrt(tt)*f5(1,2)/f5(2,2);
+         liemat:=l_g*liemat>> else
+       <<l_g(1,1):=1/(s*sqrt(tt));
+         l_g(1,2):=0;
+         l_g(1,3):=0;
+         l_g(2,1):=q*s*sqrt(tt)*f5(2,1)/f5(2,2);
+         l_g(2,2):=q*s*sqrt(tt);
+         l_g(2,3):=-q*s*sqrt(tt)*f5(1,2)/f5(2,2);
+         l_g(3,1):=q*r;
+         l_g(3,2):=0;
+         l_g(3,3):=q*tt/f5(2,2);
+         liemat:=l_g*liemat>>>> else
+     if alpha>0 then
+      <<l_g(1,1):=1/(s*sqrt(tt));
+        l_g(1,2):=0;
+        l_g(1,3):=0;
+        l_g(2,1):=q*r;
+        l_g(2,2):=0;
+        l_g(2,3):=q*tt/f5(2,2);
+        l_g(3,1):=q*s*sqrt(tt)*f5(2,1)/f5(2,2);
+        l_g(3,2):=q*s*sqrt(tt);
+        l_g(3,3):=-q*s*sqrt(tt)*f5(1,2)/f5(2,2);
+        liemat:=l_g*liemat>> else
+      <<l_g(1,1):=1/(s*sqrt(tt));
+        l_g(1,2):=0;
+        l_g(1,3):=0;
+        l_g(2,1):=q*s*sqrt(tt)*f5(2,1)/f5(2,2);
+        l_g(2,2):=q*s*sqrt(tt);
+        l_g(2,3):=-q*s*sqrt(tt)*f5(1,2)/f5(2,2);
+        l_g(3,1):=q*r;
+        l_g(3,2):=0;
+        l_g(3,3):=q*tt/f5(2,2);
+        liemat:=l_g*liemat>>>>;
   if symbolic !*tr_lie then
-  WRITE "[X,Y]=Z, [X,Z]=Y, [Y,Z]=X";lie_class:={liealg(3),comtab(8)};
-  CLEAR l_G,F5
-END;
+  write "[X,Y]=Z, [X,Z]=Y, [Y,Z]=X";lie_class:={liealg(3),comtab(8)};
+  clear l_g,f5
+end;
 
 algebraic procedure lie4();
-BEGIN
-     SCALAR LAM,JAC1,JAC2,JAC3,JAC4;
-     INTEGER P1,M1,M2,M3,DIML1;
-     MATRIX l_F(6,4);
-     ARRAY ORDV(12);
- ORDV(1):=ORDV(3):=ORDV(7):=1;ORDV(2):=ORDV(5):=ORDV(9):=2;
- ORDV(4):=ORDV(6):=ORDV(11):=3;ORDV(8):=ORDV(10):=ORDV(12):=4;
- FOR I:=1:4 DO
-  <<l_F(1,I):=CC(1,2,I);l_F(2,I):=CC(1,3,I);l_F(3,I):=CC(2,3,I);
-    l_F(4,I):=CC(1,4,I);l_F(5,I):=CC(2,4,I);l_F(6,I):=CC(3,4,I);
-    CC(1,1,I):=CC(2,2,I):=CC(3,3,I):=CC(4,4,I):=0;
-    CC(2,1,I):=-l_F(1,I);CC(3,1,I):=-l_F(2,I);CC(3,2,I):=-l_F(3,I);
-    CC(4,1,I):=-l_F(4,I);CC(4,2,I):=-l_F(5,I);CC(4,3,I):=-l_F(6,I)>>;
- FOR S:=1:4 DO
- <<JAC1:=FOR R:=1:4 SUM
-    CC(1,2,R)*CC(R,3,S)+CC(2,3,R)*CC(R,1,S)+CC(3,1,R)*CC(R,2,S);
-   JAC2:=FOR R:=1:4 SUM
-    CC(1,2,R)*CC(R,4,S)+CC(2,4,R)*CC(R,1,S)+CC(4,1,R)*CC(R,2,S);
-   JAC3:=FOR R:=1:4 SUM
-    CC(1,3,R)*CC(R,4,S)+CC(3,4,R)*CC(R,1,S)+CC(4,1,R)*CC(R,3,S);
-   JAC4:=FOR R:=1:4 SUM
-    CC(2,3,R)*CC(R,4,S)+CC(3,4,R)*CC(R,2,S)+CC(4,2,R)*CC(R,3,S);
-   IF (JAC1 NEQ 0 OR JAC2 NEQ 0 OR JAC3 NEQ 0 OR JAC4 NEQ 0 ) THEN
-    S:=4>>;
- IF (JAC1 NEQ 0 OR JAC2 NEQ 0 OR JAC3 NEQ 0 OR JAC4 NEQ 0 )THEN
-  <<clear l_F,ORDV,CC;symbolic rederr "not a Lie algebra">>;
- M1:=0;
- FOR S:=1:6 DO
-  FOR TT:=1:4 DO
-   IF l_F(S,TT) NEQ 0 THEN <<M1:=S;P1:=TT;S:=6;TT:=4>>;
- IF M1=0 THEN DIML1:=0 ELSE
-  IF M1=6 THEN DIML1:=1 ELSE
-  <<M2:=0;
-    FOR S:=M1+1:6 DO
-     <<LAM:=l_F(S,P1)/l_F(M1,P1);
-       FOR TT:=1:4 DO
-       IF l_F(S,TT) NEQ LAM*l_F(M1,TT) THEN <<M2:=S;S:=6;TT:=4>>>>;
-       IF M2=0 THEN DIML1:=1 ELSE
-     IF M2=6 THEN DIML1:=2 ELSE
-     <<M3:=0;
-       FOR S:=M2+1:6 DO
-       IF NOT(DET(MAT((l_F(M1,2),l_F(M1,3),l_F(M1,4)),
-                      (l_F(M2,2),l_F(M2,3),l_F(M2,4)),
-                      (l_F(S,2),l_F(S,3),l_F(S,4))))=0 AND
-              DET(MAT((l_F(M1,1),l_F(M1,3),l_F(M1,4)),
-                      (l_F(M2,1),l_F(M2,3),l_F(M2,4)),
-                      (l_F(S,1),l_F(S,3),l_F(S,4))))=0 AND
-              DET(MAT((l_F(M1,1),l_F(M1,2),l_F(M1,4)),
-                      (l_F(M2,1),l_F(M2,2),l_F(M2,4)),
-                      (l_F(S,1),l_F(S,2),l_F(S,4))))=0 AND
-              DET(MAT((l_F(M1,1),l_F(M1,2),l_F(M1,3)),
-                      (l_F(M2,1),l_F(M2,2),l_F(M2,3)),
-                      (l_F(S,1),l_F(S,2),l_F(S,3))))=0)
-        THEN <<M3:=S;S:=6>>;
-       IF M3=0 THEN DIML1:=2 ELSE DIML1:=3>>>>;
-   IF DIML1=0 THEN
-    <<if symbolic !*tr_lie then WRITE "Your Lie algebra is commutative";
+begin
+     scalar lam,jac1,jac2,jac3,jac4;
+     integer p1,m1,m2,m3,diml1;
+     matrix l_f(6,4);
+     array ordv(12);
+ ordv(1):=ordv(3):=ordv(7):=1;ordv(2):=ordv(5):=ordv(9):=2;
+ ordv(4):=ordv(6):=ordv(11):=3;ordv(8):=ordv(10):=ordv(12):=4;
+ for i:=1:4 do
+  <<l_f(1,i):=cc(1,2,i);l_f(2,i):=cc(1,3,i);l_f(3,i):=cc(2,3,i);
+    l_f(4,i):=cc(1,4,i);l_f(5,i):=cc(2,4,i);l_f(6,i):=cc(3,4,i);
+    cc(1,1,i):=cc(2,2,i):=cc(3,3,i):=cc(4,4,i):=0;
+    cc(2,1,i):=-l_f(1,i);cc(3,1,i):=-l_f(2,i);cc(3,2,i):=-l_f(3,i);
+    cc(4,1,i):=-l_f(4,i);cc(4,2,i):=-l_f(5,i);cc(4,3,i):=-l_f(6,i)>>;
+ for s:=1:4 do
+ <<jac1:=for r:=1:4 sum
+    cc(1,2,r)*cc(r,3,s)+cc(2,3,r)*cc(r,1,s)+cc(3,1,r)*cc(r,2,s);
+   jac2:=for r:=1:4 sum
+    cc(1,2,r)*cc(r,4,s)+cc(2,4,r)*cc(r,1,s)+cc(4,1,r)*cc(r,2,s);
+   jac3:=for r:=1:4 sum
+    cc(1,3,r)*cc(r,4,s)+cc(3,4,r)*cc(r,1,s)+cc(4,1,r)*cc(r,3,s);
+   jac4:=for r:=1:4 sum
+    cc(2,3,r)*cc(r,4,s)+cc(3,4,r)*cc(r,2,s)+cc(4,2,r)*cc(r,3,s);
+   if (jac1 neq 0 or jac2 neq 0 or jac3 neq 0 or jac4 neq 0 ) then
+    s:=4>>;
+ if (jac1 neq 0 or jac2 neq 0 or jac3 neq 0 or jac4 neq 0 )then
+  <<clear l_f,ordv,cc;symbolic rederr "not a Lie algebra">>;
+ m1:=0;
+ for s:=1:6 do
+  for tt:=1:4 do
+   if l_f(s,tt) neq 0 then <<m1:=s;p1:=tt;s:=6;tt:=4>>;
+ if m1=0 then diml1:=0 else
+  if m1=6 then diml1:=1 else
+  <<m2:=0;
+    for s:=m1+1:6 do
+     <<lam:=l_f(s,p1)/l_f(m1,p1);
+       for tt:=1:4 do
+       if l_f(s,tt) neq lam*l_f(m1,tt) then <<m2:=s;s:=6;tt:=4>>>>;
+       if m2=0 then diml1:=1 else
+     if m2=6 then diml1:=2 else
+     <<m3:=0;
+       for s:=m2+1:6 do
+       if not(det(mat((l_f(m1,2),l_f(m1,3),l_f(m1,4)),
+                      (l_f(m2,2),l_f(m2,3),l_f(m2,4)),
+                      (l_f(s,2),l_f(s,3),l_f(s,4))))=0 and
+              det(mat((l_f(m1,1),l_f(m1,3),l_f(m1,4)),
+                      (l_f(m2,1),l_f(m2,3),l_f(m2,4)),
+                      (l_f(s,1),l_f(s,3),l_f(s,4))))=0 and
+              det(mat((l_f(m1,1),l_f(m1,2),l_f(m1,4)),
+                      (l_f(m2,1),l_f(m2,2),l_f(m2,4)),
+                      (l_f(s,1),l_f(s,2),l_f(s,4))))=0 and
+              det(mat((l_f(m1,1),l_f(m1,2),l_f(m1,3)),
+                      (l_f(m2,1),l_f(m2,2),l_f(m2,3)),
+                      (l_f(s,1),l_f(s,2),l_f(s,3))))=0)
+        then <<m3:=s;s:=6>>;
+       if m3=0 then diml1:=2 else diml1:=3>>>>;
+   if diml1=0 then
+    <<if symbolic !*tr_lie then write "Your Lie algebra is commutative";
       lie_class:={liealg(4),comtab(0)};
-      liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,1,0),(0,0,0,1))>> ELSE
-    IF DIML1=3 THEN
-    com43(ORDV(2*M1-1),ORDV(2*M1),ORDV(2*M2-1),ORDV(2*M2),
-            ORDV(2*M3-1),ORDV(2*M3)) ELSE
-      IF DIML1=1 THEN
-       com41(ORDV(2*M1-1),ORDV(2*M1),P1) ELSE
-        com42(ORDV(2*M1-1),ORDV(2*M1),ORDV(2*M2-1),ORDV(2*M2));
- CLEAR ORDV,l_F
-END;
+      liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,1,0),(0,0,0,1))>> else
+    if diml1=3 then
+    com43(ordv(2*m1-1),ordv(2*m1),ordv(2*m2-1),ordv(2*m2),
+            ordv(2*m3-1),ordv(2*m3)) else
+      if diml1=1 then
+       com41(ordv(2*m1-1),ordv(2*m1),p1) else
+        com42(ordv(2*m1-1),ordv(2*m1),ordv(2*m2-1),ordv(2*m2));
+ clear ordv,l_f
+end;
 
-algebraic procedure com41(I1,J1,P1);
-BEGIN SCALAR Y1,Y2,Y3,BETA1,BETA2,BETA3,BETA4,BETA5,BETA6;
-      MATRIX liemat(4,4);
- FOR I:=1:4 DO liemat(1,I):=CC(I1,J1,I);
- IF P1=1 THEN <<Y1:=2;Y2:=3;Y3:=4>> ELSE
-  IF P1=2 THEN <<Y1:=1;Y2:=3;Y3:=4>> ELSE
-   IF P1=3 THEN <<Y1:=1;Y2:=2;Y3:=4>> ELSE
-    <<Y1:=1;Y2:=2;Y3:=3>>;
- liemat(2,Y1):=liemat(3,Y2):=liemat(4,Y3):=1;
- BETA1:=(FOR L:=1:4 SUM CC(I1,J1,L)*CC(L,Y1,P1))/CC(I1,J1,P1);
- BETA2:=(FOR L:=1:4 SUM CC(I1,J1,L)*CC(L,Y2,P1))/CC(I1,J1,P1);
- BETA3:=CC(Y1,Y2,P1)/CC(I1,J1,P1);
- BETA4:=(FOR L:=1:4 SUM CC(I1,J1,L)*CC(L,Y3,P1))/CC(I1,J1,P1);
- BETA5:=CC(Y1,Y3,P1)/CC(I1,J1,P1);
- BETA6:=CC(Y2,Y3,P1)/CC(I1,J1,P1);
- IF (BETA1=0 AND BETA2=0 AND BETA3=0 AND BETA4=0 AND BETA5=0) THEN
-  <<liemat:=MAT((1,0,0,0),(0,0,0,1),(0,0,1,0),(0,1,0,0))*liemat;
-    BETA3:=-BETA6;BETA6:=0>> ELSE
-  IF (BETA1=0 AND BETA2=0 AND BETA3=0) THEN
-   <<liemat:=MAT((1,0,0,0),(0,1,0,0),(0,0,0,1),(0,0,1,0))*liemat;
-     BETA2:=BETA4;BETA3:=BETA5;BETA4:=BETA5:=0;BETA6:=-BETA6>>;
- IF (BETA1=0 AND BETA2=0) THEN
-  <<liemat:=MAT((BETA3,0,0,0),(0,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
-    Y1:=BETA4;Y2:=BETA5/BETA3;Y3:=BETA6/BETA3>> ELSE
-  IF BETA1=0 THEN
-   <<liemat:=MAT((1,0,0,0),(-BETA3/BETA2,1,0,0),(0,0,1/BETA2,0),
-             (0,0,0,1))*liemat;Y1:=BETA4;
-     Y2:=BETA5-BETA3*BETA4/BETA2;Y3:=BETA6/BETA2>> ELSE
-    <<liemat:=MAT((1,0,0,0),(BETA3/BETA1,-BETA2/BETA1,1,0),
-              (0,1/BETA1,0,0),(0,0,0,1))*liemat;
-      Y1:=BETA4;Y2:=(BETA3*BETA4-BETA2*BETA5)/BETA1;
-      Y3:=BETA5/BETA1>>;
- IF (BETA1=0 AND BETA2=0) THEN
-  <<liemat:=MAT((1,0,0,0),(0,1,0,0),(0,Y3,-Y2,1),(0,0,1,0))*liemat;
+algebraic procedure com41(i1,j1,p1);
+begin scalar y1,y2,y3,beta1,beta2,beta3,beta4,beta5,beta6;
+      matrix liemat(4,4);
+ for i:=1:4 do liemat(1,i):=cc(i1,j1,i);
+ if p1=1 then <<y1:=2;y2:=3;y3:=4>> else
+  if p1=2 then <<y1:=1;y2:=3;y3:=4>> else
+   if p1=3 then <<y1:=1;y2:=2;y3:=4>> else
+    <<y1:=1;y2:=2;y3:=3>>;
+ liemat(2,y1):=liemat(3,y2):=liemat(4,y3):=1;
+ beta1:=(for l:=1:4 sum cc(i1,j1,l)*cc(l,y1,p1))/cc(i1,j1,p1);
+ beta2:=(for l:=1:4 sum cc(i1,j1,l)*cc(l,y2,p1))/cc(i1,j1,p1);
+ beta3:=cc(y1,y2,p1)/cc(i1,j1,p1);
+ beta4:=(for l:=1:4 sum cc(i1,j1,l)*cc(l,y3,p1))/cc(i1,j1,p1);
+ beta5:=cc(y1,y3,p1)/cc(i1,j1,p1);
+ beta6:=cc(y2,y3,p1)/cc(i1,j1,p1);
+ if (beta1=0 and beta2=0 and beta3=0 and beta4=0 and beta5=0) then
+  <<liemat:=mat((1,0,0,0),(0,0,0,1),(0,0,1,0),(0,1,0,0))*liemat;
+    beta3:=-beta6;beta6:=0>> else
+  if (beta1=0 and beta2=0 and beta3=0) then
+   <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,0,1),(0,0,1,0))*liemat;
+     beta2:=beta4;beta3:=beta5;beta4:=beta5:=0;beta6:=-beta6>>;
+ if (beta1=0 and beta2=0) then
+  <<liemat:=mat((beta3,0,0,0),(0,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
+    y1:=beta4;y2:=beta5/beta3;y3:=beta6/beta3>> else
+  if beta1=0 then
+   <<liemat:=mat((1,0,0,0),(-beta3/beta2,1,0,0),(0,0,1/beta2,0),
+             (0,0,0,1))*liemat;y1:=beta4;
+     y2:=beta5-beta3*beta4/beta2;y3:=beta6/beta2>> else
+    <<liemat:=mat((1,0,0,0),(beta3/beta1,-beta2/beta1,1,0),
+              (0,1/beta1,0,0),(0,0,0,1))*liemat;
+      y1:=beta4;y2:=(beta3*beta4-beta2*beta5)/beta1;
+      y3:=beta5/beta1>>;
+ if (beta1=0 and beta2=0) then
+  <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,y3,-y2,1),(0,0,1,0))*liemat;
     if symbolic !*tr_lie then
-    WRITE "[X,Z]=W";lie_class:={liealg(4),comtab(2)}>> ELSE
-  <<IF Y1=0 THEN
-    liemat:=MAT((1,0,0,0),(0,1,0,0),(-Y3,0,0,-1),(0,0,1,1))*liemat ELSE
-    liemat:=MAT((1,0,0,0),(0,1,0,0),(-Y3/Y1,0,1,-1/Y1),(0,0,0,1/Y1))*
+    write "[X,Z]=W";lie_class:={liealg(4),comtab(2)}>> else
+  <<if y1=0 then
+    liemat:=mat((1,0,0,0),(0,1,0,0),(-y3,0,0,-1),(0,0,1,1))*liemat else
+    liemat:=mat((1,0,0,0),(0,1,0,0),(-y3/y1,0,1,-1/y1),(0,0,0,1/y1))*
     liemat;
     if symbolic !*tr_lie then
-    WRITE "[W,Z]=W";lie_class:={liealg(4),comtab(1)}>>
-END;
+    write "[W,Z]=W";lie_class:={liealg(4),comtab(1)}>>
+end;
 
 
-algebraic procedure com42(I1,J1,I2,J2);
-BEGIN SCALAR D,D1,D2,D3,D4,A1,A2,A3,A4,A5,B1,B2,B3,B4,B5;
-      MATRIX liemat(4,4);
-      ARRAY SOL(1,4);
- FOR I:=1:4 DO <<liemat(1,I):=CC(I1,J1,I);liemat(2,I):=CC(I2,J2,I)>>;
- liemat(3,1):=liemat(4,2):=1;IF (D:=DET(liemat)) NEQ 0 THEN
-  <<D1:=1;D2:=2;D3:=3;D4:=4>> ELSE
-  <<liemat(4,2):=0;liemat(4,3):=1;IF (D:=DET(liemat)) NEQ 0 THEN
-   <<D1:=1;D2:=3;D3:=2;D4:=4;D:=-D>> ELSE
-   <<liemat(3,1):=0;liemat(3,2):=1;IF (D:=DET(liemat)) NEQ 0 THEN
-    <<D1:=2;D2:=3;D3:=1;D4:=4>> ELSE
+algebraic procedure com42(i1,j1,i2,j2);
+begin scalar d,d1,d2,d3,d4,a1,a2,a3,a4,a5,b1,b2,b3,b4,b5;
+      matrix liemat(4,4);
+      array sol(1,4);
+ for i:=1:4 do <<liemat(1,i):=cc(i1,j1,i);liemat(2,i):=cc(i2,j2,i)>>;
+ liemat(3,1):=liemat(4,2):=1;if (d:=det(liemat)) neq 0 then
+  <<d1:=1;d2:=2;d3:=3;d4:=4>> else
+  <<liemat(4,2):=0;liemat(4,3):=1;if (d:=det(liemat)) neq 0 then
+   <<d1:=1;d2:=3;d3:=2;d4:=4;d:=-d>> else
+   <<liemat(3,1):=0;liemat(3,2):=1;if (d:=det(liemat)) neq 0 then
+    <<d1:=2;d2:=3;d3:=1;d4:=4>> else
     <<liemat(3,2):=liemat(4,3):=0;liemat(3,1):=liemat(4,4):=1;
-      IF (D:=DET(liemat)) NEQ 0 THEN
-     <<D1:=1;D2:=4;D3:=2;D4:=3>> ELSE
-     <<liemat(3,1):=0;liemat(3,2):=1;IF (D:=DET(liemat)) NEQ 0 THEN
-      <<D1:=2;D2:=4;D3:=1;D4:=3;D:=-D>> ELSE
-      <<liemat(3,2):=0;liemat(3,3):=1;D:=DET(liemat);
-        D1:=3;D2:=4;D3:=1;D4:=2>>
+      if (d:=det(liemat)) neq 0 then
+     <<d1:=1;d2:=4;d3:=2;d4:=3>> else
+     <<liemat(3,1):=0;liemat(3,2):=1;if (d:=det(liemat)) neq 0 then
+      <<d1:=2;d2:=4;d3:=1;d4:=3;d:=-d>> else
+      <<liemat(3,2):=0;liemat(3,3):=1;d:=det(liemat);
+        d1:=3;d2:=4;d3:=1;d4:=2>>
   >>>>>>>>;
- A1:=FOR R:=1:4 SUM ( CC(I1,J1,R)*CC(R,D1,D3)*CC(I2,J2,D4)-
-                      CC(I1,J1,R)*CC(R,D1,D4)*CC(I2,J2,D3))/D;
- B1:=FOR R:=1:4 SUM (-CC(I1,J1,R)*CC(R,D1,D3)*CC(I1,J1,D4)+
-                      CC(I1,J1,R)*CC(R,D1,D4)*CC(I1,J1,D3))/D;
- A2:=FOR R:=1:4 SUM ( CC(I2,J2,R)*CC(R,D1,D3)*CC(I2,J2,D4)-
-                      CC(I2,J2,R)*CC(R,D1,D4)*CC(I2,J2,D3))/D;
- B2:=FOR R:=1:4 SUM (-CC(I2,J2,R)*CC(R,D1,D3)*CC(I1,J1,D4)+
-                      CC(I2,J2,R)*CC(R,D1,D4)*CC(I1,J1,D3))/D;
- A3:=FOR R:=1:4 SUM ( CC(I1,J1,R)*CC(R,D2,D3)*CC(I2,J2,D4)-
-                      CC(I1,J1,R)*CC(R,D2,D4)*CC(I2,J2,D3))/D;
- B3:=FOR R:=1:4 SUM (-CC(I1,J1,R)*CC(R,D2,D3)*CC(I1,J1,D4)+
-                      CC(I1,J1,R)*CC(R,D2,D4)*CC(I1,J1,D3))/D;
- A4:=FOR R:=1:4 SUM ( CC(I2,J2,R)*CC(R,D2,D3)*CC(I2,J2,D4)-
-                      CC(I2,J2,R)*CC(R,D2,D4)*CC(I2,J2,D3))/D;
- B4:=FOR R:=1:4 SUM (-CC(I2,J2,R)*CC(R,D2,D3)*CC(I1,J1,D4)+
-                      CC(I2,J2,R)*CC(R,D2,D4)*CC(I1,J1,D3))/D;
- A5:=( CC(D1,D2,D3)*CC(I2,J2,D4)-CC(D1,D2,D4)*CC(I2,J2,D3))/D;
- B5:=(-CC(D1,D2,D3)*CC(I1,J1,D4)+CC(D1,D2,D4)*CC(I1,J1,D3))/D;
- findcentre(A1,A2,A3,A4,A5,B1,B2,B3,B4,B5);
-   IF NOTTRIV=0 THEN trivcent(A1,A2,A3,A4,A5,B1,B2,B3,B4,B5)
-  ELSE
-  IF (SOL(1,3)=0 AND SOL(1,4)=0) THEN
-   IF SOL(1,1)=0 THEN
-   <<liemat:=MAT((0,1,0,0),(1,0,0,0),(0,0,1,0),(0,0,0,1))*liemat;
-   centincom(B1,B3,B5,A1,A3,A5)>> ELSE
-   <<liemat:=MAT((1,SOL(1,2)/SOL(1,1),0,0),(0,1,0,0),(0,0,1,0),
-            (0,0,0,1))*liemat;centincom(A2,A4,A5,
-     B2-SOL(1,2)/SOL(1,1)*A2,B4-SOL(1,2)/SOL(1,1)*A4,
-     B5-SOL(1,2)/SOL(1,1)*A5)>> ELSE
-  IF DET(MAT((1,0,0,0),(0,1,0,0),
-        (SOL(1,1),SOL(1,2),SOL(1,3),SOL(1,4)),(0,0,0,1)))=0 THEN
-  <<liemat:=MAT((1,0,0,0),(0,1,0,0),
-        (SOL(1,1),SOL(1,2),SOL(1,3),SOL(1,4)),(0,0,1,0))*liemat;
-  centoutcom(A1,A2,B1,B2)>> ELSE
-  <<liemat:=MAT((1,0,0,0),(0,1,0,0),
-        (SOL(1,1),SOL(1,2),SOL(1,3),SOL(1,4)),(0,0,0,1))*liemat;
-  centoutcom(A3,A4,B3,B4)>>;
- CLEAR SOL,NOTTRIV
-END;
+ a1:=for r:=1:4 sum ( cc(i1,j1,r)*cc(r,d1,d3)*cc(i2,j2,d4)-
+                      cc(i1,j1,r)*cc(r,d1,d4)*cc(i2,j2,d3))/d;
+ b1:=for r:=1:4 sum (-cc(i1,j1,r)*cc(r,d1,d3)*cc(i1,j1,d4)+
+                      cc(i1,j1,r)*cc(r,d1,d4)*cc(i1,j1,d3))/d;
+ a2:=for r:=1:4 sum ( cc(i2,j2,r)*cc(r,d1,d3)*cc(i2,j2,d4)-
+                      cc(i2,j2,r)*cc(r,d1,d4)*cc(i2,j2,d3))/d;
+ b2:=for r:=1:4 sum (-cc(i2,j2,r)*cc(r,d1,d3)*cc(i1,j1,d4)+
+                      cc(i2,j2,r)*cc(r,d1,d4)*cc(i1,j1,d3))/d;
+ a3:=for r:=1:4 sum ( cc(i1,j1,r)*cc(r,d2,d3)*cc(i2,j2,d4)-
+                      cc(i1,j1,r)*cc(r,d2,d4)*cc(i2,j2,d3))/d;
+ b3:=for r:=1:4 sum (-cc(i1,j1,r)*cc(r,d2,d3)*cc(i1,j1,d4)+
+                      cc(i1,j1,r)*cc(r,d2,d4)*cc(i1,j1,d3))/d;
+ a4:=for r:=1:4 sum ( cc(i2,j2,r)*cc(r,d2,d3)*cc(i2,j2,d4)-
+                      cc(i2,j2,r)*cc(r,d2,d4)*cc(i2,j2,d3))/d;
+ b4:=for r:=1:4 sum (-cc(i2,j2,r)*cc(r,d2,d3)*cc(i1,j1,d4)+
+                      cc(i2,j2,r)*cc(r,d2,d4)*cc(i1,j1,d3))/d;
+ a5:=( cc(d1,d2,d3)*cc(i2,j2,d4)-cc(d1,d2,d4)*cc(i2,j2,d3))/d;
+ b5:=(-cc(d1,d2,d3)*cc(i1,j1,d4)+cc(d1,d2,d4)*cc(i1,j1,d3))/d;
+ findcentre(a1,a2,a3,a4,a5,b1,b2,b3,b4,b5);
+   if nottriv=0 then trivcent(a1,a2,a3,a4,a5,b1,b2,b3,b4,b5)
+  else
+  if (sol(1,3)=0 and sol(1,4)=0) then
+   if sol(1,1)=0 then
+   <<liemat:=mat((0,1,0,0),(1,0,0,0),(0,0,1,0),(0,0,0,1))*liemat;
+   centincom(b1,b3,b5,a1,a3,a5)>> else
+   <<liemat:=mat((1,sol(1,2)/sol(1,1),0,0),(0,1,0,0),(0,0,1,0),
+            (0,0,0,1))*liemat;centincom(a2,a4,a5,
+     b2-sol(1,2)/sol(1,1)*a2,b4-sol(1,2)/sol(1,1)*a4,
+     b5-sol(1,2)/sol(1,1)*a5)>> else
+  if det(mat((1,0,0,0),(0,1,0,0),
+        (sol(1,1),sol(1,2),sol(1,3),sol(1,4)),(0,0,0,1)))=0 then
+  <<liemat:=mat((1,0,0,0),(0,1,0,0),
+        (sol(1,1),sol(1,2),sol(1,3),sol(1,4)),(0,0,1,0))*liemat;
+  centoutcom(a1,a2,b1,b2)>> else
+  <<liemat:=mat((1,0,0,0),(0,1,0,0),
+        (sol(1,1),sol(1,2),sol(1,3),sol(1,4)),(0,0,0,1))*liemat;
+  centoutcom(a3,a4,b3,b4)>>;
+ clear sol,nottriv
+end;
 
-algebraic procedure findcentre(A1,A2,A3,A4,A5,B1,B2,B3,B4,B5);
-BEGIN INTEGER FLAG;
-      SCALAR HELP;
- NOTTRIV:=0;FLAG:=0;
- CENT:=MAT((A1,A2,0,-A5),(A3,A4,A5,0),(B1,B2,0,-B5),
-           (B3,B4,B5,0),(0,0,A1,A3),(0,0,A2,A4),
-           (0,0,B1,B3),(0,0,B2,B4));
- FOR I:=1:4 DO
-  IF (CENT(I,1) NEQ 0 AND FLAG=0) THEN
-  <<FLAG:=1;FOR J:=1:4 DO
-   <<HELP:=CENT(1,J);CENT(1,J):=CENT(I,J);CENT(I,J):=HELP>>>>;
- IF FLAG=0 THEN <<NOTTRIV:=1;SOL(1,1):=1>> ELSE
- <<FOR I:=2:4 DO <<HELP:=CENT(I,1)/CENT(1,1);
-   FOR J:=1:4 DO CENT(I,J):=CENT(I,J)-HELP*CENT(1,J)>>;
-   FLAG:=0;
-   FOR I:=2:4 DO
-    IF (CENT(I,2) NEQ 0 AND FLAG=0) THEN
-    <<FLAG:=1;FOR J:=2:4 DO
-     <<HELP:=CENT(2,J);CENT(2,J):=CENT(I,J);CENT(I,J):=HELP>>>>;
-   IF FLAG=0 THEN <<NOTTRIV:=1;SOL(1,1):=-CENT(1,2);
-                    SOL(1,2):=CENT(1,1)>> ELSE
-   <<FOR I:=3:4 DO <<HELP:=CENT(I,2)/CENT(2,2);
-     FOR J:=2:4 DO CENT(I,J):=CENT(I,J)-HELP*CENT(2,J)>>;
-     FLAG:=0;
-     FOR I:=3:8 DO
-      IF (CENT(I,3) NEQ 0 AND FLAG=0) THEN
-      <<FLAG:=1;FOR J:=3:4 DO
-       <<HELP:=CENT(3,J);CENT(3,J):=CENT(I,J);CENT(I,J):=HELP>>>>;
-     IF FLAG=0 THEN <<NOTTRIV:=1;
-      SOL(1,1):=(CENT(1,2)*CENT(2,3)/CENT(2,2)-CENT(1,3))/CENT(1,1);
-      SOL(1,2):=-CENT(2,3)/CENT(2,2);SOL(1,3):=1>> ELSE
-     <<FOR I:=4:8 DO <<HELP:=CENT(I,3)/CENT(3,3);
-       FOR J:=3:4 DO CENT(I,J):=CENT(I,J)-HELP*CENT(3,J)>>;
-       FLAG:=0;
-       FOR I:=4:8 DO
-        IF (CENT(I,4) NEQ 0 AND FLAG=0) THEN
-        <<FLAG:=1;CENT(4,4):=CENT(I,4)>>;
-       IF FLAG=0 THEN <<NOTTRIV:=1;
-        SOL(1,1):=(-(CENT(2,3)*CENT(3,4)/CENT(3,3)-CENT(2,4))*
-                  CENT(1,2)/CENT(2,2)+CENT(3,4)*CENT(1,3)/
-                  CENT(3,3)-CENT(1,4))/CENT(1,1);
-        SOL(1,2):=(CENT(2,3)*CENT(3,4)/CENT(3,3)-CENT(2,4))/
-                  CENT(2,2);
-        SOL(1,3):=-CENT(3,4)/CENT(3,3);SOL(1,4):=1>>
+algebraic procedure findcentre(a1,a2,a3,a4,a5,b1,b2,b3,b4,b5);
+begin integer flag;
+      scalar help;
+ nottriv:=0;flag:=0;
+ cent:=mat((a1,a2,0,-a5),(a3,a4,a5,0),(b1,b2,0,-b5),
+           (b3,b4,b5,0),(0,0,a1,a3),(0,0,a2,a4),
+           (0,0,b1,b3),(0,0,b2,b4));
+ for i:=1:4 do
+  if (cent(i,1) neq 0 and flag=0) then
+  <<flag:=1;for j:=1:4 do
+   <<help:=cent(1,j);cent(1,j):=cent(i,j);cent(i,j):=help>>>>;
+ if flag=0 then <<nottriv:=1;sol(1,1):=1>> else
+ <<for i:=2:4 do <<help:=cent(i,1)/cent(1,1);
+   for j:=1:4 do cent(i,j):=cent(i,j)-help*cent(1,j)>>;
+   flag:=0;
+   for i:=2:4 do
+    if (cent(i,2) neq 0 and flag=0) then
+    <<flag:=1;for j:=2:4 do
+     <<help:=cent(2,j);cent(2,j):=cent(i,j);cent(i,j):=help>>>>;
+   if flag=0 then <<nottriv:=1;sol(1,1):=-cent(1,2);
+                    sol(1,2):=cent(1,1)>> else
+   <<for i:=3:4 do <<help:=cent(i,2)/cent(2,2);
+     for j:=2:4 do cent(i,j):=cent(i,j)-help*cent(2,j)>>;
+     flag:=0;
+     for i:=3:8 do
+      if (cent(i,3) neq 0 and flag=0) then
+      <<flag:=1;for j:=3:4 do
+       <<help:=cent(3,j);cent(3,j):=cent(i,j);cent(i,j):=help>>>>;
+     if flag=0 then <<nottriv:=1;
+      sol(1,1):=(cent(1,2)*cent(2,3)/cent(2,2)-cent(1,3))/cent(1,1);
+      sol(1,2):=-cent(2,3)/cent(2,2);sol(1,3):=1>> else
+     <<for i:=4:8 do <<help:=cent(i,3)/cent(3,3);
+       for j:=3:4 do cent(i,j):=cent(i,j)-help*cent(3,j)>>;
+       flag:=0;
+       for i:=4:8 do
+        if (cent(i,4) neq 0 and flag=0) then
+        <<flag:=1;cent(4,4):=cent(i,4)>>;
+       if flag=0 then <<nottriv:=1;
+        sol(1,1):=(-(cent(2,3)*cent(3,4)/cent(3,3)-cent(2,4))*
+                  cent(1,2)/cent(2,2)+cent(3,4)*cent(1,3)/
+                  cent(3,3)-cent(1,4))/cent(1,1);
+        sol(1,2):=(cent(2,3)*cent(3,4)/cent(3,3)-cent(2,4))/
+                  cent(2,2);
+        sol(1,3):=-cent(3,4)/cent(3,3);sol(1,4):=1>>
   >>>>>>;
- CLEAR CENT
-END;
+ clear cent
+end;
 
-algebraic procedure centincom(A,C,E,B,D,F);
-BEGIN SCALAR V1,W1,V2,W2;
- IF C=0 THEN IF D=0 THEN
-   <<liemat:=MAT((1,0,0,0),(0,1,0,0),(0,0,0,1),(0,0,1,0))*liemat;
-     V1:=A;V2:=-E;W1:=B;W2:=-F>> ELSE
-     <<liemat:=MAT((1,0,0,0),(0,1,0,0),(0,0,1,-B/D),(0,0,0,1))*liemat;
-       V1:=C;V2:=E;W1:=D;W2:=F>> ELSE
-  <<liemat:=MAT((1,0,0,0),(0,1,0,0),(0,0,1,-A/C),(0,0,0,1))*liemat;
-    V1:=C;V2:=E;W1:=D;W2:=F>>;
- IF W1=0 THEN
-  <<liemat:=MAT((1,0,0,0),(0,1,0,0),(0,-V2/W2,V1/W2,0),(0,0,0,1/V1))*
+algebraic procedure centincom(a,c,e,b,d,f);
+begin scalar v1,w1,v2,w2;
+ if c=0 then if d=0 then
+   <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,0,1),(0,0,1,0))*liemat;
+     v1:=a;v2:=-e;w1:=b;w2:=-f>> else
+     <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,1,-b/d),(0,0,0,1))*liemat;
+       v1:=c;v2:=e;w1:=d;w2:=f>> else
+  <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,1,-a/c),(0,0,0,1))*liemat;
+    v1:=c;v2:=e;w1:=d;w2:=f>>;
+ if w1=0 then
+  <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,-v2/w2,v1/w2,0),(0,0,0,1/v1))*
   liemat;
     if symbolic !*tr_lie then
-    WRITE "[X,Z]=W, [Y,Z]=X";lie_class:={liealg(4),comtab(6)}>> ELSE
-  <<liemat:=MAT((1,0,0,0),(0,1,0,0),(0,-W2/(W1*V2-W2*V1),
-             W1*W1/(W1*V2-W2*V1),0),(0,0,0,1/W1))*
-        MAT((1,0,0,0),(V1,W1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
+    write "[X,Z]=w, [Y,Z]=X";lie_class:={liealg(4),comtab(6)}>> else
+  <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,-w2/(w1*v2-w2*v1),
+             w1*w1/(w1*v2-w2*v1),0),(0,0,0,1/w1))*
+        mat((1,0,0,0),(v1,w1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
     if symbolic !*tr_lie then
-    WRITE "[X,Z]=X, [Y,Z]=W";lie_class:={liealg(4),comtab(7)}>>
-END;
+    write "[X,Z]=X, [Y,Z]=w";lie_class:={liealg(4),comtab(7)}>>
+end;
 
-algebraic procedure centoutcom(A,C,B,D);
-BEGIN INTEGER FLAG;
-      SCALAR ALPHA,BETA;
- FLAG:=0;
- IF C NEQ 0 THEN
- <<liemat:=MAT((0,B-A*D/C,0,0),(1,-A/C,0,0),(0,0,1,0),(0,0,0,1))*liemat;
-    ALPHA:=A+D;BETA:=B*C-A*D>> ELSE
-  IF B NEQ 0 THEN
-   <<liemat:=MAT((-A*D/B,0,0,0),(-D*D/B,D,0,0),(0,0,1,0),(0,0,0,1/D))*
+algebraic procedure centoutcom(a,c,b,d);
+begin integer flag;
+      scalar alpha,beta;
+ flag:=0;
+ if c neq 0 then
+ <<liemat:=mat((0,b-a*d/c,0,0),(1,-a/c,0,0),(0,0,1,0),(0,0,0,1))*liemat;
+    alpha:=a+d;beta:=b*c-a*d>> else
+  if b neq 0 then
+   <<liemat:=mat((-a*d/b,0,0,0),(-d*d/b,d,0,0),(0,0,1,0),(0,0,0,1/d))*
    liemat;
-     ALPHA:=1+A/D;BETA:=-A/D>> ELSE
-   IF A NEQ D THEN
-    <<liemat:=MAT((1,1,0,0),(1/A,1/D,0,0),(0,0,1,0),(0,0,0,1))*liemat;
-      ALPHA:=A+D;BETA:=-A*D>> ELSE
-      <<liemat:=MAT((1,0,0,0),(0,1,0,0),(0,0,1,0),(0,0,0,1/A))*liemat;
-        FLAG:=1>>;
- IF FLAG=1 THEN
+     alpha:=1+a/d;beta:=-a/d>> else
+   if a neq d then
+    <<liemat:=mat((1,1,0,0),(1/a,1/d,0,0),(0,0,1,0),(0,0,0,1))*liemat;
+      alpha:=a+d;beta:=-a*d>> else
+      <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,1,0),(0,0,0,1/a))*liemat;
+        flag:=1>>;
+ if flag=1 then
   <<if symbolic !*tr_lie then
-    WRITE "[W,Z]=W, [X,Z]=X";lie_class:={liealg(4),comtab(10)}>> ELSE
-  IF ALPHA=0 THEN
-   <<liemat:=MAT((1,0,0,0),(0,SQRT(ABS(BETA)),0,0),(0,0,1,0),
-             (0,0,0,1/SQRT(ABS(BETA))))*liemat;
+    write "[W,Z]=W, [X,Z]=X";lie_class:={liealg(4),comtab(10)}>> else
+  if alpha=0 then
+   <<liemat:=mat((1,0,0,0),(0,sqrt(abs(beta)),0,0),(0,0,1,0),
+             (0,0,0,1/sqrt(abs(beta))))*liemat;
      if symbolic !*tr_lie then
-     WRITE "[W,Z]=",BETA/ABS(BETA),"X, [X,Z]=W";
-     if BETA>0 then lie_class:={liealg(4),comtab(11)} else
-                    lie_class:={liealg(4),comtab(8)}>> ELSE
-    <<liemat:=MAT((1,0,0,0),(0,-ALPHA,0,0),(0,0,1,0),
-              (0,0,0,-1/ALPHA))*liemat;
+     write "[W,Z]=",beta/abs(beta),"X, [X,Z]=W";
+     if beta>0 then lie_class:={liealg(4),comtab(11)} else
+                    lie_class:={liealg(4),comtab(8)}>> else
+    <<liemat:=mat((1,0,0,0),(0,-alpha,0,0),(0,0,1,0),
+              (0,0,0,-1/alpha))*liemat;
       if symbolic !*tr_lie then
-      WRITE "[W,Z]=-W+",BETA/(ALPHA**2),"X, [X,Z]=W";
-      lie_class:={liealg(4),comtab(9),BETA/(ALPHA**2)}>>
-END;
+      write "[W,Z]=-W+",beta/(alpha**2),"X, [X,Z]=W";
+      lie_class:={liealg(4),comtab(9),beta/(alpha**2)}>>
+end;
 
-algebraic procedure trivcent(A1,A2,A3,A4,A5,B1,B2,B3,B4,B5);
-BEGIN INTEGER FLAG;
-      SCALAR HE,HELP,ALPHA,BETA,C1,C2,C3,C4,C5,
-             D1,D2,D3,D4,D5,P,E1,E2,E3,E4,E5,E6;
- IF (A1*B2-A2*B1)=0 THEN
-  IF (A3*B4-A4*B3)=0 THEN
-   <<liemat:=MAT((1,0,0,0),(0,1,0,0),(0,0,1,1),(0,0,0,1))*liemat;
-     A1:=A1+A3;B1:=B1+B3;A2:=A2+A4;B2:=B2+B4>> ELSE
-   <<liemat:=MAT((1,0,0,0),(0,1,0,0),(0,0,0,1),(0,0,1,0))*liemat;
-     HELP:=A1;A1:=A3;A3:=HELP;HELP:=A2;A2:=A4;A4:=HELP;
-     HELP:=B1;B1:=B3;B3:=HELP;HELP:=B2;B2:=B4;B4:=HELP;
-     A5:=-A5;B5:=-B5>>;
- IF A2 NEQ 0 THEN <<ALPHA:=A1+B2;BETA:=A2*B1-A1*B2;
-  IF ALPHA=0 THEN
-   <<C1:=0;C2:=B1-A1*B2/A2;C3:=SQRT(ABS(BETA));C4:=-C3*A1/A2;
-     C5:=1/C3;D1:=A1/(A2*C2);D2:=C5;D3:=1/C2;D4:=0;D5:=C3;
-     IF NOT(NUMBERP(BETA)) THEN
-     <<WRITE "Is ",BETA,">0 ? (y/n) and press <RETURN>";
-       HE:=SYMBOLIC READ();
-       IF HE=y THEN FLAG:=2 ELSE FLAG:=3>> ELSE
-     IF BETA>0 THEN FLAG:=2 ELSE FLAG:=3>> ELSE
-   <<C1:=0;C2:=B1-A1*B2/A2;C3:=-ALPHA;C4:=ALPHA*A1/A2;
-     C5:=1/C3;D1:=A1/(A2*C2);D2:=C5;D3:=1/C2;D4:=0;D5:=C3;
-     FLAG:=4;P:=BETA/(ALPHA*ALPHA)>>>> ELSE
-  IF B1 NEQ 0 THEN <<ALPHA:=1+A1/B2;BETA:=-A1/B2;
-   IF ALPHA=0 THEN
-    <<C1:=-A1*B2/B1;C2:=0;C3:=-SQRT(ABS(BETA))*B2/B1;C4:=-C3*B1;
-      C5:=1/C4;D1:=1/C1;D2:=0;D3:=-1/(A1*B2);D4:=C5;D5:=C4;
-      IF NOT(NUMBERP(BETA)) THEN
-     <<WRITE "Is ",BETA,">0 ? (y/n) and press <RETURN>";
-       HE:=SYMBOLIC READ();
-       IF HE=y THEN FLAG:=2 ELSE FLAG:=3>> ELSE
-      IF BETA>0 THEN FLAG:=2 ELSE FLAG:=3>> ELSE
-    <<C1:=-A1*B2/B1;C2:=0;C3:=ALPHA*B2/B1;C4:=-ALPHA*B2;
-      C5:=1/C4;D1:=1/C1;D2:=0;D3:=-1/(A1*B2);D4:=C5;D5:=C4;
-      FLAG:=4;P:=BETA/(ALPHA*ALPHA)>>>> ELSE
-   IF A1 NEQ B2 THEN <<ALPHA:=A1+B2;BETA:=-A1*B2;
-    IF ALPHA=0 THEN
-     <<C1:=1;C2:=1;C3:=SQRT(ABS(BETA))/A1;C4:=SQRT(ABS(BETA))/B2;
-       C5:=1/SQRT(ABS(BETA));HELP:=1/B2-1/A1;D1:=1/(B2*HELP);
-       D2:=-C5/HELP;D3:=-1/(A1*HELP);D4:=-D2;D5:=1/C5;
-       IF NOT(NUMBERP(BETA)) THEN
-     <<WRITE "Is ",BETA,">0 ? (y/n) and press <RETURN>";
-       HE:=SYMBOLIC READ();
-       IF HE=y THEN FLAG:=2 ELSE FLAG:=3>> ELSE
-       IF BETA>0 THEN FLAG:=2 ELSE FLAG:=3>> ELSE
-     <<C1:=1;C2:=1;C3:=-ALPHA/A1;C4:=-ALPHA/B2;C5:=-1/ALPHA;
-       HELP:=1/B2-1/A1;D1:=1/(B2*HELP);D2:=1/(ALPHA*HELP);
-       D3:=-1/(A1*HELP);D4:=-D2;D5:=-ALPHA;
-       FLAG:=4;P:=BETA/(ALPHA*ALPHA)>>>> ELSE
-     <<C1:=1;C2:=0;C3:=0;C4:=1;C5:=1/A1;
-       D1:=1;D2:=0;D3:=0;D4:=1;D5:=A1;FLAG:=1>>;
- liemat:=MAT((C1,C2,0,0),(C3,C4,0,0),(0,0,C5,0),(0,0,0,1))*liemat;
- E1:=D1*(C1*A3+C2*A4)+D3*(C1*B3+C2*B4);
- E2:=D2*(C1*A3+C2*A4)+D4*(C1*B3+C2*B4);
- E3:=D1*(C3*A3+C4*A4)+D3*(C3*B3+C4*B4);
- E4:=D2*(C3*A3+C4*A4)+D4*(C3*B3+C4*B4);
- E5:=C5*A5*D1+C5*B5*D3;
- E6:=C5*A5*D2+C5*B5*D4;
- IF FLAG=4 THEN
-  <<liemat:=MAT((1,0,0,0),(0,1,0,0),(0,0,E1+E4,1),(0,0,1,0))*liemat;
-    A1:=-E4;A2:=E1+E3+E4;A3:=-1;A4:=1;A5:=-E5;
-    B1:=P*(E1+E4)+E2;B2:=E4;B3:=P;B4:=0;B5:=-E6>> ELSE
-  IF FLAG=1 THEN
-   IF (E1+E4=0) THEN
-    <<liemat:=MAT((1,0,0,0),(0,1,0,0),(0,0,0,1),(0,0,1,0))*liemat;
-      A1:=E1;A2:=E3;A3:=1;A4:=0;A5:=-E5;
-      B1:=E2;B2:=E4;B3:=0;B4:=1;B5:=-E6>> ELSE
-    <<liemat:=MAT((1,0,0,0),(0,1,0,0),(0,0,E1+E4,-2),(0,0,0,1))*liemat;
-      A1:=E4-E1;A2:=-2*E3;A3:=E1;A4:=E3;A5:=E5*(E1+E4);
-      B1:=-2*E2;B2:=E1-E4;B3:=E2;B4:=E4;B5:=E6*(E1+E4)>>;
- IF (FLAG=1 OR FLAG=4) THEN
-  IF A1*B2-A2*B1=0 THEN
-   IF B1=0 THEN
-    <<liemat:=MAT((A2,0,0,0),(0,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
-      FLAG:=5;E1:=A3;E2:=B3*A2;E3:=A4/A2;E4:=B4;E5:=A5/A2;
-      E6:=B5>> ELSE
-    <<liemat:=MAT((A1,B1,0,0),(1,0,0,0),(0,0,1,0),(0,0,0,1))*liemat;
-      FLAG:=5;E1:=(A1*B3+B1*B4)/B1;
-      E2:=A1*A3+B1*A4-A1*(A1*B3+B1*B4)/B1;E3:=B3/B1;
-      E4:=A3-A1*B3/B1;E5:=B5/B1;E6:=A5-B5*A1/B1>> ELSE
-   <<IF A2 NEQ 0 THEN
-      <<BETA:=A2*B1-A1*B2;C1:=0;C2:=B1-A1*B2/A2;
-        C3:=SQRT(ABS(BETA));C4:=-C3*A1/A2;C5:=1/C3;
-        D1:=A1/(A2*C2);D2:=C5;D3:=1/C2;D4:=0;D5:=C3>> ELSE
-       IF B1 NEQ 0 THEN
-        <<BETA:=-A1/B2;C1:=-A1*B2/B1;C2:=0;
-          C3:=-SQRT(ABS(BETA))*B2/B1;C4:=-C3*B1;C5:=1/C4;
-          D1:=1/C1;D2:=0;D3:=-1/(A1*B2);D4:=C5;D5:=C4>> ELSE
-        <<BETA:=-A1*B2;C1:=1;C2:=1;C3:=SQRT(ABS(BETA))/A1;
-          C4:=SQRT(ABS(BETA))/B2;C5:=1/SQRT(ABS(BETA));
-          HELP:=1/B2-1/A1;D1:=1/(B2*HELP);D2:=-C5/HELP;
-          D3:=-1/(A1*HELP);D4:=-D2;D5:=1/C5>>;
-     IF NOT(NUMBERP(BETA)) THEN
-     <<WRITE "Is ",BETA,">0 ? (y/n) and press <RETURN>";
-       HE:=SYMBOLIC READ();
-       IF HE=y THEN FLAG:=2 ELSE FLAG:=3>> ELSE
-     IF BETA>0 THEN FLAG:=2 ELSE FLAG:=3;
-     liemat:=MAT((C1,C2,0,0),(C3,C4,0,0),(0,0,C5,0),(0,0,0,1))*liemat;
-     E1:=D1*(C1*A3+C2*A4)+D3*(C1*B3+C2*B4);
-     E2:=D2*(C1*A3+C2*A4)+D4*(C1*B3+C2*B4);
-     E3:=D1*(C3*A3+C4*A4)+D3*(C3*B3+C4*B4);
-     E4:=D2*(C3*A3+C4*A4)+D4*(C3*B3+C4*B4);
-     E5:=C5*A5*D1+C5*B5*D3;
-     E6:=C5*A5*D2+C5*B5*D4>>;
- IF FLAG=2 THEN
-  <<liemat:=MAT((1,0,0,0),(0,1,0,0),(-E5/E1,-E6/E1,1,0),
-            (0,0,-E2/E1,1/E1))*liemat;
-    liemat:=MAT((1/2,1/2,0,0),(1/2,-1/2,0,0),(0,0,1/2,1/2),
+algebraic procedure trivcent(a1,a2,a3,a4,a5,b1,b2,b3,b4,b5);
+begin integer flag;
+      scalar he,help,alpha,beta,c1,c2,c3,c4,c5,
+             d1,d2,d3,d4,d5,p,e1,e2,e3,e4,e5,e6;
+ if (a1*b2-a2*b1)=0 then
+  if (a3*b4-a4*b3)=0 then
+   <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,1,1),(0,0,0,1))*liemat;
+     a1:=a1+a3;b1:=b1+b3;a2:=a2+a4;b2:=b2+b4>> else
+   <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,0,1),(0,0,1,0))*liemat;
+     help:=a1;a1:=a3;a3:=help;help:=a2;a2:=a4;a4:=help;
+     help:=b1;b1:=b3;b3:=help;help:=b2;b2:=b4;b4:=help;
+     a5:=-a5;b5:=-b5>>;
+ if a2 neq 0 then <<alpha:=a1+b2;beta:=a2*b1-a1*b2;
+  if alpha=0 then
+   <<c1:=0;c2:=b1-a1*b2/a2;c3:=sqrt(abs(beta));c4:=-c3*a1/a2;
+     c5:=1/c3;d1:=a1/(a2*c2);d2:=c5;d3:=1/c2;d4:=0;d5:=c3;
+     if not(numberp(beta)) then
+     <<write "Is ",beta,">0 ? (y/n) and press <RETURN>";
+       he:=symbolic read();
+       if he=y then flag:=2 else flag:=3>> else
+     if beta>0 then flag:=2 else flag:=3>> else
+   <<c1:=0;c2:=b1-a1*b2/a2;c3:=-alpha;c4:=alpha*a1/a2;
+     c5:=1/c3;d1:=a1/(a2*c2);d2:=c5;d3:=1/c2;d4:=0;d5:=c3;
+     flag:=4;p:=beta/(alpha*alpha)>>>> else
+  if b1 neq 0 then <<alpha:=1+a1/b2;beta:=-a1/b2;
+   if alpha=0 then
+    <<c1:=-a1*b2/b1;c2:=0;c3:=-sqrt(abs(beta))*b2/b1;c4:=-c3*b1;
+      c5:=1/c4;d1:=1/c1;d2:=0;d3:=-1/(a1*b2);d4:=c5;d5:=c4;
+      if not(numberp(beta)) then
+     <<write "Is ",beta,">0 ? (y/n) and press <RETURN>";
+       he:=symbolic read();
+       if he=y then flag:=2 else flag:=3>> else
+      if beta>0 then flag:=2 else flag:=3>> else
+    <<c1:=-a1*b2/b1;c2:=0;c3:=alpha*b2/b1;c4:=-alpha*b2;
+      c5:=1/c4;d1:=1/c1;d2:=0;d3:=-1/(a1*b2);d4:=c5;d5:=c4;
+      flag:=4;p:=beta/(alpha*alpha)>>>> else
+   if a1 neq b2 then <<alpha:=a1+b2;beta:=-a1*b2;
+    if alpha=0 then
+     <<c1:=1;c2:=1;c3:=sqrt(abs(beta))/a1;c4:=sqrt(abs(beta))/b2;
+       c5:=1/sqrt(abs(beta));help:=1/b2-1/a1;d1:=1/(b2*help);
+       d2:=-c5/help;d3:=-1/(a1*help);d4:=-d2;d5:=1/c5;
+       if not(numberp(beta)) then
+     <<write "Is ",beta,">0 ? (y/n) and press <RETURN>";
+       he:=symbolic read();
+       if he=y then flag:=2 else flag:=3>> else
+       if beta>0 then flag:=2 else flag:=3>> else
+     <<c1:=1;c2:=1;c3:=-alpha/a1;c4:=-alpha/b2;c5:=-1/alpha;
+       help:=1/b2-1/a1;d1:=1/(b2*help);d2:=1/(alpha*help);
+       d3:=-1/(a1*help);d4:=-d2;d5:=-alpha;
+       flag:=4;p:=beta/(alpha*alpha)>>>> else
+     <<c1:=1;c2:=0;c3:=0;c4:=1;c5:=1/a1;
+       d1:=1;d2:=0;d3:=0;d4:=1;d5:=a1;flag:=1>>;
+ liemat:=mat((c1,c2,0,0),(c3,c4,0,0),(0,0,c5,0),(0,0,0,1))*liemat;
+ e1:=d1*(c1*a3+c2*a4)+d3*(c1*b3+c2*b4);
+ e2:=d2*(c1*a3+c2*a4)+d4*(c1*b3+c2*b4);
+ e3:=d1*(c3*a3+c4*a4)+d3*(c3*b3+c4*b4);
+ e4:=d2*(c3*a3+c4*a4)+d4*(c3*b3+c4*b4);
+ e5:=c5*a5*d1+c5*b5*d3;
+ e6:=c5*a5*d2+c5*b5*d4;
+ if flag=4 then
+  <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,e1+e4,1),(0,0,1,0))*liemat;
+    a1:=-e4;a2:=e1+e3+e4;a3:=-1;a4:=1;a5:=-e5;
+    b1:=p*(e1+e4)+e2;b2:=e4;b3:=p;b4:=0;b5:=-e6>> else
+  if flag=1 then
+   if (e1+e4=0) then
+    <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,0,1),(0,0,1,0))*liemat;
+      a1:=e1;a2:=e3;a3:=1;a4:=0;a5:=-e5;
+      b1:=e2;b2:=e4;b3:=0;b4:=1;b5:=-e6>> else
+    <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,e1+e4,-2),(0,0,0,1))*liemat;
+      a1:=e4-e1;a2:=-2*e3;a3:=e1;a4:=e3;a5:=e5*(e1+e4);
+      b1:=-2*e2;b2:=e1-e4;b3:=e2;b4:=e4;b5:=e6*(e1+e4)>>;
+ if (flag=1 or flag=4) then
+  if a1*b2-a2*b1=0 then
+   if b1=0 then
+    <<liemat:=mat((a2,0,0,0),(0,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
+      flag:=5;e1:=a3;e2:=b3*a2;e3:=a4/a2;e4:=b4;e5:=a5/a2;
+      e6:=b5>> else
+    <<liemat:=mat((a1,b1,0,0),(1,0,0,0),(0,0,1,0),(0,0,0,1))*liemat;
+      flag:=5;e1:=(a1*b3+b1*b4)/b1;
+      e2:=a1*a3+b1*a4-a1*(a1*b3+b1*b4)/b1;e3:=b3/b1;
+      e4:=a3-a1*b3/b1;e5:=b5/b1;e6:=a5-b5*a1/b1>> else
+   <<if a2 neq 0 then
+      <<beta:=a2*b1-a1*b2;c1:=0;c2:=b1-a1*b2/a2;
+        c3:=sqrt(abs(beta));c4:=-c3*a1/a2;c5:=1/c3;
+        d1:=a1/(a2*c2);d2:=c5;d3:=1/c2;d4:=0;d5:=c3>> else
+       if b1 neq 0 then
+        <<beta:=-a1/b2;c1:=-a1*b2/b1;c2:=0;
+          c3:=-sqrt(abs(beta))*b2/b1;c4:=-c3*b1;c5:=1/c4;
+          d1:=1/c1;d2:=0;d3:=-1/(a1*b2);d4:=c5;d5:=c4>> else
+        <<beta:=-a1*b2;c1:=1;c2:=1;c3:=sqrt(abs(beta))/a1;
+          c4:=sqrt(abs(beta))/b2;c5:=1/sqrt(abs(beta));
+          help:=1/b2-1/a1;d1:=1/(b2*help);d2:=-c5/help;
+          d3:=-1/(a1*help);d4:=-d2;d5:=1/c5>>;
+     if not(numberp(beta)) then
+     <<write "Is ",beta,">0 ? (y/n) and press <RETURN>";
+       he:=symbolic read();
+       if he=y then flag:=2 else flag:=3>> else
+     if beta>0 then flag:=2 else flag:=3;
+     liemat:=mat((c1,c2,0,0),(c3,c4,0,0),(0,0,c5,0),(0,0,0,1))*liemat;
+     e1:=d1*(c1*a3+c2*a4)+d3*(c1*b3+c2*b4);
+     e2:=d2*(c1*a3+c2*a4)+d4*(c1*b3+c2*b4);
+     e3:=d1*(c3*a3+c4*a4)+d3*(c3*b3+c4*b4);
+     e4:=d2*(c3*a3+c4*a4)+d4*(c3*b3+c4*b4);
+     e5:=c5*a5*d1+c5*b5*d3;
+     e6:=c5*a5*d2+c5*b5*d4>>;
+ if flag=2 then
+  <<liemat:=mat((1,0,0,0),(0,1,0,0),(-e5/e1,-e6/e1,1,0),
+            (0,0,-e2/e1,1/e1))*liemat;
+    liemat:=mat((1/2,1/2,0,0),(1/2,-1/2,0,0),(0,0,1/2,1/2),
             (0,0,-1/2,1/2))*liemat;
     if symbolic !*tr_lie then
-    WRITE "[W,Y]=W, [X,Z]=X";lie_class:={liealg(4),comtab(3)}>> ELSE
-  IF FLAG=3 THEN
-   <<liemat:=MAT((1,0,0,0),(0,1,0,0),(-E5/E1,-E6/E1,1,0),
-             (0,0,E2/E1,1/E1))*liemat;
+    write "[W,Y]=W, [X,Z]=X";lie_class:={liealg(4),comtab(3)}>> else
+  if flag=3 then
+   <<liemat:=mat((1,0,0,0),(0,1,0,0),(-e5/e1,-e6/e1,1,0),
+             (0,0,e2/e1,1/e1))*liemat;
      if symbolic !*tr_lie then
-     WRITE "-[W,Y]=[X,Z]=X, [X,Y]=[W,Z]=W";
-     lie_class:={liealg(4),comtab(4)}>> ELSE
-  <<liemat:=MAT((1,0,0,0),(0,1,0,0),(-E5/E1,-E6/E1,1,0),
-            (0,0,-E3/E1,1/E1))*liemat;
+     write "-[W,Y]=[X,Z]=X, [X,Y]=[W,Z]=W";
+     lie_class:={liealg(4),comtab(4)}>> else
+  <<liemat:=mat((1,0,0,0),(0,1,0,0),(-e5/e1,-e6/e1,1,0),
+            (0,0,-e3/e1,1/e1))*liemat;
     if symbolic !*tr_lie then
-    WRITE "[X,Y]=[W,Z]=W, [X,Z]=X";lie_class:={liealg(4),comtab(5)}>>;
-END;
+    write "[X,Y]=[W,Z]=W, [X,Z]=X";lie_class:={liealg(4),comtab(5)}>>;
+end;
 
-algebraic procedure com43(I1,J1,I2,J2,I3,J3);
-BEGIN INTEGER LL;
-      MATRIX liemat(4,4),BB(4,4),FF(3,3);
-      ARRAY l_Z(4,4,3);
- FOR I:=1:4 DO
-  <<CC(2,1,I):=-CC(1,2,I);CC(3,1,I):=-CC(1,3,I);
-    CC(3,2,I):=-CC(2,3,I);CC(4,1,I):=-CC(1,4,I);
-    CC(4,2,I):=-CC(2,4,I);CC(4,3,I):=-CC(3,4,I);
-    CC(1,1,I):=CC(2,2,I):=CC(3,3,I):=CC(4,4,I):=0;
-    liemat(1,I):=CC(I1,J1,I);liemat(2,I):=CC(I2,J2,I);
-    liemat(3,I):=CC(I3,J3,I)>>;
- liemat(4,1):=1;IF DET(liemat) NEQ 0 THEN LL:=1 ELSE
-  FOR J:=2:4 DO <<liemat(4,J-1):=0;liemat(4,J):=1;
-  IF DET(liemat) NEQ 0 THEN <<LL:=J;J:=4>>>>;
- BB:=1/liemat;
- FOR I:=1:3 DO
-  <<l_Z(1,2,I):=FOR R:=1:4 SUM FOR S:=1:4 SUM FOR TT:=1:4 SUM
-              liemat(1,R)*liemat(2,S)*CC(R,S,TT)*BB(TT,I);
-    l_Z(1,3,I):=FOR R:=1:4 SUM FOR S:=1:4 SUM FOR TT:=1:4 SUM
-              liemat(1,R)*liemat(3,S)*CC(R,S,TT)*BB(TT,I);
-    l_Z(2,3,I):=FOR R:=1:4 SUM FOR S:=1:4 SUM FOR TT:=1:4 SUM
-              liemat(2,R)*liemat(3,S)*CC(R,S,TT)*BB(TT,I);
-    l_Z(1,4,I):=FOR R:=1:4 SUM FOR TT:=1:4 SUM
-              liemat(1,R)*CC(R,LL,TT)*BB(TT,I);
-    l_Z(2,4,I):=FOR R:=1:4 SUM FOR TT:=1:4 SUM
-              liemat(2,R)*CC(R,LL,TT)*BB(TT,I);
-    l_Z(3,4,I):=FOR R:=1:4 SUM FOR TT:=1:4 SUM
-              liemat(3,R)*CC(R,LL,TT)*BB(TT,I)>>;
- FOR I:=1:3 DO
-  <<FF(1,I):=l_Z(1,2,I);FF(2,I):=l_Z(1,3,I);FF(3,I):=l_Z(2,3,I)>>;
- LL:=0;
- FOR I:=1:3 DO FOR J:=1:3 DO
-  IF FF(I,J) NEQ 0 THEN <<LL:=1;I:=3;J:=3>>;
- IF LL=0 THEN comcom0() ELSE
-  IF DET(FF)=0 THEN comcom1() ELSE comcom3();
- CLEAR BB,FF,l_Z
-END;
+algebraic procedure com43(i1,j1,i2,j2,i3,j3);
+begin integer ll;
+      matrix liemat(4,4),bb(4,4),ff(3,3);
+      array l_z(4,4,3);
+ for i:=1:4 do
+  <<cc(2,1,i):=-cc(1,2,i);cc(3,1,i):=-cc(1,3,i);
+    cc(3,2,i):=-cc(2,3,i);cc(4,1,i):=-cc(1,4,i);
+    cc(4,2,i):=-cc(2,4,i);cc(4,3,i):=-cc(3,4,i);
+    cc(1,1,i):=cc(2,2,i):=cc(3,3,i):=cc(4,4,i):=0;
+    liemat(1,i):=cc(i1,j1,i);liemat(2,i):=cc(i2,j2,i);
+    liemat(3,i):=cc(i3,j3,i)>>;
+ liemat(4,1):=1;if det(liemat) neq 0 then ll:=1 else
+  for j:=2:4 do <<liemat(4,j-1):=0;liemat(4,j):=1;
+  if det(liemat) neq 0 then <<ll:=j;j:=4>>>>;
+ bb:=1/liemat;
+ for i:=1:3 do
+  <<l_z(1,2,i):=for r:=1:4 sum for s:=1:4 sum for tt:=1:4 sum
+              liemat(1,r)*liemat(2,s)*cc(r,s,tt)*bb(tt,i);
+    l_z(1,3,i):=for r:=1:4 sum for s:=1:4 sum for tt:=1:4 sum
+              liemat(1,r)*liemat(3,s)*cc(r,s,tt)*bb(tt,i);
+    l_z(2,3,i):=for r:=1:4 sum for s:=1:4 sum for tt:=1:4 sum
+              liemat(2,r)*liemat(3,s)*cc(r,s,tt)*bb(tt,i);
+    l_z(1,4,i):=for r:=1:4 sum for tt:=1:4 sum
+              liemat(1,r)*cc(r,ll,tt)*bb(tt,i);
+    l_z(2,4,i):=for r:=1:4 sum for tt:=1:4 sum
+              liemat(2,r)*cc(r,ll,tt)*bb(tt,i);
+    l_z(3,4,i):=for r:=1:4 sum for tt:=1:4 sum
+              liemat(3,r)*cc(r,ll,tt)*bb(tt,i)>>;
+ for i:=1:3 do
+  <<ff(1,i):=l_z(1,2,i);ff(2,i):=l_z(1,3,i);ff(3,i):=l_z(2,3,i)>>;
+ ll:=0;
+ for i:=1:3 do for j:=1:3 do
+  if ff(i,j) neq 0 then <<ll:=1;i:=3;j:=3>>;
+ if ll=0 then comcom0() else
+  if det(ff)=0 then comcom1() else comcom3();
+ clear bb,ff,l_z
+end;
 
 algebraic procedure comcom0();
-BEGIN SCALAR HE,A1,B1,C1,A2,B2,C2,A3,B3,C3,AA1,BB1,CC1,
-             AA2,BB2,CC2,AL1,BE1,GA1,AL2,BE2,GA2,R,S,P,Q;
- A1:=l_Z(1,4,1);B1:=l_Z(1,4,2);C1:=l_Z(1,4,3);
- A2:=l_Z(2,4,1);B2:=l_Z(2,4,2);C2:=l_Z(2,4,3);
- A3:=l_Z(3,4,1);B3:=l_Z(3,4,2);C3:=l_Z(3,4,3);
- IF (A3=0 AND B3=0) THEN
-  <<liemat:=MAT((1,0,0,0),(0,1,0,0),(0,0,1,0),(0,0,0,1/C3))*liemat;
-    AL1:=A1/C3;BE1:=B1/C3;GA1:=C1/C3;
-    AL2:=A2/C3;BE2:=B2/C3;GA2:=C2/C3>> ELSE
-  <<IF (A3=0 AND B3 NEQ 0) THEN
-   <<liemat:=MAT((0,B3,C3,0),(1,0,0,0),(0,0,1,0),(0,0,0,1))*liemat;
-     AA1:=B2+C3;BB1:=B3*A2;CC1:=B3*C2-B2*C3;
-     AA2:=B1/B3;BB2:=A1;CC2:=C1-B1*C3/B3>> ELSE
-   <<liemat:=MAT((A3,B3,C3,0),(0,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
-     AA1:=A1+B3*A2/A3+C3;BB1:=A3*B1-A1*B3-B3*B3*A2/A3+B3*B2;
-     CC1:=A3*C1-A1*C3-B3*A2*C3/A3+B3*C2;
-     AA2:=A2/A3;BB2:=B2-A2*B3/A3;CC2:=C2-A2*C3/A3>>;
-  <<liemat:=MAT((1,0,0,0),(0,1,-AA2,0),(0,0,1,0),(0,0,0,1))*liemat;
-    CC1:=CC1+BB1*AA2;CC2:=CC2+BB2*AA2;AA2:=0>>;
-  IF (BB1=0 AND AA1=BB2 AND CC2 NEQ 0) THEN
-   <<liemat:=MAT((0,0,1,0),(0,1,0,0),(1,-CC1/CC2,0,0),(0,0,0,1/AA1))*
+begin scalar he,a1,b1,c1,a2,b2,c2,a3,b3,c3,aa1,bb1,cc1,
+             aa2,bb2,cc2,al1,be1,ga1,al2,be2,ga2,r,s,p,q;
+ a1:=l_z(1,4,1);b1:=l_z(1,4,2);c1:=l_z(1,4,3);
+ a2:=l_z(2,4,1);b2:=l_z(2,4,2);c2:=l_z(2,4,3);
+ a3:=l_z(3,4,1);b3:=l_z(3,4,2);c3:=l_z(3,4,3);
+ if (a3=0 and b3=0) then
+  <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,1,0),(0,0,0,1/c3))*liemat;
+    al1:=a1/c3;be1:=b1/c3;ga1:=c1/c3;
+    al2:=a2/c3;be2:=b2/c3;ga2:=c2/c3>> else
+  <<if (a3=0 and b3 neq 0) then
+   <<liemat:=mat((0,b3,c3,0),(1,0,0,0),(0,0,1,0),(0,0,0,1))*liemat;
+     aa1:=b2+c3;bb1:=b3*a2;cc1:=b3*c2-b2*c3;
+     aa2:=b1/b3;bb2:=a1;cc2:=c1-b1*c3/b3>> else
+   <<liemat:=mat((a3,b3,c3,0),(0,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
+     aa1:=a1+b3*a2/a3+c3;bb1:=a3*b1-a1*b3-b3*b3*a2/a3+b3*b2;
+     cc1:=a3*c1-a1*c3-b3*a2*c3/a3+b3*c2;
+     aa2:=a2/a3;bb2:=b2-a2*b3/a3;cc2:=c2-a2*c3/a3>>;
+  <<liemat:=mat((1,0,0,0),(0,1,-aa2,0),(0,0,1,0),(0,0,0,1))*liemat;
+    cc1:=cc1+bb1*aa2;cc2:=cc2+bb2*aa2;aa2:=0>>;
+  if (bb1=0 and aa1=bb2 and cc2 neq 0) then
+   <<liemat:=mat((0,0,1,0),(0,1,0,0),(1,-cc1/cc2,0,0),(0,0,0,1/aa1))*
    liemat;
-     AL1:=0;BE1:=CC1/(AA1*CC2);GA1:=1/AA1;
-     AL2:=CC2/AA1;BE2:=1;GA2:=0>> ELSE
-    IF (BB1=0 AND AA1 NEQ BB2 AND CC2 NEQ 0) THEN
-     <<A1:=1/(BB2-AA1);B1:=(BB2*AA1-BB2*BB2+CC1)/(CC2*(AA1-BB2));
-     liemat:=MAT((1,0,0,0),(0,1,0,0),(A1,B1,1,0),(0,0,0,1/BB2))*liemat;
-       AL1:=(AA1-CC1*A1)/BB2;BE1:=-B1*CC1/BB2;GA1:=CC1/BB2;
-       AL2:=-CC2*A1/BB2;BE2:=1-B1*CC2/BB2;GA2:=CC2/BB2>>ELSE
-     IF(BB1=0 AND CC2=0) THEN
-      <<liemat:=MAT((1,0,0,0),(0,0,1,0),(0,1,0,0),(0,0,0,1/BB2))*liemat;
-        AL1:=AA1/BB2;BE1:=CC1/BB2;AL2:=1/BB2;GA1:=BE2:=GA2:=0>>
-     ELSE
-      <<R:=-AA1-BB2;S:=AA1*BB2-CC1;P:=S-R*R/3;
-        Q:=2*R*R*R/27-S*R/3+BB2*CC1-BB1*CC2;
-        C1:=(-Q/2+SQRT(Q*Q/4+P*P*P/27))**(1/3)+
-            (-Q/2-SQRT(Q*Q/4+P*P*P/27))**(1/3)-R/3;
-        A1:=(C1-BB2)/BB1;B1:=(C1-BB2)*(C1-AA1)/BB1;
-      liemat:=MAT((1,0,0,0),(0,0,1,0),(A1,1,B1,0),(0,0,0,1/C1))*liemat;
-        AL1:=(AA1-A1*BB1)/C1;BE1:=(CC1-B1*BB1)/C1;
-        GA1:=BB1/C1;AL2:=1/C1;BE2:=GA2:=0>>>>;
- IF GA2 NEQ 0 THEN
- <<liemat:=MAT((1,-GA1/GA2,0,0),(0,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
-   AA1:=AL1-GA1*AL2/GA2;BB1:=BE1+AL1*GA1/GA2-AL2*GA1*GA1/
-   (GA2*GA2)-GA1*BE2/GA2;AA2:=AL2;BB2:=BE2+AL2*GA1/GA2;CC2:=GA2>>
-  ELSE <<liemat:=MAT((0,1,0,0),(1,0,0,0),(0,0,1,0),(0,0,0,1))*liemat;
-         AA1:=BE2;BB1:=AL2;AA2:=BE1;BB2:=AL1;CC2:=GA1>>;
- IF (AA2=0 AND AA1-BB1-BB2=0 AND -AA1-BB1+BB2=0 AND CC2=0)
-  THEN c0111(AA1,AA1) ELSE
-  <<IF AA2=0 THEN
-     IF (AA1-BB1-BB2) NEQ 0 THEN
-     <<liemat:=MAT((1,0,0,0),(1,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
-       AA2:=AA1-BB1-BB2;BB2:=BB1+BB2;AA1:=AA1-BB1>> ELSE
-      IF (-AA1-BB1+BB2) NEQ 0 THEN
-       <<liemat:=MAT((1,0,0,0),(-1,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
-         AA2:=-AA1-BB1+BB2;BB2:=BB2-BB1;AA1:=AA1+BB1>> ELSE
-      <<liemat:=MAT((0,0,1,0),(0,1,0,0),(1,0,0,0),(0,0,0,1/AA1))*liemat;
-          AA2:=CC2/AA1;BB2:=1;CC2:=0;AA1:=1/AA1>>;
-    liemat:=MAT((1,-AA1/AA2,AA1*CC2/AA2,0),(0,1,0,0),(0,0,1,0),
+     al1:=0;be1:=cc1/(aa1*cc2);ga1:=1/aa1;
+     al2:=cc2/aa1;be2:=1;ga2:=0>> else
+    if (bb1=0 and aa1 neq bb2 and cc2 neq 0) then
+     <<a1:=1/(bb2-aa1);b1:=(bb2*aa1-bb2*bb2+cc1)/(cc2*(aa1-bb2));
+     liemat:=mat((1,0,0,0),(0,1,0,0),(a1,b1,1,0),(0,0,0,1/bb2))*liemat;
+       al1:=(aa1-cc1*a1)/bb2;be1:=-b1*cc1/bb2;ga1:=cc1/bb2;
+       al2:=-cc2*a1/bb2;be2:=1-b1*cc2/bb2;ga2:=cc2/bb2>>else
+     if(bb1=0 and cc2=0) then
+      <<liemat:=mat((1,0,0,0),(0,0,1,0),(0,1,0,0),(0,0,0,1/bb2))*liemat;
+        al1:=aa1/bb2;be1:=cc1/bb2;al2:=1/bb2;ga1:=be2:=ga2:=0>>
+     else
+      <<r:=-aa1-bb2;s:=aa1*bb2-cc1;p:=s-r*r/3;
+        q:=2*r*r*r/27-s*r/3+bb2*cc1-bb1*cc2;
+        c1:=(-q/2+sqrt(q*q/4+p*p*p/27))**(1/3)+
+            (-q/2-sqrt(q*q/4+p*p*p/27))**(1/3)-r/3;
+        a1:=(c1-bb2)/bb1;b1:=(c1-bb2)*(c1-aa1)/bb1;
+      liemat:=mat((1,0,0,0),(0,0,1,0),(a1,1,b1,0),(0,0,0,1/c1))*liemat;
+        al1:=(aa1-a1*bb1)/c1;be1:=(cc1-b1*bb1)/c1;
+        ga1:=bb1/c1;al2:=1/c1;be2:=ga2:=0>>>>;
+ if ga2 neq 0 then
+ <<liemat:=mat((1,-ga1/ga2,0,0),(0,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
+   aa1:=al1-ga1*al2/ga2;bb1:=be1+al1*ga1/ga2-al2*ga1*ga1/
+   (ga2*ga2)-ga1*be2/ga2;aa2:=al2;bb2:=be2+al2*ga1/ga2;cc2:=ga2>>
+  else <<liemat:=mat((0,1,0,0),(1,0,0,0),(0,0,1,0),(0,0,0,1))*liemat;
+         aa1:=be2;bb1:=al2;aa2:=be1;bb2:=al1;cc2:=ga1>>;
+ if (aa2=0 and aa1-bb1-bb2=0 and -aa1-bb1+bb2=0 and cc2=0)
+  then c0111(aa1,aa1) else
+  <<if aa2=0 then
+     if (aa1-bb1-bb2) neq 0 then
+     <<liemat:=mat((1,0,0,0),(1,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
+       aa2:=aa1-bb1-bb2;bb2:=bb1+bb2;aa1:=aa1-bb1>> else
+      if (-aa1-bb1+bb2) neq 0 then
+       <<liemat:=mat((1,0,0,0),(-1,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
+         aa2:=-aa1-bb1+bb2;bb2:=bb2-bb1;aa1:=aa1+bb1>> else
+      <<liemat:=mat((0,0,1,0),(0,1,0,0),(1,0,0,0),(0,0,0,1/aa1))*liemat;
+          aa2:=cc2/aa1;bb2:=1;cc2:=0;aa1:=1/aa1>>;
+    liemat:=mat((1,-aa1/aa2,aa1*cc2/aa2,0),(0,1,0,0),(0,0,1,0),
             (0,0,0,1))*liemat;
-    BE1:=BB1-AA1*BB2/AA2;
-    AL2:=AA2;BE2:=AA1+BB2;GA2:=CC2-AA1*CC2;
-    liemat:=MAT((1,0,0,0),(-BE2,BE1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
-    AA1:=BE2; AA2:=AL2*BE1;CC2:=GA2*BE1;
-    IF (CC2 NEQ 0 AND AA2=(1-AA1)) THEN
-     <<liemat:=MAT((1,0,0,0),(1,1,0,0),(0,0,CC2,0),(0,0,0,1))*liemat;
-       AL1:=AA1-1;
-       IF AL1=1 THEN
+    be1:=bb1-aa1*bb2/aa2;
+    al2:=aa2;be2:=aa1+bb2;ga2:=cc2-aa1*cc2;
+    liemat:=mat((1,0,0,0),(-be2,be1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
+    aa1:=be2; aa2:=al2*be1;cc2:=ga2*be1;
+    if (cc2 neq 0 and aa2=(1-aa1)) then
+     <<liemat:=mat((1,0,0,0),(1,1,0,0),(0,0,cc2,0),(0,0,0,1))*liemat;
+       al1:=aa1-1;
+       if al1=1 then
         <<if symbolic !*tr_lie then
-          WRITE "[W,Z]=W+X, [X,Z]=X+Y, [Y,Z]=Y";
+          write "[W,Z]=W+X, [X,Z]=X+Y, [Y,Z]=Y";
           lie_class:={liealg(4),comtab(12)}>>
-        ELSE <<liemat:=MAT((0,0,1,0),(0,1,0,0),(1,1/(AL1-1),
-               1/((AL1-1)*(AL1-1)),0),(0,0,0,1/AL1))*liemat;
-        liemat:=MAT((0,1,0,0),(1/AL1,0,0,0),(0,0,1,0),(0,0,0,1))*liemat;
+        else <<liemat:=mat((0,0,1,0),(0,1,0,0),(1,1/(al1-1),
+               1/((al1-1)*(al1-1)),0),(0,0,0,1/al1))*liemat;
+        liemat:=mat((0,1,0,0),(1/al1,0,0,0),(0,0,1,0),(0,0,0,1))*liemat;
         if symbolic !*tr_lie then
-        WRITE "[W,Z]=",1/AL1,"W+X, [X,Z]=",1/AL1,"X, [Y,Z]=Y";
-        lie_class:={liealg(4),comtab(15),1/AL1}>>>> ELSE
-     <<IF CC2 NEQ 0 THEN
-       liemat:=MAT((1,0,-CC2/(1-AA2-AA1),0),(0,1,(-1+AA1)*
-               CC2/(1-AA2-AA1),0),(0,0,CC2/(1-AA2-AA1),0),
+        write "[W,Z]=",1/al1,"W+X, [X,Z]=",1/al1,"X, [Y,Z]=Y";
+        lie_class:={liealg(4),comtab(15),1/al1}>>>> else
+     <<if cc2 neq 0 then
+       liemat:=mat((1,0,-cc2/(1-aa2-aa1),0),(0,1,(-1+aa1)*
+               cc2/(1-aa2-aa1),0),(0,0,cc2/(1-aa2-aa1),0),
                (0,0,0,1))*liemat;
-       liemat:=MAT((1,0,0,0),(AA1/2,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
-       R:=(AA1*AA1/4+AA2);
-       IF R=0 THEN
+       liemat:=mat((1,0,0,0),(aa1/2,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
+       r:=(aa1*aa1/4+aa2);
+       if r=0 then
        <<if symbolic !*tr_lie then
-         WRITE "[W,Z]=",AA1/2,"W+X, [X,Z]=",AA1/2,"X, [Y,Z]=Y";
-         lie_class:={liealg(4),comtab(15),AA1/2}>> ELSE
-        <<liemat:=MAT((SQRT(ABS(R)),0,0,0),(0,1,0,0),(0,0,1,0),
+         write "[W,Z]=",aa1/2,"W+X, [X,Z]=",aa1/2,"X, [Y,Z]=Y";
+         lie_class:={liealg(4),comtab(15),aa1/2}>> else
+        <<liemat:=mat((sqrt(abs(r)),0,0,0),(0,1,0,0),(0,0,1,0),
                   (0,0,0,1))*liemat;
-          IF NOT(NUMBERP(R)) THEN
-          <<WRITE "Is ",R,"<0 ? (y/n) and press <RETURN>";
-            HE:=SYMBOLIC READ();
-            IF HE=y THEN
-            <<liemat:=MAT((1,0,0,0),(0,1,0,0),(0,0,1,0),
-                     (0,0,0,SQRT(ABS(1/R))))*liemat;
-             S:=AA1/(2*SQRT(ABS(R)));
+          if not(numberp(r)) then
+          <<write "Is ",r,"<0 ? (y/n) and press <RETURN>";
+            he:=symbolic read();
+            if he=y then
+            <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,1,0),
+                     (0,0,0,sqrt(abs(1/r))))*liemat;
+             s:=aa1/(2*sqrt(abs(r)));
              if symbolic !*tr_lie then
-             WRITE "[W,Z]=",S,"W+X, [X,Z]=-W+",S,"X, [Y,Z]=",
-                   SQRT(ABS(1/R)),"Y";
-                   lie_class:={liealg(4),comtab(14),S,SQRT(ABS(1/R))}>>
-            ELSE
-          <<liemat:=MAT((1,0,0,0),(1,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
-              liemat:=MAT((-2*SQRT(ABS(R)),SQRT(ABS(R)),0,0),
-                      (0,SQRT(ABS(R)),0,0),(0,0,1,0),(0,0,0,1))*liemat;
-              <<c0111(AA1/2-SQRT(ABS(R)),AA1/2+SQRT(ABS(R)))>>>>>> ELSE
-          IF R<0 THEN
-           <<liemat:=MAT((1,0,0,0),(0,1,0,0),(0,0,1,0),
-                     (0,0,0,SQRT(ABS(1/R))))*liemat;
-             S:=AA1/(2*SQRT(ABS(R)));
+             write "[W,Z]=",s,"W+X, [X,Z]=-W+",s,"X, [Y,Z]=",
+                   sqrt(abs(1/r)),"Y";
+                   lie_class:={liealg(4),comtab(14),s,sqrt(abs(1/r))}>>
+            else
+          <<liemat:=mat((1,0,0,0),(1,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
+              liemat:=mat((-2*sqrt(abs(r)),sqrt(abs(r)),0,0),
+                      (0,sqrt(abs(r)),0,0),(0,0,1,0),(0,0,0,1))*liemat;
+              <<c0111(aa1/2-sqrt(abs(r)),aa1/2+sqrt(abs(r)))>>>>>> else
+          if r<0 then
+           <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,1,0),
+                     (0,0,0,sqrt(abs(1/r))))*liemat;
+             s:=aa1/(2*sqrt(abs(r)));
              if symbolic !*tr_lie then
-             WRITE "[W,Z]=",S,"W+X, [X,Z]=-W+",S,"X, [Y,Z]=",
-                   SQRT(ABS(1/R)),"Y";
-                   lie_class:={liealg(4),comtab(14),S,SQRT(ABS(1/R))}>>
-            ELSE
-          <<liemat:=MAT((1,0,0,0),(1,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
-              liemat:=MAT((-2*SQRT(ABS(R)),SQRT(ABS(R)),0,0),
-                      (0,SQRT(ABS(R)),0,0),(0,0,1,0),(0,0,0,1))*liemat;
-              c0111(AA1/2-SQRT(ABS(R)),AA1/2+SQRT(ABS(R)))>>>>
+             write "[W,Z]=",s,"W+X, [X,Z]=-W+",s,"X, [Y,Z]=",
+                   sqrt(abs(1/r)),"Y";
+                   lie_class:={liealg(4),comtab(14),s,sqrt(abs(1/r))}>>
+            else
+          <<liemat:=mat((1,0,0,0),(1,1,0,0),(0,0,1,0),(0,0,0,1))*liemat;
+              liemat:=mat((-2*sqrt(abs(r)),sqrt(abs(r)),0,0),
+                      (0,sqrt(abs(r)),0,0),(0,0,1,0),(0,0,0,1))*liemat;
+              c0111(aa1/2-sqrt(abs(r)),aa1/2+sqrt(abs(r)))>>>>
      >>>>
- END;
+ end;
 
-algebraic procedure c0111(MY,NY);
-BEGIN
- liemat:=MAT((0,0,1,0),(1,0,0,0),(0,1,0,0),(0,0,0,1))*liemat;
+algebraic procedure c0111(my,ny);
+begin
+ liemat:=mat((0,0,1,0),(1,0,0,0),(0,1,0,0),(0,0,0,1))*liemat;
  if symbolic !*tr_lie then
- WRITE "[W,Z]=W, [X,Z]=",MY,"X, [Y,Z]=",NY,"Y";
- lie_class:={liealg(4),comtab(13),MY,NY}
-END;
+ write "[W,Z]=W, [X,Z]=",my,"X, [Y,Z]=",ny,"Y";
+ lie_class:={liealg(4),comtab(13),my,ny}
+end;
 
-ALGEBRAIC PROCEDURE COMCOM1();
-BEGIN INTEGER II;
-      SCALAR HE,A1,A2,A3,B2,B3,C2,C3,HELP;
-      MATRIX A11(4,4),A22(4,4),A33(4,4),CCC(3,3);
- HELP:=0;
- FOR M:=1:3 DO FOR N:=1:3 DO
-  IF FF(M,N) NEQ 0 THEN <<II:=M;M:=3;N:=3>>;
-  A11:=MAT((1,0,0,0),(0,1,0,0),(FF(II,1),FF(II,2),FF(II,3),0),
+algebraic procedure comcom1();
+begin integer ii;
+      scalar he,a1,a2,a3,b2,b3,c2,c3,help;
+      matrix a11(4,4),a22(4,4),a33(4,4),ccc(3,3);
+ help:=0;
+ for m:=1:3 do for n:=1:3 do
+  if ff(m,n) neq 0 then <<ii:=m;m:=3;n:=3>>;
+  a11:=mat((1,0,0,0),(0,1,0,0),(ff(ii,1),ff(ii,2),ff(ii,3),0),
            (0,0,0,1));
-  A22:=MAT((1,0,0,0),(0,0,1,0),(FF(II,1),FF(II,2),FF(II,3),0),
+  a22:=mat((1,0,0,0),(0,0,1,0),(ff(ii,1),ff(ii,2),ff(ii,3),0),
            (0,0,0,1));
-  A33:=MAT((0,1,0,0),(0,0,1,0),(FF(II,1),FF(II,2),FF(II,3),0),
+  a33:=mat((0,1,0,0),(0,0,1,0),(ff(ii,1),ff(ii,2),ff(ii,3),0),
            (0,0,0,1));
- IF DET(A11) NEQ 0 THEN liemat:=A11*liemat ELSE
-  IF DET(A22) NEQ 0 THEN liemat:=A22*liemat ELSE liemat:=A33*liemat;
- liemat:=MAT((0,0,1,0),(1,0,0,0),(0,1,0,0),(0,0,0,1))*liemat;
- A11:=1/liemat;
- FOR M:=1:3 DO FOR N:=1:3 DO
- CCC(M,N):=FOR I:=1:4 SUM FOR J:=1:4 SUM FOR K:=1:4 SUM
-  liemat(M,I)*liemat(4,J)*CC(I,J,K)*A11(K,N);
- A1:=CCC(1,1);A2:=CCC(2,1);A3:=CCC(3,1);B2:=CCC(2,2);
- B3:=CCC(3,2);C2:=CCC(2,3);C3:=CCC(3,3);
- IF A1=0 THEN
-  <<IF C2=0 THEN
-     IF B3=0 THEN
-      <<liemat:=MAT((1,0,0,0),(0,1,1,0),(0,0,1,0),(0,0,0,1))*liemat;
-        A2:=A2+A3;C2:=-2*B2>> ELSE
-      <<liemat:=MAT((1,0,0,0),(0,1,B2/B3,0),(0,0,1,0),(0,0,0,1))*liemat;
-        A2:=A2+A3*B2/B3;C2:=-3*B2*B2/B3;B2:=2*B2>>;
-    HELP:=B2*B2+C2*B3;C3:=SQRT(ABS(HELP));
-    liemat:=MAT((C2/C3,0,0,0),(0,1,0,0),(0,B2/C3,C2/C3,0),
-            (0,A3*C3/HELP,-A2*C3/HELP,C3/HELP))*liemat;
+ if det(a11) neq 0 then liemat:=a11*liemat else
+  if det(a22) neq 0 then liemat:=a22*liemat else liemat:=a33*liemat;
+ liemat:=mat((0,0,1,0),(1,0,0,0),(0,1,0,0),(0,0,0,1))*liemat;
+ a11:=1/liemat;
+ for m:=1:3 do for n:=1:3 do
+ ccc(m,n):=for i:=1:4 sum for j:=1:4 sum for k:=1:4 sum
+  liemat(m,i)*liemat(4,j)*cc(i,j,k)*a11(k,n);
+ a1:=ccc(1,1);a2:=ccc(2,1);a3:=ccc(3,1);b2:=ccc(2,2);
+ b3:=ccc(3,2);c2:=ccc(2,3);c3:=ccc(3,3);
+ if a1=0 then
+  <<if c2=0 then
+     if b3=0 then
+      <<liemat:=mat((1,0,0,0),(0,1,1,0),(0,0,1,0),(0,0,0,1))*liemat;
+        a2:=a2+a3;c2:=-2*b2>> else
+      <<liemat:=mat((1,0,0,0),(0,1,b2/b3,0),(0,0,1,0),(0,0,0,1))*liemat;
+        a2:=a2+a3*b2/b3;c2:=-3*b2*b2/b3;b2:=2*b2>>;
+    help:=b2*b2+c2*b3;c3:=sqrt(abs(help));
+    liemat:=mat((c2/c3,0,0,0),(0,1,0,0),(0,b2/c3,c2/c3,0),
+            (0,a3*c3/help,-a2*c3/help,c3/help))*liemat;
     if symbolic !*tr_lie then
-    WRITE "[X,Y]=W, [X,Z]=",HELP/ABS(HELP),"Y, [Y,Z]=X";
-    if HELP>0 then lie_class:={liealg(4),comtab(19)} else
-                   lie_class:={liealg(4),comtab(20)}>> ELSE
-  <<liemat:=MAT((1,0,0,0),(0,1,0,0),(0,0,1,0),
-            (0,2*A3/A1,-2*A2/A1,2/A1))*liemat;
-    B2:=2*B2/A1;C2:=2*C2/A1;B3:=2*B3/A1;C3:=2*C3/A1;
-    IF B3 NEQ 0 THEN
-  <<liemat:=MAT((1,0,0,0),(0,1,(1-B2)/B3,0),(0,0,1,0),(0,0,0,1))*liemat;
-      C2:=C2+(1-B2)*(C3-1)/B3;B2:=C3:=1;
-      IF C2=0 THEN
-       <<liemat:=MAT((-1,0,0,0),(0,0,1,0),(0,1,0,0),(0,0,0,1))*liemat;
-         C2:=B3>> ELSE
-       <<A1:=B3/ABS(B3);A2:=C2/ABS(C2);A3:=SQRT(ABS(B3*C2));
-         liemat:=MAT((1,0,0,0),(0,(ABS(B3/C2))**(1/4),0,0),
-                 (0,0,(ABS(C2/B3))**(1/4),0),(0,0,0,1))*liemat;
-         IF A1=A2 THEN
-          <<IF NOT(NUMBERP(A1)) THEN
-            <<WRITE "Is ",A1,"<0 ? (y/n) and press <RETURN>";
-              HE:=SYMBOLIC READ();
-              IF HE=y THEN A3:=-A3>> ELSE
-            IF A1<0 THEN A3:=-A3;
-            liemat:=MAT((1,0,0,0),(0,1,0,0),(0,1,1,0),(0,0,0,1))*liemat;
-            B2:=1-A3;C2:=A3;C3:=A3+1>> ELSE
-          <<HELP:=1;
-            IF NOT(NUMBERP(A1)) THEN
-            <<WRITE "Is ",A1,"<0 ? (y/n) and press <RETURN>";
-              HE:=SYMBOLIC READ();
-              IF HE=y THEN
-              liemat:=MAT((-1,0,0,0),(0,0,1,0),(0,1,0,0),(0,0,0,1))*
-              liemat>> ELSE
-            IF A1<0 THEN
-            liemat:=MAT((-1,0,0,0),(0,0,1,0),(0,1,0,0),(0,0,0,1))
+    write "[X,Y]=W, [X,Z]=",help/abs(help),"Y, [Y,Z]=X";
+    if help>0 then lie_class:={liealg(4),comtab(19)} else
+                   lie_class:={liealg(4),comtab(20)}>> else
+  <<liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,1,0),
+            (0,2*a3/a1,-2*a2/a1,2/a1))*liemat;
+    b2:=2*b2/a1;c2:=2*c2/a1;b3:=2*b3/a1;c3:=2*c3/a1;
+    if b3 neq 0 then
+  <<liemat:=mat((1,0,0,0),(0,1,(1-b2)/b3,0),(0,0,1,0),(0,0,0,1))*liemat;
+      c2:=c2+(1-b2)*(c3-1)/b3;b2:=c3:=1;
+      if c2=0 then
+       <<liemat:=mat((-1,0,0,0),(0,0,1,0),(0,1,0,0),(0,0,0,1))*liemat;
+         c2:=b3>> else
+       <<a1:=b3/abs(b3);a2:=c2/abs(c2);a3:=sqrt(abs(b3*c2));
+         liemat:=mat((1,0,0,0),(0,(abs(b3/c2))**(1/4),0,0),
+                 (0,0,(abs(c2/b3))**(1/4),0),(0,0,0,1))*liemat;
+         if a1=a2 then
+          <<if not(numberp(a1)) then
+            <<write "Is ",a1,"<0 ? (y/n) and press <RETURN>";
+              he:=symbolic read();
+              if he=y then a3:=-a3>> else
+            if a1<0 then a3:=-a3;
+            liemat:=mat((1,0,0,0),(0,1,0,0),(0,1,1,0),(0,0,0,1))*liemat;
+            b2:=1-a3;c2:=a3;c3:=a3+1>> else
+          <<help:=1;
+            if not(numberp(a1)) then
+            <<write "Is ",a1,"<0 ? (y/n) and press <RETURN>";
+              he:=symbolic read();
+              if he=y then
+              liemat:=mat((-1,0,0,0),(0,0,1,0),(0,1,0,0),(0,0,0,1))*
+              liemat>> else
+            if a1<0 then
+            liemat:=mat((-1,0,0,0),(0,0,1,0),(0,1,0,0),(0,0,0,1))
                        *liemat;
             if symbolic !*tr_lie then
-            WRITE "[W,Z]=2W, [X,Y]=W, [X,Z]=X-",A3,"Y, ",
-           "[Y,Z]=",A3,"X+Y";lie_class:={liealg(4),comtab(17),A3}>>>>>>;
-    IF (HELP NEQ 1) THEN
-     IF (C2=0 OR B2 NEQ C3) THEN
-     <<IF (B2 NEQ C3) THEN
-      liemat:=MAT((1,0,0,0),(0,1,C2/(B2-C3),0),(0,0,1,0),(0,0,0,1))*
+            write "[W,Z]=2W, [X,Y]=W, [X,Z]=X-",a3,"Y, ",
+           "[Y,Z]=",a3,"X+Y";lie_class:={liealg(4),comtab(17),a3}>>>>>>;
+    if (help neq 1) then
+     if (c2=0 or b2 neq c3) then
+     <<if (b2 neq c3) then
+      liemat:=mat((1,0,0,0),(0,1,c2/(b2-c3),0),(0,0,1,0),(0,0,0,1))*
       liemat;
-      IF NOT(NUMBERP(B2)) THEN
-            <<WRITE "Is ",B2,"<1 ? (y/n) and press <RETURN>";
-              HE:=SYMBOLIC READ();
-              IF HE=y THEN
-          liemat:=MAT((-1,0,0,0),(0,0,1,0),(0,1,0,0),(0,0,0,1))*liemat;
-              HELP:=B2;B2:=C3;C3:=HELP>> ELSE
-      IF B2<1 THEN
-        <<liemat:=MAT((-1,0,0,0),(0,0,1,0),(0,1,0,0),(0,0,0,1))*liemat;
-          HELP:=B2;B2:=C3;C3:=HELP>>;
+      if not(numberp(b2)) then
+            <<write "Is ",b2,"<1 ? (y/n) and press <RETURN>";
+              he:=symbolic read();
+              if he=y then
+          liemat:=mat((-1,0,0,0),(0,0,1,0),(0,1,0,0),(0,0,0,1))*liemat;
+              help:=b2;b2:=c3;c3:=help>> else
+      if b2<1 then
+        <<liemat:=mat((-1,0,0,0),(0,0,1,0),(0,1,0,0),(0,0,0,1))*liemat;
+          help:=b2;b2:=c3;c3:=help>>;
         if symbolic !*tr_lie then
-        WRITE "[W,Z]=2W, [X,Y]=W, [X,Z]=",B2,"X, [Y,Z]=",C3,"Y";
-        lie_class:={liealg(4),comtab(16),B2-1}>> ELSE
-      <<liemat:=MAT((1,0,0,0),(0,1/SQRT(ABS(C2)),0,0),
-                (0,0,SQRT(ABS(C2)),0),(0,0,0,1))*liemat;
-        IF NOT(NUMBERP(C2)) THEN
-            <<WRITE "Is ",C2,"<0 ? (y/n) and press <RETURN>";
-              HE:=SYMBOLIC READ();
-              IF HE=y THEN
-              liemat:=MAT((-1,0,0,0),(0,1,0,0),(0,0,-1,0),(0,0,0,1))*
-              liemat>> ELSE
-        IF C2<0 THEN
-         liemat:=MAT((-1,0,0,0),(0,1,0,0),(0,0,-1,0),(0,0,0,1))*liemat;
+        write "[W,Z]=2W, [X,Y]=W, [X,Z]=",b2,"X, [Y,Z]=",c3,"Y";
+        lie_class:={liealg(4),comtab(16),b2-1}>> else
+      <<liemat:=mat((1,0,0,0),(0,1/sqrt(abs(c2)),0,0),
+                (0,0,sqrt(abs(c2)),0),(0,0,0,1))*liemat;
+        if not(numberp(c2)) then
+            <<write "Is ",c2,"<0 ? (y/n) and press <RETURN>";
+              he:=symbolic read();
+              if he=y then
+              liemat:=mat((-1,0,0,0),(0,1,0,0),(0,0,-1,0),(0,0,0,1))*
+              liemat>> else
+        if c2<0 then
+         liemat:=mat((-1,0,0,0),(0,1,0,0),(0,0,-1,0),(0,0,0,1))*liemat;
         if symbolic !*tr_lie then
-        WRITE "[W,Z]=2W, [X,Y]=W, [X,Z]=X+Y, [Y,Z]=Y";
+        write "[W,Z]=2W, [X,Y]=W, [X,Z]=X+Y, [Y,Z]=Y";
         lie_class:={liealg(4),comtab(18)}>>>>;
- CLEAR A11,A22,A33,CCC
-END;
+ clear a11,a22,a33,ccc
+end;
 
 algebraic procedure comcom3();
-BEGIN INTEGER HELP;
-      SCALAR HE,AL,BE,GA;
-      MATRIX l_K(3,3),l_A(3,3);
- HELP:=0;
- l_K(1,1):=FF(1,2)**2+2*FF(1,3)*FF(2,2)+FF(2,3)**2;
- l_K(1,2):=-FF(1,1)*FF(1,2)+FF(1,3)*FF(3,2)-
-          FF(2,1)*FF(1,3)+FF(2,3)*FF(3,3);
- l_K(1,3):=-FF(1,1)*FF(2,2)-FF(1,2)*FF(3,2)-
-          FF(2,1)*FF(2,3)-FF(2,2)*FF(3,3);
- l_K(2,1):=l_K(1,2);
- l_K(2,2):=FF(1,1)**2-2*FF(1,3)*FF(3,1)+FF(3,3)**2;
- l_K(2,3):=FF(1,1)*FF(2,1)+FF(1,2)*FF(3,1)-
-         FF(3,1)*FF(2,3)-FF(3,2)*FF(3,3);
- l_K(3,1):=l_K(1,3);l_K(3,2):=l_K(2,3);
- l_K(3,3):=FF(2,1)**2+2*FF(2,2)*FF(3,1)+FF(3,2)**2;
- IF NOT(NUMBERP(l_K(1,1)) AND
-  NUMBERP(l_K(1,1)*l_K(2,2)-l_K(1,2)*l_K(2,1)) AND
-        NUMBERP(DET(l_K))) THEN
- <<WRITE "Is ",-l_K(1,1),">0 and ",
-      l_K(1,1)*l_K(2,2)-l_K(1,2)*l_K(2,1),">0 and ",
-     -DET(l_K),">0 ? (y/n) and press <RETURN>";
-   HE:=SYMBOLIC READ();
-   IF HE=y THEN <<HELP:=1;lie4so3()>> ELSE lie4so21()>> ELSE
- IF (-l_K(1,1)>0 AND l_K(1,1)*l_K(2,2)-l_K(1,2)*l_K(2,1)>0 AND
-     -DET(l_K)>0) THEN
-  <<HELP:=1;lie4so3()>> ELSE lie4so21();
- liemat:=MAT((l_A(1,1),l_A(1,2),l_A(1,3),0),(l_A(2,1),l_A(2,2),
-          l_A(2,3),0), (l_A(3,1),l_A(3,2),l_A(3,3),0),(0,0,0,1))*liemat;
- BB:=1/liemat;
- AL:=FOR J:=1:4 SUM FOR K:=1:4 SUM FOR L:=1:4 SUM
-         liemat(1,J)*liemat(4,K)*CC(J,K,L)*BB(L,2);
- BE:=FOR J:=1:4 SUM FOR K:=1:4 SUM FOR L:=1:4 SUM
-         liemat(1,J)*liemat(4,K)*CC(J,K,L)*BB(L,3);
- GA:=FOR J:=1:4 SUM FOR K:=1:4 SUM FOR L:=1:4 SUM
-         liemat(2,J)*liemat(4,K)*CC(J,K,L)*BB(L,3);
- IF HELP=1 THEN
-  liemat:=MAT((1,0,0,0),(0,1,0,0),(0,0,1,0),(GA,-BE,AL,1))*liemat ELSE
-  liemat:=MAT((1,0,0,0),(0,1,0,0),(0,0,1,0),(GA,-BE,-AL,1))*liemat;
- IF HELP=1 THEN
+begin integer help;
+      scalar he,al,be,ga;
+      matrix l_k(3,3),l_a(3,3);
+ help:=0;
+ l_k(1,1):=ff(1,2)**2+2*ff(1,3)*ff(2,2)+ff(2,3)**2;
+ l_k(1,2):=-ff(1,1)*ff(1,2)+ff(1,3)*ff(3,2)-
+          ff(2,1)*ff(1,3)+ff(2,3)*ff(3,3);
+ l_k(1,3):=-ff(1,1)*ff(2,2)-ff(1,2)*ff(3,2)-
+          ff(2,1)*ff(2,3)-ff(2,2)*ff(3,3);
+ l_k(2,1):=l_k(1,2);
+ l_k(2,2):=ff(1,1)**2-2*ff(1,3)*ff(3,1)+ff(3,3)**2;
+ l_k(2,3):=ff(1,1)*ff(2,1)+ff(1,2)*ff(3,1)-
+         ff(3,1)*ff(2,3)-ff(3,2)*ff(3,3);
+ l_k(3,1):=l_k(1,3);l_k(3,2):=l_k(2,3);
+ l_k(3,3):=ff(2,1)**2+2*ff(2,2)*ff(3,1)+ff(3,2)**2;
+ if not(numberp(l_k(1,1)) and
+  numberp(l_k(1,1)*l_k(2,2)-l_k(1,2)*l_k(2,1)) and
+        numberp(det(l_k))) then
+ <<write "Is ",-l_k(1,1),">0 and ",
+      l_k(1,1)*l_k(2,2)-l_k(1,2)*l_k(2,1),">0 and ",
+     -det(l_k),">0 ? (y/n) and press <RETURN>";
+   he:=symbolic read();
+   if he=y then <<help:=1;lie4so3()>> else lie4so21()>> else
+ if (-l_k(1,1)>0 and l_k(1,1)*l_k(2,2)-l_k(1,2)*l_k(2,1)>0 and
+     -det(l_k)>0) then
+  <<help:=1;lie4so3()>> else lie4so21();
+ liemat:=mat((l_a(1,1),l_a(1,2),l_a(1,3),0),(l_a(2,1),l_a(2,2),
+          l_a(2,3),0), (l_a(3,1),l_a(3,2),l_a(3,3),0),(0,0,0,1))*liemat;
+ bb:=1/liemat;
+ al:=for j:=1:4 sum for k:=1:4 sum for l:=1:4 sum
+         liemat(1,j)*liemat(4,k)*cc(j,k,l)*bb(l,2);
+ be:=for j:=1:4 sum for k:=1:4 sum for l:=1:4 sum
+         liemat(1,j)*liemat(4,k)*cc(j,k,l)*bb(l,3);
+ ga:=for j:=1:4 sum for k:=1:4 sum for l:=1:4 sum
+         liemat(2,j)*liemat(4,k)*cc(j,k,l)*bb(l,3);
+ if help=1 then
+  liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,1,0),(ga,-be,al,1))*liemat else
+  liemat:=mat((1,0,0,0),(0,1,0,0),(0,0,1,0),(ga,-be,-al,1))*liemat;
+ if help=1 then
   <<if symbolic !*tr_lie then
-    WRITE "[W,X]=Y, [W,Y]=-X, [X,Y]=W";
-    lie_class:={liealg(4),comtab(21)}>> ELSE
+    write "[W,X]=Y, [W,Y]=-X, [X,Y]=W";
+    lie_class:={liealg(4),comtab(21)}>> else
   <<if symbolic !*tr_lie then
-    WRITE "[W,X]=Y, [W,Y]=X, [X,Y]=W";
+    write "[W,X]=Y, [W,Y]=X, [X,Y]=W";
     lie_class:={liealg(4),comtab(22)}>>;
- CLEAR l_K,l_A
-END;
+ clear l_k,l_a
+end;
 
 algebraic procedure lie4so3();
-BEGIN SCALAR S,TT,Q,R,ALPHA;
- S:=FF(2,2)/ABS(FF(2,2));
- TT:=ABS(FF(1,2)**2+FF(1,3)*FF(2,2));
- R:=FF(1,1)-FF(1,2)*FF(2,1)/FF(2,2);
- ALPHA:=TT*(-R*R-((FF(2,1)/FF(2,2))**2+FF(3,1)/FF(2,2))*TT);
- Q:=1/SQRT(ALPHA);
- l_A(1,1):=1/(S*SQRT(TT));l_A(1,2):=l_A(1,3):=l_A(2,2):=0;l_A(2,1):=Q*R;
- l_A(2,3):=-Q*TT/FF(2,2);l_A(3,1):=-Q*S*SQRT(TT)*FF(2,1)/FF(2,2);
- l_A(3,2):=-Q*S*SQRT(TT);l_A(3,3):=Q*S*SQRT(TT)*FF(1,2)/FF(2,2)
-END;
+begin scalar s,tt,q,r,alpha;
+ s:=ff(2,2)/abs(ff(2,2));
+ tt:=abs(ff(1,2)**2+ff(1,3)*ff(2,2));
+ r:=ff(1,1)-ff(1,2)*ff(2,1)/ff(2,2);
+ alpha:=tt*(-r*r-((ff(2,1)/ff(2,2))**2+ff(3,1)/ff(2,2))*tt);
+ q:=1/sqrt(alpha);
+ l_a(1,1):=1/(s*sqrt(tt));l_a(1,2):=l_a(1,3):=l_a(2,2):=0;l_a(2,1):=q*r;
+ l_a(2,3):=-q*tt/ff(2,2);l_a(3,1):=-q*s*sqrt(tt)*ff(2,1)/ff(2,2);
+ l_a(3,2):=-q*s*sqrt(tt);l_a(3,3):=q*s*sqrt(tt)*ff(1,2)/ff(2,2)
+end;
 
 algebraic procedure lie4so21();
-BEGIN SCALAR GAM,EPS,S,TT,Q,R,ALPHA;
-      MATRIX l_G(3,3);
- l_A:=MAT((1,0,0),(0,1,0),(0,0,1));
- IF FF(2,2)=0 THEN
-  IF FF(1,3) NEQ 0 THEN <<l_A:=MAT((1,0,0),(0,0,1),(0,1,0));
-   l_G(1,1):=FF(2,1);l_G(1,2):=FF(2,3);l_G(1,3):=FF(2,2);
-   l_G(2,1):=FF(1,1);l_G(2,2):=FF(1,3);l_G(2,3):=FF(1,2);
-   l_G(3,1):=-FF(3,1);l_G(3,2):=-FF(3,3);l_G(3,3):=-FF(3,2);FF:=l_G>>
-    ELSE
-   IF FF(3,1) NEQ 0 THEN <<l_A:=MAT((0,1,0),(1,0,0),(0,0,1));
-    l_G(1,1):=-FF(1,2);l_G(1,2):=-FF(1,1);l_G(1,3):=-FF(1,3);
-    l_G(2,1):=FF(3,2);l_G(2,2):=FF(3,1);l_G(2,3):=FF(3,3);
-    l_G(3,1):=FF(2,2);l_G(3,2):=FF(2,1);l_G(3,3):=FF(2,3);FF:=l_G>> ELSE
-                         <<l_A:=MAT((1,0,1),(1,0,0),(0,1,0));
-    l_G(1,1):=-FF(2,3);l_G(1,2):=FF(2,3)-FF(2,1);l_G(1,3):=0;
-    l_G(2,1):=-FF(3,3);l_G(2,2):=2*FF(1,1);l_G(2,3):=FF(1,2)-FF(3,2);
-    l_G(3,1):=0;l_G(3,2):=FF(1,1);l_G(3,3):=FF(1,2);FF:=l_G>>;
- IF FF(1,2)**2+FF(1,3)*FF(2,2)=0 THEN
-  <<GAM:=-FF(1,2)/FF(2,2);EPS:=FF(1,1)-FF(1,2)*FF(2,1)/FF(2,2);
-  IF 1/4*(FF(3,2)**2+FF(3,1)*FF(2,2))-EPS*FF(2,2)/2=0 THEN
-   <<l_A:=MAT((0,0,1),(0,2/EPS,2*GAM/EPS),(1,0,0))*l_A;
-   l_G(1,1):=2*GAM*FF(3,2)/EPS-FF(3,3);
-   l_G(1,2):=-FF(3,2);l_G(1,3):=-2*FF(3,1)/EPS;
-   l_G(2,1):=0;l_G(2,2):=-EPS*FF(2,2)/2;l_G(2,3):=-FF(2,1);
-   l_G(3,1):=l_G(3,2):=0;l_G(3,3):=-2;FF:=l_G>> ELSE
-   <<l_A:=MAT((1/2,0,1/2),(0,1/EPS,GAM/EPS),(-1/2,0,1/2))*l_A;
-   l_G(1,1):=-FF(3,1)/(2*EPS);l_G(1,2):=-FF(3,2)/2;
-   l_G(1,3):=FF(3,1)/(2*EPS)-1;
-   l_G(2,1):=FF(2,1)/2;l_G(2,2):=FF(2,2)*EPS/2;
-   l_G(2,3):=-FF(2,1)/2;l_G(3,1):=FF(3,1)/(2*EPS)+1;
-   l_G(3,2):=FF(3,2)/2;l_G(3,3):=-FF(3,1)/(2*EPS);FF:=l_G>>>>;
- IF NOT(NUMBERP(FF(1,2)**2+FF(1,3)*FF(2,2))) THEN
- <<WRITE "Is ",FF(1,2)**2+FF(1,3)*FF(2,2),
+begin scalar gam,eps,s,tt,q,r,alpha;
+      matrix l_g(3,3);
+ l_a:=mat((1,0,0),(0,1,0),(0,0,1));
+ if ff(2,2)=0 then
+  if ff(1,3) neq 0 then <<l_a:=mat((1,0,0),(0,0,1),(0,1,0));
+   l_g(1,1):=ff(2,1);l_g(1,2):=ff(2,3);l_g(1,3):=ff(2,2);
+   l_g(2,1):=ff(1,1);l_g(2,2):=ff(1,3);l_g(2,3):=ff(1,2);
+   l_g(3,1):=-ff(3,1);l_g(3,2):=-ff(3,3);l_g(3,3):=-ff(3,2);ff:=l_g>>
+    else
+   if ff(3,1) neq 0 then <<l_a:=mat((0,1,0),(1,0,0),(0,0,1));
+    l_g(1,1):=-ff(1,2);l_g(1,2):=-ff(1,1);l_g(1,3):=-ff(1,3);
+    l_g(2,1):=ff(3,2);l_g(2,2):=ff(3,1);l_g(2,3):=ff(3,3);
+    l_g(3,1):=ff(2,2);l_g(3,2):=ff(2,1);l_g(3,3):=ff(2,3);ff:=l_g>> else
+                         <<l_a:=mat((1,0,1),(1,0,0),(0,1,0));
+    l_g(1,1):=-ff(2,3);l_g(1,2):=ff(2,3)-ff(2,1);l_g(1,3):=0;
+    l_g(2,1):=-ff(3,3);l_g(2,2):=2*ff(1,1);l_g(2,3):=ff(1,2)-ff(3,2);
+    l_g(3,1):=0;l_g(3,2):=ff(1,1);l_g(3,3):=ff(1,2);ff:=l_g>>;
+ if ff(1,2)**2+ff(1,3)*ff(2,2)=0 then
+  <<gam:=-ff(1,2)/ff(2,2);eps:=ff(1,1)-ff(1,2)*ff(2,1)/ff(2,2);
+  if 1/4*(ff(3,2)**2+ff(3,1)*ff(2,2))-eps*ff(2,2)/2=0 then
+   <<l_a:=mat((0,0,1),(0,2/eps,2*gam/eps),(1,0,0))*l_a;
+   l_g(1,1):=2*gam*ff(3,2)/eps-ff(3,3);
+   l_g(1,2):=-ff(3,2);l_g(1,3):=-2*ff(3,1)/eps;
+   l_g(2,1):=0;l_g(2,2):=-eps*ff(2,2)/2;l_g(2,3):=-ff(2,1);
+   l_g(3,1):=l_g(3,2):=0;l_g(3,3):=-2;ff:=l_g>> else
+   <<l_a:=mat((1/2,0,1/2),(0,1/eps,gam/eps),(-1/2,0,1/2))*l_a;
+   l_g(1,1):=-ff(3,1)/(2*eps);l_g(1,2):=-ff(3,2)/2;
+   l_g(1,3):=ff(3,1)/(2*eps)-1;
+   l_g(2,1):=ff(2,1)/2;l_g(2,2):=ff(2,2)*eps/2;
+   l_g(2,3):=-ff(2,1)/2;l_g(3,1):=ff(3,1)/(2*eps)+1;
+   l_g(3,2):=ff(3,2)/2;l_g(3,3):=-ff(3,1)/(2*eps);ff:=l_g>>>>;
+ if not(numberp(ff(1,2)**2+ff(1,3)*ff(2,2))) then
+ <<write "Is ",ff(1,2)**2+ff(1,3)*ff(2,2),
          "<0 ? (y/n) and press <RETURN>";
-   HE:=SYMBOLIC READ();
-   IF HE=y THEN
-   <<S:=FF(2,2)/ABS(FF(2,2));
-  TT:=ABS(FF(1,2)**2+FF(1,3)*FF(2,2));
-  R:=FF(1,1)-FF(1,2)*FF(2,1)/FF(2,2);
-  ALPHA:=TT*(-R*R-((FF(2,1)/FF(2,2))**2+FF(3,1)/FF(2,2))*TT);
-  Q:=1/SQRT(ABS(ALPHA));
-  l_G(1,1):=-Q*S*SQRT(TT)*FF(2,1)/FF(2,2);
-  l_G(1,2):=-Q*S*SQRT(TT);l_G(1,3):=Q*S*SQRT(TT)*FF(1,2)/FF(2,2);
-  l_G(2,1):=1/(S*SQRT(TT));l_G(2,2):=l_G(2,3):=0;
-  l_G(3,1):=Q*R;l_G(3,2):=0;l_G(3,3):=-Q*TT/FF(2,2);l_A:=l_G*l_A>> ELSE
-  <<S:=FF(2,2)/ABS(FF(2,2));
-  TT:=FF(1,2)**2+FF(1,3)*FF(2,2);
-  R:=FF(1,1)-FF(1,2)*FF(2,1)/FF(2,2);
-  ALPHA:=TT*(R*R-((FF(2,1)/FF(2,2))**2+FF(3,1)/FF(2,2))*TT);
-  Q:=1/SQRT(ABS(ALPHA));
-  IF NOT(NUMBERP(ALPHA)) THEN
-  <<WRITE "Is ",ALPHA,">0 ? (y/n) and press <RETURN>";
-    HE:=SYMBOLIC READ();
-    IF HE =y THEN
-    <<l_G(1,1):=1/(S*SQRT(TT));l_G(1,2):=l_G(1,3):=0;
-   l_G(2,1):=Q*R;l_G(2,2):=0;l_G(2,3):=Q*TT/FF(2,2);
-   l_G(3,1):=Q*S*SQRT(TT)*FF(2,1)/FF(2,2);l_G(3,2):=Q*S*SQRT(TT);
-   l_G(3,3):=-Q*S*SQRT(TT)*FF(1,2)/FF(2,2);l_A:=l_G*l_A>> ELSE
-   <<l_G(1,1):=1/(S*SQRT(TT));l_G(1,2):=l_G(1,3):=0;
-   l_G(2,1):=Q*S*SQRT(TT)*FF(2,1)/FF(2,2);l_G(2,2):=Q*S*SQRT(TT);
-   l_G(2,3):=-Q*S*SQRT(TT)*FF(1,2)/FF(2,2);
-   l_G(3,1):=Q*R;l_G(3,2):=0;l_G(3,3):=Q*TT/FF(2,2);
-   l_A:=l_G*l_A>>>> ELSE
-  IF ALPHA>0 THEN
-   <<l_G(1,1):=1/(S*SQRT(TT));l_G(1,2):=l_G(1,3):=0;
-   l_G(2,1):=Q*R;l_G(2,2):=0;l_G(2,3):=Q*TT/FF(2,2);
-   l_G(3,1):=Q*S*SQRT(TT)*FF(2,1)/FF(2,2);l_G(3,2):=Q*S*SQRT(TT);
-   l_G(3,3):=-Q*S*SQRT(TT)*FF(1,2)/FF(2,2);l_A:=l_G*l_A>> ELSE
-   <<l_G(1,1):=1/(S*SQRT(TT));l_G(1,2):=l_G(1,3):=0;
-   l_G(2,1):=Q*S*SQRT(TT)*FF(2,1)/FF(2,2);l_G(2,2):=Q*S*SQRT(TT);
-   l_G(2,3):=-Q*S*SQRT(TT)*FF(1,2)/FF(2,2);
-   l_G(3,1):=Q*R;l_G(3,2):=0;l_G(3,3):=Q*TT/FF(2,2);l_A:=l_G*l_A>>
->>>> ELSE
- IF FF(1,2)**2+FF(1,3)*FF(2,2)<0 THEN
-  <<S:=FF(2,2)/ABS(FF(2,2));
-  TT:=ABS(FF(1,2)**2+FF(1,3)*FF(2,2));
-  R:=FF(1,1)-FF(1,2)*FF(2,1)/FF(2,2);
-  ALPHA:=TT*(-R*R-((FF(2,1)/FF(2,2))**2+FF(3,1)/FF(2,2))*TT);
-  Q:=1/SQRT(ABS(ALPHA));
-  l_G(1,1):=-Q*S*SQRT(TT)*FF(2,1)/FF(2,2);
-  l_G(1,2):=-Q*S*SQRT(TT);l_G(1,3):=Q*S*SQRT(TT)*FF(1,2)/FF(2,2);
-  l_G(2,1):=1/(S*SQRT(TT));l_G(2,2):=l_G(2,3):=0;
-  l_G(3,1):=Q*R;l_G(3,2):=0;l_G(3,3):=-Q*TT/FF(2,2);
-  l_A:=l_G*l_A>> ELSE
-  <<S:=FF(2,2)/ABS(FF(2,2));
-  TT:=FF(1,2)**2+FF(1,3)*FF(2,2);
-  R:=FF(1,1)-FF(1,2)*FF(2,1)/FF(2,2);
-  ALPHA:=TT*(R*R-((FF(2,1)/FF(2,2))**2+FF(3,1)/FF(2,2))*TT);
-  Q:=1/SQRT(ABS(ALPHA));
-  IF NOT(NUMBERP(ALPHA)) THEN
-  <<WRITE "Is ",ALPHA,">0 ? (y/n) and press <RETURN>";
-    HE:=SYMBOLIC READ();
-    IF HE =y THEN
-    <<l_G(1,1):=1/(S*SQRT(TT));l_G(1,2):=l_G(1,3):=0;
-   l_G(2,1):=Q*R;l_G(2,2):=0;l_G(2,3):=Q*TT/FF(2,2);
-   l_G(3,1):=Q*S*SQRT(TT)*FF(2,1)/FF(2,2);l_G(3,2):=Q*S*SQRT(TT);
-   l_G(3,3):=-Q*S*SQRT(TT)*FF(1,2)/FF(2,2);l_A:=l_G*l_A>> ELSE
-   <<l_G(1,1):=1/(S*SQRT(TT));l_G(1,2):=l_G(1,3):=0;
-   l_G(2,1):=Q*S*SQRT(TT)*FF(2,1)/FF(2,2);l_G(2,2):=Q*S*SQRT(TT);
-   l_G(2,3):=-Q*S*SQRT(TT)*FF(1,2)/FF(2,2);
-   l_G(3,1):=Q*R;l_G(3,2):=0;l_G(3,3):=Q*TT/FF(2,2);
-   l_A:=l_G*l_A>>>> ELSE
-  IF ALPHA>0 THEN
-   <<l_G(1,1):=1/(S*SQRT(TT));l_G(1,2):=l_G(1,3):=0;
-   l_G(2,1):=Q*R;l_G(2,2):=0;l_G(2,3):=Q*TT/FF(2,2);
-   l_G(3,1):=Q*S*SQRT(TT)*FF(2,1)/FF(2,2);l_G(3,2):=Q*S*SQRT(TT);
-   l_G(3,3):=-Q*S*SQRT(TT)*FF(1,2)/FF(2,2);l_A:=l_G*l_A>> ELSE
-   <<l_G(1,1):=1/(S*SQRT(TT));l_G(1,2):=l_G(1,3):=0;
-   l_G(2,1):=Q*S*SQRT(TT)*FF(2,1)/FF(2,2);l_G(2,2):=Q*S*SQRT(TT);
-   l_G(2,3):=-Q*S*SQRT(TT)*FF(1,2)/FF(2,2);
-   l_G(3,1):=Q*R;l_G(3,2):=0;l_G(3,3):=Q*TT/FF(2,2);l_A:=l_G*l_A>>>>;
- CLEAR l_G
-END;
+   he:=symbolic read();
+   if he=y then
+   <<s:=ff(2,2)/abs(ff(2,2));
+  tt:=abs(ff(1,2)**2+ff(1,3)*ff(2,2));
+  r:=ff(1,1)-ff(1,2)*ff(2,1)/ff(2,2);
+  alpha:=tt*(-r*r-((ff(2,1)/ff(2,2))**2+ff(3,1)/ff(2,2))*tt);
+  q:=1/sqrt(abs(alpha));
+  l_g(1,1):=-q*s*sqrt(tt)*ff(2,1)/ff(2,2);
+  l_g(1,2):=-q*s*sqrt(tt);l_g(1,3):=q*s*sqrt(tt)*ff(1,2)/ff(2,2);
+  l_g(2,1):=1/(s*sqrt(tt));l_g(2,2):=l_g(2,3):=0;
+  l_g(3,1):=q*r;l_g(3,2):=0;l_g(3,3):=-q*tt/ff(2,2);l_a:=l_g*l_a>> else
+  <<s:=ff(2,2)/abs(ff(2,2));
+  tt:=ff(1,2)**2+ff(1,3)*ff(2,2);
+  r:=ff(1,1)-ff(1,2)*ff(2,1)/ff(2,2);
+  alpha:=tt*(r*r-((ff(2,1)/ff(2,2))**2+ff(3,1)/ff(2,2))*tt);
+  q:=1/sqrt(abs(alpha));
+  if not(numberp(alpha)) then
+  <<write "Is ",alpha,">0 ? (y/n) and press <RETURN>";
+    he:=symbolic read();
+    if he =y then
+    <<l_g(1,1):=1/(s*sqrt(tt));l_g(1,2):=l_g(1,3):=0;
+   l_g(2,1):=q*r;l_g(2,2):=0;l_g(2,3):=q*tt/ff(2,2);
+   l_g(3,1):=q*s*sqrt(tt)*ff(2,1)/ff(2,2);l_g(3,2):=q*s*sqrt(tt);
+   l_g(3,3):=-q*s*sqrt(tt)*ff(1,2)/ff(2,2);l_a:=l_g*l_a>> else
+   <<l_g(1,1):=1/(s*sqrt(tt));l_g(1,2):=l_g(1,3):=0;
+   l_g(2,1):=q*s*sqrt(tt)*ff(2,1)/ff(2,2);l_g(2,2):=q*s*sqrt(tt);
+   l_g(2,3):=-q*s*sqrt(tt)*ff(1,2)/ff(2,2);
+   l_g(3,1):=q*r;l_g(3,2):=0;l_g(3,3):=q*tt/ff(2,2);
+   l_a:=l_g*l_a>>>> else
+  if alpha>0 then
+   <<l_g(1,1):=1/(s*sqrt(tt));l_g(1,2):=l_g(1,3):=0;
+   l_g(2,1):=q*r;l_g(2,2):=0;l_g(2,3):=q*tt/ff(2,2);
+   l_g(3,1):=q*s*sqrt(tt)*ff(2,1)/ff(2,2);l_g(3,2):=q*s*sqrt(tt);
+   l_g(3,3):=-q*s*sqrt(tt)*ff(1,2)/ff(2,2);l_a:=l_g*l_a>> else
+   <<l_g(1,1):=1/(s*sqrt(tt));l_g(1,2):=l_g(1,3):=0;
+   l_g(2,1):=q*s*sqrt(tt)*ff(2,1)/ff(2,2);l_g(2,2):=q*s*sqrt(tt);
+   l_g(2,3):=-q*s*sqrt(tt)*ff(1,2)/ff(2,2);
+   l_g(3,1):=q*r;l_g(3,2):=0;l_g(3,3):=q*tt/ff(2,2);l_a:=l_g*l_a>>
+>>>> else
+ if ff(1,2)**2+ff(1,3)*ff(2,2)<0 then
+  <<s:=ff(2,2)/abs(ff(2,2));
+  tt:=abs(ff(1,2)**2+ff(1,3)*ff(2,2));
+  r:=ff(1,1)-ff(1,2)*ff(2,1)/ff(2,2);
+  alpha:=tt*(-r*r-((ff(2,1)/ff(2,2))**2+ff(3,1)/ff(2,2))*tt);
+  q:=1/sqrt(abs(alpha));
+  l_g(1,1):=-q*s*sqrt(tt)*ff(2,1)/ff(2,2);
+  l_g(1,2):=-q*s*sqrt(tt);l_g(1,3):=q*s*sqrt(tt)*ff(1,2)/ff(2,2);
+  l_g(2,1):=1/(s*sqrt(tt));l_g(2,2):=l_g(2,3):=0;
+  l_g(3,1):=q*r;l_g(3,2):=0;l_g(3,3):=-q*tt/ff(2,2);
+  l_a:=l_g*l_a>> else
+  <<s:=ff(2,2)/abs(ff(2,2));
+  tt:=ff(1,2)**2+ff(1,3)*ff(2,2);
+  r:=ff(1,1)-ff(1,2)*ff(2,1)/ff(2,2);
+  alpha:=tt*(r*r-((ff(2,1)/ff(2,2))**2+ff(3,1)/ff(2,2))*tt);
+  q:=1/sqrt(abs(alpha));
+  if not(numberp(alpha)) then
+  <<write "Is ",alpha,">0 ? (y/n) and press <RETURN>";
+    he:=symbolic read();
+    if he =y then
+    <<l_g(1,1):=1/(s*sqrt(tt));l_g(1,2):=l_g(1,3):=0;
+   l_g(2,1):=q*r;l_g(2,2):=0;l_g(2,3):=q*tt/ff(2,2);
+   l_g(3,1):=q*s*sqrt(tt)*ff(2,1)/ff(2,2);l_g(3,2):=q*s*sqrt(tt);
+   l_g(3,3):=-q*s*sqrt(tt)*ff(1,2)/ff(2,2);l_a:=l_g*l_a>> else
+   <<l_g(1,1):=1/(s*sqrt(tt));l_g(1,2):=l_g(1,3):=0;
+   l_g(2,1):=q*s*sqrt(tt)*ff(2,1)/ff(2,2);l_g(2,2):=q*s*sqrt(tt);
+   l_g(2,3):=-q*s*sqrt(tt)*ff(1,2)/ff(2,2);
+   l_g(3,1):=q*r;l_g(3,2):=0;l_g(3,3):=q*tt/ff(2,2);
+   l_a:=l_g*l_a>>>> else
+  if alpha>0 then
+   <<l_g(1,1):=1/(s*sqrt(tt));l_g(1,2):=l_g(1,3):=0;
+   l_g(2,1):=q*r;l_g(2,2):=0;l_g(2,3):=q*tt/ff(2,2);
+   l_g(3,1):=q*s*sqrt(tt)*ff(2,1)/ff(2,2);l_g(3,2):=q*s*sqrt(tt);
+   l_g(3,3):=-q*s*sqrt(tt)*ff(1,2)/ff(2,2);l_a:=l_g*l_a>> else
+   <<l_g(1,1):=1/(s*sqrt(tt));l_g(1,2):=l_g(1,3):=0;
+   l_g(2,1):=q*s*sqrt(tt)*ff(2,1)/ff(2,2);l_g(2,2):=q*s*sqrt(tt);
+   l_g(2,3):=-q*s*sqrt(tt)*ff(1,2)/ff(2,2);
+   l_g(3,1):=q*r;l_g(3,2):=0;l_g(3,3):=q*tt/ff(2,2);l_a:=l_g*l_a>>>>;
+ clear l_g
+end;
 
 endmodule;
 
 end;
+

@@ -1,4 +1,4 @@
-module TaySimp;
+module taysimp;
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -42,22 +42,22 @@ imports
         reversip, sfp, simp, simp!*, tc, to, tpow,
 
 % from the header module:
-        !*q2TayExp, !*tay2f, !*tay2q, !*tayexp2q, comp!.tp!.!-p,
-        cst!-taylor!*, has!-Taylor!*, find!-non!-zero,
-        get!-degreelist, has!-TayVars, invert!-powerlist,
-        make!-cst!-coefflis, make!-cst!-powerlist, make!-Taylor!*,
-        prune!-coefflist, resimptaylor, TayCfPl, TayCfSq,
-        TayCoeffList, TayFlags, TayGetCoeff, Taylor!-kernel!-sq!-p,
-        Taylor!*p, Taylor!:, TayMakeCoeff, taymultcoeffs, TayOrig,
-        TayTemplate, TayTpElNext, TayTpElPoint, TayTpElVars,
-        TpNextList,
+        !*q2tayexp, !*tay2f, !*tay2q, !*TayExp2q, comp!.tp!.!-p,
+        cst!-taylor!*, has!-taylor!*, find!-non!-zero,
+        get!-degreelist, has!-tayvars, invert!-powerlist,
+        make!-cst!-coefflis, make!-cst!-powerlist, make!-taylor!*,
+        prune!-coefflist, resimptaylor, taycfpl, taycfsq,
+        taycoefflist, tayflags, taygetcoeff, taylor!-kernel!-sq!-p,
+        taylor!*p, taylor!:, taymakecoeff, taymultcoeffs, tayorig,
+        taytemplate, taytpelnext, taytpelpoint, taytpelvars,
+        tpnextlist,
 
 % from module Tayintro:
-        confusion, Taylor!-error, Taylor!-error!*,
+        confusion, taylor!-error, taylor!-error!*,
 
 % from module Tayutils:
-        addto!-all!-TayTpElOrders, get!-cst!-coeff, smallest!-increment,
-        Taylor!*!-nzconstantp, Taylor!*!-zerop,
+        addto!-all!-taytpelorders, get!-cst!-coeff, smallest!-increment,
+        taylor!*!-nzconstantp, taylor!*!-zerop,
 
 % from module Tayinterf:
         taylorexpand, taylorexpand!-sf,
@@ -70,7 +70,7 @@ imports
 
 fluid '(!*taylorautoexpand !*taylorkeeporiginal)$
 
-comment The procedures in this module provide the higher taylor
+COMMENT The procedures in this module provide the higher taylor
         manipulation machinery.  Given any s.q. (s.f.,...) they
         return the equivalent Taylor kernel (disguised as a s.q.)
         if the argument contains a Taylor kernel and everything
@@ -89,23 +89,23 @@ symbolic procedure taysimpsq u;
   %
   begin scalar nm,dd;
     dd := taysimpf denr u;
-    if null numr dd then Taylor!-error('zero!-denom,'taysimpsq)
-     else if Taylor!-kernel!-sq!-p dd
+    if null numr dd then taylor!-error('zero!-denom,'taysimpsq)
+     else if taylor!-kernel!-sq!-p dd
       then return taysimpf multf(numr u,!*tay2f invtaylor mvar numr dd);
     nm := taysimpf numr u;
     return
-    if Taylor!-kernel!-sq!-p nm
-      then if not has!-TayVars(mvar numr nm,dd)
+    if taylor!-kernel!-sq!-p nm
+      then if not has!-tayvars(mvar numr nm,dd)
              then !*tay2q resimptaylor
                             multtaylorsq(mvar numr nm,invsq dd)
-            else if Taylor!*!-nzconstantp mvar numr nm
+            else if taylor!*!-nzconstantp mvar numr nm
              then quotsq(get!-cst!-coeff mvar numr nm,dd)
-            else if null !*taylorautoexpand or has!-Taylor!* dd
+            else if null !*taylorautoexpand or has!-taylor!* dd
              then quotsq(nm,dd)
             else taysimpsq!*
                    quottaylor!-as!-sq(
                      nm,
-                     taylorexpand(dd,TayTemplate mvar numr nm))
+                     taylorexpand(dd,taytemplate mvar numr nm))
      else quotsq(nm,dd)
   end;
 
@@ -136,10 +136,10 @@ symbolic procedure taysimpf u;
       % A domain element can never be a Taylor kernel.
       %
       <<if domainp u then notay := addsq(!*f2q u,notay)
-         else if not has!-Taylor!* car u
+         else if not has!-taylor!* car u
           then notay := addsq(notay,!*t2q car u)
          else <<x := taysimpt car u;
-                if Taylor!-kernel!-sq!-p x
+                if taylor!-kernel!-sq!-p x
                   then if null tay then tay := mvar numr x
                     else if comp!.tp!.!-p(tay,mvar numr x)
                            then tay := addtaylor(tay,mvar numr x)
@@ -157,26 +157,26 @@ symbolic procedure taysimpf u;
     %
     % We first make sure that it is not actually a constant.
     %
-    if not null tay and not null TayOrig tay and null numr TayOrig tay
+    if not null tay and not null tayorig tay and null numr tayorig tay
       then return notay
     %
     % If tay is nil, return the non-taylor parts.
     %
      else if null numr notay and not null tay then return !*tay2q tay
-     else if null tay or Taylor!*!-zerop tay then return notay;
+     else if null tay or taylor!*!-zerop tay then return notay;
     %
     % Otherwise the non-taylor parts (if the are non-nil)
     % must be expanded if !*taylorautoexpand is non-nil.
     % The only exception are terms that do not contain
     % any of the Taylor variables: these are always expanded.
     %
-    if Taylor!*!-nzconstantp tay and not has!-Taylor!* notay
+    if taylor!*!-nzconstantp tay and not has!-taylor!* notay
       then return addsq(get!-cst!-coeff tay,notay)
-     else if null !*taylorautoexpand and has!-TayVars(tay,notay)
+     else if null !*taylorautoexpand and has!-tayvars(tay,notay)
       then return addsq(!*tay2q tay,notay);
     if flg then return addsq(!*tay2q tay,notay)
      else <<
-       notay := taylorexpand(notay,TayTemplate tay);
+       notay := taylorexpand(notay,taytemplate tay);
        return taysimpsq!* addtaylor!-as!-sq(notay,!*tay2q tay)>>
   end;
 
@@ -204,13 +204,13 @@ symbolic procedure taysimpt u;
     % Remark: the call to SMEMQLP checks if rest contains one of
     %         the Taylor variables if it is not a Taylor kernel.
     %
-    return if not has!-Taylor!* pow
-      then if Taylor!-kernel!-sq!-p rest
+    return if not has!-taylor!* pow
+      then if taylor!-kernel!-sq!-p rest
              then multpowerintotaylor(pow,mvar numr rest)
             else multpq(pow,rest)
      else <<pow := taysimpp pow;
-            if not has!-Taylor!* rest and Taylor!-kernel!-sq!-p pow
-              then if has!-TayVars(mvar numr pow,rest)
+            if not has!-taylor!* rest and taylor!-kernel!-sq!-p pow
+              then if has!-tayvars(mvar numr pow,rest)
                  then if !*taylorautoexpand
                    then taysimpsq!* multtaylor!-as!-sq(pow,
 %                          taylorexpand(rest,TayTemplate mvar numr pow))
@@ -220,7 +220,7 @@ symbolic procedure taysimpt u;
 % as pow
 %
                           taylorexpand!-sf(tc u,
-                                           TayTemplate mvar numr pow,
+                                           taytemplate mvar numr pow,
                                            nil))
                   else multsq(pow,rest)
                 else !*tay2q multtaylorsq(mvar numr pow,rest)
@@ -237,7 +237,7 @@ symbolic procedure multpowerintotaylor (p, tk);
   % Remark: the call to SMEMQLP checks if p contains one of
   %         the Taylor variables.
   %
-  if not has!-TayVars(tk,p)
+  if not has!-tayvars(tk,p)
     then !*tay2q multtaylorsq(tk,!*p2q p)
    else if !*taylorautoexpand
 %    then taysimpsq!*
@@ -248,8 +248,8 @@ symbolic procedure multpowerintotaylor (p, tk);
 %
     then taysimpsq!*
            multtaylor!-as!-sq(!*tay2q tk,
-                     taylorexpand!-sf(!*p2f p,TayTemplate tk,nil))
-   else if Taylor!*!-nzconstantp tk
+                     taylorexpand!-sf(!*p2f p,taytemplate tk,nil))
+   else if taylor!*!-nzconstantp tk
     then multpq(p,get!-cst!-coeff tk)
    else multpq(p,!*tay2q tk);
 
@@ -288,7 +288,7 @@ symbolic procedure taysimpp u;
    %  to 1 by the standard simplifier
    %
    else if not fixp pdeg u or pdeg u = 0 then confusion 'taysimpp
-   else if not null TayOrig car u and null numr TayOrig car u
+   else if not null tayorig car u and null numr tayorig car u
     then (nil ./ 1)
    else !*tay2q
      if pdeg u = 1 then car u else expttayi(car u,cdr u)$
@@ -304,7 +304,7 @@ symbolic procedure taysimpkernel u;
     u := simp!* u;
     if not kernp u then return u
      else << x := mvar numr u;
-             if atom x or Taylor!*p x then return u;
+             if atom x or taylor!*p x then return u;
              fn := get (car x, 'taylorsimpfn);
              return if null fn then u
                      else apply1 (fn, x)>>
@@ -318,7 +318,7 @@ symbolic procedure expttayi(u,i);
   %
   begin scalar v,flg;
     if i<0 then <<i := -i; flg := t>>;
-    v := if evenp i then cst!-Taylor!*(1 ./ 1,TayTemplate u)
+    v := if evenp i then cst!-taylor!*(1 ./ 1,taytemplate u)
           else <<i := i - 1; u>>;
     while (i:=i/2)>0 do <<u := multtaylor(u,u);
                           if not evenp i then v := multtaylor(v,u)>>;
@@ -326,10 +326,10 @@ symbolic procedure expttayi(u,i);
   end;
 
 
-comment non-integer powers of Taylor kernels;
+COMMENT non-integer powers of Taylor kernels;
 
 
-comment The implementation of expttayrat follows the algorithm
+COMMENT The implementation of expttayrat follows the algorithm
         quoted by Knuth in the second volume of `The Art of
         Computer Programming', extended to the case of series in
         more than one variable.
@@ -387,7 +387,7 @@ symbolic procedure expttayrat(tay,rat);
   % value is tay ** rat
   % algorithm as quoted by Knuth
   %
-  Taylor!:
+  taylor!:
   begin scalar clist,tc,tp;
     %
     % First of all we have to find out if we can raise the leading
@@ -397,30 +397,30 @@ symbolic procedure expttayrat(tay,rat);
     % This guarantees that the resulting Taylor kernel starts with
     %  coefficient 1.
     %
-    if not Taylor!*p tay then return simp!* {'expt,tay,mk!*sq rat};
-    tc := prune!-coefflist TayCoeffList tay;
-    tp := TayTemplate tay;
+    if not taylor!*p tay then return simp!* {'expt,tay,mk!*sq rat};
+    tc := prune!-coefflist taycoefflist tay;
+    tp := taytemplate tay;
     %
     % Find first non-zero coefficient.
     %
     if null tc
       then if minusp numr rat
-             then Taylor!-error!*('not!-a!-unit,'expttayrat)
+             then taylor!-error!*('not!-a!-unit,'expttayrat)
             else <<tp := for each tpel in tp collect begin scalar w;
-                           w := TayTpElNext tpel * !*q2TayExp rat;
-                           return {TayTpElVars tpel,
-                                   TayTpElPoint tpel,
+                           w := taytpelnext tpel * !*q2tayexp rat;
+                           return {taytpelvars tpel,
+                                   taytpelpoint tpel,
                                    w - mkrn(1,denr rat),
                                    w};
                            end;
                    clist := make!-cst!-coefflis(nil ./ 1,tp)>>
      else begin scalar c0,l,l1;
        c0 := car tc;
-       l1 := for each ll in TayCfPl c0 collect
-               for each p in ll collect (p * !*q2TayExp rat);
-       l := invert!-powerlist TayCfPl c0;
-       tp := addto!-all!-TayTpElOrders(tp,get!-degreelist l);
-       l := TayMakeCoeff(l,invsq TayCfSq c0);
+       l1 := for each ll in taycfpl c0 collect
+               for each p in ll collect (p * !*q2tayexp rat);
+       l := invert!-powerlist taycfpl c0;
+       tp := addto!-all!-taytpelorders(tp,get!-degreelist l);
+       l := taymakecoeff(l,invsq taycfsq c0);
        %
        % We divide the rest of the kernel (without the leading term)
        %  by the leading term.
@@ -431,36 +431,36 @@ symbolic procedure expttayrat(tay,rat);
        % Next we multiply the resulting Taylor kernel by the leading
        %  coefficient raised to the power rat.
        %
-       c0 := TayMakeCoeff(l1,simp!* {'expt,mk!*sq TayCfSq c0,
+       c0 := taymakecoeff(l1,simp!* {'expt,mk!*sq taycfsq c0,
                                      {'quotient,numr rat,denr rat}});
        clist := for each el in clist collect taymultcoeffs(el,c0);
-       tp := addto!-all!-TayTpElOrders(tp,get!-degreelist l1);
+       tp := addto!-all!-taytpelorders(tp,get!-degreelist l1);
     end;
     %
     % Finally we fill in the original expression
     %
-    return make!-Taylor!*(
+    return make!-taylor!*(
              clist,
              tp,
-             if !*taylorkeeporiginal and TayOrig tay
-               then simp {'expt,prepsq TayOrig tay,
+             if !*taylorkeeporiginal and tayorig tay
+               then simp {'expt,prepsq tayorig tay,
                           {'quotient,car rat,cdr rat}}
               else nil,
-             TayFlags tay)
+             tayflags tay)
   end;
 
 symbolic procedure expttayrat1(tp,tcl,rat);
-  Taylor!:
+  taylor!:
    begin scalar clist,coefflis,il,l0,rat1;
      rat1 := addsq(rat,1 ./ 1);
      %
      % Now we compute the coefficients
      %
      l0 := make!-cst!-powerlist tp;
-     clist := {TayMakeCoeff(l0,1 ./ 1)};
-     tcl := TayMakeCoeff(l0,1 ./ 1) . tcl;
+     clist := {taymakecoeff(l0,1 ./ 1)};
+     tcl := taymakecoeff(l0,1 ./ 1) . tcl;
      il := smallest!-increment tcl;
-     coefflis := makecoeffs0(tp,TpNextList tp,il);
+     coefflis := makecoeffs0(tp,tpnextlist tp,il);
      if null coefflis then return clist;
      for each cc in cdr coefflis do
        begin scalar s,pos,pp,q,n,n1;
@@ -469,8 +469,8 @@ symbolic procedure expttayrat1(tp,tcl,rat);
          n := nth(nth(cc,car pos),cdr pos);
          pp := makecoeffpairs(l0,cc,l0,il);
          for each p in pp do begin scalar v,w;
-           v := TayGetCoeff(cdr p,tcl);
-           w := TayGetCoeff(car p,clist);
+           v := taygetcoeff(cdr p,tcl);
+           w := taygetcoeff(car p,clist);
            %
            % The following line is a short cut for efficiency.
            %
@@ -480,7 +480,7 @@ symbolic procedure expttayrat1(tp,tcl,rat);
            q := quotsq(!*TayExp2q(-n1),!*TayExp2q n);
            s := addsq(s,multsq(addsq(rat,multsq(q,rat1)),w))
           end;
-         if not null numr s then clist := TayMakeCoeff(cc,s) . clist
+         if not null numr s then clist := taymakecoeff(cc,s) . clist
        end;
      return reversip clist
    end;

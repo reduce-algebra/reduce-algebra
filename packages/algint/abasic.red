@@ -1,4 +1,4 @@
-MODULE ABASIC;   % Basic definitions for algebraic function integrator.
+module abasic;   % Basic definitions for algebraic function integrator.
 
 % Author: James H. Davenport.
 
@@ -28,69 +28,69 @@ MODULE ABASIC;   % Basic definitions for algebraic function integrator.
 
 % Modifications by: Anthony C. Hearn.
 
-FLUID '(!*CONSCOUNT !*NOEXTEND);
+fluid '(!*conscount !*noextend);
 
-GLOBAL '(INITL!* LIST!-OF!-MEDIUM!-PRIMES SQRTS!-MOD!-8);
+global '(initl!* list!-of!-medium!-primes sqrts!-mod!-8);
 
-INITL!* := APPEND('(!*NOEXTEND), INITL!*);
+initl!* := append('(!*noextend), initl!*);
 
-!*CONSCOUNT:=10000; % DEFAULT MAXIMUM NUMBER OF CONSES IN CERTAIN
-                    % OPERATIONS;
+!*conscount:=10000; % Default maximum number of conses in certain
+                    % operations;
 
-LIST!-OF!-MEDIUM!-PRIMES:='(101 103 107 109);   % Used in MODLINEQ
+list!-of!-medium!-primes:='(101 103 107 109);   % Used in MODLINEQ
 
-SQRTS!-MOD!-8:=MKVECT 7;
+sqrts!-mod!-8:=mkvect 7;
 
-PUTV(SQRTS!-MOD!-8,0,T);
+putv(sqrts!-mod!-8,0,t);
 
-PUTV(SQRTS!-MOD!-8,1,T);
+putv(sqrts!-mod!-8,1,t);
 
-PUTV(SQRTS!-MOD!-8,4,T);
+putv(sqrts!-mod!-8,4,t);
 
-PUT('NTHROOT,'SIMPFN,'SIMPIDEN);
-% THE BINARY N-TH ROOT OPERATOR NTHROOT(X,2)=SQRT(X)
-% NO SIMPLIFICATION IS USED HERE;
-% HOPE IS THAT PBUILD INTRODUCES IT, AND SIMPLOG REMOVES IT;
+put('nthroot,'simpfn,'simpiden);
+% The binary n-th root operator NTHROOT(X,2)=SQRT(X)
+% no simplification is used here;
+% hope is that pbuild introduces it, and simplog removes it;
 
-symbolic inline procedure !*KK2Q A; ((MKSP(A,1) .* 1) .+ NIL) ./ 1;
+symbolic inline procedure !*kk2q a; ((mksp(a,1) .* 1) .+ nil) ./ 1;
 
-symbolic inline procedure DIVSF(U,V); SQRT2TOP(U ./ V);
+symbolic inline procedure divsf(u,v); sqrt2top(u ./ v);
 
-SYMBOLIC PROCEDURE INT!-SQRT U;
+symbolic procedure int!-sqrt u;
    % Integer square root function;
-   BEGIN SCALAR X,Y;
-      X := SQRT U;
-      IF FIXP X THEN RETURN X
-       ELSE IF X = FLOAT(Y := FIX X) THEN RETURN Y ELSE RETURN X
-   END;
+   begin scalar x,y;
+      x := sqrt u;
+      if fixp x then return x
+       else if x = float(y := fix x) then return y else return x
+   end;
 
-symbolic inline procedure MANINP(U,V,W);
-   INTERR "MANINP called -- not implemented";
+symbolic inline procedure maninp(u,v,w);
+   interr "MANINP called -- not implemented";
 
 
-% SELECTORS FOR THE TAYLOR STRUCTURE:
+% Selectors for the taylor structure:
 
 % ***STORE-HACK-1***;
-% REMOVE THIS MACRO IF MORE STORE IS AVAILABLE;
+% remove this macro if more store is available;
 
-symbolic inline procedure TAYSHORTEN U;NIL;
+symbolic inline procedure tayshorten u;nil;
 
-symbolic inline procedure TAYLORDEFN U; CAR U;
+symbolic inline procedure taylordefn u; car u;
 
-symbolic inline procedure TAYLORNUMBERS U; CADR U;
+symbolic inline procedure taylornumbers u; cadr u;
 
-symbolic inline procedure TAYLORFIRST U; CAADR U;
+symbolic inline procedure taylorfirst u; caadr u;
 
-symbolic inline procedure TAYLORLAST U; CDADR U;
+symbolic inline procedure taylorlast u; cdadr u;
 
-symbolic inline procedure TAYLORLIST U; CDDR U;
+symbolic inline procedure taylorlist u; cddr u;
 
-%FUNCTION.((FIRST.LAST COMPUTED SO FAR)
-%       .ASSOC LIST OF COMPUTED TERMS);
+%function.((first.last computed so far)
+%       .assoc list of computed terms);
 
-symbolic inline procedure TAYLORMAKE(FN,NUMS,ALIST); FN.(NUMS.ALIST);
+symbolic inline procedure taylormake(fn,nums,alist); fn.(nums.alist);
 
-ENDMODULE;
+endmodule;
 
-END;
+end;
 

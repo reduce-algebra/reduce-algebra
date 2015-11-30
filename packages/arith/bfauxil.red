@@ -30,7 +30,7 @@ module bfauxil; % Support for the roots package and ROUNDED domain.
 %
 
 
-Comment   support for modules allroot and isoroot, and for ROUNDED
+COMMENT   support for modules allroot and isoroot, and for ROUNDED
  domain logic;
 
 exports !!shbinflp, bf2flr, bfdiffer, bfdivide, bfinverse, bflessp,

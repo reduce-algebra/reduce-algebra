@@ -121,7 +121,7 @@ procedure talp_chkknowl(atf,knowl);
 	       	  if rl_op at eq atop and atop eq 'neq then
 		     if talp_invf invt neq fs then <<
 		    	result := 'true;
-		    	stop := T
+		    	stop := t
 	 	     >>
 	    >>;
 	    tmp := cdr tmp
@@ -211,9 +211,9 @@ procedure talp_try3(f,vars);
 	       rhs := talp_arg2r subf;
 	       for each x in vars do <<
 		  if atom lhs and talp_contains(rhs,x) or 
-		     talp_td lhs < talp_td rhs then contrvar := T;
+		     talp_td lhs < talp_td rhs then contrvar := t;
 		  if atom rhs and talp_contains(lhs,x) or
-		     talp_td rhs < talp_td lhs then contlvar := T
+		     talp_td rhs < talp_td lhs then contlvar := t
 	       >>;
 	       if contlvar then <<
 		  equs := subf . equs;
@@ -277,7 +277,7 @@ procedure talp_eqtp(t1,t2);
    % are terms. Returns a boolean value. Returns T if [t1] and [t2]
    % are identical, nil otherwise.
    if atom t1 or atom t2 then
-      if t1 eq t2 then T else nil
+      if t1 eq t2 then t else nil
    else if atom car t1 and atom car t2 then
       if car t1 eq car t2 then talp_eqtp(cdr t1,cdr t2) else nil
    else talp_eqtp(car t1,car t2) and talp_eqtp(cdr t1,cdr t2);
@@ -298,7 +298,7 @@ procedure talp_chsbstres(f,lst,equs);
 	 equs := cdr equs;
 	 lst := cdr lst;
 	 if rl_tvalp curr then <<
-	    stop := T;
+	    stop := t;
 	    chosen := curr
 	 >> else <<
 	    currsum := talp_sumd curr;
@@ -320,7 +320,7 @@ procedure talp_chsbstres(f,lst,equs);
 	    >>
 	 >>
       >>;
-      return if chosen then chosen . T else f . nil
+      return if chosen then chosen . t else f . nil
    end;
 
 procedure talp_extlftrs(subl,eql,fvars);
@@ -388,7 +388,7 @@ procedure talp_ctns(pair,pairl);
    begin scalar found;
       while pairl and not found do
 	 if caar pairl eq car pair and cdar pairl eq cdr pair then
-	    found := T
+	    found := t
 	 else pairl := cdr pairl;
       return found
    end;   
@@ -566,7 +566,7 @@ procedure talp_invtscsimplat(atf);
       invt := cdr candidate;
       var := car candidate;
       op := car atf;
-      pure := T;
+      pure := t;
       fctsym := talp_invf invt;
       fctsyml := fctsym . fctsyml;
       while not (atom talp_invarg invt) do <<

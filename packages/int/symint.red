@@ -38,10 +38,10 @@ module symint;  % Improved simplification of symbolic integrals
 % 11/1/98: Commutation of integrals
 % 21/2/98: df(y,x,2) etc. handling corrected
 
-fluid '(!*failhard !*IntDfFound);
+fluid '(!*failhard !*intdffound);
 
-switch CommuteInt;                      % off by default (for now)
-deflist('((CommuteInt ((t (rmsubs))))), 'simpfg);
+switch commuteint;                      % off by default (for now)
+deflist('((commuteint ((t (rmsubs))))), 'simpfg);
 
 % If the switch CommuteInt is turned on then the top-level integration
 % in a symbolic integral is commuted into the integrand to try to
@@ -51,11 +51,11 @@ deflist('((CommuteInt ((t (rmsubs))))), 'simpfg);
 % integrable nested derivative is integrated regardless of this
 % switch.
 
-switch PartialInt, PartialIntDf, PartialIntInt; % off by default
-deflist('((PartialInt ((t   (on  '(PartialIntDf PartialIntInt)))
-                       (nil (off '(PartialIntDf PartialIntInt)))))
-          (PartialIntDf ((t (rmsubs))))
-          (PartialIntInt ((t (rmsubs))))), 'simpfg);
+switch partialint, partialintdf, partialintint; % off by default
+deflist('((partialint ((t   (on  '(partialintdf partialintint)))
+                       (nil (off '(partialintdf partialintint)))))
+          (partialintdf ((t (rmsubs))))
+          (partialintint ((t (rmsubs))))), 'simpfg);
 
 % If the switch PartialIntDf is turned on then integration by parts is
 % performed if the result simplifies in the sense that it integrates a
@@ -74,11 +74,11 @@ deflist('((PartialInt ((t   (on  '(PartialIntDf PartialIntInt)))
 % The switch PartialInt is just a convenience to turn both the above
 % switches on or off together.
 
-switch XPartialInt, XPartialIntDf, XPartialIntInt; % off by default
-deflist('((XPartialInt ((t   (on  '(XPartialIntDf XPartialIntInt)))
-                       (nil (off '(XPartialIntDf XPartialIntInt)))))
-          (XPartialIntDf ((t (rmsubs))))
-          (XPartialIntInt ((t (rmsubs))))), 'simpfg);
+switch xpartialint, xpartialintdf, xpartialintint; % off by default
+deflist('((xpartialint ((t   (on  '(xpartialintdf xpartialintint)))
+                       (nil (off '(xpartialintdf xpartialintint)))))
+          (xpartialintdf ((t (rmsubs))))
+          (xpartialintint ((t (rmsubs))))), 'simpfg);
 
 % These switches control extended partial integration of integrals of
 % the form int( int(u(x,z),z) * v(x), x ), which is experimental,
@@ -90,15 +90,15 @@ symbolic procedure symint u;
    begin scalar v, y, x;
       y := cadr u;  x := caddr u;
       % Check for a directly integrable derivative:
-      if (v := NestedIntDf(y,x,nil)) then return mksq(v,1);
+      if (v := nestedintdf(y,x,nil)) then return mksq(v,1);
       if !*failhard then rerror(int,4,"FAILHARD switch set");
-      if (!*PartialIntDf or !*PartialIntInt) and
+      if (!*partialintdf or !*partialintint) and
          % Integrate by parts if the result simplifies:
          % DO WE NEED TO CALL SIMPINT1 RECURSIVELY ON THE RESULT?
-         (v := PartialInt(y,x)) then return mksq(v,1);
-      if (!*XPartialIntDf or !*XPartialIntInt) and
+         (v := partialint(y,x)) then return mksq(v,1);
+      if (!*xpartialintdf or !*xpartialintint) and
          % EXPERIMENTAL!  Try extended partial integration:
-         (v := XPartialInt(y,x)) then return mksq(v,1);
+         (v := xpartialint(y,x)) then return mksq(v,1);
       return mksq(u,1)
    end;
 
@@ -125,7 +125,7 @@ symbolic procedure symint u;
 %%             car_y . nested . cddr y
 %%    end;
 
-symbolic procedure NestedIntDf(y, x, !*recursive);
+symbolic procedure nestedintdf(y, x, !*recursive);
    %% In order to simplify a symbolic integral int(y,x), commute the
    %% integral through integrals and derivatives in the integrand to
    %% try to find an integrable integrand.  Return the result if
@@ -141,9 +141,9 @@ symbolic procedure NestedIntDf(y, x, !*recursive);
    begin scalar fn, nested;
       return
          if (fn := car y) eq 'df then   % integrating a derivative
-            if (nested := IntDf(y, x)) then nested
+            if (nested := intdf(y, x)) then nested
                %% int( ... df(f, A, x, B) ... , x ) -> df(f, A, B)
-            else if (nested := NestedIntDf(cadr y, x, t)) then
+            else if (nested := nestedintdf(cadr y, x, t)) then
                %% recursing into the integrand
                fn . nested . cddr y
             else nil
@@ -152,10 +152,10 @@ symbolic procedure NestedIntDf(y, x, !*recursive);
             if eq(x, caddr y) then
                %% int( ... int(f, x) ... , x ) -> stop
                nil
-            else if (nested := NestedIntDf(cadr y, x, t)) then
+            else if (nested := nestedintdf(cadr y, x, t)) then
                %% recursing into the integrand
                fn . nested . cddr y
-            else if !*CommuteInt and ordp(x, caddr y) then
+            else if !*commuteint and ordp(x, caddr y) then
                %% Commute integrals into canonical nesting order:
                %% int( ... int(f, b) ... , a ) ->
                %%    int( ... int(f, a) ... , b )
@@ -164,26 +164,26 @@ symbolic procedure NestedIntDf(y, x, !*recursive);
                %% sort the integrands into canonical order.
                {'int, {'int, cadr y, x}, caddr y}
             else nil
-         else if !*recursive and !*CommuteInt and
+         else if !*recursive and !*commuteint and
             %% y is not an integral or a derivative -- try to
             %% integrate it unless at top level:
             not eqcar(nested := reval {'int,y,x}, 'int) then nested
    end;
 
-symbolic procedure IntDf(y, x);
+symbolic procedure intdf(y, x);
    % y = df(f, u, nu, v, nv, ...) where nu, nv, ... optional
    % if x = u, v, ... then return int(y, x)
-   begin scalar !*IntDfFound;
-      x := IntDfVars(cddr y, x);
-      if !*IntDfFound then return
+   begin scalar !*intdffound;
+      x := intdfvars(cddr y, x);
+      if !*intdffound then return
          if x then 'df . cadr y . x else cadr y
    end;
 
-symbolic procedure IntDfVars(y, x);
+symbolic procedure intdfvars(y, x);
    if y then
       if car y eq x then
       begin scalar n;
-         !*IntDfFound := t;
+         !*intdffound := t;
          return
             if (y := cdr y) and fixp(n := car y) then <<
                y := cdr y;
@@ -191,10 +191,10 @@ symbolic procedure IntDfVars(y, x);
                x . y
             >> else y
       end
-      else car y . IntDfVars(cdr y, x);
+      else car y . intdfvars(cdr y, x);
 
 
-symbolic procedure PartialInt(y, x);
+symbolic procedure partialint(y, x);
    %% Integrate by parts if the resulting integral simplifies;
    %% otherwise return nil.  Split integrand into a derivative or
    %% integral and a second factor and call the appropriate procedure.
@@ -209,7 +209,7 @@ symbolic procedure PartialInt(y, x);
       >>;
       % y := list of factors:
       if car y eq 'times then y := cdr y
-      else if denlist or !*PartialIntInt then y := y . nil
+      else if denlist or !*partialintint then y := y . nil
          % Can do double integral int(int(u(x),x),x) as a special case
       else return;
       faclist := y;
@@ -228,32 +228,32 @@ symbolic procedure PartialInt(y, x);
          else if cdr facs then 'times . facs else car facs;
       if denlist then facs := 'quotient . facs . denlist;
       if car df_or_int eq 'df then
-         (if !*PartialIntDf and
-            (result := PartialIntDf(facs, df_or_int, x))
+         (if !*partialintdf and
+            (result := partialintdf(facs, df_or_int, x))
          then return result)
       else
-         (if !*PartialIntInt and
-            (result := PartialIntInt(df_or_int, facs, x))
+         (if !*partialintint and
+            (result := partialintint(df_or_int, facs, x))
          then return result);
       % Continue the loop through the factors in faclist:
       faclist := cdr faclist;
       goto continue
    end;
 
-symbolic procedure PartialIntDf(u, df_v, x);
+symbolic procedure partialintdf(u, df_v, x);
    %% int(u(x)*df(v(x),x), x) -> u(x)*v(x) - int(df(u(x),x)*v(x), x)
    %% Integrate by parts if the resulting integral simplifies [to
    %% avoid infinite loops], which means that df(u(x),x) may not
    %% contain any unevaluated derivatives; otherwise return nil.
    begin scalar v;
-      v := IntDf(df_v, x);
+      v := intdf(df_v, x);
       % Check that df(u(x),x) simplifies:
       if smemq('df, df_v := reval {'df,u,x}) then return;
       return reval {'difference,
          {'times,u,v}, {'int, {'times, df_v, v}, x}}
    end;
 
-symbolic procedure PartialIntInt(int_u, v, x);
+symbolic procedure partialintint(int_u, v, x);
    %% int(int(u(x),x) * v(x), x) ->
    %%    int(u(x),x) * int(v(x),x) - int( u(x) * int(v(x),x), x )
    %% Integrate by parts if the resulting integral simplifies [to
@@ -268,7 +268,7 @@ symbolic procedure PartialIntInt(int_u, v, x);
    end;
 
 
-symbolic procedure XPartialInt(y, x);
+symbolic procedure xpartialint(y, x);
    %% Extended partial integration.  This code is somewhat heuristic
    %% and may be slow.  The problem is to try to simplify
    %%    int( int(u(x,z),z) * v(x), x ).
@@ -302,15 +302,15 @@ symbolic procedure XPartialInt(y, x);
       if denlist then facs := 'quotient . facs . denlist;
       if facs = 1 then return;          % ?????
       if (result :=
-         (!*XPartialIntDf and XPartialIntDf(int, facs, x)) or
-            (!*XPartialIntInt and XPartialIntInt(int, facs, x)))
+         (!*xpartialintdf and xpartialintdf(int, facs, x)) or
+            (!*xpartialintint and xpartialintint(int, facs, x)))
       then return result;
       % Continue the loop through the factors in faclist:
       faclist := cdr faclist;
       goto continue
    end;
 
-symbolic procedure XPartialIntDf(int_u, v, x);
+symbolic procedure xpartialintdf(int_u, v, x);
    %% int(int(u(x,z),z)*v(x), x) ->
    %%    int(int(u(x,z),x),z) * v(x) -
    %%       int( int(int(u(x,z),x),z) * df(v(x),x), x )
@@ -327,7 +327,7 @@ symbolic procedure XPartialIntDf(int_u, v, x);
          {'times,int_u,v}, {'int, {'times, int_u, df_v}, x}}
    end;
 
-symbolic procedure XPartialIntInt(int_u, v, x);
+symbolic procedure xpartialintint(int_u, v, x);
    %% int(int(u(x,z),z) * v(x), x) ->
    %%    int(u(x,z),z) * int(v(x),x) -
    %%       int( int(df(u(x,z),x),z) * int(v(x),x), x )

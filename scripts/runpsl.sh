@@ -74,7 +74,7 @@ else
 #     rm -f $here/../bin/$scr
 #     echo "exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img \$*" > $here/../bin/$scr
 #     chmod +x $here/../bin/$scr
-      printf "here = %s\n" 
+      #printf "here = %s\n" 
       ulimit -s unlimited
       exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img $*
       exit 0

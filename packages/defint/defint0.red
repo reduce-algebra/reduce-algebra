@@ -81,7 +81,7 @@ symbolic procedure new_defint(lst);
       if pairp result then <<for each i in result do test_unknown(i);
              % Tidy up result by ensuring that just unknown is returned
              % and not multiples of it.
-            if unknown_tst then return 'UNKNOWN else return result>>
+            if unknown_tst then return 'unknown else return result>>
        else return result
    end;
 
@@ -137,21 +137,21 @@ else if n = 'unknown then unknown_tst := 't;
 algebraic<<
 heaviside_rules :=
 
-{ heaviside(~x) => 1 when numberp x and x >= 0,
-  heaviside(~x) => 0 when numberp x and x < 0 };
+{ Heaviside(~x) => 1 when numberp x and x >= 0,
+  Heaviside(~x) => 0 when numberp x and x < 0 };
 
 let heaviside_rules;
 
 operator defint2,defint_choose;
 
-SHARE MELLINCOEF$
+share mellincoef$
 
 defint2_rules:=
 
-{ defint2(~n,cos((~x*~~A)/~~C)-cos((~x*~~B)/~~D),~x) =>
-                defint2(-2,n,sin((A/C+B/D)*x/2),sin((A/C-B/D)*x/2),x),
-  defint2(cos((~x*~~A)/~~C)-cos((~x*~~B)/~~D),~x) =>
-                defint2(-2,sin((A/C+B/D)*x/2),sin((A/C-B/D)*x/2),x),
+{ defint2(~n,cos((~x*~~a)/~~c)-cos((~x*~~b)/~~d),~x) =>
+                defint2(-2,n,sin((a/c+b/d)*x/2),sin((a/c-b/d)*x/2),x),
+  defint2(cos((~x*~~a)/~~c)-cos((~x*~~b)/~~d),~x) =>
+                defint2(-2,sin((a/c+b/d)*x/2),sin((a/c-b/d)*x/2),x),
 
   defint2(~b,~f1,~f2,~x) => b*defint2(f1,f2,x) when freeof (b,x),
 

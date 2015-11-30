@@ -124,42 +124,45 @@ put('packages!_to!_load,'stat,'rlis);
 
 flag('(load!-package load!_package),'eval);
 
-
-% Support for patching REDUCE 3.5 sources.
-
-symbolic procedure patchstat;
-   % Read a patch for a given package.
-   begin scalar !*mode,u,v,x,y,z,z2;
-      x := scan();   % Package name.
-      scan();        % Remove semicolon.
- a:   !*mode := 'symbolic;
-      y := xread nil;
-      if eqcar(y,'symbolic) then y := cadr y
-       else if flagpcar(y,'modefn)
-        then progn(!*mode := car y, y := cadr y);
-      if eq(y,'endpatch)
-       then progn(u := dated!-gensym x,
-                  z2 :=  list('de,u,nil,'progn . reversip z) . z2,
-                  z2 := list('put,mkquote x,mkquote 'patchfn,mkquote u)
-                           . z2,
-                  return ('patch . reversip z2))
-       else if eqcar(y,'procedure)
-        then progn(u := dated!-gensym v,
-               v := cadr y,
-               z := list('copyd,mkquote v,mkquote u) . z,
-               z2  := convertmode(('procedure . u . cddr y),nil,
-                                  'symbolic,!*mode)
-                     . z2)
-       else z := convertmode(y,nil,'symbolic,!*mode) . z;
-      go to a;
-   end;
-
-put('patch,'stat,'patchstat);
-
-symbolic procedure formpatch(u,vars,mode);
-   'progn . cdr u;
-
-put('patch,'formfn,'formpatch);
+% 
+% % Support for patching REDUCE 3.5 sources.
+%   This was a scheme used at a stage when Reduce was mainly distributed
+%   on physical media (eg tapes) and small patches files could be used to
+%   apply updates. It is no longer used (or relevant?) in today's world.
+%
+% symbolic procedure patchstat;
+%    % Read a patch for a given package.
+%    begin scalar !*mode,u,v,x,y,z,z2;
+%       x := scan();   % Package name.
+%       scan();        % Remove semicolon.
+%  a:   !*mode := 'symbolic;
+%       y := xread nil;
+%       if eqcar(y,'symbolic) then y := cadr y
+%        else if flagpcar(y,'modefn)
+%         then progn(!*mode := car y, y := cadr y);
+%       if eq(y,'endpatch)
+%        then progn(u := dated!-gensym x,
+%                   z2 :=  list('de,u,nil,'progn . reversip z) . z2,
+%                   z2 := list('put,mkquote x,mkquote 'patchfn,mkquote u)
+%                            . z2,
+%                   return ('patch . reversip z2))
+%        else if eqcar(y,'procedure)
+%         then progn(u := dated!-gensym v,
+%                v := cadr y,
+%                z := list('copyd,mkquote v,mkquote u) . z,
+%                z2  := convertmode(('procedure . u . cddr y),nil,
+%                                   'symbolic,!*mode)
+%                      . z2)
+%        else z := convertmode(y,nil,'symbolic,!*mode) . z;
+%       go to a;
+%    end;
+%
+% put('patch,'stat,'patchstat);
+%
+% symbolic procedure formpatch(u,vars,mode);
+%    'progn . cdr u;
+%
+% put('patch,'formfn,'formpatch);
 
 % endmodule;
 

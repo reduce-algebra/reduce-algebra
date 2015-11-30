@@ -152,25 +152,25 @@ flag('(row_dim,column_dim),'opfn);
 
 
 
-symbolic procedure matrixp(A);
+symbolic procedure matrixp(a);
   %
   % Tests if input is a matrix (boolean).
   %
-  if not eqcar(A,'mat) then nil else t;
+  if not eqcar(a,'mat) then nil else t;
 
 flag('(matrixp),'boolean);
 flag('(matrixp),'opfn);
 
 
 
-symbolic procedure size_of_matrix(A);
+symbolic procedure size_of_matrix(a);
   %
   % Takes matrix and returns list {no. of rows, no. of columns}.
   %
   begin
     integer row_dim,column_dim;
-    row_dim := -1 + length A;
-    column_dim := length cadr A;
+    row_dim := -1 + length a;
+    column_dim := length cadr a;
     return {row_dim,column_dim};
   end;
 
@@ -208,7 +208,7 @@ symbolic procedure companion(poly,x);
 
 
 
-symbolic procedure find_companion(R,x);
+symbolic procedure find_companion(r,x);
   %
   % Given a companion matrix, find_companion will return the associated
   % polynomial.
@@ -216,15 +216,15 @@ symbolic procedure find_companion(R,x);
   begin
     scalar  p;
     integer rowdim,k;
-    if not matrixp(R) then rederr
+    if not matrixp(r) then rederr
      {"Error in find_companion(first argument): should be a matrix."};
-    rowdim := row_dim(R);
+    rowdim := row_dim(r);
     k := 2;
-    while k<=rowdim and getmat(R,k,k-1)=1 do k:=k+1;
+    while k<=rowdim and getmat(r,k,k-1)=1 do k:=k+1;
     p := 0;
     for j:=1:k-1 do
     <<
-      p:={'plus,p,{'times,{'minus,getmat(R,j,k-1)},{'expt,x,j-1}}};
+      p:={'plus,p,{'times,{'minus,getmat(r,j,k-1)},{'expt,x,j-1}}};
     >>;
     p := {'plus,p,{'expt,x,k-1}};
     return p;
@@ -232,6 +232,7 @@ symbolic procedure find_companion(R,x);
 
 flag('(companion,find_companion),'opfn);
 
+put('companion,'rtypefn,'quotematrix);
 
 
 symbolic procedure jordan_block(const,mat_dim);
@@ -240,29 +241,30 @@ symbolic procedure jordan_block(const,mat_dim);
   % a jordan block of dimension mat_dim x mat_dim.
   %
   begin
-    scalar JB;
+    scalar jb;
     if not fixp mat_dim then rederr
      "Error in jordan_block(second argument): should be an integer.";
-    JB := mkmatrix(mat_dim,mat_dim);
+    jb := mkmatrix(mat_dim,mat_dim);
     for i:=1:mat_dim do
     <<
       for j:=1:mat_dim do
       <<
         if i=j then
         <<
-          setmat(JB,i,j,const);
-          if i<mat_dim then setmat(JB,i,j+1,1);
+          setmat(jb,i,j,const);
+          if i<mat_dim then setmat(jb,i,j+1,1);
         >>;
       >>;
     >>;
-    return JB;
+    return jb;
   end;
 
 flag ('(jordan_block),'opfn);
 
+put('jordan_block,'rtypefn,'quotematrix);
 
 
-symbolic procedure sub_matrix(A,row_list,col_list);
+symbolic procedure sub_matrix(a,row_list,col_list);
   %
   % Removes the sub_matrix from A consisting of the rows in row_list and
   % the columns in col_list. (Both row_list and col_list can be single
@@ -270,9 +272,9 @@ symbolic procedure sub_matrix(A,row_list,col_list);
   %
   begin
     scalar new_mat;
-    if not !*fast_la and not matrixp(A) then rederr
+    if not !*fast_la and not matrixp(a) then rederr
      "Error in sub_matrix(first argument): should be a matrix.";
-    new_mat := stack_rows(A,row_list);
+    new_mat := stack_rows(a,row_list);
     new_mat := augment_columns(new_mat,col_list);
     return new_mat;
   end;
@@ -282,18 +284,18 @@ symbolic procedure sub_matrix(A,row_list,col_list);
 rtypecar sub_matrix;
 
 
-symbolic procedure copy_into(BB,AA,p,q);
+symbolic procedure copy_into(bb,aa,p,q);
   %
   % Copies matrix BB into AA with BB(1,1) at AA(p,q).
   %
   begin
-    scalar A,B;
+    scalar a,b;
     integer m,n,r,c;
     if not !*fast_la then
     <<
-      if not matrixp(BB) then rederr
+      if not matrixp(bb) then rederr
        "Error in copy_into(first argument): should be a matrix.";
-      if not matrixp(AA) then rederr
+      if not matrixp(aa) then rederr
        "Error in copy_into(second argument): should be a matrix.";
       if not fixp p then rederr
        "Error in copy_into(third argument): should be an integer.";
@@ -308,19 +310,19 @@ symbolic procedure copy_into(BB,AA,p,q);
         return;
       >>;
     >>;
-    m := row_dim(AA);
-    n := column_dim(AA);
-    r := row_dim(BB);
-    c := column_dim(BB);
+    m := row_dim(aa);
+    n := column_dim(aa);
+    r := row_dim(bb);
+    c := column_dim(bb);
     if not !*fast_la and (r+p-1>m or c+q-1>n) then
     <<
       % Only print offending matrices if they're not too big.
       if m*n<26 and r*c<26 then
       <<
         prin2t "***** Error in copy_into: the matrix";
-        matpri(BB);
+        matpri(bb);
         prin2t "      does not fit into";
-        matpri(AA);
+        matpri(aa);
         prin2  "      at position ";
         prin2 p;
         prin2 ",";
@@ -335,34 +337,35 @@ symbolic procedure copy_into(BB,AA,p,q);
         return;
       >>;
     >>;
-    A := mkmatrix(m,n);
-    B := mkmatrix(r,c);
+    a := mkmatrix(m,n);
+    b := mkmatrix(r,c);
     for i:=1:m do
     <<
       for j:=1:n do
       <<
-        setmat(A,i,j,getmat(AA,i,j));
+        setmat(a,i,j,getmat(aa,i,j));
       >>;
     >>;
     for i:=1:r do
     <<
       for j:=1:c do
       <<
-        setmat(B,i,j,getmat(BB,i,j));
+        setmat(b,i,j,getmat(bb,i,j));
       >>;
     >>;
     for i:=1:r do
     <<
       for j:=1:c do
       <<
-        setmat(A,p+i-1,q+j-1,getmat(B,i,j));
+        setmat(a,p+i-1,q+j-1,getmat(b,i,j));
       >>;
     >>;
-    return A;
+    return a;
   end;
 
 flag ('(copy_into),'opfn);
 
+rtypecar copy_into;
 
 
 symbolic procedure copy_mat(u);
@@ -370,7 +373,6 @@ symbolic procedure copy_mat(u);
 
 
 
-put('diagonal,'psopfn,'diagonal1); % To allow variable input.
 symbolic procedure diagonal1(mat_list);
   %
   % Can take either a list of arguments or the arguments seperately.
@@ -403,6 +405,9 @@ symbolic procedure diagonal1(mat_list);
     return diag_mat;
   end;
 
+put('diagonal,'psopfn,'diagonal1); % To allow variable input.
+
+put('diagonal,'rtypefn,'quotematrix);
 
 
 symbolic procedure diag(uu);
@@ -414,7 +419,7 @@ symbolic procedure diag(uu);
   %
   begin
     scalar bigA,arg,input,u;
-    integer nargs,n,Aidx,stp,bigsize,smallsize;
+    integer nargs,n,aidx,stp,bigsize,smallsize;
 
     u := car uu;
     input := u;
@@ -435,7 +440,7 @@ symbolic procedure diag(uu);
     >>;
 
     bigA := mkmatrix(bigsize,bigsize);
-    Aidx:=1;
+    aidx:=1;
     input := u;
     for k:=1:nargs do
     <<
@@ -443,24 +448,24 @@ symbolic procedure diag(uu);
       % If scalar entry.
       if algebraic length(arg) = 1 or eqcar(arg,'quotient) then
       <<
-        setmat(bigA,Aidx,Aidx,arg);
-        Aidx:=Aidx+1;
+        setmat(bigA,aidx,aidx,arg);
+        aidx:=aidx+1;
         input := cdr input;
       >>
       else
       <<
         smallsize:= row_dim(arg);
-        stp:=smallsize+Aidx-1;
-        for i:=Aidx:stp do
+        stp:=smallsize+aidx-1;
+        for i:=aidx:stp do
         <<
-          for j:=Aidx:stp do
+          for j:=aidx:stp do
           <<
             arg:=car input;
             % Find (i-Aidx+1)'th row.
             arg := cdr arg;
             <<
               n:=1;
-              while n < (i-Aidx+1) do
+              while n < (i-aidx+1) do
               <<
                 arg := cdr arg;
                 n:=n+1;
@@ -472,7 +477,7 @@ symbolic procedure diag(uu);
             %
             <<
               n:=1;
-              while n < (j-Aidx+1) do
+              while n < (j-aidx+1) do
               <<
                 arg := cdr arg;
                 n:=n+1;
@@ -483,12 +488,12 @@ symbolic procedure diag(uu);
             setmat(bigA,i,j,arg);
           >>;
         >>;
-        Aidx := Aidx+smallsize;
+        aidx := aidx+smallsize;
         input := cdr input;
       >>;
     >>;
 
-    return biga;
+    return bigA;
   end;
 
 
@@ -529,6 +534,7 @@ symbolic procedure band_matrix(elt_list,sq_size);
 
 flag('(band_matrix),'opfn);
 
+put('band_matrix,'rtypefn,'quotematrix);
 
 
 symbolic procedure make_identity(sq_size);
@@ -542,6 +548,7 @@ symbolic procedure make_identity(sq_size);
 
 flag('(make_identity),'opfn);
 
+put('make_identity,'rtypefn,'quotematrix);
 
 
 symbolic procedure squarep(in_mat);
@@ -1047,7 +1054,7 @@ rtypecar mult_rows,mult_columns;
 
 
 %%%%%%%%%%%%%%%%%%%%% matrix_augment/matrix_stack %%%%%%%%%%%%%%%%%%%%%%
-put('matrix_augment,'psopfn,'matrix_augment1);
+
 symbolic procedure matrix_augment1(matrices);
   %
   % Takes any number of matrices and joins them horizontally.
@@ -1077,9 +1084,11 @@ symbolic procedure matrix_augment1(matrices);
     return 'mat.new_list;
   end;
 
+rtypecar matrix_augment;
+
+put('matrix_augment,'psopfn,'matrix_augment1);
 
 
-put('matrix_stack,'psopfn,'matrix_stack1);
 symbolic procedure matrix_stack1(matrices);
   %
   % Takes any number of matrices and joins them vertically.
@@ -1103,7 +1112,9 @@ symbolic procedure matrix_stack1(matrices);
     return 'mat.new_list;
   end;
 
+rtypecar matrix_stack;
 
+put('matrix_stack,'psopfn,'matrix_stack1);
 
 
 symbolic procedure no_rows(mat_list);
@@ -1231,6 +1242,7 @@ symbolic procedure block_matrix(rows,cols,mat_list);
 
 flag('(block_matrix),'opfn);
 
+put('block_matrix,'rtypefn,'quotematrix);
 
 
 symbolic procedure create_row_list(rows,cols,mat_list);
@@ -1317,7 +1329,6 @@ symbolic procedure check_rows(row_list);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% end block_matrix %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-put('vandermonde,'psopfn,'vandermonde1);
 symbolic procedure vandermonde1(variables);
   %
   % Input can be either a list or individual arguments.
@@ -1346,9 +1357,11 @@ symbolic procedure vandermonde1(variables);
     return vand;
   end;
 
+put('vandermonde,'psopfn,'vandermonde1);
+
+put('vandermonde,'rtypefn,'quotematrix);
 
 
-put('toeplitz,'psopfn,'toeplitz1);
 symbolic procedure toeplitz1(variables);
   %
   % Input can be either a list or individual arguments.
@@ -1377,14 +1390,19 @@ symbolic procedure toeplitz1(variables);
     return toep;
   end;
 
+put('toeplitz,'psopfn,'toeplitz1);
+
+put('toeplitz,'rtypefn,'quotematrix);
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%% kronecker_product %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-symbolic procedure kronecker_product(AA,BB);
+symbolic procedure kronecker_product(aa,bb);
   %
   % Copies matrix BB into AA with BB(1,1) at AA(p,q).
   %
   begin
-    scalar A,B; integer m,n,r,c;
+    scalar a,b; integer m,n,r,c;
     if not !*fast_la then
     <<
       if not matrixp(aa) then rederr
@@ -1392,21 +1410,21 @@ symbolic procedure kronecker_product(AA,BB);
       if not matrixp(bb) then rederr
     "Error in kronecker_product (second argument): should be a matrix.";
     >>;
-    m := row_dim(AA);
-    n := column_dim(AA);
-    r := row_dim(BB);
-    c := column_dim(BB);
+    m := row_dim(aa);
+    n := column_dim(aa);
+    r := row_dim(bb);
+    c := column_dim(bb);
 
-    A := mkmatrix(m*r,n*c);
+    a := mkmatrix(m*r,n*c);
     for i:=1:m do
      for j:=1:n do <<
-         B := getmat(AA,i,j);
+         b := getmat(aa,i,j);
          for ii:=1:c do
            for jj := 1 : r do
-                setmat(A,(i-1)*r+jj,(j-1)*c+ii,
+                setmat(a,(i-1)*r+jj,(j-1)*c+ii,
                    reval list('times,b, getmat(bb,jj,ii)));
                 >>;
-    return A;
+    return a;
   end;
 
 % flag('(kronecker_product),'opfn);
@@ -1555,6 +1573,9 @@ symbolic procedure remove_columns(in_mat,col_list);
 
 flag('(minor,remove_rows,remove_columns),'opfn);
 
+rtypecar minor,remove_columns,remove_rows;
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% end  minor %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -1681,6 +1702,7 @@ symbolic procedure random_matrix(rowdim,coldim,limit);
 
 flag('(random_matrix),'opfn);
 
+put('random_matrix,'rtypefn,'quotematrix);
 
 
 symbolic procedure im_random_matrix(rowdim,coldim,limit);
@@ -1811,6 +1833,9 @@ symbolic procedure char_poly(in_mat,lmbda);
 
 flag('(char_matrix char_poly),'opfn);
 
+rtypecar char_matrix;
+
+
 %%%%%%%%%%%%%%%%%%%%%%%% end char_matrix/char_poly %%%%%%%%%%%%%%%%%%%%%
 
 
@@ -1932,6 +1957,9 @@ symbolic procedure rows_pivot(in_mat,pivot_row,pivot_col,row_list);
 
 flag('(pivot,rows_pivot),'opfn);
 
+rtypecar pivot,rows_pivot;
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% end pivot/rows_pivot %%%%%%%%%%%%%%%%%%%%%
 
 
@@ -1969,6 +1997,7 @@ symbolic procedure mat_jacobian(exp_list,var_list);
 
 flag('(mat_jacobian),'opfn);
 
+put('mat_jacobian,'rtypefn,'quotematrix);
 
 
 symbolic procedure hessian(poly,variables);
@@ -2009,6 +2038,7 @@ symbolic procedure hessian(poly,variables);
 
 flag('(hessian),'opfn);
 
+put('hessian,'rtypefn,'quotematrix);
 
 
 symbolic procedure hermitian_tp(in_mat);
@@ -2029,8 +2059,7 @@ symbolic procedure hermitian_tp(in_mat);
       for col:=1:column_dim(h_tp) do
       <<
         element := getmat(h_tp,row,col);
-        setmat(h_tp,row,col,
-               algebraic (repart(element) - i*impart(element)));
+        setmat(h_tp,row,col,mk!*sq simpconj list element);
       >>;
     >>;
     return h_tp;
@@ -2038,6 +2067,7 @@ symbolic procedure hermitian_tp(in_mat);
 
 flag('(hermitian_tp),'opfn);
 
+rtypecar hermitian_tp;
 
 
 symbolic procedure hilbert(sq_size,value);
@@ -2065,6 +2095,7 @@ symbolic procedure hilbert(sq_size,value);
 
 flag('(hilbert),'opfn);
 
+put('hilbert,'rtypefn,'quotematrix);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%% begin coeff_matrix  %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2079,7 +2110,7 @@ symbolic procedure coeff_matrix1(equation_list);
   % equations as individual arguments.
   %
   begin
-    scalar variable_list,A,X,b;
+    scalar variable_list,a,x,b;
     if pairp car equation_list and caar equation_list = 'list then
      equation_list := cdar equation_list;
     equation_list := remove_equals(equation_list);
@@ -2087,10 +2118,10 @@ symbolic procedure coeff_matrix1(equation_list);
     if variable_list = nil then
      rederr "Error in coeff_matrix: no variables in input.";
     check_linearity(equation_list,variable_list);
-    A := get_A(equation_list,variable_list);
-    X := get_X(variable_list);
+    a := get_a(equation_list,variable_list);
+    x := get_x(variable_list);
     b := get_b(equation_list,variable_list);
-    return {'list,A,X,b};
+    return {'list,a,x,b};
   end;
 
 
@@ -2138,23 +2169,23 @@ symbolic procedure check_linearity(equation_list,variable_list);
 
 
 
-symbolic procedure get_A(equation_list,variable_list);
+symbolic procedure get_a(equation_list,variable_list);
   begin
-    scalar A,element,var_elt;
+    scalar a,element,var_elt;
     integer row,col,length_equation_list,length_variable_list;
     length_equation_list := length equation_list;
     length_variable_list := length variable_list;
-    A := mkmatrix(length equation_list,length variable_list);
+    a := mkmatrix(length equation_list,length variable_list);
     for row:=1:length_equation_list do
     <<
       for col:=1:length_variable_list do
       <<
         element := nth(equation_list,row);
         var_elt := nth(variable_list,col);
-        setmat(A,row,col,algebraic coeffn(element,var_elt,1));
+        setmat(a,row,col,algebraic coeffn(element,var_elt,1));
       >>;
     >>;
-    return A;
+    return a;
   end;
 
 
@@ -2180,15 +2211,15 @@ symbolic procedure get_b(equation_list,variable_list);
 
 
 
-symbolic procedure get_X(variable_list);
+symbolic procedure get_x(variable_list);
   begin
-    scalar X;
+    scalar x;
     integer row,length_variable_list;
     length_variable_list := length variable_list;
-    X := mkmatrix(length_variable_list,1);
+    x := mkmatrix(length_variable_list,1);
     for row := 1:length variable_list do
-     setmat(X,row,1,nth(variable_list,row));
-    return X;
+     setmat(x,row,1,nth(variable_list,row));
+    return x;
   end;
 
 

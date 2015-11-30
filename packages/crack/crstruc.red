@@ -46,7 +46,7 @@ begin scalar done$
 
  % check initial data
  if (not pairp done) or
-    (car done neq 'LIST) then 
+    (car done neq 'list) then 
  rederr("struc_done not properly initialized!")
                          else done:=cdr done$
 

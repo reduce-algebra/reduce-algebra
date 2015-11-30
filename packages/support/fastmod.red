@@ -110,63 +110,64 @@ flag ('(modular!-times general!-modular!-times),'lose);
 
 remflag('(times!-in!-vector remainder!-in!-vector),'lose);
 
-SYMBOLIC PROCEDURE TIMES!-IN!-VECTOR(A,DA,B,DB,C);
+symbolic procedure times!-in!-vector(a,da,b,db,c);
 % Put the product of A and B into C and return its degree.
 % C must not overlap with either A or B;
-  BEGIN
-    SCALAR DC,IC,W,lc,lb;
-    IF ilessp(DA,0) OR ilessp(DB,0) THEN RETURN MINUS!-ONE;
-    DC:=iplus2(DA,DB);
-    FOR I:=0:DC DO PUTV(C,I,0);
-    FOR IA:=0:DA DO <<
-      W:=GETV(A,IA);
+  begin
+    scalar dc,ic,w,lc,lb;
+    if ilessp(da,0) or ilessp(db,0) then return minus!-one;
+    dc:=iplus2(da,db);
+    for i:=0:dc do putv(c,i,0);
+    for ia:=0:da do <<
+      w:=getv(a,ia);
       lb := loc igetv(b,0);
       lc := loc igetv(c,ia);
-      FOR IB:=0:DB DO <<
-        IC:=iplus2(IA,IB);
+      for ib:=0:db do <<
+        ic:=iplus2(ia,ib);
 
-     %  PUTV(C,IC,MODULAR!-PLUS(GETV(C,IC),
-     %    MODULAR!-TIMES(W,GETV(B,IB))))
+     %  putv(c,ic,modular!-plus(getv(c,ic),
+     %    modular!-times(w,getv(b,ib))))
 
-        putmem(lc,MODULAR!-PLUS(getmem lc,
-          MODULAR!-TIMES(W,getmem lb)));
+        putmem(lc,modular!-plus(getmem lc,
+          modular!-times(w,getmem lb)));
         lb := iplus2(lb,addressingunitsperitem);
         lc := iplus2(lc,addressingunitsperitem);
 
       >> >>;
-    RETURN DC
-  END;
+    return dc
+  end;
 
-SYMBOLIC PROCEDURE REMAINDER!-IN!-VECTOR(A,DA,B,DB);
+symbolic procedure remainder!-in!-vector(a,da,b,db);
 % Overwrite the vector A with the remainder when A is
 % divided by B, and return the degree of the result;
-  BEGIN
-    SCALAR DELTA,DB!-1,RECIP!-LC!-B,W,la,lb;
-    IF DB=0 THEN RETURN MINUS!-ONE
-    ELSE IF DB=MINUS!-ONE THEN ERRORF "ATTEMPT TO DIVIDE BY ZERO";
-    RECIP!-LC!-B:=MODULAR!-MINUS MODULAR!-RECIPROCAL GETV(B,DB);
-    DB!-1:=isub1 DB; % Leading coeff of B treated specially, hence this;
-    WHILE NOT ilessp(DELTA:=idifference(DA,DB),0) DO <<
-      W:=MODULAR!-TIMES(RECIP!-LC!-B,GETV(A,DA));
+  begin
+    scalar delta,db!-1,recip!-lc!-b,w,la,lb;
+    if db=0 then return minus!-one
+    else if db=minus!-one then errorf "attempt to divide by zero";
+    recip!-lc!-b:=modular!-minus modular!-reciprocal getv(b,db);
+    db!-1:=isub1 db; % Leading coeff of B treated specially, hence this;
+    while not ilessp(delta:=idifference(da,db),0) do <<
+      w:=modular!-times(recip!-lc!-b,getv(a,da));
       la := loc(igetv(a,delta)); lb:= loc(igetv(b,0));
-      FOR I:=0:DB!-1 DO
+      for i:=0:db!-1 do
 
-       %PUTV(A,I#+DELTA,MODULAR!-PLUS(GETV(A,I#+DELTA),
-       %  MODULAR!-TIMES(GETV(B,I),W)));
+       %putv(a,i#+delta,modular!-plus(getv(a,i#+delta),
+       %  modular!-times(getv(b,i),w)));
 
-       <<putmem(la,MODULAR!-PLUS(getmem la,
-          MODULAR!-TIMES(getmem lb,w)));
+       <<putmem(la,modular!-plus(getmem la,
+          modular!-times(getmem lb,w)));
          la := iplus2(la,addressingunitsperitem);
          lb := iplus2(lb,addressingunitsperitem);
        >>;
 
-      DA:=isub1 DA;
-      WHILE NOT ilessp(DA,0) AND GETV(A,DA)=0 DO DA:=isub1 DA >>;
-    RETURN DA
-  END;
+      da:=isub1 da;
+      while not ilessp(da,0) and getv(a,da)=0 do da:=isub1 da >>;
+    return da
+  end;
 
 flag('(times!-in!-vector remainder!-in!-vector),'lose);
 
 endmodule;
 
 end;
+

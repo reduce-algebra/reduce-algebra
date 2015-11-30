@@ -80,12 +80,12 @@ module froben; % Computation of the frobenius normal form of a matrix.          
 % normal form of G is performed in the function cyclic_to_frobenius.
 
 
-symbolic procedure frobenius(A);
+symbolic procedure frobenius(a);
   begin
-    scalar AA,P,Pinv,ans,tmp,full_coeff_list,rule_list,input_mode;
+    scalar aa,p,pinv,ans,tmp,full_coeff_list,rule_list,input_mode;
 
-    matrix_input_test(A);
-    if (car size_of_matrix(A)) neq (cadr size_of_matrix(A))
+    matrix_input_test(a);
+    if (car size_of_matrix(a)) neq (cadr size_of_matrix(a))
      then rederr "ERROR: expecting a square matrix. ";
 
     input_mode := get(dmode!*,'dname);
@@ -97,14 +97,14 @@ symbolic procedure frobenius(A);
      input_mode neq 'rational then on rational;
     on combineexpt;
 
-    tmp := nest_input(A);
-    AA := car tmp;
+    tmp := nest_input(a);
+    aa := car tmp;
     full_coeff_list := cadr tmp;
 
-    tmp := frobeniusform(AA);
+    tmp := frobeniusform(aa);
     ans := car tmp;
-    P := cadr tmp;
-    Pinv := caddr tmp;
+    p := cadr tmp;
+    pinv := caddr tmp;
     %
     %  Set up rule list for removing nests.
     %
@@ -119,8 +119,8 @@ symbolic procedure frobenius(A);
     %
     let rule_list;
     ans := de_nest_mat(ans);
-    P := de_nest_mat(P);
-    Pinv := de_nest_mat(Pinv);
+    p := de_nest_mat(p);
+    pinv := de_nest_mat(pinv);
     clearrules rule_list;
     %
     % Return to original mode.
@@ -134,35 +134,35 @@ symbolic procedure frobenius(A);
        >>;
     off combineexpt;
 
-    return {'list,ans,P,Pinv};
+    return {'list,ans,p,pinv};
   end;
 
 flag ('(frobenius),'opfn);  %  So it can be used from algebraic mode.
 
 
 
-symbolic procedure frobeniusform(A);
+symbolic procedure frobeniusform(a);
   begin
-    scalar ans,plist,tmp,P,Pinv,inv_fact,T1,Tinv,V,Vinv,x;
+    scalar ans,plist,tmp,p,pinv,inv_fact,t1,tinv,v,vinv,x;
 
     x := mkid('x,0);
 
-    tmp := cyclic_vectors(A,x);
+    tmp := cyclic_vectors(a,x);
     plist := car tmp;
-    V := cadr tmp;
-    Vinv := caddr tmp;
+    v := cadr tmp;
+    vinv := caddr tmp;
 
     tmp := cyclic_to_frobenius(plist,x);
     inv_fact := car tmp;
-    T1 := cadr tmp;
-    Tinv := caddr tmp;
+    t1 := cadr tmp;
+    tinv := caddr tmp;
 
-    P:= reval {'times,V,T1};
-    Pinv:= reval {'times,Tinv,Vinv};
+    p:= reval {'times,v,t1};
+    pinv:= reval {'times,tinv,vinv};
 
     ans := invfact_to_frobenius(inv_fact,x);
 
-    return {ans,P,Pinv};
+    return {ans,p,pinv};
   end;
 
 
@@ -173,10 +173,10 @@ symbolic procedure basis(n,i);
   % Basis creates an element of the natural basis of a vector space.
   %
   begin
-    scalar VV;
-    VV := mkmatrix(1,n);
-    setmat(VV,1,i,1);
-    return VV;
+    scalar vv;
+    vv := mkmatrix(1,n);
+    setmat(vv,1,i,1);
+    return vv;
   end;
 
 
@@ -295,9 +295,9 @@ flag('(companion),'opfn);  %  So it can be used independently from
 
 symbolic procedure compute_g(r,dd,plist,x);
   begin
-    scalar G,tmp,new_elt;
+    scalar g,tmp,new_elt;
 
-    G := mkmatrix(r,r);
+    g := mkmatrix(r,r);
 
     for j:=1:r do
     <<
@@ -310,7 +310,7 @@ symbolic procedure compute_g(r,dd,plist,x);
                   {'minus,getmat(dd,1,i)}}}};
           new_elt := {'plus,new_elt,tmp};
         >>;
-        setmat(G,i,j,new_elt);
+        setmat(g,i,j,new_elt);
       >>;
 
       new_elt := 0;
@@ -321,40 +321,40 @@ symbolic procedure compute_g(r,dd,plist,x);
         new_elt := {'plus,new_elt,tmp};
       >>;
 
-      setmat(G,j,j,new_elt);
+      setmat(g,j,j,new_elt);
 
     >>;
 
-    return G;
+    return g;
   end;
 
 
 
 
-symbolic procedure copy_mat(A);
+symbolic procedure copy_mat(a);
   %
   % Creates a copy of the input and returns it;
   %
   begin
-    scalar C;
+    scalar c;
     integer row_dim,col_dim;
 
-    matrix_input_test(A);
+    matrix_input_test(a);
 
-    row_dim := car size_of_matrix(A);
-    col_dim := cadr size_of_matrix(A);
+    row_dim := car size_of_matrix(a);
+    col_dim := cadr size_of_matrix(a);
 
-    C := mkmatrix(row_dim,col_dim);
+    c := mkmatrix(row_dim,col_dim);
 
     for i:=1:row_dim do
     <<
       for j:=1:col_dim do
       <<
-        setmat(C,i,j,getmat(A,i,j));
+        setmat(c,i,j,getmat(a,i,j));
       >>;
     >>;
 
-    return C;
+    return c;
   end;
 
 
@@ -376,8 +376,8 @@ symbolic procedure cyclic_to_frobenius(plist,x);
   % using the fact that G is upper triangular. Then we use a modified
   % version of smithex.
   begin
-    scalar dd,D,US,S,G,C,T1,Tinv,inv_fact,L,Linv,columnT,rowT,rr,q,
-           columnTinv,rowTinv,tmp,tmp1;
+    scalar dd,d,us,s,g,c,t1,tinv,inv_fact,l,linv,columnt,rowt,rr,q,
+           columntinv,rowtinv,tmp,tmp1;
     integer r,n;
 
     r := length plist;
@@ -393,69 +393,69 @@ symbolic procedure cyclic_to_frobenius(plist,x);
     %%%%%%%%%%%%%%%%%%%
     % Compute matrix G.
     %%%%%%%%%%%%%%%%%%%
-    G:=compute_g(r,dd,plist,x);
+    g:=compute_g(r,dd,plist,x);
     %%%%%%%%%%%%%%%%%%%
 
     %%%%%%%%%%%%%%%%%%%
     % Compute smith normal form of G.
     %%%%%%%%%%%%%%%%%%%
-    tmp := uppersmith(G,x);
-    US:=car tmp;
-    L := cadr tmp;
-    Linv := caddr tmp;
+    tmp := uppersmith(g,x);
+    us:=car tmp;
+    l := cadr tmp;
+    linv := caddr tmp;
 
-    tmp:=mysmith(US,L,Linv,x);
-    S:=car tmp;
-    L := cadr tmp;
-    Linv := caddr tmp;
+    tmp:=mysmith(us,l,linv,x);
+    s:=car tmp;
+    l := cadr tmp;
+    linv := caddr tmp;
     %%%%%%%%%%%%%%%%%%%
 
-    D := mkmatrix(1,r);
+    d := mkmatrix(1,r);
     for i:=1:r do
     <<
-      setmat(D,1,i,deg(getmat(S,i,i),x));
+      setmat(d,1,i,deg(getmat(s,i,i),x));
     >>;
 
     %%%%%%%%%%%%%%%%%%%
     % Compute transformation matrix.
     %%%%%%%%%%%%%%%%%%%
-    C := mkmatrix(1,r);
-    T1 := mkmatrix(n,n);
-    columnT:=0;
+    c := mkmatrix(1,r);
+    t1 := mkmatrix(n,n);
+    columnt:=0;
 
     for i:=1:r do
     <<
       for k:=1:r do
       <<
-        setmat(C,1,k,getmat(L,k,i));
+        setmat(c,1,k,getmat(l,k,i));
       >>;
-      for j:=1:getmat(D,1,i) do
+      for j:=1:getmat(d,1,i) do
       <<
-        columnT:=columnT+1;
+        columnt:=columnt+1;
         for ii:=r step -1 until 1 do
         <<
-          q:=get_quo(getmat(C,1,ii),getmat(G,ii,ii));
-          rr:=get_rem(getmat(C,1,ii),getmat(G,ii,ii));
-          setmat(C,1,ii,rr);
+          q:=get_quo(getmat(c,1,ii),getmat(g,ii,ii));
+          rr:=get_rem(getmat(c,1,ii),getmat(g,ii,ii));
+          setmat(c,1,ii,rr);
           for jj:=1:(ii-1) do
           <<
-            setmat(C,1,jj,reval {'plus,reval getmat(C,1,jj),{'times,
-                   {'minus,q},reval getmat(G,jj,ii)}});
+            setmat(c,1,jj,reval {'plus,reval getmat(c,1,jj),{'times,
+                   {'minus,q},reval getmat(g,jj,ii)}});
           >>;
         >>;
-        rowT:=0;
+        rowt:=0;
         for ii:=1:r do
         <<
           tmp := reval{'plus,getmat(dd,1,ii+1),{'minus,
                        getmat(dd,1,ii)}};
           for jj:=1:tmp do
           <<
-            rowT:=rowT+1;
-            tmp1 := coeffn(getmat(C,1,ii),x,jj-1);
-            setmat(T1,rowT,columnT,tmp1);
+            rowt:=rowt+1;
+            tmp1 := coeffn(getmat(c,1,ii),x,jj-1);
+            setmat(t1,rowt,columnt,tmp1);
           >>;
         >>;
-        for ii:=1:r do setmat(C,1,ii,{'times,getmat(C,1,ii),x});
+        for ii:=1:r do setmat(c,1,ii,{'times,getmat(c,1,ii),x});
       >>;
     >>;
     %%%%%%%%%%%%%%%%%%%
@@ -464,28 +464,28 @@ symbolic procedure cyclic_to_frobenius(plist,x);
     % Compute inverse transformation matrix
     %%%%%%%%%%%%%%%%%%%
     <<
-      Tinv := mkmatrix(n,n);
-      columnTinv:=0;
+      tinv := mkmatrix(n,n);
+      columntinv:=0;
 
       for i:=1:r do
       <<
-        for k:=1:r do setmat(C,1,k,getmat(Linv,k,i));
+        for k:=1:r do setmat(c,1,k,getmat(linv,k,i));
         for j:=1:reval {'plus,getmat(dd,1,i+1),{'minus,
                         getmat(dd,1,i)}} do
         <<
-          columnTinv:=columnTinv+1;
-          rowTinv:=0;
+          columntinv:=columntinv+1;
+          rowtinv:=0;
           for ii:=1:r do
           <<
-            setmat(C,1,ii,get_rem(getmat(C,1,ii),getmat(S,ii,ii)));
-            for jj:=1:reval getmat(D,1,ii) do
+            setmat(c,1,ii,get_rem(getmat(c,1,ii),getmat(s,ii,ii)));
+            for jj:=1:reval getmat(d,1,ii) do
             <<
-              rowTinv:=rowTinv+1;
-              setmat(Tinv,rowTinv,columnTinv,reval
-                     coeffn(getmat(C,1,ii),x,jj-1));
+              rowtinv:=rowtinv+1;
+              setmat(tinv,rowtinv,columntinv,reval
+                     coeffn(getmat(c,1,ii),x,jj-1));
             >>;
           >>;
-          for ii:=1:r do setmat(C,1,ii,{'times,getmat(C,1,ii),x});
+          for ii:=1:r do setmat(c,1,ii,{'times,getmat(c,1,ii),x});
         >>;
       >>;
 
@@ -496,19 +496,19 @@ symbolic procedure cyclic_to_frobenius(plist,x);
 
     for i:=1:r do
     <<
-      if getmat(D,1,i)>0 then
+      if getmat(d,1,i)>0 then
       <<
-        inv_fact := append(inv_fact,{getmat(S,i,i)});
+        inv_fact := append(inv_fact,{getmat(s,i,i)});
       >>;
     >>;
 
-    return {inv_fact,T1,Tinv};
+    return {inv_fact,t1,tinv};
   end;
 
 
 
 
-symbolic procedure cyclic_vectors(A,x);
+symbolic procedure cyclic_vectors(a,x);
   %
   % cyclic_vectors computes a polycyclic basis of K^n with respect to A.
   % If this basis is (b1,..,bn)=
@@ -520,17 +520,17 @@ symbolic procedure cyclic_vectors(A,x);
   % plist_to_polycompanion([p1,..,pr],x).
   %
   begin
-    scalar V,Vinv,plist,U,Uinv,S,carrier,lincomb,VV,UU,SS,l,car,c,
+    scalar v,vinv,plist,u,uinv,s,carrier,lincomb,vv,uu,ss,l,car,c,
            tmp,ans,q,break;
     integer n,r;
 
-    n := car size_of_matrix(A);
+    n := car size_of_matrix(a);
 
-    U := mkmatrix(n,n);
-    S := mkmatrix(n,n);
+    u := mkmatrix(n,n);
+    s := mkmatrix(n,n);
     plist := {};
-    V := mkmatrix(n,n);
-    Vinv := mkmatrix(n,n);
+    v := mkmatrix(n,n);
+    vinv := mkmatrix(n,n);
     carrier := mkvect(n);
     lincomb := mkvect(n);
 
@@ -544,13 +544,13 @@ symbolic procedure cyclic_vectors(A,x);
       %%%%%%%%%%%%%%%%%%%
       q := 1;
       while getv(carrier,q) neq nil do q:=q+1;  %  Find car gap.
-      VV := basis(n,q);
+      vv := basis(n,q);
       %%%%%%%%%%%%%%%%%%%
 
       break := nil; %  Controls break out of loop.
       while not break do
       <<
-        UU := copy_mat(VV);
+        uu := copy_mat(vv);
         for i:=1:n do putv(lincomb,i,0);
 
         %  Always VV=UU+U*lincomb.
@@ -558,16 +558,16 @@ symbolic procedure cyclic_vectors(A,x);
         <<
           car:= getv(carrier,i);
 
-          if car neq nil and getmat(UU,1,i) neq 0 then
+          if car neq nil and getmat(uu,1,i) neq 0 then
           <<
-            c := {'quotient,getmat(UU,1,i),getmat(U,i,car)};
-            setmat(UU,1,i,0);
+            c := {'quotient,getmat(uu,1,i),getmat(u,i,car)};
+            setmat(uu,1,i,0);
 
             for j:=i+1:n do
             <<
-              tmp := {'times,c,getmat(U,j,car)};
-              setmat(UU,1,j,reval {'plus,getmat(UU,1,j),{'minus,{'times,
-                     c,getmat(U,j,car)}}});
+              tmp := {'times,c,getmat(u,j,car)};
+              setmat(uu,1,j,reval {'plus,getmat(uu,1,j),{'minus,{'times,
+                     c,getmat(u,j,car)}}});
             >>;
 
             putv(lincomb,car,c);
@@ -576,7 +576,7 @@ symbolic procedure cyclic_vectors(A,x);
         >>;
 
         q := 1;
-        while q<=n and reval getmat(UU,1,q)=0 do
+        while q<=n and reval getmat(uu,1,q)=0 do
         <<
           q:=q+1;
         >>;
@@ -589,17 +589,17 @@ symbolic procedure cyclic_vectors(A,x);
           putv(carrier,q,r); % This basis-element carries coordinates q.
 
           %  Always U=V*S.
-          for j:=q:n do setmat(U,j,r,getmat(UU,1,j));
-          for j:=1:n do setmat(V,j,r,getmat(VV,1,j));
+          for j:=q:n do setmat(u,j,r,getmat(uu,1,j));
+          for j:=1:n do setmat(v,j,r,getmat(vv,1,j));
 
           for j:=1:r-1 do
           <<
             tmp:=getv(lincomb,j);
-            for l:=j+1:r-1 do tmp:={'plus,tmp,{'times,getmat(S,j,l),
+            for l:=j+1:r-1 do tmp:={'plus,tmp,{'times,getmat(s,j,l),
                                     getv(lincomb,l)}};
-            setmat(S,j,r,{'minus,tmp});
+            setmat(s,j,r,{'minus,tmp});
           >>;
-          setmat(S,r,r,1);
+          setmat(s,r,r,1);
 
           %  Compute A*VV.
           for i:=1:n do
@@ -607,15 +607,15 @@ symbolic procedure cyclic_vectors(A,x);
             tmp:=0;
             for j:=1:n do
             <<
-             tmp:=reval{'plus,tmp,reval{'times,reval getmat(A,i,j),
-                        reval getmat(VV,1,j)}};
+             tmp:=reval{'plus,tmp,reval{'times,reval getmat(a,i,j),
+                        reval getmat(vv,1,j)}};
             >>;
-            setmat(UU,1,i,tmp);
+            setmat(uu,1,i,tmp);
           >>;
 
-          for i:=1: cadr size_of_matrix(UU) do
+          for i:=1: cadr size_of_matrix(uu) do
           <<
-            setmat(VV,1,i,getmat(UU,1,i));
+            setmat(vv,1,i,getmat(uu,1,i));
           >>;
 
         >>
@@ -629,7 +629,7 @@ symbolic procedure cyclic_vectors(A,x);
       %%%%%%%%%%%%%%%%%%%
       % New cycle found
       %%%%%%%%%%%%%%%%%%%
-      SS := mkmatrix(1,r);
+      ss := mkmatrix(1,r);
 
       for j:=1:r do
       <<
@@ -637,17 +637,17 @@ symbolic procedure cyclic_vectors(A,x);
 
         for l:=j+1:r do
         <<
-          tmp:=reval{'plus,tmp,{'times,reval getmat(S,j,l),
+          tmp:=reval{'plus,tmp,{'times,reval getmat(s,j,l),
                      reval getv(lincomb,l)}};
         >>;
 
-        setmat(SS,1,j,tmp);
+        setmat(ss,1,j,tmp);
       >>;
 
       ans := nil;
       for j:=1:r do
       <<
-        tmp := {'times,getmat(SS,1,r+1-j),{'expt,x,r-j}};
+        tmp := {'times,getmat(ss,1,r+1-j),{'expt,x,r-j}};
         ans := reval{'plus,ans,tmp};
       >>;
 
@@ -657,7 +657,7 @@ symbolic procedure cyclic_vectors(A,x);
 
     >>; %  End while r<n.
 
-    Uinv := inv(U,carrier);
+    uinv := inv(u,carrier);
 
     for i:=1:n do
     <<
@@ -666,14 +666,14 @@ symbolic procedure cyclic_vectors(A,x);
         tmp:=0;
         for l:=i:n do
         <<
-          tmp:=reval {'plus,tmp,{'times,reval getmat(S,i,l),
-                      reval getmat(Uinv,l,j)}};
+          tmp:=reval {'plus,tmp,{'times,reval getmat(s,i,l),
+                      reval getmat(uinv,l,j)}};
          >>;
-        setmat(Vinv,i,j,tmp);
+        setmat(vinv,i,j,tmp);
       >>;
     >>;
 
-    return {plist,V,Vinv};
+    return {plist,v,vinv};
   end;
 
 
@@ -728,7 +728,7 @@ symbolic procedure diag(uu);
   %
   begin
     scalar bigA,arg,input,u;
-    integer nargs,n,Aidx,stp,bigsize,smallsize;
+    integer nargs,n,aidx,stp,bigsize,smallsize;
 
     u := car uu;
     input := u;
@@ -748,7 +748,7 @@ symbolic procedure diag(uu);
     >>;
 
     bigA := mkmatrix(bigsize,bigsize);
-    Aidx:=1;
+    aidx:=1;
     input := u;
     for k:=1:nargs do
     <<
@@ -756,24 +756,24 @@ symbolic procedure diag(uu);
       % If scalar entry.
       if algebraic length(arg) = 1 then
       <<
-        setmat(bigA,Aidx,Aidx,arg);
-        Aidx:=Aidx+1;
+        setmat(bigA,aidx,aidx,arg);
+        aidx:=aidx+1;
         input := cdr input;
       >>
       else
       <<
         smallsize:= car size_of_matrix(arg);
-        stp:=smallsize+Aidx-1;
-        for i:=Aidx:stp do
+        stp:=smallsize+aidx-1;
+        for i:=aidx:stp do
         <<
-          for j:=Aidx:stp do
+          for j:=aidx:stp do
           <<
             arg:=car input;
             % Find (i-Aidx+1)'th row.
             arg := cdr arg;
             <<
               n:=1;
-              while n < (i-Aidx+1) do
+              while n < (i-aidx+1) do
               <<
                 arg := cdr arg;
                 n:=n+1;
@@ -785,7 +785,7 @@ symbolic procedure diag(uu);
             %
             <<
               n:=1;
-              while n < (j-Aidx+1) do
+              while n < (j-aidx+1) do
               <<
                 arg := cdr arg;
                 n:=n+1;
@@ -796,12 +796,12 @@ symbolic procedure diag(uu);
             setmat(bigA,i,j,arg);
           >>;
         >>;
-        Aidx := Aidx+smallsize;
+        aidx := aidx+smallsize;
         input := cdr input;
       >>;
     >>;
 
-    return biga;
+    return bigA;
   end;
 
 
@@ -866,17 +866,17 @@ symbolic procedure get_rem(poly1,poly2);
 
 
 
-symbolic procedure inv(U,carrier);
+symbolic procedure inv(u,carrier);
   %
   % inv computes the inverse of a permuted upper triangular matrix. The
   % permutation is given by carrier.
   %
   begin
-    scalar Uinv,tmp;
+    scalar uinv,tmp;
     integer n;
 
-    n:= car size_of_matrix(U);
-    Uinv := mkmatrix(n,n);
+    n:= car size_of_matrix(u);
+    uinv := mkmatrix(n,n);
 
     for i:=1:n do
     <<
@@ -887,20 +887,20 @@ symbolic procedure inv(U,carrier);
 
         for k:=j:i-1 do
         <<
-          tmp := {'plus,tmp,{'times,getmat(U,i,getv(carrier,k)),
-                  getmat(Uinv,getv(carrier,k),j)}};
+          tmp := {'plus,tmp,{'times,getmat(u,i,getv(carrier,k)),
+                  getmat(uinv,getv(carrier,k),j)}};
         >>;
 
-        setmat(Uinv,getv(carrier,i),j,{'quotient,{'minus,tmp},
-               getmat(U,i,getv(carrier,i))});
+        setmat(uinv,getv(carrier,i),j,{'quotient,{'minus,tmp},
+               getmat(u,i,getv(carrier,i))});
       >>;
 
-      setmat(Uinv,getv(carrier,i),i,{'quotient,1,getmat(U,i,
-             getV(carrier,i))});
-      for j:=i+1:n do setmat(Uinv,getv(carrier,i),j,0);
+      setmat(uinv,getv(carrier,i),i,{'quotient,1,getmat(u,i,
+             getv(carrier,i))});
+      for j:=i+1:n do setmat(uinv,getv(carrier,i),j,0);
     >>;
 
-    return Uinv;
+    return uinv;
   end;
 
 
@@ -929,45 +929,45 @@ symbolic procedure make_identity(row_dim,col_dim);
   % Creates identity matrix.
   %
   begin
-    scalar A;
-    A := mkmatrix(row_dim,col_dim);
+    scalar a;
+    a := mkmatrix(row_dim,col_dim);
     for i:=1:row_dim do
     <<
       for j:=1:col_dim do
       <<
-        if i=j then setmat(A,i,i,1);
+        if i=j then setmat(a,i,i,1);
       >>
     >>;
-    return A;
+    return a;
   end;
 
 
 
 
 
-symbolic procedure matrix_input_test(A);
+symbolic procedure matrix_input_test(a);
   begin
-    if not eqcar(A,'mat) then rederr
-     {"ERROR: `",A,"' is non matrix input."}
-    else return A;
+    if not eqcar(a,'mat) then rederr
+     {"ERROR: `",a,"' is non matrix input."}
+    else return a;
   end;
 
 
 
 
-symbolic procedure mysmith(US,L,Linv,x);
+symbolic procedure mysmith(us,l,linv,x);
   %
   % The Smith normal form S of a matrix US is computed. L and Linv are
   % also computed where L*S*R=US.
   % For description of mysmith see smithex.
   %
   begin
-    scalar S,a,b,g,jj,s1,t1,tmp,isclear,q,lc,poly1,poly2,input1,input2;
+    scalar s,a,b,g,jj,s1,t1,tmp,isclear,q,lc,poly1,poly2,input1,input2;
     integer n,r;
 
-    n:= car size_of_matrix(US);
+    n:= car size_of_matrix(us);
 
-    S := copy_mat(US);
+    s := copy_mat(us);
 
     for k:=1:n do
     <<
@@ -978,12 +978,12 @@ symbolic procedure mysmith(US,L,Linv,x);
         for i:= k+1:n do
         <<
 
-          if getmat(S,i,k) = 0 then <<>>
+          if getmat(s,i,k) = 0 then <<>>
           else
           <<
 
-            poly1 := getmat(S,k,k);
-            poly2 := getmat(S,i,k);
+            poly1 := getmat(s,k,k);
+            poly2 := getmat(s,i,k);
             tmp := calc_exgcd(poly1,poly2,x);
             g := car tmp;
             s1 := cadr tmp ;
@@ -992,34 +992,34 @@ symbolic procedure mysmith(US,L,Linv,x);
             b := get_quo(poly2,g);
             for j:=k+1:n do
             <<
-              input1 := getmat(S,k,j);
-              input2 := getmat(S,i,j);
+              input1 := getmat(s,k,j);
+              input2 := getmat(s,i,j);
               tmp := {'plus,{'times,s1,input1},{'times,t1,input2}};
-              setmat(S,i,j,{'plus,{'times,a,input2},{'minus,{'times,b,
+              setmat(s,i,j,{'plus,{'times,a,input2},{'minus,{'times,b,
                      input1}}});
-              setmat(S,k,j,tmp);
+              setmat(s,k,j,tmp);
             >>;
 
             for j:=1:n do
             <<
-              tmp := reval{'plus,{'times,a,getmat(L,j,k)},{'times,b,
-                           getmat(L,j,i)}};
-              setmat (L,j,i,reval{'plus,{'times,{'minus,t1},
-                      getmat(L,j,k)},{'times,s1,getmat(L,j,i)}});
-              setmat (L,j,k,tmp);
+              tmp := reval{'plus,{'times,a,getmat(l,j,k)},{'times,b,
+                           getmat(l,j,i)}};
+              setmat (l,j,i,reval{'plus,{'times,{'minus,t1},
+                      getmat(l,j,k)},{'times,s1,getmat(l,j,i)}});
+              setmat (l,j,k,tmp);
             >>;
 
             for j:=1:n do
             <<
-              tmp := reval{'plus,{'times,s1,getmat(Linv,k,j)},
-                           {'times,t1,getmat(Linv,i,j)}};
-              setmat (Linv,i,j,reval{'plus,{'times,a,getmat(Linv,i,j)},
-                      {'times,{'minus,b},getmat(Linv,k,j)}});
-              setmat (Linv,k,j,tmp);
+              tmp := reval{'plus,{'times,s1,getmat(linv,k,j)},
+                           {'times,t1,getmat(linv,i,j)}};
+              setmat (linv,i,j,reval{'plus,{'times,a,getmat(linv,i,j)},
+                      {'times,{'minus,b},getmat(linv,k,j)}});
+              setmat (linv,k,j,tmp);
             >>;
 
-            setmat(S,k,k,g);
-            setmat(S,i,k,0);
+            setmat(s,k,k,g);
+            setmat(s,i,k,0);
 
           >>;
 
@@ -1028,19 +1028,19 @@ symbolic procedure mysmith(US,L,Linv,x);
 
         for i:=k+1:n do
         <<
-          poly1:=getmat(S,k,i);
-          poly2:=getmat(S,k,k);
-          setmat(S,k,i,get_rem(poly1,poly2));
+          poly1:=getmat(s,k,i);
+          poly2:=getmat(s,k,k);
+          setmat(s,k,i,get_rem(poly1,poly2));
           q := get_quo(poly1,poly2);
         >>;
 
         for i:=k+1:n do
         <<
-          if getmat(S,k,i) = 0 then <<>>
+          if getmat(s,k,i) = 0 then <<>>
           else
           <<
-            poly1:=getmat(S,k,k);
-            poly2:=getmat(S,k,i);
+            poly1:=getmat(s,k,k);
+            poly2:=getmat(s,k,i);
             tmp := calc_exgcd(poly1,poly2,x);
             g:= car tmp;
             s1 := cadr tmp;
@@ -1050,16 +1050,16 @@ symbolic procedure mysmith(US,L,Linv,x);
 
             for j:=k+1:n do
             <<
-              input1 := getmat(S,j,k);
-              input2 := getmat(S,j,i);
+              input1 := getmat(s,j,k);
+              input2 := getmat(s,j,i);
               tmp := {'plus,{'times,s1,input1},{'times,t1,input2}};
-              setmat(S,j,i,{'plus,{'times,a,input2},{'minus,{'times,b,
+              setmat(s,j,i,{'plus,{'times,a,input2},{'minus,{'times,b,
                      input1}}});
-              setmat(S,j,k,tmp);
+              setmat(s,j,k,tmp);
             >>;
 
-            setmat(S,k,k,g);
-            setmat(S,k,i,0);
+            setmat(s,k,k,g);
+            setmat(s,k,i,0);
             isclear := nil;
           >>;
         >>;
@@ -1071,30 +1071,30 @@ symbolic procedure mysmith(US,L,Linv,x);
     for i:=1:n do
     <<
 
-      if getmat(S,i,i) neq 0 then
+      if getmat(s,i,i) neq 0 then
       <<
         r:=r+1;
         %  Watch out for integers giving lc = 0.
-        if off_mod_lcof(getmat(S,i,i),x) = 0 then lc := getmat(S,i,i)
-        else lc := off_mod_lcof(getmat(S,i,i),x);
-        setmat(S,r,r,{'quotient,getmat(S,i,i),lc});
+        if off_mod_lcof(getmat(s,i,i),x) = 0 then lc := getmat(s,i,i)
+        else lc := off_mod_lcof(getmat(s,i,i),x);
+        setmat(s,r,r,{'quotient,getmat(s,i,i),lc});
         if i neq r then
         <<
-          setmat(S,i,i,0);
+          setmat(s,i,i,0);
 
           for j:=1:n do
           <<
-            tmp := reval getmat(L,j,r);
-            setmat(L,j,r,reval getmat(L,i,j));
+            tmp := reval getmat(l,j,r);
+            setmat(l,j,r,reval getmat(l,i,j));
 
-            setmat(L,j,i,tmp);
+            setmat(l,j,i,tmp);
           >>;
 
           for j:=1:n do
           <<
-            tmp := reval getmat(Linv,r,j);
-            setmat(Linv,r,j,reval getmat(Linv,i,j));
-            setmat(Linv,i,j,tmp);
+            tmp := reval getmat(linv,r,j);
+            setmat(linv,r,j,reval getmat(linv,i,j));
+            setmat(linv,i,j,tmp);
           >>;
 
         >>;
@@ -1108,35 +1108,35 @@ symbolic procedure mysmith(US,L,Linv,x);
     <<
       jj:=i+1;
       <<
-        while reval getmat(S,i,i) neq 1 and jj <= r do
+        while reval getmat(s,i,i) neq 1 and jj <= r do
         <<
-          poly1:=reval getmat(S,i,i);
-          poly2:=reval getmat(S,jj,jj);
+          poly1:=reval getmat(s,i,i);
+          poly2:=reval getmat(s,jj,jj);
           tmp := calc_exgcd(poly1,poly2,x);
           g:= car tmp;
           s1 := cadr tmp;
           t1 := caddr tmp;
           a:=get_quo(poly1,g);
           b:=get_quo(poly2,g);
-          setmat(S,i,i,g);
-          setmat(S,jj,jj,{'times,a,poly2});
+          setmat(s,i,i,g);
+          setmat(s,jj,jj,{'times,a,poly2});
 
           for k:=1:n do
           <<
-            tmp := reval {'plus,{'times,a,getmat(L,k,i)},{'times,b,
-                          getmat(L,k,jj)}};
-            setmat (L,k,jj,reval {'plus,{'times,{'minus,t1},
-                    getmat(L,k,i)},{'times,s1,getmat(L,k,jj)}});
-            setmat (L,k,i,tmp);
+            tmp := reval {'plus,{'times,a,getmat(l,k,i)},{'times,b,
+                          getmat(l,k,jj)}};
+            setmat (l,k,jj,reval {'plus,{'times,{'minus,t1},
+                    getmat(l,k,i)},{'times,s1,getmat(l,k,jj)}});
+            setmat (l,k,i,tmp);
           >>;
 
           for k:=1:n do
           <<
-            tmp := reval {'plus,{'times,s1,getmat(Linv,i,k)},{'times,t1,
-                          getmat(Linv,jj,k)}};
-            setmat(Linv,jj,k,reval {'plus,{'times,a,getmat(Linv,jj,k)},
-                   {'times,{'minus,b},getmat(Linv,i,k)}});
-            setmat(Linv,i,k,tmp);
+            tmp := reval {'plus,{'times,s1,getmat(linv,i,k)},{'times,t1,
+                          getmat(linv,jj,k)}};
+            setmat(linv,jj,k,reval {'plus,{'times,a,getmat(linv,jj,k)},
+                   {'times,{'minus,b},getmat(linv,i,k)}});
+            setmat(linv,i,k,tmp);
           >>;
 
           jj:=jj+1;
@@ -1144,47 +1144,47 @@ symbolic procedure mysmith(US,L,Linv,x);
       >>;
     >>;
 
-    return {S,L,Linv};
+    return {s,l,linv};
   end;
 
 
 
 
-symbolic procedure nest_input(A);
+symbolic procedure nest_input(a);
   %
   % Takes a matrix and converts all elements into nested form.
   % Also finds union of all coefficients in all elements and
   % returns them in a list, along with the new matrix.
   %
   begin
-    scalar tmp,coeff_list,full_coeff_list,AA;
+    scalar tmp,coeff_list,full_coeff_list,aa;
     integer row_dim,col_dim;
 
     full_coeff_list := nil;
     coeff_list := nil;
 
-    AA := copy_mat(A);
+    aa := copy_mat(a);
 
-    row_dim := car size_of_matrix(AA);
-    col_dim := cadr size_of_matrix(AA);
+    row_dim := car size_of_matrix(aa);
+    col_dim := cadr size_of_matrix(aa);
 
     for i := 1:row_dim do
     <<
       for j := 1:col_dim do
       <<
-        coeff_list := get_coeffs(getmat(AA,i,j));
+        coeff_list := get_coeffs(getmat(aa,i,j));
         if coeff_list = nil then <<>>
         else full_coeff_list := union(coeff_list,full_coeff_list);
         for each elt in coeff_list do
         <<
           tmp := {'co,2,elt};
-          setmat(AA,i,j,algebraic (sub(elt=tmp,getmat(AA,i,j))));
+          setmat(aa,i,j,algebraic (sub(elt=tmp,getmat(aa,i,j))));
         >>;
       >>;
     >>;
 
 
-    return {AA,full_coeff_list};
+    return {aa,full_coeff_list};
   end;
 
 
@@ -1246,7 +1246,7 @@ symbolic procedure plist_to_polycompanion(plist,x);
   %      [ 0   0    0    1   -c4 ]
   %
   begin
-    scalar d,A;
+    scalar d,a;
     integer r,n;
 
     r := length plist;
@@ -1256,42 +1256,42 @@ symbolic procedure plist_to_polycompanion(plist,x);
     for i:=1:r do putv(d,i,deg(nth(plist,i),x));
 
     n := getv(d,r);
-    A := mkmatrix(n,n);
+    a := mkmatrix(n,n);
 
     for i:=1:r do
     <<
-      for j:=getv(d,i-1)+2:getv(d,i) do setmat(A,j,j-1,1);
+      for j:=getv(d,i-1)+2:getv(d,i) do setmat(a,j,j-1,1);
       for j:=i:r do
       <<
         for k:=getv(d,i-1)+1:getv(d,i) do
         <<
-          setmat(A,k,getv(d,j),{'minus,coeffn(nth(plist,j),x,k-1)});
+          setmat(a,k,getv(d,j),{'minus,coeffn(nth(plist,j),x,k-1)});
         >>;
       >>;
     >>;
 
-    return A;
+    return a;
   end;
 
 
 
 
-symbolic procedure size_of_matrix(A);
+symbolic procedure size_of_matrix(a);
   %
   % Takes matrix and returns list {no. of rows, no. of columns).
   %
   begin
     integer row_dim,col_dim;
-    matrix_input_test(A);
-    row_dim := -1 + length A;
-    col_dim := length cadr A;
+    matrix_input_test(a);
+    row_dim := -1 + length a;
+    col_dim := length cadr a;
     return {row_dim,col_dim};
   end;
 
 
 
 
-symbolic procedure uppersmith(G,x);
+symbolic procedure uppersmith(g,x);
   %
   % An upper triangular matrix G is simplified. Entry G(i,j) is reduced
   % modulo gcd(G(i,i),G(j,j)). L and L^(-1) are also comnputed where
@@ -1299,53 +1299,53 @@ symbolic procedure uppersmith(G,x);
   %
   begin
 
-    scalar US,L,Linv,g,s1,t1,q,r,tmp;
+    scalar us,l,linv,g,s1,t1,q,r,tmp;
     integer n;
 
-    n:= car size_of_matrix(G);
+    n:= car size_of_matrix(g);
 
-    US:=copy_mat(G);
+    us:=copy_mat(g);
 
-    L := make_identity(n,n);
-    Linv := make_identity(n,n);
+    l := make_identity(n,n);
+    linv := make_identity(n,n);
 
     for j:=2:n do
     <<
       for i:=1:j-1 do
       <<
-        tmp:=calc_exgcd(getmat(US,i,i),getmat(US,j,j),x);
+        tmp:=calc_exgcd(getmat(us,i,i),getmat(us,j,j),x);
         g:= car tmp;
         s1:= cadr tmp;
         t1 := caddr tmp;
-        q := get_quo(getmat(US,i,j),g);
-        r := get_rem(getmat(US,i,j),g);
+        q := get_quo(getmat(us,i,j),g);
+        r := get_rem(getmat(us,i,j),g);
 
-        setmat(US,i,j,r);
+        setmat(us,i,j,r);
 
         for k:=1:i-1 do
         <<
-          tmp := getmat(US,k,i);
-          setmat(US,k,j,{'plus,getmat(US,k,j),{'times,{'minus,q},s1,
-                 getmat(US,k,i)}});
+          tmp := getmat(us,k,i);
+          setmat(us,k,j,{'plus,getmat(us,k,j),{'times,{'minus,q},s1,
+                 getmat(us,k,i)}});
         >>;
 
         for k:=j+1:n do
         <<
-          setmat(US,i,k,{'plus,getmat(US,i,k),{'times,{'minus,q},t1,
-                 getmat(US,j,k)}});
+          setmat(us,i,k,{'plus,getmat(us,i,k),{'times,{'minus,q},t1,
+                 getmat(us,j,k)}});
         >>;
 
         for k:=1:i do
         <<
-          setmat(L,k,j,{'plus,getmat(L,k,j),{'times,q,t1,
-                 getmat(L,k,i)}});
+          setmat(l,k,j,{'plus,getmat(l,k,j),{'times,q,t1,
+                 getmat(l,k,i)}});
         >>;
 
-        setmat(Linv,i,j,{'times,{'minus,q},t1});
+        setmat(linv,i,j,{'times,{'minus,q},t1});
       >>;
     >>;
 
-    return {US,L,Linv};
+    return {us,l,linv};
   end;
 
 endmodule;

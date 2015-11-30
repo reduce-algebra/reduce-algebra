@@ -33,49 +33,49 @@ module sfother;   % Rulesets for the Struve H and L functions, Lommel
 % Neither imports nor exports functions.
 % This module contains only rulesets.
 
-algebraic (operator struveh, struvel);
+algebraic (operator StruveH, StruveL);
 
 algebraic (struve!*rules := {
 
-df(struveh(~n,~z),z)  =>
-   (2/pi) - struveh(1,z) when numberp n and n = 0,
+df(StruveH(~n,~z),z)  =>
+   (2/pi) - StruveH(1,z) when numberp n and n = 0,
 
-df(struveh(~n,~x),x) => (x*StruveH(-1 + n,x)- n*StruveH(n,x))/x,
+df(StruveH(~n,~x),x) => (x*StruveH(-1 + n,x)- n*StruveH(n,x))/x,
 
-df((z**n)*struveh(~n,~z),z)  => (z**n)*struveh(n-1,z),
+df((z**n)*StruveH(~n,~z),z)  => (z**n)*StruveH(n-1,z),
 
-df((z**(-n))*struveh(~n,~z),z)  =>
-   (1/(sqrt(pi)*(2**n)*gamma(n+(3/2)))) - (z**(-n))*struveh(n+1,z),
+df((z**(-n))*StruveH(~n,~z),z)  =>
+   (1/(sqrt(pi)*(2**n)*gamma(n+(3/2)))) - (z**(-n))*StruveH(n+1,z),
 
 
-struveh(~n,~z)  =>
-   ((-1)**n)*besselj(-n,z)
+StruveH(~n,~z)  =>
+   ((-1)**n)*BesselJ(-n,z)
       when numberp n and impart n = 0
          and n < 0 and (n*2)=floor(n*2) and not evenp floor(n*2),
 
-struveh(~n,~z)  =>
+StruveH(~n,~z)  =>
    ((2/(pi*z))**(1/2))*(1-cos z) when numberp n and n=1/2,
 
-struveh(~n,~z)  =>
+StruveH(~n,~z)  =>
    ((z/(pi*2))**(1/2)) * (1+(2/(z**2))) -
       ((2/(pi*z))**(1/2)) * (sin z + ((cos z)/z))
       when numberp n and n=3/2,
 
-struveh(~n,~x) => (x*0.5)^(n+1)*struve_compute_term(n,x,h)
+StruveH(~n,~x) => (x*0.5)^(n+1)*struve_compute_term(n,x,h)
           when numberp x and numberp n and symbolic !*rounded,
 
-struvel(~n,~x) => struve_compute_term(n,x,l)
+StruveL(~n,~x) => struve_compute_term(n,x,l)
           when numberp x and numberp n and symbolic !*rounded,
 
-struvel(~n,~z)  =>
-   besseli(-n,z)
+StruveL(~n,~z)  =>
+   BesselI(-n,z)
       when numberp n and impart n = 0
          and n < 0 and (n*2)=floor(n*2) and not evenp floor(n*2),
 
-struvel(~n,~z)  =>
-   -i*(e**((-i*n*pi)/2))*struveh(n,i*z) when symbolic !*complex,
+StruveL(~n,~z)  =>
+   -i*(e**((-i*n*pi)/2))*StruveH(n,i*z) when symbolic !*complex,
 
-df(struvel(~n,~x),x) => (x*StruveL(-1 + n,x)- n*StruveL(n,x))/x
+df(StruveL(~n,~x),x) => (x*StruveL(-1 + n,x)- n*StruveL(n,x))/x
 
 })$
 
@@ -88,7 +88,7 @@ algebraic (operator lommel1, lommel2);
 algebraic (lommel!*rules := {
 
 lommel1(~a,~b,~z)  =>
-   -(2**a)*besselj(a,z)*gamma(a+1)+z**a
+   -(2**a)*BesselJ(a,z)*gamma(a+1)+z**a
       when numberp a and numberp b and a = b+1,
 
 lommel1(~a,~b,~z)  =>
@@ -96,7 +96,7 @@ lommel1(~a,~b,~z)  =>
       when numberp b and b < 0 and a neq b and a neq (b+1),
 
 lommel1(~a,~b,~z)  =>
-   (sqrt(pi)*(2**a)*gamma((2*a + 1)/2)*struveh(a,z))/2 when a = b,
+   (sqrt(pi)*(2**a)*gamma((2*a + 1)/2)*StruveH(a,z))/2 when a = b,
 
 lommel2(~a,~b,~z)  => z**b when numberp a and numberp b and a = b+1,
 
@@ -104,7 +104,7 @@ lommel2(~a,~b,~z)  => lommel2(a,-b,z)
       when numberp b and b < 0 and a neq b and a neq (b+1),
 
 lommel2(~a,~b,~z)  =>
-   (sqrt(pi)*(2**a)*gamma((2*a + 1)/2)*(-bessely(a,z)+struveh(a,z)))/2
+   (sqrt(pi)*(2**a)*gamma((2*a + 1)/2)*(-BesselY(a,z)+StruveH(a,z)))/2
       when a = b
 
 })$
@@ -113,15 +113,15 @@ algebraic (let lommel!*rules);
 
 
 
-algebraic (operator whittakerm, whittakerw);
+algebraic (operator WhittakerM, WhittakerW);
 
 algebraic (whittaker!*rules := {
 
-whittakerm(~k,~m,~z)  =>
-   exp(-z/2)*(z**(1/2+m))*kummerm(1/2+m-k,1+2*m,z),
+WhittakerM(~k,~m,~z)  =>
+   exp(-z/2)*(z**(1/2+m))*KummerM(1/2+m-k,1+2*m,z),
 
-whittakerw(~k,~m,~z)  =>
-   exp(-z/2)*(z**(1/2+m))*kummeru(1/2+m-k,1+2*m,z),
+WhittakerW(~k,~m,~z)  =>
+   exp(-z/2)*(z**(1/2+m))*KummerU(1/2+m-k,1+2*m,z),
 
 df(WhittakerM(~n,~m,~z),z)  => 1/(2*z)*
         ((1+2*m-2*n)*WhittakerM(n-1,m,z) + (2*n-z)*WhittakerM(n,m,z)),
@@ -150,7 +150,7 @@ begin scalar dmode!*!*;
                 off rounded;
                 expo := e^(-i*n*pi/2);
                 on rounded;
-                return  (-i*expo*struveh(n,i*x))>>
+                return  (-i*expo*StruveH(n,i*x))>>
   else <<
    pre := precision 0;
    precis := 10.0^(-pre-2);
@@ -161,7 +161,7 @@ begin scalar dmode!*!*;
                         result := term >>
         else for kk:=0:-(n+2) do << k:=kk+1;
                         term := (-1)^kk*(1/2*x)^(2*kk)/
-                                (Gamma(kk+3/2) * Gamma(kk+n+3/2));
+                                (gamma(kk+3/2) * gamma(kk+n+3/2));
                         result := result + term>>;
         while abs(term) > precis do
           <<  term:= term*(-0.25)*(x^2)/((k+0.5)*(k+n+0.5));

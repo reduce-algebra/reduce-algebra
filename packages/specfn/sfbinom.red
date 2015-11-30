@@ -50,32 +50,32 @@ algebraic <<
                 when fixp n and fixp k and n<k and n >=0,
        binomial (~n,~k) => 0
                 when fixp n and fixp k and k < 0,
-       binomial (~n,~k) => Gamma(n+1) / Gamma (k+1) / Gamma(n-k+1)
+       binomial (~n,~k) => gamma(n+1) / gamma (k+1) / gamma(n-k+1)
                 when numberp n and  numberp k and not(fixp (n - k) and
                 (n-k) < 0),
-       df(binomial(~c,~k),c) => binomial(c,k)*(Psi(1+c)-Psi(1+c-k))
+       df(binomial(~c,~k),c) => binomial(c,k)*(psi(1+c)-psi(1+c-k))
      } >>;
 
 % Some rules for quotients of binomials are still missing
 
-algebraic operator Stirling1, Stirling2;
+algebraic operator stirling1, stirling2;
 
 algebraic
- let {Stirling1(~n,~n) => 1,
-      Stirling1(~n,0)  => 0 when not(n=0),
-      Stirling1(~n,~n-1) => - binomial(n,2),
-      Stirling1(~n,~m) => 0 when fixp n and fixp m and n < m,
-      Stirling1(~n,~m) => (for k:=0:(n-m) sum
+ let {stirling1(~n,~n) => 1,
+      stirling1(~n,0)  => 0 when not(n=0),
+      stirling1(~n,~n-1) => - binomial(n,2),
+      stirling1(~n,~m) => 0 when fixp n and fixp m and n < m,
+      stirling1(~n,~m) => (for k:=0:(n-m) sum
                         ( (-1)^k * binomial(n-1+k,n-m+k) *
-                          binomial(2*n-m,n-m-k) * Stirling2(n-m+k,k)))
+                          binomial(2*n-m,n-m-k) * stirling2(n-m+k,k)))
                 when fixp n and fixp m and n > m,
 % This rather naive implementation will cause problem
 % when m - n is large !
-      Stirling2(~n,~n) => 1,
-      Stirling2(~n,0)  => 0 when not(n=0),
-      Stirling2(~n,~n-1) => binomial(n,2),
-      Stirling2(~n,~m) => 0 when fixp n and fixp m and n < m,
-      Stirling2(~n,~m) => calc!:stirling2(n,m)
+      stirling2(~n,~n) => 1,
+      stirling2(~n,0)  => 0 when not(n=0),
+      stirling2(~n,~n-1) => binomial(n,2),
+      stirling2(~n,~m) => 0 when fixp n and fixp m and n < m,
+      stirling2(~n,~m) => calc!:stirling2(n,m)
                         when fixp n and fixp m and n >m };
 
 algebraic procedure calc!:stirling2 (n,m);
@@ -98,7 +98,7 @@ if (not fixp n) or (n < 0) then return nil;
 
 list_of_bincoeff := { 1 };
 
-while N > 0 do
+while n > 0 do
      << old := 0;
         newlist := {};
         while not(list_of_bincoeff = {}) do
@@ -116,7 +116,7 @@ end;
 
 flag('(binomial_row),'opfn);
 
-symbolic procedure Motzkin(n);
+symbolic procedure motzkin(n);
 
 if (n:= reval n)=0 then 1 else if n=1 then 1 else
 % ((3*n-3)*Motzkin(n-2) + (2*n+1)* Motzkin(n-1))/(n+2);

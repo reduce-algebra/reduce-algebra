@@ -301,7 +301,7 @@ procedure cl_applysac1(c,l,gor);
    % possible application of subsumption or cut between $\gamma$ and
    % an arbitrary element of $\lambda$. [l] is modified.
    begin scalar w,flg;
-      flg:=T;
+      flg:=t;
       repeat <<
 	 w := cl_applysac2(c,l,gor);
 	 if w eq 'break then <<
@@ -338,12 +338,12 @@ procedure cl_applysac2(c,l,gor);
    % equivalent to ['true] in the case ['gor eq 'or] or to ['false] in
    % the case ['gor eq 'and].
    begin scalar w,ll;
-      if null l then return ( (T . c) . nil);
+      if null l then return ( (t . c) . nil);
       ll := l;
       while ll and ((w := cl_subandcut(c, car ll,gor)) eq 'keep1) do
 	 ll := cdr ll;
       if null w then return 'break;
-      if null ll then return ((T . c) . nil);
+      if null ll then return ((t . c) . nil);
       if w eq 'keep2 then return (nil . ll);
       if w neq 'failed then  % [w] is the result of the cut
 	                     % between [c] and [car ll].
@@ -465,7 +465,7 @@ procedure cl_sacatlp(a,l);
    % [a] is an atomic formula; [l] is a list of atomic formulas.
    % Returns [T] a subsumption or cut beween [a] and an element of [l]
    % is possible.
-   T;
+   t;
 
 procedure cl_sacat(a1,a2,gor);
    % Common logic subsumption and cut atomic formula. [a1] and [a2]
@@ -599,7 +599,7 @@ procedure cl_bnf2set2(fl,op);
 	 if not cl_cxfp f then
 	    {f}
 	 else if rl_op f eq xop then <<
-	    flg := T;
+	    flg := t;
 	    sort(list2set rl_argn f,'rl_ordatp)
 	 >> else
 	    rederr {"cl_bnf2set1: not in bnf: ",f}
@@ -776,7 +776,7 @@ procedure cl_qsimpltestclcl(pl,cl,op);
    % conclusion clauses; [op] is one of [and] or [or]. Returns [T] or
    % [nil].
    begin scalar r;
-      r := T;
+      r := t;
       while pl and r do <<
 	 r := rl_qsimpltestccl(car pl,cl,op);
 	 pl := cdr pl;
@@ -830,7 +830,7 @@ procedure cl_qssusubymem(c1,c2,op);
 
 procedure cl_qssusubymem1(c1,c2);
    begin scalar r;
-      r := T;
+      r := t;
       while c2 and r do <<
 	 if not(car c2 member c1) then
 	    r := nil;
@@ -854,7 +854,7 @@ procedure cl_qssusubytab1(c1,c2,op);
    % Subsumtion by table. Returns [T] is [c1] g-subsumes [c2] and
    % hence [c1] implies [c2].
    begin scalar r;
-      r := T;
+      r := t;
       while c2 and r do <<
 	 r := cl_qssusubytab2(c1,car c2,op);
 	 c2 := cdr c2
@@ -961,7 +961,7 @@ procedure cl_qsimpltestcc1(sl,cp,cc,op);  % TODO
 
 procedure cl_qstautp(f);
    if f eq 'true then
-      T
+      t
    else if f eq 'false then
       nil
    else
@@ -1070,7 +1070,7 @@ procedure cl_qstrycons(a,c1,c2,op);
       if not(na member c2) then
 	 return nil;
       sc1 := cc1;
-      r := T;
+      r := t;
       while sc1 and r do <<
 	 if rl_negateat car sc1 member c2 then
 	    r := nil;

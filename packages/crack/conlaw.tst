@@ -28,7 +28,7 @@ lisp(print_:=nil)$     % no output of the calculation
 
 %% off batch_mode$
 
-comment -------------------------------------------------------------
+COMMENT -------------------------------------------------------------
 The following example calculates all conservation laws of the KdV-
 equation with a characteristic function of order not higher than two;
 
@@ -37,7 +37,7 @@ depend u,x,t$          % declares u to be a function of x,t
 conlaw4({{df(u,t) = u*df(u,x)+df(u,x,3)}, {u}, {t,x}},
         {0, 2, t, {}, {}}                             )$
 
-comment -------------------------------------------------------------
+COMMENT -------------------------------------------------------------
 The next example demonstrates that one can specify an ansatz
 for the characteristic function of one or more equations of the
 PDE-system. In this example all conservation laws of the wave
@@ -67,7 +67,7 @@ conlaw2({{df(u,t)=df(v,x),
 clear q_1$
 nodepnd {q_1}$
 
-comment -------------------------------------------------------------
+COMMENT -------------------------------------------------------------
 For the Burgers equation the following example finds all conservation
 laws of zero'th order in the characteristic function up to the solution
 of the linear heat equation. This is an example for what happens when 
@@ -80,7 +80,7 @@ depend u,x,t$
 conlaw1({{df(u,t)=df(u,x,2)+df(u,x)**2/2}, {u}, {t,x}}, 
         {0, 0, t, {}, {}}                              )$      
 
-comment -------------------------------------------------------------
+COMMENT -------------------------------------------------------------
 In this example all conservation laws of the Ito system are calculated
 that have a conserved density of order not higher than one.
 This is a further example of non-polynomial conservation laws;
@@ -92,7 +92,7 @@ conlaw1({{df(u,t)=df(u,x,3)+6*u*df(u,x)+2*v*df(v,x),
           df(v,t)=2*df(u,x)*v+2*u*df(v,x)           }, {u,v}, {t,x}},
         {0, 1, t, {}, {}})$
 
-comment -------------------------------------------------------------
+COMMENT -------------------------------------------------------------
 In the next example the 5th order Korteweg - de Vries equation is
 investigated concerning conservation laws of order 0 and 1 in the
 conserved density P_t. Parameters a,b,c in the PDE are determined
@@ -108,7 +108,7 @@ conlaw1({{df(u,t)=-df(u,x,5)-a*u**2*df(u,x)
          {u}, {t,x}},
         {0, 1, t, {a,b,c}, {}})$
 
-comment -------------------------------------------------------------
+COMMENT -------------------------------------------------------------
 conlawi can also be used to determine first integrals of ODEs.
 The generality of the ansatz is not just specified by the order.
 For example, the Lorentz system below is a first order system

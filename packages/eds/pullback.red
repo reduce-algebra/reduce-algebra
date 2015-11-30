@@ -28,7 +28,7 @@ module pullback;
 %
 
 
-Comment. Data structure:
+COMMENT. Data structure:
 
         map     ::= list of kernel . prefix
 

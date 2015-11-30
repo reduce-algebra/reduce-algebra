@@ -1,4 +1,4 @@
-comment
+COMMENT
         Test and demonstration file for the Taylor expansion package,
         by Rainer M. Schoepf.  Works with version 2.2a (01-Apr-2000);
 
@@ -6,12 +6,12 @@ comment
 
 on errcont; % disable interruption on errors
 
-comment Simple Taylor expansion;
+COMMENT Simple Taylor expansion;
 
 xx := taylor (e**x, x, 0, 4);
 yy := taylor (e**y, y, 0, 4);
 
-comment Basic operations, i.e. addition, subtraction, multiplication,
+COMMENT Basic operations, i.e. addition, subtraction, multiplication,
         and division are possible: this is not done automatically if
         the switch TAYLORAUTOCOMBINE is OFF.  In this case it is
         necessary to use taylorcombine;
@@ -20,35 +20,35 @@ taylorcombine (xx**2);
 taylorcombine (ws - xx);
 taylorcombine (xx**3);
 
-comment The result is again a Taylor kernel;
+COMMENT The result is again a Taylor kernel;
 
 if taylorseriesp ws then write "OK";
 
-comment It is not possible to combine Taylor kernels that were
+COMMENT It is not possible to combine Taylor kernels that were
         expanded with respect to different variables;
 
 taylorcombine (xx**yy);
 
-comment But we can take the exponential or the logarithm
+COMMENT But we can take the exponential or the logarithm
         of a Taylor kernel;
 
 taylorcombine (e**xx);
 taylorcombine log ws;
 
-comment A more complicated example;
+COMMENT A more complicated example;
 
 hugo := taylor(log(1/(1-x)),x,0,5);
 taylorcombine(exp(hugo/(1+hugo)));
 
-comment We may try to expand about another point;
+COMMENT We may try to expand about another point;
 
 taylor (xx, x, 1, 2);
 
-comment Arc tangent is one of the functions this package knows of;
+COMMENT Arc tangent is one of the functions this package knows of;
 
 xxa := taylorcombine atan ws;
 
-comment The trigonometric functions;
+COMMENT The trigonometric functions;
 
 taylor (tan x / x, x, 0, 2);
 
@@ -56,25 +56,25 @@ taylorcombine sin ws;
 
 taylor (cot x / x, x, 0, 4);
 
-comment The poles of these functions are correctly handled;
+COMMENT The poles of these functions are correctly handled;
 
 taylor(tan x,x,pi/2,0);
 
 taylor(tan x,x,pi/2,3);
 
-comment Expansion with respect to more than one kernel is possible;
+COMMENT Expansion with respect to more than one kernel is possible;
 
 xy := taylor (e**(x+y), x, 0, 2, y, 0, 2);
 
 taylorcombine (ws**2);
 
-comment We take the inverse and convert back to REDUCE's standard
+COMMENT We take the inverse and convert back to REDUCE's standard
         representation;
 
 taylorcombine (1/ws);
 taylortostandard ws;
 
-comment Some examples of Taylor kernel divsion;
+COMMENT Some examples of Taylor kernel divsion;
 
 xx1 := taylor (sin (x), x, 0, 4);
 taylorcombine (xx/xx1);
@@ -89,7 +89,7 @@ taylorcombine(tt2/tt1);
 taylorcombine(tt3/tt1);
 
 
-comment Here's what I call homogeneous expansion;
+COMMENT Here's what I call homogeneous expansion;
 
 xx := taylor (e**(x*y), {x,y}, 0, 2);
 xx1 := taylor (sin (x+y), {x,y}, 0, 2);
@@ -97,21 +97,21 @@ xx2 := taylor (cos (x+y), {x,y}, 0, 2);
 temp := taylorcombine (xx/xx2);
 taylorcombine (ws*xx2);
 
-comment The following shows a principal difficulty:
+COMMENT The following shows a principal difficulty:
         since xx1 is symmetric in x and y but has no constant term
         it is impossible to compute 1/xx1;
 
 taylorcombine (1/xx1);
 
-comment Substitution in Taylor expressions is possible;
+COMMENT Substitution in Taylor expressions is possible;
 
 sub (x=z, xy);
 
-comment Expression dependency in substitution is detected;
+COMMENT Expression dependency in substitution is detected;
 
 sub (x=y, xy);
 
-comment It is possible to replace a Taylor variable by a constant;
+COMMENT It is possible to replace a Taylor variable by a constant;
 
 sub (x=4, xy);
 
@@ -119,7 +119,7 @@ sub (x=4, xx1);
 
 sub (y=0, ws);
 
-comment This package has three switches:
+COMMENT This package has three switches:
         TAYLORKEEPORIGINAL, TAYLORAUTOEXPAND, and TAYLORAUTOCOMBINE;
 
 on taylorkeeporiginal;
@@ -146,10 +146,10 @@ xx / xx2;
 
 ws * xx2;
 
-comment Another example that shows truncation if Taylor kernels
+COMMENT Another example that shows truncation if Taylor kernels
         of different expansion order are combined;
 
-comment First we increase the number of terms to be printed;
+COMMENT First we increase the number of terms to be printed;
 
 taylorprintterms := all;
 
@@ -161,11 +161,11 @@ off taylorautocombine;
 taylorcombine(p-x**2);
 taylorcombine(p - taylor(x**2,x,0,5));
 
-comment Switch back to finite number of terms;
+COMMENT Switch back to finite number of terms;
 
 taylorprintterms := 6;
 
-comment Some more examples;
+COMMENT Some more examples;
 
 taylor(1/(1+y^4+x^2*y^2+x^4),{x,y},0,6);
 
@@ -222,7 +222,7 @@ taylor(tan x/log cos x,x,pi/2,2);
 taylor(log(x^2/(x^2-a)),x,0,3);
 
 
-comment Three more complicated examples contributed by Stan Kameny;
+COMMENT Three more complicated examples contributed by Stan Kameny;
 
 zz2 := (z*(z-2*pi*i)*(z-pi*i/2)^2)/(sinh z-i);
 dz2 := df(zz2,z);
@@ -239,7 +239,7 @@ taylor((sin tan x-tan sin x)/(asin atan x-atan asin x),x,0,6);
 taylor((sin tan x-tan sin x)/(asin atan x-atan asin x),x,0,0);
 
 
-comment If the expansion point is not constant, it has to be taken
+COMMENT If the expansion point is not constant, it has to be taken
         care of in differentation, as the following examples show;
 
 taylor(sin(x+a),x,a,8);
@@ -247,7 +247,7 @@ df(ws,a);
 taylor(cos(x+a),x,a,7);
 
 
-comment A problem are non-analytical terms: rational powers and
+COMMENT A problem are non-analytical terms: rational powers and
         logarithmic terms can be handled, but other types of essential
         singularities cannot;
 
@@ -257,11 +257,11 @@ taylor(asinh(1/x),x,0,5);
 
 taylor(e**(1/x),x,0,2);
 
-comment Another example for non-integer powers;
+COMMENT Another example for non-integer powers;
 
 sub (y = sqrt (x), yy);
 
-comment Expansion about infinity is possible in principle...;
+COMMENT Expansion about infinity is possible in principle...;
 
 taylor (e**(1/x), x, infinity, 5);
 xi := taylor (sin (1/x), x, infinity, 5);
@@ -269,13 +269,13 @@ xi := taylor (sin (1/x), x, infinity, 5);
 y1 := taylor(x/(x-1), x, infinity, 3);
 z := df(y1, x);
 
-comment ...but far from being perfect;
+COMMENT ...but far from being perfect;
 
 taylor (1 / sin (x), x, infinity, 5);
 
 clear z;
 
-comment You may access the expansion with the PART operator;
+COMMENT You may access the expansion with the PART operator;
 
 part(yy,0);
 part(yy,1);
@@ -283,7 +283,7 @@ part(yy,4);
 part(yy,6);
 
 
-comment The template of a Taylor kernel can be extracted;
+COMMENT The template of a Taylor kernel can be extracted;
 
 taylortemplate yy;
 
@@ -295,7 +295,7 @@ taylortemplate xy;
 
 taylortemplate xx1;
 
-comment Here is a slightly less trivial example;
+COMMENT Here is a slightly less trivial example;
 
 exp := (sin (x) * sin (y) / (x * y))**2;
 
@@ -304,7 +304,7 @@ taylor (exp, x, 0, 2, y, 0, 2);
 
 tt := taylor (exp, {x,y}, 0, 2);
 
-comment An example that uses factorization;
+COMMENT An example that uses factorization;
 
 on factor;
 
@@ -316,12 +316,12 @@ on exp;
 
 zz;
 
-comment A simple example of Taylor kernel differentiation;
+COMMENT A simple example of Taylor kernel differentiation;
 
 hugo := taylor(e^x,x,0,5);
 df(hugo^2,x);
 
-comment The following shows the (limited) capabilities to integrate
+COMMENT The following shows the (limited) capabilities to integrate
         Taylor kernels. Only simple cases are supported, otherwise
         a warning is printed and the Taylor kernels are converted to
         standard representation;
@@ -334,7 +334,7 @@ int (ww, x);
 int (zz + ww, x);
 
 
-comment And here we present Taylor series reversion.
+COMMENT And here we present Taylor series reversion.
         We start with the example given by Knuth for the algorithm;
 
 taylor (t - t**2, t, 0, 5);
@@ -352,7 +352,7 @@ taylorrevert (tmp, x, y);
 taylor (log y, y, 1, 5);
 
 
-comment The following example calculates the perturbation expansion
+COMMENT The following example calculates the perturbation expansion
         of the root x = 20 of the following polynomial in terms of
         EPS, in ROUNDED mode;
 
@@ -364,7 +364,7 @@ tpoly := taylor (poly, x, 20, 4);
 
 taylorrevert (tpoly, x, eps);
 
-comment Some more examples using rounded mode;
+COMMENT Some more examples using rounded mode;
 
 precision 13;
 
@@ -377,18 +377,18 @@ taylor(tan x,x,pi/2,4);
 off rounded;
 
 
-comment An example that involves computing limits of type 0/0 if
+COMMENT An example that involves computing limits of type 0/0 if
         expansion is done via differentiation;
 
 
 taylor(sqrt((e^x - 1)/x),x,0,15);
 
-comment An example that involves intermediate non-analytical terms
+COMMENT An example that involves intermediate non-analytical terms
         which cancel entirely;
 
 taylor(x^(5/2)/(log(x+1)*tan(x^(3/2))),x,0,5);
 
-comment Other examples involving non-analytical terms;
+COMMENT Other examples involving non-analytical terms;
 
 taylor(log(e^x-1),x,0,5);
 
@@ -408,9 +408,9 @@ taylor(exp sub(x=x^15,ss),x,0,2);
 
 taylor(dilog(x),x,0,4);
 
-taylor(ei(x),x,0,4);
+taylor(Ei(x),x,0,4);
 
-comment In the following we demonstrate the possibiblity to compute the
+COMMENT In the following we demonstrate the possibiblity to compute the
         expansion of a function which is given by a simple first order
         differential equation: the function myexp(x) is exp(-x^2);
 
@@ -425,7 +425,7 @@ clear myexp,erf;
 
 %%% showtime;
 
-comment There are two special operators, implicit_taylor and
+COMMENT There are two special operators, implicit_taylor and
         inverse_taylor, to compute the Taylor expansion of implicit
         or inverse functions;
 
@@ -442,7 +442,7 @@ implicit_taylor(x+y^3-y,x,y,0,-1,5);
 
 implicit_taylor(y*e^y-x,x,y,0,0,5);
 
-comment This is the function exp(-1/x^2), which has an essential
+COMMENT This is the function exp(-1/x^2), which has an essential
         singularity at the point 0;
 
 implicit_taylor(x^2*log y+1,x,y,0,0,3);
@@ -457,7 +457,7 @@ inverse_taylor(log(1+x),x,y,0,5);
 
 inverse_taylor((e^x-e^(-x))/2,x,y,0,5);
 
-comment In the next two cases the inverse functions have a branch
+COMMENT In the next two cases the inverse functions have a branch
         point, therefore the computation fails;
 
 inverse_taylor((e^x+e^(-x))/2,x,y,0,5);
@@ -472,7 +472,7 @@ inverse_taylor(x*exp(x),x,y,0,5);
 %%% showtime;
 
 
-comment An application is the problem posed by Prof. Stanley:
+COMMENT An application is the problem posed by Prof. Stanley:
         we prove that the finite difference expression below
         corresponds to the given derivative expression;
 
@@ -664,7 +664,7 @@ finite_difference_expression :=
 -f(x,y)*gg(x,y)^2*a(x,y-dy)/(16*dx^2*dy^2)
 -a(x,y)*f(x,y)*gg(x,y)^2/(8*dx^2*dy^2)$
 
-comment We define abbreviations for the partial derivatives;
+COMMENT We define abbreviations for the partial derivatives;
 
 operator ax,ay,fx,fy,gx,gy;
 operator axx,axy,ayy,fxx,fxy,fyy,gxx,gxy,gyy;
@@ -741,7 +741,7 @@ let operator_diff_rules;
 
 texp := taylor (finite_difference_expression, dx, 0, 1, dy, 0, 1);
 
-comment You may also try to expand further but this needs a lot
+COMMENT You may also try to expand further but this needs a lot
         of CPU time.  Therefore the following line is commented out;
 
 %texp := taylor (finite_difference_expression, dx, 0, 2, dy, 0, 2);
@@ -769,7 +769,7 @@ off taylorautoexpand,taylorkeeporiginal;
 
 %%% showtime;
 
-comment An example provided by Alan Barnes: elliptic functions;
+COMMENT An example provided by Alan Barnes: elliptic functions;
 
 % Jacobi's elliptic functions 
 %       sn(x,k),  cn(x,k), dn(x,k).
@@ -857,6 +857,6 @@ clear sn, cn, dn, epsilon;
 
 %%% showtime;
 
-comment That's all, folks;
+COMMENT That's all, folks;
 
 end;

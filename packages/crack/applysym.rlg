@@ -46,7 +46,7 @@ on dfprint$
 
           % to print derivatives as subscripts
 
-comment
+COMMENT
 -------------------------------------------------------
 This file is supposed to provide an automatic test of
 the program APPLYSYM. On the other hand the application
@@ -73,7 +73,7 @@ lisp(print_:=nil)$
 depend w,x,y,z$
 
 
-QUASILINPDE( df(w,x)*x+df(w,y)*y+2*df(w,z)*z-2*w-x*y,  w,  {x,y,z} )$
+quasilinpde( df(w,x)*x+df(w,y)*y+2*df(w,z)*z-2*w-x*y,  w,  {x,y,z} )$
 
 
 The quasilinear PDE:  0 = w *x + w *y + 2*w *z - 2*w - x*y.
@@ -91,7 +91,7 @@ nodepend w,x,y,z$
 
 
 
-comment
+COMMENT
 -------------------------------------------------------
 The result means that w is defined implicitly through 
 
@@ -126,7 +126,7 @@ lisp(depl!*:=nil)$
 depend z,x,y$
 
 
-QUASILINPDE( x*df(z,x)-y, z, {x,y})$
+quasilinpde( x*df(z,x)-y, z, {x,y})$
 
 
 The quasilinear PDE:  0 = z *x - y.
@@ -149,7 +149,7 @@ lisp(depl!*:=nil)$
 depend z,x,y$
 
 
-QUASILINPDE( x**2*df(z,x)+y**2*df(z,y), z, {x,y})$
+quasilinpde( x**2*df(z,x)+y**2*df(z,y), z, {x,y})$
 
 
                               2       2
@@ -175,7 +175,7 @@ lisp(depl!*:=nil)$
 depend z,x,y$
 
 
-QUASILINPDE( (x**2-y**2)*df(z,x)+2*x*y*df(z,y), z, {x,y})$
+quasilinpde( (x**2-y**2)*df(z,x)+2*x*y*df(z,y), z, {x,y})$
 
 
                               2       2
@@ -202,7 +202,7 @@ lisp(depl!*:=nil)$
 depend z,x,y$
 
 
-QUASILINPDE( (a0*x-a1)*df(z,x)+(a0*y-a2)*df(z,y), z, {x,y})$
+quasilinpde( (a0*x-a1)*df(z,x)+(a0*y-a2)*df(z,y), z, {x,y})$
 
 
 The quasilinear PDE:  0 = z *a0*x - z *a1 + z *a0*y - z *a2.
@@ -228,7 +228,7 @@ lisp(depl!*:=nil)$
 depend z,x,y$
 
 
-QUASILINPDE( a*df(z,x)+b*df(z,y)-x**2+y**2, z, {x,y})$
+quasilinpde( a*df(z,x)+b*df(z,y)-x**2+y**2, z, {x,y})$
 
 
                                          2    2
@@ -253,7 +253,7 @@ lisp(depl!*:=nil)$
 depend z,x,y$
 
 
-QUASILINPDE( x*df(z,x)+y*df(z,y)-a*x, z, {x,y})$
+quasilinpde( x*df(z,x)+y*df(z,y)-a*x, z, {x,y})$
 
 
 The quasilinear PDE:  0 = z *x + z *y - a*x.
@@ -278,7 +278,7 @@ lisp(depl!*:=nil)$
 depend z,x,y$
 
 
-QUASILINPDE( df(z,x)+df(z,y)-a*z, z, {x,y})$
+quasilinpde( df(z,x)+df(z,y)-a*z, z, {x,y})$
 
 
 The quasilinear PDE:  0 = z  + z  - a*z.
@@ -304,7 +304,7 @@ lisp(depl!*:=nil)$
 depend z,x,y$
 
 
-QUASILINPDE( df(z,x)-y*df(z,y)+z, z, {x,y})$
+quasilinpde( df(z,x)-y*df(z,y)+z, z, {x,y})$
 
 
 The quasilinear PDE:  0 = z  - z *y + z.
@@ -328,7 +328,7 @@ lisp(depl!*:=nil)$
 depend z,x,y$
 
 
-QUASILINPDE( 2*df(z,x)-y*df(z,y)+z, z, {x,y})$
+quasilinpde( 2*df(z,x)-y*df(z,y)+z, z, {x,y})$
 
 
 The quasilinear PDE:  0 = 2*z  - z *y + z.
@@ -352,7 +352,7 @@ lisp(depl!*:=nil)$
 depend z,x,y$
 
 
-QUASILINPDE( a*df(z,x)+y*df(z,y)-b*z, z, {x,y})$
+quasilinpde( a*df(z,x)+y*df(z,y)-b*z, z, {x,y})$
 
 
 The quasilinear PDE:  0 = z *a + z *y - b*z.
@@ -378,7 +378,7 @@ lisp(depl!*:=nil)$
 depend z,x,y$
 
 
-QUASILINPDE( x*(df(z,x)-df(z,y))-y*df(z,y), z,{x,y})$
+quasilinpde( x*(df(z,x)-df(z,y))-y*df(z,y), z,{x,y})$
 
 
 The quasilinear PDE:  0 = z *x - z *x - z *y.
@@ -402,7 +402,7 @@ lisp(depl!*:=nil)$
 depend z,x,y$
 
 
-QUASILINPDE( x*df(z,x)+y*df(z,y)-az, z, {x,y})$
+quasilinpde( x*df(z,x)+y*df(z,y)-az, z, {x,y})$
 
 
 The quasilinear PDE:  0 = z *x + z *y - az.
@@ -428,7 +428,7 @@ lisp(depl!*:=nil)$
 depend z,x,y$
 
 
-QUASILINPDE( x*df(z,x)+y*df(z,y)-z+x**2+y**2-1, z, {x,y})$
+quasilinpde( x*df(z,x)+y*df(z,y)-z+x**2+y**2-1, z, {x,y})$
 
 
                                          2    2
@@ -455,7 +455,7 @@ lisp(depl!*:=nil)$
 depend z,x,y$
 
 
-QUASILINPDE( a*x**2*df(z,x)+b*y**2*df(z,y)-c*z**2, z, {x,y})$
+quasilinpde( a*x**2*df(z,x)+b*y**2*df(z,y)-c*z**2, z, {x,y})$
 
 
                                 2         2      2
@@ -481,7 +481,7 @@ lisp(depl!*:=nil)$
 depend z,x,y$
 
 
-QUASILINPDE( x*y**2*df(z,x)+2*y**3*df(z,y)-2*(y*z-x**2)**2, z,
+quasilinpde( x*y**2*df(z,x)+2*y**3*df(z,y)-2*(y*z-x**2)**2, z,
              {x,y})$
 
 
@@ -510,7 +510,7 @@ lisp(depl!*:=nil)$
 depend w,x,y,z$
 
 
-QUASILINPDE( x*df(w,x)+(a*x+b*y)*df(w,y)+(c*x+d*y+f*z)*df(w,z), w,
+quasilinpde( x*df(w,x)+(a*x+b*y)*df(w,y)+(c*x+d*y+f*z)*df(w,z), w,
              {x,y,z})$
 
 

@@ -34,7 +34,7 @@ module bfdoer; % routines for doing bfloat arithmetic, mixed float
 %
 
 
-Comment  support for allroot and realroot modules;
+COMMENT  support for allroot and realroot modules;
 
 exports bfeqp, bfleqp, bfloatem, bfmin, bfsgn, cflotem,
         ckacc, deflate2, firstroot, gfconj, gfdiff, gfeqp, gfexit,

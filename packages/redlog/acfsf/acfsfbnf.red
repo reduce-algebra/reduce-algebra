@@ -43,7 +43,7 @@ procedure acfsf_dnf(f);
    % Algebraically closed field disjunctive normal form. [f] is a
    % formula. Returns a DNF of [f]. Depends on switch [rlbnfsac].
    if !*rlbnfsac then
-      (cl_dnf f) where !*rlsiso=T
+      (cl_dnf f) where !*rlsiso=t
    else
       cl_dnf f;
 
@@ -51,7 +51,7 @@ procedure acfsf_cnf(f);
    % Algebraically closed field conjunctive normal form. [f] is a
    % formula. Returns a CNF of [f]. Depends on switch [rlbnfsac].
    if !*rlbnfsac then
-      (cl_cnf f) where !*rlsiso=T
+      (cl_cnf f) where !*rlsiso=t
    else
       cl_cnf f;
 

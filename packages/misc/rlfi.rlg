@@ -33,7 +33,7 @@ Unknown: a
 \end{verbatim}
 \begin{displaymath}
 \left\{
-a={\rm root\_of} \left(a\_^{7}-13 a\_+5,a\_,tag\_1\right)
+a={\mathrm{root\_of}} \left(a\_^{7}-13 a\_+5,a\_,tag\_1\right)
 \right\}
 \end{displaymath}
 \begin{verbatim}
@@ -45,8 +45,8 @@ solve(a**(2*y)-3*a**y+2,y);
 \end{verbatim}
 \begin{displaymath}
 \left\{
-y=\left(2 {\rm arbint} _{2} i \pi +\log \,2\right)/\log \,a , y=\left(2 
-{\rm arbint} _{1} i \pi \right)/\log \,a
+y=\left(2 {\mathrm{arbint}} _{2} i \pi +\log \,2\right)/\log \,a , y=\left(2 
+{\mathrm{arbint}} _{1} i \pi \right)/\log \,a
 \right\}
 \end{displaymath}
 \begin{verbatim}
@@ -70,25 +70,25 @@ off verbatim;
 \beta \: \sin \,\alpha \:
 \end{displaymath}
 \begin{displaymath}
-\frac{\partial \,{\bf \tilde{u}}^{e}}{\partial \,t}+c \frac{\partial ^{2}{\bf 
-\tilde{u}}^{e}}{\partial x^{2}}+b \frac{\partial \,{\bf \tilde{u}}^{i}}{
-\partial \,x}={\bf f}^{e}
+\frac{\partial \,\mathbf{\tilde{u}}^{e}}{\partial \,t}+c \frac{\partial ^{2}
+\mathbf{\tilde{u}}^{e}}{\partial x^{2}}+b \frac{\partial \,\mathbf{\tilde{u}}
+^{i}}{\partial \,x}=\mathbf{f}^{e}
 \end{displaymath}
 \begin{displaymath}
-\frac{{\bf \tilde{u}}^{e}_{j+1,k}-{\bf \tilde{u}}^{e}_{jk}}{\delta \,t}+c 
-\frac{{\bf \tilde{u}}^{e}_{j,k+1}-2 {\bf \tilde{u}}^{e}_{jk}+{\bf \tilde{u}}^{
-e}_{j,k-1}}{\delta ^{2}\,x}+b \frac{{\bf \tilde{u}}^{i}_{j,k+1/2}-{\bf \tilde{
-u}}^{i}_{j,k-1/2}}{\delta \,x}={\bf f}^{e}
+\frac{\mathbf{\tilde{u}}^{e}_{j+1,k}-\mathbf{\tilde{u}}^{e}_{jk}}{\delta \,t}+
+c \frac{\mathbf{\tilde{u}}^{e}_{j,k+1}-2 \mathbf{\tilde{u}}^{e}_{jk}+\mathbf{
+\tilde{u}}^{e}_{j,k-1}}{\delta ^{2}\,x}+b \frac{\mathbf{\tilde{u}}^{i}_{j,k+1/
+2}-\mathbf{\tilde{u}}^{i}_{j,k-1/2}}{\delta \,x}=\mathbf{f}^{e}
 \end{displaymath}
 \begin{verbatim}
 REDUCE Input:
 
-product(k=1,2*n+1,f(2*i k+1)\(i(2*k+1)-1));
+product(k=1,2*n+1,f(2*i k+1)//(i(2*k+1)-1));
 
 
 \end{verbatim}
 \begin{displaymath}
-\prod _{k=1}^{2 n+1}\frac{{\bf f}^{2 i_{k}+1}}{i_{2 k+1}-1}
+\prod _{k=1}^{2 n+1}\frac{\mathbf{f}^{2 i_{k}+1}}{i_{2 k+1}-1}
 \end{displaymath}
 \begin{verbatim}
 REDUCE Input:
@@ -98,7 +98,8 @@ int(u(e,j,k,x)*f(e,x),x);
 
 \end{verbatim}
 \begin{displaymath}
-\int {\bf \tilde{u}}^{e}_{jk}\left(x\right) {\bf f}^{e}\left(x\right)\:d\,x
+\int \mathbf{\tilde{u}}^{e}_{jk}\left(x\right) \mathbf{f}^{e}\left(x\right)
+\:d\,x
 \end{displaymath}
 \begin{verbatim}
 REDUCE Input:
@@ -108,7 +109,7 @@ sum(i=0,n,sqrt u(e,i));
 
 \end{verbatim}
 \begin{displaymath}
-\sum _{i=0}^{n}\sqrt {{\bf \tilde{u}}^{e}_{i}}
+\sum _{i=0}^{n}\sqrt {\mathbf{\tilde{u}}^{e}_{i}}
 \end{displaymath}
 \begin{verbatim}
 REDUCE Input:
@@ -119,10 +120,3 @@ off latex,verbatim;
 \end{verbatim}
 \end{document}
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 0 ms  plus GC time: 16 ms
-
-End of Lisp run after 0.00+0.06 seconds
-real 0.21
-user 0.04
-sys 0.06

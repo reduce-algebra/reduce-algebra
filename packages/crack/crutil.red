@@ -277,7 +277,7 @@ begin scalar h,oldinpu,ex,pdes,forg,subli,start_no,intbak;
  for each h in forg do
 % if pairp h and (car h='EQUAL) then subli:=cons(h,subli);
 % subli:=cons('LIST,subli);
- if pairp h and (car h='EQUAL) then subli:=cons((cadr h . {'!*sq,caddr h,t}),subli);
+ if pairp h and (car h='equal) then subli:=cons((cadr h . {'!*sq,caddr h,t}),subli);
 
  start_no:=eqn_no;
  intbak:=!*int$ !*int:=nil;
@@ -300,7 +300,7 @@ oncemore:
   if print_ then write eqn_no," ";
   goto oncemore
  >>          else <<
-  ex:=mkeqSQ(ex,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes);
+  ex:=mkeqsq(ex,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes);
   h:=eqinsert2(ex,pdes);
   if null h then <<
    if null car recycle_eqns then
@@ -317,7 +317,7 @@ oncemore:
  return list(pdes,forg)
 end;
 
-symbolic procedure mkeqSQlist(sqvallist,faclist,pvallist,ftem,vl,flaglist,
+symbolic procedure mkeqsqlist(sqvallist,faclist,pvallist,ftem,vl,flaglist,
                               simp_flag,orderl,pdes);
 %  makes a list of equations, currently uses either sqvallist or pvallist
 %    sqvallist: list of expressions in sq-form (no prefix sq) or nil
@@ -331,7 +331,7 @@ symbolic procedure mkeqSQlist(sqvallist,faclist,pvallist,ftem,vl,flaglist,
 %                       within updateSQ()
 begin scalar l0,l1;
  while (sqvallist or faclist or pvallist) and null contradiction_ do <<
-  l0:=mkeqSQ(if sqvallist then car sqvallist else nil,
+  l0:=mkeqsq(if sqvallist then car sqvallist else nil,
              if   faclist then car   faclist else nil,
              if  pvallist then car  pvallist else nil,
              ftem,vl,flaglist,simp_flag,orderl,nil,append(l1,pdes));
@@ -344,7 +344,7 @@ begin scalar l0,l1;
  return l1
 end;
 
-symbolic procedure mkeqSQ(sqval,fac,pval,ftem,vl,flaglist,simp_flag,
+symbolic procedure mkeqsq(sqval,fac,pval,ftem,vl,flaglist,simp_flag,
                           orderl,hist,pdes);
 %  makes a single new equation
 %    sqval:    expression in sq-form (see header of updateSQ() )
@@ -365,7 +365,7 @@ begin scalar s;
  s:=new_pde();
  if record_hist and hist then put(s,'histry_,reval hist);
  for each a in flaglist do flag1(s,a);
- if not updateSQ(s,sqval,fac,pval,ftem,vl,simp_flag,orderl,pdes) then
+ if not updatesq(s,sqval,fac,pval,ftem,vl,simp_flag,orderl,pdes) then
  <<drop_pde(s,nil,nil);
    s:=nil>>;
  if record_hist and null hist and s then put(s,'histry_,s);
@@ -384,7 +384,7 @@ begin scalar h,dl;
  return h
 end;
 
-symbolic procedure updateSQ(equ,sqval,fac,pval,ftem,vl,simp_flag,orderl,pdes);
+symbolic procedure updatesq(equ,sqval,fac,pval,ftem,vl,simp_flag,orderl,pdes);
 % determine the properties of a pde
 %   equ:      pde name
 %   sqval:    expression in SQ form (preferred) or nil
@@ -473,7 +473,7 @@ begin scalar l,h,nvars,rational,nonrational,allvarfcts,droped_factors,carl,rati;
         (     !*complex and (get(equ,'terms) > max_term_to_fac_complex))
      then l:=sffac numr sqval
      else <<
-      h:=cdr err_catch_fac2 {'!*SQ,(numr sqval . 1),t};
+      h:=cdr err_catch_fac2 {'!*sq,(numr sqval . 1),t};
       l:=nil;
       if cdr h or (caddar h>1) then
       while h do <<
@@ -499,10 +499,10 @@ begin scalar l,h,nvars,rational,nonrational,allvarfcts,droped_factors,carl,rati;
     if pval and null droped_factors then put(equ,'pval,pval)
    >>                else <<
     if null ftem then ftem:=ftem_; % for safety, just in case
-    if null fac then l:=simplifySQ(sqval,ftem,t,equ,nil)
+    if null fac then l:=simplifysq(sqval,ftem,t,equ,nil)
                 else <<l:=nil;
                        for each f in fac do <<
-                         h:=simplifySQ(f,ftem,t,equ,nil);
+                         h:=simplifysq(f,ftem,t,equ,nil);
                          if h neq {(1 . 1)} then l:=union(h,l)
                        >>;
                        if null l then l:={(1 . 1)}
@@ -530,7 +530,7 @@ begin scalar l,h,nvars,rational,nonrational,allvarfcts,droped_factors,carl,rati;
                        kernels numr sqval ));
    l:=nil;
    for each v in get(equ,'kern) do
-   if pairp v and (car v neq 'DF) and
+   if pairp v and (car v neq 'df) and
       member(car v,reducefunctions_) then l:=cons(v,l);
    put(equ,'non_rat_kern,l);
    put(equ,'fct_kern_lin,nil); % determined in add_fct_kern() crshort.red if
@@ -549,10 +549,10 @@ begin scalar l,h,nvars,rational,nonrational,allvarfcts,droped_factors,carl,rati;
    put(equ,'nvars,length vl);
    put(equ,'level,level_);
    put(equ,'derivs,sort_derivs(if pairp denr sqval then
-	             	       union(all_deriv_search_SF(denr sqval,ftem),
-				     all_deriv_search_SF(numr sqval,ftem) )
+	             	       union(all_deriv_search_sf(denr sqval,ftem),
+				     all_deriv_search_sf(numr sqval,ftem) )
                                                    else
-			       all_deriv_search_SF(numr sqval,ftem),ftem,vl));
+			       all_deriv_search_sf(numr sqval,ftem),ftem,vl));
    if struc_eqn then put(equ,'no_derivs,no_of_derivs(equ));
    put(equ,'fcteval_lin,nil);
    put(equ,'fcteval_nca,nil);
@@ -567,7 +567,7 @@ begin scalar l,h,nvars,rational,nonrational,allvarfcts,droped_factors,carl,rati;
                                    );
    %put(equ,'length,pdeweightSF(numr sqval,ftem)+pdeweightSF(denr sqval,ftem));
    put(equ,'length,get(equ,'terms));
-   put(equ,'printlength,delengthSQ sqval);
+   put(equ,'printlength,delengthsq sqval);
    put(equ,'orderings,orderl)$	% Orderings !
 
    % rationality test:
@@ -588,7 +588,7 @@ begin scalar l,h,nvars,rational,nonrational,allvarfcts,droped_factors,carl,rati;
      carl:=car l$ l:=cdr l;
      if atom carl               or
         ((pairp carl    ) and
-         (car carl = 'DF) and
+         (car carl = 'df) and
          (atom cadr carl)     ) then t else <<
       % Move all functions from rational to non-rational which occur in carl.
       h:=rati;
@@ -661,7 +661,7 @@ begin scalar l,h,nvars,rational,nonrational,allvarfcts,droped_factors,carl,rati;
    if (not get(equ,'rational)) or
       ((l:=get(equ,'starde)) and (cdr l = 0)) then remflag1(equ,'to_eval);
    if fhom_ then <<
-    l:=find_hom_deg_SF numr sqval;
+    l:=find_hom_deg_sf numr sqval;
     put(equ,'hom_deg,l);
 %   if car l=1 then << % i.e. linear in flin_
 %    l:=get(equ,'derivs);
@@ -687,20 +687,20 @@ begin scalar l,h,nvars,rational,nonrational,allvarfcts,droped_factors,carl,rati;
        if nonrational then nil else
        if lin_problem then t else
        if not freeof(denr sqval,ftem) then nil else
-       if lin_check_SQ(((first_term_SF numr sqval) . 1),ftem) then
-       if lin_check_SQ(sqval,ftem) then t else nil    else nil);
+       if lin_check_sq(((first_term_sf numr sqval) . 1),ftem) then
+       if lin_check_sq(sqval,ftem) then t else nil    else nil);
    put(equ,'not_to_eval,nil);
 
    % The following aims at global lasting effects, so it shall not be
    % run if equation equ is not necessary
    if pdes then <<
-    new_ineq_from_equ_SQ(equ,pdes);
+    new_ineq_from_equ_sq(equ,pdes);
     if null cdr pdes then % When the first and so far only equation
                           % was established (created by updatesq)
                           % then pdes was nil before, so it was not
                           % checked before and should be checked now.
-    new_ineq_from_equ_SQ(car pdes,pdes);
-    if null contradiction_ then simp_all_ineq_with_equ_SQ(equ,pdes);
+    new_ineq_from_equ_sq(car pdes,pdes);
+    if null contradiction_ then simp_all_ineq_with_equ_sq(equ,pdes);
 
     % Does the new equation imply a vanishing derivative?
     h:=get(equ,'allvarfcts);
@@ -717,7 +717,7 @@ begin scalar l,h,nvars,rational,nonrational,allvarfcts,droped_factors,carl,rati;
       to_do_list:=
       cons(list('add_eqns,
                 for each g in h collect if pairp g and
-                                           car g = '!*SQ then cadr g
+                                           car g = '!*sq then cadr g
                                                          else simp g),to_do_list)
      >> else
      to_do_list:=cons(list('add_differentiated_pdes,list equ),
@@ -742,7 +742,7 @@ begin scalar pdes,eqns,q;
  eqns:=cadddr arglist;
  while eqns and null contradiction_ do <<
   if zerop car eqns then q:=nil else
-  q:=mkeqSQ(car eqns,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,nil)$%pdes);
+  q:=mkeqsq(car eqns,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,nil)$%pdes);
   if q then pdes:=eqinsert(q,pdes);
   eqns:=cdr eqns
  >>;
@@ -802,12 +802,12 @@ end;
 % return deg(pv,h)
 %end;
 
-symbolic procedure pde_degree_SQ(pv,fl);
+symbolic procedure pde_degree_sq(pv,fl);
 % fl must be rational functions
 begin
  scalar f,sb,k;
  k:=setkorder list lin_test_const;
- sb:=for each f in fl collect (f . {'!*sq,simp {'TIMES,lin_test_const,f},t});
+ sb:=for each f in fl collect (f . {'!*sq,simp {'times,lin_test_const,f},t});
  pv:=subf(numr pv,sb);
  setkorder k;
  return ldeg numr pv
@@ -827,10 +827,10 @@ begin scalar l;
 %          subst(reval cons('DF,caar l),reval cons('DF,car d),
 %                get(equ,'val)))>>;
     put(equ,'kern,
-        subst(reval cons('DF,caar l),reval cons('DF,car d),
+        subst(reval cons('df,caar l),reval cons('df,car d),
               get(equ,'kern)));
     put(equ,'sqval,
-	subsq(get(equ,'sqval),{((reval cons('DF,car d)) . (reval cons('DF,caar l)))})
+	subsq(get(equ,'sqval),{((reval cons('df,car d)) . (reval cons('df,caar l)))})
        );
   >>;
   put(equ,'fcts,sort_according_to(subst(f,cadr der,get(equ,'fcts)),ftem_));
@@ -882,7 +882,7 @@ symbolic procedure eqinsert(s,l);
 if not (s or get(s,'sqval)) or zerop get(s,'length) or member(s,l) then l
 else if not l then list s
 else begin scalar l1$ %,n,m;
- l1:=proddel_SQ(s,l);
+ l1:=proddel_sq(s,l);
  if car l1 then <<
 %  n:=get(s,'length);
 %  l:=cadr l1;
@@ -908,7 +908,7 @@ if not (s or get(s,'sqval)) or zerop get(s,'length) or member(s,l)
 then nil
 else if not l then list s
               else begin scalar l1,n,found1,found2;
- l1:=proddel_SQ(s,l);
+ l1:=proddel_sq(s,l);
  if car l1 then <<
   n:=get(s,'length);
   l:=cadr l1;
@@ -965,7 +965,7 @@ end;
 % return follows
 %end;
 
-symbolic procedure follows_fromSQ(pfac,pdes);
+symbolic procedure follows_fromsq(pfac,pdes);
 % determines whether the equation p=0 where p is a product of all elements
 % of pfac follows straight forwardly from the list of equation names pdes
 begin scalar p1,follows;
@@ -1020,7 +1020,7 @@ end;
 %end;
 
 
-symbolic procedure proddel_SQ(s,l);
+symbolic procedure proddel_sq(s,l);
 % delete all pdes from l with s as factor
 % delete s if it is a consequence of any known pde from l
 begin scalar l1,l2,l3,n,lnew,pdes,s_hist;
@@ -1035,7 +1035,7 @@ begin scalar l1,l2,l3,n,lnew,pdes,s_hist;
                              else
     <<l3:=cons(car l,l3); % car l is a consequ. of s
       drop_pde(car l,nil,
-               reval {'!*SQ,quotsq(multsq(simp s,get(car l,'sqval)),
+               reval {'!*sq,quotsq(multsq(simp s,get(car l,'sqval)),
                                    get(s,'sqval)),t})
     >>
   else <<
@@ -1057,7 +1057,7 @@ begin scalar l1,l2,l3,n,lnew,pdes,s_hist;
   terpri();
  >>;
  if s_hist then <<
- drop_pde(s,nil,reval {'!*SQ,s_hist,t});s:=nil>>;
+ drop_pde(s,nil,reval {'!*sq,s_hist,t});s:=nil>>;
  return list(s,reverse l2);
 end;
 
@@ -1102,7 +1102,7 @@ if (null print_) or (get(s,'printlength)>print_) then begin scalar a,b;
    print_derivs(s,t);
   >>
 end                     else
-mathprint list('EQUAL,0,{'!*SQ,get(s,'sqval),t});
+mathprint list('equal,0,{'!*sq,get(s,'sqval),t});
 
 symbolic procedure print_derivs(p,allvarf);
 begin scalar a,d,dl,avf;
@@ -1115,12 +1115,12 @@ begin scalar a,d,dl,avf;
  >>;
  dl:=for each d in dl collect <<
   a:=if null cdar d then caar d
-                    else cons('DF,car d);
-  if cdr d=1 then a else {'EXPT,a,cdr d}
+                    else cons('df,car d);
+  if cdr d=1 then a else {'expt,a,cdr d}
  >>;
  mathprint cons('! ,dl);
  dl:=get(p,'non_rat_kern);
- if dl then mathprint cons('LIST,dl);
+ if dl then mathprint cons('list,dl);
 
 % write dl % hard to read
 end;
@@ -1135,7 +1135,7 @@ for each s in l do
                   else
  if (null print_) or (get(s,'printlength)>print_) then
  <<write get(s,'terms)," terms"$terpri()>>        else
- mathprint list('EQUAL,0,{'!*SQ,get(s,'sqval),t});
+ mathprint list('equal,0,{'!*sq,get(s,'sqval),t});
  if print_all then <<
              write "   derivs      : ";
     terpri()$print_derivs(s,nil);
@@ -1143,12 +1143,12 @@ for each s in l do
     terpri()$write "   fac         : ";
     if pairp get(s,'fac) then <<
      terpri();
-     mathprint cons('LIST,for each f in get(s,'fac) collect
+     mathprint cons('list,for each f in get(s,'fac) collect
                           if (null print_) or
-                             (delengthSQ f > print_) then
+                             (delengthsq f > print_) then
                     bldmsg("%w%d%w"," ",no_of_tm_sf numr f," terms ")
 %{'LIST,no_of_tm_sf numr f," terms"}
-                                                     else {'!*SQ,f,t});
+                                                     else {'!*sq,f,t});
 %     for each f in get(s,'fac) do
 %     if (null print_) or (delengthSQ f > print_)    then
 %     <<write no_of_tm_sf numr f," terms"$terpri()>> else
@@ -1222,10 +1222,10 @@ symbolic procedure rationalp(p,f);
 % currently (June 2007) only called from crint.red --> prefix input
 not pairp p
 or
-((car p='QUOTIENT) and
+((car p='quotient) and
  polynop(cadr p,f) and polynop(caddr p,f))
 or
-((car p='EQUAL) and
+((car p='equal) and
  rationalp(cadr p,f) and rationalp(caddr p,f))
 or
 polynop(p,f);
@@ -1244,24 +1244,24 @@ symbolic procedure polynop(p,f);
 %    p: expression
 %    f: function
 if atom p then t else
-if (pairp p) and (car p = 'DF) and (atom cadr p) then t else
+if (pairp p) and (car p = 'df) and (atom cadr p) then t else
 if my_freeof(p,f) then t else
 begin scalar a;
- if member(car p,list('EXPT,'PLUS,'MINUS,'TIMES,'QUOTIENT,'DF)) then
+ if member(car p,list('expt,'plus,'minus,'times,'quotient,'df)) then
                                         %  erlaubte Funktionen
-        <<if (car p='PLUS) or (car p='TIMES) then
+        <<if (car p='plus) or (car p='times) then
                 <<p:=cdr p;
                 while p do
                     if a:=polynop(car p,f) then p:=cdr p
                                            else p:=nil>>
-        else if (car p='MINUS) then
+        else if (car p='minus) then
                 a:=polynop(cadr p,f)
-        else if (car p='QUOTIENT) then
+        else if (car p='quotient) then
                 <<if freeof(caddr p,f) then a:=polynop(cadr p,f)>>
-        else if car p='EXPT then        %  Exponent
+        else if car p='expt then        %  Exponent
                 <<if (fixp caddr p) then
                    if caddr p>0 then a:=polynop(cadr p,f)>>
-        else if car p='DF then          %  Ableitung
+        else if car p='df then          %  Ableitung
                 if (cadr p=f) or freeof(cadr p,f) then a:=t>>
  else a:=(p=f);
  return a
@@ -1289,7 +1289,7 @@ begin scalar v,dfc, % the function or derivative (without df)
   >>
  >>;
  return if (null dfc) or (dfcp=1) then nil else
-        if null cdr dfc then cons(car dfc,v) else cons(cons('DF,dfc),v)
+        if null cdr dfc then cons(car dfc,v) else cons(cons('df,dfc),v)
 end;
 
 
@@ -1380,9 +1380,9 @@ begin
    >>
   >>;
   if f2 then f1:=append(f1,f2);
-  f5:=cons(cons('LIST,f1),f5)
+  f5:=cons(cons('list,f1),f5)
  >>;
- return cons('LIST,f5)
+ return cons('list,f5)
 end;
 
 
@@ -1470,7 +1470,7 @@ begin scalar s,h,k,n,pl,sf,tl,proli,plcp,newplcp,
  h:=size_history;
  while h do <<
   k:=car h;   h:=cdr h;
-  if car k = 'CP then
+  if car k = 'cp then
   if null plcp then plcp:=cdr k
                else << % merge plcp and cdr k
    newplcp:=nil;
@@ -1617,7 +1617,7 @@ begin scalar s,h,k,n,pl,sf,tl,proli,plcp,newplcp,
    if h=6 then pl:=bldmsg("%w%w%w%w%d%w",pl,"'",s,"' using ($1/60000):(",
                           sf,"*$7) title ""free cells  :""");
   >>;
- >> until h='N;
+ >> until h='n;
 
  % Generating the headline
  tl:="set title ""Modules in order of their priority: ";
@@ -1708,7 +1708,7 @@ begin scalar s,m,n,p,h,cntr,laststep,lastp,ll,sh;
  sh:=reverse size_history;
  while sh do <<
   p:=caar sh;
-  if p='A then <<
+  if p='a then <<
    h:=laststep - cntr;
    write" : ",h,if h=1 then " step" else " steps";
    terpri();
@@ -1722,8 +1722,8 @@ begin scalar s,m,n,p,h,cntr,laststep,lastp,ll,sh;
    if atom h then write h
              else
    repeat <<
-    if caar h = 'EQUAL then <<write" 0=" $maprin caddr car h>> else
-    if caar h = 'INEQ  then <<write" 0<>"$maprin caddr car h>>;
+    if caar h = 'equal then <<write" 0=" $maprin caddr car h>> else
+    if caar h = 'ineq  then <<write" 0<>"$maprin caddr car h>>;
     h:=cdr h;
     if h then <<
      s:="";
@@ -1732,14 +1732,14 @@ begin scalar s,m,n,p,h,cntr,laststep,lastp,ll,sh;
     >>
    >> until null h
   >>      else
-  if p='Z then <<
+  if p='z then <<
    n:=sub1 n;
    if lastp neq 'z then write", ",cadddr car sh," soln"
   >>      else
   if numberp caar sh then laststep:=cadar sh;
 
   if (size_watch=t) and
-     ((p='A) or (p='Z)) and
+     ((p='a) or (p='z)) and
      (n neq length caddar sh) then
   <<write"Somthing is wrong with level counting in size_hist"$terpri();
     write"n=",n," level:",caddar sh$terpri();
@@ -1867,7 +1867,7 @@ begin scalar plbak,plcop,ok;
 end$  % of modify_proc_list
 
 symbolic procedure choose_6_20(arglist);
-comment
+COMMENT
  This procedure is for automatic runs, not interactive use.
  It assumes that in proc_list_ the entry 'choose_6_20 is
  followed by either 'subst_level_45 (6) or 'subst_level_35 (20).
@@ -1960,7 +1960,7 @@ end;
 
 
 symbolic procedure choose_27_8_16(arglist);
-comment
+COMMENT
  This procedure is for automatic runs, not interactive use.
  It assumes that in proc_list_ the entry 'choose_27_8_16
  is followed by 'diff_length_reduction,'factorize_to_substitute,'subst_level_3
@@ -2080,7 +2080,7 @@ end;
 
 
 symbolic procedure choose_30_47_21(arglist);
-comment
+COMMENT
  This procedure is for automatic runs, not interactive use.
  It assumes that in proc_list_ the entry 'choose_30_47_21
  is followed by 'decoupling,'factorize_any,'subst_level_4
@@ -2226,7 +2226,7 @@ begin
 end;
 
 symbolic procedure choose_70_65_8_47(arglist);
-comment
+COMMENT
  This procedure is for automatic runs, not interactive use.
  The idea is to simplify the system through a case splitting if
  it gets too difficult. The decision is based on the last
@@ -2317,7 +2317,7 @@ begin scalar csh,plbak,ok,plcop,do_split,sl,shcp;
 end;
 
 symbolic procedure choose_30_47_72(arglist);
-comment
+COMMENT
  This procedure is for automatic runs, not interactive use.
  The idea is for huge and highly overdetermined systems to balance
  reading in of equations, to do substitutions, decoupling and
@@ -2376,7 +2376,7 @@ end;
 
 
 symbolic procedure choose_11_30(arglist);
-comment
+COMMENT
  This procedure is for automatic runs, not interactive use.
  It assumes that in proc_list_ the entry 'choose_11_30 is
  followed by either 'alg_length_reduction (11) or 'decoupling (30).
@@ -2483,7 +2483,7 @@ if size_watch then begin
 end;
 
 symbolic procedure try_other_ordering(arglist);
-comment
+COMMENT
  This procedure is for automatic runs, not interactive use.
  It assumes that in proc_list_ there is 'decoupling (30)
  and that this procedure comes definitely after 30 and pretty
@@ -2582,13 +2582,13 @@ begin scalar pcp,nonli,h,p,fl,f0;
  return null nonli
 end;
 
-symbolic procedure lin_check_SQ(sqval,fl);
+symbolic procedure lin_check_sq(sqval,fl);
 % returns t iff standard quotient sqval is homogeneously or
 % inhomogeneously linear in the elements of fl
 if denr sqval neq 1 and not freeoflist(sqval,fl) then nil else
 begin scalar k,f,nu,sb;
  k:=setkorder list lin_test_const;
- sb:=for each f in fl collect (f . {'TIMES,lin_test_const,f});
+ sb:=for each f in fl collect (f . {'times,lin_test_const,f});
  nu:=numr subf(numr sqval,sb);
  setkorder k;
  return if domainp nu or
@@ -2605,8 +2605,8 @@ begin scalar a,f;
  for each f in fl do a:=err_catch_sub(f,0,a);
  return
  if a then <<
-  for each f in fl do pde:=subst({'TIMES,lin_test_const,f},f,pde);
-  freeof(reval {'QUOTIENT,{'DIFFERENCE,pde,a},lin_test_const},lin_test_const)
+  for each f in fl do pde:=subst({'times,lin_test_const,f},f,pde);
+  freeof(reval {'quotient,{'difference,pde,a},lin_test_const},lin_test_const)
  >>   else nil
 end;
 
@@ -2637,8 +2637,8 @@ begin scalar h;
   if not freeoflist(flin_,get(s,'fcts)) then write" n2l(-)";
   if member(cdar sl,fhom_) then write" fhom_(+)";
   if member(simp cdar sl,ineq_) then write" <>0(-)";
-  if (h:=(  delengthSF numr caar sl
-          + delengthSF denr caar sl))>print_ then
+  if (h:=(  delengthsf numr caar sl
+          + delengthsf denr caar sl))>print_ then
   write" coeff: (print length = ",h,")"      else
   write" coeff: ",prepsq caar sl$terpri();
   %  mathprint caar sl;
@@ -2659,8 +2659,8 @@ symbolic procedure plot_non0_separants(s);
 % One could think of storing all leading derivatives for which
 % the symbol is non-zero.
 begin scalar dv,dl,dlc,dr,fdl,avf,ur;
- if (userrules_ neq {'LIST}) and
-    (zerop reval {'DIFFERENCE,
+ if (userrules_ neq {'list}) and
+    (zerop reval {'difference,
                   car  cdadr userrules_,
                   cadr cdadr userrules_})
  then <<ur:=t; algebraic (clearrules lisp userrules_) >>;
@@ -2682,17 +2682,17 @@ begin scalar dv,dl,dlc,dr,fdl,avf,ur;
  >>;
  for each dr in dl do <<
   dr:=if null cdr dr then car dr
-                     else cons('DF,dr);
+                     else cons('df,dr);
   dr:=mvar car mksq(dr,1);
   if get(s,'linear_) or
-     can_not_become_zeroSQ(diffsq(get(s,'sqval),dr),get(s,'fcts))
+     can_not_become_zerosq(diffsq(get(s,'sqval),dr),get(s,'fcts))
   then fdl:=cons(dr,fdl)
  >>;
  terpri();
  if fdl then <<
   write "Leading derivatives with non-zero separant: ";
   % terpri()$ mathprint cons('! ,fdl);
-  write cdr reval cons('LIST,fdl);
+  write cdr reval cons('list,fdl);
  >>     else
  write "No leading derivative with non-zero separant. ";
  if ur then algebraic(let lisp userrules_)
@@ -2719,16 +2719,16 @@ begin scalar dv,dl,dlc,dr,fdl,avf,l;
  >>;
  for each dv in dl do <<
   dr:=if null cdar dv then caar dv
-                      else cons('DF,car dv);
+                      else cons('df,car dv);
   if get(s,'linear_) or
-     can_not_become_zeroSQ(<<l:=coeffn(get(s,'sqval),dr,cdr dv);
+     can_not_become_zerosq(<<l:=coeffn(get(s,'sqval),dr,cdr dv);
                              if pairp l then cadr l
                                         else simp l>>,
                            get(s,'fcts)) then
 %     freeofzero(coeffn(get(s,'val),dr,cdr dv),get(s,'fcts),
 %                get(s,'vars),get(s,'nonrational)) then
   if cdr dv=1 then fdl:=cons(dr,fdl)
-              else fdl:=cons({'EXPT,dr,cdr dv},fdl)
+              else fdl:=cons({'expt,dr,cdr dv},fdl)
  >>;
  if null fdl then <<
   write"No leading derivative has a non-zero coefficient."$ terpri()
@@ -2749,14 +2749,14 @@ begin scalar dv,dl,dlc,dr,fdl,avf,l;
  >>;
  if fdl then <<
   l:=get(s,'sqval);
-  if pairp car fdl and (caar fdl = 'EXPT) then dv:=coeffn({'!*SQ,l,t},cadar fdl,caddar fdl)
-                                          else dv:=coeffn({'!*SQ,l,t},  car fdl,1);
+  if pairp car fdl and (caar fdl = 'expt) then dv:=coeffn({'!*sq,l,t},cadar fdl,caddar fdl)
+                                          else dv:=coeffn({'!*sq,l,t},  car fdl,1);
   dv:=if pairp dv then cadr dv
                   else simp dv;
-  userrules_:=cons('LIST,
+  userrules_:=cons('list,
 %                         reval {'DIFFERENCE,car fdl,{'QUOTIENT,l,dv}}},
-                   cons({'REPLACEBY,car fdl,
-                         {'!*SQ,quotsq(subtrsq(multsq(simp car fdl,dv),l),dv),t}},
+                   cons({'replaceby,car fdl,
+                         {'!*sq,quotsq(subtrsq(multsq(simp car fdl,dv),l),dv),t}},
                          cdr userrules_));
   algebraic (write "The new list of user defined rules: ",
                    lisp userrules_);
@@ -2822,7 +2822,7 @@ begin scalar h,carh;
   carh:=simp car h;
   if freeoflist(carh,ftem_) or member(carh,ineq_) then <<carh:=nil;h:=cdr h>>
                                                   else             h:=nil;
-  case_list:=cons('LIST,cddr case_list)
+  case_list:=cons('list,cddr case_list)
  >>;
  return
  if carh then split_into_cases({car arglist,cadr arglist,caddr arglist,carh})
@@ -2919,26 +2919,26 @@ end;
 %end;
 
 
-symbolic procedure all_power_search_SF(p);
+symbolic procedure all_power_search_sf(p);
 if pairp p and pairp car p and not domainp p % pairp caar p
 then begin scalar a,b,lcp;
  a:=mvar p;
- lcp:=all_power_search_SF lc p;
+ lcp:=all_power_search_sf lc p;
  b:=if atom a then ({a} . ldeg p) else
-    if pairp a and car a = 'DF then (cdr a . ldeg p);
+    if pairp a and car a = 'df then (cdr a . ldeg p);
  while pairp       red p and
        pairp car   red p and
        not domainp red p do
  if a eq mvar red p then <<if b then lcp:=cons((car b . ldeg red p),lcp);
-                           lcp:=union(all_power_search_SF lc red p,lcp); p:=red p      >>
-                    else <<lcp:=union(all_power_search_SF    red p,lcp); p:={nil . nil}>>;
+                           lcp:=union(all_power_search_sf lc red p,lcp); p:=red p      >>
+                    else <<lcp:=union(all_power_search_sf    red p,lcp); p:={nil . nil}>>;
  return if b then cons(b,lcp)
              else lcp
 end;
 
-symbolic procedure all_deriv_search_SF(p,ftem);
+symbolic procedure all_deriv_search_sf(p,ftem);
 begin scalar h,ad;
- for each h in all_power_search_SF p do
+ for each h in all_power_search_sf p do
  if member(caar h,ftem) then ad:=cons(h,ad);
  return ad
 end;
@@ -2947,24 +2947,24 @@ symbolic procedure all_deriv_search(p,ftem)$  % currently (July 2007) only used 
 %  yields all derivatives occuring polynomially in a pde  p
 begin scalar a;
  if not pairp p then <<if member(p,ftem) then a:=list cons(list p,1)>>
-                else <<if member(car p,'(PLUS QUOTIENT EQUAL)) then
+                else <<if member(car p,'(plus quotient equal)) then
     for each q in cdr p do
 	  a:=union(all_deriv_search(q,ftem),a)
-  else if car p='MINUS then a:=all_deriv_search(cadr p,ftem)
-  else if car p='TIMES then
+  else if car p='minus then a:=all_deriv_search(cadr p,ftem)
+  else if car p='times then
     for each q in cdr p do
 	  a:=mult_derivs(all_deriv_search(q,ftem),a)
-  else if (car p='EXPT) and numberp caddr p then
+  else if (car p='expt) and numberp caddr p then
       for each b in all_deriv_search(cadr p,ftem) do
           <<if numberp cdr b then
                a:=cons(cons(car b,times(caddr p,cdr b)),a)>>
-  else if (car p='DF) and member(cadr p,ftem) then a:=list cons(cdr p,1)
+  else if (car p='df) and member(cadr p,ftem) then a:=list cons(cdr p,1)
  >>;
  return a
 end;
 
 symbolic procedure abs_ld_deriv(p);
-if get(p,'derivs) then reval cons('DF,caar get(p,'derivs));
+if get(p,'derivs) then reval cons('df,caar get(p,'derivs));
 
 symbolic procedure abs_ld_deriv_pow(p);
 if get(p,'derivs) then cdar get(p,'derivs)
@@ -3091,7 +3091,7 @@ end;
 
 symbolic procedure absodeg(p);
 if not pairp p then 0
-else eval cons('PLUS,for each v in p collect if fixp(v) then sub1(v)
+else eval cons('plus,for each v in p collect if fixp(v) then sub1(v)
                                                         else 1);
 
 symbolic procedure maxderivs(numberlist,deriv,varlist);
@@ -3175,7 +3175,7 @@ begin scalar l;
  return
  if l:=get(p,'derivs) then <<
   while l and (caaar l neq f) do l:=cdr l;
-  if l then cons(reval cons('DF,caar l),cdar l)
+  if l then cons(reval cons('df,caar l),cdar l)
  >>                   else cons(nil,0)
 end;
 
@@ -3192,7 +3192,7 @@ if p=f then a:=cons(nil,1)
 else
 <<a:=cons(nil,0);
 if pairp p then
-  if member(car p,'(PLUS TIMES QUOTIENT EQUAL)) then
+  if member(car p,'(plus times quotient equal)) then
      <<p:=cdr p;
        while p do
 	 <<a:=dfmax(ld_deriv_search(car p,f,vl),a,vl);
@@ -3201,8 +3201,8 @@ if pairp p then
            p:=cdr p
 	 >>
      >>
-  else if car p='MINUS then a:=ld_deriv_search(cadr p,f,vl)
-  else if car p='EXPT then
+  else if car p='minus then a:=ld_deriv_search(cadr p,f,vl)
+  else if car p='expt then
      <<a:=ld_deriv_search(cadr p,f,vl);
        if numberp cdr a then
 	  if numberp caddr p
@@ -3212,13 +3212,13 @@ if pairp p then
 	    else if not my_freeof(caddr p,f)
 	            then a:=cons(nil,'infinity)
      >>
-  else if car p='DF then
+  else if car p='df then
 	   if cadr p=f then a:=cons(cddr p,1)
 	   else if my_freeof(cadr p,f)
 		then a:=cons(nil,0)                       %  a constant
 		else a:=cons(nil,'infinity)
   else if my_freeof(p,f) then a:=cons(nil,0)
-  else if member(car p,ONE_ARGUMENT_FUNCTIONS_) then
+  else if member(car p,one_argument_functions_) then
            a:=cons(car ld_deriv_search(cadr p,f,vl),'infinity)
   else a:=cons(nil,'infinity)
 >>;
@@ -3229,7 +3229,7 @@ symbolic procedure lderiv(p,f,vl);
 %  fuehrende Ableitung in LISP-Notation mit Potenz (als dotted pair)
 begin scalar l;
 l:=ld_deriv_search(p,f,vl);
-return cons(if car l then cons('DF,cons(f,car l))
+return cons(if car l then cons('df,cons(f,car l))
 		  else if zerop cdr l then nil
 			  else f
 		,cdr l)
@@ -3240,12 +3240,12 @@ symbolic procedure splitinhom(q,ftem,vl);
 % returns dotted pair qhom . qinhom
 begin scalar qhom,qinhom,denm;
   vl:=varslist(q,ftem,vl);
-  if pairp q and (car q = 'QUOTIENT) then
+  if pairp q and (car q = 'quotient) then
   if starp(smemberl(ftem,caddr q),length vl) then
   <<denm:=caddr q; q:=cadr q>>               else return (q . 0)
                                      else denm:=1;
 
-  if pairp q and (car q = 'PLUS) then q:=cdr q
+  if pairp q and (car q = 'plus) then q:=cdr q
 				 else q:=list q;
   while q do <<
    if starp(smemberl(ftem,car q),length vl) then qinhom:=cons(car q,qinhom)
@@ -3254,14 +3254,14 @@ begin scalar qhom,qinhom,denm;
   >>;
   if null qinhom then qinhom:=0
 		 else
-  if length qinhom > 1 then qinhom:=cons('PLUS,qinhom)
+  if length qinhom > 1 then qinhom:=cons('plus,qinhom)
 		       else qinhom:=car qinhom;
   if null qhom then qhom:=0
 	       else
-  if length qhom   > 1 then qhom:=cons('PLUS,qhom)
+  if length qhom   > 1 then qhom:=cons('plus,qhom)
 		       else qhom:=car qhom;
-  if denm neq 1 then <<qhom  :=list('QUOTIENT,  qhom,denm);
-                       qinhom:=list('QUOTIENT,qinhom,denm)>>;
+  if denm neq 1 then <<qhom  :=list('quotient,  qhom,denm);
+                       qinhom:=list('quotient,qinhom,denm)>>;
   return qhom . qinhom
 end;
 
@@ -3272,7 +3272,7 @@ if pairp l then
  if car l='quotient then
   l1:=union(cddr l,union(search_den(cadr l),search_den(caddr l)))
  else if member(car l,'(log ln logb log10)) then
-  if pairp cadr l and (caadr l='QUOTIENT) then
+  if pairp cadr l and (caadr l='quotient) then
    l1:=union(list cadadr l,search_den(cadr l))
   else l1:=union(cdr l,search_den(cadr l))
  else l1:=union(search_den(car l),search_den(cdr l));
@@ -3285,7 +3285,7 @@ begin scalar cases,carl;
  l:=search_den(l);
  while l do <<
   carl:=simp car l;
-  if null can_not_become_zeroSQ(carl,ftem)
+  if null can_not_become_zerosq(carl,ftem)
 %  if not freeofzero(car l,ftem,vl,ftem)
   then cases:=cons(carl,cases);
   l:=cdr l
@@ -3301,18 +3301,18 @@ for each ex in forg collect
 symbolic procedure forg_int_f(ex,fges);
 % try to integrate expr. ex of the form df(f,...)=p .
 begin scalar p,h,f;
- p:={'!*SQ,caddr ex,t};
+ p:={'!*sq,caddr ex,t};
  f:=cadadr ex;
- if pairp p and (car p='PLUS)
-    then p:=reval cons('PLUS,cons(list('MINUS,cadr ex),cdr p))
-    else p:=reval list('DIFFERENCE,p,cadr ex);
+ if pairp p and (car p='plus)
+    then p:=reval cons('plus,cons(list('minus,cadr ex),cdr p))
+    else p:=reval list('difference,p,cadr ex);
  p:=integratepde(p,cons(f,fges),nil,nil,nil);
  if p and (car p) and not cdr p then
     <<h:=car lderiv(car p,f,fctargs f);
-    p:=reval list('PLUS,car p,h);
+    p:=reval list('plus,car p,h);
     for each ff in fnew_ do
       if not member(ff,ftem_) then ftem_:=fctinsert(ff,ftem_);
-    ex:=list('EQUAL,h,p)>>;
+    ex:=list('equal,h,p)>>;
  return ex
 end;
 
@@ -3338,8 +3338,8 @@ put('total_alg_mode_deriv,'psopfn,'tot_alg_deri);
 symbolic procedure tot_alg_deri(inp);
 begin scalar s;
  return
- {'!*SQ,diffsq(<<s:=aeval car inp;
-          if pairp s and (car s='!*SQ) then cadr s
+ {'!*sq,diffsq(<<s:=aeval car inp;
+          if pairp s and (car s='!*sq) then cadr s
                                        else simp s>>,reval cadr inp),t}
 end;
 
@@ -3376,7 +3376,7 @@ symbolic procedure sqzerop(p);
 % p is recognized as zero if p=0 or (nil . 1) or (0 . 1) or {!*SQ,(nil . 1),t}
 % and NOT if p=nil (because atom nil = t and zerop nil = nil.
 if atom p then zerop p else
-if  car p neq '!*SQ then null  numr p or
+if  car p neq '!*sq then null  numr p or
                          zerop numr p
                     else null numr cadr p or
                          (domainp caadr p and not atom caadr p and
@@ -3413,7 +3413,7 @@ symbolic procedure my_freeof(u,v);
 %  a patch for FREEOF in REDUCE 3.5
 not(smember(v,u)) and freeofdepl(depl!*,u,v);
 
-lisp flag('(my_freeof),'BOOLEAN);
+lisp flag('(my_freeof),'boolean);
 
 symbolic procedure freeoflist(l,m);
 %   liefert t, falls kein Element aus m in l auftritt
@@ -3502,7 +3502,7 @@ end;
 
 symbolic operator fargs;
 symbolic procedure fargs f;
-cons('LIST,fctargs if pairp f and car f='!*SQ then reval f else f);
+cons('list,fctargs if pairp f and car f='!*sq then reval f else f);
 
 symbolic procedure fctargs f;
 %  arguments of a function
@@ -3565,9 +3565,9 @@ begin scalar l,f,a,n,nn;
     f:=car fl;
     fl:=cdr fl;
     if pairp f then
-      if car f='EQUAL then <<
+      if car f='equal then <<
         n:=if (pairp caddr f) and
-              (car caddr f='!*SQ) then no_of_tm_sq cadr caddr f
+              (car caddr f='!*sq) then no_of_tm_sq cadr caddr f
                                   else no_of_terms      caddr f;
         if (null print_) or (n>print_) then <<
           terpri()$write cadr f,"= expr. with ",n," terms";
@@ -3583,7 +3583,7 @@ begin scalar l,f,a,n,nn;
         n:=add1 n
       >>
     else <<                   % not pairp
-      nn:=reval {'PLUS,4,length explode f,
+      nn:=reval {'plus,4,length explode f,
                  for each a in fctargs f sum add1 length explode a};
       if nn+n > 79 then <<terpri()$n:=0>>;
       l:=assoc(f,depl!*);
@@ -3595,7 +3595,7 @@ begin scalar l,f,a,n,nn;
   >>;
 end;
 
-symbolic procedure fctprint_SQ(fl);
+symbolic procedure fctprint_sq(fl);
 %  printing the functions of the lisp list fl of elements:
 %  - {EQUAL,f,...} where the rhs is in SQ form or
 %  - f                                         or
@@ -3606,16 +3606,16 @@ begin scalar l,f,a,n,nn;
     f:=car fl;
     fl:=cdr fl;
     if pairp f then
-      if car f='EQUAL then <<
+      if car f='equal then <<
         n:=no_of_tm_sq caddr f;
         if (null print_) or (n>print_) then <<
           terpri()$write cadr f,"= expr. with ",n," terms";
           if (l:=get(cadr f,'fcts)) then <<write " in "$myprin2l(l,", ")>>;
           terpri()
         >>                             else % not too long
-        mathprint {'EQUAL, cadr f,
+        mathprint {'equal, cadr f,
                    if null numr caddr f then 0
-                                        else{'!*SQ,caddr f,t}};
+                                        else{'!*sq,caddr f,t}};
         n:=0
       >>              else <<                 % pairp but not {'EQUAL,...}
         if n = 4 then <<terpri()$n:=0>>$  % i.e. 4 in a row
@@ -3624,7 +3624,7 @@ begin scalar l,f,a,n,nn;
         n:=add1 n
       >>
     else <<                                   % not pairp
-      nn:=reval {'PLUS,4,length explode f,
+      nn:=reval {'plus,4,length explode f,
                  for each a in fctargs f sum add1 length explode a};
       if nn+n > 79 then <<terpri()$n:=0>>;
       l:=assoc(f,depl!*);
@@ -3654,7 +3654,7 @@ end;
 
 symbolic procedure deprint(l);
 %   Ausdrucken der Gl. aus der Liste l
-if l and print_ then for each x in l do eqprint list('EQUAL,0,x);
+if l and print_ then for each x in l do eqprint list('equal,0,x);
 
 symbolic procedure eqprint(e);
 %  Ausdrucken der Gl. e
@@ -3662,18 +3662,18 @@ symbolic procedure eqprint(e);
 if print_ then
 begin scalar n;
  n:=if not pairp e then 1 else
-    if (car e =  '!*SQ) then delengthSQ cadr e else
-    if (car e = 'EQUAL) then if not pairp caddr e then 1 else
-                             if (caaddr e = '!*SQ) then delengthSQ cadr caddr e
+    if (car e =  '!*sq) then delengthsq cadr e else
+    if (car e = 'equal) then if not pairp caddr e then 1 else
+                             if (caaddr e = '!*sq) then delengthsq cadr caddr e
                                                    else delength        caddr e
                         else delength e;
  if n>print_ then
         <<write %"expr. with ",
                 n," factors in ",
     if not pairp e then 1 else
-    if (car e =  '!*SQ) then no_of_tm_sq cadr e else
-    if (car e = 'EQUAL) then if not pairp caddr e then 1 else
-                             if (caaddr e = '!*SQ) then no_of_tm_sq cadr caddr e
+    if (car e =  '!*sq) then no_of_tm_sq cadr e else
+    if (car e = 'equal) then if not pairp caddr e then 1 else
+                             if (caaddr e = '!*sq) then no_of_tm_sq cadr caddr e
                                                    else no_of_terms      caddr e
                         else no_of_terms e,
                 " terms";
@@ -3681,8 +3681,8 @@ begin scalar n;
         >>   else
  if sqzerop e then mathprint 0 else
  if pairp e and
-    car e='EQUAL and
-    sqzerop caddr e then mathprint {'EQUAL,cadr e,0}
+    car e='equal and
+    sqzerop caddr e then mathprint {'equal,cadr e,0}
                     else mathprint e;
 end;
 
@@ -3698,21 +3698,21 @@ if print_ and level_ then <<
 
 symbolic procedure start_level(n,new_assumption);
 <<level_:=cons(n,level_);
-  CaseTree(if null new_assumption then {nil} % simply nil would mean
+  casetree(if null new_assumption then {nil} % simply nil would mean
                                              % that a case is finished
                                   else new_assumption);
   print_level(2);
   if size_watch and not fixp size_watch then % otherwise avoid growth
   history_:=cons(bldmsg("%w%w","Start of level ",level_string(nil)),
                  cons('ig,history_));
-  if size_watch then size_hist:=cons({'A,"Start of ",reverse level_,
+  if size_watch then size_hist:=cons({'a,"Start of ",reverse level_,
                                       new_assumption},size_hist);
 >>;
 
 symbolic procedure finish_level(no_of_sol);
 begin scalar s;
  delete_backup();
- CaseTree(no_of_sol);
+ casetree(no_of_sol);
  if size_watch and not fixp size_watch then <<% otherwise avoid growth
   s:=level_string(nil);
   s:=bldmsg("End of level %w, %d solution(s)",s,no_of_sol);
@@ -3721,7 +3721,7 @@ begin scalar s;
  level_:=cdr level_;
  print_level(0);
  if size_watch then
- size_hist:=cons({'Z,"Back to ",reverse level_,no_of_sol},size_hist);
+ size_hist:=cons({'z,"Back to ",reverse level_,no_of_sol},size_hist);
  % change switches back
  s:=switch_list;
  while s do <<
@@ -3994,8 +3994,8 @@ begin scalar a,b,c,d,h;
  if car ineqs then <<
   terpri()$write "Non-vanishing expressions: ";
   for each a in car ineqs do
-  if no_number_atom_SQ a then c:=cons(mvar numr a,c)
-                         else b:=cons({'!*SQ,a,t},b);
+  if no_number_atom_sq a then c:=cons(mvar numr a,c)
+                         else b:=cons({'!*sq,a,t},b);
   listprint c;terpri();
   for each a in b do eqprint a
  >>;
@@ -4009,8 +4009,8 @@ begin scalar a,b,c,d,h;
 
     c:=nil; b:=nil;
     for each d in h do   % b,c will be lists of factors of h
-    if no_number_atom_SQ d then c:=cons(mvar numr d,c)
-                           else b:=cons({'!*SQ,d,t},b);
+    if no_number_atom_sq d then c:=cons(mvar numr d,c)
+                           else b:=cons({'!*sq,d,t},b);
     listprint c;
 
     if not null b then <<
@@ -4056,15 +4056,15 @@ begin scalar dflist,dfs,f,p,cp,h,hh,showcoef;
     if caaar dfs=f then <<
      cp:=dflist;
      while cp and (caar cp neq caar dfs) do cp:=cdr cp;
-     if cdaar dfs then h:=cons('DF,caar dfs)
+     if cdaar dfs then h:=cons('df,caar dfs)
                   else h:=caaar dfs;
      if showcoef then
      if null cp then dflist:=cons({caar dfs,
-                                   {'LIST,p,
-                                    err_catch_fac coeffn({'!*SQ,get(p,'sqval),t},h,1)}},dflist)
+                                   {'list,p,
+                                    err_catch_fac coeffn({'!*sq,get(p,'sqval),t},h,1)}},dflist)
                 else rplaca(cp,cons(caar cp,
-                                    cons({'LIST,p,
-                                          err_catch_fac coeffn({'!*SQ,get(p,'sqval),t},h,1)},
+                                    cons({'list,p,
+                                          err_catch_fac coeffn({'!*sq,get(p,'sqval),t},h,1)},
                                          cdar cp)))
                else
      if null cp then dflist:=cons({caar dfs,p},dflist)
@@ -4075,9 +4075,9 @@ begin scalar dflist,dfs,f,p,cp,h,hh,showcoef;
   >>;
   while dflist do <<
    dfs:=car dflist;dflist:=cdr dflist;
-   if cdar dfs then h:=cons('DF,car dfs)
+   if cdar dfs then h:=cons('df,car dfs)
                else h:=caar dfs;
-   if showcoef then algebraic <<write h,": ",lisp cons('LIST,cdr dfs)>>
+   if showcoef then algebraic <<write h,": ",lisp cons('list,cdr dfs)>>
                else <<write h,": "$ print cdr dfs$ terpri()>>
   >>;
  >>;
@@ -4091,10 +4091,10 @@ symbolic procedure print_forg(fcts,vl);
   >>;
   if fcts then <<
    terpri()$write "Functions : ";
-   fctprint_SQ(fcts)$ terpri();
+   fctprint_sq(fcts)$ terpri();
    write "with ",
    for each p in fcts sum
-   if pairp p and (car p = 'EQUAL) then no_of_tm_sq caddr p
+   if pairp p and (car p = 'equal) then no_of_tm_sq caddr p
                                    else 1                  ," terms";
    terpri();
   >>;
@@ -4113,12 +4113,12 @@ end;
 symbolic procedure no_of_terms(d);
 if not pairp d then if (null d) or (zerop d) then 0
                                              else 1 else
-if car d='PLUS then length d - 1            else
-if car d='EQUAL then no_of_terms(cadr  d) +
+if car d='plus then length d - 1            else
+if car d='equal then no_of_terms(cadr  d) +
                      no_of_terms(caddr d)   else
-if (car d='MINUS) or (car d='QUOTIENT) then
+if (car d='minus) or (car d='quotient) then
    no_of_terms(cadr d)                 else
-if car d='EXPT then
+if car d='expt then
 if (not fixp caddr d) or (caddr d < 2) then 1 else
 % number of terms of (a1+a2+..+an)**r = n+r-1 over r
 begin scalar h,m,q;
@@ -4127,7 +4127,7 @@ begin scalar h,m,q;
  for q:=1:caddr d do h:=h*(m+q)/q;
  return h
 end            else
-if car d='TIMES then begin scalar h,r;
+if car d='times then begin scalar h,r;
  h:=1;
  for each r in cdr d do h:=h*no_of_terms(r);
  return h
@@ -4187,7 +4187,7 @@ symbolic procedure no_of_tm_sq s;
 no_of_tm_sf numr s + if denr s = 1 then 0
                                    else no_of_tm_sf denr s;
 
-symbolic procedure no_number_atom_SF(sf);
+symbolic procedure no_number_atom_sf(sf);
 if pairp sf and
    null red sf and
    lc sf = 1 and
@@ -4195,36 +4195,36 @@ if pairp sf and
    null pairp mvar sf then t
                       else nil;
 
-symbolic procedure no_number_atom_SQ(sq);
-no_number_atom_SF numr sq;
+symbolic procedure no_number_atom_sq(sq);
+no_number_atom_sf numr sq;
 
-symbolic procedure one_termpSF(sf);
+symbolic procedure one_termpsf(sf);
 % returns nil if sf has more than one term
 if domainp sf then t else
-if red sf then nil else one_termpSF lc sf;
+if red sf then nil else one_termpsf lc sf;
 
-symbolic procedure first_term_SF(sf);
+symbolic procedure first_term_sf(sf);
 % returns first term of standard form sf in standard form
 % (((mvar . ldeg) . lc) . red)  or
 % ((    lpow      . lc) . red)
 if domainp sf then sf else
-{(lpow sf . first_term_SF lc sf)};
+{(lpow sf . first_term_sf lc sf)};
 
-symbolic procedure num_term_SF(sf);
+symbolic procedure num_term_sf(sf);
 % returns purely numerical term of standard form sf if there is one
 % (((mvar . ldeg) . lc) . red)  or
 % ((    lpow      . lc) . red)
 if sf then if domainp sf then sf
-                         else num_term_SF red sf;
+                         else num_term_sf red sf;
 
-symbolic procedure lmon_SF(sf);
+symbolic procedure lmon_sf(sf);
 % returns the leading monomial of standard form sf in standard form
 % (((mvar . ldeg) . lc) . red)  or
 % ((    lpow      . lc) . red)
 if domainp sf then 1 else
-{(lpow sf . lmon_SF lc sf)};
+{(lpow sf . lmon_sf lc sf)};
 
-symbolic procedure nco_SQ(h);
+symbolic procedure nco_sq(h);
 % returns the numerical coefficient of the leading term
 % of the standard quotient h
 begin scalar d;
@@ -4232,8 +4232,8 @@ begin scalar d;
  d:=cdr h;
  h:=car h;
  while pairp h and not domainp car h do h:=lc h;
- if pairp h then h:={'QUOTIENT,cadr h,cddr h};
- if d neq 1 then h:={'QUOTIENT,h,d};
+ if pairp h then h:={'quotient,cadr h,cddr h};
+ if d neq 1 then h:={'quotient,h,d};
  return h
 end;
 
@@ -4243,7 +4243,7 @@ symbolic procedure numco(h);
 begin
  h:=car cadr aeval car h;
  while pairp h and not domainp car h do h:=lc h;
- if pairp h then h:={'QUOTIENT,cadr h,cddr h};
+ if pairp h then h:={'quotient,cadr h,cddr h};
  return h
 end;
 
@@ -4317,17 +4317,17 @@ put('sqappend,'psopfn,'sq!*append);
 
 %--------
 
-symbolic procedure delengthSF(d);
+symbolic procedure delengthsf(d);
 % counting all factors, even numbers in the standard form d
 if (not pairp d) or (not pairp car d) or (not pairp caar d)
 then if domainp d then 0
                   else 1
-else ldeg d + delengthSF(lc d) + delengthSF(red d);
+else ldeg d + delengthsf(lc d) + delengthsf(red d);
 
-symbolic procedure delengthSQ(d);
+symbolic procedure delengthsq(d);
 % counting all factors, even numbers in the standard quotient form
-(if numr d = 1 then 0 else delengthSF numr d) +
-(if denr d = 1 then 0 else delengthSF denr d)   ;
+(if numr d = 1 then 0 else delengthsf numr d) +
+(if denr d = 1 then 0 else delengthsf denr d)   ;
 
 symbolic procedure delength(d);
 %   Laenge eines Polynoms in prefix Form
@@ -4335,36 +4335,36 @@ if not pairp d then
  if d then 1
       else 0
 else
-if (car d='PLUS) or (car d='TIMES) or (car d='QUOTIENT)
-   or (car d='MINUS) or (car d='EQUAL)
+if (car d='plus) or (car d='times) or (car d='quotient)
+   or (car d='minus) or (car d='equal)
    then for each a in cdr d sum delength(a)
 else 1;
 
-symbolic procedure pdeweightSF(d,ftem);
+symbolic procedure pdeweightsf(d,ftem);
 % determines the total number of factors of elements of ftem
 % in the standard form d which has structure:  (((mvar . ldeg) . lc) . red)
 % This version does not count ftem in exponents
 
 if (not pairp d) or (not pairp car d) or (not pairp caar d) then 0 else
 if freeoflist(mvar d,ftem) then
-         pdeweightSF(lc d,ftem) + pdeweightSF(red d,ftem)
+         pdeweightsf(lc d,ftem) + pdeweightsf(red d,ftem)
                            else
-ldeg d + pdeweightSF(lc d,ftem) + pdeweightSF(red d,ftem);
+ldeg d + pdeweightsf(lc d,ftem) + pdeweightsf(red d,ftem);
 % assuming that ldeg d is an integer
 
 symbolic procedure pdeweight(d,ftem);
 %   Laenge eines Polynoms in LISP - Notation
 if not smemberl(ftem,d) then 0
 else if not pairp d then 1
-else if (car d='PLUS) or (car d='TIMES) or (car d='EQUAL)
-        or (car d='QUOTIENT) then
+else if (car d='plus) or (car d='times) or (car d='equal)
+        or (car d='quotient) then
          for each a in cdr d sum pdeweight(a,ftem)
-else if (car d='EXPT) then
+else if (car d='expt) then
         if numberp caddr d then
          caddr d*pdeweight(cadr d,ftem)
                            else
         pdeweight(caddr d,ftem)+pdeweight(cadr d,ftem)
-else if (car d='MINUS) then pdeweight(cadr d,ftem)
+else if (car d='minus) then pdeweight(cadr d,ftem)
 else 1;
 
 symbolic procedure desort(l);
@@ -4585,7 +4585,7 @@ begin scalar pdes,forg,!*complex_bak;
                else if flagp(car c,'to_subst) then remflag(car c,'to_subst);
   >>;
 
-  UniquifyAll(pdes,forg);
+  uniquifyall(pdes,forg);
 
   return {reverse pdes,reverse forg};
 end;
@@ -4667,8 +4667,8 @@ begin scalar q,newidval,idnt;
 
   % adding a new identity based on phist and the 'histry_ entry of p
   if phist and not zerop phist and (p neq get(p,'histry_)) then <<
-   idnt:=reval {'PLUS,get(p,'histry_),{'MINUS,phist}};
-   if pairp idnt and car idnt='QUOTIENT then idnt:=cadr idnt;
+   idnt:=reval {'plus,get(p,'histry_),{'minus,phist}};
+   if pairp idnt and car idnt='quotient then idnt:=cadr idnt;
    if not zerop idnt then
    new_idty(idnt,pdes,if pdes then t else nil)
   >>
@@ -4985,8 +4985,8 @@ begin scalar p,pl,s,h,wn,vl,v,ll;
   >> until null h;
   write"Shall the name of the equation be written? (y/n) ";
   repeat s:=termread()
-  until (s='y) or (s='Y) or (s='n) or (s='N);
-  if (s='y) or (s='Y) then wn:=t;
+  until (s='y) or (s='y) or (s='n) or (s='n);
+  if (s='y) or (s='y) then wn:=t;
   write"Please give the name of the file in double quotes"$terpri();
   write"without `;' : ";
   s:=termread();
@@ -5002,10 +5002,10 @@ begin scalar p,pl,s,h,wn,vl,v,ll;
   write"off batch_mode$"$terpri();
   for each p in pl do <<h:=get(p,'vars);if h then vl:=union(h,vl)>>;
   write"list_of_variables:=";
-  algebraic write lisp cons('LIST,vl);
+  algebraic write lisp cons('list,vl);
 
   write"list_of_functions:=";
-  algebraic write lisp cons('LIST,ftem_);
+  algebraic write lisp cons('list,ftem_);
 
   if flin_ then <<
    write"% linearly occuring functions:"$terpri();
@@ -5033,22 +5033,22 @@ begin scalar p,pl,s,h,wn,vl,v,ll;
 %    >>
   >>;
   if wn then <<
-    for each h in pl do algebraic (write h,":=",lisp {'!*SQ,get(h,'sqval),t});
+    for each h in pl do algebraic (write h,":=",lisp {'!*sq,get(h,'sqval),t});
     write"list_of_equations:=";
-    algebraic write lisp cons('LIST,pl)
+    algebraic write lisp cons('list,pl)
   >>    else <<
     write"list_of_equations:=";
-    algebraic write lisp cons('LIST,
-       for each h in pl collect {'!*SQ,get(h,'sqval),t});
+    algebraic write lisp cons('list,
+       for each h in pl collect {'!*sq,get(h,'sqval),t});
   >>;
 
   write"list_of_inequalities:=";
   algebraic write lisp(
-   cons('LIST,append(for each p in ineq_ collect {'!*SQ,p,t},
+   cons('list,append(for each p in ineq_ collect {'!*sq,p,t},
                      if null ineq_or then nil else
                      for each h in ineq_or collect
-                          cons('LIST,for each p in h collect
-                                     {'!*SQ,if null cdr p then car p else
+                          cons('list,for each p in h collect
+                                     {'!*sq,if null cdr p then car p else
                                             <<v:=car p; p:=cdr p;
                                               while p do<<v:=multsq(v,car p);
                                                           p:= cdr p>>;
@@ -5063,11 +5063,11 @@ begin scalar p,pl,s,h,wn,vl,v,ll;
   terpri();
 
   for each h in forg do <<
-   if pairp h and (car h = 'EQUAL) then <<
+   if pairp h and (car h = 'equal) then <<
     terpri();
     algebraic
     write lisp(cadr  h)," := sub(second first solution_,",
-          lisp({'!*SQ,caddr h,t}),")"
+          lisp({'!*sq,caddr h,t}),")"
    >>
   >>;
   terpri();
@@ -5158,20 +5158,20 @@ end;
 % end;
 
 
-symbolic procedure updateSQfcteval(pdes,newineq);
+symbolic procedure updatesqfcteval(pdes,newineq);
 % newineq is a new (scalar) inequality in SQ form
 begin scalar p,pv,ps,hist,h1;
  for each p in pdes do
  if null contradiction_ then
- if newineq=get(p,'sqval) then raise_contradiction({'!*SQ,newineq,t},nil)
+ if newineq=get(p,'sqval) then raise_contradiction({'!*sq,newineq,t},nil)
                           else <<
   pv:=get(p,'fac);
   if pairp pv and member(newineq,pv) then <<
-   if record_hist then hist:=reval {'QUOTIENT,get(p,'histry_),reval {'!*SQ,newineq,nil}};
+   if record_hist then hist:=reval {'quotient,get(p,'histry_),reval {'!*sq,newineq,nil}};
 
    for each h1 in allflags_ do flag1(p,h1)$ % <-- to be added because this was
    % in contradictioncheck() which is now fully covered by this procedure
-   updateSQ(p,quotsq(get(p,'sqval),newineq),nil,nil,get(p,'fcts),
+   updatesq(p,quotsq(get(p,'sqval),newineq),nil,nil,get(p,'fcts),
             get(p,'vars),t,list(0),pdes);
    % pdes:=insert_in_eqlist(p,delete(p,pdes))$  %<=<=<=<=
    drop_pde_from_idties(p,pdes,hist);
@@ -5263,7 +5263,7 @@ begin scalar p,q,ex;
                        else <<
   ex:=get(p,'sqval);
   pdes:=drop_pde(p,pdes,nil);
-  q:=mkeqSQ(ex,nil,nil,ftem,vl,allflags_,t,list(0),nil,pdes);
+  q:=mkeqsq(ex,nil,nil,ftem,vl,allflags_,t,list(0),nil,pdes);
   terpri()$write q," replaces ",p;
   pdes:=eqinsert(q,pdes);
   if member(q,pdes) then <<terpri()$write q," : "$ typeeq(q)$ plot_non0_separants(q)>>
@@ -5283,19 +5283,19 @@ begin scalar p,q,ex,h,newft,again;
   terpri();
   write "is to be calculated (y/n)? ";
   p:=termread();
-  if (p='y) or (p='Y) then <<
+  if (p='y) or (p='y) then <<
    h:=addfunction(ftem);
    ftem:=car h;
    if cdr h then newft:=cons(cdr h,newft)
   >>;
   again:=t
- >> until (p='n) or (p='N);
+ >> until (p='n) or (p='n);
  terpri();
  write "If you want to replace a pde then type its name, e.g. e_23 <ENTER>.";
  terpri();
  write "If you want to add a pde then type `new_pde' <ENTER>. ";
  p:=termread();
- if (p='NEW_PDE) or member(p,pdes) then
+ if (p='new_pde) or member(p,pdes) then
   <<terpri()$write "Input of a value for ";
   if p='new_pde then write "the new pde."
                 else write p,".";
@@ -5333,7 +5333,7 @@ begin scalar p,q,ex,h,newft,again;
 %  if h<3 then h:=nil
 %         else h:=t;
   if h=1 then h:=nil else h:=t;
-  if p neq 'NEW_PDE then
+  if p neq 'new_pde then
   % pdes:=drop_pde(p,pdes,{'QUOTIENT,{'TIMES,p,prepsq ex},prepsq get(p,'sqval)});
   %### 18.6.07 this drop_pde does not make much sense to me
   pdes:=drop_pde(p,pdes,nil);
@@ -5342,16 +5342,16 @@ begin scalar p,q,ex,h,newft,again;
                 % system, g as non-flin_ could not be solved for if
                 % newf would be in flin_ .
   for each q in newft do
-  if lin_check_SQ(ex,{q}) then flin_:=sort_according_to(cons(q,flin_),ftem_);
-  q:=mkeqSQ(ex,nil,nil,ftem,vl,allflags_,h,list(0),nil,pdes);
+  if lin_check_sq(ex,{q}) then flin_:=sort_according_to(cons(q,flin_),ftem_);
+  q:=mkeqsq(ex,nil,nil,ftem,vl,allflags_,h,list(0),nil,pdes);
   % A new equation with a new function appearing linear and only
   % algebraically can only have the purpose of a transformation
   % in which case the new equation should not be solved for the
   % new function as this would just mean dropping the new equation:
-  if (p='NEW_PDE) and newft then
+  if (p='new_pde) and newft then
   put(q,'not_to_eval,newft);
   terpri()$write q;
-  if p='NEW_PDE then write " is added"
+  if p='new_pde then write " is added"
                 else write " replaces ",p;
   pdes:=eqinsert(q,pdes)>>
  else <<terpri();
@@ -5437,7 +5437,7 @@ symbolic procedure nodependlist(fl);
 % deleting all dependencies of the list fl which
 % can be a lisp list or an algebraic mode list
 for each f in fl do
-if f neq 'LIST then <<
+if f neq 'list then <<
  f:=reval f;   depl!*:=delete(assoc(f,depl!*),depl!*);
  f:=mkid(f,'_);depl!*:=delete(assoc(f,depl!*),depl!*)
 >>;
@@ -5501,7 +5501,7 @@ begin scalar h,k,bak,bakup_bak;
  setkorder k;
  max_gc_counter:=bak;
  backup_:=bakup_bak;
- return if errorp h then {'LIST,nil}
+ return if errorp h then {'list,nil}
                     else car h
 end;
 
@@ -5527,9 +5527,9 @@ begin scalar h,p,bak,bakup_bak;
  bakup_bak:=backup_;backup_:='max_gc_gb;
  h:=errorset(
      {'groebnerfeval,
-      mkquote{cons('LIST,for each p in pdes  collect {'!*SQ,get(p,'sqval),t}),
-              cons('LIST,ftem_),
-              cons('LIST,for each p in ineq_ collect {'!*SQ,p,t}) }},errorset_control,errorset_control)
+      mkquote{cons('list,for each p in pdes  collect {'!*sq,get(p,'sqval),t}),
+              cons('list,ftem_),
+              cons('list,for each p in ineq_ collect {'!*sq,p,t}) }},errorset_control,errorset_control)
  where !*protfg=t;
  erfg!*:=nil;
  max_gc_counter:=bak;
@@ -5543,7 +5543,7 @@ symbolic procedure err_catch_sub(h2,h6,h3);
 % do sub(h2=h6,h3) with error catching
 % prefix version
 begin scalar h4,h5;
- h4 := list('EQUAL,h2,h6);
+ h4 := list('equal,h2,h6);
  h5:=errorset({'subeval,mkquote{reval h4,
                                 reval h3 }},errorset_control,errorset_control)
      where !*protfg=t;
@@ -5553,8 +5553,8 @@ begin scalar h4,h5;
 end;
 
 
-put('err_catch_sub_SQ,'psopfn,'ecs_SQ);
-symbolic procedure ecs_SQ(inp);
+put('err_catch_sub_sq,'psopfn,'ecs_sq);
+symbolic procedure ecs_sq(inp);
 % This is a psopfn procedure which does not evaluate the arguments
 % automatically, this is done at the start of .
 % The input equations should be in {!*sq,..,t} form (fast) but can be
@@ -5574,7 +5574,7 @@ begin scalar h2,h3,h5,h6;
      where !*protfg=t;
  erfg!*:=nil;
  return if errorp h5 then nil
-                     else {'!*SQ,car h5,t}
+                     else {'!*sq,car h5,t}
 end;
 
 symbolic operator err_catch_int;
@@ -5705,7 +5705,7 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak,
  % ` Non-numerical ... in arithmetic (or so)
  % 12.7.08: The same error occurs when on complex and an expression
  % contains '!:gi!: and then on rational is done and factorize.
- h:=errorset({'reval,list('FACTORIZE,mkquote a)},errorset_control,errorset_control)  % reval --> aeval for speedup
+ h:=errorset({'reval,list('factorize,mkquote a)},errorset_control,errorset_control)  % reval --> aeval for speedup
     where !*protfg=t;
  if rational_changed then <<off msg$ algebraic(off rational)$ on msg>>;
  if no_powers_changed then algebraic(off nopowers);
@@ -5717,7 +5717,7 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak,
  return if errorp h or
            (pairp h and pairp car h and
             cdar h and null cadar h) % seems a REDUCE bug
-        then {'LIST,a}
+        then {'list,a}
         else car h
 end;
 
@@ -5742,7 +5742,7 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak,
  % ` Non-numerical ... in arithmetic (or so)
  % 12.7.08: The same error occurs when on complex and an expression
  % contains '!:gi!: and then on rational is done and factorize.
- h:=errorset(list('FACTORIZE,mkquote a),errorset_control,errorset_control) where !*protfg=t;
+ h:=errorset(list('factorize,mkquote a),errorset_control,errorset_control) where !*protfg=t;
  if rational_changed then <<off msg$ algebraic(off rational)$ on msg>>;
  if no_powers_changed then algebraic(on nopowers);
  kernlist!*:=kernlist!*bak;
@@ -5753,7 +5753,7 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak,
  return if errorp h or
            (pairp h and pairp car h and
             cdar h and null cadar h) % seems a REDUCE bug
-        then {'LIST,{'LIST,a,1}}
+        then {'list,{'list,a,1}}
         else car h
 end;
 
@@ -5801,7 +5801,7 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak;
  kernlist!*bak:=kernlist!*;
  kord!*bak:=kord!*;
  bakup_bak:=backup_;backup_:='max_gc_fac;
- h:=errorset({'aeval,list('list,''GCD,mkquote a,mkquote b)},errorset_control,errorset_control)
+ h:=errorset({'aeval,list('list,''gcd,mkquote a,mkquote b)},errorset_control,errorset_control)
     where !*protfg=t;
  kernlist!*:=kernlist!*bak;
  kord!*:=kord!*bak;
@@ -5810,7 +5810,7 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak;
  backup_:=bakup_bak;
  % return if errorp h then 1     % --> previous prefix form
  %                    else car h
- return if errorp h then {'!*SQ,(1 . 1),t}
+ return if errorp h then {'!*sq,(1 . 1),t}
                     else car h
 end;
 
@@ -5838,13 +5838,13 @@ begin scalar l,g,h,k,m,new_sqval,fs,dropped_factors,mb,pdes,pdecp,dropped_eqn;
          and null dropped_eqn do << % find only one successful factorization
   h:=get(car l,'fac);
   if null h or (fixp h and (h<2)) then <<
-   h:=cdr err_catch_fac2 {'!*SQ,(numr get(car l,'sqval) . 1),t};
+   h:=cdr err_catch_fac2 {'!*sq,(numr get(car l,'sqval) . 1),t};
    if pairp h and (cdr h or (caddar h>1)) then
    while h and null dropped_eqn do <<
     g:=simp cadar h;
     if domainp numr g then h:=cdr h
                       else <<
-     mb:=can_not_become_zeroSQ(g,ftem_);
+     mb:=can_not_become_zerosq(g,ftem_);
      if (caddar h > 1) or mb then <<
       dropped_factors:=t;
       if null new_sqval then new_sqval:=get(car l,'sqval);
@@ -5871,7 +5871,7 @@ begin scalar l,g,h,k,m,new_sqval,fs,dropped_factors,mb,pdes,pdecp,dropped_eqn;
 
    if dropped_eqn then <<
     pdes:=drop_pde(car l,pdes,{'times,dropped_eqn,
-                                      {'QUOTIENT,prepsq get(car l,'sqval),
+                                      {'quotient,prepsq get(car l,'sqval),
                                                  prepsq get(dropped_eqn,'sqval)}});
     drop_pde_from_properties(car l,pdes)
    >>             else
@@ -5883,10 +5883,10 @@ begin scalar l,g,h,k,m,new_sqval,fs,dropped_factors,mb,pdes,pdecp,dropped_eqn;
                            else <<  % factors are dropped -> new equation -> updatesq()
     for each f in allflags_ do flag1(car l,f);
     if record_hist then h:=get(car l,'sqval);
-    updateSQ(car l,new_sqval,fs,nil,get(car l,'fcts),get(car l,'vars),t,list(0),pdes);
+    updatesq(car l,new_sqval,fs,nil,get(car l,'fcts),get(car l,'vars),t,list(0),pdes);
     % The updateSQ-call is correct whether fs holds only one factor or more than one
     drop_pde_from_idties(car l,pdes,if record_hist then reval
-                {'TIMES,get(car l,'hist),{'QUOTIENT,prepsq get(car l,'sqval),prepsq h}}
+                {'times,get(car l,'hist),{'quotient,prepsq get(car l,'sqval),prepsq h}}
                                                           else nil);
     drop_pde_from_properties(car l,pdes);
     if null contradiction_ then
@@ -6040,14 +6040,14 @@ symbolic procedure polyansatz(ev,iv,fn,degre,homo);
 % - generates and returns polynomial in prefix form which could
 %   be speeded up to SQ-form if needed.
 begin scalar a,fi,el1,el2,f,fl,p,pr;
- a:=reval list('EXPT,cons('PLUS,if homo then cdr ev
+ a:=reval list('expt,cons('plus,if homo then cdr ev
                                         else cons(1,cdr ev)),degre);
  a:=reverse cdr a;
  fi:=0;
  iv:=cdr iv;
  for each el1 in a collect <<
   if (not pairp el1) or
-     (car el1 neq 'TIMES) then el1:=list el1
+     (car el1 neq 'times) then el1:=list el1
                           else el1:=cdr el1;
   f:=newfct(fn,iv,fi);
   fi:=add1 fi;
@@ -6055,12 +6055,12 @@ begin scalar a,fi,el1,el2,f,fl,p,pr;
   pr:=list f;
   for each el2 in el1 do
   if not fixp el2 then pr:=cons(el2,pr);
-  if length pr>1 then pr:=cons('TIMES,pr)
+  if length pr>1 then pr:=cons('times,pr)
                  else pr:=car pr;
   p:=cons(pr,p)
  >>;
- p:=reval cons('PLUS,p);
- return list('LIST,p,cons('LIST,fl))
+ p:=reval cons('plus,p);
+ return list('list,p,cons('list,fl))
 end;
 
 symbolic operator polyans;
@@ -6084,7 +6084,7 @@ begin scalar ll,fl,a,i,f;
     while i<=dgr do
     <<f:=newfct(fn,ll,i);
       fl:=(f . fl);
-      a:=list('PLUS,list('TIMES,f,list('EXPT,list(d_y,ordr),i)),a);
+      a:=list('plus,list('times,f,list('expt,list(d_y,ordr),i)),a);
       i:=add1 i>>;
     return list('list,reval a,cons('list,fl))
 end$ % of polyans
@@ -6108,43 +6108,43 @@ begin scalar n,vl1,vl2,h1,h2,h3,h4,fl;
   return
   if kind = 0 then <<vl1:=append(cdr v1,cdr v2);
 		     h1:=newfct(fn,vl1,'_);
-		     list('LIST,h1,list('LIST,h1))>>
+		     list('list,h1,list('list,h1))>>
   else
   if kind = 1 then <<h1:=newfct(fn,vl1,1);
-		     list('LIST,h1,list('LIST,h1))>>
+		     list('list,h1,list('list,h1))>>
   else
   if kind = 2 then <<h1:=newfct(fn,vl2,1);
-		     list('LIST,h1,list('LIST,h1))>>
+		     list('list,h1,list('list,h1))>>
   else
   if kind = 3 then <<h1:=newfct(fn,vl1,1);
 		     h2:=newfct(fn,vl2,2);
-		     list('LIST,reval list('PLUS,h1,h2),
-			  list('LIST,h1,h2))>>
+		     list('list,reval list('plus,h1,h2),
+			  list('list,h1,h2))>>
   else
   if kind = 4 then <<h1:=newfct(fn,vl1,1);
 		     h2:=newfct(fn,vl2,2);
-		     list('LIST,reval list('TIMES,h1,h2),
-			  list('LIST,h1,h2))>>
+		     list('list,reval list('times,h1,h2),
+			  list('list,h1,h2))>>
   else
   if kind = 5 then <<h1:=newfct(fn,vl1,1);
 		     h2:=newfct(fn,vl2,2);
 		     h3:=newfct(fn,vl1,3);
-		     list('LIST,reval list('PLUS,list('TIMES,h1,h2),h3),
-			  list('LIST,h1,h2,h3))>>
+		     list('list,reval list('plus,list('times,h1,h2),h3),
+			  list('list,h1,h2,h3))>>
   else
   if kind = 6 then <<h1:=newfct(fn,vl1,1);
 		     h2:=newfct(fn,vl2,2);
 		     h3:=newfct(fn,vl2,3);
-		     list('LIST,reval list('PLUS,list('TIMES,h1,h2),h3),
-			  list('LIST,h1,h2,h3))>>
+		     list('list,reval list('plus,list('times,h1,h2),h3),
+			  list('list,h1,h2,h3))>>
   else
   if kind = 7 then <<h1:=newfct(fn,vl1,1);
 		     h2:=newfct(fn,vl2,2);
 		     h3:=newfct(fn,vl1,3);
 		     h4:=newfct(fn,vl2,4);
-		     list('LIST,reval list('PLUS,
-			  list('TIMES,h1,h2),h3,h4),
-			  list('LIST,h1,h2,h3,h4))>>
+		     list('list,reval list('plus,
+			  list('times,h1,h2),h3,h4),
+			  list('list,h1,h2,h3,h4))>>
   else
 % ansatz of the form FN = FN1(v11,v2) + FN2(v12,v2) + ... + FNi(v1i,v2)
   if kind = 8 then <<n:=1$ vl1:=cdr v1$ vl2:=cdr v2;
@@ -6155,7 +6155,7 @@ begin scalar n,vl1,vl2,h1,h2,h3,h4,fl;
 		       fl:=cons(h1, fl);
 		       n:=n+1
 		     >>;
-		     list('LIST, cons('PLUS,fl), cons('LIST,fl))>>
+		     list('list, cons('plus,fl), cons('list,fl))>>
 		
 
   else
@@ -6163,9 +6163,9 @@ begin scalar n,vl1,vl2,h1,h2,h3,h4,fl;
 		     h2:=newfct(fn,vl2,2);
 		     h3:=newfct(fn,vl1,3);
 		     h4:=newfct(fn,vl2,4);
-		     list('LIST,reval list('PLUS,list('TIMES,h1,h2),
-						 list('TIMES,h3,h4)),
-			  list('LIST,h1,h2,h3,h4))>>
+		     list('list,reval list('plus,list('times,h1,h2),
+						 list('times,h3,h4)),
+			  list('list,h1,h2,h3,h4))>>
 end$ % of sepans
 
 %
@@ -6258,7 +6258,7 @@ symbolic operator filter;
 % an algebraic mode function to return a list of all occurences of operator care
 % no reval needed as call of symbolic operator converts to prefix form
 symbolic procedure filter(l,care);
-cons('LIST,search_li2(l,care));
+cons('list,search_li2(l,care));
 
 symbolic operator backup_reduce_flags;
 symbolic procedure backup_reduce_flags;
@@ -6342,7 +6342,7 @@ end;
 algebraic procedure maklist(ex);
 % making a list out of an expression if not already
 if lisp(atom algebraic ex) then {ex} else
-if lisp(car algebraic ex neq 'LIST) then ex:={ex}
+if lisp(car algebraic ex neq 'list) then ex:={ex}
                                     else ex;
 
 % older slower version:
@@ -6404,7 +6404,7 @@ begin scalar cpls1,cpls2,n,cycle;
   while cpls1 and (not same_steps(h,car cpls1)) do
   <<n:=add1 n;cpls1:=cdr cpls1>>;
   if null cpls1 or
-     ((reval {'PLUS,n,n})>length last_steps) then cycle:=nil
+     ((reval {'plus,n,n})>length last_steps) then cycle:=nil
                                              else <<
    cpls1:=cdr cpls1;
    cpls2:=last_steps;
@@ -6598,16 +6598,16 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
   write"free param in sol2: ",cadddr sol2$terpri()>>;
 
  % We drop all assignments like a6=a6 from both sets of assignments
- ass1:=caddr sol1$ for each a in cadddr sol1 do ass1:=delete({'EQUAL,a,a},ass1);
- ass2:=caddr sol2$ for each a in cadddr sol2 do ass2:=delete({'EQUAL,a,a},ass2);
+ ass1:=caddr sol1$ for each a in cadddr sol1 do ass1:=delete({'equal,a,a},ass1);
+ ass2:=caddr sol2$ for each a in cadddr sol2 do ass2:=delete({'equal,a,a},ass2);
 
  % 1. We check whether all remaining equations of sol2 are
  % either fulfilled by assignments of sol1 or if after these
  % assignments the remaining equations of sol2 are in the ideal of the
  % remaining equations of sol1. In a first implementation we simply
  % check whether both remaining systems are the same.
- sol1_eqn:=cons('LIST,cadr sol1)$  % unsolved equations in sol1
- sol2_eqn:=cons('LIST,cadr sol2)$  % unsolved equations in sol2
+ sol1_eqn:=cons('list,cadr sol1)$  % unsolved equations in sol1
+ sol2_eqn:=cons('list,cadr sol2)$  % unsolved equations in sol2
 
  % 1.1. We do all substitutions of assignments of sol2 in sol2_eqn and
  % similar for sol1 as some substitutions may not have been fully
@@ -6648,7 +6648,7 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
 
  % 1.3.1. Bring sol1_eqn into the form of a Groebner Basis gb
  if cdr sol1_eqn then algebraic <<
-  torder(lisp(cons('LIST,cadddr sol1)),lex);
+  torder(lisp(cons('list,cadddr sol1)),lex);
   gb:=groebner sol1_eqn;  % maybe covering this in a shell in case it
                           % takes too long
   if tr_merge then write "gb=",gb;
@@ -6676,12 +6676,12 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
  % writing assignments of solution 2 as expressions to vanish,
  % no numerator taken yet
  cond2:=for each a in ass2
-        collect {'PLUS,cadr a,{'MINUS,caddr a}};
+        collect {'plus,cadr a,{'minus,caddr a}};
 
  % Do all substitutions a=... from sol1 for which there is an
  % assignment a=... in sol2 and collect the other substitutions as remain_sb.
  % These are straight forward substitutions not to be debated.
- cond2:=cons('LIST,cond2);  % because of use of subeval in substitution
+ cond2:=cons('list,cond2);  % because of use of subeval in substitution
  sb:=ass1; % all assignments of solution 1
  while sb do <<
   a:=car sb; sb:=cdr sb;
@@ -6766,8 +6766,8 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
             else regular_sb:=cons(a,regular_sb)
  >>;
  if tr_merge then <<terpri();
-                    write"regular_sb: "$mathprint cons('LIST,regular_sb)>>;
- if tr_merge then <<write"singular_sb: "$mathprint cons('LIST,singular_sb)>>;
+                    write"regular_sb: "$mathprint cons('list,regular_sb)>>;
+ if tr_merge then <<write"singular_sb: "$mathprint cons('list,singular_sb)>>;
 
  if singular_sb then <<
   write"Substitutions lead to singularities."$terpri();
@@ -6777,13 +6777,13 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
  % We now make a list of vanishing expressions based on singular_sb
  % which when replaced by 0 in remain_c2 give singularities
  singular_ex:=for each a in singular_sb
-              collect reval {'PLUS,cadr a,{'MINUS,caddr a}};
+              collect reval {'plus,cadr a,{'minus,caddr a}};
  if tr_merge then <<
   write"The following are expressions which vanish due to sol1 and";
   terpri();
   write"which lead to singularities when used for substitutions in sol2";
   terpri();
-  mathprint cons('LIST,singular_ex)
+  mathprint cons('list,singular_ex)
  >>;
 
  if tr_merge then <<
@@ -6794,8 +6794,8 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
  singular_eli:=for each a in singular_sb collect cadr a;
  regular_eli:=for each a in regular_sb collect cadr a;
  if tr_merge then <<terpri();
-                    write"singular_eli: "$mathprint cons('LIST,singular_eli)>>;
- if tr_merge then <<write"regular_eli: "$mathprint cons('LIST,regular_eli)>>;
+                    write"singular_eli: "$mathprint cons('list,singular_eli)>>;
+ if tr_merge then <<write"regular_eli: "$mathprint cons('list,regular_eli)>>;
 
  % Before continuing we want to check whether the supposed to be more special
  % solution sol1 has free parameters which are not free parameters in the more
@@ -6818,13 +6818,13 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
     mathprint car h;
    >>;
    dropped_assign_in_s2:=cons(car h,dropped_assign_in_s2);
-   gauge_of_s2:=cons(algebraic(num(lisp({'PLUS,cadr car h,
-                                         {'MINUS,caddr car h}}))),
+   gauge_of_s2:=cons(algebraic(num(lisp({'plus,cadr car h,
+                                         {'minus,caddr car h}}))),
                      gauge_of_s2)
   >>
  >>;
 
- gauge_of_s2:=cons('LIST,gauge_of_s2);
+ gauge_of_s2:=cons('list,gauge_of_s2);
 
  if tr_merge then <<write"gauge_of_s2="$mathprint gauge_of_s2>>;
 
@@ -6878,8 +6878,8 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
      h:=cdr h;
      while h do <<
       if pairp car h then
-      if not((caar h = 'QUOTIENT) and (fixp cadar h) and (fixp caddar h)) then
-      if caar h='LIST then
+      if not((caar h = 'quotient) and (fixp cadar h) and (fixp caddar h)) then
+      if caar h='list then
       if pairp cadar h then sb:=cons(cadar h,sb) else
                       else sb:=cons(car h,sb);
       h:=cdr h;
@@ -6890,7 +6890,7 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
     % single variables which set to zero would be a limitation
     if tr_merge then <<write"After dropping single variable factors ",
                              length sb," factor(s) remain"$terpri()>>;
-    sb:=reval cons('TIMES,cons(1,sb)); % to re-gain a product from the factors
+    sb:=reval cons('times,cons(1,sb)); % to re-gain a product from the factors
     if tr_merge then <<write"New relation used for substitution: sb=";
                        mathprint sb$terpri()>>;
 
@@ -6909,7 +6909,7 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
      a:=car try_to_sub_cp; try_to_sub_cp:=cdr try_to_sub_cp;
      if tr_merge then <<write"try to sub next: ",a$terpri()>>;
      if not freeof(sb,a) and lin_check(sb,{a}) then <<
-      num_sb:=reval {'DIFFERENCE, sb,{'TIMES,a,coeffn(sb,a,1)}};
+      num_sb:=reval {'difference, sb,{'times,a,coeffn(sb,a,1)}};
       if tr_merge then <<write"num_sb="$mathprint num_sb>>;
 %      singular_ex_cp:=singular_ex;
 %      while singular_ex_cp do <<
@@ -6953,7 +6953,7 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
 
          % next substitution must work because gauge_of_s2 is denom-free
          gauge_of_s2:=err_catch_sub(cadr b,caddr b,gauge_of_s2);
-         gauge_of_s2:=cons('LIST, for each gauge_of_s2_cp in cdr gauge_of_s2
+         gauge_of_s2:=cons('list, for each gauge_of_s2_cp in cdr gauge_of_s2
                            collect algebraic(num(lisp(gauge_of_s2_cp))));
          gauge_of_s2_cp:=nil;
          new_assign_in_s2:=cons(b,new_assign_in_s2);
@@ -6970,7 +6970,7 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
 
          h:=append(regular_sb,singular_sb);
          while h and a neq cadar h do h:=cdr h;
-         if h then remain_c2:=append(remain_c2,list {'DIFFERENCE,caddar h,caddr b});
+         if h then remain_c2:=append(remain_c2,list {'difference,caddar h,caddr b});
 	 if tr_merge then <<write"remain_c2="$print_indexed_list(cdr remain_c2)>>;
          singular_ex_cp:=nil;
          try_to_sub:=delete(a,try_to_sub);
@@ -7129,7 +7129,7 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
   >>;
 
   if tr_merge and remain_c2_cp then
-  <<write"remain_c2_cp after subst = "$mathprint cons('LIST,remain_c2)>>;
+  <<write"remain_c2_cp after subst = "$mathprint cons('list,remain_c2)>>;
   write"Solution ",s1," is not less restrictive than solution"$terpri();
   write s2," and fulfills all conditions of solution ",s2," ."$terpri();
   write"But it was not possible for the program to re-formulate solution ";
@@ -7156,7 +7156,7 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
 
    % transform the general solution if that was necessary and
    % updating the list of free parameters
-   h:=cons('LIST,ass2);
+   h:=cons('list,ass2);
    b:=cadddr sol2;
    if tr_merge then <<
     write"h0="$print_indexed_list(h);
@@ -7166,7 +7166,7 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
    for each a in dropped_assign_in_s2 do
    <<h:=delete(a,h);b:=cons(reval cadr a,b)>>;
    if tr_merge then <<write"h1="$print_indexed_list(h)>>;
-   new_eqn:=cons('LIST,cadr sol2);
+   new_eqn:=cons('list,cadr sol2);
    for each a in reverse new_assign_in_s2 do if h then <<
     b:=delete(reval cadr a,b);
     if tr_merge then <<write"a=",a$terpri()$write"h2="$print_indexed_list(h)>>;
@@ -7188,18 +7188,18 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
     % Bring the new set of remaining equations into the form of a Groebner Basis
     if cdr new_eqn then algebraic <<
      if length new_eqn > 1 then <<
-      torder(lisp(cons('LIST,b)),lex);
+      torder(lisp(cons('list,b)),lex);
       gb:=groebner new_eqn;  % maybe covering this in a shell in case it
 	 		     % takes too long
       if tr_merge then write "gb=",gb;
      >>;
      % Simplifying each rhs of h using gb
-     lisp (h:=cons('LIST,for each hh in cdr h collect
+     lisp (h:=cons('list,for each hh in cdr h collect
                          if (pairp caddr hh) and
-                            ((caaddr hh = 'QUOTIENT) or
-                             ((caaddr hh = '!*SQ) and (denr cadr caddr hh neq 1))
+                            ((caaddr hh = 'quotient) or
+                             ((caaddr hh = '!*sq) and (denr cadr caddr hh neq 1))
                             ) then hh else
-			 {'EQUAL,cadr hh,algebraic preduce(lisp caddr hh,gb)}));
+			 {'equal,cadr hh,algebraic preduce(lisp caddr hh,gb)}));
     >>;
 
     % delete the redundant solution
@@ -7487,7 +7487,7 @@ begin scalar a,b,c,sout,echo_bak,semic_bak;
     write"The following unsolved equations remain:"$terpri();
     write"<pre>";
    >>      else write"Equations:";
-   for each a in car backup_ do mathprint {'EQUAL,0,a};
+   for each a in car backup_ do mathprint {'equal,0,a};
    if html then <<write"</pre>"$terpri()>>
   >>;
 
@@ -7501,8 +7501,8 @@ begin scalar a,b,c,sout,echo_bak,semic_bak;
    b:=nil;
    for each a in cadr backup_ do
 %   if not sqzerop caddr a then
-   b:=cons({'EQUAL,cadr a,
-            if pairp caddr a and car caddr a='!*SQ then cadr caddr a
+   b:=cons({'equal,cadr a,
+            if pairp caddr a and car caddr a='!*sq then cadr caddr a
                                                    else simp caddr a},b);
    print_forg(b,nil)
   >>;
@@ -7529,7 +7529,7 @@ begin scalar a,b,c,sout,echo_bak,semic_bak;
    write"<HR><A NAME=""4""></A><H3>Inequalities</H3>"$terpri();
    write"In the following not identically vanishing expressions are shown."$  terpri();
    write"<pre> ";
-   mathprint cons('LIST,cadddr backup_);
+   mathprint cons('list,cadddr backup_);
    write"</pre>"$terpri();
 
    if cddddr backup_ and car cddddr backup_ then <<
@@ -7542,7 +7542,7 @@ begin scalar a,b,c,sout,echo_bak,semic_bak;
     for each a in car cddddr backup_ do <<
      write"OR-list:"$terpri();
      write"<pre> ";
-     mathprint cons('LIST,for each b in a collect cons('LIST,b));
+     mathprint cons('list,for each b in a collect cons('list,b));
      write"</pre>"$terpri()
     >>
 
@@ -7559,10 +7559,10 @@ begin scalar a,b,c,sout,echo_bak,semic_bak;
  >>;
  if crout or html then <<
   algebraic (
-  crack_out(lisp cons('LIST,car backup_),
-            lisp cons('LIST,cadr backup_),
-            lisp cons('LIST,caddr backup_),
-            lisp cons('LIST,cadddr backup_),
+  crack_out(lisp cons('list,car backup_),
+            lisp cons('list,cadr backup_),
+            lisp cons('list,caddr backup_),
+            lisp cons('list,cadddr backup_),
             lisp solcount));
  >>;
  if html then <<
@@ -7685,7 +7685,7 @@ begin scalar fcl,p,q;
  fcl:=reverse frequent_factors pdes;
  write"Number of occurences, eqn of fewest # of factors, the factor: "$terpri();
  for each p in fcl do
- if (q:=pdeweightSF(numr caddr p,ftem_))>print_ then
+ if (q:=pdeweightsf(numr caddr p,ftem_))>print_ then
  <<write car p,",",cadr p," : ",no_of_tm_sf numr caddr p," terms"$terpri()>>
                                                 else
  <<write car p,",",cadr p," : ";
@@ -7711,7 +7711,7 @@ begin scalar h,maxf,best,h3,h4;
   % without case distinction
   if not pairp caddar h then h4:=t
                         else <<
-   h3:=mkeqSQ(caddar h,nil,nil,ftem_,vl_,allflags_,t,list(0),errorset_control,errorset_control);
+   h3:=mkeqsq(caddar h,nil,nil,ftem_,vl_,allflags_,t,list(0),errorset_control,errorset_control);
    % the last argument is nil to avoid having a lasting effect on pdes
    fcteval(h3);
    h4:=get(h3,'fcteval_lin) or get(h3,'fcteval_nca);
@@ -7834,7 +7834,7 @@ symbolic procedure list_sol_on_disk;
     chn := rds chn;
     sol_list:=nil;
 % input!-case is a PSLism.
-    oldcase := input!-case  NIL;
+    oldcase := input!-case  nil;
     while (xx := read()) and (xx neq int2id 4) do
     sol_list:=cons(bldmsg("%w",xx),sol_list);
     close rds chn;
@@ -8003,7 +8003,7 @@ symbolic procedure uniquenesssq u;
   uniquenessf denr u;
 >>;
 
-symbolic procedure UniquifyAll(pdes,forg);
+symbolic procedure uniquifyall(pdes,forg);
 begin scalar a,b,c;
  for each a in pdes do <<
   uniquifysq get(a,'sqval);
@@ -8017,7 +8017,7 @@ begin scalar a,b,c;
   for each b in get(a,'fct_nli_nli) do uniquifysq car b;
   for each b in get(a,'fct_nli_nus) do uniquifysq car b
  >>;
- for each a in forg do if pairp a and car a = 'EQUAL then uniquifysq caddr a;
+ for each a in forg do if pairp a and car a = 'equal then uniquifysq caddr a;
  for each a in ineq_ do uniquifysq a;
  for each a in ineq_or do
   for each b in a do
@@ -8280,7 +8280,7 @@ begin scalar p,q,h,k;
  for each p in pdes do <<
   h:=simp get(p,'histry_);
   for each q in pdes do
-  h:=subsq(h,{(q . {'!*SQ,get(q,'sqval),t})});
+  h:=subsq(h,{(q . {'!*sq,get(q,'sqval),t})});
   if not sqzerop subtrsq(get(p,'sqval),h) then <<
    write"The history value of ",p," is not correct!";
    k:=t;
@@ -8326,7 +8326,7 @@ end;
 
 %-------------------------------
 
-symbolic procedure InternTest(pdes,forg);
+symbolic procedure interntest(pdes,forg);
 begin scalar a,b,c;
  for each a in pdes do <<
   uniquenesssq get(a,'sqval);
@@ -8341,7 +8341,7 @@ begin scalar a,b,c;
   for each b in get(a,'fct_nli_nus) do uniquenesssq car b
  >>;
 
- for each a in forg do if pairp a and car a = 'EQUAL then uniquenesssq caddr a;
+ for each a in forg do if pairp a and car a = 'equal then uniquenesssq caddr a;
  for each a in ineq_ do uniquenesssq a;
  for each a in ineq_or do
   for each b in a do
@@ -8396,7 +8396,7 @@ end;
 
 %===========
 
-symbolic procedure CaseTree(inp);
+symbolic procedure casetree(inp);
 % inp is of one of the 3 types:
 %  {{'EQUAL,0,pf}} : a new case pf= 0 is to start
 %  {{'INEQ ,0,pf}} : a new case pf<>0 is to start
@@ -8406,7 +8406,7 @@ if session_ and % Otherwise the current computation is a side computation
                 % which should not interfere with the case tree.
    keep_case_tree then
 begin
- comment
+ COMMENT
   The stored list is nil, or no file is stored if no case
   distinction has happened yet.
 
@@ -8495,7 +8495,7 @@ begin
  then <<write"### ERROR in CaseTree: lv=nil, cdr ctc=",cdr ctc$ terpri()>>
  else
  if newsplit then
- if caar inp = 'EQUAL then
+ if caar inp = 'equal then
  if zerop cadar inp then rplacd(ctc,{{1,caddar inp,nil,1},{2,nil,caddar inp,0}})
                     else rplacd(ctc,{{1,cadar  inp,nil,1},{2,nil,cadar  inp,0}})
                       else
@@ -8616,8 +8616,8 @@ begin scalar ctf,fpid,fl,ct,ctc,ctcc,soln,condi,echo_bak,semic_bak,
   >>
  >>;
 
- condi:= if cadr ctc then {'EQUAL,cadr ctc,0}
-                     else {'NEQ, caddr ctc,0};
+ condi:= if cadr ctc then {'equal,cadr ctc,0}
+                     else {'neq, caddr ctc,0};
  if cadddr ctc = 0 then rplaca(cdddr ctc,1)$ % as this computation
                                              % is about to start
  consistenttree(ct,nil);
@@ -8668,7 +8668,7 @@ begin scalar s,level_bak,levstri;
   levstri:=level_string(session_);
 
   old_history:=
-  if car s = 'NEQ then {'rb,levstri,
+  if car s = 'neq then {'rb,levstri,
                         'as,'level_,{'quote,level_bak},
                         'n,cadr s}
                   else {'rb,levstri,

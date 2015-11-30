@@ -34,7 +34,7 @@ fluid '(powlis!* powlis1!*);
 
 global '(!*resubs simpcount!* simplimit!*);
 
-Comment If STRUCTURE is ON, then expressions like (a**(b/2))**2 are not
+COMMENT If STRUCTURE is ON, then expressions like (a**(b/2))**2 are not
 simplified, to allow some attempt at a structure theorem use, especially
 in the integrator;
 

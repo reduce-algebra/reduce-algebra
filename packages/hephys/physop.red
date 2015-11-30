@@ -141,11 +141,11 @@ flag ('(dot), 'spaced);
 
 % define some global variables from REDUCE needed in the package
 fluid '(alglist!* subfg!* wtl!*);
-Global '(tstack!* mul!*);
+global '(tstack!* mul!*);
 % ---define global variables needed for the package---
-FLuid '(oporder!* defoporder!* physopindices!* physopvarind!*);
-Fluid '(physoplist!*);
-Global '(specoplist!*);
+fluid '(oporder!* defoporder!* physopindices!* physopvarind!*);
+fluid '(physoplist!*);
+global '(specoplist!*);
 % define global flags
 fluid '(!*anticom !*anticommchk !*contract !*contract2 !*hardstop);
 fluid '(!*indflg indcnt!* !*ncmp ncmp!*);
@@ -162,7 +162,7 @@ switch anticom;
 
 % reserved operators and variables;
 % idx is the basic identifier for system created indices
-Global '(idx);
+global '(idx);
 
 
 % ----- link new data type PHYSOP in REDUCE ------
@@ -435,7 +435,7 @@ symbolic procedure  physopordchk!*(u,v);
 % checks if there is a pair of wrong ordered noncommuting operators
 % in this list
 begin scalar x,y,lst;
-x:= car u;  u := cdr U;
+x:= car u;  u := cdr u;
 if null u then
     if null cdr v then
         return (ncmpchk(x,car v) and not (invp x = car v))
@@ -680,7 +680,7 @@ if not idp u then return;
 x:= explode u;
 if length(x) < 4 then return;
 x := for j:= 1 : 3 collect nth(x,j);
-if not(x='(I D X ) or x='(!i !d !x)) then return; % check both cases.
+if not(x='(i d x ) or x='(!i !d !x)) then return; % check both cases.
 physopindices!* := nconc(physopindices!*,list(u));
 return t
 end;
@@ -990,7 +990,7 @@ end;
 % ***** dirty trick *****
 % we introduce a rtypefn for !*sq expressions to get
 % proper type checking in assignements
-symbolic procedure physop!*sq U;
+symbolic procedure physop!*sq u;
 % u is a !*sq expressions
 % checks if u contains physops
 begin scalar x;
@@ -1118,7 +1118,7 @@ symbolic procedure physopsm!* u;
    else if flagp(oper,'physopmapping) and !*physopp!* args then
                 v := mk!*sq !*k2q (oper . args)
 %   special hack for handling of PROG constructs
-   else if oper = 'PROG then v := physopprog args
+   else if oper = 'prog then v := physopprog args
         else  v := aeval  u
       >>;
   return v
@@ -1258,7 +1258,7 @@ x := for each j in cdr u collect
          if idp j and (isanindex j or isavarindex j) then j %added 1.01
          else physopsm!* j;
 u := opname . for each j in x collect
-                if eqcar(j,'!*sq) then prepsqxx cadr J
+                if eqcar(j,'!*sq) then prepsqxx cadr j
                 else j;
 if x := opmtch!* u then return x;
 % special hack introduced here to check for
@@ -1523,7 +1523,7 @@ symbolic procedure physopexpt args;
     else lht := mk!*sq simpx1(physopaeval lht,physopaeval rht,1)
 else if lht = 'unit then lht := mk!*sq !*k2q 'unit
      else if numberp rht  then  lht := exptexpand(lht,rht)
-          else  lht := mk!*sq !*P2q (lht . physopaeval rht); %0.99c
+          else  lht := mk!*sq !*p2q (lht . physopaeval rht); %0.99c
 return lht
 end;
 
@@ -1653,7 +1653,7 @@ begin  scalar res;
 if null u or null v then return v;
 v := physopaeval v;
 for each x in u do  v := subst(cdr x,car x,v);
-return physopsm!* V
+return physopsm!* v
 end;
 % *********** end of 3.4 modifications ******************
 
@@ -1841,13 +1841,13 @@ else << z1 := opmtch!* ('anticomm . x);
         if null z1 then
         z1 :=  if (y:=opmtch!* ('anticomm . reverse x)) then y
                else nil;
-        if z1 then << !*anticommchk := T;
+        if z1 then << !*anticommchk := t;
                       res:=  physopsim!* z1>>
      >>;
 if null res then
-   << !*hardstop:= T;
+   << !*hardstop:= t;
       if null !*anticom then res := mk!*sq !*k2q ('comm . x)
-      else << !*anticommchk := T;
+      else << !*anticommchk := t;
               res := mk!*sq !*k2q ('anticomm . x) >>
 >>;
 return res
@@ -1938,7 +1938,7 @@ if rhtype then
    <<
       x := comm2(lht,rht);
       if null !*anticommchk then
-         If !*hardstop then res := mk!*sq !*k2q list('anticomm,lht,rht)
+         if !*hardstop then res := mk!*sq !*k2q list('anticomm,lht,rht)
          else res := reval3 list('plus,x,physoptimes list(2,rht,lht))
       else res := x;
    >>
@@ -2182,7 +2182,7 @@ else if car op eq 'times then
          else << !*hardstop := nil;
                  z:= physopapply list(u,y);
                  if !*hardstop then
-                    << flg := T; x := y . x;
+                    << flg := t; x := y . x;
                        y := if null cdr x then list('opapply,car x,
                                physopaeval v)
                             else list('opapply,('times . x),
@@ -2211,9 +2211,9 @@ symbolic procedure compconj u;
 begin scalar x;
    if null u or numberp u then return u
    else if idp u and (x:=get(u,'rvalue)) then <<
-   x:=subst(list('minus,'I),'I,x);
+   x:=subst(list('minus,'i),'i,x);
    put(u,'rvalue,x); return u >>
-   else return subst(list('minus,'I),'I,u)
+   else return subst(list('minus,'i),'i,u)
 end;
 
  % --------------  adjoint of operators ---------------------
@@ -2248,7 +2248,7 @@ else <<
 return res
 end;
 
-Put('adj,'phystypefn,'getphystypecar);
+put('adj,'phystypefn,'getphystypecar);
 
 symbolic procedure adj2 u;
 begin scalar x,y;
@@ -2321,8 +2321,8 @@ begin scalar x,y,n,u1,v1,z,contract;
  u1 := if atom u then u else car u;
  if ltype then
           if rtype = ltype then go to a
-          ELSE IF NULL B OR ZEROP V OR (LISTP V AND ((CAR V = 'PROG)
-                                           OR (CAR V = 'COND))) %1.01
+          else if null b or zerop v or (listp v and ((car v = 'prog)
+                                           or (car v = 'cond))) %1.01
                   or ((not atom u) and (car u = 'opapply)) then
                       return physopset(u,v,b)
                else rederr2('physoptypelet,
@@ -2334,7 +2334,7 @@ begin scalar x,y,n,u1,v1,z,contract;
          if x = 'state then state u1;
          if x = 'tensor then tensop list(u1,get(v,'tensdimen));
          ltype := rtype >>;
-A: if b and (not atom u or flagp(u,'used!*)) then rmsubs();
+a: if b and (not atom u or flagp(u,'used!*)) then rmsubs();
 % perform the assignement
    physopset(u,v,b);
 % phystype checking added 1.01
@@ -2361,7 +2361,7 @@ A: if b and (not atom u or flagp(u,'used!*)) then rmsubs();
                   v1:= subst(insertfreeindices(z,nil),z,v1) >>;
    physoptypelet(u1,v1,ltype,b,rtype);
    return;
-C:
+c:
 % this is for more complicated let rules involving more than
 % one term on the lhs
 % special hack here to handle let rules involving elementary
@@ -2369,8 +2369,8 @@ C:
    if car u = 'opapply then  return physopset(u,v,b);
 % step 1: do all physop simplifications on lhs
 %  we set indflg!* for dot product simplifications on the lhs
-   !*indflg:= T; indcnt!* := 0;
-   contract := !*contract2; !*contract2 := T;
+   !*indflg:= t; indcnt!* := 0;
+   contract := !*contract2; !*contract2 := t;
    u := physopsm!* u;
    !*indflg := nil; indcnt!* := 0; !*contract2 := contract;
 % check correct phystype
@@ -2383,7 +2383,7 @@ C:
 %  write "u= ",u; terpri();
 % ab hier neu
 % step3 : do some modifications in case of a sum or difference on the lh
-   if car u = 'PLUS then
+   if car u = 'plus then
    <<
       u1 := cddr u;
       u := cadr u;
@@ -2394,20 +2394,20 @@ C:
          v := append(v,list(x));
       >>;
    >>;
-   if car u = 'DIFFERENCE then
+   if car u = 'difference then
    <<
        u1:= cddr u;
        u:= cadr u;
        v := append(list('plus,v),list(u1));
    >>;
-   if car U = 'MINUS then
+   if car u = 'minus then
    <<
        u := cadr u;
        v := list('minus,v);
    >>;
 % step 4: add the rule to the corresponding list
 % expression may still contain quotients and expt
-   if car u ='EXPT then
+   if car u ='expt then
    <<
        u := cadr u . caddr u;
        powlis1!* :=  xadd!*(u .
@@ -2503,7 +2503,7 @@ end;
 return nil
 end;
 
- Rlistat '(clearphysop);
+ rlistat '(clearphysop);
 
 %------ procedures for printing out physops correctly ---------
 

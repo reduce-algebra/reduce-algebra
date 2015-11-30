@@ -1078,11 +1078,13 @@ typedef struct Single_Float
 #define UNWIND_ERROR      (UNWIND_FNAME|UNWIND_ARGS)
 #define UNWIND_UNWIND     0x400       /* no backtrace, still an error */
 
-#ifdef DEBUG
+#if 0 && defined DEBUG
 /*
  * When I have built the system with debugging options enabled I will display
- * a backtrace when perforing THROW as well as after errors. This is so
- * I can really see what is going on!
+ * a backtrace when performing THROW as well as after errors. This is so
+ * I can really see what is going on! Well that now feels like a nuisance so I
+ * will back off from it, but leave this here so it would be easy to
+ * reinstate if needed later on.
  */
 #define SHOW_FNAME  (exit_reason == UNWIND_THROW || \
                      (exit_reason & UNWIND_FNAME) != 0)

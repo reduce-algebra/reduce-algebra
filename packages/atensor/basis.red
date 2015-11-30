@@ -127,15 +127,15 @@ procedure insert_pv_(v,b)$
     if null v then return b$
     b1:=b$
     while cdr b1 and cdaar b1 > cdar v do <<          % reduce car b1.
-      rplacA(b1,pv_renorm reduce_pv(car b1,v))$
+      rplaca(b1,pv_renorm reduce_pv(car b1,v))$
       b1:=cdr b1$
     >>$
     if cdaar b1 > cdar v then <<
-      rplacA(b1,pv_renorm reduce_pv(car b1,v))$
-      rplacD(b1,v . cdr b1)$                             % insert after.
+      rplaca(b1,pv_renorm reduce_pv(car b1,v))$
+      rplacd(b1,v . cdr b1)$                             % insert after.
     >> else <<                                                    % insert before.
       w:=car b1 . cdr b1;
-      rplacD(rplacA(b1,v),w)$
+      rplacd(rplaca(b1,v),w)$
     >>$
     return b$
  end$
@@ -153,8 +153,8 @@ symbolic procedure update_pv(v,b)$
     r:=v$
     while v do <<
       w:=member(cdar v,cdr b)$
-      if w then rplacD(car v,car w)
-      else rplacD(b,cdar v . cdr b)$
+      if w then rplacd(car v,car w)
+      else rplacd(b,cdar v . cdr b)$
       v:=cdr v$
     >>$
     return r$

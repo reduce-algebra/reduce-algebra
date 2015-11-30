@@ -31,7 +31,7 @@ module roots;  % Header module for roots package.
 %
 
 
-Comment
+COMMENT
   Revisions:
   30 March 95   Mod 1.96 adds the additional capability of solving
                  polynomials by automatically reversing the powers and

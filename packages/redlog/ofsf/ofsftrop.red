@@ -215,7 +215,7 @@ asserted procedure ofsf_zeropeval1(argl: List, posp: Boolean): List;
 asserted procedure ofsf_s2aPointPair(pp: List2): List2;
    {'list, ofsf_al2eql car pp, cadr pp};
 
-asserted procedure ofsf_al2eql(al: AList): List;
+asserted procedure ofsf_al2eql(al: Alist): List;
    'list . for each pr in al collect {'equal, car pr, cdr pr};
 
 asserted procedure ofsf_zerop(f: SF, scond: QfFormula): List;
@@ -284,7 +284,7 @@ asserted procedure ofsf_zeropTryOne(f: SF, vl: List): List3;
       return {-1, one, fone}
    end;
 
-asserted procedure ofsf_zerop2(f: SF, scond: QfFormula, one: AList, fone: Integer, posp: Boolean): List3;
+asserted procedure ofsf_zerop2(f: SF, scond: QfFormula, one: Alist, fone: Integer, posp: Boolean): List3;
    % Returns (FLAG, OTHER, ZERO). The semantics of FLAG is as follows:
    %
    % FLAG = -1: This incomplete method failed.
@@ -331,7 +331,7 @@ asserted procedure ofsf_zerop2(f: SF, scond: QfFormula, one: AList, fone: Intege
 
 switch rmonl;
 
-asserted procedure ofsf_posdirp(ff: SF, scond: QfFormula, one: AList, fone: Integer, d: Integer, vl: List, monl: List, posp: Boolean): List3;
+asserted procedure ofsf_posdirp(ff: SF, scond: QfFormula, one: Alist, fone: Integer, d: Integer, vl: List, monl: List, posp: Boolean): List3;
    % Returns (FLAG, OTHER, ZERO). We refer to exponent vector as points and to the
    % sign of a corresponding coefficient as the sign of the point. Then the
    % semantics of FLAG is as follows:
@@ -394,7 +394,7 @@ asserted procedure ofsf_posdirp(ff: SF, scond: QfFormula, one: AList, fone: Inte
       return w
    end;
 
-asserted procedure ofsf_posdirp1(ff: SF, scond: QfFormula, one: AList, fone: Integer, l: List, c: Integer, d: Integer, vl: List, snegp: Boolean): List3;
+asserted procedure ofsf_posdirp1(ff: SF, scond: QfFormula, one: Alist, fone: Integer, l: List, c: Integer, d: Integer, vl: List, snegp: Boolean): List3;
    % Returns (FLAG, OTHER, ZERO). We refer to exponent vector as points and to
    % the sign of a corresponding coefficient as the sign of the point. Then the
    % semantics of FLAG is as follows:
@@ -418,7 +418,7 @@ asserted procedure ofsf_posdirp1(ff: SF, scond: QfFormula, one: AList, fone: Int
 	 ev := pop l;
 	 lp_negconstr skiprows;
 	 w := lp_optimize();
-	 if not (w memq '(infeasible unbounded)) then <<
+	 if not (w memq '(infeasible unbounded)) and ofsf_smallp w then <<
 	    % Unbounded is actually feasible but without a solution. I have to
 	    % think about this. For now I am just skipping it.
 	    dir := ('c . pop w) . for i := 1:d collect mkid('n, i) . pop w;
@@ -461,7 +461,16 @@ asserted procedure ofsf_posdirp1(ff: SF, scond: QfFormula, one: AList, fone: Int
       return {flag, other, {zero, mk!*sq fzero}}
    end;
 
-asserted procedure ofsf_sceval(f: QfFormula, subl: AList): TruthValue;
+asserted procedure ofsf_smallp(w: Any): ExtraBoolean;
+   % w is a list of floats from an external solver or of Lisp prefix rational
+   % numbers from the Reduce Simplex.
+   begin scalar l;
+      l := for each n in cdr w collect
+ 	 abs if floatp n then fix n else sfto_sf2int numr sfto_ceilq simp n;
+      return lto_max l < 100
+   end;
+
+asserted procedure ofsf_sceval(f: QfFormula, subl: Alist): TruthValue;
    % subl assigns SQs representing :rd: or :ra: domain elements to all
    % variables. We assume that the domain mode is nil when calling this
    % function.
@@ -480,7 +489,7 @@ asserted procedure ofsf_sceval(f: QfFormula, subl: AList): TruthValue;
       return cl_eval(f, subl, function(ofsf_scevalat))
    end;
 
-asserted procedure ofsf_scevalat(at: OfsfAtf, subl: AList): TruthValue;
+asserted procedure ofsf_scevalat(at: OfsfAtf, subl: Alist): TruthValue;
    % subl assigns SQs representing :rd: or :ra: domain elements to all
    % variables. We assume that the domain mode is nil when calling this
    % function.
@@ -498,7 +507,7 @@ asserted procedure ofsf_addconstraints(l: List);
    for each pt in l do
       lp_addconstraint('leq, (-1) . pt, -1);
 
-asserted procedure ofsf_zerop3(ff: SF, fone: Integer, d: Integer, vl: List, ev: List, dir: AList, nvar: ExtraBoolean): List;
+asserted procedure ofsf_zerop3(ff: SF, fone: Integer, d: Integer, vl: List, ev: List, dir: Alist, nvar: ExtraBoolean): List;
    begin scalar flag, other;
       {flag, other} := if !*rlgurobi and !*rltropilp then
       	 ofsf_zerop3i(ff, fone, d, vl, ev, dir, nvar)
@@ -509,7 +518,7 @@ asserted procedure ofsf_zerop3(ff: SF, fone: Integer, d: Integer, vl: List, ev: 
       return {flag, other}
    end;
 
-asserted procedure ofsf_zerop3i(ff: SF, fone: Integer, d: Integer, vl: List, ev: List, dirp: AList, nvar: ExtraBoolean): List;
+asserted procedure ofsf_zerop3i(ff: SF, fone: Integer, d: Integer, vl: List, ev: List, dirp: Alist, nvar: ExtraBoolean): List;
    begin integer w, g;
       if !*rlverbose then <<
 	 ioto_tprin2t {"+++ found integer direction towards a positive value"};
@@ -527,7 +536,7 @@ asserted procedure ofsf_zerop3i(ff: SF, fone: Integer, d: Integer, vl: List, ev:
       return ofsf_zerop4i(ff, fone, d, vl, dirp, nvar)
    end;
 
-asserted procedure ofsf_zerop4i(ff: SF, fone: Integer, d: Integer, vl: List, dirp: AList, nvar: ExtraBoolean): List;
+asserted procedure ofsf_zerop4i(ff: SF, fone: Integer, d: Integer, vl: List, dirp: Alist, nvar: ExtraBoolean): List;
    begin scalar v, isol, ffinfty, sol, ffval, inf;
       pop dirp;
       isol := for i := 1:d collect <<
@@ -549,13 +558,13 @@ asserted procedure ofsf_zerop4i(ff: SF, fone: Integer, d: Integer, vl: List, dir
       sol .  ffval := ofsf_realizeinfinity(isol, ffinfty);
       if !*rlverbose then <<
 	 ioto_tprin2t {"+++ found a point with positive value:"};
-      	 mathprint ofsf_s2apointPair {sol, mk!*sq ffval}
+      	 mathprint ofsf_s2aPointPair {sol, mk!*sq ffval}
       >>;
       if fone > 0 then ffval := negsq ffval;
       return {1, {sol, mk!*sq ffval}}
    end;
 
-asserted procedure ofsf_realizeinfinity(isol: AList, ffinfty: SQ): DottedPair;
+asserted procedure ofsf_realizeinfinity(isol: Alist, ffinfty: SQ): DottedPair;
    begin scalar nffinfty, nval, val, isubl, sol; integer pow;
       nffinfty := numr ffinfty;
       if minusf nffinfty then
@@ -599,13 +608,13 @@ asserted procedure ofsf_zerop3f(ff: SF, fone: Integer, vl: List, ev: List, dirp:
       >> until val > 0;
       if !*rlverbose then <<
 	 ioto_tprin2t {"+++ found a point with positive value:"};
-      	 mathprint ofsf_s2apointPair {subl, val}
+      	 mathprint ofsf_s2aPointPair {subl, val}
       >>;
       if fone > 0 then val := -val;
       return {1, {subl, val}}
    end;
 
-asserted procedure ofsf_zerop3r(ff: SF, fone: Integer, d: Integer, vl: List, ev: List, dirp: AList, nvar: ExtraBoolean): List;
+asserted procedure ofsf_zerop3r(ff: SF, fone: Integer, d: Integer, vl: List, ev: List, dirp: Alist, nvar: ExtraBoolean): List;
    begin integer w, l;
       if !*rlverbose then <<
 	 ioto_tprin2 {"+++ found rational direction towards a positive value"};
@@ -647,7 +656,7 @@ asserted procedure ofsf_zerosolveeval(l: List): List;
       return {'list, 'list . zero, mk!*sq gzero}
    end;
 
-asserted procedure ofsf_zerosolve(g: SF, p: AList, q: AList): DottedPair;
+asserted procedure ofsf_zerosolve(g: SF, p: Alist, q: Alist): DottedPair;
    %
    % g(p_1, ..., p_n) < 0 < g(q_1, ..., q_n)
    %
@@ -731,7 +740,7 @@ asserted procedure ofsf_zeroapproxeval(l: List): List;
       return {'list, 'list . zero, mk!*sq gzero}
    end;
 
-asserted procedure ofsf_zeroapprox(g: SF, p: AList, q: AList): DottedPair;
+asserted procedure ofsf_zeroapprox(g: SF, p: Alist, q: Alist): DottedPair;
    begin scalar subal, x_i, p_i, q_i, g0, y, yq, w, rl, ral, zero, gzero;
       if !*rlverbose then
 	 ioto_tprin2t {"+++ approximating zero, float precision is ", precision 0, " ..."};

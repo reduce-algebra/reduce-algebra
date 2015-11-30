@@ -2,7 +2,7 @@ module regex;
 
 % Copyright 1994 by Rainer Schoepf and ZIB.
 
-comment a regular expression matcher;
+COMMENT a regular expression matcher;
 
 fluid '(!*trregex !*trregexmatch);
 
@@ -272,14 +272,14 @@ symbolic procedure compile_regex source;
              else if current eq '!$
               then if not null source then add_simple_char_exp '!$
                     else add_exp '(cond ((not (equal indx len)) (return nil)))
-             else if current eq '!* then add_exp 'ASTERISK
-             else if current eq '!+ then add_exp 'PLUS
-             else if current eq '!? then add_exp 'QUESTION
+             else if current eq '!* then add_exp 'asterisk
+             else if current eq '!+ then add_exp 'plus
+             else if current eq '!? then add_exp 'question
              else if current eq '!{
               then begin scalar result; 
                       result := regex_brace source; 
                       source := pnth0(source,car result); 
-                      add_exp ('BRACE . cdr result)
+                      add_exp ('brace . cdr result)
                    end
              else if current eq '!(
               then <<group := group + 1; 
@@ -315,9 +315,9 @@ symbolic procedure compile_regex source;
                       if not atom value
                         then if car value eq 'group_ref
                                then add_group_ref_exp value
-                              else if car value eq 'WORDBOUNDARY
+                              else if car value eq 'wordboundary
                                then rederr "Word boundaries not yet implemented"
-                              else if car value eq 'NONWORDBOUNDARY
+                              else if car value eq 'nonwordboundary
                               
            then rederr "Non word boundaries not yet implemented"
           else nil
@@ -331,7 +331,7 @@ symbolic procedure compile_regex source;
       for j := 1:length expression do 
          begin scalar piece; 
             piece := nth(expression,j); 
-            if idp piece or eqcar(piece,'BRACE)
+            if idp piece or eqcar(piece,'brace)
               then <<result := compile_regex_closure(expression,j,result); 
                      j := car result; 
                      result := cdr result>>
@@ -382,7 +382,7 @@ symbolic smacro procedure next_exp;
                       nexl := {'(return t)}; 
                       nexl := nth(expression,j := j + 1) . nexl;     % skip set_group_ref
                       while (nex := nth(expression,j := j + 1)) neq groupno do 
-                         <<if idp nex or eqcar(nex,'BRACE)
+                         <<if idp nex or eqcar(nex,'brace)
                              then <<nex := 
                                      compile_regex_closure(expression,j,nexl); 
                                     j := car nex; 
@@ -395,7 +395,7 @@ symbolic smacro procedure next_exp;
 symbolic procedure compile_regex_closure(expression,j,result); 
    begin scalar piece; 
       piece := nth(expression,j); 
-      if piece eq 'QUESTION
+      if piece eq 'question
         then begin scalar nex; 
                 nex := next_exp(); 
                 if numberp car nex
@@ -406,19 +406,19 @@ symbolic procedure compile_regex_closure(expression,j,result);
                                     {t, {'set_group_end, car nex, 'indx}}})
                  else add2result ({'prog, 'nil, nex, '(return t)})
              end
-       else if piece eq 'ASTERISK
+       else if piece eq 'asterisk
         then begin scalar nex; 
                 nex := next_exp(); 
                 result := {form_variant_exp(nex,0,nil,result)}; 
                 regex_info ({"Constructed * result:", result})
              end
-       else if piece eq 'PLUS
+       else if piece eq 'plus
         then begin scalar nex; 
                 nex := next_exp(); 
                 result := {form_variant_exp(nex,1,nil,result)}; 
                 regex_info ({"Constructed + result:", result})
              end
-       else if eqcar(piece,'BRACE)
+       else if eqcar(piece,'brace)
         then begin integer max,min; scalar nex; 
                 min := cadr piece; 
                 max := caddr piece; 
@@ -542,8 +542,8 @@ symbolic procedure regex_quoted(charlist,flag);
        else if first eq '!f then result := num2char 12 % FF
        else if first eq '!b
         then if flag then result := num2char 8         % BACKSPACE
-              else result := '(WORDBOUNDARY)
-       else if first eq '!B and null flag then result := '(NONWORDBOUNDARY)
+              else result := '(wordboundary)
+       else if first eq '!B and null flag then result := '(nonwordboundary)
        else if is_digit_char first
         then if length charlist>2
                   and is_digit_char cadr charlist

@@ -31,7 +31,7 @@ module roots2; % Header module for roots2 package.
 %
 
 
-Comment
+COMMENT
   Revisions:
   30 March 95  Mod 1.96 adds to multroot the capability of solving
                 polynomial trees which are determinate but whose

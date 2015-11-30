@@ -35,9 +35,9 @@ algebraic;
 % y' = f(x,y)
 % in a neighborhood of x0 *if* f is holomorphic in x and y at (x0,y0).
 
-PROCEDURE detaylor(f,x,y,x0,y0,N);
-
-begin scalar wj, pot;
+procedure detaylor(f,x,y,x0,y0,n);
+begin
+  scalar wj, pot;
   wj:=f; pot:=x-x0;
   return ( y0+sub({x=x0,y=y0},f)*(x-x0) +
             for j:=2:n sum
@@ -103,15 +103,15 @@ procedure x ltimess y; % vector * scalar  -> vector
 %       do so).
 %       The yi MUST be symbols so DF can handle them.
 
-procedure odetaylor(flis,Anfangswerte,N);
+procedure odetaylor(flis,anfangswerte,n);
 begin scalar pot,x,y,x0,y0,wj,res;
  % Split args (see comment above for format):
- x:=  lhs first Anfangswerte;
- x0:= rhs first Anfangswerte;
- y:=  for each gl in rest Anfangswerte collect lhs gl;
- y0:= for each gl in rest Anfangswerte collect rhs gl;
+ x:=  lhs first anfangswerte;
+ x0:= rhs first anfangswerte;
+ y:=  for each gl in rest anfangswerte collect lhs gl;
+ y0:= for each gl in rest anfangswerte collect rhs gl;
 % Initialisations (= degree one of the taylor polynomial)
-res:= y0 lplusl (sub(Anfangswerte,flis) ltimess (x-x0));
+res:= y0 lplusl (sub(anfangswerte,flis) ltimess (x-x0));
 pot:= x-x0;
  wj:= flis;
 % Main loop:
@@ -124,7 +124,7 @@ for j:=2:n do
 % The above DFs should be PARTDFs, really. In REDUCE 3.4, maybe they
 %    can...
      pot := pot*(x-x0)/j;
-     res:= res lplusl (sub(Anfangswerte,wj) ltimess pot);
+     res:= res lplusl (sub(anfangswerte,wj) ltimess pot);
            %should be sub...
    >>;
  % DONE:

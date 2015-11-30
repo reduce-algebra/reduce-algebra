@@ -205,7 +205,7 @@ symbolic procedure noncom2_sublist(u,v);
     if not (listp u and listp v) then
       rederr " invalid arguments to noncom2_sublist";
 %initialization
-    if null u or null v or not (V:= member(car u,v)) then return;
+    if null u or null v or not (v:= member(car u,v)) then return;
 a:  if null u then return nconc(reslist,append(u1,v));
     z:= v;
     x := car u;

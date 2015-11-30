@@ -34,7 +34,7 @@ module nestdom; %
 % Adaption to allow convertion between arnum and nested.
 %%%%%%%%%
 symbolic procedure ident(x);x;
-PUT('!:ar!:,'!:nest!:,'ident);
+put('!:ar!:,'!:nest!:,'ident);
 %%%%%%%%%
 
 
@@ -46,61 +46,61 @@ inline procedure nestlevel u; cadr u;
 inline procedure nestdmode u; caddr u;
 inline procedure nestsq u; cdddr u;
 
-GLOBAL '(DOMAINLIST!*);
+global '(domainlist!*);
 
-FLUID '(alglist!* nestlevel!*);
+fluid '(alglist!* nestlevel!*);
 nestlevel!* := 0;
 
 switch nested;
 
-DOMAINLIST!* := UNION('(!:nest!:),DOMAINLIST!*);
+domainlist!* := union('(!:nest!:),domainlist!*);
 
-PUT('NESTED,'TAG,'!:nest!:);
-PUT('!:nest!:,'DNAME,'NESTED);
-FLAG('(!:nest!:),'FIELD);
-FLAG('(!:nest!:),'CONVERT);
-PUT('!:nest!:,'I2D,'!*I2nest);
-% PUT('!:nest!:,'!:BF!:,'nestCNV);
-% PUT('!:nest!:,'!:FT!:,'nestCNV);
-% PUT('!:nest!:,'!:RN!:,'nestCNV);
-PUT('!:nest!:,'!:BF!:,mkdmoderr('!:nest!:,'!:BF!:));
-PUT('!:nest!:,'!:FT!:,mkdmoderr('!:nest!:,'!:ft!:));
-PUT('!:nest!:,'!:RN!:,mkdmoderr('!:nest!:,'!:RN!:));
-PUT('!:nest!:,'MINUSP,'nestMINUSP!:);
-PUT('!:nest!:,'PLUS,'nestPLUS!:);
-PUT('!:nest!:,'TIMES,'nestTIMES!:);
-PUT('!:nest!:,'DIFFERENCE,'nestDIFFERENCE!:);
-PUT('!:nest!:,'QUOTIENT,'nestQUOTIENT!:);
-PUT('!:nest!:,'divide,'nestdivide!:);
-% PUT('!:nest!:,'gcd,'nestgcd!:);
-PUT('!:nest!:,'ZEROP,'nestZEROP!:);
-PUT('!:nest!:,'ONEP,'nestONEP!:);
-% PUT('!:nest!:,'factorfn,'factornest!:);
-PUT('!:nest!:,'PREPFN,'nestPREP!:);
-PUT('!:nest!:,'PRIFN,'PRIN2);
-PUT('!:RN!:,'!:nest!:,'RN2nest);
+put('nested,'tag,'!:nest!:);
+put('!:nest!:,'dname,'nested);
+flag('(!:nest!:),'field);
+flag('(!:nest!:),'convert);
+put('!:nest!:,'i2d,'!*i2nest);
+% put('!:nest!:,'!:bf!:,'nestcnv);
+% put('!:nest!:,'!:ft!:,'nestcnv);
+% put('!:nest!:,'!:rn!:,'nestcnv);
+put('!:nest!:,'!:bf!:,mkdmoderr('!:nest!:,'!:bf!:));
+put('!:nest!:,'!:ft!:,mkdmoderr('!:nest!:,'!:ft!:));
+put('!:nest!:,'!:rn!:,mkdmoderr('!:nest!:,'!:rn!:));
+put('!:nest!:,'minusp,'nestminusp!:);
+put('!:nest!:,'plus,'nestplus!:);
+put('!:nest!:,'times,'nesttimes!:);
+put('!:nest!:,'difference,'nestdifference!:);
+put('!:nest!:,'quotient,'nestquotient!:);
+put('!:nest!:,'divide,'nestdivide!:);
+% put('!:nest!:,'gcd,'nestgcd!:);
+put('!:nest!:,'zerop,'nestzerop!:);
+put('!:nest!:,'onep,'nestonep!:);
+% put('!:nest!:,'factorfn,'factornest!:);
+put('!:nest!:,'prepfn,'nestprep!:);
+put('!:nest!:,'prifn,'prin2);
+put('!:rn!:,'!:nest!:,'rn2nest);
 
-SYMBOLIC PROCEDURE !*I2nest U;
+symbolic procedure !*i2nest u;
    %converts integer U to nested form;
    if domainp u then u else
    '!:nest!: . 0 . dmode!* . (u ./ 1);
 
-SYMBOLIC PROCEDURE RN2nest U;
+symbolic procedure rn2nest u;
    %converts integer U to nested form;
    if domainp u then u else
    '!:nest!: . 0 . dmode!* . (cdr u);
 
-SYMBOLIC PROCEDURE nestCNV U;
-   REDERR LIST("Conversion between `nested' and",
-                GET(CAR U,'DNAME),"not defined");
+symbolic procedure nestcnv u;
+   rederr list("Conversion between `nested' and",
+                get(car u,'dname),"not defined");
 
-SYMBOLIC PROCEDURE nestMINUSP!: U;
+symbolic procedure nestminusp!: u;
    nestlevel u = 0 and minusf car nestsq u;
 
-SYMBOLIC PROCEDURE sq2nestedf sq;
+symbolic procedure sq2nestedf sq;
   '!:nest!: . nestlevel!* . dmode!* . sq;
 
-SYMBOLIC PROCEDURE nest2op!:(U,V,op);
+symbolic procedure nest2op!:(u,v,op);
   (begin scalar r,nlu,nlv,nlr,dm,nestlevel!*;
      nlu := if not eqcar (u,'!:nest!:) then 0 else nestlevel u;
      nlv := if not eqcar (v,'!:nest!:) then 0 else nestlevel v;
@@ -135,38 +135,38 @@ SYMBOLIC PROCEDURE nest2op!:(U,V,op);
      return r;
     end )  where dmode!* = nil;
 
-SYMBOLIC PROCEDURE nestPLUS!:(u,v); nest2op!:(u,v,'addsq);
+symbolic procedure nestplus!:(u,v); nest2op!:(u,v,'addsq);
 
-SYMBOLIC PROCEDURE nestTIMES!:(U,V); nest2op!:(u,v,'multsq);
+symbolic procedure nesttimes!:(u,v); nest2op!:(u,v,'multsq);
 
-SYMBOLIC PROCEDURE nestDIFFERENCE!:(U,V);
+symbolic procedure nestdifference!:(u,v);
     nest2op!:(u,v,function (lambda(x,y); addsq(x,negsq y)));
 
 symbolic procedure nestdivide!:(u,v); nest2op!:(u,v,'quotsq) . 1;
 
 %symbolic procedure nestgcd!:(u,v); !*i2nest 1;
 
-SYMBOLIC PROCEDURE nestQUOTIENT!:(U,V); nest2op!:(u,v,'quotsq);
+symbolic procedure nestquotient!:(u,v); nest2op!:(u,v,'quotsq);
 
-SYMBOLIC PROCEDURE nestZEROP!: U; null numr nestsq u;
+symbolic procedure nestzerop!: u; null numr nestsq u;
 
-SYMBOLIC PROCEDURE nestONEP!: U;
+symbolic procedure nestonep!: u;
        (car v = 1 and cdr v = 1) where v = nestsq u;
 
-INITDMODE 'nested;
+initdmode 'nested;
 
 
 % nested routines are defined in the GENnest nestule with the exception
 % of the following:
 
-SYMBOLIC PROCEDURE SETnest U;
+symbolic procedure setnest u;
    begin
       u := reval u;
       if not fixp u then typerr(u,"nestulus");
       nestlevel!* := u;
    end;
 
-FLAG('(SETnest),'OPFN);   %to make it a symbolic operator;
+flag('(setnest),'opfn);   %to make it a symbolic operator;
 
 flag('(setnest),'noval);
 
@@ -185,7 +185,7 @@ sq)) ./ 1;
 
 put('co,'simpfn,'simpco);
 
-symbolic procedure nestPREP!: u; list('co,nestlevel u,prepsq nestsq u);
+symbolic procedure nestprep!: u; list('co,nestlevel u,prepsq nestsq u);
 
 endmodule;
 

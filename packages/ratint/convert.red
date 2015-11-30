@@ -192,19 +192,19 @@ procedure convertlog(exp,var); lisp convert_log(exp,var);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 algebraic;
-expr procedure logtoAtan(exp1,exp2,x);
-begin scalar D,C,G, temp, rem;
+expr procedure logtoatan(exp1,exp2,x);
+begin scalar d,c,g, temp, rem;
 rem:=pseudorem(exp1,exp2,x);
 if(part(rem,1)=0) then return (2*atan(exp1/exp2))
 %if(numberp(exp1/exp2)) then return (2*atan(exp1/exp2))
  else <<
-      if(deg(exp1,x)<deg(exp2,x)) then return logtoAtan(-exp2,exp1,x)
+      if(deg(exp1,x)<deg(exp2,x)) then return logtoatan(-exp2,exp1,x)
       else <<
       temp:=gcd_ex(exp2,-exp1,x);
-      D:=part(temp,1);
-      C:=part(temp,2);
-      G:=exp2*D-exp1*C;
-      return(2*atan((exp1*D+exp2*C)/G)+ logtoAtan(D,C,x));
+      d:=part(temp,1);
+      c:=part(temp,2);
+      g:=exp2*d-exp1*c;
+      return(2*atan((exp1*d+exp2*c)/g)+ logtoatan(d,c,x));
             >>;
       >>;
  end;

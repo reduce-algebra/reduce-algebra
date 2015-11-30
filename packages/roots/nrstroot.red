@@ -33,7 +33,7 @@ module nrstroot; % Routines for finding the root of a polynomial which
 %
 
 
-Comment   modules bfdoer, bfdoer2, complxp, allroot, and rootaux of
+COMMENT   modules bfdoer, bfdoer2, complxp, allroot, and rootaux of
 roots.red needed also;
 
 global '(bfz!* cpval!#);

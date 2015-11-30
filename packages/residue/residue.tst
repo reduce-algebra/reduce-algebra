@@ -26,7 +26,7 @@ residue(sin(x)/x^6,x,0);
 residue((1-cos(x))/x^5,x,0);
 residue(exp(1/x),x,0);
 % not implemented
-residue((A*x+B*x^2+c)/(D*x+E),x,-E/D);
+residue((a*x+b*x^2+c)/(d*x+e),x,-e/d);
 residue(tan(x),x,pi/2);
 residue(sec(x),x,pi/2);
 residue(factorial(x),x,0);

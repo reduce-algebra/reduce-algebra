@@ -31,7 +31,10 @@ fluid '(!*minusliter !*mode !*oldminusliter !*rlisp88 forbinops!*
 
 switch rlisp88;
 
-create!-package('(rlisp88 for88 loops88 bquote comment rvector mstruct
+% I have removed the sub-module "comment" here since its functionality is
+% now part of the main system.
+
+create!-package('(rlisp88 for88 loops88 bquote rvector mstruct
                   records inspect),
                 '(rlisp));
 

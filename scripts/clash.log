@@ -59,7 +59,6 @@ or off easily.
 
 
 
-!*k2pf                         defined in       general xideal
 addm                           defined in       matsm sparsmat
 addm1                          defined in       matsm sparsmat
 addmpf                         defined in       partitsf xexcalc
@@ -89,7 +88,6 @@ conv                           defined in       convert expon
 convert                        defined in       ludecom convert
 copy_mat                       defined in       linalg froben
 copy_vect                      defined in       perms sparsmat
-copyd                          defined in       cslprolo cslrend
 cross                          defined in       dummy1 v3tools
 declarerd                      defined in       mathml mml_ir
 deg                            defined in       polyop desir odesolve
@@ -129,13 +127,11 @@ flag1                          defined in       rcref crack
 flatindxl                      defined in       auxitens indices
 flatten                        defined in       int mrvlimit
 fnrd                           defined in       mathml mml_ir
+freedoublearray                defined in       cuba_main nlopt_main
 frobenius                      defined in       desir systems froben
 fullcopy                       defined in       dummy sparsmat
-functionp                      defined in       assertcheckfn randpoly
 gb_vars                        defined in       gb crgb
 gentran                        defined in       intrfc codgen
-get!*fdeg                      defined in       general xideal
-get!*ifdeg                     defined in       general xideal
 get!+vec!+dim                  defined in       gramschm symatvec
 get!+vec!+entry                defined in       gramschm symatvec
 get!-impfun!-args              defined in       cantens excalc
@@ -150,12 +146,12 @@ getrtype                       defined in       reval physop
 getrtype1                      defined in       reval avector
 getrtype2                      defined in       reval avector
 gram!+schmid                   defined in       gramschm symatvec
+greaterpcdr                    defined in       general sort
 groebfasttest                  defined in       buchbg groeweak
 groebtestrestriction           defined in       grinter2 groebrst
 gvar1                          defined in       invbint grinterf
 gvarlis                        defined in       invbint grinterf
 gvarlis1                       defined in       invbint grinterf
-i2bf!:                         defined in       simp arith
 ident                          defined in       nestdom pattdefn
 indvarprt                      defined in       gentens indxprin
 init                           defined in       codctl bibasis_involutive
@@ -163,14 +159,10 @@ innerprod                      defined in       numeval ludecom
 intervalrd                     defined in       mathml mml_ir
 isimp1                         defined in       hephys red2cvit
 kernelp                        defined in       noncom2 table1
-lambda_4ue81zccw261            defined in       sfto ofsfanuex ofsfvsl
-lambda_5ecvmqn0s7d8            defined in       solvealg edspatch
-lambda_63ircqeulrd3            defined in       ofsfqe dvfsfqe
-lambda_tvzjjrvmyxu4            defined in       edspde edssolve
-lambda_x9hgwkw3owh3            defined in       scripts dvfsfsiat
-lambda_xwwv19lu7y09            defined in       map qsum
 lambdard                       defined in       mathml mml_ir
 lengthreval                    defined in       reval baglist sparsmat
+lesspcar                       defined in       general sort
+lesspcdr                       defined in       general sort
 lex                            defined in       mathml tools
 limit                          defined in       orthovec limits
 limitrd                        defined in       mathml mml_ir
@@ -236,7 +228,7 @@ my!+nullsq!+p                  defined in       gramschm symatvec
 natnumlis                      defined in       matrext sparsmat
 ndepends                       defined in       partdf edspatch
 ndependsl                      defined in       partdf edspatch
-negpf                          defined in       general xideal
+newdoublearray                 defined in       cuba_main nlopt_main
 newrederr                      defined in       zeilberg ztrans
 newrederr1                     defined in       zeilberg ztrans
 newton                         defined in       desir ratint
@@ -261,7 +253,6 @@ polynomq                       defined in       qsum simplede zeilberg
 polynomq4                      defined in       qsum zeilberg
 polynomqqq                     defined in       qsum zeilberg residue contfrac
 printout                       defined in       mathml ir2om mml_ir
-printvec                       defined in       ezgcd genparser
 protected                      defined in       minlngth codpri
 prsubsetrd                     defined in       mathml mml_ir
 putform                        defined in       exintro edspatch
@@ -306,6 +297,7 @@ select!-eval                   defined in       map qsum
 selectrd                       defined in       mathml mml_ir
 sep                            defined in       convert crsep
 seprd                          defined in       mathml mml_ir
+setdoublearray                 defined in       cuba_main nlopt_main
 setmat                         defined in       lamatrix matarg
 setrd                          defined in       mathml mml_ir
 sets                           defined in       mathml mml_ir
@@ -314,7 +306,6 @@ simpcofactor                   defined in       cofactor sparsmat
 simpdet                        defined in       det sparsmat
 simpiden                       defined in       simp pmpatch
 simpsumsym                     defined in       genpurfn ctintro
-simptaylor                     defined in       approx tayintrf
 simptrace                      defined in       det sparsmat
 size_of_matrix                 defined in       linalg froben
 sl_unstraightify               defined in       rlsched rlsl
@@ -334,14 +325,11 @@ subs3f1                        defined in       subs3q noncom2
 subsetrd                       defined in       mathml mml_ir
 swap                           defined in       vect sparsmat
 symmetricp                     defined in       cholesky splinalg rankstat
-taylor                         defined in       approx orthovec
 taylorfunction                 defined in       idepend algint
 taylorp                        defined in       idepend pade
 tconc                          defined in       records sl2psl
 tensor                         defined in       gentens tensorio expres
 texlet                         defined in       rlfi tri
-tokbquote                      defined in       tok bquote
-token!-number                  defined in       tok smtread
 tp                             defined in       matsm sparsmat
 tprettyprint                   defined in       cslcompat pretty
 transposerd                    defined in       mathml mml_ir

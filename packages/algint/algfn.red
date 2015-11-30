@@ -1,4 +1,4 @@
-MODULE ALGFN;
+module algfn;
 
 % Author: James H. Davenport.
 
@@ -30,48 +30,48 @@ MODULE ALGFN;
 % Q(all "constants")(var).
 
 
-EXPORTS ALGFNPL,ALGEBRAICSF;
+exports algfnpl,algebraicsf;
 
-IMPORTS SIMP,INTERR,DEPENDSP,DEPENDSPL;
+imports simp,interr,dependsp,dependspl;
 
-SYMBOLIC PROCEDURE ALGFNP(PF,VAR);
-   IF ATOM PF THEN T
-    ELSE IF NOT ATOM CAR PF THEN INTERR "Not prefix form"
-    ELSE IF CAR PF EQ '!*SQ THEN ALGFNSQ(CADR PF,VAR)
-      ELSE IF CAR PF EQ 'EXPT
-       THEN IF NOT algint!-RATNUMP CADDR PF
-              THEN (NOT DEPENDSP(CADR PF,VAR))
-                AND (NOT DEPENDSP(CADDR PF,VAR))
-             ELSE ALGFNP(CADR PF,VAR)
-    ELSE IF NOT MEMQ(CAR PF,'(MINUS PLUS TIMES QUOTIENT SQRT))
+symbolic procedure algfnp(pf,var);
+   if atom pf then t
+    else if not atom car pf then interr "Not prefix form"
+    else if car pf eq '!*sq then algfnsq(cadr pf,var)
+      else if car pf eq 'expt
+       then if not algint!-ratnump caddr pf
+              then (not dependsp(cadr pf,var))
+                and (not dependsp(caddr pf,var))
+             else algfnp(cadr pf,var)
+    else if not memq(car pf,'(minus plus times quotient sqrt))
            % JPff fiddle
-     THEN NOT DEPENDSPL(CDR PF,VAR)
-    ELSE ALGFNPL(CDR PF,VAR);
+     then not dependspl(cdr pf,var)
+    else algfnpl(cdr pf,var);
 
-SYMBOLIC PROCEDURE ALGFNPL(P!-LIST,VAR);
-   NULL P!-LIST OR ALGFNP(CAR P!-LIST,VAR) AND ALGFNPL(CDR P!-LIST,VAR);
+symbolic procedure algfnpl(p!-list,var);
+   null p!-list or algfnp(car p!-list,var) and algfnpl(cdr p!-list,var);
 
-SYMBOLIC PROCEDURE ALGFNSQ(SQ,VAR);
-   ALGFNSF(NUMR SQ,VAR) AND ALGFNSF(DENR SQ,VAR);
+symbolic procedure algfnsq(sq,var);
+   algfnsf(numr sq,var) and algfnsf(denr sq,var);
 
-SYMBOLIC PROCEDURE ALGFNSF(SF,VAR);
-   ATOM SF
- OR ALGFNP(MVAR SF,VAR) AND ALGFNSF(LC SF,VAR) AND ALGFNSF(RED SF,VAR);
+symbolic procedure algfnsf(sf,var);
+   atom sf
+ or algfnp(mvar sf,var) and algfnsf(lc sf,var) and algfnsf(red sf,var);
 
-SYMBOLIC PROCEDURE algint!-RATNUMP Q;
-   IF ATOM Q THEN NUMBERP Q
-    ELSE CAR Q EQ 'QUOTIENT AND (NUMBERP CADR Q) AND (NUMBERP CADDR Q);
+symbolic procedure algint!-ratnump q;
+   if atom q then numberp q
+    else car q eq 'quotient and (numberp cadr q) and (numberp caddr q);
 
-SYMBOLIC PROCEDURE ALGEBRAICSF U;
-   IF ATOM U THEN NIL
-    ELSE ALGEBRAICP MVAR U OR ALGEBRAICSF LC U OR ALGEBRAICSF RED U;
+symbolic procedure algebraicsf u;
+   if atom u then nil
+    else algebraicp mvar u or algebraicsf lc u or algebraicsf red u;
 
-SYMBOLIC PROCEDURE ALGEBRAICP U;
-   IF ATOM U THEN NIL
-    ELSE IF CAR U EQ 'EXPT THEN 1 NEQ DENR SIMP CADDR U
-    ELSE CAR U EQ 'SQRT;
+symbolic procedure algebraicp u;
+   if atom u then nil
+    else if car u eq 'expt then 1 neq denr simp caddr u
+    else car u eq 'sqrt;
 
-ENDMODULE;
+endmodule;
 
-END;
+end;
 

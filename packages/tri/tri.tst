@@ -2,7 +2,7 @@
 
 global '(textest!*);
 
-symbolic procedure texexa(code);
+symbolic procedure TeXexa(code);
    begin
      prin2 "\TRIexa{"; prin2 textest!*;
      if !*TeXindent then prin2 "}{TeXindent}{" else
@@ -13,7 +13,7 @@ symbolic procedure texexa(code);
    end;
 
 algebraic procedure exa(expression,code);
-   begin symbolic texexa code; return expression end;
+   begin symbolic TeXexa code; return expression end;
 
 % ----------------------------------------------------------------------
 % Examples from the Integrator Test File
@@ -21,9 +21,9 @@ algebraic procedure exa(expression,code);
 
 symbolic(textest!*:="Integration");
 
-texsetbreak(120,1000);
+TeXsetbreak(120,1000);
 
-on texindent;
+on TeXindent;
 
 off echo;
 
@@ -80,6 +80,6 @@ exa(int(x*cos(xi/sin(x))*cos(x)/sin(x)**2,x),
 
 % shut "log/tritst.tex";
 
-off tex;
+off TeX;
 
 end;

@@ -111,7 +111,7 @@ symbolic procedure simpdelt (x,varl);
 % varl is the set of variables {v1,v2, ...}
 % result is the simplified form of the Dirac delta function if varl is nil
 % and cdr x is nil.
- If varl and null cdr x then !*k2f(car x . varl . nil) else
+ if varl and null cdr x then !*k2f(car x . varl . nil) else
   if null varl or null cdr varl then
  begin scalar delt,ind,y,yv,yc;
   delt := car x; ind:= cdr x;

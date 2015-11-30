@@ -1005,7 +1005,7 @@ not (nil member foreach el in l collect jbconstp (el,f));
 symbolic procedure jbconstp (item,ref);
 if constp item
    then % some numerical value
-        T
+        t
    else if atom item
            then % some id
                 if get(item,'rowocc)
@@ -1013,15 +1013,15 @@ if constp item
                         if (car(get(item,'rowocc))< findvardef(ref))
                             then % This use and the previous are in the
                                  % scope of one definition of item.
-                                 T
+                                 t
                             else % This use and the previous are in
                                  % scopes of diferent definitions of
                                  % item.
-                                 NIL
+                                 nil
 
                    else % some input id used twice ore more on rhs.
-                        T
-           else not(NIL member foreach el in cdr item
+                        t
+           else not(nil member foreach el in cdr item
                                   collect jbconstp(el,ref));
 
 symbolic procedure findvardef v;

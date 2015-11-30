@@ -381,7 +381,7 @@ symbolic procedure yylex();
 % here. Ha ha ha "comment" is now a keyword in that it will never generate
 % a lexer-code to pass back as a result. But it is recognised in the same
 % sort of circumstances that keywords are.
-    while w = lex_symbol_code and yylval = 'comment and
+    while w = lex_symbol_code and yylval = 'COMMENT and
           not lex_escaped do <<
       while not (lex_char = '!; or lex_char = '!$) do yyreadch();
       yyreadch();

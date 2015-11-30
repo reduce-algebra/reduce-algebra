@@ -26,7 +26,7 @@ module ratalgo;
 
 % rational algorithm for FPS package
 
-algebraic procedure Complexapart(f,x);
+algebraic procedure complexapart(f,x);
 
     begin scalar !*factor,!*complex;
         on factor,complex;
@@ -36,32 +36,32 @@ algebraic procedure Complexapart(f,x);
    end;
 
 algebraic procedure ratalgo(p,x);
-     begin scalar afp,tt,S,ak,d,c,j,ss;
-     afp := Complexapart(p,x);
+     begin scalar afp,tt,s,ak,d,c,j,ss;
+     afp := complexapart(p,x);
 
-     S:= 0; ak := 0;
+     s:= 0; ak := 0;
 
-     if symbolic !*traceFPS then write " Rational Algorithm applied";
+     if symbolic !*tracefps then write " Rational Algorithm applied";
 
      foreach tt in afp do
-        << if freeof(tt,x) then S := S + tt else
+        << if freeof(tt,x) then s := s + tt else
            <<
            d := 1/tt;
            if not polynomq(d,x) then <<
-                if symbolic !*traceFPS then write
+                if symbolic !*tracefps then write
                          " Rational Algorithm  failed";
-                S := -1 >>;
-          if not (S = -1) then
+                s := -1 >>;
+          if not (s = -1) then
           <<
            d := d/lcof(d,x); c := d * tt;
-           J := deg(d,x);
+           j := deg(d,x);
            d := expt(d,1/j);
            if not polynomq(d,x) then <<
-                if symbolic !*traceFPS then write
+                if symbolic !*tracefps then write
                         " Rational Algorithm  failed";
                 afp := {}; d :=12;
-                S := -1 >>;
-           if d = x then S := S + c/d^j  else
+                s := -1 >>;
+           if d = x then s := s + c/d^j  else
                 <<
                 ss := lcof(d,x);
                 d := d /ss; c := c / ss;
@@ -70,8 +70,8 @@ algebraic procedure ratalgo(p,x);
                    c*simplify_factorial(factorial(j + k -1)/
                         factorial(k)/factorial(j-1))/xk^k;
         >> >> >> >>;
-        if S = -1 then return (-1);
-        return S := S + infsum(ak*x^k,k,0,infinity)
+        if s = -1 then return (-1);
+        return s := s + infsum(ak*x^k,k,0,infinity)
     end;
 
 symbolic procedure fastpart(x,n);
@@ -88,7 +88,7 @@ symbolic procedure auxcopy(u);
 % for XR
 
 if getd 'print_format then
-        print_format('(pochhammer u v),'(!( u !) !_ v));
+        print_format('(Pochhammer u v),'(!( u !) !_ v));
 
 endmodule;
 

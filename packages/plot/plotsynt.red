@@ -39,7 +39,7 @@ if not(gettype '!*interval!* = 'operator) then
 <<
    precedence .., or;
    algebraic operator ..;
-   put('!*interval!*,'PRTCH,'! !.!.! );
+   put('!*interval!*,'prtch,'! !.!.! );
 >>;
 
 mkop 'point;
@@ -198,7 +198,7 @@ symbolic procedure ploteval2 ();
    if length ivars=2 then ploteval3xy(car ivars,cadr ivars,dvar) else
   % WN was besseres!!  if length ivars=3 and impl then
             ploteval3impl('x,'y,'z); %car ivars,cadr ivars,caddr ivars);
-  comment  else typerr('list . for each p in plotfunctions!* collect
+  COMMENT  else typerr('list . for each p in plotfunctions!* collect
                          if null car p then cdr p else
                          {'equal,car p,cdr p},
                 " plot option or function");
@@ -220,8 +220,8 @@ symbolic procedure plotrange(x,d);
      y:=assoc(x,plotranges!*);
      y:=if y then cdr y else d;
      if y=0 or null y then % return nil;
-     y:={'!*INTERVAL!*, - plotmax!*, plotmax!*};
-     if not eqcar(y,'!*INTERVAL!*) then
+     y:={'!*interval!*, - plotmax!*, plotmax!*};
+     if not eqcar(y,'!*interval!*) then
         typerr(y,"plot range");
      return {plotevalform0(rdwrap cadr y,nil) ,
              plotevalform0(rdwrap caddr y,nil)};
@@ -245,7 +245,7 @@ symbolic procedure plotindepvars(u,v);
       if eqcar(u,'!:dn!:) or get(car u,'dname) then v else
 % WN    if get(car u,'dname) then v else
       if member(car u,'(plus minus difference times quotient expt)) or
-         get(car u,'!:RD!:) or get(car u,'simpfn)
+         get(car u,'!:rd!:) or get(car u,'simpfn)
             or eqcar(getd(car u),'expr)
        then <<for each x in cdr u do v:=plotindepvars(x,v); v>>
      else typerr(u,"expression in function to plot")

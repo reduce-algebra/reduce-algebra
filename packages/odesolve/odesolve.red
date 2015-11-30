@@ -27,13 +27,13 @@ module odesolve$  % Header for ordinary differential equation solver
 %
 
 
-algebraic ODESolve_version := "ODESolve 1.065"$
+algebraic odesolve_version := "ODESolve 1.065"$
 
-global '(ODESolve!-subpackages!*)$
+global '(odesolve!-subpackages!*)$
 
 % Build needs repeating if this list is changed!
 
-ODESolve!-subpackages!* := '(
+odesolve!-subpackages!* := '(
    odeintfc   % User interface and condition code (FJW)
    odetop     % Top level ODESolve routines (FJW / MAHM)
    odelin     % Simple linear ODE solvers (MAHM / FJW)
@@ -43,7 +43,7 @@ ODESolve!-subpackages!* := '(
    odepatch   % Temporary REDUCE patches and extensions (FJW)
    )$
 
-create!-package('odesolve . ODESolve!-subpackages!*, nil)$
+create!-package('odesolve . odesolve!-subpackages!*, nil)$
 
 % Modification of the "deg" function.
 
@@ -98,7 +98,7 @@ symbolic operator member, delete, !*eqn2a, depends, smember, gensym$
 symbolic inline procedure eqnp u;
    eqcar(u, 'equal)$
 
-symbolic inline procedure ODESolve!-basisp soln;
+symbolic inline procedure odesolve!-basisp soln;
    rlistp cadr soln and not eqnp cadadr soln$
 
 % The following two statements are needed in case SOLVE has not been
@@ -117,14 +117,14 @@ share !*trode$
 % rlistat is not flagged eval, so for faslout ...
 deflist('((traceode rlis) (traceode!* rlis) (traceode1 rlis)), 'stat)$
 
-global '(TraceOde!-InputList)$
+global '(traceode!-inputlist)$
 
 symbolic procedure traceode!-print u;
    %% Print sequence of elements and terminate line with linefeed.
    %% Returns nil.
    begin scalar alg;  % non-nil if any algebraic elements to print
-      alg := u := revlis nconc(TraceOde!-InputList, u);
-      TraceOde!-InputList := nil;
+      alg := u := revlis nconc(traceode!-inputlist, u);
+      traceode!-inputlist := nil;
       while alg and atom car alg do alg := cdr alg;
       if alg then <<
          terpri!* t;
@@ -146,7 +146,7 @@ symbolic procedure traceode!* u;
    %% Returns nil.
    if !*trode then
       %% Assignment necessary when TraceOde!-InputList is null:
-      begin TraceOde!-InputList := nconc(TraceOde!-InputList, u) end$
+      begin traceode!-inputlist := nconc(traceode!-inputlist, u) end$
 
 symbolic procedure traceode1 u;
    %% Extra tracing -- print line with linefeed:
@@ -171,10 +171,10 @@ algebraic procedure ode!-int(y, x);
    %% should probably be used more widely, so moved here!
    int(trigsimp y, x)$
 
-algebraic procedure ODESolve!-multi!-int(y, x, m);
+algebraic procedure odesolve!-multi!-int(y, x, m);
    %% Integate y wrt x m times:
    %% REVISE TO INTEGRATE JUST ONCE (cf. trivial n'th order ODEs)?
-   if m > 0 then ODESolve!-multi!-int(int(y,x), x, m-1) else y$
+   if m > 0 then odesolve!-multi!-int(int(y,x), x, m-1) else y$
 
 %% algebraic procedure odefailure(ode);
 %%    <<

@@ -208,7 +208,7 @@ symbolic procedure initialize_gnuplot();
 
    #elif (member 'vms lispsystem!*)
 
-   !*plotusepipe:=NIL;               % pipes: no
+   !*plotusepipe:=nil;               % pipes: no
    !*plotpause:=nil;                 % pause: no
    %plottmp!* := "SYS$SCRATCH:";
    plottmp!* := get!-tempdir();

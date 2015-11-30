@@ -105,7 +105,7 @@ put('dvfsf,'rl_params,'(
 put('dvfsf,'rl_cswitches,'(
    (rlqeheu . nil)
    (rlqedfs . nil)
-   (rlsusi . T)
+   (rlsusi . t)
 ));
 
 % Services
@@ -232,7 +232,7 @@ procedure dvfsf_enter(argl);
       >>;
       flag('(p),'reserved);
       dvfsf_p!* := n;
-      return T . argl
+      return t . argl
    end;
 
 procedure dvfsf_exit();

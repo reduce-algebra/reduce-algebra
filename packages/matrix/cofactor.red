@@ -26,7 +26,7 @@ module cofactor;   % Cofactor operator.
 %
 
 
-comment
+COMMENT
 
 Syntax:  COFACTOR(MATRIX:matrix,ROW:integer,COLUMN:integer):algebraic
 

@@ -1136,7 +1136,7 @@ begin
 
   % construction du polygone N-R-M de l'operateur defini par
   % cl(prof-1,i) avec i=0..ordremax ;
-  nba:=polygoneNRM(prof,ordremax,x) ;
+  nba:=polygonenrm(prof,ordremax,x) ;
 
   % dessin ;
   if lisp !*trdesir then for j:=1:nba do
@@ -1284,7 +1284,7 @@ begin
     return ik ;
 end ;
 
-procedure polygoneNRM(prof,ordremax,x) ;
+procedure polygonenrm(prof,ordremax,x) ;
 %------------------------------------- ;
 % construction du polygone N-R-M de l'operateur defini par cl(prof-1,i),
 % avec i=0..ordremax ;
@@ -1942,7 +1942,7 @@ procedure membre(elt,list);
 %------------------------;
 begin
 scalar bool;
-for each w in list do if w=elt then bool:= T;
+for each w in list do if w=elt then bool:= t;
 return bool;
 end;
 

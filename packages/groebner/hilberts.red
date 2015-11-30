@@ -28,7 +28,7 @@ module hilberts;% Hilbert series of a set of Monomials .
 %
 
 
-comment
+COMMENT
 
 A very brief " description " of the method used.
 

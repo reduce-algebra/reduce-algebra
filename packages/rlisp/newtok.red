@@ -136,6 +136,7 @@ newtok '((!>) greaterp);
 newtok '((!> !=) geq);
 newtok '((!]) !*rsqbkt!*);
 newtok '((!> !>) !*rsqbkt!*);
+newtok '((!/ !*) !*comment!*);
 
 put('expt,'prtch,'!*!*);   % To ensure that FORTRAN output is correct.
 

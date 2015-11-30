@@ -87,11 +87,11 @@ begin scalar ff1,alpha,y,var,chosen_num,coef,!*uncached;
 !*uncached := t;
 ff1 := prepsq simp car u;
 
-if ff1 = 'UNKNOWN then return simp 'UNKNOWN;
+if ff1 = 'unknown then return simp 'unknown;
 alpha := cadr u;
 y := caddr u;
 
-if smember('minus,y) or fixp y and y<0 then return simp 'UNKNOWN;
+if smember('minus,y) or fixp y and y<0 then return simp 'unknown;
                        % until a fix is available
 var := cadddr u;
 chosen_num := cadr ff1;
@@ -102,7 +102,7 @@ if chosen_num = 0 then << coef := caddr ff1;
 else
 << put('f1,'g,getv(mellin!-transforms!*,chosen_num));
    coef := getv(mellin!-coefficients!*,chosen_num);
-   if coef then MELLINCOEF:= coef else MELLINCOEF :=1;
+   if coef then mellincoef:= coef else mellincoef :=1;
 
    return  simp list('new_mei,'f1 . cddr ff1,alpha,y,var)>>;
 end$
@@ -123,7 +123,7 @@ mellin := bastab(car f,cddr f);
 temp := car cddddr mellin;
 var := cadr f;
 
-if not idp VAR then RETURN error(99,'FAIL); % something is rotten, if not...
+if not idp var then return error(99,'fail); % something is rotten, if not...
                                    % better give up
 
 temp := reval algebraic(sub(x=var,temp));
@@ -194,7 +194,7 @@ v := gfmsq(num,denom,new_y);
 if v = 'fail then return simp 'fail
 else v := prepsq subsq(v,list(prepsq new_y . y));  % WN
 
-if eqcar(v,'meijerg) then new_v := v else new_v := simp v;
+if eqcar(v,'MeijerG) then new_v := v else new_v := simp v;
 return multsq(new_v,coeff);
 end$
 

@@ -43,7 +43,7 @@ fluid '(!*rlbrkcxk !*rlverbose kord!*);
 
 exports ioto_prin2,ioto_tprin2,ioto_prin2t,ioto_tprin2t,ioto_prtmsg,
    ioto_cterpri,ioto_cplu,ioto_realtime,ioto_flush,ioto_datestamp,
-   lto_insert,lto_insertq,lto_mergesort,lto_catsoc,lto_natsoc,lto_cassoc,
+   lto_insert,lto_insertq,lto_insertqcar,lto_mergesort,lto_catsoc,lto_natsoc,lto_cassoc,
    lto_nconcn,lto_alunion,lto_almerge,lto_sconcat2,lto_sconcat,lto_at2str,
    delq,delqip,adjoin,sfto_dcontentf,sfto_dprpartf,sfto_sqfpartf,
    sfto_ucontentf,sfto_uprpartf,sfto_tsqsumf,sfto_sqfdecf,sfto_pdecf,

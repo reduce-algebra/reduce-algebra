@@ -106,7 +106,7 @@ for each i in n do
 
 % do not reform functions containing the heaviside function
 
-                  or car cadadr i = 'heaviside)
+                  or car cadadr i = 'Heaviside)
      then
           lst := append(lst,{i})  % A list of the functions which do
                                 % not need reforming

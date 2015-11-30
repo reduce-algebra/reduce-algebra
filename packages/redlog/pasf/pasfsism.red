@@ -101,7 +101,7 @@ procedure pasf_susibinad(old,new);
       if new eq 'false then
 	 return 'false;
       if new eq 'true then
-	 return {'(delete . T)};
+	 return {'(delete . t)};
       % Equal left handsides simplification
       if pasf_arg2l old = pasf_arg2l new then
 	 return pasf_susibineq(pasf_arg2l old,pasf_op old,pasf_op new,level);
@@ -156,7 +156,7 @@ procedure pasf_susibineq(u,oop,nop,level);
 	 return 'false
       else if eqn(car w,1) then
 	 % Remove new atomic formula from the level
- 	 return {'(delete . T)}
+ 	 return {'(delete . t)}
       else if eqn(car w,2) then
  	 % Remove old atomic formula from the theory, add new atomic
  	 % formula to the knowledge
@@ -165,12 +165,12 @@ procedure pasf_susibineq(u,oop,nop,level);
 	 % Remove old atomic formula from the theory, remove new
 	 % atomic formula from the level, add modified atomic formula to
 	 % the level
-	 return {'(delete . nil), '(delete . T),
+	 return {'(delete . nil), '(delete . t),
 	    ('add . (pasf_0mk2(cdr w, u) . level))}
       else if eqn(car w,4) then
 	 % Remove new atomic formula from the level, add modified
 	 % atomic formula to the level
-	 return {'(delete . T),
+	 return {'(delete . t),
 	    ('add . (pasf_0mk2(cdr w, u) . level))}
       else
 	 % Remove old atomic formula from the theory, add modified
@@ -193,12 +193,12 @@ procedure pasf_susibineqcong(u,oop,nop,level);
       if null domainp n or null domainp m then return nil;
       % Both formulas are congruences
       if car oop eq 'cong and car nop eq 'cong then
-	 return{'(delete . nil),'(delete . T),
+	 return{'(delete . nil),'(delete . t),
 	    ('add . (pasf_0mk2(pasf_mkop('cong,lcm(m,n)),u) . level))};
       % Old formula is a congruence and new is a incongruence
       if car oop eq 'cong and car nop eq 'ncong then <<
 	 if (nil and m = 2*n) then
-	    return{'(delete . T),('delete . nil),('add .
+	    return{'(delete . t),('delete . nil),('add .
 	       (pasf_0mk2(pasf_mkop('ncong,m),addf(u,negf n)) . level))}
 	 else <<
 	    % Making sure changes are really applied
@@ -211,7 +211,7 @@ procedure pasf_susibineqcong(u,oop,nop,level);
 	       else if atf eq 'true then
 		  return nil
 	       else
-	       	  return{'(delete . T),('add . (atf . level))}
+	       	  return{'(delete . t),('add . (atf . level))}
 	    >> else
 	       return nil
 	 >>
@@ -219,7 +219,7 @@ procedure pasf_susibineqcong(u,oop,nop,level);
       % Old formula is an incongruence and new is a congurence
       if car oop eq 'ncong and car nop eq 'cong then <<
 	 if (nil and n = 2*m) then
-	    return{'(delete . nil),'(delete . T),('add .
+	    return{'(delete . nil),'(delete . t),('add .
 	       (pasf_0mk2(pasf_mkop('ncong,n),addf(u,negf m)) . level))}
 	 else <<
 	    % Making sure changes are really applied
@@ -239,7 +239,7 @@ procedure pasf_susibineqcong(u,oop,nop,level);
       >>;
       % Both formulas are incongruences
       if remainder(m,n) = 0 then
-	 return {'(delete . T)}
+	 return {'(delete . t)}
       else if remainder(n,m) = 0 then
 	 return {'(delete . nil)}
       else
@@ -294,16 +294,16 @@ procedure pasf_susibinord(oop,ot,oabs,nop,nt,nabs,level);
 	    return 'false;
       % Special case: inequalities with single point satisfaction set
       if oop eq 'geq and nop eq 'lessp and nabsv + 1 = oabsv then
-	 return {'(delete . T), '(delete . nil),
+	 return {'(delete . t), '(delete . nil),
 	    ('add . (pasf_0mk2('equal, addf(ot,numr simp oabs)) . level))};
       if nop eq 'geq and oop eq 'lessp and oabsv + 1 = nabsv then
-	 return {'(delete . T), '(delete . nil),
+	 return {'(delete . t), '(delete . nil),
 	    ('add . (pasf_0mk2('equal, addf(ot,numr simp nabs)) . level))};
       if oop eq 'leq and nop eq 'greaterp and oabsv + 1 = nabsv then
-	 return {'(delete . T), '(delete . nil),
+	 return {'(delete . t), '(delete . nil),
 	    ('add . (pasf_0mk2('equal, addf(ot,numr simp oabs)) . level))};
       if nop eq 'leq and oop eq 'greaterp and nabsv + 1 = oabsv then
-	 return {'(delete . T), '(delete . nil),
+	 return {'(delete . t), '(delete . nil),
 	    ('add . (pasf_0mk2('equal, addf(ot,numr simp nabs)) . level))};
       w := pasf_smordtable(oop,nop,oabs,nabs);
       if car w eq nil then
@@ -314,7 +314,7 @@ procedure pasf_susibinord(oop,ot,oabs,nop,nt,nabs,level);
 	 return 'false
       else if eqn(car w,1) then
 	 % Remove new atomic formula from the level
- 	 return {'(delete . T)}
+ 	 return {'(delete . t)}
       else if eqn(car w,2) then
  	 % Remove old atomic formula from the theory, add new atomic formula
  	 % to the knowledge
@@ -337,7 +337,7 @@ procedure pasf_susibinordcongeq(oop,nop);
 	 return 'false;
       % Old formula is a congruence and new is an incongruence
       if car oop eq 'cong and car nop eq 'ncong then
-	 return {'(delete . T)};
+	 return {'(delete . t)};
       % Old formula is an incongruence and new is a congurence
       if car oop eq 'ncong and car nop eq 'cong then
 	 return {'(delete . nil)};
@@ -363,7 +363,7 @@ procedure pasf_susibinordcong(oop,ot,oabs,nop,nt,nabs,level);
 	 lhs := addf(ot,numr simp(n*cadr eucd*nabs + m*caddr
 	    eucd*oabs));
 	 at := pasf_simplat1(pasf_0mk2(op,lhs),nil) where !*rlsifac=nil;
-	 return {'(delete . T),'(delete . nil), 'add . (at . level)}
+	 return {'(delete . t),'(delete . nil), 'add . (at . level)}
       >>;
       return nil
    end;

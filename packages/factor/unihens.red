@@ -1010,7 +1010,7 @@ try!-another!-factor:
       for each fd in factors!-done do
         printsf fd;
       printstr "Remaining factors are:";
-      printvec("    f(",number!-of!-factors,") = ",factorvec);
+      ezgcd_printvec("    f(",number!-of!-factors,") = ",factorvec);
       prin2!* "New coefficient bound is "; printstr coefftbd;
       prin2!* " and the residue is now "; printsf w >>;
     return w

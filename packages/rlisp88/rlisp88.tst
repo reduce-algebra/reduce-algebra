@@ -45,38 +45,38 @@ rotate 45.0;
 
 % 5. Random elements.
 % Now create a vector with random elements.
-M3 := ARRAY('A, 3 + 4, ARRAY("String", 'ID), '(a b));
-M3[2, 1];
-M4 := ARRAY(ARRAY('a, 'b), ARRAY('c, 'd));
-M4[1];
+m3 := array('a, 3 + 4, array("String", 'id), '(a b));
+m3[2, 1];
+m4 := array(array('a, 'b), array('c, 'd));
+m4[1];
 
 % 6. Array addition.
-expr procedure ArrayAdd(a, b);
+expr procedure arrayadd(a, b);
 if vectorp a then
     for i:=0:uc
         with c, uc
         initially c :=  mkarray(uc := upbv a)
-        do c[i] := ArrayAdd(a[i], b[i])
+        do c[i] := arrayadd(a[i], b[i])
         returns c
   else a + b;
-ArrayAdd(array(array(array(1, 2), array(3, 4)),
+arrayadd(array(array(array(1, 2), array(3, 4)),
                array(array(5, 6), array(7, 8))),
          array(array(array(1, 1), array(2, 2)),
                array(array(3, 3), array(4, 4))));
 
 %                               RECORDS
 % 1: Declaration.
-RECORD MAPF  /* A MAPF record defines
+record mapf  /* A MAPF record defines
                the contents of a MAPF file. */
-  WITH 
-  MAPF!:NAME := ""        /* Name of MAPF (a string) */,
-  MAPF!:NUMBER := 0       /* MAPF number (integer) */,
-  MAPF!:ROAD-COUNT := 0   /* Number of roads */,
-  MAPF!:NODE-COUNT := 0   /* Number of nodes */,
-  MAPF!:LLAT := 0.0       /* Lower left hand corner map latitude */,
-  MAPF!:LLONG := 0.0      /* Lower left hand corner map longitude */,
-  MAPF!:ULAT := 0.0       /* Upper right hand corner map latitude */,
-  MAPF!:ULONG := 0.0      /* Upper right hand corner map longitude */;
+  with 
+  mapf!:name := ""        /* Name of MAPF (a string) */,
+  mapf!:number := 0       /* MAPF number (integer) */,
+  mapf!:road-count := 0   /* Number of roads */,
+  mapf!:node-count := 0   /* Number of nodes */,
+  mapf!:llat := 0.0       /* Lower left hand corner map latitude */,
+  mapf!:llong := 0.0      /* Lower left hand corner map longitude */,
+  mapf!:ulat := 0.0       /* Upper right hand corner map latitude */,
+  mapf!:ulong := 0.0      /* Upper right hand corner map longitude */;
 
 % 2: Creation.
 global '(r1 r2 r3);
@@ -96,129 +96,129 @@ r2;
 
 
 % 5. Options.
-RECORD complex /* Stores complex reals */
-  WITH
-   R := 0.0  /* Real part */,
-   I := 0.0  /* Imaginary part */
-  HAS CONSTRUCTOR;
-Make-Complex(I := 34.0, R := 12.0);
+record complex /* Stores complex reals */
+  with
+   r := 0.0  /* Real part */,
+   i := 0.0  /* Imaginary part */
+  has constructor;
+make-complex(i := 34.0, r := 12.0);
 
-RECORD Rational /* Representation of rational numbers */
-  WITH
-    Num := 0  /* Numerator */,
-    Den := 1  /* Denominator */
-  HAS CONSTRUCTOR = rat;
+record rational /* Representation of rational numbers */
+  with
+    num := 0  /* Numerator */,
+    den := 1  /* Denominator */
+  has constructor = rat;
 
 expr procedure gcd(p, q);
 if q > p then gcd(q, p)
 else (if r = 0 then q else gcd(q, r)) where r = remainder(p,q);
 
-expr procedure Rational(a, b);
+expr procedure rational(a, b);
 /* Build a rational number in lowest terms */
-  Rat(Num := a / g, Den := b / g) where g := gcd(a, b);
-Rational(34, 12);
+  rat(num := a / g, den := b / g) where g := gcd(a, b);
+rational(34, 12);
 
 
-RECORD Timing /* Timing Record for RLISP test */
-  WITH
-    Machine := ""    /* Machine name */,
-    Storage := 0     /* Main storage in bits */,
-    TimeMS = 0       /* Test time in milliseconds */
-  HAS NO CONSTRUCTOR;
+record timing /* Timing Record for RLISP test */
+  with
+    machine := ""    /* Machine name */,
+    storage := 0     /* Main storage in bits */,
+    timems = 0       /* Test time in milliseconds */
+  has no constructor;
 
 
 
 % PREDICATE option.
-RECORD History /* Record of an event */
-  WITH
-    EventTime := 0.0   /* Time of event (units) */,
-    EventData := NIL   /* List with (type ...) */
-  HAS PREDICATE = History!?;
+record history /* Record of an event */
+  with
+    eventtime := 0.0   /* Time of event (units) */,
+    eventdata := nil   /* List with (type ...) */
+  has predicate = history!?;
 
-History!? History(EventData := '(MOVE 34.5 52.5));
+history!? history(eventdata := '(move 34.5 52.5));
 
 
 %                            FOR LOOP
 % 1) Basic test.
-EXPR PROCEDURE LPRINT lst;
+expr procedure lprint lst;
 /* LPRINT displays each element of its argument separated by blanks.
    After the last element has been displayed, the print line is
    terminated. */
-FOR EACH element IN lst 
-    DO << PRIN2 element; PRINC " " >>
-    FINALLY TERPRI()
-    RETURNS lst;
-LPRINT '(Now is the time to use RLISP);
+for each element in lst 
+    do << prin2 element; princ " " >>
+    finally terpri()
+    returns lst;
+lprint '(now is the time to use rlisp);
 
 % 2) Basic iteration in both directions.
-FOR i:=5 STEP -2 UNTIL 0 DO PRINT i;
-FOR i:=1:3 DO PRINT i;
+for i:=5 step -2 until 0 do print i;
+for i:=1:3 do print i;
 
 % 3) COLLECT option.
-FOR EACH leftpart IN '(A B C)
-    EACH rightpart IN '(1 2 "string")
-    COLLECT leftpart . rightpart;
+for each leftpart in '(a b c)
+    each rightpart in '(1 2 "string")
+    collect leftpart . rightpart;
 
 % 4) IN/ON iterators.
-FOR EACH X IN '(a b c) DO PRINT x;
-FOR EACH x ON '(a b c) DO PRINT x;
+for each x in '(a b c) do print x;
+for each x on '(a b c) do print x;
 
 
 % 5) EVERY option.
-FOR EACH x IN '(A B C) EVERY IDP x
-    RETURNS "They are all id's";
-FOR EACH x IN '(A B 12) EVERY IDP x
-    RETURNS "They are all id's";
+for each x in '(a b c) every idp x
+    returns "They are all id's";
+for each x in '(a b 12) every idp x
+    returns "They are all id's";
 
 % 6) INITIALLY/FINALLY option.
-EXPR PROCEDURE ListPrint x;
+expr procedure listprint x;
 /* ListPrint(x) displays each element of x separated by blanks. The
    first element is prefixed with "*** ". The last element is suffixed
    with a period and a new line. */
-FOR EACH element ON x 
-    INITIALLY PRIN2 "*** "
-    DO << PRIN2 CAR element;
-          IF CDR element THEN PRIN2 " " >>
-    FINALLY << PRIN2 "."; TERPRI() >>;
-ListPrint '(The quick brown bert died);
+for each element on x 
+    initially prin2 "*** "
+    do << prin2 car element;
+          if cdr element then prin2 " " >>
+    finally << prin2 "."; terpri() >>;
+listprint '(the quick brown bert died);
 
 
 % 7) MAXIMIZE/MINIMIZE options.
-FOR EACH x IN '(A B 12 -34 2.3)
-    WHEN NUMBERP x
-    MAXIMIZE x;
-FOR EACH x IN '(A B 12 -34 2.3)
-    WHEN NUMBERP x
-    MINIMIZE x;
+for each x in '(a b 12 -34 2.3)
+    when numberp x
+    maximize x;
+for each x in '(a b 12 -34 2.3)
+    when numberp x
+    minimize x;
 
 
 % 8) RETURNS option.
-EXPR PROCEDURE ListFiddle(f, x);
+expr procedure listfiddle(f, x);
 /* ListFiddle displays every element of its second argument and returns
    a list of those for which the first argument returns non-NIL. */
-FOR EACH element IN x
-   WITH clist
-   DO << PRINT element;
-         IF APPLY(f, LIST element) THEN clist := element . clist >>
-   RETURNS REVERSIP clist;
-ListFiddle(FUNCTION ATOM, '(a (BANG 12) "OOPS!"));
+for each element in x
+   with clist
+   do << print element;
+         if apply(f, list element) then clist := element . clist >>
+   returns reversip clist;
+listfiddle(function atom, '(a (bang 12) "OOPS!"));
 
 
 % 9) SOME option.
-FOR EACH x IN '(a b 12) SOME NUMBERP x
-    DO PRINT x;
+for each x in '(a b 12) some numberp x
+    do print x;
 
 % 10) UNTIL/WHILE options.
-EXPR PROCEDURE CollectUpTo l;
+expr procedure collectupto l;
 /* CollectUpTo collect all the elements of the list l up to the
    first number. */
-FOR EACH x IN l UNTIL NUMBERP x COLLECT x;
-CollectUpTo '(a b c 1 2 3);
+for each x in l until numberp x collect x;
+collectupto '(a b c 1 2 3);
 
 % 11) WHEN/UNLESS options.
-FOR EACH x IN '(A 12 "A String" 32)
-    WHEN NUMBERP x
-    COLLECT x;
+for each x in '(a 12 "A String" 32)
+    when numberp x
+    collect x;
 
 
 % ##### Basic Tests #####
@@ -246,17 +246,17 @@ if +3.14159 neq 3.14159 then error(0, "positive floats don't work");
 % Description: A set of CAR/CDR alternatives that
 %    return NIL when CAR/CDR of an atom is tried.
 
-expr procedure SafeCar x;
+expr procedure safecar x;
 /* Returns CAR of a list or NIL. */
 if atom x then nil else car x;
 
-expr procedure SafeCdr x;
+expr procedure safecdr x;
 /* Returns CDR of a list or NIL. */
 if atom x then nil else cdr x;
 
-expr procedure SafeFirst x; SafeCar x;
-expr procedure SafeSecond x; SafeCar SafeCdr x;
-expr procedure SafeThird x; SafeSecond SafeCdr x;
+expr procedure safefirst x; safecar x;
+expr procedure safesecond x; safecar safecdr x;
+expr procedure safethird x; safesecond safecdr x;
 
 
 % ##### Test of Procedures #####
@@ -341,38 +341,38 @@ if properintersection('((a) b (c)), '(a (b) c)) = nil
 
 %-------------------- Exercise #4 -------------------------
 
-expr procedure TreeVisit(a, tree, c);
+expr procedure treevisit(a, tree, c);
 /* Preorder visit of tree to find a. Returns path from root. c
   contains path to root of tree so far. */
 if null tree then nil
   else if a = car tree then append(c, {a})
-  else TreeVisit(a, cadr tree, append(c, {car tree})) or
-       TreeVisit(a, caddr tree, append(c, {car tree}));
+  else treevisit(a, cadr tree, append(c, {car tree})) or
+       treevisit(a, caddr tree, append(c, {car tree}));
 
-TreeVisit('c, '(a (b (d nil nil) (c nil nil)) (e nil nil)), nil);
-if TreeVisit('c, '(a (b (d nil nil) (c nil nil)) (e nil nil)), nil)
+treevisit('c, '(a (b (d nil nil) (c nil nil)) (e nil nil)), nil);
+if treevisit('c, '(a (b (d nil nil) (c nil nil)) (e nil nil)), nil)
              = '(a b c)
      then "Test 1 TreeVisit OK"
      else error(0, "Test 1 TreeVisit fails");
 
-TreeVisit('h, '(a (b (d nil nil) (c nil nil))
+treevisit('h, '(a (b (d nil nil) (c nil nil))
                   (e (f nil nil) (g (h nil nil) nil)) ), nil);
-if TreeVisit('h, '(a (b (d nil nil) (c nil nil))
+if treevisit('h, '(a (b (d nil nil) (c nil nil))
                   (e (f nil nil) (g (h nil nil) nil))),nil) = '(a e g h)
      then "Test 2 TreeVisit OK"
      else error(0, "Test 2 TreeVisit fails");
 
-if TreeVisit('i, '(a (b (d nil nil) (c nil nil))
+if treevisit('i, '(a (b (d nil nil) (c nil nil))
                   (e (f nil nil) (g (h nil nil) nil)) ), nil) = nil
      then "Test 3 TreeVisit OK"
      else error(0, "Test 3 TreeVisit fails");
 
-if TreeVisit('a, '(a (b (d nil nil) (c nil nil))
+if treevisit('a, '(a (b (d nil nil) (c nil nil))
                   (e (f nil nil) (g (h nil nil) nil)) ), nil) = '(a)
      then "Test 4 TreeVisit OK"
      else error(0, "Test 4 TreeVisit fails");
 
-if TreeVisit('e, '(a (b (d nil nil) (c nil nil))
+if treevisit('e, '(a (b (d nil nil) (c nil nil))
                   (e (f nil nil) (g (h nil nil) nil)) ), nil) = '(a e)
      then "Test 5 TreeVisit OK"
      else error(0, "Test 5 TreeVisit fails");
@@ -398,11 +398,11 @@ if lookfor('(n o w),'(h e l l o a n d n o w i t i s)) = '(n o w i t i s)
   then "Test 1 lookfor OK"
   else error(0, "Test 1 lookfor fails");
 
-if lookfor('(now is), '(now we have nothing is)) = NIL
+if lookfor('(now is), '(now we have nothing is)) = nil
   then "Test 2 lookfor OK"
   else error(0, "Test 2 lookfor fails");
 
-if lookfor('(now is), '(well hello!, now)) = NIL
+if lookfor('(now is), '(well hello!, now)) = nil
   then "Test 3 lookfor OK"
   else error(0, "Test 3 lookfor fails");
 
@@ -477,7 +477,7 @@ if atom x then {x}
   else if cdr x then append(fringe car x, fringe cdr x)
   else fringe car x;
 
-if fringe nil = '(NIL)
+if fringe nil = '(nil)
   then "Test 1 fringe OK"
   else error(0, "Test 1 fringe fails");
 
@@ -498,27 +498,27 @@ if null l then nil
   else if x = car l then delall(x, cdr l)
   else car l . delall(x, cdr l);
 
-if delall('X, nil) = NIL
+if delall('x, nil) = nil
   then "Test 1 delall OK"
   else error(0, "Test 1 delall fails");
 
-if delall('X, '(X)) = NIL
+if delall('x, '(x)) = nil
   then "Test 2 delall OK"
   else error(0, "Test 2 delall fails");
 
-if delall('X, '(A)) = '(A)
+if delall('x, '(a)) = '(a)
   then "Test 3 delall OK"
   else error(0, "Test 3 delall fails");
 
-if delall('(X B), '(A (B) (X B))) = '(A (B))
+if delall('(x b), '(a (b) (x b))) = '(a (b))
   then "Test 4 delall OK"
   else error(0, "Test 4 delall fails");
 
-if delall('(X B), '((X B) (X B))) = NIL
+if delall('(x b), '((x b) (x b))) = nil
   then "Test 5 delall OK"
   else error(0, "Test 5 delall fails");
 
-if delall('(X B), '((X B) X B (X B))) = '(X B)
+if delall('(x b), '((x b) x b (x b))) = '(x b)
   then "Test 6 delall OK"
   else error(0, "Test 6 delall fails");
 
@@ -527,32 +527,32 @@ if delall('(X B), '((X B) X B (X B))) = '(X B)
 expr procedure startswith(prefix, word);
 /* STARTSWITH(PREFIX, WORD) -- Returns T if the list of
   characters WORD begins with the list of characters PREFIX. */
-if null prefix then T
+if null prefix then t
   else if word then
      if car prefix eq car word then
          startswith(cdr prefix, cdr word);
 
-if startswith('(P R E), '(P R E S I D E N T)) = T
+if startswith('(p r e), '(p r e s i d e n t)) = t
   then "Test 1 startswith OK!"
   else error(0, "Test 1 startswith fails");
 
-if startswith('(P R E), '(P O S T F I X)) = NIL
+if startswith('(p r e), '(p o s t f i x)) = nil
   then "Test 2 startswith OK!"
   else error(0, "Test 2 startswith fails");
 
-if startswith('(P R E), '(P R E)) = T
+if startswith('(p r e), '(p r e)) = t
   then "Test 3 startswith OK!"
   else error(0, "Test 3 startswith fails");
 
-if startswith('(P R E), '(P R)) = NIL
+if startswith('(p r e), '(p r)) = nil
   then "Test 4 startswith OK!"
   else error(0, "Test 4 startswith fails");
 
-if startswith('(P R E), NIL) = NIL
+if startswith('(p r e), nil) = nil
   then "Test 5 startswith OK!"
   else error(0, "Test 5 startswith fails");
 
-if startswith('(P R E), '(P P R E)) = NIL
+if startswith('(p r e), '(p p r e)) = nil
   then "Test 6 startswith OK!"
   else error(0, "Test 6 startswith fails");
 
@@ -562,18 +562,18 @@ if startswith('(P R E), '(P P R E)) = NIL
 %------------------------- Exercise #1 -------------------------
 expr procedure goodlist l;
 /* GOODLIST(L) - returns T if L is a proper list. */
-if null l then T
+if null l then t
   else if pairp l then goodlist cdr l;
 
-if goodlist '(a b c) = T
+if goodlist '(a b c) = t
   then "Test 1 goodlist OK"
   else error(0, "Test 1 goodlist fails");
 
-if goodlist nil = T
+if goodlist nil = t
   then "Test 2 goodlist OK"
   else error(0, "Test 2 goodlist fails");
 
-if goodlist '(a . b) = NIL
+if goodlist '(a . b) = nil
   then "Test 3 goodlist OK"
   else error(0, "Test 3 goodlist fails");
 
@@ -586,19 +586,19 @@ if null b then nil
   else if apply(fn, {a, car b}) then b
   else fmember(a, cdr b, fn);
 
-if fmember('a, '(b c a d), function EQ) = '(a d)
+if fmember('a, '(b c a d), function eq) = '(a d)
   then "Test 1 fmember is OK"
   else error(0, "Test 1 fmember fails");
 
-if fmember('(a), '((b c) (a) d), function EQ) = NIL
+if fmember('(a), '((b c) (a) d), function eq) = nil
   then "Test 2 fmember is OK"
   else error(0, "Test 2 fmember fails");
 
-if fmember('(a), '((b c) (a) d), function EQUAL) = '((a) d)
+if fmember('(a), '((b c) (a) d), function equal) = '((a) d)
   then "Test 3 fmember is OK"
   else error(0, "Test 3 fmember fails");
 
-if fmember(34, '(1 2 56 12), function LESSP) = '(56 12)
+if fmember(34, '(1 2 56 12), function lessp) = '(56 12)
   then "Test 4 fmember is OK"
   else error(0, "Test 4 fmember fails");
 
@@ -684,7 +684,7 @@ if floatlist '(3.4 1.222 1.0e22) = '(3.4 1.222 1.0e22)
   then "Test 2 floatlist OK"
   else error(0, "Test 2 floatlist fails");
 
-if floatlist '(a b c) = NIL
+if floatlist '(a b c) = nil
   then "Test 3 floatlist OK"
   else error(0, "Test 3 floatlist fails");
 
@@ -758,7 +758,7 @@ for each w on s
     do << prin2 car w;
           if cdr w then prin2 " " else prin2t "." >>;
 
-psentence '(The man in the field is happy);
+psentence '(the man in the field is happy);
 
 %------------------------- Exercise #6 -------------------------
 expr procedure bsort v;
@@ -835,14 +835,14 @@ if average '(a b c 5 6.0) = 5.5 then
   else error(0, "Test 4 average fails");
 
 %------------------------- Exercise #9 -------------------------
-expr procedure boundingbox L;
+expr procedure boundingbox l;
 /* BOUNDINGBOX(L) returns a list of
   (min X, max X, min Y, max Y)
  for the list L of dotted-pairs (x . y). */
-{ for each x in L minimize car x,
-  for each x in L maximize car x,
-  for each y in L minimize cdr y,
-  for each y in L maximize cdr y};
+{ for each x in l minimize car x,
+  for each x in l maximize car x,
+  for each y in l minimize cdr y,
+  for each y in l maximize cdr y};
 
 
 if boundingbox '((0 . 1) (4 . 5)) = '(0 4 1 5)
@@ -960,10 +960,10 @@ expr procedure read2char c;
  list including C. Terminates at end of file. */
 repeat l := (ch := readch()) . l
        with ch, l
-       until ch eq c or ch eq !$EOF!$
+       until ch eq c or ch eq !$eof!$
        returns reversip l;
 
-if read2char '!* = {!$EOL!$, 'a, 'b, 'c, '!*}
+if read2char '!* = {!$eol!$, 'a, 'b, 'c, '!*}
   then "Test 1 read2char OK"
   else error(0, "Test 1 read2char fails");
 abc*
@@ -1050,14 +1050,14 @@ end;
 fluid '(val);
 val := readcoordinate();
 @ 57.29577
-if val < 1.000001 AND val > 0.999999
+if val < 1.000001 and val > 0.999999
   then "Test 1 readcoordinate OK"
   else error(0, "Test 1 readcoordinate failed");
 
 % This fails with poor arithmetic.
 val := readcoordinate();
 (57 17 44.772)
-if val < 1.000001 AND val > 0.999999
+if val < 1.000001 and val > 0.999999
   then "Test 2 readcoordinate OK"
   else error(0, "Test 2 readcoordinate failed");
 unfluid '(val);
@@ -1180,8 +1180,8 @@ else if constantp car l then
     << stack!* := car l . stack!*;
        pexecute cdr l >>
   else if idp car l then
-    if get(car l, 'STACKFN) then
-       << apply(get(car l, 'STACKFN), nil);
+    if get(car l, 'stackfn) then
+       << apply(get(car l, 'stackfn), nil);
           pexecute cdr l >>
     else error(0, {car l, "undefined function"})
   else << stack!* := car l . stack!*;
@@ -1191,18 +1191,18 @@ else if constantp car l then
 /* PADD1() - Subtract the 2nd stack elt from the
   first and replace top two entries with result. */
 stack!* := (cadr stack!* - car stack!*) . cddr stack!*;
-put('!-, 'STACKFN, 'pdiff);
+put('!-, 'stackfn, 'pdiff);
 
 expr procedure pplus2;
 /* PPLUS2() - Pop and add the top two numbers
   on the stack and push the result. */
 stack!* := (car stack!* + cadr stack!*) . cddr stack!*;
-put('!+, 'STACKFN, 'pplus2);
+put('!+, 'stackfn, 'pplus2);
 
 expr procedure pprint;
 /* PPRINT() - Print the top stack element. */
 print car stack!*;
-put('PRINT, 'STACKFN, 'pprint);
+put('print, 'stackfn, 'pprint);
 
 
 pexecute '(3 4 !+);
@@ -1226,14 +1226,14 @@ else if constantp car l then
     << stack!* := car l . stack!*;
        pexecute cdr l >>
   else if idp car l then
-    if eqcar(l, 'QUOTE) then
+    if eqcar(l, 'quote) then
        << stack!* := cadr l . stack!*;
           pexecute cddr l >>
-    else if flagp(car l, 'STACKVAR) then
-       << stack!* := get(car l, 'STACKVAL) . stack!*;
+    else if flagp(car l, 'stackvar) then
+       << stack!* := get(car l, 'stackval) . stack!*;
           pexecute cdr l >>
-    else if get(car l, 'STACKFN) then
-       << apply(get(car l, 'STACKFN), nil);
+    else if get(car l, 'stackfn) then
+       << apply(get(car l, 'stackfn), nil);
           pexecute cdr l >>
     else error(0, {car l, "undefined function"})
   else << stack!* := car l . stack!*;
@@ -1245,13 +1245,13 @@ expr procedure pset;
   the STACKVAL attribute of the first. Flag the id as
   a STACKVAR for later use. Pop the top stack
   element. */
-<< put(car stack!*, 'STACKVAL, cadr stack!*);
-   flag({car stack!*}, 'STACKVAR);
+<< put(car stack!*, 'stackval, cadr stack!*);
+   flag({car stack!*}, 'stackvar);
    stack!* := cdr stack!* >>;
-put('SET, 'STACKFN, 'pset);
+put('set, 'stackfn, 'pset);
 
 stack!* := nil;
-pexecute '(4.5 quote x set 4 !+ x !+ PRINT);
+pexecute '(4.5 quote x set 4 !+ x !+ print);
 if stack!* neq '(13.0) then error(0, "Test 3 PEXECUTE fails");
 
 
@@ -1261,11 +1261,11 @@ if stack!* neq '(13.0) then error(0, "Test 3 PEXECUTE fails");
 
 record qtree /* QTREE is a quad tree node element. */
  with
-   node := NIL        /* Node name */,
-   q1 := NIL          /* Child #1 */,
-   q2 := NIL          /* Child #2 */,
-   q3 := NIL          /* Child #3 */,
-   q4 := NIL          /* Child #4 */;
+   node := nil        /* Node name */,
+   q1 := nil          /* Child #1 */,
+   q2 := nil          /* Child #2 */,
+   q3 := nil          /* Child #3 */,
+   q4 := nil          /* Child #4 */;
 
 
 expr procedure qvisit q;
@@ -1281,34 +1281,34 @@ if null q then nil
 
 /* A simple quad tree. */
 global '(qdemo);
-qdemo := qtree(node := 'A,
-            q1 := qtree(node := 'B),
-            q2 := qtree(node := 'C),
-            q3 := qtree(node := 'D,
-                        q1 := qtree(node := 'E)),
-            q4 := qtree(node := 'F));
+qdemo := qtree(node := 'a,
+            q1 := qtree(node := 'b),
+            q2 := qtree(node := 'c),
+            q3 := qtree(node := 'd,
+                        q1 := qtree(node := 'e)),
+            q4 := qtree(node := 'f));
 
-if qvisit qdemo = '(A B C D E F)
+if qvisit qdemo = '(a b c d e f)
   then "Test 1 qvisit OK!"
   else error(0, "Test 1 qvisit Fails!");
 
 /* The quadtree in the book. */
 global '(qdemo2);
-qdemo2 := qtree(node := 'A,
-    q1 := qtree(node := 'B),
-    q2 := qtree(node := 'C),
-    q3 := qtree(node := 'D,
-         q1 := qtree(node := 'E,
-            q2 := qtree(node := 'F)),
-         q2 := qtree(node := 'G),
-         q3 := qtree(node := 'H),
-         q4 := qtree(node := 'I)));
+qdemo2 := qtree(node := 'a,
+    q1 := qtree(node := 'b),
+    q2 := qtree(node := 'c),
+    q3 := qtree(node := 'd,
+         q1 := qtree(node := 'e,
+            q2 := qtree(node := 'f)),
+         q2 := qtree(node := 'g),
+         q3 := qtree(node := 'h),
+         q4 := qtree(node := 'i)));
 
-if qvisit qdemo2 = '(A B C D E F G H I)
+if qvisit qdemo2 = '(a b c d e f g h i)
   then "Test 2 qvisit OK!"
   else error(0, "Test 2 qvisit Fails!");
 
-if qvisit nil = NIL
+if qvisit nil = nil
   then "Test 3 qvisit OK!"
   else error(0, "Test 3 qvisit Fails!");
 
@@ -1329,15 +1329,15 @@ else begin scalar v;
   if v := qsearch(q4 q, val, fn) then return node q . v
 end;
 
-if qsearch(qdemo, 'E, function EQ) = '(A D E)
+if qsearch(qdemo, 'e, function eq) = '(a d e)
   then "Test 1 qsearch OK!"
   else error(0, "Test 1 qsearch fails");
 
-if qsearch(qdemo, 'XXX, function EQ) = nil
+if qsearch(qdemo, 'xxx, function eq) = nil
   then "Test 2 qsearch OK!"
   else error(0, "Test 2 qsearch fails");
 
-if qsearch(qdemo2, 'F, function EQ) = '(A D E F)
+if qsearch(qdemo2, 'f, function eq) = '(a d e f)
   then "Test 3 qsearch OK!"
   else error(0, "Test 3 qsearch fails");
 
@@ -1348,9 +1348,9 @@ record commchain
 /* A COMMCHAIN is an n-ary tree with superior and
  subordinate links. */
 with 
-  name := NIL          /* Name of this node. */,
-  superior := NIL      /* Pointer to superior node. */,
-  subordinates := NIL  /* List of subordinates. */;
+  name := nil          /* Name of this node. */,
+  superior := nil      /* Pointer to superior node. */,
+  subordinates := nil  /* List of subordinates. */;
 
 
 expr procedure backchain(l, sup);
@@ -1367,30 +1367,30 @@ if null l then nil
 global '(cch);
 cch :=
   commchain(
-    name := 'TOP,
+    name := 'top,
     subordinates :=
-      {commchain(name := 'LEV1-A),
+      {commchain(name := 'lev1-a),
        commchain(
-          name := 'LEV1-B,
+          name := 'lev1-b,
           subordinates := 
-            {commchain(name := 'LEV2-A),
-             commchain(name := 'LEV2-B)}),
-       commchain(name := 'LEV1-C)});
+            {commchain(name := 'lev2-a),
+             commchain(name := 'lev2-b)}),
+       commchain(name := 'lev1-c)});
 
 % Wrap this up to avoid printing problems. 
-<< backchain(cch, 'COMMANDER); NIL >>;
+<< backchain(cch, 'commander); nil >>;
 
 
-if superior cch EQ 'COMMANDER
+if superior cch eq 'commander
   then "Test 1 backchain OK!"
   else error(0, "Test 1 backchain Fails!");
 
-if name superior car subordinates cch EQ 'TOP
+if name superior car subordinates cch eq 'top
   then "Test 2 backchain OK!"
   else error(0, "Test 2 backchain Fails!");
 
 if name superior car subordinates cadr subordinates cch
-      eq 'LEV1-B
+      eq 'lev1-b
   then "Test 3 backchain OK!"
   else error(0, "Test 3 backchain Fails!");
 
@@ -1418,9 +1418,9 @@ if errorset(quote lookup('f, '((a . b) (c . d))), nil, nil) = 0
 expr procedure quadratic(a, b, c);
 /* QUADRATIC(A, B, C) -- Returns both solutions of the
   quadratic equation A*X^2 + B*X + C */
-{(-B + U) / V, (-B - U) / V}
-  where U := SQRT(B^2 - 4*A*C),
-        V := 2.0 * A;
+{(-b + u) / v, (-b - u) / v}
+  where u := sqrt(b^2 - 4*a*c),
+        v := 2.0 * a;
 
 if quadratic(1.0, 2.0, 1.0) = '(-1.0 -1.0)
   then "Test 1 quadratic OK!"
@@ -1526,7 +1526,7 @@ if vaverage array('a, 'b) = 0.0
 
 %------------------------- Exercise #2 -------------------------
 
-expr procedure MAPPEND(a, b);
+expr procedure mappend(a, b);
 /* MAPPEND(A, B) -- Appends array B to array A and
   returns a new array with both. */
 begin scalar c, ua;
@@ -1752,18 +1752,18 @@ cpath :=
 
 
 % Coerce int to complex.
-if coerce(0, 3, nil, cpath) = '(FLT2CPLX STR2FLT INT2STR)
+if coerce(0, 3, nil, cpath) = '(flt2cplx str2flt int2str)
   then "Test 1 coerce OK"
   else error(0, "Test 1 coerce fails");
 
 % Coerce Complex into int.
-if coerce(3, 0, nil, cpath) = NIL
+if coerce(3, 0, nil, cpath) = nil
   then "Test 2 coerce OK"
   else error(0, "Test 2 coerce fails");
 
 % Coerce int into gaussian.
 if coerce(0, 4, nil, cpath) = 
-       '(CFIX FLT2CPLX STR2FLT INT2STR)
+       '(cfix flt2cplx str2flt int2str)
   then "Test 3 coerce OK"
   else error(0, "Test 3 coerce fails");
 
@@ -1808,8 +1808,8 @@ expr procedure life(c, n1, n2, n3, n4, n5, n6, n7, n8);
 
 /* LIFESTATES contains a vector of states and what
   character to print. */
-global '(LIFESTATES);
-LIFESTATES := array(" ", "*");
+global '(lifestates);
+lifestates := array(" ", "*");
 
 expr procedure pcell(gen, a, pr);
 /* PCELL(GEN, A) -- Display the state of the GEN generation
@@ -1852,7 +1852,7 @@ seed := array(
   array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
 
-rungame(seed, 10, function life, LIFESTATES);
+rungame(seed, 10, function life, lifestates);
 
 
 %------------------------- Exercise #7 -------------------------
@@ -1870,11 +1870,11 @@ begin scalar dest, src, last, u;
   last := dest := src := 0;
 loop: if src > upbv heep then
         if src = dest then return 0
-        else << heep[dest] := 'FREE;
+        else << heep[dest] := 'free;
                 heep[dest+1] := src - dest;
                 for i:=dest+2:upbv heep do heep[i] := '!*;
                 return heep[dest+1] >>;
-  if heep[src] eq 'FREE then
+  if heep[src] eq 'free then
        src := heep[src+1] + src
   else << u := heep[src+1] + src - 1;
           for i:=src:u do << heep[dest] := heep[i];
@@ -1885,48 +1885,48 @@ end;
 
 
 /* A simple array to test. */
-global '(H);
-H := array('INUSE, 3, 0,
-           'FREE, 4, '!*, '!*,
-           'INUSE, 4, 0, 1,
-           'FREE, 3, '!*,
-           'FREE, 5, '!*, '!*, '!*,
-           'INUSE, 5, 0, 1, 2,
-           'INUSE, 5, 3, 4, 5);
+global '(h);
+h := array('inuse, 3, 0,
+           'free, 4, '!*, '!*,
+           'inuse, 4, 0, 1,
+           'free, 3, '!*,
+           'free, 5, '!*, '!*, '!*,
+           'inuse, 5, 0, 1, 2,
+           'inuse, 5, 3, 4, 5);
 
-if compact H = 12
+if compact h = 12
   then "Test 1 compact OK!"
   else error(0, "Test 1 compact fails!");
-if H = array('INUSE, 3, 0, 'INUSE, 4, 0, 1, 'INUSE,
-             5, 0, 1, 2, 'INUSE, 5, 3, 4, 5,
-             'FREE, 12, '!*, '!*, '!*, '!*, '!*, '!*,
+if h = array('inuse, 3, 0, 'inuse, 4, 0, 1, 'inuse,
+             5, 0, 1, 2, 'inuse, 5, 3, 4, 5,
+             'free, 12, '!*, '!*, '!*, '!*, '!*, '!*,
              '!*, '!*, '!*, '!*)
   then "Test 2 compact OK!"
   else error(0, "Test 2 compact fails!");
 
 /* Test a completely full one. */
-H := array('INUSE, 3, 0, 'INUSE, 5, 1, 2, 3);
-if compact H = 0
+h := array('inuse, 3, 0, 'inuse, 5, 1, 2, 3);
+if compact h = 0
   then "Test 3 compact OK!"
   else error(0, "Test 3 compact fails!");
-if H = array('INUSE, 3, 0, 'INUSE, 5, 1, 2, 3)
+if h = array('inuse, 3, 0, 'inuse, 5, 1, 2, 3)
   then "Test 4 compact OK!"
   else error(0, "Test 4 compact fails!");
 
 
 /* Test a completely empty one. */
-H := array('FREE, 3, '!*, 'FREE, 5, '!*, '!*, '!*);
-if compact H = 8 
+h := array('free, 3, '!*, 'free, 5, '!*, '!*, '!*);
+if compact h = 8 
   then "Test 5 compact OK!"
   else error(0, "Test 5 compact fails!");
-if H = array('FREE, 8, '!*, '!*, '!*, '!*, '!*, '!*)
+if h = array('free, 8, '!*, '!*, '!*, '!*, '!*, '!*)
   then "Test 6 compact OK!"
   else error(0, "Test 6 compact fails!");
 
 
 %------------------------- Exercise #8 -------------------------
 
-expr procedure HISTOGRAM(v, n);
+expr procedure histogram(v, n);
 /* HISTOGRAM(V,N) -- V is an arbitrarily size vector of
   numbers. Compute its an N element histogram over its
   range and return it. */
@@ -1950,15 +1950,15 @@ global '(v1);
 << v1 := mkvect 100;
    for i:=0:100 do v1[i] := float i >>;
 
-if HISTOGRAM(v1, 1) = array(101)
+if histogram(v1, 1) = array(101)
   then "Test 1 HISTOGRAM OK!"
   else error(0, "Test 1 HISTOGRAM Fails!");
 
-if HISTOGRAM(v1, 2) = array(50, 51)
+if histogram(v1, 2) = array(50, 51)
   then "Test 2 HISTOGRAM OK!"
   else error(0, "Test 2 HISTOGRAM Fails!");
 
-if HISTOGRAM(v1, 7) = array(15, 14, 14, 15, 14, 14, 15)
+if histogram(v1, 7) = array(15, 14, 14, 15, 14, 14, 15)
   then "Test 3 HISTOGRAM OK!"
   else error(0, "Test 3 HISTOGRAM Fails!");
 
@@ -2193,22 +2193,22 @@ if d(0, 0, 1, 1) = sqrt 2
 macro procedure pop x;
 /* POP(X) - Assuming X is an identifier, pop the stack
   and return the popped value. */
-(`(prog (!$V!$)
-     (setq !$V!$ (car #v))
+(`(prog (!$v!$)
+     (setq !$v!$ (car #v))
      (setq #v (cdr #v))
-     (return !$V!$))) where v := cadr x;
+     (return !$v!$))) where v := cadr x;
 
-xxx := '(A B);
-if pop xxx eq 'A
+xxx := '(a b);
+if pop xxx eq 'a
   then "Test 1 POP ok!"
   else error(0, "Test 1 POP fails!");
-if xxx = '(B) 
+if xxx = '(b) 
   then "Test 1 POP ok!"
   else error(0, "Test 1 POP fails!");
-if pop xxx eq 'B
+if pop xxx eq 'b
   then "Test 2 POP ok!"
   else error(0, "Test 2 POP fails!");
-if xxx eq NIL
+if xxx eq nil
   then "Test 2 POP ok!"
   else error(0, "Test 2 POP fails!");
 
@@ -2222,16 +2222,16 @@ macro procedure push x;
   where st := cadr x,
         v := caddr x;
 
-if push(xxx, 'A) = 'A
+if push(xxx, 'a) = 'a
   then "Test 1 push OK!"
   else error(0, "Test 1 push fails");
-if xxx = '(A)
+if xxx = '(a)
   then "Test 1 push OK!"
   else error(0, "Test 1 push fails");
-if push(xxx, 'B) = 'B
+if push(xxx, 'b) = 'b
   then "Test 2 push OK!"
   else error(0, "Test 2 push fails");
-if xxx = '(B A)
+if xxx = '(b a)
   then "Test 2 push OK!"
   else error(0, "Test 2 push fails");
   
@@ -2390,14 +2390,14 @@ if rmsg("Test %w now %p", "foo", "foo") = "Test ""foo"" now foo"
   else error(0, "Test 4 rmsg fails!");
 
 %------------------------- Exercise -------------------------
-define CFLAG = T;
+define cflag = t;
 
 macro procedure ifcflag x;
 /* IFCLFAG(X) - generate the code for X if CFLAG is non-NIL,
   otherwise generate NIL (this can't be used everywhere). */
-if CFLAG then cadr x else nil;
+if cflag then cadr x else nil;
 
-ifCFLAG expr procedure pslfoo x; car x;
+ifcflag expr procedure pslfoo x; car x;
 if getd 'pslfoo
   then "Test 1 ifCFLAG OK!"
   else error(0, "Test 1 ifCFLAG fails!");
@@ -2408,8 +2408,8 @@ if getd 'pslfoo
 %------------------------- Exercise #2 -------------------------
 
 /* Lists functions that have been embedded with count code. */
-global '(EMBEDDED!*);
-EMBEDDED!* := NIL;
+global '(embedded!*);
+embedded!* := nil;
 
 expr procedure embed f;
 /* EMBED(F) - wrap function F with counter code. Error if F is
@@ -2418,15 +2418,15 @@ expr procedure embed f;
 begin scalar def, args, nfn;
   if not(def := getd f) then  error(0, {f, "is undefined"});
   if codep cdr def then error(0, {f, "is not interpreted"});
-  put(f, 'COUNT, 0);
-  if f memq EMBEDDED!* then return NIL;
-  EMBEDDED!* := f . EMBEDDED!*;
+  put(f, 'count, 0);
+  if f memq embedded!* then return nil;
+  embedded!* := f . embedded!*;
   putd(nfn := intern gensym(), car def, cdr def);
   putd(f, car def,
        {'lambda, caddr def,
         {'progn,
-           {'put, mkquote f, mkquote 'COUNT,
-                  {'add1, {'get, mkquote f, mkquote 'COUNT}}},
+           {'put, mkquote f, mkquote 'count,
+                  {'add1, {'get, mkquote f, mkquote 'count}}},
            nfn . caddr def}});
   return f
 end;
@@ -2435,8 +2435,8 @@ end;
 expr procedure stats;
 /* STATS() - list all the embedded functions and their 
    counts. */
-for each f in EMBEDDED!*
-    do << prin1 f; prin2 "  "; print get(f, 'COUNT) >>;
+for each f in embedded!*
+    do << prin1 f; prin2 "  "; print get(f, 'count) >>;
 
 
 expr procedure pcnt x;
@@ -2454,10 +2454,10 @@ if get('pcnt, 'count) = 0
 if pcnt '(a . (b . c)) = 2
   then "Test 3 embed OK!"
   else error(0, "Test 3 embed Fails!");
-if get('pcnt, 'COUNT) = 5
+if get('pcnt, 'count) = 5
   then "Test 4 embed OK!"
   else error(0, "Test 4 embed Fails!");
-if EMBEDDED!* = '(PCNT)
+if embedded!* = '(pcnt)
   then "Test 5 embed OK!"
   else error(0, "Test 5 embed Fails!");
 
@@ -2469,7 +2469,7 @@ stats();
 %
 % We set LINELENGTH to various values to check how good we do on output.
 % Don't let the default screw up the test:
-LINELENGTH 80;
+linelength 80;
 
 % Describe some of the basic data types.
 % Dotted-pairs.
@@ -2507,19 +2507,19 @@ describe nil;   % This message is sort of funny in odd ways.
 % Now let's get serious. Here's a global with no active comment. The
 % remprop is something you shouldn't know about but allows us to run
 % the test file multiple times and get the same results.
-remprop('TheCow, 'NEWNAM);
-DEFINE TheCow = "How now brown cow";
-describe 'TheCow;
+remprop('thecow, 'newnam);
+define thecow = "How now brown cow";
+describe 'thecow;
 
 off saveactives;
 /* I never saw a purple cow, I never hope to see one now. */
-global '(PurpleCow);
-describe 'PurpleCow;
+global '(purplecow);
+describe 'purplecow;
 
 on saveactives;
 /* But I'd rather see one than be one! */
-global '(Pcow);
-describe 'Pcow;
+global '(pcow);
+describe 'pcow;
 
 % Now we march on to procedures.
 % Here's one with no comment and we don't save it.
@@ -2602,17 +2602,17 @@ Well hoop de doo! Is there anything else funny?
 global '(testvariable);
 
 describe 'testvariable;
-LINELENGTH 60;
+linelength 60;
 describe 'testvariable;
-LINELENGTH 50;
+linelength 50;
 describe 'testvariable;
-LINELENGTH 40;
+linelength 40;
 describe 'testvariable;
-LINELENGTH 30;
+linelength 30;
 describe 'testvariable;
-LINELENGTH 20;
+linelength 20;
 describe 'testvariable;
-LINELENGTH 10;
+linelength 10;
 describe 'testvariable;
 
 

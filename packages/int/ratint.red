@@ -1,4 +1,4 @@
-MODULE ratint;   % Support for direct rational integration.
+module ratint;   % Support for direct rational integration.
 
 % Authors: Mary Ann Moore and Arthur C. Norman.
 
@@ -26,33 +26,34 @@ MODULE ratint;   % Support for direct rational integration.
 %
 
 
-SYMBOLIC PROCEDURE RATIONALINTEGRATE(X,VAR);
-    BEGIN     SCALAR N,D;
-      N:=NUMR X; D:=DENR X;
-      IF NOT(VAR MEMBER VARSINSF(D,NIL)) THEN
-            RETURN !*MULTSQ(POLYNOMIALINTEGRATE(N,VAR),1 ./ D);
-      REDERR "Rational integration not coded yet"
-    END;
+symbolic procedure rationalintegrate(x,var);
+    begin     scalar n,d;
+      n:=numr x; d:=denr x;
+      if not(var member varsinsf(d,nil)) then
+            return !*multsq(polynomialintegrate(n,var),1 ./ d);
+      rederr "Rational integration not coded yet"
+    end;
 
-SYMBOLIC PROCEDURE POLYNOMIALINTEGRATE(X,V);
+symbolic procedure polynomialintegrate(x,v);
 % Integrate standard form. result is standard quotient.
-    IF NULL X THEN NIL ./ 1
-    ELSE IF ATOM X THEN ((MKSP(V,1) .* 1) .+ NIL) ./ 1
-    ELSE BEGIN    SCALAR R;
-      R:=POLYNOMIALINTEGRATE(RED X,V); % deal with reductum
-      IF V=MVAR X THEN BEGIN    SCALAR DEGREE,NEWLT;
-         DEGREE:=1+TDEG LT X;
-         NEWLT:=((MKSP(V,DEGREE) .* LC X) .+ NIL) ./ 1; % up exponent
-         R:=ADDSQ(!*MULTSQ(NEWLT,1 ./ DEGREE),R)
-         END
-      ELSE BEGIN        SCALAR NEWTERM;
-        NEWTERM:=(((LPOW X) .* 1) .+ NIL) ./ 1;
-        NEWTERM:=!*MULTSQ(NEWTERM,POLYNOMIALINTEGRATE(LC X,V));
-        R:=ADDSQ(R,NEWTERM)
-        END;
-      RETURN R
-    END;
+    if null x then nil ./ 1
+    else if atom x then ((mksp(v,1) .* 1) .+ nil) ./ 1
+    else begin    scalar r;
+      r:=polynomialintegrate(red x,v); % deal with reductum
+      if v=mvar x then begin    scalar degree,newlt;
+         degree:=1+tdeg lt x;
+         newlt:=((mksp(v,degree) .* lc x) .+ nil) ./ 1; % up exponent
+         r:=addsq(!*multsq(newlt,1 ./ degree),r)
+         end
+      else begin        scalar newterm;
+        newterm:=(((lpow x) .* 1) .+ nil) ./ 1;
+        newterm:=!*multsq(newterm,polynomialintegrate(lc x,v));
+        r:=addsq(r,newterm)
+        end;
+      return r
+    end;
 
 endmodule;
 
 end;
+

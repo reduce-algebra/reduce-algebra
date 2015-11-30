@@ -116,7 +116,7 @@ procedure dvfsf_dnf(f);
    % Discretely valued field standard form conjunctive normal form.
    % [f] is a formula. Returns a DNF of [f].
    if !*rlbnfsac then
-      (cl_dnf f) where !*rlsiso=T
+      (cl_dnf f) where !*rlsiso=t
    else
       cl_dnf f;
 
@@ -124,7 +124,7 @@ procedure dvfsf_cnf(f);
    % Discretely valued field standard form conjunctive normal form.
    % [f] is a formula. Returns a CNF of [f].
    if !*rlbnfsac then
-      (cl_cnf f) where !*rlsiso=T
+      (cl_cnf f) where !*rlsiso=t
    else
       cl_cnf f;
 
@@ -178,7 +178,7 @@ procedure dvfsf_a2cdl(atml);
          atf := caar atml;
       	 atml := cdr atml;
       	 termll := dvfsf_argn atf . termll;
-	 if not(dvfsf_op atf memq '(equal neq)) then flag := T
+	 if not(dvfsf_op atf memq '(equal neq)) then flag := t
       >>;
       return if flag then
 	 for each x in termll collect

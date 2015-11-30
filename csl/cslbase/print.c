@@ -1977,8 +1977,15 @@ static void fp_sprint(char *buff, double x, int prec)
 #ifdef DEBUG
     char *fullbuff = buff; /* Useful for when running under a debugger */
 #endif
+/*
+ * Note that I am assuming IEEE arithmetic here so the tricks that I use
+ * to detect -0.0, NaN and infinities ought to be OK. Just remember that
+ * -0.0 is equal to 0.0 and not less than it, so the simple test
+ & "x < 0.0" will not pick up the case of -0.0.
+ */
     if (x == 0.0)
-    {   strcpy(buff, "0.0");
+    {   if (1.0/x < 0.0) strcpy(buff, "-0.0");
+        else strcpy(buff, "0.0");
         return;
     }
     if (x != x)
@@ -2493,6 +2500,13 @@ case TAG_VECTOR:
                                     k++;
                                     ch = celt(stack[0], k);
                                     n = (n << 6) | (ch & 0x3f);
+/*
+ * There is a portability issue here. ON some platforms (and perhaps with
+ * some locales set) you may find (for instance) case conversion between
+ * small; and large Greek letters (as in the TeX notation \gamma vd \Gamma),
+ * while in others only basic Latin characters will get case converted. This
+ * effect may show up in the utf8-in-list regression test.
+ */
                                     if (escaped_printing & escape_fold_down)
                                         n = towlower(n);
                                     else if (escaped_printing & escape_fold_up)

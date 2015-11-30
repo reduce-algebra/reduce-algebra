@@ -56,6 +56,7 @@ global '(!$eof!$
          crchar!*
          curline!*
          cursym!*
+         curescaped!*
          eof!*
          ifl!*
          nxtsym!*
@@ -67,6 +68,7 @@ global '(!$eof!$
 %     3  operator-like character  +,-,...
 %     4  result of quotation      '(something)
          ttype!*
+         escaped!*
          !*csl
          !*psl
          named!-character!*);
@@ -558,6 +560,7 @@ symbolic procedure tokquote;
    begin
       crchar!* := readch1();
       nxtsym!* := mkquote rread();
+      curescaped!* := nil;
       ttype!* := 4;
       return nxtsym!*
    end;
@@ -578,10 +581,13 @@ symbolic procedure token!-number x;
       x := readch1();
       if (x eq !$eof!$) or
          (not (string!-length id2string x = 1)) then go to ret
-       else if x eq '!.
-         then if dotp
-                then rerror('rlisp,3,"Syntax error: improper number")
-               else progn(dotp := t, go to num2)
+% The code here used to generate a diagnostic on input like "1.2.3" but
+% now it should accept 1.2 as a number and just stop reading at the second
+% dot. That seems more friendly and generally consistent with what lexical
+% processing should do.
+       else if x eq '!. and not dotp then progn(
+         dotp := t,
+         go to num2)
        else if digit x then go to num1
        else if y = '(!0) and (x eq '!x or x eq '!X) then go to hexnum
 % For whatever original reason this ignores backslashes within numbers. This
@@ -614,7 +620,9 @@ symbolic procedure token!-number x;
       y := 16*y + z;
       go to hexnum1;
    nume2:
-      if null z then rerror('rlisp,4,"Syntax error: improper number");
+      if null z then rerror('rlisp,4,
+         concat("Syntax error: improper number ",
+                list2string (x . append(z, 'e . y))));
 % This use of compress is for a number...
       z := compress reversip!* z;
       if sign then power := power - z else power := power + z;
@@ -679,6 +687,12 @@ symbolic procedure token1;
 % can be used for something interesting. But initially package::name will
 % merely denote a name that has embedded colons.
 %
+% I suspect that the flag "!*minusliter" (which I hope is not made a flag
+% that can be toggled using on/off, since it is a dodgy thing for ordinary
+% users to mess with) causes "-" to be accepted as a "letter" within but
+% not at the start of a name. Thus "-a-b+c" ends up parsing as
+%      (plus (minus a!-b) c)
+%
    begin scalar x,y,z;
         x := crchar!*;
     a:  if (x eq !$eof!$) or
@@ -715,11 +729,23 @@ symbolic procedure token1;
         rplaca(cdr x,apply1('minus,cadr x));        % Also for booting.
         return x;
     escape:
-        begin scalar raise,!*lower;
-           raise := !*raise;
-           !*raise := nil;
+        begin scalar !*raise,!*lower;
+           escaped!* := t;
            x := readch1();
-           !*raise := raise
+% If a token is read such that a letter is preceeded by an exclamation mark
+% I will set the variable escaped!*. The purpose of this is to support a
+% tool that will report on cases where names are used in Reduce such that they
+% are identical other than in case. So if both "symbolic" and "sYmBoLiC" are
+% used that is a clash. However I do not want "!Alpha" and "alpha" to count
+% as a clash, or "!X" and "!x" and "x". So the presence of a letter whose
+% case is explicitly preserved by the escape character will be taken as a mark
+% that the word was meant to be just as written. This can leave bad cases
+% such as "!Alpha" vs "!AlphA" but it covers enough to be useful for now.
+% I do not set escaped!* to nil here - if you wish to inspect it please set
+% it to nil before calling token(). The arrangement like that is perhaps
+% ugly but minimises overhead in all the common cases where this is not
+% actually being used.
+           if liter x then escaped!* := t;
         end;
     letter:
         ttype!* := 0;
@@ -842,17 +868,13 @@ symbolic procedure token1;
 % major hook that manages extra symbol tables.
         return nxtsym!*;
     extpackescape:
-        begin scalar raise,!*lower;
-           raise := !*raise;
-           !*raise := nil;
-           x := readch1();
-           !*raise := raise
+        begin scalar !*raise,!*lower;
+           escaped!* := t;
+           x := readch1()
         end;
         go to extpackmore;
     string:
-        begin scalar raise,!*lower;
-           raise := !*raise;
-           !*raise := nil;
+        begin scalar !*raise,!*lower;
        strinx:
            x := wideid2list x; % extract character from the symbol.
        dumpx:
@@ -863,8 +885,7 @@ symbolic procedure token1;
        dumped:
            named!-character!* := nil;
            if (x := readch1()) eq !$eof!$
-             then progn(!*raise := raise,
-                        crchar!* := '! ,
+             then progn(crchar!* := '! ,
                         lpriw("***** End-of-file in string",nil),
                         filenderr())
             else if (null(x eq '!")) or named!-character!* then go to strinx;
@@ -872,20 +893,17 @@ symbolic procedure token1;
            named!-character!* := nil;
            x := readch1();
            if (x eq '!") and (null named!-character!*) then go to strinx;
-           nxtsym!* := list2widestring cdr reversip!* y;
-           !*raise := raise
+           nxtsym!* := list2widestring cdr reversip!* y
          end;
         ttype!* := 1;
         crchar!* := x;
         go to c;
     coment:
-        begin scalar !*lower,raise;
-        raise := !*raise;
-        !*raise := nil;
+        begin scalar !*raise,!*lower;
     comm1:
         named!-character!* := nil;
-        if (null(readch1() eq !$eol!$)) or named!-character!* then go to comm1;
-        !*raise := raise
+        if (null((x := readch1()) eq !$eol!$ or
+                  x eq !$eof!$)) or named!-character!* then go to comm1
         end;
         x := readch1();
         go to a
@@ -895,6 +913,7 @@ symbolic procedure tokbquote;
    begin
      crchar!* := readch1();
       nxtsym!* := list('backquote,rread());
+      curescaped!* := nil;
       ttype!* := 3;
       return nxtsym!*
    end;
@@ -907,6 +926,7 @@ symbolic procedure token;
 
 symbolic procedure filenderr;
    begin
+      curescaped!* := nil;
       eof!* := eof!*+1;
       if terminalp() then error1()
        else error(99,if ifl!*
@@ -1049,12 +1069,13 @@ symbolic procedure addcomment u;
  %  if commentlist!*
  %    then cursym!* := 'comment . aconc(reversip commentlist!*,u)
  %   else
-   cursym!* := u;
+     cursym!* := u;
 
 symbolic procedure scan;
    begin scalar bool,x,y;
         if null (cursym!* eq '!*semicol!*) then go to b;
-    a:  nxtsym!* := token();
+    a:  escaped!* := nil;
+        nxtsym!* := token();
     b:  if null atom nxtsym!* and null toknump nxtsym!*
           then go to q1
          else if nxtsym!* eq 'else or cursym!* eq '!*semicol!*
@@ -1063,7 +1084,14 @@ symbolic procedure scan;
     c:  if null idp nxtsym!* then go to l
          else if (x:=get(nxtsym!*,'newnam)) and
                         (null (x=nxtsym!*)) then go to new
-         else if nxtsym!* eq 'comment
+% Here I will allow "comment" to be spent in either upper or lower case
+% so that if "off raise;" (or "off lower;") is active things that may be
+% intended to be comments remain treated as such. The various capitalisations
+% detected here actually arise within the Reduce sources (at least until at
+% some stage they are tidied away...)
+         else if nxtsym!* eq '!c!o!m!m!e!n!t or
+                 nxtsym!* eq '!C!O!M!M!E!N!T or
+                 nxtsym!* eq '!C!o!m!m!e!n!t
           then progn(x := read!-comment1 'comment,
                      if !*comment then return x else go to a)
          else if nxtsym!* eq '!% and ttype!*=3
@@ -1081,11 +1109,14 @@ symbolic procedure scan;
          else if nxtsym!* eq '!#endif then go to a
          else if nxtsym!* eq '!#eval then progn(
                      errorset(rread(), !*backtrace, nil),
+                     curescaped!* := (escaped!* := nil),
                      go to a)
          else if nxtsym!* eq '!#define then progn(
                      x := errorset(rread(), !*backtrace, nil),
+                     curescaped!* := (escaped!* := nil),
                      progn(if errorp x then go to a),
                      y := errorset(rread(), !*backtrace, nil),
+                     curescaped!* := (escaped!* := nil),
                      progn(if errorp y then go to a),
                      put(x, 'newnam, y),
                      go to a)
@@ -1102,13 +1133,17 @@ symbolic procedure scan;
          else if nxtsym!* eq !$eof!$ then return filenderr()
          else if car x then go to sw3;
    sw2: cursym!*:=cadr x;
+        curescaped!*:=nil;
         bool := nil;
         if cursym!* eq '!*rpar!* then go to l2
          else return addcomment cursym!*;
    sw3: if bool or null (y:= atsoc(nxtsym!*,car x)) then go to sw2;
         prin2x nxtsym!*;
         x := cdr y;
-        if null car x and cadr x eq '!*Comment!*
+% The next line is a hook for RLISP88 where input of the form
+%    /* .... */ reads in as (!*comment!* "....") so that the comment
+% text can be preserved.
+        if null car x and cadr x eq '!*comment!*
           then progn(comment!* := read!-comment(),go to a);
         go to sw1;
   hh:
@@ -1136,6 +1171,7 @@ symbolic procedure scan;
   conditional:
 % The conditional expression used here must be written in Lisp form
         x := errorset(rread(), !*backtrace, nil);
+        curescaped!* := (escaped!* := nil);
 % errors in evaluation count as NIL
         if null errorp x and car x then go to a;
         x := nil;
@@ -1161,6 +1197,7 @@ symbolic procedure scan;
          else go to skipping;
   delim:
         semic!*:=nxtsym!*;
+        curescaped!* := nil;
         return addcomment '!*semicol!*;
   new:  nxtsym!* := x;
         if stringp x then go to l
@@ -1170,6 +1207,8 @@ symbolic procedure scan;
         prin2x " ";
         prin2x cadr(nxtsym!* := mkquote cadr nxtsym!*);
   l:    cursym!*:=nxtsym!*;
+        curescaped!* := escaped!*;
+        escaped!* := nil;
         nxtsym!* := token();
         if (nxtsym!* eq !$eof!$) and (ttype!* = 3) then return filenderr();
   l2:   if numberp nxtsym!*
@@ -1179,9 +1218,7 @@ symbolic procedure scan;
    end;
 
 symbolic procedure read!-comment1 u;
-   begin scalar !*lower,raise;
-      raise := !*raise;
-      !*raise := nil;
+   begin scalar !*lower,!*raise;
       named!-character!* := nil;
  comm1:
       if named!-character!* or
@@ -1192,9 +1229,30 @@ symbolic procedure read!-comment1 u;
              crchar!* := readch1(),
              go to comm1);
       crchar!* := '! ;
-      !*raise := raise;
       condterpri()
    end;
+
+% The next procedure is adapted from code in RLISP88 for a comment
+% opened with "/*". These leave material in the source.
+
+symbolic procedure read!-comment;
+   begin
+      scalar x,y,z;
+      begin
+         scalar !*raise, !*lower;
+         z := list crchar!*;
+      a: named!-character!* := nil;
+         if (x := readch()) eq '!* and not named!-character!* then
+            if (y := readch()) eq '!/ and not named!-character!* then return
+            else z := y . x . z
+         else if x = !$eof!$ then rederr "EOF encountered in comment"
+         else z := x . z;
+         go to a;
+      end;
+      crchar!* := readch();
+      return list('!*comment!*, list2string reversip z)
+   end;
+
 
 endmodule;
 

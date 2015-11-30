@@ -1,4 +1,4 @@
-module Taylor;
+module taylor;
 
 %****************************************************************
 %
@@ -866,9 +866,9 @@ module Taylor;
 %
 %
 
-create!-package('(Taylor TayIntro TayUtils TayIntrf TayExpnd TayBasic
-                  TaySimp      TaySubst  TayDiff  TayConv     TayPrint
-                  TayFront TayFns TayRevrt TayImpl TayPart),
+create!-package('(taylor tayintro tayutils tayintrf tayexpnd taybasic
+                  taysimp      taysubst  taydiff  tayconv     tayprint
+                  tayfront tayfns tayrevrt tayimpl taypart),
                 '(contrib taylor));
 
 
@@ -878,9 +878,9 @@ create!-package('(Taylor TayIntro TayUtils TayIntrf TayExpnd TayBasic
 %
 %*****************************************************************
 
-fluid  '(Taylor!:version        % version number
-         Taylor!:date!*         % release date
-         TaylorPrintTerms       % Number of terms to be printed
+fluid  '(taylor!:version        % version number
+         taylor!:date!*         % release date
+         taylorprintterms       % Number of terms to be printed
          !*tayexpanding!*
          !*tayinternal!*
          !*tayrestart!*
@@ -889,13 +889,13 @@ fluid  '(Taylor!:version        % version number
          !*taylorautocombine    %   >  see below
          !*taylorprintorder     %  /
          !*trtaylor             % /
-         convert!-Taylor!*
+         convert!-taylor!*
          !*sub2
          !*verboseload);
 
-share TaylorPrintTerms;
+share taylorprintterms;
 
-comment This package has six switches:
+COMMENT This package has six switches:
         `TAYLORKEEPORIGINAL' causes the expression for which the
         expansion is performed to be kept.
         `TAYLORAUTOEXPAND' makes Taylor expressions ``contagious''
@@ -918,9 +918,9 @@ switch taylorautocombine=on,
        trtaylor=off,
        verboseload;
 
-convert!-Taylor!* := nil;      % flag indicating that Taylor kernels
+convert!-taylor!* := nil;      % flag indicating that Taylor kernels
                                % should be converted to prefix forms
-TaylorPrintTerms := 5;         % Only this nubmer of non-zero terms 
+taylorprintterms := 5;         % Only this nubmer of non-zero terms 
                                % will normally be printed.
 %!*taylorkeeporiginal := nil;   % used to indicate if the original
                                % expressions (before the expansion)
@@ -943,36 +943,36 @@ TaylorPrintTerms := 5;         % Only this nubmer of non-zero terms
                                % in progress to indicate that the error
                                % might disappear if the order is
                                % increased.
-Taylor!:version := "2.2e";      % version number of the package
-Taylor!:date!* := "25-Aug-2014"; % release date
+taylor!:version := "2.2e";      % version number of the package
+taylor!:date!* := "25-Aug-2014"; % release date
 
 if !*verboseload then
   << terpri ();
      prin2 "TAYLOR PACKAGE, version ";
-     prin2 Taylor!:version;
+     prin2 taylor!:version;
      prin2 ", as of ";
-     prin2 Taylor!:date!*;
+     prin2 taylor!:date!*;
      prin2t " for REDUCE being loaded...";
      terpri () >> ;
 
 
 
-exports !*tay2f, !*tay2q, !*TayExp2q, copy!-list, cst!-Taylor!*,
-        get!-degree, get!-degreelist, has!-Taylor!*, has!-TayVars,
+exports !*tay2f, !*tay2q, !*TayExp2q, copy!-list, cst!-taylor!*,
+        get!-degree, get!-degreelist, has!-taylor!*, has!-tayvars,
         make!-cst!-coefficient, make!-cst!-coefflis,
-        make!-cst!-powerlist, make!-Taylor!*, multintocoefflist,
-        nzerolist, prepTayExp, resimpcoefflist, resimptaylor,
-        set!-TayCfPl, set!-TayCfSq, set!-TayCoeffList, set!-TayFlags,
-        set!-TayOrig, set!-TayTemplate, subs2coefflist, TayCfPl,
-        TayCfSq, TayCoeffList, TayDegreeSum, TayExp!-difference,
-        TayExp!-greaterp, TayExp!-lessp, TayExp!-max2, TayExp!-min2,
-        TayExp!-minus, TayExp!-minusp, TayExp!-plus, TayExp!-plus2,
-        TayExp!-times, TayExp!-times2, TayFlags, TayFlagsCombine,
-        TayGetCoeff, Taylor!*p, Taylor!-kernel!-sf!-p,
-        Taylor!-kernel!-sq!-p, Taylor!:, TayMakeCoeff, taymincoeff,
-        taymultcoeffs, TayOrig, TayTemplate, TayTpElNext,
-        TayTpElOrder, TayTpElPoint, TayTpElVars, TayVars,
-        TpDegreeList;
+        make!-cst!-powerlist, make!-taylor!*, multintocoefflist,
+        nzerolist, preptayexp, resimpcoefflist, resimptaylor,
+        set!-taycfpl, set!-taycfsq, set!-taycoefflist, set!-tayflags,
+        set!-tayorig, set!-taytemplate, subs2coefflist, taycfpl,
+        taycfsq, taycoefflist, taydegreesum, tayexp!-difference,
+        tayexp!-greaterp, tayexp!-lessp, tayexp!-max2, tayexp!-min2,
+        tayexp!-minus, tayexp!-minusp, tayexp!-plus, tayexp!-plus2,
+        tayexp!-times, tayexp!-times2, tayflags, tayflagscombine,
+        taygetcoeff, taylor!*p, taylor!-kernel!-sf!-p,
+        taylor!-kernel!-sq!-p, taylor!:, taymakecoeff, taymincoeff,
+        taymultcoeffs, tayorig, taytemplate, taytpelnext,
+        taytpelorder, taytpelpoint, taytpelvars, tayvars,
+        tpdegreelist;
 
 imports
 
@@ -1017,98 +1017,98 @@ symbolic inline procedure copy!-list l;
 %*****************************************************************
 
 
-symbolic inline procedure make!-Taylor!* (cflis, tp, orig, flgs);
+symbolic inline procedure make!-taylor!* (cflis, tp, orig, flgs);
   %
   % Builds a new Taylor kernel structure out of its parts.
   %
-  {'Taylor!*, cflis, tp, orig, flgs};
+  {'taylor!*, cflis, tp, orig, flgs};
 
-symbolic inline procedure TayMakeCoeff (u, v);
+symbolic inline procedure taymakecoeff (u, v);
   %
   % Builds a coefficient from degreelist and s.q.
   %
   u . v;
 
 
-comment Selector inlines for the parts of a Taylor kernel;
+COMMENT Selector inlines for the parts of a Taylor kernel;
 
-symbolic inline procedure TayCoeffList u; cadr u;
+symbolic inline procedure taycoefflist u; cadr u;
 
-symbolic inline procedure TayTemplate u; caddr u;
+symbolic inline procedure taytemplate u; caddr u;
 
-symbolic inline procedure TayOrig u; cadddr u;
+symbolic inline procedure tayorig u; cadddr u;
 
-symbolic inline procedure TayFlags u; car cddddr u;
+symbolic inline procedure tayflags u; car cddddr u;
 
-symbolic inline procedure TayCfPl u; car u;
+symbolic inline procedure taycfpl u; car u;
 
-symbolic inline procedure TayCfSq u; cdr u;
+symbolic inline procedure taycfsq u; cdr u;
 
-symbolic inline procedure TayTpVars tp;
+symbolic inline procedure taytpvars tp;
   for each x in tp join copy!-list car x;
 
-symbolic inline procedure TayVars u;
-  TayTpVars TayTemplate u;
+symbolic inline procedure tayvars u;
+  taytpvars taytemplate u;
 
-symbolic inline procedure TayGetCoeff (degrlis, coefflis);
-  (if null cc then nil ./ 1 else TayCfSq cc)
+symbolic inline procedure taygetcoeff (degrlis, coefflis);
+  (if null cc then nil ./ 1 else taycfsq cc)
     where cc := assoc (degrlis, coefflis);
 
-symbolic inline procedure TayTpElVars u; car u;
+symbolic inline procedure taytpelvars u; car u;
 
-symbolic inline procedure TayTpElPoint u; cadr u;
+symbolic inline procedure taytpelpoint u; cadr u;
 
-symbolic inline procedure TayTpElOrder u; caddr u;
+symbolic inline procedure taytpelorder u; caddr u;
 
-symbolic inline procedure TayTpElNext u; cadddr u;
+symbolic inline procedure taytpelnext u; cadddr u;
 
-symbolic inline procedure TpDegreeList tp;
-  for each x in tp collect TayTpElOrder x;
+symbolic inline procedure tpdegreelist tp;
+  for each x in tp collect taytpelorder x;
 
-symbolic inline procedure TpNextList tp;
-  for each x in tp collect TayTpElNext x;
+symbolic inline procedure tpnextlist tp;
+  for each x in tp collect taytpelnext x;
 
 %symbolic inline procedure TayDegreeList u;
 %  TpDegreeList TayTemplate u;
 
-symbolic inline procedure TayDegreeSum u;
-  for each x in TayTemplate u sum TayTpElOrder x;
+symbolic inline procedure taydegreesum u;
+  for each x in taytemplate u sum taytpelorder x;
 
 
-comment Modification inlines;
+COMMENT Modification inlines;
 
-symbolic inline procedure set!-TayCoeffList (u, v);
+symbolic inline procedure set!-taycoefflist (u, v);
   %
   % Sets TayCoeffList part of Taylor kernel u to v
   %
   rplaca (cdr u, v);
 
-symbolic inline procedure set!-TayTemplate (u, v);
+symbolic inline procedure set!-taytemplate (u, v);
   %
   % Sets TayTemplate part of Taylor kernel u to v
   %
   rplaca (cddr u, v);
 
-symbolic inline procedure set!-TayOrig (u, v);
+symbolic inline procedure set!-tayorig (u, v);
   %
   % Sets TayOrig part of Taylor kernel u to v
   %
   rplaca (cdddr u, v);
 
-symbolic inline procedure set!-TayFlags (u, v);
+symbolic inline procedure set!-tayflags (u, v);
   %
   % Sets TayFlags part of Taylor kernel u to v
   %
   rplaca (cddddr u, v);
 
-symbolic inline procedure set!-TayCfPl (u, v);
+symbolic inline procedure set!-taycfpl (u, v);
   rplaca (u, v);
 
-symbolic inline procedure set!-TayCfSq (u, v);
+symbolic inline procedure set!-taycfsq (u, v);
   rplacd (u, v);
 
 
-comment Smacro that implement arithmetic operations on
+COMMENT Smacro that implement arithmetic operations on
         exponents in powerlist;
 
 symbolic inline procedure exponent!-check!-int rn;
@@ -1118,97 +1118,97 @@ symbolic procedure !*TayExp2q u;
    if atom u then !*f2q (if zerop u then nil else u)
     else cdr u;
 
-symbolic procedure !*q2TayExp u;
-   (if null x then confusion '!*q2TayExp
+symbolic procedure !*q2tayexp u;
+   (if null x then confusion '!*q2tayexp
      else exponent!-check!-int car x)
       where x := simprn {mk!*sq u};
 
-symbolic procedure prepTayExp u;
+symbolic procedure preptayexp u;
    if atom u then u else rnprep!: u;
 
-symbolic macro procedure TayExp!-plus x;
+symbolic macro procedure tayexp!-plus x;
    if null cdr x then 0
     else if null cddr x then cadr x
-    else expand(cdr x,'TayExp!-plus2);   
+    else expand(cdr x,'tayexp!-plus2);   
 
-symbolic procedure TayExp!-plus2(e1,e2);
+symbolic procedure tayexp!-plus2(e1,e2);
    if atom e1 and atom e2 then e1+e2
     else exponent!-check!-int(
            if atom e1 then rnplus!:(!*i2rn e1,e2)
             else if atom e2 then rnplus!:(e1,!*i2rn e2)
             else rnplus!:(e1,e2));
 
-symbolic procedure TayExp!-difference(e1,e2);
+symbolic procedure tayexp!-difference(e1,e2);
    if atom e1 and atom e2 then e1-e2
     else exponent!-check!-int(
            if atom e1 then rndifference!:(!*i2rn e1,e2)
             else if atom e2 then rndifference!:(e1,!*i2rn e2)
             else rndifference!:(e1,e2));
 
-symbolic procedure TayExp!-minus e;
+symbolic procedure tayexp!-minus e;
    if atom e then -e else rnminus!: e;
 
-symbolic macro procedure TayExp!-times x;
+symbolic macro procedure tayexp!-times x;
    if null cdr x then 1
     else if null cddr x then cadr x
-    else expand(cdr x,'TayExp!-times2);   
+    else expand(cdr x,'tayexp!-times2);   
 
-symbolic procedure TayExp!-times2(e1,e2);
+symbolic procedure tayexp!-times2(e1,e2);
    if atom e1 and atom e2 then e1*e2
     else exponent!-check!-int(
            if atom e1 then rntimes!:(!*i2rn e1,e2)
             else if atom e2 then rntimes!:(e1,!*i2rn e2)
             else rntimes!:(e1,e2));
 
-symbolic procedure TayExp!-quotient(u,v);
+symbolic procedure tayexp!-quotient(u,v);
    exponent!-check!-int
      rnquotient!:(if atom u then !*i2rn u else u,
                   if atom v then !*i2rn v else v);
 
-symbolic procedure TayExp!-minusp e;
+symbolic procedure tayexp!-minusp e;
    if atom e then minusp e
     else rnminusp!: e;
 
-symbolic procedure TayExp!-greaterp(a,b);
-   TayExp!-lessp(b,a);
+symbolic procedure tayexp!-greaterp(a,b);
+   tayexp!-lessp(b,a);
 
-symbolic macro procedure TayExp!-geq x;
-   {'not,'TayExp!-lessp . cdr x};
+symbolic macro procedure tayexp!-geq x;
+   {'not,'tayexp!-lessp . cdr x};
 
-symbolic procedure TayExp!-lessp(e1,e2);
+symbolic procedure tayexp!-lessp(e1,e2);
    if atom e1 and atom e2 then e1<e2
-    else !:minusp TayExp!-difference(e1,e2);
+    else !:minusp tayexp!-difference(e1,e2);
 
-symbolic macro procedure TayExp!-leq x;
-   {'not,'TayExp!-greaterp . cdr x};
+symbolic macro procedure tayexp!-leq x;
+   {'not,'tayexp!-greaterp . cdr x};
 
-symbolic procedure TayExp!-max2(e1,e2);
-   if TayExp!-lessp(e1,e2) then e2 else e1;
+symbolic procedure tayexp!-max2(e1,e2);
+   if tayexp!-lessp(e1,e2) then e2 else e1;
 
-symbolic procedure TayExp!-min2(e1,e2);
-   if TayExp!-lessp(e1,e2) then e1 else e2;
+symbolic procedure tayexp!-min2(e1,e2);
+   if tayexp!-lessp(e1,e2) then e1 else e2;
 
-symbolic macro procedure Taylor!: u;
-   sublis('((plus . TayExp!-plus)
-            (plus2 . TayExp!-plus2)
-            (difference . TayExp!-difference)
-            (minus . TayExp!-minus)
-            (times . TayExp!-times)
-            (times2 . TayExp!-times2)
-            (minusp . TayExp!-minusp)
-            (greaterp . TayExp!-greaterp)
-            (geq . TayExp!-geq)
-            (lessp . TayExp!-lessp)
-            (leq . TayExp!-leq)
-            (max2 . TayExp!-max2)
-            (min2 . TayExp!-min2)),
+symbolic macro procedure taylor!: u;
+   sublis('((plus . tayexp!-plus)
+            (plus2 . tayexp!-plus2)
+            (difference . tayexp!-difference)
+            (minus . tayexp!-minus)
+            (times . tayexp!-times)
+            (times2 . tayexp!-times2)
+            (minusp . tayexp!-minusp)
+            (greaterp . tayexp!-greaterp)
+            (geq . tayexp!-geq)
+            (lessp . tayexp!-lessp)
+            (leq . tayexp!-leq)
+            (max2 . tayexp!-max2)
+            (min2 . tayexp!-min2)),
           cadr u);
            
 
 
-comment Smacros and procedures that are commonly used ;
+COMMENT Smacros and procedures that are commonly used ;
 
-symbolic inline procedure TayFlagsCombine (u, v);
+symbolic inline procedure tayflagscombine (u, v);
   %
   % Not much for now
   %
@@ -1218,13 +1218,13 @@ symbolic inline procedure get!-degree dg;
   %
   % Procedure to handle degree parts of Taylor kernels.
   %
-  Taylor!: for each n in dg sum n;
+  taylor!: for each n in dg sum n;
 
 symbolic inline procedure get!-degreelist dgl;
    for each dg in dgl collect get!-degree dg;
 
 symbolic inline procedure invert!-powerlist pl;
-   Taylor!:
+   taylor!:
      for each nl in pl collect
        for each p in nl collect -p;
 
@@ -1236,11 +1236,11 @@ symbolic inline procedure taymultcoeffs (c1, c2);
   % both are of the form (TayPowerList . s.q.)
   % so generate an appropriate degreelist by adding the degrees.
   %
-  TayMakeCoeff (add!-degrees (TayCfPl c1, TayCfPl c2),
-                multsq (TayCfSq c1, TayCfSq c2));
+  taymakecoeff (add!-degrees (taycfpl c1, taycfpl c2),
+                multsq (taycfsq c1, taycfsq c2));
 
 symbolic inline procedure prune!-coefflist(cflist);
-   <<while not null cflis and null numr TayCfSq car cflis
+   <<while not null cflis and null numr taycfsq car cflis
        do cflis := cdr cflis;
      cflis>> where cflis := cflist;
 
@@ -1251,16 +1251,16 @@ symbolic inline procedure multintocoefflist(coefflis,sq);
   % Multiplies each coefficient in coefflis by the s.q. sq.
   %
   for each p in coefflis collect
-    TayMakeCoeff(TayCfPl p,resimp subs2!* multsq(TayCfSq p,sq));
+    taymakecoeff(taycfpl p,resimp subs2!* multsq(taycfsq p,sq));
 
 symbolic inline procedure subs2coefflist clist;
   for each pp in clist join
-    ((if not null numr sq then {TayMakeCoeff(TayCfPl pp,sq)})
-     where sq := subs2!* TayCfSq pp);
+    ((if not null numr sq then {taymakecoeff(taycfpl pp,sq)})
+     where sq := subs2!* taycfsq pp);
 
 symbolic inline procedure resimpcoefflist clist;
   for each cc in clist collect
-    TayMakeCoeff(TayCfPl cc,subs2 resimp TayCfSq cc);
+    taymakecoeff(taycfpl cc,subs2 resimp taycfsq cc);
 
 symbolic inline procedure resimptaylor u;
   %
@@ -1269,12 +1269,12 @@ symbolic inline procedure resimptaylor u;
   % u is a Taylor kernel, value is the Taylor kernel
   % with coefficients and TayOrig part resimplified
   %
-  make!-Taylor!* (
-         resimpcoefflist TayCoeffList u,
-         TayTemplate u,
-         if !*taylorkeeporiginal and TayOrig u
-           then resimp TayOrig u else nil,
-         TayFlags u);
+  make!-taylor!* (
+         resimpcoefflist taycoefflist u,
+         taytemplate u,
+         if !*taylorkeeporiginal and tayorig u
+           then resimp tayorig u else nil,
+         tayflags u);
 
 symbolic inline procedure make!-cst!-powerlist tp;
   %
@@ -1283,7 +1283,7 @@ symbolic inline procedure make!-cst!-powerlist tp;
   % Generates a powerlist for the constant coefficient
   % according to template tp
   %
-  for each el in tp collect nzerolist length TayTpElVars el;
+  for each el in tp collect nzerolist length taytpelvars el;
 
 symbolic inline procedure make!-cst!-coefficient (cst, tp);
   %
@@ -1292,7 +1292,7 @@ symbolic inline procedure make!-cst!-coefficient (cst, tp);
   % Generates the constant coefficient cst
   % according to Taylor template tp
   %
-  TayMakeCoeff (make!-cst!-powerlist tp, cst);
+  taymakecoeff (make!-cst!-powerlist tp, cst);
 
 symbolic inline procedure make!-cst!-coefflis (cst, tp);
   %
@@ -1303,66 +1303,66 @@ symbolic inline procedure make!-cst!-coefflis (cst, tp);
   %
   {make!-cst!-coefficient (cst, tp)};
 
-symbolic inline procedure cst!-Taylor!* (cst, tp);
+symbolic inline procedure cst!-taylor!* (cst, tp);
   %
   % (s.q., TayTemplate) -> TaylorKernel
   %
   % generates a Taylor kernel with template tp for the constant cst.
   %
-  make!-Taylor!* (
+  make!-taylor!* (
      make!-cst!-coefflis (cst, tp), tp, cst, nil);
 
 
-comment Predicates;
+COMMENT Predicates;
 
-symbolic inline procedure has!-Taylor!* u;
+symbolic inline procedure has!-taylor!* u;
   %
   % (Any) -> Boolean
   %
   % checks if an expression u contains a Taylor kernel
   %
-  smember ('Taylor!*, u);
+  smember ('taylor!*, u);
 
-symbolic inline procedure Taylor!*p u;
+symbolic inline procedure taylor!*p u;
   %
   % (Kernel) -> Boolean
   %
   % checks if kernel u is a Taylor kernel
   %
-  eqcar (u, 'Taylor!*);
+  eqcar (u, 'taylor!*);
 
-symbolic inline procedure Taylor!-kernel!-sf!-p u;
+symbolic inline procedure taylor!-kernel!-sf!-p u;
   %
   % (s.f.) -> Boolean
   %
   % checks if s.f. u is a Taylor kernel
   %
   not domainp u and null red u and lc u = 1
-     and ldeg u = 1 and Taylor!*p mvar u;
+     and ldeg u = 1 and taylor!*p mvar u;
 
-symbolic inline procedure Taylor!-kernel!-sq!-p u;
+symbolic inline procedure taylor!-kernel!-sq!-p u;
   %
   % u is a standard quotient,
   % returns t if it is simply a Taylor kernel
   %
-  kernp u and Taylor!*p mvar numr u;
+  kernp u and taylor!*p mvar numr u;
 
-symbolic inline procedure has!-TayVars(tay,ex);
+symbolic inline procedure has!-tayvars(tay,ex);
    %
    % Checks whether ex contains any of the Taylor variables
    %  of Taylor kernel tay.
    %
-   smemberlp(TayVars tay,ex);
+   smemberlp(tayvars tay,ex);
 
-symbolic procedure Taylor!*!-zerop tay;
-   TayCoeffList!-zerop TayCoefflist tay;
+symbolic procedure taylor!*!-zerop tay;
+   taycoefflist!-zerop taycoefflist tay;
 
-symbolic procedure TayCoeffList!-zerop tcl;
+symbolic procedure taycoefflist!-zerop tcl;
    null tcl
-     or null numr TayCfSq car tcl and TayCoeffList!-zerop cdr tcl;
+     or null numr taycfsq car tcl and taycoefflist!-zerop cdr tcl;
 
 
-comment inlines for the generation of unique Taylor kernels;
+COMMENT inlines for the generation of unique Taylor kernels;
 
 symbolic inline procedure !*tay2f u;
   !*p2f mksp (u, 1);
@@ -1371,12 +1371,12 @@ symbolic inline procedure !*tay2q u;
   !*p2q mksp (u, 1);
 
 
-comment some procedures for tracing;
+COMMENT some procedures for tracing;
 
-symbolic smacro procedure Taylor!-trace u;
+symbolic smacro procedure taylor!-trace u;
    if !*trtaylor then lpri("Taylor: " . if u and atom u then list u else u);
 
-symbolic smacro procedure Taylor!-trace!-mprint u;
+symbolic smacro procedure taylor!-trace!-mprint u;
    if !*trtaylor then mathprint u;
 
 endmodule;

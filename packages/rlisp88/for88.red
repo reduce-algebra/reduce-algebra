@@ -32,7 +32,7 @@ global '(forkeywords!*);
 
 flag('(fastfor),'switch);     % Since switch may not yet be defined.
 
-Comment The FOR statement defined here has a very rich syntax with many
+COMMENT The FOR statement defined here has a very rich syntax with many
 different options. The parsing and macro expansion are under the control
 of keywords that are activated during parsing once FOR has been read.
 The keywords are deactivated at the end of the FOR statement, enabling
@@ -44,7 +44,7 @@ forloops!*;
 
 deflist('((all forallstat)),'forloops!*);
 
-Comment
+COMMENT
 Keywords are defined by their presence in the global list FORKEYWORDS!*.
 For each keyword, a parsing construct is also defined under the
 indicator FOR-KEYWORD.
@@ -62,7 +62,7 @@ forkeywords!* := '(collect count do each every finally in initially
 
 remflag(forkeywords!*,'delim);    % For bootstrapping purposes.
 
-Comment some of the keywords denote actions (e.g., PRODUCT, SUM) with
+COMMENT some of the keywords denote actions (e.g., PRODUCT, SUM) with
 which a binary function is associated. To associate such a function with
 an action, one says;
 

@@ -1,4 +1,4 @@
-comment factorizer test file;
+COMMENT factorizer test file;
 
 array a(20);
 
@@ -8,7 +8,7 @@ algebraic procedure test(prob,nfac);
   begin integer m; scalar p,q,r;
     scalar basetime;
     p := for i:=1:nfac product a(i);
-    Write "Problem number ",prob;
+    write "Problem number ",prob;
     symbolic (basetime := time());
     r := factorize p;
     symbolic (basetime := time() - basetime);

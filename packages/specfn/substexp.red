@@ -32,7 +32,7 @@ depend f,!~k;
 
 operator pssubst;
 
-operator a,Pproduct;
+operator a,pproduct;
 
 subst_rules :=
 
@@ -69,23 +69,23 @@ spec_pochhammer :=
      prod((repart(z) + (j - 1))^2 + (impart(z))^2,j,1,k)
         when not(impart(z) = 0) and z = conj cz,
   Pochhammer(~k,~n) => 1 when n=0,
-  Pochhammer(~k,~n) => Pproduct (k,n) when fixp n,
-  Pproduct (~k,~ii) => 1 when ii =0,
-  Pproduct (~k,~ii) => (k + ii - 1) * Pproduct (k,ii -1)}$
+  Pochhammer(~k,~n) => pproduct (k,n) when fixp n,
+  pproduct (~k,~ii) => 1 when ii =0,
+  pproduct (~k,~ii) => (k + ii - 1) * pproduct (k,ii -1)}$
 
 spec_factorial :=
 
-{ Factorial (~n) // Factorial (~n+1) => 1/(n+1),
-  Factorial (~n) * Factorial (~n) // Factorial (~n+1) =>
-                                Factorial (n)/(n+1),
-  Factorial (~n+1) // Factorial (~n) => (n+1),
-  Factorial (~n+1) * Factorial (~n+1) // Factorial (~n) =>
-                                (n+1) * Factorial (~n+1),
-  (~otto ^(~k)) * Factorial (~n) // Factorial (~n +1) => otto^k  /(n+1),
-  (~otto ^(~k)) * Factorial (~n+1) // Factorial (~n) =>  otto^k * (n+1),
-  (~otto ^~k) * ~hugo * Factorial (~n) // Factorial (~n +1) =>
+{ factorial (~n) // factorial (~n+1) => 1/(n+1),
+  factorial (~n) * factorial (~n) // factorial (~n+1) =>
+                                factorial (n)/(n+1),
+  factorial (~n+1) // factorial (~n) => (n+1),
+  factorial (~n+1) * factorial (~n+1) // factorial (~n) =>
+                                (n+1) * factorial (~n+1),
+  (~otto ^(~k)) * factorial (~n) // factorial (~n +1) => otto^k  /(n+1),
+  (~otto ^(~k)) * factorial (~n+1) // factorial (~n) =>  otto^k * (n+1),
+  (~otto ^~k) * ~hugo * factorial (~n) // factorial (~n +1) =>
       otto^k * hugo/(n+1),
-  (~otto ^~k) * ~hugo * Factorial (~n+1) // Factorial (~n) =>
+  (~otto ^~k) * ~hugo * factorial (~n+1) // factorial (~n) =>
       otto^k * hugo *(n+1)}$
 
 endmodule;

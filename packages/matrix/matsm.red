@@ -72,8 +72,11 @@ symbolic procedure matsm1 u;
          else if flagp(caar u,'matmapfn) and cdar u
             and getrtype cadar u eq 'matrix
           then x := matsm matrixmap(car u,nil)
+         else if (x := get(caar u,'psopfn))
+	 then <<x := lispapply(x,list cdar u); 
+                if eqcar(x,'mat) then x := matsm x>>
          else <<x := lispapply(caar u,cdar u);
-          if eqcar(x,'mat) then x := matsm x>>;
+                if eqcar(x,'mat) then x := matsm x>>;
     b:  z := if null z then x
               else if null cdr z and null cdar z then multsm(caar z,x)
               else multm(x,z);

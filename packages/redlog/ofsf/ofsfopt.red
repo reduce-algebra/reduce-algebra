@@ -115,7 +115,7 @@ procedure ofsf_opt(cl,targ,parml,nproc);
    begin scalar svrlqedfs,w;
       if !*rlqeheu then <<
 	 svrlqedfs := !*rlqedfs;
-	 !*rlqedfs := T
+	 !*rlqedfs := t
       >>;
       w := ofsf_opt0(cl,targ,parml,nproc);
       if !*rlqeheu then
@@ -270,7 +270,7 @@ procedure ofsf_optgauss(cvl,al,pl,an,theo);
       >>;
       if w then <<
 	 if !*rlverbose and not !*rlparallel then ioto_prin2 "g";
-	 return T . ofsf_esetsubst(cvl,al,pl,an,v,{w},theo)
+	 return t . ofsf_esetsubst(cvl,al,pl,an,v,{w},theo)
       >>
    end;
 
@@ -312,7 +312,7 @@ procedure ofsf_esetsubst(cvl,al,pl,an,v,eset,theo);
 	    junct := 'break;
 	    eset := nil
 	 >> else if null nal then <<
-	    zonly := T;
+	    zonly := t;
 	    scpl := pl;
 	    while scpl do <<
 	       w := ofsf_varlat car scpl;
@@ -348,7 +348,7 @@ procedure ofsf_zesetsubst(cvl,al,pl,an,zeset,theo);
 	    junct := 'break;
 	    zeset := nil
 	 >> else if null nal then <<
-	    zonly := T;
+	    zonly := t;
 	    scpl := pl;
 	    while scpl do <<
 	       w := ofsf_varlat car scpl;

@@ -152,7 +152,8 @@ put('pasf,'rl_params,'(
    (rl_b2atl!* . pasf_b2atl)
    (rl_bsatp!* . pasf_bsatp)
    (rl_structat!* . pasf_structat)
-   (rl_rxffn!* . pasf_rxffn)));
+   (rl_rxffn!* . pasf_rxffn)
+   (rl_smt2ReadAt!* . pasf_smt2ReadAt)));
 
 % Services
 put('pasf,'rl_services,'(

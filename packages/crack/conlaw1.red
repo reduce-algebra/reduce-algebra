@@ -93,7 +93,7 @@ begin
   %--- Here comes a test that lhs's are properly chosen
   chksub(eqlist,ulist)$
   eqlist:=sqreverse for each e1 in eqlist collect 
-          if part(e1,0)=EQUAL then lhs e1 - rhs e1 
+          if part(e1,0)=equal then lhs e1 - rhs e1 
                               else e1;
 
   if contrace then write"ulist=",ulist,"    eqlist=",eqlist;
@@ -225,7 +225,7 @@ begin
       %--- the conserved current pl and the condition condi
       if not flist then fl:={}
                    else fl:=flist;
-      deplist:=lisp(cons('LIST,setdiff(cdr ulist,cdr nodep))) . 
+      deplist:=lisp(cons('list,setdiff(cdr ulist,cdr nodep))) . 
                for n:=1:highdensord collect 
                listdifdif2(nodep,sqpart(dulist,n+1));
       deplist1:=for h3:=1:(densord+1) collect sqpart(deplist,h3);
@@ -304,7 +304,7 @@ begin
           h5:=h5+1;
           h3:=comparedif2(caar h1, cadar h1, reval algebraic e1);
           if (h3 neq nil) and (h3 neq 0) then algebraic <<
-            h3:=lisp(cons('LIST,h3));
+            h3:=lisp(cons('list,h3));
             dequ:=lisp caddar h1; % rhs which is to be differentiated
             for each n in h3 do dequ:=totdif(dequ,sqpart(xlist,n),n,dulist);
             % new highest derivatives should be added to vl afterwards
@@ -352,7 +352,7 @@ begin
       condi:={condi};
 
       if (not lisp(null get('cl_condi,'avalue))) and
-         (part(cl_condi,0)=LIST) then 
+         (part(cl_condi,0)=list) then 
       condi:=sqappend(condi,cl_condi)$
 
       %--- freeing some space
@@ -520,7 +520,7 @@ begin
               if h4 then <<
                 for each e1 in h2 do 
                 if fargs e1 neq {} then lisp <<
-                  nonconstc:=cons('LIST,cons(reval e1,cdr nonconstc));
+                  nonconstc:=cons('list,cons(reval e1,cdr nonconstc));
                   write reval e1," = "$
                   fctprint list reval e1$
                   write" is not constant.";

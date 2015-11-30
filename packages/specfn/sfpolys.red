@@ -40,18 +40,18 @@ fluid '(powlis1!*);
 algebraic operator bernoullip;
 
 algebraic <<
-Let {   BernoulliP (~n,0) => Bernoulli n     when fixp n and n >=0,
-        BernoulliP (~n,~x) => (for k:=0:n sum (binomial(n,k) *
-                         Bernoulli(k) * x^(n-k)))
+let {   bernoullip (~n,0) => bernoulli n     when fixp n and n >=0,
+        bernoullip (~n,~x) => (for k:=0:n sum (binomial(n,k) *
+                         bernoulli(k) * x^(n-k)))
                                           when fixp n and n >=0} >>;
 
 % Euler Polynomials (see e.g. Abramowitz Stegun , chapter 23
 
-algebraic operator EulerP ;
+algebraic operator eulerp ;
 
 algebraic <<
-Let {   EulerP (~n,1/2) => Euler(n)/2^n when fixp n and n >=0,
-        EulerP (~n,~x) => (for k:=0:n sum (binomial(n,k) *
+let {   eulerp (~n,1/2) => Euler(n)/2^n when fixp n and n >=0,
+        eulerp (~n,~x) => (for k:=0:n sum (binomial(n,k) *
                          Euler(k)/2^k * (x -1/2)^(n-k)))
                                     when fixp n and n >=0}
 >>;
@@ -103,17 +103,17 @@ algebraic procedure hermite_base1(x,n,base,r);
         (2x*first base - 2r*second base)
               . base, r+1);
 
-algebraic procedure chebyshev_base_T(x,n);
-     chebyshev_base_T1(x,n,{x,1},1);
+algebraic procedure chebyshev_base_t(x,n);
+     chebyshev_base_t1(x,n,{x,1},1);
 
-algebraic procedure chebyshev_base_T1(x,n,base,r);
+algebraic procedure chebyshev_base_t1(x,n,base,r);
      if r>=n then reverse base else
-     chebyshev_base_T1(x,n,
+     chebyshev_base_t1(x,n,
         (2x*first base - second base )
               . base, r+1);
 
-algebraic procedure chebyshev_base_U(x,n);
-     chebyshev_base_T1(x,n,{2x,1},1);
+algebraic procedure chebyshev_base_u(x,n);
+     chebyshev_base_t1(x,n,{2x,1},1);
 
 algebraic procedure gegenbauer_base1(x,n,base,r,a);
      if r>=n then reverse base else
@@ -127,40 +127,40 @@ algebraic procedure gegenbauer_base(x,n,a);
 
 algebraic <<
 
-operator HERMITEP,JACOBIP,LEGENDREP,LEGENDREQ, !~f,
-         LAGUERREP,CHEBYSHEVT,CHEBYSHEVU,gegenbauerP;
+operator HermiteP,JacobiP,LegendreP,LegendreQ, !~f,
+         LaguerreP,ChebyshevT,ChebyshevU,GegenbauerP;
 
 let limit(~f(~n,~x),~x,~lim) => f(n,lim) when freeof (lim,infinity)
-       and member (f,{LEGENDREP,CHEBYSHEVT,CHEBYSHEVU,Hermitep,
-              laguerreP,BernoulliP,EulerP,LaguerreP});
+       and member (f,{LegendreP,ChebyshevT,ChebyshevU,HermiteP,
+              LaguerreP,bernoullip,eulerp,LaguerreP});
 
 let limit(~f(~n,~m,~x),~x,~lim) => f(n,m,lim) when freeof (lim,infinity)
-         and member (f,{LEGENDREP,LegendreQ,gegenbauerP,laguerreP});
+         and member (f,{LegendreP,LegendreQ,GegenbauerP,LaguerreP});
 
 let limit(~f(~n,~m,~mm,~x),~x,~lim) => f(n,m,mm,lim)
       when freeof (lim,infinity) and member (f,{JacobiP});
 
 let { % AS (22.4)
-LegendreP(~n,0,0) => cos(n*Pi/2)*factorial(n)/(2^n*(factorial(n/2))^2),
+LegendreP(~n,0,0) => cos(n*pi/2)*factorial(n)/(2^n*(factorial(n/2))^2),
 % AS (8.6.1)
 LegendreP(~n,~m,0) =>
-        2^m/sqrt(Pi)*cos((n+m)*Pi/2)*GAMMA((n+m+1)/2)/GAMMA((n-m+2)/2),
+        2^m/sqrt(pi)*cos((n+m)*pi/2)*gamma((n+m+1)/2)/gamma((n-m+2)/2),
 % AS (8.6.2)
 LegendreQ(~n,~m,0) =>
-        2^(m-1)/sqrt(Pi)*sin((n+m)*Pi/2)*GAMMA((n+m+1)/2)
-          /GAMMA((n-m+2)/2),
+        2^(m-1)/sqrt(pi)*sin((n+m)*pi/2)*gamma((n+m+1)/2)
+          /gamma((n-m+2)/2),
 % AS (8.6.1)
 LegendreP(~n,0) =>
-        1/sqrt(Pi)*cos((n)*Pi/2)*GAMMA((n+1)/2)/GAMMA((n+2)/2),
+        1/sqrt(pi)*cos((n)*pi/2)*gamma((n+1)/2)/gamma((n+2)/2),
 LegendreP(~n,1) => 1,
 LegendreP(~n,-1) => (-1)^n,
 
 % AS (22.4)
-GegenbauerP(~n,0,0) => 2*cos(n*Pi/2)/n,
-GegenbauerP(~n,~a,0)=> cos(n*Pi/2)*GAMMA(a+n/2)
-                                /(GAMMA(a)*factorial(n/2)),
-ChebyshevT(~n,0) => cos(n*Pi/2),
-ChebyshevU(~n,0) => cos(n*Pi/2),
+GegenbauerP(~n,0,0) => 2*cos(n*pi/2)/n,
+GegenbauerP(~n,~a,0)=> cos(n*pi/2)*gamma(a+n/2)
+                                /(gamma(a)*factorial(n/2)),
+ChebyshevT(~n,0) => cos(n*pi/2),
+ChebyshevU(~n,0) => cos(n*pi/2),
 ChebyshevT(~n,1) => 1,
 ChebyshevU(~n,1) => n + 1 ,
 ChebyshevT(~n,-1) => (-1)^n,
@@ -169,9 +169,9 @@ ChebyshevU(~n,-1) => (n+1)* (-1)^n,
 LaguerreP(~n,~a,0) => binomial(n+a,n),
 LaguerreP(~n,0) => 1,
 LaguerreP(0,~x) => 1,
-HermiteP(~n,0) => cos(n*Pi/2)*factorial(n)/factorial(n/2) }$
+HermiteP(~n,0) => cos(n*pi/2)*factorial(n)/factorial(n/2) }$
 
-let  {  hermitep (~n,~x)=> (begin scalar b1,b2,bex,r;
+let  {  HermiteP (~n,~x)=> (begin scalar b1,b2,bex,r;
                                 r := 1; b1 := 2x; b2 := 1;
                                 for i:= 1:(n-1) do <<
                                 bex := 2x*b1 - 2*r*b2;
@@ -183,14 +183,14 @@ let  {  hermitep (~n,~x)=> (begin scalar b1,b2,bex,r;
     %       (factorial n * for ii:=0:floor(n/2) sum ((-1)^ii/(factorial ii *
     %     factorial(n -2ii)) * (2*x)^(n-2ii)))
     %               when fixp n and n > 0 and lisp !*rounded,
-     hermitep (~n,~x)=> (begin scalar k,tmp,result,Ratio,oldslash,
+     HermiteP (~n,~x)=> (begin scalar k,tmp,result,ratio,oldslash,
                                       powlis1!*;
                         lisp setq(oldslash,remprop('slash,'opmtch));
                           % tmp:=subs(k=0,term);
                           tmp:=(2*x)**n;
                           result:=tmp;
                           % Ratio:=ratio(term,k);
-                          Ratio:=-1/4/(k+1)*(n-2*k)*(n-2*k-1)/x**2;
+                          ratio:=-1/4/(k+1)*(n-2*k)*(n-2*k-1)/x**2;
                           for k:=0:n/2 do
                           <<
                           % tmp:=tmp*Ratio;
@@ -201,18 +201,18 @@ let  {  hermitep (~n,~x)=> (begin scalar b1,b2,bex,r;
                           return(result);
                         end)
                        when fixp n and n > 0 ,
-     hermitep (0,~x)=> 1};
+     HermiteP (0,~x)=> 1};
 
-let{ legendreP (~n,~x) =>
+let{ LegendreP (~n,~x) =>
         %       (1/2^n * for ii:=0:floor(n/2) sum (binomial(n,ii) *
         %          binomial(2n-2ii,n)*(-1)^ii *x^(n-2ii)))
         (begin
-        scalar k,tmp,result,Ratio,oldslash,powlis1!*;
+        scalar k,tmp,result,ratio,oldslash,powlis1!*;
          lisp setq(oldslash,remprop('slash,'opmtch));
          tmp:=2**(-n)*factorial(2*n)/factorial(n)**2*x**n;
          result:=tmp;
          % Ratio:=ratio(term,k);
-         Ratio:=-1/2/x**2*(n-2*k-1)*(n-2*k)/(k+1)/(2*n-2*k-1);
+         ratio:=-1/2/x**2*(n-2*k-1)*(n-2*k)/(k+1)/(2*n-2*k-1);
          for k:=0:n/2 do
          <<
          % tmp:=tmp*eval(Ratio);
@@ -223,27 +223,27 @@ let{ legendreP (~n,~x) =>
          return(result);
          end) when fixp n and n > 0,
 
-     legendreP (~n,~m,~x) => (-1)^m *(1-x^2)^(m/2)*
-                                sub(!=z = x,df(legendreP (n,!=z),!=z,m))
+     LegendreP (~n,~m,~x) => (-1)^m *(1-x^2)^(m/2)*
+                                sub(!=z = x,df(LegendreP (n,!=z),!=z,m))
                         when fixp n and n > 0 and fixp m and m > 0,
-     jacobiP (~n,~a,~b,~x) =>
+     JacobiP (~n,~a,~b,~x) =>
             (1/2^n * for ii:=0:n sum (binomial(n+a,ii) *
                 binomial(n+b,n-ii)*(x-1)^(n-ii)*(x+1)^ii))
                 when fixp n and n > 0 and numberp a and a > -1
                 and numberp b and b > -1,
-     jacobiP (~n,~a,~b,~x) => sub(!=z = x
+     JacobiP (~n,~a,~b,~x) => sub(!=z = x
                         ,first reverse legendre_base (!=z,n,a,b))
                         when fixp n and n > 0,
-     legendreP (0,~x) => 1,
-     legendreP (0,0,~x) => 1,
-     jacobiP (0,~a,~b,~x) => 1};
+     LegendreP (0,~x) => 1,
+     LegendreP (0,0,~x) => 1,
+     JacobiP (0,~a,~b,~x) => 1};
 
-let{ laguerreP(~n,~x) =>  laguerreP(~n,0,~x) when fixp n and n > 0,
+let{ LaguerreP(~n,~x) =>  LaguerreP(~n,0,~x) when fixp n and n > 0,
         %  (for ii:=0:n sum (binomial(n,n-ii) *
         %        (-1)^ii/factorial ii *x^(ii)))
         %               when fixp n and n > 0,
 
-     laguerreP(~n,~alpha,~x) => (begin scalar b1,b2,bex,r;
+     LaguerreP(~n,~alpha,~x) => (begin scalar b1,b2,bex,r;
                                 r := 1; b1 := 1-x+alpha; b2 := 1;
                                 for i:= 1:(n-1) do <<
                                 bex := (1+2r-x+alpha)/(r+1)*b1 -
@@ -253,11 +253,11 @@ let{ laguerreP(~n,~x) =>  laguerreP(~n,0,~x) when fixp n and n > 0,
                                 return b1; end)
                 when fixp n and n > 0 and numberp alpha and numberp x ,
 
-     laguerreP(~n,~alpha,~x) =>
+     LaguerreP(~n,~alpha,~x) =>
         %  (for ii:=0:n sum (binomial(n+alpha,n-ii) *
         %        (-1)^ii/factorial ii *x^(ii)))
         %               when fixp n and n > 0,
-        (begin scalar k,tmp,result,Ratio,oldslash,powlis1!*;
+        (begin scalar k,tmp,result,ratio,oldslash,powlis1!*;
           lisp setq(oldslash,remprop('slash,'opmtch));
           % tmp:=subs(k=0,term);
           if n=0 then return(1);
@@ -265,7 +265,7 @@ let{ laguerreP(~n,~x) =>  laguerreP(~n,0,~x) when fixp n and n > 0,
           % tmp:=prod(j+alpha,j,1,n)/factorial(n);
           result:=tmp;
           % Ratio:=ratio(term,k);
-          Ratio:=-1/(alpha+k+1)*(n-k)*x/(k+1);
+          ratio:=-1/(alpha+k+1)*(n-k)*x/(k+1);
           for k:=0:n do
           <<
           % tmp:=tmp*Ratio;
@@ -276,13 +276,13 @@ let{ laguerreP(~n,~x) =>  laguerreP(~n,0,~x) when fixp n and n > 0,
           return(result);
           end)  when fixp n and n > 0,
 
-     laguerreP(0,~a,~x) => 1};
+     LaguerreP(0,~a,~x) => 1};
 
-let {chebyshevT (~n,~x) =>
+let {ChebyshevT (~n,~x) =>
         %(n/2*for ii:=0:floor(n/2) sum ((-1)^ii*factorial (n-ii-1) /
         %   (factorial(ii) *factorial(n -2ii))* (2*x)^(n-2ii)))
         (begin
-        scalar k,tmp,result,Ratio,oldslash,powlis1!*;
+        scalar k,tmp,result,ratio,oldslash,powlis1!*;
           lisp setq(oldslash,remprop('slash,'opmtch));
           if n=0 then return(1);
           if n=1 then return(x);
@@ -290,7 +290,7 @@ let {chebyshevT (~n,~x) =>
           tmp:=2**(n-1)*x**n;
           result:=tmp;
           % Ratio:=ratio(term,k);
-          Ratio:=-1/4*(n-2*k)*(n-2*k-1)/x**2/(n-k-1)/(k+1);
+          ratio:=-1/4*(n-2*k)*(n-2*k-1)/x**2/(n-k-1)/(k+1);
           for k:=0:n/2-1 do
           <<
           % tmp:=tmp*eval(Ratio);
@@ -301,27 +301,27 @@ let {chebyshevT (~n,~x) =>
           return(result);
         end) when fixp n and n > 0 and not numberp x,
 
-        chebyshevT (~n,~x) =>
+        ChebyshevT (~n,~x) =>
          (begin
            if n=0 then return(1) else if n=1 then return(x) else
            if (floor(n/2)=n/2) then return(2*ChebyshevT(n/2,x)^2-1)
            else return(2*ChebyshevT((n-1)/2,x)*ChebyshevT((n+1)/2,x)-x)
           end) when fixp n and n > 0 and numberp x,
 
-     chebyshevT (0,~x) => 1};
+     ChebyshevT (0,~x) => 1};
 
-let {chebyshevU (~n,~x) =>
+let {ChebyshevU (~n,~x) =>
         %(for ii:=0:floor(n/2) sum ((-1)^ii*factorial (n-ii) /
         % (factorial(ii) *factorial(n -2ii))* (2*x)^(n-2ii)))
         (begin
-        scalar k,tmp,result,Ratio,oldslash,powlis1!*;
+        scalar k,tmp,result,ratio,oldslash,powlis1!*;
           lisp setq(oldslash,remprop('slash,'opmtch));
           if n=0 then return(1);
           % tmp:=subs(k=0,term);
           tmp:=2**n*x**n;
           result:=tmp;
           % Ratio:=ratio(term,k);
-          Ratio:=-1/4/(n-k)*(n-2*k)*(n-2*k-1)/x**2/(k+1);
+          ratio:=-1/4/(n-k)*(n-2*k)*(n-2*k-1)/x**2/(k+1);
           for k:=0:n/2 do
           <<
           % tmp:=tmp*eval(Ratio);
@@ -332,7 +332,7 @@ let {chebyshevU (~n,~x) =>
           return(result);
         end) when fixp n and n > 0 and not numberp x,
 
-        chebyshevU (~n,~x) =>
+        ChebyshevU (~n,~x) =>
         ( begin
           if n=0 then return(1) else if n=1 then return(2*x) else
           if evenp n
@@ -340,9 +340,9 @@ let {chebyshevU (~n,~x) =>
           else return(2*ChebyshevU((n-1)/2,x)*ChebyshevT((n+1)/2,x))
         end) when fixp n and n > 0 and numberp x,
 
-     chebyshevU (0,~x) => 1};
+     ChebyshevU (0,~x) => 1};
 
-let { gegenbauerP (~n,~a,~x) => (begin scalar b1,b2,bex,r;
+let { GegenbauerP (~n,~a,~x) => (begin scalar b1,b2,bex,r;
                                 r := 1; b1 := 2*a*x; b2 := 1;
                                 for i:= 1:(n-1) do <<
                                 bex := 2*(r+a)/(r+1)*x*b1 -
@@ -351,18 +351,18 @@ let { gegenbauerP (~n,~a,~x) => (begin scalar b1,b2,bex,r;
                                 >>;
                                 return b1; end)
                 when fixp n and n > 0 and numberp a and numberp x ,
-        gegenbauerP (~n,~a,~x) =>
+        GegenbauerP (~n,~a,~x) =>
         %       (1/Gamma(a)*for ii:=0:floor(n/2) sum
         %((-1)^ii* gamma(a+n-ii)/(factorial ii *factorial(n-2ii))*
         % (2*x)^(n-2ii)))
-        (begin scalar k,tmp,result,Ratio,oldslash,powlis1!*;
+        (begin scalar k,tmp,result,ratio,oldslash,powlis1!*;
           lisp setq(oldslash,remprop('slash,'opmtch));
           % tmp:=subs(k=0,term);
           tmp:=(for j:=1:n product (a+j-1))/factorial(n)*2**n*x**n;
           % tmp:=prod(a+j-1,j,1,n)/factorial(n)*2**n*x**n;
           result:=tmp;
           % Ratio:=ratio(term,k);
-          Ratio:=-1/4/(a+n-k-1)*(n-2*k)*(n-2*k-1)/x**2/(k+1);
+          ratio:=-1/4/(a+n-k-1)*(n-2*k)*(n-2*k-1)/x**2/(k+1);
           for k:=0:n/2 do
           <<
           % tmp:=tmp*eval(Ratio);
@@ -374,18 +374,18 @@ let { gegenbauerP (~n,~a,~x) => (begin scalar b1,b2,bex,r;
         end)
         when fixp n and n > 0 and not(a=0),
 
-     gegenbauerP (~n,0,~x) =>
+     GegenbauerP (~n,0,~x) =>
         %(for ii:=0:floor(n/2) sum
         %((-1)^ii* factorial(n-ii-1)/(factorial ii *factorial(n-2ii))*
         %        (2*x)^(n-2ii)))
         (begin
-        scalar k,tmp,result,Ratio,oldslash,powlis1!*;
+        scalar k,tmp,result,ratio,oldslash,powlis1!*;
           lisp setq(oldslash,remprop('slash,'opmtch));
           % tmp:=subs(k=0,term);
           tmp:=2**n*x**n/n;
           result:=tmp;
           % Ratio:=ratio(term,k);
-          Ratio:=-1/4*(n-2*k)*(n-2*k-1)/x**2/(n-k-1)/(k+1);
+          ratio:=-1/4*(n-2*k)*(n-2*k-1)/x**2/(n-k-1)/(k+1);
           for k:=0:n/2 do
           <<
           % tmp:=tmp*eval(Ratio);
@@ -400,7 +400,7 @@ let { gegenbauerP (~n,~a,~x) => (begin scalar b1,b2,bex,r;
 %                               first reverse gegenbauer_base(!=z,n,a))
 %                       when fixp n and n > 0,
 
-     gegenbauerP (0,~a,~x) => 1};
+     GegenbauerP (0,~a,~x) => 1};
 
 % rules for differentiation
 
@@ -425,9 +425,9 @@ df(LaguerreP(~n,~a,~z),z) =>
 df(LaguerreP(~n,~z),z) => 1/z*(-(n)*LaguerreP(n-1,z)+n*LaguerreP(n,z)),
 df(HermiteP(~n,~z),z) => 2*n*HermiteP(n-1,z),
 % AS (23.1.5)
-df(BernoulliP(~n,~z),z) => n*BernoulliP(n-1,z),
+df(bernoullip(~n,~z),z) => n*bernoullip(n-1,z),
 % AS (23.1.5)
-df(EulerP(~n,~z),z) => n*EulerP(n-1,z) };
+df(eulerp(~n,~z),z) => n*eulerp(n-1,z) };
 >>;
 
 % following ideas from John Abbott and Wolfram Koepf

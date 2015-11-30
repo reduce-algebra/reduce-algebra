@@ -32,10 +32,10 @@ share fps_search_depth;
 
 fps_search_depth := 5; %the default
 
-switch traceFPS;
+switch tracefps;
 
-algebraic <<  operator BA; operator infsum ;
-                array DFF(50) >>;
+algebraic <<  operator ba; operator infsum ;
+                array dff(50) >>;
 
 put('simplede,'psopfn,'simpledeeval);
 
@@ -61,81 +61,81 @@ symbolic procedure simpledeeval(u);
 
 algebraic procedure int_simplede(f,x);
 
-begin scalar cap_a,degree0fde,cap_f,j,cap_J,nnn,s,ind,deq,eqq,reqq,
-        ak,terms,list1,list2,Nmax,cap_m,cap_R,ii,m,leadcoeff,m0,
-        len,cap_S,result,parameters,solved,!*allfac,!*protfg;
+begin scalar cap_a,degree0fde,cap_f,j,cap_j,nnn,s,ind,deq,eqq,reqq,
+        ak,terms,list1,list2,nmax,cap_m,cap_r,ii,m,leadcoeff,m0,
+        len,cap_s,result,parameters,solved,!*allfac,!*protfg;
 
         !*protfg := t;
-        Nmax :=fps_search_depth;
+        nmax :=fps_search_depth;
         clear a;
-        operator A; off allfac;
+        operator a; off allfac;
         depend ff,x;
 
-        DFF(0) := f;
+        dff(0) := f;
 
 % start search for a simple DE
 
-        for degreeofDE:=1:Nmax do
-            <<  DFF(degreeofDE) := df(DFF(degreeofDE-1),x);
-                eqq :=  DFF(degreeofDE) +
-                       for j:=0:(degreeofDE-1) sum A(j) * DFF(j);
+        for degreeofde:=1:nmax do
+            <<  dff(degreeofde) := df(dff(degreeofde-1),x);
+                eqq :=  dff(degreeofde) +
+                       for j:=0:(degreeofde-1) sum a(j) * dff(j);
                 eqq := RecursionSimplify(eqq);
                 eqq := num eqq;
                 terms := {};
-                list1 := converttolist (eqq,degreeofDE+1);
+                list1 := converttolist (eqq,degreeofde+1);
                 while list1 neq {} do
                      << list2 := {}; j := fastpart(list1 ,1);
                         cap_j := j; len := fastlength list1;
                         for i:=2:len do
                            if type_ratpoly(j/fastpart(list1,i),x) then
-                                cap_J := cap_J + fastpart(list1,i)
+                                cap_j := cap_j + fastpart(list1,i)
                            else list2 := fastpart(list1,i) . list2;
-                        terms := cap_J . terms;
+                        terms := cap_j . terms;
                         list1 := reverse list2;
                      >>;
 
-                ind := for j:=0:degreeofDE-1 collect a(j);
+                ind := for j:=0:degreeofde-1 collect a(j);
 
                 s := savesolve(terms,ind);
-                if s = {} then NIL else
-                << if symbolic !*traceFPS then write "Solution: ",s;
-                        result := degreeofDE; Nmax := 0 >>;
+                if s = {} then nil else
+                << if symbolic !*tracefps then write "Solution: ",s;
+                        result := degreeofde; nmax := 0 >>;
             >>;
 
-        degreeofDE := result;
+        degreeofde := result;
 
-        if Nmax = 0 then << if symbolic !*traceFPS then
+        if nmax = 0 then << if symbolic !*tracefps then
                          write " successful search for DE">>
           else return -1;
 
-        for each ss in first s do << ss := sub(a(degreeofDE)=1,ss);
+        for each ss in first s do << ss := sub(a(degreeofde)=1,ss);
                                         setze(lhs ss,rhs ss)>>;
 
 % setting up the Differential equation
 
         on factor;
-        deq := df(ff,x,degreeofDE) +
-                 for j:=0:(degreeofDE-1) sum a(j)*df(ff,x,j);
+        deq := df(ff,x,degreeofde) +
+                 for j:=0:(degreeofde-1) sum a(j)*df(ff,x,j);
         off factor;
         deq := num deq;
         return deq;
 end;
 
-put('FPS,'psopfn,'fpseval);
+put('fps,'psopfn,'fpseval);
 
-symbolic procedure FPSeval(u);
+symbolic procedure fpseval(u);
    begin scalar gens,res,opm,!*factor,!*precise;
      if get('fps,'opmtch) and (opm := opmtchrevop ('fps . u))
        then return aeval opm;
      if length u = 2 then
-        << res := PSalg(car u,cadr u);
-           if eq(res,-1) then return FPSexit(car u,cadr u,0);
+        << res := psalg(car u,cadr u);
+           if eq(res,-1) then return fpsexit(car u,cadr u,0);
         return sublis('((oddexpt . expt)(ba . a) (nn . k)),res)
         >>
         else if length u = 3 then
                << gens := gensym();
-               res := PSalg(sublis(list( cadr u . gens),car u),gens);
-               if eq(res,-1) then return FPSexit(car u,cadr u,caddr u);
+               res := psalg(sublis(list( cadr u . gens),car u),gens);
+               if eq(res,-1) then return fpsexit(car u,cadr u,caddr u);
                res := sublis('((oddexpt . expt)(ba . a) (nn . k)),res);
                res := subf(caadr res, list list(gens,'plus,cadr u,
                          list('minus,caddr u)));
@@ -144,33 +144,33 @@ symbolic procedure FPSeval(u);
                 else rederr("Wrong number of Arguments for FPS");
         end;
 
-algebraic procedure AsymptPowerSeries (f,x);
+algebraic procedure asymptpowerseries (f,x);
   sub(x=1/x,fps(sub(x=1/x,f),x));
 
-symbolic procedure FPSexit(a,b,z);
- << erfg!* := nil; list ('FPS,a,b, z) >>$
+symbolic procedure fpsexit(a,b,z);
+ << erfg!* := nil; list ('fps,a,b, z) >>$
 
 symbolic procedure simpledeexit(a,b,z);
  << erfg!* := nil; list ('simplede,a,b, z) >>$
 
-algebraic procedure PSalg(f,x);
+algebraic procedure psalg(f,x);
 
-begin scalar cap_a,degree0fde,cap_f,j,cap_J,nnn,s,ind,deq,eqq,reqq,
-        ak,terms,list1,list2,Nmax,cap_m,cap_R,ii,m,leadcoeff,m0,
-        len,cap_S,result,parameters,solved,!*allfac,!*protfg;
+begin scalar cap_a,degree0fde,cap_f,j,cap_j,nnn,s,ind,deq,eqq,reqq,
+        ak,terms,list1,list2,nmax,cap_m,cap_r,ii,m,leadcoeff,m0,
+        len,cap_s,result,parameters,solved,!*allfac,!*protfg;
 
-        f := Recursionsimplify f;
+        f := RecursionSimplify f;
         !*protfg := t;
-        Nmax :=fps_search_depth;
+        nmax :=fps_search_depth;
         clear a;
-        operator A; off allfac;
+        operator a; off allfac;
         depend ff,x;
 
-        DFF(0) := f;
+        dff(0) := f;
 
 % special cases
 
-        if PolynomQ(f,x) then return f;
+        if polynomq(f,x) then return f;
         if type_ratpoly(f,x) then return ratalgo(f,x);
 
 % start search for a simple DE
@@ -179,50 +179,50 @@ begin scalar cap_a,degree0fde,cap_f,j,cap_J,nnn,s,ind,deq,eqq,reqq,
         clearrules spec_factorial;
         clearrules spec_pochhammer;
 
-        for degreeofDE:=1:Nmax do
-            <<  DFF(degreeofDE) := df(DFF(degreeofDE-1),x);
-                eqq :=  DFF(degreeofDE) +
-                       for j:=0:(degreeofDE-1) sum A(j) * DFF(j);
+        for degreeofde:=1:nmax do
+            <<  dff(degreeofde) := df(dff(degreeofde-1),x);
+                eqq :=  dff(degreeofde) +
+                       for j:=0:(degreeofde-1) sum a(j) * dff(j);
                 eqq := RecursionSimplify(eqq);
                 eqq := num eqq;
                 terms := {};
-                list1 := converttolist (eqq,degreeofDE+1);
+                list1 := converttolist (eqq,degreeofde+1);
                 while list1 neq {} do
                      << list2 := {}; j := fastpart(list1,1); cap_j := j;
                         len := fastlength list1;
                         for i:=2:len do
                                 if type_ratpoly(j/fastpart(list1,i),x)
-                                  then cap_J:= cap_J + fastpart(list1,i)
+                                  then cap_j:= cap_j + fastpart(list1,i)
                                 else list2 := fastpart(list1,i) . list2;
-                        terms := cap_J . terms;
+                        terms := cap_j . terms;
                         list1 := reverse list2;
                      >>;
 
-                ind := for j:=0:degreeofDE-1 collect a(j);
+                ind := for j:=0:degreeofde-1 collect a(j);
 
                 s := savesolve(terms,ind);
-                if s = {} then NIL else
-                << if symbolic !*traceFPS then write "Solution: ",s;
-                        result := degreeofDE; Nmax := 0 >>;
+                if s = {} then nil else
+                << if symbolic !*tracefps then write "Solution: ",s;
+                        result := degreeofde; nmax := 0 >>;
             >>;
 
-        degreeofDE := result;
+        degreeofde := result;
 
-        if Nmax = 0 then << if symbolic !*traceFPS then
+        if nmax = 0 then << if symbolic !*tracefps then
                          write " successful search for DE">>
           else return -1;
 
-        for each ss in first s do << ss := sub(a(degreeofDE)=1,ss);
+        for each ss in first s do << ss := sub(a(degreeofde)=1,ss);
                                         setze(lhs ss,rhs ss)>>;
 
 % setting up the Differential equation
 
         on factor;
-        deq := df(ff,x,degreeofDE) +
-                 for j:=0:(degreeofDE-1) sum a(j)*df(ff,x,j);
+        deq := df(ff,x,degreeofde) +
+                 for j:=0:(degreeofde-1) sum a(j)*df(ff,x,j);
         off factor;
         deq := num deq;
-        if symbolic !*traceFPS
+        if symbolic !*tracefps
           then write("Differential equation is: ", deq);
 
 % transforming into Recurrence equation
@@ -230,17 +230,17 @@ begin scalar cap_a,degree0fde,cap_f,j,cap_J,nnn,s,ind,deq,eqq,reqq,
         factor ba;
         req := (pssubst(deq,x,ba,nn) where subst_rules);
 
-        if symbolic !*traceFPS
+        if symbolic !*tracefps
           then write("Recurrence equation is :",req);
 
         ind := {};
         for ii:=-50 : 50 do
            if not(coeffn(req,ba(nn+ii),1) =0) then ind := ii . ind;
-        cap_M := first ind;
-        if symbolic !*traceFPS then
-          write(" M, ind, parameters : ",cap_M,",",ind,",", parameters);
+        cap_m := first ind;
+        if symbolic !*tracefps then
+          write(" M, ind, parameters : ",cap_m,",",ind,",", parameters);
 
-        leadcoeff := num coeffn(req,ba(nn+cap_M),1);
+        leadcoeff := num coeffn(req,ba(nn+cap_m),1);
         nnn := fastlength ind;
 
         let special!*pochhammer!*rules;
@@ -251,14 +251,14 @@ begin scalar cap_a,degree0fde,cap_f,j,cap_J,nnn,s,ind,deq,eqq,reqq,
 
         if (nnn = 1) then <<
                 % functions with finite representation
-                if symbolic !*traceFPS then
+                if symbolic !*tracefps then
                   write
                      "fps with finite number of non-zero coefficients";
-                cap_R := sub(nn=nn+(1-cap_M),- reduct(req,ba(nn+cap_M)))
-                        /(sub(nn=nn+(1-cap_M),lcof(req,ba(nn+cap_M)))
-                         * Ba(nn));
-                leadcoeff:= sub(nn=nn+(1-cap_M),leadcoeff);
-                result := constantRE(cap_R,leadcoeff,0,nn,x);
+                cap_r := sub(nn=nn+(1-cap_m),- reduct(req,ba(nn+cap_m)))
+                        /(sub(nn=nn+(1-cap_m),lcof(req,ba(nn+cap_m)))
+                         * ba(nn));
+                leadcoeff:= sub(nn=nn+(1-cap_m),leadcoeff);
+                result := constantre(cap_r,leadcoeff,0,nn,x);
                 if result = failed then result :=0;
                 >>;
 
@@ -266,23 +266,23 @@ begin scalar cap_a,degree0fde,cap_f,j,cap_J,nnn,s,ind,deq,eqq,reqq,
 
         if (nnn = 2) then <<
                 m := abs(first ind  - second ind);
-                cap_R := sub(nn=nn+(m-cap_M),- reduct(req,ba(nn+cap_M)))
-                        /(sub(nn=nn+(m-cap_M),lcof(req,ba(nn+cap_M)))
-                          * Ba(nn));
-                leadcoeff:= sub(nn=nn+(m-cap_M),leadcoeff);
-                result := hypergeomRE(m,cap_R,leadcoeff,0,nn,x)
+                cap_r := sub(nn=nn+(m-cap_m),- reduct(req,ba(nn+cap_m)))
+                        /(sub(nn=nn+(m-cap_m),lcof(req,ba(nn+cap_m)))
+                          * ba(nn));
+                leadcoeff:= sub(nn=nn+(m-cap_m),leadcoeff);
+                result := hypergeomre(m,cap_r,leadcoeff,0,nn,x)
                 >>;
 
         if result =0 then
         <<
 % test for constant coefficients
 
-        terms := for j:=0:(degreeofDE-1) join
-                         if freeof(a(j),x) then {} else {T};
+        terms := for j:=0:(degreeofde-1) join
+                         if freeof(a(j),x) then {} else {t};
         if terms = {} then <<
-                req := ba(k+degreeofDE) +
-                         for j:=0:(degreeofDE-1) sum ba(k+j)*a(j);
-                if symbolic !*traceFPS  then
+                req := ba(k+degreeofde) +
+                         for j:=0:(degreeofde-1) sum ba(k+j)*a(j);
+                if symbolic !*tracefps  then
                  << write("DE has constant coefficients");
                     write("DE = ",deq);
                     write("RE = ",req);
@@ -293,11 +293,11 @@ begin scalar cap_a,degree0fde,cap_f,j,cap_J,nnn,s,ind,deq,eqq,reqq,
                         s := s + limit(dff(iii),x,0) * x^iii;
                         iii := iii + 1 >>;
                 m0 := iii;
-        if symbolic !*traceFPS  then write "i was found : ",iii;
-        if m0 <= degreeofDE-1 then
-        << s := solve_lin_rec(req,for i:=m0:(degreeofDE-1) collect
+        if symbolic !*tracefps  then write "i was found : ",iii;
+        if m0 <= degreeofde-1 then
+        << s := solve_lin_rec(req,for i:=m0:(degreeofde-1) collect
                                 ba(i) = limit(dff(i),x,0));
-           if symbolic !*traceFPS  then write("solution : ",s);
+           if symbolic !*tracefps  then write("solution : ",s);
            s:=sub(n=nn,s);
            result := infsum(s/(factorial nn) *  x^nn,nn,0,infinity)
         >> else result := s;
@@ -320,11 +320,11 @@ symbolic procedure verbessere (x,uu);
   else if not (eqcar (x,'infsum)) then x
   else
   <<
-   if eqcar (x,'infsum) and eqcar(cadr x,'QUOTIENT) then
-     x := list('infsum ,list('QUOTIENT,
+   if eqcar (x,'infsum) and eqcar(cadr x,'quotient) then
+     x := list('infsum ,list('quotient,
                 simplify_expt cadr cadr x,simplify_expt caddr cadr x));
        uu := cadr x;
-   if eqcar (x,'infsum) and eqcar(cadr x,'QUOTIENT) then
+   if eqcar (x,'infsum) and eqcar(cadr x,'quotient) then
       << uu := int_simplify_factorial auxcopy cadr x >>;
    list('infsum  , uu,'nn,0,'infinity)>> >>;
 
@@ -372,7 +372,7 @@ symbolic procedure simplify_expt u;
 
 fluid ('(rsolve!*!*));
 
-algebraic procedure hypergeomRE(m,cap_R,leadcoeff,dffpointer,k,x);
+algebraic procedure hypergeomre(m,cap_r,leadcoeff,dffpointer,k,x);
 
 % solve the hypergeometric Recurrence Equation
 %
@@ -381,7 +381,7 @@ algebraic procedure hypergeomRE(m,cap_R,leadcoeff,dffpointer,k,x);
 %  where leadcoeff is the leading coefficient of the RE
 %  and DF is a table where DF(dffpointer+i) = df(f,x,i)
 
-  begin scalar denr,fract,ii,m0,m1,c0,ck,S,c,df2,q,r2,lterm,nn,
+  begin scalar denr,fract,ii,m0,m1,c0,ck,s,c,df2,q,r2,lterm,nn,
         s0, leadcoeff2;
         denr := solve(leadcoeff,k);
         m0 := {};
@@ -389,11 +389,11 @@ algebraic procedure hypergeomRE(m,cap_R,leadcoeff,dffpointer,k,x);
                 if type_rational rhs xx then  m0 := ((rhs xx)+1) . m0;
         if not(m0 = {}) then m0 := max(m0) else m0 := 0;
 
-        if symbolic !*traceFPS then
+        if symbolic !*tracefps then
                  << write "RE is of hypergeometric type";
                     write "Symmetry number mm := ",m;
                     write "RE: for all k >= ",m0,": a (",k," + ",m,") = "
-                        ,cap_R * a(k);
+                        ,cap_r * a(k);
                     write "leadcoeff := ",leadcoeff; >>;
 
         fract := {};
@@ -403,23 +403,23 @@ algebraic procedure hypergeomRE(m,cap_R,leadcoeff,dffpointer,k,x);
         if not(fract = {}) then
                 << q := first fract;
                    dff(dffpointer + 10) := sub(x=x^q,dff(dffpointer));
-                   if symbolic !*traceFPS then <<
+                   if symbolic !*tracefps then <<
                         write "RE modified to nn= ",k/q;
                         write "=> f := ",dff(dffpointer + 10)>>;
-                   S := hypergeomRE(q*m,sub(k=k/q,cap_R),
+                   s := hypergeomre(q*m,sub(k=k/q,cap_r),
                         sub(k=k/q,leadcoeff),dffpointer + 10,k,x);
-                   return sub(x=x^(1/q),S); >>;
+                   return sub(x=x^(1/q),s); >>;
 
         if m0 < 0  then <<
                 nn:= -m0 + remainder(-m0,m);
                 dff(dffpointer + 10) := df2 := x^nn * dff(dffpointer);
-                if symbolic !*traceFPS then <<
+                if symbolic !*tracefps then <<
                         write "working with ",x^nn,"*f";
                         write "=> f :=" ,df2 >>;
-                S := hypergeomRE(m,sub(k=k-nn,cap_R),
+                s := hypergeomre(m,sub(k=k-nn,cap_r),
                                    sub(k=k-nn,leadcoeff),
                                    dffpointer + 10,k,x);
-                return update_coeff(S,x,-nn) >>;
+                return update_coeff(s,x,-nn) >>;
 
         if m0 > 0  then <<
          m1 := {};
@@ -428,18 +428,18 @@ algebraic procedure hypergeomRE(m,cap_R,leadcoeff,dffpointer,k,x);
          m1 := min m1;
          if m1 > 0 then <<
                 dff(dffpointer + 10) := df2 := x^(-m1)*dff(dffpointer);
-                if symbolic !*traceFPS then <<
+                if symbolic !*tracefps then <<
                         write"a(k) = 0 for k < ",m1;
                         write "working with ",x^(-m1),"*f";
                         write "=> f :=" ,df2 >>;
-                S := hypergeomRE(m,sub(k=k+m1,cap_R),
+                s := hypergeomre(m,sub(k=k+m1,cap_r),
                                    sub(k=k+m1,leadcoeff),
                                         dffpointer + 10,k,x);
-                return update_coeff(S,x,m1);
+                return update_coeff(s,x,m1);
                         >> >>;
 
      % logarithmic singularity Baustelle
-        If lisp pairp
+        if lisp pairp
                  errorset!*(list ('simptaylor,mkquote list(
                                         mkquote list('dff,dffpointer),
                                         mkquote x,0,1)),nil) then
@@ -452,48 +452,48 @@ algebraic procedure hypergeomRE(m,cap_R,leadcoeff,dffpointer,k,x);
                         if dffpointer + 10 >= first length dff
                           then return failed;
                         dff(dffpointer + 10):=dff(dffpointer) -lterm;
-                        if symbolic !*traceFPS then
+                        if symbolic !*tracefps then
                                 write "=> f :=",dff(dffpointer + 10);
-                        S := hypergeomRE(m, R, leadcoeff*(k-nn),
+                        s := hypergeomre(m, r, leadcoeff*(k-nn),
                                 dffpointer + 10,k,x);
-                        RETURN(if S=failed then S else lterm+S);
+                        return(if s=failed then s else lterm+s);
                      >>;
         >>;
 
-        S := 0; S0 := 0;
+        s := 0; s0 := 0;
         for i:=0:(m0+m-1) do <<
            if i > 0 then
              dff(dffpointer + i) := df(dff(dffpointer + i-1),x);
            c0 := limit(dff(dffpointer + i),x,0);
 
            if (lisp listp reval c0 and fastpart(c0,0) = limit) then
-                <<  if symbolic !*traceFPS
+                <<  if symbolic !*tracefps
                         then write "Could not find the limit of: "
                         ,dff(dffpointer + i),",",x,",",0;
                     rederr("Problem using limit operator") >> else
                 <<
                 c0 := c0/factorial (i);
-                if symbolic !*traceFPS then write " a(",i,") = ",c0;
+                if symbolic !*tracefps then write " a(",i,") = ",c0;
                 if not (c0 =0) then
                      << s0 := s0+c0*x^i;
-                        if i < m0 then S := S + c0 * x^i % single terms
+                        if i < m0 then s := s + c0 * x^i % single terms
                         else
-                     << ck := hypergeomRsolve(sub(k=M*k+i,cap_R),k,c0);
-                        if symbolic !*traceFPS then write " ck = ",ck;
+                     << ck := hypergeomrsolve(sub(k=m*k+i,cap_r),k,c0);
+                        if symbolic !*tracefps then write " ck = ",ck;
                         c :=1;
-                        ck := ck/C;
+                        ck := ck/c;
                         ck := (ck where hgspec_pochhammer);
-                        if ck = 0 then S := S + c0*x^i else
-                         if Rsolve!*!* = finite then S := S +
-                                C*sum(ck*x^(m*k+i), k)
+                        if ck = 0 then s := s + c0*x^i else
+                         if rsolve!*!* = finite then s := s +
+                                c*sum(ck*x^(m*k+i), k)
                          else
-                         S := S + C * infsum(ck*x^(m*k+i)) ;
-                        if symbolic !*traceFPS then write " S = ",s;
+                         s := s + c * infsum(ck*x^(m*k+i)) ;
+                        if symbolic !*tracefps then write " S = ",s;
                 >> >> >> >>;
-  return (S);
+  return (s);
 end;
 
-algebraic << let INFSUM(0) = 0>>;
+algebraic << let infsum(0) = 0>>;
 
 % some compatibility functions for Maple sources.
 
@@ -514,7 +514,7 @@ symbolic procedure type_rational(num);
    then t else nil) where num1 := simp num;
 
 algebraic procedure type_ratpoly(exprn,var);
-  if (PolynomQ (den exprn,var) and PolynomQ (num exprn,var))
+  if (polynomq (den exprn,var) and polynomq (num exprn,var))
     then t else nil;
 
 symbolic procedure savesolve (x,y);
@@ -525,7 +525,7 @@ on cramer; % this is a temporary fix for solve !!
 return
 << switch solveinconsistent;
    on solveinconsistent;
-   inconsistent!* := NIL;
+   inconsistent!* := nil;
    if pairp (x := errorset!*(list ('solveeval,mkquote list(x,y)),nil))
         and not inconsistent!*
         then << x :=car x;
@@ -538,23 +538,23 @@ end;
 algebraic procedure setze(x,y);
   let x = y;
 
-symbolic procedure PolynomQ (x,var);
+symbolic procedure polynomq (x,var);
 
- if not fixp denr simp x then NIL else
+ if not fixp denr simp x then nil else
  begin scalar kerns,kern;
 
  kerns := kernels !*q2f simp x;
 
- aa: if null kerns then return T;
+ aa: if null kerns then return t;
      kern := first kerns;
      kerns := cdr kerns;
      if not(eq (kern, var)) and depends(kern,var)
-                then return NIL else go aa;
+                then return nil else go aa;
 end;
 
-flag('(PolynomQ),'opfn);
+flag('(polynomq),'opfn);
 
-flag ('(PolynomQ type_ratpoly),'boolean);
+flag ('(polynomq type_ratpoly),'boolean);
 
 
 algebraic << operator update_coeff;

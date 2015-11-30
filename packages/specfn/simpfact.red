@@ -47,7 +47,7 @@ let { simplify_factorial1 (~x + ~y,~z) =>
       simplify_factorial1 (x,z) + simplify_factorial1(y,z)};
 >>;
 
-symbolic procedure int_Simplify_factorial (u);
+symbolic procedure int_simplify_factorial (u);
   begin
     scalar minus_num,minus_denom,test_expt;
     if not pairp u or car u neq 'quotient then u
@@ -107,7 +107,7 @@ symbolic procedure int_Simplify_factorial (u);
       return u;
   end;
 
-flag('(int_Simplify_factorial),'opfn);
+flag('(int_simplify_factorial),'opfn);
 
 
 

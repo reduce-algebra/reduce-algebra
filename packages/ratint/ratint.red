@@ -175,11 +175,11 @@ end;
 % and expt seperately in a list
 
 expr procedure hr_monic_den(li,x);
-begin scalar !*EXP, !*FACTOR, q, lc;
-on EXP;
+begin scalar !*exp, !*factor, q, lc;
+on exp;
 li:= (for each r in li collect << lc:=lcof(den(r),x);
                                   {num(r)/lc, den(r)/lc} >> );
-on FACTOR;
+on factor;
 li:= (for each r in li collect
      <<  q:=part(r,2);
          if(arglength(q) > -1 and part(q,0)=expt) then
@@ -421,7 +421,7 @@ end;
 % -------------------------------------------------------------------------
 %in "eea"; in "rem"; in "phi";
 
-expr procedure newton(a,p,u1,w1,B);
+expr procedure newton(a,p,u1,w1,b);
 begin scalar alpha,gamma,eea_result,s,tt,u,w,ef,modulus,c,sigma,
 sigma_tilde,tau, tau_tilde,re,r,quo;
 
@@ -453,7 +453,7 @@ ef:=a-u*w; off modular;  modulus:=p;
 % the bound on modulus is reached
 
 on modular; setmod p;
-while(ef neq 0 and modulus<2*B*gamma) do
+while(ef neq 0 and modulus<2*b*gamma) do
     <<
 
        c:=ef/modulus;% write "c is ", c; off modular;

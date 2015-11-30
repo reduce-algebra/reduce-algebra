@@ -37,6 +37,8 @@ lisp <<
 
 module coloutput;
 
+global '(statcounter);
+
 fluid '(posn!* orig!*);
 
 procedure redfront_oh(m,l);

@@ -1,4 +1,4 @@
-MODULE MANINP;
+module maninp;
 
 % Author: James H. Davenport.
 
@@ -26,33 +26,35 @@ MODULE MANINP;
 %
 
 
-FLUID '(INTVAR);
+fluid '(intvar);
 
-SYMBOLIC PROCEDURE FINDMANINPARM PLACES;
-BEGIN
-  SCALAR SQRTS,VARS,U;
-  SQRTS:=SQRTSINPLACES PLACES;
-LOOP:
-  IF NULL SQRTS THEN RETURN NIL;
-  VARS:=GETVARIABLES SIMP ARGOF CAR SQRTS;
-INNERLOOP:
-  IF NULL VARS
-    THEN <<
-      SQRTS:=CDR SQRTS;
-      GO TO LOOP >>;
-  U:=CAR VARS;
-  VARS:=CDR VARS;
-  IF U EQ INTVAR
-    THEN GO TO INNERLOOP;
-  IF ATOM U
-    THEN RETURN U;
-  IF CAR U EQ 'SQRT
-    THEN << U:=SIMP ARGOF U;
-            VARS:=VARSINSF(NUMR U,VARSINSF(DENR U,VARS));
-            GO TO INNERLOOP >>;
-  INTERR "Unrecognised differentiation candidate"
-  END;
+symbolic procedure findmaninparm places;
+begin
+  scalar sqrts,vars,u;
+  sqrts:=sqrtsinplaces places;
+loop:
+  if null sqrts then return nil;
+  vars:=getvariables simp argof car sqrts;
+innerloop:
+  if null vars
+    then <<
+      sqrts:=cdr sqrts;
+      go to loop >>;
+  u:=car vars;
+  vars:=cdr vars;
+  if u eq intvar
+    then go to innerloop;
+  if atom u
+    then return u;
+  if car u eq 'sqrt
+    then << u:=simp argof u;
+            vars:=varsinsf(numr u,varsinsf(denr u,vars));
+            go to innerloop >>;
+  interr "Unrecognised differentiation candidate"
+  end;
 
-ENDMODULE;
+endmodule;
 
-END;
+end;
+
+

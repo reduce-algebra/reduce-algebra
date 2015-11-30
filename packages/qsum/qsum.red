@@ -107,12 +107,12 @@ algebraic;
 
 symbolic procedure new_simpexpt(u);
 begin
-        scalar !*PRECISE, !*FACTOR, !*EXP, !*MCD, !*ALLFAC, redefmode;
+        scalar !*precise, !*factor, !*exp, !*mcd, !*allfac, redefmode;
 
         % Schalte exp ein, damit die Exponenten expandiert werden.
         % Ausschalten von PRECISE um Vereinfachungen wie
         %  (x*y)^k => x^k*y^k zu erreichen.
-        on EXP, MCD;  off PRECISE, ALLFAC;  % switch-setting
+        on exp, mcd;  off precise, allfac;  % switch-setting
 
         if eqcar(car u, 'minus) then
                 return multsq(original_simpexpt({{'minus,1},cadr(u)}),
@@ -143,7 +143,7 @@ end;
 % some compatibility functions for Maple sources.
 % by Winfried Neun
 
-put('PolynomQQ,'psopfn,'polynomQQQ);
+put('polynomqq,'psopfn,'polynomqqq);
 
 algebraic procedure polynomq4(expr1,k);
 begin scalar !*exp;
@@ -158,7 +158,7 @@ begin
 scalar deno, nume;
 deno:=den expr1;
 nume:=num expr1;
-  if (PolynomQQ (deno,var) and PolynomQQ (nume,var))
+  if (polynomqq (deno,var) and polynomqq (nume,var))
     then return t else return nil;
 end;
 flag ('(type_ratpoly),'boolean);
@@ -166,38 +166,38 @@ flag ('(type_ratpoly),'boolean);
 symbolic procedure tttype_ratpoly(u,xx);
   ( if fixp xx then t else
         if not eqcar (xx , '!*sq) then  nil
-          else and(polynomQQQ(list(mk!*sq (numr cadr xx ./ 1),
+          else and(polynomqqq(list(mk!*sq (numr cadr xx ./ 1),
                                   reval cadr u))
-                 ,polynomQQQ(list(mk!*sq (denr cadr xx ./ 1),
+                 ,polynomqqq(list(mk!*sq (denr cadr xx ./ 1),
                                   reval cadr u)))
  ) where xx = aeval(car u);
 
 flag ('(tttype_ratpoly),'boolean);
 
 %checks if x is polynomial in var
-symbolic procedure PolynomQ (x,var);
+symbolic procedure polynomq (x,var);
 
- if not fixp denr simp x then NIL else
+ if not fixp denr simp x then nil else
  begin scalar kerns,kern,aa;
 
  kerns:=kernels !*q2f simp x;
 
- aa: if null kerns then return T;
+ aa: if null kerns then return t;
      kern:=first kerns;
      kerns:=cdr kerns;
      if not(eq (kern, var)) and depends(kern,var)
-                then return NIL else go aa;
+                then return nil else go aa;
 end;
 
-flag('(PolynomQ),'opfn);
+flag('(polynomq),'opfn);
 
-flag ('(PolynomQ type_ratpoly),'boolean);
+flag ('(polynomq type_ratpoly),'boolean);
 
 
-symbolic procedure PolynomQQQ (x);
+symbolic procedure polynomqqq (x);
 
 (if fixp xx then t else
- if not onep denr (xx:=cadr xx) then NIL
+ if not onep denr (xx:=cadr xx) then nil
  else begin scalar kerns,kern,aa,var,fform,mvv,degg;
 
  fform:=sfp  mvar  numr xx;
@@ -212,20 +212,20 @@ symbolic procedure PolynomQQQ (x);
         kerns:=append ( append (kernels mvv,kernels degg),kerns) >> >>
    else kerns:=kernels !*q2f xx;
 
- aa: if null kerns then return T;
+ aa: if null kerns then return t;
      kern:=first kerns;
      kerns:=cdr kerns;
      if not(eq (kern, var)) and depends(kern,var)
-                then return NIL else go aa;
+                then return nil else go aa;
 end) where xx = aeval(car x);
 
-put('PolynomQQ,'psopfn,'polynomQQQ);
+put('polynomqq,'psopfn,'polynomqqq);
 
 symbolic procedure ttttype_ratpoly(u);
   ( if fixp xx then t else
         if not eqcar (xx , '!*sq) then nil
-          else and(polynomQQQ(list(mk!*sq (numr cadr xx ./ 1), reval cadr u))
-                  ,polynomQQQ(list(mk!*sq (denr cadr xx ./ 1), reval cadr u)))
+          else and(polynomqqq(list(mk!*sq (numr cadr xx ./ 1), reval cadr u))
+                  ,polynomqqq(list(mk!*sq (denr cadr xx ./ 1), reval cadr u)))
  ) where xx = aeval(car u);
 
 flag ('(type_ratpoly),'boolean);
@@ -310,8 +310,8 @@ algebraic procedure showgctiming(n);
 
 symbolic procedure product2list(term);
 begin
-        scalar !*FACTOR, !*EXP, !*LIMITEDFACTORS, !*MCD, l, z;
-        on FACTOR, MCD;  off LIMITEDFACTORS;  % switch-setting
+        scalar !*factor, !*exp, !*limitedfactors, !*mcd, l, z;
+        on factor, mcd;  off limitedfactors;  % switch-setting
         term:= simp aeval(term);
         z:= numr term;
         l:= {};
@@ -335,8 +335,8 @@ symbolic operator product2list;
 
 symbolic procedure sum2list(z);
 begin
-        scalar !*FACTOR, !*EXP, !*MCD, !*ALLFAC, l, denom;
-        on EXP, MCD; off ALLFAC;  % switch-setting
+        scalar !*factor, !*exp, !*mcd, !*allfac, l, denom;
+        on exp, mcd; off allfac;  % switch-setting
         z:= simp aeval(z);
         denom:= denr z;
         z:= numr z;
@@ -359,8 +359,8 @@ symbolic operator sum2list;
 
 algebraic procedure laurentcoeff(p, x);
 begin
-        scalar !*EXP, !*FACTOR, !*MCD, !*DIV, np, dp;
-        on EXP, MCD;  off DIV;  % switch-setting
+        scalar !*exp, !*factor, !*mcd, !*div, np, dp;
+        on exp, mcd;  off div;  % switch-setting
         np:= coeff(num(p),x);
         dp:= sub(x=1, den(p));
         return (for each j in np collect (j/dp));
@@ -370,8 +370,8 @@ end$
 
 algebraic procedure laurentcoeffn(p, x, n);
 begin
-        scalar !*EXP, !*FACTOR, !*MCD, !*RATIONAL, DMODE!*, !*DIV, np, dp, d;
-        on EXP, MCD; off RATIONAL;  % switch-setting
+        scalar !*exp, !*factor, !*mcd, !*rational, dmode!*, !*div, np, dp, d;
+        on exp, mcd; off rational;  % switch-setting
         dp:= den(p);
         d:= deg(dp, x);
         np:= num(p) / sub(x=1,dp);
@@ -384,8 +384,8 @@ end;
 
 algebraic procedure laurentdegree(p, x);
 begin
-        scalar !*EXP, !*FACTOR, !*MCD, !*DIV, !*RATIONAL, DMODE!*;
-        on EXP, MCD;  off DIV, RATIONAL;  % switch-setting
+        scalar !*exp, !*factor, !*mcd, !*div, !*rational, dmode!*;
+        on exp, mcd;  off div, rational;  % switch-setting
         return (deg(num(p),x) - deg(den(p),x));
 end$
 
@@ -393,8 +393,8 @@ end$
 
 algebraic procedure laurentldegree(p, x);
 begin
-        scalar !*EXP, !*FACTOR, !*MCD, !*DIV, !*RATIONAL, DMODE!*;
-        on EXP, MCD;  off DIV, RATIONAL;  % switch-setting
+        scalar !*exp, !*factor, !*mcd, !*div, !*rational, dmode!*;
+        on exp, mcd;  off div, rational;  % switch-setting
         p:= sub(x=1/x, p);
         return (deg(den(p),x) - deg(num(p),x));
 end$
@@ -440,10 +440,10 @@ end$
 
 symbolic procedure nullspacesolve(a, var);
 begin
-        scalar !*FACTOR, !*EXP, !*GCD, !*MCD, !*LIMITEDFACTORS,
+        scalar !*factor, !*exp, !*gcd, !*mcd, !*limitedfactors,
                         m, n, nr_pref_va, va;
         timing('nullspacesolve);
-        on EXP, MCD;  off GCD, LIMITEDFACTORS;  % switch-setting
+        on exp, mcd;  off gcd, limitedfactors;  % switch-setting
         % put equations into list and remove 'zeroe-entries'...
         if pairp(a) and (car(a) = 'list) then
                 a:= cdr(a)
@@ -468,7 +468,7 @@ begin
         va:= mkvect(n);
         for j:=0:n do <<putv(va,j,car(var)); var:= cdr(var)>>;
         a:= nullspace_equations2sqmatrix(a, va, m, n);
-        on FACTOR;  % switch-setting
+        on factor;  % switch-setting
         a:= a;
         a:= nullspace_triangulize(a, va, m, n+1, nr_pref_va);
         va:= cadr(a);
@@ -555,10 +555,10 @@ end$
 symbolic procedure
         nullspace_triangulize_pivot(a, not_changed, m, n, k, nr_pref_va);
 begin
-        scalar !*EXP, !*FACTOR, !*MCD, !*GCD,
+        scalar !*exp, !*factor, !*mcd, !*gcd,
                         row, pivot, pivotsize, l1, l2, tmp;
         timing('nullspace_triangulize_pivot);
-        off FACTOR, EXP, MCD, GCD;  % switch-setting
+        off factor, exp, mcd, gcd;  % switch-setting
         pivot:= nil;
         pivotsize:= {10^10, 10^10};
         for each j in not_changed do begin
@@ -831,9 +831,9 @@ end;
 
 symbolic procedure qsimpcomb_standard_integer_part(z);
 begin
-        scalar !*BALANCED_MOD, !*EXP, !*FACTOR, !*RATIONAL, !*DMODE,
+        scalar !*balanced_mod, !*exp, !*factor, !*rational, !*dmode,
                 n, d, tmp;
-        on EXP;  off BALANCED_MOD, RATIONAL;  % switch-setting
+        on exp;  off balanced_mod, rational;  % switch-setting
         z:= simp aeval mk!*sq z;
         n:= numr z;
         d:= denr z;
@@ -879,8 +879,8 @@ end;
 
 symbolic procedure qsimpcomb_standard_qexp_part(a,q,qe);
 begin
-        scalar !*FACTOR, !*EXP, n, d;
-        on FACTOR;  % switch-setting
+        scalar !*factor, !*exp, n, d;
+        on factor;  % switch-setting
         a:= simp aeval mk!*sq a;
         n:= numr a;
         d:= denr a;
@@ -1084,7 +1084,7 @@ begin
         scalar !*precise, !*factor, !*exp, !*mcd, !*gcd, !*rational,
                 redefmode, orig_bino, orig_qbin, orig_qbra, orig_qfct,
                 orig_qfac, orig_qpoc;
-        on FACTOR, MCD, GCD;  off RATIONAL, PRECISE;  % switch-setting
+        on factor, mcd, gcd;  off rational, precise;  % switch-setting
 
         if (length(f) neq 1) then
                 rederr "Wrong number of arguments in qsimp";
@@ -1177,7 +1177,7 @@ symbolic procedure select!-eval u;
   w:=freequote formbool(w,nil,'algebraic);
   if v then w:={'replaceby,v,w};
   r:=for each q in
-        pair(cdr map!-eval1(l,w,function(lambda y;y),'lispeval),cdr l)
+        pair(cdr map!-eval1(l,w,function identity!-function,'lispeval),cdr l)
       join if car q and car q neq 0 then {cdr q};
   if r then return car l . r;
   if (r:=atsoc(car l,'((plus . 0)(times . 1)(and . 1)(or . 0))))
@@ -1190,8 +1190,8 @@ end$
 
 algebraic procedure type_homogeneous(f,z);
 begin
-        scalar !*EXP, !*FACTOR, !*MCD, c, deg_f;
-        on EXP, MCD;  % switch-setting
+        scalar !*exp, !*factor, !*mcd, c, deg_f;
+        on exp, mcd;  % switch-setting
         if not(type_ratpoly(f,z)) then return nil;
         deg_f:= laurentdegree(f,z);
         c:= laurentcoeffn(f,z,deg_f);
@@ -1203,8 +1203,8 @@ end$
 
 algebraic procedure qgosper_qprimedispersion(f, g, q, qk);
 begin
-        scalar !*EXP, !*FACTOR, !*GCD, !*MCD, n, m, a, b, c, d, j;
-        on EXP, MCD;  off GCD; % switch-setting
+        scalar !*exp, !*factor, !*gcd, !*mcd, n, m, a, b, c, d, j;
+        on exp, mcd;  off gcd; % switch-setting
         f:= f;
         n:= laurentdegree(f,qk);
         if (n = 0) or (n neq laurentdegree(g,qk)) then return {};
@@ -1214,9 +1214,9 @@ begin
         b:= laurentcoeffn(f,qk,m);
         c:= laurentcoeffn(g,qk,n);
         d:= laurentcoeffn(g,qk,m);
-        on GCD;  % switch-setting
+        on gcd;  % switch-setting
         j:= a*d / (b*c);
-        off GCD;  % switch-setting
+        off gcd;  % switch-setting
         if not type_homogeneous(j,q) then return {};
         j:= laurentdegree(j,q) / (n-m);
         if not(fixp(j) and (-1 < j)) then return {};
@@ -1230,8 +1230,8 @@ end$
 
 algebraic procedure qgosper_qdispersionset_simple_factorlist(p, x);
 begin
-        scalar !*EXP, !*FACTOR, !*GCD, !*LIMITEDFACTORS, !*MCD;
-        on FACTOR, MCD;  off GCD, LIMITEDFACTORS;  % switch-setting
+        scalar !*exp, !*factor, !*gcd, !*limitedfactors, !*mcd;
+        on factor, mcd;  off gcd, limitedfactors;  % switch-setting
         p:= product2list(p);
         p:= (for each j in p collect if (arglength(j)>-1) and
                 (part(j,0)=expt) and (fixp(part(j,2))) then part(j,1) else j);
@@ -1262,14 +1262,14 @@ end$
 
 algebraic procedure qgosper_qupdate(pp, qq, rr, q, qk);
 begin
-        scalar !*FACTOR, !*EXP, !*MCD, !*DIV, !*GCD, !*LIMITEDFACTORS, disp, g;
+        scalar !*factor, !*exp, !*mcd, !*div, !*gcd, !*limitedfactors, disp, g;
         timing(qupdate);
-        on FACTOR, MCD, DIV;  off LIMITEDFACTORS;  % switch-setting
+        on factor, mcd, div;  off limitedfactors;  % switch-setting
         disp:= qgosper_qdispersionset(qq, rr, q, qk);
         for each j in disp do begin
-                on EXP;  % switch-setting;
+                on exp;  % switch-setting;
                 g:= gcd(qq, sub(qk=qk*q^j,rr));
-                on FACTOR;  % switch-setting
+                on factor;  % switch-setting
                 if not freeof(g, qk) then begin
                         qq:= qq / g;
                         rr:= rr / sub(qk=qk/q^j, g);
@@ -1285,8 +1285,8 @@ end$
 
 algebraic procedure qgosper_qdegreebound_q_exponent(f, q);
 begin
-        scalar !*EXP, !*FACTOR, !*MCD, !*GCD, !*COMBINELOGS, !*EXPANDLOGS;
-        on EXPANDLOGS, EXP, MCD, GCD;  OFF COMBINELOGS;  % switch-setting
+        scalar !*exp, !*factor, !*mcd, !*gcd, !*combinelogs, !*expandlogs;
+        on expandlogs, exp, mcd, gcd;  off combinelogs;  % switch-setting
         return log(f)/log(q);
 end$
 
@@ -1294,10 +1294,10 @@ end$
 
 algebraic procedure qgosper_qdegreebound(pp, qq, rr, q, qk);
 begin
-        scalar !*MCD, !*FACTOR, !*EXP, !*GCD,
+        scalar !*mcd, !*factor, !*exp, !*gcd,
                         ldegpp,ldegqq,ldegrr,ldegff,dd,ee,degpp,degqq,degrr,degff;
         timing(qdegreebound);
-        on EXP, MCD;  off GCD;  % switch-setting
+        on exp, mcd;  off gcd;  % switch-setting
         % untere Gradschranke
         ldegpp:= laurentldegree(pp, qk);
         ldegqq:= laurentldegree(qq, qk);
@@ -1376,10 +1376,10 @@ put('qsumrecursion_indets2arbcomplex, 'psopfn, 'qsumrecursion_inds2arbcmplx);
 
 algebraic procedure qgosper_qfindf(pqr, q, qk);
 begin
-        scalar !*EXP, !*FACTOR, !*MCD, !*CRAMER,
+        scalar !*exp, !*factor, !*mcd, !*cramer,
                         pp, qq, rr, d, var, f, a, i, eqn, solu;
         timing(qfindf);
-        on EXP, MCD;  % switch-setting
+        on exp, mcd;  % switch-setting
         pp:= part(pqr, 1);
         qq:= part(pqr, 2);
         rr:= part(pqr, 3);
@@ -1390,14 +1390,14 @@ begin
         f:= (for j:=part(d,1):part(d,2) sum part(var,j-part(d,1)+1)*qk^j);
         eqn:= sub(qk=qk*q,qq)*f - rr*sub(qk=qk/q,f) - pp;
         eqn:= laurentcoeff(eqn,qk);
-        on CRAMER;  % switch-setting
+        on cramer;  % switch-setting
         timing(solve);
         if (lisp !*qsum_nullspace) then
                 solu:= nullspacesolve(eqn, var)
         else
                 solu:= solve(eqn, var);
         timing(solve);
-        on FACTOR;  % switch-setting
+        on factor;  % switch-setting
         if (solu = {}) then return <<timing(qfindf); {}>>;
         solu:= qsumrecursion_indets2arbcomplex(solu, var);
         f:= sub(solu, f);
@@ -1417,9 +1417,9 @@ end$
 algebraic procedure qsumrecursion_qfindf_equations
         (pp, qq, rr, d, q, qk, sigma_var);
 begin
-        scalar !*EXP, !*FACTOR, !*LIMITEDFACTORS, !*MCD, !*CRAMER,
+        scalar !*exp, !*factor, !*limitedfactors, !*mcd, !*cramer,
                         var, f, eqn, solu, ld;
-        on EXP, MCD;  % switch-setting
+        on exp, mcd;  % switch-setting
         var:= (for j:=part(d,1):part(d,2) collect (lisp gensym()));
         if (part(d,1) < 0) then begin
                 f:= (for j:=0:part(d,2)-part(d,1) sum part(var,j+1)*qk^j);
@@ -1438,13 +1438,13 @@ begin
         if (lisp !*qsum_nullspace) then begin
                 eqn:= coeff(eqn, qk);
                 for each i in var do factor i;
-                on FACTOR, MCD;  % switch-setting
+                on factor, mcd;  % switch-setting
                 eqn:= eqn;
                 solu:= nullspacesolve(eqn, var);
                 for each i in var do remfac i;
                 end
         else begin
-                on CRAMER;  % switch-setting
+                on cramer;  % switch-setting
                 eqn:= coeff(eqn, qk);
                 solu:= solve(eqn, var);
         end; % of else
@@ -1457,9 +1457,9 @@ begin
                 f:= nil;
         solu:= {f, select(qsumrecursion_has(~w,sigma_var), solu)};
         if (lisp !*qsumrecursion_exp) and not(lisp !*qsum_nullspace) then
-                on EXP  % switch-setting
+                on exp  % switch-setting
         else
-                on FACTOR;  % switch-setting
+                on factor;  % switch-setting
         solu:= reval solu;
         return solu;
 end$
@@ -1483,10 +1483,10 @@ symbolic operator qsumrecursion_has$
 
 algebraic procedure qsumrecursion_qfindf(pqr, q, qk, sigma_var);
 begin
-        scalar !*FACTOR, !*EXP, !*LIMITEDFACTORS, !*MCD, !*CRAMER,
+        scalar !*factor, !*exp, !*limitedfactors, !*mcd, !*cramer,
                         pp, qq, rr, d, var, f, a, i, eqn, solu;
         timing(qfindf);
-        on EXP, MCD;  % switch-setting
+        on exp, mcd;  % switch-setting
         pp:= part(pqr, 1);
         qq:= part(pqr, 2);
         rr:= part(pqr, 3);
@@ -1670,8 +1670,8 @@ put('qgosper, 'psopfn, 'qgosper);
 
 algebraic procedure qgosper_eval(a, q, k);
 begin
-        scalar !*PRECISE, !*EXP, !*FACTOR, !*MCD, qk, pqr, f, redefmode;
-        on FACTOR, MCD; off PRECISE;  % switch-setting
+        scalar !*precise, !*exp, !*factor, !*mcd, qk, pqr, f, redefmode;
+        on factor, mcd; off precise;  % switch-setting
 
         % Turn off function-has-been-redefined-messages.
         share redefmode;
@@ -1719,8 +1719,8 @@ end$
 
 algebraic procedure qsumrecursion_denom_lcm(dl);
 begin
-        scalar !*FACTOR, !*EXP, !*GCD, !*MCD, g;
-        on FACTOR, MCD, GCD;  % switch-setting
+        scalar !*factor, !*exp, !*gcd, !*mcd, g;
+        on factor, mcd, gcd;  % switch-setting
         g:= (part(dl,1)*part(dl,2)/gcd(part(dl,1),part(dl,2)));
         if (length(dl) = 2) then return g;
         dl:= (for j:=3:length(dl) collect j);
@@ -1731,13 +1731,13 @@ end$
 
 algebraic procedure qsumrecursion_denom(req, vars);
 begin
-        scalar !*FACTOR, !*EXP, !*GCD, !*MCD, numer, denom;
-        on FACTOR, MCD, GCD;  % switch-setting
+        scalar !*factor, !*exp, !*gcd, !*mcd, numer, denom;
+        on factor, mcd, gcd;  % switch-setting
         numer:= (for each j in vars collect coeffn(req,j,1)*j);
         denom:= (for each j in numer collect den(j));
         denom:= qsumrecursion_denom_lcm(denom);
         numer:= (for each j in numer collect j*denom);
-        off FACTOR; off EXP; % lisp setq(!*really_off_exp,t);  % switch-setting
+        off factor; off exp; % lisp setq(!*really_off_exp,t);  % switch-setting
         return (for each j in numer sum j);
 end$
 
@@ -1745,8 +1745,8 @@ end$
 
 algebraic procedure qsumrecursion_qratios(f, q, k, qk, n, qn);
 begin
-        scalar !*FACTOR, !*EXP, !*MCD, !*GCD, !*LIMITEDFACTORS, kn_ratio;
-        on FACTOR, MCD;  off GCD, LIMITEDFACTORS;  % switch-setting
+        scalar !*factor, !*exp, !*mcd, !*gcd, !*limitedfactors, kn_ratio;
+        on factor, mcd;  off gcd, limitedfactors;  % switch-setting
         timing(qratios);
         kn_ratio:= {down_qratio(f,k), qratio(f,n)};
         kn_ratio:= (kn_ratio where {q^k=>qk, q^n=>qn});
@@ -1766,12 +1766,12 @@ end$
 
 algebraic procedure qsumrecursion_eval(f, q, k, summ, n, recrange);
 begin
-        scalar !*PRECISE, !*FACTOR, !*EXP, !*MCD, !*GCD, !*LIMITEDFACTORS,
+        scalar !*precise, !*factor, !*exp, !*mcd, !*gcd, !*limitedfactors,
                         redefmode, qk, qn, rk, rn, lo, hi, a, poly, sigmalist,
                         record, pqr, fpol, solu, cert;
         timing(start); timing(qsumrecursion);
 
-        on FACTOR, MCD;  off PRECISE, GCD, LIMITEDFACTORS;  % switch-setting
+        on factor, mcd;  off precise, gcd, limitedfactors;  % switch-setting
         % Turn off function-has-been-redefined-messages.
         share redefmode;
         redefmode:= (lisp !*redefmsg);
@@ -1804,12 +1804,12 @@ begin
                         a:= (for l:=0:record-1 product sub({n=n-l, qn=qn/q^l}, rn))
                 else
                         a:= (for l:=0:record-1 product sub({n=n+l, qn=qn*q^l}, rn));
-                on GCD;  % switch-setting???
+                on gcd;  % switch-setting???
                 poly:= poly + part(sigmalist,record)*a;
                 fpol:= {};
                 if (record >= lo) then begin
                         a:= rk * sub(qk=qk/q, den(poly)) / den(poly);
-                        off GCD;  % switch-setting???
+                        off gcd;  % switch-setting???
 %trace_qsum("rat:=", a);
                         pqr:= qgosper_qupdate(num(poly), num(a), den(a), q, qk);
                         fpol:= qsumrecursion_qfindf(pqr, q, qk, sigmalist);
@@ -1824,9 +1824,9 @@ begin
         else
                 rec:= summ(n) + (for j:=1:record sum part(sigmalist,j)*summ(n+j));
         if (lisp !*qsumrecursion_exp) then
-                on EXP  % switch-setting
+                on exp  % switch-setting
         else
-                on FACTOR;  % switch-setting
+                on factor;  % switch-setting
         factor summ;
         rec:= sub(solu, rec);
         if (lisp !*qsumrecursion_certificate) then begin

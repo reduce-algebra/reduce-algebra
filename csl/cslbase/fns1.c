@@ -1456,13 +1456,13 @@ Lisp_Object Lenable_errorset(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     Lisp_Object r = cons(fixnum_of_int(errorset_min),
                          fixnum_of_int(errorset_max));
     errexit();
-    if (a == nil || a == fixnum_of_int(0)) errorset_min = 0;
-    else if (a == fixnum_of_int(1)) errorset_min = 1;
-    else if (a == fixnum_of_int(2)) errorset_min = 2;
+    if (a == nil || a == fixnum_of_int(0))            errorset_min = 0;
+    else if (a == fixnum_of_int(1))                   errorset_min = 1;
+    else if (a == fixnum_of_int(2))                   errorset_min = 2;
     else if (a == fixnum_of_int(3) || a == lisp_true) errorset_min = 3;
-    if (b == nil || a == fixnum_of_int(0)) errorset_max = 0;
-    else if (b == fixnum_of_int(1)) errorset_max = 1;
-    else if (b == fixnum_of_int(2)) errorset_max = 2;
+    if (b == nil || b == fixnum_of_int(0))            errorset_max = 0;
+    else if (b == fixnum_of_int(1))                   errorset_max = 1;
+    else if (b == fixnum_of_int(2))                   errorset_max = 2;
     else if (b == fixnum_of_int(3) || b == lisp_true) errorset_max = 3;
 /* I increase the max to be at least as high as the indicated min */
     if (errorset_min > errorset_max) errorset_max = errorset_min;

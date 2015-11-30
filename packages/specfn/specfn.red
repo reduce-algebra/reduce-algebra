@@ -128,24 +128,24 @@ algebraic procedure complex!*restore!*switch(fl);
 %                  ,lommel1, lommel2 ,whittakerm, whittakerw,
 %                   Airy_Ai, Airy_Bi,Airy_AiPrime,Airy_biprime);
 
-defautoload_operator(besselj,specbess);
-defautoload_operator(bessely,specbess);
-defautoload_operator(besseli,specbess);
-defautoload_operator(besselk,specbess);
+defautoload_operator(BesselJ,specbess);
+defautoload_operator(BesselY,specbess);
+defautoload_operator(BesselI,specbess);
+defautoload_operator(BesselK,specbess);
 defautoload_operator(hankel1,specbess);
 defautoload_operator(hankel2,specbess);
-defautoload_operator(kummerM,specbess);
-defautoload_operator(kummerU,specbess);
-defautoload_operator(struveh,specbess);
-defautoload_operator(struvel,specbess);
+defautoload_operator(KummerM,specbess);
+defautoload_operator(KummerU,specbess);
+defautoload_operator(StruveH,specbess);
+defautoload_operator(StruveL,specbess);
 defautoload_operator(lommel1,specbess);
 defautoload_operator(lommel2,specbess);
-defautoload_operator(whittakerm,specbess);
-defautoload_operator(whittakerw,specbess);
+defautoload_operator(WhittakerM,specbess);
+defautoload_operator(WhittakerW,specbess);
 defautoload_operator(Airy_Ai,specbess);
 defautoload_operator(Airy_Bi,specbess);
-defautoload_operator(Airy_AiPrime,specbess);
-defautoload_operator(Airy_biprime,specbess);
+defautoload_operator(Airy_Aiprime,specbess);
+defautoload_operator(Airy_Biprime,specbess);
 
 %defautoload_operator(gamma,sfgamma);
 %defautoload_operator(igamma,sfgamma);

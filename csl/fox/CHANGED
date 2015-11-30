@@ -106,4 +106,10 @@ December 2014: Change logic for finding help files.
 February 2015: Add menus to pop up dialog boxes for a range of Reduce
      algebraic operations.
 
+March 2015: increase the pool size in FXShowMath.cpp because when it overflows
+     everything seems to crash. I will need a proper fix some time because
+     my change of buffer size delays rather than cures the issue!
+
+April 2015: A proper fix (I hope) for the issue noted from March 2015.
+
 <end of CHANGED>

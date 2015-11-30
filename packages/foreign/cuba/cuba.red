@@ -41,9 +41,9 @@ global '(
    libredcuba_loc!*
    libredcuba!*
    cuba_algorithms!*
-   newDoubleArray!*
-   setDoubleArray!*
-   freeDoubleArray!*
+   newdoublearray!*
+   setdoublearray!*
+   freedoublearray!*
    cuba_gen_par!*
    cuba_set_flags_bit!*
    cuba_clear_flags_bit!*

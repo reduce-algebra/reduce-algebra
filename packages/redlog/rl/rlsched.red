@@ -44,196 +44,196 @@ rl_mkserv('subfof,'(dummy dummy),nil,nil,nil,nil);
 rl_mkserv('identifyonoff,'(reval),nil,nil,'null,nil);
 
 rl_mkserv('simpl,'(rl_simp),
-   '(rl_a2s!-atl rl_a2s!-number),'((list) -1),'rl_s2a!-simpl,T);
+   '(rl_a2s!-atl rl_a2s!-number),'((list) -1),'rl_s2a!-simpl,t);
 
-rl_mkserv('thsimpl,'(rl_a2s!-atl),nil,nil,'rl_s2a!-atl,T);
+rl_mkserv('thsimpl,'(rl_a2s!-atl),nil,nil,'rl_s2a!-atl,t);
 
 rl_mkserv('lthsimpl,'(rl_a2s!-atl),nil,nil,'rl_s2a!-atl,nil);
 
-rl_mkserv('pnf,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('pnf,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('apnf,'(rl_a2s!-posf),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('apnf,'(rl_a2s!-posf),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('nnf,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('nnf,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
 rl_mkserv('nnfnot,'(dummy),nil,nil,nil,nil);
 
-rl_mkserv('rnf,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('rnf,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('cnf,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('cnf,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('dnf,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('dnf,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('ex,'(rl_simp),'(rl_a2s!-varl),'((list)),'rl_mk!*fof,T);
+rl_mkserv('ex,'(rl_simp),'(rl_a2s!-varl),'((list)),'rl_mk!*fof,t);
 
-rl_mkserv('ex2,'(rl_simp),'(rl_a2s!-varl),'((list)),'rl_mk!*fof,T);
+rl_mkserv('ex2,'(rl_simp),'(rl_a2s!-varl),'((list)),'rl_mk!*fof,t);
 
-rl_mkserv('all,'(rl_simp),'(rl_a2s!-varl),'((list)),'rl_mk!*fof,T);
+rl_mkserv('all,'(rl_simp),'(rl_a2s!-varl),'((list)),'rl_mk!*fof,t);
 
 rl_mkserv('posgqe,'(rl_simp),'(rl_a2s!-atl rl_a2s!-varl),'((list)
-   (list)),'rl_s2a!-gqe,T);
+   (list)),'rl_s2a!-gqe,t);
 
 rl_mkserv('gqe,'(rl_simp),'(rl_a2s!-atl rl_a2s!-varl),'((list)
-   (list)),'rl_s2a!-gqe,T);
+   (list)),'rl_s2a!-gqe,t);
 
 rl_mkserv('posgqea,'(rl_simp),'(rl_a2s!-atl rl_a2s!-varl),'((list)
-   (list)),'rl_s2a!-gqea,T);
+   (list)),'rl_s2a!-gqea,t);
 
 rl_mkserv('gqea,'(rl_simp),'(rl_a2s!-atl rl_a2s!-varl),'((list)
-   (list)),'rl_s2a!-gqea,T);
+   (list)),'rl_s2a!-gqea,t);
 
-rl_mkserv('lqe,'(rl_simp rl_a2s!-atl rl_a2s!-pt),nil,nil,'rl_s2a!-gqe,T);
+rl_mkserv('lqe,'(rl_simp rl_a2s!-atl rl_a2s!-pt),nil,nil,'rl_s2a!-gqe,t);
 
-rl_mkserv('aqe,'(rl_simp rl_a2s!-atl rl_a2s!-aqepoints),nil,nil,'rl_s2a!-gqe,T);
+rl_mkserv('aqe,'(rl_simp rl_a2s!-atl rl_a2s!-aqepoints),nil,nil,'rl_s2a!-gqe,t);
 
-rl_mkserv('qe,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-qe,T);
+rl_mkserv('qe,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-qe,t);
 
-rl_mkserv('posqe,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,T);
+rl_mkserv('posqe,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,t);
 
-rl_mkserv('qeg,'(rl_simp),nil,nil,'rl_s2a!-simpl,T);
+rl_mkserv('qeg,'(rl_simp),nil,nil,'rl_s2a!-simpl,t);
 
 rl_mkserv('pqe,'(rl_simp),'(rl_a2s!-sf rl_a2s!-atl),
-   '(1 (list)),'rl_s2a!-simpl,T);
+   '(1 (list)),'rl_s2a!-simpl,t);
 
-rl_mkserv('stex,'(rl_simp),nil,nil,'rl_s2a!-simpl,T);
+rl_mkserv('stex,'(rl_simp),nil,nil,'rl_s2a!-simpl,t);
 
-rl_mkserv('wqe,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,T);
+rl_mkserv('wqe,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,t);
 
-rl_mkserv('qea,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-qea,T);
+rl_mkserv('qea,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-qea,t);
 
-rl_mkserv('posqea,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-qea,T);
+rl_mkserv('posqea,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-qea,t);
 
 rl_mkserv('pqea,'(rl_simp),'(rl_a2s!-sf rl_a2s!-atl),
-   '(1 (list)),'rl_s2a!-qea,T);
+   '(1 (list)),'rl_s2a!-qea,t);
 
-rl_mkserv('wqea,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-wqea,T);
+rl_mkserv('wqea,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-wqea,t);
 
-rl_mkserv('zsimpl,'(rl_simp),nil,nil,'rl_s2a!-simpl,T);
+rl_mkserv('zsimpl,'(rl_simp),nil,nil,'rl_s2a!-simpl,t);
 
-rl_mkserv('atnum,'(rl_simp),nil,nil,'aeval,T);
+rl_mkserv('atnum,'(rl_simp),nil,nil,'aeval,t);
 
-rl_mkserv('qnum,'(rl_simp),nil,nil,'aeval,T);
+rl_mkserv('qnum,'(rl_simp),nil,nil,'aeval,t);
 
-rl_mkserv('gsc,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,T);
+rl_mkserv('gsc,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,t);
 
-rl_mkserv('gsd,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,T);
+rl_mkserv('gsd,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,t);
 
-rl_mkserv('gsn,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,T);
+rl_mkserv('gsn,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,t);
 
 rl_mkserv('opt,'(rl_a2s!-atl rl_a2s!-targfn),
-   '(rl_a2s!-varl rl_a2s!-number),'((list) 8),'rl_s2a!-opt,T);
+   '(rl_a2s!-varl rl_a2s!-number),'((list) 8),'rl_s2a!-opt,t);
 
-rl_mkserv('atl,'(rl_simp),nil,nil,'rl_s2a!-atl,T);
+rl_mkserv('atl,'(rl_simp),nil,nil,'rl_s2a!-atl,t);
 
 rl_mkserv('atml,'(rl_simp),nil,nil,
-   function(lambda x; rl_s2a!-ml(x,'rl_mk!*fof)),T);
+   function(lambda x; rl_s2a!-ml(x,'rl_mk!*fof)),t);
 
-rl_mkserv('matrix,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('matrix,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('ifacl,'(rl_simp),nil,nil,'rl_s2a!-terml,T);
+rl_mkserv('ifacl,'(rl_simp),nil,nil,'rl_s2a!-terml,t);
 
 rl_mkserv('ifacml,'(rl_simp),nil,nil,
-   function(lambda x; rl_s2a!-ml(x,'rl_s2a!-term)),T);
+   function(lambda x; rl_s2a!-ml(x,'rl_s2a!-term)),t);
 
-rl_mkserv('tab,'(rl_simp rl_a2s!-atl),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('tab,'(rl_simp rl_a2s!-atl),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('atab,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('atab,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('itab,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('itab,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('qeipo,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,T);
+rl_mkserv('qeipo,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,t);
 
-rl_mkserv('qews,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,T);
+rl_mkserv('qews,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,t);
 
 rl_mkserv('gentheo,'(rl_a2s!-atl rl_simp),'(rl_a2s!-varl),'((list)),
-   'rl_s2a!-gqe,T);
+   'rl_s2a!-gqe,t);
 
-rl_mkserv('tnf,'(rl_simp rl_a2s!-terml),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('tnf,'(rl_simp rl_a2s!-terml),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('terml,'(rl_simp),nil,nil,'rl_s2a!-terml,T);
+rl_mkserv('terml,'(rl_simp),nil,nil,'rl_s2a!-terml,t);
 
 rl_mkserv('termml,'(rl_simp),nil,nil,
-   function(lambda x; rl_s2a!-ml(x,'rl_s2a!-term)),T);
+   function(lambda x; rl_s2a!-ml(x,'rl_s2a!-term)),t);
 
-rl_mkserv('struct,'(rl_simp),'(rl_a2s!-id),'(v),'rl_s2a!-struct,T);
+rl_mkserv('struct,'(rl_simp),'(rl_a2s!-id),'(v),'rl_s2a!-struct,t);
 
-rl_mkserv('ifstruct,'(rl_simp),'(rl_a2s!-id),'(v),'rl_s2a!-struct,T);
+rl_mkserv('ifstruct,'(rl_simp),'(rl_a2s!-id),'(v),'rl_s2a!-struct,t);
 
-rl_mkserv('varl,'(rl_simp),nil,nil,'rl_s2a!-varl,T);
+rl_mkserv('varl,'(rl_simp),nil,nil,'rl_s2a!-varl,t);
 
-rl_mkserv('fvarl,'(rl_simp),nil,nil,'rl_s2a!-fbvarl,T);
+rl_mkserv('fvarl,'(rl_simp),nil,nil,'rl_s2a!-fbvarl,t);
 
-rl_mkserv('bvarl,'(rl_simp),nil,nil,'rl_s2a!-fbvarl,T);
+rl_mkserv('bvarl,'(rl_simp),nil,nil,'rl_s2a!-fbvarl,t);
 
-rl_mkserv('qvarl,'(rl_simp),nil,nil,'rl_s2a!-fbvarl,T);
+rl_mkserv('qvarl,'(rl_simp),nil,nil,'rl_s2a!-fbvarl,t);
 
-rl_mkserv('decdeg1,'(rl_simp),'(rl_a2s!-decdeg1),'(fvarl),'rl_s2a!-decdeg1,T);
+rl_mkserv('decdeg1,'(rl_simp),'(rl_a2s!-decdeg1),'(fvarl),'rl_s2a!-decdeg1,t);
 
-rl_mkserv('decdeg,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('decdeg,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('explats,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('explats,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('mkcanonic,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('mkcanonic,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
 rl_mkserv('surep,'(dummy dummy),nil,nil,nil,nil);
 
 rl_mkserv('siaddatl,'(dummy dummy),nil,nil,nil,nil);
 
-rl_mkserv('xqe,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('xqe,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('xqea,'(rl_simp),nil,nil,'rl_s2a!-qea,T);
+rl_mkserv('xqea,'(rl_simp),nil,nil,'rl_s2a!-qea,t);
 
 rl_mkserv('cad,'(rl_simp),'(rl_a2s!-idlist rl_a2s!-sflist),'((list) (list)),
-   function(lambda x; rl_mk!*fof cdr x),T);
+   function(lambda x; rl_mk!*fof cdr x),t);
 
 rl_mkserv('gcad,'(rl_simp),'(rl_a2s!-idlist rl_a2s!-sflist),'((list) (list)),
-   'rl_s2a!-gqe,T);
+   'rl_s2a!-gqe,t);
 
-rl_mkserv('cadporder,'(rl_simp),nil,nil,'rl_s2a!-idlist,T);
+rl_mkserv('cadporder,'(rl_simp),nil,nil,'rl_s2a!-idlist,t);
 
-rl_mkserv('gcadporder,'(rl_simp),nil,nil,'rl_s2a!-idlist,T);
+rl_mkserv('gcadporder,'(rl_simp),nil,nil,'rl_s2a!-idlist,t);
 
 rl_mkserv('cadproj,'(rl_simp),'(rl_a2s!-idlist),'((list)),
-   function(lambda x; rl_s2a!-sflistlist cdr x),T);
+   function(lambda x; rl_s2a!-sflistlist cdr x),t);
 
-rl_mkserv('kapur,'(rl_simp),{function(lambda x; x)},'(nil),'rl_mk!*fof,T);
+rl_mkserv('kapur,'(rl_simp),{function(lambda x; x)},'(nil),'rl_mk!*fof,t);
 
-rl_mkserv('miniscope,'(rl_simp),'(nil),'(nil),'rl_mk!*fof,T);
+rl_mkserv('miniscope,'(rl_simp),'(nil),'(nil),'rl_mk!*fof,t);
 
-rl_mkserv('skolemize,'(rl_simp),{function(lambda x; x)},'(nil),'rl_mk!*fof,T);
+rl_mkserv('skolemize,'(rl_simp),{function(lambda x; x)},'(nil),'rl_mk!*fof,t);
 
-rl_mkserv('qsat,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('qsat,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('qsatoptions,'(rl_a2s!-qsatoptions),nil,nil,'rl_s2a!-qsatoptions,T);
+rl_mkserv('qsatoptions,'(rl_a2s!-qsatoptions),nil,nil,'rl_s2a!-qsatoptions,t);
 
-rl_mkserv('qsatdimacs,'(rl_a2s!-string),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('qsatdimacs,'(rl_a2s!-string),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('readdimacs,'(rl_a2s!-string),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('readdimacs,'(rl_a2s!-string),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('cadswitches,nil,nil,nil,function(lambda x; x),T);
+rl_mkserv('cadswitches,nil,nil,nil,function(lambda x; x),t);
 
-rl_mkserv('expand,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('expand,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
 % Optional argument is not yet used:
-rl_mkserv('expanda,'(rl_simpa),'(rl_simp),'(false),'rl_s2a!-qea,T);
+rl_mkserv('expanda,'(rl_simpa),'(rl_simp),'(false),'rl_s2a!-qea,t);
 
-rl_mkserv('hqe,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('hqe,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('ghqe,'(rl_simp),nil,nil,'rl_s2a!-ghqe,T);
+rl_mkserv('ghqe,'(rl_simp),nil,nil,'rl_s2a!-ghqe,t);
 
-rl_mkserv('quine,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('quine,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('resolve,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('resolve,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('posresolve,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('posresolve,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('tan2,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('tan2,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('!1equation,'(rl_simp rl_a2s!-var),'(rl_a2s!-atl),'((list)),'rl_mk!*fof,T);
+rl_mkserv('!1equation,'(rl_simp rl_a2s!-var),'(rl_a2s!-atl),'((list)),'rl_mk!*fof,t);
 
-rl_mkserv('enf,'(rl_simp rl_a2s!-var),'(rl_a2s!-atl),'((list)),'rl_mk!*fof,T);
+rl_mkserv('enf,'(rl_simp rl_a2s!-var),'(rl_a2s!-atl),'((list)),'rl_mk!*fof,t);
 
-rl_mkserv('depth,'(rl_simp),nil,nil,'aeval,T);
+rl_mkserv('depth,'(rl_simp),nil,nil,'aeval,t);
 
 rl_mkserv('qesil,'(rl_a2s!-fl),'(rl_a2s!-atl),'((list)),'rl_s2a!-fl,t);
 
@@ -267,11 +267,11 @@ rl_mkserv('tropsat, '(rl_simp), nil, nil, 'aeval, t);
 
 rl_mkserv('ptropsat, '(rl_simp), nil, nil, 'aeval, t);
 
-rl_mkserv('dpep,'(rl_simp),'(rl_a2s!-number),'(20), function(lambda x; rl_mk!*fof cdr x),T);
+rl_mkserv('dpep,'(rl_simp),'(rl_a2s!-number),'(20), function(lambda x; rl_mk!*fof cdr x),t);
 
-rl_mkserv('vsl,'(rl_a2s!-atl),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('vsl,'(rl_a2s!-atl),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('sign,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+rl_mkserv('sign,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
 % Black box scheduler.
 

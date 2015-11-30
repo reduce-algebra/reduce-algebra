@@ -29,7 +29,7 @@ module reval; % Functions for algebraic evaluation of prefix forms.
 
 
 fluid '(!*combineexpt !*exp !*intstr !*listargs !*mcd !*resimp alglist!*
-        dmode!* subfg!* varstack!*);
+        dmode!* subfg!* varstack!* frlis!*);
 
 switch listargs;
 
@@ -212,7 +212,8 @@ symbolic procedure getrtype u;
                           else car x
                   else nil
      else if not idp car u then nil
-     else if getrtype car u eq 'array then getrtype getelv u 
+     else if getrtype car u eq 'array and not smemqlp(frlis!*,cdr u)
+      then getrtype getelv u 
      else if (x := get(car u,'avalue)) and (x := get(car x,'rtypefn))
       then apply1(x,cdr u)
      % Special case handling for the SUB operator.

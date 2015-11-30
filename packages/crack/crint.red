@@ -34,20 +34,20 @@ symbolic procedure ldlist(p,f,vl)$
 % of variables
 begin scalar a$
   if not atom p then
-  if member(car p,list('EXPT,'PLUS,'MINUS,'TIMES,'QUOTIENT,'DF,'EQUAL))
+  if member(car p,list('expt,'plus,'minus,'times,'quotient,'df,'equal))
   then <<
-    if (car p='PLUS) or (car p='TIMES) or
-       (car p='QUOTIENT) or (car p='EQUAL) then
+    if (car p='plus) or (car p='times) or
+       (car p='quotient) or (car p='equal) then
     <<p:=cdr p$
       while p do
       <<a:=diffincl(a,ldlist(car p,f,vl))$
         p:=cdr p>>
     >>                                     else
-    if car p='MINUS then a:=ldlist(cadr p,f,vl) else
-    if car p='EXPT         then   % if numberp caddr p then
+    if car p='minus then a:=ldlist(cadr p,f,vl) else
+    if car p='expt         then   % if numberp caddr p then
     a:=ldlist(cadr p,f,vl) else   % fuehrende Abl. aus der Basis
                                   % else a:=nil
-    if car p='DF then if cadr p=f then
+    if car p='df then if cadr p=f then
     <<p:=cddr p;
       while vl do
       <<a:=cons(dfdeg(p,car vl),a);
@@ -310,14 +310,14 @@ begin
       <<%qh :=reval list('INT,qh,v)$
         qh :=err_catch_int(qh,v)$          % changed 23.1.08
         if null qh then iflag:=nil else    % changed 23.1.08
-        if freeof(qh,'INT) then <<
+        if freeof(qh,'int) then <<
           %qih:=reval list('INT,qih,v)$
           qih:=err_catch_int(qih,v)$       % changed 23.1.08        
           iflag:=if null qih then nil else % changed 23.1.08        
                  if freeint_ and 
-                    (null freeof(qih,'INT)) then nil else
+                    (null freeof(qih,'int)) then nil else
                  if freeabs_ and 
-                    (null freeof(qih,'ABS)) then nil else <<
+                    (null freeof(qih,'abs)) then nil else <<
                    intlist:=cons(list(1),intlist)$
                    'success>>$
           if pri then <<write"232323 qh=",qh;terpri();
@@ -362,7 +362,7 @@ begin
               %--- is a list of integr. factors, here only one
               intfaclist:=cons(caadr ph,intfaclist);
               %--- multiply the inhomogeneous part with integ. factor
-              qih:=reval reval reval list('TIMES,car intfaclist,qih);
+              qih:=reval reval reval list('times,car intfaclist,qih);
               if pri then <<write"454545 qih=",qih;terpri()>>;
               ph:=car ph  % the integral of qh
             >>
@@ -394,7 +394,7 @@ begin
               geni:=partint(cadr pih,smemberl(ftem,cadr pih),
                             vl,v,genflag)$
               if geni then 
-              <<qih:=reval list('PLUS,car pih,car geni)$
+              <<qih:=reval list('plus,car pih,car geni)$
                 n:=add1 n$
                 ftem:=union(fnew_,ftem)$
                 newcond:=append(cdr geni,newcond)$  % additional de's
@@ -423,7 +423,7 @@ begin
               % inhomogeneous part can not be integrated therefore
               % reversing the succesful integration of the hom. part
               if car intfaclist neq 1 then
-              qih:=reval list('QUOTIENT,qih,car intfaclist);
+              qih:=reval list('quotient,qih,car intfaclist);
               intfaclist:=cdr intfaclist
             >>;
           >>; %-- end of the integration of the inhomog. part
@@ -443,7 +443,7 @@ begin
 
   % intlist and its elements intfaclist are in the inverse order
   % to vl and the sequence of integrations done
-  q:=reval list('PLUS,qh,qih)$ %--- adding homog. and inhomog. part
+  q:=reval list('plus,qh,qih)$ %--- adding homog. and inhomog. part
   if pri then <<terpri()$write"\\\  newcond:"$deprint newcond;
     write"multiple result:",if null iflag then nil
     else list(q,intlist,newcond,nges)
@@ -476,7 +476,7 @@ begin
   return h1  % updated listoflds
 end$ % of uplistoflds
 
-symbolic procedure ProportionalityConditions(ex,fl,x)$
+symbolic procedure proportionalityconditions(ex,fl,x)$
 % This procedure collects cases that lead to at least
 % two coefficients of two elements of fl in ex being
 % proportional to each other by an x-independent multiplier.
@@ -494,8 +494,8 @@ begin scalar flo,f1,f2,flc,s1,s2,c1,condi$
     if not zerop s2 then <<
 
      % condition for checking a special case:
-     c1:=reval {'DF,{'QUOTIENT,s1,s2},x};
-     c1:=simplifySQ(simp c1,ftem_,t,nil,t)$
+     c1:=reval {'df,{'quotient,s1,s2},x};
+     c1:=simplifysq(simp c1,ftem_,t,nil,t)$
      if (c1 neq {(1 . 1)}) and (not freeoflist(c1,ftem_)) then
      condi:=union(c1,condi)
     >>
@@ -532,7 +532,7 @@ begin scalar v,f,l,vl1,j,ftemcp,fnewcp;
     >>   else l:=1
   >>;
   % the constants and functions of integration
-  if vari then q:=list('PLUS,q,intconst(l,vl,vari,list(1)))
+  if vari then q:=list('plus,q,intconst(l,vl,vari,list(1)))
   % The coefficient is 1 so no testing of case splitting due to
   % specific parameter values is done.
           else
@@ -541,7 +541,7 @@ begin scalar v,f,l,vl1,j,ftemcp,fnewcp;
     <<v:=car vl1; vl1:=cdr vl1;
       fnewcp:=fnew_;
       if car ifac then 
-      q:=list('PLUS,q,intconst(l,vl,v,car ifac))$
+      q:=list('plus,q,intconst(l,vl,v,car ifac))$
       % l..product of factors in the coefficient of the function to be
       % eliminated, car ifac .. list of integrating factors
 
@@ -551,7 +551,7 @@ begin scalar v,f,l,vl1,j,ftemcp,fnewcp;
       % singularity check:
       j:=zero_den(q,ftemcp); 
       % proportionality check:
-      if null j then j:=ProportionalityConditions(q,setdiff(fnew_,fnewcp),v)$
+      if null j then j:=proportionalityconditions(q,setdiff(fnew_,fnewcp),v)$
 
       ifac:=cdr ifac; 
     >>
@@ -724,11 +724,11 @@ begin
             v:=car hh;hh:=cdr hh;
             % h is the list of integrating factors of the v-integr.
             while h do <<
-              p2:=reval list('QUOTIENT,list('DF,p2,v),car h);
+              p2:=reval list('quotient,list('df,p2,v),car h);
               h:=cdr h
             >>
           >>;
-          p2:=reval reval list('PLUS,p,list('MINUS,p2));
+          p2:=reval reval list('plus,p,list('minus,p2));
           p2:=multipleint(ili2a,ftem,p2,nil,vl,genflag,t,nil,
                           % potflag=t, partial=nil
                           union(vlofintlist(vl,ili1a),
@@ -769,17 +769,17 @@ begin
             while v do
             <<cop:=car ifac1a; ifac1a:=cdr ifac1a;
               while cop do <<
-                pot1:=reval list('QUOTIENT,list('DF,pot1,car v),car cop);
+                pot1:=reval list('quotient,list('df,pot1,car v),car cop);
                 cop:=cdr cop
               >>;
               cop:=car ifac2a; ifac2a:=cdr ifac2a;
               while cop do <<
-                pot2:=reval list('QUOTIENT,list('DF,pot2,car v),car cop);
+                pot2:=reval list('quotient,list('df,pot2,car v),car cop);
                 cop:=cdr cop
               >>;
               v:=cdr v;
             >>;
-            pnew:=addintco(list('PLUS,p1,reval pot2),
+            pnew:=addintco(list('plus,p1,reval pot2),
                            ftem,ifac1b,vlrev,nil)$
             % This value is called pnew and not p because if secnd=nil then
             % if pnew=nil or aic=nil below then another try can be done 
@@ -793,7 +793,7 @@ begin
 
             if null pnew then secnd:=t
                          else <<
-              aic:=addintco(list('PLUS,p2,list('MINUS,reval pot1)),
+              aic:=addintco(list('plus,p2,list('minus,reval pot1)),
                             ftem,ifac2b,vlrev,nil)$
               if null aic then secnd:=t
                           else <<
@@ -869,8 +869,8 @@ begin scalar ft,ip,h,itgl1,itgl2$
   >>;
  >>$
 
- if itgl1 then <<itgl1:=reval cons('PLUS,itgl1);
-                 itgl2:=reval cons('PLUS,itgl2) >>$
+ if itgl1 then <<itgl1:=reval cons('plus,itgl1);
+                 itgl2:=reval cons('plus,itgl2) >>$
 
  return if null itgl1 then nil
                       else {itgl1,itgl2}
@@ -888,7 +888,7 @@ begin scalar dv,newdv$
               else newdv:=cons(car dv,newdv);
    dv:=cdr dv
  >>;
- return if newdv then cons('DF,cons(cadr der,reverse newdv))
+ return if newdv then cons('df,cons(cadr der,reverse newdv))
                  else cadr der
 end$
 
@@ -900,27 +900,27 @@ begin scalar tm,cex$
  return
  if freeoflist(ex,ft) then 1 else
  if not pairp ex then ex else
- if car ex='MINUS then strip_x(cadr ex,ft,x) else
- if car ex='DF then drop_x_dif(ex,x) else
- if car ex='EXPT then if not pairp cadr ex then ex else
-                      if caadr ex='DF then
-                      {'EXPT,drop_x_dif(cadr ex,x),caddr ex} else 1 % strange
+ if car ex='minus then strip_x(cadr ex,ft,x) else
+ if car ex='df then drop_x_dif(ex,x) else
+ if car ex='expt then if not pairp cadr ex then ex else
+                      if caadr ex='df then
+                      {'expt,drop_x_dif(cadr ex,x),caddr ex} else 1 % strange
                  else
- if car ex='TIMES then <<
+ if car ex='times then <<
   ex:=cdr ex;
   while ex do <<
    cex:=car ex; ex:=cdr ex;
    if not freeoflist(cex,ft) then 
    if not pairp cex then tm:=cons(cex,tm) else
-   if car cex='DF then tm:=cons(drop_x_dif(cex,x),tm) else
-   if car cex='EXPT then if not pairp cadr cex then tm:=cons(cex,tm) else
-                         if caadr cex='DF then
-                         tm:=cons({'EXPT,drop_x_dif(cadr cex,x),caddr cex},tm) 
+   if car cex='df then tm:=cons(drop_x_dif(cex,x),tm) else
+   if car cex='expt then if not pairp cadr cex then tm:=cons(cex,tm) else
+                         if caadr cex='df then
+                         tm:=cons({'expt,drop_x_dif(cadr cex,x),caddr cex},tm) 
                     % else strange - no polynomial in ft
   >>;
   if null tm then 1 % strange
              else 
-  if length tm > 1 then reval cons('TIMES,tm)  % product of factors
+  if length tm > 1 then reval cons('times,tm)  % product of factors
                    else car tm                 % single factor
  >>               else 1 % strange
 end$
@@ -933,7 +933,7 @@ begin scalar stcp,pcop,parti;
  if pname then
  if get(pname,'partitioned) then return get(pname,'partitioned)
                             else <<cp_sq2p_val(pname)$p:=get(pname,'pval)>>$
- if (not pairp p) or (car p neq 'PLUS) then p:=list p 
+ if (not pairp p) or (car p neq 'plus) then p:=list p 
                                        else p:=cdr p;
  if null ft then parti:={{1,1,p}} else
  while p do <<                % sort each term into a partial sum
@@ -956,17 +956,17 @@ symbolic procedure int_partition(p,ft,x)$
 begin scalar parti,ft,pcop;
 
  % the special case of a quotient
- if (pairp p) and (car p='QUOTIENT) then return 
+ if (pairp p) and (car p='quotient) then return 
  if not freeoflist(caddr p,ft) then list p
                                else <<
   pcop:=int_partition(cadr p,ft,x)$
-  for each h in pcop collect {'QUOTIENT,h,caddr p}
+  for each h in pcop collect {'quotient,h,caddr p}
  >>$
  parti:=sort_partition(nil,p,ft,x)$
  parti:=idx_sort for each h in parti collect cdr h;
  return for each h in parti collect
         if car h = 1 then caadr h
-                     else cons('PLUS,cadr h) 
+                     else cons('plus,cadr h) 
 
 end$
 
@@ -978,15 +978,15 @@ begin scalar f,ft,l,l1,l2,l3,l4,vl,k,s,a,iflag,flag$
   while ftem and not flag do
   <<f:=car ftem$ % integrating all terms including car ftem
     if member(x,fctargs f) then
-    <<if (pairp p) and (car p = 'QUOTIENT) then <<
+    <<if (pairp p) and (car p = 'quotient) then <<
         l1:=lderiv(cadr  p,f,vl)$ % numerator
-        if cdr l1 neq 'INFINITY then <<
+        if cdr l1 neq 'infinity then <<
           l2:=lderiv(caddr p,f,vl)$ % denomiator
-          if cdr l2 = 'INFINITY then l1:=l2 
+          if cdr l2 = 'infinity then l1:=l2 
                                 else <<
             if car l1 and (car l1=car l2) then l1:=(car l1 . 2) % nonlinearity
                                           else <<
-              l:=lderiv({'PLUS,car l1,car l2},f,vl)$ % comparison of both
+              l:=lderiv({'plus,car l1,car l2},f,vl)$ % comparison of both
               if car l2 % changed from car l1 as car l1 gives endless loops with
                  % call intpde((quotient (minus 1) (df u y)),(u),(y x t),y,nil)
                  and (car l = car l2) then l1:=(car l2 . -1)
@@ -998,7 +998,7 @@ begin scalar f,ft,l,l1,l2,l3,l4,vl,k,s,a,iflag,flag$
       l1:=l:=lderiv(p,f,vl)$
       while not (flag or <<
         iflag:=intlintest(l,x);
-        if (iflag='NOXDRV) or (iflag='NODRV) then <<
+        if (iflag='noxdrv) or (iflag='nodrv) then <<
           l2:=start_let_rules()$
 !#if (equal version!* "REDUCE 3.6")
           p:=reval aeval p$
@@ -1009,8 +1009,8 @@ begin scalar f,ft,l,l1,l2,l3,l4,vl,k,s,a,iflag,flag$
           l:=lderiv(p,f,vl)$
           iflag:=intlintest(l,x)
         >>                                   else
-        if potint and (iflag='NONLIN) and (pairp p) and 
-           (car p='PLUS) and null l3 and (cdr l neq 'infinity) then <<
+        if potint and (iflag='nonlin) and (pairp p) and 
+           (car p='plus) and null l3 and (cdr l neq 'infinity) then <<
           l3:=t; l4:=l;
           l:=car l . 1;
           iflag:=intlintest(l,x);
@@ -1018,8 +1018,8 @@ begin scalar f,ft,l,l1,l2,l3,l4,vl,k,s,a,iflag,flag$
         >>;
         iflag
       >>        ) do
-      <<if (pairp p) and (car p = 'QUOTIENT) then
-        k:=reval {'QUOTIENT,coeffn(cadr p,car l,cdr l),caddr p}
+      <<if (pairp p) and (car p = 'quotient) then
+        k:=reval {'quotient,coeffn(cadr p,car l,cdr l),caddr p}
                                              else
         k:=reval coeffn(p,car l,cdr l)$
         if intcoefftest(car lderiv(k,f,vl),car l,vl) then
@@ -1044,10 +1044,10 @@ begin scalar f,ft,l,l1,l2,l3,l4,vl,k,s,a,iflag,flag$
             k:=reval subst(a,'v_a_r_,k)$
             s:=cons(k,s)$
 !#if (equal version!* "REDUCE 3.6")
-            p:=reval aeval list('DIFFERENCE,p,list('DF,k,x))$
+            p:=reval aeval list('difference,p,list('df,k,x))$
 !#else          
             %p:=reval list('DIFFERENCE,p,list('DF,k,x))$             %################  THIS CAN TAKE LONG
-            p:=list('DIFFERENCE,p,list('DF,k,x))$            
+            p:=list('difference,p,list('df,k,x))$            
             p:=err_catch_reval p$           
             if null p then flag:='reval_too_slow else
 !#endif
@@ -1076,9 +1076,9 @@ begin scalar f,ft,l,l1,l2,l3,l4,vl,k,s,a,iflag,flag$
     if null l1 then nil
                else <<
 !#if (equal version!* "REDUCE 3.6")
-      s:=reval aeval cons('PLUS,cons(l1,s))$
+      s:=reval aeval cons('plus,cons(l1,s))$
 !#else          
-      s:=reval cons('PLUS,cons(l1,s))$
+      s:=reval cons('plus,cons(l1,s))$
 !#endif
       if lin_problem then l4:=nil
                      else l4:=zero_den(s,ft);
@@ -1094,15 +1094,15 @@ begin scalar f,ft,l,l1,l2,l3,l4,vl,k,s,a,iflag,flag$
         to_do_list:=union(list(list('split_into_cases,l2)),to_do_list);
         nil
       >>    else
-      if freeint_ and (null freeof(s,'INT)) then nil else
-      if freeabs_ and (null freeof(s,'ABS)) then nil else <<
+      if freeint_ and (null freeof(s,'int)) then nil else
+      if freeabs_ and (null freeof(s,'abs)) then nil else <<
         k:=start_let_rules()$
 !#if (equal version!* "REDUCE 3.6")
-        l2:=reval aeval list('DF,l1,x)$
-        if 0 neq reval reval aeval list('DIFFERENCE,l,l2) then <<
+        l2:=reval aeval list('df,l1,x)$
+        if 0 neq reval reval aeval list('difference,l,l2) then <<
 !#else          
-        l2 := reval {'DF,l1,x} where !*precise=nil;
-        if 0 neq (reval {'DIFFERENCE,l,l2} where !*precise=nil) then <<
+        l2 := reval {'df,l1,x} where !*precise=nil;
+        if 0 neq (reval {'difference,l,l2} where !*precise=nil) then <<
 !#endif
           write"REDUCE integrator error:"$terpri()$
           algebraic write "int(",l,",",x,") neq ",l1;terpri()$
@@ -1111,9 +1111,9 @@ begin scalar f,ft,l,l1,l2,l3,l4,vl,k,s,a,iflag,flag$
           nil
         >> else <<
 !#if (equal version!* "REDUCE 3.6")
-          p:=reval reval aeval list('DIFFERENCE,p,l2)$
+          p:=reval reval aeval list('difference,p,l2)$
 !#else          
-          p:=reval list('DIFFERENCE,p,l2)$
+          p:=reval list('difference,p,l2)$
 !#endif
           stop_let_rules(k)$
           if poly_only then if ratexp(s,ft) then list(s,p)
@@ -1130,15 +1130,15 @@ symbolic procedure explicitpart(p,ft,x)$
 begin scalar l$
 if not member(x,argset smemberl(ft,p)) then l:=p
 else if pairp p then
-   <<if car p='MINUS then
-        l:=reval list('MINUS,explicitpart(cadr p,ft,x))$
-   if (car p='QUOTIENT) and not member(x,argset smemberl(ft,caddr p))
+   <<if car p='minus then
+        l:=reval list('minus,explicitpart(cadr p,ft,x))$
+   if (car p='quotient) and not member(x,argset smemberl(ft,caddr p))
    then
-      l:=reval list('QUOTIENT,explicitpart(cadr p,ft,x),caddr p)$
-   if car p='PLUS then
+      l:=reval list('quotient,explicitpart(cadr p,ft,x),caddr p)$
+   if car p='plus then
       <<for each a in cdr p do
           if not member(x,argset smemberl(ft,a)) then l:=cons(a,l)$
-      if pairp l then l:=reval cons('PLUS,l)>> >>$
+      if pairp l then l:=reval cons('plus,l)>> >>$
 if not l then l:=0$
 return l$
 end$
@@ -1151,7 +1151,7 @@ begin scalar l,l2,f,coli,cotmp$
     cotmp:=coli;
     coli:=nil;
     while cotmp do <<
-      coli:=cons(list('INT,list('TIMES,car ifalist,car cotmp),x),coli);
+      coli:=cons(list('int,list('times,car ifalist,car cotmp),x),coli);
       cotmp:=cdr cotmp
     >>;
     coli:=cons(1,coli);
@@ -1163,28 +1163,28 @@ begin scalar l,l2,f,coli,cotmp$
     nfct_:=add1 nfct_$
     fnew_:=cons(f,fnew_)$
     flin_:=fctinsert(f,flin_)$
-    l:=cons(list('TIMES,f,car coli),l)$
+    l:=cons(list('times,f,car coli),l)$
     coli:=cdr coli
   >>$
-  if length l>1 then l:=cons('PLUS,l)
+  if length l>1 then l:=cons('plus,l)
                 else if pairp l then l:=car l
                                 else l:=0$
   if co and co neq 1 then
   if pairp co then
-  <<if car co='TIMES then co:=cdr co
+  <<if car co='times then co:=cdr co
                      else co:=list co$
     while co do <<if my_freeof(car co,x) then l2:=cons(car co,l2)$
                   co:=cdr co>>
   >>
               else if co neq x then l2:=list co$
-  return reval if l2 then cons('TIMES,cons(l,l2))
+  return reval if l2 then cons('times,cons(l,l2))
                      else l
 end$
 
 symbolic procedure intcoefftest(l,l1,vl)$
 begin scalar s$
 return if not pairp l then t
-       else if car l='DF then
+       else if car l='df then
                <<s:=decderiv(l1,car vl)$
                if pairp s and pairp cdr s then s:=cddr s
                                           else s:=nil$
@@ -1206,7 +1206,7 @@ if not car l then
 else                                    %  Fkt. tritt auf
   if (car l) and (cdr l=1) then         %  fuehr. Abl. tritt linear auf
                 if pairp car l then     %  Abl. der Fkt. tritt auf
-                    if caar l='DF then
+                    if caar l='df then
                         if member(x,cddar l) then nil
                                         %  x-Abl. tritt auf
                         else if member(x,fctargs cadar l) then 'noxdrv
@@ -1218,9 +1218,9 @@ else                                    %  Fkt. tritt auf
 symbolic procedure decderiv(l,x)$
 %  in Diff.ausdr. l wird Ordn. d. Abl. nach x um 1 gesenkt
 begin scalar l1$
-return if l then if car l='DF then
+return if l then if car l='df then
         <<l1:=decderiv1(cddr l,x)$
-        if l1 then cons('DF,cons(cadr l,l1))
+        if l1 then cons('df,cons(cadr l,l1))
                  else cadr l>>
                             else l
            else nil$
@@ -1250,7 +1250,7 @@ begin scalar l,l1,l2,fl,ltdl$
  if l1:=integrateode(q,car l1,cadr l1,caddr l1,ftem) then
                                        % trying to integrate it
  <<l:=append(cdr l1,l);
-   q:=prepsq car simplifypdeSQ(simp car l1,ftem,nil,nil,nil)$  
+   q:=prepsq car simplifypdesq(simp car l1,ftem,nil,nil,nil)$  
    ftem:=smemberl(union(fnew_,ftem),q)$
    fl:=t
  >>                                                  else 
@@ -1283,7 +1283,7 @@ begin scalar l,l1,l2,fl,ltdl$
    l:=for each a in l collect reval a$
 !#endif
    l:=for each a in l collect
-          if pairp a and (car a='QUOTIENT) then cadr a
+          if pairp a and (car a='quotient) then cadr a
                                            else a>>$
  return l$
 end$
@@ -1352,7 +1352,7 @@ begin scalar l,fli,fnew_old,h,loftolist$
                h:=coeffn(car l,car fli,1);
                if domainp h then nil 
                             else <<
-                 h:=simplifySQ(cadr h,get(q,'fcts),t,nil,t)$
+                 h:=simplifysq(cadr h,get(q,'fcts),t,nil,t)$
                  if h={(1 . 1)} then t else nil
                >>
              >>
@@ -1383,7 +1383,7 @@ begin scalar l,fli,fnew_old,h,loftolist$
         while h and (car h neq get(q,'pval)) do h:=cdr h;
         if h then << % equation q is to be kept
           l:=delete(get(q,'pval),l);
-          l:=cons(q,mkeqSQlist(nil,nil,l,ftem_,get(q,'vars),
+          l:=cons(q,mkeqsqlist(nil,nil,l,ftem_,get(q,'vars),
                                allflags_,t,get(q,'orderings),pdes))$
           if print_ then <<
             terpri()$
@@ -1398,10 +1398,10 @@ begin scalar l,fli,fnew_old,h,loftolist$
           >>
         >>   else <<
           flag1(q,'to_eval)$
-          updateSQ(q,nil,nil,car l,ftem_,get(q,'vars),t,list(0),nil)$
+          updatesq(q,nil,nil,car l,ftem_,get(q,'vars),t,list(0),nil)$
           drop_pde_from_idties(q,pdes,nil)$
           drop_pde_from_properties(q,pdes)$
-          l:=cons(q,mkeqSQlist(nil,nil,cdr l,ftem_,get(q,'vars),
+          l:=cons(q,mkeqsqlist(nil,nil,cdr l,ftem_,get(q,'vars),
                                allflags_,t,get(q,'orderings),pdes))$
           put(q,'dec_with,nil);     % 23.3.99 added --> cycling?
           put(q,'dec_with_rl,nil);  %    "    added --> cycling?
@@ -1543,7 +1543,7 @@ symbolic procedure gintorder(p,vl,x)$
 %symbolic procedure gintorder(p,ftem,vl,x)$
 %  reorder equation p
 begin scalar l,l1,q,m,b,c,q1,q2$
-  if pairp(p) and (car p='QUOTIENT) then <<
+  if pairp(p) and (car p='quotient) then <<
    q:=caddr p$
    p:=cadr p$
    l1:=gintorder1(q,x,t)$
@@ -1552,44 +1552,44 @@ begin scalar l,l1,q,m,b,c,q1,q2$
    q1:=car l1;
    q2:=cadr l1;
   >>$
-  if pairp(p) and (car p='PLUS) then p:=cdr p   % list of summands
+  if pairp(p) and (car p='plus) then p:=cdr p   % list of summands
                                 else p:=list p$
   while p do
   <<l1:=gintorder1(car p,x,nil)$
 %  <<l1:=gintorder1(car p,ftem,x,nil)$
-    if DepOnAllVars(if q1=1 then car l1
-                            else cons('TIMES,
-                    append(if pairp q1 and car q1='TIMES then cdr q1 
+    if deponallvars(if q1=1 then car l1
+                            else cons('times,
+                    append(if pairp q1 and car q1='times then cdr q1 
                                                          else list q1,
-                           if pairp car l1 and caar l1='TIMES then cdar l1
+                           if pairp car l1 and caar l1='times then cdar l1
                                                               else list car l1)),
                     x,vl) then l:=p:=nil
                           else <<l:=termsort(l,l1)$p:=cdr p>> >>$
   if l then
   <<l:=for each a in l collect if cddr a then
                <<b:=car a$
-                 c:=cdr reval coeff1(cons('PLUS,cdr a),x,nil)$
+                 c:=cdr reval coeff1(cons('plus,cdr a),x,nil)$
                  m:=0$
                  while c and (car c=0) do <<c:=cdr c$m:=add1 m>>$
-                 if m>0 then b:=list('TIMES,list('EXPT,x,m),b)$
+                 if m>0 then b:=list('times,list('expt,x,m),b)$
                  cons(reval b,c)>>
                                          else
                  cons(reval car a,cdr reval coeff1(cadr a,x,nil))$
     if q then <<
        l:=for each a in l collect
               cons(car a,for each s in cdr a collect
-                             reval list('QUOTIENT,s,q2))$
+                             reval list('quotient,s,q2))$
        l:=for each a in l collect
-              cons(reval list('QUOTIENT,car a,q1),cdr a)
+              cons(reval list('quotient,car a,q1),cdr a)
     >>$
 >>$
 return l$
 end$
 
-symbolic procedure DepOnAllVars(c,x,vl)$
+symbolic procedure deponallvars(c,x,vl)$
 % tests for occurence of vars from vl in factors of c depending on x
 begin scalar l$
-if pairp c and (car c='TIMES) then c:=cdr c
+if pairp c and (car c='times) then c:=cdr c
                               else c:=list c$
 while c and vl do
 <<if not my_freeof(car c,x) then 
@@ -1612,8 +1612,8 @@ begin scalar l1,l2,sig$
 %    l2: list of factors of p not depending on x 
 %    l1: all other factors
 
-if pairp p and (car p='MINUS) then <<sig:=t$p:=cadr p>>$
-if pairp p and (car p='TIMES) then p:=cdr p
+if pairp p and (car p='minus) then <<sig:=t$p:=cadr p>>$
+if pairp p and (car p='times) then p:=cdr p
                               else p:=list p$
 for each a in p do
    <<if my_freeof(a,x) then l2:=cons(a,l2)
@@ -1632,17 +1632,17 @@ for each a in p do
      %
      else if mode2 then l1:=cons(a,l1)
      else if a=x then l2:=cons(a,l2)
-     else if pairp a and (car a='EXPT) and (cadr a=x) and fixp caddr a
+     else if pairp a and (car a='expt) and (cadr a=x) and fixp caddr a
      then l2:=cons(a,l2)
      else l1:=cons(a,l1)>>$
 if pairp l1 then
-   if cdr l1 then l1:=cons('TIMES,l1)
+   if cdr l1 then l1:=cons('times,l1)
              else l1:=car l1$
 if pairp l2 then
-   if cdr l2 then l2:=cons('TIMES,l2)        
+   if cdr l2 then l2:=cons('times,l2)        
              else l2:=car l2$ 
-if sig then if l2 then l2:=list('MINUS,l2)
-                  else l2:=list('MINUS,1)$
+if sig then if l2 then l2:=list('minus,l2)
+                  else l2:=list('minus,1)$
 return list(if l1 then l1 else 1,if l2 then l2 else 1)$
 end$
 
@@ -1661,7 +1661,7 @@ begin scalar f,neg,l1,l2,n,k,l,h$
   l:=for each s in l collect <<
     h:=varslist(car s,ftem,vl)$
     if h=nil then <<
-      list('TIMES,x,car s,cons('PLUS,cdr s))
+      list('times,x,car s,cons('plus,cdr s))
     >>       else <<
       f:=newfct(fname_,h,nfct_)$
       nfct_:=add1 nfct_$
@@ -1670,26 +1670,26 @@ begin scalar f,neg,l1,l2,n,k,l,h$
       neg:=t$
       n:=sub1 length cdr s$
       k:=-1$
-      if (pairp car s) and (caar s='DF) then
-        <<h:=reval reval list('DIFFERENCE,cadar s,list('DF,f,x,add1 n))$
+      if (pairp car s) and (caar s='df) then
+        <<h:=reval reval list('difference,cadar s,list('df,f,x,add1 n))$
         if not zerop h then l1:=cons(h,l1)$
         l2:=cddar s>>
       else
-        <<h:=signchange reval reval list('DIFFERENCE,car s,
-                                   list('DF,f,x,add1 n))$
+        <<h:=signchange reval reval list('difference,car s,
+                                   list('df,f,x,add1 n))$
         if not zerop h then l1:=cons(h,l1)$
         l2:=nil>>$
-      reval cons('PLUS, for each sk on cdr s collect
+      reval cons('plus, for each sk on cdr s collect
                  <<neg:=not neg$
                    k:=add1 k$
-                   reval list('TIMES,if neg then -1 else 1,
-                              append(list('DF,f,x,n-k),l2),
+                   reval list('times,if neg then -1 else 1,
+                              append(list('df,f,x,n-k),l2),
                               tailsum(sk,k,x)               )
                  >>
                 )
     >>
   >>$
-  if l then l:=cons(reval cons('PLUS,l),l1)$
+  if l then l:=cons(reval cons('plus,l),l1)$
   if tr_genint then
   <<terpri()$
     write "result (without constant or function of integration): "$
@@ -1705,10 +1705,10 @@ end$
 symbolic procedure tailsum(sk,k,x)$
 begin scalar j$
 j:=-1$
-return reval cons('PLUS,
+return reval cons('plus,
 for each a in sk collect
     <<j:=j+1$
-    list('TIMES,a,prod(j+1,j+k),list('EXPT,x,j)) >> )
+    list('times,a,prod(j+1,j+k),list('expt,x,j)) >> )
 end$
 
 symbolic procedure prod(m,n)$
@@ -1763,9 +1763,9 @@ begin scalar fl1,fl2;
  if null fl1 then fl1:=1;
  if null fl2 then fl2:=1;
  if pairp fl1 then if length fl1 = 1 then fl1:=car fl1
-                                     else fl1:=cons('TIMES,fl1);
+                                     else fl1:=cons('times,fl1);
  if pairp fl2 then if length fl2 = 1 then fl2:=car fl2
-                                     else fl2:=cons('TIMES,fl2);
+                                     else fl2:=cons('times,fl2);
  return list(fl1,fl2)
 end$ % of fctrs
 
@@ -1776,12 +1776,12 @@ symbolic procedure extractfac(p,indep,v)$
 % denominator factors
 begin scalar nu,de$
  return
- if (pairp p) and (car p='QUOTIENT) then
+ if (pairp p) and (car p='quotient) then
  <<nu:=fctrs( cadr p,indep,v);
    de:=fctrs(caddr p,indep,v);
-   list( reval if car  de neq 1 then list('QUOTIENT,  car nu,  car de)
+   list( reval if car  de neq 1 then list('quotient,  car nu,  car de)
                                 else car nu,
-               if cadr de neq 1 then list('QUOTIENT, cadr nu, cadr de)
+               if cadr de neq 1 then list('quotient, cadr nu, cadr de)
                                 else cadr nu
        )
  >>                                 else fctrs(p,indep,v)
@@ -1796,12 +1796,12 @@ begin scalar res,pri$
  ex:=reval ex$
  if pri then <<terpri()$write"ex=",ex>>;
  if pairp ex then
- if (car ex='QUOTIENT) or (car ex='PLUS) or (car ex='TIMES) then 
+ if (car ex='quotient) or (car ex='plus) or (car ex='times) then 
  for each s in cdr ex do res:=union(get_kernels s,res)      else 
- if (car ex='MINUS) or 
-    ((car ex='EXPT)    and 
+ if (car ex='minus) or 
+    ((car ex='expt)    and 
 %    (numberp caddr ex)) then % not for e.g. (quotient,2,3)
-     (cadr ex neq 'E)  and 
+     (cadr ex neq 'e)  and 
      (cadr ex neq 'e)  and 
      (not fixp cadr ex)   ) then res:=get_kernels cadr ex
                             else res:=list ex
@@ -1850,10 +1850,10 @@ begin
                             % solved should not include these functions
      freeoflist(e2,indep) then <<
    n:=gensym();nl:=cons(n,nl);
-   h:=cons(list('EXPT,e2,n),h); 
+   h:=cons(list('expt,e2,n),h); 
   >>;
   if h then <<
-   if length h > 1 then h:=cons('TIMES,h)
+   if length h > 1 then h:=cons('times,h)
                    else h:=car h;
    %-- the list of substitutions for the special ansatz
    sublist:=cons((e1 . h),sublist);
@@ -1877,17 +1877,17 @@ begin
    h:=p;
    for each e2 in gk do 
    if freeoflist(e2,fl) then
-   if pairp e2 and ((car e2 = 'DF) or (car e2 = 'INT)) then <<
-    n:=list('QUOTIENT,1+random 30028,30029);
+   if pairp e2 and ((car e2 = 'df) or (car e2 = 'int)) then <<
+    n:=list('quotient,1+random 30028,30029);
     terpri();write"substitution done: ",e2," = ",n;
-    h:=subst(list('QUOTIENT,1+random 30028,30029),e2,h)
+    h:=subst(list('quotient,1+random 30028,30029),e2,h)
    >>;
    for each e2 in gk do 
    if freeoflist(e2,fl) then
-   if not(pairp e2 and ((car e2 = 'DF) or (car e2 = 'INT))) then <<
-    n:=list('QUOTIENT,1+random 30028,30029);
+   if not(pairp e2 and ((car e2 = 'df) or (car e2 = 'int))) then <<
+    n:=list('quotient,1+random 30028,30029);
     terpri();write"substitution done: ",e2," = ",n;
-    h:=subst(list('QUOTIENT,1+random 30028,30029),e2,h)
+    h:=subst(list('quotient,1+random 30028,30029),e2,h)
    >>;
 
    terpri()$terpri()$write"The equation after all substitutions: ";
@@ -1895,12 +1895,12 @@ begin
    eqprint h;
 
    eqs:=cons(reval h,eqs);
-   startval:=cons(list('EQUAL,e1,1),startval)
+   startval:=cons(list('equal,e1,1),startval)
   >>;
   if length eqs = 1 then eqs:=cdr eqs
-                    else eqs:=cons('LIST,eqs);
+                    else eqs:=cons('list,eqs);
   if length startval = 1 then startval:=cdr startval
-                         else startval:=cons('LIST,startval);
+                         else startval:=cons('list,startval);
   terpri()$write"start rdsolveeval!";terpri()$terpri()$
   h:=rdsolveeval list(eqs,startval);
   eqs:=nil;
@@ -1910,7 +1910,7 @@ begin
  %----- An analytical approach to solve for the constants
  if null pri then <<printold:=print_;print_:=nil>>;
  if p and not zerop p then                  % uebernommen aus SEPAR
- if not (pairp p and (car p='QUOTIENT) and  %      "       "    "
+ if not (pairp p and (car p='quotient) and  %      "       "    "
         intersection(argset smemberl(fl,cadr p),vl)) then 
  p:=separ2(p,fl,list x)                                  else 
  p:=nil;
@@ -1936,13 +1936,13 @@ begin
    if length eqs > 1 then deprint eqs
                      else eqprint car eqs
   >>;
-  if length eqs > 1 then eqs:=cons('LIST,eqs)
+  if length eqs > 1 then eqs:=cons('list,eqs)
                     else eqs:=car eqs;
 
   if pri then <<terpri()$write"eqs2=",eqs;terpri();write"nl=",nl>>$
 
   % for catching the error message `singular equations'
-  hh:=cons('LIST,nl);
+  hh:=cons('list,nl);
   eqs:=<<   
    ai:=!!arbint;
    err_catch_solve(eqs,hh)
@@ -1950,10 +1950,10 @@ begin
 
   if pri then <<terpri()$write"eqs3a=",eqs,"  ai=",ai,"  !!arbint=",
                 !!arbint;terpri()>>$
-  if not freeof(eqs,'ARBCOMPLEX) then <<
+  if not freeof(eqs,'arbcomplex) then <<
    eqs:=reval car eqs;
    for h:=(ai+1):!!arbint do
-   eqs:=subst(0,list('ARBCOMPLEX,h),eqs);
+   eqs:=subst(0,list('arbcomplex,h),eqs);
    if pri then <<terpri()$write"eqs3b=",eqs;terpri()>>$
    eqs:=err_catch_solve(eqs,hh)
   >>;
@@ -1969,7 +1969,7 @@ begin
 
   for each e1 in eqs do <<  % each e1 is a list of substitutions
    if pri then <<terpri()$write"e2=",e1;terpri()>>$
-   if car e1='LIST then e1:=cdr e1;
+   if car e1='list then e1:=cdr e1;
    if pri then <<terpri()$write"e3=",e1;terpri()>>$
    for each e2 in e1 do <<
     if pri then algebraic write"solution:",symbolic e2;
@@ -1997,11 +1997,11 @@ symbolic procedure add_factors(gk,p)$
 if null p then gk else
 if (  not  pairp p         ) or 
    ((      pairp p   ) and 
-    (car p neq 'TIMES)     ) then 
-union(list if (pairp p) and (car p = 'MINUS) then cadr p
+    (car p neq 'times)     ) then 
+union(list if (pairp p) and (car p = 'minus) then cadr p
                                              else      p,gk) else
 <<for each h in cdr p do 
-  gk:=union(list if (pairp h) and (car h = 'MINUS) then cadr h
+  gk:=union(list if (pairp h) and (car h = 'minus) then cadr h
                                                    else      h,gk);
   gk
 >>$
@@ -2049,7 +2049,7 @@ begin
                   carftr:=car ftr;
                   if not evalnumberp carftr then 
                   if (pairp carftr) and 
-                     (car carftr='QUOTIENT) then
+                     (car carftr='quotient) then
                   gk:=add_factors(add_factors(gk,cadr carftr),
                                   caddr carftr                ) else
                   gk:=add_factors(gk,carftr);
@@ -2065,7 +2065,7 @@ begin
   depl!*:=cons(list(h,x),depl!*)$
   depend h,x;
   fl:=h . fl;
-  e1:=intpde(reval list('TIMES,h,e1),ftem,vl,x,t);
+  e1:=intpde(reval list('times,h,e1),ftem,vl,x,t);
   if e1 and car e1 then <<
    newequ:=car e1 . newequ;
    tozero:=cadr e1 . tozero;
@@ -2079,13 +2079,13 @@ begin
  >>;
  if null tozero then return nil;
  %-------- newequ is the integral
- newequ:=if length pl > 1 then cons('PLUS,newequ)
+ newequ:=if length pl > 1 then cons('plus,newequ)
                           else car newequ;
  %-------- tozero is the PDE for the integrating factor
- tozero:=reval if length pl > 1 then cons('PLUS,tozero)
+ tozero:=reval if length pl > 1 then cons('plus,tozero)
                                 else car tozero;
  
- if pairp tozero and (car tozero='QUOTIENT) then tozero:=cadr tozero$
+ if pairp tozero and (car tozero='quotient) then tozero:=cadr tozero$
 
  if factr then <<
   h:=cdr err_catch_fac(tozero)$
@@ -2093,7 +2093,7 @@ begin
   tozero:=nil;
   for each e1 in h do
   if smemberl(fl,e1) then tozero:=cons(e1,tozero)$
-  tozero:= reval if length tozero > 1 then cons('TIMES,tozero)
+  tozero:= reval if length tozero > 1 then cons('times,tozero)
                                       else car tozero;
  >>;
  if nil and pri then <<write"tozero =";eqprint tozero >>;
@@ -2155,7 +2155,7 @@ begin
        ftr:=car exfactors;
        exfactors:=cdr exfactors;
        gk:=if ftr=1 then cdr e1
-                    else reval list('QUOTIENT,cdr e1,ftr);
+                    else reval list('quotient,cdr e1,ftr);
        if print_ and verbse then mathprint gk;
        gk
       >>,
@@ -2262,7 +2262,7 @@ begin scalar a,b,op,ex1$
              %***** car ex is a standard or other function *****
   <<a:=car ex$                    % for linearity check
   ex:=cdr ex$
-  if a='INT then ex:=list reval car ex$
+  if a='int then ex:=list reval car ex$
   while (op neq '!_abb) and ex do
    <<b:=odecheck(car ex,fint,ftem)$
    if b then                                  % function found
@@ -2374,8 +2374,8 @@ begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli$
  oldde:=reval subst(ford_,reval ford,de)$
  if pairp ford then                 % i.e.  (car ford) eq 'DF then
  << for j:=1:ordr do
-   oldde:= reval subst( reval list('DF,ford_,xnew,j),
-                        reval list('DF,ford,xnew,j), oldde)>>$
+   oldde:= reval subst( reval list('df,ford_,xnew,j),
+                        reval list('df,ford,xnew,j), oldde)>>$
  algebraic !!arbconst:=0$
  %newde:=algebraic(first odesolve(symbolic oldde,symbolic ford_,symbolic xnew))$
  newde:=algebraic(first lisp err_catch_odesolve(oldde,ford_,xnew))$
@@ -2386,7 +2386,7 @@ begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli$
  % where .. includes ford_
  % which is an error of ODESOLVE
  if pairp newde and
-    car newde = 'EQUAL and
+    car newde = 'equal and
 
     pairp cdr newde and 
     cadr newde = ford_ and
@@ -2394,41 +2394,41 @@ begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli$
     pairp cddr newde and
     pairp caddr newde and
 
-    caaddr newde = 'EQUAL  then 
+    caaddr newde = 'equal  then 
 
     if freeof(caddr newde,ford_) then newde:=nil
                                  else <<
-  h:=solveeval {{'LIST,{'DIFFERENCE,cadr caddr newde,caddr caddr newde}},
-                {'LIST,ford_}};
-  if (not freeof(h,'i)) or (not freeof(h,'!:gi!:)) then algebraic(ON COMPLEX)$
-  if pairp h and (car h = 'LIST) and (pairp cadr h) and 
-     (caadr h = 'EQUAL) and (cadadr h = ford_) then newde:=cadr h
+  h:=solveeval {{'list,{'difference,cadr caddr newde,caddr caddr newde}},
+                {'list,ford_}};
+  if (not freeof(h,'i)) or (not freeof(h,'!:gi!:)) then algebraic(on complex)$
+  if pairp h and (car h = 'list) and (pairp cadr h) and 
+     (caadr h = 'equal) and (cadadr h = ford_) then newde:=cadr h
  >>$
 
  % if newde has the form (LIST (EQUAL ford_ ...) (EQUAL xnew ...) arbparam(1))
  if pairp newde and
-    car newde = 'LIST and
+    car newde = 'list and
 
     pairp cdr newde and 
     pairp cadr newde and
-    caadr newde = 'EQUAL and
+    caadr newde = 'equal and
     cadadr newde = ford_ and 
 
     pairp cddr newde and
     pairp caddr newde and
-    caaddr newde = 'EQUAL and
+    caaddr newde = 'equal and
     car cdaddr newde = xnew and 
 
     pairp cdddr newde and null
     cddddr newde then <<
 
-  h:=solveeval {{'LIST,{'DIFFERENCE,cadr caddr newde,caddr caddr newde}},
-                {'LIST,cadddr newde}};
+  h:=solveeval {{'list,{'difference,cadr caddr newde,caddr caddr newde}},
+                {'list,cadddr newde}};
 
-  if (not freeof(h,'i)) or (not freeof(h,'!:gi!:)) then algebraic(ON COMPLEX)$
-  if pairp h and (car h = 'LIST) and (pairp cadr h) and 
-     (caadr h = 'EQUAL) and (cadadr h = cadddr newde) then 
-  newde:={'EQUAL,ford_,subst(car cddadr h,cadadr h,car cddadr newde)}
+  if (not freeof(h,'i)) or (not freeof(h,'!:gi!:)) then algebraic(on complex)$
+  if pairp h and (car h = 'list) and (pairp cadr h) and 
+     (caadr h = 'equal) and (cadadr h = cadddr newde) then 
+  newde:={'equal,ford_,subst(car cddadr h,cadadr h,car cddadr newde)}
 
  >>;
 
@@ -2441,12 +2441,12 @@ begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli$
  % numerator of expression for ford_ .
 
  if newde and 
-    (car newde='EQUAL) and 
-    (caddr newde=0) then newde:={'EQUAL,reval num cadr newde,0};
+    (car newde='equal) and 
+    (caddr newde=0) then newde:={'equal,reval num cadr newde,0};
 
  j:=zero_den(subst(ford,ford_,newde),cons(ford_,ftem)); %,argset ftem
  if null j and not freeoflist(caddr newde,ftem_) then
- j:=ProportionalityConditions(caddr newde,
+ j:=proportionalityconditions(caddr newde,
                               for h1:= 1 : (algebraic !!arbconst)
                               collect list('arbconst,h1), xnew)$
  if j then return <<
@@ -2464,8 +2464,8 @@ begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli$
 % >>$
 
  % if safeint_ and zero_den(newde,ftem,argset ftem) then newde:=nil;
- if freeint_ and null freeof(newde,'INT) then newde:=nil;
- if freeabs_ and null freeof(newde,'ABS) then newde:=nil;
+ if freeint_ and null freeof(newde,'int) then newde:=nil;
+ if freeabs_ and null freeof(newde,'abs) then newde:=nil;
  if newde and (cadr newde neq oldde) then <<   % solution found
   % Test der Loesung klappt nur, wenn Loesung explizit gegeben
   if cadr newde neq ford_ then <<
@@ -2482,27 +2482,27 @@ begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli$
           rationalp(subst(ford_,list('arbconst,j),newde),ford_) do j:=j+1;
     if j leq ordr then newde:=nil
    >>;
-   if pairp newde and (car newde = 'EQUAL) then
+   if pairp newde and (car newde = 'equal) then
    if (pairp cadr newde) and 
-      (caadr newde = 'QUOTIENT) and 
-      (zerop caddr newde) then newde:={'EQUAL,cadadr newde,0}
+      (caadr newde = 'quotient) and 
+      (zerop caddr newde) then newde:={'equal,cadadr newde,0}
                           else
    if (pairp caddr newde) and
-      (caaddr newde = 'QUOTIENT) and 
-      (zerop cadr newde)  then newde:={'EQUAL,0,cadr caddr newde}
+      (caaddr newde = 'quotient) and 
+      (zerop cadr newde)  then newde:={'equal,0,cadr caddr newde}
                           else <<
     % If it is linear in one arbcons(i) and the second terms in the
     % expression is a sqrt or tan or arctan,... then delete this function.
     % Example: arbconst(1) + sqrt(g0785**2  + u1**2 )=0
-    h1:=reval {'DIFFERENCE,cadr newde,caddr newde};
+    h1:=reval {'difference,cadr newde,caddr newde};
     j:=1;
     while (j leq ordr) and  
           (freeof(h1,list('arbconst,j)) or
            (not lin_check(h1,list list('arbconst,j)))) do j:=j+1;
     if j leq ordr then <<
      h:=coeffn(h1,list('arbconst,j),1)$
-     t2:=reval {'QUOTIENT,{'DIFFERENCE,{'TIMES,list('arbconst,j),h},h1},h};
-     h2:={'EQUAL,{'PLUS,list('arbconst,j),
+     t2:=reval {'quotient,{'difference,{'times,list('arbconst,j),h},h1},h};
+     h2:={'equal,{'plus,list('arbconst,j),
                   simplifiziere(t2,cons(ford_,cons(xnew,ftem)),nil)},0}$
      if h2 neq newde then <<
       newde:=h2$
@@ -2525,16 +2525,16 @@ begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli$
      deprint list oldde$
      write "to"$
      eqprint newde$
-     Write "which inserted in the equation yields "$
-     eqprint {'!*SQ,null_,t}
+     write "which inserted in the equation yields "$
+     eqprint {'!*sq,null_,t}
     >>
    >>
   >>
  >>$
 
  if newde then
- <<newde:=list('PLUS,cadr newde,list('MINUS,caddr newde))$
-   if zerop reval list('PLUS,newde,list('MINUS,oldde)) then newde:=nil$
+ <<newde:=list('plus,cadr newde,list('minus,caddr newde))$
+   if zerop reval list('plus,newde,list('minus,oldde)) then newde:=nil$
    % not anymore needed after writing to to_do_list
    % if newde and (zd neq nil) then 
    % newde:=cons('TIMES,append(zd,list newde))$
@@ -2546,7 +2546,7 @@ begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli$
  if null newde then nil
                else
  <<newde:=subst(ford,ford_,newde)$
-   newvl:=delete(xnew,if (pairp ford and (car ford='DF))
+   newvl:=delete(xnew,if (pairp ford and (car ford='df))
                          then fctargs cadr ford
                          else fctargs ford)$
 %   if pairp ford then newvl:=delete(xnew,cdr assoc(cadr ford,depl!*))
@@ -2667,18 +2667,18 @@ begin scalar a$
   if not atom p then
 %    if member(car p,list('EXPT,'PLUS,'MINUS,'TIMES,
 %                         'QUOTIENT,'DF,'EQUAL)) then
-    if member(car p,REDUCEFUNCTIONS_) then
+    if member(car p,reducefunctions_) then
                                         %  erlaubte Funktionen
-    <<if (car p='PLUS) or (car p='TIMES) or 
-         (car p='QUOTIENT) or (car p='EQUAL) then
+    <<if (car p='plus) or (car p='times) or 
+         (car p='quotient) or (car p='equal) then
       <<p:=cdr p$
         while p do 
         <<a:=diffreltot(ldifftot1(car p,f,vl),a,vl)$
           p:=cdr p
         >> 
       >>                      else 
-      if car p='MINUS then a:=ldifftot1(cadr p,f,vl) else 
-      if car p='EXPT then               %  Exponent
+      if car p='minus then a:=ldifftot1(cadr p,f,vl) else 
+      if car p='expt then               %  Exponent
 %      if numberp caddr p then
 %      <<a:=ldifftot1(cadr p,f,vl)$
 %        a:=cons(car a,times(caddr p,cdr a))
@@ -2691,7 +2691,7 @@ begin scalar a$
                                         %  Potenz aus Basis wird mit
                                         %  Potenz multipliziert
                      else 
-      if car p='DF then                 %  Ableitung
+      if car p='df then                 %  Ableitung
       if cadr p=f then a:=cons(cddr p,1)
                                         %  f wird differenziert?
                   else a:=cons(nil,0)
@@ -2726,8 +2726,8 @@ symbolic procedure diffreltotp(p,q,v)$
 %   liste Liste aus Var. und Ordn. der Ableit. in Diff.ausdr.,
 %   power Potenz des Differentialausdrucks
 begin scalar n,m$
-m:=eval(cons('PLUS,ldiff1(car p,v)))$
-n:=eval(cons('PLUS,ldiff1(car q,v)))$
+m:=eval(cons('plus,ldiff1(car p,v)))$
+n:=eval(cons('plus,ldiff1(car q,v)))$
 return
  if m<n then t
  else if n<m then nil
@@ -2790,7 +2790,7 @@ end$
 symbolic operator totdeg$
 symbolic procedure totdeg(p,f)$
 %   Ordnung (total) der hoechsten Ableitung von f im Ausdruck p
-eval(cons('PLUS,ldiff1(car ldifftot(reval p,reval f),fctargs reval f)))$
+eval(cons('plus,ldiff1(car ldifftot(reval p,reval f),fctargs reval f)))$
 
 %-------------
 
@@ -2999,12 +2999,12 @@ begin scalar ii,il,h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,contrace,u,
     h5:=mkid(u,h1);
     if contrace then <<write"h5=",h5;terpri()>>;
 %    h6:=nil;
-    if contrace then <<write"h6-1=", list('DF,divp,h5);
+    if contrace then <<write"h6-1=", list('df,divp,h5);
                        terpri()>>;
 %    h6:=cons(reval list('QUOTIENT,list('DF,divp,h5),h11), h6);
 %    if nde=1 then h6:=car h6
 %             else h6:=cons('PLUS,h6);
-    h6:=reval list('QUOTIENT,list('DF,divp,h5),h11);
+    h6:=reval list('quotient,list('df,divp,h5),h11);
     if contrace then <<write"h6=",h6;terpri()>>;
     nega:=nil;
     h7:=h4;
@@ -3026,8 +3026,8 @@ begin scalar ii,il,h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,contrace,u,
      h10:=if h8 then mkid(u,h8)
                 else u;
      if contrace then <<write"h10=",h10;terpri()>>;
-     h10:=list('TIMES,h6,h10);
-     if nega then h10:=list('MINUS,h10);
+     h10:=list('times,h6,h10);
+     if nega then h10:=list('minus,h10);
      if contrace then algebraic write">>>> h10=",h10;
      pii:=cons(h10,pii)$
      nega:=not nega;
@@ -3037,12 +3037,12 @@ begin scalar ii,il,h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,contrace,u,
   >> until null il;
   pii:=reval if null pii then 0 else
              if length pii=1 then car pii
-                             else cons('PLUS,pii);
+                             else cons('plus,pii);
   if contrace then algebraic write"pii-end=",pii;
 
   pii
  >>;             % for all ii
- return cons('LIST,pl)
+ return cons('list,pl)
 end$  % of intcurrent1
 
 %-------------
@@ -3082,7 +3082,7 @@ begin scalar h2,h3,h4,h5,h6,h7,h8,e2,e3,lin_problem_bak;
     if null e2 then e2:=list(nil,e3)
                else e3:=cadr e2;
     if (car e2) and (not zerop car e2) then h7:=t;
-    h6:=cons(list('PLUS,car e2,car h5),h6);
+    h6:=cons(list('plus,car e2,car h5),h6);
     h5:=cdr h5;
     h2:=cdr h2
    >>;
@@ -3093,7 +3093,7 @@ begin scalar h2,h3,h4,h5,h6,h7,h8,e2,e3,lin_problem_bak;
  >> until (e3=0) or (h4=nil);
  lin_problem:=lin_problem_bak;
 
- return {'LIST,reval cons('LIST, h5),e3}
+ return {'list,reval cons('list, h5),e3}
  % end of the computation of the conserved current P
  % result is a {{P_i},remainder}
  % was successful if 0 = remainder (=e3)
@@ -3129,7 +3129,7 @@ begin scalar xl,h1,h2,h3,h4,h5,resu1,resu2,resu3,succ,lin_problem_bak;
      h4:=cons(car h3,resu2);
      for each h5 in cdr h2 do h4:=cons(0,h4);
      succ:=t;
-     resu3:= {'LIST,cons('LIST,reverse h4),0}
+     resu3:= {'list,cons('list,reverse h4),0}
     >>;
     h2:=cdr h2;
     resu2:=cons(0,resu2)
@@ -3141,7 +3141,7 @@ begin scalar xl,h1,h2,h3,h4,h5,resu1,resu2,resu3,succ,lin_problem_bak;
 
  lin_problem:=lin_problem_bak;
  return if succ then resu3
-                else {'LIST,cons('LIST,cons(0,resu1)),divp} 
+                else {'list,cons('list,cons(0,resu1)),divp} 
 end$   % of intcurrent3
 
 endmodule$
@@ -3175,8 +3175,8 @@ begin scalar s,scal,notfound,cq,x,xx,xanz,sanz,xcop,ok;
       if xanz=sanz then
       if length(cq)=1 then ok:=t else
       if length(scal)>1 then
-      if part(scal,0)=PLUS then      % if possible not a sum
-      if (part(cq,0) neq PLUS) or
+      if part(scal,0)=plus then      % if possible not a sum
+      if (part(cq,0) neq plus) or
          (length(cq)<length(scal)) then ok:=t;
 
       if ok then <<s:=x; scal:=cq; sanz:=xanz>>;
@@ -3192,21 +3192,21 @@ end$ % of select_indep_var
 algebraic procedure charsyscrack(xlist,cqlist,s,scal,u,ode)$
 % formulation and solution of the characteristic ODE-system
 begin
-  scalar lcopy,x,cS,flist,soln,printold,timeold,facintold,
+  scalar lcopy,x,cs,flist,soln,printold,timeold,facintold,
          adjustold,safeintold,freeintold,odesolveold,
          e1,e2,e3,e4,n,nmax,dff,proclistold,flin_old,
          lin_problem_old,session_old,level_old;
   % formulating the ode/pde - system .
   lcopy := cqlist ;
-  cS := {} ;
+  cs := {} ;
   for each x in xlist do
   << cq := first lcopy ; lcopy := rest lcopy ;
      if x neq s then
      << depend x,s;
-        cS := .(scal*df(x,s)-cq,cS) >>
+        cs := .(scal*df(x,s)-cq,cs) >>
   >>;
   if s neq u then <<flist:={u}; depend u,s;
-                    cS := .(scal*df(u,s)+ode,cS) >>
+                    cs := .(scal*df(u,s)+ode,cs) >>
              else flist:={};
   for each x in xlist do
   if s neq x then flist:=.(x,flist);
@@ -3230,12 +3230,12 @@ begin
   if lisp(print_ neq nil) then
   lisp <<
     write "The equivalent characteristic system:";terpri();
-    deprint cdr algebraic cS$
+    deprint cdr algebraic cs$
     %terpri()$
     write "for the functions: ";
     fctprint( cdr reval algebraic flist);write".";
   >>;
-  soln:=crack(cS,flist,flist,{});
+  soln:=crack(cs,flist,flist,{});
   lcopy:={};
   for each x in soln do <<
    e1:=first x;
@@ -3245,7 +3245,7 @@ begin
     e2:=length third x;
     for each e3 in flist do
     if not freeof(third x,e3) then e2:=e2-1;
-    if e2=length cS then << % enough constants
+    if e2=length cs then << % enough constants
 
      % all remaining conditions are algebraic (non-differential) in all the
      % functions of flist?
@@ -3253,12 +3253,12 @@ begin
      e3:={};
      for each e4 in third x do if freeof(flist,e4) then e3:=e4 . e3
                                                    else e2:=e4 . e2;
-     if (length cS) = (length e3) then << % sufficiently many integrations done
+     if (length cs) = (length e3) then << % sufficiently many integrations done
       for each e4 in e2 do
       for each e5 in e1 do
       if lisp(not freeof(lderiv(reval algebraic e5,
                                 reval algebraic e4,
-                                list(reval algebraic s)),'DF)) 
+                                list(reval algebraic s)),'df)) 
       then <<e2:={};e1:={}>>;
 
       if e2 neq {} then << 
@@ -3270,7 +3270,7 @@ begin
          lisp <<
           n:=lderiv(reval algebraic rhs e5,reval algebraic e4,
                     list(reval algebraic s));
-          n:=if (not pairp car n) or (caar n neq 'DF) then 0 else
+          n:=if (not pairp car n) or (caar n neq 'df) then 0 else
              % would be wrong, for example, for  n=sin(df(..,..))
              if (length car n) = 3 then 1
                                    else cadddr car n
@@ -3294,7 +3294,7 @@ begin
      >>
     >>
    >>                                                              else 
-   if (first x = {}) and (length cS = length third x) then 
+   if (first x = {}) and (length cs = length third x) then 
    lcopy:=cons({second x,third x},lcopy)
   >>;
 
@@ -3369,10 +3369,10 @@ if (not smemberl(fl,h)) or
 %----------------------------
 
 symbolic procedure drop_factors(q,fl,allowed_to_drop)$
-if not pairp q or (car q neq 'TIMES)     then 
+if not pairp q or (car q neq 'times)     then 
 if dropable(q,fl,allowed_to_drop) then 1 
                                   else q else
-reval cons('TIMES,for each h in cdr q collect
+reval cons('times,for each h in cdr q collect
                   if dropable(h,fl,allowed_to_drop) then 1 else h)$
 
 %----------------------------
@@ -3382,17 +3382,17 @@ begin
  scalar n,nu,de;
  return
  if not pairp q then q else 
- if member(car q,ONE_ARGUMENT_FUNCTIONS_) or
-    (member(car q,{'EXPT}) and 
+ if member(car q,one_argument_functions_) or
+    (member(car q,{'expt}) and 
      dropable(caddr q,fl,allowed_to_drop)) then simplifiziere(cadr q,fl,allowed_to_drop) 
                                            else 
- if car q = 'QUOTIENT then <<
+ if car q = 'quotient then <<
   nu:=drop_factors(cadr  q,fl,allowed_to_drop);
   de:=drop_factors(caddr q,fl,allowed_to_drop);
   if nu=1 then simplifiziere(de,fl,allowed_to_drop) else
-  if de=1 then simplifiziere(nu,fl,allowed_to_drop) else {'QUOTIENT,nu,de}
+  if de=1 then simplifiziere(nu,fl,allowed_to_drop) else {'quotient,nu,de}
  >>                   else
- if car q = 'TIMES then <<
+ if car q = 'times then <<
   de:=drop_factors(q,fl,allowed_to_drop);
   if (not pairp de) or (length de < length q) then 
   simplifiziere(de,fl,allowed_to_drop)        else de
@@ -3401,7 +3401,7 @@ begin
   n:=ncontent(q);
   if n=1 then q % one could also subtract constant multiples of 
                 % elements of allowed_to_drop to simplify q
-         else simplifiziere(reval list('QUOTIENT, q, reval n),
+         else simplifiziere(reval list('quotient, q, reval n),
                             fl,allowed_to_drop)
  >>                                    
 end$
@@ -3487,7 +3487,7 @@ begin scalar i, q, qlist, cq, cqlist, ode, soln, tran,
         x:=for each h1 in x collect 
            simplifiziere(h1,cons(reval u,cdr xlist),delete(h1,x))
        >> until x=xx$
-       x:=cons('LIST,x);
+       x:=cons('list,x);
       >>$
       xx:=tran;
       while (xx neq {}) and 

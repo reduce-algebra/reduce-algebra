@@ -256,6 +256,7 @@ procedure nlopt_algorithm_name(code_or_num);
       	 else
       	    second(assoc(code_or_num,nlopt_algorithm_rev_codes!*));
       return call!-foreign!-function(nlopt_algorithm_name!*, 'int32,n, 'string);
+      % nlopt_algorithm_name is built-in to the NLopt library
    end;
 
 procedure nlopt_destroy();

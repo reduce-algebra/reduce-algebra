@@ -1571,6 +1571,8 @@ Lisp_Object MS_CDECL Lput_hash(Lisp_Object nil, int nargs, ...)
     va_end(a);
     argcheck(nargs, 3, "puthash");
     simple_msg("put_hash: ", key);
+    if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_HASH)
+        return aerror1("puthash", tab);
     push3(key, tab, val);
     Lget_hash(nil, 3, key, tab, nil);
     pop3(val, tab, key);

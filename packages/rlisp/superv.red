@@ -70,6 +70,7 @@ global '(!$eof!$
          crbuf1!*
          curline!*
          cursym!*
+         curescaped!*
          eof!*
          erfg!*
          forkeywords!*
@@ -238,6 +239,7 @@ symbolic procedure begin1a prefixchars;
       ogctime1!* := ogctime2!* := ogctime3!* := ogctime!*;
       peekchar!* := prefixchars;
       cursym!* := '!*semicol!*;
+      curescaped!* := nil;
   a:  if terminalp()
         then progn((if !*nosave!* or statcounter=0 then nil
                      else add2buflis()),
@@ -314,7 +316,9 @@ symbolic procedure begin11 x;
    begin scalar errmsg!*,mode,result,newrule!*;
       if cursym!* eq 'end
          then if terminalp() and null !*lisp!_hook
-                then progn(cursym!* := '!*semicol!*, !*nosave!* := t,
+                then progn(cursym!* := '!*semicol!*,
+                           curescaped!* := nil,
+                           !*nosave!* := t,
                            return nil)
                else progn(comm1 'end, return 'end)
        else if eqcar((if !*reduce4 then x else cadr x),'retry)

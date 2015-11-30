@@ -312,7 +312,7 @@ showtime;
 
 $
 
-END$
+end$
 
 Tested on x86_64-pc-windows CSL
 Time (counter 1): 813 ms

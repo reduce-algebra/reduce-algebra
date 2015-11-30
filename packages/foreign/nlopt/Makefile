@@ -2,7 +2,7 @@
 
 # NLopt is fetched and unpacked
 
-all: librednlopt.so nlopt.pdf
+all: librednlopt.so nlopt.pdf clean
 
 # The sequence of operations here is:
 # (1) Set the installation path for NLopt to a sub-directory of the current location.
@@ -89,6 +89,6 @@ nlopt.pdf:	nlopt.tex
 # readable documentation.
 
 clean:
-	rm -rf nlopt.out *.o *.so  *.log *.aux
+	rm -rf nlopt.out *.o *.log *.aux
 
 # end of Makefile

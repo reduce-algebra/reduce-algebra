@@ -1,4 +1,4 @@
-module TayFns;
+module tayfns;
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -44,24 +44,24 @@ imports
         simplogi, simplogsq, subs2!*, subsq, subtrsq,
 
 % from the header module:
-        !*tay2q, !*TayExp2q, constant!-sq!-p, cst!-Taylor!*,
-        find!-non!-zero, get!-degree, has!-TayVars,
-        make!-cst!-powerlist, make!-Taylor!*, prune!-coefflist,
-        set!-TayCoeffList, set!-TayFlags, set!-TayOrig, TayCfPl,
-        TayCfSq, TayCoeffList, TayFlags, TayGetCoeff, Taylor!*p,
-        Taylor!-kernel!-sq!-p, Taylor!:, TayMakeCoeff, TayOrig,
-        TayTemplate, TayTpElNext, TayTpElOrder, TayTpElPoint,
-        TayTpElVars, TayTpVars, TayVars, TpNextList,
+        !*tay2q, !*TayExp2q, constant!-sq!-p, cst!-taylor!*,
+        find!-non!-zero, get!-degree, has!-tayvars,
+        make!-cst!-powerlist, make!-taylor!*, prune!-coefflist,
+        set!-taycoefflist, set!-tayflags, set!-tayorig, taycfpl,
+        taycfsq, taycoefflist, tayflags, taygetcoeff, taylor!*p,
+        taylor!-kernel!-sq!-p, taylor!:, taymakecoeff, tayorig,
+        taytemplate, taytpelnext, taytpelorder, taytpelpoint,
+        taytpelvars, taytpvars, tayvars, tpnextlist,
 
 % from the module Tayintro:
         confusion, delete!-nth, delete!-nth!-nth, replace!-nth,
-        replace!-nth!-nth, Taylor!-error, Taylor!-error!*,
+        replace!-nth!-nth, taylor!-error, taylor!-error!*,
         var!-is!-nth,
 
 % from the module Tayutils:
-        addto!-all!-TayTpElORders, get!-cst!-coeff, is!-neg!-pl,
-        smallest!-increment, subtr!-degrees, Taylor!*!-constantp,
-        Taylor!*!-zerop,
+        addto!-all!-taytpelorders, get!-cst!-coeff, is!-neg!-pl,
+        smallest!-increment, subtr!-degrees, taylor!*!-constantp,
+        taylor!*!-zerop,
 
 % from the module Taybasic:
         addtaylor, addtaylor!-as!-sq, invtaylor, makecoeffs0,
@@ -79,7 +79,7 @@ imports
         difftaylorwrttayvar,
 
 % from the module TayConv:
-        prepTayCoeff, prepTaylor!*,
+        preptaycoeff, preptaylor!*,
 
 % from the module Tayfrontend:
         taylorcombine, taylortostandard;
@@ -115,20 +115,20 @@ symbolic procedure taysimpexpt u;
        then return !*tay2q expttayrat(mvar numr bas,cdr numr expn);
      bas := mvar numr bas;
      return
-       if Taylor!*p bas
-         then if Taylor!-kernel!-sq!-p expn
-                then if TayTemplate bas = TayTemplate mvar numr expn
+       if taylor!*p bas
+         then if taylor!-kernel!-sq!-p expn
+                then if taytemplate bas = taytemplate mvar numr expn
                        then taysimpexp {'exp,
                                         mk!*sq taysimpsq
                                           multtaylor!-as!-sq(
                                               expn,
                                               taysimplog {'log,bas})}
                       else mksq({'expt,bas,mvar numr expn},1)
-               else if not has!-TayVars(bas,expn)
+               else if not has!-tayvars(bas,expn)
                 then begin scalar logterm;
                   logterm := taysimplog{'log,bas};
                   return
-                    if Taylor!-kernel!-sq!-p logterm
+                    if taylor!-kernel!-sq!-p logterm
                       then taysimpexp{'exp,
                                       multtaylorsq(mvar numr logterm,
                                                    expn)}
@@ -136,16 +136,16 @@ symbolic procedure taysimpexpt u;
                             simp!* {'exp,mk!*sq multsq(logterm,expn)}
                  end
                else mksq({'expt,bas,mk!*sq expn},1)
-        else if Taylor!-kernel!-sq!-p expn
-               then if not has!-TayVars(mvar numr expn,bas)
+        else if taylor!-kernel!-sq!-p expn
+               then if not has!-tayvars(mvar numr expn,bas)
                       then taysimpexp{'exp,
                                       multtaylorsq(mvar numr expn,
                                                    simp!*{'log,bas})}
-                     else if Taylor!*!-constantp mvar numr expn
+                     else if taylor!*!-constantp mvar numr expn
                       then taylorexpand(
                              simp!* {'expt,bas,
-                                     prepTaylor!* mvar numr expn},
-                             TayTemplate mvar numr expn)
+                                     preptaylor!* mvar numr expn},
+                             taytemplate mvar numr expn)
                      else mksq({'expt,bas,mk!*sq expn},1)
         else mksq({'expt,bas,mk!*sq expn},1);
   end;
@@ -153,11 +153,11 @@ symbolic procedure taysimpexpt u;
 put('expt,'taylorsimpfn,'taysimpexpt);
 
 
-symbolic procedure TayCoeffList!-union u;
+symbolic procedure taycoefflist!-union u;
   if null cdr u then car u
-   else TayCoeffList!-union2 (car u, TayCoeffList!-union cdr u)$
+   else taycoefflist!-union2 (car u, taycoefflist!-union cdr u)$
 
-symbolic procedure TayCoeffList!-union2 (x, y);
+symbolic procedure taycoefflist!-union2 (x, y);
   %
   % returns union of TayCoeffLists x and y
   %
@@ -169,68 +169,68 @@ symbolic procedure inttaylorwrttayvar(tay,var);
   %
   % integrates Taylor kernel tay wrt variable var
   %
-  inttaylorwrttayvar1(TayCoeffList tay,TayTemplate tay,var)$
+  inttaylorwrttayvar1(taycoefflist tay,taytemplate tay,var)$
 
 symbolic procedure inttaylorwrttayvar1(tcl,tp,var);
   %
   % integrates Taylor kernel with TayCoeffList tcl and template tp
   %  wrt variable var
   %
-  Taylor!:
+  taylor!:
   begin scalar tt,u,w,singlist,csing; integer n,n1,m;
     u := var!-is!-nth(tp,var);
     n := car u;
     n1 := cdr u;
     tt := nth(tp,n);
     u := for each cc in tcl join <<
-           m := nth(nth(TayCfPl cc,n),n1);
-           if TayTpElPoint nth(tp,n) eq 'infinity
+           m := nth(nth(taycfpl cc,n),n1);
+           if taytpelpoint nth(tp,n) eq 'infinity
              then <<
                if m=1 then <<singlist :=
-                               TayMakeCoeff(
-                                 delete!-nth!-nth(TayCfPl cc,n,n1),
-                                 TayCfSq cc) . singlist;nil>>
-                else {TayMakeCoeff(
-                        replace!-nth!-nth(TayCfPl cc,n,n1,m-1),
-                        multsq(TayCfSq cc,invsq !*TayExp2q(-m + 1)))}>>
+                               taymakecoeff(
+                                 delete!-nth!-nth(taycfpl cc,n,n1),
+                                 taycfsq cc) . singlist;nil>>
+                else {taymakecoeff(
+                        replace!-nth!-nth(taycfpl cc,n,n1,m-1),
+                        multsq(taycfsq cc,invsq !*TayExp2q(-m + 1)))}>>
             else <<
                if m=-1 then <<singlist :=
-                                TayMakeCoeff(
-                                  delete!-nth!-nth(TayCfPl cc,n,n1),
-                                  TayCfSq cc) . singlist;nil>>
-               else {TayMakeCoeff(
-                       replace!-nth!-nth(TayCfPl cc,n,n1,m+1),
-                       multsq(TayCfSq cc,invsq !*TayExp2q(m + 1)))}>>>>;
-    w := {TayTpElVars tt,TayTpElPoint tt,
-          if var member TayTpElVars tt
-            then if TayTpElPoint tt eq 'infinity
-                   then TayTpElOrder tt - 1
-                  else TayTpElOrder tt + 1
-           else TayTpElOrder tt,
-          if var member TayTpElVars tt
-            then if TayTpElPoint tt eq 'infinity
-                   then TayTpElNext tt - 1
-                  else TayTpElNext tt + 1
-           else TayTpElOrder tt};
+                                taymakecoeff(
+                                  delete!-nth!-nth(taycfpl cc,n,n1),
+                                  taycfsq cc) . singlist;nil>>
+               else {taymakecoeff(
+                       replace!-nth!-nth(taycfpl cc,n,n1,m+1),
+                       multsq(taycfsq cc,invsq !*TayExp2q(m + 1)))}>>>>;
+    w := {taytpelvars tt,taytpelpoint tt,
+          if var member taytpelvars tt
+            then if taytpelpoint tt eq 'infinity
+                   then taytpelorder tt - 1
+                  else taytpelorder tt + 1
+           else taytpelorder tt,
+          if var member taytpelvars tt
+            then if taytpelpoint tt eq 'infinity
+                   then taytpelnext tt - 1
+                  else taytpelnext tt + 1
+           else taytpelorder tt};
     if singlist then begin scalar tpel;
         tpel := nth(tp,n);
         singlist := reversip singlist;
-        if TayCfPl car singlist = '(nil) % no Taylor left
-          then csing := TayCfSq car singlist
+        if taycfpl car singlist = '(nil) % no Taylor left
+          then csing := taycfsq car singlist
          else csing := !*tay2q
-                         make!-Taylor!*(
+                         make!-taylor!*(
                            singlist,
                            replace!-nth(
                              tp,n,
-                             {delete!-nth(TayTpElVars tpel,n1),
-                              TayTpElPoint tpel,
-                              TayTpElOrder tpel,
-                              TayTpElNext tpel}),
+                             {delete!-nth(taytpelvars tpel,n1),
+                              taytpelpoint tpel,
+                              taytpelorder tpel,
+                              taytpelnext tpel}),
                            nil,nil);
-        csing := multsq(csing,simp!* {'log,nth(TayTpElVars tpel,n1)})
+        csing := multsq(csing,simp!* {'log,nth(taytpelvars tpel,n1)})
        end;
 
-    return (csing . make!-Taylor!*(u,replace!-nth(tp,n,w),nil,nil))
+    return (csing . make!-taylor!*(u,replace!-nth(tp,n,w),nil,nil))
 %
 % The following is not needed yet
 %
@@ -244,7 +244,7 @@ symbolic procedure inttaylorwrttayvar1(tcl,tp,var);
   end;
 
 
-comment The inverse trigonometric and inverse hyperbolic functions
+COMMENT The inverse trigonometric and inverse hyperbolic functions
         of a Taylor kernel are calculated by first computing the
         derivative(s) with respect to the Taylor variable(s) and
         integrating the result.  The derivatives can easily be
@@ -391,47 +391,47 @@ symbolic procedure taysimpasin u;
   if not (car u memq '(asin acos acsc asec asinh acosh acsch asech))
      or cddr u
     then confusion 'taysimpasin
-   else Taylor!:
+   else taylor!:
      begin scalar l,l0,c0,v,tay0,tay,tay2,tp,singlist;
      tay0 := taysimpsq simp!* cadr u;
-     if not Taylor!-kernel!-sq!-p tay0
+     if not taylor!-kernel!-sq!-p tay0
        then return mksq({car u,mk!*sq tay0},1);
      tay0 := mvar numr tay0; % asin's argument
-     l0 := make!-cst!-powerlist TayTemplate tay0;
-     c0 := TayGetCoeff(l0,TayCoeffList tay0);
+     l0 := make!-cst!-powerlist taytemplate tay0;
+     c0 := taygetcoeff(l0,taycoefflist tay0);
      if car u memq '(asec acsc asech acsch)
        then if null numr c0 then return taysimpasec!*(car u,tay0)
              else tay := invtaylor tay0
       else tay := tay0;
-     tp := TayTemplate tay;
-     l := prune!-coefflist TayCoeffList tay;
-     if null l then return !*tay2q make!-Taylor!* (
+     tp := taytemplate tay;
+     l := prune!-coefflist taycoefflist tay;
+     if null l then return !*tay2q make!-taylor!* (
                  make!-cst!-coefflis (simp!* {car u,0}, tp),
                  tp, 
-                 if null TayOrig tay then nil else simp!* {car u,prepsq TayOrig tay},
+                 if null tayorig tay then nil else simp!* {car u,prepsq tayorig tay},
                  nil);
-     if is!-neg!-pl TayCfPl car l then return taysimpasin!*(car u,tay);
+     if is!-neg!-pl taycfpl car l then return taysimpasin!*(car u,tay);
      tay2 := multtaylor(tay,tay);
      if car u memq '(asin acos acsc asec)
        then tay2 := negtaylor tay2;
      tay2 := addtaylor(
-               cst!-Taylor!*(
+               cst!-taylor!*(
                  !*f2q(if car u memq '(acosh asech) then -1 else 1),
                  tp),
                tay2);
-     if Taylor!*!-zerop tay2
-       then Taylor!-error!*('branch!-point,car u)
-      else if null numr TayGetCoeff(l0,TayCoeffList tay2)
+     if taylor!*!-zerop tay2
+       then taylor!-error!*('branch!-point,car u)
+      else if null numr taygetcoeff(l0,taycoefflist tay2)
        then return taysimpasin!*(car u,tay);
 
      tay2 := invtaylor expttayrat(tay2,1 ./ 2);
      if car u memq '(acos asec) then tay2 := negtaylor tay2;
-     l := for each krnl in TayVars tay collect
+     l := for each krnl in tayvars tay collect
             inttaylorwrttayvar(
               multtaylor(difftaylorwrttayvar(tay,krnl),tay2),
               krnl);
-     v := TayCoeffList!-union
-            for each pp in l collect TayCoeffList cdr pp;
+     v := taycoefflist!-union
+            for each pp in l collect taycoefflist cdr pp;
      singlist := nil ./ 1;
      for each pp in l do
        if car pp then singlist := addsq(singlist,car pp);
@@ -439,17 +439,17 @@ symbolic procedure taysimpasin u;
      % special treatment for zeroth coefficient
      %
      c0 := simp {car u,mk!*sq c0};
-     v := TayMakeCoeff(l0,c0) . v;
-     tay := make!-Taylor!*(
+     v := taymakecoeff(l0,c0) . v;
+     tay := make!-taylor!*(
               v,
               tp,
-              if !*taylorkeeporiginal and TayOrig tay
-                then simp {car u,mk!*sq TayOrig tay}
+              if !*taylorkeeporiginal and tayorig tay
+                then simp {car u,mk!*sq tayorig tay}
                else nil,
-              TayFlags tay);
+              tayflags tay);
      if null numr singlist then return !*tay2q tay;
-     if !*taylorkeeporiginal and TayOrig tay
-       then set!-TayOrig(tay,subtrsq(TayOrig tay,singlist));
+     if !*taylorkeeporiginal and tayorig tay
+       then set!-tayorig(tay,subtrsq(tayorig tay,singlist));
      return addsq(singlist,!*tay2q tay)
   end;
 
@@ -457,7 +457,7 @@ symbolic procedure taysimpasec!*(fn,tay);
    begin scalar result,tay1,tay2,i1;
      i1 := simp 'i;
      if fn memq '(asin acsc) then tay := multtaylorsq(tay,i1);
-     tay1 := cst!-Taylor!*(1 ./ 1,TayTemplate tay);
+     tay1 := cst!-taylor!*(1 ./ 1,taytemplate tay);
      tay2 := multtaylor(tay,tay);
      if fn memq '(asec asech) then tay2 := negtaylor tay2;
      result := taysimplog {'log,
@@ -477,11 +477,11 @@ symbolic procedure taysimpasin!*(fn,tay);
    begin scalar result,tay1;
      if fn memq '(asin acsc)
        then tay := multtaylorsq(tay,simp 'i);
-     tay1 := cst!-Taylor!*(
+     tay1 := cst!-taylor!*(
                (if fn memq '(asin asinh acsc acsch)
                   then 1
                  else -1) ./ 1,
-                TayTemplate tay);
+                taytemplate tay);
      result := taysimplog {'log,
                            addtaylor(
                              expttayrat(addtaylor(multtaylor(tay,tay),
@@ -509,18 +509,18 @@ symbolic procedure taysimpatan u;
     then confusion 'taysimpatan
    else begin scalar l,l0,c0,v,tay,tay2,tp,singlist;
      tay := taysimpsq simp!* cadr u;
-     if not Taylor!-kernel!-sq!-p tay
+     if not taylor!-kernel!-sq!-p tay
        then return mksq({car u,mk!*sq tay},1);
      tay := mvar numr tay; % atan's argument
-     tp := TayTemplate tay;
+     tp := taytemplate tay;
      l0 := make!-cst!-powerlist tp;
-     l := prune!-coefflist TayCoeffList tay;
-     if null l then return !*tay2q make!-Taylor!* (
+     l := prune!-coefflist taycoefflist tay;
+     if null l then return !*tay2q make!-taylor!* (
                  make!-cst!-coefflis (simp!* {car u,0}, tp),
                  tp, 
-                 if null TayOrig tay then nil else simp!* {car u,prepsq TayOrig tay},
+                 if null tayorig tay then nil else simp!* {car u,prepsq tayorig tay},
                  nil);
-     if is!-neg!-pl TayCfPl car l then return taysimpatan!*(car u,tay);
+     if is!-neg!-pl taycfpl car l then return taysimpatan!*(car u,tay);
      c0 := get!-cst!-coeff tay;
      if car u memq '(atan acot)
        then c0 := subs2!* multsq(c0,simp 'i);
@@ -528,14 +528,14 @@ symbolic procedure taysimpatan u;
        then return taysimpatan!*(car u,tay);
      tay2 := multtaylor(tay,tay);
      if car u memq '(atanh acoth) then tay2 := negtaylor tay2;
-     tay2 := invtaylor addtaylor(cst!-Taylor!*(1 ./ 1,tp),tay2);
+     tay2 := invtaylor addtaylor(cst!-taylor!*(1 ./ 1,tp),tay2);
      if car u eq 'acot then tay2 := negtaylor tay2;
-     l := for each krnl in TayVars tay collect
+     l := for each krnl in tayvars tay collect
             inttaylorwrttayvar(
               multtaylor(difftaylorwrttayvar(tay,krnl),tay2),
               krnl);
-     v := TayCoeffList!-union
-            for each pp in l collect TayCoeffList cdr pp;
+     v := taycoefflist!-union
+            for each pp in l collect taycoefflist cdr pp;
      singlist := nil ./ 1;
      for each pp in l do
        if car pp then singlist := addsq(singlist,car pp);
@@ -543,18 +543,18 @@ symbolic procedure taysimpatan u;
      % special treatment for zeroth coefficient
      %
      c0 := simp {car u,
-                 mk!*sq TayGetCoeff(l0,TayCoeffList tay)};
-     v := TayMakeCoeff (l0,c0) . v;
-     tay := make!-Taylor!*(
+                 mk!*sq taygetcoeff(l0,taycoefflist tay)};
+     v := taymakecoeff (l0,c0) . v;
+     tay := make!-taylor!*(
               v,
               tp,
-              if !*taylorkeeporiginal and TayOrig tay
-                then simp {car u,mk!*sq TayOrig tay}
+              if !*taylorkeeporiginal and tayorig tay
+                then simp {car u,mk!*sq tayorig tay}
                else nil,
-              TayFlags tay);
+              tayflags tay);
      if null numr singlist then return !*tay2q tay;
-     if !*taylorkeeporiginal and TayOrig tay
-       then set!-TayOrig(tay,subtrsq(TayOrig tay,singlist));
+     if !*taylorkeeporiginal and tayorig tay
+       then set!-tayorig(tay,subtrsq(tayorig tay,singlist));
      return addsq(singlist,!*tay2q tay)
   end;
 
@@ -562,7 +562,7 @@ symbolic procedure taysimpatan!*(fn,tay);
    begin scalar result,tay1;
      if fn memq '(atan acot)
        then tay := multtaylorsq(tay,simp 'i);
-     tay1 := cst!-Taylor!*(1 ./ 1,TayTemplate tay);
+     tay1 := cst!-taylor!*(1 ./ 1,taytemplate tay);
      tay := quottaylor(addtaylor(tay1,tay),
                        addtaylor(tay1,negtaylor tay));
      result := multsq(taysimplog {'log,tay},1 ./ 2);
@@ -579,7 +579,7 @@ put('atanh,'taylorsimpfn,'taysimpatan);
 put('acoth,'taylorsimpfn,'taysimpatan);
 
 
-comment For the logarithm and exponential we use the extension of
+COMMENT For the logarithm and exponential we use the extension of
         an algorithm quoted by Knuth who shows how to do this for
         series in one expansion variable.
 
@@ -654,82 +654,82 @@ symbolic procedure taysimplog u;
   % Special Taylor expansion function for logarithms
   %
   if not (car u eq 'log) or cddr u then confusion 'taysimplog
-   else Taylor!:
+   else taylor!:
     begin scalar a0,clist,coefflis,il,l0,l,tay,tp,csing,singterm;
     u := simplogi cadr u;
     if not kernp u then return taysimpsq u;
     u := mvar numr u;
     if not (car u eq 'log) then confusion 'taysimplog;
     u := taysimpsq simp!* cadr u;
-    if not Taylor!-kernel!-sq!-p u then return mksq({'log,mk!*sq u},1);
+    if not taylor!-kernel!-sq!-p u then return mksq({'log,mk!*sq u},1);
     tay := mvar numr u;
-    tp := TayTemplate tay;
+    tp := taytemplate tay;
     l0 := make!-cst!-powerlist tp;
     %
     % The following relies on the standard ordering of the
     % TayCoeffList.
     %
-    l := prune!-coefflist TayCoeffList tay;
-    if null l then Taylor!-error!*('not!-a!-unit,'taysimplog);
+    l := prune!-coefflist taycoefflist tay;
+    if null l then taylor!-error!*('not!-a!-unit,'taysimplog);
     %
     % The assumption at this point is that the first term is the one
     % with lowest degree, i.e. dividing by this term yields a series
     % which starts with a constant term.
     %
-    if TayCfPl car l neq l0 then
-      <<csing := TayCfPl car l;
+    if taycfpl car l neq l0 then
+      <<csing := taycfpl car l;
         l := for each pp in l collect begin scalar newpl;
-                 newpl := subtr!-degrees(TayCfPl pp,csing);
+                 newpl := subtr!-degrees(taycfpl pp,csing);
                  if is!-neg!-pl newpl
-                   then Taylor!-error('not!-a!-unit,'taysimplog)
-                  else return TayMakeCoeff(newpl,TayCfSQ pp);
+                   then taylor!-error('not!-a!-unit,'taysimplog)
+                  else return taymakecoeff(newpl,taycfsq pp);
                end;
-        tp := addto!-all!-TayTpElOrders(
+        tp := addto!-all!-taytpelorders(
                 tp,
                 for each nl in csing collect
                   - get!-degree nl);
         singterm := simp!* retimes preptaycoeff(csing,tp);
-        if !:minusp lnc numr TayCfSq car l
+        if !:minusp lnc numr taycfsq car l
           then <<singterm := negsq singterm;
                  l := negtaylor1 l>>>>;
-    a0 := TayGetCoeff(l0,l);
-    clist := {TayMakeCoeff(l0,simplogi mk!*sq a0)};
+    a0 := taygetcoeff(l0,l);
+    clist := {taymakecoeff(l0,simplogi mk!*sq a0)};
     il := if null l then nlist(1,length tp)
            else smallest!-increment l;
-    coefflis := makecoeffs0(tp,TpNextList tp,il);
+    coefflis := makecoeffs0(tp,tpnextlist tp,il);
     if not null coefflis
       then for each cc in cdr coefflis do
              begin scalar s,pos,pp,n,n1;
                s := nil ./ 1;
                pos := find!-non!-zero cc;
                n := nth(nth(cc,car pos),cdr pos);
-               pp := makecoeffpairs(l0,cc,TayCfPl car l,il);
+               pp := makecoeffpairs(l0,cc,taycfpl car l,il);
                for each p in pp do <<
                  n1 := nth(nth(car p,car pos),cdr pos);
                  s := addsq(s,
                             multsq(!*TayExp2q n1,
-                                   multsq(TayGetCoeff(car p,clist),
-                                          TayGetCoeff(cdr p,l))))>>;
+                                   multsq(taygetcoeff(car p,clist),
+                                          taygetcoeff(cdr p,l))))>>;
 %               for each p in pp addsq
 %                 multsq(!*TayExp2q nth(nth(car p,car pos),cdr pos),
 %                        multsq(TayGetCoeff(car p,clist),
 %                               TayGetCoeff(cdr p,l)));
-               s := subtrsq(TayGetCoeff(cc,l),quotsq(s,!*TayExp2q n));
+               s := subtrsq(taygetcoeff(cc,l),quotsq(s,!*TayExp2q n));
                if not null numr s
-                 then clist := TayMakeCoeff(cc,quotsq(s,a0)) . clist;
+                 then clist := taymakecoeff(cc,quotsq(s,a0)) . clist;
              end;
-    tay := make!-Taylor!*(
+    tay := make!-taylor!*(
              reversip clist,
              tp,
-             if !*taylorkeeporiginal and TayOrig tay
-               then simplogi mk!*sq TayOrig tay
+             if !*taylorkeeporiginal and tayorig tay
+               then simplogi mk!*sq tayorig tay
               else nil,
-             TayFlags tay);
+             tayflags tay);
     if null csing then return !*tay2q tay;
     singterm := simplogsq singterm;
-    if Taylor!*!-zerop tay then return singterm;
-    if !*taylorkeeporiginal and TayOrig tay
-      then set!-TayOrig(tay,subtrsq(TayOrig tay,singterm));
+    if taylor!*!-zerop tay then return singterm;
+    if !*taylorkeeporiginal and tayorig tay
+      then set!-tayorig(tay,subtrsq(tayorig tay,singterm));
     return addsq(singterm,!*tay2q tay)
   end;
 
@@ -741,36 +741,36 @@ symbolic procedure taysimpexp u;
   % Special Taylor expansion function for exponentials
   %
   if not (car u eq 'exp) or cddr u then confusion 'taysimpexp
-   else Taylor!:
+   else taylor!:
     begin scalar a0,clist,coefflis,il,l0,l,lm,lp,tay,tp;
     u := taysimpsq simp!* cadr u;
-    if not Taylor!-kernel!-sq!-p u
+    if not taylor!-kernel!-sq!-p u
       then return mksq ({'exp,mk!*sq u},1);
     tay := mvar numr u;
-    tp := TayTemplate tay;
+    tp := taytemplate tay;
     l0 := make!-cst!-powerlist tp;
     %
     % The following relies on the standard ordering of the
     % TayCoeffList.
     %
-    l := prune!-coefflist TayCoeffList tay;
-    if null l then return !*tay2q cst!-Taylor!*(1 ./ 1,tp);
+    l := prune!-coefflist taycoefflist tay;
+    if null l then return !*tay2q cst!-taylor!*(1 ./ 1,tp);
     for each pp in l do
-      if is!-neg!-pl TayCfPl pp then lm := pp . lm
-       else if not null numr TayCfSq pp then lp := pp . lp;
+      if is!-neg!-pl taycfpl pp then lm := pp . lm
+       else if not null numr taycfsq pp then lp := pp . lp;
     lm := reversip lm;
     l := reversip lp;
 
     if lm
       then lm := simp!* {'exp,
-                         preptaylor!* make!-Taylor!*(lm,tp,nil,nil)};
+                         preptaylor!* make!-taylor!*(lm,tp,nil,nil)};
 
     if null l then return lm;
 
-    a0 := TayGetCoeff(l0,l);
-    clist := {TayMakeCoeff(l0,simp!* {'exp,mk!*sq a0})};
+    a0 := taygetcoeff(l0,l);
+    clist := {taymakecoeff(l0,simp!* {'exp,mk!*sq a0})};
     il := smallest!-increment l;
-    coefflis := makecoeffs0(tp,TpNextList tp,il);
+    coefflis := makecoeffs0(tp,tpnextlist tp,il);
 
     if not null coefflis
       then for each cc in cdr coefflis do
@@ -783,30 +783,30 @@ symbolic procedure taysimpexp u;
                  n1 := nth(nth(car p,car pos),cdr pos);
                  s := addsq(s,
                             multsq(!*TayExp2q(n - n1),
-                                   multsq(TayGetCoeff(car p,clist),
-                                          TayGetCoeff(cdr p,l))))>>;
+                                   multsq(taygetcoeff(car p,clist),
+                                          taygetcoeff(cdr p,l))))>>;
                s := subs2!* quotsq(s,!*TayExp2q n);
                if not null numr s
-                 then clist := TayMakeCoeff(cc,s) . clist
+                 then clist := taymakecoeff(cc,s) . clist
              end;
 
     clist := reversip clist;
 
     u := !*tay2q
-           make!-Taylor!*(
+           make!-taylor!*(
              clist,
              tp,
-             if !*taylorkeeporiginal and TayOrig tay
-               then simp {'exp,mk!*sq TayOrig tay}
+             if !*taylorkeeporiginal and tayorig tay
+               then simp {'exp,mk!*sq tayorig tay}
               else nil,
-             TayFlags tay);
+             tayflags tay);
     return if null lm then u else multsq(u,lm)
   end;
 
 put('exp,'taylorsimpfn,'taysimpexp);
 
 
-comment The algorithm for the trigonometric functions is also
+COMMENT The algorithm for the trigonometric functions is also
         derived from their differential equation.
         The simplest case is that of tangent whose equation is
 
@@ -985,26 +985,26 @@ symbolic procedure taysimptan u;
   %
   if not (car u memq '(tan cot tanh coth)) or cddr u
     then confusion 'taysimptan
-   else Taylor!:
+   else taylor!:
     begin scalar a,a0,clist,coefflis,il,l0,l,poleflag,tay,tp;
     tay := taysimpsq simp!* cadr u;
-    if not Taylor!-kernel!-sq!-p tay
+    if not taylor!-kernel!-sq!-p tay
       then return mksq({car u,mk!*sq tay},1);
     tay := mvar numr tay;
-    tp := TayTemplate tay;
+    tp := taytemplate tay;
     l0 := make!-cst!-powerlist tp;
     %
     % First we get rid of possible zero coefficients.
     %
-    l := prune!-coefflist TayCoeffList tay;
+    l := prune!-coefflist taycoefflist tay;
 %    if null l then return !*tay2q cst!-Taylor!*(simp!* {car u,0},tp);
     %
     % The following relies on the standard ordering of the
     % TayCoeffList.
     %
-    if not null l and is!-neg!-pl TayCfPl car l
-      then Taylor!-error('essential!-singularity,car u);
-    a0 := TayGetCoeff(l0,l);
+    if not null l and is!-neg!-pl taycfpl car l
+      then taylor!-error('essential!-singularity,car u);
+    a0 := taygetcoeff(l0,l);
     il := if null l then nlist(1,length tp)
            else smallest!-increment l;
     %
@@ -1031,11 +1031,11 @@ symbolic procedure taysimptan u;
                else if car u eq 'cot
                 then invsq simp!* {'tan,!*!*taylor!-epsilon!*!*}
                else invsq simp!* {'tanh,!*!*taylor!-epsilon!*!*};
-        clist := {TayMakeCoeff(l0,a0)};
+        clist := {taymakecoeff(l0,a0)};
         >>
-     else clist := {TayMakeCoeff(l0,simp!* {car u,mk!*sq a0})};
+     else clist := {taymakecoeff(l0,simp!* {car u,mk!*sq a0})};
     %
-    coefflis := makecoeffs0(tp,TpNextList tp,il);
+    coefflis := makecoeffs0(tp,tpnextlist tp,il);
 
     if not null coefflis
       then for each cc in cdr coefflis do
@@ -1047,31 +1047,31 @@ symbolic procedure taysimptan u;
                  x := reversip makecoeffpairs1(l0,car p,l0,il);
                  y := nil ./ 1;
                  for each z in x do
-                   y := addsq(y,multsq(TayGetCoeff(car z,clist),
-                                       TayGetCoeff(cdr z,clist)));
+                   y := addsq(y,multsq(taygetcoeff(car z,clist),
+                                       taygetcoeff(cdr z,clist)));
                  n1 := nth(nth(car p,car pos),cdr pos);
                  s := addsq(s,
                             multsq(!*TayExp2q(n - n1),
-                                   multsq(y,TayGetCoeff(cdr p,l))))>>;
+                                   multsq(y,taygetcoeff(cdr p,l))))>>;
                cf := quotsq(s,!*TayExp2q n);
                if car u memq '(tanh coth) then cf := negsq cf;
-               cf := addsq(TayGetCoeff(cc,l),cf);
+               cf := addsq(taygetcoeff(cc,l),cf);
                if null numr cf then return;  % short cut for efficiency
                if car u eq 'cot then cf := negsq cf;
-               clist := TayMakeCoeff(cc,cf) . clist
+               clist := taymakecoeff(cc,cf) . clist
              end;
-    a := make!-Taylor!*(reversip clist,tp,nil,nil);
+    a := make!-taylor!*(reversip clist,tp,nil,nil);
     %
     % Construct ``real'' series in case of pole
     %
     if poleflag then begin scalar x;
        x := if car u eq 'cot
-              then cst!-Taylor!*(
+              then cst!-taylor!*(
                      invsq simp {'tan,!*!*taylor!-epsilon!*!*},tp)
              else if car u eq 'coth
-              then cst!-Taylor!*(
+              then cst!-taylor!*(
                      invsq simp {'tanh,!*!*taylor!-epsilon!*!*},tp)
-             else cst!-Taylor!*(
+             else cst!-taylor!*(
                      simp {car u,!*!*taylor!-epsilon!*!*},tp);
 
        if car u eq 'tan then
@@ -1092,16 +1092,16 @@ symbolic procedure taysimptan u;
                          addtaylor(x,negtaylor a));
 
         if not (a freeof !*!*taylor!-epsilon!*!*)
-          then set!-TayCoeffList(a,
-                  for each pp in TayCoeffList a collect
-                    TayMakeCoeff(TayCfPl pp,
-                                 subsq(TayCfSq pp,
+          then set!-taycoefflist(a,
+                  for each pp in taycoefflist a collect
+                    taymakecoeff(taycfpl pp,
+                                 subsq(taycfsq pp,
                                        {!*!*taylor!-epsilon!*!* . 0})));
       end;
     %
-    if !*taylorkeeporiginal and TayOrig tay
-      then set!-TayOrig(a,simp {car u,mk!*sq TayOrig tay});
-    set!-Tayflags(a,TayFlags tay);
+    if !*taylorkeeporiginal and tayorig tay
+      then set!-tayorig(a,simp {car u,mk!*sq tayorig tay});
+    set!-tayflags(a,tayflags tay);
     return !*tay2q a
   end;
 
@@ -1112,7 +1112,7 @@ put('coth,'taylorsimpfn,'taysimptan);
 
 
 
-comment For the circular sine and cosine and their reciprocals
+COMMENT For the circular sine and cosine and their reciprocals
         we calculate the exponential and use it via the formulas
 
 
@@ -1157,26 +1157,26 @@ symbolic procedure taysimpsin u;
   %
   if not (car u memq '(sin cos sec csc)) or cddr u
     then confusion 'taysimpsin
-   else Taylor!:
+   else taylor!:
     begin scalar l,tay,result,tp,i1,l0,a0,a1,a2;
     tay := taysimpsq simp!* cadr u;
-    if not Taylor!-kernel!-sq!-p tay
+    if not taylor!-kernel!-sq!-p tay
       then return mksq({car u,mk!*sq tay},1);
     tay := mvar numr tay;
-    tp := TayTemplate tay;
+    tp := taytemplate tay;
     l0 := make!-cst!-powerlist tp;
-    l := prune!-coefflist TayCoeffList tay;
+    l := prune!-coefflist taycoefflist tay;
 %    if null l then return !*tay2q cst!-Taylor!*(simp!* {car u,0},tp);
 %    if is!-neg!-pl TayCfPl car l
 %      then Taylor!-error('essential!-singularity,car u);
-    a0 := TayGetCoeff(l0,l);
+    a0 := taygetcoeff(l0,l);
     %
     % make constant term to 0
     %
     i1 := simp 'i;
     if not null numr a0
-      then tay := addtaylor(tay,cst!-Taylor!*(negsq a0,tp));
-    result := taysimpexp{'exp,multtaylor(tay,cst!-Taylor!*(i1,tp))};
+      then tay := addtaylor(tay,cst!-taylor!*(negsq a0,tp));
+    result := taysimpexp{'exp,multtaylor(tay,cst!-taylor!*(i1,tp))};
     a1 := simp!* {'sin,mk!*sq a0} . simp!* {'cos,mk!*sq a0};
     if car u memq '(sin csc) then <<
       a2 := addsq(car a1,multsq(i1,cdr a1));
@@ -1201,7 +1201,7 @@ put('csc,'taylorsimpfn,'taysimpsin);
 
 
 
-comment For the hyperbolic sine and cosine and their reciprocals
+COMMENT For the hyperbolic sine and cosine and their reciprocals
         we calculate the exponential and use it via the formulas
 
 
@@ -1245,24 +1245,24 @@ symbolic procedure taysimpsinh u;
   %
   if not (car u memq '(sinh cosh sech csch)) or cddr u
     then confusion 'taysimpsin
-   else Taylor!:
+   else taylor!:
     begin scalar l,tay,result,tp,l0,a0,a1,a2;
     tay := taysimpsq simp!* cadr u;
-    if not Taylor!-kernel!-sq!-p tay
+    if not taylor!-kernel!-sq!-p tay
       then return mksq({car u,mk!*sq tay},1);
     tay := mvar numr tay;
-    tp := TayTemplate tay;
+    tp := taytemplate tay;
     l0 := make!-cst!-powerlist tp;
-    l := prune!-coefflist TayCoeffList tay;
+    l := prune!-coefflist taycoefflist tay;
 %    if null l then return !*tay2q cst!-Taylor!*(simp!* {car u,0},tp);
 %    if is!-neg!-pl TayCfPl car l
 %      then Taylor!-error('essential!-singularity,car u);
-    a0 := TayGetCoeff(l0,l);
+    a0 := taygetcoeff(l0,l);
     %
     % make constant term to 0
     %
     if not null numr a0
-      then tay := addtaylor(tay,cst!-Taylor!*(negsq a0,tp));
+      then tay := addtaylor(tay,cst!-taylor!*(negsq a0,tp));
     result := taysimpexp{'exp,tay};
     a1 := simp!* {'sinh,mk!*sq a0} . simp!* {'cosh,mk!*sq a0};
     if car u memq '(sinh csch) then <<
@@ -1287,7 +1287,7 @@ put('sech, 'taylorsimpfn, 'taysimpsinh);
 put('csch, 'taylorsimpfn, 'taysimpsinh);
 
 
-comment Support for the integration of Taylor kernels.
+COMMENT Support for the integration of Taylor kernels.
         Unfortunately, with the current interface, only Taylor kernels
         on toplevel can be treated successfully.
 
@@ -1310,7 +1310,7 @@ algebraic let {
              * taylorcombine(int(symbolic('(taylor!* x y z w)),u)/u),u),
 
   int(~x,~y) => taylorint1(~x,~y)
-                  when not symbolic algebraic(~x freeof 'Taylor!*)
+                  when not symbolic algebraic(~x freeof 'taylor!*)
 };
 
 
@@ -1320,9 +1320,9 @@ symbolic procedure revaltaylorint1 x;
   begin scalar u,v;
     u := car x;
     v := cadr x;
-    if Taylor!*p u then return revaltaylorint append(cdr u,{v});
+    if taylor!*p u then return revaltaylorint append(cdr u,{v});
     u := reval taylorcombine u;
-    if Taylor!*p u then return revaltaylorint append(cdr u,{v});
+    if taylor!*p u then return revaltaylorint append(cdr u,{v});
     if not atom u
       then if car u memq '(plus minus difference)
              then return
@@ -1341,11 +1341,11 @@ symbolic procedure revaltaylorint u;
     tayorg := caddr u;
     tayflgs := cadddr u;
     var := car cddddr u;
-    if null (var member TayTpVars taytp)
+    if null (var member taytpvars taytp)
       then return mk!*sq !*tay2q
-            make!-Taylor!*(
+            make!-taylor!*(
               for each pp in taycfl collect
-                TayCfPl pp . simp!* {'int,mk!*sq TayCfSq pp,var},
+                taycfpl pp . simp!* {'int,mk!*sq taycfsq pp,var},
               taytp,
               if not null tayorg
                 then simp!* {'int,mk!*sq tayorg,var}

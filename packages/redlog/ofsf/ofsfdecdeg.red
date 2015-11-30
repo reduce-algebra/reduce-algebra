@@ -112,7 +112,7 @@ procedure ofsf_decdeg2(f,v,posp);
    % from outside. Note that for even $n$ positive conditions have to be
    % added.
    begin scalar a,w,atl,!*gcd,oddp; integer dgcd;
-      !*gcd := T;
+      !*gcd := t;
       if !*rlbrkcxk then
 	 dgcd := ofsf_cxkdgcd(f,v);
       atl := cl_atl1 f;
@@ -134,7 +134,7 @@ procedure ofsf_decdeg2(f,v,posp);
 	 if dgcd > 0 and oddp eq 'odd then <<
 	    % We have found $R(c*v^k,0)$ with odd $k$ and $R$ an
 	    % ordering relation for the first time.
-	    oddp := T;
+	    oddp := t;
 	    while w := quotf(dgcd,2) do
 	       dgcd := w
 	 >>

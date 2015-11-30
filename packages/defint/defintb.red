@@ -56,23 +56,23 @@ algebraic ;
   defint_choose((log(~x))^(~n)*Heaviside ((~x)-1),~var) => f32(n,x),
   defint_choose(log(1+~x),~var) => f1(34,x),
   defint_choose(log((~x+1)/~x),~var) => f1(35,x),
-  defint_choose(ei(-~x),~var) => f1(36,x),
+  defint_choose(Ei(-~x),~var) => f1(36,x),
   defint_choose(si(~x),~var) => f1(37,x),
   defint_choose(ci(~x),~var) => f1(38,x),
   defint_choose(shi(~x),~var) => f1(39,x),
 
   defint_choose(erf(~x),~var) => f1(41,x),
   defint_choose(-erf(~x)+1,~var) => f1(42,x),    %erfc(x)
-  defint_choose(fresnel_s(~x),~var) => f1(43,x),
-  defint_choose(fresnel_c(~x),~var) => f1(44,x),
+  defint_choose(Fresnel_S(~x),~var) => f1(43,x),
+  defint_choose(Fresnel_C(~x),~var) => f1(44,x),
   defint_choose(gamma(~n,~x),~var) => f1(45,x,n),
 
-  defint_choose(besselj(~n,~x),~var) => f1(50,x,n),
-  defint_choose(bessely(~n,~x),~var) => f1(51,x,n),
-  defint_choose(besseli(~n,~x),~var) => f1(52,x,n),
-  defint_choose(besselk(~n,~x),~var) => f1(53,x,n),
-  defint_choose(struveh(~n,~x),~var) => f1(54,x,n),
-  defint_choose(struvel(~n,~x),~var) => f1(55,x,n),
+  defint_choose(BesselJ(~n,~x),~var) => f1(50,x,n),
+  defint_choose(BesselY(~n,~x),~var) => f1(51,x,n),
+  defint_choose(BesselI(~n,~x),~var) => f1(52,x,n),
+  defint_choose(BesselK(~n,~x),~var) => f1(53,x,n),
+  defint_choose(StruveH(~n,~x),~var) => f1(54,x,n),
+  defint_choose(StruveL(~n,~x),~var) => f1(55,x,n),
   defint_choose(m_legendrep(~n,~x)*Heaviside(1-(~x)),~var) =>
                                           f1(56,x,n),
   defint_choose(m_legendrep(~n,1/~x)*Heaviside((~x)-1),~var) =>

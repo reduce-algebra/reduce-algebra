@@ -1,13 +1,12 @@
-lisp;
+load_package redlog;
+rlset r;
 
-load!-package 'assert;
-on1 'assert;
-on1 'assertbreak;
-
-load!-package 'redlog;
-rl_set '(r);
-
+load_package assert;
+on assert;
+on assertbreak;
 assert_install_all;
+
+lisp;
 
 % TEST 1
 
@@ -15,18 +14,16 @@ oo := setkorder '(x);
 
 ex1_f1 := numr simp xread t;
 (x**5 - 3)*(x**2 -2)*(x**3 - 42)*(x + 7);
-
 ex1_f2 := numr simp xread t;
-(x + 100)*(x^19 - 1000);
-
-ex1_f2 := multf(ex1_f1, ex1_f2);
-
-ex1_g := numr simp xread t;
+(x**5 - 3)*(x**2 -2)*(x**3 - 42)*(x + 7)*(x + 100)*(x^19 - 1000);
+ex1_f3 := numr simp xread t;
 x^2 - 3;
 
-ex1_trl := trail_push(declit_mk ofsf_0mk2('equal, ex1_f1), nil);
-ex1_trl := trail_push(declit_mk ofsf_0mk2('equal, ex1_f2), ex1_trl);
-ex1_trl := trail_push(declit_mk ofsf_0mk2('greaterp, ex1_g), ex1_trl);
+ex1_trl := nil;
+ex1_trl := trail_push({'rl_declit, nil, ofsf_0mk2('equal, ex1_f1)}, ex1_trl);
+ex1_trl := trail_push({'rl_declit, nil, ofsf_0mk2('equal, ex1_f2)}, ex1_trl);
+ex1_trl := trail_push({'rl_declit, nil, ofsf_0mk2('greaterp, ex1_f3)}, ex1_trl);
+
 
 ex1_res := ofsf_feasible ex1_trl;
 for each p in ex1_res do assert anuiv_ptp p;
@@ -48,37 +45,35 @@ ofsf_ivlprint ex1_fres;
 setkorder oo;
 
 % TEST 2
-% f1 = x^4 - 5 < 0
-% f2 = (y^5 - x^3)*(y - x)*(y^3 - 7) = 0
-% g = y^3 - 2 > 0
-% Trail: f1, x = sqrt 2, f2, g
+% f1 = x^4 - 5
+% f2 = (y^5 - x^3)*(y - x)*(y^3 - 7)
+% f3 = y^3 - 2
+% Trail: f1 < 0, x := sqrt 2, f2 = 0, f3 > 0
 % f2(sqrt 2) has three roots.
-% Their approximations are {y = 1.23114,y = 1.41421,y = 1.91293}.
-% Only the last two satisfy g > 0.
+% Their approximations are {y = 1.23114, y = 1.41421, y = 1.91293}.
+% Only the last two satisfy f3 > 0.
 
 oo := setkorder '(y x);
 
 ex2_hugo := aex_fromrp simp xread t;
 x**2 - 2;
-
 ex2_sqrt2 := anu_mk(ex2_hugo, iv_mk(rat_fromnum 1, rat_fromnum 2));
 
-ex2_f1 := rl_simp xread t;
-x^4 - 5 < 0;
-
-ex2_f2 := rl_simp xread t;
-(y^5 - x^3)*(y - x)*(y^3 - 7) = 0;
-
-ex2_g := rl_simp xread t;
-y^3 - 2 > 0;
+ex2_f1 := numr simp xread t;
+x^4 - 5;
+ex2_f2 := numr simp xread t;
+(y^5 - x^3)*(y - x)*(y^3 - 7);
+ex2_f3 := numr simp xread t;
+y^3 - 2;
 
 ex2_trl := nil;
-ex2_trl := trail_push(declit_mk ex2_f1, ex2_trl);
+ex2_trl := trail_push({'rl_declit, nil, ofsf_0mk2('lessp, ex2_f1)}, ex2_trl);
 ex2_trl := trail_push(varass_mk('x, ex2_sqrt2), ex2_trl);
-ex2_trl := trail_push(declit_mk ex2_f2, ex2_trl);
-ex2_trl := trail_push(declit_mk ex2_g, ex2_trl);
+ex2_trl := trail_push({'rl_declit, nil, ofsf_0mk2('equal, ex2_f2)}, ex2_trl);
+ex2_trl := trail_push({'rl_declit, nil, ofsf_0mk2('greaterp, ex2_f3)}, ex2_trl);
 
 ex2_res := ofsf_feasible ex2_trl;
+
 for each p in ex2_res do assert anuiv_ptp p;
 
 ex2_fres := ofsf_ivlapprox ex2_res;
@@ -101,17 +96,16 @@ setkorder oo;
 
 oo := setkorder '(x);
 
-ex3_g := numr simp xread t;
+ex3_f1 := numr simp xread t;
 (x-1)^2*(x-2)^2*(x-3)^2*(x-4)*(x-5)*(x-6)^2;
-
-ex3_h := numr simp xread t;
+ex3_f2 := numr simp xread t;
 -(2*x - 3)*(2*x - 9);
 
-for each r in '(equal neq leq geq lessp greaterp) do <<
+for each op in '(equal neq leq geq lessp greaterp) do <<
    ex3_trl := nil;
-   ex3_trl := trail_push(declit_mk ofsf_0mk2(r, ex3_g), ex3_trl);
-   ex3_trl := trail_push(declit_mk ofsf_0mk2('geq, ex3_h), ex3_trl);
-   prin2t r;
+   ex3_trl := trail_push({'rl_declit, nil, ofsf_0mk2(op, ex3_f1)}, ex3_trl);
+   ex3_trl := trail_push({'rl_declit, nil, ofsf_0mk2('geq, ex3_f2)}, ex3_trl);
+   prin2t op;
    ofsf_ivlprint ofsf_ivlapprox ofsf_feasible ex3_trl;
    terpri()
 >>;

@@ -99,7 +99,7 @@ algebraic operator sqrt_of, oddexpt;
 algebraic << let sqrt_of(~x) => sqrt (x) when numberp x >>;
 
 
-algebraic procedure ThreeJSymbol (u1,u2,u3);
+algebraic procedure threejsymbol (u1,u2,u3);
  if listp u1 and listp u2 and listp u3 then
   begin
    scalar j1,j2,j3,m1,m2,m3,tmp,lower,upper,better,best;
@@ -324,35 +324,35 @@ algebraic <<
  operator clebsch_gordan;
 
 let clebsch_gordan({~j1,~m1},{~j2,~m2},{~j3,~m3}) =>
-       ThreeJSymbol ({~j1,~m1},{~j2,~m2},{~j3, - ~m3}) *
+       threejsymbol ({~j1,~m1},{~j2,~m2},{~j3, - ~m3}) *
        (2*j3+1)^(1/2) * (-1)^(j1-j2+m3);
 
 % The 6 J symbol
 % The naming of the functions follows Landolt-Boernstein
 
-operator SixJSymbol;
+operator sixjsymbol;
 
-let { SixJSymbol({~j1,~j2,~j3} , {~l1,~l2,~l3}) =>
+let { sixjsymbol({~j1,~j2,~j3} , {~l1,~l2,~l3}) =>
        (begin scalar nnn,mmm,!*factor,!*exp,signum;
        % necessary conditions for existence
 
        if (necess_6j (j1,j2,j3,l1,l2,l3) = nil) then return nil;
        on factor;
-       mmm := Racah_W(j1,j2,j3,l1,l2,l3);
+       mmm := racah_w(j1,j2,j3,l1,l2,l3);
        nnn :=
-        square_Racah_delta(j1,j2,j3) * square_Racah_delta(j1,l2,l3)*
-        square_Racah_delta(l1,j2,l3) * square_Racah_delta(l1,l2,j3)
+        square_racah_delta(j1,j2,j3) * square_racah_delta(j1,l2,l3)*
+        square_racah_delta(l1,j2,l3) * square_racah_delta(l1,l2,j3)
         * mmm^2;
        nnn := simplify_factorial (nnn);
        signum := sign mmm;
        if numberp signum then return (signum * sqrt nnn)
           else return (sign nnn * sqrt nnn); end)};
 
-procedure square_Racah_delta(a,b,c);
+procedure square_racah_delta(a,b,c);
   simplify_factorial(factorial(a+b-c) *factorial(a-b+c)
                 * factorial(-a +b +c) / factorial (a + b + c +1));
 
-procedure Racah_W(j1,j2,j3,l1,l2,l3);
+procedure racah_w(j1,j2,j3,l1,l2,l3);
  begin scalar mini,maxi,interv;
 
     mini := min(j1+j2+l1+l2,j2+j3+l2+l3,j3+j1+l3+l1);
@@ -533,21 +533,21 @@ symbolic procedure fancy!-clebsch_gordon(u);
 
 put('clebsch_gordon,'fancy!-prifn, 'fancy!-clebsch_gordon);
 
-symbolic procedure fancy!-ThreeJSymbol(u);
+symbolic procedure fancy!-threejsymbol(u);
      fancy!-matpri2({cdr cadr u,cdr caddr u},nil,nil);
 
-put('ThreeJSymbol,'fancy!-prifn, 'fancy!-ThreeJSymbol);
+put('threejsymbol,'fancy!-prifn, 'fancy!-threejsymbol);
 
-symbolic procedure fancy!-SixJSymbol(u);
+symbolic procedure fancy!-sixjsymbol(u);
      fancy!-matpri2({cdr cadr u,cdr caddr u},nil,'("{" . "}"));
 
-put('SixJSymbol,'fancy!-prifn, 'fancy!-SixJSymbol);
+put('sixjsymbol,'fancy!-prifn, 'fancy!-sixjsymbol);
 
-symbolic procedure fancy!-NineJSymbol(u);
+symbolic procedure fancy!-ninejsymbol(u);
      fancy!-matpri2({cdr cadr u,cdr caddr u, cdr cadddr u},nil,
           '("{" . "}"));
 
-put('NineJSymbol,'fancy!-prifn, 'fancy!-NineJSymbol);
+put('ninejsymbol,'fancy!-prifn, 'fancy!-ninejsymbol);
 
 endmodule;
 

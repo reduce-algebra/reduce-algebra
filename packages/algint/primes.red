@@ -1,4 +1,4 @@
-MODULE PRIMES;
+module primes;
 
 % Author: James H. Davenport.
 
@@ -26,31 +26,32 @@ MODULE PRIMES;
 %
 
 
-% EXPORTS NEXTPRIME,JHD!-PRIMEP;
+% exports nextprime,jhd!-primep;
 % JHD!-PRIMEP replaced by the primep from "module zfactor" 8.Sept.1988
-EXPORTS NEXTPRIME;
+exports nextprime;
 
-SYMBOLIC PROCEDURE NEXTPRIME P;
+symbolic procedure nextprime p;
 % Returns the next prime number bigger than p.
-    IF P=0 THEN 1
-    ELSE IF P=1 THEN 2
-    ELSE BEGIN
-        IF EVENP P THEN P:=P+1 ELSE P:=P+2;
- TEST:  IF PRIMEP P THEN RETURN P;
-        P:=P+2;
-        GO TO TEST END;
+    if p=0 then 1
+    else if p=1 then 2
+    else begin
+        if evenp p then p:=p+1 else p:=p+2;
+ test:  if primep p then return p;
+        p:=p+2;
+        go to test end;
 
-% SYMBOLIC PROCEDURE JHD!-PRIMEP P;
-%     IF P < 4 THEN T
-%     ELSE IF EVENP P THEN NIL
-%     ELSE BEGIN
-%       SCALAR N;
-%       N:=3; %trial factor.
-%  TOP: IF N*N>P THEN RETURN T
-%       ELSE IF REMAINDER(P,N)=0 THEN RETURN NIL;
-%       N:=N+2;
-%       GO TO TOP END;
+% symbolic procedure jhd!-primep p;
+%     if p < 4 then t
+%     else if evenp p then nil
+%     else begin
+%       scalar n;
+%       n:=3; %Trial factor.
+%  top: if n*n>p then return t
+%       else if remainder(p,n)=0 then return nil;
+%       n:=n+2;
+%       go to top end;
 
-ENDMODULE;
+endmodule;
 
-END;
+end;
+

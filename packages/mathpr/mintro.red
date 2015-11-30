@@ -22,7 +22,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-comment
+COMMENT
 I have put in support for the things that the Twente brigade had, and
 indeed when used with care they have jolly good effects on readability.
 I have also tinkered with what I had before quite a bit both to clean up

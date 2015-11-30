@@ -136,7 +136,7 @@ residue(exp(1/x),x,0);
 ***** taylor fails 
 
 % not implemented
-residue((A*x+B*x^2+c)/(D*x+E),x,-E/D);
+residue((a*x+b*x^2+c)/(d*x+e),x,-e/d);
 
 
                2      2

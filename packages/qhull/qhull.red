@@ -46,12 +46,12 @@ qhull_wd!* := "/tmp/";
 operator qhull;
 
 asserted procedure qhull(l: List): List;
-   qhull_s2aList qhull_qhull qhull_a2sList l;
+   qhull_s2alist qhull_qhull qhull_a2slist l;
 
-asserted procedure qhull_a2sList(l: List): List;
+asserted procedure qhull_a2slist(l: List): List;
    for each pt in cdr l collect cdr pt;
 
-asserted procedure qhull_s2aList(l: List): List;
+asserted procedure qhull_s2alist(l: List): List;
    'list . for each pt in l collect 'list . pt;
 
 asserted procedure qhull_qhull(l: List): List;
@@ -65,20 +65,20 @@ asserted procedure qhull_qhull(l: List): List;
       fn2 := lto_sconcat {qhull_wd!*,getenv "USER", rnd, "-qhull.out"};
       qhull := getenv("QHULL") or qhull_call!*;
       call := lto_sconcat {qhull, " p < ", fn1, " > ", fn2};
-      qhull_createInfile(l, d, n, fn1);
+      qhull_createinfile(l, d, n, fn1);
       w := system call;
       if not eqn(w, 0) then <<
 	 if not !*qhullkeepfiles then
 	    system lto_sconcat {"rm ", fn1};
 	 rederr "qhull call failed"
       >>;
-      w := qhull_parseOutfile fn2;
+      w := qhull_parseoutfile fn2;
       if not !*qhullkeepfiles then
       	 system lto_sconcat {"rm ", fn1, " ", fn2};
       return w
    end;
 
-asserted procedure qhull_createInfile(l: List, d: Integer, n: Integer, fn1: String): Any;
+asserted procedure qhull_createinfile(l: List, d: Integer, n: Integer, fn1: String): Any;
    <<
       out fn1;
       prin2t d;
@@ -94,7 +94,7 @@ asserted procedure qhull_createInfile(l: List, d: Integer, n: Integer, fn1: Stri
       shut fn1
    >>;
 
-asserted procedure qhull_parseOutfile(fn2: String): List;
+asserted procedure qhull_parseoutfile(fn2: String): List;
    begin scalar ch, res; integer d, n;
       ch := open(fn2, 'input);
       rds ch;

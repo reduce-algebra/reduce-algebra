@@ -211,8 +211,8 @@ procedure ofsf_xopt!-check(f);
    % by using xopt.
    begin scalar !*rlsiatadv,!*rlsitsqspl,!*rlsifac,!*rldavgcd,!*rlsipd,
 	 !*rlsipw;
-      !*rlsipw := T;
-      return ofsf_xopt!-check1(cl_simpl(cl_pnf f,nil,-1),nil,T)
+      !*rlsipw := t;
+      return ofsf_xopt!-check1(cl_simpl(cl_pnf f,nil,-1),nil,t)
    end;
 
 procedure ofsf_xopt!-check1(f,vl,p);
@@ -225,7 +225,7 @@ procedure ofsf_xopt!-check1(f,vl,p);
       op := rl_op f;
 %       if op eq 'ex or op eq 'all then
       if op eq 'ex  then
-	 return p and ofsf_xopt!-check1(rl_mat f,rl_var f . vl,T);
+	 return p and ofsf_xopt!-check1(rl_mat f,rl_var f . vl,t);
       if op eq 'all  then
       	 return nil;
       if rl_cxp op then <<
@@ -265,7 +265,7 @@ procedure ofsf_xopt!-qe(f);
    % relations. Returns a quantifier free formula equivalent to [f].
    % Entry point for ofsf_qe.
    begin scalar !*rlxoptqe;
-      !*rlxoptqe := T;
+      !*rlxoptqe := t;
       return ofsf_xopt!-xopt f
    end;
 
@@ -277,7 +277,7 @@ procedure ofsf_xopt!-xopt(f);
       scalar !*rlsiatadv,!*rlsitsqspl,!*rlsifac,!*rldavgcd,!*rlsipd,!*rlsipw;
       integer ofsf_xopt!-delnodes!*,ofsf_xopt!-plnodes!*,ofsf_xopt!-fnodes!*,
 	 ofsf_xopt!-thcof!*,ofsf_xopt!-nodes!*;
-      !*rlsipw := T;
+      !*rlsipw := t;
       f := cl_simpl(cl_pnf f,nil,-1);
       w := cl_splt f;
       exl := car w;
@@ -791,7 +791,7 @@ procedure ofsf_xopt!-celmember(ce,cel);
 	 scel := cdr scel;
 	 if f = ofsf_xopt!-ce!-f a then <<
 	    scel := nil;
-	    flg := T
+	    flg := t
 	 >>
       >>;
       return flg
@@ -835,7 +835,7 @@ procedure ofsf_xopt!-ccoput(co,ce);
 	 w := car w;
 	 if ofsf_xopt!-ce!-f w = f then <<
 	    sco := nil;
-	    flg := T
+	    flg := t
 	 >>
       >>;
       if flg then <<

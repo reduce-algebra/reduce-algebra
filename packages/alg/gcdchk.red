@@ -1,4 +1,4 @@
-MODULE GCDCHK;   % Check for a unit gcd using modular arithmetic.
+module gcdchk;   % Check for a unit gcd using modular arithmetic.
 
 % Author: Arthur C. Norman and Mary Ann Moore.
 
@@ -28,47 +28,47 @@ MODULE GCDCHK;   % Check for a unit gcd using modular arithmetic.
 
 % Modifications by: Anthony C. Hearn.
 
-FLUID '(!*BACKTRACE LIST!-OF!-LARGE!-PRIMES MODULAR!-VALUES);
+fluid '(!*backtrace list!-of!-large!-primes modular!-values);
 
 % LIST!-OF!-LARGE!-PRIMES is a list of the largest pair of adjacent
 % primes that can fit in the inum range of the implementation.
 % This should be set here in an implementation dependent manner.
 % For the time begin, a maximum inum value of 2^23 is assumed.
 
-LIST!-OF!-LARGE!-PRIMES := '(8388449 8388451);
+list!-of!-large!-primes := '(8388449 8388451);
 
-SYMBOLIC PROCEDURE MONIC!-MOD!-P A;
-   IF NULL A THEN NIL
-    ELSE IF DOMAINP A THEN 1
-    ELSE IF LC A = 1 THEN A
-    ELSE MULTIPLY!-BY!-CONSTANT!-MOD!-P(A,MODULAR!-RECIPROCAL LC A);
+symbolic procedure monic!-mod!-p a;
+   if null a then nil
+    else if domainp a then 1
+    else if lc a = 1 then a
+    else multiply!-by!-constant!-mod!-p(a,modular!-reciprocal lc a);
 
-symbolic inline procedure BEFORE!-IN!-ORDER(A,B);
+symbolic inline procedure before!-in!-order(a,b);
 %Predicate taking the value true if the polynomial
 %a has a leading term which comes strictly before that
 %of b in canonical order;
-   NULL DOMAINP A AND (DOMAINP B OR LDEG A>LDEG B);
+   null domainp a and (domainp b or ldeg a>ldeg b);
 
-SYMBOLIC PROCEDURE UNI!-PLUS!-MOD!-P(A,B);
+symbolic procedure uni!-plus!-mod!-p(a,b);
 % Form the sum of the two univariate polynomials a and b
 % working over the ground domain defined by the routines
 % modular!-plus, modular!-times etc. The inputs to this
 % routine are assumed to have coefficients already
 % in the required domain;
-  IF NULL A THEN B
-   ELSE IF NULL B THEN A
-   ELSE IF BEFORE!-IN!-ORDER(A,B)
-    THEN (LT A) .+ UNI!-PLUS!-MOD!-P(RED A,B)
-   ELSE IF BEFORE!-IN!-ORDER(B,A)
-    THEN (LT B) .+ UNI!-PLUS!-MOD!-P(A,RED B)
-   ELSE IF DOMAINP A
-    THEN <<A:=MODULAR!-PLUS(A,B); IF A=0 THEN NIL ELSE A>>
-   ELSE BEGIN SCALAR W;
-      W:=UNI!-PLUS!-MOD!-P(RED A,RED B);
-      B:=MODULAR!-PLUS(LC A,LC B);
-      IF B=0 THEN RETURN W;
-      RETURN (LPOW A .* B) .+ W
-   END;
+  if null a then b
+   else if null b then a
+   else if before!-in!-order(a,b)
+    then (lt a) .+ uni!-plus!-mod!-p(red a,b)
+   else if before!-in!-order(b,a)
+    then (lt b) .+ uni!-plus!-mod!-p(a,red b)
+   else if domainp a
+    then <<a:=modular!-plus(a,b); if a=0 then nil else a>>
+   else begin scalar w;
+      w:=uni!-plus!-mod!-p(red a,red b);
+      b:=modular!-plus(lc a,lc b);
+      if b=0 then return w;
+      return (lpow a .* b) .+ w
+   end;
 
 %symbolic procedure uni!-times!-mod!-p(a,b);
 %   if (null a) or (null b) then nil
@@ -79,131 +79,132 @@ SYMBOLIC PROCEDURE UNI!-PLUS!-MOD!-P(A,B);
 %                                 uni!-times!-term!-mod!-p(lt a,b)),
 %                    uni!-times!-term!-mod!-p(lt b,red a));
 
-SYMBOLIC PROCEDURE UNI!-TIMES!-TERM!-MOD!-P(TERM,B);
+symbolic procedure uni!-times!-term!-mod!-p(term,b);
 %Multiply the given polynomial by the given term;
-    IF NULL B THEN NIL
-    ELSE IF DOMAINP B THEN <<
-       B:=MODULAR!-TIMES(TC TERM,B);
-       IF B=0 THEN NIL
-       ELSE (TPOW TERM .* B) .+ NIL >>
-    ELSE BEGIN SCALAR W;
-        W:=MODULAR!-TIMES(TC TERM,LC B);
-        IF W=0 THEN RETURN UNI!-TIMES!-TERM!-MOD!-P(TERM,RED B);
-        W:= (TVAR TERM TO (TDEG TERM+LDEG B)) .* W;
-        RETURN W .+ UNI!-TIMES!-TERM!-MOD!-P(TERM,RED B)
-    END;
+    if null b then nil
+    else if domainp b then <<
+       b:=modular!-times(tc term,b);
+       if b=0 then nil
+       else (tpow term .* b) .+ nil >>
+    else begin scalar w;
+        w:=modular!-times(tc term,lc b);
+        if w=0 then return uni!-times!-term!-mod!-p(term,red b);
+        w:= (tvar term to (tdeg term+ldeg b)) .* w;
+        return w .+ uni!-times!-term!-mod!-p(term,red b)
+    end;
 
-SYMBOLIC PROCEDURE UNI!-REMAINDER!-MOD!-P(A,B);
+symbolic procedure uni!-remainder!-mod!-p(a,b);
 % Remainder when a is divided by b;
-    IF NULL B THEN REDERR "B=0 IN REMAINDER-MOD-P"
-    ELSE IF DOMAINP B THEN NIL
-    ELSE XUNI!-REMAINDER!-MOD!-P(A,B);
+    if null b then rederr "b=0 in remainder-mod-p"
+    else if domainp b then nil
+    else xuni!-remainder!-mod!-p(a,b);
 
-SYMBOLIC PROCEDURE XUNI!-REMAINDER!-MOD!-P(A,B);
+symbolic procedure xuni!-remainder!-mod!-p(a,b);
 % Remainder when the univariate modular polynomial a is
 % divided by b, given that b is non degenerate;
-   IF DOMAINP A OR LDEG A < LDEG B THEN A
-   ELSE BEGIN
-    SCALAR Q,W;
-    Q:=MODULAR!-QUOTIENT(MODULAR!-MINUS LC A,LC B);
+   if domainp a or ldeg a < ldeg b then a
+   else begin
+    scalar q,w;
+    q:=modular!-quotient(modular!-minus lc a,lc b);
 % compute -lc of quotient;
-    W:= LDEG A - LDEG B; %ldeg of quotient;
-    IF W=0 THEN A:=UNI!-PLUS!-MOD!-P(RED A,
-      MULTIPLY!-BY!-CONSTANT!-MOD!-P(RED B,Q))
-    ELSE
-      A:=UNI!-PLUS!-MOD!-P(RED A,UNI!-TIMES!-TERM!-MOD!-P(
-            (MVAR B TO W) .* Q,RED B));
+    w:= ldeg a - ldeg b; %ldeg of quotient;
+    if w=0 then a:=uni!-plus!-mod!-p(red a,
+      multiply!-by!-constant!-mod!-p(red b,q))
+    else
+      a:=uni!-plus!-mod!-p(red a,uni!-times!-term!-mod!-p(
+            (mvar b to w) .* q,red b));
 % the above lines of code use red a and red b because
 % by construction the leading terms of the required
 % answers will cancel out;
-     RETURN XUNI!-REMAINDER!-MOD!-P(A,B)
-   END;
+     return xuni!-remainder!-mod!-p(a,b)
+   end;
 
-SYMBOLIC PROCEDURE MULTIPLY!-BY!-CONSTANT!-MOD!-P(A,N);
+symbolic procedure multiply!-by!-constant!-mod!-p(a,n);
 % Multiply the polynomial a by the constant n
 % assumes that a is univariate, and that n is coprime with
 % the current modulus so that modular!-times(xxx,n) neq 0
 % for all xxx;
-   IF NULL A THEN NIL
-   ELSE IF N=1 THEN A
-   ELSE IF DOMAINP A THEN MODULAR!-TIMES(A,N)
-   ELSE (LPOW A .* MODULAR!-TIMES(LC A,N)) .+
-     MULTIPLY!-BY!-CONSTANT!-MOD!-P(RED A,N);
+   if null a then nil
+   else if n=1 then a
+   else if domainp a then modular!-times(a,n)
+   else (lpow a .* modular!-times(lc a,n)) .+
+     multiply!-by!-constant!-mod!-p(red a,n);
 
-SYMBOLIC PROCEDURE UNI!-GCD!-MOD!-P(A,B);
+symbolic procedure uni!-gcd!-mod!-p(a,b);
 %Return the monic gcd of the two modular univariate
 %polynomials a and b;
-    IF NULL A THEN MONIC!-MOD!-P B
-    ELSE IF NULL B THEN MONIC!-MOD!-P A
-    ELSE IF DOMAINP A THEN 1
-    ELSE IF DOMAINP B THEN 1
-    ELSE IF LDEG A > LDEG B THEN
-      ORDERED!-UNI!-GCD!-MOD!-P(A,B)
-    ELSE ORDERED!-UNI!-GCD!-MOD!-P(B,A);
+    if null a then monic!-mod!-p b
+    else if null b then monic!-mod!-p a
+    else if domainp a then 1
+    else if domainp b then 1
+    else if ldeg a > ldeg b then
+      ordered!-uni!-gcd!-mod!-p(a,b)
+    else ordered!-uni!-gcd!-mod!-p(b,a);
 
-SYMBOLIC PROCEDURE ORDERED!-UNI!-GCD!-MOD!-P(A,B);
+symbolic procedure ordered!-uni!-gcd!-mod!-p(a,b);
 % As above, but degr a > degr b;
-   IF NULL B THEN MONIC!-MOD!-P A
-   ELSE ORDERED!-UNI!-GCD!-MOD!-P(B,UNI!-REMAINDER!-MOD!-P(A,B));
+   if null b then monic!-mod!-p a
+   else ordered!-uni!-gcd!-mod!-p(b,uni!-remainder!-mod!-p(a,b));
 
-SYMBOLIC MACRO PROCEDURE MYERR U;
-   LIST('ERRORSET,
-        'LIST .
-           MKQUOTE CAADR U .
-              FOR EACH J IN CDADR U COLLECT LIST('MKQUOTE,J),
-        T,'!*BACKTRACE);
+symbolic macro procedure myerr u;
+   list('errorset,
+        'list .
+           mkquote caadr u .
+              for each j in cdadr u collect list('mkquote,j),
+        t,'!*backtrace);
 
-SYMBOLIC PROCEDURE MODULAR!-MULTICHECK(U,V,VAR);
-   IF ERRORP (U := MYERR MODULAR!-MULTICHECK1(U,V,VAR)) THEN NIL
-    ELSE CAR U;
+symbolic procedure modular!-multicheck(u,v,var);
+   if errorp (u := myerr modular!-multicheck1(u,v,var)) then nil
+    else car u;
 
-SYMBOLIC PROCEDURE MODULAR!-MULTICHECK1(U,V,VAR);
+symbolic procedure modular!-multicheck1(u,v,var);
 % TRUE if a modular check tells me that U and V are coprime;
-  BEGIN
-    SCALAR OLDP,P,MODULAR!-VALUES,UMODP,VMODP;
-    P:=LIST!-OF!-LARGE!-PRIMES;
-    OLDP:=SETMOD NIL;
-TRY!-NEXT!-PRIME:
-    MODULAR!-VALUES:=NIL;
-    IF NULL P THEN GOTO UNCERTAIN;
-    SETMOD CAR P;
-    P:=CDR P;
-    IF NULL MODULAR!-IMAGE(LC U,VAR) OR NULL MODULAR!-IMAGE(LC V,VAR)
-      THEN GO TO TRY!-NEXT!-PRIME;
-    UMODP:=MODULAR!-IMAGE(U,VAR);
-    VMODP:=MODULAR!-IMAGE(V,VAR);
-    P := DOMAINP UNI!-GCD!-MOD!-P(UMODP,VMODP);
-UNCERTAIN:
-    SETMOD OLDP;
-    RETURN P
-  END;
+  begin
+    scalar oldp,p,modular!-values,umodp,vmodp;
+    p:=list!-of!-large!-primes;
+    oldp:=setmod nil;
+try!-next!-prime:
+    modular!-values:=nil;
+    if null p then goto uncertain;
+    setmod car p;
+    p:=cdr p;
+    if null modular!-image(lc u,var) or null modular!-image(lc v,var)
+      then go to try!-next!-prime;
+    umodp:=modular!-image(u,var);
+    vmodp:=modular!-image(v,var);
+    p := domainp uni!-gcd!-mod!-p(umodp,vmodp);
+uncertain:
+    setmod oldp;
+    return p
+  end;
 
-SYMBOLIC PROCEDURE MODULAR!-IMAGE(P,VAR);
-    IF DOMAINP P
-      THEN IF NULL P THEN NIL
-            ELSE IF NOT ATOM P THEN ERROR1()
-            ELSE <<P := MODULAR!-NUMBER P; IF P=0 THEN NIL ELSE P>>
-    ELSE BEGIN
-      SCALAR V,X,W;
-      V:=MVAR P;
-      IF V=VAR THEN <<
-          X:=MODULAR!-IMAGE(LC P,VAR);
-          IF NULL X THEN RETURN MODULAR!-IMAGE(RED P,VAR)
-          ELSE RETURN (LPOW P .* X) .+ MODULAR!-IMAGE(RED P,VAR) >>;
-      X:=ATSOC(V,MODULAR!-VALUES);
-      IF NULL X THEN <<
-          X:=MODULAR!-NUMBER RANDOM CAR LIST!-OF!-LARGE!-PRIMES;
-          MODULAR!-VALUES:=(V . X) . MODULAR!-VALUES >>
-      ELSE X:=CDR X;
-      X:=MODULAR!-EXPT(X,LDEG P);
-      W:=MODULAR!-IMAGE(RED P,VAR);
-      V:=MODULAR!-IMAGE(LC P,VAR);
-      IF NULL V THEN X:=NIL
-      ELSE X:=MODULAR!-TIMES(V,X);
-      IF W THEN X:=MODULAR!-PLUS(X,W);
-      RETURN IF X=0 THEN NIL ELSE X
-    END;
+symbolic procedure modular!-image(p,var);
+    if domainp p
+      then if null p then nil
+            else if not atom p then error1()
+            else <<p := modular!-number p; if p=0 then nil else p>>
+    else begin
+      scalar v,x,w;
+      v:=mvar p;
+      if v=var then <<
+          x:=modular!-image(lc p,var);
+          if null x then return modular!-image(red p,var)
+          else return (lpow p .* x) .+ modular!-image(red p,var) >>;
+      x:=atsoc(v,modular!-values);
+      if null x then <<
+          x:=modular!-number random car list!-of!-large!-primes;
+          modular!-values:=(v . x) . modular!-values >>
+      else x:=cdr x;
+      x:=modular!-expt(x,ldeg p);
+      w:=modular!-image(red p,var);
+      v:=modular!-image(lc p,var);
+      if null v then x:=nil
+      else x:=modular!-times(v,x);
+      if w then x:=modular!-plus(x,w);
+      return if x=0 then nil else x
+    end;
 
-ENDMODULE;
+endmodule;
 
-END;
+end;
+

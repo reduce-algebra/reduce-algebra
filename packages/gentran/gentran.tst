@@ -1,59 +1,59 @@
-MATRIX M(3,3)$
-M(1,1) := 18*COS(Q3)*COS(Q2)*M30*P**2 - 9*SIN(Q3)**2*P**2*M30
-	  - SIN(Q3)**2*J30Y + SIN(Q3)**2*J30Z + P**2*M10
-	  + 18*P**2*M30 + J10Y + J30Y;
-M(2,1) :=
-M(1,2) := 9*COS(Q3)*COS(Q2)*M30*P**2 - SIN(Q3)**2*J30Y +
-	  SIN(Q3)**2*J30Z - 9*SIN(Q3)**2*M30*P**2 + J30Y +
-	  9*M30*P**2;
-M(3,1) :=
-M(1,3) := -9*SIN(Q3)*SIN(Q2)*M30*P**2;
-M(2,2) := -SIN(Q3)**2*J30Y + SIN(Q3)**2*J30Z - 9*SIN(Q3)**2
-	   *M30*P**2 + J30Y + 9*M30*P**2;
-M(3,2) :=
-M(2,3) := 0;
-M(3,3) := 9*M30*P**2 + J30X;
+matrix m(3,3)$
+m(1,1) := 18*cos(q3)*cos(q2)*m30*p**2 - 9*sin(q3)**2*p**2*m30
+	  - sin(q3)**2*j30y + sin(q3)**2*j30z + p**2*m10
+	  + 18*p**2*m30 + j10y + j30y;
+m(2,1) :=
+m(1,2) := 9*cos(q3)*cos(q2)*m30*p**2 - sin(q3)**2*j30y +
+	  sin(q3)**2*j30z - 9*sin(q3)**2*m30*p**2 + j30y +
+	  9*m30*p**2;
+m(3,1) :=
+m(1,3) := -9*sin(q3)*sin(q2)*m30*p**2;
+m(2,2) := -sin(q3)**2*j30y + sin(q3)**2*j30z - 9*sin(q3)**2
+	   *m30*p**2 + j30y + 9*m30*p**2;
+m(3,2) :=
+m(2,3) := 0;
+m(3,3) := 9*m30*p**2 + j30x;
 
-GENTRANLANG!* := 'FORTRAN$
-FORTLINELEN!* := 72$
+gentranlang!* := 'fortran$
+fortlinelen!* := 72$
 
-GENTRAN LITERAL "C", CR!*,
-		"C", TAB!*, "*** COMPUTE VALUES FOR MATRIX M ***", CR!*,
-		"C", CR!*$
+gentran literal "C", cr!*,
+		"C", tab!*, "*** COMPUTE VALUES FOR MATRIX M ***", cr!*,
+		"C", cr!*$
 
-FOR j:=1:3 DO
-    FOR k:=j:3 DO
-	 GENTRAN M(j,k) ::=: M(j,k)$
+for j:=1:3 do
+    for k:=j:3 do
+	 gentran m(j,k) ::=: m(j,k)$
 
-GENTRAN LITERAL "C", CR!*,
-		"C", TAB!*, "*** COMPUTE VALUES FOR INVERSE MATRIX ***",
-		     CR!*,
-		"C", CR!*$
+gentran literal "C", cr!*,
+		"C", tab!*, "*** COMPUTE VALUES FOR INVERSE MATRIX ***",
+		     cr!*,
+		"C", cr!*$
 
-SHARE var$
-FOR j:=1:3 DO
-    FOR k:=j:3 DO
-	IF M(j,k) NEQ 0 THEN
+share var$
+for j:=1:3 do
+    for k:=j:3 do
+	if m(j,k) neq 0 then
 	<<
-	    var := TEMPVAR NIL;
-	    MARKVAR var;
-	    M(j,k) := var;
-	    M(k,j) := var;
-	    GENTRAN
-		EVAL(var) := M(EVAL(j),EVAL(k))
+	    var := tempvar nil;
+	    markvar var;
+	    m(j,k) := var;
+	    m(k,j) := var;
+	    gentran
+		eval(var) := m(eval(j),eval(k))
         >>$
 
 COMMENT -- Contents of Matrix M: --$
-M := M;
+m := m;
 
-MATRIX MXINV(3,3)$
-MXINV := M**(-1)$
+matrix mxinv(3,3)$
+mxinv := m**(-1)$
 
-FOR j:=1:3 DO
-    FOR k:=j:3 DO
-	GENTRAN MXINV(j,k) ::=: MXINV(j,k)$
+for j:=1:3 do
+    for k:=j:3 do
+	gentran mxinv(j,k) ::=: mxinv(j,k)$
 
-GENTRAN
+gentran
    for j:=1:3 do
        for k:=j+1:3 do
        <<
@@ -61,4 +61,4 @@ GENTRAN
 	   mxinv(k,j) := mxinv(j,k)
         >>$
 
-END$
+end$

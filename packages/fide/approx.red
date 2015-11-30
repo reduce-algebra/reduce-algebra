@@ -43,7 +43,7 @@ procedure fact(n)$
 if n=0 then 1
   else n*fact(n-1)$
 
-procedure taylor(fce,var,step,ord)$
+procedure fide!-taylor(fce,var,step,ord)$
 if step=0 or ord=0 then fce
   else fce+for j:=1:ord sum step**j/fact(j)*df(fce,var,j)$
 
@@ -99,7 +99,7 @@ procedure functions u$
 
 put('functions,'stat,'rlis)$
 
-procedure simptaylor u$
+procedure fide!-simptaylor u$
 begin
   scalar ind,var,movar,step,fce,ifce$
   fce:=car u$
@@ -119,7 +119,7 @@ begin
              get(var,'gridstep))$
   movar:=if (movar:=get(var,'maxorder)) then movar
            else 3$
-  return simp list('taylor,
+  return simp list('fide!-taylor,
                    fce,
                    var,
                    step,
@@ -133,7 +133,7 @@ begin
   scalar ldifsch,rdifsch,nrcoor,coors,rest,ldifeq,rdifeq,alglist!*$
   symbolic
     <<for each a in functions!* do
-          <<put(a,'simpfn,'simptaylor)$
+          <<put(a,'simpfn,'fide!-simptaylor)$
             eval list('depend,mkquote (a . coords!*)) >>$
       flag(functions!*,'full)$
       for each a in coords!* do put(a,'gridstep, intern compress append

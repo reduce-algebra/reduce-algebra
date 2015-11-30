@@ -83,6 +83,7 @@
  (assert        "assert"                test                 csl psl)
  (odesolve      "odesolve"    noncore   test                 csl psl)
  (pf            "misc"                  test                 csl psl)
+ (trigd         "misc/trigd"            test                 csl psl)
  (cvit          "hephys"                test                 csl psl)
  (noncom2       "hephys"                                     csl psl)
  (physop        "hephys"                test                 csl psl)

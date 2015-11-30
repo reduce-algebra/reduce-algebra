@@ -106,7 +106,7 @@ listargp odesolve, dsolve$              % May have single list arg.
 symbolic procedure odesolve!-eval args;
    %% Establish a suitable global environment:
    (if !*div or !*intstr or !*factor or not !*exp or not !*mcd then
-      NoInt2Int reval result else NoInt2Int result) where result =
+      noint2int reval result else noint2int result) where result =
       begin scalar !*evallhseqp, !*multiplicities, !*div, !*intstr,
             !*exp, !*mcd, !*factor, !*ifactor, !*precise,
             !*nopowers, !*algint, !*echo, !*df_partial;
@@ -122,8 +122,8 @@ symbolic procedure odesolve(ode, y, x);
    %% Calls odesolve!-eval to ensure correct environment.
    odesolve!-eval{ode, y, x}$
 
-global '(ODESolve!-tracing!-synonyms)$
-ODESolve!-tracing!-synonyms := '(trode trace tracing)$
+global '(odesolve!-tracing!-synonyms)$
+odesolve!-tracing!-synonyms := '(trode trace tracing)$
 
 symbolic procedure odesolve!-eval1 args;
    %% args = (ode &optional y x conds)
@@ -132,7 +132,7 @@ symbolic procedure odesolve!-eval1 args;
    %% optionally impose conditions on the general solution.
    %% Support for systems of odes partly implemented so far.
    ( begin scalar ode, system, y, x, yconds, xconds, conds, soln;
-      if null args then RedErr
+      if null args then rederr
          "ODESolve requires at least one argument -- the ODE";
 
       begin scalar df_simpfn, !*uncached;  !*uncached := t;
@@ -159,11 +159,11 @@ symbolic procedure odesolve!-eval1 args;
             else if system then
                y := makelist            % rlist of dependent variables
                   for each yy in cdr y collect !*a2k yy
-            else MsgPri("ODESolve: invalid second argument",
+            else msgpri("ODESolve: invalid second argument",
                y, nil, nil, t)
-         else if system then TypErr(y, "dependent var list")
+         else if system then typerr(y, "dependent var list")
          else if eqnp y then
-            if cadr y memq 'output . ODESolve!-tracing!-synonyms then % option
+            if cadr y memq 'output . odesolve!-tracing!-synonyms then % option
                y := nil
             else << yconds := caddr y;  y := !*a2k cadr y >>
          else if not smember(y:=!*a2k y, ode) then
@@ -176,7 +176,7 @@ symbolic procedure odesolve!-eval1 args;
                x := 'empty
             else x := nil               % condition list
          else if eqnp x then
-            if cadr x memq 'output . ODESolve!-tracing!-synonyms then % option
+            if cadr x memq 'output . odesolve!-tracing!-synonyms then % option
                x := nil
             else << xconds := caddr x;  x := !*a2k cadr x >>
          else if not smember(x:=!*a2k x, ode) then
@@ -210,7 +210,7 @@ symbolic procedure odesolve!-eval1 args;
          for each knl in cdr k_list do
             df_list := union(df_list, get_op_knl('df, knl));
          %% df_list is set of derivatives in ode(s).
-         if null df_list then RedErr
+         if null df_list then rederr
             "No derivatives found -- use solve instead.";
          %% df_list = ((df y x ...) ... (df z x ...) ... )
          if null y then <<
@@ -220,30 +220,30 @@ symbolic procedure odesolve!-eval1 args;
             %% y is a list at this point.
             if system then
                if length ode < length y then
-                  RedErr "ODESolve: under-determined system of ODEs."
+                  rederr "ODESolve: under-determined system of ODEs."
                else y := makelist y     % algebraic list of vars
             else
                if cdr y then
-                  MsgPri("ODESolve -- too many dependent variables:",
+                  msgpri("ODESolve -- too many dependent variables:",
                      makelist y, nil, nil, t)
                else y := car y;         % single var
-            MsgPri("Dependent var(s) assumed to be", y, nil, nil, nil)
+            msgpri("Dependent var(s) assumed to be", y, nil, nil, nil)
          >>;
          if null x then <<
             x := caddar df_list;
-            MsgPri("Independent var assumed to be", x, nil, nil, nil)
+            msgpri("Independent var assumed to be", x, nil, nil, nil)
          >>;
       end;
 
       %% Process the ode (re-simplifying derivatives):
-      EnsureDependency(y, x);
+      ensuredependency(y, x);
       ode := aeval ode;
       %% !*eqn2a is defined in alg.red
       if system then
          if length ode > 2 then
             %% RedErr "Solving a system of ODEs is not yet supported."
             %% Skip conditions TEMPORARILY!
-            return ODESolve!-Depend(
+            return odesolve!-depend(
                makelist for each o in cdr ode collect !*eqn2a o, y, x, nil)
          else
             << ode := !*eqn2a cadr ode;  y := cadr y >>
@@ -268,7 +268,7 @@ symbolic procedure odesolve!-eval1 args;
          yconds := cdr yconds;  xconds := cdr xconds
       >>;
       if yconds or xconds then
-         RedErr "Different condition list lengths";
+         rederr "Different condition list lengths";
       if conds then
          %% Move this into odesolve!-with!-conds?
          conds := makelist odesolve!-sort!-conds(conds, y, x);
@@ -279,9 +279,9 @@ symbolic procedure odesolve!-eval1 args;
          if eqnp arg then               % equation argument
             if cadr arg eq 'output then
                args := caddr arg . args
-            else if cadr arg memq ODESolve!-tracing!-synonyms then
+            else if cadr arg memq odesolve!-tracing!-synonyms then
                !*trode := caddr arg
-            else MsgPri("Invalid ODESolve option", arg,
+            else msgpri("Invalid ODESolve option", arg,
                "ignored.", nil, nil)
                                         % keyword argument
          else if arg memq
@@ -291,11 +291,11 @@ symbolic procedure odesolve!-eval1 args;
          else if arg eq 'algint then on1 'algint
          else if arg eq 'full or !*odesolve_full then
             !*odesolve_expand := !*odesolve_explicit := t
-         else if arg memq ODESolve!-tracing!-synonyms then !*trode := t
+         else if arg memq odesolve!-tracing!-synonyms then !*trode := t
          else if arg memq '(laplace numeric series) then
-            RedErr{"ODESolve option", arg, "not yet implemented."}
+            rederr{"ODESolve option", arg, "not yet implemented."}
                %% Pass remaining args to routine called
-         else RedErr{"Invalid ODESolve option", arg}
+         else rederr{"Invalid ODESolve option", arg}
       end;
 
       if !*odesolve_verbose then algebraic <<
@@ -311,23 +311,23 @@ symbolic procedure odesolve!-eval1 args;
 %%       if !*odesolve_basis then !*odesolve_explicit := nil;
 
       %% Finally, solve the ode!
-      if not getd 'ODESolve!*0 then     % for testing
-         return {'ODESolve, ode, y, x, conds};
+      if not getd 'odesolve!*0 then     % for testing
+         return {'odesolve, ode, y, x, conds};
 %%       soln := if conds then
 %%          odesolve!-with!-conds(ode, y, x, conds)
 %%       else odesolve!-depend(ode, y, x);
-      if null(soln := ODESolve!-Depend(ode, y, x, conds)) then
+      if null(soln := odesolve!-depend(ode, y, x, conds)) then
          return algebraic {num ode=0};
       %% Done as follows because it may be easier to solve after
       %% imposing conditions than before, and it would be necessary to
       %% remove root_of's before imposing conditions anyway.
-      if !*odesolve_explicit and not ODESolve!-basisp soln then
-         soln := ODESolve!-Make!-Explicit(soln, y, conds);
+      if !*odesolve_explicit and not odesolve!-basisp soln then
+         soln := odesolve!-make!-explicit(soln, y, conds);
       if !*odesolve_expand then
          soln := expand_roots_of_unity soln;
       if !*odesolve_check then
-         ODE!-Soln!-Check(if !*odesolve_noint then NoInt2Int soln else soln,
-            ode, y, x, conds) where !*noint = t;
+         ode!-soln!-check(if !*odesolve_noint then noint2int soln else soln,
+            ode, y, x, conds) where !*NoInt = t;
       return soln
 
    end ) where !*odesolve_implicit = !*odesolve_implicit,
@@ -342,7 +342,7 @@ symbolic procedure odesolve!-eval1 args;
                !*odesolve_fast = !*odesolve_fast,
                !*odesolve_check = !*odesolve_check$
 
-symbolic procedure Odesolve!-Make!-Explicit(solns, y, conds);
+symbolic procedure odesolve!-make!-explicit(solns, y, conds);
    <<
       %% SHOULD PROBABLY CHECK THAT Y IS NOT INSIDE AN UNEVALUATED
       %% INTEGRAL BEFORE TRYING TO SOLVE FOR IT -- IT SEEMS TO UPSET
@@ -424,10 +424,10 @@ symbolic procedure get_op_knl(op, knl);
             where op_in_car = get_op_knl(op, car knl),
                op_in_cdr = get_op_knl(op, cdr knl)$
 
-symbolic procedure EnsureDependency(y, x);
+symbolic procedure ensuredependency(y, x);
    for each yy in (if rlistp y then cdr y else y . nil) do
       if not depends(yy, x) then <<
-         MsgPri("depend", yy, ",", x, nil);
+         msgpri("depend", yy, ",", x, nil);
          depend1(yy, x, t)
       >>$
 
@@ -440,18 +440,18 @@ symbolic procedure odesolve!-sort!-conds(conds, y, x);
    begin scalar cond_alist;
       for each cond in conds do
       begin scalar x_cond, y_conds, x_alist;
-         if not rlistp cond then TypErr(cond, "ode condition");
+         if not rlistp cond then typerr(cond, "ode condition");
 
          %% Extract the x condition:
          y_conds := for each c in cdr cond join
-            if not CondEq(c, y, x) then
-               TypErr(c, "ode condition equation")
+            if not condeq(c, y, x) then
+               typerr(c, "ode condition equation")
             else if cadr c eq x then << x_cond := c; nil >>
             else c . nil;
          if null x_cond then
-            MsgPri(nil, x, "omitted from ode condition", cond, t);
+            msgpri(nil, x, "omitted from ode condition", cond, t);
          if null y_conds then
-            MsgPri(nil, y, "omitted from ode condition", cond, t);
+            msgpri(nil, y, "omitted from ode condition", cond, t);
 
          %% Build the new condition alist, with the x condition as key:
          if (x_alist := assoc(x_cond, cond_alist)) then
@@ -472,7 +472,7 @@ symbolic procedure odesolve!-sort!-conds(conds, y, x);
                   cadr(next := car next_sorted) then
                   %% Two conds have same lhs, so ...
                   ( if caddr this neq caddr next then
-                     MsgPri("Inconsistent conditions:",
+                     msgpri("Inconsistent conditions:",
                         {'list, this, next}, "at", car cond, t) )
                            % otherwise ignore second copy
                else result := this . result;
@@ -482,7 +482,7 @@ symbolic procedure odesolve!-sort!-conds(conds, y, x);
          end
    end$
 
-symbolic procedure CondEq(c, y, x);
+symbolic procedure condeq(c, y, x);
    %% Return true if c is a valid condition equation for y(x).
    %% cf. eqexpr in alg.red
    eqexpr c and ( (c := cadr c) eq x or c eq y or
@@ -511,7 +511,7 @@ symbolic procedure lessp!-deriv!-ord(a, b);
 %%% THE FOLLOWING PROCEDURE SHOULD PROBABLY INCLUDE THE CODE TO MAKE
 %%% SOLUTIONS EXPLICIT BEFORE RESTORING OPERATOR FORMS FOR Y.
 
-symbolic procedure ODESolve!-Depend(ode, y, x, conds);
+symbolic procedure odesolve!-depend(ode, y, x, conds);
    %% Check variables and dependences before really calling odesolve.
    %% If y is an operator kernel then check whether ode is a
    %% differential-delay equation, and if not solve ode with y
@@ -549,10 +549,10 @@ symbolic procedure ODESolve!-Depend(ode, y, x, conds);
          end;
       ylist := reverse ylist;
       ode := if rlistp ode then
-         ODESolve!-System(cdr ode, ylist, x)
+         odesolve!-system(cdr ode, ylist, x)
       else if conds then
          odesolve!-with!-conds(ode, car ylist, x, conds)
-      else ODESolve!*0(ode, car ylist, x);
+      else odesolve!*0(ode, car ylist, x);
       if null ode then return;
       if sublist then
       begin scalar !*NoInt;
@@ -566,10 +566,10 @@ symbolic procedure ODESolve!-Depend(ode, y, x, conds);
       return ode
    end ) where depl!* = depl!*$
 
-symbolic procedure ODESolve!-System(ode, y, x);
+symbolic procedure odesolve!-system(ode, y, x);
    %% TEMPORARY
-   {'ODESolve!-System, makelist ode, makelist y, x}$
-algebraic operator ODESolve!-System$
+   {'odesolve!-system, makelist ode, makelist y, x}$
+algebraic operator odesolve!-system$
 
 symbolic procedure odesolve!-delay!-check(ode, y);
    %% Check that ode is not a differential-delay equation in y,
@@ -582,7 +582,7 @@ symbolic procedure odesolve!-delay!-check(ode, y);
          ( for each knl in kernels numr simp ode do
             for each yy in get_op_knl(y_op, knl) do
                if not(yy eq y) then
-                  MsgPri("Arguments of", y_op, "differ --",
+                  msgpri("Arguments of", y_op, "differ --",
                      "solving delay equations is not implemented.", t) )
                         where y_op = car y
    end$
@@ -617,7 +617,7 @@ algebraic procedure odesolve!-with!-conds(ode, y, x, conds);
       %% Find the general solution of the ode and assign it to the
       %% global algebraic variable ode_solution:
       %1.03% ode_solution := odesolve!-depend(ode, y, x);
-      ode_solution := symbolic ODESolve!*0(ode, y, x);
+      ode_solution := symbolic odesolve!*0(ode, y, x);
       if not ode_solution then return;
       traceode "General solution is ", ode_solution;
       traceode "Applying conditions ", conds;
@@ -659,7 +659,7 @@ algebraic procedure odesolve!-with!-conds1(soln, y, x, conds, arbconsts);
                %% substituting for x or y in df(y,x,...):
                result := sub(dfconds, map(y => lhs dfcond, soln));
                if not(result freeof df) then % see comment below
-                  RedErr "Cannot apply conditions";
+                  rederr "Cannot apply conditions";
                arbconsteqns := sub(xcond, result) . arbconsteqns
             end;
             return arbconsteqns
@@ -697,7 +697,7 @@ algebraic procedure odesolve!-with!-conds1(soln, y, x, conds, arbconsts);
 %   {{b1(x), b2(x), ..., bn(x)}, PI(x)}; PI may be omitted if zero
 % or a list of component solutions.
 
-algebraic procedure ODE!-Soln!-Check(soln, ode, y, x, conds);
+algebraic procedure ode!-soln!-check(soln, ode, y, x, conds);
    %% SOLN is a LIST of solutions; ODE is a differential EXPRESSION; Y
    %% is the dependent variable; X is the independent variable; CONDS
    %% is true if conditions were specified.
@@ -705,8 +705,8 @@ algebraic procedure ODE!-Soln!-Check(soln, ode, y, x, conds);
       symbolic(!*allowdfint := !*expanddf := t);
       ode := num !*eqn2a ode;           % returns ode as expression
       %% Should compute order `on demand' in ODE!-Comp!-Soln!-Fails.
-      n := ODE!-Order(ode, y);
-      if symbolic ODESolve!-basisp soln then <<
+      n := ode!-order(ode, y);
+      if symbolic odesolve!-basisp soln then <<
          %% Basis solution (of linear ODE).
          %% Only arises as general solution.
          %% Remove contribution from PI if there is one:
@@ -723,11 +723,11 @@ algebraic procedure ODE!-Soln!-Check(soln, ode, y, x, conds);
       >> else <<
          %% List of component solutions.
          %% Check generality:
-         if not conds and ODESolve!-arbconsts soln < n then
+         if not conds and odesolve!-arbconsts soln < n then
             write "ODESolve warning - ",
                "too few arbitrary constants in general solution!";
          for each s in soln do
-            if ODE!-Comp!-Soln!-Fails(s, ode, y, x, n) then
+            if ode!-comp!-soln!-fails(s, ode, y, x, n) then
                write "ODESolve warning - ",
                   "component solution may not satisfy ODE: ", s;
       >>
@@ -739,7 +739,7 @@ algebraic procedure ODE!-Soln!-Check(soln, ode, y, x, conds);
 % unsolved: ode = 0, but CAN THIS CASE ARISE?
 % parametric: {y = g(p), x = f(p), p}
 
-algebraic procedure ODE!-Comp!-Soln!-Fails(soln, ode, y, x, n);
+algebraic procedure ode!-comp!-soln!-fails(soln, ode, y, x, n);
    %% SOLN is a SINGLE component solution; ODE is a differential
    %% EXPRESSION; Y is the dependent variable; X is the independent
    %% variable; N is the order of ODE.
@@ -802,25 +802,25 @@ algebraic procedure ODE!-Comp!-Soln!-Fails(soln, ode, y, x, n);
 
 %% Code to find the actual number of arbitrary constants in a solution:
 
-fluid '(ODESolve!-arbconst!-args)$
+fluid '(odesolve!-arbconst!-args)$
 
-symbolic operator ODESolve!-arbconsts$
-symbolic procedure ODESolve!-arbconsts u;
+symbolic operator odesolve!-arbconsts$
+symbolic procedure odesolve!-arbconsts u;
    %% Return the number of distinct arbconsts in any sexpr u.
-   begin scalar ODESolve!-arbconst!-args;
-      ODESolve!-arbconsts1 u;
-      return length ODESolve!-arbconst!-args
+   begin scalar odesolve!-arbconst!-args;
+      odesolve!-arbconsts1 u;
+      return length odesolve!-arbconst!-args
    end$
 
-symbolic procedure ODESolve!-arbconsts1 u;
+symbolic procedure odesolve!-arbconsts1 u;
    %% Collect all the indices of arbconsts in u into a set in the
    %% fluid variable ODESolve!-arbconst!-args.
    if not atom u then
       if car u eq 'arbconst then
-         (if not member(cadr u, ODESolve!-arbconst!-args) then
-            ODESolve!-arbconst!-args := cadr u . ODESolve!-arbconst!-args)
+         (if not member(cadr u, odesolve!-arbconst!-args) then
+            odesolve!-arbconst!-args := cadr u . odesolve!-arbconst!-args)
       else
-         << ODESolve!-arbconsts1 car u;  ODESolve!-arbconsts1 cdr u >>$
+         << odesolve!-arbconsts1 car u;  odesolve!-arbconsts1 cdr u >>$
 
 endmodule$
 

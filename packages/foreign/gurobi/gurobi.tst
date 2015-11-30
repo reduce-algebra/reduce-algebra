@@ -2,9 +2,9 @@ lisp;
 
 gurobi_newmodel(0, 2);
 
-gurobi_addconstraintFast('geq, {-2, -2}, -3);
-gurobi_addconstraintFast('geq, {1, 0}, 1);
-gurobi_addconstraintFast('geq, {0, 1}, 1);
+gurobi_addconstraintfast('geq, {-2, -2}, -3);
+gurobi_addconstraintfast('geq, {1, 0}, 1);
+gurobi_addconstraintfast('geq, {0, 1}, 1);
 
 gurobi_updatemodel();
 gurobi_dumpmodel();
@@ -20,9 +20,9 @@ gurobi_freemodel();
 
 gurobi_newmodel(0, 2);
 
-gurobi_addconstraintFast('geq, {3, 2}, 1);
-gurobi_addconstraintFast('geq, {2, 0}, 1);
-gurobi_addconstraintFast('geq, {0, 2}, 1);
+gurobi_addconstraintfast('geq, {3, 2}, 1);
+gurobi_addconstraintfast('geq, {2, 0}, 1);
+gurobi_addconstraintfast('geq, {0, 2}, 1);
 
 gurobi_updatemodel();
 
@@ -32,9 +32,9 @@ gurobi_freemodel();
 
 gurobi_newmodel(2, 0);
 
-gurobi_addconstraintFast('geq, {3, 2}, 1);
-gurobi_addconstraintFast('geq, {2, 0}, 1);
-gurobi_addconstraintFast('geq, {0, 2}, 1);
+gurobi_addconstraintfast('geq, {3, 2}, 1);
+gurobi_addconstraintfast('geq, {2, 0}, 1);
+gurobi_addconstraintfast('geq, {0, 2}, 1);
 
 gurobi_updatemodel();
 

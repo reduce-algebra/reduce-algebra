@@ -96,23 +96,23 @@ symbolic procedure triang_triang m;
  else for each x in triang!=triang(m,ring_names cali!=basering) collect
                 triang!=makedpmat x;
 
-symbolic procedure triang!=triang(A,vars);
+symbolic procedure triang!=triang(a,vars);
 % triang!=triang(A,vars)={f1.x for x in triang!=triang(B,cdr vars)}
 %                       \union triang!=triang(A:<B>,vars)
 % where A={f1,...,fr}, B={f2~,...fr~}, see [Moeller].
 % Returns a list of polynomial lists.
-  if dpmat_unitideal!? A then nil
-  else begin scalar x,f1,m1,m2,B;
+  if dpmat_unitideal!? a then nil
+  else begin scalar x,f1,m1,m2,b;
     x:=car vars;
-    m1:=sort(for each x in dpmat_list A collect bas_dpoly x,
+    m1:=sort(for each x in dpmat_list a collect bas_dpoly x,
                 function triang!=trsort);
     if length m1 = length vars then return {m1};
     f1:=car m1;
     m2:=for each y in cdr m1 collect bas_make(1,dp_xlt(y,x));
-    B:=interreduce!* dpmat_make(length m2,0,m2,nil,nil);
+    b:=interreduce!* dpmat_make(length m2,0,m2,nil,nil);
     return append(
-    for each u in triang!=triang(B,cdr vars) collect (f1 . u),
-                triang!=triang(matstabquot!*(A,B),vars));
+    for each u in triang!=triang(b,cdr vars) collect (f1 . u),
+                triang!=triang(matstabquot!*(a,b),vars));
     end;
 
 % =================================================================
@@ -136,14 +136,14 @@ symbolic procedure triang_triang1 m;
  else for each x in triang!=triang1(m,ring_names cali!=basering) collect
                 triang!=makedpmat x;
 
-symbolic procedure triang!=triang1(A,vars);
+symbolic procedure triang!=triang1(a,vars);
 % triang!=triang(A,vars)={f1.x for x in triang!=triang1(B,cdr vars)}
 %                       \union triang!=triang1(A:<B>,vars)
 % where A={f1,...,fr}, B={f2~,...fr~}, see [Moeller].
 % Returns a list of polynomial lists.
-  if dpmat_unitideal!? A then nil
-  else if length vars = 1 then {{bas_dpoly first dpmat_list A}}
-  else (begin scalar u,x,f1,m1,m2,B,vars1,res;
+  if dpmat_unitideal!? a then nil
+  else if length vars = 1 then {{bas_dpoly first dpmat_list a}}
+  else (begin scalar u,x,f1,m1,m2,b,vars1,res;
     x:=car vars; vars1:=ring_names cali!=basering;
     setring!* ring_define(vars1,eliminationorder!*(vars1,{x}),
                         'revlex,ring_ecart cali!=basering);
@@ -155,31 +155,31 @@ symbolic procedure triang!=triang1(A,vars);
                 function triang!=trsort);
        f1:=car m1;
        m2:=for each y in cdr m1 collect bas_make(1,dp_xlt(y,x));
-       B:=interreduce!* dpmat_make(length m2,0,m2,nil,nil);
+       b:=interreduce!* dpmat_make(length m2,0,m2,nil,nil);
        res:=nconc(append(
-       for each v in triang!=triang1(B,cdr vars) collect (f1 . v),
-                triang!=triang1a(matstabquot!*(u,B),vars)),res);
+       for each v in triang!=triang1(b,cdr vars) collect (f1 . v),
+                triang!=triang1a(matstabquot!*(u,b),vars)),res);
     >>;
     return res;
     end) where cali!=basering=cali!=basering;
 
-symbolic procedure triang!=triang1a(A,vars);
+symbolic procedure triang!=triang1a(a,vars);
 % triang!=triang(A,vars)={f1.x for x in triang!=triang1(B,cdr vars)}
 %                       \union triang!=triang1(A:<B>,vars)
 % where A is already a gr basis wrt. the elimination order.
 % Returns a list of polynomial lists.
-  if dpmat_unitideal!? A then nil
-  else if length vars = 1 then {{bas_dpoly first dpmat_list A}}
-  else begin scalar u,x,f1,m1,m2,B;
+  if dpmat_unitideal!? a then nil
+  else if length vars = 1 then {{bas_dpoly first dpmat_list a}}
+  else begin scalar u,x,f1,m1,m2,b;
     x:=car vars;
     m1:=sort(for each x in dpmat_list a collect bas_dpoly x,
                 function triang!=trsort);
     f1:=car m1;
     m2:=for each y in cdr m1 collect bas_make(1,dp_xlt(y,x));
-    B:=interreduce!* dpmat_make(length m2,0,m2,nil,nil);
+    b:=interreduce!* dpmat_make(length m2,0,m2,nil,nil);
     return append(
-       for each u in triang!=triang1(B,cdr vars) collect (f1 . u),
-                triang!=triang1a(matstabquot!*(A,B),vars));
+       for each u in triang!=triang1(b,cdr vars) collect (f1 . u),
+                triang!=triang1a(matstabquot!*(a,b),vars));
     end;
 
 % =================================================================
@@ -205,14 +205,14 @@ symbolic procedure triang_triang2 m;
  else for each x in triang!=triang2(m,ring_names cali!=basering)
         collect triang!=makedpmat x;
 
-symbolic procedure triang!=triang2(A,vars);
+symbolic procedure triang!=triang2(a,vars);
 % triang!=triang(A,vars)={f1.x for x in triang!=triang2(B,cdr vars)}
 %                       \union triang!=triang2(A:<B>,vars)
 % where A={f1,...,fr}, B={f2~,...fr~}, see [Moeller].
 % Returns a list of polynomial lists.
-  if dpmat_unitideal!? A then nil
-  else if length vars = 1 then {{bas_dpoly first dpmat_list A}}
-  else (begin scalar u,x,f1,m1,m2,B,vars1,vars2,extravars,res,c1;
+  if dpmat_unitideal!? a then nil
+  else if length vars = 1 then {{bas_dpoly first dpmat_list a}}
+  else (begin scalar u,x,f1,m1,m2,b,vars1,vars2,extravars,res,c1;
     x:=car vars; vars1:=ring_names cali!=basering;
     extravars:=dpmat_from_a('list . (vars2:=setdiff(vars1,vars)));
     % We need this to make A truely zerodimensional.
@@ -228,31 +228,31 @@ symbolic procedure triang!=triang2(A,vars);
                 function triang!=trsort);
        f1:=car m1;
        m2:=for each y in cdr m1 collect bas_make(1,dp_xlt(y,x));
-       B:=interreduce!* dpmat_make(length m2,0,m2,nil,nil);
+       b:=interreduce!* dpmat_make(length m2,0,m2,nil,nil);
        res:=nconc(append(
-       for each v in triang!=triang2(B,cdr vars) collect (f1 . v),
-                triang!=triang2a(matstabquot!*(u,B),vars)),res);
+       for each v in triang!=triang2(b,cdr vars) collect (f1 . v),
+                triang!=triang2a(matstabquot!*(u,b),vars)),res);
     >>;
     return res;
     end) where cali!=basering=cali!=basering;
 
-symbolic procedure triang!=triang2a(A,vars);
+symbolic procedure triang!=triang2a(a,vars);
 % triang!=triang(A,vars)={f1.x for x in triang!=triang2(B,cdr vars)}
 %                       \union triang!=triang2(A:<B>,vars)
 % where A is already a gr basis wrt. the elimination order.
 % Returns a list of polynomial lists.
-  if dpmat_unitideal!? A then nil
-  else if length vars = 1 then {{bas_dpoly first dpmat_list A}}
-  else begin scalar u,x,f1,m1,m2,B;
+  if dpmat_unitideal!? a then nil
+  else if length vars = 1 then {{bas_dpoly first dpmat_list a}}
+  else begin scalar u,x,f1,m1,m2,b;
     x:=car vars;
     m1:=sort(for each x in dpmat_list a collect bas_dpoly x,
                 function triang!=trsort);
     f1:=car m1;
     m2:=for each y in cdr m1 collect bas_make(1,dp_xlt(y,x));
-    B:=interreduce!* dpmat_make(length m2,0,m2,nil,nil);
+    b:=interreduce!* dpmat_make(length m2,0,m2,nil,nil);
     return append(
-       for each u in triang!=triang2(B,cdr vars) collect (f1 . u),
-                triang!=triang2a(matstabquot!*(A,B),vars));
+       for each u in triang!=triang2(b,cdr vars) collect (f1 . u),
+                triang!=triang2a(matstabquot!*(a,b),vars));
     end;
 
 endmodule; % triang

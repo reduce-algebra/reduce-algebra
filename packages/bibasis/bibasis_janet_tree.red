@@ -44,34 +44,34 @@ module bibasis_janet_tree;
 
 % The following structure is only used in this file.
 
-inline procedure CreateJanetTreeNode(degree, triple, nextDegree, nextVariable);
-   (degree . triple) . (nextDegree . nextVariable);
+inline procedure createjanettreenode(degree, triple, nextdegree, nextvariable);
+   (degree . triple) . (nextdegree . nextvariable);
 
-accessors (JanetTreeNodeGetDegree . JanetTreeNodeGetTriple) .
-          (JanetTreeNodeGetNextDegree . JanetTreeNodeGetNextVariable);
+accessors (janettreenodegetdegree . janettreenodegettriple) .
+          (janettreenodegetnextdegree . janettreenodegetnextvariable);
 
-inline procedure JanetTreeReset(); FluidBibasisJanetTreeRootNode := nil;
+inline procedure janettreereset(); fluidbibasisjanettreerootnode := nil;
 
 
-expr procedure JanetTreeNodeBuild(degree, variable, triple);
-begin scalar tmpNode1, tmpNode2, monom;
-    monom := TripleGetLm(triple);
-    tmpNode1 := CreateJanetTreeNode(MonomGetVariableDegree(monom, variable), nil, nil, nil);
-    tmpNode2 := tmpNode1;
+expr procedure janettreenodebuild(degree, variable, triple);
+begin scalar tmpnode1, tmpnode2, monom;
+    monom := triplegetlm(triple);
+    tmpnode1 := createjanettreenode(monomgetvariabledegree(monom, variable), nil, nil, nil);
+    tmpnode2 := tmpnode1;
     
-    while igreaterp(degree, MonomGetVariableDegree(monom, variable)) do 
+    while igreaterp(degree, monomgetvariabledegree(monom, variable)) do 
     <<
-        degree := idifference(degree, MonomGetVariableDegree(monom, variable));
+        degree := idifference(degree, monomgetvariabledegree(monom, variable));
         variable := iadd1(variable);
-        JanetTreeNodeGetNextVariable(tmpNode2) := CreateJanetTreeNode(MonomGetVariableDegree(monom, variable), nil, nil, nil);
-        tmpNode2 := JanetTreeNodeGetNextVariable(tmpNode2);
+        janettreenodegetnextvariable(tmpnode2) := createjanettreenode(monomgetvariabledegree(monom, variable), nil, nil, nil);
+        tmpnode2 := janettreenodegetnextvariable(tmpnode2);
     >>;
-    JanetTreeNodeGetTriple(tmpNode2) := triple;
-    return tmpNode1;
+    janettreenodegettriple(tmpnode2) := triple;
+    return tmpnode1;
 end;
 
 
-expr procedure JanetTreeNodePrint(node);
+expr procedure janettreenodeprint(node);
 begin
     if null(node) then
     <<
@@ -79,68 +79,68 @@ begin
     >>
     else
     <<
-        prin2 "(("; prin2 JanetTreeNodeGetDegree(node); prin2 ") . ("; 
-        prin2 if JanetTreeNodeGetTriple(node) then TripleGetLm(JanetTreeNodeGetTriple(node)) else "nil"; 
+        prin2 "(("; prin2 janettreenodegetdegree(node); prin2 ") . ("; 
+        prin2 if janettreenodegettriple(node) then triplegetlm(janettreenodegettriple(node)) else "nil"; 
         prin2 ")) . ((";
         
-        if JanetTreeNodeGetNextDegree(node) then JanetTreeNodePrint(JanetTreeNodeGetNextDegree(node)) else prin2 "nil";
+        if janettreenodegetnextdegree(node) then janettreenodeprint(janettreenodegetnextdegree(node)) else prin2 "nil";
         prin2 ") . (";
-        if JanetTreeNodeGetNextVariable(node) then JanetTreeNodePrint(JanetTreeNodeGetNextVariable(node)) else prin2 "nil";
+        if janettreenodegetnextvariable(node) then janettreenodeprint(janettreenodegetnextvariable(node)) else prin2 "nil";
         prin2 "))";
     >>;
 end;
 
 
-inline procedure JanetTreePrint(); JanetTreeNodePrint(FluidBibasisJanetTreeRootNode);
+inline procedure janettreeprint(); janettreenodeprint(fluidbibasisjanettreerootnode);
 
 
-expr procedure JanetTreeInsert(triple);
-begin integer variable, degree; scalar nodeIterator, tmpNode, monom;
-    monom := TripleGetLm(triple);
-    degree := MonomGetDegree(monom);
+expr procedure janettreeinsert(triple);
+begin integer variable, degree; scalar nodeiterator, tmpnode, monom;
+    monom := triplegetlm(triple);
+    degree := monomgetdegree(monom);
     variable := 1;
-    if null(FluidBibasisJanetTreeRootNode) then
+    if null(fluidbibasisjanettreerootnode) then
     <<
-        FluidBibasisJanetTreeRootNode := JanetTreeNodeBuild(degree, variable, triple);
+        fluidbibasisjanettreerootnode := janettreenodebuild(degree, variable, triple);
     >>
     else
     <<
-        nodeIterator := FluidBibasisJanetTreeRootNode;
+        nodeiterator := fluidbibasisjanettreerootnode;
 
         while degree > 0 do
         <<
-            while and(nodeIterator,
-                      JanetTreeNodeGetDegree(nodeIterator) < MonomGetVariableDegree(monom, variable), 
-                      JanetTreeNodeGetNextDegree(nodeIterator)) do 
+            while and(nodeiterator,
+                      janettreenodegetdegree(nodeiterator) < monomgetvariabledegree(monom, variable), 
+                      janettreenodegetnextdegree(nodeiterator)) do 
             <<
-                nodeIterator := JanetTreeNodeGetNextDegree(nodeIterator);
+                nodeiterator := janettreenodegetnextdegree(nodeiterator);
             >>;
    
-            if and(nodeIterator,
-                   JanetTreeNodeGetDegree(nodeIterator) > MonomGetVariableDegree(monom, variable)) then
+            if and(nodeiterator,
+                   janettreenodegetdegree(nodeiterator) > monomgetvariabledegree(monom, variable)) then
             <<
-                tmpNode := JanetTreeNodeBuild(degree, variable, triple);
+                tmpnode := janettreenodebuild(degree, variable, triple);
                 degree := 0;
                 
-                JanetTreeNodeGetNextDegree(nodeIterator) := CreateJanetTreeNode(JanetTreeNodeGetDegree(nodeIterator),
-                                                                                JanetTreeNodeGetTriple(nodeIterator),
-                                                                                JanetTreeNodeGetNextDegree(nodeIterator),
-                                                                                JanetTreeNodeGetNextVariable(nodeIterator));
-                JanetTreeNodeGetNextVariable(nodeIterator) := JanetTreeNodeGetNextVariable(tmpNode);
-                JanetTreeNodeGetDegree(nodeIterator) := JanetTreeNodeGetDegree(tmpNode);
-                JanetTreeNodeGetTriple(nodeIterator) := JanetTreeNodeGetTriple(tmpNode);
+                janettreenodegetnextdegree(nodeiterator) := createjanettreenode(janettreenodegetdegree(nodeiterator),
+                                                                                janettreenodegettriple(nodeiterator),
+                                                                                janettreenodegetnextdegree(nodeiterator),
+                                                                                janettreenodegetnextvariable(nodeiterator));
+                janettreenodegetnextvariable(nodeiterator) := janettreenodegetnextvariable(tmpnode);
+                janettreenodegetdegree(nodeiterator) := janettreenodegetdegree(tmpnode);
+                janettreenodegettriple(nodeiterator) := janettreenodegettriple(tmpnode);
             >>
-            else if and(nodeIterator,
-                        JanetTreeNodeGetDegree(nodeIterator) = MonomGetVariableDegree(monom, variable),
-                        JanetTreeNodeGetNextVariable(nodeIterator)) then 
+            else if and(nodeiterator,
+                        janettreenodegetdegree(nodeiterator) = monomgetvariabledegree(monom, variable),
+                        janettreenodegetnextvariable(nodeiterator)) then 
             <<
-                degree := degree - MonomGetVariableDegree(monom, variable);
+                degree := degree - monomgetvariabledegree(monom, variable);
                 variable := variable + 1;
-                nodeIterator := JanetTreeNodeGetNextVariable(nodeIterator);
+                nodeiterator := janettreenodegetnextvariable(nodeiterator);
             >>
-            else if not(null(nodeIterator)) then
+            else if not(null(nodeiterator)) then
             <<
-                JanetTreeNodeGetNextDegree(nodeIterator) := JanetTreeNodeBuild(degree, variable, triple);
+                janettreenodegetnextdegree(nodeiterator) := janettreenodebuild(degree, variable, triple);
                 degree := 0;
             >>;
         >>;
@@ -148,92 +148,92 @@ begin integer variable, degree; scalar nodeIterator, tmpNode, monom;
 end;
 
 
-expr procedure JanetTreeFind(monom);
-if null(FluidBibasisJanetTreeRootNode) then
+expr procedure janettreefind(monom);
+if null(fluidbibasisjanettreerootnode) then
     nil
-else begin scalar result, nodeIterator; integer degree, variable;
-    nodeIterator := FluidBibasisJanetTreeRootNode;
-    degree := MonomGetDegree(monom);
+else begin scalar result, nodeiterator; integer degree, variable;
+    nodeiterator := fluidbibasisjanettreerootnode;
+    degree := monomgetdegree(monom);
     variable := 1;
     while igreaterp(degree, 0) do 
     <<
-        while and(JanetTreeNodeGetDegree(nodeIterator) < MonomGetVariableDegree(monom, variable), 
-                 JanetTreeNodeGetNextDegree(nodeIterator)) do 
+        while and(janettreenodegetdegree(nodeiterator) < monomgetvariabledegree(monom, variable), 
+                 janettreenodegetnextdegree(nodeiterator)) do 
         <<
-            nodeIterator := JanetTreeNodeGetNextDegree(nodeIterator);
+            nodeiterator := janettreenodegetnextdegree(nodeiterator);
         >>;
 
-        if neq(JanetTreeNodeGetDegree(nodeIterator), MonomGetVariableDegree(monom, variable)) then
+        if neq(janettreenodegetdegree(nodeiterator), monomgetvariabledegree(monom, variable)) then
         <<
             degree := 0;
         >>
-        else if JanetTreeNodeGetNextVariable(nodeIterator) then 
+        else if janettreenodegetnextvariable(nodeiterator) then 
         <<
-            degree := idifference(degree, MonomGetVariableDegree(monom, variable));
+            degree := idifference(degree, monomgetvariabledegree(monom, variable));
             variable := iadd1(variable);
-            nodeIterator := JanetTreeNodeGetNextVariable(nodeIterator);
+            nodeiterator := janettreenodegetnextvariable(nodeiterator);
         >>
         else 
         <<
             degree := 0;
-            result := JanetTreeNodeGetTriple(nodeIterator);
+            result := janettreenodegettriple(nodeiterator);
         >>;
     >>;
     return result;
 end;
 
 
-expr procedure JanetTreeDelete(monom);
-if not(null(FluidBibasisJanetTreeRootNode)) then
-begin scalar nodeIterator, nodeIteratorParent, lastBifurcation, lastBifurcationParent, break, varDirection; integer variable, degree;
-    nodeIterator := FluidBibasisJanetTreeRootNode;
-    nodeIteratorParent := nil;
-    lastBifurcation := FluidBibasisJanetTreeRootNode;
-    lastBifurcationParent := nil;
+expr procedure janettreedelete(monom);
+if not(null(fluidbibasisjanettreerootnode)) then
+begin scalar nodeiterator, nodeiteratorparent, lastbifurcation, lastbifurcationparent, break, vardirection; integer variable, degree;
+    nodeiterator := fluidbibasisjanettreerootnode;
+    nodeiteratorparent := nil;
+    lastbifurcation := fluidbibasisjanettreerootnode;
+    lastbifurcationparent := nil;
     variable := 1;
     
     while not(break) do
     <<
-        degree := MonomGetVariableDegree(monom, variable);
+        degree := monomgetvariabledegree(monom, variable);
 
-        while and(nodeIterator,
-                  ilessp(JanetTreeNodeGetDegree(nodeIterator), degree)) do
+        while and(nodeiterator,
+                  ilessp(janettreenodegetdegree(nodeiterator), degree)) do
         <<
-            if eq(lastBifurcation, nodeIterator) then
+            if eq(lastbifurcation, nodeiterator) then
             <<
-                varDirection := nil;
+                vardirection := nil;
             >>;
             
-            nodeIteratorParent := nodeIterator;
-            nodeIterator := JanetTreeNodeGetNextDegree(nodeIterator);
+            nodeiteratorparent := nodeiterator;
+            nodeiterator := janettreenodegetnextdegree(nodeiterator);
             
-            if and(nodeIterator,
-                   JanetTreeNodeGetNextDegree(nodeIterator),
-                   JanetTreeNodeGetNextVariable(nodeIterator)) then
+            if and(nodeiterator,
+                   janettreenodegetnextdegree(nodeiterator),
+                   janettreenodegetnextvariable(nodeiterator)) then
             <<
-                lastBifurcation := nodeIterator;
-                lastBifurcationParent := nodeIteratorParent;
+                lastbifurcation := nodeiterator;
+                lastbifurcationparent := nodeiteratorparent;
             >>;
         >>;
 
-        if and(nodeIterator,
-               JanetTreeNodeGetNextVariable(nodeIterator)) then
+        if and(nodeiterator,
+               janettreenodegetnextvariable(nodeiterator)) then
         <<
             variable := iadd1(variable);
-            if eq(lastBifurcation, nodeIterator) then
+            if eq(lastbifurcation, nodeiterator) then
             <<
-                varDirection := t;
+                vardirection := t;
             >>;
             
-            nodeIteratorParent := nodeIterator;
-            nodeIterator := JanetTreeNodeGetNextVariable(nodeIterator);
+            nodeiteratorparent := nodeiterator;
+            nodeiterator := janettreenodegetnextvariable(nodeiterator);
             
-            if and(nodeIterator,
-                   JanetTreeNodeGetNextDegree(nodeIterator),
-                   JanetTreeNodeGetNextVariable(nodeIterator)) then
+            if and(nodeiterator,
+                   janettreenodegetnextdegree(nodeiterator),
+                   janettreenodegetnextvariable(nodeiterator)) then
             <<
-                lastBifurcation := nodeIterator;
-                lastBifurcationParent := nodeIteratorParent;
+                lastbifurcation := nodeiterator;
+                lastbifurcationparent := nodeiteratorparent;
             >>;
         >>
         else
@@ -242,30 +242,30 @@ begin scalar nodeIterator, nodeIteratorParent, lastBifurcation, lastBifurcationP
         >>;
     >>;
     
-    if varDirection then
+    if vardirection then
     <<
-        if eq(lastBifurcation, FluidBibasisJanetTreeRootNode) then
+        if eq(lastbifurcation, fluidbibasisjanettreerootnode) then
         <<
             % if last bifurcation is root node, just replace root node with its next degree subtree
-            FluidBibasisJanetTreeRootNode := JanetTreeNodeGetNextDegree(FluidBibasisJanetTreeRootNode);
+            fluidbibasisjanettreerootnode := janettreenodegetnextdegree(fluidbibasisjanettreerootnode);
         >>
         else
         <<
             % connect bifurcation parent with bifurcation's next degree subtree
             % as far as we are in binary ring, max degree is 1 and bifurcation is next degree subtree of it's parent
-            JanetTreeNodeGetNextVariable(lastBifurcationParent) := JanetTreeNodeGetNextDegree(lastBifurcation);
+            janettreenodegetnextvariable(lastbifurcationparent) := janettreenodegetnextdegree(lastbifurcation);
         >>;
     >>
     else
     <<
-        JanetTreeNodeGetNextDegree(lastBifurcation) := nil;
+        janettreenodegetnextdegree(lastbifurcation) := nil;
     >>;
     
     % there were no bifurcations, i.e. lastBifurcation = FluidBibasisJanetTreeRootNode
-    if not(or(JanetTreeNodeGetNextDegree(lastBifurcation), 
-              JanetTreeNodeGetNextVariable(lastBifurcation))) then
+    if not(or(janettreenodegetnextdegree(lastbifurcation), 
+              janettreenodegetnextvariable(lastbifurcation))) then
     <<
-        FluidBibasisJanetTreeRootNode := nil;
+        fluidbibasisjanettreerootnode := nil;
     >>;
 end;
 

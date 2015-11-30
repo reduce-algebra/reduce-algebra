@@ -138,17 +138,17 @@ begin scalar el,il,fl,vl,l,l1,l2,a,b,n,m,k,p,pdes$
  fl:=reval  caddr inp$
  vl:=reval cadddr inp$
  el:=if pairp el and 
-        (car el='LIST) then 
+        (car el='list) then 
      for each p in cdr el collect 
-     if pairp p and car p='!*SQ then cadr p 
+     if pairp p and car p='!*sq then cadr p 
                                 else simp!* p
                        else if pairp el and 
-                               car el='!*SQ then list cadr el
+                               car el='!*sq then list cadr el
                                             else list simp!* el$ 
  % el is now a list of standard quotients
- fl:=if pairp fl and (car fl='LIST) then cdr fl else list fl$
- vl:=if pairp vl and (car vl='LIST) then cdr vl else list vl$
- il:=if pairp il and (car il='LIST) then cdr il else list il$
+ fl:=if pairp fl and (car fl='list) then cdr fl else list fl$
+ vl:=if pairp vl and (car vl='list) then cdr vl else list vl$
+ il:=if pairp il and (car il='list) then cdr il else list il$
  vl_:=union(argset fl,vl)$  vl:=nil;
  % orderings_:=make_orderings(fl, vl_)$        % Orderings support!
  if vl_ then fl:=fctsort fl$
@@ -184,12 +184,12 @@ begin scalar el,il,fl,vl,l,l1,l2,a,b,n,m,k,p,pdes$
  el:=for each p in el collect <<
       if null !*complex and
          ((not freeof(numr p,'i)) or (not freeof(numr p,'!:gi!:))) then
-      algebraic(ON COMPLEX)$
-      if not freeoflist(denr p,ftem_) then addSQineq(nil,(denr p ./ 1),t)$
+      algebraic(on complex)$
+      if not freeoflist(denr p,ftem_) then addsqineq(nil,(denr p ./ 1),t)$
       (numr p ./ 1)
      >>$
  for each p in il do 
- if pairp p and (car p = 'LIST) then <<
+ if pairp p and (car p = 'list) then <<
   p:=cdr p;   
   % p is now a lisp list of expressions of which at least one must not vanish
   l:=if null p then 1
@@ -206,11 +206,11 @@ begin scalar el,il,fl,vl,l,l1,l2,a,b,n,m,k,p,pdes$
   if null l then contradiction_:=t  % all expressions are zero
             else
   if cdr l then ineq_or:=cons(l,ineq_or)
-           else addSQineq(nil,caar l,t)   
+           else addsqineq(nil,caar l,t)   
  >>                             else 
- addSQineq(nil,if pairp p and (car p='!*SQ) then cadr p
+ addsqineq(nil,if pairp p and (car p='!*sq) then cadr p
                                             else simp p,t); 
- simpSQineq_or_adhoc(nil)$  % the initial simplification of ineq_or
+ simpsqineq_or_adhoc(nil)$  % the initial simplification of ineq_or
                             % nil because no pdes (yet) assigned
  il:=nil$
  history_:=nil;
@@ -224,10 +224,10 @@ begin scalar el,il,fl,vl,l,l1,l2,a,b,n,m,k,p,pdes$
  % are in all orderings
 
  % each equation gets a property list
- pdes:=mkeqSQlist(el,nil,nil,ftem_,vl_,
+ pdes:=mkeqsqlist(el,nil,nil,ftem_,vl_,
                   allflags_,t,%orderings_prop_list_all(),
                   list(0),nil)$
- if contradiction_ then return {'LIST}$
+ if contradiction_ then return {'list}$
 
  if equations_file="" then <<
   l:=pdes;
@@ -250,7 +250,7 @@ begin scalar el,il,fl,vl,l,l1,l2,a,b,n,m,k,p,pdes$
 
  el:=nil$ % to free memory
  if size_watch then 
- size_hist:=list(cons('CP,for each l in proc_list_ collect get(l,'no)))$
+ size_hist:=list(cons('cp,for each l in proc_list_ collect get(l,'no)))$
  % size_hist:=nil$
  % size_hist:=if size_watch then {cons(0,get_statistic(pdes,ftem_))}
  %                          else nil$
@@ -275,22 +275,22 @@ if (null collect_sol) and (null paracrack_initialized) then
  >>$ 
 
  % dropping redundant functions/constants now done at end of crackmain
- l:=cons('LIST,
+ l:=cons('list,
     for each a in l collect % i.e. for each solution a
     <<l1:=nil$      % to be the list of computed assignments
       l2:=caddr a$  % to be the list of free or not yet determined unknowns
       for each b in cadr a do
       if (pairp b) and 
-         (car b = 'EQUAL) then l1:=cons({'EQUAL,cadr b,
-                                          aeval {'!*SQ,caddr b,nil}},l1)
+         (car b = 'equal) then l1:=cons({'equal,cadr b,
+                                          aeval {'!*sq,caddr b,nil}},l1)
                           else l2:=cons(b,l2)$
-      {'LIST,
-       cons('LIST,for each m in car a collect {'!*SQ,m,t}),
-       cons('LIST,l1),
-       cons('LIST,l2),
-       cons('LIST,append(for each m in     cadddr a collect aeval {'!*sq,m,nil},
+      {'list,
+       cons('list,for each m in car a collect {'!*sq,m,t}),
+       cons('list,l1),
+       cons('list,l2),
+       cons('list,append(for each m in     cadddr a collect aeval {'!*sq,m,nil},
                          for each m in car cddddr a collect 
-                           cons('LIST,for each n in m collect <<
+                           cons('list,for each n in m collect <<
                                         p:=simp 1;
                                         for each k in n do p:=multsq(k,p);
                                         aeval {'!*sq,p,nil}
@@ -569,7 +569,7 @@ again:
         for each s in pdes do 
         if not freeof(l,s) then l:=subst({'!*sq,get(s,'sqval),t},s,l)$
         for each s in forg do 
-        if (pairp s) and (car s='EQUAL) then l:=subst({'!*sq,caddr s,t},cadr s,l)$
+        if (pairp s) and (car s='equal) then l:=subst({'!*sq,caddr s,t},cadr s,l)$
 	terpri()$
         mathprint(reval l)
       >>
@@ -1045,7 +1045,7 @@ again:
         if member(l,pdes) then rule_from_pde(l)
                           else algebraic(let lisp l) 
                   else <<
-         userrules_:=cons('LIST,cons(l,cdr userrules_))$
+         userrules_:=cons('list,cons(l,cdr userrules_))$
          algebraic (write "The new list of user defined rules: ",
                           lisp userrules_)$
          terpri()$
@@ -1053,11 +1053,11 @@ again:
         write"Shall all current LET-rules be applied to all current ",
              "equations (y/n)? "$
         l:=termread()$
-        if (l='y) or (l='Y) then <<
+        if (l='y) or (l='y) then <<
          algebraic(let lisp userrules_);
          s:=pdes;
          for each h in s do <<
-          l:=mkeqSQ(get(h,'sqval),nil,nil,get(h,'fcts),get(h,'vars),
+          l:=mkeqsq(get(h,'sqval),nil,nil,get(h,'fcts),get(h,'vars),
                     allflags_,t,list(0),nil,pdes)$
           pdes:=drop_pde(h,pdes,nil)$
           pdes:=eqinsert(l,pdes)
@@ -1087,8 +1087,8 @@ again:
          while l>1 do <<
           l:=sub1 l;s:=cons(car userrules_,s);userrules_:=cdr userrules_
          >>;
-         algebraic(clearrules lisp {'LIST,car userrules_});
-         userrules_:=cons('LIST,append(reverse s,cdr userrules_));
+         algebraic(clearrules lisp {'list,car userrules_});
+         userrules_:=cons('list,append(reverse s,cdr userrules_));
          algebraic (write lisp userrules_);
          terpri()$
         >>
@@ -1120,7 +1120,7 @@ again:
           if null fhom_ then fhom_:=ftem_;
           for each s in pdes do <<
            put(s,'fct_hom,smemberl(get(s,'fcts),fhom_));
-           put(s,'hom_deg,find_hom_deg_SF(numr get(s,'sqval)))
+           put(s,'hom_deg,find_hom_deg_sf(numr get(s,'sqval)))
           >>
          >>      else fhom_:=nil
         >>$
@@ -1142,10 +1142,10 @@ again:
          if l='y then <<
           write"Use reverse total degree ordering? (y/n) "$ 
           l:=termread()$
-          if l='y then 'SL_REVGRAD 
+          if l='y then 'sl_revgrad 
                   else <<
            write"Pure lexicographical ordering is used."$terpri()$
-           'SL_LEX
+           'sl_lex
           >>                                                         
          >>      else <<
           write"Should the GB package of J.C.Faugere be used? (y/n) "$
@@ -1153,14 +1153,14 @@ again:
           if l='y then <<
            write"Use reverse total degree ordering? (y/n) "$
            l:=termread()$
-           if l='y then 'GB_REVGRAD 
+           if l='y then 'gb_revgrad 
                    else <<
             write"Pure lexicographical ordering is used."$terpri()$
-            'GB_LEX 
+            'gb_lex 
            >>
           >>      else <<
            write"The REDUCE Groebner package is used."$terpri()$
-           'REDUCE
+           'reduce
           >>
          >>
         >>$
@@ -1185,7 +1185,7 @@ again:
         max_gc_elimin:=5$
         max_gc_red_len:=1; % 4
         if null size_watch then 
-        size_hist:=list(cons('CP,for each l in proc_list_ collect get(l,'no)))$
+        size_hist:=list(cons('cp,for each l in proc_list_ collect get(l,'no)))$
         max_gc_fac:=4;    
         choose_6_20_max_ftem:=25;   
         choose_6_20_max_terms:=5000;
@@ -1222,7 +1222,7 @@ again:
       else if s='de then pdes:=deletepde(pdes)
       else if s='di then delete_ineq(pdes)
       else if s='c then change_pde_flag(pdes)
-      else if s='pt then <<l:=General_Trafo({pdes,forg})$
+      else if s='pt then <<l:=general_trafo({pdes,forg})$
                            if l then <<pdes:=car l$ forg:=cadr l>> >>
       % else if s='se then pdes:=sort_eq_by_length pdes
       % (not needed anymore, done by default more efficiently)
@@ -1241,7 +1241,7 @@ again:
            <<write " no success"$terpri()>>
       else if s='ic then check_history(pdes)
       else if s='iy then 
-           for each l in pdes do mathprint {'EQUAL,l,get(l,'histry_)}
+           for each l in pdes do mathprint {'equal,l,get(l,'histry_)}
       % to trace and debug -----------------------
       else if s='tm then <<tr_main:=not tr_main;
         if tr_main then write"tr_main is now on." 
@@ -1300,7 +1300,7 @@ again:
         terpri()$
         in l
       >>
-      else if s='cu then InternTest(pdes,forg)
+      else if s='cu then interntest(pdes,forg)
       else if s='qt then <<
         change_prompt_to ""$ 
         terpri()$
@@ -1473,7 +1473,7 @@ again:
       else if s='gs then groeb_solve:=<<
        change_prompt_to ""$ 
 
-       find_Singular()$
+       find_singular()$
        if singular_call and singular_lib then <<
         repeat <<
          write"What is the max time allowed in seconds? "$ 
@@ -1482,24 +1482,24 @@ again:
         singular_time:=l$
         write"Use reverse total degree ordering? (y/n) "$ 
         l:=termread()$
-        if l='y then 'SL_REVGRAD 
+        if l='y then 'sl_revgrad 
                 else <<
          write"Pure lexicographical ordering is used."$terpri()$
-         'SL_LEX
+         'sl_lex
         >>
        >>
       >>
       else if s='gg then <<
        change_prompt_to "Use reverse total degree ordering? (y/n) "$ 
        l:=termread()$
-       if l='y then 'GB_REVGRAD 
+       if l='y then 'gb_revgrad 
                else <<
         write"Pure lexicographical ordering is used."$terpri()$
-        'GB_LEX 
+        'gb_lex 
        >> 
       >>
-      else if s='gr then groeb_solve:='REDUCE
-      else if s='df then groeb_solve:='DiffElim
+      else if s='gr then groeb_solve:='reduce
+      else if s='df then groeb_solve:='diffelim
       % otherwise -------------------------------------
       else <<
        if size_watch and not fixp size_watch then % otherwise avoid growth
@@ -1559,20 +1559,20 @@ again:
                           else add1 length sol_list;
       if not null(getd 'crack_out) and call_crack_out then algebraic 
       (s:=crack_out(
-           lisp cons('LIST,for each a in pdes collect {'!*SQ,get(a,'sqval),t}),
-           lisp cons('LIST,for each a in setdiff(forg,ftem_) collect
-                           {'EQUAL,cadr a,aeval {'!*SQ,caddr a,nil}}),
-           lisp cons('LIST,ftem_),
-           lisp cons('LIST,append(for each a in ineq_ collect aeval {'!*SQ,a,nil},
+           lisp cons('list,for each a in pdes collect {'!*sq,get(a,'sqval),t}),
+           lisp cons('list,for each a in setdiff(forg,ftem_) collect
+                           {'equal,cadr a,aeval {'!*sq,caddr a,nil}}),
+           lisp cons('list,ftem_),
+           lisp cons('list,append(for each a in ineq_ collect aeval {'!*sq,a,nil},
                            if null ineq_or then nil else
-                           cons('LIST,for each a in ineq_or collect 
+                           cons('list,for each a in ineq_or collect 
                                       % each a is a single or-inequality
-                                      cons('LIST,for each b in a collect 
+                                      cons('list,for each b in a collect 
                                                  % each b is a single expression 
                                                  % in an or-inequality
-                                                 cons('LIST,for each c in b 
+                                                 cons('list,for each c in b 
                                                       collect aeval 
-                                                      {'!*SQ,c,nil}))))),
+                                                      {'!*sq,c,nil}))))),
            lisp l))                                   else s:=nil;
       % If s is not null then s is expected to be an algebraic list of
       % expressions that should be zero but are not and therefore make
@@ -1582,7 +1582,7 @@ again:
 
         % the original PDEs under the current case conditions
         for each l in pdes do <<
-         h:=simplifypdeSQ(get(l,'sqval),ftem_,t,l,t)$
+         h:=simplifypdesq(get(l,'sqval),ftem_,t,l,t)$
          put(l,'sqval,car h)$
          put(l,'fac,cdr h)
         >>$
@@ -1590,8 +1590,8 @@ again:
         % the conditions returned from crack_out()
         pl:=pdes;        
         for each l in cdr s do
-        pdes:=eqinsert(mkeqSQ(<<h:=aeval l;
-                                if pairp h and (car h='!*SQ) then cadr h
+        pdes:=eqinsert(mkeqsq(<<h:=aeval l;
+                                if pairp h and (car h='!*sq) then cadr h
                                                              else simp h>>,
                               nil,nil,ftem_,vl_,allflags_,
                               t,list(0),nil,pdes),pdes)$
@@ -1612,10 +1612,10 @@ again:
      % appear in remaining equations and thus not be in ftem_ anymore.
      s:=nil$
      for each l in forg do 
-     if not pairp l or car l neq 'EQUAL then s:=cons(l,s)$
+     if not pairp l or car l neq 'equal then s:=cons(l,s)$
 
      save_solution(for each a in pdes collect prepsq get(a,'sqval),
-                   for each a in setdiff(forg,s) collect {'EQUAL,cadr a,prepsq caddr a},
+                   for each a in setdiff(forg,s) collect {'equal,cadr a,prepsq caddr a},
                    union(s,ftem_),
                    for each a in ineq_   collect prepsq a,
                    for each a in ineq_or collect 
@@ -1685,7 +1685,7 @@ begin scalar l,s$
  while cdr l do << % use substitution car l in all of cdr l
   s:=cdr l;
   while s do <<
-   rplaca(s,(caar s . {'!*SQ,subsq(cadr cdar s,{car l}),t}))$
+   rplaca(s,(caar s . {'!*sq,subsq(cadr cdar s,{car l}),t}))$
    s:=cdr s
   >>$
   l:=cdr l
@@ -1808,7 +1808,7 @@ begin scalar l,p,err;
       terpri()
      >>$
      if size_watch then 
-     size_hist:=cons(cons('CP,for each l in proc_list_ collect get(l,'no)),
+     size_hist:=cons(cons('cp,for each l in proc_list_ collect get(l,'no)),
                      size_hist);
      %terpri()$write"The new order of procedures:"$ priproli(proc_list_)
      >>
@@ -2090,7 +2090,7 @@ begin scalar f,l,q,g,h,pdes,forg,found_sub$
                 then 1
                 else (cadr h) 
                )   do 
-      g:=addsq(simp gensym(),mksq(list('INT,prepsq g,car h),1));  
+      g:=addsq(simp gensym(),mksq(list('int,prepsq g,car h),1));  
       h:=cdr h;
       if h and (fixp car h) then h:=cdr h
     >>;
@@ -2099,11 +2099,11 @@ begin scalar f,l,q,g,h,pdes,forg,found_sub$
                                      % reval subst(g,cadr d,s);
     % now the substitution in fsub_
     fsub_:=for each s in fsub_ collect 
-           (car s . {'!*SQ,subsq(caddr s,{(cadr d . {'!*sq,g,t})}),t});
+           (car s . {'!*sq,subsq(caddr s,{(cadr d . {'!*sq,g,t})}),t});
 
     if member(cadr d,forg) then <<
        ftem_:=fctinsert(cadr d,ftem_)$ % puting cadr d back into ftem_
-       q:=mkeqSQ(subtrsq(simp d,simp f),nil,nil,
+       q:=mkeqsq(subtrsq(simp d,simp f),nil,nil,
                    %list('PLUS,d,list('MINUS,f)),
                    list(f,cadr d),fctargs f,allflags_,nil,list(0),nil,pdes)$
        remflag1(q,'to_eval)$
@@ -2173,7 +2173,7 @@ begin scalar pdes,s,a,al,d,f,p,q,newf,sb,new_eq,old_eq,ok;
   f:=car a;
 
   % formulating a LET-rule for the substitution
-  sb:={'REPLACEBY,{'EXPT,car a,cadr a},newf};
+  sb:={'replaceby,{'expt,car a,cadr a},newf};
   algebraic(let lisp sb);
 
   new_eq:=nil;
@@ -2184,7 +2184,7 @@ begin scalar pdes,s,a,al,d,f,p,q,newf,sb,new_eq,old_eq,ok;
   while p and ok do 
   if freeof(get(car p,'fcts),f) then p:=cdr p
                                 else <<
-   q:=mkeqSQ(get(car p,'sqval),nil,nil,cons(newf,get(car p,'fcts)),
+   q:=mkeqsq(get(car p,'sqval),nil,nil,cons(newf,get(car p,'fcts)),
              get(car p,'vars),allflags_,t,list(0),nil,pdes);
    if not freeof(get(q,'fcts),f) then ok:=nil
                                  else <<
@@ -2203,7 +2203,7 @@ begin scalar pdes,s,a,al,d,f,p,q,newf,sb,new_eq,old_eq,ok;
    for each q in old_eq do pdes:=drop_pde(q,pdes,nil);
 
    % generating the new equation and adding all to pdes
-   q:=mkeqSQ(nil,nil,{'DIFFERENCE,newf,{'EXPT,car a,cadr a}},{newf,f},nil,allflags_,nil,
+   q:=mkeqsq(nil,nil,{'difference,newf,{'expt,car a,cadr a}},{newf,f},nil,allflags_,nil,
              list(0),nil,pdes);
    put(q,'not_to_eval,{newf})$
    pdes:=eqinsert(q,pdes)
@@ -2294,7 +2294,7 @@ begin scalar pdes,l1,l2,l3,l4,l5,l6,fl,vl,zd,pdes2$
  terpri()$
  l2:=termlistread()$
  if l2 then <<
-  l3:=cdr solveeval list(cons('LIST,l1),cons('LIST,l2));
+  l3:=cdr solveeval list(cons('list,l1),cons('list,l2));
   % We don't check for complex solutions and add ON COMPLEX because
   % only the linear case is used below.
   % solveeval liefert eg: (list (list (equal x -3) (equal y -3)))
@@ -2309,8 +2309,8 @@ begin scalar pdes,l1,l2,l3,l4,l5,l6,fl,vl,zd,pdes2$
    l3:=for each l4 in l3 collect <<        % for each solution l4
     l4:=for each l5 in cdr l4 collect <<
      zd:=union(zero_den(reval l5,fl),zd)$
-     l6:=reval {'PLUS,cadr l5,{'MINUS,caddr l5}}$
-     if pairp l6 and (car l6 = 'QUOTIENT) then cadr l6
+     l6:=reval {'plus,cadr l5,{'minus,caddr l5}}$
+     if pairp l6 and (car l6 = 'quotient) then cadr l6
                                           else l6 
     >>       % l4 is now a list of expressions to vanish
    >>;
@@ -2318,9 +2318,9 @@ begin scalar pdes,l1,l2,l3,l4,l5,l6,fl,vl,zd,pdes2$
     l4:=car l3;             % the solution
     pdes2:=pdes;
     for each l5 in l4 do <<
-     l5:=if zd then mkeqSQ(nil,cons(simp l5,zd),nil,
+     l5:=if zd then mkeqsq(nil,cons(simp l5,zd),nil,
                            fl,vl,allflags_,nil,list(0),nil,pdes)
-               else mkeqSQ(nil,nil,l5,
+               else mkeqsq(nil,nil,l5,
                            fl,vl,allflags_,nil,list(0),nil,pdes)$
      pdes:=eqinsert(l5,pdes)$
     >>;
@@ -2415,23 +2415,23 @@ begin scalar d,p,q,drop,fctrl$
  while l and null (d:=alg_for_deriv(car l)) do l:=cdr l;
  if d then <<
   p:=cdr d$
-  d:=solveeval list({'!*SQ,get(car l,'sqval),t},
+  d:=solveeval list({'!*sq,get(car l,'sqval),t},
                     if 1=length car d then caar d
-                                      else cons('DF,car d));
+                                      else cons('df,car d));
   % 30.11.08: To avoid difficult solutions which do not simplify
   % but crash future computations:
   if p>2 then
-  if not freeoflist(d,{'ROOT_OF,'COS,'SIN,'SINH,'COSH,'TAN,
-                       'ACOSH,'ASIN,'ATAN,'ASINH,'ACOSH}) then d:=nil
+  if not freeoflist(d,{'root_of,'cos,'sin,'sinh,'cosh,'tan,
+                       'acosh,'asin,'atan,'asinh,'acosh}) then d:=nil
                                                           else <<
-   q:=search_li(d,'SQRT)$ % Find the cadr of all sublists which have 'SQRT as car
+   q:=search_li(d,'sqrt)$ % Find the cadr of all sublists which have 'SQRT as car
 
    while q and null drop do
    if pairp car q then <<drop:=t;q:={'sqrt,car q}>>
                             else q:=cdr q;
 
    if null drop then <<
-    q:=search_li2(d,'EXPT)$ % Find all sublists which have 'EXPT as car
+    q:=search_li2(d,'expt)$ % Find all sublists which have 'EXPT as car
     while q and null drop do
     if not fixp caddar q and pairp cadar q then <<drop:=t;q:=car q>>
                                            else q:=cdr q
@@ -2441,7 +2441,7 @@ begin scalar d,p,q,drop,fctrl$
     write"The solution "$
     mathprint d$
     write"of the equation "$
-    mathprint {'!*SQ,get(car l,'sqval),t}$
+    mathprint {'!*sq,get(car l,'sqval),t}$
     write"was ignored because of the term"$
     mathprint q$
     d:=nil
@@ -2449,7 +2449,7 @@ begin scalar d,p,q,drop,fctrl$
 
   >>;
 
-  if (not freeof(d,'i)) or (not freeof(d,'!:gi!:)) then algebraic(ON COMPLEX)$
+  if (not freeof(d,'i)) or (not freeof(d,'!:gi!:)) then algebraic(on complex)$
   
   if not freeof(d,'abs) then <<
    algebraic (let abs_);
@@ -2457,12 +2457,12 @@ begin scalar d,p,q,drop,fctrl$
    algebraic(clearrules abs_);
   >>$
 
-  if d and (car d='LIST) % and (length d = p+1) taken out beause of multi. roots
+  if d and (car d='list) % and (length d = p+1) taken out beause of multi. roots
   then <<
    p:=simp 1;
    
    for each el in cdr d do
-   if car el='EQUAL then <<
+   if car el='equal then <<
     fctrl:=cons(subtrsq(simp cadr el, simp caddr el),fctrl);
     p:=multsq(car fctrl,p)
    >>               else d:=nil
@@ -2473,7 +2473,7 @@ begin scalar d,p,q,drop,fctrl$
 %   d:=cons('TIMES,p);
    d:=p;
    p:=car l;
-   d:=mkeqSQ(d,fctrl,nil,get(p,'fcts),get(p,'vars),allflags_,
+   d:=mkeqsq(d,fctrl,nil,get(p,'fcts),get(p,'vars),allflags_,
              nil,get(p,'orderings),nil,pdes)$
    % last argument is nil as no new inequalities are to be expected.
    % but that has been changed as one never knows and it does not do
@@ -2583,7 +2583,7 @@ begin scalar pdes,forg,l,stem,ftem,vl,vl1$
         ftem_:=fctinsert(f,ftem_)$
       ftem:=union(fnew_,ftem)$
       fnew_:=nil$
-      pdes:=eqinsert(mkeqSQ(nil,nil,l,smemberl(ftem_,ftem),vl,
+      pdes:=eqinsert(mkeqsq(nil,nil,l,smemberl(ftem_,ftem),vl,
                             allflags_,t,list(0),nil,pdes),
                      pdes)$
       vl1:=nil$ 
@@ -2668,7 +2668,7 @@ begin scalar n,sh,l;
  while (n<size_watch) and sh do <<n:=add1 n; sh:=cdr sh>>$
  if sh then <<
   rplacd(sh,nil);
-  rplaca(sh,cons('CP,for each l in proc_list_ collect get(l,'no)))
+  rplaca(sh,cons('cp,for each l in proc_list_ collect get(l,'no)))
  >>
 end$
 
@@ -2693,7 +2693,7 @@ begin scalar pdes,l,l1,l2,q$
          write " we get the new equations : "
        >>$
        for each v in fctargs f do <<
-         q:=mkeqSQ(diffsq(get(p,'sqval),v),nil,nil,get(p,'fcts),get(p,'vars),
+         q:=mkeqsq(diffsq(get(p,'sqval),v),nil,nil,get(p,'fcts),get(p,'vars),
                    delete('to_diff,allflags_),t,list(0),nil,pdes)$
          if q then <<
            if get(q,'terms)>1 then <<
@@ -2733,7 +2733,7 @@ begin scalar pdes,l,l1,q,vli$
       write " we get the new equations : "
     >>$
     for each v in vli do
-    <<q:=mkeqSQ(diffsq(get(p,'sqval),v),nil,nil,get(p,'fcts),get(p,'vars),
+    <<q:=mkeqsq(diffsq(get(p,'sqval),v),nil,nil,get(p,'fcts),get(p,'vars),
                 delete('to_fullint,delete('to_int,allflags_)),
                 t,get(p,'orderings),nil,pdes)$
       if null get(q,'starde) then <<
@@ -2802,7 +2802,7 @@ begin scalar h,hh,s,pdes,forg,contrad,n,pf,q,sqf,l1,l2,result,intact,
 
   print_bak:=print_$ print_:=nil$ % not to print the finding of a contradiction
 % h:=simplifypde(h,smemberl(ftem_,h),t,nil)$     % (h,ftem,tofactor,eqn_name)$
-  hh:=simplifySQ(h,smemberl(ftem_,h),t,nil,t)$ % (p,ftem,fctr,en,sep)$ 
+  hh:=simplifysq(h,smemberl(ftem_,h),t,nil,t)$ % (p,ftem,fctr,en,sep)$ 
   if hh={(1 . 1)} then contradiction_:=t$
   print_:=print_bak$
 
@@ -2816,8 +2816,8 @@ begin scalar h,hh,s,pdes,forg,contrad,n,pf,q,sqf,l1,l2,result,intact,
       write" --> Back to main menu."$terpri()$
       nil
     >>        else <<
-      for each l2 in hh do if l2 neq (1 . 1) then addSQineq(pdes,l2,nil)$ 
-      addSQineq(pdes,h,nil)$  % no simplification as simplification
+      for each l2 in hh do if l2 neq (1 . 1) then addsqineq(pdes,l2,nil)$ 
+      addsqineq(pdes,h,nil)$  % no simplification as simplification
                               % obviously simplifies to (1 . 1) whereas
                               % it was obviously not known that h neq 0
       {pdes,forg}  
@@ -2855,7 +2855,7 @@ again:
 
   n:=add1 n$
   if s then <<   %====== the case that the expression h vanishes
-    start_level(n,list {'EQUAL,0,pf})$ if print_ then terpri()$
+    start_level(n,list {'equal,0,pf})$ if print_ then terpri()$
 
     if sqf_must_be_zero then <<
       % find and delete all equations which have sqf or one of the elements
@@ -2876,7 +2876,7 @@ again:
       >>$
       q:=l1:=l2:=nil$ % should not be necessary
     >>                  else <<
-      q:=mkeqSQ(sqf,hh,pf,ftem_,vl_,allflags_,t,list(0),nil,pdes)$
+      q:=mkeqsq(sqf,hh,pf,ftem_,vl_,allflags_,t,list(0),nil,pdes)$
       if print_ then 
       if contradiction_ then <<
         write "The case"$
@@ -2888,7 +2888,7 @@ again:
       >>
     >>
   >>   else <<   %====== the case that h does not vanish identically
-    start_level(n,list {'INEQ,0,pf})$
+    start_level(n,list {'ineq,0,pf})$
     if print_ then <<
       terpri()$
       write "CRACK is now called with assuming  "$terpri()$
@@ -2896,7 +2896,7 @@ again:
       write" to be nonzero. "$
     >>$
 
-    for each l2 in hh do addSQineq(pdes,l2,nil)$ 
+    for each l2 in hh do addsqineq(pdes,l2,nil)$ 
     if contradiction_ then <<
       if print_ then 
       write"According to the system of equations, this expression must be zero!"$
@@ -3181,11 +3181,11 @@ begin scalar s,h,fl,newpdes,sol,pdes,bak,newfdep,f,sub_afterwards,
  % Test for contradiction or more than one solution
  % to be investigated further
  for each s in caar  sol do 
- pdes:=eqinsert(mkeqSQ(s,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes),
+ pdes:=eqinsert(mkeqsq(s,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes),
                 pdes)$
  for each s in cadar sol do 
- if pairp s and (car s='EQUAL) then <<
-  h:=mkeqSQ(subtrsq(caddr s,simp cadr s),nil,nil,
+ if pairp s and (car s='equal) then <<
+  h:=mkeqsq(subtrsq(caddr s,simp cadr s),nil,nil,
             ftem_,vl_,allflags_,t,list(0),nil,pdes);
   pdes:=eqinsert(h,pdes)$
   if sub_afterwards then  

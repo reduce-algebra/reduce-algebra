@@ -87,8 +87,8 @@ off1 'cgbreal;
 off1 'cgbsgreen;  % Simulate green: Compute Gsys and color it green.
 off1 'cgbfaithful;
 
-!*cgbsloppy := T;
-!*cgbcdsimpl := T;
+!*cgbsloppy := t;
+!*cgbcdsimpl := t;
 
 fluid '(!*cgbgreen);  % pseudo switch for computing green Gsys'
 
@@ -141,7 +141,7 @@ macro procedure cgb_mkinterface(argl);
                prgn := {'put,mkquote smi,''number!-of!-args,len+3} . prgn;
                prgn := {'de,smi,args,{'cgb_interface!$,mkquote sm,mkquote a2sl1,
             mkquote a2sl2,mkquote defl,mkquote xvfn,mkquote
-               s2a,mkquote s2s,mkquote s,T,'list . args}} . prgn
+               s2a,mkquote s2s,mkquote s,t,'list . args}} . prgn
       >>;
       if (null modes or modes eq 'am) then <<
                % Define the algebraic mode interface
@@ -168,30 +168,30 @@ macro procedure cgb_mkinterface(argl);
 
 cgb_mkinterface('cgb,'(cgb_a2s!-psys cgb_a2s!-cd),'(cgb_a2s2!-psys
    cgb_a2s2!-cd),{'true},'cgb_xvars!-psys2,'cgb_s2a!-cgb,'cgb_s2s!-cgb,
-   T,'f,nil);
+   t,'f,nil);
 
 cgb_mkinterface('gsys,'(cgb_a2s!-psys cgb_a2s!-cd),'(cgb_a2s2!-psys
    cgb_a2s2!-cd),{'true},'cgb_xvars!-psys2,'cgb_s2a!-gsys,'cgb_s2s!-gsys,
-   T,'f,nil);
+   t,'f,nil);
 
 cgb_mkinterface('ggsys,'(cgb_a2s!-psys cgb_a2s!-cd cgb_a2s!-varl),
    '(cgb_a2s2!-psys cgb_a2s2!-cd cgb_a2s2!-varl),
-   {'true,'(list)},'cgb_xvars!-psys3,'cgb_s2a!-gsys,'cgb_s2s!-gsys,T,'f,nil);
+   {'true,'(list)},'cgb_xvars!-psys3,'cgb_s2a!-gsys,'cgb_s2s!-gsys,t,'f,nil);
 
 cgb_mkinterface('gsys2cgb,'(cgb_a2s!-gsys),'(cgb_a2s2!-gsys),
-   nil,'cgb_xvars!-gsys,'cgb_s2a!-cgb,'cgb_s2s!-cgb,T,'f,nil);
+   nil,'cgb_xvars!-gsys,'cgb_s2a!-cgb,'cgb_s2s!-cgb,t,'f,nil);
 
 put('cgb_cgb,'gb_wrapper,{'gb_gb0,'(gb_a2s!-psys
    gb_dummy1),'(gb_a2s2!-psys gb_dummy1),{'dummy},'gb_xvars!-psys2,
-   'gb_s2a!-gbx,'gb_s2s!-gb,T});
+   'gb_s2a!-gbx,'gb_s2s!-gb,t});
 
 put('cgb_gsys,'gb_wrapper,{'gb_gbgsys0,'(gb_a2s!-psys
    gb_dummy1),'(gb_a2s2!-psys gb_dummy1),{'dummy},'gb_xvars!-psys2,
-   'gb_s2a!-gsys,'gb_s2s!-gsys,T});
+   'gb_s2a!-gsys,'gb_s2s!-gsys,t});
 
 put('cgb_ggsys,'gb_wrapper,{'gb_gbggsys0,'(gb_a2s!-psys
    gb_dummy1 gb_dummy1),'(gb_a2s2!-psys gb_dummy1 gb_dummy1),{'dummy,'dummy},
-   'gb_xvars!-psys3,'gb_s2a!-gsys,'gb_s2s!-gsys,T});
+   'gb_xvars!-psys3,'gb_s2a!-gsys,'gb_s2s!-gsys,t});
 
 procedure cgb_a2s!-psys(l);
    % Comprehensive Groebner bases algebraic mode to symbolic mode
@@ -276,13 +276,13 @@ procedure cgb_a2s!-cd(cd);
 procedure cgb_cdp(cd);
    begin scalar err;
       if rl_tvalp cd or not rl_cxp rl_op cd then
-         return T;
+         return t;
       if rl_op cd neq 'and then
          return nil;
       cd := rl_argn cd;
       while not err and cd do
          if (not rl_tvalp car cd and rl_cxp rl_op car cd) then
-            err := T
+            err := t
          else
             cd := cdr cd;
       return not err
@@ -336,7 +336,7 @@ procedure cgb_interface!$(fname,a2sl1,a2sl2,defl,xvfn,s2a,s2s,s,smp,argl);
       w := errorset({'cgb_interface1!$,
          mkquote fname,mkquote a2sl2,mkquote s2a,mkquote s2s,mkquote s,
          mkquote smp,mkquote argl, mkquote nargl,mkquote car vl,
-         mkquote cdr vl},T,!*backtrace);
+         mkquote cdr vl},t,!*backtrace);
       cd_cleanup ocdenv;
       cgp_cleanup oenv;
       if errorp w then
@@ -470,7 +470,7 @@ procedure cgb_intersection(a,b);
 procedure cgb_cgb(u,theo);
    % Comprehensive Groebner bases CGB computation. [u] is a list of
    % CGP's; [theo] is a condition. Returns a list of CGP's.
-   cgb_gsys2cgb cgb_gsys(u,theo) where !*cgbfaithful=T;
+   cgb_gsys2cgb cgb_gsys(u,theo) where !*cgbfaithful=t;
 
 procedure cgb_gsys2cgb(u);
    % Comprehensive Groebner bases CGB to Groebner system conversion.
@@ -523,9 +523,9 @@ procedure cgb_ggsys(u,theo,xvarl);
    % Groebner system of [u].
    if !*cgbfaithful then
       gsy_normalize cgb_gsys1(cgp_lsort u,theo,xvarl)
-          where !*cgbgen=T,!*cgbgreen=nil
+          where !*cgbgen=t,!*cgbgreen=nil
    else
-      cgb_nonfaithfulgsys(u,theo,xvarl) where !*cgbgen=T;
+      cgb_nonfaithfulgsys(u,theo,xvarl) where !*cgbgen=t;
 
 procedure cgb_nonfaithfulgsys(u,theo,xvarl);
    % Comprehensive Groebner bases green Groebner system computation.
@@ -535,7 +535,7 @@ procedure cgb_nonfaithfulgsys(u,theo,xvarl);
       gsy_normalize cgb_gsys2green(cgb_gsys1(cgp_lsort u,theo,xvarl),theo)
          where !*cgbgreen=nil
    else
-      gsy_normalize cgb_gsys1(cgp_lsort u,theo,xvarl) where !*cgbgreen=T;
+      gsy_normalize cgb_gsys1(cgp_lsort u,theo,xvarl) where !*cgbgreen=t;
 
 procedure cgb_gsys1(u,theo,xvarl);
    % Comprehensive Groebner bases Groebner system computation
@@ -659,10 +659,10 @@ procedure cgb_normalform(f,g,xvars);
       fold := f;
       f := cgp_hpcp f;
       f := cgp_shift(f,xvars);
-      c := T; while c and cgp_rp f do <<
+      c := t; while c and cgp_rp f do <<
          divisor := cgb_searchinlist(cgp_evlmon f,g);
          if divisor then <<
-            tai := T;
+            tai := t;
             f := cgb_reduce(f,divisor)
          >> else if !*cgbfullred then
             f := cgp_shiftwhite f
@@ -772,7 +772,7 @@ procedure cd_surep(f,cd);
    % Condition sure predicate. [f] is an atomic formula; [cd] is a CD.
    % If [T] is returned, then [cd] implies [f].
    begin scalar !*rlgsvb;
-      return rl_surep(f,cd) where !*rlspgs=!*cgbgs,!*rlsithok=T;
+      return rl_surep(f,cd) where !*rlspgs=!*cgbgs,!*rlsithok=t;
    end;
 
 procedure cd_gsd(f,cd);
@@ -786,7 +786,7 @@ procedure cd_ordp(cd1,cd2);
    % Condition order predicate. [cd1] and [cd2] are conditions sorted
    % wrt. ['cd_ordatp]. Returns bool.
    if null cd1 then
-      T
+      t
    else if null cd2 then
       nil
    else if car cd1 neq car cd2 then
@@ -798,7 +798,7 @@ procedure cd_ordatp(a1,a2);
    % Condition order atomic formula predicate. [a1] and [a2] are
    % atomic formulas. Returns bool.
    if car a1 eq 'neq and car a2 eq 'equal then
-      T
+      t
    else if car a1 eq 'equal and car a2 eq 'neq then
       nil
    else
@@ -1368,7 +1368,7 @@ procedure cgp_shift1(p,xvars);
    begin scalar hp,rp,ht,hc,c;
       hp := cgp_hp p;
       rp := cgp_rp p;
-      c := T;
+      c := t;
       while c and rp do <<
          ht := dip_evlmon rp;
          hc := dip_lbc rp;

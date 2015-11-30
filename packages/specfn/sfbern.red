@@ -298,7 +298,7 @@ symbolic procedure single!*bern(n);
 %%
 %%flag('(Euler!:aux),'opfn);
 
-symbolic procedure Euler!:aux(n);
+symbolic procedure euler!:aux(n);
 
 if not evenp n then 0 else
 
@@ -310,7 +310,7 @@ eulers :={ -1,1};
 
 nn := -2;
 
-while N > 0 do
+while n > 0 do
 <<      nn := nn + 1;
         old := 0;
         newlist := {};

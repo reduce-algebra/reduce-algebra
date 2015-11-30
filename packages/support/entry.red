@@ -140,7 +140,7 @@ symbolic procedure autoload_value!*(u,v);
 
 put('autoload_value!*,'evfn,'autoload_value!*);
 
-comment Actual Entry Point Definitions;
+COMMENT Actual Entry Point Definitions;
 
 % Compiler and LAP entry points.
 
@@ -463,8 +463,8 @@ flag('(compute!:dilog compute!:lerch_phi),'opfn);
 defautoload(compute!:dilog,specfn);
 defautoload(compute!:lerch_phi,specfn,expr,3);
 
-flag('(compute!:Khinchin1 bernoulli!*calc euler!:aux),'opfn);
-defautoload(compute!:Khinchin1,specfn,expr,0);
+flag('(compute!:khinchin1 bernoulli!*calc euler!:aux),'opfn);
+defautoload(compute!:khinchin1,specfn,expr,0);
 defautoload(bernoulli!*calc,specfn,expr,1);
 defautoload(euler!:aux,specfn,expr,1);
 defautoload(rd_euler!*,(specfn sfgamma),expr,0);
@@ -472,24 +472,24 @@ defautoload(cr_euler!*,(specfn sfgamma),expr,0);
 defautoload(rd_catalan!*,specfn,expr,0);
 defautoload(cr_catalan!*,specfn,expr,0);
 
-defautoload_operator(besselj,(specfn specbess));
-defautoload_operator(bessely,(specfn specbess));
-defautoload_operator(besseli,(specfn specbess));
-defautoload_operator(besselk,(specfn specbess));
+defautoload_operator(BesselJ,(specfn specbess));
+defautoload_operator(BesselY,(specfn specbess));
+defautoload_operator(BesselI,(specfn specbess));
+defautoload_operator(BesselK,(specfn specbess));
 defautoload_operator(hankel1,(specfn specbess));
 defautoload_operator(hankel2,specbess);
-defautoload_operator(kummerM,specbess);
-defautoload_operator(kummerU,specbess);
-defautoload_operator(struveh,specbess);
-defautoload_operator(struvel,specbess);
+defautoload_operator(KummerM,specbess);
+defautoload_operator(KummerU,specbess);
+defautoload_operator(StruveH,specbess);
+defautoload_operator(StruveL,specbess);
 defautoload_operator(lommel1,specbess);
 defautoload_operator(lommel2,specbess);
-defautoload_operator(whittakerm,specbess);
-defautoload_operator(whittakerw,specbess);
+defautoload_operator(WhittakerM,specbess);
+defautoload_operator(WhittakerW,specbess);
 defautoload_operator(Airy_Ai,specbess);
 defautoload_operator(Airy_Bi,specbess);
-defautoload_operator(Airy_AiPrime,specbess);
-defautoload_operator(Airy_biprime,specbess);
+defautoload_operator(Airy_Aiprime,specbess);
+defautoload_operator(Airy_Biprime,specbess);
 
 %defautoload_operator(gamma,(specfn sfgamma));
 defautoload_operator(binomial,specfn);
@@ -513,9 +513,9 @@ defautoload(do!*zeta!*pos!*intcalc,(specfn sfgamma));
 defautoload(igamma!:eval,(specfn sfgamma),expr,2);
 defautoload(ibeta!:eval,(specfn sfgamma),expr,3);
 
-flag('(SolidHarmonicY SphericalHarmonicY),'opfn);
-defautoload(SolidHarmonicY,specfn,expr,6);
-defautoload(SphericalHarmonicY,specfn,expr,4);
+flag('(solidharmonicy sphericalharmonicy),'opfn);
+defautoload(solidharmonicy,specfn,expr,6);
+defautoload(sphericalharmonicy,specfn,expr,4);
 
 flag('(fibonacci fibonaccip),'opfn);
 flag('(fibonacci),'integer);

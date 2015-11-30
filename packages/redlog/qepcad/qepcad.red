@@ -67,12 +67,12 @@ put('ofsf,'rl_services,
         (rl_qepcadl!* . qepcad_qepcadl))));
 
 rl_mkserv('qepcad,'(rl_simp),'(reval),'(nil),
-   function(lambda x; if x then rl_mk!*fof x),T);
+   function(lambda x; if x then rl_mk!*fof x),t);
 rl_mkserv('slfq,'(rl_simp),'(reval),'(nil),
-   function(lambda x; if x then rl_mk!*fof x),T);
+   function(lambda x; if x then rl_mk!*fof x),t);
 
-rl_mkserv('qepcadn,'(reval),nil,nil,'reval,T);
-rl_mkserv('qepcadl,'(reval),nil,nil,'reval,T);
+rl_mkserv('qepcadn,'(reval),nil,nil,'reval,t);
+rl_mkserv('qepcadl,'(reval),nil,nil,'reval,t);
 
 rl_set '(ofsf);
 
@@ -88,7 +88,7 @@ procedure qepcad_qepcad(f,fn);
       isfancy := !*fancy;
       if isfancy then
       	 off1 'fancy;
-      w := errorset({'qepcad_qepcad1,mkquote f,mkquote fn},T,!*backtrace);
+      w := errorset({'qepcad_qepcad1,mkquote f,mkquote fn},t,!*backtrace);
       if isfancy then
       	 on1 'fancy;
       if errorp w then <<
@@ -274,7 +274,7 @@ procedure qepcad_qepcadl(l);
 procedure qepcad_slfq(f,fn);
    begin scalar w,oldpprifn,oldprtch,scsemic,oldecho,oldutf8;
       oldecho := !*echo;
-      w := errorset({'qepcad_slfq1,mkquote f,mkquote fn},T,!*backtrace);
+      w := errorset({'qepcad_slfq1,mkquote f,mkquote fn},t,!*backtrace);
       if errorp w then <<
 	 !*echo := oldecho;
 	 semic!* := scsemic;

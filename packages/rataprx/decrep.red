@@ -65,7 +65,7 @@ procedure digits2number(x);
   begin
      scalar j, number, !*rounded, dmode!*;
 
-     if x={} OR NOT(paarp x)  %check for empty list OR non-list
+     if x={} or not(paarp x)  %check for empty list OR non-list
      then rederr
      "argument of digits2number should be list of non-negative digits";
 
@@ -74,7 +74,7 @@ procedure digits2number(x);
      for j:=1:(length(x)-1) do
      <<
         if (numberp(part(x,j)) and part(x,j)>0 and part(x,j)<10)
-           OR part(x,j)=0
+           or part(x,j)=0
         then number := number*10 + part(x,j+1)
         else rederr
        "argument of digits2number should be list of non-negative digits"
@@ -92,7 +92,7 @@ procedure number2digits(n);
     flg := 0;
 
 %%check for integer argument
-    if NOT(fixp n) then
+    if not(fixp n) then
          rederr "argument must be an integer";
 
 %%match -ve Input => -ve Output
@@ -133,7 +133,7 @@ procedure rational2periodic(xx);
              !*rounded, dmode!*;
 
 %%check for rational number argument
-      if NOT(numberp xx)
+      if not(numberp xx)
       then rederr "argument must be a rational number";
 
       n := num xx;
@@ -263,7 +263,7 @@ procedure nexttry(x,y,z);
 operator periodic2rational;
 
 %% Ruleset to allow two types of periodic input.
-per2ratRULES :=
+per2ratrules :=
 {
     periodic2rational(periodic(~x,~y)) => periodic2rational(x,y)
                                           when paarp x and length x=2
@@ -274,7 +274,7 @@ per2ratRULES :=
                                              and paarp y
 
 };
-let per2ratRULES;
+let per2ratrules;
 
 
 
@@ -292,8 +292,8 @@ procedure per2rat(ab,c);
 
       if a<0 then << a:=-a; b:=-b>>;
 
-      if NOT(fixp b) OR
-         ( (remainder(b,10) neq 0)  AND (b neq 1) AND (b neq -1) )
+      if not(fixp b) or
+         ( (remainder(b,10) neq 0)  and (b neq 1) and (b neq -1) )
       then rederr "denominator must be 1, -1 or a multiple of 10";
 
       if length c = 0 then number_c = 0

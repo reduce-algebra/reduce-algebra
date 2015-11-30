@@ -1,4 +1,4 @@
-MODULE COMPAT;
+module compat;
 
 % Author: Anthony C. Hearn;
 
@@ -26,11 +26,11 @@ MODULE COMPAT;
 %
 
 
-FLUID '(!*USERMODE);
+fluid '(!*usermode);
 
-GLOBAL '(SPARE!*);
+global '(spare!*);
 
-SPARE!* := 10;
+spare!* := 10;
 
 % This file defines functions and variables that are needed to
 % make REDUCE and the underlying PSL system compatible. It should
@@ -40,7 +40,7 @@ SPARE!* := 10;
 
 % PSL doesn't need PRINTPROMPT
 
-REMFLAG('(PRINTPROMPT),'LOSE);
+remflag('(printprompt), 'lose);
 
 symbolic procedure printprompt u; nil;
 
@@ -65,5 +65,3 @@ symbolic procedure !*s2i u; u;
 endmodule;
 
 end;
-
-

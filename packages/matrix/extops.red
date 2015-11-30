@@ -27,7 +27,7 @@ module extops;  % Support for exterior multiplication.
 %
 
 
-Comment. Data structure for simple exterior forms is
+COMMENT. Data structure for simple exterior forms is
 
         ex ::= nil | lpow ex .* lc ex .+ ex
         lpow ex ::= list of kernel

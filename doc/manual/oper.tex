@@ -1107,8 +1107,16 @@ will give \var{A3} the value 2.
 
 \section{The Pochhammer Notation}
 \ttindex{Pochhammer}\index{Pochhammer notation}
+\index{Pochhammer's symbol}
 
-The Pochhammer notation $(a)_k$ is supported by the binary operator \texttt{POCHHAMMER(A,K)}.
+The Pochhammer notation $(a)_k$ (also called Pochhammer's symbol) is supported by the binary operator \texttt{POCHHAMMER(A,K)}.
+For a non-negative integer $k$, it is defined as (\url{http://dlmf.nist.gov/5.2.iii})
+\begin{align*}
+  (a)_0 &= 1, \\
+  (a)_k &= a(a+1)(a+2)\cdots(a+k-1).\\
+\intertext{For $a\not=0,\pm1,\pm2,\dots$, this is equivalent to}
+  (a)_k &= \frac{\Gamma(a+k)}{\Gamma(a)}
+\end{align*}
 With \sw{ROUNDED} off, this expression is evaluated
 numerically if $a$ and $k$ are both integral, and otherwise may be
 simplified where appropriate.  The simplification rules are based upon

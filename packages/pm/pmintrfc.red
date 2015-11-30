@@ -104,7 +104,7 @@ symbolic procedure fixreplist(repset);
       return replist
    end;
 
-Comment It is necessary to replace all free variables by unique ones
+COMMENT It is necessary to replace all free variables by unique ones
         in order to avoid confusion during the superset operation.
         To this end we generate replace them by special gensyms
         before putting them in the rules database.  This is not

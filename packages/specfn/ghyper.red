@@ -32,9 +32,9 @@ module ghyper;   % Generalized Hypergeometric Functions.
 %         unevaluated (without error) as requested by Francis Wright
 
 
- put('GHF,'simpfn,'simpGHF)$
+ put('ghf,'simpfn,'simpghf)$
 
-   symbolic procedure simpGHF u;
+   symbolic procedure simpghf u;
    if null cddr u then
         rerror('specialf,125,
               "WRONG NUMBER OF ARGUMENTS TO GHF-FUNCTION")
@@ -46,13 +46,13 @@ module ghyper;   % Generalized Hypergeometric Functions.
    v:=redpar1(cddr u,car u);
    vv:=redpar1(cdr v,cadr u);
    if null cddr vv then return
-      GHFsq(list(car u,cadr u),listsq car v,
+      ghfsq(list(car u,cadr u),listsq car v,
       listsq car vv, simp cadr vv);
       return rerror ('specialf,127,
         "WRONG NUMBER OF ARGUMENTS TO GHF-FUNCTION");
    end$
 
- symbolic procedure GHFexit(a,b,z);
+ symbolic procedure ghfexit(a,b,z);
  begin scalar aa,bb;
   aa:= 'list . listprepsq a;
   bb:= 'list . listprepsq b;
@@ -73,37 +73,37 @@ symbolic procedure listmaxsq u;
             listmaxsq((car u) . cddr u) else
             listmaxsq((cadr u) . cddr u)$
 
- symbolic procedure GHFpolynomp (u,a);
+ symbolic procedure ghfpolynomp (u,a);
  begin scalar w1,w2;
-M1:
+m1:
  if null u then
-   if null w1 then <<u:=w2; return (NIL . a) >>
+   if null w1 then <<u:=w2; return (nil . a) >>
               else <<u:=listmaxsq(w1);
                      a:=u . append(delete(u,w1),w2);
-                     return (T . a)>>
+                     return (t . a)>>
            else
  if parfool(car u) then (w1:=(car u) . w1)
                    else (w2:=(car u) . w2);
  u:=cdr u;
- GOTO M1;
+ goto m1;
  end$
 
  symbolic procedure polynom(u,a,b,z);
  % u - list of SQ.
  begin scalar s; integer k;
  if null caar(u) then return '(1 . 1) else
-   s := GHFpolynomp (b,a);
+   s := ghfpolynomp (b,a);
    a := cdr s;
    if car s then
      if null caar a or greaterp(caar a,caar u) then
      <<%rerror('special,124,
        %        "zero in the denominator of the GHF-function");
        b:=a; a:=u;
-       return GHFexit(a,b,z);
+       return ghfexit(a,b,z);
      >>
    else b:=a;
   k:=1;  s:=1 . 1;
-M:
+m:
     s:=addsq(s,quotsq(multsq(multpochh(u,simp k),exptsq(z,k)),
         multpochh(append(list('(1 . 1)),b),simp k)));
     k:=k+1;
@@ -115,15 +115,15 @@ M:
 %***********************************************************************
 
 % This assigns to a and b!
- symbolic smacro procedure GHFlowering1p;
+ symbolic smacro procedure ghflowering1p;
   begin scalar sa,sb,w1,w2;
   sa:=a;   sb:=b;
- M1:  if null b then << a:=sa; b:=sb; return NIL
+ m1:  if null b then << a:=sa; b:=sb; return nil
                      >>;
- M2:  if null a then << w2:= (car b) . w2;
+ m2:  if null a then << w2:= (car b) . w2;
                         b:=cdr b;
                         a:=sa; w1:=nil;
-                        GOTO M1
+                        goto m1
                      >>
                  else
       if numberp(prepsq subtrsq(car a,car b)) and
@@ -131,22 +131,22 @@ M:
                         <<
                          b:=car b . append(w2,cdr b);
                          a:=subtrsq(car a,car b) . append(w1,cdr a);
-                         return T
+                         return t
                         >> else
                         <<
                          w1:=(car a) . w1;
                          a:=cdr a;
-                         GOTO M2
+                         goto m2
                         >>;
    end$
 
  symbolic procedure lowering1(x,y,u,z);
   % x -- (m . a).
   % y -- (g . b).
-  addsq(GHFsq(u,append(list(subtrsq(addsq(car x,car y),'(1 . 1))),
+  addsq(ghfsq(u,append(list(subtrsq(addsq(car x,car y),'(1 . 1))),
                             cdr x),
                 append(list(car y),cdr y),z),
-        multsq(GHFsq(u,append(list(addsq(car x,car y)),listplus(cdr x,
+        multsq(ghfsq(u,append(list(addsq(car x,car y)),listplus(cdr x,
                         '(1 . 1))),
                        append(list(addsq(car y,'(1 . 1))),
                               listplus(cdr y,'(1 . 1))),z),
@@ -154,19 +154,19 @@ M:
                       multsq(car y,multlist(cdr y)))))$
 
 % This assigns to a and b
- symbolic smacro procedure GHFlowering2p;
+ symbolic smacro procedure ghflowering2p;
   begin scalar sa,sb,w1,wa,fl;
-  if equal(z,'(1 . 1)) then return NIL;
+  if equal(z,'(1 . 1)) then return nil;
   sa:=a;   sb:=b;
- M1:  if null b then
+ m1:  if null b then
          << b:=sb;
             if fl then a:=wa . sa else a:= sa;
-            return NIL
+            return nil
          >>;
- M2:  if null a then
+ m2:  if null a then
          << b:=cdr b;
             a:=sa; w1:=nil;
-            GOTO M1
+            goto m1
          >>
                 else
       if numberp(prepsq subtrsq(car b,car a)) and
@@ -175,85 +175,85 @@ M:
                  if not equal(wa,car a) then
                     << b:=sb;
                        a:=list(wa,car a) . append(w1,cdr a);
-                       return T
+                       return t
                     >>
                     else
                     <<
                        w1:=(car a) . w1;
                        a:=cdr a;
-                       GOTO M2
+                       goto m2
                     >>
                  else
-                 << fl:=T;
+                 << fl:=t;
                     sa:=append(w1,cdr a);
                     wa:=car a;
                     b:=cdr b; a:=sa; w1:=nil;
-                    GOTO M1
+                    goto m1
                  >>
               else
               << w1:= (car a) .w1;
                  a:=cdr a;
-                 GOTO M2
+                 goto m2
               >>;
    end$
 
    symbolic procedure lowering2(x,b,u,z);
    % x -- (r s).(a).
-  subtrsq(multsq(GHFsq(u,append(list(caar x,addsq('(1 . 1),cadar x)),
+  subtrsq(multsq(ghfsq(u,append(list(caar x,addsq('(1 . 1),cadar x)),
                         cdr x),b,z),
                   quotsq(cadar x,subtrsq(cadar x,caar x))),
-           multsq(GHFsq(u,append(list(addsq('(1 . 1),caar x),cadar x),
+           multsq(ghfsq(u,append(list(addsq('(1 . 1),caar x),cadar x),
                         cdr x),b,z),
                   quotsq(caar x,subtrsq(cadar x,caar x))))$
 
 % This assigns to a and b
-  symbolic smacro procedure GHFlowering3p;
+  symbolic smacro procedure ghflowering3p;
   %return a = (mmm . a1).
    begin scalar sa,w,mmm;    % MM used in SPDE as a global.
    sa:=a;
-M1: if null a then << a:=sa; return NIL >>
+m1: if null a then << a:=sa; return nil >>
               else
     if not numberp(prepsq car a) then
-                   <<w:= (car a) . w; a:=cdr a; GOTO M1 >>;
+                   <<w:= (car a) . w; a:=cdr a; goto m1 >>;
 
     if member ('(1 . 1), a) then <<mmm := '(1 . 1);
                                    a:= delete('(1 . 1),a)>>
                 else << mmm:= car a;  a:=cdr a >>; % WN 2.2 94
 
-M2:  if null a then
-        if listnumberp b then << a:=mmm . w; return T >>
-                         else << a:=sa; return NIL>>
+m2:  if null a then
+        if listnumberp b then << a:=mmm . w; return t >>
+                         else << a:=sa; return nil>>
                 else
         if equal(car a,'(1 . 1)) then
-                         <<a:=sa; return NIL>>
+                         <<a:=sa; return nil>>
                                 else
                          <<w:=(car a) . w;
                            a:=cdr a;
-                           GOTO M2
+                           goto m2
                          >>;
   end$
 
   symbolic procedure listnumberp(v);
   % v -- list of SQ.
   % value is T if numberp exist in (v).
-   if null v then NIL
+   if null v then nil
              else
-   if numberp(prepsq car v)  then T
+   if numberp(prepsq car v)  then t
                              else listnumberp(cdr v)$
 
   symbolic procedure lowering3(a,b,u,z);
   multsq(quotsq(multlist(difflist(b,'(1 . 1))),multsq(z,multlist(
                          difflist(cdr a,'(1 . 1))))),
-         subtrsq(GHFsq(u, (car a) . difflist(cdr a,'(1 . 1)),
+         subtrsq(ghfsq(u, (car a) . difflist(cdr a,'(1 . 1)),
                          difflist(b,'(1 . 1)),z),
-                 GHFsq(u,append(list(subtrsq(car a,'(1 . 1))),
+                 ghfsq(u,append(list(subtrsq(car a,'(1 . 1))),
                     difflist(cdr a,'(1 . 1))),difflist(b,'(1 . 1)),z)))$
 
 %***********************************************************************
 %*                      GHFsq, main entry                              *
 %***********************************************************************
 
-   symbolic procedure GHFsq(u,a,b,z);
+   symbolic procedure ghfsq(u,a,b,z);
    % u -- (p q) PF.
    % a,b -- lists of SQ.
    % z -- SQ.
@@ -264,31 +264,31 @@ M2:  if null a then
    if listparfool(b,(nil .1)) and not listparfool(a,(nil . 1)) then
        % return rerror('specialf,128,
         %"zero in the denominator of the GHF-function")
-       return GHFexit(a,b,z)
+       return ghfexit(a,b,z)
       else
-   aaa := GHFpolynomp(a,a);
+   aaa := ghfpolynomp(a,a);
    a := cdr aaa;
    if car aaa         then return polynom(a,a,b,z) else
-   if GHFlowering1p() then return lowering1(a,b,u,z) else
-   if GHFlowering2p() then return lowering2(a,b,u,z) else
-   if GHFlowering3p() then return lowering3(a,b,u,z) else
+   if ghflowering1p() then return lowering1(a,b,u,z) else
+   if ghflowering2p() then return lowering2(a,b,u,z) else
+   if ghflowering3p() then return lowering3(a,b,u,z) else
    if car u = 0 and cadr u = 0 then return expdeg(simp 'e,z) else
-   if car u = 0 and cadr u = 1 then return GHF01(a,b,z) else
+   if car u = 0 and cadr u = 1 then return ghf01(a,b,z) else
    if car u = 1 and cadr u = 0 then
-       if  z='(1 . 1) then return GHFexit(a,b,z)
+       if  z='(1 . 1) then return ghfexit(a,b,z)
        else
           return expdeg(subtrsq('(1 . 1),z),if null a then '(nil . 1)
                                           else negsq(car a))
                                                           else
-   if car u = 1 and cadr u = 1 then return GHF11(a,b,z)  else
-   if car u = 1 and cadr u = 2 then return GHF12(a,b,z)  else
-   if car u = 2 and cadr u = 1 then return GHF21(a,b,z)  else
+   if car u = 1 and cadr u = 1 then return ghf11(a,b,z)  else
+   if car u = 1 and cadr u = 2 then return ghf12(a,b,z)  else
+   if car u = 2 and cadr u = 1 then return ghf21(a,b,z)  else
    if car u = cadr u + 1 then
-      if (c:=GHFmid(a,b,z)) = 'FAIL
-                        then return GHFexit(a,b,z)
+      if (c:=ghfmid(a,b,z)) = 'fail
+                        then return ghfexit(a,b,z)
                         else return c;
 
-   if car u <= cadr u then return GHFexit(a,b,z);
+   if car u <= cadr u then return ghfexit(a,b,z);
    return rerror('specialf,131,"hypergeometric series diverges");
    end$
 
@@ -297,10 +297,10 @@ M2:  if null a then
 %                        p = q+1                                       *
 %***********************************************************************
 
- symbolic procedure GHFmid(a,b,z);
+ symbolic procedure ghfmid(a,b,z);
  begin scalar c;
   c:= redpar(a,difflist(b, '(1 . 1)));
-   if length(cadr c) > 0 or length(car c) > 1 then return 'FAIL
+   if length(cadr c) > 0 or length(car c) > 1 then return 'fail
      else
       return formulaformidcase(length(b), caar c,
                                subtrsq(car b,'(1 . 1)), z);
@@ -356,13 +356,13 @@ M2:  if null a then
            multsq(simpx1(prepsq(multsq('(-1 . 1),a)),p,1), '(-1 . 1)),
            multsq(gamsq(simp p),gamsq(simp b))))
   end
- else 'FAIL$
+ else 'fail$
 
 %***********************************************************************
 %*                       Particular cases                              *
 %***********************************************************************
 
- symbolic procedure GHF01(a,b,z);
+ symbolic procedure ghf01(a,b,z);
   if znak z then
    multsq(gamsq(car b),multsq(bessmsq(subtrsq(car b,'(1 . 1)),
    multsq('(2 . 1),simpx1(prepsq z,1,2))),
@@ -372,7 +372,7 @@ M2:  if null a then
    multsq('(2 . 1),simpx1(prepsq(negsq z),1,2))),expdeg(negsq z,
    multsq(subtrsq('(1 . 1),car b),'(1 . 2))))) $
 
-  symbolic procedure GHF11(a,b,z);
+  symbolic procedure ghf11(a,b,z);
   if equal(car b,multsq('(2 . 1),car a)) then
      multsq(multsq(gamsq(addsq('(1 . 2),car a)),expdeg(simp 'e,
                        multsq(z,'(1 . 2)))),
@@ -391,9 +391,9 @@ M2:  if null a then
      multsq(multsq('(1 . 2),expdeg(simp 'e,z)),
             multsq(simpfunc('erf,simpx1(prepsq z,1,2)),simpx1(prepsq
             quotsq(simp('pi),z),1,2)))
-                   else GHFexit(a,b,z)$
+                   else ghfexit(a,b,z)$
 
-  symbolic procedure GHF21(a,b,z);
+  symbolic procedure ghf21(a,b,z);
   if and(equal(car a,'(1 . 2)),equal(cadr a,'(1 . 2)),
          equal(car b,'(3 . 2)),znak(z))
     then
@@ -416,7 +416,7 @@ M2:  if null a then
        multsq(simpfunc('log,quotsq(addsq('(1 . 1),simpx1(prepsq z,1,2)),
                             subtrsq('(1 . 1),simpx1(prepsq z,1,2)))),
               invsq(multsq('(2 . 1),simpx1(prepsq z,1,2)))) else
-    GHFexit(a,b,z)
+    ghfexit(a,b,z)
     >>
     else
   if and(equal(car a,'(1 . 1)),equal(cadr a,'(1 . 1)),
@@ -443,7 +443,7 @@ M2:  if null a then
   if car a='(1 . 1) and cadr a='(1 . 1) and numberp prepsq car b and
      prepsq car(b) > 0 and not(z='(1 . 1)) then
         formula136(prepsq car b,z) else
-GHFexit(a,b,z)$
+ghfexit(a,b,z)$
 
  symbolic procedure formula136(m,z);
  begin scalar c; integer k;
@@ -460,7 +460,7 @@ GHFexit(a,b,z)$
          quotsq(multsq(simp(m-1),z),exptsq(subtrsq(z,'(1 . 1)),2)));
  end$
 
-  symbolic procedure GHF12(a,b,z);
+  symbolic procedure ghf12(a,b,z);
   if equal(car a,'(3 . 4)) and (equal(car b,'(3 . 2)) and equal(cadr b,
      '(7 . 4)) or equal(car b,'(7 . 4)) and equal(cadr b,'(3 . 2)))
      and not znak z  then
@@ -475,12 +475,12 @@ GHFexit(a,b,z)$
      <<z:=multsq((2 . 1),simpx1(prepsq(negsq z),1,2));
      multsq(quotsq(simpx1('pi,1,2),multsq(simpx1(2,1,2),
      simpx1(prepsq z,1,2))),simpfunc('intfc,z)) >>
-            else GHFexit(a,b,z)$
+            else ghfexit(a,b,z)$
 
 symbolic inline procedure ghyper_fehlerf();
         rerror('specialf,139,"Wrong arguments to hypergeometric");
 
-symbolic procedure hypergeom(U);
+symbolic procedure hypergeom(u);
 
 begin scalar list1,list2,res,res1;
 
@@ -701,12 +701,12 @@ algebraic
 
 
   hypergeometric({1},{3/4,5/4},~x) =>
-    1/2*sqrt(pi/sqrt(-x))*(cos(2*sqrt(-x))*fresnel_c(2*sqrt(-x))
-        + sin(2*sqrt(-x))*fresnel_s(2*sqrt(-x))),
+    1/2*sqrt(pi/sqrt(-x))*(cos(2*sqrt(-x))*Fresnel_C(2*sqrt(-x))
+        + sin(2*sqrt(-x))*Fresnel_S(2*sqrt(-x))),
 
   hypergeometric({1},{5/4,7/4},~x) =>
     3*sqrt(pi)/(8*(sqrt(-x))^(3/2))*(sin(2*sqrt(-x))
-        *fresnel_c(2*sqrt(-x))-cos(2*sqrt(-x))*fresnel_s(2*sqrt(-x))),
+        *Fresnel_C(2*sqrt(-x))-cos(2*sqrt(-x))*Fresnel_S(2*sqrt(-x))),
 
   hypergeometric({5/2},{7/2,7/2},-~x) =>
        (75/(16*x^2))*(3*si(2*sqrt(x))/(2*sqrt(x))
@@ -719,29 +719,29 @@ algebraic
 
   hypergeometric({~a},{~b,3/2},~x) =>
     -2^(1-2*a)*a*(sqrt(-x))^(-2*a)*
-                (gamma(2*a-1)*cos(a*pi)+fresnel_s(2*sqrt(-x),2*a-1))
+                (gamma(2*a-1)*cos(a*pi)+Fresnel_S(2*sqrt(-x),2*a-1))
 
     when b = a + 1,
 
   hypergeometric({~a},{~b,1/2},~x) =>
     2^(1-2*a)*a*(sqrt(-x))^(-2*a)*
-                (gamma(2*a)*cos(a*pi)-fresnel_c(2*sqrt(-x),2*a))
+                (gamma(2*a)*cos(a*pi)-Fresnel_C(2*sqrt(-x),2*a))
 
     when b = a + 1
 };
 
 let hypergeometric_rules;
 
-operator Poisson!-Charlier, Toronto;
+operator poisson!-charlier, toronto;
 
-let { Toronto(~m,~n,~x) =>
-           Gamma(m/2 + 1/2)/factorial n * x^(2*n-2*m+1)*exp(-x^2) *
+let { toronto(~m,~n,~x) =>
+           gamma(m/2 + 1/2)/factorial n * x^(2*n-2*m+1)*exp(-x^2) *
            KummerM(m/2+1/2,1+n,x^2),
 
-      Poisson!-Charlier(~n,~nu,~x) =>
-           pochhammer(1 + nu-n,n)/(sqrt factorial n * x^(n/2))*
-               sum(pochhammer(-n,i)*x^i/
-                (pochhammer(1+nu-n,i) * factorial i)
+      poisson!-charlier(~n,~nu,~x) =>
+           Pochhammer(1 + nu-n,n)/(sqrt factorial n * x^(n/2))*
+               sum(Pochhammer(-n,i)*x^i/
+                (Pochhammer(1+nu-n,i) * factorial i)
            ,i,0,n)
     };
 >>;

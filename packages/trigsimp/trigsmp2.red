@@ -70,31 +70,31 @@ symbolic procedure trigsimp1(f, options);
          if u memq '(sin cos) then
             if trigpreference then
                (u eq trigpreference) or
-                  RedErr "Incompatible options: use either sin or cos."
+                  rederr "Incompatible options: use either sin or cos."
             else trigpreference := u
          else if u memq '(sinh cosh) then
             if hyppreference then
                (u eq hyppreference) or
-                  RedErr "Incompatible options: use either sinh or cosh."
+                  rederr "Incompatible options: use either sinh or cosh."
             else hyppreference := u
          else if u eq 'tan then tanpreference := t
          else if u eq 'tanh then tanhpreference := t
          else if u memq '(expand combine compact) then
             if direction then
                (u eq direction) or
-                  RedErr "Incompatible options: use either expand or combine or compact."
+                  rederr "Incompatible options: use either expand or combine or compact."
             else direction := u
          else if u memq '(hyp trig expon) then
             if mode then
                (u eq mode) or
-                  RedErr "Incompatible options: use either hyp or trig or expon."
+                  rederr "Incompatible options: use either hyp or trig or expon."
             else mode := u
          else if u eq 'keepalltrig then keepalltrig := t
          else if eqcar(u, 'quotient) and not(u member opt_args) then
             %% optional trig arg of the form `x/2'
             opt_args := u . opt_args
          else
-            RedErr {"Option", u, "invalid.", " Allowed options are",
+            rederr {"Option", u, "invalid.", " Allowed options are",
                "sin or cos, tan, cosh or sinh, tanh,",
                "expand or combine or compact,",
                "hyp or trig or expon, keepalltrig."};
@@ -387,9 +387,9 @@ flag ('(balanced coordinated), 'boolean)$
 
 algebraic procedure trig2ord(p,x,y);
    if not balanced(p,x) or not balanced(p,y) then
-      RedErr "trig2ord error: polynomial not balanced."
+      rederr "trig2ord error: polynomial not balanced."
    else if not coordinated(p,x) or not coordinated(p,y) then
-      RedErr "trig2ord error: polynomial not coordinated."
+      rederr "trig2ord error: polynomial not coordinated."
    else sub(x=sqrt(x), y=sqrt(y), x**degree(p,x)*y**degree(p,y)*p);
 
 algebraic procedure ord2trig(p,x,y);
@@ -414,9 +414,9 @@ algebraic procedure varget(p);
    %% `p' of the form `n*x', where `n' must be numeric and `x' must be
    %% a kernel.
    begin scalar var;
-      if not(var := mainvar num p) then RedErr
+      if not(var := mainvar num p) then rederr
          "TrigGCD/Factorize error: no variable specified.";
-      if not numberp(p/var) then RedErr
+      if not numberp(p/var) then rederr
          "TrigGCD/Factorize error: last arg must be [number*]variable.";
       return var
    end;
@@ -427,7 +427,7 @@ symbolic procedure trigargcheck(p, var, nu);
       for each arg in get_trig_arguments(p, nil) do algebraic
          if (df_arg_var := df(arg,var)) and
             not fixp(df_arg_var/nu) then
-            RedErr "TrigGCD/Factorize error: basis not possible."
+            rederr "TrigGCD/Factorize error: basis not possible."
    end;
 
 symbolic operator sub2poly$

@@ -137,7 +137,7 @@ else
 % The next statement stores the index of a for loop in the symbol
 % table, assigning them the type integer,
 % if the switch 'getdecs' is on.
-        if !*getdecs and (car exp memq '(!~FOR for)) then
+        if !*getdecs and (car exp memq '(!~for for)) then
                         symtabput(nil,cadr exp, '(integer));
             list for each e in exp
              conc preproc1 e

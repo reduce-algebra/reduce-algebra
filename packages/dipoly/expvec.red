@@ -61,7 +61,7 @@ symbolic procedure evnth (e1,n);
 symbolic procedure evred e1;
 %    Exponent vector reductum. e1 is an exponent vector. evred(e1)
 %    returns the reductum of the exponent vector e1.
-     if e1 then cdr e1 else NIL;
+     if e1 then cdr e1 else nil;
 
 symbolic procedure evfirst e1;
 %    Exponent vector first. e1 is an exponent vector. evfirst(e1)

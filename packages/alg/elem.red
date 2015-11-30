@@ -1,7 +1,7 @@
 module elem; % Simplification rules for elementary functions.
 
 % Author: Anthony C. Hearn.
-% Modifications by:  Herbert Melenk, Rainer Schoepf.
+% Modifications by:  Herbert Melenk, Rainer Schoepf and others.
 
 % Copyright (c) 1993 The RAND Corporation. All rights reserved.
 
@@ -68,28 +68,55 @@ symbolic procedure sign!-of u;
   % Returns -1,0 or 1 if the sign of u is known. Otherwise nil.
    (numberp s and s) where s = numr simp!-sign{u};
 
-symbolic procedure simp!-sign u;
+symbolic procedure simp!-sign1 u;
  begin scalar s,n;
-   u:=reval car u;
-   s:=if eqcar(u,'abs) then '(1 . 1)
-      else if eqcar(u,'times) then simp!-sign!-times u
-      else if eqcar(u,'plus) then simp!-sign!-plus u
-      else simpiden{'sign,u};
-   if not numberp(n:=numr s) or n=1 or n=-1 then return s;
+   s:=if atom u then
+      << if !*modular then simpiden {'sign,u}
+          else if numberp u then (if u > 0 then 1 else if u < 0 then -1 else 0) ./ 1
+          else simp!-sign2 u >>
+       else if car u eq '!:rd!: then
+ 	  (if rd!:zerop u then nil else if rd!:minusp u then -1 else 1) ./ 1
+       else if car u eq 'abs then '(1 . 1)
+       else if car u eq 'minus then negsq simp!-sign1 cadr u
+       else if car u eq 'times then simp!-sign!-times u
+       else if car u eq 'quotient then simp!-sign!-quot u
+       else if car u eq 'plus then simp!-sign!-plus u
+       else if car u eq 'expt then simp!-sign!-expt u
+       else simp!-sign2 u;
+   n:=numr s;
+   if not numberp n or n=1 or n=-1 or n=0 then return s;
    typerr(n,"sign value");
  end;
+
+symbolic procedure simp!-sign2 u;
+   % fallback to standard rules: 1. try numeric evaluation, 2. call simpiden
+   (if x then x ./ 1 else simpiden{'sign,u}) where x := rd!-sign u;
+
+symbolic procedure simp!-sign u;
+   simp!-sign1 reval car u;
 
 symbolic procedure simp!-sign!-times w;
  % Factor all known signs out of the product.
   begin scalar n,s,x;
    n:=1;
    for each f in cdr w do
-   <<x:=simp!-sign {f};
+   <<x:=simp!-sign1 f;
      if fixp numr x then n:=n * numr x else s:=f.s>>;
    n:=(n/abs n) ./ 1;
-   s:=if null s then '(1 . 1) else
-     simpiden {'sign, if cdr s then 'times.reversip s else car s};
+   s:=if null s then '(1 . 1)
+       else simp!-sign2(if cdr s then 'times.reversip s else car s);
    return multsq (n,s)
+  end;
+
+symbolic procedure simp!-sign!-quot w;
+ % Factor known signs out of the quotient.
+  begin scalar x,y,flg,z;
+     if eqcar(cadr w,'minus) then << flg:=t;  w := {car w,cadr cadr w, caddr w} >>;
+     x := simp!-sign1 cadr w;		% numerator
+     y := simp!-sign1 caddr w;		% denominator
+     if denr x = 1 and fixp numr x or denr y = 1 and fixp numr y then z := multsq (x,y)
+      else z := simp!-sign2 w;
+     return if flg then negsq z else z
   end;
 
 symbolic procedure simp!-sign!-plus w;
@@ -97,13 +124,24 @@ symbolic procedure simp!-sign!-plus w;
  % or one unknown sign were found.
   begin scalar n,m,x,q;
    for each f in cdr w do if null q then
-   <<x:=simp!-sign {f};
+   <<x:=simp!-sign1 f;
      m:=if fixp numr x then numr x/abs denr x;
      if null m or n and m neq n then q:=t;
      n:=m>>;
-   return if null q then n ./ 1 else
-       simpiden {'sign,w};
+   return if null q then n ./ 1 else simp!-sign2 w;
   end;
+
+symbolic procedure simp!-sign!-expt w;
+  (if fixp ex and evenp ex and not(!*complex or !*precise_complex) then (1 ./ 1)
+    else (
+     if fixp ex and denr sb = 1 and fixp numr sb
+       then (if not evenp ex and numr sb < 0 then -1 else 1) ./ 1
+      else if fixp ex and not(!*complex or !*precise_complex) then sb
+      else if ex = '(quotient 1 2) and sb = (1 ./ 1) then 1 ./ 1
+      else if sb = (1 ./ 1) and realvaluedp ex then (1 ./ 1)
+      else simp!-sign2 w
+         ) where sb := simp!-sign1 cadr w
+  ) where ex := caddr w;
 
 fluid '(rd!-sign!*);
 
@@ -137,27 +175,29 @@ put('sign,'simpfn,'simp!-sign);
 % sign.
 
 sign_rules :=
-   { sign ~x => (if x>0 then 1 else if x<0 then -1 else 0)
-        when numberp x and impart x=0,
-     sign(e) => 1,
-     sign(pi) => 1,
-     sign(-~x) => -sign(x),
+   {
+%%   sign ~x => (if x>0 then 1 else if x<0 then -1 else 0)
+%%      when numberp x and impart x=0,
+%%   sign(e) => 1,
+%%   sign(pi) => 1,
+%%   sign(-~x) => -sign(x),
 %%   sign( ~x * ~y) =>  sign x * sign y
 %%         when numberp sign x or numberp sign y,
-     sign( ~x / ~y) =>  sign x * sign y
-           when y neq 1 and (numberp sign x or numberp sign y),
+%%   sign( ~x / ~y) =>  sign x * sign y
+%%         when y neq 1 and (numberp sign x or numberp sign y),
 %%   sign( ~x + ~y) =>  sign x when sign x = sign y,
-     sign( ~x ^ ~n) => 1 when fixp (n/2) and 
-                              lisp(not (!*complex or !*precise_complex)),
-     sign( ~x ^ ~n) => sign x^n when fixp n and numberp sign x,
-     sign( ~x ^ ~n) => sign x when fixp n and 
-                                   lisp(not (!*complex or !*precise_complex)),
-     sign(sqrt ~a)  => 1 when sign a=1,
-     sign(sinh ~x)  => sign(x) when realvaluedp x,
+%%   sign( ~x ^ ~n) => 1 when fixp (n/2) and 
+%%                            lisp(not (!*complex or !*precise_complex)),
+%%   sign( ~x ^ ~n) => sign x^n when fixp n and numberp sign x,
+%%   sign( ~x ^ ~n) => sign x when fixp n and 
+%%                                 lisp(not (!*complex or !*precise_complex)),
+%%   sign(sqrt ~a)  => 1 when sign a=1,
+     sign(sinh ~x)  => sign(x) when numberp sign(x) or realvaluedp x,
      sign(cosh ~x)  => 1 when realvaluedp x,
-     sign( ~a ^ ~x) => 1 when sign a=1 and realvaluedp x,
+     sign(tanh ~x)  => sign(x) when numberp sign(x) or realvaluedp x,
+%%   sign( ~a ^ ~x) => 1 when sign a=1 and realvaluedp x,
 %%   sign(abs ~a)   => 1,
-     sign ~a => rd!-sign a when rd!-sign a,
+%%   sign ~a => rd!-sign a when rd!-sign a,
      % Next rule here for convenience.
      abs(~x)^2 => x^2 when symbolic not !*precise}$
      % $ above needed for bootstrap.
@@ -240,7 +280,7 @@ flag('(acoth acsc acsch asin asinh atan atanh sin tan csc csch sinh
 
 flag('(cos sec sech cosh),'even);
 
-flag('(cot coth csc csch),'nonzero);
+flag('(cot coth csc csch acoth),'nonzero);
 
 % In the following rules, it is not necessary to let f(0)=0, when f
 % is odd, since simpiden already does this.
@@ -268,7 +308,8 @@ let cos(0)= 1,
     sinh(i) => i*sin(1),
     cosh(i) => cos(1),
     acosh(1) => 0,
-    acosh(-1) => i*pi
+    acosh(-1) => i*pi,
+    acoth(0) => i*pi/2
   % acos(0)= pi/2,
   % acos(1)=0,
   % acos(1/2)=pi/3,
@@ -287,6 +328,7 @@ for all x let cos acos x=x, sin asin x=x, tan atan x=x,
            csc acsc x=x, sech asech x=x, csch acsch x=x;
 
 for all x let acos(-x)=pi-acos(x),
+              asec(-x)=pi-asec(x),
               acot(-x)=pi-acot(x);
 
 % Fold the elementary trigonometric functions down to the origin.
@@ -295,44 +337,68 @@ let
 
  sin( (~~w + ~~k*pi)/~~d)
      => (if evenp fix(k/d) then 1 else -1)
-          * sin((w + remainder(k,d)*pi)/d)
-      when w freeof pi and ratnump(k/d) and fixp k and abs(k/d) >= 1,
+          * sin(w/d + ((k/d)-fix(k/d))*pi)
+      when w freeof pi and ratnump(k/d) and abs(k/d) >= 1,
 
  sin( ~~k*pi/~~d) => sin((1-k/d)*pi)
       when ratnump(k/d) and k/d > 1/2,
 
  cos( (~~w + ~~k*pi)/~~d)
      => (if evenp fix(k/d) then 1 else -1)
-          * cos((w + remainder(k,d)*pi)/d)
-      when w freeof pi and ratnump(k/d) and fixp k and abs(k/d) >= 1,
+          * cos(w/d + ((k/d)-fix(k/d))*pi)
+      when w freeof pi and ratnump(k/d) and abs(k/d) >= 1,
 
  cos( ~~k*pi/~~d) => -cos((1-k/d)*pi)
       when ratnump(k/d) and k/d > 1/2,
 
- tan( (~~w + ~~k*pi)/~~d)
-     => tan((w + remainder(k,d)*pi)/d)
+ csc( (~~w + ~~k*pi)/~~d)
+     => (if evenp fix(k/d) then 1 else -1)
+          * csc(w/d + ((k/d)-fix(k/d))*pi)
       when w freeof pi and ratnump(k/d) and fixp k and abs(k/d) >= 1,
 
+ csc( ~~k*pi/~~d) => csc((1-k/d)*pi)
+      when ratnump(k/d) and k/d > 1/2,
+
+ sec( (~~w + ~~k*pi)/~~d)
+     => (if evenp fix(k/d) then 1 else -1)
+          * sec(w/d + ((k/d)-fix(k/d))*pi)
+      when w freeof pi and ratnump(k/d) and fixp k and abs(k/d) >= 1,
+
+ sec( ~~k*pi/~~d) => -sec((1-k/d)*pi)
+      when ratnump(k/d) and k/d > 1/2,
+
+ tan( (~~w + ~~k*pi)/~~d)
+     => tan(w/d + ((k/d)-fix(k/d))*pi)
+      when w freeof pi and ratnump(k/d) and abs(k/d) >= 1,
+
  cot( (~~w + ~~k*pi)/~~d)
-     => cot((w + remainder(k,d)*pi)/d)
-      when w freeof pi and ratnump(k/d) and fixp k and abs(k/d) >= 1;
+     => cot(w/d + ((k/d)-fix(k/d))*pi)
+      when w freeof pi and ratnump(k/d) and abs(k/d) >= 1;
 
 % The following rules follow the pattern
 %   sin(~x + pi/2)=> cos(x) when x freeof pi
 % however allowing x to be a quotient and a negative pi/2 shift.
 % We need to handleonly pi/2 shifts here because
 % the bigger shifts are already covered by the rules above.
+%
+% Note the use of ~~d instead of ~d in the denominator for rational k.
 
-let sin((~x + ~~k*pi)/~d) => sign(k/d)*cos(x/d)
+let sin((~x + ~~k*pi)/~~d) => sign(k/d)*cos(x/d)
          when x freeof pi and abs(k/d) = 1/2,
 
-    cos((~x + ~~k*pi)/~d) => -sign(k/d)*sin(x/d)
+    cos((~x + ~~k*pi)/~~d) => -sign(k/d)*sin(x/d)
          when x freeof pi and abs(k/d) = 1/2,
 
-    tan((~x + ~~k*pi)/~d) => -cot(x/d)
+    csc((~x + ~~k*pi)/~~d) => sign(k/d)*sec(x/d)
          when x freeof pi and abs(k/d) = 1/2,
 
-    cot((~x + ~~k*pi)/~d) => -tan(x/d)
+    sec((~x + ~~k*pi)/~~d) => -sign(k/d)*csc(x/d)
+         when x freeof pi and abs(k/d) = 1/2,
+
+    tan((~x + ~~k*pi)/~~d) => -cot(x/d)
+         when x freeof pi and abs(k/d) = 1/2,
+
+    cot((~x + ~~k*pi)/~~d) => -tan(x/d)
          when x freeof pi and abs(k/d) = 1/2;
 
 % Inherit function values.
@@ -366,12 +432,13 @@ symbolic operator knowledge_about;
 symbolic procedure trigquot(n,d);
   % Form a quotient n/d, replacing sin and cos by tan/cot
   % whenver possible.
-  begin scalar m,u,w;
+  begin scalar m,u,v,w;
     u:=if eqcar(n,'minus) then <<m:=t; cadr n>> else n;
-    if pairp u and pairp d then
-      if car u eq 'sin and car d eq 'cos and cadr u=cadr d
+    v:=if eqcar(d,'minus) then <<m:=not m; cadr d>> else d;
+    if pairp u and pairp v then
+      if car u eq 'sin and car v eq 'cos and cadr u=cadr v
             then w:='tan else
-      if car u eq 'cos and car d eq 'sin and cadr u=cadr d
+      if car u eq 'cos and car v eq 'sin and cadr u=cadr v
             then w:='cot;
     if null w then return{'quotient,n,d};
     w:={w,cadr u};
@@ -430,27 +497,43 @@ let
 
  sinh( (~~w + ~~k*pi)/~~d)
       => (if evenp fix(i*k/d) then 1 else -1)
-           * sinh((w + remainder(i*k,d)*pi/i)/d)
-       when w freeof pi and ratnump(i*k/d) and fixp k and abs(i*k/d)>=1,
+           * sinh(w/d + (i*k/d-fix(i*k/d))*pi/i)
+       when w freeof pi and ratnump(i*k/d) and abs(i*k/d)>=1,
 
  sinh( ~~k*pi/~~d) => sinh((i-k/d)*pi)
        when ratnump(i*k/d) and abs(i*k/d) > 1/2,
 
  cosh( (~~w + ~~k*pi)/~~d)
       => (if evenp fix(i*k/d) then 1 else -1)
-           * cosh((w + remainder(i*k,d)*pi/i)/d)
-       when w freeof pi and ratnump(i*k/d) and fixp k and abs(i*k/d)>=1,
+           * cosh(w/d + (i*k/d-fix(i*k/d))*pi/i)
+       when w freeof pi and ratnump(i*k/d) and abs(i*k/d)>=1,
 
  cosh( ~~k*pi/~~d) => -cosh((i-k/d)*pi)
        when ratnump(i*k/d) and abs(i*k/d) > 1/2,
 
- tanh( (~~w + ~~k*pi)/~~d)
-      => tanh((w + remainder(i*k,d)*pi/i)/d)
+ csch( (~~w + ~~k*pi)/~~d)
+      => (if evenp fix(i*k/d) then 1 else -1)
+           * csch(w + (i*k/d-fix(i*k/d))*pi/i)
        when w freeof pi and ratnump(i*k/d) and fixp k and abs(i*k/d)>=1,
 
+ csch( ~~k*pi/~~d) => csch((i-k/d)*pi)
+       when ratnump(i*k/d) and abs(i*k/d) > 1/2,
+
+ sech( (~~w + ~~k*pi)/~~d)
+      => (if evenp fix(i*k/d) then 1 else -1)
+           * sech(w/d + (i*k/d-fix(i*k/d))*pi/i)
+       when w freeof pi and ratnump(i*k/d) and fixp k and abs(i*k/d)>=1,
+
+ sech( ~~k*pi/~~d) => -sech((i-k/d)*pi)
+       when ratnump(i*k/d) and abs(i*k/d) > 1/2,
+
+ tanh( (~~w + ~~k*pi)/~~d)
+      => tanh(w/d + (i*k/d-fix(i*k/d))*pi/i)
+       when w freeof pi and ratnump(i*k/d) and abs(i*k/d)>=1,
+
  coth( (~~w + ~~k*pi)/~~d)
-      => coth((w + remainder(i*k,d)*pi/i)/d)
-       when w freeof pi and ratnump(i*k/d) and fixp k and abs(i*k/d)>=1;
+      => coth(w/d + (i*k/d-fix(i*k/d))*pi/i)
+       when w freeof pi and ratnump(i*k/d) and abs(i*k/d)>=1;
 
 % The following rules follow the pattern
 %   sinh(~x + i*pi/2)=> cosh(x) when x freeof pi
@@ -458,33 +541,27 @@ let
 % We need to handle only pi/2 shifts here because
 % the bigger shifts are already covered by the rules above.
 
-let sinh((~x + ~~k*pi)/~d) => i*sign(-i*k/d)*cosh(x/d)
+let sinh((~x + ~~k*pi)/~~d) => i*sign(-i*k/d)*cosh(x/d)
           when x freeof pi and abs(i*k/d) = 1/2,
 
-    cosh((~x + ~~k*pi)/~d) => i*sign(-i*k/d)*sinh(x/d)
+    cosh((~x + ~~k*pi)/~~d) => i*sign(-i*k/d)*sinh(x/d)
           when x freeof pi and abs(i*k/d) = 1/2,
 
-    tanh((~x + ~~k*pi)/~d) => coth(x/d)
+    csch((~~x + ~~k*pi)/~~d) => -i*sign(-i*k/d)*sech(x/d)
           when x freeof pi and abs(i*k/d) = 1/2,
 
-    coth((~x + ~~k*pi)/~d) => tanh(x/d)
+    sech((~~x + ~~k*pi)/~~d) => -i*sign(-i*k/d)*csch(x/d)
+          when x freeof pi and abs(i*k/d) = 1/2,
+
+    tanh((~x + ~~k*pi)/~~d) => coth(x/d)
+          when x freeof pi and abs(i*k/d) = 1/2,
+
+    coth((~x + ~~k*pi)/~~d) => tanh(x/d)
           when x freeof pi and abs(i*k/d) = 1/2;
 
 
 % Transfer inverse function values from cos to acos and tan to atan.
 % Negative values not needed.
-
-%symbolic procedure simpabs u;
-%   if null u or cdr u then mksq('abs . revlis u, 1)  % error?.
-%    else begin scalar x;
-%      u := car u;
-%      if eqcar(u,'quotient) and fixp cadr u and fixp caddr u
-%         and cadr u>0 and caddr u>0 then return simp u;
-%      if x := rd!-abs u then return x;
-%      u := simp!* u;
-%      return if null numr u then nil ./ 1
-%             else quotsq(mkabsf1 absf numr u,mkabsf1 denr u)
-%  end;
 
 acos_rules :=
   symbolic(
@@ -546,6 +623,34 @@ let df(acsc(~x),x) =>  -1/(x*sqrt(x**2 - 1)),
     df(acsch(~x),x)=> -1/(x*sqrt(1+ x**2)),
     df(asech(~x),x)=> -1/(x*sqrt(1- x**2));
 
+% rules for atan2  
+let df(atan2(~y,~x),~z) => (x*df(y, z)-y*df(x, z))/(x^2+y^2);
+
+symbolic procedure simp!-atan2 u;
+   begin scalar x,y,z,v,w;
+      y := reval car u;
+      x := reval cadr u;
+      if numberp x and zerop x
+        then << z := simp!-sign1 y;
+                if denr z = 1 and numberp numr z and not zerop numr z
+ 		  then return multsq(z,simp '(quotient pi 2)) >>
+       else if numberp y and zerop y
+         then << z := simp!-sign1 x;
+                 if denr z = 1
+ 		   then << if numr z = 1 then return nil ./ 1
+ 		            else if numr z = -1 then return simp 'pi >> >>
+       else << z := simp!-sign1 x; v := simp!-sign1 y;
+               if denr z=1 and fixp numr z and denr v=1 and fixp numr v
+                 then << w := simp {'atan,{'quotient,y,x}};
+                         if numr z=1 then return w
+                          else if numr v=1 then return addsq(simp 'pi,w)
+                          else return subtrsq(w,simp 'pi) >> >>;
+       return simpiden {'atan2,y,x};
+   end;
+
+put('atan2,'simpfn,'simp!-atan2);
+  
+
 %for all x let e**log x=x;   % Requires every power to be checked.
 
 for all x,y let df(x**y,x)= y*x**(y-1),
@@ -553,7 +658,7 @@ for all x,y let df(x**y,x)= y*x**(y-1),
 
 % Ei, erf, erfc, erfi, exp and dilog.
 
-operator dilog,ei,erf,erfi,erfc,exp;
+operator dilog,Ei,erf,erfi,erfc,exp;
 
 let {
    dilog(0) => pi**2/6,
@@ -564,7 +669,7 @@ let {
 
 let df(dilog(~x),(~x)) => -log(x)/(x-1);
 
-let df(ei(~x),~x) => e**x/x;
+let df(Ei(~x),~x) => e**x/x;
 
 
 
@@ -597,15 +702,15 @@ let   e**(i*pi/2) = i,
 operator ci,si;
 
 let {
-  Si(0) => 0,
-  Si(-~x) => (- Si(x)),
+  si(0) => 0,
+  si(-~x) => (- si(x)),
   df(si(~x),x) => sin(x)/x,
-  Si(~x) => compute!:int!:functions(x,Si)
+  si(~x) => compute!:int!:functions(x,si)
             when numberp x and lisp !*rounded,
 
-  Ci(-~x) => - Ci(x) -i*pi,
+  ci(-~x) => - ci(x) -i*pi,
   df(ci(~x),x) => cos(x)/x,
-  Ci(~x) => compute!:int!:functions(x,Ci)
+  ci(~x) => compute!:int!:functions(x,ci)
             when numberp x and abs(x) <= 20 and lisp !*rounded
 };
 
@@ -703,20 +808,22 @@ let trig_imag_rules;
 
 % Generalized periodicity rules for trigonometric functions.
 % FJW, 16 October 1996.
+% exp rule corrected and others generalised to work for negative n
+% by AB March 2015 (negative n would give error)
 
 let {
- cos(~n*pi*arbint(~i) + ~~x) => cos(remainder(n,2)*pi*arbint(i) + x)
+ cos(~n*pi*arbint(~i) + ~~x) => cos((if evenp n then 0 else 1)*pi*arbint(i) + x)
   when fixp n,
- sin(~n*pi*arbint(~i) + ~~x) => sin(remainder(n,2)*pi*arbint(i) + x)
+ sin(~n*pi*arbint(~i) + ~~x) => sin((if evenp n then 0 else 1)*pi*arbint(i) + x)
   when fixp n,
  tan(~n*pi*arbint(~i) + ~~x) => tan(x) when fixp n,
- sec(~n*pi*arbint(~i) + ~~x) => sec(remainder(n,2)*pi*arbint(i) + x)
+ sec(~n*pi*arbint(~i) + ~~x) => sec((if evenp n then 0 else 1)*pi*arbint(i) + x)
   when fixp n,
- csc(~n*pi*arbint(~i) + ~~x) => csc(remainder(n,2)*pi*arbint(i) + x)
+ csc(~n*pi*arbint(~i) + ~~x) => csc((if evenp n then 0 else 1)*pi*arbint(i) + x)
   when fixp n,
  cot(~n*pi*arbint(~i) + ~~x) => cot(x) when fixp n,
- exp(~n*i*pi*arbint(~k) + ~~x) => exp(x) * (if evenp n then 1 else -1)
-  when fixp n
+ exp(~n*i*pi*arbint(~k) + ~~x) => 
+      exp((if evenp n then 0 else 1)*i*pi*arbint(k) + x) when fixp n
 };
 
 endmodule;

@@ -33,6 +33,8 @@ fluid '(!*echo !*int trap!-time!*);
 global '(!$eof!$
          !$eol!$
          !*lessspace
+         cursym!*
+         curescaped!*
          cloc!*
          contl!*
          curline!*
@@ -97,6 +99,7 @@ symbolic procedure yesp u;
         if ofl then wrs cdr ofl;
         if ifl then rds cadr ifl;
         cursym!* := '!*semicol!*;
+        curescaped!* := nil;
         return x
    end;
 

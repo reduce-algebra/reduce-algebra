@@ -30,7 +30,7 @@ module parser;  % Functions for parsing RLISP expressions.
 
 fluid '(!*backtrace);
 
-global '(cursym!* letl!* nxtsym!*);
+global '(cursym!*);
 
 %With the exception of assignment statements, which are handled by
 %XREAD, statements in REDUCE are introduced by a key-word, which

@@ -129,7 +129,7 @@ deflist('((!$eol!$ t) (!$eof!$ t)),'constant!?);
 % This file defines the system dependent code necessary to run REDUCE
 % under PSL.
 
-Comment The following functions, which are referenced in the basic
+COMMENT The following functions, which are referenced in the basic
 REDUCE source (RLISP, ALG1, ALG2, MATR and PHYS) should be defined to
 complete the definition of REDUCE:
 
@@ -257,7 +257,7 @@ procedure setpchar c;
    end;
 
 
-Comment The following functions are only referenced if various flags are
+COMMENT The following functions are only referenced if various flags are
 set, or the functions are actually defined. They are defined in another
 module, which is not needed to build the basic system. The name of the
 flag follows the function name, enclosed in parentheses:
@@ -278,13 +278,13 @@ flag follows the function name, enclosed in parentheses:
                     point in milliseconds;
 
 
-Comment The FACTOR module also requires a definition for GCTIME. Since
+COMMENT The FACTOR module also requires a definition for GCTIME. Since
 this is currently undefined in PSL, we provide the following definition;
 
 symbolic procedure gctime; gctime!*;
 
 
-Comment The following operator is used to save a REDUCE session as a
+COMMENT The following operator is used to save a REDUCE session as a
 file for later use;
 
 symbolic procedure savesession u;
@@ -295,25 +295,25 @@ flag('(savesession),'opfn);
 flag('(savesession),'noval);
 
 
-Comment make "system" available as an operator;
+COMMENT make "system" available as an operator;
 
 flag('(system),'opfn);
 
 flag('(system),'noval);
 
 
-Comment to make "faslend" an endstat;
+COMMENT to make "faslend" an endstat;
 
 put('faslend,'stat,'endstat);
 
 
-Comment to make "bye" and "quit" equivalent, as stated by the REDUCE
+COMMENT to make "bye" and "quit" equivalent, as stated by the REDUCE
 manual;
 
 put('quit,'newnam,'bye);
 
 
-Comment There are a number of system constants required for each
+COMMENT There are a number of system constants required for each
 implementation. In systems that don't support inums, the equivalent
 single precision integers should be used;
 
@@ -333,9 +333,9 @@ largest!-small!-modulus := 2**23;
 % flag('(intersection),'lose);
 
 
-Comment PSL Specific patches;
+COMMENT PSL Specific patches;
 
-Comment We need to define a function BEGIN, which acts as the top-level
+COMMENT We need to define a function BEGIN, which acts as the top-level
 call to REDUCE, and sets the appropriate variables;
 
 % global '(startuproutine!* toploopread!* toploopeval!* toploopprint!*
@@ -376,7 +376,7 @@ a:      % crchar!* := '! ;
 flag('(begin),'go);
 
 
-Comment Initial setups for REDUCE;
+COMMENT Initial setups for REDUCE;
 
 % spare!* := 11;   % We need this for bootstrapping.
 
@@ -458,7 +458,7 @@ switch fulltrace;   % Prevents node renaming in trace output.
 
 !*fulltrace := t;   % Since we usually want it this way.
 
-Comment The global variable ESC* is used by the interactive string
+COMMENT The global variable ESC* is used by the interactive string
 editor (defined in CEDIT) as a terminator for input strings.  In PSL
 we use the escape character;
 
@@ -472,7 +472,7 @@ fluid '(!*pgwd !*plap !*pwrds !*pcmac);
 flag('(pgwd plap pwrds pcmac),'switch);
 
 
-Comment The following declarations are needed to build various modules;
+COMMENT The following declarations are needed to build various modules;
 
 flag('(fl2int),'lose);                  % Used in MATH.
 
@@ -493,10 +493,6 @@ deflist('((imports rlis)),'stat);   % Needed for ~imports to work.
    % In case this file loaded more than once.
 
 symbolic procedure concat2(u,v); concat(u,v);
-
-% Used by patching mechanism.
-
-symbolic procedure dated!-gensym u; gensym();
 
 load get!-options;
 load strings;
@@ -526,7 +522,7 @@ end$
 % got used to Perl/php split WN
 
 symbolic procedure split!-str (string,separator);
-  reverse split!-str!-1(string,separator,NIL);
+  reverse split!-str!-1(string,separator,nil);
 
 symbolic procedure split!-str!-1 (string,separator,r);
   begin scalar n;

@@ -24,7 +24,7 @@ module constre;
 %
 
 
-algebraic procedure constantRE(cap_R,leadcoeff,dffpointer,k,x);
+algebraic procedure constantre(cap_r,leadcoeff,dffpointer,k,x);
 
 % solve  constant RE
 %
@@ -33,7 +33,7 @@ algebraic procedure constantRE(cap_R,leadcoeff,dffpointer,k,x);
 %  where leadcoeff is the leading coefficient of the RE
 %  and DF is a table where DF(dffpointer+i) = df(f,x,i)
 
-  begin scalar denr,fract,ii,m0,m1,c0,ck,S,c,df2,q,r2,lterm,nn,
+  begin scalar denr,fract,ii,m0,m1,c0,ck,s,c,df2,q,r2,lterm,nn,
         s0, leadcoeff2;
         denr := solve(leadcoeff,k);
         m0 := {};
@@ -41,11 +41,11 @@ algebraic procedure constantRE(cap_R,leadcoeff,dffpointer,k,x);
                 if type_rational rhs xx then  m0 := ((rhs xx)+1) . m0;
         if not(m0 = {}) then m0 := max(m0) else m0 := 0;
 
-        if symbolic !*traceFPS then
+        if symbolic !*tracefps then
                  << write ">>> m0 = ",m0;
                     write "RE is constant";
                     write "RE: for all k >= ",m0,": a (k + 1) = "
-                        ,cap_R * a(k);
+                        ,cap_r * a(k);
                     write "leadcoeff := ",leadcoeff; >>;
 
         fract := {};
@@ -55,26 +55,26 @@ algebraic procedure constantRE(cap_R,leadcoeff,dffpointer,k,x);
         if not(fract = {}) then
                 << q := first fract;
                    dff(dffpointer + 10) := sub(x=x^q,dff(dffpointer));
-                   if symbolic !*traceFPS then <<
+                   if symbolic !*tracefps then <<
                         write "RE modified to nn= ",k/q;
                         write "=> f := ",dff(dffpointer + 10)>>;
-                   S := constantRE(sub(k=k/q,cap_R),
+                   s := constantre(sub(k=k/q,cap_r),
                         sub(k=k/q,leadcoeff),dffpointer + 10,k,x);
-                   return sub(x=x^(1/q),S); >>;
+                   return sub(x=x^(1/q),s); >>;
 
         if m0 < 0  then <<
                 nn:= -m0 + 1;
                 dff(dffpointer + 10) := df2 := x^nn * dff(dffpointer);
-                if symbolic !*traceFPS then <<
+                if symbolic !*tracefps then <<
                         write "working with ",x^nn,"*f";
                         write "=> f :=" ,df2 >>;
-                S := constantRE(sub(k=k-nn,cap_R),sub(k=k-nn,leadcoeff),
+                s := constantre(sub(k=k-nn,cap_r),sub(k=k-nn,leadcoeff),
                                         dffpointer + 10,k,x);
-                return update_coeff(S,x,-nn);
+                return update_coeff(s,x,-nn);
         >>;
 
         if m0 = 0 then <<
-                if symbolic !*traceFPS then write "PS does not exist";
+                if symbolic !*tracefps then write "PS does not exist";
                 return failed>>;
 
         if m0 > 0  then <<
@@ -84,18 +84,18 @@ algebraic procedure constantRE(cap_R,leadcoeff,dffpointer,k,x);
         m1 := min m1;
         if m1 < 0 then <<
                 dff(dffpointer + 10) := df2 := x^(-m1)*dff(dffpointer);
-        if symbolic !*traceFPS then <<
+        if symbolic !*tracefps then <<
                         write "working with ",x^(-m1),"*f";
                         write "=> f :=" ,df2 >>;
-                S := constantRE(sub(k=k+m1,cap_R),sub(k=k+m1,leadcoeff),
+                s := constantre(sub(k=k+m1,cap_r),sub(k=k+m1,leadcoeff),
                                         dffpointer + 10,k,x);
-                return update_coeff(S,x,m1)
+                return update_coeff(s,x,m1)
                 >>;
         >>;
 
         % { m1 >= 0 }
 
-        S := 0; S0 := 0;
+        s := 0; s0 := 0;
         for i:=0:m0 do
                 <<
                 if i > m1 then
@@ -107,10 +107,10 @@ algebraic procedure constantRE(cap_R,leadcoeff,dffpointer,k,x);
                     rederr("problem using limit operator") >> else
                 <<
                 c0 := c0/factorial (i);
-                S := S + c0*x^i ;
-                if symbolic !*traceFPS then write " S = ",s;
+                s := s + c0*x^i ;
+                if symbolic !*tracefps then write " S = ",s;
                 >> >>;
-  return (S);
+  return (s);
 
 end;
 

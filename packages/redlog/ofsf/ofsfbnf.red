@@ -43,7 +43,7 @@ procedure ofsf_dnf(f);
    % Ordered field standard form conjunctive normal form. [f] is a
    % formula. Returns a DNF of [f].
    if !*rlbnfsac then
-      (cl_dnf f) where !*rlsiso=T
+      (cl_dnf f) where !*rlsiso=t
    else
       cl_dnf f;
 
@@ -51,7 +51,7 @@ procedure ofsf_cnf(f);
    % Ordered field standard form conjunctive normal form. [f] is a
    % formula. Returns a CNF of [f].
    if !*rlbnfsac then
-      (cl_cnf f) where !*rlsiso=T
+      (cl_cnf f) where !*rlsiso=t
    else
       cl_cnf f;
 
@@ -306,18 +306,18 @@ procedure ofsf_qssusutab(r1,r2);
    begin scalar w;
       % Printen mit: for each x in w do << for each y in cdr x do <<
       % prin2 cdr y; prin2 "  " >>; prin2t ""; >>;
-      w:= '( (lessp . ( (lessp . T) (leq . T) (equal . nil)
-                        (neq . T) (geq . nil) (greaterp . nil)))
-	     (leq   . ( (lessp . nil) (leq . T) (equal . nil)
+      w:= '( (lessp . ( (lessp . t) (leq . t) (equal . nil)
+                        (neq . t) (geq . nil) (greaterp . nil)))
+	     (leq   . ( (lessp . nil) (leq . t) (equal . nil)
 		        (neq . nil) (geq . nil) (greaterp . nil)))
-	     (equal . ( (lessp . nil) (leq . T) (equal . T)
-		        (neq . nil) (geq . T) (greaterp . nil)))
+	     (equal . ( (lessp . nil) (leq . t) (equal . t)
+		        (neq . nil) (geq . t) (greaterp . nil)))
 	     (neq   . ( (lessp . nil) (leq . nil) (equal . nil)
-		        (neq . T) (geq . nil) (greaterp . nil)))
+		        (neq . t) (geq . nil) (greaterp . nil)))
 	     (geq   . ( (lessp . nil) (leq . nil) (equal . nil)
-		        (neq . nil) (geq . T) (greaterp . nil)))
+		        (neq . nil) (geq . t) (greaterp . nil)))
 	     (greaterp . ( (lessp . nil)  (leq . nil)  (equal . nil)
-	             	(neq . T) (geq . T) (greaterp . T))));
+	             	(neq . t) (geq . t) (greaterp . t))));
       return cdr atsoc(r2,cdr atsoc(r1,w))
    end;
 

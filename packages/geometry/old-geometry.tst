@@ -1,7 +1,7 @@
 % Author H.-G. Graebe | Univ. Leipzig | Version 6.9.1998
 % graebe@informatik.uni-leipzig.de
 
-comment 
+COMMENT 
 
 Test suite for the package GEOMETRY 1.1
 
@@ -20,7 +20,7 @@ showtime;
 
 % A generic triangle ABC
 
-A:=Point(a1,a2); B:=Point(b1,b2); C:=Point(c1,c2);
+a:=point(a1,a2); b:=point(b1,b2); c:=point(c1,c2);
 
 % Its midpoint perpendiculars have a point in common:
 
@@ -28,11 +28,11 @@ A:=Point(a1,a2); B:=Point(b1,b2); C:=Point(c1,c2);
  
 % This point
 
-	M:=intersection_point(mp(a,b),mp(b,c));
+	m:=intersection_point(mp(a,b),mp(b,c));
 
 % is the center of the circumscribed circle
 
-	sqrdist(M,A) - sqrdist(M,B);	
+	sqrdist(m,a) - sqrdist(m,b);	
 
 % The altitutes intersection theorem
 
@@ -44,30 +44,30 @@ A:=Point(a1,a2); B:=Point(b1,b2); C:=Point(c1,c2);
 
 % Euler's line
 
-        M:=intersection_point(mp(a,b),mp(b,c));
-        H:=intersection_point(altitude(a,b,c),altitude(b,c,a));
-        S:=intersection_point(median(a,b,c),median(b,c,a));
+        m:=intersection_point(mp(a,b),mp(b,c));
+        h:=intersection_point(altitude(a,b,c),altitude(b,c,a));
+        s:=intersection_point(median(a,b,c),median(b,c,a));
 
-                collinear(M,H,S);
-                sqrdist(S,varpoint(M,H,2/3));
+                collinear(m,h,s);
+                sqrdist(s,varpoint(m,h,2/3));
 
 % Feuerbach's circle
 
 	% Choose a special coordinate system
-	A:=Point(0,0); B:=Point(u1,0); C:=Point(u2,u3);
+	a:=point(0,0); b:=point(u1,0); c:=point(u2,u3);
 
-        M:=intersection_point(mp(a,b),mp(b,c));
-        H:=intersection_point(altitude(a,b,c),altitude(b,c,a));
-        N:=midpoint(M,H);
+        m:=intersection_point(mp(a,b),mp(b,c));
+        h:=intersection_point(altitude(a,b,c),altitude(b,c,a));
+        n:=midpoint(m,h);
 
-                sqrdist(N,midpoint(A,B))-sqrdist(N,midpoint(B,C));
-                sqrdist(N,midpoint(A,B))-sqrdist(N,midpoint(H,C));
+                sqrdist(n,midpoint(a,b))-sqrdist(n,midpoint(b,c));
+                sqrdist(n,midpoint(a,b))-sqrdist(n,midpoint(h,c));
 
-        D:=intersection_point(pp_line(A,B),pp_line(H,C));
+        d:=intersection_point(pp_line(a,b),pp_line(h,c));
 
-                sqrdist(N,midpoint(A,B))-sqrdist(N,D);
+                sqrdist(n,midpoint(a,b))-sqrdist(n,d);
 
-clear_ndg(); clear(A,B,C,D,M,H,S,N);
+clear_ndg(); clear(a,b,c,d,m,h,s,n);
 
 % ############################# 
 % Non-linear Geometric Objects
@@ -75,16 +75,16 @@ clear_ndg(); clear(A,B,C,D,M,H,S,N);
 
 % Bisector intersection theorem
  
-A:=Point(0,0); B:=Point(1,0); C:=Point(u1,u2);
-P:=Point(x1,x2);
+a:=point(0,0); b:=point(1,0); c:=point(u1,u2);
+p:=point(x1,x2);
  
 polys:={
-        point_on_bisector(P,A,B,C),
-        point_on_bisector(P,B,C,A),
-        point_on_bisector(P,C,A,B)};
+        point_on_bisector(p,a,b,c),
+        point_on_bisector(p,b,c,a),
+        point_on_bisector(p,c,a,b)};
 
-con1:=num(sqrdist(P,pedalpoint(p,pp_line(A,C)))-x2^2);
-con2:=num(sqrdist(p,pedalpoint(p,pp_line(B,C)))-x2^2);
+con1:=num(sqrdist(p,pedalpoint(p,pp_line(a,c)))-x2^2);
+con2:=num(sqrdist(p,pedalpoint(p,pp_line(b,c)))-x2^2);
 
 setring({x1,x2},{},lex);
 setideal(polys,polys);
@@ -93,29 +93,29 @@ gbasis polys;
 
 % Bisector intersection theorem. A constructive proof.
  
-A:=Point(0,0); B:=Point(1,0); P:=Point(u1,u2);
-l1:=pp_line(A,B);
-l2:=symline(l1,pp_line(A,P));
-l3:=symline(l1,pp_line(B,P));
+a:=point(0,0); b:=point(1,0); p:=point(u1,u2);
+l1:=pp_line(a,b);
+l2:=symline(l1,pp_line(a,p));
+l3:=symline(l1,pp_line(b,p));
 
-point_on_bisector(P,A,B,intersection_point(l2,l3));
+point_on_bisector(p,a,b,intersection_point(l2,l3));
 
-clear_ndg(); clear(A,B,C,P,l1,l2,l3);
+clear_ndg(); clear(a,b,c,p,l1,l2,l3);
 
 % Miquel's theorem
 
 on gcd;
-A:=Point(0,0); B:=Point(1,0); C:=Point(c1,c2);
-P:=choose_pl(pp_line(A,B),u1);
-Q:=choose_pl(pp_line(B,C),u2);
-R:=choose_pl(pp_line(A,C),u3);
+a:=point(0,0); b:=point(1,0); c:=point(c1,c2);
+p:=choose_pl(pp_line(a,b),u1);
+q:=choose_pl(pp_line(b,c),u2);
+r:=choose_pl(pp_line(a,c),u3);
 
-X:=other_cc_point(P,p3_circle(A,P,R),p3_circle(B,P,Q))$
+x:=other_cc_point(p,p3_circle(a,p,r),p3_circle(b,p,q))$
 
-point_on_circle(X,p3_circle(C,Q,R));
+point_on_circle(x,p3_circle(c,q,r));
 
 off gcd;
-clear_ndg(); clear(A,B,C,P,Q,R,X);
+clear_ndg(); clear(a,b,c,p,q,r,x);
 
 % ########################
 % Theorems of linear type
@@ -123,15 +123,15 @@ clear_ndg(); clear(A,B,C,P,Q,R,X);
 
 % Pappus' theorem
 
-A:=Point(u1,u2); B:=Point(u3,u4); C:=Point(x1,u5); 
-P:=Point(u6,u7); Q:=Point(u8,u9); R:=Point(u0,x2);
+a:=point(u1,u2); b:=point(u3,u4); c:=point(x1,u5); 
+p:=point(u6,u7); q:=point(u8,u9); r:=point(u0,x2);
 
-polys:={collinear(A,B,C), collinear(P,Q,R)};
+polys:={collinear(a,b,c), collinear(p,q,r)};
 
 con:=collinear(
-	intersection_point(pp_line(A,Q),pp_line(P,B)),
-	intersection_point(pp_line(A,R),pp_line(P,C)),
-	intersection_point(pp_line(B,R),pp_line(Q,C)))$
+	intersection_point(pp_line(a,q),pp_line(p,b)),
+	intersection_point(pp_line(a,r),pp_line(p,c)),
+	intersection_point(pp_line(b,r),pp_line(q,c)))$
 
 vars:={x1,x2};
 sol:=solve(polys,vars);
@@ -140,17 +140,17 @@ sub(sol,con);
 
 % Pappus' theorem. A constructive approach
 
-A:=Point(u1,u2); B:=Point(u3,u4);  
-P:=Point(u6,u7); Q:=Point(u8,u9); 
+a:=point(u1,u2); b:=point(u3,u4);  
+p:=point(u6,u7); q:=point(u8,u9); 
 
-C:=choose_pl(pp_line(A,B),u5);
-R:=choose_pl(pp_line(P,Q),u0);
+c:=choose_pl(pp_line(a,b),u5);
+r:=choose_pl(pp_line(p,q),u0);
 
-con:=collinear(intersection_point(pp_line(A,Q),pp_line(P,B)),
-	intersection_point(pp_line(A,R),pp_line(P,C)),
-	intersection_point(pp_line(B,R),pp_line(Q,C)));
+con:=collinear(intersection_point(pp_line(a,q),pp_line(p,b)),
+	intersection_point(pp_line(a,r),pp_line(p,c)),
+	intersection_point(pp_line(b,r),pp_line(q,c)));
 
-clear_ndg(); clear(A,B,C,P,Q,R);
+clear_ndg(); clear(a,b,c,p,q,r);
 
 % ###########################
 % Theorems of non linear type
@@ -158,14 +158,14 @@ clear_ndg(); clear(A,B,C,P,Q,R);
 
 % Fermat Point
 
-A:=Point(0,0); B:=Point(0,2); C:=Point(u1,u2);
-P:=Point(x1,x2); Q:=Point(x3,x4); R:=Point(x5,x6);
+a:=point(0,0); b:=point(0,2); c:=point(u1,u2);
+p:=point(x1,x2); q:=point(x3,x4); r:=point(x5,x6);
 
-polys1:={sqrdist(P,B)-sqrdist(B,C), sqrdist(P,C)-sqrdist(B,C), 
-	sqrdist(Q,A)-sqrdist(A,C), sqrdist(Q,C)-sqrdist(A,C), 
-	sqrdist(R,B)-sqrdist(A,B), sqrdist(R,A)-sqrdist(A,B)};
+polys1:={sqrdist(p,b)-sqrdist(b,c), sqrdist(p,c)-sqrdist(b,c), 
+	sqrdist(q,a)-sqrdist(a,c), sqrdist(q,c)-sqrdist(a,c), 
+	sqrdist(r,b)-sqrdist(a,b), sqrdist(r,a)-sqrdist(a,b)};
 
-con:=concurrent(pp_line(A,P), pp_line(B,Q), pp_line(C,R));
+con:=concurrent(pp_line(a,p), pp_line(b,q), pp_line(c,r));
 
 vars:={x1,x2,x3,x4,x5,x6};
 setring(vars,{},lex);
@@ -173,16 +173,16 @@ iso:=isolatedprimes polys1;
 
 for each u in iso collect con mod u;
 
-polys2:={sqrdist(P,B)-sqrdist(P,C), 
-	sqrdist(Q,A)-sqrdist(Q,C),  
-	sqrdist(R,A)-sqrdist(R,B), 
-	num(p3_angle(R,A,B)-p3_angle(P,B,C)), 
-	num(p3_angle(Q,C,A)-p3_angle(P,B,C))};
+polys2:={sqrdist(p,b)-sqrdist(p,c), 
+	sqrdist(q,a)-sqrdist(q,c),  
+	sqrdist(r,a)-sqrdist(r,b), 
+	num(p3_angle(r,a,b)-p3_angle(p,b,c)), 
+	num(p3_angle(q,c,a)-p3_angle(p,b,c))};
 
 sol:=solve(polys2,{x1,x2,x3,x4,x6});
 sub(sol,con);
 
-clear_ndg(); clear(A,B,C,P,Q,R);
+clear_ndg(); clear(a,b,c,p,q,r);
 
 % ####################
 %  Desargue's theorem
@@ -190,72 +190,72 @@ clear_ndg(); clear(A,B,C,P,Q,R);
 
 % A constructive proof.
 
-A:=Point(a1,a2); B:=Point(b1,b2); 
-C:=Point(c1,c2); R:=Point(d1,d2);
+a:=point(a1,a2); b:=point(b1,b2); 
+c:=point(c1,c2); r:=point(d1,d2);
 
-S:=choose_pl(par(R,pp_line(A,B)),u);
-T:=intersection_point(par(R,pp_line(A,C)),par(S,pp_line(B,C)));
+s:=choose_pl(par(r,pp_line(a,b)),u);
+t:=intersection_point(par(r,pp_line(a,c)),par(s,pp_line(b,c)));
  
-con:=concurrent(pp_line(A,R),pp_line(B,S),pp_line(C,T));
+con:=concurrent(pp_line(a,r),pp_line(b,s),pp_line(c,t));
 
 % Desargue's theorem as theorem of linear type.
 
-A:=Point(u1,u2); B:=Point(u3,u4); C:=Point(u5,u6);
-R:=Point(u7,u8); S:=Point(u9,x1); T:=Point(x2,x3);
+a:=point(u1,u2); b:=point(u3,u4); c:=point(u5,u6);
+r:=point(u7,u8); s:=point(u9,x1); t:=point(x2,x3);
 
-polys:={parallel(pp_line(R,S),pp_line(A,B)),
-	parallel(pp_line(S,T),pp_line(B,C)),
-	parallel(pp_line(R,T),pp_line(A,C))};
+polys:={parallel(pp_line(r,s),pp_line(a,b)),
+	parallel(pp_line(s,t),pp_line(b,c)),
+	parallel(pp_line(r,t),pp_line(a,c))};
 
-con:=concurrent(pp_line(A,R),pp_line(B,S),pp_line(C,T));
+con:=concurrent(pp_line(a,r),pp_line(b,s),pp_line(c,t));
 
 sol:=solve(polys,{x1,x2,x3});
 sub(sol,con);
 
 % The general theorem of Desargue.
 
-A:=Point(0,0); B:=Point(0,1); C:=Point(u5,u6);
-R:=Point(u7,u8); S:=Point(u9,u1); T:=Point(u2,x1);
+a:=point(0,0); b:=point(0,1); c:=point(u5,u6);
+r:=point(u7,u8); s:=point(u9,u1); t:=point(u2,x1);
 
-con1:=collinear(intersection_point(pp_line(R,S),pp_line(A,B)),
-	intersection_point(pp_line(S,T),pp_line(B,C)),
-	intersection_point(pp_line(R,T),pp_line(A,C)));
+con1:=collinear(intersection_point(pp_line(r,s),pp_line(a,b)),
+	intersection_point(pp_line(s,t),pp_line(b,c)),
+	intersection_point(pp_line(r,t),pp_line(a,c)));
 
-con2:=concurrent(pp_line(A,R),pp_line(B,S),pp_line(C,T));
+con2:=concurrent(pp_line(a,r),pp_line(b,s),pp_line(c,t));
 
 sol:=solve(con2,x1);
 sub(sol,con1);
 
-clear_ndg(); clear(A,B,C,R,S,T);
+clear_ndg(); clear(a,b,c,r,s,t);
 
 % #################
 %  Brocard points
 % #################
 
-A:=Point(0,0); B:=Point(1,0); C:=Point(u1,u2);
+a:=point(0,0); b:=point(1,0); c:=point(u1,u2);
 
-c1:=Circle(1,x1,x2,x3);
-c2:=Circle(1,x4,x5,x6);
-c3:=Circle(1,x7,x8,x9);
+c1:=circle(1,x1,x2,x3);
+c2:=circle(1,x4,x5,x6);
+c3:=circle(1,x7,x8,x9);
 
 polys:={
-	cl_tangent(c1,pp_line(A,C)), 
-	point_on_circle(A,c1), 
-	point_on_circle(B,c1), 
-	cl_tangent(c2,pp_line(A,B)), 
-	point_on_circle(B,c2), 
-	point_on_circle(C,c2), 
-	cl_tangent(c3,pp_line(B,C)), 
-	point_on_circle(A,c3), 
-	point_on_circle(C,c3)};
+	cl_tangent(c1,pp_line(a,c)), 
+	point_on_circle(a,c1), 
+	point_on_circle(b,c1), 
+	cl_tangent(c2,pp_line(a,b)), 
+	point_on_circle(b,c2), 
+	point_on_circle(c,c2), 
+	cl_tangent(c3,pp_line(b,c)), 
+	point_on_circle(a,c3), 
+	point_on_circle(c,c3)};
  
 vars:={x1,x2,x3,x4,x5,x6,x7,x8,x9};
 sol:=solve(polys,vars);
 
-P:=other_cc_point(B,sub(sol,c1),sub(sol,c2));
-con:=point_on_circle(P,sub(sol,c3));
+p:=other_cc_point(b,sub(sol,c1),sub(sol,c2));
+con:=point_on_circle(p,sub(sol,c3));
 
-clear_ndg(); clear A,B,C,c1,c2,c3;	
+clear_ndg(); clear a,b,c,c1,c2,c3;	
 
 % ##################
 %  Simson's theorem
@@ -263,32 +263,32 @@ clear_ndg(); clear A,B,C,c1,c2,c3;
 
 % A constructive proof
 
-        M:=Point(0,0);
-        A:=choose_pc(M,r,u1);
-        B:=choose_pc(M,r,u2);
-        C:=choose_pc(M,r,u3);
-        P:=choose_pc(M,r,u4);
-        X:=pedalpoint(P,pp_line(A,B))$
-        Y:=pedalpoint(P,pp_line(B,C))$
-        Z:=pedalpoint(P,pp_line(A,C))$
+        m:=point(0,0);
+        a:=choose_pc(m,r,u1);
+        b:=choose_pc(m,r,u2);
+        c:=choose_pc(m,r,u3);
+        p:=choose_pc(m,r,u4);
+        x:=pedalpoint(p,pp_line(a,b))$
+        y:=pedalpoint(p,pp_line(b,c))$
+        z:=pedalpoint(p,pp_line(a,c))$
  
-        collinear(X,Y,Z);
+        collinear(x,y,z);
 
-clear_ndg(); clear(M,A,B,C,P,X,Y,Z);
+clear_ndg(); clear(m,a,b,c,p,x,y,z);
 
 % Simson's theorem almost constructive
 
 clear_ndg();
 
-	A:=Point(0,0); B:=Point(u1,u2); 
-	C:=Point(u3,u4); P:=Point(u5,x1);
-        X:=pedalpoint(P,pp_line(A,B));
-        Y:=pedalpoint(P,pp_line(B,C));
-        Z:=pedalpoint(P,pp_line(A,C));
+	a:=point(0,0); b:=point(u1,u2); 
+	c:=point(u3,u4); p:=point(u5,x1);
+        x:=pedalpoint(p,pp_line(a,b));
+        y:=pedalpoint(p,pp_line(b,c));
+        z:=pedalpoint(p,pp_line(a,c));
 
-	poly:=p4_circle(A,B,C,P); 
+	poly:=p4_circle(a,b,c,p); 
 
-        con:=collinear(X,Y,Z);
+        con:=collinear(x,y,z);
 
 	remainder(num con,poly);
 
@@ -296,17 +296,17 @@ print_ndg();
 
 % Equational proof, first version:
 
-M:=Point(0,0); A:=Point(0,1); 
-B:=Point(u1,x1); C:=Point(u2,x2); P:=Point(u3,x3);
+m:=point(0,0); a:=point(0,1); 
+b:=point(u1,x1); c:=point(u2,x2); p:=point(u3,x3);
 
-X:=varpoint(A,B,x4); Y:=varpoint(B,C,x5); Z:=varpoint(A,C,x6);
+x:=varpoint(a,b,x4); y:=varpoint(b,c,x5); z:=varpoint(a,c,x6);
 
-polys:={sqrdist(M,B)-1, sqrdist(M,C)-1, sqrdist(M,P)-1,
-	orthogonal(pp_line(A,B),pp_line(P,X)),
-	orthogonal(pp_line(A,C),pp_line(P,Z)),
-	orthogonal(pp_line(B,C),pp_line(P,Y))};
+polys:={sqrdist(m,b)-1, sqrdist(m,c)-1, sqrdist(m,p)-1,
+	orthogonal(pp_line(a,b),pp_line(p,x)),
+	orthogonal(pp_line(a,c),pp_line(p,z)),
+	orthogonal(pp_line(b,c),pp_line(p,y))};
 
-con:=collinear(X,Y,Z);
+con:=collinear(x,y,z);
 
 vars:={x4,x5,x6,x1,x2,x3};
 setring(vars,{},lex);
@@ -315,20 +315,20 @@ con mod gbasis polys;
 
 % Second version:
 
-A:=Point(0,0);
-B:=Point(1,0);
-C:=Point(u1,u2);
-P:=Point(u3,x1);
-X:=Point(x2,0);		% => on the line AB 
-Y:=varpoint(B,C,x3);
-Z:=varpoint(A,C,x4);
+a:=point(0,0);
+b:=point(1,0);
+c:=point(u1,u2);
+p:=point(u3,x1);
+x:=point(x2,0);		% => on the line AB 
+y:=varpoint(b,c,x3);
+z:=varpoint(a,c,x4);
 
-polys:={orthogonal(pp_line(A,C),pp_line(P,Z)),
-	orthogonal(pp_line(B,C),pp_line(P,Y)),
-	orthogonal(pp_line(A,B),pp_line(P,X)),
-       	p4_circle(A,B,C,P)};
+polys:={orthogonal(pp_line(a,c),pp_line(p,z)),
+	orthogonal(pp_line(b,c),pp_line(p,y)),
+	orthogonal(pp_line(a,b),pp_line(p,x)),
+       	p4_circle(a,b,c,p)};
 
-con:=collinear(X,Y,Z);
+con:=collinear(x,y,z);
 
 vars:={x2,x3,x4,x1};
 setring(vars,{},lex);
@@ -336,16 +336,16 @@ con mod interreduce polys;
 
 % The inverse theorem
 
-polys:={orthogonal(pp_line(A,C),pp_line(P,Z)),
-	orthogonal(pp_line(B,C),pp_line(P,Y)),
-	orthogonal(pp_line(A,B),pp_line(P,X)),
-       	collinear(X,Y,Z)};
+polys:={orthogonal(pp_line(a,c),pp_line(p,z)),
+	orthogonal(pp_line(b,c),pp_line(p,y)),
+	orthogonal(pp_line(a,b),pp_line(p,x)),
+       	collinear(x,y,z)};
 
-con:=p4_circle(A,B,C,P);
+con:=p4_circle(a,b,c,p);
 
 con mod interreduce polys;
 
-clear_ndg(); clear(M,A,B,C,P,Y,Z);
+clear_ndg(); clear(m,a,b,c,p,y,z);
 
 % ########################
 %  The butterfly theorem
@@ -353,30 +353,30 @@ clear_ndg(); clear(M,A,B,C,P,Y,Z);
  
 % An equational proof with groebner factorizer and constraints. 
 
-P:=Point(0,0);
-O:=Point(u1,0);
-A:=Point(u2,u3);	
-B:=Point(u4,x1);
-C:=Point(x2,x3); 
-D:=Point(x4,x5); 
-F:=Point(0,x6);
-G:=Point(0,x7);
+p:=point(0,0);
+o:=point(u1,0);
+a:=point(u2,u3);	
+b:=point(u4,x1);
+c:=point(x2,x3); 
+d:=point(x4,x5); 
+f:=point(0,x6);
+g:=point(0,x7);
 
-polys:={sqrdist(O,B)-sqrdist(O,A), 
-	sqrdist(O,C)-sqrdist(O,A), 
-	sqrdist(O,D)-sqrdist(O,A),
-	point_on_line(P,pp_line(A,C)),
-	point_on_line(P,pp_line(B,D)),
-	point_on_line(F,pp_line(A,D)),
-	point_on_line(G,pp_line(B,C))
+polys:={sqrdist(o,b)-sqrdist(o,a), 
+	sqrdist(o,c)-sqrdist(o,a), 
+	sqrdist(o,d)-sqrdist(o,a),
+	point_on_line(p,pp_line(a,c)),
+	point_on_line(p,pp_line(b,d)),
+	point_on_line(f,pp_line(a,d)),
+	point_on_line(g,pp_line(b,c))
 };
 
-con:=num sqrdist(P,midpoint(F,G));
+con:=num sqrdist(p,midpoint(f,g));
 
 vars:={x6,x7,x3,x5,x1,x2,x4};
 setring(vars,{},lex);
 
-sol:=groebfactor(polys,{sqrdist(A,C),sqrdist(B,D)});
+sol:=groebfactor(polys,{sqrdist(a,c),sqrdist(b,d)});
 
 for each u in sol collect con mod u;
 
@@ -384,39 +384,39 @@ for each u in sol collect con mod u;
 
 on gcd;
 
-O:=Point(0,0);
-A:=Point(1,0);	
-B:=choose_pc(O,1,u1);
-C:=choose_pc(O,1,u2);
-D:=choose_pc(O,1,u3);
-P:=intersection_point(pp_line(A,C),pp_line(B,D));
+o:=point(0,0);
+a:=point(1,0);	
+b:=choose_pc(o,1,u1);
+c:=choose_pc(o,1,u2);
+d:=choose_pc(o,1,u3);
+p:=intersection_point(pp_line(a,c),pp_line(b,d));
 
-h:=lot(P,pp_line(O,P));
+h:=lot(p,pp_line(o,p));
 
-F:=intersection_point(h,pp_line(A,D)); 
-G:=intersection_point(h,pp_line(B,C));
+f:=intersection_point(h,pp_line(a,d)); 
+g:=intersection_point(h,pp_line(b,c));
 
-con:=sqrdist(P,midpoint(F,G));
+con:=sqrdist(p,midpoint(f,g));
 
 off gcd;
-clear_ndg(); clear(O,A,B,C,D,P,h,F,G);
+clear_ndg(); clear(o,a,b,c,d,p,h,f,g);
 
 % ################################
 % Tangency of Feuerbach's circle
 % ################################
  
-A:=Point(0,0); B:=Point(2,0); C:=Point(u1,u2);
-M:=intersection_point(mp(A,B),mp(B,C));
-H:=intersection_point(altitude(A,B,C),altitude(B,C,A));
-N:=midpoint(M,H);	
-c1:=c1_circle(N,sqrdist(N,midpoint(A,B)));
+a:=point(0,0); b:=point(2,0); c:=point(u1,u2);
+m:=intersection_point(mp(a,b),mp(b,c));
+h:=intersection_point(altitude(a,b,c),altitude(b,c,a));
+n:=midpoint(m,h);	
+c1:=c1_circle(n,sqrdist(n,midpoint(a,b)));
 			% Feuerbach's circle
 
-P:=Point(x1,x2);	% => x2 is the radius of the inscribed circle. 
+p:=point(x1,x2);	% => x2 is the radius of the inscribed circle. 
 
-polys:={point_on_bisector(P,A,B,C), point_on_bisector(P,B,C,A)};
+polys:={point_on_bisector(p,a,b,c), point_on_bisector(p,b,c,a)};
 
-con:=cc_tangent(c1_circle(P,x2^2),c1); 
+con:=cc_tangent(c1_circle(p,x2^2),c1); 
 
 vars:={x1,x2};
 setring(vars,{},lex);
@@ -425,13 +425,13 @@ num con mod gbasis polys;
 
 % Now let P be the incenter of the triangle ABH
 
-polys1:={point_on_bisector(P,A,B,H), point_on_bisector(P,B,H,A)};
+polys1:={point_on_bisector(p,a,b,h), point_on_bisector(p,b,h,a)};
 
-con1:=cc_tangent(c1_circle(P,x2^2),c1); 
+con1:=cc_tangent(c1_circle(p,x2^2),c1); 
 setideal(polys1,polys1);
 num con1 mod gbasis polys1;
 
-clear_ndg(); clear A,B,C,P,M,N,H,c1;
+clear_ndg(); clear a,b,c,p,m,n,h,c1;
 
 % #############################
 % Solutions to the exercises
@@ -439,92 +439,92 @@ clear_ndg(); clear A,B,C,P,M,N,H,c1;
 
 % 1)
 
-A:=Point(0,0); B:=Point(1,0); C:=Point(1,1); D:=Point(0,1);
-P:=Point(x1,x2); Q:=Point(x3,1);
+a:=point(0,0); b:=point(1,0); c:=point(1,1); d:=point(0,1);
+p:=point(x1,x2); q:=point(x3,1);
 
-polys:={point_on_line(P,par(C,pp_line(B,D))),
-	sqrdist(B,D)-sqrdist(B,P),
-	point_on_line(Q,pp_line(B,P))};
+polys:={point_on_line(p,par(c,pp_line(b,d))),
+	sqrdist(b,d)-sqrdist(b,p),
+	point_on_line(q,pp_line(b,p))};
 
-con:=sqrdist(D,P)-sqrdist(D,Q);
+con:=sqrdist(d,p)-sqrdist(d,q);
 
 setring({x1,x2,x3},{},lex);
 setideal(polys,polys);
 con mod gbasis polys;
 
-clear_ndg(); clear(A,B,C,D,P,Q);
+clear_ndg(); clear(a,b,c,d,p,q);
 
 % 2)
 
-A:=Point(u1,0); B:=Point(u2,0); C:=Point(0,u3); 
-Q:=Point(0,0);		% the pedal point on AB
-R:=pedalpoint(B,pp_line(A,C)); 
-P:=pedalpoint(A,pp_line(B,C)); 
+a:=point(u1,0); b:=point(u2,0); c:=point(0,u3); 
+q:=point(0,0);		% the pedal point on AB
+r:=pedalpoint(b,pp_line(a,c)); 
+p:=pedalpoint(a,pp_line(b,c)); 
 
-con1:=point_on_bisector(C,P,Q,R);
-con2:=angle_sum(p3_angle(P,Q,C),p3_angle(R,Q,C));
+con1:=point_on_bisector(c,p,q,r);
+con2:=angle_sum(p3_angle(p,q,c),p3_angle(r,q,c));
 
-clear_ndg(); clear(A,B,C,P,Q,R);
+clear_ndg(); clear(a,b,c,p,q,r);
 
 % 3)
 
-A:=Point(u1,0); B:=Point(u2,0); C:=Point(0,u3); 
-P:=pedalpoint(A,pp_line(B,C)); 
-Q:=pedalpoint(B,pp_line(A,C)); 
-R:=pedalpoint(C,pp_line(A,B));
+a:=point(u1,0); b:=point(u2,0); c:=point(0,u3); 
+p:=pedalpoint(a,pp_line(b,c)); 
+q:=pedalpoint(b,pp_line(a,c)); 
+r:=pedalpoint(c,pp_line(a,b));
 
-P1:=pedalpoint(P,pp_line(A,B));
-P2:=pedalpoint(P,pp_line(A,C));
-Q1:=pedalpoint(Q,pp_line(A,B));
-Q2:=pedalpoint(Q,pp_line(B,C));
-R1:=pedalpoint(R,pp_line(A,C));
-R2:=pedalpoint(R,pp_line(B,C));
+p1:=pedalpoint(p,pp_line(a,b));
+p2:=pedalpoint(p,pp_line(a,c));
+q1:=pedalpoint(q,pp_line(a,b));
+q2:=pedalpoint(q,pp_line(b,c));
+r1:=pedalpoint(r,pp_line(a,c));
+r2:=pedalpoint(r,pp_line(b,c));
 
-con:=for each X in {Q2,R1,R2} collect p4_circle(P1,P2,Q1,X);
+con:=for each x in {q2,r1,r2} collect p4_circle(p1,p2,q1,x);
 
-clear_ndg(); clear(O,A,B,C,P,Q,R,P1,P2,Q1,Q2,R1,R2);
+clear_ndg(); clear(o,a,b,c,p,q,r,p1,p2,q1,q2,r1,r2);
 
 % 4) 
 
-A:=Point(u1,0); B:=Point(u2,0); C:=Point(0,u3); 
+a:=point(u1,0); b:=point(u2,0); c:=point(0,u3); 
 		% => Pedalpoint from C is (0,0)
-M:=intersection_point(mp(A,B),mp(B,C));
+m:=intersection_point(mp(a,b),mp(b,c));
 
 % Prove (2*h_c*R = a*b)^2
 
-con:=4*u3^2*sqrdist(M,A)-sqrdist(C,B)*sqrdist(A,C);
+con:=4*u3^2*sqrdist(m,a)-sqrdist(c,b)*sqrdist(a,c);
 
-clear_ndg(); clear(A,B,C,M);
+clear_ndg(); clear(a,b,c,m);
 
 % 5. A solution of constructive type.
 
 on gcd;
-O:=Point(0,u1); A:=Point(0,0);	% hence k has radius u1.
-B:=Point(u2,0);
-M:=midpoint(A,B);
-D:=choose_pc(O,u1,u3); 
-k:=c1_circle(O,u1^2);
-C:=other_cl_point(D,k,pp_line(M,D));
-Eh:=other_cl_point(D,k,pp_line(B,D));
-F:=other_cl_point(C,k,pp_line(B,C));
+o:=point(0,u1); a:=point(0,0);	% hence k has radius u1.
+b:=point(u2,0);
+m:=midpoint(a,b);
+d:=choose_pc(o,u1,u3); 
+k:=c1_circle(o,u1^2);
+c:=other_cl_point(d,k,pp_line(m,d));
+eh:=other_cl_point(d,k,pp_line(b,d));
+f:=other_cl_point(c,k,pp_line(b,c));
 
-con:=parallel(pp_line(A,B),pp_line(Eh,F));
+con:=parallel(pp_line(a,b),pp_line(eh,f));
 
 off gcd;
-clear_ndg(); clear(O,A,B,C,D,Eh,F,M,k);
+clear_ndg(); clear(o,a,b,c,d,eh,f,m,k);
 
 % 6)
 
-Z:=Point(0,0); X:=Point(0,1); Y:=Point(0,-1); 
-B:=Point(u1,0); C:=Point(u2,0); P:=Point(0,u3);
-M:=Point(x1,x2); N:=Point(x3,x4); 
-A:=Point(x5,0); D:=Point(x6,0);
+z:=point(0,0); x:=point(0,1); y:=point(0,-1); 
+b:=point(u1,0); c:=point(u2,0); p:=point(0,u3);
+m:=point(x1,x2); n:=point(x3,x4); 
+a:=point(x5,0); d:=point(x6,0);
 
-polys:={p4_circle(X,Y,B,N), p4_circle(X,Y,C,M),
-	p4_circle(X,Y,B,D), p4_circle(X,Y,C,A),
-	collinear(B,P,N), collinear(C,P,M)};
+polys:={p4_circle(x,y,b,n), p4_circle(x,y,c,m),
+	p4_circle(x,y,b,d), p4_circle(x,y,c,a),
+	collinear(b,p,n), collinear(c,p,m)};
 
-con:=concurrent(pp_line(A,M),pp_line(D,N),pp_line(X,Y));
+con:=concurrent(pp_line(a,m),pp_line(d,n),pp_line(x,y));
 
 vars:={x1,x2,x3,x4,x5,x6};
 setring(vars,{},lex);
@@ -532,18 +532,18 @@ res:=groebfactor(polys,{x5-u2,x1-u2,x6-u1,x3-u1});
 	% constraints A\neq C, M\neq C, D\neq B, N\neq B
 for each u in res collect con mod u;
 
-clear_ndg(); clear(Z,X,Y,B,C,P,M,N,A,D);
+clear_ndg(); clear(z,x,y,b,c,p,m,n,a,d);
 
 % 7)
 
-M:=Point(0,0);
-A:=Point(0,u1); B:=Point(-1,0); C:=Point(1,0); 
-Eh:=varpoint(A,B,x1); F:=varpoint(A,C,x2);
-O:=intersection_point(pp_line(A,M),lot(B,pp_line(A,B))); 
-Q:=intersection_point(pp_line(Eh,F),pp_line(B,C));
+m:=point(0,0);
+a:=point(0,u1); b:=point(-1,0); c:=point(1,0); 
+eh:=varpoint(a,b,x1); f:=varpoint(a,c,x2);
+o:=intersection_point(pp_line(a,m),lot(b,pp_line(a,b))); 
+q:=intersection_point(pp_line(eh,f),pp_line(b,c));
 
-con1:=num orthogonal(pp_line(O,Q),pp_line(Eh,Q));
-con2:=num sqrdist(Q,midpoint(Eh,F));
+con1:=num orthogonal(pp_line(o,q),pp_line(eh,q));
+con2:=num sqrdist(q,midpoint(eh,f));
 
 vars:={x1,x2};
 setring(vars,{},lex);
@@ -559,48 +559,48 @@ for each u in p2 collect con1 mod u;
 
 u1^2 * (x1 - x2)^2 + (x1 + x2 -2)^2 mod second p2;
 
-clear_ndg(); clear(M,A,B,C,O,Eh,F,Q);
+clear_ndg(); clear(m,a,b,c,o,eh,f,q);
 
 % 8)
 
 on gcd; 
 
-A:=Point(u1,0); B:=Point(u2,0); l1:=pp_line(A,B);
-M:=Point(0,u3);		% the incenter, hence u3 = incircle radius 
+a:=point(u1,0); b:=point(u2,0); l1:=pp_line(a,b);
+m:=point(0,u3);		% the incenter, hence u3 = incircle radius 
 
-C:=intersection_point(symline(l1,pp_line(A,M)),
-		symline(l1,pp_line(B,M)));  
+c:=intersection_point(symline(l1,pp_line(a,m)),
+		symline(l1,pp_line(b,m)));  
 
-N:=intersection_point(mp(A,B),mp(B,C)); % the outcenter
+n:=intersection_point(mp(a,b),mp(b,c)); % the outcenter
 
-sqr_rad:=sqrdist(A,N);	% the outcircle sqradius.
+sqr_rad:=sqrdist(a,n);	% the outcircle sqradius.
 
-(sqr_rad-sqrdist(M,N))^2-4*u3^2*sqr_rad;
+(sqr_rad-sqrdist(m,n))^2-4*u3^2*sqr_rad;
 
 off gcd;
-clear_ndg(); clear A,B,C,M,N,l1,sqr_rad;
+clear_ndg(); clear a,b,c,m,n,l1,sqr_rad;
 
 % 9)
 
 on gcd;
 
-A:=Point(0,0); B:=Point(1,0); M:=Point(u1,0);
-C:=Point(u1,u1); F:=Point(u1,1-u1);
+a:=point(0,0); b:=point(1,0); m:=point(u1,0);
+c:=point(u1,u1); f:=point(u1,1-u1);
 
-c1:=red_hom_coords p3_circle(A,M,C); 
-c2:=red_hom_coords p3_circle(B,M,F);
-N:=other_cc_point(M,c1,c2);
+c1:=red_hom_coords p3_circle(a,m,c); 
+c2:=red_hom_coords p3_circle(b,m,f);
+n:=other_cc_point(m,c1,c2);
 
-point_on_line(N,pp_line(A,F));
-point_on_line(N,pp_line(B,C));
+point_on_line(n,pp_line(a,f));
+point_on_line(n,pp_line(b,c));
 
-l1:=red_hom_coords pp_line(M,N);
+l1:=red_hom_coords pp_line(m,n);
 l2:=sub(u1=u2,l1);
 
 intersection_point(l1,l2); % = (1/2,-1/2)
 
 off gcd;
-clear_ndg(); clear A,B,C,F,M,N,c1,c2,l1,l2;
+clear_ndg(); clear a,b,c,f,m,n,c1,c2,l1,l2;
 
 % ####################
 % Some more examples
@@ -615,13 +615,13 @@ clear_ndg(); clear A,B,C,F,M,N,c1,c2,l1,l2;
 % Claim: OH, AA1, BB1 are concurrent.
 % --------------------------
 
-A:=Point(u1,0); B:=Point(u2,0); C:=Point(0,u3); 
-H:=intersection_point(altitude(C,A,B),altitude(A,B,C));
-O:=circle_center(p3_circle(A,B,C)); 
-A1:=circle_center(p3_circle(H,B,C)); 
-B1:=circle_center(p3_circle(H,A,C)); 
+a:=point(u1,0); b:=point(u2,0); c:=point(0,u3); 
+h:=intersection_point(altitude(c,a,b),altitude(a,b,c));
+o:=circle_center(p3_circle(a,b,c)); 
+a1:=circle_center(p3_circle(h,b,c)); 
+b1:=circle_center(p3_circle(h,a,c)); 
 
-con:=concurrent(pp_line(O,H),pp_line(A,A1),pp_line(B,B1));
+con:=concurrent(pp_line(o,h),pp_line(a,a1),pp_line(b,b1));
 
 end;
 

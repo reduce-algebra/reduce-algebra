@@ -28,7 +28,7 @@ module indsymm;
 
 fluid '(indl);   % Needed by Common Lisp.
 
-comment index_symmetries u(k,l,m,n):    symmetric     in {k,l},{m,n}
+COMMENT index_symmetries u(k,l,m,n):    symmetric     in {k,l},{m,n}
                                         antisymmetric in {{k,l},{m,n}},
                          g(k,l),h(k,l): symmetric;
 

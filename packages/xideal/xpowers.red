@@ -28,7 +28,7 @@ module xpowers;
 %
 
 
-Comment.  Factor ordering within a product is decided using the current
+COMMENT.  Factor ordering within a product is decided using the current
 kernel order.  Term ordering is decided by ordering of the valuation of
 terms in the commutative monoid.  The valuation of a poly is simply the
 list of factors in the leading power.  Monoid ordering can be either

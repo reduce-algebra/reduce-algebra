@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(gb_rcsid!* gb_copyright!*);
@@ -51,7 +51,7 @@ off1 'cgbcontred;
 off1 'cgbcounthf;
 off1 'cgbcheckg;
 
-!*cgbsloppy := T;
+!*cgbsloppy := t;
 !*cgbsugar := nil;  % Indicator for using sugar property of VDP's.
 		    % This is on for gb computation and off for using
 		    % the code from external procedures. Do not
@@ -106,20 +106,20 @@ macro procedure gb_mkinterface(argl);
       s2s := eval nth(argl,8);
       s := eval nth(argl,9);
       postfix := eval nth(argl,10);
-      modes := eval nth(argl,11);      
+      modes := eval nth(argl,11);
       len := length a2sl1;
       args := for i := 1:len+3 collect mkid('a,i);
       sm := intern compress append('(!g !b !_),explode bname);
       % Define the symbolic mode interface
       if (null modes or modes eq 'sm) then <<
-      	 smi := intern compress nconc(explode sm,explode postfix);      
+      	 smi := intern compress nconc(explode sm,explode postfix);
       	 prgn := {'put,mkquote smi,''number!-of!-args,len+3} . prgn;
       	 prgn := {'de,smi,args,{'gb_interface!$,mkquote sm, mkquote a2sl1,
 	    mkquote a2sl2,mkquote defl,mkquote xvfn,mkquote s2a,mkquote s2s,
-	    mkquote s,T,'list . args}} . prgn
+	    mkquote s,t,'list . args}} . prgn
       >>;
       if (null modes or modes eq 'am) then <<
-      	 % Define the algebraic mode interface      
+      	 % Define the algebraic mode interface
       	 ami := bname;
       	 %      ami := intern compress append('(!g !b),explode bname);
       	 psval := intern compress nconc(explode ami,'(!! !$));
@@ -134,17 +134,17 @@ macro procedure gb_mkinterface(argl);
    end;
 
 gb_mkinterface('gb,'(gb_a2s!-psys),'(gb_a2s2!-psys),
-   nil,'gb_xvars!-psys,'gb_s2a!-gbx,'gb_s2s!-gb,T,'f,nil);
+   nil,'gb_xvars!-psys,'gb_s2a!-gbx,'gb_s2s!-gb,t,'f,nil);
 
 %% gb_mkinterface('gbgsys,'(gb_a2s!-psys),'(gb_a2s2!-psys),
 %%    nil,'gb_xvars!-psys,'gb_s2a!-gsys,'gb_s2s!-gsys,T,'f,nil);
 
 gb_mkinterface('reduce,'(gb_a2s!-pol gb_a2s!-psys),
    '(gb_a2s2!-pol gb_a2s2!-psys),
-   nil,'gb_xvars!-ppsys,'gb_s2a!-pol,'gb_s2s!-pol,T,'f,nil);
+   nil,'gb_xvars!-ppsys,'gb_s2a!-pol,'gb_s2s!-pol,t,'f,nil);
 
 gb_mkinterface('ltb,'(gb_a2s!-psys),'(gb_a2s2!-psys),
-   nil,'gb_xvars!-psys,'gb_s2a!-gb,'gb_s2s!-gb,T,'f,nil);
+   nil,'gb_xvars!-psys,'gb_s2a!-gb,'gb_s2s!-gb,t,'f,nil);
 
 procedure gb_a2s!-psys(l);
    % Groebner bases algebraic mode to symbolic mode polynomial system.
@@ -172,7 +172,7 @@ procedure gb_s2a!-gbx(l);
    % side effet the global variable gltb provided !*gltbasis is on.
    <<
       if !*gltbasis then
-      	 gltb := gb_gb2gltb l;      
+      	 gltb := gb_gb2gltb l;
       gb_s2a!-gb l
    >>;
 
@@ -232,7 +232,7 @@ procedure gb_interface!$(fname,a2sl1,a2sl2,defl,xvfn,s2a,s2s,s,smp,argl);
 	 nargl := gb_am!-pargl(fname,a2sl1,argl,defl);
 	 vl := apply(xvfn,append(nargl,{td_vars()}));
 	 oenv := vdp_init(car vl,td_sortmode(),td_sortextension());
-      	 gvarslast := 'list . car vl;      
+      	 gvarslast := 'list . car vl;
       >> else <<
 	 w := gb_sm!-pargl(argl);
 	 nargl := car w;
@@ -240,12 +240,12 @@ procedure gb_interface!$(fname,a2sl1,a2sl2,defl,xvfn,s2a,s2s,s,smp,argl);
 	 c := caddr w;
 	 x := cadddr w;
 	 vl := apply(xvfn,append(nargl,{m}));
-	 oenv := vdp_init(car vl,c,x);	       
-      >>;	    
+	 oenv := vdp_init(car vl,c,x);
+      >>;
       w := errorset({'gb_interface1!$,
 	 mkquote fname,mkquote a2sl2,mkquote s2a,mkquote s2s,mkquote s,
 	 mkquote smp,mkquote argl, mkquote nargl,mkquote car vl,
-	 mkquote cdr vl},T,!*backtrace);
+	 mkquote cdr vl},t,!*backtrace);
       vdp_cleanup oenv;
       if errorp w then
       	 rederr {"Error during ",fname};
@@ -320,12 +320,12 @@ procedure gb_domainchk();
    % GB computations.
    if not memq(dmode!*,'(nil)) then
       rederr bldmsg("gb does not support domain: %w",get(dmode!*,'dname));
-      
+
 procedure gb_vars(l,vl);     %DROPPED: depend,rules,zero divisors.
    % Groebner bases variables. [l] is a list of SF's; [vl] is the list
    % of main variables. Returns a pair $(m . p)$ where $m$ and $p$ are
    % list of variables. $m$ is the list of used main variables and $p$
-   % is the list of used parameters. 
+   % is the list of used parameters.
    begin scalar w,m,p;
       for each f in l do
 	 w := union(w,kernels f);
@@ -373,7 +373,7 @@ procedure gb_gbgsys(p);
 
 procedure gb_gb0(p,dummy);
    gb_gb p;
-   
+
 procedure gb_gb(p);
    begin scalar spac,p1,savetime,!*factor,!*exp,intvdpvars!*,!*gcd,!*ezgcd,
 	 dip_vars!*,secondvalue!*,thirdvalue!*,cgb_gstat!*,!*cgbsugar;
@@ -381,11 +381,11 @@ procedure gb_gb(p);
 	 cgb_tr1count!*,cgb_tr2count!*,cgb_tr3count!*,cgb_b4count!*,
 	 cgb_strangecount!*,cgb_paircount!*,cgb_hfaccount!*,cgb_gcount!*,
 	 cgb_gbcount!*,cgb_updbcount!*,cgb_updbcountp!*,cgb_updbcalls!*;
-      !*exp := !*gcd := !*ezgcd := T;
-      !*cgbsugar := T;
+      !*exp := !*gcd := !*ezgcd := t;
+      !*cgbsugar := t;
       if !*cgbstat then
       	 savetime := time();
-      if !*cgbcheckg then	 
+      if !*cgbcheckg then
       	 cgb_gstat!* := nil;
       cgb_contcount!* := cgb_mincontred!*;
       if !*cgbstat then
@@ -484,7 +484,7 @@ procedure gb_traverso(g0);
 	    cgb_hcount!* := cgb_hcount!* #+ 1;
 	 if vdp_zero!? h then
 	    (if !*cgbstat then
-	       cgb_hzerocount!* := cgb_hzerocount!* #+ 1)	    
+	       cgb_hzerocount!* := cgb_hzerocount!* #+ 1)
 	 else if vdp_unit!? h then <<
 	    h := gb_enumerate h;
 	    d := nil;
@@ -619,7 +619,7 @@ procedure gb_traverso!-pairlist(gk,g,d);
 
 procedure gb_tr2crit(n,r);
    % delete equivalents to coprime lcm
-   for each p in n join 
+   for each p in n join
       if ev_member(car p,r) then <<
 	 if !*cgbstat then
 	    cgb_tr2count!* := cgb_tr2count!* #+ 1;
@@ -671,7 +671,7 @@ procedure gb_buchcrit4t(e1,e2);
    % nonconstructive test of lcm(e1,e2) = e1 + e2 equivalent: no
    % matches of nonzero elements.
    not ev_disjointp(e1,e2);
-   
+
 procedure gb_cplistsort(g,sloppy);
    begin scalar gg;
       for each p in g do
@@ -750,7 +750,7 @@ procedure gb_spolynomial(pr);
  	 return s;
 %      return vdp_setsugar(gb_strange!-reduction(s,p1,p2),cadddr pr)
       return gb_strange!-reduction(s,p1,p2)  % TODO: normal suger for
-					     % special cases. 
+					     % special cases.
    end;
 
 procedure gb_spolynomial1(p1,p2);
@@ -783,7 +783,7 @@ procedure gb_strange!-reduction(s,p1,p2);
       saves := s;
       tp1 := vdp_evlmon p1;
       tp2 := vdp_evlmon p2;
-      c := T; while c and not vdp_zero!? s do <<
+      c := t; while c and not vdp_zero!? s do <<
 	 ts := vdp_evlmon s;
 	 if gb_buch!-ev_divides!?(tp2,ts) then
 	    s := gb_reduceonestepint(s,vdp_zero(),vdp_lbc s,ts,p2)
@@ -814,7 +814,7 @@ procedure gb_normalform(f,g);
  	 c := vdp_lbc f;
 	 divisor := gb_searchinlist(vev,g);
 	 if divisor then <<
-	    tai := T;
+	    tai := t;
 	    if vdp_monp divisor then
 	       f := vdp_cancelmev(f,vdp_evlmon divisor)
 	    else <<
@@ -965,7 +965,7 @@ procedure gb_vdpvordopt(w,vars);
       vars := gb_vdpvordopt31 intvdpvars!*;
       return vars
    end;
- 
+
 procedure gb_vdpvordopt31(u);
    begin scalar v,y;
       if null u then
@@ -1131,7 +1131,7 @@ procedure vdp_prod(d1,d2);
    end;
 
 procedure vdp_zero();
-   vdp_make('invalid,'invalid,nil);   
+   vdp_make('invalid,'invalid,nil);
 
 procedure vdp_mred(u);
    begin scalar r;
@@ -1258,7 +1258,7 @@ procedure gb_reduce(f,g);
  	 c := vdp_lbc f;
 	 divisor := gb_searchinlist(vev,g);
 	 if divisor then <<
-	    tai := T;
+	    tai := t;
 	    if vdp_monp divisor then
 	       f := vdp_cancelmev(f,vdp_evlmon divisor)
 	    else
@@ -1266,7 +1266,7 @@ procedure gb_reduce(f,g);
 	 >> else <<
 	    f := gb_shift(f,f1);
 	    f1 := secondvalue!*
-	 >> 
+	 >>
       >>;
       return if tai then f1 else fold
    end;
@@ -1280,7 +1280,7 @@ procedure gb_reduceonesteprat(f,c,vev,g1);
    begin scalar b,rg1,vevcof;
       rg1 := vdp_mred g1;
       if vdp_zero!? rg1 then  % g1 is monomial
-	 return vdp_mred f; 
+	 return vdp_mred f;
       b := bc_quot(c,vdp_lbc g1);
       vevcof := ev_dif(vev,vdp_evlmon g1);
       return vdp_ilcombr(vdp_mred f,bc_a2bc 1,rg1,bc_neg b,vevcof);

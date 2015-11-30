@@ -3238,7 +3238,7 @@ term_printf(
         {   nil_as_base
 /*
  * If the user had used "-g" on the command line that will have set
- * errorset_min and I use that to trigger turing on gc and fasl messages.
+ * errorset_min and I use that to trigger during on gc and fasl messages.
  */
             if (errorset_min == 3) miscflags |= GC_MESSAGES | FASL_MESSAGES;
         }
@@ -4430,5 +4430,3 @@ PROC_handle PROC_rest(PROC_handle p)
 
 
 /* End of csl.c */
-
-

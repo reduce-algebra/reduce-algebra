@@ -1,4 +1,4 @@
-module meijerg;  % Meijer's G-function.
+module MeijerG;  % Meijer's G-function.
 
 % Author : Victor Adamchik, Byelorussian University Minsk, Byelorussia.
 
@@ -31,7 +31,7 @@ module meijerg;  % Meijer's G-function.
 symbolic inline procedure meijerg_fehler();
         rerror('specialf,140,"Wrong arguments to operator MeijerG");
 
-symbolic procedure simpMeijerG(U);
+symbolic procedure simpmeijerg(u);
 
 begin scalar list1,list2,list1a,list2a;
 
@@ -58,7 +58,7 @@ if eqcar(list1,'MeijerG) then return list1 else return
                         end;
 
 remflag('(MeijerG),'full);
-put('MeijerG,'simpfn,'simpMeijerG);
+put('MeijerG,'simpfn,'simpmeijerg);
 
 if not getd('simpmeijerg) then
         flag('(f6 f8 f9 f10 f11 f12 f13 f14 f26 f27 f28 f29 f30
@@ -66,7 +66,7 @@ if not getd('simpmeijerg) then
 
 switch tracespecfns;
 
-symbolic procedure GFMsq(a,b,z);
+symbolic procedure gfmsq(a,b,z);
  begin scalar v1,v2; integer m,n,p,q,aa,bb;
   v1:=redpar(car b,cdr a);
   v2:=redpar(cdr b,car a);
@@ -77,20 +77,20 @@ symbolic procedure GFMsq(a,b,z);
   m:=length(car v1); n:=length(cadr v2);
   q:=m + length(car v2); p:=n + length(cadr v1);   %WN
   if !*tracespecfns then
-        << prin2 list( "MeijerG<",m,n,p,q,">",a,"|",b,"|",Z,"|aa=",aa,
+        << prin2 list( "MeijerG<",m,n,p,q,">",a,"|",b,"|",z,"|aa=",aa,
                        "|bb=",bb);
         terpri()>>;
   if p=0 and q=0 then return
         << rerror('specialf,141,"DIVERGENT INTEGRAL");
-          'FAIL
+          'fail
         >>;
-  if greaterp(p,q) then return GFMinvers(aa,bb,z) else
+  if greaterp(p,q) then return gfminvers(aa,bb,z) else
   if greaterp(q,3) or greaterp(p,3) then return
-     simpGtoH(aa,bb,z) else
+     simpgtoh(aa,bb,z) else
   if q=3 and p=1 then go to q3 else
   if q=2 and (p=0 or p=1) then go to q2 else
   if q=1 then go to q1 else
-          return simpGtoH(aa,bb,z);
+          return simpgtoh(aa,bb,z);
 
 q1:if p=0 and n=0 and m=1 then return
       multsq(expdeg(z,car b),expdeg(simp!* 'e,negsq z)) else
@@ -118,7 +118,7 @@ q1:if p=0 and n=0 and m=1 then return
                       subtrsq(car a,addsq('(1 . 1),car b)))))
             else return  rerror('specialf,142,
                         "***** parameter error in G-function");
-q2:  if p=2 then  return  simpGtoH(aa,bb,z) else
+q2:  if p=2 then  return  simpgtoh(aa,bb,z) else
      if p=1 then go to q2p1 else
      if p=0 and m=1 then return f6(car b,cadr b,z) else
      if p=0 and m=2 then return f8(car b,cadr b,z) else
@@ -128,21 +128,21 @@ q2:  if p=2 then  return  simpGtoH(aa,bb,z) else
 q2p1: if m=1 and n=0 then return q2p1m1n0(a,b,z) else
       if m=2 and n=0 then return q2p1m2n0(a,b,z) else
       if m=2 and n=1 then return q2p1m2n1(a,b,z) else
-                      return simpGtoH(aa,bb,z);
+                      return simpgtoh(aa,bb,z);
 
 q3:   if p=1 then go to q3p1 else
-                      return simpGtoH(aa,bb,z);
+                      return simpgtoh(aa,bb,z);
 
 q3p1: if m=1 and n=1 then return q3p1m1n1(a,b,z) else
       if m=2 and n=0 then return q3p1m2n0(a,b,z) else
       if m=2 and n=1 then return q3p1m2n1(a,b,z) else
       if m=3 and n=0 then return q3p1m3n0(a,b,z) else
       if m=3 and n=1 then return q3p1m3n1(a,b,z) else
-                      return simpGtoH(aa,bb,z);
+                      return simpgtoh(aa,bb,z);
 end;
 
-symbolic procedure GFMinvers(a,b,z);
-  GFMsq( (pdifflist(('1 . 1),car b) . pdifflist('(1 . 1),cdr b)),
+symbolic procedure gfminvers(a,b,z);
+  gfmsq( (pdifflist(('1 . 1),car b) . pdifflist('(1 . 1),cdr b)),
          (pdifflist('(1 . 1),car a) . pdifflist('(1 . 1),cdr a)),
          invsq z);
 
@@ -158,15 +158,15 @@ symbolic procedure f8(a,b,z);
 %*     Representation G-function through hypergeometric functions      *
 %***********************************************************************
 
-symbolic procedure simpGtoH(a,b,z);
+symbolic procedure simpgtoh(a,b,z);
    %a=((a1,,,an).(an+1,,,ap)).
    %b=((b1,,,bm).(bm+1,,,bq)).
    %z -- argument.
    %value is the generalized hypergeometric function.
    if length(car b) + length(cdr b) >= length(car a) + length(cdr a)
-     then fromGtoH(a,b,z)
+     then fromgtoh(a,b,z)
    else
-      fromGtoH(
+      fromgtoh(
         cons(pdifflist('(1 . 1),car b),pdifflist('(1 . 1),cdr b)),
         cons(pdifflist('(1 . 1),car a),pdifflist('(1 . 1),cdr a)),
         invsq z);
@@ -192,7 +192,7 @@ symbolic procedure simpGtoH(a,b,z);
 %  if listfool(car b) then GFMlogcase(a,b,z)
 %                    else allsimplpoles(car b,a,b,z);
 
-symbolic procedure fromGtoH(a,b,z);
+symbolic procedure fromgtoh(a,b,z);
   %a=((a1,,,an).(an+1,,,ap)).
   %b=((b1,,,bm).(bm+1,,,bq)).
   %z -- argument.
@@ -200,18 +200,18 @@ symbolic procedure fromGtoH(a,b,z);
   if null car b then gfmexit(a,b,z)
     else
   if not null a and listfooltwo(difflist(car b,'(-1 . 1)),car a)
-     then 'FAIL
+     then 'fail
     else
- if listfool(car b) then GFMlogcase(a,b,z)
+ if listfool(car b) then gfmlogcase(a,b,z)
 
  else
   if length car a + length cdr a <= length car b + length cdr b then
       allsimplpoles(car b,a,b,z) else allsimplpoles(car a,a,b,z);
 
-symbolic procedure GFMexit(a,b,z);
+symbolic procedure gfmexit(a,b,z);
  begin scalar mnpq,aa,bb;
   if (length car a + length cdr a) > (length car b + length cdr b)
-                then return GFMexitinvers(a,b,z);
+                then return gfmexitinvers(a,b,z);
    mnpq := 'lst . list(length car b,length car a,
                        length car a + length cdr a,
                        length car b + length cdr b);
@@ -221,8 +221,8 @@ symbolic procedure GFMexit(a,b,z);
         list(mnpq,aa,bb,prepsq z));
   end;
 
-symbolic procedure GFMexitinvers(a,b,z);
-  GFMexit((pdifflist('(1 . 1),car b) . pdifflist('(1 . 1),cdr b)),
+symbolic procedure gfmexitinvers(a,b,z);
+  gfmexit((pdifflist('(1 . 1),car b) . pdifflist('(1 . 1),cdr b)),
           (pdifflist('(1 . 1),car a) . pdifflist('(1 . 1),cdr a)),
            invsq z) ;
 
@@ -246,7 +246,7 @@ symbolic procedure infinitysimplpoles(a,b,v,z);
          if null a or null cdr a then '(1 . 1) else
            multgamma(difflist(cdr a,v))));
   return multsq(multsq(coefgam,expdeg(z,v)),
-            GHFsq(list(length(car a) + length(cdr a),
+            ghfsq(list(length(car a) + length(cdr a),
                        length(car b) + length(cdr b)),
              if null a then nil else
              if null car a then pdifflist(addsq('(1 . 1),v),cdr a)
@@ -271,7 +271,7 @@ symbolic procedure q2p1m1n0(a,b,z);
   v:=addend(a,b,'(1 . 2));
   if null car addsq(cadr v,caddr v) then
                  return f7(car v,cadr v,z) else
-                 return simpGtoH((nil . a),redpar1(b,1),z);
+                 return simpgtoh((nil . a),redpar1(b,1),z);
   end;
 
 symbolic procedure f7(a,b,z);
@@ -303,7 +303,7 @@ symbolic procedure q2p1m2n1(a,b,z);
     ((equal(cdadr v,2) and not numberp(cadar v)) or
     not equal(cdadr v,2)) then
                return f10(car v,cadr v,z) else
-               return simpGtoH((a . nil),(b . nil),z);
+               return simpgtoh((a . nil),(b . nil),z);
  end;
 
 symbolic procedure f10(a,b,z);
@@ -332,7 +332,7 @@ symbolic procedure q3p1m2n1(a,b,z);
                               return f35(car b,caddr b,z) else
     if equal(subtrsq(car a,cadr b),'(1 . 2)) and equal(car a,car b) then
                               return f35(cadr b,caddr b,z) else
-             return simpGtoH((a . nil),redpar1(b,2),z);
+             return simpgtoh((a . nil),redpar1(b,2),z);
  m: v:=addend(a,b,'(1 . 2));   v1:=cdr v;
     if null caar v1 and null car addsq(cadr v1,caddr v1) then
                               return f32( car v,cadr v1,z) else
@@ -342,7 +342,7 @@ symbolic procedure q3p1m2n1(a,b,z);
        ((not equal(cdar v1,1) and not equal(cdar v1,2)) or
          not numberp(caar v1))
                            then  return f33(car v,car v1,z);
-             return simpGtoH((a . nil),redpar1(b,2),z);
+             return simpgtoh((a . nil),redpar1(b,2),z);
   end;
 
 symbolic procedure f34(a,b,z);
@@ -388,7 +388,7 @@ symbolic procedure q3p1m2n0(a,b,z);
        ((equal(cdar v1,1) and not numberp(caar v1)) or
        not equal(cdar v1,1))
                   then return f30(car v,car v1,z);
-             return simpGtoH((nil . a),redpar1(b,2),z);
+             return simpgtoh((nil . a),redpar1(b,2),z);
   end;
 
 symbolic procedure f29(a,b,z);
@@ -418,7 +418,7 @@ symbolic procedure q3p1m1n1(a,b,z);
     if (null caadr v1 or null caaddr v1)
       and (null car addsq(car v1,cadr v1)
     or null car addsq(car v1,caddr v1)) then return f27(car v,car v1,z);
-                  return simpGtoH((a . nil),redpar1(b,1),z);
+                  return simpgtoh((a . nil),redpar1(b,1),z);
   end;
 
 symbolic procedure f26(c,a,z);
@@ -443,7 +443,7 @@ symbolic procedure q3p1m3n0(a,b,z);
                        return f36(car v,car v1,z) else
     if null car(addsq(cadr v1,caddr v1)) and null caar v1 then
                        return f36(car v,cadr v1,z);
-                   return simpGtoH((nil . a),(b . nil),z);
+                   return simpgtoh((nil . a),(b . nil),z);
   end;
 
 symbolic procedure f36(a,b,z);
@@ -466,16 +466,16 @@ symbolic procedure q3p1m3n1(a,b,z);
     if equal(subtrsq(car a,car b),'(1 . 2)) and
       null numr(addsq(addsq(cadr b,caddr b),multf(-2,caar b) ./ cdar b))
                        then f39(car b,cadr b,z) else
-                       simpGtoH((a . nil),(b . nil),z);
+                       simpgtoh((a . nil),(b . nil),z);
 
 symbolic procedure f38(a,b,z);
  if parfool(subtrsq('(1 . 1),addsq(a,b))) or
     parfool(addsq('(1 . 1),subtrsq(b,a))) then
-   simpGtoH((list(a) . nil),(list(a,b,negsq b) . nil),z) else
+   simpgtoh((list(a) . nil),(list(a,b,negsq b) . nil),z) else
  multsq(expdeg('(4 . 1),subtrsq('(1 . 1),a)),
         multsq(multgamma(list(subtrsq( '(1 . 1),addsq(a,b)),
                 addsq(b,subtrsq('(1 . 1),a)))),
-                lommel2sq(subtrsq(multsq('( 2 . 1),a),'(1 . 1))
+                Lommel2sq(subtrsq(multsq('( 2 . 1),a),'(1 . 1))
                 ,multsq('(2 . 1),b),multsq('(2 . 1),
                         simpx1(prepsq z,1,2)))));
 
@@ -486,7 +486,7 @@ symbolic procedure f39(a,b,z);
   simpfunc('cos,multsq(simp!* 'pi,subtrsq(b,a))))),multsq(hankel1sq(
   subtrsq(b,a),simpx1(prepsq z,1,2)),hankel2sq(subtrsq(b,a),
   simpx1(prepsq z,1,2)))) else
-       simpGtoH((list(addsq(a,'(1 . 2))) . nil),
+       simpgtoh((list(addsq(a,'(1 . 2))) . nil),
        (list(b,a,subtrsq(multsq('(2 . 1),a),b)) . nil),z);
 
 %***********************************************************************
@@ -498,15 +498,15 @@ fluid '(!*infinitymultpole);
 symbolic inline procedure priznak(u,v);
  for each uu in u collect ( uu . v) ;
 
-symbolic procedure GFMlogcase(a,b,z);
+symbolic procedure gfmlogcase(a,b,z);
  begin scalar w;
-  w:=allpoles(logcase(append(priznak(cdr a,'N),priznak(car b,'P))));
+  w:=allpoles(logcase(append(priznak(cdr a,'n),priznak(car b,'p))));
   w:=sortpoles(w);
   if null !*infinitymultpole then
-              return GFMlogcasemult(w,a,b,z)
+              return gfmlogcasemult(w,a,b,z)
      else << !*infinitymultpole := nil;
         % to prevent lots of integrals from failing.
-             return 'FAIL>>;
+             return 'fail>>;
  end;
 
 array res(5);
@@ -515,7 +515,7 @@ symbolic procedure allpoles uu;
   for each u in uu join
    begin scalar w;integer kr;
    while u do <<
-    if equal(cdar u,'N) then kr:=kr-1
+    if equal(cdar u,'n) then kr:=kr-1
                         else kr:=kr+1;
     if kr > 0 then
      if not null cdr u then
@@ -525,7 +525,7 @@ symbolic procedure allpoles uu;
         else w:=w
        else
           <<    w:=cons(list(kr,'infinity,negsq caar u),w);
-                if not eqn(kr,1) then !*infinitymultpole:=T
+                if not eqn(kr,1) then !*infinitymultpole:=t
           >>;
     u:=cdr u;
    >>;
@@ -535,9 +535,9 @@ symbolic procedure allpoles uu;
 symbolic procedure logcase u;
    begin scalar blog,blognew,sb;
    sb:=u; u:=cdr sb;
- M1: if null sb then return blognew;
+ m1: if null sb then return blognew;
 
- M2: if null u then
+ m2: if null u then
            << if not null blog then
                         << blognew:=cons(blog,blognew);
                            blog:=nil
@@ -545,7 +545,7 @@ symbolic procedure logcase u;
                                else
                            blognew:=cons(list car sb,blognew);
               sb:=cdr sb;  if sb then u:=cdr sb;
-              GOTO M1
+              goto m1
            >>
           else
            if equal(caar sb,caar u) or
@@ -561,11 +561,11 @@ symbolic procedure logcase u;
                     blog:=ordern(car u,blog);
                  sb:=delete(car u, sb);
                  if u then u:=cdr u;
-                 GOTO M2
+                 goto m2
               >>
               else
               << if u then u:=cdr u;
-                 GOTO M2;
+                 goto m2;
               >>
 end;
 
@@ -589,11 +589,11 @@ symbolic procedure sortpoles(w);
   return append(w2,w1);
  end;
 
-symbolic procedure GFMlogcasemult(w,a,b,z);
+symbolic procedure gfmlogcasemult(w,a,b,z);
   % w -- list of lists.
   if null w then (nil . 1) else
      addsq(groupresudes(car w,a,b,z),
-           GFMlogcasemult(cdr w,a,b,z));
+           gfmlogcasemult(cdr w,a,b,z));
 
 symbolic procedure groupresudes(w,a,b,z);
   % w -- (order number start).
@@ -602,7 +602,7 @@ symbolic procedure groupresudes(w,a,b,z);
    if equal(cadr w,'infinity) and car w = 1 then
       simplepoles(caddr w,a,b,z)
    else
-      'FAIL;
+      'fail;
 
 symbolic procedure simplepoles(at,a,b,z);
  if member(at, car b) then
@@ -790,14 +790,14 @@ symbolic procedure taylorgamma(u,v,n);
   % representation of gamma-function by the polynom of the
   % order  n  in  u  on the degree  v.
   if n=1 then '(1 . 1) else
-     addsq(quotsq(multsq(exptsq(v,n-1),GammaToPsi(u,n-1)),
+     addsq(quotsq(multsq(exptsq(v,n-1),gammatopsi(u,n-1)),
               gamsq(n ./ 1)),
            taylorgamma(u,v,n-1));
 
-symbolic procedure GammaToPsi(u,n);
+symbolic procedure gammatopsi(u,n);
   if n=1 then psisq(u) else
-     addsq(multsq(psisq(u),GammaToPsi(u,n-1)),
-           diffsq(GammaToPsi(u,n-1),prepsq u));
+     addsq(multsq(psisq(u),gammatopsi(u,n-1)),
+           diffsq(gammatopsi(u,n-1),prepsq u));
 
 algebraic <<
   operator lst,gfm;
@@ -805,8 +805,8 @@ algebraic <<
 >>;
 
 algebraic
-   let meijerg({{},1},{{0,0},-1/2},~x) =>
-        G_Fresnel_S(2*sqrt(x),-1)/(2^(-2)*sqrt(pi));
+   let MeijerG({{},1},{{0,0},-1/2},~x) =>
+        g_fresnel_s(2*sqrt(x),-1)/(2^(-2)*sqrt(pi));
 
 
 endmodule;

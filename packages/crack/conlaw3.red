@@ -96,7 +96,7 @@ begin
   if not lisp(null get(mkid('q_,n),'avalue)) then cf0:=t;
 
   eqlist:=sqreverse for each e1 in eqlist collect 
-          if part(e1,0)=EQUAL then lhs e1 - rhs e1 
+          if part(e1,0)=equal then lhs e1 - rhs e1 
                               else e1;
 
   if contrace then write"ulist=",ulist,"    eqlist=",eqlist;
@@ -234,7 +234,7 @@ begin
     %--- initializing characteristic functions cf, the list of functions fl,
     %--- the conserved current pl and the condition condi
     condi:=0;
-    deplist:=lisp(cons('LIST,setdiff(cdr ulist,cdr nodep))) . 
+    deplist:=lisp(cons('list,setdiff(cdr ulist,cdr nodep))) . 
              for n:=1:densord collect listdifdif2(nodep,sqpart(dulist,n+1));
     if expl then deplist:=xlist . deplist;
     deplist:=sqreverse deplist;
@@ -298,7 +298,7 @@ begin
     condi:={condi};
 
     if (not lisp(null get('cl_condi,'avalue))) and
-       (part(cl_condi,0)=LIST) then 
+       (part(cl_condi,0)=list) then 
     condi:=sqappend(condi,cl_condi)$
 
     %--- freeing some space
@@ -393,7 +393,7 @@ begin
           if nontriv then <<
             for each e1 in h2 do
             if fargs e1 neq {} then lisp <<
-              nonconstc:=cons('LIST,cons(reval e1,cdr nonconstc));
+              nonconstc:=cons('list,cons(reval e1,cdr nonconstc));
               write reval e1," = "$
               fctprint list reval e1$
               write" is not constant.";

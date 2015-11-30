@@ -1,4 +1,4 @@
-MODULE HACKSQRT;  % Routines for manipulation of sqrt expressions.
+module hacksqrt;  % Routines for manipulation of sqrt expressions.
 
 % Author: James H. Davenport.
 
@@ -26,143 +26,145 @@ MODULE HACKSQRT;  % Routines for manipulation of sqrt expressions.
 %
 
 
-FLUID '(NESTEDSQRTS THISPLACE);
+fluid '(nestedsqrts thisplace);
 
-EXPORTS SQRTSINTREE,SQRTSINSQ,SQRTSINSQL,SQRTSINSF,SQRTSIGN;
-EXPORTS DEGREENEST,SORTSQRTS;
+exports sqrtsintree,sqrtsinsq,sqrtsinsql,sqrtsinsf,sqrtsign;
+exports degreenest,sortsqrts;
 
-IMPORTS MKVECT,INTERR,GETV,DEPENDSP,UNION;
+imports mkvect,interr,getv,dependsp,union;
 
-SYMBOLIC PROCEDURE SQRTSINTREE(U,VAR,SLIST);
+symbolic procedure sqrtsintree(u,var,slist);
 % Adds to slist all the sqrts in the prefix-type tree u.
-IF ATOM U
-  THEN SLIST
-  ELSE IF CAR U EQ '!*SQ
-    THEN UNION(SLIST,SQRTSINSQ(CADR U,VAR))
-    ELSE IF CAR U EQ 'SQRT
-      THEN IF DEPENDSP(ARGOF U,VAR)
-        THEN <<
-          SLIST:=SQRTSINTREE(ARGOF U,VAR,SLIST);
+if atom u
+  then slist
+  else if car u eq '!*sq
+    then union(slist,sqrtsinsq(cadr u,var))
+    else if car u eq 'sqrt
+      then if dependsp(argof u,var)
+        then <<
+          slist:=sqrtsintree(argof u,var,slist);
           %  nested square roots
-          IF MEMBER(U,SLIST)
-            THEN SLIST
-            ELSE U.SLIST >>
-        ELSE SLIST
-      ELSE SQRTSINTREE(CAR U,VAR,SQRTSINTREE(CDR U,VAR,SLIST));
+          if member(u,slist)
+            then slist
+            else u.slist >>
+        else slist
+      else sqrtsintree(car u,var,sqrtsintree(cdr u,var,slist));
 
 
-SYMBOLIC PROCEDURE SQRTSINSQ(U,VAR);
+symbolic procedure sqrtsinsq(u,var);
    % Returns list of all sqrts in sq.
-   SQRTSINSF(DENR U,SQRTSINSF(NUMR U,NIL,VAR),VAR);
+   sqrtsinsf(denr u,sqrtsinsf(numr u,nil,var),var);
 
 
-SYMBOLIC PROCEDURE SQRTSINSQL(U,VAR);
+symbolic procedure sqrtsinsql(u,var);
 % Returns list of all sqrts in sq list.
-IF NULL U
-  THEN NIL
-  ELSE SQRTSINSF(DENR CAR U,
-      SQRTSINSF(NUMR CAR U,SQRTSINSQL(CDR U,VAR),VAR),VAR);
+if null u
+  then nil
+  else sqrtsinsf(denr car u,
+      sqrtsinsf(numr car u,sqrtsinsql(cdr u,var),var),var);
 
 
-SYMBOLIC PROCEDURE SQRTSINSF(U,SLIST,VAR);
+symbolic procedure sqrtsinsf(u,slist,var);
 % Adds to slist all the sqrts in sf.
-IF DOMAINP U OR NULL U
-  THEN SLIST
-  ELSE <<
-    IF  EQCAR(MVAR U,'SQRT) AND
-        DEPENDSP(ARGOF MVAR U,VAR) AND
-        NOT MEMBER(MVAR U,SLIST)
-      THEN BEGIN
-        SCALAR SLIST2;
-        SLIST2:=SQRTSINTREE(ARGOF MVAR U,VAR,NIL);
-        IF SLIST2
-          THEN <<
-            NESTEDSQRTS:=T;
-            SLIST:=UNION(SLIST2,SLIST) >>;
-        SLIST:=(MVAR U).SLIST
-        END;
-    SQRTSINSF(LC U,SQRTSINSF(RED U,SLIST,VAR),VAR) >>;
+if domainp u or null u
+  then slist
+  else <<
+    if  eqcar(mvar u,'sqrt) and
+        dependsp(argof mvar u,var) and
+        not member(mvar u,slist)
+      then begin
+        scalar slist2;
+        slist2:=sqrtsintree(argof mvar u,var,nil);
+        if slist2
+          then <<
+            nestedsqrts:=t;
+            slist:=union(slist2,slist) >>;
+        slist:=(mvar u).slist
+        end;
+    sqrtsinsf(lc u,sqrtsinsf(red u,slist,var),var) >>;
 
 
-SYMBOLIC PROCEDURE EASYSQRTSIGN(SLIST,THINGS);
+symbolic procedure easysqrtsign(slist,things);
 % This procedure builds a list of all substitutions for all possible
 % combinations of square roots in list.
-IF NULL SLIST
-  THEN THINGS
-  ELSE EASYSQRTSIGN(CDR SLIST,
-                    NCONC(MAPCONS(THINGS,(CAR SLIST).(CAR SLIST)),
-                          MAPCONS(THINGS,
-                                  LIST(CAR SLIST,'MINUS,CAR SLIST))));
+if null slist
+  then things
+  else easysqrtsign(cdr slist,
+                    nconc(mapcons(things,(car slist).(car slist)),
+                          mapcons(things,
+                                  list(car slist,'minus,car slist))));
 
-SYMBOLIC PROCEDURE HARDSQRTSIGN(SLIST,THINGS);
+symbolic procedure hardsqrtsign(slist,things);
 % This procedure fulfils the same role for nested sqrts
 % ***assumption: the simpler sqrts come further up the list.
-IF NULL SLIST
-  THEN THINGS
-  ELSE BEGIN
-    SCALAR THISPLACE,ANSWERS,POS,NEG;
-    THISPLACE:=CAR SLIST;
-    ANSWERS:= for each u in THINGS collect SUBLIS(U,THISPLACE) . U;
-    POS := for each u in ANSWERS collect (THISPLACE . CAR U) . CDR U;
+if null slist
+  then things
+  else begin
+    scalar thisplace,answers,pos,neg;
+    thisplace:=car slist;
+    answers:= for each u in things collect sublis(u,thisplace) . u;
+    pos := for each u in answers collect (thisplace . car u) . cdr u;
     % pos is sqrt(f) -> sqrt(innersubst f)
-    NEG := for each u in ANSWERS
-       collect {THISPLACE,'MINUS,CAR U} . CDR U;
+    neg := for each u in answers
+       collect {thisplace,'minus,car u} . cdr u;
     % neg is sqrt(f) -> -sqrt(innersubst f)
-    RETURN HARDSQRTSIGN(CDR SLIST,NCONC(POS,NEG))
-    END;
+    return hardsqrtsign(cdr slist,nconc(pos,neg))
+    end;
 
 
-SYMBOLIC PROCEDURE DEGREENEST(PF,VAR);
+symbolic procedure degreenest(pf,var);
 % Returns the maximum degree of nesting of var
 % inside sqrts in the prefix form pf.
-IF ATOM PF
-  THEN 0
-  ELSE IF CAR PF EQ 'SQRT
-    THEN IF DEPENDSP(CADR PF,VAR)
-      THEN IADD1 DEGREENEST(CADR PF,VAR)
-      ELSE 0
-    ELSE IF CAR PF EQ 'EXPT
-      THEN IF DEPENDSP(CADR PF,VAR)
-        THEN IF EQCAR(CADDR PF,'QUOTIENT)
-          THEN IADD1 DEGREENEST(CADR PF,VAR)
-          ELSE DEGREENEST(CADR PF,VAR)
-        ELSE 0
-      ELSE DEGREENESTL(CDR PF,VAR);
+if atom pf
+  then 0
+  else if car pf eq 'sqrt
+    then if dependsp(cadr pf,var)
+      then iadd1 degreenest(cadr pf,var)
+      else 0
+    else if car pf eq 'expt
+      then if dependsp(cadr pf,var)
+        then if eqcar(caddr pf,'quotient)
+          then iadd1 degreenest(cadr pf,var)
+          else degreenest(cadr pf,var)
+        else 0
+      else degreenestl(cdr pf,var);
 
-SYMBOLIC PROCEDURE DEGREENESTL(U,VAR);
+symbolic procedure degreenestl(u,var);
 %Returns max degreenest from list of pfs u.
-IF NULL U
-  THEN 0
-  ELSE MAX(DEGREENEST(CAR U,VAR),
-           DEGREENESTL(CDR U,VAR));
+if null u
+  then 0
+  else max(degreenest(car u,var),
+           degreenestl(cdr u,var));
 
 
-SYMBOLIC PROCEDURE SORTSQRTS(U,VAR);
+symbolic procedure sortsqrts(u,var);
 % Sorts list of sqrts into order required by hardsqrtsign
 % (and many other parts of the package).
-BEGIN
-  SCALAR I,V;
-  V:=MKVECT(10); %should be good enough!
-  WHILE U DO <<
-    I:=DEGREENEST(CAR U,VAR);
-    IF I IEQUAL 0
-      THEN INTERR "Non-dependent sqrt found";
-    IF I > 10
-      THEN INTERR
+begin
+  scalar i,v;
+  v:=mkvect(10); %should be good enough!
+  while u do <<
+    i:=degreenest(car u,var);
+    if i iequal 0
+      then interr "Non-dependent sqrt found";
+    if i > 10
+      then interr
          "Degree of nesting exceeds 10 (recompile with 10 increased)";
-    PUTV(V,I,(CAR U).GETV(V,I));
-    U:=CDR U >>;
-  U:=GETV(V,10);
-  FOR I :=9 STEP -1 UNTIL 1 DO
-    U:=NCONC(GETV(V,I),U);
-  RETURN U
-  END;
+    putv(v,i,(car u).getv(v,i));
+    u:=cdr u >>;
+  u:=getv(v,10);
+  for i :=9 step -1 until 1 do
+    u:=nconc(getv(v,i),u);
+  return u
+  end;
 
 
-SYMBOLIC PROCEDURE SQRTSIGN(SQRTS,X);
-   IF NESTEDSQRTS THEN HARDSQRTSIGN(SORTSQRTS(SQRTS,X),LIST NIL)
-    ELSE EASYSQRTSIGN(SQRTS,LIST NIL);
+symbolic procedure sqrtsign(sqrts,x);
+   if nestedsqrts then hardsqrtsign(sortsqrts(sqrts,x),list nil)
+    else easysqrtsign(sqrts,list nil);
 
-ENDMODULE;
+endmodule;
 
-END;
+end;
+
+

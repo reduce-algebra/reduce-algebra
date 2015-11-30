@@ -59,20 +59,20 @@ comb(?a,?n _=natp(?n+1))::- (-1)^?n *poc(-?a,?n)/fctl(?n);
 
 % Use the name XEvenp to avoid probles with evenp.
 
-XEvenp((??x _=XEvenp(??x))+(?y _=XEvenp(?y))) :- t;
-XEvenp((??x _= oddp(??x))+(?y _= oddp(?y))) :- t;
-XEvenp((??x _= oddp(??x))+(?y _=XEvenp(?y))) :- 0;
-XEvenp((??x _= intp(??x)) * (?y _=XEvenp(?y))) :- t;
-XEvenp((??x _= oddp(??x)) * (?y _= oddp(?y))) :- 0;
-XEvenp(( ?x _= XEvenp(?x))^(?y _= intp(?y))) :- t;
-XEvenp(( ?x _=  oddp(?x))^(?y _= intp(?y))) :- 0;
+xevenp((??x _=xevenp(??x))+(?y _=xevenp(?y))) :- t;
+xevenp((??x _= oddp(??x))+(?y _= oddp(?y))) :- t;
+xevenp((??x _= oddp(??x))+(?y _=xevenp(?y))) :- 0;
+xevenp((??x _= intp(??x)) * (?y _=xevenp(?y))) :- t;
+xevenp((??x _= oddp(??x)) * (?y _= oddp(?y))) :- 0;
+xevenp(( ?x _= xevenp(?x))^(?y _= intp(?y))) :- t;
+xevenp(( ?x _=  oddp(?x))^(?y _= intp(?y))) :- 0;
 
 oddp((??x _= oddp(??x))+(?y _= oddp(?y))) :- 0;
-oddp((??x _=XEvenp(??x))+(?y _=XEvenp(?y))) :- 0;
-oddp((??x _= oddp(??x))+(?y _=XEvenp(?y))) :- t;
-oddp((??x _= intp(??x)) * (?y _=XEvenp(?y))) :- 0;
+oddp((??x _=xevenp(??x))+(?y _=xevenp(?y))) :- 0;
+oddp((??x _= oddp(??x))+(?y _=xevenp(?y))) :- t;
+oddp((??x _= intp(??x)) * (?y _=xevenp(?y))) :- 0;
 oddp((??x _= oddp(??x)) * (?y _= oddp(?y))) :- t;
-oddp(( ?x _= XEvenp(?x))^(?y _= intp(?y))) :- 0;
+oddp(( ?x _= xevenp(?x))^(?y _= intp(?y))) :- 0;
 oddp(( ?x _=  oddp(?x))^(?y _= intp(?y))) :- t;
 
 
@@ -97,21 +97,21 @@ mlegp(?x,?n _=natp(?n))
    ::- ((2*?n-1)*?x*mlegp(?x,?n-1)-(?n-1)*mlegp(?x,?n-2))/?n;
 
 
-comment * Generalized hypergeometric functions: elementary identities *;
+COMMENT * Generalized hypergeometric functions: elementary identities *;
 
 % Author: John Gottschalk, Univ. of Western Australia, Sep 84.
 
-comment P: XWarning is automatically loaded. ;
+COMMENT P: XWarning is automatically loaded. ;
  ;
 % Keywords:: hypergeometric: generalized hypergeometric functions:
 %       Ghg: sums: summation: gauss: vandermonde: saalschutz: whipple:
 %       kummer: watson: dixon: dougall.
 
-comment This file contains assignments and substitutions for rewriting
+COMMENT This file contains assignments and substitutions for rewriting
         special generalized hypergeometric functions in terms of Gamma
         and Polygamma functions. ;
 
-comment These identities are from Appendix 3 of Slater "Generalized
+COMMENT These identities are from Appendix 3 of Slater "Generalized
         Hypergeometric Functions", Cambridge University Press,1966.
         Those that have been omitted may be simply derived form other
         results, for example equation III.25 is is a result of equation
@@ -133,11 +133,11 @@ dougall      ::-  sghg(0,12);
 nearlypoised ::-  sghg(0,{13,14,15});
 wellpoised   ::-  flat({sghg(0,{16,17,18,19}),dixon,dougall,kummer});
 
-comment The patterns are written with a "=" sign as the pattern matcher
+COMMENT The patterns are written with a "=" sign as the pattern matcher
         in version 1.5.0. will return a 0 for matches like
         Match[a/2+1/2,(a+1)/2], but use of Eq gets around this problem;
 
-comment  Reduction for 2F1(1,a:a+m:-1) when m is a natural number. ;
+COMMENT  Reduction for 2F1(1,a:a+m:-1) when m is a natural number. ;
 
 %SGhg(0,1) :- Ghg(2,1,#(1,?a),#(?b _=Natp(?b-?a)),-1) ->
 %     (-1)^(?b-?a-1) *Gamma(?b)/
@@ -156,42 +156,42 @@ comment  Reduction for 2F1(1,a:a+m:-1) when m is a natural number. ;
 sghg(0,4) :- ghg(3,2,#(1,?a,?b),#(?a+1,?b+1),1 _=symbwt(?b~=?a)) ->
      ?a *?b/(?a-?b) * (psi(?a)-psi(?b));
 
-comment  Gauss's theorem ;
+COMMENT  Gauss's theorem ;
 sghg(0,5) :- ghg(2,1,#(?a,?b),#(?c),1) ->
      gamma(?c) *gamma(?c-?a-?b)/(gamma(?c-?a) *gamma(?c-?b));
 
-comment  Vandermonde's theorem ;
+COMMENT  Vandermonde's theorem ;
 sghg(0,6) :- ghg(2,1,#(?a,?n _=natp(1-?n)),#(?c),1)
            -> poc(?c-?a,-?n)/poc(?c,-?n);
 
-comment  Saalschutz's theorem ;
+COMMENT  Saalschutz's theorem ;
 sghg(0,7) :- ghg(3,2,#(?a,?b,?n _=natp(1-?n)),
                      #(?c,?d _=?d=?a+?b+?n-?c+1),1) ->
      gamma(?c-?a-?n) *gamma(?c-?b-?n) *gamma(?c) *gamma(?c-?a-?b)/
      (gamma(?c-?a) *gamma(?c-?b) *gamma(?c-?n) *gamma(?c-?a-?b-?n));
 
-comment  Whipple's theorem ;
+COMMENT  Whipple's theorem ;
 sghg(0,8) :- ghg(3,2,#(?a,?b _=?b=1-?a,?c),#(?d,?e) _=?d+?e=1+2*?c,1) ->
      pi *2^(1-2*?c) *gamma(?d) *gamma(?e)/
      (gamma((?a+?e)/2) *gamma((?a+?d)/2) *gamma((?d+?e)/2)
       *gamma((?b+?d)/2));
 
-comment  Kummer's theorem ;
+COMMENT  Kummer's theorem ;
 sghg(0,9) :- ghg(2,1,#(?a,?b),#(?c _=?c=1+?a-?b),-1) ->
     gamma(1+?a-?b) *gamma(1+?a/2)/(gamma(1+?a) *gamma(1+?a/2-?b)) ;
 
-comment  Watson's Theorem ;
+COMMENT  Watson's Theorem ;
 sghg(0,10) :- ghg(3,2,#(?a,?b,?c),#(?d _=?d=(1+?a+?b)/2,?e _=?e=2*?c),1)->
    gamma(1/2) *gamma(?c+1/2) *gamma((1+?a+?b)/2) *gamma((1-?a-?b)/2+?c)/
    (gamma((1+?a)/2) *gamma((1+?b)/2) *gamma((1-?a)/2+?c)
     *gamma((1-?b)/2+?c));
 
-comment  Dixon's theorem ;
+COMMENT  Dixon's theorem ;
 sghg(0,11):- ghg(3,2,#(?a,?b,?c),#(?d _=?d=1+?a-?b,?e _=?e=1+?a-?c),1) ->
      gamma(1+?a/2) *gamma(1+?a-?b)*gamma(1+?a-?c)*gamma(1+?a/2-?b-?c)/
      (gamma(1+?a)*gamma(1+?a/2-?b)*gamma(1+?a/2-?c)*gamma(1+?a-?b-?c));
 
-comment  Dougall's theorem ;
+COMMENT  Dougall's theorem ;
 sghg(0,12) :- ghg(7,6,#(?a,?f _=?f=1+?a/2,?b,?c,?d,?e,?n _=natp(1-?n) &
      1+2*?a-?b-?c-?d-?e-?n=0),
      #(?g _=?g=?a/2,?h _=?h=1+?a-?b,?i _=?i=1+?a-?c,?j _=?j=1+?a-?d,
@@ -201,23 +201,23 @@ sghg(0,12) :- ghg(7,6,#(?a,?f _=?f=1+?a/2,?b,?c,?d,?e,?n _=natp(1-?n) &
      (poc(1+?a-?b,-?n) *poc(1+?a-?c,-?n) *poc(1+?a-?d,-?n)
         *poc(1+?a-?b-?c-?d,-?n));
 
-comment  Appendix III.15 in Slater's book ;
+COMMENT  Appendix III.15 in Slater's book ;
 sghg(0,13) :- ghg(3,2,#(?a,?c _=?c=1+?a/2,?n _=natp(1-?n)),
                       #(?d _=?d=?a/2,?b),1) ->
                  (?b-?a-1+?n) *poc(?b-?a,-?n-1)/poc(?b,-?n);
 
-comment  Appendix III.16 in Slater's book ;
+COMMENT  Appendix III.16 in Slater's book ;
 sghg(0,14) :- ghg(3,2,#(?a,?b,?n _=natp(1-?n)),
                           #(?c _=?c=1+?a-?b,?d _=?d=1+2*?b+?n),1) ->
      poc(?a-2*?b,-?n) *poc(1+?a/2-?b,-?n) *poc(-?b,-?n)/
      (poc(1+?a-?b,-?n) *poc(?a/2-?b,-?n) *poc(-2*?b,-?n));
 
-comment  Appendix III.17 in Slater's book ;
+COMMENT  Appendix III.17 in Slater's book ;
 sghg(0,15) :- ghg(4,3,#(?a,?c _=?c=1+?a/2,?b,?n _=natp(1-?n)),
           #(?d _=?d=?a/2,?e _=?e=1+?a-?b,?f _=?f=1+2*?b+?n),1) ->
      poc(?a-2*?b,-?n) *poc(-?b,-?n)/(poc(1+?a-?b,-?n) *poc(-2*?b,-?n));
 
-comment  Appendix III.19 in Slater's book ;
+COMMENT  Appendix III.19 in Slater's book ;
 sghg(0,16) :- ghg(7,6,#(?a,?b,?c _=?c=1+?a/2,?d _=?d=1/2+?b,
   ?e _=?e=?a-2*?b,?f _=?f=1+2*?a-2*?b-?n,?n _=natp(1-?n)),
   #(?g _=?g=?a/2,?h _=?h=1+?a-?b,?i _=?i=?a+1/2-?b,?j _=?j=1+2*?b,
@@ -225,23 +225,23 @@ sghg(0,16) :- ghg(7,6,#(?a,?b,?c _=?c=1+?a/2,?d _=?d=1/2+?b,
   poc(1+?a,-?n) *poc(1+2*?a-4*?b,-?n)/(poc(1+?a-2*?b,-?n)
       *poc(1+2*?a-2*?b,-?n));
 
-comment  Appendix III.20 in Slater's book ;
+COMMENT  Appendix III.20 in Slater's book ;
 sghg(0,17) :- ghg(4,3,#(?a,?b,?n _=natp(1-?n),?c _=?c=1/2+?a),
           #(?d _=?d=?b/2+?n/2,?e _=?e=?b/2+?n/2+1/2,?f _=?f=1+2*?a),1) ->
      poc(?b+?n-2*?a,-?n)/poc(?b+?n,-?n);
 
-comment  Appendix III.10 in Slater's book ;
+COMMENT  Appendix III.10 in Slater's book ;
 sghg(0,18) :- ghg(4,3,#(?a,?b,?c,?d _=?d=1+?a/2),
   #(?e _=?e=?a/2,?f _=?f=1+?a-?b,?g _=?g=1+?a-?c),-1) ->
      gamma(1+?a-?b) *gamma(1+?a-?c)/(gamma(1+?a) *gamma(1+?a-?b-?c));
 
-comment  Appendix III.12 in Slater's book ;
+COMMENT  Appendix III.12 in Slater's book ;
 sghg(0,19) :- ghg(5,4,#(?a,?b,?c,?d,?e _=?e=1+?a/2),
   #(?f _=?f=?a/2,?g _=?g=1+?a-?b,?h _=?h=1+?a-?c,?i _=?i=1+?a-?d),1) ->
   gamma(1+?a-?b) *gamma(1+?a-?c) *gamma(1+?a-?d) *gamma(1+?a-?b-?c-?d)/
   (gamma(1+?a)*gamma(1+?a-?b-?c)*gamma(1+?a-?b-?d)*gamma(1+?a-?c-?d));
 
-comment  The ?y _=?y=?x is needed to overcome a bug. It should be removed
+COMMENT  The ?y _=?y=?x is needed to overcome a bug. It should be removed
   later. ;
 
 ghg(?p,?q,#(?x,??a),#(?y _=?y = ?x & ~natp(1-?y),??b),?z) ::-
@@ -257,14 +257,14 @@ ghg(0,0,?a,?b,?z)             :-  e^?z;
 %Ghg(?p,?q,#(0,??a),#(??b) _=~In(?1 _=Natp(1-?1),{??b},2),?z) :-  1;
 ghg(?p,?q,#(??t),#(??b),0)    :-  1;
 
-comment  If one of the bottom parameters is zero or a negative integer
+COMMENT  If one of the bottom parameters is zero or a negative integer
          the hypergeometric functions may be singular, so the presence
          of a functions of this type causes a warning message to
          be printed. ;
-comment Note In seems to have an off by one level spec., so this may
+COMMENT Note In seems to have an off by one level spec., so this may
    need changing in future. ;
 
-comment W: Sum[Smp] is redefined to be Inf.
+COMMENT W: Sum[Smp] is redefined to be Inf.
     The identities may not be correct if one of the bottom parameters
     is a negative integer, even though the function may be well-behaved.
     The convergence of hypergeometric series should be checked using the
@@ -314,7 +314,7 @@ sghg(6,2) :- ssaal:-
            /gamma({1-?c,1+?b-?c,?e,?f,?g})
         *ghg(3,2,#(1+?e-?c,1+?f-?c,1+?g-?c),#(2-?c,1+?b-?c),1);
 
-comment : SDixon
+COMMENT : SDixon
         Generalization of Dixons theorem, Slater p52 (2.3.3.7);
 sghg(6,3) :- sdixon :-
    ghg(3,2,#(?a,?b,?c),#(?e,?f),1) ->
@@ -323,7 +323,7 @@ sghg(6,3) :- sdixon :-
         ghg(3,2,#(?e-?a,?f-?a,?e+?f-?a-?b-?c),
                 #(?e+?f-?a-?c,?e+?f-?a-?b),1);
 
-comment : SGhg[6,4]
+COMMENT : SGhg[6,4]
         Three term relations, Slater p 115 (4.3.4);
 
 sghg(6,4) :-
@@ -333,7 +333,7 @@ sghg(6,4) :-
    gamma({1-?a,?d,?e,?b-?c})/gamma({?e-?c,?d-?c,1+?c-?a,?b})
    *ghg(3,2,#(?c,1+?c-?e,1+?c-?d),#(1+?c-?b,1+?c-?a),1);
 
-comment : SGhg[6,5]
+COMMENT : SGhg[6,5]
      transforms a nearly-poised 3F2(-1) to a 4F3(1). Page 33 of Bailey;
 
 sghg(6,5) :- ghg(3,2,#(?a,?b,?c),#(?d,?e _=?e+?c=?d+?b),-1) -->
@@ -378,11 +378,11 @@ sghg(6,8) :- ghg(6,5,#(?a,?b _=?b=1+?a/2,?c,?d,?e,?n _=natp(1-?n)),
 %_XGhg6(Loaded) :- 1;
 
 
-comment Special Elementary Cases of Gausses Series;
+COMMENT Special Elementary Cases of Gausses Series;
 
-comment Abramowitz & Stegun, 15.1;
+COMMENT Abramowitz & Stegun, 15.1;
 
-comment Incomplete. Rest of transformations must be added.
+COMMENT Incomplete. Rest of transformations must be added.
 
 xgauss(1,3) :- Ghg(2,1,#(1,1),#(2),?z) -> 1/?z * Ln(1-?z);
 
@@ -411,12 +411,12 @@ xgauss(1,10):- ghg(2,1,#(?a,?a+1/2),#(3/2),?z) ->
                 1/(2*sqrt(?z)*(1-2*?a))*
                     ((1+sqrt(z))^(-2*?a) + (1-sqrt(?z))^(-2*?a));
 
-comment Incomplete. Rest of transformations must be added.;
+COMMENT Incomplete. Rest of transformations must be added.;
 
 
 
-comment Hypergeometric functions. Transformations of the argument; ;
-comment Abramowitiz & Stegun 15.3
+COMMENT Hypergeometric functions. Transformations of the argument; ;
+COMMENT Abramowitiz & Stegun 15.3
 comment   Linear transformations *;
 
 sgauss(3,3):-   ghg(2,1,#(?a,?b),#(?c),?z) ->
@@ -457,7 +457,7 @@ sgauss(3,8):-    ghg(2,1,#(?a,?b),#(?c),?z) ->
                 ghg(2,1,#(?c-?a,1-?a),#(?c-?a-?b+1),1-1/?z);
 
 
-comment*  Quadratic transformations *;
+COMMENT*  Quadratic transformations *;
 
 
 sgauss(3,15):-     ghg(2,1,#(?a,?b),#(2*?b),?z) ->
