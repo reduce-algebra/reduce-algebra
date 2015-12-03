@@ -162,7 +162,7 @@ symbolic operator euler!:aux;
 
 % Gamma function and friends
 
-operator gamma,m_gamma; % m_gamma is the incomplete gamma
+algebraic operator gamma,psi,m_gamma; % m_gamma is the incomplete gamma
  % function which happens to be produced by definite integration.
 
 flag('(gamma),'realvalued);
@@ -389,12 +389,9 @@ let pochhammer!*rules;
 
 % from specfn/sfpsi.red
 
-algebraic operator psi, polygamma;
+algebraic operator polygamma;
 
 flag('(psi polygamma),'realvalued);
-
-put('psi,'!:rd!:,'rdpsi!*);
-put('psi,'!:cr!:,'crpsi!*);
 
 symbolic operator psi!:error;
 
@@ -432,9 +429,10 @@ psi!*rules := {
       when numberp z and impart z = 0
                and (z < 0 and not fixp z or z > 1/2 and z < 1), % and not symbolic !*rounded,
 
-   df(psi(~z),z)  =>  polygamma(1, z),
+   df(psi(~z),z)  =>  polygamma(1, z)
 
-   int(psi(~z),z)  =>  log gamma(~z)
+%% moved to int/driver.red
+%%   int(psi(~z),z)  =>  log gamma(~z)
 
 };
 
@@ -465,6 +463,9 @@ psi_rules := {
 % NOTE: The rational-shift rule does not work with "on intstr, div".
 
 let psi_rules;
+
+put('psi,'!:rd!:,'rdpsi!*);
+put('psi,'!:cr!:,'crpsi!*);
 
 symbolic operator polygamma!*calc, trigamma!*halves, polygamma!:error,
                   polygamma_aux;
@@ -498,9 +499,10 @@ polygamma!*rules := {
                and not (fixp x and x <= 0)
                and numberp n and impart n = 0 and n = floor n,
 
-   df(polygamma(~n,~x), ~x)  =>  polygamma(n+1, x),
+   df(polygamma(~n,~x), ~x)  =>  polygamma(n+1, x)
 
-   int(polygamma(~n,~x),~x)  =>  polygamma(n-1,x)
+%% moved to int/driver.red
+%%   int(polygamma(~n,~x),~x)  =>  polygamma(n-1,x)
 
 };
 
@@ -595,11 +597,13 @@ let
  ibeta(~a,1,~x) => x^a,
  ibeta(1,~b,~x) => 1 - (1-x)^b,
 
- df(ibeta(~a,~b,~x),~x) => (1-x)^(b-1)*x^(a-1) / beta(a,b),
+ df(ibeta(~a,~b,~x),~x) => (1-x)^(b-1)*x^(a-1) / beta(a,b)
 
- ibeta(~a,~b,~x) => int(t^(a-1)*(1-t)^(b-1),t,0,x) / beta(a,b)
-        when numberp a and fixp a and a>0 and a<6 and
-             numberp b and fixp b and b>0 and b<6
+%% moved to int/driver.red
+%% ibeta(~a,~b,~x) => int(t^(a-1)*(1-t)^(b-1),t,0,x) / beta(a,b)
+%%        when numberp a and fixp a and a>0 and a<6 and
+%%             numberp b and fixp b and b>0 and b<6
+
 };
 
 endmodule;
