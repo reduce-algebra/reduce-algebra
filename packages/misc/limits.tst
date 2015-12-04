@@ -189,6 +189,26 @@ COMMENT one sided limit from bug report by Zbynek Konecny ;
 
 limit!-((abs(x)-3)/(x-3),x,3); % 1
 
+COMMENT A couple of limits with simple exponentials ;
+
+limit((11/5)^x,x,infinity);
+limit((2/5)^x,x,infinity);
+limit(2.1^x,x,infinity);
+limit(2.1^(1/x),x,0);
+
+on rounded;
+limit((11/5)^x,x,infinity);
+limit((2/5)^x,x,infinity);
+limit(2.1^x,x,infinity);
+limit(2.1^(1/x),x,0);
+off rounded;
+
+limit(log(2)*log(x),x,infinity);
+
+on rounded;
+limit(log(2)*log(x),x,infinity);
+off rounded;
+
 end;
 
 COMMENT  The following examples all fail with the present limit package.

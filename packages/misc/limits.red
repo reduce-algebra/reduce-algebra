@@ -68,7 +68,7 @@ lisp(ps!:order!-limit := 100);
 
 switch usetaylor; off usetaylor;
 
-fluid '(!*precise lhop!# lplus!# !*protfg !*msg !*rounded !*complex
+fluid '(!*precise lhop!# lplus!# !*protfg !*msg !*rounded !*complex !*factor
         !#nnn lim00!# !*crlimtest !*lim00rec);
 
 !*lim00rec := t;  % Default value.
@@ -81,11 +81,11 @@ symbolic(abslims!# := {0,1,-1,'infinity,'(minus infinity)});
 
 fluid '(lsimpdpth); global '(ld0!#); symbolic(ld0!# := 3);
 
-flag('(limit limit!+ limit!- limit2),'full);
+flag('(limit limit!+ limit!-),'full);
 
-symbolic
-for each c in '(limit limit!+ limit!- limit2) do
-  <<remflag({c},'opfn); put(c,'simpfn,'simplimit)>>;
+put('limit,'simpfn,'simplimit);
+put('limit!+,'simpfn,'simplimit);
+put('limit!-,'simpfn,'simplimit);
 
 symbolic procedure limit2(top,bot,xxx,a);
    lhopital(top,bot,xxx,a) where lhop!#=0;
@@ -127,7 +127,7 @@ symbolic procedure simplimit u;
    begin scalar fn,exprn,var,val,old,v,!*precise,!*protfg;
      if length u neq 4
        then rerror(limit,1,
-                   "Improper number of arguments to limit operator");
+                   {"Improper number of arguments to",car u,"operator"});
      fn:= car u; exprn := cadr u; var := !*a2k caddr u; val := cadddr u;
      !*protfg := t;   % ACH: I'm not sure why this is needed.
      old := get('cot,'opmtch);
@@ -159,20 +159,37 @@ symbolic procedure limit0(exp,x,a);
               {'plus,a,x}}),x)
            else limit00(exp1,x)>> where y=nil) end;
 
+%%
+%% RmS: limit!-expcombine detects expressions of the form
+%%   n^g(x)/m^g(x) where n,m are numbers
+%% and combines them to (n/m)^g(x) which is more easily handled by other
+%% parts of the limits code 
+%%
+symbolic procedure limit!-exptcombine p;
+   if eqcar(p,'quotient) and eqcar(cadr p,'expt) and eqcar(caddr p,'expt)
+	and caddr cadr p = caddr caddr p
+	and numberp cadr cadr p and numberp cadr caddr p
+       then p := {'expt,{'quotient,cadr cadr p,cadr caddr p},caddr cadr p}
+    else p;
+
+symbolic inline procedure limit!-factrprep p;
+    prepsq simp!* p where !*factor=t;
+
 symbolic procedure limit00(ex,x);
    begin scalar p,p1,z,xpwrlcm,lim,ls;
-     if (lim := crlimitset(p := prepsq ex,x)) then go to ret;
+     p := limit!-exptcombine prepsq ex;
+     if (lim := crlimitset(p,x)) then go to ret;
      if not lim00!# then
        <<lim00!# := not !*lim00rec;
-         p1 := factrprep prepsq ex;
+         p1 := limit!-exptcombine limit!-factrprep p;
          if (xpwrlcm := xpwrlcmp(p1,x)) neq 1 then
            <<ex := subsq(ex,{x . {'expt,x,xpwrlcm}});
-             p1 := factrprep prepsq ex>>;
+             p1 := limit!-exptcombine limit!-factrprep prepsq ex>>;
          if (z := pwrdenp(p1,x)) neq 1 then
             ex := simp!*{'expt,p1,z};
-         if (lim := crlimitset(p := prepsq ex,x)) then go to ret>>;
-     % tps has failed because ex has a branch point at a or is undefined
-     % at a or tps itself has failed or Reduce has not recognized the
+         if (lim := crlimitset(p := limit!-exptcombine prepsq ex,x)) then go to ret>>;
+     % Series expansion has failed because ex has a branch point at a or is undefined
+     % at a or tps/taylor itself has failed or Reduce has not recognized the
      % numeric value of an expression.
      if %xpwrlcm and xpwrlcm>1 or
      lsimpdpth>ld0!#
@@ -190,11 +207,6 @@ ret: return
          else if ls member '(infinity failed) then lim
          else mk!*sq simp!* {'expt,prepsq simp!* lim,{'quotient,1,z}}>>
     end;
-
-symbolic procedure factrprep p;
-   begin scalar !*factor;
-     !*factor := t;
-     return prepsq simp!* p end;
 
 symbolic procedure expt2exp(p,x);
    if atom p then p
@@ -270,9 +282,13 @@ symbolic procedure limit1t(ex,x,a);
        else if nnn=0 then mk!*sq vvv
        else if !*complex then 'infinity
        else if domainp(nnn := numr vvv) then
-         (if !:minusp nnn
-         then aeval '(minus infinity) else 'infinity)
-       else aeval{'times,{'sign,prepsq vvv},'infinity}
+         (if !:minusp nnn then '(minus infinity) else 'infinity)
+       else << vvv := simp!-sign list mk!*sq vvv;
+               if atom denr vvv and fixp numr vvv
+                 then << if numr vvv = 0 then 0
+                          else if numr vvv = 1 then 'infinity
+ 		          else '(minus infinity) >>
+               else aeval{'times,mk!*sq vvv,'infinity} >>
    end;
 
 symbolic procedure limit1p(ex,x,a);
@@ -285,9 +301,13 @@ symbolic procedure limit1p(ex,x,a);
        else if nnn=0 then mk!*sq vvv
        else if !*complex then 'infinity
        else if domainp(nnn := car vvv) then
-         (if !:minusp nnn then aeval '(minus infinity)
-                          else 'infinity)
-       else aeval{'times,{'sign,prepsq vvv},'infinity}
+         (if !:minusp nnn then '(minus infinity) else 'infinity)
+       else << vvv := simp!-sign list mk!*sq vvv;
+               if atom denr vvv and fixp numr vvv
+                 then << if numr vvv = 0 then 0
+                          else if numr vvv = 1 then 'infinity
+ 		          else '(minus infinity) >>
+               else aeval{'times,mk!*sq vvv,'infinity} >>
    end;
 
 symbolic procedure crlimitset(ex,x);
@@ -397,11 +417,11 @@ symbolic procedure triml l;
 symbolic procedure limsort(ex,x);
    begin scalar zros,infs,nrms,q,s;
       for each c in ex do
-         if (q := numr(s := simp!* limit00(simp!* c,x)))
-              and numberp q and not zerop q then nrms := q . nrms
-         else if null q or zerop q then zros := c . zros
-         else if caaar q memq '(failed infinity) then infs := c.infs
-         else nrms := (prepsq s) . nrms;
+         << q := numr(s := simp!* limit00(simp!* c,x));
+            if domainp q then << if not !:zerop q then nrms := q . nrms
+                                  else zros := c . zros >>
+             else if caaar q memq '(failed infinity) then infs := c.infs
+             else nrms := (prepsq s) . nrms >>;
       return list(zros,infs,nrms) end;
 
 symbolic procedure logcomb(tinf,x);
@@ -543,7 +563,10 @@ symbolic procedure exptest(b,n,x,a);
       else if n=0 then 1 else
         ((if 2*y=n then limlabs limitest(b,x,a) else limitest(b,x,a))
          where y=n/2)
-   else if numberp b and b>1 then limitest(list('exp,n),x,a);
+   else if numr simp!-sign list {'difference,b,1}=1
+    then limitest({'exp,{'times,n,{'log,b}}},x,a)
+   else if numr simp!-sign list b = 1
+    then limitest({'quotient,1,{'exp,{'times,n,{'minus,{'log,b}}}}},x,a);
 
 symbolic procedure limlabs a;
    if null a then nil
@@ -590,8 +613,11 @@ symbolic procedure ltimes1(a,b);
    else mk!*sq multsq(simp!* a,simp!* b) end;
 
 symbolic procedure limposp a;
-  (if n and not numberp n then 'failed else n and n>0)
-  where n=numr simp!* a;
+  (if not atom denr s then 'failed
+    else if numr s=1 then t
+    else if numr s=-1 then nil
+    else 'failed)
+  where s := simp!-sign list a;
 
 symbolic procedure lminus(exl,x,a);
    lminus1 mkalg limfix(car exl,x,a);
