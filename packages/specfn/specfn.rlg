@@ -1237,11 +1237,10 @@ x   *log(x)*polygamma(2,x *x + x  + 2*x *y + x*y )*x*y
                   y      3      2        2
  + 2*polygamma(1,x *x + x  + 2*x *y + x*y )*y
 
-int(psi(z), z);
+int(psi(x), x);
 
 
-           y      3      2        2
-log(gamma(x *x + x  + 2*x *y + x*y ))
+log(gamma(x))
 
 
 on rounded;

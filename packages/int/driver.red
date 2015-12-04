@@ -1017,8 +1017,9 @@ intrules :=
        x^(1-n)/(1-n)*acosh(a*x+b)-a/(1-n)*int(x^(1-n)*sqrt((a*x+b)^2-1)/(1-(a*x+b)^2),x)
                                  when fixp n and n>1 and a freeof x and b freeof x,
 
-   int(psi(~z),z)  =>  log gamma(~z),
+   int(psi(~z),z)  =>  log gamma(z),
    int(polygamma(~n,~x),~x)  =>  polygamma(n-1,x)
+
 };
 
 % We can't set intrules if modular (and possibly another mode) is on.

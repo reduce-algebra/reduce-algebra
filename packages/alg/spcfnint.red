@@ -597,12 +597,11 @@ let
  ibeta(~a,1,~x) => x^a,
  ibeta(1,~b,~x) => 1 - (1-x)^b,
 
- df(ibeta(~a,~b,~x),~x) => (1-x)^(b-1)*x^(a-1) / beta(a,b)
+ df(ibeta(~a,~b,~x),~x) => (1-x)^(b-1)*x^(a-1) / beta(a,b),
 
-%% moved to int/driver.red
-%% ibeta(~a,~b,~x) => int(t^(a-1)*(1-t)^(b-1),t,0,x) / beta(a,b)
-%%        when numberp a and fixp a and a>0 and a<6 and
-%%             numberp b and fixp b and b>0 and b<6
+ ibeta(~a,~b,~x) => int(t^(a-1)*(1-t)^(b-1),t,0,x) / beta(a,b)
+        when numberp a and fixp a and a>0 and a<6 and
+             numberp b and fixp b and b>0 and b<6
 
 };
 

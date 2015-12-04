@@ -245,7 +245,7 @@ clear x, y;
 
 df(psi(z), x);
 df(df(psi(z), y),x);
-int(psi(z), z);
+int(psi(x), x);
 
 on rounded;
 
