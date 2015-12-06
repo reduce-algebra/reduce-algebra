@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(cl_bnf_rcsid!* cl_bnf_copyright!*);
@@ -534,11 +534,11 @@ procedure cl_sacat(a1,a2,gor);
 % TODO: Substituierende Simplifikation
 
 procedure cl_quine(f);
-   % Common logic Quine simplification. [f] is a a formula in a BNF.
-   %  Returns a formula in BNF.
+   % Common logic Quine simplification. [f] is a a formula in a BNF. Returns a
+   % formula in BNF.
    begin scalar w,op,s;
       w := cl_bnf2set f;
-      op := car w;      
+      op := car w;
       if not op then
 	 return f;
       if op eq 'and then
@@ -582,7 +582,7 @@ procedure cl_bnf2set1(f,xop);
 	    return op  . w
 	 else if cl_flip op eq xop then
 	    return op . {rl_argn f}
-	 else      	    
+	 else
 	    return nil  . f;
       return op . cdr w
    end;
@@ -620,7 +620,7 @@ procedure cl_qs(s,op);
    begin scalar w;
       if !*rlverbose then
 	 ioto_tprin2 {"[Quine: ",cl_qssize s,"/",length s};
-      w := cl_qscpi(s,op);      
+      w := cl_qscpi(s,op);
       if w eq 'break then <<
 	 ioto_prin2t {" -> 0/0]"};
 	 return {{}} % True for DNF; False for CNF
@@ -667,7 +667,7 @@ procedure cl_qscpi(cl,op);
 	 return 'break;
       return firstl
    end;
-   
+
 procedure cl_qssisu(l,op);
    % Simplify by subsumtion. [l] is a list of clauses. Returns a list
    % of clauses.
@@ -719,7 +719,7 @@ procedure cl_qsselect(s,op);
 	 ioto_prin2 {" -> ",csize,"/",clen,"+",cl_qssize dcs,"/",length dcs};
       if !*psen then
 	 w := cl_qsselect2(core,dcs,op)
-      else	 
+      else
       	 w := cl_qsselect1(core,dcs,cl_subsets dcs,op);
       if !*rlverbose then <<
 	 wsize := cl_qssize w;
@@ -811,7 +811,7 @@ procedure cl_qssize(s);
 procedure cl_qssusubysi(c1,c2,op);
    % Subsumtion by Simplification.
       rederr "Out of order -> ueber rl_simpl";
-% cl_qssimplc1(c2,c1,op) eq 'true;  
+% cl_qssimplc1(c2,c1,op) eq 'true;
 
 procedure cl_qssusubyit(c1,c2,op);
    % Subsumtion by implication test.
@@ -916,7 +916,7 @@ procedure cl_qssimplc(c,theo,op);
 
 procedure cl_qssibysimpl(s,theo,op);
    begin scalar !*rlsiexpla,!*rlsiexpl,f,w;
-      f := rl_simpl(cl_set2bnf(s,op),nil,-1);  
+      f := rl_simpl(cl_set2bnf(s,op),nil,-1);
       if rl_tvalp f then
 	 return f;
       w := cl_bnf2set1(f,'or);
@@ -941,7 +941,7 @@ procedure cl_qsimpltestccl(cp,clc,op);
       >>;
       %      w := cl_qssimplf(rl_smkn(op,r),nil);
       %      if not rl_tvalp w and cl_qe(rl_all(w,nil)) eq 'true then
-      %	 rederr {"cl_asimpltestcc: computed non-atomic formula:",w};      
+      %	 rederr {"cl_asimpltestcc: computed non-atomic formula:",w};
       return rl_qstautp r
    end;
 
@@ -1098,15 +1098,15 @@ procedure cl_ps(s);
    begin scalar v,w,r; integer i,n;
       v := cdr s;
       if cdr s eq 'final then
-	 return 'final;      
+	 return 'final;
       if null cdr s then
 	 v := cdr s := mkvect (length car s-1);
       n := upbv v;
       while i<=n and (w:=getv(v,i)) do <<
 	 r := car w . r;
 	 i:=i+1;
-      >>;      
-      cl_psnext s;	    
+      >>;
+      cl_psnext s;
       return  r
    end;
 
@@ -1118,12 +1118,12 @@ procedure cl_psnext1(s,n);
       v := cdr s;
       if n > upbv v then
 	 return cdr s := 'final;  % Mark and return;
-      w := getv(v,n);      
+      w := getv(v,n);
       if null w then  % Introduce pointer
 	 return putv(v,n,car s);
-      w := cdr w;  % Try to move      
+      w := cdr w;  % Try to move
       if w then  % Success
-	 return putv(v,n,w);      
+	 return putv(v,n,w);
       % Overflow occurs.
       repeat <<
 	 w := cl_psnext1(s,n+1);

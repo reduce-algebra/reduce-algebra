@@ -196,10 +196,13 @@ rl_mkserv('gcadporder,'(rl_simp),nil,nil,'rl_s2a!-idlist,t);
 rl_mkserv('cadproj,'(rl_simp),'(rl_a2s!-idlist),'((list)),
    function(lambda x; rl_s2a!-sflistlist cdr x),t);
 
+% ibalp + tplp, undocumented
 rl_mkserv('kapur,'(rl_simp),{function(lambda x; x)},'(nil),'rl_mk!*fof,t);
 
+% tplp, undocumented
 rl_mkserv('miniscope,'(rl_simp),'(nil),'(nil),'rl_mk!*fof,t);
 
+% tplp, undocumented
 rl_mkserv('skolemize,'(rl_simp),{function(lambda x; x)},'(nil),'rl_mk!*fof,t);
 
 rl_mkserv('qsat,'(rl_simp),nil,nil,'rl_mk!*fof,t);
@@ -210,6 +213,7 @@ rl_mkserv('qsatdimacs,'(rl_a2s!-string),nil,nil,'rl_mk!*fof,t);
 
 rl_mkserv('readdimacs,'(rl_a2s!-string),nil,nil,'rl_mk!*fof,t);
 
+% Does not work, because ofsf_cadswitches is missing.
 rl_mkserv('cadswitches,nil,nil,nil,function(lambda x; x),t);
 
 rl_mkserv('expand,'(rl_simp),nil,nil,'rl_mk!*fof,t);
@@ -237,21 +241,6 @@ rl_mkserv('depth,'(rl_simp),nil,nil,'aeval,t);
 
 rl_mkserv('qesil,'(rl_a2s!-fl),'(rl_a2s!-atl),'((list)),'rl_s2a!-fl,t);
 
-rl_mkserv('straightify,'(rl_simp),nil,nil,'sl_mk!*slp,t);
-rl_alias('sfy,'straightify);
-
-sl_mkserv('atnum,'(sl_simp),nil,nil,'aeval,t);
-
-sl_mkserv('simpl,'(sl_simp),nil,nil,'sl_mk!*slp,t);
-
-sl_mkserv('straightify,'(sl_simp),nil,nil,'sl_mk!*slp,t);
-sl_alias('sfy,'straightify);
-
-sl_mkserv('pnf,'(sl_simp),nil,nil,'sl_mk!*slp,t);
-
-sl_mkserv('unstraightify,'(sl_simp),nil,nil,'rl_mk!*fof,t);
-sl_alias('unsfy,'unstraightify);
-
 rl_mkserv('dfgprint,'(rl_simp),'(reval),'(nil),'aeval,t);
 
 rl_mkserv('smt2Print,'(rl_simp),'(reval rl_a2s!-stringl),'(nil (list)),'aeval,t);
@@ -272,6 +261,22 @@ rl_mkserv('dpep,'(rl_simp),'(rl_a2s!-number),'(20), function(lambda x; rl_mk!*fo
 rl_mkserv('vsl,'(rl_a2s!-atl),nil,nil,'rl_mk!*fof,t);
 
 rl_mkserv('sign,'(rl_simp),nil,nil,'rl_mk!*fof,t);
+
+% experimental straight-line code, undocumented on the web:
+rl_mkserv('straightify,'(rl_simp),nil,nil,'sl_mk!*slp,t);
+rl_alias('sfy,'straightify);
+
+sl_mkserv('atnum,'(sl_simp),nil,nil,'aeval,t);
+
+sl_mkserv('simpl,'(sl_simp),nil,nil,'sl_mk!*slp,t);
+
+sl_mkserv('straightify,'(sl_simp),nil,nil,'sl_mk!*slp,t);
+sl_alias('sfy,'straightify);
+
+sl_mkserv('pnf,'(sl_simp),nil,nil,'sl_mk!*slp,t);
+
+sl_mkserv('unstraightify,'(sl_simp),nil,nil,'rl_mk!*fof,t);
+sl_alias('unsfy,'unstraightify);
 
 % Black box scheduler.
 

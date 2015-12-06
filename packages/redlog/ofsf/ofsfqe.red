@@ -2925,6 +2925,7 @@ procedure ofsf_elimsetr!-precise(atfal);
    end;
 
 procedure ofsf_qeg(f);
+   % Generic QE-based reguler quantifier elimination.
    begin scalar !*rlqegenct,ass,gres,res,w;
       gres := cl_gqe(f,nil,nil);
       res := gres . for i := 1:length car gres collect <<
