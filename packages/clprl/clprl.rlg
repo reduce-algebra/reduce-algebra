@@ -280,7 +280,7 @@ z - 3 = 0
 clp(mi, false :- min(x,y,3));
 
 
-(y - 3 >= 0 and x - 3 = 0) or (y - 3 = 0 and x - 3 >= 0)
+(y - 3 = 0 and x - 3 >= 0) or (y - 3 >= 0 and x - 3 = 0)
 
 
 
@@ -338,10 +338,10 @@ false
 
 end;
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 500 ms  plus GC time: 16 ms
+Tested on x86_64-mac_10.11_elcapitan-darwin15.0.0 CSL
+Time (counter 1): 850 ms  plus GC time: 50 ms
 
-End of Lisp run after 0.51+0.10 seconds
-real 0.79
-user 0.01
-sys 0.04
+End of Lisp run after 0.85+0.21 seconds
+real         1.25
+user         1.15
+sys          0.09
