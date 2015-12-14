@@ -77,7 +77,7 @@
 // I may be old fashioned, but I will be happier using C rather than C++
 // libraries here.
 
-#if defined __cplusplus && !defined __STDC_CONTANT_MACROS
+#ifndef __STDC_CONTANT_MACROS
 #define __STDC_CONSTANT_MACROS 1
 #endif
 
@@ -120,7 +120,7 @@ extern char *getcwd(char *s, size_t n);
 // I have a generated file that contains the widths of all the fonts
 // I am willing to use here.
 
-#include "cmfont-widths.c"
+#include "cmfont-widths.cpp"
 
 static FILE *logfile = NULL;
 
@@ -251,7 +251,7 @@ BEGIN_EVENT_TABLE(dviFrame, wxFrame)
     EVT_SIZE(            dviFrame::OnSize)
 END_EVENT_TABLE()
 
-int get_current_directory(char *s, int n)
+int get_current_directory(char *s, size_t n)
 {
     if (getcwd(s, n) == 0)
     {   switch(errno)
@@ -613,7 +613,7 @@ int find_program_directory(const char *argv0)
 #endif // WIN32
 
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
     int i;
     int usegui = 1;
@@ -663,7 +663,7 @@ int main(int argc, char *argv[])
                 (buf.st_mode & S_IFDIR) != 0)
             {
 // Well foo.app exists and is a directory, so I will try to use it
-                char **nargs = (char **)malloc(sizeof(char *)*(argc+3));
+                const char **nargs = (const char **)malloc(sizeof(char *)*(argc+3));
                 int i;
                 nargs[0] = "/usr/bin/open";
                 nargs[1] = xname;
@@ -672,7 +672,7 @@ int main(int argc, char *argv[])
                     nargs[i+2] = argv[i];
                 nargs[argc+2] = NULL;
 // /usr/bin/open foo.app --args [any original arguments]
-                return execv("/usr/bin/open", nargs);
+                return execv("/usr/bin/open", const_cast<char * const *>(nargs));
             }
         }
 #endif
@@ -681,7 +681,7 @@ int main(int argc, char *argv[])
     logprintf("calling wxEntry\n");
 #endif
 
-        return wxEntry(argc, argv);
+        return wxEntry(argc, (char **)argv);
     }
 //
 // The following is a bit silly but is here to prove that I can launch this

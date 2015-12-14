@@ -239,8 +239,8 @@ ACN_FILES = \
 FXDCNativePrinter.cpp \
 FXPostscriptFont.cpp \
 FXTerminal.cpp \
-fwin.c \
-termed.c \
+fwin.cpp \
+termed.cpp \
 FXWorker.cpp \
 FXShowMath.cpp
 

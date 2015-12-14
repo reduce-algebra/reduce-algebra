@@ -1,7 +1,9 @@
-/*
- * Header file for libwindow
- */
+//
+// Header file for libwindow
+//
+
+// $Id$
 
 extern void showwindow();
 
-/* end of file */
+// end of libwindow.h

@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXArray.h,v 1.24.2.1 2008/03/25 20:18:43 fox Exp $                           *
+* $Id$                           *
 ********************************************************************************/
 #ifndef FXARRAY_H
 #define FXARRAY_H

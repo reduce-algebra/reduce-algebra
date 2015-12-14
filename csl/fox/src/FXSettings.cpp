@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXSettings.cpp,v 1.54.2.1 2008/07/28 18:24:09 fox Exp $                      *
+* $Id$                      *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"

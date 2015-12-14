@@ -9,7 +9,7 @@
 
 case x$1 in
 *cygwin*)
-  CC="gcc"
+  CC="g++"
   STRIP="strip"
   CFLAGS="dyndemo.def"
   LIBS="-ldl"
@@ -19,7 +19,7 @@ case x$1 in
   DLL="so"
   ;;
 *w32*)
-  CC="i686-w64-mingw32-gcc"
+  CC="i686-w64-mingw32-g++"
   STRIP="i686-w64-mingw32-strip"
   CFLAGS="-DWIN32=1 dyndemo.def"
   LIBS=
@@ -29,7 +29,7 @@ case x$1 in
   DLL="dll"
   ;;
 *w64*)
-  CC="x86_64-w64-mingw32-gcc"
+  CC="x86_64-w64-mingw32-g++"
   STRIP="x86_64-w64-mingw32-strip"
   CFLAGS="-DWIN32=1 dyndemo.def"
   LIBS=
@@ -39,7 +39,7 @@ case x$1 in
   DLL="dll"
   ;;
 *linux* | *unix* | *mac* | *bsd*)
-  CC="gcc"
+  CC="g++"
   STRIP="strip"
   CFLAGS="-rdynamic"
   LIBS="-ldl"
@@ -58,13 +58,13 @@ CFLAGS="$CFLAGS -O2 -Wall"
 
 rm -f *.o *.so *.dll *.exe *.a
 
-$CC $CFLAGS dyndemo.c $LIBS -o dyndemo
+$CC $CFLAGS dyndemo.cpp $LIBS -o dyndemo
 $IMPORTS
-$CC $DLLCFLAGS dynmodule.c $IMPLIB -o dynmodule.$DLL
+$CC $DLLCFLAGS dynmodule.cpp $IMPLIB -o dynmodule.$DLL
 
-echo $CC $CFLAGS dyndemo.c $LIBS -o dyndemo
+echo $CC $CFLAGS dyndemo.cpp $LIBS -o dyndemo
 echo $IMPORTS " "
-echo $CC $DLLCFLAGS dynmodule.c $IMPLIB -o dynmodule.$DLL
+echo $CC $DLLCFLAGS dynmodule.cpp $IMPLIB -o dynmodule.$DLL
 $STRIP dyndemo dynmodule.$DLL
 ls -l dyndemo dynmodule.$DLL
 

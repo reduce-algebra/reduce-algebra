@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXThread.h,v 1.40.2.2 2006/07/26 15:25:53 fox Exp $                          *
+* $Id$                          *
 ********************************************************************************/
 #ifndef FXTHREAD_H
 #define FXTHREAD_H

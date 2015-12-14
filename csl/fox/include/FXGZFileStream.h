@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXGZFileStream.h,v 1.5.2.1 2007/09/28 16:42:19 fox Exp $                     *
+* $Id$                     *
 ********************************************************************************/
 #ifdef HAVE_ZLIB_H
 #ifndef FXGZFILESTREAM_H

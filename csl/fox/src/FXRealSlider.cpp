@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXRealSlider.cpp,v 1.20.2.2 2007/08/09 00:37:06 fox Exp $                    *
+* $Id$                    *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"

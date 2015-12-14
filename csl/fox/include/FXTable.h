@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXTable.h,v 1.166.2.1 2006/06/07 15:51:04 fox Exp $                          *
+* $Id$                          *
 ********************************************************************************/
 #ifndef FXTABLE_H
 #define FXTABLE_H

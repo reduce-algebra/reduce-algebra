@@ -1017,8 +1017,43 @@ else
     passcc="$passcc --enable-sse2"
     ;;
   esac
+  filter=""
+  for x in $ac_configure_args
+  do
+# The processing here is so that I do not pass CSL or REDUCE-specific
+# configuration flags down when configuring crlibm. This then has to have
+# a catalogue of all the options I need to ignore. Messy!
+    case $x in
+    \'--with-force*\' | \
+    \'--with-mingw*\' | \
+    \'--with-lto*\' | \
+    \'--with-m32*\' | \
+    \'--with-m64*\' | \
+    \'--with*-gui*\' | \
+    \'--with*-xft*\' | \
+    \'--with*-xim*\' | \
+    \'--with-smallpage*\' | \
+    \'--with*-fox*\' | \
+    \'--with*-wx*\' | \
+    \'--with-cyg*\' | \
+    \'--with-csl*\' | \
+    \'--with-build*\' | \
+    \'--with-pslbuild*\' | \
+    \'--enable-debug*\' | \
+    \'--enable-conservative*\' | \
+    \'--enable-test*\' | \
+    \'--enable-jit*\' | \
+    \'--enable-static*\' | \
+    \'--enable-silent*\' | \
+    \'--disable-silent*\' )
+      ;;
+    *)
+      filter="$filter $x"
+      ;;
+    esac
+  done
   AC_MSG_NOTICE([passcc = $passcc])
-  doconfig="$SHELL \"$abssrcdir/csl/cslbase/crlibm/configure\" $ac_configure_args \
+  doconfig="$SHELL \"$abssrcdir/csl/cslbase/crlibm/configure\" $filter \
         $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
         --prefix=\"$builddir\""

@@ -1,4 +1,4 @@
-/* headers.h                       Copyright (C) 2005-2015 Codemist Ltd */
+// headers.h                       Copyright (C) 2005-2015 Codemist Ltd
 
 #ifndef header_headers_h
 #define header_headers_h 1
@@ -32,21 +32,23 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* $Id$ */
+// $Id$
 
-/*
- * #include the majority of the header files needed by CSL code.
- */
+//
+// #include the majority of the header files needed by CSL code.
+//
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-/*
- * If the header "complex.h" is available, the type "complex double" is
- * accepted and the function "csqrt" is present I will assume I can use the
- * standard C99 complex number support facilities.
- */
+//
+// If the header "complex.h" is available, the type "complex double" is
+// accepted and the function "csqrt" is present I will assume I can use the
+// standard C99 complex number support facilities. Aha SOME C++ systems
+// support this, but others use a template class, and I will adapt my code
+// to use that some time.
+//
 
 #if defined HAVE_COMPLEX_H && \
     defined HAVE_COMPLEX_DOUBLE && \
@@ -54,9 +56,9 @@
 #define HAVE_COMPLEX 1
 #endif
 
-/*
- * I will check a number of things before I try to use sigaltstack()
- */
+//
+// I will check a number of things before I try to use sigaltstack()
+//
 #if defined HAVE_SIGNAL_H && defined HAVE_SETJMP_H
 #if defined HAVE_SIGSETJMP && defined HAVE_SIGLONGJMP
 #if defined HAVE_SIGACTION && defined HAVE_SIGALTSTACK
@@ -79,6 +81,10 @@
 #define __STDC_CONSTANT_MACROS 1
 #endif
 
+#if defined __cplusplus && !defined __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS 1
+#endif
+
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
@@ -86,11 +92,11 @@
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
 #else
-/*
- * If <inttypes.h> is not available I will try some things that probably
- * work on the most common gcc systems but which may need more work on
- * other platforms.
- */
+//
+// If <inttypes.h> is not available I will try some things that probably
+// work on the most common gcc systems but which may need more work on
+// other platforms.
+//
 #if defined __x86_64 || (defined __SIZEOF_PTRDIFF_T__ && __SIZEOF_PTRDIFF_T__ == 8)
 #define PRIdPTR "lld"
 #define PRIuPTR "llu"
@@ -107,7 +113,7 @@
 #endif
 
 #ifdef WIN64
-/* The mingw64 build that I use seems to get messed up by inttypes.h */
+// The mingw64 build that I use seems to get messed up by inttypes.h
 #undef PRIdPTR
 #undef PRIuPTR
 #undef PRIxPTR
@@ -117,13 +123,13 @@
 #endif
 
 #ifndef UNDER_CE
-/*
- * The test for UNDER_CE is a little odd here, but when I once compiled a
- * version of this to run under Windows CE on an Ipaq I could not have
- * signal handling there hence this. One mighht have expected me to say
- * #ifdef HAVE_SIGNAL_H but maybe the file existed in the world where I
- * cross-built for CE and that led to pain? I now forget.
- */
+//
+// The test for UNDER_CE is a little odd here, but when I once compiled a
+// version of this to run under Windows CE on an Ipaq I could not have
+// signal handling there hence this. One mighht have expected me to say
+// #ifdef HAVE_SIGNAL_H but maybe the file existed in the world where I
+// cross-built for CE and that led to pain? I now forget.
+//
 #include <signal.h>
 #endif
 
@@ -151,11 +157,11 @@
 #endif
 
 #ifdef HAVE_CRLIBM
-/*
- * crlibm aims to produce correctly rounded results in all cases.
- * The functions from it selected here are the ones that round to
- * nearest.
- */
+//
+// crlibm aims to produce correctly rounded results in all cases.
+// The functions from it selected here are the ones that round to
+// nearest.
+//
 
 #include "crlibm.h"
 
@@ -189,10 +195,8 @@
 #define log10      log10_rn
 #define pow        pow_rn
 
-#endif /* HAVE_CRLIBM */
+#endif // HAVE_CRLIBM
 
+#endif // this header included already
 
-#endif /* this header included already */
-
-/* end of headers.h */
-
+// end of headers.h

@@ -61,8 +61,9 @@ symbolic procedure c!:printf1(fmt, args);
 %               %s       use princ (to print a name?)
 %               %d       use princ (to print a number?)
 %               %a       use prin
-%               %c       as prin, but do not generate the sequence
-%                        "*/" as part of the output (!)
+%               %c       as prin, but the material is within a comment and
+%                        so if it contains a newline then an extra "//"
+%                        will be needed.
 %               %t       do a ttab()
 %               %<       ensure at least 2 free chars on line
 %               %v       print a variable.... magic for this compiler
@@ -104,19 +105,35 @@ symbolic procedure c!:printf1(fmt, args);
 
 % The following yukky code is for use in displaying C comments. I want to be
 % able to annotate my code as in
-%     ... /* load the literal "something" */
-% where the literal is displayed. But if the literal were to be a string
-% with the character sequence "*/" within it I would get into trouble...
-
+%     ... // load the literal "something"
+% where the literal is displayed. If the literal were to be a string
+% with an embedded newline this could come out as
+%     ... // "string with
+%             embedded newline"
+% where the tail has escaped from comment context... And I also need to cope
+% if the material in the comment is merely very very long and will cause
+% line breaks.
+% A further horror is that I must not leave a "\" trailing where it can be
+% at the end of a line (within a comment) causing potential chaos.
 symbolic procedure c!:safeprin x;
   begin
-    scalar a, b;
-    a := explode x;
-    while a do <<
-       if eqcar(a, '!/) and b then princ " ";
-       princ car a;
-       b := eqcar(a, '!*);
-       a := cdr a >>;
+    scalar n, lastc;
+    n := 0;
+    for each c in explode x do <<
+      if n > 120 and c = '!  then <<
+        terpri();
+        prin2 "//";
+        n := 2 >>
+      else if n > 150 and c neq !$eol!$ then <<
+        terpri();
+        prin2 "// ";
+        n := 3 >>
+      else n := n + 1;
+      if lastc = '!\ and c = !$eol!$ then princ " (backslash)";
+      lastc := c;
+      princ c;
+      if c = !$eol!$ then << princ "//"; n := 2 >> >>;
+    if lastc = '!\ then princ " (backslash)";
   end;
 
 symbolic procedure c!:valid_fndef(args, body);
@@ -645,7 +662,7 @@ symbolic procedure c!:cfndef(c!:current_procedure,
     c!:reset_gensyms();
     wrs C_file;
     linelength 200;
-    c!:printf("\n\n/* Code for %a %<*/\n\n", c!:current_procedure);
+    c!:printf("\n\n// Code for %a\n\n", c!:current_procedure);
 
     c!:find_literal c!:current_procedure; % For benefit of backtraces
 %
@@ -680,7 +697,7 @@ symbolic procedure c!:cfndef(c!:current_procedure,
        for each v in n do
          body := list('setq, car v, cdr v) . body;
        body := 'prog . (for each v in reverse n collect car v) . body >>;
-    c!:printf("static Lisp_Object %s(Lisp_Object env", c!:current_c_name);
+    c!:printf("static LispObject %s(LispObject env", c!:current_c_name);
     env := nil;
     if varargs then c!:printf(", int nargs, ...")
     else <<
@@ -694,7 +711,7 @@ symbolic procedure c!:cfndef(c!:current_procedure,
          env := (x . aa) . env;
          c!:registers := aa . c!:registers;
          args1 := aa . args1;
-         c!:printf(" Lisp_Object %s", aa) end >>;
+         c!:printf(" LispObject %s", aa) end >>;
     c!:printf(")\n{\n");
     if varargs and args then
       for each x in args do begin
@@ -905,9 +922,9 @@ symbolic procedure c!:ccompilestart(name, setupname, dir, hdrnow);
        else name := c!:concat(dir, c!:concat("/", name)) >>;
 princ "C file = "; print name;
 !#if common!-lisp!-mode
-    C_file := open(c!:concat(name, ".c"), !:direction, !:output);
+    C_file := open(c!:concat(name, ".cpp"), !:direction, !:output);
 !#else
-    C_file := open(c!:concat(name, ".c"), 'output);
+    C_file := open(c!:concat(name, ".cpp"), 'output);
 !#endif
     L_file := c!:concat(name, ".lsp");
     L_contents := nil;
@@ -931,11 +948,10 @@ princ "C file = "; print name;
     O_file := wrs C_file;
     c!:defnames := nil;
     if hdrnow then
-        c!:printf("\n/* Module: %s %tMachine generated C code %<*/\n\n", setupname, 25)
-    else c!:printf("\n/* %s.c %tMachine generated C code %<*/\n\n", name, 25);
-    c!:printf("/* $I");
-    c!:printf("d: $ */\n\n");
-%   c!:printf("/* Signature: 00000000 %s %<*/\n\n", d);
+        c!:printf("\n// Module: %s %tMachine generated C code\n\n", setupname, 25)
+    else c!:printf("\n// %s.c %tMachine generated C code\n\n", name, 25);
+    c!:printf("// $I");
+    c!:printf("d: $\n\n");
     c!:printf "#include <stdio.h>\n";
     c!:printf "#include <stdlib.h>\n";
     c!:printf "#include <string.h>\n";
@@ -964,11 +980,11 @@ princ "C file = "; print name;
 symbolic procedure c!:print!-init();
   <<
    c!:printf "\n";
-   c!:printf "Lisp_Object *C_nilp;\n";
-   c!:printf "Lisp_Object **C_stackp;\n";
-   c!:printf "Lisp_Object * volatile * stacklimitp;\n";
+   c!:printf "LispObject *C_nilp;\n";
+   c!:printf "LispObject **C_stackp;\n";
+   c!:printf "LispObject * volatile * stacklimitp;\n";
    c!:printf "\n";
-   c!:printf "void init(Lisp_Object *a, Lisp_Object **b, Lisp_Object * volatile *c)\n";
+   c!:printf "void init(LispObject *a, LispObject **b, LispObject * volatile *c)\n";
    c!:printf "{\n";
    c!:printf "    C_nilp = a;\n";
    c!:printf "    C_stackp = b;\n";
@@ -1032,7 +1048,7 @@ procedure C!-end1 create_lfile;
                      '!  . append(explodec c2, '!  . explodec c1));
     c!:printf("    {NULL, (one_args *)%a, (two_args *)%a, 0}\n};\n\n",
               Setup_name, checksum);
-    c!:printf "%</* end of generated code %<*/\n";
+    c!:printf "%<// end of generated code\n";
     close C_file;
     if create_lfile then <<
 !#if common!-lisp!-mode
@@ -1156,7 +1172,7 @@ symbolic procedure c!:print_exit_condition(why, where_to, depth);
             if flagp(a, 'c!:live_across_call) then <<
                if null g then c!:printf "    {\n";
                g := c!:my_gensym();
-               c!:printf("        Lisp_Object %s = %v;\n", g, a);
+               c!:printf("        LispObject %s = %v;\n", g, a);
                args := g . args >>
             else args := a . args;
           if depth neq 0 then <<
@@ -1164,7 +1180,7 @@ symbolic procedure c!:print_exit_condition(why, where_to, depth);
               c!:printf("    popv(%s);\n", depth) >>;
           if g then c!:printf "    ";
 !#if common!-lisp!-mode
-          c!:printf("    { Lisp_Object retVal = %s(", cdr w);
+          c!:printf("    { LispObject retVal = %s(", cdr w);
 !#else
           c!:printf("    return %s(", cdr w);
 !#endif
@@ -1191,7 +1207,7 @@ symbolic procedure c!:print_exit_condition(why, where_to, depth);
             if flagp(a, 'c!:live_across_call) then <<
                if null g then c!:printf "    {\n";
                g := c!:my_gensym();
-               c!:printf("        Lisp_Object %s = %v;\n", g, a);
+               c!:printf("        LispObject %s = %v;\n", g, a);
                args := g . args >>
             else args := a . args;
           if depth neq 0 then c!:printf("        popv(%s);\n", depth);
@@ -1207,11 +1223,11 @@ symbolic procedure c!:print_exit_condition(why, where_to, depth);
           for each a in cdr why do
             if flagp(a, 'c!:live_across_call) then <<
                g := c!:my_gensym();
-               c!:printf("        Lisp_Object %s = %v;\n", g, a);
+               c!:printf("        LispObject %s = %v;\n", g, a);
                args := g . args >>
             else args := a . args;
           if depth neq 0 then c!:printf("        popv(%s);\n", depth);
-          c!:printf("        fn = elt(env, %s); %</* %c %<*/\n",
+          c!:printf("        fn = elt(env, %s); %<// %c\n",
                     c!:find_literal cadar why, cadar why);
           if nargs = 1 then c!:printf("        return (*qfn1(fn))(qenv(fn)")
           else if nargs = 2 then c!:printf("        return (*qfn2(fn))(qenv(fn)")
@@ -1250,14 +1266,14 @@ symbolic procedure c!:pmovr(op, r1, r2, r3, depth);
 put('movr, 'c!:opcode_printer, function c!:pmovr);
 
 symbolic procedure c!:pmovk(op, r1, r2, r3, depth);
-   c!:printf("    %v = elt(env, %s); %</* %c %<*/\n", r1, r3, r2);
+   c!:printf("    %v = elt(env, %s); %<// %c\n", r1, r3, r2);
 
 put('movk, 'c!:opcode_printer, function c!:pmovk);
 
 symbolic procedure c!:pmovk1(op, r1, r2, r3, depth);
    if null r3 then c!:printf("    %v = nil;\n", r1)
    else if r3 = 't then c!:printf("    %v = lisp_true;\n", r1)
-   else c!:printf("    %v = (Lisp_Object)%s; %</* %c %<*/\n", r1, 16*r3+1, r3);
+   else c!:printf("    %v = (LispObject)%s; %<// %c\n", r1, 16*r3+1, r3);
 
 put('movk1, 'c!:opcode_printer, function c!:pmovk1);
 flag('(movk1), 'c!:uses_nil);  % Well it does SOMETIMES
@@ -1269,17 +1285,17 @@ symbolic procedure c!:preloadenv(op, r1, r2, r3, depth);
 put('reloadenv, 'c!:opcode_printer, function c!:preloadenv);
 
 symbolic procedure c!:pldrglob(op, r1, r2, r3, depth);
-   c!:printf("    %v = qvalue(elt(env, %s)); %</* %c %<*/\n", r1, r3, r2);
+   c!:printf("    %v = qvalue(elt(env, %s)); %<// %c\n", r1, r3, r2);
 
 put('ldrglob, 'c!:opcode_printer, function c!:pldrglob);
 
 symbolic procedure c!:pstrglob(op, r1, r2, r3, depth);
-   c!:printf("    qvalue(elt(env, %s)) = %v; %</* %c %<*/\n", r3, r1, r2);
+   c!:printf("    qvalue(elt(env, %s)) = %v; %<// %c\n", r3, r1, r2);
 
 put('strglob, 'c!:opcode_printer, function c!:pstrglob);
 
 symbolic procedure c!:pnilglob(op, r1, r2, r3, depth);
-   c!:printf("    qvalue(elt(env, %s)) = nil; %</* %c %<*/\n", r3, r2);
+   c!:printf("    qvalue(elt(env, %s)) = nil; %<// %c\n", r3, r2);
 
 put('nilglob, 'c!:opcode_printer, function c!:pnilglob);
 flag('(nilglob), 'c!:uses_nil);
@@ -1295,7 +1311,7 @@ symbolic procedure c!:pfastget(op, r1, r2, r3, depth);
  <<
    c!:printf("    if (!symbolp(%v)) %v = nil;\n", r2, r1);
    c!:printf("    else { %v = qfastgets(%v);\n", r1, r2);
-   c!:printf("           if (%v != nil) { %v = elt(%v, %s); %</* %c %<*/\n",
+   c!:printf("           if (%v != nil) { %v = elt(%v, %s); %<// %c\n",
                                        r1, r1, r1, car r3, cdr r3);
    c!:printf("#ifdef RECORD_GET\n");
    c!:printf("             if (%v != SPID_NOPROP)\n", r1);
@@ -1315,7 +1331,7 @@ symbolic procedure c!:pfastflag(op, r1, r2, r3, depth);
  <<
    c!:printf("    if (!symbolp(%v)) %v = nil;\n", r2, r1);
    c!:printf("    else { %v = qfastgets(%v);\n", r1, r2);
-   c!:printf("           if (%v != nil) { %v = elt(%v, %s); %</* %c %<*/\n",
+   c!:printf("           if (%v != nil) { %v = elt(%v, %s); %<// %c\n",
                                        r1, r1, r1, car r3, cdr r3);
    c!:printf("#ifdef RECORD_GET\n");
    c!:printf("             if (%v == SPID_NOPROP)\n", r1);
@@ -1405,28 +1421,28 @@ flag('(igreaterp), 'c!:uses_nil);
 % level even on 64-bit architectures.
 
 symbolic procedure c!:piminus(op, r1, r2, r3, depth);
-   c!:printf("    %v = (Lisp_Object)(2-((int32_t)(%v)));\n", r1, r3);
+   c!:printf("    %v = (LispObject)(2-((int32_t)(%v)));\n", r1, r3);
 
 put('iminus, 'c!:opcode_printer, function c!:piminus);
 
 symbolic procedure c!:piadd1(op, r1, r2, r3, depth);
-   c!:printf("    %v = (Lisp_Object)((int32_t)(%v) + 0x10);\n", r1, r3);
+   c!:printf("    %v = (LispObject)((int32_t)(%v) + 0x10);\n", r1, r3);
 
 put('iadd1, 'c!:opcode_printer, function c!:piadd1);
 
 symbolic procedure c!:pisub1(op, r1, r2, r3, depth);
-   c!:printf("    %v = (Lisp_Object)((int32_t)(%v) - 0x10);\n", r1, r3);
+   c!:printf("    %v = (LispObject)((int32_t)(%v) - 0x10);\n", r1, r3);
 
 put('isub1, 'c!:opcode_printer, function c!:pisub1);
 
 symbolic procedure c!:piplus2(op, r1, r2, r3, depth);
- << c!:printf("    %v = (Lisp_Object)(int32_t)((int32_t)%v +", r1, r2);
+ << c!:printf("    %v = (LispObject)(int32_t)((int32_t)%v +", r1, r2);
     c!:printf(" (int32_t)%v - TAG_FIXNUM);\n", r3) >>;
 
 put('iplus2, 'c!:opcode_printer, function c!:piplus2);
 
 symbolic procedure c!:pidifference(op, r1, r2, r3, depth);
- << c!:printf("    %v = (Lisp_Object)(int32_t)((int32_t)%v - (int32_t)%v", r1, r2, r3);
+ << c!:printf("    %v = (LispObject)(int32_t)((int32_t)%v - (int32_t)%v", r1, r2, r3);
     c!:printf(" + TAG_FIXNUM);\n") >>;
 
 put('idifference, 'c!:opcode_printer, function c!:pidifference);
@@ -1517,7 +1533,7 @@ symbolic procedure c!:pget(op, r1, r2, r3, depth);
 put('get, 'c!:opcode_printer, function c!:pget);
 
 symbolic procedure c!:pqgetv(op, r1, r2, r3, depth);
- << c!:printf("    %v = *(Lisp_Object *)((char *)%v + (CELL-TAG_VECTOR) +",
+ << c!:printf("    %v = *(LispObject *)((char *)%v + (CELL-TAG_VECTOR) +",
               r1, r2);
     c!:printf(" ((int32_t)%v/(16/CELL)));\n", r3) >>;
 
@@ -1525,7 +1541,7 @@ put('qgetv, 'c!:opcode_printer, function c!:pqgetv);
 
 symbolic procedure c!:pqputv(op, r1, r2, r3, depth);
  <<
-  c!:printf("    *(Lisp_Object *)((char *)%v + (CELL-TAG_VECTOR) +", r2);
+  c!:printf("    *(LispObject *)((char *)%v + (CELL-TAG_VECTOR) +", r2);
   c!:printf(" ((int32_t)%v/(16/CELL))) = %v;\n", r3, r1) >>;
 
 put('qputv, 'c!:opcode_printer, function c!:pqputv);
@@ -1566,7 +1582,7 @@ symbolic procedure c!:pcall(op, r1, r2, r3, depth);
        c!:printf(");\n") >>
     else if w := get(car r3, 'c!:direct_predicate) then <<
        boolfn := t;
-       c!:printf("    %v = (Lisp_Object)%s(", r1, cdr w);
+       c!:printf("    %v = (LispObject)%s(", r1, cdr w);
        if r2 then <<
           c!:printf("%v", car r2);
           for each a in cdr r2 do c!:printf(", %v", a) >>;
@@ -1590,7 +1606,7 @@ symbolic procedure c!:pcall(op, r1, r2, r3, depth);
     else begin
        scalar nargs;
        nargs := length r2;
-       c!:printf("    fn = elt(env, %s); %</* %c %<*/\n",
+       c!:printf("    fn = elt(env, %s); %<// %c\n",
               c!:find_literal car r3, car r3);
        if nargs = 1 then c!:printf("    %v = (*qfn1(fn))(qenv(fn)", r1)
        else if nargs = 2 then c!:printf("    %v = (*qfn2(fn))(qenv(fn)", r1)
@@ -1619,7 +1635,7 @@ symbolic procedure c!:pgoto(lab, depth);
     lab := get(car lab, 'c!:chosen);
     if zerop depth then c!:printf("return onevalue(%v);\n", lab)
     else if flagp(lab, 'c!:live_across_call) then
-      c!:printf("{ Lisp_Object res = %v; popv(%s); return onevalue(res); }\n", lab, depth)
+      c!:printf("{ LispObject res = %v; popv(%s); return onevalue(res); }\n", lab, depth)
     else c!:printf("{ popv(%s); return onevalue(%v); }\n", depth, lab)
   end;
 
@@ -1925,7 +1941,7 @@ symbolic procedure c!:allocate_registers rl;
          poss := c!:my_gensym();
          allocation := append(allocation, list poss) >>
       else poss := car poss;
-%     c!:printf("%</* Allocate %s to %s, to miss %s %<*/\n",
+%     c!:printf("%<// Allocate %s to %s, to miss %s\n",
 %               r, poss, get(r, 'c!:clash));
       put(r, 'c!:chosen, poss)
     end;
@@ -2072,16 +2088,16 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
     c!:startpoint := c!:branch_chain(c!:startpoint, t); % ... AGAIN to tidy up
     remflag(c!:all_blocks, 'c!:visited);
     if does_call then nil_used := t;
-    if nil_used then c!:printf "    Lisp_Object nil = C_nil;\n"
+    if nil_used then c!:printf "    LispObject nil = C_nil;\n"
     else if nilbase_used then c!:printf "    nil_as_base\n";
     if locs then <<
-      c!:printf("    Lisp_Object %s", car locs);
+      c!:printf("    LispObject %s", car locs);
       for each v in cdr locs do c!:printf(", %s", v);
       c!:printf ";\n" >>;
-    if fn_used then c!:printf "    Lisp_Object fn;\n";
+    if fn_used then c!:printf "    LispObject fn;\n";
     if varargs and args then <<
       w := " ";
-      c!:printf("    Lisp_Object");
+      c!:printf("    LispObject");
       for each v in args do <<
          c!:printf("%s%s", w, v);
          w := ", " >>;
@@ -2098,7 +2114,7 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
     if varargs and args then <<
        c!:printf("    va_start(aa, nargs);\n");
        for each v in reverse args do
-          c!:printf("    %s = va_arg(aa, Lisp_Object);\n", v);
+          c!:printf("    %s = va_arg(aa, LispObject);\n", v);
        c!:printf("    va_end(aa);\n") >>;
     c!:printf("#ifdef DEBUG_VALIDATE\n");
     c!:printf("    if (check_env(env)) return aerror(\qenv for %s\q);\n",
@@ -2124,7 +2140,7 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
     else c!:printf("    CSL_IGNORE(env);\n");
     n := 0;
     if stacks then <<
-       c!:printf "%</* space for vars preserved across procedure calls %<*/\n";
+       c!:printf "%<// space for vars preserved across procedure calls\n";
        for each v in stacks do <<
           put(v, 'c!:location, n);
           n := n+1 >>;
@@ -2141,16 +2157,16 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
     if reloadenv then <<
        reloadenv := n;
        n := n + 1 >>;
-    if env then c!:printf "%</* copy arguments values to proper place %<*/\n";
+    if env then c!:printf "%<// copy arguments values to proper place\n";
     for each v in env do
       if flagp(cdr v, 'c!:live_across_call) then
          c!:printf("    stack[%s] = %s;\n",
                -get(get(cdr v, 'c!:chosen), 'c!:location), cdr v)
       else c!:printf("    %s = %s;\n", get(cdr v, 'c!:chosen), cdr v);
-    c!:printf "%</* end of prologue %<*/\n";
+    c!:printf "%<// end of prologue\n";
     c!:display_flowgraph(c!:startpoint, n, t);
     if c!:error_labels then <<
-       c!:printf "%</* error exit handlers %<*/\n";
+       c!:printf "%<// error exit handlers\n";
        for each x in c!:error_labels do <<
           c!:printf("%s:\n", cdr x);
           c!:print_error_return(caar x, cadar x, caddar x) >> >>;
@@ -2164,12 +2180,12 @@ symbolic procedure c!:print_error_return(why, env, depth);
     if null why then <<
 % One could imagine generating backtrace entries here...
        for each v in env do
-          c!:printf("    qvalue(elt(env, %s)) = %v; %</* %c %<*/\n",
+          c!:printf("    qvalue(elt(env, %s)) = %v; %<// %c\n",
                  c!:find_literal car v, get(cdr v, 'c!:chosen), car v);
        if depth neq 0 then c!:printf("    popv(%s);\n", depth);
        c!:printf "    return nil;\n" >>
     else if flagp(cadr why, 'c!:live_across_call) then <<
-       c!:printf("    {   Lisp_Object res = %v;\n", cadr why);
+       c!:printf("    {   LispObject res = %v;\n", cadr why);
        for each v in env do
           c!:printf("        qvalue(elt(env, %s)) = %v;\n",
                  c!:find_literal car v, get(cdr v, 'c!:chosen));

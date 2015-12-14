@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FX7Segment.h,v 1.12 2006/03/01 02:13:21 fox Exp $                        *
+* $Id$                        *
 ********************************************************************************/
 #ifndef FX7SEGMENT_H
 #define FX7SEGMENT_H

@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXComboBox.cpp,v 1.66.2.2 2007/06/07 20:17:57 fox Exp $                      *
+* $Id$                      *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"

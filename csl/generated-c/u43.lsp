@@ -1,170 +1,167 @@
 
 % u43.lsp           Machine generated Lisp
 
-(c!:install "u43" 14996 5487146 1470121)
+(c!:install "u43" 20229 1430725 5614467)
 
-(c!:install 'new_prove '(new_prove nil new_provev) 124058601082197365)
+(c!:install 'expvec2a1 '(expvec2a1 expt nreverse) 1401478201088901231)
 
-(c!:install 'verify_tens_ids '(verify_tens_ids cantens
-"are inconsistent lists of indices" t extract_dummy_ids repeats rerror) 
-2124580761287725659)
+(c!:install 'deflate1 '(deflate1 nil ncoeffs times!: plus!:) 
+2203928117898340331)
 
-(c!:install '!*q2f '(!*q2f polynomial prepsq typerr) 1992770000421239697
+(c!:install 'coeff1_calc '(coeff1_calc calc_coeffmap_ nreverse) 
+1897238753576047443)
+
+(c!:install 'dp_prod '(dp_prod dp!=prod) 1131889884801490894)
+
+(c!:install 'dummy_nam '(dummy_nam symbolic g_dvnames t ordn list2vect!*
+) 1987001247185842929)
+
+(c!:install 'precision1 '(precision1 !!rdprec !*roundbf minprec!#
+!:prec!: !:print!-prec!: nil !:bprec!: !:rd!: epsqrt!* rd!-tolerance!*
+cr!-tolerance!* !!flprec !*!*roundbf rmsubs decprec2internal max) 
+1094124719569915161)
+
+(c!:install 'texexplode '(texexplode texname nil !  strcollect
+texcollect texexplist) 32878331386523690)
+
+(c!:install 'simpx1 '(simpx1 !*minus!* nil quotient expt i frlis!* !*mcd
+!*notseparate !*keepsqrts sqrt minus plus !*expandexpt times used!* (
+minus 1) difference (quotient 1 2) simpexpt negsq multsq simp mksq invsq
+exptsq simp!* simprad smemqlp) 217428944454050099)
+
+(c!:install 'makecoeffpairs1 '(makecoeffpairs1 ((nil)) nil tayexp!-minus
+makecoeffpairshom lastpair) 1976336402385581849)
+
+(c!:install 'pasf_qff2ivl '(pasf_qff2ivl
+"pasf_qff2ivl : uniform Presburger arithmetic formula in input"
+pasf_uprap rederr pasf_dnf pasf_qff2ivl1) 1883740105589236743)
+
+(c!:install 'aex_neg '(aex_neg aex_ex negsq aex_ctx aex_mk) 
+927702877372250923)
+
+(c!:install 'parseml '(parseml nil space count ch temp2 char (m a t h)
+"<math>" (!/ m a t h) "</math>" list2string lex errorml aeval mathml) 
+1633709420079393290)
+
+(c!:install 'tidysqrt '(tidysqrt nil tidysqrtf invsq multsq) 
+1496738360046693267)
+
+(c!:install 'getvariables '(getvariables nil varsinsf) 
+197185471501381051)
+
+(c!:install 'row_dim '(row_dim !*fast_la nil
+"Error in row_dim: input should be a matrix." rederr size_of_matrix
+matrixp) 723371441808594052)
+
+(c!:install 'multsqpf '(multsqpf t nreverse multsq) 1757488349765476751)
+
+(c!:install 'gffdot '(gffdot) 733304784377669362)
+
+(c!:install '!*kp2q '(!*kp2q "Zero divisor" mksq revpr rederr) 
+1293483753785013630)
+
+(c!:install 'physop!*sq '(physop!*sq nil physop !*q2a !*collectphysops) 
+851782618777726459)
+
+(c!:install 'store_edges '(store_edges nil) 1508654666156025741)
+
+(c!:install 'lchk '(lchk t nil) 1917025160835465823)
+
+(c!:install 'compactf1 '(compactf1 intersection compactf11) 
+1704580020154585377)
+
+(c!:install '!*v2j '(!*v2j ordering lex varlist!* sub01) 
+1976701608171549133)
+
+(c!:install 'rl_simplb '(rl_simplb rl_simplb!* apply) 279535802749677085
 )
 
-(c!:install 'square!-free!-mod!-p '(square!-free!-mod!-p t
-derivative!-mod!-p gcd!-mod!-p) 1793212767385351113)
+(c!:install 'ps!:mkpow '(ps!:mkpow expt quotient) 1492163102441571598)
 
-(c!:install 'monomcomparelex '(monomcomparelex nil) 1828135299749321880)
+(c!:install 'varsinsf '(varsinsf t nil union) 1719043728093859155)
 
-(c!:install 'bra_mk '(bra_mk) 958458358774511472)
+(c!:install 'dip!-nc!-ev!-prod '(dip!-nc!-ev!-prod nil bcprod
+dip!-nc!-ev!-prod1) 2224665023924069173)
 
-(c!:install 'spinnerprod '(spinnerprod nil t plus times) 
-144423914503628268)
+(c!:install 'minprec '(minprec !*bftag !:prec!: !!nfpd) 
+1602854570656589848)
 
-(c!:install '!:log10 '(!:log10 not_found bften!* get!:const log!:
-save!:const) 815825420359911240)
+(c!:install 'acmemb '(acmemb nil aceq) 1742652133430379865)
 
-(c!:install 'exptbf '(exptbf csl_timbf lshift) 1912298101888022966)
+(c!:install 'mo_from_ei '(mo_from_ei mo!=deglist mo_zero) 
+602087789336090225)
 
-(c!:install 'lndepends '(lndepends nil ndepends) 1225443434999479660)
+(c!:install 'general!-negate!-term '(general!-negate!-term
+general!-minus!-mod!-p) 450923593234793085)
 
-(c!:install 'count!-linear!-factors!-mod!-p '(
-count!-linear!-factors!-mod!-p linear!-factors dpoly nil poly!-vector
-current!-modulus make!-x!-to!-p gcd!-in!-vector quotfail!-in!-vector
-copy!-vector) 1772436455543001893)
+(c!:install 'addinds '(addinds "Powrhs too long" "Powu too long" interr
+nreverse) 1866285765582136868)
 
-(c!:install 'ofsf_smeqtable '(ofsf_smeqtable ((equal (equal . equal) (
-neq . false) (geq . equal) (leq . equal) (greaterp . false) (lessp . 
-false)) (neq (neq . neq) (geq . greaterp) (leq . lessp) (greaterp . 
-greaterp) (lessp . lessp)) (geq (geq . geq) (leq . equal) (greaterp . 
-greaterp) (lessp . false)) (leq (leq . leq) (greaterp . false) (lessp . 
-lessp)) (greaterp (greaterp . greaterp) (lessp . false)) (lessp (lessp
- . lessp)))) 1215348524260009273)
+(c!:install 'available!*p '(available!*p "this is no group identifier"
+available rederr) 1082911592291158226)
 
-(c!:install 'rl_sacat '(rl_sacat rl_sacat!* apply) 944955371135587480)
+(c!:install 'ofsf_simpat '(ofsf_simpat !*rlnzden !*rlposden t
+"atomic formula" nil !*rladdcond (lessp leq greaterp geq) and greaterp
+neq simp typerr negsq addsq multf) 2282181452827438056)
 
-(c!:install 'rl_subat '(rl_subat rl_subat!* apply) 823858473539513481)
+(c!:install 'cl_simpl '(cl_simpl !*rlsism nil inctheo and false
+cl_sitheo rl_smupdknowl cl_simpl1) 77547197209398539)
 
-(c!:install 'rat_abs '(rat_abs absf) 1504838843898292378)
+(c!:install 'bc_minus!? '(bc_minus!? minusf) 57780086938528791)
 
-(c!:install 'dvfsf_susipost '(dvfsf_susipost) 1115339129606832861)
+(c!:install 'cr!:minusp '(cr!:minusp nil) 1518570810801810726)
 
-(c!:install 'dipretimes '(dipretimes times) 253811250525107887)
+(c!:install 'matrix_input_test '(matrix_input_test mat "ERROR: `"
+"' is non matrix input." rederr) 1702012329098984594)
 
-(c!:install '!:log2 '(!:log2 not_found bftwo!* get!:const log!:
-save!:const) 684887441519640917)
+(c!:install 'column_dim '(column_dim !*fast_la nil
+"Error in column_dim: input should be a matrix." rederr size_of_matrix
+matrixp) 420723012607600441)
 
-(c!:install 'exp!* '(exp!* !:bprec!: exp!:) 1899228351420786989)
+(c!:install 'unshift '(unshift !*xo nil (0.0 . 0.0) gfplus gfadjust) 
+1467274265607953694)
 
-(c!:install 'indordln '(indordln nil indordlad indordl2) 
-113562722405101892)
+(c!:install 'atlas_edges '(atlas_edges map__edges den__edges union_edges
+coeff_edges) 1121553401104374560)
 
-(c!:install 'delete_edge '(delete_edge nreverse) 1457055915638932043)
+(c!:install 'compactf3 '(compactf3 mv!-vars!* nil sf2mv mv!-compact
+mv2sf) 1696280566382108671)
 
-(c!:install 'generic_arguments '(generic_arguments list generic_function
-) 1005046265298320445)
+(c!:install '!*sq2fourier '(!*sq2fourier nil cos fourier tag
+fs!:make!-nullangle) 1279989235566875546)
 
-(c!:install 'njets '(njets combin) 1430456143211559356)
+(c!:install 'gi '(gi gg!* nil class) 1040844877306604009)
 
-(c!:install 'pst_mkpst '(pst_mkpst nil pst_mkpst1 pst_equitable) 
-1119549800287236044)
+(c!:install 'r2flbf '(r2flbf !*bftag r2bf r2fl) 2263286083679047814)
 
-(c!:install 'remainder!-mod!-p '(remainder!-mod!-p
-"B=0 IN REMAINDER-MOD-P" t nil xremainder!-mod!-p errorf) 
-1617505365660957407)
+(c!:install 'rtypepart '(rtypepart yetunknowntype nil getrtypecar) 
+1342518845604065030)
 
-(c!:install 'janettreeinsert '(janettreeinsert
-fluidbibasisjanettreerootnode nil monomgetvariabledegree
-janettreenodebuild setcar setcdr) 1855112859056991572)
+(c!:install 'freeof!-df '(freeof!-df t !:dn!: !*sq df nil freeof!-dfl
+smember prepsq) 499815421325389022)
 
-(c!:install 'delasc '(delasc nil t) 1435038776993638387)
+(c!:install 'qqe_length!-graph!-bterm '(qqe_length!-graph!-bterm t (
+lhead rhead) nil qqe_op qqe_length!-graph!-bterm!-update!-headmin) 
+963522414754514002)
 
-(c!:install 'cl_smsimpl!-junct2 '(cl_smsimpl!-junct2 !*rlsichk nil
-!*rlsiso rl_ordatp !*rlsisocx cl_sordp rl_smmkatl lto_insert sort
-cl_flip) 1519443371539733338)
+(c!:install 'quotfx1 '(quotfx1 t quotfdx quotfxerr ordop quotkx lt!* to
+cutf multf negf addf aconc!* rnconc) 716959166681671727)
 
-(c!:install 'bc_dcont '(bc_dcont sfto_dcontentf) 756698739986786000)
+(c!:install 'ofsf_factsf '(ofsf_factsf multf negf addf) 
+141358915575840429)
 
-(c!:install 'spmatsm!* '(spmatsm!* sparsemat nil spmatsm matsm!*1) 
-1097875971497327075)
+(c!:install 'expttermp '(expttermp expt expttermp1) 2051147640346025912)
 
-(c!:install 'nestzerop!: '(nestzerop!: simp) 1274628154170026995)
+(c!:install 'xpartitsq '(xpartitsq nil t sfp xexptpf cancel wedgepf
+addpf xvarp xpartitk multpfsq) 1464648259197719264)
 
-(c!:install 'vdplsort '(vdplsort vdpvevlcomp sort) 32922675996707456)
+(c!:install 'evalsubset '(evalsubset subset evalsetbool evalsymsubset) 
+2086967204047313238)
 
-(c!:install 'mkdmoderr '(mkdmoderr lambda (!*x!*) dmoderr) 
-560371362299189013)
+(c!:install 'adjp '(adjp unit adjoint comm anticomm) 507533349238098650)
 
-(c!:install 'natnump '(natnump nil) 837708986667196379)
-
-(c!:install 'asymmetrize!-inds '(asymmetrize!-inds nil nth repeats
-indordln permp flatindl pair indordn) 1798583542440782114)
-
-(c!:install 'listquotient '(listquotient quotient) 690478911433164218)
-
-(c!:install 'reduce!-weights '(reduce!-weights t red!-weight
-mv!-domainlist!-!+ red!-weight!-less!-p mv!-domainlist!-!-) 
-1298166121607320318)
-
-(c!:install 'addnew '(addnew gv!* bv!* t ljet insert) 
-2212495835606865964)
-
-(c!:install 'taylorp '(taylorp taylor nil) 625880954467416559)
-
-(c!:install 'mksfpf '(mksfpf t asymplis!* subfg!* nil mkprod !:expt mksp
-exptf2) 636980284834055583)
-
-(c!:install 'spmatlength '(spmatlength sparsemat matrix "Matrix"
-"not set" list rerror) 1102465676049906727)
-
-(c!:install 'gpexpp '(gpexpp nil (!:rd!: !:cr!: !:crn!: !:gi!:) t plus (
-minus recip) (difference quotient expt) times !:rd!: (!:cr!: !:crn!:
-!:gi!:) unresidp gparg1p gpexp1p) 1997977812855299707)
-
-(c!:install 'physopsubs '(physopsubs alglist!* nil physoplist!* rtype
-simpfn simpiden (dot) physopfn dot physop physop2sq subs2 !*q2a) 
-513208560725727658)
-
-(c!:install 'free '(free nil freeind) 1361021780282992428)
-
-(c!:install 'expand!-imrepartpow '(expand!-imrepartpow !*exp t
-cmpxsplitfn nil i exptsq mkrepart simp mkimpart multsq addsq to) 
-2104270544387999026)
-
-(c!:install 'groeb!=testb '(groeb!=testb nil mo_comp nth mo_divides!?
-bas_dpoly dp_lmon mo_lcm mo_equal!?) 163974214321032176)
-
-(c!:install 'ofsf_facequal '(ofsf_facequal nil equal or and true false
-fctrf) 870021863807330908)
-
-(c!:install 'gigcd!: '(gigcd!: gizerop!: fqa giremainder) 
-712631881722795825)
-
-(c!:install 'mri_simplfloor1 '(mri_simplfloor1 t mri_simplfloor
-mri_irsplit addf exptf multf) 669187460518805120)
-
-(c!:install 'lengthn '(lengthn) 2146047142596603821)
-
-(c!:install 'maprintla '(maprintla nil laprifn fulla failed t indexed
-!:rd!: !*nat ncharspr!* laline!* orig!* posn!* equal !( !) minus prin2la
-prinidop prinlatom inprinla oprinla prinpopargs rd!:prin apply) 
-488642075718898224)
-
-(c!:install 'defined_vertex '(defined_vertex t nil memq_edgelist) 
-786273083146040478)
-
-(c!:install 'general!-modular!-difference '(general!-modular!-difference
-current!-modulus) 1894751750856803824)
-
-(c!:install 'domainp_list '(domainp_list t nil) 480969053917566483)
-
-(c!:install 'ofsf_smmkatl!-and1 '(ofsf_smmkatl!-and1 nil (lessp greaterp
-) and lastpair ofsf_smmkat!-and2 ofsf_entry2at) 2251178583896239765)
-
-(c!:install 'change!+sq!+to!+int '(change!+sq!+to!+int
-"no integer in change!+sq!+to!+int" prepsq simp!* rederr) 
-2014770405559547778)
+(c!:install 'calc_world '(calc_world s_world_names actual_alst
+calc_atlas reval) 1735440944159530077)
 
 
 % End of generated Lisp code

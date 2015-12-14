@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: fxfilematch.cpp,v 1.16.2.1 2007/09/16 04:31:13 fox Exp $                     *
+* $Id$                     *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"

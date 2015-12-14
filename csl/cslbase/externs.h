@@ -1,9 +1,9 @@
-/* externs.h                            Copyright (C) Codemist 1989-2015 */
+// externs.h                            Copyright (C) Codemist 1989-2015
 
-/*
- *   Main batch of extern declarations.
- *
- */
+//
+//   Main batch of extern declarations.
+//
+//
 
 /**************************************************************************
  * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
@@ -35,30 +35,33 @@
  *************************************************************************/
 
 
-/* $Id$ */
+// $Id$
 
 #ifndef header_externs_h
 #define header_externs_h 1
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+// Note that the Windows version exports a number of symbols, as listed
+// in a ".def" file. In order for there to be a match between the symbol
+// names in the object files and the names in the .def file it is vital
+// that all those things be declared with C linkage and hence un-mangled
+// names. Perhaps I need some strategy that lets me gain the extra security
+// of C++ linkage for everything else... but that is for the future.
 
 #ifdef USE_MPI
 #include "mpi.h"
 extern int32_t mpi_rank,mpi_size;
 #endif
 
-/*
- * I have a bunch of macros that I use for desparation-mode debugging,
- * and in particular when I have bugs that wriggle back into their lairs
- * when I try running under "gdb" or whatever. These print dull messages
- * to stderr. The "do..while" idiom is to keep C syntax safe with regard to
- * semicolons.
- */
+//
+// I have a bunch of macros that I use for desparation-mode debugging,
+// and in particular when I have bugs that wriggle back into their lairs
+// when I try running under "gdb" or whatever. These print dull messages
+// to stderr. The "do..while" idiom is to keep C syntax safe with regard to
+// semicolons.
+//
 
 #define D do { \
-          char *fffff = strrchr(__FILE__, '/'); \
+          const char *fffff = strrchr(__FILE__, '/'); \
           if (fffff == NULL) fffff = strrchr(__FILE__, '\\'); \
           if (fffff == NULL) fffff = __FILE__; else fffff++; \
           fprintf(stderr, "Line %d File %s\n", __LINE__, fffff); \
@@ -66,7 +69,7 @@ extern int32_t mpi_rank,mpi_size;
           } while (0)
 
 #define DS(s) do { \
-          char *fffff = strrchr(__FILE__, '/'); \
+          const char *fffff = strrchr(__FILE__, '/'); \
           if (fffff == NULL) fffff = strrchr(__FILE__, '\\'); \
           if (fffff == NULL) fffff = __FILE__; else fffff++; \
           fprintf(stderr, "Line %d File %s: %s\n", __LINE__, fffff, (s)); \
@@ -74,7 +77,7 @@ extern int32_t mpi_rank,mpi_size;
           } while (0)
 
 #define DX(s) do { \
-          char *fffff = strrchr(__FILE__, '/'); \
+          const char *fffff = strrchr(__FILE__, '/'); \
           if (fffff == NULL) fffff = strrchr(__FILE__, '\\'); \
           if (fffff == NULL) fffff = __FILE__; else fffff++; \
           fprintf(stderr, "Line %d File %s: %llx\n", __LINE__, fffff, \
@@ -83,11 +86,11 @@ extern int32_t mpi_rank,mpi_size;
           } while (0)
 
 extern void **pages,
-            **heap_pages, **vheap_pages,
-            **bps_pages, **native_pages;
+       **heap_pages, **vheap_pages,
+       **bps_pages, **native_pages;
 
 extern void **new_heap_pages, **new_vheap_pages,
-            **new_bps_pages, **new_native_pages;
+       **new_bps_pages, **new_native_pages;
 
 #ifdef CONSERVATIVE
 
@@ -97,8 +100,7 @@ extern void **new_heap_pages, **new_vheap_pages,
 #define PAGE_TYPE_NATIVE 3
 
 typedef struct page_map_t
-{
-    void *start;
+{   void *start;
     void *end;
     int type;
 } page_map_t;
@@ -106,19 +108,19 @@ typedef struct page_map_t
 #endif
 
 extern int32_t pages_count,
-               heap_pages_count, vheap_pages_count,
-               bps_pages_count, native_pages_count;
+       heap_pages_count, vheap_pages_count,
+       bps_pages_count, native_pages_count;
 
 extern int32_t new_heap_pages_count, new_vheap_pages_count,
-               new_bps_pages_count, new_native_pages_count;
+       new_bps_pages_count, new_native_pages_count;
 
 extern int32_t native_pages_changed;
 extern int32_t native_fringe;
 
-extern Lisp_Object *nilsegment, *stacksegment;
-extern Lisp_Object *stackbase;
-extern int32_t stack_segsize;  /* measured in units of one CSL page */
-extern Lisp_Object *C_stack;
+extern LispObject *nilsegment, *stacksegment;
+extern LispObject *stackbase;
+extern int32_t stack_segsize;  // measured in units of one CSL page
+extern LispObject *C_stack;
 #define stack C_stack
 extern char *C_stack_base, *C_stack_limit;
 extern double max_store_size;
@@ -128,17 +130,17 @@ extern CSLbool restartp;
 extern char *big_chunk_start, *big_chunk_end;
 
 #ifdef CONSERVATIVE
-extern Lisp_Object *C_stackbase, *C_stacktop;
+extern LispObject *C_stackbase, *C_stacktop;
 #endif
 
-extern Lisp_Object multiplication_buffer;
+extern LispObject multiplication_buffer;
 
 #ifdef MEMORY_TRACE
 
 #define push(a)         do { \
                           *++stack = (a); \
                           memory_reference((intptr_t)stack); } while (0)
-/* push2 etc are just like push, but grouped together */
+// push2 etc are just like push, but grouped together
 #define push2(a,b)      do { \
                           *++stack = (a); \
                           memory_reference((intptr_t)stack); \
@@ -184,10 +186,10 @@ extern Lisp_Object multiplication_buffer;
 #define pop6(a,b,c,d,e,f) {pop3(a,b,c); pop3(d,e,f)}
 #define popv(n)           stack -= (n)
 
-#else /* MEMORY_TRACE */
+#else // MEMORY_TRACE
 
 #define push(a)         { *++stack = (a); }
-/* push2 etc are just like push, but grouped together */
+// push2 etc are just like push, but grouped together
 #define push2(a,b)      { stack[1] = (a); stack[2] = (b); stack += 2; }
 #define push3(a,b,c)    { stack[1] = (a); stack[2] = (b); stack[3] = (c); \
                           stack += 3; }
@@ -212,7 +214,7 @@ extern Lisp_Object multiplication_buffer;
                           (a) = stack[6]; (b) = stack[5]; (c) = stack[4]; \
                           (d) = stack[3]; (e) = stack[2]; (f) = stack[1]; }
 #define popv(n)           stack -= (n)
-#endif /* MEMORY_TRACE*/
+#endif // MEMORY_TRACE
 
 #define errexit()    { nil = C_nil; if (exception_pending()) return nil; }
 #define errexitn(n)  { nil = C_nil;                                      \
@@ -233,23 +235,23 @@ extern Lisp_Object multiplication_buffer;
 extern volatile char stack_contents_temp;
 
 #ifdef CHECK_STACK
-extern int check_stack(char *file, int line);
+extern int check_stack(const char *file, int line);
 extern void show_stack();
 #define if_check_stack \
    if (check_stack("@" __FILE__,__LINE__)) \
    {   show_stack(); return aerror("stack overflow"); }
 #else
 #define if_check_stack \
-   {   char *p = (char *)&p; \
+   {   const char *p = (char *)&p; \
        if (p < C_stack_limit) return aerror("stack overflow"); \
    }
 #endif
 
 extern int32_t software_ticks, countdown;
 
-/*
- * Extra debugging help...
- */
+//
+// Extra debugging help...
+//
 
 #ifdef DEBUG
 
@@ -282,10 +284,10 @@ extern void debug_show_trail_raw(const char *msg, const char *file, int line);
 
 #endif
 
-/*
- * The next bit is JUST used under Linux for tracking stubborn bugs where
- * I want to check where I am executing code.
- */
+//
+// The next bit is JUST used under Linux for tracking stubborn bugs where
+// I want to check where I am executing code.
+//
 extern volatile int blipflag;
 extern int64_t blipcount, startblip;
 
@@ -352,117 +354,117 @@ extern int64_t blipcount, startblip;
         if (exception_pending()) { popv(k); return nil; }   \
     }
 
-/*
- * As well as being used to point directly to the major Lisp item NIL,
- * this register is used as a base for a table of other critically
- * important other Lisp values.  Offsets for at least some of these are
- * defined here.
- * I also need a proper C external variable holding the value of NIL since
- * when called from the C library (e.g. in a signal handler) the global
- * register variable will not be available!
- */
+//
+// As well as being used to point directly to the major Lisp item NIL,
+// this register is used as a base for a table of other critically
+// important other Lisp values.  Offsets for at least some of these are
+// defined here.
+// I also need a proper C external variable holding the value of NIL since
+// when called from the C library (e.g. in a signal handler) the global
+// register variable will not be available!
+//
 
-extern Lisp_Object C_nil;
+extern LispObject C_nil;
 
-/*
- * In COMMON mode the symbol-head for NIL uses the first few offsets
- * from NIL here, so I start storing system variables at offset 12 so
- * that even if at some stage I expand the size of all identifiers from the
- * present state I will be safe.
- */
+//
+// In COMMON mode the symbol-head for NIL uses the first few offsets
+// from NIL here, so I start storing system variables at offset 12 so
+// that even if at some stage I expand the size of all identifiers from the
+// present state I will be safe.
+//
 
-#define first_nil_offset         50     /* GC collector marks from here up */
+#define first_nil_offset         50     // GC collector marks from here up
 
-/*
- * A vector of 50 words is used by the interpreter when preparing args
- * for functions and when handling multiple values.
- */
+//
+// A vector of 50 words is used by the interpreter when preparing args
+// for functions and when handling multiple values.
+//
 
 #define work_0_offset           200
 
-/* Garbage collector marks up to but not including last_nil_offset */
+// Garbage collector marks up to but not including last_nil_offset
 #define last_nil_offset         251
 
-/*
- * NIL_SEGMENT_SIZE must be over-large by enough to allow for
- * space lost while rounding nil up to be a multiple of 8. Also in the
- * Common Lisp case I need to give myself a spare word BEFORE the place
- * where C_nil points.
- */
-#define NIL_SEGMENT_SIZE    (last_nil_offset*sizeof(Lisp_Object) + 32)
+//
+// NIL_SEGMENT_SIZE must be over-large by enough to allow for
+// space lost while rounding nil up to be a multiple of 8. Also in the
+// Common Lisp case I need to give myself a spare word BEFORE the place
+// where C_nil points.
+//
+#define NIL_SEGMENT_SIZE    (last_nil_offset*sizeof(LispObject) + 32)
 
-/*
- * I give myself a margin of SPARE bytes at the end of a page so that I can
- * always CONS that amount (even without a garbage collection check) and not
- * corrupt anything.  The main use for this is that sometimes I need to
- * convert a set of multiple values or of arguments from values on the
- * (C-) stack or wherever va_arg() can find them into a list structure, and
- * to avoid horrible potential problems with a garbage collection spotting]
- * an exception (notably a ^C interrupt), running arbitrary code in an
- * exception ghandler and then continuing, I need to cons those things up
- * without any possible GC.  The function cons_no_gc does that, and
- * I should then call cons_gc_test() afterwards to regularise the situation.
- * 512 bytes here leaves room for 64 conses, and I support at most 50
- * (multiple-) values so I hope this is safe.
- */
+//
+// I give myself a margin of SPARE bytes at the end of a page so that I can
+// always CONS that amount (even without a garbage collection check) and not
+// corrupt anything.  The main use for this is that sometimes I need to
+// convert a set of multiple values or of arguments from values on the
+// (C-) stack or wherever va_arg() can find them into a list structure, and
+// to avoid horrible potential problems with a garbage collection spotting]
+// an exception (notably a ^C interrupt), running arbitrary code in an
+// exception ghandler and then continuing, I need to cons those things up
+// without any possible GC.  The function cons_no_gc does that, and
+// I should then call cons_gc_test() afterwards to regularise the situation.
+// 512 bytes here leaves room for 64 conses, and I support at most 50
+// (multiple-) values so I hope this is safe.
+//
 
 #define SPARE                   512
 
-/*
- * I want my table of addresses here to be 8-byte aligned on 64-bit
- * machines...
- */
+//
+// I want my table of addresses here to be 8-byte aligned on 64-bit
+// machines...
+//
 
-/*
- *            !COMMON  COMMON
- *   32-bit    nil       nil
- *   64-bit    nil+4     nil
- */
+//
+//            !COMMON  COMMON
+//   32-bit    nil       nil
+//   64-bit    nil+4     nil
+//
 
 #ifdef COMMON
-#define BASE ((Lisp_Object *)nil)
+#define BASE ((LispObject *)nil)
 #else
-#define BASE (SIXTY_FOUR_BIT ? ((Lisp_Object *)(nil+4)): ((Lisp_Object *)nil))
+#define BASE (SIXTY_FOUR_BIT ? ((LispObject *)(nil+4)): ((LispObject *)nil))
 #endif
 
 #ifdef NILSEG_EXTERNS
-/*
- * One some computers (ones with plenty of registers, and where the
- * main addressing mode is register-indexed, and where optimising
- * an compiler can keep variables in registers all the time, it will
- * be most efficient to put major system variables addressed as offsets
- * from NIL, where I expect to keep nil in a register variable pretty
- * well always.  On other machines (notable the Intel 80286) that policy
- * gives pretty disasterous code, and the use of direct simple external
- * variables will win.  In PRESERVE and RESTORE I will have to copy
- * all the separate external variables into a compact block for
- * transfer to and from files.  Actually on many (most?) machines the
- * choice of whether this option should be enabled or not will be pretty
- * marginal and should really be sorted out by building once with
- * NILSEG_EXTERNS and once without, and comparing the performance of the
- * two resulting systems. Since I believe the performance effects will
- * be small and I expect use of a debugger to be easier if all the key
- * variables are available as external symbols that is what I will make
- * my default right now. I can imagine that if at some stage I move to
- * more creation of native code that the references relative to NIL provide
- * easier code to generate and less effort needing to relocate it, so I may
- * then switch back.
- */
+//
+// One some computers (ones with plenty of registers, and where the
+// main addressing mode is register-indexed, and where optimising
+// an compiler can keep variables in registers all the time, it will
+// be most efficient to put major system variables addressed as offsets
+// from NIL, where I expect to keep nil in a register variable pretty
+// well always.  On other machines (notable the Intel 80286) that policy
+// gives pretty disasterous code, and the use of direct simple external
+// variables will win.  In PRESERVE and RESTORE I will have to copy
+// all the separate external variables into a compact block for
+// transfer to and from files.  Actually on many (most?) machines the
+// choice of whether this option should be enabled or not will be pretty
+// marginal and should really be sorted out by building once with
+// NILSEG_EXTERNS and once without, and comparing the performance of the
+// two resulting systems. Since I believe the performance effects will
+// be small and I expect use of a debugger to be easier if all the key
+// variables are available as external symbols that is what I will make
+// my default right now. I can imagine that if at some stage I move to
+// more creation of native code that the references relative to NIL provide
+// easier code to generate and less effort needing to relocate it, so I may
+// then switch back.
+//
 
 #define nil_as_base
 
 extern intptr_t byteflip;
 
-extern Lisp_Object codefringe;
-extern Lisp_Object volatile codelimit;
+extern LispObject codefringe;
+extern LispObject volatile codelimit;
 
-extern Lisp_Object * volatile stacklimit;
+extern LispObject * volatile stacklimit;
 
-extern Lisp_Object fringe;
-extern Lisp_Object volatile heaplimit;
+extern LispObject fringe;
+extern LispObject volatile heaplimit;
 
-extern Lisp_Object volatile vheaplimit;
-extern Lisp_Object vfringe;
+extern LispObject volatile vheaplimit;
+extern LispObject vfringe;
 
 extern intptr_t nwork;
 
@@ -471,121 +473,121 @@ extern intptr_t gensym_ser, print_precision, miscflags;
 extern intptr_t current_modulus, fastget_size, package_bits;
 extern intptr_t modulus_is_large;
 
-extern Lisp_Object lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
-extern Lisp_Object quote_symbol, function_symbol, comma_symbol;
-extern Lisp_Object comma_at_symbol, cons_symbol, eval_symbol;
-extern Lisp_Object work_symbol, evalhook, applyhook, macroexpand_hook;
-extern Lisp_Object append_symbol, exit_tag, exit_value, catch_tags;
-extern Lisp_Object current_package, startfn;
-extern Lisp_Object gensym_base, string_char_sym, boffo;
-extern Lisp_Object err_table;
-extern Lisp_Object progn_symbol;
-extern Lisp_Object lisp_work_stream, charvec, raise_symbol, lower_symbol;
-extern Lisp_Object echo_symbol, codevec, litvec, supervisor, B_reg;
-extern Lisp_Object savedef, comp_symbol, compiler_symbol, faslvec;
-extern Lisp_Object tracedfn, lisp_terminal_io;
-extern Lisp_Object lisp_standard_output, lisp_standard_input, lisp_error_output;
-extern Lisp_Object lisp_trace_output, lisp_debug_io, lisp_query_io;
-extern Lisp_Object prompt_thing, faslgensyms;
-extern Lisp_Object prinl_symbol, emsg_star, redef_msg;
-extern Lisp_Object expr_symbol, fexpr_symbol, macro_symbol;
-extern Lisp_Object cl_symbols, active_stream, current_module;
-extern Lisp_Object native_defs, features_symbol, lisp_package;
-extern Lisp_Object sys_hash_table, help_index, cfunarg, lex_words;
-extern Lisp_Object get_counts, fastget_names, input_libraries;
-extern Lisp_Object output_library, current_file, break_function;
-extern Lisp_Object standard_output, standard_input, debug_io;
-extern Lisp_Object error_output, query_io, terminal_io;
-extern Lisp_Object trace_output, fasl_stream;
-extern Lisp_Object native_code, native_symbol, traceprint_symbol;
-extern Lisp_Object loadsource_symbol;
-extern Lisp_Object hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
-extern Lisp_Object gchook, resources, callstack, procstack, procmem;
-extern Lisp_Object trap_time, count_high;
+extern LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
+extern LispObject quote_symbol, function_symbol, comma_symbol;
+extern LispObject comma_at_symbol, cons_symbol, eval_symbol;
+extern LispObject work_symbol, evalhook, applyhook, macroexpand_hook;
+extern LispObject append_symbol, exit_tag, exit_value, catch_tags;
+extern LispObject current_package, startfn;
+extern LispObject gensym_base, string_char_sym, boffo;
+extern LispObject err_table;
+extern LispObject progn_symbol;
+extern LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol;
+extern LispObject echo_symbol, codevec, litvec, supervisor, B_reg;
+extern LispObject savedef, comp_symbol, compiler_symbol, faslvec;
+extern LispObject tracedfn, lisp_terminal_io;
+extern LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;
+extern LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
+extern LispObject prompt_thing, faslgensyms;
+extern LispObject prinl_symbol, emsg_star, redef_msg;
+extern LispObject expr_symbol, fexpr_symbol, macro_symbol;
+extern LispObject cl_symbols, active_stream, current_module;
+extern LispObject native_defs, features_symbol, lisp_package;
+extern LispObject sys_hash_table, help_index, cfunarg, lex_words;
+extern LispObject get_counts, fastget_names, input_libraries;
+extern LispObject output_library, current_file, break_function;
+extern LispObject standard_output, standard_input, debug_io;
+extern LispObject error_output, query_io, terminal_io;
+extern LispObject trace_output, fasl_stream;
+extern LispObject native_code, native_symbol, traceprint_symbol;
+extern LispObject loadsource_symbol;
+extern LispObject hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
+extern LispObject gchook, resources, callstack, procstack, procmem;
+extern LispObject trap_time, count_high;
 
 #ifdef COMMON
-extern Lisp_Object keyword_package;
-extern Lisp_Object all_packages, package_symbol, internal_symbol;
-extern Lisp_Object external_symbol, inherited_symbol;
-extern Lisp_Object key_key, allow_other_keys, aux_key;
-extern Lisp_Object format_symbol;
-extern Lisp_Object expand_def_symbol, allow_key_key;
+extern LispObject keyword_package;
+extern LispObject all_packages, package_symbol, internal_symbol;
+extern LispObject external_symbol, inherited_symbol;
+extern LispObject key_key, allow_other_keys, aux_key;
+extern LispObject format_symbol;
+extern LispObject expand_def_symbol, allow_key_key;
 #endif
 
-extern Lisp_Object declare_symbol, special_symbol, large_modulus;
-extern Lisp_Object used_space, avail_space, eof_symbol, call_stack;
+extern LispObject declare_symbol, special_symbol, large_modulus;
+extern LispObject used_space, avail_space, eof_symbol, call_stack;
 
 #ifdef OPENMATH
-extern Lisp_Object om_openFileDev(Lisp_Object env, int nargs, ...);
-extern Lisp_Object om_openStringDev(Lisp_Object nil, Lisp_Object lstr, Lisp_Object lenc);
-extern Lisp_Object om_closeDev(Lisp_Object env, Lisp_Object dev);
-extern Lisp_Object om_setDevEncoding(Lisp_Object nil, Lisp_Object ldev, Lisp_Object lenc);
-extern Lisp_Object om_makeConn(Lisp_Object nil, Lisp_Object ltimeout);
-extern Lisp_Object om_closeConn(Lisp_Object nil, Lisp_Object lconn);
-extern Lisp_Object om_getConnInDevice(Lisp_Object nil, Lisp_Object lconn);
-extern Lisp_Object om_getConnOutDevice(Lisp_Object nil, Lisp_Object lconn);
-extern Lisp_Object om_connectTCP(Lisp_Object nil, int nargs, ...);
-extern Lisp_Object om_bindTCP(Lisp_Object nil, Lisp_Object lconn, Lisp_Object lport);
-extern Lisp_Object om_putApp(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_putEndApp(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_putAtp(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_putEndAtp(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_putAttr(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_putEndAttr(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_putBind(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_putEndBind(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_putBVar(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_putEndBVar(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_putError(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_putEndError(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_putObject(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_putEndObject(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_putInt(Lisp_Object nil, Lisp_Object ldev, Lisp_Object val);
-extern Lisp_Object om_putFloat(Lisp_Object nil, Lisp_Object ldev, Lisp_Object val);
-extern Lisp_Object om_putByteArray(Lisp_Object nil, Lisp_Object ldev, Lisp_Object val);
-extern Lisp_Object om_putVar(Lisp_Object nil, Lisp_Object ldev, Lisp_Object val);
-extern Lisp_Object om_putString(Lisp_Object nil, Lisp_Object ldev, Lisp_Object val);
-extern Lisp_Object om_putSymbol(Lisp_Object nil, Lisp_Object ldev, Lisp_Object val);
-extern Lisp_Object om_putSymbol2(Lisp_Object nil, int nargs, ...);
-extern Lisp_Object om_getApp(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getEndApp(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getAtp(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getEndAtp(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getAttr(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getEndAttr(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getBind(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getEndBind(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getBVar(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getEndBVar(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getError(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getEndError(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getObject(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getEndObject(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getInt(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getFloat(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getByteArray(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getVar(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getString(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getSymbol(Lisp_Object nil, Lisp_Object ldev);
-extern Lisp_Object om_getType(Lisp_Object nil, Lisp_Object ldev);
+extern LispObject om_openFileDev(LispObject env, int nargs, ...);
+extern LispObject om_openStringDev(LispObject nil, LispObject lstr, LispObject lenc);
+extern LispObject om_closeDev(LispObject env, LispObject dev);
+extern LispObject om_setDevEncoding(LispObject nil, LispObject ldev, LispObject lenc);
+extern LispObject om_makeConn(LispObject nil, LispObject ltimeout);
+extern LispObject om_closeConn(LispObject nil, LispObject lconn);
+extern LispObject om_getConnInDevice(LispObject nil, LispObject lconn);
+extern LispObject om_getConnOutDevice(LispObject nil, LispObject lconn);
+extern LispObject om_connectTCP(LispObject nil, int nargs, ...);
+extern LispObject om_bindTCP(LispObject nil, LispObject lconn, LispObject lport);
+extern LispObject om_putApp(LispObject nil, LispObject ldev);
+extern LispObject om_putEndApp(LispObject nil, LispObject ldev);
+extern LispObject om_putAtp(LispObject nil, LispObject ldev);
+extern LispObject om_putEndAtp(LispObject nil, LispObject ldev);
+extern LispObject om_putAttr(LispObject nil, LispObject ldev);
+extern LispObject om_putEndAttr(LispObject nil, LispObject ldev);
+extern LispObject om_putBind(LispObject nil, LispObject ldev);
+extern LispObject om_putEndBind(LispObject nil, LispObject ldev);
+extern LispObject om_putBVar(LispObject nil, LispObject ldev);
+extern LispObject om_putEndBVar(LispObject nil, LispObject ldev);
+extern LispObject om_putError(LispObject nil, LispObject ldev);
+extern LispObject om_putEndError(LispObject nil, LispObject ldev);
+extern LispObject om_putObject(LispObject nil, LispObject ldev);
+extern LispObject om_putEndObject(LispObject nil, LispObject ldev);
+extern LispObject om_putInt(LispObject nil, LispObject ldev, LispObject val);
+extern LispObject om_putFloat(LispObject nil, LispObject ldev, LispObject val);
+extern LispObject om_putByteArray(LispObject nil, LispObject ldev, LispObject val);
+extern LispObject om_putVar(LispObject nil, LispObject ldev, LispObject val);
+extern LispObject om_putString(LispObject nil, LispObject ldev, LispObject val);
+extern LispObject om_putSymbol(LispObject nil, LispObject ldev, LispObject val);
+extern LispObject om_putSymbol2(LispObject nil, int nargs, ...);
+extern LispObject om_getApp(LispObject nil, LispObject ldev);
+extern LispObject om_getEndApp(LispObject nil, LispObject ldev);
+extern LispObject om_getAtp(LispObject nil, LispObject ldev);
+extern LispObject om_getEndAtp(LispObject nil, LispObject ldev);
+extern LispObject om_getAttr(LispObject nil, LispObject ldev);
+extern LispObject om_getEndAttr(LispObject nil, LispObject ldev);
+extern LispObject om_getBind(LispObject nil, LispObject ldev);
+extern LispObject om_getEndBind(LispObject nil, LispObject ldev);
+extern LispObject om_getBVar(LispObject nil, LispObject ldev);
+extern LispObject om_getEndBVar(LispObject nil, LispObject ldev);
+extern LispObject om_getError(LispObject nil, LispObject ldev);
+extern LispObject om_getEndError(LispObject nil, LispObject ldev);
+extern LispObject om_getObject(LispObject nil, LispObject ldev);
+extern LispObject om_getEndObject(LispObject nil, LispObject ldev);
+extern LispObject om_getInt(LispObject nil, LispObject ldev);
+extern LispObject om_getFloat(LispObject nil, LispObject ldev);
+extern LispObject om_getByteArray(LispObject nil, LispObject ldev);
+extern LispObject om_getVar(LispObject nil, LispObject ldev);
+extern LispObject om_getString(LispObject nil, LispObject ldev);
+extern LispObject om_getSymbol(LispObject nil, LispObject ldev);
+extern LispObject om_getType(LispObject nil, LispObject ldev);
 
-extern Lisp_Object om_stringToStringPtr(Lisp_Object nil, Lisp_Object lstr);
-extern Lisp_Object om_stringPtrToString(Lisp_Object nil, Lisp_Object lpstr);
+extern LispObject om_stringToStringPtr(LispObject nil, LispObject lstr);
+extern LispObject om_stringPtrToString(LispObject nil, LispObject lpstr);
 
-extern Lisp_Object om_read(Lisp_Object nil, Lisp_Object dev);
-extern Lisp_Object om_supportsCD(Lisp_Object nil, Lisp_Object lcd);
-extern Lisp_Object om_supportsSymbol(Lisp_Object nil, Lisp_Object lcd, Lisp_Object lsym);
-extern Lisp_Object om_listCDs(Lisp_Object nil, int nargs, ...);
-extern Lisp_Object om_listSymbols(Lisp_Object nil, Lisp_Object lcd);
-extern Lisp_Object om_whichCDs(Lisp_Object nil, Lisp_Object lsym);
+extern LispObject om_read(LispObject nil, LispObject dev);
+extern LispObject om_supportsCD(LispObject nil, LispObject lcd);
+extern LispObject om_supportsSymbol(LispObject nil, LispObject lcd, LispObject lsym);
+extern LispObject om_listCDs(LispObject nil, int nargs, ...);
+extern LispObject om_listSymbols(LispObject nil, LispObject lcd);
+extern LispObject om_whichCDs(LispObject nil, LispObject lsym);
 #endif
 
-extern Lisp_Object workbase[51];
+extern LispObject workbase[51];
 
-extern Lisp_Object user_base_0, user_base_1, user_base_2;
-extern Lisp_Object user_base_3, user_base_4, user_base_5;
-extern Lisp_Object user_base_6, user_base_7, user_base_8;
-extern Lisp_Object user_base_9;
+extern LispObject user_base_0, user_base_1, user_base_2;
+extern LispObject user_base_3, user_base_4, user_base_5;
+extern LispObject user_base_6, user_base_7, user_base_8;
+extern LispObject user_base_9;
 
 #define work_0              workbase[0]
 #define work_1              workbase[1]
@@ -594,38 +596,37 @@ extern Lisp_Object user_base_9;
 #define mv_3                workbase[3]
 #define work_50             workbase[50]
 
-#else /* NILSEG_EXTERNS */
+#else // NILSEG_EXTERNS
 
-#define nil_as_base  Lisp_Object nil = C_nil;
+#define nil_as_base  LispObject nil = C_nil;
 
 #define byteflip              BASE[12]
 #define codefringe            BASE[13]
-#define codelimit             (*(Lisp_Object volatile *)&BASE[14])
-/*
- * On a machine where sizeof(void *)=8 and alignment matters I need to arrange for
- * stacklimit to be properly aligned. Also I MUST do the address calculation
- * in a way that does not get muddled by the "sizeof(void *)" issue. I
- * reserve nilseg offsets 15, 16 and 17 for this. However the value
- * stacklimit still generally lives in a simple variable.
- */
-extern Lisp_Object * volatile stacklimit;
-/*
- * #ifdef COMMON
- * #define stacklimit            (*(Lisp_Object * volatile *) \
- *                                   &BASE[16])
- * #else
- * #define stacklimit            (*(Lisp_Object * volatile *)&BASE[15])
- * #endif
- */
+#define codelimit             (*(LispObject volatile *)&BASE[14])
+//
+// On a machine where sizeof(void *)=8 and alignment matters I need to arrange for
+// stacklimit to be properly aligned. Also I MUST do the address calculation
+// in a way that does not get muddled by the "sizeof(void *)" issue. I
+// reserve nilseg offsets 15, 16 and 17 for this. However the value
+// stacklimit still generally lives in a simple variable.
+//
+extern LispObject * volatile stacklimit;
+//
+// #ifdef COMMON
+// #define stacklimit            (*(LispObject * volatile *)&BASE[16])
+// #else
+// #define stacklimit            (*(LispObject * volatile *)&BASE[15])
+// #endif
+//
 #define fringe                BASE[18]
-#define heaplimit             (*(Lisp_Object volatile *)&BASE[19])
-#define vheaplimit            (*(Lisp_Object volatile *)&BASE[20])
+#define heaplimit             (*(LispObject volatile *)&BASE[19])
+#define vheaplimit            (*(LispObject volatile *)&BASE[20])
 #define vfringe               BASE[21]
 
 #define miscflags             BASE[22]
 
 #define nwork                 BASE[24]
-/* #define exit_reason           BASE[25] */
+// #define exit_reason           BASE[25]
 #define exit_count            BASE[26]
 #define gensym_ser            BASE[27]
 #define print_precision       BASE[28]
@@ -633,12 +634,12 @@ extern Lisp_Object * volatile stacklimit;
 #define fastget_size          BASE[30]
 #define package_bits          BASE[31]
 #define modulus_is_large      BASE[32]
-/* offsets 33-49 spare at present */
+// offsets 33-49 spare at present
 
-/* Offset 50 used for EQ hash table list    */
-/* Offset 51 used for EQUAL hash table list */
+// Offset 50 used for EQ hash table list
+// Offset 51 used for EQUAL hash table list
 #define current_package       BASE[52]
-/* current_package is treated specially by the garbage collector */
+// current_package is treated specially by the garbage collector
 
 #define B_reg                 BASE[53]
 #define codevec               BASE[54]
@@ -663,9 +664,9 @@ extern Lisp_Object * volatile stacklimit;
 #define active_stream         BASE[73]
 #define current_module        BASE[74]
 #define native_defs           BASE[75]
-/*
- * 76-89 spare for workspace-style locations
- */
+//
+// 76-89 spare for workspace-style locations
+//
 #define append_symbol         BASE[90]
 #define applyhook             BASE[91]
 #define cfunarg               BASE[92]
@@ -761,28 +762,28 @@ extern Lisp_Object * volatile stacklimit;
 #define eof_symbol            BASE[187]
 #define call_stack            BASE[188]
 
-/*
- * The next are intended for use by people building custom versions
- * of CSL. They are always handled as if NILSEG_EXTERNS had been set,
- * even if it had not, since that gives the user direct access to them as
- * simple C variables. Note that they must ALWAYS be kept with proper
- * valid Lisp objects in them.
- */
-/*  #define user_base_0       BASE[190] */
-/*  #define user_base_1       BASE[191] */
-/*  #define user_base_2       BASE[192] */
-/*  #define user_base_3       BASE[193] */
-/*  #define user_base_4       BASE[194] */
-/*  #define user_base_5       BASE[195] */
-/*  #define user_base_6       BASE[196] */
-/*  #define user_base_7       BASE[197] */
-/*  #define user_base_8       BASE[198] */
-/*  #define user_base_9       BASE[199] */
+//
+// The next are intended for use by people building custom versions
+// of CSL. They are always handled as if NILSEG_EXTERNS had been set,
+// even if it had not, since that gives the user direct access to them as
+// simple C variables. Note that they must ALWAYS be kept with proper
+// valid Lisp objects in them.
+//
+//  #define user_base_0       BASE[190]
+//  #define user_base_1       BASE[191]
+//  #define user_base_2       BASE[192]
+//  #define user_base_3       BASE[193]
+//  #define user_base_4       BASE[194]
+//  #define user_base_5       BASE[195]
+//  #define user_base_6       BASE[196]
+//  #define user_base_7       BASE[197]
+//  #define user_base_8       BASE[198]
+//  #define user_base_9       BASE[199]
 
-extern Lisp_Object user_base_0, user_base_1, user_base_2;
-extern Lisp_Object user_base_3, user_base_4, user_base_5;
-extern Lisp_Object user_base_6, user_base_7, user_base_8;
-extern Lisp_Object user_base_9;
+extern LispObject user_base_0, user_base_1, user_base_2;
+extern LispObject user_base_3, user_base_4, user_base_5;
+extern LispObject user_base_6, user_base_7, user_base_8;
+extern LispObject user_base_9;
 
 #define work_0                BASE[200]
 #define work_1                BASE[201]
@@ -791,31 +792,31 @@ extern Lisp_Object user_base_9;
 #define mv_3                  BASE[203]
 #define work_50               BASE[250]
 
-#endif /*NILSEG_EXTERNS */
+#endif //NILSEG_EXTERNS
 
 extern void copy_into_nilseg(int fg);
 extern void copy_out_of_nilseg(int fg);
 
-#define eq_hash_table_list     BASE[50] /* In heap image */
-#define equal_hash_table_list  BASE[51] /* In heap image */
+#define eq_hash_table_list     BASE[50] // In heap image
+#define equal_hash_table_list  BASE[51] // In heap image
 #define current_package_offset 52
 
-extern void rehash_this_table(Lisp_Object v);
-extern Lisp_Object eq_hash_tables, equal_hash_tables;
+extern void rehash_this_table(LispObject v);
+extern LispObject eq_hash_tables, equal_hash_tables;
 
-/*
- * The following are used to help <escape> processing.
- */
-extern Lisp_Object volatile savecodelimit;
-extern Lisp_Object * volatile savestacklimit;
-extern Lisp_Object volatile saveheaplimit;
-extern Lisp_Object volatile savevheaplimit;
+//
+// The following are used to help <escape> processing.
+//
+extern LispObject volatile savecodelimit;
+extern LispObject * volatile savestacklimit;
+extern LispObject volatile saveheaplimit;
+extern LispObject volatile savevheaplimit;
 extern char *exit_charvec;
 
-/*
- * There is no reason to preserve this across restarts etc so making it a
- * simple C variable makes it easier for me to initialise it early.
- */
+//
+// There is no reason to preserve this across restarts etc so making it a
+// simple C variable makes it easier for me to initialise it early.
+//
 extern intptr_t exit_reason;
 
 extern int procstackp;
@@ -829,15 +830,15 @@ extern const char *name_of_caller;
 
 extern int garbage_collection_permitted;
 
-#define MAX_INPUT_FILES         40  /* limit on command-line length */
+#define MAX_INPUT_FILES         40  // limit on command-line length
 #define MAX_SYMBOLS_TO_DEFINE   40
 #define MAX_FASL_PATHS          20
 
-extern char *files_to_read[MAX_INPUT_FILES],
-     *symbols_to_define[MAX_SYMBOLS_TO_DEFINE],
-     *fasl_paths[MAX_FASL_PATHS];
+extern const char *files_to_read[MAX_INPUT_FILES],
+       *symbols_to_define[MAX_SYMBOLS_TO_DEFINE],
+       *fasl_paths[MAX_FASL_PATHS];
 extern int csl_argc;
-extern char **csl_argv;
+extern const char **csl_argv;
 extern int fasl_output_file, output_directory;
 
 #ifdef BUILTIN_IMAGE
@@ -866,13 +867,13 @@ extern CSLbool undefine_this_one[MAX_SYMBOLS_TO_DEFINE];
 extern int errorset_min, errorset_max;
 
 extern int number_of_input_files,
-    number_of_symbols_to_define,
-    number_of_fasl_paths,
-    init_flags;
+       number_of_symbols_to_define,
+       number_of_fasl_paths,
+       init_flags;
 
 extern int native_code_tag;
 
-extern char *standard_directory;
+extern const char *standard_directory;
 
 extern int gc_number;
 extern CSLbool gc_method_is_copying;
@@ -884,51 +885,47 @@ extern int force_reclaim_method, reclaim_trap_count, reclaim_stack_limit;
 
 #define Lispify_predicate(p)  ((p) ? lisp_true : nil)
 
-/*
- * variables used by the IO system.
- */
+//
+// variables used by the IO system.
+//
 
 extern int tty_count;
 extern FILE *spool_file;
 extern char spool_file_name[32];
 
 typedef struct Ihandle
-{
-    FILE *f;        /* File within which this sub-file lives */
-    long int o;     /* Offset (as returned by ftell)         */
-    long int n;     /* Number of bytes remaining unread here */
-    uint32_t chk;   /* Checksum                              */
-    int status;     /* Reading or Writing                    */
-    int nativedir;  /* true if a system directory not my own PDS */
+{   FILE *f;        // File within which this sub-file lives
+    long int o;     // Offset (as returned by ftell)
+    long int n;     // Number of bytes remaining unread here
+    uint32_t chk;   // Checksum
+    int status;     // Reading or Writing
+    int nativedir;  // true if a system directory not my own PDS
 } Ihandle;
 
-/*
- * If there is no more than 100 bytes of data then I will deem
- * file compression frivolous.  The compression code assumes that
- * it has at least 2 bytes to work on, so do NOT cut this limit down to zero.
- * Indeed more than that the limit must be greater than the length of
- * the initial header record (112 bytes).
- */
+//
+// If there is no more than 100 bytes of data then I will deem
+// file compression frivolous.  The compression code assumes that
+// it has at least 2 bytes to work on, so do NOT cut this limit down to zero.
+// Indeed more than that the limit must be greater than the length of
+// the initial header record (112 bytes).
+//
 
 extern int32_t compression_worth_while;
 #define CODESIZE                0x1000
 
 typedef struct entry_point1
-{
-    one_args *p;
-    char *s;
+{   one_args *p;
+    const char *s;
 } entry_point1;
 
 typedef struct entry_point2
-{
-    two_args *p;
-    char *s;
+{   two_args *p;
+    const char *s;
 } entry_point2;
 
 typedef struct entry_pointn
-{
-    n_args *p;
-    char *s;
+{   n_args *p;
+    const char *s;
 } entry_pointn;
 
 extern entry_point1 entries_table1[];
@@ -944,21 +941,21 @@ extern int32_t code_up_io(void *e);
 
 extern int doubled_execution;
 
-extern char *linker_type;
-extern char *compiler_command[], *import_data[],
-            *config_header[], *csl_headers[];
+extern const char *linker_type;
+extern const char *compiler_command[], *import_data[],
+       *config_header[], *csl_headers[];
 
-extern Lisp_Object encapsulate_pointer(void *);
-extern void *extract_pointer(Lisp_Object a);
-extern Lisp_Object Lencapsulatedp(Lisp_Object nil, Lisp_Object a);
-typedef void initfn(Lisp_Object *, Lisp_Object **, Lisp_Object * volatile *);
-extern int load_dynamic(char *objname, char *modname,
-                        Lisp_Object name, Lisp_Object fns);
-extern Lisp_Object Linstate_c_code(Lisp_Object nil,
-                                   Lisp_Object name, Lisp_Object fns);
+extern LispObject encapsulate_pointer(void *);
+extern void *extract_pointer(LispObject a);
+extern LispObject Lencapsulatedp(LispObject nil, LispObject a);
+typedef void initfn(LispObject *, LispObject **, LispObject * volatile *);
+extern int load_dynamic(const char *objname, const char *modname,
+                        LispObject name, LispObject fns);
+extern "C" LispObject Linstate_c_code(LispObject nil,
+                                  LispObject name, LispObject fns);
 
-extern Lisp_Object characterify(Lisp_Object a);
-extern Lisp_Object char_to_id(int ch);
+extern LispObject characterify(LispObject a);
+extern LispObject char_to_id(int ch);
 
 #ifdef MEMORY_TRACE
 extern intptr_t memory_base, memory_size;
@@ -976,31 +973,31 @@ extern void IreInit(void);
 extern void Icontext(Ihandle *);
 extern void Irestore_context(Ihandle);
 extern void Ilist(void);
-extern CSLbool open_output(char *s, int len);
+extern CSLbool open_output(const char *s, int len);
 #define IOPEN_OUT       0
 #define IOPEN_UNCHECKED 1
 #define IOPEN_CHECKED   2
-extern CSLbool Iopen(char *name, int len, int dirn, char *expanded_name);
+extern CSLbool Iopen(const char *name, int len, int dirn, char *expanded_name);
 extern CSLbool Iopen_from_stdin(void), Iopen_to_stdout(void);
 extern CSLbool IopenRoot(char *expanded_name, int hard, int sixtyfour);
 extern CSLbool Iwriterootp(char *expanded);
 extern CSLbool Iopen_help(int32_t offset);
 extern CSLbool Iopen_banner(int code);
-extern CSLbool Imodulep(char *name, int len, char *datestamp, int32_t *size,
-                                 char *expanded_name);
-extern CSLbool Icopy(char *name, int len);
-extern CSLbool Idelete(char *name, int len);
+extern CSLbool Imodulep(const char *name, int len, char *datestamp, int32_t *size,
+                        char *expanded_name);
+extern CSLbool Icopy(const char *name, int len);
+extern CSLbool Idelete(const char *name, int len);
 extern CSLbool IcloseInput(int check_checksum);
 extern CSLbool IcloseOutput(int write_checksum);
 extern CSLbool Ifinished(void);
 extern int  Igetc(void);
 extern int32_t Iread(void *buff, int32_t size);
 extern CSLbool Iputc(int ch);
-extern CSLbool Iwrite(void *buff, int32_t size);
+extern CSLbool Iwrite(const void *buff, int32_t size);
 extern long int Ioutsize(void);
 extern const char *CSLtmpdir();
-extern const char *CSLtmpnam(char *suffix, int32_t suffixlen);
-extern int Cmkdir(char *s);
+extern const char *CSLtmpnam(const char *suffix, int32_t suffixlen);
+extern int Cmkdir(const char *s);
 extern char *look_in_lisp_variable(char *o, int prefix);
 
 extern void CSL_MD5_Init(void);
@@ -1008,7 +1005,7 @@ extern void CSL_MD5_Update(const unsigned char *data, int len);
 extern void CSL_MD5_Final(unsigned char *md);
 extern CSLbool CSL_MD5_busy;
 extern unsigned char *CSL_MD5(unsigned char *data, int n, unsigned char *md);
-extern void checksum(Lisp_Object a);
+extern void checksum(LispObject a);
 extern unsigned char unpredictable[256];
 extern void inject_randomness(int n);
 
@@ -1026,172 +1023,168 @@ extern CSLbool volatile already_in_gc, tick_on_gc_exit;
 extern CSLbool volatile interrupt_pending, tick_pending;
 extern int deal_with_tick(void);
 extern int current_fp_rep;
-#ifndef __cplusplus
-#ifdef USE_SIGALTSTACK
-extern sigjmp_buf *errorset_buffer;
-extern sigjmp_buf my_exit_buffer;
-#else
-extern jmp_buf *errorset_buffer;
-extern jmp_buf my_exit_buffer;
-#endif
-#endif
-extern char *errorset_msg;
+extern const char *errorset_msg;
 extern int errorset_code;
-extern void unwind_stack(Lisp_Object *, CSLbool findcatch);
+extern void unwind_stack(LispObject *, CSLbool findcatch);
 extern CSLbool segvtrap;
 extern CSLbool batch_flag;
 extern int escaped_printing;
 extern void low_level_signal_handler(int code);
 extern int async_interrupt(int a);
-extern void sigint_handler(int code);
+extern "C" void sigint_handler(int code);
 
-extern void record_get(Lisp_Object tag, CSLbool found);
+extern "C" void record_get(LispObject tag, CSLbool found);
 
-/*
- * Functions used internally - not to be installed in Lisp function
- * cells, but some of these may end up getting called using special
- * non-standard conventions when the Lisp compiler has been at work.
- */
+//
+// Functions used internally - not to be installed in Lisp function
+// cells, but some of these may end up getting called using special
+// non-standard conventions when the Lisp compiler has been at work.
+//
+
+// Note that some things here are declared to use C rather than C++ linkage.
+// These are things that will be exported for use by other applications that
+// might arrange to build CSL/Reduce as a DLL and hook into it from outside.
+// See impex.def for the list of names where this can happen.
 
 extern int         primep(int32_t);
 extern void        adjust_all(void);
 extern void        set_up_functions(CSLbool restartp);
 extern void        get_user_files_checksum(unsigned char *);
-extern Lisp_Object acons(Lisp_Object a, Lisp_Object b, Lisp_Object c);
-extern Lisp_Object ash(Lisp_Object a, Lisp_Object b);
-extern Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
-                                        Lisp_Object *entry_stack);
-extern CSLbool        complex_stringp(Lisp_Object a);
+extern "C" LispObject acons(LispObject a, LispObject b, LispObject c);
+extern "C" LispObject ash(LispObject a, LispObject b);
+extern LispObject bytestream_interpret(LispObject code, LispObject lit,
+                                       LispObject *entry_stack);
+extern CSLbool        complex_stringp(LispObject a);
 extern void        freshline_trace(void);
 extern void        freshline_debug(void);
-extern Lisp_Object cons(Lisp_Object a, Lisp_Object b);
-extern Lisp_Object cons_no_gc(Lisp_Object a, Lisp_Object b);
-extern Lisp_Object cons_gc_test(Lisp_Object a);
+extern "C" LispObject cons(LispObject a, LispObject b);
+extern LispObject cons_no_gc(LispObject a, LispObject b);
+extern LispObject cons_gc_test(LispObject a);
 extern void        convert_fp_rep(void *p, int old_rep, int new_rep, int type);
-extern Lisp_Object Ceval(Lisp_Object u, Lisp_Object env);
-extern Lisp_Object noisy_Ceval(Lisp_Object u, Lisp_Object env);
+extern LispObject Ceval(LispObject u, LispObject env);
+extern LispObject noisy_Ceval(LispObject u, LispObject env);
 extern uint32_t  Crand(void);
-extern Lisp_Object Cremainder(Lisp_Object a, Lisp_Object b);
+extern "C" LispObject Cremainder(LispObject a, LispObject b);
 extern void        Csrand(uint32_t a, uint32_t b);
-extern void        discard(Lisp_Object a);
-extern CSLbool eql_fn(Lisp_Object a, Lisp_Object b);
-extern CSLbool cl_equal_fn(Lisp_Object a, Lisp_Object b);
-extern CSLbool equal_fn(Lisp_Object a, Lisp_Object b);
+extern void        discard(LispObject a);
+extern "C" CSLbool eql_fn(LispObject a, LispObject b);
+extern "C" CSLbool cl_equal_fn(LispObject a, LispObject b);
+extern "C" CSLbool equal_fn(LispObject a, LispObject b);
 #ifdef TRACED_EQUAL
-extern CSLbool traced_equal_fn(Lisp_Object a, Lisp_Object b,
-                                      char *, int, int);
+extern CSLbool traced_equal_fn(LispObject a, LispObject b,
+                               const char *, int, int);
 #define equal_fn(a, b) traced_equal_fn(a, b, __FILE__, __LINE__, 0)
 extern void dump_equals();
 #endif
-extern CSLbool equalp(Lisp_Object a, Lisp_Object b);
-extern Lisp_Object apply(Lisp_Object fn, int nargs,
-                         Lisp_Object env, Lisp_Object fname, int noisy);
-extern Lisp_Object apply_lambda(Lisp_Object def, int nargs,
-                         Lisp_Object env, Lisp_Object name, int noisy);
+extern "C" CSLbool equalp(LispObject a, LispObject b);
+extern LispObject apply(LispObject fn, int nargs,
+                        LispObject env, LispObject fname, int noisy);
+extern LispObject apply_lambda(LispObject def, int nargs,
+                               LispObject env, LispObject name, int noisy);
 extern void        deallocate_pages(void);
 extern void        drop_heap_segments(void);
-extern Lisp_Object gcd(Lisp_Object a, Lisp_Object b);
-extern Lisp_Object get_pname(Lisp_Object a);
+extern LispObject gcd(LispObject a, LispObject b);
+extern LispObject get_pname(LispObject a);
 #ifdef COMMON
-extern Lisp_Object get(Lisp_Object a, Lisp_Object b, Lisp_Object c);
+extern "C" LispObject get(LispObject a, LispObject b, LispObject c);
 #else
-extern Lisp_Object get(Lisp_Object a, Lisp_Object b);
+extern "C" LispObject get(LispObject a, LispObject b);
 #endif
-extern Lisp_Object getvector(int tag, int type, int32_t length);
-extern Lisp_Object getvector_init(int32_t n, Lisp_Object v);
-extern Lisp_Object getcodevector(int type, int32_t size);
-extern uint32_t  hash_lisp_string(Lisp_Object s);
-extern void lose_C_def(Lisp_Object a);
-extern CSLbool        geq2(Lisp_Object a, Lisp_Object b);
-extern CSLbool        greaterp2(Lisp_Object a, Lisp_Object b);
-extern CSLbool        lesseq2(Lisp_Object a, Lisp_Object b);
-extern CSLbool        lessp2(Lisp_Object a, Lisp_Object b);
-extern Lisp_Object list2(Lisp_Object a, Lisp_Object b);
-extern Lisp_Object list2star(Lisp_Object a, Lisp_Object b, Lisp_Object c);
-extern Lisp_Object list3(Lisp_Object a, Lisp_Object b, Lisp_Object c);
-extern Lisp_Object list3star(Lisp_Object a, Lisp_Object b,
-                             Lisp_Object c, Lisp_Object d);
-extern Lisp_Object list4(Lisp_Object a, Lisp_Object b,
-                         Lisp_Object c, Lisp_Object d);
-extern Lisp_Object lognot(Lisp_Object a);
-extern Lisp_Object macroexpand(Lisp_Object form, Lisp_Object env);
-extern Lisp_Object make_one_word_bignum(int32_t n);
-extern Lisp_Object make_package(Lisp_Object name);
-extern Lisp_Object make_string(const char *b);
-extern Lisp_Object make_nstring(char *b, int32_t n);
-extern Lisp_Object make_undefined_symbol(char const *s);
-extern Lisp_Object make_symbol(char const *s, int restartp,
-                               one_args *f1, two_args *f2, n_args *fn);
-extern void stdout_printf(char *fmt, ...);
-extern void term_printf(char *fmt, ...);
-extern void err_printf(char *fmt, ...);
-extern void debug_printf(char *fmt, ...);
-extern void trace_printf(char *fmt, ...);
-extern char        *my_getenv(char *name);
-extern Lisp_Object ncons(Lisp_Object a);
-extern Lisp_Object ndelete(Lisp_Object a, Lisp_Object b);
-extern Lisp_Object negate(Lisp_Object a);
-extern Lisp_Object nreverse(Lisp_Object a);
-extern FILE        *open_file(char *filename, char *original_name,
+extern LispObject getvector(int tag, int type, size_t length);
+extern LispObject getvector_init(size_t n, LispObject v);
+extern LispObject getcodevector(int type, size_t size);
+extern uint32_t  hash_lisp_string(LispObject s);
+extern void lose_C_def(LispObject a);
+extern "C" CSLbool        geq2(LispObject a, LispObject b);
+extern "C" CSLbool        greaterp2(LispObject a, LispObject b);
+extern "C" CSLbool        lesseq2(LispObject a, LispObject b);
+extern "C" CSLbool        lessp2(LispObject a, LispObject b);
+extern "C" LispObject list2(LispObject a, LispObject b);
+extern "C" LispObject list2star(LispObject a, LispObject b, LispObject c);
+extern "C" LispObject list3(LispObject a, LispObject b, LispObject c);
+extern "C" LispObject list3star(LispObject a, LispObject b,
+                            LispObject c, LispObject d);
+extern "C" LispObject list4(LispObject a, LispObject b,
+                        LispObject c, LispObject d);
+extern "C" LispObject lognot(LispObject a);
+extern LispObject macroexpand(LispObject form, LispObject env);
+extern LispObject make_one_word_bignum(int32_t n);
+extern LispObject make_package(LispObject name);
+extern LispObject make_string(const char *b);
+extern LispObject make_nstring(const char *b, int32_t n);
+extern LispObject make_undefined_symbol(const char *s);
+extern LispObject make_symbol(char const *s, int restartp,
+                              one_args *f1, two_args *f2, n_args *fn);
+extern void stdout_printf(const char *fmt, ...);
+extern void term_printf(const char *fmt, ...);
+extern void err_printf(const char *fmt, ...);
+extern void debug_printf(const char *fmt, ...);
+extern void trace_printf(const char *fmt, ...);
+extern const char *my_getenv(const char *name);
+extern "C" LispObject ncons(LispObject a);
+extern LispObject ndelete(LispObject a, LispObject b);
+extern "C" LispObject negate(LispObject a);
+extern LispObject nreverse(LispObject a);
+extern FILE        *open_file(char *filename, const char *original_name,
                               size_t n, const char *dirn, FILE *old_file);
-extern Lisp_Object plus2(Lisp_Object a, Lisp_Object b);
-extern void        preserve(char *msg, int len);
+extern "C" LispObject plus2(LispObject a, LispObject b);
+extern void        preserve(const char *msg, int len);
 extern void        preserve_native_code(void);
 extern void        relocate_native_function(unsigned char *bps);
-extern Lisp_Object prin(Lisp_Object u);
-extern char *get_string_data(Lisp_Object a, char *why, int32_t *len);
-extern void prin_to_stdout(Lisp_Object u);
-extern void prin_to_terminal(Lisp_Object u);
-extern void prin_to_debug(Lisp_Object u);
-extern void prin_to_query(Lisp_Object u);
-extern void prin_to_trace(Lisp_Object u);
-extern void prin_to_error(Lisp_Object u);
-extern void loop_print_stdout(Lisp_Object o);
-extern void loop_print_terminal(Lisp_Object o);
-extern void loop_print_debug(Lisp_Object o);
-extern void loop_print_query(Lisp_Object o);
-extern void loop_print_trace(Lisp_Object o);
-extern void loop_print_error(Lisp_Object o);
-extern void internal_prin(Lisp_Object u, int prefix);
-extern Lisp_Object princ(Lisp_Object u);
-extern Lisp_Object print(Lisp_Object u);
-extern Lisp_Object printc(Lisp_Object u);
-extern void        print_bignum(Lisp_Object u, CSLbool blankp, int nobreak);
-extern void        print_bighexoctbin(Lisp_Object u,
-                       int radix, int width, CSLbool blankp, int nobreak);
-extern Lisp_Object putprop(Lisp_Object a, Lisp_Object b,
-                       Lisp_Object c);
-extern Lisp_Object quot2(Lisp_Object a, Lisp_Object b);
-extern Lisp_Object rational(Lisp_Object a);
+extern LispObject prin(LispObject u);
+extern const char *get_string_data(LispObject a, const char *why, size_t *len);
+extern void prin_to_stdout(LispObject u);
+extern void prin_to_terminal(LispObject u);
+extern void prin_to_debug(LispObject u);
+extern void prin_to_query(LispObject u);
+extern void prin_to_trace(LispObject u);
+extern void prin_to_error(LispObject u);
+extern void loop_print_stdout(LispObject o);
+extern void loop_print_terminal(LispObject o);
+extern void loop_print_debug(LispObject o);
+extern void loop_print_query(LispObject o);
+extern void loop_print_trace(LispObject o);
+extern void loop_print_error(LispObject o);
+extern void internal_prin(LispObject u, int prefix);
+extern LispObject princ(LispObject u);
+extern LispObject print(LispObject u);
+extern LispObject printc(LispObject u);
+extern void        print_bignum(LispObject u, CSLbool blankp, int nobreak);
+extern void        print_bighexoctbin(LispObject u,
+                                      int radix, int width, CSLbool blankp, int nobreak);
+extern LispObject putprop(LispObject a, LispObject b,
+                          LispObject c);
+extern "C" LispObject quot2(LispObject a, LispObject b);
+extern "C" LispObject rational(LispObject a);
 extern void        read_eval_print(int noisy);
-extern Lisp_Object reclaim(Lisp_Object value_to_return, char *why,
-                           int stg_class, intptr_t size);
+extern "C" LispObject reclaim(LispObject value_to_return, const char *why,
+                          int stg_class, intptr_t size);
 #ifdef DEBUG
-extern void validate_all(char *why, int line, char *file);
-extern int check_env(Lisp_Object env);
+extern void validate_all(const char *why, int line, const char *file);
+extern int check_env(LispObject env);
 #endif
 extern CSLbool do_not_kill_native_code;
-extern void        set_fns(Lisp_Object sym, one_args *f1,
-                                            two_args *f2, n_args *fn);
+extern void        set_fns(LispObject sym, one_args *f1,
+                           two_args *f2, n_args *fn);
 extern void        setup(int restartp, double storesize);
-extern Lisp_Object simplify_string(Lisp_Object s);
-extern CSLbool        stringp(Lisp_Object a);
-extern Lisp_Object times2(Lisp_Object a, Lisp_Object b);
-extern int32_t       thirty_two_bits(Lisp_Object a);
+extern LispObject simplify_string(LispObject s);
+extern CSLbool        stringp(LispObject a);
+extern "C" LispObject times2(LispObject a, LispObject b);
+extern int32_t       thirty_two_bits(LispObject a);
 #ifdef HAVE_INT64_T
-extern int64_t       sixty_four_bits(Lisp_Object a);
+extern int64_t       sixty_four_bits(LispObject a);
 #endif
 
 #ifdef DEBUG
-extern void validate_string_fn(Lisp_Object a, char *f, int l);
+extern void validate_string_fn(LispObject a, const char *f, int l);
 #define validate_string(a) validate_string_fn(a, __FILE__, __LINE__)
 #else
-#define validate_string(a) /* nothing */
+#define validate_string(a) // nothing
 #endif
 
-/*
- * The next few provide support for multiple values.
- */
+//
+// The next few provide support for multiple values.
+//
 #ifdef COMMON
 #define onevalue(r)   (exit_count=1, (r))
 #define nvalues(r, n) (exit_count=(n), (r))
@@ -1206,44 +1199,44 @@ extern void validate_string_fn(Lisp_Object a, char *f, int l);
 #define noisy_eval(a, b) noisy_Ceval(a, b)
 #define noisy_voideval(a, b) noisy_Ceval(a, b)
 #else
-/*
- * I lift the top test from eval out to be in-line so that I can
- * (rather often) avoid the overhead of a procedure call when return from
- * it will be almost immediate.  The effect is that in CSL mode Ceval is
- * only ever called on a list.  NB the first arg to eval gets evaluated
- * several times here - maybe I will just hope that CSE optimisation picks
- * up this sort of repetition...
- */
+//
+// I lift the top test from eval out to be in-line so that I can
+// (rather often) avoid the overhead of a procedure call when return from
+// it will be almost immediate.  The effect is that in CSL mode Ceval is
+// only ever called on a list.  NB the first arg to eval gets evaluated
+// several times here - maybe I will just hope that CSE optimisation picks
+// up this sort of repetition...
+//
 #define eval(a, b) \
     (is_cons(a) ? Ceval(a, b) : \
      is_symbol(a) ? (qvalue(a) == unset_var ? error(1, err_unset_var, a) : \
                      onevalue(qvalue(a))) : \
      onevalue(a))
-/* voideval(a, b) is like (void)eval(a, b) */
+// voideval(a, b) is like (void)eval(a, b)
 #define voideval(a, b) \
-    if (is_cons(a)) Ceval(a, b) /* Beware "else" after this */
+    if (is_cons(a)) Ceval(a, b) // Beware "else" after this
 #define noisy_eval(a, b) \
     (is_cons(a) ? noisy_Ceval(a, b) : \
      is_symbol(a) ? (qvalue(a) == unset_var ? error(1, err_unset_var, a) : \
                      onevalue(qvalue(a))) : \
      onevalue(a))
-/* voideval(a, b) is like (void)eval(a, b) */
+// voideval(a, b) is like (void)eval(a, b)
 #define noisy_voideval(a, b) \
-    if (is_cons(a)) noisy_Ceval(a, b) /* Beware "else" after this */
+    if (is_cons(a)) noisy_Ceval(a, b) // Beware "else" after this
 #endif
 
-/*
- * The function "equal" seems to be pretty critical (certainly for Standard
- * Lisp mode and Reduce). So I write out the top-level part of it in-line
- * and only call the (messy) function in cases where it might be worth-while.
- * For Common Lisp I will presumably look at eql and cl_equal as well.
- * The test here says:
- *   If a and b are EQ then they are EQUAL,
- *   else if a and b have different types they are not EQUAL
- *   else if a has type 1, 2, 3 or 4 (ie fixnum, odds, sfloat, symbol)
- *            then they are not EQUAL (those types need to be EQ to be EQUAL)
- *   otherwise call equal_fn(a, b) to decide the issue.
- */
+//
+// The function "equal" seems to be pretty critical (certainly for Standard
+// Lisp mode and Reduce). So I write out the top-level part of it in-line
+// and only call the (messy) function in cases where it might be worth-while.
+// For Common Lisp I will presumably look at eql and cl_equal as well.
+// The test here says:
+//   If a and b are EQ then they are EQUAL,
+//   else if a and b have different types they are not EQUAL
+//   else if a has type 1, 2, 3 or 4 (ie fixnum, odds, sfloat, symbol)
+//            then they are not EQUAL (those types need to be EQ to be EQUAL)
+//   otherwise call equal_fn(a, b) to decide the issue.
+//
 #define equal(a, b)                                \
     ((a) == (b) ||                                 \
      (((((a) ^ (b)) & TAG_BITS) == 0) &&           \
@@ -1262,17 +1255,17 @@ extern void validate_string_fn(Lisp_Object a, char *f, int l);
       ((unsigned)(((a) & TAG_BITS) - 1) > 3) &&    \
       eql_fn(a, b)))
 
-/*
- * Helpers for the bignum arithmetic code...
- */
+//
+// Helpers for the bignum arithmetic code...
+//
 
 #ifndef IMULTIPLY
 extern uint32_t Imultiply(uint32_t *rlow, uint32_t a,
-                            uint32_t b, uint32_t c);
+                          uint32_t b, uint32_t c);
 #endif
 #ifndef IDIVIDE
 extern uint32_t Idivide(uint32_t *qp, uint32_t a,
-                          uint32_t b, uint32_t c);
+                        uint32_t b, uint32_t c);
 extern uint32_t Idiv10_9(uint32_t *qp, uint32_t a, uint32_t b);
 #endif
 
@@ -1286,16 +1279,14 @@ extern void     *useful_functions[];
 extern char     *address_of_var(int n);
 
 typedef struct setup_type
-{
-    char *name;
+{   const char *name;
     one_args *one;
     two_args *two;
     n_args *n;
 } setup_type;
 
 typedef struct setup_type_1
-{
-    char *name;
+{   const char *name;
     one_args *one;
     two_args *two;
     n_args *n;
@@ -1304,24 +1295,24 @@ typedef struct setup_type_1
 } setup_type_1;
 
 extern setup_type const
-       arith06_setup[], arith08_setup[], arith10_setup[], arith12_setup[],
-       arith13_setup[], char_setup[], eval1_setup[], eval2_setup[],
-       eval3_setup[], funcs1_setup[], funcs2_setup[], funcs3_setup[],
-       print_setup[], read_setup[], mpi_setup[];
+arith06_setup[], arith08_setup[], arith10_setup[], arith12_setup[],
+              arith13_setup[], char_setup[], eval1_setup[], eval2_setup[],
+              eval3_setup[], funcs1_setup[], funcs2_setup[], funcs3_setup[],
+              print_setup[], read_setup[], mpi_setup[];
 extern setup_type const
-                    u01_setup[], u02_setup[], u03_setup[], u04_setup[],
-       u05_setup[], u06_setup[], u07_setup[], u08_setup[], u09_setup[],
-       u10_setup[], u11_setup[], u12_setup[], u13_setup[], u14_setup[],
-       u15_setup[], u16_setup[], u17_setup[], u18_setup[], u19_setup[],
-       u20_setup[], u21_setup[], u22_setup[], u23_setup[], u24_setup[],
-       u25_setup[], u26_setup[], u27_setup[], u28_setup[], u29_setup[],
-       u30_setup[], u31_setup[], u32_setup[], u33_setup[], u34_setup[],
-       u35_setup[], u36_setup[], u37_setup[], u38_setup[], u39_setup[],
-       u40_setup[], u41_setup[], u42_setup[], u43_setup[], u44_setup[],
-       u45_setup[], u46_setup[], u47_setup[], u48_setup[], u49_setup[],
-       u50_setup[], u51_setup[], u52_setup[], u53_setup[], u54_setup[],
-       u55_setup[], u56_setup[], u57_setup[], u58_setup[], u59_setup[],
-       u60_setup[];
+u01_setup[], u02_setup[], u03_setup[], u04_setup[],
+          u05_setup[], u06_setup[], u07_setup[], u08_setup[], u09_setup[],
+          u10_setup[], u11_setup[], u12_setup[], u13_setup[], u14_setup[],
+          u15_setup[], u16_setup[], u17_setup[], u18_setup[], u19_setup[],
+          u20_setup[], u21_setup[], u22_setup[], u23_setup[], u24_setup[],
+          u25_setup[], u26_setup[], u27_setup[], u28_setup[], u29_setup[],
+          u30_setup[], u31_setup[], u32_setup[], u33_setup[], u34_setup[],
+          u35_setup[], u36_setup[], u37_setup[], u38_setup[], u39_setup[],
+          u40_setup[], u41_setup[], u42_setup[], u43_setup[], u44_setup[],
+          u45_setup[], u46_setup[], u47_setup[], u48_setup[], u49_setup[],
+          u50_setup[], u51_setup[], u52_setup[], u53_setup[], u54_setup[],
+          u55_setup[], u56_setup[], u57_setup[], u58_setup[], u59_setup[],
+          u60_setup[];
 
 extern setup_type const *setup_tables[];
 
@@ -1336,45 +1327,41 @@ extern setup_type const om_setup[];
 extern setup_type const om_parse_setup[];
 #endif
 
-extern char *find_image_directory(int argc, char *argv[]);
+extern const char *find_image_directory(int argc, const char *argv[]);
 extern char program_name[64];
-extern Lisp_Object declare_fn(Lisp_Object args, Lisp_Object env);
-extern Lisp_Object function_fn(Lisp_Object args, Lisp_Object env);
-extern Lisp_Object let_fn_1(Lisp_Object bvl, Lisp_Object body,
-                            Lisp_Object env, int compilerp, int noisy);
-extern Lisp_Object mv_call_fn(Lisp_Object args, Lisp_Object env);
-extern Lisp_Object noisy_mv_call_fn(Lisp_Object args, Lisp_Object env);
-extern Lisp_Object progn_fn(Lisp_Object args, Lisp_Object env);
-extern Lisp_Object noisy_progn_fn(Lisp_Object args, Lisp_Object env);
-extern Lisp_Object quote_fn(Lisp_Object args, Lisp_Object env);
-extern Lisp_Object tagbody_fn(Lisp_Object args, Lisp_Object env);
-extern Lisp_Object noisy_tagbody_fn(Lisp_Object args, Lisp_Object env);
+extern LispObject declare_fn(LispObject args, LispObject env);
+extern LispObject function_fn(LispObject args, LispObject env);
+extern LispObject let_fn_1(LispObject bvl, LispObject body,
+                           LispObject env, int compilerp, int noisy);
+extern LispObject mv_call_fn(LispObject args, LispObject env);
+extern LispObject noisy_mv_call_fn(LispObject args, LispObject env);
+extern LispObject progn_fn(LispObject args, LispObject env);
+extern LispObject noisy_progn_fn(LispObject args, LispObject env);
+extern LispObject quote_fn(LispObject args, LispObject env);
+extern LispObject tagbody_fn(LispObject args, LispObject env);
+extern LispObject noisy_tagbody_fn(LispObject args, LispObject env);
 
-/*
- * The variables here are always extern - they never survive in an image
- * file.
- */
-extern Lisp_Object resource_exceeded();
+//
+// The variables here are always extern - they never survive in an image
+// file.
+//
+extern LispObject resource_exceeded();
 extern int64_t time_base,  space_base,  io_base,  errors_base;
 extern int64_t time_now,   space_now,   io_now,   errors_now;
 extern int64_t time_limit, space_limit, io_limit, errors_limit;
 
-/* 
- * Flags used to toggle the protection or otherwise of symbols, and 
- * whether to warn about attempts to redefine them.
- */
+//
+// Flags used to toggle the protection or otherwise of symbols, and
+// whether to warn about attempts to redefine them.
+//
 extern CSLbool symbol_protect_flag, warn_about_protected_symbols;
 
 #ifdef JIT
-extern char *Jcompile(Lisp_Object def, Lisp_Object env);
+extern char *Jcompile(LispObject def, LispObject env);
 extern unsigned long jit_size;
 #define JIT_INIT_SIZE 8192
 #endif
 
-#ifdef __cplusplus
-}
-#endif
+#endif // header_externs_h
 
-#endif /* header_externs_h */
-
-/* end of externs.h */
+// end of externs.h

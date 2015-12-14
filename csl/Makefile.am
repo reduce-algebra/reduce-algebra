@@ -6,10 +6,10 @@
 
 
 lib_LIBRARIES = libwindow.a
-libwindow_a_SOURCES = window.c
+libwindow_a_SOURCES = window.cpp
 
 noinst_PROGRAMS = testprogram
-testprogram_SOURCES = testprogram.c
+testprogram_SOURCES = testprogram.cpp
 testprogram_LDADD = libwindow.a
 
 # end of Makefile.am

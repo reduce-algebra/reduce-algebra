@@ -51,11 +51,16 @@ AC_COPYRIGHT([Codemist Ltd])
 
 AC_PREREQ(2.59)
 
-# My source file is expected to have "csl.c" in it. This is just a small
+# My source file is expected to have "csl.cpp" in it. This is just a small
 # sanity check in case somebody tries to configure with directories
 # messed up.
-AC_CONFIG_SRCDIR(csl.c)
+AC_CONFIG_SRCDIR(csl.cpp)
 AC_CONFIG_FILES(Makefile)
+
+# These days I am making all the source files for CSL ones in C++ not C
+# and so it is best to make configuration tests match.
+
+AC_LANG(C++)
 
 AC_DEFINE(CSL, [1], [True to tell sources that this build is part of CSL])
 
@@ -1279,15 +1284,6 @@ then
     fi
 
     AC_MSG_NOTICE("Will look for FOX in $with_fox")
-
-# FOX is unhappy if you try to link (or even compile) in C
-# mode so set C++ usage here. Because some other things get confused in
-# C++ mode I make this test happen here at the end of my configure script.
-
-# Also I will not even want to try using C++ for anything unless FOX is
-# going to be used. Another reason to put this stuff late her.
-
-    AC_LANG(C++)
 
     cppflags_save="$CPPFLAGS"
     ldflags_save="$LDFLAGS"

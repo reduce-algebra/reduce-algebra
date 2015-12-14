@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXIconList.h,v 1.95.2.4 2006/11/17 16:02:31 fox Exp $                        *
+* $Id$                        *
 ********************************************************************************/
 #ifndef FXICONLIST_H
 #define FXICONLIST_H

@@ -266,37 +266,37 @@ all-local:	csl.img reduce.img
 endif !cygwin
 
 
-core_sources = arith01.c arith02.c arith03.c arith04.c arith05.c \
-		arith06.c arith07.c arith08.c arith09.c arith10.c arith11.c \
-		arith12.c arith13.c bytes1.c char.c cslmpi.c eval1.c eval2.c \
-		eval3.c eval4.c fns1.c fns2.c fns3.c \
-		print.c cslread.c restart.c sysfwin.c
+core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
+		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp arith11.cpp \
+		arith12.cpp arith13.cpp bytes1.cpp char.cpp cslmpi.cpp eval1.cpp eval2.cpp \
+		eval3.cpp eval4.cpp fns1.cpp fns2.cpp fns3.cpp \
+		print.cpp cslread.cpp restart.cpp sysfwin.cpp
 
-demo_sources = csl.c fasl.c gc.c preserve.c
+demo_sources = csl.cpp fasl.cpp gc.cpp preserve.cpp
 
-undemo_sources = csl.c fasl.c gc.c preserve.c
+undemo_sources = csl.cpp fasl.cpp gc.cpp preserve.cpp
 
 # If I am building under FOX then the main parts of material from
-# fwin.c and termed.c get picked up from the FOX library.
-# If wxWidgets is in use I have an alternate versions called wxfwin.c 
-# but termed.c can be used unchanged (but from source in this directory
+# fwin.cpp and termed.cpp get picked up from the FOX library.
+# If wxWidgets is in use I have an alternate versions called wxfwin.cpp 
+# but termed.cpp can be used unchanged (but from source in this directory
 # not in the FOX directory). When I do not have a GUI at all I use both
-# fwin.c and termed.c from this directory.
+# fwin.cpp and termed.cpp from this directory.
 
 if fox
 fwin_sources =
 else !fox
 if wx
-fwin_sources = wxfwin.c wxterminal.cpp termed.c
+fwin_sources = wxfwin.cpp wxterminal.cpp termed.cpp
 else !wx
-fwin_sources = fwin.c termed.c
+fwin_sources = fwin.cpp termed.cpp
 endif !wx
 endif !fox
 
 if x86
 # A BSD-licensed disassembler for x86 and x86_64
-distormsrc = x86defs.c wstring.c textdefs.c prefix.c operands.c \
-		insts.c instructions.c distorm.c decoder.c
+distormsrc = x86defs.cpp wstring.cpp textdefs.cpp prefix.cpp operands.cpp \
+		insts.cpp instructions.cpp distorm.cpp decoder.cpp
 else !x86
 distormstrc =
 endif !x86
@@ -305,7 +305,7 @@ if jit
 # the JIT is EXPERIMENTAL and not all working yet. It only pretends
 # to be available for the x86 (32-bit) platform. Mention of it is
 # present here to support the development activity.
-jit_sources = jit1.c jit2.c jit3.c jitx86.c $(distormsrc)
+jit_sources = jit1.cpp jit2.cpp jit3.cpp jitx86.cpp $(distormsrc)
 else !jit
 jit_sources =
 endif !jit
@@ -317,68 +317,68 @@ INLINE_DEFS = $(gensrc)/inline-defs.dat
 $(INLINE_DEFS):
 	touch $(INLINE_DEFS)
 
-generated_sources =             u01.c \
-		u02.c u03.c \
-		u04.c u05.c \
-		u06.c u07.c \
-		u08.c u09.c \
-		u10.c u11.c \
-		u12.c u13.c \
-		u14.c u15.c \
-		u16.c u17.c \
-		u18.c u19.c \
-		u20.c u21.c \
-		u22.c u23.c \
-		u24.c u25.c \
-		u26.c u27.c \
-		u28.c u29.c \
-		u30.c u31.c \
-		u32.c u33.c \
-		u34.c u35.c \
-		u36.c u37.c \
-		u38.c u39.c \
-		u40.c u41.c \
-		u42.c u43.c \
-		u44.c u45.c \
-		u46.c u47.c \
-		u48.c u49.c \
-		u50.c u51.c \
-		u52.c u53.c \
-		u54.c u55.c \
-		u56.c u57.c \
-		u58.c u59.c \
-		u60.c
-generated_sources_deps =             $(gensrc)/u01.c \
-		$(gensrc)/u02.c $(gensrc)/u03.c \
-		$(gensrc)/u04.c $(gensrc)/u05.c \
-		$(gensrc)/u06.c $(gensrc)/u07.c \
-		$(gensrc)/u08.c $(gensrc)/u09.c \
-		$(gensrc)/u10.c $(gensrc)/u11.c \
-		$(gensrc)/u12.c $(gensrc)/u13.c \
-		$(gensrc)/u14.c $(gensrc)/u15.c \
-		$(gensrc)/u16.c $(gensrc)/u17.c \
-		$(gensrc)/u18.c $(gensrc)/u19.c \
-		$(gensrc)/u20.c $(gensrc)/u21.c \
-		$(gensrc)/u22.c $(gensrc)/u23.c \
-		$(gensrc)/u24.c $(gensrc)/u25.c \
-		$(gensrc)/u26.c $(gensrc)/u27.c \
-		$(gensrc)/u28.c $(gensrc)/u29.c \
-		$(gensrc)/u30.c $(gensrc)/u31.c \
-		$(gensrc)/u32.c $(gensrc)/u33.c \
-		$(gensrc)/u34.c $(gensrc)/u35.c \
-		$(gensrc)/u36.c $(gensrc)/u37.c \
-		$(gensrc)/u38.c $(gensrc)/u39.c \
-		$(gensrc)/u40.c $(gensrc)/u41.c \
-		$(gensrc)/u42.c $(gensrc)/u43.c \
-		$(gensrc)/u44.c $(gensrc)/u45.c \
-		$(gensrc)/u46.c $(gensrc)/u47.c \
-		$(gensrc)/u48.c $(gensrc)/u49.c \
-		$(gensrc)/u50.c $(gensrc)/u51.c \
-		$(gensrc)/u52.c $(gensrc)/u53.c \
-		$(gensrc)/u54.c $(gensrc)/u55.c \
-		$(gensrc)/u56.c $(gensrc)/u57.c \
-		$(gensrc)/u58.c $(gensrc)/u59.c \
-		$(gensrc)/u60.c
+generated_sources =             u01.cpp \
+		u02.cpp u03.cpp \
+		u04.cpp u05.cpp \
+		u06.cpp u07.cpp \
+		u08.cpp u09.cpp \
+		u10.cpp u11.cpp \
+		u12.cpp u13.cpp \
+		u14.cpp u15.cpp \
+		u16.cpp u17.cpp \
+		u18.cpp u19.cpp \
+		u20.cpp u21.cpp \
+		u22.cpp u23.cpp \
+		u24.cpp u25.cpp \
+		u26.cpp u27.cpp \
+		u28.cpp u29.cpp \
+		u30.cpp u31.cpp \
+		u32.cpp u33.cpp \
+		u34.cpp u35.cpp \
+		u36.cpp u37.cpp \
+		u38.cpp u39.cpp \
+		u40.cpp u41.cpp \
+		u42.cpp u43.cpp \
+		u44.cpp u45.cpp \
+		u46.cpp u47.cpp \
+		u48.cpp u49.cpp \
+		u50.cpp u51.cpp \
+		u52.cpp u53.cpp \
+		u54.cpp u55.cpp \
+		u56.cpp u57.cpp \
+		u58.cpp u59.cpp \
+		u60.cpp
+generated_sources_deps =             $(gensrc)/u01.cpp \
+		$(gensrc)/u02.cpp $(gensrc)/u03.cpp \
+		$(gensrc)/u04.cpp $(gensrc)/u05.cpp \
+		$(gensrc)/u06.cpp $(gensrc)/u07.cpp \
+		$(gensrc)/u08.cpp $(gensrc)/u09.cpp \
+		$(gensrc)/u10.cpp $(gensrc)/u11.cpp \
+		$(gensrc)/u12.cpp $(gensrc)/u13.cpp \
+		$(gensrc)/u14.cpp $(gensrc)/u15.cpp \
+		$(gensrc)/u16.cpp $(gensrc)/u17.cpp \
+		$(gensrc)/u18.cpp $(gensrc)/u19.cpp \
+		$(gensrc)/u20.cpp $(gensrc)/u21.cpp \
+		$(gensrc)/u22.cpp $(gensrc)/u23.cpp \
+		$(gensrc)/u24.cpp $(gensrc)/u25.cpp \
+		$(gensrc)/u26.cpp $(gensrc)/u27.cpp \
+		$(gensrc)/u28.cpp $(gensrc)/u29.cpp \
+		$(gensrc)/u30.cpp $(gensrc)/u31.cpp \
+		$(gensrc)/u32.cpp $(gensrc)/u33.cpp \
+		$(gensrc)/u34.cpp $(gensrc)/u35.cpp \
+		$(gensrc)/u36.cpp $(gensrc)/u37.cpp \
+		$(gensrc)/u38.cpp $(gensrc)/u39.cpp \
+		$(gensrc)/u40.cpp $(gensrc)/u41.cpp \
+		$(gensrc)/u42.cpp $(gensrc)/u43.cpp \
+		$(gensrc)/u44.cpp $(gensrc)/u45.cpp \
+		$(gensrc)/u46.cpp $(gensrc)/u47.cpp \
+		$(gensrc)/u48.cpp $(gensrc)/u49.cpp \
+		$(gensrc)/u50.cpp $(gensrc)/u51.cpp \
+		$(gensrc)/u52.cpp $(gensrc)/u53.cpp \
+		$(gensrc)/u54.cpp $(gensrc)/u55.cpp \
+		$(gensrc)/u56.cpp $(gensrc)/u57.cpp \
+		$(gensrc)/u58.cpp $(gensrc)/u59.cpp \
+		$(gensrc)/u60.cpp
 generated_objects =           reduce-u01.$(OBJEXT) \
 		reduce-u02.$(OBJEXT) reduce-u03.$(OBJEXT) \
 		reduce-u04.$(OBJEXT) reduce-u05.$(OBJEXT) \
@@ -443,10 +443,10 @@ generated_lisp =                  $(gensrc)/u01.lsp \
 		$(gensrc)/u60.lsp
 
 csl_SOURCES = $(core_sources) $(undemo_sources) $(fwin_sources) \
-		$(jit_sources) stubs.c
+		$(jit_sources) stubs.cpp
 
 bootstrapreduce_SOURCES = $(core_sources) $(undemo_sources) $(fwin_sources) \
-		$(jit_sources) stubs.c
+		$(jit_sources) stubs.cpp
 
 reduce_SOURCES = $(core_sources) $(demo_sources) $(fwin_sources) \
 		$(jit_sources) $(generated_sources)
@@ -506,7 +506,7 @@ wxdemo_SOURCES = wxdemo.cpp
 wxdemo_LDADD = $(fwin_icon)
 wxdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
-wxfontdemo_SOURCES = wxfontdemo.cpp charmetrics.c
+wxfontdemo_SOURCES = wxfontdemo.cpp charmetrics.cpp
 wxfontdemo_LDADD = $(fwin_icon)
 wxfontdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
@@ -514,7 +514,7 @@ wxdvi_SOURCES = wxdvi.cpp
 wxdvi_LDADD = $(fwin_icon)
 wxdvi_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
-wxshowmath_SOURCES = wxshowmath.cpp charmetrics.c unimaths.c
+wxshowmath_SOURCES = wxshowmath.cpp charmetrics.cpp unimaths.cpp
 wxshowmath_LDADD = $(fwin_icon)
 wxshowmath_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
@@ -530,7 +530,7 @@ else !windows
 DLLEXT=so
 endif !windows
 
-dyndemo_SOURCES = dyndemo.c
+dyndemo_SOURCES = dyndemo.cpp
 
 if !windows
 dyndemo_DEPENDENCIES = dynmodule.so
@@ -607,9 +607,9 @@ WINHELPERS= cygwin-isatty.exe cygwin64-isatty.exe not-under-cygwin.exe
 endif !cygwin
 
 # A brief note about version of C compilers under cygwin. On either the
-# 32 or 64-bit cygwin just "gcc" is the main C compiler that targets the
+# 32 or 64-bit cygwin just "g++" is the main C++ compiler that targets the
 # native width of the platform. But on each it is also possible to have
-# one or both of i686-pc-cygwin-gcc and x86_64-pc-cygwin-gcc which explicitly
+# one or both of i686-pc-cygwin-g++ and x86_64-pc-cygwin-g++ which explicitly
 # target one or other width. These count as cross compilers, and at the
 # time of writing they behave well enough to build the small command-line
 # utilities here but do not come with enough development libraries to make
@@ -619,16 +619,16 @@ endif !cygwin
 # copies of cygwin1.dll but because they are BSD-licensed open source code
 # that does not prevent me from redistributing them in an unconstrained manner.
 
-cygwin-isatty.exe:	$(srcdir)/cygwin-isatty.c
-	if test -x /usr/bin/i686-pc-cygwin-gcc.exe; then i686-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin-isatty.exe; else $(CP) $(srcdir)/premade-cygwin-isatty.exe .; \
+cygwin-isatty.exe:	$(srcdir)/cygwin-isatty.cpp
+	if test -x /usr/bin/i686-pc-cygwin-g++.exe; then i686-pc-cygwin-g++ -O3 $(srcdir)/cygwin-isatty.cpp -o cygwin-isatty.exe; else $(CP) $(srcdir)/premade-cygwin-isatty.exe .; \
 	  if test -x /usr/bin/i686-pc-cygwin-strip.exe; then i686-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi fi
 
-cygwin64-isatty.exe:	$(srcdir)/cygwin-isatty.c
-	if test -x /usr/bin/x86_64-pc-cygwin-gcc.exe; then x86_64-pc-cygwin-gcc -O3 $(srcdir)/cygwin-isatty.c -o cygwin64-isatty.exe; else $(CP) $(srcdir)/premade-cygwin64-isatty.exe .; \
+cygwin64-isatty.exe:	$(srcdir)/cygwin-isatty.cpp
+	if test -x /usr/bin/x86_64-pc-cygwin-g++.exe; then x86_64-pc-cygwin-g++ -O3 $(srcdir)/cygwin-isatty.cpp -o cygwin64-isatty.exe; else $(CP) $(srcdir)/premade-cygwin64-isatty.exe .; \
 	  if test -s /usr/bin/x86_64-pc-cygwin-strip.exe; then x86_64-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi fi
 
-not-under-cygwin.exe:	$(srcdir)/not-under-cygwin.c
-	i686-w64-mingw32-gcc -O3 $(srcdir)/not-under-cygwin.c -o not-under-cygwin.exe
+not-under-cygwin.exe:	$(srcdir)/not-under-cygwin.cpp
+	i686-w64-mingw32-g++ -O3 $(srcdir)/not-under-cygwin.cpp -o not-under-cygwin.exe
 	i686-w64-mingw32-strip not-under-cygwin.exe
 
 csl_DEPENDENCIES = local-cslexe.def local-cslcom.def fwin-csl.$(OBJEXT) \
@@ -785,7 +785,7 @@ openmath.$(OBJEXT):	../include/crlibm.h
 preserve.$(OBJEXT):	../include/crlibm.h
 print.$(OBJEXT):	../include/crlibm.h
 pro.$(OBJEXT):	../include/crlibm.h
-restart.$(OBJEXT):	../include/crlibm.h machineid.c
+restart.$(OBJEXT):	../include/crlibm.h machineid.cpp
 stubs.$(OBJEXT):	../include/crlibm.h
 sysfwin.$(OBJEXT):	../include/crlibm.h
 sysipaq.$(OBJEXT):	../include/crlibm.h
@@ -827,7 +827,7 @@ csl-openmath.$(OBJEXT):	../include/crlibm.h
 csl-preserve.$(OBJEXT):	../include/crlibm.h
 csl-print.$(OBJEXT):	../include/crlibm.h
 csl-pro.$(OBJEXT):	../include/crlibm.h
-csl-restart.$(OBJEXT):	../include/crlibm.h machineid.c
+csl-restart.$(OBJEXT):	../include/crlibm.h machineid.cpp
 csl-stubs.$(OBJEXT):	../include/crlibm.h
 csl-sysfwin.$(OBJEXT):	../include/crlibm.h
 csl-sysipaq.$(OBJEXT):	../include/crlibm.h
@@ -869,7 +869,7 @@ reduce-openmath.$(OBJEXT):	../include/crlibm.h
 reduce-preserve.$(OBJEXT):	../include/crlibm.h
 reduce-print.$(OBJEXT):	../include/crlibm.h
 reduce-pro.$(OBJEXT):	../include/crlibm.h
-reduce-restart.$(OBJEXT):	../include/crlibm.h machineid.c
+reduce-restart.$(OBJEXT):	../include/crlibm.h machineid.cpp
 reduce-stubs.$(OBJEXT):	../include/crlibm.h
 reduce-sysfwin.$(OBJEXT):	../include/crlibm.h
 reduce-sysipaq.$(OBJEXT):	../include/crlibm.h
@@ -889,11 +889,11 @@ else !crlibm
 CRINC =
 
 # It is important for the next line that restart.$(OBJEXT) is created from
-# restart.c using a generic default rule - otherwise the lack of
+# restart.cpp using a generic default rule - otherwise the lack of
 # explicit actions here would hurt.
-restart.$(OBJEXT):	machineid.c
-csl-restart.$(OBJEXT):	machineid.c
-reduce-restart.$(OBJEXT):	machineid.c
+restart.$(OBJEXT):	machineid.cpp
+csl-restart.$(OBJEXT):	machineid.cpp
+reduce-restart.$(OBJEXT):	machineid.cpp
 
 endif !crlibm
 
@@ -1487,12 +1487,12 @@ report-dlls:	csl.exe bootstrapreduce.exe reduce.exe
 	$(OBJDUMP) -p reduce.exe | grep "DLL"
 endif cygwin
 
-fwindemo_SOURCES=fwindemo.c $(fwin_sources)
+fwindemo_SOURCES=fwindemo.cpp $(fwin_sources)
 if wx
 wxpsl_SOURCES=wxpsl.cpp $(fwin_sources)
 endif wx
 
-termdemo_SOURCES=termdemo.c termed.c
+termdemo_SOURCES=termdemo.cpp termed.cpp
 termdemo_LIBS=
 
 #
@@ -1565,7 +1565,7 @@ win_specials = cygwin-reduce.exe cygwin-csl.exe cygwin-fwindemo.exe \
 
 generatedfiles=$(console_binaries) $(noinstall_console_binaries) \
 	$(image_files) $(local_image_files) $(win_specials) \
-	objtype* cl-wrap* makeheaders* *.def machineid.c *.dep $(INLINE_DEFS)
+	objtype* cl-wrap* makeheaders* *.def machineid.cpp *.dep $(INLINE_DEFS)
 
 clean-local:
 	-$(RM) -rf $(generatedfiles)
@@ -1589,7 +1589,7 @@ macr =
 endif !mac_framework
 
 generatedfiles=$(image_files) $(local_image_files) \
-	objtype makeheaders machineid.c dynmodule* \
+	objtype makeheaders machineid.cpp dynmodule* \
 	$(macr)
 
 clean-local:
@@ -1616,10 +1616,10 @@ endif !windows
 #                                 only used for system recompilation.
 #    make profile                 runs tests, collects profile information.
 #                                 This takes a long time!
-#    make c-code                  Create files u*.c and u*.lsp
+#    make c-code                  Create files u*.cpp and u*.lsp
 #                                 out of hot-spot parts of REDUCE.
 #                                 (should happen automatically)
-#  [ make full-c-code             Creates u*.c etc but trying to compile
+#  [ make full-c-code             Creates u*.cpp etc but trying to compile
 #                                 pretty much everything into C. This leads
 #                                 to a huge executable and may put undue
 #                                 stress on C compilers. Mainly for use
@@ -1662,62 +1662,51 @@ dyndep =
 endif !cygwin
 endif !windows
 
-dynmodule.$(DLLEXT):	$(srcdir)/dynmodule.c $(dyndep)
-	$(COMPILE_DLL) $(srcdir)/dynmodule.c $(dyndep) $(DEST)dynmodule.$(DLLEXT)
+dynmodule.$(DLLEXT):	$(srcdir)/dynmodule.cpp $(dyndep)
+	$(COMPILE_DLL) $(srcdir)/dynmodule.cpp $(dyndep) $(DEST)dynmodule.$(DLLEXT)
 
 if canrun
 
-if windows
+objtype$(EXEEXT):	$(srcdir)/objtype.cpp
+	g++ $(srcdir)/objtype.cpp -o objtype$(EXEEXT)
 
-objtype$(EXEEXT):	$(srcdir)/objtype.c
-	gcc $(srcdir)/objtype.c -o objtype$(EXEEXT)
+makeheaders$(EXEEXT):	$(srcdir)/makeheaders.cpp
+	g++ $(srcdir)/makeheaders.cpp -o makeheaders$(EXEEXT)
 
-makeheaders$(EXEEXT):	$(srcdir)/makeheaders.c
-	gcc $(srcdir)/makeheaders.c -o makeheaders$(EXEEXT)
-
-else !windows
-
-objtype$(EXEEXT):	$(srcdir)/objtype.c
-	$(COMPILE) $(srcdir)/objtype.c -o objtype$(EXEEXT)
-
-makeheaders$(EXEEXT):	$(srcdir)/makeheaders.c
-	$(COMPILE) $(srcdir)/makeheaders.c -o makeheaders$(EXEEXT)
-
-endif !windows
 else !canrun
 
 # If I can not run programs built by the normal C compiler (eg because I am
-# cross-compiling) I will build these two utilities using gcc. I will blandly
-# assume that in any cross-compilation situation that gcc is available
+# cross-compiling) I will build these two utilities using g++. I will blandly
+# assume that in any cross-compilation situation that g++ is available
 # and works, and the assumption is simplified by the fact that these two
 # programs are both fairly small and conservative.
 
-objtype$(EXEEXT):	$(srcdir)/objtype.c
-	gcc $(srcdir)/objtype.c -o objtype$(EXEEXT)
+objtype$(EXEEXT):	$(srcdir)/objtype.cpp
+	g++ $(srcdir)/objtype.cpp -o objtype$(EXEEXT)
 
-makeheaders$(EXEEXT):	$(srcdir)/makeheaders.c
-	gcc $(srcdir)/makeheaders.c -o makeheaders$(EXEEXT)
+makeheaders$(EXEEXT):	$(srcdir)/makeheaders.cpp
+	g++ $(srcdir)/makeheaders.cpp -o makeheaders$(EXEEXT)
 
 endif !canrun
 
 # The next line generates a small file that contains inforation about the
 # object files used on this computer and the command used to compile
-# simple C code. Note that machineid.c is made to depend on Makefile
+# simple C code. Note that machineid.cpp is made to depend on Makefile
 # so if for any reason Makefile gets update so will it, and hence
 # restart.o and the rest.
 
-machineid.c:	cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(EXEEXT) \
+machineid.cpp:	reduce-cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(EXEEXT) \
 			makeheaders$(EXEEXT) Makefile $(srcdir)/impex.def \
 			$(srcdir)/machine.h $(srcdir)/tags.h \
 			$(srcdir)/cslerror.h $(srcdir)/externs.h \
 			$(srcdir)/arith.h $(srcdir)/entries.h
-	./objtype$(EXEEXT) cslread.$(OBJEXT) \
-		$(srcdir)/impex.def machineid-1.c $(COMPILE_DLL)
+	./objtype$(EXEEXT) reduce-cslread.$(OBJEXT) \
+		$(srcdir)/impex.def machineid-1.cpp $(COMPILE_DLL)
 	./makeheaders$(EXEEXT) config.h $(srcdir)/machine.h \
 		$(srcdir)/tags.h \
 		$(srcdir)/cslerror.h $(srcdir)/externs.h \
-		$(srcdir)/arith.h $(srcdir)/entries.h > machineid-2.c
-	cat machineid-1.c machineid-2.c > machineid.c
+		$(srcdir)/arith.h $(srcdir)/entries.h > machineid-2.cpp
+	cat machineid-1.cpp machineid-2.cpp > machineid.cpp
 
 -include reduce.dep
 
@@ -1989,7 +1978,7 @@ $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
 # I believe there is a potential race (with "make -j") if say reduce-u01.o is
 # out of date in a simple way and starts to get compiled, but while that
 # is going on a missing version of say u33.lsp causes the rule here to
-# trigger... and in the process re-create a new version of reduce-u05.c. I try
+# trigger... and in the process re-create a new version of reduce-u05.cpp. I try
 # to deal with that by deleting all the *.o files just in case some
 # parallel process has slotted one in just when I did not want that!
 # Well it is even worse - the main reduce executable can become out

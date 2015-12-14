@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXRealSpinner.cpp,v 1.38.2.1 2006/03/31 21:25:59 fox Exp $                   *
+* $Id$                   *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"

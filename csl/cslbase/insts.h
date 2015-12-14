@@ -1,11 +1,11 @@
-/*
-insts.h
+//
+//insts.h
+//
+//Copyright (C) 2003-2006 Gil Dabah, http://ragestorm.net/distorm/
+//This library is licensed under the BSD license. See the file COPYING.
+//
 
-Copyright (C) 2003-2006 Gil Dabah, http://ragestorm.net/distorm/
-This library is licensed under the BSD license. See the file COPYING.
-*/
-
-/* $Id$ */
+// $Id$
 
 #ifndef ___INSTS_H__
 #define ___INSTS_H__

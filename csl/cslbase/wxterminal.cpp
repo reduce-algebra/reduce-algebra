@@ -154,9 +154,9 @@ extern uint32_t cmtt_coverage[];
 
 static fwin_entrypoint *fwin_main_entry;
 static int fwin_argc;
-static char **fwin_argv;
+static const char **fwin_argv;
 
-int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main1)
+int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main1)
 {
     fwin_main_entry = fwin_main1;
     fwin_argc = argc;
@@ -220,7 +220,7 @@ int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main1)
 #endif // KEEP_CONSOLE_OPEN
 #endif // WIN32
     wxDISABLE_DEBUG_SUPPORT();
-    return wxEntry(argc, argv);
+    return wxEntry(argc, (char **)argv);
 }
 
 class fwinApp : public wxApp
@@ -235,7 +235,7 @@ IMPLEMENT_APP_NO_MAIN(fwinApp)
 // I have a generated file that contains the widths of all the fonts
 // I am willing to use here.
 
-#include "cmfont-widths.c"
+#include "cmfont-widths.cpp"
 
 
 // I had HOPED I might use a variant on wxTextCtrl here and let it cope
@@ -820,27 +820,27 @@ int get_current_directory(char *s, int n)
 #define LONGEST_LEGAL_FILENAME 1024
 #endif
 
-/*
- * getenv() is a mild pain: Windows seems
- * to have a strong preference for upper case names.  To allow for
- * all this I do not call getenv() directly but go via the following
- * code that can patch things up.
- */
-
-const char *my_getenv(const char *s)
-{
-#ifdef WIN32
-    char uppercasename[LONGEST_LEGAL_FILENAME];
-    char *p = uppercasename;
-    int c;
-    memset(uppercasename, 0, sizeof(uppercasename));
-    while ((c = *s++) != 0) *p++ = toupper(c);
-    *p = 0;
-    return getenv(uppercasename);
-#else
-    return getenv(s);
-#endif
-}
+// /*
+//  * getenv() is a mild pain: Windows seems
+//  * to have a strong preference for upper case names.  To allow for
+//  * all this I do not call getenv() directly but go via the following
+//  * code that can patch things up.
+//  */
+//
+// const char *my_getenv(const char *s)
+// {
+// #ifdef WIN32
+//     char uppercasename[LONGEST_LEGAL_FILENAME];
+//     char *p = uppercasename;
+//     int c;
+//     memset(uppercasename, 0, sizeof(uppercasename));
+//     while ((c = *s++) != 0) *p++ = toupper(c);
+//     *p = 0;
+//     return getenv(uppercasename);
+// #else
+//     return getenv(s);
+// #endif
+// }
 
 
 

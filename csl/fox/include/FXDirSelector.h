@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXDirSelector.h,v 1.21 2006/01/22 17:58:00 fox Exp $                     *
+* $Id$                     *
 ********************************************************************************/
 #ifndef FXDIRSELECTOR_H
 #define FXDIRSELECTOR_H

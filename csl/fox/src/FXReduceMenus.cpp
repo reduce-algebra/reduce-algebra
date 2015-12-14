@@ -1,7 +1,7 @@
 /* FXReduceMenus.cpp                    Copyright (C) 2014 Codemist Ltd */
 
 
-/* $Id: version.h 2688 2014-09-20 16:52:18Z arthurcnorman $ */
+/* $Id$ */
 
 
 /**************************************************************************

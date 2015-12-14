@@ -1,10 +1,9 @@
-/*  cslerror.h                        Copyright (C) 1989-2015 Codemist Ltd */
+//  cslerror.h                        Copyright (C) 1989-2015 Codemist Ltd
 
-/*
- * Error codes and functions.
- *
- */
-
+//
+// Error codes and functions.
+//
+//
 
 
 /**************************************************************************
@@ -36,36 +35,36 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 #ifndef header_cslerror_h
 #define header_cslerror_h 1
 
-extern Lisp_Object interrupted(Lisp_Object p);
-extern Lisp_Object error(int nargs, int code, ...);
-extern Lisp_Object cerror(int nargs, int code1, int code2, ...);
-extern Lisp_Object too_few_2(Lisp_Object env, Lisp_Object a1);
-extern Lisp_Object too_many_1(Lisp_Object env, Lisp_Object a1, Lisp_Object a2);
-extern Lisp_Object wrong_no_0a(Lisp_Object env, Lisp_Object a1);
-extern Lisp_Object wrong_no_0b(Lisp_Object env, Lisp_Object a1, Lisp_Object a2);
-extern Lisp_Object wrong_no_3a(Lisp_Object env, Lisp_Object a1);
-extern Lisp_Object wrong_no_3b(Lisp_Object env, Lisp_Object a1, Lisp_Object a2);
-extern Lisp_Object wrong_no_na(Lisp_Object env, Lisp_Object a1);
-extern Lisp_Object wrong_no_nb(Lisp_Object env, Lisp_Object a1, Lisp_Object a2);
-extern Lisp_Object wrong_no_1(Lisp_Object env, int nargs, ...);
-extern Lisp_Object wrong_no_2(Lisp_Object env, int nargs, ...);
-extern Lisp_Object bad_specialn(Lisp_Object env, int nargs, ...);
+extern "C" LispObject interrupted(LispObject p);
+extern "C" LispObject error(int nargs, int code, ...);
+extern "C" LispObject cerror(int nargs, int code1, int code2, ...);
+extern "C" LispObject too_few_2(LispObject env, LispObject a1);
+extern "C" LispObject too_many_1(LispObject env, LispObject a1, LispObject a2);
+extern "C" LispObject wrong_no_0a(LispObject env, LispObject a1);
+extern "C" LispObject wrong_no_0b(LispObject env, LispObject a1, LispObject a2);
+extern "C" LispObject wrong_no_3a(LispObject env, LispObject a1);
+extern "C" LispObject wrong_no_3b(LispObject env, LispObject a1, LispObject a2);
+extern "C" LispObject wrong_no_na(LispObject env, LispObject a1);
+extern "C" LispObject wrong_no_nb(LispObject env, LispObject a1, LispObject a2);
+extern "C" LispObject wrong_no_1(LispObject env, int nargs, ...);
+extern "C" LispObject wrong_no_2(LispObject env, int nargs, ...);
+extern "C" LispObject bad_specialn(LispObject env, int nargs, ...);
 
-extern Lisp_Object aerror(char *s);         /* Called from C not Lisp */
-extern Lisp_Object aerror0(char *s);
-extern Lisp_Object aerror1(char *s, Lisp_Object a);
-extern Lisp_Object aerror2(char *s, Lisp_Object a, Lisp_Object b);
-extern void fatal_error(int code, ...);
+extern "C" LispObject aerror(const char *s);         // Called from C not Lisp
+extern "C" LispObject aerror0(const char *s);
+extern "C" LispObject aerror1(const char *s, LispObject a);
+extern "C" LispObject aerror2(const char *s, LispObject a, LispObject b);
+extern "C" void fatal_error(int code, ...);
 
-/*
- * Since miscflags is treated as a set of bits the issue of whether it
- * is signed or not will never arise!
- */
+//
+// Since miscflags is treated as a set of bits the issue of whether it
+// is signed or not will never arise!
+//
 #define GC_MESSAGES   0x01
 #define FASL_MESSAGES 0x02
 #define VERBOSE_MSGS  0x04
@@ -73,13 +72,13 @@ extern void fatal_error(int code, ...);
 #define GC_MSG_BITS   0x07
 #define verbos_flag (miscflags & GC_MSG_BITS)
 
-/*
- * In a backtrace I can get
- *    +++ Error EXPLANATION               HEADLINE_FLAG
- *    Calling: FUNCTION                   FNAME_FLAG
- *    Arg1: DATA                          ARGS_FLAG
- *
- */
+//
+// In a backtrace I can get
+//    +++ Error EXPLANATION               HEADLINE_FLAG
+//    Calling: FUNCTION                   FNAME_FLAG
+//    Arg1: DATA                          ARGS_FLAG
+//
+//
 
 #define HEADLINE_FLAG 0x08
 #define FNAME_FLAG    0x10
@@ -87,52 +86,51 @@ extern void fatal_error(int code, ...);
 
 #define BACKTRACE_MSG_BITS 0x38
 
-/*
- * It is essential that the #define values set up here are kept in
- * step with the textual error messages in the array that follows...
- */
- 
-#define err_bad_car               0      /* + the atom */
-#define err_bad_cdr               1      /* + the atom */
-#define err_no_store              2      /* no extras */
-#define err_undefined_function_1  3      /* + fn name */
-#define err_undefined_function_2  4      /* + fn name */
-#define err_undefined_function_n  5      /* + fn name */
-#define err_wrong_no_args         6      /* fn name, actual arg count */
-#define err_unbound_lexical       7      /* + name */
-#define err_bad_rplac             8      /* + atom */
-#define err_bad_arith             9      /* + bad value */
-#define err_redef_special        10      /* + name */
-#define err_bad_arg              11      /* + offending value */
-#define err_bad_declare          12      /* + offending value */
-#define err_bad_fn               13      /* + offending value */
-#define err_unset_var            14      /* + name */
-#define err_too_many_args1       15      /* no extras */
-#define err_too_many_args2       16      /* no extras */
-#define err_bad_apply            17      /* + bad thing */
-#define err_macroex_hook         18      /* what it is */
-#define err_block_tag            19      /* bad tag */
-#define err_go_tag               20      /* bad tag */
+//
+// It is essential that the #define values set up here are kept in
+// step with the textual error messages in the array that follows...
+//
+
+#define err_bad_car               0      // + the atom
+#define err_bad_cdr               1      // + the atom
+#define err_no_store              2      // no extras
+#define err_undefined_function_1  3      // + fn name
+#define err_undefined_function_2  4      // + fn name
+#define err_undefined_function_n  5      // + fn name
+#define err_wrong_no_args         6      // fn name, actual arg count
+#define err_unbound_lexical       7      // + name
+#define err_bad_rplac             8      // + atom
+#define err_bad_arith             9      // + bad value
+#define err_redef_special        10      // + name
+#define err_bad_arg              11      // + offending value
+#define err_bad_declare          12      // + offending value
+#define err_bad_fn               13      // + offending value
+#define err_unset_var            14      // + name
+#define err_too_many_args1       15      // no extras
+#define err_too_many_args2       16      // no extras
+#define err_bad_apply            17      // + bad thing
+#define err_macroex_hook         18      // what it is
+#define err_block_tag            19      // bad tag
+#define err_go_tag               20      // bad tag
 #define err_excess_args          21
 #define err_insufficient_args    22
-#define err_bad_bvl              23      /* + offending value */
+#define err_bad_bvl              23      // + offending value
 #define err_bad_keyargs          24
 #define err_write_err            25
-#define err_bad_endp             26      /* + the non-null atom */
+#define err_bad_endp             26      // + the non-null atom
 #define err_no_fasldir           27
-#define err_no_fasl              28      /* plus module name */
-#define err_open_failed          29      /* plus file name */
-#define err_pipe_failed          30      /* plus command for execution */
+#define err_no_fasl              28      // plus module name
+#define err_open_failed          29      // plus file name
+#define err_pipe_failed          30      // plus command for execution
 #define err_stack_overflow       31
 #define err_top_bit              32
 #define err_mem_spans_zero       33
-#define err_no_longer_used       34      /* available for re-use */
+#define err_no_longer_used       34      // available for re-use
 #define err_no_tempdir           35
-    
+
 #ifdef INCLUDE_ERROR_STRING_TABLE
-static char *error_message_table[] =
-{
-    "attempt to take car of an atom",
+static const char *error_message_table[] =
+{   "attempt to take car of an atom",
     "attempt to take cdr of an atom",
     "insufficient freestore to run this package",
     "undefined function (1 arg)",
@@ -172,7 +170,6 @@ static char *error_message_table[] =
 };
 #endif
 
-#endif /* header_cslerror_h */
+#endif // header_cslerror_h
 
-/* end of cslerror.h */
-
+// end of cslerror.h

@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXIconDict.h,v 1.6 2006/02/03 00:33:15 fox Exp $                         *
+* $Id$                         *
 ********************************************************************************/
 #ifndef FXICONDICT_H
 #define FXICONDICT_H

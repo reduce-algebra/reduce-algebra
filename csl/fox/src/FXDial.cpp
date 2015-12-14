@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXDial.cpp,v 1.50.2.1 2007/09/22 04:28:37 fox Exp $                          *
+* $Id$                          *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"

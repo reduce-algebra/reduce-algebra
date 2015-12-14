@@ -456,7 +456,7 @@ public:
   int recently_flushed;
 
   int argc;
-  char **argv;
+  const char **argv;
 
 #ifdef WIN32
   DWORD worker_thread(void *);

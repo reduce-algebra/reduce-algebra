@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXMenuCaption.cpp,v 1.53.2.1 2006/12/11 15:57:26 fox Exp $                   *
+* $Id$                   *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"

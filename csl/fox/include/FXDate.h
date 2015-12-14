@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXDate.h,v 1.10.2.1 2006/07/17 17:57:30 fox Exp $                            *
+* $Id$                            *
 ********************************************************************************/
 #ifndef FXDATE_H
 #define FXDATE_H

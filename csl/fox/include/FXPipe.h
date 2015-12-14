@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXPipe.h,v 1.7.2.1 2007/08/02 21:31:17 fox Exp $                             *
+* $Id$                             *
 ********************************************************************************/
 #ifndef FXPIPE_H
 #define FXPIPE_H

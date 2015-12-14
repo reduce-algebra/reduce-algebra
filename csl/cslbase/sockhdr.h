@@ -1,8 +1,8 @@
-/*  sockhdr.h                        Copyright (C) 1997-2015 Codemist Ltd */
+//  sockhdr.h                        Copyright (C) 1997-2015 Codemist Ltd
 
-/*
- * pull in headers suitable for socket-related code.
- */
+//
+// pull in headers suitable for socket-related code.
+//
 
 
 /**************************************************************************
@@ -35,7 +35,7 @@
  *************************************************************************/
 
 
-/* $Id$ */
+// $Id$
 
 #ifndef UNDER_CE
 #include <errno.h>
@@ -44,13 +44,13 @@
 #ifdef WIN32
 #include <winsock.h>
 #else
-#define unix_posix 1        /* Assume all non-windows systems are Unix! */
-/*
- * There may well be terrible delicacies re different variants on Unix. I
- * have (initially) tested this using Solaris and Linux. As I find
- * trouble in other cases I guess I can make the autoconf checks more and
- * more elaborate...
- */
+#define unix_posix 1        // Assume all non-windows systems are Unix!
+//
+// There may well be terrible delicacies re different variants on Unix. I
+// have (initially) tested this using Solaris and Linux. As I find
+// trouble in other cases I guess I can make the autoconf checks more and
+// more elaborate...
+//
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -59,8 +59,8 @@
 #include <arpa/inet.h>
 #include <sys/time.h>
 #include <fcntl.h>
-#define WSAGetLastError()   errno  /* retrieve error code   */
-#define WSACleanup()               /* tidy up at end of day */
+#define WSAGetLastError()   errno  // retrieve error code
+#define WSACleanup()               // tidy up at end of day
 #define closesocket(a)      close(a)
 #define SOCKET              int
 #define SOCKET_ERROR        (-1)
@@ -70,31 +70,31 @@
 #endif
 
 #if 0
-/*
- * At one time I could make Reduce serve on a socket - I am removing that
- * code now, but leaving remains visible in case anybody else needs it.
- */
+//
+// At one time I could make Reduce serve on a socket - I am removing that
+// code now, but leaving remains visible in case anybody else needs it.
+//
 
 #define default_csl_server_port 1206
-#define MAX_USERS                 10  /* approx concurrent remote users */
-#define REMOTE_STORE            8000  /* Allow 8 Mbytes per remote user */
-#define MAX_CPU_TIME             300  /* Approx CPU limit (seconds) */
-#define MAX_ELAPSED_TIME          45  /* Approx elapsed time limit (mins) */
+#define MAX_USERS                 10  // approx concurrent remote users
+#define REMOTE_STORE            8000  // Allow 8 Mbytes per remote user
+#define MAX_CPU_TIME             300  // Approx CPU limit (seconds)
+#define MAX_ELAPSED_TIME          45  // Approx elapsed time limit (mins)
 
 extern clock_t cpu_timeout;
 extern time_t  elapsed_timeout;
 
-/*
- * Now some declarations for my own variables and functions.
- */
+//
+// Now some declarations for my own variables and functions.
+//
 
 #ifndef header_tags_h
-/*
- * If used as part of the CSL Lisp system header_tags_h will already
- * be defined, and the type Lisp_Object will exist. Otherwise I should
- * define it here.
- */
-typedef int Lisp_Object;
+//
+// If used as part of the CSL Lisp system header_tags_h will already
+// be defined, and the type LispObject will exist. Otherwise I should
+// define it here.
+//
+typedef int LispObject;
 #endif
 
 #define PERMITTED_BACKLOG 5
@@ -104,7 +104,6 @@ extern SOCKET socket_server;
 extern char *WSAErrName(int i);
 extern int ensure_sockets_ready(void);
 
-#endif /* 0 */
+#endif // 0
 
-/* End of sockhdr.h */
-
+// End of sockhdr.h

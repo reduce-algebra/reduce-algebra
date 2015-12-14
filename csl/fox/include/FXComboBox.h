@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXComboBox.h,v 1.46 2006/01/27 02:07:44 fox Exp $                        *
+* $Id$                        *
 ********************************************************************************/
 #ifndef FXCOMBOBOX_H
 #define FXCOMBOBOX_H

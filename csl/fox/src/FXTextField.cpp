@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXTextField.cpp,v 1.171.2.3 2008/09/22 20:46:59 fox Exp $                    *
+* $Id$                    *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"

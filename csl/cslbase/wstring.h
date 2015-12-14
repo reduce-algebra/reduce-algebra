@@ -1,11 +1,11 @@
-/*
-wstring.h
+//
+//wstring.h
+//
+//Copyright (C) 2003-2006 Gil Dabah, http://ragestorm.net/distorm/
+//This library is licensed under the BSD license. See the file COPYING.
+//
 
-Copyright (C) 2003-2006 Gil Dabah, http://ragestorm.net/distorm/
-This library is licensed under the BSD license. See the file COPYING.
-*/
-
-/* $Id$ */
+// $Id$
 
 #ifndef ___WSTRING_H__
 #define ___WSTRING_H__
@@ -17,9 +17,9 @@ This library is licensed under the BSD license. See the file COPYING.
 // Make sure the buffer isn't overflowed.
 #define MAX_TEXT_SIZE (60)
 
-typedef struct {
-	unsigned int pos;
-	unsigned char p[MAX_TEXT_SIZE];
+typedef struct
+{   unsigned int pos;
+    unsigned char p[MAX_TEXT_SIZE];
 } _WString;
 
 // Warning, this macro should be used only when the compiler knows the size of string in advance!
@@ -33,16 +33,14 @@ void _FASTCALL_ strcpylen_WS(_WString* s, const char* buf, unsigned int len);
 void _FASTCALL_ strcatlen_WS(_WString* s, const char* buf, unsigned int len);
 
 _INLINE_ void strclear_WS(_WString* s)
-{
-	s->p[0] = '\0';
-	s->pos = 0;
+{   s->p[0] = '\0';
+    s->pos = 0;
 }
 
 _INLINE_ void chrcat_WS(_WString* s, unsigned char ch)
-{
-	s->p[s->pos] = ch;
-	s->p[s->pos + 1] = '\0';
-	s->pos += 1;
+{   s->p[s->pos] = ch;
+    s->p[s->pos + 1] = '\0';
+    s->pos += 1;
 }
 
 

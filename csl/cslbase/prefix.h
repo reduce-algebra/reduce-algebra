@@ -1,11 +1,11 @@
-/*
-prefix.h
+//
+//prefix.h
+//
+//Copyright (C) 2003-2006 Gil Dabah, http://ragestorm.net/distorm/
+//This library is licensed under the BSD license. See the file COPYING.
+//
 
-Copyright (C) 2003-2006 Gil Dabah, http://ragestorm.net/distorm/
-This library is licensed under the BSD license. See the file COPYING.
-*/
-
-/* $Id$ */
+// $Id$
 
 #ifndef ___PREFIX_H__
 #define ___PREFIX_H__
@@ -18,18 +18,18 @@ This library is licensed under the BSD license. See the file COPYING.
 // start is a pointer to the first prefix to take into account.
 // last is a pointer to the last byte we scanned.
 // Other pointers are used to keep track of prefixes positions and help us know if they appeared already and where.
-typedef struct {
-	unsigned int unusedCount, specialPrefixesSize, isREXPrefixValid;
-	_iflags totalPrefixes, usedPrefixes;
-	const unsigned char *lokrepPos, *segovrdPos, *opsizePos, *addrsizePos, *rexpos, *start, *last;
+typedef struct
+{   unsigned int unusedCount, specialPrefixesSize, isREXPrefixValid;
+    _iflags totalPrefixes, usedPrefixes;
+    const unsigned char *lokrepPos, *segovrdPos, *opsizePos, *addrsizePos, *rexpos, *start, *last;
 } _PrefixState;
 
-// Describe the type of the prefix and which one it was in a flag manner. 
+// Describe the type of the prefix and which one it was in a flag manner.
 typedef enum {PRE_NONE = -1, PRE_LOKREP, PRE_SEGOVRD, PRE_OPSIZE, PRE_ADDRSIZE, PRE_REX} _PrefixType;
 
-typedef struct {
-	_iflags flag;
-	_PrefixType type;
+typedef struct
+{   _iflags flag;
+    _PrefixType type;
 } _PrefixInfo;
 
 // Intel supports 4 types of prefixes, whereas AMD supports 5 types (lock is seperated from rep/nz).

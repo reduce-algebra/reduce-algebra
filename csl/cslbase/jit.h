@@ -1,4 +1,4 @@
-/* jit.h               Copyright (C) 2006-2015 J O'Connell & Codemist Ltd */
+// jit.h               Copyright (C) 2006-2015 J O'Connell & Codemist Ltd
 
 #ifndef header_jit_h
 #define header_jit_h 1
@@ -33,25 +33,25 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 
-/*
- * At present the CSL JIT only supports the Intel/AMD x86 architecture.
- * Attempts to use it on other sorts of machine may have really bad
- * confusing consequences!
- */
+//
+// At present the CSL JIT only supports the Intel/AMD x86 architecture.
+// Attempts to use it on other sorts of machine may have really bad
+// confusing consequences!
+//
 
 #define x86arch    1
 
-/*
- * Debug switch for the JIT
- */
+//
+// Debug switch for the JIT
+//
 
 #define JDEBUG     1
 
 
-/* register, eg EAX */
+// register, eg EAX
 
 #define EAX 0x0
 #define ECX 0x1
@@ -62,7 +62,7 @@
 #define ESI 0x6
 #define EDI 0x7
 
-/* memory indirection, eg [EAX] */
+// memory indirection, eg [EAX]
 
 #define EAXM 0x8
 #define ECXM 0x9
@@ -73,21 +73,21 @@
 #define ESIM 0xe
 #define EDIM 0xf
 
-/* memory offset */
+// memory offset
 
 #define DISP32 0x10
 
-/*
- * At some stage it may be good to arrange that the JIT assembler can decide
- * whether it needs a long-form branch or if a short one will suffice. At this
- * stage the choice is made globally. Define JUMPREL8 if you guarantee
- * all functions are tiny and you want the shortest code, or leave it
- * undefined for safer treatment of bigger examples.
- */
+//
+// At some stage it may be good to arrange that the JIT assembler can decide
+// whether it needs a long-form branch or if a short one will suffice. At this
+// stage the choice is made globally. Define JUMPREL8 if you guarantee
+// all functions are tiny and you want the shortest code, or leave it
+// undefined for safer treatment of bigger examples.
+//
 
 #ifdef JUMPREL8
 
-/* Conditional branches with rel8 offset */
+// Conditional branches with rel8 offset
 
 #define JA   0x77
 #define JAE   0x73
@@ -125,7 +125,7 @@
 
 #else
 
-/* Conditional branches with rel32 offset */
+// Conditional branches with rel32 offset
 
 #define JA    0x0f87
 #define JAE   0x0f83
@@ -158,11 +158,11 @@
 #define JS    0x0f88
 #define JZ    0x0f84
 
-#endif /* JUMPREL */
+#endif // JUMPREL
 
-/* Function defintions */
+// Function defintions
 
-/* jitx86.h */
+// jitx86.h
 
 extern void inc_reg(int reg);
 extern void dec_reg(int reg);
@@ -185,18 +185,16 @@ extern void lea_m32_r32_disp(int source, int dest, int disp);
 extern void Jpush(int nargs, ...);
 extern void Jpop(int nargs, ...);
 
-/* jit2.c */
+// jit2.c
 
-typedef struct reloc_table_struct 
-{
-    char *label;
+typedef struct reloc_table_struct
+{   char *label;
     unsigned long pos;
     struct reloc_table_struct *next;
 } reloc_table;
 
-typedef struct variables_table_struct 
-{
-    int addr;
+typedef struct variables_table_struct
+{   int addr;
     unsigned long pos;
     struct variables_table_struct *next;
 } variables_table;
@@ -207,7 +205,7 @@ extern reloc_table *jumpers_table;
 extern variables_table *vars_table;
 extern reloc_table *disassembler_labels;
 
-extern unsigned char codebuffer[8192];   /* rather arbitrary size! */
+extern unsigned char codebuffer[8192];   // rather arbitrary size!
 extern unsigned long codep;
 
 extern void free_labels_table(reloc_table *head);
@@ -222,7 +220,7 @@ extern void put2bytes(int c);
 extern void put3bytes(int c);
 extern void put4bytes(int c);
 extern void put5bytes(long long c);
-extern void put_little_endian(Lisp_Object c);
+extern void put_little_endian(LispObject c);
 extern void put_addr(void *c);
 extern int isreg(int reg);
 extern void call_rel_fn(char *label);
@@ -232,7 +230,7 @@ extern void add_label(char *label);
 extern void add_disassembler_label(char *label);
 extern void Jcall_abs_fn(void *addr_big_endian);
 
-/* jit3.c */
+// jit3.c
 
 #define init_stack_pointers() { put3bytes(0x5589e5); }
 #define exit_stack_pointers() { put4bytes(0x89ec5dc3); }
@@ -244,11 +242,11 @@ extern void Jcall_abs_fn(void *addr_big_endian);
 #undef stack
 #define stack &C_stack
 
-/*
- * 83 ec 28              sub    $0x28,%esp
- * a1 xx xx xx xx        mov 0x0, %eax
- * 89 45 f8              mov %eax, 0xfffffff8(%ebp)
- */
+//
+// 83 ec 28              sub    $0x28,%esp
+// a1 xx xx xx xx        mov 0x0, %eax
+// 89 45 f8              mov %eax, 0xfffffff8(%ebp)
+//
 
 #define Jsetup_nil() { put4bytes(0x83ec38a1);   \
         put_addr(&C_nil);                       \
@@ -260,9 +258,9 @@ extern void Jcall_abs_fn(void *addr_big_endian);
 
 #define Jresult() { put3bytes(0x8b45f4); }
 
-/*
- * used in bytecode compiler:
- */
+//
+// used in bytecode compiler:
+//
 
 #define load_stack_into(REG)        mov_rm32_rm32_disp(EBPM,REG,-2);
 #define load_stackaddr_into(REG)    lea_m32_r32_disp(EBPM,REG,-2);
@@ -273,9 +271,9 @@ extern void Jcall_abs_fn(void *addr_big_endian);
 #define store_entry_stack_from(REG) mov_rm32_rm32_disp(REG,EBPM,4);
 #define store_result_from(REG)      mov_rm32_rm32_disp(REG,EBPM,-15);
 
-/*
- * OPTIMISE_REG is a pending enhancement!
- */
+//
+// OPTIMISE_REG is a pending enhancement!
+//
 
 #ifndef OPTIMISE_REG
 
@@ -290,7 +288,7 @@ extern void Jcall_abs_fn(void *addr_big_endian);
 #define load_B_reg_into(REG)        { load_nil_into(REG);            \
                                       add_imm32_rm32(B_REG,REG); }
 
-#endif /* OPTIMISE_REG */
+#endif // OPTIMISE_REG
 
 #define push_A_reg()                mov_rm32_rm32_disp(EDI,EBPM,-17);
 #define pop_A_reg()                 mov_rm32_rm32_disp(EBPM,EDI,-17);
@@ -308,14 +306,14 @@ extern void Jcall_abs_fn(void *addr_big_endian);
 #define load_litvec_into(REG)    { load_nil_into(REG);               \
                                    add_imm32_rm32(LITVEC,REG); }
 #else
-/* 
- * Loads litvec into REG from qcdr(def) which is passed as arg
- * to bytestream_interpret in 12(ebp)
- */
-#define load_litvec_into(REG)      mov_rm32_rm32_disp(EBPM,REG,3); 
+//
+// Loads litvec into REG from qcdr(def) which is passed as arg
+// to bytestream_interpret in 12(ebp)
+//
+#define load_litvec_into(REG)      mov_rm32_rm32_disp(EBPM,REG,3);
 #endif
 
-#define FRINGE 0x48 /* FIXME only works for x86 */
+#define FRINGE 0x48 // FIXME only works for x86
 #define HEAPLIMIT 0x4c
 #define B_REG 0xd4
 #define CODEVEC 0xd8
@@ -326,6 +324,6 @@ extern void Jcall_abs_fn(void *addr_big_endian);
 #define make_label(label,op,num) sprintf(label,"%s%i%i",op,num,bytecodes);
 
 
-#endif /* header_jit_h */
+#endif // header_jit_h
 
-/* end of jit.h */
+// end of jit.h

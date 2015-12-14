@@ -1,11 +1,11 @@
-/*
-config.h
+//
+//config.h
+//
+//Copyright (C) 2003-2006 Gil Dabah, http://ragestorm.net/distorm/
+//This library is licensed under the BSD license. See the file COPYING.
+//
 
-Copyright (C) 2003-2006 Gil Dabah, http://ragestorm.net/distorm/
-This library is licensed under the BSD license. See the file COPYING.
-*/
-
-/* $Id$ */
+// $Id$
 
 #ifndef ___CONFIG_H__
 #define ___CONFIG_H__
@@ -21,7 +21,7 @@ This library is licensed under the BSD license. See the file COPYING.
 // GCC ignores this directive...
 //#define _FASTCALL_ __attribute__((__fastcall__))
 #ifdef SUPPORT_64BIT_OFFSET
-	#define OFFSET_INTEGER unsigned long long
+#define OFFSET_INTEGER unsigned long long
 #endif
 #elif _MSC_VER
 #define _PACKED_
@@ -29,7 +29,7 @@ This library is licensed under the BSD license. See the file COPYING.
 #define _FASTCALL_ __fastcall
 #define _INLINE_ static __inline
 #ifdef SUPPORT_64BIT_OFFSET
-	#define OFFSET_INTEGER unsigned __int64
+#define OFFSET_INTEGER unsigned __int64
 #endif
 #endif
 

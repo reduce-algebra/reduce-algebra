@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXIconSource.h,v 1.13 2006/02/03 00:44:32 fox Exp $                      *
+* $Id$                      *
 ********************************************************************************/
 #ifndef FXICONSOURCE_H
 #define FXICONSOURCE_H

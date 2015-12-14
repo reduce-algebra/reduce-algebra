@@ -1,11 +1,11 @@
-/*
-decoder.h
+//
+//decoder.h
+//
+//Copyright (C) 2003-2006 Gil Dabah, http://ragestorm.net/distorm/
+//This library is licensed under the BSD license. See the file COPYING.
+//
 
-Copyright (C) 2003-2006 Gil Dabah, http://ragestorm.net/distorm/
-This library is licensed under the BSD license. See the file COPYING.
-*/
-
-/* $Id$ */
+// $Id$
 
 
 #ifndef ___DECODER_H__
@@ -22,18 +22,18 @@ typedef enum {Decode16Bits = 0, Decode32Bits = 1, Decode64Bits = 2} _DecodeType;
 
 typedef OFFSET_INTEGER _OffsetType;
 
-typedef struct {
-	_WString mnemonic;
-	_WString operands;
-	_WString instructionHex;
-	unsigned int size;
-	_OffsetType offset;
+typedef struct
+{   _WString mnemonic;
+    _WString operands;
+    _WString instructionHex;
+    unsigned int size;
+    _OffsetType offset;
 } _DecodedInst;
 
-typedef struct {
-	const unsigned char* code;
-	long codeLen;
-	_OffsetType codeOffset;
+typedef struct
+{   const unsigned char* code;
+    long codeLen;
+    _OffsetType codeOffset;
 } _CodeInfo;
 
 typedef enum {DECRES_NONE, DECRES_SUCCESS, DECRES_MEMORYERR, DECRES_INPUTERR} _DecodeResult;

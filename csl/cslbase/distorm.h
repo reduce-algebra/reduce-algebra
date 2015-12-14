@@ -1,33 +1,34 @@
 // diStorm64 1.1.4
 
-/*
-distorm.h
+//
+//distorm.h
+//
+//Copyright (C) 2003-2006 Gil Dabah, http://ragestorm.net/distorm/
+//This library is licensed under the BSD license. See the file COPYING.
+//
+//This file is used in win32proj and linuxproj.
+//
 
-Copyright (C) 2003-2006 Gil Dabah, http://ragestorm.net/distorm/
-This library is licensed under the BSD license. See the file COPYING.
-
-This file is used in win32proj and linuxproj.
-*/
-
-/* $Id$ */
+// $Id$
 
 // Comment out this macro if you wish to use 32 bits offsets only!
 #define SUPPORT_64BIT_OFFSET 1
 
 #ifdef SUPPORT_64BIT_OFFSET
-	#ifdef __GNUC__
-		#define OFFSET_INTEGER unsigned long long
-	#elif _MSC_VER
-		#define OFFSET_INTEGER unsigned __int64
-	#endif
+#ifdef __GNUC__
+#define OFFSET_INTEGER unsigned long long
+#elif _MSC_VER
+#define OFFSET_INTEGER unsigned __int64
+#endif
 #else
-	#define OFFSET_INTEGER unsigned long
+#define OFFSET_INTEGER unsigned long
 #endif
 
 
 // Support C++ compilers
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 // diStorm64 Version 1.1.4
@@ -40,18 +41,18 @@ typedef OFFSET_INTEGER _OffsetType;
 
 // Static size of strings. Do not change this value.
 #define MAX_TEXT_SIZE (60)
-typedef struct {
-	unsigned int length;
-	unsigned char p[MAX_TEXT_SIZE]; // p is a null terminated string.
+typedef struct
+{   unsigned int length;
+    unsigned char p[MAX_TEXT_SIZE]; // p is a null terminated string.
 } _WString;
 
 // This structure holds all information the disassembler generates per instruction.
-typedef struct {
-	_WString mnemonic; // Mnemonic of decoded instruction, prefixed if required by REP, LOCK etc.
-	_WString operands; // Operands of the decoded instruction, up to 3 operands, comma-seperated.
-	_WString instructionHex; // Hex dump - little endian, including prefixes.
-	unsigned int size; // Size of decoded instruction.
-	_OffsetType offset; // Start offset of the decoded instruction.
+typedef struct
+{   _WString mnemonic; // Mnemonic of decoded instruction, prefixed if required by REP, LOCK etc.
+    _WString operands; // Operands of the decoded instruction, up to 3 operands, comma-seperated.
+    _WString instructionHex; // Hex dump - little endian, including prefixes.
+    unsigned int size; // Size of decoded instruction.
+    _OffsetType offset; // Start offset of the decoded instruction.
 } _DecodedInst;
 
 // Return code of the decoding function.

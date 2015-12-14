@@ -1,4 +1,4 @@
-/* bytes.h                             Copyright (C) Codemist 1993-2015 */
+// bytes.h                             Copyright (C) Codemist 1993-2015
 
 
 
@@ -31,18 +31,18 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 
-/*
- *   Bytecode interpreter support.
- */
+//
+//   Bytecode interpreter support.
+//
 
 #ifndef header_bytes_h
 #define header_bytes_h 1
 
-#define JUMP_BACK               0x01 /* select direction of jump  */
-#define JUMP_LONG               0x02 /* select 16 vs 8 bit offset */
+#define JUMP_BACK               0x01 // select direction of jump
+#define JUMP_LONG               0x02 // select 16 vs 8 bit offset
 
 #define OP_LOADLOC              0x00
 #define OP_LOADLOC0             0x01
@@ -301,7 +301,6 @@
 #define OP_ONEVALUE             0xfe
 #define OP_SPARE                0xff
 
-#endif /* header_bytes_h */
+#endif // header_bytes_h
 
-/* end of bytes.h */
-
+// end of bytes.h

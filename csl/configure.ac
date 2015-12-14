@@ -24,7 +24,7 @@ fi
 # I am going to expect that you have at least this version of autoconf.
 AC_PREREQ(2.59)
 
-AC_CONFIG_SRCDIR(window.c)
+AC_CONFIG_SRCDIR(window.cpp)
 AC_CONFIG_FILES([Makefile])
 
 

@@ -3579,7 +3579,7 @@ long FXTerminal::onCmdInsertNewline(FXObject *c, FXSelector s, void *ptr)
     inputBuffer[n] = 0;
     j = k = 0;
     while (inputBuffer[j] != 0)
-    {   int ch = utf_decode((unsigned char *)&inputBuffer[j]);
+    {   int ch = utf_decode((const unsigned char *)&inputBuffer[j]);
         j += utf_bytes;
         if (sizeof(wchar_t) == 2 && ch > 0xffff)
         {   inputWBuffer[k++] = ch;  // Use surrogates here! @@@@

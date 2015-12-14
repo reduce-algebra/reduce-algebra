@@ -1,16 +1,16 @@
-/* machine.h                       Copyright (C) 1990-2015 Codemist Ltd */
+// machine.h                       Copyright (C) 1990-2015 Codemist Ltd
 
-/*
- * This was ONCE a place where all system-specific options were detected
- * and mapped onto tidy macros that could guide subsequent compilation. Now
- * all that is handled in "config.h", which is manufactured on a per-target
- * basis by a configure-script created by autoconf.
- *
- * Now it us used for just a few tests based on what comes out of
- * config.h to set up really major further bits of configuration, where
- * the characteristic of what is done here is that it will vary from
- * target to target and it is truly pervasive in consequences.
- */
+//
+// This was ONCE a place where all system-specific options were detected
+// and mapped onto tidy macros that could guide subsequent compilation. Now
+// all that is handled in "config.h", which is manufactured on a per-target
+// basis by a configure-script created by autoconf.
+//
+// Now it us used for just a few tests based on what comes out of
+// config.h to set up really major further bits of configuration, where
+// the characteristic of what is done here is that it will vary from
+// target to target and it is truly pervasive in consequences.
+//
 
 
 
@@ -43,18 +43,18 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 
 #ifndef header_machine_h
 #define header_machine_h 1
 
 
-/*
- * I will decode information that config.h has given me and define a simple
- * symbol SOCKETS if I can use sockets...
- * 
- */
+//
+// I will decode information that config.h has given me and define a simple
+// symbol SOCKETS if I can use sockets...
+//
+//
 #if !defined UNDER_CE && !defined EMBEDDED
 #if ((defined HAVE_SOCKET && defined HAVE_SYS_SOCKET_H) || defined WIN32)
 #define SOCKETS                  1
@@ -91,13 +91,13 @@
 
 #include <stdint.h>
 
-#else /* HAVE_STDINT_H */
-/*
- * Now it appears that some systems provide types with names like
- * u_int32_t where I count uint32_t as more standard. I will adapt
- * around that here. As C compilers become more standardised this
- * will become increasingly irrelevant.
- */
+#else // HAVE_STDINT_H
+//
+// Now it appears that some systems provide types with names like
+// u_int32_t where I count uint32_t as more standard. I will adapt
+// around that here. As C compilers become more standardised this
+// will become increasingly irrelevant.
+//
 
 #ifndef HAVE_UINT32_T
 #ifdef  HAVE_U_INT32_T
@@ -120,11 +120,11 @@ typedef u_intptr_t uintptr_t;
 #endif
 #endif
 
-/*
- * Finally if those abstract widths have not been provided I will fall
- * back on information worked out at configure-time. Note that that could
- * be delicate in the context of cross-compilation and other odd cases.
- */
+//
+// Finally if those abstract widths have not been provided I will fall
+// back on information worked out at configure-time. Note that that could
+// be delicate in the context of cross-compilation and other odd cases.
+//
 
 #if !defined HAVE_INT32_T && defined SIZEOF_INT && (SIZEOF_INT == 4)
 typedef int int32_t;
@@ -186,13 +186,12 @@ typedef uint64_t uintptr_t;
 #define HAVE_UINTPTR_T 1
 #endif
 
-#endif /* HAVE_STDINT_H */
-/*
- * With luck that will have regularised the situation with regard to
- * integer types!
- */
+#endif // HAVE_STDINT_H
+//
+// With luck that will have regularised the situation with regard to
+// integer types!
+//
 
-#endif /* header_machine_h */
+#endif // header_machine_h
 
-/* end machine.h */
-
+// end machine.h

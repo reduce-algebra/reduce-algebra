@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: fxutils.cpp,v 1.129.2.4 2008/05/20 16:21:12 fox Exp $                        *
+* $Id$                        *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"

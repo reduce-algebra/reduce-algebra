@@ -157,7 +157,7 @@ FXPostscriptFont::FXPostscriptFont(FXApp* a,
 // When generating Postscript I need font metrics. These can be extracted
 // from "afm" files that Adobe supply. I have a program "get-adobe-metrics.c"
 // that can be run on a typical Linux system to extract the (minimal) metric
-// information that I need here and build a file "font-info.c". By including
+// information that I need here and build a file "font-info.cpp". By including
 // that file here I collect info about all the standard Postscript Fonts.
 // I will not permit a user to use any other fonts than these!
 //
@@ -213,9 +213,9 @@ FXPostscriptFont::FXPostscriptFont(FXApp* a,
 // nominal character cell that is 1000 units high, which means that
 // integer metrics are quite accurate enough for everybody.
 
-#include "font-info.c"
+#include "font-info.cpp"
 
-// Here is the sort of info found in "font-info.c". Each font
+// Here is the sort of info found in "font-info.cpp". Each font
 // listed comes with its full Adobe name.
 // [It will shortly need (max)width, height, ascent, descent,
 // leading, (max)left-bearing (max)right-bearing]

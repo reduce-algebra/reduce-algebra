@@ -80,11 +80,11 @@ extern pthread_cond_t  cond;
 
 // Using Posix threads I initialise the mutexes statically.
 
-#define CREATEMUTEX        /* Nothing */
+#define CREATEMUTEX        // Nothing
 #define LOCKMUTEX          pthread_mutex_lock(&mutex)
 #define UNLOCKMUTEX        pthread_mutex_unlock(&mutex)
 
-#define CREATELOGMUTEX     /* Nothing */
+#define CREATELOGMUTEX     // Nothing
 #define LOCKLOGMUTEX       if (pthread_mutex_lock(&logmutex) != 0) \
                            { fprintf(stderr, "locking failed\n"); exit(1); }
 #define UNLOCKLOGMUTEX     if (pthread_mutex_unlock(&logmutex) != 0) \
@@ -236,7 +236,7 @@ static cuckoo_inline uint32_t cuckoo_lookup(
     uint32_t key,             // integer key to look up
     void *table,              // base of the hash table
     size_t hash_item_size,    // size of each item in the table,
-                              // must be <= MAX_CUCKOO_ITEM_SIZE
+    // must be <= MAX_CUCKOO_ITEM_SIZE
     uint32_t table_size,      // number of entries in the hash table
     cuckoo_get_key *get_key,  // function to retrieve keys from table
     uint32_t modulus2,        // used to give a secondary hash function
@@ -287,7 +287,7 @@ extern uint32_t cuckoo_insert(
     cuckoo_importance *importance, // how important are various keys?
     void *table,              // base of the hash table
     size_t hash_item_size,    // size of each item in the table,
-                              // must be <= MAX_CUCKOO_ITEM_SIZE
+    // must be <= MAX_CUCKOO_ITEM_SIZE
     uint32_t table_size,      // number of entries in the hash table
     cuckoo_get_key *get_key,  // function to retrieve keys from table
     cuckoo_set_key *set_key,  // function to set a key in the table
@@ -310,8 +310,7 @@ extern uint32_t cuckoo_insert(
 // failure to set up the table.
 
 typedef struct __cuckoo_parameters
-{
-    uint32_t table_size;
+{   uint32_t table_size;
     uint32_t modulus2;
     uint32_t offset2;
     double   merit;
@@ -408,7 +407,7 @@ extern cuckoo_parameters cuckoo_optimise(
 // the search inadequacies here are not important, but those who are ultra
 // cautious will run this binary search first, and then run the linear search
 // as a low priority long-running background task just to verify that nothing
-// better is available. 
+// better is available.
 
 extern cuckoo_parameters cuckoo_binary_optimise(
     uint32_t *items,               // table of keys
@@ -456,4 +455,3 @@ extern cuckoo_parameters hungarian_try_all_hash_functions(
 #endif // __cuckoo_h
 
 // End of cuckoo.h
-

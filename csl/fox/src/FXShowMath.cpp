@@ -80,10 +80,8 @@
 
 #include <stdlib.h>
 
-extern "C" {
-extern int directoryp(char *a, char *b, size_t n);
-extern int file_readable(char *a, char *b, size_t n);
-}
+extern int directoryp(char *a, const char *b, size_t n);
+extern int file_readable(char *a, const char *b, size_t n);
 
 #include <string.h>
 #include <ctype.h>
@@ -435,7 +433,7 @@ Box *makeTopBox(Box *b0)
 // with widths of individual characters. At least at present I do not record
 // individual character heights or kerning information there.
 
-#include "cmfont-info.c"
+#include "cmfont-info.cpp"
 
 static cm_font_info *findFont(const char *name)
 {

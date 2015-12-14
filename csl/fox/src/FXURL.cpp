@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXURL.cpp,v 1.32.2.1 2008/02/19 22:13:21 fox Exp $                           *
+* $Id$                           *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"

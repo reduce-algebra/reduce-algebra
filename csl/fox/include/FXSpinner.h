@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXSpinner.h,v 1.46 2006/02/06 03:03:40 fox Exp $                         *
+* $Id$                         *
 ********************************************************************************/
 #ifndef FXSPINNER_H
 #define FXSPINNER_H

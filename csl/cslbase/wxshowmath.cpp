@@ -30,11 +30,11 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* $Id: wxshowmath.cpp 2387 2014-03-01 20:45:16Z arthurcnorman $ */
+/* $Id$ */
 
 
 // Without the fullowing things like UINT64_C will not be available.
-#if defined __cplusplus && !defined __STDC_CONSTANT_MACROS
+#ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS 1
 #endif
 
@@ -209,7 +209,7 @@ BEGIN_EVENT_TABLE(showmathFrame, wxFrame)
     EVT_SIZE(            showmathFrame::OnSize)
 END_EVENT_TABLE()
 
-int get_current_directory(char *s, int n)
+int get_current_directory(char *s, size_t n)
 {
     if (getcwd(s, n) == 0)
     {   switch(errno)
@@ -620,7 +620,8 @@ int main(int argc, char *argv[])
                 (buf.st_mode & S_IFDIR) != 0)
             {
 // Well foo.app exists and is a directory, so I will try to use it
-                char **nargs = (char **)malloc(sizeof(char *)*(argc+3));
+                const char **nargs =
+                    (const char **)malloc(sizeof(char *)*(argc+3));
                 int i;
                 nargs[0] ="/usr/bin/open";
                 nargs[1] = xname;
@@ -629,7 +630,7 @@ int main(int argc, char *argv[])
                     nargs[i+2] = argv[i];
                 nargs[argc+2] = NULL;
 // /usr/bin/open foo.app --args [any original arguments]
-                return execv("/usr/bin/open", nargs);
+                return execv("/usr/bin/open", const_cast<char * const *>(nargs));
             }
         }
 #endif

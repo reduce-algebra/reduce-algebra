@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: fxpsio.cpp,v 1.11.2.1 2006/04/14 01:21:01 fox Exp $                          *
+* $Id$                          *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"

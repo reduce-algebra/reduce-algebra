@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXExtentf.h,v 1.8.2.1 2006/07/25 01:35:36 fox Exp $                          *
+* $Id$                          *
 ********************************************************************************/
 #ifndef FXEXTENTF_H
 #define FXEXTENTF_H

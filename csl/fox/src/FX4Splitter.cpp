@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FX4Splitter.cpp,v 1.52 2006/02/20 03:32:13 fox Exp $                     *
+* $Id$                     *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"

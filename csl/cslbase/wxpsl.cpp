@@ -54,7 +54,7 @@
 #include <windows.h>
 #endif
 
-#if defined __cplusplus && !defined __STDC_CONSTANT_MACROS
+#ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS 1
 #endif
 
@@ -94,10 +94,8 @@ static char bpsl_binary[LONGEST_LEGAL_FILENAME];
 static char reduce_image[LONGEST_LEGAL_FILENAME];
 static char memory_control[LONGEST_LEGAL_FILENAME];
 
-int fwin_main(int argc, char **argv)
-{
-    int memory = 0;
-    int i = strlen(programDir), j;
+int fwin_main(int argc, const char **argv)
+{   int i = strlen(programDir), j;
     for (j=0; j<3; j++)
     {   i--;
         while (i > 0 && (programDir[i] != '/' && programDir[i] != '\\')) i--;
@@ -349,7 +347,7 @@ int fwin_main(int argc, char **argv)
 #define BUFSIZE 256
     for (;;)
     {   char buf[BUFSIZE], prompt[80];
-        int n, prevc = 0, c, j = 0, k;
+        int n, prevc = 0, c = -1, j = 0, k;
         n = read(ReduceToMe[0], buf, BUFSIZE);
         while (j<(int)n && (c = (buf[j++] & 0xff)) != 0x01)
         {
@@ -398,7 +396,7 @@ int fwin_main(int argc, char **argv)
 // within the console window that it creates.
 //
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
     return fwin_startup(argc, argv, fwin_main);
 }

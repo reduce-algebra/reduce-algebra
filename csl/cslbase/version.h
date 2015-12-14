@@ -1,9 +1,9 @@
-/* version.h                  Copyright (C) 1990-2015 Codemist Ltd */
+// version.h                  Copyright (C) 1990-2015 Codemist Ltd
 
 #ifndef header_version_h
 #define header_version_h 1
 
-/* $Id$ */
+// $Id$
 
 
 /**************************************************************************
@@ -39,19 +39,19 @@
 #include "config.h"
 #endif
 
-/*
- * VERSION is used to control the version number displayed when CSL/CCL
- * is started up in verbose mode (command line option -v). Version numbers
- * are also recorded in image files. But NOTE NOTE NOTE that the macro
- * VERSION gets set in config.h based on the version number established in
- * "configure.ac" and so the value set here is merely a fall-back. Indeed
- * this whole file is a bit of a joke!
- */
+//
+// VERSION is used to control the version number displayed when CSL/CCL
+// is started up in verbose mode (command line option -v). Version numbers
+// are also recorded in image files. But NOTE NOTE NOTE that the macro
+// VERSION gets set in config.h based on the version number established in
+// "configure.ac" and so the value set here is merely a fall-back. Indeed
+// this whole file is a bit of a joke!
+//
 
 #ifndef VERSION
 #define VERSION     "6.05"
 #endif
 
-#endif /* header_version_h */
+#endif // header_version_h
 
-/* end of version.h */
+// end of version.h

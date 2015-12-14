@@ -149,7 +149,7 @@
    (setq blank   (compress (list '!! (special!-char 0))))
 %%! predef [blank] \item [{\ttfamily blank}] \index{{\ttfamily blank}} ~\newline
 %% The value of this variable is an space or blank character. This
-%% might otherwise be written as ''{\ttfamily ! }''.
+%% might otherwise be written as {\ttfamily "! "}.
 
    (setq !$eol!$ (compress (list '!! (special!-char 1))))
 %%! predef [$eol$] \item [{\ttfamily !\$eol!\$}] \index{{\ttfamily "!\$eol"!\$}}~\newline

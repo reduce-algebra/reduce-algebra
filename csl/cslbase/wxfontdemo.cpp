@@ -94,7 +94,7 @@
 // in a fully cross-platform manner and with wxWidgets, so I have some
 // "cslSTIX" fonts that map those glyphs to a range starting at U+108000.
 
-#if defined __cplusplus && !defined __STDC_CONSTANT_MACROS
+#ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS 1
 #endif
 
@@ -242,7 +242,7 @@ END_EVENT_TABLE()
 
 int page, regular, bold, italic;
 
-int get_current_directory(char *s, int n)
+int get_current_directory(char *s, size_t n)
 {
     if (getcwd(s, n) == 0)
     {   switch(errno)
@@ -592,7 +592,7 @@ int find_program_directory(const char *argv0)
 
 extern void add_custom_fonts();
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
     int i;
     int usegui = 1;
@@ -637,7 +637,8 @@ int main(int argc, char *argv[])
                 (buf.st_mode & S_IFDIR) != 0)
             {
 // Well foo.app exists and is a directory, so I will try to use it
-                char **nargs = (char **)malloc(sizeof(char *)*(argc+3));
+                const char **nargs =
+                    (const char **)malloc(sizeof(char *)*(argc+3));
                 int i;
                 nargs[0] = "/usr/bin/open";
                 nargs[1] = xname;
@@ -646,14 +647,14 @@ int main(int argc, char *argv[])
                     nargs[i+2] = argv[i];
                 nargs[argc+2] = NULL;
 // /usr/bin/open foo.app --args [any original arguments]
-                return execv(nargs[0], nargs);
+                return execv(nargs[0], const_cast<char * const *>(nargs));
             }
         }
 #endif
 
         add_custom_fonts();
         wxDISABLE_DEBUG_SUPPORT();
-        return wxEntry(argc, argv);
+        return wxEntry(argc, (char **)argv);
     }
     printf("This program has been launched asking for use in a console\n");
     printf("type a line of text please\n");

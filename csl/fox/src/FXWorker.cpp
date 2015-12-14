@@ -96,7 +96,7 @@ FXMenuPane *fileMenu, *editMenu,
 
 int rootWidth, rootHeight;
 
-#include "fox-icons.c"
+#include "fox-icons.cpp"
 
 //
 // I derive a sub-class from MainWindow just so I can notice when the
@@ -178,7 +178,7 @@ static int IgnoreXError(Display *d, XErrorEvent *e)
 
 static fwin_entrypoint *fwin_main1;
 
-int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main)
+int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 {
     fwin_main1 = fwin_main;
 #ifdef WIN32
@@ -252,7 +252,11 @@ int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main)
 // Just at present I do not fully understand what FOX does with these
 // arguments but it MAY be that it expects to allow "-geometry" or "-fn"
 // etc arguments as per standard for X11 applications.
-    application_object->init(argc, argv, TRUE);
+//
+// The type if the pointer required by fox is just char *, but I do not
+// see any reason it should clobber the strings! So the explicit (but
+// potentially unsafe) cast here seems my easiest way forward.
+    application_object->init(argc, const_cast<char **>(argv), TRUE);
 #ifndef WIN32
     debug_option = 0;
     for (int i=1; i<argc; i++)

@@ -9,28 +9,28 @@
 
 case x$1 in
 *cygwin*)
-  CC="gcc"
+  CC="g++"
   STRIP="strip"
   DLLCFLAGS="-shared"
   DLL="so"
   EXE=".exe"
   ;;
 *w32*)
-  CC="i686-w64-mingw32-gcc"
+  CC="i686-w64-mingw32-g++"
   STRIP="i686-w64-mingw32-strip"
   DLLCFLAGS="-shared"
   DLL="dll"
   EXE=".com"
   ;;
 *w64*)
-  CC="x86_64-w64-mingw32-gcc"
+  CC="x86_64-w64-mingw32-g++"
   STRIP="x86_64-w64-mingw32-strip"
   DLLCFLAGS="-shared"
   DLL="dll"
   EXE=".com"
   ;;
 *linux* | *unix* | *mac* | *bsd*)
-  CC="gcc"
+  CC="g++"
   STRIP="strip"
   DLLCFLAGS="-shared -fPIC"
   DLL="so"
@@ -42,9 +42,9 @@ case x$1 in
   ;;
 esac
 
-$CC $DLLCFLAGS foreign.c -o foreign.$DLL
+$CC $DLLCFLAGS foreign.cpp -o foreign.$DLL
 
-echo $CC $DLLCFLAGS foreign.c -o foreign.$DLL
+echo $CC $DLLCFLAGS foreign.cpp -o foreign.$DLL
 $STRIP foreign.$DLL
 ls -l foreign.$DLL
 

@@ -283,8 +283,8 @@ symbolic procedure greaterpcar(u, v);
 symbolic procedure lesspcar(u, v);
   car u < car v;
 
-symbolic procedure greaterpcdr(u, v);
-  cdr u > cdr v;
+symbolic procedure greaterpcdr(a, b);
+  cdr a > cdr b;
 
 symbolic procedure lesspcdr(u, v);
   cdr u < cdr v;

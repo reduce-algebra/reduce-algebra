@@ -11,9 +11,9 @@
 # in track. I do not use (eg) symbolic links because I want a distribution
 # of either the cslbase files or the fox files to be utterly self-contained.
 
-diff -w cslbase/termed.h fox/include
-diff -w cslbase/fwin.h   fox/include
-diff -w cslbase/termed.c fox/src
-diff -w cslbase/fwin.c   fox/src
+diff -w cslbase/termed.h   fox/include
+diff -w cslbase/fwin.h     fox/include
+diff -w cslbase/termed.cpp fox/src
+diff -w cslbase/fwin.cpp   fox/src
 
 # end of comparisons

@@ -35,7 +35,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 
 // The events declared here are used to send data from the worker thread

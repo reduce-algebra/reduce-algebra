@@ -1,11 +1,11 @@
-/*
-textdefs.h
+//
+//textdefs.h
+//
+//Copyright (C) 2003-2006 Gil Dabah, http://ragestorm.net/distorm/
+//This library is licensed under the BSD license. See the file COPYING.
+//
 
-Copyright (C) 2003-2006 Gil Dabah, http://ragestorm.net/distorm/
-This library is licensed under the BSD license. See the file COPYING.
-*/
-
-/* $Id$ */
+// $Id$
 
 #ifndef ___TEXTDEFS_H__
 #define ___TEXTDEFS_H__
@@ -25,36 +25,34 @@ This library is licensed under the BSD license. See the file COPYING.
 #define SP_CHR ' '
 #define SEG_OFF_CHR ':'
 
-/* Naming Convention:
-
-get - returns a pointer to a string.
-str - concatenates to string.
-
-hex - means the function is used for hex dump (number is padded to required size).
-code - means the function is used for disassembled instruction.
-
-sp - space character in front of the string.
-h - '0x' in front of the string.
-
-b - byte
-w - word
-dw - double word
-qw - quad word
-
-all numbers are in HEX.
-*/
+// Naming Convention:
+//
+//get - returns a pointer to a string.
+//str - concatenates to string.
+//
+//hex - means the function is used for hex dump (number is padded to required size).
+//code - means the function is used for disassembled instruction.
+//
+//sp - space character in front of the string.
+//h - '0x' in front of the string.
+//
+//b - byte
+//w - word
+//dw - double word
+//qw - quad word
+//
+//all numbers are in HEX.
+//
 
 extern char TextBTable[256][4];
 extern char TextHBTable[256][6];
 
 _INLINE_ char* get_hex_b(unsigned long x)
-{
-	return &TextBTable[x & 255][1]; // Skip space character.
+{   return &TextBTable[x & 255][1]; // Skip space character.
 }
 
 _INLINE_ char* get_code_sp_hb(unsigned long x)
-{
-	return TextHBTable[x & 255];
+{   return TextHBTable[x & 255];
 }
 
 void _FASTCALL_ str_hex_b(_WString* s, unsigned long x);

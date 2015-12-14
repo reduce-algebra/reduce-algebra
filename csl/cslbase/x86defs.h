@@ -1,11 +1,11 @@
-/*
-x86defs.h
+//
+//x86defs.h
+//
+//Copyright (C) 2003-2006 Gil Dabah, http://ragestorm.net/distorm/
+//This library is licensed under the BSD license. See the file COPYING.
+//
 
-Copyright (C) 2003-2006 Gil Dabah, http://ragestorm.net/distorm/
-This library is licensed under the BSD license. See the file COPYING.
-*/
-
-/* $Id$ */
+// $Id$
 
 #ifndef ___X86DEFS_H__
 #define ___X86DEFS_H__
@@ -20,9 +20,9 @@ This library is licensed under the BSD license. See the file COPYING.
 // Definitions use this structure for faster copying.
 // str_x86def relies on this size, copying aligned dwords.
 #define DEF_TEXT_SIZE (8)
-typedef struct {
-	unsigned int size;
-	unsigned char p[DEF_TEXT_SIZE];
+typedef struct
+{   unsigned int size;
+    unsigned char p[DEF_TEXT_SIZE];
 } _DefText;
 
 extern _DefText _CONDITIONS[16];
@@ -130,12 +130,11 @@ extern _InstInfo II_arpl;
 extern _InstInfo II_movsxd;
 
 _INLINE_ void str_x86def(_WString* s, _DefText* d)
-{
-	// Copy 2 aligned dwords to speed up things.
-	// _WString should have that extra space, most of the times it will simply copy null-termianting characters.
-	*(long*)&s->p[s->pos] = *(long*)d->p;
-	*(long*)&s->p[s->pos + sizeof(long)] = *(long*)&d->p[sizeof(long)];
-	s->pos += d->size;
+{   // Copy 2 aligned dwords to speed up things.
+    // _WString should have that extra space, most of the times it will simply copy null-termianting characters.
+    *(long*)&s->p[s->pos] = *(long*)d->p;
+    *(long*)&s->p[s->pos + sizeof(long)] = *(long*)&d->p[sizeof(long)];
+    s->pos += d->size;
 }
 
 #endif // ___X86DEFS_H__
