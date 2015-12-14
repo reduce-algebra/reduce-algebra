@@ -284,7 +284,7 @@ case $host in
 # "i686-w64-mingw32-gcc".
     AC_MSG_NOTICE([Windows built creating native binary])
     AC_DEFINE(WIN32, [1], [True if we are running on Windows])
-    LDFLAGS="$LDFLAGS -static"
+#   LDFLAGS="$LDFLAGS -static"
     DLL_CFLAGS="$CFLAGS -shared"
 # In this case I make the machine appear to be "i686-pc-windows" or some
 # such to distinguish it from the case where cygwin1.dll might be involved.
@@ -975,6 +975,7 @@ then
   if test "x$enable_static" = "xyes"
   then
     LDFLAGS="${LDFLAGS} -static"
+    AC_MSG_NOTICE([inclusing -static in linker flags])
   fi
 else
 #

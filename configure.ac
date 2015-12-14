@@ -1039,6 +1039,7 @@ else
     \'--with-csl*\' | \
     \'--with-build*\' | \
     \'--with-pslbuild*\' | \
+    \'--with-force*\' | \
     \'--enable-debug*\' | \
     \'--enable-conservative*\' | \
     \'--enable-test*\' | \

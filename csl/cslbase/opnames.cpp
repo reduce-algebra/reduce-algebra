@@ -41,7 +41,7 @@
 // down that route!
 //
 
-static char *opnames[256] =
+static const char *opnames[256] =
 {   "LOADLOC",                   // 0x00
     "LOADLOC0",                  // 0x01
     "LOADLOC1",                  // 0x02
