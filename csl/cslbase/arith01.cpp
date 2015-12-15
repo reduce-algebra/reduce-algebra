@@ -138,9 +138,6 @@ LispObject make_boxfloat(double a, int32_t type)
 // if type==0 this makes a short float
 //
 {   LispObject r, nil;
-#ifndef COMMON
-    CSL_IGNORE(type);
-#endif
     switch (type)
     {   case 0:
         {   Float_union aa;

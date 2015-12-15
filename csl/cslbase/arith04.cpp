@@ -281,7 +281,7 @@ static CSLbool lesspis(LispObject a, LispObject b)
     return (double)int_of_fixnum(a) < (double)bb.f;
 }
 
-CSLbool lesspib(LispObject a, LispObject b)
+CSLbool lesspib(LispObject, LispObject b)
 //
 // a fixnum and a bignum can never be equal, and the magnitude of
 // the bignum must be at least as great as that of the fixnum, hence
@@ -289,7 +289,6 @@ CSLbool lesspib(LispObject a, LispObject b)
 //
 {   int32_t len = bignum_length(b);
     int32_t msd = bignum_digits(b)[(len-CELL-4)/4];
-    CSL_IGNORE(a);
     return (msd >= 0);
 }
 
@@ -525,10 +524,9 @@ static CSLbool lesspsf(LispObject a, LispObject b)
     return (double)aa.f < float_of_number(b);
 }
 
-CSLbool lesspbi(LispObject a, LispObject b)
+CSLbool lesspbi(LispObject a, LispObject)
 {   int32_t len = bignum_length(a);
     int32_t msd = bignum_digits(a)[(len-CELL-4)/4];
-    CSL_IGNORE(b);
     return (msd < 0);
 }
 

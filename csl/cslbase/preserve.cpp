@@ -963,8 +963,7 @@ static void sort_directory(directory *d)
 }
 
 static directory *enlarge_directory(int current_size)
-{   nil_as_base
-    int n = (3*current_size)/2;
+{   int n = (3*current_size)/2;
     int newsize = sizeof(directory)+(n-1)*sizeof(directory_entry);
     int newpos = sizeof(directory_header)+n*sizeof(directory_entry);
 //
@@ -1035,8 +1034,7 @@ CSLbool open_output(const char *name, int len)
 // if anything went wrong. Remember name==NULL for initial image & help
 // data.
 //
-{   nil_as_base
-    int i, j, n;
+{   int i, j, n;
     const char *ct;
     char hard[16];
     directory *d;
@@ -1392,17 +1390,10 @@ CSLbool Imodulep(const char *name, int len, char *datestamp, int32_t *size,
 // that in Iopen.
 //
 {   int i;
-    LispObject nil = C_nil;
+#ifdef COMMON
+    LispObject nil = C_nil;   // used in the consp test.
+#endif
     LispObject il = qvalue(input_libraries);
-//
-// nil is conditionally needed for two reasons here:
-// (a) if NILSEG_EXTERNS was not selected it is needed as a base register for
-//     access to input_libraries
-// (b) if COMMON was selected it is needed for the expansion of the
-//     consp test.
-// If neither of the above apply its is redundant, but not a very greate pain.
-//
-    CSL_IGNORE(nil);
     while (consp(il))
     {   int j;
         directory *d;
@@ -1504,8 +1495,6 @@ CSLbool Iopen(const char *name, int len, int forinput, char *expanded_name)
 // IopenRoot() to access the root image.
 //
 {   const char *n;
-    LispObject nil = C_nil;
-    CSL_IGNORE(nil);
     if (name == NULL) len = IMAGE_CODE;
     if (forinput != IOPEN_OUT)
     {   int i;
@@ -1574,10 +1563,8 @@ CSLbool Iwriterootp(char *expanded_name)
 // by (preserve) so it can report that this would fail without actually
 // doing anything too drastic.
 //
-{   LispObject nil = C_nil;
-    directory *d;
+{   directory *d;
     LispObject oo = qvalue(output_library);
-    CSL_IGNORE(nil);
     if (!any_output_request)
     {   strcpy(expanded_name, "<no output file specified>");
         return YES;
@@ -1602,9 +1589,7 @@ CSLbool Iopen_help(int32_t offset)
 // A negative offset indicates that the help module should be opened
 // for writing.
 //
-{   LispObject nil = C_nil;
-    CSL_IGNORE(nil);
-    if (offset >= 0)
+{   if (offset >= 0)
     {   LispObject il = qvalue(input_libraries);
         while (consp(il))
         {   CSLbool bad;
@@ -1628,9 +1613,7 @@ CSLbool Iopen_banner(int code)
 // code = -1   open for writing
 // code = -2   delete banner file
 //
-{   LispObject nil = C_nil;
-    CSL_IGNORE(nil);
-    if (code == -2) return Idelete(NULL, BANNER_CODE);
+{   if (code == -2) return Idelete(NULL, BANNER_CODE);
     else if (code == 0)
     {   LispObject il = qvalue(input_libraries);
         while (consp(il))
@@ -1674,8 +1657,7 @@ CSLbool Iopen_to_stdout(void)
 }
 
 CSLbool Idelete(const char *name, int len)
-{   nil_as_base
-    int i, nrec;
+{   int i, nrec;
     directory *d;
     LispObject oo = qvalue(output_library);
     if (!is_library(oo)) return YES;
@@ -1727,7 +1709,6 @@ CSLbool Idelete(const char *name, int len)
 static int validate_checksum(FILE *f, uint32_t chk1)
 {   int c;
     uint32_t chk2 = 0;
-    nil_as_base
 #ifdef BUILTIN_IMAGE
     if ((c = *binary_read_filep++) == EOF) goto failed;
     chk2 = c & 0xff;
@@ -1806,9 +1787,7 @@ CSLbool Icopy(const char *name, int len)
     uint32_t chk1;
     char hard[16];
     directory *d, *id;
-    LispObject nil = C_nil;
     LispObject il, oo = qvalue(output_library);
-    CSL_IGNORE(nil);
     if (!is_library(oo)) return YES;
     d = fasl_files[library_number(oo)];
 //
@@ -2574,12 +2553,7 @@ void preserve(const char *banner, int len)
 // in global list-bases from a previous calculation it could clog up the
 // heap and waste a lot of space...
 //
-#ifdef NILSEG_EXTERNS
     for (i=0; i<=50; i++) workbase[i] = nil;
-#else
-    for (i=work_0_offset; i<last_nil_offset; i++)
-        BASE[i] = nil;
-#endif
     exit_tag = exit_value = catch_tags =
                                 codevec = litvec = B_reg = faslvec = faslgensyms = nil;
 

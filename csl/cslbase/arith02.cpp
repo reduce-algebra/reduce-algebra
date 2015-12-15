@@ -200,10 +200,10 @@ static LispObject timesii(LispObject a, LispObject b)
         if (low <= 0x07ffffff) return fixnum_of_int(low);
         else return make_one_word_bignum(low);
     }
-    else if (high == -1 && (low & 0x40000000) != 0)
+    else if (high == 0xffffffffU && (low & 0x40000000) != 0)
     {   // one word negative result
         low = set_top_bit(low);
-        if ((low & fix_mask) == fix_mask) return fixnum_of_int(low);
+        if (((int32_t)low & fix_mask) == fix_mask) return fixnum_of_int(low);
         else return make_one_word_bignum(low);
     }
     else return make_two_word_bignum(high, low);
@@ -1520,7 +1520,7 @@ static LispObject timesbb(LispObject a, LispObject b)
             bignum_digits(c)[i] = clear_top_bit(carry);
         }
         carry = ~bignum_digits(c)[i] + top_bit(carry);
-        if (carry != -1)
+        if (carry != 0xffffffffU)
         {   bignum_digits(c)[i] = carry;
             return c;   // no truncation needed
         }

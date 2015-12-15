@@ -147,9 +147,8 @@ LispObject char_to_id(int ch)
 // as part of a character object.
 //
 
-static LispObject Lchar_downcase(LispObject nil, LispObject a)
+static LispObject Lchar_downcase(LispObject, LispObject a)
 {   int cc;
-    CSL_IGNORE(nil);
     a = characterify(a);
     if (!is_char(a)) return aerror("char-downcase");
 #ifdef COMMON
@@ -198,27 +197,24 @@ LispObject Lcharacter(LispObject nil, LispObject a)
 {   return onevalue(Lispify_predicate(is_char(a)));
 }
 
-static LispObject Lchar_bits(LispObject nil, LispObject a)
+static LispObject Lchar_bits(LispObject, LispObject a)
 {
 // "bits" are no longer supported (or needed).
-    CSL_IGNORE(nil);
     a = characterify(a);
     if (!is_char(a)) return aerror("char-bits");
     return onevalue(fixnum_of_int(0));
 }
 
-static LispObject Lchar_font(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    a = characterify(a);
+static LispObject Lchar_font(LispObject, LispObject a)
+{   a = characterify(a);
     if (!is_char(a)) return aerror("char-font");
     return onevalue(fixnum_of_int(font_of_char(a)));
 }
 
 #endif
 
-static LispObject Lchar_upcase(LispObject nil, LispObject a)
+static LispObject Lchar_upcase(LispObject, LispObject a)
 {   int cc;
-    CSL_IGNORE(nil);
     a = characterify(a);
     if (!is_char(a)) return aerror("char-upcase");
 #ifdef COMMON
@@ -370,9 +366,8 @@ static LispObject Ldigit_char_1(LispObject nil, LispObject a)
 
 #endif
 
-LispObject Lspecial_char(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!is_fixnum(a)) return aerror("special-char");
+LispObject Lspecial_char(LispObject, LispObject a)
+{   if (!is_fixnum(a)) return aerror("special-char");
     switch (int_of_fixnum(a))
     {   case 0:   // space
             a = pack_char(0, ' ');
@@ -533,9 +528,8 @@ LispObject Lutf8_decode1(LispObject nil, LispObject a)
     return utf8_decode(int_of_fixnum(a) & 0xff, -1, -1, -1);
 }
 
-LispObject Lchar_code(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    a = characterify(a);
+LispObject Lchar_code(LispObject, LispObject a)
+{   a = characterify(a);
     if (!is_char(a)) return aerror("char-code");
 //
 // Note the special treatment of EOF here, and that characterify accepts
@@ -546,7 +540,7 @@ LispObject Lchar_code(LispObject nil, LispObject a)
     return onevalue(fixnum_of_int(code_of_char(a)));
 }
 
-static LispObject Lcode_charn(LispObject nil, int nargs, ...)
+static LispObject Lcode_charn(LispObject, int nargs, ...)
 {   va_list aa;
     LispObject a, font;
     int32_t av;
@@ -556,7 +550,6 @@ static LispObject Lcode_charn(LispObject nil, int nargs, ...)
     (void)va_arg(aa, LispObject);
     font = va_arg(aa, LispObject);
     va_end(aa);
-    CSL_IGNORE(nil);
     if ((int32_t)font < 0 || (int32_t)font > (int32_t)fixnum_of_int(7) ||
         (int32_t)a < 0 || (int32_t)a > (int32_t)fixnum_of_int(0x001fffff))
         return aerror("code-char");
@@ -578,9 +571,8 @@ static LispObject Lcode_char2(LispObject nil, LispObject a, LispObject b)
 
 #ifdef COMMON
 
-static LispObject Lchar_int(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    a = characterify(a);
+static LispObject Lchar_int(LispObject, LispObject a)
+{   a = characterify(a);
     if (!is_char(a)) return aerror("char-int");
     else if (a == CHAR_EOF) return onevalue(fixnum_of_int(-1));
     else return onevalue(fixnum_of_int(code_of_char(a)));
@@ -594,10 +586,9 @@ static LispObject Lint_char(LispObject nil, LispObject a)
     return onevalue(pack_char(0, n));
 }
 
-static LispObject Lmake_char(LispObject nil, int nargs, ...)
+static LispObject Lmake_char(LispObject, int nargs, ...)
 {   va_list aa;
     LispObject a, bits, font;
-    CSL_IGNORE(nil);
     if (nargs == 0 || nargs > 3) return aerror("make-char");
     va_start(aa, nargs);
     a = va_arg(aa, LispObject);

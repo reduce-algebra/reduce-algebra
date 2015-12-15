@@ -552,10 +552,9 @@ LispObject Lget(LispObject nil, LispObject a, LispObject b)
 
 #else
 
-LispObject Lget_3(LispObject nil, int nargs, ...)
+LispObject Lget_3(LispObject, int nargs, ...)
 {   va_list aa;
     LispObject a, b, c;
-    CSL_IGNORE(nil);
     if (nargs != 3) return aerror("get");
     va_start(aa, nargs);
     a = va_arg(aa, LispObject);
@@ -575,7 +574,6 @@ LispObject Lputprop(LispObject nil, int nargs, ...)
 {   va_list aa;
     LispObject a, b, c;
     argcheck(nargs, 3, "put");
-    CSL_IGNORE(nil);
     va_start(aa, nargs);
     a = va_arg(aa, LispObject);
     b = va_arg(aa, LispObject);
@@ -948,16 +946,14 @@ LispObject Lremflag(LispObject nil, LispObject a, LispObject b)
 
 #endif
 
-LispObject Lremprop(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    return onevalue(remprop(a, b));
+LispObject Lremprop(LispObject, LispObject a, LispObject b)
+{   return onevalue(remprop(a, b));
 }
 
 
 LispObject Lplist(LispObject nil, LispObject a)
 {   LispObject r;
     int i;
-    CSL_IGNORE(nil);
     if (!symbolp(a)) return aerror1("plist", a);
     r = qplist(a);
     a = qfastgets(a);
@@ -1358,11 +1354,11 @@ char *native_stack = NULL, *native_stack_base = NULL;
 //
 const char *name_of_caller = NULL;
 
-static uintptr_t stacktop = 0;
-
 extern LispObject bytestream_interpret1(LispObject code, LispObject lit,
                                         LispObject *entry_stack);
+#ifdef CHECK_STACK
 static int maxnest = 0;
+#endif
 
 LispObject bytestream_interpret(LispObject code, LispObject lit,
                                 LispObject *entry_stack)
@@ -1455,8 +1451,8 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
     LispObject volatile ffsym = elt(lit, 0);
     char volatile ffname[16];
     memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
-    int fflength =
-        (int)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+    size_t fflength =
+        (size_t)(length_of_header(vechdr(qpname(ffsym))) - CELL);
     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
     ffname[fflength] = 0;
     if (*ffname == 0)
@@ -1467,7 +1463,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
         abort();
     }
     debug_record((const char *)ffname);
-    CSL_IGNORE(ffsym);
+    (void)ffsym;   // Not used by the code but may be useful under a debugger
     debug_assert(1);
 #endif
 #ifdef CHECK_STACK

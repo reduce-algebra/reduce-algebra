@@ -676,7 +676,6 @@ void print_bighexoctbin(LispObject u, int radix, int width,
     int32_t len = 31*(n+1);
     int flag = 0, bits;
     CSLbool sign = NO, started = NO;
-    nil_as_base
     int line_length = other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH,
                                          active_stream);
     int column =

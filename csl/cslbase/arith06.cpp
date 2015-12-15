@@ -70,9 +70,8 @@ LispObject Lsub1(LispObject nil, LispObject a)
     return onevalue(a);
 }
 
-LispObject Lfloat_2(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (is_sfloat(b))
+LispObject Lfloat_2(LispObject, LispObject a, LispObject b)
+{   if (is_sfloat(b))
     {   double d = float_of_number(a);
         return onevalue(make_sfloat(d));
     }
@@ -83,9 +82,8 @@ LispObject Lfloat_2(LispObject nil, LispObject a, LispObject b)
     }
 }
 
-LispObject Lfloat(LispObject nil, LispObject a)
+LispObject Lfloat(LispObject, LispObject a)
 {   double d;
-    CSL_IGNORE(nil);
     if (!is_number(a)) return aerror1("bad arg for float", a);
     d = float_of_number(a);
 #ifdef COMMON
@@ -152,10 +150,9 @@ static int msd_table[256] =
     8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8
 };
 
-LispObject Lmsd(LispObject nil, LispObject a)
+LispObject Lmsd(LispObject, LispObject a)
 {   int32_t top;
     int32_t r = 0;
-    CSL_IGNORE(nil);
     if (is_fixnum(a)) top = int_of_fixnum(a);
     else if (is_numbers(a))
     {   Header h = numhdr(a);
@@ -195,10 +192,9 @@ static int lsd_table[256] =
     4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0
 };
 
-LispObject Llsd(LispObject nil, LispObject a)
+LispObject Llsd(LispObject, LispObject a)
 {   int32_t top;
     int32_t r = 0;
-    CSL_IGNORE(nil);
     if (is_fixnum(a))
     {   top = int_of_fixnum(a);
 // lsd(0) is taken to have the value 0 here - it is a bit of an odd case
@@ -724,10 +720,8 @@ LispObject Leqn(LispObject nil, LispObject a, LispObject b)
     return onevalue(w ? lisp_true : nil);
 }
 
-LispObject Leqn_1(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(a);
-    return onevalue(lisp_true);
+LispObject Leqn_1(LispObject, LispObject)
+{   return onevalue(lisp_true);
 }
 
 LispObject Llessp_n(LispObject nil, int nargs, ...)
@@ -764,10 +758,8 @@ LispObject Llessp(LispObject nil, LispObject a, LispObject b)
     return onevalue(w ? lisp_true : nil);
 }
 
-LispObject Llessp_1(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(a);
-    return onevalue(lisp_true);
+LispObject Llessp_1(LispObject, LispObject)
+{   return onevalue(lisp_true);
 }
 
 LispObject Lgreaterp_n(LispObject nil, int nargs, ...)
@@ -804,12 +796,11 @@ LispObject Lgreaterp(LispObject nil, LispObject a, LispObject b)
     return onevalue(w ? lisp_true : nil);
 }
 
-LispObject Lgreaterp_1(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(a);
-    return onevalue(lisp_true);
+LispObject Lgreaterp_1(LispObject, LispObject)
+{   return onevalue(lisp_true);
 }
 
+#ifdef COMMON
 static LispObject Lneqn(LispObject nil, int nargs, ...)
 //
 // /= is supposed to check that NO pair of args match.
@@ -840,6 +831,7 @@ static LispObject Lneqn(LispObject nil, int nargs, ...)
     }
     return onevalue(lisp_true);
 }
+#endif // COMMON
 
 LispObject Lneq_2(LispObject nil, LispObject a, LispObject b)
 {   CSLbool w = numeq2(a, b);
@@ -847,10 +839,8 @@ LispObject Lneq_2(LispObject nil, LispObject a, LispObject b)
     return onevalue(w ? nil : lisp_true);
 }
 
-LispObject Lneq_1(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(a);
-    return onevalue(lisp_true);
+LispObject Lneq_1(LispObject, LispObject)
+{   return onevalue(lisp_true);
 }
 
 LispObject Lgeq_n(LispObject nil, int nargs, ...)
@@ -887,10 +877,8 @@ LispObject Lgeq(LispObject nil, LispObject a, LispObject b)
     return onevalue(w ? lisp_true : nil);
 }
 
-LispObject Lgeq_1(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(a);
-    return onevalue(lisp_true);
+LispObject Lgeq_1(LispObject, LispObject)
+{   return onevalue(lisp_true);
 }
 
 LispObject Lleq_n(LispObject nil, int nargs, ...)
@@ -927,15 +915,12 @@ LispObject Lleq(LispObject nil, LispObject a, LispObject b)
     return onevalue(w ? lisp_true : nil);
 }
 
-LispObject Lleq_1(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(a);
-    return onevalue(lisp_true);
+LispObject Lleq_1(LispObject, LispObject)
+{   return onevalue(lisp_true);
 }
 
 LispObject Lmax2(LispObject nil, LispObject a, LispObject b)
 {   CSLbool w;
-    CSL_IGNORE(nil);
     push2(a, b);
     w = lessp2(a, b);
     pop2(b, a);
@@ -946,7 +931,6 @@ LispObject Lmax2(LispObject nil, LispObject a, LispObject b)
 
 LispObject Lmin2(LispObject nil, LispObject a, LispObject b)
 {   CSLbool w;
-    CSL_IGNORE(nil);
     push2(a, b);
     w = lessp2(b, a);
     pop2(b, a);
@@ -1015,6 +999,7 @@ LispObject Lrational(LispObject nil, LispObject a)
     return onevalue(a);
 }
 
+#ifdef COMMON
 static LispObject Lmanexp(LispObject nil, LispObject a)
 {   int x;
     double f;
@@ -1031,6 +1016,7 @@ static LispObject Lrationalize(LispObject nil, LispObject a)
     errexit();
     return onevalue(a);
 }
+#endif
 
 //
 // The following random number generator is taken from the Norcroft
@@ -1226,14 +1212,16 @@ void Csrand(uint32_t seed, uint32_t seed2)
 }
 
 LispObject Lrandom_2(LispObject nil, LispObject a, LispObject bb)
-{   LispObject b;
+{
+#ifdef COMMON
+    LispObject b;
 //
 // Common Lisp expects an optional second arg to be used for the random
 // state - at present I do not support that, but it will not be too hard
 // when I get around to it...
 //
     b = bb;
-    CSL_IGNORE(nil);
+#endif // COMMON
     if (is_fixnum(a))
     {   int32_t v = int_of_fixnum(a), p, q;
         if (v <= 0) return aerror1("random", a);
@@ -1337,8 +1325,7 @@ LispObject Lrandom_2(LispObject nil, LispObject a, LispObject bb)
 }
 
 LispObject Lrandom(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (is_fixnum(a))
+{   if (is_fixnum(a))
     {   int32_t v = int_of_fixnum(a), p, q;
         if (v <= 0) return aerror1("random", a);
 // (random 1) always returns zero - a rather silly case!
@@ -1442,13 +1429,12 @@ LispObject Lrandom(LispObject nil, LispObject a)
     return aerror1("random", a);
 }
 
-LispObject Lnext_random(LispObject nil, int nargs, ...)
+LispObject Lnext_random(LispObject, int nargs, ...)
 //
 // Returns a random positive fixnum.  27 bits in this Lisp!
 //
 {   int32_t r;
     argcheck(nargs, 0, "next-random");
-    CSL_IGNORE(nil);
     r = Crand();
     return onevalue((LispObject)((r & 0x7ffffff0) + TAG_FIXNUM));
 }
@@ -1460,7 +1446,6 @@ LispObject Lmake_random_state(LispObject nil, LispObject a, LispObject b)
 // random number generator in Standard Lisp mode.  I need to re-think
 // this soon before it feels frozen in! Oops - too late!!!
 //
-    CSL_IGNORE(b);
     if (!is_fixnum(a)) return aerror1("make-random-state", a);
     Csrand(int_of_fixnum(a),
            is_fixnum(b) ? int_of_fixnum(b) : 0);
@@ -1483,13 +1468,11 @@ LispObject Lmake_random_state1(LispObject nil, LispObject a)
 // considered secure, so anybody worried by security needs at least sha2!
 //
 
-LispObject Lmd5(LispObject env, LispObject a)
-{   LispObject nil = C_nil;
-    LispObject r;
+LispObject Lmd5(LispObject nil, LispObject a)
+{   LispObject r;
     unsigned char md[16];
     uint32_t v0, v1, v2, v3, v4;
     int32_t len, i;
-    CSL_IGNORE(env);
     if (is_fixnum(a))
     {   sprintf((char *)md, "%.7lx", (unsigned long)(a>>4)&0x0fffffff);
         CSL_MD5_Init();
@@ -1576,13 +1559,11 @@ LispObject Lmd5(LispObject env, LispObject a)
 // For testing the MD5 code... processes a string "raw".
 //
 
-LispObject Lmd5string(LispObject env, LispObject a)
-{   LispObject nil = C_nil;
-    LispObject r;
+LispObject Lmd5string(LispObject nil, LispObject a)
+{   LispObject r;
     unsigned char md[16];
     uint32_t v0, v1, v2, v3, v4;
     int32_t len, i;
-    CSL_IGNORE(env);
     if (is_vector(a) && type_of_header(vechdr(a)) == TYPE_STRING)
     {   len = length_of_header(vechdr(a));
         CSL_MD5_Init();
@@ -1656,13 +1637,11 @@ LispObject Lmd5string(LispObject env, LispObject a)
 // would be clumsy overkill.
 //
 
-LispObject Lmd60(LispObject env, LispObject a)
-{   LispObject nil = C_nil;
-    LispObject r;
+LispObject Lmd60(LispObject nil, LispObject a)
+{   LispObject r;
     unsigned char md[16];
     uint32_t v0, v1;
     int32_t len, i;
-    CSL_IGNORE(env);
     if (is_fixnum(a))
     {   sprintf((char *)md, "%.7lx", (unsigned long)(a>>4) & 0x0fffffff);
         CSL_MD5_Init();

@@ -237,8 +237,6 @@ int32_t stack_segsize = 1;
 char *exit_charvec = NULL;
 intptr_t exit_reason;
 
-#ifdef NILSEG_EXTERNS
-
 intptr_t byteflip;
 LispObject codefringe;
 LispObject volatile codelimit;
@@ -295,9 +293,6 @@ LispObject hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
 LispObject gchook, resources, callstack, procstack, procmem, trap_time;
 LispObject count_high, used_space, avail_space, eof_symbol, call_stack;
 LispObject workbase[51];
-
-
-#endif
 
 LispObject user_base_0, user_base_1, user_base_2, user_base_3, user_base_4;
 LispObject user_base_5, user_base_6, user_base_7, user_base_8, user_base_9;
@@ -982,7 +977,6 @@ static void adjust_consheap(void)
 // can create a double-sized page where the top limit is 2*CSL_PAGE_SIZE
 // and I will need some way to identify that when I come to garbage collect.
 //
-    nil_as_base
     int32_t page_number;
     for (page_number = 0; page_number < heap_pages_count; page_number++)
     {   void *page = heap_pages[page_number];
@@ -1419,7 +1413,10 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
 {   if (!SIXTY_FOUR_BIT)
     {   int32_t *newp;  // specific widths used here
         int64_t *oldp;
-        int i, len;
+        size_t i, len;
+#ifdef DEBUG_WIDTH
+        int ii;
+#endif
         while (p < fr)
         {
 // Fetch header as a 64-bit value, truncate to 32-bit
@@ -1435,10 +1432,10 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
             printf("p=%p Header = %.16llx = %.16llx (is_sym=%d)\n",
                    p, *(long long *)p, (long long)h, (int)is_symbol_header(h));
             printf("Length = %d\n", (int)length_of_header(h));
-            for(i=-32; i<=32; i+=4)
-            {   if (i == 0) printf("\n%p: ", p);
-                printf("%.8x ", *(int32_t *)(p+i));
-                if (i==0) printf("\n");
+            for(ii=-32; ii<=32; ii+=4)
+            {   if (ii == 0) printf("\n%p: ", p);
+                printf("%.8x ", *(int32_t *)(p+ii));
+                if (ii==0) printf("\n");
             }
             printf("\n");
             fflush(stdout);
@@ -1630,7 +1627,7 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
                         printf("len=%d len-4=%d\n", (int)len, (int)doubleword_align_up(length_of_header(h)-4));
 #endif
 // Test if the vector has shrunk in memory - if so insert padding
-                        if (len != doubleword_align_up(length_of_header(h)-4))
+                        if (len != (size_t)doubleword_align_up(length_of_header(h)-4))
                             *(int32_t *)(p + len - 8) = flip_32(make_padder(8));
 #ifdef DEBUG_WIDTH
                         for (i=-16; i<=8; i+=4) printf("%.8x ", *(int32_t *)(p+len+i)); printf("\n");
@@ -1662,7 +1659,10 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
     if (SIXTY_FOUR_BIT)
     {   int64_t *newp = (int64_t *)low;  // specific widths used here
         int32_t *oldp = (int32_t *)olow;
-        int i, len;
+        size_t i, len;
+#ifdef DEBUG_WIDTH
+        int ii;
+#endif
         while ((char *)newp < fr)
         {
 // Fetch header as a 32-bit value, widen to 64-bit
@@ -1677,10 +1677,10 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
 //
             printf("oldp=%p Header = %.16llx (%d)\n", oldp, (long long)h, (int)is_symbol_header(h));
             printf("Length = %d\n", (int)length_of_header(h));
-            for(i=-32; i<=32; i+=4)
-            {   if (i == 0) printf("\n%p: ", oldp);
-                printf("%.8x ", *(int32_t *)(((char *)oldp)+i));
-                if (i == 0) printf("\n");
+            for(ii=-32; ii<=32; ii+=4)
+            {   if (ii == 0) printf("\n%p: ", oldp);
+                printf("%.8x ", *(int32_t *)(((char *)oldp)+ii));
+                if (ii == 0) printf("\n");
             }
             printf("\n");
             fflush(stdout);
@@ -1896,8 +1896,7 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
 
 
 static void adjust_vecheap(void)
-{   nil_as_base
-    int32_t page_number;
+{   int32_t page_number;
     intptr_t iw;
     for (page_number = 0; page_number < vheap_pages_count; page_number++)
     {   void *page = vheap_pages[page_number];
@@ -2086,8 +2085,7 @@ static void adjust_bpsheap(void)
 // same as that used when expanding or squashing the vector heap when
 // allowing for word length changes. What a shame!
 //
-{   nil_as_base
-    int32_t page_number;
+{   int32_t page_number;
     int32_t i;
     codelimit = codefringe = 0;
     for (page_number = 0; page_number < bps_pages_count; page_number++)
@@ -3059,7 +3057,7 @@ static unsigned int loaded_dynamic_count = 0 , loaded_dynamic_size = 0;
 //
 static setup_type_1 *find_dynamic_module(char *name, size_t len)
 {   unsigned int hash = 0;
-    int i;
+    size_t i;
     char *p = name;
     if (loaded_dynamic_size == 0) return NULL;
     for (i=0; i<len; i++) hash=169*hash+(*p++ & 0xff);
@@ -4792,7 +4790,6 @@ void set_up_functions(CSLbool restart_flag)
 // to version of the binary of the system.
 //
     int i;
-    nil_as_base
 #ifdef COMMON
 //
 // In Common Lisp mode it could be that the user had something other than the
@@ -6314,7 +6311,6 @@ void copy_into_nilseg(int fg)
 {   LispObject nil = C_nil;
     multiplication_buffer = nil;
 
-#ifdef NILSEG_EXTERNS
     int i;
     if (fg)     // move non list bases too
     {   BASE[12]                                 = byteflip;
@@ -6474,7 +6470,6 @@ void copy_into_nilseg(int fg)
 
     for (i=0; i<=50; i++)
         BASE[work_0_offset+i]   = workbase[i];
-#endif // NILSEG_EXTERNS
 
     if (fg)
     {
@@ -6499,8 +6494,6 @@ void copy_into_nilseg(int fg)
 
 void copy_out_of_nilseg(int fg)
 {   LispObject nil = C_nil;
-
-#ifdef NILSEG_EXTERNS
     int i;
     if (fg)
     {   byteflip         = BASE[12];
@@ -6619,9 +6612,7 @@ void copy_out_of_nilseg(int fg)
     procmem               = BASE[157];
     trap_time             = BASE[158];
     count_high            = BASE[159];
-
 #ifdef COMMON
-
     keyword_package       = BASE[170];
     all_packages          = BASE[171];
     package_symbol        = BASE[172];
@@ -6634,9 +6625,7 @@ void copy_out_of_nilseg(int fg)
     format_symbol         = BASE[179];
     expand_def_symbol     = BASE[180];
     allow_key_key         = BASE[181];
-
 #endif
-
     declare_symbol        = BASE[182];
     special_symbol        = BASE[183];
     large_modulus         = BASE[184];
@@ -6647,7 +6636,6 @@ void copy_out_of_nilseg(int fg)
 
     for (i = 0; i<=50; i++)
         workbase[i]  = BASE[work_0_offset+i];
-#endif // NILSEG_EXTERNS
 
     if (fg)
     {

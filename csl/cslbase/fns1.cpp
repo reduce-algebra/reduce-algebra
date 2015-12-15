@@ -69,8 +69,7 @@ LispObject integerp(LispObject p)
 
 
 LispObject cons(LispObject a, LispObject b)
-{   nil_as_base
-    LispObject r = (LispObject)((char *)fringe - sizeof(Cons_Cell));
+{   LispObject r = (LispObject)((char *)fringe - sizeof(Cons_Cell));
     qcar(r) = a;
     qcdr(r) = b;
     fringe = r;
@@ -81,8 +80,7 @@ LispObject cons(LispObject a, LispObject b)
 }
 
 LispObject cons_no_gc(LispObject a, LispObject b)
-{   nil_as_base
-    LispObject r = (LispObject)((char *)fringe - sizeof(Cons_Cell));
+{   LispObject r = (LispObject)((char *)fringe - sizeof(Cons_Cell));
     qcar(r) = a;
     qcdr(r) = b;
     fringe = r;
@@ -94,8 +92,7 @@ LispObject cons_no_gc(LispObject a, LispObject b)
 //
 
 LispObject cons_gc_test(LispObject p)
-{   nil_as_base
-    if ((char *)fringe <= (char *)heaplimit)
+{   if ((char *)fringe <= (char *)heaplimit)
         return reclaim(p, "cons gc test", GC_CONS, 0);
     else return p;
 }
@@ -129,8 +126,7 @@ LispObject list2(LispObject a, LispObject b)
 }
 
 LispObject list2star(LispObject a, LispObject b, LispObject c)
-{   nil_as_base
-    LispObject r = (LispObject)((char *)fringe - 2*sizeof(Cons_Cell));
+{   LispObject r = (LispObject)((char *)fringe - 2*sizeof(Cons_Cell));
     qcar(r) = a;
     qcdr(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
     qcar((char *)r+sizeof(Cons_Cell)) = b;
@@ -143,8 +139,7 @@ LispObject list2star(LispObject a, LispObject b, LispObject c)
 }
 
 LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject d)
-{   nil_as_base
-    LispObject r = (LispObject)((char *)fringe - 3*sizeof(Cons_Cell));
+{   LispObject r = (LispObject)((char *)fringe - 3*sizeof(Cons_Cell));
     qcar(r) = a;
     qcdr(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
     qcar((char *)r+sizeof(Cons_Cell)) = b;
@@ -182,8 +177,7 @@ LispObject list4(LispObject a, LispObject b, LispObject c, LispObject d)
 
 
 LispObject acons(LispObject a, LispObject b, LispObject c)
-{   nil_as_base
-    LispObject r = (LispObject)((char *)fringe - 2*sizeof(Cons_Cell));
+{   LispObject r = (LispObject)((char *)fringe - 2*sizeof(Cons_Cell));
     qcar(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
     qcdr(r) = c;
     qcar((char *)r+sizeof(Cons_Cell)) = a;
@@ -236,9 +230,8 @@ LispObject list3(LispObject a, LispObject b, LispObject c)
  * empty lisp {\ttfamily nil} would be {\ttfamily nil}.
  */
 
-LispObject Lcar(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_car, a);
+LispObject Lcar(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_car, a);
     else return onevalue(qcar(a));
 }
 
@@ -252,9 +245,8 @@ LispObject Lcar(LispObject nil, LispObject a)
  * being treated as an error.
  */
 
-LispObject Lcar_star(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return onevalue(a);
+LispObject Lcar_star(LispObject, LispObject a)
+{   if (!car_legal(a)) return onevalue(a);
     else return onevalue(qcar(a));
 }
 
@@ -262,9 +254,8 @@ LispObject Lcar_star(LispObject nil, LispObject a)
  * See {\ttfamily car}.
  */
 
-LispObject Lcdr(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_cdr, a);
+LispObject Lcdr(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else return onevalue(qcdr(a));
 }
 
@@ -277,9 +268,8 @@ LispObject Lcdr(LispObject nil, LispObject a)
  * {\ttfamily (car (cdr (car x)))}.
  */
 
-LispObject Lcaar(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_car, a);
+LispObject Lcaar(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else return onevalue(qcar(a));
@@ -289,9 +279,8 @@ LispObject Lcaar(LispObject nil, LispObject a)
  * see {\ttfamily caar} and {\ttfamily second}.
  */
 
-LispObject Lcadr(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_cdr, a);
+LispObject Lcadr(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else return onevalue(qcar(a));
@@ -301,9 +290,8 @@ LispObject Lcadr(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcdar(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_car, a);
+LispObject Lcdar(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else return onevalue(qcdr(a));
@@ -313,9 +301,8 @@ LispObject Lcdar(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcddr(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_cdr, a);
+LispObject Lcddr(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else return onevalue(qcdr(a));
@@ -325,9 +312,8 @@ LispObject Lcddr(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcaaar(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_car, a);
+LispObject Lcaaar(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
@@ -339,9 +325,8 @@ LispObject Lcaaar(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcaadr(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_cdr, a);
+LispObject Lcaadr(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
@@ -353,9 +338,8 @@ LispObject Lcaadr(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcadar(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_car, a);
+LispObject Lcadar(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
@@ -367,9 +351,8 @@ LispObject Lcadar(LispObject nil, LispObject a)
  * see {\ttfamily caar} and {\ttfamily third}.
  */
 
-LispObject Lcaddr(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_cdr, a);
+LispObject Lcaddr(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
@@ -381,9 +364,8 @@ LispObject Lcaddr(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcdaar(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_car, a);
+LispObject Lcdaar(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
@@ -395,9 +377,8 @@ LispObject Lcdaar(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcdadr(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_cdr, a);
+LispObject Lcdadr(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
@@ -409,9 +390,8 @@ LispObject Lcdadr(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcddar(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_car, a);
+LispObject Lcddar(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
@@ -423,9 +403,8 @@ LispObject Lcddar(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcdddr(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_cdr, a);
+LispObject Lcdddr(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
@@ -437,9 +416,8 @@ LispObject Lcdddr(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcaaaar(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_car, a);
+LispObject Lcaaaar(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
@@ -453,9 +431,8 @@ LispObject Lcaaaar(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcaaadr(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_cdr, a);
+LispObject Lcaaadr(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
@@ -469,9 +446,8 @@ LispObject Lcaaadr(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcaadar(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_car, a);
+LispObject Lcaadar(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
@@ -485,9 +461,8 @@ LispObject Lcaadar(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcaaddr(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_cdr, a);
+LispObject Lcaaddr(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
@@ -501,9 +476,8 @@ LispObject Lcaaddr(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcadaar(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_car, a);
+LispObject Lcadaar(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
@@ -517,9 +491,8 @@ LispObject Lcadaar(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcadadr(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_cdr, a);
+LispObject Lcadadr(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
@@ -533,9 +506,8 @@ LispObject Lcadadr(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcaddar(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_car, a);
+LispObject Lcaddar(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
@@ -549,9 +521,8 @@ LispObject Lcaddar(LispObject nil, LispObject a)
  * see {\ttfamily caar} and {\ttfamily fourth}.
  */
 
-LispObject Lcadddr(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_cdr, a);
+LispObject Lcadddr(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
@@ -565,9 +536,8 @@ LispObject Lcadddr(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcdaaar(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_car, a);
+LispObject Lcdaaar(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
@@ -581,9 +551,8 @@ LispObject Lcdaaar(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcdaadr(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_cdr, a);
+LispObject Lcdaadr(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
@@ -597,9 +566,8 @@ LispObject Lcdaadr(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcdadar(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_car, a);
+LispObject Lcdadar(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
@@ -613,9 +581,8 @@ LispObject Lcdadar(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcdaddr(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_cdr, a);
+LispObject Lcdaddr(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
@@ -629,9 +596,8 @@ LispObject Lcdaddr(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcddaar(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_car, a);
+LispObject Lcddaar(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
@@ -645,9 +611,8 @@ LispObject Lcddaar(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcddadr(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_cdr, a);
+LispObject Lcddadr(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
     if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
@@ -661,9 +626,8 @@ LispObject Lcddadr(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcdddar(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_car, a);
+LispObject Lcdddar(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_car, a);
     else a = qcar(a);
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
@@ -677,9 +641,8 @@ LispObject Lcdddar(LispObject nil, LispObject a)
  * see {\ttfamily caar}.
  */
 
-LispObject Lcddddr(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!car_legal(a)) return error(1, err_bad_cdr, a);
+LispObject Lcddddr(LispObject, LispObject a)
+{   if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
     if (!car_legal(a)) return error(1, err_bad_cdr, a);
     else a = qcdr(a);
@@ -696,10 +659,9 @@ LispObject Lcddddr(LispObject nil, LispObject a)
  * for the corresponding function for updating the {\ttfamily cdr} component.
  */
 
-LispObject Lrplaca(LispObject nil,
+LispObject Lrplaca(LispObject,
                    LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!consp(a)) return error(1, err_bad_rplac, a);
+{   if (!consp(a)) return error(1, err_bad_rplac, a);
     qcar(a) = b;
     return onevalue(a);
 }
@@ -708,10 +670,9 @@ LispObject Lrplaca(LispObject nil,
  * See {\ttfamily rplaca}
  */
 
-LispObject Lrplacd(LispObject nil,
+LispObject Lrplacd(LispObject,
                    LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!consp(a)) return error(1, err_bad_rplac, a);
+{   if (!consp(a)) return error(1, err_bad_rplac, a);
     qcdr(a) = b;
     return onevalue(a);
 }
@@ -755,9 +716,8 @@ LispObject Lconstantp(LispObject nil, LispObject a)
 #endif
 }
 
-LispObject Lidentity(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return onevalue(a);
+LispObject Lidentity(LispObject, LispObject a)
+{   return onevalue(a);
 }
 
 #ifdef COMMON
@@ -772,9 +732,8 @@ LispObject Lnumberp(LispObject nil, LispObject a)
 {   return onevalue(Lispify_predicate(is_number(a)));
 }
 
-LispObject Lintegerp(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return onevalue(integerp(a));
+LispObject Lintegerp(LispObject, LispObject a)
+{   return onevalue(integerp(a));
 }
 
 LispObject Leq_safe(LispObject nil, LispObject a)
@@ -848,8 +807,7 @@ static LispObject Llong_floatp(LispObject nil, LispObject p)
 }
 
 LispObject Lrationalp(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return onevalue(
+{   return onevalue(
                Lispify_predicate(
                    is_fixnum(a) ||
                    (is_numbers(a) &&
@@ -857,8 +815,7 @@ LispObject Lrationalp(LispObject nil, LispObject a)
 }
 
 LispObject Lcomplexp(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return onevalue(Lispify_predicate(is_numbers(a) && is_complex(a)));
+{   return onevalue(Lispify_predicate(is_numbers(a) && is_complex(a)));
 }
 
 #ifdef COMMON
@@ -1027,9 +984,8 @@ static LispObject Lconvert_to_struct(LispObject nil, LispObject a)
     return onevalue(a);
 }
 
-LispObject Lcons(LispObject nil, LispObject a, LispObject b)
+LispObject Lcons(LispObject, LispObject a, LispObject b)
 {   LispObject r;
-    CSL_IGNORE(nil);
     r = (LispObject)((char *)fringe - sizeof(Cons_Cell));
     qcar(r) = a;
     qcdr(r) = b;
@@ -1040,9 +996,8 @@ LispObject Lcons(LispObject nil, LispObject a, LispObject b)
     else return onevalue((LispObject)((char *)r + TAG_CONS));
 }
 
-LispObject Lxcons(LispObject nil, LispObject a, LispObject b)
+LispObject Lxcons(LispObject, LispObject a, LispObject b)
 {   LispObject r;
-    CSL_IGNORE(nil);
     r = (LispObject)((char *)fringe - sizeof(Cons_Cell));
     qcar(r) = b;
     qcdr(r) = a;
@@ -1210,11 +1165,10 @@ static LispObject Lliststar(LispObject nil, int nargs, ...)
 //       ...
 //       v)
 //
-static LispObject Lfill_vector(LispObject nil, int nargs, ...)
+static LispObject Lfill_vector(LispObject, int nargs, ...)
 {   va_list a;
     LispObject v, il;
     int32_t i;
-    CSL_IGNORE(nil);
     if (nargs < 3) return aerror("fill-vector");
     va_start(a, nargs);
     v = va_arg(a, LispObject);
@@ -1557,16 +1511,14 @@ LispObject Lerror0(LispObject nil, int nargs, ...)
     return nil;
 }
 
-LispObject Lmake_special(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!symbolp(a)) return aerror1("make-special", a);
+LispObject Lmake_special(LispObject, LispObject a)
+{   if (!symbolp(a)) return aerror1("make-special", a);
     qheader(a) |= SYM_SPECIAL_VAR;
     return onevalue(a);
 }
 
-LispObject Lmake_global(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!symbolp(a)) return aerror("make-global");
+LispObject Lmake_global(LispObject, LispObject a)
+{   if (!symbolp(a)) return aerror("make-global");
     qheader(a) |= (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR);
     return onevalue(a);
 }
@@ -1619,9 +1571,8 @@ LispObject Lboundp(LispObject nil, LispObject a)
     else return onevalue(lisp_true);
 }
 
-LispObject Lsymbol_value(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!symbolp(a)) return onevalue(a);
+LispObject Lsymbol_value(LispObject, LispObject a)
+{   if (!symbolp(a)) return onevalue(a);
     else return onevalue(qvalue(a));
 }
 
@@ -1898,14 +1849,13 @@ LispObject getvector_init(size_t n, LispObject k)
     return p;
 }
 
-LispObject Lstop(LispObject env, LispObject code)
+LispObject Lstop(LispObject, LispObject code)
 {
 //
 // I ignore "env" and set up nil for myself here to make it easier to call
 // this function from random places in my interface code...
 //
     LispObject nil = C_nil;
-    CSL_IGNORE(env);
     if (!is_fixnum(code)) return aerror("stop");
     exit_value = code;
     exit_tag = fixnum_of_int(0);    // Flag to say "stop"
@@ -1915,7 +1865,7 @@ LispObject Lstop(LispObject env, LispObject code)
     return nil;
 }
 
-LispObject Lstop2(LispObject env, LispObject code, LispObject b)
+LispObject Lstop2(LispObject env, LispObject code, LispObject)
 {   return Lstop(env, code);
 }
 
@@ -1963,7 +1913,6 @@ LispObject Ltime(LispObject nil, int nargs, ...)
         consolidated_time[0] += delta;
     }
     argcheck(nargs, 0, "time");
-    CSL_IGNORE(nil);
 //
 // If I just converted to an uint32_t value here I would get overflow
 // after 2^32 milliseconds, which is 49.7 days. This is, I fear, just within
@@ -2004,9 +1953,8 @@ LispObject Ltime(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-LispObject Lgctime(LispObject nil, int nargs, ...)
+LispObject Lgctime(LispObject, int nargs, ...)
 {   argcheck(nargs, 0, "gctime");
-    CSL_IGNORE(nil);
     return onevalue(fixnum_of_int((int32_t)(1000.0 * gc_time)));
 }
 
@@ -2061,7 +2009,6 @@ LispObject Ldate(LispObject nil, int nargs, ...)
     char today[32];
     char today1[32];
     argcheck(nargs, 0, "date");
-    CSL_IGNORE(nil);
     strcpy(today, ctime(&t));  // e.g. "Sun Sep 16 01:03:52 1973\n"
     //       012345678901234567890123
     today[24] = 0;             // loses final '\n'
@@ -2084,7 +2031,6 @@ LispObject Ldate1(LispObject nil, LispObject a1)
 {   LispObject w;
     time_t t = time(NULL);
     char today[32];
-    CSL_IGNORE(nil);
     strcpy(today, ctime(&t));  // e.g. "Sun Sep 16 01:03:52 1973\n"
     today[24] = 0;             // loses final '\n'
     w = make_string(today);
@@ -2097,7 +2043,6 @@ LispObject Ldate_and_time(LispObject nil, int nargs, ...)
     time_t t = time(NULL);
     char today[32];
     argcheck(nargs, 0, "date");
-    CSL_IGNORE(nil);
     strcpy(today, ctime(&t));  // e.g. "Sun Sep 16 01:03:52 1973\n"
     today[24] = 0;             // loses final '\n'
     w = make_string(today);
@@ -2109,7 +2054,6 @@ LispObject Ldate_and_time1(LispObject nil, LispObject a1)
 {   LispObject w;
     time_t t = time(NULL);
     char today[32], today1[32];
-    CSL_IGNORE(nil);
     strcpy(today, ctime(&t));  // e.g. "Sun Sep 16 01:03:52 1973\n"
     //       012345678901234567890123
     today[24] = 0;             // loses final '\n'
@@ -2141,7 +2085,6 @@ LispObject Ldatestamp(LispObject nil, int nargs, ...)
 //
     uint32_t n = (uint32_t)t;   // NON-PORTABLE assumption about time_t
     argcheck(nargs, 0, "datestamp");
-    CSL_IGNORE(nil);
     if ((n & fix_mask) == 0) w = fixnum_of_int(n);
     else if ((n & 0xc0000000U) == 0) w = make_one_word_bignum(n);
     else w = make_two_word_bignum((n >> 31) & 1, n & 0x7fffffff);
@@ -2172,7 +2115,6 @@ LispObject Ltimeofday(LispObject nil, int nargs, ...)
 #endif
 #endif
     argcheck(nargs, 0, "datestamp");
-    CSL_IGNORE(nil);
     if ((n & fix_mask) == 0) w = fixnum_of_int(n);
     else if ((n & 0xc0000000U) == 0) w = make_one_word_bignum(n);
     else w = make_two_word_bignum((n >> 31) & 1, n & 0x7fffffff);
@@ -2282,9 +2224,8 @@ static LispObject Lrepresentation2(LispObject nil,
     }
 }
 
-LispObject Lindirect(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (SIXTY_FOUR_BIT)
+LispObject Lindirect(LispObject, LispObject a)
+{   if (SIXTY_FOUR_BIT)
         return onevalue(*(LispObject *)(intptr_t)sixty_four_bits(a));
     else return onevalue(*(LispObject *)(intptr_t)thirty_two_bits(a));
 }

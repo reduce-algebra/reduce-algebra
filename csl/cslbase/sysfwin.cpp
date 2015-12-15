@@ -194,9 +194,8 @@ void kill_gnuplot()
 {   TerminateProcess(gnuplot_process, 0);
 }
 
-BOOL CALLBACK find_text(HWND h, LPARAM x)
+BOOL CALLBACK find_text(HWND h, LPARAM)
 {   char buffer[24];
-    CSL_IGNORE(x);
     GetClassName(h, buffer, 20);
     if (strcmp(buffer, "wgnuplot_text") != 0) return TRUE;
     gnuplot_handle = h;

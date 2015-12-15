@@ -68,7 +68,7 @@ uint32_t Idivide(uint32_t *qp, uint32_t a, uint32_t b, uint32_t c)
 // either signed or unsigned arithmetic.
 //
 {   uint64_t p = ((uint64_t)a << 31) | (uint64_t)b;
-    *qp = (uint32_t)(p / (uint64_t)c);
+    if (qp != NULL) *qp = (uint32_t)(p / (uint64_t)c);
     return (uint32_t)(p % (uint64_t)c);
 }
 
@@ -150,7 +150,7 @@ uint32_t Idivide(uint32_t *qp, uint32_t a, uint32_t b, uint32_t c)
     {   a = a - c;          // leave remainder in a, b should be zero
         q = q + 1;
     }
-    *qp = q;
+    if (qp != NULL) *qp = q;
     return a;
 }
 
@@ -396,7 +396,7 @@ LispObject quotbn(LispObject a, int32_t n)
                 else return make_two_word_bignum(0, a0);
             }
             a0 = -(int32_t)a0;
-            if ((a0 & fix_mask) == fix_mask) return fixnum_of_int(a0);
+            if (((int32_t)a0 & fix_mask) == fix_mask) return fixnum_of_int(a0);
             else if ((a0 & 0xc0000000U) == 0xc0000000U)
                 return make_one_word_bignum(a0);
             else return make_two_word_bignum(-1, clear_top_bit(a0));
@@ -459,7 +459,7 @@ LispObject quotbn(LispObject a, int32_t n)
             bignum_digits(a)[i] = clear_top_bit(carry);
         }
         carry = ~bignum_digits(a)[i] + top_bit(carry);
-        if (carry == -1 && (bignum_digits(a)[i-1] & 0x40000000) != 0)
+        if (carry == 0xffffffffU && (bignum_digits(a)[i-1] & 0x40000000) != 0)
         {   bignum_digits(a)[lena] = 0;
             lena--;
             bignum_digits(a)[i-1] |= ~0x7fffffff;
@@ -537,8 +537,8 @@ LispObject quotbn1(LispObject a, int32_t n)
         else sign = 0;
         if (n < 0) sign ^= 1, n = -n;
         if (a1 < n) // result can be calculated in one word - good!
-        {   uint32_t q, r;
-            Ddivide(r, q, (uint32_t)a1, a0, n);
+        {   uint32_t r;
+            Ddivider(r, (uint32_t)a1, a0, n);
             if ((sign & 2) != 0) r = -(int32_t)r;
             nil = C_nil;
             nwork = r;
@@ -548,9 +548,9 @@ LispObject quotbn1(LispObject a, int32_t n)
 // here the quotient will involve two digits.
 //
         else
-        {   uint32_t q1, q0, r;
-            Ddivide(r, q1, 0, (uint32_t)a1, n);
-            Ddivide(r, q0, r, a0, n);
+        {   uint32_t r;
+            Ddivider(r, 0, (uint32_t)a1, n);
+            Ddivider(r, r, a0, n);
             if ((sign & 2) != 0) r = -(int32_t)r;
             nil = C_nil;
             nwork = r;
@@ -766,7 +766,7 @@ LispObject quotbb(LispObject a, LispObject b)
 // should go here explaing why all is well...
 //
         if (carry != 0 && (int32_t)r1 < 0 &&
-            carry != 1 && r1 != ~0x7fffffff)
+            carry != 1 && r1 != ~0x7fffffffU)
         {   err_printf("\n+++!!!+++ carry needed (line %d of \"%s\")\n",
                        __LINE__, __FILE__);
             my_exit(EXIT_FAILURE);
@@ -839,7 +839,8 @@ LispObject quotbb(LispObject a, LispObject b)
 // if my remainder is -2^(31*n-1) then I need to shrink lena here, which
 // seems like a messy case to have to consider.
 //
-            if (carry == -1 && (bignum_digits(a)[i-1] & 0x40000000) != 0)
+            if (carry == 0xffffffffU &&
+                (bignum_digits(a)[i-1] & 0x40000000) != 0)
             {   bignum_digits(a)[lena] = 0;
                 lena--;
                 bignum_digits(a)[i-1] |= ~0x7fffffff;
@@ -865,7 +866,7 @@ LispObject quotbb(LispObject a, LispObject b)
     return_q:
         if (q != 0 && (sign & 1) != 0)
         {   q = -(int32_t)q;
-            if ((q & fix_mask) == fix_mask) return fixnum_of_int(q);
+            if (((int32_t)q & fix_mask) == fix_mask) return fixnum_of_int(q);
             if ((q & 0x40000000) == 0)
                 return make_two_word_bignum(-1, clear_top_bit(q));
         }
@@ -992,7 +993,7 @@ LispObject quotbb(LispObject a, LispObject b)
             bignum_digits(a)[i] = clear_top_bit(carry);
         }
         carry = ~bignum_digits(a)[i] + top_bit(carry);
-        if (carry == -1 && (bignum_digits(a)[i-1] & 0x40000000) != 0)
+        if (carry == 0xffffffffU && (bignum_digits(a)[i-1] & 0x40000000) != 0)
         {   bignum_digits(a)[lena] = 0;
             lena--;
             bignum_digits(a)[i-1] |= ~0x7fffffff;
@@ -1031,7 +1032,7 @@ LispObject quotbb(LispObject a, LispObject b)
                 bignum_digits(b)[i] = clear_top_bit(carry);
             }
             carry = ~bignum_digits(b)[i] + top_bit(carry);
-            if (carry == -1 && (bignum_digits(b)[i-1] & 0x40000000) != 0)
+            if (carry == 0xffffffffU && (bignum_digits(b)[i-1] & 0x40000000) != 0)
             {   bignum_digits(b)[lenb] = 0;
                 lenb--;
                 bignum_digits(b)[i-1] |= ~0x7fffffff;

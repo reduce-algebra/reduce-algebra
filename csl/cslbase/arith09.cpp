@@ -376,9 +376,9 @@ static int32_t huge_gcd(uint32_t *a, int32_t lena, uint32_t *b, int32_t lenb)
             else q = a1, lenr--;
         }
         else
-        {   uint32_t rtemp, qtemp;
+        {   uint32_t qtemp;
             b1++;         // To achieve rounding down of q
-            if (a0 != 0 || a1 >= b1) Ddivide(rtemp, qtemp, a0, a1, b1);
+            if (a0 != 0 || a1 >= b1) Ddivideq(qtemp, a0, a1, b1);
 //
 // The following line indicates a special case needed when this division
 // is almost done - up to almost the end I can afford to approximate a
@@ -390,7 +390,7 @@ static int32_t huge_gcd(uint32_t *a, int32_t lena, uint32_t *b, int32_t lenb)
 //
             else if (lena == lenb) qtemp = 1;
             else
-            {   Ddivide(rtemp, qtemp, a1, a2, b1);
+            {   Ddivideq(qtemp, a1, a2, b1);
                 lenr--;
             }
             q = qtemp;
@@ -659,10 +659,8 @@ LispObject gcd(LispObject a, LispObject b)
                 else
                 {   q = bignum_digits(a)[new_lena] % p;
                     while (new_lena > 0)
-                    {   uint32_t qtemp;
-                        Ddivide(q, qtemp, q,
+                        Ddivider(q, q,
                                 bignum_digits(a)[--new_lena], p);
-                    }
                 }
                 if (p < q)
                 {   int32_t r = p;

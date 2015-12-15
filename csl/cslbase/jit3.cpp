@@ -735,10 +735,9 @@ void Jprepare_bytecode_compiler(int nargs)
     }
 }
 
-LispObject Jbpsupbv(LispObject nil, LispObject v)
+LispObject Jbpsupbv(LispObject, LispObject v)
 {   Header h;
     int32_t n;
-    CSL_IGNORE(nil);
     if (!(is_bps(v))) return aerror1("bps-upbv", v);
     h = *(Header *)((char *)data_of_bps(v) - CELL);
     n = length_of_header(h) - CELL;
@@ -3791,7 +3790,9 @@ char* Jcompile(LispObject def, int nargs)
     // beware! ffname gets clobbered by gc
     //
     char *ffname = &celt(qpname(elt(qcdr(def), 0)), 0);
-    CSL_IGNORE(ffname);
+// ffname is not used in the code here - it merely exists so that if I
+// run under a debugger I can inspect it.
+    (void)ffname;
     putbyte(0xb8); put_addr(ffname);
     mov_rm32_rm32(EAX,ESPM);
     Jcall_abs_fn(print_ffname);

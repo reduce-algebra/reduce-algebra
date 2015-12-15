@@ -118,23 +118,24 @@ static LispObject Lboole(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-static LispObject Lbyte(LispObject nil, LispObject a, LispObject b)
+#ifdef COMMON
+static LispObject Lbyte(LispObject, LispObject a, LispObject b)
 {   a = cons(a, b);
     errexit();
     return onevalue(a);
 }
 
-static LispObject Lbyte_position(LispObject nil, LispObject a)
+static LispObject Lbyte_position(LispObject, LispObject a)
 {   if (!consp(a)) return aerror1("byte-position", a);
     else return onevalue(qcdr(a));
 }
 
-static LispObject Lbyte_size(LispObject nil, LispObject a)
+static LispObject Lbyte_size(LispObject, LispObject a)
 {   if (!consp(a)) return aerror1("byte-size", a);
     else return onevalue(qcar(a));
 }
 
-static LispObject Lcomplex_2(LispObject nil, LispObject a, LispObject b)
+static LispObject Lcomplex_2(LispObject, LispObject a, LispObject b)
 {
 // /* Need to coerce a and b to the same type here...
     a = make_complex(a, b);
@@ -142,7 +143,7 @@ static LispObject Lcomplex_2(LispObject nil, LispObject a, LispObject b)
     return onevalue(a);
 }
 
-static LispObject Lcomplex_1(LispObject nil, LispObject a)
+static LispObject Lcomplex_1(LispObject, LispObject a)
 {
 // /* Need to make zero of same type as a
     a = make_complex(a, fixnum_of_int(0));
@@ -150,7 +151,7 @@ static LispObject Lcomplex_1(LispObject nil, LispObject a)
     return onevalue(a);
 }
 
-static LispObject Lconjugate(LispObject nil, LispObject a)
+static LispObject Lconjugate(LispObject, LispObject a)
 {   if (!is_number(a)) return aerror1("conjugate", a);
     if (is_numbers(a) && is_complex(a))
     {   LispObject r = real_part(a),
@@ -166,23 +167,23 @@ static LispObject Lconjugate(LispObject nil, LispObject a)
     else return onevalue(a);
 }
 
-static LispObject Ldenominator(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!is_number(a)) return aerror1("denominator", a);
+static LispObject Ldenominator(LispObject, LispObject a)
+{   if (!is_number(a)) return aerror1("denominator", a);
     if (is_numbers(a) && is_ratio(a))
         return onevalue(denominator(a));
     else return onevalue(fixnum_of_int(1));
 }
+#endif
 
-static LispObject Ldeposit_field(LispObject nil, int nargs, ...)
+#ifdef DEPOSIT_FIELD_IMPLEMENTED
+static LispObject Ldeposit_field(LispObject, int nargs, ...)
 {
 //
 // Not implemented yet!
 //
     va_list aa;
     LispObject a, b, c;
-    CSL_IGNORE(nil);
-    CSL_IGNORE(nargs);
+    (void)nargs;   // should really check value
     va_start(aa, nargs);
     a = va_arg(aa, LispObject);
     b = va_arg(aa, LispObject);
@@ -190,16 +191,17 @@ static LispObject Ldeposit_field(LispObject nil, int nargs, ...)
     va_end(aa);
     return aerror("deposit-field");
 }
+#endif
 
-static LispObject Ldpb(LispObject nil, int nargs, ...)
+#ifdef DPB_IMPLEMENTED
+static LispObject Ldpb(LispObject, int nargs, ...)
 {
 //
 // Not implemented yet!
 //
     va_list aa;
     LispObject a, b, c;
-    CSL_IGNORE(nil);
-    CSL_IGNORE(nargs);
+    (void)nargs;  // should really check value
     va_start(aa, nargs);
     a = va_arg(aa, LispObject);
     b = va_arg(aa, LispObject);
@@ -207,17 +209,17 @@ static LispObject Ldpb(LispObject nil, int nargs, ...)
     va_end(aa);
     return aerror("dpb");
 }
+#endif
 
-static LispObject Lffloor(LispObject nil, LispObject a, LispObject b)
+#ifdef COMMON
+static LispObject Lffloor(LispObject, LispObject, LispObject)
 {
 //
 // Not implemented yet!
 //
-    CSL_IGNORE(nil);
-    CSL_IGNORE(a);
-    CSL_IGNORE(b);
     return aerror("ffloor");
 }
+#endif
 
 LispObject Lgcd_n(LispObject nil, int nargs, ...)
 {   va_list a;
@@ -253,30 +255,27 @@ LispObject Lgcd(LispObject nil, LispObject a, LispObject b)
     return onevalue(a);
 }
 
-LispObject Lgcd_1(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return onevalue(a);
+LispObject Lgcd_1(LispObject, LispObject a)
+{   return onevalue(a);
 }
 
-static LispObject Limagpart(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!is_number(a)) return aerror1("imagpart", a);
+#ifdef COMMON
+static LispObject Limagpart(LispObject, LispObject a)
+{   if (!is_number(a)) return aerror1("imagpart", a);
     if (is_numbers(a) && is_complex(a))
         return onevalue(imag_part(a));
 // /* the 0.0 returned here ought to be the same type as a has
     else return onevalue(fixnum_of_int(0));
 }
 
-static LispObject Lldb(LispObject nil, LispObject a, LispObject b)
+static LispObject Lldb(LispObject, LispObject, LispObject)
 {
 //
 // Not implemented yet!
 //
-    CSL_IGNORE(nil);
-    CSL_IGNORE(a);
-    CSL_IGNORE(b);
     return aerror("ldb");
 }
+#endif // COMMON
 
 LispObject Llcm_n(LispObject nil, int nargs, ...)
 {   va_list a;
@@ -302,37 +301,33 @@ LispObject Llcm(LispObject nil, LispObject a, LispObject b)
     return onevalue(a);
 }
 
-LispObject Llcm_1(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return onevalue(a);
+LispObject Llcm_1(LispObject, LispObject a)
+{   return onevalue(a);
 }
 
-static LispObject Lldb_test(LispObject nil, LispObject a, LispObject b)
+#ifdef COMMON
+static LispObject Lldb_test(LispObject, LispObject, LispObject)
 {
 //
 // Not implemented yet!
 //
-    CSL_IGNORE(nil);
-    CSL_IGNORE(a);
-    CSL_IGNORE(b);
     return aerror("ldb-test");
 }
 
-static LispObject Lnumerator(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!is_number(a)) return aerror1("numerator", a);
+static LispObject Lnumerator(LispObject, LispObject a)
+{   if (!is_number(a)) return aerror1("numerator", a);
     if (is_numbers(a) && is_ratio(a))
         return onevalue(numerator(a));
     else return onevalue(a);
 }
 
-static LispObject Lrealpart(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!is_number(a)) return aerror1("realpart", a);
+static LispObject Lrealpart(LispObject, LispObject a)
+{   if (!is_number(a)) return aerror1("realpart", a);
     if (is_numbers(a) && is_complex(a))
         return onevalue(real_part(a));
     else return onevalue(a);
 }
+#endif // COMMON
 
 //
 // This now does special things for NaNs and infinities. For a NaN is just
@@ -621,7 +616,8 @@ static LispObject Lfp_signbit(LispObject nil, LispObject a)
                     return onevalue(signbit(single_float_val(a)) ? lisp_true : nil);
 #else
                     x = ((Single_Float *)((char *)a-TAG_BOXFLOAT))->f.i;
-                    return onevalue(x == 0x80000000 ? lisp_true : nil);
+// If the integer representation is negative then the sign bit is set.
+                    return onevalue(x < 0 ? lisp_true : nil);
 #endif
                 case TYPE_LONG_FLOAT:
 #ifdef HAVE_SIGNBIT
@@ -655,9 +651,8 @@ static LispObject Lfp_signbit(LispObject nil, LispObject a)
 // worry about them later on if I am really forced to.
 //
 
-static LispObject Lfloat_digits(LispObject nil, LispObject a)
+static LispObject Lfloat_digits(LispObject, LispObject a)
 {   int tag = (int)a & TAG_BITS;
-    CSL_IGNORE(nil);
     switch (tag)
     {   case TAG_SFLOAT:
             return onevalue(fixnum_of_int(20));
@@ -673,10 +668,9 @@ static LispObject Lfloat_digits(LispObject nil, LispObject a)
     }
 }
 
-static LispObject Lfloat_precision(LispObject nil, LispObject a)
+static LispObject Lfloat_precision(LispObject, LispObject a)
 {   int tag = (int)a & TAG_BITS;
     double d = float_of_number(a);
-    CSL_IGNORE(nil);
     if (d == 0.0) return onevalue(fixnum_of_int(0));
 // /* I do not cope with de-normalised numbers here
     switch (tag)
@@ -694,15 +688,12 @@ static LispObject Lfloat_precision(LispObject nil, LispObject a)
     }
 }
 
-static LispObject Lfloat_radix(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(a);
-    return onevalue(fixnum_of_int(FLT_RADIX));
+static LispObject Lfloat_radix(LispObject, LispObject)
+{   return onevalue(fixnum_of_int(FLT_RADIX));
 }
 
-static LispObject Lfloat_sign2(LispObject nil, LispObject a, LispObject b)
+static LispObject Lfloat_sign2(LispObject, LispObject a, LispObject b)
 {   double d = float_of_number(b);
-    CSL_IGNORE(nil);
 // Worry a bit about -0.0 here
     if (float_of_number(a) < 0.0) d = -d;
     if (is_sfloat(b)) return onevalue(make_sfloat(d));
@@ -710,9 +701,8 @@ static LispObject Lfloat_sign2(LispObject nil, LispObject a, LispObject b)
     else return onevalue(make_boxfloat(d, type_of_header(flthdr(b))));
 }
 
-static LispObject Lfloat_sign1(LispObject nil, LispObject a)
+static LispObject Lfloat_sign1(LispObject, LispObject a)
 {   double d = float_of_number(a);
-    CSL_IGNORE(nil);
 // worry a bit about -0.0 here
     if (d < 0.0) d = -1.0; else d = 1.0;
     if (is_sfloat(a)) return onevalue(make_sfloat(d));
@@ -720,19 +710,15 @@ static LispObject Lfloat_sign1(LispObject nil, LispObject a)
     else return onevalue(make_boxfloat(d, type_of_header(flthdr(a))));
 }
 
-static LispObject Lfround(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(a);
-    CSL_IGNORE(b);
-    return aerror("fround");
+#ifdef ROUND_AND_TRUNCATE
+static LispObject Lfround(LispObject, LispObject, LispObject)
+{   return aerror("fround");
 }
 
-static LispObject Lftruncate(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(a);
-    CSL_IGNORE(b);
-    return aerror("ftruncate");
+static LispObject Lftruncate(LispObject, LispObject, LispObject)
+{   return aerror("ftruncate");
 }
+#endif
 
 //
 // This may need to worry about NaNs and infinities.
@@ -743,7 +729,6 @@ static LispObject Linteger_decode_float(LispObject nil, LispObject a)
     int tag = (int)a & TAG_BITS;
     int x, neg = 0;
     int32_t a1, a2;
-    CSL_IGNORE(nil);
     if (!is_float(a)) return aerror("integer-decode-float");
     d = float_of_number(a);
     if (!(d == d)) return onevalue(nil);
@@ -805,36 +790,26 @@ static LispObject Linteger_length(LispObject nil, LispObject a)
     return Lmsd(nil, a);
 }
 
-static LispObject Llogbitp(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(a);
-    CSL_IGNORE(b);
-    return aerror("logbitp");
+#if LOGFNS
+static LispObject Llogbitp(LispObject, LispObject, LispObject)
+{   return aerror("logbitp");
 }
 
-static LispObject Llogcount(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(a);
-    return aerror("logcount");
+static LispObject Llogcount(LispObject, LispObject)
+{   return aerror("logcount");
 }
 
-static LispObject Llogtest(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(a);
-    CSL_IGNORE(b);
-    return aerror("logtest");
+static LispObject Llogtest(LispObject, LispObject, LispObject)
+{   return aerror("logtest");
 }
 
-static LispObject Lmask_field(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(a);
-    CSL_IGNORE(b);
-    return aerror("mask-field");
+static LispObject Lmask_field(LispObject, LispObject, LispObject)
+{   return aerror("mask-field");
 }
+#endif
 
-static LispObject Lscale_float(LispObject nil, LispObject a, LispObject b)
+static LispObject Lscale_float(LispObject, LispObject a, LispObject b)
 {   double d = float_of_number(a);
-    CSL_IGNORE(nil);
     if (!is_fixnum(b)) return aerror("scale-float");
     d = ldexp(d, int_of_fixnum(b));
     if (is_sfloat(a)) return onevalue(make_sfloat(d));
@@ -994,7 +969,7 @@ static LispObject lisp_fix_ratio(LispObject a, int roundmode)
 // This converts from a ratio to a Lisp integer.  It has to apply
 // the specified rounding regime.
 //
-{   LispObject p, q, r, nil = C_nil;;
+{   LispObject p, q, r, nil = C_nil;
     p = numerator(a);
     q = denominator(a);
     push2(q, p);
@@ -1111,33 +1086,28 @@ static LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
 // versions of these functions. /*
 //
 
-static LispObject Lceiling_2(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!is_number(a) || !is_number(b)) return aerror1("ceiling", a);
+static LispObject Lceiling_2(LispObject, LispObject a, LispObject b)
+{   if (!is_number(a) || !is_number(b)) return aerror1("ceiling", a);
     return lisp_ifix(a, b, FIX_CEILING);
 }
 
-static LispObject Lfloor_2(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!is_number(a) || !is_number(b)) return aerror1("floor", a);
+static LispObject Lfloor_2(LispObject, LispObject a, LispObject b)
+{   if (!is_number(a) || !is_number(b)) return aerror1("floor", a);
     return lisp_ifix(a, b, FIX_FLOOR);
 }
 
-static LispObject Lround_2(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!is_number(a) || !is_number(b)) return aerror1("round", a);
+static LispObject Lround_2(LispObject, LispObject a, LispObject b)
+{   if (!is_number(a) || !is_number(b)) return aerror1("round", a);
     return lisp_ifix(a, b, FIX_ROUND);
 }
 
-LispObject Ltruncate_2(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!is_number(a) || !is_number(b)) return aerror1("truncate", a);
+LispObject Ltruncate_2(LispObject, LispObject a, LispObject b)
+{   if (!is_number(a) || !is_number(b)) return aerror1("truncate", a);
     return lisp_ifix(a, b, FIX_TRUNCATE);
 }
 
-static LispObject Lceiling(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!is_number(a)) return aerror1("ceiling", a);
+static LispObject Lceiling(LispObject, LispObject a)
+{   if (!is_number(a)) return aerror1("ceiling", a);
     if (is_numbers(a) && is_ratio(a)) return lisp_fix_ratio(a, FIX_CEILING);
     if (!is_float(a))
     {   mv_2 = fixnum_of_int(0);
@@ -1146,9 +1116,8 @@ static LispObject Lceiling(LispObject nil, LispObject a)
     return lisp_fix(a, FIX_CEILING);
 }
 
-static LispObject Lfloor(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!is_number(a)) return aerror1("floor", a);
+static LispObject Lfloor(LispObject, LispObject a)
+{   if (!is_number(a)) return aerror1("floor", a);
     if (is_numbers(a) && is_ratio(a)) return lisp_fix_ratio(a, FIX_FLOOR);
     if (!is_float(a))
     {   mv_2 = fixnum_of_int(0);
@@ -1157,9 +1126,8 @@ static LispObject Lfloor(LispObject nil, LispObject a)
     return lisp_fix(a, FIX_FLOOR);
 }
 
-static LispObject Lround(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!is_number(a)) return aerror1("round", a);
+static LispObject Lround(LispObject, LispObject a)
+{   if (!is_number(a)) return aerror1("round", a);
     if (is_numbers(a) && is_ratio(a)) return lisp_fix_ratio(a, FIX_ROUND);
     if (!is_float(a))
     {   mv_2 = fixnum_of_int(0);
@@ -1168,9 +1136,8 @@ static LispObject Lround(LispObject nil, LispObject a)
     return lisp_fix(a, FIX_ROUND);
 }
 
-LispObject Ltruncate(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!is_number(a)) return aerror1("fix", a);
+LispObject Ltruncate(LispObject, LispObject a)
+{   if (!is_number(a)) return aerror1("fix", a);
     if (is_numbers(a) && is_ratio(a)) return lisp_fix_ratio(a, FIX_TRUNCATE);
     if (!is_float(a))
     {   mv_2 = fixnum_of_int(0);
@@ -1205,31 +1172,45 @@ setup_type const arith08_setup[] =
     {"float-precision",         Lfloat_precision, too_many_1, wrong_no_1},
     {"float-radix",             Lfloat_radix, too_many_1, wrong_no_1},
     {"float-sign",              Lfloat_sign1, Lfloat_sign2, wrong_no_2},
+#ifdef ROUND_AND_TRUNCATE
     {"fround",                  too_few_2, Lfround, wrong_no_2},
     {"ftruncate",               too_few_2, Lftruncate, wrong_no_2},
+#endif
+#ifdef LOGFNS
     {"logbitp",                 too_few_2, Llogbitp, wrong_no_2},
     {"logcount",                Llogcount, too_many_1, wrong_no_1},
     {"logtest",                 too_few_2, Llogtest, wrong_no_2},
     {"mask-field",              too_few_2, Lmask_field, wrong_no_2},
+#endif
     {"scale-float",             too_few_2, Lscale_float, wrong_no_2},
     {"boole",                   wrong_no_na, wrong_no_nb, Lboole},
+#ifdef COMMON
     {"byte",                    too_few_2, Lbyte, wrong_no_2},
     {"byte-position",           Lbyte_position, too_many_1, wrong_no_1},
     {"byte-size",               Lbyte_size, too_many_1, wrong_no_1},
     {"complex",                 Lcomplex_1, Lcomplex_2, wrong_no_2},
     {"conjugate",               Lconjugate, too_many_1, wrong_no_1},
+#endif
     {"decode-float",            Ldecode_float, too_many_1, wrong_no_1},
     {"float-denormalized-p",    Lfloat_denormalized_p, too_many_1, wrong_no_1},
     {"float-infinity-p",        Lfloat_infinity_p, too_many_1, wrong_no_1},
+#ifdef COMMON
     {"denominator",             Ldenominator, too_many_1, wrong_no_1},
+#endif
+#ifdef DEPOSIT_FIELD_IMPLEMENTED
     {"deposit-field",           wrong_no_na, wrong_no_nb, Ldeposit_field},
+#endif
+#ifdef DPB_IMPLEMENTED
     {"dpb",                     wrong_no_na, wrong_no_nb, Ldpb},
+#endif
+#ifdef COMMON
     {"ffloor",                  too_few_2, Lffloor, wrong_no_2},
     {"imagpart",                Limagpart, too_many_1, wrong_no_1},
     {"ldb",                     too_few_2, Lldb, wrong_no_2},
     {"ldb-test",                too_few_2, Lldb_test, wrong_no_2},
     {"numerator",               Lnumerator, too_many_1, wrong_no_1},
     {"realpart",                Lrealpart, too_many_1, wrong_no_1},
+#endif
     {"gcd",                     Lgcd_1, Lgcd, Lgcd_n},
     {"gcdn",                    Lgcd_1, Lgcd, Lgcd_n},
     {"lcmn",                    Llcm_1, Llcm, Llcm_n},

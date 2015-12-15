@@ -2350,7 +2350,6 @@ char *address_of_var(int n)
     if (n == 0) p = (char *)nil;
     else if (n == 1) p = (char *)&stack;
     else
-#ifdef NILSEG_EXTERNS
         switch (n)
     {       default:    p = 0;                              break;
             case  12:   p = (char *)&byteflip;              break;
@@ -2470,22 +2469,6 @@ char *address_of_var(int n)
             case 152:   p = (char *)&declare_symbol;        break;
             case 153:   p = (char *)&special_symbol;        break;
         }
-#else // NILSEG_EXTERNS
-        if (n >= 160) switch (n)
-        {       default:    p = 0;                              break;
-                case 160:   p = (char *)&user_base_0;           break;
-                case 161:   p = (char *)&user_base_1;           break;
-                case 162:   p = (char *)&user_base_2;           break;
-                case 163:   p = (char *)&user_base_3;           break;
-                case 164:   p = (char *)&user_base_4;           break;
-                case 165:   p = (char *)&user_base_5;           break;
-                case 166:   p = (char *)&user_base_6;           break;
-                case 167:   p = (char *)&user_base_7;           break;
-                case 168:   p = (char *)&user_base_8;           break;
-                case 169:   p = (char *)&user_base_9;           break;
-            }
-        else p = (char *)&(((int32_t *)nil)[n]);
-#endif // NILSEG_EXTERNS
     return p;
 }
 

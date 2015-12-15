@@ -1000,8 +1000,10 @@ CSLbool numeq2(LispObject a, LispObject b)
 // of NaNs in this comparison.
 //
                     return (a == b) ||
-                           (a == TAG_SFLOAT && b == TAG_SFLOAT|0x80000000) ||
-                           (a == TAG_SFLOAT|0x80000000 && b == TAG_SFLOAT); // !!!
+                           (a == TAG_SFLOAT &&
+                            b == (LispObject)(TAG_SFLOAT|0x80000000)) ||
+                           (a == (LispObject)(TAG_SFLOAT|0x80000000) &&
+                            b == TAG_SFLOAT); // !!!
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)

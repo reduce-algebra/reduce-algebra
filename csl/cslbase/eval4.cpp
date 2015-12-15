@@ -2176,10 +2176,8 @@ static LispObject Lspid_to_nil(LispObject nil, LispObject a)
     return onevalue(a);
 }
 
-static LispObject Lload_spid(LispObject nil, int nargs, ...)
+static LispObject Lload_spid(LispObject, int, ...)
 {   // Used in compilation of UNWIND-PROTECT
-    CSL_IGNORE(nil);
-    CSL_IGNORE(nargs);
     return onevalue(SPID_PROTECT);
 }
 

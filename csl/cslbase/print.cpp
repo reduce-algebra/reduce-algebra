@@ -133,7 +133,6 @@ void stdout_printf(const char *fmt, ...)
 {   va_list a;
     char print_temp[VPRINTF_CHUNK], *p;
     int n;
-    nil_as_base
     LispObject stream = qvalue(standard_output);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
@@ -148,7 +147,6 @@ void err_printf(const char *fmt, ...)
 {   va_list a;
     char print_temp[VPRINTF_CHUNK], *p;
     int n;
-    nil_as_base
     LispObject stream = qvalue(error_output);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
@@ -163,7 +161,6 @@ void debug_printf(const char *fmt, ...)
 {   va_list a;
     char print_temp[VPRINTF_CHUNK], *p;
     int n;
-    nil_as_base
     LispObject stream = qvalue(debug_io);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
@@ -178,7 +175,6 @@ void trace_printf(const char *fmt, ...)
 {   va_list a;
     char print_temp[VPRINTF_CHUNK], *p;
     int n;
-    nil_as_base
     LispObject stream = qvalue(trace_output);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
@@ -350,7 +346,7 @@ int32_t write_action_terminal(int32_t op, LispObject dummy)
             case WRITE_GET_INFO:
                 switch (op & 0xff)
                 {   case WRITE_GET_LINE_LENGTH: w = terminal_line_length;
-                        if (w == 0x80000000)
+                        if (w == (int32_t)0x80000000)
                             w = default_terminal_line_length;
                         return w;
                     case WRITE_GET_COLUMN:      return terminal_column;
@@ -419,7 +415,7 @@ int32_t write_action_spool(int32_t op, LispObject dummy)
             case WRITE_GET_INFO:
                 switch (op & 0xff)
                 {   case WRITE_GET_LINE_LENGTH: w = terminal_line_length;
-                        if (w == 0x80000000)
+                        if (w == (int32_t)0x80000000)
                             w = default_terminal_line_length;
                         return w;
                     case WRITE_GET_COLUMN:      return terminal_column;
@@ -1116,9 +1112,6 @@ LispObject Lopen(LispObject nil, LispObject name, LispObject dir)
     size_t len = 0;
     const char *w;
     int d;
-#if defined HAVE_POPEN || defined HAVE_FWIN
-    CSLbool pipep = NO;
-#endif
     memset(filename, 0, sizeof(filename));
     memset(fn1, 0, sizeof(fn1));
     if (!is_fixnum(dir)) return aerror1("open", dir);
@@ -1301,7 +1294,6 @@ LispObject Lopen(LispObject nil, LispObject name, LispObject dir)
 
         case DIRECTION_OUTPUT | OPEN_PIPE:
 #if defined HAVE_POPEN || defined HAVE_FWIN
-            pipep = YES;
             memcpy(filename, w, (size_t)len);
             filename[len] = 0;
             file = my_popen(filename, "w");
@@ -1313,7 +1305,6 @@ LispObject Lopen(LispObject nil, LispObject name, LispObject dir)
 
         case DIRECTION_INPUT | OPEN_PIPE:
 #if defined HAVE_POPEN || defined HAVE_FWIN
-            pipep = YES;
             memcpy(filename, w, (size_t)len);
             filename[len] = 0;
             file = my_popen(filename, "r");
@@ -1691,8 +1682,7 @@ LispObject Lfind_gnuplot(LispObject nil, int nargs, ...)
 }
 
 LispObject Lgetpid(LispObject nil, int nargs, ...)
-{   LispObject w;
-    argcheck(nargs, 0, "getpid");
+{   argcheck(nargs, 0, "getpid");
 #ifdef WIN32
     return onevalue(fixnum_of_int(_getpid()));
 #else
@@ -1803,8 +1793,7 @@ static void outprefix(CSLbool blankp, int32_t len)
 // If blankp is true we need to display a blank or newline before
 // the item.
 //
-{   nil_as_base
-    int32_t line_length =
+{   int32_t line_length =
         other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH,
                            active_stream);
     int32_t column =
@@ -3259,8 +3248,7 @@ print_my_buff:
 }
 
 LispObject prin(LispObject u)
-{   nil_as_base
-    escaped_printing = escape_yes;
+{   escaped_printing = escape_yes;
     push(u);
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
@@ -3382,8 +3370,7 @@ void loop_print_stdout(LispObject o)
 }
 
 void loop_print_error(LispObject o)
-{   nil_as_base
-    LispObject w = qvalue(standard_output);
+{   LispObject w = qvalue(standard_output);
 #ifndef NO_BYTECOUNT
     const char *name = name_of_caller;
 #endif
@@ -3405,8 +3392,7 @@ void loop_print_error(LispObject o)
 }
 
 void loop_print_trace(LispObject o)
-{   nil_as_base
-    LispObject w = qvalue(standard_output);
+{   LispObject w = qvalue(standard_output);
 #ifndef NO_BYTECOUNT
     const char *name = name_of_caller;
 #endif
@@ -3428,8 +3414,7 @@ void loop_print_trace(LispObject o)
 }
 
 void loop_print_debug(LispObject o)
-{   nil_as_base
-    LispObject w = qvalue(standard_output);
+{   LispObject w = qvalue(standard_output);
 #ifndef NO_BYTECOUNT
     const char *name = name_of_caller;
 #endif
@@ -3445,8 +3430,7 @@ void loop_print_debug(LispObject o)
 }
 
 void loop_print_query(LispObject o)
-{   nil_as_base
-    LispObject w = qvalue(standard_output);
+{   LispObject w = qvalue(standard_output);
 #ifndef NO_BYTECOUNT
     const char *name = name_of_caller;
 #endif
@@ -3462,8 +3446,7 @@ void loop_print_query(LispObject o)
 }
 
 void loop_print_terminal(LispObject o)
-{   nil_as_base
-    LispObject w = qvalue(standard_output);
+{   LispObject w = qvalue(standard_output);
 #ifndef NO_BYTECOUNT
     const char *name = name_of_caller;
 #endif
@@ -3482,7 +3465,6 @@ LispObject prinraw(LispObject u)
 {   Header h;
     int32_t len, i;
     char b[40], *p;
-    nil_as_base
     push(u);
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
@@ -3515,8 +3497,7 @@ LispObject prinraw(LispObject u)
 }
 
 static LispObject prinhex(LispObject u, int n)
-{   nil_as_base
-    escaped_printing = escape_yes+escape_hex+((n & 0x3f)<<8);
+{   escaped_printing = escape_yes+escape_hex+((n & 0x3f)<<8);
     push(u);
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
@@ -3527,8 +3508,7 @@ static LispObject prinhex(LispObject u, int n)
 }
 
 static LispObject prinoctal(LispObject u, int n)
-{   nil_as_base
-    escaped_printing = escape_yes+escape_octal+((n & 0x3f)<<8);
+{   escaped_printing = escape_yes+escape_octal+((n & 0x3f)<<8);
     push(u);
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
@@ -3539,8 +3519,7 @@ static LispObject prinoctal(LispObject u, int n)
 }
 
 static LispObject prinbinary(LispObject u, int n)
-{   nil_as_base
-    escaped_printing = escape_yes+escape_binary+((n & 0x3f)<<8);
+{   escaped_printing = escape_yes+escape_binary+((n & 0x3f)<<8);
     push(u);
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
@@ -3551,8 +3530,7 @@ static LispObject prinbinary(LispObject u, int n)
 }
 
 LispObject princ(LispObject u)
-{   nil_as_base
-    escaped_printing = 0;
+{   escaped_printing = 0;
     push(u);
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
@@ -3563,8 +3541,7 @@ LispObject princ(LispObject u)
 }
 
 LispObject print(LispObject u)
-{   nil_as_base
-    LispObject stream = qvalue(standard_output);
+{   LispObject stream = qvalue(standard_output);
     push(u);
     escaped_printing = escape_yes;
     if (!is_stream(stream)) stream = qvalue(terminal_io);
@@ -3577,8 +3554,7 @@ LispObject print(LispObject u)
 }
 
 LispObject printc(LispObject u)
-{   nil_as_base
-    LispObject stream = qvalue(standard_output);
+{   LispObject stream = qvalue(standard_output);
     push(u);
     escaped_printing = 0;
     if (!is_stream(stream)) stream = qvalue(terminal_io);
@@ -3591,16 +3567,14 @@ LispObject printc(LispObject u)
 }
 
 void freshline_trace(void)
-{   nil_as_base
-    if (other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
+{   if (other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
                            qvalue(trace_output)) != 0)
         putc_stream('\n', qvalue(trace_output));
 
 }
 
 void freshline_debug(void)
-{   nil_as_base
-    if (other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
+{   if (other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
                            qvalue(debug_io)) != 0)
         putc_stream('\n', qvalue(debug_io));
 
@@ -3841,7 +3815,7 @@ LispObject Llinelength(LispObject nil, LispObject a)
         if (oll < 10) oll = 10;
         oll = other_write_action(WRITE_SET_LINELENGTH | oll, stream);
     }
-    if (oll == 0x80000000) return onevalue(lisp_true);
+    if (oll == (int32_t)0x80000000) return onevalue(lisp_true);
     else return onevalue(fixnum_of_int(oll));
 }
 
@@ -4955,12 +4929,13 @@ static LispObject Lopen_url(LispObject nil, LispObject url)
 {   char filename[LONGEST_LEGAL_FILENAME],
     filename1[LONGEST_LEGAL_FILENAME], *p;
     const char *user, *pass, *proto, *hostaddr, *port, *path;
-    int  nuser, npass, nproto, nhostaddr, nport, npath;
+    size_t  nuser, npass, nproto, nhostaddr, nport, npath;
     size_t len = 0;
     struct hostent *host;
-    long int hostnum;
+    unsigned long int hostnum;
     SOCKET s;
-    int i, retcode, retry_count=0;
+    size_t i;
+    int retcode, retry_count=0;
     LispObject r;
     const char *w = get_string_data(url, "open-url", &len);
     errexit();

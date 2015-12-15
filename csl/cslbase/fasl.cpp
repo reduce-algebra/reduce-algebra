@@ -2405,7 +2405,7 @@ static int compare_char_counts(void const *aa, void const *bb)
 #define INFO_CHAR   ('_' & 0x1f)
 
 LispObject Lwrite_help_module(LispObject nil,
-                              LispObject name, LispObject ignore)
+                              LispObject name, LispObject)
 {   int i, c1, c2, c3, pass, linep;
     int32_t info_seen;
     unsigned char cx1[256], cx2[256];
@@ -2428,7 +2428,6 @@ LispObject Lwrite_help_module(LispObject nil,
     FILE *file;
     unsigned char *frequencies;
     char_pair_hash *overflow;
-    CSL_IGNORE(ignore);
     memset(filename, 0, sizeof(filename));
 #if 0
 #ifdef SOCKETS
@@ -2918,11 +2917,9 @@ static int cstackp;
 //
 
 static int getc_help(void)
-{   LispObject nil = C_nil;
-    LispObject v = help_index;
+{   LispObject v = help_index;
     unsigned char *p;
     int k, c2;
-    CSL_IGNORE(nil);
     p = &ucelt(v, 0);
     if (cstackp == 0) k = Igetc();
     else k = cstack[--cstackp];
@@ -3011,12 +3008,10 @@ void skip_some_lines(int n)
 
 static int topic_in_index(char *key)
 {   int len = strlen(key);
-    LispObject nil = C_nil;
     LispObject v = help_index;
     int32_t size, i, low, high, offset;
     int k, l;
     char *p;
-    CSL_IGNORE(nil);
     if (len > 28) len = 28;
     if (!is_vector(v)) return 0;
     size = length_of_header(vechdr(v)) - CELL;
@@ -3330,7 +3325,6 @@ char prompt_string[MAX_PROMPT_LENGTH];
 
 LispObject Lsetpchar(LispObject nil, LispObject a)
 {   LispObject old = prompt_thing;
-    CSL_IGNORE(nil);
     prompt_thing = a;
 #define escape_nolinebreak 0x80
     escaped_printing = escape_nolinebreak;

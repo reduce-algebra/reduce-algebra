@@ -1001,9 +1001,8 @@ static LispObject noisy_progv_fn(LispObject args, LispObject env)
 
 #endif
 
-LispObject quote_fn(LispObject args, LispObject env)
+LispObject quote_fn(LispObject args, LispObject)
 {   LispObject nil = C_nil;
-    CSL_IGNORE(env);
     if (consp(args) && qcdr(args) == nil) return onevalue(qcar(args));
     return aerror("quote");
 }
@@ -2109,7 +2108,6 @@ LispObject Lerrorsetn(LispObject env, int nargs, ...)
 //
 {   LispObject form, fg1, fg2;
     va_list a;
-    nil_as_base;
     if (nargs < 1 || nargs > 3) return aerror("errorset");
     va_start(a, nargs);
     form = va_arg(a, LispObject);

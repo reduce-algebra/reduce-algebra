@@ -1004,7 +1004,7 @@ static LispObject noisy_cond_fn(LispObject args, LispObject env)
 }
 
 
-LispObject declare_fn(LispObject args, LispObject env)
+LispObject declare_fn(LispObject, LispObject)
 //
 // declarations can only properly occur at the heads of various
 // special forms, and so may NOT be evaluated in an ordinary manner.
@@ -1015,17 +1015,14 @@ LispObject declare_fn(LispObject args, LispObject env)
 // a no-op here seems the safest bet. And in CSL mode this allows one to
 // have left DECLAREs in there for the benefit of the compiler.
 //
-{   LispObject nil = C_nil;
-    CSL_IGNORE(env);
-    CSL_IGNORE(args);
-    return onevalue(nil);
+{   return onevalue(C_nil);
 }
 
 
 #define flagged_lose(v) \
     ((fv = qfastgets(v)) != nil && elt(fv, 1) != SPID_NOPROP)
 
-static LispObject defun_fn(LispObject args, LispObject env)
+static LispObject defun_fn(LispObject args, LispObject)
 {
 //
 // defun is eventually expected (required!) to be a macro rather than (maybe
@@ -1034,7 +1031,6 @@ static LispObject defun_fn(LispObject args, LispObject env)
 // in CSL mode
 //
     LispObject fname, nil = C_nil;
-    CSL_IGNORE(env);
     if (consp(args))
     {   fname = qcar(args);
         args = qcdr(args);
@@ -1084,7 +1080,7 @@ static LispObject defun_fn(LispObject args, LispObject env)
     return aerror("defun");
 }
 
-static LispObject defmacro_fn(LispObject args, LispObject env)
+static LispObject defmacro_fn(LispObject args, LispObject)
 {
 //
 // defmacro is eventually expected (required!) to be a macro rather than (maybe
@@ -1092,7 +1088,6 @@ static LispObject defmacro_fn(LispObject args, LispObject env)
 // build it in as a special form.
 //
     LispObject fname, nil = C_nil;
-    CSL_IGNORE(env);
     if (consp(args))
     {   fname = qcar(args);
         args = qcdr(args);
@@ -1264,7 +1259,6 @@ LispObject function_fn(LispObject args, LispObject env)
 
 static LispObject go_fn(LispObject args, LispObject env)
 {   LispObject p, tag, nil = C_nil;
-    CSL_IGNORE(env);
     if (!consp(args)) return aerror("go");
     else tag = qcar(args);
     for(p=env; consp(p); p=qcdr(p))

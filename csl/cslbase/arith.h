@@ -102,22 +102,36 @@
 // to avoid nasty problems with C syntax and the need for semicolons.
 //
 #define IMULTIPLY 1      // External function not needed
-#define Dmultiply(hi, lo, a, b, c)                          \
- do { uint64_t r64 = (uint64_t)(a) * (uint64_t)(b) +  \
+#define Dmultiply(hi, lo, a, b, c)                        \
+ do { uint64_t r64 = (uint64_t)(a) * (uint64_t)(b) +      \
                      (uint32_t)(c);                       \
       (lo) = 0x7fffffffu & (uint32_t)r64;                 \
       (hi) = (uint32_t)(r64 >> 31); } while (0)
 #define IDIVIDE   1
-#define Ddivide(r, q, a, b, c)                                      \
+#define Ddivide(r, q, a, b, c)                                \
  do { uint64_t r64 = (((uint64_t)(a)) << 31) | (uint64_t)(b); \
       uint64_t c64 = (uint64_t)(uint32_t)(c);                 \
-      q = (uint32_t)(r64 / c64);                                  \
+      q = (uint32_t)(r64 / c64);                              \
       r = (uint32_t)(r64 % c64); } while (0)
 #define Ddiv10_9(r, q, a, b) Ddivide(r, q, a, b, 1000000000u)
+#define Ddivideq(q, a, b, c)                                  \
+ do { uint64_t r64 = (((uint64_t)(a)) << 31) | (uint64_t)(b); \
+      uint64_t c64 = (uint64_t)(uint32_t)(c);                 \
+      q = (uint32_t)(r64 / c64); } while (0)
+#define Ddiv10_9q(r, q, a, b) Ddivideq(q, a, b, 1000000000u)
+#define Ddivider(r, a, b, c)                                  \
+ do { uint64_t r64 = (((uint64_t)(a)) << 31) | (uint64_t)(b); \
+      uint64_t c64 = (uint64_t)(uint32_t)(c);                 \
+      r = (uint32_t)(r64 % c64); } while (0)
+#define Ddiv10_9r(r, q, a, b) Ddivider(r, a, b, 1000000000u)
 #else
 #define Dmultiply(hi, lo, a, b, c) ((hi) = Imultiply(&(lo), (a), (b), (c)))
 #define Ddivide(r, q, a, b, c) ((r) = Idivide(&(q), (a), (b), (c)))
 #define Ddiv10_9(r, q, a, b)   ((r) = Idiv10_9(&(q), (a), (b)))
+#define Ddivideq(q, a, b, c) (Idivide(&(q), (a), (b), (c)))
+#define Ddiv10_9q(q, a, b)   (Idiv10_9(&(q), (a), (b)))
+#define Ddivider(r, a, b, c) ((r) = Idivide(NULL, (a), (b), (c)))
+#define Ddiv10_9r(r, a, b)   ((r) = Idiv10_9(NULL, (a), (b)))
 #endif
 
 #define fix_mask (-0x08000000)

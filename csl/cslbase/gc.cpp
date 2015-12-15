@@ -1384,7 +1384,6 @@ static int fold_cons_heap(void)
 //
 // This is amazingly messy because the heap is segmented.
 //
-    nil_as_base
     int top_page_number = 0,
         bottom_page_number = (int)heap_pages_count - 1;
     void *top_page = heap_pages[top_page_number],
@@ -1613,8 +1612,7 @@ static void move_vec_heap(void)
 // relocation will be dealt with elsewhere.  Calculations made here must remain
 // in step with those in adjust_vecheap.
 //
-{   nil_as_base
-    int32_t page_number, new_page_number = 0;
+{   int32_t page_number, new_page_number = 0;
     void *new_page = vheap_pages[0];
     char *new_low = (char *)doubleword_align_up((intptr_t)new_page);
     char *new_high = new_low + (CSL_PAGE_SIZE - 8);
@@ -2456,7 +2454,6 @@ static CSLbool reset_limit_registers(intptr_t vheap_need,
 // need for a more genuine GC.
 //
 {   void *p;
-    nil_as_base
     uintptr_t len;
     CSLbool full;
     if (gc_method_is_copying)
@@ -2539,8 +2536,7 @@ static void tidy_fringes(void)
 // later on when needed while scanning a page of heap.  Similarly
 // vfringe is stashed away at the end of its page.
 //
-{   nil_as_base
-    char *fr = (char *)fringe,
+{   char *fr = (char *)fringe,
           *vf = (char *)vfringe,
            *cf = (char *)codefringe,
             *hl = (char *)heaplimit,
@@ -3110,7 +3106,8 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // The above line is "really"
 //          copy(&current_package);
 // but I use an offset into the nilseg in explicit form because otherwise
-// there is a big foul-up with the NILSEG_EXTERNS option...  Sorry!
+// there is confusion between the real and copied location of the pointer
+// to the package.
 //
 
 //

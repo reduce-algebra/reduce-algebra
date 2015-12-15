@@ -401,8 +401,6 @@ om_openFileDev(LispObject nil, int nargs, ...)
     int32_t len;
     LispObject lispDev;
 
-    CSL_IGNORE(nil);
-
     // Unpack the parameters into Lisp_Objects.
     argcheck(nargs, 3, "om_openFileDev");
     va_start(args, nargs);
@@ -469,7 +467,6 @@ om_openStringDev(LispObject nil, LispObject lstr, LispObject lenc)
     OMdev dev;
     LispObject ldev;
 
-    CSL_IGNORE(nil);
     push2(lstr, lenc);
 
     pstr = om_toCString(lstr);
@@ -490,7 +487,6 @@ LispObject
 om_closeDev(LispObject nil, LispObject ldev)
 {   OMdev dev;
 
-    CSL_IGNORE(nil);
     push(ldev);
 
     dev = om_toDev(ldev);
@@ -507,7 +503,6 @@ om_setDevEncoding(LispObject nil, LispObject ldev, LispObject lenc)
 {   OMdev dev;
     OMencodingType enc;
 
-    CSL_IGNORE(nil);
     push2(ldev, lenc);
 
     dev = om_toDev(ldev);
@@ -540,7 +535,6 @@ om_makeConn(LispObject nil, LispObject ltimeout)
 {   OMconn conn;
     int32_t timeout;
 
-    CSL_IGNORE(nil);
     push(ltimeout);
 
     if (!is_fixnum(ltimeout))
@@ -562,7 +556,6 @@ om_closeConn(LispObject nil, LispObject lconn)
 {   OMconn conn;
     OMstatus status;
 
-    CSL_IGNORE(nil);
     push(lconn);
 
     conn = om_toConn(lconn);
@@ -586,7 +579,6 @@ om_getConnInDev(LispObject nil, LispObject lconn)
 {   OMconn conn;
     OMdev dev;
 
-    CSL_IGNORE(nil);
     push(lconn);
 
     conn = om_toConn(lconn);
@@ -607,7 +599,6 @@ om_getConnOutDev(LispObject nil, LispObject lconn)
 {   OMconn conn;
     OMdev dev;
 
-    CSL_IGNORE(nil);
     push(lconn);
 
     conn = om_toConn(lconn);
@@ -637,7 +628,6 @@ om_connectTCP(LispObject nil, int nargs, ...)
     int32_t port;
     OMstatus status;
 
-    CSL_IGNORE(nil);
 
     // Unpack the parameters into Lisp_Objects.
     argcheck(nargs, 3, "om_connectTCP");
@@ -686,7 +676,6 @@ om_bindTCP(LispObject nil, LispObject lconn, LispObject lport)
     int32_t port;
     OMstatus status;
 
-    CSL_IGNORE(nil);
     push2(lconn, lport);
 
     conn = om_toConn(lconn);
@@ -1591,7 +1580,6 @@ om_getSymbol(LispObject nil, LispObject ldev)
     int cdLen, nameLen;
     LispObject cdstr, namestr, obj;
 
-    CSL_IGNORE(nil);
     push(ldev);
 
     dev = om_toDev(ldev);

@@ -595,8 +595,6 @@ LispObject aerror2(const char *s, LispObject a, LispObject b)
 
 static LispObject wrong(int wanted, int given, LispObject env)
 {   char msg[64];
-    LispObject nil = C_nil;
-    CSL_IGNORE(nil);
     sprintf(msg, "Function called with %d args where %d wanted", given, wanted);
     if (is_cons(env)) env = qcdr(env);
     if ((miscflags & HEADLINE_FLAG) && is_vector(env))
@@ -608,70 +606,52 @@ static LispObject wrong(int wanted, int given, LispObject env)
     return aerror(msg);
 }
 
-LispObject too_few_2(LispObject env, LispObject a1)
-{   CSL_IGNORE(a1);
-    return wrong(2, 1, env);
+LispObject too_few_2(LispObject env, LispObject)
+{   return wrong(2, 1, env);
 }
 
-LispObject too_many_1(LispObject env, LispObject a1, LispObject a2)
-{   CSL_IGNORE(a1);
-    CSL_IGNORE(a2);
-    return wrong(1, 2, env);
+LispObject too_many_1(LispObject env, LispObject, LispObject)
+{   return wrong(1, 2, env);
 }
 
-LispObject wrong_no_0a(LispObject env, LispObject a1)
-{   CSL_IGNORE(a1);
-    return wrong(0, 1, env);
+LispObject wrong_no_0a(LispObject env, LispObject)
+{   return wrong(0, 1, env);
 }
 
-LispObject wrong_no_0b(LispObject env, LispObject a1, LispObject a2)
-{   CSL_IGNORE(a1);
-    CSL_IGNORE(a2);
-    return wrong(0, 2, env);
+LispObject wrong_no_0b(LispObject env, LispObject, LispObject)
+{   return wrong(0, 2, env);
 }
 
-LispObject wrong_no_3a(LispObject env, LispObject a1)
-{   CSL_IGNORE(a1);
-    return wrong(3, 1, env);
+LispObject wrong_no_3a(LispObject env, LispObject)
+{   return wrong(3, 1, env);
 }
 
-LispObject wrong_no_3b(LispObject env, LispObject a1, LispObject a2)
-{   CSL_IGNORE(a1);
-    CSL_IGNORE(a2);
-    return wrong(3, 2, env);
+LispObject wrong_no_3b(LispObject env, LispObject, LispObject)
+{   return wrong(3, 2, env);
 }
 
-LispObject wrong_no_na(LispObject env, LispObject a1)
-{   CSL_IGNORE(a1);
-    if (is_cons(env) && is_bps(qcar(env)))
+LispObject wrong_no_na(LispObject env, LispObject)
+{   if (is_cons(env) && is_bps(qcar(env)))
         return wrong(((unsigned char *)data_of_bps(qcar(env)))[0], 1, env);
     else return aerror("function called with 1 arg when 0 or >= 3 wanted");
 }
 
-LispObject wrong_no_nb(LispObject env, LispObject a1, LispObject a2)
-{   CSL_IGNORE(a1);
-    CSL_IGNORE(a2);
-    if (is_cons(env) && is_bps(qcar(env)))
+LispObject wrong_no_nb(LispObject env, LispObject, LispObject)
+{   if (is_cons(env) && is_bps(qcar(env)))
         return wrong(((unsigned char *)data_of_bps(qcar(env)))[0], 2, env);
     else return aerror("function called with 2 args when 0 or >= 3 wanted");
 }
 
 LispObject wrong_no_1(LispObject env, int nargs, ...)
-{   CSL_IGNORE(env);
-    CSL_IGNORE(nargs);
-    return wrong(1, nargs, env);
+{   return wrong(1, nargs, env);
 }
 
 LispObject wrong_no_2(LispObject env, int nargs, ...)
-{   CSL_IGNORE(env);
-    CSL_IGNORE(nargs);
-    return wrong(2, nargs, env);
+{   return wrong(2, nargs, env);
 }
 
-LispObject bad_specialn(LispObject env, int nargs, ...)
-{   CSL_IGNORE(env);
-    CSL_IGNORE(nargs);
-    return aerror("call to special form");
+LispObject bad_specialn(LispObject, int, ...)
+{   return aerror("call to special form");
 }
 
 void fatal_error(int code, ...)
@@ -1305,13 +1285,7 @@ void sigint_handler(int code)
     if (!tick_pending)
     {   if (already_in_gc) tick_on_gc_exit = YES;
         else
-        {
-#ifndef NILSEG_EXTERNS
-            LispObject nil = C_nil;
-            CSLbool xxx = NO;
-            if (exception_pending()) flip_exception(), xxx = YES;
-#endif
-            tick_pending = YES;
+        {   tick_pending = YES;
             saveheaplimit = heaplimit;
             heaplimit = fringe;
             savevheaplimit = vheaplimit;
@@ -1320,9 +1294,6 @@ void sigint_handler(int code)
             codelimit = codefringe;
             savestacklimit = stacklimit;
             stacklimit = stackbase;
-#ifndef NILSEG_EXTERNS
-            if (xxx) flip_exception();
-#endif
         }
     }
     return;
@@ -1375,13 +1346,7 @@ int deal_with_tick(void)
     if (!tick_pending)
     {   if (already_in_gc) tick_on_gc_exit = YES;
         else
-        {
-#ifndef NILSEG_EXTERNS
-            LispObject nil = C_nil;
-            CSLbool xxx = NO;
-            if (exception_pending()) flip_exception(), xxx = YES;
-#endif
-            tick_pending = YES;
+        {   tick_pending = YES;
             saveheaplimit = heaplimit;
             heaplimit = fringe;
             savevheaplimit = vheaplimit;
@@ -1390,9 +1355,6 @@ int deal_with_tick(void)
             codelimit = codefringe;
             savestacklimit = stacklimit;
             stacklimit = stackbase;
-#ifndef NILSEG_EXTERNS
-            if (xxx) flip_exception();
-#endif
         }
     }
 #endif
@@ -3111,7 +3073,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 //    2 bit:    1 to request initial allocation of memory.
 //
         setup(restartp ? 3 : 2, store_size);
-        {   nil_as_base
+        {
 //
 // If the user had used "-g" on the command line that will have set
 // errorset_min and I use that to trigger during on gc and fasl messages.

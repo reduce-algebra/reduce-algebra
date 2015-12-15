@@ -658,8 +658,7 @@ LispObject Lsymbol_env(LispObject nil, LispObject a)
 }
 
 LispObject Lsymbol_set_env(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!is_symbol(a)) return aerror1("symbol-set-env", a);
+{   if (!is_symbol(a)) return aerror1("symbol-set-env", a);
     if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
         (SYM_C_DEF | SYM_CODEPTR)) return onevalue(nil);
     qenv(a) = b;
@@ -759,7 +758,6 @@ void lose_C_def(LispObject a)
     LispObject nil = C_nil;
     LispObject b = get(a, unset_var, nil), c;
 #else
-    nil_as_base
     LispObject b = get(a, unset_var), c;
 #endif
     Lremprop(C_nil, a, unset_var);
@@ -1245,7 +1243,6 @@ LispObject Lsymbol_set_definition(LispObject nil,
 LispObject Lgetd(LispObject nil, LispObject a)
 {   Header h;
     LispObject type;
-    CSL_IGNORE(nil);
     if (a == nil) return onevalue(nil);
     else if (!is_symbol(a)) return onevalue(nil);
     h = qheader(a);
@@ -1268,7 +1265,6 @@ LispObject Lgetd(LispObject nil, LispObject a)
 
 LispObject Lremd(LispObject nil, LispObject a)
 {   LispObject res;
-    CSL_IGNORE(nil);
     if (!is_symbol(a) ||
         (qheader(a) & SYM_SPECIAL_FORM) != 0)
         return aerror1("remd", a);
@@ -1304,7 +1300,6 @@ LispObject Lremd(LispObject nil, LispObject a)
 
 LispObject Lset_autoload(LispObject nil, LispObject a, LispObject b)
 {   LispObject res;
-    CSL_IGNORE(nil);
     if (!is_symbol(a) ||
         (qheader(a) & SYM_SPECIAL_FORM) != 0)
         return aerror1("set-autoload", a);
@@ -1532,15 +1527,15 @@ static uint32_t find_built_in_function(one_args *f1,
     return pack_funtable(NOT_FOUND, NOT_FOUND);
 }
 
-LispObject Ltrace_all(LispObject nil, LispObject a)
+LispObject Ltrace_all(LispObject, LispObject a)
 {
 #ifdef DEBUG
+    LispObject nil = C_nil;
     if (a == nil) trace_all = 0;
     else trace_all = 1;
     return onevalue(nil);
 #else
-    CSL_IGNORE(nil);
-    CSL_IGNORE(a);
+    (void)a;
     return aerror("trace-all only supported in DEBUG version");
 #endif
 }
@@ -1662,7 +1657,6 @@ LispObject Ltrace(LispObject nil, LispObject a)
 
 LispObject Luntrace(LispObject nil, LispObject a)
 {   LispObject w = a;
-    CSL_IGNORE(nil);
     if (symbolp(a))
     {   a = ncons(a);
         errexit();
@@ -1900,7 +1894,6 @@ LispObject Ldouble(LispObject nil, LispObject a)
 
 LispObject Lundouble(LispObject nil, LispObject a)
 {   LispObject w = a;
-    CSL_IGNORE(nil);
     if (symbolp(a))
     {   a = ncons(a);
         errexit();
@@ -1951,7 +1944,7 @@ LispObject Lundouble(LispObject nil, LispObject a)
 // work for general code!
 //
 
-LispObject Ljit(LispObject nil, LispObject a)
+LispObject Ljit(LispObject, LispObject a)
 {   LispObject w = a;
     if (symbolp(a))
     {   a = ncons(a);
@@ -2409,8 +2402,10 @@ CSLbool cl_equal_fn(LispObject a, LispObject b)
 // a and b are not EQ at this stage.. I guarantee to have checked that
 // before entering this general purpose code.
 //
-{   LispObject nil = C_nil;
-    CSL_IGNORE(nil);
+{
+#ifdef COMMON
+    LispObject nil = C_nil;
+#endif
 //
 // The for loop at the top here is so that cl_equal can iterate along the
 // length of linear lists.
@@ -2657,8 +2652,10 @@ CSLbool equal_fn(LispObject a, LispObject b)
 // the types of the two args agree, and that they are not both immediate
 // date.
 //
-{   LispObject nil = C_nil;
-    CSL_IGNORE(nil);
+{
+#ifdef COMMON
+    LispObject nil = C_nil;
+#endif
 #endif
 //
 // The for loop at the top here is so that equal can iterate along the
@@ -2873,8 +2870,10 @@ CSLbool equalp(LispObject a, LispObject b)
 // a and b are not EQ at this stage.. I guarantee to have checked that
 // before entering this general purpose code.
 //
-{   LispObject nil = C_nil;
-    CSL_IGNORE(nil);
+{
+#ifdef COMMON
+    LispObject nil = C_nil;
+#endif
 //
 // The for loop at the top here is so that equalp can iterate along the
 // length of linear lists.
@@ -3127,8 +3126,7 @@ LispObject Lnreverse(LispObject nil, LispObject a)
 }
 
 LispObject Lnreverse2(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    while (consp(a))
+{   while (consp(a))
     {   LispObject c = a;
         a = qcdr(a);
         qcdr(c) = b;
@@ -3364,8 +3362,6 @@ static CSLbool smemq(LispObject a, LispObject b)
 //
 #ifdef COMMON
     LispObject nil = C_nil;
-#else
-    nil_as_base
 #endif
     while (consp(b))
     {   LispObject w = qcar(b);
@@ -3417,7 +3413,9 @@ static LispObject Lcontained(LispObject nil, LispObject x, LispObject y)
 
 LispObject Llast(LispObject nil, LispObject a)
 {   LispObject b;
-    CSL_IGNORE(nil);
+#ifndef COMMON
+    (void)nil;
+#endif
     if (!consp(a)) return aerror1("last", a);
     while (b = qcdr(a), consp(b)) a = b;
     return onevalue(qcar(a));
@@ -3425,7 +3423,9 @@ LispObject Llast(LispObject nil, LispObject a)
 
 LispObject Llastpair(LispObject nil, LispObject a)
 {   LispObject b;
-    CSL_IGNORE(nil);
+#ifndef COMMON
+    (void)nil;
+#endif
     if (!consp(a)) return onevalue(a); // aerror1("lastpair", a);
     while (b = qcdr(a), consp(b)) a = b;
     return onevalue(a);
@@ -3570,9 +3570,8 @@ LispObject Lappend_n(LispObject nil, int nargs, ...)
     return onevalue(nreverse(r));
 }
 
-LispObject Lappend_1(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return onevalue(a);
+LispObject Lappend_1(LispObject, LispObject a)
+{   return onevalue(a);
 }
 
 #endif // COMMON
@@ -3671,7 +3670,9 @@ LispObject Ldeleq(LispObject nil, LispObject a, LispObject b)
 
 LispObject Lnconc(LispObject nil, LispObject a, LispObject b)
 {   LispObject c;
-    CSL_IGNORE(nil);
+#ifndef COMMON
+    (void)nil;
+#endif
     if (!consp(a)) return onevalue(b);
     c = a;
     for (;;)

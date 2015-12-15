@@ -2004,9 +2004,8 @@ LispObject Lmacroexpand(LispObject nil, LispObject a)
 }
 
 #ifdef COMMON
-LispObject Lmacroexpand_2(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    return macroexpand(a, b);
+LispObject Lmacroexpand_2(LispObject, LispObject a, LispObject b)
+{   return macroexpand(a, b);
 }
 #endif
 
@@ -2015,9 +2014,8 @@ LispObject Lmacroexpand_1(LispObject nil, LispObject a)
 }
 
 #ifdef COMMON
-LispObject Lmacroexpand_1_2(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    return macroexpand_1(a, b);
+LispObject Lmacroexpand_1_2(LispObject, LispObject a, LispObject b)
+{   return macroexpand_1(a, b);
 }
 
 #endif
@@ -2091,7 +2089,7 @@ LispObject autoloadn(LispObject fname, int nargs, ...)
     return apply(fname, nargs, nil, fname, 0);
 }
 
-LispObject undefined1(LispObject fname, LispObject a1)
+LispObject undefined1(LispObject fname, LispObject)
 {
 //
 // It would be perfectly possible to grab and save the args here, and retry
@@ -2099,19 +2097,15 @@ LispObject undefined1(LispObject fname, LispObject a1)
 // this entrypoint is for compiled code calling something that is undefined,
 // and so no lexical environment is needed.
 //
-    CSL_IGNORE(a1);
     return error(1, err_undefined_function_1, fname);
 }
 
-LispObject undefined2(LispObject fname, LispObject a1, LispObject a2)
-{   CSL_IGNORE(a1);
-    CSL_IGNORE(a2);
-    return error(1, err_undefined_function_2, fname);
+LispObject undefined2(LispObject fname, LispObject, LispObject)
+{   return error(1, err_undefined_function_2, fname);
 }
 
-LispObject undefinedn(LispObject fname, int nargs, ...)
-{   CSL_IGNORE(nargs);
-    return error(1, err_undefined_function_n, fname);
+LispObject undefinedn(LispObject fname, int, ...)
+{   return error(1, err_undefined_function_n, fname);
 }
 
 //
@@ -2130,16 +2124,13 @@ LispObject f0_as_0(LispObject env, int nargs, ...)
     return (*qfnn(env))(qenv(env), 0);
 }
 
-LispObject f1_as_0(LispObject env, LispObject a)
-{   CSL_IGNORE(a);
-    debug_record_symbol(env);
+LispObject f1_as_0(LispObject env, LispObject)
+{   debug_record_symbol(env);
     return (*qfnn(env))(qenv(env), 0);
 }
 
-LispObject f2_as_0(LispObject env, LispObject a, LispObject b)
-{   CSL_IGNORE(a);
-    CSL_IGNORE(b);
-    debug_record_symbol(env);
+LispObject f2_as_0(LispObject env, LispObject, LispObject)
+{   debug_record_symbol(env);
     return (*qfnn(env))(qenv(env), 0);
 }
 
@@ -2154,9 +2145,8 @@ LispObject f1_as_1(LispObject env, LispObject a)
     return (*qfn1(env))(qenv(env), a);
 }
 
-LispObject f2_as_1(LispObject env, LispObject a, LispObject b)
-{   CSL_IGNORE(b);
-    debug_record_symbol(env);
+LispObject f2_as_1(LispObject env, LispObject a, LispObject)
+{   debug_record_symbol(env);
     return (*qfn1(env))(qenv(env), a);
 }
 

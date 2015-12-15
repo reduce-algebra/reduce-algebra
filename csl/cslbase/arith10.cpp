@@ -1583,6 +1583,8 @@ LispObject Llog_2(LispObject nil, LispObject a, LispObject b)
     return quot2(a, b);
 }
 
+#ifdef ISQRT_IMPLEMENTED_PROPERLY
+// This can only be used wgen it is implemented properly!
 static LispObject Lisqrt(LispObject nil, LispObject a)
 {   double d;
 // This makes some pretence at computing an integer square root, but it
@@ -1613,6 +1615,7 @@ static LispObject Lisqrt(LispObject nil, LispObject a)
 // /* This is not anything like good enough yet
     return onevalue(fixnum_of_int((int32_t)d));
 }
+#endif
 
 LispObject Labsval(LispObject nil, LispObject a)
 //
@@ -1753,7 +1756,6 @@ LispObject Latan2(LispObject nil, LispObject y, LispObject x)
 
 LispObject Latan2d(LispObject nil, LispObject y, LispObject x)
 {   double u, v, r;
-    int q = 0;
     u = float_of_number(x);
     v = float_of_number(y);
     if (u == 0.0 && v == 0.0) r = 0.0; // really an error case

@@ -157,8 +157,7 @@ static LispObject copy_string(LispObject str, int32_t n)
 }
 
 LispObject Lbatchp(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil);
-    argcheck(nargs, 0, "batchp");
+{   argcheck(nargs, 0, "batchp");
 #if 0
 #ifdef SOCKETS
 //
@@ -464,7 +463,10 @@ LispObject intern(int len, CSLbool escaped)
 // or symbol as relevant.
 //
 {   int i, numberp = escaped ? -1 : 0;
-    int fplength = 2, explicit_fp_format = 0;
+    int fplength = 2;
+#ifdef COMMON
+    int explicit_fp_format = 0;
+#endif
     LispObject nil = C_nil;
     stackcheck0(0);
     for (i=0; i<len; i++)
@@ -506,24 +508,32 @@ LispObject intern(int len, CSLbool escaped)
                         continue;
                     case 's': case 'S':
                         boffo_char(i) = 'e';
+#ifdef COMMON
                         explicit_fp_format = 1;
+#endif
                         fplength = 0;
                         numberp = 9;
                         continue;
                     case 'f': case 'F':
                         boffo_char(i) = 'e';
+#ifdef COMMON
                         explicit_fp_format = 1;
+#endif
                         fplength = 1;
                         numberp = 9;
                         continue;
                     case 'd': case 'D':
                         boffo_char(i) = 'e';
+#ifdef COMMON
                         explicit_fp_format = 1;
+#endif
                         numberp = 9;
                         continue;
                     case 'l': case 'L':
                         boffo_char(i) = 'e';
+#ifdef COMMON
                         explicit_fp_format = 1;
+#endif
                         fplength = 3;
                         numberp = 9;
                         continue;
@@ -553,24 +563,32 @@ LispObject intern(int len, CSLbool escaped)
                     case 's': case 'S':
                         // Clobbering the string is a DISASTER if it is not in fact numeric
                         boffo_char(i) = 'e';
+#ifdef COMMON
                         explicit_fp_format = 1;
+#endif
                         fplength = 0;
                         numberp = 9;
                         continue;
                     case 'f': case 'F':
                         boffo_char(i) = 'e';
+#ifdef COMMON
                         explicit_fp_format = 1;
+#endif
                         fplength = 1;
                         numberp = 9;
                         continue;
                     case 'd': case 'D':
                         boffo_char(i) = 'e';
+#ifdef COMMON
                         explicit_fp_format = 1;
+#endif
                         numberp = 9;
                         continue;
                     case 'l': case 'L':
                         boffo_char(i) = 'e';
+#ifdef COMMON
                         explicit_fp_format = 1;
+#endif
                         fplength = 3;
                         numberp = 9;
                         continue;
@@ -1128,7 +1146,7 @@ try_again:
         packint_(p) = v;
         packvint_(p) = fixnum_of_int(number_of_chunks);
     }
-    if (n == 0xfffffff1) return aerror("too many symbols"); // long stop
+    if (n == (LispObject)0xfffffff1) return aerror("too many symbols"); // long stop
     packnint_(p) = (LispObject)((int32_t)n + (1<<4));
     // increment as a Lisp fixnum
     {   int32_t nv = int_of_fixnum(packvint_(p));
@@ -1181,8 +1199,7 @@ static LispObject lookup(LispObject str, int32_t strsize,
 // these two implementations of hashing!
 //
 {   Header h;
-    int32_t size;
-    uint32_t i = int_of_fixnum(nv), step, n;
+    size_t size, i = int_of_fixnum(nv), step, n;
     if (i != 1)
     {   i = (hash ^ (hash >> 16)) % i; // Segmented - find correct segment
         while (i-- != 0) v = qcdr(v);
@@ -1211,7 +1228,7 @@ static LispObject lookup(LispObject str, int32_t strsize,
             if (memcmp((char *)str + (CELL-TAG_VECTOR),
                        (char *)pn + (CELL-TAG_VECTOR),
                        (size_t)strsize) == 0 &&
-                (uint32_t)length_of_header(vechdr(pn)) == strsize+CELL)
+                length_of_header(vechdr(pn)) == (size_t)strsize+CELL)
             {   if (4*n > 3*size) rehash_pending = YES;
                 return w;
             }
@@ -3432,8 +3449,7 @@ static int raw_char_from_file(LispObject stream)
 }
 
 int char_from_file(LispObject stream)
-{   LispObject nil = C_nil;
-    int ch = stream_pushed_char(stream);
+{   int ch = stream_pushed_char(stream);
     if (ch == NOT_CHAR)
     {   ch = raw_char_from_file(stream);
         if (ch == EOF) return EOF;
@@ -3457,8 +3473,7 @@ int char_from_file(LispObject stream)
 }
 
 int32_t read_action_illegal(int32_t op, LispObject f)
-{   CSL_IGNORE(f);
-    if (op != READ_CLOSE && op != READ_IS_CONSOLE)
+{   if (op != READ_CLOSE && op != READ_IS_CONSOLE)
         aerror1("Illegal operation on stream",
                 cons_no_gc(fixnum_of_int(op), stream_type(f)));
     return 0;
@@ -3507,9 +3522,8 @@ int32_t read_action_output_file(int32_t op, LispObject f)
         }
 }
 
-int32_t read_action_terminal(int32_t op, LispObject f)
-{   CSL_IGNORE(f);
-    if (op < -1) return 1;
+int32_t read_action_terminal(int32_t op, LispObject)
+{   if (op < -1) return 1;
     else if (op <= 0x10ffff) return (terminal_pushed = op);
     else switch (op)
         {   case READ_CLOSE:
@@ -4087,13 +4101,12 @@ void read_eval_print(int noisy)
 LispObject Lrdf4(LispObject nil, LispObject file, LispObject noisyp,
                  LispObject verbosep, LispObject nofilep)
 {   LispObject r = nil;
-    int noisy = (noisyp != nil),
+    int noisy = (noisyp != nil);
+    int verbose = (verbosep != nil);
 #ifdef COMMON
-        nofile = (nofilep != nil),
-#endif
-        verbose = (verbosep != nil);
-#ifndef COMMON
-    CSL_IGNORE(nofilep);
+    int nofile = (nofilep != nil);
+#else
+    (void)nofilep;
 #endif
 //
 // (rdf nil)/(load nil) obeys Lisp commands from the current input
@@ -4389,8 +4402,6 @@ static LispObject want_a_string(LispObject name)
 #ifdef COMMON
     LispObject nil = C_nil;
     if (complex_stringp(name)) return simplify_string(name);
-#else
-    nil_as_base
 #endif
     if (symbolp(name)) return get_pname(name);
     else if (is_vector(name) &&
@@ -4408,7 +4419,6 @@ static LispObject Lfind_package(LispObject nil, LispObject name)
 {   LispObject w;
     Header h;
     int32_t len;
-    CSL_IGNORE(nil);
     if (is_vector(name))
     {   h = vechdr(name);
         if (type_of_header(h) == TYPE_STRUCTURE &&
@@ -4463,8 +4473,7 @@ LispObject find_package(char *name, int len)
 
 static LispObject Luse_package(LispObject nil, LispObject uses,
                                LispObject pkg)
-{   CSL_IGNORE(nil);
-    push(uses);
+{   push(uses);
     pkg = Lfind_package(nil, pkg);
     pop(uses);
     errexit();
@@ -4605,10 +4614,8 @@ static LispObject Lmake_package_1(LispObject nil, LispObject a)
 {   return Lmake_package(nil, 1, a);
 }
 
-static LispObject Llist_all_packages(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nargs);
-    CSL_IGNORE(nil);
-    return onevalue(all_packages);
+static LispObject Llist_all_packages(LispObject, int, ...)
+{   return onevalue(all_packages);
 }
 
 #endif
@@ -4715,9 +4722,8 @@ LispObject Lpeekch(LispObject nil, int nargs, ...)
     return Lpeekch2(nil, nil, qvalue(standard_input));
 }
 
-LispObject Lunreadch2(LispObject nil, LispObject a, LispObject stream)
+LispObject Lunreadch2(LispObject, LispObject a, LispObject stream)
 {   int ch;
-    CSL_IGNORE(nil);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     if (a == eof_symbol || a == CHAR_EOF) ch = EOF;

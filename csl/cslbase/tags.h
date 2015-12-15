@@ -121,7 +121,7 @@ typedef int                 CSLbool;
 
 #define MAX_NATIVE_PAGES        MAX_BPS_PAGES
 
-#define CSL_IGNORE(x)           (x = x)
+#define CSL_IGNORE(x)           ((void)(x))
 
 //
 // Windows seems to say it can use file names up to 260 chars, Unix and
