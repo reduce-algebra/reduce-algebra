@@ -272,9 +272,9 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		eval3.cpp eval4.cpp fns1.cpp fns2.cpp fns3.cpp \
 		print.cpp cslread.cpp restart.cpp sysfwin.cpp
 
-demo_sources = csl.cpp fasl.cpp gc.cpp preserve.cpp
+demo_sources = csl.cpp fasl.cpp cslgc.cpp preserve.cpp
 
-undemo_sources = csl.cpp fasl.cpp gc.cpp preserve.cpp
+undemo_sources = csl.cpp fasl.cpp cslgc.cpp preserve.cpp
 
 # If I am building under FOX then the main parts of material from
 # fwin.cpp and termed.cpp get picked up from the FOX library.
@@ -774,7 +774,7 @@ fasl.$(OBJEXT):	../include/crlibm.h
 fns1.$(OBJEXT):	../include/crlibm.h
 fns2.$(OBJEXT):	../include/crlibm.h
 fns3.$(OBJEXT):	../include/crlibm.h
-gc.$(OBJEXT):	../include/crlibm.h
+cslgc.$(OBJEXT):	../include/crlibm.h
 imulvc.$(OBJEXT):	../include/crlibm.h
 jit1.$(OBJEXT):	../include/crlibm.h
 jit2.$(OBJEXT):	../include/crlibm.h
@@ -816,7 +816,7 @@ csl-fasl.$(OBJEXT):	../include/crlibm.h
 csl-fns1.$(OBJEXT):	../include/crlibm.h
 csl-fns2.$(OBJEXT):	../include/crlibm.h
 csl-fns3.$(OBJEXT):	../include/crlibm.h
-csl-gc.$(OBJEXT):	../include/crlibm.h
+csl-cslgc.$(OBJEXT):	../include/crlibm.h
 csl-imulvc.$(OBJEXT):	../include/crlibm.h
 csl-jit1.$(OBJEXT):	../include/crlibm.h
 csl-jit2.$(OBJEXT):	../include/crlibm.h
@@ -858,7 +858,7 @@ reduce-fasl.$(OBJEXT):	../include/crlibm.h
 reduce-fns1.$(OBJEXT):	../include/crlibm.h
 reduce-fns2.$(OBJEXT):	../include/crlibm.h
 reduce-fns3.$(OBJEXT):	../include/crlibm.h
-reduce-gc.$(OBJEXT):	../include/crlibm.h
+reduce-cslgc.$(OBJEXT):	../include/crlibm.h
 reduce-imulvc.$(OBJEXT):	../include/crlibm.h
 reduce-jit1.$(OBJEXT):	../include/crlibm.h
 reduce-jit2.$(OBJEXT):	../include/crlibm.h

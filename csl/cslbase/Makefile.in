@@ -133,9 +133,9 @@ am__bootstrapreduce_SOURCES_DIST = arith01.cpp arith02.cpp arith03.cpp \
 	arith09.cpp arith10.cpp arith11.cpp arith12.cpp arith13.cpp \
 	bytes1.cpp char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp \
 	eval4.cpp fns1.cpp fns2.cpp fns3.cpp print.cpp cslread.cpp \
-	restart.cpp sysfwin.cpp csl.cpp fasl.cpp gc.cpp preserve.cpp \
-	fwin.cpp termed.cpp wxfwin.cpp wxterminal.cpp jit1.cpp \
-	jit2.cpp jit3.cpp jitx86.cpp x86defs.cpp wstring.cpp \
+	restart.cpp sysfwin.cpp csl.cpp fasl.cpp cslgc.cpp \
+	preserve.cpp fwin.cpp termed.cpp wxfwin.cpp wxterminal.cpp \
+	jit1.cpp jit2.cpp jit3.cpp jitx86.cpp x86defs.cpp wstring.cpp \
 	textdefs.cpp prefix.cpp operands.cpp insts.cpp \
 	instructions.cpp distorm.cpp decoder.cpp stubs.cpp
 am__objects_1 = arith01.$(OBJEXT) arith02.$(OBJEXT) arith03.$(OBJEXT) \
@@ -147,7 +147,7 @@ am__objects_1 = arith01.$(OBJEXT) arith02.$(OBJEXT) arith03.$(OBJEXT) \
 	eval3.$(OBJEXT) eval4.$(OBJEXT) fns1.$(OBJEXT) fns2.$(OBJEXT) \
 	fns3.$(OBJEXT) print.$(OBJEXT) cslread.$(OBJEXT) \
 	restart.$(OBJEXT) sysfwin.$(OBJEXT)
-am__objects_2 = csl.$(OBJEXT) fasl.$(OBJEXT) gc.$(OBJEXT) \
+am__objects_2 = csl.$(OBJEXT) fasl.$(OBJEXT) cslgc.$(OBJEXT) \
 	preserve.$(OBJEXT)
 @fox_FALSE@@wx_FALSE@am__objects_3 = fwin.$(OBJEXT) termed.$(OBJEXT)
 @fox_FALSE@@wx_TRUE@am__objects_3 = wxfwin.$(OBJEXT) \
@@ -168,7 +168,7 @@ am__csl_SOURCES_DIST = arith01.cpp arith02.cpp arith03.cpp arith04.cpp \
 	arith10.cpp arith11.cpp arith12.cpp arith13.cpp bytes1.cpp \
 	char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp eval4.cpp \
 	fns1.cpp fns2.cpp fns3.cpp print.cpp cslread.cpp restart.cpp \
-	sysfwin.cpp csl.cpp fasl.cpp gc.cpp preserve.cpp fwin.cpp \
+	sysfwin.cpp csl.cpp fasl.cpp cslgc.cpp preserve.cpp fwin.cpp \
 	termed.cpp wxfwin.cpp wxterminal.cpp jit1.cpp jit2.cpp \
 	jit3.cpp jitx86.cpp x86defs.cpp wstring.cpp textdefs.cpp \
 	prefix.cpp operands.cpp insts.cpp instructions.cpp distorm.cpp \
@@ -185,8 +185,8 @@ am__objects_6 = csl-arith01.$(OBJEXT) csl-arith02.$(OBJEXT) \
 	csl-fns2.$(OBJEXT) csl-fns3.$(OBJEXT) csl-print.$(OBJEXT) \
 	csl-cslread.$(OBJEXT) csl-restart.$(OBJEXT) \
 	csl-sysfwin.$(OBJEXT)
-am__objects_7 = csl-csl.$(OBJEXT) csl-fasl.$(OBJEXT) csl-gc.$(OBJEXT) \
-	csl-preserve.$(OBJEXT)
+am__objects_7 = csl-csl.$(OBJEXT) csl-fasl.$(OBJEXT) \
+	csl-cslgc.$(OBJEXT) csl-preserve.$(OBJEXT)
 @fox_FALSE@@wx_FALSE@am__objects_8 = csl-fwin.$(OBJEXT) \
 @fox_FALSE@@wx_FALSE@	csl-termed.$(OBJEXT)
 @fox_FALSE@@wx_TRUE@am__objects_8 = csl-wxfwin.$(OBJEXT) \
@@ -219,9 +219,9 @@ am__reduce_SOURCES_DIST = arith01.cpp arith02.cpp arith03.cpp \
 	arith09.cpp arith10.cpp arith11.cpp arith12.cpp arith13.cpp \
 	bytes1.cpp char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp \
 	eval4.cpp fns1.cpp fns2.cpp fns3.cpp print.cpp cslread.cpp \
-	restart.cpp sysfwin.cpp csl.cpp fasl.cpp gc.cpp preserve.cpp \
-	fwin.cpp termed.cpp wxfwin.cpp wxterminal.cpp jit1.cpp \
-	jit2.cpp jit3.cpp jitx86.cpp x86defs.cpp wstring.cpp \
+	restart.cpp sysfwin.cpp csl.cpp fasl.cpp cslgc.cpp \
+	preserve.cpp fwin.cpp termed.cpp wxfwin.cpp wxterminal.cpp \
+	jit1.cpp jit2.cpp jit3.cpp jitx86.cpp x86defs.cpp wstring.cpp \
 	textdefs.cpp prefix.cpp operands.cpp insts.cpp \
 	instructions.cpp distorm.cpp decoder.cpp u01.cpp u02.cpp \
 	u03.cpp u04.cpp u05.cpp u06.cpp u07.cpp u08.cpp u09.cpp \
@@ -248,7 +248,7 @@ am__objects_11 = reduce-arith01.$(OBJEXT) reduce-arith02.$(OBJEXT) \
 	reduce-cslread.$(OBJEXT) reduce-restart.$(OBJEXT) \
 	reduce-sysfwin.$(OBJEXT)
 am__objects_12 = reduce-csl.$(OBJEXT) reduce-fasl.$(OBJEXT) \
-	reduce-gc.$(OBJEXT) reduce-preserve.$(OBJEXT)
+	reduce-cslgc.$(OBJEXT) reduce-preserve.$(OBJEXT)
 @fox_FALSE@@wx_FALSE@am__objects_13 = reduce-fwin.$(OBJEXT) \
 @fox_FALSE@@wx_FALSE@	reduce-termed.$(OBJEXT)
 @fox_FALSE@@wx_TRUE@am__objects_13 = reduce-wxfwin.$(OBJEXT) \
@@ -630,8 +630,8 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		eval3.cpp eval4.cpp fns1.cpp fns2.cpp fns3.cpp \
 		print.cpp cslread.cpp restart.cpp sysfwin.cpp
 
-demo_sources = csl.cpp fasl.cpp gc.cpp preserve.cpp
-undemo_sources = csl.cpp fasl.cpp gc.cpp preserve.cpp
+demo_sources = csl.cpp fasl.cpp cslgc.cpp preserve.cpp
+undemo_sources = csl.cpp fasl.cpp cslgc.cpp preserve.cpp
 @fox_FALSE@@wx_FALSE@fwin_sources = fwin.cpp termed.cpp
 @fox_FALSE@@wx_TRUE@fwin_sources = wxfwin.cpp wxterminal.cpp termed.cpp
 
@@ -1163,6 +1163,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-bytes1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-char.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-csl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-cslgc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-cslmpi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-cslread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-decoder.Po@am__quote@
@@ -1176,7 +1177,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-fns2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-fns3.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-fwin.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-gc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-instructions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-insts.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-jit1.Po@am__quote@
@@ -1197,6 +1197,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-wxterminal.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-x86defs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cslgc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cslmpi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cslread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/decoder.Po@am__quote@
@@ -1214,7 +1215,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/foxdemo-foxdemo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fwin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fwindemo.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/instructions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/insts.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jit1.Po@am__quote@
@@ -1241,6 +1241,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-bytes1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-char.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-csl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-cslgc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-cslmpi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-cslread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-decoder.Po@am__quote@
@@ -1254,7 +1255,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-fns2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-fns3.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-fwin.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-gc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-instructions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-insts.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-jit1.Po@am__quote@
@@ -1772,19 +1772,19 @@ csl-fasl.obj: fasl.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o csl-fasl.obj `if test -f 'fasl.cpp'; then $(CYGPATH_W) 'fasl.cpp'; else $(CYGPATH_W) '$(srcdir)/fasl.cpp'; fi`
 
-csl-gc.o: gc.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT csl-gc.o -MD -MP -MF $(DEPDIR)/csl-gc.Tpo -c -o csl-gc.o `test -f 'gc.cpp' || echo '$(srcdir)/'`gc.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/csl-gc.Tpo $(DEPDIR)/csl-gc.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='gc.cpp' object='csl-gc.o' libtool=no @AMDEPBACKSLASH@
+csl-cslgc.o: cslgc.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT csl-cslgc.o -MD -MP -MF $(DEPDIR)/csl-cslgc.Tpo -c -o csl-cslgc.o `test -f 'cslgc.cpp' || echo '$(srcdir)/'`cslgc.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/csl-cslgc.Tpo $(DEPDIR)/csl-cslgc.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='cslgc.cpp' object='csl-cslgc.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o csl-gc.o `test -f 'gc.cpp' || echo '$(srcdir)/'`gc.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o csl-cslgc.o `test -f 'cslgc.cpp' || echo '$(srcdir)/'`cslgc.cpp
 
-csl-gc.obj: gc.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT csl-gc.obj -MD -MP -MF $(DEPDIR)/csl-gc.Tpo -c -o csl-gc.obj `if test -f 'gc.cpp'; then $(CYGPATH_W) 'gc.cpp'; else $(CYGPATH_W) '$(srcdir)/gc.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/csl-gc.Tpo $(DEPDIR)/csl-gc.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='gc.cpp' object='csl-gc.obj' libtool=no @AMDEPBACKSLASH@
+csl-cslgc.obj: cslgc.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT csl-cslgc.obj -MD -MP -MF $(DEPDIR)/csl-cslgc.Tpo -c -o csl-cslgc.obj `if test -f 'cslgc.cpp'; then $(CYGPATH_W) 'cslgc.cpp'; else $(CYGPATH_W) '$(srcdir)/cslgc.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/csl-cslgc.Tpo $(DEPDIR)/csl-cslgc.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='cslgc.cpp' object='csl-cslgc.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o csl-gc.obj `if test -f 'gc.cpp'; then $(CYGPATH_W) 'gc.cpp'; else $(CYGPATH_W) '$(srcdir)/gc.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o csl-cslgc.obj `if test -f 'cslgc.cpp'; then $(CYGPATH_W) 'cslgc.cpp'; else $(CYGPATH_W) '$(srcdir)/cslgc.cpp'; fi`
 
 csl-preserve.o: preserve.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT csl-preserve.o -MD -MP -MF $(DEPDIR)/csl-preserve.Tpo -c -o csl-preserve.o `test -f 'preserve.cpp' || echo '$(srcdir)/'`preserve.cpp
@@ -2486,19 +2486,19 @@ reduce-fasl.obj: fasl.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o reduce-fasl.obj `if test -f 'fasl.cpp'; then $(CYGPATH_W) 'fasl.cpp'; else $(CYGPATH_W) '$(srcdir)/fasl.cpp'; fi`
 
-reduce-gc.o: gc.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT reduce-gc.o -MD -MP -MF $(DEPDIR)/reduce-gc.Tpo -c -o reduce-gc.o `test -f 'gc.cpp' || echo '$(srcdir)/'`gc.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/reduce-gc.Tpo $(DEPDIR)/reduce-gc.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='gc.cpp' object='reduce-gc.o' libtool=no @AMDEPBACKSLASH@
+reduce-cslgc.o: cslgc.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT reduce-cslgc.o -MD -MP -MF $(DEPDIR)/reduce-cslgc.Tpo -c -o reduce-cslgc.o `test -f 'cslgc.cpp' || echo '$(srcdir)/'`cslgc.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/reduce-cslgc.Tpo $(DEPDIR)/reduce-cslgc.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='cslgc.cpp' object='reduce-cslgc.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o reduce-gc.o `test -f 'gc.cpp' || echo '$(srcdir)/'`gc.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o reduce-cslgc.o `test -f 'cslgc.cpp' || echo '$(srcdir)/'`cslgc.cpp
 
-reduce-gc.obj: gc.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT reduce-gc.obj -MD -MP -MF $(DEPDIR)/reduce-gc.Tpo -c -o reduce-gc.obj `if test -f 'gc.cpp'; then $(CYGPATH_W) 'gc.cpp'; else $(CYGPATH_W) '$(srcdir)/gc.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/reduce-gc.Tpo $(DEPDIR)/reduce-gc.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='gc.cpp' object='reduce-gc.obj' libtool=no @AMDEPBACKSLASH@
+reduce-cslgc.obj: cslgc.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT reduce-cslgc.obj -MD -MP -MF $(DEPDIR)/reduce-cslgc.Tpo -c -o reduce-cslgc.obj `if test -f 'cslgc.cpp'; then $(CYGPATH_W) 'cslgc.cpp'; else $(CYGPATH_W) '$(srcdir)/cslgc.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/reduce-cslgc.Tpo $(DEPDIR)/reduce-cslgc.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='cslgc.cpp' object='reduce-cslgc.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o reduce-gc.obj `if test -f 'gc.cpp'; then $(CYGPATH_W) 'gc.cpp'; else $(CYGPATH_W) '$(srcdir)/gc.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o reduce-cslgc.obj `if test -f 'cslgc.cpp'; then $(CYGPATH_W) 'cslgc.cpp'; else $(CYGPATH_W) '$(srcdir)/cslgc.cpp'; fi`
 
 reduce-preserve.o: preserve.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT reduce-preserve.o -MD -MP -MF $(DEPDIR)/reduce-preserve.Tpo -c -o reduce-preserve.o `test -f 'preserve.cpp' || echo '$(srcdir)/'`preserve.cpp
@@ -4178,7 +4178,7 @@ $(FOXDEPS):	$(srcdir)/../fox/CHANGED
 @crlibm_TRUE@fns1.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@fns2.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@fns3.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@gc.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@cslgc.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@imulvc.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@jit1.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@jit2.$(OBJEXT):	../include/crlibm.h
@@ -4220,7 +4220,7 @@ $(FOXDEPS):	$(srcdir)/../fox/CHANGED
 @crlibm_TRUE@csl-fns1.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@csl-fns2.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@csl-fns3.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-gc.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@csl-cslgc.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@csl-imulvc.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@csl-jit1.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@csl-jit2.$(OBJEXT):	../include/crlibm.h
@@ -4262,7 +4262,7 @@ $(FOXDEPS):	$(srcdir)/../fox/CHANGED
 @crlibm_TRUE@reduce-fns1.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@reduce-fns2.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@reduce-fns3.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-gc.$(OBJEXT):	../include/crlibm.h
+@crlibm_TRUE@reduce-cslgc.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@reduce-imulvc.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@reduce-jit1.$(OBJEXT):	../include/crlibm.h
 @crlibm_TRUE@reduce-jit2.$(OBJEXT):	../include/crlibm.h

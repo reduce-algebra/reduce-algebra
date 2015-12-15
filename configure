@@ -685,6 +685,7 @@ with_cygbuild
 with_cygbuild64
 with_force
 with_crlibm
+with_boehm
 with_mingw64
 with_lto
 with_m32
@@ -1344,6 +1345,7 @@ Optional Packages:
   --with-cygbuild64       Used internally to control build directory
   --with-force            Forces refresh of windows varients
   --with-crlibm           Can be used to disable use of crlibm library
+  --with-boehm            Can be used to disable use of boehm collector
   --with-mingw64          Use "with" or "without" to force windows-64 build
                           status (CSL only)
   --with-lto              Experiment with extreme optimisation in gcc (CSL
@@ -2012,6 +2014,19 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: with_crlibm = $with_crlibm" >&5
 $as_echo "$as_me: with_crlibm = $with_crlibm" >&6;}
+
+
+# Check whether --with-boehm was given.
+if test "${with_boehm+set}" = set; then :
+  withval=$with_boehm;
+else
+  with_boehm="no"
+fi
+
+
+# For now I will insist on an explicit request for this...
+{ $as_echo "$as_me:${as_lineno-$LINENO}: with_boehm = $with_boehm" >&5
+$as_echo "$as_me: with_boehm = $with_boehm" >&6;}
 
 # Ensure that at least one Lisp system is selected
 if test "x$with_psl" = "xno" && test "x$with_csl" = "xno"
@@ -3632,7 +3647,8 @@ $as_echo "$as_me: About to configure crlibm" >&6;}
     \'--with-csl*\' | \
     \'--with-build*\' | \
     \'--with-pslbuild*\' | \
-    \'--with-force*\' | \
+    \'--with*-crlibm*\' | \
+    \'--with*-boehm*\' | \
     \'--enable-debug*\' | \
     \'--enable-conservative*\' | \
     \'--enable-test*\' | \
@@ -3652,6 +3668,70 @@ $as_echo "$as_me: passcc = $passcc" >&6;}
         $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
         --prefix=\"$builddir\""
+  { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
+$as_echo "$as_me: doconfig = $doconfig" >&6;}
+  eval "$doconfig"
+
+  cd "$builddir"
+fi
+
+if test "x$with_boehm" == "xno"
+then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: boehm will not be used here" >&5
+$as_echo "$as_me: boehm will not be used here" >&6;}
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: About to configure boehm" >&5
+$as_echo "$as_me: About to configure boehm" >&6;}
+  mkdir -p boehm
+  cd boehm
+
+  if test "x$CC$CPP$CXX$CXXCPP" != "x"
+  then
+    passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+  fi
+  filter=""
+  for x in $ac_configure_args
+  do
+# The processing here is so that I do not pass CSL or REDUCE-specific
+# configuration flags down when configuring crlibm. This then has to have
+# a catalogue of all the options I need to ignore. Messy!
+    case $x in
+    \'--with-force*\' | \
+    \'--with-mingw*\' | \
+    \'--with-lto*\' | \
+    \'--with-m32*\' | \
+    \'--with-m64*\' | \
+    \'--with*-gui*\' | \
+    \'--with*-xft*\' | \
+    \'--with*-xim*\' | \
+    \'--with-smallpage*\' | \
+    \'--with*-fox*\' | \
+    \'--with*-wx*\' | \
+    \'--with-cyg*\' | \
+    \'--with-csl*\' | \
+    \'--with-build*\' | \
+    \'--with-pslbuild*\' | \
+    \'--with*-crlibm*\' | \
+    \'--with*-boehm*\' | \
+    \'--enable-debug*\' | \
+    \'--enable-conservative*\' | \
+    \'--enable-test*\' | \
+    \'--enable-jit*\' | \
+    \'--enable-static*\' | \
+    \'--enable-silent*\' | \
+    \'--disable-silent*\' )
+      ;;
+    *)
+      filter="$filter $x"
+      ;;
+    esac
+  done
+  { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
+$as_echo "$as_me: passcc = $passcc" >&6;}
+  doconfig="$SHELL \"$abssrcdir/csl/cslbase/gc-7.4.2/configure\" $filter \
+        $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+        CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
+        --prefix=\"$builddir\" --enable-cplusplus"
   { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
 $as_echo "$as_me: doconfig = $doconfig" >&6;}
   eval "$doconfig"
