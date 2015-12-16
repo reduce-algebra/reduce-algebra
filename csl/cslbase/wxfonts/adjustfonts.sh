@@ -60,10 +60,11 @@ rm *.ps
 # arrange that fixafm merges the information into the .afm file in this
 # case.
 
+# I have not converted showttf,c to be in C++...
 gcc showttf.c -o showttf
 ./showttf STIXMath-Regular.otf > STIXMath.tables
 
-gcc fixafm.c -o fixafm
+g++ fixafm.cpp -o fixafm
 
 for x in *.afm
 do

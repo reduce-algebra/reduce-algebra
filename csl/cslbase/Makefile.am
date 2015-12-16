@@ -112,6 +112,7 @@ plain_wxdvi = wxdvi
 plain_wxshowmath = wxshowmath
 plain_wxshowmathdemo = wxshowmathdemo
 plain_dyndemo = dyndemo
+plain_gctest = gctest
 else !exeext
 plain_csl = csl.unnecessary.except.on.windows
 plain_reduce = reduce.unnecessary.except.on.windows
@@ -128,6 +129,7 @@ plain_wxdvi = wxdvi.unnecessary.except.on.windows
 plain_wxshowmath = wxshowmath.unnecessary.except.on.windows
 plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
 plain_dyndemo = dyndemo.unnecessary.except.on.windows
+plain_gctest = gctest.unnecessary.except.on.windows
 endif !exeext
 
 .PHONY: $(plain_csl)
@@ -145,6 +147,7 @@ endif !exeext
 .PHONY: $(plain_wxshowmathdemo)
 .PHONY: $(plain_termdemo)
 .PHONY: $(plain_dyndemo)
+.PHONY: $(plain_gctest)
 
 .PHONY: report-dlls
 .PHONY:	bootstraprecompile
@@ -258,6 +261,10 @@ noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) dyndemo$(EXEEXT) \
 	$(wxdemotarget)
 endif !mac_framework
+
+if boehm
+noinst_PROGRAMS += gctest$(EXEEXT)
+endif boehm
 
 if cygwin
 all-local:	report-dlls csl.img reduce.img
@@ -735,6 +742,7 @@ if crlibm
 
 CRLIBMDEPS=../lib/libcrlibm.a ../include/crlibm.h
 
+CRDEP = ../include/crlibm.h
 CRINC = -I../include
 AM_CPPFLAGS     += $(CRINC)
 reduce_CPPFLAGS += $(CRINC)
@@ -744,135 +752,6 @@ csl_CPPFLAGS    += $(CRINC)
 # instance, "make csl.o" in a clean tree and crlibm building will get
 # triggered.
 
-# Note that all the compilation of these files must be performed using
-# a Make "default" action so that the dependencies shown here are not
-# taken as specifing conflicting actions.
-
-arith01.$(OBJEXT):	../include/crlibm.h
-arith02.$(OBJEXT):	../include/crlibm.h
-arith03.$(OBJEXT):	../include/crlibm.h
-arith04.$(OBJEXT):	../include/crlibm.h
-arith05.$(OBJEXT):	../include/crlibm.h
-arith06.$(OBJEXT):	../include/crlibm.h
-arith07.$(OBJEXT):	../include/crlibm.h
-arith08.$(OBJEXT):	../include/crlibm.h
-arith09.$(OBJEXT):	../include/crlibm.h
-arith10.$(OBJEXT):	../include/crlibm.h
-arith11.$(OBJEXT):	../include/crlibm.h
-arith12.$(OBJEXT):	../include/crlibm.h
-arith13.$(OBJEXT):	../include/crlibm.h
-bytes1.$(OBJEXT):	../include/crlibm.h
-char.$(OBJEXT):	../include/crlibm.h
-csl.$(OBJEXT):	../include/crlibm.h
-cslmpi.$(OBJEXT):	../include/crlibm.h
-cslread.$(OBJEXT):	../include/crlibm.h
-eval1.$(OBJEXT):	../include/crlibm.h
-eval2.$(OBJEXT):	../include/crlibm.h
-eval3.$(OBJEXT):	../include/crlibm.h
-eval4.$(OBJEXT):	../include/crlibm.h
-fasl.$(OBJEXT):	../include/crlibm.h
-fns1.$(OBJEXT):	../include/crlibm.h
-fns2.$(OBJEXT):	../include/crlibm.h
-fns3.$(OBJEXT):	../include/crlibm.h
-cslgc.$(OBJEXT):	../include/crlibm.h
-imulvc.$(OBJEXT):	../include/crlibm.h
-jit1.$(OBJEXT):	../include/crlibm.h
-jit2.$(OBJEXT):	../include/crlibm.h
-jit3.$(OBJEXT):	../include/crlibm.h
-jitx86.$(OBJEXT):	../include/crlibm.h
-ompsetup.$(OBJEXT):	../include/crlibm.h
-openmath.$(OBJEXT):	../include/crlibm.h
-preserve.$(OBJEXT):	../include/crlibm.h
-print.$(OBJEXT):	../include/crlibm.h
-pro.$(OBJEXT):	../include/crlibm.h
-restart.$(OBJEXT):	../include/crlibm.h machineid.cpp
-stubs.$(OBJEXT):	../include/crlibm.h
-sysfwin.$(OBJEXT):	../include/crlibm.h
-sysipaq.$(OBJEXT):	../include/crlibm.h
-
-csl-arith01.$(OBJEXT):	../include/crlibm.h
-csl-arith02.$(OBJEXT):	../include/crlibm.h
-csl-arith03.$(OBJEXT):	../include/crlibm.h
-csl-arith04.$(OBJEXT):	../include/crlibm.h
-csl-arith05.$(OBJEXT):	../include/crlibm.h
-csl-arith06.$(OBJEXT):	../include/crlibm.h
-csl-arith07.$(OBJEXT):	../include/crlibm.h
-csl-arith08.$(OBJEXT):	../include/crlibm.h
-csl-arith09.$(OBJEXT):	../include/crlibm.h
-csl-arith10.$(OBJEXT):	../include/crlibm.h
-csl-arith11.$(OBJEXT):	../include/crlibm.h
-csl-arith12.$(OBJEXT):	../include/crlibm.h
-csl-arith13.$(OBJEXT):	../include/crlibm.h
-csl-bytes1.$(OBJEXT):	../include/crlibm.h
-csl-char.$(OBJEXT):	../include/crlibm.h
-csl-csl.$(OBJEXT):	../include/crlibm.h
-csl-cslmpi.$(OBJEXT):	../include/crlibm.h
-csl-cslread.$(OBJEXT):	../include/crlibm.h
-csl-eval1.$(OBJEXT):	../include/crlibm.h
-csl-eval2.$(OBJEXT):	../include/crlibm.h
-csl-eval3.$(OBJEXT):	../include/crlibm.h
-csl-eval4.$(OBJEXT):	../include/crlibm.h
-csl-fasl.$(OBJEXT):	../include/crlibm.h
-csl-fns1.$(OBJEXT):	../include/crlibm.h
-csl-fns2.$(OBJEXT):	../include/crlibm.h
-csl-fns3.$(OBJEXT):	../include/crlibm.h
-csl-cslgc.$(OBJEXT):	../include/crlibm.h
-csl-imulvc.$(OBJEXT):	../include/crlibm.h
-csl-jit1.$(OBJEXT):	../include/crlibm.h
-csl-jit2.$(OBJEXT):	../include/crlibm.h
-csl-jit3.$(OBJEXT):	../include/crlibm.h
-csl-jitx86.$(OBJEXT):	../include/crlibm.h
-csl-ompsetup.$(OBJEXT):	../include/crlibm.h
-csl-openmath.$(OBJEXT):	../include/crlibm.h
-csl-preserve.$(OBJEXT):	../include/crlibm.h
-csl-print.$(OBJEXT):	../include/crlibm.h
-csl-pro.$(OBJEXT):	../include/crlibm.h
-csl-restart.$(OBJEXT):	../include/crlibm.h machineid.cpp
-csl-stubs.$(OBJEXT):	../include/crlibm.h
-csl-sysfwin.$(OBJEXT):	../include/crlibm.h
-csl-sysipaq.$(OBJEXT):	../include/crlibm.h
-
-reduce-arith01.$(OBJEXT):	../include/crlibm.h
-reduce-arith02.$(OBJEXT):	../include/crlibm.h
-reduce-arith03.$(OBJEXT):	../include/crlibm.h
-reduce-arith04.$(OBJEXT):	../include/crlibm.h
-reduce-arith05.$(OBJEXT):	../include/crlibm.h
-reduce-arith06.$(OBJEXT):	../include/crlibm.h
-reduce-arith07.$(OBJEXT):	../include/crlibm.h
-reduce-arith08.$(OBJEXT):	../include/crlibm.h
-reduce-arith09.$(OBJEXT):	../include/crlibm.h
-reduce-arith10.$(OBJEXT):	../include/crlibm.h
-reduce-arith11.$(OBJEXT):	../include/crlibm.h
-reduce-arith12.$(OBJEXT):	../include/crlibm.h
-reduce-arith13.$(OBJEXT):	../include/crlibm.h
-reduce-bytes1.$(OBJEXT):	../include/crlibm.h
-reduce-char.$(OBJEXT):	../include/crlibm.h
-reduce-csl.$(OBJEXT):	../include/crlibm.h
-reduce-cslmpi.$(OBJEXT):	../include/crlibm.h
-reduce-cslread.$(OBJEXT):	../include/crlibm.h
-reduce-eval1.$(OBJEXT):	../include/crlibm.h
-reduce-eval2.$(OBJEXT):	../include/crlibm.h
-reduce-eval3.$(OBJEXT):	../include/crlibm.h
-reduce-eval4.$(OBJEXT):	../include/crlibm.h
-reduce-fasl.$(OBJEXT):	../include/crlibm.h
-reduce-fns1.$(OBJEXT):	../include/crlibm.h
-reduce-fns2.$(OBJEXT):	../include/crlibm.h
-reduce-fns3.$(OBJEXT):	../include/crlibm.h
-reduce-cslgc.$(OBJEXT):	../include/crlibm.h
-reduce-imulvc.$(OBJEXT):	../include/crlibm.h
-reduce-jit1.$(OBJEXT):	../include/crlibm.h
-reduce-jit2.$(OBJEXT):	../include/crlibm.h
-reduce-jit3.$(OBJEXT):	../include/crlibm.h
-reduce-jitx86.$(OBJEXT):	../include/crlibm.h
-reduce-ompsetup.$(OBJEXT):	../include/crlibm.h
-reduce-openmath.$(OBJEXT):	../include/crlibm.h
-reduce-preserve.$(OBJEXT):	../include/crlibm.h
-reduce-print.$(OBJEXT):	../include/crlibm.h
-reduce-pro.$(OBJEXT):	../include/crlibm.h
-reduce-restart.$(OBJEXT):	../include/crlibm.h machineid.cpp
-reduce-stubs.$(OBJEXT):	../include/crlibm.h
-reduce-sysfwin.$(OBJEXT):	../include/crlibm.h
-reduce-sysipaq.$(OBJEXT):	../include/crlibm.h
 
 csl_LDADD += -L../lib -lcrlibm
 bootstrapreduce_LDADD += -L../lib -lcrlibm
@@ -896,6 +775,179 @@ csl-restart.$(OBJEXT):	machineid.cpp
 reduce-restart.$(OBJEXT):	machineid.cpp
 
 endif !crlibm
+
+if boehm
+
+gctest_SOURCES = gctest.cpp
+gctest_CPPFLAGS = $(TRACE)
+gctest_LDADD =
+gctest_DEPENDENCIES =
+
+BOEHMDEPS=../lib/gc.a ../include/gc/gc.h
+
+BOEHMDEP = ../include/gc/gc.h
+BOEHMINC = -I../include
+AM_CPPFLAGS     += $(BOEHMINC)
+reduce_CPPFLAGS += $(BOEHMINC)
+csl_CPPFLAGS    += $(BOEHMINC)
+gctest_CPPFLAGS    += $(BOEHMINC)
+
+csl_LDADD += -L../lib -lgc
+bootstrapreduce_LDADD += -L../lib -lgc
+reduce_LDADD += -L../lib -lgc
+gctest_LDADD += -L../lib -lgc
+
+csl_DEPENDENCIES += $(BOEHMDEPS)
+bootstrapreduce_DEPENDENCIES += $(BOEHMDEPS)
+reduce_DEPENDENCIES += $(BOEHMDEPS)
+gctest_DEPENDENCIES += $(BOEHMDEPS)
+
+$(BOEHMDEPS):
+	$(TRACE)@cd ../boehm && $(MAKE) install
+
+else !boehm
+BOEHMINC =
+
+restart.$(OBJEXT):	machineid.cpp
+csl-restart.$(OBJEXT):	machineid.cpp
+reduce-restart.$(OBJEXT):	machineid.cpp
+
+endif !boehm
+
+if crlibmorboehm
+
+# Note that all the compilation of these files must be performed using
+# a Make "default" action so that the dependencies shown here are not
+# taken as specifing conflicting actions.
+
+arith01.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+arith02.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+arith03.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+arith04.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+arith05.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+arith06.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+arith07.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+arith08.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+arith09.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+cslmpi.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+cslread.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+eval1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+eval2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+eval3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+eval4.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+imulvc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+print.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+pro.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) machineid.cpp
+stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+
+csl-arith01.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-arith02.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-arith03.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-arith04.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-arith05.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-arith06.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-arith07.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-arith08.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-arith09.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-cslmpi.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-cslread.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-eval1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-eval2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-eval3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-eval4.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-imulvc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-print.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-pro.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) machineid.cpp
+csl-stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+
+reduce-arith01.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-arith02.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-arith03.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-arith04.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-arith05.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-arith06.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-arith07.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-arith08.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-arith09.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-cslmpi.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-cslread.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-eval1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-eval2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-eval3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-eval4.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-imulvc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-print.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-pro.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) machineid.cpp
+reduce-stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+
+
+endif crlibmorboehm
 
 # If one of the major foundations of this Makefile have a date later than that
 # on fxver.h then make does a futile recursion to try to fix it and in the
@@ -1473,6 +1525,13 @@ $(plain_termdemo):	termdemo.exe
 
 $(plain_dyndemo):	dyndemo.exe
 	echo "make dyndemo.exe is preferred"
+
+if boehm
+
+$(plain_gctest):	gctest.exe
+	echo "make gctest.exe is preferred"
+
+endif boehm
 
 endif exeext
 

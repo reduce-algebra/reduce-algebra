@@ -1,10 +1,10 @@
-/* wxpsl.cpp                                Copyright (C) Codemist Ltd 2011 */
+// wxpsl.cpp                                Copyright (C) Codemist Ltd 2011
 
-/*
- * This code borrows from the redfront package by Dolzmann and Sturm,
- * but rather than using readline and their character based interface
- * it uses (wx)fwin to provide a windowed and unicode-friendly terminal.
- */
+//
+// This code borrows from the redfront package by Dolzmann and Sturm,
+// but rather than using readline and their character based interface
+// it uses (wx)fwin to provide a windowed and unicode-friendly terminal.
+//
 
 
 /**************************************************************************
@@ -38,7 +38,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 //
 // See the file "fwindemo.c" for a smaller example of how to use fwin. This
@@ -101,11 +101,11 @@ int fwin_main(int argc, const char **argv)
         while (i > 0 && (programDir[i] != '/' && programDir[i] != '\\')) i--;
     }
     sprintf(bpsl_binary, "%.*s%cpslbuild%c%s%cpsl%cbpsl%s",
-        i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR, EXEEXT);
+            i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR, EXEEXT);
     sprintf(reduce_image, "%.*s%cpslbuild%c%s%cred%creduce.img",
-        i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
+            i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
     sprintf(memory_control, "%.*s%cpslbuild%c%s%cpsl%c64",
-        i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
+            i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
     FWIN_LOG(("bin: %s\n", bpsl_binary));
     FWIN_LOG(("img: %s\n", reduce_image));
     FWIN_LOG(("64:  %s\n", memory_control));
@@ -203,15 +203,15 @@ int fwin_main(int argc, const char **argv)
 
 // Create the child process.
     bSuccess = CreateProcess(NULL, // application name
-        cmdLine,       // command line
-        NULL,          // process security attributes
-        NULL,          // primary thread security attributes
-        TRUE,          // handles are inherited
-        0,             // creation flags
-        NULL,          // use parent's environment
-        NULL,          // use parent's current directory
-        &siStartInfo,  // STARTUPINFO pointer
-        &piProcInfo);  // receives PROCESS_INFORMATION
+                             cmdLine,       // command line
+                             NULL,          // process security attributes
+                             NULL,          // primary thread security attributes
+                             TRUE,          // handles are inherited
+                             0,             // creation flags
+                             NULL,          // use parent's environment
+                             NULL,          // use parent's current directory
+                             &siStartInfo,  // STARTUPINFO pointer
+                             &piProcInfo);  // receives PROCESS_INFORMATION
 
 // If an error occurs, exit the application.
     if (!bSuccess)
@@ -255,7 +255,7 @@ int fwin_main(int argc, const char **argv)
         close(MeToReduce[1]);
         close(ReduceToMe[0]);
         FWIN_LOG(("child: MeToReduce[0]= %d, ReduceToMe[1] = %d\n",
-	                  MeToReduce[0], ReduceToMe[1]));
+                  MeToReduce[0], ReduceToMe[1]));
         dup2(MeToReduce[0],STDIN_FILENO);
         dup2(ReduceToMe[1],STDOUT_FILENO);
 //      dup2(ReduceToMe[1],STDERR_FILENO);    // ??????
@@ -350,8 +350,7 @@ int fwin_main(int argc, const char **argv)
         int n, prevc = 0, c = -1, j = 0, k;
         n = read(ReduceToMe[0], buf, BUFSIZE);
         while (j<(int)n && (c = (buf[j++] & 0xff)) != 0x01)
-        {
-            FWIN_LOG(("see char %.2x\n", c));
+        {   FWIN_LOG(("see char %.2x\n", c));
             if (c == 0x0d) fwin_putchar('\n');
             else if (c == 0x0a)
             {   if (prevc != 0x0d) fwin_putchar('\n');
@@ -397,8 +396,7 @@ int fwin_main(int argc, const char **argv)
 //
 
 int main(int argc, const char *argv[])
-{
-    return fwin_startup(argc, argv, fwin_main);
+{   return fwin_startup(argc, argv, fwin_main);
 }
 
 //
@@ -411,264 +409,272 @@ int main(int argc, const char *argv[])
 
 
 
-void print_usage(char name[]) {
-    fprintf(stderr,
-	    "usage: %s [-bhuvV] [[-m] NUMBER[kKmM]]\n",name);
+void print_usage(char name[])
+{   fprintf(stderr,
+            "usage: %s [-bhuvV] [[-m] NUMBER[kKmM]]\n",name);
 }
 
-void print_help(char name[]) {
+void print_help(char name[])
+{
 
-  fprintf(stderr,"A REDUCE frontend using fwin\n\n");
+    fprintf(stderr,"A REDUCE frontend using fwin\n\n");
 
-  print_usage(name);
+    print_usage(name);
 
-  fprintf(stderr,"       -h\t\tthis help message\n");
-  fprintf(stderr,"       -m NUMBER [kKmM]\tmemory allocation in Bytes [KB|MB]\n");
-  fprintf(stderr,"       -v, -V\t\tverbose\n\n");
+    fprintf(stderr,"       -h\t\tthis help message\n");
+    fprintf(stderr,"       -m NUMBER [kKmM]\tmemory allocation in Bytes [KB|MB]\n");
+    fprintf(stderr,"       -v, -V\t\tverbose\n\n");
 
-  fprintf(stderr,"Examples: %s -v\n",name);
-  fprintf(stderr,"          %s -m 96m.\n\n",name);
+    fprintf(stderr,"Examples: %s -v\n",name);
+    fprintf(stderr,"          %s -m 96m.\n\n",name);
 }
 
 
 
-void sig_killChild(void) {
+void sig_killChild(void)
+{
 #ifdef SIGCHLD
-  signal(SIGCHLD,SIG_IGN);
+    signal(SIGCHLD,SIG_IGN);
 #endif
 #if 0
-  kill(reduceProcessId,SIGTERM);
+    kill(reduceProcessId,SIGTERM);
 #endif
 }
 
 
 
-void sig_sigGen(int arg) {
-  FWIN_LOG(("sig_sigGen(%d)\n",arg));
-  sig_killChild();
-  switch (arg) {
+void sig_sigGen(int arg)
+{   FWIN_LOG(("sig_sigGen(%d)\n",arg));
+    sig_killChild();
+    switch (arg)
+    {
 #ifdef SIGQUIT
-  case SIGQUIT:
+        case SIGQUIT:
 #endif
 #ifdef SIGHUP
-  case SIGHUP:
+        case SIGHUP:
 #endif
 #ifdef SIGTERM
-  case SIGTERM:
+        case SIGTERM:
 #endif
 
 //    if (verbose) {
 //      printf("REDFRONT normally exiting on signal %d (%s)\n",arg,sig_identify(arg));
 //    }
-    exit(0);
-  default:
+            exit(0);
+        default:
 //    if (verbose) {
 //      printf("***** REDFRONT exiting on unexpected signal %d (%s)\n",
-//	     arg,sig_identify(arg));
+//       arg,sig_identify(arg));
 //    }
-    exit(EXIT_FAILURE);
-  }
+            exit(EXIT_FAILURE);
+    }
 }
 
-void sig_skipUntilString(int handle,const char string[]) {
-  char *buffer;
-  int len;
-  int i;
+void sig_skipUntilString(int handle,const char string[])
+{   char *buffer;
+    int len;
+    int i;
 
-  len = strlen(string);
-  buffer = (char *)malloc(len * sizeof(char) + 1);
-  read(handle,buffer,len);
+    len = strlen(string);
+    buffer = (char *)malloc(len * sizeof(char) + 1);
+    read(handle,buffer,len);
 
-  while (strcmp(buffer,string) != 0) {
-    FWIN_LOG(("sig_skipUntilString(): buffer=|%s|\n",buffer));
-    for (i=0; i < len-1; i++)
-      buffer[i] = buffer[i+1];
-    read(handle,buffer+len-1,1);
-  }
-  free(buffer);
+    while (strcmp(buffer,string) != 0)
+    {   FWIN_LOG(("sig_skipUntilString(): buffer=|%s|\n",buffer));
+        for (i=0; i < len-1; i++)
+            buffer[i] = buffer[i+1];
+        read(handle,buffer+len-1,1);
+    }
+    free(buffer);
 }
 
-void sig_sigChld(int arg) {
-  FWIN_LOG(("sig_sigChld(): Reduce process terminated\n"));
+void sig_sigChld(int arg)
+{   FWIN_LOG(("sig_sigChld(): Reduce process terminated\n"));
 //  if (verbose) {
 //    printf("REDFRONT normally exiting on signal %d (%s)\n",arg,sig_identify(arg));
 //  }
-  exit(0);
+    exit(0);
 }
 
-void sig_sigTstp(int arg) {
+void sig_sigTstp(int arg)
+{
 #ifdef SIGSTOP
 // Not having SIGSTOP looks bad!
-  kill(0,SIGSTOP);
+    kill(0,SIGSTOP);
 #endif
 }
 
-void sig_installHandlers(void) {
+void sig_installHandlers(void)
+{
 #ifdef SIGQUIT
-  signal(SIGQUIT,sig_sigGen);
+    signal(SIGQUIT,sig_sigGen);
 #endif
 #ifdef SIGHUP
-  signal(SIGHUP,sig_sigGen);
+    signal(SIGHUP,sig_sigGen);
 #endif
 #ifdef SIGINT
-  signal(SIGINT, sig_sigGen);
+    signal(SIGINT, sig_sigGen);
 #endif
 #ifdef SIGILL
-  signal(SIGILL,sig_sigGen);
+    signal(SIGILL,sig_sigGen);
 #endif
 #ifdef SIGTSTP
-  signal(SIGTSTP,sig_sigTstp);
+    signal(SIGTSTP,sig_sigTstp);
 #endif
 #ifdef SIGBUS
-  signal(SIGBUS,sig_sigGen);
+    signal(SIGBUS,sig_sigGen);
 #endif
 #ifdef SIGSEGV
-  signal(SIGSEGV,sig_sigGen);
+    signal(SIGSEGV,sig_sigGen);
 #endif
 #ifdef SIGPIPE
-  signal(SIGPIPE,sig_sigGen);
+    signal(SIGPIPE,sig_sigGen);
 #endif
 #ifdef SIGCHLD
-  signal(SIGCHLD,sig_sigChld);
+    signal(SIGCHLD,sig_sigChld);
 #endif
 #ifdef SIGTERM
-  signal(SIGTERM,sig_sigGen);
+    signal(SIGTERM,sig_sigGen);
 #endif
 }
 
-void sig_removeHandlers(void) {
+void sig_removeHandlers(void)
+{
 #ifdef SIGQUIT
-  signal(SIGQUIT,SIG_DFL);
+    signal(SIGQUIT,SIG_DFL);
 #endif
 #ifdef SIGHUP
-  signal(SIGHUP,SIG_DFL);
+    signal(SIGHUP,SIG_DFL);
 #endif
 #ifdef SIGINT
-  signal(SIGINT,SIG_DFL);
+    signal(SIGINT,SIG_DFL);
 #endif
 #ifdef SIGILL
-  signal(SIGILL,SIG_DFL);
+    signal(SIGILL,SIG_DFL);
 #endif
 #ifdef SIGTSTP
-  signal(SIGTSTP,SIG_DFL);
+    signal(SIGTSTP,SIG_DFL);
 #endif
 #ifdef SIGBUS
-  signal(SIGBUS,SIG_DFL);
+    signal(SIGBUS,SIG_DFL);
 #endif
 #ifdef SIGSEGV
-  signal(SIGSEGV,SIG_DFL);
+    signal(SIGSEGV,SIG_DFL);
 #endif
 #ifdef SIGPIPE
-  signal(SIGPIPE,SIG_DFL);
+    signal(SIGPIPE,SIG_DFL);
 #endif
 #ifdef SIGCHLD
-  signal(SIGCHLD,SIG_DFL);
+    signal(SIGCHLD,SIG_DFL);
 #endif
 #ifdef SIGTERM
-  signal(SIGTERM,SIG_DFL);
+    signal(SIGTERM,SIG_DFL);
 #endif
 }
 
-const char *sig_identify(int signo) {
+const char *sig_identify(int signo)
+{
 // The list of signals is taken from the sigaction man page: "The
 // following is a list of all signals with names as in the include
 // file <signal.h>
-  switch(signo) {
+    switch(signo)
+    {
 #ifdef SIGHUP
-  case SIGHUP:    return "SIGHUP";
+        case SIGHUP:    return "SIGHUP";
 #endif
 #ifdef SIGINT
-  case SIGINT:    return "SIGINT";
+        case SIGINT:    return "SIGINT";
 #endif
 #ifdef SIGQUIT
-  case SIGQUIT:   return "SIGQUIT";
+        case SIGQUIT:   return "SIGQUIT";
 #endif
 #ifdef SIGILL
-  case SIGILL:    return "SIGILL";
+        case SIGILL:    return "SIGILL";
 #endif
 #ifdef SIGTRAP
-  case SIGTRAP:   return "SIGTRAP";
+        case SIGTRAP:   return "SIGTRAP";
 #endif
 #ifdef SIGABRT
-  case SIGABRT:   return "SIGABRT";
+        case SIGABRT:   return "SIGABRT";
 #endif
 #ifdef SIGEMT
-  case SIGEMT:    return "SIGEMT";
+        case SIGEMT:    return "SIGEMT";
 #endif
 #ifdef SIGFPE
-  case SIGFPE:    return "SIGFPE";
+        case SIGFPE:    return "SIGFPE";
 #endif
 #ifdef SIGKILL
-  case SIGKILL:   return "SIGKILL";
+        case SIGKILL:   return "SIGKILL";
 #endif
 #ifdef SIGBUS
-  case SIGBUS:    return "SIGBUS";
+        case SIGBUS:    return "SIGBUS";
 #endif
 #ifdef SIGSEGV
-  case SIGSEGV:   return "SIGSEGV";
+        case SIGSEGV:   return "SIGSEGV";
 #endif
 #ifdef SIGSYS
-  case SIGSYS:    return "SIGSYS";
+        case SIGSYS:    return "SIGSYS";
 #endif
 #ifdef SIGPIPE
-  case SIGPIPE:   return "SIGPIPE";
+        case SIGPIPE:   return "SIGPIPE";
 #endif
 #ifdef SIGALRM
-  case SIGALRM:   return "SIGALRM";
+        case SIGALRM:   return "SIGALRM";
 #endif
 #ifdef SIGTERM
-  case SIGTERM:   return "SIGTERM";
+        case SIGTERM:   return "SIGTERM";
 #endif
 #ifdef SIGURG
-  case SIGURG:    return "SIGURG";
+        case SIGURG:    return "SIGURG";
 #endif
 #ifdef SIGSTOP
-  case SIGSTOP:   return "SIGSTOP";
+        case SIGSTOP:   return "SIGSTOP";
 #endif
 #ifdef SIGTSTP
-  case SIGTSTP:   return "SIGTSTP";
+        case SIGTSTP:   return "SIGTSTP";
 #endif
 #ifdef SIGCONT
-  case SIGCONT:   return "SIGCONT";
+        case SIGCONT:   return "SIGCONT";
 #endif
 #ifdef SIGCHLD
-  case SIGCHLD:   return "SIGCHLD";
+        case SIGCHLD:   return "SIGCHLD";
 #endif
 #ifdef SIGTTIN
-  case SIGTTIN:   return "SIGTTIN";
+        case SIGTTIN:   return "SIGTTIN";
 #endif
 #ifdef SIGTTOU
-  case SIGTTOU:   return "SIGTTOU";
+        case SIGTTOU:   return "SIGTTOU";
 #endif
 #ifdef SIGIO
-  case SIGIO:     return "SIGIO";
+        case SIGIO:     return "SIGIO";
 #endif
 #ifdef SIGXCPU
-  case SIGXCPU:   return "SIGXCPU";
+        case SIGXCPU:   return "SIGXCPU";
 #endif
 #ifdef SIGXFSZ
-  case SIGXFSZ:   return "SIGXFSZ";
+        case SIGXFSZ:   return "SIGXFSZ";
 #endif
 #ifdef SIGVTALAM
-  case SIGVTALRM: return "SIGVTALRM";
+        case SIGVTALRM: return "SIGVTALRM";
 #endif
 #ifdef SIGPROF
-  case SIGPROF:   return "SIGPROF";
+        case SIGPROF:   return "SIGPROF";
 #endif
 #ifdef SIGWINCH
-  case SIGWINCH:  return "SIGWINCH";
+        case SIGWINCH:  return "SIGWINCH";
 #endif
 #ifdef SIGINFO
-  case SIGINFO:   return "SIGINFO";
+        case SIGINFO:   return "SIGINFO";
 #endif
 #ifdef SIGUSR1
-  case SIGUSR1:   return "SIGUSR1";
+        case SIGUSR1:   return "SIGUSR1";
 #endif
 #ifdef SIGUSR2
-  case SIGUSR2:   return "SIGUSR2";
+        case SIGUSR2:   return "SIGUSR2";
 #endif
-  }
-  return "unknown signal";
+    }
+    return "unknown signal";
 }
 
 

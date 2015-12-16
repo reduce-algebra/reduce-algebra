@@ -141,16 +141,16 @@ static const char *opnames[256] =
 // so I could consolidate BUILTIN0/1/3 into one opcode and BUILTIN2/2R into
 // another with only a modest run-time overhead.
 //
-    "BUILTIN2",                  /* 0x5e */ //@
-    "BUILTIN2R",                 /* 0x5f */ //@
-    "BUILTIN3",                  /* 0x60 */ //@
+    "BUILTIN2",                  // 0x5e @
+    "BUILTIN2R",                 // 0x5f @
+    "BUILTIN3",                  // 0x60 @
     "APPLY1",                    // 0x61
     "APPLY2",                    // 0x62
     "APPLY3",                    // 0x63
 // APPLY4 is not even implemented yet! So removing it could not hurt!
 // Maybe implementing it might help?
 //
-    "APPLY4",                    /* 0x64 */ //@
+    "APPLY4",                    // 0x64 @
     "JCALL",                     // 0x65
     "JCALLN",                    // 0x66
     "JUMP",                      // 0x67
@@ -163,36 +163,36 @@ static const char *opnames[256] =
 // a short range. For long jumps I could go to only allowing a 32K span
 // not a 64K one and consilidate the _L and _BL cases.
 //
-    "JUMPNIL_L",                 /* 0x6d */ //@?
-    "JUMPNIL_BL",                /* 0x6e */ //@?
+    "JUMPNIL_L",                 // 0x6d @?
+    "JUMPNIL_BL",                // 0x6e @?
     "JUMPT",                     // 0x6f
     "JUMPT_B",                   // 0x70
-    "JUMPT_L",                   /* 0x71 */ //@?
-    "JUMPT_BL",                  /* 0x72 */ //@?
+    "JUMPT_L",                   // 0x71 @?
+    "JUMPT_BL",                  // 0x72 @?
     "JUMPATOM",                  // 0x73
     "JUMPATOM_B",                // 0x74
-    "JUMPATOM_L",                /* 0x75 */ //@?
-    "JUMPATOM_BL",               /* 0x76 */ //@?
+    "JUMPATOM_L",                // 0x75 @?
+    "JUMPATOM_BL",               // 0x76 @?
     "JUMPNATOM",                 // 0x77
     "JUMPNATOM_B",               // 0x78
-    "JUMPNATOM_L",               /* 0x79 */ //@?
-    "JUMPNATOM_BL",              /* 0x7a */ //@?
+    "JUMPNATOM_L",               // 0x79 @?
+    "JUMPNATOM_BL",              // 0x7a @?
     "JUMPEQ",                    // 0x7b
     "JUMPEQ_B",                  // 0x7c
-    "JUMPEQ_L",                  /* 0x7d */ //@?
-    "JUMPEQ_BL",                 /* 0x7e */ //@?
+    "JUMPEQ_L",                  // 0x7d @?
+    "JUMPEQ_BL",                 // 0x7e @?
     "JUMPNE",                    // 0x7f
     "JUMPNE_B",                  // 0x80
-    "JUMPNE_L",                  /* 0x81 */ //@?
-    "JUMPNE_BL",                 /* 0x82 */ //@?
+    "JUMPNE_L",                  // 0x81 @?
+    "JUMPNE_BL",                 // 0x82 @?
     "JUMPEQUAL",                 // 0x83
     "JUMPEQUAL_B",               // 0x84
-    "JUMPEQUAL_L",               /* 0x85 */ //@?
-    "JUMPEQUAL_BL",              /* 0x86 */ //@?
+    "JUMPEQUAL_L",               // 0x85 @?
+    "JUMPEQUAL_BL",              // 0x86 @?
     "JUMPNEQUAL",                // 0x87
     "JUMPNEQUAL_B",              // 0x88
-    "JUMPNEQUAL_L",              /* 0x89 */ //@?
-    "JUMPNEQUAL_BL",             /* 0x8a */ //@?
+    "JUMPNEQUAL_L",              // 0x89 @?
+    "JUMPNEQUAL_BL",             // 0x8a @?
     "JUMPL0NIL",                 // 0x8b
     "JUMPL0T",                   // 0x8c
     "JUMPL1NIL",                 // 0x8d
@@ -248,8 +248,8 @@ static const char *opnames[256] =
     "CATCH",                     // 0xbf
     "CATCH_B",                   // 0xc0
 // Use a trampoline-jump if necessary for catches with huge span?
-    "CATCH_L",                   /* 0xc1 */ //@
-    "CATCH_BL",                  /* 0xc2 */ //@
+    "CATCH_L",                   // 0xc1 @
+    "CATCH_BL",                  // 0xc2 @
     "UNCATCH",                   // 0xc3
     "THROW",                     // 0xc4
     "PROTECT",                   // 0xc5

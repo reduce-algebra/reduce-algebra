@@ -1,4 +1,4 @@
-// wxshowmath.cpp                            Copyright (C) 2015, A C Norman    
+// wxshowmath.cpp                            Copyright (C) 2015, A C Norman
 
 
 /**************************************************************************
@@ -30,7 +30,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 
 // Without the fullowing things like UINT64_C will not be available.
@@ -109,8 +109,7 @@ extern char *getcwd(char *s, size_t n);
 static FILE *logfile = NULL;
 
 static int logprintf(const char *fmt, ...)
-{
-    va_list a;
+{   va_list a;
     int r = 0;
     if (logfile == NULL) logfile = fopen("wxshowmath.log","w");
     if (logfile != NULL)
@@ -210,30 +209,28 @@ BEGIN_EVENT_TABLE(showmathFrame, wxFrame)
 END_EVENT_TABLE()
 
 int get_current_directory(char *s, size_t n)
-{
-    if (getcwd(s, n) == 0)
+{   if (getcwd(s, n) == 0)
     {   switch(errno)
-        {
-    case ERANGE: return -2; // negative return value flags an error.
-    case EACCES: return -3;
-    default:     return -4;
+        {   case ERANGE: return -2; // negative return value flags an error.
+            case EACCES: return -3;
+            default:     return -4;
         }
     }
     else return strlen(s);
 }
 
-/*
- * The next procedure is responsible for establishing information about
- * both the"short-form" name of the program launched and the directory
- * it was found in. This latter directory may be a good place to keep
- * associated resources. Well many conventions would NOT view it as a
- * good place, but it is how I organise things!
- *
- * The way of finding the information concerned differs between Windows and
- * Unix/Linux, as one might expect.
- *
- * return non-zero value if failure.
- */
+//
+// The next procedure is responsible for establishing information about
+// both the"short-form" name of the program launched and the directory
+// it was found in. This latter directory may be a good place to keep
+// associated resources. Well many conventions would NOT view it as a
+// good place, but it is how I organise things!
+//
+// The way of finding the information concerned differs between Windows and
+// Unix/Linux, as one might expect.
+//
+// return non-zero value if failure.
+//
 
 #ifndef LONGEST_LEGAL_FILENAME
 #define LONGEST_LEGAL_FILENAME 1024
@@ -243,12 +240,12 @@ const char *fullProgramName ="./wxshowmath.exe";
 const char *programName     ="wxshowmath.exe";
 const char *programDir      =".";
 
-/*
- * getenv() is a mild pain: Windows seems
- * to have a strong preference for upper case names.  To allow for
- * all this I do not call getenv() directly but go via the following
- * code that can patch things up.
- */
+//
+// getenv() is a mild pain: Windows seems
+// to have a strong preference for upper case names.  To allow for
+// all this I do not call getenv() directly but go via the following
+// code that can patch things up.
+//
 
 const char *my_getenv(const char *s)
 {
@@ -271,15 +268,14 @@ int program_name_dot_com = 0;
 static char this_executable[LONGEST_LEGAL_FILENAME];
 
 int find_program_directory(const char *argv0)
-{
-    char *w;
+{   char *w;
     int len, ndir, npgm;
-/*
- * In older code I believed that I could rely on Windows giving me
- * the full path of my executable in argv[0]. With bits of mingw/cygwin
- * anywhere near me that may not be so, so I grab the information directly
- * from the Windows APIs.
- */
+//
+// In older code I believed that I could rely on Windows giving me
+// the full path of my executable in argv[0]. With bits of mingw/cygwin
+// anywhere near me that may not be so, so I grab the information directly
+// from the Windows APIs.
+//
     char execname[LONGEST_LEGAL_FILENAME];
     GetModuleFileNameA(NULL, execname, LONGEST_LEGAL_FILENAME-2);
     strcpy(this_executable, execname);
@@ -294,10 +290,10 @@ int find_program_directory(const char *argv0)
 
     fullProgramName = argv0;
     len = strlen(argv0);
-/*
- * If the current program is called c:\aaa\xxx.exe, then the directory
- * is just c:\aaa and the simplified program name is just xxx
- */
+//
+// If the current program is called c:\aaa\xxx.exe, then the directory
+// is just c:\aaa and the simplified program name is just xxx
+//
     if (len > 4 &&
         argv0[len-4] == '.' &&
         ((tolower(argv0[len-3]) == 'e' &&
@@ -332,11 +328,11 @@ int find_program_directory(const char *argv0)
 // Now for Unix, Linux, BSD (and hence Macintosh) worlds.
 
 
-/*
- * Different systems put or do not put underscores in front of these
- * names. My adaptation here should give me a chance to work whichever
- * way round it goes.
- */
+//
+// Different systems put or do not put underscores in front of these
+// names. My adaptation here should give me a chance to work whichever
+// way round it goes.
+//
 
 #ifndef S_IFMT
 # ifdef __S_IFMT
@@ -365,49 +361,48 @@ int find_program_directory(const char *argv0)
 #endif
 
 
-/*
- * The length set here is at least the longest length that I
- * am prepared to worry about. If anybody installs the program in a
- * very deep directory such that its fully rooted name is over-long
- * things may not behave well. But I am not going to fuss with dynamic
- * allocation of or expansion of the arrays I use here.
- */
+//
+// The length set here is at least the longest length that I
+// am prepared to worry about. If anybody installs the program in a
+// very deep directory such that its fully rooted name is over-long
+// things may not behave well. But I am not going to fuss with dynamic
+// allocation of or expansion of the arrays I use here.
+//
 
 int find_program_directory(const char *argv0)
-{
-    char pgmname[LONGEST_LEGAL_FILENAME];
+{   char pgmname[LONGEST_LEGAL_FILENAME];
     char *w;
     const char *cw;
     int n, n1;
-/*
- * If the main reduce executable is has a full path-name /xxx/yyy/zzz then
- * I will use /xxx/yyy as its directory To find this I need to find the full
- * path for the executable. I ATTEMPT to follow the behaviour of"sh",
- *"bash" and"csh".  But NOTE WELL that if anybody launches this code in
- * an unusual manner (eg using an"exec" style function) that could confuse
- * me substantially. What comes in via argv[0] is typically just the final
- * component of the program name - what I am doing here is scanning to
- * see what path it might have corresponded to.
- *
- *
- * If the name of the executable starts with a"/" it is already an
- * absolute path name. I believe that if the user types (to the shell)
- * something like $DIR/bin/$PGMNAME or ~user/subdir/pgmname then the
- * environment variables and user-name get expanded out by the shell before
- * the command is actually launched.
- */
+//
+// If the main reduce executable is has a full path-name /xxx/yyy/zzz then
+// I will use /xxx/yyy as its directory To find this I need to find the full
+// path for the executable. I ATTEMPT to follow the behaviour of"sh",
+//"bash" and"csh".  But NOTE WELL that if anybody launches this code in
+// an unusual manner (eg using an"exec" style function) that could confuse
+// me substantially. What comes in via argv[0] is typically just the final
+// component of the program name - what I am doing here is scanning to
+// see what path it might have corresponded to.
+//
+//
+// If the name of the executable starts with a"/" it is already an
+// absolute path name. I believe that if the user types (to the shell)
+// something like $DIR/bin/$PGMNAME or ~user/subdir/pgmname then the
+// environment variables and user-name get expanded out by the shell before
+// the command is actually launched.
+//
     if (argv0 == NULL || argv0[0] == 0) // Information not there - return
     {   programDir = (const char *)"."; // some sort of default.
         programName = (const char *)"wxshowmath";
         fullProgramName = (const char *)"./wxshowmath";
         return 0;
     }
-/*
- * I will treat 3 cases here
- * (a)   /abc/def/ghi      fully rooted: already an absolute name;
- * (b)   abc/def/ghi       treat as ./abc/def/ghi;
- * (c)   ghi               scan $PATH to see where it may have come from.
- */
+//
+// I will treat 3 cases here
+// (a)   /abc/def/ghi      fully rooted: already an absolute name;
+// (b)   abc/def/ghi       treat as ./abc/def/ghi;
+// (c)   ghi               scan $PATH to see where it may have come from.
+//
     else if (argv0[0] == '/') fullProgramName = argv0;
     else
     {   for (cw=argv0; *cw!=0 && *cw!='/'; cw++);   // seek a"/" *
@@ -428,24 +423,24 @@ int find_program_directory(const char *argv0)
         }
         else
         {   const char *path = my_getenv("PATH");
-/*
- * I omit checks for names of shell built-in functions, since my code is
- * actually being executed by here. So I get my search path and look
- * for an executable file somewhere on it. I note that the shells back this
- * up with hash tables, and so in cases where"rehash" might be needed this
- * code may become confused.
- */
+//
+// I omit checks for names of shell built-in functions, since my code is
+// actually being executed by here. So I get my search path and look
+// for an executable file somewhere on it. I note that the shells back this
+// up with hash tables, and so in cases where"rehash" might be needed this
+// code may become confused.
+//
             struct stat buf;
             uid_t myuid = geteuid(), hisuid;
             gid_t mygid = getegid(), hisgid;
             int protection;
             int ok = 0;
-/*
- * I expect $PATH to be a sequence of directories with":" characters to
- * separate them. I suppose it COULD be that somebody used directory names
- * that had embedded colons, and quote marks or escapes in $PATH to allow
- * for that. In such case this code will just fail to cope.
- */
+//
+// I expect $PATH to be a sequence of directories with":" characters to
+// separate them. I suppose it COULD be that somebody used directory names
+// that had embedded colons, and quote marks or escapes in $PATH to allow
+// for that. In such case this code will just fail to cope.
+//
             if (path != NULL)
             {   while (*path != 0)
                 {   while (*path == ':') path++; // skip over":"
@@ -455,11 +450,11 @@ int find_program_directory(const char *argv0)
                         if (n > (int)(sizeof(pgmname)-3-strlen(argv0)))
                             return 3; // fail! 3=$PATH element overlong
                     }
-/*
- * Here I have separated off the next segment of my $PATH and put it at
- * the start of pgmname. Observe that to avoid buffer overflow I
- * exit abruptly if the entry on $PATH is itself too big for my buffer.
- */
+//
+// Here I have separated off the next segment of my $PATH and put it at
+// the start of pgmname. Observe that to avoid buffer overflow I
+// exit abruptly if the entry on $PATH is itself too big for my buffer.
+//
                     pgmname[n++] = '/';
                     strcpy(&pgmname[n], argv0);
 // see if the file whose name I have just built up exists at all.
@@ -467,10 +462,10 @@ int find_program_directory(const char *argv0)
                     hisuid = buf.st_uid;
                     hisgid = buf.st_gid;
                     protection = buf.st_mode; // info about the file found
-/*
- * I now want to check if there is a file of the right name that is
- * executable by the current (effective) user.
- */
+//
+// I now want to check if there is a file of the right name that is
+// executable by the current (effective) user.
+//
                     if (protection & S_IXOTH ||
                         (mygid == hisgid && protection & S_IXGRP) ||
                         (myuid == hisuid && protection & S_IXUSR))
@@ -480,13 +475,13 @@ int find_program_directory(const char *argv0)
                 }
             }
             if (!ok) return 4;    // executable not found via $PATH
-/*
- * Life is not yet quite easy! $PATH may contain some items that do not
- * start with"/", ie that are still local paths relative to the
- * current directory. I want to be able to return an absolute fully
- * rooted path name! So unless the item we have at present starts with"/"
- * I will stick the current directory's location in front.
- */
+//
+// Life is not yet quite easy! $PATH may contain some items that do not
+// start with"/", ie that are still local paths relative to the
+// current directory. I want to be able to return an absolute fully
+// rooted path name! So unless the item we have at present starts with"/"
+// I will stick the current directory's location in front.
+//
             if (pgmname[0] != '/')
             {   char temp[LONGEST_LEGAL_FILENAME];
                 strcpy(temp, pgmname);
@@ -499,10 +494,10 @@ int find_program_directory(const char *argv0)
             fullProgramName = pgmname;
         }
     }
-/*
- * Now if I have a program name I will try to see if it is a symbolic link
- * and if so I will follow it.
- */
+//
+// Now if I have a program name I will try to see if it is a symbolic link
+// and if so I will follow it.
+//
     {   struct stat buf;
         char temp[LONGEST_LEGAL_FILENAME];
         if (lstat(fullProgramName, &buf) != -1 &&
@@ -514,21 +509,21 @@ int find_program_directory(const char *argv0)
             fullProgramName = pgmname;
         }
     }
-/*
- * Now fullProgramName is set up, but may refer to an array that
- * is stack allocated. I need to make it proper.
- */
+//
+// Now fullProgramName is set up, but may refer to an array that
+// is stack allocated. I need to make it proper.
+//
     w = (char *)malloc(1+strlen(fullProgramName));
     if (w == NULL) return 5;           // 5 = malloc fails
     strcpy(w, fullProgramName);
     fullProgramName = w;
 #ifdef __CYGWIN__
-/*
- * Now if I built on raw cygwin I may have an unwanted".com" or".exe"
- * suffix, so I will purge that! This code exists here because the raw
- * cygwin build has a somewhat schitzo view as to whether it is a Windows
- * or a Unix-like system.
- */
+//
+// Now if I built on raw cygwin I may have an unwanted".com" or".exe"
+// suffix, so I will purge that! This code exists here because the raw
+// cygwin build has a somewhat schitzo view as to whether it is a Windows
+// or a Unix-like system.
+//
     if (strlen(w) > 4)
     {   w += strlen(w) - 4;
         if (w[0] == '.' &&
@@ -540,12 +535,12 @@ int find_program_directory(const char *argv0)
               tolower(w[3]) == 'm'))) w[0] = 0;
     }
 #endif
-/*
- * OK now I have the full name, which is of the form
- *   abc/def/fgi/xyz
- * and I need to split it at the final"/" (and by now I very fully expect
- * there to be at least one"/".
- */
+//
+// OK now I have the full name, which is of the form
+//   abc/def/fgi/xyz
+// and I need to split it at the final"/" (and by now I very fully expect
+// there to be at least one"/".
+//
     for (n=strlen(fullProgramName)-1; n>=0; n--)
         if (fullProgramName[n] == '/') break;
     if (n < 0) return 6;               // 6 = no"/" in full file path
@@ -553,10 +548,10 @@ int find_program_directory(const char *argv0)
     if (w == NULL) return 7;           // 7 = malloc fails
     strncpy(w, fullProgramName, n);
     w[n] = 0;
-/*
- * Note that if the executable was"/foo" then programDir will end up as""
- * so that programDir +"/" + programName works out properly.
- */
+//
+// Note that if the executable was"/foo" then programDir will end up as""
+// so that programDir +"/" + programName works out properly.
+//
     programDir = w;
     n1 = strlen(fullProgramName) - n;
     w = (char *)malloc(n1);
@@ -571,8 +566,7 @@ int find_program_directory(const char *argv0)
 
 
 int main(int argc, char *argv[])
-{
-    int i;
+{   int i;
     int usegui = 1;
 // I have had a case where my code appears to run happily when I run it
 // under gdb or when I have compiled it with full debugging options, but
@@ -636,7 +630,7 @@ int main(int argc, char *argv[])
 #endif
         wxDISABLE_DEBUG_SUPPORT();
 #if DEBUG
-    logprintf("calling wxEntry\n");
+        logprintf("calling wxEntry\n");
 #endif
 
         return wxEntry(argc, argv);
@@ -673,8 +667,7 @@ IMPLEMENT_APP_NO_MAIN(showmathApp)
 
 
 static const char *fontNames[] =
-{
-    "cmuntt",
+{   "cmuntt",
     "odokai",
     "cslSTIX-Regular",
     "cslSTIX-Bold",
@@ -698,18 +691,18 @@ void add_custom_fonts()
     {   char nn[LONGEST_LEGAL_FILENAME];
 #ifdef WIN32
         sprintf(nn,"%s/%s/%s.ttf",
-                    programDir, toString(fontsdir), fontNames[i]);
+                programDir, toString(fontsdir), fontNames[i]);
 #else
         sprintf(nn,"%s/%s/%s.%s",
-            programDir, toString(fontsdir), fontNames[i],
-            (strcmp(fontNames[i], "odokai") == 0 ? "ttf" : "otf"));
+                programDir, toString(fontsdir), fontNames[i],
+                (strcmp(fontNames[i], "odokai") == 0 ? "ttf" : "otf"));
 #endif
         wxString widename(nn);
         if (!wxFont::AddPrivateFont(widename))
             logprintf("Adding font %s failed\n", nn);
     }
     if (!wxFont::ActivatePrivateFonts())
-            logprintf("Activating private fonts failed\n");
+        logprintf("Activating private fonts failed\n");
 #endif // MACINTOSH
 }
 
@@ -745,7 +738,7 @@ void showmathPanel::SetRule(int height, int width)
 {
 #if 0
     logprintf("SetRule %d %.3g %d %.3g\n", width, (double)width/65536.0,
-                                        height, (double)height/65537.0);
+              height, (double)height/65537.0);
 #endif
 // The curious re-scaling here is so that the border of the rectangle does not
 // end up fatter than the rectangle itself.
@@ -789,7 +782,7 @@ bool showmathApp::OnInit()
         showmathfilename = tidyfilename;
     }
 #endif
-    
+
 #if DEBUG
     logprintf("showmathfilename=%s\n",
               showmathfilename == NULL ?"<null>" : showmathfilename);
@@ -804,9 +797,8 @@ bool showmathApp::OnInit()
 }
 
 showmathFrame::showmathFrame(const char *showmathfilename)
-       : wxFrame(NULL, wxID_ANY,"wxshowmath")
-{
-    SetIcon(wxICON(fwin));
+    : wxFrame(NULL, wxID_ANY,"wxshowmath")
+{   SetIcon(wxICON(fwin));
     int numDisplays = wxDisplay::GetCount(); // how many displays?
 // It is not clear to me what I should do if there are several displays,
 // and if there are none I am probably in a mess!
@@ -913,8 +905,8 @@ static char default_data[4096] =
 // constructor
 
 showmathPanel::showmathPanel(showmathFrame *parent, const char *showmathfilename)
-       : wxPanel(parent, wxID_ANY, wxDefaultPosition,
-                 wxDefaultSize, 0L,"showmathPanel")
+    : wxPanel(parent, wxID_ANY, wxDefaultPosition,
+              wxDefaultSize, 0L,"showmathPanel")
 {
 // I will read in any data once here and put it in a character buffer.
     FILE *f = NULL;
@@ -944,8 +936,7 @@ showmathPanel::showmathPanel(showmathFrame *parent, const char *showmathfilename
 
 
 void showmathFrame::OnClose(wxCloseEvent &WXUNUSED(event))
-{
-    Destroy();
+{   Destroy();
 #ifdef WIN32
 // Otherwise under XP bad things happen for me. Like the application
 // re-launching. I do not think I understand, but the extreme action of
@@ -957,8 +948,7 @@ void showmathFrame::OnClose(wxCloseEvent &WXUNUSED(event))
 }
 
 void showmathFrame::OnExit(wxCommandEvent &WXUNUSED(event))
-{
-    Destroy();
+{   Destroy();
 #ifdef WIN32
     TerminateProcess(GetCurrentProcess(), 1);
 #else
@@ -970,18 +960,17 @@ void showmathFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
 {
 // At present this never gets activated!
     wxMessageBox(
-       wxString::Format(
-"wxshowmath (A C Norman 2015)\nwxWidgets version: %s\nOperating system: %s",
-           wxVERSION_STRING,
-           wxGetOsDescription()),
-       "About wxshowmath",
-       wxOK | wxICON_INFORMATION,
-       this);
+        wxString::Format(
+            "wxshowmath (A C Norman 2015)\nwxWidgets version: %s\nOperating system: %s",
+            wxVERSION_STRING,
+            wxGetOsDescription()),
+        "About wxshowmath",
+        wxOK | wxICON_INFORMATION,
+        this);
 }
 
 void showmathFrame::OnSize(wxSizeEvent &WXUNUSED(event))
-{
-    wxSize client(GetClientSize());
+{   wxSize client(GetClientSize());
     panel->SetSize(client);
     panel->Refresh();
 }
@@ -1036,7 +1025,7 @@ static int32_t convert_font_name(char *dest, char *src)
 //    <anything else>-Bold
 //    <anything else>-Italic
 //    <anything else>-BoldItalic
-//    
+//
     int32_t r = wxFONTFLAG_DEFAULT;
     if (strcmp(src, "cmuntt") == 0) strcpy(dest, "CMU Typewriter Text");
     else if (strcmp(src, "odokai") == 0) strcpy(dest, "AR PL New Kai");
@@ -1062,13 +1051,12 @@ static int32_t convert_font_name(char *dest, char *src)
              wxFONTFLAG_ITALIC) r |= (F_Italic<<16);
     else r |= (F_Regular<<16);
 
-logprintf("Gives %s with flags %x\n", dest, r); fflush(stdout);
+    logprintf("Gives %s with flags %x\n", dest, r); fflush(stdout);
     return r;
 }
 
 static void allow_for_utf16(wchar_t *ccc, int cp)
-{
-    if (sizeof(wchar_t) == 4 ||
+{   if (sizeof(wchar_t) == 4 ||
         cp <= 0xffff)
     {   ccc[0] = cp;
         ccc[1] = 0;
@@ -1083,8 +1071,7 @@ static void allow_for_utf16(wchar_t *ccc, int cp)
 }
 
 void showmathPanel::OnPaint(wxPaintEvent &event)
-{
-    wxPaintDC mydc(this);
+{   wxPaintDC mydc(this);
     gc = wxGraphicsContext::Create(mydc);
     if (gc == NULL) return;
 // The next could probably be done merely by setting a background colour
@@ -1114,15 +1101,15 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
 // The graphicsFixedPitch font will be for a line spacing of 24 pixels,
 // but I will scale it as relevant.
     graphicsFixedPitch =
-       gc->CreateFont(
-           wxFont(wxFontInfo(24).FaceName(wxT("CMU Typewriter Text"))));
+        gc->CreateFont(
+            wxFont(wxFontInfo(24).FaceName(wxT("CMU Typewriter Text"))));
     double dwidth, dheight, ddepth, dleading;
     gc->SetFont(graphicsFixedPitch);
     gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
     em = dwidth;
     logprintf("em=%#.6g\n", em);
     logprintf("height = %#.6g total height = %#.6g leading = %#.6g\n",
-        dheight-ddepth-dleading, dheight, dleading);
+              dheight-ddepth-dleading, dheight, dleading);
 
     double screenWidth = (double)window.GetWidth();
     double lineWidth = 80.0*em;
@@ -1142,9 +1129,9 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
                            wxFONTFLAG_BOLD + wxFONTFLAG_ITALIC);
         gc->SetFont(tf1);
         gc->GetTextExtent(wxString((wchar_t)'X'),
-            &dwidth, &dheight, &ddepth, &dleading);
+                          &dwidth, &dheight, &ddepth, &dleading);
         logprintf("%.6g %.6g [%.6g]\n",
-            dheight, ddepth, dheight-ddepth);
+                  dheight, ddepth, dheight-ddepth);
         ddd = (int)((dheight - ddepth)/10.0 + 0.5);
         if (ddd == chardepth_WIN32[F_BoldItalic])
         {   chardepth = chardepth_WIN32;
@@ -1155,9 +1142,9 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
             gc->CreateFont(10000.0, "AR PL New Kai", wxFONTFLAG_DEFAULT);
         gc->SetFont(tf1);
         gc->GetTextExtent(wxString((wchar_t)'X'),
-            &dwidth, &dheight, &ddepth, &dleading);
+                          &dwidth, &dheight, &ddepth, &dleading);
         logprintf("%.6g %.6g [%.6g]\n",
-            dheight, ddepth, dheight-ddepth);
+                  dheight, ddepth, dheight-ddepth);
         ddd = (int)((dheight - ddepth)/10.0 + 0.5);
         if (ddd == chardepth_X11[F_odokai])
         {   chardepth = chardepth_X11;
@@ -1168,9 +1155,9 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
             gc->CreateFont(10000.0, "cslSTIXMath", wxFONTFLAG_DEFAULT);
         gc->SetFont(tf1);
         gc->GetTextExtent(wxString((wchar_t)unicode_INTEGRAL),
-            &dwidth, &dheight, &ddepth, &dleading);
+                          &dwidth, &dheight, &ddepth, &dleading);
         logprintf("%.6g %.6g [%.6g]\n",
-            dheight, ddepth, dheight-ddepth);
+                  dheight, ddepth, dheight-ddepth);
         ddd = (int)((dheight - ddepth)/10.0 + 0.5);
         if (ddd == chardepth_OSX[F_Math])
         {   chardepth = chardepth_OSX;
@@ -1188,7 +1175,7 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
     gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
     logprintf("%.6g %.6g %.6g %.6g fixedpitch\n", width, height, descent, xleading);
     graphicsFixedPitchBaseline = height - descent;
-logprintf("Fixed Pitch Baseline = %.6g\n", height-descent);
+    logprintf("Fixed Pitch Baseline = %.6g\n", height-descent);
 // Sort of for fun I put a row of 80 characters at the top of the screen
 // so I can show how fixed pitch stuff might end up being rendered.
     gc->SetFont(graphicsFixedPitch);
@@ -1199,9 +1186,9 @@ logprintf("Fixed Pitch Baseline = %.6g\n", height-descent);
     wxBrush b2(c2);
     gc->SetBrush(b2);
     for (int x=0; x<1000; x+=10)
-    for (int y=0; y<=1000; y+=10)
-    if (((x/10)+(y/10)) & 1 != 0)
-        gc->DrawRectangle((double)x, (double)y, 10.0, 10.0);
+        for (int y=0; y<=1000; y+=10)
+            if (((x/10)+(y/10)) & 1 != 0)
+                gc->DrawRectangle((double)x, (double)y, 10.0, 10.0);
 #endif
 
 
@@ -1239,7 +1226,7 @@ logprintf("Fixed Pitch Baseline = %.6g\n", height-descent);
     gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
     logprintf("(D)em=%#.3g\n", dwidth);
     logprintf("(D)height = %#.3g total height = %#.3g leading = %#.3g\n",
-        dheight-ddepth-dleading, dheight, dleading);
+              dheight-ddepth-dleading, dheight, dleading);
     lookupchar(F_Math, stix_LEFT_CURLY_BRACKET_UPPER_HOOK);
     logprintf("upper hook   %d %d\n", c_lly, c_ury);
     lookupchar(F_Math, stix_LEFT_CURLY_BRACKET_MIDDLE_PIECE);
@@ -1290,8 +1277,8 @@ logprintf("Fixed Pitch Baseline = %.6g\n", height-descent);
         }
         else if (sscanf(in, "deffont %d %60s %d;", &n, name, &size) == 3 &&
 // deffont number name size;   define font with given number
-            0 <= n &&
-            n < MAX_FONTS)
+                 0 <= n &&
+                 n < MAX_FONTS)
         {   int flags = convert_font_name(name1, name);
             int col;
             logprintf("font[%d] = \"%s\" size %d\n", n, name1, size);
@@ -1299,7 +1286,7 @@ logprintf("Fixed Pitch Baseline = %.6g\n", height-descent);
             gc->SetFont(graphicsFont[n]);
             gc->GetTextExtent(wxString((wchar_t)'('), &width, &height, &descent, &xleading);
             logprintf("( %s/%d: %.6g %.6g [%.6g]\n",
-                name1, size, height, descent, height-descent);
+                      name1, size, height, descent, height-descent);
             col = logprintf("    %d,", (int)((height - descent)/10.0 + 0.5));
             while (col++ < 20) logprintf(" ");
             logprintf("// %s\n", name);
@@ -1325,8 +1312,9 @@ logprintf("Fixed Pitch Baseline = %.6g\n", height-descent);
         else logprintf("\nLine <%.32s> unrecognised\n", in);
         in = strchr(in, ';');
         if (in != NULL) in++;
-    } while (in != NULL);
-    
+    }
+    while (in != NULL);
+
 
 
 // I will mark all the fonts I might have created as invalid now
@@ -1340,4 +1328,3 @@ logprintf("Fixed Pitch Baseline = %.6g\n", height-descent);
 
 
 // end of wxshowmath.cpp
-

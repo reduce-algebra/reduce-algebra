@@ -117,17 +117,6 @@ AC_ARG_WITH(cygbuild64,
 
 AC_SUBST(with_cygbuild64)
 
-# For aq short while I provided a way to use gcc rather than clang on the Mac
-# because it seemed to give a rioughtly 25% speed boost. But in September 2015
-# I find that trying to do that causes real pain as regards versions of
-# libc++ (at least) so I simplify the scheme away and accept that on a
-# Macintosh REDUCE will run slower than it might until and unless the standard
-# toolchains there catch up.
-#AC_ARG_WITH(gcc,
-#   AC_HELP_STRING([--without-gcc], [used on OSX and BSD where clang is default to use clang for everything]),
-#   [],
-#   [with_gcc="yes"])
-
 AC_SUBST(with_cygbuild64)
 
 AC_ARG_WITH(crlibm,
@@ -138,6 +127,16 @@ AC_ARG_WITH(crlibm,
 if test "x$with_crlibm" != "xno"
 then
   AC_DEFINE(HAVE_CRLIBM, [1], [Correct Rounding maths library should be used])
+fi
+
+AC_ARG_WITH(boehm,
+   AC_HELP_STRING([--with-boehm], [Can be used to disable use of boehm]),
+   [],
+   [with_boehm="no"])
+
+if test "x$with_boehm" != "xno"
+then
+  AC_DEFINE(HAVE_BOEHM, [1], [Boehm conservative collector should be available])
 fi
 
 if test "x$BUILTFOR" = "xunknown"
@@ -284,7 +283,11 @@ case $host in
 # "i686-w64-mingw32-gcc".
     AC_MSG_NOTICE([Windows built creating native binary])
     AC_DEFINE(WIN32, [1], [True if we are running on Windows])
-#   LDFLAGS="$LDFLAGS -static"
+# I seem to need to link with "-static" in a Windows mode or else things
+# like the C++ library do not get found when I try to run the executables.
+# This is of course liable to be an issue of my $PATH, but linking in static
+# mode will still keep me safe.
+    LDFLAGS="$LDFLAGS -static"
     DLL_CFLAGS="$CFLAGS -shared"
 # In this case I make the machine appear to be "i686-pc-windows" or some
 # such to distinguish it from the case where cygwin1.dll might be involved.
@@ -573,10 +576,6 @@ fi
 #
 
 # find C compiler & preprocessor
-# I will not need C++ unless FOX is available and I try to build a GUI
-# version, but maybe it does not hurt a lot to look for it regardless.
-
-
 
 old_CFLAGS="$CFLAGS"
 old_CXXFLAGS="$CXXFLAGS"
@@ -606,6 +605,7 @@ fi
 # loaded, not while being run. Fedora Core 6 (at least) by default
 # uses just the new format, and so generates VERY non-portable executables.
 # Enabling the "both" option here should soften the impact...
+# Perhaps this is now an issue of ancient history?
 
 AC_MSG_NOTICE([Checking for "--hash-style=both"])
 if test "x$GCC" = "xyes"
@@ -617,6 +617,20 @@ then
     [AC_MSG_NOTICE(Will use --hash-style=both)],
     [LDFLAGS="$OLDLDFLAGS"
      AC_MSG_NOTICE(--hash-style=both not available)])
+fi
+
+AC_MSG_NOTICE([Checking for "--std=gnu++11"])
+if test "x$GCC" = "xyes"
+then
+# I need gnu++11 so that non-ANSI functions such as putc-unlocked are
+# left available to me.
+  OLDCPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$CPPFLAGS --std=gnu++11"
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                  [[printf("\n");]])],
+    [AC_MSG_NOTICE(Will use --std=gnu++11)],
+    [CPPFLAGS="$OLDCPPFLAGS"
+     AC_MSG_NOTICE(--std=gnu++11 not available)])
 fi
 
 # I have alternative ways of doing things on Windows and Macintosh, but
@@ -1204,17 +1218,6 @@ then
     [[#include <sys/resource.h>]])
 fi
 
-# sigsetjmp will be a macro not a function, and so the various predefined
-# tests are not very good at detecting it. So I have a custom test here.
-AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <setjmp.h>]],
-                                [[static sigjmp_buf env;
-                                  int main(int argc, char *argv())
-                                  { sigsetjmp(env, 0); return 0; }]])],
-  [AC_MSG_NOTICE(sigsetjmp appears to be available)
-   AC_DEFINE(HAVE_SIGSETJMP, [1], [sigsetjmp present])],
-  [])
-
-
 # The next bit tests if I can compile and then run programs.
 # This information is used in the Makefiles when I appear to be
 # cross compiling but neverthless the executables I generate can
@@ -1424,7 +1427,9 @@ AM_CONDITIONAL(jit,test "x$enable_jit" = "xyes")
 AM_CONDITIONAL(canrun,test "x$can_run_executables" = "xyes")
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")
 AM_CONDITIONAL(valgrind, test "x$VALGRIND" = "xvalgrind")
-AM_CONDITIONAL(crlibm, test "x$crlibm" != "xno")
+AM_CONDITIONAL(crlibm, test "x$with_crlibm" != "xno")
+AM_CONDITIONAL(boehm, test "x$with_boehm" != "xno")
+AM_CONDITIONAL(crlibmorboehm, test "x$with_crlibm" != "xno" || "x$with_boehm" != "xno")
 
 AC_OUTPUT
 

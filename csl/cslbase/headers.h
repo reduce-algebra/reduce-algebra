@@ -67,6 +67,10 @@
 #endif
 #endif
 
+// At some stage I might wish to move to "#include <cstdio>" etc however
+// that would put things in the std: namespace, and the killer for me is
+// that with g++ I can then not find putc_unlocked and getc_unlocked.
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -113,7 +117,7 @@
 #endif
 
 #ifdef WIN64
-// The mingw64 build that I use seems to get messed up by inttypes.h
+// The mingw64 build that I use seems to get messed up by cinttypes
 #undef PRIdPTR
 #undef PRIuPTR
 #undef PRIxPTR
@@ -131,10 +135,6 @@
 // cross-built for CE and that led to pain? I now forget.
 //
 #include <signal.h>
-#endif
-
-#ifndef __cplusplus
-#include <setjmp.h>
 #endif
 
 #include "machine.h"

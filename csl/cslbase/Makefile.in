@@ -89,22 +89,38 @@ host_triplet = @host@
 @mac_framework_FALSE@noinst_PROGRAMS = bootstrapreduce$(EXEEXT) \
 @mac_framework_FALSE@	fwindemo$(EXEEXT) termdemo$(EXEEXT) \
 @mac_framework_FALSE@	$(am__EXEEXT_1) dyndemo$(EXEEXT) \
-@mac_framework_FALSE@	$(am__EXEEXT_2)
+@mac_framework_FALSE@	$(am__EXEEXT_2) $(am__append_4)
 @mac_framework_TRUE@noinst_PROGRAMS = bootstrapreduce$(EXEEXT) \
 @mac_framework_TRUE@	fwindemo$(EXEEXT) termdemo$(EXEEXT) \
-@mac_framework_TRUE@	$(am__EXEEXT_1) $(am__EXEEXT_2)
-@crlibm_TRUE@am__append_4 = $(CRINC)
+@mac_framework_TRUE@	$(am__EXEEXT_1) $(am__EXEEXT_2) \
+@mac_framework_TRUE@	$(am__append_4)
+@boehm_TRUE@am__append_4 = gctest$(EXEEXT)
 @crlibm_TRUE@am__append_5 = $(CRINC)
 @crlibm_TRUE@am__append_6 = $(CRINC)
-@crlibm_TRUE@am__append_7 = -L../lib -lcrlibm
+@crlibm_TRUE@am__append_7 = $(CRINC)
+
+# The following ugly dependencies are here so that one can go, for
+# instance, "make csl.o" in a clean tree and crlibm building will get
+# triggered.
 @crlibm_TRUE@am__append_8 = -L../lib -lcrlibm
 @crlibm_TRUE@am__append_9 = -L../lib -lcrlibm
-@crlibm_TRUE@am__append_10 = $(CRLIBMDEPS)
+@crlibm_TRUE@am__append_10 = -L../lib -lcrlibm
 @crlibm_TRUE@am__append_11 = $(CRLIBMDEPS)
 @crlibm_TRUE@am__append_12 = $(CRLIBMDEPS)
-@windows_TRUE@@wx_TRUE@am__append_13 = fwindemo$(COM) wxpsl$(COM) reduce$(COM)
-@windows_TRUE@@wx_FALSE@am__append_14 = fwindemo$(COM) reduce$(COM)
-@windows_TRUE@am__append_15 = csl$(COM)
+@crlibm_TRUE@am__append_13 = $(CRLIBMDEPS)
+@boehm_FALSE@gctest_DEPENDENCIES =
+@boehm_TRUE@am__append_14 = $(BOEHMINC)
+@boehm_TRUE@am__append_15 = $(BOEHMINC)
+@boehm_TRUE@am__append_16 = $(BOEHMINC)
+@boehm_TRUE@am__append_17 = -L../lib -lgc
+@boehm_TRUE@am__append_18 = -L../lib -lgc
+@boehm_TRUE@am__append_19 = -L../lib -lgc
+@boehm_TRUE@am__append_20 = $(BOEHMDEPS)
+@boehm_TRUE@am__append_21 = $(BOEHMDEPS)
+@boehm_TRUE@am__append_22 = $(BOEHMDEPS)
+@windows_TRUE@@wx_TRUE@am__append_23 = fwindemo$(COM) wxpsl$(COM) reduce$(COM)
+@windows_TRUE@@wx_FALSE@am__append_24 = fwindemo$(COM) reduce$(COM)
+@windows_TRUE@am__append_25 = csl$(COM)
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -214,6 +230,9 @@ am__fwindemo_SOURCES_DIST = fwindemo.cpp fwin.cpp termed.cpp \
 	wxfwin.cpp wxterminal.cpp
 am_fwindemo_OBJECTS = fwindemo.$(OBJEXT) $(am__objects_3)
 fwindemo_OBJECTS = $(am_fwindemo_OBJECTS)
+am__gctest_SOURCES_DIST = gctest.cpp
+@boehm_TRUE@am_gctest_OBJECTS = gctest-gctest.$(OBJEXT)
+gctest_OBJECTS = $(am_gctest_OBJECTS)
 am__reduce_SOURCES_DIST = arith01.cpp arith02.cpp arith03.cpp \
 	arith04.cpp arith05.cpp arith06.cpp arith07.cpp arith08.cpp \
 	arith09.cpp arith10.cpp arith11.cpp arith12.cpp arith13.cpp \
@@ -342,17 +361,18 @@ am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
 SOURCES = $(bootstrapreduce_SOURCES) $(csl_SOURCES) $(dyndemo_SOURCES) \
 	$(fontdemo_SOURCES) $(foxdemo_SOURCES) $(fwindemo_SOURCES) \
-	$(reduce_SOURCES) $(showmathdemo_SOURCES) $(termdemo_SOURCES) \
-	$(wxdemo_SOURCES) $(wxdvi_SOURCES) $(wxfontdemo_SOURCES) \
-	$(wxpsl_SOURCES) $(wxshowmath_SOURCES) \
+	$(gctest_SOURCES) $(reduce_SOURCES) $(showmathdemo_SOURCES) \
+	$(termdemo_SOURCES) $(wxdemo_SOURCES) $(wxdvi_SOURCES) \
+	$(wxfontdemo_SOURCES) $(wxpsl_SOURCES) $(wxshowmath_SOURCES) \
 	$(wxshowmathdemo_SOURCES)
 DIST_SOURCES = $(am__bootstrapreduce_SOURCES_DIST) \
 	$(am__csl_SOURCES_DIST) $(dyndemo_SOURCES) $(fontdemo_SOURCES) \
 	$(foxdemo_SOURCES) $(am__fwindemo_SOURCES_DIST) \
-	$(am__reduce_SOURCES_DIST) $(showmathdemo_SOURCES) \
-	$(termdemo_SOURCES) $(wxdemo_SOURCES) $(wxdvi_SOURCES) \
-	$(wxfontdemo_SOURCES) $(am__wxpsl_SOURCES_DIST) \
-	$(wxshowmath_SOURCES) $(wxshowmathdemo_SOURCES)
+	$(am__gctest_SOURCES_DIST) $(am__reduce_SOURCES_DIST) \
+	$(showmathdemo_SOURCES) $(termdemo_SOURCES) $(wxdemo_SOURCES) \
+	$(wxdvi_SOURCES) $(wxfontdemo_SOURCES) \
+	$(am__wxpsl_SOURCES_DIST) $(wxshowmath_SOURCES) \
+	$(wxshowmathdemo_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -528,11 +548,11 @@ TRACE = $(warning TRACE: $@ :: $?)
 # I wish to know where this build intends to install things...
 AM_CPPFLAGS = $(TRACE) $(am__append_1) -DBINDIR=$(bindir) \
 	-DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) \
-	$(am__append_4)
+	$(am__append_5) $(am__append_14)
 AM_LDFLAGS = $(TRACE)
 reduce_CPPFLAGS = $(TRACE) -DNO_BYTECOUNT=1 $(am__append_2) \
 	-DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) \
-	-Dfontsdir=reduce.$(fontsdir) $(am__append_5)
+	-Dfontsdir=reduce.$(fontsdir) $(am__append_6) $(am__append_15)
 #
 # At least on a temporary basis I will make CSL keep profiling
 # information. This is because that will help me debug the profile
@@ -543,7 +563,7 @@ reduce_CPPFLAGS = $(TRACE) -DNO_BYTECOUNT=1 $(am__append_2) \
 #csl_CPPFLAGS    = $(TRACE) -DNO_BYTECOUNT=1
 csl_CPPFLAGS = $(TRACE) $(am__append_3) -DBINDIR=$(bindir) \
 	-DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) \
-	$(am__append_6)
+	$(am__append_7) $(am__append_16)
 @exeext_FALSE@plain_csl = csl.unnecessary.except.on.windows
 
 # If I list all the phony targets here this may help document things you
@@ -586,6 +606,8 @@ csl_CPPFLAGS = $(TRACE) $(am__append_3) -DBINDIR=$(bindir) \
 @exeext_TRUE@plain_wxshowmathdemo = wxshowmathdemo
 @exeext_FALSE@plain_dyndemo = dyndemo.unnecessary.except.on.windows
 @exeext_TRUE@plain_dyndemo = dyndemo
+@exeext_FALSE@plain_gctest = gctest.unnecessary.except.on.windows
+@exeext_TRUE@plain_gctest = gctest
 CP = cp
 RM = rm
 @cygpath_FALSE@CYGSRC = $(srcdir)
@@ -866,14 +888,18 @@ dyndemo_SOURCES = dyndemo.cpp
 @windows_TRUE@reduceres = fwin-reduce.$(OBJEXT)
 @windows_FALSE@fwindemo_LDADD = $(FOX_LIBS)
 @windows_TRUE@fwindemo_LDADD = $(fwin_icon) $(FOX_LIBS)
-@windows_FALSE@csl_LDADD = $(FOX_LIBS) $(am__append_7)
+@windows_FALSE@csl_LDADD = $(FOX_LIBS) $(am__append_8) \
+@windows_FALSE@	$(am__append_17)
 @windows_TRUE@csl_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS) \
-@windows_TRUE@	$(am__append_7)
-@windows_FALSE@bootstrapreduce_LDADD = $(FOX_LIBS) $(am__append_8)
+@windows_TRUE@	$(am__append_8) $(am__append_17)
+@windows_FALSE@bootstrapreduce_LDADD = $(FOX_LIBS) $(am__append_9) \
+@windows_FALSE@	$(am__append_18)
 @windows_TRUE@bootstrapreduce_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS) \
-@windows_TRUE@	$(am__append_8)
-@windows_FALSE@reduce_LDADD = $(FOX_LIBS) $(am__append_9)
-@windows_TRUE@reduce_LDADD = $(reduceres) $(FOX_LIBS) $(am__append_9)
+@windows_TRUE@	$(am__append_9) $(am__append_18)
+@windows_FALSE@reduce_LDADD = $(FOX_LIBS) $(am__append_10) \
+@windows_FALSE@	$(am__append_19)
+@windows_TRUE@reduce_LDADD = $(reduceres) $(FOX_LIBS) $(am__append_10) \
+@windows_TRUE@	$(am__append_19)
 @cygwin_FALSE@@windows_TRUE@WINHELPERS = cygwin-isatty.exe cygwin64-isatty.exe not-under-cygwin.exe
 
 # The purpose of these two tiny programs is explained in the
@@ -881,23 +907,25 @@ dyndemo_SOURCES = dyndemo.cpp
 # They are not compiled with the general configure-detected compilation
 # options.
 @cygwin_TRUE@@windows_TRUE@WINHELPERS = 
-@windows_FALSE@csl_DEPENDENCIES = $(FONTDEP) $(WXC) $(am__append_10)
+@windows_FALSE@csl_DEPENDENCIES = $(FONTDEP) $(WXC) $(am__append_11) \
+@windows_FALSE@	$(am__append_20)
 @windows_TRUE@csl_DEPENDENCIES = local-cslexe.def local-cslcom.def \
 @windows_TRUE@	fwin-csl.$(OBJEXT) $(FONTDEP) $(WXC) \
-@windows_TRUE@	$(am__append_10)
+@windows_TRUE@	$(am__append_11) $(am__append_20)
 @windows_FALSE@bootstrapreduce_DEPENDENCIES = $(FONTDEP) \
 @windows_FALSE@	reduce.doc/index.html $(AWKFILES) $(GP) $(WXC) \
-@windows_FALSE@	$(am__append_11)
+@windows_FALSE@	$(am__append_12) $(am__append_21)
 @windows_TRUE@bootstrapreduce_DEPENDENCIES =  \
 @windows_TRUE@	local-bootstrapreduceexe.def fwin-csl.$(OBJEXT) \
 @windows_TRUE@	$(FONTDEP) reduce.doc/index.html $(AWKFILES) \
-@windows_TRUE@	$(GP) $(WXC) $(am__append_11)
+@windows_TRUE@	$(GP) $(WXC) $(am__append_12) $(am__append_21)
 @windows_FALSE@reduce_DEPENDENCIES = $(FONTDEP) reduce.doc/index.html \
-@windows_FALSE@	$(AWKFILES) $(GP) $(WXC) $(am__append_12)
+@windows_FALSE@	$(AWKFILES) $(GP) $(WXC) $(am__append_13) \
+@windows_FALSE@	$(am__append_22)
 @windows_TRUE@reduce_DEPENDENCIES = local-reduceexe.def \
 @windows_TRUE@	local-reducecom.def $(reduceres) $(FONTDEP) \
 @windows_TRUE@	reduce.doc/index.html $(GP) $(WXC) $(AWKFILES) \
-@windows_TRUE@	$(am__append_12)
+@windows_TRUE@	$(am__append_13) $(am__append_22)
 @windows_FALSE@@wx_FALSE@fwindemo_DEPENDENCIES = $(fwin_icon)
 @windows_FALSE@@wx_TRUE@fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 @windows_TRUE@@wx_FALSE@fwindemo_DEPENDENCIES = $(fwin_icon) $(WINHELPERS)
@@ -922,8 +950,17 @@ DEST = -o # Note that the variable needs to include a trailing blank
 #FOXDEPS=../lib/libFOX-1.6.lib
 @fox_TRUE@@win64_TRUE@FOXDEPS = ../lib/libFOX-1.6.a
 @crlibm_TRUE@CRLIBMDEPS = ../lib/libcrlibm.a ../include/crlibm.h
+@crlibm_TRUE@CRDEP = ../include/crlibm.h
 @crlibm_FALSE@CRINC = 
 @crlibm_TRUE@CRINC = -I../include
+@boehm_TRUE@gctest_SOURCES = gctest.cpp
+@boehm_TRUE@gctest_CPPFLAGS = $(TRACE) $(BOEHMINC)
+@boehm_TRUE@gctest_LDADD = -L../lib -lgc
+@boehm_TRUE@gctest_DEPENDENCIES = $(BOEHMDEPS)
+@boehm_TRUE@BOEHMDEPS = ../lib/gc.a ../include/gc/gc.h
+@boehm_TRUE@BOEHMDEP = ../include/gc/gc.h
+@boehm_FALSE@BOEHMINC = 
+@boehm_TRUE@BOEHMINC = -I../include
 
 #
 # the wxWidgets snapshot that I have just uploaded builds as version
@@ -993,11 +1030,11 @@ srcfiles = $(mainsrc) $(csl_SOURCES)
 @fox_FALSE@@wx_TRUE@guibin = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxshowmathdemo$(EXEEXT)
 @fox_TRUE@guibin = foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)
 @wx_FALSE@mainbin = $(guibin) fwindemo$(EXEEXT) termdemo$(EXEEXT) \
-@wx_FALSE@	reduce$(EXEEXT) $(am__append_13) $(am__append_14)
+@wx_FALSE@	reduce$(EXEEXT) $(am__append_23) $(am__append_24)
 @wx_TRUE@mainbin = $(guibin) fwindemo$(EXEEXT) wxpsl$(EXEEXT) \
-@wx_TRUE@	termdemo$(EXEEXT) reduce$(EXEEXT) $(am__append_13) \
-@wx_TRUE@	$(am__append_14)
-binfiles = $(mainbin) csl$(EXEEXT) $(am__append_15)
+@wx_TRUE@	termdemo$(EXEEXT) reduce$(EXEEXT) $(am__append_23) \
+@wx_TRUE@	$(am__append_24)
+binfiles = $(mainbin) csl$(EXEEXT) $(am__append_25)
 @win64_FALSE@@windows_FALSE@NAME = $(BUILD)
 @win64_FALSE@@windows_TRUE@NAME = windows32
 @win64_TRUE@NAME = windows64
@@ -1092,6 +1129,10 @@ dyndemo$(EXEEXT): $(dyndemo_OBJECTS) $(dyndemo_DEPENDENCIES) $(EXTRA_dyndemo_DEP
 @fox_FALSE@foxdemo$(EXEEXT): $(foxdemo_OBJECTS) $(foxdemo_DEPENDENCIES) $(EXTRA_foxdemo_DEPENDENCIES) 
 @fox_FALSE@	@rm -f foxdemo$(EXEEXT)
 @fox_FALSE@	$(AM_V_CXXLD)$(CXXLINK) $(foxdemo_OBJECTS) $(foxdemo_LDADD) $(LIBS)
+
+gctest$(EXEEXT): $(gctest_OBJECTS) $(gctest_DEPENDENCIES) $(EXTRA_gctest_DEPENDENCIES) 
+	@rm -f gctest$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(gctest_OBJECTS) $(gctest_LDADD) $(LIBS)
 
 @fox_FALSE@showmathdemo$(EXEEXT): $(showmathdemo_OBJECTS) $(showmathdemo_DEPENDENCIES) $(EXTRA_showmathdemo_DEPENDENCIES) 
 @fox_FALSE@	@rm -f showmathdemo$(EXEEXT)
@@ -1215,6 +1256,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/foxdemo-foxdemo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fwin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fwindemo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gctest-gctest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/instructions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/insts.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jit1.Po@am__quote@
@@ -2079,6 +2121,20 @@ foxdemo-foxdemo.obj: foxdemo.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='foxdemo.cpp' object='foxdemo-foxdemo.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(foxdemo_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o foxdemo-foxdemo.obj `if test -f 'foxdemo.cpp'; then $(CYGPATH_W) 'foxdemo.cpp'; else $(CYGPATH_W) '$(srcdir)/foxdemo.cpp'; fi`
+
+gctest-gctest.o: gctest.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gctest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gctest-gctest.o -MD -MP -MF $(DEPDIR)/gctest-gctest.Tpo -c -o gctest-gctest.o `test -f 'gctest.cpp' || echo '$(srcdir)/'`gctest.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gctest-gctest.Tpo $(DEPDIR)/gctest-gctest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='gctest.cpp' object='gctest-gctest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gctest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gctest-gctest.o `test -f 'gctest.cpp' || echo '$(srcdir)/'`gctest.cpp
+
+gctest-gctest.obj: gctest.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gctest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gctest-gctest.obj -MD -MP -MF $(DEPDIR)/gctest-gctest.Tpo -c -o gctest-gctest.obj `if test -f 'gctest.cpp'; then $(CYGPATH_W) 'gctest.cpp'; else $(CYGPATH_W) '$(srcdir)/gctest.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gctest-gctest.Tpo $(DEPDIR)/gctest-gctest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='gctest.cpp' object='gctest-gctest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gctest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gctest-gctest.obj `if test -f 'gctest.cpp'; then $(CYGPATH_W) 'gctest.cpp'; else $(CYGPATH_W) '$(srcdir)/gctest.cpp'; fi`
 
 reduce-arith01.o: arith01.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT reduce-arith01.o -MD -MP -MF $(DEPDIR)/reduce-arith01.Tpo -c -o reduce-arith01.o `test -f 'arith01.cpp' || echo '$(srcdir)/'`arith01.cpp
@@ -4039,6 +4095,7 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps) \
 .PHONY: $(plain_wxshowmathdemo)
 .PHONY: $(plain_termdemo)
 .PHONY: $(plain_dyndemo)
+.PHONY: $(plain_gctest)
 
 .PHONY: report-dlls
 .PHONY:	bootstraprecompile
@@ -4144,140 +4201,6 @@ $(INLINE_DEFS):
 $(FOXDEPS):	$(srcdir)/../fox/CHANGED
 	$(TRACE)@cd ../fox && $(MAKE) install
 
-# The following ugly dependencies are here so that one can go, for
-# instance, "make csl.o" in a clean tree and crlibm building will get
-# triggered.
-
-# Note that all the compilation of these files must be performed using
-# a Make "default" action so that the dependencies shown here are not
-# taken as specifing conflicting actions.
-
-@crlibm_TRUE@arith01.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@arith02.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@arith03.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@arith04.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@arith05.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@arith06.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@arith07.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@arith08.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@arith09.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@arith10.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@arith11.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@arith12.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@arith13.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@bytes1.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@char.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@cslmpi.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@cslread.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@eval1.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@eval2.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@eval3.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@eval4.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@fasl.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@fns1.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@fns2.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@fns3.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@cslgc.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@imulvc.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@jit1.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@jit2.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@jit3.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@jitx86.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@ompsetup.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@openmath.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@preserve.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@print.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@pro.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@restart.$(OBJEXT):	../include/crlibm.h machineid.cpp
-@crlibm_TRUE@stubs.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@sysfwin.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@sysipaq.$(OBJEXT):	../include/crlibm.h
-
-@crlibm_TRUE@csl-arith01.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-arith02.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-arith03.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-arith04.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-arith05.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-arith06.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-arith07.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-arith08.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-arith09.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-arith10.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-arith11.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-arith12.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-arith13.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-bytes1.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-char.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-csl.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-cslmpi.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-cslread.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-eval1.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-eval2.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-eval3.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-eval4.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-fasl.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-fns1.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-fns2.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-fns3.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-cslgc.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-imulvc.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-jit1.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-jit2.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-jit3.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-jitx86.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-ompsetup.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-openmath.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-preserve.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-print.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-pro.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-restart.$(OBJEXT):	../include/crlibm.h machineid.cpp
-@crlibm_TRUE@csl-stubs.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-sysfwin.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@csl-sysipaq.$(OBJEXT):	../include/crlibm.h
-
-@crlibm_TRUE@reduce-arith01.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-arith02.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-arith03.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-arith04.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-arith05.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-arith06.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-arith07.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-arith08.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-arith09.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-arith10.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-arith11.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-arith12.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-arith13.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-bytes1.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-char.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-csl.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-cslmpi.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-cslread.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-eval1.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-eval2.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-eval3.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-eval4.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-fasl.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-fns1.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-fns2.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-fns3.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-cslgc.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-imulvc.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-jit1.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-jit2.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-jit3.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-jitx86.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-ompsetup.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-openmath.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-preserve.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-print.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-pro.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-restart.$(OBJEXT):	../include/crlibm.h machineid.cpp
-@crlibm_TRUE@reduce-stubs.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-sysfwin.$(OBJEXT):	../include/crlibm.h
-@crlibm_TRUE@reduce-sysipaq.$(OBJEXT):	../include/crlibm.h
-
 @crlibm_TRUE@$(CRLIBMDEPS):
 @crlibm_TRUE@	$(TRACE)@cd ../crlibm && $(MAKE) install
 
@@ -4287,6 +4210,143 @@ $(FOXDEPS):	$(srcdir)/../fox/CHANGED
 @crlibm_FALSE@restart.$(OBJEXT):	machineid.cpp
 @crlibm_FALSE@csl-restart.$(OBJEXT):	machineid.cpp
 @crlibm_FALSE@reduce-restart.$(OBJEXT):	machineid.cpp
+
+@boehm_TRUE@$(BOEHMDEPS):
+@boehm_TRUE@	$(TRACE)@cd ../boehm && $(MAKE) install
+
+@boehm_FALSE@restart.$(OBJEXT):	machineid.cpp
+@boehm_FALSE@csl-restart.$(OBJEXT):	machineid.cpp
+@boehm_FALSE@reduce-restart.$(OBJEXT):	machineid.cpp
+
+# Note that all the compilation of these files must be performed using
+# a Make "default" action so that the dependencies shown here are not
+# taken as specifing conflicting actions.
+
+@crlibmorboehm_TRUE@arith01.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@arith02.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@arith03.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@arith04.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@arith05.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@arith06.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@arith07.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@arith08.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@arith09.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@cslmpi.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@cslread.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@eval1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@eval2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@eval3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@eval4.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@imulvc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@print.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@pro.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) machineid.cpp
+@crlibmorboehm_TRUE@stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+
+@crlibmorboehm_TRUE@csl-arith01.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-arith02.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-arith03.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-arith04.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-arith05.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-arith06.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-arith07.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-arith08.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-arith09.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-cslmpi.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-cslread.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-eval1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-eval2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-eval3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-eval4.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-imulvc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-print.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-pro.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) machineid.cpp
+@crlibmorboehm_TRUE@csl-stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@csl-sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+
+@crlibmorboehm_TRUE@reduce-arith01.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-arith02.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-arith03.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-arith04.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-arith05.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-arith06.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-arith07.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-arith08.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-arith09.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-cslmpi.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-cslread.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-eval1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-eval2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-eval3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-eval4.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-imulvc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-print.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-pro.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) machineid.cpp
+@crlibmorboehm_TRUE@reduce-stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+@crlibmorboehm_TRUE@reduce-sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
 
 # If one of the major foundations of this Makefile have a date later than that
 # on fxver.h then make does a futile recursion to try to fix it and in the
@@ -4628,6 +4688,9 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 
 @exeext_TRUE@$(plain_dyndemo):	dyndemo.exe
 @exeext_TRUE@	echo "make dyndemo.exe is preferred"
+
+@boehm_TRUE@@exeext_TRUE@$(plain_gctest):	gctest.exe
+@boehm_TRUE@@exeext_TRUE@	echo "make gctest.exe is preferred"
 
 # on cygwin I scan to verify which DLLs are referenced by my main
 # executables so that I can verify (eg) that they do not link to

@@ -1383,7 +1383,7 @@ static LispObject CSLpowi(LispObject a, uint32_t n)
 //
 // Raise a to the power n by repeated multiplication. The name is CSLpowi
 // rather than just powi because some miserable C compilers come with an
-// external function called powi in <math.h> and then moan about the
+// external function called powi in <cmath> and then moan about the
 // name clash.
 //
 {   LispObject nil;
@@ -1585,14 +1585,13 @@ LispObject Llog_2(LispObject nil, LispObject a, LispObject b)
 
 #ifdef ISQRT_IMPLEMENTED_PROPERLY
 // This can only be used wgen it is implemented properly!
-static LispObject Lisqrt(LispObject nil, LispObject a)
+static LispObject Lisqrt(LispObject, LispObject a)
 {   double d;
 // This makes some pretence at computing an integer square root, but it
 // does so incredibly clumsily by mapping onto a floating point value and
 // then expecting the square root computed that way to fir into a fixnum,
 // ie to be at worst 27 bits long. That is not at all good enough for
 // serious use so I am disabling it for now!
-    CSL_IGNORE(nil);
     switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             d = (double)int_of_fixnum(a);
@@ -1697,13 +1696,12 @@ static LispObject Lsignum(LispObject nil, LispObject a)
     return onevalue(a);
 }
 
-static LispObject Lcis(LispObject env, LispObject a)
+static LispObject Lcis(LispObject, LispObject a)
 //
 // Implement as exp(i*a) - this permits complex args which goes
 // beyond the specification of Common Lisp.
 //
 {   LispObject ii, nil;
-    CSL_IGNORE(env);
     push(a);
     ii = make_complex(fixnum_of_int(0), fixnum_of_int(1));
     pop(a);
@@ -1718,14 +1716,12 @@ static LispObject Lcis(LispObject env, LispObject a)
     return Ltrigfn(30, a);     // exp()
 }
 
-LispObject Latan(LispObject env, LispObject a)
-{   CSL_IGNORE(env);
-    return Ltrigfn(15, a);     // atan()
+LispObject Latan(LispObject, LispObject a)
+{   return Ltrigfn(15, a);     // atan()
 }
 
 LispObject Latan_2(LispObject env, LispObject a, LispObject b)
-{   CSL_IGNORE(env);
-    return Latan2(env, a, b);
+{   return Latan2(env, a, b);
 }
 
 LispObject Latan2(LispObject nil, LispObject y, LispObject x)
@@ -1768,217 +1764,176 @@ LispObject Latan2d(LispObject nil, LispObject y, LispObject x)
     return onevalue(x);
 }
 
-LispObject Lacos(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(0, a);
+LispObject Lacos(LispObject, LispObject a)
+{   return Ltrigfn(0, a);
 }
 
-LispObject Lacosd(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(1, a);
+LispObject Lacosd(LispObject, LispObject a)
+{   return Ltrigfn(1, a);
 }
 
-LispObject Lacosh(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(2, a);
+LispObject Lacosh(LispObject, LispObject a)
+{   return Ltrigfn(2, a);
 }
 
-LispObject Lacot(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(3, a);
+LispObject Lacot(LispObject, LispObject a)
+{   return Ltrigfn(3, a);
 }
 
-LispObject Lacotd(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(4, a);
+LispObject Lacotd(LispObject, LispObject a)
+{   return Ltrigfn(4, a);
 }
 
-LispObject Lacoth(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(5, a);
+LispObject Lacoth(LispObject, LispObject a)
+{   return Ltrigfn(5, a);
 }
 
-LispObject Lacsc(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(6, a);
+LispObject Lacsc(LispObject, LispObject a)
+{   return Ltrigfn(6, a);
 }
 
-LispObject Lacscd(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(7, a);
+LispObject Lacscd(LispObject, LispObject a)
+{   return Ltrigfn(7, a);
 }
 
-LispObject Lacsch(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(8, a);
+LispObject Lacsch(LispObject, LispObject a)
+{   return Ltrigfn(8, a);
 }
 
-LispObject Lasec(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(9, a);
+LispObject Lasec(LispObject, LispObject a)
+{   return Ltrigfn(9, a);
 }
 
-LispObject Lasecd(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(10, a);
+LispObject Lasecd(LispObject, LispObject a)
+{   return Ltrigfn(10, a);
 }
 
-LispObject Lasech(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(11, a);
+LispObject Lasech(LispObject, LispObject a)
+{   return Ltrigfn(11, a);
 }
 
-LispObject Lasin(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(12, a);
+LispObject Lasin(LispObject, LispObject a)
+{   return Ltrigfn(12, a);
 }
 
-LispObject Lasind(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(13, a);
+LispObject Lasind(LispObject, LispObject a)
+{   return Ltrigfn(13, a);
 }
 
-LispObject Lasinh(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(14, a);
+LispObject Lasinh(LispObject, LispObject a)
+{   return Ltrigfn(14, a);
 }
 
 // code 15 is for atan
 
-LispObject Latand(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(16, a);
+LispObject Latand(LispObject, LispObject a)
+{   return Ltrigfn(16, a);
 }
 
 // code 17 is atan2, 18 is atan2d
 
-LispObject Latanh(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(19, a);
+LispObject Latanh(LispObject, LispObject a)
+{   return Ltrigfn(19, a);
 }
 
-LispObject Lcbrt(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(20, a);
+LispObject Lcbrt(LispObject, LispObject a)
+{   return Ltrigfn(20, a);
 }
 
-LispObject Lcos(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(21, a);
+LispObject Lcos(LispObject, LispObject a)
+{   return Ltrigfn(21, a);
 }
 
-LispObject Lcosd(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(22, a);
+LispObject Lcosd(LispObject, LispObject a)
+{   return Ltrigfn(22, a);
 }
 
-LispObject Lcosh(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(23, a);
+LispObject Lcosh(LispObject, LispObject a)
+{   return Ltrigfn(23, a);
 }
 
-LispObject Lcot(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(24, a);
+LispObject Lcot(LispObject, LispObject a)
+{   return Ltrigfn(24, a);
 }
 
-LispObject Lcotd(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(25, a);
+LispObject Lcotd(LispObject, LispObject a)
+{   return Ltrigfn(25, a);
 }
 
-LispObject Lcoth(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(26, a);
+LispObject Lcoth(LispObject, LispObject a)
+{   return Ltrigfn(26, a);
 }
 
-LispObject Lcsc(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(27, a);
+LispObject Lcsc(LispObject, LispObject a)
+{   return Ltrigfn(27, a);
 }
 
-LispObject Lcscd(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(28, a);
+LispObject Lcscd(LispObject, LispObject a)
+{   return Ltrigfn(28, a);
 }
 
-LispObject Lcsch(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(29, a);
+LispObject Lcsch(LispObject, LispObject a)
+{   return Ltrigfn(29, a);
 }
 
-LispObject Lexp(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(30, a);
+LispObject Lexp(LispObject, LispObject a)
+{   return Ltrigfn(30, a);
 }
 
 // 31 is expt, 32 is hypot
 
-LispObject Lln(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(33, a);
+LispObject Lln(LispObject, LispObject a)
+{   return Ltrigfn(33, a);
 }
 
 // 34 is 2-arg log
 
-LispObject Llog10(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(35, a);
+LispObject Llog10(LispObject, LispObject a)
+{   return Ltrigfn(35, a);
 }
 
-LispObject Llog2(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(46, a);
+LispObject Llog2(LispObject, LispObject a)
+{   return Ltrigfn(46, a);
 }
 
-LispObject Lsec(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(36, a);
+LispObject Lsec(LispObject, LispObject a)
+{   return Ltrigfn(36, a);
 }
 
-LispObject Lsecd(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(37, a);
+LispObject Lsecd(LispObject, LispObject a)
+{   return Ltrigfn(37, a);
 }
 
-LispObject Lsech(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(38, a);
+LispObject Lsech(LispObject, LispObject a)
+{   return Ltrigfn(38, a);
 }
 
-LispObject Lsin(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(39, a);
+LispObject Lsin(LispObject, LispObject a)
+{   return Ltrigfn(39, a);
 }
 
-LispObject Lsind(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(40, a);
+LispObject Lsind(LispObject, LispObject a)
+{   return Ltrigfn(40, a);
 }
 
-LispObject Lsinh(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(41, a);
+LispObject Lsinh(LispObject, LispObject a)
+{   return Ltrigfn(41, a);
 }
 
-LispObject Lsqrt(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(42, a);
+LispObject Lsqrt(LispObject, LispObject a)
+{   return Ltrigfn(42, a);
 }
 
-LispObject Ltan(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(43, a);
+LispObject Ltan(LispObject, LispObject a)
+{   return Ltrigfn(43, a);
 }
 
-LispObject Ltand(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(44, a);
+LispObject Ltand(LispObject, LispObject a)
+{   return Ltrigfn(44, a);
 }
 
-LispObject Ltanh(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return Ltrigfn(45, a);
+LispObject Ltanh(LispObject, LispObject a)
+{   return Ltrigfn(45, a);
 }
 
 setup_type const arith10_setup[] =

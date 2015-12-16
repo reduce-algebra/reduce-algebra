@@ -58,7 +58,6 @@ LispObject Lfrexp(LispObject nil, LispObject a)
 
 LispObject Lmodular_difference(LispObject nil, LispObject a, LispObject b)
 {   int32_t r;
-    CSL_IGNORE(nil);
     if (!modulus_is_large)
     {   r = int_of_fixnum(a) - int_of_fixnum(b);
         if (r < 0) r += current_modulus;
@@ -70,8 +69,7 @@ LispObject Lmodular_difference(LispObject nil, LispObject a, LispObject b)
 }
 
 LispObject Lmodular_minus(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!modulus_is_large)
+{   if (!modulus_is_large)
     {   if (a != fixnum_of_int(0))
         {   int32_t r = current_modulus - int_of_fixnum(a);
             a = fixnum_of_int(r);
@@ -97,7 +95,6 @@ LispObject Lmodular_number(LispObject nil, LispObject a)
 
 LispObject Lmodular_plus(LispObject nil, LispObject a, LispObject b)
 {   int32_t r;
-    CSL_IGNORE(nil);
     if (!modulus_is_large)
     {   r = int_of_fixnum(a) + int_of_fixnum(b);
         if (r >= current_modulus) r -= current_modulus;
@@ -144,9 +141,8 @@ LispObject large_modular_reciprocal(LispObject n, int safe)
     return onevalue(y);
 }
 
-LispObject Lmodular_reciprocal(LispObject nil, LispObject n)
+LispObject Lmodular_reciprocal(LispObject, LispObject n)
 {   int32_t a, b, x, y;
-    CSL_IGNORE(nil);
     if (modulus_is_large) return large_modular_reciprocal(n, 0);
     a = current_modulus;
     b = int_of_fixnum(n);
@@ -173,7 +169,6 @@ LispObject Lmodular_reciprocal(LispObject nil, LispObject n)
 
 LispObject Lsafe_modular_reciprocal(LispObject nil, LispObject n)
 {   int32_t a, b, x, y;
-    CSL_IGNORE(nil);
     if (modulus_is_large) return large_modular_reciprocal(n, 1);
     a = current_modulus;
     b = int_of_fixnum(n);
@@ -203,7 +198,6 @@ LispObject Lmodular_times(LispObject nil, LispObject a, LispObject b)
 #endif
     uint32_t r, cm;
     int32_t aa, bb;
-    CSL_IGNORE(nil);
     if (!modulus_is_large)
     {   cm = (uint32_t)current_modulus;
         aa = int_of_fixnum(a);
@@ -234,8 +228,7 @@ LispObject Lmodular_times(LispObject nil, LispObject a, LispObject b)
 }
 
 LispObject Lmodular_quotient(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    push(a);
+{   push(a);
     b = Lmodular_reciprocal(nil, b);
     pop(a);
     errexit();
@@ -269,10 +262,9 @@ LispObject large_modular_expt(LispObject a, int x)
     return onevalue(r);
 }
 
-LispObject Lmodular_expt(LispObject nil, LispObject a, LispObject b)
+LispObject Lmodular_expt(LispObject, LispObject a, LispObject b)
 {   int32_t x, r, p;
     uint32_t h, l;
-    CSL_IGNORE(nil);
     x = int_of_fixnum(b);
     if (x == 0) return onevalue(fixnum_of_int(1));
     if (modulus_is_large) return large_modular_expt(a, x);
@@ -306,7 +298,6 @@ LispObject Lset_small_modulus(LispObject nil, LispObject a)
 {   int32_t r;
     LispObject old = modulus_is_large ? large_modulus :
                      fixnum_of_int(current_modulus);
-    CSL_IGNORE(nil);
     if (a==nil) return onevalue(old);
     else if (!is_fixnum(a))
     {   if (!is_numbers(a) || !is_bignum(a))
@@ -332,15 +323,13 @@ LispObject Lset_small_modulus(LispObject nil, LispObject a)
     return onevalue(old);
 }
 
-LispObject Liadd1(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!is_fixnum(a)) return aerror1("iadd1", a);
+LispObject Liadd1(LispObject, LispObject a)
+{   if (!is_fixnum(a)) return aerror1("iadd1", a);
     return onevalue((LispObject)((int32_t)a + 0x10));
 }
 
-LispObject Lidifference(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("idifference", a, b);
+LispObject Lidifference(LispObject, LispObject a, LispObject b)
+{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("idifference", a, b);
     return onevalue((LispObject)((int32_t)a - (int32_t)b + TAG_FIXNUM));
 }
 
@@ -359,35 +348,30 @@ LispObject Lxdifference(LispObject nil, LispObject a, LispObject b)
 }
 
 LispObject Ligreaterp(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("igreaterp", a, b);
+{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("igreaterp", a, b);
     return onevalue(Lispify_predicate(a > b));
 }
 
 LispObject Lilessp(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("ilessp", a, b);
+{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("ilessp", a, b);
     return onevalue(Lispify_predicate(a < b));
 }
 
 LispObject Ligeq(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("igeq", a, b);
+{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("igeq", a, b);
     return onevalue(Lispify_predicate(a >= b));
 }
 
 LispObject Lileq(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("ileq", a, b);
+{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("ileq", a, b);
     return onevalue(Lispify_predicate(a <= b));
 }
 
-static LispObject Lilogand(LispObject nil, int nargs, ...)
+static LispObject Lilogand(LispObject, int nargs, ...)
 {   va_list a;
     LispObject r;
     if (nargs == 0) return onevalue(fixnum_of_int(-1));
     if (nargs > ARG_CUT_OFF) return aerror("too many args for ilogand");
-    CSL_IGNORE(nil);
     va_start(a, nargs);
     r = va_arg(a, LispObject);
     if (!is_fixnum(r)) return aerror1("ilogand", r);
@@ -403,12 +387,11 @@ static LispObject Lilogand(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-static LispObject Lilogor(LispObject nil, int nargs, ...)
+static LispObject Lilogor(LispObject, int nargs, ...)
 {   va_list a;
     LispObject r;
     if (nargs == 0) return onevalue(fixnum_of_int(0));
     if (nargs > ARG_CUT_OFF) return aerror("too many args for ilogor");
-    CSL_IGNORE(nil);
     va_start(a, nargs);
     r = va_arg(a, LispObject);
     if (!is_fixnum(r)) return aerror1("ilogor", r);
@@ -424,12 +407,11 @@ static LispObject Lilogor(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-static LispObject Lilogxor(LispObject nil, int nargs, ...)
+static LispObject Lilogxor(LispObject, int nargs, ...)
 {   va_list a;
     LispObject r;
     if (nargs == 0) return onevalue(fixnum_of_int(0));
     if (nargs > ARG_CUT_OFF) return aerror("too many args for ilogxor");
-    CSL_IGNORE(nil);
     va_start(a, nargs);
     r = va_arg(a, LispObject);
     if (!is_fixnum(r)) return aerror1("ilogxor", r);
@@ -445,53 +427,45 @@ static LispObject Lilogxor(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-static LispObject Lilogand2(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("ilogand", a, b);
+static LispObject Lilogand2(LispObject, LispObject a, LispObject b)
+{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("ilogand", a, b);
     return onevalue(a & b);
 }
 
-static LispObject Lilogor2(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("ilogor", a, b);
+static LispObject Lilogor2(LispObject, LispObject a, LispObject b)
+{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("ilogor", a, b);
     return onevalue(a | b);
 }
 
-static LispObject Lilogxor2(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("ilogxor", a, b);
+static LispObject Lilogxor2(LispObject, LispObject a, LispObject b)
+{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("ilogxor", a, b);
     return onevalue((a ^ b) + TAG_FIXNUM);
 }
 
-LispObject Limin(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("imin", a, b);
+LispObject Limin(LispObject, LispObject a, LispObject b)
+{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("imin", a, b);
     return onevalue(a < b ? a : b);
 }
 
-LispObject Limax(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("imax", a, b);
+LispObject Limax(LispObject, LispObject a, LispObject b)
+{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("imax", a, b);
     return onevalue(a > b ? a : b);
 }
 
-LispObject Liminus(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!is_fixnum(a)) return aerror1("iminus", a);
+LispObject Liminus(LispObject, LispObject a)
+{   if (!is_fixnum(a)) return aerror1("iminus", a);
     return onevalue((LispObject)(2*TAG_FIXNUM - (int32_t)a));
 }
 
 LispObject Liminusp(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return onevalue(Lispify_predicate((int32_t)a < (int32_t)fixnum_of_int(0)));
+{   return onevalue(Lispify_predicate((int32_t)a < (int32_t)fixnum_of_int(0)));
 }
 
-static LispObject Liplus(LispObject nil, int nargs, ...)
+static LispObject Liplus(LispObject, int nargs, ...)
 {   va_list a;
     LispObject r;
     if (nargs == 0) return onevalue(fixnum_of_int(0));
     if (nargs > ARG_CUT_OFF) return aerror("too many args for iplus");
-    CSL_IGNORE(nil);
     va_start(a, nargs);
     r = va_arg(a, LispObject);
     if (!is_fixnum(r)) return aerror1("iplus", r);
@@ -507,15 +481,13 @@ static LispObject Liplus(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-LispObject Liplus2(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("iplus2", a, b);
+LispObject Liplus2(LispObject, LispObject a, LispObject b)
+{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("iplus2", a, b);
     return onevalue((LispObject)((int32_t)a + (int32_t)b - TAG_FIXNUM));
 }
 
-LispObject Liquotient(LispObject nil, LispObject a, LispObject b)
+LispObject Liquotient(LispObject, LispObject a, LispObject b)
 {   int32_t aa, bb, c;
-    CSL_IGNORE(nil);
     if (!is_fixnum(a) || !is_fixnum(b) ||
         b == fixnum_of_int(0)) return aerror2("iquotient", a, b);
 // C does not define the exact behaviour of /, % on -ve args
@@ -529,9 +501,8 @@ LispObject Liquotient(LispObject nil, LispObject a, LispObject b)
     return onevalue(fixnum_of_int((aa-c)/bb));
 }
 
-LispObject Liremainder(LispObject nil, LispObject a, LispObject b)
+LispObject Liremainder(LispObject, LispObject a, LispObject b)
 {   int32_t aa, bb, c;
-    CSL_IGNORE(nil);
     if (!is_fixnum(a) || !is_fixnum(b) ||
         b == fixnum_of_int(0)) return aerror2("iremainder", a, b);
 // C does not define the exact behaviour of /, % on -ve args
@@ -545,25 +516,22 @@ LispObject Liremainder(LispObject nil, LispObject a, LispObject b)
     return onevalue(fixnum_of_int(c));
 }
 
-LispObject Lirightshift(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("irightshift", a, b);
+LispObject Lirightshift(LispObject, LispObject a, LispObject b)
+{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("irightshift", a, b);
     return onevalue(fixnum_of_int(int_of_fixnum(a) >> int_of_fixnum(b)));
 }
 
-LispObject Lisub1(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    if (!is_fixnum(a)) return aerror1("isub1", a);
+LispObject Lisub1(LispObject, LispObject a)
+{   if (!is_fixnum(a)) return aerror1("isub1", a);
     return onevalue((LispObject)((int32_t)a - 0x10));
 }
 
-static LispObject Litimes(LispObject nil, int nargs, ...)
+static LispObject Litimes(LispObject, int nargs, ...)
 {   va_list a;
     LispObject rr;
     int32_t r;
     if (nargs == 0) return onevalue(fixnum_of_int(1));
     if (nargs > ARG_CUT_OFF) return aerror("too many args for itimes");
-    CSL_IGNORE(nil);
     va_start(a, nargs);
     rr = va_arg(a, LispObject);
     if (!is_fixnum(rr)) return aerror1("itimes", rr);
@@ -580,20 +548,17 @@ static LispObject Litimes(LispObject nil, int nargs, ...)
     return onevalue(fixnum_of_int(r));
 }
 
-LispObject Litimes2(LispObject nil, LispObject a, LispObject b)
-{   CSL_IGNORE(nil);
-    if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("itimes2", a, b);
+LispObject Litimes2(LispObject, LispObject a, LispObject b)
+{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("itimes2", a, b);
     return onevalue(fixnum_of_int(int_of_fixnum(a) * int_of_fixnum(b)));
 }
 
 LispObject Lionep(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return onevalue(Lispify_predicate((int32_t)a == (int32_t)fixnum_of_int(1)));
+{   return onevalue(Lispify_predicate((int32_t)a == (int32_t)fixnum_of_int(1)));
 }
 
 LispObject Lizerop(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return onevalue(Lispify_predicate((int32_t)a == (int32_t)fixnum_of_int(0)));
+{   return onevalue(Lispify_predicate((int32_t)a == (int32_t)fixnum_of_int(0)));
 }
 
 #ifdef FP_EVALUATE

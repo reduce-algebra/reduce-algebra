@@ -159,7 +159,7 @@
 
 // I need my cuckoo-hashing library. One sane thing to do would be to
 // link to that as a separately compiled component, but here I will just
-// include its source! See cuckoo.h and cuckoo.c for commantary and
+// include its source! See cuckoo.h and cuckoo.c for commentary and
 // explanation.
 
 #include "cuckoo.cpp"

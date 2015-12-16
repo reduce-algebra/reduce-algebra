@@ -60,10 +60,9 @@
 // This appears to be the case with MPICH (values in the hundreds),
 // but assumptions like this should not be made.
 //
-static LispObject Lmpi_comm_rank(LispObject nil, LispObject comm)
+static LispObject Lmpi_comm_rank(LispObject, LispObject comm)
 {   int rank;
     static char fun_name[] = "mpi_comm_rank";
-    CSL_IGNORE(nil);
     check_fix(comm);
     MPI_Comm_rank(int_of_fixnum(comm),&rank);
     return onevalue(fixnum_of_int(rank));
@@ -73,10 +72,9 @@ static LispObject Lmpi_comm_rank(LispObject nil, LispObject comm)
 // (mpi_comm_size comm)
 //
 // Same assumption about comm.
-static LispObject Lmpi_comm_size(LispObject nil, LispObject comm)
+static LispObject Lmpi_comm_size(LispObject, LispObject comm)
 {   int size;
     static char fun_name[] = "mpi_comm_size";
-    CSL_IGNORE(nil);
     check_fix(comm);
     MPI_Comm_size(int_of_fixnum(comm),&size);
     return onevalue(fixnum_of_int(size));
@@ -111,7 +109,7 @@ static LispObject Lmpi_send(LispObject nil, int nargs, ...)
 // (mpi_recv source tag comm)
 // returns (message (source tag error)).
 //
-static LispObject Lmpi_recv(LispObject nil, int nargs, ...)
+static LispObject Lmpi_recv(LispObject, int nargs, ...)
 {   static char fun_name[] = "mpi_recv";
 
     MPI_Status status;
@@ -119,7 +117,6 @@ static LispObject Lmpi_recv(LispObject nil, int nargs, ...)
     LispObject Lstatus;
     va_list a;
 
-    CSL_IGNORE(nil);
     argcheck(nargs,3,fun_name);
     va_start(a,nargs);
     get_fix_arg(source); get_fix_arg(tag); get_fix_arg(comm);
@@ -150,7 +147,7 @@ static LispObject Lmpi_recv(LispObject nil, int nargs, ...)
 // THERE IS A LIMIT OF 1024 BYTES FOR THE RECEIVE BUFFER (sorry.)
 // THIS WILL BE REMOVED ASAP.
 //
-static LispObject Lmpi_sendrecv(LispObject nil, int nargs, ...)
+static LispObject Lmpi_sendrecv(LispObject, int nargs, ...)
 {   static char fun_name[] = "mpi_sendrecv";
 
     MPI_Status status;
@@ -160,7 +157,6 @@ static LispObject Lmpi_sendrecv(LispObject nil, int nargs, ...)
     char r_buffer[1024];
 
     va_list a;
-    CSL_IGNORE(nil);
     argcheck(nargs,6,fun_name);
     va_start(a,nargs);
     get_arg(s_mess);
@@ -188,14 +184,13 @@ static LispObject Lmpi_sendrecv(LispObject nil, int nargs, ...)
 // (mpi_isend message dest tag comm)
 // returns request handle
 //
-static LispObject Lmpi_isend(LispObject nil, int nargs, ...)
+static LispObject Lmpi_isend(LispObject, int nargs, ...)
 {   static char fun_name[] = "mpi_isend";
 
     LispObject message, request;
     int dest, tag, comm;
 
     va_list a;
-    CSL_IGNORE(nil);
 
     // For now, we assume type MPI_Request to be 32 bits.
     request = Lmkvect32(nil,fixnum_of_int(2));
@@ -230,14 +225,13 @@ struct dummy_request
     int comm;
 };
 
-static LispObject Lmpi_irecv(LispObject nil, int nargs, ...)
+static LispObject Lmpi_irecv(LispObject, int nargs, ...)
 {   static char fun_name[] = "mpi_irecv";
 
     int source,tag,comm;
     LispObject request;
     va_list a;
     char* buffer;
-    CSL_IGNORE(nil);
 
     // For now, we assume type MPI_Request to be 32 bits.
     request = Lmkvect32(nil,fixnum_of_int(2));
@@ -373,7 +367,7 @@ static LispObject Lmpi_test(LispObject nil, LispObject request)
 // (mpi_iprobe source tag comm)
 // returns (flag (source tag error))
 //
-static LispObject Lmpi_iprobe(LispObject nil, int nargs, ...)
+static LispObject Lmpi_iprobe(LispObject, int nargs, ...)
 {   static char fun_name[] = "impi_probe";
 
     MPI_Status status;
@@ -381,7 +375,6 @@ static LispObject Lmpi_iprobe(LispObject nil, int nargs, ...)
     LispObject Lstatus;
     va_list a;
 
-    CSL_IGNORE(nil);
     argcheck(nargs,3,fun_name);
     va_start(a,nargs);
     get_fix_arg(source); get_fix_arg(tag); get_fix_arg(comm);
@@ -397,7 +390,7 @@ static LispObject Lmpi_iprobe(LispObject nil, int nargs, ...)
 // (mpi_probe source tag comm)
 // returns (source tag error)
 //
-static LispObject Lmpi_probe(LispObject nil, int nargs, ...)
+static LispObject Lmpi_probe(LispObject, int nargs, ...)
 {   static char fun_name[] = "mpi_probe";
 
     MPI_Status status;
@@ -405,7 +398,6 @@ static LispObject Lmpi_probe(LispObject nil, int nargs, ...)
     LispObject Lstatus;
     va_list a;
 
-    CSL_IGNORE(nil);
     argcheck(nargs,3,fun_name);
     va_start(a,nargs);
     get_fix_arg(source); get_fix_arg(tag); get_fix_arg(comm);
@@ -435,14 +427,13 @@ static LispObject Lmpi_barrier(LispObject nil, LispObject comm)
 // (mpi_bcast message root comm)  [message ignored if not root]
 // returns message
 //
-static LispObject Lmpi_bcast(LispObject nil, int nargs, ...)
+static LispObject Lmpi_bcast(LispObject, int nargs, ...)
 {   static char fun_name[] = "mpi_bcast";
 
     LispObject message;
     int root,comm,rank;
     va_list a;
 
-    CSL_IGNORE(nil);
     argcheck(nargs,3,fun_name);
     va_start(a,nargs);
     get_arg(message); get_fix_arg(root); get_fix_arg(comm);
@@ -468,14 +459,13 @@ static LispObject Lmpi_bcast(LispObject nil, int nargs, ...)
 // (mpi_gather message root comm)
 // returns vector of messages if root, else nil.
 //
-static LispObject Lmpi_gather(LispObject nil, int nargs, ...)
+static LispObject Lmpi_gather(LispObject, int nargs, ...)
 {   static char fun_name[] = "mpi_gather";
 
     LispObject message;
     int root,comm,rank;
     va_list a;
 
-    CSL_IGNORE(nil);
     argcheck(nargs,3,fun_name);
     va_start(a,nargs);
     get_arg(message); get_fix_arg(root); get_fix_arg(comm);
@@ -525,14 +515,13 @@ static LispObject Lmpi_gather(LispObject nil, int nargs, ...)
 // (mpi_scatter vector_of_messages root comm)  [messages ignored if not root]
 // returns message
 //
-static LispObject Lmpi_scatter(LispObject nil, int nargs, ...)
+static LispObject Lmpi_scatter(LispObject, int nargs, ...)
 {   static char fun_name[] = "mpi_scatter";
 
     LispObject messages, message;
     int root, comm, rank;
     va_list a;
 
-    CSL_IGNORE(nil);
     argcheck(nargs,3,fun_name);
     va_start(a,nargs);
     get_arg(messages); get_fix_arg(root); get_fix_arg(comm);
@@ -590,7 +579,7 @@ static LispObject Lmpi_scatter(LispObject nil, int nargs, ...)
 // (mpi_allgather message comm)
 // returns vector of messages
 //
-static LispObject Lmpi_allgather(LispObject nil,
+static LispObject Lmpi_allgather(LispObject,
                                  LispObject message,
                                  LispObject comm)
 {   static char fun_name[] = "mpi_gather";
@@ -600,7 +589,6 @@ static LispObject Lmpi_allgather(LispObject nil,
 
     check_fix(comm);
     comm = int_of_fixnum(comm);
-    CSL_IGNORE(nil);
 
     pack_object(message);
 
@@ -633,7 +621,7 @@ static LispObject Lmpi_allgather(LispObject nil,
 // (mpi_alltoall vector_of_messages comm)
 // returns vector of messages.
 //
-static LispObject Lmpi_alltoall(LispObject nil,
+static LispObject Lmpi_alltoall(LispObject,
                                 LispObject smessages, LispObject Lcomm)
 {   static char fun_name[] = "mpi_alltoall";
 
@@ -642,7 +630,6 @@ static LispObject Lmpi_alltoall(LispObject nil,
     int *sendcounts, *recvcounts, *sdispls, *rdispls;
     char* recvbuffer;
 
-    CSL_IGNORE(nil);
     check_fix(Lcomm);
     comm = int_of_fixnum(Lcomm);
 
@@ -697,113 +684,77 @@ static LispObject Lmpi_alltoall(LispObject nil,
 
 #else  // USE_MPI
 
-static LispObject Lmpi_comm_rank(LispObject nil, LispObject comm)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(comm);
-    return aerror0("mpi support not built into this version of CSL");
+static LispObject Lmpi_comm_rank(LispObject, LispObject)
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_comm_size(LispObject nil, LispObject comm)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(comm);
-    return aerror0("mpi support not built into this version of CSL");
+static LispObject Lmpi_comm_size(LispObject, LispObject)
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_send(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(nargs);
-    return aerror0("mpi support not built into this version of CSL");
+static LispObject Lmpi_send(LispObject, int, ...)
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_recv(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(nargs);
-    return aerror0("mpi support not built into this version of CSL");
+static LispObject Lmpi_recv(LispObject, int, ...)
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_sendrecv(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(nargs);
-    return aerror0("mpi support not built into this version of CSL");
+static LispObject Lmpi_sendrecv(LispObject, int, ...)
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_isend(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(nargs);
-    return aerror0("mpi support not built into this version of CSL");
+static LispObject Lmpi_isend(LispObject, int, ...)
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_irecv(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(nargs);
-    return aerror0("mpi support not built into this version of CSL");
+static LispObject Lmpi_irecv(LispObject, int, ...)
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_wait(LispObject nil, LispObject request)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(request);
-    return aerror0("mpi support not built into this version of CSL");
+static LispObject Lmpi_wait(LispObject, LispObject)
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 
-static LispObject Lmpi_test(LispObject nil, LispObject request)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(request);
-    return aerror0("mpi support not built into this version of CSL");
+static LispObject Lmpi_test(LispObject, LispObject)
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_iprobe(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(nargs);
-    return aerror0("mpi support not built into this version of CSL");
+static LispObject Lmpi_iprobe(LispObject, int, ...)
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_probe(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(nargs);
-    return aerror0("mpi support not built into this version of CSL");
+static LispObject Lmpi_probe(LispObject, int, ...)
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_barrier(LispObject nil, LispObject comm)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(comm);
-    return aerror0("mpi support not built into this version of CSL");
+static LispObject Lmpi_barrier(LispObject, LispObject)
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_bcast(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(nargs);
-    return aerror0("mpi support not built into this version of CSL");
+static LispObject Lmpi_bcast(LispObject, int, ...)
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_gather(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(nargs);
-    return aerror0("mpi support not built into this version of CSL");
+static LispObject Lmpi_gather(LispObject, int, ...)
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_scatter(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(nargs);
-    return aerror0("mpi support not built into this version of CSL");
+static LispObject Lmpi_scatter(LispObject, int, ...)
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 
-static LispObject Lmpi_allgather(LispObject nil,
-                                 LispObject message,
-                                 LispObject comm)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(message);
-    CSL_IGNORE(comm);
-    return aerror0("mpi support not built into this version of CSL");
+static LispObject Lmpi_allgather(LispObject,
+                                 LispObject,
+                                 LispObject)
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_alltoall(LispObject nil,
-                                LispObject smessages, LispObject Lcomm)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(smessages);
-    CSL_IGNORE(Lcomm);
-    return aerror0("mpi support not built into this version of CSL");
+static LispObject Lmpi_alltoall(LispObject,
+                                LispObject, LispObject)
+{   return aerror0("mpi support not built into this version of CSL");
 }
 
 #endif // USE_MPI

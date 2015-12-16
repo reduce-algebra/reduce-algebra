@@ -5397,7 +5397,7 @@ static void set_up_variables(CSLbool restart_flag)
         qvalue(n) = faa;
     }
 //
-// Floating point characteristics are taken from <float.h> where it is
+// Floating point characteristics are taken from <cfloat> where it is
 // supposed that the C compiler involved has got the values correct.
 // I do this every time the system is loaded rather than just when an
 // image is cold-created. This is because an image file may have been created
@@ -5454,7 +5454,7 @@ static void set_up_variables(CSLbool restart_flag)
 //
 // The "least-xxx" set of values did not consider the case of denormalised
 // numbers too carefully in ClTl-1, so in ClTl-2 there are elaborations. I
-// believe that a proper C header file <float.h> will make the macros that
+// believe that a proper C header file <cfloat> will make the macros that
 // I use here refer to NORMALISED values, so the numeric results I use
 // here will not be quite proper (ie there are smaller floats that are
 // un-normalised). But I will ignore that worry just for now.

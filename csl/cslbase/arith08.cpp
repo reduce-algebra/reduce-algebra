@@ -604,7 +604,10 @@ static LispObject Lfp_subnorm(LispObject nil, LispObject a)
 //
 
 static LispObject Lfp_signbit(LispObject nil, LispObject a)
-{   int32_t x = 0;
+{
+#ifndef HAVE_SIGNBIT
+    int32_t x = 0;
+#endif
     switch ((int)a & TAG_BITS)
     {   case TAG_SFLOAT:
             if ((int32_t)a < 0) return onevalue(lisp_true);

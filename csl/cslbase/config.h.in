@@ -21,6 +21,9 @@
 /* Define to 1 if you have the `atexit' function. */
 #undef HAVE_ATEXIT
 
+/* Boehm conservative collector should be available */
+#undef HAVE_BOEHM
+
 /* Define to 1 if you have the `cfmakeraw' function. */
 #undef HAVE_CFMAKERAW
 
@@ -225,9 +228,6 @@
 
 /* Define to 1 if you have the `signbit' function. */
 #undef HAVE_SIGNBIT
-
-/* sigsetjmp present */
-#undef HAVE_SIGSETJMP
 
 /* Define to 1 if you have the `socket' function. */
 #undef HAVE_SOCKET

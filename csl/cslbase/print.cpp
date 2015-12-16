@@ -198,7 +198,6 @@ LispObject Ltyo(LispObject nil, LispObject a)
 //
     int c;
     LispObject stream = qvalue(standard_output);
-    CSL_IGNORE(nil);
     if (a == CHAR_EOF || a == fixnum_of_int(-1)) return onevalue(a);
     else if (is_char(a)) c = (int)code_of_char(a);
     else if (is_fixnum(a)) c = (int)int_of_fixnum(a);
@@ -212,10 +211,8 @@ LispObject Ltyo(LispObject nil, LispObject a)
     return onevalue(a);
 }
 
-int char_to_illegal(int c, LispObject f)
+int char_to_illegal(int, LispObject f)
 {   LispObject nil = C_nil;
-    CSL_IGNORE(c);
-    CSL_IGNORE(f);
     if (exception_pending()) return 1;
     aerror1("Attempt to write to an input stream or one that has been closed",
             stream_type(f));
@@ -224,7 +221,6 @@ int char_to_illegal(int c, LispObject f)
 
 int char_from_illegal(LispObject f)
 {   LispObject nil = C_nil;
-    CSL_IGNORE(f);
     if (exception_pending()) return EOF;
     aerror1("Attempt to read from an output stream or one that has been closed",
             stream_type(f));
@@ -232,8 +228,7 @@ int char_from_illegal(LispObject f)
 }
 
 int32_t write_action_illegal(int32_t op, LispObject f)
-{   CSL_IGNORE(f);
-    if (op == WRITE_GET_INFO+WRITE_IS_CONSOLE) return 0;
+{   if (op == WRITE_GET_INFO+WRITE_IS_CONSOLE) return 0;
     if (op != WRITE_CLOSE)
         aerror1("Illegal operation on stream",
                 cons_no_gc(fixnum_of_int(op >> 8), stream_type(f)));
@@ -314,16 +309,14 @@ int32_t write_action_pipe(int32_t op, LispObject f)
 
 #else
 
-int32_t write_action_pipe(int32_t op, LispObject f)
-{   CSL_IGNORE(op); CSL_IGNORE(f);
-    return -1;
+int32_t write_action_pipe(int32_t, LispObject)
+{   return -1;
 }
 
 #endif
 
-int32_t write_action_terminal(int32_t op, LispObject dummy)
+int32_t write_action_terminal(int32_t op, LispObject)
 {   int32_t w;
-    CSL_IGNORE(dummy);
     if (op < 0) return -1;
     else switch (op & 0xf0000000)
         {   case WRITE_CLOSE:
@@ -361,9 +354,8 @@ int32_t write_action_terminal(int32_t op, LispObject dummy)
 
 #if defined HAVE_LIBFOX || defined HAVE_LIBWX
 
-int32_t write_action_math(int32_t op, LispObject dummy)
-{   CSL_IGNORE(dummy);
-    if (op < 0) return -1;
+int32_t write_action_math(int32_t op, LispObject)
+{   if (op < 0) return -1;
     else switch (op & 0xf0000000)
         {   case WRITE_CLOSE:
                 return 0;   // I will never close the math stream
@@ -387,9 +379,8 @@ int32_t write_action_math(int32_t op, LispObject dummy)
         }
 }
 
-int32_t write_action_spool(int32_t op, LispObject dummy)
+int32_t write_action_spool(int32_t op, LispObject)
 {   int32_t w;
-    CSL_IGNORE(dummy);
     if (op < 0) return -1;
     else switch (op & 0xf0000000)
         {   case WRITE_CLOSE:
@@ -612,9 +603,8 @@ LispObject Lmake_echo_stream(LispObject nil, LispObject a, LispObject b)
     return onevalue(w);
 }
 
-LispObject Lmake_string_input_stream_n(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil); CSL_IGNORE(nargs);
-    return aerror("make-string-input-stream");
+LispObject Lmake_string_input_stream_n(LispObject, int, ...)
+{   return aerror("make-string-input-stream");
 }
 
 LispObject Lmake_string_input_stream_1(LispObject nil, LispObject a)
@@ -683,9 +673,8 @@ LispObject Lmake_function_stream(LispObject nil, LispObject a)
 
 static int io_kilo = 0;
 
-int char_to_terminal(int c, LispObject dummy)
-{   CSL_IGNORE(dummy);
-    if (++io_kilo >= 1024)
+int char_to_terminal(int c, LispObject)
+{   if (++io_kilo >= 1024)
     {   io_kilo = 0;
         io_now++;
     }
@@ -1726,10 +1715,8 @@ LispObject Lrename_file(LispObject nil, LispObject from, LispObject to)
 // This function is a call-back from the file-scanning routine.
 //
 
-static void make_dir_list(const char *name, int why, long int size)
+static void make_dir_list(const char *name, int, long int)
 {   LispObject nil = C_nil, w;
-    CSL_IGNORE(why);
-    CSL_IGNORE(size);
     errexitv();
     if (scan_leafstart >= (int)strlen(name)) return;
     w = make_string(name+scan_leafstart);
@@ -3689,12 +3676,11 @@ static LispObject explode(LispObject u)
 static unsigned char checksum_buffer[64];
 static int checksum_count;
 
-int char_to_checksum(int c, LispObject f)
+int char_to_checksum(int c, LispObject)
 {   LispObject nil = C_nil;
 //
 // return at once if a previous call raised an exception
 //
-    CSL_IGNORE(f);
     if (exception_pending()) return 1;
     checksum_buffer[checksum_count++] = (unsigned char)c;
 // printf("Digest %x \'%c\'\n", c, c);
@@ -3957,36 +3943,32 @@ static LispObject Lprinbinary2(LispObject nil, LispObject a, LispObject b)
     return onevalue(a);
 }
 
-LispObject Lposn(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil);
-    argcheck(nargs, 0, "posn");
+LispObject Lposn(LispObject, int nargs, ...)
+{   argcheck(nargs, 0, "posn");
     return onevalue(fixnum_of_int((int32_t)
                                   other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
                                           qvalue(standard_output))));
 }
 
-LispObject Lposn_1(LispObject nil, LispObject stream)
-{   CSL_IGNORE(nil);
-    if (!is_stream(stream)) stream = qvalue(terminal_io);
+LispObject Lposn_1(LispObject, LispObject stream)
+{   if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     return onevalue(fixnum_of_int((int32_t)
                                   other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, stream)));
 }
 
-LispObject Llposn(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil);
-    argcheck(nargs, 0, "lposn");
+LispObject Llposn(LispObject, int nargs, ...)
+{   argcheck(nargs, 0, "lposn");
     return onevalue(fixnum_of_int(0));
 }
 
-LispObject Lpagelength(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    return onevalue(a);
+// This does not do anything!
+LispObject Lpagelength(LispObject, LispObject a)
+{   return onevalue(a);
 }
 
 LispObject Lprinc_upcase(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    push(a);
+{   push(a);
     escaped_printing = escape_fold_up;
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
@@ -3999,8 +3981,7 @@ LispObject Lprinc_upcase(LispObject nil, LispObject a)
 }
 
 LispObject Lprinc_downcase(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    push(a);
+{   push(a);
     escaped_printing = escape_fold_down;
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
@@ -4013,8 +3994,7 @@ LispObject Lprinc_downcase(LispObject nil, LispObject a)
 }
 
 LispObject Lprinc(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    push(a);
+{   push(a);
     escaped_printing = 0;
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
@@ -4027,8 +4007,7 @@ LispObject Lprinc(LispObject nil, LispObject a)
 }
 
 LispObject Lprin2a(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    push(a);
+{   push(a);
     escaped_printing = escape_nolinebreak;
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
@@ -4063,7 +4042,6 @@ LispObject Llengthc(LispObject nil, LispObject a)
 // This counts a TAB as having width 1. It counts the number of bytes
 // used to print the argument.
 //
-    CSL_IGNORE(nil);
     escaped_printing = escape_nolinebreak;
     set_stream_write_fn(lisp_work_stream, count_character);
     memory_print_buffer[0] = 0;
@@ -4083,7 +4061,6 @@ LispObject Lwidelengthc(LispObject nil, LispObject a)
 // Like lengthc but counts characters (by ignoring bytes that
 //& are 10xxxxxx in binary).
 //
-    CSL_IGNORE(nil);
     escaped_printing = escape_nolinebreak;
     set_stream_write_fn(lisp_work_stream, count_character);
     memory_print_buffer[0] = 0;
@@ -4172,7 +4149,6 @@ LispObject Lprint(LispObject nil, LispObject a)
 
 LispObject Lprintc(LispObject nil, LispObject a)
 {   LispObject stream = qvalue(standard_output);
-    CSL_IGNORE(nil);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     push(a);
@@ -4376,9 +4352,8 @@ static LispObject Lbinary_open_output(LispObject nil, LispObject name)
     return onevalue(nil);
 }
 
-int binary_outchar(int c, LispObject dummy)
-{   CSL_IGNORE(dummy);
-    if (binary_outfile == NULL) return 1;
+int binary_outchar(int c, LispObject)
+{   if (binary_outfile == NULL) return 1;
     PUTC(c, binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
     return 0;   // indicate success
@@ -4398,9 +4373,8 @@ static LispObject Lbinary_prin1(LispObject nil, LispObject a)
     return onevalue(a);
 }
 
-static LispObject Lbinary_princ(LispObject nil, LispObject a)
-{   CSL_IGNORE(nil);
-    escaped_printing = 0;
+static LispObject Lbinary_princ(LispObject, LispObject a)
+{   escaped_printing = 0;
     push(a);
     set_stream_write_fn(lisp_work_stream, binary_outchar);
     set_stream_write_other(lisp_work_stream, write_action_file);
@@ -4502,9 +4476,8 @@ static LispObject Lbinary_select_input(LispObject nil, LispObject a)
     return onevalue(nil);
 }
 
-static LispObject Lbinary_readbyte(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil);
-    argcheck(nargs, 0, "binary-readbyte");
+static LispObject Lbinary_readbyte(LispObject, int nargs, ...)
+{   argcheck(nargs, 0, "binary-readbyte");
     if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
     if (++io_kilo >= 1024)
     {   io_kilo = 0;
@@ -4513,9 +4486,8 @@ static LispObject Lbinary_readbyte(LispObject nil, int nargs, ...)
     return onevalue(fixnum_of_int((int32_t)GETC(binary_infile) & 0xff));
 }
 
-static LispObject Lbinary_read2(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil);
-    argcheck(nargs, 0, "binary-read2");
+static LispObject Lbinary_read2(LispObject, int nargs, ...)
+{   argcheck(nargs, 0, "binary-read2");
     if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
     {   int32_t c1 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t c2 = (int32_t)GETC(binary_infile) & 0xff;
@@ -4528,9 +4500,8 @@ static LispObject Lbinary_read2(LispObject nil, int nargs, ...)
     }
 }
 
-static LispObject Lbinary_read3(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil);
-    argcheck(nargs, 0, "binary-read3");
+static LispObject Lbinary_read3(LispObject, int nargs, ...)
+{   argcheck(nargs, 0, "binary-read3");
     if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
     {   int32_t c1 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t c2 = (int32_t)GETC(binary_infile) & 0xff;
@@ -4544,9 +4515,8 @@ static LispObject Lbinary_read3(LispObject nil, int nargs, ...)
     }
 }
 
-static LispObject Lbinary_read4(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil);
-    argcheck(nargs, 0, "binary-read4");
+static LispObject Lbinary_read4(LispObject, int nargs, ...)
+{   argcheck(nargs, 0, "binary-read4");
     if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
     {   int32_t c1 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t c2 = (int32_t)GETC(binary_infile) & 0xff;

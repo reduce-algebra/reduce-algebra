@@ -149,7 +149,6 @@ LispObject Lencapsulatedp(LispObject nil, LispObject a)
 
 LispObject Lmaple_atomic_value(LispObject nil, LispObject a)
 {   LispObject v;
-    CSL_IGNORE(nil);
     if (!is_vector(a) ||
         type_of_header(vechdr(a)) != TYPE_SPARE)
         return aerror1("not an encapsulated pointer", a);
@@ -162,13 +161,12 @@ LispObject Lmaple_atomic_value(LispObject nil, LispObject a)
 //
         return onevalue(fixnum_of_int(v >> 1));
     }
-    else return onevalue(C_nil);
+    else return onevalue(nil);
 }
 
-LispObject Lmaple_tag(LispObject nil, LispObject a)
+LispObject Lmaple_tag(LispObject, LispObject a)
 {   LispObject v;
     LispObject *v1;
-    CSL_IGNORE(nil);
     if (!is_vector(a) ||
         type_of_header(vechdr(a)) != TYPE_SPARE)
         return aerror1("not an encapsulated pointer", a);
@@ -180,10 +178,9 @@ LispObject Lmaple_tag(LispObject nil, LispObject a)
     return onevalue(fixnum_of_int(v >> 26));
 }
 
-LispObject Lmaple_length(LispObject nil, LispObject a)
+LispObject Lmaple_length(LispObject, LispObject a)
 {   LispObject v;
     LispObject *v1;
-    CSL_IGNORE(nil);
     if (!is_vector(a) ||
         type_of_header(vechdr(a)) != TYPE_SPARE)
         return aerror1("not an encapsulated pointer", a);
@@ -195,10 +192,9 @@ LispObject Lmaple_length(LispObject nil, LispObject a)
     return onevalue(fixnum_of_int(v & 0x03ffffff));
 }
 
-LispObject Lmaple_string_data(LispObject nil, LispObject a)
+LispObject Lmaple_string_data(LispObject, LispObject a)
 {   LispObject *p = (LispObject *)extract_pointer(a);
     char *s = (char *)&p[3];
-    CSL_IGNORE(nil);
     return onevalue(make_string(s));
 }
 
@@ -226,11 +222,10 @@ LispObject Lmaple_integer(LispObject nil, LispObject a)
     return r;
 }
 
-LispObject Lmaple_component(LispObject nil, LispObject a, LispObject nn)
+LispObject Lmaple_component(LispObject, LispObject a, LispObject nn)
 {   LispObject v;
     LispObject *v1;
     int32_t len, n;
-    CSL_IGNORE(nil);
     if (!is_fixnum(nn)) return aerror1("integer needed as selector", nn);
     if (!is_vector(a) ||
         type_of_header(vechdr(a)) != TYPE_SPARE)
@@ -1605,10 +1600,9 @@ LispObject Lrem_hash_1(LispObject nil, LispObject a)
 {   return Lrem_hash(nil, a, sys_hash_table);
 }
 
-LispObject Lclr_hash(LispObject nil, LispObject tab)
+LispObject Lclr_hash(LispObject, LispObject tab)
 {   LispObject v;
     int32_t size, i;
-    CSL_IGNORE(nil);
     if (!is_vector(tab) ||
         type_of_header(vechdr(tab)) != TYPE_HASH)
         return aerror1("clrhash", tab);
@@ -1674,7 +1668,7 @@ LispObject Lhash_flavour(LispObject nil, LispObject tab)
 }
 #endif
 
-LispObject Lputv(LispObject nil, int nargs, ...)
+LispObject Lputv(LispObject, int nargs, ...)
 {   Header h;
     va_list a;
     intptr_t n1, hl;
@@ -1685,7 +1679,6 @@ LispObject Lputv(LispObject nil, int nargs, ...)
     n = va_arg(a, LispObject);
     x = va_arg(a, LispObject);
     va_end(a);
-    CSL_IGNORE(nil);
     if (!is_vector(v) || vector_holds_binary(h = vechdr(v)))
         return aerror1("putv", v);
     else if (!is_fixnum(n)) return aerror1("putv offset not fixnum", n);
@@ -1696,10 +1689,9 @@ LispObject Lputv(LispObject nil, int nargs, ...)
     return onevalue(x);
 }
 
-LispObject Lgetv(LispObject nil, LispObject v, LispObject n)
+LispObject Lgetv(LispObject, LispObject v, LispObject n)
 {   Header h;
     intptr_t n1, hl;
-    CSL_IGNORE(nil);
     if (!is_vector(v) || vector_holds_binary(h = vechdr(v)))
         return aerror1("getv", v);
     else if (!is_fixnum(n)) return aerror1("getv offset not fixnum", n);
@@ -1865,7 +1857,7 @@ LispObject simplify_string(LispObject s)
     return onevalue(w);
 }
 
-LispObject Lsputv(LispObject nil, int nargs, ...)
+LispObject Lsputv(LispObject, int nargs, ...)
 {   Header h;
     va_list a;
     int32_t vx;
@@ -1877,7 +1869,6 @@ LispObject Lsputv(LispObject nil, int nargs, ...)
     n = va_arg(a, LispObject);
     x = va_arg(a, LispObject);
     va_end(a);
-    CSL_IGNORE(nil);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_STRING)
         return aerror1("putv-char", v);
     else if (!is_fixnum(n)) return aerror1("putv-char", n);
@@ -1901,7 +1892,7 @@ LispObject Lsputv(LispObject nil, int nargs, ...)
 // was having to do mappings and conversions.
 //
 
-LispObject Lsputv2(LispObject nil, int nargs, ...)
+LispObject Lsputv2(LispObject, int nargs, ...)
 {   Header h;
     va_list a;
     int32_t vx1, vx2;
@@ -1914,7 +1905,6 @@ LispObject Lsputv2(LispObject nil, int nargs, ...)
     x1 = va_arg(a, LispObject);
     x2 = va_arg(a, LispObject);
     va_end(a);
-    CSL_IGNORE(nil);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_STRING)
         return aerror1("putv-char2", v);
     else if (!is_fixnum(n)) return aerror1("putv-char", n);
@@ -1932,7 +1922,7 @@ LispObject Lsputv2(LispObject nil, int nargs, ...)
     return onevalue(x2);
 }
 
-LispObject Lsputv3(LispObject nil, int nargs, ...)
+LispObject Lsputv3(LispObject, int nargs, ...)
 {   Header h;
     va_list a;
     int32_t vx1, vx2, vx3;
@@ -1946,7 +1936,6 @@ LispObject Lsputv3(LispObject nil, int nargs, ...)
     x2 = va_arg(a, LispObject);
     x3 = va_arg(a, LispObject);
     va_end(a);
-    CSL_IGNORE(nil);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_STRING)
         return aerror1("putv-char2", v);
     else if (!is_fixnum(n)) return aerror1("putv-char", n);
@@ -1968,7 +1957,7 @@ LispObject Lsputv3(LispObject nil, int nargs, ...)
     return onevalue(x3);
 }
 
-LispObject Lsputv4(LispObject nil, int nargs, ...)
+LispObject Lsputv4(LispObject, int nargs, ...)
 {   Header h;
     va_list a;
     int32_t vx1, vx2, vx3, vx4;
@@ -1983,7 +1972,6 @@ LispObject Lsputv4(LispObject nil, int nargs, ...)
     x3 = va_arg(a, LispObject);
     x4 = va_arg(a, LispObject);
     va_end(a);
-    CSL_IGNORE(nil);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_STRING)
         return aerror1("putv-char2", v);
     else if (!is_fixnum(n)) return aerror1("putv-char", n);
@@ -2009,17 +1997,16 @@ LispObject Lsputv4(LispObject nil, int nargs, ...)
     return onevalue(x4);
 }
 
-LispObject Lbpsupbv(LispObject nil, LispObject v)
+LispObject Lbpsupbv(LispObject, LispObject v)
 {   Header h;
     int32_t n;
-    CSL_IGNORE(nil);
     if (!(is_bps(v))) return aerror1("bps-upbv", v);
     h = *(Header *)((char *)data_of_bps(v) - CELL);
     n = length_of_header(h) - CELL;
     return onevalue(fixnum_of_int(n-1));
 }
 
-LispObject Lbpsputv(LispObject nil, int nargs, ...)
+LispObject Lbpsputv(LispObject, int nargs, ...)
 {   Header h;
     va_list a;
     int32_t n1, hl;
@@ -2030,7 +2017,6 @@ LispObject Lbpsputv(LispObject nil, int nargs, ...)
     n = va_arg(a, LispObject);
     x = va_arg(a, LispObject);
     va_end(a);
-    CSL_IGNORE(nil);
     if (!is_bps(v)) return aerror1("bpsputv", v);
     else if (!is_fixnum(n)) return aerror1("bps-putv", n);
     else if (!is_fixnum(x)) return aerror1("bps-putv contents", x);
@@ -2056,7 +2042,6 @@ LispObject Lsgetv(LispObject nil, LispObject v, LispObject n)
 {   Header h;
     int w;
     int32_t n1, hl;
-    CSL_IGNORE(nil);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_STRING)
         return aerror1("schar", v);
     else if (!is_fixnum(n)) return aerror1("schar", n);
@@ -2085,11 +2070,10 @@ LispObject Lsgetv(LispObject nil, LispObject v, LispObject n)
 #endif
 }
 
-LispObject Lsgetvn(LispObject nil, LispObject v, LispObject n)
+LispObject Lsgetvn(LispObject, LispObject v, LispObject n)
 {   Header h;
     int w;
     intptr_t n1, hl;
-    CSL_IGNORE(nil);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_STRING)
         return aerror1("scharn", v);
     else if (!is_fixnum(n)) return aerror1("scharn", n);
@@ -2100,11 +2084,10 @@ LispObject Lsgetvn(LispObject nil, LispObject v, LispObject n)
     return onevalue(fixnum_of_int(w));
 }
 
-LispObject Lbytegetv(LispObject nil, LispObject v, LispObject n)
+LispObject Lbytegetv(LispObject, LispObject v, LispObject n)
 {   Header h;
     int w;
     intptr_t n1, hl;
-    CSL_IGNORE(nil);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_STRING)
         return aerror1("byte-getv", v);
     else if (!is_fixnum(n)) return aerror1("byte-getv", n);
@@ -2115,10 +2098,9 @@ LispObject Lbytegetv(LispObject nil, LispObject v, LispObject n)
     return onevalue(fixnum_of_int(w));
 }
 
-LispObject Lbpsgetv(LispObject nil, LispObject v, LispObject n)
+LispObject Lbpsgetv(LispObject, LispObject v, LispObject n)
 {   Header h;
     intptr_t n1, hl;
-    CSL_IGNORE(nil);
     if (!is_bps(v)) return aerror1("bps-getv", v);
     else if (!is_fixnum(n)) return aerror1("bps-getv", n);
     h = *(Header *)((char *)data_of_bps(v) - CELL);
@@ -2135,7 +2117,7 @@ LispObject Lbpsgetv(LispObject nil, LispObject v, LispObject n)
 // transferred.
 //
 
-LispObject Lnativeputv(LispObject nil, int nargs, ...)
+LispObject Lnativeputv(LispObject, int nargs, ...)
 {   va_list a;
     int32_t o, v32, width;
     intptr_t p;
@@ -2150,7 +2132,6 @@ LispObject Lnativeputv(LispObject nil, int nargs, ...)
     if (nargs == 4) w = va_arg(a, LispObject);
     else w = fixnum_of_int(1);
     va_end(a);
-    CSL_IGNORE(nil);
     if (!consp(v) ||
         !is_fixnum(qcar(v)) ||
         !is_fixnum(qcdr(v)) ||
@@ -2203,10 +2184,9 @@ LispObject Lnativeputv(LispObject nil, int nargs, ...)
     return onevalue(x);
 }
 
-LispObject Lnativegetv(LispObject nil, LispObject v, LispObject n)
+LispObject Lnativegetv(LispObject, LispObject v, LispObject n)
 {   int32_t o;
     intptr_t p;
-    CSL_IGNORE(nil);
     if (!consp(v) ||
         !is_fixnum(qcar(v)) ||
         !is_fixnum(qcdr(v)) ||
@@ -2221,7 +2201,7 @@ LispObject Lnativegetv(LispObject nil, LispObject v, LispObject n)
     return onevalue(fixnum_of_int(o & 0xff));
 }
 
-LispObject Lnativegetvn(LispObject nil, int nargs, ...)
+LispObject Lnativegetvn(LispObject, int nargs, ...)
 {   LispObject v, n, w;
     int32_t o;
     intptr_t p;
@@ -2232,7 +2212,6 @@ LispObject Lnativegetvn(LispObject nil, int nargs, ...)
     n = va_arg(a, LispObject);
     w = va_arg(a, LispObject);
     va_end(a);
-    CSL_IGNORE(nil);
     if (!consp(v) ||
         !is_fixnum(qcar(v)) ||
         !is_fixnum(qcdr(v)) ||
@@ -2260,9 +2239,8 @@ LispObject Lnativegetvn(LispObject nil, int nargs, ...)
     }
 }
 
-LispObject Lnative_type(LispObject nil, int nargs, ...)
-{   CSL_IGNORE(nil);
-    CSL_IGNORE(nargs);
+LispObject Lnative_type(LispObject, int, ...)
+{
 //
 // This mechanism is not being pursued at present...
 //
@@ -2277,9 +2255,8 @@ LispObject Lnative_type(LispObject nil, int nargs, ...)
 // to be useful while testing a native-mode compiler.
 //
 
-LispObject Lnative_address(LispObject nil, LispObject fn, LispObject nargs)
+LispObject Lnative_address(LispObject, LispObject fn, LispObject nargs)
 {   intptr_t n;
-    CSL_IGNORE(nil);
     if (!symbolp(fn)) return aerror1("native-address", fn);
     if (!is_fixnum(nargs)) return aerror1("native-address", nargs);
     n = int_of_fixnum(nargs);
@@ -2508,7 +2485,7 @@ LispObject Lnative_address1(LispObject nil, LispObject x)
 // in with the greater generality of vector structures.
 //
 
-LispObject Lputv8(LispObject nil, int nargs, ...)
+LispObject Lputv8(LispObject, int nargs, ...)
 {   Header h;
     va_list a;
     intptr_t n1, hl;
@@ -2519,7 +2496,6 @@ LispObject Lputv8(LispObject nil, int nargs, ...)
     n = va_arg(a, LispObject);
     x = va_arg(a, LispObject);
     va_end(a);
-    CSL_IGNORE(nil);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VEC8)
         return aerror1("putv8", v);
     else if (!is_fixnum(n)) return aerror1("putv8 offset not fixnum", n);
@@ -2530,10 +2506,9 @@ LispObject Lputv8(LispObject nil, int nargs, ...)
     return onevalue(x);
 }
 
-LispObject Lgetv8(LispObject nil, LispObject v, LispObject n)
+LispObject Lgetv8(LispObject, LispObject v, LispObject n)
 {   Header h;
     intptr_t n1, hl;
-    CSL_IGNORE(nil);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VEC8)
         return aerror1("getv8", v);
     else if (!is_fixnum(n)) return aerror1("getv8 offset not fixnum", n);
@@ -2543,7 +2518,7 @@ LispObject Lgetv8(LispObject nil, LispObject v, LispObject n)
     else return onevalue(fixnum_of_int(scelt(v, n1)));
 }
 
-LispObject Lputv16(LispObject nil, int nargs, ...)
+LispObject Lputv16(LispObject, int nargs, ...)
 {   Header h;
     va_list a;
     intptr_t n1, hl;
@@ -2554,7 +2529,6 @@ LispObject Lputv16(LispObject nil, int nargs, ...)
     n = va_arg(a, LispObject);
     x = va_arg(a, LispObject);
     va_end(a);
-    CSL_IGNORE(nil);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VEC16)
         return aerror1("putv16", v);
     else if (!is_fixnum(n)) return aerror1("putv16 offset not fixnum", n);
@@ -2565,10 +2539,9 @@ LispObject Lputv16(LispObject nil, int nargs, ...)
     return onevalue(x);
 }
 
-LispObject Lgetv16(LispObject nil, LispObject v, LispObject n)
+LispObject Lgetv16(LispObject, LispObject v, LispObject n)
 {   Header h;
     intptr_t n1, hl;
-    CSL_IGNORE(nil);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VEC16)
         return aerror1("getv16", v);
     else if (!is_fixnum(n)) return aerror1("getv16 offset not fixnum", n);
@@ -2579,7 +2552,7 @@ LispObject Lgetv16(LispObject nil, LispObject v, LispObject n)
     return onevalue(fixnum_of_int(n1));
 }
 
-LispObject Lputv32(LispObject nil, int nargs, ...)
+LispObject Lputv32(LispObject, int nargs, ...)
 {   Header h;
     va_list a;
     intptr_t n1, hl;
@@ -2590,7 +2563,6 @@ LispObject Lputv32(LispObject nil, int nargs, ...)
     n = va_arg(a, LispObject);
     x = va_arg(a, LispObject);
     va_end(a);
-    CSL_IGNORE(nil);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VEC32)
         return aerror1("putv32", v);
     else if (!is_fixnum(n)) return aerror1("putv32 offset not fixnum", n);
@@ -2601,10 +2573,9 @@ LispObject Lputv32(LispObject nil, int nargs, ...)
     return onevalue(x);
 }
 
-LispObject Lgetv32(LispObject nil, LispObject v, LispObject n)
+LispObject Lgetv32(LispObject, LispObject v, LispObject n)
 {   Header h;
     intptr_t n1, hl;
-    CSL_IGNORE(nil);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VEC32)
         return aerror1("getv32", v);
     else if (!is_fixnum(n)) return aerror1("getv32 offset not fixnum", n);
@@ -2615,7 +2586,7 @@ LispObject Lgetv32(LispObject nil, LispObject v, LispObject n)
     return make_lisp_integer32(n1);
 }
 
-LispObject Lfputv32(LispObject nil, int nargs, ...)
+LispObject Lfputv32(LispObject, int nargs, ...)
 {   Header h;
     va_list a;
     intptr_t n1, hl;
@@ -2628,7 +2599,6 @@ LispObject Lfputv32(LispObject nil, int nargs, ...)
     x = va_arg(a, LispObject);
     d = float_of_number(x);
     va_end(a);
-    CSL_IGNORE(nil);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_FLOAT32)
         return aerror1("fputv32", v);
     else if (!is_fixnum(n)) return aerror1("fputv32 offset not fixnum", n);
@@ -2642,7 +2612,6 @@ LispObject Lfputv32(LispObject nil, int nargs, ...)
 LispObject Lfgetv32(LispObject nil, LispObject v, LispObject n)
 {   Header h;
     intptr_t n1, hl;
-    CSL_IGNORE(nil);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_FLOAT32)
         return aerror1("fgetv32", v);
     else if (!is_fixnum(n)) return aerror1("fgetv32 offset not fixnum", n);
@@ -2658,7 +2627,7 @@ LispObject Lfgetv32(LispObject nil, LispObject v, LispObject n)
     return onevalue(v);
 }
 
-LispObject Lfputv64(LispObject nil, int nargs, ...)
+LispObject Lfputv64(LispObject, int nargs, ...)
 {   Header h;
     va_list a;
     intptr_t n1, hl;
@@ -2671,7 +2640,6 @@ LispObject Lfputv64(LispObject nil, int nargs, ...)
     x = va_arg(a, LispObject);
     d = float_of_number(x);
     va_end(a);
-    CSL_IGNORE(nil);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_FLOAT64)
         return aerror1("fputv64", v);
     else if (!is_fixnum(n)) return aerror1("fputv64 offset not fixnum", n);
@@ -2688,7 +2656,6 @@ LispObject Lfputv64(LispObject nil, int nargs, ...)
 LispObject Lfgetv64(LispObject nil, LispObject v, LispObject n)
 {   Header h;
     intptr_t n1, hl;
-    CSL_IGNORE(nil);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_FLOAT64)
         return aerror1("fgetv64", v);
     else if (!is_fixnum(n)) return aerror1("fgetv64 offset not fixnum", n);
@@ -2737,13 +2704,12 @@ LispObject Llist_to_vector(LispObject nil, LispObject a)
 //       (t (putv v n x))))
 //
 
-static LispObject Lputvec(LispObject nil, int nargs, ...)
+static LispObject Lputvec(LispObject, int nargs, ...)
 {   Header h;
     va_list a;
     int32_t vx;
     intptr_t n1, hl;
     LispObject v, n, x;
-    CSL_IGNORE(nil);
     argcheck(nargs, 3, "putvec");
     va_start(a, nargs);
     v = va_arg(a, LispObject);
@@ -3548,7 +3514,7 @@ static LispObject Lmake_simple_bitvector(LispObject nil, LispObject n)
     return onevalue(w);
 }
 
-static LispObject Lbputv(LispObject nil, int nargs, ...)
+static LispObject Lbputv(LispObject, int nargs, ...)
 {   Header h;
     va_list a;
     int b;
@@ -3560,7 +3526,6 @@ static LispObject Lbputv(LispObject nil, int nargs, ...)
     n = va_arg(a, LispObject);
     x = va_arg(a, LispObject);
     va_end(a);
-    CSL_IGNORE(nil);
 //
 // This code is WRONG at present in that unexpectedly it is supposed to
 // support bit-arrays of arbitrary rank, and not just simple vectors.
@@ -3585,11 +3550,10 @@ static LispObject Lbputv(LispObject nil, int nargs, ...)
     return onevalue(fixnum_of_int(x));
 }
 
-static LispObject Lbgetv(LispObject nil, LispObject v, LispObject n)
+static LispObject Lbgetv(LispObject, LispObject v, LispObject n)
 {   Header h;
     int b;
     int32_t n1;
-    CSL_IGNORE(nil);
 //
 // This code is WRONG at present in that unexpectedly it is supposed to
 // support bit-arrays of arbitrary rank, and not just simple vectors.
@@ -3610,7 +3574,6 @@ static LispObject Lbgetv(LispObject nil, LispObject v, LispObject n)
 LispObject Lupbv(LispObject nil, LispObject v)
 {   Header h;
     int32_t n;
-    CSL_IGNORE(nil);
 //
 // in non segmented mode this will support BPS, but really
 // you ought not to rely on that.
@@ -3646,10 +3609,9 @@ LispObject Lupbv(LispObject nil, LispObject v)
     return onevalue(fixnum_of_int(n));
 }
 
-LispObject Lstring_length(LispObject nil, LispObject v)
+LispObject Lstring_length(LispObject, LispObject v)
 {   Header h;
     int32_t n;
-    CSL_IGNORE(nil);
     if (!(is_vector(v))) return aerror1("string-length", v);
     h = vechdr(v);
     if (type_of_header(h) != TYPE_STRING) return aerror1("string-length", v);
@@ -3658,10 +3620,9 @@ LispObject Lstring_length(LispObject nil, LispObject v)
 }
 
 #ifdef COMMON
-LispObject Lvecbnd(LispObject nil, LispObject v)
+LispObject Lvecbnd(LispObject, LispObject v)
 {   Header h;
     int32_t n;
-    CSL_IGNORE(nil);
 //
 // in non segmented mode this will support BPS, but really
 // you ought not to rely on that.
