@@ -539,6 +539,10 @@ symbolic procedure safe!-fp!-quot(u, v);
 
 global '(!!maxfloatq2 !!two511 !!two513);
 
+remprop('!!maxfloatq2, 'constant!?);
+remprop('!!two511, 'constant!?);
+remprop ('!!two513, 'constant!?);
+
 begin
   scalar r, w;
 % I know the numeric value I want expressed in powers of 2, so I compute
