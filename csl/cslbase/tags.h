@@ -59,6 +59,8 @@ typedef int                 CSLbool;
 #define YES                 1
 #define NO                  0
 
+#define CSL_IGNORE(x)       ((void)(x))
+
 //
 // I allocate memory (using malloc()) in CSL_PAGE_SIZE chunks.
 // This was first implemented for the benefit of 16-bit machines
