@@ -377,10 +377,15 @@ symbolic procedure pseudo_inverse(in_mat);
   % square matrices (A * pseudo_inverse(A) = identity).
   %
   begin
-    scalar psu_inv,svd_list;
+    scalar psu_inv,svd_list,sigma1;
     svd_list := svd(in_mat);
+    %
+    % compute pseudo inverse of diagonal matrix
+    algebraic << sigma1 := second svd_list;
+                 for i:=1:first length sigma1 do
+		    if sigma1(i,i) neq 0 then sigma1(i,i):=1/sigma1(i,i) >>;
     psu_inv := algebraic
-                (tp(third svd_list)*(1/second svd_list)*first svd_list);
+                (tp(third svd_list)*sigma1*(first svd_list));
     return psu_inv;
   end;
 
