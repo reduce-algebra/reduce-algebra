@@ -1124,9 +1124,12 @@ else
   done
   AC_MSG_NOTICE([passcc = $passcc])
   doconfig="$SHELL \"$abssrcdir/csl/cslbase/gc-7.4.2/configure\" $filter \
-        $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+        $pass_host CPPFLAGS=\"$CPPFLAGS -DDONT_ADD_BYTE_AT_END=1\" \
+        CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-        --prefix=\"$builddir\" --enable-cplusplus"
+        --prefix=\"$builddir\" --enable-cplusplus \
+        --enable-threads=posix --enable-thread-local-alloc \
+        --enable-parallel-mark"
   AC_MSG_NOTICE([doconfig = $doconfig])
   eval "$doconfig"
 

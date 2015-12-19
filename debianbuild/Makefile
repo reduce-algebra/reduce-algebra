@@ -78,5 +78,7 @@ reduce-source-psl-$(SNAPSHOT).tar.bz2:
 		--owner=root --group=root \
 		reduce-source-$(SNAPSHOT)/psl
 
+clean:
+	target "clean" not used here
 
 # end of Makefile

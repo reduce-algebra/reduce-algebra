@@ -783,7 +783,7 @@ gctest_CPPFLAGS = $(TRACE)
 gctest_LDADD =
 gctest_DEPENDENCIES =
 
-BOEHMDEPS=../lib/gc.a ../include/gc/gc.h
+BOEHMDEPS=../lib/libgc.a ../include/gc/gc.h
 
 BOEHMDEP = ../include/gc/gc.h
 BOEHMINC = -I../include
