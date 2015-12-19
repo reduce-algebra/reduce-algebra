@@ -16,7 +16,7 @@
 HERE=`pwd`
 
 # The ip address or name of the machine where the generated archive is to go
-DESTMC=192.168.1.119
+DESTMC=192.168.1.110
 # The user to use when copying
 DESTUSER=acn1
 # The directory to place snapshots in
@@ -54,7 +54,7 @@ CYG*)
   printf "Found Reduce at %s\n" $RED
   BUILD=winbuild
   OUTDIR=Output
-  OUTFILES="Reduce.Setup.sh"
+  OUTFILES="Reduce-Setup.exe"
   ;;
 Darwin*)
   SYS=mac
