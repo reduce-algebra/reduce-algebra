@@ -1630,38 +1630,44 @@ $\mathcal{A}$ &:-& a matrix.
 {\bf Synopsis:} %{\bf What it does:}
 
 \begin{addtolength}{\leftskip}{0.22in}
-{\tt pseudo\_inverse}, also known as the Moore-Penrose inverse, computes
+\texttt{pseudo\_inverse}, also known as the Moore-Penrose inverse, computes
 the pseudo inverse of $\mathcal{A}$. 
 
 Given the singular value decomposition of $\mathcal{A}$, i.e: $\mathcal{A} = 
 {\cal U} 
-\sum {\cal V}^T$, then the pseudo inverse $\mathcal{A}^{-1}$ is defined 
-by $\mathcal{A}^{-1} = {\cal V}^T \sum^{-1} {\cal U}$.
+\Sigma{\cal V}^T$, then the pseudo inverse $\mathcal{A}^{\dagger}$ is defined 
+by $\mathcal{A}^{\dagger} = \mathcal{V} \Sigma^{\dagger} \mathcal{U}^{T}$. For the 
+rectangular diagonal
+matrix $\Sigma$, the pseudoinverse $\Sigma^{\dagger}$ is computed by taking the reciprocal
+of every diagonal element and transposing the resulting matrix.
 
-Thus $\mathcal{A}$ $ * $ {\tt pseudo\_inverse}$(\mathcal{A}) = {\cal I}$.
+If $\mathcal{A}$ is square and non-singular, then $\mathcal{A}^{\dagger} = \mathcal{A}$.
+In general, however,
+$\mathcal{A} * \mathcal{A}^{\dagger} * \mathcal{A} = \mathcal{A}$, and
+$\mathcal{A}^{\dagger} *  \mathcal{A} * \mathcal{A}^{\dagger} = \mathcal{A}^{\dagger}$.
+
+Perhaps more importantly, $\mathcal{A}^{\dagger}$ solves the following least-squares
+problem: given a rectangular matrix $\mathcal{A}$ and a vector $b$, find the
+$x$ minimizing $\|\mathcal{A}x - b\|_2$, 
+and which, in addition, has minimum $\mathcal{L}_{2}$-Norm, $\|x\|_2$.  
+This $x$ is $\mathcal{A}^{\dagger} b$.
 
 \end{addtolength}
 
 {\bf Examples:}
-
-% \begin{flushleft}
-% \hspace*{0.175in}
-% \begin{math}
-% {\cal R} = \left( \begin{array}{cccc} 1 & 2 & 3 & 4 \\ 9 & 8 & 7 & 6
-% \end{array} \right)
-% \end{math}
-% \end{flushleft}
-
-\begin{flushleft}  
-\hspace*{0.1in}
-\begin{math}  
+\nopagebreak
+\begin{flushleft}
+\begin{displaymath}
+\mathcal{R} = \left( \begin{array}{cccc} 1 & 2 & 3 & 4 \\ 9 & 8 & 7 & 6
+\end{array} \right),
+\quad
 \begin{array}{ccc}
-{\tt pseudo\_inverse}(\mathcal{A}) & = & 
+\text{pseudo\_inverse}(\mathcal{R}) & = & 
         \left( \begin{array}{cc} -0.2 & 0.1 \\ -0.05 & 0.05 \\ 0.1 & 0 
 \\ 0.25 & -0.05 
  \end{array} \right) 
 \end{array}
-\end{math}  
+\end{displaymath}  
 \end{flushleft}
 
 {\bf Related functions:}

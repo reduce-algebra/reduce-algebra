@@ -54,7 +54,7 @@ symbolic procedure svd(a);
   % Computation of the singular values and complete orthogonal
   % decomposition of a real rectangular matrix A.
   %
-  %      A = tp(U) diag(q) V,   U tp(U) = V tp(V) = I,
+  %      A = U diag(q) tp(V),   U tp(U) = V tp(V) = I,
   %
   % and q contains the singular values along the diagonal.
   % (tp => transpose).
@@ -341,8 +341,8 @@ symbolic procedure svd(a);
     q_mat := q_to_diag_matrix(q);
     if i_rounded_turned_on then off rounded;
     if trans_done then
-     return {'list,algebraic tp v,q_mat,algebraic tp u}
-      else return {'list,algebraic tp u,q_mat,algebraic tp v};
+     return {'list,algebraic v,q_mat,algebraic u}
+      else return {'list,algebraic u,q_mat,algebraic v};
   end;
 
 flag('(svd),'opfn); % To make it available from algebraic (user) mode.
@@ -371,7 +371,7 @@ symbolic procedure pseudo_inverse(in_mat);
   % Given the singular value decomposition A := tp(U) diag(q) V
   % the pseudo inverse A^(-1) is defined as
   %
-  %   A^(-1) = tp(V) (diag(q))^(-1) U.
+  %   A^(-1) = V (diag(q))^(-1) tp(U).
   %
   % NB: this can be quite handy as we can take the inverse of non
   % square matrices (A * pseudo_inverse(A) = identity).
@@ -381,11 +381,11 @@ symbolic procedure pseudo_inverse(in_mat);
     svd_list := svd(in_mat);
     %
     % compute pseudo inverse of diagonal matrix
-    algebraic << sigma1 := second svd_list;
+    algebraic << sigma1 := tp second svd_list;
                  for i:=1:first length sigma1 do
 		    if sigma1(i,i) neq 0 then sigma1(i,i):=1/sigma1(i,i) >>;
     psu_inv := algebraic
-                (tp(third svd_list)*sigma1*(first svd_list));
+                ((third svd_list)*sigma1*(tp first svd_list));
     return psu_inv;
   end;
 
@@ -396,7 +396,7 @@ rtypecar pseudo_inverse;
 
 symbolic procedure rd_copy_mat(a);
   %
-  % Creates a copy of the input matrix and returns it aswell as
+  % Creates a copy of the input matrix and returns it as well as
   % reval-ing each elt to get them in !:rd!: form;
   %
   begin

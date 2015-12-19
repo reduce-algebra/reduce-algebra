@@ -9,7 +9,8 @@ mat5  := mat((1,2,1,1),(1,2,3,1),(4,5,1,2),(3,4,5,6));
 mat6  := mat((i+1,i+2,i+3),(4,5,2),(1,i,0));
 mat7  := mat((1,1,0),(1,3,1),(0,1,1));
 mat8  := mat((1,3),(-4,3));
-mat9 :=  mat((1,2,3,4),(9,8,7,6));
+mat9  := mat((1,2,3,4),(9,8,7,6));
+mat10 := mat((1,0,0,0,2),(0,0,3,0,0),(0,0,0,0,0),(0,2,0,0,0));
 poly  := x^7+x^5+4*x^4+5*x^3+12;
 poly1 := x^2+x*y^3+x*y*z^3+y*x+2+y*3;
 
@@ -242,8 +243,16 @@ simplex(min, 0,
 
 
 svd_ans := svd(mat8);
-tmp := tp first svd_ans * second svd_ans * third svd_ans;
+tmp := first svd_ans * second svd_ans * tp third svd_ans;
 tmp - mat8;
+
+svd_ans := svd(mat10);
+tmp := first svd_ans * second svd_ans * tp third svd_ans;
+tmp - mat10;
+
+mat10inv := pseudo_inverse(mat10);
+mat10 * mat10inv * mat10;
+mat10inv * mat10 * mat10inv;
 
 mat9inv := pseudo_inverse(mat9);
 mat9 * mat9inv;
