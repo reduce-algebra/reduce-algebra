@@ -55,7 +55,7 @@ CYG*)
   printf "Found Reduce at %s\n" $RED
   BUILD=winbuild
   OUTDIR=Output
-  OUTFILES="Reduce-Setup-$today.exe"
+  OUTFILES="Reduce-Setup-${today}.exe"
   ;;
 Darwin*)
   SYS=mac
@@ -70,14 +70,14 @@ Darwin*)
   RED=/home/acn1/reduce-algebra
   BUILD=debianbuild
   OUTDIR=.
-  OUTFILES="reduce-common_$today_all.deb \
-            reduce-csl_$today_amd64.deb \
-            reduce-psl_$today_amd64.deb \
-            reduce-addons_$today_amd64.deb \
-            reduce-common-$today-1.noarch.rpm \
-            reduce-csl-$today-1.x86_64.rpm \
-            reduce-psl-$today-1.x86_64.rpm \
-            reduce-addons-$today-1.x86_64.rpm"
+  OUTFILES="reduce-common_${today}_all.deb \
+            reduce-csl_${today}_amd64.deb \
+            reduce-psl_${today}_amd64.deb \
+            reduce-addons_${today}_amd64.deb \
+            reduce-common-${today}-1.noarch.rpm \
+            reduce-csl-${today}-1.x86_64.rpm \
+            reduce-psl-${today}-1.x86_64.rpm \
+            reduce-addons-${today}-1.x86_64.rpm"
   ;;
 esac
 
@@ -86,21 +86,21 @@ esac
 # The date of a snapshot is recorded as yyyymmdd - ie 4 digits of year, two
 # of month and two for the day within the month.
 
-if test -f $SYS-$today.stamp
+if test -f $SYS-${today}.stamp
 then
 # If this script has already run today then I will not use it a second time.
-  printf "Snapshot $SYS-$today.stamp already exists\n"
+  printf "Snapshot $SYS-${today}.stamp already exists\n"
   exit 0
 fi
 
 # If I touch the output file here at the start then any accidental attempt to
 # restart the build will detect the presence of the file and give up.
-touch $SYS-$today.stamp
+touch $SYS-${today}.stamp
 
 # Remove previous stamp files.
 for x in $SYS-*.stamp
 do
-  if test $x != $SYS-$today.stamp
+  if test $x != $SYS-${today}.stamp
   then
     rm $x
   fi
@@ -157,9 +157,13 @@ case $SYS in
 mac)
   ;;
 windows)
+  sleep 60
   shutdown /p
   ;;
 *)
+# pause before shutting down in the hope that doing so gives "script"
+# time to record even the tail of the transcript
+  sleep 60
   sudo /sbin/shutdown -h now
   ;;
 esac
