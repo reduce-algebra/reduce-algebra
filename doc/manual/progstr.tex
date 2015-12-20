@@ -172,6 +172,7 @@ include:
     \sum_{n=0}^{\infty} \frac{(-1)^{n}}{(2n+1)^{2}} .
   \end{displaymath}
 \ttindex{CATALAN}
+\index{Reserved variable ! \texttt{CATALAN}}
 
 \item[E] Intended to represent the base of
 \ttindex{E}
@@ -182,12 +183,16 @@ floating point precision\index{Numerical precision}.
 
 \item[EULER\_GAMMA] Euler's constant, also available as $-\psi(1)$.
 \ttindex{EULER\_GAMMA}
+\index{Reserved variable ! \texttt{EULER\_GAMMA}}
 
 \item[GOLDEN\_RATIO] The number $\frac{1+\sqrt{5}}{2}$.
 \ttindex{GOLDEN\_RATIO}
+\index{Reserved variable ! \texttt{GOLDEN\_RATIO}}
 
 \item[I] Intended to represent the square
 \ttindex{I}
+\index{Reserved variable ! \texttt{I}}
+
 root of $-1$. \texttt{i\textasciicircum2} is replaced by $-1$, and
 appropriately for higher powers of \texttt{I}.  This applies only to the
 symbol \texttt{I} used on the top
@@ -196,6 +201,8 @@ the context \texttt{for i:= ...}.
 
 \item[INFINITY] Intended to represent $\infty$
 \ttindex{INFINITY}
+\index{Reserved variable ! \texttt{INFINITY}}
+
 in limit and power series calculations for example, as well as in definite integration.
 Note however that the
 current system does \emph{not} do proper arithmetic on $\infty$.  For example,
@@ -207,24 +214,31 @@ current system does \emph{not} do proper arithmetic on $\infty$.  For example,
   \end{displaymath}
 %, as defined in
 \ttindex{KHINCHIN}%\cite{Khinchin:64}. 
+\index{Reserved variable ! \texttt{KHINCHIN}}
 
 \item[NEGATIVE] Used in the \hyperlink{package:ROOTS}{Roots package}.
 \ttindex{NEGATIVE}
+\index{Reserved variable ! \texttt{NEGATIVE}}
 
 \item[NIL] In {\REDUCE} (algebraic mode only)
 taken as a synonym for zero.  Therefore \texttt{NIL} cannot be used as a
 variable.
+\ttindex{NIL}
+\index{Reserved variable ! \texttt{NIL}}
 
 \item[PI] Intended to represent the circular
 \ttindex{PI}
+\index{Reserved variable ! \texttt{PI}}
 constant.  With \sw{ROUNDED} on, it is replaced by the value of $\pi$ to
 the current degree of floating point precision.
 
 \item[POSITIVE] Used in the \hyperlink{package:ROOTS}{Roots package}.
 \ttindex{POSITIVE}
+\index{Reserved variable ! \texttt{POSITIVE}}
 
 \item[T] Must not be used as a formal
 \ttindex{T}
+\index{Reserved variable ! \texttt{T}}
 parameter or local variable in procedures, since conflict arises with the
 symbolic mode meaning of T as \emph{true}.
 \end{list}

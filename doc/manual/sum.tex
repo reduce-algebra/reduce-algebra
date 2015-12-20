@@ -36,7 +36,7 @@ Gosper's algorithm succeeds whenever the ratio
 
 \noindent is a rational function of $n$.  The function SUM!-SQ
 handles basic functions such as polynomials, rational functions and
-exponentials. \ttindex{SUM-SQ}
+exponentials. \ttindextype{SUM"!-SQ}{operator}
 
 The trigonometric functions sin, cos, etc. are converted to exponentials
 and then Gosper's algorithm is applied.  The result is converted back into
@@ -55,7 +55,9 @@ Other functions, as shown in the test file for the case of binomials and
 formal products, can be summed by providing LET rules which must relate the
 functions evaluated at $k$ and $k - 1$ ($k$ being the summation variable).
 
-\index{Tracing!SUM package} \ttindex{TRSUM}
+\index{Tracing!SUM package} \ttindextype{TRSUM}{switch}
+\index{Switch ! \texttt{TRSUM}}
+\index{Switches by package ! SUM package ! \texttt{TRSUM}}
 There is a switch TRSUM (default OFF).  If this switch is on, trace
 messages are printed out during the course of Gosper's algorithm.
 

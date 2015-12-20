@@ -101,6 +101,7 @@ irregardless of the value of the variable \f{TAYLORPRINTTERMS}.
 
 
 \ttindextype{TAYLORKEEPORIGINAL}{switch}
+\index{Switch ! \texttt{TAYLORKEEPORIGINAL}}
 If the switch \hyperlink{switch:TAYLORKEEPORIGINAL}{\f{TAYLORKEEPORIGINAL}}
 is set to \f{ON} the
 original expression EXP is kept for later reference.
@@ -166,6 +167,7 @@ kernels in \f{exp} have their original expressions kept
 \hyperlink{operator:TAYLORCOMBINE}{\f{TAYLORCOMBINE}} will also combine these and store the result
 as the original expression of the resulting Taylor kernel.
 \ttindextype{TAYLORAUTOEXPAND}{switch}
+\index{Switch ! \texttt{TAYLORAUTOEXPAND}}
 There is also the switch \hyperlink{switch:TAYLORAUTOEXPAND}{\f{TAYLORAUTOEXPAND}} (see below).
 
 There are a few restrictions to avoid mathematically undefined
@@ -223,6 +225,8 @@ This package introduces a number of new switches:
 \begin{description}
 
 \ttindextype{TAYLORAUTOCOMBINE}{switch}
+\index{Switch ! \texttt{TAYLORAUTOCOMBINE}}
+\index{Switches by package ! TAYLOR package ! \texttt{TAYLORAUTOCOMBINE}}
 \item[\sw{TAYLORAUTOCOMBINE}] \hypertarget{switch:TAYLORAUTOCOMBINE}{}causes
     Taylor expressions to be automatically combined during the simplification
     process.  This is equivalent to applying \f{TAYLORCOMBINE} to
@@ -230,12 +234,16 @@ This package introduces a number of new switches:
     Default is \f{ON}.
 
 \ttindextype{TAYLORAUTOEXPAND}{switch}
+\index{Switch ! \texttt{TAYLORAUTOEXPAND}}
+\index{Switches by package ! TAYLOR package ! \texttt{TAYLORAUTOEXPAND}}
 \item[\sw{TAYLORAUTOEXPAND}] \hypertarget{switch:TAYLORAUTOEXPAND}{} makes Taylor expressions ``contagious''
     in the sense that \f{TAYLORCOMBINE} tries to Taylor expand
     all non-Taylor subexpressions and to combine the result with the
     rest. Default is \f{OFF}.
 
 \ttindextype{TAYLORKEEPORIGINAL}{switch}\hypertarget{switch:TAYLORKEEPORIGINAL}{}
+\index{Switch ! \texttt{TAYLORKEEPORIGINAL}}
+\index{Switches by package ! TAYLOR package ! \texttt{TAYLORKEEPORIGINAL}}
 \item[\sw{TAYLORKEEPORIGINAL}] forces the
     package to keep the original expression, i.e.\ the expression
     that was Taylor expanded.  All operations performed on the
@@ -244,11 +252,15 @@ This package introduces a number of new switches:
     Default is \f{OFF}.
 
 \ttindextype{TAYLORPRINTORDER}{switch}\hypertarget{switch:TAYLORPRINTORDER}{}
+\index{Switch ! \texttt{TAYLORPRINTORDER}}
+\index{Switches by package ! TAYLOR package ! \texttt{TAYLORPRINTORDER}}
 \item[\sw{TAYLORPRINTORDER}] causes the
     remainder to be printed in big-$O$ notation.  Otherwise, three
     dots are printed. Default is \f{ON}.
 
 \ttindextype{VERBOSELOAD}{switch}
+\index{Switch ! \texttt{VERBOSELOAD}}
+\index{Switches by package ! TAYLOR package ! \texttt{VERBOSELOAD}}
 \item[\sw{VERBOSELOAD}] will cause
     \REDUCE{} to print some information when the Taylor package is
     loaded.  This switch is already present in \textsf{PSL} systems.

@@ -1,20 +1,21 @@
 \index{NORMFORM package}
 
+\newcommand{\rank}{\mathop{\mathrm{rank}}}
 
 \subsection{Introduction}
 When are two given matrices similar? Similar matrices have the same
-trace, determinant, \hspace{0in} characteristic polynomial, 
-\hspace{0in} and eigenvalues, \hspace{0in} but the matrices 
+trace, determinant, characteristic polynomial, 
+and eigenvalues, but the matrices 
 \begin{displaymath}
-\begin{array}{ccc} {\cal U} = \left( \begin{array}{cc} 0 & 1 \\ 0 & 
-0 \end{array} \right) & $and$ & {\cal V} = \left( \begin{array}{cc} 
-0 & 0 \\ 0 & 0 \end{array} \right) \end{array} 
+ \mathcal{U} = \begin{pmatrix} 0 & 1 \\ 0 & 0 \end{pmatrix} 
+  \quad\text{ and } \quad
+ \mathcal{V} = \begin{pmatrix} 0 & 0 \\ 0 & 0 \end{pmatrix}
 \end{displaymath}
 are the same in all four of the above but are not similar. Otherwise 
-there could exist a nonsingular ${\cal N} {\in} M_{2}$ (the set of 
-all $2 \times 2$ matrices) such that ${\cal U} = {\cal N} \, {\cal V}
-\, {\cal N}^{-1} = {\cal N} \, {\it 0} \, {\cal N}^{-1} = {\it 0}$, 
-which is a contradiction since ${\cal U} \neq {\it 0}$.
+there could exist a nonsingular $\mathcal{ N} {\in} M_{2}$ (the set of 
+all $2 \times 2$ matrices) such that $\mathcal{U} = \mathcal{N} \mathcal{V}
+\mathcal{N}^{-1} = \mathcal{N} \, \mathit{0} \, \mathcal{N}^{-1} = \mathit{0}$, 
+which is a contradiction since $\mathcal{U} \neq \mathit{0}$.
 
 Two matrices can look very different but still be similar. One 
 approach to determining whether two given matrices are similar is to 
@@ -33,14 +34,14 @@ forms of matrices:
  - jordan
 \end{verbatim}
  
-The package is loaded by {\tt load\_package normform;}
+The package is loaded by \texttt{load\_package normform;}
 
-By default all calculations are carried out in {\cal Q} (the rational 
-numbers). For {\tt smithex}, {\tt frobenius}, {\tt ratjordan}, 
-{\tt jordansymbolic}, and {\tt jordan}, this field can be extended. 
+By default all calculations are carried out in $\mathbf{Q}$ (the rational 
+numbers). For \f{smithex}, \f{frobenius}, \f{ratjordan}, 
+\f{jordansymbolic}, and \f{jordan}, this field can be extended. 
 Details are given in the respective sections.
 
-The {\tt frobenius}, {\tt ratjordan}, and {\tt jordansymbolic} normal 
+The \f{frobenius}, \f{ratjordan}, and \f{jordansymbolic} normal 
 forms can also be computed in a modular base. Again, details are given 
 in the respective sections.
 
@@ -51,117 +52,113 @@ packages written by T.M.L. Mulders and A.H.M. Levelt. These have been
 implemented in Maple [4].
 
 
-\subsection{smithex}
+\subsection{Smith normal form}
+\ttindextype{SMITHEX}{operator}
 
-\subsubsection{function}
+\begin{description}
+\item[Function]\mbox{}\\*
+\f{smithex}($\mathcal{A},\, x$) computes the Smith normal form $\mathcal{ S}$
+of the matrix $\mathcal{ A}$.
 
-{\tt smithex}(${\cal A},\, x$) computes the Smith normal form ${\cal S}$
-of the matrix ${\cal A}$.
+It returns \{$\mathcal{ S}, \mathcal{ P}, \mathcal{ P}^{-1}$\} where $\mathcal{ S}, 
+\mathcal{ P}$, and $\mathcal{ P}^{-1}$ are such that $\mathcal{ P S P}^{-1} = 
+\mathcal{ A}$.
 
-It returns \{${\cal S}, {\cal P}, {\cal P}^{-1}$\} where ${\cal S}, 
-{\cal P}$, and ${\cal P}^{-1}$ are such that ${\cal P S P}^{-1} = 
-{\cal A}$.
-
-${\cal A}$ is a rectangular matrix of univariate polynomials in $x$.
+$\mathcal{ A}$ is a rectangular matrix of univariate polynomials in $x$.
 
 $x$ is the variable name.
 
-\subsubsection{field extensions}
+\item[Field extensions]\mbox{}\\*
+Calculations are performed in $\mathbf{Q}$. To extend this field the 
+{\small ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}.
 
-Calculations are performed in ${\cal Q}$. To extend this field the 
-{\small ARNUM} package can be used. For details see {\it section} 8.
-
-\subsubsection{synopsis}
-
+\item[Synopsis:]\mbox{}\\*
 \begin{itemize}
-\item The Smith normal form ${\cal S}$ of an n by m matrix ${\cal A}$ 
-with univariate polynomial entries in $x$ over a field {\it F} is 
+\item The Smith normal form $\mathcal{S}$ of an n by m matrix $\mathcal{A}$ 
+with univariate polynomial entries in $x$ over a field $\mathbf{F}$ is 
 computed. That is, the polynomials are then regarded as elements of the
-{\it E}uclidean domain {\it F}($x$).
+{\it E}uclidean domain $\mathbf{F}(x)$.
 
-\item The Smith normal form is a diagonal matrix ${\cal S}$ where:
+\item The Smith normal form is a diagonal matrix $\mathcal{S}$ where:
 
   \begin{itemize}
-  \item rank(${\cal A}$) = number of nonzero rows (columns) of 
-        ${\cal S}$.
-  \item ${\cal S}(i,\, i)$ is a monic polynomial for 0 $< i \leq $
-        rank(${\cal A}$).
-  \item ${\cal S}(i,\, i)$ divides ${\cal S}(i+1,\, i+1)$ for 0 $< i
-        <$ rank(${\cal A}$).
-  \item ${\cal S}(i,\,i)$ is the greatest common divisor of all $i$ by 
-        $i$ minors of ${\cal A}$.
+  \item $\rank(\mathcal{A})$ = number of nonzero rows (columns) of 
+        $\mathcal{S}$.
+  \item $\mathcal{S}(i,i)$ is a monic polynomial for $0 < i \leq \rank(\mathcal{A})$.
+  \item $\mathcal{S}(i,i)$ divides $\mathcal{S}(i+1,i+1)$ for $0 < i < \rank(\mathcal{A})$.
+  \item $\mathcal{ S}(i,i)$ is the greatest common divisor of all $i$ by 
+        $i$ minors of $\mathcal{A}$.
   \end{itemize}
 
       Hence, if we have the case that $n = m$, as well as 
-      rank(${\cal A}$) $= n$, then product (${\cal S}(i,\,i), 
-      i=1\ldots n$) = det(${\cal A}$) / lcoeff(det$({\cal A}), \, x$).
-
+      $\rank(\mathcal{A}) = n$, then 
+      \begin{displaymath}
+      \prod_{i=1}^{n} \mathcal{ S}(i,i) = 
+      \frac{\det(\mathcal{A})} { \mathop{\mathrm{lcoeff}}(\det(\mathcal{A}),x)}.
+      \end{displaymath}
+      
 \item The Smith normal form is obtained by doing elementary row and 
       column operations. This includes interchanging rows (columns),
       multiplying through a row (column) by $-1$, and adding integral 
       multiples of one row (column) to another.
 
 \item Although the rank and determinant can be easily obtained from 
-      ${\cal S}$, this is not an efficient method for computing these 
+      $\mathcal{S}$, this is not an efficient method for computing these 
       quantities except that this may yield a partial factorization of 
-      det(${\cal A}$) without doing any explicit factorizations.
+      $\det(\mathcal{A})$ without doing any explicit factorizations.
 
 \end{itemize}
 
-\subsubsection{example}
-
-{\tt load\_package normform;}
-
-\begin{displaymath}
-{\cal A} = \left( \begin{array}{cc} x & x+1 \\ 0 & 3*x^2 \end{array} 
-\right)
-\end{displaymath}
-
-\begin{displaymath}
-\hspace{-0.5in}
-\begin{array}{ccc}
-{\tt smithex}({\cal A},\, x) & = & 
-\left\{ \left( \begin{array}{cc} 1 & 0 \\ 
-0 & x^3 \end{array} \right), \left( \begin{array}{cc} 1 & 0 \\ 3*x^2 
-& 1 \end{array} \right), \left( \begin{array}{cc} x & x+1 \\ -3 & -3 
-\end{array} \right) \right\} \end{array}
-\end{displaymath}
-
+\item[Example:]\mbox{}\\*
+\texttt{load\_package normform;}
+\begin{gather*}
+ \mathcal{A} = \begin{pmatrix} x & x+1 \\ 0 & 3*x^2 \end{pmatrix} \\[2mm]
+ \mathtt{smithex}(\mathcal{A}, x)  =  
+  \left\{
+    \begin{pmatrix} 1 & 0 \\ 0 & x^3 \end{pmatrix},
+    \begin{pmatrix} 1 & 0 \\ 3*x^2 & 1 \end{pmatrix}, 
+    \begin{pmatrix} x & x+1 \\ -3 & -3 \end{pmatrix} 
+  \right\}
+\end{gather*}
+\end{description}
 
 \subsection{smithex\_int}
+\ttindextype{SMITHEX\_INT}{operator}
 
-\subsubsection{function}
+\begin{description}
+\item[Function]\mbox{}\\*
 
-Given an $n$ by $m$ rectangular matrix ${\cal A}$ that contains 
-{\it only} integer entries, {\tt smithex\_int}(${\cal A}$) computes the
-Smith normal form ${\cal S}$ of ${\cal A}$.
+Given an $n$ by $m$ rectangular matrix $\mathcal{A}$ that contains 
+\emph{only} integer entries, \f{smithex\_int}($\mathcal{A}$) computes the
+Smith normal form $\mathcal{S}$ of $\mathcal{A}$.
 
-It returns \{${\cal S}, {\cal P}, {\cal P}^{-1}$\} where ${\cal S}, 
-{\cal P}$, and ${\cal P}^{-1}$ are such that ${\cal P S P}^{-1} = 
-{\cal A}$.
+It returns $\{\mathcal{S}, \mathcal{P}, \mathcal{ P}^{-1}\}$ where $\mathcal{S}$,
+$\mathcal{P}$, and $\mathcal{ P}^{-1}$ are such that $\mathcal{P S P}^{-1} = 
+\mathcal{A}$.
 
 
-\subsubsection{synopsis}
+\item[Synopsis]\mbox{}\\*
 
 \begin{itemize}
-\item The Smith normal form ${\cal S}$ of an $n$ by $m$ matrix 
-${\cal A}$ with integer entries is computed.
+\item The Smith normal form $\mathcal{ S}$ of an $n$ by $m$ matrix 
+$\mathcal{ A}$ with integer entries is computed.
 
-\item The Smith normal form is a diagonal matrix ${\cal S}$ where:
+\item The Smith normal form is a diagonal matrix $\mathcal{ S}$ where:
 
   \begin{itemize}
-  \item rank(${\cal A}$) = number of nonzero rows (columns) of 
-        ${\cal S}$.
-  \item sign(${\cal S}(i,\, i)$) = 1 for 0 $< i \leq $ rank(${\cal A}$).
-  \item ${\cal S}(i,\, i)$ divides ${\cal S}(i+1,\, i+1)$ for 0 $< i
-        <$ rank(${\cal A}$).
-  \item ${\cal S}(i,\,i)$ is the greatest common divisor of all $i$ by 
-        $i$ minors of ${\cal A}$.
+  \item $\rank(\mathcal{A})$ = number of nonzero rows (columns) of 
+        $\mathcal{S}$.
+  \item $\mathop{\mathrm{sign}}(\mathcal{S}(i,i)) = 1$ for $0 < i \leq \rank(\mathcal{A})$.
+  \item $\mathcal{S}(i,i)$ divides $\mathcal{S}(i+1,i+1)$ for $0< i < \rank(\mathcal{A})$.
+  \item $\mathcal{S}(i,i)$ is the greatest common divisor of all $i$ by 
+        $i$ minors of $\mathcal{A}$.
   \end{itemize}
 
       Hence, if we have the case that $n = m$, as well as 
-      rank(${\cal A}$) $= n$, then abs(det(${\cal A}$)) = 
-      product(${\cal S}(i,\,i),i=1\ldots n$).
+      rank($\mathcal{A}$) $= n$, then 
+      \begin{displaymath}
+        \left|\det(\mathcal{A})\right| = \prod_{i=1}^{n} \mathcal{S}(i,i) .
+      \end{displaymath}
       
 \item The Smith normal form is obtained by doing elementary row and 
       column operations. This includes interchanging rows (columns),
@@ -169,469 +166,428 @@ ${\cal A}$ with integer entries is computed.
       multiples of one row (column) to another. 
 \end{itemize}
 
-\subsubsection{example}
+\item[Example]\mbox{}\\*
 
-{\tt load\_package normform;}
-
-\begin{displaymath}
-{\cal A} = \left( \begin{array}{ccc} 9 & -36 & 30 \\ -36 & 192 & -180 \\
-30 & -180 & 180  \end{array} 
-\right)
-\end{displaymath}
-
-{\tt smithex\_int}(${\cal A}$) = 
-\begin{center}
-\begin{displaymath}
-\left\{ \left( \begin{array}{ccc} 3 & 0 & 0 \\ 0 & 12 & 0 \\ 0 & 0 & 60 
-\end{array} \right), \left( \begin{array}{ccc} -17 & -5 & -4 \\ 64 & 19 
-& 15 \\ -50 & -15 & -12 \end{array} \right), \left( \begin{array}{ccc} 
-1 & -24 & 30 \\ -1 & 25 & -30 \\ 0 & -1 & 1 \end{array} \right) \right\}
-\end{displaymath}
-\end{center}
-
+\texttt{load\_package normform;}
+\begin{gather*}
+ \mathcal{A} =
+    \begin{pmatrix} 9 & -36 & 30 \\ -36 & 192 & -180 \\ 30 & -180 & 180 \end{pmatrix} \\[2mm]
+\mathtt{smithex\_int}(\mathcal{A}) = 
+\left\{ \begin{pmatrix} 3 & 0 & 0 \\ 0 & 12 & 0 \\ 0 & 0 & 60 \end{pmatrix},
+        \begin{pmatrix} -17 & -5 & -4 \\ 64 & 19 & 15 \\ -50 & -15 & -12 \end{pmatrix},
+        \begin{pmatrix} 1 & -24 & 30 \\ -1 & 25 & -30 \\ 0 & -1 & 1 \end{pmatrix} \right\}
+\end{gather*}
+\end{description}
 
 \subsection{frobenius}
+\ttindextype{FROBENIUS}{operator}
 
-\subsubsection{function}
+\begin{description}
+\item[Function]\mbox{}\\*
 
-{\tt frobenius}(${\cal A}$) computes the Frobenius normal form 
-${\cal F}$ of the matrix ${\cal A}$.
+$\mathtt{frobenius}(\mathcal{A})$ computes the Frobenius normal form 
+$\mathcal{F}$ of the matrix $\mathcal{A}$.
 
-It returns \{${\cal F}, {\cal P}, {\cal P}^{-1}$\} where ${\cal F}, 
-{\cal P}$, and ${\cal P}^{-1}$ are such that ${\cal P F P}^{-1} = 
-{\cal A}$.
+It returns $\{\mathcal{F}, \mathcal{P}, \mathcal{P}^{-1}\}$ where $\mathcal{F}$, 
+$\mathcal{P}$, and $\mathcal{P}^{-1}$ are such that $\mathcal{P F P}^{-1} = 
+\mathcal{A}$.
 
-${\cal A}$ is a square matrix.
+$\mathcal{A}$ is a square matrix.
 
-\subsubsection{field extensions}
+\item[Field extensions]\mbox{}\\*
 
-Calculations are performed in ${\cal Q}$. To extend this field the 
-{\small ARNUM} package can be used. For details see {\it section} 8.
+Calculations are performed in $\mathcal{Q}$. To extend this field the 
+{\small ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}
 
-\subsubsection{modular arithmetic}
+\item[Modular arithmetic]\mbox{}\\*
 
-{\tt frobenius} can be calculated in a modular base. For details see 
-{\it section} 9.
+\f{frobenius} can be calculated in a modular base. For details see 
+subsection \ref{sec:normform-modular}.
 
-\subsubsection{synopsis}
+\item[Synopsis]\mbox{}\\*
 
 \begin{itemize}
-\item ${\cal F}$ has the following structure:
+\item $\mathcal{F}$ has the following structure:
       \begin{displaymath}
-      {\cal F} = \left( \begin{array}{cccc} {\cal C}{\it p_{1}} &  &  & 
-      \\  & {\cal C}{\it p_{2}} &  &  \\  &  & \ddots &  \\  &  &  & 
-      {\cal C}{\it p_{k}} \end{array} \right) 
+      \mathcal{F} = \begin{pmatrix} \mathcal{C}{p_{1}} &  &  & 
+      \\  & \mathcal{C}{p_{2}} &  &  \\  &  & \ddots &  \\  &  &  & 
+      \mathcal{C}{p_{k}} \end{pmatrix} 
       \end{displaymath}
-      where the ${\cal C}({\it p_{i}})$'s are companion matrices 
-      associated with polynomials ${\it p_{1}, p_{2}},\ldots, 
-      {\it p_{k}}$, with the property that ${\it p_{i}}$ divides 
-      ${\it p_{i+1}}$ for $i =1\ldots k-1$. All unmarked entries are 
+      where the $\mathcal{C}({p_{i}})$'s are companion matrices 
+      associated with polynomials $p_{1}, p_{2},\ldots, p_{k}$, 
+      with the property that $p_{i}$ divides 
+      $p_{i+1}$ for $i =1\ldots k-1$. All unmarked entries are 
       zero.
 
 \item The Frobenius normal form defined in this way is unique (ie: if 
-      we require that ${\it p_{i}}$ divides ${\it p_{i+1}}$ as above).
+      we require that $p_{i}$ divides $p_{i+1}$ as above).
 \end{itemize}
  
-\subsubsection{example}
+\item[Example]\mbox{}\\*
 
-{\tt load\_package normform;}
-
-\begin{displaymath}
-{\cal A} = \left( \begin{array}{cc} \frac{-x^2+y^2+y}{y} & 
-\frac{-x^2+x+y^2-y}{y} \\ \frac{-x^2-x+y^2+y}{y} & \frac{-x^2+x+y^2-y}
-{y} \end{array} \right)
-\end{displaymath}
-
-{\tt frobenius}(${\cal A}$) = 
-\begin{center}
-\begin{displaymath}
-\left\{ \left( \begin{array}{cc} 0 & \frac{x*(x^2-x-y^2+y)}{y} \\ 1 & 
-\frac{-2*x^2+x+2*y^2}{y} \end{array} \right), \left( \begin{array}{cc}
-1 & \frac{-x^2+y^2+y}{y} \\ 0 & \frac{-x^2-x+y^2+y}{y} \end{array} 
-\right), \left( \begin{array}{cc} 1 & \frac{-x^2+y^2+y}{x^2+x-y^2-y} \\
-0 & \frac{-y}{x^2+x-y^2-y} \end{array} \right) \right\}
-\end{displaymath}
-\end{center}
-
+\texttt{load\_package normform;}
+\begin{gather*}
+\mathcal{A} = \begin{pmatrix} \frac{-x^2+y^2+y}{y} & 
+\frac{-x^2+x+y^2-y}{y} \\[1mm] \frac{-x^2-x+y^2+y}{y} & \frac{-x^2+x+y^2-y}
+{y} \end{pmatrix} \\[2mm]
+\begin{split}
+\f{frobenius}(\mathcal{A}) &=  \\
+&\left\{
+   \begin{pmatrix} 0 & \frac{x*(x^2-x-y^2+y)}{y} \\[1mm]
+                   1 & \frac{-2*x^2+x+2*y^2}{y} \end{pmatrix},
+   \begin{pmatrix}
+     1 & \frac{-x^2+y^2+y}{y} \\[1mm] 0 & \frac{-x^2-x+y^2+y}{y}
+   \end{pmatrix},
+   \begin{pmatrix} 1 & \frac{-x^2+y^2+y}{x^2+x-y^2-y} \\[1mm]
+      0 & \frac{-y}{x^2+x-y^2-y} \end{pmatrix}
+ \right\}
+\end{split}
+\end{gather*}
+\end{description}
 
 \subsection{ratjordan}
+\ttindextype{RATJORDAN}{operator}
 
-\subsubsection{function}
+\begin{description}
+\item[Function]\mbox{}\\*
 
-{\tt ratjordan}(${\cal A}$) computes the rational Jordan normal form 
-${\cal R}$ of the matrix ${\cal A}$.
+\f{ratjordan}($\mathcal{A}$) computes the rational Jordan normal form 
+$\mathcal{R}$ of the matrix $\mathcal{A}$.
 
-It returns \{${\cal R}, {\cal P}, {\cal P}^{-1}$\} where ${\cal R}, 
-{\cal P}$, and ${\cal P}^{-1}$ are such that ${\cal P R P}^{-1} = 
-{\cal A}$.
+It returns $\{\mathcal{R}, \mathcal{P}, \mathcal{P}^{-1}\}$ where $\mathcal{R}$, 
+$\mathcal{P}$, and $\mathcal{P}^{-1}$ are such that $\mathcal{P R P}^{-1} = 
+\mathcal{A}$.
 
-${\cal A}$ is a square matrix.
+$\mathcal{A}$ is a square matrix.
 
-\subsubsection{field extensions}
+\item[Field extensions]\mbox{}\\*
 
-Calculations are performed in ${\cal Q}$. To extend this field the 
-{\small ARNUM} package can be used. For details see {\it section} 8.
+Calculations are performed in $\mathcal{Q}$. To extend this field the 
+{\small ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}.
 
-\subsubsection{modular arithmetic}
+\item[Modular arithmetic]\mbox{}\\*
 
-{\tt ratjordan} can be calculated in a modular base. For details see 
-{\it section} 9.
+\f{ratjordan} can be calculated in a modular base. For details see 
+subsection \ref{sec:normform-modular}.
 
-\subsubsection{synopsis}
+\item[Synopsis]\mbox{}\\*
 
 \begin{itemize}
-\item ${\cal R}$ has the following structure:
+\item $\mathcal{R}$ has the following structure:
       \begin{displaymath}
-      {\cal R} = \left( \begin{array}{cccccc} {\it r_{11}} \\  & 
-      {\it r_{12}} \\  &  & \ddots \\  &  &  & {\it r_{21}}  \\ &  &  
-      &  & {\it r_{22}} \\ &  &  &  &  & \ddots \end{array} \right) 
+      \mathcal{R} = \begin{pmatrix} r_{11} \\  & 
+      r_{12} \\  &  & \ddots \\  &  &  & r_{21}  \\ &  &  
+      &  &  r_{22} \\ &  &  &  &  & \ddots \end{pmatrix} 
       \end{displaymath}
 
-      The ${\it r_{ij}}$'s have the following shape:  
+      The $r_{ij}$'s have the following shape:  
       \begin{displaymath}
-      {\it r_{ij}} = \left( \begin{array}{ccccc} {\cal C}({\it p}) & 
-      {\cal I}  &  &  & \\  &  {\cal C}({\it p}) & {\cal I}  & & \\ & 
-      & \ddots & \ddots & \\ &  &  &  {\cal C}({\it p}) & {\cal I} \\ &
-      &  &  & {\cal C}({\it p}) \end{array} \right) 
+      r_{ij} = \begin{pmatrix} \mathcal{C}(p) & 
+      \mathcal{I}  &  &  & \\  &  \mathcal{C}(p) & \mathcal{I}  & & \\ & 
+      & \ddots & \ddots & \\ &  &  &  \mathcal{C}(p) & \mathcal{I} \\ &
+      &  &  & \mathcal{C}(p) \end{pmatrix} 
       \end{displaymath}
 
-      where there are e${\it ij}$ times ${\cal C}({\it p})$ blocks 
-      along the diagonal and ${\cal C}({\it p})$ is the companion 
-      matrix  associated with the irreducible polynomial ${\it p}$. All 
+      where there are e${ij}$ times $\mathcal{C}(p)$ blocks 
+      along the diagonal and $\mathcal{C}(p)$ is the companion 
+      matrix  associated with the irreducible polynomial $p$. All 
       unmarked entries are zero.
 \end{itemize}
 
-\subsubsection{example}
+\item[Example]\mbox{}\\*
 
-{\tt load\_package normform;}
-
-\begin{displaymath}
-{\cal A} = \left( \begin{array}{cc} x+y & 5 \\ y & x^2  \end{array} 
-\right)
-\end{displaymath}
-
-{\tt ratjordan}(${\cal A}$) = 
-\begin{center}
-\begin{displaymath}
-\left\{ \left( \begin{array}{cc} 0 & -x^3-x^2*y+5*y \\ 1 & 
-x^2+x+y \end{array} \right), \left( \begin{array}{cc}
-1 & x+y \\ 0 & y \end{array} \right), \left( \begin{array}{cc} 1 & 
-\frac{-(x+y)}{y} \\ 0 & \hspace{0.2in} \frac{1}{y} \end{array} \right) 
-\right\}
-\end{displaymath}
-\end{center}
-
+\texttt{load\_package normform;}
+\begin{gather*}
+\mathcal{A} = \begin{pmatrix} x+y & 5 \\ y & x^2  \end{pmatrix} \\[2mm]
+\begin{split}
+\f{ratjordan}(\mathcal{A}) &= \\ 
+& \left\{
+    \begin{pmatrix} 0 & -x^3-x^2*y+5*y \\[1mm] 1 & x^2+x+y \end{pmatrix},
+    \begin{pmatrix} 1 & x+y \\[1mm] 0 & y \end{pmatrix},
+    \begin{pmatrix} 1 & \frac{-(x+y)}{y} \\[1mm] 0 &  \frac{1}{y} \end{pmatrix} 
+  \right\}
+\end{split}
+\end{gather*}
+\end{description}
 
 \subsection{jordansymbolic}
+\ttindextype{JORDANSYMBOLIC}{operator}
 
-\subsubsection{function}
+\begin{description}
+\item[Function]\mbox{}\\*
 
-{\tt jordansymbolic}(${\cal A}$) \hspace{0in} computes the Jordan 
-normal form ${\cal J}$of the matrix ${\cal A}$.
+\f{jordansymbolic}$(\mathcal{A})$ computes the Jordan 
+normal form $\mathcal{J}$ of the matrix $\mathcal{A}$.
 
-It returns \{${\cal J}, {\cal L}, {\cal P}, {\cal P}^{-1}$\}, where 
-${\cal J}, {\cal P}$, and ${\cal P}^{-1}$ are such that ${\cal P J P}^
-{-1} = {\cal A}$. ${\cal L}$ = \{ {\it ll} , $\xi$ \}, where $\xi$ is 
-a name and {\it ll} is a list of irreducible factors of ${\it p}(\xi)$.
+It returns $\{\mathcal{J}, \mathcal{L}, \mathcal{P}, \mathcal{P}^{-1}\}$, where 
+$\mathcal{J}$, $\mathcal{P}$, and $\mathcal{P}^{-1}$ are such that $\mathcal{P J P}^
+{-1} = \mathcal{A}$. $\mathcal{L} = \{ ll , \xi \}$, where $\xi$ is 
+a name and $ll$ is a list of irreducible factors of $p(\xi)$.
 
-${\cal A}$ is a square matrix.
+$\mathcal{A}$ is a square matrix.
 
-\subsubsection{field extensions}
+\item[Field extensions]\mbox{}\\*
 
-Calculations are performed in ${\cal Q}$. To extend this field the 
-{\small ARNUM} package can be used. For details see {\it section} 8.
+Calculations are performed in $\mathcal{Q}$. To extend this field the 
+{\small ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}.
 
-\subsubsection{modular arithmetic}
+\item[Modular arithmetic]\mbox{}\\*
 
 {\tt jordansymbolic} can be calculated in a modular base. For details 
-see {\it subsection} 9.
+see subsection \ref{sec:normform-modular}.
 
-\subsubsection{extras}
+\item[Extras]\mbox{}\\*
 
-If using {\tt xr}, the X interface for \REDUCE, the appearance of the 
-output can be improved by switching {\tt on looking\_good;}. This 
-converts all lambda to $\xi$ and improves the indexing, eg: lambda12 
-$\Rightarrow \xi_{12}$. The example ({\it section} 6.6) shows the 
+\ttindextype{LOOKING\_GOOD}{switch}
+\index{Switch ! \texttt{LOOKING\_GOOD}}
+\index{Switches by package ! NORMFORM package ! \texttt{LOOKING\_GOOD}}
+If using \texttt{xr}, the X interface for \REDUCE, the appearance of the 
+output can be improved by setting the switch \sw{looking\_good} to on. This 
+converts all lambda to $\xi$ and improves the indexing, e.g., \texttt{lambda12} 
+$\Rightarrow \xi_{12}$. The example below shows the 
 output when this switch is on.
 
-\subsubsection{synopsis}
+\item[Synopsis]\mbox{}\\*
 
 \begin{itemize}
-\item A {\it Jordan block} ${\jmath}_{k}(\lambda)$ is a $k$ by $k$ 
+\item A \emph{Jordan block} ${\jmath}_{k}(\lambda)$ is a $k$ by $k$ 
       upper triangular matrix of the form:
-
+%
       \begin{displaymath}
-      {\jmath}_{k}(\lambda) = \left( \begin{array}{ccccc} \lambda & 1 
+      {\jmath}_{k}(\lambda) = \begin{pmatrix} \lambda & 1 
       &  &  & \\  &  \lambda & 1  & & \\ & 
       & \ddots & \ddots & \\ &  &  &  \lambda & 1 \\ &
-      &  &  & \lambda \end{array} \right) 
+      &  &  & \lambda \end{pmatrix} 
       \end{displaymath}
-      
+%     
       There are $k-1$ terms ``$+1$'' in the superdiagonal; the scalar 
       $\lambda$ appears $k$ times on the main diagonal. All other 
       matrix entries are zero, and ${\jmath}_{1}(\lambda) = (\lambda)$.
 
-\item A Jordan matrix ${\cal J} \in M_{n}$ (the set of all $n$ by $n$ 
-      matrices) is a direct sum of {\it jordan blocks}.
-
+\item A Jordan matrix $\mathcal{J} \in M_{n}$ (the set of all $n$ by $n$ 
+      matrices) is a direct sum of \emph{jordan blocks}
+%
       \begin{displaymath}
-      {\cal J} = \left( \begin{array}{cccc} \jmath_{n_1}(\lambda_{1}) 
+      \mathcal{J} = \begin{pmatrix} \jmath_{n_1}(\lambda_{1}) 
       \\  & \jmath_{n_2}(\lambda_{2}) \\ & & \ddots \\ & & & 
-      \jmath_{n_k}(\lambda_{k}) \end{array} \right),
-      {\it n}_{1}+{\it n}_{2}+\cdots +{\it n}_{k} = n
+      \jmath_{n_k}(\lambda_{k}) \end{pmatrix} ,
+      n_{1}+n_{2}+\cdots + n_{k} = n
       \end{displaymath}
-
-      in which the orders ${\it n}_{i}$ may not be distinct and the 
+%
+      in which the orders $n_{i}$ may not be distinct and the 
       values ${\lambda_{i}}$ need not be distinct.
 
 \item Here ${\lambda}$ is a zero of the characteristic polynomial 
-      ${\it p}$ of ${\cal A}$. If ${\it p}$ does not split completely, 
-      symbolic names are chosen for the missing zeroes of ${\it p}$.
+      $p$ of $\mathcal{A}$. If $p$ does not split completely, 
+      symbolic names are chosen for the missing zeroes of $p$.
       If, by some means, one knows such missing zeroes, they can be 
       substituted for the symbolic names. For this, 
-      {\tt jordansymbolic} actually returns $\{ {\cal J,L,P,P}^{-1} \}$.
-      ${\cal J}$ is the Jordan normal form of ${\cal A}$ (using 
-      symbolic names if necessary). ${\cal L} = \{ {\it ll}, \xi \}$, 
+      \f{jordansymbolic} actually returns $\{ \mathcal{J,L,P,P}^{-1} \}$.
+      $\mathcal{J}$ is the Jordan normal form of $\mathcal{A}$ (using 
+      symbolic names if necessary). $\mathcal{L} = \{ {\it ll}, \xi \}$, 
       where $\xi$ is a name and ${\it ll}$ is a list of irreducible 
-      factors of ${\it p}(\xi)$. If symbolic names are used then 
-      ${\xi}_{ij}$ is a zero of ${\it ll}_{i}$. ${\cal P}$ and 
-      ${\cal P}^{-1}$ are as above.
+      factors of $p(\xi)$. If symbolic names are used then 
+      ${\xi}_{ij}$ is a zero of $ll_{i}$. $\mathcal{P}$ and 
+      $\mathcal{P}^{-1}$ are as above.
 \end{itemize}      
 
-\subsubsection{example}
+\item[Example]\mbox{}\\*
 
-{\tt load\_package normform;}\\
-{\tt on looking\_good;} 
-
-\begin{displaymath}
-{\cal A} = \left( \begin{array}{cc} 1 & y \\ y^2 & 3  \end{array} 
-\right)
-\end{displaymath}
-
-{\tt jordansymbolic}(${\cal A}$) = 
-\begin{eqnarray}
- & & \left\{ \left( \begin{array}{cc} \xi_{11} & 0 \\ 0 & \xi_{12}
-\end{array} \right) ,
-\left\{ \left\{ -y^3+\xi^2-4*\xi+3 \right\}, \xi \right\}, \right. 
-\nonumber \\ & & \hspace{0.1in} \left. \left( \begin{array}{cc} 
-\xi_{11} -3 & \xi_{12} -3 \\ y^2 & y^2 
-\end{array} \right), \left( \begin{array}{cc} \frac{\xi_{11} -2}
-{2*(y^3-1)} & \frac{\xi_{11} + y^3 -1}{2*y^2*(y^3+1)} \\ 
-\frac{\xi_{12} -2}{2*(y^3-1)} & \frac{\xi_{12}+y^3-1}{2*y^2*(y^3+1)}
-\end{array} \right) \right\} \nonumber
-\end{eqnarray}
-
-\vspace{0.2in}
-\begin{flushleft}
-\begin{math}
-{\tt solve(-y^3+xi^2-4*xi+3,xi)}${\tt ;}$
-\end{math}
-\end{flushleft}
-
-\vspace{0.1in}
-\begin{center}
-\begin{math}
-\{ \xi = \sqrt{y^3+1} + 2,\, \xi = -\sqrt{y^3+1}+2 \}
-\end{math}
-\end{center}
-
-\vspace{0.1in}
-\begin{math}
-{\tt {\cal J}  = sub}{\tt (}{\tt \{ xi(1,1)=sqrt(y^3+1)+2,\, xi(1,2) = 
--sqrt(y^3+1)+2\},} 
-\end{math}
-\\ \hspace*{0.29in} {\tt first  jordansymbolic (${\cal A}$));} 
- 
-\vspace{0.2in}
-\begin{displaymath}
-{\cal J} = \left( \begin{array}{cc} \sqrt{y^3+1} + 2 & 0 \\ 0 & 
--\sqrt{y^3+1} + 2 \end{array} \right)
-\end{displaymath}
-
-\vspace{0.2in}
+\texttt{load\_package normform;}\\
+\texttt{on looking\_good;} 
+\begin{gather*}
+\mathcal{A} = \begin{pmatrix} 1 & y \\ y^2 & 3  \end{pmatrix}  \\[2mm]
+\begin{split}
+\f{jordansymbolic}(\mathcal{A}) &= \\ 
+ & \left\{
+     \begin{pmatrix} \xi_{11} & 0 \\ 0 & \xi_{12} \end{pmatrix} ,
+     \left\{ \left\{ -y^3+\xi^2-4*\xi+3 \right\}, \xi \right\}, \right. \\
+ & \hspace{0.1in} \left.
+       \begin{pmatrix} \xi_{11} -3 & \xi_{12} -3 \\[1mm] y^2 & y^2 \end{pmatrix},
+       \begin{pmatrix} \frac{\xi_{11} -2} {2*(y^3-1)}
+                 & \frac{\xi_{11} + y^3 -1}{2*y^2*(y^3+1)} \\[1mm]
+                \frac{\xi_{12} -2}{2*(y^3-1)}
+                 & \frac{\xi_{12}+y^3-1}{2*y^2*(y^3+1)}
+       \end{pmatrix}
+  \right\} 
+\end{split} \\
+\intertext{\texttt{solve(-y\^{}3+xi\^{}2-4*xi+3,xi);}}
+\{ \xi = \sqrt{y^3+1} + 2,\, \xi = -\sqrt{y^3+1}+2 \} \\
+\intertext{\texttt{J = sub(\{xi(1,1)=sqrt(y\^{}3+1)+2, xi(1,2)=-sqrt(y\^{}3+1)+2\},
+   \mbox{}\ \ \ \ \ \ \ \ first  jordansymbolic (A))}}
+%
+\mathcal{J} = \begin{pmatrix} \sqrt{y^3+1} + 2 & 0 \\ 0 & 
+-\sqrt{y^3+1} + 2 \end{pmatrix}
+\end{gather*}
 For a similar example ot this in standard {\REDUCE} (ie: not using 
-{\tt xr}), see the {\it normform.log} file.
-
-\vspace{0.5in}
+\texttt{xr}), see the \texttt{normform.rlg} file.
+\end{description}
 
 \subsection{jordan}
+\ttindextype{JORDAN}{operator}
 
-\subsubsection{function}
+\begin{description}
+\item[Function]\mbox{}\\*
 
-{\tt jordan}(${\cal A}$) computes the Jordan normal form 
-${\cal J}$ of the matrix ${\cal A}$.
+\f{jordan}($\mathcal{A}$) computes the Jordan normal form 
+$\mathcal{J}$ of the matrix $\mathcal{A}$.
 
-It returns \{${\cal J}, {\cal P}, {\cal P}^{-1}$\}, where 
-${\cal J}, {\cal P}$, and ${\cal P}^{-1}$ are such that ${\cal P J P}^
-{-1} = {\cal A}$. 
+It returns $\{\mathcal{J}, \mathcal{P}, \mathcal{P}^{-1}\}$, where 
+$\mathcal{J}$, $\mathcal{P}$, and $\mathcal{P}^{-1}$ are such that $\mathcal{P J P}^
+{-1} = \mathcal{A}$. 
 
-${\cal A}$ is a square matrix.
+$\mathcal{A}$ is a square matrix.
 
-\subsubsection{field extensions}
+\item[Field extensions]\mbox{}\\*
 
-Calculations are performed in ${\cal Q}$. To extend this field the 
-{\small ARNUM} package can be used. For details see {\it section} 8.
+Calculations are performed in $\mathcal{Q}$. To extend this field the 
+{\small ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}.
 
-\subsubsection{note}
-In certain polynomial cases {\tt fullroots} is turned on to compute the 
+\item[Note]\mbox{}\\*
+\ttindextype{FULLROOTS}{switch}
+In certain polynomial cases the switch \sw{fullroots} is turned on to compute the 
 zeroes. This can lead to the calculation taking a long time, as well as 
-the output being very large. In this case a message {\tt ***** WARNING: 
-fullroots turned on. May take a while.} will be printed. It may be 
-better to kill the calculation and compute {\tt jordansymbolic} instead.
+the output being very large. In this case a message \\
+\verb|***** WARNING: fullroots turned on. May take a while.|\\
+will be printed. It may be 
+better to kill the calculation and compute \f{jordansymbolic} instead.
 
-\subsubsection{synopsis}
+\item[Synopsis]\mbox{}\\*
 
 \begin{itemize}
-\item The Jordan normal form ${\cal J}$ with entries in an algebraic 
-      extension of ${\cal Q}$ is computed.
+\item The Jordan normal form $\mathcal{J}$ with entries in an algebraic 
+      extension of $\mathcal{Q}$ is computed.
 
-\item A {\it Jordan block} ${\jmath}_{k}(\lambda)$ is a $k$ by $k$ 
+\item A \emph{Jordan block} ${\jmath}_{k}(\lambda)$ is a $k$ by $k$ 
       upper triangular matrix of the form:
-
+%
       \begin{displaymath}
-      {\jmath}_{k}(\lambda) = \left( \begin{array}{ccccc} \lambda & 1 
+      {\jmath}_{k}(\lambda) = \begin{pmatrix} \lambda & 1 
       &  &  & \\  &  \lambda & 1  & & \\ & 
       & \ddots & \ddots & \\ &  &  &  \lambda & 1 \\ &
-      &  &  & \lambda \end{array} \right) 
+      &  &  & \lambda \end{pmatrix} 
       \end{displaymath}
-      
+%      
       There are $k-1$ terms ``$+1$'' in the superdiagonal; the scalar 
       $\lambda$ appears $k$ times on the main diagonal. All other 
       matrix entries are zero, and ${\jmath}_{1}(\lambda) = (\lambda)$.
 
-\item A Jordan matrix ${\cal J} \in M_{n}$ (the set of all $n$ by $n$ 
+\item A Jordan matrix $\mathcal{J} \in M_{n}$ (the set of all $n$ by $n$ 
       matrices) is a direct sum of {\it jordan blocks}.
-
+%
       \begin{displaymath}
-      {\cal J} = \left( \begin{array}{cccc} \jmath_{n_1}(\lambda_{1}) 
+      \mathcal{J} = \begin{pmatrix} \jmath_{n_1}(\lambda_{1}) 
       \\  & \jmath_{n_2}(\lambda_{2}) \\ & & \ddots \\ & & & 
-      \jmath_{n_k}(\lambda_{k}) \end{array} \right),
-      {\it n}_{1}+{\it n}_{2}+\cdots +{\it n}_{k} = n
+      \jmath_{n_k}(\lambda_{k}) \end{pmatrix},
+       n_{1}+ n_{2}+\cdots +n_{k} = n
       \end{displaymath}
-
-      in which the orders ${\it n}_{i}$ may not be distinct and the 
+%
+      in which the orders $n_{i}$ may not be distinct and the 
       values ${\lambda_{i}}$ need not be distinct.
 
 \item Here ${\lambda}$ is a zero of the characteristic polynomial 
-      ${\it p}$ of ${\cal A}$. The zeroes of the characteristic 
+      $p$ of $\mathcal{A}$. The zeroes of the characteristic 
       polynomial are computed exactly, if possible. Otherwise they are 
       approximated by floating point numbers.
 \end{itemize}      
 
-\subsubsection{example}
+\item[Example]\mbox{}\\*
 
-{\tt load\_package normform;}
-
-\begin{displaymath}
-{\cal A} = \left( \begin{array}{cccccc} -9 & -21 & -15 & 4 & 2 & 0 \\
+\texttt{load\_package normform;}
+\begin{gather*}
+\mathcal{A} = \begin{pmatrix} -9 & -21 & -15 & 4 & 2 & 0 \\
 -10 & 21 & -14 & 4 & 2 & 0 \\ -8 & 16 & -11 & 4 & 2 & 0 \\ -6 & 12 & -9 
 & 3 & 3 & 0 \\ -4 & 8 & -6 & 0 & 5 & 0 \\ -2 & 4 & -3 & 0 & 1 & 3 
-\end{array} \right)
-\end{displaymath}
-
-\begin{flushleft}
-{\tt ${\cal J}$ = first jordan$({\cal A})$;}
-\end{flushleft}
-  
-\begin{displaymath}
-{\cal J} = \left( \begin{array}{cccccc} 3 & 0 & 0 & 0 & 0 & 0 \\ 0 & 3 
+\end{pmatrix} \\ 
+\intertext{\texttt{J = first jordan(A);}}
+%
+\mathcal{J} = \begin{pmatrix} 3 & 0 & 0 & 0 & 0 & 0 \\ 0 & 3 
 & 0 & 0 & 0 & 0 \\ 0 & 0 & 1 & 1 & 0 & 0 \\ 0 & 0 & 0 & 1 & 0 & 0 \\
  0 & 0 & 0 & 0 & i+2 & 0 \\ 0 & 0 & 0 & 0 & 0 & -i+2 
-\end{array} \right)
-\end{displaymath}
+\end{pmatrix}
+\end{gather*}
+\end{description}
 
-\newpage
 
+\subsection{Algebraic extensions: Using the \textsc{arnum} package}
+\label{sec:normform-arnum}
 
-\subsection{arnum}
+The package is loaded by the command \texttt{load\_package arnum;}. The algebraic 
+field $\mathbf{Q}$ can now be extended. For example, 
+\texttt{defpoly sqrt2**2-2;} will extend it to include ${\sqrt{2}}$ (defined here by 
+\texttt{sqrt2}). The {\small ARNUM} package was written by Eberhard 
+Schr\"ufer and is described in section \ref{sec:package-arnum}.
 
-The package is loaded by {\tt load\_package arnum;}. The algebraic 
-field ${\cal Q}$ can now be extended. For example, {\tt defpoly 
-sqrt2**2-2;} will extend it to include ${\sqrt{2}}$ (defined here by 
-{\tt sqrt2}). The {\small ARNUM} package was written by Eberhard 
-Schr\"ufer and is described in the {\it arnum.tex} file.
+\subsubsection{Example}
 
-\subsubsection{example}
-
-{\tt load\_package normform;} \\
-{\tt load\_package arnum;} \\
-{\tt defpoly sqrt2**2-2;} \\
+\texttt{load\_package normform;} \\
+\texttt{load\_package arnum;} \\
+\texttt{defpoly sqrt2**2-2;} \\
 (sqrt2 now changed to ${\sqrt{2}}$ for looks!) 
-\vspace{0.2in}
-
-\begin{displaymath}
-{\cal A} = \left( \begin{array}{ccc} 4*{\sqrt{2}}-6 & -4*{\sqrt{2}}+7 &
+\begin{gather*}
+\mathcal{A} = \begin{pmatrix} 4*{\sqrt{2}}-6 & -4*{\sqrt{2}}+7 &
 -3*{\sqrt{2}}+6 \\ 3*{\sqrt{2}}-6 & -3*{\sqrt{2}}+7 & -3*{\sqrt{2}}+6 
-\\ 3*{\sqrt{2}} & 1-3*{\sqrt{2}} & -2*{\sqrt{2}}   \end{array} \right)
-\end{displaymath} 
-\vspace{0.2in}
-
-\begin{eqnarray}
-{\tt ratjordan}({\cal A}) & = & 
-\left\{ \left( \begin{array}{ccc} {\sqrt{2}} & 0 & 0 \\ 0 & {\sqrt{2}} 
-& 0 \\ 0 & 0 & -3*{\sqrt{2}}+1 \end{array} \right), \right. \nonumber 
-\\ & & \hspace{0.1in} \left. \left( \begin{array}{ccc} 7*{\sqrt{2}}-6 
-& \frac{2*{\sqrt{2}}-49}{31} & \frac{-21*{\sqrt{2}}+18}{31} \\ 
-3*{\sqrt{2}}-6 & \frac{21*{\sqrt{2}}-18}{31} & \frac{-21*{\sqrt{2}}+18}
-{31} \\ 3*{\sqrt{2}}+1 & \frac{-3*{\sqrt{2}}+24}{31} & 
-\frac{3*{\sqrt{2}}-24}{31} \end{array} \right), \right. \nonumber \\ & 
-& \hspace{0.1in} \left. \left( \begin{array}{ccc} 0 & {\sqrt{2}}+1 & 
+\\ 3*{\sqrt{2}} & 1-3*{\sqrt{2}} & -2*{\sqrt{2}}   \end{pmatrix} \\[2mm]
+%
+\begin{split}
+\f{ratjordan}(\mathcal{A})  = & 
+\left\{ \begin{pmatrix} {\sqrt{2}} & 0 & 0 \\ 0 & {\sqrt{2}} 
+& 0 \\ 0 & 0 & -3*{\sqrt{2}}+1 \end{pmatrix}, \right. \\[2mm]
+ & \hspace{0.1in} \left. \begin{pmatrix}
+ 7*{\sqrt{2}}-6 & \frac{2*{\sqrt{2}}-49}{31} & \frac{-21*{\sqrt{2}}+18}{31} \\[1mm] 
+ 3*{\sqrt{2}}-6 & \frac{21*{\sqrt{2}}-18}{31} & \frac{-21*{\sqrt{2}}+18}{31} \\[1mm]
+ 3*{\sqrt{2}}+1 & \frac{-3*{\sqrt{2}}+24}{31} & \frac{3*{\sqrt{2}}-24}{31}
+ \end{pmatrix}, \right. \\[2mm]
+& \hspace{0.1in} \left. \begin{pmatrix} 0 & {\sqrt{2}}+1 & 
 1 \\ -1 & 4*{\sqrt{2}}+9 & 4*{\sqrt{2}} \\ -1 & -\frac{1}{6}*{\sqrt{2}}
-+1 & 1 \end{array} \right) \right\} \nonumber 
-\end{eqnarray}
++1 & 1 \end{pmatrix} \right\} 
+\end{split}
+\end{gather*}
 
-\newpage
+%\newpage
 
 
-\subsection{modular}
+\subsection{Modular arithmetic}
+\label{sec:normform-modular}
 
-Calculations can be performed in a modular base by switching {\tt on 
-modular;}. The base can then be set by {\tt setmod p;} (p a prime). The 
-normal form will then have entries in ${\cal Z}/$p${\cal Z}$. 
+\ttindextype{MODULAR}{switch}
+\ttindextype{BALANCED\_MOD}{switch}
+Calculations can be performed in a modular base by setting the switch \sw{modular}
+to on. The base can then be set by \texttt{setmod p;} (p a prime). The 
+normal form will then have entries in $\mathcal{Z}/$p$\mathcal{Z}$. 
 
-By also switching {\tt on balanced\_mod;} the output will be shown using
+By also switching on \sw{balanced\_mod} the output will be shown using
 a symmetric modular representation. 
 
-Information on this modular manipulation can be found in {\it chapter} 
-9 (Polynomials and Rationals) of the {\REDUCE}  User's Manual [5].
+Information on this modular manipulation can be found in chapter \ref{sec:core-polyrat}.
 
-\subsubsection{example}
+\subsubsection{Example}
 
-{\tt load\_package normform;} \\
-{\tt on modular;} \\
-{\tt setmod 23;} 
-\vspace{0.1in}
+\texttt{load\_package normform;} \\
+\texttt{on modular;} \\
+\texttt{setmod 23;} 
+\begin{gather*}
+\mathcal{A} = \begin{pmatrix} 10 & 18 \\ 17 & 20 \end{pmatrix} \\[2mm]
+\begin{split}
+\f{jordansymbolic}(\mathcal{A}) &= \\ 
+&\left\{
+ \begin{pmatrix} 18 & 0 \\ 0 & 12 \end{pmatrix},
+ \left\{ \left\{ \lambda + 5, \lambda + 11  \right\}, \lambda \right\}, 
+         \begin{pmatrix} 15 & 9 \\ 22 & 1 \end{pmatrix},
+         \begin{pmatrix} 1 & 14 \\ 1 & 15 \end{pmatrix} \right\}
+\end{split} \\
+\intertext{\texttt{on balanced\_mod;}}
+\begin{split}
+\f{jordansymbolic}(\mathcal{A}) & = \\
+&\left\{
+  \begin{pmatrix} -5 & 0 \\ 0 & -11 \end{pmatrix},
+  \left\{ \left\{ \lambda + 5, \lambda + 11  \right\}, \lambda \right\}, 
+  \begin{pmatrix} -8 & 9 \\ -1 & 1 \end{pmatrix},
+  \begin{pmatrix} 1 & -9 \\ 1 & -8 \end{pmatrix} \right\}
+\end{split}
+\end{gather*}
 
-\begin{displaymath}
-{\cal A} = \left( \begin{array}{cc} 10 & 18 \\ 17 & 20 \end{array} 
-\right)
-\end{displaymath}
-
-{\tt jordansymbolic}(${\cal A}$) = 
-\begin{center}
-\begin{displaymath}
-\left\{ \left( \begin{array}{cc} 18 & 0 \\ 0 & 12 \end{array} \right),
-\left\{ \left\{ \lambda + 5, \lambda + 11  \right\}, \lambda \right\}, 
-\left( \begin{array}{cc} 15 & 9 \\ 22 & 1 \end{array} \right), \left( 
-\begin{array}{cc} 1 & 14 \\ 1 & 15 \end{array} \right) \right\}
-\end{displaymath}
-\end{center}
-\vspace{0.2in}
-
-{\tt on balanced\_mod;}
-\vspace{0.2in}
-
-{\tt jordansymbolic}(${\cal A}$) = 
-\begin{center}
-\begin{displaymath}
-\left\{ \left( \begin{array}{cc} -5 & 0 \\ 0 & -11 \end{array} \right),
-\left\{ \left\{ \lambda + 5, \lambda + 11  \right\}, \lambda \right\}, 
-\left( \begin{array}{cc} -8 & 9 \\ -1 & 1 \end{array} \right), \left( 
-\begin{array}{cc} 1 & -9 \\ 1 & -8 \end{array} \right) \right\}
-\end{displaymath}
-\end{center}
-
-\newpage
+%\newpage
 \begin{thebibliography}{6}
 \bibitem{MulLev} T.M.L.Mulders and A.H.M. Levelt: {\it The Maple 
         normform and Normform packages.} (1993)

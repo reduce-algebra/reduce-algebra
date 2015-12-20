@@ -244,6 +244,9 @@ The relevant switches are as follows:
 
 \subsubsection{ALLFAC Switch}
 \hypertarget{switch:ALLFAC}{}
+\ttindextype{ALLFAC}{switch}
+\index{Switch ! \texttt{ALLFAC}}
+\index{Switches by package ! 000@REDUCE Core ! \texttt{ALLFAC}}
 
 This switch will cause the system to search the whole expression, or any
 sub-expression enclosed in parentheses, for simple multiplicative factors
@@ -264,6 +267,9 @@ where otherwise stated.
 
 \subsubsection{DIV Switch}\ttindex{DIV}
 \hypertarget{switch:DIV}{}
+\ttindextype{DIV}{switch}
+\index{Switch ! \texttt{DIV}}
+\index{Switches by package ! 000@REDUCE Core ! \texttt{DIV}}
 
 This switch makes the system search the denominator of an expression for
 simple factors that it divides into the numerator, so that rational
@@ -277,6 +283,9 @@ expression would print as
 
 \subsubsection{LIST Switch}\ttindex{LIST}
 \hypertarget{switch:LIST}{}
+\ttindextype{LIST}{switch}
+\index{Switch ! \texttt{LIST}}
+\index{Switches by package ! 000@REDUCE Core ! \texttt{LIST}}
 
 This switch causes the system to print each term in any sum on a separate
 line. With \sw{LIST} on, our expression prints as
@@ -295,6 +304,9 @@ line. With \sw{LIST} on, our expression prints as
 
 \subsubsection{NOSPLIT Switch}\ttindex{NOSPLIT}
 \hypertarget{switch:NOSPLIT}{}
+\ttindextype{NOSPLIT}{switch}
+\index{Switch ! \texttt{NOSPLIT}}
+\index{Switches by package ! 000@REDUCE Core ! \texttt{NOSPLIT}}
 
 Under normal circumstances, the printing routines try to break an expression
 across lines at a natural point.  This is a fairly expensive process.  If
@@ -304,6 +316,9 @@ can speed up the printing of expressions by turning off the switch
 
 \subsubsection{RAT Switch}\ttindex{RAT}
 \hypertarget{switch:RAT}{}
+\ttindextype{RAT}{switch}
+\index{Switch ! \texttt{RAT}}
+\index{Switches by package ! 000@REDUCE Core ! \texttt{RAT}}
 
 This switch is only useful with expressions in which variables are
 factored with \texttt{FACTOR}. With this mode, the overall denominator of the
@@ -337,6 +352,9 @@ off we retrieve the original structure
 
 \subsubsection{RATPRI Switch}\ttindex{RATPRI}
 \hypertarget{switch:RATPRI}{}
+\ttindextype{RATPRI}{switch}
+\index{Switch ! \texttt{RATPRI}}
+\index{Switches by package ! 000@REDUCE Core ! \texttt{RATPRI}}
 
 If the numerator and denominator of an expression can each be printed in
 one line, the output routines will print them in a two dimensional
@@ -352,6 +370,9 @@ form.
 
 \subsubsection{REVPRI Switch}\ttindex{REVPRI}
 \hypertarget{switch:REVPRI}{}
+\ttindextype{REVPRI}{switch}
+\index{Switch ! \texttt{REVPRI}}
+\index{Switches by package ! 000@REDUCE Core ! \texttt{REVPRI}}
 
 The normal ordering of terms in output is from highest to lowest power.
 In some situations (e.g., when a power series is output), the opposite
@@ -482,13 +503,17 @@ command, is as follows:
 
 \end{verbatim}
 \end{enumerate}
+
 \subsection{Suppression of Zeros}
 \hypertarget{switch:NERO}{}
+\ttindextype{NERO}{switch}
+\index{Switch ! \texttt{NERO}}
+\index{Switches by package ! 000@REDUCE Core ! \texttt{NREO}}
 
 It is sometimes annoying to have zero assignments (i.e. assignments of the
 form \texttt{<expression> := 0}) printed, especially in printing large arrays
 with many zero elements.  The output from such assignments can be
-suppressed by turning on the switch \sw{NERO}.\ttindex{NERO}
+suppressed by turning on the switch \sw{NERO}.\ttindextype{NERO}{switch}
 
 \subsection{{FORTRAN} Style Output Of Expressions}
 
@@ -506,6 +531,9 @@ compatible files for numerical processing.
 
 \hypertarget{reserved:CARD_NO}{}
 \hypertarget{switch:FORT}{}
+\ttindextype{FORT}{switch}
+\index{Switch ! \texttt{FORT}}
+\index{Switches by package ! 000@REDUCE Core ! \texttt{FORT}}
 First, when the switch \sw{FORT}\ttindex{FORT} is on, the system will
 print expressions in a FORTRAN notation.  Expressions begin in column
 seven.  If an expression extends over one line, a continuation mark (.)
@@ -813,6 +841,8 @@ if \sw{RATARG} is on.
 
 \hypertarget{reserved:HIGH_POW}{}
 \hypertarget{reserved:LOW_POW}{}
+\index{Reserved variable ! \texttt{LOW\_POW}}
+\index{Reserved variable ! \texttt{HIGH\_POW}}
 The length of the result of \texttt{COEFF} is the highest power of \texttt{VAR}
 encountered plus 1.  In the above examples it is 7.  In addition, the
 variable \var{HIGH\_POW}\ttindex{HIGH\_POW} is set to the highest non-zero
