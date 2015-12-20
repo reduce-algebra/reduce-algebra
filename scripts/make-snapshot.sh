@@ -14,6 +14,7 @@
 # to time. See comments lower down about its use in virtual machines.
 
 HERE=`pwd`
+today=`date +%Y%m%d`
 
 # The ip address or name of the machine where the generated archive is to go
 DESTMC=192.168.1.110
@@ -33,7 +34,7 @@ DESTDIR=snapshots
 # BUILD is the location within a full Reduce source tree where scripts
 #  to make a release for $SYS live.
 # OUTDIR is the directory within $BUILD where release packages are made.
-# OUTFILES is a list of the files in OUTDIR that are wanted.
+# OUTFILES is a file or list of the files in OUTDIR that are wanted.
 
 case `uname -a`
 in
@@ -54,7 +55,7 @@ CYG*)
   printf "Found Reduce at %s\n" $RED
   BUILD=winbuild
   OUTDIR=Output
-  OUTFILES="Reduce-Setup.exe"
+  OUTFILES="Reduce-Setup-$today.exe"
   ;;
 Darwin*)
   SYS=mac
@@ -62,12 +63,21 @@ Darwin*)
   RED=/Users/acn1/reduce-algebra
   BUILD=macbuild
   OUTDIR=.
+  OUTFILE=""
   ;;
 *)
   SYS=linux
   RED=/home/acn1/reduce-algebra
   BUILD=debianbuild
   OUTDIR=.
+  OUTFILES="reduce-common_$today_all.deb \
+            reduce-csl_$today_amd64.deb \
+            reduce-psl_$today_amd64.deb \
+            reduce-addons_$today_amd64.deb \
+            reduce-common-$today-1.noarch.rpm \
+            reduce-csl-$today-1.x86_64.rpm \
+            reduce-psl-$today-1.x86_64.rpm \
+            reduce-addons-$today-1.x86_64.rpm"
   ;;
 esac
 
@@ -76,18 +86,25 @@ esac
 # The date of a snapshot is recorded as yyyymmdd - ie 4 digits of year, two
 # of month and two for the day within the month.
 
-today=`date +%Y%m%d`
-if test -f $SYS-$today.tgz
+if test -f $SYS-$today.stamp
 then
 # If this script has already run today then I will not use it a second time.
-# I leave (short form) logs in /tmp.
-  printf "Snapshot $SYS-$today.tgz already exists\n" > /tmp/$SYS-already.log
+  printf "Snapshot $SYS-$today.stamp already exists\n"
   exit 0
 fi
 
 # If I touch the output file here at the start then any accidental attempt to
 # restart the build will detect the presence of the file and give up.
-touch $SYS-$today.tgz
+touch $SYS-$today.stamp
+
+# Remove previous stamp files.
+for x in $SYS-*.stamp
+do
+  if test $x != $SYS-$today.stamp
+  then
+    rm $x
+  fi
+done
 
 # Ensure that the version to be used is up to date
 cd $RED
@@ -95,47 +112,41 @@ svn update
 
 # Move to where the building happens and create files for distribution
 cd $BUILD
-make > /tmp/$SYS.log
+make clean
+make
 
-# Copy generated files into the directory that the script was originally called from.
+if test "$SYS" = "windows"
+then
+# I want to badge the setup file with today's date.
+  mv $OUTDIR/Reduce-Setup.exe $OUTDIR/$OUTFILES
+fi
+
+# Copy generated files to the remote machine where they are wanted
 cd $OUTDIR
-SAVE="tar cvfz $HERE/$SYS-$today.tgz $OUTFILES"
-eval "$SAVE" >> /tmp/$SYS.log
+scp $OUTFILES $DESTUSER@$DESTMC:$DESTDIR
+printf "Snapshot copied to snapshots directory\n"
 
 cd $HERE
-# Remove previous snapshots.
-for x in $SYS-*.tgz
-do
-  if test $x != $SYS-$today.tgz
-  then
-    rm $x
-  fi
-done
-
-# use scp to copy the archive to a central machine. 
-ls -l $SYS-$today.tgz >> /tmp/$SYS.log
-scp $SYS-$today.tgz $DESTUSER@$DESTMC:$DESTDIR
-printf "$SYS-$today.tgz copied to snapshots directory\n" >> /tmp/$SYS.log
-
-# I will run the Widnows and Linux builds within virtual machines hosted
+# I will run the Windows and Linux builds within virtual machines hosted
 # on a Macintosh. It licensing permitted me to use OSX in a virtual machine
 # on a non-Mac host I would have used something else as my main host, but
 # as things are I need to build the Mac version on a real Macintosh. For
 # the builds in a virtual environment I shut down the VM after a build.
 # Note that because I only build once per day if I were to start the VM up
-# again lare on the same day it would not shut itself down and that gives
+# again later on the same day it would not shut itself down and that gives
 # me scope to develop and debug. For the shutdown command to work my user
 # needs to have "sudo" priviledge without needing a password. In my case
-# this is a line in /etc/sudoers
+# this is all set up in /etc/sudoers with a line that reads:
 #   acn1 ALL=(ALL) NOPASSWD:ALL
 #
-# The om Linux I make the machine auto-logon to myself and then have an
+# The on Linux I make the machine auto-logon to myself and then have an
 # entry in "startup programs" that launches this script. For Windows I
 # again set up autologin. I use windown-key+R/shell:startup and create
 # a shortcut to c:\cywgin\Cygwin.bat as a startup item. amd then I can
 # use .bashrc to start this script.
 #
 # On the Mac I can use a command like "vboxmanage startvm autobuilder" 
+# to start the virtual machines.
 
 # The FIRST time on any day that this machine is booted it will spend
 # between 5 and 45 minutes building a Reduce snapshot and it will then
@@ -154,3 +165,4 @@ windows)
 esac
 
 # end of make-snapshot.sh
+
