@@ -129,6 +129,8 @@
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE 1
 #define _DARWIN_C_SOURCE 1
+// FreeBSD seems to need this one for the same reasons
+#define __BSD_VISIBLE 1
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

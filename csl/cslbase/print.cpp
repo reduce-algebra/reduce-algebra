@@ -5120,7 +5120,7 @@ start_again:
         }
         trace_printf("Connection created\n");
     }
-    sprintf(filename1, "GET %.*s HTTP/1.0\x0d\x0a\x0d\x0a", npath, path);
+    sprintf(filename1, "GET %.*s HTTP/1.0\x0d\x0a\x0d\x0a", (int)npath, path);
 
 // MD addition from webcore.c
     i = strlen(filename1);

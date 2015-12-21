@@ -59,7 +59,7 @@
 int main(int argc, char *argv[])
 {
     printf("GC_all_interior_pointers = %d\n", GC_get_all_interior_pointers());
-    printf("DONT_ADD_BYTE_AT_END = %d\n", DONT_ADD_BYTE_AT_END);
+//  printf("DONT_ADD_BYTE_AT_END = %d\n", DONT_ADD_BYTE_AT_END);
     GC_set_all_interior_pointers(0);
     GC_set_pages_executable(1); // To support executable code in heap.
     GC_INIT();

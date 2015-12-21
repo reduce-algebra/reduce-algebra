@@ -1554,20 +1554,21 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // getrlimit so I will treat them as failure.
 //
 #if HAVE_DECL_RLIM_SAVED_MAX
-            if (stackLimit == RLIM_SAVED_MAX &&
+            if (stackLimit == (int64_t)RLIM_SAVED_MAX &&
                 RLIM_SAVED_MAX != RLIM_INFINITY)
             {   /* do nothing */
             }
             else
 #endif
 #if HAVE_DECL_RLIM_SAVED_CUR
-                if (stackLimit == RLIM_SAVED_CUR &&
+                if (stackLimit == (int64_t)RLIM_SAVED_CUR &&
                     RLIM_SAVED_CUR != RLIM_INFINITY)
                 {   /* do nothing */
                 }
                 else
 #endif
-                    if (stackLimit == RLIM_INFINITY) stackLimit = 20*1024*1024;
+                    if (stackLimit == (int64_t)RLIM_INFINITY)
+                        stackLimit = 20*1024*1024;
 // I view values under 200K as silly and ignore them!
             if (stackLimit >= 200*1024)
             {   C_stack_limit = C_stack_base - stackLimit + 0x10000;
