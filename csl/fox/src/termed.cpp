@@ -126,11 +126,19 @@
 // termios.h and _XOPEN_SOURCE and _BSD_SOURCE are similarly needed on Linux
 // and/or Cygwin to allow access to low level terminal handling functions.
 //
+// However if I defined _XOPEN_SOURCE on a FreeBSD system that least to
+// the declaration of cfmakeraw being HIDDEN rather than exposed.
+//
+// So I try to define the various special markers only on the platforms that
+// they relate to.
+
+#if defined __CYGWIN__ || defined __linux__
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE 1
+#endif
+#if defined __APPLE__
 #define _DARWIN_C_SOURCE 1
-// FreeBSD seems to need this one for the same reasons
-#define __BSD_VISIBLE 1
+#endif
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
