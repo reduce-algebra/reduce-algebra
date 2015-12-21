@@ -279,7 +279,7 @@ asserted procedure qff_condense(f: QfFormula, p: Position): QfFormula;
       	 return rl_mkn(op, reversip ncl)
       >>;
       % we know that [op eq 'or]
-      for each c in rl_argn f collect <<
+      for each c in rl_argn f do <<
 	 i := i + 1;
 	 if eqn(i, n) then
 	    push(qff_condense(c, cdr p), ncl)
