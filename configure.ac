@@ -1122,7 +1122,7 @@ else
       ;;
     esac
   done
-  case $build
+  case $build in
   *windows* | *win32* | *mingw*)
     thr="win32"
     ;;

@@ -1,0 +1,81 @@
+Time-stamp: "2014-11-18 17:42:13 vitolo"
+
+% This is a list of global variables
+%
+% Global variables in input
+indep_var (identifiers of independent variables)
+dep_var (identifiers of dependent variables)
+odd_var (identifiers of odd variables)
+deg_indep_var (degree of independent variables)
+deg_dep_var (degree of dependent variables)
+deg_odd_var (degree of odd variables)
+total_order (order of prolongation of even equations)
+principal_der (lhs of even differential equations, list of principal ders)
+de (rhs of differential equations)
+principal_odd (lhs of odd differential equations, list of principal ders)
+de_odd (rhs of differential equations)
+
+% Global variables for the free jetspace, accessible in symbolic mode only.
+% in cde_jetspace.red
+% Same meaning as above, purely symbolic lists:
+indep_var!* dep_var!* odd_var!* principal_der!* de!* principal_odd!* de_odd!*
+% New global variables:
+id_tot_der!* (identifier of total derivatives for ext variables,
+ "dd" is the default)
+eid_tot_der!* (identifier of total derivatives for odd variables,
+ "td" is the default)
+n_indep_var (number of independent variables)
+all_mind_table!* (multiindexes for all variables in `table' format)
+all_der_mind!* (all even derivatives in multiindex notation)
+all_odd_mind!* (all odd derivatives in multiindex notation)
+all_der_id!* (all even derivatives in identifier notation)
+all_odd_id!* (all odd derivatives in identifier notation)
+n_all_ext (number of all odd-ext variables)
+i2m_jetspace!* (alist of even derivative coordinates:
+ identifier-multiindex notation)
+i2m_jetspace_odd!* (alist of odd derivative coordinates, same notation as above)
+i2o_jetspace!* (alist of even derivative - order of derivative,
+ same notation as above)
+i2o_jetspace_odd!* (alist of odd derivative - order of derivative, same notation
+ as above)
+m2o_jetspace!* (alist of multiindices and their length)
+
+% New global variables that contain principal and parametric derivatives
+% in cde_parametric.red
+all_principal_der!* (list of even principal derivatives ordered according
+ with increasing order of derivative)
+all_parametric_der!* (list of even parametric derivatives ordered according
+ with increasing order of derivative)
+all_principal_odd!* (list of odd principal derivatives ordered according
+ with increasing order of derivative)
+all_parametric_odd!* (list of odd parametric derivatives ordered according
+ with increasing order of derivative)
+n_all_principal_ext (number of all principal ext)
+n_all_parametric_ext (number of all parametric ext)
+
+% Identifiers of total derivatives, in cde_totalder.red
+tot_der!* (set of identifiers for total derivatives of ext coordinates)
+etot_der!* (set of identifiers for total derivatives of odd coordinates)
+letop (auxiliary function depending on independent variables
+ signalling "jetspace too small")
+
+% Lists of differential consequences, in cde_diffcon.red
+primary_diffcon_tot!* (list of two lists; the first sublist is
+a list of even primary differential consequences together with the data which
+identifies it as a coefficient of a derivative vector field;
+the second sublist is analogous for odd variables)
+primary_diffcon_der!* (list of even principal derivatives which appear in total
+ derivatives and whose expression must be computed)
+primary_diffcon_odd!* (list of odd principal derivatives which appear in total
+ derivatives and whose expression must be computed)
+diffcon_der!* (alist of even principal derivatives - corresponding expression,
+ ordered according with decreasing order of derivatives)
+diffcon_odd!* (alist of odd principal derivatives - corresponding expression,
+ ordered according with decreasing order of derivatives)
+diffcon_comp_der!* (list of all computed even principal derivatives)
+diffcon_comp_odd!* (list of all computed odd principal derivatives)
+diffcon_comp_ext!* (list of all computed ext principal derivatives)
+diffcon_param_der!* (alist of even principal derivatives - corresponding clean
+ expression)
+diffcon_param_ext!* (alist of ext principal derivatives - corresponding clean
+ expression)

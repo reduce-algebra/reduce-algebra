@@ -1,0 +1,207 @@
+;; RefTeX parse info file
+;; File: /home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex
+;; User: vitolo (Raffaele Vitolo)
+
+(set reftex-docstruct-symbol '(
+
+
+(xr nil "\\\\\\\\\\\\")
+
+(index-tags)
+
+(is-multi nil)
+
+(bibview-cache ("KKV2" . "") ("KrVe-JGP-2011" . "") ("getz" . "") ("IVV" . "") ("KKV" . "") ("Olv" . "") ("Many" . "") ("gdeq" . "") ("inside" . ""))
+
+(master-dir . "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/")
+
+(label-numbers ("eq:" . 19))
+
+(bof "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex")
+
+(toc "toc" "    1 Introduction: why \\cde?" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 2 "1" "\\section{Introduction: why \\cde?}" 6869)
+
+("sec:why-cde" "s" "This brief guide refers to using \\cde, a \\reduce package for differential-geometric computations for" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "    2 Installation" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 2 "2" "\\section{Installation}" 11441)
+
+("sec:installation" "s" "In order to use the \\cde package it is enough to have a recent version of \\reduce with both the \\cde" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "      2.1 Installation of Reduce" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 3 "2.1" "\\subsection{Installation of Reduce}" 11937)
+
+("sec:installation-reduce" "s" "In order to install \\reduce one can download the experimental Windows installer or download a precom" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "      2.2 Choice of an editor for writing Reduce programs" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 3 "2.2" "\\subsection{Choice of an editor for writing Reduce programs}" 14303)
+
+("sec:inst-reduce-ide" "s" "Now, let us deal with the problem of writing \\reduce programs. Generally speaking, any text editor c" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "    3 Working with CDE" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 2 "3" "\\section{Working with CDE}" 17323)
+
+("sec:working-with-cde" "s" "All programs that we will discuss in this manual can be found inside the subfolder \\texttt{examples}" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "    4 Jet space of even and odd variables, and total derivatives" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 2 "4" "\\section{Jet space of even and odd variables,
+  and total derivatives}" 22511)
+
+("sec:jet-space-even" "s" "The mathematical theory for jets of even (\\emph{ie} standard) variables and total derivatives can be" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:2" "e" "D_\\lambda=\\pd{}{x^\\lambda} + u^i_{\\boldsymbol{\\sigma}\\lambda}\\pd{}{u^i_{\\boldsymbol{\\sigma}}}, " "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:2" "e" "D_\\lambda=\\pd{}{x^\\lambda} + u^i_{\\boldsymbol{\\sigma}\\lambda}\\pd{}{u^i_{\\boldsymbol{\\sigma}}} + p^i_" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "    5 Differential equations in even and odd variables" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 2 "5" "\\section{Differential equations in even and odd variables}" 30373)
+
+("sec:diff-equat-even" "s" "We now give the equation in the form of one or more derivatives equated to right-hand side expressio" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:2" "e" "D_\\lambda=\\pd{}{x^\\lambda}+\\sum_{u^i_{\\boldsymbol{\\sigma}}\\ \\text{parametric}}u^i_{\\boldsymbol{\\sigm" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "    6 Calculus of variations" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 2 "6" "\\section{Calculus of variations}" 34261)
+
+("sec:calculus-variations" "s" "\\cde can compute variational derivatives of any function (usually a Lagrangian density) or superfunc" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:9" "e" "\\fd{\\mathcal{L}}{u^i} = (-1)^{|\\sigma|}D_\\sigma\\pd{\\mathcal{L}}{u^i_\\sigma}, \\quad \\fd{\\mathcal{L}}{" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "    7 $\\mathcal{C}$-differential operators" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 2 "7" "\\section{$\\mathcal{C}$-differential operators}" 35538)
+
+("sec:mathc-diff-oper-1" "s" "Linearizing (or taking the Fr\\'echet derivative) of a vector function that defines a differential eq" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "      7.1 $\\mathcal{C}$-differential operators" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 3 "7.1" "\\subsection{$\\mathcal{C}$-differential operators}" 36476)
+
+("sec:mathc-diff-oper" "s" "Let us consider the spaces \\begin{displaymath} P=\\{\\varphi\\colon J^r(n,m)\\to \\R^k\\},\\qquad Q=\\{\\psi\\" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:4" "e" "\\Delta(\\varphi) = (\\sum_{\\sigma, i}a^{\\sigma j}_i D_\\sigma \\varphi^i), " "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:7" "e" "\\Delta\\colon P_1\\times\\cdots\\times P_h \\to Q" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:10" "e" "\\Delta(\\phi_1,\\dots,\\phi_h) = \\sum_{\\sigma_1,\\ldots,\\sigma_h} a^{\\sigma_1,\\ldots,\\sigma_h,\\ j}_{i_1\\" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:5" "e" "\\Delta^*((q_j)) = (\\sum_{\\sigma, i} (-1)^{|\\sigma|} D_\\sigma(a^{\\sigma j}_i q_j)). " "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "      7.2 $\\mathcal{C}$-differential operators as superfunctions" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 3 "7.2" "\\subsection{$\\mathcal{C}$-differential operators as superfunctions}" 41603)
+
+("sec:mathc-diff-oper-odd" "s" "In the papers \\cite{IVV,KKV} (and independently in \\cite{getz}) a scheme for dealing with (skew-adjo" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:13" "e" "\\Big(\\sum_{\\sigma_1,\\ldots,\\sigma_h, i_1,\\ldots, i_h}a^{\\sigma_1,\\ldots,\\sigma_h,\\ j}_{i_1\\cdots i_h" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "      7.3 The Schouten bracket" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 3 "7.3" "\\subsection{The Schouten bracket}" 44443)
+
+("sec:schouten-bracket" "s" "We are interested in the operation of Schouten bracket between \\emph{variational multivectors} \\cite" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:16" "e" "\\Delta\\colon \\varkappa\\times\\cdots\\times \\varkappa \\to \\{J^r(n,m) \\to \\lambda^nT^*\\mathbb{R^n}\\}/ \\b" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:11" "e" "[A_1,A_2] = \\Big[\\fd{A_1}{u^j}\\fd{A_2}{p_j} + \\fd{A_2}{u^j}\\fd{A_1}{p_j}\\Big] " "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:14" "e" "[A_1,A_2] = 0 \\quad\\Leftrightarrow\\quad \\mathcal{E}\\left(\\fd{A_1}{u^j}\\fd{A_2}{p_j} + \\fd{A_2}{u^j}\\" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "    8 Computing linearization and its adjoint" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 2 "8" "\\section{Computing linearization and its adjoint}" 46436)
+
+("sec:linadj" "s" "Currently, \\cde supports linearization of a vector function, or a \\cdiffop with $0$ arguments. The c" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:1" "e" "\\left\\{ \\begin{array}{l} u_t-u_xv-uv_x-\\sigma v_{xxx}=0" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("first" "i" "compute linearization of a PDE of the form $F=0$ and its adjoint, and save them in the form of a vec" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "    9 Higher symmetries" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 2 "9" "\\section{Higher symmetries}" 51364)
+
+("sec:higher-symmetries" "s" "In this section we show the computation of (some) higher \\cite{Many} (or generalized, \\cite{Olv}) sy" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("sec:higher-symmetries-1" "s" "In this section we show the computation of (some) higher \\cite{Many} (or generalized, \\cite{Olv}) sy" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "      9.1 Setting up the jet space and the differential equation." "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 3 "9.1" "\\subsection{Setting up the jet space and the differential equation.}" 53377)
+
+("sec:setting-up-jet" "s" "After loading \\cde: \\begin{verbatim} indep_var:={x,t}$ dep_var:={u}$ deg_indep_var:={-1,-2}$ deg_dep" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "      9.2 Solving the problem via dimensional analysis." "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 3 "9.2" "\\subsection{Solving the problem via dimensional analysis.}" 54051)
+
+("sec:solving-problem-via" "s" "Higher symmetries of the given equation are functions \\texttt{sym} depending on parametric coordinat" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "      9.3 Solving the problem using CRACK" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 3 "9.3" "\\subsection{Solving the problem using CRACK}" 61332)
+
+(toc "toc" "    10 Local conservation laws" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 2 "10" "\\section{Local conservation laws}" 64627)
+
+("sec:local-cons-laws" "s" "In this section we will find (some) local conservation laws for the KdV equation $F=u_t-u_{xxx}+uu_x" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "    11 Local Hamiltonian operators" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 2 "11" "\\section{Local Hamiltonian operators}" 67070)
+
+("sec:local-hamilt-oper" "s" "In this section we will show how to compute local Hamiltonian operators for Korteweg--de Vries, Bous" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "      11.1 Korteweg--de Vries equation" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 3 "11.1" "\\subsection{Korteweg--de Vries equation}" 67679)
+
+("sec:korteweg-de-vries" "s" "Here we will find local Hamiltonian operators for the KdV equation $u_t=u_{xxx}+uu_x$. A necessary c" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "      11.2 Boussinesq equation" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 3 "11.2" "\\subsection{Boussinesq equation}" 73213)
+
+("sec:comp-syst-pdes" "s" "There is no conceptual difference when computing for systems of PDEs with respect to the previous co" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:12" "s" "\\left\\{ \\begin{array}{l} -p_t+vp_x+q_x=0" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "      11.3 Kadomtsev--Petviashvili equation" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 3 "11.3" "\\subsection{Kadomtsev--Petviashvili equation}" 75662)
+
+("sec:mult-case" "s" "There is no conceptual difference in symbolic computations of Hamiltonian operators for PDEs in $2$ " "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:3" "e" "u_{yy}=u_{tx}-u_x^2-uu_{xx}-\\frac{1}{12}u_{xxxx}. " "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "    12 Examples of Schouten bracket of local Hamiltonian operators" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 2 "12" "\\section{Examples of Schouten bracket of local Hamiltonian
+  operators}" 77467)
+
+("sec:scho-brack-local" "s" "Let $F=0$ be a system of PDEs. Here $F\\in P$, where $P$ is the module (in the algebraic sense) of ve" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:15" "e" "H\\colon \\hat P \\to \\varkappa " "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:17" "e" "\\hat H\\colon \\hat\\varkappa\\times\\hat\\varkappa \\to \\wedge^n T^*\\mathbb{R}^n " "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:18" "e" "H(\\psi) = (a^{ij\\sigma}D_\\sigma\\psi_j) \\quad \\to \\quad \\hat H(\\psi_1,\\psi_2) = (a^{ij\\sigma}D_\\sigma" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "      12.1 Bi-Hamiltonian structure of the KdV equation" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 3 "12.1" "\\subsection{Bi-Hamiltonian structure of the KdV equation}" 79855)
+
+("sec:bi-hamilt-struct" "s" "We can do the above computations using KdV equation as a test case (see the file \\texttt{kdv\\_lho3.r" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "      12.2 Bi-Hamiltonian structure of the WDVV equation" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 3 "12.2" "\\subsection{Bi-Hamiltonian structure of the WDVV equation}" 81358)
+
+("sec:bi-hamilt-struct-1" "s" "This subsection refers to the the example file \\texttt{wdvv\\_biham1.red}. The simplest nontrivial ca" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:8" "s" "a_t=b_x,\\quad b_t=c_x,\\quad c_t=(b^2-ac)_x, " "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" 81593)
+
+("casimir" "e" "A_2=\\ddx{}\\left(g^{ij}_2\\ddx{}+c_{k}^{ij}u_{x}^{k}\\right)\\ddx{},  " "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("Killing" "e" "g_{mk,n}+g_{kn,m}+g_{mn,k}=0.  " "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "      12.3 Schouten bracket of multidimensional operators" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 3 "12.3" "\\subsection{Schouten bracket of multidimensional operators}" 87878)
+
+("sec:mult-oper" "s" "The formulae \\medskip More formulae are currently being implemented in the system, like symplecticit" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:19" "e" nil "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil "")
+
+(toc "toc" "    13 Non-local operators" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 2 "13" "\\section{Non-local operators}" 91777)
+
+("sec:non-local-hamilt" "s" "In this section we will show an experimental way to find nonlocal operators. The word `experimental'" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "      13.1 Non-local Hamiltonian operators for the Korteweg--de Vries equation" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 3 "13.1" "\\subsection{Non-local Hamiltonian operators for the
+  Korteweg--de Vries equation}" 92707)
+
+("sec:korteweg-de-vries-1" "s" "Here we will compute some nonlocal Hamiltonian operators for the KdV equation. The result of the com" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "      13.2 Non-local recursion operator for the Korteweg--de Vries equation" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 3 "13.2" "\\subsection{Non-local recursion operator for the
+  Korteweg--de Vries equation}" 96840)
+
+("sec:korteweg-de-vries-2" "s" "Following the ideas in \\cite{KKV}, a differential operator that sends symmetries into symmetries can" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "      13.3 Non-local Hamiltonian-recursion operators for Plebanski equation" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 3 "13.3" "\\subsection{Non-local Hamiltonian-recursion operators for
+  Plebanski equation}" 98831)
+
+("sec:plebanski-equation" "s" "The Plebanski (or second Heavenly) equation \\begin{equation}  F=u_{tt}u_{xx}-u_{tx}^2+u_{xz}+u_{ty}=" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:4" "e" "F=u_{tt}u_{xx}-u_{tx}^2+u_{xz}+u_{ty}=0 " "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:5" "e" "\\bar{d}\\omega = \\ell^*_F(p) " "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+("eq:6" "e" "D_t ct-D_x cx=0 " "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil)
+
+(toc "toc" "    14 Appendix: old versions of \\cde" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 2 "14" "\\section{Appendix: old versions of \\cde}" 110896)
+
+(toc "toc" "          14.0.0.1 \\cde 1.0" "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex" nil 5 "14.0.0.1" "\\paragraph{\\cde 1.0}" 110979)
+
+(thebib . "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex")
+
+(eof "/home/vitolo/Dropbox/Symbolics/CDE/cde-dev_150921/userguide/Cde-userguide-2.0.tex")
+))
+

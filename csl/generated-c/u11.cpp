@@ -1,5 +1,5 @@
 
-// $destdir\u11.c        Machine generated C code
+// $destdir/u11.c        Machine generated C code
 
 // $Id$
 
@@ -126,6 +126,7 @@ typedef uint64_t uintptr_t;
 typedef int CSLbool;
 #define YES 1
 #define NO 0
+#define CSL_IGNORE(x) ((void)(x))
 #ifndef PAGE_BITS
 # define PAGE_BITS 22
 #endif 
@@ -146,7 +147,6 @@ typedef int CSLbool;
 #define MAX_BPS_PAGES (MAX_BPSSIZE << (20-PAGE_BITS))
 #endif
 #define MAX_NATIVE_PAGES MAX_BPS_PAGES
-#define CSL_IGNORE(x) (x = x)
 #define LONGEST_LEGAL_FILENAME 1024
 #define FP_WORD_ORDER 0x01
 #define FP_BYTE_ORDER 0x02
@@ -910,8 +910,6 @@ extern LispObject C_nil;
 #else
 #define BASE (SIXTY_FOUR_BIT ? ((LispObject *)(nil+4)): ((LispObject *)nil))
 #endif
-#ifdef NILSEG_EXTERNS
-#define nil_as_base
 extern intptr_t byteflip;
 extern LispObject codefringe;
 extern LispObject volatile codelimit;
@@ -1039,151 +1037,6 @@ extern LispObject user_base_9;
 #define mv_2 workbase[2]
 #define mv_3 workbase[3]
 #define work_50 workbase[50]
-#else 
-#define nil_as_base LispObject nil = C_nil;
-#define byteflip BASE[12]
-#define codefringe BASE[13]
-#define codelimit (*(LispObject volatile *)&BASE[14])
-extern LispObject * volatile stacklimit;
-#define fringe BASE[18]
-#define heaplimit (*(LispObject volatile *)&BASE[19])
-#define vheaplimit (*(LispObject volatile *)&BASE[20])
-#define vfringe BASE[21]
-#define miscflags BASE[22]
-#define nwork BASE[24]
-#define exit_count BASE[26]
-#define gensym_ser BASE[27]
-#define print_precision BASE[28]
-#define current_modulus BASE[29]
-#define fastget_size BASE[30]
-#define package_bits BASE[31]
-#define modulus_is_large BASE[32]
-#define current_package BASE[52]
-#define B_reg BASE[53]
-#define codevec BASE[54]
-#define litvec BASE[55]
-#define exit_tag BASE[56]
-#define exit_value BASE[57]
-#define catch_tags BASE[58]
-#define lisp_package BASE[59]
-#define boffo BASE[60]
-#define charvec BASE[61]
-#define sys_hash_table BASE[62]
-#define help_index BASE[63]
-#define gensym_base BASE[64]
-#define err_table BASE[65]
-#define supervisor BASE[66]
-#define startfn BASE[67]
-#define faslvec BASE[68]
-#define tracedfn BASE[69]
-#define prompt_thing BASE[70]
-#define faslgensyms BASE[71]
-#define cl_symbols BASE[72]
-#define active_stream BASE[73]
-#define current_module BASE[74]
-#define native_defs BASE[75]
-#define append_symbol BASE[90]
-#define applyhook BASE[91]
-#define cfunarg BASE[92]
-#define comma_at_symbol BASE[93]
-#define comma_symbol BASE[94]
-#define compiler_symbol BASE[95]
-#define comp_symbol BASE[96]
-#define cons_symbol BASE[97]
-#define echo_symbol BASE[98]
-#define emsg_star BASE[99]
-#define evalhook BASE[100]
-#define eval_symbol BASE[101]
-#define expr_symbol BASE[102]
-#define features_symbol BASE[103]
-#define fexpr_symbol BASE[104]
-#define funarg BASE[105]
-#define function_symbol BASE[106]
-#define lambda BASE[107]
-#define lisp_true BASE[108]
-#define lower_symbol BASE[109]
-#define macroexpand_hook BASE[110]
-#define macro_symbol BASE[111]
-#define opt_key BASE[112]
-#define prinl_symbol BASE[113]
-#define progn_symbol BASE[114]
-#define quote_symbol BASE[115]
-#define raise_symbol BASE[116]
-#define redef_msg BASE[117]
-#define rest_key BASE[118]
-#define savedef BASE[119]
-#define string_char_sym BASE[120]
-#define unset_var BASE[121]
-#define work_symbol BASE[122]
-#define lex_words BASE[123]
-#define get_counts BASE[124]
-#define fastget_names BASE[125]
-#define input_libraries BASE[126]
-#define output_library BASE[127]
-#define current_file BASE[128]
-#define break_function BASE[129]
-#define lisp_work_stream BASE[130]
-#define lisp_standard_output BASE[131]
-#define lisp_standard_input BASE[132]
-#define lisp_debug_io BASE[133]
-#define lisp_error_output BASE[134]
-#define lisp_query_io BASE[135]
-#define lisp_terminal_io BASE[136]
-#define lisp_trace_output BASE[137]
-#define standard_output BASE[138]
-#define standard_input BASE[139]
-#define debug_io BASE[140]
-#define error_output BASE[141]
-#define query_io BASE[142]
-#define terminal_io BASE[143]
-#define trace_output BASE[144]
-#define fasl_stream BASE[145]
-#define native_code BASE[146]
-#define native_symbol BASE[147]
-#define traceprint_symbol BASE[148]
-#define loadsource_symbol BASE[149]
-#define hankaku_symbol BASE[150]
-#define bytecoded_symbol BASE[151]
-#define nativecoded_symbol BASE[152]
-#define gchook BASE[153]
-#define resources BASE[154]
-#define callstack BASE[155]
-#define procstack BASE[156]
-#define procmem BASE[157]
-#define trap_time BASE[158]
-#define count_high BASE[159]
-#ifdef COMMON
-#define keyword_package BASE[170]
-#define all_packages BASE[171]
-#define package_symbol BASE[172]
-#define internal_symbol BASE[173]
-#define external_symbol BASE[174]
-#define inherited_symbol BASE[175]
-#define key_key BASE[176]
-#define allow_other_keys BASE[177]
-#define aux_key BASE[178]
-#define format_symbol BASE[179]
-#define expand_def_symbol BASE[180]
-#define allow_key_key BASE[181]
-#endif
-#define declare_symbol BASE[182]
-#define special_symbol BASE[183]
-#define large_modulus BASE[184]
-#define used_space BASE[185]
-#define avail_space BASE[186]
-#define eof_symbol BASE[187]
-#define call_stack BASE[188]
-extern LispObject user_base_0, user_base_1, user_base_2;
-extern LispObject user_base_3, user_base_4, user_base_5;
-extern LispObject user_base_6, user_base_7, user_base_8;
-extern LispObject user_base_9;
-#define work_0 BASE[200]
-#define work_1 BASE[201]
-#define mv_1 work_1
-#define mv_2 BASE[202]
-#define mv_3 BASE[203]
-#define work_50 BASE[250]
-#endif 
 extern void copy_into_nilseg(int fg);
 extern void copy_out_of_nilseg(int fg);
 #define eq_hash_table_list BASE[50] 
@@ -1671,10 +1524,24 @@ extern unsigned long jit_size;
  q = (uint32_t)(r64 / c64); \
  r = (uint32_t)(r64 % c64); } while (0)
 #define Ddiv10_9(r, q, a, b) Ddivide(r, q, a, b, 1000000000u)
+#define Ddivideq(q, a, b, c) \
+ do { uint64_t r64 = (((uint64_t)(a)) << 31) | (uint64_t)(b); \
+ uint64_t c64 = (uint64_t)(uint32_t)(c); \
+ q = (uint32_t)(r64 / c64); } while (0)
+#define Ddiv10_9q(r, q, a, b) Ddivideq(q, a, b, 1000000000u)
+#define Ddivider(r, a, b, c) \
+ do { uint64_t r64 = (((uint64_t)(a)) << 31) | (uint64_t)(b); \
+ uint64_t c64 = (uint64_t)(uint32_t)(c); \
+ r = (uint32_t)(r64 % c64); } while (0)
+#define Ddiv10_9r(r, q, a, b) Ddivider(r, a, b, 1000000000u)
 #else
 #define Dmultiply(hi, lo, a, b, c) ((hi) = Imultiply(&(lo), (a), (b), (c)))
 #define Ddivide(r, q, a, b, c) ((r) = Idivide(&(q), (a), (b), (c)))
 #define Ddiv10_9(r, q, a, b) ((r) = Idiv10_9(&(q), (a), (b)))
+#define Ddivideq(q, a, b, c) (Idivide(&(q), (a), (b), (c)))
+#define Ddiv10_9q(q, a, b) (Idiv10_9(&(q), (a), (b)))
+#define Ddivider(r, a, b, c) ((r) = Idivide(NULL, (a), (b), (c)))
+#define Ddiv10_9r(r, a, b) ((r) = Idiv10_9(NULL, (a), (b)))
 #endif
 #define fix_mask (-0x08000000)
 #define fixnum_minusp(a) ((int32_t)(a) < 0)
@@ -2351,7 +2218,6 @@ static LispObject CC_subs3f1(LispObject env, int nargs, ...)
     LispObject v0017, v0018, v0002;
     va_list aa;
     va_start(aa, nargs);
-    CSL_IGNORE(nil);
     argcheck(nargs, 3, "subs3f1");
     va_start(aa, nargs);
     v0002 = va_arg(aa, LispObject);
@@ -2559,7 +2425,6 @@ static LispObject CC_mkzl(LispObject env,
     LispObject nil = C_nil;
     LispObject v0049, v0050;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for mkzl");
 #endif
@@ -2625,7 +2490,6 @@ static LispObject CC_intexprnp(LispObject env,
     LispObject nil = C_nil;
     LispObject v0058, v0059, v0060, v0015;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for intexprnp");
 #endif
@@ -2710,14 +2574,12 @@ static LispObject CC_rat_numrn(LispObject env,
 {
     LispObject nil = C_nil;
     LispObject v0065, v0063;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for rat_numrn");
 #endif
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
-    CSL_IGNORE(env);
 // copy arguments values to proper place
     v0065 = v0002;
 // end of prologue
@@ -2742,7 +2604,6 @@ static LispObject CC_polyKabs(LispObject env,
     LispObject nil = C_nil;
     LispObject v0065;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for poly-abs");
 #endif
@@ -2791,7 +2652,6 @@ static LispObject CC_sub_math(LispObject env, int nargs, ...)
     LispObject nil = C_nil;
     LispObject v0073, v0074;
     LispObject fn;
-    CSL_IGNORE(nil);
     argcheck(nargs, 0, "sub_math");
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for sub_math");
@@ -2909,7 +2769,6 @@ static LispObject CC_vevlcm(LispObject env,
 {
     LispObject nil = C_nil;
     LispObject v0081, v0082, v0058;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for vevlcm");
 #endif
@@ -3008,7 +2867,6 @@ static LispObject CC_vdpzero(LispObject env, int nargs, ...)
     LispObject nil = C_nil;
     LispObject v0077;
     LispObject fn;
-    CSL_IGNORE(nil);
     argcheck(nargs, 0, "vdpzero");
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for vdpzero");
@@ -3016,7 +2874,6 @@ static LispObject CC_vdpzero(LispObject env, int nargs, ...)
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
-    CSL_IGNORE(env);
 // end of prologue
     v0077 = (LispObject)1; // 0
     {
@@ -3035,7 +2892,6 @@ static LispObject CC_mksgnsq(LispObject env,
     LispObject nil = C_nil;
     LispObject v0023, v0084, v0088;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for mksgnsq");
 #endif
@@ -3115,7 +2971,6 @@ static LispObject CC_Hkp2f(LispObject env,
     LispObject nil = C_nil;
     LispObject v0024, v0033;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for *kp2f");
 #endif
@@ -3173,14 +3028,12 @@ static LispObject CC_assert_typesyntaxp(LispObject env,
     LispObject nil = C_nil;
     LispObject v0065, v0063;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for assert_typesyntaxp");
 #endif
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
-    CSL_IGNORE(env);
 // copy arguments values to proper place
     v0063 = v0002;
 // end of prologue
@@ -3207,7 +3060,6 @@ static LispObject CC_simptimes(LispObject env,
     LispObject nil = C_nil;
     LispObject v0095, v0076;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for simptimes");
 #endif
@@ -3361,7 +3213,6 @@ static LispObject CC_redKratios1(LispObject env,
     LispObject nil = C_nil;
     LispObject v0085, v0071, v0020, v0021;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for red-ratios1");
 #endif
@@ -3428,7 +3279,6 @@ static LispObject CC_pdif(LispObject env,
     LispObject nil = C_nil;
     LispObject v0103, v0065;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for pdif");
 #endif
@@ -3478,7 +3328,6 @@ static LispObject CC_artimesT(LispObject env,
     LispObject nil = C_nil;
     LispObject v0034, v0024, v0033;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for artimes:");
 #endif
@@ -3546,7 +3395,6 @@ static LispObject CC_qqe_argKcheckKb(LispObject env,
     LispObject nil = C_nil;
     LispObject v0070;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for qqe_arg-check-b");
 #endif
@@ -3659,7 +3507,6 @@ static LispObject CC_rl_susitf(LispObject env,
     LispObject nil = C_nil;
     LispObject v0026, v0104;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for rl_susitf");
 #endif
@@ -3707,14 +3554,12 @@ static LispObject CC_sfto_mvartest(LispObject env,
 {
     LispObject nil = C_nil;
     LispObject v0050, v0105, v0072;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for sfto_mvartest");
 #endif
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
-    CSL_IGNORE(env);
 // copy arguments values to proper place
     v0105 = v0018;
     v0072 = v0002;
@@ -3754,7 +3599,6 @@ static LispObject CC_powers1(LispObject env,
     LispObject nil = C_nil;
     LispObject v0107, v0083;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for powers1");
 #endif
@@ -3806,7 +3650,6 @@ static LispObject CC_terpriH(LispObject env,
     LispObject nil = C_nil;
     LispObject v0059, v0060, v0015;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for terpri*");
 #endif
@@ -3935,7 +3778,6 @@ static LispObject CC_rdTminus(LispObject env,
     LispObject nil = C_nil;
     LispObject v0089, v0087;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for rd:minus");
 #endif
@@ -3950,7 +3792,6 @@ static LispObject CC_rdTminus(LispObject env,
         nil = C_nil;
         if (exception_pending()) return nil;
     }
-    CSL_IGNORE(env);
 // space for vars preserved across procedure calls
     push(nil);
 // copy arguments values to proper place
@@ -3999,7 +3840,6 @@ static LispObject CC_spquotematrix(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
-    CSL_IGNORE(env);
 // copy arguments values to proper place
     v0077 = v0002;
 // end of prologue
@@ -4017,7 +3857,6 @@ static LispObject CC_wedget2(LispObject env,
     LispObject nil = C_nil;
     LispObject v0090, v0091, v0046;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for wedget2");
 #endif
@@ -4129,14 +3968,12 @@ static LispObject CC_gfrsq(LispObject env,
     LispObject nil = C_nil;
     LispObject v0051, v0106;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for gfrsq");
 #endif
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
-    CSL_IGNORE(env);
 // copy arguments values to proper place
     v0051 = v0002;
 // end of prologue
@@ -4156,7 +3993,6 @@ static LispObject CC_fortranop(LispObject env,
 {
     LispObject nil = C_nil;
     LispObject v0063, v0047, v0048;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for fortranop");
 #endif
@@ -4171,7 +4007,6 @@ static LispObject CC_fortranop(LispObject env,
         nil = C_nil;
         if (exception_pending()) return nil;
     }
-    CSL_IGNORE(env);
 // copy arguments values to proper place
     v0048 = v0002;
 // end of prologue
@@ -4191,7 +4026,6 @@ static LispObject CC_deletemultH(LispObject env,
 {
     LispObject nil = C_nil;
     LispObject v0088, v0070, v0069;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for deletemult*");
 #endif
@@ -4271,7 +4105,6 @@ static LispObject CC_rnconc(LispObject env,
     LispObject nil = C_nil;
     LispObject v0070, v0069;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for rnconc");
 #endif
@@ -4355,7 +4188,6 @@ static LispObject CC_aminuspT(LispObject env,
     LispObject nil = C_nil;
     LispObject v0037, v0078;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for aminusp:");
 #endif
@@ -4454,7 +4286,6 @@ static LispObject CC_pv_times3(LispObject env,
     LispObject nil = C_nil;
     LispObject v0032, v0117;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for pv_times3");
 #endif
@@ -4513,7 +4344,6 @@ static LispObject CC_freeof(LispObject env,
     LispObject nil = C_nil;
     LispObject v0117, v0049, v0050;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for freeof");
 #endif
@@ -4569,7 +4399,6 @@ static LispObject CC_qqe_ofsf_varlterm(LispObject env,
     LispObject nil = C_nil;
     LispObject v0110, v0053, v0054, v0036;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for qqe_ofsf_varlterm");
 #endif
@@ -4659,7 +4488,6 @@ static LispObject CC_rl_smcpknowl(LispObject env,
     LispObject nil = C_nil;
     LispObject v0106;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for rl_smcpknowl");
 #endif
@@ -4707,7 +4535,6 @@ static LispObject CC_ibalp_hassimple(LispObject env,
     LispObject nil = C_nil;
     LispObject v0100, v0085;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for ibalp_hassimple");
 #endif
@@ -4775,14 +4602,12 @@ static LispObject CC_unbind(LispObject env,
 {
     LispObject nil = C_nil;
     LispObject v0047, v0048, v0025;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for unbind");
 #endif
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
-    CSL_IGNORE(env);
 // copy arguments values to proper place
     v0048 = v0002;
 // end of prologue
@@ -4814,7 +4639,6 @@ static LispObject CC_groebcpcomplessW(LispObject env,
     LispObject nil = C_nil;
     LispObject v0073, v0074, v0123, v0095;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for groebcpcompless?");
 #endif
@@ -4931,14 +4755,12 @@ static LispObject CC_assert_dyntypep(LispObject env,
 {
     LispObject nil = C_nil;
     LispObject v0026, v0104;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for assert_dyntypep");
 #endif
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
-    CSL_IGNORE(env);
 // copy arguments values to proper place
     v0104 = v0002;
 // end of prologue
@@ -4963,7 +4785,6 @@ static LispObject CC_moMrevlexcomp(LispObject env,
     LispObject nil = C_nil;
     LispObject v0085;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for mo=revlexcomp");
 #endif
@@ -5047,7 +4868,6 @@ static LispObject CC_wtchk(LispObject env,
     LispObject nil = C_nil;
     LispObject v0092, v0093, v0126;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for wtchk");
 #endif
@@ -5140,7 +4960,6 @@ static LispObject CC_qqe_qprefixKvar(LispObject env,
     LispObject nil = C_nil;
     LispObject v0094, v0064;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for qqe_qprefix-var");
 #endif
@@ -5210,7 +5029,6 @@ static LispObject CC_quotodd(LispObject env,
     LispObject nil = C_nil;
     LispObject v0057, v0094, v0064;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for quotodd");
 #endif
@@ -5281,7 +5099,6 @@ static LispObject CC_psTprepfnT(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
-    CSL_IGNORE(env);
 // copy arguments values to proper place
     v0077 = v0002;
 // end of prologue
@@ -5297,14 +5114,12 @@ static LispObject CC_minuspT(LispObject env,
 {
     LispObject nil = C_nil;
     LispObject v0064, v0096, v0116;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for minusp:");
 #endif
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
-    CSL_IGNORE(env);
 // copy arguments values to proper place
     v0116 = v0002;
 // end of prologue
@@ -5345,7 +5160,6 @@ static LispObject CC_listdiff(LispObject env,
 {
     LispObject nil = C_nil;
     LispObject v0032, v0117;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for listdiff");
 #endif
@@ -5403,14 +5217,12 @@ static LispObject CC_setKordp(LispObject env,
     LispObject nil = C_nil;
     LispObject v0032, v0117, v0049;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for set-ordp");
 #endif
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
-    CSL_IGNORE(env);
 // copy arguments values to proper place
     v0117 = v0018;
     v0049 = v0002;
@@ -5440,7 +5252,6 @@ static LispObject CC_scalopp(LispObject env,
     LispObject nil = C_nil;
     LispObject v0141, v0142, v0143;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for scalopp");
 #endif
@@ -5688,7 +5499,6 @@ static LispObject CC_form(LispObject env,
     LispObject nil = C_nil;
     LispObject v0151, v0152, v0153;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for form");
 #endif
@@ -5829,7 +5639,6 @@ static LispObject CC_redKratios2(LispObject env, int nargs, ...)
     LispObject v0077, v0017, v0018, v0002;
     va_list aa;
     va_start(aa, nargs);
-    CSL_IGNORE(nil);
     argcheck(nargs, 4, "red-ratios2");
     va_start(aa, nargs);
     v0002 = va_arg(aa, LispObject);
@@ -5949,7 +5758,6 @@ static LispObject CC_cali_bc_zeroW(LispObject env,
     LispObject nil = C_nil;
     LispObject v0096, v0116, v0100;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for cali_bc_zero?");
 #endif
@@ -6029,7 +5837,6 @@ static LispObject CC_dd(LispObject env,
     LispObject nil = C_nil;
     LispObject v0132, v0131, v0127;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for dd");
 #endif
@@ -6154,7 +5961,6 @@ static LispObject CC_generalKmodularKreciprocal(LispObject env,
     LispObject nil = C_nil;
     LispObject v0088, v0070, v0069, v0062;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for general-modular-reciprocal");
 #endif
@@ -6229,7 +6035,6 @@ static LispObject CC_hornerKrule(LispObject env, int nargs, ...)
     LispObject v0077, v0017, v0018, v0002;
     va_list aa;
     va_start(aa, nargs);
-    CSL_IGNORE(nil);
     argcheck(nargs, 4, "horner-rule");
     va_start(aa, nargs);
     v0002 = va_arg(aa, LispObject);
@@ -6451,7 +6256,6 @@ static LispObject CC_ckrn(LispObject env,
     LispObject nil = C_nil;
     LispObject v0069, v0062;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for ckrn");
 #endif
@@ -6549,7 +6353,6 @@ static LispObject CC_rl_negateat(LispObject env,
     LispObject nil = C_nil;
     LispObject v0106;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for rl_negateat");
 #endif
@@ -6597,7 +6400,6 @@ static LispObject CC_rl_simpbop(LispObject env,
     LispObject nil = C_nil;
     LispObject v0084, v0088;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for rl_simpbop");
 #endif
@@ -6697,7 +6499,6 @@ static LispObject CC_numericKcontent(LispObject env,
     LispObject nil = C_nil;
     LispObject v0037, v0078, v0079;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for numeric-content");
 #endif
@@ -6791,7 +6592,6 @@ static LispObject CC_psTgetKterm(LispObject env,
     LispObject nil = C_nil;
     LispObject v0153, v0176, v0138;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for ps:get-term");
 #endif
@@ -6943,7 +6743,6 @@ static LispObject CC_isimplicit(LispObject env,
 {
     LispObject nil = C_nil;
     LispObject v0096, v0116, v0100;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for isimplicit");
 #endif
@@ -7015,7 +6814,6 @@ static LispObject CC_getmat(LispObject env, int nargs, ...)
     LispObject v0017, v0018, v0002;
     va_list aa;
     va_start(aa, nargs);
-    CSL_IGNORE(nil);
     argcheck(nargs, 3, "getmat");
     va_start(aa, nargs);
     v0002 = va_arg(aa, LispObject);
@@ -7158,7 +6956,6 @@ static LispObject CC_dipprodin1(LispObject env, int nargs, ...)
     LispObject v0017, v0018, v0002;
     va_list aa;
     va_start(aa, nargs);
-    CSL_IGNORE(nil);
     argcheck(nargs, 3, "dipprodin1");
     va_start(aa, nargs);
     v0002 = va_arg(aa, LispObject);
@@ -7252,14 +7049,12 @@ static LispObject CC_sc_minussq(LispObject env,
     LispObject nil = C_nil;
     LispObject v0006;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for sc_minussq");
 #endif
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
-    CSL_IGNORE(env);
 // copy arguments values to proper place
     v0006 = v0002;
 // end of prologue
@@ -7280,7 +7075,6 @@ static LispObject CC_vevdif(LispObject env,
     LispObject nil = C_nil;
     LispObject v0149, v0150, v0151;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for vevdif");
 #endif
@@ -7431,7 +7225,6 @@ static LispObject CC_evalneq(LispObject env,
     LispObject nil = C_nil;
     LispObject v0103, v0065;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for evalneq");
 #endif
@@ -7446,7 +7239,6 @@ static LispObject CC_evalneq(LispObject env,
         nil = C_nil;
         if (exception_pending()) return nil;
     }
-    CSL_IGNORE(env);
 // copy arguments values to proper place
     v0103 = v0018;
     v0065 = v0002;
@@ -7467,14 +7259,12 @@ static LispObject CC_lengthcdr(LispObject env,
 {
     LispObject nil = C_nil;
     LispObject v0006;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for lengthcdr");
 #endif
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
-    CSL_IGNORE(env);
 // copy arguments values to proper place
     v0006 = v0002;
 // end of prologue
@@ -7491,7 +7281,6 @@ static LispObject CC_mo_neg(LispObject env,
 {
     LispObject nil = C_nil;
     LispObject v0155;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for mo_neg");
 #endif
@@ -7643,7 +7432,6 @@ static LispObject CC_gperm3(LispObject env,
     LispObject nil = C_nil;
     LispObject v0117, v0049, v0050;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for gperm3");
 #endif
@@ -7699,7 +7487,6 @@ static LispObject CC_noncomperm(LispObject env,
     LispObject nil = C_nil;
     LispObject v0125, v0098, v0137;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for noncomperm");
 #endif
@@ -7853,7 +7640,6 @@ static LispObject CC_diff(LispObject env,
     LispObject nil = C_nil;
     LispObject v0154, v0124;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for diff");
 #endif
@@ -7986,7 +7772,6 @@ static LispObject CC_ibalp_simpatom(LispObject env,
     LispObject nil = C_nil;
     LispObject v0147, v0012;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for ibalp_simpatom");
 #endif
@@ -8119,7 +7904,6 @@ static LispObject CC_mathml2(LispObject env, int nargs, ...)
     LispObject nil = C_nil;
     LispObject v0097;
     LispObject fn;
-    CSL_IGNORE(nil);
     argcheck(nargs, 0, "mathml2");
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for mathml2");
@@ -8127,7 +7911,6 @@ static LispObject CC_mathml2(LispObject env, int nargs, ...)
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
-    CSL_IGNORE(env);
 // end of prologue
     {
         fn = elt(env, 2); // sub_math
@@ -8147,7 +7930,6 @@ static LispObject CC_formclis(LispObject env, int nargs, ...)
     LispObject v0017, v0018, v0002;
     va_list aa;
     va_start(aa, nargs);
-    CSL_IGNORE(nil);
     argcheck(nargs, 3, "formclis");
     va_start(aa, nargs);
     v0002 = va_arg(aa, LispObject);
@@ -8224,14 +8006,12 @@ static LispObject CC_rmplus(LispObject env,
 {
     LispObject nil = C_nil;
     LispObject v0107, v0083, v0089;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for rmplus");
 #endif
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
-    CSL_IGNORE(env);
 // copy arguments values to proper place
     v0083 = v0002;
 // end of prologue
@@ -8261,7 +8041,6 @@ static LispObject CC_dp_times_bcmo(LispObject env, int nargs, ...)
     LispObject v0017, v0018, v0002;
     va_list aa;
     va_start(aa, nargs);
-    CSL_IGNORE(nil);
     argcheck(nargs, 3, "dp_times_bcmo");
     va_start(aa, nargs);
     v0002 = va_arg(aa, LispObject);
@@ -8386,14 +8165,12 @@ static LispObject CC_pv_intequiv(LispObject env,
 {
     LispObject nil = C_nil;
     LispObject v0065, v0063;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for pv_intequiv");
 #endif
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
-    CSL_IGNORE(env);
 // copy arguments values to proper place
     v0063 = v0002;
 // end of prologue
@@ -8419,7 +8196,6 @@ static LispObject CC_qqe_ofsf_simplat1(LispObject env,
     LispObject nil = C_nil;
     LispObject v0116, v0100;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for qqe_ofsf_simplat1");
 #endif
@@ -8488,7 +8264,6 @@ static LispObject CC_xread(LispObject env,
     LispObject nil = C_nil;
     LispObject v0089, v0087;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for xread");
 #endif
@@ -8546,7 +8321,6 @@ static LispObject CC_aex_varl(LispObject env,
     LispObject nil = C_nil;
     LispObject v0097;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for aex_varl");
 #endif
@@ -8592,14 +8366,12 @@ static LispObject CC_bc2a(LispObject env,
     LispObject nil = C_nil;
     LispObject v0103, v0065;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for bc2a");
 #endif
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
-    CSL_IGNORE(env);
 // copy arguments values to proper place
     v0065 = v0002;
 // end of prologue
@@ -8622,7 +8394,6 @@ static LispObject CC_evenfree(LispObject env,
     LispObject nil = C_nil;
     LispObject v0020, v0021;
     LispObject fn;
-    CSL_IGNORE(nil);
 #ifdef DEBUG_VALIDATE
     if (check_env(env)) return aerror("env for evenfree");
 #endif

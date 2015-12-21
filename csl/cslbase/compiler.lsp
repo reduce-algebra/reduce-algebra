@@ -4138,16 +4138,13 @@ varargs args) (progn (setq w " ") (c!:printf "    LispObject") (prog (var1342
 ) (setq var1342 args) lab1341 (cond ((null var1342) (return nil))) (prog (v) 
 (setq v (car var1342)) (progn (c!:printf "%s%s" w v) (setq w ", "))) (setq 
 var1342 (cdr var1342)) (go lab1341)) (c!:printf ";\n    va_list aa;\n") (
-c!:printf "    va_start(aa, nargs);\n")))) (cond (nil_used (c!:printf 
-"    CSL_IGNORE(nil);\n")) (t (cond (nilbase_used (progn (c!:printf 
-"#ifndef NILSEG_EXTERNS\n") (c!:printf "    CSL_IGNORE(nil);\n") (c!:printf 
-"#endif\n")))))) (cond ((or (equal (car argch) 0) (geq (car argch) 3)) (
-c!:printf "    argcheck(nargs, %s, \q%s\q);\n" (car argch) (cdr argch)))) (
-cond ((and varargs args) (progn (c!:printf "    va_start(aa, nargs);\n") (
-prog (var1344) (setq var1344 (reverse args)) lab1343 (cond ((null var1344) (
-return nil))) (prog (v) (setq v (car var1344)) (c!:printf 
-"    %s = va_arg(aa, LispObject);\n" v)) (setq var1344 (cdr var1344)) (go 
-lab1343)) (c!:printf "    va_end(aa);\n")))) (c!:printf 
+c!:printf "    va_start(aa, nargs);\n")))) (cond ((or (equal (car argch) 0) (
+geq (car argch) 3)) (c!:printf "    argcheck(nargs, %s, \q%s\q);\n" (car 
+argch) (cdr argch)))) (cond ((and varargs args) (progn (c!:printf 
+"    va_start(aa, nargs);\n") (prog (var1344) (setq var1344 (reverse args)) 
+lab1343 (cond ((null var1344) (return nil))) (prog (v) (setq v (car var1344))
+(c!:printf "    %s = va_arg(aa, LispObject);\n" v)) (setq var1344 (cdr 
+var1344)) (go lab1343)) (c!:printf "    va_end(aa);\n")))) (c!:printf 
 "#ifdef DEBUG_VALIDATE\n") (c!:printf 
 "    if (check_env(env)) return aerror(\qenv for %s\q);\n" (cdr argch)) (
 c!:printf "#endif\n") (c!:printf "#ifdef CHECK_STACK\n") (c!:printf 
@@ -4157,13 +4154,12 @@ c!:printf "    if (stack >= stacklimit)\n") (c!:printf "    {\n") (c!:pushpop
 "        env = reclaim(env, \qstack\q, GC_STACK, 0);\n") (c!:pushpop (quote 
 pop) (reverse args)) (c!:printf "        nil = C_nil;\n") (c!:printf 
 "        if (exception_pending()) return nil;\n") (c!:printf "    }\n")))) (
-cond (reloadenv (c!:printf "    push(env);\n")) (t (c!:printf 
-"    CSL_IGNORE(env);\n"))) (setq n 0) (cond (stacks (progn (c!:printf 
-"%<// space for vars preserved across procedure calls\n") (prog (var1346) (
-setq var1346 stacks) lab1345 (cond ((null var1346) (return nil))) (prog (v) (
-setq v (car var1346)) (progn (put v (quote c!:location) n) (setq n (plus n 1)
-))) (setq var1346 (cdr var1346)) (go lab1345)) (setq w n) (prog nil lab1347 (
-cond ((null (geq w 5)) (return nil))) (progn (c!:printf 
+cond (reloadenv (c!:printf "    push(env);\n"))) (setq n 0) (cond (stacks (
+progn (c!:printf "%<// space for vars preserved across procedure calls\n") (
+prog (var1346) (setq var1346 stacks) lab1345 (cond ((null var1346) (return 
+nil))) (prog (v) (setq v (car var1346)) (progn (put v (quote c!:location) n) 
+(setq n (plus n 1)))) (setq var1346 (cdr var1346)) (go lab1345)) (setq w n) (
+prog nil lab1347 (cond ((null (geq w 5)) (return nil))) (progn (c!:printf 
 "    push5(nil, nil, nil, nil, nil);\n") (setq w (difference w 5))) (go 
 lab1347)) (cond ((neq w 0) (progn (cond ((equal w 1) (c!:printf 
 "    push(nil);\n")) (t (progn (c!:printf "    push%s(nil" w) (prog (i) (setq

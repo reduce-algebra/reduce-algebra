@@ -1,0 +1,32 @@
+\BOOKMARK [1][-]{section.1}{1. Introduction: why CDE?}{}% 1
+\BOOKMARK [1][-]{section.2}{2. Installation}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{2.1. Installation of Reduce}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{2.2. Choice of an editor for writing Reduce programs}{section.2}% 4
+\BOOKMARK [1][-]{section.3}{3. Working with CDE}{}% 5
+\BOOKMARK [1][-]{section.4}{4. Jet space of even and odd variables, and total derivatives}{}% 6
+\BOOKMARK [1][-]{section.5}{5. Differential equations in even and odd variables}{}% 7
+\BOOKMARK [1][-]{section.6}{6. Calculus of variations}{}% 8
+\BOOKMARK [1][-]{section.7}{7. C-differential operators}{}% 9
+\BOOKMARK [2][-]{subsection.7.1}{7.1. C-differential operators}{section.7}% 10
+\BOOKMARK [2][-]{subsection.7.2}{7.2. C-differential operators as superfunctions}{section.7}% 11
+\BOOKMARK [2][-]{subsection.7.3}{7.3. The Schouten bracket}{section.7}% 12
+\BOOKMARK [1][-]{section.8}{8. Computing linearization and its adjoint}{}% 13
+\BOOKMARK [1][-]{section.9}{9. Higher symmetries}{}% 14
+\BOOKMARK [2][-]{subsection.9.1}{9.1. Setting up the jet space and the differential equation.}{section.9}% 15
+\BOOKMARK [2][-]{subsection.9.2}{9.2. Solving the problem via dimensional analysis.}{section.9}% 16
+\BOOKMARK [2][-]{subsection.9.3}{9.3. Solving the problem using CRACK}{section.9}% 17
+\BOOKMARK [1][-]{section.10}{10. Local conservation laws}{}% 18
+\BOOKMARK [1][-]{section.11}{11. Local Hamiltonian operators}{}% 19
+\BOOKMARK [2][-]{subsection.11.1}{11.1. Korteweg\205de Vries equation}{section.11}% 20
+\BOOKMARK [2][-]{subsection.11.2}{11.2. Boussinesq equation}{section.11}% 21
+\BOOKMARK [2][-]{subsection.11.3}{11.3. Kadomtsev\205Petviashvili equation}{section.11}% 22
+\BOOKMARK [1][-]{section.12}{12. Examples of Schouten bracket of local Hamiltonian operators}{}% 23
+\BOOKMARK [2][-]{subsection.12.1}{12.1. Bi-Hamiltonian structure of the KdV equation}{section.12}% 24
+\BOOKMARK [2][-]{subsection.12.2}{12.2. Bi-Hamiltonian structure of the WDVV equation}{section.12}% 25
+\BOOKMARK [2][-]{subsection.12.3}{12.3. Schouten bracket of multidimensional operators}{section.12}% 26
+\BOOKMARK [1][-]{section.13}{13. Non-local operators}{}% 27
+\BOOKMARK [2][-]{subsection.13.1}{13.1. Non-local Hamiltonian operators for the Korteweg\205de Vries equation}{section.13}% 28
+\BOOKMARK [2][-]{subsection.13.2}{13.2. Non-local recursion operator for the Korteweg\205de Vries equation}{section.13}% 29
+\BOOKMARK [2][-]{subsection.13.3}{13.3. Non-local Hamiltonian-recursion operators for Plebanski equation}{section.13}% 30
+\BOOKMARK [1][-]{section.14}{14. Appendix: old versions of CDE}{}% 31
+\BOOKMARK [1][-]{section*.3}{References}{}% 32

@@ -2103,12 +2103,13 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
          w := ", " >>;
       c!:printf(";\n    va_list aa;\n");
       c!:printf("    va_start(aa, nargs);\n") >>;
-    if nil_used then
-       c!:printf("    CSL_IGNORE(nil);\n")
-    else if nilbase_used then <<
-       c!:printf("#ifndef NILSEG_EXTERNS\n");
-       c!:printf("    CSL_IGNORE(nil);\n");
-       c!:printf("#endif\n") >>;
+%   if nil_used then
+%      c!:printf("    CSL_IGNORE(nil);\n")
+%   else
+%   if nilbase_used then <<
+%      c!:printf("#ifndef NILSEG_EXTERNS\n");
+%      c!:printf("    CSL_IGNORE(nil);\n");
+%      c!:printf("#endif\n") >>;
     if car argch = 0 or car argch >= 3 then
        c!:printf("    argcheck(nargs, %s, \q%s\q);\n", car argch, cdr argch);
     if varargs and args then <<
@@ -2136,8 +2137,8 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
        c!:printf "        nil = C_nil;\n";
        c!:printf "        if (exception_pending()) return nil;\n";
        c!:printf "    }\n" >>;
-    if reloadenv then c!:printf("    push(env);\n")
-    else c!:printf("    CSL_IGNORE(env);\n");
+    if reloadenv then c!:printf("    push(env);\n");
+%   else c!:printf("    CSL_IGNORE(env);\n");
     n := 0;
     if stacks then <<
        c!:printf "%<// space for vars preserved across procedure calls\n";
