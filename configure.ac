@@ -1122,14 +1122,22 @@ else
       ;;
     esac
   done
+  case $build
+  *windows* | *win32* | *mingw*)
+    thr="win32"
+    ;;
+  *)
+    thr="posix"
+    ;;
+  esac
   AC_MSG_NOTICE([passcc = $passcc])
-  doconfig="$SHELL \"$abssrcdir/csl/cslbase/gc-7.4.2/configure\" $filter \
+  doconfig="$SHELL \"$abssrcdir/csl/cslbase/gc-7/configure\" $filter \
         $pass_host CPPFLAGS=\"$CPPFLAGS -DDONT_ADD_BYTE_AT_END=1\" \
         CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
         --prefix=\"$builddir\" --enable-cplusplus \
-        --enable-threads=posix --enable-thread-local-alloc \
-        --enable-parallel-mark"
+        --enable-threads=$thr --enable-thread-local-alloc \
+        --enable-parallel-mark --without-libatomic-ops"
   AC_MSG_NOTICE([doconfig = $doconfig])
   eval "$doconfig"
 

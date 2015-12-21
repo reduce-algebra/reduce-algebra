@@ -94,7 +94,7 @@ case $cygwin in
   then
     buildcase=3
   else
-    echo You are running undet cygwin64 but do not seem to have cygwin32 installed.
+    echo You are running under cygwin64 but do not seem to have cygwin32 installed.
     echo Please install it and then try again.
     exit 1
   fi

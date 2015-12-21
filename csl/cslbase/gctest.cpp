@@ -39,6 +39,23 @@
 // The very first challenge is just to get it built and in basic working
 // order!
 
+// I will put a general commentary about how far I have got here:
+//
+// I am using a snapshot of the gc from the developers' git repository,
+// rather than any tidily presented release.
+//
+// If you configure using --with-csl --with-boehm the system should
+//   build and use the gc. Building fails for cygwin64: the resulting library
+//   will not link for lack of some symbols that should define storage regions.
+//   configuration on FreeBSD is an issue if pkg.m4 is missing on your
+//   system, as it may very well be. On FreeBSD the configure step notes
+//   that thread support is incomplete there.
+//   The xxx-w64-mingw32 builds for Windows build but fails the "make check"
+//   test of use under C++.
+//
+// The documentation mentions DONT_ADD_BYTE_AT_END but to a large extent at
+// lesst the continued existence of that seems uncertain to me. I will need
+// to read the code to understand!
 
 #include <stdio.h>
 #include <stdint.h>
@@ -49,18 +66,23 @@
 // in the final word of an allocated chunk, which would be horrid! However
 // without it blocks whose size are multiples of 8 are padded to the next
 // multiple of 8 up...
+//
+// I am putting comments here noting functions that might feel useful. I
+// will then try to set up some test cases involving them.
 
-#if defined __WIN32__ // || defined __CYGWIN__
+#if defined __WIN32__
 #include <windows.h>
 #endif
+
 #define GC_THREADS
 #include "gc.h"
 
 int main(int argc, char *argv[])
 {
-    printf("GC_all_interior_pointers = %d\n", GC_get_all_interior_pointers());
+    printf("initially: GC_all_interior_pointers = %d\n", GC_get_all_interior_pointers());
 //  printf("DONT_ADD_BYTE_AT_END = %d\n", DONT_ADD_BYTE_AT_END);
     GC_set_all_interior_pointers(0);
+    printf("after resetting: GC_all_interior_pointers = %d\n", GC_get_all_interior_pointers());
     GC_set_pages_executable(1); // To support executable code in heap.
     GC_INIT();
     int size = 1;

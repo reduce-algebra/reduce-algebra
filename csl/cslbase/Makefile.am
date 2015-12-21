@@ -1727,24 +1727,24 @@ dynmodule.$(DLLEXT):	$(srcdir)/dynmodule.cpp $(dyndep)
 if canrun
 
 objtype$(EXEEXT):	$(srcdir)/objtype.cpp
-	g++ $(srcdir)/objtype.cpp -o objtype$(EXEEXT)
+	$(localcxx) $(srcdir)/objtype.cpp -o objtype$(EXEEXT)
 
 makeheaders$(EXEEXT):	$(srcdir)/makeheaders.cpp
-	g++ $(srcdir)/makeheaders.cpp -o makeheaders$(EXEEXT)
+	$(localcxx) $(srcdir)/makeheaders.cpp -o makeheaders$(EXEEXT)
 
 else !canrun
 
 # If I can not run programs built by the normal C compiler (eg because I am
-# cross-compiling) I will build these two utilities using g++. I will blandly
-# assume that in any cross-compilation situation that g++ is available
+# cross-compiling) I will build these two utilities using $(localcxx). I will blandly
+# assume that in any cross-compilation situation that $(localcxx) is available
 # and works, and the assumption is simplified by the fact that these two
 # programs are both fairly small and conservative.
 
 objtype$(EXEEXT):	$(srcdir)/objtype.cpp
-	g++ $(srcdir)/objtype.cpp -o objtype$(EXEEXT)
+	$(localcxx) $(srcdir)/objtype.cpp -o objtype$(EXEEXT)
 
 makeheaders$(EXEEXT):	$(srcdir)/makeheaders.cpp
-	g++ $(srcdir)/makeheaders.cpp -o makeheaders$(EXEEXT)
+	$(localcxx) $(srcdir)/makeheaders.cpp -o makeheaders$(EXEEXT)
 
 endif !canrun
 

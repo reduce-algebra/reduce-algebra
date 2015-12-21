@@ -455,6 +455,14 @@ case $host in
   ;;
 esac
 
+# I need a C++ compiler that is use to compile small utility programs.
+# Im some cases I can not use $CXX because that is a cross-compiler that
+# generates binaries that I can not run. I used to just use "g++" and hope,
+# but here I will see which of g++, clang++, c++ and CC is at least present.
+# I will then assume that that is a viable compiler to use.
+
+AC_PATH_PROGS(LOCALCXX, [g++ clang++ c++ CC], g++, [])
+
 # In some cases there may be explicitly GNU versions of various utilities,
 # and I will perhaps use them if I find them.
 
