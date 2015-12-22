@@ -53,7 +53,7 @@ symbolic procedure mk_cdiffop(cdiff_op,num_arg,len_arg,len_target);
 % NOTE: to get the number of arguments do get('cdnarg,cdiff_op);
 % to get the length of each of its argumens do get('cdlarg,cdiff_op);
 % to get the length of vectors in the target space do get('cdtarget,cdiff_op);
-% to see if an identifier is a cdop do flagp('cdop,cdiff_op);
+% to see if an identifier is a cdop do get('cdop,cdiff_op);
 begin
   mkop cdiff_op;
   put('cdop,cdiff_op,t);
@@ -72,7 +72,7 @@ end;
 symbolic operator mk_cdiffop;
 
 symbolic procedure cdiffp(cdiff_op);
-  flagp('cdop,cdiff_op);
+  get('cdop,cdiff_op);
 
 symbolic procedure check_cdiff_onearg(cdiff_op);
   % Checks if the CDiff operator has exactly one argument.
@@ -116,7 +116,7 @@ symbolic procedure mk_superfun(superfun,num_arg,len_arg,len_target);
   % NOTE: to get the number of arguments do get('sfnarg,superfun);
   % to get the length of each of its argumens do get('sflarg,superfun);
   % to get the length of vectors in the target space do get('sftarget,superfun);
-  % to see if an identifier is a superfun do flagp('sfun,superfun);
+  % to see if an identifier is a superfun do get('sfun,superfun);
 begin
   mkop superfun;
   put('sfun,superfun,t);
@@ -135,7 +135,7 @@ end;
 symbolic operator mk_superfun;
 
 symbolic procedure superfunp(superfun);
-  flagp('sfun,superfun);
+  get('sfun,superfun);
 
 symbolic procedure check_superfun_onearg(superfun);
   % Checks if the superfunction of a CDiff operator

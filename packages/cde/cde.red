@@ -51,7 +51,7 @@ module cde; % CDIFF package main file
 % which are the same and are usable in both modes, provided that the lists
 % that are declared in one mode are shared in order to make them accessible
 % under the other mode.
-global '(indep_var dep_var odd_var total_order
+fluid '(indep_var dep_var odd_var total_order
  principal_der de principal_odd de_odd
  deg_indep_var deg_dep_var deg_odd_var % end of input variables
  indep_var!* dep_var!* odd_var!* principal_der!* de!* principal_odd!* de_odd!*
