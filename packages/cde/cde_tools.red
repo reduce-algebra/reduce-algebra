@@ -59,6 +59,12 @@ symbolic procedure cde_list2id l;
    if atom l then rederr "argument for cde_list2id must be a list"
     else intern compress for each i in l join explode i;
 
+symbolic procedure cde_list_to_ids l;
+  % Enables an algebraic mode version of cde_list2ids
+  cde_list2id cdr l;
+
+symbolic operator cde_list_to_ids;
+
 symbolic procedure cde_mkzero n;
    for i:=1:n collect 0;
 

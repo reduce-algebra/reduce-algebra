@@ -3,9 +3,8 @@
 % 2015.10.10 R. Vitolo
 
 % Loading the interface to cdiff packages
-in "cde.red"$
 
-algebraic;
+load_package cde;
 
 % Initialization
 indep_var:={x,y}$

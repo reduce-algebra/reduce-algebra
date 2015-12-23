@@ -7,9 +7,8 @@
 % (even and odd) principal and parametric derivatives,
 % and the restriction of total derivatives to the (even and odd) equation.
 % Of course mostly odd part refers to tangent or cotangent covering.
-in "cde.red"$
 
-algebraic;
+load_package cde;
 
 % Initialization of the jet environment of the differential equation.
 indep_var:={t,x,y}$
@@ -43,7 +42,6 @@ cde({indep_var,dep_var,odd_var,total_order},
 
 % Solving the determining equations through dimensional analysis
 cde_grading(deg_indep_var,deg_dep_var,deg_odd_var)$
-
 
 % Saving cde state in a file
 save_cde_state(statename)$
@@ -103,7 +101,7 @@ for i:=tel+1:tel2 do integrate_equation i$
 off nat$
 off echo$
 out <<resname>>$
-phi_odd:=replace_extodd(phi);
+phi:=phi;
 write ";end;";
 shut <<resname>>$
 on echo$

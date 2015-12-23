@@ -7,11 +7,8 @@
 % (even and odd) principal and parametric derivatives,
 % and the restriction of total derivatives to the (even and odd) equation.
 % Of course mostly odd part refers to tangent or cotangent covering.
-in "cde.red"$
 
-algebraic;
-
-load_package assist;
+load_package cde;
 
 % Initialization of the jet environment of the differential equation
 indep_var:={x,t}$
@@ -69,7 +66,7 @@ system_eq:=splitext_list({total_eq})$
 
 load_package crack;
 crack_results:=crack(system_eq,{},unk,
-   diffset(all_parametric_der,even_vars));
+   cde_difflist(all_parametric_der,even_vars));
 
 % Here we write results of the computation in a file.
 

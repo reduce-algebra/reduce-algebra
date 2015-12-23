@@ -8,12 +8,10 @@
 % 3 - the two operators are compatible, [aa1,aa2]=0.
 
 % Loading the interface to cdiff packages
-in "cde.red"$
+load_package cde;
 
-algebraic;
 
-load_package assist;
-
+% Initialization
 indep_var:={t,x}$
 dep_var:={a,b,c}$
 odd_var:={p,q,r}$
@@ -66,7 +64,7 @@ procedure chr1(gmat,i,j,k,vars)$
 
 procedure mk_chr1(gmat,i,j,k,vars)$
 % Generate a symbol from the table of all Christoffel symbols
-   list_to_ids({chr1_,i,j,k})$
+   cde_list_to_ids({chr1_,i,j,k})$
 
 procedure generate_all_chr1(gmat,vars)$
 % Generate all Christoffel symbols of type 1
@@ -94,7 +92,7 @@ end$
 
 procedure mk_chr2(gmat,i,j,k,vars)$
 % Generate a symbol from the table of all Christoffel symbols
-   list_to_ids({chr2_,i,j,k})$
+   cde_list_to_ids({chr2_,i,j,k})$
 
 procedure generate_all_chr2(gmat,inv_gmat,vars)$
 % Generate all Christoffel symbols of type 1

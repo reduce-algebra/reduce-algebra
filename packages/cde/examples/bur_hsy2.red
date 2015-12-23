@@ -7,11 +7,8 @@
 % (even and odd) principal and parametric derivatives,
 % and the restriction of total derivatives to the (even and odd) equation.
 % Of course mostly odd part refers to tangent or cotangent covering.
-in "cde.red"$
 
-algebraic;
-
-load_package assist;
+load_package cde;
 
 % Initialization of the jet environment of the differential equation.
 indep_var:={x,t}$
@@ -46,7 +43,7 @@ for all sym let ell_b(sym)=td(sym,t)-td(sym,x,2)-2*u*td(sym,x)-2*u_x*sym$
 % This is the list of variables from which the unknown function `ansatz' depends
 even_vars:=for i:=0:3 join selectvars(0,i,dep_var,all_parametric_der)$
 for each el in even_vars do depend(ansatz,el)$
-split_vars:=diffset(all_parametric_der,even_vars)$
+split_vars:=cde_difflist(all_parametric_der,even_vars)$
 
 total_eq:=ell_b(ansatz)$
 check_letop({total_eq})$
