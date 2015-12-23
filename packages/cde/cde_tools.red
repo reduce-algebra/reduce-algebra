@@ -104,8 +104,14 @@ begin scalar firstl; integer n;
 end;
 
 symbolic procedure cde_diffset(set,rem);
-% Removes the subset rem from the set set
+% Removes the sublist 'rem' from the list 'set'
    if not rem then set else cde_diffset(cde_delete(car rem,set),cdr rem);
+
+symbolic procedure cde_difflist(set,rem);
+  % Removes the subset rem from the set set; works in algebraic mode.
+  'list . cde_diffset(cdr set,cdr rem);
+
+symbolic operator cde_difflist;
 
 symbolic procedure cde_lassoc(el,l);
 % Like assoc, but on the second element.

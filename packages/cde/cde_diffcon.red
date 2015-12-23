@@ -285,6 +285,10 @@ symbolic procedure cde_differential_consequences();
       diffcon_param_der!*,diffcon_param_ext!*);
   end;
 
+algebraic procedure restrict_to_equation(fct);
+  begin
+    return (fct where repprincparam_der)
+  end;
 
 endmodule;
 

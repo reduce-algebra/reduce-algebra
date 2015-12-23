@@ -1,6 +1,6 @@
-Time-stamp: "2014-11-18 17:42:13 vitolo"
+Time-stamp: "2015-12-22 13:29:37 vitolo"
 
-% This is a list of global variables
+% This is a list of global variables; well, now they are fluid.
 %
 % Global variables in input
 indep_var (identifiers of independent variables)

@@ -79,7 +79,7 @@ symbolic procedure all_next_mon(fgdo,listmon);
     return cde_mkset(montemp)
   end;
 
-symbolic procedure mkallmon(alg_grad,vars);
+symbolic procedure mkallmon0(alg_grad,vars);
 % makes a list of lists of all monomials of algebraic degree = k <= alg_grad
 % from a list of variables `vars'.
    begin scalar allmon_temp,allmon;
@@ -92,6 +92,11 @@ symbolic procedure mkallmon(alg_grad,vars);
       >>;
       return reverse(allmon)
    end;
+
+symbolic procedure mkallmon(alg_grad,vars);
+  'list . mkallmon0(alg_grad,cdr vars);
+
+symbolic operator mkallmon;
 
 % Section 2:  selects a list of graded variables
 %    by which generates monomials up to a given scale degree.
@@ -189,8 +194,8 @@ symbolic procedure gradmult(firstmon,secondmon);
 % The following procedure yields the graded multiplication of
 % two graded monomials.
 % Does not work for odd-ext variables.
-  list(list('times,car(firstmon),car(secondmon)),
-    cadr(firstmon)+cadr(secondmon));
+  list(aeval list('times,car(firstmon),car(secondmon)),
+    aeval list('plus,cadr(firstmon),cadr(secondmon)));
 
 symbolic procedure multgradmon(gradvar,alistmon);
 % The following procedure is the same as `multmon'
@@ -203,12 +208,11 @@ symbolic procedure multgradmon(gradvar,alistmon);
 symbolic procedure all_next_gradmon(alistvar,alistmon);
 % Makes all possible products of first (algebraic) degree variables
 % with an alist of graded monomials.
-   begin scalar gradmontemp;
-      for each el in alistvar do
-   	 gradmontemp:=
-            append(multgradmon(el,alistmon),gradmontemp);
-      return cde_mkset(gradmontemp)
-   end;
+begin scalar gradmontemp;
+  for each el in alistvar do
+    gradmontemp:=append(multgradmon(el,alistmon),gradmontemp);
+  return cde_mkset(gradmontemp)
+end;
 
 symbolic procedure filter_gradmon(alistmon,scale_deg);
 % Takes a list graded monomials and produces a pair of lists,
@@ -295,82 +299,51 @@ symbolic procedure mkalllinodd(graadmon,graadlijst_odd,degmin,degmax);
 
 symbolic operator mkalllinodd;
 
-% Section 4: same procedures as in S.3 
+% Section 4: same procedures as in S.3
 % but also involving independent variables
 
-symbolic procedure mkallgradmon_ind(alg_deg,top_degree);
-   % This procedure makes all graded monomials {el,deg} 
+symbolic procedure mkallgradmon_ind(alg_deg);
+   % This procedure makes all graded monomials {el,deg}
    % where el is a monomial of algebraic degree <= alg_deg
    % of independent variables and deg is an integer.
-   % It issues an error if graded monomials
-   % have degree whose absolute value is higher than top_degree.
    begin scalar allgradmon_temp,allgradmon,indep_gradmon;
-      indep_gradmon:=pair(indep_var,deg_indep_var);
-      allgradmon:=list(1,0) . indep_gradmon;
-      allgradmon_temp:=indep_gradmon;
-      for i:=1:(alg_deg-1) do
+     indep_gradmon:=for i:=1:n_indep_var collect
+       list(nth(indep_var!*,i),nth(deg_indep_var!*,i));
+     allgradmon:=list(1,0) . indep_gradmon;
+     allgradmon_temp:=indep_gradmon;
+     for i:=1:alg_deg do
+     <<
+       allgradmon_temp:=all_next_gradmon(indep_gradmon,allgradmon_temp);
+       allgradmon:=append(allgradmon,allgradmon_temp)
+     >>;
+     return allgradmon
+  end;
+
+symbolic procedure mult_grad(gradmon,lmon);
+  for each el in lmon collect aeval list('times,car gradmon,el);
+  
+symbolic procedure mkallgradmon_evenind(alg_deg,grmon,degree);
+  % takes graded monomials of independent variables constructed by
+  % mkallgradmon_ind and multiplies them with even graded monomials
+  % of complementary degree in order to produce monomials
+  % possibly with independent variables and having scale degree `degree'.
+  % Note that the monomials cannot be of zero degree in odd variables;
+  % this procedure is suitable for computations of operators.
+    begin scalar tempvars,tempdeg,tempgrmon,grmon_ind,n_grmon;
+      tempgrmon:=cdr grmon;
+      tempgrmon:=for each el in tempgrmon collect cdr el;
+      grmon_ind:=mkallgradmon_ind(alg_deg);
+      n_grmon:=length(tempgrmon);
+      for each el in grmon_ind do
       <<
-	 allgradmon_temp:=all_next_gradmon(indep_gradmon,allgradmon_temp);
-         for each el in allgradmon_temp do
-         <<
-            if abs(cadr(el))>top_degree then rederr
-               "Error: degree of independent variables lower than top_degree!"
-         >>;
-	 allgradmon:=append(allgradmon,allgradmon_temp)
+	tempdeg:=aeval list('plus,degree,minus(cadr el));
+	if lessp(tempdeg,n_grmon-1) then
+	  tempvars:=append(mult_grad(el,nth(tempgrmon,tempdeg+1)),tempvars)
       >>;
-      return allgradmon
-   end;
+      return 'list . tempvars
+    end;
 
-symbolic procedure mklinodd0(graadmon,graadlijst_odd,degree);
-   % Next function takes a list of lists of monomials `graadmon'
-   % of increasing degrees 0,1,...
-   % and a list of parametric odd coordinates `graadlijst_odd'
-   % of increasing degrees 0,1,... and multiplies them,
-   % yielding all products of degree equal to `degree'.
-   begin scalar linodd,linodd_temp;
-      for i:=0:degree do
-      <<
-         for each el in nth(graadlijst_odd,i+1) do
-         <<
-            linodd_temp:=for each ell in part(graadmon,degree-i+1)
-               collect list('times,el,ell);
-            linodd:=append(linodd,linodd_temp)
-         >>
-      >>;
-      return linodd
-   end;
-
-symbolic procedure mklinodd0_ind(grmon_ind,grmon,grlijst_odd,degree);
-   % takes graded monomials of independent variables grmon_ind
-   % and multiplies them with linear odd monomials of complementary degree
-   % in order to produce linear odd monomials possibly with 
-   % independent variables and having scale degree `degree'.
-   % Note that the monomials can be of zero degree in odd variables; this
-   % procedure is suitable for computations of even and odd 
-   % conservation laws on coverings at the same time.
-   begin scalar tempvars;
-      return for each el in grmon_ind join
-      <<
-	 tempvars:=mklinodd0(grmon,grlijst_odd,degree - cadr(el));
-	 for each ell in tempvars collect list('times,car(el),ell)
-      >>
-   end;
-
-symbolic procedure mklinodd_ind(grmon_ind,grmon,grlijst_odd,degree);
-   % takes graded monomials of independent variables grmon_ind
-   % and multiplies them with linear odd monomials of complementary degree
-   % in order to produce linear odd monomials possibly with 
-   % independent variables and having scale degree `degree'.
-   % Note that the monomials cannot be of zero degree in odd variables;
-   % this procedure is suitable for computations of operators.
-   begin scalar tempvars;
-      return for each el in grmon_ind join
-      <<
-	 tempvars:=mklinodd(grmon,grlijst_odd,degree - cadr(el));
-	 for each ell in tempvars collect list('times,first(el),ell)
-      >>
-   end;
-
+symbolic operator mkallgradmon_evenind;
 
 % Section 5: procedures for solving symmetry equations
 
