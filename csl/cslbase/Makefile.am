@@ -792,10 +792,10 @@ reduce_CPPFLAGS += $(BOEHMINC)
 csl_CPPFLAGS    += $(BOEHMINC)
 gctest_CPPFLAGS    += $(BOEHMINC)
 
-csl_LDADD += -L../lib -lgc
-bootstrapreduce_LDADD += -L../lib -lgc
-reduce_LDADD += -L../lib -lgc
-gctest_LDADD += -L../lib -lgc
+csl_LDADD += ..lib//libgc.a
+bootstrapreduce_LDADD += ../lib/libgc.a
+reduce_LDADD += ../lib/libgc.a
+gctest_LDADD += ../lib/libgc.a
 
 csl_DEPENDENCIES += $(BOEHMDEPS)
 bootstrapreduce_DEPENDENCIES += $(BOEHMDEPS)

@@ -53,20 +53,26 @@
 //   The xxx-w64-mingw32 builds for Windows build but fails the "make check"
 //   test of use under C++.
 //
-// The documentation mentions DONT_ADD_BYTE_AT_END but to a large extent at
-// lesst the continued existence of that seems uncertain to me. I will need
-// to read the code to understand!
+// Note that I build gc-7 with DONT_ADD_BYTE_AT_END predefined. That is NOT
+// the default state, so a ready-build system-installed copy of the library
+// is not going to suit you. The effect of not having that option set is
+// that allocation is 8-byte units on a 32-bit machine or 16-byte ones on
+// a 64-bit machine get padded to double their size.
+//
+// I have patched gc.h to fix the cygwin64 issue. Perhaps some time the
+// upstream suppliers will adopt this.
+//
+// I now do not go "--enable-cplusplus" when I build the GC. It looks to me
+// as if the only effect of doing so would be to override new and free so that
+// memory allocated by them is treated as part of the root set (bit is not
+// collectable). So if I try storing references to anything in memory
+// allocated that way I will need to ensure that there is a reference
+// somewhere else too - for instance in a static variable. I miss this out
+// for now because the mingw build report trouble with the C++ test.
 
 #include <stdio.h>
 #include <stdint.h>
 
-// #define DONT_ADD_BYTE_AT_END 1         seems not to exist any more?
-//
-// I see a remark somewhere that when it did the GC would not scan a pointer
-// in the final word of an allocated chunk, which would be horrid! However
-// without it blocks whose size are multiples of 8 are padded to the next
-// multiple of 8 up...
-//
 // I am putting comments here noting functions that might feel useful. I
 // will then try to set up some test cases involving them.
 
@@ -79,21 +85,37 @@
 
 int main(int argc, char *argv[])
 {
+    printf("gctest\n");
+    fflush(stdout);
+// By default all_interior_pointers is set and this means that a pointer to
+// any byte within an allocated object will keep that object safe. I
+// just check that this is indeed the initial state and force it in case.
+// IN die coulse I can merely delete these 3 lines!
     printf("initially: GC_all_interior_pointers = %d\n", GC_get_all_interior_pointers());
-//  printf("DONT_ADD_BYTE_AT_END = %d\n", DONT_ADD_BYTE_AT_END);
-    GC_set_all_interior_pointers(0);
+    GC_set_all_interior_pointers(1);
     printf("after resetting: GC_all_interior_pointers = %d\n", GC_get_all_interior_pointers());
+// Part of a reason for liking the idea of a conservative GC is that it
+// will make compilation fron Lisp into native code easier. When I do that
+// I will want to be able to put code into the heap, and modern operating
+// systems seem to be fussy about dynamically created code. So since gc-7
+// gives me a way of supporting it I will use their scheme. A consequence
+// may be that the whole heap becomes executable. If I was writing code with
+// security implications I might worry about that.
     GC_set_pages_executable(1); // To support executable code in heap.
+// Some platforms need GC_INIT() and I must have set major options before
+// calling it. On some other platforms it is a no-op.
     GC_INIT();
-    int size = 1;
-// Here I will allocate blocks of various small sizes and observe the
-// differences between the addresses that they end up at. This can tell
-// me something about the potential wastage due to padding.
+// My first test tries to see how memory allocation rounds up block
+// sizes. This appears to show that on a 32-bit platform every block is
+// rounded up to a multiple of 8 bytes, and on a 64-bit onr to a multiple
+// of 16 bytes. Given that I defined DONT_ADD_BYTE_AT_END when building
+// the library I find that if I ask for 8 bytes that is what I get.
+    int size = 2;
     intptr_t prev = (intptr_t)GC_MALLOC(1);
-    for (int i=0; i<35; i++)
+    for (int i=0; i<18; i++)
     {   intptr_t next = (intptr_t)GC_MALLOC(size);
         printf("size = %d delta = %d\n", size, (int)(prev - next));
-        if ((i & 1) == 0) size++;
+        if ((i & 1) == 0) size += 2;
         prev = next;
     }
 // GC_MALLOC_ATOMIC(size) to be used if object will not contain pointers

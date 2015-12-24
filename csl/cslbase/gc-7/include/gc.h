@@ -14,6 +14,9 @@
  * Permission to modify the code and to distribute modified code is granted,
  * provided the above notices are retained, and a notice that the code was
  * modified is included with the above copyright notice.
+ *
+ * Modification by A C Norman so that cygwin64 is better supported. See
+ * around line 1738.
  */
 
 /*
@@ -1733,6 +1736,13 @@ GC_API int GC_CALL GC_get_force_unmap_on_gcollect(void);
 #if defined(__CYGWIN32__) || defined(__CYGWIN__)
   /* Similarly gnu-win32 DLLs need explicit initialization from the     */
   /* main program, as does AIX.                                         */
+#ifdef __x86_64
+/* The 64-bit version of cygwin uses different names here.              */
+#define _data_start__ __data_start__
+#define _data_end__   __data_end__
+#define _bss_start__  __bss_start__
+#define _bss_end__    __bss_end__
+#endif
   extern int _data_start__[], _data_end__[], _bss_start__[], _bss_end__[];
 # define GC_DATASTART ((GC_word)_data_start__ < (GC_word)_bss_start__ ? \
                        (void *)_data_start__ : (void *)_bss_start__)
