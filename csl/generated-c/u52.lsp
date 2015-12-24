@@ -1,114 +1,122 @@
 
 % u52.lsp           Machine generated Lisp
 
-(c!:install "u52" 17078 5100483 5387709)
+(c!:install "u52" 1037 6486846 9922150)
 
-(c!:install 'mchcomb '(mchcomb nil frlis!* ncmp!* smemqlp comb mchcomb2
-mchsarg lastpair setdiff) 1392635989027317182)
+(c!:install 'opfchk!! '(opfchk!! integer t !:rn!: !*numval dmode!* (
+!:rd!: !:cr!:) !:rd!: nil simprn simparg simprd !*complex list expt
+!:cr!: alg "is not defined as complex function" apply revlis simpcr
+rerror errorset2 errorp complexp intconv rd!:minusp) 1674097965982232728
+)
 
-(c!:install 'cl_sitheo '(cl_sitheo !*rlsiexpla !*rlsithok nil false
-inctheo true cl_simplat) 1409875018982774999)
+(c!:install 'constant_expr_listp '(constant_expr_listp constant i nil
+constant_exprp) 1981414049505523866)
 
-(c!:install 'irp_aex '(irp_aex nth) 2181938210901538142)
+(c!:install 'search4facf '(search4facf nil tryfactorf) 
+105188235140882629)
 
-(c!:install 'dvfsf_v '(dvfsf_v dvfsf_p!* qremf) 487778452932369413)
+(c!:install 'cr!:minusp '(cr!:minusp nil) 1518570810801810726)
 
-(c!:install 'formopr '(formopr symbolic flag opfn operator mkarg) 
-734211570063637338)
+(c!:install 'xriterion_2 '(xriterion_2 nil wedge_pair t !*trxideal
+"criterion 2 hit" last xdiv make_wedge_pair find_item writepri) 
+1011732389820470887)
 
-(c!:install 'updkorder '(updkorder kord!* nil alglist!*) 
-467378026450231291)
+(c!:install 'preproc '(preproc preproc1) 93797400033213538)
 
-(c!:install 'groebfasttest '(groebfasttest nil) 2225559225235425092)
+(c!:install 'all_defined '(all_defined map__edges defined_append
+all_defined_map_) 1489012146983854163)
 
-(c!:install 'sc_negtranspose '(sc_negtranspose nil fast!-row!-dim
-fast!-column!-dim sc_mkmatrix sc_getmat sc_negsq sc_setmat) 
-1174707352613512955)
+(c!:install 'reprod '(reprod nil multf) 1680435243969883784)
 
-(c!:install 'evalset_eq '(evalset_eq set_eq equal evalsetbool apply) 
-1152963132903555802)
+(c!:install '!*hfac '(!*hfac t avector "Invalid index" hfactors rerror
+getavalue) 1430784764324749651)
 
-(c!:install 'dp!=a2dpatom '(dp!=a2dpatom nil cali!=basering
-ring_all_names cali_bc_fi mo_from_a dp_term cali_bc_from_a mo_zero) 
-321569725278902271)
+(c!:install 'prepsqyy '(prepsqyy !*sq prepsqxx) 997402464023639603)
 
-(c!:install 'legendre!-symbol '(legendre!-symbol general!-modular!-expt)
- 2147372502581689754)
+(c!:install 'allbkern '(allbkern nil kernels basic!-kern union) 
+514249563188008739)
 
-(c!:install 'radf '(radf !*gcd !*mcd t nil !*precise_complex !*precise
-abs !*reduced dmode!* !*modular !*numval expt radd multf !:recip
-domainvalchk !*q2f multd prepf comfac to sfchk mkexpt comfac!-to!-poly
-quotf minusf negf lnc sqfrf radf1 mksp check!-radf!-sign) 
-2047862539242897659)
+(c!:install 'cl_ex '(cl_ex ex cl_closure) 2161111789049350897)
 
-(c!:install 'reduce!-mod!-eig '(reduce!-mod!-eig nil reduce!-mod!-eigf
-lcm quotf multf) 455080532723605792)
+(c!:install 'qqe_qadd!-inside '(qqe_qadd!-inside t nil a
+qqe_qadd!-location!* d qqe_op qqe_qopaddp) 311115905959534393)
 
-(c!:install 'ofsf_sacatlp '(ofsf_sacatlp nil ordp) 1642731296400115659)
+(c!:install 'quotfexf!*1 '(quotfexf!*1 nil t !*rationalize matrix
+"Catastrophic division failure" quotf rationalizesq rerror) 
+2026527606341443677)
 
-(c!:install 'repr_atfnew '(repr_atfnew (cong ncong) nil pasf_coeflst
-minusf pasf_anegrel multf repr_new) 1676932974862805964)
+(c!:install 'subsubf '(subsubf nil equal sub subsublis reversip!* aeval
+aconc!* subeval mksp mk!*sq) 121500722672076007)
 
-(c!:install 'specrd!:plus '(specrd!:plus minus add_minus mkround
-rd!:difference rd!:plus) 184901937126139639)
+(c!:install 'rand!-comb '(rand!-comb nil random) 284281306018021432)
 
-(c!:install 'setrow '(setrow maxvar rowmin rowmax nil codmat t max min) 
-25515298953873557)
+(c!:install 'partitindexvar '(partitindexvar nil minus metricu!*
+covariant t indxsymmetries revalind !*num2id deg!*form getlower simp
+multpfsq addpf coposp mkupf mksq indexsymmetrize negsq getupper) 
+2024709525095817349)
 
-(c!:install '!:mod!:units '(!:mod!:units current!-modulus) 
-1958294982665438620)
+(c!:install 'physop!*sq '(physop!*sq nil physop !*q2a !*collectphysops) 
+851782618777726459)
 
-(c!:install 'exdfpf '(exdfpf nil exdfk multpfsq exdf0 wedgepf2
-mkuniquewedge addpf) 184208791114024624)
+(c!:install 'dvertex!-to!-projector '(dvertex!-to!-projector mktails
+repeatsp prop!-simp mk!-contract!-coeff dpropagator) 1717623831293684885
+)
 
-(c!:install 'bfsqrt '(bfsqrt bfz!* !:bprec!: !:rd!: bfhalf!* minusp!:
-terrlst bfzerop!: order!: conv!:mt divide!: plus!: times!: difference!:
-abs!: greaterp!: inorm) 1321881066305928376)
+(c!:install 'remk '(remk nil degr multf negf to addf) 
+1723941094955150317)
 
-(c!:install 'msolve!-poly '(msolve!-poly current!-modulus !*trnonlnr
-"Current modulus larger than" failed nil lprim kernels msolve!-polya
-msolve!-polyn) 91685823521947210)
+(c!:install 'general!-minus!-mod!-p '(general!-minus!-mod!-p t
+general!-modular!-minus nreverse) 684814198127245782)
 
-(c!:install 'bf2rn1 '(bf2rn1 t !:rd!: !:bprec!: minus!: lshift normbf
-difbf divide!: abs!: bfzerop!: greaterp!: invbf) 2108707566568556354)
+(c!:install 'coeffs!-to!-form '(coeffs!-to!-form nil coeffs!-to!-form1) 
+2154444125061801480)
 
-(c!:install 'make!-image!-lc!-list1 '(make!-image!-lc!-list1 varlist nil
-t polyzero !*d2n horner!-rule!-for!-one!-var) 1392158257754706136)
+(c!:install 'chrstrem '(chrstrem !*trwu !*trchrstrem t
+"--------------------------------------------------------" nil
+"The new pol-set in ascending order is" "which is trivially trivial"
+inconsistent "A basic set is" "The remainder of "
+"wrt the basic set is " "which is a non-zero constant, and so"
+"the equations are inconsistent." "The final characteristic set is:"
+wusort wuconstantp prin2t!* printsf terpri!* setdiff prin2!*
+findremainder prin2t absf union pickbasicset) 1280869024354071871)
 
-(c!:install 'exceeds!-order!-variant '(exceeds!-order!-variant nil
-tayexp!-plus2 tayexp!-greaterp) 281437532664161638)
+(c!:install 'dfmax '(dfmax dfrel) 1321308369240572700)
 
-(c!:install 'qqe_ofsf_ordatp '(qqe_ofsf_ordatp ordp qqe_ofsf_ordrelp) 
-1015085286788638325)
+(c!:install 'search_att '(search_att nil (stop) !  != !" t !$ find
+errorml) 1499001463146015585)
 
-(c!:install 'cl_smsimpl!-junct1 '(cl_smsimpl!-junct1 nil !*rlsiidem true
-t false or and not impl repl equiv ex all bex ball cl_simpl1 cl_flip
-rl_smupdknowl cl_atfp cl_smsimpl!-junct2) 1325694582209969737)
+(c!:install 'setprev '(setprev codmat maxvar) 1599879108268475474)
 
-(c!:install 'get_num_part '(get_num_part !:rd!: !:dn!: minus expt bf2flr
-nreverse rdwrap2 rdwrap!-expt) 1851619515349251964)
+(c!:install 'poly!-remainder '(poly!-remainder remainder nil
+poly!-divide!*) 2156884762798901839)
 
-(c!:install 'rembras '(rembras !*nat t " " "(" ")" prin2!* maprin) 
-1490696696680403491)
+(c!:install 'mkuniquewedge '(mkuniquewedge nil mkuniquewedge1 multpfsq
+addpf) 1825251528310770281)
 
-(c!:install 'infinityp '(infinityp !- t) 650902818912177841)
+(c!:install 'mk!-strand!-vertex '(mk!-strand!-vertex incident
+mk!-strand!-vertex2) 1642583444989583446)
 
-(c!:install 'mod!-dump '(mod!-dump freeind mod!-dump1) 
-971018643620945822)
+(c!:install 'mo_from_ei '(mo_from_ei mo!=deglist mo_zero) 
+602087789336090225)
 
-(c!:install 'bfprin0 '(bfprin0 !:print!-prec!: !:prec!: round!:dec1
-bfprin0x) 903295039315450273)
+(c!:install 'sfto_b!:cquot '(sfto_b!:cquot quotf1 nreverse) 
+357833287846482351)
 
-(c!:install 'pasf_anegateat '(pasf_anegateat true t false (cong ncong)
-pasf_anegrel pasf_mkop negf) 772954739155271814)
+(c!:install 'ev_max!# '(ev_max!#) 1938215986788281525)
 
-(c!:install 'listeq '(listeq nil) 2063551688827354275)
+(c!:install 'rewrite2 '(rewrite2 nil) 494596473675394549)
 
-(c!:install 'qsimpcomb_standard_integer_part '(
-qsimpcomb_standard_integer_part !*balanced_mod !*exp !*factor !*rational
-exp balanced_mod rational nil on off mk!*sq aeval simp
-qsimpcomb_standard_integer_part_sf addsq qremf !:minusp addf) 
-944958182892733980)
+(c!:install 'column_dim '(column_dim !*fast_la nil
+"Error in column_dim: input should be a matrix." rederr size_of_matrix
+matrixp) 420723012607600441)
+
+(c!:install 'gvarlis '(gvarlis nil ordop gvarlis1 sort) 
+701878123664886157)
+
+(c!:install 'weak_xreduce '(weak_xreduce nil !*trxmod " =" last "   "
+first preppf writepri weak_xreduce1) 825331736159439463)
+
+(c!:install 'tvectorp '(tvectorp nil deg!*form) 392924607371364231)
 
 
 % End of generated Lisp code

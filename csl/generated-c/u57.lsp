@@ -1,81 +1,63 @@
 
 % u57.lsp           Machine generated Lisp
 
-(c!:install "u57" 9909 7940005 9313330)
+(c!:install "u57" 11840 2675529 4084844)
 
-(c!:install 'gcdlist '(gcdlist nil t "Term content division failed"
-gcdld mapcarcar powers1 numeric!-content vintersection gcddd mksp multf
-quotfail1 gcdlist1 poly!-abs) 308618966018162665)
+(c!:install 'comcom3 '(comcom3 l_k l_a plus expt ff times minus
+difference det "Is " nil first ">0 and " ">0 ? (y/n) and press <RETURN>"
+last y lie4so3 lie4so21 liemat mat bb quotient cc !*tr_lie
+"[W,X]=Y, [W,Y]=-X, [X,Y]=W" only lie_class list liealg comtab
+"[W,X]=Y, [W,Y]=X, [X,Y]=W" matrix aeval setk evalnumberp evalgreaterp
+revalx boolvalue!* assgnpri clear aeval!* evalequal) 449270489247826737)
 
-(c!:install 'exptchk0 '(exptchk0 nil t exptunwind expttermp addsq multsq
-) 1923995024677123899)
+(c!:install 'lexorder '(lexorder nil gv!* !*g2lex gcdout ljet insert) 
+1576949871607660531)
 
-(c!:install 'dip!-nc!-m!*p!-distleft '(dip!-nc!-m!*p!-distleft nil
-dip!-nc!-ev!-prod dipsum) 1049167886780568147)
+(c!:install 'quotfail '(quotfail polyzero "UNEXPECTED DIVISION FAILURE"
+quotf errorf) 1594334677508816826)
 
-(c!:install 'mksetshare '(mksetshare progn (setq alglist!* (cons nil nil
-)) mksetq) 2074184981787001789)
+(c!:install 'lto_hmember '(lto_hmember apply lto_hmember1) 
+1905637738227880727)
 
-(c!:install 'list_of_parents '(list_of_parents nil list_of_parent) 
-112367089572403565)
+(c!:install 'evalleq '(evalleq evalgreaterp) 1431629446096259862)
 
-(c!:install 'is_sub_df '(is_sub_df nil dot_df_args) 617371264518312904)
+(c!:install 'taysimpsq!* '(taysimpsq!* nil !*taylorautoexpand taysimpsq)
+ 2248755144385674747)
 
-(c!:install 'readsys '(readsys varlist!* zeros!* nforms!* reductions!*
-ng!* alfa!* beta!* nil gg!* vjets!* simp !*f2di gcdout addnew !*v2j) 
-701576860068999125)
+(c!:install 'pasf_exprng!-gball '(pasf_exprng!-gball t
+"pasf_exprng: bad bound " " with free variables " !*rlexprngnatural nil
+and true false cl_fvarl rederr pasf_exprng pasf_qff2ivl pasf_sisub) 
+269965458363782836)
 
-(c!:install 'cdr_sort '(cdr_sort nil t apply) 786982879104822087)
+(c!:install 'aex_lc '(aex_lc aex_mvartest aex_ex sfto_lcx quotsq kernels
+aex_ctx ctx_filter aex_mk) 1824200743412597136)
 
-(c!:install 'bdstest '(bdstest r2bf rootrnd equal!:) 1756864303508523238
-)
+(c!:install 'rnfloor!* '(rnfloor!*) 833451730533008425)
 
-(c!:install 'get_nr_irred_reps '(get_nr_irred_reps !*complex
-get!*nr!*complex!*irred!*reps get!*nr!*real!*irred!*reps) 
-130552199331658638)
+(c!:install 'codfac '(codfac rowmin nil codmat maxvar t times commonfac
+samefar) 1024486698922874800)
 
-(c!:install 'ev_init '(ev_init nil) 1151919986852689506)
+(c!:install 'qsimpcomb_standard_qexp_part_sf '(
+qsimpcomb_standard_qexp_part_sf nil expt times simp addsq) 
+546438383342275915)
 
-(c!:install 'znumr '(znumr t nil) 668625862312107851)
+(c!:install 'rm_neg_pow '(rm_neg_pow t nil to multsq addsq) 
+613999024558537082)
 
-(c!:install 'mkdep '(mkdep nil t depend1) 2077599978790671051)
+(c!:install 'mkuniquewedge1 '(mkuniquewedge1 wedgemtch!* wedge wedgemtch
+partitop mkupf) 882086248870702565)
 
-(c!:install 'dipcancelmev '(dipcancelmev nil dipcancelmev1) 
-491657578392624396)
+(c!:install 'rand_functionp '(rand_functionp lambda getd) 
+918742695220211816)
 
-(c!:install 'fast!-stack!-rows '(fast!-stack!-rows) 1858118498792371307)
+(c!:install '!:dmexpt '(!:dmexpt !*complex !:dm2fix !:expt force!-to!-dm
+crexpt!* rdexpt!*) 55387169460792112)
 
-(c!:install 'logrtn '(logrtn 2.0 !!log2 msd log) 336330865579327079)
+(c!:install 'partdff '(partdff t !*product!-rule nil addsq multsq
+partdfpow partdft) 1367082714225540413)
 
-(c!:install 'fix_or_str '(fix_or_str) 187885900038197544)
-
-(c!:install 'matpri1 '(matpri1 !*fort "MAT" nil only t !*nat spare!*
-orig!* mat!-top!-l mat!-top!-r mat!-low!-l mat!-low!-r mat!-mid!-l
-mat!-mid!-r setq posn!* ycoord!* pline!* ymax!* ymin!* assgnpri terpri!*
-layout!-formula max update!-pline min symbol maprin oprin matpri2) 
-1382642526229014791)
-
-(c!:install 'ioto_tprin2 '(ioto_tprin2 t nil ioto_prin21) 
-990400564676560741)
-
-(c!:install 'pasf_smwrmknowl '(pasf_smwrmknowl !*rlsusi pasf_susirmknowl
-cl_smrmknowl) 47500139863204398)
-
-(c!:install 'formgen '(formgen !? !?!? mgen t !! gen nil progn put form1
-) 2252849306404541860)
-
-(c!:install 'idqsimpcont '(idqsimpcont !*vdpinteger idqsimpconti
-idqsimpcontr) 1765350843447257556)
-
-(c!:install 'sin!: '(sin!: t bfz!* !!scls !:bf!-0!.25 bfone!* !!sclc
-!:rd!: nil bflerrmsg bfzerop!: minusp!: minus!: msd !:pi times!: lessp!:
-difference!: cut!:mt cos!: order!: min cut!:ep abs!: greaterp!: max
-divide!: plus!: round!:mt quotient!: conv!:bf2i) 2066303961375014403)
-
-(c!:install 'replace_edge2 '(replace_edge2) 581054168860553246)
-
-(c!:install 'groeb!=critb '(groeb!=critb nil groeb!=testb lastpair) 
-897090031316603823)
+(c!:install 'new_edge '(new_edge nil new_edge_list mk_edge_name) 
+1785637529940774812)
 
 
 % End of generated Lisp code
