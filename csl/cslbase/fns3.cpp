@@ -333,16 +333,16 @@ static void simple_print(LispObject x)
     {   int len;
         x = qpname(x);
         len = length_of_header(vechdr(x)) - CELL;
-        printf("%.*s", len, &celt(x, 0));
+        printf("%.*s", (int)len, &celt(x, 0));
     }
     else if (is_vector(x))
     {   int i;
         if (type_of_header(vechdr(x)) == TYPE_STRING)
         {   int len = length_of_header(vechdr(x)) - CELL;
-            printf("\"%.*s\"", len, &celt(x, 0));
+            printf("\"%.*s\"", (int)len, &celt(x, 0));
             return;
         }
-        printf("[%d:", length_of_header(vechdr(x)) - CELL);
+        printf("[%" PRId64 ":", (int64_t)length_of_header(vechdr(x)) - CELL);
         for (i=0; i<(length_of_header(vechdr(x)) - CELL)/CELL; i++)
         {   printf(" ");
             simple_print(elt(x, i));
@@ -351,7 +351,7 @@ static void simple_print(LispObject x)
         return;
     }
     else
-    {   printf("@%.8x@", x);
+    {   printf("@%" PRIx64 "@", (int64_t)x);
         return;
     }
 }

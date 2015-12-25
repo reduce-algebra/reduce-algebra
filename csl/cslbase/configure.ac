@@ -601,7 +601,7 @@ AC_PROG_CXX
 CFLAGS="$old_CFLAGS"
 CXXFLAGS="$old_CXXFLAGS"
 
-LT_INIT
+LT_INIT([disable-static])
 
 if test "x$XLIBS" != "x"
 then
@@ -1000,7 +1000,7 @@ then
   if test "x$enable_static" = "xyes"
   then
     LDFLAGS="${LDFLAGS} -static"
-    AC_MSG_NOTICE([inclusing -static in linker flags])
+    AC_MSG_NOTICE([including -static in linker flags])
   fi
 else
 #

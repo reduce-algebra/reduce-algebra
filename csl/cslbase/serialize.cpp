@@ -195,6 +195,14 @@ static int address_used(uint64_t addr)
 // it should be treated as a fatal error - the processing here is naive
 // at present, since for instance with a GUI there is no guarantee that
 // stderr exists.
+//
+// Furthermore rather than using malloc here (and free later) I should try
+// to use some space that is allocated to me but not currently in use. If I
+// have a 2-space copying collectior I have half my whole memory available!
+// Even if I am using a non-copying collector I expect there to be LOTS of
+// space available. So maybe what I need rather than malloc is a call that
+// allocates a vector-like region in the heap, but falls back to malloc (eg
+// to expand the heap) rather than garbage collecting?
 
 static void *new_map_block()
 {
@@ -224,7 +232,7 @@ static uint8_t *new_final_map_block()
 // it should ever consume should be under 50 Mbytes and on a small machine
 // such as a 512 Mbyte Raspberry pi it ought to use under 10 Mbytes.
 
-static void mark_address__as_used(uint64_t addr)
+static void mark_address_as_used(uint64_t addr)
 {
     unsigned int i = (unsigned int)(addr >> 54);
     uint8_t *****m1 = used_map[i];
@@ -260,22 +268,34 @@ static void release_map_5(uint8_t *m)
 
 static void release_map_4(uint8_t **m)
 {
-    if (m != NULL) for (int i=0; i<512; i++) release_map_5(m[i]);
+    if (m != NULL)
+    {   for (int i=0; i<512; i++) release_map_5(m[i]);
+        free(m);
+    }
 }
 
 static void release_map_3(uint8_t ***m)
 {
-    if (m != NULL) for (int i=0; i<512; i++) release_map_4(m[i]);
+    if (m != NULL)
+    {   for (int i=0; i<512; i++) release_map_4(m[i]);
+        free(m);
+    }
 }
 
 static void release_map_2(uint8_t ****m)
 {
-    if (m != NULL) for (int i=0; i<512; i++) release_map_3(m[i]);
+    if (m != NULL)
+    {   for (int i=0; i<512; i++) release_map_3(m[i]);
+        free(m);
+    }
 }
 
 static void release_map_1(uint8_t *****m)
 {
-    if (m != NULL) for (int i=0; i<512; i++) release_map_2(m[i]);
+    if (m != NULL)
+    {   for (int i=0; i<512; i++) release_map_2(m[i]);
+        free(m);
+    }
 }
 
 static void release_map()
@@ -286,12 +306,14 @@ static void release_map()
     }
 }
 
+// The code here is NOT AT ALL WORKING YET.
+
 static void mark_used_cells(LispObject a)
 {
     LispObject b = (LispObject)NULL;
     LispObject p = a, w;
 descend:
-    switch (p & TAGBITS)
+    switch (p & TAG_BITS)
     {
     default:
     case TAG_CONS:
@@ -327,7 +349,7 @@ descend:
         mark_address_as_used((int64_t)p);
 // For bignums I can just ascend here. For rationals and complex values I
 // must descend through the two components.
-        qnumerator(p) = b;
+        numerator(p) = b;
         b = p;
         p = w;
         goto descend;

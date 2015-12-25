@@ -1851,7 +1851,7 @@ static void char_ins(char *s, int c)
 static void fp_sprint(char *buff, double x, int prec)
 {
 #ifdef DEBUG
-    char *fullbuff = buff; // Useful for when running under a debugger
+    volatile char *fullbuff = buff; // Useful for when running under a debugger
 #endif
 //
 // Note that I am assuming IEEE arithmetic here so the tricks that I use
