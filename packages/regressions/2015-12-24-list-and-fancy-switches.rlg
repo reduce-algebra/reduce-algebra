@@ -1,0 +1,112 @@
+on fancy;
+
+
+
+operator f;
+
+
+share y1,y2,y3,y4;
+
+
+
+x1 := (a+b+c)/2;
+
+latex:\black$\displaystyle  x_{1}\mathrm{:=}\frac{a+b+c}{2}$
+x2 := binomial(a+b/2,n);
+
+latex:\black$\displaystyle  x_{2}\mathrm{:=}\left(\begin{matrix}\frac{2\*a+b}{2}\\n\end{matrix}\right)$
+x3 := int(f(x),x,a+b,c+d);
+
+latex:\black$\displaystyle  x_{3}\mathrm{:=}\int _{a+b}^{c+d}f\left(x\right)\,d\,x$
+x4 := sum(f(x),x,a+b,c+d);
+
+latex:\black$\displaystyle  x_{4}\mathrm{:=}\sum_{x=a+b}^{c+d}\,f\left(x\right)$
+x5 := df(f(x+a),x);
+
+latex:\black$\displaystyle  x_{5}\mathrm{:=}\frac{\partial \*f\left(a+x\right)}{\partial \*x}$
+x6 := BesselJ(a+b,x);
+
+latex:\black$\displaystyle  x_{6}\mathrm{:=}J_{a+b}\left(x\right)$
+x7 := texsym(stackrel,f(a+b),texsym(longrightarrow));
+
+latex:\black$\displaystyle  x_{7}\mathrm{:=}\stackrel{f\left(a+b\right)}{\longrightarrow}$
+x8 := hypergeometric({},{1,2},-z);
+
+latex:\black$\displaystyle  x_{8}\mathrm{:=}\mathrm{{}}_{0}F_{2}\left(\left.\mathrm{{}}^{-}_{1,2}\,\right|\,-z\right)$
+x9 := MeijerG({{}},{{b,b+1/3,b+2/3}},z);
+
+latex:\black$\displaystyle  x_{9}\mathrm{:=}\frac{z^b\*\left(6\*z^{2/3}\*\mathrm{{}}_{0}F_{2}\left(\left.\mathrm{{}}^{-}_{\frac{5}{3},\frac{4}{3}}\,\right|\,-z\right)\*\pi^2-2\*\sqrt[\,3]{z}\*\sqrt{3}\*\Gamma\left(\frac{2}{3}\right)\*\Gamma\left(\frac{1}{3}\right)\*\mathrm{{}}_{0}F_{2}\left(\left.\mathrm{{}}^{-}_{\frac{4}{3},\frac{2}{3}}\,\right|\,-z\right)\*\pi+\Gamma\left(\frac{2}{3}\right)^2\*\Gamma\left(\frac{1}{3}\right)^2\*\mathrm{{}}_{0}F_{2}\left(\left.\mathrm{{}}^{-}_{\frac{2}{3},\frac{1}{3}}\,\right|\,-z\right)\right)}{\Gamma\left(\frac{2}{3}\right)\*\Gamma\left(\frac{1}{3}\right)}$
+
+% Expressions that simplify and must therefore be built by hand
+
+lisp <<
+  y1 := '(!*sq (((((limit (f x) x (plus a b)) . 1) . 1)) . 1) t);
+  y2 := '(!*sq (((((hypergeometric (list 1 -22) (list) (minus z)) . 1) . 1)) . 1) t);
+  y3 := '(!*sq (((((meijerg (list (list)) (list (list b (plus b 1) (plus b 2))) z) . 1) . 1)) . 1) t);
+  y4 := '(!*sq (((((meijerg (list (list b (plus b 1) (plus b 2))) (list (list)) z) . 1) . 1)) . 1) t);
+>>$
+
+
+y1;
+
+latex:\black$\displaystyle  \lim_{x\rightarrow a+b}f\left(x\right)$
+y2;
+
+latex:\black$\displaystyle  \mathrm{{}}_{2}F_{0}\left(\left.\mathrm{{}}^{1,\mathrm{-22}}_{-}\,\right|\,-z\right)$
+y3;
+
+latex:\black$\displaystyle  G^{3\*0}_{0\*3}\left(z\,\left|\,{}^{-}_{b,b+1,b+2}\right.\right)$
+y4;
+
+latex:\black$\displaystyle  G^{0\*3}_{3\*0}\left(z\,\left|\,{}^{b,b+1,b+2}_{-}\right.\right)$
+
+on list;
+
+
+
+x1;
+
+latex:\black$\displaystyle  \frac{b+c+a}{2}$
+x2;
+
+latex:\black$\displaystyle  \left(\begin{matrix}\frac{2\*a+b}{2}\\n\end{matrix}\right)$
+x3;
+
+latex:\black$\displaystyle  \int _{a+b}^{c+d}f\left(x\right)\,d\,x$
+x4;
+
+latex:\black$\displaystyle  \sum_{x=a+b}^{c+d}\,f\left(x\right)$
+x5;
+
+latex:\black$\displaystyle  \frac{\partial \*f\left(a+x\right)}{\partial \*x}$
+x6;
+
+latex:\black$\displaystyle  J_{a+b}\left(x\right)$
+x7;
+
+latex:\black$\displaystyle  \stackrel{f\left(a+b\right)}{\longrightarrow}$
+x8;
+
+latex:\black$\displaystyle  \mathrm{{}}_{0}F_{2}\left(\left.\mathrm{{}}^{-}_{1,2}\,\right|\,z\right)$
+x9;
+
+latex:\black$\displaystyle  \frac{z^b\*\left(6\*z^{2/3}\*\mathrm{{}}_{0}F_{2}\left(\left.\mathrm{{}}^{-}_{\frac{5}{3},\frac{4}{3}}\,\right|\,-z\right)\*\pi^2-2\*\sqrt[\,3]{z}\*\sqrt{3}\*\Gamma\left(\frac{2}{3}\right)\*\Gamma\left(\frac{1}{3}\right)\*\mathrm{{}}_{0}F_{2}\left(\left.\mathrm{{}}^{-}_{\frac{4}{3},\frac{2}{3}}\,\right|\,-z\right)\*\pi+\Gamma\left(\frac{2}{3}\right)^2\*\Gamma\left(\frac{1}{3}\right)^2\*\mathrm{{}}_{0}F_{2}\left(\left.\mathrm{{}}^{-}_{\frac{2}{3},\frac{1}{3}}\,\right|\,-z\right)\right)}{\Gamma\left(\frac{2}{3}\right)\*\Gamma\left(\frac{1}{3}\right)}$
+y1;
+
+latex:\black$\displaystyle  \lim_{x\rightarrow a+b}f\left(x\right)$
+y2;
+
+latex:\black$\displaystyle  \mathrm{{}}_{2}F_{0}\left(\left.\mathrm{{}}^{1,\mathrm{-22}}_{-}\,\right|\,z\right)$
+y3;
+
+latex:\black$\displaystyle  G^{3\*0}_{0\*3}\left(z\,\left|\,{}^{-}_{b,b+1,b+2}\right.\right)$
+y4;
+
+latex:\black$\displaystyle  G^{0\*3}_{3\*0}\left(z\,\left|\,{}^{b,b+1,b+2}_{-}\right.\right)$
+
+off fancy;
+
+
+
+end;
+

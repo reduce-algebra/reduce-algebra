@@ -519,7 +519,8 @@ symbolic procedure fancy!-print!-indexlist1(l,op,sep);
     testing!-width!* :=t;
     fancy!-prin2!*(op,0);
     fancy!-prin2!*('!{,0);
-    w:=fancy!-inprint(sep or 'times,0,l);
+    if null l then w:=nil
+      else w:=fancy!-inprint(sep or 'times,0,l);
     fancy!-prin2!*("}",0);
     return w;
   end;
@@ -848,7 +849,7 @@ symbolic procedure fancy!-boolvalpri u;
 put('boolvalue!*,'fancy!-prifn,'fancy!-boolvalpri);
 
 symbolic procedure fancy!-quotpri u;
-   begin scalar n1,n2,n1t,n2t,fl,w,pos,tpos,testing!-width!*;
+   begin scalar n1,n2,n1t,n2t,fl,w,pos,tpos,testing!-width!*,!*list;
      if overflowed!* then return 'failed;
      testing!-width!*:=t;
      pos:=fancy!-pos!*;
@@ -1066,7 +1067,7 @@ put('binomial,'fancy!-prifn,'fancy!-binomial);
 
 symbolic procedure fancy!-binomial u;
   fancy!-level
-   begin scalar w1,w2;
+   begin scalar w1,w2,!*list;
      fancy!-prin2!*("\left(\begin{array}{c}",2);
      w1 := fancy!-maprint(cadr u,0);
      fancy!-prin2!*("\\",0);
@@ -1090,10 +1091,10 @@ symbolic procedure fancy!-intpri(u,p);
        else
          fancy!-prin2!*("\int ",0);
      if lo then  << fancy!-prin2!*('!_,0);
-                  fancy!-maprint!-tex!-bkt(lo,0,nil);
+                  fancy!-maprint!-tex!-bkt(lo,0,nil) where !*list=nil;
                  >>;
      if hi then << fancy!-prin2!*('!^,0);
-                  fancy!-maprint!-tex!-bkt(hi,0,nil);
+                  fancy!-maprint!-tex!-bkt(hi,0,nil) where !*list=nil;
                  >>;
      w1:=fancy!-maprint(cadr u,0);
      fancy!-prin2!*("\,d\,",2);
@@ -1134,10 +1135,10 @@ symbolic procedure fancy!-sumpri!*(u,p,mode);
         fancy!-prin2!*("\prod",0); % big PI
      fancy!-prin2!*('!_,0);
      fancy!-prin2!*('!{,0);
-     if w then w0:=fancy!-maprint(w,0);
+     if w then w0:=fancy!-maprint(w,0) where !*list=nil;
      fancy!-prin2!*('!},0);
      if hi then <<fancy!-prin2!*('!^,0);
-                  fancy!-maprint!-tex!-bkt(hi,0,nil);
+                  fancy!-maprint!-tex!-bkt(hi,0,nil) where !*list=nil;
                  >>;
      fancy!-prin2!*('!\!, ,1);
      w1:=fancy!-maprint(cadr u,0);
@@ -1166,7 +1167,8 @@ symbolic procedure fancy!-limpri(u,p);
      fancy!-prin2!*('!{,0);
      fancy!-maprint(var,0);
      fancy!-prin2!*("\to",0);
-     fancy!-maprint(lo,0);
+     fancy!-prin2!*('! ,0); % make sure there is space before the following symbol
+     fancy!-maprint(lo,0) where !*list=nil;
      fancy!-prin2!*('!},0);
      w:=fancy!-maprint(cadr u,0);
      return w;
@@ -1520,8 +1522,6 @@ put('ChebyshevT,'fancy!-functionsymbol,'(ascii 84));
 
 put('empty!*,'fancy!-special!-symbol,32);
 
-put('hypergeometric,'fancy!-prifn,'fancy!-hypergeometric);
-
 symbolic procedure fancy!-hypergeometric u;
  fancy!-level
   begin scalar w,a1,a2,a3;
@@ -1535,6 +1535,8 @@ symbolic procedure fancy!-hypergeometric u;
    w:=fancy!-print!-one!-index length a2;
    if testing!-width!* and w eq 'failed then return w;
    fancy!-prin2!*("(",nil);
+   if null a1 then a1 := list '!-;
+   if null a2 then a2 := list '!-;
    w := w eq 'failed or fancy!-print!-indexlist1(a1,'!^,'!*comma!*);
    w := w eq 'failed or fancy!-print!-indexlist1(a2,'!_,'!*comma!*);
    fancy!-prin2!*("\,",1);
@@ -1545,9 +1547,9 @@ symbolic procedure fancy!-hypergeometric u;
    return w;
   end;
 
-% hypergeometric({1,2,u/w,v},{5,6},sqrt x);
+put('hypergeometric,'fancy!-prifn,'fancy!-hypergeometric);
 
-put('MeijerG,'fancy!-prifn,'fancy!-meijerg);
+% hypergeometric({1,2,u/w,v},{5,6},sqrt x);
 
 symbolic procedure fancy!-meijerg u;
  fancy!-level
@@ -1569,11 +1571,15 @@ symbolic procedure fancy!-meijerg u;
    fancy!-prin2!*("(",nil);
    w := w eq 'failed or fancy!-prinfit(a3,0,nil);
    w := w eq 'failed or fancy!-special!-symbol(124,1);    % vertical bar
+   if null a1 then a1 := list '!-;
+   if null a2 then a2 := list '!-;
    w := w eq 'failed or fancy!-print!-indexlist1(a1,'!^,'!*comma!*);
    w := w eq 'failed or fancy!-print!-indexlist1(a2,'!_,'!*comma!*);
    fancy!-prin2!*(")",nil);
    return w;
   end;
+
+put('MeijerG,'fancy!-prifn,'fancy!-meijerg);
 
 % meijerg({{},1},{{0}},x);
 
