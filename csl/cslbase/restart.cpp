@@ -5198,8 +5198,8 @@ static void set_up_variables(CSLbool restart_flag)
 #ifdef DEBUG
                  w = cons(make_keyword("DEBUG"), w);
 #endif
-#ifdef TEST
-                 w = cons(make_keyword("TEST"), w);
+#ifdef EXPERIMENT
+                 w = cons(make_keyword("EXPERIMENT"), w);
 #endif
                  w = cons(make_keyword("RECORD_GET"), w);
 #ifdef HAVE_FWIN
@@ -5257,8 +5257,8 @@ static void set_up_variables(CSLbool restart_flag)
 #ifdef DEBUG
         w = cons(make_keyword("debug"), w);
 #endif
-#ifdef TEST
-        w = cons(make_keyword("test"), w);
+#ifdef EXPERIMENT
+        w = cons(make_keyword("experiment"), w);
 #endif
 #ifdef EMBEDDED
         w = cons(make_keyword("embedded"), w);

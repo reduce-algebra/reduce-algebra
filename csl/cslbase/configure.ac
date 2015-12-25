@@ -17,7 +17,7 @@
 #
 #
 #   --enable-conservative   development version not working yet!
-#   --enable-test     predefine a symbol TEST used to protect
+#   --enable-test     predefine a symbol EXPERIMENT used to protect
 #                     temporary or unfinished code developments.
 #   --enable-jit      another experimental and incomplete extension.
 #   --enable-embedded well the EMBEDDED option is intended for use via
@@ -40,6 +40,7 @@
 # Specify the name of this "application" and a version number
 AC_INIT([REDUCE],[6.04])
 AM_INIT_AUTOMAKE([1.8.3 -Wno-portability -Wno-override foreign dist-bzip2])
+AC_CONFIG_MACRO_DIRS([m4])
 
 here=`pwd`
 AC_MSG_NOTICE([+++ Configure in directory $here +++])
@@ -553,7 +554,7 @@ AC_MSG_RESULT([$enable_test])
 
 if test "x$enable_test" = "xyes"
 then
-  AC_DEFINE(TEST, [1], [True if this is an experimental testing mode variant])
+  AC_DEFINE(EXPERIMENT, [1], [True if this is an experimental testing mode variant])
 fi
 
 # Want to build "embedded" variant?
@@ -599,6 +600,8 @@ AC_MSG_NOTICE([Looking for C++ compiler])
 AC_PROG_CXX
 CFLAGS="$old_CFLAGS"
 CXXFLAGS="$old_CXXFLAGS"
+
+LT_INIT
 
 if test "x$XLIBS" != "x"
 then
@@ -1431,6 +1434,7 @@ AM_CONDITIONAL(exeext,test "x$exeext" = "xyes")
 AM_CONDITIONAL(fox,test "x$fox_present" = "xyes")
 AM_CONDITIONAL(wx,test "x$with_wx" != "xno")
 AM_CONDITIONAL(gui,test "x$fox_present" = "xyes" || test "x$with_wx" != "xno")
+AM_CONDITIONAL(experiment,test "x$enable_test" = "xyes")
 AM_CONDITIONAL(jit,test "x$enable_jit" = "xyes")
 AM_CONDITIONAL(canrun,test "x$can_run_executables" = "xyes")
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")

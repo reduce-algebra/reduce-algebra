@@ -20,6 +20,8 @@ TRACE = $(warning TRACE: $@ :: $?)
 # just use "touch" to reset time-stamps on files so that the ordering
 # appears reasonable.
 
+ACLOCAL_AMFLAGS = -I m4
+
 # The rules here are arranged to chain so that configure is only
 # considered after aclocal.m4 has been dealt with and Makefile.in only after
 # that. This is trying to follow the guidance given re "Multiple Outputs"
@@ -277,7 +279,7 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp arith11.cpp \
 		arith12.cpp arith13.cpp bytes1.cpp char.cpp cslmpi.cpp eval1.cpp eval2.cpp \
 		eval3.cpp eval4.cpp fns1.cpp fns2.cpp fns3.cpp \
-		print.cpp cslread.cpp restart.cpp sysfwin.cpp
+		print.cpp cslread.cpp restart.cpp serialize.cpp sysfwin.cpp
 
 demo_sources = csl.cpp fasl.cpp cslgc.cpp preserve.cpp
 
@@ -778,7 +780,7 @@ endif !crlibm
 
 if boehm
 
-gctest_SOURCES = gctest.cpp
+gctest_SOURCES = gctest.cpp serialize.cpp
 gctest_CPPFLAGS = $(TRACE)
 gctest_LDADD =
 gctest_DEPENDENCIES =

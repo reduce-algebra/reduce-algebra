@@ -1,5 +1,0 @@
-The file cmuntt.ttf is the font from cmuntt.otf passed through fontforge to
-convert to a pure ttf font without any embedded bitmap versions. This is
-done because it seems that gdiplus only accepts simple ttf fonts...
-
-Arthur Norman. October 2011
