@@ -1,0 +1,37 @@
+
+% Test that using the defint package doesn't modify global switches
+
+operator f;
+
+
+
+lisp {!*factor,!*exp,!*complex,!*rounded,!*combinelogs};
+
+
+(nil t nil nil nil)
+
+
+load_package defint;
+
+
+
+lisp {!*factor,!*exp,!*complex,!*rounded,!*combinelogs};
+
+
+(nil t nil nil nil)
+
+
+int(f(x),x,a+b,c+d);
+
+
+int(f(x),x,a + b,c + d)
+
+
+lisp {!*factor,!*exp,!*complex,!*rounded,!*combinelogs};
+
+
+(nil t nil nil nil)
+
+
+end;
+

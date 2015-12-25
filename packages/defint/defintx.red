@@ -146,7 +146,7 @@ symbolic procedure defint0 u;
    %      {'simp!*,{'prepsq,mkquote u}}},nil);
    %   if errorp u then error(99,list("error during log simp"))
    %      else u := car u;
- ret: if fac then on factor;
+ ret: onoff('factor,fac);
       off complex;
       algebraic (clearrules logcomplex); %,atan2eval);
       if u neq 'failed then u := prepsq u;
