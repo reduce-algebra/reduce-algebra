@@ -1,3 +1,9 @@
+
+#if (member 'psl lispsystem!*)
+linelength 5000$
+load_package tmprint$
+#endif
+
 on fancy;
 
 
