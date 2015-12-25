@@ -398,14 +398,14 @@ symbolic procedure intg(u1,u2,u3);
             quotsq(
                multgamma(
                  append(
-                   listplus(car redpar1(defint_gb u1,defint_gm u1),u2),
-                   listplus(
+                   specfn!-listplus(car redpar1(defint_gb u1,defint_gm u1),u2),
+                   specfn!-listplus(
                      listmin(car redpar1(defint_ga u1,defint_gn u1)),
                      subtrsq('(1 . 1),u2)))),
                multgamma(
                  append(
-                   listplus(cdr redpar1(defint_ga u1,defint_gn u1),u2),
-                   listplus(
+                   specfn!-listplus(cdr redpar1(defint_ga u1,defint_gn u1),u2),
+                   specfn!-listplus(
                      listmin(cdr redpar1(defint_gb u1,defint_gm u1)),
                      subtrsq('(1 . 1),u2)))))));
    return multsq(if numberp(mellincoef) then simp(mellincoef)

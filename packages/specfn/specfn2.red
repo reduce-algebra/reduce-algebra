@@ -68,7 +68,7 @@ symbolic inline procedure mksqnew u;
   !*p2q(car fkern(u) .* 1);
 
 symbolic inline procedure gamsq(u);
- mksqnew('gamma . list(prepsq u));
+  mksqnew({'gamma,prepsq u});
 
 symbolic inline procedure multgamma u;
    %u -- list of SQ.
@@ -76,20 +76,20 @@ symbolic inline procedure multgamma u;
      where p = '(1 . 1);
 
 symbolic inline procedure besssq(v,u);
- mksqnew('BesselJ . list(prepsq v,prepsq u))$
+  mksqnew({'BesselJ,prepsq v,prepsq u});
 
 symbolic inline procedure bessmsq(v,u);
- mksqnew('BesselI . list(prepsq v,prepsq u))$
+  mksqnew({'BesselI,prepsq v,prepsq u});
 
 symbolic inline procedure simppochh(v,u);
- mksqnew('Pochhammer . list(prepsq v,prepsq u))$
+  mksqnew({'Pochhammer,prepsq v,prepsq u});
 
 symbolic procedure multpochh(u,k);
  << for each pp in u do <<p := multsq (simppochh (pp,k),p)>>; p>>
                  where p = '(1 . 1);
 
 symbolic inline procedure psisq(v);
- mksqnew('psi . list(prepsq v))$
+  mksqnew({'psi,prepsq v});
 
 %symbolic inline procedure dfpsisq(v,u);
 % mksqnew('dfpsi . list(prepsq v,prepsq u))$
@@ -134,14 +134,16 @@ symbolic inline procedure difflist(u,v);
  % value is (u) - v.
  for each uu in u collect addsq(uu,negsq v);
 
-symbolic procedure listplus(u,v);
+%% Renamed from listplus which also defined in listvecops package
+symbolic procedure specfn!-listplus(u,v);
 % value is (u) + v.
- difflist(u,negsq v)$
+  for each uu in u collect addsq(uu,v);
 
- symbolic inline procedure addlist u;
-  % u -- list of PF.
-  <<for each pp in u do <<p := addsq(simp!* pp,p)>>; p>>
-    where p = '(nil . 1);
+%%UNUSED
+%% symbolic inline procedure addlist u;
+%%  % u -- list of PF.
+%%  <<for each pp in u do <<p := addsq(simp!* pp,p)>>; p>>
+%%    where p = '(nil . 1);
 
  symbolic inline procedure listsq(u);
  % u - list of PF.
@@ -161,7 +163,7 @@ symbolic procedure parfool u;
   % value is T if u = 0,-1,-2,...
   if null numr u then t
     else
-  if and(numberp numr u,eqn(denr u,1),lessp(denr u,0)) then t
+  if numberp numr u and denr u=1 and numr u<0 then t
     else nil;
 
  symbolic procedure znak u;
@@ -240,15 +242,17 @@ symbolic procedure redpar1(u,n);
  % value is a pair, car-part -- first n elements of list u
  %                  cdr-part -- u .
  begin scalar bm;
-  while u and not(n=0) do begin
-    bm:=cons (car u,bm);
-    u:=cdr u;
-    n:=n-1;
-  end;
-  return cons(reversip bm,u);
+  while u and n>0 do <<
+    bm := car u . bm;
+    u  := cdr u;
+    n  := n-1>>;
+  return reversip bm . u;
 end;
 
 symbolic procedure redpar (l1,l2);
+  % value is the pair (la,lb)
+  % where la consists of all elements in l1 that do not occur in l2
+  % and lb of all elements of l1 that occur in l2
    begin scalar l3;
    while l2 do <<
          if member(car l2 , l1) then l1 := delete(car l2,l1)
@@ -260,28 +264,28 @@ symbolic procedure redpar (l1,l2);
 algebraic operator lommel,Heaviside;
 
 symbolic inline procedure heavisidesq(u);
- mksqnew('Heaviside . list(prepsq u));
+  mksqnew({'Heaviside,prepsq u});
 
 symbolic inline procedure struvelsq(v,u);
- mksqnew('StruveL . list(prepsq v,prepsq u));
+  mksqnew({'StruveL,prepsq v,prepsq u});
 
 symbolic inline procedure struvehsq(v,u);
- mksqnew('StruveH . list(prepsq v,prepsq u));
+  mksqnew({'StruveH,prepsq v,prepsq u});
 
 symbolic inline procedure neumsq(v,u);
- mksqnew('BesselY . list(prepsq v,prepsq u));
+  mksqnew({'BesselY,prepsq v,prepsq u});
 
 symbolic inline procedure dfpsisq(v,u);
- mksqnew('polygamma . list(prepsq u,prepsq v));
+  mksqnew({'polygamma,prepsq u,prepsq v});
 
 symbolic inline procedure Lommel2sq (u,v,w);
- mksqnew('lommel2  . list(prepsq u,prepsq v,prepsq w));
+  mksqnew({'lommel2,prepsq u,prepsq v,prepsq w});
 
 symbolic inline procedure tricomisq (u,v,w);
- mksqnew('KummerU . list(prepsq u,prepsq v,prepsq w));
+  mksqnew({'KummerU,prepsq u,prepsq v,prepsq w});
 
 symbolic inline procedure macdsq (v,u);
- mksqnew('BesselK . list(prepsq v,prepsq u));
+  mksqnew({'BesselK,prepsq v,prepsq u});
 
 fluid '(v1!wq a!g9 b!!g9);
 
@@ -291,7 +295,7 @@ symbolic inline procedure sumlist u;
     where p = '(nil . 1);
 
 symbolic inline procedure listprepsq(u);
- for each uu in u collect prepsq uu;
+  for each uu in u collect prepsq uu;
 
 endmodule;
 

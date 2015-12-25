@@ -146,10 +146,10 @@ m:
   addsq(ghfsq(u,append(list(subtrsq(addsq(car x,car y),'(1 . 1))),
                             cdr x),
                 append(list(car y),cdr y),z),
-        multsq(ghfsq(u,append(list(addsq(car x,car y)),listplus(cdr x,
+        multsq(ghfsq(u,append(list(addsq(car x,car y)),specfn!-listplus(cdr x,
                         '(1 . 1))),
                        append(list(addsq(car y,'(1 . 1))),
-                              listplus(cdr y,'(1 . 1))),z),
+                              specfn!-listplus(cdr y,'(1 . 1))),z),
                quotsq(multsq(z,multlist(cdr x)),
                       multsq(car y,multlist(cdr y)))))$
 

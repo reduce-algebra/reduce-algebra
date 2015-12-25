@@ -662,10 +662,10 @@ symbolic procedure multresude (u,a,b,z);
   <<
    for i:=0 step 1 until 5 do res(i):='(nil . 1);
    findresude(multlistasym(list(
-          listtaylornom(listplus(car b,cadr u),simp 'eps,car u),
+          listtaylornom(specfn!-listplus(car b,cadr u),simp 'eps,car u),
           listtaylornom(pdifflist(addsq('(1 . 1),negsq cadr u),car a),
                                  negsq simp 'eps,car u),
-          listtaylorden(listplus(cdr a,cadr u),simp 'eps,car u),
+          listtaylorden(specfn!-listplus(cdr a,cadr u),simp 'eps,car u),
           listtaylorden(pdifflist(addsq('(1 . 1),negsq cadr u),cdr b),
                                  negsq simp 'eps,car u),
           if equal(z,'(1 . 1)) then '(1 . 1) else
