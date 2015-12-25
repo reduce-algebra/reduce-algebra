@@ -565,63 +565,63 @@ int(e^(-1/2x),x,0,y);
 int(si(x),x,0,y);
 
 
-si(y)*y - 1 + cos(y)
+cos(y) + si(y)*y - 1
 
 
 int(BesselJ(2,x^(1/4)),x,0,y);
 
 
-                                 1/4               1/4
- - 2*((8*sqrt(y) - y)*besselj(0,y   ) - besselj(2,y   )*y
+              1/4         3/4            1/4        1/4            1/4
+2*(besselj(2,y   )*y - 4*y   *besselj(1,y   ) + 16*y   *besselj(1,y   )
 
-            1/4   1/4        1/4                 1/4
-       + 4*y   *(y    + 2)*(y    - 2)*besselj(1,y   ))
+                           1/4               1/4
+    - 8*sqrt(y)*besselj(0,y   ) + besselj(0,y   )*y)
 
 
 int(x*BesselI(2,x),x,0,y);
 
 
- - (2*(besseli(0,y) - 1) - besseli(1,y)*y)
+besseli(1,y)*y - 2*besseli(0,y) + 2
 
 
 int(x^(3/2)*e^(-x),x,0,y);
 
 
-             y
- 3*sqrt(pi)*e *erf(sqrt(y)) - 4*sqrt(y)*y - 6*sqrt(y)
-------------------------------------------------------
-                            y
-                         4*e
+    y
+ 3*e *erf(sqrt(y))*pi - 4*sqrt(y)*sqrt(pi)*y - 6*sqrt(y)*sqrt(pi)
+------------------------------------------------------------------
+                                      y
+                          4*sqrt(pi)*e
 
 
 int(sinh(x),x,0,y);
 
 
-   y     2
- (e  - 1)
------------
-      y
-   2*e
+  2*y      y
+ e    - 2*e  + 1
+-----------------
+         y
+      2*e
 
 
 int(cosh(2*x),x,0,y);
 
 
-   2*y        y        y
- (e    + 1)*(e  + 1)*(e  - 1)
-------------------------------
-               2*y
-            4*e
+  4*y
+ e    - 1
+----------
+     2*y
+  4*e
 
 
 int(x*shi(x),x,0,y);
 
 
-      y   y                     2
-  - (e *(e *(y - 1) - 2*shi(y)*y ) + y + 1)
---------------------------------------------
-                       y
-                    4*e
+     2*y      2*y      y         2
+  - e   *y + e    + 2*e *shi(y)*y  - y - 1
+-------------------------------------------
+                      y
+                   4*e
 
 
 int(x^2*e^(-x^2),x,0,y);
@@ -647,29 +647,29 @@ int(x^(-1)/2*sin(x),x,0,y);
 int(sin x + cos x,x,0,y);
 
 
-sin(y) + 1 - cos(y)
+ - cos(y) + sin(y) + 1
 
 
 int(sin x + sin(-2*x),x,0,y);
 
 
-  - (2*cos(y) - 1 - cos(2*y))
-------------------------------
-              2
+ cos(2*y) - 2*cos(y) + 1
+-------------------------
+            2
 
 
 int(sin(n*x),x,0,y);
 
 
-  - (cos(n*y) - 1)
--------------------
-         n
+  - cos(n*y) + 1
+-----------------
+        n
 
 
 int(Heaviside(x-1),x,0,y);
 
 
-(y - 1)*heaviside(y - 1)
+heaviside(y - 1)*(y - 1)
 
 
 

@@ -68,11 +68,14 @@ exp(-x^2-x)/sqrt(pi);
 int(ws,x,-infinity, infinity);
 
 
-  1/4          1
- e   *( - erf(---) + 1)
-               2
-------------------------
-           2
+                                        x
+     1/4      1      1/4               e
+  - e   *erf(---) + e    + 2*int(--------------,x,0,infinity)
+              2                              2
+                                            x
+                                  sqrt(pi)*e
+--------------------------------------------------------------
+                              2
 
 
 erf(x+1/2);
@@ -97,12 +100,12 @@ df(ws,x);
 int(ws,x,-infinity, infinity);
 
 
-                  x
-      2*sqrt(pi)*e                              1
-int(------------------,x,0,infinity) + 1 - erf(---)
-          2                                     2
-      (4*x  + 1)/4
-     e            *pi
+                                x
+        1           2*sqrt(pi)*e
+ - erf(---) + int(------------------,x,0,infinity) + 1
+        2               2
+                    (4*x  + 1)/4
+                   e            *pi
 
 
 e^(1/4)*erf(x+1/2);
@@ -116,24 +119,23 @@ e   *erf(---------)
 df(ws,x);
 
 
-             1/4
- 2*sqrt(pi)*e
-------------------
-           2
-  (2*x + 1) /4
- e            *pi
+ 2*sqrt(pi)
+------------
+   2
+  x  + x
+ e      *pi
 
 
 % nor does this
 int(ws,x,-infinity, infinity);
 
 
-                 1/4
-     2*sqrt(pi)*e
-int(------------------,x, - infinity,infinity)
-               2
-      (2*x + 1) /4
-     e            *pi
+                                           x
+    1/4      1      1/4        2*sqrt(pi)*e
+ - e   *erf(---) + e    + int(---------------,x,0,infinity)
+             2                      2
+                                   x
+                                  e  *pi
 
 
 erf(sqrt(log(2))*x);

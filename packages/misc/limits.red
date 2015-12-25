@@ -535,7 +535,7 @@ symbolic procedure speccomb(a,b);
           if cc then c := if a eq 'infinity then 1 else -1;
           if cc then
              if c*cc = 1 then 'infinity else '(minus infinity)
-            else {'times,{'sgn,b},a}>> else {'quotient,a,b})
+            else {'times,{'sign,b},a}>> else {'quotient,a,b})
           where c=topevalsetsq prepsq simp!* b,cc=nil)
    else 'failed);
 

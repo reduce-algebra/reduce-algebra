@@ -296,7 +296,9 @@ else if car num  = 'times then
             else if cdr num_coef then num_coef := 'times . reverse num_coef
             else num_coef := car num_coef;
            if num then
-              num := if cdr num then 'times . reverse num else car num >>;
+              num := if cdr num then 'times . reverse num else car num >>
+
+else num_coef := 1;
 
 if fixp denom or atom denom then
         << denom_coef := denom; denom := nil>>

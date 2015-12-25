@@ -2,28 +2,39 @@
 int(e^(-(x-mu)^2/(2*sigma^2)),x,-infinity,infinity);
 
 
-                2         2
-      - (x - mu) /(2*sigma )
-int(e                       ,x, - infinity,infinity)
+              mu
+( - erf(---------------)*pi*sigma
+         sqrt(2)*sigma
+
+                                     2         2
+                           - (x - mu) /(2*sigma )
+  + sqrt(pi)*sqrt(2)*int(e                       ,x,0,infinity) + pi*sigma)/(
+
+   sqrt(pi)*sqrt(2))
 
 
 y := e^(-(x-mu)^2/(2*sigma^2));
 
 
-                     2      -2
-       - 1/2*(mu - x) *sigma
-y := e
+                       2
+           (mu*x)/sigma
+          e
+y := ------------------------
+          2    2          2
+       (mu  + x )/(2*sigma )
+      e
 
 
 z := df(y,x)/x;
 
 
-                 2      -2         2      -2           -2              -2  2
-       - (mu - x) *sigma   + 1/2*mu *sigma   - mu*sigma  *x + 1/2*sigma  *x
-z := e
-
-                    -2  -1
-     *(mu - x)*sigma  *x
+                       2
+           (mu*x)/sigma
+          e             *(mu - x)
+z := ---------------------------------
+          2    2          2
+       (mu  + x )/(2*sigma )      2
+      e                     *sigma *x
 
 
 limit(z,x,infinity);

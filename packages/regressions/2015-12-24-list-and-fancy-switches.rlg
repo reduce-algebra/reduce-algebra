@@ -1,7 +1,11 @@
 
 #if (member 'psl lispsystem!*)
 linelength 5000$
+
+
 load_package tmprint$
+
+
 #endif
 
 on fancy;
@@ -72,7 +76,7 @@ on list;
 
 x1;
 
-latex:\black$\displaystyle  \frac{b+c+a}{2}$
+latex:\black$\displaystyle  \frac{a+b+c}{2}$
 x2;
 
 latex:\black$\displaystyle  \left(\begin{matrix}\frac{2\*a+b}{2}\\n\end{matrix}\right)$
