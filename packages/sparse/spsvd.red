@@ -56,10 +56,12 @@ symbolic procedure spsvd(a);
            ,tmpv;
     integer i,j,k,l,l1,m,n;
     trans_done := i_rounded_turned_on := nil;
-    if not !*rounded then << on rounded; i_rounded_turned_on := t; >>;
+    if not !*rounded then << on1 'rounded; i_rounded_turned_on := t; >> where !*msg := nil;
 
     if not matrixp(a) then
-     rederr "Error in spsvd: non matrix input.";
+     rederr "Error in spsvd: non matrix input."
+%    else if not eqcar(a,'sparsemat) then
+%      rederr 
 
     % The value of eps can be decreased to increase accuracy.
     % As usual, doing this will slow things down (and vice versa).
@@ -76,7 +78,13 @@ symbolic procedure spsvd(a);
     m := sprow_dim(a);
     n := spcol_dim(a);
 
-    u := copy_vect(a,nil);
+    % Check that all matrix elements are real
+    u := errorset2({'sprd_copy_mat, mkquote(a)});
+    if errorp u then
+    << if i_rounded_turned_on then off1 'rounded where !*msg := nil;
+       if errmsg!* then rederr errmsg!* else rederr "Error in spsvd operator";
+    >>
+       else u := car u;
     v := mkempspmat(n,list('spm,n,n));
     ee := mkvect(n);
     q := mkvect(n);
@@ -431,7 +439,7 @@ symbolic procedure spsvd(a);
     >>;
 
     q_mat := spq_to_diag_matrix(q);
-    if i_rounded_turned_on then off rounded;
+    if i_rounded_turned_on then off1 'rounded where !*msg := nil;
     v:=spden_to_sp(v); % to print it out in Sparse manner
     u:=spden_to_sp(u);
     if trans_done then
@@ -485,17 +493,21 @@ symbolic procedure sprd_copy_mat(a);
   % reval-ing each elt to get them in !:rd!: form;
   %
   begin
-    scalar c;
+    scalar c,r;
     integer row_dim,column_dim;
+    c := copy_vect(a,nil);
     row_dim := sprow_dim(a);
     column_dim := spcol_dim(a);
-    c := list('sparsemat,list('u,row_dim,column_dim));
     for i:=1:row_dim do
     <<
-      for j:=1:column_dim do
-      <<
-        letmtr3(list(c,i,j),my_reval(findelem2(a,i,j)),c,nil);
-      >>;
+       r := getv(cadr c,i);
+       for j:=1:column_dim do
+       <<
+	  val := if val then cdr val else 0;
+	if not fixp val and not eqcar(val,'!:rd!:)
+	   then rerror(sparse,2,{"spsvd: Non-numeric matrix element at position (",i,",",j,")"});
+       >>
+	 where val := atsoc(j,r)
     >>;
     return c;
   end;

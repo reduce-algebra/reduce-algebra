@@ -68,7 +68,8 @@ symbolic procedure svd(a);
            i_rounded_turned_on,trans_done;
     integer i,j,k,l,l1,m,n;
     trans_done := i_rounded_turned_on := nil;
-    if not !*rounded then << on rounded; i_rounded_turned_on := t; >>;
+    if not !*rounded then << on1 'rounded; i_rounded_turned_on := t; >>
+       where !*msg = nil;
 
     if not matrixp(a) then
      rederr "Error in svd: non matrix input.";
@@ -88,7 +89,14 @@ symbolic procedure svd(a);
     m := row_dim(a);
     n := column_dim(a);
 
-    u := rd_copy_mat(a);
+    % Check that all matrix elements are real in rd_copy_mat, raise error if necessary
+    u := errorset2({'rd_copy_mat,mkquote a});
+    if errorp u then
+    << if i_rounded_turned_on then off1 'rounded where !*msg := nil;
+       if errmsg!* then rederr errmsg!* else rederr "Error in svd operator";
+    >>
+    else u := car u;
+
     v := mkmatrix(n,n);
     ee := mkvect(n);
     q := mkvect(n);
@@ -339,7 +347,7 @@ symbolic procedure svd(a);
     >>;
 
     q_mat := q_to_diag_matrix(q);
-    if i_rounded_turned_on then off rounded;
+    if i_rounded_turned_on then off1 'rounded where !*msg := nil;
     if trans_done then
      return {'list,algebraic v,q_mat,algebraic u}
       else return {'list,algebraic u,q_mat,algebraic v};
@@ -368,10 +376,13 @@ symbolic procedure pseudo_inverse(in_mat);
   %
   % Also known as the Moore-Penrose Inverse.
   %
-  % Given the singular value decomposition A := tp(U) diag(q) V
+  % Given the singular value decomposition A := U diag(q) tp(V)
   % the pseudo inverse A^(-1) is defined as
   %
-  %   A^(-1) = V (diag(q))^(-1) tp(U).
+  %   A^(+) = V (diag(q))^(+) tp(U)
+  %
+  % where (diag(q))^(+) is obtained from diag(q) by taking the reciprocal of every nonzero
+  % diagonal element.
   %
   % NB: this can be quite handy as we can take the inverse of non
   % square matrices (A * pseudo_inverse(A) = identity).
@@ -409,8 +420,11 @@ symbolic procedure rd_copy_mat(a);
     <<
       for j:=1:column_dim do
       <<
-        setmat(c,i,j,my_reval(getmat(a,i,j)));
-      >>;
+	 if not fixp val and not eqcar(val,'!:rd!:)
+	   then rerror(linalg,2,{"svd: Non-numeric matrix element at position (",i,",",j,")"});
+         setmat(c,i,j,val)
+      >>
+	   where val := my_reval(getmat(a,i,j));
     >>;
     return c;
   end;
