@@ -41,10 +41,12 @@ then
   psldir=`cygpath -m "$cpsldir"`
   reduce=`cygpath -m "$creduce"`
   here=`cygpath -m "$chere"`
+  fasl=`cygpath -m "$cfasl"`
 else
   psldir="$cpsldir"
   reduce="$creduce"
   here="$chere"
+  fasl="$cfasl"
 fi
 
 if test -f psl/64
@@ -113,7 +115,7 @@ cd psl
 
 (put 'fancy 'simpfg
   '((t (load fmprint) (fmp!-switch t))
-    (nil (fmp!-switch nil)) ))
+    (nil (load fmprint) (fmp!-switch nil)) ))
 
 % implant graphics mode switch
 
