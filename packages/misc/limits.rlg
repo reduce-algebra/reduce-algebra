@@ -173,10 +173,10 @@ limit(x^2*(e^(1/x)-1)*(log(x+2)-log(x)),x,infinity);
 limit(x^alpha*log(x+1)^2/log(x),x,infinity);
 
 
-                        2
-       alpha  log(x + 1)
-limit(x     *-------------,x,infinity)
-                log(x)
+        alpha           2
+       x     *log(x + 1)
+limit(--------------------,x,infinity)
+             log(x)
 
   %% if repart alpha < 0 then 0 else infinity.
   %% fails because answer depends in essential way on parameter.
@@ -482,11 +482,13 @@ limit(log(x-a)/((a-b)*(a-c)) + log(2(x-b))/((b-c)*(b-a))
 limit(1/(e^x-e^(x-1/x^2)),x,infinity);
 
 
-             1
+               2
+            1/x
+           e
 limit(----------------,x,infinity)
-                    2
-        x    x - 1/x
-       e  - e
+               2
+        x   1/x
+       e *(e     - 1)
  % infinity  % fails
 
 % new capabilities: branch points at the origin, needed for definite
@@ -552,7 +554,7 @@ limit((1+a*x)^(1/x),x,infinity);
 
 
                1/x
-limit((1 + a*x)   ,x,infinity)
+limit((a*x + 1)   ,x,infinity)
  % 1
 limit(x^2*sqrt(4*x^4+5)-2*x^4,x,infinity);
 
@@ -569,19 +571,19 @@ limit!+(1/x-1/sin x,x,0);
 limit(e^(x*sqrt(x^2+1))-e^(x^2),x,infinity);
 
 
-               2          2
-       x*sqrt(x  + 1)    x
-limit(e               - e  ,x,infinity)
+           2          2
+          x     sqrt(x  + 1)*x
+limit( - e   + e              ,x,infinity)
  % 0 fails
 limit((e^x+x*log x)/(log(x^4+x+1)+e^sqrt(x^3+1)),x,infinity);
 
 
                  x
-                e  + x*log(x)
+                e  + log(x)*x
 limit(---------------------------------,x,infinity)
-                                3
-            4             sqrt(x  + 1)
-       log(x  + x + 1) + e
+              3
+        sqrt(x  + 1)        4
+       e             + log(x  + x + 1)
  %0 % fails
 limit!-(1/(x^3-6*x+11*x-6),x,2);
 

@@ -40,7 +40,13 @@ z := ---------------------------------
 limit(z,x,infinity);
 
 
-limit(z,x,infinity)
+                        2
+            (mu*x)/sigma
+           e             *(mu - x)
+limit(---------------------------------,x,infinity)
+           2    2          2
+        (mu  + x )/(2*sigma )      2
+       e                     *sigma *x
 
 
 on complex;
@@ -50,7 +56,13 @@ on complex;
 limit(z,x,infinity);
 
 
-limit(z,x,infinity)
+                        2
+            (mu*x)/sigma
+           e             *(mu - x)
+limit(---------------------------------,x,infinity)
+           2    2          2
+        (mu  + x )/(2*sigma )      2
+       e                     *sigma *x
 
 
 end;

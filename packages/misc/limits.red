@@ -136,7 +136,8 @@ symbolic procedure simplimit u;
      v := errorset!*({'apply,mkquote fn,mkquote {exprn,var,val}},nil);
      put('cot,'opmtch,old);
      !*protfg := nil;
-     return if errorp v or (v := car v) = aeval 'failed then mksq(u,1)
+     return if errorp v or (v := car v) = aeval 'failed
+              then mksq({fn,aeval exprn,var,val},1)
              else simp!* v
    end;
 
