@@ -294,17 +294,11 @@ LispObject Linorm(LispObject nil, LispObject a, LispObject k)
 // word, and so there are no issues about +ve vs -ve numbers to bother me.
 //
         while ((top & 0xf) == 0)
-        {   top = top >> 4;
-#ifdef SIGNED_SHIFTS_ARE_LOGICAL
-            if (top & 0x08000000) top |= ~0x0fffffff;
-#endif
+        {   top = (top & ~0xf)/16;
             kk += 4;
         }
         while ((top & 0x1) == 0)
-        {   top = top >> 1;
-#ifdef SIGNED_SHIFTS_ARE_LOGICAL
-            if (top & 0x40000000) top |= ~0x7fffffff;
-#endif
+        {   top = (top & ~1)/2;
             kk += 1;
         }
         a = cons(fixnum_of_int(top), fixnum_of_int(kk));
@@ -1305,6 +1299,7 @@ LispObject Lrandom_2(LispObject nil, LispObject a, LispObject bb)
         errexit();
         return onevalue(a);
     }
+#ifndef EXPERIMENT
     if (is_sfloat(a))
     {   Float_union d;
         float v;
@@ -1321,6 +1316,7 @@ LispObject Lrandom_2(LispObject nil, LispObject a, LispObject bb)
         d.f = v;
         return onevalue((d.i & ~(int32_t)0xf) + TAG_SFLOAT);
     }
+#endif
     return aerror1("random", a);
 }
 
@@ -1486,7 +1482,7 @@ LispObject Lmd5(LispObject nil, LispObject a)
             CSL_MD5_Update(md, 8);
         }
     }
-    else if (is_vector(a) && type_of_header(vechdr(a)) == TYPE_STRING)
+    else if (is_vector(a) && is_string(a))
     {   len = length_of_header(vechdr(a));
         CSL_MD5_Init();
         CSL_MD5_Update((const unsigned char *)"\"", 1);
@@ -1564,7 +1560,7 @@ LispObject Lmd5string(LispObject nil, LispObject a)
     unsigned char md[16];
     uint32_t v0, v1, v2, v3, v4;
     int32_t len, i;
-    if (is_vector(a) && type_of_header(vechdr(a)) == TYPE_STRING)
+    if (is_vector(a) && is_string(a))
     {   len = length_of_header(vechdr(a));
         CSL_MD5_Init();
         CSL_MD5_Update((unsigned char *)(a + CELL - TAG_VECTOR), len-CELL);
@@ -1655,7 +1651,7 @@ LispObject Lmd60(LispObject nil, LispObject a)
             CSL_MD5_Update(md, 8);
         }
     }
-    else if (is_vector(a) && type_of_header(vechdr(a)) == TYPE_STRING)
+    else if (is_vector(a) && is_string(a))
     {   len = length_of_header(vechdr(a));
         CSL_MD5_Init();
         CSL_MD5_Update((const unsigned char *)"\"", 1);

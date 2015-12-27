@@ -190,8 +190,7 @@ static int bitmap_mark_vec(LispObject p)
     }
     {   LispObject x = p;
         if (is_symbol(x)) x = qpname(x);
-        if (is_vector(x) && type_of_header(vechdr(x)) == TYPE_STRING)
-            info = &celt(x, 0);
+        if (is_vector(x) && is_string(x)) info = &celt(x, 0);
         else if (is_symbol(p)) info = "unnamed symbol";
         else if (is_vector(x)) info = "vector";
         else if (is_numbers(x)) info = "numbers";
@@ -284,8 +283,10 @@ top:
 {       default:            // The case-list is exhaustive!
         case TAG_CONS:      // Already processed
         case TAG_FIXNUM:    // Invalid here
-        case TAG_ODDS:      // Invalid here
+        case TAG_HDR_IMMED: // Invalid here
+#ifndef EXPERIMENT
         case TAG_SFLOAT:    // Invalid here
+#endif
             term_printf("\nBad object in VALIDATE (%.8lx)\n", (long)p);
             term_printf("Validation for %s at line %d of file %s (%d)\n",
                         validate_why, validate_line, validate_file, validate_line1);
@@ -295,8 +296,7 @@ top:
         case TAG_SYMBOL:
             info = "symbol";
             if (is_vector(qpname(p)) &&
-                type_of_header(vechdr(qpname(p))) == TYPE_STRING)
-                info = &celt(qpname(p), 0);
+                is_string(qpname(p))) info = &celt(qpname(p), 0);
             if (bitmap_mark_vec(p)) return;
             validate(qvalue(p), __LINE__);
             validate(qenv(p), __LINE__);
@@ -486,7 +486,7 @@ descend:
 
 //
 //  case TAG_FIXNUM:
-//  case TAG_ODDS:          Doers this mean I do not mark codevectors?
+//  case TAG_HDR_IMMED:          Doers this mean I do not mark codevectors?
 //  case TAG_SFLOAT:
 //
         default:
@@ -508,7 +508,7 @@ descend:
 // field of CONS cells and through either odd or even words within vectors.
 // Thus althouh marked with the pointer mark bit the rest of tagging on these
 // chain words is a bit funny! Specifically the tag bits will say "0" or "4",
-// ie CONS or SYMBOL (and not ODDS).
+// ie CONS or SYMBOL (and not HDR_IMMED).
 //
             if (!is_odds(h) || is_marked_h(h))  // Visited before
             {   q = &qheader(p);                // where I should chain
@@ -1181,8 +1181,10 @@ top:
 {       default:            // The case-list is exhaustive!
         case TAG_CONS:      // Already processed
         case TAG_FIXNUM:    // Invalid here
-        case TAG_ODDS:      // Invalid here
+        case TAG_HDR_IMMED: // Invalid here
+#ifndef EXPERIMENT
         case TAG_SFLOAT:    // Invalid here
+#endif
             // Fatal error really called for here
             term_printf("\nBad object in GC (%.8lx)\n", (long)p);
             ensure_screen();
@@ -1511,7 +1513,7 @@ static void adjust_vec_heap(void)
             uintptr_t free;
 //
 // Here a vector will have an ordinary vector-header (which is tagged
-// as ODDS) if it was not marked.
+// as HDR_IMMED) if it was not marked.
 //
             while (is_odds(h = *(Header *)low))
             {   intptr_t len;
@@ -1621,7 +1623,7 @@ static void move_vec_heap(void)
     {   void *page = vheap_pages[page_number];
         char *low = (char *)doubleword_align_up((intptr_t)page);
         char *fr = low + car32(low);
-        *(LispObject *)fr = set_mark_bit_h(TAG_ODDS + (8<<10));
+        *(LispObject *)fr = set_mark_bit_h(TAG_HDR_IMMED + (8<<10));
         low += 8;
         for (;;)
         {   Header h;
@@ -1801,7 +1803,16 @@ static void relocate_vecheap(void)
                             user_vectors += doubleword_align_up(length_of_header(h));
                         else other_mem += doubleword_align_up(length_of_header(h));
                         break;
+#ifdef EXPERIMENT
+                    case TYPE_STRING_1:
+                    case TYPE_STRING_2:
+                    case TYPE_STRING_3:
+                    case TYPE_STRING_4:
+// length_of_header() here gives the length rounded up to a multiple of 4
+// bytes so is quite appropriate here.
+#else
                     case TYPE_STRING:
+#endif
                         strings += doubleword_align_up(length_of_header(h));
                         break;
                     case TYPE_BIGNUM:
@@ -2019,7 +2030,15 @@ static void copy(LispObject *p)
                 else
                 {   len = doubleword_align_up(length_of_header(h));
                     switch (type_of_header(h))
-                    {   case TYPE_STRING:
+                    {
+#ifdef EXPERIMENT
+                        case TYPE_STRING_1:
+                        case TYPE_STRING_2:
+                        case TYPE_STRING_3:
+                        case TYPE_STRING_4:
+#else
+                        case TYPE_STRING:
+#endif
                             strings += len; break;
                         case TYPE_BIGNUM:
                             big_numbers += len; break;
@@ -2340,7 +2359,6 @@ LispObject Lmapstore(LispObject nil, LispObject a)
                 {   LispObject e = qenv(low + TAG_SYMBOL);
                     intptr_t clen = 0;
                     uint64_t n;
-                    LispObject w;
                     if (is_cons(e))
                     {   e = qcar(e);
                         if (is_bps(e))
@@ -2349,11 +2367,6 @@ LispObject Lmapstore(LispObject nil, LispObject a)
                         }
                     }
                     n = qcount(low + TAG_SYMBOL);
-                    if (CELL==4)
-                    {   w = get((LispObject)(low+TAG_SYMBOL), count_high);
-                        if (is_fixnum(w))
-                            n = n + (((uint64_t)int_of_fixnum(w))<<30);
-                    }
                     if (n != 0 && clen != 0)
                     {   double w = (double)n/(double)clen;
 //
@@ -2408,10 +2421,10 @@ LispObject Lmapstore(LispObject nil, LispObject a)
 //
                             if ((what & 1) == 0)
                             {   qcount(low + TAG_SYMBOL) = 0;
-                                if (CELL==4)
-                                    putprop((LispObject)(low+TAG_SYMBOL),
-                                            count_high,
-                                            fixnum_of_int(0));
+//                              if (CELL==4)
+//                                  putprop((LispObject)(low+TAG_SYMBOL),
+//                                          count_high,
+//                                          fixnum_of_int(0));
                             }
                         }
                     }

@@ -210,10 +210,15 @@ static LispObject timesii(LispObject a, LispObject b)
 }
 
 static LispObject timesis(LispObject a, LispObject b)
-{   Float_union bb;
+{
+#ifdef EXPERIMENT
+    return fixnum_of_int(0);
+#else
+    Float_union bb;
     bb.i = b - TAG_SFLOAT;
     bb.f = (float) ((float)int_of_fixnum(a) * bb.f);
     return (bb.i & ~(int32_t)0xf) + TAG_SFLOAT;
+#endif
 }
 
 //
@@ -1793,8 +1798,10 @@ LispObject times2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return timesii(a, b);
+#ifndef EXPERIMENT
                 case TAG_SFLOAT:
                     return timesis(a, b);
+#endif
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
@@ -1813,6 +1820,7 @@ LispObject times2(LispObject a, LispObject b)
                 default:
                     return aerror1("bad arg for times",  b);
             }
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
             switch (b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -1842,6 +1850,7 @@ LispObject times2(LispObject a, LispObject b)
                 default:
                     return aerror1("bad arg for times",  b);
             }
+#endif
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -1849,8 +1858,10 @@ LispObject times2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return timesbi(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return timesbs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -1873,8 +1884,10 @@ LispObject times2(LispObject a, LispObject b)
                     switch (b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return timesri(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return timesrs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -1897,8 +1910,10 @@ LispObject times2(LispObject a, LispObject b)
                     switch (b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return timesci(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return timescs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -1924,8 +1939,10 @@ LispObject times2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return timesfi(a, b);
+#ifndef EXPERIMENT
                 case TAG_SFLOAT:
                     return timesfs(a, b);
+#endif
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)

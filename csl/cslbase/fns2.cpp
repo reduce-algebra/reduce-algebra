@@ -81,7 +81,7 @@ LispObject getcodevector(int type, size_t size)
         }
         r = cf - alloc_size;
         codefringe = (LispObject)r;
-        *((Header *)r) = type + (size << 10) + TAG_ODDS;
+        *((Header *)r) = type + (size << 10) + TAG_HDR_IMMED;
 //
 // codelimit is always 8 bytes above the base of the code-page. The
 // address I need to return for a code-vector points (in a packed way)
@@ -2213,8 +2213,7 @@ static LispObject Lcheckpoint(LispObject nil,
     failed = Iwriterootp(filename);  // Can I open image file for writing?
     term_printf("\nThe system will be preserved on file \"%s\"\n", filename);
     if (failed) return aerror("checkpoint");
-    if (is_vector(banner) &&
-        type_of_header(vechdr(banner)) == TYPE_STRING)
+    if (is_vector(banner) && is_string(banner))
     {   msg = &celt(banner, 0);
         len = length_of_header(vechdr(banner)) - CELL;
     }
@@ -2295,8 +2294,10 @@ CSLbool eql_fn(LispObject a, LispObject b)
 // Actually in Common Lisp mode where I have short floats as immediate data
 // I have further pain here with (eql 0.0 -0.0).
 //
+#ifndef EXPERIMENT
     if ((a == TAG_SFLOAT && b == (TAG_SFLOAT|(intptr_t)0x80000000)) ||
         (a == (TAG_SFLOAT|(intptr_t)0x80000000) && b == TAG_SFLOAT)) return YES;
+#endif
     if (!is_number(a) || is_immed_or_cons(a)) return NO;
     if (is_bfloat(a))
     {   Header h = flthdr(a);
@@ -2345,8 +2346,13 @@ static CSLbool cl_vec_equal(LispObject a, LispObject b)
     intptr_t offa = 0, offb = 0;
     int ta = type_of_header(ha), tb = type_of_header(hb);
     intptr_t la = length_of_header(ha), lb = length_of_header(hb);
-    if (header_of_bitvector(ha)) ta = TYPE_BITVEC1;
-    if (header_of_bitvector(hb)) tb = TYPE_BITVEC1;
+#ifdef EXPERIMENT
+    if (is_bitvec_header(ha)) ta = TYPE_BITVEC_1;
+    if (is_bitvec_header(hb)) tb = TYPE_BITVEC_1;
+#else
+    if (is_bitvec_header(ha)) ta = TYPE_BITVEC1;
+    if (is_bitvec_header(hb)) tb = TYPE_BITVEC1;
+#endif
     switch (ta)
     {
 //
@@ -2357,13 +2363,27 @@ static CSLbool cl_vec_equal(LispObject a, LispObject b)
 // arrays to compare here I will pretend that they are not strings or
 // bit-vectors and compare using EQ...
 //
+#ifdef EXPERIMENT
+        case TYPE_STRING_1:
+        case TYPE_STRING_2:
+        case TYPE_STRING_3:
+        case TYPE_STRING_4:
+#else
         case TYPE_STRING:
+#endif
             switch (tb)
             {
 // /*
 //  case TYPE_ARRAY:
 //
+#ifdef EXPERIMENT
+                case TYPE_STRING_1:
+                case TYPE_STRING_2:
+                case TYPE_STRING_3:
+                case TYPE_STRING_4:
+#else
                 case TYPE_STRING:
+#endif
                     goto compare_strings;
                 default:return NO;
             }
@@ -2380,6 +2400,10 @@ static CSLbool cl_vec_equal(LispObject a, LispObject b)
         default: return (a == b);
     }
 compare_strings:
+#ifdef EXPERIMENT
+    la = length_of_byteheader(ha);
+    lb = length_of_byteheader(hb);
+#endif
     if (la != lb) return NO;
     while (la > 0)
     {   la--;
@@ -3514,12 +3538,12 @@ LispObject Llength(LispObject nil, LispObject a)
             if (is_fixnum(fillp)) dims = fillp;
             return onevalue(dims);
         }
-        if (header_of_bitvector(h))
+        if (is_bitvec_header(h))
         {   n = (n - 1)*8;
 // Dodgy constant on next line - critically dependent on tag codes used!
             n += ((h & 0x380) >> 7) + 1;
         }
-        else if (type_of_header(h) != TYPE_STRING) n = n/CELL;
+        else if (!is_string_header(h)) n = n/CELL;
         return onevalue(fixnum_of_int(n));
     }
 #endif

@@ -477,7 +477,7 @@ extern LispObject native_code, native_symbol, traceprint_symbol;
 extern LispObject loadsource_symbol;
 extern LispObject hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
 extern LispObject gchook, resources, callstack, procstack, procmem;
-extern LispObject trap_time, count_high;
+extern LispObject trap_time;
 
 #ifdef COMMON
 extern LispObject keyword_package;

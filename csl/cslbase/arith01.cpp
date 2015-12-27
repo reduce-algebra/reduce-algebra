@@ -127,9 +127,15 @@ LispObject make_sfloat(double d)
 // rounding etc - short floats are to save heap turn-over, but will
 // not give robust numeric results.
 //
-{   Float_union w;
+{
+#ifdef EXPERIMENT
+// SFLOAT is (perhaps temporarily?) not supported in the experimental branch.
+    return fixnum_of_int(0);
+#else
+    Float_union w;
     w.f = (float)d;
     return (w.i & ~(int32_t)0xf) + TAG_SFLOAT;
+#endif
 }
 
 LispObject make_boxfloat(double a, int32_t type)
@@ -140,9 +146,14 @@ LispObject make_boxfloat(double a, int32_t type)
 {   LispObject r, nil;
     switch (type)
     {   case 0:
-        {   Float_union aa;
+        {
+#ifdef EXPERIMENT
+            return fixnum_of_int(0);
+#else
+            Float_union aa;
             aa.f = (float)a;
             return (aa.i & ~(intptr_t)0xf) + TAG_SFLOAT;
+#endif
         }
         case TYPE_SINGLE_FLOAT:
             r = getvector(TAG_BOXFLOAT, TYPE_SINGLE_FLOAT, sizeof(Single_Float));
@@ -198,11 +209,13 @@ double float_of_number(LispObject a)
 // code repetition.
 //
 {   if (is_fixnum(a)) return (double)int_of_fixnum(a);
+#ifndef EXPERIMENT
     else if (is_sfloat(a))
     {   Float_union w;
         w.i = a - TAG_SFLOAT;
         return (double)w.f;
     }
+#endif
     else if (is_bfloat(a))
     {   int32_t h = type_of_header(flthdr(a));
         switch (h)
@@ -389,10 +402,15 @@ LispObject make_ratio(LispObject p, LispObject q)
 //
 
 static LispObject plusis(LispObject a, LispObject b)
-{   Float_union bb;
+{
+#ifdef EXPERIMENT
+    return fixnum_of_int(0);
+#else
+    Float_union bb;
     bb.i = b - TAG_SFLOAT;
     bb.f = (float)((float)int_of_fixnum(a) + bb.f);
     return (bb.i & ~(int32_t)0xf) + TAG_SFLOAT;
+#endif
 }
 
 //
@@ -1018,8 +1036,10 @@ LispObject plus2(LispObject a, LispObject b)
                     if (t == 0 || t == fix_mask) return fixnum_of_int(r);
                     else return make_one_word_bignum(r);
                 }
+#ifndef EXPERIMENT
                 case TAG_SFLOAT:
                     return plusis(a, b);
+#endif
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
@@ -1038,6 +1058,7 @@ LispObject plus2(LispObject a, LispObject b)
                 default:
                     return aerror1("bad arg for plus",  b);
             }
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
             switch (b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -1067,6 +1088,7 @@ LispObject plus2(LispObject a, LispObject b)
                 default:
                     return aerror1("bad arg for plus",  b);
             }
+#endif
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -1074,8 +1096,10 @@ LispObject plus2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return plusbi(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return plusbs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -1098,8 +1122,10 @@ LispObject plus2(LispObject a, LispObject b)
                     switch (b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return plusri(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return plusrs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -1122,8 +1148,10 @@ LispObject plus2(LispObject a, LispObject b)
                     switch (b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return plusci(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return pluscs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -1149,8 +1177,10 @@ LispObject plus2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return plusfi(a, b);
+#ifndef EXPERIMENT
                 case TAG_SFLOAT:
                     return plusfs(a, b);
+#endif
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)

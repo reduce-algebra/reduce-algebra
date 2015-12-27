@@ -166,9 +166,14 @@ uint32_t Idiv10_9(uint32_t *qp, uint32_t high, uint32_t low)
 //
 
 static CSLbool lesseqis(LispObject a, LispObject b)
-{   Float_union bb;
+{
+#ifdef EXPERIMENT
+    return 0;
+#else
+    Float_union bb;
     bb.i = b - TAG_SFLOAT;
     return (double)int_of_fixnum(a) <= (double)bb.f;
+#endif
 }
 
 #define lesseqib(a, b) lesspib(a, b)
@@ -187,35 +192,60 @@ static CSLbool lesseqir(LispObject a, LispObject b)
 #define lesseqif(a, b) ((double)int_of_fixnum(a) <= float_of_number(b))
 
 static CSLbool lesseqsi(LispObject a, LispObject b)
-{   Float_union aa;
+{
+#ifdef EXPERIMENT
+    return 0;
+#else
+    Float_union aa;
     aa.i = a - TAG_SFLOAT;
     return (double)aa.f <= (double)int_of_fixnum(b);
+#endif
 }
 
 static CSLbool lesseqsb(LispObject a, LispObject b)
-{   Float_union aa;
+{
+#ifdef EXPERIMENT
+    return 0;
+#else
+    Float_union aa;
     aa.i = a - TAG_SFLOAT;
     return !lesspbd(b, (double)aa.f);
+#endif
 }
 
 static CSLbool lesseqsr(LispObject a, LispObject b)
-{   Float_union aa;
+{
+#ifdef EXPERIMENT
+    return 0;
+#else
+    Float_union aa;
     aa.i = a - TAG_SFLOAT;
     return !lessprd(b, (double)aa.f);
+#endif
 }
 
 static CSLbool lesseqsf(LispObject a, LispObject b)
-{   Float_union aa;
+{
+#ifdef EXPERIMENT
+    return 0;
+#else
+    Float_union aa;
     aa.i = a - TAG_SFLOAT;
     return (double)aa.f <= float_of_number(b);
+#endif
 }
 
 #define lesseqbi(a, b) lesspbi(a, b)
 
 static CSLbool lesseqbs(LispObject a, LispObject b)
-{   Float_union bb;
+{
+#ifdef EXPERIMENT
+    return 0;
+#else
+    Float_union bb;
     bb.i = b - TAG_SFLOAT;
     return !lesspdb((double)bb.f, a);
+#endif
 }
 
 static CSLbool lesseqbb(LispObject a, LispObject b)
@@ -261,9 +291,14 @@ static CSLbool lesseqri(LispObject a, LispObject b)
 }
 
 static CSLbool lesseqrs(LispObject a, LispObject b)
-{   Float_union bb;
+{
+#ifdef EXPERIMENT
+    return 0;
+#else
+    Float_union bb;
     bb.i = b - TAG_SFLOAT;
     return !lesspdr((double)bb.f, a);
+#endif
 }
 
 #define lesseqrb(a, b) lesseqri(a, b)
@@ -284,9 +319,14 @@ static CSLbool lesseqrr(LispObject a, LispObject b)
 #define lesseqfi(a, b) (float_of_number(a) <= (double)int_of_fixnum(b))
 
 static CSLbool lesseqfs(LispObject a, LispObject b)
-{   Float_union bb;
+{
+#ifdef EXPERIMENT
+    return 0;
+#else
+    Float_union bb;
     bb.i = b - TAG_SFLOAT;
     return float_of_number(a) <= (double)bb.f;
+#endif
 }
 
 #define lesseqfb(a, b) (!lesspbd(b, float_of_number(a)))
@@ -309,8 +349,10 @@ CSLbool lesseq2(LispObject a, LispObject b)
             {   case TAG_FIXNUM:
 // For fixnums the comparison can be done directly
                     return ((int32_t)a <= (int32_t)b);
+#ifndef EXPERIMENT
                 case TAG_SFLOAT:
                     return lesseqis(a, b);
+#endif
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
@@ -327,6 +369,7 @@ CSLbool lesseq2(LispObject a, LispObject b)
                 default:
                     return (CSLbool)aerror2("bad arg for leq", a, b);
             }
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
             switch (b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -353,6 +396,7 @@ CSLbool lesseq2(LispObject a, LispObject b)
                 default:
                     return (CSLbool)aerror2("bad arg for leq", a, b);
             }
+#endif
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -360,8 +404,10 @@ CSLbool lesseq2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return lesseqbi(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return lesseqbs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -382,8 +428,10 @@ CSLbool lesseq2(LispObject a, LispObject b)
                     switch (b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return lesseqri(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return lesseqrs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -407,8 +455,10 @@ CSLbool lesseq2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return lesseqfi(a, b);
+#ifndef EXPERIMENT
                 case TAG_SFLOAT:
                     return lesseqfs(a, b);
+#endif
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)

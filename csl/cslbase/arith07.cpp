@@ -135,12 +135,14 @@ LispObject negate(LispObject a)
             if (aa != 0x08000000) return fixnum_of_int(aa);
             else return make_one_word_bignum(aa);
         }
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
         {   Float_union aa;
             aa.i = a - TAG_SFLOAT;
             aa.f = (float) (-aa.f);
             return (aa.i & ~(int32_t)0xf) + TAG_SFLOAT;
         }
+#endif
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)

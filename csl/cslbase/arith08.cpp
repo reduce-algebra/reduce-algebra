@@ -393,10 +393,13 @@ static LispObject Ldecode_float(LispObject nil, LispObject a)
 static LispObject Lfloat_denormalized_p(LispObject nil, LispObject a)
 {   int x = 0;
     switch ((int)a & TAG_BITS)
-    {   case TAG_SFLOAT:
+    {
+#ifndef EXPERIMENT
+        case TAG_SFLOAT:
             if ((a & 0x7fffffff) == TAG_SFLOAT) return onevalue(nil);  // 0.0
             x = (int32_t)a & 0x7f800000;
             return onevalue(x == 0 ? lisp_true : nil);
+#endif
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -423,9 +426,12 @@ static LispObject Lfloat_denormalized_p(LispObject nil, LispObject a)
 static LispObject Lfloat_infinity_p(LispObject nil, LispObject a)
 {   int32_t x;
     switch ((int)a & TAG_BITS)
-    {   case TAG_SFLOAT:
+    {
+#ifndef EXPERIMENT
+        case TAG_SFLOAT:
             x = (int32_t)a & 0x7f800000;
             return onevalue(x == 0x7f800000 ? lisp_true : nil);
+#endif
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -461,9 +467,12 @@ static LispObject Lfloat_infinity_p(LispObject nil, LispObject a)
 static LispObject Lfp_infinite(LispObject nil, LispObject a)
 {   int32_t x;
     switch ((int)a & TAG_BITS)
-    {   case TAG_SFLOAT:
+    {
+#ifndef EXPERIMENT
+        case TAG_SFLOAT:
             x = (int32_t)a & 0x7f800000;
             return onevalue(x == 0x7f800000 ? lisp_true : nil);
+#endif
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -489,11 +498,14 @@ static LispObject Lfp_infinite(LispObject nil, LispObject a)
 static LispObject Lfp_nan(LispObject nil, LispObject a)
 {   int32_t x;
     switch ((int)a & TAG_BITS)
-    {   case TAG_SFLOAT:
+    {
+#ifndef EXPERIMENT
+        case TAG_SFLOAT:
             a &= 0x7fffffff;
             if (a == 0x7f800000) return onevalue(nil);
             x = (int32_t)a & 0x7f800000;
             return onevalue(x == 0x7f800000 ? lisp_true : nil);
+#endif
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -527,9 +539,12 @@ static LispObject Lfp_nan(LispObject nil, LispObject a)
 static LispObject Lfp_finite(LispObject nil, LispObject a)
 {   int32_t x;
     switch ((int)a & TAG_BITS)
-    {   case TAG_SFLOAT:
+    {
+#ifndef EXPERIMENT
+        case TAG_SFLOAT:
             x = (int32_t)a & 0x7f800000;
             return onevalue(x != 0x7f800000 ? lisp_true : nil);
+#endif
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -571,10 +586,13 @@ static LispObject Lfp_finite(LispObject nil, LispObject a)
 static LispObject Lfp_subnorm(LispObject nil, LispObject a)
 {   int32_t x = 0;
     switch ((int)a & TAG_BITS)
-    {   case TAG_SFLOAT:
+    {
+#ifndef EXPERIMENT
+        case TAG_SFLOAT:
             if ((a & 0x7fffffff) == TAG_SFLOAT) return onevalue(nil);  // 0.0
             x = (int32_t)a & 0x7f800000;
             return onevalue(x == 0 ? lisp_true : nil);
+#endif
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -609,9 +627,12 @@ static LispObject Lfp_signbit(LispObject nil, LispObject a)
     int32_t x = 0;
 #endif
     switch ((int)a & TAG_BITS)
-    {   case TAG_SFLOAT:
+    {
+#ifndef EXPERIMENT
+        case TAG_SFLOAT:
             if ((int32_t)a < 0) return onevalue(lisp_true);
             else return onevalue(nil);
+#endif
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -657,8 +678,11 @@ static LispObject Lfp_signbit(LispObject nil, LispObject a)
 static LispObject Lfloat_digits(LispObject, LispObject a)
 {   int tag = (int)a & TAG_BITS;
     switch (tag)
-    {   case TAG_SFLOAT:
+    {
+#ifndef EXPERIMENT
+        case TAG_SFLOAT:
             return onevalue(fixnum_of_int(20));
+#endif
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -677,13 +701,17 @@ static LispObject Lfloat_precision(LispObject, LispObject a)
     if (d == 0.0) return onevalue(fixnum_of_int(0));
 // /* I do not cope with de-normalised numbers here
     switch (tag)
-    {   case TAG_SFLOAT:
+    {
+#ifndef EXPERIMENT
+        case TAG_SFLOAT:
             return onevalue(fixnum_of_int(20));
+#endif
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
                     return onevalue(fixnum_of_int(24));
                 default:
+// Beware here if long floats ever exist!
                     return onevalue(fixnum_of_int(53));
             }
         default:
@@ -753,13 +781,16 @@ static LispObject Linteger_decode_float(LispObject nil, LispObject a)
     else
     {   d = frexp(d, &x);
         if (d == 1.0) d = 0.5, x++;
+#ifndef EXPERIMENT
         if (tag == TAG_SFLOAT)
         {   d *= TWO_20;
             x -= 20;
             a1 = (int32_t)d;
             a = fixnum_of_int(a1);
         }
-        else if (tag == TAG_BOXFLOAT &&
+        else
+#endif
+        if (tag == TAG_BOXFLOAT &&
                  type_of_header(flthdr(a)) == TYPE_SINGLE_FLOAT)
         {   d *= TWO_24;
             x -= 24;

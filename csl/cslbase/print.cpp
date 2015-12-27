@@ -933,11 +933,11 @@ const char *get_string_data(LispObject name, const char *why, size_t *len)
             if (exception_pending()) return NULL;
             h = vechdr(name);
         }
-        else if (!(is_vector(name)))
+        else if (!is_vector(name))
         {   aerror1(why, name);
             return NULL;
         }
-        else if (type_of_header(h = vechdr(name)) != TYPE_STRING)
+        else if (!is_string_header(h = vechdr(name)))
         {   aerror1(why, name);
             return NULL;
         }
@@ -2123,7 +2123,7 @@ restart:
                 sprintf(my_buff, "%ld", (long)int_of_fixnum(u));
             break;
 
-        case TAG_ODDS:
+        case TAG_HDR_IMMED:
             if (is_bps(u))
             {   Header h = *(Header *)(data_of_bps(u) - CELL);
                 len = length_of_header(h) - CELL;
@@ -2236,7 +2236,15 @@ restart:
         print_non_simple_string:
 #endif
             switch (type_of_header(h))
-            {   case TYPE_STRING:
+            {
+#ifdef EXPERIMENT
+                case TYPE_STRING_1:
+                case TYPE_STRING_2:
+                case TYPE_STRING_3:
+                case TYPE_STRING_4:
+#else
+                case TYPE_STRING:
+#endif
                 {   int32_t slen = 0;
 // /*
 // Getting the width of strings that contain tabs correct here is
@@ -2477,6 +2485,40 @@ restart:
                             *(void **)&elt(u, 0));
                     goto print_my_buff;
 
+#ifdef EXPERIMENT
+                case TYPE_BITVEC_1:   bl = 1; break;
+                case TYPE_BITVEC_2:   bl = 2; break;
+                case TYPE_BITVEC_3:   bl = 3; break;
+                case TYPE_BITVEC_4:   bl = 4; break;
+                case TYPE_BITVEC_5:   bl = 5; break;
+                case TYPE_BITVEC_6:   bl = 6; break;
+                case TYPE_BITVEC_7:   bl = 7; break;
+                case TYPE_BITVEC_8:   bl = 8; break;
+                case TYPE_BITVEC_9:   bl = 9; break;
+                case TYPE_BITVEC_10:  bl = 10; break;
+                case TYPE_BITVEC_11:  bl = 11; break;
+                case TYPE_BITVEC_12:  bl = 12; break;
+                case TYPE_BITVEC_13:  bl = 13; break;
+                case TYPE_BITVEC_14:  bl = 14; break;
+                case TYPE_BITVEC_15:  bl = 15; break;
+                case TYPE_BITVEC_16:  bl = 16; break;
+                case TYPE_BITVEC_17:  bl = 17; break;
+                case TYPE_BITVEC_18:  bl = 18; break;
+                case TYPE_BITVEC_19:  bl = 19; break;
+                case TYPE_BITVEC_20:  bl = 20; break;
+                case TYPE_BITVEC_21:  bl = 21; break;
+                case TYPE_BITVEC_22:  bl = 22; break;
+                case TYPE_BITVEC_23:  bl = 23; break;
+                case TYPE_BITVEC_24:  bl = 24; break;
+                case TYPE_BITVEC_25:  bl = 25; break;
+                case TYPE_BITVEC_26:  bl = 26; break;
+                case TYPE_BITVEC_27:  bl = 27; break;
+                case TYPE_BITVEC_28:  bl = 28; break;
+                case TYPE_BITVEC_29:  bl = 29; break;
+                case TYPE_BITVEC_30:  bl = 30; break;
+                case TYPE_BITVEC_31:  bl = 31; break;
+                case TYPE_BITVEC_32:  bl = 32; break;
+#else
                 case TYPE_BITVEC1:  bl = 1; break;
                 case TYPE_BITVEC2:  bl = 2; break;
                 case TYPE_BITVEC3:  bl = 3; break;
@@ -2485,7 +2527,7 @@ restart:
                 case TYPE_BITVEC6:  bl = 6; break;
                 case TYPE_BITVEC7:  bl = 7; break;
                 case TYPE_BITVEC8:  bl = 8; break;
-
+#endif
 #ifndef COMMON
                 case TYPE_STRUCTURE:
                     pop(u);
@@ -2525,7 +2567,11 @@ restart:
 // not support strings that were over-large so got represented in
 // chunks. Tough luck about that for now!
 //
+#ifdef EXPERIMENT
+                        h = TYPE_STRING_1;
+#else
                         h = TYPE_STRING;
+#endif
                         goto print_non_simple_string;
                     }
                 }
@@ -2618,7 +2664,14 @@ restart:
                     return;
                 }
 
+#ifdef EXPERIMENT
+                case TYPE_VEC8_1:
+                case TYPE_VEC8_2:
+                case TYPE_VEC8_3:
+                case TYPE_VEC8_4:
+#else
                 case TYPE_VEC8:
+#endif
                     outprefix(blankp, 4);
                     putc_stream('#', active_stream); putc_stream('V', active_stream);
                     putc_stream('8', active_stream); putc_stream('(', active_stream);
@@ -4087,7 +4140,7 @@ LispObject Ldebug_print(LispObject nil, LispObject a)
     }
     if (!is_vector(a)) return Lprint(nil, a);
     h = vechdr(a);
-    if (type_of_header(h) != TYPE_STRING) return Lprint(nil, a);
+    if (!is_string_header(h)) return Lprint(nil, a);
     len = length_of_header(h) - CELL;
     p = &celt(a, 0);
     for (i=0; i<len; i++)
@@ -5281,7 +5334,7 @@ LispObject Lwindow_heading2(LispObject nil, LispObject a, LispObject b)
     txt[0] = 0;
     if (is_fixnum(b)) n = int_of_fixnum(b);
     else n = 2;  // default to setting the right section
-    if (is_vector(a) && type_of_header(vechdr(a)) == TYPE_STRING)
+    if (is_vector(a) && is_string(a))
     {   int32_t l = length_of_header(vechdr(a)) - CELL;
         if (l > 30) l = 30;
         memcpy(txt, &celt(a, 0), l);

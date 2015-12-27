@@ -96,8 +96,7 @@ LispObject characterify_string(LispObject pn)
 
 LispObject characterify(LispObject c)
 {   if (is_symbol(c)) return characterify_string(qpname(c));
-    else if (is_vector(c) &&
-             type_of_header(vechdr(c)) == TYPE_STRING)
+    else if (is_vector(c) && is_string(c))
         return characterify_string(c);
     else if (is_fixnum(c)) return pack_char(0, int_of_fixnum(c));
     else return c;
@@ -173,7 +172,7 @@ LispObject Lcharacter(LispObject nil, LispObject a)
 {   if (is_char(a)) return onevalue(a);
     else if (is_vector(a))
     {   Header h = vechdr(a);
-        if (type_of_header(h) == TYPE_STRING)
+        if (is_string_header(h))
             return onevalue(characterify_string(a));
 //
 // /* The issue of strings (especially non-simple ones) and the ELT function
@@ -1125,7 +1124,7 @@ static LispObject get_char_vec(LispObject v, int32_t *high, int32_t *offset)
     if (symbolp(v)) v = qpname(v);
     if (!is_vector(v)) return nil;
     h = vechdr(v);
-    if (type_of_header(h) == TYPE_STRING)
+    if (is_string_header(h))
     {   *high = length_of_header(h) - 4; // @@@ /* 4 vs CELL
         *offset = 0;
         return v;
@@ -1139,7 +1138,7 @@ static LispObject get_char_vec(LispObject v, int32_t *high, int32_t *offset)
     *offset = int_of_fixnum(elt(v, 3));
     v = elt(v, 2);
     h = vechdr(v);
-    if (type_of_header(h) != TYPE_STRING) return nil;
+    if (!is_string_header(h)) return nil;
     else return v;
 }
 

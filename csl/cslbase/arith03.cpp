@@ -158,11 +158,16 @@ uint32_t Idivide(uint32_t *qp, uint32_t a, uint32_t b, uint32_t c)
 #endif // IDIVIDE
 
 static LispObject quotis(LispObject a, LispObject b)
-{   Float_union bb;
+{
+#ifdef EXPERIMENT
+    return fixnum_of_int(0);
+#else
+    Float_union bb;
     bb.i = b - TAG_SFLOAT;
     if (bb.f == 0.0) return aerror2("bad arg for quotient", a, b);
     bb.f = (float) ((float)int_of_fixnum(a) / bb.f);
     return (bb.i & ~(int32_t)0xf) + TAG_SFLOAT;
+#endif
 }
 
 static LispObject quotib(LispObject a, LispObject b)
@@ -302,11 +307,16 @@ static LispObject quotif(LispObject a, LispObject b)
 }
 
 static LispObject quotsi(LispObject a, LispObject b)
-{   Float_union aa;
+{
+#ifdef EXPERIMENT
+    return fixnum_of_int(0);
+#else
+    Float_union aa;
     if (b == fixnum_of_int(0)) return aerror2("bad arg for quotient", a, b);
     aa.i = a - TAG_SFLOAT;
     aa.f = (float) (aa.f / (float)int_of_fixnum(b));
     return (aa.i & ~(int32_t)0xf) + TAG_SFLOAT;
+#endif
 }
 
 static LispObject quotsb(LispObject a, LispObject b)
@@ -1257,8 +1267,10 @@ LispObject quot2(LispObject a, LispObject b)
                         if (r != 0x08000000) return fixnum_of_int(r);
                         else return make_one_word_bignum(r);
                     }
+#ifndef EXPERIMENT
                 case TAG_SFLOAT:
                     return quotis(a, b);
+#endif
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
@@ -1277,6 +1289,7 @@ LispObject quot2(LispObject a, LispObject b)
                 default:
                     return aerror1("bad arg for quotient",  b);
             }
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -1306,6 +1319,7 @@ LispObject quot2(LispObject a, LispObject b)
                 default:
                     return aerror1("bad arg for quotient",  b);
             }
+#endif
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -1313,8 +1327,10 @@ LispObject quot2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotbi(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return quotbs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -1337,8 +1353,10 @@ LispObject quot2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotri(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return quotrs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -1361,8 +1379,10 @@ LispObject quot2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotci(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return quotcs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -1388,8 +1408,10 @@ LispObject quot2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return quotfi(a, b);
+#ifndef EXPERIMENT
                 case TAG_SFLOAT:
                     return quotfs(a, b);
+#endif
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
@@ -1462,8 +1484,10 @@ LispObject CLquot2(LispObject a, LispObject b)
                         bb = bb / w;
                         return make_ratio(fixnum_of_int(aa), fixnum_of_int(bb));
                     }
+#ifndef EXPERIMENT
                 case TAG_SFLOAT:
                     return quotis(a, b);
+#endif
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
@@ -1482,6 +1506,7 @@ LispObject CLquot2(LispObject a, LispObject b)
                 default:
                     return aerror1("bad arg for /",  b);
             }
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -1511,6 +1536,7 @@ LispObject CLquot2(LispObject a, LispObject b)
                 default:
                     return aerror1("bad arg for /",  b);
             }
+#endif
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -1518,8 +1544,10 @@ LispObject CLquot2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return CLquotbi(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return quotbs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -1542,8 +1570,10 @@ LispObject CLquot2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotri(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return quotrs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -1566,8 +1596,10 @@ LispObject CLquot2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotci(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return quotcs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -1593,8 +1625,10 @@ LispObject CLquot2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return quotfi(a, b);
+#ifndef EXPERIMENT
                 case TAG_SFLOAT:
                     return quotfs(a, b);
+#endif
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)

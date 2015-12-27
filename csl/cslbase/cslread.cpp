@@ -1565,7 +1565,7 @@ static LispObject Lmake_symbol(LispObject nil, LispObject str)
     s = getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
     errexitn(1);
     pop(str);
-    qheader(s) = TAG_ODDS+TYPE_SYMBOL;
+    qheader(s) = TAG_HDR_IMMED+TYPE_SYMBOL;
     qvalue(s) = unset_var;
     if (is_vector(str)) validate_string(str);
     qpname(s) = str;
@@ -1606,10 +1606,10 @@ LispObject Lgensym(LispObject nil, int nargs, ...)
 #endif
     errexit();
 #ifdef COMMON
-    qheader(id) = TAG_ODDS+TYPE_SYMBOL+SYM_ANY_GENSYM;
+    qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM;
     qpname(id) = pn;
 #else
-    qheader(id) = TAG_ODDS+TYPE_SYMBOL+SYM_UNPRINTED_GENSYM+SYM_ANY_GENSYM;
+    qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_UNPRINTED_GENSYM+SYM_ANY_GENSYM;
     qpname(id) = gensym_base;
 #endif
     qvalue(id) = unset_var;
@@ -1661,9 +1661,9 @@ LispObject Lgensym1(LispObject nil, LispObject a)
     errexitn(1);
     pop(genbase);
 #ifdef COMMON
-    qheader(id) = TAG_ODDS+TYPE_SYMBOL+SYM_ANY_GENSYM;
+    qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM;
 #else
-    qheader(id) = TAG_ODDS+TYPE_SYMBOL+SYM_UNPRINTED_GENSYM+SYM_ANY_GENSYM;
+    qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_UNPRINTED_GENSYM+SYM_ANY_GENSYM;
 #endif
     qvalue(id) = unset_var;
     qpname(id) = genbase;
@@ -1707,7 +1707,7 @@ LispObject Lgensym2(LispObject nil, LispObject a)
     id = getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
     errexitn(1);
     pop(genbase);
-    qheader(id) = TAG_ODDS+TYPE_SYMBOL+SYM_ANY_GENSYM;
+    qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM;
     qvalue(id) = unset_var;
     qpname(id) = genbase;
     qplist(id) = nil;
@@ -1846,7 +1846,7 @@ LispObject iintern(LispObject str, int32_t h, LispObject p, int str_is_ok)
         s = (LispObject)getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
         pop(p);
         errexit();
-        qheader(s) = TAG_ODDS+TYPE_SYMBOL;
+        qheader(s) = TAG_HDR_IMMED+TYPE_SYMBOL;
 #ifdef COMMON
         if (p == qvalue(keyword_package) && keyword_package != nil)
         {   qvalue(s) = (LispObject)s;

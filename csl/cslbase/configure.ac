@@ -38,7 +38,7 @@
 # change that. These are the things I note above as "special flags"
 
 # Specify the name of this "application" and a version number
-AC_INIT([REDUCE],[6.04])
+AC_INIT([REDUCE],[7.00])
 AM_INIT_AUTOMAKE([1.8.3 -Wno-portability -Wno-override foreign dist-bzip2])
 AC_CONFIG_MACRO_DIRS([m4])
 
@@ -1384,7 +1384,9 @@ then
 # 10.5  Leopard  )
 # 10.6  Snow Leopard
 # 10.7  Lion
-# 10.8  Mountain Lion   This is the oldest version I will worry about.
+# 10.8  Mountain Lion   This is the oldest version I will worry about,
+#                       and actually I am in the process of stopping
+#                       thinking about anything earlier than Yosemite.
 # 10.9  Mavericks       It seems that I may NEED to specify this as the
 #                       oldest supported platform, because changes that
 #                       Apple made that are triggered by (merely) setting

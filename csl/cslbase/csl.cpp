@@ -1024,7 +1024,7 @@ static void lisp_main(void)
                     return_code = EXIT_SUCCESS;
                     compression_worth_while = 128;
                     if (is_vector(exit_value) &&
-                        type_of_header(vechdr(exit_value)) == TYPE_STRING)
+                        is_string(exit_value))
                     {   msg = &celt(exit_value, 0);
                         len = (int)(length_of_header(vechdr(exit_value)) - CELL);
                     }
@@ -1044,7 +1044,7 @@ static void lisp_main(void)
                     return_code = EXIT_SUCCESS;
                     compression_worth_while = 128;
                     if (is_vector(exit_value) &&
-                        type_of_header(vechdr(exit_value)) == TYPE_STRING)
+                        is_string(exit_value))
                     {   msg = &celt(exit_value, 0);
                         len = (int)(length_of_header(vechdr(exit_value)) - CELL);
                     }
@@ -4104,7 +4104,7 @@ int PROC_fixnum(PROC_handle p)
 
 int PROC_string(PROC_handle p)
 {   return is_vector((LispObject)p) &&
-           type_of_header(vechdr((LispObject)p)) == TYPE_STRING;
+           is_string((LispObject)p);
 }
 
 int PROC_floatnum(PROC_handle p)
@@ -4184,6 +4184,5 @@ PROC_handle PROC_first(PROC_handle p)
 PROC_handle PROC_rest(PROC_handle p)
 {   return (PROC_handle)qcdr((LispObject)p);
 }
-
 
 // End of csl.cpp

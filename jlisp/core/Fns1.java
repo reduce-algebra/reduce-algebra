@@ -137,7 +137,7 @@ class Fns1
         {"clrhash",                     new ClrhashFn()},
         {"code-char",                   new Code_charFn()},
         {"codep",                       new CodepFn()},
-        ("complexp",                    new ComplexpFn()},
+        {"complexp",                    new ComplexpFn()},
         {"compress",                    new CompressFn()},
         {"cons",                        new ConsFn()},
         {"consp",                       new ConspFn()},

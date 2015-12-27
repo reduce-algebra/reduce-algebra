@@ -160,6 +160,16 @@
 // 32-bit machines where the first 3 levels of table are not needed at
 // all. It seems tidiest to just retain the general code.
 
+// Experiments (using Jlisp) show that when building the bootstrap version
+// of Reduce (which includes a lot more than the final one) there are
+// around 250000 objects, of which only 7000 have more than one reference
+// to them. That is in the main (bootstrapreduce) initial image - when one
+// loads more packages that can add extra data, but for the purposes of
+// creaing the main Reduce checkpoint file the above numbers are what I
+// will base my design on. Of this the key issue is that the suggestion that
+// maybe 3% of items in a lisp heap might (in the case I have measured) be
+// shared, so the table needed to record them does not need to be huge.
+
 static uint8_t *****used_map[1024] = {NULL};
 
 // Test if an address is marked as in use.
@@ -328,11 +338,13 @@ descend:
     case TAG_FIXNUM:   // immediate data
         goto ascend;
 
-    case TAG_ODDS:     // immediate data
+    case TAG_HDR_IMMED:// immediate data
         goto ascend;
 
+#ifndef EXPERIMENT
     case TAG_SFLOAT:   // immediate data
         goto ascend;
+#endif
 
     case TAG_SYMBOL:
         if (address_used((int64_t)p)) goto ascend2;

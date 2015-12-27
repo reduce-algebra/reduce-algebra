@@ -120,10 +120,7 @@ LispObject rationalf(double d)
 //
         while ((a2 & 1) == 0 && x < 0)
         {   a2 = (a2 >> 1) | ((a1 & 1) << 30);
-            a1 = a1 >> 1;
-#ifdef SIGNED_SHIFTS_ARE_LOGICAL
-            if (a1 & 0x40000000) a1 |= ~0x7fffffff;
-#endif
+            a1 = (a1 & ~1)/2;  // shifts right one place (arithmetically)
             x++;
             if (x == 0)
             {   if (negative)
@@ -219,11 +216,13 @@ LispObject rational(LispObject a)
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             return a;
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
         {   Float_union aa;
             aa.i = a - TAG_SFLOAT;
             return rationalf((double)aa.f);
         }
+#endif
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -245,11 +244,13 @@ LispObject rationalize(LispObject a)
 {   switch (a & TAG_BITS)
     {   case TAG_FIXNUM:
             return a;
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
         {   Float_union aa;
             aa.i = a - TAG_SFLOAT;
             return rationalizef((double)aa.f);
         }
+#endif
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -272,13 +273,18 @@ LispObject rationalize(LispObject a)
 //
 
 static CSLbool lesspis(LispObject a, LispObject b)
-{   Float_union bb;
+{
+#ifdef EXPERIMENT
+    return 0;
+#else
+    Float_union bb;
     bb.i = b - TAG_SFLOAT;
 //
 // Any fixnum can be converted to a float without introducing any
 // error at all...
 //
     return (double)int_of_fixnum(a) < (double)bb.f;
+#endif
 }
 
 CSLbool lesspib(LispObject, LispObject b)
@@ -501,27 +507,47 @@ CSLbool lessprd(LispObject a, double b)
 }
 
 static CSLbool lesspsi(LispObject a, LispObject b)
-{   Float_union aa;
+{
+#ifdef EXPERIMENT
+    return 0;
+#else
+    Float_union aa;
     aa.i = a - TAG_SFLOAT;
     return (double)aa.f < (double)int_of_fixnum(b);
+#endif
 }
 
 static CSLbool lesspsb(LispObject a, LispObject b)
-{   Float_union aa;
+{
+#ifdef EXPERIMENT
+    return 0;
+#else
+    Float_union aa;
     aa.i = a - TAG_SFLOAT;
     return lesspdb((double)aa.f, b);
+#endif
 }
 
 static CSLbool lesspsr(LispObject a, LispObject b)
-{   Float_union aa;
+{
+#ifdef EXPERIMENT
+    return 0;
+#else
+    Float_union aa;
     aa.i = a - TAG_SFLOAT;
     return lesspdr((double)aa.f, b);
+#endif
 }
 
 static CSLbool lesspsf(LispObject a, LispObject b)
-{   Float_union aa;
+{
+#ifdef EXPERIMENT
+    return 0;
+#else
+    Float_union aa;
     aa.i = a - TAG_SFLOAT;
     return (double)aa.f < float_of_number(b);
+#endif
 }
 
 CSLbool lesspbi(LispObject a, LispObject)
@@ -531,9 +557,14 @@ CSLbool lesspbi(LispObject a, LispObject)
 }
 
 static CSLbool lesspbs(LispObject a, LispObject b)
-{   Float_union bb;
+{
+#ifdef EXPERIMENT
+    return 0;
+#else
+    Float_union bb;
     bb.i = b - TAG_SFLOAT;
     return lesspbd(a, (double)bb.f);
+#endif
 }
 
 static CSLbool lesspbb(LispObject a, LispObject b)
@@ -579,9 +610,14 @@ static CSLbool lesspri(LispObject a, LispObject b)
 }
 
 static CSLbool lessprs(LispObject a, LispObject b)
-{   Float_union bb;
+{
+#ifdef EXPERIMENT
+    return 0;
+#else
+    Float_union bb;
     bb.i = b - TAG_SFLOAT;
     return lessprd(a, (double)bb.f);
+#endif
 }
 
 #define lessprb(a, b) lesspri(a, b)
@@ -591,9 +627,14 @@ static CSLbool lessprs(LispObject a, LispObject b)
 #define lesspfi(a, b) (float_of_number(a) < (double)int_of_fixnum(b))
 
 static CSLbool lesspfs(LispObject a, LispObject b)
-{   Float_union bb;
+{
+#ifdef EXPERIMENT
+    return 0;
+#else
+    Float_union bb;
     bb.i = b - TAG_SFLOAT;
     return float_of_number(a) < (double)bb.f;
+#endif
 }
 
 #define lesspfb(a, b) lesspdb(float_of_number(a), b)
@@ -621,8 +662,10 @@ CSLbool lessp2(LispObject a, LispObject b)
             {   case TAG_FIXNUM:
 // For fixnums the comparison happens directly
                     return ((int32_t)a < (int32_t)b);
+#ifndef EXPERIMENT
                 case TAG_SFLOAT:
                     return lesspis(a, b);
+#endif
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
@@ -639,6 +682,7 @@ CSLbool lessp2(LispObject a, LispObject b)
                 default:
                     return (CSLbool)aerror2("bad arg for lessp", a, b);
             }
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
             switch (b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -665,6 +709,7 @@ CSLbool lessp2(LispObject a, LispObject b)
                 default:
                     return (CSLbool)aerror2("bad arg for lessp", a, b);
             }
+#endif
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -672,8 +717,10 @@ CSLbool lessp2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return lesspbi(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return lesspbs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -694,8 +741,10 @@ CSLbool lessp2(LispObject a, LispObject b)
                     switch (b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return lesspri(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return lessprs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -719,8 +768,10 @@ CSLbool lessp2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return lesspfi(a, b);
+#ifndef EXPERIMENT
                 case TAG_SFLOAT:
                     return lesspfs(a, b);
+#endif
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)

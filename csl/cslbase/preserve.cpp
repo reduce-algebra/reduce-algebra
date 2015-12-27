@@ -2475,7 +2475,7 @@ static void unadjust_all(void)
 {   int32_t i;
     LispObject nil = C_nil;
     set_up_entry_lookup();
-    qheader(nil)  = TAG_ODDS+TYPE_SYMBOL+SYM_SPECIAL_VAR;
+    qheader(nil)  = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_SPECIAL_VAR;
     qvalue(nil)   = 0;
     qenv(nil)     = 0;
     ifn1(nil)     = 0;

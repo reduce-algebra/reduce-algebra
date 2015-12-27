@@ -442,7 +442,7 @@ static void term_putchar(int c);
 static wchar_t *term_wide_plain_getline(void)
 {   int n, ch;
     int i;
-#ifdef TEST
+#ifdef TERMED_TEST
     fprintf(stderr, "plain_getline:");
     fflush(stderr);
 #endif
@@ -578,7 +578,7 @@ void term_wide_setprompt(const wchar_t *s)
 
 int term_setup(int flag, const char *colour)
 {
-#ifdef TEST
+#ifdef TERMED_TEST
     fprintf(stderr,
             "term_setup in the DISABLE (no cursor addressability) case\n");
 #endif
@@ -909,7 +909,7 @@ int term_setup(int flag, const char *colour)
 #ifdef WIN32
     DWORD w;
     CONSOLE_SCREEN_BUFFER_INFO csb;
-#ifdef TEST
+#ifdef TERMED_TEST
     fprintf(stderr, "term_setup in the WIN32 case\n");
 #endif
 //
@@ -924,7 +924,7 @@ int term_setup(int flag, const char *colour)
     display_line = (wchar_t *)malloc(200*sizeof(wchar_t));
     if (input_line == NULL || display_line == NULL)
     {   input_line_size = 0;
-#ifdef TEST
+#ifdef TERMED_TEST
         fprintf(stderr, "unable to allocate buffers\n");
 #endif
         return 1;
@@ -932,7 +932,7 @@ int term_setup(int flag, const char *colour)
     else input_line_size = 200;
     if (!flag)
     {
-#ifdef TEST
+#ifdef TERMED_TEST
         fprintf(stderr, "user asked for no local editing\n");
 #endif
         return 1;
@@ -944,14 +944,14 @@ int term_setup(int flag, const char *colour)
     stdin_handle = GetStdHandle(STD_INPUT_HANDLE);
     if (GetFileType(stdin_handle) != FILE_TYPE_CHAR)
     {
-#ifdef TEST
+#ifdef TERMED_TEST
         fprintf(stderr, "stdin not CHAR type\n");
 #endif
         return 1;
     }
     if (!GetConsoleMode(stdin_handle, &w))
     {
-#ifdef TEST
+#ifdef TERMED_TEST
         fprintf(stderr, "could not get stdin console mode \n");
 #endif
         return 1;
@@ -960,19 +960,19 @@ int term_setup(int flag, const char *colour)
 // Standard output must be a character device and a ConsoleScreenBuffer
 //
     stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-#ifdef TEST
+#ifdef TERMED_TEST
     fprintf(stderr, "stdin handle = %p, stdout handle = %p\n", stdin_handle, stdout_handle);
 #endif
     if (GetFileType(stdout_handle) != FILE_TYPE_CHAR)
     {
-#ifdef TEST
+#ifdef TERMED_TEST
         fprintf(stderr, "stdout not CHAR type\n");
 #endif
         return 1;
     }
     if (!GetConsoleScreenBufferInfo(stdout_handle, &csb))
     {
-#ifdef TEST
+#ifdef TERMED_TEST
 //
 // This was here stdout_handled needed READ access as well as WRITE access.
 // All the extra printing was useful while I was tracking that problem down!
@@ -995,7 +995,7 @@ int term_setup(int flag, const char *colour)
     if (!GetConsoleMode(stdin_handle, &stdin_attributes) ||
         !GetConsoleMode(stdout_handle, &stdout_attributes))
     {
-#ifdef TEST
+#ifdef TERMED_TEST
         fprintf(stderr, "trouble GetConsoleMode\n");
 #endif
         return 1;
@@ -1010,7 +1010,7 @@ int term_setup(int flag, const char *colour)
     inputAttributes = plainAttributes ^ FOREGROUND_RED;
     if (!SetConsoleMode(stdout_handle, 0))
     {
-#ifdef TEST
+#ifdef TERMED_TEST
         fprintf(stderr, "trouble setting stdout attributes\n");
 #endif
         return 1;
@@ -1018,7 +1018,7 @@ int term_setup(int flag, const char *colour)
     if (!SetConsoleMode(stdin_handle,
                         ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT))
     {
-#ifdef TEST
+#ifdef TERMED_TEST
         fprintf(stderr, "trouble setting stdin attributes\n");
 #endif
         return 1;
@@ -1034,14 +1034,14 @@ int term_setup(int flag, const char *colour)
     originalCodePage = GetConsoleOutputCP();
     atexit(resetCP);
     SetConsoleOutputCP(CP_UTF8);
-#ifdef TEST
+#ifdef TERMED_TEST
     printf("Original page = %d.  \xc3\xbc\n", originalCodePage);
 #endif
 #else // WIN32
     int errval, errcode;
     char *s;
     struct termios my_term;
-#ifdef TEST
+#ifdef TERMED_TEST
     fprintf(stderr, "term_setup in the non-Windows case\n");
 #endif
     term_enabled = 0;
@@ -5556,7 +5556,7 @@ static wchar_t *term_wide_fancy_getline(void)
 // searching continues. It returns false if it has exited search mode and the
 // key must now be treated as if it was a "normal" non-search one.
 //
-#ifdef TEST
+#ifdef TERMED_TEST
 //
 //      fprintf(stderr, "process character %#x\n", ch);
 //      fflush(stderr);

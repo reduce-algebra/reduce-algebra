@@ -174,7 +174,7 @@ extern char memory_print_buffer[MAX_PROMPT_LENGTH];
 #define set_stream_read_fn(v, x)        (elt(v, 9) = (LispObject)(x))
 #define set_stream_read_other(v, x)     (elt(v, 10) = (LispObject)(x))
 
-#define STREAM_HEADER (TAG_ODDS + TYPE_STREAM + (STREAM_SIZE<<10))
+#define STREAM_HEADER (TAG_HDR_IMMED + TYPE_STREAM + (STREAM_SIZE<<10))
 #define STREAM_FLAG_PIPE       1
 
 #define is_stream(v)      (is_vector(v) && vechdr(v) == STREAM_HEADER)
@@ -259,7 +259,11 @@ extern character_writer *procedural_output;
 // sub-structure packed within a file.
 //
 
+#ifdef EXPERIMENT
+#define IMAGE_FORMAT_VERSION       '5'
+#else
 #define IMAGE_FORMAT_VERSION       '4'
+#endif
 
 #define DIRECTORY_SIZE              8    // Initial directory size
 

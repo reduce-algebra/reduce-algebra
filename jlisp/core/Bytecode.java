@@ -1,5 +1,9 @@
 package uk.co.codemist.jlisp.core;
 
+
+/* $Id$ */
+
+
 //
 // This file is part of the Jlisp implementation of Standard Lisp
 // Copyright \u00a9 (C) Codemist Ltd, 1998-2015.
@@ -34,10 +38,6 @@ package uk.co.codemist.jlisp.core;
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
-
-// $Id$
-
-
 class Bytecode extends BytecodeCore
 {
 
@@ -856,6 +856,10 @@ case FREERSTR:
             }
         }
         continue;
+case ONEVALUE:
+// For now multiple values are not supported in Jlisp so this opcode is
+// treated as a no-op.
+        continue;
 case EXIT:
         sp = spsave;
         return a;
@@ -1159,10 +1163,8 @@ case FASTGET:
             else a = Jlisp.nil;
         }
         continue;
-case SPARE1:
-        Jlisp.error("bytecode SPARE1 not implemented");
-case SPARE2:
-        Jlisp.error("bytecode SPARE2 not implemented");
+case SPARE:
+        Jlisp.error("bytecode SPARE not implemented");
     } // end of switch
 // This should be where I get to if I do a "break;" in the big switch
 // statement above. Note that I am still within the for loop.

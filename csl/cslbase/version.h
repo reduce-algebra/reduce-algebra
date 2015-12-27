@@ -45,11 +45,17 @@
 // are also recorded in image files. But NOTE NOTE NOTE that the macro
 // VERSION gets set in config.h based on the version number established in
 // "configure.ac" and so the value set here is merely a fall-back. Indeed
-// this whole file is a bit of a joke!
+// this whole file is a bit of a joke! Well to prevent it from being a joke
+// I make it undefine anything that config.h has established and set up its
+// own value explictly.
 //
 
-#ifndef VERSION
-#define VERSION     "6.05"
+#undef VERSION
+
+#ifdef EXPERIMENT
+#define VERSION     "8.00"
+#else
+#define VERSION     "7.00"
 #endif
 
 #endif // header_version_h

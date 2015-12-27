@@ -1007,28 +1007,29 @@ static int increment_counter(LispObject nil, int n)
 // need to hope that the compiler optimises this apparently dynamic test
 // away for me.
 //
-    if (CELL == 8) qcount(elt(litvec, 0)) += n;
-    else
-    {   LispObject name = elt(litvec, 0);
-        uintptr_t count = qcount(name) + n;
-        if ((count & 0xc0000000) != 0)
-        {   uintptr_t extra = (count >> 30) & 0x3;
-            LispObject prop = get(name, count_high);
-            if (is_fixnum(prop)) extra += int_of_fixnum(prop);
-            putprop(name, count_high, fixnum_of_int(extra));
-            count &= 0x3fffffff;
-        }
-        qcount(name) = count;
+//  if (CELL == 8)
+    qcount(elt(litvec, 0)) += n;
+//  else
+//  {   LispObject name = elt(litvec, 0);
+//      uint64_t count = qcount(name) + n;
+//      if ((count & 0xc0000000) != 0)
+//      {   uintptr_t extra = (count >> 30) & 0x3;
+//          LispObject prop = get(name, count_high);
+//          if (is_fixnum(prop)) extra += int_of_fixnum(prop);
+//          putprop(name, count_high, fixnum_of_int(extra));
+//          count &= 0x3fffffff;
+//      }
+//      qcount(name) = count;
 //
 // Unfortunately it is at least possible that "put" might report an error
 // here, so I need to check for that.
 //
-        nil = C_nil;
-        if (exception_pending())
-        {   flip_exception();
-            return 1;
-        }
-    }
+//      nil = C_nil;
+//      if (exception_pending())
+//      {   flip_exception();
+//          return 1;
+//      }
+//  }
     return 0;
 }
 

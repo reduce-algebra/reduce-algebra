@@ -1061,7 +1061,9 @@ static void preserve(OutputStream dump) throws IOException
 // Now write it out. The code here MUST process the same set of things as
 // that above. But before I write out the main heap I will dump
 // some special header info...
+        System.out.printf("There are %d objects in all to dump%n", objects.size());
         int n = repeatedObjects.size();
+        System.out.printf("There are %d repeated objects to dump%n", n);
         odump.write(n>>16);
         odump.write(n>>8);
         odump.write(n);

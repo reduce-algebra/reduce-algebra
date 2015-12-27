@@ -912,7 +912,7 @@ static LispObject Lsimple_bit_vector_p(LispObject nil,
 // simple-bit-vector-p
 //
 {   if (!(is_vector(a))) return onevalue(nil);
-    else return onevalue(Lispify_predicate(header_of_bitvector(vechdr(a))));
+    else return onevalue(Lispify_predicate(is_bitvec_header(vechdr(a))));
 }
 
 LispObject Lsimple_vectorp(LispObject nil, LispObject a)
@@ -936,7 +936,7 @@ LispObject Lthreevectorp(LispObject nil, LispObject a)
 //
 {   if (!(is_vector(a))) return onevalue(nil);
     return onevalue(Lispify_predicate(
-                        vechdr(a) == (TAG_ODDS + TYPE_SIMPLE_VEC + ((4*CELL)<<10))));
+                        vechdr(a) == (TAG_HDR_IMMED + TYPE_SIMPLE_VEC + ((4*CELL)<<10))));
 }
 
 #ifdef COMMON
@@ -951,7 +951,7 @@ static LispObject Larrayp(LispObject nil, LispObject a)
     if (type_of_header(h)==TYPE_ARRAY ||
         type_of_header(h)==TYPE_STRING ||
         type_of_header(h)==TYPE_SIMPLE_VEC ||
-        header_of_bitvector(h)) return onevalue(lisp_true);
+        is_bitvec_header(h)) return onevalue(lisp_true);
     else return onevalue(nil);
 }
 
@@ -1824,7 +1824,7 @@ LispObject getvector(int tag, int type, size_t size)
             continue;
         }
         vfringe = (LispObject)(r + alloc_size);
-        *((Header *)r) = type + (size << 10) + TAG_ODDS;
+        *((Header *)r) = type + (size << 10) + TAG_HDR_IMMED;
 //
 // DANGER: the vector allocated here is left uninitialised at this stage.
 // This is OK if the vector will contain binary information, but if it
@@ -2124,7 +2124,7 @@ LispObject Ltimeofday(LispObject nil, int nargs, ...)
     return onevalue(w);
 }
 
-#define STR24HDR (TAG_ODDS+TYPE_STRING+((24+CELL)<<10))
+#define STR24HDR (TAG_HDR_IMMED+TYPE_STRING+((24+CELL)<<10))
 
 static int getint(char *p, int len)
 {   int r = 0;

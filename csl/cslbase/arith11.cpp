@@ -178,8 +178,10 @@ LispObject Cremainder(LispObject a, LispObject b)
 // support that.  Standard Lisp is only concerned with fixnums and
 // bignums, but can tolerate the extra generality.
 //
+#ifndef EXPERIMENT
                 case TAG_SFLOAT:
                     return remis(a, b);
+#endif
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
@@ -213,6 +215,7 @@ LispObject Cremainder(LispObject a, LispObject b)
                 default:
                     return aerror1("Bad arg for remainder",  b);
             }
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -240,6 +243,7 @@ LispObject Cremainder(LispObject a, LispObject b)
                 default:
                     return aerror1("Bad arg for remainder",  b);
             }
+#endif
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -247,8 +251,10 @@ LispObject Cremainder(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return rembi(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return rembs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -269,8 +275,10 @@ LispObject Cremainder(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return remri(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return remrs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -309,8 +317,10 @@ LispObject Cremainder(LispObject a, LispObject b)
 //
                 case TAG_FIXNUM:
                     return remfi(a, b);
+#ifndef EXPERIMENT
                 case TAG_SFLOAT:
                     return remfs(a, b);
+#endif
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
@@ -494,8 +504,10 @@ LispObject modulus(LispObject a, LispObject b)
 // support that.  Standard Lisp is only concerned with fixnums and
 // bignums.
 //
+#ifndef EXPERIMENT
                 case TAG_SFLOAT:
                     return modis(a, b);
+#endif
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
@@ -512,6 +524,7 @@ LispObject modulus(LispObject a, LispObject b)
                 default:
                     return aerror1("Bad arg for mod",  b);
             }
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -539,6 +552,7 @@ LispObject modulus(LispObject a, LispObject b)
                 default:
                     return aerror1("Bad arg for mod",  b);
             }
+#endif
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -546,8 +560,10 @@ LispObject modulus(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return modbi(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return modbs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -568,8 +584,10 @@ LispObject modulus(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return modri(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return modrs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -593,8 +611,10 @@ LispObject modulus(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return modfi(a, b);
+#ifndef EXPERIMENT
                 case TAG_SFLOAT:
                     return modfs(a, b);
+#endif
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
@@ -625,6 +645,7 @@ CSLbool zerop(LispObject a)
             if (is_complex(a) && zerop(real_part(a)))
                 return zerop(imag_part(a));
             else return NO;
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
 //
 // The code here assumes that the the floating point number zero
@@ -632,6 +653,7 @@ CSLbool zerop(LispObject a)
 // cautious way of coding things.
 //
             return ((a & 0x7ffffff8) == 0); // Strip sign bit as well as tags
+#endif
         case TAG_BOXFLOAT:
             return (float_of_number(a) == 0.0);
         default:
@@ -648,11 +670,13 @@ CSLbool onep(LispObject a)
             if (is_complex(a) && onep(real_part(a)))
                 return zerop(imag_part(a));
             else return NO;
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
         {   Float_union w;
             w.f = (float)1.0;
             return (a == (w.i & ~(int32_t)0xf) + TAG_SFLOAT);
         }
+#endif
         case TAG_BOXFLOAT:
             return (float_of_number(a) == 1.0);
         default:
@@ -668,11 +692,13 @@ CSLbool minusp(LispObject a)
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             return ((int32_t)a < 0);
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
         {   Float_union aa;
             aa.i = a - TAG_SFLOAT;
             return (aa.f < 0.0);
         }
+#endif
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -702,11 +728,13 @@ CSLbool plusp(LispObject a)
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             return (a > fixnum_of_int(0));
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
         {   Float_union aa;
             aa.i = a - TAG_SFLOAT;
             return (aa.f > 0.0);
         }
+#endif
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -740,9 +768,14 @@ CSLbool plusp(LispObject a)
 //
 
 static CSLbool numeqis(LispObject a, LispObject b)
-{   Float_union bb;
+{
+#ifdef EXPERIMENT
+    return 0;
+#else
+    Float_union bb;
     bb.i = b - TAG_SFLOAT;
     return ((double)int_of_fixnum(a) == (double)bb.f);
+#endif
 }
 
 static CSLbool numeqic(LispObject a, LispObject b)
@@ -889,9 +922,14 @@ static CSLbool numeqsr(LispObject a, LispObject b)
 #define numeqsc(a, b) numeqic(a, b)
 
 static CSLbool numeqsf(LispObject a, LispObject b)
-{   Float_union aa;
+{
+#ifdef EXPERIMENT
+    return 0;
+#else
+    Float_union aa;
     aa.i = a - TAG_SFLOAT;
     return ((double)aa.f == float_of_number(b));
+#endif
 }
 
 #define numeqbs(a, b) numeqsb(b, a)
@@ -970,8 +1008,10 @@ CSLbool numeq2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return (a == b);
+#ifndef EXPERIMENT
                 case TAG_SFLOAT:
                     return numeqis(a, b);
+#endif
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
@@ -990,6 +1030,7 @@ CSLbool numeq2(LispObject a, LispObject b)
                 default:
                     differentb;
             }
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -1022,6 +1063,7 @@ CSLbool numeq2(LispObject a, LispObject b)
                 default:
                     differentb;
             }
+#endif
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -1029,8 +1071,10 @@ CSLbool numeq2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return 0;
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return numeqbs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -1053,8 +1097,10 @@ CSLbool numeq2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return 0;
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return numeqrs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -1077,8 +1123,10 @@ CSLbool numeq2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return numeqci(a, b);
+#ifndef EXPERIMENT
                         case TAG_SFLOAT:
                             return numeqcs(a, b);
+#endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
@@ -1104,8 +1152,10 @@ CSLbool numeq2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return numeqfi(a, b);
+#ifndef EXPERIMENT
                 case TAG_SFLOAT:
                     return numeqfs(a, b);
+#endif
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)

@@ -291,7 +291,7 @@ LispObject error_output, query_io, terminal_io, trace_output, fasl_stream;
 LispObject native_code, native_symbol, traceprint_symbol, loadsource_symbol;
 LispObject hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
 LispObject gchook, resources, callstack, procstack, procmem, trap_time;
-LispObject count_high, used_space, avail_space, eof_symbol, call_stack;
+LispObject used_space, avail_space, eof_symbol, call_stack;
 LispObject workbase[51];
 
 LispObject user_base_0, user_base_1, user_base_2, user_base_3, user_base_4;
@@ -1407,7 +1407,7 @@ int32_t code_up_io(void *e)
     return 0;
 }
 
-#define make_padder(n) (TYPE_VEC8 + ((n)<<10) + TAG_ODDS)
+#define make_padder(n) (TYPE_VEC8 + ((n)<<10) + TAG_HDR_IMMED)
 
 static void shrink_vecheap_page_to_32(char *p, char *fr)
 {   if (!SIXTY_FOUR_BIT)
@@ -1982,7 +1982,7 @@ static void adjust_vecheap(void)
                 if (0 < iw && iw < entry_table_sizen)
                     ifnn(ss) = (intptr_t)entries_tablen[iw].p;
                 else ifnn(ss) = (intptr_t)undefinedn;
-                qcount(ss) = flip_bytes(qcount(ss));
+                qcount(ss) = flip_64bits(qcount(ss));
                 low += symhdr_length;
                 continue;
             }
@@ -2217,7 +2217,7 @@ static void adjust_bpsheap(void)
 void adjust_all(void)
 {   int32_t i;
     LispObject nil = C_nil;
-    qheader(nil)  = TAG_ODDS+TYPE_SYMBOL+SYM_SPECIAL_VAR;
+    qheader(nil)  = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_SPECIAL_VAR;
 #ifdef COMMON
     qheader(nil) |= SYM_EXTERN_IN_HOME;
 #endif
@@ -4478,7 +4478,7 @@ static void cold_setup()
     ifn1(nil) = (intptr_t)undefined1;
     ifn2(nil) = (intptr_t)undefined2;
     ifnn(nil) = (intptr_t)undefinedn;
-    qheader(nil) = TAG_ODDS+TYPE_SYMBOL+SYM_SPECIAL_VAR;
+    qheader(nil) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_SPECIAL_VAR;
     qvalue(nil) = nil;
 //
 // When I am debugging CSL I can validate the heap, for instance whenever
@@ -4701,7 +4701,7 @@ static void cold_setup()
     eof_symbol          = make_undefined_symbol("\xf4\x8f\xbf\xbf");
     call_stack          = nil;
     trap_time           = make_undefined_symbol("trap-time*");
-    count_high          = make_undefined_symbol("count-high*");
+//  count_high          = make_undefined_symbol("count-high*");
     qheader(lower_symbol) |= SYM_SPECIAL_VAR;
     qheader(echo_symbol)  |= SYM_SPECIAL_VAR;
     qheader(hankaku_symbol) |= SYM_SPECIAL_VAR;
@@ -6159,7 +6159,7 @@ void setup(int restart_flag, double store_size)
         else Cfread((char *)BASE, sizeof(LispObject)*last_nil_offset);
         copy_out_of_nilseg(YES);
 #ifndef COMMON
-        qheader(nil) = TAG_ODDS+TYPE_SYMBOL+SYM_SPECIAL_VAR;// BEFORE nil...
+        qheader(nil) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_SPECIAL_VAR;// BEFORE nil...
 #endif
 //
 // Now the value in byteflip is really a 32-bit value saved an intptr_t,
@@ -6440,7 +6440,7 @@ void copy_into_nilseg(int fg)
     BASE[156]    = procstack;
     BASE[157]    = procmem;
     BASE[158]    = trap_time;
-    BASE[159]    = count_high;
+//  BASE[159]    = count_high;
 
 #ifdef COMMON
     BASE[170]    = keyword_package;
@@ -6611,7 +6611,7 @@ void copy_out_of_nilseg(int fg)
     procstack             = BASE[156];
     procmem               = BASE[157];
     trap_time             = BASE[158];
-    count_high            = BASE[159];
+//  count_high            = BASE[159];
 #ifdef COMMON
     keyword_package       = BASE[170];
     all_packages          = BASE[171];

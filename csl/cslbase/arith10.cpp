@@ -390,6 +390,7 @@ static LispObject make_complex_float(Complex v, LispObject a)
 {   int32_t type;
     LispObject a1, a2, nil;
     a = real_part(a);
+#ifndef EXPERIMENT
     if (is_sfloat(a))
     {   Float_union r, i;
         r.f = (float)v.real;
@@ -399,6 +400,7 @@ static LispObject make_complex_float(Complex v, LispObject a)
         errexit();
         return onevalue(a1);
     }
+#endif
     if (is_bfloat(a)) type = type_of_header(flthdr(a));
     else type = TYPE_SINGLE_FLOAT;
     a1 = make_boxfloat(v.real, type);
@@ -1240,6 +1242,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
     {   case TAG_FIXNUM:
             d = (double)int_of_fixnum(a);
             break;
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
         {   Float_union aa;
             aa.i = a - TAG_SFLOAT;
@@ -1247,6 +1250,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
             restype = 0;
             break;
         }
+#endif
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -1344,11 +1348,13 @@ static LispObject makenum(LispObject a, int32_t n)
     switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             return fixnum_of_int(n);
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
         {   Float_union aa;
             aa.f = (float)n;
             return (aa.i & ~(int32_t)0xf) + TAG_SFLOAT;
         }
+#endif
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -1625,7 +1631,9 @@ LispObject Labsval(LispObject nil, LispObject a)
 //
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
+#endif
             break;
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
