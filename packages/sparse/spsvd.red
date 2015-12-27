@@ -59,7 +59,7 @@ symbolic procedure spsvd(a);
     if not !*rounded then << on1 'rounded; i_rounded_turned_on := t; >> where !*msg := nil;
 
     if not matrixp(a) then
-     rederr "Error in spsvd: non matrix input."
+     rederr "Error in spsvd: non matrix input.";
 %    else if not eqcar(a,'sparsemat) then
 %      rederr 
 
