@@ -102,3 +102,5 @@ lisp print loaded!-modules!*;
 bye;
 XXX
 
+grep -q '^\*\*\*\*\* ' buildlogs/$1.blg && echo Possible error building noncore module $1 - check buildlogs/$1.blg && exit 1
+exit 0
