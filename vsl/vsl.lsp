@@ -1254,10 +1254,16 @@ top (cond ((atom a) (return (reversip r))))
           (code!-char (plus c 32))
           x)))
 
+(de char!-downcase (x) (tolower x))
+
 (de explode2lc (x)
     (mapcar (explodec x) 'tolower))
 
-(de intern (x) x)
+(de intern (x)
+   (if (stringp x)
+       (compress (mapcan (explodec x)
+                         '(lambda (c) (list '!! c))))
+       x))
 
 (setq !*raise nil)
 (setq !*lower t)
@@ -1662,9 +1668,47 @@ top (cond ((atom a) (return (reversip r))))
    (prog (r)
       (setq r '(!"))
       (dolist (c a)
+         (if (ifixp c) (setq c (code!-char c)))
          (if (eq c '!") (setq r (cons c r)))
          (setq r (cons c r)))
       (return (compress (reverse (cons '!" r))))))
+
+(de list2string (a) (list!-to!-string a))
+
+(de string2list (s)
+   (setq s (mapcar (explodec s) 'char!-code))) 
+
+(de string!-length (s) (length (explodec s)))
+
+(de id2string (a)
+   (compress (cons '!" (append (explodec a) '(!")))))
+
+(flag '(id2string) 'lose)
+
+(de land (a b) (ilogand a b))
+
+(de lshift (a n) (rightshift a (iminus n)))
+
+(de allocate!-string (n)
+   (prog (i l)
+      (setq i 0)
+      (while (lessp i n)
+         (setq l (cons 0 l))
+         (setq i (iplus i 1)))
+      (return (list2string l))))
+
+(dm string!-store (x)
+   `(prog (l)
+       (setq l (string2list ,(cadr x)))
+       (setq l (str!-store1 l ,(caddr x) ,(cadddr x)))
+       (setq ,(cadr x) (list2string l))
+       s))
+
+
+(de str!-store1 (charlis len what)
+    (if (equal len 0)
+        (cons what (cdr charlis))
+        (cons (car charlis) (str!-store1 (cdr charlis) (iplus len -1) what))))
 
 (de gensym1 (x) (gensym))
 
@@ -1679,6 +1723,36 @@ top (cond ((atom a) (return (reversip r))))
 
 (de tmpnam () "./temporary-file.tmp")
 
+(de posn () 0)
+
+(de lposn () 0)
+
+(dm unwind!-protect (x) `(progn . ,(cdr x)))
+
+% arithmetic left shift
+(de ashift (n m)
+   (cond 
+      ((equal n 0) 0)
+      ((equal m 0) n)
+      ((greaterp m 0) (leftshift n m))
+      ((greaterp n 0) (rightshift n (minus m)))
+      (t % arithmetic right shift of negative number
+       (minus (rightshift (minus n) (minus m))))))
+
+(de prin1 (u) (prin u))
+
+(de carcheck (fff) nil)
+
+(de fp!-finite (x) t)
+
+(de complexp (x) nil)
+
+(dm nreverse (x) `(reversip ,(cadr x)))
+
+(de widelengthc (u)
+   (cond
+      ((idp u) (length!-without!-followers (string2list (id2string u))))
+      ((stringp u) (length!-without!-followers (string2list u)))
+      (t (length (explode2 u)))))
+
 % End of vsl.lsp
-
-
