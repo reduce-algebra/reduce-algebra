@@ -1542,7 +1542,7 @@ top (cond ((atom a) (return (reversip r))))
       (when (eqcar u 'eval!-when)
             (if (memq 'compile (cadr u)) (eval (cons 'progn (cddr u))))
             (if (memq 'load (cadr u))
-                (s!fslout1 (cons 'progn (cddr u)) loadonly))
+                (s!:fslout1 (cons 'progn (cddr u)) loadonly))
             (return nil))
       (cond
          ((not (atom u)) (setq u (macroexpand u))))
@@ -1754,5 +1754,7 @@ top (cond ((atom a) (return (reversip r))))
       ((idp u) (length!-without!-followers (string2list (id2string u))))
       ((stringp u) (length!-without!-followers (string2list u)))
       (t (length (explode2 u)))))
+
+%(de get!-lisp!-directory () ".")
 
 % End of vsl.lsp
