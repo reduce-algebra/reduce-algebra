@@ -269,18 +269,16 @@ int main(int argc,char *argv[])
         switch (whichArg++)
         {
     case 0:
-            if (n >= 0 && n < sizeof(testData)/sizeof(testData[0]))
-                example = n;
+            if (n < sizeof(testData)/sizeof(testData[0])) example = n;
             break;
     case 1:
-            if (n < 0) n = -n;
             if (n == 0) n = 280;
             while (n < 50) n = n*10;
             while (n >= 500) n = n/10;
             fontSize = n;
             break;
     case 2:
-            if (n >= 0 && n<12) fontFace = n;
+            if (n<12) fontFace = n;
             else fontFace = 2;
             break;
     default:

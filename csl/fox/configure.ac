@@ -155,9 +155,9 @@ AC_MSG_RESULT([$enable_release])
 if test "x$enable_release" = "xyes" && test "x$enable_debug" != "xyes"; then
   CXXFLAGS="${CXXFLAGS} -O2 -DNDEBUG"
   if test "${GXX}" = "yes" ; then
-    case $xxx in
+    case $host_os in
   *darwin* | *Darwin*)
-      CXXFLAGS="${CXXFLAGS} -Wuninitialized -ffast-math -fstrict-aliasing -finline-functions"
+      CXXFLAGS="${CXXFLAGS} -Wuninitialized -ffast-math -fstrict-aliasing"
       ;;
   *)
       CXXFLAGS="${CXXFLAGS} -Wuninitialized -fomit-frame-pointer -ffast-math -fstrict-aliasing -finline-functions -fexpensive-optimizations"

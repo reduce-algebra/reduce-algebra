@@ -31,7 +31,6 @@
 # a higher level configure script and should not be used directly here.
 # 
 
-
 # FOX gets built in a directory whose name is based on the platform
 # it supports. In simple cases this is just the GNU triple, as in
 # i686-pc-linux etc. However there are a range of cases when I will
@@ -1128,7 +1127,6 @@ AC_CHECK_HEADERS([arpa/inet.h netdb.h netinet/in.h sys/socket.h sys/stat.h])
 AC_CHECK_HEADERS([sys/types.h sys/wait.h sys/shm.h sys/ipc.h signal.h])
 AC_CHECK_HEADERS([setjmp.h sys/sysctl.h syscall.h sched.h])
 
-
 AC_CHECK_TYPES([cpu_set_t], [], [],
    [#ifdef HAVE_SCHED_H
     #include <sched.h>
@@ -1167,8 +1165,7 @@ AC_CHECK_TYPES([complex double], [], [],
     #include <complex.h>
     #endif])
 
-
-# With luck the above types from newer C standards will ba available. If
+# With luck the above types from newer C standards will be available. If
 # they are I can rely on them an I then do not need to worry about
 # the sized of the older-style native types such as "long". And for
 # cross compilation and multi-architecture builds it can be delicate to
@@ -1240,7 +1237,6 @@ fi
 # to I will expect that plain use of "gcc utility.c -o utility" can be
 # used to create working utility programs when I need that.
 
-
 save_cross=cross_compiling
 cross_compiling=no
 AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
@@ -1252,20 +1248,8 @@ cross_compiling=$save_cross
 
 AC_MSG_NOTICE([Can Run Executables = $can_run_executables])
 
-AC_RUN_IFELSE([AC_LANG_PROGRAM([[]],
-  [[int x=-1;int y=x>>1;int z=(y<0)?1:0;return z;]])],
-  [odd_shifts="yes"],
-  [odd_shifts="no"],
-  [odd_shifts="no"])
-AC_MSG_NOTICE([Signed shifts logical status = $odd_shifts])
-if test "x$odd_shifts" = "xyes"
-then
-  AC_DEFINE(SIGNED_SHIFTS_ARE_LOGICAL, [1], [Unusual but within ANSI spec])
-fi
-
 AC_SUBST(FOX_INCLUDES)
 AC_SUBST(FOX_LIBS)
-
 
 if test "x$with_fox" != "xno"
 then

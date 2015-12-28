@@ -32,6 +32,7 @@ all:	package-win
 $(BUILDTOPDIR).stamp:
 	rm -rf $(BUILDTOPDIR)
 	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) > $(BUILDTOPDIR).log
+	( cd $(BUILDTOPDIR) ; ./autogen.sh )
 	touch $(BUILDTOPDIR).stamp
 
 # The CSL version of Reduce gets build using an elaborate scheme that

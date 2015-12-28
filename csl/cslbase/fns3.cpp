@@ -336,7 +336,7 @@ static void simple_print(LispObject x)
     else if (is_vector(x))
     {   int i;
         if (is_string(x))
-        {   int len = length_of_header(vechdr(x)) - CELL;
+        {   int len = length_of_byteheader(vechdr(x)) - CELL;
             printf("\"%.*s\"", (int)len, &celt(x, 0));
             return;
         }
@@ -538,18 +538,19 @@ static uint32_t hash_eql(LispObject key)
     else if (is_numbers(key))
     {   Header h = numhdr(key);
         uint32_t r = 9876543;
-        int n;
+        size_t n;
         switch (type_of_header(h))
         {   case TYPE_BIGNUM:
                 n = length_of_header(h);
-                n = (n-CELL-4)>>2;  // last index into the data
+                n = (n-CELL-4)/4;  // last index into the data
 //
-// This mat be overkill - for very long bignums it is possibly a waste to
+// This may be overkill - for very long bignums it is possibly a waste to
 // walk over ALL the digits when computing a hash value - I could do well
 // enough just looking at a few. But I still feel safer using all of them.
-//
-                while (n >= 0)
+// Note that all bignums have at least one word of data.
+                for (;;)
                 {   r = update_hash(r, bignum_digits(key)[n]);
+                    if (n == 0) break;
                     n--;
                 }
                 return r;
@@ -621,7 +622,7 @@ static uint32_t hash_cl_equal(LispObject key, CSLbool descend)
 // in other cases I must not.
 //
                 if (is_string_header(ha))
-                {   len = length_of_header(ha) - CELL;
+                {   len = length_of_byteheader(ha) - CELL;
                     data = &ucelt(key, 0);
                     goto hash_as_string;
                 }
@@ -629,6 +630,9 @@ static uint32_t hash_cl_equal(LispObject key, CSLbool descend)
 // I might need to re-check that Common Lisp EQUAL and hence this
 // version of hashing inspects the bits in a bit-vector.
 //
+#ifdef EXPERIMENT
+#error unreconstructed
+#endif
                 else if (is_bitvec_header(ha))
                 {   len = length_of_header(ha) - CELL;
                     len = (len - 1)*8 + ((ha & 0x380) >> 7) + 1;
@@ -695,7 +699,7 @@ static uint32_t hash_cl_equal(LispObject key, CSLbool descend)
                 if (is_bps(key))
                 {   data = (unsigned char *)data_of_bps(key);
                     // I treat bytecode things as strings here
-                    len = length_of_header(*(Header *)(data - CELL)) - CELL;
+                    len = length_of_byteheader(*(Header *)(data - CELL)) - CELL;
                     goto hash_as_string;
                 }
                 else return update_hash(r, (uint32_t)key);
@@ -1746,7 +1750,11 @@ LispObject Lmkvect16(LispObject nil, LispObject n)
     intptr_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkvect16", n);
     nn = 2*(1 + int_of_fixnum(n)); // Note 1+ for Standard Lisp style
+#ifdef EXPERIMENT
+    w = getvector(TAG_VECTOR, TYPE_VEC16_1, nn+CELL+1);
+#else
     w = getvector(TAG_VECTOR, TYPE_VEC16, nn+CELL);
+#endif
     errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL);
     while (nn > CELL)
@@ -2527,10 +2535,14 @@ LispObject Lputv16(LispObject, int nargs, ...)
     n = va_arg(a, LispObject);
     x = va_arg(a, LispObject);
     va_end(a);
-    if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VEC16)
+    if (!is_vector(v) || !is_vec16_header(h = vechdr(v)))
         return aerror1("putv16", v);
     else if (!is_fixnum(n)) return aerror1("putv16 offset not fixnum", n);
+#ifdef EXPERIMENT
+    hl = length_of_hword_header(h) - CELL/2;
+#else
     hl = (length_of_header(h) - CELL) >> 1;
+#endif
     n1 = int_of_fixnum(n);
     if (n1 < 0 || n1 >= hl) return aerror1("putv16 index range", n);
     sethelt(v, n1, int_of_fixnum(x));
@@ -2540,10 +2552,14 @@ LispObject Lputv16(LispObject, int nargs, ...)
 LispObject Lgetv16(LispObject, LispObject v, LispObject n)
 {   Header h;
     intptr_t n1, hl;
-    if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VEC16)
+    if (!is_vector(v) || !is_vec16_header(h = vechdr(v)))
         return aerror1("getv16", v);
     else if (!is_fixnum(n)) return aerror1("getv16 offset not fixnum", n);
+#ifdef EXPERIMENT
+    hl = length_of_vec16_header(h) - CELL/2;
+#else
     hl = (length_of_header(h) - CELL) >> 1;
+#endif
     n1 = int_of_fixnum(n);
     if (n1 < 0 || n1 >= hl) return aerror1("getv16 index range", n);
     n1 = helt(v, n1);
@@ -3587,11 +3603,28 @@ LispObject Lupbv(LispObject nil, LispObject v)
     else
 #endif
         switch (type_of_header(h))
-        {   case TYPE_STRING:
+        {
+#ifdef EXPERIMENT
+            case TYPE_STRING_1:
+            case TYPE_STRING_2:
+            case TYPE_STRING_3:
+            case TYPE_STRING_4:
+            case TYPE_VEC8_1:
+            case TYPE_VEC8_2:
+            case TYPE_VEC8_3:
+            case TYPE_VEC8_4:
+                n = length_of_byte_header(h) - CELL;
+#else
+            case TYPE_STRING:
             case TYPE_VEC8:
+#endif
                 break;
             case TYPE_VEC16:
+#ifdef EXPERIMENT
+                n = length_of_hword_header(h) - CELL/2;
+#else
                 n = n/2;
+#endif
                 break;
             case TYPE_VEC32:
                 n = n/4;
@@ -3613,7 +3646,7 @@ LispObject Lstring_length(LispObject, LispObject v)
     if (!is_vector(v)) return aerror1("string-length", v);
     h = vechdr(v);
     if (!is_string_header(h)) return aerror1("string-length", v);
-    n = length_of_header(h) - CELL;
+    n = length_of_byte_header(h) - CELL;
     return onevalue(fixnum_of_int(n));
 }
 
@@ -3628,6 +3661,10 @@ LispObject Lvecbnd(LispObject, LispObject v)
     if (!(is_vector(v))) return aerror1("vector-bound", v);
     h = vechdr(v);
     n = length_of_header(h) - CELL;
+#ifdef EXPERIMENT
+// UNRECONSTRUCTED here -- see code in upbv for hints
+#error inreconstructed
+#endif
     if (is_bitvec_header(h))
     {   n = (n - 1)*8;
         n += ((h & 0x380) >> 7) + 1;
@@ -3724,12 +3761,16 @@ LispObject vector_subseq(LispObject sequence, int32_t start, int32_t end)
     {   char *s;
         int32_t k;
 
-        hl = length_of_header(h) - CELL;
+        hl = length_of_byte_header(h) - CELL;
         if (hl < end) return aerror0("vector-subseq* out of range");
 
         // Get a new string of the right size
         push(sequence);
+#ifdef EXPERIMENT
+        copy = getvector(TAG_VECTOR, TYPE_STRING_1, CELL+seq_length+3);
+#else
         copy = getvector(TAG_VECTOR, TYPE_STRING, CELL+seq_length);
+#endif
         pop(sequence);
 
         // This code plagiarised from copy_string ...

@@ -102,7 +102,11 @@ LispObject Lget_bps(LispObject nil, LispObject n)
 {   int32_t n1;
     if (!is_fixnum(n) || (int32_t)n<0) return aerror1("get-bps", n);
     n1 = int_of_fixnum(n);
+#ifdef EXPERIMENT
+    n = getcodevector(TYPE_BPS_1, n1+CELL+3);
+#else
     n = getcodevector(TYPE_BPS, n1+CELL);
+#endif
     errexit();
     return onevalue(n);
 }
@@ -2387,13 +2391,83 @@ static CSLbool cl_vec_equal(LispObject a, LispObject b)
                     goto compare_strings;
                 default:return NO;
             }
+#ifdef EXPERIMENT
+        case TYPE_BITVEC_1:
+        case TYPE_BITVEC_2:
+        case TYPE_BITVEC_3:
+        case TYPE_BITVEC_4:
+        case TYPE_BITVEC_5:
+        case TYPE_BITVEC_6:
+        case TYPE_BITVEC_7:
+        case TYPE_BITVEC_8:
+        case TYPE_BITVEC_9:
+        case TYPE_BITVEC_10:
+        case TYPE_BITVEC_11:
+        case TYPE_BITVEC_12:
+        case TYPE_BITVEC_13:
+        case TYPE_BITVEC_14:
+        case TYPE_BITVEC_15:
+        case TYPE_BITVEC_16:
+        case TYPE_BITVEC_17:
+        case TYPE_BITVEC_18:
+        case TYPE_BITVEC_19:
+        case TYPE_BITVEC_20:
+        case TYPE_BITVEC_21:
+        case TYPE_BITVEC_22:
+        case TYPE_BITVEC_23:
+        case TYPE_BITVEC_24:
+        case TYPE_BITVEC_25:
+        case TYPE_BITVEC_26:
+        case TYPE_BITVEC_27:
+        case TYPE_BITVEC_28:
+        case TYPE_BITVEC_29:
+        case TYPE_BITVEC_30:
+        case TYPE_BITVEC_31:
+        case TYPE_BITVEC_32:
+#else
         case TYPE_BITVEC1:
+#endif
             switch (tb)
             {
 // /*
 //  case TYPE_ARRAY:
 //
+#ifdef EXPERIMENT
+                case TYPE_BITVEC_1:
+                case TYPE_BITVEC_2:
+                case TYPE_BITVEC_3:
+                case TYPE_BITVEC_4:
+                case TYPE_BITVEC_5:
+                case TYPE_BITVEC_6:
+                case TYPE_BITVEC_7:
+                case TYPE_BITVEC_8:
+                case TYPE_BITVEC_9:
+                case TYPE_BITVEC_10:
+                case TYPE_BITVEC_11:
+                case TYPE_BITVEC_12:
+                case TYPE_BITVEC_13:
+                case TYPE_BITVEC_14:
+                case TYPE_BITVEC_15:
+                case TYPE_BITVEC_16:
+                case TYPE_BITVEC_17:
+                case TYPE_BITVEC_18:
+                case TYPE_BITVEC_19:
+                case TYPE_BITVEC_20:
+                case TYPE_BITVEC_21:
+                case TYPE_BITVEC_22:
+                case TYPE_BITVEC_23:
+                case TYPE_BITVEC_24:
+                case TYPE_BITVEC_25:
+                case TYPE_BITVEC_26:
+                case TYPE_BITVEC_27:
+                case TYPE_BITVEC_28:
+                case TYPE_BITVEC_29:
+                case TYPE_BITVEC_30:
+                case TYPE_BITVEC_31:
+                case TYPE_BITVEC_32:
+#else
                 case TYPE_BITVEC1:
+#endif
                     goto compare_bits;
                 default:return NO;
             }
@@ -2412,7 +2486,13 @@ compare_strings:
     }
     return YES;
 compare_bits:
+    la = length_of_bitheader(ha);
+    lb = length_of_bitheader(hb);
     if (la != lb) return NO;
+// I will insist that the bitvectors have zero bits in any unused space
+// in their final byte. 
+    la = (la + 7)/8;
+    lb = (lb + 7)/8;
     while (la > 0)
     {   la--;
         if (*((char *)a + la + offa - TAG_VECTOR) !=

@@ -940,12 +940,7 @@ static LispObject lisp_fix_sub(LispObject a, int roundmode)
     {   x = -x;             // The shift amount here can be 31 at most...
         a3 = a2 << (32 - x);
         a2 = clear_top_bit((a2 >> x) | (a1 << (31 - x)));
-#ifdef SIGNED_SHIFTS_ARE_LOGICAL
-        if (a1 < 0) a1 = (a1 >> x) | (((int32_t)-1) << (31 - x));
-        else a1 = a1 >> x;
-#else
-        a1 = a1 >> x;
-#endif
+        a1 = ASR(a1, x);
         switch (roundmode)
         {   case FIX_TRUNCATE:
                 if (a1 < 0 && a3 != 0)  // proper rounding on -ve values

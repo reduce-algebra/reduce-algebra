@@ -458,10 +458,10 @@ typedef uintptr_t Header;
 // The low 3 bits are always TAG_HDR_IMMED, and at present g is reserved
 // for use by the garbage collector.
 //
-// I will use a shift by T to cope with the width of g100 with
-// T=4 for now but potentially T=3 in the future
+// I will use a shift by Tw to cope with the width of g100 with
+// Tw=4 for now but potentially Tw=3 in the future
 
-#define T 4
+#define Tw 4
 
 //
 // The zz bits are
@@ -501,12 +501,18 @@ typedef uintptr_t Header;
 // WELL during a transition period the length code stored will be for the
 // full object, including the length of its header word... So BEWARE.
 
-#define header_mask                (0x7f<<T)
+#define header_mask                (0x7f<<Tw)
 #define type_of_header(h)          (((unsigned int)(h)) & header_mask)
-#define length_of_header(h)        (((size_t)(h)) >> (T+7))
-#define length_of_bitheader(h)     ((((size_t)(h)) >> (T+2)) - 31)
-#define length_of_byteheader(h)    ((((size_t)(h)) >> (T+5))  - 3)
-#define length_of_hwordheader(h)   ((((size_t)(h)) >> (T+6)) - 1)
+// length_of_header returns the length of a word or doubleword oriented
+// object in bytes. NOT in words.
+#define length_of_header(h)        ((((size_t)(h)) >> (Tw+7)) << 2)
+// length_of_bitheader returns a length in bits.
+#define length_of_bitheader(h)     ((((size_t)(h)) >> (Tw+2)) - 31)
+// length_of_byteheader returns a length in bytes, and so compatible with what
+// length_of_header used to do on byte arrays (and henec strings)
+#define length_of_byteheader(h)    ((((size_t)(h)) >> (Tw+5))  - 3)
+// length_of_hwordheader gives the number of halfwords used.
+#define length_of_hwordheader(h)   ((((size_t)(h)) >> (Tw+6)) - 1)
 
 // Values for the type field in a header
 
@@ -520,17 +526,17 @@ typedef uintptr_t Header;
 // scan the vector heap, which is a bit messy.
 //
 
-#define TYPE_SYMBOL         (0x0000000<<T)
-#define  SYM_SPECIAL_VAR    (0x0000010<<T)  // (fluid '(xxx))
-#define  SYM_GLOBAL_VAR     (0x0000020<<T)  // (global '(xxx))
-#define  SYM_SPECIAL_FORM   (0x0000040<<T)  // eg. COND, QUOTE
-#define  SYM_MACRO          (0x0000080<<T)  // (putd 'xxx 'macro ...)
-#define  SYM_C_DEF          (0x0000100<<T)  // has definition from C kernel
-#define  SYM_CODEPTR        (0x0000200<<T)  // just carries code pointer
-#define  SYM_ANY_GENSYM     (0x0000400<<T)  // gensym, printed or not
-#define  SYM_TRACED         (0x0000800<<T)
-#define  SYM_FASTGET_MASK   (0x003f000<<T)  // used to support "fast" gets
-#define  SYM_FASTGET_SHIFT  (12+T)
+#define TYPE_SYMBOL         (0x0000000<<Tw)
+#define  SYM_SPECIAL_VAR    (0x0000010<<Tw)  // (fluid '(xxx))
+#define  SYM_GLOBAL_VAR     (0x0000020<<Tw)  // (global '(xxx))
+#define  SYM_SPECIAL_FORM   (0x0000040<<Tw)  // eg. COND, QUOTE
+#define  SYM_MACRO          (0x0000080<<Tw)  // (putd 'xxx 'macro ...)
+#define  SYM_C_DEF          (0x0000100<<Tw)  // has definition from C kernel
+#define  SYM_CODEPTR        (0x0000200<<Tw)  // just carries code pointer
+#define  SYM_ANY_GENSYM     (0x0000400<<Tw)  // gensym, printed or not
+#define  SYM_TRACED         (0x0000800<<Tw)
+#define  SYM_FASTGET_MASK   (0x003f000<<Tw)  // used to support "fast" gets
+#define  SYM_FASTGET_SHIFT  (12+Tw)
 //
 // In Common Lisp mode I use the rest of the header to help speed up
 // test for the availability of a symbol in a package (while I am printing).
@@ -539,17 +545,17 @@ typedef uintptr_t Header;
 // not printed.
 //
 #ifdef COMMON
-#define  SYM_EXTERN_IN_HOME (0x0040000<<T)  // external in its home package
-#define  SYM_IN_PACKAGE     (((int)0xff800000)/(1<<(4-T)))
+#define  SYM_EXTERN_IN_HOME (0x0040000<<Tw)  // external in its home package
+#define  SYM_IN_PACKAGE     (((int)0xff800000)/(1<<(4-Tw)))
                                             // availability in 9/10 packages
-#define  SYM_IN_PKG_SHIFT   (19+T)
-#define  SYM_IN_PKG_COUNT   (13-T)
+#define  SYM_IN_PKG_SHIFT   (19+Tw)
+#define  SYM_IN_PKG_COUNT   (13-Tw)
 #else // COMMON
-#define  SYM_UNPRINTED_GENSYM (0x0040000<<T)// not-yet-printed gensym
+#define  SYM_UNPRINTED_GENSYM (0x0040000<<Tw)// not-yet-printed gensym
 #endif // COMMON
 
 #define symhdr_length       (doubleword_align_up(sizeof(Symbol_Head)))
-#define is_symbol_header(h) (((int)h & (0x3<<T)) == TYPE_SYMBOL)
+#define is_symbol_header(h) (((int)h & (0x3<<Tw)) == TYPE_SYMBOL)
 #define header_fastget(h)   (((h) >> SYM_FASTGET_SHIFT) & 0x3f)
 
 // The codes for yyyyy are as follows:
@@ -616,12 +622,12 @@ typedef uintptr_t Header;
 // of the form xx1:11x1:g100 is the header of a number.
 
 
-#define TYPE_BIGNUM         ( 0x1f <<T)
-#define TYPE_RATNUM         ( 0x1d <<T)
-#define TYPE_COMPLEX_NUM    ( 0x3d <<T)
-#define TYPE_SINGLE_FLOAT   ( 0x3f <<T)
-#define TYPE_DOUBLE_FLOAT   ( 0x5f <<T)
-#define TYPE_LONG_FLOAT     ( 0x7f <<T)
+#define TYPE_BIGNUM         ( 0x1f <<Tw)
+#define TYPE_RATNUM         ( 0x1d <<Tw)
+#define TYPE_COMPLEX_NUM    ( 0x3d <<Tw)
+#define TYPE_SINGLE_FLOAT   ( 0x3f <<Tw)
+#define TYPE_DOUBLE_FLOAT   ( 0x5f <<Tw)
+#define TYPE_LONG_FLOAT     ( 0x7f <<Tw)
 
 #define TYPE_COMPLEX  TYPE_COMPLEX_NUM
 #define TYPE_FLOAT32  TYPE_SINGLE_FLOAT
@@ -673,19 +679,19 @@ typedef uintptr_t Header;
 #define is_bignum_header(h) (type_of_header(h) == TYPE_BIGNUM)
 #define is_bignum(n) is_bignum_header(numhdr(n))
 
-#define is_string_header(h) ((type_of_header(h) & (0x1f<<T)) == TYPE_STRING_1)
+#define is_string_header(h) ((type_of_header(h) & (0x1f<<Tw)) == TYPE_STRING_1)
 #define is_string(n) is_string_header(vechdr(n))
 
-#define is_vec8_header(h) ((type_of_header(h) & (0x1f<<T)) == TYPE_VEC8_1)
+#define is_vec8_header(h) ((type_of_header(h) & (0x1f<<Tw)) == TYPE_VEC8_1)
 #define is_vec8(n) is_vec8_header(vechdr(n))
 
-#define is_bpsvec_header(h) ((type_of_header(h) & (0x1f<<T)) == TYPE_BPS_1)
+#define is_bpsvec_header(h) ((type_of_header(h) & (0x1f<<Tw)) == TYPE_BPS_1)
 #define is_bpsvec(n) is_bpsvec_header(vechdr(n))
 
-#define is_vec16_header(h) ((type_of_header(h) & (0x3f<<T)) == TYPE_VEC16_1)
+#define is_vec16_header(h) ((type_of_header(h) & (0x3f<<Tw)) == TYPE_VEC16_1)
 #define is_vec16(n) is_vec16_header(vechdr(n))
 
-#define is_bitvec_header(h) ((type_of_header(h) & (0x03<<T)) == TYPE_BITVEC_1)
+#define is_bitvec_header(h) ((type_of_header(h) & (0x03<<Tw)) == TYPE_BITVEC_1)
 #define is_bitvec(n) is_bitvec_header(vechdr(n))
 
 #ifdef MEMORY_TRACE
@@ -748,102 +754,102 @@ typedef uintptr_t Header;
 // Bitvectors will now supported even in Standard Lisp mode.
 //
 
-#define TYPE_BITVEC_1     ( 0x02 <<T)  // subtypes encode length mod 32
-#define TYPE_BITVEC_2     ( 0x06 <<T)  // BITVEC_n has n bits in use in its...
-#define TYPE_BITVEC_3     ( 0x0a <<T)  // ... final 32-bit word.
-#define TYPE_BITVEC_4     ( 0x0c <<T)  //
-#define TYPE_BITVEC_5     ( 0x12 <<T)  //
-#define TYPE_BITVEC_6     ( 0x16 <<T)  //
-#define TYPE_BITVEC_7     ( 0x1a <<T)  //
-#define TYPE_BITVEC_8     ( 0x1c <<T)  //
-#define TYPE_BITVEC_9     ( 0x22 <<T)  //
-#define TYPE_BITVEC_10    ( 0x26 <<T)  //
-#define TYPE_BITVEC_11    ( 0x2a <<T)  //
-#define TYPE_BITVEC_12    ( 0x2c <<T)  //
-#define TYPE_BITVEC_13    ( 0x32 <<T)  //
-#define TYPE_BITVEC_14    ( 0x36 <<T)  //
-#define TYPE_BITVEC_15    ( 0x3a <<T)  //
-#define TYPE_BITVEC_16    ( 0x3c <<T)  //
-#define TYPE_BITVEC_17    ( 0x42 <<T)  //
-#define TYPE_BITVEC_18    ( 0x46 <<T)  //
-#define TYPE_BITVEC_19    ( 0x4a <<T)  //
-#define TYPE_BITVEC_20    ( 0x4c <<T)  //
-#define TYPE_BITVEC_21    ( 0x52 <<T)  //
-#define TYPE_BITVEC_22    ( 0x56 <<T)  //
-#define TYPE_BITVEC_23    ( 0x5a <<T)  //
-#define TYPE_BITVEC_24    ( 0x5c <<T)  //
-#define TYPE_BITVEC_25    ( 0x62 <<T)  //
-#define TYPE_BITVEC_26    ( 0x66 <<T)  //
-#define TYPE_BITVEC_27    ( 0x6a <<T)  //
-#define TYPE_BITVEC_28    ( 0x6c <<T)  //
-#define TYPE_BITVEC_29    ( 0x72 <<T)  //
-#define TYPE_BITVEC_30    ( 0x76 <<T)  //
-#define TYPE_BITVEC_31    ( 0x7a <<T)  //
-#define TYPE_BITVEC_32    ( 0x7c <<T)  //
+#define TYPE_BITVEC_1     ( 0x02 <<Tw)  // subtypes encode length mod 32
+#define TYPE_BITVEC_2     ( 0x06 <<Tw)  // BITVEC_n has n bits in use in its...
+#define TYPE_BITVEC_3     ( 0x0a <<Tw)  // ... final 32-bit word.
+#define TYPE_BITVEC_4     ( 0x0c <<Tw)  //
+#define TYPE_BITVEC_5     ( 0x12 <<Tw)  //
+#define TYPE_BITVEC_6     ( 0x16 <<Tw)  //
+#define TYPE_BITVEC_7     ( 0x1a <<Tw)  //
+#define TYPE_BITVEC_8     ( 0x1c <<Tw)  //
+#define TYPE_BITVEC_9     ( 0x22 <<Tw)  //
+#define TYPE_BITVEC_10    ( 0x26 <<Tw)  //
+#define TYPE_BITVEC_11    ( 0x2a <<Tw)  //
+#define TYPE_BITVEC_12    ( 0x2c <<Tw)  //
+#define TYPE_BITVEC_13    ( 0x32 <<Tw)  //
+#define TYPE_BITVEC_14    ( 0x36 <<Tw)  //
+#define TYPE_BITVEC_15    ( 0x3a <<Tw)  //
+#define TYPE_BITVEC_16    ( 0x3c <<Tw)  //
+#define TYPE_BITVEC_17    ( 0x42 <<Tw)  //
+#define TYPE_BITVEC_18    ( 0x46 <<Tw)  //
+#define TYPE_BITVEC_19    ( 0x4a <<Tw)  //
+#define TYPE_BITVEC_20    ( 0x4c <<Tw)  //
+#define TYPE_BITVEC_21    ( 0x52 <<Tw)  //
+#define TYPE_BITVEC_22    ( 0x56 <<Tw)  //
+#define TYPE_BITVEC_23    ( 0x5a <<Tw)  //
+#define TYPE_BITVEC_24    ( 0x5c <<Tw)  //
+#define TYPE_BITVEC_25    ( 0x62 <<Tw)  //
+#define TYPE_BITVEC_26    ( 0x66 <<Tw)  //
+#define TYPE_BITVEC_27    ( 0x6a <<Tw)  //
+#define TYPE_BITVEC_28    ( 0x6c <<Tw)  //
+#define TYPE_BITVEC_29    ( 0x72 <<Tw)  //
+#define TYPE_BITVEC_30    ( 0x76 <<Tw)  //
+#define TYPE_BITVEC_31    ( 0x7a <<Tw)  //
+#define TYPE_BITVEC_32    ( 0x7c <<Tw)  //
 
 // A string is not really a vector of characters since i8t is in utf-8 so
 // access to the nth characters or updating characters within it is
 // hard. You should use a vector of 32-bit codepoints if you want
 // a genuine vector of characters, but then that will not be a string.
 
-#define TYPE_STRING_1    ( 0x07 <<T) // simple (narrow) character vector
-#define TYPE_STRING_2    ( 0x27 <<T) // Strings are in UTF8
-#define TYPE_STRING_3    ( 0x47 <<T) //
-#define TYPE_STRING_4    ( 0x67 <<T) //
+#define TYPE_STRING_1    ( 0x07 <<Tw) // simple (narrow) character vector
+#define TYPE_STRING_2    ( 0x27 <<Tw) // Strings are in UTF8
+#define TYPE_STRING_3    ( 0x47 <<Tw) //
+#define TYPE_STRING_4    ( 0x67 <<Tw) //
 
-#define TYPE_VEC8_1      ( 0x03 <<T) // vector of 8 bit values
-#define TYPE_VEC8_2      ( 0x23 <<T) //
-#define TYPE_VEC8_3      ( 0x43 <<T) //
-#define TYPE_VEC8_4      ( 0x63 <<T) //
+#define TYPE_VEC8_1      ( 0x03 <<Tw) // vector of 8 bit values
+#define TYPE_VEC8_2      ( 0x23 <<Tw) //
+#define TYPE_VEC8_3      ( 0x43 <<Tw) //
+#define TYPE_VEC8_4      ( 0x63 <<Tw) //
 
-#define TYPE_BPS_1       ( 0x0b <<T) // Bytecodes
-#define TYPE_BPS_2       ( 0x2b <<T) //
-#define TYPE_BPS_3       ( 0x4b <<T) //
-#define TYPE_BPS_4       ( 0x6b <<T) //
+#define TYPE_BPS_1       ( 0x0b <<Tw) // Bytecodes
+#define TYPE_BPS_2       ( 0x2b <<Tw) //
+#define TYPE_BPS_3       ( 0x4b <<Tw) //
+#define TYPE_BPS_4       ( 0x6b <<Tw) //
 
-#define TYPE_NATIVECODE  ( 0x6f <<T) //
+#define TYPE_NATIVECODE  ( 0x6f <<Tw) //
 
-#define TYPE_VEC16_1     ( 0x0f <<T) // vector of 16 bit values
-#define TYPE_VEC16_2     ( 0x4f <<T) //
+#define TYPE_VEC16_1     ( 0x0f <<Tw) // vector of 16 bit values
+#define TYPE_VEC16_2     ( 0x4f <<Tw) //
 
-#define TYPE_MAPLEREF    ( 0x2f <<T) // hook for interface to Maple ...
+#define TYPE_MAPLEREF    ( 0x2f <<Tw) // hook for interface to Maple ...
                                      // ... note this was an EXPERIMENT
-#define TYPE_FOREIGN     ( 0x33 <<T) // entrypoint to foreign function
-#define TYPE_SP          ( 0x3b <<T) // Encapsulated stack ptr
-#define TYPE_ENCAPSULATE ( 0x3b <<T)
+#define TYPE_FOREIGN     ( 0x33 <<Tw) // entrypoint to foreign function
+#define TYPE_SP          ( 0x3b <<Tw) // Encapsulated stack ptr
+#define TYPE_ENCAPSULATE ( 0x3b <<Tw)
 
-#define vector_holds_binary(h) (((h) & (0x2<<T)) != 0)
+#define vector_holds_binary(h) (((h) & (0x2<<Tw)) != 0)
 
-#define TYPE_SIMPLE_VEC   ( 0x01 <<T) // simple general vector
-#define TYPE_HASH         ( 0x11 <<T) // hash table
-#define TYPE_HASHX        ( 0x15 <<T) // hash table in need of re-hashing
-#define TYPE_ARRAY        ( 0x05 <<T) // header record for general array
-#define TYPE_STRUCTURE    ( 0x09 <<T) // includes packages etc possibly
-#define TYPE_OBJECT       ( 0x0d <<T) // and "object"
+#define TYPE_SIMPLE_VEC   ( 0x01 <<Tw) // simple general vector
+#define TYPE_HASH         ( 0x11 <<Tw) // hash table
+#define TYPE_HASHX        ( 0x15 <<Tw) // hash table in need of re-hashing
+#define TYPE_ARRAY        ( 0x05 <<Tw) // header record for general array
+#define TYPE_STRUCTURE    ( 0x09 <<Tw) // includes packages etc possibly
+#define TYPE_OBJECT       ( 0x0d <<Tw) // and "object"
 
-#define TYPE_VEC32        ( 0x13 <<T) // contains 32-bit integers
-#define TYPE_VEC64        ( 0x17 <<T) // contains 32-bit integers
-#define TYPE_VEC128       ( 0x1b <<T) // contains 32-bit integers
-#define TYPE_VECFLOAT32   ( 0x53 <<T) // contains single-precision floats
-#define TYPE_VECFLOAT64   ( 0x57 <<T) // contains double-precision floats
-#define TYPE_VECFLOAT128  ( 0x5b <<T) // contains long double floats
+#define TYPE_VEC32        ( 0x13 <<Tw) // contains 32-bit integers
+#define TYPE_VEC64        ( 0x17 <<Tw) // contains 32-bit integers
+#define TYPE_VEC128       ( 0x1b <<Tw) // contains 32-bit integers
+#define TYPE_VECFLOAT32   ( 0x53 <<Tw) // contains single-precision floats
+#define TYPE_VECFLOAT64   ( 0x57 <<Tw) // contains double-precision floats
+#define TYPE_VECFLOAT128  ( 0x5b <<Tw) // contains long double floats
 
 // The next items live amongst the vectors that hold LIsp pointers, but only
 // the first three items are pointers - the rest of the stuff is binary
 // data. This arrangements was required for streams, and the three other
 // "mixed" cases are just in case anybody finds them useful.
-#define is_mixed_header(h) (((h) & (0x73<<T)) == TYPE_MIXED1)
+#define is_mixed_header(h) (((h) & (0x73<<Tw)) == TYPE_MIXED1)
 
-#define TYPE_MIXED1       ( 0x41 <<T) // general, but limited to 3 pointers
-#define TYPE_MIXED2       ( 0x45 <<T) // general, but limited to 3 pointers
-#define TYPE_MIXED3       ( 0x49 <<T) // only 3 pointers
-#define TYPE_STREAM       ( 0x4d <<T) // 3 pointers then binary data
+#define TYPE_MIXED1       ( 0x41 <<Tw) // general, but limited to 3 pointers
+#define TYPE_MIXED2       ( 0x45 <<Tw) // general, but limited to 3 pointers
+#define TYPE_MIXED3       ( 0x49 <<Tw) // only 3 pointers
+#define TYPE_STREAM       ( 0x4d <<Tw) // 3 pointers then binary data
 
-#define HDR_IMMED_MASK    (( 0xf <<T) | TAG_BITS)
-#define TAG_CHAR          (( 0x4 <<T) | TAG_HDR_IMMED) // 24 bits payload
-#define TAG_BPS           (( 0x8 <<T) | TAG_HDR_IMMED) // I rather forget..
+#define HDR_IMMED_MASK    (( 0xf <<Tw) | TAG_BITS)
+#define TAG_CHAR          (( 0x4 <<Tw) | TAG_HDR_IMMED) // 24 bits payload
+#define TAG_BPS           (( 0x8 <<Tw) | TAG_HDR_IMMED) // I rather forget..
       // why BPS is referred to using a weird handle like this!
-#define TAG_SPID          (( 0xc <<T) | TAG_HDR_IMMED) // Internal flag values
+#define TAG_SPID          (( 0xc <<Tw) | TAG_HDR_IMMED) // Internal flag values
 
 #define SPID_NIL            (TAG_SPID+0x0000)  // NIL in checkpoint file
 #define SPID_FBIND          (TAG_SPID+0x0100)  // Fluid binding on stack
@@ -859,7 +865,7 @@ typedef uintptr_t Header;
 #define SPID_NOPROP         (TAG_SPID+0x0b00)  // fastget entry is empty
 #define SPID_LIBRARY        (TAG_SPID+0x0c00)  // + 0xnnn00000 offset
 
-#define is_header(x) (((int)(x) & (0x3<<T)) != 0) // valid if TAG_HDR_IMMED
+#define is_header(x) (((int)(x) & (0x3<<Tw)) != 0) // valid if TAG_HDR_IMMED
 #define is_char(x)   (((int)(x) & HDR_IMMED_MASK) == TAG_CHAR)
 #define is_bps(x)    (((int)(x) & HDR_IMMED_MASK) == TAG_BPS)
 #define is_spid(x)   (((int)(x) & HDR_IMMED_MASK) == TAG_SPID)
@@ -960,6 +966,9 @@ typedef uintptr_t Header;
 #define header_mask          0x3f0
 #define type_of_header(h)    (((unsigned int)(h)) & header_mask)
 #define length_of_header(h)  (((uint32_t)(h)) >> 10)
+#define length_of_bitheader(h)     ((((size_t)(h)) >> 7)) - 7)
+#define length_of_byteheader(h)    (((size_t)(h)) >> 10)
+#define length_of_hwordheader(h)   ((((size_t)(h)) >> 9) - 1)
 
 // Values for the type field in a header
 
@@ -1388,8 +1397,35 @@ typedef struct Big_Number
 #else
 #define bignum_digits(b)  ((uint32_t *)((char *)b  + (CELL-TAG_NUMBERS)))
 #endif
+
+#ifdef TESTING
+// make_bighdr takes an argument measured in 32-bit units, including space
+// for the header word. This is the natural space unit used in the tagging
+// scheme so I just need to shift the count to where it has to live.
+#define make_bighdr(n)    (TAG_HDR_IMMED+TYPE_BIGNUM+(((intptr_t)(n))<<(Tw+7)))
+// pack_hdrlength takes a length in bytes (including the size of the header)
+// but it OUGHT always to be a multiple of 4. I will for now not check
+// that, but if anybody gets in wrong the effect will be to confuse the
+// tagging system potentially badly. NOTE VERY WELL that although the other
+// header length packers take a count of items this one takes a length in
+// bytes!
+#define pack_hdrlength(n) (((intptr_t)(n))<<(Tw+5))
+// pack_hdrlengthbytes takes a number of bytes as an argument and adjusts it
+// to go in a header. The integer part will end up counting the number of
+// words that are at least partly used.
+// pack_hdrlengthbits sets a header for a vector with a given number of bits.
+#define pack_hdrlengthbits(n) ((31+(intptr_t)(n))<<(Tw+2))
+#define pack_hdrlengthbytes(n) ((3+(intptr_t)(n))<<(Tw+5))
+// pack_hdrlengthhwords takes a count of the number of halfwords neede.
+#define pack_hdrlengthhwords(n) ((1+(intptr_t)(n))<<(Tw+4))
+#else
 #define make_bighdr(n)    (TAG_HDR_IMMED+TYPE_BIGNUM+(((intptr_t)(n))<<12))
 #define pack_hdrlength(n) (((intptr_t)(n))<<12)
+#define pack_hdrlengthbytes(n) (((intptr_t)(n))<<12)
+#define pack_hdrlengthhwords(n) ((2*(intptr_t)(n))<<12)
+// @@@ not finished yet!
+#define pack_hdrlengthbits(n) (((7+(intptr_t)(n))/8)<<12)
+#endif
 
 typedef struct Rational_Number
 {   Header header;
@@ -1528,6 +1564,23 @@ typedef struct Single_Float
 #define SHOW_FNAME  ((exit_reason & UNWIND_FNAME) != 0)
 #define SHOW_ARGS   ((exit_reason & UNWIND_ARGS) != 0)
 #endif
+
+// The C and C++ refuse to define the behaviour of right shifts
+// on signed types. The underlying reason may relate to the possibility that
+// numbers might be stored in sign-and-magniture notation or some other
+// scheme other than the 2s complement that is in pracise universal these
+// days. The macro here assumes 2s complement arithmetic, but first tests
+// for that and if so just does the shift. Otherwise it arranges to extend
+// the sign bit manually, using division by powers of 2 on unsigned values
+// to do the main shift operation. I believe that even though this looks
+// rather messy here it will lead to simple compiled code with modern C++
+// compilers.
+
+#define ASR(v, n) \
+  (((-1) >> 1) == -1 ? ((int32_t)(v)) >> (n) : \
+   (int32_t)(v) >= 0 ? (int32_t)((uint32_t)(v) / (uint32_t)(1 << (n))) : \
+   (int32_t)(((uint32_t)(v) / (uint32_t)(1 << (n))) | \
+             (- (1 << (32 - (n))))))
 
 #endif // header_tags_h
 

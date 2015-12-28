@@ -36,23 +36,28 @@ DESTDIR=snapshots
 # OUTDIR is the directory within $BUILD where release packages are made.
 # OUTFILES is a file or list of the files in OUTDIR that are wanted.
 
+RED=""
+for x in $HOME/reduce-distribution \
+         $HOME/reduce-algebra \
+         /y/projects/reduce-distribution
+do
+  if test -d $x
+  then
+    RED="$x"
+    break
+  fi
+done
+if test "x$RED" = "x"
+then
+  printf "Reduce sources not found\n"
+  exit 1
+fi
+printf "Found Reduce at %s\n" $RED
+
 case `uname -a`
 in
 CYG*)
   SYS=windows
-# Here I illustrate a way of coping with having this script on two machines
-# where the Reduce sources are kept in different locations...
-  RED=/home/acn1/reduce-algebra
-  if ! test -d $RED
-  then
-    RED=/y/projects/reduce-algebra/trunk
-    if ! test -d $RED
-    then
-      printf "Unable to find Reduce files!\n"
-      exit 1
-    fi
-  fi
-  printf "Found Reduce at %s\n" $RED
   BUILD=winbuild
   OUTDIR=Output
   OUTFILES="Reduce-Setup-${today}.exe"
@@ -60,14 +65,12 @@ CYG*)
 Darwin*)
   SYS=mac
 # This is at present work in progress!
-  RED=/Users/acn1/reduce-algebra
   BUILD=macbuild
   OUTDIR=.
   OUTFILE=""
   ;;
 *)
   SYS=linux
-  RED=/home/acn1/reduce-algebra
   BUILD=debianbuild
   OUTDIR=.
   OUTFILES="reduce-common_${today}_all.deb \
@@ -90,6 +93,11 @@ if test -f $SYS-${today}.stamp
 then
 # If this script has already run today then I will not use it a second time.
   printf "Snapshot $SYS-${today}.stamp already exists\n"
+# Copy generated files to the remote machine where they are wanted even if
+# this is redundant.
+  cd $OUTDIR
+  scp $OUTFILES $DESTUSER@$DESTMC:$DESTDIR
+  printf "Snapshot copied to snapshots directory\n"
   exit 0
 fi
 
@@ -169,4 +177,3 @@ windows)
 esac
 
 # end of make-snapshot.sh
-

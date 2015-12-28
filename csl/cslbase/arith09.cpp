@@ -821,27 +821,11 @@ LispObject ash(LispObject a, LispObject b)
 // effect.
 //
             if (bb > 30) bb = 30;
-#ifdef SIGNED_SHIFTS_ARE_LOGICAL
-//
-// ANSI C (oh bother it) permits an implementation to have right shifts
-// on signed values as logical (ie. shifting in zeros into the vacated
-// positions.  In that case since I really want an arithmetic shift here
-// I need to insert '1' bits by hand.
-//
-            if (aa < 0)
-            {   aa = aa >> bb;
-                aa |= (((int32_t)-1) << (32 - bb));
-            }
-            else
-#endif
-                aa = aa >> bb;
+            aa = ASR(aa, bb);
             return fixnum_of_int(aa);
         }
         else if (bb < 31)
-        {   int32_t ah = aa >> (31 - bb);
-#ifdef SIGNED_SHIFTS_ARE_LOGICAL
-            if (aa < 0) ah |= (((int32_t)-1) << (bb+1));
-#endif
+        {   int32_t ah = ASR(aa, (31 - bb));
             aa = aa << bb;
 //
 // Here (ah,aa) is a double-precision representation of the left-shifted
@@ -886,14 +870,11 @@ LispObject ash(LispObject a, LispObject b)
         int32_t words = bb / 31;    // words to shift left by
         int32_t bits = bb % 31;     // bits to shift left by
         int32_t msd = bignum_digits(a)[lena];
-        int32_t d0 = msd >> (31 - bits);
+        int32_t d0 = ASR(msd, (31 - bits));
         int32_t d1 = clear_top_bit(msd << bits);
         int32_t i, lenc = lena + words;
         CSLbool longer = NO;
         LispObject c, nil;
-#ifdef SIGNED_SHIFTS_ARE_LOGICAL
-        if (msd < 0) d0 |= (((int32_t)-1) << (bits+1));
-#endif
         if (!((d0 == 0 && (d1 & 0x40000000) == 0) ||
               (d0 == -1 && (d1 & 0x40000000) != 0)))
             lenc++, longer = YES;
@@ -920,12 +901,7 @@ LispObject ash(LispObject a, LispObject b)
                 (d0 >> (31 - bits)) | clear_top_bit(d1 << bits);
             d0 = d1;
         }
-        if (longer)
-        {   bignum_digits(c)[words+i] = d0 >> (31 - bits);
-#ifdef SIGNED_SHIFTS_ARE_LOGICAL
-            if (d0 < 0) bignum_digits(c)[words+i] |= (((int32_t)-1) << (bits+1));
-#endif
-        }
+        if (longer) bignum_digits(c)[words+i] = ASR(d0, (31 - bits));
         else if (msd < 0) bignum_digits(c)[words+i-1] |= ~0x7fffffff;
         return c;
     }
@@ -937,14 +913,11 @@ LispObject ash(LispObject a, LispObject b)
         int32_t words = (-bb) / 31;    // words to shift right by
         int32_t bits = (-bb) % 31;     // bits to shift right by
         int32_t msd = bignum_digits(a)[lena];
-        int32_t d0 = msd >> bits;
+        int32_t d0 = ASR(msd, bits);
         int32_t d1 = clear_top_bit(msd << (31 - bits));
         int32_t i, lenc = lena - words;
         CSLbool shorter = NO;
         LispObject c, nil;
-#ifdef SIGNED_SHIFTS_ARE_LOGICAL
-        if (msd < 0) d0 |= (((int32_t)-1) << (31 - bits));
-#endif
         if (bits != 0 &&
             ((d0 == 0 && (d1 & 0x40000000) == 0) ||
              (d0 == -1 && (d1 & 0x40000000) != 0)))

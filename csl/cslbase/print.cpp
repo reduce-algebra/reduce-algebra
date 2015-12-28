@@ -5011,10 +5011,11 @@ start_again:
 // the right and for the ":" from the left these are not needed at all,
 // so if I notice them here all I have to do is to discard them!
 //
-        for (i=len-1; i>=0; i--)
-            if (p[i] == '@') break;
-        if (i >= 0)
-        {   user = p;
+        for (i=len; i>0; i--)
+            if (p[i-1] == '@') break;
+        if (i > 0)
+        {   i--;
+            user = p;
             p += i+1;
             len -= i+1;
             while (user[nuser] != ':' && user[nuser] != '@') nuser++;
