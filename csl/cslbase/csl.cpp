@@ -2842,7 +2842,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     {   const char *p = standard_directory;
         char *p1;
         char cur[LONGEST_LEGAL_FILENAME];
-        memset(cur, 0, sizeof(cur));
 //
 // If the user does not specify any image files then the behaviour
 // defaults as follows:
@@ -2903,14 +2902,12 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // it does not its creation should be deferred for as long as possible.
 //
             output_directory = 0x40000000 + 0;
-            number_of_fasl_paths = 1;
             if (p1 != NULL) (*free_hook)(p1);
         }
         else
         {   strcpy(p1, p+1);
             fasl_paths[0] = p1;
             fasl_paths[1] = standard_directory;
-            output_directory = 0x40000000 + 0;
             number_of_fasl_paths = 2;
         }
     }

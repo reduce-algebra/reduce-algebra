@@ -31,7 +31,7 @@ cp $srcdir/dejavu-fonts-ttf-2.32/AUTHORS          $F/AUTHORS.dejavu-fonts-ttf-2.
 cp $srcdir/dejavu-fonts-ttf-2.32/ttf/DejaVuSansMono.ttf $F
 # I will use fireflysung fonts to cover the CJK range. I hope that at some
 # time I may be able to move to use of SourceHanSans/Noto... but that time
-// has not yet come.
+# has not yet come.
 cp $srcdir/fireflysung-1.3.0/fireflysung.ttf      $F
 cp $srcdir/fireflysung-1.3.0/AUTHORS              $F/AUTHORS.fireflysung
 cp $srcdir/fireflysung-1.3.0/COPYRIGHT            $F/COPYRIGHT.fireflysung

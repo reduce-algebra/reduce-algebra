@@ -9,7 +9,7 @@
 
     Author:     JM
 
-    Copyright:  © Copyright 2003 Apple Computer, Inc. All rights reserved.
+    Copyright:  ) Copyright 2003 Apple Computer, Inc. All rights reserved.
 
     Disclaimer: IMPORTANT: This Apple software is supplied to you by
     Apple Computer, Inc.  ("Apple") in consideration of your agreement
@@ -75,11 +75,11 @@ OSErr FinderLaunch(const char *target)
 
 /*
  * FSPathMakeRef needs (UInt8 *) as its first argument, but my current
- * understanding is that this is "just" a string but in an exlicitly
+ * understanding is that this is "just" a string but in an explicitly
  * 8-bit code. Thus "char *" ought to suffice UNLESS you are compiling in a
  * world where char is a 16-bit item or some other wide-char messing about is
  * happening. The C compiler with 10.3 adjusted things without an explicit
- * cast hear and gave a warning. WIth 10.4 it gives an error.
+ * cast here and gave a warning. With 10.4 it gives an error.
  *    ACN, August 2005
  */
     err = FSPathMakeRef((const UInt8 *)target, &privateInfo, NULL);
@@ -123,6 +123,8 @@ OSErr FinderLaunch(const char *target)
     }
 
     if (err == noErr) {
+// In 2015 and on 10.11 I find that NewAlias is not provided at all so this
+// code is useless!
       err = NewAlias(NULL, &fileinfo, &targetAlias);
 #ifdef DEBUG
       printf("NewAlias()-> %d\n",err);

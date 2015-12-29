@@ -66,7 +66,6 @@
 
 #include "fwin.h"
 
-
 extern int fwin_main(int argc, const char *argv[]);
 
 #ifdef HAVE_LIBFOX
@@ -99,10 +98,13 @@ int main(int argc, const char *argv[])
 #endif
 #include <windows.h>
 #include <io.h>
+#include <wchar.h>
 #endif // WIN32
 
 #include <string.h>
 #include <stdio.h>
+#include <stdint.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <ctype.h>
@@ -148,10 +150,10 @@ extern char *getcwd(char *s, size_t n);
 // #endif
 //
 
-#if defined MACINTOSH && defined MAC_FRAMEWORK
+#if defined __APPLE__ // && defined MAC_FRAMEWORK
 //
 // The extent to which any code here pays attention to Mac-specific
-// features is and will probably remain minimal! However some may be
+// features is and should probably remain minimal! However some may be
 // used here.
 //
 #include <Carbon/Carbon.h>
@@ -183,43 +185,71 @@ extern char *getcwd(char *s, size_t n);
 // if debugging you might want to ensure that such a directory exists!
 //
 
-static FILE *logfile = NULL;
+static FILE *fwin_logfile = NULL;
 
 #define LOGFILE_NAME "fwin-debug.log"
 
 void fwin_write_log(const char *s, ...)
-{   int create = (logfile == NULL);
+{
+//
+// I expect vfprintf and fflush to be thread-safe, however the test
+// on fwin_logfile and the code that creates it could lead to a race
+// if two threads both tried to open the log file at the same time. I
+// believe that since this is JUST to be used for debugging everything can
+// be made safe by insisting that any code that uses threads must execute
+// FWIN_LOG() before it starts any thread, so that the log file will get
+// created when there is not concurrency to cause confusion. That seems
+// lighter weight than messing with a further critical section here.
+//
+    int create = (fwin_logfile == NULL);
     va_list x;
 //
 // Note that I create this file in "a" (append) mode so that previous
-// inpformation there is not lost.
+// information there is not lost.
 //
     if (create)
     {   char logfile_name[LONGEST_LEGAL_FILENAME];
         memset(logfile_name, 0, sizeof(logfile_name));
         if (strcmp(programDir, ".") == 0)
             sprintf(logfile_name, "/tmp/%s", LOGFILE_NAME);
+#ifdef __APPLE__
+//
+// If the executable I am running exists as
+//    ...../something.app/Contents/MacOS/something
+// then I will place the log file adjacant to the .app directory rather
+// than in the MacOS directory next to the actual raw executable.
+//
+        else if (sprintf(logfile_name, "%s.app/Contents/MacOS", programName),
+                 strlen(programDir) >= strlen(logfile_name) &&
+                 strcmp(programDir+strlen(programDir)-strlen(logfile_name),
+                        logfile_name) == 0)
+        {   sprintf(logfile_name, "%.*s/%s",
+                    (int)(strlen(programDir)-strlen(programName)-19),
+                    programDir, LOGFILE_NAME);
+        }
+#endif
         else sprintf(logfile_name, "%s/%s", programDir, LOGFILE_NAME);
-        logfile = fopen(logfile_name, "a");
+        fwin_logfile = fopen(logfile_name, "a");
     }
-    if (logfile == NULL) return; // the file can not be used
+    if (fwin_logfile == NULL) return; // the file can not be used
     if (create)
     {   time_t tt = time(NULL);
         struct tm *tt1 = localtime(&tt);
-        fprintf(logfile, "Log segment starting: %s\n", asctime(tt1));
+        fprintf(fwin_logfile, "Log segment starting: %s\n", asctime(tt1));
     }
     va_start(x, s);
-    vfprintf(logfile, s, x);
+    vfprintf(fwin_logfile, s, x);
     va_end(x);
     va_start(x, s);
     vfprintf(stderr, s, x);
     va_end(x);
-    fflush(logfile);
+    fflush(fwin_logfile);
 }
 
 #endif
 
 
+#if defined WIN32
 //
 // The next few are not exactly useful if FOX is not available
 // and hence this code will run in line-mode only. However it is
@@ -237,6 +267,51 @@ void fwin_write_log(const char *s, ...)
 // grow in a way I view as clumsy. The wording I use is as requested (but
 // under LGPL not actually required!) by the FOX authors.
 //
+// I am rather crudely not going to concern myself with buffer overflow issues
+// here. The Microsoft conversion functions do but I will tell them that
+// the strings I handle will be at most 1000 characters or bytes long. Any
+// case that goes beyond that will lead to trouble.
+//
+
+typedef wchar_t Uchar;
+
+void unicodeToUtf8(char *dest, const wchar_t *src)
+{   int w = WideCharToMultiByte(CP_UTF8, 0, src, -1, dest, 1000, NULL, NULL);
+    dest[w] = 0;
+}
+
+void utf8ToUnicode(wchar_t *dest, const char *src)
+{   int w = MultiByteToWideChar(CP_UTF8, 0, src, -1, dest, 1000);
+    dest[w] = 0;
+}
+
+int lenAsUtf8(const wchar_t *s)
+{   return (int)WideCharToMultiByte(CP_UTF8, 0, s, -1, NULL, 0, NULL, NULL);
+}
+
+#else
+
+//
+// On all platforms except Windows the representation used
+// for Unicode strings is just UTF8, so the "conversions" indicated here
+// become simple data-copies.
+//
+
+typedef char Uchar;
+
+void unicodeToUtf8(char *dest, const char *src)
+{   strcpy(dest, src);
+}
+
+void utf8ToUnicode(char *dest, const char *src)
+{   strcpy(dest, src);
+}
+
+int lenAsUtf8(const char *s)
+{   return strlen(s) + 1;
+}
+
+#endif
 
 char about_box_title[40]       = "About XXX";
 char about_box_description[40] = "XXX version 1.1";
@@ -258,7 +333,10 @@ interrupt_callback_t *interrupt_callback;
 extern const char *my_getenv(const char *s);
 
 #ifdef WIN32
-static int program_name_dot_com;
+static int programNameDotCom;
+#endif
+#ifdef __APPLE__
+static int macApp = 0;
 #endif
 
 int windowed = 0;
@@ -295,13 +373,48 @@ void consoleWait()
 // to give at least a minimal chance for the user to inspect it I will
 // put in a delay here.
 //
-    clock_t c0 = clock() + 5*CLOCKS_PER_SEC;
-    while (clock() < c0);
+    int i = 5;
+    clock_t c0;
+    while (i > 0)
+    {   char title[30];
+        sprintf(title, "Exiting after %d seconds", i);
+        SetConsoleTitle(title);
+        c0 = clock() + CLOCKS_PER_SEC;
+        while (clock() < c0);
+        i--;
+    }
 }
 
 #endif
 
 #ifndef EMBEDDED
+
+#ifdef WIN32
+
+BOOL CtrlHandler(DWORD x)
+{   switch (x)
+    {
+//
+// This seems to be needed to ensure that if a windows console is closed
+// and you launched your program from a cygwin shell (via the cygwin
+// execv(e) family) it exists nicely. Otherwise it can be retried several
+// times.
+//
+        case CTRL_CLOSE_EVENT:
+        case CTRL_LOGOFF_EVENT:
+        case CTRL_SHUTDOWN_EVENT:
+        case CTRL_BREAK_EVENT:
+//
+// I had tried the ise of ExitProcess(1) here and that was not strong enough
+// to avoid program-restart! So I take drastic action with TerminateProcess.
+//
+            TerminateProcess(GetCurrentProcess(), 1);
+        default:
+            return 0;
+    }
+}
+
+#endif
 
 #if defined PART_OF_FOX || defined CSL
 int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
@@ -309,11 +422,18 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 int main(int argc, const char *argv[])
 #endif
 {   int i;
-#ifndef WIN32
+#ifdef WIN32
+    int ssh_client = 0;
+#else
     const char *disp;
 #endif
+//
 // I want to know the path to the directory from which this
-// code was launched.
+// code was launched. Note that in some cases the prints to stderr
+// shown here will be totally ineffective and the code will just seem
+// to exit abruptly. Eg that can be the situation if the version being run
+// has been linked on Windows as a window-mode (as distinct from console-mode)
+// binary, or if it is on a Macintosh not associated with a console.
 //
     if (argc == 0)
     {   fprintf(stderr,
@@ -327,7 +447,8 @@ int main(int argc, const char *argv[])
     texmacs_mode = 0;
 //
 // An option "--my-path" just prints the path to the executable
-// and stops.
+// and stops. An option "--args" indicates that I should not look at any
+// more arguments - they may be used by the program that is to be run.
 //
     for (i=1; i<argc; i++)
     {   if (strcmp(argv[i], "--my-path") == 0)
@@ -356,6 +477,7 @@ int main(int argc, const char *argv[])
 // file.
 //
     windowed = 2;
+    FWIN_LOG(("windowed = %d at line %d\n", windowed, __LINE__));
     for (i=1; i<argc; i++)
     {   if (strcmp(argv[i], "--args") == 0) break;
         if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
@@ -379,15 +501,19 @@ int main(int argc, const char *argv[])
 // Note well that I detect just "--" as an entire argument here, so that
 // extended options "--option" do not interfere.
 //
-        else if ((strcmp(argv[i], "--") == 0
-#if 0
-                  || strcmp(argv[i], "-f") == 0
-                  || strcmp(argv[i], "-F") == 0
-#endif
-                 ) &&
+// The "--my-path" option may be useful for debugging, but probably does
+// not mak emuch sense otherwise!
+//
+        else if (strcmp(argv[i], "--") == 0 &&
                  windowed != 0) windowed = -1;
+        else if (strcmp(argv[i], "--my-path") == 0)
+        {   printf("%s\n", programDir);
+            exit(0);
+        }
     }
+    FWIN_LOG(("windowed = %d at line %d\n", windowed, __LINE__));
     if (texmacs_mode) windowed = 0;
+    FWIN_LOG(("windowed = %d at line %d\n", windowed, __LINE__));
 //
 // If there had not been any command-line option to give direction
 // about whether to run in a window I will use system-dependent
@@ -408,9 +534,15 @@ int main(int argc, const char *argv[])
 // what the status of stdin/stdout are when launched not from a command line
 // but by clicking on an icon...
 //
+    FWIN_LOG(("windowed = %d at line %d\n", windowed, __LINE__));
     if (windowed != 0)
-    {   if (!isatty(fileno(stdin)) || !isatty(fileno(stdout))) windowed = 0;
-
+    {
+#ifndef __APPLE__
+// When a Mac application is launched it seems not to be connected to
+// a terminal.
+        if (!isatty(fileno(stdin)) || !isatty(fileno(stdout))) windowed = 0;
+#endif
+        FWIN_LOG(("windowed = %d at line %d\n", windowed, __LINE__));
 //
 // On Unix-like systems I will check the DISPLAY variable, and if it is not
 // set I will suppose that I can not create a window. That case will normally
@@ -423,12 +555,10 @@ int main(int argc, const char *argv[])
 //
         disp = my_getenv("DISPLAY");
         if (disp == NULL || strchr(disp, ':')==NULL) windowed = 0;
+        FWIN_LOG(("windowed = %d at line %d\n", windowed, __LINE__));
     }
 #else   // WIN32
-//
-// Before I try to decide what to do I will (sometimes) collect information
-// on what cygwin would make of the state of stdin and stdout.
-//
+    FWIN_LOG(("windowed = %d at line %d\n", windowed, __LINE__));
 // I have tried various messy Windows API calls here to get this right.
 // But so far I find that the cases that apply to me are
 //    (a) windows command prompt : normal case
@@ -467,9 +597,7 @@ int main(int argc, const char *argv[])
 // code, and the file "gui-or-not.txt" in the source tree discusses just
 // what I do.
 //
-//
-
-    if (program_name_dot_com && windowed == 2)
+    if (programNameDotCom && windowed == 2)
     {
 // The program was named "xxx.com". I will assume that that means it was
 // a console-mode application and it is being launched directly from a
@@ -492,6 +620,7 @@ int main(int argc, const char *argv[])
 // of console rather than windowed mode. Thus
 //         xxx             launch in a window
 //         xxx --nogui     run as console application
+//         xxx -w          run as console application
 //         xxx < yyy       run as console application
 //         xxx > yyy       run as console application
 // My hope is that the detection of redirected stdin/stdout will help
@@ -507,12 +636,34 @@ int main(int argc, const char *argv[])
 // expect - however this possibly messes up the tests I make to see if I
 // want to run a terminal or a windowed version of everything.
 //
-        h = GetStdHandle(STD_INPUT_HANDLE);
-        if (GetFileType(h) != FILE_TYPE_CHAR) windowed = 0;
-        else if (!GetConsoleMode(h, &w)) windowed = 0;
-        h = GetStdHandle(STD_OUTPUT_HANDLE);
-        if (GetFileType(h) != FILE_TYPE_CHAR) windowed = 0;
-        else if (!GetConsoleScreenBufferInfo(h, &csb)) windowed = 0;
+        const char *ssh = my_getenv("SSH_CLIENT");
+        if (ssh != NULL && *ssh != 0)
+        {   FWIN_LOG(("SSH_CLIENT set on Windows, so treat as console app\n"));
+            ssh_client = 1;
+            windowed = 0;
+        }
+        else
+        {   h = GetStdHandle(STD_INPUT_HANDLE);
+            if (GetFileType(h) != FILE_TYPE_CHAR)
+            {   FWIN_LOG(("STD_INPUT_HANDLE not FILE_TYPE_CHAR\n"));
+                windowed = 0;
+            }
+            else if (!GetConsoleMode(h, &w))
+            {   FWIN_LOG(("!GetConsoleMode(STD_INPUT_HANDLE)\n"));
+                windowed = 0;
+            }
+            else
+            {   h = GetStdHandle(STD_OUTPUT_HANDLE);
+                if (GetFileType(h) != FILE_TYPE_CHAR)
+                {   FWIN_LOG(("STD_OUTPUT_HANDLE not FILE_TYPE_CHAR\n"));
+                    windowed = 0;
+                }
+                else if (!GetConsoleScreenBufferInfo(h, &csb))
+                {   FWIN_LOG(("!GetConsoleMode(STD_OUTPUT_HANDLE)\n"));
+                    windowed = 0;
+                }
+            }
+        }
     }
     else if (windowed == 2)
     {
@@ -539,18 +690,123 @@ int main(int argc, const char *argv[])
 // explictly provide a "-w" flag to indicate that the application should
 // work in stream/console mode.
 //
-        if (GetFileType(h) == FILE_TYPE_DISK) windowed = 0;
+        const char *ssh = my_getenv("SSH_CLIENT");
+        if (ssh != NULL && *ssh != 0)
+        {   FWIN_LOG(("SSH_CLIENT set\n"));
+            ssh_client = 1;
+            windowed = 0;
+        }
+        else if (GetFileType(h) == FILE_TYPE_DISK)
+        {   FWIN_LOG(("STD_INPUT_HANDLE is FILE_TYPE_DISK\n"));
+            windowed = 0;
+        }
     }
 #endif  // WIN32
+    FWIN_LOG(("windowed = %d at line %d\n", windowed, __LINE__));
+#ifdef __APPLE__
 //
-// I have windowed with values
-//    2     decision pending (but default to windowed);
-//    1     in a window;
-//    0     not in a window;
-//    -1    windowed but start minimised.
+// This may be a proper way to test if I am really running in an application
+// bundle.
 //
-    if (windowed == 2) windowed = 1;
+    FWIN_LOG(("Checking for Mac Application\n"));
+    {   CFBundleRef mainBundle = CFBundleGetMainBundle();
+        FWIN_LOG(("mainBundle = %p\n", mainBundle));
+        if (mainBundle == NULL) macApp = 0;
+        else
+        {   CFDictionaryRef d = CFBundleGetInfoDictionary(mainBundle);
+            FWIN_LOG(("DictionaryRef d=%p\n", d));
+            if (d == NULL) macApp = 0;
+            else
+            {   CFStringRef s =
+                    (CFStringRef)CFDictionaryGetValue(d,
+                        CFSTR("ATSApplicationFontsPath"));
+                FWIN_LOG(("FontsPath =%p. Will be macApp if non-NULL\n", s));
+                macApp = (s != NULL);
+                FWIN_LOG(("mapApp = %d\n", macApp));
+            }
+        }
+    }
+#endif // __APPLE__
+    FWIN_LOG(("windowed = %d at line %d\n", windowed, __LINE__));
+// If stdin or stdout is not from a "tty" I will run in non-windowed mode.
+// This may help when the system is used in scripts. I worry a bit about
+// what the status of stdin/stdout are when launched not from a command line
+// but by clicking on an icon...
+//
+    if (
+#ifdef __APPLE__
+        !macApp &&
+#endif
+        (!isatty(fileno(stdin)) || !isatty(fileno(stdout))))
+    {   FWIN_LOG(("stdin or stdout is not a tty\n"));
+        windowed = 0;
+    }
 
+#ifdef __APPLE__
+//
+// If I am using X11 as my GUI then I am happy to use remote access via
+// SSH since I can be using X forwarding - provided DISPLAY is set all can
+// be well. However on a Macintosh I do NOT want to launch a window if I
+// have connected via ssh since I will not have the desktop forwarded.
+//
+    FWIN_LOG(("Special Mac processing\n"));
+    {   const char *ssh = my_getenv("SSH_CLIENT");
+        FWIN_LOG(("ssh = %p\n", ssh));
+        if (ssh != NULL && *ssh != 0)
+        {   FWIN_LOG(("SSH_CLIENT set on MacOSX\n"));
+//          ssh_client = 1;
+            windowed = 0;
+        }
+    }
+#else // __APPLE__
+    FWIN_LOG(("Non-Apple unix-like checks for X\n"));
+// On Unix-like systems I will check the DISPLAY variable, and if it is not
+// set I will suppose that I can not create a window. That case will normally
+// arise when you have gained remote access to the system eg via telnet or
+// ssh without X forwarding. I will also insist that if set it has a ":" in
+// its value... that is to avoid trouble with it getting set to an empty
+// string.
+//
+    disp = my_getenv("DISPLAY");
+    if (disp == NULL || strchr(disp, ':')==NULL)
+    {   FWIN_LOG(("DISPLAY not set for an X11 version\n"));
+        windowed = 0;
+    }
+#endif // __APPLE__
+    FWIN_LOG(("Windowed = %d at line %d\n", windowed, __LINE__));
+//
+// REGARDLESS of any decisions about windowing made so for things can be
+// forced by command line options.
+//    -w+ forces an attempt to run in a window even if it looks as if that
+//        would not make sense or would fail. It is mainly for debugging.
+//    -w. forces use of a window, but starts it minimised.
+//    -w  forces command-line rather than windowed use (can also write
+//        "-w-" for this case).
+// I also look for some other CSL-specific options that make me feel I
+// should adjust behaviour:
+//    --  All output will be going to a file. So if the program is to run in
+//        windowed mode I will start it off minimised.
+//    --texmacs   force the run NOT to try to create its own window,
+//        because it is being invoked via a pipe from TeXmacs,
+//
+    for (i=1; i<argc; i++)
+    {   if (strcmp(argv[i], "--args") == 0) break;
+        if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
+        else if (strncmp(argv[i], "-w", 2) == 0)
+        {   if (argv[i][2] == '+') windowed = 1;
+            else if (argv[i][2] == '.') windowed = -1;
+            else windowed = 0;
+            break;
+        }
+//
+// Note well that I detect just "--" as an entire argument here, so that
+// extended options "--option" do not interfere.
+//
+        else if (strcmp(argv[i], "--") == 0 &&
+                 windowed != 0) windowed = -1;
+    }
+    if (texmacs_mode) windowed = 0;
+    FWIN_LOG(("Windowed = %d at line %d\n", windowed, __LINE__));
 #ifdef WIN32
 //
 // If I am running under Windows and I have set command line options
@@ -560,12 +816,51 @@ int main(int argc, const char *argv[])
     if (windowed == 0)
     {   int consoleCreated = AllocConsole();
         if (consoleCreated)
-        {   freopen("CONIN$", "r+", stdin);
-// need "w+" for some console buffer access to behave properly.
-            freopen("CONOUT$", "w+", stdout);
-            freopen("CONOUT$", "w+", stderr);
+        {   if (ssh_client)
+            {
+//
+// This situation seems totally odd to me. I just launched a Windowed-mode
+// application and normally when I do that it detaches from the console.
+// however rather than having a proper console here I am connected over
+// ssh (I am testing this using the cygwin openssh server on Windows 7).
+// It appears to be the case that I *DO* have stdin and stdout available to
+// me in this case even though I think that when I launch exactly the same
+// binary from a directly attached console it detaches and I need to use
+// the newly created console....
+// The code I have here is based on empirical observation in cases that
+// most people will probably not trigger!
+//
+                FWIN_LOG(("Running windowed mode application via ssh.\n"));
+            }
+            else
+            {
+#ifdef __CYGWIN__
+                freopen("/dev/conin", "r+", stdin);
+                freopen("/dev/conout", "w+", stdout);
+                freopen("/dev/conout", "w+", stderr);
+#else // __CYGWIN__
+//
+// I try rather hard here to leave things properly connected to
+// the new console. Note opening CONOUT in "w+" mode so it has
+// GENERIC_READ_ACCESS.
+//
+                HANDLE h;
+                freopen("CONIN$", "r+", stdin);
+                freopen("CONOUT$", "w+", stdout);
+                freopen("CONOUT$", "w+", stderr);
+                SetStdHandle(STD_INPUT_HANDLE,
+                             CreateFile("CONIN$",
+                                        GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, NULL,
+                                        OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
+                SetStdHandle(STD_OUTPUT_HANDLE,
+                             h = CreateFile("CONOUT$",
+                                            GENERIC_READ|GENERIC_WRITE, FILE_SHARE_WRITE, NULL,
+                                            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
+                SetStdHandle(STD_ERROR_HANDLE, h);
+#endif // __CYGWIN__
 // I will also pause for 5 seconds at the end...
-            atexit(consoleWait);
+                atexit(consoleWait);
+            }
         }
         SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandler, TRUE);
     }
@@ -575,11 +870,14 @@ int main(int argc, const char *argv[])
 // looking for a command-line option that controls whether to use it!
 //
 #endif // PART_OF_FOX
+#endif // WIN32
+
 // Windowed or not, if there is an argument "-b" or "-bxxxx" then the
 // string xxx will do something about screen colours. An empty string
 // will suggest no colouring, the string "-" (as in -b-) whatever default
 // I choose.
 //
+    FWIN_LOG(("Now look for colour specifications\n"));
     colour_spec = "-";
     for (i=1; i<argc; i++)
     {   if (strcmp(argv[i], "--args") == 0) break;
@@ -590,21 +888,70 @@ int main(int argc, const char *argv[])
     }
 
 #ifdef PART_OF_FOX
+    FWIN_LOG(("Windowed = %d at line %d\n", windowed, __LINE__));
     if (windowed==0) return plain_worker(argc, argv, fwin_main);
-    return windowed_worker(argc, argv, fwin_main);
-#else
-// If I am using a text-only interface everything is now set up!
-    return plain_worker(argc, argv, fwin_main);
+
+#ifdef __APPLE__
+    FWIN_LOG(("Mac special checks to see if I am in an app\n"));
+//
+// If I will be wanting to use a GUI and if I have just loaded an
+// executable that is not within an application bundle then I will
+// use "open" to launch the corresponding application bundle. Doing this
+// makes resources (eg fonts) that are within the bundle available and
+// it also seems to cause things to terminate more neatly.
+//
+    if (!macApp)
+    {   char xname[LONGEST_LEGAL_FILENAME];
+//
+// Here the binary I launched was NOT being from an application bundle.
+// I will try to re-launch it so it is.
+//
+        struct stat buf;
+        memset(xname, 0, sizeof(xname));
+        sprintf(xname, "%s.app", fullProgramName);
+        FWIN_LOG(("Run not from app. Check %s\n", xname));
+        if (stat(xname, &buf) == 0 &&
+            (buf.st_mode & S_IFDIR) != 0)
+        {
+// Well foo.app exists and is a directory, so I will try to use it
+            const char **nargs = (const char **)malloc(sizeof(char *)*(argc+3));
+            int i;
+            FWIN_LOG(("About to restart Mac from an application bundle\n"));
+#ifdef DEBUG
+//
+// Since I am about to restart the program I do not want the new version to
+// find that the log file is open and hence not accessible.
+//
+            if (fwin_logfile != NULL)
+            {   fclose(fwin_logfile);
+                fwin_logfile = NULL;
+            }
 #endif
+            nargs[0] = "/usr/bin/open";
+            nargs[1] = xname;
+            nargs[2] = "--args";
+            for (i=1; i<argc; i++)
+                nargs[i+2] = argv[i];
+            nargs[argc+2] = NULL;
+// /usr/bin/open foo.app --args [any original arguments]
+            execv("/usr/bin/open", const_cast<char * const *>(nargs));
+//
+// execv should NEVER return, but if it does I might like to at least
+// attempt to display a report including the error code.
+//
+            fprintf(stderr,
+                    "Returned from execv with error code %d\n", errno);
+            exit(1);
+        }
+    }
+#endif
+    FWIN_LOG(("I think I am in an app: start windowed_worker\n"));
+    return windowed_worker(argc, argv, fwin_main);
 }
 
 void sigint_handler(int code)
 {
-#ifdef TEST_SIGNAL_CATCHER
-// For debugging I may want to see when signals get caught...
-    fprintf(stderr, "sigint_handler called %d %#x\n", code, code);
-    fflush(stderr);
-#endif
+    FWIN_LOG(("sigint_handler called %d %#x\n", code, code));
     signal(SIGINT, sigint_handler);
     if (interrupt_callback != NULL) (*interrupt_callback)(QUIET_INTERRUPT);
     return;
@@ -613,12 +960,10 @@ void sigint_handler(int code)
 #endif // EMBEDDED
 
 #ifdef SIGBREAK
+
 void sigbreak_handler(int code)
 {
-#ifdef TEST_SIGNAL_CATCHER
-    fprintf(stderr, "sigbreak_handler called %d %#x\n", code, code);
-    fflush(stderr);
-#endif
+    FWIN_LOG("sigbreak_handler called %d %#x\n", code, code);
     signal(SIGBREAK, sigbreak_handler);
     if (interrupt_callback != NULL) (*interrupt_callback)(NOISY_INTERRUPT);
     return;
@@ -702,6 +1047,7 @@ int fwin_plain_getchar()
             current_line = term_getline();
             if (current_line == NULL) return EOF;  // failed or EOF
             chars_left = strlen(current_line);
+//          input_history_add(current_line);
         }
     }
     else if (chars_left == 0)
@@ -928,7 +1274,7 @@ int find_program_directory(const char *argv0)
          (tolower(w[len-3]) == 'c' &&
           tolower(w[len-2]) == 'o' &&
           tolower(w[len-1]) == 'm')))
-    {   program_name_dot_com = (tolower(w[len-3]) == 'c');
+    {   programNameDotCom = (tolower(w[len-3]) == 'c');
         len -= 4;
         w[len] = 0;
     }
@@ -969,10 +1315,10 @@ int find_program_directory(const char *argv0)
     return 0;
 }
 
-#else
+#else // WIN32: now the Unix and Linux version
 
 // Different systems put or do not put underscores in front of these
-// names. My adaptation here should give me a chabce to work whichever
+// names. My adaptation here should give me a chance to work whichever
 // way round it goes.
 //
 
@@ -1002,10 +1348,13 @@ int find_program_directory(const char *argv0)
 # endif
 #endif
 
-
 //
-// the length set here is at least the longest length that I
-// am prepared to worry about.
+// I will not take any action at all to deal with UTF-8 or Unicode issues
+// in filenames or paths. Indeed most of Linux and certainly most of my
+// code will risk terribly confusion with various perfectly ordinary
+// 7-bit characters such as blank (' ') within filenames, so the issue
+// of international alphabets there is something I will not really fuss
+// about yet.
 //
 
 int find_program_directory(const char *argv0)
@@ -1043,7 +1392,7 @@ int find_program_directory(const char *argv0)
 // (b)   abc/def/ghi       treat as ./abc/def/ghi;
 // (c)   ghi               scan $PATH to see where it may have come from.
 //
-    if (argv0[0] == '/') fullProgramName = argv0;
+    else if (argv0[0] == '/') fullProgramName = argv0;
     else
     {   for (w=argv0; *w!=0 && *w!='/'; w++);   // seek a "/"
         if (*w == '/')      // treat as if relative to current dir
@@ -1159,8 +1508,9 @@ int find_program_directory(const char *argv0)
 //
 // Now if I built on raw cygwin I may have an unwanted ".com" or ".exe"
 // suffix, so I will purge that! This code exists here because the raw
-// cygwin build has a somewhat mixed view as to whether it is a Windows
-// or a Unix-like system.
+// cygwin build has a somewhat schitzo view as to whether it is a Windows
+// or a Unix-like system. When I am using raw cygwin I am really not
+// living in a Windows world.
 //
     if (strlen(w1) > 4)
     {   char *w2 = w1 + strlen(w1) - 4;
@@ -1245,6 +1595,9 @@ int find_program_directory(const char *argv0)
 #define S_IXUSR __S_IXUSR
 #endif
 #endif
+
+extern "C" int get_home_directory(char *b, size_t len);
+extern "C" int get_users_home_directory(char *b, size_t len);
 
 static lookup_function *look_in_variable = NULL;
 
@@ -1401,6 +1754,7 @@ void process_file_name(char *filename, const char *old, size_t n)
         else *o++ = (char)c;
     }
     *o = 0;
+
 #ifdef WIN32
 //
 // Now the filename has had $ and ~ prefix things expanded - I "just"
@@ -1414,6 +1768,8 @@ void process_file_name(char *filename, const char *old, size_t n)
 // As of September 2004 I will also map an intial sequence
 //         /cygdrive/x/
 // onto    x:\ (ie the Windows style path)
+//
+
     if (strncmp(filename, "/cygdrive/", 10) == 0 &&
         filename[11] == '/')
     {   char *p = filename+2, *tail = filename+11;
@@ -1422,21 +1778,29 @@ void process_file_name(char *filename, const char *old, size_t n)
         while (*tail != 0) *p++ = *tail++;
         *p = 0;
     }
+//
+// I map "/" characters in MSDOS filenames into "\" so that users
+// can give file names with Unix-like slashes as separators if they want.
+// People who WANT to use filenames with '/' in them will be hurt.
+//
     {   int j;
         char *tail = filename;
-        while (*tail != 0) tail++;
+        while ((j = *tail) != 0)
+        {   if (j == '/') *tail = '\\';
+            tail++;
+        }
 //
-// stat and friends do not like directories referred to as "/foo/", so check
+// stat and friends do not like directories referred to as "\foo\", so check
 // for a trailing slash, being careful to respect directories with names
-// like "/" and "a:/".
+// like "\" and "a:\".
 //
         j = strlen(filename);
         if (j > 0 && j != 1 && !(j == 3 && *(filename+1) == ':'))
-        {   if ( (*(tail - 1) == '/')) *(tail - 1) = 0;
+        {   if ( (*(tail - 1) == '\\')) *(tail - 1) = 0;
         }
     }
 #endif // WIN32
-#if defined MACINTOSH && defined MAC_FRAMEWORK
+#if defined __APPLE__ // && defined MAC_FRAMEWORK
 //
 // For MacOS the issue of "aliases" arises. The "preferred" file system
 // is HFS+ and that supports both links and aliases, but at the very least
@@ -2148,8 +2512,8 @@ int delete_wildcard(char *filename, const char *old, size_t n)
         if (glob(filename, GLOB_NOSORT, NULL, &gg) == 0)
         {   for (i=0; i<gg.gl_pathc; i++)
                 scan_directory(gg.gl_pathv[i], remove_files);
+            globfree(&gg);
         }
-        globfree(&gg);
 #endif
     }
     return 0;
@@ -2482,7 +2846,7 @@ int get_home_directory(char *b, size_t len)
 }
 
 int get_users_home_directory(char *b, size_t len)
-{   len = len;
+{   (void)len;
     strcpy(b, ".");    // use current directory if getpwnam() no available
     return 1;
 }

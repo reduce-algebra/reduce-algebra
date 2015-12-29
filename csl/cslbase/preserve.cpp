@@ -2544,7 +2544,7 @@ void preserve(const char *banner, int len)
 // up.
 //
     preserve_native_code();
-    if (Iopen(NULL, 0, NO, NULL))
+    if (Iopen(NULL, 0, IOPEN_OUT, NULL))
     {   err_printf("+++ PRESERVE failed to open image file\n");
         return;
     }

@@ -3232,7 +3232,7 @@ bool fwinText::processChar(int c, int r, int m)
     }
 // Now I deal with keys that do not have a Unicode translation. I will
 // map them onto codes that are distinguished by having bit 0x80000000 set.
-#define NON_UNICODE 0x80000000U
+#define NON_UNICODE ((int32_t)0x80000000)
     if (c == WXK_NONE)
     {   switch (r)
         {

@@ -1144,6 +1144,7 @@ endif mac_framework
 else !wx
 if mac_framework
 	$(REZ) -t APPL -o csl $(srcdir)/mac.r
+	$(srcdir)/create_old_bundle.sh csl $(srcdir) csl
 endif mac_framework
 
 endif !wx
@@ -1209,6 +1210,7 @@ if mac_framework
 # Rez is now an rather old fashioned way of doing things. With wxWidgets I
 # will replace this with stuff that creates application bundles.
 	$(REZ) -t APPL -o reduce $(srcdir)/mac.r
+	$(srcdir)/create_old_bundle.sh reduce $(srcdir) reduce
 endif mac_framework
 endif !wx
 
@@ -1241,6 +1243,7 @@ endif mac_framework
 else !wx
 if mac_framework
 	$(REZ) -t APPL -o bootstrapreduce $(srcdir)/mac.r
+	$(srcdir)/create_old_bundle.sh bootstrapreduce $(srcdir) reduce
 endif mac_framework
 endif !wx
 if windows
@@ -1795,7 +1798,7 @@ if canrun
 	chmod 664 $(gensrc)/*
 	./reduce$(COM) -w -z -Dno_init_file $(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
-		-- buildlogs/reduce.log \
+		-o- -- buildlogs/reduce.log \
 		-j reduce.dep
 	chmod 664 $(gensrc)/*
 # I copy an image into $(gensrc) with a view to keeping a copy thare that
@@ -1917,7 +1920,7 @@ if canrun
 	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(EXEEXT) -w -z -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
-		-- buildlogs/bootstrapreduce.log \
+		-o- -- buildlogs/bootstrapreduce.log \
 		-j bootstrapreduce.dep
 	chmod 664 $(gensrc)/*
 	if test -f bootstrapreduce.app/Contents/bootstrapreduce.img; \
@@ -2204,7 +2207,7 @@ if canrun
 	echo Building in `pwd`
 	./csl$(COM) -w -v -z "$(CYGSRC)/buildcsl.lsp" \
 		-D@cslbase="$(CYGSRC)" \
-		-- buildlogs/csl.img.log \
+		-o- -- buildlogs/csl.img.log \
 		-j csl.dep
 	if test -f csl.app/Contents/csl.img; \
 	then $(CP) -r csl.app/Contents/csl.img $(gensrc); \

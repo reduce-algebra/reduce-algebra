@@ -49,6 +49,22 @@
 
 /* $Id$ */
 
+// Apple no longer support the FinderLaunch sample code that they
+// published and that explained to me how to open an HTML document
+// programatically. So I will just ignore them an the capability that
+// was once available is no more. If some Apple enthusiast wishes to
+// review this and show how tro restore things that would be nice, but
+// I do not believe me investigating would be a good use of my time.
+//   ACN December 2015
+
+#if 0 && defined __APPLE__
+#define MACINTOSH 1
+#define MAC_FRAMEWORK 1
+#else
+#undef MACINTOSH
+#undef MAC_FRAMEWORK
+#endif
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -2046,7 +2062,13 @@ long FXTerminal::onCmdSelectBrowser(FXObject *c, FXSelector s, void *ptr)
 #endif
 #endif
 
-#if defined MACINTOSH && defined MAC_FRAMEWORK
+#if defined MACINTOSH && defined MAC_FRAMEWORK && 0
+
+// The code FinderLaunch.c as provided by Apple worked a decade ago
+// but Apple have by now removed various system library data types and
+// entrypoints that it uses and it is not at all obvious whether they have
+// published a replacement bit of sample code. So I will just have to
+// disable this.
 
 // The code included here comes from an Apple library, and it has its
 // redistribution rights listed in comments at its top.
