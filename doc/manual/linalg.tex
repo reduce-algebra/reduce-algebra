@@ -1171,7 +1171,7 @@ This means that the c'th column
 \item[Syntax:]\mbox{}\\*
 \texttt{pseudo\_inverse($\mathcal{A}$);}\\[2mm]
 \begin{tabular}{l l l} 
-$\mathcal{A}$ &:-& a matrix.
+$\mathcal{A}$ &:-& a matrix containing only real numeric entries.
 \end{tabular}
 
 \item[Synopsis:]\mbox{}\\*
@@ -1182,9 +1182,9 @@ Given the singular value decomposition of $\mathcal{A}$, i.e: $\mathcal{A} =
 \mathcal{U} 
 \Sigma\mathcal{V}^T$, then the pseudo inverse $\mathcal{A}^{\dagger}$ is defined 
 by $\mathcal{A}^{\dagger} = \mathcal{V} \Sigma^{\dagger} \mathcal{U}^{T}$. For the 
-rectangular diagonal
+diagonal
 matrix $\Sigma$, the pseudoinverse $\Sigma^{\dagger}$ is computed by taking the reciprocal
-of every diagonal element and transposing the resulting matrix.
+of only the nonzero diagonal elements.
 
 If $\mathcal{A}$ is square and non-singular, then $\mathcal{A}^{\dagger} = \mathcal{A}$.
 In general, however,
@@ -1194,7 +1194,7 @@ $\mathcal{A}^{\dagger} \mathcal{A} \mathcal{A}^{\dagger} = \mathcal{A}^{\dagger}
 Perhaps more importantly, $\mathcal{A}^{\dagger}$ solves the following least-squares
 problem: given a rectangular matrix $\mathcal{A}$ and a vector $b$, find the
 $x$ minimizing $\|\mathcal{A}x - b\|_2$, 
-and which, in addition, has minimum $\mathcal{L}_{2}$-Norm, $\|x\|_2$.  
+and which, in addition, has minimum $\ell_{2}$ (euclidean) Norm, $\|x\|_2$.  
 This $x$ is $\mathcal{A}^{\dagger} b$.
 
 \item[Examples:]
@@ -1226,24 +1226,12 @@ $r,c$, limit &:-& positive integers. \\
 \texttt{random\_matrix} creates an $r\times c$ matrix with random entries in the
 range $-\text{limit} < \text{entry} < \text{limit}$.
 
-\ttindextype{IMAGINARY}{switch}
-\ttindextype{NOT\_NEGATIVE}{switch}
-\ttindextype{ONLY\_INTEGER}{switch}
-\ttindextype{SYMMETRIC}{switch}
-\ttindextype{LOWER\_MATRIX}{switch}
-\ttindextype{UPPER\_MATRIX}{switch}
-\index{Switch ! \texttt{IMAGINARY}}
-\index{Switches by package ! LINALG package ! \texttt{IMAGINARY}}
-\index{Switch ! \texttt{NOT\_NEGATIVE}}
-\index{Switches by package ! LINALG package ! \texttt{NOT\_NEGATIVE}}
-\index{Switch ! \texttt{ONLY\_INTEGER}}
-\index{Switches by package ! LINALG package ! \texttt{ONLY\_INTEGER}}
-\index{Switch ! \texttt{SYMMETRIC}}
-\index{Switches by package ! LINALG package ! \texttt{SYMMETRIC}}
-\index{Switch ! \texttt{LOWER\_MATRIX}}
-\index{Switches by package ! LINALG package ! \texttt{LOWER\_MATRIX}}
-\index{Switch ! \texttt{UPPER\_MATRIX}}
-\index{Switches by package ! LINALG package ! \texttt{UPPER\_MATRIX}}
+\ttindexswitch{IMAGINARY}{LINALG}
+\ttindexswitch{NOT\_NEGATIVE}{LINALG}
+\ttindexswitch{ONLY\_INTEGER}{LINALG}
+\ttindexswitch{SYMMETRIC}{LINALG}
+\ttindexswitch{LOWER\_MATRIX}{LINALG}
+\ttindexswitch{UPPER\_MATRIX}{LINALG}
 \item[Switches:]\mbox{}\\*
 \begin{tabular}{l l p{0.685\linewidth}}
 \texttt{imaginary}  &:-& if 
@@ -1382,9 +1370,7 @@ under the linear inequality constraints.
 
 It returns \{optimal value,\{ values of variables at this optimal\}\}.
 
-\ttindextype{FASTSIMPLEX}{switch}
-\index{Switch ! \texttt{FASTSIMPLEX}}
-\index{Switches by package ! LINALG package ! \texttt{FASTSIMPLEX}}
+\ttindexswitch{FASTSIMPLEX}{LINALG}
 The \texttt{\{bounds\}} argument is optional and admissible only when the switch
 \texttt{fastsimplex} is on, which is the default.
 
@@ -1478,35 +1464,47 @@ columns specified in column\_list.
 \item[Syntax:]\mbox{}\\*
 \texttt{svd($\mathcal{A}$);}\\[2mm]
 \begin{tabular}{l l l} 
-$\mathcal{A}$ &:-& a matrix containing only numeric entries.
+$\mathcal{A}$ &:-& a matrix containing only real numeric entries.
 \end{tabular}
 
 \item[Synopsis:]\mbox{}\\*
 \texttt{svd} computes the singular value decomposition of $\mathcal{A}$. 
+If $A$
+is an $m\times n$ real matrix of (column) rank $r$, \texttt{svd} returns the
+3-element list \{$\mathcal{U},\Sigma,\mathcal{V}$\} where $\mathcal{A} =
+\mathcal{U} \Sigma \mathcal{V}^T$. 
 
-It returns the three element list \{$\mathcal{U},\Sigma,\mathcal{V}$\}
-where $\mathcal{A} = \mathcal{U} 
-\Sigma \mathcal{V}^T$ and $\Sigma = diag(\sigma_{1}, \ldots ,\sigma_{n}). \; 
-\sigma_{i}$ for $i= (1 \ldots n)$ are the singular values of $\mathcal{A}$.
-($n$ is the column dimension of $\mathcal{A}$.)
-
-The singular values of $\mathcal{A}$ are the non-negative square roots of 
+Let $k=\min(m,n)$.  Then $U$ is $m\times k$,
+$V$ is $n\times k$, and and $\Sigma = \mbox{diag}(\sigma_{1}, \ldots ,\sigma_{k})$,
+where $\sigma_{i}\ge 0$ are the singular values of $\mathcal{A}$; only $r$ of
+these are non-zero.  The singular values are the non-negative square roots of
 the eigenvalues of $\mathcal{A}^T \mathcal{A}$. 
 
 $\mathcal{U}$ and $\mathcal{V}$ are such that $\mathcal{UU}^T = \mathcal{VV}^T = 
-\mathcal{V}^T \mathcal{V} = \mathcal{I}_n$.
+\mathcal{V}^T \mathcal{V} = \mathcal{I}_k$.
+
+\textbf{Note:} there are a number of different definitions of SVD in the
+literature, in some of which $\Sigma$ is square and $U$ and $V$ rectangular, as
+here, but in others $U$ and $V$ are square, and $\Sigma$ is rectangular.
 
 \item[Examples:]\mbox{}\\*
 \begin{flalign*}
- & \mathcal{Q} = \begin{pmatrix} 1 & 3 \\ -4 & 3 \end{pmatrix} && \\[2mm]
+ & \mathcal{Q} = \begin{pmatrix} 1 & 3 \\ -4 & 3 \\ 3 & 6 \end{pmatrix} && \\[2mm]
  & \begin{aligned}
      \mathtt{svd(\mathcal{Q})} = &
        \left\{ 
-         \begin{pmatrix} 0.289784 & -0.957092 \\ 0.957092 & 0.289784 \end{pmatrix},
-         \begin{pmatrix} 5.149162 & 0 \\ 0 & 2.913094 \end{pmatrix}, \right.  \\
+         \begin{pmatrix} 0.0236042 & 0.419897 \\ -0.969049 & 0.232684 \\ 0.245739 & 0.877237 \end{pmatrix},
+         \begin{pmatrix}  4.83288 & 0 \\ 0 & 7.52618 \end{pmatrix}, \right.  \\
          & \left. \: \; \,
-           \begin{pmatrix} -0.687215 & -0.726453 \\ 0.726453 & -0.687215 \end{pmatrix}
-       \right\}
+           \begin{pmatrix} 0.959473 & 0.281799 \\ - 0.281799 & 0.959473 \end{pmatrix}
+       \right\} \\[2mm]
+      \mathtt{svd(TP(\mathcal{Q}))} = &
+       \left\{ 
+         \begin{pmatrix} 0.959473 & 0.281799 \\ - 0.281799 & 0.959473 \end{pmatrix},
+         \begin{pmatrix}  4.83288 & 0 \\ 0 & 7.52618 \end{pmatrix}, \right.  \\
+         & \left. \: \; \,
+         \begin{pmatrix} 0.0236042 & 0.419897 \\ -0.969049 & 0.232684 \\ 0.245739 & 0.877237 \end{pmatrix}
+       \right\} 
     \end{aligned}
 \end{flalign*}
 \end{description}
@@ -1731,9 +1729,7 @@ kronecker_product(a1,a2);
 \end{description}
 
 \subsection{Fast Linear Algebra}
-\ttindextype{FAST\_LA}{switch}
-\index{Switch ! \texttt{FAST\_LA}}
-\index{Switches by package ! LINALG package ! \texttt{FAST\_LA}}
+\ttindexswitch{FAST\_LA}{LINALG}
 
 By turning the \sw{fast\_la} switch on, the speed of the following 
 functions will be increased:

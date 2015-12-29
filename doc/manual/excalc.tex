@@ -513,8 +513,8 @@ as a translation;
 Exterior forms and vectors may have indices.  On input, the indices
 are given as arguments of the object.  A positive argument denotes a
 superscript and a negative argument a subscript.  On output, the
-indexed quantity is displayed two dimensionally if {\tt NAT} is on.
-\ttindextype{NAT}{flag}
+indexed quantity is displayed two dimensionally if \texttt{NAT} is on.
+\ttindextype{NAT}{switch}
 Indices may be identifiers or numbers.  
 
 \example\index{EXCALC package!example}
@@ -639,11 +639,11 @@ specified index names, or at all.  For this the command
 \ttindextype{NOSUM}{command}
 \hspace*{2em} \k{NOSUM} \s{indexname$_1$}, \ldots;\label{NOSUM}
 
-and the switch {\tt NOSUM} are \ttindextype{NOSUM}{switch}
-available.  The command {\tt NOSUM} has the effect that summation is
+and the switch \texttt{NOSUM} are\ttindexswitch{NOSUM}{EXCALC}
+available.  The command \texttt{NOSUM} has the effect that summation is
 not performed over those indices which had been listed.  The command
-{\tt RENOSUM}\label{RENOSUM} enables summation again.  The switch {\tt
-NOSUM}, if on, inhibits any summation. \ttindextype{RENOSUM}{command}
+{\tt RENOSUM}\label{RENOSUM} enables summation again.  The switch \sw{NOSUM}, 
+if on, inhibits any summation. \ttindextype{RENOSUM}{command}
 
 \label{INDEXSYMMETRIES} \ttindextype{INDEX\_SYMMETRIES}{command}
 It is possible to declare symmetry properties for an indexed quantity by 
@@ -842,7 +842,7 @@ coordinate functions are replaced by the frame basis vectors.
 
 \end{verbatim}
 
-\ttindextype{DISPLAYFRAME}{command} \index{Tracing!EXCALC}\index{EXCALC package!tracing}
+\ttindextype{DISPLAYFRAME}{command} \index{Tracing!EXCALC package}\index{EXCALC package!tracing}
 As a convenience, the frames can be displayed at any point in a program
 by the command {\tt DISPLAYFRAME;}\label{DISPLAYFRAME}.
 

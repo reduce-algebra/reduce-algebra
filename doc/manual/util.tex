@@ -11,7 +11,7 @@ implementations of {\REDUCE} currently available.
 Many versions of {\REDUCE} include a Standard Lisp compiler that is
 automatically loaded on demand.  You should check your system specific
 user guide to make sure you have such a compiler.  To make the compiler
-active, the switch \sw{COMP}\ttindex{COMP} should be turned on.  Any
+active, the switch \sw{COMP}\ttindexswitch{COMP}{} should be turned on.  Any
 further definitions input after this will be compiled automatically.  If
 the compiler used is a derivative version of the original Griss-Hearn
 compiler,
@@ -145,7 +145,7 @@ functions, such as \texttt{AEVAL}.
 \subsection{Usage}
 
 To invoke the cross reference program, the switch \texttt{CREF}
-\ttindex{CREF} is used. \texttt{on cref} causes the cref program to load
+\ttindexswitch{CREF}{} is used. \texttt{on cref} causes the cref program to load
 and the cross-referencing process to begin.  After all the required
 definitions are loaded, \texttt{off cref} will cause the cross-reference
 listing to be produced.  For example, if you wish to cross-reference all
@@ -180,7 +180,7 @@ those macros you require expanded and those you do not.
 
 {\REDUCE} includes a module for printing {\REDUCE} syntax in a standard
 format.  This module is activated by the switch \sw{PRET},
-\ttindex{PRET} which is normally off.
+\ttindexswitch{PRET}{} which is normally off.
 
 Since the system converts algebraic input into an equivalent symbolic form,
 the printing program tries to interpret this as an algebraic expression
@@ -191,9 +191,9 @@ it is formally equivalent.
 
 \hypertarget{switch:MSG}{}
 If you want to prettyprint a whole file, say \texttt{off output,msg;}
-\sw{MSG} and (hopefully) only clean output will result.  Unlike 
-\sw{DEFN},\ttindex{DEFN} input is also evaluated with \sw{PRET}
-\ttindex{PRET} on.
+\sw{MSG}\ttindexswitch{MSG}{} and (hopefully) only clean output will result.  Unlike 
+\sw{DEFN},\ttindexswitch{DEFN}{} input is also evaluated with \sw{PRET}
+\ttindexswitch{PRET}{} on.
 
 \section{Prettyprinting Standard Lisp S-Expressions}\index{Prettyprinting}
 
@@ -203,7 +203,7 @@ purpose is \texttt{PRETTYPRINT}\ttindex{PRETTYPRINT} which takes a Lisp
 expression and prints the formatted equivalent.
 
 Users can also have their {\REDUCE} input printed in this form by use of
-the switch \sw{DEFN}.\ttindex{DEFN} This is in fact a convenient way to
+the switch \sw{DEFN}.\ttindexswitch{DEFN}{} This is in fact a convenient way to
 convert {\REDUCE} (or Rlisp) syntax into Lisp. \texttt{off msg;} will prevent
 warning messages from being printed.
 

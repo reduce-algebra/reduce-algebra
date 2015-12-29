@@ -32,10 +32,10 @@ and \cite{Koepf1}.}
 algorithm for indefinite, and definite summation of
 $q$-hypergeo\-metric terms, respectively.
 
-An expression $a_k$ is called a {\sl $q$-hypergeometric term}, if
+An expression $a_k$ is called a \textsl{$q$-hypergeometric term}, if
 $a_{k}/a_{k-1}$ is a rational function with respect to $q^k$. Most
-$q$-terms are based on the {\sl $q$-shifted factorial} or 
-{\sl qpochhammer}. Other typical $q$-hypergeometric terms are ratios 
+$q$-terms are based on the \textsl{$q$-shifted factorial} or 
+\textsl{qpochhammer}. Other typical $q$-hypergeometric terms are ratios 
 of products of powers, $q$-factorials, $q$-binomial coefficients, and 
 $q$-shifted factorials that are integer-linear in their arguments.
 
@@ -51,10 +51,10 @@ Our package supports the input of the following elementary
 $q$-functions:
 \begin{itemize}
 %
-\item {\verb@qpochhammer(a,q,infinity)@}\[
+\item \texttt{qpochhammer(a,q,infinity)@}\[
 	\qfac{a}{\infty}:= \prod_{j=0}^{\infty}{\left(1-a\,q^j\right)}
 	\]
-\item {\verb@qpochhammer(a,q,k)@} \[
+\item \texttt{qpochhammer(a,q,k)} \[
 	\qfac{a}{k}:= 
          \left\{\begin{array}{ccc}
            \prod_{j=0}^{k-1}{\left(1-a\,q^j\right)} && \mbox{{if} $k>0$ } \\
@@ -62,11 +62,11 @@ $q$-functions:
            \prod_{j=1}^{k}{\left(1-a\,q^{-j}\right)^{-1}} && \mbox{{if} $k<0$ }
          \end{array}\right.
 	\]
-\item {\verb@qbrackets(k,q)@}
+\item  \texttt{qbrackets(k,q)}
 	\[  {}[q,k]:=\frac{q^k-1}{q-1}  \]
-\item {\verb@qfactorial(k,q)@}
+\item  \texttt{qfactorial(k,q)}
 	\[   {}[k]_q!:= \frac{\qfac{q}{k}}{(1-q)^k}  \]
-\item {\verb@qbinomial(n,k,q)@}
+\item  \texttt{qbinomial(n,k,q)}
 	\[  \qbinomial{n}{k}:=
 		\frac{\qfac{q}{n}}{\qfac{q}{k}\cdot\qfac{q}{n-k}} \]
 \end{itemize}
@@ -109,9 +109,9 @@ series} (see e.\,g.\ \cite{GasperRahman}, Chapter 5) that is defined as
 The \textsl{summands} of those generalized $q$-hypergeometric series may
 be entered by
 \begin{itemize}
-	\item {\protect\verb-qphihyperterm({a1,a2,...,a3},{b1,b2,...,b3},q,z,k)-}
+	\item \texttt{qphihyperterm({a1,a2,...,a3},{b1,b2,...,b3},q,z,k)}
 		and
-	\item {\protect\verb-qpsihyperterm({a1,a2,...,a3},{b1,b2,...,b3},q,z,k)-}
+	\item \texttt{qpsihyperterm({a1,a2,...,a3},{b1,b2,...,b3},q,z,k)}
 \end{itemize}
 respectively.
 
@@ -263,14 +263,15 @@ The QSUM package must be loaded by:
 The \texttt{qgosper} operator is an implementation of the $q$-Gosper
 algorithm.
 \begin{itemize}
-	\item {\verb@qgosper(a,q,k)@} determines a $q$-hypergeometric
-		antidifference. (By default it returns a {\sl downward}
+	\item \texttt{qgosper(a,q,k)} determines a $q$-hypergeometric
+		antidifference. (By default it returns a \textsl{downward}
 		antidifference, which may be changed by the switch 
-		{\verb@qgosper_down@}; see also 
+		\sw{qgosper\_down}; see also 
+                \ttindexswitch{QGOSPER\_DOWN}{QSUM}
 		\S~\ref{switches}.)
 		If it does not return a \textsl{q}-hypergeometric antidifference,
 		then such an antidifference does not exist.
-	\item {\verb@qgosper(a,q,k,m,n)@} determines a closed formula
+	\item \texttt{qgosper(a,q,k,m,n)} determines a closed formula
 		for the definite sum $\sum\limits_{k=m}^n a_k$ using the
 		$q$-analogue of Gosper's algorithm. 
 		This is only successful if \textsl{q}-Gosper's algorithm applies.
@@ -348,18 +349,18 @@ If successful the left hand side of the recurrence equation
 (\ref{holonomic_recurrence}) is returned.
 
 There are three different ways to pass a summand $\fcn{f}{n,k}$
-to {\verb@qsumrecursion@}:
+to \f{qsumrecursion}:
 %
 \begin{itemize}
-	\item {\verb@qsumrecursion(f,q,k,n)@}, where \texttt{f} is a
+	\item \texttt{qsumrecursion(f,q,k,n)}, where \texttt{f} is a
 		$q$-hypergeometric term wrt. \texttt{k} and \texttt{n},
 		\texttt{k} is the summation variable and \texttt{n} the recursion
 		variable, \texttt{q} is a symbol.
-	\item {\verb@qsumrecursion(upper,lower,q,z,n)@} is a shortcut for \\
-		{\verb@qsumrecursion(qphihyperterm(upper,lower,q,z,k),q,k,n)@}
-	\item {\verb@qsumrecursion(f,upper,lower,q,z,n)@} is a similar 
+	\item \texttt{qsumrecursion(upper,lower,q,z,n)} is a shortcut for \\
+		\texttt{qsumrecursion(qphihyperterm(upper,lower,q,z,k),q,k,n)}
+	\item \texttt{qsumrecursion(f,upper,lower,q,z,n)} is a similar 
 		shortcut for\\
-		{\verb@qsumrecursion(f*qphihyperterm(upper,lower,q,z,k),q,k,n)@},
+		\texttt{qsumrecursion(f*qphihyperterm(upper,lower,q,z,k),q,k,n)},
 \end{itemize}
 %
 i.\,e.\ \texttt{upper} and \texttt{lower} are lists of upper and lower
@@ -379,12 +380,12 @@ For all three instances the following variations are allowed:
 
 		By default \texttt{qsumrecursion} will search for recurrences
 		of order from 1 to 5. (The global variable 
-		{\verb@qsumrecursion_recrange!*@} controls this behavior,
+		\texttt{qsumrecursion\_recrange!*} controls this behavior,
 		see \S~\ref{switches}.)
 	\item Usually \texttt{qsumrecursion} uses \texttt{summ} as a name
 		for the $\mathrm{summ}$-function defined above. If you want
 		to use another operator, say e.\,g. \texttt{s}, then the
-		following syntax applies: {\verb@qsumrecursion(f,q,k,s(n))@}
+		following syntax applies: \texttt{qsumrecursion(f,q,k,s(n))}
 \end{itemize}
 
 As a first example we want to consider the {\sl q-binomial theorem}:
@@ -413,10 +414,10 @@ summand is zero for all $k>n$ as $\qfac{q^{-n}}{k}=0$ and
 the $\qfac{q}{k}$-term in the denominator makes the summand
 vanish for all $k<0$.
 
-\ttindextype{QSUMRECURSION\_CERTIFICATE}{switch}
-With the switch \verb@qsumrecursion_certificate@ it is possible
+\ttindexswitch{QSUMRECURSION\_CERTIFICATE}{QSUM}
+With the switch \sw{qsumrecursion\_certificate} it is possible
 to get the antidifference $g_k$ described above. When switched
-on, \verb@qsumrecursion@ returns a list with five entries,
+on, \f{qsumrecursion} returns a list with five entries,
 see \S~\ref{switches}. For the
 last example we get:
 
@@ -450,12 +451,12 @@ proof := { - ((q  - z)*summ(n - 1) - q *summ(n)),
 \end{redoutput}
 %
 \\[-2.5ex]\noindent{}
-Let's define the list entries as \verb@{rec,cert,f,k,dir}@. If you
-substitute $\fcn{summ}{n+j}$ by $\fcn{f}{n+j,k}$ in \verb@rec@ then
+Let's define the list entries as \texttt{\{rec,cert,f,k,dir\}}. If you
+substitute $\fcn{summ}{n+j}$ by $\fcn{f}{n+j,k}$ in \texttt{rec} then
 you obtain the left hand side of equation (\ref{eq:f_n_k-recursion}),
-where \verb@f@ is the input summand. The function
-$\fcn{g}{k}:=\verb@f*cert@$ is the corresponding
-antidifference, where \verb@dir@ states which sort of antidifference
+where \texttt{f} is the input summand. The function
+$\fcn{g}{k}:=\text{\texttt{f*cert}}$ is the corresponding
+antidifference, where \texttt{dir} states which sort of antidifference
 was calculated \texttt{downward\_antidifference} or 
 \texttt{upward\_antidifference}, see also \S~\ref{switches}.
 Those informations enable you to prove the recurrence equation for
@@ -580,7 +581,8 @@ polynomials.
 \redprompt off qsum_nullspace;
 \end{alltt}}
 
-The setting of {\verb@qsum_nullspace@} 
+The setting of \sw{qsum\_nullspace} 
+\ttindexswitch{QSUM\_NULLSPACE}{QSUM}
 (see \cite{Paule1} and \S~\ref{switches})
 results in a faster
 calculation of the recurrence equation for this example.
@@ -599,11 +601,11 @@ An essential step in the algorithms introduced above is to decide
 whether a term $a_k$ is $q$-hypergeometric, i.\,e.\ if the
 ratio $a_{k}/a_{k-1}$ is rational in $q^k$.
 
-The procedure \verb@qsimpcomb@ provides this facility. It tries to
+The procedure \texttt{qsimpcomb} provides this facility. It tries to
 simplify all exponential expressions in the given term and applies
 some transformation rules to the known elementary $q$-functions
-as \verb@qpochhammer@, \verb@qbrackets@, \verb@qbinomial@
-and \verb@qfactorial@. Note that the procedure may fail to
+as \texttt{qpochhammer}, \texttt{qbrackets}, \texttt{qbinomial}
+and \texttt{qfactorial}. Note that the procedure may fail to
 completely simplify some expressions. This is due to the fact that the
 procedure was designed to simplify ratios of $q$-hypergeometric
 terms in the form $\fcn{f}{k}/\fcn{f}{k-1}$ and not arbitrary 
@@ -616,15 +618,15 @@ is not recognized as 1, despite the transformation formula
 which is valid for $n\in\mathbb{N}$.
 
 Note that due to necessary simplification of powers, the switch
-\verb@precise@ is (locally) turned off in \verb@qsimpcomb@. This
+\sw{precise} is (locally) turned off in \texttt{qsimpcomb}. This
 might produce wrong results if the input term contains 
 e.\,g.\ complex variables.
 
 The following synomyms may be used:
 \begin{itemize}
-	\item \verb@up_qratio(f,k)@ or \verb@qratio(f,k)@ for
-		\verb@qsimpcomb(sub(k=k+1,f)/f)@ and
-	\item \verb@down_qratio(f,k)@ for \verb@qsimpcomp(f/sub(k=k-1,f))@.
+	\item \texttt{up\_qratio(f,k)} or \texttt{qratio(f,k)} for
+		\texttt{qsimpcomb(sub(k=k+1,f)/f)} and
+	\item \texttt{down\_qratio(f,k)} for \texttt{qsimpcomp(f/sub(k=k-1,f))}.
 \end{itemize}
 
 % ----------------------------------------------------------------------
@@ -632,51 +634,51 @@ The following synomyms may be used:
 \subsection{Global Variables and Switches}
 \label{switches}
 
-\ttindextype{QSUM\_TRACE}{switch}
-\ttindextype{QGOSPER\_DOWN}{switch}
-\ttindextype{QSUMRECURSION\_DOWN}{switch}
-\ttindextype{QSUM\_NULLSPACE}{switch}
-\ttindextype{QGOSPER\_SPECIALSOL}{switch}
-\ttindextype{QSUMRECURSION\_EXP}{switch}
-\ttindextype{QSUMRECURSION\_CERTIFICATE}{switch}
+\ttindexswitch{QSUM\_TRACE}{QSUM}
+\ttindexswitch{QGOSPER\_DOWN}{QSUM}
+\ttindexswitch{QSUMRECURSION\_DOWN}{QSUM}
+\ttindexswitch{QSUM\_NULLSPACE}{QSUM}
+\ttindexswitch{QGOSPER\_SPECIALSOL}{QSUM}
+\ttindexswitch{QSUMRECURSION\_EXP}{QSUM}
+\ttindexswitch{QSUMRECURSION\_CERTIFICATE}{QSUM}
 \ttindex{DOWNWARD\_ANTIDIFFERENCE}\ttindex{UPWARD\_ANTIDIFFERENCE}
 The following switches can be used in connection with
 the \texttt{QSUM} package:
 %
 \begin{itemize}
-	\item \verb@qsum_trace@, default setting is off. If it is
+	\item \sw{qsum\_trace}, default setting is off. If it is
 		turned on some intermediate results are printed.
-	\item \verb@qgosper_down@, default setting is on. It determines
-		whether \verb@qgosper@ returns a downward or an upward
+	\item \sw{qgosper\_down}, default setting is on. It determines
+		whether \texttt{qgosper} returns a downward or an upward
 		antidifference $g_k$ for the input term $a_k$,
 	   i.\,e.\ $a_k=g_k-g_{k-1}$ or $a_k=g_{k+1}-g_k$ respectively.
-	\item \verb@qsumrecursion_down@, default setting is on. If it is
+	\item \sw{qsumrecursion\_down}, default setting is on. If it is
 		switched on a downward recurrence equation will be returned by
-		\verb@qsumrecursion@. Switching it off leads to an upward
+		\texttt{qsumrecursion}. Switching it off leads to an upward
 		recurrence equation.
-	\item \verb@qsum_nullspace@, default setting is off. The 
+	\item \sw{qsum\_nullspace}, default setting is off. The 
 		antidifference $\fcn{g}{k}$ is always a rational multiple (in $q^k$)
-		of the input term $\fcn{f}{k}$. \verb@qgosper@ and \verb@qsumrecursion@
+		of the input term $\fcn{f}{k}$. \texttt{qgosper} and \texttt{qsumrecursion}
 		determine this certificate, which requires solving a set of
-		linear equations. If the switch \verb@qsum_nullspace@ is
+		linear equations. If the switch \sw{qsum\_nullspace} is
 		turned on a modified nullspace-algorithm will be used for
 		solving those equations. In general this method is slower.
 		However if the resulting recurrence equation is quite complicated
-		it might help to switch on \verb@qsum_nullspace@.
+		it might help to switch on \sw{qsum\_nullspace}.
 		See also \cite{Knuth} and \cite{Paule1}.
-	\item \verb@qgosper_specialsol@, default setting is on. The
+	\item \sw{qgosper\_specialsol}, default setting is on. The
 		antidifference $\fcn{g}{k}$ which is determined by 
-		\verb@qgosper@ might not be unique. If this switch is turned on,
+		\texttt{qgosper} might not be unique. If this switch is turned on,
 		just one special solution is returned. If you want
 		to see all solutions, you should turn the switch off.
-	\item \verb@qsumrecursion_exp@, default setting is off. This
+	\item \sw{qsumrecursion\_exp}, default setting is off. This
 		switch determines if the coefficients of the
 		resulting recurrence equation should
 		be factored. Turning it off might speed up the calculation
 		(if factoring is complicated). Note that
-		when turning on \verb@qsum_nullspace@ usually no speedup
-		occurs by switching \verb@qsumrecursion_exp@ on.
-	\item \verb@qsumrecursion_certificate@, default off. 
+		when turning on \sw{qsum\_nullspace} usually no speedup
+		occurs by switching \sw{qsumrecursion\_exp} on.
+	\item \sw{qsumrecursion\_certificate}, default off. 
 		As Zeilberger's algorithm 
 		delivers a recurrence equation for a $q$-hypergeometric term
 		$\mathrm{f}(n,k)$, see equation (\ref{eq:f_n_k-recursion}),
@@ -685,28 +687,28 @@ the \texttt{QSUM} package:
 
 		If it is set on, instead of simply returning the 
 		resulting recurrence equation (for the sum)---if one 
-		exists---\verb@qsumrecursion@  returns 
-		a list \verb@{rec,cert,f,k,dir}@ with
+		exists---\texttt{qsumrecursion} returns 
+		a list \texttt{\{rec,cert,f,k,dir\}} with
 		five items: The first entry contains the
 		recurrence equation, while the other items enable you to
 		prove the recurrence a posteriori by rational arithmetic.
 
-		If we denote by \verb@r@ the recurrence
-		\verb@rec@ where we substituted the \verb@summ@-function
+		If we denote by \texttt{r} the recurrence
+		\texttt{rec} where we substituted the \verb@summ@-function
 		by the input term \verb@f@ (with the corresponding shifts
-		in \verb@n@) then the following equation is valid:
-		\[  \verb@r = cert*f - sub(k=k-1,cert*f)@  \]
+		in \texttt{n}) then the following equation is valid:
+		\[  \texttt{r = cert*f - sub(k=k-1,cert*f)}  \]
 		or
-		\[  \verb@r = sub(k=k+1,cert*f) - cert*f@  \]
-		if \verb@dir=downward_antidifference@ or
-		\verb@dir=upward_antidifference@ respectively.
+		\[  \texttt{r = sub(k=k+1,cert*f) - cert*f}  \]
+		if \texttt{dir=downward\_antidifference} or
+		\texttt{dir=upward\_antidifference} respectively.
 \end{itemize}
 
-The global variable \verb@qsumrecursion_recrange!*@ controls for
-which recursion orders the procedure \verb@qsumrecursion@ looks.
+The global variable \var{qsumrecursion\_recrange!*} controls for
+which recursion orders the procedure \texttt{qsumrecursion} looks.
 It has to be a list with two entries, the first one representing
 the lowest and the second one the highest order of a recursion
-to search for. By default it is set to \verb@{1,5}@.
+to search for. By default it is set to \texttt{\{1,5\}}.
 
 % ----------------------------------------------------------------------
 
@@ -715,39 +717,39 @@ to search for. By default it is set to \verb@{1,5}@.
 The following messages may occur:
 \begin{itemize}
 %
-	\item If your call to \verb@qgosper@ or \verb@qsumrecursion@
+	\item If your call to \texttt{qgosper} or \texttt{qsumrecursion}
 		reveals some incorrect syntax, e.\,g.\ wrong number of 
 		arguments or wrong type you may receive the following messages:
 		\begin{verbatim}***** Wrong number of arguments.\end{verbatim}
 		or
 		\begin{verbatim}***** Wrong type of arguments.\end{verbatim}
 %
-	\item If you call \verb@qgosper@ with a summand term that
+	\item If you call \texttt{qgosper} with a summand term that
 		is free of the summation variable you get
 		\begin{verbatim}
 			WARNING: Summand is independent of summation variable.
 			***** No q-hypergeometric antidifference exists.
 		\end{verbatim}
 %
-%	\item It is not allowed to specify bounds in \verb@qgosper@ which
+%	\item It is not allowed to specify bounds in \\texttt{qgosper} which
 %		contain the summation variable. Otherwise you get the message:
 %		\begin{verbatim}
 %		***** Summation bounds contain the summation variable. 
 %		\end{verbatim}
 %
-	\item If \verb@qgosper@ finds no antidifference it returns:
+	\item If \texttt{qgosper} finds no antidifference it returns:
 		\begin{verbatim}
 		***** No q-hypergeometric antidifference exists.
 		\end{verbatim}
 %
-	\item If \verb@qsumrecursion@ finds no recursion in the specified
+	\item If \texttt{qsumrecursion} finds no recursion in the specified
 		range it returns:
 		\begin{verbatim}***** Found no recursion. Use higher order.\end{verbatim}
-		(If you do not pass a range as an argument to \verb@qsumrecursion@
-		the default range in \verb@qsumrecursion_recrange!*@ will be used.)
+		(If you do not pass a range as an argument to \texttt{qsumrecursion}
+		the default range in \texttt{qsumrecursion\_recrange!*} will be used.)
 %
-	\item If the input term passed to \verb@qgosper@ 
-		(\verb@qsumrecursion@) is not $q$-hyper\-geometric wrt.\ the 
+	\item If the input term passed to \texttt{qgosper}
+		(\texttt{qsumrecursion}) is not $q$-hyper\-geometric wrt.\ the 
 		summation variable --- say $k$ --- (and the recursion variable) 
 		then you get
 		\begin{verbatim}
@@ -755,10 +757,10 @@ The following messages may occur:
 		\end{verbatim}
 		With all the examples we tested, our procedures decided properly
 		whether the input term was $q$-hypergeometric or not. However, we
-		cannot guarantee in general that \verb@qsimpcomb@ {\sl always} returns
-		an expression that {\sl looks} rational in $q^k$ if it actually is.
+		cannot guarantee in general that \texttt{qsimpcomb} \emph{always} returns
+		an expression that \emph{looks} rational in $q^k$ if it actually is.
 %
-	\item If the global variable \verb@qsumrecursion_recrange!*@ was
+	\item If the global variable \var{qsumrecursion\_recrange!*} was
 		assigned an invalid value:
 		\begin{verbatim}
 		Global variable qsumrecursion_recrange!* must be a list

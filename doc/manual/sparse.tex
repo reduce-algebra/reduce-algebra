@@ -1142,12 +1142,31 @@ This means that the c'th column
 \item[Syntax:]\mbox{}\\*
 \texttt{sppseudo\_inverse($\mathcal{A}$);}\\[2mm]
 \begin{tabular}{l l l} 
-$\mathcal{A}$ &:-& a sparse matrix.
+$\mathcal{A}$ &:-& a sparse matrix containing only real numeric entries.
 \end{tabular}
 
 \item[Synopsis:]\mbox{}\\*
 \texttt{sppseudo\_inverse}, also known as the Moore-Penrose inverse, computes
 the pseudo inverse of $\mathcal{A}$. 
+
+Given the singular value decomposition of $\mathcal{A}$, i.e: $\mathcal{A} = 
+\mathcal{U} 
+\Sigma\mathcal{V}^T$, then the pseudo inverse $\mathcal{A}^{\dagger}$ is defined 
+by $\mathcal{A}^{\dagger} = \mathcal{V} \Sigma^{\dagger} \mathcal{U}^{T}$. For the 
+diagonal
+matrix $\Sigma$, the pseudoinverse $\Sigma^{\dagger}$ is computed by taking the reciprocal
+of only the nonzero diagonal elements.
+
+If $\mathcal{A}$ is square and non-singular, then $\mathcal{A}^{\dagger} = \mathcal{A}$.
+In general, however,
+$\mathcal{A} \mathcal{A}^{\dagger} \mathcal{A} = \mathcal{A}$, and
+$\mathcal{A}^{\dagger} \mathcal{A} \mathcal{A}^{\dagger} = \mathcal{A}^{\dagger}$.
+
+Perhaps more importantly, $\mathcal{A}^{\dagger}$ solves the following least-squares
+problem: given a rectangular matrix $\mathcal{A}$ and a vector $b$, find the
+$x$ minimizing $\|\mathcal{A}x - b\|_2$, 
+and which, in addition, has minimum $\ell_{2}$ (euclidean) Norm, $\|x\|_2$.  
+This $x$ is $\mathcal{A}^{\dagger} b$.
 
 \item[Examples:]\mbox{}\\*
 \begin{flalign*}
@@ -1327,16 +1346,29 @@ columns specified in column\_list.
 \item[Syntax:]\mbox{}\\*
 \texttt{spsvd($\mathcal{A}$);}\\[2mm]
 \begin{tabular}{l l l} 
-$\mathcal{A}$ &:-& a sparse matrix containing only numeric entries.
+$\mathcal{A}$ &:-& a sparse matrix containing only real numeric entries.
 \end{tabular}
 
 \item[Synopsis:]\mbox{}\\*
 \texttt{spsvd} computes the singular value decomposition of $\mathcal{A}$. 
 
-It returns \{$\mathcal{U},\Sigma,\mathcal{V}$\} where $\mathcal{A} = \mathcal{U} 
-\Sigma \mathcal{V}^T$ and $\Sigma = diag(\sigma_{1}, \ldots ,\sigma_{n}). \; 
-\sigma_{i}$ for $i= (1 \ldots n)$ are the singular values of $\mathcal{A}$.
-($n$ is the column dimension of $\mathcal{A}$.)
+If $A$
+is an $m\times n$ real matrix of (column) rank $r$, \texttt{svd} returns the
+3-element list \{$\mathcal{U},\Sigma,\mathcal{V}$\} where $\mathcal{A} =
+\mathcal{U} \Sigma \mathcal{V}^T$. 
+
+Let $k=\min(m,n)$.  Then $U$ is $m\times k$,
+$V$ is $n\times k$, and and $\Sigma = \mbox{diag}(\sigma_{1}, \ldots ,\sigma_{k})$,
+where $\sigma_{i}\ge 0$ are the singular values of $\mathcal{A}$; only $r$ of
+these are non-zero.  The singular values are the non-negative square roots of
+the eigenvalues of $\mathcal{A}^T \mathcal{A}$. 
+
+$\mathcal{U}$ and $\mathcal{V}$ are such that $\mathcal{UU}^T = \mathcal{VV}^T = 
+\mathcal{V}^T \mathcal{V} = \mathcal{I}_k$.
+
+\textbf{Note:} there are a number of different definitions of SVD in the
+literature, in some of which $\Sigma$ is square and $U$ and $V$ rectangular, as
+here, but in others $U$ and $V$ are square, and $\Sigma$ is rectangular.
 
 \item[Examples:]\mbox{}\\*
 \begin{flalign*}
@@ -1445,9 +1477,7 @@ $\mathcal{A}$ &:-& a matrix.
 
 
 \subsection{Fast Linear Algebra}
-\ttindextype{FAST\_LA}{switch}
-\index{Switch ! \texttt{FAST\_LA}}
-\index{Switches by package ! SPARSE package ! \texttt{FAST\_LA}}
+\ttindexswitch{FAST\_LA}{SPARSE}
 
 By turning the \sw{fast\_la} switch on, the speed of the following 
 functions will be increased:

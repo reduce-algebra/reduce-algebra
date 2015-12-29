@@ -399,8 +399,8 @@ If 2 PHYSOPs have been declared noncommutative using the (redefined)
 \f{NONCOM} statement, it is possible to introduce in the environment
 \underline{elementary} (anti-) commutation relations between them. For
 this purpose,
-2 \underline{scalar} operators \f{COMM} \ttindex{COMM} and
-\f{ANTICOMM} \ttindex{ANTICOMM} are available.
+2 \underline{scalar} operators \f{COMM} \ttindextype{COMM}{operator} and
+\f{ANTICOMM} \ttindextype{ANTICOMM}{operator} are available.
 These operators are used in conjunction with \f{LET} statements.
 Example: \\
 
@@ -433,8 +433,8 @@ A*B;
 so that the user may introduce the commutation relation later on.
 
 The user may want to force the system to look for
-\underline{anticommutators} only; for this purpose a switch \f{ANTICOM}
-\ttindex{ANTICOM}
+\underline{anticommutators} only; for this purpose a switch \sw{ANTICOM}
+\ttindexswitch{ANTICOM}{PHYSOP}
 is defined which has to be turned on ( \f{ANTICOM} is normally set to
 \f{OFF}). In this case, the above example is replaced by: \\
 

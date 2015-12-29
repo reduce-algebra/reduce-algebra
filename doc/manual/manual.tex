@@ -118,6 +118,19 @@
                               \else
                                 \index{#1 #2@\texttt{#1} #2}%
                               \fi}}
+\newcommand{\ttindexswitch}[2]{{%
+       \renewcommand{\_}{\protect\underscore}%
+       \renewcommand{\|}{\protect\textbar}%
+       \index{#1 switch@\texttt{#1} switch}%
+       \index{Switch ! #1@\texttt{#1}}%
+       \def\blubber{#2}%
+       \ifx\blubber\empty
+         \def\blubber{\index{Switches by package ! 000@REDUCE Core ! #1@\texttt{#1}}}%
+       \else
+         \def\blubber{\index{Switches by package ! #2 package ! #1@\texttt{#1}}}%
+       \fi
+       \blubber}}
+
 \newcommand{\COMPATNOTE}{{\em Compatibility Note:\ }}
 % \meta{...} is an alternative sentential form in descriptions using \it.
 \newcommand{\meta}[1]{\mbox{$\langle$\textit{#1}$\rangle$}}

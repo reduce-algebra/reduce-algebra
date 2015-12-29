@@ -382,21 +382,6 @@ true
 \end{verbatim}
 
 
-\subsection{Installation}
-
-The source file {\tt sets.red} can be read into REDUCE when required
-using {\tt IN}.  If the ``professional'' version is being used this
-should be done with {\tt ON COMP} set, but it is much better to
-compile the code as a {\tt FASL} file using {\tt FASLOUT} and then
-load it with {\tt LOAD\_PACKAGE} (or {\tt LOAD}).  See the REDUCE
-manual and implementation-specific guide for further details.
-
-This package has to redefine the REDUCE internal procedure {\tt
-mk!*sq} and a warning about this can be expected and ignored.  I
-believe (and hope!) that this redefinition is safe and will not have
-any unexpected consequences for the rest of REDUCE.
-
-
 \subsection{Possible future developments}
 
 \begin{itemize}

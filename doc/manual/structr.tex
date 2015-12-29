@@ -44,7 +44,7 @@ any way.  For example, the expression \texttt{cos(2*x+2*y)} will normally be
 returned in the same form.  If the argument \texttt{2*x+2*y} were evaluated
 at the top level, however, it would be printed as \texttt{2*(X+Y)}.  If it is
 desirable to have the arguments themselves in a similar form, the switch
-\texttt{INTSTR}\ttindex{INTSTR} (for ``internal structure''), if on, will
+\texttt{INTSTR}\ttindexswitch{INTSTR}{} (for ``internal structure''), if on, will
 cause this to happen.
 
 In cases where the arguments of the kernel operators may be reordered, the
@@ -135,7 +135,7 @@ comprehensible and possibly pleasing form.
 \hypertarget{switch:OUTPUT}{}
 The most extreme option offered is to suppress the output entirely from
 any top level evaluation.  This is accomplished by turning off the switch
-\sw{OUTPUT}\ttindex{OUTPUT} which is normally on.  It is useful for
+\sw{OUTPUT}\ttindexswitch{OUTPUT}{} which is normally on.  It is useful for
 limiting output when loading large files or producing ``clean'' output from
 the prettyprint programs.
 
@@ -165,7 +165,7 @@ for controlling output formats. It should be noted, however, that the
 transformation of large expressions to produce these varied output formats
 can take a lot of computing time and space. If a user wishes to speed up
 the printing of the output in such cases, he can turn off the switch 
-\sw{PRI}\ttindex{PRI}. If this is done, then output is produced in one fixed
+\sw{PRI}\ttindexswitch{PRI}{}. If this is done, then output is produced in one fixed
 format, which basically reflects the internal form of the expression, and
 none of the options below apply. \sw{PRI} is normally on.
 
@@ -244,9 +244,7 @@ The relevant switches are as follows:
 
 \subsubsection{ALLFAC Switch}
 \hypertarget{switch:ALLFAC}{}
-\ttindextype{ALLFAC}{switch}
-\index{Switch ! \texttt{ALLFAC}}
-\index{Switches by package ! 000@REDUCE Core ! \texttt{ALLFAC}}
+\ttindexswitch{ALLFAC}{}
 
 This switch will cause the system to search the whole expression, or any
 sub-expression enclosed in parentheses, for simple multiplicative factors
@@ -267,9 +265,7 @@ where otherwise stated.
 
 \subsubsection{DIV Switch}\ttindex{DIV}
 \hypertarget{switch:DIV}{}
-\ttindextype{DIV}{switch}
-\index{Switch ! \texttt{DIV}}
-\index{Switches by package ! 000@REDUCE Core ! \texttt{DIV}}
+\ttindexswitch{DIV}{}
 
 This switch makes the system search the denominator of an expression for
 simple factors that it divides into the numerator, so that rational
@@ -283,9 +279,7 @@ expression would print as
 
 \subsubsection{LIST Switch}\ttindex{LIST}
 \hypertarget{switch:LIST}{}
-\ttindextype{LIST}{switch}
-\index{Switch ! \texttt{LIST}}
-\index{Switches by package ! 000@REDUCE Core ! \texttt{LIST}}
+\ttindexswitch{LIST}{}
 
 This switch causes the system to print each term in any sum on a separate
 line. With \sw{LIST} on, our expression prints as
@@ -304,9 +298,7 @@ line. With \sw{LIST} on, our expression prints as
 
 \subsubsection{NOSPLIT Switch}\ttindex{NOSPLIT}
 \hypertarget{switch:NOSPLIT}{}
-\ttindextype{NOSPLIT}{switch}
-\index{Switch ! \texttt{NOSPLIT}}
-\index{Switches by package ! 000@REDUCE Core ! \texttt{NOSPLIT}}
+\ttindexswitch{NOSPLIT}{}
 
 Under normal circumstances, the printing routines try to break an expression
 across lines at a natural point.  This is a fairly expensive process.  If
@@ -316,9 +308,7 @@ can speed up the printing of expressions by turning off the switch
 
 \subsubsection{RAT Switch}\ttindex{RAT}
 \hypertarget{switch:RAT}{}
-\ttindextype{RAT}{switch}
-\index{Switch ! \texttt{RAT}}
-\index{Switches by package ! 000@REDUCE Core ! \texttt{RAT}}
+\ttindexswitch{RAT}{}
 
 This switch is only useful with expressions in which variables are
 factored with \texttt{FACTOR}. With this mode, the overall denominator of the
@@ -352,9 +342,7 @@ off we retrieve the original structure
 
 \subsubsection{RATPRI Switch}\ttindex{RATPRI}
 \hypertarget{switch:RATPRI}{}
-\ttindextype{RATPRI}{switch}
-\index{Switch ! \texttt{RATPRI}}
-\index{Switches by package ! 000@REDUCE Core ! \texttt{RATPRI}}
+\ttindexswitch{RATPRI}{}
 
 If the numerator and denominator of an expression can each be printed in
 one line, the output routines will print them in a two dimensional
@@ -370,9 +358,7 @@ form.
 
 \subsubsection{REVPRI Switch}\ttindex{REVPRI}
 \hypertarget{switch:REVPRI}{}
-\ttindextype{REVPRI}{switch}
-\index{Switch ! \texttt{REVPRI}}
-\index{Switches by package ! 000@REDUCE Core ! \texttt{REVPRI}}
+\ttindexswitch{REVPRI}{}
 
 The normal ordering of terms in output is from highest to lowest power.
 In some situations (e.g., when a power series is output), the opposite
@@ -506,9 +492,7 @@ command, is as follows:
 
 \subsection{Suppression of Zeros}
 \hypertarget{switch:NERO}{}
-\ttindextype{NERO}{switch}
-\index{Switch ! \texttt{NERO}}
-\index{Switches by package ! 000@REDUCE Core ! \texttt{NREO}}
+\ttindexswitch{NERO}{}
 
 It is sometimes annoying to have zero assignments (i.e. assignments of the
 form \texttt{<expression> := 0}) printed, especially in printing large arrays
@@ -531,9 +515,7 @@ compatible files for numerical processing.
 
 \hypertarget{reserved:CARD_NO}{}
 \hypertarget{switch:FORT}{}
-\ttindextype{FORT}{switch}
-\index{Switch ! \texttt{FORT}}
-\index{Switches by package ! 000@REDUCE Core ! \texttt{FORT}}
+\ttindexswitch{FORT}{}
 First, when the switch \sw{FORT}\ttindex{FORT} is on, the system will
 print expressions in a FORTRAN notation.  Expressions begin in column
 seven.  If an expression extends over one line, a continuation mark (.)
@@ -642,11 +624,11 @@ The width of the output expression is also adjustable by the assignment
 
 {\REDUCE} automatically inserts a decimal point after each isolated integer
 coefficient in a FORTRAN expression (so that, for example, 4 becomes
-\texttt{4.} ). To prevent this, set the \sw{PERIOD}\ttindex{PERIOD}
+\texttt{4.} ). To prevent this, set the \sw{PERIOD}\ttindexswitch{PERIOD}{}
 mode switch to \texttt{OFF}.
 
 FORTRAN output is normally produced in lower case.  If upper case is desired,
-the switch \texttt{FORTUPPER}\ttindex{FORTUPPER} should be turned on.
+the switch \texttt{FORTUPPER}\ttindexswitch{FORTUPPER}{} should be turned on.
 
 \hypertarget{operator:VARNAME}{}
 Finally, the default name \texttt{ANS} assigned to an unnamed expression and
@@ -669,7 +651,7 @@ output files are explained elsewhere. However, we see in the examples on
 output of expressions that the standard ``natural'' method of printing
 expressions is not compatible with the input syntax. So to print the
 expression in an input compatible form we must inhibit this natural style
-by turning off the switch \sw{NAT}.\ttindex{NAT} If this is done, a
+by turning off the switch \sw{NAT}.\ttindexswitch{NAT}{} If this is done, a
 dollar sign will also be printed at the end of the expression.
 
 \textit{Example:}
@@ -816,7 +798,7 @@ the coefficient independent of \texttt{VAR} first.
 Under normal circumstances, an error results if \texttt{EXPRN} is not a
 polynomial in \texttt{VAR}, although the coefficients themselves can be
 rational as long as they do not depend on \texttt{VAR}.  However, if the
-switch \sw{RATARG}\ttindex{RATARG} is on, denominators are not checked for
+switch \sw{RATARG}\ttindexswitch{RATARG}{} is on, denominators are not checked for
 dependence on \texttt{VAR}, and are taken to be part of the coefficients.
 
 \textit{Example:}
