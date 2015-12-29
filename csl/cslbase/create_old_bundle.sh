@@ -1,13 +1,16 @@
 #! /bin/bash
 
 # Usage:
-#   $srcdir/create_bundle.sh name srcdir ?icon
+#   $srcdir/create_old_bundle.sh name srcdir ?icon
 #
 # Sets up name.app with a proper Info.plist etc for use with MacOSX.
 # This copies in an icon, and arg2 (if present) specifies its identity
 # as an .icns file in $srcdir
+#
+# This is for the older FOX-based version of Reduce
+#
 
-echo TRACE: create_bundle.sh $*
+echo TRACE: create_old_bundle.sh $*
 
 P=$1.app/Contents/Info.plist
 srcdir=$2
@@ -19,29 +22,9 @@ mkdir -p $1.app/Contents/MacOS
 mkdir -p $1.app/Contents/Resources
 mkdir -p $1.app/Contents/Resources/Fonts
 F="$1.app/Contents/Resources/Fonts"
-cp $srcdir/wxfonts/STIX*.pdf                     $F
-cp $srcdir/wxfonts/*.ttf                         $F
-cp $srcdir/cm-unicode/LICENSE                    $F/LICENSE.cm-unicode
-cp $srcdir/cm-unicode/README                     $F/README.cm-unicode
-cp $srcdir/cm-unicode/cmuntt.otf                 $F
-# The DejaVu Sans Mono font covers a range of characters that CMTT does not..
-cp $srcdir/dejavu-fonts-ttf-2.32/LICENSE          $F/LICENSE.dejavu-fonts-ttf-2.32
-cp $srcdir/dejavu-fonts-ttf-2.32/README           $F/README.dejavu-fonts-ttf-2.32
-cp $srcdir/dejavu-fonts-ttf-2.32/AUTHORS          $F/AUTHORS.dejavu-fonts-ttf-2.32
-cp $srcdir/dejavu-fonts-ttf-2.32/ttf/DejaVuSansMono.ttf $F
-# I will use fireflysung fonts to cover the CJK range. I hope that at some
-# time I may be able to move to use of SourceHanSans/Noto... but that time
-# has not yet come.
-cp $srcdir/fireflysung-1.3.0/fireflysung.ttf      $F
-cp $srcdir/fireflysung-1.3.0/AUTHORS              $F/AUTHORS.fireflysung
-cp $srcdir/fireflysung-1.3.0/COPYRIGHT            $F/COPYRIGHT.fireflysung
-mkdir -p $F/license.fireflysung
-mkdir -p $F/license.fireflysung/big5
-mkdir -p $F/license.fireflysung/english
-mkdir -p $F/license.fireflysung/gb
-cp $srcdir/fireflysung-1.3.0/license/big5/ARPHICPL.TXT    $F/license.fireflysung/big5
-cp $srcdir/fireflysung-1.3.0/license/english/ARPHICPL.TXT $F/license.fireflysung/english
-cp $srcdir/fireflysung-1.3.0/license/gb/ARPHICPL.TXT      $F/license.fireflysung/gb
+# Copy everything from my source tree. This makes sense if the tree is
+# clean and does not contain any local extras!
+cp -r $srcdir/fonts/*                            $F
 mkdir -p $1.app/Contents/Resources/reduce.resources
 AA="$1.app/Contents/Resources/reduce.resources"
 cp $srcdir/../../packages/redlog/mma/mma.awk          $AA

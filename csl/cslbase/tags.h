@@ -966,7 +966,7 @@ typedef uintptr_t Header;
 #define header_mask          0x3f0
 #define type_of_header(h)    (((unsigned int)(h)) & header_mask)
 #define length_of_header(h)  (((uint32_t)(h)) >> 10)
-#define length_of_bitheader(h)     ((((size_t)(h)) >> 7)) - 7)
+#define length_of_bitheader(h)     ((((size_t)(h)) >> 7) - 7)
 #define length_of_byteheader(h)    (((size_t)(h)) >> 10)
 #define length_of_hwordheader(h)   ((((size_t)(h)) >> 9) - 1)
 

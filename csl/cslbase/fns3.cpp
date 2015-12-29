@@ -3613,7 +3613,7 @@ LispObject Lupbv(LispObject nil, LispObject v)
             case TYPE_VEC8_2:
             case TYPE_VEC8_3:
             case TYPE_VEC8_4:
-                n = length_of_byte_header(h) - CELL;
+                n = length_of_byteheader(h) - CELL;
 #else
             case TYPE_STRING:
             case TYPE_VEC8:
@@ -3646,7 +3646,7 @@ LispObject Lstring_length(LispObject, LispObject v)
     if (!is_vector(v)) return aerror1("string-length", v);
     h = vechdr(v);
     if (!is_string_header(h)) return aerror1("string-length", v);
-    n = length_of_byte_header(h) - CELL;
+    n = length_of_byteheader(h) - CELL;
     return onevalue(fixnum_of_int(n));
 }
 
@@ -3761,7 +3761,7 @@ LispObject vector_subseq(LispObject sequence, int32_t start, int32_t end)
     {   char *s;
         int32_t k;
 
-        hl = length_of_byte_header(h) - CELL;
+        hl = length_of_byteheader(h) - CELL;
         if (hl < end) return aerror0("vector-subseq* out of range");
 
         // Get a new string of the right size
