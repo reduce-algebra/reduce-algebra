@@ -3,7 +3,7 @@
 *   T e x t   w i n d o w   t h a t   a l l o w s   s i m p l e   I / O       *
 *                                                                             *
 *******************************************************************************
-* Copyright (C) 2003-14 by Arthur Norman, Codemist Ltd. All Rights Reserved.  *
+* Copyright (C) 2003-15 by Arthur Norman, Codemist Ltd. All Rights Reserved.  *
 *******************************************************************************
 * This library is free software; you can redistribute it and/or               *
 * modify it under the terms of the GNU Lesser General Public                  *
@@ -480,7 +480,11 @@ extern FXTerminal *text;
 #ifdef WIN32
 #define DEFAULT_FONT_NAME "Courier New"
 #else
+#ifdef __APPLE__
+#define DEFAULT_FONT_NAME "CMU Typewriter Text"
+#else
 #define DEFAULT_FONT_NAME "courier"
+#endif
 #endif
 
 } // namespace

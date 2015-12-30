@@ -230,6 +230,8 @@ void fwin_write_log(const char *s, ...)
 #endif
         else sprintf(logfile_name, "%s/%s", programDir, LOGFILE_NAME);
         fwin_logfile = fopen(logfile_name, "a");
+// I provide a fallback in case (perhaps) permissions fail me.
+        if (fwin_logfile == NULL) fwin_logfile = fopen("/tmp/fwin.log", "w");
     }
     if (fwin_logfile == NULL) return; // the file can not be used
     if (create)

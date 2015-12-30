@@ -75,6 +75,32 @@
 
 #include "termed.h"        // for command line case
 
+#ifndef DEBUG
+
+#define LOG(...) ((void)0)
+
+#else
+
+#include <stdarg.h>
+
+static FILE *worker_logfile = NULL;
+
+static void write_log(const char *s, ...)
+{   va_list x;
+    if (worker_logfile == NULL) worker_logfile = fopen("worker.log", "w");
+    if (worker_logfile == NULL) worker_logfile = fopen("/tmp/worker.log", "w");
+    va_start(x, s);
+    vfprintf(worker_logfile, s, x);
+    va_end(x);
+    fflush(worker_logfile);
+}
+
+#define LOG(...) \
+    do { write_log("%d: ", __LINE__); write_log(__VA_ARGS__); } while (0)
+
+#endif
+
+
 namespace FX {
 
 #include "fwin.h"
@@ -180,6 +206,9 @@ static fwin_entrypoint *fwin_main1;
 
 int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 {
+    LOG("Start windowed_worker\n");
+    for (int i=0; i<argc; i++)
+       LOG("Arg %d: %s\n", i, argv[i]);
     fwin_main1 = fwin_main;
 #ifdef WIN32
 // The following is somewhat unsatisfactory so I will explain my options and
@@ -246,8 +275,10 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 #define WINDOW_NAME   programName
 
 // registry entries will be filed under Codemist-Ltd/<something>.
+    LOG("About to create new FXApp\n");
     application_object = new FXApp(PRODUCT_NAME,
                                    COMPANY_NAME);
+    LOG("Created new FXApp - now initialize it\n");
 // args can be sent in via command-line args, if that is any help.
 // Just at present I do not fully understand what FOX does with these
 // arguments but it MAY be that it expects to allow "-geometry" or "-fn"
@@ -257,6 +288,7 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 // see any reason it should clobber the strings! So the explicit (but
 // potentially unsafe) cast here seems my easiest way forward.
     application_object->init(argc, const_cast<char **>(argv), TRUE);
+    LOG("FXApp initialized\n");
 #ifndef WIN32
     debug_option = 0;
     for (int i=1; i<argc; i++)
@@ -275,11 +307,14 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
  */
     if (debug_option) _Xdebug = 1;
     else XSetErrorHandler(IgnoreXError);
+    LOG("line 310\n");
 #endif
 
     FXRootWindow *r = application_object->getRootWindow();
+    LOG("line 314\n");
     rootWidth = r->getDefaultWidth(),
     rootHeight = r->getDefaultHeight();
+    LOG("root windows %d %d\n", rootWidth, rootHeight);
 
 // Now I will decide how big the main window should be. If I have information
 // in the registry left over from my last run I will use that.
@@ -338,6 +373,7 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
     if (strcmp(programName, "csl") == 0) icondata = csl;
     else if (strcmp(programName, "bootstrapreduce") == 0) icondata = csl;
     else if (strcmp(programName, "reduce") == 0) icondata = reduce;
+    LOG("About to try to create MainWindow1\n");
     main_window = new FXMainWindow1(
         application_object,
         WINDOW_NAME,
@@ -347,6 +383,7 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
         DECOR_ALL,
         screenx, screeny,
         screenw, screenh);
+    LOG("Next the menu bar\n");
     main_menu_bar = new FXMenuBar(main_window,
                                   LAYOUT_SIDE_TOP | LAYOUT_FILL_X);
 // NB. NB. NB.
@@ -354,10 +391,11 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 // FOX I change the files FXText.h and FXText.cpp to implement it. It
 // lets me wrap lines at exactly 80 columns, regardless of how whitespace
 // happens to lie.
+    LOG("now the FXTerminal object\n");
     text = new FXTerminal(main_window, NULL, 0,
         HSCROLLER_NEVER | TEXT_FIXEDWRAP | TEXT_WORDWRAP | TEXT_COLUMNWRAP |
         TEXT_SHOWACTIVE | LAYOUT_FILL_X | LAYOUT_FILL_Y);
-
+    LOG("Next a menupane\n");
 // I am really supposed to destroy menus as I exit. So somewhere I need to
 // arrange that - or maybe I can hope that my application only closes its
 // window when finally terminating, and somebody will tidy up at a system
@@ -421,6 +459,7 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
                                 (FXObject *)text, FXTerminal::ID_RESET_WINDOW);
 
     new FXMenuTitle(main_menu_bar, "&Edit", NULL, editMenu);
+    LOG("Special Reduce menus next\n");
 
 // Add the special Reduce menus...
     {   const char **red = reduceMenus, *p;
@@ -472,6 +511,7 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 
     new FXMenuTitle(main_menu_bar, "Help", NULL, helpMenu, LAYOUT_RIGHT);
 
+    LOG("Window close to ready for display\n");
     text->setEditable(FALSE);
     text->setStyled(TRUE);
 
@@ -481,18 +521,21 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
     strcpy(mid_stuff, programName);
     main_window->setTitle(programName);
 
+    LOG("Try to create the application object\n");
     application_object->create();
 
 // Selecting the font may involve measuring font sizes etc which may
 // need the font creating...
 
+    LOG("Fonts: %s\n", fontname);
     FXFont *font1 = selectFont(fontname, fontsize,
         fontweight, fontslant, fontencoding, fontsetwidth, fonthints);
     font1->create();
     text->setFont(font1);
+    LOG("main font set up\n");
 
     if (screenw == 0) text->onCmdResetWindow(NULL, 0, NULL);
-
+    LOG("onCmdResetWindow OK\n");
 //
 // I will iconify the window AFTER I have adjusted its size since I do not
 // want to end up with a size that is silly and based on just an icon!
@@ -504,10 +547,14 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
         main_window->minimize();
     }
 
+    LOG("About to setupShowMath\n");
     text->setupShowMath();
+    LOG("setupShowMath OK - now show the main window\n");
 
     main_window->show();
+    LOG("show() seems OK\n");
     text->onCmdHome(NULL, 0, NULL); // actually just to grab the focus!
+    LOG("should now have focus\n");
 #ifdef WIN32
     DWORD threadId;
     thread1 = CreateThread(NULL,  // security attributes
@@ -559,7 +606,7 @@ FXFont *selectFont(const char *name, int size,
 // I really hope that I have a fixed-with font here!
     f->create();
 // If the registry had told me what size font to use then I will just
-// stick with that. If not then I will have been hended in a negative
+// stick with that. If not then I will have been handed in a negative
 // size specifier and I will need to make a guess here.
    if (size > 0) return f;
 // My font-size selection will be based in font and screen widths.

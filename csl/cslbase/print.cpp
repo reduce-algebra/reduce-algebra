@@ -1670,6 +1670,10 @@ LispObject Lfind_gnuplot(LispObject nil, int nargs, ...)
     return onevalue(w);
 }
 
+#ifndef WIN32
+#include <unistd.h>
+#endif
+
 LispObject Lgetpid(LispObject nil, int nargs, ...)
 {   argcheck(nargs, 0, "getpid");
 #ifdef WIN32

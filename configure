@@ -3726,12 +3726,27 @@ $as_echo "$as_me: About to configure boehm" >&6;}
       ;;
     esac
   done
+  case $build in
+  *windows* | *win32* | *mingw*)
+    thr="win32"
+    ;;
+  *)
+    thr="posix"
+    ;;
+  esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
-  doconfig="$SHELL \"$abssrcdir/csl/cslbase/gc-7.4.2/configure\" $filter \
-        $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-        CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-        --prefix=\"$builddir\" --enable-cplusplus"
+  doconfig="$SHELL \"$abssrcdir/csl/cslbase/gc-7/configure\" $filter \
+        $pass_host \
+        CPPFLAGS=\"$CPPFLAGS -DDONT_ADD_BYTE_AT_END=1\" \
+        CFLAGS=\"$CFLAGS\" \
+        CXXFLAGS=\"$CXXFLAGS\" \
+        LDFLAGS=\"$LDFLAGS\" $passcc \
+        --prefix=\"$builddir\" \
+        --enable-threads=$thr \
+        --enable-thread-local-alloc \
+        --enable-parallel-mark \
+        --without-libatomic-ops"
   { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
 $as_echo "$as_me: doconfig = $doconfig" >&6;}
   eval "$doconfig"

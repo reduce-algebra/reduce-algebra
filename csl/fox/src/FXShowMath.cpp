@@ -1,5 +1,6 @@
+#define DEBUG_LIST_AVAILABLE_FONTS 1
 //
-// "FXShowMath.cpp"                       Copyright A C Norman 2004-2014
+// "FXShowMath.cpp"                       Copyright A C Norman 2004-2015
 //
 //
 // Code to layout mathematical formulae for display. Formulae are
@@ -91,6 +92,31 @@ extern int file_readable(char *a, const char *b, size_t n);
 #include <stdarg.h>
 
 #include "fwin.h"
+
+#ifndef DEBUG
+
+#define LOG(...)
+
+#else
+
+#include <stdarg.h>
+
+static FILE *showmath_logfile = NULL;
+
+static void write_log(const char *s, ...)
+{   va_list x;
+    if (showmath_logfile == NULL) showmath_logfile = fopen("showmath.log", "w");
+    if (showmath_logfile == NULL) showmath_logfile = fopen("/tmp/showmath.log", "w");
+    va_start(x, s);
+    vfprintf(showmath_logfile, s, x);
+    va_end(x);
+}
+
+#define LOG(...) \
+    do { write_log("%d: ", __LINE__); write_log(__VA_ARGS__); } while (0)
+
+#endif
+
 
 namespace FX {
 
@@ -727,7 +753,8 @@ static localFonts fontNames[] =
     {"cmex10", NULL},
     {"cmmi10", NULL},
     {"cmr10",  NULL},
-    {"cmsy10", NULL}
+    {"cmsy10", NULL},
+    {"cmuntt", NULL}
 };
 
 #ifdef WIN32
@@ -814,7 +841,12 @@ static const char *loadPrivateFonts(FXApp *appl, FXWindow *w)
 // I want to ensure that the fonts needed will be available. On both
 // Windows and X11 there are awkwardnesses about this:
 // [Windows] AddFontResourceEx is only available on NT, 2000, XP, not
-//           on earlier systems.
+//           on earlier systems. Ha ha ha - these are all systems that
+//           have dropped out of support and so I am probably reasonably
+//           permitted to ignore them - and EVEN MORE I can feel happy
+//           about not supporting things that are earlier. There will
+//           (at the time of writing this comment) still be some XP
+//           systems out there, but those will be being replaced.
 //           AddMemFontResource can only add TrueType fonts, and also
 //           does not support older systems.
 //           Two nuisances emerge from this. (a) the font resources
@@ -908,18 +940,16 @@ static const char *loadPrivateFonts(FXApp *appl, FXWindow *w)
     dpy = (Display *)appl->getDisplay();
     screen = DefaultScreen(dpy);
 
-// I will add in the four font files that I want to use here. Note that
-// with Xft I will force use of the ".pfb" versions. These are close to
-// BUT NOT IDENTICAL TO the original AMS Type1 Computer Modern fonts.
-// It is important to use MY versions of the fonts here.
+// I will add in the  font files that I want to use here.
     int someAdded = 0;
-    for (int i=0; i<4; i++)
+    for (int i=0; i<(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char *fff = (char *)
             new char[20+strlen(programDir)+strlen(fontNames[i].name)];
         char ff1[LONGEST_LEGAL_FILENAME];
         if (fff == NULL) return "failed to allocate space";
         sprintf(fff, "%s/" toString(fontsdir) "/%s.pfb",
                 programDir, fontNames[i].name);
+        LOG("Font file to add: %s\n", fff);
 // For Xft I will insist that ALL the fonts that I try to add have
 // readable font file and are accepted by AppFontAdd, otherwise I will
 // suppose that Xft is not usable.
@@ -935,8 +965,7 @@ static const char *loadPrivateFonts(FXApp *appl, FXWindow *w)
             return " not readable or FcConfigAppFontAddfile failed";
         else someAdded = 1;
     }
-// ensure that fonts are really available. If I do not actually add any
-// I will not fuss about this!
+// ensure that fonts are really available. 
 //
 // Well with the attempts at maths display behaviour if I do not manage
 // to add my custom fonts is liable to be a disaster!
@@ -946,7 +975,7 @@ static const char *loadPrivateFonts(FXApp *appl, FXWindow *w)
 // to me. Well at least if the local font files existed!
 
 #ifdef DEBUG_LIST_AVAILABLE_FONTS
-    for (int i=0; i<4; i++)
+    for (int i=0; i<sizeof(fontNames)/sizeof(fontNames[0]); i++)
     {   XftFontSet *fs = XftListFonts(dpy, screen,
 //               XFT_FAMILY,  XftTypeString, fontNames[i].name,
                  (const char *)0, 
@@ -4537,13 +4566,18 @@ default:
 
 int setupShowMath(FXApp *app, int mainSize, FXWindow *w)
 {
+    LOG("start setupShowMath\n");
     setupMemoryPool();
+    LOG("memory pool set up - now rehash table\n");
     rehashKeywordTable();            // names in the table of TeX keywords
+    LOG("Try to load private fonts\n");
     const char *message = loadPrivateFonts(app, w);
     if (message != NULL)
     {   printf("Failed to set up fonts: %s\n", message);
+        LOG("Failed to set up fonts: %s\n", message);
         exit(1);
     }
+    LOG("now change font sizes\n");
     return changeMathFontSize(app, mainSize);
 }
 

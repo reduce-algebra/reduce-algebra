@@ -1589,15 +1589,9 @@ long FXTerminal::onCmdResetFont(FXObject *c, FXSelector s, void *ptr)
 // Resets the font (and thus window-width) to my default. This is to give
 // some level of safety in case I feel messed up.
     FXFont *o = font;
-#if (FOX_MINOR<=4)
-    FXFont *f = selectFont(DEFAULT_FONT_NAME, 0,  // 0 means "choose for me"
-        FONTWEIGHT_BOLD, FONTSLANT_REGULAR, FONTENCODING_DEFAULT,
-        FONTSETWIDTH_DONTCARE, FONTPITCH_FIXED|FONTHINT_MODERN);
-#else
     FXFont *f = selectFont(DEFAULT_FONT_NAME, 0,  // 0 means "choose for me"
         FXFont::Bold, FXFont::Straight, FONTENCODING_DEFAULT,
         0, FXFont::Fixed|FXFont::Modern);
-#endif
     setFont(f);
     delete o;
     setFocus();   // I am uncertain, but without this I lose focus...
