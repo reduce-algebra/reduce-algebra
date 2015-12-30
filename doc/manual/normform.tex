@@ -338,9 +338,7 @@ see subsection \ref{sec:normform-modular}.
 
 \item[Extras]\mbox{}\\*
 
-\ttindextype{LOOKING\_GOOD}{switch}
-\index{Switch ! \texttt{LOOKING\_GOOD}}
-\index{Switches by package ! NORMFORM package ! \texttt{LOOKING\_GOOD}}
+\ttindexswitch[NORMFORM]{LOOKING\_GOOD}
 If using \texttt{xr}, the X interface for \REDUCE, the appearance of the 
 output can be improved by setting the switch \sw{looking\_good} to on. This 
 converts all lambda to $\xi$ and improves the indexing, e.g., \texttt{lambda12} 
@@ -550,8 +548,8 @@ Schr\"ufer and is described in section \ref{sec:package-arnum}.
 \subsection{Modular arithmetic}
 \label{sec:normform-modular}
 
-\ttindexswitch{MODULAR}{}
-\ttindexswitch{BALANCED\_MOD}{}
+\ttindexswitch{MODULAR}
+\ttindexswitch{BALANCED\_MOD}
 Calculations can be performed in a modular base by setting the switch \sw{modular}
 to on. The base can then be set by \texttt{setmod p;} (p a prime). The 
 normal form will then have entries in $\mathcal{Z}/$p$\mathcal{Z}$. 

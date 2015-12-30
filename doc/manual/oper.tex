@@ -384,9 +384,9 @@ or collect a sum of logarithms into a single logarithm.  Since these are
 inverse operations, it is not possible to provide rules for doing both at
 the same time and preserve the {\REDUCE} concept of idempotent evaluation.
 As an alternative, REDUCE provides two switches \sw{EXPANDLOGS}
-\ttindexswitch{EXPANDLOGS}{} and \sw{COMBINELOGS}\ttindexswitch{COMBINELOGS}{} to carry
+\ttindexswitch{EXPANDLOGS} and \sw{COMBINELOGS}\ttindexswitch{COMBINELOGS}{} to carry
 out these operations.  Both are off by default, and are subject 
-to the value of the switch \sw{PRECISE}\ttindexswitch{PRECISE}{}. This switch is on
+to the value of the switch \sw{PRECISE}\ttindexswitch{PRECISE}. This switch is on
 by default and prevents modifications that may be false in a complex domain.
 Thus to expand \texttt{LOG(3*Y)} into a sum of logs, one can say
 \begin{verbatim}
@@ -429,7 +429,7 @@ If you now subtract \texttt{sqrt(x)} from this expression, you will
         SQRT(X) - SQRT(X)
 \end{verbatim}
 will result.  To combine such exponentiated terms, the switch
-\sw{COMBINEEXPT}\ttindexswitch{COMBINEEXPT}{} should be turned on.
+\sw{COMBINEEXPT}\ttindexswitch{COMBINEEXPT} should be turned on.
 
 The square root function can be input using the name \texttt{SQRT}, or the
 power operation \texttt{\textasciicircum(1/2)}.  On output, unsimplified
@@ -461,7 +461,7 @@ becomes
 Note that such simplifications can cause trouble if \var{A} is eventually
 given a value that is a negative number.  If it is important that the
 positive property of the square root and higher even roots always be
-preserved, the switch \sw{PRECISE}\ttindexswitch{PRECISE}{} should be set on
+preserved, the switch \sw{PRECISE}\ttindexswitch{PRECISE} should be set on
 (the default value).
 This causes any non-numerical factors taken out of surds to be represented
 by their absolute value form.
@@ -475,7 +475,7 @@ With % both \texttt{REDUCED} and
 However, this is incorrect in the complex domain, where the
 $\sqrt{x^{2}}$ is not identical to $|x|$. To avoid the above
 simplification, the switch
-\sw{PRECISE\_COMPLEX}\ttindexswitch{PRECISE\_COMPLEX}{} should be set on
+\sw{PRECISE\_COMPLEX}\ttindexswitch{PRECISE\_COMPLEX} should be set on
 (default is off). For example:
 \begin{verbatim}
 on precise_complex; sqrt(-8a^2*b);
@@ -488,7 +488,7 @@ yields the output
 
 The statement that {\REDUCE} knows very little about these functions
 applies only in the mathematically exact \texttt{off rounded} mode.  If
-\sw{ROUNDED}\ttindexswitch{ROUNDED}{} is on, any of the functions
+\sw{ROUNDED}\ttindexswitch{ROUNDED} is on, any of the functions
 \begin{verbatim}
         ACOS ACOSH ACOT ACOTH ACSC ACSCH ASEC ASECH ASIN ASINH
         ATAN ATANH ATAN2 COS COSH COT COTH CSC CSCH EXP HYPOT
@@ -582,31 +582,31 @@ The operator \texttt{CHANGEVAR} does a variable transformation in a set of
 differential equations.
 Syntax:
 \begin{syntaxtable}
-   \texttt{changevar(}\meta{oldvars},\meta{newvars},\meta{eqlist},\meta{diffeq}\texttt{)}
+   \texttt{changevar(}\meta{depvars},\meta{newvars},\meta{eqlist},\meta{diffeq}\texttt{)}
 \end{syntaxtable}
 \meta{diffeq} is either a single differential equation or a list of
-differential equations, \meta{oldvars} are the dependent variables to
+differential equations, \meta{depvars} are the dependent variables to
 be substituted, \meta{newvars} are the new depend variables, and
-\meta{eqlist} is a list of equations of the form \meta{oldvar}
+\meta{eqlist} is a list of equations of the form \meta{depvar}
 \texttt{=} \meta{expression} where \meta{expression} is some function
 in the new dependent variables.
 
-The three lists \meta{oldvars}, \meta{newvars}, and \meta{eqlist} must
+The three lists \meta{depvars}, \meta{newvars}, and \meta{eqlist} must
 be of the same length. If there is only one variable to be
 substituted, then it can be given instead of the list. The same applies to the list
 of differential equations, i.e., the following two
 commands are equivalent
 \begin{verbatim}
-    changevar(x,y,x=e^y,df(u,x) = log(x)};
+    changevar(u,y,x=e^y,df(u(x),x) - log(x));
 
-    changevar({x},{y},{x=e^y},{df(u,x) = log(x)}};
+    changevar({u},{y},{x=e^y},{df(u(x),x) - log(x)});
 \end{verbatim}
-There is one difference, though: the first command returns the transformed differential
+except for one difference: the first command returns the transformed differential
 equation, the second one a list with a single element.
 
 \hypertarget{switch:DISPJACOBIAN}{}
 The switch \sw{DISPJACOBIAN} governs the display the entries of the inverse Jacobian,
-it is \texttt{OFF} per default.\ttindexswitch{DISPJACOBIAN}{}
+it is \texttt{OFF} per default.\ttindexswitch{DISPJACOBIAN}
 
 The mathematics behind the change of independent variable(s) in differential
 equations is quite straightforward. It is basically the application of the
@@ -630,13 +630,13 @@ derivatives. This is not always a  preferable way to proceed. Mainly because
 the functions $f_{i}$ may not always be easily invertible. Another approach
 that makes use of the Jacobian is better. Consider the above given equations
 which relate the old variables to the new ones. Let us differentiate them:
-\begin{eqnarray*}
-  \frac{\partial x_{j}}{\partial x_{i}} & = &
+\begin{align*}
+  \frac{\partial x_{j}}{\partial x_{i}} & = 
         \frac{\partial f_{j}}{\partial x_{i}}   \\
-  \delta_{ij} & = &
+  \delta_{ij} & = 
         \frac{\partial f_{j}}{\partial u_{k}}
         \frac{\partial u_{k}}{\partial x_{i}}
-\end{eqnarray*}
+\end{align*}
 The first derivative is nothing but the $(j,k)$ th entry of the Jacobian matrix.
 
 So if we speak in matrix language
@@ -719,7 +719,7 @@ and returns the result
 \hypertarget{operator:CONTINUED_FRACTION}{}
 \index{approximation}\index{rational number}
 
-The operator \texttt{CONTINUED\_FRACTION} \ttindex{CONTINUED\_FRACTION}
+The operator \texttt{CONTINUED\_FRACTION} \ttindextype{CONTINUED\_FRACTION}{operator}
 approximates the real number 
 (rational number, rounded number)
 into a continued fraction. \texttt{CONTINUED\_FRACTION} has one or
@@ -764,7 +764,7 @@ continued_fraction(pi,100);
 \section{DF Operator}
 \label{sec:DF-operator}
 \hypertarget{operator:DF}{}
-The operator \texttt{DF}\ttindex{DF} is used to represent partial
+The operator \texttt{DF}\ttindextype{DF}{operator} is used to represent partial
 differentiation\index{Differentiation} with respect
 to one or more variables. It is used with the syntax:
 \begin{verbatim}
@@ -802,14 +802,14 @@ case the derivative is reported as the symbol \texttt{df(z,x)}.
 
 Consider \texttt{df(u,x,y,z)}.  If non of \texttt{x,y,z} are equal to \var{u}
 then the order of differentiation is commuted into a canonical form, unless the
-switch \sw{NOCOMMUTEDF}\ttindexswitch{NOCOMMUTEDF}{} is turned on (default is off).
+switch \sw{NOCOMMUTEDF}\ttindexswitch{NOCOMMUTEDF} is turned on (default is off).
 if at least one of \texttt{x,y,z} is equal to \var{u} then the order of
 differentiation is \emph{not} commuted and the derivative is \emph{not}
 simplified
-to zero, unless the switch \sw{COMMUTEDF}\ttindexswitch{COMMUTEDF}{} is turned on.
+to zero, unless the switch \sw{COMMUTEDF}\ttindexswitch{COMMUTEDF} is turned on.
 It is off by default.
 
-If \sw{COMMUTEDF} is off and the switch \sw{SIMPNONCOMDF}\ttindexswitch{SIMPNONCOMDF}{}
+If \sw{COMMUTEDF} is off and the switch \sw{SIMPNONCOMDF}\ttindexswitch{SIMPNONCOMDF}
 is on then simplify as follows:
 \begin{verbatim}
         DF(U,X,U)        ->  DF(U,X,2) / DF(U,X)
@@ -819,7 +819,7 @@ is on then simplify as follows:
 This simplification removes the non-commutative aspect of the derivative.
 
 \hypertarget{switch:EXPANDDF}{}
-If the switch \sw{EXPANDDF}\ttindexswitch{EXPANDDF}{} is turned on then REDUCE uses
+If the switch \sw{EXPANDDF}\ttindexswitch{EXPANDDF} is turned on then REDUCE uses
 the chain rule to expand symbolic derivatives of indirectly dependent variables
 provided the result is unambiguous, i.e. provided there is no direct dependence.
 It is off by default.  Thus, for example, given
@@ -837,12 +837,12 @@ and the algorithm would loop).
 
 \hypertarget{switch:ALLOWDFINT}{}
 \hypertarget{switch:DFINT}{}
-Turning on the switch \sw{ALLOWDFINT}\ttindexswitch{ALLOWDFINT}{} allows
+Turning on the switch \sw{ALLOWDFINT}\ttindexswitch{ALLOWDFINT} allows
 "differentiation under the integral sign", i.e. 
 \begin{verbatim}
         DF(INT(Y, X), V) -> INT(DF(Y, V), X)
 \end{verbatim}
-if this results in a simplification.  If the switch \sw{DFINT}\ttindexswitch{DFINT}{}
+if this results in a simplification.  If the switch \sw{DFINT}\ttindexswitch{DFINT}
 is also turned on then this happens regardless of whether the result
 simplifies. Both switches are off by default.
 
@@ -880,7 +880,7 @@ Notice that all dummy arguments of the relevant operator must be declared
 arbitrary by the \texttt{FOR ALL} command, and that rules may be supplied for
 operators with any number of arguments.  If no differentiation rule
 appears for an argument in an operator, the differentiation routines will
-return as result an expression in terms of \texttt{DF}\ttindex{DF}.  For
+return as result an expression in terms of \texttt{DF}\ttindextype{DF}{operator}.  For
 example, if the rule for the differentiation with respect to the second
 argument of \texttt{F} is not supplied, the evaluation of \texttt{df(f(x,z),z)}
 would leave this expression unchanged. (No \texttt{DEPEND} declaration

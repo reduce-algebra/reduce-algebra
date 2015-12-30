@@ -17,10 +17,9 @@ the programming and for a better readable output this package
 assumes that the arguments of a generic function have default
 names such as $f(x,y)$,$q(rho,phi)$. 
 A generic function is declared by prototype form in a statement
-
-\vspace{.1in}
- \f{GENERIC\_FUNCTION} $fname(arg_1,arg_2\cdots arg_n)$;
-\vspace{.1in}
+\begin{syntax}
+ \f{GENERIC\_FUNCTION } \meta{fname}\texttt{(}\meta{arg$_1$},\meta{arg$_2$}\cdots \meta{arg$_n$}\texttt{);}
+\end{syntax}
 
 \noindent
 where $fname$ is the (new) name of a function and $arg_i$ are
@@ -54,12 +53,10 @@ as $\frac{\partial f}{\partial x} \frac{d u}{d w} +
 \subsection{Partial Derivatives}
 
 \ttindex{DFP}
-The operator {\tt DFP} represents a partial derivative:
-
-\vspace{.1in}
- {\tt DFP}($expr,{dfarg_1,dfarg_2\cdots dfarg_n}$);
-\vspace{.1in}
-
+The operator \f{DFP} represents a partial derivative:
+\begin{syntax}
+ \f{DFP(}\meta{expr},\meta{dfarg$_1$},\meta{dfarg$_2$}\cdots \meta{dfarg$_n$}\texttt{);}
+\end{syntax}
 \noindent
 where $expr$ is a function expression and $dfarg_i$ are
 the differentiation variables. Examples:

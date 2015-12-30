@@ -8,14 +8,14 @@ evaluation of expressions.  Such substitutions use the prefix operator
 \hypertarget{operator:SUB}{}
 
 Syntax:
-\begin{verbatim}
-        SUB(<substitution_list>,EXPRN1:algebraic):algebraic
-\end{verbatim}
+\begin{syntax}
+        \texttt{SUB(}\meta{substitution\_list},\meta{EXPRN1:algebraic}\texttt{)}:algebraic
+\end{syntax}
 where \meta{substitution\_list} is a list of one or more equations of the
 form
-\begin{verbatim}
-        VAR:kernel=EXPRN:algebraic
-\end{verbatim}
+\begin{syntax}
+        \meta{VAR:kernel}\texttt{ = }\meta{EXPRN:algebraic}
+\end{syntax}
 or a kernel that evaluates to such a list.
 
 The \texttt{SUB} operator gives the algebraic result of replacing every
@@ -75,7 +75,7 @@ or
 \end{syntax}
 or
 \begin{syntax}
-    \meta{argument}\meta{infix operator},\dots,\meta{argument}\texttt{) = }
+    \meta{argument}\meta{infix operator},\dots,\meta{argument}\texttt{ = }
          \meta{expression}
 \end{syntax}
 For example,

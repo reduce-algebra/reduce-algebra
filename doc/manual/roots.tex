@@ -268,14 +268,14 @@ Note: switches \sw{AUTOMODE}, \sw{ISOROOT} and \sw{ACCROOT}, present in
 earlier versions, have been eliminated.
 
 \begin{description}
-\ttindexswitch{RATROOT}{ROOTS}
+\ttindexswitch[ROOTS]{RATROOT}
 \item[RATROOT] (Default OFF) If \sw{RATROOT} is on all root equations are
 output in rational form.  Assuming that the mode is \sw{COMPLEX} (i.e.
 \sw{ROUNDED} is off,) the root equations are
 guaranteed to be able to be input into \REDUCE{} without truncation or
 rounding errors. (Cf. the function \f{MKPOLY} described above.)
 
-\ttindexswitch{MULTIROOT}{ROOTS}
+\ttindexswitch[ROOTS]{MULTIROOT}
 \item[MULTIROOT] (Default ON) Whenever the polynomial has complex
 coefficients or has real coefficients and has multiple roots, as
 \ttindex{SQFRF} determined by the Sturm function, the function \f{SQFRF}
@@ -292,13 +292,13 @@ however, the initial accuracy specified was too low, and it was not
 possible to separate the roots, the program will abort.)
 
 \index{Tracing!ROOTS package}
-\ttindexswitch{TRROOT}{ROOTS}
+\ttindexswitch[ROOTS]{TRROOT}
 \item[TRROOT] (Default OFF) If switch \sw{TRROOT} is on, trace messages
 are printed out during the course of root determination, to show the
 progress of solution.
 
 \ttindex{ROOTMSG} 
-\ttindexswitch{ROOTMSG}{ROOTS}
+\ttindexswitch[ROOTS]{ROOTMSG}
 \item[ROOTMSG] (Default OFF) If switch
 \sw{ROOTMSG} is on in addition to switch \sw{TRROOT}, additional
 messages are printed out to aid in following the progress of Laguerre and

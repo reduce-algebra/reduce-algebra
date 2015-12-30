@@ -40,9 +40,9 @@ and the required argument and value modes of the latter, follow.
 
 \section{Controlling the Expansion of Expressions}
 \hypertarget{switch:EXP}{}
-\ttindexswitch{EXP}{}
+\ttindexswitch{EXP}
 
-The switch \sw{EXP}\ttindexswitch{EXP}{} controls the expansion of expressions.  If
+The switch \sw{EXP}\ttindexswitch{EXP} controls the expansion of expressions.  If
 it is off, no expansion of powers or products of expressions occurs.
 Users should note however that in this case results come out in a normal
 but not necessarily canonical form.  This means that zero expressions
@@ -82,7 +82,7 @@ Factorization and GCD Package'', Proc. SYMSAC '81, ACM (New York) (1981),
 109-116.
 
 The easiest way to use this facility is to turn on the switch
-\sw{FACTOR},\ttindexswitch{FACTOR}{} which causes all expressions to be output in
+\sw{FACTOR},\ttindexswitch{FACTOR} which causes all expressions to be output in
 a factored form.  For example, with \sw{FACTOR} on, the expression
 \texttt{A\textasciicircum2-B\textasciicircum2} is returned as 
 \texttt{(A+B)*(A-B)}.
@@ -108,7 +108,7 @@ If there is a numerical factor, as in factorizing $12x^{2}-12$,
 that factor will appear as the first member of the result.
 It will however not be factored further.  Prime factors of such numbers
 can be found, using a probabilistic algorithm, by turning on the switch
-\sw{IFACTOR}.\ttindexswitch{IFACTOR}{}  For example,
+\sw{IFACTOR}.\ttindexswitch{IFACTOR}  For example,
 \begin{verbatim}
         on ifactor; factorize(12x^2-12);
 \end{verbatim}
@@ -121,7 +121,7 @@ If the first argument of \texttt{FACTORIZE} is an integer, it will be
 decomposed into its prime components, whether or not \sw{IFACTOR} is on.
 
 Note that the \sw{IFACTOR} switch only affects the result of \texttt{FACTORIZE}.
-It has no effect if the \sw{FACTOR}\ttindexswitch{FACTOR}{} switch is also on.
+It has no effect if the \sw{FACTOR}\ttindexswitch{FACTOR} switch is also on.
 
 The order in which the factors occur in the result (with the exception of
 a possible overall numerical coefficient which comes first) can be system
@@ -143,7 +143,7 @@ discriminant of the polynomial being factored, but users should note that
 this condition is not checked by the program, so this capability should be
 used with care.
 
-\ttindexswitch{MODULAR}{}
+\ttindexswitch{MODULAR}
 Factorization can be performed over a number of polynomial coefficient
 domains in addition to integers. The particular description of the relevant
 domain should be consulted to see if factorization is supported. For
@@ -157,7 +157,7 @@ example, the following statements will factorize $x^{4}+1$ modulo 7:
 The factorization module is provided with a trace facility that may be useful
 as a way of monitoring progress on large problems, and of satisfying
 curiosity about the internal workings of the package. The most simple use
-of this is enabled by issuing the {\REDUCE} command\ttindexswitch{TRFAC}{}
+of this is enabled by issuing the {\REDUCE} command\ttindexswitch{TRFAC}
 \texttt{on trfac;} .
 Following this, all calls to the factorizer will generate informative
 messages reporting on such things as the reduction of multivariate to
@@ -184,7 +184,7 @@ this trace facility the generated trace files should be closed by calling
 \begin{verbatim}
         symbolic close!-trace!-files();
 \end{verbatim}
-\textit{NOTE:} Using the factorizer with \sw{MCD}\ttindexswitch{MCD}{} off will
+\textit{NOTE:} Using the factorizer with \sw{MCD}\ttindexswitch{MCD} off will
 result in an error.
 
 \section{Cancellation of Common Factors}
@@ -192,7 +192,7 @@ result in an error.
 Facilities are available in {\REDUCE} for cancelling common factors in the
 numerators and denominators of expressions, at the option of the user. The
 system will perform this greatest common divisor computation if the switch
-\sw{GCD}\ttindexswitch{GCD}{} is on. (\sw{GCD} is normally off.)
+\sw{GCD}\ttindexswitch{GCD} is on. (\sw{GCD} is normally off.)
 
 A check is automatically made, however, for common variable and numerical
 products in the numerators and denominators of expressions, and the
@@ -214,7 +214,7 @@ the polynomial \texttt{a*c+a*d+b*c+b*d} would be returned as \texttt{(A+B)*(C+D)
 Under normal circumstances, GCDs are computed using an algorithm described
 in the above paper. It is also possible in {\REDUCE} to compute GCDs using
 an alternative algorithm, called the EZGCD Algorithm, which uses modular
-arithmetic.  The switch \sw{EZGCD}\ttindexswitch{EZGCD}{}, if on in addition to
+arithmetic.  The switch \sw{EZGCD}\ttindexswitch{EZGCD}, if on in addition to
 \sw{GCD}, makes this happen.
 
 In non-trivial cases, the EZGCD algorithm is almost always better
@@ -276,7 +276,7 @@ returns the least common multiple of the two polynomials \texttt{EXPRN1} and
 
 \section{Controlling Use of Common Denominators}
 \hypertarget{switch:MCD}{}
-\ttindexswitch{MCD}{}
+\ttindexswitch{MCD}
 When two rational functions are added, {\REDUCE} normally produces an
 expression over a common denominator. However, if the user does not want
 denominators combined, he or she can turn off the switch \sw{MCD}
@@ -341,7 +341,7 @@ result obtained when the given variable is eliminated between the two input
 polynomials. If the two input polynomials have a non-trivial GCD their
 resultant vanishes.
 
-The switch \sw{BEZOUT}\ttindexswitch{BEZOUT}{} controls the computation of the
+The switch \sw{BEZOUT}\ttindexswitch{BEZOUT} controls the computation of the
 resultants. It is off by default. In this case a subresultant algorithm
 is used. If the switch Bezout is turned on, the resultant is computed via
 the Bezout Matrix. However, in the latter case, only polynomial coefficients
@@ -653,7 +653,7 @@ SYMSAC '86, ACM, New York (1986), 100--106.
 Instead of treating rational numbers as the numerator and denominator of a
 rational expression, it is also possible to use them as polynomial
 coefficients directly. This is accomplished by turning on the switch
-\sw{RATIONAL}.\ttindexswitch{RATIONAL}{}
+\sw{RATIONAL}.\ttindexswitch{RATIONAL}
 
 \textit{Example:} With \sw{RATIONAL} off, the input expression \texttt{a/2}
 would be converted into a rational expression, whose numerator was \texttt{A}
@@ -667,7 +667,7 @@ whereas the former could not.
 \hypertarget{switch:ROUNDED}{}
 \hypertarget{switch:ROUNDBF}{}
 \hypertarget{operator:PRECISION}{}
-The switch \sw{ROUNDED}\ttindexswitch{ROUNDED}{} permits the use of arbitrary
+The switch \sw{ROUNDED}\ttindexswitch{ROUNDED} permits the use of arbitrary
 sized real coefficients in polynomial expressions.  The actual precision
 of these coefficients can be set by the operator \texttt{PRECISION}.
 \ttindex{PRECISION} For example, \texttt{precision 50;} sets the precision to
@@ -691,7 +691,7 @@ precision) integers, which is a more precise representation in many cases
 than the machine floating point arithmetic, but not as efficient.  If a
 case arises where use of the machine arithmetic leads to problems, a user
 can force {\REDUCE} to use the bigfloat representation at all precisions by
-turning on the switch \sw{ROUNDBF}.\ttindexswitch{ROUNDBF}{}  In rare cases,
+turning on the switch \sw{ROUNDBF}.\ttindexswitch{ROUNDBF}  In rare cases,
 this switch is turned on by the system, and the user informed by the
 message
 \begin{verbatim}
@@ -708,13 +708,13 @@ cause such numbers to be printed with five digits maximum.
 \hypertarget{switch:NOCONVERT}{}
 Under normal circumstances when \sw{ROUNDED} is on, {\REDUCE} converts the
 number 1.0 to the integer 1.  If this is not desired, the switch
-\sw{NOCONVERT}\ttindexswitch{NOCONVERT}{} can be turned on.
+\sw{NOCONVERT}\ttindexswitch{NOCONVERT} can be turned on.
 
 \hypertarget{switch:BFSPACE}{}
 Numbers that are stored internally as bigfloats are normally printed with
 a space between every five digits to improve readability.  If this
 feature is not required, it can be suppressed by turning off the switch
-\sw{BFSPACE}.\ttindexswitch{BFSPACE}{}
+\sw{BFSPACE}.\ttindexswitch{BFSPACE}
 
 Further information on the bigfloat arithmetic may be found in T. Sasaki,
 ``Manual for Arbitrary Precision Real Arithmetic System in {\REDUCE}'',
@@ -724,7 +724,7 @@ TR-8 (1979).
 \hypertarget{switch:ADJPREC}{}
 When a real number is input, it is normally truncated to the precision in
 effect at the time the number is read.  If it is desired to keep the full
-precision of all numbers input, the switch \sw{ADJPREC}\ttindexswitch{ADJPREC}{}
+precision of all numbers input, the switch \sw{ADJPREC}\ttindexswitch{ADJPREC}
 (for \emph{adjust precision}) can be turned on.  While on, \sw{ADJPREC}
 will automatically increase the precision, when necessary, to match that
 of any integer or real input, and a message printed to inform the user of
@@ -734,7 +734,7 @@ the precision increase.
 When \sw{ROUNDED} is on, rational numbers are normally converted to
 rounded representation.  However, if a user wishes to keep such numbers in
 a rational form until used in an operation that returns a real number,
-the switch \sw{ROUNDALL}\ttindexswitch{ROUNDALL}{} can be turned off.  This
+the switch \sw{ROUNDALL}\ttindexswitch{ROUNDALL} can be turned off.  This
 switch is normally on.
 
 Results from rounded calculations are returned in rounded form with two
@@ -748,7 +748,7 @@ current precision, the integer result is returned.
 {\REDUCE} includes facilities for manipulating polynomials whose
 coefficients are computed modulo a given base.  To use this option, two
 commands must be used; \texttt{SETMOD }\meta{integer}\ttindex{SETMOD}, to set
-the prime modulus, and \texttt{ON MODULAR}\ttindexswitch{MODULAR}{} to cause the
+the prime modulus, and \texttt{ON MODULAR}\ttindexswitch{MODULAR} to cause the
 actual modular calculations to occur.
 For example, with \texttt{setmod 3;} and \texttt{on modular;}, the polynomial
 \texttt{(a+2*b)\textasciicircum3} would become 
@@ -768,7 +768,7 @@ to use an equivalent symmetric representation in the interval
 [-p/2+1,p/2], or more precisely
 [-floor((p-1)/2), ceiling((p-1)/2)],
 especially if the modular numbers map objects that include
-negative quantities.  The switch \sw{BALANCED\_MOD}\ttindexswitch{BALANCED\_MOD}{}
+negative quantities.  The switch \sw{BALANCED\_MOD}\ttindexswitch{BALANCED\_MOD}
 allows you to select the symmetric representation for output.
 
 Users should note that the modular calculations are on the polynomial
@@ -797,7 +797,7 @@ and
         (a^2+b^2)/(a+i*b)
 \end{verbatim}
 is not reduced further.  However, if the switch
-\sw{COMPLEX}\ttindexswitch{COMPLEX}{} is turned on, full complex arithmetic is then
+\sw{COMPLEX}\ttindexswitch{COMPLEX} is turned on, full complex arithmetic is then
 carried out.  In other words, the above factorization will give the result
 \begin{verbatim}
         {{A + I,1},{A - I,1}}
@@ -810,7 +810,7 @@ real numbers; the appropriate arithmetic is performed in this case.
 \hypertarget{switch:RATIONALIZE}{}
 Complex conjugation is used to remove complex numbers from denominators of
 expressions.  To do this if \sw{COMPLEX} is off, you must turn the switch
-\sw{RATIONALIZE}\ttindexswitch{RATIONALIZE}{} on.
+\sw{RATIONALIZE}\ttindexswitch{RATIONALIZE} on.
 
 \section{ROOT\_VAL Operator}
 \hypertarget{operator:ROOT_VAL}{}

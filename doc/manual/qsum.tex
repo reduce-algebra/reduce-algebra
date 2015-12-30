@@ -15,7 +15,7 @@
 \newcounter{redprompt}
 {\setcounter{redprompt}{0}}
 \newcommand{\redprompt}{\stepcounter{redprompt}\theredprompt:}
-\newenvironment{redoutput}{\small\begin{alltt}}{\end{alltt}\noindent{}}
+\newenvironment{redoutput}{\small\begin{alltt}}{\end{alltt}\vskip-\parskip\noindent{}}
 
 % ----------------------------------------------------------------------
 
@@ -267,7 +267,7 @@ algorithm.
 		antidifference. (By default it returns a \textsl{downward}
 		antidifference, which may be changed by the switch 
 		\sw{qgosper\_down}; see also 
-                \ttindexswitch{QGOSPER\_DOWN}{QSUM}
+                \ttindexswitch[QSUM]{QGOSPER\_DOWN}
 		\S~\ref{switches}.)
 		If it does not return a \textsl{q}-hypergeometric antidifference,
 		then such an antidifference does not exist.
@@ -329,7 +329,7 @@ Here are some other simple examples:
 ----------
   q - 1
 \end{redoutput}
-\vspace{-2ex}%
+%\vspace{-2ex}%
 % ----------------------------------------------------------------------
 %
 \subsection{\REDUCE{} operator \texttt{QSUMRECURSION}}
@@ -414,7 +414,7 @@ summand is zero for all $k>n$ as $\qfac{q^{-n}}{k}=0$ and
 the $\qfac{q}{k}$-term in the denominator makes the summand
 vanish for all $k<0$.
 
-\ttindexswitch{QSUMRECURSION\_CERTIFICATE}{QSUM}
+\ttindexswitch[QSUM]{QSUMRECURSION\_CERTIFICATE}
 With the switch \sw{qsumrecursion\_certificate} it is possible
 to get the antidifference $g_k$ described above. When switched
 on, \f{qsumrecursion} returns a list with five entries,
@@ -582,7 +582,7 @@ polynomials.
 \end{alltt}}
 
 The setting of \sw{qsum\_nullspace} 
-\ttindexswitch{QSUM\_NULLSPACE}{QSUM}
+\ttindexswitch[QSUM]{QSUM\_NULLSPACE}
 (see \cite{Paule1} and \S~\ref{switches})
 results in a faster
 calculation of the recurrence equation for this example.
@@ -634,13 +634,13 @@ The following synomyms may be used:
 \subsection{Global Variables and Switches}
 \label{switches}
 
-\ttindexswitch{QSUM\_TRACE}{QSUM}
-\ttindexswitch{QGOSPER\_DOWN}{QSUM}
-\ttindexswitch{QSUMRECURSION\_DOWN}{QSUM}
-\ttindexswitch{QSUM\_NULLSPACE}{QSUM}
-\ttindexswitch{QGOSPER\_SPECIALSOL}{QSUM}
-\ttindexswitch{QSUMRECURSION\_EXP}{QSUM}
-\ttindexswitch{QSUMRECURSION\_CERTIFICATE}{QSUM}
+\ttindexswitch[QSUM]{QSUM\_TRACE}
+\ttindexswitch[QSUM]{QGOSPER\_DOWN}
+\ttindexswitch[QSUM]{QSUMRECURSION\_DOWN}
+\ttindexswitch[QSUM]{QSUM\_NULLSPACE}
+\ttindexswitch[QSUM]{QGOSPER\_SPECIALSOL}
+\ttindexswitch[QSUM]{QSUMRECURSION\_EXP}
+\ttindexswitch[QSUM]{QSUMRECURSION\_CERTIFICATE}
 \ttindex{DOWNWARD\_ANTIDIFFERENCE}\ttindex{UPWARD\_ANTIDIFFERENCE}
 The following switches can be used in connection with
 the \texttt{QSUM} package:

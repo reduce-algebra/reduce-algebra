@@ -13,10 +13,10 @@ is also employed where applicable.
 
 \subsection{Normal entry points}
 \ttindex{LIMIT}\hypertarget{operator:LIMIT}{}
-\vspace{.1in}
-\noindent \texttt{LIMIT}(EXPRN:{\em algebraic}, VAR:{\em kernel},
-LIMPOINT:{\em algebraic}):{\em algebraic}
-\vspace{.1in}
+\begin{syntax}
+ \f{LIMIT(}\meta{EXPRN:algebraic}, \meta{VAR:kernel},
+  \meta{LIMPOINT:algebraic}):{algebraic}
+\end{syntax}
 
 This is the standard way of calling limit, applying all of the methods. The
 result is the limit of EXPRN as VAR approaches LIMPOINT.
@@ -27,12 +27,12 @@ result is the limit of EXPRN as VAR approaches LIMPOINT.
 \ttindex{LIMIT+} \ttindex{LIMIT-}
 \hypertarget{operator:LIMIT+}{}
 \hypertarget{operator:LIMIT-}{}
-\vspace{.1in}
-\noindent \texttt{LIMIT!+}(EXPRN:{\em algebraic}, VAR:{\em kernel},
-LIMPOINT:{\em algebraic}):{\em algebraic} \\
-\noindent \texttt{LIMIT!-}(EXPRN:{\em algebraic}, VAR:{\em kernel},
-LIMPOINT:{\em algebraic}):{\em algebraic}
-\vspace{.1in}
+\begin{syntaxtable}
+  \texttt{LIMIT!+(}\meta{EXPRN:algebraic}, \meta{VAR:kernel},
+     \meta{LIMPOINT:algebraic}\texttt{)}:algebraic & \\
+  \texttt{LIMIT!-(}\meta{EXPRN:algebraic}, \meta{VAR:kernel},
+     \meta{LIMPOINT:algebraic}\texttt{)}:algebraic \\
+\end{syntaxtable}
 
 If the limit depends upon the direction of approach to the \texttt{LIMPOINT},
 the functions \texttt{LIMIT!+} and \texttt{LIMIT!-} may be used.  They are
@@ -50,6 +50,8 @@ defined by:
 \ttindex{LIMIT0}
 \hypertarget{operator:LIMIT0}{}
 \vspace{.1in}
+\noindent \texttt{LIMIT!-}(EXPRN:{\em algebraic}, VAR:{\em kernel},
+LIMPOINT:{\em algebraic}):{\em algebraic}
 \noindent \texttt{LIMIT0}(EXPRN:{\em algebraic}, VAR:{\em kernel},
 LIMPOINT:{\em algebraic}):{\em algebraic}
 \vspace{.1in}

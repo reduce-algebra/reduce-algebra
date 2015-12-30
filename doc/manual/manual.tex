@@ -110,6 +110,8 @@
                           \renewcommand{\|}{\protect\textbar}%
                           \index{#1@\texttt{#1}}}}
 \def\ttindextypehelper#1#2\relax{\let\blubber=#1}
+\def\capitalizehelper#1#2\relax{\edef\blubba{\uppercase{#1}\lowercase{#2}}}
+\def\capitalize#1{\capitalizehelper#1\relax}
 \newcommand{\ttindextype}[2]{{\renewcommand{\_}{\protect\underscore}%
                               \renewcommand{\|}{\protect\textbar}%
                               \ttindextypehelper#2\relax
@@ -118,18 +120,20 @@
                               \else
                                 \index{#1 #2@\texttt{#1} #2}%
                               \fi}}
-\newcommand{\ttindexswitch}[2]{{%
+\newcommand*{\ttindexswitch}[2][]{{%
        \renewcommand{\_}{\protect\underscore}%
        \renewcommand{\|}{\protect\textbar}%
-       \index{#1 switch@\texttt{#1} switch}%
-       \index{Switch ! #1@\texttt{#1}}%
-       \def\blubber{#2}%
+       \index{#2 switch@\texttt{#2} switch}%
+       \index{Switch!#2@\texttt{#2}}%
+       \def\blubber{#1}%
        \ifx\blubber\empty
-         \def\blubber{\index{Switches by package ! 000@REDUCE Core ! #1@\texttt{#1}}}%
+         \def\blubber{\index{Switches by package ! 000@REDUCE Core! #2@\texttt{#2}}}%
        \else
-         \def\blubber{\index{Switches by package ! #2 package ! #1@\texttt{#1}}}%
+         \capitalize{#1}%
+         \def\blubber{\index{Switches by package ! \textsc{\blubba} package ! #2@\texttt{#2}}}%
        \fi
        \blubber}}
+%\show\ttindexswitch
 
 \newcommand{\COMPATNOTE}{{\em Compatibility Note:\ }}
 % \meta{...} is an alternative sentential form in descriptions using \it.
@@ -147,9 +151,9 @@
 
 \endgroup
 \newenvironment{syntax}{%
-    \quote\math\displaystyle
+    \list{}\item\relax\math\displaystyle
     \catcode`\|=\active
-}{\endmath\endquote}
+}{\endmath\endlist}
 
 \newenvironment{syntaxtable}{
     \syntax

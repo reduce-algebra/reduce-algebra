@@ -322,7 +322,7 @@ Another basis yet again results with a different term ordering:
 
 The operation of $groebner$ can be controlled by the following switches:
 \begin{description}
-\ttindexswitch{GROEBOPT}{GROEBNER}
+\ttindexswitch[GROEBNER]{GROEBOPT}
 \item[groebopt] -- If set $on$, the sequence of variables is optimized
 with respect to execution speed; the algorithm involved is described
 in~\cite{Boege:86}; note that the final list of variables is available in
@@ -338,14 +338,14 @@ $groebopt$ can be used even in cases where elimination of variables is desired.
 
 By default $groebopt$ is $off$, conserving the original variable sequence.
 
-\ttindexswitch{GROEBFULLREDUCTION}{GROEBNER}
+\ttindexswitch[GROEBNER]{GROEBFULLREDUCTION}
 \item[$groebfullreduction$] -- If set $off$, the reduction steps during
 the \linebreak[4] $groebner$ operation are limited to the pure head
 term reduction; subsequent terms are reduced otherwise.
 
 By default $groebfullreduction$ is on.
 
-\ttindexswitch{GLTBASIS}{GROEBNER}
+\ttindexswitch[GROEBNER]{GLTBASIS}
 \item[$gltbasis$] -- If set on, the leading terms of the result basis are
 extracted. They are collected in a basis of monomials, which is
 available as value of the global variable with the name $gltb$.
@@ -361,20 +361,20 @@ is valid only under the assumption that all these expressions do not vanish.
 The following switches control the print output of $groebner$; by
 default all these switches are set $off$ and nothing is printed.
 \begin{description}
-\ttindexswitch{GROEBSTAT}{GROEBNER}
+\ttindexswitch[GROEBNER]{GROEBSTAT}
 \item[$groebstat$] -- A summary of the computation is printed
 including the computing time, the number of intermediate
 $h$--polynomials and the counters for the hits of the criteria.
 
-\ttindexswitch{TRGROEB}{GROEBNER}
+\ttindexswitch[GROEBNER]{TRGROEB}
 \item[$trgroeb$] -- Includes $groebstat$ and the printing of the
 intermediate $h$-polynomials.
 
-\ttindexswitch{TRGROEBS}{GROEBNER}
+\ttindexswitch[GROEBNER]{TRGROEBS}
 \item[$trgroebs$] -- Includes $trgroeb$ and the printing of
 intermediate $s$--poly\-nomials.
 
-\ttindexswitch{TRGROEB1}{GROEBNER}
+\ttindexswitch[GROEBNER]{TRGROEB1}
 \item[$trgroeb1$] -- The internal pairlist is printed when modified.
 \end{description}
 
@@ -410,7 +410,7 @@ ideal with dimension zero the list is empty.
 which is the maximum length of the independent sets.
 \end{description}
 
-\ttindexswitch{GROEBOPT}{GROEBNER}
+\ttindexswitch[GROEBNER]{GROEBOPT}
 The switch $groebopt$ plays no role in the algorithms $gdimension$ and
 $gindependent$\_$sets$. It is set $off$ during the processing even if
 it is set $on$ before. Its state is saved during the processing.
@@ -591,13 +591,13 @@ It is obvious here that the solutions of the equations can be read
 off immediately.
 
 All switches from $groebner$ are valid for $groebnerf$ as well:
-\ttindexswitch{GROEBOPT}{GROEBNER}
-\ttindexswitch{GLTBASIS}{GROEBNER}
-\ttindexswitch{GROEBFULLREDUCTION}{GROEBNER}
-\ttindexswitch{GROEBSTAT}{GROEBNER}
-\ttindexswitch{TRGROEB}{GROEBNER}
-\ttindexswitch{TRGROEBS}{GROEBNER}
-\ttindexswitch{TRGROEB1}{GROEBNER}
+\ttindexswitch[GROEBNER]{GROEBOPT}
+\ttindexswitch[GROEBNER]{GLTBASIS}
+\ttindexswitch[GROEBNER]{GROEBFULLREDUCTION}
+\ttindexswitch[GROEBNER]{GROEBSTAT}
+\ttindexswitch[GROEBNER]{TRGROEB}
+\ttindexswitch[GROEBNER]{TRGROEBS}
+\ttindexswitch[GROEBNER]{TRGROEB1}
 \begin{center}
 \begin{tabular}{l}
 $groebopt$ \\
@@ -613,7 +613,7 @@ $rgroeb1$
 \subsubsubsection*{Additional switches for $groebnerf$:}
 \begin{description}
 
-\ttindexswitch{TRGROEBR}{GROEBNER}
+\ttindexswitch[GROEBNER]{TRGROEBR}
 \item[$trgroebr$] -- All intermediate partial basis are printed when
 detected.
 
@@ -838,7 +838,7 @@ $orders:=\{\{gradlexgradlex,2\},\{lexgradlex,2\}\}$
 In some case not only are the results produced by $greduce$ and
 $preduce$ of interest, but the reduction process is of some value
 too. If the switch
-\ttindexswitch{GROEBPROT}{GROEBNER}
+\ttindexswitch[GROEBNER]{GROEBPROT}
 \begin{center}
 $groebprot$
 \end{center}

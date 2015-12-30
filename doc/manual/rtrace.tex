@@ -15,7 +15,7 @@ The package \rtrace{} provides portable tracing facilities for
 \item tracing of rules when they fire.
 \end{itemize}
 In contrast to conventional Lisp-level tracing, values are printed in
-algebraic style whenever possible if the switch \rtrace{}\ttindexswitch{RTRACE}{RTRACE} is
+algebraic style whenever possible if the switch \rtrace{}\ttindexswitch[RTRACE]{RTRACE} is
 on, which
 it is by default.  The output has been specially tailored for the
 needs of algebraic-mode programming.  Most features can be applied
@@ -356,7 +356,7 @@ opens a new one.  The file name \texttt{NIL} (without string quotes)
 closes any current output file and causes the trace output to be
 redirected to the standard output device.
 
-\ttindexswitch{RTRACE}{RTRACE}
+\ttindexswitch[RTRACE]{RTRACE}
 The \rdebug{} variables \texttt{trlimit} and \texttt{trprinter!*} are
 not implemented in \rtrace{}.  If you want to select Lisp-style
 tracing then turn off the switch \rtrace{}:

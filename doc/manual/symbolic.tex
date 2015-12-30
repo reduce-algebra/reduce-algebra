@@ -146,7 +146,7 @@ Syntax:
 \end{syntaxtable}
  where
 \begin{syntax}
-    \meta{varlist} \texttt{(} \meta{variable}\texttt{,}\dots\texttt{,}\meta{variable}\texttt{)}
+    \meta{varlist}  \bnfprod \texttt{(} \meta{variable}\texttt{,}\dots\texttt{,}\meta{variable}\texttt{)}
 \end{syntax}
 e.g.,
 \begin{verbatim}
@@ -252,7 +252,7 @@ no \texttt{FEXPR}s in the core REDUCE system.
 \hypertarget{switch:DEFN}{}
 
 A user can obtain the Standard Lisp equivalent of his {\REDUCE} input by
-turning on the switch \sw{DEFN}\ttindexswitch{DEFN}{} (for definition).  The
+turning on the switch \sw{DEFN}\ttindexswitch{DEFN} (for definition).  The
 system then prints the Lisp translation of his input but does not evaluate
 it.  Normal operation is resumed when \sw{DEFN} is turned off.
 
@@ -337,13 +337,12 @@ Once you have this expression, you can now manipulate it as you wish.  To
 facilitate this, a standard set of selectors\index{Selector} and
 constructors\index{Constructor} are available for getting at parts of the
 form.  Those presently defined are as follows:
-\extendedmanual{\newpage}
-\begin{center}
-\vspace{10pt}
-{\large  REDUCE Selectors\par}
-%\end{center}
-%\begin{center}
+%\extendedmanual{\newpage}
+\begin{description}
 \renewcommand{\arraystretch}{1.5}
+
+\item[REDUCE Selectors]\mbox{}\\[-2mm]
+
 \begin{tabular}{lp{\rboxwidth}}
 \texttt{DENR} & denominator of standard quotient \\
 %
@@ -369,14 +368,10 @@ form.  Those presently defined are as follows:
 %
 \texttt{TPOW} & power of a term
 \end{tabular}
-\end{center}
 
-\begin{center}
-\vspace{10pt}
-{\large REDUCE Constructors \par}
-%\end{center}
-%\begin{center}
-\renewcommand{\arraystretch}{1.5}
+\pagebreak
+\item[REDUCE Constructors]\mbox{}\\*
+%
 \begin{tabular}{lp{\redboxwidth}}
 \texttt{.+} & add a term to a polynomial \\
 %
@@ -385,7 +380,7 @@ form.  Those presently defined are as follows:
 %
 \texttt{.\textasciicircum} & raise a variable to a power
 \end{tabular}
-\end{center}
+\end{description}
 
 For example, to find the numerator of the standard quotient above, one
 could say:
