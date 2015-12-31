@@ -18,13 +18,18 @@ IC=${3:-fwin}
 
 SetFile -t APPL $1
 mkdir -p $1.app/Contents
+mkdir -p $1.app/Frameworks
+cp /opt/local/lib/libfontconfig.1.dylib $1.app/Frameworks
+cp $srcdir/README.fontconfig            $1.app/Frameworks
 mkdir -p $1.app/Contents/MacOS
+mkdir -p $1.app/Contents/MacOS/reduce.fonts
 mkdir -p $1.app/Contents/Resources
-mkdir -p $1.app/Contents/Resources/Fonts
-F="$1.app/Contents/Resources/Fonts"
+F="$1.app/Contents/MacOS/reduce.fonts"
 # Copy everything from my source tree. This makes sense if the tree is
 # clean and does not contain any local extras!
-cp -r $srcdir/fonts/*                            $F
+cp -r $srcdir/fonts/*READ*                            $F
+cp -r $srcdir/fonts/*.pfb                             $F
+#cp -r $srcdir/fonts/*.ttf                             $F
 mkdir -p $1.app/Contents/Resources/reduce.resources
 AA="$1.app/Contents/Resources/reduce.resources"
 cp $srcdir/../../packages/redlog/mma/mma.awk          $AA
