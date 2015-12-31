@@ -778,7 +778,7 @@ fi
 
 if test "x$macintosh_build" = "xyes"
 then
-  ENVP=MACOSX_DEPLOYMENT_TARGET=10.9
+  ENVP=MACOSX_DEPLOYMENT_TARGET=10.10
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
 fi

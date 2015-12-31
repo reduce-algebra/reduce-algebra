@@ -1,5 +1,5 @@
 //
-// "FXWorker.cpp"                          Copyright A C Norman 2003-2010
+// "FXWorker.cpp"                          Copyright A C Norman 2003-2015
 //
 //
 // Window interface for old-fashioned C applications. Intended to
@@ -269,7 +269,7 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 
 #endif
 
-#define COMPANY_NAME  "Codemist-Ltd"
+#define COMPANY_NAME  "Codemist"
 #define PRODUCT_NAME  programName
 
 #define WINDOW_NAME   programName
@@ -331,19 +331,6 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
     }
     int fontsize =
         reg->readIntEntry("screen", "fontsize", -1);
-#if (FOX_MINOR<=4)
-    int fontweight =
-        reg->readIntEntry("screen", "fontweight", FONTWEIGHT_BOLD);
-    int fontslant =
-        reg->readIntEntry("screen", "fontslant", FONTSLANT_REGULAR);
-    int fontencoding =
-        reg->readIntEntry("screen", "fontencoding", FONTENCODING_DEFAULT);
-    int fontsetwidth =
-        reg->readIntEntry("screen", "fontsetwidth", FONTSETWIDTH_DONTCARE);
-    int fonthints =
-        reg->readIntEntry("screen", "fonthints",
-                          FONTPITCH_FIXED|FONTHINT_MODERN);
-#else
     int fontweight =
         reg->readIntEntry("screen", "fontweight", FXFont::Bold);
     int fontslant =
@@ -355,7 +342,6 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
     int fonthints =
         reg->readIntEntry("screen", "fonthints",
                           FXFont::Fixed|FXFont::Modern);
-#endif
     const char *fontname =
         reg->readStringEntry("screen", "fontname",  DEFAULT_FONT_NAME);
 // I have a concern here about how long the string that is returned will
@@ -527,7 +513,7 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 // Selecting the font may involve measuring font sizes etc which may
 // need the font creating...
 
-    LOG("Fonts: %s\n", fontname);
+    LOG("fonts: %s\n", fontname);
     FXFont *font1 = selectFont(fontname, fontsize,
         fontweight, fontslant, fontencoding, fontsetwidth, fonthints);
     font1->create();
@@ -590,6 +576,18 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 FXFont *selectFont(const char *name, int size,
     int weight, int slant, int encoding, int setwidth, int hints)
 {
+#ifdef DEBUG
+// Try to list some fonts
+    FXFontDesc *all;
+    FXuint n;
+    FXFont::listFonts(all, n, "");
+    LOG("%d fonts detected\n", n);
+    for (int i=0; i<n; i++)
+    {   LOG("Font %d is <%s> %x %x %x %x %x %x\n", i, all[i].face,
+          all[i].face[0]&0xff, all[i].face[1]&0xff, all[i].face[2]&0xff,
+          all[i].face[3]&0xff, all[i].face[4]&0xff, all[i].face[5]&0xff);
+    }
+#endif
 // I start with a simplistic hypothesis that the width if characters in
 // fonts here will scale linearly with their point size.
     int pointSize = 200;
@@ -597,14 +595,18 @@ FXFont *selectFont(const char *name, int size,
     FXFontDesc fd;
     strncpy(fd.face, name, sizeof(fd.face));
     fd.size = pointSize;    // NB decipoints not points
-    fd.weight = weight;
+    fd.weight = 0; //weight;
     fd.slant = slant;
     fd.encoding = encoding;
     fd.setwidth = setwidth;
-    fd.flags = hints;
+    fd.flags = 1; //hints;
+    LOG("Ask for font %s %s size %d\n", name, fd.face, pointSize);
+    LOG("size=%d weight=%d slant=%d enc=%d setq=%d hints=%d\n",
+        fd.size, fd.weight, fd.slant, fd.encoding, fd.setwidth, fd.flags);
     FXFont *f = new FXFont(application_object, fd);
 // I really hope that I have a fixed-with font here!
     f->create();
+    LOG("New font after creation is %s\n", f->getActualName().text());
 // If the registry had told me what size font to use then I will just
 // stick with that. If not then I will have been handed in a negative
 // size specifier and I will need to make a guess here.

@@ -510,8 +510,8 @@ const char *find_image_directory(int argc, const char *argv[])
 // where windowed versions are set up as "applications" in a directory that
 // forms an "application bundle". The programDir here can then refer to
 // ./reduce.app/Contents/MacOS/reduce (or whatever) and it is probably good
-// to make the default image location be reduce.app/Contents, ie a little
-// above where I am. But then the vanilla console mode version is liable to
+// to make the default image location be reduce.app/Contents/MacOS too.
+// But then the vanilla console mode version is liable to
 // be just ./reduce, and I want one image file to be used for both versions.
 // Furthermore some kind person may have launched the executable that is
 // within the application bundle directly from a console so that it is not
@@ -523,8 +523,10 @@ const char *find_image_directory(int argc, const char *argv[])
     n = strlen(programDir) - strlen(xname);
     if (n>=0 && strcmp(programDir+n, xname) == 0)
     {   // Seem to be being executed from within application bundle.
+// This dates from when I thought I would put the image in merely Contents not
+// in Contents/MacOS.
         sprintf(xname, "%.*s/%s.img",
-            (int)strlen(programDir)-6, programDir, programName);
+            (int)strlen(programDir), programDir, programName);
     }
     else
     {   struct stat buf;
@@ -534,10 +536,10 @@ const char *find_image_directory(int argc, const char *argv[])
 // such bundle I will put the image file in the location I would have used
 // with Windows of X11.
 //
-        sprintf(xname, "%s/%s.app/Contents", programDir, programName);
+        sprintf(xname, "%s/%s.app/Contents/MacOS", programDir, programName);
         if (stat(xname, &buf) == 0 &&
             (buf.st_mode & S_IFDIR) != 0)
-        {   sprintf(xname, "%s/%s.app/Contents/%s.img",
+        {   sprintf(xname, "%s/%s.app/Contents/MacOS/%s.img",
                 programDir, programName, programName);
         }
         else sprintf(xname, "%s/%s.img", programDir, programName);

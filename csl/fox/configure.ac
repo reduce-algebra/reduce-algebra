@@ -397,8 +397,8 @@ case $host_os in
   *darwin*)
 # I should review this annually since OSX tends not to value backwards
 # compatibility!
-    CC="MACOSX_DEPLOYMENT_TARGET=10.9 $CC"
-    CXX="MACOSX_DEPLOYMENT_TARGET=10.9 $CXX"
+    CC="MACOSX_DEPLOYMENT_TARGET=10.10 $CC"
+    CXX="MACOSX_DEPLOYMENT_TARGET=10.10 $CXX"
   ;;
 esac
 

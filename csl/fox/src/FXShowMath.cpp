@@ -1,4 +1,3 @@
-#define DEBUG_LIST_AVAILABLE_FONTS 1
 //
 // "FXShowMath.cpp"                       Copyright A C Norman 2004-2015
 //

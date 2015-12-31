@@ -918,7 +918,7 @@ then
       MACARCH="--enable-macos_arch=x86_64" 
       extras="--with-xft --with-xim"
       wx="--with-cocoa \
-          --with-macosx-version-min=10.9 \
+          --with-macosx-version-min=10.10 \
           $MACARCH "
       ;;
     *)

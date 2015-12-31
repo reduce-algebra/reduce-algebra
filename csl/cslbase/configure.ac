@@ -1378,16 +1378,47 @@ then
 # 10.10 Yosemite        My test machine runs this.
 # 10.11 El Capitan     ... I will now be moving to test on this
 
-# Well now that 10.10 has been (nearly been) released I will always target
-# 10.8 and support for earlier versions is no longer guaranteed.
+# Well now that 10.11 has been released I will always target
+# 10.10 and support for earlier versions is no longer guaranteed. I
+# take this rather agressive stance because my experience is that Apple
+# follow a line that old versions of anything can not be expected to work.
   if test "x$with_wx" != "xno"
   then
-    ENVP=MACOSX_DEPLOYMENT_TARGET=10.9
+    ENVP=MACOSX_DEPLOYMENT_TARGET=10.10
   else
-    ENVP=MACOSX_DEPLOYMENT_TARGET=10.9
+    ENVP=MACOSX_DEPLOYMENT_TARGET=10.10
   fi
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
+# The eccentric code here insists that I use the "macports" version
+# of many libraries and it links in the .a files not the .dyld ones so
+# that the resulting executable is easier to distribute. At present
+# fontconfig and freetype seems to be problems... so I may need to find out
+# how to get them packaged within the application bundle. I believe that
+# their license terms may make this legal.
+# Note that pthread and dl resolve to system-provided libraries and so
+# do not need magic treatment.
+  LL=/opt/local/lib
+  LIBS="$LL/libXrandr.a \
+    $LL/libXcursor.a \
+    $LL/libXrender.a \
+    $LL/libcurses.a \
+    $LL/libXext.a \
+    $LL/libX11.a \
+    $LL/libXft.a \
+    $LL/libXau.a \
+    $LL/libXfixes.a \
+    $LL/libxcb.a \
+    $LL/libXdmcp.a \
+    $LL/libpng.a \
+    $LL/libz.a \
+    $LL/libbz2.a \
+    $LL/libfreetype.a \
+    $LL/libiconv.a \
+    $LL/libXft.a \
+    ./libfontconfig.1.dylib \
+    -lpthread \
+    -ldl"  
 fi
 
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])

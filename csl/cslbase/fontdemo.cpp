@@ -239,7 +239,8 @@ static localFonts fontNames[] =
     {"cmex10", NULL},
     {"cmmi10", NULL},
     {"cmr10",  NULL},
-    {"cmsy10", NULL}
+    {"cmr10",  NULL},
+    {"cmuntt", NULL}
 };
 
 #ifdef WIN32
@@ -427,7 +428,7 @@ int main(int argc,char *argv[])
 
 // I will add exactly and only the fonts that I will be using.
     char fff[256];
-    for (int i=0; i<4; i++)
+    for (int i=0; i<sizeof(fontNames)/sizeof(fontNames[0]); i++)
     {   sprintf(fff,
             "%s/" toString(fontsdir) "/%s.pfb",
             programDir, fontNames[i].name);

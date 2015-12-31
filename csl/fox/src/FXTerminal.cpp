@@ -506,16 +506,7 @@ long FXTerminal::onCmdRead(FXObject *c, FXSelector sel, void *ptr)
     FXString filename;
     if (opendialog.execute())
     {   filename = opendialog.getFilename();
-#if !(FOX_MINOR<=4)
-/*
- * For versions before 1.6 I did not have the FXStat package to use. I could
- * re-code this to call ::stat directly but all it does is to filter cases
- * where the user exists the "Read File" dialog without a proper file name
- * in selected.
- */
-        if (FXStat::isFile(filename)) 
-#endif
-            s = filename.text();
+        if (FXStat::isFile(filename)) s = filename.text();
         strcpy(most_recent_read_file, s);
     }
     if (s != NULL && *s!=0)
@@ -999,11 +990,7 @@ static void setPrinterFont(FXDCNativePrinter &dc, int pageWidth, const char *fon
 // For a NativePrinter I can specify a font size as a double, so I do
 // that here to get as good a fit as I can.
     delete f;
-#if (FOX_MINOR<=4)
-    f = dc.fntDoubleGenerateFont(font_name, bestSize, FONTWEIGHT_BOLD);
-#else
     f = dc.fntDoubleGenerateFont(font_name, bestSize, FXFont::Bold);
-#endif
     f->create();
     dc.setFont(f);
 }
@@ -1556,8 +1543,12 @@ long FXTerminal::onCmdFont(FXObject *c, FXSelector s, void *ptr)
     keyFlags &= ~ESC_PENDING;
     FXFontDialog d(this, "Font", DECOR_BORDER|DECOR_TITLE);
     FXFontDesc description;
+FILE *f = fopen("/tmp/font.log", "a");
+fprintf(f, "onCmdFont\n"); fflush(f);
     font->getFontDesc(description);    // information about the current font ..
+fprintf(f, "onCmdFont current face as requested <%s>\n", description.face); fflush(f);
     strcpy(description.face, font->getActualName().text());
+fprintf(f, "onCmdFont actual face in use <%s>\n", description.face); fflush(f);
     description.flags =
         (description.flags & ~FXFont::Variable) | FXFont::Fixed;
     d.setFontSelection(description);   // .. and make that default choice!
@@ -1567,17 +1558,21 @@ long FXTerminal::onCmdFont(FXObject *c, FXSelector s, void *ptr)
     if (d.execute())
     {   FXFont *o = font;
         d.getFontSelection(description);
+fprintf(f, "new face <%s>\n", description.face); fflush(f);
         FXFont *newFont = new FXFont(application_object, description);
         newFont->create();
+fprintf(f, "new actual name = %s\n", newFont->getActualName().text());
         if (!newFont->isFontMono())
         {   delete newFont;
             FXMessageBox::error(this, MBOX_OK, "Error",
                 "You must select a fixed-pitch font");
+fclose(f);
             return 1;
         }
         setFont(newFont);
         delete o;                     // I must delete the old font.
     }
+fclose(f);
     setFocus();   // I am uncertain, but without this I lose focus...
     return 1;
 }
