@@ -15,6 +15,9 @@
 /* True if this is with no GUI and aimed at embedded use */
 #undef EMBEDDED
 
+/* True if this is an experimental testing mode variant */
+#undef EXPERIMENT
+
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #undef HAVE_ARPA_INET_H
 
@@ -59,6 +62,9 @@
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */
 #undef HAVE_DIRENT_H
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
 
 /* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
 #undef HAVE_DOPRNT
@@ -422,6 +428,9 @@
    slash. */
 #undef LSTAT_FOLLOWS_SLASHED_SYMLINK
 
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
+#undef LT_OBJDIR
+
 /* True if we are running on Macintosh */
 #undef MACINTOSH
 
@@ -461,9 +470,6 @@
 /* Define as the return type of signal handlers (`int' or `void'). */
 #undef RETSIGTYPE
 
-/* Unusual but within ANSI spec */
-#undef SIGNED_SHIFTS_ARE_LOGICAL
-
 /* The size of `int', as computed by sizeof. */
 #undef SIZEOF_INT
 
@@ -490,9 +496,6 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
-
-/* True if this is an experimental testing mode variant */
-#undef TEST
 
 /* Define to 1 if your <sys/time.h> declares `struct tm'. */
 #undef TM_IN_SYS_TIME
