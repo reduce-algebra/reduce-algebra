@@ -1,5 +1,4 @@
 
-\index{ORTHOVEC package}
 \iffalse
 The revised version of ORTHOVEC is a collection of REDUCE 3.4 procedures and
 operations which provide a simple to use environment for the manipulation of
@@ -160,14 +159,16 @@ and in the case of scalar arguments reduce to the usual definitions of
 $ +, -, *, /, $ etc.
 
 The operators are represented by symbols 
-\ttindextype{+}{!3-D vector} \ttindextype{-}{!3-D vector} 
-\ttindextype{/}{!3-D vector} \ttindextype{*}{!3-D vector} 
-\ttindextype{*}{!3-D vector} \ttindextype{"\^}{!3-D vector}
-\ttindextype{><}{!3-D vector}
+\index{+ operator@\texttt  {+} operator!3-D vectors}
+\index{- operator@\texttt  {-} operator!3-D vectors}
+\index{/ operator@\texttt  {/} operator!3-D vectors}
+\index{* operator@\texttt  {*} operator!3-D vectors}
+\index{"\^ operator@\texttt {"\^} operator!3-D vectors}
+\index{>< (cross product) operator@\texttt  {><} (cross product) operator!3-D vectors}
 \begin{verbatim}  
 +, -, /, *, ^, ><
 \end{verbatim}
-\ttindextype{><}{!diphthong} The composite {\tt ><} is an
+The composite \texttt{><} is an
 attempt to represent the cross product symbol 
 $\times$ in ASCII characters.
 If we let ${\bf v}$ be a vector and $s$ be a scalar, then
@@ -257,7 +258,7 @@ multiplication are scalar multiplication of vectors, the third is the
 \index{Vector!dot product} \index{Vector!inner product}
 \index{Inner product} \index{Dot product}
 product of two scalars and the last is the inner (dot) product.  The
-prefix operators  {\tt +, -, /} can take either scalar or vector
+unary operators  \texttt{+, -, /} can take either scalar or vector
 arguments and return results of the same type as their arguments. 
 VMOD returns a scalar.
 
@@ -291,8 +292,8 @@ ${\bf a}^n \equiv  {\rm VMOD}(a)^n =   \mid {\bf a} \mid^n$
 
 \subsection{Differential Operations}
 Differential operators provided are div, grad, curl, delsq, and dotgrad.
-\index{Div operator} \index{Grad operator} \index{Curl operator}
-\index{Delsq operator} \index{Dotgrad operator}
+\ttindextype{DIV}{operator} \ttindextype{GRAD}{operator}\ttindextype{CURL}{operator}
+\ttindextype{DELSQ}{ operator} \ttindextype{DOTGRAD}{operator}
 All but the last of these are prefix operators having a single
 vector or scalar argument as appropriate.  Valid combinations of 
 operator and argument, and the type of the result are shown in table~\ref{vvecttable}.
@@ -500,7 +501,7 @@ The input lines were taken from the file
 {\em orthovectest.red} (the Test Run Input), but could 
 equally well be typed in at the Terminal.
 
-\example\index{ORTHOVEC package!example}
+\example\index{Orthovec package@\textsc{Orthovec} package!example}
 
 Show that
 \begin{eqnarray*}
@@ -509,7 +510,7 @@ Show that
  + ({\bf a} \cdot {\bf d})({\bf b} \cdot {\bf c}) \equiv 0
 \end{eqnarray*}
  
-\example\index{ORTHOVEC package!example}\label{ORTHOVEC:eqm}
+\example\index{Orthovec package@\textsc{Orthovec} package!example}\label{ORTHOVEC:eqm}
 
 Write the equation of motion
 \begin{eqnarray*}
@@ -518,7 +519,7 @@ Write the equation of motion
 \end{eqnarray*}
 in cylindrical coordinates.
 
-\example\index{ORTHOVEC package!example}\label{ORTHOVEC:taylor}
+\example\index{Orthovec package@\textsc{Orthovec} package!example}\label{ORTHOVEC:taylor}
 
 Taylor expand
 \begin{itemize}
@@ -532,13 +533,13 @@ fifth order in $z$.
 ${\bf v} = (x/ \sin(x),(e^y-1)/y,(1+z)^{10})$.
 \end{itemize}
 
-\example\index{ORTHOVEC package!example}
+\example\index{Orthovec package@\textsc{Orthovec} package!example}
 
 Obtain the second component of the equation of motion in
 example~\ref{ORTHOVEC:eqm}, and the first component of the final
 vector Taylor series in example~\ref{ORTHOVEC:taylor}.
 
-\example\index{ORTHOVEC package!example}
+\example\index{Orthovec package@\textsc{Orthovec} package!example}
 
 Evaluate the line integral 
 \begin{eqnarray*}
@@ -551,7 +552,7 @@ ${\bf r}_2 = (2,4,8)$ along the path $(x,y,z) = (s, s^2, s^3)$ where\\
 \end{eqnarray*}
 and $({\bf i, j, k})$ are unit vectors in the ($x,y,z$) directions.
 
-\example\index{ORTHOVEC package!example}
+\example\index{Orthovec package@\textsc{Orthovec} package!example}
 
 Find the volume $V$ common to the intersecting cylinders $x^2 + y^2 
 = r^2$ and $x^2 + z^2 = r^2$ i.e. evaluate

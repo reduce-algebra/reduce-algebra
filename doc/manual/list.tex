@@ -26,8 +26,8 @@ on the \hyperlink{ASSIST}{ASSIST}\extendedmanual{ (chapter~\ref{ASSIST})} packag
 
 To facilitate the use of
 lists, a number of operators are also available for manipulating
-them. \texttt{PART(\meta{list},n)}\ttindex{PART} for example will return the
-$n^{th}$ element of a list. \texttt{LENGTH}\ttindex{LENGTH} will return the
+them. \texttt{PART(\meta{list},n)}\ttindextype{PART}{operator} for example will return the
+$n^{th}$ element of a list. \texttt{LENGTH}\ttindextype{LENGTH}{operator} will return the
 length of a list.  Several operators are also defined uniquely for lists.
 For those familiar with them, these operators in fact mirror the
 operations defined for Lisp lists.  These operators are as follows:
@@ -46,32 +46,32 @@ list(a,list(list(b,c),d),e);       ->  {{a},{{b,c},d},e}
 \subsection{FIRST}
 \hypertarget{operator:FIRST}{}
 
-This operator\ttindex{FIRST} returns the first member of a list.  An error
+This operator\ttindextype{FIRST}{operator} returns the first member of a list.  An error
 occurs if the argument is not a list, or the list is empty.
 
 \subsection{SECOND}
 \hypertarget{operator:SECOND}{}
 
-\texttt{SECOND}\ttindex{SECOND} returns the second member of a list.  An error
+\texttt{SECOND}\ttindextype{SECOND}{operator} returns the second member of a list.  An error
 occurs if the argument is not a list or has no second element.
 
 \subsection{THIRD}
 \hypertarget{operator:THIRD}{}
 
-This operator\ttindex{THIRD} returns the third member of a list.  An error
+This operator\ttindextype{THIRD}{operator} returns the third member of a list.  An error
 occurs if the argument is not a list or has no third element.
 
 \subsection{REST}
 \hypertarget{operator:REST}{}
 
-\texttt{REST}\ttindex{REST} returns its argument with the first element
+\texttt{REST}\ttindextype{REST}{operator} returns its argument with the first element
 removed.  An error occurs if the argument is not a list, or is empty.
 
 \subsection{\textbf{.} (Cons) Operator}
 \hypertarget{operator:CONS}{}
 \hypertarget{reserved:consop}{}
 
-This operator\ttindex{. (CONS)} adds (``conses'') an expression to the
+This operator\ttindextype{. (CONS)}{operator} adds (``conses'') an expression to the
 front of a list.  For example:
 \begin{verbatim}
         a . {b,c}     ->   {a,b,c}.
@@ -80,7 +80,7 @@ front of a list.  For example:
 \subsection{APPEND}
 \hypertarget{operator:APPEND}{}
 
-This operator\ttindex{APPEND} appends its first argument to its second to
+This operator\ttindextype{APPEND}{operator} appends its first argument to its second to
 form a new list.
 \textit{Examples:}
 \begin{verbatim}
@@ -91,7 +91,7 @@ form a new list.
 \subsection{REVERSE}
 \hypertarget{operator:REVERSE}{}
 
-The operator \texttt{REVERSE}\ttindex{REVERSE} returns its argument with the
+The operator \texttt{REVERSE}\ttindextype{REVERSE}{operator} returns its argument with the
 elements in the reverse order.  It only applies to the top level list, not
 any lower level lists that may occur.  Examples are:\index{List operation}
 \begin{verbatim}
@@ -110,9 +110,9 @@ example, the result of evaluating \texttt{log\{a,b,c\}} is the expression
 \texttt{\{LOG(A),LOG(B),LOG(C)\}}.
 
 There are two ways to inhibit this operator distribution.  Firstly, the
-switch \sw{LISTARGS},\ttindex{LISTARGS} if on, will globally inhibit
+switch \sw{LISTARGS},\ttindexswitch{LISTARGS} if on, will globally inhibit
 such distribution.  Secondly, one can inhibit this distribution for a
-specific operator by the declaration \texttt{LISTARGP}.\ttindex{LISTARGP} For
+specific operator by the declaration \texttt{LISTARGP}.\ttindextype{LISTARGP}{declaration} For
 example, with the declaration \texttt{listargp log}, \texttt{log\{a,b,c\}}
  would evaluate to \texttt{LOG(\{A,B,C\})}.
 

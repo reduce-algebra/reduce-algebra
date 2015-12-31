@@ -120,6 +120,11 @@
                               \else
                                 \index{#1 #2@\texttt{#1} #2}%
                               \fi}}
+\newcommand*{\indexpackage}[1]{%
+  \capitalize{#1}%
+  \index{#1 package@\textsc{\blubba} package}%
+  \index{Packages!#1@\textsc{\blubba}}%
+}
 \newcommand*{\ttindexswitch}[2][]{{%
        \renewcommand{\_}{\protect\underscore}%
        \renewcommand{\|}{\protect\textbar}%
@@ -130,7 +135,7 @@
          \def\blubber{\index{Switches by package ! 000@REDUCE Core! #2@\texttt{#2}}}%
        \else
          \capitalize{#1}%
-         \def\blubber{\index{Switches by package ! \textsc{\blubba} package ! #2@\texttt{#2}}}%
+         \def\blubber{\index{Switches by package ! #1 package@\textsc{\blubba} package ! #2@\texttt{#2}}}%
        \fi
        \blubber}}
 %\show\ttindexswitch

@@ -1,7 +1,7 @@
 
-\index{algebraic number fields}
-\index{algebraic numbers}
-\index{ARNUM package}
+\index{Algebraic number fields}
+\index{Algebraic numbers}
+
 Algebraic numbers are the solutions of an irreducible polynomial over
 some ground domain.  \index{i} The algebraic number $i$ (imaginary
 unit), \index{imaginary unit} for example, would be defined by the
@@ -19,7 +19,7 @@ All algebraic numbers which can be built up from $a$ are then of the form:
 \end{eqnarray*}
 where the $r_j$'s are rational numbers.
 
-\ttindextype{+}{!algebraic numbers}
+\index{+ operator@\texttt  {+} operator!algebraic numbers}
 The operation of addition is defined by
 \begin{eqnarray*}
 ({r_{n-1}} {a ^{n-1}} ~+~ {r_{n-2}} {a ^{n-2}} ~+~ ...) ~ + ~
@@ -27,7 +27,7 @@ The operation of addition is defined by
 ({r_{n-1}+s_{n-1}}) {a ^{n-1}} ~+~ ({r_{n-2}+s_{n-2}}) {a ^{n-2}} ~+~ ...
 \end{eqnarray*}
 
-\ttindextype{*}{!algebraic numbers}
+\index{* operator@\texttt  {*} operator!algebraic numbers}
 Multiplication of two algebraic numbers can be performed by normal
 polynomial multiplication followed by a reduction of the result with the
 help of the defining polynomial.
@@ -40,7 +40,7 @@ a^n ~ + ~ {p _{n-1}} {a ^ {n -1}} ~ + ~ ... ~ + ~ {p_0} \\
 = ~~~{q_{n-1}} a^{n-1} ~ + ~ {q _{n-2}} {a ^ {n -2}} ~ + ~ ...
 \end{eqnarray*}
 
-\ttindextype{/}{!algebraic numbers}
+\index{/ operator@\texttt  {/} operator!algebraic numbers}
 Division of two algebraic numbers r and s yields another algebraic number q.
 
 $ \frac{r}{s} = q$ or $ r = q s $.
@@ -107,7 +107,7 @@ bases might be available in a later version.  If the defining
 polynomial is not monic, it will be made so by an appropriate
 substitution.
 
-\example \index{ARNUM package!example}
+\example \index{ARNUM package@\textsc{Arnum} package!example}
 
 \begin{verbatim}
      defpoly sqrt2**2-2;
@@ -147,7 +147,7 @@ things, adds the new extension to the previously defined one.  All
 algebraic numbers are then expressed in terms of the primitive element.
 
 
-\example\index{ARNUM package!example}
+\example\index{ARNUM package@\textsc{Arnum} package!example}
 
 \begin{verbatim}
    defpoly sqrt2**2-2,cbrt5**3-5;
@@ -178,7 +178,7 @@ the polynomial and the defining polynomial.  After factoring over the
 integers, the factors over the algebraic number field are recovered by GCD
 calculations.
 
-\example\index{ARNUM package!example}
+\example\index{ARNUM package@\textsc{Arnum} package!example}
 
 \begin{verbatim}
    defpoly a**2-5;
@@ -195,7 +195,7 @@ of a primitive element of minimal degree for which a given polynomial splits
 into linear factors.  The algorithm as described in Trager's article is
 essentially a repeated primitive element calculation.
 
-\example\index{ARNUM package!example}
+\example\index{ARNUM package@\textsc{Arnum} package!example}
 
 \begin{verbatim}
    split_field(x**3-3*x+7);

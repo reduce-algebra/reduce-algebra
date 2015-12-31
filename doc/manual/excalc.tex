@@ -1,5 +1,4 @@
 
-\index{EXCALC package}
 
 \subsection*{Acknowledgments}
 
@@ -117,7 +116,8 @@ Example:
 
 \subsection{Exterior Multiplication}
 
-\ttindextype{"\^}{! exterior multiplication} \index{Exterior product}
+\index{"\^ operator@\texttt {"\^} operator!exterior multiplication} 
+\index{Exterior product}
 Exterior multiplication between exterior forms is carried out with the
 nary infix operator \^{ } (wedge)\label{wedge}.  Factors are ordered
 according to the usual ordering in {\REDUCE} using the commutation
@@ -246,7 +246,7 @@ operator {\tt d}\label{d}.  Products are normally differentiated out,
      ( - 1) *X*Y^d Z  + X*d Y^Z + d X^Y^Z
 \end{verbatim}
 
-This expansion can be suppressed by the command {\tt NOXPND D}\label{NOXPNDD}.
+This expansion can be suppressed by the command \texttt{NOXPND D}\label{NOXPNDD}.
 \ttindextype{NOXPND}{! D}
 
 \begin{verbatim}
@@ -325,7 +325,7 @@ The inner product between a vector and an exterior form is represented
 by the diphthong \_$|$ \label{innerp} (underscore or-bar), which is the
 notation of many textbooks.  If the exterior form is an exterior
 product, the inner product is carried through any factor.
-\ttindextype{\_\textbar}{operator}
+\ttindextype{\_\textbar}{(inner product) operator}
 
 \example\index{EXCALC package!example}
 
@@ -366,7 +366,8 @@ The Lie derivative can be taken between a vector and an exterior form
 or between two vectors.  It is represented by the infix operator $|$\_
 \label{lie}.  In the case of Lie differentiating, an exterior form by
 a vector, the Lie derivative is expressed through inner products and
-exterior differentiations, {\em i.e.} \ttindextype{\textbar\_}{operator}
+exterior differentiations, \emph{i.e.} 
+\ttindextype{\textbar\_}{(Lie derivative) operator}
 
 \begin{verbatim}
      pform z=k;
@@ -400,9 +401,9 @@ are differentiated out.
 
 \subsection{Hodge-* Duality Operator}
 
-\index{Hodge-* duality operator} \ttindextype{"\#}{! Hodge-* operator}
+\index{Hodge-* duality operator} \ttindextype{"\#}{(Hodge-*) operator}
 The Hodge-*\label{hodge} duality operator maps an exterior form of degree
-{\tt K} to an exterior form of degree {\tt N-K}, where {\tt N} is the
+\texttt{K} to an exterior form of degree \texttt{N-K}, where \texttt{N} is the
 dimension of the space.  The double application of the operator must
 lead back to the original exterior form up to a factor. The following
 example shows how the factor is chosen here
@@ -444,12 +445,12 @@ More simplifications are performed if a coframe is defined.
 \subsection{Variational Derivative}
 
 \index{Derivative!variational} \index{Variational derivative}
-\ttindex{VARDF}
-The function {\tt VARDF}\label{VARDF} returns as its value the
+\ttindextype{VARDF}{(variational derivative) operator)}
+The function \texttt{VARDF}\label{VARDF} returns as its value the
 variation of a given Lagrangian n-form with respect to a specified
 exterior form (a field of the Lagrangian).  In the shared variable
-\ttindex{BNDEQ"!*}
-{\tt BNDEQ!*}, the expression is stored that has to yield zero if
+\ttindextype{BNDEQ"!*}{shared variable}
+\texttt{BNDEQ!*}, the expression is stored that has to yield zero if
 integrated over the boundary.
 
 Syntax:
@@ -514,7 +515,7 @@ Exterior forms and vectors may have indices.  On input, the indices
 are given as arguments of the object.  A positive argument denotes a
 superscript and a negative argument a subscript.  On output, the
 indexed quantity is displayed two dimensionally if \texttt{NAT} is on.
-\ttindextype{NAT}{switch}
+\ttindexswitch{NAT}
 Indices may be identifiers or numbers.  
 
 \example\index{EXCALC package!example}
@@ -574,7 +575,7 @@ possible index values, and the summation convention is understood.
 
 If the expression to be evaluated is not an assignment, the values of
 the expression are displayed as an assignment to an indexed variable
-with name {\tt NS}.  This is done only on output, {\em i.e.} no actual
+with name \texttt{NS}.  This is done only on output, \emph{i.e.} no actual
 binding to the variable NS occurs.
 \ttindextype{NS}{dummy variable}
 
@@ -722,7 +723,7 @@ orthonormal frame and a coordinate frame.
 
 Individual elements of the metric can be accessed just by calling them
 with the desired indices. The value of the determinant of the
-\index{Determinant!in DETM"!*} \ttindex{DETM"!*}
+\index{Determinant!in DETM"!*} \ttindextype{DETM"!*}{variable}
 covariant metric is stored in the variable {\tt DETM!*}.  The metric
 is not needed for lowering or raising of indices as the system
 performs this automatically, {\em i.e.} no matter in what index
@@ -981,17 +982,18 @@ defined on.
 
 \begin{table}
 \begin{tabular}{l l r}
-\ttindextype{"\^}{! exterior multiplication} \index{Wedge}
+\index{"\^ operator@\texttt {"\^} operator!exterior multiplication}
+\index{Wedge}
 \^{ }  &  Exterior Multiplication & \pageref{wedge} \\
-\ttindextype{"@}{! partial differentiation}
+\index{"@ operator@\texttt  {"@} operator! partial differentiation}
 @  & Partial Differentiation & \pageref{at}  \\
-\ttindextype{"@}{! tangent vector}
+\index{"@ operator@\texttt  {"@} operator! tangent vector}
 @  & Tangent Vector  & \pageref{at1}  \\
-\ttindextype{"\#}{! Hodge-* operator}
+\ttindextype{"\#}{(Hodge-*) operator}
 \#  & Hodge-* Operator & \pageref{hodge} \\
-\ttindextype{\_\textbar}{operator}
+\ttindextype{\_\textbar}{(inner product) operator}
 \_$|$  & Inner Product  & \pageref{innerp} \\
-\ttindextype{\textbar\_}{operator}
+\ttindextype{\textbar\_}{(Lie derivative) operator}
 $|$\_  & Lie Derivative  & \pageref{lie}  \\
 \ttindextype{COFRAME}{command}
 COFRAME & Declaration of a coframe & \pageref{COFRAME} \\

@@ -51,7 +51,7 @@ two integers, in lowest terms: that is, as rational numbers.
 In essentially all versions of {\REDUCE} it is also possible (but not always
 desirable!) to ask {\REDUCE} to work with floating point approximations to
 numbers again, to any precision. Such numbers are called \emph{real}.
-\index{Real}  They can be input in two ways:
+\index{Real number}  They can be input in two ways:
 \begin{enumerate}
 \item as a signed or unsigned sequence of any number of decimal digits
       with an embedded or trailing decimal point.
@@ -61,7 +61,7 @@ numbers again, to any precision. Such numbers are called \emph{real}.
 e.g. \texttt{32. +32.0 0.32E2} and \texttt{320.E-1} are all representations of
 32.
 
-The declaration \texttt{SCIENTIFIC\_NOTATION}\ttindex{SCIENTIFIC\_NOTATION}
+The declaration \texttt{SCIENTIFIC\_NOTATION}\ttindextype{SCIENTIFIC\_NOTATION}{declaration}
 controls the output format of floating point numbers.  At
 the default settings, any number with five or less digits before the
 decimal point is printed in a fixed-point notation, e.g., \texttt{12345.6}.
@@ -71,7 +71,7 @@ more zeros after the decimal point is printed in scientific notation.  To
 change these defaults, \texttt{SCIENTIFIC\_NOTATION} can be used in one of two
 ways. \texttt{SCIENTIFIC\_NOTATION} \emph{m};, where \emph{m} is a positive
 integer, sets the printing format so that a number with more than \emph{m}
-digits before the decimal point, or {\em m\/} or more zeros after the
+digits before the decimal point, or \emph{m} or more zeros after the
 decimal point, is printed in scientific notation. \texttt{SCIENTIFIC\_NOTATION}
 \{\emph{m,n}\}, with \emph{m} and \emph{n} both positive integers, sets the
 format so that a number with more than \emph{m} digits before the decimal
@@ -105,7 +105,7 @@ A sequence of alphanumeric characters in which the first is a digit is
 interpreted as a product.  For example, \texttt{2ab3c} is interpreted as
 \texttt{2*ab3c}.  There is one exception to this:  If the first letter after a
 digit is \texttt{E}, the system will try to interpret that part of the
-sequence as a real number\index{Real}, which may fail in some cases.  For
+sequence as a real number\index{Real number}, which may fail in some cases.  For
 example, \texttt{2E12} is the real number $2.0*10^{12}$, \texttt{2e3c} is
 2000.0*C, and \texttt{2ebc} gives an error.
 
@@ -139,7 +139,8 @@ may not extend over a line of text.
 
 Every variable\index{Variable} is named by an identifier, and is given a
 specific type.  The type is of no concern to the ordinary user.  Most
-variables are allowed to have the default type, called \emph{scalar}.
+variables are allowed to have the default type, called 
+\index{Scalar variable}\emph{scalar}.
 These can receive, as values, the representation of any ordinary algebraic
 expression.  In the absence of such a value, they stand for themselves.
 
@@ -172,26 +173,26 @@ include:
     \sum_{n=0}^{\infty} \frac{(-1)^{n}}{(2n+1)^{2}} .
   \end{displaymath}
 \ttindex{CATALAN}
-\index{Reserved variable ! \texttt{CATALAN}}
+\index{Reserved variable !CATALAN@\texttt{CATALAN}}
 
 \item[E] Intended to represent the base of
 \ttindex{E}
 the natural logarithms.  \texttt{log(e)}, if it occurs in an expression, is
-automatically replaced by 1.  If \sw{ROUNDED}\ttindex{ROUNDED} is
+automatically replaced by 1.  If \sw{ROUNDED}\ttindexswitch{ROUNDED} is
 on, \texttt{E} is replaced by the value of E to the current degree of
 floating point precision\index{Numerical precision}.
 
 \item[EULER\_GAMMA] Euler's constant, also available as $-\psi(1)$.
 \ttindex{EULER\_GAMMA}
-\index{Reserved variable ! \texttt{EULER\_GAMMA}}
+\index{Reserved variable !EULER\_GAMMA@\texttt{EULER\_GAMMA}}
 
 \item[GOLDEN\_RATIO] The number $\frac{1+\sqrt{5}}{2}$.
 \ttindex{GOLDEN\_RATIO}
-\index{Reserved variable ! \texttt{GOLDEN\_RATIO}}
+\index{Reserved variable !GOLDEN\_RATION@\texttt{GOLDEN\_RATIO}}
 
 \item[I] Intended to represent the square
 \ttindex{I}
-\index{Reserved variable ! \texttt{I}}
+\index{Reserved variable !I@\texttt{I}}
 
 root of $-1$. \texttt{i\textasciicircum2} is replaced by $-1$, and
 appropriately for higher powers of \texttt{I}.  This applies only to the
@@ -201,7 +202,7 @@ the context \texttt{for i:= ...}.
 
 \item[INFINITY] Intended to represent $\infty$
 \ttindex{INFINITY}
-\index{Reserved variable ! \texttt{INFINITY}}
+\index{Reserved variable !INFINITY@\texttt{INFINITY}}
 
 in limit and power series calculations for example, as well as in definite integration.
 Note however that the
@@ -214,36 +215,36 @@ current system does \emph{not} do proper arithmetic on $\infty$.  For example,
   \end{displaymath}
 %, as defined in
 \ttindex{KHINCHIN}%\cite{Khinchin:64}. 
-\index{Reserved variable ! \texttt{KHINCHIN}}
+\index{Reserved variable !KHINCHIN@\texttt{KHINCHIN}}
 
 \item[NEGATIVE] Used in the \hyperlink{package:ROOTS}{Roots package}.
 \ttindex{NEGATIVE}
-\index{Reserved variable ! \texttt{NEGATIVE}}
+\index{Reserved variable !NEGATIVE@\texttt{NEGATIVE}}
 
 \item[NIL] In {\REDUCE} (algebraic mode only)
 taken as a synonym for zero.  Therefore \texttt{NIL} cannot be used as a
 variable.
 \ttindex{NIL}
-\index{Reserved variable ! \texttt{NIL}}
+\index{Reserved variable !NIL@\texttt{NIL}}
 
 \item[PI] Intended to represent the circular
 \ttindex{PI}
-\index{Reserved variable ! \texttt{PI}}
-constant.  With \sw{ROUNDED} on, it is replaced by the value of $\pi$ to
+\index{Reserved variable !PI@\texttt{PI}}
+constant.  With \sw{ROUNDED}\ttindexswitch{ROUNDED} on, it is replaced by the value of $\pi$ to
 the current degree of floating point precision.
 
 \item[POSITIVE] Used in the \hyperlink{package:ROOTS}{Roots package}.
 \ttindex{POSITIVE}
-\index{Reserved variable ! \texttt{POSITIVE}}
+\index{Reserved variable !POSITIVE@\texttt{POSITIVE}}
 
 \item[T] Must not be used as a formal
 \ttindex{T}
-\index{Reserved variable ! \texttt{T}}
+\index{Reserved variable !T@\texttt{T}}
 parameter or local variable in procedures, since conflict arises with the
 symbolic mode meaning of T as \emph{true}.
 \end{list}
 
-Other reserved variables, such as \texttt{LOW\_POW}, described in other sections,
+Other reserved variables, such as \var{LOW\_POW}, described in other sections,
 are listed in Appendix A.
 
 Using these reserved variables\index{Reserved variable} inappropriately
@@ -252,7 +253,7 @@ will lead to errors.
 There are also internal variables used by {\REDUCE} that have similar
 restrictions. These usually have an asterisk in their names, so it is
 unlikely a casual user would use one. An example of such a variable is
-\texttt{K!*} used in the asymptotic command package.
+\var{K!*} used in the asymptotic command package.
 
 Certain words are reserved in {\REDUCE}. They may only be used in the manner
 intended. A list of these is given in the section ``Reserved Identifiers''.
@@ -282,12 +283,13 @@ convenience of human readers, in such a way that {\REDUCE} pays no
 attention to it.  There are two ways to do this:
 
 \begin{enumerate}
-\item Everything from the word \texttt{COMMENT}\ttindex{COMMENT} to the next
+\item Everything from the word \texttt{COMMENT}\ttindextype{COMMENT}{keyword} to the next
 statement terminator, normally ; or \$, is ignored.  Such comments
 can be placed anywhere a blank could properly appear. (Note that \texttt{END}
 and \texttt{>}\texttt{>} are \emph{not} treated as \texttt{COMMENT} delimiters!)
 
-\item Everything from the symbol \texttt{\%}\index{Percent sign} to the end
+\item Everything from the symbol \texttt{\%}\index{Percent sign}
+\index{\% (Precent sign)@\texttt{\%} (Percent sign)} to the end
 of the line on which it appears is ignored.  Such comments can be placed
 as the last part of any line.  Statement terminators have no special
 meaning in such comments.  Remember to put a semicolon before the \texttt{\%}
@@ -353,7 +355,8 @@ but
 &``\var{cos}'' minus the variable \var{y})
 \end{tabular}
 \end{quote}
-A unary prefix operator\index{Prefix operator} has a precedence
+A unary prefix operator\index{Unary prefix operator}\index{Prefix operator, unary}
+has a precedence
 \index{Operator precedence} higher than any infix operator, including
 unary infix operators. \index{Infix operator}
 In other words, {\REDUCE} will always interpret \texttt{cos~y + 3} as
@@ -467,6 +470,9 @@ left associative.  In other words,
 The operators\index{Operator} \texttt{<}, \texttt{<=}, \texttt{>}, \texttt{>=}
 can only be used for making comparisons between numbers.  No meaning is
 currently assigned to this kind of comparison between general expressions.
+\ttindextype{<}{operator}
+\ttindextype{<=}{operator}
+\ttindextype{>}{operator}\ttindextype{>=}{operator}
 
 Parentheses may be used to specify the order of combination.  If
 parentheses are omitted then this order is by the ordering of the
