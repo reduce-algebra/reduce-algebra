@@ -95,11 +95,12 @@ to get the desired answer.
 
 \hypertarget{command:SAVEAS}{}
 If the user wishes to assign the workspace to a variable or expression for
-later use, the \texttt{SAVEAS}\ttindex{SAVEAS} statement can be used.  It
+later use, the \texttt{SAVEAS}\ttindextype{SAVEAS}{statement}
+\index{Statement!SAVEAS@\texttt{SAVEAS}} statement can be used.  It
 has the syntax
-\begin{verbatim}
-        SAVEAS <expression>
-\end{verbatim}
+\begin{syntax}
+        \texttt{SAVEAS}\ \meta{expression}
+\end{syntax}
 For example, after the differentiation in the last example, the workspace
 holds the expression \texttt{2*x+2*y}.  If we wish to assign this to the
 variable \var{Z} we can now say
@@ -146,7 +147,7 @@ whole output line with terms.  Certain output declarations,\index{Output
 declaration} however, can be used to affect this format.  To begin with,
 we look at an operator for changing the length of the output line.
 
-\subsection{LINELENGTH Operator}\ttindex{LINELENGTH}
+\subsection{LINELENGTH Operator}\ttindextype{LINELENGTH}{operator}
 \hypertarget{operator:LINELENGTH}{}
 
 This operator is used with the syntax
@@ -175,7 +176,7 @@ and switches available are as follows:
 \subsubsection{ORDER Declaration}
 \hypertarget{command:ORDER}{}
 
-The declaration \texttt{ORDER}\ttindex{ORDER} may be used to order variables
+The declaration \texttt{ORDER}\ttindextype{ORDER}{declaration} may be used to order variables
 on output.  The syntax is:
 \begin{verbatim}
         order v1,...vn;
@@ -188,7 +189,7 @@ orders \texttt{X} ahead of \texttt{Y}, \texttt{Y} ahead of \texttt{Z} and all th
 ahead of other variables not given an order. \texttt{order nil;} resets the
 output order to the system default.  The order of variables may be changed
 by further calls of \texttt{ORDER}, but then the reordered variables would
-have an order lower than those in earlier \texttt{ORDER}\ttindex{ORDER} calls.
+have an order lower than those in earlier \texttt{ORDER} calls.
 Thus,
 \begin{verbatim}
         order x,y,z;
@@ -201,7 +202,7 @@ usually alphabetic.
 \hypertarget{command:FACTOR}{}
 
 This declaration takes a list of identifiers or kernels\index{Kernel}
-as argument. \texttt{FACTOR}\ttindex{FACTOR} is not a factoring command
+as argument. \texttt{FACTOR}\ttindextype{FACTOR}{declaration} is not a factoring command
 (use \texttt{FACTORIZE} or the \sw{FACTOR} switch for this purpose); rather it
 is a separation command.  All terms involving fixed powers of the declared
 expressions are printed as a product of the fixed powers and a sum of the
@@ -759,7 +760,8 @@ a significant effect on the space and time associated with a calculation.
 In its default state, {\REDUCE} uses a specific order for this which may
 vary between sessions.  However, it is possible for the user to change
 this internal order by means of the declaration
-\texttt{KORDER}\ttindex{KORDER}.  The syntax for this is:
+\texttt{KORDER}\ttindextype{KORDER}{declaration}\index{Declaration!KORDER}.
+The syntax for this is:
 \begin{verbatim}
         korder v1,...,vn;
 \end{verbatim}
@@ -769,7 +771,7 @@ where the \texttt{Vi} are kernels\index{Kernel}.  With this declaration, the
 further call of \texttt{KORDER} replaces a previous one. \texttt{KORDER NIL;}
 resets the internal order to the system default.
 
-Unlike the \texttt{ORDER}\ttindex{ORDER} declaration, that has a purely
+Unlike the \texttt{ORDER}\ttindextype{ORDER}{declaration} declaration, that has a purely
 cosmetic effect on the way results are printed, the use of \texttt{KORDER}
 can have a significant effect on computation time.  In critical cases
 then, the user can experiment with the ordering of the variables used to
@@ -784,7 +786,7 @@ described in this section. In addition, operators for obtaining specific
 parts of polynomials and rational functions (such as a denominator) are
 described in another section.
 
-\subsection{COEFF Operator}\ttindex{COEFF}
+\subsection{COEFF Operator}\ttindextype{COEFF}{operator}
 \hypertarget{operator:COEFF}{}
 \hypertarget{switch:RATARG}{}
 Syntax:
@@ -833,7 +835,7 @@ power found in \texttt{EXPRN} during the evaluation, and \var{LOW\_POW}
 constant term.  If \texttt{EXPRN} is a constant, then \var{HIGH\_POW} and
 \var{LOW\_POW} are both set to zero.
 
-\subsection{COEFFN Operator}\ttindex{COEFFN}
+\subsection{COEFFN Operator}\ttindextype{COEFFN}{operator}
 \hypertarget{operator:COEFFN}{}
 
 The \texttt{COEFFN} operator is designed to give the user a particular
@@ -845,7 +847,7 @@ returns all coefficients. \texttt{COEFFN} is used with the syntax
 It returns the $n^{th}$ coefficient of \texttt{VAR} in the polynomial
 \texttt{EXPRN}.
 
-\subsection{PART Operator}\ttindex{PART}
+\subsection{PART Operator}\ttindextype{PART}{operator}
 \hypertarget{operator:PART}{}
 Syntax:
 \begin{verbatim}
@@ -890,7 +892,7 @@ and
         part(a+b,0)  ->  PLUS
 \end{verbatim}
 \hypertarget{operator:ARGLENGTH}{}
-An operator \texttt{ARGLENGTH}\ttindex{ARGLENGTH} is available to determine
+An operator \texttt{ARGLENGTH}\ttindextype{ARGLENGTH}{operator} is available to determine
 the number of arguments of the top level operator in an expression.  If
 the expression does not contain a top level operator, then $-1$ is returned.
 For example,
@@ -916,5 +918,5 @@ For example, with the normal settings of the {\REDUCE} switches:
 
 Note that \texttt{xx} in the above is not changed by this substitution.  In
 addition, unlike expressions such as array and matrix elements that have
-an {\em instant evaluation\/}\index{Instant evaluation} property, the values
+an \emph{instant evaluation\/}\index{Instant evaluation} property, the values
 of \texttt{part(xx,2)} and \texttt{part(c+d,0)} are also not changed.

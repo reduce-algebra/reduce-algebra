@@ -95,7 +95,7 @@ the single space environment is set and
 a unique space is defined. It is euclidian, and has a symbolic 
 dimension equal to \texttt{dim}.
 The single space environment is determined by the switch
-\sw{ONESPACE}\ttindex{ONESPACE} which is turned on. 
+\sw{ONESPACE}\ttindexswitch[CANTENS]{ONESPACE} which is turned on. 
 One can verify the above assertions as follows \ttindex{WHOLESPACE\_DIM}:
 \begin{verbatim}
       onespace ?; => yes
@@ -469,7 +469,7 @@ system:
 \end{verbatim}
 Other verifications of coherence are made when space specifications 
 are introduced both in the ON and OFF \sw{onespace} environment. We shall 
-discuss them later\ttindex{onespace!OFF}\ttindex{onespace!ON}.
+discuss them later\index{ONESPACE switch@\texttt  {ONESPACE} switch!Off}\index{ONESPACE switch@\texttt  {ONESPACE} switch!On}.
 
 \subsubsubsection{Substitutions, assignements and rewriting rules}
 
@@ -756,14 +756,14 @@ are independent of all space specifications. They are complete as long as
 we confine to the default space which is active when starting \texttt{CANTENS}.
 However, as soon as some space specification is introduced, it has some
 consequences one the generic tensor properties. This is true both when 
-\ttindex{ONESPACE}\sw{ONESPACE} is switched ON or OFF. Here we shall describe 
+\ttindexswitch[CANTENS]{ONESPACE}\sw{ONESPACE} is switched ON or OFF. Here we shall describe 
 how to deal with these features.  
 
 When \sw{onespace} is ON, if the space dimension is set to an integer, numeric 
 indices of any generic tensors are forced to be less or equal that integer 
 if the signature is 0 or less than that integer if the signature is equal to 1. 	  
 The following illustrates what happens.
-\ttindex{onespace!ON}
+\index{ONESPACE switch@\texttt  {ONESPACE} switch!On}
 \begin{verbatim}
       on onespace;
   
@@ -808,7 +808,8 @@ The following illustrates what happens.
               te
                     b
 \end{verbatim}
-When \sw{onespace} is OFF\ttindex{onespace!OFF}, many more possibilities to control the input or to 
+When \sw{onespace} is OFF\index{ONESPACE switch@\texttt  {ONESPACE} switch!Off},
+many more possibilities to control the input or to 
 give specific properties to tensors are open. 
 For instance, it is possible to declare that a tensor belongs 
 to one of them. It is also possible to declare that some indices 
@@ -981,9 +982,9 @@ previous section. It can also work in a space which is a direct product
 of two spaces. Therefore, one never needs to introduce more than one 
 such tensor. If one is working in a graphic environment, it is advantageous 
 to choose the keyword as its name. Here we choose \texttt{DELT}.
-We illustrate how it works  when the switch \ttindex{ONESPACE}\sw{onespace} is 
+We illustrate how it works  when the switch \ttindexswitch[CANTENS]{ONESPACE}\sw{onespace} is 
 successively switched ON and OFF.
-\ttindex{onespace!ON}
+\index{ONESPACE switch@\texttt  {ONESPACE} switch!On}
 \begin{verbatim}
       on onespace;
 
@@ -1039,7 +1040,7 @@ the Dirac \emph{delta function}\ttindex{delta function}
       delt({x-y}) ==> delt(x-y)
 \end{verbatim}
 Next we work in the context of several spaces:
-\ttindex{onespace!OFF}
+\index{ONESPACE switch@\texttt  {ONESPACE} switch!Off}
 \begin{verbatim}
       off onespace;
 
@@ -1170,7 +1171,9 @@ one or multi-space context either with the convention of
 Any \texttt{eta}-like tensor is assumed to work within a space 
 of signature 1. Therefore, if the space whose metric, it is supposed 
 to describe has a signature 0, an error message follows if one is 
-working in an ON \sw{onespace} \ttindex{onespace!ON}\ttindex{onespace!OFF} 
+working in an ON \sw{onespace}
+\index{ONESPACE switch@\texttt  {ONESPACE} switch!On}
+\index{ONESPACE switch@\texttt  {ONESPACE} switch!Off}
 context and a warning when in an OFF \sw{onespace} context.
 Illustration:
 \ttindex{SIGNATURE}
@@ -1235,7 +1238,7 @@ The tensor is of course symmetric \index{symmetric!tensor}.
 Its indices are checked in the same way as for a generic tensor.
 In a multi\_space context\index{spaces}, the \texttt{eta} tensor must belong 
 to a well defined space of \index{signature!CANTENS package}\index{CANTENS package!signature}signature 1:
-\ttindex{onespace!OFF}
+\index{ONESPACE switch@\texttt  {ONESPACE} switch!Off}
 \begin{verbatim}
       off onespace;
 
@@ -1287,7 +1290,7 @@ We describe how to define and manipulate it in the context of a
 unique space and, next, in a multi-space context.
 
 \subsubsubsection{\sw{ONESPACE} is ON}
-\ttindex{onespace!ON}
+\index{ONESPACE switch@\texttt  {ONESPACE} switch!On}
 The use of \ttindex{MAKE\_PARTIC\_TENS}\texttt{MAKE\_PARTIC\_TENS} places it, by default, in an
 euclidian space if the signature is 0 and in a Minkowski-type space if 
 the signature\index{signature!CANTENS package} is 1. 
@@ -1395,7 +1398,7 @@ to assign it to 1 or -1\ttindex{GLOBAL\_SIGN}.
 \end{verbatim}
 
 \subsubsubsection{\sw{ONESPACE} is OFF}
-\ttindex{onespace!OFF}
+\index{ONESPACE switch@\texttt  {ONESPACE} switch!Off}
 As already said, several epsilon tensors may be defined. They \emph{must} 
 be assigned to a well defined (sub-)space otherwise the simplifying 
 function \ttindex{CANONICAL}\texttt{CANONICAL} will not properly work.
@@ -1746,7 +1749,7 @@ The following is a tensor expression:
 \end{verbatim}
 In the above expression, \texttt{delt} and \texttt{eps} are, respectively, the
 \texttt{delta}\ttindex{delta} and the \texttt{epsilon}\ttindex{epsilon} tensors,
-\texttt{op} is an operator\index{operator!CANTENS package}. 
+\texttt{op} is an operator\index{Operator!CANTENS package@\textsc{Cantens} package}. 
 and \texttt{delt(x-y)} is the Dirac delta function.\ttindex{delta function}
 Notice that the above expression is not coh\'erent since the first term 
 has a variance while the second term is a scalar. Moreover, the 
@@ -1986,7 +1989,7 @@ on the tensor monom \texttt{a1} it gives back \texttt{a1}!
 No change of dummy index position is allowed if a tensor belongs
 to an  \texttt{AFFINE}\ttindex{affine space!CANTENS package} space.
 With the tensor polynomial \texttt{pp} introduced above one has:
-\ttindex{onespace!OFF}
+\index{ONESPACE switch@\texttt  {ONESPACE} switch!Off}
 \begin{verbatim}
       off onespace;
 
@@ -2156,7 +2159,7 @@ two epsilons gives a \texttt{DEL}-like tensor. When the
 signature is equal to 1, it is equal to \emph{minus} a \texttt{DEL}-like tensor.
 Here we choose 1 for the signature\index{signature!CANTENS package} and we work in a 
 single space\index{spaces!CANTENS package}.
-\ttindex{onespace!ON}
+\index{ONESPACE switch@\texttt  {ONESPACE} switch!On}
 We define the \texttt{DEL} tensor:
 \begin{verbatim}
       on onespace;
@@ -2255,7 +2258,7 @@ Since \ttindex{CANONICAL}\texttt{CANONICAL} is able to work inside several
 spaces, we can introduce also several epsilons and make the relevant 
 simplifications on each (sub)-spaces. This is the goal of the 
 next illustration. 
-\ttindex{onespace!OFF}\ttindex{SHOW\_EPSILONS}
+\index{ONESPACE switch@\texttt  {ONESPACE} switch!Off}\ttindex{SHOW\_EPSILONS}
 \begin{verbatim}
       off onespace;
 
@@ -2538,7 +2541,7 @@ The subsequent illustrations show how \texttt{CANONICAL} does indeed
 manage to find  the canonical form and simplify  expressions 
 which contain derivatives. Notice, the use of 
 the (modified) \ttindextype{DEPEND}{declaration}\texttt{DEPEND}  declaration.
-\ttindex{onespace!ON}
+\index{ONESPACE switch@\texttt  {ONESPACE} switch!On}
 \begin{verbatim}
       on onespace;   
  

@@ -14,6 +14,7 @@ sub-sections.
 
 \hypertarget{reserved:ARRAY}{\section{Array Declarations}}
 
+\index{Array declaration}\index{Declaration!array}
 Array\ttindex{ARRAY} declarations in {\REDUCE} are similar to FORTRAN
 dimension statements.  For example:
 \begin{verbatim}
@@ -61,6 +62,7 @@ exiting the block (use \texttt{CLEAR} instead for this purpose).
 \hypertarget{switch:TIME}{}
 \hypertarget{switch:DEMO}{}
 
+\index{Mode handling declarations}\index{Declaration!mode handling}
 The \sw{ON}\ttindex{ON} and \sw{OFF}\ttindex{OFF} declarations are
 available to the user for controlling various system options.  Each option
 is represented by a \emph{switch}\index{Switch} name. \texttt{ON} and
@@ -136,6 +138,7 @@ we advise using \texttt{;END;} there.
 \hypertarget{command:QUIT}{}
 \hypertarget{command:BYE}{\section{BYE Command}}\ttindex{BYE}
 
+\index{BYE command}\index{Command!BYE}
 The command \texttt{BYE}; (or alternatively \texttt{QUIT};)\ttindex{QUIT}
 stops the execution
 of {\REDUCE}, closes all open output files, and returns you to the calling
@@ -145,6 +148,7 @@ normally destroyed.
 \section{SHOWTIME Command}\ttindex{SHOWTIME}
 \hypertarget{command:SHOWTIME}{}
 
+\index{SHOWTIME command}\index{Command!SHOWTIME}
 \texttt{SHOWTIME}; prints the elapsed time since the last call of this
 command or, on its first call, since the current {\REDUCE} session began.
 The time is normally given in milliseconds and gives the time as measured
@@ -154,7 +158,8 @@ dependent.
 \section{DEFINE Command}
 \hypertarget{command:DEFINE}{}
 
-The command \texttt{DEFINE}\ttindex{DEFINE} allows a user to supply a new name for
+\ttindextype{DEFINE}{command}\index{Command!DEFINE}
+The command \texttt{DEFINE} allows a user to supply a new name for
 any identifier or replace it by any well-formed expression.  Its argument
 is a list of expressions of the form
 \begin{syntaxtable}
@@ -173,7 +178,7 @@ for the same identifier.  It stays in effect until the end of the
 {\REDUCE} run.
 
 The identifiers \texttt{ALGEBRAIC} and \texttt{SYMBOLIC} have properties which
-prevent \texttt{DEFINE}\ttindex{DEFINE} from being used on them.  To define
+prevent \texttt{DEFINE} from being used on them.  To define
 \texttt{ALG} to be a synonym for \texttt{ALGEBRAIC}, use the more complicated
 construction
 \begin{verbatim}

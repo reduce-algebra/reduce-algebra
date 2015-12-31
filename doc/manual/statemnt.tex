@@ -6,8 +6,10 @@ expressions, and has the syntax \index{Proper statement}
   \meta{statement} \bnfprod \meta{expression} | \meta{proper statement}
 \end{syntax}
 A {\REDUCE} program consists of a series of commands which are statements
-followed by a terminator:\index{Terminator}\index{Semicolon}
-\index{Dollar sign}
+followed by a terminator:\index{Terminator, statement}
+\index{Statement terminator}
+\index{Semicolon}\ttindextype{;}{(statement terminator)}
+\index{Dollar sign}\ttindextype{\$}{(statement terminator)}
 \begin{syntax}
         \meta{terminator} \bnfprod \texttt{;}|\texttt{\$}
 \end{syntax}
@@ -41,7 +43,8 @@ The following sub-sections describe the types of proper statements
 
 \label{reserved:assignop}
 
-These statements\index{Assignment} have the syntax
+These statements\index{Assignment}\index{Assignment statement}
+\index{Statement!assignment} have the syntax
 \begin{syntax}
     \meta{assignment statement} \bnfprod \meta{expression} \texttt{:=} \meta{expression}
 \end{syntax}
@@ -65,8 +68,8 @@ right-hand-side is assigned to that unevaluated variable.  If the
 left-hand-side is an operator or array expression, the arguments of that
 operator or array are evaluated, but no other simplification done.  The
 evaluated right-hand-side is then assigned to the resulting expression.
-For example, if \texttt{A} is a single-dimensional array, \texttt{a(1+1) := b}
-assigns the value \texttt{B} to the array element \texttt{a(2)}.
+For example, if \texttt{a} is a single-dimensional array, \texttt{a(1+1) := b}
+assigns the value \texttt{b} to the array element \texttt{a(2)}.
 
 If a semicolon is used as the terminator when an assignment
 \index{Assignment} is issued as a command (i.e. not as a part of a group
@@ -76,6 +79,7 @@ symbol of the assignment statement is printed out, followed by a
 
 It is also possible to write a multiple assignment statement:
 \index{Multiple assignment statement}
+\index{Assignment statement!multiple}
 \begin{syntax}
     \meta{expression} \texttt{:=} \dots \texttt{:=} \meta{expression} \texttt{:=} \meta{expression}
 \end{syntax}
@@ -87,6 +91,7 @@ with the value of the last expression.
 
 \subsection{Set Statement}
 \hypertarget{command:SET}{}
+\index{Set Statement}\index{Statement!Set}
 
 In some cases, it is desirable to perform an assignment in which \emph{both}
 the left- and right-hand sides of an assignment\index{Assignment} are
@@ -106,7 +111,8 @@ assigns the value \texttt{X} to \texttt{A23}.
 
 \index{<<@\texttt{<}\texttt{<} (begin group)}
 \index{>>@\texttt{>}\texttt{>} (end group)}
-The group statement\index{Group statement} is a construct used where
+The group statement\index{Group statement}
+\index{Statement!Group} is a construct used where
 {\REDUCE} expects a single statement, but a series of actions needs to be
 performed.  It is formed by enclosing one or more statements (of any kind)
 between the symbols \texttt{<}\texttt{<} and \texttt{>}\texttt{>}, 
@@ -129,8 +135,8 @@ the value NIL or zero.
 \hypertarget{reserved:THEN}{}
 \hypertarget{reserved:ELSE}{}
 
-The conditional statement\index{Conditional statement} has the following
-syntax:
+The conditional statement\index{Conditional statement}\index{Statement!conditional}
+has the following syntax:
 \begin{syntaxtable}
  \meta{conditional statement} &\bnfprod &
     \texttt{IF } \meta{boolean expression} \texttt{ THEN } \meta{statement} \\
@@ -194,9 +200,12 @@ the boolean expression -- for example, a variable is written there -- the
 \hypertarget{reserved:SUM}{}
 \hypertarget{reserved:PRODUCT}{}
 
-The \texttt{FOR} statement is used to define a variety of program
+The \texttt{FOR} statement\index{FOR statement}\index{Statement!FOR}
+is used to define a variety of program
 loops\index{Loop}.  Its general syntax is as follows:\ttindex{UNTIL}
-\ttindex{DO}\ttindex{PRODUCT}\ttindex{SUM}\ttindex{COLLECT}\ttindex{JOIN}
+\ttindextype{DO}{keyword}\ttindextype{PRODUCT}{keyword}\ttindextype{SUM}{keyword}
+\ttindextype{COLLECT}{keyword}\ttindextype{JOIN}{keyword}
+\ttindextype{ON}{keyword}\ttindextype{IN}{keyword}
 \begin{small}
 \[ \mbox{\texttt{FOR}} \left\{ \begin{array}{@{}ccc@{}}
     \mbox{\meta{var} \texttt{:=} \meta{number} } \left\{ \begin{array}{@{}c@{}}
@@ -308,6 +317,7 @@ prints \texttt{A} twice, not 1 followed by 2.
 \hypertarget{command:WHILE}{}
 
 The\ttindex{WHILE} \texttt{FOR} \ldots{} \texttt{DO}\ttindex{DO} feature
+\index{WHILE statement}\index{Statement!WHILE}
 allows easy coding of a repeated operation in which the number of repetitions
 is known in advance.  If the criterion for repetition is more complicated,
 \texttt{WHILE} \ldots{} \texttt{DO} can often be used.  Its syntax is:
@@ -349,7 +359,8 @@ be added to \var{EX} and the next \var{TERM} calculated.  As soon as
 \hypertarget{command:REPEAT}{}
 \hypertarget{reserved:UNTIL}{}
 
-\ttindex{REPEAT} \texttt{REPEAT} \ldots{} \texttt{UNTIL} is very similar
+\index{REPEAT statement}\index{Statement!REPEAT}
+\ttindex{REPEAT}\texttt{REPEAT} \ldots{} \texttt{UNTIL} is very similar
 in purpose to \texttt{WHILE} \ldots{} \texttt{DO}.  Its syntax is:
 \begin{syntax}
         \texttt{REPEAT }\meta{statement}\texttt{ UNTIL }\meta{boolean expression}
@@ -382,7 +393,8 @@ case is a term added to \texttt{EX} which is less than 1/1000.
 \section{Compound Statements}
 \hypertarget{command:BEGIN}{}
 
-\index{Compound statement}Often the desired process can best (or only) be
+\index{Compound statement}\index{Statement!compound}Often the desired process
+can best (or only) be
 described as a series of steps to be carried out one after the other.  In
 many cases, this can be achieved by use of the group statement\index{Group
 statement}.  However, each step often provides some intermediate
@@ -469,6 +481,7 @@ will compute the Legendre polynomial of degree \var{N} in the variable
 
 \subsection{Compound Statements with GO TO}
 
+\index{GO TO statement}\index{Statement!GO TO}
 It is possible to have more complicated structures inside the \texttt{BEGIN}
 \ldots{} \texttt{END}\ttindex{BEGIN \ldots{} END} brackets than indicated in the
 previous example.  That the individual lines of the program need not be
@@ -534,7 +547,7 @@ statement to a point within the compound statement using a \texttt{GO TO}.
 \hypertarget{command:RETURN}{}
 
 The value corresponding to a \texttt{BEGIN} \ldots{} \texttt{END} compound
-statement,
+statement,\index{RETURN statement}\index{Statement!RETURN}
 \ttindex{BEGIN \ldots{} END} such as a procedure body, is normally 0
 (\texttt{NIL} in symbolic mode).  By executing a \texttt{RETURN}\ttindex{RETURN}
 statement in the compound statement a different value can be returned.

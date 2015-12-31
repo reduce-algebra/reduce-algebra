@@ -148,14 +148,16 @@ example:
           list_1_n := delete(hit,list_1_n);
           luckies := hit . luckies >>;
      return luckies;
-  end;                         % In Germany, try lotto (49,6);
+  end;
+                 % In Germany, try lotto (49,6);
 \end{verbatim}
 
 \textit{Another example:} Find all coefficients of a multivariate
 polynomial with respect to a list of variables:
 
 \begin{verbatim}
-procedure allcoeffs(q,lis); % q : polynomial, lis: list of vars
+procedure allcoeffs(q,lis); 
+   % q : polynomial, lis: list of vars
    allcoeffs1 (list q,lis);
 
 procedure allcoeffs1(q,lis);

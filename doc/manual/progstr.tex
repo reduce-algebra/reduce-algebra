@@ -69,11 +69,18 @@ Numbers with more than five digits are printed in scientific notation,
 e.g., \texttt{1.234567E+5}.  Similarly, by default, any number with eleven or
 more zeros after the decimal point is printed in scientific notation.  To
 change these defaults, \texttt{SCIENTIFIC\_NOTATION} can be used in one of two
-ways. \texttt{SCIENTIFIC\_NOTATION} \emph{m};, where \emph{m} is a positive
+ways.
+
+\texttt{SCIENTIFIC\_NOTATION} \emph{m};
+
+where \emph{m} is a positive
 integer, sets the printing format so that a number with more than \emph{m}
 digits before the decimal point, or \emph{m} or more zeros after the
-decimal point, is printed in scientific notation. \texttt{SCIENTIFIC\_NOTATION}
-\{\emph{m,n}\}, with \emph{m} and \emph{n} both positive integers, sets the
+decimal point, is printed in scientific notation. 
+
+\texttt{SCIENTIFIC\_NOTATION}\{\emph{m,n}\},
+
+with \emph{m} and \emph{n} both positive integers, sets the
 format so that a number with more than \emph{m} digits before the decimal
 point, or \emph{n} or more zeros after the decimal point is printed in
 scientific notation.
@@ -176,7 +183,7 @@ include:
 \index{Reserved variable !CATALAN@\texttt{CATALAN}}
 
 \item[E] Intended to represent the base of
-\ttindex{E}
+\ttindextype{E}{reserved variable}
 the natural logarithms.  \texttt{log(e)}, if it occurs in an expression, is
 automatically replaced by 1.  If \sw{ROUNDED}\ttindexswitch{ROUNDED} is
 on, \texttt{E} is replaced by the value of E to the current degree of
@@ -214,7 +221,7 @@ current system does \emph{not} do proper arithmetic on $\infty$.  For example,
     \prod_{n=1}^{\infty}\left(1+\frac{1}{n(n+2)}\right)^{\log_{2} n} .
   \end{displaymath}
 %, as defined in
-\ttindex{KHINCHIN}%\cite{Khinchin:64}. 
+\ttindextype{KHINCHIN}{reserved variable}%\cite{Khinchin:64}. 
 \index{Reserved variable !KHINCHIN@\texttt{KHINCHIN}}
 
 \item[NEGATIVE] Used in the \hyperlink{package:ROOTS}{Roots package}.
@@ -356,9 +363,10 @@ but
 \end{tabular}
 \end{quote}
 A unary prefix operator\index{Unary prefix operator}\index{Prefix operator, unary}
+\index{Operator!unary prefix}
 has a precedence
-\index{Operator precedence} higher than any infix operator, including
-unary infix operators. \index{Infix operator}
+\index{Operator!precedence} higher than any infix operator, including
+unary infix operators. \index{Infix operator}\index{Operator!infix}
 In other words, {\REDUCE} will always interpret \texttt{cos~y + 3} as
 \texttt{(cos~y) + 3} rather than as \texttt{cos(y + 3)}.
 
@@ -476,7 +484,7 @@ currently assigned to this kind of comparison between general expressions.
 
 Parentheses may be used to specify the order of combination.  If
 parentheses are omitted then this order is by the ordering of the
-precedence list\index{Operator precedence} defined by the right-hand side
+precedence list\index{Operator!precedence} defined by the right-hand side
 of the \meta{infix operator}\index{Infix operator} table
 at the beginning of this section,
 from lowest to highest.  In other words, \texttt{WHERE} has the lowest

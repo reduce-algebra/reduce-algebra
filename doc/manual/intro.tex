@@ -162,12 +162,14 @@ For example, the statements
      df(log(x)*(sin(x)+cos(x))/sqrt(x),x,2);
 \end{verbatim}
 will result in the output
+\begin{small}
 \begin{verbatim}
       ANS=(-4.*LOG(X)*COS(X)*X**2-4.*LOG(X)*COS(X)*X+3.*
       . LOG(X)*COS(X)-4.*LOG(X)*SIN(X)*X**2+4.*LOG(X)*
       . SIN(X)*X+3.*LOG(X)*SIN(X)+8.*COS(X)*X-8.*COS(X)-8.
       . *SIN(X)*X-8.*SIN(X))/(4.*SQRT(X)*X**2)
 \end{verbatim}
+\end{small}
 These algebraic manipulations illustrate the algebraic mode of {\REDUCE}.
 {\REDUCE} is based on Standard Lisp. A symbolic mode is also available for
 executing Lisp statements. These statements follow the syntax of Lisp,

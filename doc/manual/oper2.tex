@@ -1,15 +1,17 @@
-\section{Even and Odd Operators}\index{Even operator}\index{Odd operator}
+\section{Even and Odd Operators}
+\index{Even operator}\index{Odd operator}
+\index{Operator!even}\index{Operator!odd}
 \hypertarget{command:EVEN}{}
 \hypertarget{command:ODD}{}
 \hypertarget{command:NONZERO}{}
 An operator can be declared to be \emph{even} or \emph{odd} in its first
-argument by the declarations \texttt{EVEN}\ttindex{EVEN} and
-\texttt{ODD}\ttindex{ODD} respectively.  Expressions involving an operator
+argument by the declarations \texttt{EVEN}\ttindextype{EVEN}{declaration} and
+\texttt{ODD}\ttindextype{ODD}{declaration} respectively.  Expressions involving an operator
 declared in this manner are transformed if the first argument contains a
 minus sign.  Any other arguments are not affected.  In addition, if say
 \texttt{F} is declared odd, then \texttt{f(0)} is replaced by zero unless
 \texttt{F} is also declared \emph{non zero} by the declaration
-\texttt{NONZERO}\ttindex{NONZERO}.  For example, the declarations
+\texttt{NONZERO}\ttindextype{NONZERO}{declaration}.  For example, the declarations
 \begin{verbatim}
         even f1; odd f2;
 \end{verbatim}
@@ -22,8 +24,9 @@ mean that
 \end{verbatim}
 To inhibit the last transformation, say \texttt{nonzero f2;}.
 
-\section{Linear Operators}\index{Linear operator}
+\section{Linear Operators}\index{Linear operator}\index{Operator!linear}
 \hypertarget{command:LINEAR}{}
+\ttindextype{LINEAR}{declaration}
 An operator can be declared to be linear in its first argument over powers
 of its second argument.  If an operator \texttt{F} is so declared, \texttt{F} of
 any sum is broken up into sums of \texttt{F}s, and any factors that are not
@@ -77,9 +80,10 @@ integration\index{Integration} of some expressions that arise in fourth
 order quantum electrodynamics.
 
 \section{Non-Commuting Operators}\index{Non-commuting operator}
+\index{Operator!non-commuting}
 \hypertarget{command:NONCOM}{}
 An operator can be declared to be non-commutative under multiplication by
-the declaration \texttt{NONCOM}.\ttindex{NONCOM}
+the declaration \texttt{NONCOM}.\ttindextype{NONCOM}{declaration}
 
 \textit{Example:}
 
@@ -96,7 +100,7 @@ and not the variable that has the non-commutative property.
 
 The \texttt{LET}\ttindex{LET} statement may be used to introduce rules of
 evaluation for such operators.  In particular, the boolean operator
-\texttt{ORDP}\ttindex{ORDP} is useful for introducing an ordering on such
+\texttt{ORDP}\ttindextype{ORDP}{boolean operator} is useful for introducing an ordering on such
 expressions.
 
 \textit{Example:}
@@ -112,9 +116,11 @@ equality check is necessary in the degenerate case to avoid a circular
 loop in the rule.
 
 \hypertarget{reserved:SYMMETRIC}{\section{Symmetric and Antisymmetric Operators}}
+\index{Symmetric operator}\index{Operator!symmetric}
+\index{Antisymmetric operator}\index{Operator!antisymmetric}
 
 An operator can be declared to be symmetric with respect to its arguments
-by the declaration \texttt{SYMMETRIC}.\ttindex{SYMMETRIC} For example
+by the declaration \texttt{SYMMETRIC}.\ttindextype{SYMMETRIC}{declaration} For example
 \begin{verbatim}
         symmetric u,v;
 \end{verbatim}
@@ -127,7 +133,7 @@ For example, \texttt{u(x,v(1,2))} would become \texttt{u(v(2,1),x)}, since
 numbers are ordered in decreasing order, and expressions are ordered in
 decreasing order of complexity.
 
-Similarly the declaration \texttt{ANTISYMMETRIC}\ttindex{ANTISYMMETRIC}
+Similarly the declaration \texttt{ANTISYMMETRIC}\ttindextype{ANTISYMMETRIC}{declaration}
 declares an operator antisymmetric.   For example,
 \begin{verbatim}
         antisymmetric l,m;
@@ -144,8 +150,8 @@ would also be replaced by 0.
 \section{Declaring New Prefix Operators}
 \hypertarget{command:OPERATOR}{}
 
-The user may add new prefix\index{Prefix} operators to the system by
-using the declaration \texttt{OPERATOR}. For example:
+The user may add new prefix\index{Prefix operator!declaring new one} operators to the system by
+using the declaration \texttt{OPERATOR}\ttindextype{OPERATOR}{declaration}. For example:
 \begin{verbatim}
         operator h,g1,arctan;
 \end{verbatim}
@@ -177,7 +183,7 @@ for this purpose).
 \hypertarget{command:PRECEDENCE}{}
 
 Users can add new infix operators by using the declarations
-\texttt{INFIX}\ttindex{INFIX} and \texttt{PRECEDENCE}.\ttindex{PRECEDENCE}
+\texttt{INFIX}\ttindextype{INFIX}{declaration} and \texttt{PRECEDENCE}.\ttindextype{PRECEDENCE}{declaration}
 For example,
 \begin{verbatim}
         infix mm;
@@ -223,7 +229,7 @@ There are several facilities in {\REDUCE}, such as the differentiation
 \index{Differentiation}
 operator and the linear operator\index{Linear operator} facility, that
 can utilize knowledge of the dependency between various variables, or
-kernels.  Such dependency may be expressed by the command \texttt{DEPEND}.\ttindex{DEPEND} 
+kernels.  Such dependency may be expressed by the command \texttt{DEPEND}.\ttindextype{DEPEND}{command}
 This takes an arbitrary number of arguments and
 sets up a dependency of the first argument on the remaining arguments.
 For example,
@@ -237,7 +243,7 @@ says that \texttt{X} is dependent on both \texttt{Y} and \texttt{Z}.
 says that \texttt{Z} is dependent on \texttt{COS(X)} and \texttt{Y}.
 
 Dependencies introduced by \texttt{DEPEND} can be removed by \texttt{NODEPEND}.
-\ttindex{NODEPEND} The arguments of this are the same as for \texttt{DEPEND}.
+\ttindextype{NODEPEND}{command} The arguments of this are the same as for \texttt{DEPEND}.
 For example, given the above dependencies,
 \begin{verbatim}
         nodepend z,cos(x);
