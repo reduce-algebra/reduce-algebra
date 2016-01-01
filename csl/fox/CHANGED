@@ -115,4 +115,7 @@ April 2015: A proper fix (I hope) for the issue noted from March 2015.
 July 2015: adjustment to characters used in the display of \left| and
            \right|, plus a spelling fix.
 
+December 2015: changes (mostly to fwin.cpp & immediate friends) to support
+      packing a macintosh build into an application bundle.
+
 <end of CHANGED>

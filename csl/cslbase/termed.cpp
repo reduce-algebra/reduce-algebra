@@ -279,6 +279,7 @@ static FILE *termed_logfile = NULL;
 static void write_log(char *s, ...)
 {   va_list x;
     if (termed_logfile == NULL) termed_logfile = fopen("termed.log", "w");
+    if (termed_logfile == NULL) termed_logfile = fopen("/tmp/termed.log", "w");
     va_start(x, s);
     vfprintf(termed_logfile, s, x);
     va_end(x);

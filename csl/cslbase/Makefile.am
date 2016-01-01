@@ -2006,7 +2006,7 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 	  $(RM) bootstrapreduce.img; \
 	  $(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img; \
 	fi
-	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
+	./bootstrapreduce$(EXEEXT) -i- -w -Dno_init_file $(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/c-code.log

@@ -77,9 +77,7 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #else
-#ifndef _MSC_VER
 extern char *getcwd(char *s, size_t n);
-#endif
 #endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
@@ -263,7 +261,7 @@ const char *my_getenv(const char *s)
 
 #ifdef WIN32
 
-int program_name_dot_com = 0;
+int programNameDotCom = 0;
 
 static char this_executable[LONGEST_LEGAL_FILENAME];
 
@@ -280,7 +278,7 @@ int find_program_directory(const char *argv0)
     GetModuleFileNameA(NULL, execname, LONGEST_LEGAL_FILENAME-2);
     strcpy(this_executable, execname);
     argv0 = this_executable;
-    program_name_dot_com = 0;
+    programNameDotCom = 0;
     if (argv0[0] == 0)      // should never happen - name is empty string!
     {   programDir =".";
         programName ="wxshowmath";  // nothing really known!
@@ -302,7 +300,7 @@ int find_program_directory(const char *argv0)
          (tolower(argv0[len-3]) == 'c' &&
           tolower(argv0[len-2]) == 'o' &&
           tolower(argv0[len-1]) == 'm')))
-    {   program_name_dot_com = (tolower(argv0[len-3]) == 'c');
+    {   programNameDotCom = (tolower(argv0[len-3]) == 'c');
         len -= 4;
     }
     for (npgm=0; npgm<len; npgm++)

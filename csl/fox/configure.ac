@@ -325,13 +325,14 @@ fi
 # For use with Reduce there are a bunch of "--with-xxx" options that are not
 # important here but it seems neatest to prevent their use from leading to
 # warning messages...
-AC_ARG_WITH(csl,[  --with-csl              stray option from the Reduce build setup])
-AC_ARG_WITH(force,[  --with-force            stray option from the Reduce build setup])
-AC_ARG_WITH(cygwin,[  --with-cygwin           stray option from the Reduce build setup])
-AC_ARG_WITH(cygbuild,[  --with-cygbuild         stray option from the Reduce build setup])
+AC_ARG_WITH(csl,       [  --with-csl              stray option from the Reduce build setup])
+AC_ARG_WITH(force,     [  --with-force            stray option from the Reduce build setup])
+AC_ARG_WITH(cygwin,    [  --with-cygwin           stray option from the Reduce build setup])
+AC_ARG_WITH(cygbuild,  [  --with-cygbuild         stray option from the Reduce build setup])
 AC_ARG_WITH(cygbuild64,[  --with-cygbuild64       stray option from the Reduce build setup])
-AC_ARG_WITH(build,[  --with-build            stray option from the Reduce build setup])
-AC_ARG_WITH(pslbuild,[  --with-pslbuild         stray option from the Reduce build setup])
+AC_ARG_WITH(build,     [  --with-build            stray option from the Reduce build setup])
+AC_ARG_WITH(pslbuild,  [  --with-pslbuild         stray option from the Reduce build setup])
+AC_ARG_WITH(boehm,     [  --with-boehm            stray option from the Reduce build setup])
 
 # Substitute variables in output files
 AC_SUBST(GL_LIBS)

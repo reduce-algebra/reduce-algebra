@@ -75,9 +75,7 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #else
-#ifndef _MSC_VER
 extern char *getcwd(char *s, size_t n);
-#endif
 #endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
@@ -353,7 +351,7 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 // I want to know the path to the directory from which this
 // code was launched. Note that in some cases the prints to stderr
 // shown here will be totally ineffective and the code will just seem
-// to exit abruptlt. Eg that can be the situation if the version being run
+// to exit abruptly. Eg that can be the situation if the version being run
 // has been linked on Windows as a window-mode (as distinct from console-mode)
 // binary, or if it is on a Macintosh not associated with a console.
 //
@@ -1516,12 +1514,6 @@ typedef struct date_and_type_
 
 
 #ifdef WIN32
-//
-// This version is for Windows NT 3.1 with Microsoft VC++, Windows 95, 98,
-// NT 3.5, 4.0, 2000, XP etc etc, also with Watcom C, mingw32 and so on.
-// Note it uses the native Windows capabilities and so it is not intended
-// for use with cygwin and its Unix-portability layer.
-//
 
 #include "windows.h"
 
@@ -1535,15 +1527,11 @@ int Cmkdir(const char *name)
 
 int truncate_file(FILE *f, long int where)
 {   if (fflush(f) != 0) return 1;
-#ifdef _MSC_VER
-    return _chsize(_fileno(f), where);  // Returns zero if success
-#else
 #ifdef __CYGWIN__
     if (fflush(f) != 0) return 1;
     return ftruncate(fileno(f), where);  // Returns zero if success
 #else
     return chsize(fileno(f), where);    // Returns zero if success
-#endif
 #endif
 }
 
@@ -1574,21 +1562,13 @@ void set_filedate(char *name, unsigned long int datestamp,
 
 void put_fileinfo(date_and_type *p, char *name)
 {   unsigned long int datestamp, filetype;
-#ifdef _MSC_VER
-    struct _stat file_info;
-#else
     struct stat file_info;
-#endif
     struct tm *st;
 //
 // Read file parameters...  Maybe I should use a Windows-style not a Unix-style
 // call here?
 //
-#ifdef _MSC_VER
-    _stat(name, &file_info);
-#else
     stat(name, &file_info);
-#endif
     st = localtime(&(file_info.st_mtime));
     datestamp = pack_date(st->tm_year, st->tm_mon, st->tm_mday,
                           st->tm_hour, st->tm_min, st->tm_sec);
@@ -1749,11 +1729,6 @@ static int more_files(void)
     return 0;
 }
 
-//
-// Anybody compiling using Microsoft Visual C++ had better note that
-// the type declared in the Microsoft header files for qsort insists
-// on a __cdecl here. Ugh.
-//
 int alphasort_files(const void *a, const void *b)
 {   const WIN32_FIND_DATA *fa = (const WIN32_FIND_DATA *)a,
                                *fb = (const WIN32_FIND_DATA *)b;

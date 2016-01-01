@@ -45,6 +45,8 @@ static LispObject apply_lots(int nargs, n_args *f, LispObject def)
 // uncommon & not worth optimising much.  The code that Microsoft C 6.00A
 // produced for this was utterly DREADFUL - maybe other C compilers will
 // make a mess of it too.  Anyway I hope it will not be called very often.
+// Also I have plans that will deal with functions with many arguments in
+// a micer way so this MESS will be able to go away.
 //
 {   switch(nargs)
     {   case 9:

@@ -65,17 +65,14 @@
 // Logging support. This will give a no-op unless the preprocessor symbol
 // DEBUG is defined at compile time.
 //
-// Usage (eg):  FWIN_LOG(("I reached %d of %s\n", __LINE__, __FILE__));
-// Note the use of doubled parentheses so I avoid using the c99
-// variadic macro scheme in case anybody wants to use a C compiler
-// dating from before then.
+// Usage (eg):  FWIN_LOG("I reached %d of %s\n", __LINE__, __FILE__);
 //
 
 #ifdef DEBUG
 extern void fwin_write_log(const char *s, ...);
-#define FWIN_LOG(a) fwin_write_log a
+#define FWIN_LOG(...) fwin_write_log(__VA_ARGS__)
 #else
-#define FWIN_LOG(a) // nothing
+#define FWIN_LOG(...) ((void)0)
 #endif
 
 

@@ -361,26 +361,6 @@ extern void write_profile(const char *filename);
 // for the portable versions.
 //
 
-#ifdef _MSC_VER
-//
-// Apologies here: For Microsoft VC++ I need to define these as __stdcall
-// (and certainly NOT as __fastcall) because Microsoft potentially change
-// which registers are used with __fastcall from release to release of
-// their compiler.
-//
-
-#ifdef IMULTIPLY
-extern uint32_t __stdcall Imultiply(uint32_t *rlow, uint32_t a,
-                                    uint32_t b, uint32_t c);
-#endif
-#ifdef IDIVIDE
-extern uint32_t __stdcall Idivide(uint32_t *qp, uint32_t a,
-                                  uint32_t b, uint32_t c);
-extern uint32_t __stdcall Idiv10_9(uint32_t *qp, uint32_t a, uint32_t b);
-#endif
-
-#else
-
 #ifdef IMULTIPLY
 extern uint32_t Imultiply(uint32_t *rlow, uint32_t a,
                           uint32_t b, uint32_t c);
@@ -389,8 +369,6 @@ extern uint32_t Imultiply(uint32_t *rlow, uint32_t a,
 extern uint32_t Idivide(uint32_t *qp, uint32_t a,
                         uint32_t b, uint32_t c);
 extern uint32_t Idiv10_9(uint32_t *qp, uint32_t a, uint32_t b);
-#endif
-
 #endif
 
 //

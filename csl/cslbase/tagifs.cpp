@@ -38,6 +38,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define MAXDEPTH 30
 #define MAXLINE 256
@@ -87,14 +88,14 @@ int main(int argc, char *argv[])
         else if (strncmp(curline, "#else", 5) == 0)
         {   i = 5;
             while (curline[i] != 0 && curline[i] != ' ') i++;
-            if (depth == 0) sprintf(&curline[i], " /* ERROR */");
-            else sprintf(&curline[i], " /* %s */", pending[depth-1]);
+            if (depth == 0) sprintf(&curline[i], " // ERROR");
+            else sprintf(&curline[i], " // %s", pending[depth-1]);
         }
         else if (strncmp(curline, "#endif", 6) == 0)
         {   i = 6;
             while (curline[i] != 0 && curline[i] != ' ') i++;
-            if (depth == 0) sprintf(&curline[i], " /* ERROR */");
-            else sprintf(&curline[i], " /* %s */", pending[depth-1]);
+            if (depth == 0) sprintf(&curline[i], " // ERROR");
+            else sprintf(&curline[i], " // %s", pending[depth-1]);
             depth--;
         }
         fprintf(out, "%s\n", curline);

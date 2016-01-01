@@ -99,9 +99,7 @@ static Display *dpy;
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #else
-#ifndef _MSC_VER
 extern char *getcwd(char *s, size_t n);
-#endif // _MSC_VER
 #endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
@@ -4738,11 +4736,7 @@ void fwin_puts(const char *s)
 }
 
 
-void
-#ifdef _MSC_VER
-            __cdecl
-#endif
-            fwin_printf(const char *fmt, ...)
+void fwin_printf(const char *fmt, ...)
 {
     va_list a;
     va_start(a, fmt);
