@@ -910,7 +910,8 @@ static void adjust(LispObject *cp)
 // A further messiness here! If I am remapping from a 64 bit image to a
 // 32-bit one I will move all bps items down one word (leaving their
 // headers starting doubleword aligned as before). So I need to change
-// all references to them.
+// all references to them. The constant 0x100 here is the place within the
+// BPS handle that corresponds to this.
 //
         if (converting_to_32 && is_bps(p)) p -= 0x100;
         else if (SIXTY_FOUR_BIT && converting_to_64 && is_bps(p))
@@ -1026,15 +1027,16 @@ static void adjust_consheap(void)
 // and so leaving mess in them ought to be OK - but of I look forward to
 // a future potential conservative garbage collector that may change at
 // least slightly, so I will try to be tidy here. The bit-pattern I use
-// to fill, 0x01000001 remains unchanged when byte-flipped and denotes
+// to fill, PADWORD, remains unchanged when byte-flipped and denotes
 // a fixnum either way.
 //
+#define PADWORD (TAG_FIXNUM + (TAG_FIXNUM<<24))
             fr = low + len;
             while (fr < start)
             {   *(LispObject *)fr = shrink_to_32(*(int64_t *)fr);
                 *(LispObject *)(fr+4) = shrink_to_32(*(int64_t *)(fr+8));
                 *(LispObject *)(fr+8) =
-                    *(LispObject *)(fr+12) = 0x01000001;
+                    *(LispObject *)(fr+12) = PADWORD;
                 fr += 16;
             }
         }
@@ -1472,8 +1474,12 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
 // I do not tidy up the contents of the padder block, but since the block is
 // tagged as a vector of 8 bit bytes this does not matter.
 //
+// NOTE that with the December 2015 structure for a Symbol_head that on
+// a 32-bit machine the length is 56 bytes and on a 64-bit one it is only
+// 104. This relates to putting a 64-bit "count" fild in the header. To allow
+// for this I have to use symhdr_length-8 in my padding here!
                 *(LispObject *)(p+symhdr_length) =
-                    flip_32(make_padder(symhdr_length));
+                    flip_32(make_padder(symhdr_length-8));
 #ifdef DEBUG_WIDTH
                 for (i=0; i<80; i+=4)
                 {   printf("%.8x ", *(int32_t *)(p+i));
@@ -1481,7 +1487,9 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
                 }
                 printf("\n");
 #endif
-                p += 2*symhdr_length;
+// ... and similarly here the "-8" related to the 64-bit header having been
+// 8 bytes shorter than twice the length of the 32-bit one.
+                p += 2*symhdr_length-8;
             }
             else switch (type_of_header(h))
                 {
@@ -1504,7 +1512,7 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
                     case TYPE_MIXED2:
                     case TYPE_MIXED3:
                     case TYPE_STREAM:
-//      case TYPE_LITVEC:
+//                  case TYPE_LITVEC:
 //
 // "len" will be the length of the old 64-bit version, and in the 64-bit
 // world there will never be a padding word at the end of a vector.
@@ -1561,7 +1569,7 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
                     case TYPE_BIGNUM:
                     case TYPE_VEC32:
                     case TYPE_VEC16:
-//      case TYPE_VEC8:                  same as TYPE_BPS
+//                  case TYPE_VEC8:                  same as TYPE_BPS
                     case TYPE_BPS:
                     case TYPE_SPARE:
                     case TYPE_SP:
@@ -1701,16 +1709,26 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
 #endif
                 *newp = flip_64(h); // write back header
 //
-// I do not know if I police it anywhere, but if one tried to mix images from
-// Common and plain mode the result would be a crash, if only because symbols
-// are represented as a different length. That is because in Common Lisp mode
-// there has to be an extra field to hold the identity of the package that
-// a symbol lives in.
-//
+//+ I do not know if I police it anywhere, but if one tried to mix images from
+//+ Common and plain mode the result would be a crash, if only because symbols
+//+ are represented as a different length. That is because in Common Lisp mode
+//+ there has to be an extra field to hold the identity of the package that
+//+ a symbol lives in.
+// The comment above is now out pf date in that I am moving to a single format
+// for symbols - however a different complication arises. That is that the
+// the symbol contains a 64-bit count field, and this does not double its
+// size when moved to a 64-bit world. So a 32-bit symbol is 56 bytes and
+// a 64-bit one 104 bytes
+// Note that a non-zero count value could get somewhat corrupted in the
+// conversion here, but I do not think that saving counts in image files
+// makes much sense anyway... so I do not care.
                 for (i=1; i<(symhdr_length/8); i++)
                 {   newp[i] = expand_to_64(oldp[i]);
                 }
-                oldp = (int32_t *)((char *)oldp + symhdr_length/2);
+// The "+4" on the next line is allowing for the fact that the count field
+// is a 64-bit value even on 32-bit machines, and it keeps the addresses
+// in the scan doubleword aligned.
+                oldp = (int32_t *)((char *)oldp + symhdr_length/2+4);
                 newp = (int64_t *)((char *)newp + symhdr_length);
             }
             else switch (type_of_header(h))

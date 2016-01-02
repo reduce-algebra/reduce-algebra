@@ -509,7 +509,7 @@ typedef uintptr_t Header;
 // length_of_bitheader returns a length in bits.
 #define length_of_bitheader(h)     ((((size_t)(h)) >> (Tw+2)) - 31)
 // length_of_byteheader returns a length in bytes, and so compatible with what
-// length_of_header used to do on byte arrays (and henec strings)
+// length_of_header used to do on byte arrays (and hence strings)
 #define length_of_byteheader(h)    ((((size_t)(h)) >> (Tw+5))  - 3)
 // length_of_hwordheader gives the number of halfwords used.
 #define length_of_hwordheader(h)   ((((size_t)(h)) >> (Tw+6)) - 1)
@@ -963,9 +963,9 @@ typedef uintptr_t Header;
 // still lets me have objects up to 4 Gbytes large...
 //
 
-#define header_mask          0x3f0
-#define type_of_header(h)    (((unsigned int)(h)) & header_mask)
-#define length_of_header(h)  (((uint32_t)(h)) >> 10)
+#define header_mask                0x3f0
+#define type_of_header(h)          (((unsigned int)(h)) & header_mask)
+#define length_of_header(h)        (((uint32_t)(h)) >> 10)
 #define length_of_bitheader(h)     ((((size_t)(h)) >> 7) - 7)
 #define length_of_byteheader(h)    (((size_t)(h)) >> 10)
 #define length_of_hwordheader(h)   ((((size_t)(h)) >> 9) - 1)

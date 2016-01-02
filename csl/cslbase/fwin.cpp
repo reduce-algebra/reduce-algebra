@@ -883,8 +883,8 @@ if (!macApp)
         exit(1);
     }
 }
-#endif // __APPLE__
 FWIN_LOG("I think I am in an app: start windowed_worker\n");
+#endif // __APPLE__
 return windowed_worker(argc, argv, fwin_main);
 }
 
