@@ -2902,6 +2902,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // it does not its creation should be deferred for as long as possible.
 //
             output_directory = 0x40000000 + 0;
+            number_of_fasl_paths = 1;
             if (p1 != NULL) (*free_hook)(p1);
         }
         else
