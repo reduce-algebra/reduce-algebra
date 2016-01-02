@@ -8,7 +8,7 @@
 //
 
 /******************************************************************************
-* Copyright (C) 2004-14 by Arthur Norman, Codemist Ltd.  All Rights Reserved. *
+* Copyright (C) 2004-15 by Arthur Norman, Codemist Ltd.  All Rights Reserved. *
 *******************************************************************************
 * This library is free software; you can redistribute it and/or               *
 * modify it under the terms of the GNU Lesser General Public                  *

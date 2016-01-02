@@ -3905,7 +3905,7 @@ void read_eval_print(int noisy)
         {
             u = Lread(nil, 0);
         }
-        catch (char *)
+        catch (const char *)
         {   nil = u = C_nil;
             if (errorset_msg != NULL)
             {   err_printf("\n%s detected\n", errorset_msg);
@@ -4050,7 +4050,7 @@ void read_eval_print(int noisy)
 #endif
             }
         }
-        catch (char *)
+        catch (const char *)
         {   if (errorset_msg != NULL)
             {   err_printf("\n%s detected\n", errorset_msg);
                 errorset_msg = NULL;

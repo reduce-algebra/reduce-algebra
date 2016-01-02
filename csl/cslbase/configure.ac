@@ -38,8 +38,9 @@
 
 # Specify the name of this "application" and a version number
 AC_INIT([REDUCE],[7.00])
-AM_INIT_AUTOMAKE([1.8.3 -Wno-portability -Wno-override foreign dist-bzip2])
-AC_CONFIG_MACRO_DIRS([m4])
+# automake 1.13 was the first to support AC_CONFIG_MACRO_DIRS
+AM_INIT_AUTOMAKE([1.13 -Wno-portability -Wno-override foreign dist-bzip2])
+AC_CONFIG_MACRO_DIR([m4])
 
 here=`pwd`
 AC_MSG_NOTICE([+++ Configure in directory $here +++])

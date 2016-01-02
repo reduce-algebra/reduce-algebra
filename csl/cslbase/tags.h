@@ -1186,11 +1186,11 @@ typedef uintptr_t Header;
 #define TYPE_STREAM         0x3e0   // 3 pointers then binary data
 
 #define HDR_IMMED_MASK      0xff
-#define TAG_CHAR            0x02    // these cases leave 24 bits spare
-#define TAG_BPS             0x42
-// #define TAG_LITVEC       0x82    .. Not used at present, intended for
+#define TAG_CHAR            (0x00+TAG_HDR_IMMED)   // these cases leave 24 bits spare
+#define TAG_BPS             (0x40+TAG_HDR_IMMED)
+// #define TAG_LITVEC       (0x80+TAG_HDR_IMMED)   .. Not used at present, intended for
 //                                  .. read-only vectors in BPS heap.
-#define TAG_SPID            0xc2    // Collection of internal flag values
+#define TAG_SPID            (0xc0+TAG_HDR_IMMED)   // Collection of internal flag values
 
 #define SPID_NIL            (TAG_SPID+0x0000)  // NIL in checkpoint file
 #define SPID_FBIND          (TAG_SPID+0x0100)  // Fluid binding on stack

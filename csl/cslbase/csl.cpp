@@ -982,7 +982,7 @@ static void lisp_main(void)
 //
             else read_eval_print(lisp_true);
         }
-        catch (char *)
+        catch (const char *)
         {   nil = C_nil;
             if (errorset_msg != NULL)
             {   term_printf("\n%s detected\n", errorset_msg);
@@ -3299,7 +3299,7 @@ static void cslaction(void)
             }
         }
     }
-    catch (char *)
+    catch (const char *)
     {   if (errorset_msg != NULL)
         {   term_printf("\n%s detected\n", errorset_msg);
             errorset_msg = NULL;

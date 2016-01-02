@@ -2049,7 +2049,7 @@ static LispObject errorset3(volatile LispObject env,
         errexit();
         return onevalue(r);
     }
-    catch (char *)
+    catch (const char *)
     {
 //
 // Note that this is where a throw might suddenly get me back to. The
@@ -2320,7 +2320,7 @@ static LispObject resource_limit7(volatile LispObject env,
         qvalue(resources) = form;
         return onevalue(r);
     }
-    catch (char *)
+    catch (const char *)
     {   nil = C_nil;
         time_base  = save_time_base;  space_base   = save_space_base;
         io_base    = save_io_base;    errors_base  = save_errors_base;
@@ -2464,8 +2464,8 @@ setup_type const eval3_setup[] =
 #else
     {"list",                    list_fn, (two_args *)noisy_list_fn, bad_specialn},
     {"list*",                   liststar_fn, (two_args *)noisy_liststar_fn, bad_specialn},
-//    {"plus",                    plus_fn, (two_args *)noisy_plus_fn, bad_specialn},
-//    {"times",                   times_fn, (two_args *)noisy_times_fn, bad_specialn},
+//  {"plus",                    plus_fn, (two_args *)noisy_plus_fn, bad_specialn},
+//  {"times",                   times_fn, (two_args *)noisy_times_fn, bad_specialn},
 #endif
     {NULL,                      0, 0, 0}
 };
