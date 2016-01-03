@@ -6,124 +6,77 @@
 # because I am not using autoconf's own mechanisms for sub-directories
 # and so doing an autoreconf once at the top-level is not enough.
 
-# I arrange that this script can be invoked from anywhere because it will
-# possibly be called when the current directory is the BUILD directory
-# not the SOURCE one. But this updates files in the SOURCE directory.
+#
+# Usage:
+#     autogen.sh [-f | --force]
+#
 
-# The flags to autoreconf indicate
-#   -i    install fresh copies of all relevant script-files etc
-#   -f    force all updates regardless of date-stamps
-#   -v    display some information about what is being done.
+f=""
+if test "x$1" = "x-f" || test "x$1" = "x--force"
+then
+  printf "Will force full re-make of all autoconf-related files\n"
+  f=" -f"
+fi
 
-a=$0
-c=unknown
-case $a in
-/* )
-  c=$a  
-  ;;
-*/* )
-  case $a in
-  ./* )
-    a=`echo $a | sed -e s+./++`
-    ;;
-  esac
-  c=`pwd`/$a
-  ;;
-* ) 
-  for d in $PATH
-  do
-    if test -x $d/$a
-    then
-      c=$d/$a
-    fi
-  done
-  if test $c = "unknown" ;then
-    echo "Unable to find full path for script. Please re-try"
-    echo "launching it using a fully rooted path."
-    exit 1
-  fi
-  ;;
-esac
+# I want this script to be one I can launch from anywhere.
 
-here=`echo $c | sed -e 's+/[^/]*$++'`
+here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
+here=`cd \`dirname "$here"\` ; pwd -P`
 
 save=`pwd`
 cd $here
 
-echo "Updating autoconf scripts in $here"
-
-rm -rf autom4te.cache
-
-canconfigure="yes"
-
-if autoconf --version </dev/null >/dev/null 2>&1
-then :
-else
-  canconfigure="no"
-  echo "autoconf not seem to be available"
-fi
-
-if automake --version </dev/null >/dev/null 2>&1
-then :
-else
-  canconfigure="no"
-  echo "automake not seem to be available"
-fi
-
-if autoheader --version </dev/null >/dev/null 2>&1
-then :
-else
-  canconfigure="no"
-  echo "autoheader not seem to be available"
-fi
-
-if test "$canconfigure" = "no"
+if ! which autoreconf > /dev/null
 then
-  echo "I will merely reset some date-stamps"
-# I only need to touch the files that the Makefile is going to have
-# dependencies for.
-  touch aclocal.m4
-# The "sleep 1" is to ensure that there is a positive difference in the
-# time stamps even if my computer does not record times to high resolution!
-  sleep 1
-  touch Makefile.in config.h.in configure
-  sleep 1
-  touch autogen.stamp
-  cd $save
-  exit 0
-fi
-
-rm -f compile config.guess config.sub depcomp install-sh missing
-
-echo "About to run aclocal --force"
-if aclocal --force
-then :
-else
-  echo "aclocal failed in $here"
-  cd $save
+  printf "You need to have autoconf and automake installed\n"
+  printf "I seem not to be able to find the autoreconf command\n"
+  printf "Stopping...\n"
   exit 1
 fi
 
-echo "About to run autoreconf -i -f -v"
-if autoreconf -i -f -v
-then :
-else
-  echo "autoreconf failed in $here"
-  cd $save
-  exit 1
+# Here I list all the directories that might be relevant. Note that in
+# some circumstances some may not be present!
+
+# There are some directories that I have chosen not to process here:
+#  ./foxtests \
+# taking a view that peopel who wish to build those already have to take
+# special steps...
+
+L=". \
+  ./cslbase \
+  ./fox
+
+# On any particular machine I will regenerate the autoconf stuff from
+# outside packages just once. The packages that I do some of my own
+# maintenence on get reconfigured every time.
+
+if ! test -f ./cslbase/gc-7/reconf.stamp
+then
+  L="$L ./cslbase/gc-7"
+  touch ./cslbase/gc-7/reconf.stamp
 fi
 
-if autoheader
-then :
-else
-  echo "autoheader failed in $here"
-  cd $save
-  exit 1
+if ! test -f ./cslbase/crlibm/reconf.stamp
+then
+  L="$L ./cslbase/crlibm"
+  touch ./cslbase/crlibm/reconf.stamp
 fi
 
-# I maintain my own timestamp on when this procedure was performed.
-touch autogen.stamp
+for d in $L
+do
+  printf "\nautoreconf in directory '%s'\n" $d
+  if test -d $d
+  then
+    cd $d
+    printf "autoreconf -i -v$f\n"
+    autoreconf -i -v$f
+    cd $here
+  fi
+done
+   
+scripts/resetall.sh
 
 cd $save
+exit 0
 
 # end of autogen.sh

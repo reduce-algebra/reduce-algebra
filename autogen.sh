@@ -11,6 +11,24 @@
 #     autogen.sh [-f | --force]
 #
 
+
+# The following seem to be the dependencies that can trigger a need for
+# autoconf, aclocal, autoheader, automake, libtoolize (and any others?)
+# to be us3ed. I use them all via autoreconf. I believe that if I have
+# at least automake 1.13 this understands even about libtool...
+#
+#	aclocal.m4:	configure.ac
+#		aclocal
+#	config.h.in:	configure.ac aclocal.m4
+#		autoheader
+#	Makefile.in:	configure.ac Makefile.am
+#	# This command also generates COPYING, INSTALL, install-sh, missing
+#	# mkinstalldirs, stamp-h.in, config.guess, config.sub, ltmain.sh and
+#	# ltconfig as needed.
+#		automake
+#	configure:	configure.ac aclocal.m4
+#
+
 f=""
 if test "x$1" = "x-f" || test "x$1" = "x--force"
 then
