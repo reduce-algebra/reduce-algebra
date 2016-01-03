@@ -117,5 +117,6 @@ July 2015: adjustment to characters used in the display of \left| and
 
 December 2015: changes (mostly to fwin.cpp & immediate friends) to support
       packing a macintosh build into an application bundle.
+      Then follow-on corrections to get the Windows case working again!
 
 <end of CHANGED>

@@ -1,14 +1,9 @@
 // fwin.cpp                                 Copyright A C Norman 2003-2015
 //
 //
-// Window interface for old-fashioned C applications. Intended to
+// Window interface for old-fashioned C/C++ applications. Intended to
 // be better than just running them within rxvt/xterm, but some people will
 // always believe that running them under emacs is best!
-//
-// Note that although the graphical bits of fwin and coded in C++ the
-// parts needed for a text-only interface are in just C. This is so that
-// on limited platforms where graphics are not relevant the C++ libraries
-// do not have to be used.
 //
 
 /**************************************************************************
@@ -55,10 +50,31 @@
 
 // $Id$
 
+// The "#ifdef" mess here has been getting out of control. The major
+// choice are:
+//   Sometimes this file will live within my copy of the FOX library as
+//   an extension. If however I am building a system without a GUI at all
+//   I can use this file to link on to my own terminal handling code. This
+//   is controlled ny HAVE_CONFIG_H and through that PART_OF_FOX.
+//
+//   Then there are variations as between Windows, OX X and Linux. At
+//   present systems other then Windows and OS X will use the Linux
+//   parts, which really represents a UNix-family system using X11 and
+//   so should cover BSD too. Because when this code is built within the
+//   FOX library it has a different configure.ac file to configure it
+//   I can not comfortably rely on the machine-selection abstractions I
+//   use elsewhere in CSL. So I use __APPLE__ to detecet the OSX case and
+//   WIN32 for Windows - those are set automatically by the compilers that
+//   I use. I do not believe thet I have any code here sensitive to the
+//   distinction between 32 and 64-bit windows, but within the Linux
+//   sections I will sometimes need to be conditional on __CYGWIN__.
+//
+//   If EMBEDDED is defined a somewhatr abbreviated version will be built
+//   since in that context simplicity trumps capability.
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #else // HAVE_CONFIG_H
-// Here I will suppose I am building as part of the FOX library
 #define PART_OF_FOX 1
 #endif // HAVE_CONFIG_H
 
@@ -68,37 +84,11 @@
 
 extern int fwin_main(int argc, const char *argv[]);
 
-#ifdef HAVE_LIBFOX
-//
-// This case will apply when I am compiling this as part of an application
-// that uses the autoconf tools to create a file "config.h" and when
-// autoconf has reported that the FOX library is available. I require that
-// this represents my updated and extended version of FOX because it will
-// then contain a copy of most of this code. My application can then just
-// start up by transferring control into FOX, passing in information about
-// the callbacks that are needed. The code here is what is needed by
-// CSL...
-//
-
-int main(int argc, const char *argv[])
-{   fwin_startup(argc, argv, fwin_main);
-    return 0;
-}
-
-
-#else // HAVE_LIBFOX
-
-// Even without FOX if I am building on Windows I need this header file
-// for (eg) GetModuleFileName().
-//
 #ifdef WIN32
-// Indicate that I expect to be using a RECENT version of Windows
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0500
-#endif // _WIN32_WINNT
+
 #include <windows.h>
 #include <io.h>
-#include <wchar.h>
+
 #endif // WIN32
 
 #include <string.h>
@@ -108,13 +98,16 @@ int main(int argc, const char *argv[])
 #include <stdlib.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <wchar.h>
+#include <wctype.h>
 #include <time.h>
 #include <signal.h>
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #else // HAVE_UNISTD_H
-extern char *getcwd(char *s, size_t n);
+// The declaration here is an expression of optimism!
+extern char *getcwd(const char *s, size_t n);
 #endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
@@ -126,36 +119,22 @@ extern char *getcwd(char *s, size_t n);
 #endif // WIN32
 
 #ifndef EMBEDDED
+
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
-#else // HAVE_DIRENT_H
-#ifndef WIN32
-#include <sys/dir.h>
-#else // WIN32
+#elif defined WIN32
 #include <direct.h>
-#endif // WIN32
+##else
+#include <sys/dir.h>
 #endif // HAVE_DIRENT_H
+
 #endif // EMBEDDED
 
-//
-// I used to have this to give me X11 headers - but (a) if I am building
-// without FOX I do not have a GUI at all and so they are not needed and
-// (b) they conflict with the Mac-specific headers that follow. Specifically
-// I have pain with "Cursor" being a name-clash.
-//
-// #ifndef WIN32
-// #include <X11/Xlib.h>
-// #endif
-//
-
 #ifdef __APPLE__
-//
-// The extent to which any code here pays attention to Mac-specific
-// features is and should probably remain minimal! However some may be
-// used here.
-//
+
 #include <Carbon/Carbon.h>
 #include <CoreServices/CoreServices.h>
+
 #endif // __APPLE__
 
 #include "termed.h"
@@ -285,8 +264,9 @@ interrupt_callback_t *interrupt_callback;
 extern const char *my_getenv(const char *s);
 
 #ifdef WIN32
-static int programNameDotCom;
+static int programNameDotCom = 0;
 #endif // WIN32
+
 #ifdef __APPLE__
 static int macApp = 0;
 #endif // __APPLE__
@@ -809,7 +789,6 @@ int main(int argc, const char *argv[])
 // looking for a command-line option that controls whether to use it!
 //
 #endif // EMBEDDED
-#endif // HAVE_LIBFOX
 
 // Windowed or not, if there is an argument "-b" or "-bxxxx" then the
 // string xxx will do something about screen colours. An empty string

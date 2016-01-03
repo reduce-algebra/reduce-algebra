@@ -8,155 +8,63 @@
 
 #
 # Usage:
-#     autogen.sh [path]
-# Without any arguments this regenerates ALL the autoconf-related files.
-# If it is given one then that can restrict the set of files that are
-# rebuild, so eg
-#     autogen.sh csl/cslbase
-# will update the files in csl/cslbase (and in csl/cslbase/crlibm).
+#     autogen.sh [-f | --force]
 #
 
-target=${1:-.}
+f=""
+if test "x$1" = "x-f" || test "x$1" = "x--force"
+then
+  printf "Will force full re-make of all autoconf-related files\n"
+  f=" -f"
+fi
 
-a=$0
-c=unknown
-case $a in
-/* )
-  c=$a  
-  ;;
-*/* )
-  case $a in
-  ./* )
-    a=`echo $a | sed -e 's+./++'`
-    ;;
-  esac
-  c=`pwd`/$a
-  ;;
-* ) 
-  for d in $PATH
-  do
-    if test -x $d/$a
-    then
-      c=$d/$a
-    fi
-  done
-  if test $c = "unknown" ;then
-    echo "Unable to find full path for script. Please re-try"
-    echo "launching it using a fully rooted path."
-    exit 1
-  fi
-  ;;
-esac
+# I want this script to be one I can launch from anywhere.
 
-here=`echo $c | sed -e 's+/[^/]*$++'`
+here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
+here=`cd \`dirname "$here"\` ; pwd -P`
 
 save=`pwd`
 cd $here
 
-# If "autoreconf" is available then that will be what I use to
-# cause aclocal, autoconf and automake to be run. I will assume that
-# all the components that are needed will be available if the top
-# level command is in place. If at some stage I find reports of cases where
-# more elaborate tests are called for I may need to upgrade this!
-
-if which autoreconf > /dev/null
+if ! which autoreconf > /dev/null
 then
+  printf "You need to have autoconf and automake installed\n"
+  printf "I seem not to be able to find the autoreconf command\n"
+  printf "Stopping...\n"
+  exit 1
+fi
 
-  echo autoreconf command available for use.
+# Here I list all the directories that might be relevant. Note that in
+# some circumstances some may not be present!
 
-  for x in `find $target \( -name configure.ac -o -name configure.in \) -print`
-  do
-    case $x in
-# I will not try reconfiguring in the wxWidgets directory. I will
-# want the files there to be exactly as unpacked from the wxWidgets
-# archive, and will believe that use of tar to unpack the archive will
-# have left files with datestamps correctly ordered.
-# cslplus is an ACN experiment not checked in to the main tree but it is
-# useful to ignore it here...
-    *wxWidgets* | *crlibm* | *cslplus* | *psl/support-packages*)
-# I think that being told about the directories I do not deal with
-# is getting dull, so I remove the print statement here.
-#     echo Leaving directory ${x%/configure.ac} untouched.
-      ;;
-    *)
-      x1=`echo $x | sed -e 's+/configure.ac$++'`
-      x1=`echo $x1 | sed -e 's+/configure.in$++'`
-      cd $x1
-      echo "============================================================"
-      echo Updating autoconf files in `pwd`:
-      rm -rf aclocal.m4 autom4te.cache
-# The files configure and Makefile.in might sometimes have been
-# hand written... if so I had better not remove them!
-      if test -f configure.ac || test -f configure.in
-      then
-        rm -f configure
-      fi
-      if test -f Makefile.am
-      then
-        rm -f Makefile.in
-      fi
-      if test -f config.h.in
-      then
-        rm -f config.h.in
-      fi
-      autoreconf -f -i
-    esac
+# There are some directories that I have chosen not to process here:
+#  ./csl/foxtests \
+#  ./generic/libreduce/src \
+#  ./generic/redfront/libedit-20140620-3.1 \
+#  ./generic/redfront/src \
+# taking a view that peopel who wish to build those already have to take
+# special steps...
+
+for d in \
+  . \
+  ./csl \
+  ./csl/cslbase \
+  ./csl/cslbase/crlibm \
+  ./csl/cslbase/gc-7 \
+  ./csl/fox \
+  ./psl \
+  ./scripts
+do
+  printf "\nautoreconf in directory '%s'\n" $d
+  if test -d $d
+  then
+    cd $d
+    printf "autoreconf -i -v$f\n"
+    autoreconf -i -v$f
     cd $here
-  done
-fi
-
-# Now just to be double plus certain that all is well I will
-# reset date-stamps. If the command autoreconf is not available then
-# this is the only thing that I will do, and in that case it is probably
-# the best that I can do.
-
-cd $here
-
-echo Now reset all date-stamps...
-
-echo Step 1 of 5: configure.ac, configure.in and Makefile.am:
-files=`find $target \( -name configure.ac -o -name configure.in \
-          -o -name Makefile.am \) -print`
-if test "x$files" != "x"
-then
-  echo $files | xargs touch
-fi
-sleep 1
-
-echo Step 2 of 5: aclocal.m4:
-files=`find $target -name aclocal.m4 -print`
-if test "x$files" != "x"
-then
-  echo $files | xargs touch
-fi
-sleep 1
-
-echo Step 3 of 5: configure:
-files=`find $target -name configure -print`
-if test "x$files" != "x"
-then
-  echo $files | xargs touch
-  echo $files | xargs chmod +x
-fi
-sleep 1
-
-echo Step 4 of 5: config.h.in:
-files=`find $target -name config.h.in -print`
-if test "x$files" != "x"
-then
-  echo $files | xargs touch
-fi
-sleep 1
-
-echo Step 5 of 5: Makefile.in:
-files=`find $target -name Makefile.in -print`
-if test "x$files" != "x"
-then
-  echo $files | xargs touch
-fi
-
-echo Date-stamps should now be in the proper sequence.
-
+  fi
+done
+   
 scripts/resetall.sh
 
 cd $save

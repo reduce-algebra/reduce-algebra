@@ -54,10 +54,6 @@
 #include "config.h"
 
 #ifdef WIN32
-// Indicate that I expect to be using a RECENT version of Windows
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0500
-#endif
 #include <windows.h>
 #include <io.h>
 #include <wchar.h>

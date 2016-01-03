@@ -44,11 +44,11 @@
 
 case `uname -m` in
 i686)
-    for m in automake bc bison cygwin64-gcc-g++ cygwin64-libXext \
-        cygwin64-libXft cygwin64-ncurses cygwin64-zlib gcc-g++ \
-        libncurses-devel libXext-devel libXft-devel make mingw64-i686-gcc-g++ \
-        mingw64-i686-zlib mingw64-x86_64-gcc-g++ mingw64-x86_64-zlib \
-        openssh subversion time
+    for m in automake bc bison cygwin64-gcc-g++ cygwin64-libtool \
+        cygwin64-libXext cygwin64-libXft cygwin64-ncurses cygwin64-zlib \
+        gcc-g++ libncurses-devel libtool libXext-devel libXft-devel make \
+        mingw64-i686-gcc-g++ mingw64-i686-zlib mingw64-x86_64-gcc-g++ \
+        mingw64-x86_64-zlib openssh subversion time
     do
       if cygcheck -c -d $m | grep $m > /dev/null
       then

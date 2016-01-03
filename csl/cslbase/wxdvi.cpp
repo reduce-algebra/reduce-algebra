@@ -64,8 +64,6 @@
 // toolchain provide gdiplus.h, but ones from a while back may not, so if
 // necessary ensure you are fully up to date.
 
-#undef _WIN32_WINNT
-#define _WIN32_WINNT 0x0500
 #include <windows.h>
 #include <wingdi.h>
 #include <gdiplus.h>

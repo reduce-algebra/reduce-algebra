@@ -56,12 +56,11 @@
 #include "config.h"
 
 #ifdef WIN32
-// I will need windows-specific functions so I can set up private fonts
-#undef _WIN32_WINNT
-#define _WIN32_WINNT 0x0500
+
 #include <windows.h>
 #include <wingdi.h>
 #include <io.h>
+
 #else
 #ifdef MACINTOSH
 
