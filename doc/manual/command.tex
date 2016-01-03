@@ -136,19 +136,19 @@ we advise using \texttt{;END;} there.
 %type \texttt{(BEGIN)} in parentheses and hit the RETURN key.
 
 \hypertarget{command:QUIT}{}
-\hypertarget{command:BYE}{\section{BYE Command}}\ttindex{BYE}
+\hypertarget{command:BYE}{\section{BYE Command}}\ttindextype{BYE}{command}
 
-\index{BYE command}\index{Command!BYE}
+\index{Command!BYE@\texttt{BYE}}
 The command \texttt{BYE}; (or alternatively \texttt{QUIT};)\ttindex{QUIT}
 stops the execution
 of {\REDUCE}, closes all open output files, and returns you to the calling
 program (usually the operating system).  Your {\REDUCE} session is
 normally destroyed.
 
-\section{SHOWTIME Command}\ttindex{SHOWTIME}
+\section{SHOWTIME Command}\ttindextype{SHOWTIME}{command}
 \hypertarget{command:SHOWTIME}{}
 
-\index{SHOWTIME command}\index{Command!SHOWTIME}
+\index{Command!SHOWTIME@\texttt{SHOWTIME}}
 \texttt{SHOWTIME}; prints the elapsed time since the last call of this
 command or, on its first call, since the current {\REDUCE} session began.
 The time is normally given in milliseconds and gives the time as measured
@@ -158,7 +158,7 @@ dependent.
 \section{DEFINE Command}
 \hypertarget{command:DEFINE}{}
 
-\ttindextype{DEFINE}{command}\index{Command!DEFINE}
+\ttindextype{DEFINE}{command}\index{Command!DEFINE@\texttt{DEFINE}}
 The command \texttt{DEFINE} allows a user to supply a new name for
 any identifier or replace it by any well-formed expression.  Its argument
 is a list of expressions of the form

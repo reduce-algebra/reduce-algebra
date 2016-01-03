@@ -15,45 +15,11 @@
 \newcommand*{\fd}[2]{\mathchoice{\frac{\delta#1}{\delta#2}}
   {\delta #1/\delta#2}{\delta#1/\delta#2}{\delta#1/\delta#2}}
 
-\let\kappa\varkappa
-\let\phi\varphi
-
-%\newcommand{\hj}{\bar{\jmath}}
-%\newcommand{\hd}{\bar{d}}
-%\newcommand{\J}{\bar{\mathcal{J}}}
-%\newcommand{\Ji}{{\bar{\mathcal{J}}}^{\infty}}
-%\newcommand{\hL}{\bar{\Lambda}}
-%\newcommand{\cC}{\mathcal{C}}
-%\newcommand{\cE}{\mathcal{E}}
-%\newcommand{\cL}{\mathcal{L}}
-%\newcommand{\cJ}{\mathcal{J}}
-%\newcommand{\g}{\mathfrak{g}}
-%\newcommand{\hH}{\bar{H}^n}
-%\newcommand{\Eu}{\mathscr{E}}
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\Z}{\mathbb{Z}}
 
-%\newcommand{\alg}{\mathcal{F}}
-
-%\newcommand{\id}{\mathrm{id}}
-
-%\DeclareMathOperator{\CDiff}{\mathcal{C}Dif{}f}
 \newcommand{\CDiff}{\mathop{\mathcal{C}\mathrm{Dif{}f}}}
-%\DeclareMathOperator{\Der}{D}
-%\DeclareMathOperator{\CL}{CL}
-%\DeclareMathOperator{\Dv}{D^v}
-%\DeclareMathOperator{\cl}{cl}
-%\DeclareMathOperator{\Diff}{Dif{}f}
-%\DeclareMathOperator{\diff}{dif{}f}
-%\DeclareMathOperator{\Smbl}{Smbl}
-%\DeclareMathOperator{\End}{End}
-%\DeclareMathOperator{\Hom}{Hom}
-%\DeclareMathOperator{\Sym}{Sym}
-%\DeclareMathOperator{\CoSym}{CoSym}
-%\DeclareMathOperator{\im}{im}
-%\DeclareMathOperator{\pr}{pr}
-%\DeclareMathOperator{\supp}{supp}
 \newcommand*{\CDiffsym}[1]{\CDiff_{(#1)}^{\,\mathrm{sym}}}
 \newcommand*{\CDiffself}[1]{\CDiff_{(#1)}^{\,\mathrm{self}}}
 \newcommand*{\CDiffskew}[1]{\CDiff_{(#1)}^{\,\mathrm{skew}}}
@@ -63,8 +29,6 @@
 
 \newcommand{\cde}{CDE\xspace}
 \newcommand{\cdiff}{CDIFF\xspace}
-%\newcommand{\REDUCE}{\texttt{Reduce}\xspace}
-%\newcommand{\reduce}{\REDUCE}
 \newcommand{\crack}{CRACK\xspace}
 \newcommand{\cdiffop}{$\mathcal{C}$-differential operator\xspace}
 \newcommand{\cdiffops}{$\mathcal{C}$-differential operators\xspace}
@@ -845,9 +809,9 @@ The syntax for one component of the operator \texttt{opname} is
 The above operator will compute
 \begin{equation}
   \label{eq:10}
-  \Delta(\phi_1,\dots,\phi_h) = \sum_{\sigma_1,\ldots,\sigma_h}
+  \Delta(\varphi_1,\dots,\varphi_h) = \sum_{\sigma_1,\ldots,\sigma_h}
   a^{\sigma_1,\ldots,\sigma_h,\ j}_{i_1\cdots i_h}
-  D_{\sigma_1} \phi_1^{i_1}\cdots D_{\sigma_h}\phi_h^{i_h},
+  D_{\sigma_1} \varphi_1^{i_1}\cdots D_{\sigma_h}\varphi_h^{i_h},
 \end{equation}
 for fixed integer indices $i_1$,\dots,$i_h$ and $j$.
 
@@ -925,7 +889,7 @@ In the papers \cite{IVV,KKV} (and independently in \cite{getz}) a scheme for
 dealing with (skew-adjoint) variational multivectors was devised. The idea was
 that operators of the type \eqref{eq:7} could be represented by homogeneous
 vector superfunctions on a supermanifold, where odd coordinates $q^i_\sigma$
-would correspond to total derivatives $D_\sigma\phi^i$. 
+would correspond to total derivatives $D_\sigma\varphi^i$. 
 
 The isomorphism between the two languages is given by
 \begin{equation}
@@ -2463,7 +2427,7 @@ cotangent covering. Namely, we compute a linear conservation law (with respect
 to $p$'s) on the cotangent covering which corresponds with the $u$-translation
 symmetry (see \cite{KKV-SPT-2011} for a theoretical description).  After
 guessing the generating function of the conservation law $\psi=(0,1)$ from the
-generating function $\phi=1$ of the $u$-translation symmetry , we deduce that
+generating function $\varphi=1$ of the $u$-translation symmetry , we deduce that
 the equation
 \begin{equation}
   \bar{d}\omega = \ell^*_F(p)

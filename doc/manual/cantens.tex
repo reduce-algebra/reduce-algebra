@@ -5,7 +5,7 @@
 %\newcommand{\beas}{\begin{eqnarray*}}
 %\newcommand{\eeas}{\end{eqnarray*}}
 
-\index{CANTENS package}
+%\index{CANTENS package}
 
 \subsection{Introduction}
 \texttt{CANTENS} is a package that creates an environment
@@ -66,7 +66,7 @@ discussed especially with respect to their ability to work simultaneously within
 several subspaces.
 
 The last section, which is also the most important,  is devoted entirely to 
-the simplification function \ttindex{CANONICAL}\texttt{CANONICAL}. This function 
+the simplification function \ttindextype{CANONICAL}{operator}\texttt{CANONICAL}. This function 
 originates from the package \texttt{DUMMY}\ttindex{DUMMY} and has been 
 substantially extended . It takes account of 
 all symmetries, make dummy summations and  seeks a ``canonical''
@@ -82,7 +82,8 @@ distinction between them. The conventions are the following:
 \item Cantens package keywords are  in small typewriter letters.
 \item All other keywords are typed in small roman letters.
 \end{itemize} 
-When \texttt{CANTENS}\index{CANTENS package!loading} is loaded, the packages
+When \texttt{CANTENS}\index{Cantens package@\textsc{Cantens} package!loading} is loaded, 
+the packages
 \texttt{ASSIST}\ttindex{ASSIST} and \texttt{DUMMY}\ttindex{DUMMY} are also 
 loaded. 
 
@@ -297,7 +298,7 @@ and \emph{automatically recognized} as such.
 So they are supposed to obey the summation rules of tensor calculus.
 This why and only why they are called tensors. Moreover, aside from 
 indices they may also depend implicitly or explicitly on any number of
-\emph{variables}\index{CANTENS package!variables}. Within this definition,
+\emph{variables}\index{Cantens package@\textsc{Cantens} package!variables}. Within this definition,
 tensors may also be spinors, they can be non-commutative or anticommutative,
 they may also be algebra generators and represent fields or quantum fields.   
 
@@ -345,7 +346,8 @@ Notice that the system distinguishes indices from variables on input
 solely on the basis that the user puts variables \emph{inside a list}.
 
 The dependence can also be declared implicit through the \REDUCE\ command 
-\ttindextype{DEPEND}{!CANTENS package}\index{CANTENS package!DEPEND@\texttt{DEPEND}}\texttt{DEPEND}
+\ttindextype{DEPEND}{!CANTENS package}
+\index{Cantens package@\textsc{Cantens} package!DEPEND@\texttt{DEPEND}}\texttt{DEPEND}
 which is generalized so as to allow to declare a tensor 
 to depend on another tensor irrespective of its components. It means that only \emph{one}
 declaration is enough to express the dependence with respect to 
@@ -398,7 +400,7 @@ possess ``removing'' action companions.} using
 If one does that one must be careful not to substitute a number to such 
 declared variables because this number would be considered as an index and 
 no longer as a variable. So it is only useful for \emph{formal} variables%
-\index{CANTENS package!variables}.
+\index{Cantens package@\textsc{Cantens} package!variables}.
 
 A tensor can be easily eliminated using the function 
 \ttindex{REM\_TENSOR}\texttt{REM\_TENSOR}. It has the syntax
@@ -473,9 +475,9 @@ discuss them later\index{ONESPACE switch@\texttt  {ONESPACE} switch!Off}\index{O
 
 \subsubsubsection{Substitutions, assignements and rewriting rules}
 
-\index{CANTENS package!LET@\texttt{LET}}
-\index{CANTENS package!rewriting rules}
-\index{rewriting rules!CANTENS package}
+\index{Cantens package@\textsc{Cantens} package!LET@\texttt{LET}}
+\index{Rewriting rules!CANTENS package}
+\index{Cantens package@\textsc{Cantens} package!rewriting rules}
 The user must be able to manipulate and give specific characteristics 
 to the generic tensors he has introduced.  Since tensors are essentially 
 \REDUCE\  operators\ttindex{REDUCE}, the usual commands of the system are 
@@ -484,7 +486,7 @@ However, some limitations are implied by the fact that indices and,
 especially numeric indices, must always be properly recognized before
 any substitution or manipulation is done. We have gathered below a set of 
 examples which illustrate all the ``delicate'' points.
-First, the substitutions\index{CANTENS package!SUB@\texttt{SUB}}:
+First, the substitutions\index{Cantens package@\textsc{Cantens} package!SUB@\texttt{SUB}}:
 \begin{verbatim}
       sub(a=-c,te(a,b)); ==>
 
@@ -518,8 +520,8 @@ for this \emph{single} exceptional case. Therefore,we have opted, not do do so
 and to use the index 0 which is simply !0 instead of 0. 
 
 Second, the assignments. Here, we advise the user to rely on  the 
-operator\ttindextype{==}{operator}\texttt{==}%
-\index{CANTENS package!== operator@\texttt{==} operator}%
+operator\ttindextype{==}{operator (\textsc{Cantens) package)}}\texttt{==}%
+\index{Cantens package@\textsc{Cantens} package!== operator@\texttt{==} operator}%
 \footnote{See the \texttt{ASSIST} documentation for its description.} 
 instead of the operator \ttindextype{:=}{(assignment) operator}\texttt{:=}. Again, 
 the reason is to avoid the problem raised above  in the case of 
@@ -612,7 +614,7 @@ Third, rewriting rules. They are either global or local and
 can be used as in \REDUCE. 
 Again, here,  the -0 index problem exists each time a substitution 
 by the index -0 must be made in a template. 
-\index{CANTENS package!FOR ALL@\texttt{FOR ALL}}
+\index{Cantens package@\textsc{Cantens} package!FOR ALL@\texttt{FOR ALL}}
 \index{FOR ALL@\texttt{FOR ALL}!CANTENS package}
 \begin{verbatim}
   % LET:
@@ -713,7 +715,7 @@ by the index -0 must be made in a template.
                  1
                te
 \end{verbatim}
-\index{CANTENS package!variables}
+\index{Cantens package@\textsc{Cantens} package!variables}
 \begin{verbatim}
   % with variables:
 
@@ -916,7 +918,8 @@ Notice that the error message has also changed accordingly.
 So, now one can even constrain the 0 component to belong to 
 an euclidian space.    
 
-Let us go back to symbolic indices\index{CANTENS package!symbolic indices}. 
+Let us go back to symbolic indices.
+\index{Cantens package@\textsc{Cantens} package!symbolic indices}
 By default, any symbolic index belongs to the global space or to all
 defined partial spaces. In many cases, this is, of course, not consistent.
 So, the possibility exists to declare that one or several indices 
@@ -1237,7 +1240,8 @@ The value of its diagonal elements depends on the chosen
 The tensor is of course symmetric \index{symmetric!tensor}.  
 Its indices are checked in the same way as for a generic tensor.
 In a multi\_space context\index{spaces}, the \texttt{eta} tensor must belong 
-to a well defined space of \index{signature!CANTENS package}\index{CANTENS package!signature}signature 1:
+to a well defined space of \index{Signature!CANTENS package}
+\index{Cantens package@\textsc{Cantens} package!signature}signature 1:
 \index{ONESPACE switch@\texttt  {ONESPACE} switch!Off}
 \begin{verbatim}
       off onespace;
@@ -1248,7 +1252,8 @@ to a well defined space of \index{signature!CANTENS package}\index{CANTENS packa
 
       et(a,-a); ==> 4
 \end{verbatim}
-If the space to which \texttt{et} belongs to is a subspace\index{subspaces!CANTENS package}\index{CANTENS package!subspaces},
+If the space to which \texttt{et} belongs to is a subspace%
+\index{Subspaces!CANTENS package}\index{Cantens package@\textsc{Cantens} package!subspaces},
 one must also
 take care to give a space-identity to dummy indices which may appear inside 
 it. In the following run, the index \texttt{a} belongs to \texttt{wholespace} 
@@ -1277,10 +1282,11 @@ index of the space \texttt{mink}:
 \end{verbatim}
 
 \subsubsection{EPSILON tensors}
-\index{epsilon tensor!CANTENS package}
-\index{CANTENS package!epsilon tensor}
-It is an antisymmetric \index{antisymmetric!CANTENS package} tensor which  
- is the invariant tensor for the unitary group transformations in 
+\index{Epsilon tensor!CANTENS package}
+\index{Cantens package@\textsc{Cantens} package!epsilon tensor}
+It is an antisymmetric \index{Antisymmetric!CANTENS package}%
+\index{Cantens package@\textsc{Cantens} package!antisymmetric tensor}
+tensor which  is the invariant tensor for the unitary group transformations in 
 n-dimensional complex space which are continuously connected to the 
 identity transformation. The number of their indices are always stricty 
 equal to the number of space dimensions.
@@ -1293,7 +1299,8 @@ unique space and, next, in a multi-space context.
 \index{ONESPACE switch@\texttt  {ONESPACE} switch!On}
 The use of \ttindex{MAKE\_PARTIC\_TENS}\texttt{MAKE\_PARTIC\_TENS} places it, by default, in an
 euclidian space if the signature is 0 and in a Minkowski-type space if 
-the signature\index{signature!CANTENS package} is 1. 
+the signature\index{Signature!CANTENS package}%
+\index{Cantens package@\textsc{Cantens} package!signature} is 1. 
 For higher signatures it is not constructed.
 For a space of symbolic dimension, the number of its indices is not 
 constrained. When it appears inside an expression, its indices are \emph{all}
@@ -1351,7 +1358,8 @@ to the left of the covariant ones.
       eps(a,b,b); ==> 0
 
 \end{verbatim}
-When the signature\index{signature!CANTENS package} is equal to 1, it is known that 
+When the signature\index{Signature!CANTENS package}%
+\index{Cantens package@\textsc{Cantens} package!signature} is equal to 1, it is known that 
 there exists
 two \emph{conventions} which are linked to the chosen value 1 or -1 of 
 the $(0,1,\ldots,n)$ component. So, the sytem does evaluate all components
@@ -1401,7 +1409,7 @@ to assign it to 1 or -1\ttindex{GLOBAL\_SIGN}.
 \index{ONESPACE switch@\texttt  {ONESPACE} switch!Off}
 As already said, several epsilon tensors may be defined. They \emph{must} 
 be assigned to a well defined (sub-)space otherwise the simplifying 
-function \ttindex{CANONICAL}\texttt{CANONICAL} will not properly work.
+function \ttindextype{CANONICAL}{operator}\texttt{CANONICAL} will not properly work.
 The set of epsilon tensors defined  associated to their space-name 
 may be retrieved using the function  
 \ttindex{SHOW\_EPSILONS}\texttt{SHOW\_EPSILONS}.
@@ -1465,8 +1473,13 @@ Next, let us define an \emph{additional} \texttt{epsilon}-type tensor:
             ***** numeric indices out of range  
 \end{verbatim}
 As previously, the discrimation between symbolic indices 
-\index{symbolic indices!CANTENS package}may be introduced 
-by assigning them to one or another space\index{spaces!CANTENS package}:
+\index{Symbolic indices!CANTENS package}%
+\index{Cantens package@\textsc{Cantens} package!symbolic indices}
+\index{Cantens package@\textsc{Cantens} package!indices, symbolic}
+may be introduced 
+by assigning them to one or another space%
+\index{Spaces!CANTENS package}
+\index{Cantens package@\textsc{Cantens} package!spaces}:
 \begin{verbatim}
       rem_spaces wholespace;
 
@@ -1574,7 +1587,9 @@ gd^{a_1,a_2,\ldots,a_n}_{b_1,b_2,\ldots, b_n}=
 \end{displaymath}
 It is, in general uneconomical to explicitly write that determinant except 
 for particular \emph{numeric}  values of the indices
-\index{numeric indices!CANTENS package} or when almost all 
+\index{Numeric indices!CANTENS package}%
+\index{Cantens package@\textsc{Cantens} package!numeric indices}%
+\index{Cantens package@\textsc{Cantens} package!indices, numeric} or when almost all 
 upper and lower indices are recognized as dummy indices.
 In the sample run below, \texttt{gd} is defined as the generalized delta function
 in the default space. The main automatic evaluations are illustrated.
@@ -1639,7 +1654,7 @@ To this end, the switch \ttindex{EXDELT}\sw{EXDELT} is provided. It is initially
               f       d       e         f       e       d
 \end{verbatim}
 In a multi-space environment, it is never necessary to define several 
-such tensor. The reason is that \ttindex{CANONICAL}\texttt{CANONICAL} uses it 
+such tensor. The reason is that \ttindextype{CANONICAL}{operator}\texttt{CANONICAL} uses it 
 always from the contraction of a pair of \texttt{epsilon}-like tensors.
 Therefore the  control of indices is already done, the space-dimension 
 in which \texttt{del} is working  is also well defined. 
@@ -1716,10 +1731,11 @@ Here is an illustration in the single space environment:
 \end{verbatim}
 
 \subsection{The simplification function \texttt{CANONICAL}}
-\ttindex{CANONICAL}
+\ttindextype{CANONICAL}{operator}
 
 \subsubsection{Tensor expressions}
-\index{tensor polynomial!CANTENS package}
+\index{Tensor polynomial!CANTENS package}
+\index{Cantens package@\textsc{Cantens} package!tensor polynomial}
 Up to now, we have described the behaviour of individual
 tensors and how they simplify themselves whenever possible.
 However, this is far from being sufficient. In general, one is
@@ -1729,7 +1745,8 @@ We define a tensor expression as an arbitrary multivariate
 polynomial. The indeterminates of such a polynomial may be 
 either an indexed object, an operator, a variable or a rational number.
 A tensor-type indeterminate cannot appear to a degree larger 
-than one except if it is a trace\index{trace!CANTENS package}.
+than one except if it is a trace\index{Trace!CANTENS package}%
+\index{Cantens package@\textsc{Cantens} package!trace}.
 The following is a tensor expression:
 \begin{verbatim}
 
@@ -1758,7 +1775,7 @@ In fact, on input, each factor  is simplified   and each
 factor is checked for coherence not more.
 Therefore, if a dummy summation  appears inside one factor, it will 
 be done whenever possible. Hereunder \texttt{delt(a,-a)} is 
-summed over:\index{CANTENS package!SUB@\texttt{SUB}}
+summed over:\index{Cantens package@\textsc{Cantens} package!SUB@\texttt{SUB}}
 \begin{verbatim}
    sub(g=a,aa); ==>
 
@@ -1771,7 +1788,7 @@ summed over:\index{CANTENS package!SUB@\texttt{SUB}}
 
 \subsubsection{The use of \texttt{CANONICAL}}
 
-\ttindex{CANONICAL}\texttt{CANONICAL}  is an offspring of the function 
+\ttindextype{CANONICAL}{operator}\texttt{CANONICAL}  is an offspring of the function 
 with the same name of the package \texttt{DUMMY}\ttindex{DUMMY}. 
 It applies to tensor expressions as defined above.   
 When it acts, this functions has several features which are 
@@ -1790,20 +1807,24 @@ for the output polynomial.
 \end{enumerate}
 Its capabilities  have been extended in four directions:
 \begin{itemize}
-\item It is able to work within \emph{several} spaces\index{spaces!CANTENS package}.
+\item It is able to work within \emph{several} spaces\index{Spaces!CANTENS package}%
+\index{Cantens package@\textsc{Cantens} package!spaces}.
 \item It manages correctly expressions where 
 formal tensor \emph{derivatives} are present%
 \footnote{In \texttt{DUMMY}\ttindex{DUMMY} it does not take them into account}. 
 \item It takes into account all symmetries even if partial.
 \item As its parent function, it can deal with non-commutative 
-and anticommutative indexed objects\index{anticommutative!CANTENS package}.
-So, Indexed objects may be spinors\index{spinor!CANTENS package} or quantum fields.
+and anticommutative indexed objects\index{Anticommutative!CANTENS package}%
+\index{Cantens package@\textsc{Cantens} package!anticommutative indexed objects}.
+So, Indexed objects may be spinors\index{Spinor!CANTENS package}%
+\index{Cantens package@\textsc{Cantens} package!spinor} or quantum fields.
 \end{itemize}
 We describe most of these features in the rest of this 
 documentation.
 \subsubsection{Check of tensor indices}
 
-\index{indices!CANTENS package}
+\index{Indices!CANTENS package}
+\index{Cantens package@\textsc{Cantens} package!indices}
 Dummy indices for individual tensors are kept in the memory of 
 the system. If they are badly distributed over several tensors,
 it is \texttt{CANONICAL} which gives an error message:  
@@ -1864,7 +1885,7 @@ To be usable, one must explicitly remove it as dummy index
 using \texttt{REM\_DUMMY\_INDICES}\ttindex{REM\_DUMMY\_INDICES}.
 Dans le quatri\`eme cas, il n'y a pas de probl\`eme puisque \texttt{b} et 
 \texttt{c} sont tous les deux des indices \emph{libres}.
-\texttt{CANONICAL}\ttindex{CANONICAL} checks that in a tensor polynomial 
+\texttt{CANONICAL}\ttindextype{CANONICAL}{operator} checks that in a tensor polynomial 
 all do possess the \emph{same} variance:
 \begin{verbatim}
       aa:=te(a,c)+x^2; ==>
@@ -1902,7 +1923,9 @@ ordinary operators%
 \end{verbatim}
 \subsubsection{Position and renaming of dummy indices}
 
-\index{dummy indices!CANTENS package}
+\index{Dummy indices!CANTENS package}
+\index{Cantens package@\textsc{Cantens} package!dummy indices}
+\index{Cantens package@\textsc{Cantens} package!indices, dummy}
 For a specific tensor, contravariant dummy indices are place 
 in front of covariant ones. This already leads to some useful 
 simplifications. For instance:
@@ -1987,7 +2010,9 @@ In the above example, no canonical form can be reached. When applied twice
 on the tensor monom \texttt{a1} it gives back \texttt{a1}!  
 
 No change of dummy index position is allowed if a tensor belongs
-to an  \texttt{AFFINE}\ttindex{affine space!CANTENS package} space.
+to an  \texttt{AFFINE}\index{Affine space!CANTENS package}%
+\index{Cantens package@\textsc{Cantens} package!affine space}
+space.
 With the tensor polynomial \texttt{pp} introduced above one has:
 \index{ONESPACE switch@\texttt  {ONESPACE} switch!Off}
 \begin{verbatim}
@@ -2008,7 +2033,8 @@ With the tensor polynomial \texttt{pp} introduced above one has:
 The renaming of \texttt{b} has been made however. 
 
 \subsubsection{Contractions and summations with particular tensors}
-\index{tensor contractions!CANTENS package}
+\index{Tensor contractions!CANTENS package}
+\index{Cantens package@\textsc{Cantens} package!tensor contractions}
 
 This is a central part of the extension of \texttt{CANONICAL}. 
 The required contractions and summations can be done in a 
@@ -2035,7 +2061,7 @@ Dummy indices are recognized  contracted and summed over whenever possible:
 \end{verbatim}
 \texttt{CANONICAL} will not attempt to make contraction with 
 dummy indices included inside ordinary operators:
-\index{OPERATOR!CANTENS package}
+\ttindextype{OPERATOR}{declaration!CANTENS package}
 \begin{verbatim}
       operator op;
 
@@ -2121,7 +2147,8 @@ First, we introduce  \texttt{ETA}:
              te    + dim + 1
                  a
 \end{verbatim}
-Let us add a generic metric \index{metric tensor!CANTENS package} tensor:
+Let us add a generic metric \index{Metric tensor!CANTENS package}%
+\index{Cantens package@\textsc{Cantens} package!metric tensor} tensor:
 \begin{verbatim}
       aa:=g(a,b)*g(-b,-d); ==>
 
@@ -2157,8 +2184,11 @@ which contains it requires a preliminary definition of the tensor \texttt{DEL}.
 When the signature\ttindex{signature} is 0; the contraction of 
 two epsilons gives a \texttt{DEL}-like tensor. When the 
 signature is equal to 1, it is equal to \emph{minus} a \texttt{DEL}-like tensor.
-Here we choose 1 for the signature\index{signature!CANTENS package} and we work in a 
-single space\index{spaces!CANTENS package}.
+Here we choose 1 for the signature\index{Signature!CANTENS package}%
+\index{Cantens package@\textsc{Cantens} package!signature}
+ and we work in a 
+single space\index{Spaces!CANTENS package}.
+\index{Cantens package@\textsc{Cantens} package!spaces}
 \index{ONESPACE switch@\texttt  {ONESPACE} switch!On}
 We define the \texttt{DEL} tensor:
 \begin{verbatim}
@@ -2254,7 +2284,7 @@ with \texttt{CANONICAL}:
 
    canonical aa; ==> 0
 \end{verbatim}
-Since \ttindex{CANONICAL}\texttt{CANONICAL} is able to work inside several 
+Since \ttindextype{CANONICAL}{operator}\texttt{CANONICAL} is able to work inside several 
 spaces, we can introduce also several epsilons and make the relevant 
 simplifications on each (sub)-spaces. This is the goal of the 
 next illustration. 
@@ -2317,7 +2347,8 @@ to a given space, the space identification can only be made through
 the indices. This is enough since the \texttt{DELTA}-like tensor 
 is bloc-diagonal. With \texttt{aa} the result of the above illustration,
 one gets, for example,: 
-\ttindex{MK\_IDS\_BELONG\_SPACE}\index{indices!CANTENS package}
+\ttindex{MK\_IDS\_BELONG\_SPACE}\index{Indices!CANTENS package}
+\index{Cantens package@\textsc{Cantens} package!indices}
 \begin{verbatim}
       mk_ids_belong_space({a,b,c,d,e,f},wholespace)$
    
@@ -2336,7 +2367,8 @@ one gets, for example,:
 \end{verbatim}
 
 \subsubsection{\texttt{CANONICAL} and symmetries} 
-\index{symmetries!CANTENS package}
+\index{Symmetries!CANTENS package}
+\index{Cantens package@\textsc{Cantens} package!symmetries}
 
 Most of the time, indexed objects have some symmetry property.
 When this property is either full symmetry or antisymmetry, there
@@ -2345,14 +2377,20 @@ is no difficulty to implement it using the declarations
 \ttindextype{ANTISYMMETRIC}{declaration}\texttt{ANTISYMMETRIC}
 of \REDUCE. However, most often, indexed objects are neither 
 fully symmetric nor fully antisymmetric: they have \emph{partial} 
-or \emph{mixed} symmetries\index{partial symmetry!CANTENS package}%
-\index{mixed symmetry!CANTENS package}.
+or \emph{mixed} symmetries\index{Partial symmetry!CANTENS package}%
+\index{Cantens package@\textsc{Cantens} package!partial symmetry}
+\index{Mixed symmetry!CANTENS package}%
+\index{Cantens package@\textsc{Cantens} package!mixed symmetry}
+.
 In the \texttt{DUMMY}\ttindex{DUMMY}\ package, the declaration 
 \ttindextype{SYMTREE}{declaration}\texttt{SYMTREE} allows to impose such type of symmetries 
 on operators. This command has been improved and extended to 
 apply to tensors.
 In order to illustrate it, we shall take the example of the 
-wellknown Riemann \index{Rieman tensor!CANTENS package}tensor in general relativity.
+wellknown Riemann 
+\index{Riemann tensor!CANTENS package}
+\index{Cantens package@\textsc{Cantens} package!Riemann tensor}
+tensor in general relativity.
  Let us remind the reader
 that this tensor has four indices. It is separately \emph{antisymmetric} with 
 respect to the interchange of the first two indices and with respect to the   
@@ -2465,7 +2503,7 @@ Another related question is the frequent need to symmetrize
 a tensor polynomial. 
 To fulfill it, the function \ttindex{SYMMETRIZE}\texttt{SYMMETRIZE} 
 of the package \texttt{ASSIST} \ttindex{ASSIST} has been improved and 
-generalised. For any kernel\index{kernel!CANTENS package} (which may be either 
+generalised. For any kernel\index{Kernel!CANTENS package} (which may be either 
 an operator or a tensor) that function generates  
 \begin{itemize}
 \item[-] the sum over the cyclic permutations of indices,
@@ -2533,7 +2571,8 @@ example shows:
 
 \subsubsection{\texttt{CANONICAL} and tensor derivatives}
 
-\index{tensor derivatives!CANTENS package}
+\index{Tensor derivatives!CANTENS package}
+\index{Cantens package@\textsc{Cantens} package!tensor derivatives}
 Only ordinary (partial) derivatives are fully correctly handled 
 by \texttt{CANONICAL}. This is enough, to explicitly construct covariant 
 derivatives. We recognize here  that extensions should still be made.

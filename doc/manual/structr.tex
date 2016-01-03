@@ -523,7 +523,8 @@ print expressions in a FORTRAN notation.  Expressions begin in column
 seven.  If an expression extends over one line, a continuation mark (.)
 followed by a blank appears on subsequent cards.  After a certain number
 of lines have been produced (according to the value of the variable 
-\var{CARD\_NO}),\ttindex{CARD\_NO} a new expression is started.  If the
+\var{CARD\_NO}),\ttindextype{CARD\_NO}{shared global variable} 
+a new expression is started.  If the
 expression printed arises from an assignment to a variable, the variable
 is printed as the name of the expression.  Otherwise the expression is
 given the default name \texttt{ANS}.  An error occurs if identifiers or

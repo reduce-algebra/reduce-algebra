@@ -179,7 +179,7 @@ include:
   \begin{displaymath}
     \sum_{n=0}^{\infty} \frac{(-1)^{n}}{(2n+1)^{2}} .
   \end{displaymath}
-\ttindex{CATALAN}
+\ttindextype{CATALAN}{reserved variable}
 \index{Reserved variable !CATALAN@\texttt{CATALAN}}
 
 \item[E] Intended to represent the base of
@@ -190,15 +190,15 @@ on, \texttt{E} is replaced by the value of E to the current degree of
 floating point precision\index{Numerical precision}.
 
 \item[EULER\_GAMMA] Euler's constant, also available as $-\psi(1)$.
-\ttindex{EULER\_GAMMA}
+\ttindextype{EULER\_GAMMA}{reserved variable}
 \index{Reserved variable !EULER\_GAMMA@\texttt{EULER\_GAMMA}}
 
 \item[GOLDEN\_RATIO] The number $\frac{1+\sqrt{5}}{2}$.
-\ttindex{GOLDEN\_RATIO}
+\ttindextype{GOLDEN\_RATIO}{reserved variable}
 \index{Reserved variable !GOLDEN\_RATION@\texttt{GOLDEN\_RATIO}}
 
 \item[I] Intended to represent the square
-\ttindex{I}
+\ttindextype{I}{reserved variable}
 \index{Reserved variable !I@\texttt{I}}
 
 root of $-1$. \texttt{i\textasciicircum2} is replaced by $-1$, and
@@ -208,7 +208,7 @@ level, not as a formal parameter in a procedure, a local variable, nor in
 the context \texttt{for i:= ...}.
 
 \item[INFINITY] Intended to represent $\infty$
-\ttindex{INFINITY}
+\ttindextype{INFINITY}{reserved variable}
 \index{Reserved variable !INFINITY@\texttt{INFINITY}}
 
 in limit and power series calculations for example, as well as in definite integration.
@@ -225,27 +225,27 @@ current system does \emph{not} do proper arithmetic on $\infty$.  For example,
 \index{Reserved variable !KHINCHIN@\texttt{KHINCHIN}}
 
 \item[NEGATIVE] Used in the \hyperlink{package:ROOTS}{Roots package}.
-\ttindex{NEGATIVE}
+\ttindextype{NEGATIVE}{reserved variable}
 \index{Reserved variable !NEGATIVE@\texttt{NEGATIVE}}
 
 \item[NIL] In {\REDUCE} (algebraic mode only)
 taken as a synonym for zero.  Therefore \texttt{NIL} cannot be used as a
 variable.
-\ttindex{NIL}
+\ttindextype{NIL}{reserved variable}
 \index{Reserved variable !NIL@\texttt{NIL}}
 
 \item[PI] Intended to represent the circular
-\ttindex{PI}
+\ttindextype{PI}{reserved variable}
 \index{Reserved variable !PI@\texttt{PI}}
 constant.  With \sw{ROUNDED}\ttindexswitch{ROUNDED} on, it is replaced by the value of $\pi$ to
 the current degree of floating point precision.
 
 \item[POSITIVE] Used in the \hyperlink{package:ROOTS}{Roots package}.
-\ttindex{POSITIVE}
+\ttindextype{POSITIVE}{reserved variable}
 \index{Reserved variable !POSITIVE@\texttt{POSITIVE}}
 
 \item[T] Must not be used as a formal
-\ttindex{T}
+\ttindextype{T}{reserved variable}
 \index{Reserved variable !T@\texttt{T}}
 parameter or local variable in procedures, since conflict arises with the
 symbolic mode meaning of T as \emph{true}.

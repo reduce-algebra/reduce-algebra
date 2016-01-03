@@ -1,10 +1,8 @@
 
-\ttindex{INEQ\_SOLVE}
-%This package supports the operator {\bf ineq\_solve} that 
+\ttindextype{INEQ\_SOLVE}{operator}
+%This package supports the operator \f{ineq\_solve} that 
 %tries to solves single inequalities and sets of coupled inequalities.
-The following types of systems are supported%
-\footnote{For linear optimization problems please use the operator
-{\bf simplex} of the {\bf linalg} package}:
+The following types of systems are supported :
 \begin{itemize}
 \item only numeric coefficients (no parametric system),
 \item a linear system of mixed equations and $<=$ -- $>=$ 
@@ -15,11 +13,13 @@ The following types of systems are supported%
      and polynomial or rational left--hand and right--hand sides,
      or a system of such inequalities with only one variable.
 \end{itemize}
+For linear optimization problems please use the operator
+\f{simplex} of the \textsc{Linalg} package (cf. section \ref{LINALG}).
 
 Syntax:
-\begin{center}
-{\tt INEQ\_SOLVE($<$expr$>$ [,$<$vl$>$])}
-\end{center}
+\begin{syntax}
+\texttt{INEQ\_SOLVE(\meta{expr} [,\meta{vl}])}
+\end{syntax}
 where $<$expr$>$ is an inequality or a list of coupled inequalities
 and equations, and the optional argument $<$vl$>$ is a single
 variable (kernel) or a list of variables (kernels). If not
@@ -36,12 +36,11 @@ of equations where each variable is equated to
 one expression or to an interval. 
 The most specific variable is the first one in the result list and
 each form contains only preceding variables (resolved form).
-The interval limits can be formal {\bf max} or {\bf min} expressions.
+The interval limits can be formal \textbf{max} or \textbf{min} expressions.
 Algebraic numbers are encoded as rounded number approximations.
 
 \noindent
-{\bf Examples}:
-
+\textbf{Examples}:
 \begin{verbatim}
 ineq_solve({(2*x^2+x-1)/(x-1) >=  (x+1/2)^2, x>0});
 
