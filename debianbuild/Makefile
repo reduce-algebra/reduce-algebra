@@ -23,7 +23,7 @@ update-changelog:
 $(BUILDTOPDIR).stamp:
 	rm -rf $(BUILDTOPDIR)
 	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) | tee $(BUILDTOPDIR).log
-	( cd $(BUILDTOPDIR) ; ./autogen.sh )
+	( cd $(BUILDTOPDIR) ; ./autogen.sh -f )
 	touch $(BUILDTOPDIR).stamp
 
 reduce-packages:	$(BUILDTOPDIR).stamp debpackages rpmpackages
