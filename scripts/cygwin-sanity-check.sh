@@ -10,9 +10,6 @@
 # it obsolete at some stage, but even then it should help to provide
 # a starting point.
 #
-
-
-#
 # In January 2015 I believe that if I run under cygwin32 I can build
 # binaries for i686-pc-cygwin, i686-pc-windows, x86_64-pc-cygwin
 # and x86_64-pc-windows. If I am running on top of a 64-bit version of
@@ -40,36 +37,48 @@
 # default versions of Reduce. The "--with-wx" experimental/development
 # option would require more. Some users wil also wish to install the
 # editor of their choice and other convenience tools, and those who wish
-# to re-build the manual will need LaTeX...
+# to re-build the manual will need LaTeX... To prepare for that I will
+# check for at least some of those too. Note that at the time of checking
+# libgtk2.0 is not provided in versions for cross building between 32 and
+# 64-bit versions of cygwin.
+
+# [Reviewed January 2016]
+
+need=""
 
 case `uname -m` in
 i686)
+    width="x86"
     for m in automake bc bison cygwin64-gcc-g++ cygwin64-libtool \
         cygwin64-libXext cygwin64-libXft cygwin64-ncurses cygwin64-zlib \
-        gcc-g++ libncurses-devel libtool libXext-devel libXft-devel make \
-        mingw64-i686-gcc-g++ mingw64-i686-zlib mingw64-x86_64-gcc-g++ \
-        mingw64-x86_64-zlib openssh subversion time
+        gcc-g++ libgtk2.0-devel libncurses-devel libtool libXext-devel \
+        libXft-devel make mingw64-i686-gcc-g++ mingw64-i686-zlib \
+        mingw64-x86_64-gcc-g++ mingw64-x86_64-zlib openssh subversion \
+	time wget
     do
       if cygcheck -c -d $m | grep $m > /dev/null
       then
         echo "Good: $m is installed"
       else
         echo "To build Reduce you should install $m"
+        need="$need $m"
       fi
     done
     ;;
 x86_64)
+    width="x86_64"
     for m in automake bc bison cygwin32-gcc-g++ \
-        cygwin32-ncurses cygwin32-zlib gcc-g++ libncurses-devel \
-        libXext-devel libXft-devel make mingw64-i686-gcc-g++ \
-        mingw64-i686-zlib mingw64-x86_64-gcc-g++ mingw64-x86_64-zlib \
-        openssh subversion time
+        cygwin32-ncurses cygwin32-zlib gcc-g++ libgtk2.0-devel \
+        libncurses-devel libXext-devel libXft-devel \
+        make mingw64-i686-gcc-g++ mingw64-i686-zlib mingw64-x86_64-gcc-g++ \
+        mingw64-x86_64-zlib openssh subversion time wget
     do
       if cygcheck -c -d $m | grep $m > /dev/null
       then
         echo "Good: $m is installed"
       else
         echo "To build Reduce you should install $m"
+        need="$need $m"
       fi
     done
     ;;
@@ -77,3 +86,13 @@ x86_64)
     echo Architecture `uname -m` not recognised
     ;;
 esac
+
+if test "x$need" != "x"
+then
+  printf "\nPerhaps try the following command:\n"
+  printf "wget -N http://cygwin.com/setup$width.exe\n"
+  printf "./setup-$width.exe --no-desktop --no-shortcuts --no-startmenu \\\n"
+  printf "  --quiet-mode -P$need\n"
+  printf "To do this you will need the cygwin version of wget installed\n"
+fi
+

@@ -61,12 +61,10 @@ $(srcdir)/config.h.in:	$(am__configure_deps) $(top_srcdir)/configure
 	rm -f stamp-h1
 	touch $@
 
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps) \
-		$(srcdir)/config.h.in
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	$(TRACE)if test $(srcdir)/Makefile.in -ot $(top_srcdir)/configure.ac || \
 	   test $(srcdir)/Makefile.in -ot $(ACLOCAL_M4) || \
 	   test $(srcdir)/Makefile.in -ot $(top_srcdir)/configure || \
-	   test $(srcdir)/Makefile.in -ot $(srcdir)/config.h.in || \
 	   test $(srcdir)/Makefile.in -ot $(srcdir)/Makefile.am ; \
 	then \
 	  $(top_srcdir)/../../autogen.sh csl/cslbase ; \

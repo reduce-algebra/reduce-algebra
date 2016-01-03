@@ -45,15 +45,30 @@ fi
 # taking a view that peopel who wish to build those already have to take
 # special steps...
 
-for d in \
-  . \
+L=". \
   ./csl \
   ./csl/cslbase \
-  ./csl/cslbase/crlibm \
-  ./csl/cslbase/gc-7 \
   ./csl/fox \
   ./psl \
-  ./scripts
+  ./scripts"
+
+# On any particular machine I will regenerate the autoconf stuff from
+# outside packages just once. The packages that I do some of my own
+# maintenence on get reconfigured every time.
+
+if ! test -f ./csl/cslbase/gc-7/reconf.stamp
+then
+  L="$L ./csl/cslbase/gc-7"
+  touch ./csl/cslbase/gc-7/reconf.stamp
+fi
+
+if ! test -f ./csl/cslbase/crlibm/reconf.stamp
+then
+  L="$L ./csl/cslbase/crlibm"
+  touch ./csl/cslbase/crlibm/reconf.stamp
+fi
+
+for d in $L
 do
   printf "\nautoreconf in directory '%s'\n" $d
   if test -d $d
