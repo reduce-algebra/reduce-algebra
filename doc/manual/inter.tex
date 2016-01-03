@@ -136,14 +136,14 @@ consulted for information on this.
 
 \hypertarget{CONT-and-PAUSE}{}
 Two commands are available in {\REDUCE} for interactive use of files. 
-\texttt{PAUSE};\ttindex{PAUSE} may be inserted at any point in an input file.  
+\texttt{PAUSE};\ttindextype{PAUSE}{command} may be inserted at any point in an input file.  
 When this command is encountered on input, the system prints the message 
 \texttt{CONT?} on the user's terminal and halts.  If the user responds 
 \texttt{Y}
 (for yes), the calculation continues from that point in the file.  If the
 user responds \texttt{N} (for no), control is returned to the terminal, and
 the user can input further statements and commands.  Later on he can use
-the command \texttt{cont;}\ttindex{CONT} to transfer control back to the
+the command \texttt{cont;}\ttindextype{CONT}{COMMAND} to transfer control back to the
 point in the file following the last \texttt{PAUSE} encountered.  A top-level
-\texttt{pause;}\ttindex{PAUSE} from the user's terminal has no effect.
+\texttt{pause;} from the user's terminal has no effect.
 

@@ -297,7 +297,6 @@ possible to separate the roots, the program will abort.)
 are printed out during the course of root determination, to show the
 progress of solution.
 
-\ttindex{ROOTMSG} 
 \ttindexswitch[ROOTS]{ROOTMSG}
 \item[ROOTMSG] (Default OFF) If switch
 \sw{ROOTMSG} is on in addition to switch \sw{TRROOT}, additional
@@ -312,10 +311,11 @@ primarily.
 \subsection{Operational Parameters and Parameter Setting.}
 
 \begin{description}                 
-\ttindex{ROOTACC\#}
+\ttindextype{ROOTACC"!\#}{global variable (ROOTS package)}
+\ttindextype{ROOTACC}{operator (ROOTS package)}
 \item[ROOTACC\#] (Default 6) This parameter can be set using the function
-\f{ROOTACC} n; which causes \var{ROOTACC\#} to be set to MAX(n,6).  If \sw{ACCROOT} 
-is on, roots will be determined to a minimum of \var{ROOT\-ACC\#}
+\f{ROOTACC} n; which causes \var{ROOTACC!\#} to be set to MAX(n,6).  If \sw{ACCROOT} 
+is on, roots will be determined to a minimum of \var{ROOT\-ACC!\#}
 significant places. (If roots are closely spaced, a higher number of
 significant places is computed where needed.)
 
@@ -326,14 +326,14 @@ of system precision at termination except that the value of system
 precision is increased if necessary to allow the full roots output to be
 printed.
 
-\ttindex{PRECISION}
+\ttindextype{PRECISION}{operator!in ROOTS package@in \textsc{Roots} package}
 \item[PRECISION n;] If the user sets system precision, using the command
 PRECISION n; then the effect is to increase the system precision to n, and
 to have the same effect on \f{ROOTS} as \f{ROOTACC} n; ie. roots will now be
 printed with minimum accuracy n.  The original conditions can then be
 restored by using the command PRECISION RESET; or PRECISION NIL;.
 
-\ttindex{ROOTPREC}
+\ttindextype{ROOTPREC}{operator (ROOTS package)}
 \item[ROOTPREC n;] The roots package normally sets the computation mode and
 precision automatically.  However, if \f{ROOTPREC} n; is
 called and $n$ is greater than the initial system precision then all root

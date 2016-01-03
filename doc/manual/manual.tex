@@ -109,16 +109,16 @@
 \newcommand{\ttindex}[1]{{\renewcommand{\_}{\protect\underscore}%
                           \renewcommand{\|}{\protect\textbar}%
                           \index{#1@\texttt{#1}}}}
-\def\ttindextypehelper#1#2\relax{\let\blubber=#1}
+\def\ttindextypehelper#1!#2\relax{\def\blubbera{#1}\def\blubberb{#2}}
 \def\capitalizehelper#1#2\relax{\edef\blubba{\uppercase{#1}\lowercase{#2}}}
 \def\capitalize#1{\capitalizehelper#1\relax}
 \newcommand{\ttindextype}[2]{{\renewcommand{\_}{\protect\underscore}%
                               \renewcommand{\|}{\protect\textbar}%
-                              \ttindextypehelper#2\relax
-                              \ifx!\blubber
-                                \index{#1@\texttt{#1}#2}%
-                              \else
+                              \ttindextypehelper#2!\relax
+                              \ifx\\\blubberb\\% true if \blubberb is empty
                                 \index{#1 #2@\texttt{#1} #2}%
+                              \else
+                                \index{#1 \blubbera@\texttt{#1} \blubbera!\blubberb}%
                               \fi}}
 \newcommand*{\indexpackage}[1]{%
   \capitalize{#1}%
@@ -214,6 +214,10 @@
 
 \newcommand{\Sym}{\operatorname{Sym}}
 
+\newcommand{\calA}{\mathcal{A}}
+\newcommand{\calM}{\mathcal{M}}
+\newcommand{\calU}{\mathcal{U}}
+\newcommand{\calV}{\mathcal{V}}
 
 %%\pagenumbering{roman}
 \pagestyle{empty}

@@ -3,11 +3,11 @@
 In many applications, it is desirable to load previously prepared {\REDUCE}
 files into the system, or to write output on other files. {\REDUCE} offers
 four commands for this purpose, namely, \texttt{IN}, \texttt{OUT}, \texttt{SHUT},
-\texttt{LOAD}, and \texttt{LOAD\_PACKAGE}.  The first\ttindex{IN}\ttindex{OUT}
-\ttindex{SHUT} three operators are described here; \texttt{LOAD} and 
+\texttt{LOAD}, and \texttt{LOAD\_PACKAGE}.  
+The first three operators are described here; \texttt{LOAD} and 
 \texttt{LOAD\_PACKAGE} are discussed in Section~\ref{sec-load}.
 
-\section{IN Command}\ttindex{IN}
+\section{IN Command}\ttindextype{IN}{command}
 \hypertarget{command:IN}{}
 \hypertarget{switch:ECHO}{}
 \hypertarget{reserved:_LINE_}{}
@@ -41,13 +41,13 @@ While a file is being loaded, the special identifier
 is replaced by the number of the current line in the file currently
 being read.
 
-\section{OUT Command}\ttindex{OUT}
+\section{OUT Command}\ttindextype{OUT}{command}
 \hypertarget{command:OUT}{}
 This command takes a single file name as argument, and directs output to
 that file from then on, until another \texttt{OUT} changes the output file,
 or \texttt{SHUT} closes it.  Output can go to only one file at a time,
 although many can be open.  If the file has previously been used for
-output during the current job, and not \texttt{SHUT},\ttindex{SHUT} the new
+output during the current job, and not \texttt{SHUT}, the new
 output is appended to the end of the file.  Any existing file is erased
 before its first use for output in a job, or if it had been \texttt{SHUT}
 before the new \texttt{OUT}.
@@ -80,7 +80,7 @@ to read -- using \texttt{IN} -- the value of the expression \texttt{XYZ}:
  on nat$                % restore usual output form
 \end{verbatim}
 
-\section{SHUT Command}\ttindex{SHUT}
+\section{SHUT Command}\ttindextype{SHUT}{command}
 \hypertarget{command:SHUT}{}
 This command takes a list of names of files that have been previously
 opened via an \texttt{OUT} statement and closes them. Most systems require this

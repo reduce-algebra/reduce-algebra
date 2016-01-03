@@ -1,4 +1,4 @@
-\chapter{Procedures}\ttindex{PROCEDURE}
+\chapter{Procedures}\ttindextype{PROCEDURE}{command}
 \hypertarget{command:PROCEDURE}{}
 
 It is often useful to name a statement for repeated use in calculations
@@ -41,7 +41,7 @@ All required procedures should be defined at the top level, since they
 have global scope throughout a program. In particular, an attempt to
 define a procedure within a procedure will cause an error to occur.
 
-\section{Procedure Heading}\index{Procedure heading}
+\section{Procedure Heading}\index{Procedure!heading}
 
 Each procedure has a heading consisting of the word \texttt{PROCEDURE}
 (optionally preceded by the word \texttt{ALGEBRAIC}), followed by the name of
@@ -87,7 +87,7 @@ The reader will have noted the word \emph{normally} a few lines earlier. The
 call by value protections can be bypassed if necessary, as described
 elsewhere.
 
-\section{Procedure Body}\index{Procedure body}
+\section{Procedure Body}\index{Procedure!body}
 
 Following the delimiter that ends the procedure heading must be a 
 \emph{single} statement defining the action to be performed or the value to be
@@ -156,7 +156,7 @@ instead of a single formula as follows:
           end;
 \end{verbatim}
 Procedures may also be defined recursively.  In other words, the procedure
-body\index{Procedure body} can include references to the procedure name
+body\index{Procedure!body} can include references to the procedure name
 itself, or to other procedures that themselves reference the given
 procedure.  As an example, we can define the Legendre polynomial through
 its standard recurrence relation:
@@ -186,7 +186,8 @@ definition.
 \hypertarget{command:MATRIXPROC}{}
 
 Normally, procedures can only return scalar values. In order for a procedure to
-return a matrix, it has to be declared of type \texttt{MATRIXPROC}:
+return a matrix, it has to be declared of 
+type \k{MATRIXPROC}:\index{Procedure!matrix-valued}
 \begin{verbatim}
         matrixproc SkewSym1 (w);
            mat((0,-w(3,1),w(2,1)),
@@ -218,7 +219,7 @@ Following this declaration, the call to \texttt{SkewSym1} can be used as a matri
 \section{Using LET Inside Procedures}
 
 By using \texttt{LET}\ttindex{LET} instead of an assignment in the procedure
-body\index{Procedure body} it is possible to bypass the call-by-value
+body\index{Procedure!using \texttt{LET} inside body} it is possible to bypass the call-by-value
 \index{Call by value} protection.  If \texttt{X} is a formal parameter or local
 variable of the procedure (i.e. is in the heading or in a local
 declaration), and \texttt{LET} is used instead of \texttt{:=} to make an

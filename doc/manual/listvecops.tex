@@ -1,0 +1,113 @@
+
+This package implements vector operations on lists.\index{List!vector operations}.
+Addition, multiplication, division, and exponentiation work elementwise.
+For example, after
+\ttindextype{+}{operator!lists}
+\ttindextype{-}{operator!lists}
+\ttindextype{*}{operator!lists}
+\ttindextype{/}{operator!lists}
+\ttindextype{**}{operator!lists}
+\ttindextype{"\^}{operator!lists}
+\begin{verbatim}
+  A := {a1,a2,a3,a4};
+  B := {b1,b2,b3,b4};
+\end{verbatim}
+\texttt{c*A} will simplify to \texttt{\{c*a1,..,c*a4\}}, 
+\texttt{A + B} to \texttt{\{a1+b1,...,a4+b4\}}, and
+\texttt{A*B} to \texttt{\{a1*b1,...,a4*b4\}}.
+Linear operations work as expected:
+\begin{verbatim}
+c1*A + c2*B;
+
+{a1*c1 + b1*c2,
+
+  a2*c1 + b2*c2,
+
+  a3*c1 + b3*c2,
+
+  a4*c1 + b4*c2}
+\end{verbatim}
+A division and an exponentation example:
+\begin{verbatim}
+{a,b,c}/{3,g,5};
+
+  a   b   c
+{---,---,---}
+  3   g   5
+
+ws^3;
+
+   3    3    3
+  a    b    c
+{----,----,-----}
+  27    3   125
+       g
+\end{verbatim}
+The new operator \texttt{*.} (\texttt{ldot})\ttindextype{*.}{(ldot) operator}
+\ttindextype{LDOT}{operator} implements
+the dot product:
+\begin{verbatim}
+{a,b,c,d} *. {5,7,9,11/d};
+
+5*a + 7*b + 9*c + 11
+\end{verbatim}
+For accessing list elements, the new operator \texttt{\_} (\texttt{lnth})
+\ttindextype{\_}{(lnth) operator for lists}\ttindextype{LNTH}{operator}
+can be used instead of the \f{PART} operator:
+\begin{verbatim}
+l := {1,{2,3},4}$
+
+lnth(l,3);
+
+4
+
+l _2*3;
+
+{6,9}
+
+l _2 _2;
+
+3
+\end{verbatim}
+It can also be used to modify a list (unlike \f{PART}, which returns a modified list):
+\begin{verbatim}
+part(l,2,2):=three;
+
+{1,{2,three},4}
+
+l;
+
+{1,{2,3},4}
+
+l _ 2 _2 :=three;
+
+three
+
+l;
+
+{1,{2,three},4}
+\end{verbatim}
+Operators are distributed over lists:
+\begin{verbatim}
+a *. log b;
+
+log(b1)*a1 + log(b2)*a2 + log(b3)*a3 + log(b4)*a4
+
+df({sin x*y,x^3*cos y},x,2,y);
+
+{ - sin(x), - 6*sin(y)*x}
+
+int({sin x,cos x},x);
+
+{ - cos(x),sin(x)}
+\end{verbatim}
+By using the keyword \k{listproc}\ttindextype{LISTPROC}{keyword}, an algebraic
+procedure can be declared to return a list:\index{Procedure!list-valued}
+\begin{verbatim}
+listproc spat3(u,v,w);
+   begin scalar x,y;
+     x := u *. w;
+     y := u *. v;
+     return v*x - w*y
+   end;
+\end{verbatim}
