@@ -7,8 +7,9 @@
 % (even and odd) principal and parametric derivatives,
 % and the restriction of total derivatives to the (even and odd) equation.
 % Of course mostly odd part refers to tangent or cotangent covering.
+in "cde.red"$
 
-load_package cde;
+algebraic;
 
 % Initialization of the jet environment of the differential equation.
 indep_var:={x,t}$
@@ -50,23 +51,24 @@ graadlijst:=der_deg_ordering(0,all_parametric_der)$
 % List of graded monomials of scale degree <= 3
 graadmon:=for i:=1:3 collect mkvarlist1(i,i)$
 graadmon:={1} . graadmon$
+graadmon:=indep_var . graadmon$
 ansatz:=for each el in graadmon join el$
 
 % Loads the result of the computation in kdv_lcl1_res
-fx := c(3)*u_x + c(2)*u + c(1)$
-ft := (2*c(8) + 2*c(3)*u*u_x + 2*c(3)*u_3x + c(2)*u**2 + 2*c(2)*
+ax := c(3)*u_x + c(2)*u + c(1)$
+at := (2*c(8) + 2*c(3)*u*u_x + 2*c(3)*u_3x + c(2)*u**2 + 2*c(2)*
 u_2x)/2$
 
-% ansatz for f0, the grading must be compatible
-% with the system fx-ddxe(f0)=0, ft-ddte(f0)=0
+% ansatz for a0, the grading must be compatible
+% with the system ax-td(a0,x)=0, at-td(a0,t)=0
 
-f0:=(for each el in ansatz sum (cc(cctel:=cctel+1)*el))$
+a0:=(for each el in ansatz sum (cc(cctel:=cctel+1)*el))$
 
 % The equations below will yield the nontrivial part
 % of the above conservation law.
 
-equ 1:=fx-td(f0,x);
-equ 2:=ft-td(f0,t);
+equ 1:=ax-td(a0,x);
+equ 2:=at-td(a0,t);
 
 % This is the list of variables, to be passed to the equation solver.
 
@@ -103,8 +105,8 @@ for i:=3:tel do integrate_equation i;
 off nat$
 off echo$
 out <<resname>>$
-write fxnontriv:=fx-ddx(f0);
-write ftnontriv:=ft-ddt(f0);
+write axnontriv:=ax-ddx(a0);
+write atnontriv:=at-ddt(a0);
 write ";end;";
 shut <<resname>>$
 on echo$
