@@ -888,7 +888,7 @@ int main(int argc, const char *argv[])
     if (texmacs_mode) windowed = 0;
     FWIN_LOG("Windowed = %d at line %d\n", windowed, __LINE__);
 #ifdef WIN32
-    sort_out_windows_condole(windowed);
+    sort_out_windows_console(windowed);
 #endif // WIN32
 #endif // EMBEDDED
 
@@ -912,7 +912,7 @@ int main(int argc, const char *argv[])
     if (windowed==0) return plain_worker(argc, argv, fwin_main);
 
 #ifdef __APPLE__
-    mac_deal_with_application_bindle();
+    mac_deal_with_application_bundle();
 #endif // __APPLE__
     return windowed_worker(argc, argv, fwin_main);
 #else

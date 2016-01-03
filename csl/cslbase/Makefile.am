@@ -5,6 +5,8 @@
 
 # CSL and REDUCE build sequences
 
+ACLOCAL_AMFLAGS = -I m4
+
 # I want to be able to see what gets built and why, so here is a GNU
 # make trace facility.
 

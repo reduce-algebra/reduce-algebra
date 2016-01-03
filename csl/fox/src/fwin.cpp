@@ -1,14 +1,9 @@
 // fwin.cpp                                 Copyright A C Norman 2003-2015
 //
 //
-// Window interface for old-fashioned C applications. Intended to
+// Window interface for old-fashioned C/C++ applications. Intended to
 // be better than just running them within rxvt/xterm, but some people will
 // always believe that running them under emacs is best!
-//
-// Note that although the graphical bits of fwin and coded in C++ the
-// parts needed for a text-only interface are in just C. This is so that
-// on limited platforms where graphics are not relevant the C++ libraries
-// do not have to be used.
 //
 
 /**************************************************************************
@@ -55,10 +50,31 @@
 
 // $Id$
 
+// The "#ifdef" mess here has been getting out of control. The major
+// choice are:
+//   Sometimes this file will live within my copy of the FOX library as
+//   an extension. If however I am building a system without a GUI at all
+//   I can use this file to link on to my own terminal handling code. This
+//   is controlled ny HAVE_CONFIG_H and through that PART_OF_FOX.
+//
+//   Then there are variations as between Windows, OX X and Linux. At
+//   present systems other then Windows and OS X will use the Linux
+//   parts, which really represents a UNix-family system using X11 and
+//   so should cover BSD too. Because when this code is built within the
+//   FOX library it has a different configure.ac file to configure it
+//   I can not comfortably rely on the machine-selection abstractions I
+//   use elsewhere in CSL. So I use __APPLE__ to detecet the OSX case and
+//   WIN32 for Windows - those are set automatically by the compilers that
+//   I use. I do not believe thet I have any code here sensitive to the
+//   distinction between 32 and 64-bit windows, but within the Linux
+//   sections I will sometimes need to be conditional on __CYGWIN__.
+//
+//   If EMBEDDED is defined a somewhatr abbreviated version will be built
+//   since in that context simplicity trumps capability.
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #else // HAVE_CONFIG_H
-// Here I will suppose I am building as part of the FOX library
 #define PART_OF_FOX 1
 #endif // HAVE_CONFIG_H
 
@@ -68,37 +84,11 @@
 
 extern int fwin_main(int argc, const char *argv[]);
 
-#ifdef HAVE_LIBFOX
-//
-// This case will apply when I am compiling this as part of an application
-// that uses the autoconf tools to create a file "config.h" and when
-// autoconf has reported that the FOX library is available. I require that
-// this represents my updated and extended version of FOX because it will
-// then contain a copy of most of this code. My application can then just
-// start up by transferring control into FOX, passing in information about
-// the callbacks that are needed. The code here is what is needed by
-// CSL...
-//
-
-int main(int argc, const char *argv[])
-{   fwin_startup(argc, argv, fwin_main);
-    return 0;
-}
-
-
-#else // HAVE_LIBFOX
-
-// Even without FOX if I am building on Windows I need this header file
-// for (eg) GetModuleFileName().
-//
 #ifdef WIN32
-// Indicate that I expect to be using a RECENT version of Windows
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0500
-#endif // _WIN32_WINNT
+
 #include <windows.h>
 #include <io.h>
-#include <wchar.h>
+
 #endif // WIN32
 
 #include <string.h>
@@ -108,13 +98,16 @@ int main(int argc, const char *argv[])
 #include <stdlib.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <wchar.h>
+#include <wctype.h>
 #include <time.h>
 #include <signal.h>
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #else // HAVE_UNISTD_H
-extern char *getcwd(char *s, size_t n);
+// The declaration here is an expression of optimism!
+extern char *getcwd(const char *s, size_t n);
 #endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
@@ -126,36 +119,22 @@ extern char *getcwd(char *s, size_t n);
 #endif // WIN32
 
 #ifndef EMBEDDED
+
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
-#else // HAVE_DIRENT_H
-#ifndef WIN32
-#include <sys/dir.h>
-#else // WIN32
+#elif defined WIN32
 #include <direct.h>
-#endif // WIN32
+##else
+#include <sys/dir.h>
 #endif // HAVE_DIRENT_H
+
 #endif // EMBEDDED
 
-//
-// I used to have this to give me X11 headers - but (a) if I am building
-// without FOX I do not have a GUI at all and so they are not needed and
-// (b) they conflict with the Mac-specific headers that follow. Specifically
-// I have pain with "Cursor" being a name-clash.
-//
-// #ifndef WIN32
-// #include <X11/Xlib.h>
-// #endif
-//
-
 #ifdef __APPLE__
-//
-// The extent to which any code here pays attention to Mac-specific
-// features is and should probably remain minimal! However some may be
-// used here.
-//
+
 #include <Carbon/Carbon.h>
 #include <CoreServices/CoreServices.h>
+
 #endif // __APPLE__
 
 #include "termed.h"
@@ -285,8 +264,9 @@ interrupt_callback_t *interrupt_callback;
 extern const char *my_getenv(const char *s);
 
 #ifdef WIN32
-static int programNameDotCom;
+static int programNameDotCom = 0;
 #endif // WIN32
+
 #ifdef __APPLE__
 static int macApp = 0;
 #endif // __APPLE__
@@ -305,15 +285,15 @@ int fwin_pause_at_end = 0;
 
 #ifdef WIN32
 
-BOOL CtrlHandler(DWORD x)
-{   switch (x)
-    {
 //
 // This seems to be needed to ensure that if a windows console is closed
 // and you launched your program from a cygwin shell (via the cygwin
-// execv(e) family) it exists nicely. Otherwise it can be retried several
-// times.
+// execv(e) family) it exits nicely. Otherwise it can be retried several
+// times. When that happens it looks really weird!
 //
+BOOL CtrlHandler(DWORD x)
+{   switch (x)
+    {
         case CTRL_CLOSE_EVENT:
         case CTRL_LOGOFF_EVENT:
         case CTRL_SHUTDOWN_EVENT:
@@ -327,7 +307,6 @@ BOOL CtrlHandler(DWORD x)
             return 0;
     }
 }
-
 
 void consoleWait()
 {
@@ -349,224 +328,10 @@ void consoleWait()
     }
 }
 
-#endif // WIN32
+static int ssh_client = 0;
 
-#ifndef EMBEDDED
-
-#if defined PART_OF_FOX || defined CSL
-int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
-#else // defined PART_OF_FOX || defined CSL
-int main(int argc, const char *argv[])
-#endif // defined PART_OF_FOX || defined CSL
-{   int i;
-#ifdef WIN32
-    int ssh_client = 0;
-#else // WIN32
-    const char *disp;
-#endif // WIN32
-//
-// I want to know the path to the directory from which this
-// code was launched. Note that in some cases the prints to stderr
-// shown here will be totally ineffective and the code will just seem
-// to exit abruptly. Eg that can be the situation if the version being run
-// has been linked on Windows as a window-mode (as distinct from console-mode)
-// binary, or if it is on a Macintosh not associated with a console.
-//
-    if (argc == 0)
-    {   fprintf(stderr,
-                "argc == 0. You tried to launch the code in a funny way?\n");
-        return 1;
-    }
-    if (find_program_directory(argv[0]))
-    {   fprintf(stderr, "Unable to identify program name and directory\n");
-        return 1;
-    }
-    texmacs_mode = 0;
-//
-// An option "--my-path" just prints the path to the executable
-// and stops. An option "--args" indicates that I should not look at any
-// more arguments - they may be used by the program that is to be run.
-//
-    for (i=1; i<argc; i++)
-    {   if (strcmp(argv[i], "--my-path") == 0)
-        {   printf("%s\n", programDir);
-            exit(0);
-        }
-        else if (strcmp(argv[i], "--args") == 0) break;
-    }
-
-#ifdef PART_OF_FOX
-//
-// As the very first thing I will do, I will seek an argument
-// that is just "-w", and if it is present record that I will want to
-// run in text mode, not windowed mode. I also detected "--"
-// and use it to flag up a request to run minimised.
-// Note that "-w" takes precedence over "--" here...
-//
-// Well the fuller explanation of the options goes:
-//     (none)               run in gui mode in "sensible" cases
-//     -w   -w-   --nogui   run in console mode
-//     -w+  --gui           run in gui mode if at all possible, fail otherwise.
-//     -w.  --guimin        run in guie mode but start minimised.
-//
-// I run as a minimise window (by default) in the "--" case since I can use
-// the window title-bar to report progress even when all output is directed to
-// file.
-//
-    windowed = 2;
-    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
-    for (i=1; i<argc; i++)
-    {   if (strcmp(argv[i], "--args") == 0) break;
-        if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
-        else if (strncmp(argv[i], "-w", 2) == 0)
-        {   if (argv[i][2] == '+') windowed = 1;
-            else if (argv[i][2] == '.') windowed = -1;
-            else windowed = 0;
-            break;
-        }
-        else if (strcmp(argv[i], "--gui") == 0) windowed  = 1;
-        else if (strcmp(argv[i], "--nogui") == 0) windowed  = 0;
-        else if (strcmp(argv[i], "--guimin") == 0) windowed  = -1;
-        else if (strcmp(argv[i], "-h") == 0 ||
-                 strcmp(argv[i], "-H") == 0)
-#ifdef HAVE_LIBXFT
-            fwin_use_xft = 0;
-#else // HAVE_LIBXFT
-            ; // Ignore "-h" option if Xft not available
-#endif // HAVE_LIBXFT
-//
-// Note well that I detect just "--" as an entire argument here, so that
-// extended options "--option" do not interfere.
-//
-// The "--my-path" option may be useful for debugging, but probably does
-// not make much sense otherwise!
-//
-        else if (strcmp(argv[i], "--") == 0 &&
-                 windowed != 0) windowed = -1;
-        else if (strcmp(argv[i], "--my-path") == 0)
-        {   printf("%s\n", programDir);
-            exit(0);
-        }
-    }
-    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
-    if (texmacs_mode) windowed = 0;
-    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
-//
-// If there had not been any command-line option to give direction
-// about whether to run in a window I will use system-dependent
-// schemes to try to decide what to do. The overall policy I want to
-// follow is that if I have a graphical environment available I should
-// use it. On an X11-based system this can usually be judged by
-// looking for a DISPLAY environment variable. On both Windows and
-// other systems if the application has been invoked from a pipe
-// or using input (or output) redirection then that signals that it
-// is expected to use stdin/stdout rather than a GUI.
-//
-#ifndef WIN32
-//
-// I will show the non-Windows code here first because it will be MUCH
-// simpler.
-// Well I thought it was until I put in the Macintosh case as well.
-//
-// If stdin or stdout is not from a "tty" I will run in non-windowed mode.
-// This may help when the system is used in scripts. I worry a bit about
-// what the status of stdin/stdout are when launched not from a command line
-// but by clicking on an icon...
-//
-    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
-    if (windowed != 0)
-    {
-#ifndef __APPLE__
-// When a Mac application is launched it seems not to be connected to
-// a terminal.
-        if (!isatty(fileno(stdin)) || !isatty(fileno(stdout))) windowed = 0;
-#endif // __APPLE__
-        FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
-//
-// On Unix-like systems I will check the DISPLAY variable, and if it is not
-// set I will suppose that I can not create a window. That case will normally
-// arise when you have gained remote access to the system eg via telnet or
-// ssh without X forwarding. I will also insist that if set it has a ":" in
-// its value... that is to avoid trouble with it getting set to an empty
-// string. Note that on a Macintosh when I am using the FOX GUI toolkit (as
-// is the case here) I need X11 and hence DISPLAY. If I was using the Mac
-// native display I would merely omit this test.
-//
-        disp = my_getenv("DISPLAY");
-        if (disp == NULL || strchr(disp, ':')==NULL) windowed = 0;
-        FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
-    }
-#ifdef __APPLE__
-//
-// This may be a proper way to test if I am really running in an application
-// bundle.
-//
-    FWIN_LOG("Checking for Mac Application\n");
-    {   CFBundleRef mainBundle = CFBundleGetMainBundle();
-        FWIN_LOG("mainBundle = %p\n", mainBundle);
-        if (mainBundle == NULL) macApp = 0;
-        else
-        {   CFDictionaryRef d = CFBundleGetInfoDictionary(mainBundle);
-            FWIN_LOG("DictionaryRef d=%p\n", d);
-            if (d == NULL) macApp = 0;
-            else
-            {   CFStringRef s =
-                    (CFStringRef)CFDictionaryGetValue(d,
-                                                      CFSTR("ATSApplicationFontsPath"));
-                FWIN_LOG("FontsPath =%p. Will be macApp if non-NULL\n", s);
-                macApp = (s != NULL);
-                FWIN_LOG("mapApp = %d\n", macApp);
-            }
-        }
-    }
-#endif // __APPLE__
-    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
-// If stdin or stdout is not from a "tty" I will run in non-windowed mode.
-// This may help when the system is used in scripts. I worry a bit about
-// what the status of stdin/stdout are when launched not from a command line
-// but by clicking on an icon...
-//
-    if (
-#ifdef __APPLE__
-        !macApp &&
-#endif // __APPLE__
-        (!isatty(fileno(stdin)) || !isatty(fileno(stdout))))
-    {   FWIN_LOG("stdin or stdout is not a tty\n");
-        windowed = 0;
-    }
-
-#ifdef __APPLE__
-//
-// If I am using X11 as my GUI then I am happy to use remote access via
-// SSH since I can be using X forwarding - provided DISPLAY is set all can
-// be well. However on a Macintosh I do NOT want to launch a window if I
-// have connected via ssh since I will not have the desktop forwarded.
-//
-    FWIN_LOG("Special Mac processing\n");
-    {   const char *ssh = my_getenv("SSH_CLIENT");
-        FWIN_LOG("ssh = %p\n", ssh);
-        if (ssh != NULL && *ssh != 0)
-        {   FWIN_LOG("SSH_CLIENT set on MacOSX\n");
-//          ssh_client = 1;
-            windowed = 0;
-        }
-    }
-#else // __APPLE__
-    FWIN_LOG("Non-Apple unix-like checks for X\n");
-// On Unix-like systems I will check the DISPLAY variable, and if it is not
-// set I will suppose that I can not create a window. That case will normally
-// arise when you have gained remote access to the system eg via telnet or
-// ssh without X forwarding. I will also insist that if set it has a ":" in
-// its value... that is to avoid trouble with it getting set to an empty
-// string.
-//
-    disp = my_getenv("DISPLAY");
-    if (disp == NULL || strchr(disp, ':')==NULL)
-    {   FWIN_LOG("DISPLAY not set for an X11 version\n");
-        windowed = 0;
-    }
-#endif // __APPLE__
-#else // WIN32
+int windows_checks(int windowed)
+{
     FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
 // I have tried various messy Windows API calls here to get this right.
 // But so far I find that the cases that apply to me are
@@ -710,43 +475,11 @@ int main(int argc, const char *argv[])
             windowed = 0;
         }
     }
-#endif // WIN32
-#endif // PART_OF_FOX
-    FWIN_LOG("Windowed = %d at line %d\n", windowed, __LINE__);
-//
-// REGARDLESS of any decisions about windowing made so for things can be
-// forced by command line options.
-//    -w+ forces an attempt to run in a window even if it looks as if that
-//        would not make sense or would fail. It is mainly for debugging.
-//    -w. forces use of a window, but starts it minimised.
-//    -w  forces command-line rather than windowed use (can also write
-//        "-w-" for this case).
-// I also look for some other CSL-specific options that make me feel I
-// should adjust behaviour:
-//    --  All output will be going to a file. So if the program is to run in
-//        windowed mode I will start it off minimised.
-//    --texmacs   force the run NOT to try to create its own window,
-//        because it is being invoked via a pipe from TeXmacs,
-//
-    for (i=1; i<argc; i++)
-    {   if (strcmp(argv[i], "--args") == 0) break;
-        if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
-        else if (strncmp(argv[i], "-w", 2) == 0)
-        {   if (argv[i][2] == '+') windowed = 1;
-            else if (argv[i][2] == '.') windowed = -1;
-            else windowed = 0;
-            break;
-        }
-//
-// Note well that I detect just "--" as an entire argument here, so that
-// extended options "--option" do not interfere.
-//
-        else if (strcmp(argv[i], "--") == 0 &&
-                 windowed != 0) windowed = -1;
-    }
-    if (texmacs_mode) windowed = 0;
-    FWIN_LOG("Windowed = %d at line %d\n", windowed, __LINE__);
-#ifdef WIN32
+    return windowed;
+}
+
+void sort_out_windows_console(int windowed)
+{
 //
 // If I am running under Windows and I have set command line options
 // that tell me to run in a console then I will create one if one does
@@ -803,35 +536,92 @@ int main(int argc, const char *argv[])
         }
         SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandler, TRUE);
     }
-#endif // WIN32
-#else // EMBEDDED
-// If the FOX toolkit is not available there is no point in
-// looking for a command-line option that controls whether to use it!
-//
-#endif // EMBEDDED
-#endif // HAVE_LIBFOX
-
-// Windowed or not, if there is an argument "-b" or "-bxxxx" then the
-// string xxx will do something about screen colours. An empty string
-// will suggest no colouring, the string "-" (as in -b-) whatever default
-// I choose.
-//
-FWIN_LOG("Now look for colour specifications\n");
-colour_spec = "-";
-for (i=1; i<argc; i++)
-{   if (strcmp(argv[i], "--args") == 0) break;
-    else if (strncmp(argv[i], "-b", 2) == 0)
-    {   colour_spec = argv[i]+2;
-        break;
-    }
 }
 
-#ifdef PART_OF_FOX
-FWIN_LOG("Windowed = %d at line %d\n", windowed, __LINE__);
-if (windowed==0) return plain_worker(argc, argv, fwin_main);
+#else // WIN32
 
 #ifdef __APPLE__
-FWIN_LOG("Mac special checks to see if I am in an app\n");
+
+static int unix_and_osx_checks(int windowed)
+{
+    const char *disp;
+//
+// If stdin or stdout is not from a "tty" I will run in non-windowed mode.
+// This may help when the system is used in scripts. I worry a bit about
+// what the status of stdin/stdout are when launched not from a command line
+// but by clicking on an icon...
+//
+    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
+    if (windowed != 0)
+    {   FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
+//
+// On Unix-like systems I will check the DISPLAY variable, and if it is not
+// set I will suppose that I can not create a window. That case will normally
+// arise when you have gained remote access to the system eg via telnet or
+// ssh without X forwarding. I will also insist that if set it has a ":" in
+// its value... that is to avoid trouble with it getting set to an empty
+// string. Note that on a Macintosh when I am using the FOX GUI toolkit (as
+// is the case here) I need X11 and hence DISPLAY. If I was using the Mac
+// native display I would merely omit this test.
+//
+        disp = my_getenv("DISPLAY");
+        if (disp == NULL || strchr(disp, ':')==NULL) windowed = 0;
+        FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
+    }
+//
+// This may be a proper way to test if I am really running in an application
+// bundle.
+//
+    FWIN_LOG("Checking for Mac Application\n");
+    {   CFBundleRef mainBundle = CFBundleGetMainBundle();
+        FWIN_LOG("mainBundle = %p\n", mainBundle);
+        if (mainBundle == NULL) macApp = 0;
+        else
+        {   CFDictionaryRef d = CFBundleGetInfoDictionary(mainBundle);
+            FWIN_LOG("DictionaryRef d=%p\n", d);
+            if (d == NULL) macApp = 0;
+            else
+            {   CFStringRef s =
+                    (CFStringRef)CFDictionaryGetValue(d,
+                                                      CFSTR("ATSApplicationFontsPath"));
+                FWIN_LOG("FontsPath =%p. Will be macApp if non-NULL\n", s);
+                macApp = (s != NULL);
+                FWIN_LOG("mapApp = %d\n", macApp);
+            }
+        }
+    }
+    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
+// If stdin or stdout is not from a "tty" I will run in non-windowed mode.
+// This may help when the system is used in scripts. I worry a bit about
+// what the status of stdin/stdout are when launched not from a command line
+// but by clicking on an icon...
+//
+    if (!macApp &&
+        (!isatty(fileno(stdin)) || !isatty(fileno(stdout))))
+    {   FWIN_LOG("stdin or stdout is not a tty\n");
+        windowed = 0;
+    }
+//
+// If I am using X11 as my GUI then I am happy to use remote access via
+// SSH since I can be using X forwarding - provided DISPLAY is set all can
+// be well. However on a Macintosh I do NOT want to launch a window if I
+// have connected via ssh since I will not have the desktop forwarded.
+//
+    FWIN_LOG("Special Mac processing\n");
+    {   const char *ssh = my_getenv("SSH_CLIENT");
+        FWIN_LOG("ssh = %p\n", ssh);
+        if (ssh != NULL && *ssh != 0)
+        {   FWIN_LOG("SSH_CLIENT set on MacOSX\n");
+//          ssh_client = 1;
+            windowed = 0;
+        }
+    }
+    return windowed;
+}
+
+void mac_deal_with_application_bundle()
+{
+    FWIN_LOG("Mac special checks to see if I am in an app\n");
 //
 // If I will be wanting to use a GUI and if I have just loaded an
 // executable that is not within an application bundle then I will
@@ -839,53 +629,295 @@ FWIN_LOG("Mac special checks to see if I am in an app\n");
 // makes resources (eg fonts) that are within the bundle available and
 // it also seems to cause things to terminate more neatly.
 //
-if (!macApp)
-{   char xname[LONGEST_LEGAL_FILENAME];
+    if (!macApp)
+    {   char xname[LONGEST_LEGAL_FILENAME];
 //
 // Here the binary I launched was NOT being from an application bundle.
 // I will try to re-launch it so it is.
 //
-    struct stat buf;
-    memset(xname, 0, sizeof(xname));
-    sprintf(xname, "%s.app", fullProgramName);
-    FWIN_LOG("Run not from app. Check %s\n", xname);
-    if (stat(xname, &buf) == 0 &&
-        (buf.st_mode & S_IFDIR) != 0)
-    {
+        struct stat buf;
+        memset(xname, 0, sizeof(xname));
+        sprintf(xname, "%s.app", fullProgramName);
+        FWIN_LOG("Run not from app. Check %s\n", xname);
+        if (stat(xname, &buf) == 0 &&
+            (buf.st_mode & S_IFDIR) != 0)
+        {
 // Well foo.app exists and is a directory, so I will try to use it
-        const char **nargs = (const char **)malloc(sizeof(char *)*(argc+3));
-        int i;
-        FWIN_LOG("About to restart Mac from an application bundle\n");
+            const char **nargs = (const char **)malloc(sizeof(char *)*(argc+3));
+            int i;
+            FWIN_LOG("About to restart Mac from an application bundle\n");
 #ifdef DEBUG
 //
 // Since I am about to restart the program I do not want the new version to
 // find that the log file is open and hence not accessible.
 //
-        if (fwin_logfile != NULL)
-        {   fclose(fwin_logfile);
-            fwin_logfile = NULL;
-        }
+            if (fwin_logfile != NULL)
+            {   fclose(fwin_logfile);
+                fwin_logfile = NULL;
+            }
 #endif // DEBUG
-        nargs[0] = "/usr/bin/open";
-        nargs[1] = xname;
-        nargs[2] = "--args";
-        for (i=1; i<argc; i++)
-            nargs[i+2] = argv[i];
-        nargs[argc+2] = NULL;
+            nargs[0] = "/usr/bin/open";
+            nargs[1] = xname;
+            nargs[2] = "--args";
+            for (i=1; i<argc; i++)
+                nargs[i+2] = argv[i];
+            nargs[argc+2] = NULL;
 // /usr/bin/open foo.app --args [any original arguments]
-        execv("/usr/bin/open", const_cast<char * const *>(nargs));
+            execv("/usr/bin/open", const_cast<char * const *>(nargs));
 //
 // execv should NEVER return, but if it does I might like to at least
 // attempt to display a report including the error code.
 //
-        fprintf(stderr,
-                "Returned from execv with error code %d\n", errno);
-        exit(1);
+            fprintf(stderr,
+                    "Returned from execv with error code %d\n", errno);
+            exit(1);
+        }
     }
+    FWIN_LOG("I think I am in an app: start windowed_worker\n");
 }
+
+#else // __APPLE__
+
+static int unix_and_osx_checks(int windowed)
+{
+    const char *disp;
+//
+// If stdin or stdout is not from a "tty" I will run in non-windowed mode.
+// This may help when the system is used in scripts. I worry a bit about
+// what the status of stdin/stdout are when launched not from a command line
+// but by clicking on an icon...
+//
+    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
+    if (windowed != 0)
+    {   if (!isatty(fileno(stdin)) || !isatty(fileno(stdout))) windowed = 0;
+        FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
+//
+// On Unix-like systems I will check the DISPLAY variable, and if it is not
+// set I will suppose that I can not create a window. That case will normally
+// arise when you have gained remote access to the system eg via telnet or
+// ssh without X forwarding. I will also insist that if set it has a ":" in
+// its value... that is to avoid trouble with it getting set to an empty
+// string. Note that on a Macintosh when I am using the FOX GUI toolkit (as
+// is the case here) I need X11 and hence DISPLAY. If I was using the Mac
+// native display I would merely omit this test.
+//
+        disp = my_getenv("DISPLAY");
+        if (disp == NULL || strchr(disp, ':')==NULL) windowed = 0;
+        FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
+    }
+    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
+// If stdin or stdout is not from a "tty" I will run in non-windowed mode.
+// This may help when the system is used in scripts. I worry a bit about
+// what the status of stdin/stdout are when launched not from a command line
+// but by clicking on an icon...
+//
+    if ((!isatty(fileno(stdin)) || !isatty(fileno(stdout))))
+    {   FWIN_LOG("stdin or stdout is not a tty\n");
+        windowed = 0;
+    }
+    FWIN_LOG("Unix-like checks for X for BSD, Linux etc\n");
+// On Unix-like systems I will check the DISPLAY variable, and if it is not
+// set I will suppose that I can not create a window. That case will normally
+// arise when you have gained remote access to the system eg via telnet or
+// ssh without X forwarding. I will also insist that if set it has a ":" in
+// its value... that is to avoid trouble with it getting set to an empty
+// string.
+//
+    disp = my_getenv("DISPLAY");
+    if (disp == NULL || strchr(disp, ':')==NULL)
+    {   FWIN_LOG("DISPLAY not set for an X11 version\n");
+        windowed = 0;
+    }
+    return windowed;
+}
+
 #endif // __APPLE__
-FWIN_LOG("I think I am in an app: start windowed_worker\n");
-return windowed_worker(argc, argv, fwin_main);
+#endif // WIN32
+
+
+#ifndef EMBEDDED
+
+// The condition here is so that I can use fwin as a stand-alone interface
+// other than as part of CSL/Reduce. This could be useful to somebody wanting
+// to use it outside the CSL project
+//
+#if defined PART_OF_FOX || defined CSL
+int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
+#else // defined PART_OF_FOX || defined CSL
+int main(int argc, const char *argv[])
+#endif // defined PART_OF_FOX || defined CSL
+{   int i;
+//
+// I want to know the path to the directory from which this
+// code was launched. Note that in some cases the prints to stderr
+// shown here will be totally ineffective and the code will just seem
+// to exit abruptly. Eg that can be the situation if the version being run
+// has been linked on Windows as a window-mode (as distinct from console-mode)
+// binary, or if it is on a Macintosh not associated with a console. In such
+// cases you will just need to debug the code even without a clue!
+//
+    if (argc == 0)
+    {   fprintf(stderr,
+                "argc == 0. You tried to launch the code in a funny way?\n");
+        return 1;
+    }
+    if (find_program_directory(argv[0]))
+    {   fprintf(stderr, "Unable to identify program name and directory\n");
+        return 1;
+    }
+    texmacs_mode = 0;
+//
+// An option "--my-path" just prints the path to the executable
+// and stops. An option "--args" indicates that I should not look at any
+// more arguments - they may be used by the program that is to be run.
+//
+    for (i=1; i<argc; i++)
+    {   if (strcmp(argv[i], "--my-path") == 0)
+        {   printf("%s\n", programDir);
+            exit(0);
+        }
+        else if (strcmp(argv[i], "--args") == 0) break;
+    }
+
+#ifdef PART_OF_FOX
+//
+// As the very first thing I will do, I will seek an argument
+// that is just "-w", and if it is present record that I will want to
+// run in text mode, not windowed mode. I also detected "--"
+// and use it to flag up a request to run minimised.
+// Note that "-w" takes precedence over "--" here...
+//
+// Well the fuller explanation of the options goes:
+//     (none)               run in gui mode in "sensible" cases
+//     -w   -w-   --nogui   run in console mode
+//     -w+  --gui           run in gui mode if at all possible, fail otherwise.
+//     -w.  --guimin        run in guie mode but start minimised.
+//
+// I run as a minimise window (by default) in the "--" case since I can use
+// the window title-bar to report progress even when all output is directed to
+// file.
+//
+    windowed = 2;
+    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
+    for (i=1; i<argc; i++)
+    {   if (strcmp(argv[i], "--args") == 0) break;
+        if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
+        else if (strncmp(argv[i], "-w", 2) == 0)
+        {   if (argv[i][2] == '+') windowed = 1;
+            else if (argv[i][2] == '.') windowed = -1;
+            else windowed = 0;
+            break;
+        }
+        else if (strcmp(argv[i], "--gui") == 0) windowed  = 1;
+        else if (strcmp(argv[i], "--nogui") == 0) windowed  = 0;
+        else if (strcmp(argv[i], "--guimin") == 0) windowed  = -1;
+        else if (strcmp(argv[i], "-h") == 0 ||
+                 strcmp(argv[i], "-H") == 0)
+#ifdef HAVE_LIBXFT
+            fwin_use_xft = 0;
+#else // HAVE_LIBXFT
+            ; // Ignore "-h" option if Xft not available
+#endif // HAVE_LIBXFT
+//
+// Note well that I detect just "--" as an entire argument here, so that
+// extended options "--option" do not interfere.
+//
+// The "--my-path" option may be useful for debugging, but probably does
+// not make much sense otherwise!
+//
+        else if (strcmp(argv[i], "--") == 0 &&
+                 windowed != 0) windowed = -1;
+        else if (strcmp(argv[i], "--my-path") == 0)
+        {   printf("%s\n", programDir);
+            exit(0);
+        }
+    }
+    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
+    if (texmacs_mode) windowed = 0;
+    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
+//
+// If there had not been any command-line option to give direction
+// about whether to run in a window I will use system-dependent
+// schemes to try to decide what to do. The overall policy I want to
+// follow is that if I have a graphical environment available I should
+// use it. On an X11-based system this can usually be judged by
+// looking for a DISPLAY environment variable. On both Windows and
+// other systems if the application has been invoked from a pipe
+// or using input (or output) redirection then that signals that it
+// is expected to use stdin/stdout rather than a GUI.
+//
+#ifdef WIN32
+    windowed = windows_checks(windowed);
+#else // WIN32
+    windowed = unix_and_osx_checks(windowed);
+#endif // WIN32
+#endif // PART_OF_FOX
+
+    FWIN_LOG("Windowed = %d at line %d\n", windowed, __LINE__);
+//
+// REGARDLESS of any decisions about windowing made so for things can be
+// forced by command line options.
+//    -w+ forces an attempt to run in a window even if it looks as if that
+//        would not make sense or would fail. It is mainly for debugging.
+//    -w. forces use of a window, but starts it minimised.
+//    -w  forces command-line rather than windowed use (can also write
+//        "-w-" for this case).
+// I also look for some other CSL-specific options that make me feel I
+// should adjust behaviour:
+//    --  All output will be going to a file. So if the program is to run in
+//        windowed mode I will start it off minimised.
+//    --texmacs   force the run NOT to try to create its own window,
+//        because it is being invoked via a pipe from TeXmacs,
+//
+    for (i=1; i<argc; i++)
+    {   if (strcmp(argv[i], "--args") == 0) break;
+        if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
+        else if (strncmp(argv[i], "-w", 2) == 0)
+        {   if (argv[i][2] == '+') windowed = 1;
+            else if (argv[i][2] == '.') windowed = -1;
+            else windowed = 0;
+            break;
+        }
+//
+// Note well that I detect just "--" as an entire argument here, so that
+// extended options "--option" do not interfere.
+//
+        else if (strcmp(argv[i], "--") == 0 &&
+                 windowed != 0) windowed = -1;
+    }
+    if (texmacs_mode) windowed = 0;
+    FWIN_LOG("Windowed = %d at line %d\n", windowed, __LINE__);
+#ifdef WIN32
+    sort_out_windows_console(windowed);
+#endif // WIN32
+#endif // EMBEDDED
+
+// Windowed or not, if there is an argument "-b" or "-bxxxx" then the
+// string xxx will do something about screen colours. An empty string
+// will suggest no colouring, the string "-" (as in -b-) whatever default
+// I choose.
+//
+    FWIN_LOG("Now look for colour specifications\n");
+    colour_spec = "-";
+    for (i=1; i<argc; i++)
+    {   if (strcmp(argv[i], "--args") == 0) break;
+        else if (strncmp(argv[i], "-b", 2) == 0)
+        {   colour_spec = argv[i]+2;
+            break;
+        }
+    }
+
+#ifdef PART_OF_FOX
+    FWIN_LOG("Windowed = %d at line %d\n", windowed, __LINE__);
+    if (windowed==0) return plain_worker(argc, argv, fwin_main);
+
+#ifdef __APPLE__
+    mac_deal_with_application_bundle();
+#endif // __APPLE__
+    return windowed_worker(argc, argv, fwin_main);
+#else
+    return plain_worker(argc, argv, fwin_main);
+#endif // PART_OF_FOX
 }
 
 void sigint_handler(int code)
@@ -895,7 +927,6 @@ void sigint_handler(int code)
     return;
 }
 
-#endif // PART_OF_FOX
 
 #ifdef SIGBREAK
 

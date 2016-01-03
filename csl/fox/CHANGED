@@ -119,4 +119,9 @@ December 2015: changes (mostly to fwin.cpp & immediate friends) to support
       packing a macintosh build into an application bundle.
       Then follow-on corrections to get the Windows case working again!
 
+January 2015: Updates to fwin.cpp to break a single huge procedure into
+      several smaller chunks, and fix bugs introduced over the previous
+      few weeks!
+     
+
 <end of CHANGED>
