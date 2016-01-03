@@ -33,107 +33,39 @@
 \newcommand{\cdiffop}{$\mathcal{C}$-differential operator\xspace}
 \newcommand{\cdiffops}{$\mathcal{C}$-differential operators\xspace}
 
-%    Cyrillic letter \`E for use in math. mode
-%    (from the Univ. of Washington Cyrillic font)
-%\DeclareFontFamily{OT1}{wncyi}{}
-%\DeclareFontShape{OT1}{wncyi}{m}{it}{
-%   <5> <6> <7> <8> <9> gen * wncyi
-%   <10> <10.95> <12> <14.4> <17.28> <20.74> <24.88> wncyi10
-%  }{}
-%\DeclareSymbolFont{cyrletters}{OT1}{wncyi}{m}{it}
-%\DeclareSymbolFontAlphabet{\cyrmath}{cyrletters}
-%\DeclareMathSymbol{\re}{\cyrmath}{cyrletters}{"03}
-%\newcommand{\Ev}{\re}
-%\newcommand{\Ev}{E}
-%\newcommand{\EulerOperator}{\mathscr{E}}
-
-%    HyperTeX commands
-%\providecommand{\href}[2]{#2}
-%\providecommand{\urlprefix}{URL }
-%\newcommand*{\email}[1]{\href{mailto:#1}{\begingroup \urlstyle{rm}\Url{#1}}}
 \providecommand*{\eprint}[2][]{\href{http://arXiv.org/abs/#2}%
 {\begingroup \Url{arXiv:#2}}}
 
-%\makeatletter
-%\renewcommand{\@fnsymbol}[1]{}
-%\makeatother
+We describe \cde, a \REDUCE package devoted to differential-geometric
+computations on Differential Equations (DEs, for short).
 
-%\markboth{Variational brackets in the geometry of PDEs}%
-%{P.H.M. Kersten, I.S. Krasil\cprime shchik, A.M.
-%  Verbovetsky, R. Vitolo}
-
-%\newcommand{\nota}[2]{\color{red}[{Mark: #1}\par{#2}]\color{black}}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%\begin{document}
-
-%\title[\cde user guide]%
-%{\cde: a Reduce package for integrability of PDEs
-%  \\
-%  version 2.0}
-%
-%
-%\author[R. Vitolo]{R. Vitolo}
-%\address{R. Vitolo\\ Dept.\ of Mathematics and Physics
-%  ``E. De Giorgi'', Universit\`a del Salento \\ via per Arnesano, 73100 Lecce,
-%  Italy} \email{raffaele.vitolo@unisalento.it}
-%
-%\date{2015 October -- \cde version: 2.0}
-%
-%\thanks{}
-%
-%\keywords{\reduce, Hamiltonian operators, symplectic operators, recursion
-%  operators, generalized symmetries, higher symmetries, conservation laws,
-%  nonlocal variables.}
-%
-%\subjclass[2010]{37Kxx}
-
-%\begin{abstract}
-  We describe \cde, a \REDUCE package devoted to differential-geometric
-  computations on Differential Equations (DEs, for short).
-  The package is included in the official \REDUCE sources in Sourceforge
-  \cite{reduce} and it is also distributed on the Geometry of Differential
-  Equations web site \url{http://gdeq.org} (GDEQ for short).
-
-  We start from an installation guide for Linux and Windows. Then we focus on
-  concrete usage recipes for computations in the geometry of differential
-  equations: higher symmetries, conservation laws, Hamiltonian operators and
-  their Schouten bracket, recursion operators. All programs discussed here are
-  shipped together with this manual and can be found in the \REDUCE sources or
-  at the GDEQ website. The mathematical theory on which computations are based
-  can be found in refs.~\cite{Many,KKV}.
-%\end{abstract}
-
-%\maketitle
-
-%\tableofcontents
+We will give concrete recipes for computations in the geometry of
+differential equations: higher symmetries, conservation laws, Hamiltonian
+operators and their Schouten bracket, recursion operators. All programs
+discussed here are shipped together with the \cde sources, inside the \REDUCE
+sources. The mathematical theory on which
+computations are based can be found in refs.~\cite{Many,KKV}. We invite the
+interested reader to have a look at the website \cite{gdeq} which contains
+useful reseources in the above mathematical area.
 
 \subsection{Introduction: why \cde?}
 \label{cdesec:why-cde}
 
-This brief guide refers to using \cde, a \REDUCE package for
-differential-geometric computations for DEs. The package aims at defining
-differential operators in total derivatives and computing with them. Such
-operators are called \emph{$\mathcal{C}$-differential operators} (see
-\cite{Many}). \cde runs in the computer algebra system \REDUCE and depends on
-the \REDUCE package \cdiff for constructing total derivatives. Recently,
-\REDUCE 3.8 became free software, and can be downloaded here \cite{red}. This
-was an important motivation for making our computations accessible to a wider
-public, also through this user guide.
+\cde is a \REDUCE package for differential-geometric computations for DEs. The
+package aims at defining differential operators in total derivatives and
+computing with them. Such operators are called \emph{$\mathcal{C}$-differential
+  operators} (see \cite{Many}).
 
-The development of the \cdiff package was started by Gragert and Kersten for
-symmetry computations in DEs. Then \cdiff was partly rewritten and extended by
-Roelofs and Post. The \cdiff package consists of 4 files, but only the main
-three files are documented \cite{svec,integ,tools}. This software and the
-related documentation can be found in both the \REDUCE sources and the Geometry
-of Differential Equations (GDEQ for short) web site \cite{gdeq}.
+\cde depends on the \REDUCE package \cdiff for constructing total
+derivatives. \cdiff was developed by Gragert and Kersten for symmetry
+computations in DEs, and later extended by Roelofs and Post.
 
-There are already several software packages that may compute symmetries and
-conservation laws; many of them run on Mathematica or Maple. Those who run on
-\REDUCE were written by M.C. Nucci \cite{nucci1,nucci2}, F. Oliveri
-(\textsc{ReLie}, \cite{relie}), F. Schwartz (SPDE, \REDUCE official
-distribution) T. Wolf (APPLYSYM and CONLAW in the official \REDUCE\
-distribution, \cite{wolfcl,wolfsy,wbde,wolfsy0}).
+There are many software packages that can compute symmetries and conservation
+laws; many of them run on Mathematica or Maple. Those who run on \REDUCE were
+written by M.C. Nucci \cite{nucci1,nucci2}, F. Oliveri (\textsc{ReLie},
+\cite{relie}), F. Schwartz (SPDE, \REDUCE official distribution) T. Wolf
+(APPLYSYM and CONLAW in the official \REDUCE\ distribution,
+\cite{wolfcl,wolfsy,wbde,wolfsy0}).
 
 The development of \cde started from the idea that a computer algebra tool
 for the investigation of integrability-related structures of PDEs still does
@@ -144,7 +76,7 @@ may find recursion operators under quite restrictive hypotheses \cite{BH10}.
 structures (such as Hamiltonian, symplectic and recursion operators) for
 systems of differential equations with an arbitrary number of independent or
 dependent variables. On the other hand \cde is also capable of (generalized)
-symmetry and conservation laws computations.  The aim of this manual is to
+symmetry and conservation laws computations.  The aim of this guide is to
 introduce the reader to computations of integrability related structures using
 \cde.
 
@@ -163,8 +95,8 @@ The current version of \cde, 2.0, has the following features:
 \item \cde is able to compute Schouten brackets between multivectors. This can
   be used \emph{eg} to check Hamiltonianity of an operator or to check their
   compatibility.
-
 \end{enumerate}
+
 At the moment the papers
 \cite{fpv,fpv2,KerstenKrasilshchikVerbovetskyVitolo:HSGP,KKV-SPT-2011,pv,sv}
 have been written using \cde, and more research by \cde on integrable systems
@@ -187,222 +119,6 @@ A.M. Verbovetsky for constant support and stimulating discussions which led me
 to write the software. Thanks are also due to B.A. Dubrovin, M. Casati,
 E.V. Ferapontov, P. Lorenzoni, M. Marvan, V. Novikov, A. Savoldi, A. Sergyeyev,
 M.V. Pavlov for many interesting discussions.
-
-\subsection{Installation}
-\label{cdesec:installation}
-
-In order to use the \cde package it is enough to have a recent version of
-\REDUCE with both the \cde and the \cdiff packages installed.
-
-We stress that \emph{most of the technical difficulties related to installation
-  and configuration are due to the lack of a \REDUCE installer. This problem
-  should be solved in the near future. There is an experimental \REDUCE
-  installer for Windows on Sourceforge, interested users might wish to try it.}
-
-\subsection{Installation of Reduce}
-\label{cdesec:installation-reduce}
-
-In order to install \REDUCE one can download the experimental Windows installer
-or download a precompiled binary distribution from here \cite{reduce}. However,
-please make sure that the version that you are downloading has been compiled
-\emph{later} than October 2015, or you will not get \cde in it. If you are
-ready to recompile \REDUCE, please consider the text \cite{inside} for
-instructions on how to do it in different operating systems.
-
-In Linux you can also download \texttt{.deb} packages at the GetDeb
-website~\cite{getdeb}.
-
-From now on we will assume that the binary executable of \REDUCE is in the path
-of the executables of your operating system. A typical location in Linux would
-be \texttt{/usr/local/bin}. You might put a link instead of the binary
-executable.
-
-A \REDUCE program using \cde package can be written with any text editor; it
-is customary to use the extension \texttt{.red} for \REDUCE programs, like
-\texttt{program.red}. If you wish to run your program, just run the \REDUCE
-executable. After starting \REDUCE, you would see something like
-\begin{verbatim}
-Reduce (Free CSL version), 01-Oct-15 ...
-
-1:
-\end{verbatim}
-At the prompt \texttt{1:} write \texttt{in "program.red";}. Of course, if the
-program file \texttt{program.red} \emph{is not} in the place where the \REDUCE
-executable is, you should indicate the full path of the program, and this
-depends on your system. In Linux, assuming that you are the user
-\texttt{user} and your program is in the subdirectory
-\texttt{Reduce/computations} of your home directory, you have something like
-\begin{verbatim}
-  in "/home/user/Reduce/computations/program.red";
-\end{verbatim}
-In Windows, assuming that you are the user
-\texttt{user} and your program is in the subdirectory
-\texttt{Reduce$\backslash$computations} of the Desktop folder, you would write
-\begin{verbatim}
-  in "C:\Documents and Settings\user\Desktop\Reduce
-\computations\program.red";
-\end{verbatim}
-Remember that each time you run \REDUCE from a command shell, \REDUCE
-inherits your current path from the shell unless you use an absolute path as
-above. However, if you start \REDUCE with the graphical interface (see below)
-you can always use the leftmost menu item \texttt{File>Open\dots} in order to
-avoid to write down the whole absolute path.
-
-\subsection{Choice of an editor for writing Reduce programs}
-\label{cdesec:inst-reduce-ide}
-
-Now, let us deal with the problem of writing \REDUCE programs.
-
-Generally speaking, any text editor can be used to write a \REDUCE program. A
-more suitable choice is an editor for programming languages. Such editors exist
-in Linux and Windows, a list can be found here \cite{ed}.
-
-A suggested text editor in Windows is \texttt{notepad++}. This editor is easy
-to install, it has support for many programming languages (but \emph{not} for
-\REDUCE!), and has a GPL free license, see \cite{noteppp}. Similar tools in
-Linux are \texttt{kwrite} and \texttt{gedit}.
-
-The IDE (Integrated Development Environment) of choice of the author for
-developing programs and running them inside the editor itself exists for the
-great text editor \texttt{emacs}, which runs in all operating systems, and in
-particular Linux and Windows. We stress that an IDE makes the
-developing-running-debugging cycle much faster because every step is performed
-in the same environment. Another IDE which has \REDUCE capabilities is GNU
-TeXmacs, see \url{http://www.texmacs.org}.
-
-Installation of \texttt{emacs} in Linux is quite smooth, although it depends on
-the Linux distribution; usually it is enough to select the package
-\texttt{emacs} in your favourite package management tool, like
-\texttt{aptitude, synaptic,} or \texttt{kpackage}.  In order to install
-\texttt{emacs} on Windows one has to work a little bit more. See here
-\cite{emacswin} for more information.  Assuming that \texttt{emacs} it is
-installed and working, the \REDUCE IDE for \texttt{emacs} can be found here
-\cite{redide}.  We refer to their guide for the installation (the procedure is
-the same for both Linux and Windows). I tested the IDE with emacs 23.2.1 under
-Debian-based Linux systems (Debian Etch and Squeeze 32-bit and 64-bit, Ubuntu
-11.04 64-bit) and Windows XP and it works fine for me.
-
-Suppose you have \texttt{emacs} and its \REDUCE IDE installed, then there is a
-last configuration step that will make \texttt{emacs} and \REDUCE work together.
-Namely, when opening for the first time a \REDUCE program file with
-\texttt{emacs}, go to the \texttt{REDUCE>Customize\dots} menu item and locate
-the `\REDUCE run Program' item. This item contains the command which is issued
-by \texttt{emacs} from the \REDUCE IDE when the menu item \texttt{Run REDUCE>Run
-  REDUCE} is selected. Change the command to:
-  \begin{itemize}
-  \item under Linux (user and location as above):
-   \begin{verbatim}
-    reduce -w
-    \end{verbatim}
-  \item under Windows (user and locations as above):
-   \begin{verbatim}
-    reduce.exe
-    \end{verbatim}
-  \end{itemize}
-This setting will run \REDUCE inside \texttt{emacs}. If you prefer the (slower)
-graphical interface to \REDUCE, remove `\texttt{-w}'. Note that the graphical
-interface will produce \LaTeX\ output, making it much more readable. This
-behaviour can be turned off in the graphical interface by issuing the command
-\texttt{off fancy;}.
-
-\subsection{Working with CDE}
-\label{cdesec:working-with-cde}
-
-All programs that we will discuss in this manual can be found inside the
-subfolder \texttt{examples} of the main directory of \cde.  There
-are some conventions that I adopted on writing programs which use \cde.
-\begin{itemize}
-\item Test files have the following names:
-  \begin{center}
-    \texttt{equationname\_typeofcomputation.red}
-  \end{center}
-  where \texttt{equationname} stands for the shortened name of the equation
-  (\emph{e.g.} Ko\-rteweg--de Vries is always indicated by \texttt{kdv}), and
-  \texttt{typeofcomputation} stands for the type of geometric object which is
-  computed with the given file, for example symmetries, Hamiltonian operators,
-  etc.. This string also includes a version number. The extension \texttt{.red}
-  will tell \texttt{emacs} to load the reduce-ide mode (provided you made the
-  installation steps described in the reduce-ide guides).
-\item More specific information, like the date and more details on the
-  computation done in each version, are included as comment lines at the very
-  beginning of each file.
-\end{itemize}
-If you use a generic editor, as soon as you are finished writing a program, you
-may run it from within \REDUCE by following the instructions in the previous
-section.
-
-In \texttt{emacs} with \REDUCE IDE it is easier: issuing the command
-\texttt{M-x run-reduce} (or choosing the menu item \texttt{Run REDUCE>Run
-  REDUCE}) will split the window in two halves and start \REDUCE in the bottom
-half. You may use either CSL or PSL \REDUCE: they are two different
-interpreters of the low-level programming language of \REDUCE, Standard Lisp.
-\REDUCE shows up the type of interpreter at startup,
-see~\ref{cdesec:installation-reduce}. At the moment, tests by \cde computations
-show that the CSL interpreter is considerably faster than the PSL interpreter.
-
-Then you may load the program file that you were editing (suppose
-that its name is \texttt{program.red}) by issuing \texttt{in "program.red";} at
-the \REDUCE prompt. In fact, \texttt{emacs} lets \REDUCE assume as its working
-directory the directory of the file that you were editing.
-
-\textbf{NOTE:} \emph{at the time of writing the package \cde is being included
-  into the main \REDUCE source tree. So, it is not likely that it will be
-  contained in any old binary distribution. If this is the case, please put
-  your program file in the main \cde directory is, in order to allow \REDUCE to
-  find the main file \texttt{cde.red} and then all others.}
-
-Results of a computation consist of the values of one or more unknown. Suppose
-that the unknown's name is \texttt{sym}, and assume that, after a computation,
-you wish to save the values of \texttt{sym}, possibly for future use from within
-\REDUCE. Issue the following \REDUCE commands (of course, after you finish your
-computations!):
-\begin{verbatim}
-off nat;
-out "file_res.red";
-sym:=sym;
-shut "file_res.red";
-on nat;
-\end{verbatim}
-The above commands will write the content of \texttt{sym} into the file
-\texttt{file\_res.red}, where \texttt{file} stands for a filename which
-follows the above convention. The command \texttt{off nat;} is needed in order
-to save the variable in a format which could be imported in future \REDUCE
-sessions. If you wish to translate your results in \LaTeX, see the package
-\texttt{tri} and its own documentation.
-
-Working remotely with \REDUCE is not difficult and it is highly recommended for
-big computations that a server can run more efficiently and without
-interruptions. A method of choice to do this is described by the following
-steps:
-\begin{enumerate}
-\item login to the remote server with \texttt{ssh};
-\item start \texttt{emacs} as a daemon on the server by the command
-  \texttt{emacs --daemon} (only from version 23.1!);
-\item run \texttt{emacsclient -c file.red}. That program will connect to the
-  \texttt{emacs} daemon and open the requested file.
-\item run \REDUCE (if you installed the reduce IDE everything is easier,
-  otherwise you should open a shell within emacs and issue the command
-  \texttt{reduce});
-\item exit \texttt{emacsclient} normally (C-x C-c). This will not kill the
-  daemon, that will keep your computation running until the end.
-\item login again when you wish to check the computation.
-\end{enumerate}
-
-In next sections we will describe some examples of computations with
-\cde. The parts which are shared between all examples are described only
-once. We stress that all computations presented in this document can be
-downloaded at the GDEQ website \cite{gdeq}, and that they are run in the
-\REDUCE environment by typing \texttt{in "program.red";} at the \REDUCE prompt,
-as explained above. Moreover, all examples can be run at once by the shell
-script \texttt{cdiff.sh} to test if the system is working properly and results
-are the same as obtained previously.
-
-Each computation consists of two parts: setting up the jet space and the
-equation, and solving the problem using suitable ansatz for the unknown
-functions. We will emphasize this division only in the first example.
-
-\textbf{Remark.} The mathematical framework on which the computations are based
-can be found in \cite{Many}.
 
 \subsection{Jet space of even and odd variables,
   and total derivatives}
@@ -428,7 +144,7 @@ $u^i_\sigma=u^i$.
 \cde is first of all a program which is able to create a \emph{finite order jet
   space} inside \REDUCE. To this aim, issue the command
 \begin{verbatim}
-in "cde.red";
+load_package cde;
 \end{verbatim}
 Then, \cde needs to know the variables and the maximal
 order of derivatives. The input can be organized as in the following example:
@@ -461,7 +177,7 @@ The main routine in \texttt{cde.red} is called as follows:
 \begin{verbatim}
 cde({indep_var,dep_var,{},total_order},{})$
 \end{verbatim}
-Here the two empty lists are placeholders; they are important for
+Here the two empty lists are placeholders; they are of interest for
 computations with odd variables/differential equations.
 The function $\texttt{cde}$ defines derivative symbols of the type:
 \begin{verbatim}
@@ -540,8 +256,8 @@ higher than the previous one.
 
 The function that checks an expression for the presence of \texttt{letop} is
 \texttt{check\_letop}.  If you wish to switch off this kind of check in order
-to increase the speed, the switch \texttt{checkord}\ttindexswitch[CDE]{CHECKORD} 
-must be set off:
+to increase the speed, the switch
+\texttt{checkord}\ttindexswitch[CDE]{CHECKORD} must be set off:
 \begin{verbatim}
 off checkord;
 \end{verbatim}
@@ -960,12 +676,13 @@ We are interested in the operation of Schouten bracket between
 \emph{variational multivectors} \cite{IVV}. These are differential operators
 with $h$ arguments in $\varkappa$ with values in densities, and whose image is
 defined up to total divergencies:
-\begin{equation}
+\begin{multline}
   \label{eq:16}
   \Delta\colon \varkappa\times\cdots\times \varkappa \to
+  \\
   \{J^r(n,m) \to \lambda^nT^*\mathbb{R^n}\}/
   \bar{d}(\{J^r(n,m) \to \lambda^{n-1} T^*\mathbb{R^n}\})
-\end{equation}
+\end{multline}
 It is known \cite{getz,KKV} that the Schouten bracket between two variational
 multivectors $A_1$, $A_2$ can be computed in terms of their corresponding
 superfunction by the formula
@@ -1041,7 +758,8 @@ The linearization of the above system and its adjoint are, respectively
 \end{align*}
 Let us introduces the vector function whose zeros are the Boussinesq equation:
 \begin{verbatim}
-f_bou:={u_t - (u_x*v + u*v_x + sig*v_3x),v_t - (u_x + v*v_x)};
+f_bou:={u_t - (u_x*v + u*v_x + sig*v_3x),
+        v_t - (u_x + v*v_x)};
 \end{verbatim}
 The following command assigns to the identifier \texttt{lbou} the linearization
 \cdiffop $\ell_{\text{Bou}}$ of the vector function \texttt{f\_bou}
@@ -1500,8 +1218,8 @@ ftnontriv := ft-td(f0,t);
 \end{verbatim}
 we obtain
 \begin{verbatim}
-fxnontriv := c(2)*u + c(1)$
-ftnontriv := (2*c(8) + c(2)*u**2 + 2*c(2)*u_2x)/2$
+fxnontriv := c(2)*u$
+ftnontriv := (c(2)*(u**2 + 2*u_2x))/2$
 \end{verbatim}
 This mechanism can be easily generalized to situations in which the
 conservation laws which are found by the program are difficult to treat by pen
@@ -1605,7 +1323,8 @@ Note that we want \emph{all} equations to be solved!
 The results are the two well-known Hamiltonian operators for the KdV. 
 After integration the function \texttt{sym} becomes
 \begin{verbatim}
-sym := (c(5)*p*u_x + 2*c(5)*p_x*u + 3*c(5)*p_3x + 3*c(2)*p_x)/3$
+sym := (c(5)*p*u_x + 2*c(5)*p_x*u +
+        3*c(5)*p_3x + 3*c(2)*p_x)/3$
 \end{verbatim}
 Of course, the results correspond to the operators
 \begin{gather*}
@@ -1626,7 +1345,8 @@ odd_vars:=for i:=0:3 join
 ext_vars:=replace_oddext(odd_vars)$
 
 ctemp:=0$
-ansatz:=for each el in ext_vars sum mkid(s,ctemp:=ctemp+1)*el$
+ansatz:=for each el in ext_vars sum
+        mkid(s,ctemp:=ctemp+1)*el$
 \end{verbatim}
 Note that we have
 \begin{verbatim}
@@ -1730,15 +1450,19 @@ After the usual procedures for decomposing polynomials we obtain three local
 Hamiltonian operators:
 \begin{small}
 \begin{verbatim}
-phi1_odd := (2*c(31)*p*sig*v_3x + 2*c(31)*p*u*v_x + 2*c(31)*p*u_x*v
- + 6*c(31)*p_2x*sig*v_x + 4*c(31)*p_3x*sig*v + 6*c(31)*p_x*sig*v_2x
- + 4*c(31)*p_x*u*v + 2*c(31)*q*u_x + 4*c(31)*q_3x*sig + 4*c(31)*q_x*u
- + c(31)*q_x*v**2 + 2*c(16)*p*u_x + 4*c(16)*p_3x*sig + 4*c(16)*p_x*u
+phi1_odd := (2*c(31)*p*sig*v_3x + 2*c(31)*p*u*v_x
+ + 2*c(31)*p*u_x*v + 6*c(31)*p_2x*sig*v_x
+ + 4*c(31)*p_3x*sig*v + 6*c(31)*p_x*sig*v_2x
+ + 4*c(31)*p_x*u*v + 2*c(31)*q*u_x + 4*c(31)*q_3x*sig
+ + 4*c(31)*q_x*u + c(31)*q_x*v**2 + 2*c(16)*p*u_x
+ + 4*c(16)*p_3x*sig + 4*c(16)*p_x*u
  + 2*c(16)*q_x*v + 2*c(10)*q_x)/2$
 
-phi2_odd := (2*c(31)*p*u_x + 2*c(31)*p*v*v_x + 4*c(31)*p_3x*sig
- + 4*c(31)*p_x*u + c(31)*p_x*v**2 + 2*c(31)*q*v_x + 4*c(31)*q_x*v
- + 2*c(16)*p*v_x + 2*c(16)*p_x*v + 4*c(16)*q_x + 2*c(10)*p_x)/2$
+phi2_odd := (2*c(31)*p*u_x + 2*c(31)*p*v*v_x
+ + 4*c(31)*p_3x*sig + 4*c(31)*p_x*u
+ + c(31)*p_x*v**2 + 2*c(31)*q*v_x + 4*c(31)*q_x*v
+ + 2*c(16)*p*v_x + 2*c(16)*p_x*v
+ + 4*c(16)*q_x + 2*c(10)*p_x)/2$
 \end{verbatim}
 \end{small}
 There is a whole hierarchy of nonlocal Hamiltonian operators~\cite{KKV}.
@@ -1862,8 +1586,8 @@ Let us load the above operators:
 operator ham1;
 for all psi1 let ham1(psi1)=td(psi1,x);
 operator ham2;
-for all psi2 let ham2(psi2)=(1/3)*u_x*psi2 + td(psi2,x,3)
- + (2/3)*u*td(psi2,x);
+for all psi2 let ham2(psi2)=
+ (1/3)*u_x*psi2 + td(psi2,x,3) + (2/3)*u*td(psi2,x);
 \end{verbatim}
 We may convert the two operators into the corresponding superfunctions
 \begin{verbatim}
@@ -2134,57 +1858,64 @@ Let us set
   \begin{pmatrix}
     D_x & 0 \\ 0 & D_y
   \end{pmatrix}
-  \\
-  P_1 =\left(
-  \begin{matrix}\displaystyle
+  \\ \label{eq:1}
+  P_1=
+  \begin{pmatrix}
+    P_1^{11} & P_1^{12}
+    \\
+    P_1^{21} & P_1^{22}
+  \end{pmatrix}
+\end{gather}
+where
+\begin{align*}
+  P_1^{11} = &
     2 \pd{g}{p^1} p^2_y D_x +
     \pd{g}{p^1} p^2_{xy}  + \pd{g}{p^1\partial p^2} p^2_x p^2_y  +
     \pd{g}{^2p^1} p^1_x p^2_y
     \\
-    \displaystyle
-   -f D^2_x
+   P_1^{21}=& -f D^2_x
   + g D_y^2 +
   \pd{g}{p^2} p^2_y D_y -
   (\pd{f}{p^1} p^1_x+2 \pd{f}{p^2} p^2_x) D_x
+  \\ &
     - \pd{f}{^2p^2} p^2_x p^2_x  - \pd{f}{p^1\partial p^2} p^1_x p^2_x 
     - \pd{f}{p^2} p^2_2x ;
-  \end{matrix}\right.
   \\
-  \left.\begin{matrix}
-    \displaystyle
-    f D_x^2 - g D_y^2
+P_1^{12}=&    f D_x^2 - g D_y^2
   + \pd{f}{p^1} p^1_x D_x -
-  \Big(\pd{g}{p^2} p^2_y + 2 \pd{g}{p^1} p^1_y\Big) D_y -
-  \pd{g}{^2p^1} p^1_y p^1_y  - \pd{g}{p^1\partial p^2} p^1_y p^2_y
+  \Big(\pd{g}{p^2} p^2_y + 2 \pd{g}{p^1} p^1_y\Big) D_y
+  \\
+  & - \pd{g}{^2p^1} p^1_y p^1_y  - \pd{g}{p^1\partial p^2} p^1_y p^2_y
   - \pd{g}{p^1} p^1_{2y} ;
   \\
-    \displaystyle
-    2 \pd{f}{p^2} p^1_x D_y
+P_1^{22}=&    2 \pd{f}{p^2} p^1_x D_y
   + \pd{f}{p^2} p^1_xy  + \pd{f}{p^1\partial p^2} p^1_x p^1_y 
-    + \pd{f}{^2p^2} p^1_x p^2_y ;
-  \end{matrix}\right)
-\end{gather}
+  + \pd{f}{^2p^2} p^1_x p^2_y ;
+\end{align*}
 and let $P_2 = P_1^T$. This is implemented as follows:
 \begin{verbatim}
 mk_cdiffop(aa2,1,{2},2)$
-for all psi let aa2(1,1,psi) = 2*df(g,p1)*p2_y*td(psi,x) +
-  df(g,p1)*p2_xy*psi + df(g,p1,p2)*p2_x*p2_y*psi + df(g,p1,2)*p1_x*p2_y*psi;
+for all psi let aa2(1,1,psi) =
+ 2*df(g,p1)*p2_y*td(psi,x) + df(g,p1)*p2_xy*psi
+ + df(g,p1,p2)*p2_x*p2_y*psi + df(g,p1,2)*p1_x*p2_y*psi;
 
-for all psi let aa2(1,2,psi) = f*td(psi,x,2) - g*td(psi,y,2)
-  + df(f,p1)*p1_x*td(psi,x) -
-  (df(g,p2)*p2_y + 2*df(g,p1)*p1_y)*td(psi,y) -
-  df(g,p1,2)*p1_y*p1_y*psi - df(g,p1,p2)*p1_y*p2_y*psi - df(g,p1)*p1_2y*psi;
+for all psi let aa2(1,2,psi) =
+ f*td(psi,x,2) - g*td(psi,y,2) + df(f,p1)*p1_x*td(psi,x)
+ - (df(g,p2)*p2_y + 2*df(g,p1)*p1_y)*td(psi,y)
+ - df(g,p1,2)*p1_y*p1_y*psi - df(g,p1,p2)*p1_y*p2_y*psi
+ - df(g,p1)*p1_2y*psi;
 
-for all psi let aa2(2,1,psi) = -f*td(psi,x,2)
-  + g*td(psi,y,2) +
-  df(g,p2)*p2_y*td(psi,y) -
-  (df(f,p1)*p1_x+2*df(f,p2)*p2_x)*td(psi,x)
-    - df(f,p2,2)*p2_x*p2_x*psi - df(f,p1,p2)*p1_x*p2_x*psi
-      - df(f,p2)*p2_2x*psi;
+for all psi let aa2(2,1,psi) =
+ - f*td(psi,x,2) + g*td(psi,y,2)
+ + df(g,p2)*p2_y*td(psi,y)
+ - (df(f,p1)*p1_x+2*df(f,p2)*p2_x)*td(psi,x)
+ - df(f,p2,2)*p2_x*p2_x*psi - df(f,p1,p2)*p1_x*p2_x*psi
+ - df(f,p2)*p2_2x*psi;
 
-for all psi let aa2(2,2,psi) = 2*df(f,p2)*p1_x*td(psi,y)
-  + df(f,p2)*p1_xy*psi + df(f,p1,p2)*p1_x*p1_y*psi
-    + df(f,p2,2)*p1_x*p2_y*psi;
+for all psi let aa2(2,2,psi) =
+ 2*df(f,p2)*p1_x*td(psi,y)
+ + df(f,p2)*p1_xy*psi + df(f,p1,p2)*p1_x*p1_y*psi
+ + df(f,p2,2)*p1_x*p2_y*psi;
 
 mk_cdiffop(aa3,1,{2},2)$
 for all psi let aa3(1,1,psi) = aa2(1,1,psi);
@@ -2287,8 +2018,10 @@ The second component must be found by solving an equation. To this aim we
 produce the ansatz
 \begin{verbatim}
 c1t:=f1*p+f2*p_x+f3*p_2x$
-c2t:=(for each el in linodd6 sum (c(ctel:=ctel+1)*el))$ % degree 6
-c3t:=(for each el in linodd8 sum (c(ctel:=ctel+1)*el))$ % degree 8
+% degree 6
+c2t:=(for each el in linodd6 sum (c(ctel:=ctel+1)*el))$
+% degree 8
+c3t:=(for each el in linodd8 sum (c(ctel:=ctel+1)*el))$
 \end{verbatim}
 where we already introduced the sets \texttt{linodd6} and \texttt{linodd8} of
 $6$-th and $8$-th degree monomials which are linear in odd variables (see the
@@ -2322,12 +2055,14 @@ as the derivatives of the new non-local variables \texttt{r1}, \texttt{r2},
 principal_odd:={p_t,r1_x,r1_t,r2_x,r2_t,r3_x,r3_t}$
 de_odd:={u*p_x+p_3x,
 p*(t*u_x + 1),
-p*t*u*u_x + p*t*u_3x + p*u + p_2x*t*u_x + p_2x - p_x*t*u_2x,
+p*t*u*u_x + p*t*u_3x + p*u + p_2x*t*u_x + p_2x
+ - p_x*t*u_2x,
 p*u_x,
 p*u*u_x + p*u_3x + p_2x*u_x - p_x*u_2x,
 p*(u*u_x + u_3x),
-p*u**2*u_x + 2*p*u*u_3x + 3*p*u_2x*u_x + p*u_5x + p_2x*u*u_x + p_2x*
-u_3x - p_x*u*u_2x - p_x*u_4x - p_x*u_x**2}$
+p*u**2*u_x + 2*p*u*u_3x + 3*p*u_2x*u_x + p*u_5x
+ + p_2x*u*u_x + p_2x*u_3x - p_x*u*u_2x
+ - p_x*u_4x - p_x*u_x**2}$
 \end{verbatim}
 The scale degree analysis of the local Hamiltonian operators of the KdV
 equation leads to the formulation of the ansatz
@@ -2342,8 +2077,9 @@ equ 1:=td(phi,t)-u*td(phi,x)-u_x*phi-td(phi,x,3);
 \end{verbatim}
 is solved in the usual way, obtaining (in odd variables notation):
 \begin{verbatim}
-phi := (c(5)*(4*p*u*u_x + 3*p*u_3x + 18*p_2x*u_x + 12*p_3x*u
- + 9*p_5x + 4*p_x*u**2 + 12*p_x*u_2x - r2*u_x))/4$
+phi := (c(5)*(4*p*u*u_x + 3*p*u_3x + 18*p_2x*u_x
+ + 12*p_3x*u + 9*p_5x + 4*p_x*u**2
+ + 12*p_x*u_2x - r2*u_x))/4$
 \end{verbatim}
 Higher non-local Hamiltonian operators could also be found
 \cite{KKV}. The CRACK approach also holds for non-local computations.
@@ -2400,236 +2136,43 @@ always a solution; the other solution corresponds to the Lenard--Magri operator
   3D_{xx} + 2u + u_xD_x^{-1}.
 \end{displaymath}
 
-
-
 \subsection{Non-local Hamiltonian-recursion operators for
   Plebanski equation}
 \label{cdesec:plebanski-equation}
 
 The Plebanski (or second Heavenly) equation
 \begin{equation}
+  \label{eq:102}
   F=u_{tt}u_{xx}-u_{tx}^2+u_{xz}+u_{ty}=0
 \end{equation}
-is Lagrangian, hence it admits a trivial local Hamiltonian operator which is
-just the Noether map. Nonlocal Hamiltonian and recursion operators have been
-computed in an evolutionary presentation of the equation in
-\cite{NeyziNutkuSheftel:JPA:2005}. We can recompute such operators in the above
-Lagrangian presentation as follows.
-
-First of all, we remark that in a Lagrangian presentation symmetries and
-cosymmetries coincide, since the equation is self-adjoint. This means that
-the concept of Hamiltonian, recursion, symplectic operators coincide.
-So, instead of trying to find a variety of operators we may focus on just one
-type of search.
-
-Then, by introducing a suitable nonlocal variable on the
-cotangent covering. Namely, we compute a linear conservation law (with respect
-to $p$'s) on the cotangent covering which corresponds with the $u$-translation
-symmetry (see \cite{KKV-SPT-2011} for a theoretical description).  After
-guessing the generating function of the conservation law $\psi=(0,1)$ from the
-generating function $\varphi=1$ of the $u$-translation symmetry , we deduce that
-the equation
+is Lagrangian. This means that its linearization is self-adjoint:
+$\ell_F=\ell^*_F$, so that the tangent and cotangent covering coincide, its odd
+equation being
 \begin{equation}
-  \bar{d}\omega = \ell^*_F(p)
+  \label{eq:24}
+  \ell_F(p) = p_{xz} + p_{ty} - 2u_{tx}p_{tx} + u_{2x}p_{2t} + u_{2t}p_{2x} = 0.
 \end{equation}
-should hold on the jet space. Here
-\begin{displaymath}
-  \omega= ct\, dx\wedge dy\wedge dz + cx\, dt\wedge
-  dy\wedge dz + cy\, dt\wedge dx\wedge dz + cz\, dt\wedge dx\wedge dy,
-\end{displaymath}
-where $ct$, $cx$, $cy$, $cz$ are linear functions of $p$'s and its
-derivatives, with coefficients in $u$'s\footnote{In general, coefficients can
-explicitly depend on independent variables.}, and
-\begin{displaymath}
-  \bar{d}\omega = (D_t ct-D_x cx+D_y cy-D_z cz)dt\wedge dx\wedge dy\wedge dz,
-\end{displaymath}
-where total derivatives are lifted on the jet space of even and odd
-coordinates.
 
-Then, we try to find representatives of the above conservation law which have
-not more than two non-vanishing components. In particular we will solve the
-equation
+It is not difficult to realize that the above equation can be written in
+explicit conservative form as
+\begin{multline*}
+    p_{xz}+p_{ty}+u_{tt}p_{xx}+u_{xx}p_{tt}-2u_{tx}p_{tx} \\
+    =D_x(p_z+u_{tt}p_x-u_{tx}p_t)+D_t(p_y+u_{xx}p_t-u_{tx}p_x)=0,
+\end{multline*}
+thus the corresponding conservation law is
 \begin{equation}
-  \label{eq:6}
-  D_t ct-D_x cx=0
+  \label{eq:32}
+  \upsilon(1)= (p_y+u_{xx}p_t-u_{tx}p_x)\,dx\wedge dy\wedge dz+
+          (u_{tx}p_t-p_z-u_{tt}p_x)\,dt\wedge dy\wedge dz.
+        \end{equation}
+We can introduce a potential $r$ for the above $2$-component conservation
+law. Namely, we can assume that
+\begin{equation}\label{eq:101}
+  r_x = p_y+u_{xx}p_t-u_{tx}p_x,\quad r_t = u_{tx}p_t-p_z-u_{tt}p_x.
 \end{equation}
-in the cotangent covering. Such an equation cannot be solved in general, but it
-can be solved in this case. In order to solve it we perform dimensional
-analysis on~\eqref{eq:5} and we deduce the gradings of $ct$ and $cx$.  The
-result is determined up to trivial conservation laws, so that we have to remove
-them; at the end we remain with three $2$-component conservation law. It can be
-proved that they are equivalent, \emph{i.e.}, they differ each other by a
-trivial conservation law.
-
-This allows us to introduce a new nonlocal \emph{odd} variable $r$ on the
-cotangent covering such that $r_x=ct$, $r_t=cx$. We obtain an Abelian covering
-of the cotangent covering:
-\begin{displaymath}
-  \left\{
-    \begin{array}{l}
-      r_x=ct,\\ r_t=cx,\\ \ell_F^*(p)=0, \\ F=0.
-    \end{array}
-  \right.
-\end{displaymath}
-A nonlocal Hamiltonian operator will be a shadow of symmetry of the above
-system with respect to the initial equation $F=0$ with the property of being
-linear with respect to all ($p$'s and $r$'s) odd variables. With the above
-nonlocal variable we find a nonlocal Hamiltonian operator which, after changing
-coordinates to the evolutionary presentation of
-\cite{NeyziNutkuSheftel:JPA:2005}, coincides with one of the nonlocal
-Hamiltonian operators presented in that paper\footnote{We observe that in
-  \cite{NeyziNutkuSheftel:JPA:2005} also the trivial Hamiltonian operator is
-  recovered in the evolutionary presentation; of course it has an apparently
-  nontrivial expression.}.
-
-Let us describe the computation in detail. We start with the conservation law
-(see the file \texttt{ple\_nlcl1.red}):
-\begin{verbatim}
-indep_var:={t,x,y,z}$
-dep_var:={u}$
-odd_var:={p}$
-deg_indep_var:={-1,-1,-4,-4}$
-deg_dep_var:={1}$
-deg_odd_var:={4}$
-total_order:=6$
-principal_der:={u_xz}$
-de:={-u_ty+u_tx**2-u_2t*u_2x}$
-principal_odd:={p_xz}$
-de_odd:={-p_ty+2*u_tx*p_tx-u_2x*p_2t-u_2t*p_2x}$
-\end{verbatim}
-
-Now we limit the computation to variables of jetspace order not greater
-than 4; this is done through the function \texttt{selectvars}, which
-takes four arguments. The first can be $0$ for even variables or $1$ for odd
-variables, the second argument is the specified order, the third argument is
-the subset of dependent variables that we wish to select (all dependent
-variables in our case) and the fourth is the set of derivative coordinates from
-which we wish to extract the variables.
-\begin{verbatim}
-v0_4:=for i:=0:4 join selectvars(0,i,dep_var,all_parametric_der)$
-vo0_4:=for i:=0:4 join selectvars(1,i,odd_var,all_parametric_odd)$
-\end{verbatim}
-We rearrange all variables by their scale degree, starting from variables of
-degree $1$ (the degree is always chosen in such a way that grading of any even
-or odd derivative coordinates is positive):
-\begin{verbatim}
-graadlijst:=der_deg_ordering(0,v0_4)$
-graadlijst_odd:={1} . der_deg_ordering(1,vo0_4)$
-\end{verbatim}
-and we collect graded monomials of scale degree less than or equal $13$:
-\begin{verbatim}
-graadmon:=for i:=1:13 collect mkvarlist1(i,i)$
-graadmon:={1} . graadmon$
-\end{verbatim}
-Then we have to make an ansatz for the conservation law: since the summands of
-\texttt{ellstarfp} have degree $9$ we assume \texttt{[ct]=[cx]=8}
-\begin{verbatim}
-deg_cx:=8$
-deg_ct:=deg_cx$
-\end{verbatim}
-It would also be \texttt{[cy]=[cz]=5}, but in this computation we assume
-$cy=cz=0$. Note that no simplification can be assumed like in the case of $2$
-independent variables: it is not true, in general, that one component of such
-conservation laws can always be written as \texttt{sym*p}. The ansatz is
-constructed through the function \texttt{mklinodd}, which takes three
-arguments: the list of lists of graded monomials of degree $1$, $2$, \dots,
-the list of lists of graded odd variables of degree $1$, $2$, \dots, and the
-final degree of their products:
-\begin{verbatim}
-linoddt:=mklinodd(graadmon,graadlijst_odd,deg_ct)$
-linoddx:=linoddt$
-% Ansatz:
-ct:=(for each el in linoddt sum (c(ctel:=ctel+1)*el))$
-cx:=(for each el in linoddx sum (c(ctel:=ctel+1)*el))$
-\end{verbatim}
-Finally we define the equation
-\begin{verbatim}
-ct_t:=td(ct,t)$
-cx_x:=td(cx,x)$
-equ 1:=ct_t-cx_x$
-\end{verbatim}
-The equation admits a lot of solutions, almost all of which are trivial
-conservation laws (here they are expressed in odd variables):
-\begin{verbatim}
-ct_odd := (6*c(45)*p_4x + 6*c(44)*p_t3x + 6*c(43)*p_2t2x + 6*c(42)*p_3tx + 6*c(
-34)*p_2x*u_t + 6*c(34)*p_t2x*u + 6*c(34)*p_y + 6*c(33)*p_2x*u_x + 6*c(33)*p_3x*u
- + 6*c(30)*p_t2x*u + 6*c(30)*p_tx*u_x + 6*c(27)*p_2t*u_x + 6*c(27)*p_2tx*u - 6*c
-(24)*p_t2x*u + 6*c(24)*p_x*u_tx - 6*c(24)*p_y - 6*c(23)*p_3x*u + 6*c(23)*p_x*
-u_2x + 3*c(21)*p_2x*u**2 + 6*c(21)*p_x*u*u_x + 6*c(18)*p_t*u_tx + 6*c(18)*p_tx*
-u_t + 6*c(17)*p_t*u_2x - 6*c(17)*p_t2x*u + 6*c(15)*p_t*u*u_x + 3*c(15)*p_tx*u**2
- + 6*c(12)*p*u_2tx + 6*c(12)*p_x*u_2t + 6*c(11)*p*u_t2x + 6*c(11)*p_t2x*u + 6*c(
-11)*p_y + 6*c(10)*p*u_3x + 6*c(10)*p_3x*u + 6*c(5)*p*u*u_tx + 6*c(5)*p*u_t*u_x +
- 6*c(5)*p_x*u*u_t + 6*c(4)*p*u*u_2x + 6*c(4)*p*u_x**2 - 3*c(4)*p_2x*u**2 + 6*c(2
-)*p*u**2*u_x + 2*c(2)*p_x*u**3)/6$
-
-cx_odd := (6*c(45)*p_t3x + 6*c(44)*p_2t2x + 6*c(43)*p_3tx + 6*c(42)*p_4t - 6*c(
-34)*p_2t*u_x + 6*c(34)*p_2tx*u + 12*c(34)*p_tx*u_t - 6*c(34)*p_z + 6*c(33)*p_2x*
-u_t + 6*c(33)*p_t2x*u + 6*c(30)*p_2tx*u + 6*c(30)*p_tx*u_t + 6*c(27)*p_2t*u_t + 
-6*c(27)*p_3t*u + 6*c(24)*p_2t*u_x - 6*c(24)*p_2tx*u - 6*c(24)*p_tx*u_t + 6*c(24)
-*p_x*u_2t + 6*c(24)*p_z - 6*c(23)*p_2x*u_t - 6*c(23)*p_t2x*u + 6*c(23)*p_tx*u_x 
-+ 6*c(23)*p_x*u_tx + 3*c(21)*p_tx*u**2 + 6*c(21)*p_x*u*u_t + 6*c(18)*p_2t*u_t + 
-6*c(18)*p_t*u_2t + 6*c(17)*p_2t*u_x - 6*c(17)*p_2tx*u + 6*c(17)*p_t*u_tx - 6*c(
-17)*p_tx*u_t + 3*c(15)*p_2t*u**2 + 6*c(15)*p_t*u*u_t + 6*c(12)*p*u_3t + 6*c(12)*
-p_t*u_2t + 6*c(11)*p*u_2tx - 6*c(11)*p_2t*u_x + 6*c(11)*p_2tx*u + 6*c(11)*p_t*
-u_tx + 6*c(11)*p_tx*u_t - 6*c(11)*p_x*u_2t - 6*c(11)*p_z + 6*c(10)*p*u_t2x + 6*c
-(10)*p_2x*u_t + 6*c(10)*p_t*u_2x + 6*c(10)*p_t2x*u - 6*c(10)*p_tx*u_x - 6*c(10)*
-p_x*u_tx + 6*c(5)*p*u*u_2t + 6*c(5)*p*u_t**2 + 6*c(5)*p_t*u*u_t + 6*c(4)*p*u*
-u_tx + 6*c(4)*p*u_t*u_x + 6*c(4)*p_t*u*u_x - 3*c(4)*p_tx*u**2 - 6*c(4)*p_x*u*u_t
- + 6*c(2)*p*u**2*u_t + 2*c(2)*p_t*u**3)/6$
-\end{verbatim}
-We begin the removal of trivial conservation laws from the above solution. The
-idea is that a conservation law (\emph{i.e.} a horizontal $3$-form) is trivial
-if it is equal to the horizontal differential of a $2$-form. Such two form will
-be chosen according with dimensional analysis. We introduce an operator and a
-counter that will parametrize trivial conservation laws:
-\begin{verbatim}
-operator cc$
-cctel:=0$
-\end{verbatim}
-Then we assume that the trivial conservation law has the form
-\begin{equation*}
-tcl = tctx dt\wedge dx + tcty dt\wedge dy + tctz dt\wedge dz + tcxy dx\wedge dy
-+ tcxz dx\wedge dz + tcyz dy\wedge dz
-\end{equation*}
-so that a conservation law will be trivial if and only if
-\begin{align*}
-\bar d (tcl) = &(D_z(tcxy)-D_y(tcxz)+D_x(tcyz))dx\wedge dy\wedge dz +
-\\
-               &(D_z(tcty)-D_y(tctz)+D_t(tcyz))dt\wedge dy\wedge dz +
-\\
-               &(D_z(tctx)-D_x(tctz)+D_t(tcxz))dt\wedge dx\wedge dz +
-\\
-               &(D_y(tctx)-D_x(tcty)+D_t(tcxy))dt\wedge dx\wedge dy
-\\
-             = &ct dx\wedge dy\wedge dz + cx dt\wedge dy\wedge dz
-             + cy dt\wedge dx\wedge dz + cz dt\wedge dx\wedge dy
-\end{align*}
-Since in our case we are looking for a $2$-component conservation law, we will
-assume a single potential of the form: $tcyz dy\wedge dz$:
-\begin{verbatim}
-deg_tcyz:=7$
-linodd_tcyz:=mklinodd(graadmon,graadlijst_odd,deg_tcyz)$
-tcyz:=(for each el in linodd_tcyz sum (cc(cctel:=cctel+1)*el))$
-\end{verbatim}
-After clearing the previous equations, we set up the new equation
-\begin{verbatim}
-clear equ$
-operator equ$
-
-equ 1:=td(tcyz,x) - ct$
-equ 2:=td(tcyz,t) - cx$
-\end{verbatim}
-Note that in this case if the equation can be solved then the conservation law
-is trivial; only if the equation \emph{cannot} be solved we found at least one
-nontrivial conservation law. Results can be written as follows:
-\begin{verbatim}
-write ctnontriv:=equ 1$
-write cxnontriv:=equ 2$
-\end{verbatim}
-they will be nonzero if a nontrivial conservation law remains in $ct$ and $cx$.
-
-Now, we look for nonlocal Hamiltonian operators in the cotangent covering using
-a new nonlocal odd variable $r$ as follows (see \texttt{ple\_nlho1.red}):
+This is a new nonlocal variable for the (co)tangent covering of the Plebanski
+equation. We can load the Plebanski equation together with its nonlocal
+variable $r$ as follows:
 \begin{verbatim}
 indep_var:={t,x,y,z}$
 dep_var:={u}$
@@ -2641,17 +2184,26 @@ total_order:=6$
 principal_der:={u_xz}$
 de:={-u_ty+u_tx**2-u_2t*u_2x}$
 % rhs of the equations that define the nonlocal variable
-rt:=p_2t*u_x - p_2tx*u - 2*p_tx*u_t + p_z$
-rx:=- p_2x*u_t - p_t2x*u - p_y$
+rt:= - p_z - u_2t*p_x + u_tx*p_t$
+rx:= p_y + u_2x*p_t - u_tx*p_x$
 % We add conservation laws as new nonlocal odd variables;
 principal_odd:={p_xz,r_x,r_t}$
 %
 de_odd:={-p_ty+2*u_tx*p_tx-u_2x*p_2t-u_2t*p_2x,rx,rt}$
 \end{verbatim}
-We look for Hamiltonian operators which depend on $r$ (which has scale degree
+We can easily verify that the integrability condition for the new nonlocal
+variable holds:
+\begin{verbatim}
+td(r,t,x) - td(r,x,t);
+\end{verbatim}
+the result is $0$.
+
+Now, we look for nonlocal recursion operators in the tangent covering using
+the new nonlocal odd variable $r$. We can load the equation exactly as before.
+We look for recursion operators which depend on $r$ (which has scale degree
 $4$); we produce the following ansatz for \texttt{phi}:
 \begin{verbatim}
-linodd:=mkalllinodd_e(graadmon,graadlijst_odd,1,4)$
+linodd:=mkalllinodd(graadmon,graadlijst_odd,1,4)$
 phi:=(for each el in linodd sum (c(ctel:=ctel+1)*el))$
 \end{verbatim}
 then we solve the equation of shadows of symmetries:
@@ -2661,14 +2213,15 @@ equ 1:=td(phi,x,z)+td(phi,t,y)-2*u_tx*td(phi,t,x)
 \end{verbatim}
 The solution is
 \begin{verbatim}
-phi := c(20)*p_t*u_x - c(20)*p_tx*u - c(20)*p_x*u_t - c(20)*r + c(1)*p
+phi := c(28)*r + c(1)*p
 \end{verbatim}
-hence we obtain the Noether map (the identity operator $p$) and the new
-nonlocal operator $u_xp_t - p_{tx}u - p_xu_t - r$. It can be proved that
+hence we obtain the identity operator $p$ and the new
+nonlocal operator $r$. It can be proved that
 changing coordinates to the evolutionary presentation yields the local operator
 (which has a much more complex expression than the identity operator) and one
-of the nonlocal operators of \cite{NeyziNutkuSheftel:JPA:2005}. More details on
-this computation can be found in \cite{KKV-SPT-2011}.
+of the nonlocal operators of \cite{NNS05}. More details on
+this computation can be found in \cite{KVV12}.
+
 
 
 \subsection{Appendix: old versions of \cde}
@@ -2693,31 +2246,8 @@ still available at \cite{gdeq}.
 
 \begin{thebibliography}{99}
 
-\bibitem{red} Obtaining \REDUCE: \url{http://reduce-algebra.sourceforge.net/}.
 \bibitem{gdeq} Geometry of Differential Equations web site:
   \url{http://gdeq.org}.
-\bibitem{getdeb} GetDeb website:
-  \url{http://archive.getdeb.net/getdeb/ubuntu/pool/apps/r/reduce-algebra/}.
-\bibitem{noteppp} \texttt{notepad++}:
-  \url{http://notepad-plus.sourceforge.net/}
-\bibitem{ed} List of text editors:
-  \url{http://en.wikipedia.org/wiki/List_of_text_editors}
-\bibitem{emacswin} How to install \texttt{emacs} in Windows:
-  \url{http://www.cmc.edu/math/alee/emacs/emacs.html}. See also
-  \url{http://www.gnu.org/software/emacs/windows/ntemacs.html}
-\bibitem{reducewin} How to install \REDUCE in Windows:
-  \url{http://reduce-algebra.sourceforge.net/windows.html}
-\bibitem{svec} \textsc{G.H.M. Roelofs}, The SUPER\_VECTORFIELD package for
-  REDUCE. Version 1.0, Memorandum 1099, Dept. Appl. Math., University of
-  Twente, 1992. Available at \url{http://gdeq.org}.
-\bibitem{integ} \textsc{G.H.M. Roelofs}, The INTEGRATOR package for
-  REDUCE. Version 1.0, Memorandum 1100, Dept. Appl. Math., University of
-  Twente, 1992. Available at \url{http://gdeq.org}.
-\bibitem{tools} \textsc{G.F. Post}, A manual for the package TOOLS 2.1,
-  Memorandum 1331, Dept. Appl. Math., University of Twente, 1996. Available at
-  \url{http://gdeq.org}.
-\bibitem{redide} \REDUCE IDE for \texttt{emacs}:
-  \url{http://centaur.maths.qmul.ac.uk/Emacs/REDUCE_IDE/}
 \bibitem{Many} \textsc{A. V. Bocharov, V. N. Chetverikov, S. V.  Duzhin, N.  G.
     Khor{\cprime}kova, I. S.  Krasil{\cprime}shchik, A.  V.  Samokhin, Yu.\ N.
     Torkhov, A. M. Verbovetsky and A. M.  Vinogradov}: Symmetries and
@@ -2785,7 +2315,7 @@ operators in the formal calculus of variations, Duke J. Math. \textbf{111}
       M.B. Sheftel}, \emph{Multi-Hamiltonian structure of Plebanski's second
       heavenly equation} J. Phys.\ A: Math.\ Gen.\ \textbf{38} (2005),
     8473. \eprint{nlin/0505030v2}.
-  \bibitem{inside} \textsc{A.C. Norman, R. Vitolo}, \emph{Inside Reduce}, part
+\bibitem{inside} \textsc{A.C. Norman, R. Vitolo}, \emph{Inside Reduce}, part
     of the official \REDUCE documentation included in the source code, see
     below.
 \bibitem{nucci1} \textsc{M.C. Nucci}, \emph{Interactive REDUCE
@@ -2808,8 +2338,6 @@ N.H. Ibragimov, Ed., CRC Press, Boca Raton (1996) pp. 415--481.
     and Geometrical Structure of the Determining Equations for Shear Waves in
     Nonlinear Isotropic Incompressible Elastodynamics}, J. Math.\ Phys.\
   \textbf{55} (2014), 081502.
-\bibitem{reduce} \REDUCE official website:
-  \url{http://reduce-algebra.sourceforge.net/}.
 \bibitem{wolfcl} \textsc{T. Wolf}, \emph{A comparison of four approaches to the
     calculation of conservation laws}, Euro.\ Jnl of Applied Mathematics 13
   part 2 (2002) 129-152.
