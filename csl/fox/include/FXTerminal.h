@@ -164,7 +164,7 @@ extern int rootWidth, rootHeight;
 /// Multiline text widget supporting use as a terminal-window style
 /// interface to other worker code. 
 
-class FXAPI FXTerminal : FXText {
+class FXAPI FXTerminal : public FXText {
   FXDECLARE(FXTerminal)
 
 public:

@@ -1719,17 +1719,20 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
 // the symbol contains a 64-bit count field, and this does not double its
 // size when moved to a 64-bit world. So a 32-bit symbol is 56 bytes and
 // a 64-bit one 104 bytes
-// Note that a non-zero count value could get somewhat corrupted in the
-// conversion here, but I do not think that saving counts in image files
-// makes much sense anyway... so I do not care.
                 for (i=1; i<(symhdr_length/8); i++)
                 {   newp[i] = expand_to_64(oldp[i]);
                 }
+// Now the code above copied all except the final "count" field properly.
+// That is a 64-bit value on both sizes of machine.
+                newp[12] = flip_64(*(uint64_t *)(&oldp[12]));
+                newp[13] = make_padder(8);
 // The "+4" on the next line is allowing for the fact that the count field
 // is a 64-bit value even on 32-bit machines, and it keeps the addresses
-// in the scan doubleword aligned.
+// in the scan doubleword aligned. The +8 then allows for the fact that
+// doubling the size of a 32-bit symbol header gives a larger size than
+// that of a 64-bit symbol header.
                 oldp = (int32_t *)((char *)oldp + symhdr_length/2+4);
-                newp = (int64_t *)((char *)newp + symhdr_length);
+                newp = (int64_t *)((char *)newp + symhdr_length+8);
             }
             else switch (type_of_header(h))
                 {

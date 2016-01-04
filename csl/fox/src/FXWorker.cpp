@@ -274,7 +274,7 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 
 #define WINDOW_NAME   programName
 
-// registry entries will be filed under Codemist-Ltd/<something>.
+// registry entries will be filed under Codemist/<something>.
     LOG("About to create new FXApp\n");
     application_object = new FXApp(PRODUCT_NAME,
                                    COMPANY_NAME);
@@ -287,6 +287,14 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 // The type if the pointer required by fox is just char *, but I do not
 // see any reason it should clobber the strings! So the explicit (but
 // potentially unsafe) cast here seems my easiest way forward.
+//
+// There is a further worry here. init() calls xftinit and that canns FcInit.
+// On some platforms in some cases (and I am not sure that I understand
+// just when!) that causes a long delay that I believe is re-scanning
+// font directories system-wide. This has particularly tended to hurt with
+// a first use of the code on a Macintosh. Well it is to some extent
+// speculation that FcInit is the code that is causing pain, and what I
+// see is not very reproducible!
     application_object->init(argc, const_cast<char **>(argv), TRUE);
     LOG("FXApp initialized\n");
 #ifndef WIN32

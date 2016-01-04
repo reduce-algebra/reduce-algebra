@@ -467,7 +467,7 @@ static cm_font_info *findFont(const char *name)
 // The info in the table has names in upper case. So I will force the
 // name in my request to be in upper case to match.
     for (char *p=ss; *p!=0; p++) *p = toupper(*p);
-    for (unsigned int i=0; i<sizeof(cm_font_widths)/sizeof(cm_font_info); i++)
+    for (size_t i=0; i<sizeof(cm_font_widths)/sizeof(cm_font_info); i++)
     {   if (strcmp(ss, cm_font_widths[i].name) == 0)
             return &cm_font_widths[i];
     }
@@ -893,7 +893,7 @@ static const char *loadPrivateFonts(FXApp *appl, FXWindow *w)
 // I check each of the fonts that this application wants to see if they
 // are already installed. If they are then there is no merit in installing
 // them for myself.
-    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
+    for (size_t i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   strcpy(lf.lfFaceName, fontNames[i].name);
         lf.lfCharSet = DEFAULT_CHARSET;
         lf.lfPitchAndFamily = 0;
@@ -934,6 +934,8 @@ static const char *loadPrivateFonts(FXApp *appl, FXWindow *w)
 // faster on subsequent occasions. I need to ask people who use Macintosh
 // machines (and perhaps others) to be really patient! And while they are
 // waiting to work out what the hang-up is and how it can be cured.
+// Actually the key call to FcInit is not here - it is much earlier called
+// from FXWorker when the App object is initialised and it calls XftInit.
     FcInit();
     XftInit("");
     dpy = (Display *)appl->getDisplay();
@@ -941,7 +943,7 @@ static const char *loadPrivateFonts(FXApp *appl, FXWindow *w)
 
 // I will add in the  font files that I want to use here.
     int someAdded = 0;
-    for (int i=0; i<(sizeof(fontNames)/sizeof(fontNames[0])); i++)
+    for (size_t i=0; i<(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char *fff = (char *)
             new char[20+strlen(programDir)+strlen(fontNames[i].name)];
         char ff1[LONGEST_LEGAL_FILENAME];
@@ -974,7 +976,7 @@ static const char *loadPrivateFonts(FXApp *appl, FXWindow *w)
 // to me. Well at least if the local font files existed!
 
 #ifdef DEBUG_LIST_AVAILABLE_FONTS
-    for (int i=0; i<sizeof(fontNames)/sizeof(fontNames[0]); i++)
+    for (size_t i=0; i<sizeof(fontNames)/sizeof(fontNames[0]); i++)
     {   XftFontSet *fs = XftListFonts(dpy, screen,
 //               XFT_FAMILY,  XftTypeString, fontNames[i].name,
                  (const char *)0, 
