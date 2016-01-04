@@ -2,14 +2,7 @@
 % 2015-10-05
 % Raffaele Vitolo
 
-% Loading the interface to cdiff packages; used to generate all
-% (even and odd) derivative coordinates,
-% (even and odd) principal and parametric derivatives,
-% and the restriction of total derivatives to the (even and odd) equation.
-% Of course mostly odd part refers to tangent or cotangent covering.
-in "cde.red"$
-
-algebraic;
+load_package cde;
 
 % Initialization of the jet environment of the differential equation.
 indep_var:={x,t}$

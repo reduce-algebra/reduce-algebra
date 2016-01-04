@@ -2,8 +2,6 @@
 % of Dubrovin-Novikov type (homogeneous) in two independent variables
 % 2015.10.10 R. Vitolo
 
-% Loading the interface to cdiff packages
-
 load_package cde;
 
 % Initialization

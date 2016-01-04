@@ -5,12 +5,6 @@
 % 2015-10-10
 % Raffaele Vitolo
 
-% Loading the interface to cdiff packages; used to generate all
-% (even and odd) derivative coordinates,
-% (even and odd) principal and parametric derivatives,
-% and the restriction of total derivatives to the (even and odd) equation.
-% Of course mostly odd part refers to tangent or cotangent covering.
-
 load_package cde;
 
 % Initialization of the jet environment of the differential equation.
@@ -36,8 +30,8 @@ principal_der:={u_xz}$
 de:={-u_ty+u_tx**2-u_2t*u_2x}$
 
 % rhs of the equations that define the nonlocal variable
-rt:=p_2t*u_x - p_2tx*u - 2*p_tx*u_t + p_z$
-rx:=- p_2x*u_t - p_t2x*u - p_y$
+rt:= - p_z - u_2t*p_x + u_tx*p_t$
+rx:= p_y + u_2x*p_t - u_tx*p_x$
 
 % same constructions for odd coordinates.
 % Note that we add conservation laws as new nonlocal odd variables;

@@ -2,12 +2,6 @@
 % 2015-10-10
 % Raffaele Vitolo
 
-% Loading the interface to cdiff packages; used to generate all
-% (even and odd) derivative coordinates,
-% (even and odd) principal and parametric derivatives,
-% and the restriction of total derivatives to the (even and odd) equation.
-% Of course mostly odd part refers to tangent or cotangent covering.
-
 load_package cde;
 
 % Initialization of the jet environment of the differential equation.
@@ -62,7 +56,6 @@ graadlijst_odd:={1} . graadlijst_odd$
 % and have total degree from 1 to 6
 linodd:=mkalllinodd(graadmon,graadlijst_odd,1,6)$
 % Ansatz for recursion operators
-
 sym:=(for each el in linodd sum (c(ctel:=ctel+1)*el))$
 
 % This is the equation \tilde\ell_K(sym)=0, where K=0 is KdV equation,

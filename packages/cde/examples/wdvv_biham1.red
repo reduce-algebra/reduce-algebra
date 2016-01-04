@@ -7,9 +7,7 @@
 % 2 - the first-order operator aa1 fulfills [aa1,aa1]=0.
 % 3 - the two operators are compatible, [aa1,aa2]=0.
 
-% Loading the interface to cdiff packages
 load_package cde;
-
 
 % Initialization
 indep_var:={t,x}$
