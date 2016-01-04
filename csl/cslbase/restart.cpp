@@ -1409,8 +1409,6 @@ int32_t code_up_io(void *e)
     return 0;
 }
 
-#define make_padder(n) (TYPE_VEC8 + ((n)<<10) + TAG_HDR_IMMED)
-
 static void shrink_vecheap_page_to_32(char *p, char *fr)
 {   if (!SIXTY_FOUR_BIT)
     {   int32_t *newp;  // specific widths used here
@@ -1562,14 +1560,75 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
                         printf("\n");
 #endif
                         break;
+#ifdef EXPERIMENT
+                    case TYPE_STRING_1:
+                    case TYPE_STRING_2:
+                    case TYPE_STRING_3:
+                    case TYPE_STRING_4:
+#else
                     case TYPE_STRING:
+#endif
 #ifdef DEBUG_WIDTH
                         printf("String: %p: \"%s\"\n", p, ((char *)p)+2*CELL);
 #endif
                     case TYPE_BIGNUM:
                     case TYPE_VEC32:
+#ifdef EXPERIMENT
+                    case TYPE_VEC16_1:
+                    case TYPE_VEC16_2:
+#else
                     case TYPE_VEC16:
+#endif
+#ifdef EXPERIMENT
+                    case TYPE_VEC8_1:
+                    case TYPE_VEC8_2:
+                    case TYPE_VEC8_3:
+                    case TYPE_VEC8_4:
+#else
 //                  case TYPE_VEC8:                  same as TYPE_BPS
+#endif
+#ifdef EXPERIMENT
+                    case TYPE_BPS_1:
+                    case TYPE_BPS_2:
+                    case TYPE_BPS_3:
+                    case TYPE_BPS_4:
+                    case TYPE_ENCAPSULATE:
+                    case TYPE_MAPLEREF:
+                    case TYPE_FOREIGN:
+                    case TYPE_SP:
+                    case TYPE_BITVEC_1:
+                    case TYPE_BITVEC_2:
+                    case TYPE_BITVEC_3:
+                    case TYPE_BITVEC_4:
+                    case TYPE_BITVEC_5:
+                    case TYPE_BITVEC_6:
+                    case TYPE_BITVEC_7:
+                    case TYPE_BITVEC_8:
+                    case TYPE_BITVEC_9:
+                    case TYPE_BITVEC_10:
+                    case TYPE_BITVEC_11:
+                    case TYPE_BITVEC_12:
+                    case TYPE_BITVEC_13:
+                    case TYPE_BITVEC_14:
+                    case TYPE_BITVEC_15:
+                    case TYPE_BITVEC_16:
+                    case TYPE_BITVEC_17:
+                    case TYPE_BITVEC_18:
+                    case TYPE_BITVEC_19:
+                    case TYPE_BITVEC_20:
+                    case TYPE_BITVEC_21:
+                    case TYPE_BITVEC_22:
+                    case TYPE_BITVEC_23:
+                    case TYPE_BITVEC_24:
+                    case TYPE_BITVEC_25:
+                    case TYPE_BITVEC_26:
+                    case TYPE_BITVEC_27:
+                    case TYPE_BITVEC_28:
+                    case TYPE_BITVEC_29:
+                    case TYPE_BITVEC_30:
+                    case TYPE_BITVEC_31:
+                    case TYPE_BITVEC_32:
+#else
                     case TYPE_BPS:
                     case TYPE_SPARE:
                     case TYPE_SP:
@@ -1581,6 +1640,7 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
                     case TYPE_BITVEC6:
                     case TYPE_BITVEC7:
                     case TYPE_BITVEC8:
+#endif
                     case TYPE_SINGLE_FLOAT:
                     case TYPE_DOUBLE_FLOAT:
                     case TYPE_LONG_FLOAT:
@@ -1822,14 +1882,69 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
                         *newp = flip_64(make_padder(len));
                         newp = (int64_t *)((char *)newp + len);
                         break;
+#ifdef EXPERIMENT
+                    case TYPE_STRING_1:
+                    case TYPE_STRING_2:
+                    case TYPE_STRING_3:
+                    case TYPE_STRING_4:
+#else
                     case TYPE_STRING:
+#endif
 #ifdef DEBUG_WIDTH
                         printf("String: %p: \"%s\"\n", oldp, ((char *)oldp)+4);
 #endif
                     case TYPE_BIGNUM:
                     case TYPE_VEC32:
+#ifdef EXPERIMENT
+                    case TYPE_VEC16_1:
+                    case TYPE_VEC16_2:
+                    case TYPE_VEC8_1:
+                    case TYPE_VEC8_2:
+                    case TYPE_VEC8_3:
+                    case TYPE_VEC8_4:
+                    case TYPE_BPS_1:
+                    case TYPE_BPS_2:
+                    case TYPE_BPS_3:
+                    case TYPE_BPS_4:
+                    case TYPE_MAPLEREF:
+                    case TYPE_FOREIGN:
+                    case TYPE_ENCAPSULATE:
+                    case TYPE_SP:
+                    case TYPE_BITVEC_1:
+                    case TYPE_BITVEC_2:
+                    case TYPE_BITVEC_3:
+                    case TYPE_BITVEC_4:
+                    case TYPE_BITVEC_5:
+                    case TYPE_BITVEC_6:
+                    case TYPE_BITVEC_7:
+                    case TYPE_BITVEC_8:
+                    case TYPE_BITVEC_9:
+                    case TYPE_BITVEC_10:
+                    case TYPE_BITVEC_11:
+                    case TYPE_BITVEC_12:
+                    case TYPE_BITVEC_13:
+                    case TYPE_BITVEC_14:
+                    case TYPE_BITVEC_15:
+                    case TYPE_BITVEC_16:
+                    case TYPE_BITVEC_17:
+                    case TYPE_BITVEC_18:
+                    case TYPE_BITVEC_19:
+                    case TYPE_BITVEC_20:
+                    case TYPE_BITVEC_21:
+                    case TYPE_BITVEC_22:
+                    case TYPE_BITVEC_23:
+                    case TYPE_BITVEC_24:
+                    case TYPE_BITVEC_25:
+                    case TYPE_BITVEC_26:
+                    case TYPE_BITVEC_27:
+                    case TYPE_BITVEC_28:
+                    case TYPE_BITVEC_29:
+                    case TYPE_BITVEC_30:
+                    case TYPE_BITVEC_31:
+                    case TYPE_BITVEC_32:
+#else
                     case TYPE_VEC16:
-//      case TYPE_VEC8:                  same as TYPE_BPS
+//                  case TYPE_VEC8:                  same as TYPE_BPS
                     case TYPE_BPS:
                     case TYPE_SPARE:
                     case TYPE_SP:
@@ -1841,6 +1956,7 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
                     case TYPE_BITVEC6:
                     case TYPE_BITVEC7:
                     case TYPE_BITVEC8:
+#endif
                     case TYPE_SINGLE_FLOAT:
 //        case TYPE_DOUBLE_FLOAT:
 //        case TYPE_LONG_FLOAT:
@@ -1848,7 +1964,7 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
 //
 // The effects of alignment and passing here are distinctly odd. A 32-bit
 // item can be in one of two forms
-//      || header | d0 || d1 | - ||          length 4 mod 8
+//      || header | d0 || d1 | -  ||         length 4 mod 8
 // or   || header | d0 || d1 | d2 ||         length 8 mod 8
 // where the double vertical bars denote doubleword boundaries and the "-"
 // is padder data.
@@ -2056,7 +2172,12 @@ static void adjust_vecheap(void)
                             *(uint32_t *)(low+i) =
                                 flip_32(*(uint32_t *)(low+i));
                         break;
+#ifdef EXPERIMENT
+                    case TYPE_VEC16_1:
+                    case TYPE_VEC16_2:
+#else
                     case TYPE_VEC16:
+#endif
                         for (i=CELL; i<doubleword_align_up(length_of_header(h)); i+=4)
                             *(uint32_t *)(low+i) =
                                 flip_halfwords(*(uint32_t *)(low+i));
@@ -2193,7 +2314,15 @@ static void adjust_bpsheap(void)
                         adjust((LispObject *)(fr+i));
                     *(Header *)fr = h;
                     break;
+#ifdef EXPERIMENT
+                case TYPE_BPS_1:
+                case TYPE_BPS_2:
+                case TYPE_BPS_3:
+                case TYPE_BPS_4:
+                   len = length_of_byteheader(h);
+#else
                 case TYPE_BPS:
+#endif
 #ifdef DEBUG_WIDTH
                     printf("BPS item length %d\n", len);
 #endif
@@ -2226,12 +2355,16 @@ static void adjust_bpsheap(void)
 // half-space could be missed off to very bad effect, including crashes within
 // the garbage collector. So if necessary I allocate a big padder block of
 // BPS here so that all subsequent allocations end up in the lower (and hence
-// standrard( part of the page. I prefer to do this here rather than to spread
+// standrard) part of the page. I prefer to do this here rather than to spread
 // support for double-sized pages into other parts of the code.
 //
     if (SIXTY_FOUR_BIT && converting_to_64)
     {   intptr_t w = codefringe - codelimit - CSL_PAGE_SIZE - 0x100;
+#ifdef EXPERIMENT
+        if (w > 0) getcodevector(TYPE_BPS_1, w);
+#else
         if (w > 0) getcodevector(TYPE_BPS, w);
+#endif
     }
 }
 
@@ -2972,7 +3105,7 @@ static LispObject Lcheck_c_code(LispObject nil, int nargs, ...)
     lc3 = va_arg(a, LispObject);
     va_end(a);
     if (!is_vector(name) ||
-        type_of_header(vechdr(name)) != TYPE_STRING ||
+        !is_string_header(vechdr(name)) ||
         !is_fixnum(lc1) ||
         !is_fixnum(lc2) ||
         !is_fixnum(lc3)) return aerror1("check-c-code", name);
@@ -2980,7 +3113,7 @@ static LispObject Lcheck_c_code(LispObject nil, int nargs, ...)
     c2 = int_of_fixnum(lc2);
     c3 = int_of_fixnum(lc3);
     sname = &celt(name, 0);
-    len = length_of_header(vechdr(name)) - CELL;
+    len = length_of_byteheader(vechdr(name)) - CELL;
 
     p = NULL;
     for (i=0; setup_tables[i]!=NULL; i++)
@@ -4588,7 +4721,11 @@ static void cold_setup()
 // Ditto interrupts.
 //
 #define boffo_size 256
+#ifdef EXPERIMENT
+    boffo = getvector(TAG_VECTOR, TYPE_STRING_1, CELL+boffo_size);
+#else
     boffo = getvector(TAG_VECTOR, TYPE_STRING, CELL+boffo_size);
+#endif
     memset((void *)((char *)boffo + (CELL - TAG_VECTOR)), '@', boffo_size);
 #ifndef COMMON
     if (current_package == nil)
@@ -5345,10 +5482,10 @@ static void set_up_variables(CSLbool restart_flag)
         {   w = cons(make_keyword("reduce"), w);
             w1 = qvalue(make_undefined_symbol("version*"));
             if (is_vector(w1) &&
-                type_of_header(vechdr(w1)) == TYPE_STRING)
+                is_string_header(vechdr(w1)))
             {
 #if defined HAVE_FWIN && !defined EMBEDDED
-                int n = length_of_header(vechdr(w1))-CELL;
+                int n = length_of_byteheader(vechdr(w1))-CELL;
                 sprintf(about_box_title, "About %.*s",
                         (n > 31-(int)strlen("About ") ?
                          31-(int)strlen("About ") : n),
@@ -5365,16 +5502,16 @@ static void set_up_variables(CSLbool restart_flag)
 //
                 w1 = qvalue(make_undefined_symbol("author1*"));
                 if (is_vector(w1) &&
-                    type_of_header(vechdr(w1)) == TYPE_STRING)
-                {   n = length_of_header(vechdr(w1))-CELL;
+                    is_string_header(vechdr(w1)))
+                {   n = length_of_byteheader(vechdr(w1))-CELL;
                     sprintf(about_box_rights_1, "%.*s",
                             n > 31 ? 31 : n, &celt(w1, 0));
                 }
                 else strcpy(about_box_rights_1, "A C Hearn/RAND");
                 w1 = qvalue(make_undefined_symbol("author2*"));
                 if (is_vector(w1) &&
-                    type_of_header(vechdr(w1)) == TYPE_STRING)
-                {   n = length_of_header(vechdr(w1))-CELL;
+                    is_string_header(vechdr(w1)))
+                {   n = length_of_byteheader(vechdr(w1))-CELL;
                     sprintf(about_box_rights_2, "%.*s",
                             n > 31 ? 31 : n, &celt(w1, 0));
                 }
@@ -5387,7 +5524,7 @@ static void set_up_variables(CSLbool restart_flag)
                 strcpy(about_box_title, "About REDUCE");
                 strcpy(about_box_description, "REDUCE");
                 strcpy(about_box_rights_1, "A C Hearn/RAND");
-                strcpy(about_box_rights_2, "Codemist Ltd");
+                strcpy(about_box_rights_2, "Codemist");
 #endif
             }
         }
@@ -5761,8 +5898,8 @@ static void set_up_variables(CSLbool restart_flag)
                 int n1;
                 if (is_symbol(w3)) w3 = qpname(w3);
                 if (!is_vector(w3) ||
-                    type_of_header(vechdr(w3)) != TYPE_STRING) break;
-                n1 = length_of_header(vechdr(w3))-CELL;
+                    !is_string_header(vechdr(w3))) break;
+                n1 = length_of_byteheader(vechdr(w3))-CELL;
                 v = (char *)(*malloc_hook)(n1+2);
                 if (v == NULL) break;
                 v[0] = ' ';
@@ -5788,8 +5925,8 @@ static void set_up_variables(CSLbool restart_flag)
                 int n1;
                 if (is_symbol(w3)) w3 = qpname(w3);
                 if (!is_vector(w3) ||
-                    type_of_header(vechdr(w3)) != TYPE_STRING) break;
-                n1 = length_of_header(vechdr(w3))-CELL;
+                    !is_string_header(vechdr(w3))) break;
+                n1 = length_of_byteheader(vechdr(w3))-CELL;
                 if (n1 > 60) break;
                 sprintf(sname, "*%.*s", n1, &celt(w3, 0));
                 w4 = make_undefined_symbol(sname);
@@ -5838,9 +5975,8 @@ void review_switch_settings()
         LispObject nil, starsw;
         sw = qcdr(sw);
         if (is_symbol(s)) s = qpname(s);
-        if (!is_vector(s) ||
-            type_of_header(vechdr(s)) != TYPE_STRING) continue;
-        n1 = length_of_header(vechdr(s))-CELL;
+        if (!is_vector(s) || !is_string_header(s)) continue;
+        n1 = length_of_byteheader(vechdr(s))-CELL;
         if (n1 > 60) continue;
         sprintf(sname, "*%.*s", n1, &celt(s, 0));
         for (p=switches; *p!=NULL; p+=2)
@@ -5878,9 +6014,8 @@ void review_switch_settings()
         char **p;
         sw = qcdr(sw);
         if (is_symbol(s)) s = qpname(s);
-        if (!is_vector(s) ||
-            type_of_header(vechdr(s)) != TYPE_STRING) continue;
-        n1 = length_of_header(vechdr(s))-CELL;
+        if (!is_vector(s) || !is_string_header(s)) continue;
+        n1 = length_of_byteheader(vechdr(s))-CELL;
         if (n1 > 60) continue;
         sprintf(sname, "%.*s", n1, &celt(s, 0));
         for (p=loadable_packages; *p!=NULL; p+=2)

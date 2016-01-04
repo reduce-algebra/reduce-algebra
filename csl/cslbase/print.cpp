@@ -1856,6 +1856,7 @@ static void fp_sprint(char *buff, double x, int prec)
 {
 #ifdef DEBUG
     volatile char *fullbuff = buff; // Useful for when running under a debugger
+    (void)fullbuff;
 #endif
 //
 // Note that I am assuming IEEE arithmetic here so the tricks that I use
@@ -2028,12 +2029,14 @@ restart:
             putc_stream(')', active_stream);
             return;
 
+#ifndef EXPERIMENT
         case TAG_SFLOAT:
         {   Float_union uu;
             uu.i = u - TAG_SFLOAT;
             fp_sprint(my_buff, (double)uu.f, print_precision);
         }
         goto float_print_tidyup;
+#endif
 
         case TAG_FIXNUM:
             if (escaped_printing & escape_hex)
@@ -2483,7 +2486,13 @@ restart:
                             (void *)elt(u, 0));
                     goto print_my_buff;
 
+#ifdef EXPERIMENT
+                case TYPE_MAPLEREF:
+                case TYPE_FOREIGN:
+                case TYPE_ENCAPSULATE:
+#else
                 case TYPE_SPARE:
+#endif
                     pop(u);
                     sprintf(my_buff, "#<encapsulated pointer: %p>",
                             *(void **)&elt(u, 0));
@@ -2687,11 +2696,17 @@ restart:
                     putc_stream(')', active_stream);
                     popv(1);
                     return;
+#ifdef EXPERIMENT
+                case TYPE_VEC16_1:
+                case TYPE_VEC16_2:
+                    len = length_of_hwordheader(h);
+#else
                 case TYPE_VEC16:
+                    len = len/2;   // bytes to halfwords
+#endif
                     outprefix(blankp, 5);
                     putc_stream('#', active_stream); putc_stream('V', active_stream);
                     putc_stream('1', active_stream); putc_stream('6', active_stream); putc_stream('(', active_stream);
-                    len = len >> 1;
                     for (k=0; k<len; k++)
                     {   sprintf(my_buff, "%d", helt(stack[0], k));
                         prin_buf(my_buff, k != 0);
@@ -3222,7 +3237,9 @@ restart:
                     sprintf(my_buff, "?%.8lx?", (long)(uint32_t)u);
                     break;
             }
-        float_print_tidyup:
+#ifndef EXPERIMENT
+        float_print_tidyup:   // label to join in from short float printing
+#endif
             break;
 
         case TAG_NUMBERS:
@@ -5205,7 +5222,11 @@ start_again:
     errexit();
     stream_type(r) = url;
     push(r);
+#ifdef EXPERIMENT
+    url = getvector(TAG_VECTOR, TYPE_STRING_1, CELL+4+SOCKET_BUFFER_SIZE);
+#else
     url = getvector(TAG_VECTOR, TYPE_STRING, CELL+4+SOCKET_BUFFER_SIZE);
+#endif
     pop(r);
     errexit();
     ielt32(url, 0) = 0;

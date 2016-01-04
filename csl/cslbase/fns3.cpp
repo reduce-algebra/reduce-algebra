@@ -1,4 +1,4 @@
-//  fns3.cpp                          Copyright (C) 1989-2015 Codemist Ltd
+// fns3.cpp                          Copyright (C) 1989-2015 Codemist Ltd
 
 //
 // Basic functions part 3.
@@ -334,7 +334,7 @@ static void simple_print(LispObject x)
         printf("%.*s", (int)len, &celt(x, 0));
     }
     else if (is_vector(x))
-    {   int i;
+    {   size_t i;
         if (is_string(x))
         {   int len = length_of_byteheader(vechdr(x)) - CELL;
             printf("\"%.*s\"", (int)len, &celt(x, 0));
@@ -631,8 +631,13 @@ static uint32_t hash_cl_equal(LispObject key, CSLbool descend)
 // version of hashing inspects the bits in a bit-vector.
 //
 #ifdef EXPERIMENT
-#error unreconstructed
-#endif
+                else if (is_bitvec_header(ha))
+                {   len = length_of_bitheader(ha) - 8*CELL;
+                    bitoff = 0;
+                    data = &ucelt(key, 0);
+                    goto hash_as_bitvector;
+                }
+#else
                 else if (is_bitvec_header(ha))
                 {   len = length_of_header(ha) - CELL;
                     len = (len - 1)*8 + ((ha & 0x380) >> 7) + 1;
@@ -640,6 +645,7 @@ static uint32_t hash_cl_equal(LispObject key, CSLbool descend)
                     data = &ucelt(key, 0);
                     goto hash_as_bitvector;
                 }
+#endif
                 else if (len == TYPE_ARRAY)
                 {
 //
@@ -742,7 +748,11 @@ static uint32_t hash_cl_equal(LispObject key, CSLbool descend)
         len += bitoff;
         while (len > bitoff)
         {   len--;
+#ifdef EXPERIMENT
+            c = data[len >> 5] & (1u << (len & 31));
+#else
             c = data[len >> 3] & (1 << (len & 7));
+#endif
             if (c != 0) c = 1;
             r = update_hash(r, c);
         }
@@ -1712,7 +1722,11 @@ LispObject Lsmkvect(LispObject nil, LispObject n)
     intptr_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("make-simple-string", n);
     nn = int_of_fixnum(n);
+#ifdef EXPERIMENT
+    w = getvector(TAG_VECTOR, TYPE_STRING_1, nn+CELL);
+#else
     w = getvector(TAG_VECTOR, TYPE_STRING, nn+CELL);
+#endif
     errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL);
     while (nn > CELL)
@@ -1731,7 +1745,11 @@ LispObject Lmkvect8(LispObject nil, LispObject n)
     intptr_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkvect8", n);
     nn = 1 + int_of_fixnum(n);  // Note that in Standard Lisp style the +1
+#ifdef EXPERIMENT
+    w = getvector(TAG_VECTOR, TYPE_VEC8_1, nn+CELL);
+#else
     w = getvector(TAG_VECTOR, TYPE_VEC8, nn+CELL);
+#endif
     errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL);
     while (nn > CELL)
@@ -1848,7 +1866,11 @@ LispObject simplify_string(LispObject s)
     stackcheck1(0, s);
     nil = C_nil;
     push(s);
+#ifdef EXPERIMENT
+    w = getvector(TAG_VECTOR, TYPE_STRING_1, n+CELL);
+#else
     w = getvector(TAG_VECTOR, TYPE_STRING, n+CELL);
+#endif
     pop(s);
     errexit();
     i = (intptr_t)doubleword_align_up(n+CELL);
@@ -2502,7 +2524,7 @@ LispObject Lputv8(LispObject, int nargs, ...)
     n = va_arg(a, LispObject);
     x = va_arg(a, LispObject);
     va_end(a);
-    if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VEC8)
+    if (!is_vector(v) || !is_vec8_header(h = vechdr(v)))
         return aerror1("putv8", v);
     else if (!is_fixnum(n)) return aerror1("putv8 offset not fixnum", n);
     hl = length_of_header(h) - CELL;
@@ -2515,7 +2537,7 @@ LispObject Lputv8(LispObject, int nargs, ...)
 LispObject Lgetv8(LispObject, LispObject v, LispObject n)
 {   Header h;
     intptr_t n1, hl;
-    if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VEC8)
+    if (!is_vector(v) || !is_vec8_header(h = vechdr(v)))
         return aerror1("getv8", v);
     else if (!is_fixnum(n)) return aerror1("getv8 offset not fixnum", n);
     hl = length_of_header(h) - CELL;
@@ -2539,7 +2561,7 @@ LispObject Lputv16(LispObject, int nargs, ...)
         return aerror1("putv16", v);
     else if (!is_fixnum(n)) return aerror1("putv16 offset not fixnum", n);
 #ifdef EXPERIMENT
-    hl = length_of_hword_header(h) - CELL/2;
+    hl = length_of_hwordheader(h) - CELL/2;
 #else
     hl = (length_of_header(h) - CELL) >> 1;
 #endif
@@ -2556,7 +2578,7 @@ LispObject Lgetv16(LispObject, LispObject v, LispObject n)
         return aerror1("getv16", v);
     else if (!is_fixnum(n)) return aerror1("getv16 offset not fixnum", n);
 #ifdef EXPERIMENT
-    hl = length_of_vec16_header(h) - CELL/2;
+    hl = length_of_hwordheader(h) - CELL/2;
 #else
     hl = (length_of_header(h) - CELL) >> 1;
 #endif
@@ -3356,7 +3378,11 @@ static LispObject Lmake_string(LispObject nil, int nargs, ...)
         return aerror1("make-string", init);
     if (key != initial_element) return aerror1("make-string", key);
     nn = int_of_fixnum(n);
+#ifdef EXPERIMENT
+    w = getvector(TAG_VECTOR, TYPE_STRING_1, nn+CELL);
+#else
     w = getvector(TAG_VECTOR, TYPE_STRING, nn+CELL);
+#endif
     errexit();
     z = (int32_t)doubleword_align_up(nn+CELL);
     if (is_char(init)) blanks = code_of_char(init);
@@ -3380,7 +3406,11 @@ static LispObject Lmake_string1(LispObject nil, LispObject n)
     int32_t nn, z, blanks;
     if (!is_fixnum(n) || (int32_t)n<0) return aerror1("make-string", n);
     nn = int_of_fixnum(n);
+#ifdef EXPERIMENT
+    w = getvector(TAG_VECTOR, TYPE_STRING_1, nn+CELL);
+#else
     w = getvector(TAG_VECTOR, TYPE_STRING, nn+CELL);
+#endif
     errexit();
     z = (int32_t)doubleword_align_up(nn+CELL);
     blanks = (' ' << 24) | (' ' << 16) | (' ' << 8) | ' ';
@@ -3500,14 +3530,21 @@ static LispObject Lshrink_vector(LispObject nil,
     else
     {   int32_t n2a = doubleword_align_up(n2);
         n1 = doubleword_align_up(n1);
-        *(LispObject *)((char *)v-TAG_VECTOR+n1) =
-            TAG_HDR_IMMED+TYPE_STRING+((n1-n2a)<<10);
+        *(LispObject *)((char *)v-TAG_VECTOR+n1) = make_padder(n1-n2a);
     }
-    vechdr(v) = TAG_HDR_IMMED+type_of_header(vechdr(v))+(n2<<10);
+    vechdr(v) = TAG_HDR_IMMED+
+        type_of_header(vechdr(v))+
+        pack_headerlengthbytes(n2);
     return onevalue(v);
 }
 
 #endif // COMMON
+
+#ifdef EXPERIMENT
+#define bitvechdr_(n) (TYPE_BITVEC_1 + ((((n)+7)&7)<<(Tw+2)))
+#else
+#define bitvechdr_(n) (TYPE_BITVEC1 + ((((n)+7)&7)<<7))
+#endif
 
 static LispObject Lmake_simple_bitvector(LispObject nil, LispObject n)
 {   int32_t bytes;
@@ -3517,7 +3554,6 @@ static LispObject Lmake_simple_bitvector(LispObject nil, LispObject n)
         return aerror1("make-simple-bitvector", n);
     n1 = int_of_fixnum(n);
     bytes = CELL+(n1+7)/8;
-#define bitvechdr_(n) (TYPE_BITVEC1 + ((((n)+7)&7)<<7))
     w = getvector(TAG_VECTOR, bitvechdr_(n1), bytes);
     errexit();
     n1 = doubleword_align_up(bytes);
@@ -3619,10 +3655,12 @@ LispObject Lupbv(LispObject nil, LispObject v)
             case TYPE_VEC8:
 #endif
                 break;
-            case TYPE_VEC16:
 #ifdef EXPERIMENT
-                n = length_of_hword_header(h) - CELL/2;
+            case TYPE_VEC16_1:
+            case TYPE_VEC16_2:
+                n = length_of_hwordheader(h) - CELL/2;
 #else
+            case TYPE_VEC16:
                 n = n/2;
 #endif
                 break;

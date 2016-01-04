@@ -468,7 +468,14 @@ static LispObject fastread1(int32_t ch, int32_t operand)
                 return r;
 
             case F_STR:                 // n characters making a string
+#ifdef EXPERIMENT
+// Here I pass the natural length of the string a the final argument to
+// getvector, and the packing between length and type code happens once
+// within getvector.
+                r = getvector(TAG_VECTOR, TYPE_STRING_1, CELL+operand);
+#else
                 r = getvector(TAG_VECTOR, TYPE_STRING, CELL+operand);
+#endif
                 errexit();
                 {   char *s = (char *)r - TAG_VECTOR + CELL;
                     int l = doubleword_align_up(operand+CELL);
@@ -500,7 +507,7 @@ static LispObject fastread1(int32_t ch, int32_t operand)
                     return nil;
                 }
                 else
-                {   r = getcodevector(TYPE_BPS, operand+CELL);
+                {   r = getcodevector(TYPE_BPS_1, operand+CELL);
                     errexit();
                     if (Iread(data_of_bps(r), operand) != operand)
                         return aerror("FASL file corrupted");
@@ -1138,10 +1145,9 @@ LispObject Lcopy_module(LispObject nil, LispObject file)
             errexit();
             h = vechdr(file);
         }
-        else if (!is_vector(file) ||
-                 type_of_header(h = vechdr(file)) != TYPE_STRING)
+        else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
             return aerror("copy-module");
-        len = length_of_header(h) - CELL;
+        len = length_of_byteheader(h) - CELL;
         modname = (char *)file + CELL - TAG_VECTOR;
 #ifdef TRIM_MODULE_NAMES
         modname = trim_module_name(modname, &len);
@@ -1187,10 +1193,9 @@ LispObject Lcopy_native(LispObject nil, LispObject src, LispObject dest)
         errexit();
         h = vechdr(dest);
     }
-    else if (!is_vector(dest) ||
-             type_of_header(h = vechdr(dest)) != TYPE_STRING)
+    else if (!is_vector(dest) || !is_string_header(h = vechdr(dest)))
         return aerror("copy-module");
-    len = length_of_header(h) - CELL;
+    len = length_of_byteheader(h) - CELL;
     modname = (char *)dest + CELL - TAG_VECTOR;
 //
 // Unlike the case of copy_module I will demand that the module name
@@ -1236,10 +1241,9 @@ LispObject Ldelete_module(LispObject nil, LispObject file)
             errexit();
             h = vechdr(file);
         }
-        else if (!is_vector(file) ||
-                 type_of_header(h = vechdr(file)) != TYPE_STRING)
+        else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
             return aerror("delete-module");
-        len = length_of_header(h) - CELL;
+        len = length_of_byteheader(h) - CELL;
         modname = (char *)file + CELL - TAG_VECTOR;
 #ifdef TRIM_MODULE_NAMES
         modname = trim_module_name(modname, &len);
@@ -1289,8 +1293,7 @@ LispObject Lbanner(LispObject nil, LispObject info)
         errexit();
         h = vechdr(info);
     }
-    else if (!is_vector(info) ||
-             type_of_header(h = vechdr(info)) != TYPE_STRING)
+    else if (!is_vector(info) || is_string_header(h = vechdr(info)))
         return aerror("banner");
     len = length_of_header(h) - CELL;
     name = (char *)info + CELL - TAG_VECTOR;
@@ -1369,8 +1372,7 @@ static LispObject load_module(LispObject nil, LispObject file,
         errexit();
         h = vechdr(file);
     }
-    else if (!is_vector(file) ||
-             type_of_header(h = vechdr(file)) != TYPE_STRING)
+    else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
         return aerror("load-module");
     current_module = file;
     if (from_stream)
@@ -1386,7 +1388,7 @@ static LispObject load_module(LispObject nil, LispObject file,
         qvalue(echo_symbol) = nil;
     }
     else
-    {   len = length_of_header(h) - CELL;
+    {   len = length_of_byteheader(h) - CELL;
         modname = (char *)file + CELL - TAG_VECTOR;
         modname = trim_module_name(modname, &len);
         Icontext(&save);
@@ -1546,10 +1548,9 @@ LispObject Lmodule_exists(LispObject nil, LispObject file)
         errexit();
         h = vechdr(file);
     }
-    else if (!is_vector(file) ||
-             type_of_header(h = vechdr(file)) != TYPE_STRING)
+    else if (!is_vector(file) ||!is_string_header(h = vechdr(file)))
         return aerror("modulep");
-    len = length_of_header(h) - CELL;
+    len = length_of_byteheader(h) - CELL;
     modname = (char *)file + CELL - TAG_VECTOR;
 #ifdef TRIM_MODULE_NAMES
     modname = trim_module_name(modname, &len);
@@ -1675,9 +1676,9 @@ LispObject Lstart_module(LispObject nil, LispObject name)
                 h = vechdr(name);
             }
             else if (!(is_vector(name))) return aerror("start-module");
-            else if (type_of_header(h = vechdr(name)) != TYPE_STRING)
+            else if (!is_string_header(h = vechdr(name)))
                 return aerror("start-module");
-        len = length_of_header(h) - CELL;
+        len = length_of_byteheader(h) - CELL;
         modname = (char *)name + CELL - TAG_VECTOR;
 //
 // Here I will play jolly games! The name as passed in to start-module will
@@ -1836,7 +1837,16 @@ static LispObject write_module1(LispObject a)
     {   Header h = vechdr(a);
         int32_t len = length_of_header(h) - CELL, i;
         switch (type_of_header(h))
-        {   case TYPE_STRING:
+        {
+#ifdef EXPERIMENT
+            case TYPE_STRING_1:
+            case TYPE_STRING_2:
+            case TYPE_STRING_3:
+            case TYPE_STRING_4:
+                len = length_of_byteheader(h) - CELL;
+#else
+            case TYPE_STRING:
+#endif
                 out_fasl_prefix(len >> 8);
                 Iputc(F_STR);
                 Iputc((int)(len & 0xff));
@@ -1867,6 +1877,42 @@ static LispObject write_module1(LispObject a)
 // bit-vectors can not be coped with here.
 //
             case TYPE_ARRAY:
+#ifdef EXPERIMENT
+            case TYPE_BITVEC_1:
+            case TYPE_BITVEC_2:
+            case TYPE_BITVEC_3:
+            case TYPE_BITVEC_4:
+            case TYPE_BITVEC_5:
+            case TYPE_BITVEC_6:
+            case TYPE_BITVEC_7:
+            case TYPE_BITVEC_8:
+            case TYPE_BITVEC_9:
+            case TYPE_BITVEC_10:
+            case TYPE_BITVEC_11:
+            case TYPE_BITVEC_12:
+            case TYPE_BITVEC_13:
+            case TYPE_BITVEC_14:
+            case TYPE_BITVEC_15:
+            case TYPE_BITVEC_16:
+            case TYPE_BITVEC_17:
+            case TYPE_BITVEC_18:
+            case TYPE_BITVEC_19:
+            case TYPE_BITVEC_20:
+            case TYPE_BITVEC_21:
+            case TYPE_BITVEC_22:
+            case TYPE_BITVEC_23:
+            case TYPE_BITVEC_24:
+            case TYPE_BITVEC_25:
+            case TYPE_BITVEC_26:
+            case TYPE_BITVEC_27:
+            case TYPE_BITVEC_28:
+            case TYPE_BITVEC_29:
+            case TYPE_BITVEC_30:
+            case TYPE_BITVEC_31:
+            case TYPE_BITVEC_32:
+            case TYPE_MIXED1:
+            case TYPE_MIXED2:
+#else
             case TYPE_BITVEC1:
             case TYPE_BITVEC2:
             case TYPE_BITVEC3:
@@ -1875,8 +1921,7 @@ static LispObject write_module1(LispObject a)
             case TYPE_BITVEC6:
             case TYPE_BITVEC7:
             case TYPE_BITVEC8:
-            case TYPE_MIXED1:
-            case TYPE_MIXED2:
+#endif
                 return aerror("vector type unsupported by write-module");
         }
     }

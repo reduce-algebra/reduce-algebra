@@ -630,9 +630,9 @@ typedef uintptr_t Header;
 #define TYPE_LONG_FLOAT     ( 0x7f <<Tw)
 
 #define TYPE_COMPLEX  TYPE_COMPLEX_NUM
-#define TYPE_FLOAT32  TYPE_SINGLE_FLOAT
-#define TYPE_FLOAT64  TYPE_DOUBLE_FLOAT
-#define TYPE_FLOAT128 TYPE_LONG_FLOAT
+#define TYPE_FLOAT32  ( 0x53 <<Tw)
+#define TYPE_FLOAT64  ( 0x57 <<Tw)
+#define TYPE_FLOAT128 ( 0x5b <<Tw)
 
 #ifdef MEMORY_TRACE
 #define numhdr(v) (*(Header *)memory_reference((intptr_t)((char *)(v) - \
@@ -813,10 +813,10 @@ typedef uintptr_t Header;
 #define TYPE_VEC16_2     ( 0x4f <<Tw) //
 
 #define TYPE_MAPLEREF    ( 0x2f <<Tw) // hook for interface to Maple ...
-                                     // ... note this was an EXPERIMENT
+                                      // ... note this was an EXPERIMENT
 #define TYPE_FOREIGN     ( 0x33 <<Tw) // entrypoint to foreign function
-#define TYPE_SP          ( 0x3b <<Tw) // Encapsulated stack ptr
-#define TYPE_ENCAPSULATE ( 0x3b <<Tw)
+#define TYPE_SP          ( 0x37 <<Tw) // Encapsulated stack ptr
+#define TYPE_ENCAPSULATE ( 0x3b <<Tw) // SAME TAG AS SP AT PRESENT@@@
 
 #define vector_holds_binary(h) (((h) & (0x2<<Tw)) != 0)
 
@@ -1398,7 +1398,7 @@ typedef struct Big_Number
 #define bignum_digits(b)  ((uint32_t *)((char *)b  + (CELL-TAG_NUMBERS)))
 #endif
 
-#ifdef TESTING
+#ifdef EXPERIMENT
 // make_bighdr takes an argument measured in 32-bit units, including space
 // for the header word. This is the natural space unit used in the tagging
 // scheme so I just need to shift the count to where it has to live.
@@ -1418,13 +1418,17 @@ typedef struct Big_Number
 #define pack_hdrlengthbytes(n) ((3+(intptr_t)(n))<<(Tw+5))
 // pack_hdrlengthhwords takes a count of the number of halfwords neede.
 #define pack_hdrlengthhwords(n) ((1+(intptr_t)(n))<<(Tw+4))
+#define make_padder(n) (pack_hdrlengthbytes(n) + TYPE_VEC8_1 + TAG_HDR_IMMED)
+
 #else
+
 #define make_bighdr(n)    (TAG_HDR_IMMED+TYPE_BIGNUM+(((intptr_t)(n))<<12))
 #define pack_hdrlength(n) (((intptr_t)(n))<<12)
 #define pack_hdrlengthbytes(n) (((intptr_t)(n))<<12)
 #define pack_hdrlengthhwords(n) ((2*(intptr_t)(n))<<12)
 // @@@ not finished yet!
 #define pack_hdrlengthbits(n) (((7+(intptr_t)(n))/8)<<12)
+#define make_padder(n) (TYPE_VEC8 + ((n)<<10) + TAG_HDR_IMMED)
 #endif
 
 typedef struct Rational_Number

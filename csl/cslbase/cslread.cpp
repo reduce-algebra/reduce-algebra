@@ -98,7 +98,11 @@ LispObject make_string(const char *b)
 // Given a C string, create a Lisp (simple-) string.
 //
 {   int32_t n = strlen(b);
+#ifdef EXPERIMENT
+    LispObject r = getvector(TAG_VECTOR, TYPE_STRING_1, CELL+n);
+#else
     LispObject r = getvector(TAG_VECTOR, TYPE_STRING, CELL+n);
+#endif
     char *s = (char *)r - TAG_VECTOR;
     int32_t k = doubleword_align_up(CELL+n);
     LispObject nil;
@@ -110,9 +114,8 @@ LispObject make_string(const char *b)
 }
 
 void validate_string_fn(LispObject s, const char *file, int line)
-{   if (is_vector(s) &&
-        type_of_header(vechdr(s)) == TYPE_STRING)
-    {   int len = length_of_header(vechdr(s));
+{   if (is_vector(s) && is_string_header(vechdr(s)))
+    {   int len = length_of_byteheader(vechdr(s));
         int len1 = doubleword_align_up(len);
         while (len < len1)
         {   if (celt(s, len-CELL) != 0)
@@ -145,7 +148,11 @@ static LispObject copy_string(LispObject str, int32_t n)
     char *s;
     int32_t k;
     push(str);
+#ifdef EXPERIMENT
+    r = getvector(TAG_VECTOR, TYPE_STRING_1, CELL+n);
+#else
     r = getvector(TAG_VECTOR, TYPE_STRING, CELL+n);
+#endif
     pop(str);
     s = (char *)r - TAG_VECTOR;
     k = doubleword_align_up(CELL+n);
@@ -206,22 +213,21 @@ LispObject Lgetenv(LispObject nil, LispObject a)
     }
 #endif
     if (symbolp(a))
-{   a = get_pname(a);
+    {   a = get_pname(a);
         errexit();
         h = vechdr(a);
     }
-    else if (!is_vector(a) ||
-             type_of_header(h = vechdr(a)) != TYPE_STRING)
-    return aerror1("getenv", a);
-           len = length_of_header(h) - CELL;
-           memcpy(parmname, (char *)a + (CELL-TAG_VECTOR), (size_t)len);
-           parmname[len] = 0;
-           w = my_getenv(parmname);
-           if (w == NULL) return onevalue(nil);    // not available
-               r = make_string(w);
-               errexit();
-               return onevalue(r);
-    }
+    else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
+        return aerror1("getenv", a);
+    len = length_of_header(h) - CELL;
+    memcpy(parmname, (char *)a + (CELL-TAG_VECTOR), (size_t)len);
+    parmname[len] = 0;
+    w = my_getenv(parmname);
+    if (w == NULL) return onevalue(nil);    // not available
+    r = make_string(w);
+    errexit();
+    return onevalue(r);
+}
 
 LispObject Lsystem(LispObject nil, LispObject a)
 {   char parmname[LONGEST_LEGAL_FILENAME];
@@ -252,10 +258,9 @@ LispObject Lsystem(LispObject nil, LispObject a)
         errexit(); nil = C_nil;
         h = vechdr(a);
     }
-    else if (!is_vector(a) ||
-             type_of_header(h = vechdr(a)) != TYPE_STRING)
+    else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
         return aerror1("system", a);
-    len = length_of_header(h) - CELL;
+    len = length_of_byteheader(h) - CELL;
     memcpy(parmname, (char *)a + (CELL-TAG_VECTOR), (size_t)len);
     parmname[len] = 0;
     ensure_screen();
@@ -304,11 +309,10 @@ static LispObject Lsilent_system(LispObject nil, LispObject a)
         errexit(); nil = C_nil;
         h = vechdr(a);
     }
-    else if (!is_vector(a) ||
-             type_of_header(h = vechdr(a)) != TYPE_STRING)
+    else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
         return aerror1("system", a);
     ensure_screen();
-    len = length_of_header(h) - CELL;
+    len = length_of_byteheader(h) - CELL;
     memcpy(cmd, (char *)a + (CELL-TAG_VECTOR), (size_t)len);
     cmd[len] = 0;
 #ifdef SHELL_EXECUTE
@@ -724,11 +728,14 @@ LispObject intern(int len, CSLbool escaped)
             boffo_char(boffop) = 0;
             d = atof((char *)&boffo_char(0));
             switch (fplength)
-            {   case 0:
+            {
+#ifndef EXPERIMENT
+                case 0:
                 {   Float_union ff;
                     ff.f = (float)d;
                     return TAG_SFLOAT + (ff.i & ~(int32_t)0xf);
                 }
+#endif
                 case 1:
                     f = (float)d;
                     r = getvector(TAG_BOXFLOAT, TYPE_SINGLE_FLOAT,
@@ -1559,8 +1566,7 @@ static LispObject Lmake_symbol(LispObject nil, LispObject str)
     {   str = simplify_string(str);
         errexit();
     }
-    else if (type_of_header(vechdr(str)) != TYPE_STRING)
-        return aerror1("make-symbol", str);
+    else if (!is_string_header(vechdr(str))) return aerror1("make-symbol", str);
     push(str);
     s = getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
     errexitn(1);
@@ -1642,14 +1648,13 @@ LispObject Lgensym1(LispObject nil, LispObject a)
         errexit();
     }
 #endif
-    if (is_vector(a) &&
-        type_of_header(vechdr(a)) == TYPE_STRING) genbase = a;
+    if (is_vector(a) &&is_string_header(vechdr(a))) genbase = a;
     else if (symbolp(a)) genbase = qpname(a);  // copy gensym base
     else return aerror1("gensym1", a);
     push(genbase);
     stackcheck0(0);
 #ifdef COMMON
-    len = length_of_header(vechdr(genbase)) - CELL;
+    len = length_of_byteheader(vechdr(genbase)) - CELL;
     if (len > 60) len = 60;     // Unpublished truncation of the string
     sprintf(genname, "%.*s%lu", (int)len,
             (char *)genbase + (CELL-TAG_VECTOR),
@@ -1695,13 +1700,12 @@ LispObject Lgensym2(LispObject nil, LispObject a)
         errexit();
     }
 #endif
-    if (is_vector(a) &&
-        type_of_header(vechdr(a)) == TYPE_STRING) genbase = a;
+    if (is_vector(a) &&is_string_header(vechdr(a))) genbase = a;
     else if (symbolp(a)) genbase = qpname(a);
     else return aerror1("gensym2", a);
     push(genbase);
     stackcheck0(0);
-    len = length_of_header(vechdr(genbase)) - CELL;
+    len = length_of_byteheader(vechdr(genbase)) - CELL;
     stack[0] = copy_string(genbase, len);
     errexitn(1);
     id = getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
@@ -1934,10 +1938,9 @@ LispObject Lintern(LispObject nil, LispObject str)
     {   str = get_pname(str);
         errexit();
     }
-    if (!is_vector(str) ||
-        type_of_header(h = vechdr(str)) != TYPE_STRING)
+    if (!is_vector(str) || !is_string_header(h = vechdr(str)))
         return aerror1("intern (not a string)", str);
-    return iintern(str, length_of_header(h) - CELL, p, 1);
+    return iintern(str, length_of_byteheader(h) - CELL, p, 1);
 }
 
 #ifdef COMMON
@@ -1966,11 +1969,10 @@ static LispObject Lfind_symbol(LispObject nil,
         pop(p);
         errexit();
     }
-    if (!is_vector(str) ||
-        type_of_header(h = vechdr(str)) != TYPE_STRING)
+    if (!is_vector(str) || !is_string_header(h = vechdr(str)))
     {   return aerror1("find-symbol (not a string)", str);
     }
-    return iintern(str, length_of_header(h) - CELL, p, 3);
+    return iintern(str, length_of_byteheader(h) - CELL, p, 3);
 }
 
 LispObject Lfind_symbol_1(LispObject nil, LispObject str)
@@ -2959,7 +2961,7 @@ static CSLbool read_failure;
 
 void packbyte(int c)
 {   LispObject nil = C_nil;
-    int32_t boffo_size = length_of_header(vechdr(boffo));
+    int32_t boffo_size = length_of_byteheader(vechdr(boffo));
 //
 // I expand boffo (maybe) several characters earlier than you might
 // consider necessary. Some of that is to be extra certain about having
@@ -2967,7 +2969,11 @@ void packbyte(int c)
 //
     if (boffop >= (int)boffo_size-(int)CELL-8)
     {   LispObject new_boffo =
+#ifdef EXPERIMENT
+            getvector(TAG_VECTOR, TYPE_STRING_1, 2*boffo_size);
+#else
             getvector(TAG_VECTOR, TYPE_STRING, 2*boffo_size);
+#endif
         nil = C_nil;
         if (exception_pending())
         {   flip_exception();
@@ -3840,7 +3846,11 @@ LispObject Llist_to_string(LispObject nil, LispObject stream)
     set_stream_read_other(lisp_work_stream, read_action_list);
     stream_pushed_char(lisp_work_stream) = NOT_CHAR;
     while (consp(stream)) n++, stream = qcdr(stream);
+#ifdef EXPERIMENT
+    str = getvector(TAG_VECTOR, TYPE_STRING_1, n);
+#else
     str = getvector(TAG_VECTOR, TYPE_STRING, n);
+#endif
     errexit();
     s = (char *)str + CELL - TAG_VECTOR;
     for (k=CELL; k<n; k++) *s++ = (char)char_from_list(lisp_work_stream);
@@ -3875,18 +3885,17 @@ LispObject Lstring2list(LispObject nil, LispObject a)
         errexit();
         h = vechdr(a);
     }
-    else if (!is_vector(a) ||
-             type_of_header(h = vechdr(a)) != TYPE_STRING)
-    return aerror1("string2list", a);
-           len = length_of_header(h) - CELL;
-           r = nil;
-           for (i=len-1; i>=0; i--)
+    else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
+        return aerror1("string2list", a);
+    len = length_of_byteheader(h) - CELL;
+    r = nil;
+    for (i=len-1; i>=0; i--)
     {   int c = ucelt(a, i);
-            push(a);
-            r = cons(fixnum_of_int(c), r);
-            pop(a);
-            errexit();
-        }
+        push(a);
+        r = cons(fixnum_of_int(c), r);
+        pop(a);
+        errexit();
+    }
     return r;
 }
 
@@ -4134,10 +4143,9 @@ LispObject Lrdf4(LispObject nil, LispObject file, LispObject noisyp,
             errexitn(3);
             h = vechdr(file);
         }
-        else if (!is_vector(file) ||
-                 type_of_header(h = vechdr(file)) != TYPE_STRING)
+        else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
             return aerror1("load", file);
-        len = length_of_header(h) - CELL;
+        len = length_of_byteheader(h) - CELL;
         filestring = (char *)file + CELL-TAG_VECTOR;
         for (i=0; i<6; i++)
         {   if (len == 0)
@@ -4325,10 +4333,9 @@ LispObject Lspool(LispObject nil, LispObject file)
         errexit();
         h = vechdr(file);
     }
-    if (!is_vector(file) ||
-        type_of_header(h = vechdr(file)) != TYPE_STRING)
+    if (!is_vector(file) || !is_string_header(h = vechdr(file)))
         return aerror1(spool_name, file);
-    len = length_of_header(h) - CELL;
+    len = length_of_byteheader(h) - CELL;
     spool_file = open_file(filename,
                            (char *)file + (CELL-TAG_VECTOR),
                            (size_t)len, "w", NULL);
@@ -4405,7 +4412,7 @@ static LispObject want_a_string(LispObject name)
 #endif
     if (symbolp(name)) return get_pname(name);
     else if (is_vector(name) &&
-             type_of_header(vechdr(name)) == TYPE_STRING) return name;
+             is_string_header(vechdr(name))) return name;
     else return aerror1("name or string needed", name);
 }
 
@@ -4754,7 +4761,12 @@ LispObject Lreadline1(LispObject nil, LispObject stream)
     errexit();
     if (ch == EOF && n == 0) w = eof_symbol;
     else
-    {   w = getvector(TAG_VECTOR, TYPE_STRING, CELL+n);
+    {
+#ifdef EXPERIMENT
+        w = getvector(TAG_VECTOR, TYPE_STRING_1, CELL+n);
+#else
+        w = getvector(TAG_VECTOR, TYPE_STRING, CELL+n);
+#endif
         errexit();
         s = (char *)w + CELL - TAG_VECTOR;
         memcpy(s, &boffo_char(0), n);
