@@ -509,7 +509,7 @@ static LispObject fastread1(int32_t ch, int32_t operand)
                 else
                 {
 #ifdef EXPERIMENT
-                    r = getcodevector(TYPE_BPS_1, operand+CELL);
+                    r = getcodevector(TYPE_BPS_4, operand+CELL);
 #else
                     r = getcodevector(TYPE_BPS, operand+CELL);
 #endif

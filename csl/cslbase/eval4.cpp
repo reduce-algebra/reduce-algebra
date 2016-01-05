@@ -87,7 +87,7 @@ LispObject bytecoded0(LispObject def, int nargs, ...)
         pop(def);
     }
 #endif
-    def = bytestream_interpret(qcar(def)-2, qcdr(def), stack);
+    def = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -130,7 +130,7 @@ LispObject bytecoded1(LispObject def, LispObject a)
         pop(def);
     }
 #endif
-    r = bytestream_interpret(qcar(def)-2, qcdr(def), stack-1);
+    r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack-1);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -195,7 +195,7 @@ LispObject bytecoded2(LispObject def, LispObject a, LispObject b)
         pop(def);
     }
 #endif
-    r = bytestream_interpret(qcar(def)-2, qcdr(def), stack-2);
+    r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack-2);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -261,7 +261,7 @@ LispObject bytecoded3(LispObject def, int nargs, ...)
         pop(def);
     }
 #endif
-    r = bytestream_interpret(qcar(def)-2, qcdr(def), stack-3);
+    r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack-3);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -310,7 +310,7 @@ LispObject bytecodedn(LispObject def, int nargs, ...)
         return error(2, err_wrong_no_args, name_from(def),
                      fixnum_of_int((int32_t)nargs));
     }
-    r = bytestream_interpret(r-1, qcdr(def), stack-nargs);
+    r = bytestream_interpret(r-TAG_HDR_IMMED+1, qcdr(def), stack-nargs);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -374,7 +374,7 @@ LispObject tracebytecoded0(LispObject def, int nargs, ...)
         return nil;
     }
     def = stack[0];
-    r = bytestream_interpret(qcar(def)-2, qcdr(def), stack);
+    r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -448,7 +448,7 @@ LispObject tracebytecoded1(LispObject def, LispObject a)
     }
     stackcheck0(4);
     def = stack[-1];
-    r = bytestream_interpret(qcar(def)-2, qcdr(def), stack-1);
+    r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack-1);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -529,7 +529,7 @@ LispObject tracebytecoded2(LispObject def,
     }
     stackcheck0(5);
     def = stack[-2];
-    r = bytestream_interpret(qcar(def)-2, qcdr(def), stack-2);
+    r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack-2);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -632,7 +632,7 @@ LispObject tracesetbytecoded3(LispObject def, int nargs, ...)
     }
     stackcheck0(6);
     def = stack[-3];
-    r = bytestream_interpret(qcar(def)-2, qcdr(def), TRACESET(stack-3));
+    r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), TRACESET(stack-3));
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -717,7 +717,7 @@ LispObject tracebytecodedn(LispObject def, int nargs, ...)
         return error(2, err_wrong_no_args, name_from(def),
                      fixnum_of_int((int32_t)nargs));
     }
-    r = bytestream_interpret(r-1, qcdr(def), stack-nargs);
+    r = bytestream_interpret(r-TAG_HDR_IMMED+1, qcdr(def), stack-nargs);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -778,7 +778,7 @@ LispObject tracesetbytecoded0(LispObject def, int nargs, ...)
         return nil;
     }
     def = stack[0];
-    r = bytestream_interpret(qcar(def)-2, qcdr(def), TRACESET(stack));
+    r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), TRACESET(stack));
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -852,7 +852,7 @@ LispObject tracesetbytecoded1(LispObject def, LispObject a)
     }
     stackcheck0(4);
     def = stack[-1];
-    r = bytestream_interpret(qcar(def)-2, qcdr(def), TRACESET(stack-1));
+    r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), TRACESET(stack-1));
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -933,7 +933,7 @@ LispObject tracesetbytecoded2(LispObject def,
     }
     stackcheck0(5);
     def = stack[-2];
-    r = bytestream_interpret(qcar(def)-2, qcdr(def), TRACESET(stack-2));
+    r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), TRACESET(stack-2));
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -1034,7 +1034,7 @@ LispObject tracebytecoded3(LispObject def, int nargs, ...)
     }
     stackcheck0(6);
     def = stack[-3];
-    r = bytestream_interpret(qcar(def)-2, qcdr(def), stack-3);
+    r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack-3);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -1119,7 +1119,7 @@ LispObject tracesetbytecodedn(LispObject def, int nargs, ...)
         return error(2, err_wrong_no_args, name_from(def),
                      fixnum_of_int((int32_t)nargs));
     }
-    r = bytestream_interpret(r-1, qcdr(def), TRACESET(stack-nargs));
+    r = bytestream_interpret(r-TAG_HDR_IMMED+1, qcdr(def), TRACESET(stack-nargs));
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -1168,14 +1168,14 @@ LispObject double_bytecoded0(LispObject def, int nargs, ...)
     if (!doubled_execution)
     {   push3(def, litvec, codevec);
         doubled_execution = 1;
-        bytestream_interpret(qcar(def)-2, qcdr(def), stack);
+        bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack);
         nil = C_nil;
         pop3(codevec, litvec, def);
         if (!exception_pending())
-            def = bytestream_interpret(qcar(def)-2, qcdr(def), stack);
+            def = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack);
         doubled_execution = 0;
     }
-    else def = bytestream_interpret(qcar(def)-2, qcdr(def), stack);
+    else def = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -1195,14 +1195,14 @@ LispObject double_bytecoded1(LispObject def, LispObject a)
     if (!doubled_execution)
     {   push4(def, litvec, codevec, a);
         doubled_execution = 1;
-        r = bytestream_interpret(qcar(def)-2, qcdr(def), stack-1);
+        r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack-1);
         nil = C_nil;
         pop3(codevec, litvec, def);
         if (!exception_pending())
-            r = bytestream_interpret(qcar(def)-2, qcdr(def), stack-1);
+            r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack-1);
         doubled_execution = 0;
     }
-    else r = bytestream_interpret(qcar(def)-2, qcdr(def), stack-1);
+    else r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack-1);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -1228,14 +1228,14 @@ LispObject double_bytecoded2(LispObject def, LispObject a, LispObject b)
     if (!doubled_execution)
     {   push5(def, litvec, codevec, a, b);
         doubled_execution = 1;
-        r = bytestream_interpret(qcar(def)-2, qcdr(def), stack-2);
+        r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack-2);
         nil = C_nil;
         pop3(codevec, litvec, def);
         if (!exception_pending())
-            r = bytestream_interpret(qcar(def)-2, qcdr(def), stack-2);
+            r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack-2);
         doubled_execution = 0;
     }
-    else r = bytestream_interpret(qcar(def)-2, qcdr(def), stack-2);
+    else r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack-2);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -1272,14 +1272,14 @@ LispObject double_bytecoded3(LispObject def, int nargs, ...)
     if (!doubled_execution)
     {   push6(def, litvec, codevec, a, b, c);
         doubled_execution = 1;
-        r = bytestream_interpret(qcar(def)-2, qcdr(def), stack-3);
+        r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack-3);
         nil = C_nil;
         pop3(codevec, litvec, def);
         if (!exception_pending())
-            r = bytestream_interpret(qcar(def)-2, qcdr(def), stack-3);
+            r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack-3);
         doubled_execution = 0;
     }
-    else r = bytestream_interpret(qcar(def)-2, qcdr(def), stack-3);
+    else r = bytestream_interpret(qcar(def)-TAG_HDR_IMMED, qcdr(def), stack-3);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -1322,7 +1322,7 @@ LispObject double_bytecodedn(LispObject def, int nargs, ...)
                      fixnum_of_int((int32_t)nargs));
     }
     trace_printf("Function with > 3 args not doubled\n");
-    r = bytestream_interpret(r-1, qcdr(def), stack-nargs);
+    r = bytestream_interpret(r-TAG_HDR_IMMED+1, qcdr(def), stack-nargs);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -1383,7 +1383,7 @@ static LispObject vbyteoptn(LispObject def, int nargs,
     }
     stackcheck1(stack-stack_save, def);
     r = qcar(def);
-    r = bytestream_interpret(r, qcdr(def), stack-nargs);
+    r = bytestream_interpret(r-TAG_HDR_IMMED+2, qcdr(def), stack-nargs);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -1466,7 +1466,7 @@ static LispObject vbyterestn(LispObject def, int nargs,
     }
     stackcheck1(stack-stack_save, def);
     r = qcar(def);
-    r = bytestream_interpret(r, qcdr(def), stack-nargs);
+    r = bytestream_interpret(r-TAG_HDR_IMMED+2, qcdr(def), stack-nargs);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -1546,7 +1546,7 @@ static LispObject double_vbyteoptn(LispObject def, int nargs,
     stackcheck1(stack-stack_save, def);
     trace_printf("Function with simple &opt arg not doubled\n");
     r = qcar(def);
-    r = bytestream_interpret(r, qcdr(def), stack-nargs);
+    r = bytestream_interpret(r-TAG_HDR_IMMED+2, qcdr(def), stack-nargs);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -1630,7 +1630,7 @@ static LispObject double_vbyterestn(LispObject def, int nargs,
     stackcheck1(stack-stack_save, def);
     trace_printf("Function with simple &rest arg not doubled\n");
     r = qcar(def);
-    r = bytestream_interpret(r, qcdr(def), stack-nargs);
+    r = bytestream_interpret(r-TAG_HDR_IMMED+2, qcdr(def), stack-nargs);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -1722,7 +1722,7 @@ static LispObject vtracebyteoptn(LispObject def, int nargs,
     }
     def = stack[-nargs];
     r = qcar(def);
-    r = bytestream_interpret(r, qcdr(def), stack-nargs);
+    r = bytestream_interpret(r-TAG_HDR_IMMED+2, qcdr(def), stack-nargs);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -1828,7 +1828,7 @@ static LispObject vtracesetbyteoptn(LispObject def, int nargs,
     }
     def = stack[-nargs];
     r = qcar(def);
-    r = bytestream_interpret(r, qcdr(def), TRACESET(stack-nargs));
+    r = bytestream_interpret(r-TAG_HDR_IMMED+2, qcdr(def), TRACESET(stack-nargs));
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -1956,7 +1956,7 @@ static LispObject vtracebyterestn(LispObject def, int nargs,
     }
     def = stack[-nargs];
     r = qcar(def);
-    r = bytestream_interpret(r, qcdr(def), stack-nargs);
+    r = bytestream_interpret(r-TAG_HDR_IMMED+2, qcdr(def), stack-nargs);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -2098,7 +2098,7 @@ static LispObject vtracesetbyterestn(LispObject def, int nargs,
     }
     def = stack[-nargs];
     r = qcar(def);
-    r = bytestream_interpret(r, qcdr(def), TRACESET(stack-nargs));
+    r = bytestream_interpret(r-TAG_HDR_IMMED+2, qcdr(def), TRACESET(stack-nargs));
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();

@@ -362,10 +362,12 @@ extern LispObject address_sign;  // 0, 0x80000000 or 0x8000000000000000
 // or environment vectors.  Anyway, whatever else, the immed_() test
 // indicates something that does not contain a natural direct C
 // pointer.
+// Really this is a historical throw-back to the earlier tagging scheme
+// where this test was esy to perform.
 //
 
 #ifdef EXPERIMENT
-#define is_immed_or_cons(p) (((0x90 >> (((int)(p)) & TAG_BITS)) & 1) != 0)
+#define is_immed_or_cons(p) (((0x91 >> (((int)(p)) & TAG_BITS)) & 1) != 0)
 #else
 #define is_immed_or_cons(p) ((((int)(p)) & 4) == 0)
 #endif

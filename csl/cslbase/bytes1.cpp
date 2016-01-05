@@ -1174,7 +1174,7 @@ static LispObject *do_freebind(LispObject bvec, LispObject *stack)
         qvalue(v) = C_nil;
     }
 //
-// TAG_FBIND is a value that can NEVER occur elsewhere in the Lisp system,
+// SPID_FBIND is a value that can NEVER occur elsewhere in the Lisp system,
 // and so it unambiguously marks a block of fluid bindings on that stack.
 //
     push2(bvec, (LispObject)SPID_FBIND);
@@ -1524,7 +1524,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
 //
     ppc = (unsigned char *)data_of_bps(code);
     ppc = ppc + (code & 3);
-    codevec = (code & ~3) + 2;
+    codevec = (code & ~3) + TAG_HDR_IMMED;
 //
 // I am careful to reload stack from C_stack after any
 // function call, to allow that the garbage collector may relocate the

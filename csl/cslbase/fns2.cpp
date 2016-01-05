@@ -53,6 +53,7 @@ LispObject getcodevector(int type, size_t size)
 //
 // type is the code (e.g. TYPE_BPS) that gets packed, together with
 // the size, into a header word.
+// I believe this only ever gets clalled with TYPE_BPS[_4] as the type.
 // size is measured in bytes and must allow space for the header word.
 // This obtains space in the BPS area
 //
@@ -69,6 +70,8 @@ LispObject getcodevector(int type, size_t size)
 #endif
     for (;;)
     {   int32_t alloc_size = (int32_t)doubleword_align_up(size);
+// Bytecodes go in a page for them that is distinct from the areas that
+// other sorts of LispObject get allocated.
         char *cf = (char *)codefringe, *cl = (char *)codelimit;
         int32_t free = cf - cl;
         char *r;
@@ -81,7 +84,11 @@ LispObject getcodevector(int type, size_t size)
         }
         r = cf - alloc_size;
         codefringe = (LispObject)r;
+#ifdef EXPERIMENT
+        *((Header *)r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
+#else
         *((Header *)r) = type + (size << 10) + TAG_HDR_IMMED;
+#endif
 //
 // codelimit is always 8 bytes above the base of the code-page. The
 // address I need to return for a code-vector points (in a packed way)
@@ -91,9 +98,17 @@ LispObject getcodevector(int type, size_t size)
 // top half of the object will contain just zero. This is to leave me scope
 // to use that when reloading a 32-bit image on a 64-bit system...
 //
+#ifdef DEBUG
+        {   LispObject w = (LispObject)(uint32_t)(TAG_BPS +
+                (((uint32_t)((r + CELL) - (cl - 8)) & (PAGE_POWER_OF_TWO-4)) << 6) +
+                (((uint32_t)(bps_pages_count-1))<<(PAGE_BITS+6)));
+            return w;
+        }
+#else
         return (LispObject)(uint32_t)(TAG_BPS +
-                                      (((uint32_t)((r + CELL) - (cl - 8)) & (PAGE_POWER_OF_TWO-4)) << 6) +
-                                      (((uint32_t)(bps_pages_count-1))<<(PAGE_BITS+6)));
+            (((uint32_t)((r + CELL) - (cl - 8)) & (PAGE_POWER_OF_TWO-4)) << 6) +
+            (((uint32_t)(bps_pages_count-1))<<(PAGE_BITS+6)));
+#endif
 // Wow! Obscure!!
     }
 }
@@ -2577,7 +2592,7 @@ CSLbool cl_equal_fn(LispObject a, LispObject b)
                             continue;
                         }
                     }
-                    else if (tca <= TAG_SYMBOL ||
+                    else if (is_immed_or_cons(tca) ||
                              ((int32_t)cb & TAG_BITS) != tca) return NO;
                     else switch (tca)
                         {   case TAG_NUMBERS:
@@ -2623,7 +2638,7 @@ CSLbool cl_equal_fn(LispObject a, LispObject b)
                 continue;
             }
         }
-        else if (ta <= TAG_SYMBOL ||
+        else if (is_immed_or_cons(ta) ||
                  ((int32_t)b & TAG_BITS) != ta) return NO;
 //
 // OK - now a and b both have the same type and neither are immediate data
@@ -2833,7 +2848,7 @@ CSLbool equal_fn(LispObject a, LispObject b)
                             continue;
                         }
                     }
-                    else if (tca <= TAG_SYMBOL ||
+                    else if (is_immed_or_cons(tca) ||
                              ((int32_t)cb & TAG_BITS) != tca) return NO;
                     else switch (tca)
                         {   case TAG_NUMBERS:
@@ -2879,7 +2894,7 @@ CSLbool equal_fn(LispObject a, LispObject b)
                 continue;
             }
         }
-        else if (ta <= TAG_SYMBOL ||
+        else if (is_immed_or_cons(ta) ||
                  ((int32_t)b & TAG_BITS) != ta) return NO;
         else switch (ta)
             {   case TAG_NUMBERS:
@@ -3045,7 +3060,7 @@ CSLbool equalp(LispObject a, LispObject b)
                             continue;
                         }
                     }
-                    else if (tca <= TAG_SYMBOL ||
+                    else if (is_immed_or_cons(tca) ||
                              ((int32_t)cb & TAG_BITS) != tca) return NO;
                     else switch (tca)
                         {   case TAG_NUMBERS:
@@ -3092,7 +3107,7 @@ CSLbool equalp(LispObject a, LispObject b)
                 continue;
             }
         }
-        else if (ta <= TAG_SYMBOL ||
+        else if (is_immed_or_cons(ta) ||
                  ((int32_t)b & TAG_BITS) != ta) return NO;
 // What is left is vectors, strings and boxed numbers
         else switch (ta)
