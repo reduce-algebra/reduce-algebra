@@ -400,7 +400,7 @@ char *look_in_lisp_variable(char *o, int prefix)
             h = vechdr(var);
         }
         else if (!is_vector(var) || !is_string(var)) return NULL;
-        len = length_of_header(vechdr(var)) - CELL;
+        len = length_of_byteheader(vechdr(var)) - CELL;
 //
 // Copy the characters from the string or from the name of the variable
 // into the file-name buffer. There could at present be a crash here

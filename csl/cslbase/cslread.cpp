@@ -99,7 +99,6 @@ LispObject make_string(const char *b)
 //
 {   int32_t n = strlen(b);
 #ifdef EXPERIMENT
-    fprintf(stderr, "make_string(%s) length %d\n", b, n);
     LispObject r = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
 #else
     LispObject r = getvector(TAG_VECTOR, TYPE_STRING, CELL+n);
@@ -165,9 +164,9 @@ static LispObject copy_string(LispObject str, int32_t n)
 #endif
     pop(str);
     s = (char *)r - TAG_VECTOR;
-    k = doubleword_align_up(CELL+n);
     errexit();
     memcpy(s + CELL, (char *)str + (CELL-TAG_VECTOR), (size_t)n);
+    k = doubleword_align_up(CELL+n)-CELL;
     while (n < k) s[CELL+n++] = 0;
     validate_string(r);
     return r;
@@ -229,7 +228,7 @@ LispObject Lgetenv(LispObject nil, LispObject a)
     }
     else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
         return aerror1("getenv", a);
-    len = length_of_header(h) - CELL;
+    len = length_of_byteheader(h) - CELL;
     memcpy(parmname, (char *)a + (CELL-TAG_VECTOR), (size_t)len);
     parmname[len] = 0;
     w = my_getenv(parmname);
@@ -458,7 +457,7 @@ uint32_t hash_lisp_string(LispObject s)
 //
 // Argument is a (lisp) string.  Return a 31 bit hash value.
 //
-{   return hash_lisp_string_with_length(s, length_of_header(vechdr(s)));
+{   return hash_lisp_string_with_length(s, length_of_byteheader(vechdr(s)));
 }
 
 static int value_in_radix(int c, int radix)
@@ -1245,7 +1244,7 @@ static LispObject lookup(LispObject str, int32_t strsize,
             if (memcmp((char *)str + (CELL-TAG_VECTOR),
                        (char *)pn + (CELL-TAG_VECTOR),
                        (size_t)strsize) == 0 &&
-                length_of_header(vechdr(pn)) == (size_t)strsize+CELL)
+                length_of_byteheader(vechdr(pn)) == (size_t)strsize+CELL)
             {   if (4*n > 3*size) rehash_pending = YES;
                 return w;
             }
@@ -1296,8 +1295,8 @@ static int ordersymbol(LispObject v1, LispObject v2)
 #endif
     validate_string(pn1);
     validate_string(pn2);
-    l1 = length_of_header(vechdr(pn1)) - CELL;
-    l2 = length_of_header(vechdr(pn2)) - CELL;
+    l1 = length_of_byteheader(vechdr(pn1)) - CELL;
+    l2 = length_of_byteheader(vechdr(pn2)) - CELL;
     c = memcmp((char *)pn1 + (CELL-TAG_VECTOR),
                (char *)pn2 + (CELL-TAG_VECTOR),
                (size_t)(l1 < l2 ? l1 : l2));
@@ -1348,7 +1347,7 @@ static int ordpv(LispObject u, LispObject v)
     if (vector_holds_binary(hu))
     {   while (n < lu && n < lv)
         {   unsigned int eu = *(unsigned char *)(u - TAG_VECTOR + n),
-                             ev = *(unsigned char *)(v - TAG_VECTOR + n);
+                         ev = *(unsigned char *)(v - TAG_VECTOR + n);
             if (eu != ev) return (eu < ev ? -1 : 1);
             n += 1;
         }
@@ -1823,10 +1822,7 @@ LispObject iintern(LispObject str, int32_t h, LispObject p, int str_is_ok)
         return nvalues(r, 2);
     }
     if (str_is_ok == 4)
-    {
-#ifdef COMMON
-        mv_2 = nil;
-#endif
+    {   mv_2 = nil;
         return nvalues(nil, 2);
     }
     for (r = packuses_(p); r!=nil; r=qcdr(r))
@@ -4444,7 +4440,7 @@ static LispObject Lfind_package(LispObject nil, LispObject name)
     name = want_a_string(name);
     errexit();
     h = vechdr(name);
-    len = length_of_header(h) - CELL;
+    len = length_of_byteheader(h) - CELL;
     for (w = all_packages; w!=nil; w=qcdr(w))
     {   LispObject nn, n = packname_(qcar(w));
         if (is_vector(n) && vechdr(n) == h &&
@@ -4472,13 +4468,13 @@ LispObject find_package(char *name, int len)
     for (w = all_packages; w!=nil; w=qcdr(w))
     {   LispObject nn, n = packname_(qcar(w));
         if (is_vector(n) &&
-            length_of_header(vechdr(n))==(uint32_t)(len+CELL) &&
+            length_of_byteheader(vechdr(n))==(uint32_t)(len+CELL) &&
             memcmp(name, (char *)n + (CELL-TAG_VECTOR), (size_t)len) == 0)
             return qcar(w);
         for (nn = packnick_(qcar(w)); nn!=nil; nn=qcdr(nn))
         {   n = qcar(nn);
             if (!is_vector(n) ||
-                length_of_header(vechdr(n)) != (uint32_t)(len+CELL))
+                length_of_byteheader(vechdr(n)) != (uint32_t)(len+CELL))
                 continue;
             if (memcmp(name,
                        (char *)n + (CELL-TAG_VECTOR), (size_t)len) == 0)

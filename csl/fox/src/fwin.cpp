@@ -332,7 +332,6 @@ static int ssh_client = 0;
 
 int windows_checks(int windowed)
 {
-    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
 // I have tried various messy Windows API calls here to get this right.
 // But so far I find that the cases that apply to me are
 //    (a) windows command prompt : normal case
@@ -418,24 +417,12 @@ int windows_checks(int windowed)
         }
         else
         {   h = GetStdHandle(STD_INPUT_HANDLE);
-            if (GetFileType(h) != FILE_TYPE_CHAR)
-            {   FWIN_LOG("STD_INPUT_HANDLE not FILE_TYPE_CHAR\n");
-                windowed = 0;
-            }
-            else if (!GetConsoleMode(h, &w))
-            {   FWIN_LOG("!GetConsoleMode(STD_INPUT_HANDLE)\n");
-                windowed = 0;
-            }
+            if (GetFileType(h) != FILE_TYPE_CHAR) windowed = 0;
+            else if (!GetConsoleMode(h, &w)) windowed = 0;
             else
             {   h = GetStdHandle(STD_OUTPUT_HANDLE);
-                if (GetFileType(h) != FILE_TYPE_CHAR)
-                {   FWIN_LOG("STD_OUTPUT_HANDLE not FILE_TYPE_CHAR\n");
-                    windowed = 0;
-                }
-                else if (!GetConsoleScreenBufferInfo(h, &csb))
-                {   FWIN_LOG("!GetConsoleMode(STD_OUTPUT_HANDLE)\n");
-                    windowed = 0;
-                }
+                if (GetFileType(h) != FILE_TYPE_CHAR) windowed = 0;
+                else if (!GetConsoleScreenBufferInfo(h, &csb)) windowed = 0;
             }
         }
     }
@@ -470,10 +457,7 @@ int windows_checks(int windowed)
             ssh_client = 1;
             windowed = 0;
         }
-        else if (GetFileType(h) == FILE_TYPE_DISK)
-        {   FWIN_LOG("STD_INPUT_HANDLE is FILE_TYPE_DISK\n");
-            windowed = 0;
-        }
+        else if (GetFileType(h) == FILE_TYPE_DISK) windowed = 0;
     }
     return windowed;
 }
@@ -551,9 +535,8 @@ static int unix_and_osx_checks(int windowed)
 // what the status of stdin/stdout are when launched not from a command line
 // but by clicking on an icon...
 //
-    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
     if (windowed != 0)
-    {   FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
+    {
 //
 // On Unix-like systems I will check the DISPLAY variable, and if it is not
 // set I will suppose that I can not create a window. That case will normally
@@ -566,50 +549,38 @@ static int unix_and_osx_checks(int windowed)
 //
         disp = my_getenv("DISPLAY");
         if (disp == NULL || strchr(disp, ':')==NULL) windowed = 0;
-        FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
     }
 //
 // This may be a proper way to test if I am really running in an application
 // bundle.
 //
-    FWIN_LOG("Checking for Mac Application\n");
     {   CFBundleRef mainBundle = CFBundleGetMainBundle();
-        FWIN_LOG("mainBundle = %p\n", mainBundle);
         if (mainBundle == NULL) macApp = 0;
         else
         {   CFDictionaryRef d = CFBundleGetInfoDictionary(mainBundle);
-            FWIN_LOG("DictionaryRef d=%p\n", d);
             if (d == NULL) macApp = 0;
             else
             {   CFStringRef s =
                     (CFStringRef)CFDictionaryGetValue(d,
                                                       CFSTR("ATSApplicationFontsPath"));
-                FWIN_LOG("FontsPath =%p. Will be macApp if non-NULL\n", s);
                 macApp = (s != NULL);
-                FWIN_LOG("mapApp = %d\n", macApp);
             }
         }
     }
-    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
 // If stdin or stdout is not from a "tty" I will run in non-windowed mode.
 // This may help when the system is used in scripts. I worry a bit about
 // what the status of stdin/stdout are when launched not from a command line
 // but by clicking on an icon...
 //
     if (!macApp &&
-        (!isatty(fileno(stdin)) || !isatty(fileno(stdout))))
-    {   FWIN_LOG("stdin or stdout is not a tty\n");
-        windowed = 0;
-    }
+        (!isatty(fileno(stdin)) || !isatty(fileno(stdout)))) windowed = 0;
 //
 // If I am using X11 as my GUI then I am happy to use remote access via
 // SSH since I can be using X forwarding - provided DISPLAY is set all can
 // be well. However on a Macintosh I do NOT want to launch a window if I
 // have connected via ssh since I will not have the desktop forwarded.
 //
-    FWIN_LOG("Special Mac processing\n");
     {   const char *ssh = my_getenv("SSH_CLIENT");
-        FWIN_LOG("ssh = %p\n", ssh);
         if (ssh != NULL && *ssh != 0)
         {   FWIN_LOG("SSH_CLIENT set on MacOSX\n");
 //          ssh_client = 1;
@@ -621,7 +592,6 @@ static int unix_and_osx_checks(int windowed)
 
 void mac_deal_with_application_bundle()
 {
-    FWIN_LOG("Mac special checks to see if I am in an app\n");
 //
 // If I will be wanting to use a GUI and if I have just loaded an
 // executable that is not within an application bundle then I will
@@ -638,14 +608,12 @@ void mac_deal_with_application_bundle()
         struct stat buf;
         memset(xname, 0, sizeof(xname));
         sprintf(xname, "%s.app", fullProgramName);
-        FWIN_LOG("Run not from app. Check %s\n", xname);
         if (stat(xname, &buf) == 0 &&
             (buf.st_mode & S_IFDIR) != 0)
         {
 // Well foo.app exists and is a directory, so I will try to use it
             const char **nargs = (const char **)malloc(sizeof(char *)*(argc+3));
             int i;
-            FWIN_LOG("About to restart Mac from an application bundle\n");
 #ifdef DEBUG
 //
 // Since I am about to restart the program I do not want the new version to
@@ -673,7 +641,6 @@ void mac_deal_with_application_bundle()
             exit(1);
         }
     }
-    FWIN_LOG("I think I am in an app: start windowed_worker\n");
 }
 
 #else // __APPLE__
@@ -687,10 +654,8 @@ static int unix_and_osx_checks(int windowed)
 // what the status of stdin/stdout are when launched not from a command line
 // but by clicking on an icon...
 //
-    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
     if (windowed != 0)
     {   if (!isatty(fileno(stdin)) || !isatty(fileno(stdout))) windowed = 0;
-        FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
 //
 // On Unix-like systems I will check the DISPLAY variable, and if it is not
 // set I will suppose that I can not create a window. That case will normally
@@ -703,19 +668,13 @@ static int unix_and_osx_checks(int windowed)
 //
         disp = my_getenv("DISPLAY");
         if (disp == NULL || strchr(disp, ':')==NULL) windowed = 0;
-        FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
     }
-    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
 // If stdin or stdout is not from a "tty" I will run in non-windowed mode.
 // This may help when the system is used in scripts. I worry a bit about
 // what the status of stdin/stdout are when launched not from a command line
 // but by clicking on an icon...
 //
-    if ((!isatty(fileno(stdin)) || !isatty(fileno(stdout))))
-    {   FWIN_LOG("stdin or stdout is not a tty\n");
-        windowed = 0;
-    }
-    FWIN_LOG("Unix-like checks for X for BSD, Linux etc\n");
+    if ((!isatty(fileno(stdin)) || !isatty(fileno(stdout)))) windowed = 0;
 // On Unix-like systems I will check the DISPLAY variable, and if it is not
 // set I will suppose that I can not create a window. That case will normally
 // arise when you have gained remote access to the system eg via telnet or
@@ -724,10 +683,7 @@ static int unix_and_osx_checks(int windowed)
 // string.
 //
     disp = my_getenv("DISPLAY");
-    if (disp == NULL || strchr(disp, ':')==NULL)
-    {   FWIN_LOG("DISPLAY not set for an X11 version\n");
-        windowed = 0;
-    }
+    if (disp == NULL || strchr(disp, ':')==NULL) windowed = 0;
     return windowed;
 }
 
@@ -798,7 +754,6 @@ int main(int argc, const char *argv[])
 // file.
 //
     windowed = 2;
-    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
     for (i=1; i<argc; i++)
     {   if (strcmp(argv[i], "--args") == 0) break;
         if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
@@ -832,9 +787,7 @@ int main(int argc, const char *argv[])
             exit(0);
         }
     }
-    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
     if (texmacs_mode) windowed = 0;
-    FWIN_LOG("windowed = %d at line %d\n", windowed, __LINE__);
 //
 // If there had not been any command-line option to give direction
 // about whether to run in a window I will use system-dependent
@@ -853,7 +806,6 @@ int main(int argc, const char *argv[])
 #endif // WIN32
 #endif // PART_OF_FOX
 
-    FWIN_LOG("Windowed = %d at line %d\n", windowed, __LINE__);
 //
 // REGARDLESS of any decisions about windowing made so for things can be
 // forced by command line options.
@@ -886,7 +838,6 @@ int main(int argc, const char *argv[])
                  windowed != 0) windowed = -1;
     }
     if (texmacs_mode) windowed = 0;
-    FWIN_LOG("Windowed = %d at line %d\n", windowed, __LINE__);
 #ifdef WIN32
     sort_out_windows_console(windowed);
 #endif // WIN32
@@ -897,7 +848,6 @@ int main(int argc, const char *argv[])
 // will suggest no colouring, the string "-" (as in -b-) whatever default
 // I choose.
 //
-    FWIN_LOG("Now look for colour specifications\n");
     colour_spec = "-";
     for (i=1; i<argc; i++)
     {   if (strcmp(argv[i], "--args") == 0) break;
@@ -908,7 +858,6 @@ int main(int argc, const char *argv[])
     }
 
 #ifdef PART_OF_FOX
-    FWIN_LOG("Windowed = %d at line %d\n", windowed, __LINE__);
     if (windowed==0) return plain_worker(argc, argv, fwin_main);
 
 #ifdef __APPLE__
@@ -1056,7 +1005,6 @@ void fwin_putchar(int c)
 // fflush(stdout) before requesting input I should be OK.
 //
 #ifdef __CYGWIN__
-//@@ FWIN_LOG("cygwin case\n");
 //
 // If I have built the system under Cygwin then we are running under
 // Windows. To keep files tidy I will (mostly) insert CRs at line-end

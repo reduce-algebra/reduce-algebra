@@ -507,7 +507,12 @@ static LispObject fastread1(int32_t ch, int32_t operand)
                     return nil;
                 }
                 else
-                {   r = getcodevector(TYPE_BPS_1, operand+CELL);
+                {
+#ifdef EXPERIMENT
+                    r = getcodevector(TYPE_BPS_1, operand+CELL);
+#else
+                    r = getcodevector(TYPE_BPS, operand+CELL);
+#endif
                     errexit();
                     if (Iread(data_of_bps(r), operand) != operand)
                         return aerror("FASL file corrupted");

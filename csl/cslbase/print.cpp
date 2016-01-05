@@ -634,7 +634,11 @@ LispObject Lget_output_stream_string(LispObject nil, LispObject a)
     stream_write_data(a) = nil;
     stream_char_pos(a) = stream_byte_pos(a) = 0;
     push(w);
+#ifdef EXPERIMENT
+    a = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
+#else
     a = getvector(TAG_VECTOR, TYPE_STRING, CELL+n);
+#endif
     pop(w);
     errexit();
     k = (n + 3) & ~(int32_t)7;
@@ -2249,6 +2253,7 @@ restart:
                 case TYPE_STRING_2:
                 case TYPE_STRING_3:
                 case TYPE_STRING_4:
+                len = length_of_byteheader(h) - CELL;
 #else
                 case TYPE_STRING:
 #endif
@@ -2875,7 +2880,7 @@ restart:
                     }
                 }
 #endif
-                len = length_of_header(h);  // counts in bytes
+                len = length_of_byteheader(h);  // counts in bytes
                 lenchars = 0;
 // Now see how many characters that is, allowing for utf-8 encoding
                 for (k=0; k<(len-CELL); k++)
