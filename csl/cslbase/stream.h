@@ -174,7 +174,11 @@ extern char memory_print_buffer[MAX_PROMPT_LENGTH];
 #define set_stream_read_fn(v, x)        (elt(v, 9) = (LispObject)(x))
 #define set_stream_read_other(v, x)     (elt(v, 10) = (LispObject)(x))
 
+#ifdef EXPERIMENT
+#define STREAM_HEADER (TAG_HDR_IMMED + TYPE_STREAM + (STREAM_SIZE<<(Tw+5)))
+#else
 #define STREAM_HEADER (TAG_HDR_IMMED + TYPE_STREAM + (STREAM_SIZE<<10))
+#endif
 #define STREAM_FLAG_PIPE       1
 
 #define is_stream(v)      (is_vector(v) && vechdr(v) == STREAM_HEADER)
@@ -188,19 +192,19 @@ extern char memory_print_buffer[MAX_PROMPT_LENGTH];
                                     stream_write_fn(f)((c) & 0xff, (f)))
 #define getc_stream(f)             (!is_stream(f) || \
                                     stream_read_fn(f)==0 ? \
-                                    term_printf("putc %s %d\n", \
+                                    term_printf("getc %s %d\n", \
                                                 __FILE__, __LINE__), \
                                     ensure_screen(), my_exit(1), 0 : \
                                     stream_read_fn(f)(f))
 #define other_write_action(c, f)   (!is_stream(f) || \
                                     stream_write_other(f)==0 ? \
-                                    term_printf("putc %s %d\n", \
+                                    term_printf("write_action %s %d\n", \
                                                 __FILE__, __LINE__), \
                                     ensure_screen(), my_exit(1), 0 : \
                                     stream_write_other(f)((c), (f)))
 #define other_read_action(c, f)    (!is_stream(f) || \
                                     stream_read_other(f)==0 ? \
-                                    term_printf("putc %s %d\n", \
+                                    term_printf("read_action %s %d\n", \
                                                 __FILE__, __LINE__), \
                                     ensure_screen(), my_exit(1), 0 : \
                                     stream_read_other(f)((c), (f)))

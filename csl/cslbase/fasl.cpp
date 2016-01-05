@@ -472,7 +472,7 @@ static LispObject fastread1(int32_t ch, int32_t operand)
 // Here I pass the natural length of the string a the final argument to
 // getvector, and the packing between length and type code happens once
 // within getvector.
-                r = getvector(TAG_VECTOR, TYPE_STRING_1, CELL+operand);
+                r = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+operand);
 #else
                 r = getvector(TAG_VECTOR, TYPE_STRING, CELL+operand);
 #endif

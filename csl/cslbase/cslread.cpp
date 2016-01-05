@@ -99,7 +99,8 @@ LispObject make_string(const char *b)
 //
 {   int32_t n = strlen(b);
 #ifdef EXPERIMENT
-    LispObject r = getvector(TAG_VECTOR, TYPE_STRING_1, CELL+n);
+    fprintf(stderr, "make_string(%s) length %d\n", b, n);
+    LispObject r = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
 #else
     LispObject r = getvector(TAG_VECTOR, TYPE_STRING, CELL+n);
 #endif
@@ -121,7 +122,16 @@ void validate_string_fn(LispObject s, const char *file, int line)
         {   if (celt(s, len-CELL) != 0)
             {   char *p = (char *)(s - TAG_VECTOR);
                 int i;
+                if (strrchr(file, '/') != NULL) file = strrchr(file, '/')+1;
                 fprintf(stderr, "\n+++ Bad string at %s %d\n", file, line);
+#ifdef EXPERIMENT
+                fprintf(stderr, "Header = %" PRIxPTR "\n", vechdr(s));
+                fprintf(stderr, "length = %d bytelength = %d\n",
+                    length_of_header(vechdr(s)),
+                    length_of_byteheader(vechdr(s)));
+                fprintf(stderr, "messed at len:%d len1:%d [%x]\n",
+                        len, len1, celt(s, len-CELL));
+#endif
                 for (i=0; i<len1; i++)
                 {   fprintf(stderr, "%p: %.2x   (%c)\n", p, *p, *p);
                     p++;
@@ -149,7 +159,7 @@ static LispObject copy_string(LispObject str, int32_t n)
     int32_t k;
     push(str);
 #ifdef EXPERIMENT
-    r = getvector(TAG_VECTOR, TYPE_STRING_1, CELL+n);
+    r = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
 #else
     r = getvector(TAG_VECTOR, TYPE_STRING, CELL+n);
 #endif
@@ -2970,7 +2980,7 @@ void packbyte(int c)
     if (boffop >= (int)boffo_size-(int)CELL-8)
     {   LispObject new_boffo =
 #ifdef EXPERIMENT
-            getvector(TAG_VECTOR, TYPE_STRING_1, 2*boffo_size);
+            getvector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
 #else
             getvector(TAG_VECTOR, TYPE_STRING, 2*boffo_size);
 #endif
@@ -3847,7 +3857,7 @@ LispObject Llist_to_string(LispObject nil, LispObject stream)
     stream_pushed_char(lisp_work_stream) = NOT_CHAR;
     while (consp(stream)) n++, stream = qcdr(stream);
 #ifdef EXPERIMENT
-    str = getvector(TAG_VECTOR, TYPE_STRING_1, n);
+    str = getvector(TAG_VECTOR, TYPE_STRING_4, n);
 #else
     str = getvector(TAG_VECTOR, TYPE_STRING, n);
 #endif
@@ -4763,7 +4773,7 @@ LispObject Lreadline1(LispObject nil, LispObject stream)
     else
     {
 #ifdef EXPERIMENT
-        w = getvector(TAG_VECTOR, TYPE_STRING_1, CELL+n);
+        w = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
 #else
         w = getvector(TAG_VECTOR, TYPE_STRING, CELL+n);
 #endif

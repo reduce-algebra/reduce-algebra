@@ -1723,7 +1723,7 @@ LispObject Lsmkvect(LispObject nil, LispObject n)
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("make-simple-string", n);
     nn = int_of_fixnum(n);
 #ifdef EXPERIMENT
-    w = getvector(TAG_VECTOR, TYPE_STRING_1, nn+CELL);
+    w = getvector(TAG_VECTOR, TYPE_STRING_4, nn+CELL);
 #else
     w = getvector(TAG_VECTOR, TYPE_STRING, nn+CELL);
 #endif
@@ -1746,7 +1746,7 @@ LispObject Lmkvect8(LispObject nil, LispObject n)
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkvect8", n);
     nn = 1 + int_of_fixnum(n);  // Note that in Standard Lisp style the +1
 #ifdef EXPERIMENT
-    w = getvector(TAG_VECTOR, TYPE_VEC8_1, nn+CELL);
+    w = getvector(TAG_VECTOR, TYPE_VEC8_4, nn+CELL);
 #else
     w = getvector(TAG_VECTOR, TYPE_VEC8, nn+CELL);
 #endif
@@ -1769,7 +1769,7 @@ LispObject Lmkvect16(LispObject nil, LispObject n)
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkvect16", n);
     nn = 2*(1 + int_of_fixnum(n)); // Note 1+ for Standard Lisp style
 #ifdef EXPERIMENT
-    w = getvector(TAG_VECTOR, TYPE_VEC16_1, nn+CELL+1);
+    w = getvector(TAG_VECTOR, TYPE_VEC16_2, nn+CELL);
 #else
     w = getvector(TAG_VECTOR, TYPE_VEC16, nn+CELL);
 #endif
@@ -1867,7 +1867,7 @@ LispObject simplify_string(LispObject s)
     nil = C_nil;
     push(s);
 #ifdef EXPERIMENT
-    w = getvector(TAG_VECTOR, TYPE_STRING_1, n+CELL);
+    w = getvector(TAG_VECTOR, TYPE_STRING_4, n+CELL);
 #else
     w = getvector(TAG_VECTOR, TYPE_STRING, n+CELL);
 #endif
@@ -3379,7 +3379,7 @@ static LispObject Lmake_string(LispObject nil, int nargs, ...)
     if (key != initial_element) return aerror1("make-string", key);
     nn = int_of_fixnum(n);
 #ifdef EXPERIMENT
-    w = getvector(TAG_VECTOR, TYPE_STRING_1, nn+CELL);
+    w = getvector(TAG_VECTOR, TYPE_STRING_4, nn+CELL);
 #else
     w = getvector(TAG_VECTOR, TYPE_STRING, nn+CELL);
 #endif
@@ -3407,7 +3407,7 @@ static LispObject Lmake_string1(LispObject nil, LispObject n)
     if (!is_fixnum(n) || (int32_t)n<0) return aerror1("make-string", n);
     nn = int_of_fixnum(n);
 #ifdef EXPERIMENT
-    w = getvector(TAG_VECTOR, TYPE_STRING_1, nn+CELL);
+    w = getvector(TAG_VECTOR, TYPE_STRING_4, nn+CELL);
 #else
     w = getvector(TAG_VECTOR, TYPE_STRING, nn+CELL);
 #endif
@@ -3805,7 +3805,7 @@ LispObject vector_subseq(LispObject sequence, int32_t start, int32_t end)
         // Get a new string of the right size
         push(sequence);
 #ifdef EXPERIMENT
-        copy = getvector(TAG_VECTOR, TYPE_STRING_1, CELL+seq_length+3);
+        copy = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+seq_length+3);
 #else
         copy = getvector(TAG_VECTOR, TYPE_STRING, CELL+seq_length);
 #endif

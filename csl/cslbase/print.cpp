@@ -5223,7 +5223,7 @@ start_again:
     stream_type(r) = url;
     push(r);
 #ifdef EXPERIMENT
-    url = getvector(TAG_VECTOR, TYPE_STRING_1, CELL+4+SOCKET_BUFFER_SIZE);
+    url = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+4+SOCKET_BUFFER_SIZE);
 #else
     url = getvector(TAG_VECTOR, TYPE_STRING, CELL+4+SOCKET_BUFFER_SIZE);
 #endif

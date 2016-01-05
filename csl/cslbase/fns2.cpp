@@ -103,7 +103,7 @@ LispObject Lget_bps(LispObject nil, LispObject n)
     if (!is_fixnum(n) || (int32_t)n<0) return aerror1("get-bps", n);
     n1 = int_of_fixnum(n);
 #ifdef EXPERIMENT
-    n = getcodevector(TYPE_BPS_1, n1+CELL+3);
+    n = getcodevector(TYPE_BPS_4, n1+CELL);
 #else
     n = getcodevector(TYPE_BPS, n1+CELL);
 #endif

@@ -1736,11 +1736,6 @@ LispObject getvector(int tag, int type, size_t size)
 // 32-bit or 64-bit representation. However it would be hard to unwind
 // that now!]
 //
-// When I allocate most things the size as passed MUST be a multiple of 4.
-// If I am allocating an array of halfwords I need to have added 1 to it, for
-// strings and byte-arrays 3 (in the experimental scheme). For bit-vectors the
-// easiest scheme may be to put most of what I need in the type argument and
-// leave size passed as zero!
     LispObject nil = C_nil;
 #ifdef DEBUG_VALIDATE
 //
@@ -2161,7 +2156,7 @@ LispObject Ltimeofday(LispObject nil, int nargs, ...)
 // used because a valid date will be a string of just that length.
 
 #ifdef EXPERIMENT
-#define STR24HDR (TAG_HDR_IMMED+TYPE_STRING_1+((24+CELL+3)<<(Tw+5)))
+#define STR24HDR (TAG_HDR_IMMED+TYPE_STRING_4+((24+CELL)<<(Tw+5)))
 #else
 #define STR24HDR (TAG_HDR_IMMED+TYPE_STRING+((24+CELL)<<10))
 #endif

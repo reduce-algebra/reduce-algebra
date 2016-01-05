@@ -187,7 +187,7 @@ LispObject address_sign;
 // if space is left unoccupied it must be filled with some form of valid
 // padding so that subsequent linear scans of the heap can succeed.
 //
-// There was an apparent pan as regards BPS pointers and refereces into
+// There was an apparent pain as regards BPS pointers and refereces into
 // double-sized pages, but I found a solution to it (albeit a slightly
 // grungy one).
 //
@@ -2361,7 +2361,7 @@ static void adjust_bpsheap(void)
     if (SIXTY_FOUR_BIT && converting_to_64)
     {   intptr_t w = codefringe - codelimit - CSL_PAGE_SIZE - 0x100;
 #ifdef EXPERIMENT
-        if (w > 0) getcodevector(TYPE_BPS_1, w);
+        if (w > 0) getcodevector(TYPE_BPS_4, w);
 #else
         if (w > 0) getcodevector(TYPE_BPS, w);
 #endif

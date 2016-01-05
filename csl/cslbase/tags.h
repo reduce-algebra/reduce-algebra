@@ -1416,7 +1416,7 @@ typedef struct Big_Number
 // pack_hdrlengthbits sets a header for a vector with a given number of bits.
 #define pack_hdrlengthbits(n) ((31+(intptr_t)(n))<<(Tw+2))
 #define pack_hdrlengthbytes(n) ((3+(intptr_t)(n))<<(Tw+5))
-// pack_hdrlengthhwords takes a count of the number of halfwords neede.
+// pack_hdrlengthhwords takes a count of the number of halfwords needed.
 #define pack_hdrlengthhwords(n) ((1+(intptr_t)(n))<<(Tw+4))
 #define make_padder(n) (pack_hdrlengthbytes(n) + TYPE_VEC8_1 + TAG_HDR_IMMED)
 
