@@ -64,10 +64,9 @@ CYG*)
   ;;
 Darwin*)
   SYS=mac
-# This is at present work in progress!
   BUILD=macbuild
   OUTDIR=.
-  OUTFILE=""
+  OUTFILES="Reduce-${today}.dmg"
   ;;
 *)
   SYS=linux
@@ -114,8 +113,10 @@ do
   fi
 done
 
-# Ensure that the version to be used is up to date
+# Ensure that the version to be used is up to date. Revert first so no
+# possibility of conflicts.
 cd $RED
+svn -R revert .
 svn update
 
 # Move to where the building happens and create files for distribution
@@ -127,6 +128,12 @@ if test "$SYS" = "windows"
 then
 # I want to badge the setup file with today's date.
   mv $OUTDIR/Reduce-Setup.exe $OUTDIR/$OUTFILES
+fi
+
+if test "$SYS" = "mac"
+then
+# I want to badge the setup file with today's date.
+  mv $OUTDIR/Reduce-snapshot.dmg $OUTDIR/$OUTFILES
 fi
 
 # Copy generated files to the remote machine where they are wanted

@@ -57,20 +57,17 @@ package-mac:	$(BUILDTOPDIR).stamp csl.stamp psl.stamp docs.stamp
 #		$(abspath .) '$$reduce/lib/psl' && mv reduce.img reduce64.img
 #	$(BUILDTOPDIR)/psl/saveimage.sh $(BUILDTOPDIR)/pslbuild/i686-pc-windows \
 #		$(abspath .) '$$reduce/lib/psl'
-#	if test -x "$(inno)/ISCC.exe"; then "$(inno)/ISCC" reduce.iss;\
-#		else echo Please run Innosetup on winbuild/reduce.iss; fi
 	rm -rf distrib
 	mkdir -p distrib
 # The CSL components will be in the form of application bundles. To run from
 # the command line you "just" need to put reduce.app/Contents/MacOS on
 # your PATH.
-	./copycsl.sh "$(BUILDTOPDIR)"
+	./copyfiles.sh "$(BUILDTOPDIR)"
 # At present the PSL material is a mere dump from the pslbuild directory.
 # I guess that transcribing the redpsl script into there and arranging
 # that it detected its own path when run and then set up the various
 # environment variables that the PSL system needs would be feasible, but
 # for now I will content myself with putting the directory in place.
-	cp -r $(BUILDTOPDIR)/psbuild/x86* distrib/psl
 	hdiutil create -volname Reduce-snapshot \
 		-srcfolder distrib \
 		-ov -format UDZO Reduce-snapshot.dmg

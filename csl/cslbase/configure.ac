@@ -1394,11 +1394,28 @@ then
 # The eccentric code here insists that I use the "macports" version
 # of many libraries and it links in the .a files not the .dyld ones so
 # that the resulting executable is easier to distribute. At present
-# fontconfig and freetype seems to be problems... so I may need to find out
-# how to get them packaged within the application bundle. I believe that
-# their license terms may make this legal.
+# fontconfig seems to be problems in that macports only generates a
+# .dylib version not a .a one. So I link with that and then copy
+# /opt/local/lib/libfontconfig.1.dylib into my.app/Frameworks in the
+# application bundle. I put a copy of a fontlib README file there so
+# that its copyright and license terms are alongside it.
+# The other libraries where I link in a .a file are mostly subject to the
+# X license (which is very similar to the BSD one). I believe in particular
+# that libpng, libz, libbz2, ncurses, freetype are all licensed in that
+# style. libiconv is under LGPL and so when this application is linked
+# with it I may distribute the resulting binary under any license I choose.
+#
+# Note that all these libraries on my Macintosh have been compiled from
+# the source files that "macports" provides without me making any changes.
+# So relevant associated source code can be obtained from the macports
+# repositories. Since CSL and Reduce are provided under an open source
+# license you OF COURSE have the right to reverse engineer or re-link
+# against alternative versions of any of the libraries. Linking against the
+# .a rather than the .dylib versions is to make the distribution here
+# simpler, not to try to lock anybody in or our of anything.
+# 
 # Note that pthread and dl resolve to system-provided libraries and so
-# do not need magic treatment.
+# I am not distributing them, merely links to them.
   LL=/opt/local/lib
   LIBS="$LL/libXrandr.a \
     $LL/libXcursor.a \
@@ -1417,7 +1434,7 @@ then
     $LL/libfreetype.a \
     $LL/libiconv.a \
     $LL/libXft.a \
-    ./libfontconfig.1.dylib \
+    -lfontconfig \
     -lpthread \
     -ldl"  
 fi
