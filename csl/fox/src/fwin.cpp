@@ -526,7 +526,7 @@ void sort_out_windows_console(int windowed)
 
 #ifdef __APPLE__
 
-static int unix_and_osx_checks(int windowed)
+static int unix_and_osx_checks(int xwindowed)
 {
     const char *disp;
 //
@@ -535,7 +535,7 @@ static int unix_and_osx_checks(int windowed)
 // what the status of stdin/stdout are when launched not from a command line
 // but by clicking on an icon...
 //
-    if (windowed != 0)
+    if (xwindowed != 0)
     {
 //
 // On Unix-like systems I will check the DISPLAY variable, and if it is not
@@ -548,7 +548,7 @@ static int unix_and_osx_checks(int windowed)
 // native display I would merely omit this test.
 //
         disp = my_getenv("DISPLAY");
-        if (disp == NULL || strchr(disp, ':')==NULL) windowed = 0;
+        if (disp == NULL || strchr(disp, ':')==NULL) xwindowed = 0;
     }
 //
 // This may be a proper way to test if I am really running in an application
@@ -573,7 +573,7 @@ static int unix_and_osx_checks(int windowed)
 // but by clicking on an icon...
 //
     if (!macApp &&
-        (!isatty(fileno(stdin)) || !isatty(fileno(stdout)))) windowed = 0;
+        (!isatty(fileno(stdin)) || !isatty(fileno(stdout)))) xwindowed = 0;
 //
 // If I am using X11 as my GUI then I am happy to use remote access via
 // SSH since I can be using X forwarding - provided DISPLAY is set all can
@@ -584,13 +584,13 @@ static int unix_and_osx_checks(int windowed)
         if (ssh != NULL && *ssh != 0)
         {   FWIN_LOG("SSH_CLIENT set on MacOSX\n");
 //          ssh_client = 1;
-            windowed = 0;
+            xwindowed = 0;
         }
     }
-    return windowed;
+    return xwindowed;
 }
 
-void mac_deal_with_application_bundle()
+void mac_deal_with_application_bundle(int argc, const char *argv[])
 {
 //
 // If I will be wanting to use a GUI and if I have just loaded an
@@ -861,7 +861,7 @@ int main(int argc, const char *argv[])
     if (windowed==0) return plain_worker(argc, argv, fwin_main);
 
 #ifdef __APPLE__
-    mac_deal_with_application_bundle();
+    mac_deal_with_application_bundle(argc, argv);
 #endif // __APPLE__
     return windowed_worker(argc, argv, fwin_main);
 #else
