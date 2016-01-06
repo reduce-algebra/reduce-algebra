@@ -260,7 +260,6 @@ symbolic procedure split_superfun(superfun,oddvar);
     scalar tempoddvars,superfun_split,tempcoeff;
 %    tempoddvars:=select_all_ders(1,oddvar,all_parametric_odd!*);
     tempoddvars:=select_all_ders(1,oddvar,all_odd_id!*);
-    tempoddvars:=select_all_ders(1,oddvar,all_parametric_odd!*);
     superfun_split:=nil;
     for each el in tempoddvars do
       if not(eqn(tempcoeff:=coeffn(superfun,el,1),0))
