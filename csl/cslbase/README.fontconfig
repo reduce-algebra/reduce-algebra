@@ -1,5 +1,6 @@
-On a Macintosh I put a copy of libfontconfig.1.sylib in the Frameworks
-directory of my application bundle.
+On a Macintosh I might put a copy of libfontconfig.1.dylib in the
+directory of my application bundle. I have not done that yet, but
+this README file is in case and for whan that happens.
 
 The license and credits for fontconfig are as follows.
 

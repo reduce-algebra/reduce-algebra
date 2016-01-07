@@ -1395,15 +1395,22 @@ then
 # of many libraries and it links in the .a files not the .dyld ones so
 # that the resulting executable is easier to distribute. At present
 # fontconfig seems to be problems in that macports only generates a
-# .dylib version not a .a one. So I link with that and then copy
-# /opt/local/lib/libfontconfig.1.dylib into my.app/Frameworks in the
-# application bundle. I put a copy of a fontlib README file there so
-# that its copyright and license terms are alongside it.
-# The other libraries where I link in a .a file are mostly subject to the
-# X license (which is very similar to the BSD one). I believe in particular
-# that libpng, libz, libbz2, ncurses, freetype are all licensed in that
-# style. libiconv is under LGPL and so when this application is linked
-# with it I may distribute the resulting binary under any license I choose.
+# .dylib version not a .a one.
+# To cope with that - on my development machine - I found the fontconfig
+# sources where macports had fetched them, went "./configure --enable-static"
+# and built a libfontconfig.a, which I then copied back into /opt/local/lib.
+# The nad news is that me doing that means that ANYBODY building on a
+# Macintosh will need to do the same, so I will put a script in csl/cslbase
+# that can try to do that for you. But people will need to run that by hand
+# before they can build Reduce.
+#
+# I believe an alternative scheme would be to icnlude fontconfig in a
+# private custom framework to be included within the application bundle,
+# but at present the explanations and documenattion about how to achieve that
+# seem denser than I am willing to confront. Perhaps some Macintosh
+# enthusiast can improve on this. But building binaries that can not
+# be moved across to other computers that do not have macports installed
+# seems to me to be quite unsatisfactory!
 #
 # Note that all these libraries on my Macintosh have been compiled from
 # the source files that "macports" provides without me making any changes.
@@ -1434,7 +1441,8 @@ then
     $LL/libfreetype.a \
     $LL/libiconv.a \
     $LL/libXft.a \
-    -lfontconfig \
+    $LL/libfontconfig.a \
+    $LL/libexpat.a \
     -lpthread \
     -ldl"  
 fi

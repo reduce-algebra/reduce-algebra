@@ -18,9 +18,6 @@ IC=${3:-fwin}
 
 SetFile -t APPL $1
 mkdir -p $1.app/Contents
-mkdir -p $1.app/Frameworks
-cp /opt/local/lib/libfontconfig.1.dylib $1.app/Frameworks
-cp $srcdir/README.fontconfig            $1.app/Frameworks
 mkdir -p $1.app/Contents/MacOS
 mkdir -p $1.app/Contents/MacOS/reduce.fonts
 mkdir -p $1.app/Contents/Resources
