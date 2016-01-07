@@ -53,7 +53,7 @@ LispObject getcodevector(int type, size_t size)
 //
 // type is the code (e.g. TYPE_BPS) that gets packed, together with
 // the size, into a header word.
-// I believe this only ever gets clalled with TYPE_BPS[_4] as the type.
+// I believe this only ever gets called with TYPE_BPS[_4] as the type.
 // size is measured in bytes and must allow space for the header word.
 // This obtains space in the BPS area
 //
@@ -102,6 +102,12 @@ LispObject getcodevector(int type, size_t size)
         {   LispObject w = (LispObject)(uint32_t)(TAG_BPS +
                 (((uint32_t)((r + CELL) - (cl - 8)) & (PAGE_POWER_OF_TWO-4)) << 6) +
                 (((uint32_t)(bps_pages_count-1))<<(PAGE_BITS+6)));
+            if (data_of_bps(w) != r+4)
+            {   fprintf(stderr, "\n+++ Packing BPS handled failed\n");
+                fprintf(stderr, "%.8x %.8x %.8x\n",
+                    (int)r, (int)w, (int)data_of_bps(w));
+                exit(1);
+            }
             return w;
         }
 #else
@@ -2592,7 +2598,7 @@ CSLbool cl_equal_fn(LispObject a, LispObject b)
                             continue;
                         }
                     }
-                    else if (is_immed_or_cons(tca) ||
+                    else if (is_immed_cons_sym(tca) ||
                              ((int32_t)cb & TAG_BITS) != tca) return NO;
                     else switch (tca)
                         {   case TAG_NUMBERS:
@@ -2638,7 +2644,7 @@ CSLbool cl_equal_fn(LispObject a, LispObject b)
                 continue;
             }
         }
-        else if (is_immed_or_cons(ta) ||
+        else if (is_immed_cons_sym(ta) ||
                  ((int32_t)b & TAG_BITS) != ta) return NO;
 //
 // OK - now a and b both have the same type and neither are immediate data
@@ -2848,7 +2854,7 @@ CSLbool equal_fn(LispObject a, LispObject b)
                             continue;
                         }
                     }
-                    else if (is_immed_or_cons(tca) ||
+                    else if (is_immed_cons_sym(tca) ||
                              ((int32_t)cb & TAG_BITS) != tca) return NO;
                     else switch (tca)
                         {   case TAG_NUMBERS:
@@ -2894,7 +2900,7 @@ CSLbool equal_fn(LispObject a, LispObject b)
                 continue;
             }
         }
-        else if (is_immed_or_cons(ta) ||
+        else if (is_immed_cons_sym(ta) ||
                  ((int32_t)b & TAG_BITS) != ta) return NO;
         else switch (ta)
             {   case TAG_NUMBERS:
@@ -3060,7 +3066,7 @@ CSLbool equalp(LispObject a, LispObject b)
                             continue;
                         }
                     }
-                    else if (is_immed_or_cons(tca) ||
+                    else if (is_immed_cons_sym(tca) ||
                              ((int32_t)cb & TAG_BITS) != tca) return NO;
                     else switch (tca)
                         {   case TAG_NUMBERS:
@@ -3107,7 +3113,7 @@ CSLbool equalp(LispObject a, LispObject b)
                 continue;
             }
         }
-        else if (is_immed_or_cons(ta) ||
+        else if (is_immed_cons_sym(ta) ||
                  ((int32_t)b & TAG_BITS) != ta) return NO;
 // What is left is vectors, strings and boxed numbers
         else switch (ta)

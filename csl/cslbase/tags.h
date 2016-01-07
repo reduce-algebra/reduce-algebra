@@ -368,8 +368,10 @@ extern LispObject address_sign;  // 0, 0x80000000 or 0x8000000000000000
 
 #ifdef EXPERIMENT
 #define is_immed_or_cons(p) (((0x91 >> (((int)(p)) & TAG_BITS)) & 1) != 0)
+#define is_immed_cons_sym(p) (((0x95 >> (p)) & 1) != 0)
 #else
 #define is_immed_or_cons(p) ((((int)(p)) & 4) == 0)
+#define is_immed_cons_sym(p) ((p) <= TAG_SYMBOL)
 #endif
 
 typedef struct Cons_Cell
