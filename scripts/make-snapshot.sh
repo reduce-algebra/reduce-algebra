@@ -95,7 +95,15 @@ then
 # Copy generated files to the remote machine where they are wanted even if
 # this is redundant.
   cd $OUTDIR
-  scp $OUTFILES $DESTUSER@$DESTMC:$DESTDIR
+  case `uname -a`
+  in
+  Darwin*)
+    cp $OUTFILES $HOME/$DESTDIR
+    ;;
+  *)
+    scp $OUTFILES $DESTUSER@$DESTMC:$DESTDIR
+    ;;
+  esac
   printf "Snapshot copied to snapshots directory\n"
   exit 0
 fi
@@ -138,7 +146,15 @@ fi
 
 # Copy generated files to the remote machine where they are wanted
 cd $OUTDIR
-scp $OUTFILES $DESTUSER@$DESTMC:$DESTDIR
+case `uname -a`
+in
+Darwin*)
+  cp $OUTFILES $HOME/$DESTDIR
+  ;;
+*)
+  scp $OUTFILES $DESTUSER@$DESTMC:$DESTDIR
+  ;;
+esac
 printf "Snapshot copied to snapshots directory\n"
 
 cd $HERE
