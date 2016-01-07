@@ -9,3 +9,4 @@
 hdiutil create -volname Reduce-${1:-snapshot} \
   -srcfolder directory-with-app-in-it \
   -ov -format UDZO Reduce-${1:-snapshot}.dmg
+

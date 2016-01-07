@@ -131,6 +131,7 @@ svn update
 
 # Move to where the building happens and create files for distribution
 cd $BUILD
+export TODAY="${today}"
 make clean
 make
 
