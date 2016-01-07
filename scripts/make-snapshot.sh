@@ -94,6 +94,8 @@ then
   printf "Snapshot $SYS-${today}.stamp already exists\n"
 # Copy generated files to the remote machine where they are wanted even if
 # this is redundant.
+  cd $RED
+  cd $BUILD
   cd $OUTDIR
   case `uname -a`
   in
