@@ -102,10 +102,10 @@ LispObject getcodevector(int type, size_t size)
         {   LispObject w = (LispObject)(uint32_t)(TAG_BPS +
                 (((uint32_t)((r + CELL) - (cl - 8)) & (PAGE_POWER_OF_TWO-4)) << 6) +
                 (((uint32_t)(bps_pages_count-1))<<(PAGE_BITS+6)));
-            if (data_of_bps(w) != r+4)
+            if (data_of_bps(w) != r+CELL)
             {   fprintf(stderr, "\n+++ Packing BPS handled failed\n");
                 fprintf(stderr, "%.8x %.8x %.8x\n",
-                    (int)r, (int)w, (int)data_of_bps(w));
+                    (int)(intptr_t)r, (int)w, (int)(intptr_t)data_of_bps(w));
                 exit(1);
             }
             return w;
