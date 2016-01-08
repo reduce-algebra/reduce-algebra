@@ -30,7 +30,7 @@ $(BUILDTOPDIR).stamp:
 	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) > $(BUILDTOPDIR).log
 	(cd $(BUILDTOPDIR) ; \
 		./autogen.sh -f )
-	(cd $(BUILDTOPDIR) ; ./make.source.sh ) 
+	(cd $(BUILDTOPDIR) ; ../make.source.sh ) 
 	touch $(BUILDTOPDIR).stamp
 
 csl.stamp:	$(BUILDTOPDIR).stamp
@@ -54,10 +54,20 @@ docs.stamp:	$(BUILDTOPDIR).stamp
 	touch docs.stamp
 
 package-mac:	$(BUILDTOPDIR).stamp csl.stamp psl.stamp docs.stamp
-#	$(BUILDTOPDIR)/psl/saveimage.sh $(BUILDTOPDIR)/pslbuild/x86_64-pc-windows \
-#		$(abspath .) '$$reduce/lib/psl' && mv reduce.img reduce64.img
-#	$(BUILDTOPDIR)/psl/saveimage.sh $(BUILDTOPDIR)/pslbuild/i686-pc-windows \
-#		$(abspath .) '$$reduce/lib/psl'
+#
+# Something like the folling lines that do a "saveimage" will be needed
+# so that the runpsl.sh script that I provide should (at least ideally)
+# work even when the directory in which all the PSL files are kept gets
+# moved. Note that the runpsl.sh script can establish an environment variable
+# that gives its own location: I use that to initialize the "fasl" variable.
+# I HOPE that PSL can be saved so that it takes the rest of its key
+# components from somewhere indicated by an environment variable... but
+# I do not quite understand that.
+#
+##	$(BUILDTOPDIR)/psl/saveimage.sh $(BUILDTOPDIR)/pslbuild/x86_64-pc-windows \
+##		$(abspath .) '$$reduce/lib/psl' && mv reduce.img reduce64.img
+##	$(BUILDTOPDIR)/psl/saveimage.sh $(BUILDTOPDIR)/pslbuild/i686-pc-windows \
+##		$(abspath .) '$$reduce/lib/psl'
 	rm -rf distrib
 	mkdir -p distrib
 # The CSL components will be in the form of application bundles. To run from
