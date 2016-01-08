@@ -30,7 +30,7 @@ $(BUILDTOPDIR).stamp:
 	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) > $(BUILDTOPDIR).log
 	(cd $(BUILDTOPDIR) ; \
 		./autogen.sh -f )
-	(cd $(BUILDTOPDIR) ; tar cvfj ../Reduce_source.tar.bz2 * ) 
+	(cd $(BUILDTOPDIR) ; ./make.source.sh ) 
 	touch $(BUILDTOPDIR).stamp
 
 csl.stamp:	$(BUILDTOPDIR).stamp
