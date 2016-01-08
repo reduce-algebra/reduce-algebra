@@ -101,16 +101,23 @@ if ! test $srcdir/aclocal.m4 -nt $srcdir/configure.ac || \
    ! test $srcdir/gc-7/libatomic_ops/configure -nt $srcdir/gc-7/libatomic_ops/aclocal.m4
 then
   echo "autoreconf necessary I think $ac_configure_args"
-  here=`pwd`
-  cd $srcdir
-  autoreconf -f -i -v
-  cd crlibm
-  autoreconf -f -i -v
-  cd ../gc-7
-  autoreconf -f -i -v
-  cd $here
-  echo "Restart: $srcdir/configure $ac_configure_args"
-  exec /bin/sh -c "$srcdir/configure $ac_configure_args"
+#
+# For the following to work properly the sequence MUST leave datestamps
+# on files in the order I test for above, which is based on my understanding
+# of what depends on what. However on SOME platforms at least I find that
+# files do not end up properly ordered and I can get an infinite loop
+# of attempred reconfiguration. So for now I withdraw this!
+#
+# here=`pwd`
+# cd $srcdir
+# autoreconf -f -i -v
+# cd crlibm
+# autoreconf -f -i -v
+# cd ../gc-7
+# autoreconf -f -i -v
+# cd $here
+# echo "Restart: $srcdir/configure $ac_configure_args"
+# exec /bin/sh -c "$srcdir/configure $ac_configure_args"
 fi
 
 # These days I am making all the source files for CSL ones in C++ not C
