@@ -36,6 +36,13 @@ then
   f=" -f"
 fi
 
+# Well I used to make "force" optional, but it now appears to me that the
+# only difference it makes is (re-)installation of support scripts and it
+# has at most minor cost implications, so I will do it always...
+
+f=" -f"
+
+
 # I want this script to be one I can launch from anywhere.
 
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
@@ -73,18 +80,20 @@ L=". \
 # On any particular machine I will regenerate the autoconf stuff from
 # outside packages just once. The packages that I do some of my own
 # maintenence on get reconfigured every time.
+# Having seen some pain about all this I am backing off efficiency in the
+# direction of caution!
 
-if ! test -f ./csl/cslbase/gc-7/reconf.stamp
-then
+#if ! test -f ./csl/cslbase/gc-7/reconf.stamp
+#then
   L="$L ./csl/cslbase/gc-7"
-  touch ./csl/cslbase/gc-7/reconf.stamp
-fi
+#  touch ./csl/cslbase/gc-7/reconf.stamp
+#fi
 
-if ! test -f ./csl/cslbase/crlibm/reconf.stamp
-then
+#if ! test -f ./csl/cslbase/crlibm/reconf.stamp
+#then
   L="$L ./csl/cslbase/crlibm"
-  touch ./csl/cslbase/crlibm/reconf.stamp
-fi
+#  touch ./csl/cslbase/crlibm/reconf.stamp
+#fi
 
 for d in $L
 do

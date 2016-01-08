@@ -20,29 +20,6 @@
 # I want to be able to see what gets built and why, so here is a GNU
 # make trace facility.
 
-# The standard arrangment used by automake arranges to re-run aclocal,
-# autoconf and automake if any of the files they generate are out of date.
-# However proper behaviour there not only relies on autoconf being installed
-# but sometimes on the correct version being installed. The replacement
-# logic here deals with that by running my own script "autogen.sh"
-# when anything needs updating. That will reconfigure using whatever
-# version of autoconf is available locally, and if none is it will
-# just use "touch" to reset time-stamps on files so that the ordering
-# appears reasonable.
-
-# The rules here are arranged to chain so that configure is only
-# considered after aclocal.m4 has been dealt with and Makefile.in only after
-# that. This is trying to follow the guidance given re "Multiple Outputs"
-# in the automake manual so that even when a parallel make is used
-# autogen.sh will only end up called once. However I found that (for
-# reasons I do not understand so far) there was a tendancy for autogen.sh
-# to get called twice. I have put what I think ought to be redundant extra
-# code that  means that whena recipe is called it does a further check
-# to see if it is actually needed, and that sorts things out. It may be that
-# the issues I observed are to do with the very special treatment that
-# make gives to the re-creation of Makefile and the files that it is
-# derived from.
-
 VPATH = @srcdir@
 am__is_gnu_make = test -n '$(MAKEFILE_LIST)' && test -n '$(MAKELEVEL)'
 am__make_running_with_option = \
@@ -559,6 +536,18 @@ all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .log .o .obj .test .test$(EXEEXT) .trs
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
+	@for dep in $?; do \
+	  case '$(am__configure_deps)' in \
+	    *$$dep*) \
+	      ( cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh ) \
+	        && { if test -f $@; then exit 0; else break; fi; }; \
+	      exit 1;; \
+	  esac; \
+	done; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign tests/Makefile'; \
+	$(am__cd) $(top_srcdir) && \
+	  $(AUTOMAKE) --foreign tests/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -570,6 +559,11 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	esac;
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
+	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
+
+$(top_srcdir)/configure:  $(am__configure_deps)
+	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
+$(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 install-binPROGRAMS: $(bin_PROGRAMS)
@@ -1184,32 +1178,6 @@ uninstall-am: uninstall-binPROGRAMS
 	ps ps-am recheck tags tags-am uninstall uninstall-am \
 	uninstall-binPROGRAMS
 
-
-$(ACLOCAL_M4):  $(am__aclocal_m4_deps)
-	@if test $(ACLOCAL_M4) -ot $(top_srcdir)/configure.ac; \
-	then \
-	  $(top_srcdir)/../../autogen.sh csl/cslbase/crlibm ; \
-	else echo Redundant attempt to remake $(ACLOCAL_M4) ; \
-	fi
-
-$(top_srcdir)/configure:  $(am__configure_deps) $(ACLOCAL_M4)
-	@if test $(top_srcdir)/configure -ot $(top_srcdir)/configure.ac || \
-	   test $(top_srcdir)/configure -ot $(ACLOCAL_M4) ; \
-	then \
-	  $(top_srcdir)/../../autogen.sh csl/cslbase/crlibm ; \
-	else echo Redundant attempt to remake configure ; \
-	fi
-
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps) \
-		$(top_srcdir)/configure
-	@if test $(srcdir)/Makefile.in -ot $(top_srcdir)/configure.ac || \
-	   test $(srcdir)/Makefile.in -ot $(ACLOCAL_M4) || \
-	   test $(srcdir)/Makefile.in -ot $(top_srcdir)/configure || \
-	   test $(srcdir)/Makefile.in -ot $(srcdir)/Makefile.am ; \
-	then \
-	  $(top_srcdir)/../../autogen.sh csl/cslbase/crlibm ; \
-	else echo Redundant attempt to remake Makefile.in ; \
-	fi
 ../libcrlibm.a:
 	cd $(top_srcdir); make libcrlibm.a 
 
