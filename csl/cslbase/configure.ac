@@ -1,6 +1,6 @@
 ## Process this file with autoconf to produce a configure script.
 
-# A C Norman.                                         2008-2010
+# A C Norman.                                         2008-2015
 
 #
 # Special flags that can be used here:
@@ -38,6 +38,7 @@
 
 # Specify the name of this "application" and a version number
 AC_INIT([REDUCE],[7.00])
+
 # automake 1.13 was the first to support AC_CONFIG_MACRO_DIRS
 AM_INIT_AUTOMAKE([1.13 -Wno-portability -Wno-override foreign dist-bzip2])
 AC_CONFIG_MACRO_DIRS([m4])
@@ -48,7 +49,7 @@ AC_MSG_NOTICE([+++ Configure in directory $here +++])
 # Explain that a file "config.h" should be generated
 AC_CONFIG_HEADERS([config.h])
 
-AC_COPYRIGHT([Codemist Ltd])
+AC_COPYRIGHT([Codemist])
 
 AC_PREREQ(2.59)
 
@@ -57,6 +58,60 @@ AC_PREREQ(2.59)
 # messed up.
 AC_CONFIG_SRCDIR(csl.cpp)
 AC_CONFIG_FILES(Makefile)
+
+
+# aclocal.m4:	configure.ac
+# 	aclocal
+# config.h.in:	configure.ac
+# 	autoheader
+# helpers = COPYING INSTALL install-sh missing mkinstalldirs config.sub \
+# 		ltmain.sh ltconfig
+# Makefile.in $(helpers):	configure.ac Makefile.am aclocal.m4
+# 	automake
+# Note: automake calls libtool for you when necessary.
+
+# When I configure CSL I will also ensure that the config-related files for
+# crlibm and gc-7 are up to date... I will not test for the presence of the
+# various helper scripts (eg install-sh, config.sub) that automake can
+# install. So I do not guarantee that the tests here are utterly comprehensive
+# but they should catch all the most important cases where reconfiguration
+# is required.
+
+if ! test $srcdir/aclocal.m4 -nt $srcdir/configure.ac || \
+   ! test $srcdir/config.h.in -nt $srcdir/configure.ac || \
+   ! test $srcdir/Makefile.in -nt $srcdir/aclocal.m4 || \
+   ! test $srcdir/Makefile.in -nt $srcdir/config.h.in || \
+   ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am || \
+   ! test $srcdir/ltmain.sh -nt $srcdir/aclocal.m4.am || \
+   ! test $srcdir/ltmain.sh -nt $srcdir/Makefile.am || \
+   ! test $srcdir/configure -nt $srcdir/aclocal.m4 || \
+   ! test $srcdir/crlibm/aclocal.m4 -nt $srcdir/crlibm/configure.ac || \
+   ! test $srcdir/crlibm/Makefile.in -nt $srcdir/crlibm/aclocal.m4 || \
+   ! test $srcdir/crlibm/Makefile.in -nt $srcdir/crlibm/Makefile.am || \
+   ! test $srcdir/crlibm/configure -nt $srcdir/crlibm/aclocal.m4 || \
+   ! test $srcdir/gc-7/aclocal.m4 -nt $srcdir/gc-7/configure.ac || \
+   ! test $srcdir/gc-7/Makefile.in -nt $srcdir/gc-7/aclocal.m4 || \
+   ! test $srcdir/gc-7/Makefile.in -nt $srcdir/gc-7/Makefile.am || \
+   ! test $srcdir/gc-7/configure -nt $srcdir/gc-7/aclocal.m4 || \
+   ! test $srcdir/gc-7/libatomic_ops/aclocal.m4 -nt $srcdir/gc-7/libatomic_ops/configure.ac || \
+   ! test $srcdir/gc-7/libatomic_ops/Makefile.in -nt $srcdir/gc-7/libatomic_ops/aclocal.m4 || \
+   ! test $srcdir/gc-7/libatomic_ops/Makefile.in -nt $srcdir/gc-7/libatomic_ops/Makefile.am || \
+   ! test $srcdir/gc-7/libatomic_ops/ltmain.sh -nt $srcdir/gc-7/libatomic_ops/aclocal.m4.am || \
+   ! test $srcdir/gc-7/libatomic_ops/ltmain.sh -nt $srcdir/gc-7/libatomic_ops/Makefile.am || \
+   ! test $srcdir/gc-7/libatomic_ops/configure -nt $srcdir/gc-7/libatomic_ops/aclocal.m4
+then
+  echo "autoreconf necessary I think $ac_configure_args"
+  here=`pwd`
+  cd $srcdir
+  autoreconf -f -i -v
+  cd crlibm
+  autoreconf -f -i -v
+  cd ../gc-7
+  autoreconf -f -i -v
+  cd $here
+  echo "Restart: $srcdir/configure $ac_configure_args"
+  exec /bin/sh -c "$srcdir/configure $ac_configure_args"
+fi
 
 # These days I am making all the source files for CSL ones in C++ not C
 # and so it is best to make configuration tests match.

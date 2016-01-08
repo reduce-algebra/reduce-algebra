@@ -1,4 +1,4 @@
-AC_INIT([REDUCE], [20101217], [acn1@cam.ac.uk])
+AC_INIT([REDUCE], [2016], [acn1@cam.ac.uk])
 
 # The next line is a dreadful thing and is in case I am launched
 # from a bash prompt, in which case the SHELL variable will be set
@@ -23,21 +23,47 @@ AC_COPYRIGHT([The REDUCE project])
 # m4 scripts) but allowed me to continue. So I set that level as my
 # baseline and ask everybody to install software newer that late 2003.
 #
+# Well now it is 2016, and I have moved my reliance on to automake 1.13,
+# which was released at the end of 2012. The reason for this move is because
+# I wish to use libtool, and full libtool integration and support for
+# AC_CONFIG_MACRO_DIRS (please note "DIRS" not "DIR" here) date from then.
+# So earlier systems may need a private copy of autoconf installed.
+#
 # If necessary they can fetch source versions of autoconf and automake and
-# install private versions for use here.
-
-# HOWEVER since the subversion repository for Reduce contains ready build
-# configuration files there should only even be an attempt to rerun
-# autoconf etc if time-stamps get out of order. There is a script
-# .../trunk/scripts/stamp.sh that should restore them. So any user who only
-# has ancient versions of autoconf and automake available is advised to run
-# scripts/stamp.sh after each time they go "svn update".
+# install private versions for use here. Following discussions with other
+# developers I am now going to require autoconf, automake and libtool
+# availability, although an enthusiastic person could probably get things
+# working without them.
 
 AC_PREREQ(2.59)
 
 abssrcdir=`"$srcdir/scripts/here.sh"`
 
 AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
+
+# aclocal.m4:	configure.ac
+# 	aclocal
+# config.h.in:	configure.ac
+# 	autoheader
+# helpers = COPYING INSTALL install-sh missing mkinstalldirs config.sub \
+# 		ltmain.sh ltconfig
+# Makefile.in $(helpers):	configure.ac Makefile.am aclocal.m4
+# 	automake
+# Note: automake calls libtool for you when necessary.
+
+if ! test $srcdir/aclocal.m4 -nt $srcdir/configure.ac || \
+   ! test $srcdir/Makefile.in -nt $srcdir/aclocal.m4 || \
+   ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am || \
+   ! test $srcdir/configure -nt $srcdir/aclocal.m4
+then
+  echo "autoreconf necessary I think $ac_configure_args"
+  here=`pwd`
+  cd $srcdir
+  autoreconf -f -i -v
+  cd $here
+  echo "Restart: $srcdir/configure $ac_configure_args"
+  exec /bin/sh -c "$srcdir/configure $ac_configure_args"
+fi
 
 AC_CANONICAL_HOST()
 

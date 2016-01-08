@@ -11,6 +11,30 @@ AC_INIT(fox,[fox_version],jeroen@fox-toolkit.com)
 AC_CONFIG_SRCDIR([include/fx.h])
 AM_INIT_AUTOMAKE([foreign])
 
+# aclocal.m4:	configure.ac
+# 	aclocal
+# config.h.in:	configure.ac
+# 	autoheader
+# helpers = COPYING INSTALL install-sh missing mkinstalldirs config.sub \
+# 		ltmain.sh ltconfig
+# Makefile.in $(helpers):	configure.ac Makefile.am aclocal.m4
+# 	automake
+# Note: automake calls libtool for you when necessary.
+
+if ! test $srcdir/aclocal.m4 -nt $srcdir/configure.ac || \
+   ! test $srcdir/Makefile.in -nt $srcdir/aclocal.m4 || \
+   ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am || \
+   ! test $srcdir/configure -nt $srcdir/aclocal.m4
+then
+  echo "autoreconf necessary I think $ac_configure_args"
+  here=`pwd`
+  cd $srcdir
+  autoreconf -f -i -v
+  cd $here
+  echo "Restart: $srcdir/configure $ac_configure_args"
+  exec /bin/sh -c "$srcdir/configure $ac_configure_args"
+fi
+
 # Set version
 FOX_MAJOR_VERSION=fox_major
 FOX_MINOR_VERSION=fox_minor
