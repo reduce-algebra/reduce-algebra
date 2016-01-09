@@ -73,32 +73,29 @@ AC_CONFIG_FILES(Makefile)
 # When I configure CSL I will also ensure that the config-related files for
 # crlibm and gc-7 are up to date... I will not test for the presence of the
 # various helper scripts (eg install-sh, config.sub) that automake can
-# install. So I do not guarantee that the tests here are utterly comprehensive
-# but they should catch all the most important cases where reconfiguration
-# is required.
+# install.
+# When I tried the fuller set of dependencies as shown above I ran into
+# trouble with autoreconf sometimes not leaving date-stamps in the order
+# I expcted. That could then lead to an infinite cycle of reconfiguration
+# attempts. So now I just look at the master source filed configure.ac and
+# Makefile.am, and compare them against the key derived files configure
+# and Makefile.in. So the check here can not detect and recover from all
+# possible cases where configuration files are out of date, but should
+# cope with some of the more common and important cases.
 
-if ! test $srcdir/aclocal.m4 -nt $srcdir/configure.ac || \
-   ! test $srcdir/config.h.in -nt $srcdir/configure.ac || \
-   ! test $srcdir/Makefile.in -nt $srcdir/aclocal.m4 || \
-   ! test $srcdir/Makefile.in -nt $srcdir/config.h.in || \
+if \
+   ! test $srcdir/Makefile.in -nt $srcdir/configure.ac || \
    ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am || \
-   ! test $srcdir/ltmain.sh -nt $srcdir/aclocal.m4.am || \
-   ! test $srcdir/ltmain.sh -nt $srcdir/Makefile.am || \
-   ! test $srcdir/configure -nt $srcdir/aclocal.m4 || \
-   ! test $srcdir/crlibm/aclocal.m4 -nt $srcdir/crlibm/configure.ac || \
-   ! test $srcdir/crlibm/Makefile.in -nt $srcdir/crlibm/aclocal.m4 || \
+   ! test $srcdir/configure -nt $srcdir/configure.ac || \
+   ! test $srcdir/crlibm/Makefile.in -nt $srcdir/crlibm/configure.ac || \
    ! test $srcdir/crlibm/Makefile.in -nt $srcdir/crlibm/Makefile.am || \
-   ! test $srcdir/crlibm/configure -nt $srcdir/crlibm/aclocal.m4 || \
-   ! test $srcdir/gc-7/aclocal.m4 -nt $srcdir/gc-7/configure.ac || \
-   ! test $srcdir/gc-7/Makefile.in -nt $srcdir/gc-7/aclocal.m4 || \
+   ! test $srcdir/crlibm/configure -nt $srcdir/crlibm/configure.ac || \
+   ! test $srcdir/gc-7/Makefile.in -nt $srcdir/gc-7/configure.ac || \
    ! test $srcdir/gc-7/Makefile.in -nt $srcdir/gc-7/Makefile.am || \
-   ! test $srcdir/gc-7/configure -nt $srcdir/gc-7/aclocal.m4 || \
-   ! test $srcdir/gc-7/libatomic_ops/aclocal.m4 -nt $srcdir/gc-7/libatomic_ops/configure.ac || \
-   ! test $srcdir/gc-7/libatomic_ops/Makefile.in -nt $srcdir/gc-7/libatomic_ops/aclocal.m4 || \
+   ! test $srcdir/gc-7/configure -nt $srcdir/gc-7/configure.ac || \
+   ! test $srcdir/gc-7/libatomic_ops/Makefile.in -nt $srcdir/gc-7/libatomic_ops/configure.ac || \
    ! test $srcdir/gc-7/libatomic_ops/Makefile.in -nt $srcdir/gc-7/libatomic_ops/Makefile.am || \
-   ! test $srcdir/gc-7/libatomic_ops/ltmain.sh -nt $srcdir/gc-7/libatomic_ops/aclocal.m4.am || \
-   ! test $srcdir/gc-7/libatomic_ops/ltmain.sh -nt $srcdir/gc-7/libatomic_ops/Makefile.am || \
-   ! test $srcdir/gc-7/libatomic_ops/configure -nt $srcdir/gc-7/libatomic_ops/aclocal.m4
+   ! test $srcdir/gc-7/libatomic_ops/configure -nt $srcdir/gc-7/libatomic_ops/configure.ac
 then
   echo "autoreconf necessary I think $ac_configure_args"
 #
