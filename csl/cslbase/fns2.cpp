@@ -1052,7 +1052,7 @@ static LispObject Lrestore_c_code(LispObject nil, LispObject a)
     pop(a);
     errexit();
     name = (char *)&celt(pn, 0);
-    len = length_of_header(vechdr(pn)) - CELL;
+    len = length_of_byteheader(vechdr(pn)) - CELL;
 //
 // This is a potential time-sink in that it does a linear scan of all the
 // definitions in the tables that are in u01.c to u60.c.
@@ -2030,7 +2030,7 @@ LispObject get_pname(LispObject a)
     {   uintptr_t len;
         LispObject nil = C_nil;
         char genname[64];
-        len = length_of_header(vechdr(name)) - CELL;
+        len = length_of_byteheader(vechdr(name)) - CELL;
         if (len > 60) len = 60;     // Unpublished truncation of the string
         sprintf(genname, "%.*s%.4lu", (int)len,
                 (char *)name + (CELL - TAG_VECTOR), (long)gensym_ser++);
@@ -2240,7 +2240,7 @@ static LispObject Lcheckpoint(LispObject nil,
     if (failed) return aerror("checkpoint");
     if (is_vector(banner) && is_string(banner))
     {   msg = &celt(banner, 0);
-        len = length_of_header(vechdr(banner)) - CELL;
+        len = length_of_byteheader(vechdr(banner)) - CELL;
     }
 //
 // Note, with some degree of nervousness, that things on the C stack will

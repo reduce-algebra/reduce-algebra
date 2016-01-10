@@ -945,7 +945,7 @@ const char *get_string_data(LispObject name, const char *why, size_t *len)
         {   aerror1(why, name);
             return NULL;
         }
-    *len = length_of_header(h) - CELL;
+    *len = length_of_byteheader(h) - CELL;
     return &celt(name, 0);
 }
 
@@ -2137,7 +2137,7 @@ restart:
         case TAG_HDR_IMMED:
             if (is_bps(u))
             {   Header h = *(Header *)(data_of_bps(u) - CELL);
-                len = length_of_header(h) - CELL;
+                len = length_of_byteheader(h) - CELL;
                 push(u);
                 outprefix(blankp, 3+2*len);
 //
@@ -4167,7 +4167,7 @@ LispObject Ldebug_print(LispObject nil, LispObject a)
     if (!is_vector(a)) return Lprint(nil, a);
     h = vechdr(a);
     if (!is_string_header(h)) return Lprint(nil, a);
-    len = length_of_header(h) - CELL;
+    len = length_of_byteheader(h) - CELL;
     p = &celt(a, 0);
     for (i=0; i<len; i++)
     {   push(a);
@@ -5366,7 +5366,7 @@ LispObject Lwindow_heading2(LispObject nil, LispObject a, LispObject b)
     if (is_fixnum(b)) n = int_of_fixnum(b);
     else n = 2;  // default to setting the right section
     if (is_vector(a) && is_string(a))
-    {   int32_t l = length_of_header(vechdr(a)) - CELL;
+    {   int32_t l = length_of_byteheader(vechdr(a)) - CELL;
         if (l > 30) l = 30;
         memcpy(txt, &celt(a, 0), l);
         txt[l] = 0;

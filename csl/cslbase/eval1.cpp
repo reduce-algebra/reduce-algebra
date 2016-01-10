@@ -2267,7 +2267,7 @@ LispObject f3_as_3(LispObject env, int nargs, ...)
 static void write_result(LispObject nil, LispObject r, char *shared)
 {
 //
-// This converts an arbitrary resulty into a string so I can pass it back.
+// This converts an arbitrary result into a string so I can pass it back.
 //
     int32_t i, len, ok = 1;
 //
@@ -2285,7 +2285,7 @@ static void write_result(LispObject nil, LispObject r, char *shared)
     {   strcpy(shared, "Failed");
         exit(3);
     }
-    len = length_of_header(vechdr(r)) - CELL;
+    len = length_of_byteheader(vechdr(r)) - CELL;
 //
 // If the displayed form ou the output was too long I just truncate it
 // at present. A more agressive attitude would be to count that as a form

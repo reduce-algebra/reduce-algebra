@@ -183,15 +183,25 @@ typedef intptr_t LispObject;
 // doubleword aligned.  The main tag allocation is documented here.
 //
 
+// The old garbage collector, in the mark part of the sliding variant,
+// uses back-pointers that can point at any cell, and so are just aligned
+// as multiplus of 4 (on a 32-bit machine). Furthermore the code requires
+// that an object header be distinguishable from any such back-pointer.
+// to satisfy that teh tag for a header must not be 0, 1, 4 or 5, and the
+// cheapskate coding in the garbage collector means that 3 and 7 must also
+// be avoided (there is a test for an odd number). So TAG_HDR_IMMED is
+// forced to be 2 or 6 at least during a transition period until the
+// garbage collector is reworked.
+
 #ifdef EXPERIMENT
 #define TAG_BITS        7
 #define XTAG_BITS       15
 
 #define TAG_CONS        0   // Cons cells
 #define TAG_VECTOR      1   // Regular Lisp vectors (except BPS maybe?)
-#define TAG_SYMBOL      2   // Symbols
+#define TAG_HDR_IMMED   2   // Char constants, BPS addresses, vechdrs etc
 #define TAG_FORWARD     3   // For the Garbage Collector
-#define TAG_HDR_IMMED   4   // Char constants, BPS addresses, vechdrs etc
+#define TAG_SYMBOL      4   // Symbols
 #define TAG_NUMBERS     5   // Bignum, Rational, Complex
 #define TAG_BOXFLOAT    6   // Boxed floats
 #define TAG_FIXNUM      7   // 28-bit integers
@@ -306,7 +316,8 @@ extern LispObject address_sign;  // 0, 0x80000000 or 0x8000000000000000
 // Exceptions are marked by setting a bit in NIL.  The following macros
 // provide an abstraction of this interface.  At one stage I used the
 // most significant bit in nil, but now for various reasons I have concluded
-// that it is nicer to use the least significant bit.
+// that it is nicer to use the least significant bit. Note that this scheme
+// means that TAG_SYMBOL must be even!
 //
 #define exception_pending() (((int)nil & 1) != 0)
 #define flip_exception()    (nil = C_nil = (nil ^ 1))
@@ -348,8 +359,9 @@ extern LispObject address_sign;  // 0, 0x80000000 or 0x8000000000000000
 #ifdef EXPERIMENT
 #define is_number(p) ((((int)(p)) & TAG_BITS) >= TAG_NUMBERS) // Any numeric type
 // This picks up the BOXFLOAT and SFLOAT cases. I may move single and long
-// floats to within TAF_NUMBERS in a while and then this will not be as
-// useful.
+// floats to within TAG_NUMBERS in a while and then this will still tell
+// me if I have a number, but deciding if it is fixed point will become
+// harder.
 #define is_float(p)  (((0xc040 >> (((int)(p)) & XTAG_BITS)) & 1) != 0)
 #else
 #define is_number(p) ((((int)(p)) & 1) != 0) // Any numeric type
@@ -367,7 +379,10 @@ extern LispObject address_sign;  // 0, 0x80000000 or 0x8000000000000000
 //
 
 #ifdef EXPERIMENT
-#define is_immed_or_cons(p) (((0x91 >> (((int)(p)) & TAG_BITS)) & 1) != 0)
+// These tests were perhape especially easy to perform in the old tagging
+// scheme which is why the code was written to use them. A rewritten
+// system may use them less!
+#define is_immed_or_cons(p) (((0x85 >> (((int)(p)) & TAG_BITS)) & 1) != 0)
 #define is_immed_cons_sym(p) (((0x95 >> (p)) & 1) != 0)
 #else
 #define is_immed_or_cons(p) ((((int)(p)) & 4) == 0)

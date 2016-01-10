@@ -1298,9 +1298,9 @@ LispObject Lbanner(LispObject nil, LispObject info)
         errexit();
         h = vechdr(info);
     }
-    else if (!is_vector(info) || is_string_header(h = vechdr(info)))
+    else if (!is_vector(info) || !is_string_header(h = vechdr(info)))
         return aerror("banner");
-    len = length_of_header(h) - CELL;
+    len = length_of_byteheader(h) - CELL;
     name = (char *)info + CELL - TAG_VECTOR;
     if (len == 0) Iopen_banner(-2); // delete banner info
     else
@@ -1822,7 +1822,7 @@ static LispObject write_module1(LispObject a)
     }
     else if (is_bps(a))
     {   char *d = data_of_bps(a);
-        int32_t len = length_of_header(*(Header *)(d - CELL)) - CELL;
+        int32_t len = length_of_byteheader(*(Header *)(d - CELL)) - CELL;
         switch (len >> 8)
         {   case 3: Iputc(F_BP3);
                 break;
@@ -2082,7 +2082,7 @@ static LispObject write_module0(LispObject nil, LispObject a)
             trace_printf("\n");
 #endif
         }
-        len = length_of_header(vechdr(w)) - CELL;
+        len = length_of_byteheader(vechdr(w)) - CELL;
         switch (pkgid)
         {   case 0: if (1 <= len && len <= 15) Iputc(F_ID1 + (int)len - 1);
                 else
@@ -2116,7 +2116,7 @@ static LispObject write_module0(LispObject nil, LispObject a)
             a = packname_(qpackage(a));
             pop(w);
             errexit();
-            lenp = length_of_header(vechdr(a)) - CELL;
+            lenp = length_of_byteheader(vechdr(a)) - CELL;
 //
 // Another ugliness rears its head here... I allow for symbols that have
 // very long names, but I will only support packages where the name of the
@@ -2184,7 +2184,7 @@ static LispObject write_module0(LispObject nil, LispObject a)
             trace_printf("\n");
 #endif
         }
-        len = length_of_header(vechdr(w)) - CELL;
+        len = length_of_byteheader(vechdr(w)) - CELL;
         if (pkgid == 0)
         {   if (1 <= len && len <= 15) Iputc(F_ID1 + (int)len - 1);
             else
@@ -2503,7 +2503,7 @@ LispObject Lwrite_help_module(LispObject nil,
         else if (!(is_vector(name))) return aerror("write-help-module");
         else if (type_of_header(h = vechdr(name)) != TYPE_STRING)
             return aerror("write-help-module");
-    len = length_of_header(h) - CELL;
+    len = length_of_byteheader(h) - CELL;
     if (len > sizeof(filename)) len = sizeof(filename);
     file = open_file(filename, (char *)name + (CELL-TAG_VECTOR),
                      (size_t)len, "r", NULL);
@@ -3064,7 +3064,7 @@ static int topic_in_index(char *key)
     char *p;
     if (len > 28) len = 28;
     if (!is_vector(v)) return 0;
-    size = length_of_header(vechdr(v)) - CELL;
+    size = length_of_byteheader(vechdr(v)) - CELL;
     p = &celt(v, 0);
 
 //
@@ -3293,7 +3293,7 @@ LispObject lisp_help(LispObject nil, LispObject a)
         case TAG_VECTOR:
             if (type_of_header(vechdr(a)) == TYPE_STRING)
             {   Header h = vechdr(a);
-                int32_t len = length_of_header(h);  // counts in bytes
+                int32_t len = length_of_byteheader(h);  // counts in bytes
                 len -= CELL;
                 help(&celt(a, 0), len);
                 return onevalue(nil);

@@ -1026,7 +1026,7 @@ static void lisp_main(void)
                     if (is_vector(exit_value) &&
                         is_string(exit_value))
                     {   msg = &celt(exit_value, 0);
-                        len = (int)(length_of_header(vechdr(exit_value)) - CELL);
+                        len = (int)(length_of_byteheader(vechdr(exit_value)) - CELL);
                     }
                     preserve(msg, len);
                     nil = C_nil;
@@ -1046,7 +1046,7 @@ static void lisp_main(void)
                     if (is_vector(exit_value) &&
                         is_string(exit_value))
                     {   msg = &celt(exit_value, 0);
-                        len = (int)(length_of_header(vechdr(exit_value)) - CELL);
+                        len = (int)(length_of_byteheader(vechdr(exit_value)) - CELL);
                     }
                     preserve(msg, len);
                     nil = C_nil;
@@ -1132,7 +1132,7 @@ static void lisp_main(void)
                                 if (exception_pending()) ignore_exception();
                                 else
                                 {   Header h = vechdr(modname);
-                                    int32_t len = length_of_header(h) - CELL;
+                                    int32_t len = length_of_byteheader(h) - CELL;
                                     if (len > 63) len = 63;
                                     memcpy(new_module,
                                            (char *)modname + (CELL - TAG_VECTOR),
@@ -1145,7 +1145,7 @@ static void lisp_main(void)
                                 if (exception_pending()) ignore_exception();
                                 else
                                 {   Header h = vechdr(exit_value);
-                                    int32_t len = length_of_header(h) - CELL;
+                                    int32_t len = length_of_byteheader(h) - CELL;
                                     if (len > 63) len = 63;
                                     memcpy(new_fn,
                                            (char *)exit_value + (CELL - TAG_VECTOR),
@@ -4150,7 +4150,7 @@ const char *PROC_symbol_name(PROC_handle p)
 {   LispObject w = (LispObject)p;
     intptr_t n;
     w = qpname(w);
-    n = length_of_header(vechdr(w)) - CELL;
+    n = length_of_byteheader(vechdr(w)) - CELL;
     if (n > (intptr_t)sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
     strncpy(PROC_name, &celt(w, 0), n);
     PROC_name[n] = 0;
@@ -4160,7 +4160,7 @@ const char *PROC_symbol_name(PROC_handle p)
 const char *PROC_string_data(PROC_handle p)
 {   LispObject w = (LispObject)p;
     intptr_t n;
-    n = length_of_header(vechdr(w)) - CELL;
+    n = length_of_byteheader(vechdr(w)) - CELL;
 //
 // NOTE that I truncate long strings here. Boo Hiss! This may make a mess
 // of dealing with big numbers, so in due course I will need to fix it!

@@ -60,7 +60,7 @@
 //
 
 LispObject characterify_string(LispObject pn)
-{   int n, w, len = length_of_header(vechdr(pn)) - CELL;
+{   int n, w, len = length_of_byteheader(vechdr(pn)) - CELL;
     if (len == 0) return pn; // empty name
     w = ucelt(pn, 0);
     if (w <= 0x7f && len == 1) return pack_char(0, w);
@@ -1125,7 +1125,7 @@ static LispObject get_char_vec(LispObject v, int32_t *high, int32_t *offset)
     if (!is_vector(v)) return nil;
     h = vechdr(v);
     if (is_string_header(h))
-    {   *high = length_of_header(h) - 4; // @@@ /* 4 vs CELL
+    {   *high = length_of_byteheader(h) - 4; // @@@ /* 4 vs CELL
         *offset = 0;
         return v;
     }

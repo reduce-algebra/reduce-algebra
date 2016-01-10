@@ -157,7 +157,7 @@ static void pack_atom(LispObject a)
         switch(type_of_header(*h))
         {   case TYPE_STRING:
                 pack_32bit(*h);
-                {   int size = length_of_header(*h) - sizeof(Header);
+                {   int size = length_of_byteheader(*h) - sizeof(Header);
                     check_buffer(size);
                     MPI_Pack(h+1, size, MPI_CHAR,
                              mpi_pack_buffer, mpi_pack_size,
@@ -268,7 +268,7 @@ static LispObject unpack_atom()
             return a;
 
         case TYPE_STRING:
-            size = length_of_header(a);
+            size = length_of_byteheader(a);
             a = getvector(TAG_VECTOR,TYPE_STRING,size);
             MPI_Unpack(mpi_pack_buffer, mpi_pack_size, &mpi_pack_position,
                        (char*)a - TAG_VECTOR + CELL,
@@ -287,7 +287,7 @@ static LispObject unpack_atom()
         case TYPE_SYMBOL:
         {   LispObject nil = C_nil;
             a = unpack_atom();  // Name in a string
-            return iintern(a, length_of_header(vechdr(a))-CELL, CP, 0);
+            return iintern(a, length_of_byteheader(vechdr(a))-CELL, CP, 0);
         }
         default:
             err_printf("Unknown header type %d", type_of_header(a));

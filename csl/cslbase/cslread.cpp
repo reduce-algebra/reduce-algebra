@@ -1345,7 +1345,32 @@ static int ordpv(LispObject u, LispObject v)
     if (type_of_header(hu) != type_of_header(hv))
         return (type_of_header(hu) < type_of_header(hv) ? -1 : 1);
     if (vector_holds_binary(hu))
-    {   while (n < lu && n < lv)
+    {
+#ifdef EXPERIMENT
+// STRING, VEC8 and BPS need length_of_byteheader used here.
+        switch (type_of_header(hu))
+        {
+        case TYPE_STRING_1:
+        case TYPE_STRING_2:
+        case TYPE_STRING_3:
+        case TYPE_STRING_4:
+        case TYPE_VEC8_1:
+        case TYPE_VEC8_2:
+        case TYPE_VEC8_3:
+        case TYPE_VEC8_4:
+        case TYPE_BPS_1:
+        case TYPE_BPS_2:
+        case TYPE_BPS_3:
+        case TYPE_BPS_4:
+            lu = length_of_byteheader(hu);
+            lv = length_of_byteheader(hv);
+            break;
+// Bitvectors are pending for now!
+        default:
+            break;
+        }
+#endif
+        while (n < lu && n < lv)
         {   unsigned int eu = *(unsigned char *)(u - TAG_VECTOR + n),
                          ev = *(unsigned char *)(v - TAG_VECTOR + n);
             if (eu != ev) return (eu < ev ? -1 : 1);

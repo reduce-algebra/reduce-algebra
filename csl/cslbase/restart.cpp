@@ -4654,6 +4654,9 @@ static void cold_setup()
     exit_reason = UNWIND_NULL;
     eq_hash_tables = equal_hash_tables = nil;
 
+// The package I am using at present will always be a package object
+// stored in the value cell of "current-package". But that symbol does not
+// quite exist yet - so as a temporary provision I use the value cell of NIL.
     current_package = nil;
 //
 // The code here is generally coded on the supposition that there will NEVER
@@ -4700,6 +4703,7 @@ static void cold_setup()
     }
 #else
     packnint_(CP) = fixnum_of_int(1); // Allow for nil
+// Place NIL into the table.
     {   int i = (int)(hash_lisp_string(qpname(nil)) &
                       (INIT_OBVECI_SIZE - 1));
         elt(packint_(CP), i) = nil;
@@ -4737,7 +4741,7 @@ static void cold_setup()
 #else
 //
 // The next line has hidden depths.  When it is obeyed during cold start
-// the C variable current_package has the value nil, hence make_symbol
+// the C variable *package* has the value nil, hence make_symbol
 // looks in the value cell of nil to find the package to intern wrt. Once
 // this has been done I can put nil back how it ought to have been!
 //

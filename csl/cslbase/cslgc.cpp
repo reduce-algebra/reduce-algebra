@@ -101,7 +101,7 @@
 //
 
 
-static char *validate_why, *validate_file;
+static const char *validate_why, *validate_file;
 static int validate_line, validate_line1;
 
 //
@@ -171,7 +171,7 @@ static int32_t (*vecheap_map)[MAX_PAGES][(CSL_PAGE_SIZE+255)/256];
 
 static int bitmap_mark_vec(LispObject p)
 {   int32_t i;
-    char *info = "unknown";
+    const char *info = "unknown";
     LispObject nil = C_nil;
 //
 // Check that the object is corectly tagged. Note that NIL must be
@@ -248,7 +248,7 @@ static int bitmap_mark_vec(LispObject p)
 
 static void validate(LispObject p, int line1)
 {   LispObject nil = C_nil;
-    char *info = "unknown";
+    const char *info = "unknown";
     Header h = 0;
     validate_line1 = line1;
     intptr_t i = 0;
@@ -338,7 +338,7 @@ top:
     }
 }
 
-void validate_all(char *why, int line, char *file)
+void validate_all(const char *why, int line, const char *file)
 {   LispObject *sp = NULL;
     LispObject nil = C_nil;
     int i;
@@ -348,21 +348,23 @@ void validate_all(char *why, int line, char *file)
     validate_file = file;   // In case a diagnostic is needed
 //  term_printf("Validate heap for %s at line %d of %s\n", why, line, file);
     if (heap_map == NULL)
-    {   if ((heap_map = malloc(MAP_SIZE)) == NULL)
+    {   if ((heap_map =
+                (int32_t (*)[MAX_PAGES][(CSL_PAGE_SIZE+255)/256])
+                calloc(MAP_SIZE, 1)) == NULL)
         {   term_printf("Unable to allocate %dM (%x) space for heap map\n",
                         (int)(MAP_SIZE/(1024*1024)), (int)(MAP_SIZE/(1024*1024)));
             return;
         }
     }
     if (vecheap_map == NULL)
-    {   if ((vecheap_map = malloc(MAP_SIZE)) == NULL)
+    {   if ((vecheap_map =
+                 (int32_t (*)[MAX_PAGES][(CSL_PAGE_SIZE+255)/256])
+                 calloc(MAP_SIZE, 1)) == NULL)
         {   term_printf("Unable to allocate %dM (%x) space for vecheap map\n",
                         (int)(MAP_SIZE/(1024*1024)), (int)(MAP_SIZE/(1024*1024)));
             return;
         }
     }
-    memset(heap_map, 0, sizeof(heap_map));
-    memset(vecheap_map, 0, sizeof(vecheap_map));
 //
 // The list bases to check from are
 // (a) nil    [NB: validate(nil) would be ineffective],
@@ -2363,7 +2365,7 @@ LispObject Lmapstore(LispObject nil, LispObject a)
                     {   e = qcar(e);
                         if (is_bps(e))
                         {   Header ch = *(Header *)(data_of_bps(e) - CELL);
-                            clen = length_of_header(ch) - CELL;
+                            clen = length_of_byteheader(ch) - CELL;
                         }
                     }
                     n = qcount(low + TAG_SYMBOL);
@@ -3046,6 +3048,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 
     copy_into_nilseg(NO);
 #ifdef DEBUG_VALIDATE
+    printf("Validating at start of GC\n");
     validate_all("gc start", __LINE__, __FILE__);
 #endif
 
@@ -3224,9 +3227,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         // ... since packages are done later
         mark(&qfastgets(nil));      // + the fastgets vector, if any
 
-        for (i = first_nil_offset; i<last_nil_offset; i++)
-        {   mark(&BASE[i]);
-        }
+        for (i = first_nil_offset; i<last_nil_offset; i++) mark(&BASE[i]);
         for (sp=stack; sp>(LispObject *)stackbase; sp--)
         {   mark(sp);
         }

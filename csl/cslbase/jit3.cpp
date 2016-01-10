@@ -740,7 +740,7 @@ LispObject Jbpsupbv(LispObject, LispObject v)
     int32_t n;
     if (!(is_bps(v))) return aerror1("bps-upbv", v);
     h = *(Header *)((char *)data_of_bps(v) - CELL);
-    n = length_of_header(h) - CELL;
+    n = length_of_byteheader(h) - CELL;
     //return fixnum_of_int(n-1);
     return n;
 }

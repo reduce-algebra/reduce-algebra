@@ -68,7 +68,7 @@ typedef struct Package
 // C compiler into using the address modes I want...
 // Rationalize at your peril!
 //
-#define packhdr_(p)   (*(Header *)     ((char *)(p) + (0 - TAG_VECTOR)))
+#define packhdr_(p)   (*(Header *)    ((char *)(p) + (0 - TAG_VECTOR)))
 #define packid_(p)    (*(LispObject *)((char *)(p) + (CELL - TAG_VECTOR)))
 #define packint_(p)   (*(LispObject *)((char *)(p) + (2*CELL - TAG_VECTOR)))
 #define packvint_(p)  (*(LispObject *)((char *)(p) + (3*CELL - TAG_VECTOR)))

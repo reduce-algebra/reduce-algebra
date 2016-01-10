@@ -1112,7 +1112,6 @@ LispObject bytecounts1(LispObject nil, LispObject a)
 #ifdef RECORD_GET
     v = elt(get_counts, 4);
     if (v == nil) return onevalue(nil);
-
     size = length_of_header(vechdr(v));
     size = (size - CELL)/CELL;
     tot = 0.0;
@@ -1453,7 +1452,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
     char volatile ffname[16];
     memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
     size_t fflength =
-        (size_t)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+        (size_t)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
     ffname[fflength] = 0;
     if (*ffname == 0)
@@ -4026,7 +4025,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                     nil = C_nil;
                     if (exception_pending()) goto callself_error_exit;
                 }
-                A_reg = bytestream_interpret(codevec-2, litvec, stack-1);
+                A_reg = bytestream_interpret(codevec-TAG_HDR_IMMED, litvec, stack-1);
                 nil = C_nil;
                 if (exception_pending()) goto callself_error_exit;
                 stack = C_stack;
@@ -4069,7 +4068,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                     nil = C_nil;
                     if (exception_pending()) goto callself_error_exit;
                 }
-                A_reg = bytestream_interpret(codevec-2, litvec, stack-2);
+                A_reg = bytestream_interpret(codevec-TAG_HDR_IMMED, litvec, stack-2);
                 nil = C_nil;
                 if (exception_pending()) goto callself_error_exit;
                 stack = C_stack;
@@ -5065,7 +5064,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
 #if defined DEBUG || !defined NO_BYTECOUNT
             ffsym = elt(litvec, 0);
             memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
-            fflength = (int)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+            fflength = (int)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
             if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
             ffname[fflength] = 0;
 #endif
@@ -5085,7 +5084,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
 #if defined DEBUG || !defined NO_BYTECOUNT
             ffsym = elt(litvec, 0);
             memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
-            fflength = (int)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+            fflength = (int)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
             if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
             ffname[fflength] = 0;
 #endif
@@ -5184,7 +5183,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
 #if defined DEBUG || !defined NO_BYTECOUNT
             ffsym = elt(litvec, 0);
             memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
-            fflength = (int)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+            fflength = (int)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
             if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
             ffname[fflength] = 0;
 #endif
@@ -5205,7 +5204,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
 #if defined DEBUG || !defined NO_BYTECOUNT
             ffsym = elt(litvec, 0);
             memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
-            fflength = (int)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+            fflength = (int)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
             if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
             ffname[fflength] = 0;
 #endif
@@ -5325,7 +5324,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
 #if defined DEBUG || !defined NO_BYTECOUNT
             ffsym = elt(litvec, 0);
             memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
-            fflength = (int)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+            fflength = (int)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
             if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
             ffname[fflength] = 0;
 #endif
@@ -5346,7 +5345,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
 #if defined DEBUG || !defined NO_BYTECOUNT
             ffsym = elt(litvec, 0);
             memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
-            fflength = (int)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+            fflength = (int)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
             if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
             ffname[fflength] = 0;
 #endif
@@ -5444,7 +5443,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
 #if defined DEBUG || !defined NO_BYTECOUNT
             ffsym = elt(litvec, 0);
             memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
-            fflength = (int)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+            fflength = (int)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
             if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
             ffname[fflength] = 0;
 #endif
@@ -5465,7 +5464,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
 #if defined DEBUG || !defined NO_BYTECOUNT
             ffsym = elt(litvec, 0);
             memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
-            fflength = (int)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+            fflength = (int)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
             if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
             ffname[fflength] = 0;
 #endif
