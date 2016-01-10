@@ -573,6 +573,80 @@ symbolic procedure get!-tempdir();
    return tempdir!*;
   end;
 
+%%
+%% extract image file name from command line arguments
+%%
+symbolic procedure get!-image!-path();
+  begin scalar found;     
+    for i:=0 : upbv unixargs!* do
+       if getv(unixargs!*,i)="-f" and i<upbv unixargs!* then found := i+1;
+    if fixp found then return getv(unixargs!*,found);
+  end;
+
+%%
+%% convert pathname into list of pathname elements,
+%%  removing extra "." and ".." along the way
+%%  result is (flag . list) where flag is true for an absolute pathname
+%%
+symbolic procedure path!-to!-entries p;
+   begin scalar dsl,pl,cl,el,l,abspath;
+    % dsl is the list of possible directory separators in the image path
+!#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
+    dsl := string2list "/\";
+!#else
+    dsl := string2list "/";
+!#endif
+    % pl is the list characters in p as integers
+    % cl will be used to collect the characters of the path elements,
+    % and el to collect the result
+    pl := string2list p;
+    % if the first char is a directory separator, we have an absolute pathname
+    if pairp pl and car pl member dsl
+       then << abspath := t;
+               % strip leading dir separator(s)
+               while pairp pl and car pl member dsl do pl := cdr pl >>;
+    % collect characters 
+    while pl do <<
+       while pairp pl and not (car pl member dsl) do <<cl := car pl . cl; pl := cdr pl>>;
+       % dir. sep. found, convert char list to string
+       el := list2string reversip cl . el; cl := nil;
+       % strip dir separator(s)
+       while pairp pl and car pl member dsl do pl := cdr pl
+    >>;
+    % return the list, removing "." and ".." entries
+    while el do <<
+       if car el = ".."
+         then <<if null cdr el then l := car el . l else el := cdr el>>
+        else if car el neq "." then l := car el . l;
+       el := cdr el >>;
+    % remove leading ".." from absolute path
+    if abspath and car l = ".."
+      then while l and car l = ".." do l := cdr l;
+    return abspath . l;
+   end;
+
+
+%%
+%% try to extract basepath from image dirpath by stripping the last two path elements
+%%
+symbolic procedure basepath!-from!-imagepath p;         
+  begin scalar l,abspath,imp;
+    l := path!-to!-entries p;
+    abspath := car l; l := cdr l;
+    if atom l or abspath and null cdr l then return ""
+     else if null cdr l then return ".." % image from current directory
+     else if null cddr l then return if abspath then dirchar!* else ".";
+    % more than two path elements, remove the last two
+    imp := if abspath then "" else ".";
+    while cddr l do <<
+       imp := concat(concat(imp,dirchar!*),car l);
+       l := cdr l >>;
+    return imp;
+end;
+
+symbolic procedure loaddirs!-from!-basepath p; 
+   list("",concat(p,"/red/"),concat(p,"/psl/"));
+
 endmodule;
 
 end;
