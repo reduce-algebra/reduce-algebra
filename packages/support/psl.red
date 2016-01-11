@@ -586,10 +586,10 @@ symbolic procedure get!-image!-path();
 %%
 %% convert pathname into list of pathname elements,
 %%  removing extra "." and ".." along the way
-%%  result is (flag . list) where flag is true for an absolute pathname
+%%  result is (prefix . list) where prefix is something like "/", "\\", "Y:\"
 %%
 symbolic procedure path!-to!-entries p;
-   begin scalar dsl,pl,cl,el,l,abspath;
+   begin scalar dsl,pl,cl,el,l,prefix;
     % dsl is the list of possible directory separators in the image path
 !#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
     dsl := string2list "/\";
@@ -600,11 +600,26 @@ symbolic procedure path!-to!-entries p;
     % cl will be used to collect the characters of the path elements,
     % and el to collect the result
     pl := string2list p;
+    dsl := string2list "/\";
+!#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
+    % if the first char is a letter and the second is a colon we have a drive spec
+    if pairp pl and pairp cdr pl and cadr pl = char !: and
+       (car pl >= char !A and car pl <= char !Z or car pl >= char !a and car pl <= char !a)
+      then << prefix := list2string {car pl, cadr pl}; pl := cddr pl;
+	      if pairp pl and car pl member dsl
+               then << prefix := concat(prefix,dirchar!*);
+		  while pairp pl and car pl member dsl do pl := cdr pl >> 
+           >>
+    % if the string starts with "\\" it is an UNC path
+     else if pairp pl and pairp cdr pl and car pl member dsl and cadr pl member dsl
+      then << prefix := "\\"; pl := cddr pl >>;
+!#else
     % if the first char is a directory separator, we have an absolute pathname
     if pairp pl and car pl member dsl
-       then << abspath := t;
+       then << prefix := dirchar!*;
                % strip leading dir separator(s)
                while pairp pl and car pl member dsl do pl := cdr pl >>;
+!#endif
     % collect characters 
     while pl do <<
        while pairp pl and not (car pl member dsl) do <<cl := car pl . cl; pl := cdr pl>>;
@@ -620,9 +635,9 @@ symbolic procedure path!-to!-entries p;
         else if car el neq "." then l := car el . l;
        el := cdr el >>;
     % remove leading ".." from absolute path
-    if abspath and car l = ".."
+    if prefix and car l = ".."
       then while l and car l = ".." do l := cdr l;
-    return abspath . l;
+    return prefix . l;
    end;
 
 
@@ -630,14 +645,16 @@ symbolic procedure path!-to!-entries p;
 %% try to extract basepath from image dirpath by stripping the last two path elements
 %%
 symbolic procedure basepath!-from!-imagepath p;         
-  begin scalar l,abspath,imp;
+  begin scalar l,prefix,imp;
     l := path!-to!-entries p;
-    abspath := car l; l := cdr l;
-    if atom l or abspath and null cdr l then return ""
+    prefix := car l; l := cdr l;
+    if atom l or prefix and null cdr l then return ""
      else if null cdr l then return ".." % image from current directory
-     else if null cddr l then return if abspath then dirchar!* else ".";
+     else if null cddr l then return if prefix then prefix else ".";
     % more than two path elements, remove the last two
-    imp := if abspath then "" else ".";
+    imp := if prefix then prefix else concat(".",dirchar!*);
+    imp := concat(imp,car l);
+    l := cdr l;
     while cddr l do <<
        imp := concat(concat(imp,dirchar!*),car l);
        l := cdr l >>;
@@ -645,7 +662,8 @@ symbolic procedure basepath!-from!-imagepath p;
 end;
 
 symbolic procedure loaddirs!-from!-basepath p; 
-   list("",concat(p,"/red/"),concat(p,"/psl/"));
+   << p := concat(p,dirchar!*);
+      {"",concat(p,concat("red",dirchar!*)),concat(p,concat("psl",dirchar!*))} >>;
 
 endmodule;
 
