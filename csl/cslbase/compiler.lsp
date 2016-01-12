@@ -3526,7 +3526,7 @@ atom (cadr where_to)) (c!:display_flowgraph (cadr where_to) depth nil)))))
 (de c!:pmovk1 (op r1 r2 r3 depth) (cond ((null r3) (c!:printf 
 "    %v = nil;\n" r1)) (t (cond ((equal r3 (quote t)) (c!:printf 
 "    %v = lisp_true;\n" r1)) (t (c!:printf 
-"    %v = (LispObject)%s; %<// %c\n" r1 (plus (times 16 r3) 1) r3))))))
+"    %v = (LispObject)%s+TAG_FIXNUM; %<// %c\n" r1 (times 16 r3) r3))))))
 
 (put (quote movk1) (quote c!:opcode_printer) (function c!:pmovk1))
 

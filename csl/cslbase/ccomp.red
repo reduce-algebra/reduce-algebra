@@ -1273,7 +1273,7 @@ put('movk, 'c!:opcode_printer, function c!:pmovk);
 symbolic procedure c!:pmovk1(op, r1, r2, r3, depth);
    if null r3 then c!:printf("    %v = nil;\n", r1)
    else if r3 = 't then c!:printf("    %v = lisp_true;\n", r1)
-   else c!:printf("    %v = (LispObject)%s; %<// %c\n", r1, 16*r3+1, r3);
+   else c!:printf("    %v = (LispObject)%s+TAG_FIXNUM; %<// %c\n", r1, 16*r3, r3);
 
 put('movk1, 'c!:opcode_printer, function c!:pmovk1);
 flag('(movk1), 'c!:uses_nil);  % Well it does SOMETIMES

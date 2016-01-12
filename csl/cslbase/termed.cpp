@@ -276,7 +276,7 @@ static int outputColour = -1;  // whatever user had been using
 
 static FILE *termed_logfile = NULL;
 
-static void write_log(char *s, ...)
+static void write_log(const char *s, ...)
 {   va_list x;
     if (termed_logfile == NULL) termed_logfile = fopen("termed.log", "w");
     if (termed_logfile == NULL) termed_logfile = fopen("/tmp/termed.log", "w");

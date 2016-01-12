@@ -613,6 +613,10 @@ AC_MSG_RESULT([$enable_test])
 
 if test "x$enable_test" = "xyes"
 then
+# I force EXPERIMENT into CPPFLAGS because when u01.cpp to u60.cpp get
+# compiled they do not include config.h and so would otherwise miss out
+# on the option!
+  CPPFLAGS="$CPPFLAGS -DEXPERIMENT=1"
   AC_DEFINE(EXPERIMENT, [1], [True if this is an experimental testing mode variant])
 fi
 
