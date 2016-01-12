@@ -1428,25 +1428,22 @@ typedef struct Big_Number
 // tagging system potentially badly. NOTE VERY WELL that although the other
 // header length packers take a count of items this one takes a length in
 // bytes!
-#define pack_hdrlength(n) (((intptr_t)(n))<<(Tw+5))
-// pack_hdrlengthbytes takes a number of bytes as an argument and adjusts it
-// to go in a header. The integer part will end up counting the number of
-// words that are at least partly used.
-// pack_hdrlengthbits sets a header for a vector with a given number of bits.
-#define pack_hdrlengthbits(n) ((31+(intptr_t)(n))<<(Tw+2))
-#define pack_hdrlengthbytes(n) ((3+(intptr_t)(n))<<(Tw+5))
-// pack_hdrlengthhwords takes a count of the number of halfwords needed.
-#define pack_hdrlengthhwords(n) ((1+(intptr_t)(n))<<(Tw+4))
-#define make_padder(n) (pack_hdrlengthbytes(n) + TYPE_VEC8_1 + TAG_HDR_IMMED)
+#define pack_hdrlength(n) (((intptr_t)(n))<<(Tw+7))
+// pack_hdrlengthbytes takes a number of 32-bit words as an argument and
+// adjusts it to go in a header.
+//@#define pack_hdrlengthbits(n) ((31+(intptr_t)(n))<<(Tw+2))
+//@#define pack_hdrlengthbytes(n) ((3+(intptr_t)(n))<<(Tw+5))
+//@#define pack_hdrlengthhwords(n) ((1+(intptr_t)(n))<<(Tw+4))
+#define make_padder(n) (pack_hdrlength((n)/4) + TYPE_VEC8_1 + TAG_HDR_IMMED)
 
 #else
 
 #define make_bighdr(n)    (TAG_HDR_IMMED+TYPE_BIGNUM+(((intptr_t)(n))<<12))
 #define pack_hdrlength(n) (((intptr_t)(n))<<12)
-#define pack_hdrlengthbytes(n) (((intptr_t)(n))<<12)
-#define pack_hdrlengthhwords(n) ((2*(intptr_t)(n))<<12)
+//#define pack_hdrlengthbytes(n) (((intptr_t)(n))<<12)
+//#define pack_hdrlengthhwords(n) ((2*(intptr_t)(n))<<12)
 // @@@ not finished yet!
-#define pack_hdrlengthbits(n) (((7+(intptr_t)(n))/8)<<12)
+//#define pack_hdrlengthbits(n) (((7+(intptr_t)(n))/8)<<12)
 #define make_padder(n) (TYPE_VEC8 + ((n)<<10) + TAG_HDR_IMMED)
 #endif
 

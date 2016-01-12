@@ -1576,7 +1576,8 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
     }
 #endif
     for (;;)
-    {   HANDLE_BLIP;
+    {
+//      HANDLE_BLIP;
 #ifndef NO_BYTECOUNT
         if (!profile_count_mode)
         {   if (increment_counter(nil, 1)) goto pop_stack_and_exit;

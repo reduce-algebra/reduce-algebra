@@ -286,7 +286,7 @@ static LispObject timesib(LispObject a, LispObject b)
 // of 31-bit values. But note that if the computer has been marked as
 // supporting a 64-bit integer data-type then Imultiply macro-expands
 // into code that uses 64-bit intermediate values and so that should
-// go quote fast enough without assembly code.
+// go quite fast enough without assembly code.
 //
     carry = 0;
 //
