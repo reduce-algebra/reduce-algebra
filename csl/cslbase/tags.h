@@ -678,12 +678,12 @@ typedef uintptr_t Header;
 
 // Here I have a header and I want to know if the pointer to this
 // object should be marked with TAG_BOXFLOAT. At present that applies
-// for FLOAT32, FLOAT64 and FLOAT128. IN the future it may never apply at all!
+// as shown. In the future it may never apply at all!
 
 #define is_boxfloat_header(h) \
-  (type_of_header(h) == TYPE_FLOAT32 || \
-   type_of_header(h) == TYPE_FLOAT64 || \
-   type_of_header(h) == TYPE_FLOAT128)
+  (type_of_header(h) == TYPE_SINGLE_FLOAT || \
+   type_of_header(h) == TYPE_DOUBLE_FLOAT || \
+   type_of_header(h) == TYPE_LONG_FLOAT)
 
 //
 // The following tests are valid provided that n is already known to

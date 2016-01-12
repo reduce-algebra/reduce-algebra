@@ -6467,6 +6467,47 @@ void setup(int restart_flag, double store_size)
 
 LispObject multiplication_buffer;
 
+#ifdef DEBUG_WITH_HASH
+uint32_t basehash[200];
+
+#define HASHDEPTH 60
+
+int hash_sequence_number = 1;
+
+uint32_t hash_for_checking(LispObject a, int depth)
+{
+    Header h;
+    int i;
+    uint32_t r;
+    if (depth > HASHDEPTH) return 12345;
+    if (is_fixnum(a)) return (uint32_t)a;
+    if (a == 0)
+    {   printf("@@@ a==0 in hash_for_checking\n");
+        return 11*hash_sequence_number++;
+    }
+    if (is_cons(a))
+    {   uint32_t c = hash_for_checking(qcar(a), depth+3);
+        uint32_t d = hash_for_checking(qcdr(a), depth+1);
+        return 169*c + d + 77777;
+    }
+    if (is_symbol(a))
+    {   uint32_t r = hash_for_checking(qplist(a), depth+2);
+        r = 11213*2 + hash_for_checking(qenv(a), depth+10);
+        return 19963*r + 17*hash_for_checking(qpname(a), depth+1);
+    }
+    if (!is_vector(a) || !is_string_header(h = vechdr(a)))
+    {   if (is_vector(a)) return vechdr(a);
+        else if (is_numbers(a)) return numhdr(a);
+        return 987654321;
+    }
+    r = 1;
+    for (i=0; i<length_of_byteheader(h)-CELL; i++)
+        r = 314159*r + celt(a, i);
+    return r; 
+}
+
+#endif
+
 void copy_into_nilseg(int fg)
 {   LispObject nil = C_nil;
     multiplication_buffer = nil;
@@ -6650,6 +6691,12 @@ void copy_into_nilseg(int fg)
     BASE[198]    = user_base_8;
     BASE[199]    = user_base_9;
 
+#ifdef DEBUG_WITH_HASH
+    for (i=first_nil_offset; i<last_nil_offset; i++)
+    {   basehash[i] = hash_for_checking(BASE[i], 0);
+    }
+#endif
+
 }
 
 void copy_out_of_nilseg(int fg)
@@ -6816,6 +6863,15 @@ void copy_out_of_nilseg(int fg)
     user_base_7           = BASE[197];
     user_base_8           = BASE[198];
     user_base_9           = BASE[199];
+
+#ifdef DEBUG_WITH_HASH
+    for (i=first_nil_offset; i<last_nil_offset; i++)
+    {   uint32_t hh;
+        if (basehash[i] != (hh = hash_for_checking(BASE[i], 0)))
+        {   printf("@@@Hash code for BASE[%d] was %x is now %x\n", i, basehash[i], hh);
+        }
+    }
+#endif
 }
 
 

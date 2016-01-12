@@ -760,7 +760,7 @@ static uint32_t hash_cl_equal(LispObject key, CSLbool descend)
     }
 }
 
-static uint32_t hash_equal(LispObject key)
+uint32_t hash_equal(LispObject key)
 //
 // This function is the one used hashing things under the Standard Lisp
 // version of EQUAL, which descends vectors but is still sensitive to

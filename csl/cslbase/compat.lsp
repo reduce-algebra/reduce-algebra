@@ -41,10 +41,7 @@
 
 %%!!! csl
 
-(setpchar "> ")
-
 (symbol!-make!-fastget 'noncom 0)  % built into the kernel
-(setpchar "> ")
 (symbol!-make!-fastget 'lose   1)
 (setpchar "> ")
 

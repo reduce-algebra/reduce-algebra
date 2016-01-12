@@ -1470,7 +1470,7 @@ LispObject Lmd5(LispObject nil, LispObject a)
     uint32_t v0, v1, v2, v3, v4;
     int32_t len, i;
     if (is_fixnum(a))
-    {   sprintf((char *)md, "%.7lx", (unsigned long)(a>>4)&0x0fffffff);
+    {   sprintf((char *)md, "%.7lx  ", (unsigned long)(a>>4)&0x0fffffff);
         CSL_MD5_Init();
         CSL_MD5_Update(md, 8);
     }
@@ -1483,7 +1483,7 @@ LispObject Lmd5(LispObject nil, LispObject a)
         }
     }
     else if (is_vector(a) && is_string(a))
-    {   len = length_of_header(vechdr(a));
+    {   len = length_of_byteheader(vechdr(a));
         CSL_MD5_Init();
         CSL_MD5_Update((const unsigned char *)"\"", 1);
         CSL_MD5_Update((unsigned char *)(a + CELL - TAG_VECTOR), len-CELL);
@@ -1561,7 +1561,7 @@ LispObject Lmd5string(LispObject nil, LispObject a)
     uint32_t v0, v1, v2, v3, v4;
     int32_t len, i;
     if (is_vector(a) && is_string(a))
-    {   len = length_of_header(vechdr(a));
+    {   len = length_of_byteheader(vechdr(a));
         CSL_MD5_Init();
         CSL_MD5_Update((unsigned char *)(a + CELL - TAG_VECTOR), len-CELL);
     }
@@ -1639,7 +1639,7 @@ LispObject Lmd60(LispObject nil, LispObject a)
     uint32_t v0, v1;
     int32_t len, i;
     if (is_fixnum(a))
-    {   sprintf((char *)md, "%.7lx", (unsigned long)(a>>4) & 0x0fffffff);
+    {   sprintf((char *)md, "%.7lx  ", (unsigned long)(a>>4) & 0x0fffffff);
         CSL_MD5_Init();
         CSL_MD5_Update(md, 8);
     }
@@ -1652,7 +1652,7 @@ LispObject Lmd60(LispObject nil, LispObject a)
         }
     }
     else if (is_vector(a) && is_string(a))
-    {   len = length_of_header(vechdr(a));
+    {   len = length_of_byteheader(vechdr(a));
         CSL_MD5_Init();
         CSL_MD5_Update((const unsigned char *)"\"", 1);
         CSL_MD5_Update((unsigned char *)(a + CELL - TAG_VECTOR), len-CELL);

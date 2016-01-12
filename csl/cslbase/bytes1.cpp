@@ -1366,7 +1366,10 @@ LispObject bytestream_interpret(LispObject code, LispObject lit,
 {
 //
 // Here I have a wrapper function that is used to help me track
-// ultra deep recursions!
+// ultra deep recursions! This is only used when CHECK_STACK had been
+// defined at compile-time, and I view any performance consequences as
+// utterly unimportant provided it sometimes allows me to discover
+// what is leading to uncontrolled recursion.
 //
     LispObject w, nil = C_nil;
     int len = 0;
@@ -1493,13 +1496,17 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
 //
 #ifdef ACN
 // ... except that I will only go the whole hog if one defines ACN
-    push2(code, lit);
-    C_stack = stack;
-    callstack = cons(elt(lit, 0), callstack);
-    stack = C_stack;
-    pop2(lit, code);
-    C_stack = stack;
-    errexit();
+    {   int codetags = code & TAG_BITS;
+        code = (code & ~TAG_BITS) + TAG_HDR_IMMED;
+        push2(code, lit);
+        C_stack = stack;
+        callstack = cons(elt(lit, 0), callstack);
+        stack = C_stack;
+        pop2(lit, code);
+        code = (code & ~TAG_BITS) | codetags;
+        C_stack = stack;
+        errexit();
+    }
 #endif
 #endif
     litvec = lit;

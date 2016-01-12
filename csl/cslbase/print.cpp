@@ -2002,7 +2002,12 @@ restart:
                 return;
             }
 #endif
-            if (u == 0) u = nil; // Bug security here
+            if (u == 0)
+            {   outprefix(blankp, 2);
+                putc_stream('?', active_stream);
+                putc_stream('?', active_stream);
+                return;
+            }
             push(u);
             outprefix(blankp, 1);
             putc_stream('(', active_stream);
@@ -2010,13 +2015,13 @@ restart:
             internal_prin(qcar(stack[0]), 0);
             errexitvn(1);
             w = stack[0];
-            while (is_cons(w = qcdr(w)))
+            while (is_cons(w = qcdr(w)) && w != 0)
             {
 #ifdef COMMON
                 if (w == nil) break;    // Again BEWARE the tag code of NIL
 #endif
                 stack[0] = w;
-                internal_prin(qcar(stack[0]), 1);
+                internal_prin(qcar(w), 1);
                 errexitvn(1);
                 w = stack[0];
             }
@@ -3943,6 +3948,27 @@ LispObject Lprint_config_header(LispObject nil, int nargs, ...)
     return onevalue(nil);
 }
 
+static void internal_check(LispObject original_a, LispObject a, int depth, uint64_t path)
+{
+    if (!is_cons(a)) return;
+    if ((a & 0x7ffffff0) == 0)
+    {   printf("Zero cons pointer at depth %d\n", depth);
+        printf("Original a = %" PRIxPTR " path = %" PRIx64 "\n",
+            original_a, path);
+        *(char *)(-1) = 0;
+    }
+    internal_check(original_a, qcar(a), depth+1, path<<1);
+    internal_check(original_a, qcdr(a), depth+1, (path<<1)+1);
+}
+
+LispObject Lcheck_list(LispObject nil, LispObject a)
+{   push(a);
+    internal_check(a, a, 0, 0);
+    pop(a);
+    errexit();
+    return onevalue(a);
+}
+
 LispObject Lprin(LispObject nil, LispObject a)
 {   push(a);
     escaped_printing = escape_yes;
@@ -5407,6 +5433,7 @@ setup_type const print_setup[] =
 #ifdef SOCKETS
     {"open-url",                Lopen_url, too_many_1, wrong_no_1},
 #endif
+    {"check-list",              Lcheck_list, too_many_1, wrong_no_1},
     {"window-heading",          Lwindow_heading1, Lwindow_heading2, wrong_no_1},
     {"eject",                   wrong_no_na, wrong_no_nb, Leject},
     {"filep",                   Lfilep, too_many_1, wrong_no_1},

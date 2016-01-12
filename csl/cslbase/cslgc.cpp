@@ -248,10 +248,18 @@ static int bitmap_mark_vec(LispObject p)
 
 static void validate(LispObject p, int line1)
 {   LispObject nil = C_nil;
-    const char *info = "unknown";
+// This code is activate when there is a suspected bug in the garbage
+// collector. A consequence is that it may be called when the heap is in
+// a corrupt state. The variable "info" here is set to give a small amount
+// of information about what has been being scanned, but is not inspected
+// by the code. It is present so thata debugger can ceck it following any
+// crash.
+    volatile const char *info = "unknown";
     Header h = 0;
     validate_line1 = line1;
     intptr_t i = 0;
+    (void)info;   // Tends to prevent gcc from moaning about definition
+                  // without use.
 top:
     if (p == nil) return;
     if (p == 0)
@@ -346,7 +354,7 @@ void validate_all(const char *why, int line, const char *file)
     validate_line = line;
     validate_line1 = 0;
     validate_file = file;   // In case a diagnostic is needed
-//  term_printf("Validate heap for %s at line %d of %s\n", why, line, file);
+    term_printf("Validate heap for %s at line %d of %s\n", why, line, file);
     if (heap_map == NULL)
     {   if ((heap_map =
                 (int32_t (*)[MAX_PAGES][(CSL_PAGE_SIZE+255)/256])
@@ -2769,6 +2777,11 @@ static int prev_consolidated_set = 1;
 
 int garbage_collection_permitted = 0;
 
+#ifdef DEBUG_WITH_HASH
+#define GCHASH 10000
+uint32_t stackhash[GCHASH];
+#endif
+
 LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 {   intptr_t i;
     clock_t t0, t1, t2, t3;
@@ -3212,6 +3225,12 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     }
     else
     {
+#ifdef DEBUG_WITH_HASH
+        for (sp=stack; sp>(LispObject *)stackbase; sp--)
+        {   int n = sp - (LispObject *)stackbase;
+            if (n < GCHASH) stackhash[n] = hash_for_checking(*sp, 0);
+        }
+#endif
 //
 // The list bases to mark from are
 // (a) nil    [NB: mark(nil) would be ineffective],
@@ -3271,11 +3290,11 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         relocate_vecheap();
 
         {   char *fr = (char *)fringe,
-                      *vf = (char *)vfringe,
-                       *cf = (char *)codefringe,
-                        *hl = (char *)heaplimit,
-                         *vl = (char *)vheaplimit,
-                          *cl = (char *)codelimit;
+                 *vf = (char *)vfringe,
+                 *cf = (char *)codefringe,
+                 *hl = (char *)heaplimit,
+                 *vl = (char *)vheaplimit,
+                 *cl = (char *)codelimit;
             uintptr_t len = (uintptr_t)(fr - (hl - SPARE));
             car32(hl - SPARE) = len;
             len = (uintptr_t)(vf - (vl - (CSL_PAGE_SIZE - 8)));
@@ -3304,6 +3323,20 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 #ifdef DEBUG_VALIDATE
     validate_all("gc end", __LINE__, __FILE__);
 #endif
+
+#ifdef DEBUG_WITH_HASH
+        for (sp=stack; sp>(LispObject *)stackbase; sp--)
+        {   int n = sp - (LispObject *)stackbase;
+            uint32_t hh;
+            if (n < GCHASH)
+            {   if (stackhash[n] != (hh = hash_for_checking(*sp, 0)))
+                {   printf("@@@Stack offset %d was %x now %x\n",
+                        n, stackhash[n], hh);
+                }
+            }
+        }
+#endif
+
     copy_out_of_nilseg(NO);
 
     if ((verbos_flag & 5) == 5)
