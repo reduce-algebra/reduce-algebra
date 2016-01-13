@@ -146,6 +146,7 @@ cd psl
 (de alterheapsize (d) (rederr "Sorry, but at present the Heap cannot be extended. Please start Reduce again with a larger heap (-td parameter) and rerun."))
 
 (savesystem "REDUCE" "../red/reduce" (quote ((commandline_setq)
+                                             (set-load-directories)
                                              (read-init-file "reduce")
 			(cond ((member "--texmacs" (vector2list unixargs!*))
 						(load tmprint))))))
