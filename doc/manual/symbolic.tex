@@ -26,7 +26,7 @@ mode} To enter symbolic mode, the user types \texttt{symbolic;}
 algebraic mode one types \texttt{algebraic;}.\ttindex{ALGEBRAIC}
 Evaluations proceed differently in each mode so the user is advised to
 check what mode he is in if a puzzling error arises.  He can find his mode
-by typing\ttindex{EVAL\_MODE}
+by typing\ttindextype{EVAL\_MODE}{shared global variable}
 \begin{verbatim}
         eval_mode;
 \end{verbatim}
@@ -132,7 +132,7 @@ Thus \texttt{ (A !. B)} is the list consisting of the three elements \texttt{A},
 \texttt{.}, and \texttt{B}, whereas \texttt{(A . B)} is the dotted pair of \texttt{A}
 and \texttt{B}.
 
-\section{Lambda Expressions}\ttindex{LAMBDA}
+\section{Lambda Expressions}\ttindextype{LAMBDA}{reserved word}
 \hypertarget{reserved:LAMBDA}{}
 \label{sec-lambda}
 
@@ -186,7 +186,8 @@ translates into \texttt{(SETQ X Y)} whereas \texttt{a(3) := 3} will be valid if
 \texttt{A} has been previously declared a single dimensioned array of at
 least four elements.
 
-\section{FOR EACH Statement}\ttindex{FOR EACH}
+\section{FOR EACH Statement}\ttindextype{FOR EACH}{statement}
+\index{Statement!FOR EACH@\texttt{FOR EACH}}
 
 The \texttt{FOR EACH} form of the \texttt{FOR} statement, designed for iteration
 down a list, is more general in symbolic mode.  Its syntax is:
@@ -202,7 +203,7 @@ remaining at each point in the iteration.  As a result, we have the
 following equivalence between each form of \texttt{FOR EACH} and the various
 mapping functions in Lisp:
 \begin{center}
-{\tt
+\texttt{
 \begin{tabular}{|l|lr r|} \hline
 & DO & COLLECT & JOIN \\ \hline
         IN &   MAPC & MAPCAR & MAPCAN \\
@@ -240,10 +241,11 @@ Report.) For example, we could define a \texttt{MACRO CONSCONS} by
 \end{verbatim}
 
 \hypertarget{reserved:SMACRO}{}
+\hypertarget{reserved:INLINE}{}
 \hypertarget{reserved:FEXPR}{}
-Another form of macro, the \texttt{SMACRO}\ttindex{SMACRO} is also available.
+Another form of macro, the \texttt{SMACRO}\ttindextype{SMACRO}{reserved identifier} is also available.
 These are described in the Standard Lisp Report.  The Report also defines
-a function type \texttt{FEXPR}.\ttindex{FEXPR}
+a function type \texttt{FEXPR}.\ttindextype{FEXPR}{reserved identifier}
 However, its use is discouraged since it is hard to implement efficiently,
 and most uses can be replaced by macros.  At the present time, there are
 no \texttt{FEXPR}s in the core REDUCE system.
@@ -260,9 +262,9 @@ it.  Normal operation is resumed when \sw{DEFN} is turned off.
 \hypertarget{command:SHARE}{}
 
 One of the principal motivations for a user of the algebraic facilities of
-{\REDUCE} to learn about symbolic mode\index{Symbolic mode} is that it
+{\REDUCE} to learn about symbolic mode\index{Symbolic mode}\index{Mode!symbolic} is that it
 gives one access to a wider range of techniques than is possible in
-algebraic mode\index{Algebraic mode} alone.  For example, if a user
+algebraic mode\index{Algebraic mode}\index{Mode!algebraic} alone.  For example, if a user
 wishes to use parts of the system defined in the basic system source code,
 or refine their algebraic code definitions to make them more efficient,
 then it is necessary to understand the source language in fairly complete
@@ -281,7 +283,7 @@ If one wants to evaluate an expression in algebraic mode, and then use
 that expression in symbolic mode calculations, or vice versa, the easiest
 way to do this is to assign a variable to that expression whose value is
 easily obtainable in both modes.  To facilitate this, a declaration 
-\texttt{SHARE}\ttindex{SHARE} is available. \texttt{SHARE} takes a list of
+\texttt{SHARE}\ttindextype{SHARE}{declaration} is available. \texttt{SHARE} takes a list of
 identifiers as argument, and marks these variables as having recognizable
 values in both modes.  The declaration may be used in either mode.
 
