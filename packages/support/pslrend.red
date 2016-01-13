@@ -50,6 +50,8 @@ fluid '(!*break
         currentscantable!*
 %       current!-modulus
         errout!*
+	imagefilename!*
+	loadbasedirectory!*
         lispscantable!*
         lispsystem!*
         promptstring!*
@@ -81,7 +83,7 @@ flag('(define!-constant),'eval);
 
 % Encode information about underlying system.
 
-compiletime define!-constant(system_list!*, 'psl . system_list!*);
+compiletime define!-constant(system_list!*, if 'psl memq system_list!* then system_list!* else 'psl . system_list!*);
 
 lispsystem!* := system_list!*;
 
@@ -500,24 +502,34 @@ load str!-search;
 load numeric!-ops;
 load chars;
 
+%%
+%% extract image file name from command line arguments
+%%
+symbolic procedure get!-image!-path();
+  begin scalar found;     
+    for i:=0 : upbv unixargs!* do
+       if getv(unixargs!*,i)="-f" and i<upbv unixargs!* then found := i+1;
+    if fixp found then return getv(unixargs!*,found);
+  end;
+
 symbolic procedure commandline_setq();
+  % executes a setq(var,value); from  commandline arg
+  % reduce -d var=value
+  begin scalar extraargs,extracommand;
+     getunixargs();			% copy command line args to unixargs!* vector
+     extraargs := get!-command!-args(); % return command line args as list
+     if null imagefilename!*
+       then imagefilename!* := get!-image!-path(); % -f image file argument
 
-% executes a setq(var,value); from  commandline arg
-% reduce -d var=value
-
-begin scalar extraargs,extracommand;
-
-getunixargs();
-extraargs := get!-command!-args()$
-
-extraargs := member('"-d",extraargs);
-if extraargs
-   then
-   << extracommand := cadr extraargs;
-      extracommand := split!-str(extracommand,"=");
-      eval list('setq,intern car extracommand, cadr extracommand);
->>$
-end$
+     while (extraargs := member('"-d",extraargs)) do
+     	if cdr extraargs
+       	  then
+       	  << extracommand := cadr extraargs;
+      	     extracommand := split!-str(extracommand,"=");
+      	     eval list('setq,intern car extracommand, cadr extracommand);
+	     extraargs := cddr extraargs;
+       	  >>;
+  end;
 
 % got used to Perl/php split WN
 
@@ -534,6 +546,94 @@ symbolic procedure split!-str!-1 (string,separator,r);
     else
       string . r ;
   end;
+
+%%
+%% convert pathname into list of pathname elements,
+%%  removing extra "." and ".." along the way
+%%  result is (prefix . list) where prefix is something like "/", "\\", "Y:\"
+%%
+symbolic procedure path!-to!-entries p;
+   begin scalar dsl,pl,cl,el,l,prefix;
+    % dsl is the list of possible directory separators in the image path
+!#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
+    dsl := string2list "/\";
+!#else
+    dsl := string2list "/";
+!#endif
+    % pl is the list characters in p as integers
+    % cl will be used to collect the characters of the path elements,
+    % and el to collect the result
+    pl := string2list p;
+    dsl := string2list "/\";
+!#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
+    % if the first char is a letter and the second is a colon we have a drive spec
+    if pairp pl and pairp cdr pl and cadr pl = char !: and
+       (car pl >= char !A and car pl <= char !Z or car pl >= char !a and car pl <= char !a)
+      then << prefix := list2string {car pl, cadr pl}; pl := cddr pl;
+	      if pairp pl and car pl member dsl
+               then << prefix := concat(prefix,dirchar!*);
+		  while pairp pl and car pl member dsl do pl := cdr pl >> 
+           >>
+    % if the string starts with "\\" it is an UNC path
+     else if pairp pl and pairp cdr pl and car pl member dsl and cadr pl member dsl
+      then << prefix := "\\"; pl := cddr pl >>;
+!#else
+    % if the first char is a directory separator, we have an absolute pathname
+    if pairp pl and car pl member dsl
+       then << prefix := dirchar!*;
+               % strip leading dir separator(s)
+               while pairp pl and car pl member dsl do pl := cdr pl >>;
+!#endif
+    % collect characters 
+    while pl do <<
+       while pairp pl and not (car pl member dsl) do <<cl := car pl . cl; pl := cdr pl>>;
+       % dir. sep. found, convert char list to string
+       el := list2string reversip cl . el; cl := nil;
+       % strip dir separator(s)
+       while pairp pl and car pl member dsl do pl := cdr pl
+    >>;
+    % return the list, removing "." and ".." entries
+    while el do <<
+       if car el = ".."
+         then <<if null cdr el then l := car el . l else el := cdr el>>
+        else if car el neq "." then l := car el . l;
+       el := cdr el >>;
+    % remove leading ".." from absolute path
+    if prefix and car l = ".."
+      then while l and car l = ".." do l := cdr l;
+    return prefix . l;
+   end;
+
+
+%%
+%% try to extract basepath from image dirpath by stripping the last two path elements
+%%
+symbolic procedure basepath!-from!-imagepath p;         
+  begin scalar l,prefix,imp;
+    l := path!-to!-entries p;
+    prefix := car l; l := cdr l;
+    if atom l or prefix and null cdr l then return ""
+     else if null cdr l then return ".." % image from current directory
+     else if null cddr l then return if prefix then prefix else ".";
+    % more than two path elements, remove the last two
+    imp := if prefix then prefix else concat(".",dirchar!*);
+    imp := concat(imp,car l);
+    l := cdr l;
+    while cddr l do <<
+       imp := concat(concat(imp,dirchar!*),car l);
+       l := cdr l >>;
+    return imp;
+end;
+
+symbolic procedure loaddirs!-from!-basepath p; 
+   << p := concat(p,dirchar!*);
+      {"",concat(p,concat("red",dirchar!*)),concat(p,concat("psl",dirchar!*))} >>;
+
+symbolic procedure set!-load!-directories ();
+   << if null loadbasedirectory!*	% set base directory if not yet known
+        then loadbasedirectory!* := basepath!-from!-imagepath imagefilename!*;
+      loaddirectories!* := loaddirs!-from!-basepath loadbasedirectory!* 
+   >>;
 
 % Some Lisp system might turn (sqrt -2.0) into a Lisp-level complex value
 % while others (including PSL) raise an error in such cases. The Reduce
