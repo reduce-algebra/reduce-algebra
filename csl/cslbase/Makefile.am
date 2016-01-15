@@ -97,6 +97,7 @@ endif !exeext
 .PHONY:	prof-inst
 .PHONY:	c-code
 .PHONY:	standard-c-code
+.PHONY:	partial-c-code
 .PHONY:	full-c-code
 .PHONY: j-code
 .PHONY:	smacros
@@ -1998,6 +1999,21 @@ standard-c-code $(generated_sources_deps) $(generated_lisp):	$(gensrc)/make.stam
 	  $(MAKE) $(AM_MAKEFLAGS) reduce; \
 	fi
 
+
+# partial-c-code is a target only activated manually.
+
+partial-c-code:	bootstrapreduce.img $(gensrc)/profile.dat
+if canrun
+	mkdir -p buildlogs
+	chmod 664 $(gensrc)/*
+	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
+		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
+		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
+		-- buildlogs/partial-c-code.log
+	chmod 664 $(gensrc)/*
+else !canrun
+	echo Can not generate C code on this platfrom
+endif !canrun
 
 # full-c-code is a target only activated manually.
 

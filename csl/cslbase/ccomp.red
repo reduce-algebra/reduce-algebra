@@ -1535,14 +1535,14 @@ put('get, 'c!:opcode_printer, function c!:pget);
 symbolic procedure c!:pqgetv(op, r1, r2, r3, depth);
  << c!:printf("    %v = *(LispObject *)((char *)%v + (CELL-TAG_VECTOR) +",
               r1, r2);
-    c!:printf(" ((int32_t)%v/(16/CELL)));\n", r3) >>;
+    c!:printf(" (((int32_t)%v-TAG_FIXNUM)/(16/CELL)));\n", r3) >>;
 
 put('qgetv, 'c!:opcode_printer, function c!:pqgetv);
 
 symbolic procedure c!:pqputv(op, r1, r2, r3, depth);
  <<
   c!:printf("    *(LispObject *)((char *)%v + (CELL-TAG_VECTOR) +", r2);
-  c!:printf(" ((int32_t)%v/(16/CELL))) = %v;\n", r3, r1) >>;
+  c!:printf(" (((int32_t)%v-TAG_FIXNUM)/(16/CELL))) = %v;\n", r3, r1) >>;
 
 put('qputv, 'c!:opcode_printer, function c!:pqputv);
 

@@ -1,5 +1,5 @@
 
-COMMENT 
+COMMENT
 
   Testing some integrals of inverse trigonometric and hyperbolic functions
 

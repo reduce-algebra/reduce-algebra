@@ -3757,13 +3757,13 @@ r1 r2 r3))
 
 (de c!:pqgetv (op r1 r2 r3 depth) (progn (c!:printf 
 "    %v = *(LispObject *)((char *)%v + (CELL-TAG_VECTOR) +" r1 r2) (c!:printf
-" ((int32_t)%v/(16/CELL)));\n" r3)))
+" (((int32_t)%v-TAG_FIXNUM)/(16/CELL)));\n" r3)))
 
 (put (quote qgetv) (quote c!:opcode_printer) (function c!:pqgetv))
 
 (de c!:pqputv (op r1 r2 r3 depth) (progn (c!:printf 
 "    *(LispObject *)((char *)%v + (CELL-TAG_VECTOR) +" r2) (c!:printf 
-" ((int32_t)%v/(16/CELL))) = %v;\n" r3 r1)))
+" (((int32_t)%v-TAG_FIXNUM)/(16/CELL))) = %v;\n" r3 r1)))
 
 (put (quote qputv) (quote c!:opcode_printer) (function c!:pqputv))
 

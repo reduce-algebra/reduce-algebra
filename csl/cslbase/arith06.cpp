@@ -50,7 +50,7 @@
 LispObject Ladd1(LispObject nil, LispObject a)
 {   if (is_fixnum(a))
     {   // fixnums have data shifted left 4 bits
-        if (a == 0x7ffffff1)     // The ONLY possible overflow case here
+        if (a == (0x7ffffff0+TAG_FIXNUM)) // ONLY possible overflow case here
             a = make_one_word_bignum(0x08000000);
         else return onevalue((LispObject)(a + 0x10));   // the cheap case
     }
@@ -61,7 +61,7 @@ LispObject Ladd1(LispObject nil, LispObject a)
 
 LispObject Lsub1(LispObject nil, LispObject a)
 {   if (is_fixnum(a))
-    {   if (a == ~0x7ffffffe)     // The ONLY possible overflow case here
+    {   if (a == (int32_t)(0x80000000+TAG_FIXNUM))
             return make_one_word_bignum(int_of_fixnum(a) - 1);
         else return onevalue((LispObject)(a - 0x10));
     }

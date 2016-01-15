@@ -1440,7 +1440,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
 //
 #if defined DEBUG || !defined NO_BYTECOUNT
 //
-// ffname will be the first 15 characters of the name of the function
+// ffname will be the first 31 characters of the name of the function
 // that is being interpreted.
 // This is jolly useful if one is in a debugger trying to understand what
 // has been going on! Note that the executable code here does not use this
@@ -1452,8 +1452,8 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
 // you would like.
 //
     LispObject volatile ffsym = elt(lit, 0);
-    char volatile ffname[16];
-    memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
+    char volatile ffname[32];
+    memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), sizeof(ffname));
     size_t fflength =
         (size_t)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;

@@ -1242,7 +1242,7 @@ LispObject add1(LispObject p)
 // just hand over to the general addition code.
 //
 {   if (is_fixnum(p))
-    {   if (p == 0x7ffffff1)     // The ONLY possible overflow case here
+    {   if (p == (0x7ffffff0+TAG_FIXNUM)) // ONLY possible overflow case here
             return make_one_word_bignum(0x08000000);
         else return (LispObject)(p + 0x10);
     }
@@ -1255,7 +1255,7 @@ LispObject sub1(LispObject p)
 // just hand over to the general addition code.
 //
 {   if (is_fixnum(p))
-    {   if (p == ~0x7ffffffe)     // The ONLY possible overflow case here
+    {   if (p == (int32_t)(0x80000000+TAG_FIXNUM))
             return make_one_word_bignum(int_of_fixnum(p) - 1);
         else return (LispObject)(p - 0x10);
     }

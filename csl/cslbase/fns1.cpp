@@ -942,8 +942,13 @@ LispObject Lthreevectorp(LispObject nil, LispObject a)
 // of size 3!
 //
 {   if (!(is_vector(a))) return onevalue(nil);
+// The "pack_hdrlength(4*CELL/4)" is because I want a vector
+// with 1 cell of header and 3 of data. So the 4*CELL deals with with that
+// but gives a size expressed in bytes. The "/4" then converts that to a
+// count expressed in 32-bit words which is what pach_hdrlength requires.
     return onevalue(Lispify_predicate(
-                        vechdr(a) == (TAG_HDR_IMMED + TYPE_SIMPLE_VEC + ((4*CELL)<<10))));
+        vechdr(a) == (TAG_HDR_IMMED + TYPE_SIMPLE_VEC +
+            pack_hdrlength(4*CELL/4))));
 }
 
 #ifdef COMMON

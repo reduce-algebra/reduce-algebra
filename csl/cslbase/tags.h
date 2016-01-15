@@ -197,15 +197,29 @@ typedef intptr_t LispObject;
 #define TAG_BITS        7
 #define XTAG_BITS       15
 
-#define TAG_CONS        0   // Cons cells
-#define TAG_VECTOR      1   // Regular Lisp vectors (except BPS maybe?)
-#define TAG_HDR_IMMED   2   // Char constants, BPS addresses, vechdrs etc
-#define TAG_FORWARD     3   // For the Garbage Collector
-#define TAG_SYMBOL      4   // Symbols
-#define TAG_NUMBERS     5   // Bignum, Rational, Complex
-#define TAG_BOXFLOAT    6   // Boxed floats
-#define TAG_FIXNUM      7   // 28-bit integers
-#define XTAG_SFLOAT     15  // Short float, 28 bits of immediate data
+#define TAG_CONS        0   // Cons cells                                01
+#define TAG_VECTOR      1   // Regular Lisp vectors (except BPS maybe?)  02
+#define TAG_HDR_IMMED   2   // Char constants, BPS addresses, vechdrs etc04
+#define TAG_FORWARD     3   // For the Garbage Collector                 08
+// There are special constraints that mean I want symbols to have
+// tag code 4. These apply in the old garbage collector and the way I
+// deal with some back-pointers there.
+#define TAG_SYMBOL      4   // Symbols                                   10
+// Note that tags from 5 up are all for numeric date
+#define TAG_NUMBERS     5   // Bignum, Rational, Complex                 20
+#define TAG_BOXFLOAT    6   // Boxed floats                              40
+#define TAG_FIXNUM      7   // 28-bit integers                           80
+#define XTAG_SFLOAT     15  // Short float, 28 bits of immediate data    80
+
+#define is_number(p)               ((((int)(p)) & TAG_BITS) >= TAG_NUMBERS)
+
+#define is_float(p)       (((0xc040 >> (((int)(p)) & XTAG_BITS)) & 1) != 0)
+
+#define is_immed_or_cons(p)  (((0x85 >> (((int)(p)) & TAG_BITS)) & 1) != 0)
+
+#define is_immed_cons_sym(p) (((0x95 >> (((int)(p)) & TAG_BITS)) & 1) != 0)
+
+#define need_more_than_eq(p) (((0x63 >> (((int)(p)) & TAG_BITS)) & 1) != 0)
 
 #else // EXPERIMENT
 
@@ -221,7 +235,20 @@ typedef intptr_t LispObject;
 #define TAG_VECTOR      6   // Regular Lisp vectors (except BPS maybe?)
 #define TAG_BOXFLOAT    7   // Boxed floats
 
+#define is_number(p) ((((int)(p)) & 1) != 0) // Any numeric type
+
+#define is_float(p)  ((((int)(p)) & 3) == 3) // Big or small float
+
+#define is_immed_or_cons(p) ((((int)(p)) & 4) == 0)
+
+#define is_immed_cons_sym(p) (((p) & TAG_BITS) <= TAG_SYMBOL)
+
+// This says that tag codes 1, 2, 3 and 4 can be tested using EQ, and all
+// others need more.
+#define need_more_than_eq(p)    ((((p) - 1) & TAG_BITS) >= TAG_SYMBOL)
+
 #endif // EXPERIMENT
+
 
 //
 // For each of the above tag classes I have a bunch of low-level
@@ -349,45 +376,6 @@ extern LispObject address_sign;  // 0, 0x80000000 or 0x8000000000000000
 // For Common Lisp it would ne necessary to detect and trap any attempt
 // to take CAR or CDR of NIL and do something special.
 #define car_legal(p) is_cons(p)
-
-//
-// The tag codes have been selected so that various useful tests
-// can be done especially cheaply - here are some of those
-// composite tests.
-//
-
-#ifdef EXPERIMENT
-#define is_number(p) ((((int)(p)) & TAG_BITS) >= TAG_NUMBERS) // Any numeric type
-// This picks up the BOXFLOAT and SFLOAT cases. I may move single and long
-// floats to within TAG_NUMBERS in a while and then this will still tell
-// me if I have a number, but deciding if it is fixed point will become
-// harder.
-#define is_float(p)  (((0xc040 >> (((int)(p)) & XTAG_BITS)) & 1) != 0)
-#else
-#define is_number(p) ((((int)(p)) & 1) != 0) // Any numeric type
-#define is_float(p)  ((((int)(p)) & 3) == 3) // Big or small float
-#endif
-
-//
-// immed_or_cons is a rather funny case, in that it includes
-// the HDR_IMMED tag, which may include segment/offset addresses of BPS
-// or environment vectors.  Anyway, whatever else, the immed_() test
-// indicates something that does not contain a natural direct C
-// pointer.
-// Really this is a historical throw-back to the earlier tagging scheme
-// where this test was esy to perform.
-//
-
-#ifdef EXPERIMENT
-// These tests were perhape especially easy to perform in the old tagging
-// scheme which is why the code was written to use them. A rewritten
-// system may use them less!
-#define is_immed_or_cons(p) (((0x85 >> (((int)(p)) & TAG_BITS)) & 1) != 0)
-#define is_immed_cons_sym(p) (((0x95 >> (p)) & 1) != 0)
-#else
-#define is_immed_or_cons(p) ((((int)(p)) & 4) == 0)
-#define is_immed_cons_sym(p) ((p) <= TAG_SYMBOL)
-#endif
 
 typedef struct Cons_Cell
 {   LispObject car;

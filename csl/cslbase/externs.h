@@ -1018,19 +1018,19 @@ extern void validate_string_fn(LispObject a, const char *f, int l);
 #define equal(a, b)                                \
     ((a) == (b) ||                                 \
      (((((a) ^ (b)) & TAG_BITS) == 0) &&           \
-      ((unsigned)(((a) & TAG_BITS) - 1) > 3) &&    \
+      need_more_than_eq(a) &&                      \
       equal_fn(a, b)))
 
 #define cl_equal(a, b)                             \
     ((a) == (b) ||                                 \
      (((((a) ^ (b)) & TAG_BITS) == 0) &&           \
-      ((unsigned)(((a) & TAG_BITS) - 1) > 3) &&    \
+      need_more_than_eq(a) &&                      \
       cl_equal_fn(a, b)))
 
 #define eql(a, b)                                  \
     ((a) == (b) ||                                 \
      (((((a) ^ (b)) & TAG_BITS) == 0) &&           \
-      ((unsigned)(((a) & TAG_BITS) - 1) > 3) &&    \
+      need_more_than_eq(a) &&                      \
       eql_fn(a, b)))
 
 //
