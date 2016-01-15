@@ -10784,6 +10784,13 @@ done
 test -n "$CYGPATH" || CYGPATH="no"
 
 
+# The following two lines are a (further) attempt to arrange that the
+# rebuilding of Makefile (and before that Makefile.in and the like)
+# is less sensitive to exactly which version of automake happens to
+# be installed...
+
+AUTOMAKE="automake -f -a -v"
+
 ac_config_headers="$ac_config_headers config.h"
 
 cat >confcache <<\_ACEOF

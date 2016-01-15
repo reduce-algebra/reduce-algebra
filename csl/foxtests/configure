@@ -3193,17 +3193,41 @@ ac_config_files="$ac_config_files Makefile"
 # Makefile.in $(helpers):	configure.ac Makefile.am aclocal.m4
 # 	automake
 
-if ! test $srcdir/aclocal.m4 -nt $srcdir/configure.ac || \
-   ! test $srcdir/Makefile.in -nt $srcdir/aclocal.m4 || \
-   ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am || \
-   ! test $srcdir/configure -nt $srcdir/aclocal.m4
+need="no"
+
+if ! test $srcdir/Makefile.in -nt $srcdir/configure.ac
 then
-  echo "autoreconf necessary I think $ac_configure_args"
+  printf "Makefile.in depends on configure.ac\n"
+  need="yes"
+fi
+if ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am
+then
+  printf "Makefile.in depends on Makefile.am\n"
+  need="yes"
+fi
+if ! test $srcdir/configure -nt $srcdir/configure.ac
+then
+  printf "configure depends on configure.ac\n"
+  need="yes"
+fi
+
+if test "x$need" = "xyes\n"
+then
+  printf "autoreconf necessary (args: $ac_configure_args)\n"
+
   here=`pwd`
   cd $srcdir
+  printf "autoreconf in the FOX tests directory\n"
   autoreconf -f -i -v
+
   cd $here
-  echo "Restart: $srcdir/configure $ac_configure_args"
+# Because autoconf might not be available or might fail and because I
+# believe I have observed cases where it has not reset timestamps in the
+# way I expected I will reset timestamps explicitly here...
+
+  touch $srcdir/Makefile.am $srcdir/configure
+
+  printf "Restart: $srcdir/configure $ac_configure_args\n"
   exec /bin/sh -c "$srcdir/configure $ac_configure_args"
 fi
 
@@ -10197,6 +10221,13 @@ fi
 done
 test -n "$CYGPATH" || CYGPATH="no"
 
+
+# The following two lines are a (further) attempt to arrange that the
+# rebuilding of Makefile (and before that Makefile.in and the like)
+# is less sensitive to exactly which version of automake happens to
+# be installed...
+
+AUTOMAKE="automake -f -a -v"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure

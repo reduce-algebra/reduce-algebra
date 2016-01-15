@@ -831,6 +831,13 @@ fi
 
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
 
+# The following two lines are a (further) attempt to arrange that the
+# rebuilding of Makefile (and before that Makefile.in and the like)
+# is less sensitive to exactly which version of automake happens to
+# be installed...
+AC_SUBST(AUTOMAKE)
+AUTOMAKE="automake -f -a -v"
+
 AC_OUTPUT
 
 # end of "configure.ac"

@@ -1841,6 +1841,24 @@ abssrcdir=`"$srcdir/scripts/here.sh"`
 { $as_echo "$as_me:${as_lineno-$LINENO}: Absolute path to source directory = $abssrcdir" >&5
 $as_echo "$as_me: Absolute path to source directory = $abssrcdir" >&6;}
 
+#
+# There is a horror here. If one fetches everything from subversion
+# then timstamps can be ill-ordered, and it can seem necessary to
+# re-create the autoconf-related files. The standard way that autoconf and
+# automake allow for this is not very generous if the version of autoconf
+# on the local machine does not match the one used in the files from the
+# central site. So there are rules here that are to arrange that when a
+# user goes "./configure" that (if necessary) autoreconf is invoked. To
+# cope with platform dependency and variation it is vital that the call
+# be with "-i -f" flags. The rules I have here do not check and recover from
+# issue such as the script "compile" (and many others) being needed on some
+# machines but not others - it just deals with the simplest cases. I hope
+# it helps at least most people. Calling the script "./autogen.sh" in the
+# top (trunk) directory of the Reduce tree is another scheme that ought
+# to help in case of problems.
+#
+
+
 # aclocal.m4:	configure.ac
 # 	aclocal
 # config.h.in:	configure.ac
@@ -3857,6 +3875,13 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: final output from top level configuration" >&5
 $as_echo "$as_me: final output from top level configuration" >&6;}
+
+# The following two lines are a (further) attempt to arrange that the
+# rebuilding of Makefile (and before that Makefile.in and the like)
+# is less sensitive to exactly which version of automake happens to
+# be installed...
+
+AUTOMAKE="automake -f -a -v"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure

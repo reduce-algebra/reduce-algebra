@@ -455,6 +455,13 @@ AM_CONDITIONAL(xp64, test "x$mingw64" = "xyes")
 AM_CONDITIONAL(cygwinshell, test "x$win32" = "xyes")
 AM_CONDITIONAL(canrun, test "x$cross_compiling" != "xyes")
 
+# The following two lines are a (further) attempt to arrange that the
+# rebuilding of Makefile (and before that Makefile.in and the like)
+# is less sensitive to exactly which version of automake happens to
+# be installed...
+AC_SUBST(AUTOMAKE)
+AUTOMAKE="automake -f -a -v"
+
 # Done.
 AC_OUTPUT(Makefile
 utils/Makefile

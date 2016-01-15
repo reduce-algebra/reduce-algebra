@@ -5902,7 +5902,12 @@ fi
 
 #AC_CONFIG_SUBDIRS([scs_lib])
 
+# The following two lines are a (further) attempt to arrange that the
+# rebuilding of Makefile (and before that Makefile.in and the like)
+# is less sensitive to exactly which version of automake happens to
+# be installed...
 
+AUTOMAKE="automake -f -a -v"
 
 ac_config_files="$ac_config_files Makefile tests/Makefile scs_lib/Makefile"
 
