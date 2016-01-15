@@ -625,14 +625,15 @@ symbolic procedure basepath!-from!-imagepath p;
     return imp;
 end;
 
-symbolic procedure loaddirs!-from!-basepath p; 
-   << p := concat(p,dirchar!*);
-      {"",concat(p,concat("red",dirchar!*)),concat(p,concat("psl",dirchar!*))} >>;
-
 symbolic procedure set!-load!-directories ();
    << if null loadbasedirectory!*	% set base directory if not yet known
         then loadbasedirectory!* := basepath!-from!-imagepath imagefilename!*;
-      loaddirectories!* := loaddirs!-from!-basepath loadbasedirectory!* 
+      (if envpath then loaddirectories!* := split!-str(envpath,":")
+        else if loadbasedirectory!* then
+          loaddirectories!* := 
+	     {"",concat(p,concat("red",dirchar!*)),concat(p,concat("psl",dirchar!*))}
+	     	where p := concat(loadbasedirectory!*,dirchar!*))
+	 where envpath := getenv("REDUCE_LOADDIRECTORIES") or getenv("PSL_LOADDIRECTORIES")
    >>;
 
 % Some Lisp system might turn (sqrt -2.0) into a Lisp-level complex value
