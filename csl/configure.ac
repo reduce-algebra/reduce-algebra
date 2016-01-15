@@ -12,13 +12,52 @@
 
 # Specify the name of this "application" and a version number
 AC_INIT([CSLCONFIGTEST],[1.0])
-AM_INIT_AUTOMAKE([1.8.3 -Wall -Wno-portability -Wno-override foreign dist-bzip2])
+AC_PREREQ(2.61)
+AM_INIT_AUTOMAKE([1.13 -Wall -Wno-portability -Wno-override foreign dist-bzip2])
 
 # The next bit is because config.guess fails on Solaris if SHELL=/bin/bash
 if test -x /bin/sh
 then
   SHELL=/bin/sh
   export SHELL
+fi
+
+need="no"
+
+if ! test $srcdir/Makefile.in -nt $srcdir/configure.ac
+then
+  printf "Makefile.in depends on configure.ac\n"
+  need="yes"
+fi
+if ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am
+then
+  printf "Makefile.in depends on Makefile.am\n"
+  need="yes"
+fi
+if ! test $srcdir/configure -nt $srcdir/configure.ac
+then
+  printf "configure depends on configure.ac\n"
+  need="yes"
+fi
+
+if test "x$need" = "xyes\n"
+then
+  printf "autoreconf necessary (args: $ac_configure_args)\n"
+
+  here=`pwd`
+  cd $srcdir
+  printf "autoreconf in the csl directory\n"
+  autoreconf -f -i -v
+
+  cd $here
+# Because autoconf might not be available or might fail and because I
+# believe I have observed cases where it has not reset timestamps in the
+# way I expected I will reset timestamps explicitly here...
+
+  touch $srcdir/Makefile.am $srcdir/configure
+
+  printf "Restart: $srcdir/configure $ac_configure_args\n"
+  exec /bin/sh -c "$srcdir/configure $ac_configure_args"
 fi
 
 # I am going to expect that you have at least this version of autoconf.

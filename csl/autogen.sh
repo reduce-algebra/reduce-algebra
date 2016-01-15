@@ -38,13 +38,13 @@ fi
 # some circumstances some may not be present!
 
 # There are some directories that I have chosen not to process here:
-#  ./foxtests \
-# taking a view that peopel who wish to build those already have to take
-# special steps...
+#  ./foxtests
+# taking a view that people who wish to build those are in a minority
+# and so can sort things out more or less for themselves.
 
 L=". \
   ./cslbase \
-  ./fox
+  ./fox"
 
 # On any particular machine I will regenerate the autoconf stuff from
 # outside packages just once. The packages that I do some of my own
@@ -74,8 +74,6 @@ do
   fi
 done
    
-scripts/resetall.sh
-
 cd $save
 exit 0
 

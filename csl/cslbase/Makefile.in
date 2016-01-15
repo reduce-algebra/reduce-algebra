@@ -4166,6 +4166,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 .PHONY:	prof-inst
 .PHONY:	c-code
 .PHONY:	standard-c-code
+.PHONY:	partial-c-code
 .PHONY:	full-c-code
 .PHONY: j-code
 .PHONY:	smacros
@@ -5153,6 +5154,18 @@ standard-c-code $(generated_sources_deps) $(generated_lisp):	$(gensrc)/make.stam
 	  $(RM) -f $(generated-objects); \
 	  $(MAKE) $(AM_MAKEFLAGS) reduce; \
 	fi
+
+# partial-c-code is a target only activated manually.
+
+partial-c-code:	bootstrapreduce.img $(gensrc)/profile.dat
+@canrun_TRUE@	mkdir -p buildlogs
+@canrun_TRUE@	chmod 664 $(gensrc)/*
+@canrun_TRUE@	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
+@canrun_TRUE@		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
+@canrun_TRUE@		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
+@canrun_TRUE@		-- buildlogs/partial-c-code.log
+@canrun_TRUE@	chmod 664 $(gensrc)/*
+@canrun_FALSE@	echo Can not generate C code on this platfrom
 
 # full-c-code is a target only activated manually.
 

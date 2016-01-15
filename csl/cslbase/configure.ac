@@ -42,6 +42,8 @@ AC_INIT([REDUCE],[7.00])
 # automake 1.13 was the first to support AC_CONFIG_MACRO_DIRS
 AM_INIT_AUTOMAKE([1.13 -Wno-portability -Wno-override foreign dist-bzip2])
 AC_CONFIG_MACRO_DIRS([m4])
+# I will use the older version too.
+AC_CONFIG_MACRO_DIR([m4])
 
 here=`pwd`
 AC_MSG_NOTICE([+++ Configure in directory $here +++])
@@ -51,7 +53,7 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_COPYRIGHT([Codemist])
 
-AC_PREREQ(2.59)
+AC_PREREQ(2.61)
 
 # My source file is expected to have "csl.cpp" in it. This is just a small
 # sanity check in case somebody tries to configure with directories
@@ -83,38 +85,99 @@ AC_CONFIG_FILES(Makefile)
 # possible cases where configuration files are out of date, but should
 # cope with some of the more common and important cases.
 
-if \
-   ! test $srcdir/Makefile.in -nt $srcdir/configure.ac || \
-   ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am || \
-   ! test $srcdir/configure -nt $srcdir/configure.ac || \
-   ! test $srcdir/crlibm/Makefile.in -nt $srcdir/crlibm/configure.ac || \
-   ! test $srcdir/crlibm/Makefile.in -nt $srcdir/crlibm/Makefile.am || \
-   ! test $srcdir/crlibm/configure -nt $srcdir/crlibm/configure.ac || \
-   ! test $srcdir/gc-7/Makefile.in -nt $srcdir/gc-7/configure.ac || \
-   ! test $srcdir/gc-7/Makefile.in -nt $srcdir/gc-7/Makefile.am || \
-   ! test $srcdir/gc-7/configure -nt $srcdir/gc-7/configure.ac || \
-   ! test $srcdir/gc-7/libatomic_ops/Makefile.in -nt $srcdir/gc-7/libatomic_ops/configure.ac || \
-   ! test $srcdir/gc-7/libatomic_ops/Makefile.in -nt $srcdir/gc-7/libatomic_ops/Makefile.am || \
-   ! test $srcdir/gc-7/libatomic_ops/configure -nt $srcdir/gc-7/libatomic_ops/configure.ac
+need="no"
+
+if ! test $srcdir/Makefile.in -nt $srcdir/configure.ac
 then
-  echo "autoreconf necessary I think $ac_configure_args"
-#
-# For the following to work properly the sequence MUST leave datestamps
-# on files in the order I test for above, which is based on my understanding
-# of what depends on what. However on SOME platforms at least I find that
-# files do not end up properly ordered and I can get an infinite loop
-# of attempred reconfiguration. So for now I withdraw this!
-#
-# here=`pwd`
-# cd $srcdir
-# autoreconf -f -i -v
-# cd crlibm
-# autoreconf -f -i -v
-# cd ../gc-7
-# autoreconf -f -i -v
-# cd $here
-# echo "Restart: $srcdir/configure $ac_configure_args"
-# exec /bin/sh -c "$srcdir/configure $ac_configure_args"
+  printf "Makefile.in depends on configure.ac\n"
+  need="yes"
+fi
+if ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am
+then
+  printf "Makefile.in depends on Makefile.am\n"
+  need="yes"
+fi
+if ! test $srcdir/configure -nt $srcdir/configure.ac
+then
+  printf "configure depends on configure.ac\n"
+  need="yes"
+fi
+
+if ! test $srcdir/crlibm/Makefile.in -nt $srcdir/crlibm/configure.ac
+then
+  printf "crlibm: Makefile.in depends on configure.ac\n"
+  need="yes"
+fi
+if ! test $srcdir/crlibm/Makefile.in -nt $srcdir/crlibm/Makefile.am
+then
+  printf "crlibm: Makefile.in depends on Makefile.am\n"
+  need="yes"
+fi
+if ! test $srcdir/crlibm/configure -nt $srcdir/crlibm/configure.ac
+then
+  printf "crlibm: configure depends on configure.ac\n"
+  need="yes"
+fi
+
+if ! test $srcdir/gc-7/Makefile.in -nt $srcdir/gc-7/configure.ac
+then
+  printf "gc-7: Makefile.in depends on configure.ac\n"
+  need="yes"
+fi
+if ! test $srcdir/gc-7/Makefile.in -nt $srcdir/gc-7/Makefile.am
+then
+  printf "gc-7: Makefile.in depends on Makefile.am\n"
+  need="yes"
+fi
+if ! test $srcdir/gc-7/configure -nt $srcdir/gc-7/configure.ac
+then
+  printf "gc-7: configure depends on configure.ac\n"
+  need="yes"
+fi
+
+if ! test $srcdir/gc-7/libatomic_ops/Makefile.in -nt $srcdir/gc-7/libatomic_ops/configure.ac
+then
+  printf "gc-7/libatomic_ops: Makefile.in depends on configure.ac\n"
+  need="yes"
+fi
+if ! test $srcdir/gc-7/libatomic_ops/Makefile.in -nt $srcdir/gc-7/libatomic_ops/Makefile.am
+then
+  printf "gc-7/libatomic_ops: Makefile.in depends on Makefile.am\n"
+  need="yes"
+fi
+if ! test $srcdir/gc-7/libatomic_ops/configure -nt $srcdir/gc-7/libatomic_ops/configure.ac
+then
+  printf "gc-7/libatomic_ops: configure depends on configure.ac\n"
+  need="yes"
+fi
+
+if test "x$need" = "xyes\n"
+then
+  printf "autoreconf necessary (args: $ac_configure_args)\n"
+
+  here=`pwd`
+  cd $srcdir
+  printf "autoreconf in the cslbase directory\n"
+  autoreconf -f -i -v
+  cd crlibm
+  printf "autoreconf in the crlibm directory\n"
+  autoreconf -f -i -v
+  cd ../gc-7
+  printf "autoreconf in the gc-7 directories\n"
+  autoreconf -f -i -v
+
+  cd $here
+# Because autoconf might not be available or might fail and because I
+# believe I have observed cases where it has not reset timestamps in the
+# way I expected I will reset timestamps explicitly here...
+
+  touch $srcdir/Makefile.am $srcdir/crlibm/Makefile.am \
+    $srcdir/gc-7/Makefile.am $srcdir/gc-7/libatomic_ops/Makefile.am
+  touch $srcdir/configure $srcdir/crlibm/configure \
+    $srcdir/gc-7/configure $srcdir/gc-7/libatomic_ops/configure
+
+  printf "Restart: $srcdir/configure $ac_configure_args\n"
+  exec /bin/sh -c "$srcdir/configure $ac_configure_args"
 fi
 
 # These days I am making all the source files for CSL ones in C++ not C

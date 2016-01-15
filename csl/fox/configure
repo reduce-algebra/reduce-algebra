@@ -3116,17 +3116,41 @@ fi
 # 	automake
 # Note: automake calls libtool for you when necessary.
 
-if ! test $srcdir/aclocal.m4 -nt $srcdir/configure.ac || \
-   ! test $srcdir/Makefile.in -nt $srcdir/aclocal.m4 || \
-   ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am || \
-   ! test $srcdir/configure -nt $srcdir/aclocal.m4
+need="no"
+
+if ! test $srcdir/Makefile.in -nt $srcdir/configure.ac
 then
-  echo "autoreconf necessary I think $ac_configure_args"
+  printf "Makefile.in depends on configure.ac\n"
+  need="yes"
+fi
+if ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am
+then
+  printf "Makefile.in depends on Makefile.am\n"
+  need="yes"
+fi
+if ! test $srcdir/configure -nt $srcdir/configure.ac
+then
+  printf "configure depends on configure.ac\n"
+  need="yes"
+fi
+
+if test "x$need" = "xyes\n"
+then
+  printf "autoreconf necessary (args: $ac_configure_args)\n"
+
   here=`pwd`
   cd $srcdir
+  printf "autoreconf in the FOX directory\n"
   autoreconf -f -i -v
+
   cd $here
-  echo "Restart: $srcdir/configure $ac_configure_args"
+# Because autoconf might not be available or might fail and because I
+# believe I have observed cases where it has not reset timestamps in the
+# way I expected I will reset timestamps explicitly here...
+
+  touch $srcdir/Makefile.am $srcdir/configure
+
+  printf "Restart: $srcdir/configure $ac_configure_args\n"
   exec /bin/sh -c "$srcdir/configure $ac_configure_args"
 fi
 

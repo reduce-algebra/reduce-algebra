@@ -69,7 +69,7 @@ x86_64)
     width="x86_64"
     for m in automake bc bison cygwin32-gcc-g++ \
         cygwin32-ncurses cygwin32-zlib gcc-g++ libgtk2.0-devel \
-        libncurses-devel libXext-devel libXft-devel \
+        libncurses-devel libtool libXext-devel libXft-devel \
         make mingw64-i686-gcc-g++ mingw64-i686-zlib mingw64-x86_64-gcc-g++ \
         mingw64-x86_64-zlib openssh subversion time wget
     do

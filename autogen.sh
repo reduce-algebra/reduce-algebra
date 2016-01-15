@@ -63,12 +63,14 @@ fi
 # some circumstances some may not be present!
 
 # There are some directories that I have chosen not to process here:
-#  ./csl/foxtests \
-#  ./generic/libreduce/src \
-#  ./generic/redfront/libedit-20140620-3.1 \
-#  ./generic/redfront/src \
-# taking a view that peopel who wish to build those already have to take
-# special steps...
+#  ./csl/foxtests
+#  ./generic/libreduce/src
+#  ./generic/redfront/libedit-20140620-3.1
+#  ./generic/redfront/src
+# taking a view that people who wish to build those already have to take
+# special steps... and so they can run autoreconf for themselves if it
+# is needed. If I did so here it would slow things down for everybody in
+# a way I would view as unhelpful.
 
 L=". \
   ./csl \

@@ -20,8 +20,8 @@ AC_COPYRIGHT([The REDUCE project])
 # (eg -Wno-portability, no-dist-gzip) but even when I removed them
 # it behaved badly for me. However FC2 with autoconf 2.59 and automake
 # 1.8.3 gave me MANY warning messages (eg about underquoted arguments in the
-# m4 scripts) but allowed me to continue. So I set that level as my
-# baseline and ask everybody to install software newer that late 2003.
+# m4 scripts) but allowed me to continue. So I set 2.61 as my
+# baseline since that is better behaved.
 #
 # Well now it is 2016, and I have moved my reliance on to automake 1.13,
 # which was released at the end of 2012. The reason for this move is because
@@ -35,11 +35,29 @@ AC_COPYRIGHT([The REDUCE project])
 # availability, although an enthusiastic person could probably get things
 # working without them.
 
-AC_PREREQ(2.59)
+AC_PREREQ(2.61)
 
 abssrcdir=`"$srcdir/scripts/here.sh"`
 
 AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
+
+#
+# There is a horror here. If one fetches everything from subversion
+# then timstamps can be ill-ordered, and it can seem necessary to
+# re-create the autoconf-related files. The standard way that autoconf and
+# automake allow for this is not very generous if the version of autoconf
+# on the local machine does not match the one used in the files from the
+# central site. So there are rules here that are to arrange that when a
+# user goes "./configure" that (if necessary) autoreconf is invoked. To
+# cope with platform dependency and variation it is vital that the call
+# be with "-i -f" flags. The rules I have here do not check and recover from
+# issue such as the script "compile" (and many others) being needed on some
+# machines but not others - it just deals with the simplest cases. I hope
+# it helps at least most people. Calling the script "./autogen.sh" in the
+# top (trunk) directory of the Reduce tree is another scheme that ought
+# to help in case of problems.  
+#
+
 
 # aclocal.m4:	configure.ac
 # 	aclocal
@@ -51,17 +69,41 @@ AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
 # 	automake
 # Note: automake calls libtool for you when necessary.
 
-if ! test $srcdir/aclocal.m4 -nt $srcdir/configure.ac || \
-   ! test $srcdir/Makefile.in -nt $srcdir/aclocal.m4 || \
-   ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am || \
-   ! test $srcdir/configure -nt $srcdir/aclocal.m4
+need="no"
+
+if ! test $srcdir/Makefile.in -nt $srcdir/configure.ac
 then
-  echo "autoreconf necessary I think $ac_configure_args"
+  printf "Makefile.in depends on configure.ac\n"
+  need="yes"
+fi
+if ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am
+then
+  printf "Makefile.in depends on Makefile.am\n"
+  need="yes"
+fi
+if ! test $srcdir/configure -nt $srcdir/configure.ac
+then
+  printf "configure depends on configure.ac\n"
+  need="yes"
+fi
+
+if test "x$need" = "xyes\n"
+then
+  printf "autoreconf necessary (args: $ac_configure_args)\n"
+
   here=`pwd`
   cd $srcdir
+  printf "autoreconf in the top-level directory\n"
   autoreconf -f -i -v
+
   cd $here
-  echo "Restart: $srcdir/configure $ac_configure_args"
+# Because autoconf might not be available or might fail and because I
+# believe I have observed cases where it has not reset timestamps in the
+# way I expected I will reset timestamps explicitly here...
+
+  touch $srcdir/Makefile.am $srcdir/configure
+
+  printf "Restart: $srcdir/configure $ac_configure_args\n"
   exec /bin/sh -c "$srcdir/configure $ac_configure_args"
 fi
 
@@ -666,7 +708,7 @@ esac
 
 AC_CONFIG_SRCDIR(scripts/make.sh)
 
-AM_INIT_AUTOMAKE([1.8.3 -Wno-portability foreign no-dist-gzip dist-bzip2])
+AM_INIT_AUTOMAKE([1.13 -Wno-portability foreign no-dist-gzip dist-bzip2])
 
 AC_CONFIG_FILES([Makefile])
 
