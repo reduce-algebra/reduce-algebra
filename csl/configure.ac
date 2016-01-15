@@ -802,12 +802,14 @@ AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
 cross_compiling=$save_cross
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
 
-# The following two lines are a (further) attempt to arrange that the
+# The following lines are a (further) attempt to arrange that the
 # rebuilding of Makefile (and before that Makefile.in and the like)
 # is less sensitive to exactly which version of automake happens to
 # be installed...
 AC_SUBST(AUTOMAKE)
 AUTOMAKE="automake -f -a -v"
+AC_SUBST(ACLOCAL)
+ACLOCAL="aclocal --force"
 
 AC_CONFIG_HEADERS([config.h])
 AC_OUTPUT

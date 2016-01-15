@@ -1228,12 +1228,21 @@ AM_CONDITIONAL(crlibm, test "x$with_crlibm" != "xno")
 
 AC_MSG_NOTICE([final output from top level configuration])
 
-# The following two lines are a (further) attempt to arrange that the
+# The following lines are a (further) attempt to arrange that the
 # rebuilding of Makefile (and before that Makefile.in and the like)
 # is less sensitive to exactly which version of automake happens to
 # be installed...
+# The default behaviour of automake seems to be to set up use of the
+# "missing" script to re-invoke aclocal, autoconf and automake in a manner
+# which insists that EXACTLY the version previously used is available.
+# This really hurts portability. So what I do here suffers somewhat in
+# that it will insist that a sufficientky recent version of ecah of those
+# tools (plus libtool) are installed, but it should reconfigure fully
+# when that is useful.
 AC_SUBST(AUTOMAKE)
 AUTOMAKE="automake -f -a -v"
+AC_SUBST(ACLOCAL)
+ACLOCAL="aclocal --force"
 
 AC_OUTPUT
 
