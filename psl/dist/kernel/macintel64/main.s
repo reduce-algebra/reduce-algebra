@@ -111,8 +111,8 @@ _psl_main:
  sub $24,%rsp
  mov %r15,%rdi
  mov %rdi,16(%rsp)
- mov %rdi,8(%rsp)
- mov %rdi,(%rsp)
+ mov %rax,(%rsp)
+ mov %rbx,8(%rsp)
  mov _symfnc@GOTPCREL(%rip),%rsi
  mov $300,%rdi
  call *2400(%rsi)
@@ -509,6 +509,7 @@ l0035:
  movb 0(%rax,%rbx,1),%al
  cbtw
  cwtl
+ and $255,%rax
  shl $8,%rax
  shr $8,%rax
  mov $254,%rdi
