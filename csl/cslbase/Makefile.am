@@ -208,10 +208,16 @@ if boehm
 noinst_PROGRAMS += gctest$(EXEEXT)
 endif boehm
 
+if mac_framework
+REDUCE_IMG=reduce.app/Contents/MacOS/reduce.img
+else !mac_framework
+REDUCE_IMG=reduce.img
+endif !mac_framework
+
 if cygwin
 all-local:	report-dlls csl.img reduce.img
 else !cygwin
-all-local:	csl.img reduce.img
+all-local:	csl.img $(REDUCE_IMG)
 endif !cygwin
 
 
@@ -1512,7 +1518,7 @@ if windows
 image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir)
 else !windows
 if mac_framework
-image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir) *.app
+image_files = csl.img $(REDUCE_IMG) reduce.doc reduce.resources reduce.$(fontsdir) *.app
 else
 image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir)
 endif
@@ -1643,7 +1649,7 @@ endif !windows
 
 
 
-default:	reduce$(EXEEXT) reduce.img
+default:	reduce$(EXEEXT) $(REDUCE_IMG)
 
 # This is the command needed to compile a module for use as a DLL or other
 # dynamically loaded module
@@ -1717,8 +1723,8 @@ machineid.cpp:	reduce-cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(E
 reduce.dep:
 	$(TRACE)touch reduce.dep
 
-reduce.img:	reduce$(COM) $(reducedep) $(generated_lisp)
-	-$(TRACE)$(RM) -rf reduce.img
+$(REDUCE_IMG):	reduce$(COM) $(reducedep) $(generated_lisp)
+	-$(TRACE)$(RM) -rf $(REDUCE_IMG)
 if canrun
 # I will make the REDUCE image file a directory rather than a single
 # file... This is achieved by specifying its name here with a trailing "/",
@@ -1816,14 +1822,14 @@ endif !canrun
 recompile:
 if canrun
 	chmod 664 $(gensrc)/*
-	if !test -f reduce.img; then make reduce.img; fi
+	if !test -f $(REDUCE_IMG); then make $(REDUCE_IMG); fi
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	./reduce$(COM) -v -w $(CYGSRC)/recompile.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-l buildlogs/$(which).log -Dwhich=$(which)
 	chmod 664 $(gensrc)/*
-	make -t reduce.img > /dev/null
+	make -t $(REDUCE_IMG) > /dev/null
 else !canrun
 	echo Can not build images on this platfrom
 endif !canrun
@@ -2069,7 +2075,7 @@ else !canrun
 	echo Can not run tests on this platfrom
 endif !canrun
 
-testall:	reduce.img
+testall:	$(REDUCE_IMG)
 if canrun
 	mkdir -p testlogs
 	./reduce$(COM) -v -w $(CYGSRC)/testall.red \
@@ -2096,7 +2102,7 @@ endif !canrun
 
 if valgrind
 
-countall:	reduce.img
+countall:	$(REDUCE_IMG)
 	mkdir -p testlogs
 	valgrind --tool=exp-bbv --instr-count-only=yes \
 		./reduce$(COM) -v -w $(CYGSRC)/testall.red \
@@ -2108,7 +2114,7 @@ countall:	reduce.img
 
 endif valgrind
 
-test1:	reduce.img
+test1:	$(REDUCE_IMG)
 if canrun
 	mkdir -p testlogs
 	./reduce$(COM) -v -w $(CYGSRC)/testall.red \
@@ -2121,7 +2127,7 @@ endif !canrun
 
 if valgrind
 
-count1:	reduce.img
+count1:	$(REDUCE_IMG)
 	mkdir -p testlogs
 	valgrind --tool=exp-bbv --instr-count-only=yes \
 		./reduce$(COM) -v -w $(CYGSRC)/testall.red \
@@ -2131,7 +2137,7 @@ count1:	reduce.img
 
 endif valgrind
 
-checkall:	reduce.img
+checkall:	$(REDUCE_IMG)
 if canrun
 	mkdir -p testlogs
 	./reduce$(COM) -v -w $(CYGSRC)/checkall.red \

@@ -1019,7 +1019,8 @@ then
             --without-libtiff --with-libsvg=no \
             --with-sdl=no --with-zlib=builtin \
             --without-expat --with-regex=builtin \
-            --disable-richtext \
+            --without-libiconv --with-libz=builtin \
+            --with-libpng=builtin --disable-richtext \
             --disable-gif --disable-pcx --enable-graphics_ctx \
             --disable-tga --disable-pnm \
             --disable-svg --prefix=\"$builddir\""

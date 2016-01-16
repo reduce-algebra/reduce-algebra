@@ -1009,18 +1009,18 @@ then
       fi
     fi
   fi
-fi
 
-if test "x$xft_found" != "xyes"
-then
-# Now a search without the benefit of helper tools.
-  xft_found="yes"
-  AC_CHECK_LIB(fontconfig, FcConfigCreate)
-  AC_CHECK_LIB(Xft, XftFontOpen,,[xft_found="no"])
-  AC_CHECK_HEADER(X11/Xft/Xft.h,,[xft_found="no"])
-  if test "$xft_found" = "yes"
+  if test "x$xft_found" != "xyes"
   then
-    AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
+# Now a search without the benefit of helper tools.
+    xft_found="yes"
+    AC_CHECK_LIB(fontconfig, FcConfigCreate)
+    AC_CHECK_LIB(Xft, XftFontOpen,,[xft_found="no"])
+    AC_CHECK_HEADER(X11/Xft/Xft.h,,[xft_found="no"])
+    if test "$xft_found" = "yes"
+    then
+      AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
+    fi
   fi
 fi
 
@@ -1185,7 +1185,7 @@ then
   AC_CHECK_LIB(curses, tgetent, [],
     [AC_CHECK_LIB(ncurses, tgetent)])
 
-# There is a misery here! "term.h" (on some machines) needs cuses.h
+# There is a misery here! "term.h" (on some machines) needs curses.h
 # included first (typically to define "bool" for it).
   AC_CHECK_HEADERS(term.h,[],[],
      [#if HAVE_CURSES_H
@@ -1548,29 +1548,41 @@ then
 # simpler, not to try to lock anybody in or our of anything.
 # 
 # Note that pthread and dl resolve to system-provided libraries and so
-# I am not distributing them, merely links to them.
-  LL=/opt/local/lib
-  LIBS="$LL/libXrandr.a \
-    $LL/libXcursor.a \
-    $LL/libXrender.a \
-    $LL/libcurses.a \
-    $LL/libXext.a \
-    $LL/libX11.a \
-    $LL/libXft.a \
-    $LL/libXau.a \
-    $LL/libXfixes.a \
-    $LL/libxcb.a \
-    $LL/libXdmcp.a \
-    $LL/libpng.a \
-    $LL/libz.a \
-    $LL/libbz2.a \
-    $LL/libfreetype.a \
-    $LL/libiconv.a \
-    $LL/libXft.a \
-    $LL/libfontconfig.a \
-    $LL/libexpat.a \
-    -lpthread \
-    -ldl"  
+# I am not distributing them, merely links to them. Hmm I will try to
+# avoid overriding the linker arrangements in the case that somebody has
+# configured for use without a GUI.
+  if test "x$with_gui" = "xyes"
+  then
+    LL=/opt/local/lib
+    LIBS="$LL/libXrandr.a \
+      $LL/libXcursor.a \
+      $LL/libXrender.a \
+      $LL/libcurses.a \
+      $LL/libXext.a \
+      $LL/libX11.a \
+      $LL/libXft.a \
+      $LL/libXau.a \
+      $LL/libXfixes.a \
+      $LL/libxcb.a \
+      $LL/libXdmcp.a \
+      $LL/libpng.a \
+      $LL/libz.a \
+      $LL/libbz2.a \
+      $LL/libfreetype.a \
+      $LL/libiconv.a \
+      $LL/libXft.a \
+      $LL/libfontconfig.a \
+      $LL/libexpat.a \
+      -lpthread \
+      -ldl"
+    if test "x$with_wx" = "xyes"
+    then
+      LIBS="$LIBS $LL/libiconv.a $LL/libz.a $LL/libpng.a"
+    fi
+  else
+# This is to try to force linking against a system-provided version.
+    LDFLAGS="-L/usr/lib -lcurses $LDFLAGS"
+  fi  
 fi
 
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
