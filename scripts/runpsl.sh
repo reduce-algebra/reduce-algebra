@@ -74,8 +74,20 @@ else
 #     rm -f $here/../bin/$scr
 #     echo "exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img \$*" > $here/../bin/$scr
 #     chmod +x $here/../bin/$scr
-      #printf "here = %s\n" 
-      ulimit -s unlimited
+#     printf "here = %s\n"
+      if ! ulimit -s unlimited 2> /dev/null
+# The Macintosh (at least) rejects an attempt to set an unlimited stack
+# size, and can only ever decrease an existing limit. So I try a range
+# of sizes here and use the largest where ulimit seems to succeed.
+      then
+        if ! ulimit -s 65000 2> /dev/null
+        then
+          if ! ulimit -s 32000 2> /dev/null
+          then
+            ulimit -s 16000 2> /dev/null
+          fi
+        fi
+      fi
       exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img $*
       exit 0
     fi

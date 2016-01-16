@@ -75,7 +75,7 @@ const char *reduceMenus[] =
         "load_package numeric; num_int($1,$2=($3 .. $4));",
     "Calculus@differential equation@"
         "ordinary differential equation@"
-        "3@equation:df(y,x)=y@dep var:y@indep:var:x@"
+        "3@equation:df(y,x)=y@dep var:y@indep var:x@"
         "odesolve($1,$2,$3);",
     "Calculus@differential equation (numeric)@"
         "ordinary differential equation (numeric)@"
@@ -115,7 +115,7 @@ const char *reduceMenus[] =
         "2@equation:ws@var:x@"
         "solve({$1},{$2});",
     "Algebra@numeric solution to 1 equation@numeric solution to 1 equation@"
-        "3@equation:ws@val:x$guess:1.0$"
+        "3@equation:ws@val:x@guess:1.0@"
         "load_package numeric; num_solve($1,$2=$3);",
     "Algebra@real roots of polynomial@real roots of polynomial@"
         "1@equation:ws@"
