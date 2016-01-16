@@ -626,7 +626,8 @@ symbolic procedure basepath!-from!-imagepath p;
 end;
 
 symbolic procedure set!-load!-directories ();
-   << if null loadbasedirectory!*	% set base directory if not yet known
+   << if null loadbasedirectory!* and not null imagefilename!*
+	% set base directory if not yet known
         then loadbasedirectory!* := basepath!-from!-imagepath imagefilename!*;
       (if envpath then loaddirectories!* := split!-str(envpath,":")
         else if loadbasedirectory!* then
