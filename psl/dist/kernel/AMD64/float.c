@@ -49,6 +49,19 @@
 #include <math.h>
 #include <fenv.h>
 
+#ifdef USE_CRLIBM
+#include "crlibm.h"
+
+#define sin	sin_rn
+#define cos	cos_rn
+#define tan 	tan_rn
+#define asin	asin_rn
+#define acos	acos_rn
+#define atan	atan_rn
+#define exp	exp_rn
+#define log	log_rn
+
+#endif
 
 /* Tag( uxfloat )
  */
@@ -173,12 +186,12 @@ uxwritefloat(buf, flt, convstr)
 
     /* Make sure that there is a trailing .0
      */
-    dot = rindex(temps, '.');
+    dot = strrchr(temps, '.');
     if (dot == '\0')
       /* Check to see if the number is in scientific notation. If so, we need
        *  add the .0 into the middle of the string, just before the e.
        */
-      if ((e = rindex(temps, 'e')) || (e = rindex(temps, 'E')))
+      if ((e = strrchr(temps, 'e')) || (e = strrchr(temps, 'E')))
         {
 	  strcpy(tempbuf, e);       /* save save exponent part */
 	  *e = '\0'; 
@@ -295,11 +308,52 @@ uxlog (r, x)
   return (1);
 }
 
-uxatan2 (r, y, x)
-     double *r, *y, *x;
+#define _pi       ((12868.0 - 0.036490896206895257)/4096.0)
+#define _half_pi  ((12868.0 - 0.036490896206895257)/8192.0)
+
+uxatan2 (res, y, x)
+     double *res, *y, *x;
 {
-    *r = atan2( *y, *x );
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+#if 0
+
+    *res = atan2( *y, *x );
+    fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
+    if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+
+#else
+
+    double u=*x, v=*y, r;
+    int q = 0;
+    if (u < 0.0) u = -u, q = 1;
+    if (v < 0.0) v = -v, q |= 2;
+    if (v > u) { r = u; u = v; v = r; q |= 4; }
+    if (u == 0.0 && v == 0.0) r = 0.0;
+    else
+    { r = atan(v/u);
+      fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
+      if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+      switch (q)
+        {
+    default:
+    case 0: break;
+    case 1: r = _pi - r;
+            break;
+    case 2: r = -r;
+            break;
+    case 3: r = -_pi + r;
+            break;
+    case 4: r = _half_pi - r;
+            break;
+    case 5: r = _half_pi + r;
+            break;
+    case 6: r = -_half_pi + r;
+            break;
+    case 7: r = -_half_pi - r;
+            break;
+        }
+    }
+
+    *res = r;
+#endif
   return (1);
 }

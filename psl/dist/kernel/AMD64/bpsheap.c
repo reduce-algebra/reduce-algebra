@@ -86,7 +86,8 @@ long unexec();
 #define BPSSIZE         1600000    /* Default bps size in number of bytes */
 #endif
 
-char *  imagefile ;
+char *  imagefile;
+char *  abs_imagefile = NULL; /* like imagefile, but as an absolute path */
 long long   max_image_size;
 long long   oldbreakvalue;
 
@@ -278,6 +279,7 @@ printf("total %lx %lx %x\n",heapsize_in_bytes , current_size_in_bytes,total);
         oldheaplast = ohl; oldheaptrapbound = ohtb;
         heaplowerbound = hlb; heapupperbound = hub;
         heaptrapbound = htb;}
+       abs_imagefile = realpath(imagefile,NULL);
        return (4711);
      }
 return (0);
@@ -495,3 +497,7 @@ long unexec()
   return((long) bpscontrol);
 }
 
+char * get_imagefilepath ()
+{
+  return abs_imagefile;
+}
