@@ -11,6 +11,28 @@
 %
 % (c) Copyright 1987, University of Utah, all rights reserved.
 %
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Revisions:
@@ -67,7 +89,8 @@ void * sbrk(int);
 
 extern int Debug;
 
-char *  imagefile ;
+char *  imagefile;
+char *  abs_imagefile = NULL; /* like imagefile, but as an absolute path */
 long long   max_image_size;
 long long   oldbreakvalue;
 
@@ -267,6 +290,7 @@ printf("total %llX %llX %llx\n",heapsize_in_bytes , current_size_in_bytes,total)
         oldheaplast = ohl; oldheaptrapbound = ohtb;
         heaplowerbound = hlb; heapupperbound = hub;
         heaptrapbound = htb;}
+       abs_imagefile = realpath(imagefile,NULL);
        return (4711);
      }
 return (0);
@@ -473,11 +497,11 @@ int increment;
 
 /*
  *   heapupperbound        = heapupperbound + increment ;
- *     heaptrapbound         = heapupperbound - 120;
- *       oldheaplowerbound     = oldheaplowerbound + increment;
- *         oldheapupperbound     = oldheapupperbound + 2* increment ;
- *           oldheaplast           = oldheaplowerbound;
- *             oldheaptrapbound      = oldheapupperbound -120;
+ *   heaptrapbound         = heapupperbound - 120;
+ *   oldheaplowerbound     = oldheaplowerbound + increment;
+ *   oldheapupperbound     = oldheapupperbound + 2* increment ;
+ *   oldheaplast           = oldheaplowerbound;
+ *   oldheaptrapbound      = oldheapupperbound -120;
  */
 
   oldbreakvalue = newbreakvalue;
@@ -493,3 +517,7 @@ long long unexec()
   return((long long) bpscontrol);
 }
 
+char * get_imagefilepath ()
+{
+  return abs_imagefile;
+}

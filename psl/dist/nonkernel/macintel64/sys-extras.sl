@@ -132,6 +132,11 @@
            32 ) -32) % sign extended
     (nonstringerror unixstring 'system)))
 
+(de delete-file (unixstring)
+  (if (stringp unixstring)
+    (weq 0 (external_unlink (strbase (strinf unixstring))))
+    (nonstringerror unixstring 'delete-file)))
+
 
 (declare-warray filestatus-work size 13)
 
@@ -274,6 +279,25 @@
               (do (setf (wgetv v i) (importforeignstring (wgetv argv i)))))))
 
 (loadtime (getunixargs))
+
+(de get-image-path ()
+  (prog (val)
+        (setq val (get_imagefilepath))
+	(cond ((eq val 0) (return nil))
+	      (t (return (importforeignstring val))))))
+
+(de get-exec-path ()
+  (prog (val)
+        (setq val (get_execfilepath))
+	(cond ((eq val 0) (return nil))
+	      (t (return (importforeignstring val))))))
+
+(de get-fullpath (relpath)
+  (prog (val)
+        (setq val (external_fullpath (strbase (strinf relpath))))
+	(cond ((eq val 0) (return nil))
+	      (t (return (importforeignstring val))))))
+
 
 % getStartupName - Figure out the filename that PSL was started from.      
 (de getstartupname ()
