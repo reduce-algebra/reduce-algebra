@@ -2351,7 +2351,7 @@ static void unadjust_vecheap(void)
                 unadjust(&qpname(s));
                 unadjust(&qplist(s));
                 unadjust(&qfastgets(s));
-#ifdef COMMON
+#if defined COMMON || defined EXPERIMENT
                 unadjust(&qpackage(s));
 #endif
                 low += symhdr_length;
@@ -2484,7 +2484,7 @@ static void unadjust_all(void)
     unadjust(&(qpname(nil)));       // not a gensym
     unadjust(&(qplist(nil)));
     unadjust(&(qfastgets(nil)));
-#ifdef COMMON
+#if defined COMMON || defined EXPERIMENT
     unadjust(&(qpackage(nil)));
 #endif
 

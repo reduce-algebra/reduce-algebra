@@ -1655,7 +1655,7 @@ LispObject Lgensym(LispObject nil, int nargs, ...)
     qvalue(id) = unset_var;
     qplist(id) = nil;
     qfastgets(id) = nil;
-#ifdef COMMON
+#if defined COMMON || defined EXPERIMENT
     qpackage(id) = nil; // Marks it as a uninterned
 #endif
     qenv(id) = id;
@@ -1708,7 +1708,7 @@ LispObject Lgensym1(LispObject nil, LispObject a)
     qpname(id) = genbase;
     qplist(id) = nil;
     qfastgets(id) = nil;
-#ifdef COMMON
+#if defined COMMON || defined EXPERIMENT
     qpackage(id) = nil; // Marks it as a uninterned
 #endif
     qenv(id) = id;
@@ -1750,7 +1750,7 @@ LispObject Lgensym2(LispObject nil, LispObject a)
     qpname(id) = genbase;
     qplist(id) = nil;
     qfastgets(id) = nil;
-#ifdef COMMON
+#if defined COMMON || defined EXPERIMENT
     qpackage(id) = nil; // Marks it as a uninterned
 #endif
     qenv(id) = id;
@@ -1893,7 +1893,7 @@ LispObject iintern(LispObject str, int32_t h, LispObject p, int str_is_ok)
         qpname(s) = qpname(nil);    // At this stage the pname is a dummy
         qplist(s) = nil;
         qfastgets(s) = nil;
-#ifdef COMMON
+#if defined COMMON || defined EXPERIMENT
         qpackage(s) = p;
 #endif
         qenv(s) = (LispObject)s;

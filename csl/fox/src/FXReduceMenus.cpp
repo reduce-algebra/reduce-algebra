@@ -120,7 +120,7 @@ const char *reduceMenus[] =
     "Algebra@real roots of polynomial@real roots of polynomial@"
         "1@equation:ws@"
         "realroots($1);",
-    "Algebra@factorize factorize@"
+    "Algebra@factorize@factorize@"
         "1@polynomial:ws@"
         "factorize($1);",
     "Algebra@greatest common divisor@greatest common divisor@"
@@ -181,8 +181,8 @@ const char *reduceMenus[] =
         "1@mat:ws@"
         "det($1);",
     "Matrix@eigenvectors and values@eigenvectors and values@"
-        "1@mat:ws@"
-        "mateigen($1);",
+        "2@mat:ws@var:lam@"
+        "mateigen($1,$2);",
 
 // End of Matrix section
 

@@ -1,0 +1,37 @@
+The two directories csl and psl here contain the CSL and PSL based versions
+of Reduce for Macintosh. For CSL there is a reduce.app that you should be able
+to open - you need XQuartz installed and it should display its GUI using
+X windows. There is also a script "redcsl" which must be stored adjacant
+to reduce.app. A command "redcsl" issued from a terminal should open the
+GUI. A command "redcsl -w" should run Reduce as a console-style application,
+and then the option "-L logfile" to preserve a transcript of your session may
+be especially useful.
+
+For PSL there is a script "redcsl" that is intended to be invoked from a
+terminal. Again it must remain in a direcory adjacent to the two psl and red
+directories that are als present there,
+
+This directory also contains an archive of the Reduce source files. Those
+wanting to keep up to date with the latest bug-fixes and improvements
+are encouraged to fetch the source from Sourceforge using "subversion".
+A typical command to do that is
+  svn co svn://svn.code.sf.net/p/reduce-algebra/code/trunk reduce-algebra
+and to build within that one firts has to ensure that you have a full
+collection of development tools and libraries installed (Xcode, its
+command-line tools, XQuartz, Macports and a range of the macports
+packages including automake, autoconf, libtool, fontconfig, X11 development
+libraries...). Then see make-static-fontconfig-for-macintosh.sh in the
+directory csl/cslbase. A file macports.my.list.of.installed.ports also in
+csl/cslbase may not be up to date but showed the list of ports I had installed
+at one stage. 
+
+Once sources are installed you should be able to go
+  ./configure --with-csl
+  make
+to create everything. The built versions will then be in cslbuild/*/csl.
+
+
+                                                            January 2016
+
+
+

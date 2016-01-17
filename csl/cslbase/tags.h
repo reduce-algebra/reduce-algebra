@@ -187,7 +187,7 @@ typedef intptr_t LispObject;
 // uses back-pointers that can point at any cell, and so are just aligned
 // as multiplus of 4 (on a 32-bit machine). Furthermore the code requires
 // that an object header be distinguishable from any such back-pointer.
-// to satisfy that teh tag for a header must not be 0, 1, 4 or 5, and the
+// to satisfy that the tag for a header must not be 0, 1, 4 or 5, and the
 // cheapskate coding in the garbage collector means that 3 and 7 must also
 // be avoided (there is a test for an odd number). So TAG_HDR_IMMED is
 // forced to be 2 or 6 at least during a transition period until the
@@ -563,7 +563,14 @@ typedef uintptr_t Header;
 
 #define symhdr_length       (doubleword_align_up(sizeof(Symbol_Head)))
 #define is_symbol_header(h) (((int)h & (0x3<<Tw)) == TYPE_SYMBOL)
+#define is_symbol_header_full_test(h) \
+    (((int)h & ((0x3<<Tw) + TAG_BITS)) == (TYPE_SYMBOL + TAG_HDR_IMMED))
 #define header_fastget(h)   (((h) >> SYM_FASTGET_SHIFT) & 0x3f)
+#define is_number_header_full_test(h) \
+    (((int)h & ((0x1d<<Tw) + TAG_BITS)) == ((0x1d<<Tw) + TAG_HDR_IMMED))
+// The "vector" case here includes vector-like number cases
+#define is_vector_header_full_test(h) \
+    (is_odds(h) && (((int)h & (0x3<<Tw)) != 0))
 
 // The codes for yyyyy are as follows:
 
@@ -578,12 +585,13 @@ typedef uintptr_t Header;
 //   000:11 01 g100  object
 //   001:00 01 g100  hash table
 //   001:01 01 g100  hash table with rehash pending
-//   001:10 01 g100  (spare)
+//   001:10 01 g100  (spare: 1 code)
 //   001:11 01 g100  rational number  *
-//   010:xx 01 g100  (spare)
+//   010:xx 01 g100  (spare: 4 codes)
 //   011:11 01 g100  complex number   *
 //   100:xx 01 g100  stream and mixed1, 2 and 3
-//   1xx:xx 01 g100  (spare)
+//   1x1:11 01 g100  (spare, but classifies as a number: 2 codes)
+//   1xx:xx 01 g100  (spare: 14 codes)
 
 //   yyy:yy 10 g100  bit-vector with yyyyy (1 to 32) bits in final word.
 
@@ -610,23 +618,18 @@ typedef uintptr_t Header;
 //   101:00 11 g100  vecflt32
 //   101:01 11 g100  vecflt64
 //   101:10 11 g100  vecflt128
-//   101:11 11 g100  float64          *
+//   101:11 11 g100  float64           *
 //   110:00 11 g100  vec8-3
 //   110:01 11 g100  string-4
 //   110:10 11 g100  bytecode-4
 //   110:11 11 g100  nativecode
-//   111:00 11 g100  (spare)
-//   111:01 11 g100  (spare)
-//   111:10 11 g100  (spare)
-//   111:11 11 g100  float128         *
+//   111:00 11 g100  (spare: 1 code)
+//   111:01 11 g100  (spare: 1 code)
+//   111:10 11 g100  (spare: 1 code)
+//   111:11 11 g100  float128          *
 
-// Note that I could try identifying a vector holding 32-bit floats that was
-// of length 1 with a singe 32-bit float. That could be supportable because one
-// is referred to using a pointer with TAG_VECTOR and the other with
-// TAG_NUMBERS or TAG_BOXFLOAT - however since I have enough combinations
-// available I avoid the overloading in the name of clarity and in case it
-// helps with debugging. I have also made the allocation so that any header
-// of the form xx1:11x1:g100 is the header of a number.
+// I have made the allocation so that any header of the form xx1:11x1:g100
+// is the header of a number.
 
 
 #define TYPE_BIGNUM         ( 0x1f <<Tw)
@@ -635,11 +638,6 @@ typedef uintptr_t Header;
 #define TYPE_SINGLE_FLOAT   ( 0x3f <<Tw)
 #define TYPE_DOUBLE_FLOAT   ( 0x5f <<Tw)
 #define TYPE_LONG_FLOAT     ( 0x7f <<Tw)
-
-#define TYPE_COMPLEX  TYPE_COMPLEX_NUM
-#define TYPE_FLOAT32  ( 0x53 <<Tw)
-#define TYPE_FLOAT64  ( 0x57 <<Tw)
-#define TYPE_FLOAT128 ( 0x5b <<Tw)
 
 #ifdef MEMORY_TRACE
 #define numhdr(v) (*(Header *)memory_reference((intptr_t)((char *)(v) - \
@@ -661,7 +659,7 @@ typedef uintptr_t Header;
 
 #define is_numbers_header(h) \
   (type_of_header(h) == TYPE_BIGNUM || \
-   type_of_header(h) == TYPE_COMPLEX || \
+   type_of_header(h) == TYPE_COMPLEX_NUM || \
    type_of_header(h) == TYPE_RATNUM)
 
 // Here I have a header and I want to know if the pointer to this
@@ -1187,8 +1185,8 @@ typedef uintptr_t Header;
 #define TYPE_VEC32          0x260   // contains 32-bit integers
 #define TYPE_MIXED1         0x2a0   // general, but limited to 3 pointers
 #define TYPE_MIXED2         0x2e0   // general, but limited to 3 pointers
-#define TYPE_FLOAT32        0x320   // contains single-precision floats
-#define TYPE_FLOAT64        0x360   // contains double-precision floats
+#define TYPE_VECFLOAT32     0x320   // vector contains single-precision floats
+#define TYPE_VECFLOAT64     0x360   // vector contains double-precision floats
 #define TYPE_MIXED3         0x3a0   // only 3 pointers
 #define TYPE_STREAM         0x3e0   // 3 pointers then binary data
 

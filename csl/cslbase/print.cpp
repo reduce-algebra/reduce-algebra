@@ -2738,7 +2738,7 @@ restart:
                     putc_stream(')', active_stream);
                     popv(1);
                     return;
-                case TYPE_FLOAT32:
+                case TYPE_VECFLOAT32:
                     outprefix(blankp, 4);
                     putc_stream('#', active_stream); putc_stream('F', active_stream);
                     putc_stream('S', active_stream); putc_stream('(', active_stream);
@@ -2751,7 +2751,7 @@ restart:
                     putc_stream(')', active_stream);
                     popv(1);
                     return;
-                case TYPE_FLOAT64:
+                case TYPE_VECFLOAT64:
                     outprefix(blankp, 4);
                     putc_stream('#', active_stream); putc_stream('F', active_stream);
                     putc_stream('D', active_stream); putc_stream('(', active_stream);

@@ -1812,7 +1812,7 @@ LispObject Lmkfvect32(LispObject nil, LispObject n)
     intptr_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkfvect32", n);
     nn = 4*(1 + int_of_fixnum(n));
-    w = getvector(TAG_VECTOR, TYPE_FLOAT32, nn+CELL);
+    w = getvector(TAG_VECTOR, TYPE_VECFLOAT32, nn+CELL);
     errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL);
     while (nn > CELL)
@@ -1832,7 +1832,7 @@ LispObject Lmkfvect64(LispObject nil, LispObject n)
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkfvect64", n);
     nn = 8*(1 + int_of_fixnum(n));
     if (!SIXTY_FOUR_BIT) nn += 4; // get the doubles aligned
-    w = getvector(TAG_VECTOR, TYPE_FLOAT64, nn+CELL);
+    w = getvector(TAG_VECTOR, TYPE_VECFLOAT64, nn+CELL);
     errexit();
     nn = (intptr_t)(nn+CELL);
     while (nn > CELL)
@@ -2637,7 +2637,7 @@ LispObject Lfputv32(LispObject, int nargs, ...)
     x = va_arg(a, LispObject);
     d = float_of_number(x);
     va_end(a);
-    if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_FLOAT32)
+    if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VECFLOAT32)
         return aerror1("fputv32", v);
     else if (!is_fixnum(n)) return aerror1("fputv32 offset not fixnum", n);
     hl = (length_of_header(h) - CELL)/4;
@@ -2650,7 +2650,7 @@ LispObject Lfputv32(LispObject, int nargs, ...)
 LispObject Lfgetv32(LispObject nil, LispObject v, LispObject n)
 {   Header h;
     intptr_t n1, hl;
-    if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_FLOAT32)
+    if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VECFLOAT32)
         return aerror1("fgetv32", v);
     else if (!is_fixnum(n)) return aerror1("fgetv32 offset not fixnum", n);
     hl = (length_of_header(h) - CELL)/4;
@@ -2678,7 +2678,7 @@ LispObject Lfputv64(LispObject, int nargs, ...)
     x = va_arg(a, LispObject);
     d = float_of_number(x);
     va_end(a);
-    if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_FLOAT64)
+    if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VECFLOAT64)
         return aerror1("fputv64", v);
     else if (!is_fixnum(n)) return aerror1("fputv64 offset not fixnum", n);
 //
@@ -2694,7 +2694,7 @@ LispObject Lfputv64(LispObject, int nargs, ...)
 LispObject Lfgetv64(LispObject nil, LispObject v, LispObject n)
 {   Header h;
     intptr_t n1, hl;
-    if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_FLOAT64)
+    if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VECFLOAT64)
         return aerror1("fgetv64", v);
     else if (!is_fixnum(n)) return aerror1("fgetv64 offset not fixnum", n);
     hl = (length_of_header(h) - 8)/8;
@@ -3673,7 +3673,7 @@ LispObject Lupbv(LispObject nil, LispObject v)
             case TYPE_VEC32:
                 n = n/4;
                 break;
-            case TYPE_FLOAT64:
+            case TYPE_VECFLOAT64:
                 n = n/8;
                 break;
             default:
@@ -3728,7 +3728,7 @@ LispObject Lvecbnd(LispObject, LispObject v)
             case TYPE_VEC32:
                 n = n/4;
                 break;
-            case TYPE_FLOAT64:
+            case TYPE_VECFLOAT64:
                 n = n/8;
                 break;
             default:

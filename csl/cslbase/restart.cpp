@@ -1644,8 +1644,8 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
                     case TYPE_SINGLE_FLOAT:
                     case TYPE_DOUBLE_FLOAT:
                     case TYPE_LONG_FLOAT:
-                    case TYPE_FLOAT32:
-                    case TYPE_FLOAT64:
+                    case TYPE_VECFLOAT32:
+                    case TYPE_VECFLOAT64:
                         len = doubleword_align_up(length_of_header(h));
 // I copy all the stuff that will go into the 32-bit version
 #ifdef DEBUG_WIDTH
@@ -1653,7 +1653,7 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
 #endif
                         switch (type_of_header(h))
                         {   case TYPE_DOUBLE_FLOAT:
-                            case TYPE_FLOAT64:
+                            case TYPE_VECFLOAT64:
                             case TYPE_LONG_FLOAT:
 //
 // double precision floating point data has to remain 64-bit aligned, and so
@@ -1845,7 +1845,7 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
                         break;
                     case TYPE_DOUBLE_FLOAT:
                     case TYPE_LONG_FLOAT:
-                    case TYPE_FLOAT64:
+                    case TYPE_VECFLOAT64:
 //
 // In these cases the representation on the 32-bit machine was
 //    || header | 0 || data | data || ...
@@ -1960,7 +1960,7 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
                     case TYPE_SINGLE_FLOAT:
 //        case TYPE_DOUBLE_FLOAT:
 //        case TYPE_LONG_FLOAT:
-                    case TYPE_FLOAT32:
+                    case TYPE_VECFLOAT32:
 //
 // The effects of alignment and passing here are distinctly odd. A 32-bit
 // item can be in one of two forms
@@ -2093,7 +2093,7 @@ static void adjust_vecheap(void)
                 adjust(&qpname(ss));
                 adjust(&qplist(ss));
                 adjust(&qfastgets(ss));
-#ifdef COMMON
+#if defined COMMON || defined EXPERIMENT
                 adjust(&qpackage(ss));
 #endif
 //
@@ -2200,12 +2200,12 @@ static void adjust_vecheap(void)
                         convert_fp_rep((void *)(low + 8),
                                        old_fp_rep, current_fp_rep, 3);
                         break;
-                    case TYPE_FLOAT32:
+                    case TYPE_VECFLOAT32:
                         for (i=CELL; i<doubleword_align_up(length_of_header(h)); i+=4)
                             convert_fp_rep((void *)(low+i),
                                            old_fp_rep, current_fp_rep, 1);
                         break;
-                    case TYPE_FLOAT64:
+                    case TYPE_VECFLOAT64:
                         for (i=8; i<doubleword_align_up(length_of_header(h)); i+=8)
                             convert_fp_rep((void *)(low+i),
                                            old_fp_rep, current_fp_rep, 2);
@@ -2383,7 +2383,7 @@ void adjust_all(void)
     adjust(&(qpname(nil)));     // not a gensym
     adjust(&(qplist(nil)));
     adjust(&(qfastgets(nil)));
-#ifdef COMMON
+#if defined COMMON || defined EXPERIMENT
     adjust(&(qpackage(nil)));
 #endif
 
@@ -4647,6 +4647,9 @@ static void cold_setup()
     qpackage(nil) = nil;
     qpname(nil) = make_string("NIL");
 #else
+#ifdef EXPERIMENT
+    qpackage(nil) = nil;
+#endif
     qpname(nil) = make_string("nil");
 #endif
     qcount(nil) = 0;
@@ -4672,6 +4675,10 @@ static void cold_setup()
 #ifdef COMMON
     qpackage(nil) = qvalue(nil);    // For sake of restart code
     all_packages = ncons(qvalue(nil));
+#else
+#ifdef EXPERIMENT
+    qpackage(nil) = qvalue(nil);
+#endif
 #endif
 
     packhdr_(CP) = TYPE_STRUCTURE + (packhdr_(CP) & ~header_mask);
@@ -4749,6 +4756,9 @@ static void cold_setup()
     qheader(current_package)|= SYM_SPECIAL_VAR;
     lisp_package = qvalue(current_package)  = qpackage(nil);
     qvalue(nil)              = nil;          // Whew!
+#endif
+#ifdef EXPERIMENT
+    qvalue(nil)              = nil;
 #endif
 
     B_reg = nil;                             // safe for GC

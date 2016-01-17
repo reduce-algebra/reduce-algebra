@@ -2281,6 +2281,28 @@ static LispObject Lcheckpoint_1(LispObject nil, LispObject startup)
 
 #endif
 
+#ifdef EXPERIMENT
+
+void first_visit(LispObject a)
+{
+    printf("First visit to %p\n", (void *)a);
+}
+
+void subsequent_visit(LispObject a)
+{
+    printf("Subsequent visit to %p\n", (void *)a);
+}
+
+static LispObject Lserialize(LispObject nil, LispObject a)
+{   scan_data(a, first_visit, subsequent_visit);
+    release_map();
+    return onevalue(nil);
+}
+
+
+#endif // EXPERIMENT
+
+
 //
 // Drop out to the next enclosing code that limits resources, as if there had
 // been an overflow.
@@ -4614,6 +4636,9 @@ setup_type const funcs2_setup[] =
     {"cl-equal",                too_few_2, Lcl_equal, wrong_no_2},
     {"equal",                   too_few_2, Lequal, wrong_no_2},
     {"member",                  too_few_2, Lmember, wrong_no_2},
+#endif
+#ifdef EXPERIMENT
+    {"serialize",               Lserialize, too_many_1, wrong_no_1},
 #endif
     {NULL,                      0, 0, 0}
 };
