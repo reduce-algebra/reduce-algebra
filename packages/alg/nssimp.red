@@ -51,7 +51,10 @@ symbolic procedure nssimp(u,v);
                           then getrtype(r :=
                                         eval!-yetunknowntypeexpr(r,nil))
                          else s) eq v)
-          then x := aconc!*(x,r)
+% E.S.: We should not reverse the order of the scalar part of the expression
+% as they may contain non commutative functions.
+%         then x := aconc!*(x,r)
+          then x := r . x
          else y := aconc!*(y,r);
         w := cdr w;
         go to c;
