@@ -36,11 +36,11 @@ case "guess:$guess" in
 	MACHINE=linux
 	;;
 
-  guess:i386-apple-darwin10.4.0 )
+  guess:i386-apple-darwin* )
 	MACHINE=macintel
 	;;
 
-  guess:x86_64-apple-darwin10.4.0 | guess:x86_64-apple-darwin10.5.0 )
+  guess:x86_64-apple-darwin* )
 	MACHINE=macintel64
 	;;
 
