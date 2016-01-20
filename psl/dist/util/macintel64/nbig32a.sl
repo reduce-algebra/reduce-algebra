@@ -7,9 +7,8 @@
 % Modified:     
 % Mode:         Lisp 
 % Package:      Utilities 
-% Status:       Experimental 
 %
-% (c) Copyright 1982, University of Utah
+% Copyright 1982, University of Utah
 %
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -424,7 +423,7 @@ error
       (setq l1 (bbsize v1))
       (setq l2 (idifference l1 nw))
       (when (ilessp l2 1) (return bzero*))
-      (setq v2 (if (bbminusp v1)(gtneg l2)(gtpos l2)))
+      (setq v2 (if (bbminusp v1)(gtpos l2)(gtpos l2)))
         % for shifts we have to handle the case nb=0
         % separately because processors tend to handle a shift for
         % nr=(-wordsize) bits as nop.
@@ -435,7 +434,7 @@ error
 	    (do 
 	      (progn
 		 (setq x (igetv v1 j))
-		 (iputv v2 i(wor carry (wshift x nb)))
+		 (iputv v2 i (wor carry (wshift x nb)))
 		 (setq carry (wshift x nr)))))
       (go ret)
    words
@@ -1310,6 +1309,20 @@ error
 (de biglshift (u v) (checkifreallybig (blshift u v)))
 
 (de lshift (u v)
+   (setq v (int2sys v))  % bigger numbers make no sense as shift amount
+   (if (intp u)
+     (cond ((wleq v (minus bitsperword)) 0)
+           ((and (posintp u) (wlessp v 0)) (wshift u v))
+           ((wlessp v (iminus tagbitlength)) (wshift u v))
+           ((wlessp v 0) (sys2int (wshift u v)))
+           ((and (betap u) (wlessp v (iquotient bitsperword 2)))
+                  (sys2int (wshift u v)))
+           (t (biglshift (sys2big u) v)))
+     % Use int2big, not sys2big, since we might have fixnums.
+     (biglshift (int2big u) v)))
+
+(commentoutcode 
+  de lshift (u v)
   (setq v (int2sys v))  % bigger numbers make no sense as shift amount
   (if (betap u) 
     (cond ((wleq v (minus bitsperword)) 0)
