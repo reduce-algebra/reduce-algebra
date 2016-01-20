@@ -228,70 +228,70 @@ uxfloattodouble (flt,dbl)
 }
 
 /* Functions for fast-math.sl (Unix C replacement for mathlib.) */
-int
+void
 uxsin (r, x)
      double *r, *x;
 {
     *r = sin( *x );
 }
 
-int
+void
 uxcos (r, x)
      double *r, *x;
 {
     *r = cos( *x );
 }
 
-int
+void
 uxtan (r, x)
      double *r, *x;
 {
     *r = tan( *x );
 }
 
-int
+void
 uxasin (r, x)
      double *r, *x;
 {
     *r = asin( *x );
 }
 
-int
+void
 uxacos (r, x)
      double *r, *x;
 {
     *r = acos( *x );
 }
 
-int
+void
 uxatan (r, x)
      double *r, *x;
 {
     *r = atan( *x );
 }
 
-int
+void
 uxsqrt (r, x)
      double *r, *x;
 {
     *r = sqrt( *x );
 }
 
-int
+void
 uxexp (r, x)
      double *r, *x;
 {
     *r = exp( *x );
 }
 
-int
+void
 uxlog (r, x)
      double *r, *x;
 {
     *r = log( *x );
 }
 
-int
+void
 uxatan2 (r, y, x)
      double *r, *y, *x;
 {
