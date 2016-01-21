@@ -313,6 +313,14 @@ char *argv[];
   return(static_argv);
 }
 
+/* convert a pathname to canonical form */
+char *
+external_fullpath(relpath)
+     char * relpath;
+{
+  return _fullpath(NULL,relpath,_MAX_PATH);
+}
+
 long long xgetw (f)
 FILE* f;
 { long long a1,a2;

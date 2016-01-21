@@ -69,9 +69,10 @@ long long unexec();
 #define PAGESIZE 4096
 #endif
 
+#include <windows.h>
+
 #if (USE_WIN_HEAPFUNCTIONS == 1)
 
-#include <windows.h>
 #include <winbase.h>
 
 HANDLE heapHandle;
@@ -85,6 +86,7 @@ extern void *sbrk (long long size);
 
 #endif
 
+void *install_function_table(ULONG64 codebase, ULONG size);
 
 
 /* Use 1 if using compacting collector ($pxnk/compact-gc.sl).
@@ -106,7 +108,8 @@ Be sure to update $pxnk/load-psl.sl to include correct collector. */
 extern int Debug;
 
 
-char *  imagefile ;
+char *  imagefile;
+char *  abs_imagefile = NULL;	/* like imagefile, but as an absolute pathname  */
 long long   max_image_size;
 long long   oldbreakvalue;
 
@@ -332,6 +335,7 @@ if (bpscontrol[0] != headerword[0]
         oldheaplast = ohl; oldheaptrapbound = ohtb;
         heaplowerbound = hlb; heapupperbound = hub;
         heaptrapbound = htb;}
+       abs_imagefile = _fullpath(NULL,imagefile,_MAX_PATH);
        return (4711);
      }
 return (0);
@@ -361,6 +365,9 @@ setupbps ()
   lastbps  =  ((long long)bps + BPSSIZE) & ~7;    /* Down to a multiple of 8. */
   p = (char *)(( bpslowerbound  -1) & ~(PAGESIZE-1));
   bpssize =  ((BPSSIZE + PAGESIZE-1) & ~(PAGESIZE-1));
+  if (!(nextbps = (long long) install_function_table ((ULONG64) nextbps, bpssize))) {
+    exit(-1);
+  }
   if (!mprotect_exec (p, bpssize)) {
     perror("Couldn’t mprotect");
     exit(errno);
@@ -417,6 +424,9 @@ allocatemorebps()
 
 #endif
 
+  if (!install_function_table ((ULONG64) nextbps, EXTRABPSSIZE)) {
+    exit(-1);
+  }
   if (!mprotect_exec ((char *)nextbps, EXTRABPSSIZE)) {
     perror("Couldn’t mprotect");
     nextbps = old_nextbps;
@@ -652,3 +662,7 @@ long long unexec()
   return((long long)bpscontrol);
 }
 
+char * get_imagefilepath ()
+{
+  return abs_imagefile;
+}

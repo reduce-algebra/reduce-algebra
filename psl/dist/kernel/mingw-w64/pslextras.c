@@ -117,6 +117,19 @@ int external_stat (char *path, struct stat *buf)
   return stat (expand_file_name (path), buf);
 }
 
+int external_mkdir (path, mode)
+     char * path;
+     mode_t mode;
+{ 
+  return _mkdir (expand_file_name(path)); 
+}
+
+int external_rmdir (path)
+    char * path;
+{ 
+  return _rmdir (expand_file_name(path));
+}
+
 /* Tag( external_link )
  */
 int external_link (char *oldpath, char *newpath)
