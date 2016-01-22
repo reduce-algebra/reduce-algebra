@@ -1,6 +1,5 @@
-Loading image file :c:\Cygwin\home\rainer\software\reduce\psl\bin\win32\pslcomp.img 
- heaplowerbound = bfbb20 (new) bfbb20 (file)
-PSL 4.2 Compiler, 27-Sep-2014
+Loading image file :c:/cygwin/home/rainer/software/reduce/psl/bin/win32/pslcomp.img 
+PSL 4.2 Compiler, 07-Nov-2014
 1 lisp> nil
 2 lisp> 2 lisp> t
 3 lisp> 3 lisp> nil
@@ -88,18 +87,19 @@ subseq search-string-for-character unchecked-string-equal copystringtofrom
 cons interrogate modify put unchecked-put atsoc unchecked-setprop 
 unchecked-prop putd code-putd fluid fluid1 stderror *define-constant25 *DEFN lisp> whatsup getpid echoon echooff external_charsininputbuffer 
 flushstdoutputbuffer external_user_homedir_string alterheapsize 
-allocatemorebps get_file_status os_startup_hook os_cleanup_hook 
-external_alarm external_ualarm external_time external_timc external_stat 
+allocatemorebps get_imagefilepath get_file_status os_startup_hook 
+os_cleanup_hook get_execfilepath external_alarm external_ualarm 
+external_time external_timc external_stat external_mkdir external_rmdir 
 external_link external_unlink external_setenv external_getenv uxfloat uxfix 
 uxassign uxplus2 uxdifference uxtimes2 uxquotient uxgreaterp uxlessp 
 uxwritefloat uuxdoubletofloat uuxfloattodouble uuxsin uuxcos uuxtan uuxasin 
 uuxacos uuxatan uuxsqrt uuxexp uuxlog uuxatan2 get_registry_value 
 external_pwd sun3_sigset sigrelse unexec unixputc unixputs unixputn 
 unixcleario expand_file_name unixopen unixcd unixfread unixfputc unixfgetc 
-unixfgets unixfwrite unixfflush ctime external_system external_exit fopen 
-fclose fseek clearerr getw putw signal sleep ieee_handler ieee_flags 
-setlinebuf popen pclose profil datetag psll_call unix-profile fread fputc 
-fgetc fgets fwrite fflush26 *DEFN lisp> plantunbound plantcodepointer plantlambdalink bittable kernel-fatal-error27 *DEFN lisp> *** global `bpslowerbound' cannot become fluid
+unixfgets unixfwrite unixfflush ctime external_system external_fullpath 
+external_exit fopen fclose fseek clearerr getw putw signal sleep 
+ieee_handler ieee_flags setlinebuf popen pclose profil datetag psll_call 
+unix-profile fread fputc fgetc fgets fwrite fflush26 *DEFN lisp> plantunbound plantcodepointer plantlambdalink bittable kernel-fatal-error27 *DEFN lisp> *** global `bpslowerbound' cannot become fluid
 *** global `nextbps' cannot become fluid
 codeaddressp lastkernel28 *DEFN lisp> 28 *DEFN lisp> initcode29 lisp> 
 Quitting

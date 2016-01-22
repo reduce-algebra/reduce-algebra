@@ -74,7 +74,8 @@
 
 extern int Debug;
 
-char *  imagefile ;
+char *  imagefile;
+char *  abs_imagefile = NULL;	/* like imagefile, but as an absolute pathname */
 int     max_image_size;
 int     oldbreakvalue;
 
@@ -391,6 +392,7 @@ setupbpsandheap(argc,argv)
 	oldheaplast = ohl; oldheaptrapbound = ohtb;
 	heaplowerbound = hlb; heapupperbound = hub;
 	heaptrapbound = htb; }
+       abs_imagefile = _fullpath(NULL, imagefile, _MAX_PATH);
        return (4711);
      }
 return (0);
@@ -475,3 +477,7 @@ unexec()
   return(bpssize);
 }
 
+char * get_imagefilepath ()
+{
+  return abs_imagefile;
+}

@@ -488,6 +488,14 @@ argv[-1][15] =0;
 
 ********************************/
 
+/* convert a pathname to canonical form */
+char *
+external_fullpath(relpath)
+     char * relpath;
+{
+  return _fullpath(NULL,relpath,_MAX_PATH);
+}
+
 LONG unixgetw(FILE * f)
    { 
      LONG pu;

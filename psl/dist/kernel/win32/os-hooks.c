@@ -88,6 +88,7 @@ extern char bps[];
 
 
 jmp_buf mainenv,signalenv;
+char * abs_execfilepath = NULL;
 
 int Debug = 0;
 
@@ -149,6 +150,9 @@ char *argv[];
   unixinitio(); 
   bruch_bruch = 0;
 
+  if (argc > 0)
+    abs_execfilepath = _fullpath(NULL,argv[0],_MAX_PATH);
+
   if (getenv("BPSL_DEBUG") != NULL)
      Debug = 1;
 
@@ -191,6 +195,10 @@ os_cleanup_hook()
 longjmp(mainenv,1);
 }
  
+char * get_execfilepath ()
+{
+  return abs_execfilepath;
+}
 
 clear_iob()
 {

@@ -360,6 +360,26 @@
 
 (loadtime (getunixargs))
 
+
+(de get-image-path ()
+  (prog (val)
+        (setq val (get_imagefilepath))
+	(cond ((eq val 0) (return nil))
+	      (t (return (importforeignstring val))))))
+
+(de get-exec-path ()
+  (prog (val)
+        (setq val (get_execfilepath))
+	(cond ((eq val 0) (return nil))
+	      (t (return (importforeignstring val))))))
+
+(de get-fullpath (relpath)
+  (prog (val)
+        (setq val (external_fullpath (strbase (strinf relpath))))
+	(cond ((eq val 0) (return nil))
+	      (t (return (importforeignstring val))))))
+
+
 % getStartupName - Figure out the filename that PSL was started from.      
 (de getstartupname ()
   (prog (arg0 path pathsz dirstart i dir filename)
@@ -547,7 +567,7 @@
 		   (while (wneq (setq c(readch)) (char eol))
 			  (push c a))
                    (if (null a)	  nil
-                     (compress (cons '!" (reverse (cons '!" a))))))))))
+                     (compress (cons '!" (reverse (cons '!" a))))))))
 
     ))
 				       
