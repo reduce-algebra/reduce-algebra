@@ -1,0 +1,61 @@
+# Intel PC
+ENV=WIN32
+
+###
+### Don't forget to add
+###  C:/Program Files/Microsoft Visual Studio 10.0/VC/bin
+### and
+###  C:/Program Files/Microsoft Visual Studio 10.0/Common7/IDE
+### at the beginning of your PATH
+###
+
+PROJ = bpsl
+SRC = bps.c bpsheap.c echo.c file-sta.c float.c misc.c os-hooks.c pslextra.c \
+        pwd-fn.c sigs.c unix-io.c pslsocke.c pipe-s.c pslave.c datetag.c
+
+cc = cl
+cflags = "/IC:\Program Files\Microsoft SDKs\Windows\v7.0A\Include" "/IC:\Program Files\Microsoft Visual Studio 10.0\VC\include" /c /Z7 /nologo /WX- /Oy- /D WIN32 /D BPSSIZE=5600000 /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /GS /fp:precise /fp:except /Zc:wchar_t /Zc:forScope /Gd /TC /analyze- /errorReport:prompt 
+
+debug = /Od /D _DEBUG /RTC1 /MTd
+
+
+# !include <ntwin32.mak>
+
+all: $(PROJ).exe
+
+# Inference Rules:
+
+%.obj: %.c
+	$(cc) $(cdebug) $(cflags) /W2 $(cvars) $(cf) -DSLAVE $<
+
+#datetag.obj: main.obj mkdttag.exe $(SRC:.c=.obj)
+#	mkdttag
+#	$(cc) $(cdebug) $(cflags) /W2 $(cvars) $(cf) datetag.c
+#
+#mkdttag.obj: mkdttag.c
+#     $(cc) $(cflags) mkdttag.c
+#
+#mkdttag.exe: mkdttag.obj
+#      $(link)  -SUBSYSTEM:console  -out:mkdttag.exe mkdttag.obj  $(guilibs)
+ 
+main.obj: main.asm
+	ml /Zf /Zd /Zi /c /Fomain.obj main.asm
+#     masm /Ml main main main main
+
+
+#
+#                   -MAP:bpsl.map 
+#
+$(PROJ).exe: $(SRC:.c=.obj) main.obj $(SRC2:.c=.obj) 
+	link /LIBPATH:"C:\Program Files\Microsoft SDKs\Windows\v7.0A\Lib" /LIBPATH:"C:\Program Files\Microsoft Visual Studio 10.0\VC\lib" /ERRORREPORT:NONE /OUT:bpsl.exe /MAP:main.lst /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE:NO /FIXED:NO /NXCOMPAT:NO /TSAWARE  main.obj  $(SRC:.c=.obj) Advapi32.lib
+#    $(link) $(ldebug) -SUBSYSTEM:console  -entry:mainCRTStartup\
+#          -MAP:bpsl.map \
+#	  -stack:0x1000000,0x1000000 \
+#          -out:$(PROJ).exe main.obj  $(SRC:.c=.OBJ) $(SRC2:.c=.OBJ) datetag.obj \
+#     kernel32.lib $(guilibs) advapi32.lib
+
+#    copy bpsl.exe d:\psl\bin\winnt
+
+#    mkbare
+#    psl2redu
+
