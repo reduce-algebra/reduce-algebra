@@ -164,27 +164,29 @@ uxwritefloat(buf, flt, convstr)
 
   temps = buf + 4;       /* Skip over lisp string length to write data */
 
-  sprintf(temps, convstr, *flt);
+  _snprintf(temps, 95, convstr, *flt);
 
-  /* Make sure that there is a trailing .0
-   */
-  dot = strrchr(temps, '.');
-  if (dot == '\0')
-    /* Check to see if the number is in scientific notation. If so, we need
-     *  add the .0 into the middle of the string, just before the e.
-     */
-    if ((e = strrchr(temps, 'e')) || (e = strrchr(temps, 'E')))
-      {
-	strcpy(tempbuf, e);       /* save save exponent part */
-	*e = '\0'; 
-	strcat(temps, ".0");     /* Add .0 ono original string */
-	strcat(temps, tempbuf);  /* add the exponent part onto the end */
-      }
-  else
+  if (_finite(*flt))
     {
-      strcat(temps, ".0");
+    /* Make sure that there is a trailing .0
+     */
+    dot = strrchr(temps, '.');
+    if (dot == '\0')
+      /* Check to see if the number is in scientific notation. If so, we need
+       *  add the .0 into the middle of the string, just before the e.
+       */
+      if ((e = strrchr(temps, 'e')) || (e = strrchr(temps, 'E')))
+	{
+	  strcpy(tempbuf, e);       /* save save exponent part */
+	  *e = '\0'; 
+	  strcat(temps, ".0");     /* Add .0 ono original string */
+	  strcat(temps, tempbuf);  /* add the exponent part onto the end */
+	}
+      else
+	{
+	  strcat(temps, ".0");
+	}
     }
-  
   /* Install the length of the string into the Lisp header word
    */
   *((int *)buf) = strlen(temps) - 1;
