@@ -98,7 +98,7 @@ EOF
 
 cat > $psys/bare-psl << EOFFF
 #
-$pxk/bpsl -td $imagesize -f $psys/bare-psl.img \$*
+\$pxk/bpsl -td $imagesize -f \$psys/bare-psl.img \$*
 #
 EOFFF
 
