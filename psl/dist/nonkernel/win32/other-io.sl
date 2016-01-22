@@ -50,9 +50,9 @@
 
 (fluid '(in* out*))
 
-(fluid '(*raise **low-case   % controls case conversion of IDs
-	 *cr      % controls the reading of cr characters
-	 ))
+(fluid '(*raise **low-case)) % controls case conversion of IDs
+
+(fluid '(*cr))      % controls the reading of cr characters
 
 (de channeleject (c)
   % Skip to top of next output page
