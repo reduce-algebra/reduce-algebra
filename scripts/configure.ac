@@ -1,19 +1,15 @@
 ## Process this file with autoconf to check your version of "autoconf"
 
-# A C Norman.                                         April 2009-14
+# A C Norman.                                                 2009-16
 
 # This is intended to cause the system to verify versions of all the
 # relevant tools.
 
-AC_INIT([VERSIONTEST],[1.0])
+AC_INIT([VERSIONTEST],[1.1])
 
-# At some stage I need to decide just what version I do rely upon!
-# The settings indicated here appear to be sufficient and some versions that
-# are earlier have failed for me.
+AC_PREREQ(2.61)
 
-AC_PREREQ(2.59)
-
-AM_INIT_AUTOMAKE([1.8.3 foreign])
+AM_INIT_AUTOMAKE([1.13 foreign])
 
 AC_CONFIG_FILES([Makefile])
 

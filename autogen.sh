@@ -69,14 +69,26 @@ case $a in
   ;;
 esac
 
+# I want "--with-wx" to imply "--without-fox". At present I do not
+# feel the need for the converse because this script does not try to
+# autoreconf wxWidgets anyway.
+case $a in
+*--with-wx=no* | "--without-wx*")
+  ;;
+*--with-wx*)
+  a="$a --without-fox"
+  ;;
+*)
+  ;;
+esac
+
 case $a in
 *--without-csl* | *with-csl=no*)
   ;;
 *--with-csl*)
   L="$L ./csl ./csl/cslbase ./csl/cslbase/crlibm"
   case $a in
-  *--without-fox* | *with-fox=no*)
-    ;;
+  *--without-fox* | *with-fox=no* | \
   *--without-gui* | *with-gui=no*)
     ;;
   *)

@@ -1479,6 +1479,8 @@ fi
 AC_SUBST(HOST)
 HOST="$host"
 
+AC_OUTPUT
+
 #
 # Make some things available for conditional segments of a Makefile
 #
