@@ -142,7 +142,7 @@ int external_link (char *oldpath, char *newpath)
  */
 int external_unlink (char *path)
 {
-  return DeleteFile (expand_file_name (path));
+  return (DeleteFile (expand_file_name (path)) == 0 ? -1 : 0);
 }
 
 /* Tag( external_strlen )
