@@ -194,6 +194,12 @@ AC_ARG_WITH(cygwin,
   [],
   [with_cygwin="no"])
 
+AC_ARG_WITH(autogen,
+  AC_HELP_STRING([--with-autogen],
+                 [Used at a higher level]),
+  [],
+  [with_autogen="yes"])
+
 AC_ARG_WITH(force,
   AC_HELP_STRING([--with-force],
                  [Used at a higher level]),
@@ -1479,8 +1485,6 @@ fi
 AC_SUBST(HOST)
 HOST="$host"
 
-AC_OUTPUT
-
 #
 # Make some things available for conditional segments of a Makefile
 #
@@ -1506,6 +1510,8 @@ AM_CONDITIONAL(valgrind, test "x$VALGRIND" = "xvalgrind")
 AM_CONDITIONAL(crlibm, test "x$with_crlibm" != "xno")
 AM_CONDITIONAL(boehm, test "x$with_boehm" != "xno")
 AM_CONDITIONAL(crlibmorboehm, test "x$with_crlibm" != "xno" || "x$with_boehm" != "xno")
+
+AC_OUTPUT
 
 # end of "configure.ac"
 

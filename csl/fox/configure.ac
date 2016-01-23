@@ -326,6 +326,7 @@ fi
 # important here but it seems neatest to prevent their use from leading to
 # warning messages...
 AC_ARG_WITH(csl,       [  --with-csl              stray option from the Reduce build setup])
+AC_ARG_WITH(autogen,   [  --with-autogen          stray option from the Reduce build setup])
 AC_ARG_WITH(force,     [  --with-force            stray option from the Reduce build setup])
 AC_ARG_WITH(cygwin,    [  --with-cygwin           stray option from the Reduce build setup])
 AC_ARG_WITH(cygbuild,  [  --with-cygbuild         stray option from the Reduce build setup])
