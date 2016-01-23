@@ -86,15 +86,17 @@ then
 
 # The next fragment should extract version numbers for autoconf and automake
 
-  acver=`autoconf --version 2> /dev/null | head -1`
-  amver=`automake --version 2> /dev/null | head -1`
+  acver=`autoconf --version 2>/dev/null | head -1`
+  amver=`automake --version 2>/dev/null | head -1`
+
+  AC_MSG_NOTICE([autoconf: $acver automake: $amver])
 
   acmaj=`echo $acver | sed -e 's/.* //; s/\..*//'`
   acmin=`echo $acver | sed -e 's/.*\.//'`
   ammaj=`echo $amver | sed -e 's/.* //; s/\..*//'`
   ammin=`echo $amver | sed -e 's/.*\.//'`
 
-  AC_MSG_NOTICE([autoconf: $acmaj.acmin automake: $ammaj.ammin])
+  AC_MSG_NOTICE([autoconf: $acmaj.$acmin automake: $ammaj.$ammin])
 
   if test $acmaj -lt 2 || test $acmaj -eq 2 && test $acmin -lt 61
   then

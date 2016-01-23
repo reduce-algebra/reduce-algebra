@@ -7,15 +7,17 @@ mkdir distrib
 mkdir distrib/psl
 mkdir distrib/csl
 
-cd README.for.distribution distrib/README
+cp README.for.distribution distrib/README
 
 cp -r $1/cslbuild/*/csl/*.app distrib/csl
-cp runcsl.sh distrib/csl
+cp runcsl.sh distrib/csl/redcsl
+chmod +x distrib/csl/redcsl
 
 cp -r $1/pslbuild/*/psl distrib/psl
 cp -r $1/pslbuild/*/red distrib/psl
 cp runpsl.sh distrib/psl/redpsl
+chmod +x distrib/csl/redpsl
 
-cp Reduce_source.tar.bz2 distrib/Reduce_source-$TODAY.tar.bz2
+cp Reduce-source.tar.bz2 distrib/Reduce_source-$TODAY.tar.bz2
 
 exit
