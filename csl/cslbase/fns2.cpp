@@ -2052,7 +2052,7 @@ LispObject Lsymbol_name(LispObject nil, LispObject a)
     return onevalue(a);
 }
 
-#ifdef COMMON
+#if defined COMMON || defined EXPERIMENT
 
 LispObject Lsymbol_package(LispObject nil, LispObject a)
 {   if (!symbolp(a)) return aerror1("symbol-package", a);
@@ -4619,7 +4619,6 @@ setup_type const funcs2_setup[] =
     {"substq",                  wrong_no_3a, wrong_no_3b, Lsubstq},
     {"symbol-protect",          too_few_2, Lsymbol_protect, wrong_no_2},
 #ifdef COMMON
-    {"symbol-package",          Lsymbol_package, too_many_1, wrong_no_1},
     {"symbol-plist",            Lplist, too_many_1, wrong_no_1},
     {"append",                  Lappend_1, Lappend, Lappend_n},
 //
@@ -4636,6 +4635,9 @@ setup_type const funcs2_setup[] =
     {"cl-equal",                too_few_2, Lcl_equal, wrong_no_2},
     {"equal",                   too_few_2, Lequal, wrong_no_2},
     {"member",                  too_few_2, Lmember, wrong_no_2},
+#endif
+#if defined COMMON || defined EXPERIMENT
+    {"symbol-package",          Lsymbol_package, too_many_1, wrong_no_1},
 #endif
 #ifdef EXPERIMENT
     {"serialize",               Lserialize, too_many_1, wrong_no_1},

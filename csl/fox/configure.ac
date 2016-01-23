@@ -11,54 +11,6 @@ AC_INIT(fox,[fox_version],jeroen@fox-toolkit.com)
 AC_CONFIG_SRCDIR([include/fx.h])
 AM_INIT_AUTOMAKE([foreign])
 
-# aclocal.m4:	configure.ac
-# 	aclocal
-# config.h.in:	configure.ac
-# 	autoheader
-# helpers = COPYING INSTALL install-sh missing mkinstalldirs config.sub \
-# 		ltmain.sh ltconfig
-# Makefile.in $(helpers):	configure.ac Makefile.am aclocal.m4
-# 	automake
-# Note: automake calls libtool for you when necessary.
-
-need="no"
-
-if ! test $srcdir/Makefile.in -nt $srcdir/configure.ac
-then
-  printf "Makefile.in depends on configure.ac\n"
-  need="yes"
-fi
-if ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am
-then
-  printf "Makefile.in depends on Makefile.am\n"
-  need="yes"
-fi
-if ! test $srcdir/configure -nt $srcdir/configure.ac
-then
-  printf "configure depends on configure.ac\n"
-  need="yes"
-fi
-
-if test "x$need" = "xyes\n"
-then
-  printf "autoreconf necessary (args: $ac_configure_args)\n"
-
-  here=`pwd`
-  cd $srcdir
-  printf "autoreconf in the FOX directory\n"
-  autoreconf -f -i -v
-
-  cd $here
-# Because autoconf might not be available or might fail and because I
-# believe I have observed cases where it has not reset timestamps in the
-# way I expected I will reset timestamps explicitly here...
-
-  touch $srcdir/Makefile.am $srcdir/configure
-
-  printf "Restart: $srcdir/configure $ac_configure_args\n"
-  exec /bin/sh -c "$srcdir/configure $ac_configure_args"
-fi
-
 # Set version
 FOX_MAJOR_VERSION=fox_major
 FOX_MINOR_VERSION=fox_minor
@@ -454,15 +406,6 @@ esac
 AM_CONDITIONAL(xp64, test "x$mingw64" = "xyes")
 AM_CONDITIONAL(cygwinshell, test "x$win32" = "xyes")
 AM_CONDITIONAL(canrun, test "x$cross_compiling" != "xyes")
-
-# The following lines are a (further) attempt to arrange that the
-# rebuilding of Makefile (and before that Makefile.in and the like)
-# is less sensitive to exactly which version of automake happens to
-# be installed...
-AC_SUBST(AUTOMAKE)
-AUTOMAKE="automake -f -a -v"
-AC_SUBST(ACLOCAL)
-ACLOCAL="aclocal --force"
 
 # Done.
 AC_OUTPUT(Makefile

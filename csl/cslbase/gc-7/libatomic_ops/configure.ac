@@ -175,15 +175,6 @@ AC_SUBST(THREADDLLIBS)
 AM_CONDITIONAL(HAVE_PTHREAD_H, test x$have_pthreads = xtrue)
 AM_CONDITIONAL(NEED_ASM, test x$need_asm = xtrue)
 
-# The following lines are a (further) attempt to arrange that the
-# rebuilding of Makefile (and before that Makefile.in and the like)
-# is less sensitive to exactly which version of automake happens to
-# be installed...
-AC_SUBST(AUTOMAKE)
-AUTOMAKE="automake -f -a -v"
-AC_SUBST(ACLOCAL)
-ACLOCAL="aclocal --force"
-
 AC_CONFIG_FILES([
         Makefile
         doc/Makefile

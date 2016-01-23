@@ -47,64 +47,79 @@ AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
 # re-create the autoconf-related files. The standard way that autoconf and
 # automake allow for this is not very generous if the version of autoconf
 # on the local machine does not match the one used in the files from the
-# central site. So there are rules here that are to arrange that when a
-# user goes "./configure" that (if necessary) autoreconf is invoked. To
-# cope with platform dependency and variation it is vital that the call
-# be with "-i -f" flags. The rules I have here do not check and recover from
-# issue such as the script "compile" (and many others) being needed on some
-# machines but not others - it just deals with the simplest cases. I hope
-# it helps at least most people. Calling the script "./autogen.sh" in the
-# top (trunk) directory of the Reduce tree is another scheme that ought
-# to help in case of problems.  
+# central site.
+#
+# I am now going to try to respond to that by forcing a re-generation of
+# all the autoconf files each time anybody runs configure. That adds to the
+# cost for everybody and means that everybody NEEDS autoconf, automake and
+# libtool installed, but may be more robust.
 #
 
+AC_ARG_WITH(autogen,
+  AC_HELP_STRING([--with-autogen], [Regenetare autoconf file at start]),
+  [],
+  [with_autogen="yes"])
 
-# aclocal.m4:	configure.ac
-# 	aclocal
-# config.h.in:	configure.ac
-# 	autoheader
-# helpers = COPYING INSTALL install-sh missing mkinstalldirs config.sub \
-# 		ltmain.sh ltconfig
-# Makefile.in $(helpers):	configure.ac Makefile.am aclocal.m4
-# 	automake
-# Note: automake calls libtool for you when necessary.
+if test "x$with_autogen" = "xyes"
+then
 
-need="no"
+  if ! which autoconf > /dev/null 2> /dev/null
+  then
+    printf "You must have autoconf (at least version 2.61) installed to\n"
+    printf "build this package. Install it and try again please.\n"
+    exit 1
+  fi
 
-if ! test $srcdir/Makefile.in -nt $srcdir/configure.ac
-then
-  printf "Makefile.in depends on configure.ac\n"
-  need="yes"
-fi
-if ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am
-then
-  printf "Makefile.in depends on Makefile.am\n"
-  need="yes"
-fi
-if ! test $srcdir/configure -nt $srcdir/configure.ac
-then
-  printf "configure depends on configure.ac\n"
-  need="yes"
-fi
+  if ! which automake > /dev/null 2> /dev/null
+  then
+    printf "You must have automake (at least version 1.13) installed to\n"
+    printf "build this package. Install it and try again please.\n"
+    exit 1
+  fi
 
-if test "x$need" = "xyes\n"
-then
-  printf "autoreconf necessary (args: $ac_configure_args)\n"
+  if ! which libtool > /dev/null 2> /dev/null
+  then
+    printf "You must have libtool installed to build this package. Install\n"
+    printf "it and try again please.\n"
+    exit 1
+  fi
+
+# The next fragment should extract version numbers for autoconf and automake
+
+  acver=`autoconf --version 2> /dev/null | head -1`
+  amver=`automake --version 2> /dev/null | head -1`
+
+  acmaj=`echo $acver | sed -e 's/.* //; s/\..*//'`
+  acmin=`echo $acver | sed -e 's/.*\.//'`
+  ammaj=`echo $amver | sed -e 's/.* //; s/\..*//'`
+  ammin=`echo $amver | sed -e 's/.*\.//'`
+
+  if test $acmaj -lt 2 || test $acmaj -eq 2 && test $acmin -lt 61
+  then
+    printf "You have autconf version $acmaj.$ammin but at least 2.61 is needed\n"
+    printf "to build this package. Install it and try again please.\n"
+    exit 1
+  fi
+
+  if test $ammaj -lt 1 || test $ammaj -eq 1 && test $ammin -lt 13
+  then
+    printf "You have autmake version $acmaj.$ammin but at least 1.13 is needed\n"
+    printf "to build this package. Install it and try again please.\n"
+    exit 1
+  fi
 
   here=`pwd`
   cd $srcdir
-  printf "autoreconf in the top-level directory\n"
-  autoreconf -f -i -v
-
+  printf "Regenerate autoconf-related files\n"
+  if ! ./autogen.sh $ac_configure_args
+  then
+    printf "The autogen.sh script seems to have failed. I can not continue\n"
+    exit 1
+  fi
   cd $here
-# Because autoconf might not be available or might fail and because I
-# believe I have observed cases where it has not reset timestamps in the
-# way I expected I will reset timestamps explicitly here...
-
-  touch $srcdir/Makefile.am $srcdir/configure
 
   printf "Restart: $srcdir/configure $ac_configure_args\n"
-  exec /bin/sh -c "$srcdir/configure $ac_configure_args"
+  exec /bin/sh -c "$srcdir/configure $ac_configure_args --without-autogen"
 fi
 
 AC_CANONICAL_HOST()
@@ -410,7 +425,7 @@ else
   inplace="no"
 fi
 
-echo in-place build attempt = $inplace
+printf "in-place build attempt = $inplace\n"
 
 # I have a fairly elaborate scheme to select a directory to use. At present
 # for PSL there are no relevant extra configure parameters, so I will not
@@ -583,7 +598,7 @@ case $inplace in
           if test "x$with_force" != "xno" ||
              test $abssrcdir/configure -nt $abssrcdir/cslbuild/$build/config.status
           then
-            echo "Need to reconfigure for $build"
+            printf "Need to reconfigure for $build\n"
             mkdir -p "$abssrcdir/cslbuild/$build"
             cd "$abssrcdir/cslbuild/$build"
             if test "x$CC$CPP$CXX$CXXCPP" != "x"
@@ -639,7 +654,7 @@ case $inplace in
             if test "x$with_force" != "xno" ||
                test $abssrcdir/configure -nt $abssrcdir/cslbuild/$build/config.status
             then
-              echo "Need to reconfigure for $build"
+              printf "Need to reconfigure for $build\n"
               mkdir -p "$abssrcdir/cslbuild/$build"
               cd "$abssrcdir/cslbuild/$build"
               if test "x$CC$CPP$CXX$CXXCPP" != "x"
@@ -875,7 +890,7 @@ then
       a=${a##* }
       b=${a%.tar.bz2}
       cd ..
-      echo "will unpack a fresh copy of wxWidgets"
+      printf "will unpack a fresh copy of wxWidgets\n"
       rm -rf wxWidgets
       tar xfj support-packages/$a
       chmod -R +rw wxWidgets-*
@@ -913,7 +928,7 @@ then
       find wxWidgets -name config.h.in -print | xargs touch
       sleep 1
       find wxWidgets -name Makefile.in -print | xargs touch
-      echo wxWidgets unpacked from archive $a
+      printf "wxWidgets unpacked from archive $a\n"
       cd $d
 #   fi
 #
@@ -1102,6 +1117,7 @@ else
 # a catalogue of all the options I need to ignore. Messy!
     case $x in
     \'--with-force*\' | \
+    \'--with*-autogen*\' | \
     \'--with-mingw*\' | \
     \'--with-lto*\' | \
     \'--with-m32*\' | \
@@ -1228,22 +1244,6 @@ AM_CONDITIONAL(wx,  test "x$with_wx" != "xno")
 AM_CONDITIONAL(crlibm, test "x$with_crlibm" != "xno")
 
 AC_MSG_NOTICE([final output from top level configuration])
-
-# The following lines are a (further) attempt to arrange that the
-# rebuilding of Makefile (and before that Makefile.in and the like)
-# is less sensitive to exactly which version of automake happens to
-# be installed...
-# The default behaviour of automake seems to be to set up use of the
-# "missing" script to re-invoke aclocal, autoconf and automake in a manner
-# which insists that EXACTLY the version previously used is available.
-# This really hurts portability. So what I do here suffers somewhat in
-# that it will insist that a sufficientky recent version of ecah of those
-# tools (plus libtool) are installed, but it should reconfigure fully
-# when that is useful.
-AC_SUBST(AUTOMAKE)
-AUTOMAKE="automake -f -a -v"
-AC_SUBST(ACLOCAL)
-ACLOCAL="aclocal --force"
 
 AC_OUTPUT
 

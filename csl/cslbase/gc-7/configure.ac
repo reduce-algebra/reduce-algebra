@@ -953,15 +953,6 @@ AM_CONDITIONAL([NEED_ATOMIC_OPS_ASM],
 dnl Produce the Files
 dnl -----------------
 
-# The following lines are a (further) attempt to arrange that the
-# rebuilding of Makefile (and before that Makefile.in and the like)
-# is less sensitive to exactly which version of automake happens to
-# be installed...
-AC_SUBST(AUTOMAKE)
-AUTOMAKE="automake -f -a -v"
-AC_SUBST(ACLOCAL)
-ACLOCAL="aclocal --force"
-
 AC_CONFIG_FILES([Makefile bdw-gc.pc])
 
 AC_CONFIG_COMMANDS([default],,

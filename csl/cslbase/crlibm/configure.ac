@@ -414,15 +414,6 @@ fi
 
 #AC_CONFIG_SUBDIRS([scs_lib])
 
-# The following lines are a (further) attempt to arrange that the
-# rebuilding of Makefile (and before that Makefile.in and the like)
-# is less sensitive to exactly which version of automake happens to
-# be installed...
-AC_SUBST(AUTOMAKE)
-AUTOMAKE="automake -f -a -v"
-AC_SUBST(ACLOCAL)
-ACLOCAL="aclocal --force"
-
 AC_CONFIG_FILES([Makefile tests/Makefile scs_lib/Makefile])
 AC_OUTPUT
 

@@ -15,6 +15,11 @@ AC_CONFIG_FILES([Makefile])
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")
 
+AC_ARG_WITH(autogen,
+  AC_HELP_STRING([--with-autogen], [Regenerate autoconf-related files]),
+  [],
+  [with_autogen="yes"])
+
 AC_ARG_WITH(m32,
    AC_HELP_STRING([--with-m32], [Force use of 32-bit mode on 64-bit host]),
    [],

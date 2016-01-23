@@ -309,7 +309,7 @@ top:
             validate(qvalue(p), __LINE__);
             validate(qenv(p), __LINE__);
             validate(qpname(p), __LINE__);
-#ifdef COMMON
+#if defined COMMON || defined EXPERIMENT
             validate(qpackage(p), __LINE__);
 #endif // COMMON
             validate(qplist(p), __LINE__);

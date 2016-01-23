@@ -22,42 +22,89 @@ then
   export SHELL
 fi
 
-need="no"
+#
+# There is a horror here. If one fetches everything from subversion
+# then timstamps can be ill-ordered, and it can seem necessary to
+# re-create the autoconf-related files. The standard way that autoconf and
+# automake allow for this is not very generous if the version of autoconf
+# on the local machine does not match the one used in the files from the
+# central site.
+#
+# I am now going to try to respond to that by forcing a re-generation of
+# all the autoconf files each time anybody runs configure. That adds to the
+# cost for everybody and means that everybody NEEDS autoconf, automake and
+# libtool installed, but may be more robust.
+#
 
-if ! test $srcdir/Makefile.in -nt $srcdir/configure.ac
-then
-  printf "Makefile.in depends on configure.ac\n"
-  need="yes"
-fi
-if ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am
-then
-  printf "Makefile.in depends on Makefile.am\n"
-  need="yes"
-fi
-if ! test $srcdir/configure -nt $srcdir/configure.ac
-then
-  printf "configure depends on configure.ac\n"
-  need="yes"
-fi
+AC_ARG_WITH(autogen,
+  AC_HELP_STRING([--with-autogen], [Regenetare autoconf file at start]),
+  [],
+  [with_autogen="yes"])
 
-if test "x$need" = "xyes\n"
+if test "x$with_autogen" = "xyes"
 then
-  printf "autoreconf necessary (args: $ac_configure_args)\n"
+
+  if ! which autoconf > /dev/null 2> /dev/null
+  then
+    printf "You must have autoconf (at least version 2.61) installed to\n"
+    printf "build this package. Install it and try again please.\n"
+    exit 1
+  fi
+
+  if ! which automake > /dev/null 2> /dev/null
+  then
+    printf "You must have automake (at least version 1.13) installed to\n"
+    printf "build this package. Install it and try again please.\n"
+    exit 1
+  fi
+
+  if ! which libtool > /dev/null 2> /dev/null
+  then
+    printf "You must have libtool installed to build this package. Install\n"
+    printf "it and try again please.\n"
+    exit 1
+  fi
+
+# The next fragment should extract version numbers for autoconf and automake
+
+  acver=`autoconf --version 2> /dev/null | head -1`
+  amver=`automake --version 2> /dev/null | head -1`
+
+  acmaj=`echo $acver | sed -e 's/.* //; s/\..*//'`
+  acmin=`echo $acver | sed -e 's/.*\.//'`
+  ammaj=`echo $amver | sed -e 's/.* //; s/\..*//'`
+  ammin=`echo $amver | sed -e 's/.*\.//'`
+
+  if test $acmaj -lt 2 || test $acmaj -eq 2 && test $acmin -lt 61
+  then
+    printf "You have autconf version $acmaj.$ammin but at least 2.61 is needed\n"
+    printf "to build this package. Install it and try again please.\n"
+    exit 1
+  fi
+
+  if test $ammaj -lt 1 || test $ammaj -eq 1 && test $ammin -lt 13
+  then
+    printf "You have autmake version $acmaj.$ammin but at least 1.13 is needed\n"
+    printf "to build this package. Install it and try again please.\n"
+    exit 1
+  fi
 
   here=`pwd`
   cd $srcdir
-  printf "autoreconf in the csl directory\n"
-  autoreconf -f -i -v
-
+  printf "Regenerate autoconf-related files\n"
+# Because you will probably not pass arguments to the configure script here
+# autogen.sh will re-make autoconf-related files all the way through the
+# entire Reduce tree. This is perhaps excessive and expensive, but on the
+# other hand it may enhance safety!
+  if ! ./autogen.sh $ac_configure_args
+  then
+    printf "The autogen.sh script seems to have failed. I can not continue\n"
+    exit 1
+  fi
   cd $here
-# Because autoconf might not be available or might fail and because I
-# believe I have observed cases where it has not reset timestamps in the
-# way I expected I will reset timestamps explicitly here...
-
-  touch $srcdir/Makefile.am $srcdir/configure
 
   printf "Restart: $srcdir/configure $ac_configure_args\n"
-  exec /bin/sh -c "$srcdir/configure $ac_configure_args"
+  exec /bin/sh -c "$srcdir/configure $ac_configure_args --without-autogen"
 fi
 
 # I am going to expect that you have at least this version of autoconf.
@@ -801,15 +848,6 @@ AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
               [can_run_executables="no"])
 cross_compiling=$save_cross
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
-
-# The following lines are a (further) attempt to arrange that the
-# rebuilding of Makefile (and before that Makefile.in and the like)
-# is less sensitive to exactly which version of automake happens to
-# be installed...
-AC_SUBST(AUTOMAKE)
-AUTOMAKE="automake -f -a -v"
-AC_SUBST(ACLOCAL)
-ACLOCAL="aclocal --force"
 
 AC_CONFIG_HEADERS([config.h])
 AC_OUTPUT
