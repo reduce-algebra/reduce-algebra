@@ -125,7 +125,8 @@ char *argv[];
      }
    }  
 
-  if(((char*)renv=(char*)getenv("reduce")) ==(char*) NULL)
+  renv=getenv("reduce");
+  if(renv ==(char*) NULL)
   {  // create path to %reduce%
        char env[200]="reduce=";
 
@@ -232,11 +233,11 @@ void init_fp()
 
 	//	printf("Control word: %08x\n",cw);
 	
-	cw = ~(EM_OVERFLOW|EM_ZERODIVIDE|EM_INVALID);
+	cw = ~(_EM_OVERFLOW|_EM_ZERODIVIDE|_EM_INVALID);
 
 	//	printf("New mask: %08x\n",cw);
 
-	cwOriginal = _controlfp(cw, MCW_EM); //Set it.
+	cwOriginal = _controlfp(cw, _MCW_EM); //Set it.
 
 	// cw = _controlfp(0, 0); //Get the default control word
 

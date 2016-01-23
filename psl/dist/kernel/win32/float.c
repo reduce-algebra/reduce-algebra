@@ -64,9 +64,9 @@
 #define PROTECT_FP_CALL(stmt)  {		\
   unsigned int cw; \
   _clearfp();  \
-   cw = _controlfp(~0, MCW_EM); /* Restore default error handling */ 	\
+   cw = _controlfp(~0, _MCW_EM); /* Restore default error handling */ 	\
   stmt; \
-  _controlfp(cw, MCW_EM);  /* Restore previous state */ 	\
+  _controlfp(cw, _MCW_EM);  /* Restore previous state */ 	\
 }
 
 

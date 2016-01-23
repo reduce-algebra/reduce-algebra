@@ -61,14 +61,14 @@ external_pwd()
 
 #define MAXPATHLEN 255
 
+#include <unistd.h>
 #include "sys/param.h"  /* For MAXPATHLEN, the longest path that can occur. */
 char Name[MAXPATHLEN + 2];     /* Need space for '/' and a NULL at the end. */
 
 char *
 external_pwd()
 {
-    char *getwd();
-    char *p = getwd(Name);
+  char *p = getcwd(Name,MAXPATHLEN);
 
     if (p)
         /* PSL convention, terminate directory strings with a slash. */
