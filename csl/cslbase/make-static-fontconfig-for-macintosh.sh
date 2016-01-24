@@ -1,7 +1,9 @@
 #! /bin/bash
 
+# Please have MACOSX_DEPLOYMENT_TARGET say to 10.10 before invoking this.
+
 # To build an executable copy of CSL or Reduce that does not rely on
-# locally-provided (macports) libraries I need a copy of linfontconfig.a
+# locally-provided (macports) libraries I need a copy of libfontconfig.a
 # in the place that macports will link things from. This script makes
 # one, and must be used before building the rest of the code.
 
@@ -14,6 +16,7 @@
 # this using a private framework. But somebody keener on the OSX target can
 # set that up if they want - I am not about to.
 
+rm -rf fontconfig-2.11.1
 tar xvfj ../support-packages/fontconfig-2.11.1.tar.bz2
 cd fontconfig-2.11.1
 ./configure --enable-static

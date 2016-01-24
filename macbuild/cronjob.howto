@@ -1,0 +1,111 @@
+This is how I have been setting up a factory that makes regular snapshots...
+
+First on my Mac I have a copy of Reduce checked out read-only in
+~/reduce-distribution. It needs to be read-only so that "svn update"
+can be run without any need for passwords or other interaction.
+
+I have a symbolic link from scripts/make-snapshot.sh in that tree to
+my home directory. By making it a symbolic link any updates in the
+subversion repository get to be used promptly.
+I also unpack cron.tgz into my home directory so I have files croncheck.sh
+and croncheck1.sh. I use "crontab -e" to edit my personal cron table and
+insert from the file crontab.entry. You will see that that runs croncheck.sh
+once every 10 minutes through the day but not between 8pm and midnight.
+My reasoning for the block-out period is that if I am going to switch my
+machine off in the evening it will be then. If the machine is on after
+midnight I will assume I can run it all night.
+
+Obviously you change the times to suit yourself. You will also need to
+adjust file paths etc.
+
+croncheck.sh checks the date against croncheck.dat which holds the time
+when the next snapshot should be made. A script make-now.sh resets the
+stamp file so that a fresh attempt will be made within the next 10 minutes.
+Note that in general a file mac-<date>.stamp is created that shows when a
+snapshot run has been made today. If you really want another try you need
+both to delete that and to run make-now.sh.
+
+You should create the directory $HOME/snapshots where snapshots will be
+collected.
+
+As well as the various MacPorts packages that I have installed, which I
+list at the end of this document, I need to run the script in csl/cslbase
+that builds and installs a static library for fontconfig.
+
+I have VirtualBox installed with virtual machines for Windows 10 (64-bit)
+and Ubuntu 15.10 (64-bit). These machines are called win-10 and autobuild.
+As explained in scripts/make-snapshot.sh each is set up so it runs a full
+fresh build of Reduce the first time it is launched on any particular day.
+These need to use private keys and .ssh/authorized-keys so that they can
+scp their results back into the snapshots directory on the host.
+
+I find a 4GB Mac very close to unusable with a 2GB virtual machine running in
+it, and 2GB is fairly minimal for the size pf the Windows 10 VM. With 8GB it
+is still not luxurious, but it survives. Expect it to take an hour (or more)
+to build all three (Mac, Windows and Linux) snapshots.
+
+The first time you try this expect at least one of the snapshots to be
+incomplete or unusable because you have not installed quite enough packages
+to allow it to build. For instance on all platforms you need LaTeX  and
+tex4ht with fairly extensive fonts. On the Linux system you need Debian
+packing tools, alien and rpm-building utilities. 
+
+The scripts are not bomb-proof and will need editing to adjust for your
+user-identifier and the address of the machine that you collect the
+snapshots on. AT this stage I have not automated uploading snapshots to the
+Sourceforge release area - I probbaly should.
+
+Here are the Macports I have installed at present (January 2016). Some
+number of these will not be needed and are there either because of other
+projects, history, accident, lack of understanding etc etc! But I BELIEVE
+that if you install all of these you may manage to build stuff. I found that
+just getting MacPorts to fetch, build and install all of these was a really
+tedious business.
+
+I have a .profile that reads
+export PATH=/opt/local/bin:/opt/local/sbin:$PATH
+export O=/Users/acn1/reduce-algebra
+export C=$O/csl/cslbase
+export DONT_USE_XPORT="yes"
+export MACOSX_DEPLOYMENT_TARGET=10.10
+
+My macports.conf file insists that MacPorts always build from source even
+if there is a ready-built binary archive available. So I have in it extra
+lines
+   buildfromsource always
+   macosx_deployment_target 10.10
+
+Note that if you have any ports left over from before you set those
+options then you need to go through some contortions to force re-
+building and re-installation to ensure that everything has been built with
+the desired deployment target. Note that "otool -lv" and search for VERSION
+lets you review that info in a .o, .a or executable file. And that if you have
+built some libraries for 10.11 and then try to link for 10.10 there are
+messages in the build log - which you really ought to search for... here
+is a fragment of typical output that you should try to avoid!
+
+ "ld: warning: object file (/opt/local/lib/libfontconfig.a(fcfs.o)) was
+          built for newer OSX version (10.11) than being linked (10.10)"
+
+
+The list of ports here came from "port installed requested" so my HOPE is
+that if you just ask for this lot that everything else that I need gets
+brought in as dependencies. But I an not 100% confident of that! Note I have
+some ports here that are not vital but that I like to use.
+
+  dvipng
+  expat
+  gnuplot
+  libtool
+  md5sha1sum
+  openssh
+  subversion
+  texlive-fonts-extra
+  texlive-fonts-recommended
+  texlive-htmlxml
+  texlive-latex-extra
+  vim
+  Xft2
+  xorg-libX11
+ 
+======================================================   ACN   January 2016
