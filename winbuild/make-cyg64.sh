@@ -119,10 +119,10 @@ then
 else
   where=`cygpath -m ${where%/bin}`
 # Whether I am running on cygwin32 or cygwin64 I should be able to use
-# i686-w64-mingw32-gcc to create a native 32-bit windows binary that will
-# be runnable. The code in other-cygwin.c uses CreateProcess to get the
+# i686-w64-mingw32-g++ to create a native 32-bit windows binary that will
+# be runnable. The code in other-cygwin.cpp uses CreateProcess to get the
 # alternate version of cygwin launched...
-  i686-w64-mingw32-gcc other-cygwin.c -Dcygwin=$where -o cyg$w
+  i686-w64-mingw32-g++ other-cygwin.cpp -Dcygwin=$where -o cyg$w
   printf "cyg$w.exe created to run $w bit cygwin tasks\n"
 fi
 done

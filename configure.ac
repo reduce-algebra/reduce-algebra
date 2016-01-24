@@ -52,11 +52,22 @@ AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
 # I am now going to try to respond to that by forcing a re-generation of
 # all the autoconf files each time anybody runs configure. That adds to the
 # cost for everybody and means that everybody NEEDS autoconf, automake and
-# libtool installed, but may be more robust.
+# libtool installed, but may be more robust. I will check the versions of
+# autoconf and automake that are present and stop if they are too old.
+# If that case hits you you may need to fetch new versions (in source form)
+# and build and install them somewhere on your PATH. This is in fact not
+# too difficult, it is along the lines of
+#   <fetch source archive from the Free Software Foundation archives>
+#   # (please use a local mirror)
+#   tar xvfz <source-archive.tgz>
+#   cd <where it unpacked to>
+#   ./configure --prefix=/usr/local/bin
+#   make
+#   sudo make install
 #
 
 AC_ARG_WITH(autogen,
-  AC_HELP_STRING([--with-autogen], [Regenetare autoconf file at start]),
+  AC_HELP_STRING([--with-autogen], [Regenerate autoconf file at start]),
   [],
   [with_autogen="yes"])
 
@@ -141,8 +152,12 @@ then
   fi
   cd $here
 
-  printf "Restart: $srcdir/configure $ac_configure_args\n"
-  exec /bin/sh -c "$srcdir/configure $ac_configure_args --without-autogen"
+# It is unexpectedly important the the "--without-autogen" be provided as
+# the first argument in the re-try. This is because otherwise some malformed
+# input olater on (eg "--") could cause it not to be recognised, leading
+# to an infinite cycle of attempted re-generation!
+  printf "Restart: $srcdir/configure --without-autogen $ac_configure_args\n"
+  exec /bin/sh -c "$srcdir/configure --without-autogen $ac_configure_args"
 fi
 
 AC_CANONICAL_HOST()

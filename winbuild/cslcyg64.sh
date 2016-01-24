@@ -1,7 +1,7 @@
 #! /bin/bash -v
 
 # Configure and build CSL version from scratch. This makes a 64-bit cygwin
-# version and is launched froma cygwin64 shell.
+# version and is launched from a cygwin64 shell.
 
 reduce=`cygpath -a ./C`
 reduce="${reduce%/}"
@@ -34,7 +34,7 @@ pushd csl
 $reduce/csl/cslbase/configure --prefix=$here/cslcyg64 \
     --with-cygwin --with-fox=$here/cslcyg64 --with-fox-pending \
     --without-wx
-make standard-c-code
+# make standard-c-code
 make
 ls -lh reduce.exe reduce.img csl.exe csl.img
 popd
