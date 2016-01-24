@@ -38,15 +38,6 @@
 # your system will be marginally faster, so on 64-bit machines I will
 # prefer the 64-bit ones.
 
-
-# If you just checked out a copy of Reduce it seems best to reset a load
-# of time-stamps hers since subversion may have left them in a mess. Doing
-# this is expected to avoid any use of autoreconf during the builds.
-
-pushd ..
-scripts/stamp.sh
-popd
-
 # Detect if we have been launched from 32 or 64-bit cygwin
 
 cygwin="none"
@@ -63,26 +54,16 @@ x86_64)
 esac
 
 # Attempt to make the utility programs that can switch me between
-# 32 and 64-bit cygwin environments. This involves a search for a
-# directory containing both cygwin1.dll and bash.exe and any such
-# directory that is found is expected to be part of a proper cygwin
-# installation. This is at least sort of reasonable in that cygwin
-# issue guidelines to the effect that having multiple copies of cygwin1.dll
-# can cause confusion, so in a well set up configuration I can count on
-# that being a signature of the cygwin installation directory.
-#
-# The script here creates executable cyg32.exe and cyg64.exe if it can,
-# so the presence of these signals its success. For instance in case (2)
-# it ought not to create a cyg64.exe but in case (3) it will need to
-# create a cyg32.exe if I am to survive.
+# 32 and 64-bit cygwin environments.
+# This REQUIRES the two cygwin installations to be in c:\cygwin and
+# c:\cygwin64.
 
-./make-cyg64.sh
+./make-cygalt.sh
 
 # Now identify which build case applies.
-
 case $cygwin in
 32)
-  if test -x ./cyg64.exe
+  if test -f /cygdrive/c/cygwin64/bin/cygwin1.dll
   then
     buildcase=1
   else
@@ -90,7 +71,7 @@ case $cygwin in
   fi
   ;;
 64)
-  if test -x ./cyg32.exe
+  if test -f /cygdrive/c/cygwin/bin/cygwin1.dll
   then
     buildcase=3
   else
@@ -105,11 +86,8 @@ esac
 # case and check that all will be well...
 
 case buildcase in
-1)
-  ./cyg64 ../scripts/cygwin-sanity-check.sh
-  ;;
-3)
-  ./cyg32 ../scripts/cygwin-sanity-check.sh
+1 | 3)
+  ./cygalt ../scripts/cygwin-sanity-check.sh
   ;;
 esac
 
@@ -126,22 +104,15 @@ esac
 
 ./cslwin32.sh
 
-# (2) a cygwin32 version. This uses native compilation in cases a and 2
+# (2) a cygwin32 version. This uses native compilation in cases 1 and 2
 #     and temporary version flipping in case 3
-
-# This and the subseqent builds should be independent, and so I run them all
-# in parallel. On a single-core computer this will not hurt too much and
-# on multi-core systems it will sharply reduce the overall build time.
-
 
 case $buildcase in
 1 | 2)
-  ./cslcyg32.sh &
-  CYG32=$!
+  ./cslcyg32.sh
   ;;
 3)
-  ../cslcyg32x.sh &
-  CYG32=$!
+  ../cslcyg32x.sh
   ;;
 esac
 
@@ -150,71 +121,20 @@ esac
 #     a version of that from somewhere that may not be useful for this
 #     build.
 
-./cslwin64.sh &
-WIN64=$!
+./cslwin64.sh
 
 # (4) a cygwin64 version
 
 case $buildcase in
 1 | 2)
-  ./cslcyg64x.sh &
-  CYG64=$!
+  ./cslcyg64x.sh
   ;;
 3)
-  ./cslcyg64.sh &
-  cyg64=$!
+  ./cslcyg64.sh
   ;;
 esac
 
-# Wait for all the sub-builds to complete
-
-cyg32ok=yes
-win64ok=yes
-cyg64ok=yes
-
-if ! wait $CYG32
-then
-  cyg32ok=no
-fi
-
-if ! wait $WIN64
-then
-  win64ok=no
-fi
-
-if ! wait $CYG64
-then
-  cyg64ok=no
-fi
-
-# I wait for all the sub-tasks to complete before reporting how things
-# went so that a transcript of the output from this script does not hide
-# potentially important information in the middle of other stuff.
-
-if test "$cyg32ok$win64ok$cyg64ok" = "yesyesyes"
-then
-  echo "cygwin32, windows64 and cygwin64 versions all seem to have buildt OK"
-fi
-
-if test "$cyg32ok" = "no"
-then
-  echo "cygwin32 build failed"
-  exit 1
-fi
-
-if test "$win64ok" = "no"
-then
-  echo "win64 build failed"
-  exit 1
-fi
-
-if test "$cyg64ok" = "no"
-then
-  ech "cygwin64 build failed"
-  exit 1
-fi
-
-# Now all versions should be built. Check sizes again
+# Now all versions should be built. Check sizes.
 
 ls -lh csl*/csl/csl.exe csl*/csl/csl.com csl*/csl/csl.img
 ls -lh csl*/csl/reduce.exe csl*/csl/reduce.com csl*/csl/reduce.img

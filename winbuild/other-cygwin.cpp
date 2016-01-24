@@ -3,23 +3,25 @@
 //
 // This program is to be run from a DOS command prompt or any cygwin
 // shell, and it "changes gear" so that the command that it is
-// given as its arguments is run in a full cygwin context. Depending on
-// how it is compiled that may be either a 32-bit or 64-bit cygwin world.
-// A special use of this is that it makes it possible to run 64 bit
-// cygwin applications from a 32-bit world or vice versa. Note that for
-// good behaviour in such usage that mixes 32 and 64-bit cygwin working
-// it will be important that file systems map so that relevant files appear
-// in consistent places from both 32 and 64-bit worlds. This may be easiest
-// if paths are fully rooted and so always start /cygdrive/x/...
+// given as its arguments is run in a full cygwin context.
+// It should always run its target in the version of cygwin it is
+// nor run from - ie if launched from a 32-bit terminal it will
+// run a 64-bit application and vice versa.
+// Note that for good behaviour in such usage that mixes 32 and 64-bit
+// cygwin working it will be important that file systems map so that
+// relevant files appear in consistent places from both 32 and 64-bit
+// worlds. This may be easiest if paths are fully rooted and so always
+// start /cygdrive/x/...
+// In particular BEWARE of hom directories!
 //
-// You must compile this with i686-w64-mingw32-gcc. This now requires that
+// You must compile this with i686-w64-mingw32-gc++. This now requires that
 // the 32 and 64-bit versions of cygwin have been installed in c:\cygwin and
 // c:\cygwin64.
 //
 
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -57,10 +59,6 @@
 #include <string.h>
 #include <windows.h>
 #include <tlhelp32.h>
-
-// If you do not go "-Dcygwin=..." when you compile this then it will
-// assume it needs to change gear into a copy of cygwin living on
-// C:\cygwin64
 
 static int run64;
 
@@ -182,7 +180,8 @@ int main(int argc, char *argv[])
 // standard outputs. It also seems that STD_INPUT is passed OK here if it is
 // a pipe, but not if it is interactive... Ah well maybe this is still good
 // enough for IMMEDIATE purposes even without the upgrades needed to sort
-// out the problems described here!
+// out the problems described here! But please be aware that some output can
+// get misdirected along the way!
     startup.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
     startup.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
     startup.hStdError = GetStdHandle(STD_ERROR_HANDLE);
@@ -203,7 +202,10 @@ int main(int argc, char *argv[])
     user = getenv("USER");
     if (user == NULL) user = "unknown";
     memset(newenv, 0, sizeof(newenv));
-    sprintf(newenv, "USER=%s%cPATH=/cygdrive/c/cygwin64/bin%c", user, 0, 0);
+    if (run64)
+        sprintf(newenv, "USER=%s%cPATH=/cygdrive/c/cygwin64/bin%c", user, 0, 0);
+    else
+        sprintf(newenv, "USER=%s%cPATH=/cygdrive/c/cygwin/bin%c", user, 0, 0);
     for (i=0; i<dirsize; i++)
         if (current[i] == '\\') current[i] = '/';
     sprintf(command,

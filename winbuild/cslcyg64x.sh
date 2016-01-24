@@ -4,8 +4,14 @@
 # version but is launched from a cygwin32 shell. It uses traditional
 # cross compilation.
 
+if test  "x`uname -m`" != "xi686"
+then
+  printf "This script needs to be run in a 64-bit cygwin environment\n"
+  printf "You seem bot to be in one, so I am giving up\n"
+  exit 1
+fi
 
-reduce=`cygpath -a ..`
+reduce=`cygpath -a ./C`
 reduce="${reduce%/}"
 echo $reduce
 
