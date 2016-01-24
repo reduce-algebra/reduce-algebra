@@ -13,15 +13,15 @@
 # I put this in my home directory and arrange that it gets invoked from time
 # to time. See comments lower down about its use in virtual machines.
 
-HERE=`pwd`
-today=`date +%Y%m%d`
+export HERE=`pwd`
+export today=`date +%Y%m%d`
 
 # The ip address or name of the machine where the generated archive is to go
-DESTMC=192.168.1.110
+export DESTMC=192.168.1.110
 # The user to use when copying
-DESTUSER=acn1
+export DESTUSER=acn1
 # The directory to place snapshots in
-DESTDIR=snapshots
+export DESTDIR=snapshots
 # NOTE that .ssh authorized-keys need to have been set up so that the use
 # of "scp" here can happen without any need to quote a password.
 
@@ -36,14 +36,14 @@ DESTDIR=snapshots
 # OUTDIR is the directory within $BUILD where release packages are made.
 # OUTFILES is a file or list of the files in OUTDIR that are wanted.
 
-RED=""
+export RED=""
 for x in $HOME/reduce-distribution \
          $HOME/reduce-algebra \
          /y/projects/reduce-distribution
 do
   if test -d $x
   then
-    RED="$x"
+    export RED="$x"
     break
   fi
 done
@@ -57,22 +57,22 @@ printf "Found Reduce at %s\n" $RED
 case `uname -a`
 in
 CYG*)
-  SYS=windows
-  BUILD=winbuild
-  OUTDIR=Output
-  OUTFILES="Reduce-Setup-${today}.exe"
+  export SYS=windows
+  export BUILD=winbuild
+  export OUTDIR=Output
+  export OUTFILES="Reduce-Setup-${today}.exe"
   ;;
 Darwin*)
-  SYS=mac
-  BUILD=macbuild
-  OUTDIR=.
-  OUTFILES="Reduce-${today}.dmg"
+  export SYS=mac
+  export BUILD=macbuild
+  export OUTDIR=.
+  export OUTFILES="Reduce-${today}.dmg"
   ;;
 *)
-  SYS=linux
-  BUILD=debianbuild
-  OUTDIR=.
-  OUTFILES="reduce-common_${today}_all.deb \
+  export SYS=linux
+  export BUILD=debianbuild
+  export OUTDIR=.
+  export OUTFILES="reduce-common_${today}_all.deb \
             reduce-csl_${today}_amd64.deb \
             reduce-psl_${today}_amd64.deb \
             reduce-addons_${today}_amd64.deb \
