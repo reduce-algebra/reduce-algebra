@@ -28,20 +28,17 @@ all:	package-mac
 $(BUILDTOPDIR).stamp:
 	rm -rf $(BUILDTOPDIR)
 	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) > $(BUILDTOPDIR).log
-	(cd $(BUILDTOPDIR) ; \
-		./autogen.sh -f )
+	(cd $(BUILDTOPDIR) ; ./autogen.sh -f )
 	(cd $(BUILDTOPDIR) ; ../make.source.sh ) 
 	touch $(BUILDTOPDIR).stamp
 
 csl.stamp:	$(BUILDTOPDIR).stamp
-	(cd $(BUILDTOPDIR) ; \
-		./configure --with-csl ; \
+	(cd $(BUILDTOPDIR) ; ./configure --with-csl ; \
 		script ../csl.log time make csl )
 	touch csl.stamp
 
 psl.stamp:	$(BUILDTOPDIR).stamp
-	(cd $(BUILDTOPDIR) ; \
-		./configure --with-psl ; \
+	(cd $(BUILDTOPDIR) ; ./configure --with-psl ; \
 		script ../psl.log time make psl )
 	touch psl.stamp
 
