@@ -1,5 +1,7 @@
-module cde_ansatz; % CDIFF package, computation of the
-                    % differential consequences of the initial system of PDEs.
+module cde_ansatz;
+% CDE package, routines that generate ansatz of solutions of differential
+% and algebraic equations, and routines for solving algebraic equations
+% ("splitting" procedures).
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -300,7 +302,7 @@ symbolic procedure mkalllinodd(graadmon,graadlijst_odd,degmin,degmax);
 symbolic operator mkalllinodd;
 
 % Section 4: same procedures as in S.3
-% but also involving independent variables
+% also involving independent variables
 
 symbolic procedure mkallgradmon_ind(alg_deg);
    % This procedure makes all graded monomials {el,deg}
@@ -309,8 +311,8 @@ symbolic procedure mkallgradmon_ind(alg_deg);
    begin scalar allgradmon_temp,allgradmon,indep_gradmon;
      indep_gradmon:=for i:=1:n_indep_var collect
        list(nth(indep_var!*,i),nth(deg_indep_var!*,i));
-     allgradmon:=list(1,0) . indep_gradmon;
-     allgradmon_temp:=indep_gradmon;
+     allgradmon:=list(list(1,0));
+     allgradmon_temp:=allgradmon;
      for i:=1:alg_deg do
      <<
        allgradmon_temp:=all_next_gradmon(indep_gradmon,allgradmon_temp);
@@ -321,27 +323,30 @@ symbolic procedure mkallgradmon_ind(alg_deg);
 
 symbolic procedure mult_grad(gradmon,lmon);
   for each el in lmon collect aeval list('times,car gradmon,el);
-  
+
 symbolic procedure mkallgradmon_evenind(alg_deg,grmon,degree);
   % takes graded monomials of independent variables constructed by
   % mkallgradmon_ind and multiplies them with even graded monomials
   % of complementary degree in order to produce monomials
   % possibly with independent variables and having scale degree `degree'.
-  % Note that the monomials cannot be of zero degree in odd variables;
-  % this procedure is suitable for computations of operators.
-    begin scalar tempvars,tempdeg,tempgrmon,grmon_ind,n_grmon;
-      tempgrmon:=cdr grmon;
-      tempgrmon:=for each el in tempgrmon collect cdr el;
-      grmon_ind:=mkallgradmon_ind(alg_deg);
-      n_grmon:=length(tempgrmon);
-      for each el in grmon_ind do
-      <<
-	tempdeg:=aeval list('plus,degree,minus(cadr el));
-	if lessp(tempdeg,n_grmon-1) then
-	  tempvars:=append(mult_grad(el,nth(tempgrmon,tempdeg+1)),tempvars)
-      >>;
-      return 'list . tempvars
-    end;
+  begin scalar tempvars,tempdeg,tempgrmon,grmon_ind,n_grmon;
+    % clean the algebraic list
+    tempgrmon:=cdr grmon;
+    tempgrmon:=for each el in tempgrmon collect cdr el;
+    % prepare the list of graded monomials of independent variables
+    grmon_ind:=mkallgradmon_ind(alg_deg);
+    % maximal scale degree plus one of the graded monomials
+    % of the independent variables
+    n_grmon:=length(tempgrmon);
+    for each el in grmon_ind do
+    <<
+      tempdeg:=aeval list('plus,degree,minus(cadr el));
+      if lessp(tempdeg,n_grmon) then
+	tempvars:=append(mult_grad(el,nth(tempgrmon,tempdeg+1)),tempvars)
+      else rederr "Algebraic degree too high with respect to scale degree!";
+    >>;
+    return 'list . tempvars
+  end;
 
 symbolic operator mkallgradmon_evenind;
 

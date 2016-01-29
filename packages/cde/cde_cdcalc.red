@@ -41,7 +41,7 @@ symbolic procedure ell_scalar_function_odd(fct);
 % \ell_F : \kappa \to P
 begin
   scalar superfun,tempvarmind,tempdvar,tempmind,tempoddvar;
-  if not(cde_freeofl(all_parametric_odd!*,fct)) then
+  if not(cde_freeofl(fct,all_parametric_odd!*)) then
     rederr "Linearization only works for even functions";
   if not(eqn(length(dep_var!*),length(odd_var!*))) then
     rederr "Even and odd variables must be the same in number!";
