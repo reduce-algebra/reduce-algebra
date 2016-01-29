@@ -886,7 +886,15 @@
                             (setq u (cddr u)))))
                     (recursive-pass-1 (cons 'progn (reversip exp)) vbls))))
         %/ Should CHECK that CONST's not SETQ'ed or BOUND
-        (setq var (recursive-pass-1 (cadr u) vbls))
+	(setq var (cadr u))
+	(cond
+	  ((and (constant? var) (not (memq var vbls)))
+	   (&compwarn (list "SETQ of constant" var))))
+	(cond
+	  ((not (idp var)) (setq var (recursive-pass-1 var vbls)))
+	  ((non-local var) (setq var (list (non-local var) var)))
+	  ((memq var vbls) (setq var (list '$local var)))
+	  (t (setq var (make-non-local var))))
         (setq exp (recursive-pass-1 (caddr u) vbls))
         (setq u (list '$name var))
         %  scs
