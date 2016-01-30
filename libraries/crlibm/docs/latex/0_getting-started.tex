@@ -1,0 +1,223 @@
+\section{What is \crlibm?}
+
+The \crlibm\ project aims at developing a portable, proven, correctly rounded,
+and efficient mathematical library (\texttt{libm}) for double precision. 
+
+\begin{description}
+\item[correctly rounded] Current \texttt{libm} implementation do not
+  always return the floating-point number that is closest to the exact
+  mathematical result. As a consequence, different \texttt{libm}
+  implementation will return different results for the same input,
+  which prevents full portability of floating-point applications. In
+  addition, few libraries support but the round-to-nearest mode of the
+  IEEE754/IEC 60559 standard for floating-point arithmetic (hereafter
+  usually referred to as the IEEE-754 standard). \crlibm\ provides the
+  four rounding modes: To nearest, to $+\infty$, to $-\infty$ and to
+  zero.
+
+\item[portable] \crlibm\ is written in C and will be compiled by any
+  compiler fulfilling basic requirements of the ISO/IEC 9899:1999
+  (hereafter referred to as C99) standard.  This is the case of
+  \texttt{gcc} version 3 and higher which is available on most
+  computer systems. It also requires a floating-point implementation
+  respecting the IEEE-754 standard, which is also available on
+  most modern systems. \crlibm\ has been tested on a large range of
+  systems.
+
+\item[proven] Other libraries attempt to provide correctly-rounded
+  result. For theoretical and practical reasons, this behaviour is
+  difficult to prove, and in extreme cases termination is not even
+  guaranteed. \crlibm\ intends to provide a comprehensive proof of the
+  theoretical possibility of correct rounding, the algorithms used,
+  and the implementation, assuming C99 and IEEE-754 compliance.
+
+\item[efficient] performance and resource usage of \crlibm\ should be
+  comparable to existing \texttt{libm} implementations, both in
+  average and in the worst case. In contrast, other correctly-rounded
+  libraries have worst case performance and memory consumption several
+  order of magnitude larger than standard \texttt{libm}s.
+
+\end{description}
+
+The ultimate goal of the \crlibm\ project is to push towards the
+standardization of correctly-rounded elementary functions.
+
+\section{Compilation and installation}
+See the \texttt{INSTALL} file in the main directory. This library is
+developed using the GNU autotools, and can therefore be compiled on
+most Unix-like systems by \texttt{./configure; make}. 
+
+
+The command \texttt{make check} will launch the selftest.
+For more advanced testing you will need to have MPFR installed (see
+\url{www.mpfr.org}) and to pass the \texttt{--enable-mpfr} flag to
+\texttt{configure}. For other flags, see \texttt{./configure --help} .
+
+\section{Using \texttt{crlibm} functions in your program}
+
+Currently \texttt{crlibm} functions have different names from the
+standard \texttt{math.h} functions. For example, for the sine function
+(\texttt{double sin(double)} in the standard \texttt{math.h}), you
+have four different functions in \texttt{crlibm} for the four
+different rounding modes. These functions are named \texttt{sin\_rn},
+\texttt{sin\_ru}, \texttt{sin\_rd} and \texttt{sin\_rz} for round to the
+nearest, round up, round down and round to zero respectively. These
+functions are declared in the C header file \texttt{crlibm.h}.
+
+The \texttt{crlibm} library relies on double-precision IEEE-754
+compliant floating-point operations.  For some processors and some
+operating systems (most notably IA32 and IA64 processors under
+GNU/Linux), the default precision is set to double-extended.  On such
+systems you will need to call the \texttt{crlibm\_init()} function
+before using any \texttt{crlibm} function to ensure such compliance.
+This has the effect of setting the processor flags to IEEE-754
+double-precision with rounding to the nearest mode.  This function
+returns the previous processor status, so that previous mode can be
+restored using the function \texttt{crlibm\_exit()}. Note that you
+probably only need one call to \texttt{crlibm\_init()} at the beginning
+of your program, not one call before each call to a mathematical
+function.
+
+Here is a non-exhaustive list of systems on which
+\texttt{crlibm\_init()} is NOT needed, and which can therefore use
+\crlibm\ as a transparent replacement of the standard \texttt{libm}:
+
+\begin{itemize}
+\item Most Power/PowerPC based systems, including those from Apple or from IBM;
+\item All the 64-bit Linux versions: the reason is that all
+  x86-compatible processors (by AMD and Intel) supporting 64-bit
+  addressing also feature SSE2 FP instructions, which are cleaner and
+  more efficient than the legacy x87 FPU. On such systems, SSE2 is
+  therefore used by default by \texttt{gcc} for double-precision FP
+  computing.
+\item On recent 32-bit x86 processors also featuring SSE2 extensions
+  (including pentium 4 and later, and generally most processors
+  produced after 2005), you can try to force the use of SSE2
+  instructions using \texttt{configure --enable-sse2}. Beware, the
+  code produced will not run on older hardware.
+\end{itemize}
+
+Here's an example function named \texttt{compare.c} using the cosine
+function from \texttt{crlibm} library.
+
+\begin{lstlisting}[label={chap0:lst:prog_example},caption={compare.c},firstnumber=1]
+#include<stdio.h>
+#include<math.h>
+#include<crlibm.h>
+
+int main(void){
+  double x, res_libm, res_crlibm;
+
+  printf("Enter a floating point number: ");
+  scanf("%lf", &x);
+  res_libm = cos(x);
+  crlibm_init(); /* no need here to save the old processor state returned by crlibm_init() */ 
+  res_crlibm = cos_rn(x);
+  printf("\n x=%.25e \n", x);
+  printf("\n cos(x) with the system : %.25e \n", res_libm);
+  printf("\n cos(x) with crlibm     : %.25e \n", res_crlibm);
+  return 0;
+}
+\end{lstlisting}
+
+This example will be compiled with \texttt{gcc compare.c -lm -lcrlibm -o compare}
+
+
+\section{Currently available functions}
+
+The currently available functions are summarized in
+Table~\ref{tab:currentstate}.
+\begin{table}[t]
+  \begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|c|c|c||c|c|}    \hline
+ & \multicolumn{4}{c||}{\crlibm\ name} &\multicolumn{2}{c|}{State of the proof} \\ \cline{2-7}
+ \raisebox{5pt}{C99} & to nearest & to $+ \infty$ & to $- \infty$ & to zero
+ & Worst cases & Proof of the code \\ \hline\hline
+    exp & exp\_rn & exp\_ru & exp\_rd & exp\_rz & complete& complete (formal)\\ \hline
+    expm1 & expm1\_rn & expm1\_ru & expm1\_rd & expm1\_rz & complete & partial\\ \hline
+    log & log\_rn & log\_ru & log\_rd & log\_rz & complete& complete\\ \hline
+    log1p & log1p\_rn & log1p\_ru & log1p\_rd & log1p\_rz & complete& partial \\ \hline
+    log2 & log2\_rn & log2\_ru & log2\_rd & log2\_rz & complete& partial\\ \hline
+    log10 & log10\_rn & log10\_ru & log10\_rd & log10\_rz& complete& partial \\ \hline
+    sin & sin\_rn & sin\_ru & sin\_rd & sin\_rz & $[-\pi, \pi]$& complete (paper+formal)\\ \hline
+    cos & cos\_rn & cos\_ru & cos\_rd & cos\_rz & $[-\pi/2, \pi/2]$& complete (paper+formal)\\ \hline
+    tan & tan\_rn & tan\_ru & tan\_rd & tan\_rz & $[-\pi/2, \pi/2]$& complete (paper+formal)\\ \hline
+    asin & asin\_rn & asin\_ru & asin\_rd & asin\_rz & complete & partial \\ \hline
+    acos & acos\_rn & acos\_ru & acos\_rd & acos\_rz & complete & partial\\ \hline
+    atan & atan\_rn & atan\_ru & atan\_rd & atan\_rz & complete & complete (paper)\\ \hline
+    sinh & sinh\_rn & sinh\_ru & sinh\_rd & sinh\_rz & complete & complete (paper)\\ \hline
+    cosh & cosh\_rn & cosh\_ru & cosh\_rd & cosh\_rz & complete & complete (paper)\\ \hline
+    sinpi & sinpi\_rn & sinpi\_ru & sinpi\_rd & sinpi\_rz & complete & complete (formal)\\ \hline
+    cospi & cospi\_rn & cospi\_ru & cospi\_rd & cospi\_rz & complete & complete (formal)\\ \hline
+    tanpi & tanpi\_rn & tanpi\_ru & tanpi\_rd & tanpi\_rz & $[2^{-25},2^{-5}]$& complete (formal)\\ \hline
+%    asinpi & asinpi\_rn & asinpi\_ru & asinpi\_rd & asinpi\_rz & complete & partial \\ \hline
+%    acospi & acospi\_rn & acospi\_ru & acospi\_rd & acospi\_rz & complete & partial\\ \hline
+    atanpi & atanpi\_rn & atanpi\_ru & atanpi\_rd & atanpi\_rz & $[\tan(2^{-25}\pi),\tan(2^{-5}\pi)]$ & complete (paper)\\ \hline
+    pow & pow\_rn &  &  &  & see chapter \ref{chap:pow} & see chapter \ref{chap:pow}\\ \hline
+\end{tabular}
+\end{center}
+  
+\caption{Current state of \crlibm.}
+\label{tab:currentstate}
+\end{table}
+
+Here are some comments on this table:
+\begin{itemize}
+\item Every function takes a double-precision number and returns a
+  double-precision number.
+\item For trigonometric functions the angles are
+  expressed in radian.
+\item The two last columns describe the state of the
+  proof:
+  \begin{itemize}
+  \item The first indicates the state of the search for worst cases
+    for correct rounding \cite{LMT98,Lef2000}. If it indicates
+    ``complete'', it means that the function is guaranteed to return
+    correct rounding on its whole floating-point input range.
+    Otherwise, it mentions the interval on which the function is
+    guaranteed to return correct rounding. Note that \crlibm\ is
+    designed in such a way that there is a very high probability that it
+    is correctly rounded everywhere, however this is not yet proven
+    formally. This question is explained in details in section
+    \ref{section:crlibm-presentation}.
+
+  \item The second indicates the state of the proof of the code
+    itself. Some (older) functions have a lengthy paper proof in this
+    document, some other have a partial or complete formal proof using
+    the Gappa proof assistant \cite{Melqu05,DinLauMel2005}.
+  \end{itemize}
+\end{itemize}
+
+
+\section{Writing portable floating-point programs}
+
+Here are some rules to help you design programs which have to
+produce exactly the same results on different architectures and
+different operating systems.
+\begin{itemize}
+\item Try to use the same compiler on all the systems.
+\item Demand C99 compliance (pass the \texttt{-C99},
+  \texttt{-std=c99}, or similar flag to the compiler). For Fortran,
+  demand F90 compliance.
+\item Call \texttt{crlibm\_init()} before you begin floating-point
+  computation. This ensures that the computations will all be done in
+  IEEE-754 double-precision with round to nearest mode, which is the
+  largest precision well supported by most systems. On IA32
+  processors, problems may still occur for extremely large or
+  extremely small values.
+\item Do not hesitate to rely heavily on parentheses (the compiler
+  should respect them according to the standards, although of course some
+  won't). Many times, wondering where the parentheses should go in an
+  expression like \texttt{a+b+c+d} will even help you improve the
+  accuracy of your code.
+\item Use \texttt{crlibm} functions in place of \texttt{math.h} functions.
+\end{itemize}
+
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "crlibm"
+%%% End: 
+

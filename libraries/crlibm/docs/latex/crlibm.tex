@@ -1,0 +1,284 @@
+\documentclass[a4paper,pdftex]{book} 
+
+\usepackage{fullpage}
+%\usepackage{isolatin1} 
+\usepackage{graphicx}
+\usepackage{mathpazo}
+\usepackage{listings}
+\usepackage{longtable} %pour les preuves des programmes
+
+\usepackage{lscape}    % pour le mode landscape
+\usepackage{makeidx}
+\usepackage{color}
+\usepackage{amstext,url,latexsym,amsfonts,amssymb,amsmath,amsthm}
+\usepackage{hyperref}
+
+
+\newtheorem{example}{Example}
+\newtheorem{theorem}{Theorem}
+\newtheorem{algorithm}{Algorithm}
+\newtheorem{propriete}{Property}
+
+\DeclareMathOperator{\sinpi}{sinpi}
+\DeclareMathOperator{\cospi}{cospi}
+\DeclareMathOperator{\tanpi}{tanpi}
+\DeclareMathOperator{\asinpi}{asinpi}
+\DeclareMathOperator{\acospi}{acospi}
+\DeclareMathOperator{\atanpi}{atanpi}
+\DeclareMathOperator{\arccosh}{arccosh}
+
+
+\newcommand{\pref}[1]{$<$\ref{#1}$>$}
+\newcommand{\quick}{{quick}}
+\newcommand{\accurate}{{accurate}}
+\newcommand{\ulp}{\mbox{ulp}}
+\newcommand{\crlibm}{\texttt{crlibm}}
+\newcommand{\scslib}{\texttt{scslib}}
+
+\renewcommand{\epsilon}{\varepsilon}
+
+\newcommand{\round}{\circ}
+\newcommand{\roundup}{\bigtriangleup}
+\newcommand{\rounddown}{\bigtriangledown}
+\newcommand{\intpart}[1]{\left\lceil #1 \right\rfloor}
+\newcommand{\maxv}[1]{{\overline{#1}}}
+\newcommand{\maxx}{\maxv{x}}
+\newcommand{\maxeps}{\maxv{\epsilon}}
+\newcommand{\maxdelta}{\maxv{\delta}}
+\newcommand{\maxz}{{\overline{z}}}
+\newcommand{\maxs}[1]{\overline{s}_{#1}}
+\newcommand{\mins}[1]{\underline{s}_{#1}}
+\newcommand{\maxp}{\overline{|P|}}
+\newcommand{\minp}{\underline{|P|}}
+\newcommand{\infnorm}[1]{||{#1}||^{\infty}}
+
+\newcommand{\abserr}[1]{\delta_{\mathrm{#1}}}
+\newcommand{\relerr}[1]{\epsilon_{\mathrm{#1}}}
+\newcommand{\maxabserr}[1]{\maxv{\delta}_{\mathrm{#1}}}
+\newcommand{\maxrelerr}[1]{\maxv{\epsilon}_{\mathrm{#1}}}
+
+\newcommand{\N}{\ensuremath{\mathbb {N}}}
+\newcommand{\Z}{\ensuremath{\mathbb {Z}}}
+\newcommand{\F}{\ensuremath{\mathbb {F}}}
+\newcommand{\R}{\ensuremath{\mathbb {R}}}
+\newcommand{\hi}{\ensuremath{\mathit{h}}}
+\newcommand{\mi}{\ensuremath{\mathit{m}}}
+\newcommand{\lo}{\ensuremath{\mathit{l}}}
+\newcommand{\E}{\ensuremath{\mathcal{E}}}
+\newcommand{\Add}{{\bf Add12}}
+\newcommand{\AddDD}{{\bf Add22}}
+\newcommand{\AddDTT}{{\bf Add233}}
+\newcommand{\AddDTTCond}{{\bf Add233Cond}}
+\newcommand{\AdddTT}{{\bf Add133}}
+\newcommand{\AddTT}{{\bf Add33}}
+\newcommand{\MulDT}{{\bf Mul23}}
+\newcommand{\Mul}{{\bf Mul12}}
+\newcommand{\MulDD}{{\bf Mul22}}
+\newcommand{\MulDTT}{{\bf Mul233}}
+\newcommand{\MuldTT}{{\bf Mul133}}
+\newcommand{\MuldDD}{{\bf Mul122}}
+\newcommand{\MuldDT}{{\bf Mul123}}
+\newcommand{\MulTT}{{\bf Mul33}}
+\newcommand{\MulAddDdD}{{\bf MulAdd212}}
+\newcommand{\MulAddDD}{{\bf MulAdd22}}
+\newcommand{\SqrtD}{{\bf sqrt12}}
+\newcommand{\SqrtT}{{\bf sqrt13}}
+\newcommand{\Renormalize}{{\bf Renormalize3}}
+\newcommand{\mAdd}{\ensuremath{\mathbf{Add12}}}
+\newcommand{\mAddDD}{\ensuremath{\mathbf{Add22}}}
+\newcommand{\mAddDTT}{\ensuremath{\mathbf{Add233}}}
+\newcommand{\mAddDTTCond}{\ensuremath{\mathbf{Add233Cond}}}
+\newcommand{\mAdddTT}{\ensuremath{\mathbf{Add133}}}
+\newcommand{\mAddTT}{\ensuremath{\mathbf{Add33}}}
+\newcommand{\mMul}{\ensuremath{\mathbf{Mul12}}}
+\newcommand{\mMulDD}{\ensuremath{\mathbf{Mul22}}}
+\newcommand{\mMulDT}{\ensuremath{\mathbf{Mul23}}}
+\newcommand{\mMulDTT}{\ensuremath{\mathbf{Mul233}}}
+\newcommand{\mMuldTT}{\ensuremath{\mathbf{Mul133}}}
+\newcommand{\mMuldDD}{\ensuremath{\mathbf{Mul122}}}
+\newcommand{\mMuldDT}{\ensuremath{\mathbf{Mul123}}}
+\newcommand{\mMulAddDdD}{\ensuremath{\mathbf{MulAdd212}}}
+\newcommand{\mMulAddDD}{\ensuremath{\mathbf{MulAdd22}}}
+\newcommand{\mUlp}{\ensuremath{\mathrm{ulp}}}
+\newcommand{\nan}{\ensuremath{\mathrm{NaN}}}
+\newcommand{\sgn}{\ensuremath{\mathrm{sgn}}}
+\renewcommand{\succ}{\ensuremath{\mathrm{succ}}}
+\newcommand{\pred}{\ensuremath{\mathrm{pred}}}
+\newcommand{\xor}{\ensuremath{\mbox{ }\mathrm{XOR}\mbox{ }}}
+\newcommand{\Ord}{\ensuremath{\mathcal{O}}} 
+
+
+
+%\newcommand{\deltapprox}{\delta_{\mathrm{approx}}}
+%\newcommand{\deltaround}{\delta_{\mathrm{round}}}
+
+
+
+
+% Environnement pour disposer de propriété ``à la leslie lamport''
+\newcounter{propexp} % reset propexp à chaque chapitre
+\newenvironment{prop}
+{\begin{trivlist}\refstepcounter{propexp}\item[\hbox to 0pt{\spring {\bf $<$\arabic{propexp}$>$}}]}
+{\ifvmode\smallskip\fi$\bullet$\end{trivlist}}
+
+% Définition de l'environnement proof
+\def\spring{\hskip 0pt minus 1fil}
+\def\@yproof[#1]{\@proof{ #1}}
+\def\@proof#1{\begin{trivlist}\item[\hbox to 0pt{\spring $\diamond$}]
+\emph{Proof#1. }}
+\newenvironment{preuve}
+{\@proof{}}{\hfill\null\hfill$\square$\end{trivlist}}
+
+
+
+% Definition des options pour le packages listings
+\lstset{numbers=left,
+  numberstyle=\tiny,
+  stepnumber=1,
+  numbersep=5pt,
+  lineskip=-1pt,
+  extendedchars=true,
+  basicstyle=\footnotesize,
+  breaklines,
+  showstringspaces=false,
+  frame=single,
+  language={[ANSI]C},
+  firstnumber=last,
+  escapeinside={(*@}{@*)}
+}
+ 
+
+
+
+\title{CR-LIBM\\A library of correctly rounded elementary functions in double-precision}
+\author{\mbox{Catherine Daramy-Loirat}, \mbox{David Defour}, \mbox{Florent~de~Dinechin},\\ \mbox{Matthieu Gallet}, \mbox{Nicolas Gast},  \mbox{Christoph Quirin Lauter}, \mbox{Jean-Michel Muller}}
+
+%% \abstract{
+%%   CRLibm is a mathematical library with correct rounding in
+%%   double-precision in the four IEEE-754 rounding modes. This report
+%%   explains the code and proves the correct rounding property.
+%% }
+
+%% \RRIresume{%
+%%   CRLibm est une bibliothèque mathématique offrant l'arrondi correct
+%%   en double précision selon les quatre modes d'arrondi. Ce rapport
+%%   détaille les algorithmes utilisés et prouve fonction par fonction la
+%%   propriété d'arrondi correct.
+%% }%
+
+%% \RRIkeywords{elementary functions, correct rounding, IEEE-754, double precision}
+
+%% \RRImotscles{fonctions élémentaires, arrondi correct, IEEE-754, double précision}
+
+%% \RRItheme{2}
+
+%% \RRIprojet{Arénaire}
+
+%% \RRIinria{\RRnote{%
+%%     This  text  is  also  available   as  a  research  report  of  the
+%%     Laboratoire    de     l'Informatique    du    Parallélisme    {\tt
+%%       http://www.ens-lyon.fr/LIP}.
+%% }}%
+
+
+
+
+\begin{document}
+\maketitle
+
+
+\section*{Important warning}
+
+This report describes and proves version \input{../../VERSION} of the
+\texttt{crlibm} library. It may therefore not correspond to the latest
+version. An up-to-date version will always be distributed along with
+the code.
+
+\vfill
+\section*{Many thanks to...}
+\begin{itemize}
+\item Vincent Lef\`evre, from \textsc{Inria}-Lorraine, without whom this
+  project would't have started, and who has since then lended a helpful hand in
+  more than 17 occasions;
+\item The Ar\'enaire project at ENS-Lyon, especially Marc Daumas,
+  Sylvie Boldo, Guillaume Melquiond, Nathalie Revol and Arnaud
+  Tisserand;
+\item Guillaume Melquiond for Gappa and its first-class hotline;
+\item The MPFR developers, and especially the \textsc{Inria}
+  \textsc{Spaces} project;
+\item The Intel Nizhniy-Novgorod Lab, especially Andrey Naraikin,
+  Sergei Maidanov and Evgeny Gvozdev;
+\item The contributors of bits and pieces, Phil Defert and Eric
+  McIntosh from CERN, Patrick Pelissier from \textsc{Inria};
+\item All the people who have reported bugs, hoping that they continue
+  until they have to stop: Evgeny Gvozdev from Intel with special
+  thanks, Christoph Lauter from TUM\"unchen (before he joined the
+  project), Eric McIntosh from CERN, Patrick Pelissier and Paul
+  Zimmermann from \textsc{Inria} Lorraine;
+\item William Kahan at UCBerkeley, Peter Markstein at HP, Neil Toda at
+  Sun, Shane Story at Intel, and many others for interesting and
+  sometimes heated discussions;
+\item Serge Torres for LIPForge.
+\end{itemize}
+
+This work was partly funded by the \textsc{Inria}, the ENS-Lyon and
+the Universit\'e de Perpignan.
+
+\tableofcontents
+
+\addtocounter{chapter}{-1}
+\chapter{Getting started with crlibm}
+\input{0_getting-started.tex}
+
+\chapter{Introduction: Goals and methods \label{chap:intro}}
+\input{0_intro.tex}
+
+\chapter{Common notations, theorems and procedures \label{chap:common}}
+\input{1_common.tex}
+
+\chapter{The natural logarithm \label{chap:log}}
+\input{log.tex}
+
+\chapter{The logarithm in base 2 \label{chap:log2}}
+\input{log2.tex}
+
+\chapter{The logarithm in base 10 \label{chap:log10}}
+\input{log10.tex}
+ 
+\chapter{The exponential \label{chap:exp}}
+\input{exp.tex}
+
+\chapter{The \texttt{expm1} function\label{chap:expm1}}
+\input{expm1.tex}
+
+\chapter{The \texttt{log1p} function\label{chap:log1p}}
+\input{log1p.tex}
+
+\chapter{The trigonometric functions \label{chap:trigo}}
+\input{trigo.tex}
+
+\chapter{The arcsine \label{chap:asin}}
+\input{asin.tex}
+
+\chapter{The arccosine \label{chap:acos}}
+\input{acos.tex}
+
+\chapter{The arctangent \label{chap:atan}}
+\input{atan.tex}
+\chapter{The trig-of-$\pi x$ functions  \label{chap:trigpi}}
+\input{trigpi.tex}
+\chapter{The hyperbolic sine and cosine \label{chap:csh}}
+\input{csh.tex}
+\chapter{The power function \label{chap:pow}}
+\input{pow.tex}
+
+
+\appendix
+
+
+\bibliographystyle{plain} 
+\bibliography{elem-fun}
+
+\end{document}
+
+

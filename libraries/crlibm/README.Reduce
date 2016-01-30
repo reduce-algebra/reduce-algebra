@@ -1,0 +1,28 @@
+This is a copy of the crlibm library from
+     http://lipforge.ens-lyon.fr/www/crlibm/
+implementing a correctly rounded elementary function library.
+
+The copy started from was fetched in July 2013 and was labelled as
+"beta4". A few changes have been made here....
+
+(1) On Windows the function random() as used in the testing code was not
+    available, and so I have changes back to use of rand(). I am aware that
+    many implementions of rand() do not leave the low-order bits very
+    well scrambled so there has been an informal attempt to do something
+    about that.
+
+(2) On many Windows platforms the function to set floating point
+    arithmetic mode is not present. crlibm guarded the attempts to use
+    it at initialisation time with #ifdef, but not the tidy up code at the
+    end.
+
+(3) The automake/autoconf stuff did not appear to support non in-place
+    configuration. Specifically some include paths were messed up. I hope
+    I have improved or fixed that.
+
+Observe that I have not touched any of the critical numerical workings!
+
+Obviously I am very happy for the crlibm owners (or indeed anybody else)
+to grab the changes I propose here, just as the LGPL allows them to.
+
+                                           A C Norman          July 2013

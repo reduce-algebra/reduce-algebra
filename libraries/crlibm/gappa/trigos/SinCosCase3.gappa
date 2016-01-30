@@ -1,0 +1,216 @@
+# Usage: You need to set the constants cah, cal, sah, sal. Running the trigo.mpl Maple script
+# should create 64 files in maple/TEMPTRIG, which can be tested independently as 
+#    sed -f    ../maple/TEMPTRIG/SinACosA_1.sed  trigoSinCosCase3.gappa | ~/gappa/src/gappa > /dev/null
+
+# NOTATION CONVENTION 
+# Variables that correspond to double-precision variables in the code begin with a small letter
+# Other variables begin with a capital letter.
+# Variables that will be replaced with Maple-computed constants begin with an underscore
+# Otherwise avoid underscores as they are painful to carry on to LaTeX :)
+
+
+# Rounding operators and sequences definition
+
+@IEEEdouble = float<ieee_64,ne>;
+
+
+# polynomial coefficients, computed by Maple
+s3 = IEEEdouble(_s3);
+s5 = IEEEdouble(_s5);
+s7 = IEEEdouble(_s7);
+c2 = IEEEdouble(_c2);
+c4 = IEEEdouble(_c4);
+c6 = IEEEdouble(_c6);
+
+# Table values, computed by Maple
+cah = IEEEdouble(_cah);
+cal = IEEEdouble(_cal);
+sah = IEEEdouble(_sah);
+sal = IEEEdouble(_sal);
+
+# The variables used here:
+# x input
+# My perfect reduced argument
+# Yhl = yh+yl, his distance to My is specified as an hypothesis 
+# Mts perfect ts
+# Mtc perfect tc
+# Msinx exact result for sin(x)
+# Msina, Mcosa perfect sin(kPi/256) and cos(kPi/256)
+
+
+yh = IEEEdouble(Yhl);
+yl = Yhl - yh;
+
+#######################################################################
+
+# First, a transcription of the actual computation, which could (and
+# should eventually) be generated automatically from the actual code
+
+# ---------------------Code shared by sin and cos, cut from ComputeTrigWithArgRed : 
+yh2 IEEEdouble=  yh * yh;
+ts  IEEEdouble=  yh2 * (s3 + yh2*(s5 + yh2*s7));
+tc  IEEEdouble=  yh2 * (c2 + yh2*(c4 + yh2*c6));
+
+# ---------------------Code for the sine, cut from DosinNotZero: 
+# Mul12(&cahyh_h,&cahyh_l, cah, yh);
+cahyh = cah * yh;
+cahyh_h = IEEEdouble(cahyh);
+cahyh_l = cahyh - cahyh_h;    # Exact equation because Mul12 is exact
+
+# Add12(thi, tlo, sah, cahyh_h);
+TSin = sah + cahyh_h;
+thiSin = IEEEdouble(TSin);
+tloSin1 = TSin - thiSin;          # Exact equation because Add12 is exact
+
+# Rem: need to Rename tlo to tloSin1, and its second use to tloSin2.
+# It would be safer to translate code to single-assignment before
+# using Gappa, modern compilers won't make any difference.
+
+#  tlo = tc*sah+(ts*cahyh_h+(sal+(tlo+(cahyh_l+(cal*yh + cah*yl))))) ;
+tloSin2 IEEEdouble= tc*sah + (ts*cahyh_h + (sal + (tloSin1 + (cahyh_l + (cal*yh + cah*yl)))));
+
+# Add12(*reshi, *reslo, thi, tlo);
+ResSinhilo = thiSin + tloSin2; # we don't need to split it for the proof.
+
+
+# ---------------------Code for the cos, cut from DoCosNotZero: 
+#  Mul12(&sahyh_h,&sahyh_l, sah, yh);			            
+sahyh = sah * yh;
+sahyh_h = IEEEdouble(sahyh);
+sahyh_l = sahyh - sahyh_h;    # Exact equation because Mul12 is exact
+
+#  Add12(thi, tlo,  cah, -sahyh_h);			            
+TCos = cah - sahyh_h;
+thiCos = IEEEdouble(TCos);
+tloCos1 = TCos - thiCos; # Exact equation because Add12 is exact
+
+#  tlo = tc*sah+(ts*cahyh_h+(sal+(tlo+(cahyh_l+(cal*yh + cah*yl))))) ;
+tloCos2 IEEEdouble= tc*cah-(ts*sahyh_h-(cal+(tloCos1-(sahyh_l+(sal*yh+sah*yl))))) ; 
+
+#  Add12(*pch, *pcl,    thi, tlo);                                   
+ResCoshilo = thiCos + tloCos2;   # No need to split it for the proof.
+
+
+#######################################################################
+
+#Definitions of the mathematical objects
+
+#------------------------------------- 
+#With these notations, the exact sine and cosine are given by these
+#exact mathematical formulae
+
+Msinx =  Msiny * Mcosa  +  Mcosy * Msina;
+Mcosx =  Mcosy * Mcosa  -  Msiny * Msina;
+
+# Now let us pile up layers of approximations
+#-------------------------------------
+# yh2 is an approximation to :
+My2 = My*My;
+# through three layers: 
+# 1/    Yhl=yh+hl = My +/- delta_ArgRed  : in the hypotheses below
+# 2/    yh = Yhl - yl                       : already written
+# 3/    rounding error in the mult          : already written       
+
+#-------------------------------------
+# ts is an approximation to :
+Mts = My2 * (s3 + My2*(s5 + My2*s7));
+# through two layers: 
+# 1/ the approximation y2 of My2        : done just above
+# 2/ the rounding errors in Horner         : already written
+
+#-------------------------------------
+PolySinY = My * (1 + Mts);
+# PolySinY is an approximation to sin(My) as expressed in the hypotheses below :
+#  PolySinY - Msiny in [-0.24126e-23, 0.24126e-23]     # delta_approx_Sin_Case3
+
+#-------------------------------------
+# Same for PolyCosY
+Mtc = My2 * (c2 +(My2 * (c4 + (My2 * c6))));
+PolyCosY = 1 + Mtc;
+
+#------------------------------------- 
+#tc is an approximation to Mtc through the rounding errors, defined
+#in the definition of tc. Same for ts
+
+#-------------------------------------
+# SinReconstrExact is an approximation to ResSinhilo 
+SinReconstrExact = PolySinY * Mcosa  +  PolyCosY * Msina ;
+
+# The delta between ResSinhilo and SinReconstrExact is due to the two
+# mathematical poly approx, and has been defined just above
+CosReconstrExact = PolyCosY * Mcosa  -  PolySinY * Msina ;
+
+#-------------------------------------
+# The reconstruction approximates the following
+SinReconstrNoRound = Yhl*(1 + ts)*(cah+cal) + (1 + tc)*(sah+sal);
+# where Yhl is an approximation to Y
+#       ts is an approximation to Mts
+#       tc is an approximation to Mtc : all already described
+# All what we still need to express is that the actual computation will neglect some terms
+CosReconstrNoRound = ( (1 + tc) * (cah+cal)   -  Yhl * (1 + ts)  * (sah+sal) );
+
+#-------------------------------------
+# tloSin2 is an approximation to TloSin2NoRound (because of rounding error in the operations, already described) 
+TloSin2NoRound = tc*sah+(ts*cahyh_h+(sal+(tloSin1+(cahyh_l+(cal*yh+cah*yl))))) ;
+TloCos2NoRound = tc*cah-(ts*sahyh_h-(cal+(tloCos1-(sahyh_l+(sal*yh+sah*yl)))));
+
+#  tloSinNoRound is an approximation to SinReconstrNoRound - tSinhi, the
+#  difference being the neglected terms. This error will be given as an hint
+
+NeglectedSinTerms = SinReconstrNoRound - (thiSin + TloSin2NoRound);
+NeglectedCosTerms = CosReconstrNoRound - (thiCos + TloCos2NoRound);
+
+# And finally, ResSinhilo is an approximation to Msinx through many layers which are given in the hints.
+
+###########################################################################################
+#  The theorem to prove
+{
+#    (Yhl in [-_ymaxCase3, -1b-200]    \/   Yhl in [-1b-200, _ymaxCase3])                            # computed by Maple
+     Yhl in [-_ymaxCase3, _ymaxCase3]                            # computed by Maple
+ /\ Yhl - My in         [-_delta_ArgRed,  _delta_ArgRed]                         # computed by Maple
+ /\ PolySinY - Msiny in [-_delta_approx_Sin_Case3,  _delta_approx_Sin_Case3]     # computed by Maple
+ /\ PolyCosY - Mcosy in [-_delta_approx_Cos_Case3,  _delta_approx_Cos_Case3]     # computed by Maple
+ /\ Msina-sah-sal in [-1b-104, 1b-104] 
+ /\ Mcosa-cah-cal in [-1b-104, 1b-104] # double-double absolute rounding error, with margin
+
+ -> 
+(ResSinhilo - Msinx)/Msinx in    [-3b-66,3b-66]
+/\ 
+(ResCoshilo - Mcosx)/Mcosx in   [-3b-66,3b-66]
+}
+
+
+###########################################################################################
+# Hints to the reduction engine: Gappa is not supposed to be clever, it's an assistant 
+
+# To get bounds on Msinx, try ResSinhilo
+Msinx -> ResSinhilo - (ResSinhilo - Msinx);
+Mcosx -> ResCoshilo - (ResCoshilo - Mcosx);
+
+# To get bounds on Msina, try sah+sal
+Msina -> sah + sal + (Msina - sah - sal);
+Mcosa -> cah + cal + (Mcosa - cah - cal);
+
+# To get bounds on My, try Yhl
+ My ->  Yhl - (Yhl - My); 
+
+# One layer of approx error, and one layer of rounding error for Msiny and Mcosy
+1 + tc - Mcosy   ->   (1 + tc - PolyCosY) + (PolyCosY - Mcosy);
+(My + My * ts) - Msiny ->   ((My + My * ts) - PolySinY) + (PolySinY - Msiny);
+
+# Layers of approximations
+ResSinhilo - Msinx ->  (ResSinhilo - SinReconstrNoRound) + (SinReconstrNoRound - SinReconstrExact) + (SinReconstrExact - Msinx);
+ResCoshilo - Mcosx ->  (ResCoshilo - CosReconstrNoRound) + (CosReconstrNoRound - CosReconstrExact) + (CosReconstrExact - Mcosx);
+
+NeglectedSinTerms ->  sal*tc + cal*yl + ts*(cahyh_l + cah*yl + cal*yh + cal*yl); 
+ResSinhilo - SinReconstrNoRound -> (ResSinhilo - (thiSin + TloSin2NoRound)) - (SinReconstrNoRound    -  (thiSin + TloSin2NoRound)) ;
+
+NeglectedCosTerms ->  cal*tc - sal*yl - ts*(sahyh_l + sah*yl + sal*yh + sal*yl); 
+ResCoshilo - CosReconstrNoRound -> (ResCoshilo - (thiCos + TloCos2NoRound)) - (CosReconstrNoRound    -  (thiCos + TloCos2NoRound)) ;
+
+
+
+Yhl*(1 + ts)*(cah+cal) - PolySinY * Mcosa ->  (Yhl*(1 + ts)- PolySinY)*(cah+cal) -  PolySinY*(Mcosa - cah - cal) ;
+(1 + tc) * (cah+cal) - PolyCosY * Mcosa   ->  ((1 + tc)- PolyCosY) * (cah+cal)   - PolyCosY * (Mcosa - cah -cal);
+(1 + tc)*(sah+sal) -   PolyCosY * Msina   ->  ((1 + tc)- PolyCosY) * (sah+sal)   - PolyCosY * (Msina - sah -sal);
+

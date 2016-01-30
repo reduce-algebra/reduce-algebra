@@ -1,0 +1,628 @@
+This chapter is contributed by Nicolas Gast under the supervision of
+F. de~Dinechin.  
+
+\newcommand{\xred}{X_{\mathrm{red}}}
+\newcommand{\xredhi}{{\mathrm{Xredhi}}}
+\newcommand{\xredlo}{{\mathrm{Xredlo}}}
+
+\section{Overview}
+
+For the arctangent, the quick phase has a precision of 64 bits, and
+the accurate phase computes to a precision of 136 bits.
+
+\subsubsection{Definition interval and exceptional cases}
+
+The inverse tangent is defined over all real numbers.
+
+\begin{itemize}
+\item If $x = NaN$ , then $\arctan(x)$ should return $NaN$
+\item If $x = \pm\infty$ , then $\arctan(x)$ should return
+$\pm\round(\pi/2) = \pm\rounddown(\pi/2)$ in rounding to nearest mode. In
+directed rounding modes, we may return $\pm\roundup(\pi/2)$ which
+invalidates the inequation $|\arctan(x)|<\frac{\pi}{2}$ but respects the
+rounding.
+\item  For $2^{54}<|x|<+\infty$ we choose to return $\pm\round(\pi/2)$
+  in all rounding modes.
+\item For $|x|<2^{-27}$ we have $|\arctan(x)-x|<2^{-53}x$ and
+  $|\arctan(x)|<|x|$, which allows to decide to return either $x$ or the
+  FP number next to $x$ towards zero.
+\end{itemize}
+
+
+
+
+
+\section{Quick phase}
+
+The code of the quick phase is organized in  five
+functions. The function (\texttt{atan\_quick})  returns two doubles
+($atanhi$ and $atanlo$) that represent $\arctan(x)$ with a precision
+of about 64 bits. Four other functions compute the correct rounding :
+\texttt{atan\_rn}, \texttt{atan\_ru}, \texttt{atan\_rd} and
+\texttt{atan\_rz}. 
+
+
+\subsection{Overview of the algorithm for the quick phase.}
+
+This phase is computed in double or double-double. There are two steps
+in the algorithm: an argument reduction and a polynomial approximation
+with a polynomial of degree 9.
+
+We compute $\arctan(x)$ as 
+\begin{equation}
+\arctan(x) = \arctan( b_i ) + \arctan(\frac{x-b_i}{1+x.b_i}) \label{eq:arctan_redu}
+\end{equation}
+
+The $b_i$ are exact doubles and the $\arctan(b_i)$ are stored in
+double-double.
+
+We define $\xred = \dfrac{x-b_i}{1+x.b_i}$ for the rest of this chapter.
+
+We tabulate intervals bounds $a_i$ and values $b_i$ such
+that 
+\begin{equation}
+ x \in [a_i;a_{i+1}] \Rightarrow \dfrac{x-b_i}{1+x.b_i} < e \quad .
+\label{atan_ineq_interval}
+\end{equation}
+
+The $i$ such that $x \in [a_i;a_{i+1}]$ will be found by dichotomy.
+Therefore we choose a power of two for the number of intervals: 64
+intervals ensure $e=2^{-6.3}$.
+
+Then we use a polynomial of degree 9 for the approximation of $\arctan(\xred)$
+which ensures 66 bits of precision:
+
+\begin{equation}
+\begin{split} \arctan(x)& \approx x - \dfrac{1}{3} .x^3 + \frac{1}{5}.x^5
+- \frac{1}{7}.x^7 + \frac{1}{9}.x^9 \nonumber \\ 
+  & \approx x . + x.Q(x^2)
+\end{split}
+\label{eq:poly_eval1}
+\end{equation}
+ 
+Q is evaluated thanks to a Horner scheme:
+$ Q(z) = z. (-\frac{1}{3} + z.(\frac{1}{5} + z.(-\frac{1}{7} +
+z.\frac{1}{9}))) $
+where each operation is computed in double.
+
+As $|z| \leq e$, $Q(z) \leq e^2$
+
+At the end, the reconstruction implements equation
+(\ref{eq:poly_eval1}) and (\ref{eq:arctan_redu}) in double-double
+arithmetic.
+
+
+\subsection{Error analysis on atan\_quick}
+
+We choose four rounding constant: two when there is a argument
+reduction, two in the other case. For each case, we use two constants
+on order to improve performances.
+
+The error analysis presented here is implemented in
+\texttt{maple/atan.mpl}
+
+\paragraph{Notes on $b_i$, $a_i$ and $\arctan(b_i)$}
+The $b_i$ and $a_i$ are computed thanks to the \texttt{allbi} maple
+procedure (see \texttt{maple/atan.mpl}). There is no approximation
+error on the $b_i$ since we chose them to be FP numbers. The $\arctan
+(b_i)$ are stored in double-double so there is an approximation of
+$2^{-105}$ on them. The value of $e$ is fixed, then the $a_i$ are also
+chosen as FP numbers such that inequation (\ref{atan_ineq_interval})
+is true.
+
+\subsubsection{Argument reduction}
+
+\begin{lstlisting}[caption={Reduction part 1},firstnumber=1]
+  if (x > MIN_REDUCTION_NEEDED) /* test if reduction is necessary : */ 
+  {
+    double xmBIhi,xmBIlo;      
+
+      if (x > arctan_table[61][B].d) {
+        i=61;
+        Add12( xmBihi , xmBilo , x , -arctan_table[61][B].d);
+      }
+      else
+        {
+          /* compute i so that a[i] < x < a[i+1] */
+          i=31;
+          if (x < arctan_table[i][A].d) i-= 16;
+          else i+=16;
+          if (x < arctan_table[i][A].d) i-= 8;
+          else i+= 8;
+          if (x < arctan_table[i][A].d) i-= 4;
+          else i+= 4;
+          if (x < arctan_table[i][A].d) i-= 2;
+          else i+= 2;
+          if (x < arctan_table[i][A].d) i-= 1;
+          else i+= 1;
+          if (x < arctan_table[i][A].d) i-= 1
+          xmBihi = x-arctan_table[i][B].d;
+          xmBilo = 0.0;
+        }
+      
+\end{lstlisting}
+
+\begin{tabular}{ll}
+Lines  1 & test if $x > 2^{-6.3}$ and so need to be reduced\\
+Line 5 & test if $x>b[61]$ because when $i \in [0;60] : b_i/2 < x <
+b_i$ (or $ x/2 < b_i < x$) and then \\&$x-b_i$ is computed exactly
+thanks to Sterbenz lemma.\\
+Line 10...21 & compute $i$ so that $\frac{x-b_i}{1+x.b_i} < 2^{-6.3} $\\
+Line 7 and 23 & compute $xmBIhi + xmBIlo = x - b_i$
+
+\end{tabular}
+
+We have no rounding error in the computation of $x-b_i$.
+
+\begin{lstlisting}[caption={Reduction part 2},firstnumber=1]
+      Mul12(&tmphi,&tmplo, x, arctan_table[i][B].d);
+
+      if (x > 1)
+        Add22(&x0hi,&x0lo,tmphi,tmplo, 1.0,0.0);
+      else {Add22( &x0hi , &x0lo , 1.0,0.0,tmphi,tmplo);}
+
+      Div22( &Xredhi, &Xredlo, xmBihi , xmBilo , x0hi,x0lo);
+\end{lstlisting}
+
+\begin{tabular}{ll}
+Line 1 & compute $x.b_i$ exactly as a double-double\\
+Line 3-5 & We need to have a Add22Comp but as we know that $x.b_i > 0$ (so
+$tmphi>0$), we test if\\& $tmphi$ is greater than 1 in order to be
+faster. The Add22 makes an error of $\epsilon_{Add22}=\epsilon_{103}$\\
+Line 7 & We compute $\xred = \dfrac{x-b_i}{1+x.b_i}$. The Div22 makes $\epsilon_{104}$ (according to Ziv \cite{Ziv91}) error so we have :
+\end{tabular}
+\bigskip
+
+\begin{equation}
+\begin{split}
+   \round\big(\xred\big) & = \frac{(x-b_i).(1+\epsilon_{105})}{(1+x.b_i).(1+\epsilon_{105})
+          .(1+\epsilon_{105}) )}.(1+\epsilon_{105}) \\
+         & =
+          \frac{x-b_i}{1+x.b_i}.(1+\epsilon_{105})(1+\epsilon_{105}+\epsilon_{105}+\epsilon_{104})\\
+         & = \xred . (1+\epsilon_{101.9})\nonumber
+\end{split}
+\end{equation}
+So: 
+\begin{equation}
+\epsilon_{\xred} = \epsilon_{102.6} \label{eps:equation}
+\end{equation}
+
+
+
+\subsubsection{Polynomial evaluation}
+
+The error due to the polynomial approximation is $\delta_{approx} =
+\infnorm{ \arctan(x) - x.(1+q)}= \delta_{72.38}$ 
+
+\begin{lstlisting}[caption={Polynomial Evaluation},firstnumber=1]
+      Xred2 = Xredhi*Xredhi;
+      
+      q = Xred2*(coef_poly[3]+Xred2*
+                 (coef_poly[2]+Xred2*
+                  (coef_poly[1]+Xred2*
+                   coef_poly[0]))) ;
+
+\end{lstlisting}
+\begin{tabular}{ll}
+Line 1 & The error between $\mathrm{Xred2}$ and the ideal value of $\xred^2$ comes from\\
+       & $\bullet$~ the error $\epsilon_{\xred}$  on $\xredhi+\xredlo$\\
+       & $\bullet$~ the truncation of $\xredlo$ adds $\epsilon_{53}$\\
+       & $\bullet$~ then the FP multiplication squares this term and adds a rounding error of $\epsilon_{53}$\\
+       & which sum up to  $\epsilon_\mathrm{Xred2} = ((1+2^{-53}+2^{-105})^2)(1+2^{-53}) 
+          \approx \epsilon_{51.4}$ \\
+Line 3 & Horner approximation with error on $\mathrm{Xred2}$:
+      Maple computes an error around $\epsilon_{50.7}$\\
+      & or $\delta_{q}=\delta_{63.3}$\\ 
+\end{tabular}
+
+\subsubsection{Reconstruction}
+
+The reconstruction adds $\arctan(b_i)$ (read as a double-double
+from a table) to $\arctan(\xred)$ (approximated by
+$(\xredhi+\xredlo)(1+q)$).  The terms of this developed product are
+depicted in the following figure.
+
+
+\begin{center}
+ \small
+ \setlength{\unitlength}{3ex}
+      \framebox{
+        \begin{picture}(22,3.5)(-3,-4.15)
+         \put(9.5,-0.5){\line(0,-1){4}}  \put(9,-1){$\epsilon$}
+  
+          \put(4,-2){$\arctan(b_i)_{hi}$} \put(0.05,-2.15){\framebox(7.9,0.7){}}
+          \put(12,-2){$\arctan(b_i)_{lo}$}  \put(8.05,-2.15){\framebox(7.9,0.7){}}
+
+          \put(4,-3){$\xredhi$} \put(0.55,-3.15){\framebox(7.9,0.7){}}
+          \put(12,-3){$\xredlo$}  \put(8.55,-3.15){\framebox(7.9,0.7){}}
+
+          \put(5,-4){$\xredhi.q$} \put(2.05,-4.15){\framebox(7.9,0.7){}}
+          \put(13,-4){$\xredlo.q$}  \put(10.05,-4.15){\framebox(7.9,0.7){}}
+
+        \end{picture}
+      }
+  \end{center}
+  
+  Here the $\epsilon$ bar represents the target accuracy of $2^{-64}$.
+  One can see that the term $\xredlo.q$ can be truncated. As $\xredlo
+  < \xredhi.2^{-53}$ and $q<x^2<2^{-12.6}$ this entails an error of
+  $\epsilon_\mathrm{trunc} = \epsilon_{65.6}$ relative to $\xred$,
+  or an absolute error of $\delta_\mathrm{trunc} =
+    e.\epsilon_\mathrm{trunc} = e^3 .2^{-53} \approx \delta_{71.9}$.
+
+
+\begin{lstlisting}[caption={Reconstruction},firstnumber=1]
+      /* reconstruction : atan(x) = atan(b[i]) + atan(x) */
+      double atanlolo = Xredlo+ arctan_table[i][ATAN_BLO].d + Xredhi*q;
+      double tmphi2, tmplo2;
+      Add12( tmphi2, tmplo2, arctan_table[i][ATAN_BHI].d, Xredhi);
+      Add12( atanhi, atanlo, tmphi2, (tmplo2+atanlolo));
+
+\end{lstlisting}
+
+Upon entering this code we have:
+\begin{center}
+ \small
+ \setlength{\unitlength}{3ex}
+      \framebox{
+        \begin{picture}(22,3.5)(-3,-4.15)
+         \put(9.5,-0.5){\line(0,-1){4}}  \put(9,-1){$\epsilon$}
+         \put(10.1,-0.5){\line(0,-1){4}}  \put(10.2,-1){$\delta_{71.9}$}
+  
+          \put(4,-2){$\arctan(b_i)_{hi}$} \put(0.05,-2.15){\framebox(7.9,0.7){}}
+          \put(12,-2){$\arctan(b_i)_{lo}$}  \put(8.05,-2.15){\framebox(7.9,0.7){}}
+
+          \put(4,-3){$\xredhi$} \put(0.55,-3.15){\framebox(7.9,0.7){}}
+          \put(12,-3){$\xredlo$}  \put(8.55,-3.15){\framebox(7.9,0.7){}}
+
+          \put(5,-4){$\xredhi.q$} \put(2.05,-4.15){\framebox(7.9,0.7){}}
+
+        \end{picture}
+      }
+  \end{center}
+
+
+Before line 5, the situation is the following:
+
+\begin{center}
+ \small
+ \setlength{\unitlength}{3ex}
+      \framebox{
+        \begin{picture}(22,2.5)(-3,-4.15)
+         \put(9.5,-0.5){\line(0,-1){4}}  \put(9,-1){$\epsilon$}
+         \put(10.1,-0.5){\line(0,-1){4}}  \put(10.2,-1){$\delta_{71.9}$}
+  
+          \put(0.5,-3){$\mathrm{tmphi2}$}
+          \put(0.05,-3.15){\framebox(7.9,0.7){}}
+          \put(8.5,-3){$\mathrm{tmplo2}$} \put(8.05,-3.15){\framebox(7.9,0.7){}}
+
+          \put(5,-4){$atanlolo$} \put(2.05,-4.15){\framebox(7.9,0.7){}}
+
+
+        \end{picture}
+      }
+  \end{center}
+\begin{tabular}{ll}
+Line 2 & The computation of  $atanlolo$  causes 3 errors :\\
+      & $ \epsilon_{53}.(\xredlo+ \arctan(b_i)_{lo}) < \delta_{105}$\\
+      & $\epsilon_{53}.\xredhi.q < \delta_{72}$\\
+      & $\epsilon_{53} . atanlolo < \delta_{72}$ (again) \\
+Line 4 & Add12 adds no error\\
+Line 5 & Here we have an FP addition which adds again $\delta_{72}$\\
+      & Add12 adds no error.
+\end{tabular}      
+
+Finally, we get (after  accurate computation in Maple) \\
+$ \delta_\mathrm{reconstr} \approx \delta_{71.8}$
+
+
+
+\subsubsection {Final error and rounding constant}
+
+We have to add all error : 
+\begin{equation}
+\delta_{final} =  \delta_{approx} + \delta_{q}  + \delta_\mathrm{reconstr} = \delta_{70.2}
+\end{equation}
+
+So when $i < 10$, the relative error is $\epsilon_{63.8}$ that leads to a
+rounding constant of $1.001$.
+
+And when $i > 10$ the relative error is $\epsilon_{68.24}$ that leads to a
+rounding constant of $1.000068$.
+
+\subsubsection{Error when there is no reduction}
+\begin{lstlisting}[caption={No reduction},firstnumber=1]
+
+      x2 = x*x;
+      q = x2*(coef_poly[3]+x2*
+                 (coef_poly[2]+x2*
+                  (coef_poly[1]+x2*
+                   coef_poly[0]))) ;
+      Add12(atanhi,atanlo, x , x*q);
+
+\end{lstlisting}
+
+The code is very simple so there are few error terms:
+
+\begin{tabular}{ll}
+Line 1 & $\epsilon_{53}$ \\
+Line 2 & The Maple procedure to compute Horner approximation gives $\epsilon_{51}$\\
+Line 3 & $\delta_{no\_reduction} = \epsilon_{105}.x + \epsilon_q.x^3 + 
+\epsilon_{x.q}.x^3 + |arctan(x) - x.(1+q)| $
+\end{tabular}
+
+When $x>2^{-10}$ the relative error is $\epsilon_{62.9}$. The
+constant is $1.0024$. 
+
+When $x<2^{-10}$ the relative error is $\epsilon_{70.4}$. The
+constant is $1.000005$. 
+
+\bigskip
+
+\subsection{Exceptional cases and rounding}
+\subsubsection{Rounding to nearest}
+\begin{lstlisting}[caption={Exceptional cases : rounding to nearest},firstnumber=1]
+
+  db_number x_db;
+  x_db.d = x;
+  unsigned int hx = x_db.i[HI] & 0x7FFFFFFF; 
+
+  /* Filter cases */
+  if ( hx >= 0x43500000)           /* x >= 2^54 */
+    {
+      if ((hx > 0x7ff00000) || ((hx == 0x7ff00000) && (x_db.i[LO] != 0)))
+        return x+x;                /* NaN */
+      else
+        return HALFPI.d;           /* \arctan(x) = Pi/2 */
+    }
+  else
+    if ( hx < 0x3E400000 )
+      {return x;                   /* x<2^-27 then \arctan(x) =~ x */}
+
+\end{lstlisting}
+\begin{tabular}{ll}
+Lines 3 & Test if x is greatear than $2^{54}$, $\infty$ or $NaN$. \\
+Line 5,6 & return $\arctan(NaN) = NaN$\\
+Line 8 & \texttt{HALFPI} is the greatest double smaller than
+$\frac{\pi}{2}$ in order not to have $\arctan(x) > \dfrac{pi}{2}$ \\
+Line 11 & When $x<2^{-27}$ : $x^2 < 2^{-54}$ so $o(\arctan(x)) = x$
+\end{tabular}
+\\
+
+\textbf{Proof}
+
+ we know that $\arctan(x) = \displaystyle {\sum_{i=0}^{\infty}
+\frac{x^{2i+1}}{2i+1}(-1)^i}$.
+
+So:
+\begin{equation}
+   \begin{split}
+       \Big| \frac{\arctan(x)-x}{x}  \Big| & = 
+       \Bigg|\frac{ \displaystyle {\sum_{i=0}^{\infty}
+       \Big( \frac{x^{2i+1}}{2i+1}(-1)^i} \Big) - x}{x} \Bigg|
+       \nonumber\\
+       & = \Big|\displaystyle {\sum_{i=1}^{\infty}}
+       \frac{x^{2i}}{2i+1}(-1)^i\Big|\nonumber \\ 
+       & < \frac{x^2}{3}\nonumber \\
+       & < 2^{-54} \nonumber
+   \end{split}
+\end{equation}
+
+Then : $\arctan(x) \approx x $
+\bigskip
+
+\subsubsection{Rounding toward $-\infty$}
+\begin{lstlisting}[caption={Exceptional cases : rounding down},firstnumber=1]
+
+  if ( hx >= 0x43500000)           /* x >= 2^54 */
+    {
+      if ((hx > 0x7ff00000) || ((hx == 0x7ff00000) && (x_db.i[LO] != 0)))
+        return x+x;                /* NaN */
+      else
+        if (x>0)
+          return HALFPI.d;
+        else
+          return -HALFPI_TO_PLUS_INFINITY.d;           /* atan(x) = Pi/2 */
+    }
+  else
+    if ( hx < 0x3E400000 )
+      {if (sign>0)
+        {if(x==0)
+          {x_db.i[HI]  = 0x80000000;
+          x_db.i[LO] = 0;}
+        else
+          x_db.l--;
+        return x_db.d;
+        }
+      else
+        return x;
+      }
+  
+\end{lstlisting}
+
+The differences with rounding to nearest mode are for $frac{pi}{2}$ for
+$x<2^(-27)$.
+
+\begin{lstlisting}[caption={Test for rounding down},firstnumber=1]
+  absyh.d=atanhi;
+  absyl.d=atanlo;
+  
+  absyh.l = absyh.l & 0x7fffffffffffffffLL;
+  absyl.l = absyl.l & 0x7fffffffffffffffLL;
+  u53.l     = (absyh.l & 0x7ff0000000000000LL) +  0x0010000000000000LL;
+  u.l   = u53.l - 0x0350000000000000LL;
+  
+  if(absyl.d > roundcst*u53.d){
+    if(atanlo<0.)
+      {atanhi -= u.d;}
+    return atanhi;
+  }
+  else {
+    return scs_atan_rd(sign*x);
+  }
+\end{lstlisting}
+
+\subsubsection{Rounding toward $-\infty$}
+
+\begin{lstlisting}[caption={Exceptional cases : rounding up},firstnumber=1]
+
+  if ( hx >= 0x43500000)           /* x >= 2^54 */
+    {
+      if ((hx > 0x7ff00000) || ((hx == 0x7ff00000) && (x_db.i[LO] != 0)))
+        return x+x;                /* NaN */
+      else
+        if (x>0)
+          return HALFPI.d;
+        else
+          return -HALFPI_TO_PLUS_INFINITY.d;           /* atan(x) = Pi/2 */
+    }
+  else
+    if ( hx < 0x3E400000 )
+      {if (sign<0)
+        {x_db.l--;
+        return -x_db.d;
+        }
+      else
+        if(x==0)
+          return 0;
+      return x;
+      }
+
+\end{lstlisting}
+
+There are the same differences for rounding down.
+
+\subsubsection{Rounding to zero}
+
+This function is quite simple: it call one of the two function defineded
+before.
+
+\begin{lstlisting}[caption={Rounding to zero},firstnumber=1]
+
+extern double atan_rz(double x) {
+  if (x>0)
+    return atan_rd(x);
+  else
+    return atan_ru(x);
+}
+\end{lstlisting}
+
+\subsubsection{Test if rounding is possible}
+This test use the theorem \ref{th:roundingRN1}.
+The code is the same than in the theorem except that we have 4 rounding
+constants : 
+\begin{itemize}
+\item 1.0047 when $i<10$
+\item 1.000068 when $i\geq10$
+\item 1.0024 when $x>2^{-10}$
+\item 1.0000132 when $x<2^{-10}$
+\end{itemize}
+
+
+\section{Accurate phase}
+The accurate phase is the same as the quick phase, except that number are
+scs and not double.
+
+The intervals are the same as in quick phase. The only difference is that
+$\arctan(b_i)$ as a third double to improve the precision of $\arctan(b_i)$ to
+150 bits. Then we use less memory, that is why we can use the same
+intervals as in the quick phase.
+
+The polynomial degree is 19 in order to have 136 bits of precision.
+
+\begin{equation} \arctan(x) \approx
+x-\frac{1}{3}.x^3+\frac{1}{5}.x^5-\frac{1}{7}.x^7+\frac{1}{9}.x^9-\frac{1}{11}.x^{11}+\frac{1}{13}.x^{13}-\frac{1}{15}.x^{15}+\frac{1}{17}.x^{17}-\frac{1}{19}.x^{19}
+\label{eq:arctan_scspoly}
+\end{equation}
+
+\section{Analysis of the performance}
+
+\subsection{Speed}
+Table \ref{tbl:arctan_abstime} (produced by the \texttt{crlibm\_testperf}
+executable) gives absolute timings for a variety of processors. The test
+computed 50000 atan in rounding to nearest mode. The second step of
+\texttt{crlibm} was taken 1 time on 50000.
+
+\begin{table}[!htb]
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|l|r|r|r|}
+\hline
+\hline
+
+ \multicolumn{4}{|c|}{Pentium 4 Xeon / Linux Debian / gcc 2.95}   \\
+ \hline
+                         & min time      & max time      & avg time \\ 
+ \hline
+                         & min time      & max time      & avg time \\ 
+ \hline
+ \texttt{libm}           & 180          & 344           &        231 \\ 
+ \hline
+  \texttt{mpfr}          & 417016       & 3956992       &     446362 \\ 
+ \hline
+  \texttt{libultim}      & 48           & 257616        &        189 \\ 
+ \hline
+ \texttt{crlibm}         & 36           & 46428         &        381 \\ 
+ \hline
+ \hline
+  \multicolumn{4}{|c|}{PowerPC G4 / MacOS X / gcc2.95}   \\
+ \hline
+                         & min time      & max time      & avg time \\
+ \hline
+ \texttt{libm}           & 6            & 11            &          9 \\
+ \hline
+  \texttt{mpfr}          & 35291        & 303019        &      37022 \\
+ \hline
+  \texttt{libultim}      & 7            & 13251         &         14 \\
+ \hline
+ \texttt{crlibm}         & 5            & 1037          &         19 \\
+ \hline
+ \hline
+
+\end{tabular}
+\end{center}
+\caption{Absolute timings for the inverse tangent (arbitrary units)
+  \label{tbl:arctan_abstime}}
+\end{table}
+
+\subsection{Memory requirements}
+Table size is
+\begin{itemize}
+\item for the \quick\ phase,
+  $62\times (1+1+2) \times8=1984$ bytes for the 62 $a_i$, $b_i$,
+  $\arctan(b_i)$ (hi and lo), plus another $8$ bytes for the rounding
+  constant, plus $4\times8$ for the polynomial, $8$ bytes for
+  $\frac{\pi}{2}$ and $64$ for the rounding constants or $2096$ bytes in
+  total.
+  
+\item for the \accurate\ phase, we just have $10$ SCS constants for the
+  polynomial, and 62 other double for $\arctan(b_i)_{lo_{lo}}$.
+  If we add all : $10*11*8 + 62*8 = 1376$
+\end{itemize}
+If we add the fast phase and the acurate one, we have a total of 3472
+bytes. 
+
+
+\section{Conclusion and perspectives}
+
+Our $\arctan$ is reasonably fast.  Libultim is faster but requires ten
+times more memory (241 polynomials of degree 7 and 241 of degree 16
+that represents more than 40KB !). Instead, our argument reduction
+performs a division, which is an expensive operation.
+
+To improve performances we could inline the code of \texttt{atan\_quick},
+but we prefer to keep it as it is in order to ease the evolution of the
+algorithm.
+
+The main problem of our $\arctan$ is the worst case time which is about 100
+times slower than the average time. Thus to improve performances we could
+try to use double-extended. A double-extended has a mantissa of 64 bits
+which could transform all double-double operation in double-extended
+operation. This format number is present in most of the Intel recent
+processors.
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "crlibm"
+%%% End: 

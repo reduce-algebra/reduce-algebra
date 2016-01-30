@@ -1,0 +1,9 @@
+This is a directory for externally provided libraries that may be useful
+for both the PSL and CSL branches of Reduce. The dirtectory "original"
+will in general hold a copy of an up-stream archive from which each
+library is derived. That is liable to contain all the notices and licenses
+that apply. Note that in order that the final binaries of Reduce do not
+end up unduly limited the external components here should either be BSD
+licensed or under some similar non-restictive terms, or at worst under
+LGPL. Incorporation of GPL (as distinct from LGPL) code would have the
+effect of making the BSD freedoms of the package as a whole ineffective.

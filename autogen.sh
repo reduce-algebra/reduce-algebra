@@ -57,7 +57,9 @@ else
   a="$*"
 fi
 
-L=". ./scripts"
+# Here are the directories that I will always process...
+
+L=". ./scripts libraries/crlibm"
 
 case $a in
 *--without-psl* | *with-psl=no*)
@@ -108,6 +110,8 @@ case $a in
 *)
   ;;
 esac
+
+printf "About to process $L\n"
 
 for d in $L
 do
