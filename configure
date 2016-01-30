@@ -1338,7 +1338,7 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-autogen          Regenetare autoconf file at start
+  --with-autogen          Regenerate autoconf file at start
   --with-csl              Use the CSL Lisp system
   --with-psl              Use the PSL Lisp system
   --with-build            Used internally to control build directory
@@ -1854,7 +1854,18 @@ $as_echo "$as_me: Absolute path to source directory = $abssrcdir" >&6;}
 # I am now going to try to respond to that by forcing a re-generation of
 # all the autoconf files each time anybody runs configure. That adds to the
 # cost for everybody and means that everybody NEEDS autoconf, automake and
-# libtool installed, but may be more robust.
+# libtool installed, but may be more robust. I will check the versions of
+# autoconf and automake that are present and stop if they are too old.
+# If that case hits you you may need to fetch new versions (in source form)
+# and build and install them somewhere on your PATH. This is in fact not
+# too difficult, it is along the lines of
+#   <fetch source archive from the Free Software Foundation archives>
+#   # (please use a local mirror)
+#   tar xvfz <source-archive.tgz>
+#   cd <where it unpacked to>
+#   ./configure --prefix=/usr/local/bin
+#   make
+#   sudo make install
 #
 
 
@@ -1948,8 +1959,12 @@ $as_echo "$as_me: detected autoconf: $acmaj.$acmin automake: $ammaj.$ammin" >&6;
   fi
   cd $here
 
-  printf "Restart: $srcdir/configure $ac_configure_args\n"
-  exec /bin/sh -c "$srcdir/configure $ac_configure_args --without-autogen"
+# It is unexpectedly important the the "--without-autogen" be provided as
+# the first argument in the re-try. This is because otherwise some malformed
+# input olater on (eg "--") could cause it not to be recognised, leading
+# to an infinite cycle of attempted re-generation!
+  printf "Restart: $srcdir/configure --without-autogen $ac_configure_args\n"
+  exec /bin/sh -c "$srcdir/configure --without-autogen $ac_configure_args"
 fi
 
 ac_aux_dir=
@@ -2742,6 +2757,83 @@ $as_echo "$as_me: +++ Will build in $abssrcdir/pslbuild/$build" >&6;}
 # but at present I do not expect any to be relevant.
     pass_build="--with-build=\"$build\""
     eval "$SHELL \"$abssrcdir/psl/configure\" $ac_configure_args $pass_build"
+# I have the configuration for crlibm here as a repeat copy of the code
+# used to configure it for use with CSL. This is UGLY but is like this
+# because of messy details of how the PSL version is configured here.
+# Right now I do not want to write out an explanatio of all the horrid
+# details.
+    if test "x$with_crlibm" == "xno"
+    then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: crlibm will not be used here" >&5
+$as_echo "$as_me: crlibm will not be used here" >&6;}
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: About to configure crlibm" >&5
+$as_echo "$as_me: About to configure crlibm" >&6;}
+      builddir=`pwd`
+      mkdir -p crlibm
+      cd crlibm
+
+      if test "x$CC$CPP$CXX$CXXCPP" != "x"
+      then
+        passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+      fi
+      case $host in
+      i386* | i486* | i586* | i686*)
+        passcc="$passcc --enable-sse2"
+        ;;
+      esac
+      filter=""
+      for x in $ac_configure_args
+      do
+# The processing here is so that I do not pass CSL or REDUCE-specific
+# configuration flags down when configuring crlibm. This then has to have
+# a catalogue of all the options I need to ignore. Messy!
+        case $x in
+        \'--with-force*\' | \
+        \'--with*-autogen*\' | \
+        \'--with-mingw*\' | \
+        \'--with-lto*\' | \
+        \'--with-m32*\' | \
+        \'--with-m64*\' | \
+        \'--with*-gui*\' | \
+        \'--with*-xft*\' | \
+        \'--with*-xim*\' | \
+        \'--with-smallpage*\' | \
+        \'--with*-fox*\' | \
+        \'--with*-wx*\' | \
+        \'--with-cyg*\' | \
+        \'--with-csl*\' | \
+        \'--with-psl*\' | \
+        \'--with-build*\' | \
+        \'--with-pslbuild*\' | \
+        \'--with*-crlibm*\' | \
+        \'--with*-boehm*\' | \
+        \'--enable-debug*\' | \
+        \'--enable-conservative*\' | \
+        \'--enable-test*\' | \
+        \'--enable-jit*\' | \
+        \'--enable-static*\' | \
+        \'--enable-silent*\' | \
+        \'--disable-silent*\' )
+          ;;
+        *)
+          filter="$filter $x"
+          ;;
+        esac
+      done
+      { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
+$as_echo "$as_me: passcc = $passcc" >&6;}
+      doconfig="$SHELL \"$abssrcdir/csl/cslbase/crlibm/configure\" $filter \
+            $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
+            --prefix=\"$builddir\""
+      { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
+$as_echo "$as_me: doconfig = $doconfig" >&6;}
+      eval "$doconfig"
+      cd "$builddir"
+fi
+
+
     cd "$abssrcdir"
   fi
   exit 0
@@ -3340,11 +3432,11 @@ ac_config_files="$ac_config_files Makefile"
 
 
 ###############################################################################
+builddir=`pwd`
+
 if test "x$with_csl" != "xno"
 then
 # Here I have a bunch of sub-directories that I need to configure
-
-  builddir=`pwd`
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: About to configure CSL core" >&5
 $as_echo "$as_me: About to configure CSL core" >&6;}
@@ -3760,6 +3852,7 @@ $as_echo "$as_me: About to configure crlibm" >&6;}
     \'--with*-wx*\' | \
     \'--with-cyg*\' | \
     \'--with-csl*\' | \
+    \'--with-psl*\' | \
     \'--with-build*\' | \
     \'--with-pslbuild*\' | \
     \'--with*-crlibm*\' | \
@@ -3824,6 +3917,7 @@ $as_echo "$as_me: About to configure boehm" >&6;}
     \'--with*-wx*\' | \
     \'--with-cyg*\' | \
     \'--with-csl*\' | \
+    \'--with-psl*\' | \
     \'--with-build*\' | \
     \'--with-pslbuild*\' | \
     \'--with*-crlibm*\' | \

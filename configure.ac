@@ -748,6 +748,79 @@ case $inplace in
 # but at present I do not expect any to be relevant.
     pass_build="--with-build=\"$build\""
     eval "$SHELL \"$abssrcdir/psl/configure\" $ac_configure_args $pass_build"
+# I have the configuration for crlibm here as a repeat copy of the code
+# used to configure it for use with CSL. This is UGLY but is like this
+# because of messy details of how the PSL version is configured here.
+# Right now I do not want to write out an explanatio of all the horrid
+# details.
+    if test "x$with_crlibm" == "xno"
+    then
+      AC_MSG_NOTICE([crlibm will not be used here])
+    else
+      AC_MSG_NOTICE([About to configure crlibm])
+      builddir=`pwd`
+      mkdir -p crlibm
+      cd crlibm
+
+      if test "x$CC$CPP$CXX$CXXCPP" != "x"
+      then
+        passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+      fi
+      case $host in
+      i386* | i486* | i586* | i686*)
+        passcc="$passcc --enable-sse2"
+        ;;
+      esac
+      filter=""
+      for x in $ac_configure_args
+      do
+# The processing here is so that I do not pass CSL or REDUCE-specific
+# configuration flags down when configuring crlibm. This then has to have
+# a catalogue of all the options I need to ignore. Messy!
+        case $x in
+        \'--with-force*\' | \
+        \'--with*-autogen*\' | \
+        \'--with-mingw*\' | \
+        \'--with-lto*\' | \
+        \'--with-m32*\' | \
+        \'--with-m64*\' | \
+        \'--with*-gui*\' | \
+        \'--with*-xft*\' | \
+        \'--with*-xim*\' | \
+        \'--with-smallpage*\' | \
+        \'--with*-fox*\' | \
+        \'--with*-wx*\' | \
+        \'--with-cyg*\' | \
+        \'--with-csl*\' | \
+        \'--with-psl*\' | \
+        \'--with-build*\' | \
+        \'--with-pslbuild*\' | \
+        \'--with*-crlibm*\' | \
+        \'--with*-boehm*\' | \
+        \'--enable-debug*\' | \
+        \'--enable-conservative*\' | \
+        \'--enable-test*\' | \
+        \'--enable-jit*\' | \
+        \'--enable-static*\' | \
+        \'--enable-silent*\' | \
+        \'--disable-silent*\' )
+          ;;
+        *)
+          filter="$filter $x"
+          ;;
+        esac
+      done
+      AC_MSG_NOTICE([passcc = $passcc])
+      doconfig="$SHELL \"$abssrcdir/csl/cslbase/crlibm/configure\" $filter \
+            $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
+            --prefix=\"$builddir\""
+      AC_MSG_NOTICE([doconfig = $doconfig])
+      eval "$doconfig"
+      cd "$builddir"
+fi
+
+
     cd "$abssrcdir"
   fi
   exit 0
@@ -766,11 +839,11 @@ AM_INIT_AUTOMAKE([1.13 -Wno-portability foreign no-dist-gzip dist-bzip2])
 AC_CONFIG_FILES([Makefile])
 
 ###############################################################################
+builddir=`pwd`
+
 if test "x$with_csl" != "xno"
 then
 # Here I have a bunch of sub-directories that I need to configure
-
-  builddir=`pwd`
 
   AC_MSG_NOTICE([About to configure CSL core])
   mkdir -p csl
@@ -1168,6 +1241,7 @@ else
     \'--with*-wx*\' | \
     \'--with-cyg*\' | \
     \'--with-csl*\' | \
+    \'--with-psl*\' | \
     \'--with-build*\' | \
     \'--with-pslbuild*\' | \
     \'--with*-crlibm*\' | \
@@ -1228,6 +1302,7 @@ else
     \'--with*-wx*\' | \
     \'--with-cyg*\' | \
     \'--with-csl*\' | \
+    \'--with-psl*\' | \
     \'--with-build*\' | \
     \'--with-pslbuild*\' | \
     \'--with*-crlibm*\' | \
