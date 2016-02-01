@@ -51,6 +51,23 @@ here=`cd \`dirname "$here"\` ; pwd -P`
 save=`pwd`
 cd $here
 
+# First I intend to check if macports.conf is set up the way I want it!
+# If it is then it should have the following two lines present:
+#   macosx_deployment_target 10.10
+#   buildfromsource always
+
+conf=/opt/local/etc/macports/macport.conf
+if ! test -f $conf || \
+   ! grep macosx_deployment_target $conf > /dev/null || \
+   ! grep "buildfromsource always" $conf > /dev/null
+then
+  printf "macport.conf seems not to exist, or does not contain the lines\n"
+  printf "   macosx_deployment_target 10.10\n"
+  printf "   buildfromsource always\n"
+  printf "Please correct that and try again.\n"
+  exit 1
+fi
+
 sudo port install          \
   astyle                   \
   autoconf                 \

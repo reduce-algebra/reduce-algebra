@@ -91,7 +91,7 @@ if test "x$need" != "x"
 then
   printf "\nPerhaps try the following command:\n"
   printf "wget -N http://cygwin.com/setup$width.exe\n"
-  printf "./setup-$width.exe --no-desktop --no-shortcuts --no-startmenu \\\n"
+  printf "./setup-$width.exe --no-desktop --no-shortcuts --no-startmenu \\\\\n"
   printf "  --quiet-mode -P$need\n"
   printf "To do this you will need the cygwin version of wget installed\n"
 fi
