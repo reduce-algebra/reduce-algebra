@@ -44,6 +44,7 @@
 
 # [Reviewed January 2016]
 
+pneed=""
 need=""
 
 case `uname -m` in
@@ -61,7 +62,16 @@ i686)
         echo "Good: $m is installed"
       else
         echo "To build Reduce you should install $m"
-        need="$need $m"
+        if test "x$need" = "x"
+        then
+          need="$m"
+        elif test ${#need} -gt 50
+        then
+          pneed="$pneed$need,\\\\\\n"
+          need="$m"
+        else
+          need="$need,$m"
+        fi
       fi
     done
     ;;
@@ -78,7 +88,16 @@ x86_64)
         echo "Good: $m is installed"
       else
         echo "To build Reduce you should install $m"
-        need="$need $m"
+        if test "x$need" = "x"
+        then
+          need="$m"
+        elif test ${#need} -gt 50
+        then
+          pneed="$pneed$need,\\\\\\n"
+          need="$m"
+        else
+          need="$need,$m"
+        fi
       fi
     done
     ;;
@@ -91,8 +110,9 @@ if test "x$need" != "x"
 then
   printf "\nPerhaps try the following command:\n"
   printf "wget -N http://cygwin.com/setup$width.exe\n"
-  printf "./setup-$width.exe --no-desktop --no-shortcuts --no-startmenu \\\\\n"
-  printf "  --quiet-mode -P$need\n"
+  printf "./setup-$width.exe --no-desktop --no-shortcuts \\\\\\n"
+  printf "  --no-startmenu --quiet-mode \\\\\\n"
+  printf "  -P \"$pneed$need\"\n"
   printf "To do this you will need the cygwin version of wget installed\n"
 fi
 
