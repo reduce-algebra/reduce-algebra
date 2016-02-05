@@ -51,11 +51,11 @@ case `uname -m` in
 i686)
     width="x86"
     for m in automake bc bison cygwin64-gcc-g++ cygwin64-libtool \
-        cygwin64-libXext cygwin64-libXft cygwin64-ncurses cygwin64-zlib \
-        gcc-g++ libgtk2.0-devel libncurses-devel libtool libXext-devel \
-        libXft-devel make mingw64-i686-gcc-g++ mingw64-i686-zlib \
-        mingw64-x86_64-gcc-g++ mingw64-x86_64-zlib openssh subversion \
-	time wget
+        cygwin64-libXext cygwin64-libXft cygwin64-ncurses cygwin64-libpng \
+        cygwin64-zlib gcc-g++ libgtk2.0-devel libncurses-devel \
+        libpng15-devel libtool libXext-devel libXft-devel make \
+        mingw64-i686-gcc-g++ mingw64-i686-zlib mingw64-x86_64-gcc-g++ \
+        mingw64-x86_64-zlib openssh subversion time wget
     do
       if cygcheck -c -d $m | grep $m > /dev/null
       then
@@ -79,7 +79,7 @@ x86_64)
     width="x86_64"
     for m in automake bc bison cygwin32-gcc-g++ \
         cygwin32-ncurses cygwin32-zlib gcc-g++ libgtk2.0-devel \
-        libncurses-devel libtool libXext-devel libXft-devel \
+        libncurses-devel libpng15-devel libtool libXext-devel libXft-devel \
         make mingw64-i686-gcc-g++ mingw64-i686-zlib mingw64-x86_64-gcc-g++ \
         mingw64-x86_64-zlib openssh subversion time wget
     do
@@ -109,7 +109,7 @@ esac
 if test "x$need" != "x"
 then
   printf "\nPerhaps try the following command:\n"
-  printf "wget -N http://cygwin.com/setup$width.exe\n"
+  printf "wget -N http://cygwin.com/setup-$width.exe\n"
   printf "./setup-$width.exe --no-desktop --no-shortcuts \\\\\\n"
   printf "  --no-startmenu --quiet-mode \\\\\\n"
   printf "  -P \"$pneed$need\"\n"
