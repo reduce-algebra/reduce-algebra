@@ -1,4 +1,4 @@
-// csl.cpp                            Copyright (C) 1989-2015 Codemist Ltd
+// csl.cpp                            Copyright (C) 1989-2016 Codemist Ltd
 
 //
 // This is Lisp system for use when delivering Lisp applications
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

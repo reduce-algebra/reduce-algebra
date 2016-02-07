@@ -1,7 +1,7 @@
 See scripts/macport-setup.sh in the root of the Reduce source tree
 for information, valid as of January 2016, about which "ports" you need
 to install on a Macintosh in order to build Reduce. Note the fact that
-the information theer refere sback to the script make-static*.sh in this
+the information there referes back to the script make-static*.sh in this
 directory, which builds and installs a special copy of libfontconfig.
 
                                                       ACN. January 2016

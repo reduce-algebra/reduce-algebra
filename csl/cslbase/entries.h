@@ -1,9 +1,9 @@
-// entries.h                            Copyright (C) Codemist 1991-2015
+// entries.h                            Copyright (C) Codemist 1991-2016
 
 
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -67,6 +67,9 @@ extern "C" LispObject Lterpri(LispObject env, int nargs, ...);
 extern "C" LispObject Ltime(LispObject env, int nargs, ...);
 extern "C" LispObject Ltmpnam(LispObject nil, int nargs, ...);
 extern "C" LispObject Ltyi(LispObject env, int nargs, ...);
+#ifdef EXPERIMENT
+extern "C" LispObject Lunserialize(LispObject env, int nargs, ...);
+#endif
 
 //
 // things with one arg...
@@ -258,6 +261,9 @@ extern "C" LispObject Lrdf1(LispObject env, LispObject a);
 extern "C" LispObject Lrds(LispObject env, LispObject a);
 extern "C" LispObject Lremd(LispObject env, LispObject a);
 extern "C" LispObject Lreverse(LispObject env, LispObject a);
+#ifdef EXPERIMENT
+extern "C" LispObject Lserialize(LispObject env, LispObject a);
+#endif
 extern "C" LispObject Lsetpchar(LispObject env, LispObject a);
 extern "C" LispObject Lset_small_modulus(LispObject env, LispObject a);
 extern "C" LispObject Lsmkvect(LispObject env, LispObject a);

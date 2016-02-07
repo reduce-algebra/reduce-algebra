@@ -1,11 +1,11 @@
-//  fns2.cpp                          Copyright (C) 1989-2015 Codemist Ltd
+//  fns2.cpp                          Copyright (C) 1989-2016 Codemist Ltd
 
 //
 // Basic functions part 2.
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -2280,27 +2280,6 @@ static LispObject Lcheckpoint_1(LispObject nil, LispObject startup)
 }
 
 #endif
-
-#ifdef EXPERIMENT
-
-void first_visit(LispObject a)
-{
-    printf("First visit to %p\n", (void *)a);
-}
-
-void subsequent_visit(LispObject a)
-{
-    printf("Subsequent visit to %p\n", (void *)a);
-}
-
-static LispObject Lserialize(LispObject nil, LispObject a)
-{   scan_data(a, first_visit, subsequent_visit);
-    release_map();
-    return onevalue(nil);
-}
-
-
-#endif // EXPERIMENT
 
 
 //

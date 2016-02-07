@@ -1,10 +1,10 @@
-// headers.h                       Copyright (C) 2005-2015 Codemist Ltd
+// headers.h                       Copyright (C) 2005-2016 Codemist Ltd
 
 #ifndef header_headers_h
 #define header_headers_h 1
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -71,6 +71,16 @@
 // that would put things in the std: namespace, and the killer for me is
 // that with g++ I can then not find putc_unlocked and getc_unlocked.
 
+// The following need to be defined so that the useful C macros in
+// stdint.h get defined. They reflect an ugly gulf between C and C++.
+
+#if defined __cplusplus && !defined __STDC_CONSTANT_MACROS
+#define __STDC_CONSTANT_MACROS 1
+#endif
+#if defined __cplusplus && !defined __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS 1
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -80,14 +90,6 @@
 #include <wctype.h>
 #include <time.h>
 #include <stdarg.h>
-
-#if defined __cplusplus && !defined __STDC_CONSTANT_MACROS
-#define __STDC_CONSTANT_MACROS 1
-#endif
-
-#if defined __cplusplus && !defined __STDC_FORMAT_MACROS
-#define __STDC_FORMAT_MACROS 1
-#endif
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>

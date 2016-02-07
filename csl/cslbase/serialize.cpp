@@ -83,43 +83,45 @@
 // is to be constructed. It will be based on having a 3-bit opcode in each
 // byte 
 
+static bool descend_symbols = true;
+
 #define SER_OPBITS   0xe0     // top 3 bits of byte are major opcode
 
 #define SER_VARIOUS  0x00     // a bunch of 32 "miscellaneous" codes
-#define   SER_RAWSYMBOL   0x00    // a symbol
-#define   SER_SYMBOL      0x01    // a symbol, but intern it as you read
-#define   SER_BIGBACKREF  0x02    // reference more than 64 items ago
-#define   SER_POSFIXNUM   0x03    // positive (or unsigned) 64-bit integer
-#define   SER_NEGFIXNUM   0x04    // negative integer up to 64 bits
-#define   SER_FLOAT28     0x05    // short float
-#define   SER_FLOAT32     0x06    // single float
-#define   SER_FLOAT64     0x07    // double float
-#define   SER_FLOAT128    0x08    // long float
-#define   SER_CHAR        0x09    // character object
-#define   SER_SPID        0x0a    // "special identifier"
-#define   SER_CONS        0x0b    // cons cell
-#define   SER_DUPCONS     0x0c    // cons cell that is referred to multiple times
-#define   SER_DUP         0x0d    // used with items that have multiple references
-#define   SER_BITVEC      0x0e    // bit-vector
-#define   SER_XXX0f       0xf0    // unused at present
+#define   SER_RAWSYMBOL    0x00    // a symbol
+#define   SER_DUPRAWSYMBOL 0x01    // a symbol
+#define   SER_SYMBOL       0x02    // a symbol, but intern it as you read
+#define   SER_DUPSYMBOL    0x03    // a symbol, but intern it as you read
+#define   SER_GENSYM       0x04    // a gensym
+#define   SER_DUPGENSYM    0x05    // a gensym
+#define   SER_BIGBACKREF   0x06    // reference more than 64 items ago
+#define   SER_POSFIXNUM    0x07    // positive (or unsigned) 64-bit integer
+#define   SER_NEGFIXNUM    0x08    // negative integer up to 64 bits
+#define   SER_FLOAT28      0x09    // short float
+#define   SER_FLOAT32      0x0a    // single float
+#define   SER_FLOAT64      0x0b    // double float
+#define   SER_FLOAT128     0x0c    // long float
+#define   SER_CHAR         0x0d    // character object
+#define   SER_SPID         0x0e    // "special identifier"
+#define   SER_CONS         0x0f    // cons cell
+#define   SER_DUPCONS      0x10    // cons cell that is referred to multiple times
+#define   SER_DUP          0x11    // used with items that have multiple references
+#define   SER_BITVEC       0x12    // bit-vector
 
 // The ones from here on have not yet been allocated
-#define   SER_XXX10       0x10
-#define   SER_XXX11       0x11
-#define   SER_XXX12       0x12
-#define   SER_XXX13       0x13
-#define   SER_XXX14       0x14
-#define   SER_XXX15       0x15
-#define   SER_XXX16       0x16
-#define   SER_XXX17       0x17
-#define   SER_XXX18       0x18
-#define   SER_XXX19       0x19
-#define   SER_XXX1a       0x1a
-#define   SER_XXX1b       0xab
-#define   SER_XXX1c       0x1c
-#define   SER_XXX1d       0x1d
-#define   SER_XXX1e       0x1e
-#define   SER_XXX1f       0x1f
+#define   SER_XXX13        0x13
+#define   SER_XXX14        0x14
+#define   SER_XXX15        0x15
+#define   SER_XXX16        0x16
+#define   SER_XXX17        0x17
+#define   SER_XXX18        0x18
+#define   SER_XXX19        0x19
+#define   SER_XXX1a        0x1a
+#define   SER_XXX1b        0xab
+#define   SER_XXX1c        0x1c
+#define   SER_XXX1d        0x1d
+#define   SER_XXX1e        0x1e
+#define   SER_XXX1f        0x1f
 
 // The next two opcodes make it possible for me to re-use one of the
 // 64 most recent shared items in a single byte. My bet is that NIL will
@@ -166,31 +168,237 @@
 // here that does not descend through symbols...
 //
 
+// I will need a hash table that records information about items in the
+// heap that are visited several times. I build this using Cuckoo hashing
+// where each key can end up in one of just two locations. This will
+// manage to hold data with maximum hash occupancy approaching 50%. Since
+// a Reduce image only ends up with around 7000 repeats the size here is not
+// a terrible problem. With this scheme all hash lookups use just one or
+// two probes, and especially usefully all unsuccessful probes use just
+// two probes -- using fairly simple-to-compute hash functions.
 
-typedef struct _repeated_object
+static size_t hashsize = 0, hashshift = 0, hashcount = 0;
+static bool rehashing = false;
+static uintptr_t *hash = NULL;
+static size_t *payload = NULL;
+
+#define NULLKEY ((uintptr_t)NULL)
+
+#define MULTIPLIER1  ((uintptr_t)UINT64_C(0x0101010101010101))
+static uintptr_t MULTIPLIER2 =  (uintptr_t)UINT64_C(0x9e3779b99e377741);
+
+#define H1(p) ((MULTIPLIER1*(uintptr_t)(p)) >> hashshift)
+#define H2(p) ((MULTIPLIER2*(uintptr_t)(p)) >> hashshift)
+
+// The lookup function is especially simple because it only has to
+// check two locations in the table. This code return (size_t)(-1) if
+// the key is not present, and otherwise the offset in the hash table
+// where it was found. Pretty much the entire motivation of the code that
+// inserts data into the table is to keep this lookup code simple and
+// fast. Note that this is cheap to use even for unsuccessful lookups.
+
+static inline size_t check_repeat_hash(uintptr_t p)
 {
-    LispObject x;
-    int32_t index;
-} repeated_object;
+    size_t h = H1(p);
+    if (hash[h] == p) return h;
+    h = H2(p);
+    if (hash[h] == p) return h;
+    else return (size_t)(-1);
+}
 
-#define INITIAL_REPEAT_HEAP_SIZE (3000)
-#define INITIAL_REPEAT_HASH_SIZE (4507)
+// Before using the hash table it is necessary to call inithash(), which
+// sets up an initial table of size 16384 entries. On a 64-bit machine this
+// occupies 128 Kbytes. It will suffice for up to around 8000 entries.
+// The table is allocated using malloc(), and as necessary is expanded
+// using realloc.
 
-repeated_object *repeat_hash = NULL;
-int repeat_hash_size = 0;
+static int cascade_limit = 0;
 
-// While writing the repeat_heap in fact holds integers that are
-// references back into the repeat hash table. I can use the type
-// LispObject for that without trouble. During writing it does not
-// need to be garbage collector safe, however for simplicity I will
-// make it a root for the garbage collector and then to keep things
-// secure I will package up the integers I put in it as fixnums.
+void init_writer_hash()
+{
+    int hashbits = 14;  // start off table 16384 entries long
+// For small tables I will allow up to 40 probes to insert data. Each
+// time the table size is doubled I will increment this by 2. The value
+// used is a trade-off between faster inserts and more need for increases
+// in the table size.
+    cascade_limit = 40;
+    hashsize = 1 << hashbits;
+    hashshift = 8*sizeof(uintptr_t) - hashbits;
+    hash = (uintptr_t *)malloc(hashsize*sizeof(uintptr_t));
+    for (size_t i=0; i<hashsize; i++) hash[i] = NULLKEY;    
+// While the hash table is being created I merely add keys without any
+// associated values. At a later stage I will allocate a parallel table
+// to hold values.
+    payload = NULL;
+    hashcount = 0;
+    rehashing = false;
+}
+
+void init_writer_payload()
+{
+    payload = (size_t *)malloc(hashcount*sizeof(size_t *));
+    for (size_t i=0; i<hashcount; i++) payload[i] = 0;
+}
+
+void release_writer_hash()
+{
+    free(hash);
+    hash = NULL;
+    free(payload);
+    payload = NULL;
+}
+
+// This inserts an item in the table. On success this returns NULLKEY,
+// while on failure it returns a key (not necessarily the one you had
+// originally been trying to insert) that should be but is not now in
+// the table. This whole scheme makes the table suitable for use as a
+// representation of a hash-set.
+
+static uintptr_t add_to_repeat_hash(uintptr_t p)
+{
+    int tries = 0;
+    size_t h = 0;
+    do
+    {   size_t h1 = H1(p), h2 = H2(p);
+        uintptr_t w1, w2;
+// If the first choice location for this key is available for use then
+// insert the key there. For lightly loaded tables this will happen quite
+// a lot of the time so I make it the first case checked and hence the
+// fastest path through the code. Note that if the item is in the table
+// already in its second choice place and the first choice location is
+// empty this would end up leaving the item in there twice. To keep myself
+// fully safe I will check for that case and not insert.
+        if ((w1 = hash[h1]) == NULLKEY)
+        {   if (hash[h2] != p)  // Key may already be present in other slot.
+            {   hash[h1] = p;
+                hashcount++;
+            }
+            return NULLKEY;
+        }
+        else if (w1 == p) return NULLKEY; // Already present in slot 1.
+        else if ((w2 = hash[h2]) == NULLKEY)
+        {   hash[h2] = p;
+            hashcount++;
+            return NULLKEY;
+        }
+        else if (w2 == p) return NULLKEY; // Already present in slot 2.
+// Both the locations I would like to go in are busy. I need to apply
+// the "cuckoo" strategy and move something that is already in the table.
 //
-// During reading it is a genuine array of Lisp values and garbage
-// collector interaction will be important.
+// On the first move of an insert I will always try putting the new key
+// in its first choice position. When I move something I record where it
+// had just been ejected from. That must have been one of the places it
+// hashed to so I try to move it to the other location. Of course in some
+// cases these will be the same place, and in others one can end up with
+// a cycle of ejections, but in happy cases this will take me for an
+// almost random walk through the table, and that will then end at an empty
+// cell.
+        if (h1 == h)
+        {   hash[h2] = p;
+            p = w2;
+            h = h2;
+        }
+        else
+        {   hash[h1] = p;
+            p = w1;
+            h = h1;
+        }
+// Sometimes there will be a cycle in the cascade or ejections, so I
+// will give up if I end up trying too hard. If I set a large value for
+// cascade_limit I will sometimes achieve a slighly higher table occupancy
+// before I need to expand the table, but at the cost of more work inserting
+// items. So the limit to use is a compromise, but not one where the
+// effects either way are terribly serious.
+    } while (++tries < cascade_limit);
+//
+// Here I have failed to insert my new key in the existing table. If this
+// happens during the rehashing phase I should report it as a failure.
+// Note that the key p is at present still pending and not inserted, but that
+// this p may not be the one you were originally inserting but instead
+// something that has been displaced.
+//
+    if (rehashing) return p; // Return the unplaced key.
+// I need to recover from a failed insert. I will try several
+// options. If the table is less than 1/3 full then up to 4 times
+// I will change the multiplier that determines my second hash function.
+// If either I have already used up those tries or if the table
+// is at least 1/3 full I will double the table size. 
+    int multiplier_changes = 0;
+    for (;;)  // a big outer loop that keeps on until I have managed to fix
+    {         // everything up.
+        if (hashcount < hashsize/3 && multiplier_changes < 4)
+        {   h = 0;
+// Here the table is less than 1/3 full but I failed to insert. Well
+// the fact that it is that empty means I know I can find somewhere to
+// place the new key.
+            while (hash[h] != NULLKEY) h++;
+            hash[h] = p;
+            hashcount++;
+// Change the second hash function. The sequence of multipliers used are
+// generated using a linear congruential generator known to behave well
+// for 64-bit arithmetic, so its low 32-bits should work reasonably well
+// on a 32-bit system as well.
+            MULTIPLIER2 =  (uintptr_t)
+                (UINT64_C(2862933555777941757)*MULTIPLIER2 +
+                 UINT64_C(3037000493));
+            multiplier_changes++;
+        }
+        else
+        {   size_t new_hashsize = 2*hashsize;
+            uintptr_t *new_hash =
+                (uintptr_t *)realloc(hash, new_hashsize*sizeof(uintptr_t));
+            if (new_hash == NULL)
+            {   printf("\n+++ Run out of memory\n");
+                abort();
+            }
+// realloc does not initialise the expanded part of the vector, so I will
+// need to fill it with NULLs before I progress further.
+            for (size_t i=hashsize+1; i<new_hashsize; i++)
+                new_hash[i] = NULLKEY;
+// Now the table has been expanded I know I have a spare place to put the
+// item I was trying to insert. And because I am about to rehash everything
+// it does not matter that it gets put somewhere rather arbitrary.
+            hash = new_hash;
+            hash[hashsize] = p;
+            hashcount++;
+            hashsize = new_hashsize;
+            hashshift--;
+            cascade_limit += 2;
+// After expanding the hash table I will allow myself another 4 different
+// hash functions before I feel obliged to try to expand the table some more.
+            multiplier_changes = 0;
+        }
+// The rehashing here scans the whole table. This may re-hash some keys
+// several times - I might have expected that I would find all old keys in
+// the first half of the table so I could only scan that. But because of
+// the remote possibility of insertion failure here I scan everything, as
+// is necessary after my recovery from that. Note that this can leave some
+// keys in their second choice slot with the first choice location empty.
+// The rest of my code here means that this is not a problem.
+        rehashing = true;
+        bool rehashing_success = true;
+        for (size_t i=0; i<hashsize; i++)
+        {   p = hash[i];
+            if (p == NULLKEY) continue; // empty slot.
+// Remove and then (re-)insert the item.
+            hash[i] = NULLKEY;
+            hashcount--;
+            if ((p = add_to_repeat_hash(p)) == NULLKEY) continue;
+// p is now a key that us is not in the table. There is no point
+// continuing this pass of re-hashing.
+            rehashing_success = false;
+            break;
+        }
+        if (rehashing_success) break;
+// Once again here p is a key that still needs to be inserted.
+    }
+    rehashing = false;
+    return NULLKEY;
+}
 
-LispObject *repeat_heap
-int repeat_heap_size = 0, repeat_count = 0;
+
+LispObject *repeat_heap;
+size_t repeat_heap_size = 0, repeat_count = 0;
 
 
 void reader_setup_repeats(int n)
@@ -212,103 +420,14 @@ void reader_setup_repeats(int n)
     } while (n != 0);
 }
 
-void writer_setup_repeats()
+void writer_setup_repeats(size_t n)
 {
-    if (repeat_heap_size != 0 ||
-        repeat_heap != NULL ||
-        repeat_hash != NULL)
-    {   printf("\n+++ repeat heap processing error\n");
-        abort();
-    }
-    repeat_heap_size = INITIAL_REPEAT_HEAP_SIZE;
+    repeat_heap_size = n;
     repeat_heap =
         (LispObject *)malloc(repeat_heap_size*sizeof(LispObject));
     if (repeat_heap == NULL)
     {   printf("\n+++ unable to allocate repeat heap\n");
         abort();
-    }
-// The initial size given here is a prime judged so that when the repeat
-// heap is full the hash table occupancy will be around 67%, which with a
-// reasonable hash distribution keeps access costs modest.
-    reepeat_hash_size = INITIAL_REPEAT_HASH_SIZE;
-    repeat_hash =
-        (LispObject *)malloc(repeat_hash_size*sizeof(repeated_object));
-    if (repeat_hash == NULL)
-    {   printf("\n+++ unable to allocate repeat hash\n");
-        abort();
-    }
-// If the key field contains 0 that means the entry is not in use.
-    repeat_count = repeat_hash_size;
-    do
-    {   repeat_hash[--repeat_count].x = fixnum_of_int(0);
-        repeat_hash[repeat_count].index = 0;
-    } while (repeat_count != 0);
-}
-
-// I can not be certain at the start how many repeated objects will be
-// found, so I may need to expand my hash table and heap while I am
-// getting ready to write a heap image. This procedure (roughly) doubles
-// the size of the tables and re-hashes data.
-// I might comment on my expectation re performance here. Let me start by
-// assuming that the (very crude) hash function works well enough - and
-// because the items being hashed are basically memory addresses with
-// it being improbable that there are heavy patterns to them.
-// Suppose (unreasonably pessimistically) that I allowed the table to get
-// totally full before I re-hashed it:
-// Inserting k items into a new hash table of size 2k has a predicted cost
-// of around 1.7 probes per insertion - the early ones only ever need 1
-// probe because the table starts off empty, so my cost ends up as
-// 1 - log(1/2). But here the table will always be exactly half full, and
-// that means I predict that I would need 3 probes per insert. Two for the
-// (failing) lookup to see it the item was already present and a final one
-// that achieves the insertion. That seems acceptable to me, especially
-// since this only happens during the process or writing a heap image.
-
-void writer_expand_repeats()
-{
-    int o = repeat_heap_size;
-    repeat_heap_size *= 2;
-    repeat_heap =
-        (LispObject *)realloc(repeat_heap_size*sizeof(LispObject));
-    if (repeat_heap == NULL)
-    {   printf("\n+++ unable to expand repeat heap\n");
-        abort();
-    }
-    while (o < repeat_heap_size) repeat_heap[o++] = fixnum_of_int(0);
-// Now double the size of the hash table, rounding up to a number without
-// any tiny factors. I am not going to the trouble to make it a prime, but I
-// do go as far as avoiding factors of 13 because symbol headers may be 13 words
-// long and that seems the largest chunk liable to be really common.
-    o = repeat_hash_size;
-    repeat_hash_size = (2*repeat_heap_size) | 1;
-    while (repeat_hash_size % 3 == 0 ||
-           repeat_hash_size % 5 == 0 ||
-           repeat_hash+size % 7 == 0 ||
-           repeat_hash_size % 11 == 0 ||
-           repeat_hash_size % 13 == 0) repeat_hash_size += 2;
-    repeat_hash =
-        (LispObject *)realloc(repeat_hash_size*sizeof(repeated_object));
-    if (repeat_hash == NULL)
-    {   printf("\n+++ unable to allocate repeat hash\n");
-        abort();
-    }
-// If the key field contains 0 that means the entry is not in use.
-    repeat_count = repeat_hash_size;
-    while (o < repeat_hash_size)
-    {   repeat_hash[o].x = fixnum_of_int(0);
-        repeat_hash[o].index = 0;
-        o++;
-    }
-// Now I need to re-hash stuff. This code can leave tombstones in the table.
-    for (o=0; o<repeat_hash_size; o++)
-    {   LispObject x = repeat_hash[o].x, y;
-        int h;
-        if (is_fixnum(x)) continue; // an unused slot
-        h = (int)((uintptr_t)x % (uintptr_t)repeat_hash_size);
-        while ((y = repeat_hash[h].x) != x &&
-               !is_fixnum(y)) h = (h + 1) % repeat_hash_size;
-        repeat_hash[o].x = fixnum_of_int(1); // tombstone.
-        repeat_hash[h].x = x;
     }
 }
 
@@ -349,55 +468,6 @@ LispObject reader_repeat_new(LispObject x)
 // ro writing out data that early mention must arrange to remember
 // the item for its later re-use.
 
-void add_to_repeat_hash(LispObject x)
-{
-// The hash key is the raw representation of a LispObject. I expect its
-// low 3 or 4 bits to be far from "random" - to be specific I expect that
-// the bottom 4 bits of almost all repeated objects will be TAG_SYMBOL
-// because I expect repeated references to symbols to be really common.
-// But if I take the remainder by the size of my hash table and that does
-// not have any small factors then I can hope to get acceptable distribution.
-// I do the remainder operation using unsigned arithmetic so I can guarantee
-// that the hash value I end up with is positive.
-    int h = (int)((uintptr_t)x % repeat_hash_size);
-    int firsth = -1;
-// Only sharable items can appear as repeats, so fixnums can be used to
-// indicate empty shots. I will use 0 for a truly empty slot and 1 for a
-// tombstone where I deleted item had been. 
-    for (;;)
-    {   LispObject w;
-        if ((w = repeat_hash[h].x) == x) return; // already present
-// If I see a tombstone I remember the first such that I come across since if
-// I end up inserting that is the location I should use.
-        else if (w == fixnum_of_int(1) && firsth == -1) firsth = h;
-        else if (w == fixnum_of_int(0))
-        {   if (firsth != -1) h = firsth;
-            repeat_hash[h].x = x;
-// Count how many entries there are in the repeat table and as necessary expand
-// the structures used to track data.
-            repeat_count++;
-            if (repeat_count == repeat_heap_size)
-                writer_expand_repeats();
-            return;
-        }
-        h = (h + 1) % repeat_hash_size;;
-    }
-}
-
-// Check if an item is in the repeat-hash, and if so return the location
-// in the table for it. Return -1 if it is not present
-
-int check_repeat_hash(LispObject x)
-{
-    int h = (int)((uintptr_t)x % repeat_hash_size);
-    for (;;)
-    {   LispObject w;
-        if ((w = repeat_hash[h].x) == x) return h; // present
-        else if (w == fixnum_of_int(0)) return -1; // not present
-        h = (h + 1) % repeat_hash_size;;
-    }
-}
-
 // Given the location in the repeats hash table of an item that I want to
 // dump, work out where it will live. Note that repeat_count will be zero
 // at the start of dumping an image, and that the updating of repeat_heap
@@ -405,14 +475,14 @@ int check_repeat_hash(LispObject x)
 // the item was before the move-to-front operation. I can use this when a
 // new item is to be entered in the repeat heap.
 
-int find_index_in_repeats(int h)
+size_t find_index_in_repeats(size_t h)
 {
-    int n = repeat_hash[h].index;
+    size_t n = payload[h];
 // if n == 0 then this is the first time we have seen this item. So it
 // needs to be inserted into repeat_hash.
     if (n == 0)
     {   n = ++repeat_count;
-        repeat_hash[n].index = h;
+        payload[n] = h;
     }
 // I now need to perform the same move-to-top operation that will be performed
 // during reading. But as I do so I will need to update values in the repeat_heap
@@ -423,9 +493,9 @@ int find_index_in_repeats(int h)
     {   int n2 = n/2;           // parent in binary heap
         LispObject w = repeat_heap[n];
         repeat_heap[n] = repeat_heap[n2];
-        repeat_hash[repeat_heap[n2]].index = n;
+        payload[repeat_heap[n2]] = n;
         repeat_heap[n2] = w;
-        repeat_hash[w].index = n2;
+        payload[w] = n2;
         if (n2 == 1) return h;  // item has been moved to front
         n = n2;
     }
@@ -467,6 +537,30 @@ uint64_t readPacked()
     }
     return (r << 8) | nextByte();
 }
+
+// For the transport of floating point values I will suppose that for
+// floats the only problem is that for some machines the byte order
+// may be backwards. For doubles I will allow for both the possibility
+// of ordering within each 32-bit word and ordering of the low and high
+// order word of the whole number.
+// I will evaluation the situation on the machine I am running on and
+// act accordingly. This should already have been done, and current_fp_rep
+// should give information!
+
+typedef union _float32u
+{   char i[4];
+    float f;
+} float32u;
+
+typedef union _float64u
+{   char i[8];
+    double f;
+} float64u;
+
+typedef union _float128u
+{   char i[16];
+    long double f;
+} float128u;
 
 LispObject serial_read()
 {
@@ -526,11 +620,13 @@ down:
 // This allows for up to 2^64 back-references.
         *p = reader_repeat_old(1 + 64 + readPacked());
         goto up;
+
     case SER_DUP:
-// This is issues just after a SER_VECTOR or SER_SYMBOL (etc) code that will
+// This is issues just after a SER_VECTOR (etc) code that will
 // have left pbase referring to the object just allocated.
         reader_repeat_new(pbase);
         goto down;
+
     case SER_POSFIXNUM:
 // This case really needs to read the 64-bit value and construct either a fixnum
 // or a boxnum as relevant. If it creates a boxnum then that could possibly be
@@ -538,6 +634,7 @@ down:
 // SER_DUP opcode can behave meaningfully.
         pbase = *p = fixnum_of_int(readPacked());
         goto up;
+
     case SER_NEGFIXNUM:
 // Negative (small to medium-sized) integers are given a separate code here beause
 // packing then using sign-and-magnitude seems easier. The extra "-1" here is both
@@ -546,41 +643,92 @@ down:
 // 1 following byte the range goes from -128 to +127 (rather than -127 to +127).
         pbase = *p = fixnum_of_int(-1-readPacked());
         goto up;
+
     case SER_RAWSYMBOL:
+    case SER_DUPRAWSYMBOL:
+        printf("SER_RAWSYMBOL not coded yet\n");
+        abort();
 // SER_RAWSYMBOL is used while dumping complete heap-images. The opcode here
 // is followed by information to go into the header word of the symbol (various
 // flag bits such as whether the symbol is global or fluid), then a dump of
 // information about what goes in the function call and count components. After
 // that all the list-like components will be transmitted (much as if they were
 // elements in a vector).
+
     case SER_SYMBOL:
+    case SER_DUPSYMBOL:
+        printf("SER_SYMBOL not coded yet\n");
+        abort();
 // SER_SYMBOL is for when a single expression is being dumped. After this
 // opcode comes information as to whether the symbol is a gensym or not, then the
 // length of its name and a seqence of bytes giving its name. The reader will
 // in general look that name up in the oblist. Such information as what is on the
-property list and what is in the value cell is not transmitted at all.
+
+    case SER_GENSYM:
+    case SER_DUPGENSYM:
+        printf("SER_GENSYN not coded yet\n");
+        abort();
+// SER_GENSYM does what it says on the tin! It needs to be followed by the
+// base of the gensym name (often just "G"). It will be created in a state
+// of not having been printed, so a numeric sequence number will be allocated
+// to it later.
+
     case SER_FLOAT28:
 // A 28-bit short float
+        printf("SER_FLOAT28 not coded yet\n");
+        abort();
+
     case SER_FLOAT32:
 // a 32-bit sungle float
+        printf("SER_FLOAT32 not coded yet\n");
+        abort();
+
     case SER_FLOAT64:
 // a 64-bit (long) float
+        printf("SER_FLOAT64 not coded yet\n");
+        abort();
+
     case SER_FLOAT128:
 // a 128-bit (double-length) float. Note that this may not use all
 // 128 bits and that cross-platform compatibility for floats of over 64
 // bits is really very uncertain at present!
+        printf("SER_FLOAT128 not coded yet\n");
+        abort();
+
     case SER_CHAR:
 // a packed characters literal. Characters that are Basic Latin can be coded
 // here with just 2 bytes, so for instance 'A' is SER_CHAR/0x41. Codes up to
 // U+3fff come in 3 bytes and so on. Note that the encoding is NOT utf8 - it is
 // the variable length encoding
-    case SER_SPID:
-    case SER_BITVEC:
+        printf("SER_CHAR not coded yet\n");
+        abort();
 
-    case SER_XXX0f:
-    case SER_XXX10:
-    case SER_XXX11:
-    case SER_XXX12:
+    case SER_SPID:
+        printf("SER_SPID not coded yet\n");
+        abort();
+
+    case SER_BITVEC:
+// This can be done very much the way that SER_STRING is. Right now I will
+// just abort!
+        printf("SER_BITVEC not coded yet\n");
+        abort();
+
+    case SER_STRING:
+// String will be very much like BVECTOR except that because I expect it to be an
+// espcially important case I pack a length code into the 5-bit field of the
+// opcode byte and the type information is implicit. This code only copes
+// with strings with length 1-32.
+        w = (c & 0x1f) + 1;
+// The variable w holds the length in terms of 8-bit bytes. Within the Lisp
+// system two bits of this need to end up being part of the type field of the
+// header while the rest goes into the "length-in-32-bit-words" part. The
+// adjustments here seem ugly and a real portability risk - but are the best I
+// can see to use right at present.
+        c = (TYPE_STRING_1>>(Tw+2)) + (((w-1)&0x3) << 3);
+        c = (c << 2) | 0x2;
+        w = (w + 3)/4;
+        goto bvecstring;
+
     case SER_XXX13:
     case SER_XXX14:
     case SER_XXX15:
@@ -628,14 +776,19 @@ property list and what is in the value cell is not transmitted at all.
 // that, and if they find it they re-hash before use, restoring the key to
 // just TYPE_HASH. The consequence is that the rehashing work is not done
 // until and unless it is actually needed.
-        w = *p = getvec(type, n);
+        {   int type = ((c & 0x1f) << (Tw + 2)) | (0x01 << Tw) | TAG_HDR_IMMED,
+                tag = is_number_header_full_test(type) ? TAG_NUMBERS :
+                                                         TAG_VECTOR;
+            size_t n = readPacked();
+            w = *p = getvector(tag, type, n);
 // vectors chain through the first entry. If a vector was empty so it did not
 // have a first entry to use here it would have needed to be dumped as a LEAF.
-        elt(w, 0) = b;
-        b = w;
-        s = cons(fixnum_of_int(n), s);
-        pbase = b;
-        p = &elt(b, n);
+            elt(w, 0) = b;
+            b = w;
+            s = cons(fixnum_of_int(n), s);
+            pbase = b;
+            p = &elt(b, n);
+        }
         goto down;
 
 
@@ -649,39 +802,153 @@ property list and what is in the value cell is not transmitted at all.
         c = c & 0x1f;
         if ((w & 0x10) != 0) c |= ~0x0f; // sign extend
         *p = fixnum_of_int(c);
-    case SER_STRING:
-// String will be very much like BVECTOR except that because I expect it to be an
-// espcially important case I pack a length code into the 5-bit field of the
-// opcode byte and the type information is implicit. This code only copes
-// with strings with length 1-32.
-        w = (c & 0x1f) + 1;
-// The variable w holds the length in terms of 8-bit bytes. Within the Lisp
-// system two bits of this need to end up being part of the type field of the
-// header while the rest goes into the "length-in-32-bit-words" part. The
-// adjustments here seem ugly and a real portability risk - but are the best I
-// can see to use right at present.
-        c = (TYPE_STRING1>>(Tw+2)) + (((w-1)&0x3) << 3);
-        w = (w + 3)/4;
-        goto bvecstring;
+
 // I had considered having a special opcode to deal with strings of length 0
 // or longer than 33, but in fact the general SER_BVECTOR code does just that
 // slighly more efficiently then I would otherwise manage. Observe that the
-// a SER_BVECTOR followed by 1 byte of length code copes with any vector needing
-// up to 127 words (ie 508 bytes) with just 2 bytes of control information.
+// a SER_BVECTOR followed by 1 byte of length code copes with any vector
+// needing up to 127 words (ie 508 bytes) with just 2 bytes of control
+// information.
+
     case SER_BVECTOR:
 // The general case for vectors containing binary information takes a suffix-
 // sequence showing how many 4-byte units follow. Observe that this means that
 // strings and vectors of 8 or 16-bit values have to be padded out to a 4-byte
 // boundary in the dump sequence.
-        c = c & 0x1f;
+        c = ((c & 0x1f) << 2) | 0x2;
         w = readPacked();
     bvecstring:
-// Here I have kept just the low 5 bits of the opcode c, and w is a length
-// expressed in words. The header I want for my vector will be
-//     wwwwwwww....wwww ccccc 01 g100
-        Create space
-        pbase = *p = ...
-        read w 4-byte units into the array just allocated
+// Here I have assembled 7 bits of ttype information in c. CCCCC comes from the
+// opcode and cc was implicit. The header I want for my vector will be
+//     wwwwwwww....wwww CCC CC cc g100
+        {   int type = (c << Tw) | TAG_HDR_IMMED,
+                tag = is_number_header_full_test(type) ? TAG_NUMBERS :
+                                                         TAG_VECTOR;
+            pbase = *p = getvector(tag, type, w);
+// Now I need to read data back into the array. There will always be
+// w units of 4 bytes each (because the length-code w counts in multiples
+// of 4 bytes). I want to read based on the width of data objects present
+// so as to be secure against moving between big and little-endian machines.
+// I will check for cases in roughly the order of frequency that I expect to
+// apply, with the last few cases probably really not common at all!
+            if (vector_i8(type))
+            {   char *x = (char *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
+// Bytes (and that includes UTF-8 encoded strings) are sent padded out to
+// a multiple of 4 bytes.
+                for (size_t i=0; i<(size_t)w; i++)
+                {   *x++ = nextByte();
+                    *x++ = nextByte();
+                    *x++ = nextByte();
+                    *x++ = nextByte();
+                }
+            }
+            else if (vector_i32(type))
+            {   uint32_t *x = (uint32_t *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
+// 32-bit integers are transmitted most significant byte first.
+                for (size_t i=0; i<(size_t)w; i++)
+                {   uint32_t q = nextByte() & 0xff;
+                    q = (q << 8) | (nextByte() & 0xff);
+                    q = (q << 8) | (nextByte() & 0xff);
+                    *x++ = (q << 8) | (nextByte() & 0xff);
+                }
+            }
+            else if (vector_f64(type))
+            {   double *x = (double *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
+                float64u u;
+// Every vector of doubles must have a length that is an even number of
+// 32-bit words.
+                for (size_t i=0; i<(size_t)w/2; i++)
+                {   for (int j=0; j<8; j++)
+                    {   int q = nextByte();
+                        int k;
+                        switch (current_fp_rep)
+                        {
+                        default:
+                        case 0:
+// Data is transmitted in an order that matches Intel... Note that the
+// writing code must convert to that if necessary.
+                            k = j;
+                            break;
+                        case FP_WORD_ORDER:
+                            k = j ^ 4;
+                            break;
+                        case FP_BYTE_ORDER:
+                            k = j ^ 3;
+                            break;
+                        case FP_WORD_ORDER|FP_BYTE_ORDER:
+                            k = j ^ 7;
+                            break;
+                        }
+                        u.i[k] = q;
+                    }
+                    *x++ = u.f;
+                }
+            }
+            else if (vector_i16(type))
+            {   uint16_t *x = (uint16_t *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
+// 16 bit values are transmitted more significant byte first, and even if
+// only an odd number are needed the transmitted data pads out so that in
+// all a multiple of 4 bytes gets sent.
+            for (size_t i=0; i<(size_t)w; i++)
+                {   uint32_t q = nextByte() & 0xff;
+                    *x++ = (q << 8) | (nextByte() & 0xff);
+                    q = nextByte() & 0xff;
+                    *x++ = (q << 8) | (nextByte() & 0xff);
+                }
+            }
+            else if (vector_i64(type))
+            {   uint64_t *x = (uint64_t *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
+// 64-bit integers are transmitted most significant byte first.
+                for (size_t i=0; i<(size_t)w/2; i++)
+                {   uint64_t q = nextByte() & 0xff;
+                    q = (q << 8) | (nextByte() & 0xff);
+                    q = (q << 8) | (nextByte() & 0xff);
+                    q = (q << 8) | (nextByte() & 0xff);
+                    q = (q << 8) | (nextByte() & 0xff);
+                    q = (q << 8) | (nextByte() & 0xff);
+                    q = (q << 8) | (nextByte() & 0xff);
+                    *x++ = (q << 8) | (nextByte() & 0xff);
+                }
+            }
+            else if (vector_f32(type))
+            {   float *x = (float *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
+                float32u u;
+                for (size_t i=0; i<(size_t)w; i++)
+                {   for (int j=0; j<4; j++)
+                    {   int q = nextByte();
+                        int k;
+                        switch (current_fp_rep)
+                        {
+                        default:
+                        case 0:
+                        case FP_WORD_ORDER:
+// Data is transmitted in an order that matches Intel... Note that the
+// writing code must convert to that if necessary.
+                            k = j;
+                            break;
+                        case FP_BYTE_ORDER:
+                        case FP_WORD_ORDER|FP_BYTE_ORDER:
+                            k = j ^ 3;
+                            break;
+                        }
+                        u.i[k] = q;
+                    }
+                    *x++ = u.f;
+                }
+            }
+            else if (vector_f128(type))
+            {   printf("128-bit integer arrays not supported (yet?)\n");
+                abort();
+            }
+            else if (vector_i128(type))
+            {   printf("128-bit floats not supported (yet?)\n");
+                abort();
+            }
+            else
+            {   printf("Vector code is impossible\n");
+                abort();
+            }
+        }
         goto up;
 
     case SER_SPARE:
@@ -957,6 +1224,18 @@ down:
             goto up;
         }
         mark_address_as_used(p - TAG_SYMBOL);
+// I have two modes if serialisation. One views symbols as "just other bits
+// of data" and descendes through them so that the contents of their value
+// cells, property lists and so on get inspected. That version is used
+// when creating a full heap image. The other stops when it finda a symbol,
+// and when writing data out just writes out its name (or somewhat more
+// subtle information if it is a gensym). On reading things back in in this
+// letter case the name as dumped is just looked up in the object list. This
+// way of doing things may be useful for preserving data on disc or sending
+// it to a separate process. It captures the information that "print" would
+// except that it also understands about structure sharing within the object
+// that is being written.
+        if (!descend_symbols) goto up;
         w = p;
         p = qpackage(p);
         qpackage(w) = b;
@@ -1102,7 +1381,8 @@ up:
 
 // Here is the second pass that writes out the data. While I develop this
 // I will arrange that the dumping code mostly prints out a human-readable
-// transcript of what there is...
+// transcript of what there is... That will not be useful for much more
+// the debugging!
 
 void write_byte(int byte, const char *msg, ...)
 {
@@ -1148,34 +1428,46 @@ void write_64(uint64_t n)
 }
 
 // The code here requires that repeat_hash has been created by a previous
-// use of scan_data.
+// use of scan_data. Every item that has multiple references to it will
+// be in there. The first time an object is visited then hash table entry
+// will exist but has zero in its data field.
 
 void write_data(LispObject p)
 {
     LispObject b = 0 + BACKPOINTER_CDR, w;
     uintptr_t len;
     Header h;
-    int i;
+    size_t i;
 down:
     if (p == 0) p = SPID_NIL; // reload as a SPID.
+    if ((i = check_repeat_hash(p)) != (size_t)(-1))
+    {   if (payload[i] != 0)
+        {   size_t n = find_index_in_repeats(i);
+            char msg[20];
+            sprintf(msg, "back %" PRIuPTR, (uintptr_t)n)
+            if (n <= 32) write_byte(SER_BACKREF0 + n - 1, msg);
+            else if (n <= 64) write_byte(SER_BACKREF0 + n - 33, msg);
+            else
+            {   write_byte(SER_BIGBACKREF, msg);
+                write_64(n);
+            }
+            goto up;
+        }
+// If this is the first visit to an item that will be repeated then I
+// need to record where it will live in the table of repeats.
+        find_index_in_repeats(i);
+    }
+    else is_repeat = false;
+// Here we will have i==-1 if the object is not going to be referenced again.    
     switch (p & TAG_BITS)
     {
     default:
     case TAG_CONS:
-        if ((i = check_repeat_hash(p)) != -1)
-        {   if (repeat_hash[i].index != 0)
-            {   int n = find_index_in_repeats
-                goto up;
-            }
-        }
-        write_byte(SER_CONS, "cons");
-        if (i == -1)
-        {   write_byte(SER_RECORD, "Record item that will be re-used");
-// This will see that this was the first visit to this item and insert
-// it into the repeat heap at the top.
-            find_index_in_repeats(i);
-        }
-        mark_address_as_used(p - TAG_CONS);
+// I have a separate opcode for a cons csll that is will have further
+// references to it bacause there was easy space in my opcode map for that.
+        if (i != (size_t)-1)
+            write_byte(SER_DUPCONS, "cons that will be re-used");
+        else write_byte(SER_CONS, "cons");
         w = p;
         p = qcar(p);
         qcar(w) = b;
@@ -1184,11 +1476,30 @@ down:
         goto down;
 
     case TAG_SYMBOL:
-        if (address_used(p - TAG_SYMBOL))
-        {   write_repeat(p);
+        if (!descend_symbols)
+        {   w = qpname(p);
+            char msg[32];
+            size_t n = length_of_byteheader(vechdr(w));
+            if (i != (size_t)-1)
+            {   sprintf(msg, "DUPSYMBOL (name %" PRIuPTR ")", (uintptr_t)n);
+                write_byte(SER_DUPSYMBOL, msg);
+            }
+            else
+            {   sprintf(msg, "SYMNOL (name %" PRIuPTR ")", (uintptr_t)n);
+                write_byte(SER_SYMBOL, msg);
+            }
+            else write_byte(SER_SYMBOL, "symbol");
+            write_64(n);
+            for (size_t i=0; i<n; i++)
+            {   int c = celt(w, i) & 0xff;
+                if (0x20 < c && c <= 0x7e) sprintf(msg, "'%c'", c);
+                else sprintf(nsg, "%#.2x", c)
+                write_byte(c, msg);
+            }
             goto up;
         }
-        write_byte(SER_SYMBOL, "symbol header");
+// I have not sorted out the bit that follows yet!
+        write_byte(SER_RAWSYMBOL, "symbol header");
 // Here I need to cope with the tagging bits and function cells, and
 // the count field... Each of these uses a variable length coding scheme that
 // will be 1 byte long in easy cases but can cope with 2^64 possibilities in
@@ -1343,6 +1654,23 @@ up:
         *(LispObject *)(b - BACKPOINTER_VECTOR) = w;
         goto down;
     }
+}
+
+static LispObject Lserialize(LispObject nil, LispObject a)
+{   descend_symbols = false;
+    init_writer_hash();
+    scan_data(a);
+    release_map();
+    init_writer_payload();
+    write_data(a);
+    release_writer_hash();
+    return onevalue(nil);
+}
+
+static LispObject Lunserialize(LispObject nil, int nargs)
+{
+// Not implemented yet!
+    return onevalue(nil);
 }
 
 #endif    //EXPERIMENT

@@ -1,4 +1,4 @@
-// tags.h                                 Copyright (C) Codemist 1990-2015
+// tags.h                                 Copyright (C) Codemist 1990-2016
 
 //
 //   Data-structure and tag bit definitions, also common C macros
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -468,7 +468,7 @@ typedef uintptr_t Header;
 // I will use a shift by Tw to cope with the width of g100 with
 // Tw=4 for now but potentially Tw=3 in the future
 
-#define Tw 4
+#define Tw (4)
 
 //
 // The zz bits are
@@ -595,38 +595,63 @@ typedef uintptr_t Header;
 
 //   yyy:yy 10 g100  bit-vector with yyyyy (1 to 32) bits in final word.
 
-//   000:00 11 g100  vec8-1
-//   000:01 11 g100  string-1  
-//   000:10 11 g100  bytecode-1
-//   000:11 11 g100  vec16-1  
-//   001:00 11 g100  vec32  
-//   001:01 11 g100  vec64
-//   001:10 11 g100  vec128
-//   001:11 11 g100  bignum            *
-//   010:00 11 g100  vec8-2
-//   010:01 11 g100  string-2
-//   010:10 11 g100  bytecode-2
-//   010:11 11 g100  maple-ref
-//   011:00 11 g100  foreign
-//   011:01 11 g100  encapsulated-sp
-//   011:10 11 g100  encapsulated general pointer
-//   011:11 11 g100  float32           *
-//   100:00 11 g100  vec8-2
-//   100:01 11 g100  string-3
-//   100:10 11 g100  bytecode-3
-//   100:11 11 g100  vec16-2
-//   101:00 11 g100  vecflt32
-//   101:01 11 g100  vecflt64
-//   101:10 11 g100  vecflt128
-//   101:11 11 g100  float64           *
-//   110:00 11 g100  vec8-3
-//   110:01 11 g100  string-4
-//   110:10 11 g100  bytecode-4
-//   110:11 11 g100  nativecode
-//   111:00 11 g100  (spare: 1 code)
-//   111:01 11 g100  (spare: 1 code)
-//   111:10 11 g100  (spare: 1 code)
-//   111:11 11 g100  float128          *
+// The final column here explains what size units of storage fit within
+// the object. For (eg) "encapsulated general pointer" I have made it
+// 64 and I should pad 32-bit cases to that width - but I do not expect
+// those sorts of data to survice serialization, so I annotate them here
+// as "64?".
+
+//   000:00 11 g100  vec8-1                         8
+//   000:01 11 g100  string-1                       8
+//   000:10 11 g100  bytecode-1                     8
+//   000:11 11 g100  vec16-1                        16
+//   001:00 11 g100  vec32                          32
+//   001:01 11 g100  vec64                          64
+//   001:10 11 g100  vec128                         128
+//   001:11 11 g100  bignum            *            32
+//   010:00 11 g100  vec8-2                         8
+//   010:01 11 g100  string-2                       8
+//   010:10 11 g100  bytecode-2                     8
+//   010:11 11 g100  maple-ref                      64?
+//   011:00 11 g100  foreign                        64?
+//   011:01 11 g100  encapsulated-sp                64?
+//   011:10 11 g100  encapsulated general pointer   64?
+//   011:11 11 g100  float32           *            F32
+//   100:00 11 g100  vec8-2                         8
+//   100:01 11 g100  string-3                       8
+//   100:10 11 g100  bytecode-3                     8
+//   100:11 11 g100  vec16-2                        16
+//   101:00 11 g100  vecflt32                       F32
+//   101:01 11 g100  vecflt64                       F64
+//   101:10 11 g100  vecflt128                      F128
+//   101:11 11 g100  float64           *            F64
+//   110:00 11 g100  vec8-3                         8
+//   110:01 11 g100  string-4                       8
+//   110:10 11 g100  bytecode-4                     8
+//   110:11 11 g100  nativecode                     8
+//   111:00 11 g100  (spare: 1 code)                X
+//   111:01 11 g100  (spare: 1 code)                X
+//   111:10 11 g100  (spare: 1 code)                X
+//   111:11 11 g100  float128          *            F128
+
+// I have tests that let me discern the size of storage units within a
+// vector. This matters for serialisation and deserialisation because the
+// source and target machines may use different ordering for bytes within
+// words etc.
+
+// I use a bitmap scheme for all of these because that gives me uniformity
+// and because I do not believe that special treatment of any of the
+// case would do much better. I expect that strings and bignums will be
+// the most common cases.
+
+#define vector_i8(h)   (((0x7f070707u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0)
+#define vector_i16(h)  (((0x00080008u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0)
+#define vector_i32(h)  (((0x00000090u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0)
+#define vector_i64(h)  (((0x00007820u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0)
+#define vector_i128(h) (((0x00000040u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0)
+#define vector_f32(h)  (((0x00108000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0)
+#define vector_f64(h)  (((0x00a00000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0)
+#define vector_f128(h) (((0x80400000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0)
 
 // I have made the allocation so that any header of the form xx1:11x1:g100
 // is the header of a number.
@@ -753,7 +778,7 @@ typedef uintptr_t Header;
     (2*CELL-TAG_VECTOR)+(((intptr_t)(n))*sizeof(double))))
 
 //
-// Bit, byte and hanfword-vectors need extra information held here so that
+// Bit, byte and halfword-vectors need extra information held here so that
 // their exact can be determined.  Generally headers hold length information
 // measured in words, so a few more bits are required here.
 // Bitvectors will now supported even in Standard Lisp mode.
@@ -792,10 +817,10 @@ typedef uintptr_t Header;
 #define TYPE_BITVEC_31    ( 0x7a <<Tw)  //
 #define TYPE_BITVEC_32    ( 0x7c <<Tw)  //
 
-// A string is not really a vector of characters since i8t is in utf-8 so
+// A string is not really a vector of characters since it is in utf-8 so
 // access to the nth characters or updating characters within it is
 // hard. You should use a vector of 32-bit codepoints if you want
-// a genuine vector of characters, but then that will not be a string.
+// a genuine vector of characters, but then you will not have a string!
 
 #define TYPE_STRING_1    ( 0x07 <<Tw) // simple (narrow) character vector
 #define TYPE_STRING_2    ( 0x27 <<Tw) // Strings are in UTF8
