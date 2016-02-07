@@ -431,19 +431,21 @@ typedef LispObject Special_Form(LispObject, LispObject);
 
 // The original CSL uses entries for 1, 2 and n arguments, where the general
 // case has an argument count and uses va_args.
-// A newer schheme will have entries for 0, 1, 2, 3 and more than that. For
+// A newer scheme will have entries for 0, 1, 2, 3 and more than that. For
 // 4 or more arguments a count is passed. For exactly four arguments the
-// final argument is passed directly. For the 5 up case arguments 4, 5, ...
+// final argument is passed directly.
+//   (F 4 a1 a2 a3 a4)
+// For the 5 up case arguments 4, 5, ...
 // are passed as a list much as if the call had been
-//   (F a1 a2 a3 (list a4 a5 a6 ...))
+//   (F n a1 a2 a3 (list a4 a5 a6 ... an))
 
 typedef LispObject no_args(LispObject);
 typedef LispObject one_args(LispObject, LispObject);
 typedef LispObject two_args(LispObject, LispObject, LispObject);
-typedef LispObject three_args(LispObject, LispObject, LispObject);
+typedef LispObject three_args(LispObject, LispObject, LispObject, LispObject);
 typedef LispObject n_args(LispObject, int, ...);
-typedef LispObject four_args(LispObject, size_t, LispObject, LispObject, LispObject);
-typedef LispObject fiveup_args(LispObject, size_t, LispObject, LispObject, LispObject);
+typedef LispObject four_args(LispObject, size_t, LispObject, LispObject,
+                                                 LispObject, LispObject);
 
 //
 // Headers are also LispObjects, but I give them a separate typedef
@@ -1366,40 +1368,33 @@ typedef struct Symbol_Head
 // macro) to stress that I view the store layout as fixed, and because
 // offsetof is badly supported by some C compilers I have come across.
 //
-#define qheader(p)     (*(Header *)    ((char *)(p) - TAG_SYMBOL))
-#define qvalue(p)      (*(LispObject *)((char *)(p) + (CELL - TAG_SYMBOL)))
-#define qenv(p)        (*(LispObject *)((char *)(p) + (2*CELL - TAG_SYMBOL)))
-#define qpname(p)      (*(LispObject *)((char *)(p) + (3*CELL-TAG_SYMBOL)))
-#define qplist(p)      (*(LispObject *)((char *)(p) + (4*CELL-TAG_SYMBOL)))
-#define qfastgets(p)   (*(LispObject *)((char *)(p) + (5*CELL-TAG_SYMBOL)))
-#define qpackage(p)    (*(LispObject *)((char *)(p) + (6*CELL-TAG_SYMBOL)))
-#define qfn0(p)        ((no_args *) *((intptr_t *)((char *)(p) + \
-                                         (7*CELL - TAG_SYMBOL))))
-#define qfn1(p)        ((one_args *) *((intptr_t *)((char *)(p) + \
-                                         (8*CELL - TAG_SYMBOL))))
-#define qfn2(p)        ((two_args *) *((intptr_t *)((char *)(p) + \
-                                         (9*CELL - TAG_SYMBOL))))
-#define qfn3(p)        ((three_args *)*((intptr_t *)((char *)(p) + \
-                                         (10*CELL - TAG_SYMBOL))))
-#define qfnn(p)        ((n_args *)   *((intptr_t *)((char *)(p) + \
-                                         (11*CELL - TAG_SYMBOL))))
-#define qfn4(p)        ((four_args *)*((intptr_t *)((char *)(p) + \
-                                         (11*CELL - TAG_SYMBOL))))
-#define qfn5up(p)      ((fiveup_args *)*((intptr_t *)((char *)(p) + \
-                                         (11*CELL - TAG_SYMBOL))))
-//
+#define qheader(p)     (*(Header      *)((char *)(p) + (0*CELL-TAG_SYMBOL)))
+#define qvalue(p)      (*(LispObject  *)((char *)(p) + (1*CELL-TAG_SYMBOL)))
+#define qenv(p)        (*(LispObject  *)((char *)(p) + (2*CELL-TAG_SYMBOL)))
+#define qpname(p)      (*(LispObject  *)((char *)(p) + (3*CELL-TAG_SYMBOL)))
+#define qplist(p)      (*(LispObject  *)((char *)(p) + (4*CELL-TAG_SYMBOL)))
+#define qfastgets(p)   (*(LispObject  *)((char *)(p) + (5*CELL-TAG_SYMBOL)))
+#define qpackage(p)    (*(LispObject  *)((char *)(p) + (6*CELL-TAG_SYMBOL)))
+
 // The ifn() selector gives access to the qfn() cell, but treating its
 // contents as (intptr_t).
 //
-#define ifn0(p)        (*(intptr_t *)((char *)(p) + (7*CELL-TAG_SYMBOL)))
-#define ifn1(p)        (*(intptr_t *)((char *)(p) + (8*CELL-TAG_SYMBOL)))
-#define ifn2(p)        (*(intptr_t *)((char *)(p) + (9*CELL-TAG_SYMBOL)))
-#define ifn3(p)        (*(intptr_t *)((char *)(p) + (10*CELL-TAG_SYMBOL)))
-#define ifnn(p)        (*(intptr_t *)((char *)(p) + (11*CELL-TAG_SYMBOL)))
-#define ifn4(p)        (*(intptr_t *)((char *)(p) + (11*CELL-TAG_SYMBOL)))
-#define ifn5up(p)      (*(intptr_t *)((char *)(p) + (11*CELL-TAG_SYMBOL)))
+#define ifn0(p)        (*(intptr_t    *)((char *)(p) + (7*CELL-TAG_SYMBOL)))
+#define ifn1(p)        (*(intptr_t    *)((char *)(p) + (8*CELL-TAG_SYMBOL)))
+#define ifn2(p)        (*(intptr_t    *)((char *)(p) + (9*CELL-TAG_SYMBOL)))
+#define ifn3(p)        (*(intptr_t    *)((char *)(p) + (10*CELL-TAG_SYMBOL)))
+#define ifnn(p)        (*(intptr_t    *)((char *)(p) + (11*CELL-TAG_SYMBOL)))
+#define ifn4(p)        (*(intptr_t    *)((char *)(p) + (11*CELL-TAG_SYMBOL)))
 
-#define qcount(p)      (*(uint64_t *)((char *)(p) + (12*CELL-TAG_SYMBOL)))
+
+#define qfn0(p)        (*(no_args    **)((char *)(p) + (7*CELL-TAG_SYMBOL)))
+#define qfn1(p)        (*(one_args   **)((char *)(p) + (8*CELL-TAG_SYMBOL)))
+#define qfn2(p)        (*(two_args   **)((char *)(p) + (9*CELL-TAG_SYMBOL)))
+#define qfn3(p)        (*(three_args **)((char *)(p) + (10*CELL-TAG_SYMBOL)))
+#define qfnn(p)        (*(n_args     **)((char *)(p) + (11*CELL-TAG_SYMBOL)))
+#define qfn4(p)        (*(four_args  **)((char *)(p) + (11*CELL-TAG_SYMBOL)))
+
+#define qcount(p)      (*(uint64_t    *)((char *)(p) + (12*CELL-TAG_SYMBOL)))
 
 typedef union Float_union
 {   float f;

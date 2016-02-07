@@ -437,11 +437,11 @@ void writer_setup_repeats(size_t n)
 // being in the range 1..64.
 // NOTE that index value zero is not used.
 
-LispObject reader_repeat_old(int n)
+LispObject reader_repeat_old(size_t n)
 {
     if (n <= 64) return repeat_heap[n];
     for (;;)
-    {   int n2 = n/2;           // parent in binary heap
+    {   size_t n2 = n/2;           // parent in binary heap
         LispObject w = repeat_heap[n];
         repeat_heap[n] = repeat_heap[n2];
         repeat_heap[n2] = w;
@@ -490,7 +490,7 @@ size_t find_index_in_repeats(size_t h)
     if (n <= 64) return n;
     h = n;
     for (;;)
-    {   int n2 = n/2;           // parent in binary heap
+    {   size_t n2 = n/2;           // parent in binary heap
         LispObject w = repeat_heap[n];
         repeat_heap[n] = repeat_heap[n2];
         payload[repeat_heap[n2]] = n;
@@ -975,7 +975,7 @@ up:
 // The remaining cases are when b points to a vector. I use the stack
 // s to track how far along it I am, and need to do special things when
 // I am almost complete
-    n = qcar(s) - 1;  // so to speak! qcar(s) will be tagged data!
+    intptr_t n = int_of_fixnum(qcar(s)) - 1;
     if (n == 0)
     {   w = b;
         pbase = w;
@@ -986,7 +986,7 @@ up:
         s = qcdr(s);
         goto down;
     }
-    qcar(s) = n; // write back decreased index
+    qcar(s) = fixnum_of_int(n); // write back decreased index
     pbase = b;
     p = &elt(b, n);
     goto down;
@@ -1427,6 +1427,11 @@ void write_64(uint64_t n)
     else write_byte(n & 0xff, "least significant 8 bits");
 }
 
+uintptr_t code_up_codepointer(void *p)
+{
+    return 0; // for now
+}
+
 // The code here requires that repeat_hash has been created by a previous
 // use of scan_data. Every item that has multiple references to it will
 // be in there. The first time an object is visited then hash table entry
@@ -1444,7 +1449,7 @@ down:
     {   if (payload[i] != 0)
         {   size_t n = find_index_in_repeats(i);
             char msg[20];
-            sprintf(msg, "back %" PRIuPTR, (uintptr_t)n)
+            sprintf(msg, "back %" PRIuPTR, (uintptr_t)n);
             if (n <= 32) write_byte(SER_BACKREF0 + n - 1, msg);
             else if (n <= 64) write_byte(SER_BACKREF0 + n - 33, msg);
             else
@@ -1457,11 +1462,11 @@ down:
 // need to record where it will live in the table of repeats.
         find_index_in_repeats(i);
     }
-    else is_repeat = false;
 // Here we will have i==-1 if the object is not going to be referenced again.    
     switch (p & TAG_BITS)
     {
     default:
+
     case TAG_CONS:
 // I have a separate opcode for a cons csll that is will have further
 // references to it bacause there was easy space in my opcode map for that.
@@ -1485,15 +1490,15 @@ down:
                 write_byte(SER_DUPSYMBOL, msg);
             }
             else
-            {   sprintf(msg, "SYMNOL (name %" PRIuPTR ")", (uintptr_t)n);
+            {   sprintf(msg, "SYMBOL (name %" PRIuPTR ")", (uintptr_t)n);
                 write_byte(SER_SYMBOL, msg);
             }
-            else write_byte(SER_SYMBOL, "symbol");
             write_64(n);
             for (size_t i=0; i<n; i++)
             {   int c = celt(w, i) & 0xff;
+                char msg[8];
                 if (0x20 < c && c <= 0x7e) sprintf(msg, "'%c'", c);
-                else sprintf(nsg, "%#.2x", c)
+                else sprintf(msg, "%#.2x", c);
                 write_byte(c, msg);
             }
             goto up;
@@ -1505,10 +1510,12 @@ down:
 // will be 1 byte long in easy cases but can cope with 2^64 possibilities in
 // all if necessary.
         write_64((uint64_t)qheader(p)>>(Tw+4));
-        for (i=0; i<=4; i++)
-            write_64(code_up_codepointer(*(void **)&qfn0(p)[i]));
+        write_64(code_up_codepointer((void *)(qfn0(p))));
+        write_64(code_up_codepointer((void *)(qfn1(p))));
+        write_64(code_up_codepointer((void *)(qfn2(p))));
+        write_64(code_up_codepointer((void *)(qfn3(p))));
+        write_64(code_up_codepointer((void *)(qfn4(p))));
         write_64(qcount(p));
-        mark_address_as_used(p - TAG_SYMBOL);
         w = p;
         p = qpackage(p);
         qpackage(w) = b;
@@ -1516,18 +1523,17 @@ down:
         goto down;
 
     case TAG_VECTOR:
-        if (address_used(p - TAG_VECTOR))
-        {   write_repeat(p);
-            goto up;
-        }
-        (*first_visit)(p);
-        mark_address_as_used(p - TAG_VECTOR);
 // Some vectors hold binary, some lists and a few have a small number of
 // lists in their first few cells and binary data beyond that. It is
 // necessary to decode the header to see which case applies. The same
 // issue will arise for (boxed) numbers.
         h = vechdr(p);
-        if (vector_holds_binary(h)) goto up;
+        if (vector_holds_binary(h)) goto dumpbinvec;
+        write_byte(SER_LVECTOR | ((h>>(Tw+2)) & 0x1f), "binary vector");
+        write_64(length_of_header(h));
+        if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly referenced vector");
+// Now now the data beyond the 3 list-holding items in a MIXED structure
+// will not be dumped. I may need to review that later on.
         if (is_mixed_header(h)) len = 4*CELL;
         else len = length_of_header(h);
 // len in the length in bytes including the size of the header. For "mixed"
@@ -1539,13 +1545,136 @@ down:
         b = w + BACKPOINTER_VECTOR;
         goto down;
 
-    case TAG_NUMBERS:
-        if (address_used(p - TAG_NUMBERS))
-        {   write_repeat(p);
-            goto up;
+    dumpbinvec:
+// I need to separate off bitvectors and short strings here.
+        write_byte(SER_BVECTOR | ((h>>(Tw+2)) & 0x1f), "binary vector");
+        write_64(length_of_header(h));
+        if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
+// The code that follows must match up with the code that reads vectors
+// back in. It has to convert data to a portable form that is agnostic
+// to little vs. big-endian architectures.
+//
+        if (vector_i8(h))
+        {   char *x = (char *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
+// Bytes (and that includes UTF-8 encoded strings) are sent padded out to
+// a multiple of 4 bytes.
+        for (size_t i=0; i<(size_t)w; i++)
+            {   write_byte(*x++, "");
+                write_byte(*x++, "");
+                write_byte(*x++, "");
+                write_byte(*x++, "");
+            }
         }
-        (*first_visit)(p);
-        mark_address_as_used(p - TAG_NUMBERS);
+        else if (vector_i32(h))
+        {   uint32_t *x = (uint32_t *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
+// 32-bit integers are transmitted most significant byte first.
+            for (size_t i=0; i<(size_t)w; i++)
+            {   uint32_t q = *x++;
+                write_byte((q>>24) & 0xff, "high byte");
+                write_byte((q>>16) & 0xff, "");
+                write_byte((q>>8) & 0xff, "");
+                write_byte(q & 0xff, "low byte");
+            }
+        }
+        else if (vector_f64(h))
+        {   double *x = (double *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
+            float64u u;
+// Every vector of doubles must have a length that is an even number of
+// 32-bit words.
+            for (size_t i=0; i<(size_t)w/2; i++)
+            {   u.f = *x++;
+                for (int j=0; j<8; j++)
+                {   int k;
+                    switch (current_fp_rep)
+                    {
+                    default:
+                    case 0:
+                        k = j;
+                        break;
+                    case FP_WORD_ORDER:
+                        k = j ^ 4;
+                        break;
+                    case FP_BYTE_ORDER:
+                        k = j ^ 3;
+                        break;
+                    case FP_WORD_ORDER|FP_BYTE_ORDER:
+                        k = j ^ 7;
+                        break;
+                    }
+                    write_byte(u.i[k], "");
+                }
+            }
+        }
+        else if (vector_i16(h))
+        {   uint16_t *x = (uint16_t *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
+// 16 bit values are transmitted more significant byte first, and even if
+// only an odd number are needed the transmitted data pads out so that in
+// all a multiple of 4 bytes gets sent.
+        for (size_t i=0; i<(size_t)w; i++)
+            {   uint32_t q = *x++;
+                write_byte((q>>8) & 0xff, "high byte");
+                write_byte(q & 0xff, "low byte");
+                q = *x++;;
+                write_byte((q>>8) & 0xff, "high byte");
+                write_byte(q & 0xff, "low byte");
+            }
+        }
+        else if (vector_i64(h))
+        {   uint64_t *x = (uint64_t *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
+// 64-bit integers are transmitted most significant byte first.
+            for (size_t i=0; i<(size_t)w/2; i++)
+            {   uint64_t q = *x++;
+                write_byte((q>>56) & 0xff, "high byte");
+                write_byte((q>>48) & 0xff, "");
+                write_byte((q>>40) & 0xff, "");
+                write_byte((q>>32) & 0xff, "");
+                write_byte((q>>24) & 0xff, "");
+                write_byte((q>>16) & 0xff, "");
+                write_byte((q>>8) & 0xff, "");
+                write_byte(q & 0xff, "low byte");
+            }
+        }
+        else if (vector_f32(h))
+        {   float *x = (float *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
+            float32u u;
+            for (size_t i=0; i<(size_t)w; i++)
+            {   u.f = *x++;
+                for (int j=0; j<8; j++)
+                {   int k;
+                    switch (current_fp_rep)
+                    {
+                    default:
+                    case 0:
+                    case FP_WORD_ORDER:
+                        k = j;
+                        break;
+                    case FP_BYTE_ORDER:
+                    case FP_WORD_ORDER|FP_BYTE_ORDER:
+                        k = j ^ 3;
+                        break;
+                    }
+                    write_byte(u.i[k], "");
+                }
+            }
+        }
+        else if (vector_f128(h))
+        {   printf("128-bit integer arrays not supported (yet?)\n");
+            abort();
+        }
+        else if (vector_i128(h))
+        {   printf("128-bit floats not supported (yet?)\n");
+            abort();
+        }
+        else
+        {   printf("Vector code is impossible\n");
+            abort();
+        }
+
+
+
+        goto up;
+
+    case TAG_NUMBERS:
         h = numhdr(p);
         if (vector_holds_binary(h)) goto up;
         len = length_of_header(h);
@@ -1556,12 +1685,6 @@ down:
         goto down;
 
     case TAG_BOXFLOAT:
-        if (address_used(p - TAG_BOXFLOAT))
-        {   write_repeat(p);
-            goto up;
-        }
-        (*first_visit)(p);
-        mark_address_as_used(p - TAG_BOXFLOAT);
 // A boxed float never contains further pointers, so there is no more
 // to do here.
         goto up;
@@ -1570,7 +1693,7 @@ down:
     case TAG_HDR_IMMED:
 // Immediate data (eg small integers, characters) will always be treated
 // as if this is the first visit.
-        (*first_visit)(p);
+
         goto up;
 
     case TAG_FORWARD:
@@ -1656,7 +1779,7 @@ up:
     }
 }
 
-static LispObject Lserialize(LispObject nil, LispObject a)
+LispObject Lserialize(LispObject nil, LispObject a)
 {   descend_symbols = false;
     init_writer_hash();
     scan_data(a);
@@ -1667,7 +1790,7 @@ static LispObject Lserialize(LispObject nil, LispObject a)
     return onevalue(nil);
 }
 
-static LispObject Lunserialize(LispObject nil, int nargs)
+LispObject Lunserialize(LispObject nil, int nargs, ...)
 {
 // Not implemented yet!
     return onevalue(nil);
