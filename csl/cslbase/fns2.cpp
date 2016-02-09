@@ -4620,6 +4620,7 @@ setup_type const funcs2_setup[] =
 #endif
 #ifdef EXPERIMENT
     {"serialize",               Lserialize, too_many_1, wrong_no_1},
+    {"unserialize",             wrong_no_0a, wrong_no_0b, Lunserialize},
 #endif
     {NULL,                      0, 0, 0}
 };

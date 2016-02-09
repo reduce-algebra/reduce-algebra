@@ -101,14 +101,15 @@ static bool descend_symbols = true;
 #define   SER_FLOAT32      0x0a    // single float
 #define   SER_FLOAT64      0x0b    // double float
 #define   SER_FLOAT128     0x0c    // long float
-#define   SER_CHAR         0x0d    // character object
-#define   SER_SPID         0x0e    // "special identifier"
-#define   SER_CONS         0x0f    // cons cell
-#define   SER_DUPCONS      0x10    // cons cell that is referred to multiple times
-#define   SER_DUP          0x11    // used with items that have multiple references
-#define   SER_BITVEC       0x12    // bit-vector
+#define   SER_CHARSPID     0x0d    // character object, "special identifier" etc
+#define   SER_CONS         0x0e    // cons cell
+#define   SER_DUPCONS      0x0f    // cons cell that is referred to multiple times
+#define   SER_DUP          0x10    // used with items that have multiple references
+#define   SER_BITVEC       0x11    // bit-vector
 
 // The ones from here on have not yet been allocated
+
+#define   SER_XXX12        0x12
 #define   SER_XXX13        0x13
 #define   SER_XXX14        0x14
 #define   SER_XXX15        0x15
@@ -502,20 +503,22 @@ size_t find_index_in_repeats(size_t h)
 }
 
 
-static uint8_t sample[] =
-{
-// This sequence should represent (1 . -2)
-    1,                          // size of shared reference heap
-    SER_CONS,                   // a cons cell
-    SER_FIXNUM + 1,             // 1
-    SER_FIXNUM + ((-2) & 0x1f)  // -2
-};
+// For testing I will put serialized data into a buffer...
 
-static uint8_t *samplep = &sample[0];
+#define SERSIZE 10000
+int sercounter = 0;
+int serincount = 0;
+unsigned char serbuffer[SERSIZE];
+
 
 int nextByte()
 {
-    return *samplep++;
+    if (serincount > sercounter)
+    {   printf("\nRead too much\n");
+        abort();
+    }
+    printf("Input byte %.2x\n", serbuffer[serincount]);
+    return serbuffer[serincount++];
 }
 
 
@@ -556,6 +559,11 @@ typedef union _float64u
 {   char i[8];
     double f;
 } float64u;
+
+// At present I am not supporting long doubles. There are multiple issues,
+// including a strong lack of consistency and compatibility across machines,
+// and pain trying to provide portable and fully accurate elementary
+// functions.
 
 typedef union _float128u
 {   char i[16];
@@ -628,19 +636,22 @@ down:
         goto down;
 
     case SER_POSFIXNUM:
-// This case really needs to read the 64-bit value and construct either a fixnum
-// or a boxnum as relevant. If it creates a boxnum then that could possibly be
-// a shared object, and against the possibility of that I set pbase so that a
-// SER_DUP opcode can behave meaningfully.
+// This case really needs to read the 64-bit value and construct either a
+// fixnum or a boxnum as relevant. If it creates a boxnum then that could
+// possibly be a shared object, and against the possibility of that I set
+// pbase so that a SER_DUP opcode can behave meaningfully.
+// @@@ At present I only ever re-create a fixnum.
         pbase = *p = fixnum_of_int(readPacked());
         goto up;
 
     case SER_NEGFIXNUM:
-// Negative (small to medium-sized) integers are given a separate code here beause
-// packing then using sign-and-magnitude seems easier. The extra "-1" here is both
-// to avoid having the duplicated case of +0 and -0 and to arrange that the set of
-// values that pack into a given number of bytes matches 2s complement. Eg with just
-// 1 following byte the range goes from -128 to +127 (rather than -127 to +127).
+// Negative (small to medium-sized) integers are given a separate code here
+// beause packing then using sign-and-magnitude seems easier. The extra "-1"
+// here is both to avoid having the duplicated case of +0 and -0 and to
+// arrange that the set of values that pack into a given number of bytes
+// matches 2s complement. Eg with just 1 following byte the range goes from
+// -128 to +127 (rather than -127 to +127).
+// @@@ At present I only ever re-create a fixnum.
         pbase = *p = fixnum_of_int(-1-readPacked());
         goto up;
 
@@ -679,7 +690,7 @@ down:
         abort();
 
     case SER_FLOAT32:
-// a 32-bit sungle float
+// a 32-bit single float
         printf("SER_FLOAT32 not coded yet\n");
         abort();
 
@@ -695,16 +706,16 @@ down:
         printf("SER_FLOAT128 not coded yet\n");
         abort();
 
-    case SER_CHAR:
+    case SER_CHARSPID:
 // a packed characters literal. Characters that are Basic Latin can be coded
 // here with just 2 bytes, so for instance 'A' is SER_CHAR/0x41. Codes up to
 // U+3fff come in 3 bytes and so on. Note that the encoding is NOT utf8 - it is
-// the variable length encoding
-        printf("SER_CHAR not coded yet\n");
-        abort();
-
-    case SER_SPID:
-        printf("SER_SPID not coded yet\n");
+// the variable length encoding.
+// SPIDs are alse encoded here. In each case they are with the low bits
+// shown here and I just send the rest of the data as a raw number. Note
+// that bytecode handles can be dealt with here if I understand them -
+// which for now I do not!
+        pbase = *p = ((LispObject)readPacked()<<(Tw+2)) | TAG_HDR_IMMED;
         abort();
 
     case SER_BITVEC:
@@ -717,18 +728,17 @@ down:
 // String will be very much like BVECTOR except that because I expect it to be an
 // espcially important case I pack a length code into the 5-bit field of the
 // opcode byte and the type information is implicit. This code only copes
-// with strings with length 1-32.
+// with strings with length 1-32. The associated data is JUST the bytes
+// making up the string, not any padding needed at the end.
         w = (c & 0x1f) + 1;
-// The variable w holds the length in terms of 8-bit bytes. Within the Lisp
-// system two bits of this need to end up being part of the type field of the
-// header while the rest goes into the "length-in-32-bit-words" part. The
-// adjustments here seem ugly and a real portability risk - but are the best I
-// can see to use right at present.
-        c = (TYPE_STRING_1>>(Tw+2)) + (((w-1)&0x3) << 3);
-        c = (c << 2) | 0x2;
-        w = (w + 3)/4;
-        goto bvecstring;
+        pbase = *p = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+w);
+        {   char *x = &celt(pbase, 0);
+            for (size_t i=0; i<(size_t)w; i++) *x++ = nextByte();
+            while (((int)x & 7) != 0) *x++ = 0;
+        }
+        goto up;
 
+    case SER_XXX12:
     case SER_XXX13:
     case SER_XXX14:
     case SER_XXX15:
@@ -779,11 +789,23 @@ down:
         {   int type = ((c & 0x1f) << (Tw + 2)) | (0x01 << Tw) | TAG_HDR_IMMED,
                 tag = is_number_header_full_test(type) ? TAG_NUMBERS :
                                                          TAG_VECTOR;
+// The size here will be the number of Lisp items held in the vector, so
+// what I need to pass to getvector scales that into bytes and allows for the
+// header word as well.
             size_t n = readPacked();
-            w = *p = getvector(tag, type, n);
-// vectors chain through the first entry. If a vector was empty so it did not
+            w = *p = getvector(tag, type, CELL*(n+1));
+// Note that the "vector" just created may be tagged with TAG_NUMBERS
+// rather than TAG_VECTOR 
+            if (!SIXTY_FOUR_BIT && ((n & 1) != 0))
+                *((LispObject *)(4*n+4+((uintptr_t)w)-tag)) = fixnum_of_int(0);
+// In case there is a GC before I have finished filling in proper values
+// in the vector I will out in values that are at least safe.
+            for (size_t i=2; i<n; i++)
+                *((LispObject *)(CELL*i+((uintptr_t)w)-tag)) =
+                    fixnum_of_int(0);
+// Vectors chain through the first entry. If a vector was empty so it did not
 // have a first entry to use here it would have needed to be dumped as a LEAF.
-            elt(w, 0) = b;
+            *((LispObject *)(CELL+((uintptr_t)w)-tag)) = b;
             b = w;
             s = cons(fixnum_of_int(n), s);
             pbase = b;
@@ -812,25 +834,20 @@ down:
 
     case SER_BVECTOR:
 // The general case for vectors containing binary information takes a suffix-
-// sequence showing how many 4-byte units follow. Observe that this means that
-// strings and vectors of 8 or 16-bit values have to be padded out to a 4-byte
-// boundary in the dump sequence.
-        c = ((c & 0x1f) << 2) | 0x2;
-        w = readPacked();
-    bvecstring:
-// Here I have assembled 7 bits of ttype information in c. CCCCC comes from the
-// opcode and cc was implicit. The header I want for my vector will be
-//     wwwwwwww....wwww CCC CC cc g100
-        {   int type = (c << Tw) | TAG_HDR_IMMED,
+// sequence showing how many 4-byte units follow. In the case of bit, byte and
+// halfword vectors the tag bits contain information to show how much
+// of the very last word will be in use. That has to be extracted so I know
+// just how much to read. The length code that follows the SER_BVECTOR
+// opcode measures in units of 4-byte words.
+        w = 4*readPacked();
+// Here I have assembled 7 bits of type information in c. CCCCC comes from the
+// opcode. The header I want for my vector will be
+//     wwwwwwww....wwww CCC CC 10 g100
+        {   int type = ((c & 0x1f)<<(Tw+2)) | (0x2<<Tw) | TAG_HDR_IMMED,
                 tag = is_number_header_full_test(type) ? TAG_NUMBERS :
                                                          TAG_VECTOR;
-            pbase = *p = getvector(tag, type, w);
-// Now I need to read data back into the array. There will always be
-// w units of 4 bytes each (because the length-code w counts in multiples
-// of 4 bytes). I want to read based on the width of data objects present
-// so as to be secure against moving between big and little-endian machines.
-// I will check for cases in roughly the order of frequency that I expect to
-// apply, with the last few cases probably really not common at all!
+            pbase = *p = getvector(tag, type, CELL+w);
+
             if (vector_i8(type))
             {   char *x = (char *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
 // Bytes (and that includes UTF-8 encoded strings) are sent padded out to
@@ -1387,23 +1404,12 @@ up:
 void write_byte(int byte, const char *msg, ...)
 {
     va_list a;
-    printf("%.2x: ", byte);
+    if (sercounter < SERSIZE) serbuffer[sercounter++] = byte;
+    printf("%.2x: ", byte & 0xff);
     va_start(a, msg);
     vprintf(msg, a);
     printf("\n");
     va_end(a);
-}
-
-// write_64 needs to be compatible with readPacked.
-
-void write_64_sub(uint64_t n)
-{
-    if (n <= 0x7f)
-    {   write_byte((int)n, "7 bits unsigned value");
-        return;
-    }
-    write_64_sub(n>>7);
-    write_byte((int)n & 0x7f, "low 7 bits");
 }
 
 // Write a 64-bit unsigned value in a format compatible with readPacked()
@@ -1411,8 +1417,10 @@ void write_64_sub(uint64_t n)
 void write_64(uint64_t n)
 {
     int i, any=0, final = 7;
+    char msg[32];
     if (n == (n & 0x7f))
-    {   write_byte(n | 0x80, "7 bit integer");
+    {   sprintf(msg, "%#.2x = %d", (int)n, (int)n);
+        write_byte(n | 0x80, msg);
         return;
     }
     if ((n & UINT64_C(0xff000000000000)) != 0) final = 8;
@@ -1420,11 +1428,18 @@ void write_64(uint64_t n)
     {   int b = (n >> (7*i+final)) & 0x7f;
         if (any || (b != 0))
         {   any = 1;
-            write_byte(b, "7 bits of a big value");
+            sprintf(msg, "%#" PRIx64, ((uint64_t)b) << (7*i+final));
+            write_byte(b, msg);
         }
     }
-    if (final == 7) write_byte(0x80 | (n & 0x7f), "least significant 7 bits");
-    else write_byte(n & 0xff, "least significant 8 bits");
+    if (final == 7)
+    {   sprintf(msg, "%#.2x = %" PRIu64, (int)n & 0x7f, n);
+        write_byte(0x80 | (n & 0x7f), msg);
+    }
+    else
+    {   sprintf(msg, "%#.2x = %" PRIu64, (int)n & 0xff, n);
+        write_byte(n & 0xff, msg);
+    }
 }
 
 uintptr_t code_up_codepointer(void *p)
@@ -1441,6 +1456,7 @@ void write_data(LispObject p)
 {
     LispObject b = 0 + BACKPOINTER_CDR, w;
     uintptr_t len;
+    int64_t w64;
     Header h;
     size_t i;
 down:
@@ -1484,7 +1500,7 @@ down:
         if (!descend_symbols)
         {   w = qpname(p);
             char msg[32];
-            size_t n = length_of_byteheader(vechdr(w));
+            size_t n = length_of_byteheader(vechdr(w)) - CELL;
             if (i != (size_t)-1)
             {   sprintf(msg, "DUPSYMBOL (name %" PRIuPTR ")", (uintptr_t)n);
                 write_byte(SER_DUPSYMBOL, msg);
@@ -1493,6 +1509,9 @@ down:
             {   sprintf(msg, "SYMBOL (name %" PRIuPTR ")", (uintptr_t)n);
                 write_byte(SER_SYMBOL, msg);
             }
+// Note that for general vectors when I write out data I always pad the
+// data as written to be a multiple of 4 bytes. I do not do that for
+// symbols... I send out exactly the number of bytes that there are.
             write_64(n);
             for (size_t i=0; i<n; i++)
             {   int c = celt(w, i) & 0xff;
@@ -1528,9 +1547,9 @@ down:
 // necessary to decode the header to see which case applies. The same
 // issue will arise for (boxed) numbers.
         h = vechdr(p);
-        if (vector_holds_binary(h)) goto dumpbinvec;
-        write_byte(SER_LVECTOR | ((h>>(Tw+2)) & 0x1f), "binary vector");
-        write_64(length_of_header(h));
+        if (vector_holds_binary(h)) goto write_binary_vector;
+        write_byte(SER_LVECTOR | ((h>>(Tw+2)) & 0x1f), "lisp vector");
+        write_64(length_of_header(h) - CELL);
         if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly referenced vector");
 // Now now the data beyond the 3 list-holding items in a MIXED structure
 // will not be dumped. I may need to review that later on.
@@ -1545,43 +1564,81 @@ down:
         b = w + BACKPOINTER_VECTOR;
         goto down;
 
-    dumpbinvec:
-// I need to separate off bitvectors and short strings here.
+    write_binary_vector:
+// I need to separate off bitvectors and short strings here since they
+// get special treatment.
+        if (is_string_header(h) &&
+            (len = length_of_byteheader(h) - CELL) <= 32 &&
+            len != 0)
+        {   char msg[20];
+            sprintf(msg, "string: %d", (int)len);
+            write_byte(SER_STRING+len-1, msg);
+            for (size_t i=0; i<len; i++)
+            {   int c = ucelt(p, i);
+                if (0x20 < c && c <= 0x7e) sprintf(msg, "'%c'", c);
+                else sprintf(msg, "%#.2x", c);
+                write_byte(c, msg);
+            }
+            goto up;
+        }
+        else if (is_bitvec_header(h))
+        {   char msg[32];
+            len = length_of_bitheader(h);
+            sprintf(msg, "bitvec %" PRIuPTR, (intptr_t)len);
+            write_byte(SER_BITVEC, msg);
+            write_64(len);
+            len = (len + 7)/8;
+            for (size_t i=0; i<len; i++)
+            {   int c = ucelt(p, i);
+                for (int k=0; k<8; k++)
+                    msg[k] = (c & (1<<k)) != 0 ? '1' : '0';
+                msg[8] = 0;
+                write_byte(c, msg);
+            }
+            goto up;
+        }
+//
+// The general code here writes out a vector where its contents are
+// binary data. This needs to use separate code for each sort of data
+// so that the serialized version is transmitted using a standard order
+// of bytes. Also for vectors that hold butes or halfwords the number
+// of units to transmit has to be computed in the light of the full
+// header word. 
         write_byte(SER_BVECTOR | ((h>>(Tw+2)) & 0x1f), "binary vector");
-        write_64(length_of_header(h));
-        if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
 // The code that follows must match up with the code that reads vectors
 // back in. It has to convert data to a portable form that is agnostic
 // to little vs. big-endian architectures.
-//
+// Also note that the "vector" may be tagged as TAG_VECTOR or TAG_NUMBERS and
+// so I need code that uses a mask operation to address its start.
         if (vector_i8(h))
-        {   char *x = (char *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
-// Bytes (and that includes UTF-8 encoded strings) are sent padded out to
-// a multiple of 4 bytes.
-        for (size_t i=0; i<(size_t)w; i++)
-            {   write_byte(*x++, "");
-                write_byte(*x++, "");
-                write_byte(*x++, "");
-                write_byte(*x++, "");
-            }
+        {   char *x = (char *)(((uintptr_t)p & ~(uintptr_t)7) + CELL);
+            write_64(len = length_of_byteheader(h) - CELL);
+            if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
+// I *could* detect strings etc here to display the comments more tidily,
+// but since they are just for debugging that seems like too much work
+// for today.
+            for (size_t i=0; i<len; i++) write_byte(*x++, "part of vec8/string");
         }
         else if (vector_i32(h))
-        {   uint32_t *x = (uint32_t *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
+        {   uint32_t *x = (uint32_t *)(((uintptr_t)p & ~(uintptr_t)7) + CELL);
+// The packed length is the length in words.
+            write_64(len = (length_of_header(h) - CELL)/4);
+            if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
 // 32-bit integers are transmitted most significant byte first.
-            for (size_t i=0; i<(size_t)w; i++)
+            for (size_t i=0; i<len; i++)
             {   uint32_t q = *x++;
                 write_byte((q>>24) & 0xff, "high byte");
-                write_byte((q>>16) & 0xff, "");
-                write_byte((q>>8) & 0xff, "");
+                write_byte((q>>16) & 0xff, "3");
+                write_byte((q>>8) & 0xff, "2");
                 write_byte(q & 0xff, "low byte");
             }
         }
         else if (vector_f64(h))
-        {   double *x = (double *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
+        {   double *x = (double *)(((uintptr_t)p & ~(uintptr_t)7) + CELL);
             float64u u;
-// Every vector of doubles must have a length that is an even number of
-// 32-bit words.
-            for (size_t i=0; i<(size_t)w/2; i++)
+            write_64(len = (length_of_header(h) - CELL)/8);
+            if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
+            for (size_t i=0; i<len; i++)
             {   u.f = *x++;
                 for (int j=0; j<8; j++)
                 {   int k;
@@ -1601,43 +1658,43 @@ down:
                         k = j ^ 7;
                         break;
                     }
-                    write_byte(u.i[k], "");
+                    write_byte(u.i[k], "part of double");
                 }
             }
         }
         else if (vector_i16(h))
         {   uint16_t *x = (uint16_t *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
-// 16 bit values are transmitted more significant byte first, and even if
-// only an odd number are needed the transmitted data pads out so that in
-// all a multiple of 4 bytes gets sent.
-        for (size_t i=0; i<(size_t)w; i++)
+            write_64(len = length_of_hwordheader(h) - CELL);
+            if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
+            for (size_t i=0; i<len; i++)
             {   uint32_t q = *x++;
-                write_byte((q>>8) & 0xff, "high byte");
-                write_byte(q & 0xff, "low byte");
-                q = *x++;;
                 write_byte((q>>8) & 0xff, "high byte");
                 write_byte(q & 0xff, "low byte");
             }
         }
         else if (vector_i64(h))
         {   uint64_t *x = (uint64_t *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
+            write_64(len = (length_of_header(h) - CELL)/8);
+            if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
 // 64-bit integers are transmitted most significant byte first.
-            for (size_t i=0; i<(size_t)w/2; i++)
+            for (size_t i=0; i<len; i++)
             {   uint64_t q = *x++;
                 write_byte((q>>56) & 0xff, "high byte");
-                write_byte((q>>48) & 0xff, "");
-                write_byte((q>>40) & 0xff, "");
-                write_byte((q>>32) & 0xff, "");
-                write_byte((q>>24) & 0xff, "");
-                write_byte((q>>16) & 0xff, "");
-                write_byte((q>>8) & 0xff, "");
+                write_byte((q>>48) & 0xff, "7");
+                write_byte((q>>40) & 0xff, "6");
+                write_byte((q>>32) & 0xff, "5");
+                write_byte((q>>24) & 0xff, "4");
+                write_byte((q>>16) & 0xff, "3");
+                write_byte((q>>8) & 0xff, "2");
                 write_byte(q & 0xff, "low byte");
             }
         }
         else if (vector_f32(h))
         {   float *x = (float *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
+            write_64(len = (length_of_header(h) - CELL)/4);
+            if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
             float32u u;
-            for (size_t i=0; i<(size_t)w; i++)
+            for (size_t i=0; i<len; i++)
             {   u.f = *x++;
                 for (int j=0; j<8; j++)
                 {   int k;
@@ -1653,7 +1710,7 @@ down:
                         k = j ^ 3;
                         break;
                     }
-                    write_byte(u.i[k], "");
+                    write_byte(u.i[k], "part of float");
                 }
             }
         }
@@ -1690,10 +1747,34 @@ down:
         goto up;
 
     case TAG_FIXNUM:
-    case TAG_HDR_IMMED:
-// Immediate data (eg small integers, characters) will always be treated
-// as if this is the first visit.
+        w64 = int_of_fixnum(p);
+        if (-16 <= w64 && w64 < 15)
+        {   char msg[8];
+            sprintf(msg, "%d", (int)w64);
+            write_byte(SER_FIXNUM | ((int)w64 & 0x1f), msg);
+        }
+        else
+        {   char msg[32];
+            sprintf(msg, "%" PRId64, w64);
+            if (w64 < 0)
+            {   write_byte(SER_NEGFIXNUM, msg);
+                write_64(-w64-1);
+            }
+            else
+            {   write_byte(SER_POSFIXNUM, msg);
+                write_64(w64);
+            }
+        }
+        goto up;
 
+    case TAG_HDR_IMMED:
+// Immediate data (eg characters and SPIDs).
+        {   char msg[32];
+            uint64_t nn = ((uint64_t)p) >> (Tw+2);
+            sprintf(msg, "#%" PRIx64, nn);
+            write_byte(SER_CHARSPID, msg);
+            write_64(nn);
+        }
         goto up;
 
     case TAG_FORWARD:
@@ -1781,6 +1862,7 @@ up:
 
 LispObject Lserialize(LispObject nil, LispObject a)
 {   descend_symbols = false;
+    sercounter = 0;
     init_writer_hash();
     scan_data(a);
     release_map();
@@ -1792,8 +1874,8 @@ LispObject Lserialize(LispObject nil, LispObject a)
 
 LispObject Lunserialize(LispObject nil, int nargs, ...)
 {
-// Not implemented yet!
-    return onevalue(nil);
+    serincount = 0;
+    return onevalue(serial_read());
 }
 
 #endif    //EXPERIMENT
