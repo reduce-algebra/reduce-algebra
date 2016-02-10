@@ -27,7 +27,7 @@ cd $here
 
 if ! which autoconf > /dev/null || \
    ! which automake > /dev/null || \
-   ! which libtool > /dev/null
+   ! which libtoolize > /dev/null
 then
   printf "You need to have autoconf, automake and libtool installed.\n"
   printf "I seem not to be able to find them.\n"

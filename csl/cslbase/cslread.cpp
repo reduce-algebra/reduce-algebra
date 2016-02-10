@@ -1,11 +1,11 @@
-// cslread.cpp                        Copyright (C) 1990-2015 Codemist Ltd
+// cslread.cpp                        Copyright (C) 1990-2016 Codemist Ltd
 
 //
 // Reading and symbol-table support.
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -147,7 +147,7 @@ void validate_string_fn(LispObject s, const char *file, int line)
     *(int *)(LispObject)(-1) = 0x55555555;  // I hope this aborts
 }
 
-static LispObject copy_string(LispObject str, int32_t n)
+LispObject copy_string(LispObject str, size_t n)
 //
 // Given a Lisp string, plus its length, create a Lisp (simple-) string.
 // NOTE that the "string" passed in may not in fact have the length

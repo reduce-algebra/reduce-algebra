@@ -235,12 +235,6 @@ void init_writer_hash()
     rehashing = false;
 }
 
-void init_writer_payload()
-{
-    payload = (size_t *)malloc(hashcount*sizeof(size_t *));
-    for (size_t i=0; i<hashcount; i++) payload[i] = 0;
-}
-
 void release_writer_hash()
 {
     free(hash);
@@ -327,7 +321,7 @@ static uintptr_t add_to_repeat_hash(uintptr_t p)
     int multiplier_changes = 0;
     for (;;)  // a big outer loop that keeps on until I have managed to fix
     {         // everything up.
-        if (hashcount < hashsize/3 && multiplier_changes < 4)
+        if (hashcount < hashsize/3 && multiplier_changes < 3)
         {   h = 0;
 // Here the table is less than 1/3 full but I failed to insert. Well
 // the fact that it is that empty means I know I can find somewhere to
@@ -398,11 +392,11 @@ static uintptr_t add_to_repeat_hash(uintptr_t p)
 }
 
 
-LispObject *repeat_heap;
+LispObject *repeat_heap = NULL;
 size_t repeat_heap_size = 0, repeat_count = 0;
 
 
-void reader_setup_repeats(int n)
+void reader_setup_repeats(size_t n)
 {
     if (repeat_heap_size != 0 ||
         repeat_heap != NULL)
@@ -410,20 +404,24 @@ void reader_setup_repeats(int n)
         abort();
     }
     repeat_heap_size = n;
+    repeat_count = 0;
+    if (n == 0) return; // No repeats present, so not table needed.
     repeat_heap = (LispObject *)malloc(n*sizeof(LispObject));
     if (repeat_heap == NULL)
     {   printf("\n+++ unable to allocate repeat heap\n");
         abort();
     }
 // I fill the vector with fixnum_of_int(0) so it is GC safe.
-    do
-    {   repeat_heap[--n] = fixnum_of_int(0);
-    } while (n != 0);
+    for (size_t i=0; i<n; i++)
+        repeat_heap[--n] = fixnum_of_int(0);
 }
 
-void writer_setup_repeats(size_t n)
+void writer_setup_repeats()
 {
-    repeat_heap_size = n;
+    payload = (size_t *)malloc(hashcount*sizeof(size_t *));
+    for (size_t i=0; i<hashcount; i++) payload[i] = 0;
+    repeat_heap_size = hashcount;
+    repeat_count = 0;
     repeat_heap =
         (LispObject *)malloc(repeat_heap_size*sizeof(LispObject));
     if (repeat_heap == NULL)
@@ -518,6 +516,7 @@ int nextByte()
         abort();
     }
     printf("Input byte %.2x\n", serbuffer[serincount]);
+    fflush(stdout);
     return serbuffer[serincount++];
 }
 
@@ -590,31 +589,36 @@ down:
 // case is LEAF which will include immediate data such as FIXNUMS, but
 // alse big-numbers, strings and back-references to previously-read
 // structures.
-    switch (c = nextByte())
+    c = nextByte();
+printf("op = %.2x\n", c & 0xe0);
+    switch (c & 0xe0)
     {
-    case SER_CONS:
+    case SER_VARIOUS:
+        switch (c)
+        {
+        case SER_CONS:
 // I should protect pbase, b, r and s across this, and I need to worry about
 // p because it could point within any previously allocated structure
 // or it could point at r. To make that safe I believe I will need to
 // write out cons in-line , because then I can manage to update *p before
 // and garbage collection, and save r after that and before a garbage
 // collection.
-        b = *p = cons(fixnum_of_int(0), b);
-        pbase = b;
-        p = &qcar(b);
-        goto down;
-    case SER_DUPCONS:
+            b = *p = cons(fixnum_of_int(0), b);
+            pbase = b;
+            p = &qcar(b);
+            goto down;
+        case SER_DUPCONS:
 // As SER_CONS but the item constructed will be referenced again so it need
 // to be entered in the relevant table. Thie could have been rendered as
 // SER_CONS; SER_DUP but I have chosen to provide a single opcode to handle it
 // compactly.
-        b = *p = cons(fixnum_of_int(0), b);
-        pbase = b;
-        p = &qcar(b);
-        reader_repeat_new(b);
-        goto down;
+            b = *p = cons(fixnum_of_int(0), b);
+            pbase = b;
+            p = &qcar(b);
+            reader_repeat_new(b);
+            goto down;
 
-    case SER_BIGBACKREF:
+        case SER_BIGBACKREF:
 // Back references with an offset from 1..64 are dealt with using special
 // compact opcodes. Here I have something that reaches further back. The main
 // opcode is followed by a sequence of bytes and if this represents the value
@@ -626,25 +630,25 @@ down:
 // and so on using 7 bits per byte... up until I have used 8 bytes.
 // If one is needed beyond that it can be a final 8-bit value.
 // This allows for up to 2^64 back-references.
-        *p = reader_repeat_old(1 + 64 + readPacked());
-        goto up;
+            *p = reader_repeat_old(1 + 64 + readPacked());
+            goto up;
 
-    case SER_DUP:
+        case SER_DUP:
 // This is issues just after a SER_VECTOR (etc) code that will
 // have left pbase referring to the object just allocated.
-        reader_repeat_new(pbase);
-        goto down;
+            reader_repeat_new(pbase);
+            goto down;
 
-    case SER_POSFIXNUM:
+        case SER_POSFIXNUM:
 // This case really needs to read the 64-bit value and construct either a
 // fixnum or a boxnum as relevant. If it creates a boxnum then that could
 // possibly be a shared object, and against the possibility of that I set
 // pbase so that a SER_DUP opcode can behave meaningfully.
 // @@@ At present I only ever re-create a fixnum.
-        pbase = *p = fixnum_of_int(readPacked());
-        goto up;
+            pbase = *p = fixnum_of_int(readPacked());
+            goto up;
 
-    case SER_NEGFIXNUM:
+        case SER_NEGFIXNUM:
 // Negative (small to medium-sized) integers are given a separate code here
 // beause packing then using sign-and-magnitude seems easier. The extra "-1"
 // here is both to avoid having the duplicated case of +0 and -0 and to
@@ -652,13 +656,13 @@ down:
 // matches 2s complement. Eg with just 1 following byte the range goes from
 // -128 to +127 (rather than -127 to +127).
 // @@@ At present I only ever re-create a fixnum.
-        pbase = *p = fixnum_of_int(-1-readPacked());
-        goto up;
+            pbase = *p = fixnum_of_int(-1-readPacked());
+            goto up;
 
-    case SER_RAWSYMBOL:
-    case SER_DUPRAWSYMBOL:
-        printf("SER_RAWSYMBOL not coded yet\n");
-        abort();
+        case SER_RAWSYMBOL:
+        case SER_DUPRAWSYMBOL:
+            printf("SER_RAWSYMBOL not coded yet\n");
+            abort();
 // SER_RAWSYMBOL is used while dumping complete heap-images. The opcode here
 // is followed by information to go into the header word of the symbol (various
 // flag bits such as whether the symbol is global or fluid), then a dump of
@@ -666,47 +670,53 @@ down:
 // that all the list-like components will be transmitted (much as if they were
 // elements in a vector).
 
-    case SER_SYMBOL:
-    case SER_DUPSYMBOL:
-        printf("SER_SYMBOL not coded yet\n");
-        abort();
-// SER_SYMBOL is for when a single expression is being dumped. After this
-// opcode comes information as to whether the symbol is a gensym or not, then the
-// length of its name and a seqence of bytes giving its name. The reader will
-// in general look that name up in the oblist. Such information as what is on the
+        case SER_SYMBOL:
+        case SER_DUPSYMBOL:
+        case SER_GENSYM:
+        case SER_DUPGENSYM:
+// All of these cases are followed by a length marker and the the octets
+// making up the UTF-8 name of the symbol. If the "DUP" options is present
+// then the symbol must be entered in the table of items that are referenced
+// repeatedly. in the "GENSYM" case the name is the base-name of the gensym,
+// pergaps very often just "G", and the name readf in will be set up as
+// if not yet printed, so a sequence number will be added leter.
+            {   size_t len = readPacked();
+                boffop = 0;
+                for (size_t i=0; i<len; i++) packbyte(nextByte());
+                if (c == SER_GENSYM || c == SER_DUPGENSYM)
+                {   w = copy_string(boffo, boffop);
+                    w = Lgensym1(C_nil, w);
+                }
+                else w = iintern(boffo, (int32_t)boffop, CP, 0);
+                pbase = *p = w;
+                if (c == SER_DUPSYMBOL || c == SER_DUPGENSYM)
+                    reader_repeat_new(b);
+                goto up;
+            }
 
-    case SER_GENSYM:
-    case SER_DUPGENSYM:
-        printf("SER_GENSYN not coded yet\n");
-        abort();
-// SER_GENSYM does what it says on the tin! It needs to be followed by the
-// base of the gensym name (often just "G"). It will be created in a state
-// of not having been printed, so a numeric sequence number will be allocated
-// to it later.
-
-    case SER_FLOAT28:
+        case SER_FLOAT28:
 // A 28-bit short float
-        printf("SER_FLOAT28 not coded yet\n");
-        abort();
+            printf("SER_FLOAT28 not coded yet\n");
+            abort();
 
-    case SER_FLOAT32:
+        case SER_FLOAT32:
 // a 32-bit single float
-        printf("SER_FLOAT32 not coded yet\n");
-        abort();
+            printf("SER_FLOAT32 not coded yet\n");
+            abort();
 
-    case SER_FLOAT64:
+        case SER_FLOAT64:
 // a 64-bit (long) float
-        printf("SER_FLOAT64 not coded yet\n");
-        abort();
+            printf("SER_FLOAT64 not coded yet\n");
+            abort();
 
-    case SER_FLOAT128:
+        case SER_FLOAT128:
 // a 128-bit (double-length) float. Note that this may not use all
 // 128 bits and that cross-platform compatibility for floats of over 64
 // bits is really very uncertain at present!
-        printf("SER_FLOAT128 not coded yet\n");
-        abort();
+            printf("SER_FLOAT128 not coded yet\n");
+            abort();
 
-    case SER_CHARSPID:
+        case SER_CHARSPID:
 // a packed characters literal. Characters that are Basic Latin can be coded
 // here with just 2 bytes, so for instance 'A' is SER_CHAR/0x41. Codes up to
 // U+3fff come in 3 bytes and so on. Note that the encoding is NOT utf8 - it is
@@ -715,49 +725,34 @@ down:
 // shown here and I just send the rest of the data as a raw number. Note
 // that bytecode handles can be dealt with here if I understand them -
 // which for now I do not!
-        pbase = *p = ((LispObject)readPacked()<<(Tw+2)) | TAG_HDR_IMMED;
-        abort();
+            pbase = *p = ((LispObject)readPacked()<<(Tw+2)) | TAG_HDR_IMMED;
+            abort();
 
-    case SER_BITVEC:
+        case SER_BITVEC:
 // This can be done very much the way that SER_STRING is. Right now I will
 // just abort!
-        printf("SER_BITVEC not coded yet\n");
-        abort();
+            printf("SER_BITVEC not coded yet\n");
+            abort();
 
-    case SER_STRING:
-// String will be very much like BVECTOR except that because I expect it to be an
-// espcially important case I pack a length code into the 5-bit field of the
-// opcode byte and the type information is implicit. This code only copes
-// with strings with length 1-32. The associated data is JUST the bytes
-// making up the string, not any padding needed at the end.
-        w = (c & 0x1f) + 1;
-        pbase = *p = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+w);
-        {   char *x = &celt(pbase, 0);
-            for (size_t i=0; i<(size_t)w; i++) *x++ = nextByte();
-            while (((int)x & 7) != 0) *x++ = 0;
+        case SER_XXX12:
+        case SER_XXX13:
+        case SER_XXX14:
+        case SER_XXX15:
+        case SER_XXX16:
+        case SER_XXX17:
+        case SER_XXX18:
+        case SER_XXX19:
+        case SER_XXX1a:
+        case SER_XXX1b:
+        case SER_XXX1c:
+        case SER_XXX1d:
+        case SER_XXX1e:
+        case SER_XXX1f:
+        default:
+            printf("Unimplemented reader opcode (a) %.2x\n", c);
+            abort();
         }
-        goto up;
-
-    case SER_XXX12:
-    case SER_XXX13:
-    case SER_XXX14:
-    case SER_XXX15:
-    case SER_XXX16:
-    case SER_XXX17:
-    case SER_XXX18:
-    case SER_XXX19:
-    case SER_XXX1a:
-    case SER_XXX1b:
-    case SER_XXX1c:
-    case SER_XXX1d:
-    case SER_XXX1e:
-    case SER_XXX1f:
-    default:
-        printf("Unimplemented reader opcode\n");
-        abort();
-    }
-    switch (c & 0xe0)
-    {
+        break;
     case SER_LVECTOR:
 // The issue of protection of p against garbage collection is perhaps
 // harder here, because if may not be possible to allocate a vector
@@ -817,13 +812,30 @@ down:
     case SER_BACKREF0:
         *p = reader_repeat_old(1 + (c & 0x1f));
         goto up;
+
     case SER_BACKREF1:
         *p = reader_repeat_old(1 + 32 + (c & 0x1f));
         goto up;
+
     case SER_FIXNUM:
         c = c & 0x1f;
-        if ((w & 0x10) != 0) c |= ~0x0f; // sign extend
+        if ((c & 0x10) != 0) c |= ~0x0f; // sign extend
         *p = fixnum_of_int(c);
+        goto up;
+
+        case SER_STRING:
+// String will be very much like BVECTOR except that because I expect it to be an
+// espcially important case I pack a length code into the 5-bit field of the
+// opcode byte and the type information is implicit. This code only copes
+// with strings with length 1-32. The associated data is JUST the bytes
+// making up the string, with padding at the end.
+            w = (c & 0x1f) + 1;
+            pbase = *p = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+w);
+            {   char *x = &celt(pbase, 0);
+                for (size_t i=0; i<(size_t)w; i++) *x++ = nextByte();
+                while (((int)x & 7) != 0) *x++ = 0;
+            }
+            goto up;
 
 // I had considered having a special opcode to deal with strings of length 0
 // or longer than 33, but in fact the general SER_BVECTOR code does just that
@@ -970,7 +982,7 @@ down:
 
     case SER_SPARE:
     default:
-        printf("Unimplemented reader opcode\n");
+        printf("Unimplemented reader opcode (b) %.2x\n", c);
         abort();
     }
 
@@ -1416,19 +1428,20 @@ void write_byte(int byte, const char *msg, ...)
 
 void write_64(uint64_t n)
 {
-    int i, any=0, final = 7;
     char msg[32];
     if (n == (n & 0x7f))
     {   sprintf(msg, "%#.2x = %d", (int)n, (int)n);
         write_byte(n | 0x80, msg);
         return;
     }
+    int final = 7;
     if ((n & UINT64_C(0xff000000000000)) != 0) final = 8;
-    for (i=8; i>0; i--)
-    {   int b = (n >> (7*i+final)) & 0x7f;
+    bool any = false;
+    for (int i=0; i<8; i++)
+    {   int b = (n >> (7*(7-i)+final)) & 0x7f;
         if (any || (b != 0))
-        {   any = 1;
-            sprintf(msg, "%#" PRIx64, ((uint64_t)b) << (7*i+final));
+        {   any = true;
+            sprintf(msg, "%#" PRIx64, ((uint64_t)b) << (7*(7-i)+final));
             write_byte(b, msg);
         }
     }
@@ -1750,12 +1763,12 @@ down:
         w64 = int_of_fixnum(p);
         if (-16 <= w64 && w64 < 15)
         {   char msg[8];
-            sprintf(msg, "%d", (int)w64);
+            sprintf(msg, "Int %d", (int)w64);
             write_byte(SER_FIXNUM | ((int)w64 & 0x1f), msg);
         }
         else
         {   char msg[32];
-            sprintf(msg, "%" PRId64, w64);
+            sprintf(msg, "int %" PRId64, w64);
             if (w64 < 0)
             {   write_byte(SER_NEGFIXNUM, msg);
                 write_64(-w64-1);
@@ -1866,16 +1879,30 @@ LispObject Lserialize(LispObject nil, LispObject a)
     init_writer_hash();
     scan_data(a);
     release_map();
-    init_writer_payload();
+    writer_setup_repeats();
+    write_64(repeat_heap_size);
     write_data(a);
     release_writer_hash();
+    if (repeat_heap_size != 0)
+    {   repeat_heap_size = 0;
+        free(repeat_heap);
+    }
+    repeat_heap = NULL;
     return onevalue(nil);
 }
 
 LispObject Lunserialize(LispObject nil, int nargs, ...)
 {
+    LispObject r;
     serincount = 0;
-    return onevalue(serial_read());
+    reader_setup_repeats(readPacked());
+    r = serial_read();
+    if (repeat_heap_size != 0)
+    {   repeat_heap_size = 0;
+        free(repeat_heap);
+    }
+    repeat_heap = NULL;
+    return onevalue(r);
 }
 
 #endif    //EXPERIMENT
