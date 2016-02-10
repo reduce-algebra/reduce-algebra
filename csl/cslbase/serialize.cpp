@@ -200,11 +200,21 @@ static uintptr_t MULTIPLIER2 =  (uintptr_t)UINT64_C(0x9e3779b99e377741);
 
 static inline size_t check_repeat_hash(uintptr_t p)
 {
+//  printf("check_repeat_hash %" PRIxPTR, p);
     size_t h = H1(p);
-    if (hash[h] == p) return h;
+    if (hash[h] == p)
+    {   //printf(" => %" PRIxPTR "\n", (intptr_t)h);
+        return h;
+    }
     h = H2(p);
-    if (hash[h] == p) return h;
-    else return (size_t)(-1);
+    if (hash[h] == p)
+    {   //printf(" => %" PRIxPTR "\n", (intptr_t)h);
+        return h;
+    }
+    else
+    {   //printf(" => -1\n");
+        return (size_t)(-1);
+    }
 }
 
 // Before using the hash table it is necessary to call inithash(), which
@@ -251,6 +261,7 @@ void release_writer_hash()
 
 static uintptr_t add_to_repeat_hash(uintptr_t p)
 {
+    printf("add_to_repeat_hash %" PRIxPTR "\n", p);
     int tries = 0;
     size_t h = 0;
     do
@@ -438,6 +449,7 @@ void writer_setup_repeats()
 
 LispObject reader_repeat_old(size_t n)
 {
+//  printf("reader_repeat_old %" PRIuPTR "\n", (uintptr_t)n);
     if (n <= 64) return repeat_heap[n];
     for (;;)
     {   size_t n2 = n/2;           // parent in binary heap
@@ -455,6 +467,7 @@ LispObject reader_repeat_old(size_t n)
 
 LispObject reader_repeat_new(LispObject x)
 {
+//  printf("reader_repeat_new %" PRIxPTR "\n", (uintptr_t)x);
     repeat_heap[++repeat_count] = x;
     return reader_repeat_old(repeat_count);
 }
@@ -476,12 +489,15 @@ LispObject reader_repeat_new(LispObject x)
 
 size_t find_index_in_repeats(size_t h)
 {
+//  printf("find_index_in_repeats %" PRIxPTR "\n", (uintptr_t)h);
     size_t n = payload[h];
+//  printf("payload %" PRIxPTR "\n", (uintptr_t)n);
 // if n == 0 then this is the first time we have seen this item. So it
 // needs to be inserted into repeat_hash.
     if (n == 0)
     {   n = ++repeat_count;
-        payload[n] = h;
+        payload[h] = n;
+//      printf("set payload %" PRIxPTR "\n", (uintptr_t)n);
     }
 // I now need to perform the same move-to-top operation that will be performed
 // during reading. But as I do so I will need to update values in the repeat_heap
@@ -574,11 +590,12 @@ LispObject serial_read()
     LispObject *p;    // a pointer to where to put the next item
     LispObject r,     // result of the entire reading process
                pbase, // needed to make the code GC safe
+               prev,  // recent object read, for use with SER_DUP
                w,     // working variable
                s,     // a (linked) stack used with vectors
                b;     // a back-pointer chain
     int c;
-    pbase = r = s = b = fixnum_of_int(0);
+    prev = pbase = r = s = b = fixnum_of_int(0);
     p = &r;
 down:
 // nextByte() needs to read from the stream representation of things
@@ -590,7 +607,6 @@ down:
 // alse big-numbers, strings and back-references to previously-read
 // structures.
     c = nextByte();
-printf("op = %.2x\n", c & 0xe0);
     switch (c & 0xe0)
     {
     case SER_VARIOUS:
@@ -615,7 +631,7 @@ printf("op = %.2x\n", c & 0xe0);
             b = *p = cons(fixnum_of_int(0), b);
             pbase = b;
             p = &qcar(b);
-            reader_repeat_new(b);
+            reader_repeat_new(pbase);
             goto down;
 
         case SER_BIGBACKREF:
@@ -630,13 +646,15 @@ printf("op = %.2x\n", c & 0xe0);
 // and so on using 7 bits per byte... up until I have used 8 bytes.
 // If one is needed beyond that it can be a final 8-bit value.
 // This allows for up to 2^64 back-references.
-            *p = reader_repeat_old(1 + 64 + readPacked());
+            *p = reader_repeat_old(w = (1 + 64 + readPacked()));
+//           printf("backref %" PRIuPTR " => %" PRIxPTR "\n",
+//                  (uintptr_t)w, (uintptr_t)*p);
             goto up;
 
         case SER_DUP:
 // This is issues just after a SER_VECTOR (etc) code that will
 // have left pbase referring to the object just allocated.
-            reader_repeat_new(pbase);
+            reader_repeat_new(prev);
             goto down;
 
         case SER_POSFIXNUM:
@@ -645,7 +663,7 @@ printf("op = %.2x\n", c & 0xe0);
 // possibly be a shared object, and against the possibility of that I set
 // pbase so that a SER_DUP opcode can behave meaningfully.
 // @@@ At present I only ever re-create a fixnum.
-            pbase = *p = fixnum_of_int(readPacked());
+            prev = *p = fixnum_of_int(readPacked());
             goto up;
 
         case SER_NEGFIXNUM:
@@ -656,7 +674,7 @@ printf("op = %.2x\n", c & 0xe0);
 // matches 2s complement. Eg with just 1 following byte the range goes from
 // -128 to +127 (rather than -127 to +127).
 // @@@ At present I only ever re-create a fixnum.
-            pbase = *p = fixnum_of_int(-1-readPacked());
+            prev = *p = fixnum_of_int(-1-readPacked());
             goto up;
 
         case SER_RAWSYMBOL:
@@ -688,9 +706,9 @@ printf("op = %.2x\n", c & 0xe0);
                     w = Lgensym1(C_nil, w);
                 }
                 else w = iintern(boffo, (int32_t)boffop, CP, 0);
-                pbase = *p = w;
+                prev = *p = w;
                 if (c == SER_DUPSYMBOL || c == SER_DUPGENSYM)
-                    reader_repeat_new(b);
+                    reader_repeat_new(prev);
                 goto up;
             }
 
@@ -725,8 +743,8 @@ printf("op = %.2x\n", c & 0xe0);
 // shown here and I just send the rest of the data as a raw number. Note
 // that bytecode handles can be dealt with here if I understand them -
 // which for now I do not!
-            pbase = *p = ((LispObject)readPacked()<<(Tw+2)) | TAG_HDR_IMMED;
-            abort();
+            prev = *p = ((LispObject)readPacked()<<(Tw+2)) | TAG_HDR_IMMED;
+            goto up;
 
         case SER_BITVEC:
 // This can be done very much the way that SER_STRING is. Right now I will
@@ -803,7 +821,7 @@ printf("op = %.2x\n", c & 0xe0);
             *((LispObject *)(CELL+((uintptr_t)w)-tag)) = b;
             b = w;
             s = cons(fixnum_of_int(n), s);
-            pbase = b;
+            prev = pbase = b;
             p = &elt(b, n);
         }
         goto down;
@@ -811,10 +829,12 @@ printf("op = %.2x\n", c & 0xe0);
 
     case SER_BACKREF0:
         *p = reader_repeat_old(1 + (c & 0x1f));
+//      printf("backref %d => %" PRIxPTR "\n", 1 + (c & 0x1f), (uintptr_t)*p);
         goto up;
 
     case SER_BACKREF1:
         *p = reader_repeat_old(1 + 32 + (c & 0x1f));
+//      printf("backref %d => %" PRIxPTR "\n", 33 + (c & 0x1f), (uintptr_t)*p);
         goto up;
 
     case SER_FIXNUM:
@@ -830,11 +850,13 @@ printf("op = %.2x\n", c & 0xe0);
 // with strings with length 1-32. The associated data is JUST the bytes
 // making up the string, with padding at the end.
             w = (c & 0x1f) + 1;
-            pbase = *p = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+w);
-            {   char *x = &celt(pbase, 0);
+            prev = *p = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+w);
+            {   char *x = &celt(prev, 0);
                 for (size_t i=0; i<(size_t)w; i++) *x++ = nextByte();
                 while (((int)x & 7) != 0) *x++ = 0;
             }
+//          printf("at end of SER_STRING prev = %" PRIxPTR "\n",
+//                 (uintptr_t)prev);
             goto up;
 
 // I had considered having a special opcode to deal with strings of length 0
@@ -858,7 +880,7 @@ printf("op = %.2x\n", c & 0xe0);
         {   int type = ((c & 0x1f)<<(Tw+2)) | (0x2<<Tw) | TAG_HDR_IMMED,
                 tag = is_number_header_full_test(type) ? TAG_NUMBERS :
                                                          TAG_VECTOR;
-            pbase = *p = getvector(tag, type, CELL+w);
+            prev = *p = getvector(tag, type, CELL+w);
 
             if (vector_i8(type))
             {   char *x = (char *)(((uintptr_t)p & ~(uintptr_t)3) + CELL);
@@ -1092,6 +1114,8 @@ static int address_used(uint64_t addr)
     addr -= ((uint64_t)i) << 18;
 // Now addr is just an 18-bit number. Discard the low 3 bits
     addr >>= 3;
+//  printf("address-used %" PRIxPTR " = %d\n", (uintptr_t)addr,
+//         m5[addr >> 3] & (1 << (addr & 7)));
     return (m5[addr >> 3] & (1 << (addr & 7))) != 0;
 } 
 
@@ -1136,6 +1160,7 @@ static uint8_t *new_final_map_block()
 
 static void mark_address_as_used(uint64_t addr)
 {
+//  printf("mark_address_as_used %" PRIxPTR "\n", (intptr_t)addr);
     unsigned int i = (unsigned int)(addr >> 54);
     uint8_t *****m1 = used_map[i];
     if (m1 == NULL) used_map[i] = m1 = (uint8_t *****)new_map_block();
@@ -1512,14 +1537,14 @@ down:
     case TAG_SYMBOL:
         if (!descend_symbols)
         {   w = qpname(p);
-            char msg[32];
+            char msg[40];
             size_t n = length_of_byteheader(vechdr(w)) - CELL;
             if (i != (size_t)-1)
-            {   sprintf(msg, "DUPSYMBOL (name %" PRIuPTR ")", (uintptr_t)n);
+            {   sprintf(msg, "dup-symbol, length=%" PRIuPTR, (uintptr_t)n);
                 write_byte(SER_DUPSYMBOL, msg);
             }
             else
-            {   sprintf(msg, "SYMBOL (name %" PRIuPTR ")", (uintptr_t)n);
+            {   sprintf(msg, "symbol, length=%" PRIuPTR, (uintptr_t)n);
                 write_byte(SER_SYMBOL, msg);
             }
 // Note that for general vectors when I write out data I always pad the
@@ -1583,31 +1608,33 @@ down:
         if (is_string_header(h) &&
             (len = length_of_byteheader(h) - CELL) <= 32 &&
             len != 0)
-        {   char msg[20];
-            sprintf(msg, "string: %d", (int)len);
+        {   char msg[40];
+            sprintf(msg, "string, length=%" PRIuPTR, (intptr_t)len);
             write_byte(SER_STRING+len-1, msg);
-            for (size_t i=0; i<len; i++)
-            {   int c = ucelt(p, i);
+            for (size_t j=0; j<len; j++)
+            {   int c = ucelt(p, j);
                 if (0x20 < c && c <= 0x7e) sprintf(msg, "'%c'", c);
                 else sprintf(msg, "%#.2x", c);
                 write_byte(c, msg);
             }
+            if (i != (size_t)-1) write_byte(SER_DUP, "dup string");
             goto up;
         }
         else if (is_bitvec_header(h))
-        {   char msg[32];
+        {   char msg[40];
             len = length_of_bitheader(h);
-            sprintf(msg, "bitvec %" PRIuPTR, (intptr_t)len);
+            sprintf(msg, "bitvec, length=%" PRIuPTR, (intptr_t)len);
             write_byte(SER_BITVEC, msg);
             write_64(len);
             len = (len + 7)/8;
-            for (size_t i=0; i<len; i++)
-            {   int c = ucelt(p, i);
+            for (size_t j=0; j<len; j++)
+            {   int c = ucelt(p, j);
                 for (int k=0; k<8; k++)
                     msg[k] = (c & (1<<k)) != 0 ? '1' : '0';
                 msg[8] = 0;
                 write_byte(c, msg);
             }
+            if (i != (size_t)-1) write_byte(SER_DUP, "dup bitvector");
             goto up;
         }
 //
@@ -1763,12 +1790,12 @@ down:
         w64 = int_of_fixnum(p);
         if (-16 <= w64 && w64 < 15)
         {   char msg[8];
-            sprintf(msg, "Int %d", (int)w64);
+            sprintf(msg, "int, value=%d", (int)w64);
             write_byte(SER_FIXNUM | ((int)w64 & 0x1f), msg);
         }
         else
         {   char msg[32];
-            sprintf(msg, "int %" PRId64, w64);
+            sprintf(msg, "int value=%" PRId64, w64);
             if (w64 < 0)
             {   write_byte(SER_NEGFIXNUM, msg);
                 write_64(-w64-1);
@@ -1782,9 +1809,9 @@ down:
 
     case TAG_HDR_IMMED:
 // Immediate data (eg characters and SPIDs).
-        {   char msg[32];
+        {   char msg[40];
             uint64_t nn = ((uint64_t)p) >> (Tw+2);
-            sprintf(msg, "#%" PRIx64, nn);
+            sprintf(msg, "char/spid, value=#%" PRIx64, nn);
             write_byte(SER_CHARSPID, msg);
             write_64(nn);
         }
