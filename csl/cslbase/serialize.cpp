@@ -1263,6 +1263,8 @@ up:
         b = elt(w, 0);
 // I could and possibly should push the released cell from s onto a local
 // freelist and use that where I do a CONS if possible...
+//      qcar(s) = fr; fr = s; s = qcdr(s); qcdr(fr) = fixnum_of_int(0);
+// might do the job, chaining the freelist through its CAR field.
         s = qcdr(s);
         goto down;
     }

@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1518,11 +1518,11 @@ typedef struct Single_Float
 // Note that long floats are a bad idea.
 // (1) "long double" may exist in C, buts its precision etc are not
 //     standardised.
-// (2) Elememtary functions etc would be a huge pain for long doubles.
+// (2) Elementary functions etc would be a huge pain for long doubles.
 // (3) On Intel you typically only get 80 bits - ie not very much better
 //     than regular doubles!
-// The type is perhaps usaful for "working precision" while implementing
-// code to support doubles, but wven there is you can not count on portable
+// The type is perhaps useful for "working precision" while implementing
+// code to support doubles, but then there is you can not count on portable
 // characteristics it is not a terribly good thing to expose it as part of
 // a user-visible interface. So I will make the Lisp level long floats
 // behave as ordinary doubles.

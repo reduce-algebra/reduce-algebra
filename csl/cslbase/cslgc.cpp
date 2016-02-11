@@ -1,4 +1,4 @@
-// File gc.cpp                      Copyright (c) Codemist Ltd, 1990-2015
+// File gc.cpp                      Copyright (c) Codemist Ltd, 1990-2016
 
 //
 // Garbage collection.
@@ -43,7 +43,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
