@@ -2028,12 +2028,40 @@ LispObject get_pname(LispObject a)
 //
     if (qheader(a) & SYM_UNPRINTED_GENSYM)
     {   uintptr_t len;
+        char *p;
         LispObject nil = C_nil;
-        char genname[64];
+        char genname[80];
         len = length_of_byteheader(vechdr(name)) - CELL;
         if (len > 60) len = 60;     // Unpublished truncation of the string
-        sprintf(genname, "%.*s%.4lu", (int)len,
-                (char *)name + (CELL - TAG_VECTOR), (long)gensym_ser++);
+// I will make the first 10K names g0000 to g9999 with exactly 4 digits
+// at the end. After that I will use
+// g9999_999, g9999_999_999, g9999_999_999_999 with underscores separating
+// off ech trailing group of 3 digits. THis scheme has two separate
+// motivations. The first is that putting digits in blocks of 3 might
+// make the names easier to read. The second is that this arrangement
+// will let me look at the full name of a printed gensym and separate off
+// the "numeric" suffix. The code I have here would allow for up to 10^13
+// distinct gensyms, and after that it wraps round. Well on a 32-bit
+// system it counts up to 2^32 and wraps there.
+        sprintf(genname, "%.*s", (int)len, &celt(name, 0));
+        p = genname+len;
+        if (gensym_ser <= 9999) sprintf(p, "%.4d", (int)gensym_ser);
+        else if (gensym_ser <= 9999999)
+            sprintf(p, "%.4d_%.3d",
+                (int)(gensym_ser/1000),
+                (int)(gensym_ser%1000));
+        else if (!SIXTY_FOUR_BIT || gensym_ser <= UINT64_C(99999999999))
+            sprintf(p, "%.4d_%.3d_%.3d",
+                (int)(gensym_ser/1000000),
+                (int)((gensym_ser/1000)%1000),
+                (int)(gensym_ser%1000));
+        else
+            sprintf(p, "%.4d_%.3d_%.3d_%.3d",
+                (int)((gensym_ser/1000000000)%10000),
+                (int)((gensym_ser/1000000)%1000),
+                (int)((gensym_ser/1000)%1000),
+                (int)(gensym_ser%1000));
+        gensym_ser++;
         push(a);
         name = make_string(genname);
         pop(a);

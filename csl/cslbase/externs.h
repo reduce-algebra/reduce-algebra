@@ -443,7 +443,8 @@ extern LispObject vfringe;
 extern intptr_t nwork;
 
 extern intptr_t exit_count;
-extern intptr_t gensym_ser, print_precision, miscflags;
+extern uintptr_t gensym_ser;
+extern intptr_t print_precision, miscflags;
 extern intptr_t current_modulus, fastget_size, package_bits;
 extern intptr_t modulus_is_large;
 

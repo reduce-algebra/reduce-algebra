@@ -3546,12 +3546,6 @@ static LispObject Lshrink_vector(LispObject nil,
 
 #endif // COMMON
 
-#ifdef EXPERIMENT
-#define bitvechdr_(n) (TYPE_BITVEC_1 + ((((n)+7)&7)<<(Tw+2)))
-#else
-#define bitvechdr_(n) (TYPE_BITVEC1 + ((((n)+7)&7)<<7))
-#endif
-
 static LispObject Lmake_simple_bitvector(LispObject nil, LispObject n)
 {   int32_t bytes;
     LispObject w;

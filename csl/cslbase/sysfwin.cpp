@@ -1,26 +1,13 @@
-// sysfwin.cpp                      Copyright (C) 1989-2015 Codemist Ltd
+// sysfwin.cpp                      Copyright (C) 1989-2016 Codemist Ltd
 
 //
-// System specific code. My objective is that this will subsume and replace
-// all the other files that I have or had called sysxxx.c, sysyyy.c etc.
-//
 // System-specific code for use with the "fwin" window interface code.
-// This is expected to be buildable on Windows via mingw32, on
-// both 32 and 64-bit variants of Linux, and (I hope) on Macintosh
-// system X (at least if an X server is made available to it). I thus
-// at least hope that I can use it as a generic uniform body of code.
 // The system will also build as a terminal-mode program as well as
 // a windowed one.
 //
-// I will use "autoconf" and all that stuff with a view to making
-// this code build on a wide range of systems via the usual
-//    ./configure ; make
-// sequence. This (obviously) involves a Unix-like build environment
-// but cygwin provides that for Windows.
-//
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -374,8 +361,7 @@ char *look_in_lisp_variable(char *o, int prefix)
 //
     if (qvalue(var) == unset_var) return o;
     else
-    {   Header h;
-        intptr_t len;
+    {   intptr_t len;
         var = qvalue(var);
 //
 // Mostly I expect that the value will be a string or symbol.
@@ -397,7 +383,6 @@ char *look_in_lisp_variable(char *o, int prefix)
             {   flip_exception();
                 return NULL;
             }
-            h = vechdr(var);
         }
         else if (!is_vector(var) || !is_string(var)) return NULL;
         len = length_of_byteheader(vechdr(var)) - CELL;

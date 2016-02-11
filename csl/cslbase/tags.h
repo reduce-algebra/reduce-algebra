@@ -523,6 +523,8 @@ typedef uintptr_t Header;
 // length_of_hwordheader gives the number of halfwords used.
 #define length_of_hwordheader(h)   ((((size_t)(h)) >> (Tw+6)) - 1)
 
+#define bitvechdr_(n) (TYPE_BITVEC_1 + ((((n)+31)&31)<<(Tw+2)))
+
 // Values for the type field in a header
 
 //
@@ -1001,6 +1003,9 @@ typedef uintptr_t Header;
 #define length_of_bitheader(h)     ((((size_t)(h)) >> 7) - 7)
 #define length_of_byteheader(h)    (((size_t)(h)) >> 10)
 #define length_of_hwordheader(h)   ((((size_t)(h)) >> 9) - 1)
+
+#define bitvechdr_(n) (TYPE_BITVEC1 + ((((n)+7)&7)<<7))
+
 
 // Values for the type field in a header
 
