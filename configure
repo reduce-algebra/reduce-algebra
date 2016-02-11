@@ -1894,7 +1894,7 @@ then
     exit 1
   fi
 
-  if ! which libtool > /dev/null 2> /dev/null
+  if ! which libtoolize > /dev/null 2> /dev/null
   then
     printf "You must have libtool installed to build this package. Install\n"
     printf "it and try again please.\n"

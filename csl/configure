@@ -741,6 +741,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_silent_rules
+with_autogen
 with_mingw64
 with_cygwin
 enable_debug
@@ -1391,6 +1392,7 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-autogen          Regenetare autoconf file at start
   --with-mingw64          Should behave like --host=x86_64-w64-mingw32
   --with-cygwin           Force use of raw cywgin (note license consequences
                           please)
@@ -3117,42 +3119,117 @@ then
   export SHELL
 fi
 
-need="no"
+#
+# There is a horror here. If one fetches everything from subversion
+# then timstamps can be ill-ordered, and it can seem necessary to
+# re-create the autoconf-related files. The standard way that autoconf and
+# automake allow for this is not very generous if the version of autoconf
+# on the local machine does not match the one used in the files from the
+# central site.
+#
+# I am now going to try to respond to that by forcing a re-generation of
+# all the autoconf files each time anybody runs configure. That adds to the
+# cost for everybody and means that everybody NEEDS autoconf, automake and
+# libtool installed, but may be more robust.
+#
 
-if ! test $srcdir/Makefile.in -nt $srcdir/configure.ac
-then
-  printf "Makefile.in depends on configure.ac\n"
-  need="yes"
-fi
-if ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am
-then
-  printf "Makefile.in depends on Makefile.am\n"
-  need="yes"
-fi
-if ! test $srcdir/configure -nt $srcdir/configure.ac
-then
-  printf "configure depends on configure.ac\n"
-  need="yes"
+
+# Check whether --with-autogen was given.
+if test "${with_autogen+set}" = set; then :
+  withval=$with_autogen;
+else
+  with_autogen="yes"
 fi
 
-if test "x$need" = "xyes\n"
+
+if test "x$with_autogen" = "xyes"
 then
-  printf "autoreconf necessary (args: $ac_configure_args)\n"
+
+  if ! which autoconf > /dev/null 2> /dev/null
+  then
+    printf "You must have autoconf (at least version 2.61) installed to\n"
+    printf "build this package. Install it and try again please.\n"
+    exit 1
+  fi
+
+  if ! which automake > /dev/null 2> /dev/null
+  then
+    printf "You must have automake (at least version 1.13) installed to\n"
+    printf "build this package. Install it and try again please.\n"
+    exit 1
+  fi
+
+  if ! which libtool > /dev/null 2> /dev/null
+  then
+    printf "You must have libtool installed to build this package. Install\n"
+    printf "it and try again please.\n"
+    exit 1
+  fi
+
+# The next fragment should extract version numbers for autoconf and automake
+
+# I extract versionm infor from the two utilities. The first line of
+# the output from "autoxx --version" is "autoxx ...  nn.nn.nn" with
+# a two or three component version number at the end.
+
+  acver=`autoconf --version 2> /dev/null | head -1`
+  amver=`automake --version 2> /dev/null | head -1`
+
+# Get rid of everything as far as the final blank in the data. What is
+# left is just the version number, whihc may be two or three components,
+# such as 14.2.1 or 15.0
+
+  acver=`echo $acver | sed -e 's/.* //'`
+  amver=`echo $amver | sed -e 's/.* //'`
+
+# The major version number is got by stripping of everything from the "." on.
+
+  acmaj=`echo $acver | sed -e 's/\..*//'`
+  ammaj=`echo $amver | sed -e 's/\..*//'`
+
+# The minor version number is left if one deleted the major number.
+
+  acver=`echo $acver | sed -e "s/$acmaj\.//"`
+  amver=`echo $amver | sed -e "s/$ammaj\.//"`
+
+# What was left could have a patch level - get rid of it.
+
+  acmin=`echo $acver | sed -e 's/\..*//'`
+  ammin=`echo $amver | sed -e 's/\..*//'`
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: detected autoconf: $acmaj.$acmin automake: $ammaj.$ammin" >&5
+$as_echo "$as_me: detected autoconf: $acmaj.$acmin automake: $ammaj.$ammin" >&6;}
+
+  if test $acmaj -lt 2 || test $acmaj -eq 2 && test $acmin -lt 61
+  then
+    printf "You have autconf $acmaj.$acmin but at least 2.61 is needed\n"
+    printf "to build this package. Install it and try again please.\n"
+    exit 1
+  fi
+
+  if test $ammaj -lt 1 || test $ammaj -eq 1 && test $ammin -lt 13
+  then
+    printf "You have automake $ammaj.$ammin but at least 1.13 is needed\n"
+    printf "to build this package. Install it and try again please.\n"
+    exit 1
+  fi
 
   here=`pwd`
   cd $srcdir
-  printf "autoreconf in the csl directory\n"
-  autoreconf -f -i -v
-
+  printf "Regenerate autoconf-related files\n"
+# Because you will probably not pass arguments to the configure script here
+# autogen.sh will re-make autoconf-related files all the way through the
+# entire Reduce tree. This is perhaps excessive and expensive, but on the
+# other hand it may enhance safety!
+  if ! ./autogen.sh $ac_configure_args
+  then
+    printf "The autogen.sh script seems to have failed. I can not continue\n"
+    exit 1
+  fi
   cd $here
-# Because autoconf might not be available or might fail and because I
-# believe I have observed cases where it has not reset timestamps in the
-# way I expected I will reset timestamps explicitly here...
-
-  touch $srcdir/Makefile.am $srcdir/configure
 
   printf "Restart: $srcdir/configure $ac_configure_args\n"
-  exec /bin/sh -c "$srcdir/configure $ac_configure_args"
+  exec /bin/sh -c "$srcdir/configure $ac_configure_args --without-autogen"
 fi
 
 # I am going to expect that you have at least this version of autoconf.
@@ -10783,15 +10860,6 @@ fi
 done
 test -n "$CYGPATH" || CYGPATH="no"
 
-
-# The following lines are a (further) attempt to arrange that the
-# rebuilding of Makefile (and before that Makefile.in and the like)
-# is less sensitive to exactly which version of automake happens to
-# be installed...
-
-AUTOMAKE="automake -f -a -v"
-
-ACLOCAL="aclocal --force"
 
 ac_config_headers="$ac_config_headers config.h"
 

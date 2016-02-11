@@ -67,24 +67,47 @@ then
 
 # The next fragment should extract version numbers for autoconf and automake
 
+# I extract versionm infor from the two utilities. The first line of
+# the output from "autoxx --version" is "autoxx ...  nn.nn.nn" with
+# a two or three component version number at the end.
+
   acver=`autoconf --version 2> /dev/null | head -1`
   amver=`automake --version 2> /dev/null | head -1`
 
-  acmaj=`echo $acver | sed -e 's/.* //; s/\..*//'`
-  acmin=`echo $acver | sed -e 's/.*\.//'`
-  ammaj=`echo $amver | sed -e 's/.* //; s/\..*//'`
-  ammin=`echo $amver | sed -e 's/.*\.//'`
+# Get rid of everything as far as the final blank in the data. What is
+# left is just the version number, whihc may be two or three components,
+# such as 14.2.1 or 15.0
+
+  acver=`echo $acver | sed -e 's/.* //'`
+  amver=`echo $amver | sed -e 's/.* //'`
+
+# The major version number is got by stripping of everything from the "." on.
+
+  acmaj=`echo $acver | sed -e 's/\..*//'`
+  ammaj=`echo $amver | sed -e 's/\..*//'`
+
+# The minor version number is left if one deleted the major number.
+
+  acver=`echo $acver | sed -e "s/$acmaj\.//"`
+  amver=`echo $amver | sed -e "s/$ammaj\.//"`
+
+# What was left could have a patch level - get rid of it.
+
+  acmin=`echo $acver | sed -e 's/\..*//'`
+  ammin=`echo $amver | sed -e 's/\..*//'`
+
+  AC_MSG_NOTICE([detected autoconf: $acmaj.$acmin automake: $ammaj.$ammin])
 
   if test $acmaj -lt 2 || test $acmaj -eq 2 && test $acmin -lt 61
   then
-    printf "You have autconf version $acmaj.$ammin but at least 2.61 is needed\n"
+    printf "You have autconf $acmaj.$acmin but at least 2.61 is needed\n"
     printf "to build this package. Install it and try again please.\n"
     exit 1
   fi
 
   if test $ammaj -lt 1 || test $ammaj -eq 1 && test $ammin -lt 13
   then
-    printf "You have autmake version $acmaj.$ammin but at least 1.13 is needed\n"
+    printf "You have automake $ammaj.$ammin but at least 1.13 is needed\n"
     printf "to build this package. Install it and try again please.\n"
     exit 1
   fi

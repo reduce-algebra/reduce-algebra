@@ -26,11 +26,15 @@ fi
 
 if ! which libtool > /dev/null
 then
-  echo "You need libtook installed, please"
+  echo "You need libtool installed, please"
+  echo "(note that on some Linux systems the package is called libtool-bin)"
   exit 1
 fi
 
 here=`dirname "$here"`
+
+cd $here/csl
+autoreconf -f -i -v
 
 if test -d $here/cslbuild
 then :
