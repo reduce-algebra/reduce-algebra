@@ -835,6 +835,7 @@ with_lto
 with_fox
 with_wx
 with_cygwin
+with_autogen
 with_force
 with_fox_pending
 enable_debug
@@ -1527,6 +1528,7 @@ Optional Packages:
   --with-fox=DIR          FOX installation location
   --with-wx               enable use of wxWidgets
   --with-cygwin           Force use of raw cywgin (note Cygwin license)
+  --with-autogen          Used at a higher level
   --with-force            Used at a higher level
   --with-fox-pending      do not check dir from --with-fox
   --with-pic[=PKGS]       try to use only PIC/non-PIC objects [default=use
@@ -3515,125 +3517,6 @@ ac_config_headers="$ac_config_headers config.h"
 ac_config_files="$ac_config_files Makefile"
 
 
-
-# aclocal.m4:	configure.ac
-# 	aclocal
-# config.h.in:	configure.ac
-# 	autoheader
-# helpers = COPYING INSTALL install-sh missing mkinstalldirs config.sub \
-# 		ltmain.sh ltconfig
-# Makefile.in $(helpers):	configure.ac Makefile.am aclocal.m4
-# 	automake
-# Note: automake calls libtool for you when necessary.
-
-# When I configure CSL I will also ensure that the config-related files for
-# crlibm and gc-7 are up to date... I will not test for the presence of the
-# various helper scripts (eg install-sh, config.sub) that automake can
-# install.
-# When I tried the fuller set of dependencies as shown above I ran into
-# trouble with autoreconf sometimes not leaving date-stamps in the order
-# I expcted. That could then lead to an infinite cycle of reconfiguration
-# attempts. So now I just look at the master source filed configure.ac and
-# Makefile.am, and compare them against the key derived files configure
-# and Makefile.in. So the check here can not detect and recover from all
-# possible cases where configuration files are out of date, but should
-# cope with some of the more common and important cases.
-
-need="no"
-
-if ! test $srcdir/Makefile.in -nt $srcdir/configure.ac
-then
-  printf "Makefile.in depends on configure.ac\n"
-  need="yes"
-fi
-if ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am
-then
-  printf "Makefile.in depends on Makefile.am\n"
-  need="yes"
-fi
-if ! test $srcdir/configure -nt $srcdir/configure.ac
-then
-  printf "configure depends on configure.ac\n"
-  need="yes"
-fi
-
-if ! test $srcdir/crlibm/Makefile.in -nt $srcdir/crlibm/configure.ac
-then
-  printf "crlibm: Makefile.in depends on configure.ac\n"
-  need="yes"
-fi
-if ! test $srcdir/crlibm/Makefile.in -nt $srcdir/crlibm/Makefile.am
-then
-  printf "crlibm: Makefile.in depends on Makefile.am\n"
-  need="yes"
-fi
-if ! test $srcdir/crlibm/configure -nt $srcdir/crlibm/configure.ac
-then
-  printf "crlibm: configure depends on configure.ac\n"
-  need="yes"
-fi
-
-if ! test $srcdir/gc-7/Makefile.in -nt $srcdir/gc-7/configure.ac
-then
-  printf "gc-7: Makefile.in depends on configure.ac\n"
-  need="yes"
-fi
-if ! test $srcdir/gc-7/Makefile.in -nt $srcdir/gc-7/Makefile.am
-then
-  printf "gc-7: Makefile.in depends on Makefile.am\n"
-  need="yes"
-fi
-if ! test $srcdir/gc-7/configure -nt $srcdir/gc-7/configure.ac
-then
-  printf "gc-7: configure depends on configure.ac\n"
-  need="yes"
-fi
-
-if ! test $srcdir/gc-7/libatomic_ops/Makefile.in -nt $srcdir/gc-7/libatomic_ops/configure.ac
-then
-  printf "gc-7/libatomic_ops: Makefile.in depends on configure.ac\n"
-  need="yes"
-fi
-if ! test $srcdir/gc-7/libatomic_ops/Makefile.in -nt $srcdir/gc-7/libatomic_ops/Makefile.am
-then
-  printf "gc-7/libatomic_ops: Makefile.in depends on Makefile.am\n"
-  need="yes"
-fi
-if ! test $srcdir/gc-7/libatomic_ops/configure -nt $srcdir/gc-7/libatomic_ops/configure.ac
-then
-  printf "gc-7/libatomic_ops: configure depends on configure.ac\n"
-  need="yes"
-fi
-
-if test "x$need" = "xyes\n"
-then
-  printf "autoreconf necessary (args: $ac_configure_args)\n"
-
-  here=`pwd`
-  cd $srcdir
-  printf "autoreconf in the cslbase directory\n"
-  autoreconf -f -i -v
-  cd crlibm
-  printf "autoreconf in the crlibm directory\n"
-  autoreconf -f -i -v
-  cd ../gc-7
-  printf "autoreconf in the gc-7 directories\n"
-  autoreconf -f -i -v
-
-  cd $here
-# Because autoconf might not be available or might fail and because I
-# believe I have observed cases where it has not reset timestamps in the
-# way I expected I will reset timestamps explicitly here...
-
-  touch $srcdir/Makefile.am $srcdir/crlibm/Makefile.am \
-    $srcdir/gc-7/Makefile.am $srcdir/gc-7/libatomic_ops/Makefile.am
-  touch $srcdir/configure $srcdir/crlibm/configure \
-    $srcdir/gc-7/configure $srcdir/gc-7/libatomic_ops/configure
-
-  printf "Restart: $srcdir/configure $ac_configure_args\n"
-  exec /bin/sh -c "$srcdir/configure $ac_configure_args"
-fi
-
 # These days I am making all the source files for CSL ones in C++ not C
 # and so it is best to make configuration tests match.
 
@@ -3923,6 +3806,15 @@ if test "${with_cygwin+set}" = set; then :
   withval=$with_cygwin;
 else
   with_cygwin="no"
+fi
+
+
+
+# Check whether --with-autogen was given.
+if test "${with_autogen+set}" = set; then :
+  withval=$with_autogen;
+else
+  with_autogen="yes"
 fi
 
 
@@ -20163,13 +20055,12 @@ $as_echo "#define HAVE_LIBXFT 1" >>confdefs.h
       fi
     fi
   fi
-fi
 
-if test "x$xft_found" != "xyes"
-then
+  if test "x$xft_found" != "xyes"
+  then
 # Now a search without the benefit of helper tools.
-  xft_found="yes"
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for FcConfigCreate in -lfontconfig" >&5
+    xft_found="yes"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for FcConfigCreate in -lfontconfig" >&5
 $as_echo_n "checking for FcConfigCreate in -lfontconfig... " >&6; }
 if ${ac_cv_lib_fontconfig_FcConfigCreate+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -20214,7 +20105,7 @@ _ACEOF
 
 fi
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XftFontOpen in -lXft" >&5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XftFontOpen in -lXft" >&5
 $as_echo_n "checking for XftFontOpen in -lXft... " >&6; }
 if ${ac_cv_lib_Xft_XftFontOpen+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -20261,7 +20152,7 @@ else
   xft_found="no"
 fi
 
-  ac_fn_cxx_check_header_mongrel "$LINENO" "X11/Xft/Xft.h" "ac_cv_header_X11_Xft_Xft_h" "$ac_includes_default"
+    ac_fn_cxx_check_header_mongrel "$LINENO" "X11/Xft/Xft.h" "ac_cv_header_X11_Xft_Xft_h" "$ac_includes_default"
 if test "x$ac_cv_header_X11_Xft_Xft_h" = xyes; then :
 
 else
@@ -20269,11 +20160,12 @@ else
 fi
 
 
-  if test "$xft_found" = "yes"
-  then
+    if test "$xft_found" = "yes"
+    then
 
 $as_echo "#define HAVE_LIBXFT 1" >>confdefs.h
 
+    fi
   fi
 fi
 
@@ -20710,7 +20602,7 @@ fi
 fi
 
 
-# There is a misery here! "term.h" (on some machines) needs cuses.h
+# There is a misery here! "term.h" (on some machines) needs curses.h
 # included first (typically to define "bool" for it).
   for ac_header in term.h
 do :
@@ -22907,29 +22799,41 @@ then
 # simpler, not to try to lock anybody in or our of anything.
 #
 # Note that pthread and dl resolve to system-provided libraries and so
-# I am not distributing them, merely links to them.
-  LL=/opt/local/lib
-  LIBS="$LL/libXrandr.a \
-    $LL/libXcursor.a \
-    $LL/libXrender.a \
-    $LL/libcurses.a \
-    $LL/libXext.a \
-    $LL/libX11.a \
-    $LL/libXft.a \
-    $LL/libXau.a \
-    $LL/libXfixes.a \
-    $LL/libxcb.a \
-    $LL/libXdmcp.a \
-    $LL/libpng.a \
-    $LL/libz.a \
-    $LL/libbz2.a \
-    $LL/libfreetype.a \
-    $LL/libiconv.a \
-    $LL/libXft.a \
-    $LL/libfontconfig.a \
-    $LL/libexpat.a \
-    -lpthread \
-    -ldl"
+# I am not distributing them, merely links to them. Hmm I will try to
+# avoid overriding the linker arrangements in the case that somebody has
+# configured for use without a GUI.
+  if test "x$with_gui" = "xyes"
+  then
+    LL=/opt/local/lib
+    LIBS="$LL/libXrandr.a \
+      $LL/libXcursor.a \
+      $LL/libXrender.a \
+      $LL/libcurses.a \
+      $LL/libXext.a \
+      $LL/libX11.a \
+      $LL/libXft.a \
+      $LL/libXau.a \
+      $LL/libXfixes.a \
+      $LL/libxcb.a \
+      $LL/libXdmcp.a \
+      $LL/libpng.a \
+      $LL/libz.a \
+      $LL/libbz2.a \
+      $LL/libfreetype.a \
+      $LL/libiconv.a \
+      $LL/libXft.a \
+      $LL/libfontconfig.a \
+      $LL/libexpat.a \
+      -lpthread \
+      -ldl"
+    if test "x$with_wx" = "xyes"
+    then
+      LIBS="$LIBS $LL/libiconv.a $LL/libz.a $LL/libpng.a"
+    fi
+  else
+# This is to try to force linking against a system-provided version.
+    LDFLAGS="-L/usr/lib -lcurses $LDFLAGS"
+  fi
 fi
 
 for ac_prog in cygpath
@@ -23160,14 +23064,6 @@ else
 fi
 
 
-# The following lines are a (further) attempt to arrange that the
-# rebuilding of Makefile (and before that Makefile.in and the like)
-# is less sensitive to exactly which version of automake happens to
-# be installed...
-
-AUTOMAKE="automake -f -a -v"
-
-ACLOCAL="aclocal --force"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure

@@ -27,10 +27,11 @@ cd $here
 
 if ! which autoconf > /dev/null || \
    ! which automake > /dev/null || \
-   ! which libtoolize > /dev/null
+   ! which libtool > /dev/null
 then
   printf "You need to have autoconf, automake and libtool installed.\n"
   printf "I seem not to be able to find them.\n"
+  printf "Note that on some Linux systems it is in a package called libtool-bin\n"
   printf "Stopping...\n"
   exit 1
 fi
