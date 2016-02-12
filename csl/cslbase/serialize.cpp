@@ -622,15 +622,15 @@ LispObject reader_repeat_new(LispObject x)
 
 size_t find_index_in_repeats(size_t h)
 {
-//  printf("find_index_in_repeats %" PRIxPTR "\n", (uintptr_t)h);
+    printf("find_index_in_repeats %" PRIxPTR "\n", (uintptr_t)h);
     size_t n = payload[h];
-//  printf("payload %" PRIxPTR "\n", (uintptr_t)n);
+    printf("payload %" PRIxPTR "\n", (uintptr_t)n);
 // if n == 0 then this is the first time we have seen this item. So it
 // needs to be inserted into repeat_hash.
     if (n == 0)
     {   n = ++repeat_count;
         payload[h] = n;
-//      printf("set payload %" PRIxPTR "\n", (uintptr_t)n);
+        printf("set payload %" PRIxPTR "\n", (uintptr_t)n);
     }
 // I now need to perform the same move-to-top operation that will be performed
 // during reading. But as I do so I will need to update values in the repeat_heap
@@ -1032,7 +1032,7 @@ down:
                 prev = *p = getvector(TAG_VECTOR, TYPE_STRING_4, len);
                 char *x = &celt(prev, 0);
                 for (size_t i=0; i<(size_t)w; i++) *x++ = nextByte();
-                while (((int)x & 7) != 0) *x++ = 0;
+                while (((intptr_t)x & 7) != 0) *x++ = 0;
             }
             goto up;
 
@@ -1137,7 +1137,7 @@ down:
         prev = *p = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+w);
         {   char *x = &celt(prev, 0);
             for (size_t i=0; i<(size_t)w; i++) *x++ = nextByte();
-            while (((int)x & 7) != 0) *x++ = 0;
+            while (((intptr_t)x & 7) != 0) *x++ = 0;
         }
 //      printf("at end of SER_STRING prev = %" PRIxPTR "\n",
 //             (uintptr_t)prev);
@@ -1169,7 +1169,7 @@ down:
             if (vector_i8(type))
             {   char *x = (char *)start_contents(prev);
                 for (size_t i=0; i<(size_t)w; i++) *x++ = nextByte();
-                while (((int)x & 7) != 0) *x++ = 0;
+                while (((intptr_t)x & 7) != 0) *x++ = 0;
             }
             else if (vector_i32(type))
             {   uint32_t *x = (uint32_t *)start_contents(prev);
@@ -1180,7 +1180,7 @@ down:
                     q = (q << 8) | (nextByte() & 0xff);
                     *x++ = (q << 8) | (nextByte() & 0xff);
                 }
-                while (((int)x & 7) != 0) *x++ = 0;
+                while (((intptr_t)x & 7) != 0) *x++ = 0;
             }
             else if (vector_f64(type))
             {   double *x = (double *)start_contents64(prev);
@@ -1195,7 +1195,7 @@ down:
                 {   uint32_t q = nextByte() & 0xff;
                     *x++ = (q << 8) | (nextByte() & 0xff);
                 }
-                while (((int)x & 7) != 0) *x++ = 0;
+                while (((intptr_t)x & 7) != 0) *x++ = 0;
             }
             else if (vector_i64(type))
             {   uint64_t *x = (uint64_t *)start_contents64(prev);
@@ -1214,7 +1214,7 @@ down:
             else if (vector_f32(type))
             {   float *x = (float *)start_contents(prev);
                 for (size_t i=0; i<(size_t)w/4; i++) *x++ = read_f32();
-                while (((int)x & 7) != 0) *x++ = 0;
+                while (((intptr_t)x & 7) != 0) *x++ = 0;
             }
             else if (vector_f128(type))
             {   printf("128-bit integer arrays not supported (yet?)\n");
