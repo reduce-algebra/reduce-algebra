@@ -726,7 +726,7 @@ endif !crlibm
 
 if boehm
 
-gctest_SOURCES = gctest.cpp serialize.cpp
+gctest_SOURCES = gctest.cpp
 gctest_CPPFLAGS = $(TRACE)
 gctest_LDADD =
 gctest_DEPENDENCIES =
