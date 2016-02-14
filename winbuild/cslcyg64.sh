@@ -17,6 +17,7 @@ reduce="${reduce%/}"
 echo $reduce
 
 here=`cygpath -a .`
+here="${here%/}"
 
 rm -rf cslcyg64
 mkdir cslcyg64

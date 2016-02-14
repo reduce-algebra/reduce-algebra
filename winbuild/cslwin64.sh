@@ -8,6 +8,7 @@ reduce="${reduce%/}"
 echo $reduce
 
 here=`cygpath -a .`
+here="${here%/}"
 
 rm -rf cslwin64
 mkdir cslwin64
