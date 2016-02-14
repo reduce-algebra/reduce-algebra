@@ -17,11 +17,18 @@ export HERE=`pwd`
 export today=`date +%Y%m%d`
 
 # The ip address or name of the machine where the generated archive is to go
-export DESTMC=192.168.1.110
+export DESTINATIONMC=192.168.1.110
 # The user to use when copying
-export DESTUSER=acn1
+export DESTINATIONUSER=acn1
 # The directory to place snapshots in
-export DESTDIR=snapshots
+export DESTINATIONDIR=snapshots
+
+# Warning: At an earlier stage I had used the name DESTDIR here but that
+# interacted with what automake does to really bad effect. Look up DESTDIR
+# in the automake documentation to see what happened, and hope that I do
+# not unwittingly stumble across other names that they reserve or rely on
+
+
 # NOTE that .ssh authorized-keys need to have been set up so that the use
 # of "scp" here can happen without any need to quote a password.
 
@@ -100,10 +107,10 @@ then
   case `uname -a`
   in
   Darwin*)
-    cp $OUTFILES $HOME/$DESTDIR
+    cp $OUTFILES $HOME/$DESTINATIONDIR
     ;;
   *)
-    scp $OUTFILES $DESTUSER@$DESTMC:$DESTDIR
+    scp $OUTFILES $DESTINATIONUSER@$DESTINATIONMC:$DESTINATIONDIR
     ;;
   esac
   printf "Snapshot copied to snapshots directory\n"
@@ -118,9 +125,9 @@ fi
 
 if test "$SYS" = "mac"
 then
-  script $HOME/make-snapshot.log $HERE/make-snapshot1.sh
+  script $HOME/make-snapshot1.log $HERE/make-snapshot1.sh
 else
-  script -c $HERE/make-snapshot1.sh $HOME/make-snapshot.log
+  script -c $HERE/make-snapshot1.sh $HOME/make-snapshot1.log
 fi
 
 exit 0

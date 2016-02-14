@@ -44,10 +44,10 @@ cd $OUTDIR
 case `uname -a`
 in
 Darwin*)
-  cp $OUTFILES $HOME/$DESTDIR
+  cp $OUTFILES $HOME/$DESTINATIONDIR
   ;;
 *)
-  scp $OUTFILES $DESTUSER@$DESTMC:$DESTDIR
+  scp $OUTFILES $DESTINATIONUSER@$DESTINATIONMC:$DESTINATIONDIR
   ;;
 esac
 printf "Snapshot copied to snapshots directory\n"
