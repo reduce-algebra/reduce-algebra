@@ -2126,9 +2126,11 @@ LispObject Lunintern_2(LispObject nil, LispObject sym, LispObject pp)
     package = pp;
 #endif
     if (!is_symbol(sym)) return onevalue(nil);
-#ifdef COMMON
+#if defined COMMON || defined EXPERIMENT
     if (qpackage(sym) == package) qpackage(sym) = nil;
+#ifndef EXPERIMENT
     packshade_(package) = ndelete(sym, packshade_(package));
+#endif
 #endif
     if ((qheader(sym) & SYM_C_DEF) != 0)
         return aerror1("remob on function with kernel definition", sym);

@@ -309,7 +309,7 @@ top:
             validate(qvalue(p), __LINE__);
             validate(qenv(p), __LINE__);
             validate(qpname(p), __LINE__);
-#if defined COMMON || defined EXPERIMENT
+#if defined COMMON //|| defined EXPERIMENT
             validate(qpackage(p), __LINE__);
 #endif // COMMON
             validate(qplist(p), __LINE__);
@@ -569,7 +569,7 @@ descend:
                 p = w;
                 goto descend;
             }
-#if defined COMMON || defined EXPERIMENT
+#if defined COMMON //|| defined EXPERIMENT
             w = qpackage(p);
             if (!is_immed(w) && w != nil)
             {   qpackage(p) = flip_mark_bit_p(b);
@@ -753,7 +753,7 @@ ascend:
             }
 
         case TAG_SYMBOL:
-#if defined COMMON || defined EXPERIMENT
+#if defined COMMON //|| defined EXPERIMENT
             w = qpackage(b);
             if (!is_immed(w) && is_marked_p(w))
             {   qpackage(b) = p;
@@ -814,7 +814,7 @@ ascend:
                 goto descend;
             }
         try_package:
-#if defined COMMON || defined EXPERIMENT
+#if defined COMMON //|| defined EXPERIMENT
             p = qpackage(b);
             if (!is_immed(p) && p != nil && !is_marked_p(p))
             {   qpackage(b) = w;
@@ -987,7 +987,7 @@ ascend_from_vector:
             }
 
         case TAG_SYMBOL:
-#if defined COMMON || defined EXPERIMENT
+#if defined COMMON //|| defined EXPERIMENT
             w = qpackage(b);
             if (!is_immed(w) && is_marked_p(w))
             {   qpackage(b) = p;
@@ -1228,7 +1228,7 @@ top:
             {   non_recursive_mark(&qvalue(p));
                 non_recursive_mark(&qenv(p));
                 non_recursive_mark(&qpname(p));
-#if defined COMMON || defined EXPERIMENT
+#if defined COMMON //|| defined EXPERIMENT
                 non_recursive_mark(&qpackage(p));
 #endif // COMMON
             }
@@ -1245,7 +1245,7 @@ top:
                 q = qfastgets(p);
                 if (!is_immed(q) && q != nil)
                     *++sp = (LispObject)&qfastgets(p);
-#if defined COMMON || defined EXPERIMENT
+#if defined COMMON //|| defined EXPERIMENT
                 q = qpackage(p);
                 if (!is_immed(q) && q != nil)
                     *++sp = (LispObject)&qpackage(p);
@@ -3150,7 +3150,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         copy(&(qplist(nil)));
         copy(&(qpname(nil)));
         copy(&(qfastgets(nil)));
-#if defined COMMON || defined EXPERIMENT
+#if defined COMMON //|| defined EXPERIMENT
         copy(&(qpackage(nil)));
 #endif // COMMON
 
@@ -3275,7 +3275,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         relocate(&(qplist(nil)));
 //      relocate(&(qpname(nil)));   never a cons cell
         relocate(&(qfastgets(nil)));
-#if defined COMMON || defined EXPERIMENT
+#if defined COMMON //|| defined EXPERIMENT
         relocate(&(qpackage(nil)));
 #endif // COMMON
 

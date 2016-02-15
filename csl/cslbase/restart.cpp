@@ -1775,7 +1775,7 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
 //+ are represented as a different length. That is because in Common Lisp mode
 //+ there has to be an extra field to hold the identity of the package that
 //+ a symbol lives in.
-// The comment above is now out pf date in that I am moving to a single format
+// The comment above is now out of date in that I am moving to a single format
 // for symbols - however a different complication arises. That is that the
 // the symbol contains a 64-bit count field, and this does not double its
 // size when moved to a 64-bit world. So a 32-bit symbol is 56 bytes and
@@ -2094,7 +2094,7 @@ static void adjust_vecheap(void)
                 adjust(&qpname(ss));
                 adjust(&qplist(ss));
                 adjust(&qfastgets(ss));
-#if defined COMMON || defined EXPERIMENT
+#if defined COMMON //|| defined EXPERIMENT
                 adjust(&qpackage(ss));
 #endif
 //
@@ -2384,7 +2384,7 @@ void adjust_all(void)
     adjust(&(qpname(nil)));     // not a gensym
     adjust(&(qplist(nil)));
     adjust(&(qfastgets(nil)));
-#if defined COMMON || defined EXPERIMENT
+#if defined COMMON //|| defined EXPERIMENT
     adjust(&(qpackage(nil)));
 #endif
 
@@ -4649,7 +4649,7 @@ static void cold_setup()
     qpname(nil) = make_string("NIL");
 #else
 #ifdef EXPERIMENT
-    qpackage(nil) = nil;
+//  qpackage(nil) = nil;
 #endif
     qpname(nil) = make_string("nil");
 #endif
@@ -4678,7 +4678,7 @@ static void cold_setup()
     all_packages = ncons(qvalue(nil));
 #else
 #ifdef EXPERIMENT
-    qpackage(nil) = qvalue(nil);
+//  qpackage(nil) = qvalue(nil);
 #endif
 #endif
 
@@ -4760,6 +4760,9 @@ static void cold_setup()
 #endif
 #ifdef EXPERIMENT
     qvalue(nil)              = nil;
+//  qpackage(nil) = qpackage(current_package) = lisp_package;
+//  printf("nil=%p, lisp_package=%p, current_package=%p\n",
+//      (void *)nil, (void *)lisp_package, (void *)current_package);
 #endif
 
     B_reg = nil;                             // safe for GC

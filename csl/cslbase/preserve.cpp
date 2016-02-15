@@ -1,7 +1,7 @@
-// preserve.cpp                       Copyright (c) Codemist Ltd, 1990-2015
+// preserve.cpp                       Copyright (c) Codemist Ltd, 1990-2016
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -679,7 +679,7 @@ void Iinit(void)
                                      i == output_directory ? PDS_OUTPUT :
                                      PDS_INPUT);
     }
-    CSL_MD5_Update((unsigned char *)"Copyright 2015 Codemist Ltd", 24);
+    CSL_MD5_Update((unsigned char *)"Copyright 2016 Codemist Ltd", 24);
 }
 
 void Icontext(Ihandle *where)
@@ -931,7 +931,7 @@ static CSLbool open_input(directory *d, const char *name, int len,
 }
 
 void IreInit(void)
-{   CSL_MD5_Update((unsigned char *)"Copyright 2015 Codemist Ltd", 24);
+{   CSL_MD5_Update((unsigned char *)"Copyright 2016 Codemist Ltd", 24);
     CSL_MD5_Update((unsigned char *)"memory.u", 8);
 }
 
@@ -2266,7 +2266,7 @@ static void unadjust(LispObject *cp)
 //
 // If p is a pointer to an object that has moved, unadjust it.
 //
-{   LispObject nil = C_nil, p = (*cp);  // Beware "=*" anachronism!
+{   LispObject nil = C_nil, p = *cp;
     if (p == nil)
     {   *cp = SPID_NIL; // Marks NIL in preserve files
         return;
@@ -2351,7 +2351,7 @@ static void unadjust_vecheap(void)
                 unadjust(&qpname(s));
                 unadjust(&qplist(s));
                 unadjust(&qfastgets(s));
-#if defined COMMON || defined EXPERIMENT
+#if defined COMMON //|| defined EXPERIMENT
                 unadjust(&qpackage(s));
 #endif
                 low += symhdr_length;
@@ -2484,7 +2484,7 @@ static void unadjust_all(void)
     unadjust(&(qpname(nil)));       // not a gensym
     unadjust(&(qplist(nil)));
     unadjust(&(qfastgets(nil)));
-#if defined COMMON || defined EXPERIMENT
+#if defined COMMON //|| defined EXPERIMENT
     unadjust(&(qpackage(nil)));
 #endif
 

@@ -302,7 +302,7 @@ static size_t *payload = NULL;
 
 #define NULLKEY ((uintptr_t)NULL)
 
-#define MULTIPLIER1  ((uintptr_t)UINT64_C(0x0101010101010101))
+#define MULTIPLIER1  ((uintptr_t)UINT64_C(0x1010101010101010))
 static uintptr_t MULTIPLIER2 =  (uintptr_t)UINT64_C(0x9e3779b99e377741);
 
 #define H1(p) ((MULTIPLIER1*(uintptr_t)(p)) >> hashshift)
@@ -557,8 +557,8 @@ void reader_setup_repeats(size_t n)
 
 void writer_setup_repeats()
 {
-    payload = (size_t *)malloc(hashcount*sizeof(size_t *));
-    for (size_t i=0; i<hashcount; i++) payload[i] = 0;
+    payload = (size_t *)malloc(hashsize*sizeof(size_t *));
+    for (size_t i=0; i<hashsize; i++) payload[i] = 0;
     repeat_heap_size = hashcount;
     repeat_count = 0;
     repeat_heap =
@@ -660,7 +660,7 @@ int serincount = 0;
 unsigned char serbuffer[SERSIZE];
 
 
-int nextByte()
+int read_byte()
 {
     if (serincount > sercounter)
     {   printf("\nRead too much\n");
@@ -694,21 +694,21 @@ void write_byte(int byte, const char *msg, ...)
 // of which have their top bit zero then the final byte is treated as a full
 // 8 bits.
 
-uint64_t readPacked()
+uint64_t read_u64()
 {
     uint64_t r = 0;
     int b, i;
     for (i=0; i<8; i++)
-    {   if (((b = nextByte()) & 0x80) != 0)
+    {   if (((b = read_byte()) & 0x80) != 0)
             return (r << 7)  | (b & 0x7f);
         r = (r << 7) | b;
     }
-    return (r << 8) | nextByte();
+    return (r << 8) | read_byte();
 }
 
-// Write a 64-bit unsigned value in a format compatible with readPacked()
+// Write a 64-bit unsigned value in a format compatible with read_u64()
 
-void writePacked(uint64_t n)
+void write_u64(uint64_t n)
 {
     char msg[32];
     if (n == (n & 0x7f))
@@ -737,8 +737,6 @@ void writePacked(uint64_t n)
     }
 }
 
-
-
 // For the transport of floating point values I will suppose that for
 // floats the only problem is that for some machines the byte order
 // may be backwards. For doubles I will allow for both the possibility
@@ -756,16 +754,16 @@ typedef union _float32u
 float read_f32()
 {   float32u u;
     if ((current_fp_rep & FP_BYTE_ORDER) == 0)
-    {    u.i[0] = nextByte();
-         u.i[1] = nextByte();
-         u.i[2] = nextByte();
-         u.i[3] = nextByte();
+    {    u.i[0] = read_byte();
+         u.i[1] = read_byte();
+         u.i[2] = read_byte();
+         u.i[3] = read_byte();
     }
     else
-    {    u.i[3] = nextByte();
-         u.i[2] = nextByte();
-         u.i[1] = nextByte();
-         u.i[0] = nextByte();
+    {    u.i[3] = read_byte();
+         u.i[2] = read_byte();
+         u.i[1] = read_byte();
+         u.i[0] = read_byte();
     }
     return u.f;
 }
@@ -798,16 +796,16 @@ double read_f64()
     {   int j = i;
         if ((current_fp_rep & FP_WORD_ORDER) != 0) j = j ^ 4;
         if ((current_fp_rep & FP_BYTE_ORDER) == 0)
-        {    u.i[j+0] = nextByte();
-             u.i[j+1] = nextByte();
-             u.i[j+2] = nextByte();
-             u.i[j+3] = nextByte();
+        {    u.i[j+0] = read_byte();
+             u.i[j+1] = read_byte();
+             u.i[j+2] = read_byte();
+             u.i[j+3] = read_byte();
         }
         else
-        {    u.i[j+3] = nextByte();
-             u.i[j+2] = nextByte();
-             u.i[j+1] = nextByte();
-             u.i[j+0] = nextByte();
+        {    u.i[j+3] = read_byte();
+             u.i[j+2] = read_byte();
+             u.i[j+1] = read_byte();
+             u.i[j+0] = read_byte();
         }
     }
     return u.f;
@@ -852,6 +850,148 @@ void write_f128(/*long*/ double f)
 {   write_f64(f);
 }
 
+// At times I need to read and write values that are the entrypoints of
+// functions that are defined in the kernel. I do this by referring back to
+// the tables that originally set them up. A bad feature of the scheme I use
+// here is that it makes serialized files that refer to functions specific
+// to the particular ordering etc in those tables. If changes have been
+// bade since the data was written things could fail. I will deal with that
+// by using a (simple) checksum on the tables and insisting it matches as
+// between reader and writer.
+
+// A raw CSL Lisp provides around 750 entrypounts, while a full copy of
+// Reduce with all the files u01.cpp to u60.cpp populated ends up with
+// somewhat under 4000 entrypoints. At present I am using fixed size
+// tables here and fixed hash functions. This is in principle unsatisfactory
+// because somebody could expand the number of entrypoints. I propose
+// not to worry about that now.
+// 
+
+#define NCODEPOINTERS 5000
+
+int ncodepointers = 0;
+uintptr_t codepointers[NCODEPOINTERS];
+
+#define CODEHASHSIZE 5003   // 5003 is prime...
+
+// Using digits from pi to give my multiplier is a bit stupid. After all
+// I am using digits from a decimal representation of pi bu the constant
+// here is specified in hex, so I am never using digist a,b,c,d,e or f.
+// However the number is as it is to suggest I am not using a number that
+// has a particular value that is critical, and I am sort of stressing that
+// by choice is arbitrary.
+
+uintptr_t code_multiplier1 = (uintptr_t)UINT64_C(0x3141592653589793);
+uintptr_t code_multiplier2 = (uintptr_t)UINT64_C(0x9e3779b99e377741);
+
+#define codehash_f1(p) (((p) * 31415927) % CODEHASHSIZE)
+#define codehash_f2(p) (((p) * 27182818) % CODEHASHSIZE)
+
+uintptr_t codehash1[CODEHASHSIZE], codehash2[CODEHASHSIZE];
+int codecode1[CODEHASHSIZE], codecode2[CODEHASHSIZE];
+
+int lookup_codepointer(uintptr_t p)
+{   int h = codehash_f1(p);
+    if (codehash1[h] == p) return codecode1[h];
+    h = codehash_f2(p);
+    if (codehash2[h] == p) return codecode2[h];
+    return -1;
+}
+
+void rehash_codepointer()
+{
+    for (int i=0; i<CODEHASHSIZE; i++)
+    {
+    }
+}
+
+void insert_codepointer(uintptr_t p)
+{   uintptr_t p2, p3;
+    int h = codehash_f1(p), h2 = codehash_f2(p);
+    if ((p2 = codehash1[h]) == p ||
+        (p3 = codehash2[h2]) == p) return; // already present
+    int code = codecode1[h], code2;
+    codehash1[h] = p;
+    codecode1[h] = ncodepointers;
+    codepointers[ncodepointers++] = p;
+    p = p2;
+    h = h2;
+    p2 = p3;
+    bool rehashed = false;
+    for (int i=0;;i++)
+    {
+// Here I need to insert key p at location h with associated value code.
+// (p2,code2) represent the (non-empty) item currently in that location.
+        codehash2[h] = p;
+        codecode2[h] = code;
+        p = p2;
+        code = code2;
+        h = codehash_f1(p);
+        if ((p2 = codehash1[h]) == (uintptr_t)NULL)
+        {   codehash1[h] = p;
+            codecode1[h] = code;
+            return;
+        }
+        code2 = codecode1[h];
+        codehash1[h] = p;
+        codecode1[h] = code;
+        p = p2;
+        code = code2;
+        h = codehash_f2(p);
+        if ((p2 = codehash2[h]) == (uintptr_t)NULL)
+        {   codehash2[h] = p;
+            codecode2[h] = code;
+            if (rehashed) rehash_codepointer();
+            return;
+        }
+        if (i > 30)
+        {   code_multiplier2 = (uintptr_t)
+                (UINT64_C(2862933555777941757)*code_multiplier2 +
+                 UINT64_C(3037000493));
+            i = 0;
+            rehashed = true;
+        }
+        code2 = codecode2[h];
+    }
+}
+
+void use_setup(const setup_type *p)
+{   while (p->name != NULL)
+    {   printf("[%d] Name: %s\n", ncodepointers, p->name);
+        insert_codepointer((uintptr_t)(p->one));
+        insert_codepointer((uintptr_t)(p->two));
+        insert_codepointer((uintptr_t)(p->n));
+        p++;
+    }
+}
+
+void set_up_function_tables()
+{
+    printf("Setting up functions table\n");
+    ncodepointers = 0;
+    for (int i=0; i<CODEHASHSIZE; i++)
+    {   codehash1[i] = codehash2[i] = 0;
+        codecode1[i] = codecode2[i] = -1;
+    }
+    const setup_type **p = setup_tables;
+    while (*p != NULL) use_setup(*p++);
+    p++;
+    while (*p != NULL) use_setup(*p++);
+}
+
+void *read_function_arg1()
+{   uint64_t n = read_u64();
+// The entry point I wish to refer to will be in one of quite a large
+// number of tables. If could be in arith06_setup to mpi_setup
+    int t = (int)n & 0x7f;
+    if (t == 0) return (void *)(entries_table1[n/0x7f].p);
+    else return (void *)(setup_tables[t-1][n/0x7f].one);
+}   
+
+void write_function_arg1(void *p)
+{
+}
+
 // In places here I need to find the start of a tagged vector-like
 // object which may be tagged with either TAG_VECTOR or TAG_NUMBERS
 // or possibly even TAG_FLOAT. This messy macro masks off the tag bits
@@ -878,7 +1018,7 @@ LispObject serial_read()
     prev = pbase = r = s = b = fixnum_of_int(0);
     p = &r;
 down:
-// nextByte() needs to read from the stream representation of things
+// read_byte() needs to read from the stream representation of things
 // and return a code... In this initial sketch I will only need to look
 // at three cases. One is for CONS which is sort of obvious. The next is
 // VECTOR. This covers all the cases where there are pointers within the
@@ -886,7 +1026,7 @@ down:
 // case is LEAF which will include immediate data such as FIXNUMS, but
 // alse big-numbers, strings and back-references to previously-read
 // structures.
-    c = nextByte();
+    c = read_byte();
     switch (c & 0xe0)
     {
     case SER_VARIOUS:
@@ -926,7 +1066,7 @@ down:
 // and so on using 7 bits per byte... up until I have used 8 bytes.
 // If one is needed beyond that it can be a final 8-bit value.
 // This allows for up to 2^64 back-references.
-            *p = reader_repeat_old(w = (1 + 64 + readPacked()));
+            *p = reader_repeat_old(w = (1 + 64 + read_u64()));
 //           printf("backref %" PRIuPTR " => %" PRIxPTR "\n",
 //                  (uintptr_t)w, (uintptr_t)*p);
             goto up;
@@ -943,7 +1083,7 @@ down:
 // possibly be a shared object, and against the possibility of that I set
 // pbase so that a SER_DUP opcode can behave meaningfully.
 // @@@ At present I only ever re-create a fixnum.
-            prev = *p = fixnum_of_int(readPacked());
+            prev = *p = fixnum_of_int(read_u64());
             goto up;
 
         case SER_NEGFIXNUM:
@@ -954,7 +1094,7 @@ down:
 // matches 2s complement. Eg with just 1 following byte the range goes from
 // -128 to +127 (rather than -127 to +127).
 // @@@ At present I only ever re-create a fixnum.
-            prev = *p = fixnum_of_int(-1-readPacked());
+            prev = *p = fixnum_of_int(-1-read_u64());
             goto up;
 
         case SER_RAWSYMBOL:
@@ -978,9 +1118,9 @@ down:
 // repeatedly. in the "GENSYM" case the name is the base-name of the gensym,
 // pergaps very often just "G", and the name read in will be set up as
 // if not yet printed, so a sequence number will be added leter.
-            {   size_t len = readPacked();
+            {   size_t len = read_u64();
                 boffop = 0;
-                for (size_t i=0; i<len; i++) packbyte(nextByte());
+                for (size_t i=0; i<len; i++) packbyte(read_byte());
                 if (c == SER_GENSYM || c == SER_DUPGENSYM)
                 {   w = copy_string(boffo, boffop);
                     w = Lgensym1(C_nil, w);
@@ -1023,15 +1163,15 @@ down:
 // shown here and I just send the rest of the data as a raw number. Note
 // that bytecode handles can be dealt with here if I understand them -
 // which for now I do not!
-            prev = *p = ((LispObject)readPacked()<<(Tw+2)) | TAG_HDR_IMMED;
+            prev = *p = ((LispObject)read_u64()<<(Tw+2)) | TAG_HDR_IMMED;
             goto up;
 
         case SER_BITVEC:
-            w = readPacked();
+            w = read_u64();
             {   size_t len = CELL + (w + 7)/8; // length in bytes
                 prev = *p = getvector(TAG_VECTOR, TYPE_STRING_4, len);
                 char *x = &celt(prev, 0);
-                for (size_t i=0; i<(size_t)w; i++) *x++ = nextByte();
+                for (size_t i=0; i<(size_t)w; i++) *x++ = read_byte();
                 while (((intptr_t)x & 7) != 0) *x++ = 0;
             }
             goto up;
@@ -1072,7 +1212,7 @@ down:
 //        else p = pbase + poff;
 //    }
 //
-// nextByte() must also deliver information on the type and the size
+// read_byte() must also deliver information on the type and the size
 // of the vector that I need to create.
 //
 // One thing to observe here. If I have a vector that is a hash table using
@@ -1089,7 +1229,7 @@ down:
 // The size here will be the number of Lisp items held in the vector, so
 // what I need to pass to getvector scales that into bytes and allows for the
 // header word as well.
-            size_t n = readPacked();
+            size_t n = read_u64();
             w = *p = getvector(tag, type, CELL*(n+1));
 // Note that the "vector" just created may be tagged with TAG_NUMBERS
 // rather than TAG_VECTOR 
@@ -1136,7 +1276,7 @@ down:
         w = (c & 0x1f) + 1;
         prev = *p = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+w);
         {   char *x = &celt(prev, 0);
-            for (size_t i=0; i<(size_t)w; i++) *x++ = nextByte();
+            for (size_t i=0; i<(size_t)w; i++) *x++ = read_byte();
             while (((intptr_t)x & 7) != 0) *x++ = 0;
         }
 //      printf("at end of SER_STRING prev = %" PRIxPTR "\n",
@@ -1157,7 +1297,7 @@ down:
 // of the very last word will be in use. That has to be extracted so I know
 // just how much to read. The length code that follows the SER_BVECTOR
 // opcode measures in units of 4-byte words.
-        w = 4*readPacked();
+        w = 4*read_u64();
 // Here I have assembled 7 bits of type information in c. CCCCC comes from the
 // opcode. The header I want for my vector will be
 //     wwwwwwww....wwww CCC CC 10 g100
@@ -1168,17 +1308,17 @@ down:
 
             if (vector_i8(type))
             {   char *x = (char *)start_contents(prev);
-                for (size_t i=0; i<(size_t)w; i++) *x++ = nextByte();
+                for (size_t i=0; i<(size_t)w; i++) *x++ = read_byte();
                 while (((intptr_t)x & 7) != 0) *x++ = 0;
             }
             else if (vector_i32(type))
             {   uint32_t *x = (uint32_t *)start_contents(prev);
 // 32-bit integers are transmitted most significant byte first.
                 for (size_t i=0; i<(size_t)w/4; i++)
-                {   uint32_t q = nextByte() & 0xff;
-                    q = (q << 8) | (nextByte() & 0xff);
-                    q = (q << 8) | (nextByte() & 0xff);
-                    *x++ = (q << 8) | (nextByte() & 0xff);
+                {   uint32_t q = read_byte() & 0xff;
+                    q = (q << 8) | (read_byte() & 0xff);
+                    q = (q << 8) | (read_byte() & 0xff);
+                    *x++ = (q << 8) | (read_byte() & 0xff);
                 }
                 while (((intptr_t)x & 7) != 0) *x++ = 0;
             }
@@ -1192,8 +1332,8 @@ down:
             else if (vector_i16(type))
             {   uint16_t *x = (uint16_t *)start_contents(prev);
                 for (size_t i=0; i<(size_t)w/2; i++)
-                {   uint32_t q = nextByte() & 0xff;
-                    *x++ = (q << 8) | (nextByte() & 0xff);
+                {   uint32_t q = read_byte() & 0xff;
+                    *x++ = (q << 8) | (read_byte() & 0xff);
                 }
                 while (((intptr_t)x & 7) != 0) *x++ = 0;
             }
@@ -1201,14 +1341,14 @@ down:
             {   uint64_t *x = (uint64_t *)start_contents64(prev);
                 if (!SIXTY_FOUR_BIT) *(int32_t *)start_contents(prev) = 0;
                 for (size_t i=0; i<(size_t)w/8; i++)
-                {   uint64_t q = nextByte() & 0xff;
-                    q = (q << 8) | (nextByte() & 0xff);
-                    q = (q << 8) | (nextByte() & 0xff);
-                    q = (q << 8) | (nextByte() & 0xff);
-                    q = (q << 8) | (nextByte() & 0xff);
-                    q = (q << 8) | (nextByte() & 0xff);
-                    q = (q << 8) | (nextByte() & 0xff);
-                    *x++ = (q << 8) | (nextByte() & 0xff);
+                {   uint64_t q = read_byte() & 0xff;
+                    q = (q << 8) | (read_byte() & 0xff);
+                    q = (q << 8) | (read_byte() & 0xff);
+                    q = (q << 8) | (read_byte() & 0xff);
+                    q = (q << 8) | (read_byte() & 0xff);
+                    q = (q << 8) | (read_byte() & 0xff);
+                    q = (q << 8) | (read_byte() & 0xff);
+                    *x++ = (q << 8) | (read_byte() & 0xff);
                 }
             }
             else if (vector_f32(type))
@@ -1692,7 +1832,7 @@ down:
             else if (n <= 64) write_byte(SER_BACKREF0 + n - 33, msg);
             else
             {   write_byte(SER_BIGBACKREF, msg);
-                writePacked(n);
+                write_u64(n);
             }
             goto up;
         }
@@ -1754,7 +1894,7 @@ down:
                     write_byte(SER_SYMBOL, msg);
                 }
             }
-            writePacked(n);  // number of bytes in the name
+            write_u64(n);  // number of bytes in the name
             for (size_t i=0; i<n; i++)
             {   int c = celt(w, i) & 0xff;
                 char msg[8];
@@ -1771,13 +1911,13 @@ down:
 // the count field... Each of these uses a variable length coding scheme that
 // will be 1 byte long in easy cases but can cope with 2^64 possibilities in
 // all if necessary.
-        writePacked((uint64_t)qheader(p)>>(Tw+4));
-        writePacked(code_up_codepointer((void *)(qfn0(p))));
-        writePacked(code_up_codepointer((void *)(qfn1(p))));
-        writePacked(code_up_codepointer((void *)(qfn2(p))));
-        writePacked(code_up_codepointer((void *)(qfn3(p))));
-        writePacked(code_up_codepointer((void *)(qfn4(p))));
-        writePacked(qcount(p));
+        write_u64((uint64_t)qheader(p)>>(Tw+4));
+        write_u64(code_up_codepointer((void *)(qfn0(p))));
+        write_u64(code_up_codepointer((void *)(qfn1(p))));
+        write_u64(code_up_codepointer((void *)(qfn2(p))));
+        write_u64(code_up_codepointer((void *)(qfn3(p))));
+        write_u64(code_up_codepointer((void *)(qfn4(p))));
+        write_u64(qcount(p));
         w = p;
         p = qpackage(p);
         qpackage(w) = b;
@@ -1793,7 +1933,7 @@ down:
     writevector:
         if (vector_holds_binary(h)) goto write_binary_vector;
         write_byte(SER_LVECTOR | ((h>>(Tw+2)) & 0x1f), "lisp vector");
-        writePacked(length_of_header(h) - CELL);
+        write_u64(length_of_header(h) - CELL);
         if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly referenced vector");
 // Now now the data beyond the 3 list-holding items in a MIXED structure
 // will not be dumped. I may need to review that later on.
@@ -1831,7 +1971,7 @@ down:
             len = length_of_bitheader(h);
             sprintf(msg, "bitvec, length=%" PRIuPTR, (intptr_t)len);
             write_byte(SER_BITVEC, msg);
-            writePacked(len);
+            write_u64(len);
             len = (len + 7)/8;
             for (size_t j=0; j<len; j++)
             {   int c = ucelt(p, j);
@@ -1858,7 +1998,7 @@ down:
 // so I need code that uses a mask operation to address its start.
         if (vector_i8(h))
         {   char *x = (char *)start_contents(p);
-            writePacked(len = length_of_byteheader(h) - CELL);
+            write_u64(len = length_of_byteheader(h) - CELL);
             if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
 // I *could* detect strings etc here to display the comments more tidily,
 // but since they are just for debugging that seems like too much work
@@ -1868,7 +2008,7 @@ down:
         else if (vector_i32(h))
         {   uint32_t *x = (uint32_t *)start_contents(p);
 // The packed length is the length in words.
-            writePacked(len = (length_of_header(h) - CELL)/4);
+            write_u64(len = (length_of_header(h) - CELL)/4);
             if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
 // 32-bit integers are transmitted most significant byte first.
             for (size_t i=0; i<len; i++)
@@ -1881,13 +2021,13 @@ down:
         }
         else if (vector_f64(h))
         {   double *x = (double *)start_contents64(p);
-            writePacked(len = (length_of_header(h) - CELL)/8);
+            write_u64(len = (length_of_header(h) - CELL)/8);
             if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
             for (size_t i=0; i<len; i++) write_f64(*x++);
         }
         else if (vector_i16(h))
         {   uint16_t *x = (uint16_t *)start_contents(p);
-            writePacked(len = length_of_hwordheader(h) - CELL);
+            write_u64(len = length_of_hwordheader(h) - CELL);
             if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
             for (size_t i=0; i<len; i++)
             {   uint32_t q = *x++;
@@ -1897,7 +2037,7 @@ down:
         }
         else if (vector_i64(h))
         {   uint64_t *x = (uint64_t *)start_contents64(p);
-            writePacked(len = (length_of_header(h) - CELL)/8);
+            write_u64(len = (length_of_header(h) - CELL)/8);
             if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
 // 64-bit integers are transmitted most significant byte first.
             for (size_t i=0; i<len/8; i++)
@@ -1914,7 +2054,7 @@ down:
         }
         else if (vector_f32(h))
         {   float *x = (float *)start_contents(p);
-            writePacked(len = (length_of_header(h) - CELL)/4);
+            write_u64(len = (length_of_header(h) - CELL)/4);
             if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
             for (size_t i=0; i<len/4; i++) write_f32(*x++);
         }
@@ -1975,11 +2115,11 @@ down:
             sprintf(msg, "int value=%" PRId64, w64);
             if (w64 < 0)
             {   write_byte(SER_NEGFIXNUM, msg);
-                writePacked(-w64-1);
+                write_u64(-w64-1);
             }
             else
             {   write_byte(SER_POSFIXNUM, msg);
-                writePacked(w64);
+                write_u64(w64);
             }
         }
         goto up;
@@ -1990,7 +2130,7 @@ down:
             uint64_t nn = ((uint64_t)p) >> (Tw+2);
             sprintf(msg, "char/spid, value=#%" PRIx64, nn);
             write_byte(SER_CHARSPID, msg);
-            writePacked(nn);
+            write_u64(nn);
         }
         goto up;
 
@@ -2077,14 +2217,20 @@ up:
     }
 }
 
+bool setup_codepointers = false;
+
 LispObject Lserialize(LispObject nil, LispObject a)
-{   descend_symbols = false;
+{   if (!setup_codepointers)
+    {   set_up_function_tables();
+        setup_codepointers = true;
+    }
+    descend_symbols = false;
     sercounter = 0;
     init_writer_hash();
     scan_data(a);
     release_map();
     writer_setup_repeats();
-    writePacked(repeat_heap_size);
+    write_u64(repeat_heap_size);
     write_data(a);
     release_writer_hash();
     if (repeat_heap_size != 0)
@@ -2099,7 +2245,7 @@ LispObject Lunserialize(LispObject nil, int nargs, ...)
 {
     LispObject r;
     serincount = 0;
-    reader_setup_repeats(readPacked());
+    reader_setup_repeats(read_u64());
     r = serial_read();
     if (repeat_heap_size != 0)
     {   repeat_heap_size = 0;

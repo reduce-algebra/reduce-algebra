@@ -1,7 +1,7 @@
-// gctest.cpp                                         Arthur Norman, 2015
+// gctest.cpp                                         Arthur Norman, 1026
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -64,8 +64,8 @@
 //
 // I now do not go "--enable-cplusplus" when I build the GC. It looks to me
 // as if the only effect of doing so would be to override new and free so that
-// memory allocated by them is treated as part of the root set (bit is not
-// collectable). So if I try storing references to anything in memory
+// memory allocated by them is treated as part of the root set (but is not
+// itself collectable). So if I try storing references to anything in memory
 // allocated that way I will need to ensure that there is a reference
 // somewhere else too - for instance in a static variable. I miss this out
 // for now because the mingw build report trouble with the C++ test.
@@ -80,8 +80,16 @@
 #include <windows.h>
 #endif
 
-#define GC_THREADS
+// I may well want to use threads, so I have to define GC_THREADS before
+// including the header file
+#define GC_THREADS 1
 #include "gc.h"
+
+void finf1(void *obj, void *client)
+{
+    void **p = (void **)obj;
+    printf("final %d: %p (%p %p %p %p)\n", *(int *)obj, obj, p[0], p[1], p[2], p[3]);
+}
 
 int main(int argc, char *argv[])
 {
@@ -130,7 +138,97 @@ int main(int argc, char *argv[])
 // GC_NEW_ATOMIC(type) 
 // GC_CreateThread()
 // GC_beginthreadx()
+
+// Now I will create some stuff, discard some, force a GC and see what I
+// can discern about when it lives and when it dies...
+    {   volatile intptr_t root[16];
+        for (int i=0; i<16; i++)
+        {   root[i] = 0;
+            volatile intptr_t a = (intptr_t)GC_MALLOC(4*sizeof(intptr_t));
+            *(int *)a = i;
+            GC_register_finalizer((void *)a, finf1, NULL, NULL, NULL);
+            printf("Object %d at %p\n", i, (void *)a);
+            switch (i)
+            {
+            case 0:
+// Point at the first item of the object
+                root[0] = a;
+                break;
+            case 1:
+// point 3 bytes in. This is within the first word on both 32 and 64-bit
+// machines.
+                root[1] = a+3;
+                break;
+            case 2:
+// point 11 bytes in. Badly aligned and not within the first word.
+                root[2] = a+11;
+                break;
+            case 3:
+// point at the very last byte of the object.
+                root[3] = a+4*sizeof(intptr_t)-1;
+                break;
+            case 4:
+// put a reference to this new object within another block.
+                ((intptr_t *)(root[0]-0))[0] = a;
+                break;
+            case 5:
+// put it within a block one more word on.
+                ((intptr_t *)(root[1]-3))[1] = a;
+                break;
+            case 6:
+// put it at the last place within the block.
+                ((intptr_t *)(root[2]-11))[3] = a;
+                break;
+            case 7:
+// Make a cyclic reference to self.
+                ((intptr_t *)a)[2] = a;
+                break;
+            case 8:
+// Make a small chain hangin off root[4]
+                root[4] = a;
+                break;
+            case 9:
+            case 10: 
+            case 11: 
+            case 12: 
+            case 13: 
+// This appears to be to show that when I have a chain of length n
+// and I discard the pointer to its head that it takes n garbage
+// collection passes before the final cell in the chain gets recycled.
+// I can see how this can arise, but it is a fact I wish to be aware of
+// when using the collector in a Lisp context where lists may
+// sometimes be very long.
+                ((intptr_t *)a)[2] = root[4];
+                root[4] = a;
+                break;
+// Note that blocks 14 and 15 are not preserved at all. But traces
+// of 15 may exist in working registers etc.
+            }
+            a = 0;
+        }
+        printf("About to do first collect\n");
+        GC_gcollect();
+        root[4] = 0;
+        printf("Have set root[4], so do second collect\n");
+        GC_gcollect();
+        for (int i=0; i<12; i++) root[i] = 0;
+        printf("Have set all roots to 0, so do second collect\n");
+        GC_gcollect();
+        printf("Do one more collection to see what happens\n");
+        GC_gcollect();
+        printf("Do one more collection to see what happens\n");
+        GC_gcollect();
+        printf("Do one more collection to see what happens\n");
+        GC_gcollect();
+        printf("Do one more collection to see what happens\n");
+        GC_gcollect();
+        printf("Do one more collection to see what happens\n");
+        GC_gcollect();
+        printf("Do one more collection to see what happens\n");
+        GC_gcollect();
+    }
     return 0;
 }
+
 
 // end of gctest.cpp

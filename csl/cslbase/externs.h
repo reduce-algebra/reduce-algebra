@@ -1082,24 +1082,24 @@ typedef struct setup_type_1
 } setup_type_1;
 
 extern setup_type const
-arith06_setup[], arith08_setup[], arith10_setup[], arith12_setup[],
-              arith13_setup[], char_setup[], eval1_setup[], eval2_setup[],
-              eval3_setup[], funcs1_setup[], funcs2_setup[], funcs3_setup[],
-              print_setup[], read_setup[], mpi_setup[];
+    arith06_setup[], arith08_setup[], arith10_setup[], arith12_setup[],
+    arith13_setup[], char_setup[], eval1_setup[], eval2_setup[],
+    eval3_setup[], funcs1_setup[], funcs2_setup[], funcs3_setup[],
+    print_setup[], read_setup[], mpi_setup[];
 extern setup_type const
-u01_setup[], u02_setup[], u03_setup[], u04_setup[],
-          u05_setup[], u06_setup[], u07_setup[], u08_setup[], u09_setup[],
-          u10_setup[], u11_setup[], u12_setup[], u13_setup[], u14_setup[],
-          u15_setup[], u16_setup[], u17_setup[], u18_setup[], u19_setup[],
-          u20_setup[], u21_setup[], u22_setup[], u23_setup[], u24_setup[],
-          u25_setup[], u26_setup[], u27_setup[], u28_setup[], u29_setup[],
-          u30_setup[], u31_setup[], u32_setup[], u33_setup[], u34_setup[],
-          u35_setup[], u36_setup[], u37_setup[], u38_setup[], u39_setup[],
-          u40_setup[], u41_setup[], u42_setup[], u43_setup[], u44_setup[],
-          u45_setup[], u46_setup[], u47_setup[], u48_setup[], u49_setup[],
-          u50_setup[], u51_setup[], u52_setup[], u53_setup[], u54_setup[],
-          u55_setup[], u56_setup[], u57_setup[], u58_setup[], u59_setup[],
-          u60_setup[];
+    u01_setup[], u02_setup[], u03_setup[], u04_setup[],
+    u05_setup[], u06_setup[], u07_setup[], u08_setup[], u09_setup[],
+    u10_setup[], u11_setup[], u12_setup[], u13_setup[], u14_setup[],
+    u15_setup[], u16_setup[], u17_setup[], u18_setup[], u19_setup[],
+    u20_setup[], u21_setup[], u22_setup[], u23_setup[], u24_setup[],
+    u25_setup[], u26_setup[], u27_setup[], u28_setup[], u29_setup[],
+    u30_setup[], u31_setup[], u32_setup[], u33_setup[], u34_setup[],
+    u35_setup[], u36_setup[], u37_setup[], u38_setup[], u39_setup[],
+    u40_setup[], u41_setup[], u42_setup[], u43_setup[], u44_setup[],
+    u45_setup[], u46_setup[], u47_setup[], u48_setup[], u49_setup[],
+    u50_setup[], u51_setup[], u52_setup[], u53_setup[], u54_setup[],
+    u55_setup[], u56_setup[], u57_setup[], u58_setup[], u59_setup[],
+    u60_setup[];
 
 extern setup_type const *setup_tables[];
 
