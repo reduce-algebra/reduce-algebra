@@ -1,4 +1,4 @@
-// machine.h                       Copyright (C) 1990-2015 Codemist Ltd
+// machine.h                       Copyright (C) 1990-2016 Codemist Ltd
 
 //
 // This was ONCE a place where all system-specific options were detected
@@ -15,7 +15,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -85,8 +85,12 @@
 
 #ifdef HAVE_STDINT_H
 
-#if defined __cplusplus && !defined __STDC_CONSTANT_MACROS
+#ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS 1
+#endif
+
+#ifndef __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS 1
 #endif
 
 #include <stdint.h>

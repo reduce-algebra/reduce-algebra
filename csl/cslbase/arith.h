@@ -160,15 +160,15 @@ extern LispObject rational(LispObject a);
 extern LispObject rationalize(LispObject a);
 extern LispObject lcm(LispObject a, LispObject b);
 extern LispObject lengthen_by_one_bit(LispObject a, int32_t msd);
-extern CSLbool numeq2(LispObject a, LispObject b);
-extern "C" CSLbool zerop(LispObject a);
-extern CSLbool onep(LispObject a);
-extern CSLbool minusp(LispObject a);
-extern CSLbool plusp(LispObject a);
-extern CSLbool lesspbd(LispObject a, double b);
-extern CSLbool lessprd(LispObject a, double b);
-extern CSLbool lesspdb(double a, LispObject b);
-extern CSLbool lesspdr(double a, LispObject b);
+extern bool numeq2(LispObject a, LispObject b);
+extern "C" bool zerop(LispObject a);
+extern bool onep(LispObject a);
+extern bool minusp(LispObject a);
+extern bool plusp(LispObject a);
+extern bool lesspbd(LispObject a, double b);
+extern bool lessprd(LispObject a, double b);
+extern bool lesspdb(double a, LispObject b);
+extern bool lesspdr(double a, LispObject b);
 extern LispObject make_one_word_bignum(int32_t n);
 extern LispObject make_two_word_bignum(int32_t a, uint32_t b);
 extern LispObject make_three_word_bignum(int32_t a, uint32_t b, uint32_t c);
@@ -194,8 +194,8 @@ extern LispObject logeqv2(LispObject a, LispObject b);
 extern LispObject rationalf(double d);
 
 extern int _reduced_exp(double, double *);
-extern CSLbool lesspbi(LispObject a, LispObject b);
-extern CSLbool lesspib(LispObject a, LispObject b);
+extern bool lesspbi(LispObject a, LispObject b);
+extern bool lesspib(LispObject a, LispObject b);
 
 //
 // This is going to be a bit of a mess because I will want to use the C

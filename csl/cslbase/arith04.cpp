@@ -89,12 +89,12 @@ static LispObject make_fix_or_big2(int32_t a1, uint32_t a2)
 
 LispObject rationalf(double d)
 {   int x;
-    CSLbool negative = NO;
+    bool negative = false;
     int32_t a0, a1;
     uint32_t a2;
     LispObject nil;
     if (d == 0.0) return fixnum_of_int(0);
-    if (d < 0.0) d = -d, negative = YES;
+    if (d < 0.0) d = -d, negative = true;
     d = frexp(d, &x);   // 0.5 <= abs(d) < 1.0, x = the (binary) exponent
 //
 // The next line is not logically needed, provided frexp() is implemented to
@@ -272,7 +272,7 @@ LispObject rationalize(LispObject a)
 // Arithmetic comparison: lessp
 //
 
-static CSLbool lesspis(LispObject a, LispObject b)
+static bool lesspis(LispObject a, LispObject b)
 {
 #ifdef EXPERIMENT
     return 0;
@@ -287,7 +287,7 @@ static CSLbool lesspis(LispObject a, LispObject b)
 #endif
 }
 
-CSLbool lesspib(LispObject, LispObject b)
+bool lesspib(LispObject, LispObject b)
 //
 // a fixnum and a bignum can never be equal, and the magnitude of
 // the bignum must be at least as great as that of the fixnum, hence
@@ -298,7 +298,7 @@ CSLbool lesspib(LispObject, LispObject b)
     return (msd >= 0);
 }
 
-static CSLbool lesspir(LispObject a, LispObject b)
+static bool lesspir(LispObject a, LispObject b)
 {
 //
 // compute a < p/q  as a*q < p
@@ -311,7 +311,7 @@ static CSLbool lesspir(LispObject a, LispObject b)
 
 #define lesspif(a, b) ((double)int_of_fixnum(a) < float_of_number(b))
 
-CSLbool lesspdb(double a, LispObject b)
+bool lesspdb(double a, LispObject b)
 //
 // a is a floating point number and b a bignum.  Compare them.
 //
@@ -338,16 +338,16 @@ CSLbool lesspdb(double a, LispObject b)
 // with a guard bit..)
 //
     if (n == 1)
-    {   if (1.0e19 < a) return NO;
-        else if (a < -1.0e19) return YES;
+    {   if (1.0e19 < a) return false;
+        else if (a < -1.0e19) return true;
         a -= TWO_31*(int32_t)bn;
         return a < (double)bignum_digits(b)[0];
     }
 //
 // If the two operands differ in their signs then all is easy.
 //
-    if (bn >= 0 && a < 0.0) return YES;
-    if (bn < 0 && a >= 0.0) return NO;
+    if (bn >= 0 && a < 0.0) return true;
+    if (bn < 0 && a >= 0.0) return false;
 //
 // Now I have a 3 or more digit bignum, so here I will (in effect)
 // convert the float to a bignum and then perform the comparison.. that
@@ -394,7 +394,7 @@ CSLbool lesspdb(double a, LispObject b)
     }
 }
 
-CSLbool lesspbd(LispObject b, double a)
+bool lesspbd(LispObject b, double a)
 //
 // Code as for lesspdb, but use '>' test instead of '<'
 //
@@ -421,16 +421,16 @@ CSLbool lesspbd(LispObject b, double a)
 // with a guard bit..)
 //
     if (n == 1)
-    {   if (1.0e19 < a) return YES;
-        else if (a < -1.0e19) return NO;
+    {   if (1.0e19 < a) return true;
+        else if (a < -1.0e19) return false;
         a -= TWO_31 * (double)bn;
         return (double)bignum_digits(b)[0] < a;
     }
 //
 // If the two operands differ in their signs then all is easy.
 //
-    if (bn >= 0 && a < 0.0) return NO;
-    if (bn < 0 && a >= 0.0) return YES;
+    if (bn >= 0 && a < 0.0) return false;
+    if (bn < 0 && a >= 0.0) return true;
 //
 // Now I have a 3 or more digit bignum, so here I will (in effect)
 // convert the float to a bignum and then perform the comparison.. that
@@ -477,7 +477,7 @@ CSLbool lesspbd(LispObject b, double a)
     }
 }
 
-static CSLbool lessprr(LispObject a, LispObject b)
+static bool lessprr(LispObject a, LispObject b)
 {   LispObject c;
     push2(a, b);
     c = times2(numerator(a), denominator(b));
@@ -488,7 +488,7 @@ static CSLbool lessprr(LispObject a, LispObject b)
     return lessp2(c, b);
 }
 
-CSLbool lesspdr(double a, LispObject b)
+bool lesspdr(double a, LispObject b)
 //
 // Compare float with ratio... painfully expensive.
 //
@@ -497,7 +497,7 @@ CSLbool lesspdr(double a, LispObject b)
     return lessprr(a1, b);
 }
 
-CSLbool lessprd(LispObject a, double b)
+bool lessprd(LispObject a, double b)
 //
 // Compare float with ratio.
 //
@@ -506,7 +506,7 @@ CSLbool lessprd(LispObject a, double b)
     return lessprr(a, b1);
 }
 
-static CSLbool lesspsi(LispObject a, LispObject b)
+static bool lesspsi(LispObject a, LispObject b)
 {
 #ifdef EXPERIMENT
     return 0;
@@ -517,7 +517,7 @@ static CSLbool lesspsi(LispObject a, LispObject b)
 #endif
 }
 
-static CSLbool lesspsb(LispObject a, LispObject b)
+static bool lesspsb(LispObject a, LispObject b)
 {
 #ifdef EXPERIMENT
     return 0;
@@ -528,7 +528,7 @@ static CSLbool lesspsb(LispObject a, LispObject b)
 #endif
 }
 
-static CSLbool lesspsr(LispObject a, LispObject b)
+static bool lesspsr(LispObject a, LispObject b)
 {
 #ifdef EXPERIMENT
     return 0;
@@ -539,7 +539,7 @@ static CSLbool lesspsr(LispObject a, LispObject b)
 #endif
 }
 
-static CSLbool lesspsf(LispObject a, LispObject b)
+static bool lesspsf(LispObject a, LispObject b)
 {
 #ifdef EXPERIMENT
     return 0;
@@ -550,13 +550,13 @@ static CSLbool lesspsf(LispObject a, LispObject b)
 #endif
 }
 
-CSLbool lesspbi(LispObject a, LispObject)
+bool lesspbi(LispObject a, LispObject)
 {   int32_t len = bignum_length(a);
     int32_t msd = bignum_digits(a)[(len-CELL-4)/4];
     return (msd < 0);
 }
 
-static CSLbool lesspbs(LispObject a, LispObject b)
+static bool lesspbs(LispObject a, LispObject b)
 {
 #ifdef EXPERIMENT
     return 0;
@@ -567,7 +567,7 @@ static CSLbool lesspbs(LispObject a, LispObject b)
 #endif
 }
 
-static CSLbool lesspbb(LispObject a, LispObject b)
+static bool lesspbb(LispObject a, LispObject b)
 {   int32_t lena = bignum_length(a),
                 lenb = bignum_length(b);
     if (lena > lenb)
@@ -582,8 +582,8 @@ static CSLbool lesspbb(LispObject a, LispObject b)
     // lenb == lena here
     {   int32_t msa = bignum_digits(a)[lena],
                     msb = bignum_digits(b)[lena];
-        if (msa < msb) return YES;
-        else if (msa > msb) return NO;
+        if (msa < msb) return true;
+        else if (msa > msb) return false;
 //
 // Now the leading digits of the numbers agree, so in particular the numbers
 // have the same sign.
@@ -594,7 +594,7 @@ static CSLbool lesspbb(LispObject a, LispObject b)
             if (da == db) continue;
             return (da < db);
         }
-        return NO;      // numbers are the same
+        return false;      // numbers are the same
     }
 }
 
@@ -602,14 +602,14 @@ static CSLbool lesspbb(LispObject a, LispObject b)
 
 #define lesspbf(a, b) lesspbd(a, float_of_number(b))
 
-static CSLbool lesspri(LispObject a, LispObject b)
+static bool lesspri(LispObject a, LispObject b)
 {   push(numerator(a));
     b = times2(b, denominator(a));
     pop(a);
     return lessp2(a, b);
 }
 
-static CSLbool lessprs(LispObject a, LispObject b)
+static bool lessprs(LispObject a, LispObject b)
 {
 #ifdef EXPERIMENT
     return 0;
@@ -626,7 +626,7 @@ static CSLbool lessprs(LispObject a, LispObject b)
 
 #define lesspfi(a, b) (float_of_number(a) < (double)int_of_fixnum(b))
 
-static CSLbool lesspfs(LispObject a, LispObject b)
+static bool lesspfs(LispObject a, LispObject b)
 {
 #ifdef EXPERIMENT
     return 0;
@@ -644,18 +644,18 @@ static CSLbool lesspfs(LispObject a, LispObject b)
 #define lesspff(a, b) (float_of_number(a) < float_of_number(b))
 
 
-CSLbool greaterp2(LispObject a, LispObject b)
+bool greaterp2(LispObject a, LispObject b)
 {   return lessp2(b, a);
 }
 
-CSLbool lessp2(LispObject a, LispObject b)
+bool lessp2(LispObject a, LispObject b)
 //
 // Note that this type-dispatch does not permit complex numbers to
 // be compared - their presence will lead to an exception being raised.
 // This shortens the code (marginally).
 //
 {   LispObject nil = C_nil;
-    if (exception_pending()) return NO;
+    if (exception_pending()) return false;
     switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             switch ((int)b & TAG_BITS)
@@ -674,13 +674,13 @@ CSLbool lessp2(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return lesspir(a, b);
                         default:
-                            return (CSLbool)aerror2("bad arg for lessp", a, b);
+                            return (bool)aerror2("bad arg for lessp", a, b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return lesspif(a, b);
                 default:
-                    return (CSLbool)aerror2("bad arg for lessp", a, b);
+                    return (bool)aerror2("bad arg for lessp", a, b);
             }
 #ifndef EXPERIMENT
         case TAG_SFLOAT:
@@ -701,13 +701,13 @@ CSLbool lessp2(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return lesspsr(a, b);
                         default:
-                            return (CSLbool)aerror2("bad arg for lessp", a, b);
+                            return (bool)aerror2("bad arg for lessp", a, b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return lesspsf(a, b);
                 default:
-                    return (CSLbool)aerror2("bad arg for lessp", a, b);
+                    return (bool)aerror2("bad arg for lessp", a, b);
             }
 #endif
         case TAG_NUMBERS:
@@ -729,13 +729,13 @@ CSLbool lessp2(LispObject a, LispObject b)
                                 case TYPE_RATNUM:
                                     return lesspbr(a, b);
                                 default:
-                                    return (CSLbool)aerror2("bad arg for lessp", a, b);
+                                    return (bool)aerror2("bad arg for lessp", a, b);
                             }
                         }
                         case TAG_BOXFLOAT:
                             return lesspbf(a, b);
                         default:
-                            return (CSLbool)aerror2("bad arg for lessp", a, b);
+                            return (bool)aerror2("bad arg for lessp", a, b);
                     }
                 case TYPE_RATNUM:
                     switch (b & TAG_BITS)
@@ -753,15 +753,15 @@ CSLbool lessp2(LispObject a, LispObject b)
                                 case TYPE_RATNUM:
                                     return lessprr(a, b);
                                 default:
-                                    return (CSLbool)aerror2("bad arg for lessp", a, b);
+                                    return (bool)aerror2("bad arg for lessp", a, b);
                             }
                         }
                         case TAG_BOXFLOAT:
                             return lessprf(a, b);
                         default:
-                            return (CSLbool)aerror2("bad arg for lessp", a, b);
+                            return (bool)aerror2("bad arg for lessp", a, b);
                     }
-                default:    return (CSLbool)aerror2("bad arg for lessp", a, b);
+                default:    return (bool)aerror2("bad arg for lessp", a, b);
             }
         }
         case TAG_BOXFLOAT:
@@ -780,16 +780,16 @@ CSLbool lessp2(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return lesspfr(a, b);
                         default:
-                            return (CSLbool)aerror2("bad arg for lessp", a, b);
+                            return (bool)aerror2("bad arg for lessp", a, b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return lesspff(a, b);
                 default:
-                    return (CSLbool)aerror2("bad arg for lessp", a, b);
+                    return (bool)aerror2("bad arg for lessp", a, b);
             }
         default:
-            return (CSLbool)aerror2("bad arg for lessp", a, b);
+            return (bool)aerror2("bad arg for lessp", a, b);
     }
 }
 

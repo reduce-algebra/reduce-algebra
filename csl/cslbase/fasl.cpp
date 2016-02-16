@@ -50,7 +50,7 @@
 #include "sockhdr.h"
 #endif
 
-CSLbool fasl_output_file = NO;  // An output file is open?
+bool fasl_output_file = false;  // An output file is open?
 static int skipping_input = 0, skipping_output = 0;
 static int32_t recent_pointer = 0, hits = 0 , misses = 0, fasl_byte_count = 0;
 
@@ -576,7 +576,7 @@ static LispObject fastread1(int32_t ch, int32_t operand)
     }
 }
 
-static CSLbool just_reading_source = NO;
+static bool just_reading_source = false;
 
 static LispObject fastread(void)
 {   int32_t operand = 0, ch = Igetc();
@@ -646,7 +646,7 @@ static LispObject fastread(void)
                             qvalue(loadsource_symbol) != nil) w = lisp_true;
                         if (w != nil)
                         {   LispObject w1, chk = w;
-                            CSLbool include = YES;
+                            bool include = true;
                             push3(chk, name, r);
                             if (consp(w))
                             {   if (integerp(qcar(w)))
@@ -1278,7 +1278,7 @@ LispObject Lbanner(LispObject nil, LispObject info)
         }
         for (i=0; i<64; i++)
             b[i] = (char)Igetc();
-        IcloseInput(NO);
+        IcloseInput(false);
         Irestore_context(save);
         info = make_string(b);
         validate_string(info);
@@ -1360,7 +1360,7 @@ static LispObject load_module(LispObject nil, LispObject file,
     int32_t len;
     Ihandle save;
     LispObject v;
-    CSLbool from_stream = NO;
+    bool from_stream = false;
     int close_mode;
     char *modname;
     int32_t save_recent = recent_pointer,
@@ -1371,7 +1371,7 @@ static LispObject load_module(LispObject nil, LispObject file,
 #endif
 
     memset(filename, 0, sizeof(filename));
-    if (is_stream(file)) h=0, from_stream = YES;
+    if (is_stream(file)) h=0, from_stream = true;
     else if (symbolp(file))
     {   file = get_pname(file);
         errexit();
@@ -1406,7 +1406,7 @@ static LispObject load_module(LispObject nil, LispObject file,
     v = getvector_init(CELL*(KEEP_RECENT+1), nil);
     nil = C_nil;
     if (exception_pending())
-    {   IcloseInput(NO);
+    {   IcloseInput(false);
         Irestore_context(save);
         if (from_stream)
         {   flip_exception();
@@ -1473,8 +1473,8 @@ static LispObject load_module(LispObject nil, LispObject file,
         nil = C_nil;
         if (exception_pending()) break;
     }
-    close_mode = YES;
-    if (exception_pending()) flip_exception(), close_mode = NO;
+    close_mode = true;
+    if (exception_pending()) flip_exception(), close_mode = false;
     pop(qvalue(savedef));
     pop(faslgensyms);
     pop(faslvec);
@@ -1502,7 +1502,7 @@ static LispObject load_module(LispObject nil, LispObject file,
         return nil;
     }
 #ifdef DEBUG_VALIDATE
-    copy_into_nilseg(NO);
+    copy_into_nilseg(false);
     validate_all("end of fast-load", __LINE__, __FILE__);
 #endif
     return onevalue(file);
@@ -1625,7 +1625,7 @@ LispObject Lstart_module(LispObject nil, LispObject name)
             IcloseOutput(1);
             faslvec = nil;
             faslgensyms = nil;
-            fasl_output_file = NO;
+            fasl_output_file = false;
             fasl_stream = nil;
             if (verbos_flag & 2)
             {   freshline_trace();
@@ -1650,7 +1650,7 @@ LispObject Lstart_module(LispObject nil, LispObject name)
         hits = misses = 0;
         faslgensyms = nil;
         fasl_stream = name;
-        fasl_output_file = YES;
+        fasl_output_file = true;
         Iopen_to_stdout(); // initialises checksum calculation
         return onevalue(lisp_true);
     }
@@ -1700,7 +1700,7 @@ LispObject Lstart_module(LispObject nil, LispObject name)
         {   err_printf("Failed to open \"%s\"\n", filename);
             return onevalue(nil);
         }
-        fasl_output_file = YES;
+        fasl_output_file = true;
         return onevalue(lisp_true);
     }
 }
@@ -2258,12 +2258,12 @@ static LispObject write_module0(LispObject nil, LispObject a)
     }
     else if (is_fixnum(a))
     {   int32_t n = int_of_fixnum(a);
-        CSLbool sign;
+        bool sign;
 //
 // The fixnum range is 0xf8000000 to 0x07ffffff
 //
-        if (n < 0) n = -n, sign = YES;
-        else sign = NO;
+        if (n < 0) n = -n, sign = true;
+        else sign = false;
         out_fasl_prefix(n >> 8);
         Iputc(sign ? F_NEG : F_INT);
         Iputc((int)(n & 0xff));
@@ -3120,7 +3120,7 @@ static int topic_in_index(char *key)
     offset = p[i+3] & 0xff;
     offset = (offset << 8) + (p[i+2] & 0xff);
     offset = (offset << 8) + (p[i+1] & 0xff);
-    IcloseInput(NO);
+    IcloseInput(false);
     if (Iopen_help(offset)) return 0;
     topic_start = offset;
     cstackp = 0;
@@ -3147,7 +3147,7 @@ int find_topic(char *s)
 }
 
 void restart_topic(void)
-{   IcloseInput(NO);
+{   IcloseInput(false);
     if (!Iopen_help(topic_start))
     {   int i;
         for (i=0; i<topic_header_size; i++) getc_help();
@@ -3273,7 +3273,7 @@ static void help(char *word, int len)
 
         if (help_main(key)) debug_printf("\nNo help available\n");
 
-        IcloseInput(NO);
+        IcloseInput(false);
     }
     Irestore_context(save);
     return;

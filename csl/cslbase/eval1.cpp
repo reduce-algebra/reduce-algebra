@@ -534,28 +534,28 @@ restart:
 // amount of time.
 //
 
-static CSLbool check_no_unwanted_keys(LispObject restarg, LispObject ok_keys)
+static bool check_no_unwanted_keys(LispObject restarg, LispObject ok_keys)
 //
 // verify that there were no unwanted keys in the actual arg list
 //
 {   LispObject nil = C_nil;
-    CSLbool odd_key_found = NO;
+    bool odd_key_found = false;
     while (restarg!=nil)
     {   LispObject k = qcar(restarg);
         LispObject w;
         for (w=ok_keys; w!=nil; w=qcdr(w))
             if (k == qcar(w)) goto is_ok;
-        odd_key_found = YES;
+        odd_key_found = true;
     is_ok:
         restarg = qcdr(restarg);
-        if (restarg==nil) return YES;  // odd length list
-        if (k == allow_key_key && qcar(restarg) != nil) return NO; // OK
+        if (restarg==nil) return true;  // odd length list
+        if (k == allow_key_key && qcar(restarg) != nil) return false; // OK
         restarg = qcdr(restarg);
     }
     return odd_key_found;
 }
 
-static CSLbool check_keyargs_even(LispObject restarg)
+static bool check_keyargs_even(LispObject restarg)
 //
 // check that list is even length with alternate items symbols in
 // the keyword package.
@@ -563,12 +563,12 @@ static CSLbool check_keyargs_even(LispObject restarg)
 {   LispObject nil = C_nil;
     while (restarg!=nil)
     {   LispObject q = qcar(restarg);
-        if (!is_symbol(q) || qpackage(q) != qvalue(keyword_package)) return YES;
+        if (!is_symbol(q) || qpackage(q) != qvalue(keyword_package)) return true;
         restarg = qcdr(restarg);
-        if (restarg==nil) return YES;      // Odd length is wrong
+        if (restarg==nil) return true;      // Odd length is wrong
         restarg = qcdr(restarg);
     }
-    return NO;                               // OK
+    return false;                               // OK
 }
 
 static LispObject keywordify(LispObject v)

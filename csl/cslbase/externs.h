@@ -125,7 +125,7 @@ extern LispObject *C_stack;
 extern char *C_stack_base, *C_stack_limit;
 extern double max_store_size;
 
-extern CSLbool restartp;
+extern bool restartp;
 
 extern char *big_chunk_start, *big_chunk_end;
 
@@ -618,7 +618,8 @@ extern const char *files_to_read[MAX_INPUT_FILES],
        *fasl_paths[MAX_FASL_PATHS];
 extern int csl_argc;
 extern const char **csl_argv;
-extern int fasl_output_file, output_directory;
+extern bool fasl_output_file;
+extern int output_directory;
 
 #ifdef BUILTIN_IMAGE
 const unsigned char *binary_read_filep;
@@ -642,7 +643,7 @@ extern void flush_socket(void);
 
 extern void report_file(const char *s);
 
-extern CSLbool undefine_this_one[MAX_SYMBOLS_TO_DEFINE];
+extern bool undefine_this_one[MAX_SYMBOLS_TO_DEFINE];
 extern int errorset_min, errorset_max;
 
 extern int number_of_input_files,
@@ -655,7 +656,7 @@ extern int native_code_tag;
 extern const char *standard_directory;
 
 extern int gc_number;
-extern CSLbool gc_method_is_copying;
+extern bool gc_method_is_copying;
 extern int force_reclaim_method, reclaim_trap_count, reclaim_stack_limit;
 
 #define INIT_QUIET      1
@@ -752,27 +753,27 @@ extern void IreInit(void);
 extern void Icontext(Ihandle *);
 extern void Irestore_context(Ihandle);
 extern void Ilist(void);
-extern CSLbool open_output(const char *s, int len);
+extern bool open_output(const char *s, int len);
 #define IOPEN_OUT       0
 #define IOPEN_UNCHECKED 1
 #define IOPEN_CHECKED   2
-extern CSLbool Iopen(const char *name, int len, int dirn, char *expanded_name);
-extern CSLbool Iopen_from_stdin(void), Iopen_to_stdout(void);
-extern CSLbool IopenRoot(char *expanded_name, int hard, int sixtyfour);
-extern CSLbool Iwriterootp(char *expanded);
-extern CSLbool Iopen_help(int32_t offset);
-extern CSLbool Iopen_banner(int code);
-extern CSLbool Imodulep(const char *name, int len, char *datestamp, int32_t *size,
+extern bool Iopen(const char *name, int len, int dirn, char *expanded_name);
+extern bool Iopen_from_stdin(void), Iopen_to_stdout(void);
+extern bool IopenRoot(char *expanded_name, int hard, int sixtyfour);
+extern bool Iwriterootp(char *expanded);
+extern bool Iopen_help(int32_t offset);
+extern bool Iopen_banner(int code);
+extern bool Imodulep(const char *name, int len, char *datestamp, int32_t *size,
                         char *expanded_name);
-extern CSLbool Icopy(const char *name, int len);
-extern CSLbool Idelete(const char *name, int len);
-extern CSLbool IcloseInput(int check_checksum);
-extern CSLbool IcloseOutput(int write_checksum);
-extern CSLbool Ifinished(void);
+extern bool Icopy(const char *name, int len);
+extern bool Idelete(const char *name, int len);
+extern bool IcloseInput(int check_checksum);
+extern bool IcloseOutput(int write_checksum);
+extern bool Ifinished(void);
 extern int  Igetc(void);
 extern int32_t Iread(void *buff, int32_t size);
-extern CSLbool Iputc(int ch);
-extern CSLbool Iwrite(const void *buff, int32_t size);
+extern bool Iputc(int ch);
+extern bool Iwrite(const void *buff, int32_t size);
 extern long int Ioutsize(void);
 extern const char *CSLtmpdir();
 extern const char *CSLtmpnam(const char *suffix, int32_t suffixlen);
@@ -782,7 +783,7 @@ extern char *look_in_lisp_variable(char *o, int prefix);
 extern void CSL_MD5_Init(void);
 extern void CSL_MD5_Update(const unsigned char *data, int len);
 extern void CSL_MD5_Final(unsigned char *md);
-extern CSLbool CSL_MD5_busy;
+extern bool CSL_MD5_busy;
 extern unsigned char *CSL_MD5(unsigned char *data, int n, unsigned char *md);
 extern void checksum(LispObject a);
 extern unsigned char unpredictable[256];
@@ -798,21 +799,21 @@ extern double *clock_stack;
 extern void push_clock(void);
 extern double pop_clock(void);
 extern double consolidated_time[10], gc_time;
-extern CSLbool volatile already_in_gc, tick_on_gc_exit;
-extern CSLbool volatile interrupt_pending, tick_pending;
+extern bool volatile already_in_gc, tick_on_gc_exit;
+extern bool volatile interrupt_pending, tick_pending;
 extern int deal_with_tick(void);
 extern int current_fp_rep;
 extern const char *errorset_msg;
 extern int errorset_code;
-extern void unwind_stack(LispObject *, CSLbool findcatch);
-extern CSLbool segvtrap;
-extern CSLbool batch_flag;
+extern void unwind_stack(LispObject *, bool findcatch);
+extern bool segvtrap;
+extern bool batch_flag;
 extern int escaped_printing;
 extern void low_level_signal_handler(int code);
 extern int async_interrupt(int a);
 extern "C" void sigint_handler(int code);
 
-extern "C" void record_get(LispObject tag, CSLbool found);
+extern "C" void record_get(LispObject tag, bool found);
 
 //
 // Functions used internally - not to be installed in Lisp function
@@ -827,13 +828,13 @@ extern "C" void record_get(LispObject tag, CSLbool found);
 
 extern int         primep(int32_t);
 extern void        adjust_all(void);
-extern void        set_up_functions(CSLbool restartp);
+extern void        set_up_functions(bool restartp);
 extern void        get_user_files_checksum(unsigned char *);
 extern "C" LispObject acons(LispObject a, LispObject b, LispObject c);
 extern "C" LispObject ash(LispObject a, LispObject b);
 extern LispObject bytestream_interpret(LispObject code, LispObject lit,
                                        LispObject *entry_stack);
-extern CSLbool     complex_stringp(LispObject a);
+extern bool     complex_stringp(LispObject a);
 extern LispObject  copy_string(LispObject a, size_t n);
 extern void        freshline_trace(void);
 extern void        freshline_debug(void);
@@ -847,16 +848,16 @@ extern uint32_t   Crand(void);
 extern "C" LispObject Cremainder(LispObject a, LispObject b);
 extern void        Csrand(uint32_t a, uint32_t b);
 extern void        discard(LispObject a);
-extern "C" CSLbool eql_fn(LispObject a, LispObject b);
-extern "C" CSLbool cl_equal_fn(LispObject a, LispObject b);
-extern "C" CSLbool equal_fn(LispObject a, LispObject b);
+extern "C" bool eql_fn(LispObject a, LispObject b);
+extern "C" bool cl_equal_fn(LispObject a, LispObject b);
+extern "C" bool equal_fn(LispObject a, LispObject b);
 #ifdef TRACED_EQUAL
-extern CSLbool traced_equal_fn(LispObject a, LispObject b,
+extern bool traced_equal_fn(LispObject a, LispObject b,
                                const char *, int, int);
 #define equal_fn(a, b) traced_equal_fn(a, b, __FILE__, __LINE__, 0)
 extern void dump_equals();
 #endif
-extern "C" CSLbool equalp(LispObject a, LispObject b);
+extern "C" bool equalp(LispObject a, LispObject b);
 extern LispObject apply(LispObject fn, int nargs,
                         LispObject env, LispObject fname, int noisy);
 extern LispObject apply_lambda(LispObject def, int nargs,
@@ -875,10 +876,10 @@ extern LispObject getvector_init(size_t n, LispObject v);
 extern LispObject getcodevector(int type, size_t size);
 extern uint32_t  hash_lisp_string(LispObject s);
 extern void lose_C_def(LispObject a);
-extern "C" CSLbool        geq2(LispObject a, LispObject b);
-extern "C" CSLbool        greaterp2(LispObject a, LispObject b);
-extern "C" CSLbool        lesseq2(LispObject a, LispObject b);
-extern "C" CSLbool        lessp2(LispObject a, LispObject b);
+extern "C" bool        geq2(LispObject a, LispObject b);
+extern "C" bool        greaterp2(LispObject a, LispObject b);
+extern "C" bool        lesseq2(LispObject a, LispObject b);
+extern "C" bool        lessp2(LispObject a, LispObject b);
 extern "C" LispObject list2(LispObject a, LispObject b);
 extern "C" LispObject list2star(LispObject a, LispObject b, LispObject c);
 extern "C" LispObject list3(LispObject a, LispObject b, LispObject c);
@@ -936,9 +937,9 @@ extern void internal_prin(LispObject u, int prefix);
 extern LispObject princ(LispObject u);
 extern LispObject print(LispObject u);
 extern LispObject printc(LispObject u);
-extern void        print_bignum(LispObject u, CSLbool blankp, int nobreak);
+extern void        print_bignum(LispObject u, bool blankp, int nobreak);
 extern void        print_bighexoctbin(LispObject u,
-                                      int radix, int width, CSLbool blankp, int nobreak);
+                                      int radix, int width, bool blankp, int nobreak);
 extern LispObject putprop(LispObject a, LispObject b,
                           LispObject c);
 extern "C" LispObject quot2(LispObject a, LispObject b);
@@ -950,12 +951,12 @@ extern "C" LispObject reclaim(LispObject value_to_return, const char *why,
 extern void validate_all(const char *why, int line, const char *file);
 extern int check_env(LispObject env);
 #endif
-extern CSLbool do_not_kill_native_code;
+extern bool do_not_kill_native_code;
 extern void        set_fns(LispObject sym, one_args *f1,
                            two_args *f2, n_args *fn);
 extern void        setup(int restartp, double storesize);
 extern LispObject simplify_string(LispObject s);
-extern CSLbool        stringp(LispObject a);
+extern bool        stringp(LispObject a);
 extern "C" LispObject times2(LispObject a, LispObject b);
 extern int32_t       thirty_two_bits(LispObject a);
 #ifdef HAVE_INT64_T
@@ -1141,7 +1142,7 @@ extern int64_t time_limit, space_limit, io_limit, errors_limit;
 // Flags used to toggle the protection or otherwise of symbols, and
 // whether to warn about attempts to redefine them.
 //
-extern CSLbool symbol_protect_flag, warn_about_protected_symbols;
+extern bool symbol_protect_flag, warn_about_protected_symbols;
 
 #ifdef JIT
 extern char *Jcompile(LispObject def, LispObject env);

@@ -64,7 +64,7 @@ LispObject getcodevector(int type, size_t size)
 // time leads to a VERY BAD performance hit.
 //
     if ((++validate_count) % 100 == 0)
-    {   copy_into_nilseg(NO);
+    {   copy_into_nilseg(false);
         validate_all("getcodevector", __LINE__, __FILE__);
     }
 #endif
@@ -200,7 +200,7 @@ LispObject Lget_native(LispObject nil, LispObject n)
     return onevalue(n);
 }
 
-int do_not_kill_native_code = 0;
+bool do_not_kill_native_code = false;
 
 void set_fns(LispObject a, one_args *f1, two_args *f2, n_args *fn)
 {   LispObject nil = C_nil;
@@ -249,7 +249,7 @@ void set_fns(LispObject a, one_args *f1, two_args *f2, n_args *fn)
 
 #ifdef HIDE_USELESS_SYMBOL_ENVIRONMENTS
 
-static CSLbool interpreter_entry(LispObject a)
+static bool interpreter_entry(LispObject a)
 //
 // If a function will be handled by the interpreter, including the case
 // of it being undefined, then the fn1() cell will tell me so.
@@ -1019,16 +1019,16 @@ LispObject Lsymbol_set_native(LispObject nil, int nargs, ...)
     return onevalue(fn);
 }
 
-static CSLbool restore_fn_cell(LispObject a, char *name,
+static bool restore_fn_cell(LispObject a, char *name,
                                int32_t len, setup_type const s[])
 {   int i;
     for (i=0; s[i].name != NULL; i++)
     {   if (strlen(s[i].name) == (size_t)len &&
             memcmp(name, s[i].name, len) == 0) break;
     }
-    if (s[i].name == NULL) return NO;
+    if (s[i].name == NULL) return false;
     set_fns(a, s[i].one, s[i].two, s[i].n);
-    return YES;
+    return true;
 }
 
 //
@@ -2199,7 +2199,7 @@ static LispObject Lrestart_lisp(LispObject nil, LispObject a)
 static LispObject Lpreserve_03(LispObject nil, int nargs, ...)
 {   LispObject startup = nil, banner = nil, resume = nil;
     char filename[LONGEST_LEGAL_FILENAME];
-    CSLbool failed;
+    bool failed;
     if (nargs!=0)
     {   va_list a;
         argcheck(nargs, 3, "preserve");
@@ -2257,7 +2257,7 @@ static LispObject Lpreserve_2(LispObject nil,
 static LispObject Lcheckpoint(LispObject nil,
                               LispObject startup, LispObject banner)
 {   char filename[LONGEST_LEGAL_FILENAME];
-    CSLbool failed = 0;
+    bool failed = false;
     char *msg = "";
     int len = 0;
     memset(filename, 0, sizeof(filename));
@@ -2293,7 +2293,7 @@ static LispObject Lcheckpoint(LispObject nil,
         for (qq = equal_hash_tables; qq!=nil; qq=qcdr(qq))
             rehash_this_table(qcar(qq));
     }
-    set_up_functions(YES);
+    set_up_functions(true);
     if (failed) return aerror("checkpoint");
     return onevalue(nil);
 }
@@ -2320,7 +2320,7 @@ static LispObject Lresource_exceeded(LispObject nil, int nargs, ...)
     return resource_exceeded();
 }
 
-static CSLbool eql_numbers(LispObject a, LispObject b)
+static bool eql_numbers(LispObject a, LispObject b)
 //
 // This is only called from eql, and then only when a and b are both tagged
 // as ratios or complex numbers.
@@ -2328,13 +2328,13 @@ static CSLbool eql_numbers(LispObject a, LispObject b)
 {   LispObject p, q;
     p = *(LispObject *)(a + (CELL - TAG_NUMBERS));
     q = *(LispObject *)(b + (CELL - TAG_NUMBERS));
-    if (!eql(p, q)) return NO;
+    if (!eql(p, q)) return false;
     p = *(LispObject *)(a + (2*CELL - TAG_NUMBERS));
     q = *(LispObject *)(b + (2*CELL - TAG_NUMBERS));
     return eql(p, q);
 }
 
-CSLbool eql_fn(LispObject a, LispObject b)
+bool eql_fn(LispObject a, LispObject b)
 //
 // This seems incredible - all the messing about that is needed to
 // check that numeric values compare properly.  Ugh.
@@ -2342,20 +2342,20 @@ CSLbool eql_fn(LispObject a, LispObject b)
 {
 //
 // (these tests done before eql_fn is called).
-//  if (a == b) return YES;
-//  if ((((int32_t)a ^ (int32_t)b) & TAG_BITS) != 0) return NO;
+//  if (a == b) return true;
+//  if ((((int32_t)a ^ (int32_t)b) & TAG_BITS) != 0) return false;
 //
 // Actually in Common Lisp mode where I have short floats as immediate data
 // I have further pain here with (eql 0.0 -0.0).
 //
 #ifndef EXPERIMENT
     if ((a == TAG_SFLOAT && b == (TAG_SFLOAT|(intptr_t)0x80000000)) ||
-        (a == (TAG_SFLOAT|(intptr_t)0x80000000) && b == TAG_SFLOAT)) return YES;
+        (a == (TAG_SFLOAT|(intptr_t)0x80000000) && b == TAG_SFLOAT)) return true;
 #endif
-    if (!is_number(a) || is_immed_or_cons(a)) return NO;
+    if (!is_number(a) || is_immed_or_cons(a)) return false;
     if (is_bfloat(a))
     {   Header h = flthdr(a);
-        if (h != flthdr(b)) return NO;
+        if (h != flthdr(b)) return false;
         if (type_of_header(h) == TYPE_SINGLE_FLOAT)
             return (single_float_val(a) == single_float_val(b));
         else
@@ -2368,16 +2368,16 @@ CSLbool eql_fn(LispObject a, LispObject b)
     }
     else    // ratio, complex or bignum
     {   Header h = numhdr(a);
-        if (h != numhdr(b)) return NO;
+        if (h != numhdr(b)) return false;
         if (type_of_header(h) == TYPE_BIGNUM)
         {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
             while (hh > (intptr_t)(CELL - TAG_NUMBERS))
             {   hh -= 4;
                 if (*(uint32_t *)((char *)a + hh) !=
                     *(uint32_t *)((char *)b + hh))
-                    return NO;
+                    return false;
             }
-            return YES;
+            return true;
         }
         else return eql_numbers(a, b);
     }
@@ -2389,7 +2389,7 @@ CSLbool eql_fn(LispObject a, LispObject b)
 #define eqcheck(a, b) ((a) == (b))
 #endif
 
-static CSLbool cl_vec_equal(LispObject a, LispObject b)
+static bool cl_vec_equal(LispObject a, LispObject b)
 //
 // here a and b are known to be vectors or arrays.  This should compare
 // them following the Common Lisp recipe, where strings or bitvectors
@@ -2439,7 +2439,7 @@ static CSLbool cl_vec_equal(LispObject a, LispObject b)
                 case TYPE_STRING:
 #endif
                     goto compare_strings;
-                default:return NO;
+                default:return false;
             }
 #ifdef EXPERIMENT
         case TYPE_BITVEC_1:
@@ -2519,7 +2519,7 @@ static CSLbool cl_vec_equal(LispObject a, LispObject b)
                 case TYPE_BITVEC1:
 #endif
                     goto compare_bits;
-                default:return NO;
+                default:return false;
             }
         default: return (a == b);
     }
@@ -2528,17 +2528,17 @@ compare_strings:
     la = length_of_byteheader(ha);
     lb = length_of_byteheader(hb);
 #endif
-    if (la != lb) return NO;
+    if (la != lb) return false;
     while (la > 0)
     {   la--;
         if (*((char *)a + la + offa - TAG_VECTOR) !=
-            *((char *)b + la + offb - TAG_VECTOR)) return NO;
+            *((char *)b + la + offb - TAG_VECTOR)) return false;
     }
-    return YES;
+    return true;
 compare_bits:
     la = length_of_bitheader(ha);
     lb = length_of_bitheader(hb);
-    if (la != lb) return NO;
+    if (la != lb) return false;
 // I will insist that the bitvectors have zero bits in any unused space
 // in their final byte. 
     la = (la + 7)/8;
@@ -2546,12 +2546,12 @@ compare_bits:
     while (la > 0)
     {   la--;
         if (*((char *)a + la + offa - TAG_VECTOR) !=
-            *((char *)b + la + offb - TAG_VECTOR)) return NO;
+            *((char *)b + la + offb - TAG_VECTOR)) return false;
     }
-    return YES;
+    return true;
 }
 
-CSLbool cl_equal_fn(LispObject a, LispObject b)
+bool cl_equal_fn(LispObject a, LispObject b)
 //
 // a and b are not EQ at this stage.. I guarantee to have checked that
 // before entering this general purpose code.
@@ -2568,7 +2568,7 @@ CSLbool cl_equal_fn(LispObject a, LispObject b)
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
         aerror("Stack too deep in cl_equal\n");
-        return NO;
+        return false;
     }
 #endif
     for (;;)
@@ -2582,13 +2582,13 @@ CSLbool cl_equal_fn(LispObject a, LispObject b)
 #ifdef COMMON
                 || b == nil
 #endif
-               ) return NO;
+               ) return false;
             else
             {   LispObject ca = qcar(a), cb = qcar(b);
                 if (ca == cb)
                 {   a = qcdr(a);
                     b = qcdr(b);
-                    if (a == b) return YES;
+                    if (a == b) return true;
                     continue;
                 }
 //
@@ -2607,7 +2607,7 @@ CSLbool cl_equal_fn(LispObject a, LispObject b)
 #ifdef COMMON
                             || cb == nil
 #endif
-                           ) return NO;
+                           ) return false;
                         else
                         {   LispObject cca = qcar(ca), ccb = qcar(cb);
                             if (cca == ccb)
@@ -2620,7 +2620,7 @@ CSLbool cl_equal_fn(LispObject a, LispObject b)
 // Do a real recursion when I get down to args like
 // ((x ...) ...) ((y ...) ...)
 //
-                            if (!cl_equal(cca, ccb)) return NO;
+                            if (!cl_equal(cca, ccb)) return false;
                             ca = qcdr(ca);
                             cb = qcdr(cb);
                             if (ca == cb) break;
@@ -2628,39 +2628,39 @@ CSLbool cl_equal_fn(LispObject a, LispObject b)
                         }
                     }
                     else if (is_immed_cons_sym(tca) ||
-                             ((int32_t)cb & TAG_BITS) != tca) return NO;
+                             ((int32_t)cb & TAG_BITS) != tca) return false;
                     else switch (tca)
                         {   case TAG_NUMBERS:
                             {   Header h = numhdr(ca);
-                                if (h != numhdr(cb)) return NO;
+                                if (h != numhdr(cb)) return false;
                                 if (type_of_header(h) == TYPE_BIGNUM)
                                 {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                                     while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                                     {   hh -= 4;
                                         if (*(uint32_t *)((char *)ca + hh) !=
                                             *(uint32_t *)((char *)cb + hh))
-                                            return NO;
+                                            return false;
                                     }
                                     break;
                                 }
-                                else if (!eql_numbers(ca, cb)) return NO;
+                                else if (!eql_numbers(ca, cb)) return false;
                                 else break;
                             }
                             case TAG_VECTOR:
-                                if (!cl_vec_equal(ca, cb)) return NO;
+                                if (!cl_vec_equal(ca, cb)) return false;
                                 break;
                             default:
                             case TAG_BOXFLOAT:
                             {   Header h = flthdr(ca);
-                                if (h != flthdr(cb)) return NO;
+                                if (h != flthdr(cb)) return false;
                                 if (type_of_header(h) == TYPE_SINGLE_FLOAT)
                                 {   if (single_float_val(ca) !=
-                                        single_float_val(cb)) return NO;
+                                        single_float_val(cb)) return false;
                                     else break;
                                 }
                                 else
                                 {   if (double_float_val(ca) !=
-                                        double_float_val(cb)) return NO;
+                                        double_float_val(cb)) return false;
                                     else break;
                                 }
                             }
@@ -2669,12 +2669,12 @@ CSLbool cl_equal_fn(LispObject a, LispObject b)
                 }
                 a = qcdr(a);
                 b = qcdr(b);
-                if (a == b) return YES;
+                if (a == b) return true;
                 continue;
             }
         }
         else if (is_immed_cons_sym(ta) ||
-                 ((int32_t)b & TAG_BITS) != ta) return NO;
+                 ((int32_t)b & TAG_BITS) != ta) return false;
 //
 // OK - now a and b both have the same type and neither are immediate data
 // conses or symbols. That leaves vectors (including strings) and boxed
@@ -2683,16 +2683,16 @@ CSLbool cl_equal_fn(LispObject a, LispObject b)
         else switch (ta)
             {   case TAG_NUMBERS:
                 {   Header h = numhdr(a);
-                    if (h != numhdr(b)) return NO;
+                    if (h != numhdr(b)) return false;
                     if (type_of_header(h) == TYPE_BIGNUM)
                     {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                         while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                         {   hh -= 4;
                             if (*(uint32_t *)((char *)a + hh) !=
                                 *(uint32_t *)((char *)b + hh))
-                                return NO;
+                                return false;
                         }
-                        return YES;
+                        return true;
                     }
                     else return eql_numbers(a, b);
                 }
@@ -2701,11 +2701,11 @@ CSLbool cl_equal_fn(LispObject a, LispObject b)
                 default:
                 case TAG_BOXFLOAT:
                 {   Header h = flthdr(a);
-                    if (h != flthdr(b)) return NO;
+                    if (h != flthdr(b)) return false;
                     if (type_of_header(h) == TYPE_SINGLE_FLOAT)
                     {   if (single_float_val(a) != single_float_val(b))
-                            return NO;
-                        else return YES;
+                            return false;
+                        else return true;
                     }
                     else
 //
@@ -2714,15 +2714,15 @@ CSLbool cl_equal_fn(LispObject a, LispObject b)
 // objects.
 //
                     {   if (double_float_val(a) != double_float_val(b))
-                            return NO;
-                        else return YES;
+                            return false;
+                        else return true;
                     }
                 }
             }
     }
 }
 
-static CSLbool vec_equal(LispObject a, LispObject b);
+static bool vec_equal(LispObject a, LispObject b);
 
 //
 // Hmmm - EQUAL could be re-implemented to be non-recursive via pointer
@@ -2788,7 +2788,7 @@ void dump_equals()
     if (log != stdout) fclose(log);
 }
 
-CSLbool traced_equal_fn(LispObject a, LispObject b,
+bool traced_equal_fn(LispObject a, LispObject b,
                         char *file, int line, int depth)
 //
 // a and b are not EQ at this stage.. I guarantee to have checked that
@@ -2799,7 +2799,7 @@ CSLbool traced_equal_fn(LispObject a, LispObject b,
 #undef equal_fn
 #define equal_fn(a, b) traced_equal_fn(a, b, file, line, depth+1)
 #else
-CSLbool equal_fn(LispObject a, LispObject b)
+bool equal_fn(LispObject a, LispObject b)
 //
 // a and b are not EQ at this stage.. I guarantee to have checked that
 // before entering this general purpose code. I will also have checked that
@@ -2824,7 +2824,7 @@ CSLbool equal_fn(LispObject a, LispObject b)
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
         aerror("Stack too deep in equal\n");
-        return NO;
+        return false;
     }
 #endif
     for (;;)
@@ -2838,13 +2838,13 @@ CSLbool equal_fn(LispObject a, LispObject b)
 #ifdef COMMON
                 || b == nil
 #endif
-               ) return NO;
+               ) return false;
             else
             {   LispObject ca = qcar(a), cb = qcar(b);
                 if (ca == cb)
                 {   a = qcdr(a);
                     b = qcdr(b);
-                    if (a == b) return YES;
+                    if (a == b) return true;
                     continue;
                 }
 //
@@ -2863,7 +2863,7 @@ CSLbool equal_fn(LispObject a, LispObject b)
 #ifdef COMMON
                             || cb == nil
 #endif
-                           ) return NO;
+                           ) return false;
                         else
                         {   LispObject cca = qcar(ca), ccb = qcar(cb);
                             if (cca == ccb)
@@ -2876,7 +2876,7 @@ CSLbool equal_fn(LispObject a, LispObject b)
 // Do a real recursion when I get down to args like
 // ((x ...) ...) ((y ...) ...)
 //
-                            if (!equal(cca, ccb)) return NO;
+                            if (!equal(cca, ccb)) return false;
                             ca = qcdr(ca);
                             cb = qcdr(cb);
                             if (ca == cb) break;
@@ -2884,39 +2884,39 @@ CSLbool equal_fn(LispObject a, LispObject b)
                         }
                     }
                     else if (is_immed_cons_sym(tca) ||
-                             ((int32_t)cb & TAG_BITS) != tca) return NO;
+                             ((int32_t)cb & TAG_BITS) != tca) return false;
                     else switch (tca)
                         {   case TAG_NUMBERS:
                             {   Header h = numhdr(ca);
-                                if (h != numhdr(cb)) return NO;
+                                if (h != numhdr(cb)) return false;
                                 if (type_of_header(h) == TYPE_BIGNUM)
                                 {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                                     while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                                     {   hh -= 4;
                                         if (*(uint32_t *)((char *)ca + hh) !=
                                             *(uint32_t *)((char *)cb + hh))
-                                            return NO;
+                                            return false;
                                     }
                                     break;
                                 }
-                                else if (!eql_numbers(ca, cb)) return NO;
+                                else if (!eql_numbers(ca, cb)) return false;
                                 else break;
                             }
                             case TAG_VECTOR:
-                                if (!vec_equal(ca, cb)) return NO;
+                                if (!vec_equal(ca, cb)) return false;
                                 break;
                             default:
                             case TAG_BOXFLOAT:
                             {   Header h = flthdr(ca);
-                                if (h != flthdr(cb)) return NO;
+                                if (h != flthdr(cb)) return false;
                                 if (type_of_header(h) == TYPE_SINGLE_FLOAT)
                                 {   if (single_float_val(ca) !=
-                                        single_float_val(cb)) return NO;
+                                        single_float_val(cb)) return false;
                                     else break;
                                 }
                                 else
                                 {   if (double_float_val(ca) !=
-                                        double_float_val(cb)) return NO;
+                                        double_float_val(cb)) return false;
                                     else break;
                                 }
                             }
@@ -2925,25 +2925,25 @@ CSLbool equal_fn(LispObject a, LispObject b)
                 }
                 a = qcdr(a);
                 b = qcdr(b);
-                if (a == b) return YES;
+                if (a == b) return true;
                 continue;
             }
         }
         else if (is_immed_cons_sym(ta) ||
-                 ((int32_t)b & TAG_BITS) != ta) return NO;
+                 ((int32_t)b & TAG_BITS) != ta) return false;
         else switch (ta)
             {   case TAG_NUMBERS:
                 {   Header h = numhdr(a);
-                    if (h != numhdr(b)) return NO;
+                    if (h != numhdr(b)) return false;
                     if (type_of_header(h) == TYPE_BIGNUM)
                     {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                         while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                         {   hh -= 4;
                             if (*(uint32_t *)((char *)a + hh) !=
                                 *(uint32_t *)((char *)b + hh))
-                                return NO;
+                                return false;
                         }
-                        return YES;
+                        return true;
                     }
                     else return eql_numbers(a, b);
                 }
@@ -2952,11 +2952,11 @@ CSLbool equal_fn(LispObject a, LispObject b)
                 default:
                 case TAG_BOXFLOAT:
                 {   Header h = flthdr(a);
-                    if (h != flthdr(b)) return NO;
+                    if (h != flthdr(b)) return false;
                     if (type_of_header(h) == TYPE_SINGLE_FLOAT)
                     {   if (single_float_val(a) != single_float_val(b))
-                            return NO;
-                        else return YES;
+                            return false;
+                        else return true;
                     }
                     else
 //
@@ -2965,8 +2965,8 @@ CSLbool equal_fn(LispObject a, LispObject b)
 // objects.
 //
                     {   if (double_float_val(a) != double_float_val(b))
-                            return NO;
-                        else return YES;
+                            return false;
+                        else return true;
                     }
                 }
             }
@@ -2978,14 +2978,14 @@ CSLbool equal_fn(LispObject a, LispObject b)
 #define equal_fn(a, b) traced_equal(a, b, __FILE__, __LINE__, 0)
 #endif
 
-static CSLbool vec_equal(LispObject a, LispObject b)
+static bool vec_equal(LispObject a, LispObject b)
 //
 // Here a and b are known to be vectors. Compare using recursive calls to
 // EQUAL on all components.
 //
 {   Header ha = vechdr(a), hb = vechdr(b);
     int32_t l;
-    if (ha != hb) return NO;
+    if (ha != hb) return false;
 //
 // This used to check all the way up to the end of the final doubleword
 // that the vector was padded to. This means that it was VITAL that any
@@ -2997,15 +2997,15 @@ static CSLbool vec_equal(LispObject a, LispObject b)
     if (vector_holds_binary(ha))
     {   while ((l -= 4) != 0)
             if (*((uint32_t *)((char *)a + l - TAG_VECTOR)) !=
-                *((uint32_t *)((char *)b + l - TAG_VECTOR))) return NO;
-        return YES;
+                *((uint32_t *)((char *)b + l - TAG_VECTOR))) return false;
+        return true;
     }
     else
     {   if (is_mixed_header(ha))
         {   while (l > 16)
             {   uint32_t ea = *((uint32_t *)((char *)a + l - TAG_VECTOR - 4)),
                              eb = *((uint32_t *)((char *)b + l - TAG_VECTOR - 4));
-                if (ea != eb) return NO;
+                if (ea != eb) return false;
                 l -= 4;
             }
         }
@@ -3013,13 +3013,13 @@ static CSLbool vec_equal(LispObject a, LispObject b)
         {   LispObject ea = *((LispObject *)((char *)a + l - TAG_VECTOR)),
                            eb = *((LispObject *)((char *)b + l - TAG_VECTOR));
             if (ea == eb) continue;
-            if (!equal(ea, eb)) return NO;
+            if (!equal(ea, eb)) return false;
         }
-        return YES;
+        return true;
     }
 }
 
-CSLbool equalp(LispObject a, LispObject b)
+bool equalp(LispObject a, LispObject b)
 //
 // a and b are not EQ at this stage.. I guarantee to have checked that
 // before entering this general purpose code.
@@ -3036,7 +3036,7 @@ CSLbool equalp(LispObject a, LispObject b)
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
         aerror("Stack too deep in equalp\n");
-        return NO;
+        return false;
     }
 #endif
     for (;;)
@@ -3050,13 +3050,13 @@ CSLbool equalp(LispObject a, LispObject b)
 #ifdef COMMON
                 || b == nil
 #endif
-               ) return NO;
+               ) return false;
             else
             {   LispObject ca = qcar(a), cb = qcar(b);
                 if (ca == cb)
                 {   a = qcdr(a);
                     b = qcdr(b);
-                    if (a == b) return YES;
+                    if (a == b) return true;
                     continue;
                 }
 //
@@ -3075,7 +3075,7 @@ CSLbool equalp(LispObject a, LispObject b)
 #ifdef COMMON
                             || cb == nil
 #endif
-                           ) return NO;
+                           ) return false;
                         else
                         {   LispObject cca = qcar(ca), ccb = qcar(cb);
                             if (cca == ccb)
@@ -3088,7 +3088,7 @@ CSLbool equalp(LispObject a, LispObject b)
 // Do a real recursion when I get down to args like
 // ((x ...) ...) ((y ...) ...)
 //
-                            if (!equalp(cca, ccb)) return NO;
+                            if (!equalp(cca, ccb)) return false;
                             ca = qcdr(ca);
                             cb = qcdr(cb);
                             if (ca == cb) break;
@@ -3096,40 +3096,40 @@ CSLbool equalp(LispObject a, LispObject b)
                         }
                     }
                     else if (is_immed_cons_sym(tca) ||
-                             ((int32_t)cb & TAG_BITS) != tca) return NO;
+                             ((int32_t)cb & TAG_BITS) != tca) return false;
                     else switch (tca)
                         {   case TAG_NUMBERS:
                             {   Header h = numhdr(ca);
-                                if (h != numhdr(cb)) return NO;
+                                if (h != numhdr(cb)) return false;
                                 if (type_of_header(h) == TYPE_BIGNUM)
                                 {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                                     while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                                     {   hh -= 4;
                                         if (*(uint32_t *)((char *)ca + hh) !=
                                             *(uint32_t *)((char *)cb + hh))
-                                            return NO;
+                                            return false;
                                     }
                                     break;
                                 }
-                                else if (!eql_numbers(ca, cb)) return NO;
+                                else if (!eql_numbers(ca, cb)) return false;
                                 else break;
                             }
                             case TAG_VECTOR:
 // /* At present vec_equal() is not right here
-                                if (!vec_equal(ca, cb)) return NO;
+                                if (!vec_equal(ca, cb)) return false;
                                 break;
                             default:
                             case TAG_BOXFLOAT:
                             {   Header h = flthdr(ca);
-                                if (h != flthdr(cb)) return NO;
+                                if (h != flthdr(cb)) return false;
                                 if (type_of_header(h) == TYPE_SINGLE_FLOAT)
                                 {   if (single_float_val(ca) !=
-                                        single_float_val(cb)) return NO;
+                                        single_float_val(cb)) return false;
                                     else break;
                                 }
                                 else
                                 {   if (double_float_val(ca) !=
-                                        double_float_val(cb)) return NO;
+                                        double_float_val(cb)) return false;
                                     else break;
                                 }
                             }
@@ -3138,26 +3138,26 @@ CSLbool equalp(LispObject a, LispObject b)
                 }
                 a = qcdr(a);
                 b = qcdr(b);
-                if (a == b) return YES;
+                if (a == b) return true;
                 continue;
             }
         }
         else if (is_immed_cons_sym(ta) ||
-                 ((int32_t)b & TAG_BITS) != ta) return NO;
+                 ((int32_t)b & TAG_BITS) != ta) return false;
 // What is left is vectors, strings and boxed numbers
         else switch (ta)
             {   case TAG_NUMBERS:
                 {   Header h = numhdr(a);
-                    if (h != numhdr(b)) return NO;
+                    if (h != numhdr(b)) return false;
                     if (type_of_header(h) == TYPE_BIGNUM)
                     {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                         while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                         {   hh -= 4;
                             if (*(uint32_t *)((char *)a + hh) !=
                                 *(uint32_t *)((char *)b + hh))
-                                return NO;
+                                return false;
                         }
-                        return YES;
+                        return true;
                     }
                     else return eql_numbers(a, b);
                 }
@@ -3167,11 +3167,11 @@ CSLbool equalp(LispObject a, LispObject b)
                 default:
                 case TAG_BOXFLOAT:
                 {   Header h = flthdr(a);
-                    if (h != flthdr(b)) return NO;
+                    if (h != flthdr(b)) return false;
                     if (type_of_header(h) == TYPE_SINGLE_FLOAT)
                     {   if (single_float_val(a) != single_float_val(b))
-                            return NO;
-                        else return YES;
+                            return false;
+                        else return true;
                     }
                     else
 //
@@ -3180,8 +3180,8 @@ CSLbool equalp(LispObject a, LispObject b)
 // objects.
 //
                     {   if (double_float_val(a) != double_float_val(b))
-                            return NO;
-                        else return YES;
+                            return false;
+                        else return true;
                     }
                 }
             }
@@ -3229,7 +3229,7 @@ LispObject Lequalp(LispObject nil, LispObject a, LispObject b)
 
 LispObject Lneq(LispObject nil,
                 LispObject a, LispObject b)
-{   CSLbool r;
+{   bool r;
 #ifdef COMMON
     r = cl_equal(a, b);
 #else
@@ -3378,7 +3378,7 @@ LispObject Lassoc(LispObject nil, LispObject a, LispObject b)
 //
 // In silly cases the length might not be a fixnum!
 //
-                trace_printf("Assoc YES %3d %3d ", pos, int_of_fixnum(Llength(nil,save_b)));
+                trace_printf("Assoc true %3d %3d ", pos, int_of_fixnum(Llength(nil,save_b)));
                 prin_to_stdout(a); trace_printf("\n");
 #endif
                 return onevalue(c);
@@ -3392,7 +3392,7 @@ LispObject Lassoc(LispObject nil, LispObject a, LispObject b)
     }
 #ifdef TRACED_EQUAL
 // beware stupidly long lists...
-    trace_printf("Assoc NO  %3d %3d ", pos, int_of_fixnum(Llength(nil,save_b)));
+    trace_printf("Assoc false  %3d %3d ", pos, int_of_fixnum(Llength(nil,save_b)));
     prin_to_stdout(a); trace_printf("\n");
 #endif
     return onevalue(nil);
@@ -3505,7 +3505,7 @@ LispObject Lmemq(LispObject nil, LispObject a, LispObject b)
     return onevalue(nil);
 }
 
-static CSLbool smemq(LispObject a, LispObject b)
+static bool smemq(LispObject a, LispObject b)
 {
 //
 // /* This is a bit worrying - it can use C recursion to arbitrary
@@ -3519,15 +3519,15 @@ static CSLbool smemq(LispObject a, LispObject b)
 #endif
     while (consp(b))
     {   LispObject w = qcar(b);
-        if (w == quote_symbol) return NO;
-        else if (smemq(a, w)) return YES;
+        if (w == quote_symbol) return false;
+        else if (smemq(a, w)) return true;
         else b = qcdr(b);
     }
     return (a == b);
 }
 
 LispObject Lsmemq(LispObject nil, LispObject a, LispObject b)
-{   CSLbool r;
+{   bool r;
     r = smemq(a, b);
     errexit();
     return onevalue(Lispify_predicate(r));
@@ -3540,25 +3540,25 @@ LispObject Lsmemq(LispObject nil, LispObject a, LispObject b)
 //           ('t (or (contained x (car y)) (contained x (cdr y))))))
 //
 
-static CSLbool containedeq(LispObject nil, LispObject x, LispObject y)
+static bool containedeq(LispObject nil, LispObject x, LispObject y)
 {   while (consp(y))
-    {   if (containedeq(nil, x, qcar(y))) return YES;
+    {   if (containedeq(nil, x, qcar(y))) return true;
         y = qcdr(y);
     }
     return (x == y);
 }
 
-static CSLbool containedequal(LispObject nil, LispObject x, LispObject y)
+static bool containedequal(LispObject nil, LispObject x, LispObject y)
 {   while (consp(y))
-    {   if (equal(x, y)) return YES;
-        if (containedequal(nil, x, qcar(y))) return YES;
+    {   if (equal(x, y)) return true;
+        if (containedequal(nil, x, qcar(y))) return true;
         y = qcdr(y);
     }
     return equal(x, y);
 }
 
 static LispObject Lcontained(LispObject nil, LispObject x, LispObject y)
-{   CSLbool r;
+{   bool r;
     if (is_symbol(x) || is_fixnum(x)) r = containedeq(nil, x, y);
     else r = containedequal(nil, x, y);
     errexit();
@@ -4211,12 +4211,12 @@ LispObject subla(LispObject a, LispObject c)
 #define rx  stack[-3]
     for (;;)
     {   LispObject tt = a;
-        CSLbool found = NO;
+        bool found = false;
         while (consp(tt))
         {   LispObject tta = qcar(tt);
             if (consp(tta) && c == qcar(tta))
             {   tt = qcdr(tta);
-                found = YES;
+                found = true;
                 break;
             }
             tt = qcdr(tt);
@@ -4340,7 +4340,7 @@ LispObject sublis(LispObject a, LispObject c)
 #define rx  stack[-3]
     for (;;)
     {   LispObject tt = a;
-        CSLbool found = NO;
+        bool found = false;
         while (consp(tt))
         {   LispObject tta = qcar(tt);
 #ifdef COMMON
@@ -4349,7 +4349,7 @@ LispObject sublis(LispObject a, LispObject c)
             if (consp(tta) && equal(c, qcar(tta)))
 #endif
             {   tt = qcdr(tta);
-                found = YES;
+                found = true;
                 break;
             }
             nil = C_nil;

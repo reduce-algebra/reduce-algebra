@@ -95,8 +95,8 @@ typedef struct Package
 
 #define NO_PREFIX           'x'
 
-extern CSLbool is_constituent(int c);
-extern LispObject intern(int len, CSLbool escaped);
+extern bool is_constituent(int c);
+extern LispObject intern(int len, bool escaped);
 extern LispObject iintern(LispObject str, int32_t h, LispObject p,
                           int str_is_ok /* NOT a bool */);
 extern LispObject find_package(char *name, int len);

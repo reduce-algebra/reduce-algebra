@@ -609,12 +609,12 @@ static LispObject Lmake_char(LispObject, int nargs, ...)
 // in general terms nicer.
 //
 
-static CSLbool chartest(LispObject c)
+static bool chartest(LispObject c)
 {   if (!is_char(c))
     {   aerror1("Character object expected", c);
-        return YES;
+        return true;
     }
-    else return NO;
+    else return false;
 }
 
 static LispObject Lchar_eqn(LispObject nil, int nargs, ...)

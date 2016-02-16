@@ -828,7 +828,7 @@ LispObject Lcomplexp(LispObject nil, LispObject a)
 
 #ifdef COMMON
 
-CSLbool complex_stringp(LispObject a)
+bool complex_stringp(LispObject a)
 //
 // true if the arg is a string, but NOT a simple string.  In general
 // when this is true simplify_string() will then be called to do
@@ -836,17 +836,17 @@ CSLbool complex_stringp(LispObject a)
 //
 {   Header h;
     LispObject w, nil = C_nil;
-    if (!is_vector(a)) return NO;
+    if (!is_vector(a)) return false;
     h = vechdr(a);
-    if (type_of_header(h) != TYPE_ARRAY) return NO;
+    if (type_of_header(h) != TYPE_ARRAY) return false;
 //
 // Note that the cheery Common Lisp Committee decided the abolish the
 // separate type 'string-char, so the test here is maybe dubious...
 //
-    else if (elt(a, 0) != string_char_sym) return NO;
+    else if (elt(a, 0) != string_char_sym) return false;
     w = elt(a, 1);
-    if (!consp(w) || consp(qcdr(w))) return NO;
-    else return YES;
+    if (!consp(w) || consp(qcdr(w))) return false;
+    else return true;
 }
 
 #endif
@@ -863,7 +863,7 @@ LispObject Lprotect_symbols(LispObject nil, LispObject a)
     return onevalue(retval);
 }
 
-CSLbool stringp(LispObject a)
+bool stringp(LispObject a)
 //
 // True if arg is a simple OR a general string
 //
@@ -871,20 +871,20 @@ CSLbool stringp(LispObject a)
 #ifdef COMMON
     LispObject w, nil = C_nil;
 #endif
-    if (!is_vector(a)) return NO;
+    if (!is_vector(a)) return false;
     h = vechdr(a);
-    if (is_string_header(h)) return YES;
+    if (is_string_header(h)) return true;
 #ifdef COMMON
-    else if (type_of_header(h) != TYPE_ARRAY) return NO;
+    else if (type_of_header(h) != TYPE_ARRAY) return false;
 //
 // Beware abolition of 'string-char
 //
-    else if (elt(a, 0) != string_char_sym) return NO;
+    else if (elt(a, 0) != string_char_sym) return false;
     w = elt(a, 1);
-    if (!consp(w) || consp(qcdr(w))) return NO;
-    else return YES;
+    if (!consp(w) || consp(qcdr(w))) return false;
+    else return true;
 #else
-    else return NO;
+    else return false;
 #endif
 }
 
@@ -1749,7 +1749,7 @@ LispObject getvector(int tag, int type, size_t size)
 // at present is a pretty random choice of frequency!
 //
     if ((++validate_count) % 500 == 0)
-    {   copy_into_nilseg(NO);
+    {   copy_into_nilseg(false);
         validate_all("getvector", __LINE__, __FILE__);
     }
 #endif
@@ -2205,7 +2205,7 @@ static LispObject Ldatelessp(LispObject nil, LispObject a, LispObject b)
 // to daylight savings time).
 //
 {   char *aa, *bb;
-    CSLbool res;
+    bool res;
     int wa, wb;
     if (!is_vector(a) || !is_vector(b) ||
         vechdr(a) != STR24HDR ||
@@ -2224,7 +2224,7 @@ static LispObject Ldatelessp(LispObject nil, LispObject a, LispObject b)
     else if ((wa = getint(aa+11, 2)) != (wb = getint(bb+11, 2))) res = wa < wb;
     else if ((wa = getint(aa+14, 2)) != (wb = getint(bb+14, 2))) res = wa < wb;
     else if ((wa = getint(aa+17, 2)) != (wb = getint(bb+17, 2))) res = wa < wb;
-    else res = NO;
+    else res = false;
     return onevalue(Lispify_predicate(res));
 }
 

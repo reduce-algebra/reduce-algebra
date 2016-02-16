@@ -1860,7 +1860,7 @@ void low_level_signal_handler(int code)
     throw "low_level_signal_handler";
 }
 
-void unwind_stack(LispObject *entry_stack, CSLbool findcatch)
+void unwind_stack(LispObject *entry_stack, bool findcatch)
 {   LispObject *sp = stack;
     while (sp != entry_stack)
     {   LispObject bv, w;
@@ -2066,7 +2066,7 @@ static LispObject errorset3(volatile LispObject env,
 // Worry about restoration of fluids bound before the exception
 // forced unwinding.  All pretty dreadful, I think.
 //
-        unwind_stack(save, NO);
+        unwind_stack(save, false);
 //
 // I also suspect I should restore miscflags from flags...
 //
@@ -2334,7 +2334,7 @@ static LispObject resource_limit7(volatile LispObject env,
 // Worry about restoration of fluids bound before the exception
 // forced unwinding.  All pretty dreadful, I think.
 //
-        unwind_stack(save, NO);
+        unwind_stack(save, false);
         stack = save;
         nil = C_nil;
         pop2(litvec, codevec);

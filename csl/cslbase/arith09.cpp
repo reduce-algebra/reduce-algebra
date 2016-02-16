@@ -873,11 +873,11 @@ LispObject ash(LispObject a, LispObject b)
         int32_t d0 = ASR(msd, (31 - bits));
         int32_t d1 = clear_top_bit(msd << bits);
         int32_t i, lenc = lena + words;
-        CSLbool longer = NO;
+        bool longer = false;
         LispObject c, nil;
         if (!((d0 == 0 && (d1 & 0x40000000) == 0) ||
               (d0 == -1 && (d1 & 0x40000000) != 0)))
-            lenc++, longer = YES;
+            lenc++, longer = true;
         push(a);
         c = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*(lenc+1));
         pop(a);
@@ -916,12 +916,12 @@ LispObject ash(LispObject a, LispObject b)
         int32_t d0 = ASR(msd, bits);
         int32_t d1 = clear_top_bit(msd << (31 - bits));
         int32_t i, lenc = lena - words;
-        CSLbool shorter = NO;
+        bool shorter = false;
         LispObject c, nil;
         if (bits != 0 &&
             ((d0 == 0 && (d1 & 0x40000000) == 0) ||
              (d0 == -1 && (d1 & 0x40000000) != 0)))
-            lenc--, shorter = YES;
+            lenc--, shorter = true;
 //
 // Maybe at this stage I can tell that the result will be zero (or -1).
 // If the result will be a single-precision value I will nevertheless

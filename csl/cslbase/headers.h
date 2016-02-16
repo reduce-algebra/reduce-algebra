@@ -74,10 +74,10 @@
 // The following need to be defined so that the useful C macros in
 // stdint.h get defined. They reflect an ugly gulf between C and C++.
 
-#if defined __cplusplus && !defined __STDC_CONSTANT_MACROS
+#ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS 1
 #endif
-#if defined __cplusplus && !defined __STDC_FORMAT_MACROS
+#ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS 1
 #endif
 
@@ -149,6 +149,9 @@
 #include "proc.h"
 #include "stream.h"
 #include "cslread.h"
+#ifdef EXPERIMENT
+#include "inthash.h"
+#endif
 
 #ifdef HAVE_FWIN
 #if HAVE_LIBWX

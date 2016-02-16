@@ -571,7 +571,7 @@ static uint32_t hash_eql(LispObject key)
     else return update_hash(1, (uint32_t)key);
 }
 
-static uint32_t hash_cl_equal(LispObject key, CSLbool descend)
+static uint32_t hash_cl_equal(LispObject key, bool descend)
 //
 // This function is the one used hashing things under EQUAL, and note
 // that Common Lisp expects that EQUAL will NOT descend vectors or
@@ -597,7 +597,7 @@ static uint32_t hash_cl_equal(LispObject key, CSLbool descend)
     {   switch (TAG_BITS & (int32_t)key)
         {   case TAG_CONS:
                 if (key == C_nil || !descend) return r;
-                r = update_hash(r, hash_cl_equal(qcar(key), YES));
+                r = update_hash(r, hash_cl_equal(qcar(key), true));
                 nil = C_nil;
                 if (exception_pending()) return 0;
                 key = qcdr(key);
@@ -692,7 +692,7 @@ static uint32_t hash_cl_equal(LispObject key, CSLbool descend)
                     while ((len -= CELL) != 0)
                     {   LispObject ea =
                             *((LispObject *)((char *)key + len - TAG_VECTOR));
-                        r = update_hash(r, hash_cl_equal(ea, YES));
+                        r = update_hash(r, hash_cl_equal(ea, true));
                         nil = C_nil;
                         if (exception_pending()) return 0;
                     }
@@ -1166,7 +1166,7 @@ static uint32_t hash_equalp(LispObject key)
 static uint32_t hashcode;
 static int hashsize, hashoffset, hashgap;
 
-static CSLbool large_hash_table;
+static bool large_hash_table;
 
 #define words_in_hash_table(v)                        \
     (((large_hash_table ? int_of_fixnum(elt(v, 1)) :  \
@@ -1204,7 +1204,7 @@ LispObject Lget_hash(LispObject nil, int nargs, ...)
             break;
         case 2:
             push3(key, tab, dflt);
-            hashcode = hash_cl_equal(key, YES);
+            hashcode = hash_cl_equal(key, true);
             pop3(dflt, tab, key);
             errexit();
             break;
@@ -1238,7 +1238,7 @@ LispObject Lget_hash(LispObject nil, int nargs, ...)
 //
     for (nprobes=0; nprobes<size; nprobes++)
     {   LispObject q = ht_elt(v, p+1);
-        CSLbool cf;
+        bool cf;
 //@@    printf("probe %d at %d\n", nprobes, p);
         if (q == SPID_HASH0)
         {   mv_2 = nil;
@@ -1248,7 +1248,7 @@ LispObject Lget_hash(LispObject nil, int nargs, ...)
         }
         if (q == SPID_HASH1)
         {   hashgap = p;
-            cf = NO;  // vacated slot
+            cf = false;  // vacated slot
         }
 // /* again user-specified hash functions need insertion here
         else switch (flavour)
@@ -1258,19 +1258,19 @@ LispObject Lget_hash(LispObject nil, int nargs, ...)
                 case 1: cf = eql(q, key);
                     break;
                 case 2: push4(key, tab, dflt, v);
-                    if (q == key) cf = YES;
+                    if (q == key) cf = true;
                     else cf = cl_equal(q, key);
                     pop4(v, dflt, tab, key);
                     errexit();
                     break;
                 case 3: push4(key, tab, dflt, v);
-                    if (q == key) cf = YES;
+                    if (q == key) cf = true;
                     else cf = equal(q, key);
                     pop4(v, dflt, tab, key);
                     errexit();
                     break;
                 case 4: push4(key, tab, dflt, v);
-                    if (q == key) cf = YES;
+                    if (q == key) cf = true;
                     else cf = equalp(q, key);
                     pop4(v, dflt, tab, key);
                     errexit();
@@ -1303,7 +1303,7 @@ static void reinsert_hash(LispObject v, int32_t size, int32_t flavour,
             break;
         case 2:
             push3(key, v, val);
-            hcode = hash_cl_equal(key, YES);
+            hcode = hash_cl_equal(key, true);
             pop3(val, v, key);
             errexitv();
             break;
@@ -1365,7 +1365,7 @@ void rehash_this_table(LispObject v)
 // up serious trouble here.
 //
 {   int32_t size, i, j, flavour, many;
-    CSLbool old_large = large_hash_table;
+    bool old_large = large_hash_table;
     LispObject pendkey[REHASH_AT_ONE_GO], pendval[REHASH_AT_ONE_GO];
     flavour = int_of_fixnum(elt(v, 0)); // Done this way always
 
@@ -1564,7 +1564,7 @@ LispObject Lput_hash(LispObject nil, int nargs, ...)
             isize = words_in_hash_table(v);
             for (i=0; i<isize; i+=2)
             {   LispObject key1 = ht_elt(v, i+1), val1 = ht_elt(v, i+2);
-                CSLbool large = large_hash_table;
+                bool large = large_hash_table;
                 if (key1 == SPID_HASH0 || key1 == SPID_HASH1) continue;
 //
 // NB the new hash table is big enough to hold all the data that was in the
@@ -1638,7 +1638,7 @@ LispObject Lsxhash(LispObject nil, LispObject key)
 //
 // Does not descend vectors
 //
-    uint32_t h = hash_cl_equal(key, YES);
+    uint32_t h = hash_cl_equal(key, true);
 //@@printf("raw hash_cl_equal = %.8x\n", h);
     errexit();
     h = (h ^ (h >> 16)) & 0x03ffffff; // ensure it will be a positive fixnum
@@ -1650,7 +1650,7 @@ LispObject Leqlhash(LispObject nil, LispObject key)
 //
 // Only handles atoms
 //
-    uint32_t h = hash_cl_equal(key, NO);
+    uint32_t h = hash_cl_equal(key, false);
 //@@printf("raw hash_eql = %.8x\n", h);
     errexit();
     h = (h ^ (h >> 16)) & 0x03ffffff; // ensure it will be a positive fixnum

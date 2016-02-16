@@ -356,7 +356,7 @@ LispObject Cremainder(LispObject a, LispObject b)
 
 static LispObject mod_by_rem(LispObject a, LispObject b)
 {   LispObject nil;
-    CSLbool sb = minusp(b);
+    bool sb = minusp(b);
     errexit();
     a = Cremainder(a, b);   // Repeats dispatch on argument type. Sorry
     errexit();
@@ -636,7 +636,7 @@ LispObject modulus(LispObject a, LispObject b)
     }
 }
 
-CSLbool zerop(LispObject a)
+bool zerop(LispObject a)
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             return (a == fixnum_of_int(0));
@@ -644,7 +644,7 @@ CSLbool zerop(LispObject a)
             // #C(r i) must satisfy zerop is r and i both do
             if (is_complex(a) && zerop(real_part(a)))
                 return zerop(imag_part(a));
-            else return NO;
+            else return false;
 #ifndef EXPERIMENT
         case TAG_SFLOAT:
 //
@@ -657,11 +657,11 @@ CSLbool zerop(LispObject a)
         case TAG_BOXFLOAT:
             return (float_of_number(a) == 0.0);
         default:
-            return NO;
+            return false;
     }
 }
 
-CSLbool onep(LispObject a)
+bool onep(LispObject a)
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             return (a == fixnum_of_int(1));
@@ -669,7 +669,7 @@ CSLbool onep(LispObject a)
             // #C(r i) must satisfy onep(r) and zerop(i)
             if (is_complex(a) && onep(real_part(a)))
                 return zerop(imag_part(a));
-            else return NO;
+            else return false;
 #ifndef EXPERIMENT
         case TAG_SFLOAT:
         {   Float_union w;
@@ -680,7 +680,7 @@ CSLbool onep(LispObject a)
         case TAG_BOXFLOAT:
             return (float_of_number(a) == 1.0);
         default:
-            return NO;
+            return false;
     }
 }
 
@@ -688,7 +688,7 @@ CSLbool onep(LispObject a)
 // sign testing
 //
 
-CSLbool minusp(LispObject a)
+bool minusp(LispObject a)
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             return ((int32_t)a < 0);
@@ -724,7 +724,7 @@ CSLbool minusp(LispObject a)
 }
 
 
-CSLbool plusp(LispObject a)
+bool plusp(LispObject a)
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             return (a > fixnum_of_int(0));
@@ -767,7 +767,7 @@ CSLbool plusp(LispObject a)
 // this must be coded so that it never provokes garbage collection.
 //
 
-static CSLbool numeqis(LispObject a, LispObject b)
+static bool numeqis(LispObject a, LispObject b)
 {
 #ifdef EXPERIMENT
     return 0;
@@ -778,8 +778,8 @@ static CSLbool numeqis(LispObject a, LispObject b)
 #endif
 }
 
-static CSLbool numeqic(LispObject a, LispObject b)
-{   if (!zerop(imag_part(b))) return NO;
+static bool numeqic(LispObject a, LispObject b)
+{   if (!zerop(imag_part(b))) return false;
     else return numeq2(a, real_part(b));
 }
 
@@ -787,7 +787,7 @@ static CSLbool numeqic(LispObject a, LispObject b)
 
 #define numeqsi(a, b) numeqis(b, a)
 
-static CSLbool numeqsb(LispObject a, LispObject b)
+static bool numeqsb(LispObject a, LispObject b)
 //
 // This is coded to allow comparison of any floating type
 // with a bignum
@@ -796,7 +796,7 @@ static CSLbool numeqsb(LispObject a, LispObject b)
     int x;
     int32_t w, len;
     uint32_t u;
-    if (-1.0e8 < d && d < 1.0e8) return NO; // fixnum range (approx)
+    if (-1.0e8 < d && d < 1.0e8) return false; // fixnum range (approx)
     len = (bignum_length(b)-CELL-4)/4;
     if (len == 0)   // One word bignums can be treated specially
     {   int32_t v = bignum_digits(b)[0];
@@ -812,7 +812,7 @@ static CSLbool numeqsb(LispObject a, LispObject b)
 // result left is zero and (b) there are no more bits left.
 //
     x = x / 31;
-    if (x != len) return NO;
+    if (x != len) return false;
     w = bignum_digits(b)[len];
     d1 = (d1 - (double)w) * TWO_31;
     u = bignum_digits(b)[--len];
@@ -821,13 +821,13 @@ static CSLbool numeqsb(LispObject a, LispObject b)
     {   u = bignum_digits(b)[--len];
         d1 = d1 - (double)u;
     }
-    if (d1 != 0.0) return NO;
+    if (d1 != 0.0) return false;
     while (--len >= 0)
-        if (bignum_digits(b)[len] != 0) return NO;
-    return YES;
+        if (bignum_digits(b)[len] != 0) return false;
+    return true;
 }
 
-static CSLbool numeqsr(LispObject a, LispObject b)
+static bool numeqsr(LispObject a, LispObject b)
 //
 // Here I will rely somewhat on the use of IEEE floating point values
 // (an in particular the weaker supposition that I have floating point
@@ -849,7 +849,7 @@ static CSLbool numeqsr(LispObject a, LispObject b)
     if (is_fixnum(db))
     {   bit = int_of_fixnum(db);
         w = bit;
-        if (w != (w & (-w))) return NO;   // not a power of 2
+        if (w != (w & (-w))) return false;   // not a power of 2
         dx = 0;
     }
     else if (is_numbers(db) && is_bignum(db))
@@ -862,12 +862,12 @@ static CSLbool numeqsr(LispObject a, LispObject b)
 //
         if (bit == 0) bit = bignum_digits(db)[--lenb];
         w = bit;
-        if (w != (w & (-w))) return NO;   // not a power of 2
+        if (w != (w & (-w))) return false;   // not a power of 2
         dx = 31*lenb;
         while (--lenb >= 0)     // check that the rest of db is zero
-            if (bignum_digits(db)[lenb] != 0) return NO;
+            if (bignum_digits(db)[lenb] != 0) return false;
     }
-    else return NO; // Odd - what type IS db here?  Maybe error.
+    else return false; // Odd - what type IS db here?  Maybe error.
     if ((bit & 0xffffU) == 0) dx += 16, bit = bit >> 16;
     if ((bit & 0xff) == 0) dx += 8, bit = bit >> 8;
     if ((bit & 0xf) == 0) dx += 4, bit = bit >> 4;
@@ -881,7 +881,7 @@ static CSLbool numeqsr(LispObject a, LispObject b)
 // special test the relies on that fact that a value represented as a rational
 // would not have been zero.
 //
-        if (dx > 10000) return NO;  // Avoid gross underflow
+        if (dx > 10000) return false;  // Avoid gross underflow
         d1 = ldexp(d1, (int)-dx);
         return (d == d1 && d != 0.0);
     }
@@ -889,7 +889,7 @@ static CSLbool numeqsr(LispObject a, LispObject b)
     if (len == 0)   // One word bignums can be treated specially
     {   int32_t v = bignum_digits(nb)[0];
         double d1;
-        if (dx > 10000) return NO;  // Avoid gross underflow
+        if (dx > 10000) return false;  // Avoid gross underflow
         d1 = ldexp((double)v, (int)-dx);
         return (d == d1 && d != 0.0);
     }
@@ -904,7 +904,7 @@ static CSLbool numeqsr(LispObject a, LispObject b)
 // result left is zero and (b) there are no more bits left.
 //
     dx = dx / 31;
-    if (dx != len) return NO;
+    if (dx != len) return false;
     w = bignum_digits(nb)[len];
     d1 = (d1 - (double)w) * TWO_31;
     u = bignum_digits(nb)[--len];
@@ -913,15 +913,15 @@ static CSLbool numeqsr(LispObject a, LispObject b)
     {   u = bignum_digits(nb)[--len];
         d1 = d1 - (double)u;
     }
-    if (d1 != 0.0) return NO;
+    if (d1 != 0.0) return false;
     while (--len >= 0)
-        if (bignum_digits(nb)[len] != 0) return NO;
-    return YES;
+        if (bignum_digits(nb)[len] != 0) return false;
+    return true;
 }
 
 #define numeqsc(a, b) numeqic(a, b)
 
-static CSLbool numeqsf(LispObject a, LispObject b)
+static bool numeqsf(LispObject a, LispObject b)
 {
 #ifdef EXPERIMENT
     return 0;
@@ -934,15 +934,15 @@ static CSLbool numeqsf(LispObject a, LispObject b)
 
 #define numeqbs(a, b) numeqsb(b, a)
 
-static CSLbool numeqbb(LispObject a, LispObject b)
+static bool numeqbb(LispObject a, LispObject b)
 {   int32_t la = bignum_length(a);
-    if (la != (int32_t)bignum_length(b)) return NO;
+    if (la != (int32_t)bignum_length(b)) return false;
     la = (la-CELL-4)/4;
     while (la >= 0)
-    {   if (bignum_digits(a)[la] != bignum_digits(b)[la]) return NO;
+    {   if (bignum_digits(a)[la] != bignum_digits(b)[la]) return false;
         else la--;
     }
-    return YES;
+    return true;
 }
 
 #define numeqbc(a, b) numeqic(a, b)
@@ -951,7 +951,7 @@ static CSLbool numeqbb(LispObject a, LispObject b)
 
 #define numeqrs(a, b) numeqsr(b, a)
 
-static CSLbool numeqrr(LispObject a, LispObject b)
+static bool numeqrr(LispObject a, LispObject b)
 {   return numeq2(numerator(a), numerator(b)) &&
            numeq2(denominator(a), denominator(b));
 }
@@ -968,7 +968,7 @@ static CSLbool numeqrr(LispObject a, LispObject b)
 
 #define numeqcr(a, b) numeqic(b, a)
 
-static CSLbool numeqcc(LispObject a, LispObject b)
+static bool numeqcc(LispObject a, LispObject b)
 {   return numeq2(real_part(a), real_part(b)) &&
            numeq2(imag_part(a), imag_part(b));
 }
@@ -985,7 +985,7 @@ static CSLbool numeqcc(LispObject a, LispObject b)
 
 #define numeqfc(a, b) numeqic(a, b)
 
-static CSLbool numeqff(LispObject a, LispObject b)
+static bool numeqff(LispObject a, LispObject b)
 {   return (float_of_number(a) == float_of_number(b));
 }
 
@@ -995,14 +995,14 @@ static CSLbool numeqff(LispObject a, LispObject b)
 //
 
 #ifdef COMMON
-#  define differenta aerror1("Bad arg for =",  a); return 0
-#  define differentb aerror1("Bad arg for =",  b); return 0
+#  define differenta aerror1("Bad arg for =",  a); return false
+#  define differentb aerror1("Bad arg for =",  b); return false
 #else
-#  define differenta return NO
-#  define differentb return NO
+#  define differenta return false
+#  define differentb return false
 #endif
 
-CSLbool numeq2(LispObject a, LispObject b)
+bool numeq2(LispObject a, LispObject b)
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             switch ((int)b & TAG_BITS)

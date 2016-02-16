@@ -183,7 +183,7 @@ static LispObject quotib(LispObject a, LispObject b)
 
 static LispObject CLquotib(LispObject a, LispObject b)
 {   LispObject g, nil = C_nil;
-    CSLbool w;
+    bool w;
     push2(a, b);
     w = minusp(b);
     errexitn(2);

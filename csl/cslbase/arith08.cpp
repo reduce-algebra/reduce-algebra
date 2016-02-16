@@ -864,7 +864,7 @@ static LispObject lisp_fix_sub(LispObject a, int roundmode)
 //
 {   int32_t a0, a1, a2, a3;
     int x, x1;
-    CSLbool negative;
+    bool negative;
     double d = float_of_number(a);
     if (!(d == d)) return aerror("NaN in fix");
     if (1.0/d == 0.0) return aerror("infinity in fix");
@@ -923,8 +923,8 @@ static LispObject lisp_fix_sub(LispObject a, int roundmode)
         else if (a > 0) return make_two_word_bignum(0, a);
         else return make_two_word_bignum(-1, clear_top_bit(a));
     }
-    if (d < 0.0) d = -d, negative = YES;
-    else negative = NO;
+    if (d < 0.0) d = -d, negative = true;
+    else negative = false;
     d = frexp(d, &x); // 0.5 <= abs(d) < 1.0, x = the (binary) exponent
     if (d == 1.0) d = 0.5, x++;
     d *= TWO_31;

@@ -115,10 +115,10 @@ LispObject Lash1(LispObject nil, LispObject a, LispObject b)
 // but is not an "arithmetic" shift as that term is understood on
 // 2's complement machines.
 //
-{   CSLbool negative = NO;
+{   bool negative = false;
     if (!is_fixnum(b)) return aerror("ash1");
     if (minusp(a))
-    {   negative = YES;
+    {   negative = true;
         a = negate(a);
     }
     errexit();
@@ -223,14 +223,14 @@ LispObject Linorm(LispObject nil, LispObject a, LispObject k)
 //
 {   int32_t top, bottom, kk, bits;
     int32_t rtop = 0, rbottom = 0;
-    CSLbool was_fixnum = NO, was_negative = NO, round_up;
+    bool was_fixnum = false, was_negative = false, round_up;
     if (is_fixnum(k) && (int32_t)k >= 0) kk = int_of_fixnum(k);
     else return aerror1("bad args for inorm", k);
     if (is_fixnum(a))
     {   top = int_of_fixnum(a);
         if (top == 0) return aerror1("zero arg for inorm", a);
         bottom = top;
-        was_fixnum = YES;
+        was_fixnum = true;
     }
     else if (is_numbers(a))
     {   Header h = numhdr(a);
@@ -316,7 +316,7 @@ LispObject Linorm(LispObject nil, LispObject a, LispObject k)
 // is odd.
 //
         kk = rtop - kk;
-        if (rbottom == kk-1) round_up = YES;
+        if (rbottom == kk-1) round_up = true;
         else
         {   int32_t wk1 = (kk-1) / 31, bk1 = (kk-1) % 31;
             int32_t bit = ((int32_t)1) << bk1;
@@ -623,14 +623,14 @@ static LispObject Lboolfn(LispObject env, int nargs, ...)
 }
 
 LispObject Lzerop(LispObject nil, LispObject a)
-{   CSLbool fg;
+{   bool fg;
     fg = zerop(a);
     errexit();
     return onevalue(Lispify_predicate(fg));
 }
 
 LispObject Lonep(LispObject nil, LispObject a)
-{   CSLbool fg;
+{   bool fg;
     fg = onep(a);
     errexit();
     return onevalue(Lispify_predicate(fg));
@@ -692,7 +692,7 @@ LispObject Leqn_n(LispObject nil, int nargs, ...)
     r = stack[1-nargs];
     for (i = 1; i<nargs; i++)
     {   LispObject s = stack[1+i-nargs];
-        CSLbool w = numeq2(r, s);
+        bool w = numeq2(r, s);
         nil = C_nil;
         if (exception_pending())
         {   popv(nargs);
@@ -709,7 +709,7 @@ LispObject Leqn_n(LispObject nil, int nargs, ...)
 }
 
 LispObject Leqn(LispObject nil, LispObject a, LispObject b)
-{   CSLbool w = numeq2(a, b);
+{   bool w = numeq2(a, b);
     errexit();
     return onevalue(w ? lisp_true : nil);
 }
@@ -730,7 +730,7 @@ LispObject Llessp_n(LispObject nil, int nargs, ...)
     r = stack[1-nargs];
     for (i = 1; i<nargs; i++)
     {   LispObject s = stack[1+i-nargs];
-        CSLbool w = lessp2(r, s);
+        bool w = lessp2(r, s);
         nil = C_nil;
         if (exception_pending())
         {   popv(nargs);
@@ -747,7 +747,7 @@ LispObject Llessp_n(LispObject nil, int nargs, ...)
 }
 
 LispObject Llessp(LispObject nil, LispObject a, LispObject b)
-{   CSLbool w = lessp2(a, b);
+{   bool w = lessp2(a, b);
     errexit();
     return onevalue(w ? lisp_true : nil);
 }
@@ -768,7 +768,7 @@ LispObject Lgreaterp_n(LispObject nil, int nargs, ...)
     r = stack[1-nargs];
     for (i = 1; i<nargs; i++)
     {   LispObject s = stack[1+i-nargs];
-        CSLbool w = lessp2(s, r);
+        bool w = lessp2(s, r);
         nil = C_nil;
         if (exception_pending())
         {   popv(nargs);
@@ -785,7 +785,7 @@ LispObject Lgreaterp_n(LispObject nil, int nargs, ...)
 }
 
 LispObject Lgreaterp(LispObject nil, LispObject a, LispObject b)
-{   CSLbool w = lessp2(b, a);
+{   bool w = lessp2(b, a);
     errexit();
     return onevalue(w ? lisp_true : nil);
 }
@@ -797,7 +797,7 @@ LispObject Lgreaterp_1(LispObject, LispObject)
 #ifdef COMMON
 static LispObject Lneqn(LispObject nil, int nargs, ...)
 //
-// /= is supposed to check that NO pair of args match.
+// /= is supposed to check that false pair of args match.
 //
 {   int i, j;
     LispObject *r;
@@ -817,7 +817,7 @@ static LispObject Lneqn(LispObject nil, int nargs, ...)
     {   LispObject n1 = r[i];
         for (j=0; j<i; j++)
         {   LispObject n2 = r[j];
-            CSLbool w = numeq2(n1, n2);
+            bool w = numeq2(n1, n2);
             nil = C_nil;
             if (exception_pending()) return nil;
             if (w) return onevalue(nil);
@@ -828,7 +828,7 @@ static LispObject Lneqn(LispObject nil, int nargs, ...)
 #endif // COMMON
 
 LispObject Lneq_2(LispObject nil, LispObject a, LispObject b)
-{   CSLbool w = numeq2(a, b);
+{   bool w = numeq2(a, b);
     errexit();
     return onevalue(w ? nil : lisp_true);
 }
@@ -849,7 +849,7 @@ LispObject Lgeq_n(LispObject nil, int nargs, ...)
     r = stack[1-nargs];
     for (i = 1; i<nargs; i++)
     {   LispObject s = stack[1+i-nargs];
-        CSLbool w = lesseq2(s, r);
+        bool w = lesseq2(s, r);
         nil = C_nil;
         if (exception_pending())
         {   popv(nargs);
@@ -866,7 +866,7 @@ LispObject Lgeq_n(LispObject nil, int nargs, ...)
 }
 
 LispObject Lgeq(LispObject nil, LispObject a, LispObject b)
-{   CSLbool w = lesseq2(b, a);
+{   bool w = lesseq2(b, a);
     errexit();
     return onevalue(w ? lisp_true : nil);
 }
@@ -887,7 +887,7 @@ LispObject Lleq_n(LispObject nil, int nargs, ...)
     r = stack[1-nargs];
     for (i = 1; i<nargs; i++)
     {   LispObject s = stack[1+i-nargs];
-        CSLbool fg = lesseq2(r, s);
+        bool fg = lesseq2(r, s);
         nil = C_nil;
         if (exception_pending())
         {   popv(nargs);
@@ -904,7 +904,7 @@ LispObject Lleq_n(LispObject nil, int nargs, ...)
 }
 
 LispObject Lleq(LispObject nil, LispObject a, LispObject b)
-{   CSLbool w = lesseq2(a, b);
+{   bool w = lesseq2(a, b);
     errexit();
     return onevalue(w ? lisp_true : nil);
 }
@@ -914,7 +914,7 @@ LispObject Lleq_1(LispObject, LispObject)
 }
 
 LispObject Lmax2(LispObject nil, LispObject a, LispObject b)
-{   CSLbool w;
+{   bool w;
     push2(a, b);
     w = lessp2(a, b);
     pop2(b, a);
@@ -924,7 +924,7 @@ LispObject Lmax2(LispObject nil, LispObject a, LispObject b)
 }
 
 LispObject Lmin2(LispObject nil, LispObject a, LispObject b)
-{   CSLbool w;
+{   bool w;
     push2(a, b);
     w = lessp2(b, a);
     pop2(b, a);
@@ -945,7 +945,7 @@ LispObject Lmax(LispObject nil, int nargs, ...)
     r = stack[1-nargs];
     for (i = 1; i<nargs; i++)
     {   LispObject s = stack[1+i-nargs];
-        CSLbool fg;
+        bool fg;
         push2(r, s);
         fg = lessp2(r, s);
         pop2(s, r);
@@ -972,7 +972,7 @@ LispObject Lmin(LispObject nil, int nargs, ...)
     r = stack[1-nargs];
     for (i = 1; i<nargs; i++)
     {   LispObject s = stack[1+i-nargs];
-        CSLbool fg;
+        bool fg;
         push2(r, s);
         fg = lessp2(s, r);
         pop2(s, r);
@@ -1047,7 +1047,7 @@ static uint32_t random_number_seed[55] =
 
 static int random_j = 23, random_k = 54;
 
-static CSLbool randomization_request = NO;
+static bool randomization_request = false;
 
 //
 // If the user specifies a random number seed of zero I will try to
@@ -1085,7 +1085,7 @@ static void randomize(void)
 // first so that any obvious patterns will get clobbered.
 //
     random_number_seed[0] |= 1;
-    randomization_request = NO;
+    randomization_request = false;
 }
 
 uint32_t Crand(void)
@@ -1122,10 +1122,10 @@ void Csrand(uint32_t seed, uint32_t seed2)
     random_k = 54;
     i = 0;
     if (seed == 0 && seed2 == 0)
-    {   randomization_request = YES;
+    {   randomization_request = true;
         return;
     }
-    randomization_request = NO;
+    randomization_request = false;
 //
 // This version was byte-order sensitive, but documents the idea
 // that I first had.

@@ -368,7 +368,7 @@ int32_t native_pages_changed;
 int32_t native_fringe;
 int current_fp_rep;
 static int old_fp_rep;
-static CSLbool flip_needed;
+static bool flip_needed;
 static int old_page_bits;
 
 int procstackp;
@@ -2388,10 +2388,10 @@ void adjust_all(void)
     adjust(&(qpackage(nil)));
 #endif
 
-    copy_into_nilseg(NO);
+    copy_into_nilseg(false);
     for (i = first_nil_offset; i<last_nil_offset; i++)
         adjust(&BASE[i]);
-    copy_out_of_nilseg(NO);
+    copy_out_of_nilseg(false);
 
     adjust_consheap();
     adjust_vecheap();
@@ -3174,7 +3174,7 @@ static setup_type const restart_setup[] =
 };
 
 
-static void create_symbols(setup_type const s[], CSLbool restart_flag)
+static void create_symbols(setup_type const s[], bool restart_flag)
 {   int i;
     for (i=0; s[i].name != NULL; i++)
         make_symbol(s[i].name, restart_flag, s[i].one, s[i].two, s[i].n);
@@ -3187,7 +3187,7 @@ static void count_symbols(setup_type const s[])
     for (i=0; s[i].name != NULL; i++) defined_symbols++;
 }
 
-static void set_up_variables(CSLbool restart_flag);
+static void set_up_variables(bool restart_flag);
 
 #ifndef EMBEDDED
 static setup_type_1 *find_def_table(LispObject mod, LispObject checksum);
@@ -3472,7 +3472,7 @@ static void warm_setup()
 //
     {   LispObject w = error_output;
         error_output = 0;
-        if (IcloseInput(YES))
+        if (IcloseInput(true))
         {
 //
 // I write a moan to stderr, even though in some cases this will not be
@@ -3640,7 +3640,7 @@ static void warm_setup()
                 native_fringe = car32(p);
                 relocate_native_code((unsigned char *)p, native_fringe);
             }
-            IcloseInput(YES);
+            IcloseInput(true);
         }
     }
 //
@@ -4957,7 +4957,7 @@ static void cold_setup()
     procstackp = 0;
 }
 
-void set_up_functions(CSLbool restart_flag)
+void set_up_functions(bool restart_flag)
 {
 //
 // All symbols that have a pointer to C code in their function cell must
@@ -5067,7 +5067,7 @@ static int alpha0(const void *a, const void *b)
 
 #endif
 
-static void set_up_variables(CSLbool restart_flag)
+static void set_up_variables(bool restart_flag)
 {   LispObject nil = C_nil, w, w1;
     int i;
 #ifdef COMMON
@@ -5819,7 +5819,7 @@ static void set_up_variables(CSLbool restart_flag)
 // symbols spelt out on the command line will always be fairly short.
 //
     for (i=0; i<number_of_symbols_to_define; i++)
-    {   CSLbool undef = undefine_this_one[i];
+    {   bool undef = undefine_this_one[i];
         const char *s = symbols_to_define[i];
         if (undef)
         {   LispObject n = make_undefined_symbol(s);
@@ -6047,22 +6047,22 @@ void review_switch_settings()
 
 #endif
 
-CSLbool CSL_MD5_busy;
+bool CSL_MD5_busy;
 unsigned char unpredictable[256];
 static int n_unpredictable = 0;
-static CSLbool unpredictable_pending = 0;
+static bool unpredictable_pending = 0;
 
 void inject_randomness(int n)
 {   unpredictable[n_unpredictable++] ^= (n % 255);
     if (n_unpredictable >= 256)
     {   n_unpredictable = 0;
-        unpredictable_pending = YES;
+        unpredictable_pending = true;
     }
     if (unpredictable_pending & !CSL_MD5_busy)
     {   CSL_MD5_Init();
         CSL_MD5_Update(unpredictable, sizeof(unpredictable));
         CSL_MD5_Final(unpredictable);
-        unpredictable_pending = NO;
+        unpredictable_pending = false;
     }
 }
 
@@ -6180,7 +6180,7 @@ void setup(int restart_flag, double store_size)
             if (IopenRoot(filename, BANNER_CODE, 0)) b[0] = 0;
             else
             {   for (i=0; i<64; i++) b[i] = (char)Igetc();
-                IcloseInput(NO);
+                IcloseInput(false);
             }
             Irestore_context(save);
 //
@@ -6319,8 +6319,8 @@ void setup(int restart_flag, double store_size)
 // must first establish if flipping is required!
 //
             i = ((int32_t *)BASE)[12]; // 32-bit value of byteflip
-            if (((i >> 16) & 0xffffU) == 0x5678U) flip_needed = NO;
-            else if ((i & 0xffffU) == 0x7856U) flip_needed = YES;
+            if (((i >> 16) & 0xffffU) == 0x5678U) flip_needed = false;
+            else if ((i & 0xffffU) == 0x7856U) flip_needed = true;
             else
             {   term_printf("\n+++ The checkpoint file is corrupt\n");
                 my_exit(EXIT_FAILURE);
@@ -6331,7 +6331,7 @@ void setup(int restart_flag, double store_size)
             }
         }
         else Cfread((char *)BASE, sizeof(LispObject)*last_nil_offset);
-        copy_out_of_nilseg(YES);
+        copy_out_of_nilseg(true);
 #ifndef COMMON
         qheader(nil) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_SPECIAL_VAR;// BEFORE nil...
 #endif
@@ -6349,12 +6349,12 @@ void setup(int restart_flag, double store_size)
                 byteflip = (LispObject)((int64_t)byteflip >> 32);
         }
         if (((byteflip >> 16) & 0xffffU) == 0x5678U)
-        {   flip_needed = NO;
+        {   flip_needed = false;
             old_fp_rep = (int)(byteflip & FP_MASK);
             old_page_bits = (int)((byteflip >> 8) & 0x1f);
         }
         else if ((byteflip & 0xffffU) == 0x7856U)
-        {   flip_needed = YES;
+        {   flip_needed = true;
             old_fp_rep = (int)(flip_32bits(byteflip) & FP_MASK);
             old_page_bits = (int)((flip_32bits(byteflip) >> 8) & 0x1f);
         }
@@ -6392,7 +6392,7 @@ void setup(int restart_flag, double store_size)
     else
     {   for (i=first_nil_offset; i<last_nil_offset; i++)
             BASE[i] = nil;
-        copy_out_of_nilseg(NO);
+        copy_out_of_nilseg(false);
     }
 
     savestacklimit = stacklimit = &stack[stack_segsize*CSL_PAGE_SIZE/4-200];
@@ -6472,7 +6472,7 @@ void setup(int restart_flag, double store_size)
             term_printf("There are %d processors available\n", n);
     }
 #ifdef DEBUG_VALIDATE
-    copy_into_nilseg(NO);
+    copy_into_nilseg(false);
     validate_all("restarting", __LINE__, __FILE__);
 #endif
     garbage_collection_permitted = 1;
@@ -6912,7 +6912,7 @@ void copy_out_of_nilseg(int fg)
 MD5_CTX context;
 
 void CSL_MD5_Init(void)
-{   CSL_MD5_busy = YES;
+{   CSL_MD5_busy = true;
     MD5_Init(&context);
 }
 
@@ -6922,7 +6922,7 @@ void CSL_MD5_Update(const unsigned char *data, int len)
 
 void CSL_MD5_Final(unsigned char *md)
 {   MD5_Final(md, &context);
-    CSL_MD5_busy = NO;
+    CSL_MD5_busy = false;
 }
 
 

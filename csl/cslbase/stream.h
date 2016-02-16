@@ -246,7 +246,7 @@ extern char memory_print_buffer[MAX_PROMPT_LENGTH];
 #define READ_END           0x40000004
 
 extern LispObject make_stream_handle(void);
-extern CSLbool use_wimp, sigint_must_throw;
+extern bool use_wimp, sigint_must_throw;
 
 extern character_reader *procedural_input;
 extern character_writer *procedural_output;
@@ -364,7 +364,7 @@ extern directory *fasl_files[MAX_FASL_PATHS], *rootDirectory;
 #define PDS_OUTPUT  1
 #define PDS_PENDING 2
 extern directory *open_pds(const char *name, int mode);
-extern CSLbool finished_with(int h);
+extern bool finished_with(int h);
 
 #endif // header_stream_h
 

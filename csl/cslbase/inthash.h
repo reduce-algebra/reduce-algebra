@@ -64,16 +64,19 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id: $
+// $Id$
 
 #ifndef __inthash_h
 #define __inthash_h 1
 
-#include <stdio.h>
 #include <stdlib.h>
 
+#ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS 1
+#endif
+#ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS 1
+#endif
 #include <stdint.h>
 
 #ifndef DEBUG
@@ -83,7 +86,7 @@
 #include <assert.h>
 
 
-// The structure "hashtable" is used to encapsulate a table. In almost
+// The structure "inthash" is used to encapsulate a table. In almost
 // all cases I hope that people will neither need nor want to inspect the
 // fields within it. However such operations as iterating over keys or
 // key-value pairs may perhaps most easily done by looking within the
@@ -91,7 +94,7 @@
 // main table are recorded with the numeric value 0 in them, because 0
 // will not be a valid key.
 
-typedef struct _hashtable
+typedef struct _inthash
 {
     size_t size;
     size_t count;
@@ -100,7 +103,7 @@ typedef struct _hashtable
     int shift;
     size_t mult1;
     size_t mult2;
-} hashtable;
+} inthash;
 
 // Before any use the hash one must initialize the structure. The argument
 // bits indicates how large the table should be to start with (2^bits), but
@@ -109,13 +112,13 @@ typedef struct _hashtable
 // I expect bits to be in the range 4-29 where there is no very special
 // reason for either limit.
 
-extern void hash_init(hashtable *h, int bits=8);
+extern void hash_init(inthash *h, int bits=8);
 
 // I can indicate that I am finished with a table. The important thing
 // that this does is to free the big vectors. It sets the various other
 // fields to dummy values just in a spirit of tidying up. 
 
-extern void hash_finalize(hashtable *h);
+extern void hash_finalize(inthash *h);
 
 // When merely created using hash_init the table will act as a hash-set
 // without storing any data alongside keys. If associated data is required
@@ -124,15 +127,15 @@ extern void hash_finalize(hashtable *h);
 // that if you create a table and add a number of entries and then later
 // on call hash_init_values then lookup on existing keys will return 0.
 
-extern void hash_init_values(hashtable *h);
+extern void hash_init_values(inthash *h);
 
 // accessor and mutator functions for the values associated with a
 // hash entry at offset hx.I try to make these "kind" in the case that
 // the values part of the table has not yet been allocated.
 
-extern uintptr_t hash_get_value(hashtable *h, size_t hx);
+extern uintptr_t hash_get_value(inthash *h, size_t hx);
 
-extern void hash_set_value(hashtable *h, size_t hx, uintptr_t v);
+extern void hash_set_value(inthash *h, size_t hx, uintptr_t v);
 
 // The lookup code takes a key k and return either an index into
 // the table where the key is present or the special value (-1) which
@@ -141,12 +144,12 @@ extern void hash_set_value(hashtable *h, size_t hx, uintptr_t v);
 // officially undefined!
 // Looking up a key using this function always has constant cost.
 
-extern size_t hash_lookup(hashtable *h, uintptr_t k);
+extern size_t hash_lookup(inthash *h, uintptr_t k);
 
 // One can delete a key from the table in constant cost. The function
 // here returns true if the item had in fact been present to start with.
 
-extern bool hash_delete(hashtable *h, uintptr_t k);
+extern bool hash_delete(inthash *h, uintptr_t k);
 
 // The function that inserts into a table returns the location where the
 // item was placed, much like hash_lookup. To enter a key/value pair
@@ -154,10 +157,8 @@ extern bool hash_delete(hashtable *h, uintptr_t k);
 //    hash_set_value(h, hash_insert(h, KEY), VALUE)
 // doing things in two steps.
 
-extern size_t hash_insert(hashtable *h, uintptr_t k);
+extern size_t hash_insert(inthash *h, uintptr_t k);
 
 #endif // __inthash_h
 
-// end of cuckoo.h
-
-
+// end of inthash.h

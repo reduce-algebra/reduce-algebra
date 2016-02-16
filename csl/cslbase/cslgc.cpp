@@ -410,7 +410,7 @@ int check_env(LispObject env)
 #endif // SOCKETS
 
 int gc_number = 0;
-CSLbool gc_method_is_copying = 0;     // YES if copying, NO if sliding
+bool gc_method_is_copying = false;     // true if copying, false if sliding
 int force_reclaim_method = 0;
 int reclaim_trap_count = -1;
 int reclaim_stack_limit = 0;
@@ -1381,8 +1381,8 @@ LispObject Lverbos(LispObject nil, LispObject a)
 }
 
 
-CSLbool volatile already_in_gc, tick_on_gc_exit;
-CSLbool volatile interrupt_pending, tick_pending;
+bool volatile already_in_gc, tick_on_gc_exit;
+bool volatile interrupt_pending, tick_pending;
 LispObject volatile saveheaplimit;
 LispObject volatile savevheaplimit;
 LispObject volatile savecodelimit;
@@ -2467,18 +2467,18 @@ LispObject Lmapstore0(LispObject nil, int nargs, ...)
     return Lmapstore(nil, nil);
 }
 
-static CSLbool reset_limit_registers(intptr_t vheap_need,
+static bool reset_limit_registers(intptr_t vheap_need,
                                      intptr_t bps_need,
                                      intptr_t native_need,
-                                     CSLbool stack_flag)
+                                     bool stack_flag)
 //
-// returns YES if after resetting the limit registers there was
-// enough space left for me to proceed. Return NO on failure, ie
+// returns true if after resetting the limit registers there was
+// enough space left for me to proceed. Return false on failure, ie
 // need for a more genuine GC.
 //
 {   void *p;
     uintptr_t len;
-    CSLbool full;
+    bool full;
     if (gc_method_is_copying)
 //
 // I wonder about the next test - memory would only really be full
@@ -2497,7 +2497,7 @@ static CSLbool reset_limit_registers(intptr_t vheap_need,
     else
         full = (pages_count <= 1);
     if (fringe <= heaplimit)
-    {   if (full) return NO;
+    {   if (full) return false;
         p = pages[--pages_count];
         space_now++;
         zero_out(p);
@@ -2513,7 +2513,7 @@ static CSLbool reset_limit_registers(intptr_t vheap_need,
     }
     if (vheap_need > (intptr_t)len)
     {   char *vf, *vh;
-        if (full) return NO;
+        if (full) return false;
         p = pages[--pages_count];
         space_now++;
         zero_out(p);
@@ -2531,7 +2531,7 @@ static CSLbool reset_limit_registers(intptr_t vheap_need,
     }
     if (bps_need != 0 && bps_need >= (intptr_t)len)
     {   char *cl;
-        if (full || bps_pages_count >= MAX_BPS_PAGES - 1) return NO;
+        if (full || bps_pages_count >= MAX_BPS_PAGES - 1) return false;
         p = pages[--pages_count];
         space_now++;
         zero_out(p);
@@ -2541,7 +2541,7 @@ static CSLbool reset_limit_registers(intptr_t vheap_need,
         codelimit = (LispObject)(cl + 8);
     }
     if (native_need != 0)
-    {   if (full || native_pages_count >= MAX_NATIVE_PAGES - 1) return NO;
+    {   if (full || native_pages_count >= MAX_NATIVE_PAGES - 1) return false;
         p = pages[--pages_count];
         space_now++;
         zero_out(p);
@@ -2549,7 +2549,7 @@ static CSLbool reset_limit_registers(intptr_t vheap_need,
         native_fringe = 8;
     }
     if (stack_flag) return (stack < stacklimit);
-    else return YES;
+    else return true;
 }
 
 static void tidy_fringes(void)
@@ -2692,7 +2692,7 @@ static LispObject ambiguous[AMBIGUOUS_CACHE_SIZE];
 static int nambiguous;
 static LispObject *C_stack_remaining;
 
-static CSLbool certainly_not_valid(LispObject p)
+static bool certainly_not_valid(LispObject p)
 {   switch (p & (GC_BIT_P | 0x7))
     {   case TAG_CONS:
 
@@ -2702,7 +2702,7 @@ static CSLbool certainly_not_valid(LispObject p)
         case TAG_BOXFLOAT:
 
         default:
-            return YES;
+            return true;
     }
 }
 
@@ -2808,7 +2808,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     if (stg_class == GC_VEC) vheap_need = size;
     else if (stg_class == GC_BPS) bps_need = size;
     else if (stg_class == GC_NATIVE) native_need = size;
-    already_in_gc = YES;
+    already_in_gc = true;
 #if defined WIN32 && !defined __CYGWIN__
     _kbhit(); // Fairly harmless anyway, but is here to let ^c get noticed
 //    printf("(*)"); fflush(stdout);  // while I debug!
@@ -2841,7 +2841,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             stacklimit = savestacklimit;
         }
         tidy_fringes();
-        already_in_gc = NO;
+        already_in_gc = false;
         pop_clock();
 //
 // There could, of course, be another async interrupt generated even during
@@ -2890,7 +2890,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             stacklimit = savestacklimit;
         }
         tidy_fringes();
-        interrupt_pending = NO;
+        interrupt_pending = false;
         pop_clock();
 #ifdef DEBUG_VALIDATE
         validate_all("end of gc", __LINE__, __FILE__);
@@ -2905,8 +2905,8 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     {   tidy_fringes();
         if (stg_class != GC_PRESERVE &&
             stg_class != GC_USER_HARD &&
-            reset_limit_registers(vheap_need, bps_need, native_need, YES))
-        {   already_in_gc = NO;
+            reset_limit_registers(vheap_need, bps_need, native_need, true))
+        {   already_in_gc = false;
             pop_clock();
 #ifdef DEBUG_VALIDATE
             validate_all("end of gc", __LINE__, __FILE__);
@@ -3059,7 +3059,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     }
 #endif // CONSERVATIVE
 
-    copy_into_nilseg(NO);
+    copy_into_nilseg(false);
 #ifdef DEBUG_VALIDATE
     printf("Validating at start of GC\n");
     validate_all("gc start", __LINE__, __FILE__);
@@ -3337,7 +3337,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         }
 #endif
 
-    copy_out_of_nilseg(NO);
+    copy_out_of_nilseg(false);
 
     if ((verbos_flag & 5) == 5)
 //
@@ -3430,7 +3430,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         }
     }
 #endif // MEMORY_TRACE
-    if (!reset_limit_registers(vheap_need, bps_need, native_need, NO))
+    if (!reset_limit_registers(vheap_need, bps_need, native_need, false))
     {   if (stack < stacklimit || stacklimit != stackbase)
         {   report_at_end(nil);
             term_printf("\n+++ No space left at all\n");
@@ -3471,12 +3471,12 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 #endif // CHECK_ONLY
 #endif // MEMORY_TRACE
     if (interrupt_pending)
-    {   interrupt_pending = NO;
-        already_in_gc = NO;
-        tick_on_gc_exit = NO;
+    {   interrupt_pending = false;
+        already_in_gc = false;
+        tick_on_gc_exit = false;
         return interrupted(p);
     }
-    already_in_gc = NO;
+    already_in_gc = false;
     if ((space_limit >= 0 && space_now > space_limit) ||
         (time_limit >= 0 && time_now > time_limit) ||
         (io_limit >= 0 && io_now > io_limit))

@@ -165,7 +165,7 @@ uint32_t Idiv10_9(uint32_t *qp, uint32_t high, uint32_t low)
 // despite the vast cost thereof.
 //
 
-static CSLbool lesseqis(LispObject a, LispObject b)
+static bool lesseqis(LispObject a, LispObject b)
 {
 #ifdef EXPERIMENT
     return 0;
@@ -178,7 +178,7 @@ static CSLbool lesseqis(LispObject a, LispObject b)
 
 #define lesseqib(a, b) lesspib(a, b)
 
-static CSLbool lesseqir(LispObject a, LispObject b)
+static bool lesseqir(LispObject a, LispObject b)
 {
 //
 // compute a <= p/q  as a*q <= p
@@ -191,7 +191,7 @@ static CSLbool lesseqir(LispObject a, LispObject b)
 
 #define lesseqif(a, b) ((double)int_of_fixnum(a) <= float_of_number(b))
 
-static CSLbool lesseqsi(LispObject a, LispObject b)
+static bool lesseqsi(LispObject a, LispObject b)
 {
 #ifdef EXPERIMENT
     return 0;
@@ -202,7 +202,7 @@ static CSLbool lesseqsi(LispObject a, LispObject b)
 #endif
 }
 
-static CSLbool lesseqsb(LispObject a, LispObject b)
+static bool lesseqsb(LispObject a, LispObject b)
 {
 #ifdef EXPERIMENT
     return 0;
@@ -213,7 +213,7 @@ static CSLbool lesseqsb(LispObject a, LispObject b)
 #endif
 }
 
-static CSLbool lesseqsr(LispObject a, LispObject b)
+static bool lesseqsr(LispObject a, LispObject b)
 {
 #ifdef EXPERIMENT
     return 0;
@@ -224,7 +224,7 @@ static CSLbool lesseqsr(LispObject a, LispObject b)
 #endif
 }
 
-static CSLbool lesseqsf(LispObject a, LispObject b)
+static bool lesseqsf(LispObject a, LispObject b)
 {
 #ifdef EXPERIMENT
     return 0;
@@ -237,7 +237,7 @@ static CSLbool lesseqsf(LispObject a, LispObject b)
 
 #define lesseqbi(a, b) lesspbi(a, b)
 
-static CSLbool lesseqbs(LispObject a, LispObject b)
+static bool lesseqbs(LispObject a, LispObject b)
 {
 #ifdef EXPERIMENT
     return 0;
@@ -248,7 +248,7 @@ static CSLbool lesseqbs(LispObject a, LispObject b)
 #endif
 }
 
-static CSLbool lesseqbb(LispObject a, LispObject b)
+static bool lesseqbb(LispObject a, LispObject b)
 {   int32_t lena = bignum_length(a),
                 lenb = bignum_length(b);
     if (lena > lenb)
@@ -263,8 +263,8 @@ static CSLbool lesseqbb(LispObject a, LispObject b)
     // lenb == lena here
     {   int32_t msa = bignum_digits(a)[lena],
                     msb = bignum_digits(b)[lena];
-        if (msa < msb) return YES;
-        else if (msa > msb) return NO;
+        if (msa < msb) return true;
+        else if (msa > msb) return false;
 //
 // Now the leading digits of the numbers agree, so in particular the numbers
 // have the same sign.
@@ -275,7 +275,7 @@ static CSLbool lesseqbb(LispObject a, LispObject b)
             if (da == db) continue;
             return (da < db);
         }
-        return YES;     // numbers are the same
+        return true;     // numbers are the same
     }
 }
 
@@ -283,14 +283,14 @@ static CSLbool lesseqbb(LispObject a, LispObject b)
 
 #define lesseqbf(a, b) (!lesspdb(float_of_number(b), a))
 
-static CSLbool lesseqri(LispObject a, LispObject b)
+static bool lesseqri(LispObject a, LispObject b)
 {   push(numerator(a));
     b = times2(b, denominator(a));
     pop(a);
     return lesseq2(a, b);
 }
 
-static CSLbool lesseqrs(LispObject a, LispObject b)
+static bool lesseqrs(LispObject a, LispObject b)
 {
 #ifdef EXPERIMENT
     return 0;
@@ -303,7 +303,7 @@ static CSLbool lesseqrs(LispObject a, LispObject b)
 
 #define lesseqrb(a, b) lesseqri(a, b)
 
-static CSLbool lesseqrr(LispObject a, LispObject b)
+static bool lesseqrr(LispObject a, LispObject b)
 {   LispObject c;
     push2(a, b);
     c = times2(numerator(a), denominator(b));
@@ -318,7 +318,7 @@ static CSLbool lesseqrr(LispObject a, LispObject b)
 
 #define lesseqfi(a, b) (float_of_number(a) <= (double)int_of_fixnum(b))
 
-static CSLbool lesseqfs(LispObject a, LispObject b)
+static bool lesseqfs(LispObject a, LispObject b)
 {
 #ifdef EXPERIMENT
     return 0;
@@ -336,13 +336,13 @@ static CSLbool lesseqfs(LispObject a, LispObject b)
 #define lesseqff(a, b) (float_of_number(a) <= float_of_number(b))
 
 
-CSLbool geq2(LispObject a, LispObject b)
+bool geq2(LispObject a, LispObject b)
 {   return lesseq2(b, a);
 }
 
-CSLbool lesseq2(LispObject a, LispObject b)
+bool lesseq2(LispObject a, LispObject b)
 {   LispObject nil = C_nil;
-    if (exception_pending()) return NO;
+    if (exception_pending()) return false;
     switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             switch ((int)b & TAG_BITS)
@@ -361,13 +361,13 @@ CSLbool lesseq2(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return lesseqir(a, b);
                         default:
-                            return (CSLbool)aerror2("bad arg for leq", a, b);
+                            return (bool)aerror2("bad arg for leq", a, b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return lesseqif(a, b);
                 default:
-                    return (CSLbool)aerror2("bad arg for leq", a, b);
+                    return (bool)aerror2("bad arg for leq", a, b);
             }
 #ifndef EXPERIMENT
         case TAG_SFLOAT:
@@ -388,13 +388,13 @@ CSLbool lesseq2(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return lesseqsr(a, b);
                         default:
-                            return (CSLbool)aerror2("bad arg for leq", a, b);
+                            return (bool)aerror2("bad arg for leq", a, b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return lesseqsf(a, b);
                 default:
-                    return (CSLbool)aerror2("bad arg for leq", a, b);
+                    return (bool)aerror2("bad arg for leq", a, b);
             }
 #endif
         case TAG_NUMBERS:
@@ -416,13 +416,13 @@ CSLbool lesseq2(LispObject a, LispObject b)
                                 case TYPE_RATNUM:
                                     return lesseqbr(a, b);
                                 default:
-                                    return (CSLbool)aerror2("bad arg for leq", a, b);
+                                    return (bool)aerror2("bad arg for leq", a, b);
                             }
                         }
                         case TAG_BOXFLOAT:
                             return lesseqbf(a, b);
                         default:
-                            return (CSLbool)aerror2("bad arg for leq", a, b);
+                            return (bool)aerror2("bad arg for leq", a, b);
                     }
                 case TYPE_RATNUM:
                     switch (b & TAG_BITS)
@@ -440,15 +440,15 @@ CSLbool lesseq2(LispObject a, LispObject b)
                                 case TYPE_RATNUM:
                                     return lesseqrr(a, b);
                                 default:
-                                    return (CSLbool)aerror2("bad arg for leq", a, b);
+                                    return (bool)aerror2("bad arg for leq", a, b);
                             }
                         }
                         case TAG_BOXFLOAT:
                             return lesseqrf(a, b);
                         default:
-                            return (CSLbool)aerror2("bad arg for leq", a, b);
+                            return (bool)aerror2("bad arg for leq", a, b);
                     }
-                default:    return (CSLbool)aerror2("bad arg for leq", a, b);
+                default:    return (bool)aerror2("bad arg for leq", a, b);
             }
         }
         case TAG_BOXFLOAT:
@@ -467,21 +467,21 @@ CSLbool lesseq2(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return lesseqfr(a, b);
                         default:
-                            return (CSLbool)aerror2("bad arg for leq", a, b);
+                            return (bool)aerror2("bad arg for leq", a, b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return lesseqff(a, b);
                 default:
-                    return (CSLbool)aerror2("bad arg for leq", a, b);
+                    return (bool)aerror2("bad arg for leq", a, b);
             }
         default:
-            return (CSLbool)aerror2("bad arg for leq", a, b);
+            return (bool)aerror2("bad arg for leq", a, b);
     }
 }
 
 
-void print_bignum(LispObject u, CSLbool blankp, int nobreak)
+void print_bignum(LispObject u, bool blankp, int nobreak)
 {   int32_t len = length_of_header(numhdr(u))-CELL;
     int32_t i, len1;
     LispObject w, nil = C_nil;
@@ -542,10 +542,10 @@ void print_bignum(LispObject u, CSLbool blankp, int nobreak)
         {   uint32_t d0 = bignum_digits(u)[0], d1 = bignum_digits(u)[1];
             uint32_t d0high, d0low, w;
             uint32_t p0, p1, p2;
-            CSLbool negativep = NO;
+            bool negativep = false;
             int i, j;
             if (((int32_t)d1) < 0)
-            {   negativep = YES;
+            {   negativep = true;
                 d0 = clear_top_bit(-(int32_t)d0);
                 if (d0 == 0) d1 = -(int32_t)d1;
                 else d1 = ~d1;
@@ -625,7 +625,7 @@ void print_bignum(LispObject u, CSLbool blankp, int nobreak)
     pop(u);
     nil = C_nil;
     if (!exception_pending())
-    {   CSLbool sign = NO;
+    {   bool sign = false;
         int32_t len2;
         len = len/4;
         len1 = (len1-CELL)/4;
@@ -633,7 +633,7 @@ void print_bignum(LispObject u, CSLbool blankp, int nobreak)
             for (i=0; i<len; i++) bignum_digits(w)[i] = bignum_digits(u)[i];
         else
         {   int32_t carry = -1;
-            sign = YES;
+            sign = true;
             for (i=0; i<len; i++)
                 // negate the number so I am working with a +ve value
             {   carry = clear_top_bit(~bignum_digits(u)[i]) + top_bit(carry);
@@ -705,7 +705,7 @@ void print_bignum(LispObject u, CSLbool blankp, int nobreak)
 }
 
 void print_bighexoctbin(LispObject u, int radix, int width,
-                        CSLbool blankp, int nobreak)
+                        bool blankp, int nobreak)
 //
 // This prints a bignum in base 16, 8 or 2.  The main misery about this is
 // that internally bignums are stored in chunks of 31 bits, so I have
@@ -725,7 +725,7 @@ void print_bighexoctbin(LispObject u, int radix, int width,
     uint32_t a=0, b=0;
     int32_t len = 31*(n+1);
     int flag = 0, bits;
-    CSLbool sign = NO, started = NO;
+    bool sign = false, started = false;
     int line_length = other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH,
                                          active_stream);
     int column =
@@ -753,7 +753,7 @@ void print_bighexoctbin(LispObject u, int radix, int width,
 //
     push(u);
     if ((int32_t)bignum_digits(u)[n] < 0)
-    {   sign = YES;
+    {   sign = true;
         len+=2;    // Allow extra length for sign marker and initial f/7/1
         if (radix == 16) flag = 0xf;
         else if (radix == 8) flag = 0x7;
@@ -804,7 +804,7 @@ void print_bighexoctbin(LispObject u, int radix, int width,
                 else if (nobreak==0 && column != 0 && column+len > line_length)
                     putc_stream('\n', active_stream);
                 if (sign) putc_stream('~', active_stream);
-                started = YES;
+                started = true;
                 if (flag > 0) putc_stream(radix == 16 ? 'f' :
                                               radix == 8  ? '7' : '1', active_stream);
                 flag = -1;

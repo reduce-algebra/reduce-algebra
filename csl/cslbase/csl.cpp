@@ -164,11 +164,11 @@ int sockets_ready = 0;
 // overwritten by default, and that the system keeps quiet about it.
 //
 
-CSLbool symbol_protect_flag = YES;
-CSLbool warn_about_protected_symbols = NO;
+bool symbol_protect_flag = true;
+bool warn_about_protected_symbols = false;
 
 #if defined WINDOW_SYSTEM && !defined EMBEDDED
-CSLbool use_wimp;
+bool use_wimp;
 #endif
 
 #ifdef USE_MPI
@@ -800,9 +800,9 @@ void my_exit(int n)
 }
 
 static int return_code = 0;
-CSLbool segvtrap = YES;
-CSLbool batch_flag = NO;
-CSLbool ignore_restart_fn = NO;
+bool segvtrap = true;
+bool batch_flag = false;
+bool ignore_restart_fn = false;
 
 #ifdef USE_SIGALTSTACK
 
@@ -937,7 +937,7 @@ static void lisp_main(void)
     atexit(tidy_up_crlibm);
 #endif
     tty_count = 0;
-    while (YES)
+    while (true)
 //
 // The sole purpose of the while loop here is to allow me to proceed
 // for a second try if I get a (cold-start) call.
@@ -988,7 +988,7 @@ static void lisp_main(void)
             {   term_printf("\n%s detected\n", errorset_msg);
                 errorset_msg = NULL;
             }
-            unwind_stack(save, NO);
+            unwind_stack(save, false);
             exit_reason = UNWIND_ERROR;
             flip_exception();
 #ifndef UNDER_CE
@@ -1092,8 +1092,8 @@ static void lisp_main(void)
                     exit_tag = exit_value = nil;
                     exit_reason = UNWIND_NULL;
                     stream_pushed_char(lisp_terminal_io) = fd;
-                    interrupt_pending = already_in_gc = NO;
-                    tick_pending = tick_on_gc_exit  = NO;
+                    interrupt_pending = already_in_gc = false;
+                    tick_pending = tick_on_gc_exit  = false;
                     continue;
                 }
                 else                                   // "restart"
@@ -1223,8 +1223,8 @@ static void lisp_main(void)
                     exit_tag = exit_value = nil;
                     exit_reason = UNWIND_NULL;
                     stream_pushed_char(lisp_terminal_io) = fd;
-                    interrupt_pending = already_in_gc = NO;
-                    tick_pending = tick_on_gc_exit  = NO;
+                    interrupt_pending = already_in_gc = false;
+                    tick_pending = tick_on_gc_exit  = false;
                     if (!cold_start && new_fn[0] != 0)
                     {   LispObject w;
                         if (new_module[0] != 0)
@@ -1252,7 +1252,7 @@ static void lisp_main(void)
 #if !defined HAVE_FWIN || defined EMBEDDED
 #ifndef UNDER_CE
 
-CSLbool sigint_must_throw = NO;
+bool sigint_must_throw = false;
 
 // Note that this version is only used if fwin is not in use (including the
 // case of the embedded medule) so there is no clash between this definition
@@ -1274,7 +1274,7 @@ void sigint_handler(int code)
     interrupt_pending = 1;
     signal(SIGINT, sigint_handler);
     if (sigint_must_throw)
-    {   sigint_must_throw = NO;
+    {   sigint_must_throw = false;
         throw((int *)0);
     }
 //
@@ -1283,9 +1283,9 @@ void sigint_handler(int code)
 // even on systems where there are no "real" ones.
 //
     if (!tick_pending)
-    {   if (already_in_gc) tick_on_gc_exit = YES;
+    {   if (already_in_gc) tick_on_gc_exit = true;
         else
-        {   tick_pending = YES;
+        {   tick_pending = true;
             saveheaplimit = heaplimit;
             heaplimit = fringe;
             savevheaplimit = vheaplimit;
@@ -1344,9 +1344,9 @@ int deal_with_tick(void)
     printf("(!)"); fflush(stdout);
     number_of_ticks++;
     if (!tick_pending)
-    {   if (already_in_gc) tick_on_gc_exit = YES;
+    {   if (already_in_gc) tick_on_gc_exit = true;
         else
-        {   tick_pending = YES;
+        {   tick_pending = true;
             saveheaplimit = heaplimit;
             heaplimit = fringe;
             savevheaplimit = vheaplimit;
@@ -1371,7 +1371,7 @@ int output_directory;
 character_reader *procedural_input;
 character_writer *procedural_output;
 
-CSLbool undefine_this_one[MAX_SYMBOLS_TO_DEFINE];
+bool undefine_this_one[MAX_SYMBOLS_TO_DEFINE];
 
 int number_of_input_files = 0,
     number_of_symbols_to_define = 0,
@@ -1424,7 +1424,7 @@ int load_count = 0, load_limit = 0x7fffffff;
 int csl_argc;
 const char **csl_argv;
 
-CSLbool restartp;
+bool restartp;
 
 char *C_stack_base = NULL, *C_stack_limit = NULL;
 double max_store_size = 0.0;
@@ -1614,7 +1614,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     consolidated_time[0] = gc_time = 0.0;
     clock_stack = &consolidated_time[0];
 #if defined WINDOW_SYSTEM && !defined EMBEDDED
-    use_wimp = YES;
+    use_wimp = true;
 #endif
 #ifdef HAVE_FWIN
 //
@@ -1646,20 +1646,20 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     procedural_input = NULL;
     procedural_output = wout;
     standard_directory = find_image_directory(argc, argv);
-    restartp = YES;
-    ignore_restart_fn = NO;
+    restartp = true;
+    ignore_restart_fn = false;
     spool_file = NULL;
     spool_file_name[0] = 0;
     output_directory = 0x80000000;
     number_of_input_files = 0;
     number_of_symbols_to_define = 0;
     number_of_fasl_paths = 0;
-    fasl_output_file = NO;
+    fasl_output_file = false;
     initial_random_seed = seed2 = 0;
     init_flags = INIT_EXPANDABLE;
     return_code = EXIT_SUCCESS;
-    segvtrap = YES;
-    batch_flag = NO;
+    segvtrap = true;
+    batch_flag = false;
     load_count = 0;
     load_limit = 0x7fffffff;
 
@@ -2075,7 +2075,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * behaviour.  I hope that this is never used!
  */
                 case 'a':
-                    batch_flag = YES;
+                    batch_flag = true;
                     continue;
 /*! options [-b] \item [{\ttfamily -b}] \index{{\ttfamily -b}}
  * {\ttfamily -b} tells the system to avoid any attempt to recolour prompts
@@ -2126,7 +2126,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     else break; // Illegal at end of command-line
                     if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
                         symbols_to_define[number_of_symbols_to_define] = w,
-                                undefine_this_one[number_of_symbols_to_define++] = NO;
+                                undefine_this_one[number_of_symbols_to_define++] = false;
                     else
                     {   fwin_restore();
                         term_printf("Too many \"-D\" requests: ignored\n");
@@ -2350,7 +2350,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
                         symbols_to_define[number_of_symbols_to_define] =
                             "*backtrace",
-                            undefine_this_one[number_of_symbols_to_define++] = NO;
+                            undefine_this_one[number_of_symbols_to_define++] = false;
                     else
                     {   fwin_restore();
                         term_printf("Too many requests: \"-G\" ignored\n");
@@ -2594,7 +2594,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
 
                 case 'n':               // Ignore restart function (-N)
-                    ignore_restart_fn = YES;
+                    ignore_restart_fn = true;
                     continue;
 
 /*! options [-o] \item [{\ttfamily -o}] \index{{\ttfamily -o}}
@@ -2641,7 +2641,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 //
 //                  symbols_to_define[number_of_symbols_to_define] =
 //                      "*echo=nil",
-//                  undefine_this_one[number_of_symbols_to_define++] = NO,
+//                  undefine_this_one[number_of_symbols_to_define++] = false,
 //
                         init_flags &= ~INIT_VERBOSE,
                                       init_flags |= INIT_QUIET;
@@ -2682,7 +2682,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
                         symbols_to_define[number_of_symbols_to_define] =
                             "*plap",
-                            undefine_this_one[number_of_symbols_to_define++] = NO;
+                            undefine_this_one[number_of_symbols_to_define++] = false;
                     else
                     {   fwin_restore();
                         term_printf("Too many requests: \"-S\" ignored\n");
@@ -2718,7 +2718,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     else break; // Illegal at end of command-line
                     if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
                         symbols_to_define[number_of_symbols_to_define] = w,
-                                undefine_this_one[number_of_symbols_to_define++] = YES;
+                                undefine_this_one[number_of_symbols_to_define++] = true;
                     else
                     {   fwin_restore();
                         term_printf("Too many \"-U\" requests: ignored\n");
@@ -2734,7 +2734,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 //
 //                  symbols_to_define[number_of_symbols_to_define] =
 //                      "*echo",
-//                  undefine_this_one[number_of_symbols_to_define++] = NO,
+//                  undefine_this_one[number_of_symbols_to_define++] = false,
 //
                         init_flags &= ~INIT_QUIET,
                                       init_flags |= INIT_VERBOSE;
@@ -2788,7 +2788,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
 
                 case 'x':
-                    segvtrap = NO;
+                    segvtrap = false;
                     continue;
 //
 // -Y  currently unused!
@@ -2801,7 +2801,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
                         symbols_to_define[number_of_symbols_to_define] =
                             "*hankaku",
-                            undefine_this_one[number_of_symbols_to_define++] = NO;
+                            undefine_this_one[number_of_symbols_to_define++] = false;
                     else
                         term_printf("Too many requests: \"-Y\" ignored\n");
                     continue;
@@ -2819,7 +2819,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
 
                 case 'z':               // Cold start option -z
-                    restartp = NO;
+                    restartp = false;
                     continue;
 
                 default:
@@ -3095,15 +3095,15 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
         gc_time += pop_clock();
 
         countdown = software_ticks;
-        interrupt_pending = already_in_gc = NO;
-        tick_pending = tick_on_gc_exit  = NO;
+        interrupt_pending = already_in_gc = false;
+        tick_pending = tick_on_gc_exit  = false;
 
 #ifndef HAVE_FWIN
 //
 // "^C" trapping and handling happens within fwin if that is available.
 //
 #ifndef UNDER_CE
-        sigint_must_throw = NO;
+        sigint_must_throw = false;
         signal(SIGINT, sigint_handler);
 #endif
 #endif

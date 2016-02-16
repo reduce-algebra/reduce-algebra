@@ -155,7 +155,7 @@ LispObject copy_string(LispObject str, size_t n)
 //
 {   LispObject nil, r;
     char *s;
-    int32_t k;
+    size_t k;
     push(str);
 #ifdef EXPERIMENT
     r = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
@@ -469,7 +469,7 @@ static int value_in_radix(int c, int radix)
     else return -1;
 }
 
-LispObject intern(int len, CSLbool escaped)
+LispObject intern(int len, bool escaped)
 //
 // This takes whatever is in the first len characters of
 // the Lisp string boffo, and maps it into a number, string
@@ -664,10 +664,10 @@ LispObject intern(int len, CSLbool escaped)
                 boffop--;
             }
             {   LispObject v = fixnum_of_int(0);
-                CSLbool sign = NO;
+                bool sign = false;
                 int32_t d = 0, d1 = 10;
                 for (i=0; i<boffop; i++)
-                {   if (i==0 && boffo_char(i) == '-') sign = YES;
+                {   if (i==0 && boffo_char(i) == '-') sign = true;
                     else if (d1 == 10000000 || i == boffop-1)
                     {   d = 10*d + (int32_t)value_in_radix(boffo_char(i), 10);
                         v = times2(v, fixnum_of_int(d1));
@@ -873,7 +873,7 @@ start_again:
     return v;
 }
 
-static CSLbool add_to_hash(LispObject s, LispObject vector, uint32_t hash)
+static bool add_to_hash(LispObject s, LispObject vector, uint32_t hash)
 //
 // Adds an item into a hash table given that it is known that it is not
 // already there.
@@ -901,12 +901,12 @@ static CSLbool add_to_hash(LispObject s, LispObject vector, uint32_t hash)
     while (++probes <= size)
     {   if (is_fixnum(elt(vector, i)))
         {   elt(vector, i) = s;
-            return YES;                 // Success
+            return true;                 // Success
         }
         i = i + step;
         if (i >= size) i -= size;
     }
-    return NO;                          // Table is totally full
+    return false;                          // Table is totally full
 }
 
 static int32_t number_of_chunks;
@@ -1179,7 +1179,7 @@ try_again:
     return nil;
 }
 
-static CSLbool rehash_pending = NO;
+static bool rehash_pending = false;
 
 static LispObject lookup(LispObject str, int32_t strsize,
                          LispObject v, LispObject nv, uint32_t hash)
@@ -1197,7 +1197,7 @@ static LispObject lookup(LispObject str, int32_t strsize,
 //    different from the ones used before. You should be able to end up
 //    with 70% of the table full of valid symbols and 30% left as the value
 //    fixnum_of_int(1) which represents a place where a deleted symbol used
-//    to be. There is now NO really empty space.
+//    to be. There is now false really empty space.
 // Now looking up symbols must keep searching past tombstones, and hence
 // here it will be necessary to scan the entire table before it is
 // possible to assert that a symbol is not present. Inserting new symbols
@@ -1234,7 +1234,7 @@ static LispObject lookup(LispObject str, int32_t strsize,
     {   LispObject w = elt(v, i);
         LispObject pn;
         if (w == fixnum_of_int(0))
-        {   if (4*n > 3*size) rehash_pending = YES;
+        {   if (4*n > 3*size) rehash_pending = true;
             return w;  // Not found
         }
         if (w != fixnum_of_int(1))
@@ -1245,14 +1245,14 @@ static LispObject lookup(LispObject str, int32_t strsize,
                        (char *)pn + (CELL-TAG_VECTOR),
                        (size_t)strsize) == 0 &&
                 length_of_byteheader(vechdr(pn)) == (size_t)strsize+CELL)
-            {   if (4*n > 3*size) rehash_pending = YES;
+            {   if (4*n > 3*size) rehash_pending = true;
                 return w;
             }
         }
         i = i + step;
         if (i >= size) i -= size;
     }
-    rehash_pending = YES;
+    rehash_pending = true;
     return fixnum_of_int(0);
 }
 
@@ -1531,7 +1531,7 @@ LispObject Lorderp(LispObject nil,
 
 static uint32_t removed_hash;
 
-static CSLbool remob(LispObject sym, LispObject v, LispObject nv)
+static bool remob(LispObject sym, LispObject v, LispObject nv)
 //
 // Searches a hash table for a symbol with name matching the given string,
 // and remove it.
@@ -1540,7 +1540,7 @@ static CSLbool remob(LispObject sym, LispObject v, LispObject nv)
     Header h;
     uint32_t hash;
     uint32_t i = int_of_fixnum(nv), size, step, n;
-    if (qheader(sym) & SYM_ANY_GENSYM) return NO; // gensym case is easy!
+    if (qheader(sym) & SYM_ANY_GENSYM) return false; // gensym case is easy!
     validate_string(str);
 #ifdef COMMON
 // If not in any package it has no home & is not available
@@ -1561,7 +1561,7 @@ static CSLbool remob(LispObject sym, LispObject v, LispObject nv)
     step = 1 | ((hash >> 10) & (size - 1));
     for (n=0; n<size; n++)
     {   LispObject w = elt(v, i);
-        if (w == fixnum_of_int(0)) return NO;  // Not found
+        if (w == fixnum_of_int(0)) return false;  // Not found
         if (w == sym)
         {   elt(v, i) = fixnum_of_int(1);
 //
@@ -1571,12 +1571,12 @@ static CSLbool remob(LispObject sym, LispObject v, LispObject nv)
 // so I can call it from C code without any formality. Thus I should do
 // any tidying up afterwards.
 //
-            return YES;
+            return true;
         }
         i = i + step;
         if (i >= size) i -= size;
     }
-    return NO;
+    return false;
 }
 
 #ifdef COMMON
@@ -1819,7 +1819,7 @@ LispObject iintern(LispObject str, int32_t h, LispObject p, int str_is_ok)
             errexit();
             packint_(p) = v;
             packvint_(p) = fixnum_of_int(number_of_chunks);
-            rehash_pending = NO;
+            rehash_pending = false;
         }
         nil = C_nil;
         if (r != fixnum_of_int(0))
@@ -1840,7 +1840,7 @@ LispObject iintern(LispObject str, int32_t h, LispObject p, int str_is_ok)
         errexit();
         packext_(p) = v;
         packvext_(p) = fixnum_of_int(number_of_chunks);
-        rehash_pending = NO;
+        rehash_pending = false;
     }
     if (r != fixnum_of_int(0))
     {   mv_2 = external_symbol;
@@ -1861,7 +1861,7 @@ LispObject iintern(LispObject str, int32_t h, LispObject p, int str_is_ok)
             errexit();
             packext_(p) = v;
             packvext_(p) = fixnum_of_int(number_of_chunks);
-            rehash_pending = NO;
+            rehash_pending = false;
         }
         if (w != fixnum_of_int(0))
         {   mv_2 = inherited_symbol;
@@ -2206,7 +2206,7 @@ static char tty_buffer[TTYBUF_SIZE];
 static char *tty_pointer;
 
 #if !defined HAVE_FWIN || defined EMBEDDED
-static CSLbool int_nest = NO;
+static bool int_nest = false;
 #endif
 
 #ifndef HAVE_FWIN
@@ -2282,7 +2282,7 @@ static int raw_char_from_terminal()
                     active_stream = qvalue(terminal_io);
                     if (!is_stream(active_stream))
                         active_stream = lisp_terminal_io;
-                    internal_prin(prompt_thing, NO);
+                    internal_prin(prompt_thing, false);
                     nil = C_nil;
                     if (exception_pending()) flip_exception();
                     pop(active_stream);
@@ -2356,9 +2356,9 @@ static int raw_char_from_terminal()
                 try
                 {   while (tty_count<TTYBUF_SIZE && !interrupt_pending)
                     {   int c;
-                        sigint_must_throw = YES;
+                        sigint_must_throw = true;
                         c = getchar();
-                        sigint_must_throw = NO;
+                        sigint_must_throw = false;
                         if (c == EOF)
                         {   clearerr(stdin);    // Believed to be what is wanted
                             c = CTRL_D;         // Use ASCII ^D as EOF marker
@@ -2377,16 +2377,16 @@ static int raw_char_from_terminal()
 // Time spent in the interrupt handler here will not be counted as CPU
 // time used.
 //
-                        interrupt_pending = NO;
+                        interrupt_pending = false;
                         if (int_nest)
                         {   err_printf("\n+++ Nested interrupt ignored\n");
                             tty_count = 0;
                             break;
                         }
                         else
-                        {   int_nest = YES;
+                        {   int_nest = true;
                             interrupted(nil);
-                            int_nest = NO;
+                            int_nest = false;
                         }
                         pop_clock();
                         tty_count = 0;
@@ -2400,8 +2400,8 @@ static int raw_char_from_terminal()
                     {   term_printf("\n%s detected\n", errorset_msg);
                         errorset_msg = NULL;
                     }
-                    sigint_must_throw = NO;
-                    interrupt_pending = YES;
+                    sigint_must_throw = false;
+                    interrupt_pending = true;
                     tty_count = 0;
                 }
             }
@@ -2677,39 +2677,39 @@ static LispObject list_to_vector(LispObject l)
 
 #ifdef COMMON
 
-static CSLbool evalfeature(LispObject u)
+static bool evalfeature(LispObject u)
 {   LispObject w, nil = C_nil;
     if (consp(u))
     {   LispObject fn = qcar(u);
         u = qcdr(u);
-        if (!consp(u)) return NO;
+        if (!consp(u)) return false;
         if (fn == not_symbol) return !evalfeature(qcar(u));
         else if (fn == and_symbol)
         {   while (consp(u))
-            {   if (!evalfeature(qcar(u))) return NO;
+            {   if (!evalfeature(qcar(u))) return false;
                 nil = C_nil;
-                if (exception_pending()) return NO;
+                if (exception_pending()) return false;
                 u = qcdr(u);
             }
-            return YES;
+            return true;
         }
         else if (fn == or_symbol)
         {   while (consp(u))
-            {   if (evalfeature(qcar(u))) return YES;
+            {   if (evalfeature(qcar(u))) return true;
                 nil = C_nil;
-                if (exception_pending()) return NO;
+                if (exception_pending()) return false;
                 u = qcdr(u);
             }
-            return NO;
+            return false;
         }
-        else return NO;
+        else return false;
     }
     w = qvalue(features_symbol);
     while (consp(w))
-    {   if (u == qcar(w)) return YES;
+    {   if (u == qcar(w)) return true;
         w = qcdr(w);
     }
-    return NO;
+    return false;
 }
 
 static LispObject read_hash(LispObject stream)
@@ -2920,9 +2920,9 @@ static LispObject read_hash(LispObject stream)
 
 #endif // COMMON
 
-CSLbool is_constituent(int c)
-{   if (c == EOF) return NO;
-    if (c & ESCAPED_CHAR) return YES;   // escaped
+bool is_constituent(int c)
+{   if (c == EOF) return false;
+    if (c & ESCAPED_CHAR) return true;   // escaped
     switch (c)
     {
 // The following characters terminate symbols
@@ -2943,9 +2943,9 @@ CSLbool is_constituent(int c)
 //
         case '.':
 #endif
-            return NO;
+            return false;
         default:
-            return YES;
+            return true;
     }
 }
 
@@ -2990,7 +2990,7 @@ static LispObject backquote_expander(LispObject a)
     return cons(cons_symbol, a);
 }
 
-static CSLbool read_failure;
+static bool read_failure;
 
 void packbyte(int c)
 {   LispObject nil = C_nil;
@@ -3015,7 +3015,7 @@ void packbyte(int c)
 // truncate the object I am reading.  But I set a flag that will be checked
 // on the way out of read/compress, so the user will know.
 //
-            read_failure = YES;
+            read_failure = true;
             return;
         }
         memcpy((void *)((char *)new_boffo + (CELL-TAG_VECTOR)),
@@ -3186,7 +3186,7 @@ static LispObject read_s(LispObject stream)
                     errexit();
 // + or - not followed by a digit will be read as a symbol
                     if (curchar > 0xff || !isdigit(curchar))
-                        return intern(boffop, NO);
+                        return intern(boffop, false);
                 }
                 while (curchar <= 0xff && isdigit(curchar))
                 {   push(stream);
@@ -3232,7 +3232,7 @@ static LispObject read_s(LispObject stream)
                         errexit();
                     }
                 }
-                return intern(boffop, NO);
+                return intern(boffop, false);
             }
 
             case '_':       // This seems to have to be a funny case for REDUCE
@@ -3242,13 +3242,13 @@ static LispObject read_s(LispObject stream)
                 pop(stream);
                 curchar = getc_stream(stream);
                 errexit();
-                return intern(boffop, NO);
+                return intern(boffop, false);
 #endif
 
             default:
-            {   CSLbool escaped = NO;
+            {   bool escaped = false;
 #ifdef COMMON
-                CSLbool within_vbars = NO;
+                bool within_vbars = false;
                 int colon = -1, double_colon = -1, i;
 #endif
                 boffop = 0;
@@ -3270,7 +3270,7 @@ static LispObject read_s(LispObject stream)
 // if I read ahead here and find whitespace etc I need to exit here.
 //
                     if (!within_vbars && !is_constituent(curchar))
-                        return intern(0, YES);
+                        return intern(0, true);
                 }
 #endif
                 if (curchar == ESCAPE_CHAR)
@@ -3279,12 +3279,12 @@ static LispObject read_s(LispObject stream)
                     curchar = getc_stream(stream);
                     errexit();
 // However, any character escaped with '\' means we do not have a number
-                    escaped = YES;
+                    escaped = true;
                 }
                 else
 #ifdef COMMON
                     if (!within_vbars)
-                    {   if (curchar == ':') colon = boffop, escaped = YES;
+                    {   if (curchar == ':') colon = boffop, escaped = true;
 #else
                 {
 #endif
@@ -3309,7 +3309,7 @@ static LispObject read_s(LispObject stream)
                     curchar = getc_stream(stream);
                     errexit();
 #ifdef COMMON
-                    if (within_vbars) escaped = YES;
+                    if (within_vbars) escaped = true;
                     while (curchar == '|')
                     {   nil = C_nil;
                         stackcheck0(0);
@@ -3325,13 +3325,13 @@ static LispObject read_s(LispObject stream)
                         curchar = getc_stream(stream);
                         errexit();
                         curchar |= ESCAPED_CHAR;
-                        escaped = YES;
+                        escaped = true;
                     }
 #ifdef COMMON
                     else if (!within_vbars)
                     {   if (curchar == ':')
                         {   if (colon >= 0) double_colon = boffop;
-                            else colon = boffop, escaped = YES;
+                            else colon = boffop, escaped = true;
                         }
 #endif
                         else if (curchar<=0xffff || sizeof(wchar_t)==4)
@@ -3678,7 +3678,7 @@ LispObject Lread(LispObject nil, int nargs, ...)
     push(reader_workspace);
     reader_workspace = nil;
 #endif
-    read_failure = NO;
+    read_failure = false;
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     curchar = NOT_CHAR;
@@ -3728,7 +3728,7 @@ LispObject Lread_1(LispObject nil, LispObject stream)
     errexit();
     push2(reader_workspace, save);
     reader_workspace = nil;
-    read_failure = NO;
+    read_failure = false;
     stream = qvalue(standard_input);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
@@ -3844,7 +3844,7 @@ LispObject read_from_vector(char *v)
     set_stream_read_other(lisp_work_stream, read_action_vector);
     stream_pushed_char(lisp_work_stream) = NOT_CHAR;
     set_stream_file(lisp_work_stream, (FILE *)v);
-    read_failure = NO;
+    read_failure = false;
     curchar = NOT_CHAR;
     r = read_s(lisp_work_stream);
     errexit();
@@ -3860,7 +3860,7 @@ LispObject Lcompress(LispObject env, LispObject stream)
     set_stream_read_fn(lisp_work_stream, char_from_list);
     set_stream_read_other(lisp_work_stream, read_action_list);
     stream_pushed_char(lisp_work_stream) = NOT_CHAR;
-    read_failure = NO;
+    read_failure = false;
     curchar = NOT_CHAR;
     env = read_s(lisp_work_stream);
     errexit();
@@ -3953,7 +3953,7 @@ void read_eval_print(int noisy)
             {   err_printf("\n%s detected\n", errorset_msg);
                 errorset_msg = NULL;
             }
-            unwind_stack(save, NO);
+            unwind_stack(save, false);
             stack = save;
 #ifndef UNDER_CE
             signal(SIGFPE, low_level_signal_handler);
@@ -4097,7 +4097,7 @@ void read_eval_print(int noisy)
             {   err_printf("\n%s detected\n", errorset_msg);
                 errorset_msg = NULL;
             }
-            unwind_stack(save, NO);
+            unwind_stack(save, false);
             stack = save;
 #ifndef UNDER_CE
             signal(SIGFPE, low_level_signal_handler);
@@ -4556,7 +4556,7 @@ static LispObject Luse_package(LispObject nil, LispObject uses,
 
 static LispObject Lmake_package(LispObject nil, int nargs, ...)
 {   LispObject name, nicknames = nil, uses = nil, w = nil, k;
-    CSLbool has_use = NO;
+    bool has_use = false;
     va_list a;
     int i;
     if (nargs == 0) return aerror("make-package");
@@ -4574,7 +4574,7 @@ static LispObject Lmake_package(LispObject nil, int nargs, ...)
     for (i=1; i<nargs; i+=2)
     {   pop2(k, w);
         if (w == nicknames_symbol) nicknames = k;
-        else if (w == use_symbol) has_use = YES, uses = k;
+        else if (w == use_symbol) has_use = true, uses = k;
     }
     popv(1);
 //

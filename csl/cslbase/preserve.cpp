@@ -327,7 +327,7 @@ static directory *current_input_directory;   // not used!
 static int nativedir = 0;
 static directory_entry *current_output_entry;
 static directory *current_output_directory = NULL;
-static CSLbool any_output_request;
+static bool any_output_request;
 static char would_be_output_directory[DIRNAME_LENGTH];
 
 #define I_INACTIVE 0
@@ -436,7 +436,7 @@ static void clear_entry(directory_entry *d)
     memset(&d->D_size, 0, 3);
 }
 
-static CSLbool version_moan(int v)
+static bool version_moan(int v)
 {
 //
 // This code used to check the top bit (ie 0x80) of v to see if the
@@ -450,10 +450,10 @@ static CSLbool version_moan(int v)
 // That ought only to influence the format of major heap image dumps -
 // general compiled FASL modules ought not to be word-length sensitive.
 //
-    if ((v & 0x7f) == IMAGE_FORMAT_VERSION) return NO;
+    if ((v & 0x7f) == IMAGE_FORMAT_VERSION) return false;
 // This printing of a newline here lookes really odd to me!
     term_printf("\n");
-    return YES;
+    return true;
 }
 
 #ifdef BUILTIN_IMAGE
@@ -481,7 +481,7 @@ directory *open_pds(const char *name, int mode)
 //
 {   char expanded[LONGEST_LEGAL_FILENAME];
     directory hdr, *d;
-    CSLbool write_OK = NO, fileExists, nameDir, fileDir;
+    bool write_OK = false, fileExists, nameDir, fileDir;
     struct stat buf;
     FILE *f;
     int l, i, n;
@@ -493,19 +493,19 @@ directory *open_pds(const char *name, int mode)
     i = strlen(expanded) - 1;
     if (expanded[i] == '/' ||
         expanded[i] == '\\') expanded[i] = 0; // Trim any final "/"
-    fileExists = fileDir = NO;
+    fileExists = fileDir = false;
 #ifdef BUILTIN_IMAGE
-    fileExists = YES;
+    fileExists = true;
     binary_read_filep = reduce_image;
 #else
     if (stat(expanded, &buf) != -1)
-    {   fileExists = YES;
-        if ((buf.st_mode & S_IFMT) == S_IFDIR) fileDir = YES;
+    {   fileExists = true;
+        if ((buf.st_mode & S_IFMT) == S_IFDIR) fileDir = true;
     }
     if (nameDir && fileExists && !fileDir)
         return make_empty_directory(expanded);
     if (mode != PDS_INPUT)
-    {   any_output_request = YES;
+    {   any_output_request = true;
         strncpy(would_be_output_directory, expanded, DIRNAME_LENGTH-1);
         if (fileExists && fileDir)
             return make_native_directory(name, expanded, 0);
@@ -517,14 +517,14 @@ directory *open_pds(const char *name, int mode)
         }
         else if (fileExists) f = fopen(expanded, "r+b");
         else f = NULL;
-        if (f != NULL) write_OK = YES;
+        if (f != NULL) write_OK = true;
         else if (mode == PDS_PENDING)
         {   f = fopen(expanded, "rb");
             if (f == NULL) return make_pending_directory(expanded, !nameDir);
         }
         else
         {   f = fopen(expanded, "w+b");
-            if (f != NULL) write_OK = YES;
+            if (f != NULL) write_OK = true;
         }
     }
 //
@@ -633,10 +633,10 @@ static int unpending(directory *d)
     {   Cmkdir(d->full_filename);
         d->h.updated &= ~D_PENDING;
         d->h.updated |= D_WRITE_OK;  // suppose directories always updatable
-        return NO;
+        return false;
     }
     f = fopen(d->filename, "w+b");
-    if (f == NULL) return YES;
+    if (f == NULL) return true;
     d->f = f;
     d->filename[DIRNAME_LENGTH-1] = 0;  // truncate the name now
     n = DIRECTORY_SIZE;      // Size for a directory
@@ -650,11 +650,11 @@ static int unpending(directory *d)
     d->h.updated = D_WRITE_OK | D_UPDATED;
     for (i=0; i<n; i++) clear_entry(&d->d[i]);
     if (fwrite(&d->h, sizeof(directory_header), 1, f) != 1)
-        return YES;
+        return true;
     if (fwrite(&d->d[0], sizeof(directory_entry), (size_t)n, f) != (size_t)n)
-        return YES;
+        return true;
     setbits32(d->h.eof, (int32_t)ftell(f));
-    return NO;
+    return false;
 }
 
 void Iinit(void)
@@ -669,7 +669,7 @@ void Iinit(void)
     binary_read_file = binary_write_file = NULL;
 #endif
     read_bytes_remaining = write_bytes_written = 0;
-    any_output_request = NO;
+    any_output_request = false;
     strcpy(would_be_output_directory, "<unknown>");
     for (i=0; i<number_of_fasl_paths; i++)
     {   if (0x40000000+i == output_directory)
@@ -852,10 +852,10 @@ static void fasl_file_name(char *nn, directory *d, const char *name, int len)
 }
 
 
-static CSLbool open_input(directory *d, const char *name, int len,
+static bool open_input(directory *d, const char *name, int len,
                           int32_t offset, int checked)
 //
-// Set up binary_read_file to access the given module, returning YES
+// Set up binary_read_file to access the given module, returning true
 // if it was not found in the given directory. I used to pass the
 // names "InitialImage" and "HelpDataFile" directly to this function, but
 // to allow for long module names I am changing things so that these special
@@ -865,9 +865,9 @@ static CSLbool open_input(directory *d, const char *name, int len,
 // here.
 //
 {   int i;
-    if (Istatus != I_INACTIVE || d == NULL) return YES;
+    if (Istatus != I_INACTIVE || d == NULL) return true;
     subfile_checksum = 0;
-    nativedir = NO;
+    nativedir = false;
     if (d->full_filename != NULL) // native directory mode
     {   char nn[LONGEST_LEGAL_FILENAME];
         memset(nn, 0, sizeof(nn));
@@ -876,7 +876,7 @@ static CSLbool open_input(directory *d, const char *name, int len,
         binary_read_filep = reduce_image;
         read_bytes_remaining = REDUCE_IMAGE_SIZE;
 #else
-        if ((binary_read_file = fopen(nn, "rb")) == NULL) return YES;
+        if ((binary_read_file = fopen(nn, "rb")) == NULL) return true;
         fseek(binary_read_file, 0L, SEEK_END);
         read_bytes_remaining = ftell(binary_read_file);
 #endif
@@ -887,8 +887,8 @@ static CSLbool open_input(directory *d, const char *name, int len,
         fseek(binary_read_file, (long)offset, SEEK_SET);
 #endif
         Istatus = I_READING;
-        nativedir = YES;
-        return NO;
+        nativedir = true;
+        return false;
     }
 //
 // I use simple linear search to scan the directory - mainly because I
@@ -922,12 +922,12 @@ static CSLbool open_input(directory *d, const char *name, int len,
 #endif
             if (i == 0)     // If fseek succeeded  it returned zero
             {   Istatus = I_READING;
-                return NO;
+                return false;
             }
-            else return YES;
+            else return true;
         }
     }
-    return YES;
+    return true;
 }
 
 void IreInit(void)
@@ -1028,9 +1028,9 @@ static directory *enlarge_directory(int current_size)
     return d1;
 }
 
-CSLbool open_output(const char *name, int len)
+bool open_output(const char *name, int len)
 //
-// Set up binary_write_file to access the given module, returning YES
+// Set up binary_write_file to access the given module, returning true
 // if anything went wrong. Remember name==NULL for initial image & help
 // data.
 //
@@ -1041,20 +1041,20 @@ CSLbool open_output(const char *name, int len)
     time_t t = time(NULL);
     LispObject oo = qvalue(output_library);
 #ifdef BUILTIN_IMAGE
-    return YES;
+    return true;
 #endif
-    nativedir = NO;
-    if (!is_library(oo)) return YES;
+    nativedir = false;
+    if (!is_library(oo)) return true;
     d = fasl_files[library_number(oo)];
-    if (d == NULL) return YES;  // closed handle, I guess
-    if ((d->h.updated & D_WRITE_OK) == 0) return YES;
+    if (d == NULL) return true;  // closed handle, I guess
+    if ((d->h.updated & D_WRITE_OK) == 0) return true;
 //
 // The main effect of the next line will be to prohibit opening a new
 // FASL file while I am in the middle of reading one that already exists.
 // Indeed this is a restriction, but at present it seems a very reasonable
 // on for me to apply.
 //
-    if (Istatus != I_INACTIVE) return YES;
+    if (Istatus != I_INACTIVE) return true;
     if (d->h.updated & D_PENDING)
     {
 //
@@ -1062,8 +1062,8 @@ CSLbool open_output(const char *name, int len)
 // rather then do and unpending() when the output module I am creating is
 // just to contain banner information.
 //
-        if (name==NULL && len==BANNER_CODE) return YES;
-        if (unpending(d)) return YES;
+        if (name==NULL && len==BANNER_CODE) return true;
+        if (unpending(d)) return true;
     }
     subfile_checksum = 0;
     current_output_directory = d;
@@ -1071,11 +1071,11 @@ CSLbool open_output(const char *name, int len)
     {   char nn[LONGEST_LEGAL_FILENAME];
         memset(nn, 0, sizeof(nn));
         fasl_file_name(nn, d, name, len);
-        if ((binary_write_file = fopen(nn, "wb")) == NULL) return YES;
+        if ((binary_write_file = fopen(nn, "wb")) == NULL) return true;
         write_bytes_written = 0;
         Istatus = I_WRITING;
-        nativedir = YES;
-        return NO;
+        nativedir = true;
+        return false;
     }
 //
 // I use simple linear search to scan the directory - mainly because I
@@ -1135,11 +1135,11 @@ CSLbool open_output(const char *name, int len)
     else if (len <= 11) n = 1;
     else if (len <= 11+11+24) n = 2;
     else if (len <= 11+11+11+24+24) n = 3;
-    else return YES;  // Name longer than 81 chars not supported, sorry
+    else return true;  // Name longer than 81 chars not supported, sorry
     while (i+n > (int)get_dirsize(d->h))
     {   d = enlarge_directory(i);
         current_output_directory = d;
-        if (d == NULL) return YES;
+        if (d == NULL) return true;
     }
     current_output_entry = &d->d[i];
     if (len == IMAGE_CODE)
@@ -1187,11 +1187,11 @@ CSLbool open_output(const char *name, int len)
     i = fseek(binary_write_file, bits32(d->h.eof), SEEK_SET);
     if (i == 0)
     {   Istatus = I_WRITING;
-        return NO;
+        return false;
     }
     else
     {   current_output_directory = NULL;
-        return YES;
+        return true;
     }
 }
 
@@ -1227,7 +1227,7 @@ static void list_one_native(const char *name, int why, long int size)
 }
 
 
-static void list_one_library(LispObject oo, CSLbool out_only)
+static void list_one_library(LispObject oo, bool out_only)
 {   int j;
     directory *d = fasl_files[library_number(oo)];
     if (d->full_filename != NULL)
@@ -1282,9 +1282,9 @@ void Ilist(void)
     {   w = qcar(il); il = qcdr(il);
         if (!is_library(w)) continue;
         if (w == ol) ol = nil;
-        list_one_library(w, NO);
+        list_one_library(w, false);
     }
-    if (is_library(ol)) list_one_library(ol, YES);
+    if (is_library(ol)) list_one_library(ol, true);
 }
 
 static LispObject mods;
@@ -1382,7 +1382,7 @@ LispObject Llibrary_members0(LispObject nil, int nargs, ...)
     else return onevalue(nil);
 }
 
-CSLbool Imodulep(const char *name, int len, char *datestamp, int32_t *size,
+bool Imodulep(const char *name, int len, char *datestamp, int32_t *size,
                  char *expanded_name)
 //
 // Hands back information about whether the given module exists, and
@@ -1415,7 +1415,7 @@ CSLbool Imodulep(const char *name, int len, char *datestamp, int32_t *size,
 // the size-limits of a 32-bit integer!
 //
             *size = (int32_t)statbuff.st_size;
-            return NO;
+            return false;
         }
         for (j=0; j<get_dirused(d->h); j++)
         {   if (samename(name, d, j, len))
@@ -1436,16 +1436,16 @@ CSLbool Imodulep(const char *name, int len, char *datestamp, int32_t *size,
                                               "%s%sInitialImage%s", n, p1, p2);
                 else sprintf(expanded_name,
                                  "%s%s%.*s%s", n, p1, len, name, p2);
-                return NO;
+                return false;
             }
         }
     }
-    return YES;
+    return true;
 }
 
 directory *rootDirectory = NULL;
 
-CSLbool IopenRoot(char *expanded_name, int hard, int sixtyfour)
+bool IopenRoot(char *expanded_name, int hard, int sixtyfour)
 //
 // Opens the "InitialImage" file so that it can be loaded. Note that
 // when I am about to do this I do not have a valid heap image loaded, and
@@ -1459,7 +1459,7 @@ CSLbool IopenRoot(char *expanded_name, int hard, int sixtyfour)
     for (i=0; i<number_of_fasl_paths; i++)
     {
 // Initial image files have a checksum at their end
-        CSLbool bad = open_input(fasl_files[i], NULL, hard, 0, 1);
+        bool bad = open_input(fasl_files[i], NULL, hard, 0, 1);
 //
 // The name that I return (for possible display in error messages) will be
 // either that of the file that was opened, or one relating to the last
@@ -1478,17 +1478,17 @@ CSLbool IopenRoot(char *expanded_name, int hard, int sixtyfour)
             else sprintf(expanded_name, "%s(HardCode<%.2x>)",
                              n, (-hard) & 0xff);
         }
-        if (!bad) return NO;
+        if (!bad) return false;
     }
-    return YES;
+    return true;
 }
 
-CSLbool Iopen(const char *name, int len, int forinput, char *expanded_name)
+bool Iopen(const char *name, int len, int forinput, char *expanded_name)
 //
 // Make file with the given name available through this package of
 // routines.  (name) is a pointer to a string (len characters valid) that
 // names a fasl file.  (forinput) specifies the direction of the transfer
-// to set up. Returns YES if something failed.
+// to set up. Returns true if something failed.
 // name can be NULL when a module is opened for output, and then output
 // is sent to "InitialImage".
 // The same is done for input, but it would be more sensible to use
@@ -1500,7 +1500,7 @@ CSLbool Iopen(const char *name, int len, int forinput, char *expanded_name)
     {   int i;
         LispObject il = qvalue(input_libraries);
         while (consp(il))
-        {   CSLbool bad;
+        {   bool bad;
             LispObject oo = qcar(il); il = qcdr(il);
             if (!is_library(oo)) continue;
             i = library_number(oo);
@@ -1525,21 +1525,21 @@ CSLbool Iopen(const char *name, int len, int forinput, char *expanded_name)
                 }
                 sprintf(expanded_name, "%s%s%.*s%s", n, p1, len, name, p2);
             }
-            if (!bad) return NO;
+            if (!bad) return false;
         }
-        return YES;
+        return true;
     }
     if (!any_output_request)
     {   if (expanded_name != NULL)
             strcpy(expanded_name, "<no output file specified>");
-        return YES;
+        return true;
     }
     n = would_be_output_directory;
     if (expanded_name != NULL)
     {   const char *p1 = "(", *p2 = ")";
         LispObject oo = qvalue(output_library);
         directory *d;
-        if (!is_library(oo)) return YES;
+        if (!is_library(oo)) return true;
         d = fasl_files[library_number(oo)];
         if (d->full_filename != NULL)
         {
@@ -1557,7 +1557,7 @@ CSLbool Iopen(const char *name, int len, int forinput, char *expanded_name)
     return open_output(name, len);
 }
 
-CSLbool Iwriterootp(char *expanded_name)
+bool Iwriterootp(char *expanded_name)
 //
 // Test if it will be possible to write out an image file. Used
 // by (preserve) so it can report that this would fail without actually
@@ -1567,22 +1567,22 @@ CSLbool Iwriterootp(char *expanded_name)
     LispObject oo = qvalue(output_library);
     if (!any_output_request)
     {   strcpy(expanded_name, "<no output file specified>");
-        return YES;
+        return true;
     }
     sprintf(expanded_name, "%s(InitialImage)", would_be_output_directory);
-    if (!is_library(oo)) return YES;
+    if (!is_library(oo)) return true;
     d = fasl_files[library_number(oo)];
-    if (d == NULL) return YES;  // closed handle, I guess
+    if (d == NULL) return true;  // closed handle, I guess
 //
 // At present for native directories the WRITE_OK flag is left set without
 // proper checking of file access permissions.
 //
-    if ((d->h.updated & D_WRITE_OK) == 0) return YES;
-    if (Istatus != I_INACTIVE) return YES;
-    return NO;
+    if ((d->h.updated & D_WRITE_OK) == 0) return true;
+    if (Istatus != I_INACTIVE) return true;
+    return false;
 }
 
-CSLbool Iopen_help(int32_t offset)
+bool Iopen_help(int32_t offset)
 //
 // Get ready to handle the HELP subfile.  offset >= 0 will open an
 // existing help module for input and position at the given location.
@@ -1592,21 +1592,21 @@ CSLbool Iopen_help(int32_t offset)
 {   if (offset >= 0)
     {   LispObject il = qvalue(input_libraries);
         while (consp(il))
-        {   CSLbool bad;
+        {   bool bad;
             LispObject oo = qcar(il); il = qcdr(il);
             if (!is_library(oo)) continue;
 // No checksum on help files
             bad = open_input(fasl_files[library_number(oo)],
                              NULL, HELP_CODE, offset, 0);
-            if (!bad) return NO;
+            if (!bad) return false;
         }
-        return YES;
+        return true;
     }
-    if (!any_output_request) return YES;
+    if (!any_output_request) return true;
     else return open_output(NULL, HELP_CODE);
 }
 
-CSLbool Iopen_banner(int code)
+bool Iopen_banner(int code)
 //
 // Get ready to handle the startup banner.
 // code = 0    open for reading
@@ -1617,27 +1617,27 @@ CSLbool Iopen_banner(int code)
     else if (code == 0)
     {   LispObject il = qvalue(input_libraries);
         while (consp(il))
-        {   CSLbool bad;
+        {   bool bad;
             LispObject oo = qcar(il); il = qcdr(il);
             if (!is_library(oo)) continue;
 // No checksum on the banner
             bad = open_input(fasl_files[library_number(oo)],
                              NULL, BANNER_CODE, 0, 0);
-            if (!bad) return NO;
+            if (!bad) return false;
         }
-        return YES;
+        return true;
     }
-    if (!any_output_request) return YES;
+    if (!any_output_request) return true;
     else return open_output(NULL, BANNER_CODE);
 }
 
 //
-// Set up binary_read_file to read from standard input. Return YES if
+// Set up binary_read_file to read from standard input. Return true if
 // things fail.
 //
 
-CSLbool Iopen_from_stdin(void)
-{   if (Istatus != I_INACTIVE) return YES;
+bool Iopen_from_stdin(void)
+{   if (Istatus != I_INACTIVE) return true;
     subfile_checksum = 0;
 #ifdef BUILTIN_IMAGE
     binary_read_filep = NULL;
@@ -1646,25 +1646,25 @@ CSLbool Iopen_from_stdin(void)
 #endif
     read_bytes_remaining = -1;
     Istatus = I_READING;
-    return NO;
+    return false;
 }
 
-CSLbool Iopen_to_stdout(void)
-{   if (Istatus != I_INACTIVE) return YES;
+bool Iopen_to_stdout(void)
+{   if (Istatus != I_INACTIVE) return true;
     subfile_checksum = 0;
     Istatus = I_WRITING;
-    return NO;
+    return false;
 }
 
-CSLbool Idelete(const char *name, int len)
+bool Idelete(const char *name, int len)
 {   int i, nrec;
     directory *d;
     LispObject oo = qvalue(output_library);
-    if (!is_library(oo)) return YES;
+    if (!is_library(oo)) return true;
     d = fasl_files[library_number(oo)];
     if (d == NULL ||
         (d->h.updated && D_WRITE_OK) == 0 ||
-        Istatus != I_INACTIVE) return YES;
+        Istatus != I_INACTIVE) return true;
     if (d->full_filename != NULL)
     {   char nn[LONGEST_LEGAL_FILENAME];
         memset(nn, 0, sizeof(nn));
@@ -1692,10 +1692,10 @@ CSLbool Idelete(const char *name, int len)
                 j++;
             }
             d->h.updated |= D_COMPACT | D_UPDATED;
-            return NO;
+            return false;
         }
     }
-    return YES;
+    return true;
 }
 
 #define update_crc(chk, c)                      \
@@ -1718,7 +1718,7 @@ static int validate_checksum(FILE *f, uint32_t chk1)
     chk2 = (chk2 << 8) | (c & 0xff);
     if ((c = *binary_read_filep++) == EOF) goto failed;
     chk2 = (chk2 << 8) | (c & 0xff);
-    if (chk1 == chk2) return NO;    // All went well
+    if (chk1 == chk2) return false;    // All went well
 #else
     if (read_bytes_remaining < 0)
     {   if ((c = Igetc()) == EOF) goto failed;
@@ -1729,7 +1729,7 @@ static int validate_checksum(FILE *f, uint32_t chk1)
         chk2 = (chk2 << 8) | (c & 0xff);
         if ((c = Igetc()) == EOF) goto failed;
         chk2 = (chk2 << 8) | (c & 0xff);
-        if (chk1 == chk2) return NO;    // All went well
+        if (chk1 == chk2) return false;    // All went well
     }
     else
     {   if ((c = getc(f)) == EOF) goto failed;
@@ -1740,14 +1740,14 @@ static int validate_checksum(FILE *f, uint32_t chk1)
         chk2 = (chk2 << 8) | (c & 0xff);
         if ((c = getc(f)) == EOF) goto failed;
         chk2 = (chk2 << 8) | (c & 0xff);
-        if (chk1 == chk2) return NO;    // All went well
+        if (chk1 == chk2) return false;    // All went well
     }
 #endif
 failed:
     if (error_output != 0)
         err_printf("\n+++ FASL module checksum failure (%.8x vs. %.8x)\n",
                    chk2, chk1);
-    return YES;
+    return true;
 }
 
 static int put_checksum(FILE *f, uint32_t chk)
@@ -1766,15 +1766,15 @@ static int put_checksum(FILE *f, uint32_t chk)
         putc_stream((int)(chk>>16), fasl_stream);
         putc_stream((int)(chk>>8), fasl_stream);
         putc_stream((int)chk, fasl_stream);
-        return NO;
+        return false;
     }
-    if (putc((int)(chk>>24), f) == EOF) return YES;
-    if (putc((int)(chk>>16), f) == EOF) return YES;
-    if (putc((int)(chk>>8), f)  == EOF) return YES;
+    if (putc((int)(chk>>24), f) == EOF) return true;
+    if (putc((int)(chk>>16), f) == EOF) return true;
+    if (putc((int)(chk>>8), f)  == EOF) return true;
     return (putc((int)chk, f) == EOF);
 }
 
-CSLbool Icopy(const char *name, int len)
+bool Icopy(const char *name, int len)
 //
 // Find the named module in one of the input files, and if the place that
 // it is found is not already the output file copy it to the output. These days
@@ -1788,21 +1788,21 @@ CSLbool Icopy(const char *name, int len)
     char hard[16];
     directory *d, *id;
     LispObject il, oo = qvalue(output_library);
-    if (!is_library(oo)) return YES;
+    if (!is_library(oo)) return true;
     d = fasl_files[library_number(oo)];
 //
 // Only valid if there is an output file and nothing else is going on.
 //
     if (d == NULL ||
         (d->h.updated & D_WRITE_OK) == 0 ||
-        Istatus != I_INACTIVE) return YES;
+        Istatus != I_INACTIVE) return true;
     if (d->h.updated & D_PENDING)
-    {   if (unpending(d)) return YES;
+    {   if (unpending(d)) return true;
     }
 //
 // The next line refuses to copy INTO a native dirtectory...
 //
-    if (d->full_filename != NULL) return YES;
+    if (d->full_filename != NULL) return true;
 //
 // Search for a suitable input module to copy...
 //
@@ -1816,12 +1816,12 @@ CSLbool Icopy(const char *name, int len)
         for (ii=0; ii<get_dirused(id->h); ii++)
             if (samename(name, id, ii, len)) goto found;
     }
-    return YES;     // Module to copy not found
+    return true;     // Module to copy not found
 found:
 //
 // If the potential input module found was in the output directory exit now.
 //
-    if (id == d) return NO;
+    if (id == d) return false;
 //
 // Now scan output directory to see where to put result
 //
@@ -1849,11 +1849,11 @@ found:
     else if (len <= 11) n = 1;
     else if (len <= 11+11+24) n = 2;
     else if (len <= 11+11+11+24+24) n = 3;
-    else return YES;  // Name longer than 81 chars not supported, sorry
+    else return true;  // Name longer than 81 chars not supported, sorry
     while (i+n > (int)get_dirsize(d->h))
     {   d = enlarge_directory(i);
         current_output_directory = d;
-        if (d == NULL) return YES;
+        if (d == NULL) return true;
     }
     current_output_entry = &d->d[i];
     if (len == IMAGE_CODE)
@@ -1911,51 +1911,51 @@ ofound:
     memset(&d->d[i].D_size, 0, 3);
     d->h.updated |= D_UPDATED;
     if (fseek(d->f, bits32(&d->d[i].D_position), SEEK_SET) != 0 ||
-        fseek(id->f, bits32(&id->d[ii].D_position), SEEK_SET) != 0) return YES;
+        fseek(id->f, bits32(&id->d[ii].D_position), SEEK_SET) != 0) return true;
     l = bits24(&id->d[ii].D_size);
     chk1 = 0;
     for (k=0; k<l; k++)
     {   int c = getc(id->f);
         uint32_t chk_temp;
         update_crc(chk1, c);
-        if (c == EOF) return YES;
+        if (c == EOF) return true;
         putc(c, d->f);
     }
     read_bytes_remaining = 0;
     j = validate_checksum(id->f, chk1);  // HUH?
     read_bytes_remaining = save;
-    if (j) return YES;
-    if (put_checksum(d->f, chk1)) return YES;
-    if (fflush(d->f) != 0) return YES;
+    if (j) return true;
+    if (put_checksum(d->f, chk1)) return true;
+    if (fflush(d->f) != 0) return true;
     setbits24(&d->d[i].D_size, (int32_t)l);
     setbits32(d->h.eof, (int32_t)ftell(d->f));
-    return NO;
+    return false;
 }
 
-CSLbool IcloseInput(int check_checksum)
+bool IcloseInput(int check_checksum)
 //
 // Terminate processing one whatever subfile has been being processed.
 // returns nonzero if there was trouble.
 // read and verify checksum if arg is TRUE.
 //
-{   CSLbool r;
+{   bool r;
     Istatus = I_INACTIVE;
 #ifdef BUILTIN_IMAGE
     if (check_checksum)
         r = validate_checksum(NULL, subfile_checksum);
-    else r = NO;
+    else r = false;
 #else
     if (check_checksum)
         r = validate_checksum(binary_read_file, subfile_checksum);
-    else r = NO;
+    else r = false;
     if (nativedir)
-    {   if (fclose(binary_read_file) != 0) r = YES;
+    {   if (fclose(binary_read_file) != 0) r = true;
     }
 #endif
     return r;
 }
 
-CSLbool IcloseOutput(int plant_checksum)
+bool IcloseOutput(int plant_checksum)
 //
 // Terminate processing one whatever subfile has been being processed.
 // returns nonzero if there was trouble. Write a checksum to the file.
@@ -1972,11 +1972,11 @@ CSLbool IcloseOutput(int plant_checksum)
     Istatus = I_INACTIVE;
     if (fasl_stream != nil && fasl_stream != SPID_NIL && plant_checksum)
     {   put_checksum(NULL, subfile_checksum);
-        return NO;
+        return false;
     }
     current_output_directory = NULL;
 // Here I have to write a checksum to the current ouput dir
-    if (d == NULL || (d->h.updated & D_WRITE_OK) == 0) return NO;
+    if (d == NULL || (d->h.updated & D_WRITE_OK) == 0) return false;
 //@@  if (plant_checksum) put_checksum(d->f, subfile_checksum);
     if (plant_checksum) put_checksum(binary_write_file, subfile_checksum);
     if (d->full_filename != NULL)
@@ -1993,17 +1993,17 @@ CSLbool IcloseOutput(int plant_checksum)
 // chance of resuming from where disaster hit.
 //
     fseek(d->f, 0, SEEK_SET);
-    if (fwrite(&d->h, sizeof(directory_header), 1, d->f) != 1) r = YES;
+    if (fwrite(&d->h, sizeof(directory_header), 1, d->f) != 1) r = true;
     if (fwrite(&d->d[0], sizeof(directory_entry),
                (size_t)get_dirsize(d->h), d->f) !=
-        (size_t)get_dirsize(d->h)) r = YES;
-    if (fflush(d->f) != 0) r = YES;
+        (size_t)get_dirsize(d->h)) r = true;
+    if (fflush(d->f) != 0) r = true;
     d->h.updated &= ~D_UPDATED;
     current_output_entry = NULL;
     return r;
 }
 
-CSLbool finished_with(int j)
+bool finished_with(int j)
 {   directory *d = fasl_files[j];
     fasl_files[j] = NULL;
 //
@@ -2013,11 +2013,11 @@ CSLbool finished_with(int j)
 // I am going to accept that as an unimportant detail.
 //
     fasl_paths[j] = NULL;
-    if (d == NULL) return NO;
+    if (d == NULL) return false;
     if (d->h.updated & D_COMPACT)
     {   int i;
         long int hwm;
-        if (d->f == NULL) return YES;
+        if (d->f == NULL) return true;
         d->h.updated |= D_UPDATED;
         sort_directory(d);
         hwm = sizeof(directory_header) +
@@ -2070,23 +2070,23 @@ CSLbool finished_with(int j)
         }
     }
     if (d->h.updated & D_UPDATED)
-    {   if (d->f == NULL || fflush(d->f) != 0) return YES;
+    {   if (d->f == NULL || fflush(d->f) != 0) return true;
         fseek(d->f, 0, SEEK_SET);
-        if (fwrite(&d->h, sizeof(directory_header), 1, d->f) != 1) return YES;
+        if (fwrite(&d->h, sizeof(directory_header), 1, d->f) != 1) return true;
         if (fwrite(&d->d[0], sizeof(directory_entry),
                    (size_t)get_dirsize(d->h), d->f) !=
-            (size_t)get_dirsize(d->h)) return YES;
-        if (fflush(d->f) != 0) return YES;
+            (size_t)get_dirsize(d->h)) return true;
+        if (fflush(d->f) != 0) return true;
     }
-    if (d->h.updated & D_PENDING) return NO;
-    else if (d->f != NULL && fclose(d->f) != 0) return YES;
-    else return NO;
+    if (d->h.updated & D_PENDING) return false;
+    else if (d->f != NULL && fclose(d->f) != 0) return true;
+    else return false;
 }
 
-CSLbool Ifinished(void)
+bool Ifinished(void)
 //
 // Indicates total completion of all work on image files, and so calls
-// for things to be (finally) tidied up.  Again returns YES of anything
+// for things to be (finally) tidied up.  Again returns true of anything
 // has gone wrong.
 //
 {
@@ -2096,9 +2096,9 @@ CSLbool Ifinished(void)
 // the ones that are flagged as needing compaction.
 //
     int j;
-    CSLbool failed = NO;
+    bool failed = false;
     for (j=0; j<number_of_fasl_paths; j++)
-        if (finished_with(j)) failed = YES;
+        if (finished_with(j)) failed = true;
     return failed;
 }
 
@@ -2199,9 +2199,9 @@ long int Ioutsize(void)
 {   return write_bytes_written;
 }
 
-CSLbool Iputc(int ch)
+bool Iputc(int ch)
 //
-// Puts one character into image system, returning YES if there
+// Puts one character into image system, returning true if there
 // was trouble.
 //
 {   uint32_t chk_temp;
@@ -2210,15 +2210,15 @@ CSLbool Iputc(int ch)
     update_crc(subfile_checksum, ch);
     if (fasl_stream != nil && fasl_stream != SPID_NIL)
         putc_stream(ch, fasl_stream);
-    else if (putc(ch, binary_write_file) == EOF) return YES;
-    return NO;
+    else if (putc(ch, binary_write_file) == EOF) return true;
+    return false;
 }
 
 #define FWRITE_CHUNK 0x4000
 
-CSLbool Iwrite(const void *buff, int32_t size)
+bool Iwrite(const void *buff, int32_t size)
 //
-// Writes (size) bytes from the given buffer, returning YES if trouble.
+// Writes (size) bytes from the given buffer, returning true if trouble.
 //
 {   const unsigned char *p = (const unsigned char *)buff;
     int32_t i;
@@ -2231,8 +2231,8 @@ CSLbool Iwrite(const void *buff, int32_t size)
 // not have to do anything special about it here.
 //
         for (i=0; i<size; i++)
-            if (Iputc(p[i])) return YES;
-        return NO;
+            if (Iputc(p[i])) return true;
+        return false;
     }
     for (i=0; i<size; i++)
     {   // Beware - update_crc is a macro and the {} block here is essential
@@ -2241,11 +2241,11 @@ CSLbool Iwrite(const void *buff, int32_t size)
     write_bytes_written += size;
     while (size >= FWRITE_CHUNK)
     {   if (fwrite(p, 1, FWRITE_CHUNK, binary_write_file) != FWRITE_CHUNK)
-            return YES;
+            return true;
         p += FWRITE_CHUNK;
         size -= FWRITE_CHUNK;
     }
-    if (size == 0) return NO;
+    if (size == 0) return false;
     else return
             (fwrite(p, 1, (size_t)size, binary_write_file) != (size_t)size);
 }
@@ -2488,13 +2488,13 @@ static void unadjust_all(void)
     unadjust(&(qpackage(nil)));
 #endif
 
-    copy_into_nilseg(YES);
+    copy_into_nilseg(true);
     eq_hash_table_list = eq_hash_tables;
     equal_hash_table_list = equal_hash_tables;
 
     for (i = first_nil_offset; i<last_nil_offset; i++)
         unadjust(&BASE[i]);
-    copy_out_of_nilseg(YES);
+    copy_out_of_nilseg(true);
 
     unadjust_consheap();
     unadjust_vecheap();
@@ -2537,7 +2537,7 @@ void preserve_native_code(void)
 
 void preserve(const char *banner, int len)
 {   int32_t i;
-    CSLbool int_flag = NO;
+    bool int_flag = false;
     LispObject nil = C_nil;
 //
 // I dump out any altered chunk of native code before I mangle the heap
@@ -2578,7 +2578,7 @@ void preserve(const char *banner, int len)
 //
     if (exception_pending())
     {   flip_exception();
-        int_flag = YES;
+        int_flag = true;
     }
     {   char msg[128];
         time_t t0 = time(0);
@@ -2604,7 +2604,7 @@ void preserve(const char *banner, int len)
     unadjust_all();    // Turn all pointers into base-offset form
 
     Cfwrite("\nNilseg:", 8);
-    copy_into_nilseg(YES);
+    copy_into_nilseg(true);
     {   LispObject saver[9];
         for (i=0; i<9; i++)
             saver[i] = BASE[i+13],
@@ -2660,7 +2660,7 @@ void preserve(const char *banner, int len)
         while (k != 0) k--, Iputc(NEWLINE_CHAR);
     }
 //
-//  flip_needed = NO; Since I stop after (preserve) these lines are unnecessary?
+//  flip_needed = false; Since I stop after (preserve) these lines are unnecessary?
 //  old_fp_rep = current_fp_rep;
 //
 

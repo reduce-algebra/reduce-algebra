@@ -103,7 +103,7 @@ extern FILE *open_file(char *filename, const char *old, size_t n,
 // change time for it.  See open_file re args.
 //
 
-extern CSLbool file_exists(char *filename, const char *old, size_t n, char *tt);
+extern bool file_exists(char *filename, const char *old, size_t n, char *tt);
 
 //
 // The interfaces to create_directory and delete_file are similar

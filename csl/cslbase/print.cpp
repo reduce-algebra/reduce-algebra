@@ -1781,7 +1781,7 @@ int tmprint_flag = 0;
 #define escape_checksum     0x4000    // doing a checksum operation
 #define escape_exploding    0x8000    // in explode, exploden etc
 
-static void outprefix(CSLbool blankp, int32_t len)
+static void outprefix(bool blankp, int32_t len)
 //
 // This function takes most of the responsibility for splitting lines.
 // when called we are about to print an item with (len) characters.
@@ -2027,14 +2027,14 @@ restart:
             }
             if (w != nil)
             {   stack[0] = w;
-                outprefix(YES, 1);
+                outprefix(true, 1);
                 errexitvn(1);
                 putc_stream('.', active_stream);
                 errexitvn(1);
                 internal_prin(stack[0], 1);
             }
             popv(1);
-            outprefix(NO, 1);
+            outprefix(false, 1);
             putc_stream(')', active_stream);
             return;
 
@@ -2183,7 +2183,7 @@ restart:
 // lines if that seems useful.  Anyway a reader for them could understand to
 // expect that.
 //
-                    outprefix(NO, 2);
+                    outprefix(false, 2);
                     putc_stream(hexdig[(ch >> 4) & 0xf], active_stream);
                     putc_stream(hexdig[ch & 0xf], active_stream);
                 }
@@ -2637,7 +2637,7 @@ restart:
                             errexitvn(1);
                         }
                     popv(1);
-                    outprefix(NO, 1);
+                    outprefix(false, 1);
 #ifndef COMMON
                     if (type_of_header(h) == TYPE_SIMPLE_VEC) putc_stream(']', active_stream);
                     else
@@ -2669,20 +2669,20 @@ restart:
 #endif
                     {   internal_prin(elt(stack[0], 0), 0);
                         errexitvn(1);
-                        outprefix(NO, 1);
+                        outprefix(false, 1);
                         internal_prin(elt(stack[0], 1), 1);
                         errexitvn(1);
-                        outprefix(NO, 1);
+                        outprefix(false, 1);
                         internal_prin(elt(stack[0], 2), 1);
                         errexitvn(1);
                     }
                     for (k=3*CELL; k<len; k+=CELL)
                     {   sprintf(my_buff, "%.8lx", (long)*(LispObject *)
                                 ((char *)stack[0] + (CELL - TAG_VECTOR) + k));
-                        prin_buf(my_buff, YES);
+                        prin_buf(my_buff, true);
                     }
                     popv(1);
-                    outprefix(NO, 1);
+                    outprefix(false, 1);
                     putc_stream(']', active_stream);
                     return;
                 }
@@ -2702,7 +2702,7 @@ restart:
                     {   sprintf(my_buff, "%d", scelt(stack[0], k));
                         prin_buf(my_buff, k != 0);
                     }
-                    outprefix(NO, 1);
+                    outprefix(false, 1);
                     putc_stream(')', active_stream);
                     popv(1);
                     return;
@@ -2721,7 +2721,7 @@ restart:
                     {   sprintf(my_buff, "%d", helt(stack[0], k));
                         prin_buf(my_buff, k != 0);
                     }
-                    outprefix(NO, 1);
+                    outprefix(false, 1);
                     putc_stream(')', active_stream);
                     popv(1);
                     return;
@@ -2734,7 +2734,7 @@ restart:
                     {   sprintf(my_buff, "%ld", (long)ielt32(stack[0], k));
                         prin_buf(my_buff, k != 0);
                     }
-                    outprefix(NO, 1);
+                    outprefix(false, 1);
                     putc_stream(')', active_stream);
                     popv(1);
                     return;
@@ -2747,7 +2747,7 @@ restart:
                     {   fp_sprint(my_buff, (double)felt(stack[0], k), print_precision);
                         prin_buf(my_buff, k != 0);
                     }
-                    outprefix(NO, 1);
+                    outprefix(false, 1);
                     putc_stream(')', active_stream);
                     popv(1);
                     return;
@@ -2760,7 +2760,7 @@ restart:
                     {   fp_sprint(my_buff, delt(stack[0], k), print_precision);
                         prin_buf(my_buff, k != 0);
                     }
-                    outprefix(NO, 1);
+                    outprefix(false, 1);
                     putc_stream(')', active_stream);
                     popv(1);
                     return;
@@ -3281,7 +3281,7 @@ restart:
 // just at the moment.
 //
                 internal_prin(numerator(stack[0]), blankp);
-                outprefix(NO, 1);
+                outprefix(false, 1);
                 putc_stream('/', active_stream);
                 pop(u);
                 internal_prin(denominator(u), 0);
@@ -3299,7 +3299,7 @@ restart:
                 internal_prin(real_part(stack[0]), 0);
                 pop(u);
                 internal_prin(imag_part(u), 1);
-                outprefix(NO, 1);
+                outprefix(false, 1);
                 putc_stream(')', active_stream);
                 return;
             }
@@ -3423,14 +3423,14 @@ void loop_print_stdout(LispObject o)
         (f = qfn1(lp)) == undefined1 ||
         (f != bytecoded1 && !is_vector(qenv(lp)))) prin_to_stdout(o);
     else
-    {   CSLbool bad = NO;
+    {   bool bad = false;
         LispObject env = qenv(lp);
         push2(lp, env);
         ifn1(lp) = (intptr_t)undefined1;  // To avoid recursion if it fails
         qenv(lp) = lp;                    // make it an undefined function
         (*f)(env, o);
         nil = C_nil;
-        if (exception_pending()) flip_exception(), bad = YES;
+        if (exception_pending()) flip_exception(), bad = true;
         pop2(env, lp);
         if (!bad) ifn1(lp) = (intptr_t)f, qenv(lp) = env; // Restore if OK
     }
@@ -4683,7 +4683,7 @@ static LispObject Lopen_library(LispObject nil, LispObject file,
                                 LispObject dirn)
 {   char filename[LONGEST_LEGAL_FILENAME];
     size_t len = 0;
-    CSLbool forinput = (dirn==nil);
+    bool forinput = (dirn==nil);
     int i;
     const char *w = get_string_data(file, "open-library", &len);
     char *w1;

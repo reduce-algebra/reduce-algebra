@@ -444,10 +444,10 @@ static double rasin(double x)
 
 
 static double iasin(double x)
-{   CSLbool sign;
+{   bool sign;
     if (-1.0 <= x && x <= 1.0) return 0.0;
-    else if (x < 0.0) x = -x, sign = YES;
-    else sign = NO;
+    else if (x < 0.0) x = -x, sign = true;
+    else sign = false;
     if (x < 2.0)
     {   x += sqrt(x*x - 1.0);
         x = log(x);             // /* serious inaccuracy here
@@ -468,9 +468,9 @@ static double racos(double x)
 }
 
 static double iacos(double x)
-{   CSLbool sign;
-    if (x < -1.0) x = -x, sign = YES;
-    else if (1.0 < x) sign = NO;
+{   bool sign;
+    if (x < -1.0) x = -x, sign = true;
+    else if (1.0 < x) sign = false;
     else return 0.0;
     if (x < 2.0)
     {   x += sqrt(x*x - 1.0);
@@ -486,9 +486,9 @@ static double iacos(double x)
 }
 
 static double CSLasinh(double x)
-{   CSLbool sign;
-    if (x < 0.0) x = -x, sign = YES;
-    else sign = NO;
+{   bool sign;
+    if (x < 0.0) x = -x, sign = true;
+    else sign = false;
     if (x < 1.0e-3)
     {   double xx = x*x;
         x = x*(1 - xx*((1.0/6.0) - (3.0/40.0)*xx));
@@ -519,9 +519,9 @@ static double acosh_coeffs[] =
 };
 
 static double racosh(double x)
-{   CSLbool sign;
-    if (x < -1.0) x = -x, sign = YES;
-    else if (1.0 < x) sign = NO;
+{   bool sign;
+    if (x < -1.0) x = -x, sign = true;
+    else if (1.0 < x) sign = false;
     else return 0.0;
     if (x < 1.5)
     {   int i;
@@ -1672,7 +1672,7 @@ LispObject Labsval(LispObject nil, LispObject a)
 }
 
 static LispObject Lphase(LispObject nil, LispObject a)
-{   CSLbool s;
+{   bool s;
     double d;
     if (is_numbers(a) && is_complex(a))
         return Latan2(nil, imag_part(a), real_part(a));
@@ -1690,7 +1690,7 @@ static LispObject Lsignum(LispObject nil, LispObject a)
 {
 //
 //* This seems an expensive way of doing things - huh? Maybe complex values?
-    CSLbool z;
+    bool z;
     LispObject w;
     z = zerop(a);
     nil = C_nil;

@@ -58,7 +58,7 @@
 // #define RECORD_GET 1
 #endif
 
-void record_get(LispObject tag, CSLbool found)
+void record_get(LispObject tag, bool found)
 {
 #ifdef RECORD_GET
     LispObject nil = C_nil;
@@ -119,7 +119,7 @@ LispObject get(LispObject a, LispObject b)
     if (!symbolp(a))
     {
 #ifdef RECORD_GET
-        record_get(b, NO);
+        record_get(b, false);
         errexit();
 #endif
         return onevalue(nil);
@@ -128,7 +128,7 @@ LispObject get(LispObject a, LispObject b)
     {   if ((w = qfastgets(a)) == nil)
         {
 #ifdef RECORD_GET
-            record_get(b, NO);
+            record_get(b, false);
             errexit();
 #endif
             return onevalue(nil);
@@ -147,7 +147,7 @@ LispObject get(LispObject a, LispObject b)
     if (pl == nil)
     {
 #ifdef RECORD_GET
-        record_get(b, NO);
+        record_get(b, false);
         errexit();
 #endif
         return onevalue(nil);
@@ -157,7 +157,7 @@ LispObject get(LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         push(w);
-        record_get(b, YES);
+        record_get(b, true);
         pop(w);
         errexit();
 #endif
@@ -167,7 +167,7 @@ LispObject get(LispObject a, LispObject b)
     if (pl == nil)
     {
 #ifdef RECORD_GET
-        record_get(b, NO);
+        record_get(b, false);
         errexit();
 #endif
         return onevalue(nil);
@@ -177,7 +177,7 @@ LispObject get(LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         push(w);
-        record_get(b, YES);
+        record_get(b, true);
         pop(w);
         errexit();
 #endif
@@ -189,7 +189,7 @@ LispObject get(LispObject a, LispObject b)
     if (pl == nil)
     {
 #ifdef RECORD_GET
-        record_get(b, NO);
+        record_get(b, false);
         errexit();
 #endif
         return onevalue(nil);
@@ -206,7 +206,7 @@ LispObject get(LispObject a, LispObject b)
             qplist(a) = pl;
 #ifdef RECORD_GET
             push(w);
-            record_get(b, YES);
+            record_get(b, true);
             pop(w);
             errexit();
 #endif
@@ -218,7 +218,7 @@ LispObject get(LispObject a, LispObject b)
         if (pl == nil)
         {
 #ifdef RECORD_GET
-            record_get(b, NO);
+            record_get(b, false);
             errexit();
 #endif
             return onevalue(nil);
@@ -309,7 +309,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
     if (!symbolp(a))
     {
 #ifdef RECORD_GET
-        record_get(b, NO);
+        record_get(b, false);
         errexit();
 #endif
         return c;
@@ -319,7 +319,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         {
 #ifdef RECORD_GET
             push(c);
-            record_get(b, NO);
+            record_get(b, false);
             pop(c);
             errexit();
 #endif
@@ -330,7 +330,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         {
 #ifdef RECORD_GET
             push(c);
-            record_get(b, NO);
+            record_get(b, false);
             pop(c);
             errexit();
 #endif
@@ -338,7 +338,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         }
 #ifdef RECORD_GET
         push(pl);
-        record_get(b, YES);
+        record_get(b, true);
         pop(pl);
         errexit();
 #endif
@@ -350,7 +350,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         {
 #ifdef RECORD_GET
             push(pl);
-            record_get(b, YES);
+            record_get(b, true);
             pop(pl);
             errexit();
 #endif
@@ -359,7 +359,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         else pl = qcdr(qcdr(pl));
     }
 #ifdef RECORD_GET
-    record_get(b, NO);
+    record_get(b, false);
     errexit();
 #endif
     return c;
@@ -443,7 +443,7 @@ LispObject Lget(LispObject nil, LispObject a, LispObject b)
     if (!symbolp(a))
     {
 #ifdef RECORD_GET
-        record_get(b, NO);
+        record_get(b, false);
         errexit();
 #endif
         return onevalue(nil);
@@ -452,7 +452,7 @@ LispObject Lget(LispObject nil, LispObject a, LispObject b)
     {   if ((w = qfastgets(a)) == nil)
         {
 #ifdef RECORD_GET
-            record_get(b, NO);
+            record_get(b, false);
             errexit();
 #endif
             return onevalue(nil);
@@ -471,7 +471,7 @@ LispObject Lget(LispObject nil, LispObject a, LispObject b)
     if (pl == nil)
     {
 #ifdef RECORD_GET
-        record_get(b, NO);
+        record_get(b, false);
         errexit();
 #endif
         return onevalue(nil);
@@ -481,7 +481,7 @@ LispObject Lget(LispObject nil, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         push(w);
-        record_get(b, YES);
+        record_get(b, true);
         pop(w);
         errexit();
 #endif
@@ -491,7 +491,7 @@ LispObject Lget(LispObject nil, LispObject a, LispObject b)
     if (pl == nil)
     {
 #ifdef RECORD_GET
-        record_get(b, NO);
+        record_get(b, false);
         errexit();
 #endif
         return onevalue(nil);
@@ -501,7 +501,7 @@ LispObject Lget(LispObject nil, LispObject a, LispObject b)
     {
 #ifdef RECORD_GET
         push(w);
-        record_get(b, YES);
+        record_get(b, true);
         pop(w);
         errexit();
 #endif
@@ -513,7 +513,7 @@ LispObject Lget(LispObject nil, LispObject a, LispObject b)
     if (pl == nil)
     {
 #ifdef RECORD_GET
-        record_get(b, NO);
+        record_get(b, false);
         errexit();
 #endif
         return onevalue(nil);
@@ -530,7 +530,7 @@ LispObject Lget(LispObject nil, LispObject a, LispObject b)
             qplist(a) = pl;
 #ifdef RECORD_GET
             push(w);
-            record_get(b, YES);
+            record_get(b, true);
             pop(w);
             errexit();
 #endif
@@ -542,7 +542,7 @@ LispObject Lget(LispObject nil, LispObject a, LispObject b)
         if (pl == nil)
         {
 #ifdef RECORD_GET
-            record_get(b, NO);
+            record_get(b, false);
             errexit();
 #endif
             return onevalue(nil);
@@ -639,7 +639,7 @@ LispObject Lflagp(LispObject nil, LispObject a, LispObject b)
     if (!symbolp(a))
     {
 #ifdef RECORD_GET
-        record_get(b, NO);
+        record_get(b, false);
         errexit();
 #endif
         return onevalue(nil);
@@ -648,7 +648,7 @@ LispObject Lflagp(LispObject nil, LispObject a, LispObject b)
     {   if ((w = qfastgets(a)) == nil)
         {
 #ifdef RECORD_GET
-            record_get(b, NO);
+            record_get(b, false);
             errexit();
 #endif
             return onevalue(nil);
@@ -657,13 +657,13 @@ LispObject Lflagp(LispObject nil, LispObject a, LispObject b)
         if (w == SPID_NOPROP)
         {
 #ifdef RECORD_GET
-            record_get(b, NO);
+            record_get(b, false);
             errexit();
 #endif
             return onevalue(nil);
         }
 #ifdef RECORD_GET
-        record_get(b, YES);
+        record_get(b, true);
         errexit();
 #endif
         return onevalue(lisp_true);
@@ -672,7 +672,7 @@ LispObject Lflagp(LispObject nil, LispObject a, LispObject b)
     if (pl == nil)
     {
 #ifdef RECORD_GET
-        record_get(b, NO);
+        record_get(b, false);
         errexit();
 #endif
         return onevalue(nil);
@@ -681,7 +681,7 @@ LispObject Lflagp(LispObject nil, LispObject a, LispObject b)
     if (qcar(w) == b)
     {
 #ifdef RECORD_GET
-        record_get(b, YES);
+        record_get(b, true);
         errexit();
 #endif
         return onevalue(lisp_true);
@@ -690,7 +690,7 @@ LispObject Lflagp(LispObject nil, LispObject a, LispObject b)
     if (pl == nil)
     {
 #ifdef RECORD_GET
-        record_get(b, NO);
+        record_get(b, false);
         errexit();
 #endif
         return onevalue(nil);
@@ -699,7 +699,7 @@ LispObject Lflagp(LispObject nil, LispObject a, LispObject b)
     if (qcar(w) == b)
     {
 #ifdef RECORD_GET
-        record_get(b, YES);
+        record_get(b, true);
         errexit();
 #endif
         return onevalue(lisp_true);
@@ -710,7 +710,7 @@ LispObject Lflagp(LispObject nil, LispObject a, LispObject b)
     if (pl == nil)
     {
 #ifdef RECORD_GET
-        record_get(b, NO);
+        record_get(b, false);
         errexit();
 #endif
         return onevalue(nil);
@@ -726,7 +726,7 @@ LispObject Lflagp(LispObject nil, LispObject a, LispObject b)
             qcdr(pl) = qplist(a);
             qplist(a) = pl;
 #ifdef RECORD_GET
-            record_get(b, YES);
+            record_get(b, true);
             errexit();
 #endif
             return onevalue(lisp_true);
@@ -737,7 +737,7 @@ LispObject Lflagp(LispObject nil, LispObject a, LispObject b)
         if (pl == nil)
         {
 #ifdef RECORD_GET
-            record_get(b, NO);
+            record_get(b, false);
             errexit();
 #endif
             return onevalue(nil);
@@ -753,7 +753,7 @@ LispObject Lflagpcar(LispObject nil, LispObject a, LispObject b)
     {   if (!consp(a))
         {
 #ifdef RECORD_GET
-            record_get(b, NO);
+            record_get(b, false);
             errexit();
 #endif
             return onevalue(nil);
@@ -762,7 +762,7 @@ LispObject Lflagpcar(LispObject nil, LispObject a, LispObject b)
         if (!symbolp(a))
         {
 #ifdef RECORD_GET
-            record_get(b, NO);
+            record_get(b, false);
             errexit();
 #endif
             return onevalue(nil);
@@ -772,7 +772,7 @@ LispObject Lflagpcar(LispObject nil, LispObject a, LispObject b)
     {   if ((w = qfastgets(a)) == nil)
         {
 #ifdef RECORD_GET
-            record_get(b, NO);
+            record_get(b, false);
             errexit();
 #endif
             return onevalue(nil);
@@ -781,13 +781,13 @@ LispObject Lflagpcar(LispObject nil, LispObject a, LispObject b)
         if (w == SPID_NOPROP)
         {
 #ifdef RECORD_GET
-            record_get(b, NO);
+            record_get(b, false);
             errexit();
 #endif
             return onevalue(nil);
         }
 #ifdef RECORD_GET
-        record_get(b, YES);
+        record_get(b, true);
         errexit();
 #endif
         return onevalue(lisp_true);
@@ -796,7 +796,7 @@ LispObject Lflagpcar(LispObject nil, LispObject a, LispObject b)
     if (pl == nil)
     {
 #ifdef RECORD_GET
-        record_get(b, NO);
+        record_get(b, false);
         errexit();
 #endif
         return onevalue(nil);
@@ -805,7 +805,7 @@ LispObject Lflagpcar(LispObject nil, LispObject a, LispObject b)
     if (qcar(w) == b)
     {
 #ifdef RECORD_GET
-        record_get(b, YES);
+        record_get(b, true);
         errexit();
 #endif
         return onevalue(lisp_true);
@@ -814,7 +814,7 @@ LispObject Lflagpcar(LispObject nil, LispObject a, LispObject b)
     if (pl == nil)
     {
 #ifdef RECORD_GET
-        record_get(b, NO);
+        record_get(b, false);
         errexit();
 #endif
         return onevalue(nil);
@@ -823,7 +823,7 @@ LispObject Lflagpcar(LispObject nil, LispObject a, LispObject b)
     if (qcar(w) == b)
     {
 #ifdef RECORD_GET
-        record_get(b, YES);
+        record_get(b, true);
         errexit();
 #endif
         return onevalue(lisp_true);
@@ -834,7 +834,7 @@ LispObject Lflagpcar(LispObject nil, LispObject a, LispObject b)
     if (pl == nil)
     {
 #ifdef RECORD_GET
-        record_get(b, NO);
+        record_get(b, false);
         errexit();
 #endif
         return onevalue(nil);
@@ -850,7 +850,7 @@ LispObject Lflagpcar(LispObject nil, LispObject a, LispObject b)
             qcdr(pl) = qplist(a);
             qplist(a) = pl;
 #ifdef RECORD_GET
-            record_get(b, YES);
+            record_get(b, true);
             errexit();
 #endif
             return onevalue(lisp_true);
@@ -861,7 +861,7 @@ LispObject Lflagpcar(LispObject nil, LispObject a, LispObject b)
         if (pl == nil)
         {
 #ifdef RECORD_GET
-            record_get(b, NO);
+            record_get(b, false);
             errexit();
 #endif
             return onevalue(nil);
@@ -2184,7 +2184,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                 {
 #ifdef RECORD_GET
                     save_pc(); C_stack = stack;
-                    record_get(A_reg, NO);
+                    record_get(A_reg, false);
                     nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     stack = C_stack; restore_pc();
@@ -2199,7 +2199,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                     {
 #ifdef RECORD_GET
                         save_pc(); C_stack = stack;
-                        record_get(A_reg, NO);
+                        record_get(A_reg, false);
                         nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         stack = C_stack; restore_pc();
@@ -2226,7 +2226,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                     {
 #ifdef RECORD_GET
                         save_pc(); C_stack = stack;
-                        record_get(A_reg, NO);
+                        record_get(A_reg, false);
                         nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         stack = C_stack; restore_pc();
@@ -2239,7 +2239,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                     {
 #ifdef RECORD_GET
                         save_pc(); C_stack = stack;
-                        record_get(A_reg, YES);
+                        record_get(A_reg, true);
                         nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         stack = C_stack; restore_pc();
@@ -2252,7 +2252,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                     {
 #ifdef RECORD_GET
                         save_pc(); C_stack = stack;
-                        record_get(A_reg, NO);
+                        record_get(A_reg, false);
                         nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         stack = C_stack; restore_pc();
@@ -2265,7 +2265,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                     {
 #ifdef RECORD_GET
                         save_pc(); C_stack = stack;
-                        record_get(A_reg, YES);
+                        record_get(A_reg, true);
                         nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         stack = C_stack; restore_pc();
@@ -2279,7 +2279,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                     {
 #ifdef RECORD_GET
                         save_pc(); C_stack = stack;
-                        record_get(A_reg, NO);
+                        record_get(A_reg, false);
                         nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         stack = C_stack; restore_pc();
@@ -2295,7 +2295,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                             qplist(B_reg) = r1;
 #ifdef RECORD_GET
                             save_pc(); C_stack = stack;
-                            record_get(A_reg, NO);
+                            record_get(A_reg, false);
                             nil = C_nil;
                             if (exception_pending()) goto error_exit;
                             stack = C_stack; restore_pc();
@@ -2309,7 +2309,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                         {
 #ifdef RECORD_GET
                             save_pc(); C_stack = stack;
-                            record_get(A_reg, NO);
+                            record_get(A_reg, false);
                             nil = C_nil;
                             if (exception_pending()) goto error_exit;
                             stack = C_stack; restore_pc();
@@ -3109,7 +3109,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                     {
 #ifdef RECORD_GET
                         save_pc(); C_stack = stack;
-                        record_get(B_reg, NO);
+                        record_get(B_reg, false);
                         nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         stack = C_stack; restore_pc();
@@ -3134,7 +3134,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                 {
 #ifdef RECORD_GET
                     save_pc(); C_stack = stack;
-                    record_get(B_reg, NO);
+                    record_get(B_reg, false);
                     nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     stack = C_stack; restore_pc();
@@ -3146,7 +3146,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                 {   ppc = ppc + *xppc;
 #ifdef RECORD_GET
                     save_pc(); C_stack = stack;
-                    record_get(B_reg, YES);
+                    record_get(B_reg, true);
                     nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     stack = C_stack; restore_pc();
@@ -3158,7 +3158,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                 {
 #ifdef RECORD_GET
                     save_pc(); C_stack = stack;
-                    record_get(B_reg, NO);
+                    record_get(B_reg, false);
                     nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     stack = C_stack; restore_pc();
@@ -3170,7 +3170,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                 {   ppc = ppc + *xppc;
 #ifdef RECORD_GET
                     save_pc(); C_stack = stack;
-                    record_get(B_reg, YES);
+                    record_get(B_reg, true);
                     nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     stack = C_stack; restore_pc();
@@ -3183,7 +3183,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                 {
 #ifdef RECORD_GET
                     save_pc(); C_stack = stack;
-                    record_get(B_reg, NO);
+                    record_get(B_reg, false);
                     nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     stack = C_stack; restore_pc();
@@ -3199,7 +3199,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                         ppc = ppc + *xppc;
 #ifdef RECORD_GET
                         save_pc(); C_stack = stack;
-                        record_get(B_reg, YES);
+                        record_get(B_reg, true);
                         nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         stack = C_stack; restore_pc();
@@ -3212,7 +3212,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                     {
 #ifdef RECORD_GET
                         save_pc(); C_stack = stack;
-                        record_get(B_reg, NO);
+                        record_get(B_reg, false);
                         nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         stack = C_stack; restore_pc();
@@ -3258,7 +3258,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                     {
 #ifdef RECORD_GET
                         save_pc(); C_stack = stack;
-                        record_get(B_reg, NO);
+                        record_get(B_reg, false);
                         nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         stack = C_stack; restore_pc();
@@ -3284,7 +3284,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                 {   ppc = ppc + *xppc;
 #ifdef RECORD_GET
                     save_pc(); C_stack = stack;
-                    record_get(B_reg, NO);
+                    record_get(B_reg, false);
                     nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     stack = C_stack; restore_pc();
@@ -3296,7 +3296,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                 {
 #ifdef RECORD_GET
                     save_pc(); C_stack = stack;
-                    record_get(B_reg, YES);
+                    record_get(B_reg, true);
                     nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     stack = C_stack; restore_pc();
@@ -3308,7 +3308,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                 {   ppc = ppc + *xppc;
 #ifdef RECORD_GET
                     save_pc(); C_stack = stack;
-                    record_get(B_reg, NO);
+                    record_get(B_reg, false);
                     nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     stack = C_stack; restore_pc();
@@ -3320,7 +3320,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                 {
 #ifdef RECORD_GET
                     save_pc(); C_stack = stack;
-                    record_get(B_reg, YES);
+                    record_get(B_reg, true);
                     nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     stack = C_stack; restore_pc();
@@ -3333,7 +3333,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                 {   ppc = ppc + *xppc;
 #ifdef RECORD_GET
                     save_pc(); C_stack = stack;
-                    record_get(B_reg, NO);
+                    record_get(B_reg, false);
                     nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     stack = C_stack; restore_pc();
@@ -3348,7 +3348,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                         qplist(A_reg) = r1;
 #ifdef RECORD_GET
                         save_pc(); C_stack = stack;
-                        record_get(B_reg, YES);
+                        record_get(B_reg, true);
                         nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         stack = C_stack; restore_pc();
@@ -3361,7 +3361,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                     {   ppc = ppc + *xppc;
 #ifdef RECORD_GET
                         save_pc(); C_stack = stack;
-                        record_get(B_reg, NO);
+                        record_get(B_reg, false);
                         nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         stack = C_stack; restore_pc();
@@ -4828,7 +4828,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
         {
 #ifdef RECORD_GET
             save_pc(); C_stack = stack;
-            record_get(A_reg, NO);
+            record_get(A_reg, false);
             nil = C_nil;
             if (exception_pending()) goto error_exit;
             stack = C_stack; restore_pc();
@@ -4843,7 +4843,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                 {
 #ifdef RECORD_GET
                     save_pc(); C_stack = stack;
-                    record_get(A_reg, NO);
+                    record_get(A_reg, false);
                     nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     stack = C_stack; restore_pc();
@@ -4874,7 +4874,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
             {
 #ifdef RECORD_GET
                 save_pc(); C_stack = stack;
-                record_get(A_reg, NO);
+                record_get(A_reg, false);
                 nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 stack = C_stack; restore_pc();
@@ -4887,7 +4887,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
             {
 #ifdef RECORD_GET
                 save_pc(); C_stack = stack;
-                record_get(A_reg, YES);
+                record_get(A_reg, true);
                 nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 stack = C_stack; restore_pc();
@@ -4900,7 +4900,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
             {
 #ifdef RECORD_GET
                 save_pc(); C_stack = stack;
-                record_get(A_reg, NO);
+                record_get(A_reg, false);
                 nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 stack = C_stack; restore_pc();
@@ -4913,7 +4913,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
             {
 #ifdef RECORD_GET
                 save_pc(); C_stack = stack;
-                record_get(A_reg, YES);
+                record_get(A_reg, true);
                 nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 stack = C_stack; restore_pc();
@@ -4927,7 +4927,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
             {
 #ifdef RECORD_GET
                 save_pc(); C_stack = stack;
-                record_get(A_reg, NO);
+                record_get(A_reg, false);
                 nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 stack = C_stack; restore_pc();
@@ -4943,7 +4943,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                     qplist(B_reg) = r1;
 #ifdef RECORD_GET
                     save_pc(); C_stack = stack;
-                    record_get(A_reg, YES);
+                    record_get(A_reg, true);
                     nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     stack = C_stack; restore_pc();
@@ -4957,7 +4957,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                 {
 #ifdef RECORD_GET
                     save_pc(); C_stack = stack;
-                    record_get(A_reg, NO);
+                    record_get(A_reg, false);
                     nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     stack = C_stack; restore_pc();
@@ -5650,7 +5650,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
 // CATCH or an UNWIND-PROTECT marker.
 //
         for (;;)
-        {   unwind_stack(((LispObject *)((intptr_t)entry_stack & ~(intptr_t)1)), YES);
+        {   unwind_stack(((LispObject *)((intptr_t)entry_stack & ~(intptr_t)1)), true);
             if (C_stack == ((LispObject *)((intptr_t)entry_stack & ~(intptr_t)1)))
             {   w = 0;
                 break;

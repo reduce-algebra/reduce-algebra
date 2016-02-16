@@ -54,11 +54,6 @@
 
 #define SIXTY_FOUR_BIT (sizeof(intptr_t) == 8)
 
-typedef int                 CSLbool;
-
-#define YES                 1
-#define NO                  0
-
 #define CSL_IGNORE(x)       ((void)(x))
 
 //
