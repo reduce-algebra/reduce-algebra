@@ -287,248 +287,9 @@ static bool descend_symbols = true;
 // code and do that.
 
 // I will need a hash table that records information about items in the
-// heap that are visited several times. I build this using Cuckoo hashing
-// where each key can end up in one of just two locations. This will
-// manage to hold data with maximum hash occupancy approaching 50%. Since
-// a Reduce image only ends up with around 7000 repeats the size here is not
-// a terrible problem. With this scheme all hash lookups use just one or
-// two probes, and especially usefully all unsuccessful probes use just
-// two probes -- using fairly simple-to-compute hash functions.
+// heap that are visited several times. I use the one from inthash.cpp.
 
-static size_t hashsize = 0, hashshift = 0, hashcount = 0;
-static bool rehashing = false;
-static uintptr_t *hash = NULL;
-static size_t *payload = NULL;
-
-#define NULLKEY ((uintptr_t)NULL)
-
-#define MULTIPLIER1  ((uintptr_t)UINT64_C(0x1010101010101010))
-static uintptr_t MULTIPLIER2 =  (uintptr_t)UINT64_C(0x9e3779b99e377741);
-
-#define H1(p) ((MULTIPLIER1*(uintptr_t)(p)) >> hashshift)
-#define H2(p) ((MULTIPLIER2*(uintptr_t)(p)) >> hashshift)
-
-// The lookup function is especially simple because it only has to
-// check two locations in the table. This code return (size_t)(-1) if
-// the key is not present, and otherwise the offset in the hash table
-// where it was found. Pretty much the entire motivation of the code that
-// inserts data into the table is to keep this lookup code simple and
-// fast. Note that this is cheap to use even for unsuccessful lookups.
-
-static inline size_t check_repeat_hash(uintptr_t p)
-{
-// The commented out print statements were used at an early stage
-// in writing and debugging this code.
-//  printf("check_repeat_hash %" PRIxPTR, p);
-    size_t h = H1(p);
-    if (hash[h] == p)
-    {   //printf(" => %" PRIxPTR "\n", (intptr_t)h);
-        return h;
-    }
-    h = H2(p);
-    if (hash[h] == p)
-    {   //printf(" => %" PRIxPTR "\n", (intptr_t)h);
-        return h;
-    }
-    else
-    {   //printf(" => -1\n");
-        return (size_t)(-1);
-    }
-}
-
-// Before using the hash table it is necessary to call inithash(), which
-// sets up an initial table of size 16384 entries. On a 64-bit machine this
-// occupies 128 Kbytes. It will suffice for up to around 8000 entries.
-// The table is allocated using malloc(), and as necessary is expanded
-// using realloc.
-
-static int cascade_limit = 0;
-
-void init_writer_hash()
-{
-    int hashbits = 14;  // start off table 16384 entries long
-// For small tables I will allow up to 40 probes to insert data. Each
-// time the table size is doubled I will increment this by 2. The value
-// used is a trade-off between faster inserts and more need for increases
-// in the table size. The expected number of probes for an insert is
-// rather small.
-    cascade_limit = 40;
-    hashsize = 1 << hashbits;
-    hashshift = 8*sizeof(uintptr_t) - hashbits;
-    hash = (uintptr_t *)malloc(hashsize*sizeof(uintptr_t));
-    for (size_t i=0; i<hashsize; i++) hash[i] = NULLKEY;    
-// While the hash table is being created I merely add keys without any
-// associated values. At a later stage I will allocate a parallel table
-// to hold values.
-    payload = NULL;
-    hashcount = 0;
-    rehashing = false;
-}
-
-void release_writer_hash()
-{
-    free(hash);
-    hash = NULL;
-    free(payload);
-    payload = NULL;
-}
-
-// This inserts an item in the table. On success this returns NULLKEY,
-// while on failure it returns a key (not necessarily the one you had
-// originally been trying to insert) that should be but is not now in
-// the table. This whole scheme makes the table suitable for use as a
-// representation of a hash-set.
-//
-// There are many variations on the concept of cuckoo hashing, and the
-// code here implements just one. It may not be the best, but if it works
-// for me I will remain happy. Note that adding entries to the table
-// only happens while writing out the serialized form of a structure and
-// the hash table only has to store those objects that have multiple
-// references to them - and even for a complete Reduce image there are
-// really not very many. So I do not expect this code to end up strained.
-
-static uintptr_t add_to_repeat_hash(uintptr_t p)
-{
-//  printf("add_to_repeat_hash %" PRIxPTR "\n", p);
-    int tries = 0;
-    size_t h = 0;
-    do
-    {   size_t h1 = H1(p), h2 = H2(p);
-        uintptr_t w1, w2;
-// If the first choice location for this key is available for use then
-// insert the key there. For lightly loaded tables this will happen quite
-// a lot of the time so I make it the first case checked and hence the
-// fastest path through the code. Note that if the item is in the table
-// already in its second choice place and the first choice location is
-// empty this would end up leaving the item in there twice. To keep myself
-// fully safe I will check for that case and not insert.
-        if ((w1 = hash[h1]) == NULLKEY)
-        {   if (hash[h2] != p)  // Key may already be present in other slot.
-            {   hash[h1] = p;
-                hashcount++;
-            }
-            return NULLKEY;
-        }
-        else if (w1 == p) return NULLKEY; // Already present in slot 1.
-        else if ((w2 = hash[h2]) == NULLKEY)
-        {   hash[h2] = p;
-            hashcount++;
-            return NULLKEY;
-        }
-        else if (w2 == p) return NULLKEY; // Already present in slot 2.
-// Both the locations I would like to go in are busy. I need to apply
-// the "cuckoo" strategy and move something that is already in the table.
-//
-// On the first move of an insert I will always try putting the new key
-// in its first choice position. When I move something I record where it
-// had just been ejected from. That must have been one of the places it
-// hashed to so I try to move it to the other location. Of course in some
-// cases these will be the same place, and in others one can end up with
-// a cycle of ejections, but in happy cases this will take me for an
-// almost random walk through the table, and that will then end at an empty
-// cell.
-        if (h1 == h)
-        {   hash[h2] = p;
-            p = w2;
-            h = h2;
-        }
-        else
-        {   hash[h1] = p;
-            p = w1;
-            h = h1;
-        }
-// Sometimes there will be a cycle in the cascade or ejections, so I
-// will give up if I end up trying too hard. If I set a large value for
-// cascade_limit I will sometimes achieve a slighly higher table occupancy
-// before I need to expand the table, but at the cost of more work inserting
-// items. So the limit to use is a compromise, but not one where the
-// effects either way are terribly serious.
-    } while (++tries < cascade_limit);
-//
-// Here I have failed to insert my new key in the existing table. If this
-// happens during the rehashing phase I should report it as a failure.
-// Note that the key p is at present still pending and not inserted, but that
-// this p may not be the one you were originally inserting but instead
-// something that has been displaced.
-//
-    if (rehashing) return p; // Return the unplaced key.
-// I need to recover from a failed insert. I will try several
-// options. If the table is less than 1/3 full then up to 4 times
-// I will change the multiplier that determines my second hash function.
-// If either I have already used up those tries or if the table
-// is at least 1/3 full I will double the table size. 
-    int multiplier_changes = 0;
-    for (;;)  // a big outer loop that keeps on until I have managed to fix
-    {         // everything up.
-        if (hashcount < hashsize/3 && multiplier_changes < 3)
-        {   h = 0;
-// Here the table is less than 1/3 full but I failed to insert. Well
-// the fact that it is that empty means I know I can find somewhere to
-// place the new key.
-            while (hash[h] != NULLKEY) h++;
-            hash[h] = p;
-            hashcount++;
-// Change the second hash function. The sequence of multipliers used are
-// generated using a linear congruential generator known to behave well
-// for 64-bit arithmetic, so its low 32-bits should work reasonably well
-// on a 32-bit system as well.
-            MULTIPLIER2 =  (uintptr_t)
-                (UINT64_C(2862933555777941757)*MULTIPLIER2 +
-                 UINT64_C(3037000493));
-            multiplier_changes++;
-        }
-        else
-        {   size_t new_hashsize = 2*hashsize;
-            uintptr_t *new_hash =
-                (uintptr_t *)realloc(hash, new_hashsize*sizeof(uintptr_t));
-            if (new_hash == NULL)
-            {   printf("\n+++ Run out of memory\n");
-                abort();
-            }
-// realloc does not initialise the expanded part of the vector, so I will
-// need to fill it with NULLs before I progress further.
-            for (size_t i=hashsize+1; i<new_hashsize; i++)
-                new_hash[i] = NULLKEY;
-// Now the table has been expanded I know I have a spare place to put the
-// item I was trying to insert. And because I am about to rehash everything
-// it does not matter that it gets put somewhere rather arbitrary.
-            hash = new_hash;
-            hash[hashsize] = p;
-            hashcount++;
-            hashsize = new_hashsize;
-            hashshift--;
-            cascade_limit += 2;
-// After expanding the hash table I will allow myself another 4 different
-// hash functions before I feel obliged to try to expand the table some more.
-            multiplier_changes = 0;
-        }
-// The rehashing here scans the whole table. This may re-hash some keys
-// several times - I might have expected that I would find all old keys in
-// the first half of the table so I could only scan that. But because of
-// the remote possibility of insertion failure here I scan everything, as
-// is necessary after my recovery from that. Note that this can leave some
-// keys in their second choice slot with the first choice location empty.
-// The rest of my code here means that this is not a problem.
-        rehashing = true;
-        bool rehashing_success = true;
-        for (size_t i=0; i<hashsize; i++)
-        {   p = hash[i];
-            if (p == NULLKEY) continue; // empty slot.
-// Remove and then (re-)insert the item.
-            hash[i] = NULLKEY;
-            hashcount--;
-            if ((p = add_to_repeat_hash(p)) == NULLKEY) continue;
-// p is now a key that us is not in the table. There is no point
-// continuing this pass of re-hashing.
-            rehashing_success = false;
-            break;
-        }
-        if (rehashing_success) break;
-// Once again here p is a key that still needs to be inserted.
-    }
-    rehashing = false;
-    return NULLKEY;
-}
+static inthash repeat_hash;
 
 
 LispObject *repeat_heap = NULL;
@@ -557,9 +318,7 @@ void reader_setup_repeats(size_t n)
 
 void writer_setup_repeats()
 {
-    payload = (size_t *)malloc(hashsize*sizeof(size_t *));
-    for (size_t i=0; i<hashsize; i++) payload[i] = 0;
-    repeat_heap_size = hashcount;
+    repeat_heap_size = repeat_hash.count;
     repeat_count = 0;
     repeat_heap =
         (LispObject *)malloc(repeat_heap_size*sizeof(LispObject));
@@ -623,13 +382,13 @@ LispObject reader_repeat_new(LispObject x)
 size_t find_index_in_repeats(size_t h)
 {
     printf("find_index_in_repeats %" PRIxPTR "\n", (uintptr_t)h);
-    size_t n = payload[h];
+    size_t n = hash_get_value(&repeat_hash, h);
     printf("payload %" PRIxPTR "\n", (uintptr_t)n);
 // if n == 0 then this is the first time we have seen this item. So it
 // needs to be inserted into repeat_hash.
     if (n == 0)
     {   n = ++repeat_count;
-        payload[h] = n;
+        hash_set_value(&repeat_hash, h, n);
         printf("set payload %" PRIxPTR "\n", (uintptr_t)n);
     }
 // I now need to perform the same move-to-top operation that will be performed
@@ -641,9 +400,9 @@ size_t find_index_in_repeats(size_t h)
     {   size_t n2 = n/2;           // parent in binary heap
         LispObject w = repeat_heap[n];
         repeat_heap[n] = repeat_heap[n2];
-        payload[repeat_heap[n2]] = n;
+        hash_set_value(&repeat_hash, repeat_heap[n2],  n);
         repeat_heap[n2] = w;
-        payload[w] = n2;
+        hash_set_value(&repeat_hash, w, n2);
         if (n2 == 1) return h;  // item has been moved to front
         n = n2;
     }
@@ -1759,7 +1518,7 @@ down:
     default:
     case TAG_CONS:
         if (address_used(p - TAG_CONS))
-        {   add_to_repeat_hash(p);
+        {   hash_insert(&repeat_hash, p);
             goto up;
         }
         mark_address_as_used(p - TAG_CONS);
@@ -1771,7 +1530,7 @@ down:
 
     case TAG_SYMBOL:
         if (address_used(p - TAG_SYMBOL))
-        {   add_to_repeat_hash(p);
+        {   hash_insert(&repeat_hash, p);
             goto up;
         }
         mark_address_as_used(p - TAG_SYMBOL);
@@ -1795,7 +1554,7 @@ down:
 
     case TAG_VECTOR:
         if (address_used(p - TAG_VECTOR))
-        {   add_to_repeat_hash(p);
+        {   hash_insert(&repeat_hash, p);
             goto up;
         }
         mark_address_as_used(p - TAG_VECTOR);
@@ -1818,7 +1577,7 @@ down:
 
     case TAG_NUMBERS:
         if (address_used(p - TAG_NUMBERS))
-        {   add_to_repeat_hash(p);
+        {   hash_insert(&repeat_hash, p);
             goto up;
         }
         mark_address_as_used(p - TAG_NUMBERS);
@@ -1833,7 +1592,7 @@ down:
 
     case TAG_BOXFLOAT:
         if (address_used(p - TAG_BOXFLOAT))
-        {   add_to_repeat_hash(p);
+        {   hash_insert(&repeat_hash, p);
             goto up;
         }
         mark_address_as_used(p - TAG_BOXFLOAT);
@@ -1949,8 +1708,8 @@ void write_data(LispObject p)
     size_t i;
 down:
     if (p == 0) p = SPID_NIL; // reload as a SPID.
-    if ((i = check_repeat_hash(p)) != (size_t)(-1))
-    {   if (payload[i] != 0)
+    if ((i = hash_lookup(&repeat_hash, p)) != (size_t)(-1))
+    {   if (hash_get_value(&repeat_hash, i) != 0)
         {   size_t n = find_index_in_repeats(i);
             char msg[20];
             sprintf(msg, "back %" PRIuPTR, (uintptr_t)n);
@@ -2352,13 +2111,13 @@ LispObject Lserialize(LispObject nil, LispObject a)
     }
     descend_symbols = false;
     sercounter = 0;
-    init_writer_hash();
+    hash_init(&repeat_hash, 13); // allow 8K entries to start with.
     scan_data(a);
     release_map();
     writer_setup_repeats();
     write_u64(repeat_heap_size);
     write_data(a);
-    release_writer_hash();
+    hash_finalize(&repeat_hash);
     if (repeat_heap_size != 0)
     {   repeat_heap_size = 0;
         free(repeat_heap);
