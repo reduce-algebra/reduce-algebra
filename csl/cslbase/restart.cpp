@@ -3174,7 +3174,7 @@ static setup_type const restart_setup[] =
 };
 
 
-static void create_symbols(setup_type const s[], bool restart_flag)
+static void create_symbols(setup_type const s[], int restart_flag)
 {   int i;
     for (i=0; s[i].name != NULL; i++)
         make_symbol(s[i].name, restart_flag, s[i].one, s[i].two, s[i].n);
@@ -3187,7 +3187,7 @@ static void count_symbols(setup_type const s[])
     for (i=0; s[i].name != NULL; i++) defined_symbols++;
 }
 
-static void set_up_variables(bool restart_flag);
+static void set_up_variables(int restart_flag);
 
 #ifndef EMBEDDED
 static setup_type_1 *find_def_table(LispObject mod, LispObject checksum);
@@ -4957,7 +4957,7 @@ static void cold_setup()
     procstackp = 0;
 }
 
-void set_up_functions(bool restart_flag)
+void set_up_functions(int restart_flag)
 {
 //
 // All symbols that have a pointer to C code in their function cell must
@@ -5067,7 +5067,7 @@ static int alpha0(const void *a, const void *b)
 
 #endif
 
-static void set_up_variables(bool restart_flag)
+static void set_up_variables(int restart_flag)
 {   LispObject nil = C_nil, w, w1;
     int i;
 #ifdef COMMON

@@ -814,7 +814,7 @@ int main(void) {
 
 // [End of crc64 source code]
 
-// A raw CSL Lisp provides around 750 entrypounts, while a full copy of
+// A raw CSL Lisp provides around 850 entrypounts, while a full copy of
 // Reduce with all the files u01.cpp to u60.cpp populated ends up with
 // somewhat under 4000 entrypoints. At present I am using fixed size
 // tables here and fixed hash functions. This is in principle unsatisfactory
@@ -822,9 +822,9 @@ int main(void) {
 // not to worry about that now.
 // 
 
-#define NCODEPOINTERS 5000
+#define NCODEPOINTERS 5000U
 
-int ncodepointers = 0;
+size_t ncodepointers = 0;
 intptr_t codepointers[NCODEPOINTERS];
 
 inthash codehash;
@@ -832,6 +832,11 @@ inthash codehash;
 bool insert_codepointer(uintptr_t x)
 {   if (hash_lookup(&codehash, x) != (size_t)(-1)) return false;
     hash_set_value(&codehash, hash_insert(&codehash, x), ncodepointers);
+    if (ncodepointers >= NCODEPOINTERS)
+    {   printf("Too many built-in functions. Please increase NCODEPOINTERS\n");
+        printf("in serialize.cpp. Current value is %u\n", NCODEPOINTERS);
+        abort();
+    }
     codepointers[ncodepointers++] = x;
     return true;
 }
@@ -855,13 +860,47 @@ void set_up_function_tables()
     printf("Setting up functions table\n");
     hash_init(&codehash);
     ncodepointers = 0;
+// The code here must find all the function addresses that are built
+// into CSL that might legitimately end up within a heap image. The
+// code sets up a 64-bit CRC code this is intended to be a signature
+// of just what is used, and so can help ensure that a heap image dumped
+// buy one system does not get re-loaded by an incompatible one.
+// Each entrypoint is allocated a sequence number and everything is
+// collected both in a hash tabke (codehash) that can map code-pointers
+// to index values, and a table (codepointers) that is a single
+// indexable array of the entrypoints. For Reduce there are somewhat under
+// 4000 pointers to handle here, so costs are not too severe.
+    for (entry_point1 *p = &entries_table1[1]; p->p!=NULL; p++)
+    {   insert_codepointer((uintptr_t)p->p);
+        crc = crc64(crc, (const unsigned char *)p->s, strlen(p->s));
+    }
+    for (entry_point2 *p = &entries_table2[1]; p->p!=NULL; p++)
+    {   insert_codepointer((uintptr_t)p->p);
+        crc = crc64(crc, (const unsigned char *)p->s, strlen(p->s));
+    }
+    for (entry_pointn *p = &entries_tablen[1]; p->p!=NULL; p++)
+    {   insert_codepointer((uintptr_t)p->p);
+        crc = crc64(crc, (const unsigned char *)p->s, strlen(p->s));
+    }
+    for (entry_pointn *p = &entries_tableio[1]; p->p!=NULL; p++)
+    {   insert_codepointer((uintptr_t)p->p);
+        crc = crc64(crc, (const unsigned char *)p->s, strlen(p->s));
+    }
+    for (n_args **p = zero_arg_functions; *p!=NULL; p++)
+        insert_codepointer((uintptr_t)(uintptr_t)*p);
+    for (one_args **p = one_arg_functions; *p!=NULL; p++)
+        insert_codepointer((uintptr_t)(uintptr_t)*p);
+    for (two_args **p = two_arg_functions; *p!=NULL; p++)
+        insert_codepointer((uintptr_t)(uintptr_t)*p);
+    for (n_args **p = three_arg_functions; *p!=NULL; p++)
+        insert_codepointer((uintptr_t)(uintptr_t)*p);
     const setup_type **p = setup_tables;
     while (*p != NULL) crc = use_setup(crc, *p++);
-    p++;
+    p++;  // setup_tables is in two parts, separated by a NULL.
     while (*p != NULL) crc = use_setup(crc, *p++);
+    printf("There are %u entries in the code pointer table\n",
+        (unsigned int)ncodepointers);
     printf("CRC for table of defined entrypoints = %" PRIx64 "\n", crc);
-// I must NOT finalize the hash table here - if at a later stage I
-// preserve am image file I will use it.
 }
 
 void *read_function()

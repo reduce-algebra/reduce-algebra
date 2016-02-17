@@ -711,7 +711,7 @@ typedef struct entry_pointn
 extern entry_point1 entries_table1[];
 extern entry_point2 entries_table2[];
 extern entry_pointn entries_tablen[];
-extern entry_pointn entries_table_io[];
+extern entry_pointn entries_tableio[];
 
 extern void set_up_entry_lookup(void);
 extern int32_t code_up_fn1(one_args *e);
@@ -828,7 +828,7 @@ extern "C" void record_get(LispObject tag, bool found);
 
 extern int         primep(int32_t);
 extern void        adjust_all(void);
-extern void        set_up_functions(bool restartp);
+extern void        set_up_functions(int restartp);
 extern void        get_user_files_checksum(unsigned char *);
 extern "C" LispObject acons(LispObject a, LispObject b, LispObject c);
 extern "C" LispObject ash(LispObject a, LispObject b);
