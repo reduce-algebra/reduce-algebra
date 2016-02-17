@@ -584,6 +584,8 @@ symbolic procedure begin;
 %       prin2 ", ";
 %       prin2 date!*;
 %       prin2t " ...";
+        if memq('experiment, lispsystem!*) then
+            printc "*** EXPERIMENTAL version...";
         if getd 'addsq then <<
 % I assume here that this is an algebra system if ADDSQ is defined, and
 % in that case process an initialisation file. Starting up without ADDSQ
