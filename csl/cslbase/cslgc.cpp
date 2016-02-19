@@ -292,7 +292,7 @@ top:
         case TAG_CONS:      // Already processed
         case TAG_FIXNUM:    // Invalid here
         case TAG_HDR_IMMED: // Invalid here
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:    // Invalid here
 #endif
             term_printf("\nBad object in VALIDATE (%.8lx)\n", (long)p);
@@ -1192,7 +1192,7 @@ top:
         case TAG_CONS:      // Already processed
         case TAG_FIXNUM:    // Invalid here
         case TAG_HDR_IMMED: // Invalid here
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:    // Invalid here
 #endif
             // Fatal error really called for here
@@ -1813,16 +1813,12 @@ static void relocate_vecheap(void)
                             user_vectors += doubleword_align_up(length_of_header(h));
                         else other_mem += doubleword_align_up(length_of_header(h));
                         break;
-#ifdef EXPERIMENT
                     case TYPE_STRING_1:
                     case TYPE_STRING_2:
                     case TYPE_STRING_3:
                     case TYPE_STRING_4:
 // length_of_header() here gives the length rounded up to a multiple of 4
 // bytes so is quite appropriate here.
-#else
-                    case TYPE_STRING:
-#endif
                         strings += doubleword_align_up(length_of_header(h));
                         break;
                     case TYPE_BIGNUM:
@@ -2041,14 +2037,10 @@ static void copy(LispObject *p)
                 {   len = doubleword_align_up(length_of_header(h));
                     switch (type_of_header(h))
                     {
-#ifdef EXPERIMENT
                         case TYPE_STRING_1:
                         case TYPE_STRING_2:
                         case TYPE_STRING_3:
                         case TYPE_STRING_4:
-#else
-                        case TYPE_STRING:
-#endif
                             strings += len; break;
                         case TYPE_BIGNUM:
                             big_numbers += len; break;

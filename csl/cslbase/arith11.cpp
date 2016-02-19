@@ -1,4 +1,4 @@
-//  arith11.cpp                       Copyright (C) 1990-2015 Codemist Ltd
+//  arith11.cpp                       Copyright (C) 1990-2016 Codemist Ltd
 
 //
 // Arithmetic functions.
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -178,7 +178,7 @@ LispObject Cremainder(LispObject a, LispObject b)
 // support that.  Standard Lisp is only concerned with fixnums and
 // bignums, but can tolerate the extra generality.
 //
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case TAG_SFLOAT:
                     return remis(a, b);
 #endif
@@ -215,7 +215,7 @@ LispObject Cremainder(LispObject a, LispObject b)
                 default:
                     return aerror1("Bad arg for remainder",  b);
             }
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -251,7 +251,7 @@ LispObject Cremainder(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return rembi(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return rembs(a, b);
 #endif
@@ -275,7 +275,7 @@ LispObject Cremainder(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return remri(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return remrs(a, b);
 #endif
@@ -317,7 +317,7 @@ LispObject Cremainder(LispObject a, LispObject b)
 //
                 case TAG_FIXNUM:
                     return remfi(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case TAG_SFLOAT:
                     return remfs(a, b);
 #endif
@@ -504,7 +504,7 @@ LispObject modulus(LispObject a, LispObject b)
 // support that.  Standard Lisp is only concerned with fixnums and
 // bignums.
 //
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case TAG_SFLOAT:
                     return modis(a, b);
 #endif
@@ -524,7 +524,7 @@ LispObject modulus(LispObject a, LispObject b)
                 default:
                     return aerror1("Bad arg for mod",  b);
             }
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -560,7 +560,7 @@ LispObject modulus(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return modbi(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return modbs(a, b);
 #endif
@@ -584,7 +584,7 @@ LispObject modulus(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return modri(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return modrs(a, b);
 #endif
@@ -611,7 +611,7 @@ LispObject modulus(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return modfi(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case TAG_SFLOAT:
                     return modfs(a, b);
 #endif
@@ -645,7 +645,7 @@ bool zerop(LispObject a)
             if (is_complex(a) && zerop(real_part(a)))
                 return zerop(imag_part(a));
             else return false;
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
 //
 // The code here assumes that the the floating point number zero
@@ -670,7 +670,7 @@ bool onep(LispObject a)
             if (is_complex(a) && onep(real_part(a)))
                 return zerop(imag_part(a));
             else return false;
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
         {   Float_union w;
             w.f = (float)1.0;
@@ -692,7 +692,7 @@ bool minusp(LispObject a)
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             return ((int32_t)a < 0);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
         {   Float_union aa;
             aa.i = a - TAG_SFLOAT;
@@ -728,7 +728,7 @@ bool plusp(LispObject a)
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             return (a > fixnum_of_int(0));
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
         {   Float_union aa;
             aa.i = a - TAG_SFLOAT;
@@ -769,7 +769,7 @@ bool plusp(LispObject a)
 
 static bool numeqis(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return 0;
 #else
     Float_union bb;
@@ -923,7 +923,7 @@ static bool numeqsr(LispObject a, LispObject b)
 
 static bool numeqsf(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return 0;
 #else
     Float_union aa;
@@ -1008,7 +1008,7 @@ bool numeq2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return (a == b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case TAG_SFLOAT:
                     return numeqis(a, b);
 #endif
@@ -1030,7 +1030,7 @@ bool numeq2(LispObject a, LispObject b)
                 default:
                     differentb;
             }
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -1071,7 +1071,7 @@ bool numeq2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return 0;
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return numeqbs(a, b);
 #endif
@@ -1097,7 +1097,7 @@ bool numeq2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return 0;
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return numeqrs(a, b);
 #endif
@@ -1123,7 +1123,7 @@ bool numeq2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return numeqci(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return numeqcs(a, b);
 #endif
@@ -1152,7 +1152,7 @@ bool numeq2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return numeqfi(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case TAG_SFLOAT:
                     return numeqfs(a, b);
 #endif

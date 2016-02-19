@@ -1,4 +1,4 @@
-//  arith06.cpp                       Copyright (C) 1990-2015 Codemist Ltd
+//  arith06.cpp                       Copyright (C) 1990-2016 Codemist Ltd
 
 //
 // Arithmetic functions... lots of Lisp entrypoints.
@@ -6,7 +6,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1299,7 +1299,7 @@ LispObject Lrandom_2(LispObject nil, LispObject a, LispObject bb)
         errexit();
         return onevalue(a);
     }
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
     if (is_sfloat(a))
     {   Float_union d;
         float v;

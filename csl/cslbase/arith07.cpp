@@ -1,4 +1,4 @@
-//  arith07.cpp                       Copyright (C) 1990-2015 Codemist Ltd
+//  arith07.cpp                       Copyright (C) 1990-2016 Codemist Ltd
 
 //
 // Arithmetic functions.  negation plus a load of Common Lisp things
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -135,7 +135,7 @@ LispObject negate(LispObject a)
             if (aa != 0x08000000) return fixnum_of_int(aa);
             else return make_one_word_bignum(aa);
         }
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
         {   Float_union aa;
             aa.i = a - TAG_SFLOAT;

@@ -771,7 +771,7 @@ LispObject Lfixp(LispObject nil, LispObject a)
 
 LispObject Lfloatp(LispObject nil, LispObject p)
 {   int tag = TAG_BITS & (int)p;
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOATS
     if (tag == TAG_SFLOAT) return onevalue(lisp_true);
 #endif
 // Beware the next line if I move boxed floats to within TAG_NUMBERS
@@ -781,7 +781,7 @@ LispObject Lfloatp(LispObject nil, LispObject p)
 
 static LispObject Lshort_floatp(LispObject nil, LispObject p)
 {
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOATS
     int tag = TAG_BITS & (int)p;
     if (tag == TAG_SFLOAT) return onevalue(lisp_true);
     else return onevalue(nil);
@@ -1810,24 +1810,16 @@ LispObject getvector(int tag, int type, size_t size)
                 case TAG_VECTOR:
                     switch (type)
                     {
-#ifdef EXPERIMENT
                         case TYPE_STRING_1:
                         case TYPE_STRING_2:
                         case TYPE_STRING_3:
                         case TYPE_STRING_4:
-#else
-                        case TYPE_STRING:
-#endif
                             sprintf(msg, "string(%ld)", (long)size);
                             break;
-#ifdef EXPERIMENT
                         case TYPE_BPS_1:
                         case TYPE_BPS_2:
                         case TYPE_BPS_3:
                         case TYPE_BPS_4:
-#else
-                        case TYPE_BPS:
-#endif
                             sprintf(msg, "BPS(%ld)", (long)size);
                             break;
                         case TYPE_SIMPLE_VEC:
@@ -1853,11 +1845,7 @@ LispObject getvector(int tag, int type, size_t size)
             continue;
         }
         vfringe = (LispObject)(r + alloc_size);
-#ifdef EXPERIMENT
         *((Header *)r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
-#else
-        *((Header *)r) = type + (size << 10) + TAG_HDR_IMMED;
-#endif
 //
 // DANGER: the vector allocated here is left uninitialised at this stage.
 // This is OK if the vector will contain binary information, but if it
@@ -2160,11 +2148,7 @@ LispObject Ltimeofday(LispObject nil, int nargs, ...)
 // This will be the header for a string of length exactly 24. It is
 // used because a valid date will be a string of just that length.
 
-#ifdef EXPERIMENT
 #define STR24HDR (TAG_HDR_IMMED+TYPE_STRING_4+((24+CELL)<<(Tw+5)))
-#else
-#define STR24HDR (TAG_HDR_IMMED+TYPE_STRING+((24+CELL)<<10))
-#endif
 
 static int getint(char *p, int len)
 {   int r = 0;

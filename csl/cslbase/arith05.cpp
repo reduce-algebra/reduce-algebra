@@ -1,4 +1,4 @@
-//  arith05.cpp                       Copyright (C) 1990-2015 Codemist Ltd
+//  arith05.cpp                       Copyright (C) 1990-2016 Codemist Ltd
 
 //
 // Arithmetic functions.
@@ -6,7 +6,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -167,7 +167,7 @@ uint32_t Idiv10_9(uint32_t *qp, uint32_t high, uint32_t low)
 
 static bool lesseqis(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return 0;
 #else
     Float_union bb;
@@ -193,7 +193,7 @@ static bool lesseqir(LispObject a, LispObject b)
 
 static bool lesseqsi(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return 0;
 #else
     Float_union aa;
@@ -204,7 +204,7 @@ static bool lesseqsi(LispObject a, LispObject b)
 
 static bool lesseqsb(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return 0;
 #else
     Float_union aa;
@@ -215,7 +215,7 @@ static bool lesseqsb(LispObject a, LispObject b)
 
 static bool lesseqsr(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return 0;
 #else
     Float_union aa;
@@ -226,7 +226,7 @@ static bool lesseqsr(LispObject a, LispObject b)
 
 static bool lesseqsf(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return 0;
 #else
     Float_union aa;
@@ -239,7 +239,7 @@ static bool lesseqsf(LispObject a, LispObject b)
 
 static bool lesseqbs(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return 0;
 #else
     Float_union bb;
@@ -292,7 +292,7 @@ static bool lesseqri(LispObject a, LispObject b)
 
 static bool lesseqrs(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return 0;
 #else
     Float_union bb;
@@ -320,7 +320,7 @@ static bool lesseqrr(LispObject a, LispObject b)
 
 static bool lesseqfs(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return 0;
 #else
     Float_union bb;
@@ -349,7 +349,7 @@ bool lesseq2(LispObject a, LispObject b)
             {   case TAG_FIXNUM:
 // For fixnums the comparison can be done directly
                     return ((int32_t)a <= (int32_t)b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case TAG_SFLOAT:
                     return lesseqis(a, b);
 #endif
@@ -369,7 +369,7 @@ bool lesseq2(LispObject a, LispObject b)
                 default:
                     return (bool)aerror2("bad arg for leq", a, b);
             }
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
             switch (b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -404,7 +404,7 @@ bool lesseq2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return lesseqbi(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return lesseqbs(a, b);
 #endif
@@ -428,7 +428,7 @@ bool lesseq2(LispObject a, LispObject b)
                     switch (b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return lesseqri(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return lesseqrs(a, b);
 #endif
@@ -455,7 +455,7 @@ bool lesseq2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return lesseqfi(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case TAG_SFLOAT:
                     return lesseqfs(a, b);
 #endif

@@ -1,11 +1,11 @@
 // serialize.cpp                      Copyright (C) 1990-2016 Codemist Ltd
 
 
-// $Id: version.h 3297 2015-12-14 20:30:04Z arthurcnorman $
+// $Id$
 
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -168,7 +168,6 @@
 // way I can keep this code in the main trunk sources but it should not
 // hurt the existing system.
 
-#ifdef EXPERIMENT
 
 // Codes for use in my (custom) serialisation format.
 //
@@ -2179,6 +2178,5 @@ LispObject Lunserialize(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-#endif    //EXPERIMENT
 
 // end of serialize.cpp

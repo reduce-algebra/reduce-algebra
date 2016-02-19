@@ -84,11 +84,7 @@ LispObject getcodevector(int type, size_t size)
         }
         r = cf - alloc_size;
         codefringe = (LispObject)r;
-#ifdef EXPERIMENT
         *((Header *)r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
-#else
-        *((Header *)r) = type + (size << 10) + TAG_HDR_IMMED;
-#endif
 //
 // codelimit is always 8 bytes above the base of the code-page. The
 // address I need to return for a code-vector points (in a packed way)
@@ -123,11 +119,7 @@ LispObject Lget_bps(LispObject nil, LispObject n)
 {   int32_t n1;
     if (!is_fixnum(n) || (int32_t)n<0) return aerror1("get-bps", n);
     n1 = int_of_fixnum(n);
-#ifdef EXPERIMENT
     n = getcodevector(TYPE_BPS_4, n1+CELL);
-#else
-    n = getcodevector(TYPE_BPS, n1+CELL);
-#endif
     errexit();
     return onevalue(n);
 }
@@ -2080,15 +2072,11 @@ LispObject Lsymbol_name(LispObject nil, LispObject a)
     return onevalue(a);
 }
 
-#if defined COMMON || defined EXPERIMENT
-
 LispObject Lsymbol_package(LispObject nil, LispObject a)
 {   if (!symbolp(a)) return aerror1("symbol-package", a);
     a = qpackage(a);
     return onevalue(a);
 }
-
-#endif
 
 static LispObject Lrestart_lisp2(LispObject nil,
                                  LispObject a, LispObject b)
@@ -2348,7 +2336,7 @@ bool eql_fn(LispObject a, LispObject b)
 // Actually in Common Lisp mode where I have short floats as immediate data
 // I have further pain here with (eql 0.0 -0.0).
 //
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
     if ((a == TAG_SFLOAT && b == (TAG_SFLOAT|(intptr_t)0x80000000)) ||
         (a == (TAG_SFLOAT|(intptr_t)0x80000000) && b == TAG_SFLOAT)) return true;
 #endif
@@ -2400,13 +2388,8 @@ static bool cl_vec_equal(LispObject a, LispObject b)
     intptr_t offa = 0, offb = 0;
     int ta = type_of_header(ha), tb = type_of_header(hb);
     intptr_t la = length_of_header(ha), lb = length_of_header(hb);
-#ifdef EXPERIMENT
     if (is_bitvec_header(ha)) ta = TYPE_BITVEC_1;
     if (is_bitvec_header(hb)) tb = TYPE_BITVEC_1;
-#else
-    if (is_bitvec_header(ha)) ta = TYPE_BITVEC1;
-    if (is_bitvec_header(hb)) tb = TYPE_BITVEC1;
-#endif
     switch (ta)
     {
 //
@@ -2417,31 +2400,22 @@ static bool cl_vec_equal(LispObject a, LispObject b)
 // arrays to compare here I will pretend that they are not strings or
 // bit-vectors and compare using EQ...
 //
-#ifdef EXPERIMENT
         case TYPE_STRING_1:
         case TYPE_STRING_2:
         case TYPE_STRING_3:
         case TYPE_STRING_4:
-#else
-        case TYPE_STRING:
-#endif
             switch (tb)
             {
 // /*
 //  case TYPE_ARRAY:
 //
-#ifdef EXPERIMENT
                 case TYPE_STRING_1:
                 case TYPE_STRING_2:
                 case TYPE_STRING_3:
                 case TYPE_STRING_4:
-#else
-                case TYPE_STRING:
-#endif
-                    goto compare_strings;
+                    got compare_strings;
                 default:return false;
             }
-#ifdef EXPERIMENT
         case TYPE_BITVEC_1:
         case TYPE_BITVEC_2:
         case TYPE_BITVEC_3:
@@ -2474,15 +2448,11 @@ static bool cl_vec_equal(LispObject a, LispObject b)
         case TYPE_BITVEC_30:
         case TYPE_BITVEC_31:
         case TYPE_BITVEC_32:
-#else
-        case TYPE_BITVEC1:
-#endif
             switch (tb)
             {
 // /*
 //  case TYPE_ARRAY:
 //
-#ifdef EXPERIMENT
                 case TYPE_BITVEC_1:
                 case TYPE_BITVEC_2:
                 case TYPE_BITVEC_3:
@@ -2515,19 +2485,14 @@ static bool cl_vec_equal(LispObject a, LispObject b)
                 case TYPE_BITVEC_30:
                 case TYPE_BITVEC_31:
                 case TYPE_BITVEC_32:
-#else
-                case TYPE_BITVEC1:
-#endif
                     goto compare_bits;
                 default:return false;
             }
         default: return (a == b);
     }
 compare_strings:
-#ifdef EXPERIMENT
     la = length_of_byteheader(ha);
     lb = length_of_byteheader(hb);
-#endif
     if (la != lb) return false;
     while (la > 0)
     {   la--;
@@ -4643,13 +4608,9 @@ setup_type const funcs2_setup[] =
     {"equal",                   too_few_2, Lequal, wrong_no_2},
     {"member",                  too_few_2, Lmember, wrong_no_2},
 #endif
-#if defined COMMON || defined EXPERIMENT
     {"symbol-package",          Lsymbol_package, too_many_1, wrong_no_1},
-#endif
-#ifdef EXPERIMENT
     {"serialize",               Lserialize, too_many_1, wrong_no_1},
     {"unserialize",             wrong_no_0a, wrong_no_0b, Lunserialize},
-#endif
     {NULL,                      0, 0, 0}
 };
 

@@ -1,11 +1,11 @@
-//  arith08.cpp                       Copyright (C) 1990-2015 Codemist Ltd
+//  arith08.cpp                       Copyright (C) 1990-2016 Codemist Ltd
 
 //
 // Arithmetic functions.
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -394,7 +394,7 @@ static LispObject Lfloat_denormalized_p(LispObject nil, LispObject a)
 {   int x = 0;
     switch ((int)a & TAG_BITS)
     {
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
             if ((a & 0x7fffffff) == TAG_SFLOAT) return onevalue(nil);  // 0.0
             x = (int32_t)a & 0x7f800000;
@@ -427,7 +427,7 @@ static LispObject Lfloat_infinity_p(LispObject nil, LispObject a)
 {   int32_t x;
     switch ((int)a & TAG_BITS)
     {
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
             x = (int32_t)a & 0x7f800000;
             return onevalue(x == 0x7f800000 ? lisp_true : nil);
@@ -468,7 +468,7 @@ static LispObject Lfp_infinite(LispObject nil, LispObject a)
 {   int32_t x;
     switch ((int)a & TAG_BITS)
     {
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
             x = (int32_t)a & 0x7f800000;
             return onevalue(x == 0x7f800000 ? lisp_true : nil);
@@ -499,7 +499,7 @@ static LispObject Lfp_nan(LispObject nil, LispObject a)
 {   int32_t x;
     switch ((int)a & TAG_BITS)
     {
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
             a &= 0x7fffffff;
             if (a == 0x7f800000) return onevalue(nil);
@@ -540,7 +540,7 @@ static LispObject Lfp_finite(LispObject nil, LispObject a)
 {   int32_t x;
     switch ((int)a & TAG_BITS)
     {
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
             x = (int32_t)a & 0x7f800000;
             return onevalue(x != 0x7f800000 ? lisp_true : nil);
@@ -587,7 +587,7 @@ static LispObject Lfp_subnorm(LispObject nil, LispObject a)
 {   int32_t x = 0;
     switch ((int)a & TAG_BITS)
     {
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
             if ((a & 0x7fffffff) == TAG_SFLOAT) return onevalue(nil);  // 0.0
             x = (int32_t)a & 0x7f800000;
@@ -628,7 +628,7 @@ static LispObject Lfp_signbit(LispObject nil, LispObject a)
 #endif
     switch ((int)a & TAG_BITS)
     {
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
             if ((int32_t)a < 0) return onevalue(lisp_true);
             else return onevalue(nil);
@@ -679,7 +679,7 @@ static LispObject Lfloat_digits(LispObject, LispObject a)
 {   int tag = (int)a & TAG_BITS;
     switch (tag)
     {
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
             return onevalue(fixnum_of_int(20));
 #endif
@@ -702,7 +702,7 @@ static LispObject Lfloat_precision(LispObject, LispObject a)
 // /* I do not cope with de-normalised numbers here
     switch (tag)
     {
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
             return onevalue(fixnum_of_int(20));
 #endif
@@ -781,7 +781,7 @@ static LispObject Linteger_decode_float(LispObject nil, LispObject a)
     else
     {   d = frexp(d, &x);
         if (d == 1.0) d = 0.5, x++;
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         if (tag == TAG_SFLOAT)
         {   d *= TWO_20;
             x -= 20;

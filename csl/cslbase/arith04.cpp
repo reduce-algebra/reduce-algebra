@@ -1,4 +1,4 @@
-//  arith04.cpp                       Copyright (C) 1991-2015 Codemist Ltd
+//  arith04.cpp                       Copyright (C) 1991-2016 Codemist Ltd
 
 //
 // Arithmetic functions.
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -216,7 +216,7 @@ LispObject rational(LispObject a)
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             return a;
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
         {   Float_union aa;
             aa.i = a - TAG_SFLOAT;
@@ -244,7 +244,7 @@ LispObject rationalize(LispObject a)
 {   switch (a & TAG_BITS)
     {   case TAG_FIXNUM:
             return a;
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
         {   Float_union aa;
             aa.i = a - TAG_SFLOAT;
@@ -274,7 +274,7 @@ LispObject rationalize(LispObject a)
 
 static bool lesspis(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return 0;
 #else
     Float_union bb;
@@ -508,7 +508,7 @@ bool lessprd(LispObject a, double b)
 
 static bool lesspsi(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return 0;
 #else
     Float_union aa;
@@ -519,7 +519,7 @@ static bool lesspsi(LispObject a, LispObject b)
 
 static bool lesspsb(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return 0;
 #else
     Float_union aa;
@@ -530,7 +530,7 @@ static bool lesspsb(LispObject a, LispObject b)
 
 static bool lesspsr(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return 0;
 #else
     Float_union aa;
@@ -541,7 +541,7 @@ static bool lesspsr(LispObject a, LispObject b)
 
 static bool lesspsf(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return 0;
 #else
     Float_union aa;
@@ -558,7 +558,7 @@ bool lesspbi(LispObject a, LispObject)
 
 static bool lesspbs(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return 0;
 #else
     Float_union bb;
@@ -611,7 +611,7 @@ static bool lesspri(LispObject a, LispObject b)
 
 static bool lessprs(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return 0;
 #else
     Float_union bb;
@@ -628,7 +628,7 @@ static bool lessprs(LispObject a, LispObject b)
 
 static bool lesspfs(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return 0;
 #else
     Float_union bb;
@@ -662,7 +662,7 @@ bool lessp2(LispObject a, LispObject b)
             {   case TAG_FIXNUM:
 // For fixnums the comparison happens directly
                     return ((int32_t)a < (int32_t)b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case TAG_SFLOAT:
                     return lesspis(a, b);
 #endif
@@ -682,7 +682,7 @@ bool lessp2(LispObject a, LispObject b)
                 default:
                     return (bool)aerror2("bad arg for lessp", a, b);
             }
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
             switch (b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -717,7 +717,7 @@ bool lessp2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return lesspbi(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return lesspbs(a, b);
 #endif
@@ -741,7 +741,7 @@ bool lessp2(LispObject a, LispObject b)
                     switch (b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return lesspri(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return lessprs(a, b);
 #endif
@@ -768,7 +768,7 @@ bool lessp2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return lesspfi(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case TAG_SFLOAT:
                     return lesspfs(a, b);
 #endif

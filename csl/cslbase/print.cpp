@@ -634,11 +634,7 @@ LispObject Lget_output_stream_string(LispObject nil, LispObject a)
     stream_write_data(a) = nil;
     stream_char_pos(a) = stream_byte_pos(a) = 0;
     push(w);
-#ifdef EXPERIMENT
     a = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
-#else
-    a = getvector(TAG_VECTOR, TYPE_STRING, CELL+n);
-#endif
     pop(w);
     errexit();
     k = (n + 3) & ~(int32_t)7;
@@ -2038,7 +2034,7 @@ restart:
             putc_stream(')', active_stream);
             return;
 
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
         {   Float_union uu;
             uu.i = u - TAG_SFLOAT;
@@ -2253,15 +2249,11 @@ restart:
 #endif
             switch (type_of_header(h))
             {
-#ifdef EXPERIMENT
                 case TYPE_STRING_1:
                 case TYPE_STRING_2:
                 case TYPE_STRING_3:
                 case TYPE_STRING_4:
                 len = length_of_byteheader(h) - CELL;
-#else
-                case TYPE_STRING:
-#endif
                 {   int32_t slen = 0;
 // /*
 // Getting the width of strings that contain tabs correct here is
@@ -2496,19 +2488,14 @@ restart:
                             (void *)elt(u, 0));
                     goto print_my_buff;
 
-#ifdef EXPERIMENT
                 case TYPE_MAPLEREF:
                 case TYPE_FOREIGN:
                 case TYPE_ENCAPSULATE:
-#else
-                case TYPE_SPARE:
-#endif
                     pop(u);
                     sprintf(my_buff, "#<encapsulated pointer: %p>",
                             *(void **)&elt(u, 0));
                     goto print_my_buff;
 
-#ifdef EXPERIMENT
                 case TYPE_BITVEC_1:   bl = 1; break;
                 case TYPE_BITVEC_2:   bl = 2; break;
                 case TYPE_BITVEC_3:   bl = 3; break;
@@ -2541,16 +2528,6 @@ restart:
                 case TYPE_BITVEC_30:  bl = 30; break;
                 case TYPE_BITVEC_31:  bl = 31; break;
                 case TYPE_BITVEC_32:  bl = 32; break;
-#else
-                case TYPE_BITVEC1:  bl = 1; break;
-                case TYPE_BITVEC2:  bl = 2; break;
-                case TYPE_BITVEC3:  bl = 3; break;
-                case TYPE_BITVEC4:  bl = 4; break;
-                case TYPE_BITVEC5:  bl = 5; break;
-                case TYPE_BITVEC6:  bl = 6; break;
-                case TYPE_BITVEC7:  bl = 7; break;
-                case TYPE_BITVEC8:  bl = 8; break;
-#endif
 #ifndef COMMON
                 case TYPE_STRUCTURE:
                     pop(u);
@@ -2590,11 +2567,7 @@ restart:
 // not support strings that were over-large so got represented in
 // chunks. Tough luck about that for now!
 //
-#ifdef EXPERIMENT
                         h = TYPE_STRING_1;
-#else
-                        h = TYPE_STRING;
-#endif
                         goto print_non_simple_string;
                     }
                 }
@@ -2687,14 +2660,10 @@ restart:
                     return;
                 }
 
-#ifdef EXPERIMENT
                 case TYPE_VEC8_1:
                 case TYPE_VEC8_2:
                 case TYPE_VEC8_3:
                 case TYPE_VEC8_4:
-#else
-                case TYPE_VEC8:
-#endif
                     outprefix(blankp, 4);
                     putc_stream('#', active_stream); putc_stream('V', active_stream);
                     putc_stream('8', active_stream); putc_stream('(', active_stream);
@@ -2706,14 +2675,9 @@ restart:
                     putc_stream(')', active_stream);
                     popv(1);
                     return;
-#ifdef EXPERIMENT
                 case TYPE_VEC16_1:
                 case TYPE_VEC16_2:
                     len = length_of_hwordheader(h);
-#else
-                case TYPE_VEC16:
-                    len = len/2;   // bytes to halfwords
-#endif
                     outprefix(blankp, 5);
                     putc_stream('#', active_stream); putc_stream('V', active_stream);
                     putc_stream('1', active_stream); putc_stream('6', active_stream); putc_stream('(', active_stream);
@@ -3247,7 +3211,7 @@ restart:
                     sprintf(my_buff, "?%.8lx?", (long)(uint32_t)u);
                     break;
             }
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         float_print_tidyup:   // label to join in from short float printing
 #endif
             break;
@@ -5253,11 +5217,7 @@ start_again:
     errexit();
     stream_type(r) = url;
     push(r);
-#ifdef EXPERIMENT
     url = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+4+SOCKET_BUFFER_SIZE);
-#else
-    url = getvector(TAG_VECTOR, TYPE_STRING, CELL+4+SOCKET_BUFFER_SIZE);
-#endif
     pop(r);
     errexit();
     ielt32(url, 0) = 0;

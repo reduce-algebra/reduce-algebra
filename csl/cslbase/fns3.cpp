@@ -630,22 +630,12 @@ static uint32_t hash_cl_equal(LispObject key, bool descend)
 // I might need to re-check that Common Lisp EQUAL and hence this
 // version of hashing inspects the bits in a bit-vector.
 //
-#ifdef EXPERIMENT
                 else if (is_bitvec_header(ha))
                 {   len = length_of_bitheader(ha) - 8*CELL;
                     bitoff = 0;
                     data = &ucelt(key, 0);
                     goto hash_as_bitvector;
                 }
-#else
-                else if (is_bitvec_header(ha))
-                {   len = length_of_header(ha) - CELL;
-                    len = (len - 1)*8 + ((ha & 0x380) >> 7) + 1;
-                    bitoff = 0;
-                    data = &ucelt(key, 0);
-                    goto hash_as_bitvector;
-                }
-#endif
                 else if (len == TYPE_ARRAY)
                 {
 //
@@ -748,11 +738,7 @@ static uint32_t hash_cl_equal(LispObject key, bool descend)
         len += bitoff;
         while (len > bitoff)
         {   len--;
-#ifdef EXPERIMENT
             c = data[len >> 5] & (1u << (len & 31));
-#else
-            c = data[len >> 3] & (1 << (len & 7));
-#endif
             if (c != 0) c = 1;
             r = update_hash(r, c);
         }
@@ -1724,11 +1710,7 @@ LispObject Lsmkvect(LispObject nil, LispObject n)
     intptr_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("make-simple-string", n);
     nn = int_of_fixnum(n);
-#ifdef EXPERIMENT
     w = getvector(TAG_VECTOR, TYPE_STRING_4, nn+CELL);
-#else
-    w = getvector(TAG_VECTOR, TYPE_STRING, nn+CELL);
-#endif
     errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL);
     while (nn > CELL)
@@ -1747,11 +1729,7 @@ LispObject Lmkvect8(LispObject nil, LispObject n)
     intptr_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkvect8", n);
     nn = 1 + int_of_fixnum(n);  // Note that in Standard Lisp style the +1
-#ifdef EXPERIMENT
     w = getvector(TAG_VECTOR, TYPE_VEC8_4, nn+CELL);
-#else
-    w = getvector(TAG_VECTOR, TYPE_VEC8, nn+CELL);
-#endif
     errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL);
     while (nn > CELL)
@@ -1770,11 +1748,7 @@ LispObject Lmkvect16(LispObject nil, LispObject n)
     intptr_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkvect16", n);
     nn = 2*(1 + int_of_fixnum(n)); // Note 1+ for Standard Lisp style
-#ifdef EXPERIMENT
     w = getvector(TAG_VECTOR, TYPE_VEC16_2, nn+CELL);
-#else
-    w = getvector(TAG_VECTOR, TYPE_VEC16, nn+CELL);
-#endif
     errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL);
     while (nn > CELL)
@@ -1868,11 +1842,7 @@ LispObject simplify_string(LispObject s)
     stackcheck1(0, s);
     nil = C_nil;
     push(s);
-#ifdef EXPERIMENT
     w = getvector(TAG_VECTOR, TYPE_STRING_4, n+CELL);
-#else
-    w = getvector(TAG_VECTOR, TYPE_STRING, n+CELL);
-#endif
     pop(s);
     errexit();
     i = (intptr_t)doubleword_align_up(n+CELL);
@@ -2562,11 +2532,7 @@ LispObject Lputv16(LispObject, int nargs, ...)
     if (!is_vector(v) || !is_vec16_header(h = vechdr(v)))
         return aerror1("putv16", v);
     else if (!is_fixnum(n)) return aerror1("putv16 offset not fixnum", n);
-#ifdef EXPERIMENT
     hl = length_of_hwordheader(h) - CELL/2;
-#else
-    hl = (length_of_header(h) - CELL) >> 1;
-#endif
     n1 = int_of_fixnum(n);
     if (n1 < 0 || n1 >= hl) return aerror1("putv16 index range", n);
     sethelt(v, n1, int_of_fixnum(x));
@@ -2579,11 +2545,7 @@ LispObject Lgetv16(LispObject, LispObject v, LispObject n)
     if (!is_vector(v) || !is_vec16_header(h = vechdr(v)))
         return aerror1("getv16", v);
     else if (!is_fixnum(n)) return aerror1("getv16 offset not fixnum", n);
-#ifdef EXPERIMENT
     hl = length_of_hwordheader(h) - CELL/2;
-#else
-    hl = (length_of_header(h) - CELL) >> 1;
-#endif
     n1 = int_of_fixnum(n);
     if (n1 < 0 || n1 >= hl) return aerror1("getv16 index range", n);
     n1 = helt(v, n1);
@@ -3384,11 +3346,7 @@ static LispObject Lmake_string(LispObject nil, int nargs, ...)
         return aerror1("make-string", init);
     if (key != initial_element) return aerror1("make-string", key);
     nn = int_of_fixnum(n);
-#ifdef EXPERIMENT
     w = getvector(TAG_VECTOR, TYPE_STRING_4, nn+CELL);
-#else
-    w = getvector(TAG_VECTOR, TYPE_STRING, nn+CELL);
-#endif
     errexit();
     z = (int32_t)doubleword_align_up(nn+CELL);
     if (is_char(init)) blanks = code_of_char(init);
@@ -3412,11 +3370,7 @@ static LispObject Lmake_string1(LispObject nil, LispObject n)
     int32_t nn, z, blanks;
     if (!is_fixnum(n) || (int32_t)n<0) return aerror1("make-string", n);
     nn = int_of_fixnum(n);
-#ifdef EXPERIMENT
     w = getvector(TAG_VECTOR, TYPE_STRING_4, nn+CELL);
-#else
-    w = getvector(TAG_VECTOR, TYPE_STRING, nn+CELL);
-#endif
     errexit();
     z = (int32_t)doubleword_align_up(nn+CELL);
     blanks = (' ' << 24) | (' ' << 16) | (' ' << 8) | ' ';
@@ -3640,7 +3594,6 @@ LispObject Lupbv(LispObject nil, LispObject v)
 #endif
         switch (type_of_header(h))
         {
-#ifdef EXPERIMENT
             case TYPE_STRING_1:
             case TYPE_STRING_2:
             case TYPE_STRING_3:
@@ -3650,19 +3603,10 @@ LispObject Lupbv(LispObject nil, LispObject v)
             case TYPE_VEC8_3:
             case TYPE_VEC8_4:
                 n = length_of_byteheader(h) - CELL;
-#else
-            case TYPE_STRING:
-            case TYPE_VEC8:
-#endif
                 break;
-#ifdef EXPERIMENT
             case TYPE_VEC16_1:
             case TYPE_VEC16_2:
                 n = length_of_hwordheader(h) - CELL/2;
-#else
-            case TYPE_VEC16:
-                n = n/2;
-#endif
                 break;
             case TYPE_VEC32:
                 n = n/4;
@@ -3701,7 +3645,7 @@ LispObject Lvecbnd(LispObject, LispObject v)
     n = length_of_header(h) - CELL;
 #ifdef EXPERIMENT
 // UNRECONSTRUCTED here -- see code in upbv for hints
-#error inreconstructed
+#error unreconstructed
 #endif
     if (is_bitvec_header(h))
     {   n = (n - 1)*8;
@@ -3713,11 +3657,7 @@ LispObject Lvecbnd(LispObject, LispObject v)
                 n = length_of_byteheader(h) - CELL;
                 break;
             case TYPE_VEC16:
-#ifdef EXPERIMENT
                 n = length_of_hwordheader(h) - CELL/2;
-#else
-                n = n/2;
-#endif
                 break;
             case TYPE_VEC32:
                 n = n/4;
@@ -3809,11 +3749,7 @@ LispObject vector_subseq(LispObject sequence, int32_t start, int32_t end)
 
         // Get a new string of the right size
         push(sequence);
-#ifdef EXPERIMENT
         copy = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+seq_length+3);
-#else
-        copy = getvector(TAG_VECTOR, TYPE_STRING, CELL+seq_length);
-#endif
         pop(sequence);
 
         // This code plagiarised from copy_string ...

@@ -188,7 +188,6 @@ typedef intptr_t LispObject;
 // forced to be 2 or 6 at least during a transition period until the
 // garbage collector is reworked.
 
-#ifdef EXPERIMENT
 #define TAG_BITS        7
 #define XTAG_BITS       15
 
@@ -215,35 +214,6 @@ typedef intptr_t LispObject;
 #define is_immed_cons_sym(p) (((0x95 >> (((int)(p)) & TAG_BITS)) & 1) != 0)
 
 #define need_more_than_eq(p) (((0x63 >> (((int)(p)) & TAG_BITS)) & 1) != 0)
-
-#else // EXPERIMENT
-
-#define TAG_BITS        7
-
-#define TAG_CONS        0   // Cons cells (and for Common Lisp, the special
-// case of NIL
-#define TAG_FIXNUM      1   // 28-bit integers
-#define TAG_HDR_IMMED   2   // Char constants, BPS addresses, vechdrs etc
-#define TAG_SFLOAT      3   // Short float, 28 bits of immediate data
-#define TAG_SYMBOL      4   // Symbols (maybe except for NIL)
-#define TAG_NUMBERS     5   // Bignum, Rational, Complex
-#define TAG_VECTOR      6   // Regular Lisp vectors (except BPS maybe?)
-#define TAG_BOXFLOAT    7   // Boxed floats
-
-#define is_number(p) ((((int)(p)) & 1) != 0) // Any numeric type
-
-#define is_float(p)  ((((int)(p)) & 3) == 3) // Big or small float
-
-#define is_immed_or_cons(p) ((((int)(p)) & 4) == 0)
-
-#define is_immed_cons_sym(p) (((p) & TAG_BITS) <= TAG_SYMBOL)
-
-// This says that tag codes 1, 2, 3 and 4 can be tested using EQ, and all
-// others need more.
-#define need_more_than_eq(p)    ((((p) - 1) & TAG_BITS) >= TAG_SYMBOL)
-
-#endif // EXPERIMENT
-
 
 //
 // For each of the above tag classes I have a bunch of low-level
@@ -355,11 +325,7 @@ extern LispObject address_sign;  // 0, 0x80000000 or 0x8000000000000000
 #define is_cons(p)   ((((int)(p)) & TAG_BITS) == TAG_CONS)
 #define is_fixnum(p) ((((int)(p)) & TAG_BITS) == TAG_FIXNUM)
 #define is_odds(p)   ((((int)(p)) & TAG_BITS) == TAG_HDR_IMMED) // many subcases
-#ifdef EXPERIMENT
 #define is_sfloat(p) ((((int)(p)) & XTAG_BITS) == XTAG_SFLOAT)
-#else
-#define is_sfloat(p) ((((int)(p)) & TAG_BITS) == TAG_SFLOAT)
-#endif
 #define is_symbol(p) ((((int)(p)) & TAG_BITS) == TAG_SYMBOL)
 #define is_numbers(p)((((int)(p)) & TAG_BITS) == TAG_NUMBERS)
 #define is_vector(p) ((((int)(p)) & TAG_BITS) == TAG_VECTOR)
@@ -453,7 +419,6 @@ typedef LispObject four_args(LispObject, size_t, LispObject, LispObject,
 
 typedef uintptr_t Header;
 
-#ifdef EXPERIMENT
 //
 // For a first version here objects will have a header word with the following
 // format:
@@ -975,349 +940,6 @@ typedef uintptr_t Header;
             (((v) >> 6) & (PAGE_POWER_OF_TWO-4))))
 
 
-#else // EXPERIMENT
-
-//
-// An object can be up to 4 Mbytes long, and has 12 bits of tag + GC info
-// in its header word.  All header words have TAG_HDR_IMMED in their low order
-// 4 bits, then 6 more bits that identify what sort of object is being
-// headed.  The remaining 22 bits give the length (in bytes) of the
-// active part of the object.  Note well that this really is a limitation
-// on the largest size of an object, and it prevents me from having
-// vectors or bignums larger than 4 Mbytes regardless of the "page"
-// structure of my memory. Well on 64-but machine I will be
-// able to relax that sometime in the future - but not just now please. So
-// observe that right now I limit lengths to 32-bit values. I guess
-// that actually since a Header is 64-bits in the 64-bit case this
-// still lets me have objects up to 4 Gbytes large...
-//
-
-#define header_mask                0x3f0
-#define type_of_header(h)          (((unsigned int)(h)) & header_mask)
-#define length_of_header(h)        (((uint32_t)(h)) >> 10)
-#define length_of_bitheader(h)     ((((size_t)(h)) >> 7) - 7)
-#define length_of_byteheader(h)    (((size_t)(h)) >> 10)
-#define length_of_hwordheader(h)   ((((size_t)(h)) >> 9) - 1)
-
-#define bitvechdr_(n) (TYPE_BITVEC1 + ((((n)+7)&7)<<7))
-
-
-// Values for the type field in a header
-
-//
-// Symbols are so important that they have 26 bits used to sub-classify them.
-// These are used by the interpreter to identify special variables, special
-// forms, and those symbols which are defined as macros.  The bits live where
-// other items would store a length, but since all symbol headers are the
-// same size an explicit length field is not necessary - but missing one out
-// means that I have to do a special check for the SYMBOL case whenever I
-// scan the vector heap, which is a bit messy.
-//
-
-#define TYPE_SYMBOL         0x00000010
-#define  SYM_SPECIAL_VAR    0x00000040  // (fluid '(xxx))
-#define  SYM_GLOBAL_VAR     0x00000080  // (global '(xxx))
-#define  SYM_SPECIAL_FORM   0x00000100  // eg. COND, QUOTE
-#define  SYM_MACRO          0x00000200  // (putd 'xxx 'macro ...)
-#define  SYM_C_DEF          0x00000400  // has definition from C kernel
-#define  SYM_CODEPTR        0x00000800  // just carries code pointer
-#define  SYM_ANY_GENSYM     0x00001000  // gensym, printed or not
-#define  SYM_TRACED         0x00002000
-#define  SYM_FASTGET_MASK   0x000fc000  // used to support "fast" gets
-#define  SYM_FASTGET_SHIFT  14
-//
-// In Common Lisp mode I use the rest of the header to help speed up
-// test for the availability of a symbol in a package (while I am printing).
-// In Standard Lisp mode I only allocate a print-name to a gensym when I
-// first print it, so I have a bit that tells me when a gensym is still
-// not printed.
-//
-#ifdef COMMON
-#define  SYM_EXTERN_IN_HOME 0x00100000  // external in its home package
-#define  SYM_IN_PACKAGE     0xffe00000  // availability in 11 packages
-#define  SYM_IN_PKG_SHIFT   23
-#define  SYM_IN_PKG_COUNT   11
-#else // COMMON
-#define  SYM_UNPRINTED_GENSYM 0x00100000// not-yet-printed gensym
-#endif // COMMON
-
-#define symhdr_length       ((sizeof(Symbol_Head) + 7) & ~7)
-#define is_symbol_header(h) (((int)h & 0x30) == TYPE_SYMBOL)
-#define header_fastget(h)   (((h) >> SYM_FASTGET_SHIFT) & 0x3f)
-
-#define TYPE_BIGNUM         0x020   // low 2-bits = '10' for numbers
-#define TYPE_RATNUM         0x060
-#define TYPE_COMPLEX_NUM    0x0a0
-#define TYPE_SINGLE_FLOAT   0x120
-#define TYPE_DOUBLE_FLOAT   0x160
-#define TYPE_LONG_FLOAT     0x1a0
-
-#ifdef MEMORY_TRACE
-#define numhdr(v) (*(Header *)memory_reference((intptr_t)((char *)(v) - \
-                                               TAG_NUMBERS)))
-#define flthdr(v) (*(Header *)memory_reference((intptr_t)((char *)(v) - \
-                                               TAG_BOXFLOAT)))
-#else
-#define numhdr(v) (*(Header *)((char *)(v) - TAG_NUMBERS))
-#define flthdr(v) (*(Header *)((char *)(v) - TAG_BOXFLOAT))
-#endif
-
-#define is_numbers_header(h) (((int)(h) & 0x330) == 0x020)
-#define is_boxfloat_header(h)(((int)(h) & 0x330) == 0x120)
-
-//
-// The following tests are valid provided that n is already known to
-// have tag TAG_NUMBERS, i.e. it is a bignum, ratio or complex.
-//
-#define is_ratio(n) \
-    (type_of_header(numhdr(n)) == TYPE_RATNUM)
-
-#define is_complex(n) \
-    (type_of_header(numhdr(n)) == TYPE_COMPLEX_NUM)
-
-#define is_bignum_header(h) (type_of_header(h) == TYPE_BIGNUM)
-#define is_bignum(n) is_bignum_header(numhdr(n))
-
-#define is_string_header(h) (type_of_header(h) == TYPE_STRING)
-#define is_string(n) is_string_header(vechdr(n))
-
-#define is_vec8_header(h) (type_of_header(h) == TYPE_VEC8)
-#define is_vec8(n) is_vec8_header(vechdr(n))
-
-#define is_bpsvec_header(h) (type_of_header(h) == TYPE_BPS)
-#define is_bpsvec(n) is_bps_header(vechdr(n))
-
-#define is_vec16_header(h) (type_of_header(h) == TYPE_VEC16)
-#define is_vec16(n) is_vec16_header(vechdr(n))
-
-#define is_bitvec_header(h) ((type_of_header(h) & 0x070) == TYPE_BITVEC1)
-#define is_bitvec(n) is_bitvec_header(vechdr(n))
-
-//
-// I very much hope that sensible C compilers will observe that the
-// value SIXTY_FOUR_BIT is a constant (but I am not allowed to know its
-// value at preprocessor time) and so will simplify this apparent test
-// so that at run-time you just use the value 2 or 3.
-//
-#define ADDRESS_SHIFT (SIXTY_FOUR_BIT ? 3 : 2)
-
-#ifdef MEMORY_TRACE
-#define vechdr(v)  (*(Header *)memory_reference((intptr_t)((char *)(v) - \
-                               TAG_VECTOR)))
-#define elt(v, n)  (*(LispObject *)memory_reference((intptr_t)((char *)(v) + \
-                               (CELL-TAG_VECTOR) + \
-                               (((intptr_t)(n))*sizeof(LispObject)))))
-#define celt(v, n) (*cmemory_reference((intptr_t)((char *)(v) + \
-                               (CELL-TAG_VECTOR)+((intptr_t)(n)))))
-#define ucelt(v, n) (*(unsigned char *)cmemory_reference( \
-                               (intptr_t)((char *)(v) + \
-                               (CELL-TAG_VECTOR)+((intptr_t)(n)))))
-#define scelt(v, n) (*(signed char *)cmemory_reference( \
-                               (intptr_t)((char *)(v) + \
-                               (CELL-TAG_VECTOR)+((intptr_t)(n)))))
-#else // MEMORY_TRACE
-
-#define vechdr(v)  (*(Header *)((char *)(v) - TAG_VECTOR))
-#define elt(v, n)  (*(LispObject *)((char *)(v) + \
-                               (CELL-TAG_VECTOR) + \
-                               (((intptr_t)(n))*sizeof(LispObject))))
-#define celt(v, n) (*((char *)(v) + (CELL-TAG_VECTOR)+((intptr_t)(n))))
-#define ucelt(v, n) (*((unsigned char *)(v) + (CELL-TAG_VECTOR)+((intptr_t)(n))))
-#define scelt(v, n) (*((signed char *)(v) + (CELL-TAG_VECTOR)+((intptr_t)(n))))
-
-#endif // MEMORY_TRACE
-
-//
-// The next are for 16-bit & 32 bit values and single-float & double-float
-// access. Note that halfwords are signed.
-//
-//
-// On the DEC Alpha the C compiler did not provide a 16-bit data type.
-// In some sense the ARM does not really have one. I am expecting that
-// 16-bit values will only be used in a very few places in my code so
-// performance will not be vital here, so I implement 16-bit access as
-// pairs of 8-bit transfers.
-// NOTE NOTE NOTE that by doing this I am imposing my own idea of
-// byte ordering on 16-bit values in memory. But if the two macros
-// here are the only use I make I will be safe unless a preserve/restart
-// operation flips things around for me!
-//
-#define helt(v, n) \
-   ((*(unsigned char *)((v) + (CELL-TAG_VECTOR) + (2*(intptr_t)(n))) | \
-    (*(signed char *)((v) + (CELL-TAG_VECTOR+1) + (2*(intptr_t)(n)))) << 8))
-#define sethelt(v, n, x) \
-   do { \
-      *(char *)((v) + (CELL-TAG_VECTOR+0) + (2*(intptr_t)(n))) = (x); \
-      *(char *)((v) + (CELL-TAG_VECTOR+1) + (2*(intptr_t)(n))) = (x)>>8; \
-      } while (0)
-#define ielt(v, n)  (*(intptr_t *)((char *)(v) + \
-                           (CELL-TAG_VECTOR)+(((intptr_t)(n))*sizeof(intptr_t))))
-//
-// Even on a 64-bit machine I will support packed arrays of 32-bit
-// ints or short-floats.
-//
-#define ielt32(v, n)  (*(int32_t *)((char *)(v) + \
-                           (CELL-TAG_VECTOR)+(((intptr_t)(n))<<2)))
-#define felt(v, n)  (*(float *)((char *)(v) + \
-                           (CELL-TAG_VECTOR)+(((intptr_t)(n))<<2)))
-// NB doubles are 64-bits on every machine
-#define delt(v, n)  (*(double *)((char *)(v) + \
-                           (2*CELL-TAG_VECTOR)+(((intptr_t)(n))<<3)))
-
-//
-// Simple bit-vectors need extra information held here so that their exact
-// can be determined.  Generally headers hold length information measured
-// in bytes, so three more bits are required here. Bitvectors will now
-// supported even in Standard Lisp mode.
-//
-
-#define TYPE_BITVEC1        0x030   // subtypes encode length mod 8
-#define TYPE_BITVEC2        0x0b0   // (counts bits used in last byte)
-#define TYPE_BITVEC3        0x130
-#define TYPE_BITVEC4        0x1b0   // Observe that bit-length continues ..
-#define TYPE_BITVEC5        0x230   // .. byte-length field in header word.
-#define TYPE_BITVEC6        0x2b0   // However to extract length of bitvec
-#define TYPE_BITVEC7        0x330   // is harder because count here is 1-8
-#define TYPE_BITVEC8        0x3b0   // rather than 0-7.
-
-#define TYPE_STRING         0x070   // simple character vector
-#define TYPE_BPS            0x170   // bytes of compiled code
-#define TYPE_SPARE          0x270   // SPARE (holds binary information)
-#define TYPE_MAPLEREF       TYPE_SPARE // An EXPERIMENTAL adjustment
-#define TYPE_FOREIGN        TYPE_SPARE // Also experimental for now
-#define TYPE_ENCAPSULATE    TYPE_SPARE // ditto
-#define TYPE_SP             0x370   // Encapsulated stack ptr
-
-#define vector_holds_binary(h) (((h) & 0x80) == 0 || is_bitvec_header(h))
-
-#define TYPE_SIMPLE_VEC     0x0f0   // simple general vector
-#define TYPE_HASH           0x1f0   // hash table
-#define TYPE_ARRAY          0x2f0   // header record for general array
-#define TYPE_STRUCTURE      0x3f0   // includes packages etc possibly.
-
-//
-// The following classes of vectors will start of as experiments. I want
-// to have at least some vectors that contain a mixture of general and binary
-// information, so TYPE_MIXED1 to TYPE_MIXED4 will serve for this, and are
-// limited to hold exactly three pointer objects. Note that for the garbage
-// collector to work properly I MUST have an odd number of pointers stored
-// in any vector...  "MIXED4" is used for stream handles.
-//
-
-#define is_mixed_header(h) (((h) & 0x2b0) == TYPE_MIXED1)
-
-#define TYPE_VEC8           TYPE_BPS// contains 8-bit integers
-
-#define TYPE_VEC16          0x220   // contains 16-bit integers
-#define TYPE_VEC32          0x260   // contains 32-bit integers
-#define TYPE_MIXED1         0x2a0   // general, but limited to 3 pointers
-#define TYPE_MIXED2         0x2e0   // general, but limited to 3 pointers
-#define TYPE_VECFLOAT32     0x320   // vector contains single-precision floats
-#define TYPE_VECFLOAT64     0x360   // vector contains double-precision floats
-#define TYPE_MIXED3         0x3a0   // only 3 pointers
-#define TYPE_STREAM         0x3e0   // 3 pointers then binary data
-
-#define HDR_IMMED_MASK      0xff
-#define TAG_CHAR            (0x00+TAG_HDR_IMMED)   // these cases leave 24 bits spare
-#define TAG_BPS             (0x40+TAG_HDR_IMMED)
-// #define TAG_LITVEC       (0x80+TAG_HDR_IMMED)   .. Not used at present, intended for
-//                                  .. read-only vectors in BPS heap.
-#define TAG_SPID            (0xc0+TAG_HDR_IMMED)   // Collection of internal flag values
-
-#define SPID_NIL            (TAG_SPID+0x0000)  // NIL in checkpoint file
-#define SPID_FBIND          (TAG_SPID+0x0100)  // Fluid binding on stack
-#define SPID_CATCH          (TAG_SPID+0x0200)  // CATCH frame on stack
-#define SPID_PROTECT        (TAG_SPID+0x0300)  // UNWIND_PROTECT on stack
-#define SPID_HASH0          (TAG_SPID+0x0400)  // Empty hash slot
-#define SPID_HASH1          (TAG_SPID+0x0500)  // Deleted hash slot
-#define SPID_GCMARK         (TAG_SPID+0x0600)  // Used by GC as sentinel
-#define SPID_NOINPUT        (TAG_SPID+0x0700)  // Used by (read) in #X()
-#define SPID_ERROR          (TAG_SPID+0x0800)  // Used to indicate error
-#define SPID_PVBIND         (TAG_SPID+0x0900)  // PROGV binding on stack
-#define SPID_NOARG          (TAG_SPID+0x0a00)  // Missing &OPTIONAL arg
-#define SPID_NOPROP         (TAG_SPID+0x0b00)  // fastget entry is empty
-#define SPID_LIBRARY        (TAG_SPID+0x0c00)  // + 0xnnn00000 offset
-
-#define is_header(x) (((int)(x) & 0x30) != 0)     // valid if is_odds()
-#define is_char(x)   (((int)(x) & HDR_IMMED_MASK) == TAG_CHAR)
-#define is_bps(x)    (((int)(x) & HDR_IMMED_MASK) == TAG_BPS)
-// #define is_hashtab(x)(((int)(x) & HDR_IMMED_MASK) == TAG_HASHTAB) not used
-#define is_spid(x)   (((int)(x) & HDR_IMMED_MASK) == TAG_SPID)
-#define is_library(x)(((int)(x) & 0xffff)    == SPID_LIBRARY)
-#define library_number(x) (((x) >> 20) & 0xfff)
-
-//
-// I will now try to support the full range of Unicode from
-// U+0000 to U+10FFFF.
-//
-// Note that the original arrangement of FONT/BITS/CODE that I had
-// was as mandated for Common Lisp. There was also a "kanji" option that
-// used the BITS and CODE fields together to pack 16-bit characters.
-// I will retire these and now use 21 bits for the codepoint and I have
-// 3 bits for "font" information but I do not expect to do anything with it.
-//       ( ==== now no longer in use === )       ( == Current == )
-//       Kanji mode           Ordinary mode      New Unicode mode
-//       font                 font               3 bits of "font"
-//       code )               bits               21 bits of "code"
-//       code ) 16 bits       code               no support for "bits"
-// Note that pack_char now takes a 21-bit code but only values up to
-// 0x0010ffff are valid for Unicode. Internally I will often pack
-// things using utf-8 encoded strings.
-//
-
-
-#define font_of_char(n)  (((int32_t)(n) >> 29) & 0x03)
-#define bits_of_char(n)  (0)
-#define code_of_char(n)  (((int32_t)(n) >>  8) & 0x001fffff)
-
-#define pack_char(font, code)                                      \
-    ((LispObject)((((uint32_t)(font)) << 29) |                    \
-                   (((uint32_t)(code)) << 8) | TAG_CHAR))
-
-//
-// For internal purposes here I will use a pseudo-character with code
-// 0x0010ffff to stand for an end of file marker. This can be packed as
-// 4 bytes in utf-8 (f4/8f/bf/bf) and it is the last codepoint in the
-// Unicode range and is reserved in Unicode as not baing a valid
-// character.
-//
-#define CHAR_EOF pack_char(0, 0x0010ffff)
-
-
-//
-// The following shows that a BPS entrypoint is represented with
-// 8 bits of tag at the bottom of the word.  There follow (PAGE_BITS-2)
-// bits of word-offset within the page.  Finally the rest of the word is
-// a page number.  This allows for up to 64 Mbytes of code space if I
-// am on a 32-bit machine. If PAGE_BITS is 22 (my current default on
-// most systems) this will be up to 16 pages each holding 4 Mbytes.
-// Given the compactness of the bytecode format the limit seems generous
-// enough at present! One thing to note here is that the packed address
-// in a BPS reference goes to the data not to the header that preceeds it.
-// If I am on a 64-bit machine I may need to have a way to refer to an
-// address in the top half of an oversized page. But I only ever need to do
-// that if I am on a 64-bit system and in that case I have all the top
-// 32-bits of the word available. There is a slight initial cause for
-// concern because when things are initially expanded to 64 bits it is
-// using sign-extension, so the top half of the item could be either
-// all zeros or all ones. But if I am careful when I create all BPS
-// pointers and when I adjust them after loading an image I can set a
-// bit in the top half of the word if necessary. I very much hope that
-// good optimising compilers will note whether SIXTY_FOUR_BIT is true
-// or false and optimise what is written here as a dynamic test into
-// reasonable code.
-//
-#define data_of_bps(v)                                        \
-  ((char *)(doubleword_align_up((intptr_t)                    \
-               bps_pages[((uint32_t)(v))>>(PAGE_BITS+6)]) +   \
-            (SIXTY_FOUR_BIT ?                                 \
-               (intptr_t)((((uint64_t)(v))>>(32-PAGE_BITS)) & \
-                          PAGE_POWER_OF_TWO) :                \
-               0) +                                           \
-            (((v) >> 6) & (PAGE_POWER_OF_TWO-4))))
-
-#endif // EXPERIMENT
-
 typedef int32_t junk;      // Unused 4-byte field for structures (for padding)
 typedef intptr_t junkxx;   // Unused cell-sized field for structures
 
@@ -1423,7 +1045,6 @@ typedef struct Big_Number
 #define bignum_digits(b)  ((uint32_t *)((char *)b  + (CELL-TAG_NUMBERS)))
 #endif
 
-#ifdef EXPERIMENT
 // make_bighdr takes an argument measured in 32-bit units, including space
 // for the header word. This is the natural space unit used in the tagging
 // scheme so I just need to shift the count to where it has to live.
@@ -1441,17 +1062,6 @@ typedef struct Big_Number
 //@#define pack_hdrlengthbytes(n) ((3+(intptr_t)(n))<<(Tw+5))
 //@#define pack_hdrlengthhwords(n) ((1+(intptr_t)(n))<<(Tw+4))
 #define make_padder(n) (pack_hdrlength((n)/4) + TYPE_VEC8_1 + TAG_HDR_IMMED)
-
-#else
-
-#define make_bighdr(n)    (TAG_HDR_IMMED+TYPE_BIGNUM+(((intptr_t)(n))<<12))
-#define pack_hdrlength(n) (((intptr_t)(n))<<12)
-//#define pack_hdrlengthbytes(n) (((intptr_t)(n))<<12)
-//#define pack_hdrlengthhwords(n) ((2*(intptr_t)(n))<<12)
-// @@@ not finished yet!
-//#define pack_hdrlengthbits(n) (((7+(intptr_t)(n))/8)<<12)
-#define make_padder(n) (TYPE_VEC8 + ((n)<<10) + TAG_HDR_IMMED)
-#endif
 
 typedef struct Rational_Number
 {   Header header;

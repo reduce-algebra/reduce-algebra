@@ -1,11 +1,11 @@
-//  arith10.cpp                       Copyright (C) 1990-2015 Codemist Ltd
+//  arith10.cpp                       Copyright (C) 1990-2016 Codemist Ltd
 
 //
 // Arithmetic functions.
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -390,7 +390,7 @@ static LispObject make_complex_float(Complex v, LispObject a)
 {   int32_t type;
     LispObject a1, a2, nil;
     a = real_part(a);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
     if (is_sfloat(a))
     {   Float_union r, i;
         r.f = (float)v.real;
@@ -1242,7 +1242,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
     {   case TAG_FIXNUM:
             d = (double)int_of_fixnum(a);
             break;
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
         {   Float_union aa;
             aa.i = a - TAG_SFLOAT;
@@ -1348,7 +1348,7 @@ static LispObject makenum(LispObject a, int32_t n)
     switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             return fixnum_of_int(n);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
         {   Float_union aa;
             aa.f = (float)n;
@@ -1631,7 +1631,7 @@ LispObject Labsval(LispObject nil, LispObject a)
 //
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
 #endif
             break;

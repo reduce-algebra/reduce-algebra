@@ -98,11 +98,7 @@ LispObject make_string(const char *b)
 // Given a C string, create a Lisp (simple-) string.
 //
 {   int32_t n = strlen(b);
-#ifdef EXPERIMENT
     LispObject r = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
-#else
-    LispObject r = getvector(TAG_VECTOR, TYPE_STRING, CELL+n);
-#endif
     char *s = (char *)r - TAG_VECTOR;
     int32_t k = doubleword_align_up(CELL+n);
     LispObject nil;
@@ -123,14 +119,12 @@ void validate_string_fn(LispObject s, const char *file, int line)
                 int i;
                 if (strrchr(file, '/') != NULL) file = strrchr(file, '/')+1;
                 fprintf(stderr, "\n+++ Bad string at %s %d\n", file, line);
-#ifdef EXPERIMENT
                 fprintf(stderr, "Header = %" PRIxPTR "\n", vechdr(s));
                 fprintf(stderr, "length = %d bytelength = %d\n",
                     length_of_header(vechdr(s)),
                     length_of_byteheader(vechdr(s)));
                 fprintf(stderr, "messed at len:%d len1:%d [%x]\n",
                         len, len1, celt(s, len-CELL));
-#endif
                 for (i=0; i<len1; i++)
                 {   fprintf(stderr, "%p: %.2x   (%c)\n", p, *p, *p);
                     p++;
@@ -157,11 +151,7 @@ LispObject copy_string(LispObject str, size_t n)
     char *s;
     size_t k;
     push(str);
-#ifdef EXPERIMENT
     r = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
-#else
-    r = getvector(TAG_VECTOR, TYPE_STRING, CELL+n);
-#endif
     pop(str);
     s = (char *)r - TAG_VECTOR;
     errexit();
@@ -738,7 +728,7 @@ LispObject intern(int len, bool escaped)
             d = atof((char *)&boffo_char(0));
             switch (fplength)
             {
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case 0:
                 {   Float_union ff;
                     ff.f = (float)d;
@@ -1346,7 +1336,6 @@ static int ordpv(LispObject u, LispObject v)
         return (type_of_header(hu) < type_of_header(hv) ? -1 : 1);
     if (vector_holds_binary(hu))
     {
-#ifdef EXPERIMENT
 // STRING, VEC8 and BPS need length_of_byteheader used here.
         switch (type_of_header(hu))
         {
@@ -1369,7 +1358,6 @@ static int ordpv(LispObject u, LispObject v)
         default:
             break;
         }
-#endif
         while (n < lu && n < lv)
         {   unsigned int eu = *(unsigned char *)(u - TAG_VECTOR + n),
                          ev = *(unsigned char *)(v - TAG_VECTOR + n);
@@ -1655,9 +1643,7 @@ LispObject Lgensym(LispObject nil, int nargs, ...)
     qvalue(id) = unset_var;
     qplist(id) = nil;
     qfastgets(id) = nil;
-#if defined COMMON || defined EXPERIMENT
     qpackage(id) = nil; // Marks it as a uninterned
-#endif
     qenv(id) = id;
     ifn1(id) = (intptr_t)undefined1;
     ifn2(id) = (intptr_t)undefined2;
@@ -1708,9 +1694,7 @@ LispObject Lgensym1(LispObject nil, LispObject a)
     qpname(id) = genbase;
     qplist(id) = nil;
     qfastgets(id) = nil;
-#if defined COMMON || defined EXPERIMENT
     qpackage(id) = nil; // Marks it as a uninterned
-#endif
     qenv(id) = id;
     ifn1(id) = (intptr_t)undefined1;
     ifn2(id) = (intptr_t)undefined2;
@@ -1750,9 +1734,7 @@ LispObject Lgensym2(LispObject nil, LispObject a)
     qpname(id) = genbase;
     qplist(id) = nil;
     qfastgets(id) = nil;
-#if defined COMMON || defined EXPERIMENT
     qpackage(id) = nil; // Marks it as a uninterned
-#endif
     qenv(id) = id;
     ifn1(id) = (intptr_t)undefined1;
     ifn2(id) = (intptr_t)undefined2;
@@ -1893,9 +1875,7 @@ LispObject iintern(LispObject str, int32_t h, LispObject p, int str_is_ok)
         qpname(s) = qpname(nil);    // At this stage the pname is a dummy
         qplist(s) = nil;
         qfastgets(s) = nil;
-#if defined COMMON || defined EXPERIMENT
         qpackage(s) = p;
-#endif
         qenv(s) = (LispObject)s;
         ifn1(s) = (intptr_t)undefined1;
         ifn2(s) = (intptr_t)undefined2;
@@ -2126,11 +2106,9 @@ LispObject Lunintern_2(LispObject nil, LispObject sym, LispObject pp)
     package = pp;
 #endif
     if (!is_symbol(sym)) return onevalue(nil);
-#if defined COMMON || defined EXPERIMENT
     if (qpackage(sym) == package) qpackage(sym) = nil;
-#ifndef EXPERIMENT
+#ifdef COMMON
     packshade_(package) = ndelete(sym, packshade_(package));
-#endif
 #endif
     if ((qheader(sym) & SYM_C_DEF) != 0)
         return aerror1("remob on function with kernel definition", sym);
@@ -3002,11 +2980,7 @@ void packbyte(int c)
 //
     if (boffop >= (int)boffo_size-(int)CELL-8)
     {   LispObject new_boffo =
-#ifdef EXPERIMENT
             getvector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
-#else
-            getvector(TAG_VECTOR, TYPE_STRING, 2*boffo_size);
-#endif
         nil = C_nil;
         if (exception_pending())
         {   flip_exception();
@@ -3879,11 +3853,7 @@ LispObject Llist_to_string(LispObject nil, LispObject stream)
     set_stream_read_other(lisp_work_stream, read_action_list);
     stream_pushed_char(lisp_work_stream) = NOT_CHAR;
     while (consp(stream)) n++, stream = qcdr(stream);
-#ifdef EXPERIMENT
     str = getvector(TAG_VECTOR, TYPE_STRING_4, n);
-#else
-    str = getvector(TAG_VECTOR, TYPE_STRING, n);
-#endif
     errexit();
     s = (char *)str + CELL - TAG_VECTOR;
     for (k=CELL; k<n; k++) *s++ = (char)char_from_list(lisp_work_stream);
@@ -4795,11 +4765,7 @@ LispObject Lreadline1(LispObject nil, LispObject stream)
     if (ch == EOF && n == 0) w = eof_symbol;
     else
     {
-#ifdef EXPERIMENT
         w = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
-#else
-        w = getvector(TAG_VECTOR, TYPE_STRING, CELL+n);
-#endif
         errexit();
         s = (char *)w + CELL - TAG_VECTOR;
         memcpy(s, &boffo_char(0), n);

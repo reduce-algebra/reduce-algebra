@@ -1,4 +1,4 @@
-//  arith01.cpp                    Copyright (C) 1990-2015 Codemist Ltd
+//  arith01.cpp                    Copyright (C) 1990-2016 Codemist Ltd
 
 //
 // Arithmetic functions.
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -128,7 +128,7 @@ LispObject make_sfloat(double d)
 // not give robust numeric results.
 //
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
 // SFLOAT is (perhaps temporarily?) not supported in the experimental branch.
     return fixnum_of_int(0);
 #else
@@ -147,7 +147,7 @@ LispObject make_boxfloat(double a, int32_t type)
     switch (type)
     {   case 0:
         {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
             return fixnum_of_int(0);
 #else
             Float_union aa;
@@ -209,7 +209,7 @@ double float_of_number(LispObject a)
 // code repetition.
 //
 {   if (is_fixnum(a)) return (double)int_of_fixnum(a);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
     else if (is_sfloat(a))
     {   Float_union w;
         w.i = a - TAG_SFLOAT;
@@ -403,7 +403,7 @@ LispObject make_ratio(LispObject p, LispObject q)
 
 static LispObject plusis(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return fixnum_of_int(0);
 #else
     Float_union bb;
@@ -1036,7 +1036,7 @@ LispObject plus2(LispObject a, LispObject b)
                     if (t == 0 || t == fix_mask) return fixnum_of_int(r);
                     else return make_one_word_bignum(r);
                 }
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case TAG_SFLOAT:
                     return plusis(a, b);
 #endif
@@ -1058,7 +1058,7 @@ LispObject plus2(LispObject a, LispObject b)
                 default:
                     return aerror1("bad arg for plus",  b);
             }
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
             switch (b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -1096,7 +1096,7 @@ LispObject plus2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return plusbi(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return plusbs(a, b);
 #endif
@@ -1122,7 +1122,7 @@ LispObject plus2(LispObject a, LispObject b)
                     switch (b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return plusri(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return plusrs(a, b);
 #endif
@@ -1148,7 +1148,7 @@ LispObject plus2(LispObject a, LispObject b)
                     switch (b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return plusci(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return pluscs(a, b);
 #endif
@@ -1177,7 +1177,7 @@ LispObject plus2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return plusfi(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case TAG_SFLOAT:
                     return plusfs(a, b);
 #endif

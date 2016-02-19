@@ -1,4 +1,4 @@
-//  arith03.cpp                       Copyright (C) 1990-2015 Codemist Ltd
+//  arith03.cpp                       Copyright (C) 1990-2016 Codemist Ltd
 
 //
 // Arithmetic functions.
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -159,7 +159,7 @@ uint32_t Idivide(uint32_t *qp, uint32_t a, uint32_t b, uint32_t c)
 
 static LispObject quotis(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return fixnum_of_int(0);
 #else
     Float_union bb;
@@ -308,7 +308,7 @@ static LispObject quotif(LispObject a, LispObject b)
 
 static LispObject quotsi(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return fixnum_of_int(0);
 #else
     Float_union aa;
@@ -1267,7 +1267,7 @@ LispObject quot2(LispObject a, LispObject b)
                         if (r != 0x08000000) return fixnum_of_int(r);
                         else return make_one_word_bignum(r);
                     }
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case TAG_SFLOAT:
                     return quotis(a, b);
 #endif
@@ -1289,7 +1289,7 @@ LispObject quot2(LispObject a, LispObject b)
                 default:
                     return aerror1("bad arg for quotient",  b);
             }
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -1327,7 +1327,7 @@ LispObject quot2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotbi(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return quotbs(a, b);
 #endif
@@ -1353,7 +1353,7 @@ LispObject quot2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotri(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return quotrs(a, b);
 #endif
@@ -1379,7 +1379,7 @@ LispObject quot2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotci(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return quotcs(a, b);
 #endif
@@ -1408,7 +1408,7 @@ LispObject quot2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return quotfi(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case TAG_SFLOAT:
                     return quotfs(a, b);
 #endif
@@ -1484,7 +1484,7 @@ LispObject CLquot2(LispObject a, LispObject b)
                         bb = bb / w;
                         return make_ratio(fixnum_of_int(aa), fixnum_of_int(bb));
                     }
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case TAG_SFLOAT:
                     return quotis(a, b);
 #endif
@@ -1506,7 +1506,7 @@ LispObject CLquot2(LispObject a, LispObject b)
                 default:
                     return aerror1("bad arg for /",  b);
             }
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -1544,7 +1544,7 @@ LispObject CLquot2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return CLquotbi(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return quotbs(a, b);
 #endif
@@ -1570,7 +1570,7 @@ LispObject CLquot2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotri(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return quotrs(a, b);
 #endif
@@ -1596,7 +1596,7 @@ LispObject CLquot2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotci(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return quotcs(a, b);
 #endif
@@ -1625,7 +1625,7 @@ LispObject CLquot2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return quotfi(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case TAG_SFLOAT:
                     return quotfs(a, b);
 #endif

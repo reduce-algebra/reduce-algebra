@@ -468,14 +468,10 @@ static LispObject fastread1(int32_t ch, int32_t operand)
                 return r;
 
             case F_STR:                 // n characters making a string
-#ifdef EXPERIMENT
 // Here I pass the natural length of the string a the final argument to
 // getvector, and the packing between length and type code happens once
 // within getvector.
                 r = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+operand);
-#else
-                r = getvector(TAG_VECTOR, TYPE_STRING, CELL+operand);
-#endif
                 errexit();
                 {   char *s = (char *)r - TAG_VECTOR + CELL;
                     int l = doubleword_align_up(operand+CELL);
@@ -508,11 +504,7 @@ static LispObject fastread1(int32_t ch, int32_t operand)
                 }
                 else
                 {
-#ifdef EXPERIMENT
                     r = getcodevector(TYPE_BPS_4, operand+CELL);
-#else
-                    r = getcodevector(TYPE_BPS, operand+CELL);
-#endif
                     errexit();
                     if (Iread(data_of_bps(r), operand) != operand)
                         return aerror("FASL file corrupted");
@@ -1843,15 +1835,11 @@ static LispObject write_module1(LispObject a)
         int32_t len = length_of_header(h) - CELL, i;
         switch (type_of_header(h))
         {
-#ifdef EXPERIMENT
             case TYPE_STRING_1:
             case TYPE_STRING_2:
             case TYPE_STRING_3:
             case TYPE_STRING_4:
                 len = length_of_byteheader(h) - CELL;
-#else
-            case TYPE_STRING:
-#endif
                 out_fasl_prefix(len >> 8);
                 Iputc(F_STR);
                 Iputc((int)(len & 0xff));
@@ -1882,7 +1870,6 @@ static LispObject write_module1(LispObject a)
 // bit-vectors can not be coped with here.
 //
             case TYPE_ARRAY:
-#ifdef EXPERIMENT
             case TYPE_BITVEC_1:
             case TYPE_BITVEC_2:
             case TYPE_BITVEC_3:
@@ -1917,16 +1904,6 @@ static LispObject write_module1(LispObject a)
             case TYPE_BITVEC_32:
             case TYPE_MIXED1:
             case TYPE_MIXED2:
-#else
-            case TYPE_BITVEC1:
-            case TYPE_BITVEC2:
-            case TYPE_BITVEC3:
-            case TYPE_BITVEC4:
-            case TYPE_BITVEC5:
-            case TYPE_BITVEC6:
-            case TYPE_BITVEC7:
-            case TYPE_BITVEC8:
-#endif
                 return aerror("vector type unsupported by write-module");
         }
     }

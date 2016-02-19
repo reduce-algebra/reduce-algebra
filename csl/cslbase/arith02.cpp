@@ -1,4 +1,4 @@
-//  arith02.cpp                       Copyright (C) 1990-2015 Codemist Ltd
+//  arith02.cpp                       Copyright (C) 1990-2016 Codemist Ltd
 
 //
 // Arithmetic functions.
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -211,7 +211,7 @@ static LispObject timesii(LispObject a, LispObject b)
 
 static LispObject timesis(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifndef SHORT_FLOAT
     return fixnum_of_int(0);
 #else
     Float_union bb;
@@ -1798,7 +1798,7 @@ LispObject times2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return timesii(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case TAG_SFLOAT:
                     return timesis(a, b);
 #endif
@@ -1820,7 +1820,7 @@ LispObject times2(LispObject a, LispObject b)
                 default:
                     return aerror1("bad arg for times",  b);
             }
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
         case TAG_SFLOAT:
             switch (b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -1858,7 +1858,7 @@ LispObject times2(LispObject a, LispObject b)
                     switch ((int)b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return timesbi(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return timesbs(a, b);
 #endif
@@ -1884,7 +1884,7 @@ LispObject times2(LispObject a, LispObject b)
                     switch (b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return timesri(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return timesrs(a, b);
 #endif
@@ -1910,7 +1910,7 @@ LispObject times2(LispObject a, LispObject b)
                     switch (b & TAG_BITS)
                     {   case TAG_FIXNUM:
                             return timesci(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                         case TAG_SFLOAT:
                             return timescs(a, b);
 #endif
@@ -1939,7 +1939,7 @@ LispObject times2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return timesfi(a, b);
-#ifndef EXPERIMENT
+#ifdef SHORT_FLOAT
                 case TAG_SFLOAT:
                     return timesfs(a, b);
 #endif

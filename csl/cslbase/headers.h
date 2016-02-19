@@ -149,9 +149,7 @@
 #include "proc.h"
 #include "stream.h"
 #include "cslread.h"
-#ifdef EXPERIMENT
 #include "inthash.h"
-#endif
 
 #ifdef HAVE_FWIN
 #if HAVE_LIBWX

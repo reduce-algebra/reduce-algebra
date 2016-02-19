@@ -1561,34 +1561,21 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
                         printf("\n");
 #endif
                         break;
-#ifdef EXPERIMENT
                     case TYPE_STRING_1:
                     case TYPE_STRING_2:
                     case TYPE_STRING_3:
                     case TYPE_STRING_4:
-#else
-                    case TYPE_STRING:
-#endif
 #ifdef DEBUG_WIDTH
                         printf("String: %p: \"%s\"\n", p, ((char *)p)+2*CELL);
 #endif
                     case TYPE_BIGNUM:
                     case TYPE_VEC32:
-#ifdef EXPERIMENT
                     case TYPE_VEC16_1:
                     case TYPE_VEC16_2:
-#else
-                    case TYPE_VEC16:
-#endif
-#ifdef EXPERIMENT
                     case TYPE_VEC8_1:
                     case TYPE_VEC8_2:
                     case TYPE_VEC8_3:
                     case TYPE_VEC8_4:
-#else
-//                  case TYPE_VEC8:                  same as TYPE_BPS
-#endif
-#ifdef EXPERIMENT
                     case TYPE_BPS_1:
                     case TYPE_BPS_2:
                     case TYPE_BPS_3:
@@ -1629,19 +1616,6 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
                     case TYPE_BITVEC_30:
                     case TYPE_BITVEC_31:
                     case TYPE_BITVEC_32:
-#else
-                    case TYPE_BPS:
-                    case TYPE_SPARE:
-                    case TYPE_SP:
-                    case TYPE_BITVEC1:
-                    case TYPE_BITVEC2:
-                    case TYPE_BITVEC3:
-                    case TYPE_BITVEC4:
-                    case TYPE_BITVEC5:
-                    case TYPE_BITVEC6:
-                    case TYPE_BITVEC7:
-                    case TYPE_BITVEC8:
-#endif
                     case TYPE_SINGLE_FLOAT:
                     case TYPE_DOUBLE_FLOAT:
                     case TYPE_LONG_FLOAT:
@@ -1883,20 +1857,15 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
                         *newp = flip_64(make_padder(len));
                         newp = (int64_t *)((char *)newp + len);
                         break;
-#ifdef EXPERIMENT
                     case TYPE_STRING_1:
                     case TYPE_STRING_2:
                     case TYPE_STRING_3:
                     case TYPE_STRING_4:
-#else
-                    case TYPE_STRING:
-#endif
 #ifdef DEBUG_WIDTH
                         printf("String: %p: \"%s\"\n", oldp, ((char *)oldp)+4);
 #endif
                     case TYPE_BIGNUM:
                     case TYPE_VEC32:
-#ifdef EXPERIMENT
                     case TYPE_VEC16_1:
                     case TYPE_VEC16_2:
                     case TYPE_VEC8_1:
@@ -1943,21 +1912,6 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
                     case TYPE_BITVEC_30:
                     case TYPE_BITVEC_31:
                     case TYPE_BITVEC_32:
-#else
-                    case TYPE_VEC16:
-//                  case TYPE_VEC8:                  same as TYPE_BPS
-                    case TYPE_BPS:
-                    case TYPE_SPARE:
-                    case TYPE_SP:
-                    case TYPE_BITVEC1:
-                    case TYPE_BITVEC2:
-                    case TYPE_BITVEC3:
-                    case TYPE_BITVEC4:
-                    case TYPE_BITVEC5:
-                    case TYPE_BITVEC6:
-                    case TYPE_BITVEC7:
-                    case TYPE_BITVEC8:
-#endif
                     case TYPE_SINGLE_FLOAT:
 //        case TYPE_DOUBLE_FLOAT:
 //        case TYPE_LONG_FLOAT:
@@ -2173,12 +2127,8 @@ static void adjust_vecheap(void)
                             *(uint32_t *)(low+i) =
                                 flip_32(*(uint32_t *)(low+i));
                         break;
-#ifdef EXPERIMENT
                     case TYPE_VEC16_1:
                     case TYPE_VEC16_2:
-#else
-                    case TYPE_VEC16:
-#endif
                         for (i=CELL; i<doubleword_align_up(length_of_header(h)); i+=4)
                             *(uint32_t *)(low+i) =
                                 flip_halfwords(*(uint32_t *)(low+i));
@@ -2315,15 +2265,11 @@ static void adjust_bpsheap(void)
                         adjust((LispObject *)(fr+i));
                     *(Header *)fr = h;
                     break;
-#ifdef EXPERIMENT
                 case TYPE_BPS_1:
                 case TYPE_BPS_2:
                 case TYPE_BPS_3:
                 case TYPE_BPS_4:
                    len = length_of_byteheader(h);
-#else
-                case TYPE_BPS:
-#endif
 #ifdef DEBUG_WIDTH
                     printf("BPS item length %d\n", len);
 #endif
@@ -2361,11 +2307,7 @@ static void adjust_bpsheap(void)
 //
     if (SIXTY_FOUR_BIT && converting_to_64)
     {   intptr_t w = codefringe - codelimit - CSL_PAGE_SIZE - 0x100;
-#ifdef EXPERIMENT
         if (w > 0) getcodevector(TYPE_BPS_4, w);
-#else
-        if (w > 0) getcodevector(TYPE_BPS, w);
-#endif
     }
 }
 
@@ -4648,9 +4590,7 @@ static void cold_setup()
     qpackage(nil) = nil;
     qpname(nil) = make_string("NIL");
 #else
-#ifdef EXPERIMENT
-//  qpackage(nil) = nil;
-#endif
+    qpackage(nil) = nil;
     qpname(nil) = make_string("nil");
 #endif
     qcount(nil) = 0;
@@ -4677,9 +4617,7 @@ static void cold_setup()
     qpackage(nil) = qvalue(nil);    // For sake of restart code
     all_packages = ncons(qvalue(nil));
 #else
-#ifdef EXPERIMENT
-//  qpackage(nil) = qvalue(nil);
-#endif
+    qpackage(nil) = qvalue(nil);
 #endif
 
     packhdr_(CP) = TYPE_STRUCTURE + (packhdr_(CP) & ~header_mask);
@@ -4733,11 +4671,7 @@ static void cold_setup()
 // Ditto interrupts.
 //
 #define boffo_size 256
-#ifdef EXPERIMENT
-    boffo = getvector(TAG_VECTOR, TYPE_STRING_1, CELL+boffo_size);
-#else
-    boffo = getvector(TAG_VECTOR, TYPE_STRING, CELL+boffo_size);
-#endif
+    boffo = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+boffo_size);
     memset((void *)((char *)boffo + (CELL - TAG_VECTOR)), '@', boffo_size);
 #ifndef COMMON
     if (current_package == nil)
@@ -4758,12 +4692,10 @@ static void cold_setup()
     lisp_package = qvalue(current_package)  = qpackage(nil);
     qvalue(nil)              = nil;          // Whew!
 #endif
-#ifdef EXPERIMENT
     qvalue(nil)              = nil;
 //  qpackage(nil) = qpackage(current_package) = lisp_package;
 //  printf("nil=%p, lisp_package=%p, current_package=%p\n",
 //      (void *)nil, (void *)lisp_package, (void *)current_package);
-#endif
 
     B_reg = nil;                             // safe for GC
     unset_var                = make_undefined_symbol("~indefinite-value~");

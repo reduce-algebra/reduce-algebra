@@ -15,6 +15,23 @@
 # the automatic regeneration done.  There are long stories about why this is
 # the best idea I have at present about how to minimise global pain!
 
+# Before I do anything else I will update revision numbers
+# I want this script to be one I can launch from anywhere, but at least
+# some of its sub-scripts will not be so generous. So find out where it
+# lives so that other locations can be found relative to that.
+here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
+here=`cd \`dirname "$here"\` ; pwd -P`
+
+rev=`$here/revision.sh`
+# I will predict that the revision after this checkin increments by 1!
+rev=$(( $rev + 1 ))
+sed -e "s/#define REVISION.*/#define REVISION $rev/" \
+    < $here/../csl/cslbase/version.h > version.tmp
+mv version.tmp $here/../csl/cslbase/version.h
+sed -e "s/revision!\* :=.*/revision!\* := $rev;/" \
+    < $here/../packages/support/revision.red > revision.tmp
+mv revision.tmp $here/../packages/support/revision.red
+
 svn status > /tmp/svnstatus
 grep ^A < /tmp/svnstatus  > /tmp/svndiffs
 grep ^D < /tmp/svnstatus >> /tmp/svndiffs

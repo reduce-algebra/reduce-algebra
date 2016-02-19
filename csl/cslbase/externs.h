@@ -912,13 +912,6 @@ extern "C" LispObject plus2(LispObject a, LispObject b);
 extern void        preserve(const char *msg, int len);
 extern void        preserve_native_code(void);
 extern void        relocate_native_function(unsigned char *bps);
-#ifdef EXPERIMENT
-typedef void process_node_function(LispObject a);
-extern void scan_data(LispObject p,
-    process_node_function *first_visit,
-    process_node_function *subsequent_visit);
-extern void release_map();
-#endif // ExPERIMENT
 extern LispObject prin(LispObject u);
 extern const char *get_string_data(LispObject a, const char *why, size_t *len);
 extern void prin_to_stdout(LispObject u);
