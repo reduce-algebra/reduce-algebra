@@ -1927,14 +1927,13 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * one for the Lisp application from an image file (eg often Reduce).
  */
                         else if (strcmp(w, "version") == 0)
-                        {
+                        {   term_printf(
 #ifndef COMMON
-                            term_printf("Codemist Standard Lisp %s for %s: %s\n",
-                                        VERSION, IMPNAME, __DATE__);
+                        "Codemist Standard Lisp %s revision %d for %s: %s\n",
 #else
-                            term_printf("Codemist Common Lisp %s for %s: %s\n",
-                                        VERSION, IMPNAME, __DATE__);
+                        "Codemist Common Lisp %s revision %d for %s: %s\n",
 #endif
+                                VERSION, REVISION, IMPNAME, __DATE__);
                             my_exit(0);
                         }
                         else if (strcmp(w, "maxmem") == 0)
@@ -2987,12 +2986,11 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #endif
 
 #ifndef COMMON
-            term_printf("Codemist Standard Lisp %s for %s: %s\n",
-                        VERSION, IMPNAME, __DATE__);
+            term_printf("Codemist Standard Lisp %s revision %d for %s: %s\n",
 #else
-            term_printf("Codemist Common Lisp %s for %s: %s\n",
-                        VERSION, IMPNAME, __DATE__);
+            term_printf("Codemist Common Lisp %s revision %d for %s: %s\n",
 #endif
+                        VERSION, REVISION, IMPNAME, __DATE__);
         }
 #ifdef MEMORY_TRACE
         if (car_counter != 0x7fffffff)

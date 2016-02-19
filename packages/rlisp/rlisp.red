@@ -37,7 +37,12 @@ flag('(rlisp),'core!_package);
 
 date!* := date();
 
-if null version!* then version!* := "REDUCE";
+fluid '(revision!*);
+if null version!* then progn(
+  if null revision!* then
+    version!* := "REDUCE"
+  else version!* := compress ('!" . append (explodec "REDUCE-v",
+    append(explodec revision!*, '(!")))));
 
 % Hook to Rlisp88.
 

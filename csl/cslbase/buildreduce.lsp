@@ -467,6 +467,8 @@ rds(xxx := open("$reduce/packages/support/build.red", 'input));
 
 (load!-package!-sources prolog_file 'support)
 
+(load!-package!-sources 'revision 'support)
+
 (load!-package!-sources 'rlisp 'rlisp)
 
 (load!-package!-sources 'smacros 'support)
@@ -1492,6 +1494,8 @@ get_configuration_data();
 
 package!-remake2(prolog_file,'support);
 
+package!-remake2('revision,'support);
+
 package!-remake2(rend_file,'support);
 
 package!-remake2('entry,'support);
@@ -1559,6 +1563,8 @@ symbolic restart!-csl nil;
 
 (setq loaded!-packages!* '(cslcompat user cslprolo))
 
+(load!-package 'revision)
+
 (load!-package 'rlisp)
 
 (load!-package 'cslrend)
@@ -1578,7 +1584,11 @@ symbolic restart!-csl nil;
 
 (load!-package 'entry)
 
-(setq version!* "Reduce (Free CSL version)")
+
+(setq version!* (compress '!" .
+  (append
+    (explodec "Reduce (Free CSL version, revision ")
+    (append (explodec revision!*) (explodec ")""")))))
 
 (setq date!* (date))
 
