@@ -2413,7 +2413,7 @@ static bool cl_vec_equal(LispObject a, LispObject b)
                 case TYPE_STRING_2:
                 case TYPE_STRING_3:
                 case TYPE_STRING_4:
-                    got compare_strings;
+                    goto compare_strings;
                 default:return false;
             }
         case TYPE_BITVEC_1:
