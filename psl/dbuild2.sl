@@ -20,6 +20,8 @@ rds(xxx := open("$reduce/packages/support/build.red",'input));
 
 (load!-package!-sources prolog_file 'support)
 
+(load!-package!-sources 'revision 'support)
+
 (load!-package!-sources 'rlisp 'rlisp)
 
 (load!-package!-sources rend_file 'support)

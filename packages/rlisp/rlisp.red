@@ -41,8 +41,8 @@ fluid '(revision!*);
 if null version!* then progn(
   if null revision!* then
     version!* := "REDUCE"
-  else version!* := compress ('!" . append (explodec "REDUCE-v",
-    append(explodec revision!*, '(!")))));
+  else version!* := compress ('!" . append (explode2 "REDUCE (",
+    append(explode2 revision!*, '(!) !")))));
 
 % Hook to Rlisp88.
 

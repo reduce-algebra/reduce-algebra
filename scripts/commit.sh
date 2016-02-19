@@ -25,13 +25,37 @@ here=`cd \`dirname "$here"\` ; pwd -P`
 rev=`$here/revision.sh`
 # I will predict that the revision after this checkin increments by 1!
 rev=$(( $rev + 1 ))
-sed -e "s/#define REVISION.*/#define REVISION $rev/" \
-    < $here/../csl/cslbase/version.h > version.tmp
-mv version.tmp $here/../csl/cslbase/version.h
-sed -e "s/revision!\* :=.*/revision!\* := $rev;/" \
-    < $here/../packages/support/revision.red > revision.tmp
-mv revision.tmp $here/../packages/support/revision.red
 
+# I will update version.h is cslbase if my checkin is from a directory
+# that contains it. An effect will be that any checkin from either the
+# PSL part of the tree or of the packages directory will not update
+# the CSL revision record.
+if test -f trunk/csl/cslbase/version.h || \
+   test -f csl/cslbase/version.h || \
+   test -f cslbase/version.h || \
+   test -f version.h
+then
+  sed -e "s/#define REVISION.*/#define REVISION $rev/" \
+      < $here/../csl/cslbase/version.h > version.tmp
+  mv version.tmp $here/../csl/cslbase/version.h
+fi
+# I will update the Reduce-based record of revision if the checkin
+# either includes support/revision.red or is in some lewer-level
+# part of the packages directory.
+newrevision=""
+if test -f trunk/packages/support/revision.red || \
+   test -f packages/support/revision.red || \
+   test -f support/revision.red || \
+   test -f revision.red || \
+   test -f ../support/revision.red || \
+   test -f ../../support/revision.red || \
+   test -f ../../../support/revision.red
+then
+  sed -e "s/revision!\* :=.*/revision!\* := $rev;/" \
+      < $here/../packages/support/revision.red > revision.tmp
+  mv revision.tmp $here/../packages/support/revision.red
+  newrevision="$here/../packages/support/revision.red "
+fi
 svn status > /tmp/svnstatus
 grep ^A < /tmp/svnstatus  > /tmp/svndiffs
 grep ^D < /tmp/svnstatus >> /tmp/svndiffs
@@ -47,7 +71,7 @@ do
   mv /tmp/work /tmp/svnfiles
 done
 
-tmp="svn ci"
+tmp="svn ci $newrevisionx"
 for x in `cat /tmp/svnfiles`
 do
   tmp="$tmp $x"

@@ -1,3 +1,5 @@
+(load!-package 'revision)
+
 (load!-package 'rlisp)
 
 (load!-package rend_file)

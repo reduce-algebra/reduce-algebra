@@ -145,6 +145,7 @@ rds(xxx := open("$reduce/packages/support/build.red",'input));
 (close xxx)
 
 (load!-package!-sources prolog_file 'support)
+(load!-package!-sourced 'revision 'siupport)
 (load!-package!-sources 'rlisp 'rlisp)
 (load!-package!-sources rend_file 'support)
 (load!-package!-sources 'poly 'poly)
@@ -182,6 +183,7 @@ errorset('(load compat),nil,nil);
 on verboseload;
 if not getd 'package!-remake2 then load remake;
 package!-remake2(prolog_file,'support);
+package!-remake2('revision, 'support);
 package!-remake2(rend_file,'support);
 package!-remake2('entry,'support);
 package!-remake2('remake,'support);
@@ -307,6 +309,7 @@ cd psl
 (load module)                      % Contains definition of load-package.
 (load pslprolo)                    % PSL specific code.
 
+(load!-package 'revision)
 (load!-package 'rlisp)
 (load!-package rend_file)
 (load!-package 'poly)

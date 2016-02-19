@@ -186,6 +186,7 @@ rds(xxx := open("$reduce/packages/support/build.red",'input));
 (close xxx)
 
 (load!-package!-sources 'pslprolo 'support)
+(load!-package!-sources 'revision 'support)
 (load!-package!-sources 'rlisp 'rlisp)
 (load!-package!-sources 'pslrend 'support)
 (load!-package!-sources 'poly 'poly)
@@ -223,6 +224,7 @@ errorset('(load compat),nil,nil);
 on verboseload;
 if not getd 'package!-remake2 then load remake;
 package!-remake2('pslprolo,'support);
+package!-remake2('revision,'support);
 package!-remake2('pslrend,'support);
 package!-remake2('entry,'support);
 package!-remake2('remake,'support);

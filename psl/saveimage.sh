@@ -127,6 +127,7 @@ cd psl
 (load module)                      % Contains definition of load-package.
 (load pslprolo)                    % PSL specific code.
 
+(load!-package 'revision)
 (load!-package 'rlisp)
 (load!-package rend_file)
 (load!-package 'poly)
@@ -134,7 +135,10 @@ cd psl
 (load!-package 'alg)
 (load!-package 'mathpr)
 (load!-package 'entry)
-(setq version!* "Reduce (Free PSL version)") (setq date!* (date))
+(setq version!* (compress (append
+   (explode2 """Reduce (Free PSL version, revision ")
+   (append (explode2 revision!*) '(!) !")))))
+(setq date!* (date))
 (initreduce)
 
 (setq !*loadversion t)             % Load entry module during BEGIN.
