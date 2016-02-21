@@ -226,6 +226,28 @@ procedure lto_sconcat(l);
       else
 	 car l;
 
+asserted procedure lto_substr(s: String, n: Integer, m: Integer): ExtraBoolean;
+   % Return the n character substring starting at m, or nil.
+   begin scalar l, res;
+      if eqn(m, 0) then
+	 return nil;
+      l := cdr explode s;
+      while not eqn(m, 1) and l do <<
+	 m := m - 1;
+	 pop l
+      >>;
+      if not l then
+ 	 return nil;
+      res := '!" . nil;
+      while not eqn(n, 0) and l do <<
+	 n := n - 1;
+	 res := pop l . res
+      >>;
+      if not l then
+ 	 return nil;
+      return compress reversip('!" . res)
+   end;
+
 procedure lto_max(l);
    if null l then '(minus infinity) else lto_max1 l;
 

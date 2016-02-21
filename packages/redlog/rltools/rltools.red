@@ -254,8 +254,18 @@ operator rlrndseed;
    procedure rltools_trunk();
       compress('!" . append(explode2 !@reduce, '(!/ !")));
 
-   symbolic procedure get_resource_directory();
-      concat(get!-lisp!-directory(), "/reduce.resources");
+   procedure get_resource_directory();
+      begin scalar l, os, a;
+         l := lispsystem!*;
+	 while not os and l do <<
+	    a := pop l;
+	    if eqcar(a, 'opsys) then
+	       os := cdr a
+	 >>;
+	 if lto_substr(id2string os, 6, 1) = "darwin" then
+	    return concat(get!-lisp!-directory(), "/../Resources/reduce.resources");
+      	 return concat(get!-lisp!-directory(), "/reduce.resources")
+      end;
 
 #endif
 
