@@ -514,17 +514,17 @@ de := {{{},{h=0,f=0},{g},{g}},
 
        {{},
 
-        {h=c_14*z,
+        {h= - c_14*z,
 
-            c_15
-         g=------,
-            c_14
+             - c_13
+         g=---------,
+             c_14
 
-         f= - c_15*y},
+         f= - c_13*y},
 
-        {c_14,c_15},
+        {c_13,c_14},
 
-        {c_15,c_14}},
+        {c_13,c_14}},
 
        {{},{g=0,f=0},{h},{}}}
 
@@ -535,13 +535,13 @@ de;
 
  {{},
 
-               c_15
-  {h=c_14*z,g=------,f= - c_15*y},
-               c_14
+                   - c_13
+  {h= - c_14*z,g=---------,f= - c_13*y},
+                   c_14
 
-  {c_14,c_15},
+  {c_13,c_14},
 
-  {c_15,c_14}},
+  {c_13,c_14}},
 
  {{},{g=0,f=0},{h},{}}}
 
@@ -549,7 +549,7 @@ de;
 fdep append(third first ws,third second ws,third third ws)$
 
 
-g=g(x), c_14, c_15
+g=g(x), c_13, c_14
 
 nodependlist {f,g,h}$
 
@@ -751,39 +751,39 @@ crack({de},{},{f,g},{});
 {{{},
 
               5               4                         4
-  {g=(6*cos(x) *c_18  - cos(x) *c_18  *sin(x) + 9*cos(x) *sin(x)*c_18
+  {g=(6*cos(x) *c_17  - cos(x) *c_17  *sin(x) + 9*cos(x) *sin(x)*c_17
                     x               2x
 
                  3                 2                         2
-       + 2*cos(x) *c_18  - 2*cos(x) *c_18  *sin(x) + 2*cos(x) *sin(x)*c_18
+       + 2*cos(x) *c_17  - 2*cos(x) *c_17  *sin(x) + 2*cos(x) *sin(x)*c_17
                        x                 2x
 
                                                 2
-       - 8*cos(x)*c_18  - 8*sin(x)*c_18)/(cos(x) *sin(x)
+       - 8*cos(x)*c_17  - 8*sin(x)*c_17)/(cos(x) *sin(x)
                       x
 
                 4           2
         *(cos(x)  + 4*cos(x)  + 4)),
 
                4                  4                3
-   f=( - cos(x) *c_18   + 4*cos(x) *c_18 - 4*cos(x) *c_18 *sin(x)
+   f=( - cos(x) *c_17   + 4*cos(x) *c_17 - 4*cos(x) *c_17 *sin(x)
                      2x                                  x
 
                  2                  2
-       - 2*cos(x) *c_18   - 6*cos(x) *c_18 - 4*cos(x)*c_18 *sin(x) - 4*c_18)/(
+       - 2*cos(x) *c_17   - 6*cos(x) *c_17 - 4*cos(x)*c_17 *sin(x) - 4*c_17)/(
                        2x                                 x
 
               3        4           2
         cos(x) *(cos(x)  + 4*cos(x)  + 4))},
 
-  {c_18},
+  {c_17},
 
   {}}}
 
 fdep third first ws$
 
 
-c_18=c_18(x)
+c_17=c_17(x)
 
 clearrules trig1_$
 
@@ -874,13 +874,13 @@ crack({de},{},{xi,eta},{x,y,y1});
 {{{},
 
                                   2
-  {eta= - 2*log(x)*c_24*y - c_24*x  - c_25*y,
+  {eta= - 2*log(x)*c_23*y - c_23*x  - c_24*y,
 
-       x*( - 2*log(x)*c_24 - c_24 - c_25)
+       x*( - 2*log(x)*c_23 - c_23 - c_24)
    xi=------------------------------------},
                        2
 
-  {c_24,c_25},
+  {c_23,c_24},
 
   {}}}
 
@@ -888,7 +888,7 @@ crack({de},{},{xi,eta},{x,y,y1});
 fdep third first ws$
 
 
-c_24, c_25
+c_23, c_24
 
 nodependlist {xi,eta}$
 
@@ -931,15 +931,15 @@ crack({de},{},{f},{});
 
 
                         2
-          - 2*c_28 - x%1
-{{{},{f=------------------},{c_28},{}}}
+          - 2*c_27 - x%1
+{{{},{f=------------------},{c_27},{}}}
                 2
 
 
 fdep third first ws$
 
 
-c_28=c_28(y!%1)
+c_27=c_27(y!%1)
 
 write "The list of transformations done (here only one): ",
       lisp done_trafo;
@@ -1008,19 +1008,19 @@ crack(de,{},{f},{});
 
 
          2                               2
-{{{f   *z  + f *sin(y)*x + c_29 - 3*f + x *z},
+{{{f   *z  + f *sin(y)*x + c_28 - 3*f + x *z},
     x,y       y
 
   {},
 
-  {f,c_29},
+  {f,c_28},
 
   {}}}
 
 fdep third first ws$
 
 
-f=f(x,y,z), c_29=c_29(z)
+f=f(x,y,z), c_28=c_28(z)
 
 nodependlist {f}$
 
