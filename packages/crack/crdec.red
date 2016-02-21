@@ -1618,14 +1618,6 @@ begin scalar s,h,hh,multpl,squ,q,pdescp,fctr,subtrahend$
  if s=caar l then <<h:=cadr l$ multpl:=pmult>> % h are the data of the other (lower priority, e.g. lower
              else <<h:=car  l$ multpl:=qmult>>$% order) equation that typically gets differentiated
                                                % multpl is the multiplier to s which needs to be checked
-
-%write"l = ",l$terpri()$
-%write"multpl = "$mathprint {'!*sq,multpl,t}$
-%write"pmult = "$mathprint {'!*sq,pmult,t}$
-%write"qmult = "$mathprint {'!*sq,qmult,t}$
-%write"s = ",s$terpri()$
-%write"car h = ",car h$terpri()$
-
  return
  if (null s) or              % no equation to be substituted as both equations are differentiated
     get(car h,'linear_) or   % equation<>s is linear
@@ -1649,11 +1641,21 @@ begin scalar s,h,hh,multpl,squ,q,pdescp,fctr,subtrahend$
                                                 else <<% a case distinction is issued
   % Check whether multpl=0 is a known equation
   hh:=simplifySQ(multpl,smemberl(ftem_,multpl),t,nil,t)$
+
+  % Check for each factor whether it is equal to one equation.
+  squ:=hh$
+  pdescp:=nil$
+  while squ and null pdescp do <<
+   pdescp:=pdes$
+   while pdescp and get(car pdescp,'sqval) neq car squ do pdescp:=cdr pdescp;
+   squ:=cdr squ
+  >>$
   squ:=car hh;
   for each q in cdr hh do squ:=multsq(q,squ)$
-
-  pdescp:=pdes$
-  while pdescp and get(car pdescp,'sqval) neq squ do pdescp:=cdr pdescp;
+  if null pdescp then <<
+   pdescp:=pdes$
+   while pdescp and get(car pdescp,'sqval) neq squ do pdescp:=cdr pdescp;
+  >>$
   if pdescp then <<
    if print_ then <<
     write"When attempting to reduce equation ",s," with ",car h,
@@ -1706,15 +1708,22 @@ begin scalar l0,l1,l2,ruli,cntr,mod_switched$ %,f$
  cntr:=0$
 again:
  l1:=dec_and_fct_select(l0,vl,nil,hp,ordering)$
- 
  if null l1 then l:=nil else 
 
- if null (l2:=dec_new_equation(l1,nil,pdes)) then    
+ if in_cycle({30,stepcounter_,get(caar l1,'printlength),
+              get(caadr l1,'printlength),
+              caddr l1,get(cadddr l1,'printlength),
+              length get(cadddr l1,'fcts)}) then <<
+   add_both_dec_with(ordering,caar l1,caadr l1,nil)$ 
+   goto again; 
+ >>                                         else
+
+ if null (l2:=dec_new_equation(l1,nil,pdes)) then
  <<l:=nil;         % iff err_catch returns nil (e.g. elimin() did not complete) 
    add_both_dec_with(ordering,caar l1,caadr l1,nil)$
    cntr:=add1 cntr;
    if cntr<4 then goto again
- >>                                     else
+ >>                                          else
 
  % Have case distinctions been initiated?
  if not pairp l2 then  % i.e. leave l=pdes, i.e. dec_one_step pretends

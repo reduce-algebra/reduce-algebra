@@ -412,7 +412,6 @@ begin scalar h1,h2,h3,p,q$
   nil
  >>                else
  if domainp car h1 then return nil$
-
  
  % If a high order derivative is non-zero then all corresponding lower order
  % derivatives must be non-zero and are added to h1.

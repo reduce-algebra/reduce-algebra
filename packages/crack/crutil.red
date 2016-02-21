@@ -401,7 +401,8 @@ symbolic procedure updateSQ(equ,sqval,fac,pval,ftem,vl,simp_flag,orderl,pdes)$
 % that it is known for sure that the elements of fs do not factorize,
 % as tested with err_catch_fac2().
 %
-begin scalar l,h,nvars,rational,nonrational,allvarfcts,droped_factors,carl,rati$
+begin scalar l,h,h2,h3,h4,nvars,rational,nonrational,allvarfcts,
+             droped_factors,carl,rati$
 
   % safety precaution: 
   if pairp sqval and car sqval = '!*sq then 
@@ -443,7 +444,13 @@ begin scalar l,h,nvars,rational,nonrational,allvarfcts,droped_factors,carl,rati$
      while h do <<
       if null domainp numr simp cadar h then <<
        if caddar h > 1 then droped_factors:=t$
-       l:=cons(numr cadr cadar h,l)  % cadr instead of simp as it is no number
+       % 3 Feb 2016: New: 
+       h2:=simplifySQ(cadr cadar h,ftem,nil,nil,t)$ % cadr instead of simp as cadar h is no number
+       for each h3 in h2 do 
+       if member(h3,l) then droped_factors:=t
+                       else l:=cons(numr h3,l)$
+       % 3 Feb 2016: Old: 
+       % l:=cons(numr cadr cadar h,l)  % cadr instead of simp as cadar h is no number
       >>$
       h:=cdr h
      >>
@@ -454,7 +461,7 @@ begin scalar l,h,nvars,rational,nonrational,allvarfcts,droped_factors,carl,rati$
     >>;
 
     if null l then <<sqval:=nil;  put(equ,'fac,nil)$  fac:=nil>> else 
-    if null cdr l then <<sqval:=(car l . 1);  put(equ,'fac,nil)$  fac:=nil>> 
+    if null cdr l then <<sqval:=(car l . 1);  put(equ,'fac,2)$  fac:=2>> 
                   else <<
      put(equ,'fac,for each h in l collect (h . 1))$
      sqval:=(car l . 1)$ l:=cdr l$
@@ -463,7 +470,7 @@ begin scalar l,h,nvars,rational,nonrational,allvarfcts,droped_factors,carl,rati$
      fac:=get(equ,'fac)
     >>
    >>
-  >>$
+  >>$ % of null sqval and not null fac, now sqval and fac are both assigned
   if sqval and not sqzerop sqval then <<
    if null simp_flag and (null fac or null cdr fac) then <<
 
@@ -484,7 +491,13 @@ begin scalar l,h,nvars,rational,nonrational,allvarfcts,droped_factors,carl,rati$
       while h do <<
        if null domainp numr simp cadar h then <<
 	if caddar h > 1 then droped_factors:=t$
-	l:=cons(numr cadr cadar h,l)  % cadr instead of simp as it is no number
+        % 3 Feb 2016: New: 
+        h2:=simplifySQ(cadr cadar h,ftem,nil,nil,t)$ % cadr instead of simp as cadar h is no number
+        for each h3 in h2 do 
+        if member(h3,l) then droped_factors:=t
+                        else l:=cons(numr h3,l)$
+        % 3 Feb 2016: Old: 
+	% l:=cons(numr cadr cadar h,l)  % cadr instead of simp as it is no number
        >>$
        h:=cdr h
       >>
@@ -504,11 +517,13 @@ begin scalar l,h,nvars,rational,nonrational,allvarfcts,droped_factors,carl,rati$
     if pval and null droped_factors then put(equ,'pval,pval)
    >>                else <<
     if null ftem then ftem:=ftem_; % for safety, just in case 
-    if null fac then l:=simplifySQ(sqval,ftem,t,equ,nil)
+    if null fac then l:=simplifySQ(sqval,ftem,t,equ,t)
                 else <<l:=nil$
                        for each f in fac do <<
                          h:=simplifySQ(f,ftem,t,equ,nil)$
-                         if h neq {(1 . 1)} then l:=union(h,l)
+                         if h = {(1 . 1)} then addSQineq(pdes,f,t)
+                                          else l:=union(h,l)
+%                        if h neq {(1 . 1)} then l:=union(h,l)
                        >>;
                        if null l then l:={(1 . 1)}
                      >>$
@@ -709,26 +724,63 @@ begin scalar l,h,nvars,rational,nonrational,allvarfcts,droped_factors,carl,rati$
     new_ineq_from_equ_SQ(car pdes,pdes)$
     if null contradiction_ then simp_all_ineq_with_equ_SQ(equ,pdes)$
 
-    % Does the new equation imply a vanishing derivative?
+    % Does the new equation imply a vanishing derivative which is known
+    % not to vanish?
     h:=get(equ,'allvarfcts)$
-    if h and null cdr h and get(equ,'vars) and 
-       freeoflist(get(equ,'kern),get(equ,'vars)) then <<
-     l:=if freeof(get(equ,'nonrational),car h) then get(equ,'vars)
-                                               else nil$
-     while l and null member(simp {'df,car h,car l},ineq_) do l:=cdr l;
-     if l then <<
-      if print_ then <<write"Next comes a separation of equation ",equ,
-                            " wrt. ",car h$terpri()>>$
-      h:=cdr algebraic(coeff(lisp {'!*sq,get(equ,'sqval),t},lisp car h));
+    if h and null cdr h and get(equ,'vars) and cdr get(equ,'fcts) then <<
 
-      to_do_list:=
-      cons(list('add_eqns,
-                for each g in h collect if pairp g and 
-                                           car g = '!*sq then cadr g
-                                                         else simp g),to_do_list)
-     >> else
-     to_do_list:=cons(list('add_differentiated_pdes,list equ),
-                      to_do_list)
+     % There should be only one type of derivative of car h
+     h4:=nil$ h3:=t$
+     l:=get(equ,'derivs);
+     while h3 and l do <<
+      if caaar l = car h then
+      if null h4 then h4:=caar l 
+                 else if h4 neq caar l then h3:=nil;
+      l:=cdr l
+     >>$
+
+     if h3 then << 
+     
+      % There should be only one derivative of car h in equ.
+      h4:=if cdr h4 then cons('df,h4) % h4 is the only occuring
+                    else car h4$      % derivative of car h
+
+      % Stop if car h does occur non-rationally
+      l:=if freeof(get(equ,'nonrational),car h) then get(equ,'vars)
+                                                else nil$
+
+      if l then <<
+       % Continue only with variables which do not come up explicitly
+       h2:=nil$
+       for each h3 in l do % for each potential separation variable h3 do
+%       if freeof(get(equ,'kern),h3) then h2:=cons(h3,h2);
+       if not member(h3,get(equ,'kern)) then h2:=cons(h3,h2);
+       l:=h2;
+      >>$
+
+      if l then <<
+       % Continue only with those variables which are not variables 
+       % of other functions
+       h2:=setdiff(get(equ,'fcts),h);
+       for each h3 in h2 do l:=setdiff(l,fctargs h3);
+      >>$
+
+      if l then << % else there is no variable of which car h should be independent
+       while l and null member(simp {'df,h4,car l},ineq_) do l:=cdr l;
+       if l then <<
+        if print_ then <<write"Next comes a separation of equation ",equ,
+                              " wrt. ",h4$terpri()>>$
+        h:=cdr algebraic(coeff(lisp {'!*sq,get(equ,'sqval),t},lisp h4));
+        to_do_list:=
+        cons(list('add_eqns,
+                  for each g in h collect if pairp g and 
+                                             car g = '!*sq then cadr g
+                                                           else simp g),to_do_list)
+       >> else
+       to_do_list:=cons(list('add_differentiated_pdes,list equ),
+                        to_do_list)
+      >>
+     >>
     >>$
 
     % Must all terms be zero?
@@ -792,7 +844,7 @@ end$
 %  write"reval val=",valu$terpri()
 % >>                                       else 
 %%    for each l in cdr valu do
-%%    if null may_vanish l then addineq(pdes,reval{'DIFFERENCE,valu,l})
+%%    if null may_vanish l then addineq(pdes,reval{'difference,valu,l})
 % if null may_vanish cadr  valu then addineq(pdes,caddr valu) else 
 % if null may_vanish caddr valu then addineq(pdes,cadr  valu)
 %end$
@@ -1180,7 +1232,10 @@ if (null print_) or (get(s,'printlength)>print_) then begin scalar a,b$
    write": "$ terpri()$
    print_derivs(s,nil)$
   >>   else <<
-   if get(s,'vars) then write" of functions of all variables: "$ 
+   if (a:=get(s,'vars)) then <<write" of functions of all ",length a,
+                                    " variables: "$ 
+                               listprint get(s,'vars)
+                             >>$
    terpri()$
    print_derivs(s,t)$
   >>
@@ -1207,6 +1262,23 @@ begin scalar a,d,dl,avf;
 
 % write dl % hard to read
 end$
+
+symbolic procedure type_pre_ex(p)$
+% p is an expression in prefix form
+if print_ then mathprint 
+if pairp p and 
+   (((car p = 'plus    ) and ( length       p > print_     )) or
+    ((car p = 'quotient) and ((length cadr  p > print_) or
+                              (length caddr p > print_)    ))    )
+then bldmsg("%w%d%w"," ",no_of_tm_sf numr p," terms ")
+else p$
+
+symbolic procedure type_sq_ex(p)$
+% p is an expression in SQ form
+if print_ then mathprint 
+if (delengthSQ p > print_) 
+then bldmsg("%w%d%w"," ",no_of_tm_sf numr p," terms ")
+else {'!*sq,p,t}$
 
 symbolic procedure typeeqlist(l)$
 %  print equations and their property lists
@@ -2707,7 +2779,7 @@ begin scalar inhom,f;
  for each f in fl do inhom:=err_catch_sub(f,0,inhom);
  return <<
   for each f in fl do pde:=subst({'times,lin_test_const,f},f,pde);
-  freeof(reval {'quotient,{'DIFFERENCE,pde,inhom},lin_test_const},lin_test_const)
+  freeof(reval {'quotient,{'difference,pde,inhom},lin_test_const},lin_test_const)
  >>   
 end$
 
@@ -2761,7 +2833,7 @@ symbolic procedure plot_non0_separants(s)$
 % the symbol is non-zero.
 begin scalar dv,dl,dlc,dr,fdl,avf,ur;
  if (userrules_ neq {'list}) and
-    (zerop reval {'DIFFERENCE,
+    (zerop reval {'difference,
                   car  cdadr userrules_,
                   cadr cdadr userrules_})
  then <<ur:=t; algebraic (clearrules lisp userrules_) >>$
@@ -2963,6 +3035,17 @@ end$
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %  leading derivatives  %
 %%%%%%%%%%%%%%%%%%%%%%%%%
+
+symbolic procedure maxmum(a,b)$
+if a>b then a else b$
+
+symbolic procedure degree_SF(sf,f)$
+% returns the highest exponent of f in the standard form sf
+% (((mvar . ldeg) . lc) . red)
+if null pairp sf then 0 else
+if f = mvar sf then ldeg sf
+               else maxmum(degree_SF(lc  sf,f),
+                           degree_SF(red sf,f) )$
 
 symbolic procedure listrel(a,b,l)$
 %   a>=b  w.r.t list l; e.g. l='(a b c) ->  a>=a, b>=c 
@@ -3404,7 +3487,7 @@ begin scalar p,h,f$
  f:=cadadr ex$
  if pairp p and (car p='plus)
     then p:=reval cons('plus,cons(list('minus,cadr ex),cdr p))
-    else p:=reval list('DIFFERENCE,p,cadr ex)$
+    else p:=reval list('difference,p,cadr ex)$
  p:=integratepde(p,cons(f,fges),nil,nil,nil)$
  if p and (car p) and not cdr p then 
     <<h:=car lderiv(car p,f,fctargs f)$
@@ -3509,7 +3592,6 @@ if smember(car fl,ex) then cons(car fl,smemberl(cdr fl,ex))
                        
 symbolic operator my_freeof$
 symbolic procedure my_freeof(u,v)$
-%  a patch for FREEOF in REDUCE 3.5
 not(smember(v,u)) and freeofdepl(depl!*,u,v)$
 
 lisp flag('(my_freeof),'BOOLEAN)$
@@ -3849,7 +3931,8 @@ end$
 symbolic procedure print_statistic(pdes,fcts)$
 if print_ then begin
  integer j,k,le,r,s$
- scalar n,m,p,el,fl,vl,pl,st$
+ scalar n,m,p,el,fl,vl,pl,st,pdecp$
+ pdecp:=pdes$
 
  %--- printing the stats of equations:
  if pdes then <<
@@ -3902,10 +3985,10 @@ if print_ then begin
             if car pl = 1 then ":" else "s:"$
       pl:=cdr pl
      >>           else <<pl:=el;el:=nil>>;
-     terpri()$
-     k:=0;
+%     terpri()$
+     k:=29;
      while pl do <<
-      if (k geq 70) then <<k:=0;terpri()>>$
+      if (k geq 70) then <<k:=0;terpri();write"  ">>$
       k:=k+4+length explode car pl + length explode get(car pl,'terms)$
       write car pl,"(",get(car pl,'terms)$
       if (s:=get(car pl,'starde)) then <<
@@ -3929,6 +4012,7 @@ if print_ then begin
   >>
  >>
  else <<terpri()$write "no equations">>$
+
  %--- printing the stats of functions:
  for each f in fcts do if not pairp f then fl:=cons(f,fl)$
  for each f in fsub_ do fl:=delete(car f,fl);
@@ -3957,12 +4041,15 @@ if print_ then begin
     if n>1 then write"s"$
     write" : "
    >>$
-   k:=0;
+   k:=5;
    el:=sort_according_to(el,ftem_)$   
    while el do <<
-    if k=10 then <<k:=0;terpri()>>
-            else k:=add1 k$
+    if k=8 then <<k:=0;terpri();write"  ">>
+           else k:=add1 k$
     write car el$
+    n:=0; 
+    for each p in pdecp do if member(car el,get(p,'fcts)) then n:=add1 n;
+    write"(",n,")"$
     el:=cdr el$
     if el then write","$
    >>$
@@ -5947,11 +6034,11 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak,modular_bak,
   modular_bak:=!*modular;  
   if !*modular then off modular$ 
   % simp converts prefixed SQ into SQ and resimp gets rid of :mod:
-  h:=errorset({'reval,list('FACTORIZE,mkquote mk!*sq resimp simp a)},nil,nil) 
+  h:=errorset({'reval,list('factorize,mkquote mk!*sq resimp simp a)},nil,nil) 
      where !*protfg=t;                                     % reval --> aeval for speedup
   if modular_bak then on modular
  >>           else
- h:=errorset({'reval,list('FACTORIZE,mkquote a)},nil,nil)  % reval --> aeval for speedup
+ h:=errorset({'reval,list('factorize,mkquote a)},nil,nil)  % reval --> aeval for speedup
     where !*protfg=t;
  if modular_bak then on modular$
  if rational_changed then <<off msg$ algebraic(off rational)$ on msg>>$
@@ -5994,11 +6081,11 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak,
   modular_bak:=!*modular;  
   if !*modular then off modular$ 
   % simp converts prefixed SQ into SQ and resimp gets rid of :mod:
-  h:=errorset(list('FACTORIZE,mkquote mk!*sq resimp simp a),nil,nil) 
+  h:=errorset(list('factorize,mkquote mk!*sq resimp simp a),nil,nil) 
      where !*protfg=t;
   if modular_bak then on modular
  >>           else
- h:=errorset(list('FACTORIZE,mkquote a),nil,nil) where !*protfg=t;
+ h:=errorset(list('factorize,mkquote a),nil,nil) where !*protfg=t;
 
  if rational_changed then <<off msg$ algebraic(off rational)$ on msg>>$
  if no_powers_changed then algebraic(on nopowers)$
@@ -6068,7 +6155,7 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak;
  kernlist!*bak:=kernlist!*$
  kord!*bak:=kord!*$
  bakup_bak:=backup_;backup_:='max_gc_fac$
- h:=errorset({'aeval,list('list,''GCD,mkquote a,mkquote b)},nil,nil)
+ h:=errorset({'aeval,list('list,''gcd,mkquote a,mkquote b)},nil,nil)
     where !*protfg=t;
  kernlist!*:=kernlist!*bak$
  kord!*:=kord!*bak;
@@ -6629,6 +6716,7 @@ if (car a = car b              ) and
    ((cddr a = cddr b) or  % full equality apart from stepcounter_
     ((car a neq 'subst  ) and
      (car a neq   27    ) and
+     (car a neq   30    ) and
      (car a neq   11    ) and
      (car a neq   59    ) and
      (car a neq 'sub_sys)     )) then t
@@ -6639,15 +6727,15 @@ symbolic procedure in_cycle(h)$
 begin scalar cpls1,cpls2,n,m,cycle;
  cpls1:=last_steps$
  if car h = 11 then <<
-  n:=1;
-  m:=1;
+  n:=0;
+  m:=0;
   while cpls1 and (m<20) do << 
    if same_steps(h,car cpls1) then n:=add1 n;
    m:=add1 m;
    cpls1:=cdr cpls1
   >>;
-  if 3*n>m then cycle:=t else cycle:=nil
- >>            else
+  if (n>1) and (3*n>m) then cycle:=t else cycle:=nil
+ >>                    else
  if car h='subst then <<
   n:=0$
   while cpls1 do <<
@@ -6697,6 +6785,7 @@ begin scalar cpls1,cpls2,n,m,cycle;
   <<n:=add1 n;cpls1:=cdr cpls1>>$
   while cpls1 and (not same_steps(h,car cpls1)) do 
   <<n:=add1 n;cpls1:=cdr cpls1>>$
+
   if null cpls1 or 
      ((reval {'plus,n,n})>length last_steps) then cycle:=nil 
                                              else <<
@@ -7220,7 +7309,7 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
      a:=car try_to_sub_cp; try_to_sub_cp:=cdr try_to_sub_cp;
      if tr_merge then <<write"try to sub next: ",a$terpri()>>$
      if not freeof(sb,a) and lin_check(sb,{a}) then <<
-      num_sb:=reval {'DIFFERENCE, sb,{'times,a,coeffn(sb,a,1)}};
+      num_sb:=reval {'difference, sb,{'times,a,coeffn(sb,a,1)}};
       if tr_merge then <<write"num_sb="$mathprint num_sb>>$
 %      singular_ex_cp:=singular_ex;
 %      while singular_ex_cp do << 
@@ -7281,7 +7370,7 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
        
          h:=append(regular_sb,singular_sb);
          while h and a neq cadar h do h:=cdr h;
-         if h then remain_c2:=append(remain_c2,list {'DIFFERENCE,caddar h,caddr b});
+         if h then remain_c2:=append(remain_c2,list {'difference,caddar h,caddr b});
 	 if tr_merge then <<write"remain_c2="$print_indexed_list(cdr remain_c2)>>$
          singular_ex_cp:=nil;
          try_to_sub:=delete(a,try_to_sub);
@@ -7349,7 +7438,7 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
 %  while try_to_sub_cp do <<
 %   a:=car try_to_sub_cp; try_to_sub_cp:=cdr try_to_sub_cp;
 %   if not freeof(sb_cp,a) and lin_check(sb_cp,{a}) then <<
-%    num_sb:={'DIFFERENCE, sb_cp,{'times,a,coeffn(sb_cp,a,1)}};
+%    num_sb:={'difference, sb_cp,{'times,a,coeffn(sb_cp,a,1)}};
 %
 %    singular_ex_cp:=singular_ex;
 %    while singular_ex_cp do << 
@@ -8671,7 +8760,7 @@ module consistency_checks$
 %  h:=get(p,'histry_);
 %  for each q in pdes do
 %  h:=subst(prepsq get(q,'sqval),q,h)$
-%  if not zerop reval {'DIFFERENCE,prepsq get(p,'sqval),h} then <<
+%  if not zerop reval {'difference,prepsq get(p,'sqval),h} then <<
 %   write"The history value of ",p," is not correct!"$
 %   k:=t$
 %   terpri()
@@ -8977,8 +9066,6 @@ begin
                   %          commented out if a statistics about successful 
                   %          assumptions shall be performed
  >>$
- %write"ct = "$terpri()$
- %prettyprint ct$ terpri()$
 
  consistenttree(ct,nil)$
 
@@ -9194,7 +9281,7 @@ module let_rule_handling$
 symbolic procedure copyrule2eqn(h,pdes)$
 % h = {'replaceby,f, {'!*sq,...,t}}
 begin scalar l$
- l:=mkeqSQ(simp!* {'DIFFERENCE,cadr h,caddr h},nil,nil,ftem_,vl_,
+ l:=mkeqSQ(simp!* {'difference,cadr h,caddr h},nil,nil,ftem_,vl_,
                     allflags_,t,list(0),nil,pdes)$
  pdes:=eqinsert(l,pdes);
  return pdes

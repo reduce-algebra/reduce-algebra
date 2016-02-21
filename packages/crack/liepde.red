@@ -370,7 +370,7 @@ end$ % of etamn
 symbolic procedure callcrack(!*time,cpu,gc,lietrace_,symcon,
                              flist,vl,xilist,etalist,inequ,last_call)$
 begin
-  scalar g,h,oldbatch_mode;
+  scalar g,h,oldbatch_mode,print_old;
   if !*time then <<terpri()$
     write "time to formulate conditions: ", time() - cpu,
           " ms    GC time : ", gctime() - gc," ms"$
@@ -379,8 +379,10 @@ begin
     write"Symmetry conditions before CRACK: ";
     write lisp ('list . symcon);
   >>;
-  % oldbatch_mode:=!*batch_mode$
+  oldbatch_mode:=!*batch_mode$
   !*batch_mode:=batch_mode_sub$
+  print_old:=print_$  
+  if null batch_mode_sub and null print_ then print_:=8$
 
   % lex_df=nil gives shorter computation but lex_df=t gives system
   % that is easier to integrate, eg ODEs it they are in the diff ideal
@@ -391,6 +393,7 @@ begin
   h:=sq!*crack({'list . symcon,'list . inequ,'list . flist,'list . vl});
 
   !*batch_mode:=oldbatch_mode$
+  print_:=print_old$
 
   if last_call then return h;
 
@@ -595,7 +598,7 @@ begin
          paralist, proc_list_bak, max_gc_fac_bak, flistorg,problem,
          symtype,flist,inequ$
 
-% lietrace_:=t;
+  % lietrace_:=t;
   backup_reduce_flags()$
   cpu:=time()$ gc:=gctime()$
   oldadj:=adjust_fnc; adjust_fnc:=nil;
@@ -1269,7 +1272,7 @@ begin
     if freeof(paralist,e1) then flist_slin:=e1 . flist_slin
                            else flist_snli:=e1 . flist_snli;
 
-    oldbatch_mode:=!*batch_mode$ !*batch_mode:=t$
+    oldbatch_mode:=!*batch_mode$ !*batch_mode:=nil$
     if print_ then <<
       write"***** START OF A COMPUTATION TO DROP REDUNDANT *****"$terpri()$
       write"*****  CONSTANTS AND FUNCTIONS OF INTEGRATION  *****"$terpri()$

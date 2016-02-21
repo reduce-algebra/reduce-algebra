@@ -33,35 +33,31 @@ module crackinit$
 % and that are backed up in crackmain calls, i.e. they are passed on, NOT back
 
 not_passed_back:='( asymplis!* !*batch_mode !*complex !*iconic adjust_fnc
-alg_poly allflags_ auto_para_mode batchcount_ batch_mode_sub
-call_crack_out case_list choose_6_20_max_ftem choose_6_20_max_terms
-choose_27_8_16_max choose_30_47_21_max choose_70_65_8_47_origmem
-choose_70_65_8_47_origterms choose_70_65_8_47_ratiomem
-choose_70_65_8_47_ratioterms choose_30_47_72_eqn choose_11_30_max_11
-choose_11_30_max_30 collect_sol confirm_subst cont_ contradiction_
-cost_limit5 depl!* crack_download_add crack_ini_file
-crack_load_command currently_to_be_substituted_in
-dec_depth_first_search diffelim_steps eqn_input eqn_no eqname_
-eqn_to_be_gen equations_file expert_mode explog_ facint_ fhom_ flin_
-fname_ fnew_ form_comp form_eqn_idx form_eqn_on_disk form_max_read
-freeabs_ freeint_ fsub_ ftem_ genint_ groeb_diff_max groeb_solve
-high_gensep idnties_ independence_ ineq_ ineq_or inter_divint
-keep_case_tree keep_parti kord!* largest_fully_shortened
-last_free_cells last_steps lazy_eval length_inc_alg length_inc_dec
-lex_df lex_fc lin_problem logoprint_ low_gensep max_coeff_len
-max_gc_elimin max_gc_fac max_gc_gb max_gc_int max_gc_minsub max_gc_ode
-max_gc_red_len max_gc_reval max_gc_short max_gc_ss max_proc_no
+alg_poly allflags_ auto_para_mode batchcount_ batch_mode_sub call_crack_out
+case_list choose_6_20_max_ftem choose_6_20_max_terms choose_27_8_16_max
+choose_30_47_21_max choose_70_65_8_47_origmem choose_70_65_8_47_origterms
+choose_70_65_8_47_ratiomem choose_70_65_8_47_ratioterms choose_30_47_72_eqn
+choose_11_30_max_11 choose_11_30_max_30 collect_sol confirm_subst cont_
+contradiction_ cost_limit5 depl!* crack_download_add crack_ini_file
+crack_load_command currently_to_be_substituted_in dec_depth_first_search
+diffelim_steps eqn_input eqn_no eqname_ eqn_to_be_gen equations_file
+expert_mode explog_ facint_ fhom_ flin_ fname_ fnew_ form_comp form_eqn_idx
+form_eqn_on_disk form_max_read freeabs_ freeint_ fsub_ ftem_ genint_
+groeb_diff_max groeb_solve high_gensep idnties_ independence_ ineq_ ineq_or
+inter_divint keep_case_tree keep_parti kord!* largest_fully_shortened
+last_free_cells last_steps lazy_eval length_inc_alg length_inc_dec lex_df
+lex_fc lin_problem logoprint_ low_gensep max_coeff_len max_gc_elimin
+max_gc_fac max_gc_gb max_gc_int max_gc_minsub max_gc_ode max_gc_red_len
+max_gc_reval max_gc_short max_gc_spec_alg_sol max_gc_ss max_proc_no
 max_red_len maxalgsys_ max_term_to_fac_complex max_term_to_fac_real
-max_term_to_pred nequ_ modular_comp new_gensep odesolve_
-paracrack_initialized poly_only potint_ print_ print_all print_more
-proc_list_ process_counter pvm_able quick_decoup record_hist
-recycle_eqns recycle_fcts reduce_call repeat_mode safeint_ session_
-singular_call singular_lib singular_time size_watch solvealg_ stop_
-struc_eqn subst_0 subst_1 subst_2 subst_3 subst_4 target_limit_0
-target_limit_1 target_limit_2 target_limit_3 time_ to_do_list
-tr_decouple tr_genint tr_gensep tr_main tr_orderings tr_short
-tr_redlength ud_1 ud_2 ud_3 ud_4 userrules_ verify_end_of_parallel_run
-vl_)$
+max_term_to_pred nequ_ modular_comp new_gensep odesolve_ paracrack_initialized
+poly_only potint_ print_ print_all print_more proc_list_ process_counter
+pvm_able quick_decoup record_hist recycle_eqns recycle_fcts reduce_call
+repeat_mode safeint_ session_ singular_call singular_lib singular_time
+size_watch solvealg_ stop_ struc_eqn subst_0 subst_1 subst_2 subst_3 subst_4
+target_limit_0 target_limit_1 target_limit_2 target_limit_3 time_ to_do_list
+tr_decouple tr_genint tr_gensep tr_main tr_orderings tr_short tr_redlength
+ud_1 ud_2 ud_3 ud_4 userrules_ verify_end_of_parallel_run vl_)$
 
 % Variables in passed_back are backed up before recursive calls such that
 % their value is available when reading a backup file with the rb 
@@ -355,6 +351,9 @@ full_proc_list_:='(to_do                      % 1
                    do_one_resultant           % 86
                    inhom_decoupling           % 87
                    linearize_bi_lin           % 88
+                   quit_if_no_alg_sol         % 89
+                   get_special_alg_sol1       % 90
+                   get_special_alg_sol2       % 91
                   )$ 
 
 for h:=1:length(full_proc_list_) do put(nth(full_proc_list_,h),'no,h)$
@@ -507,6 +506,8 @@ max_gc_counter:=100000000$put('max_gc_counter,'description,list("max. number of 
 max_gc_reval:=1$   put('my_gc_reval,'description,list("maximal number of garbage collections for simplification"))$
 
 max_gc_short:=40$  put('max_gc_short,'description,list("maximal number of garbage collections during shortening"))$
+
+max_gc_spec_alg_sol:=30$ put('max_gc_spec_alg_sol,'description,list("maximal number of garbage collections during get_special_alg_sol"))$
 
 max_gc_ss:=10$     put('max_gc_ss,'description,list("maximal number of garbage collections during search of sub_systems"))$
 
@@ -783,7 +784,7 @@ para_case_dir:=""$    put('para_case_dir,'description,list("the directory in whi
 % (x**(5/4))**(4/5) - x;  --->   0
 
 
-version_date:="2015-08-17"$
+version_date:="2016-02-17"$
 put('!*notseparate,'description,list("Date of last change."))$
 
 algebraic(off combineexpt)$ % put(','description,list(""))$
@@ -1029,6 +1030,12 @@ put('inhom_decoupling,'description,
     list("Decoupling of inhom. equations in otherwise homog. system"))$
 put('linearize_bi_lin,'description, 
     list("Converting a homog. quadr. system into a lin. one of all products"))$
+put('quit_if_no_alg_sol,'description,
+    list("Stop case if there is an alg. poly. eqn of degree>1 in only 1 fct."))$
+put('get_special_alg_sol1,'description, 
+    list("Set coeff. of higher powers to zero to linearize and get spec. sol."))$
+put('get_special_alg_sol2,'description, 
+    list("Set linear terms to zero and get spec. sol."))$
 
  % Check the installation of FORM
  % If later on : if form_comp and form_pipe then ./form_start
@@ -1089,6 +1096,7 @@ put('linearize_bi_lin,'description,
  put('i_x ,'description,list("Exit interactive mode for good"))$
  put('i_q ,'description,list("Quit level or quit crack if in level 0"))$
  put('i_qh,'description,list("Quit level hard and drop solutions"))$
+ put('i_qq,'description,list("Quit the whole CRACK run with all levels"))$
 
  put('i_pl,'description,list("Set maximal length of an expression to be printed"))$ % print_
  put('i_pm,'description,list("Toggle extended printing about the success of methods ON/OFF"))$ % print_more
@@ -1220,7 +1228,8 @@ begin
 
   trig1_:={sin(~x)**2  => 1-cos(x)**2}$
 % trig1_:={cos(~x)**2  => 1-sin(x)**2}$
-  trig2_:={cosh(~x)**2 => (sinh(x)**2 + 1)}$
+  trig2_:={sinh(~x)**2 => (cosh(x)**2 - 1)}$
+% trig2_:={cosh(~x)**2 => (sinh(x)**2 + 1)}$
   trig3_:={tan(~x/2)   => (1-cos(x))/sin(x)}$
   trig4_:={cot(~x/2)   => (1+cos(x))/sin(x)}$
   trig5_:={cos(2*~x)   => 1-2*sin(x)**2}$

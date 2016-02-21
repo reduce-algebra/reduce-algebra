@@ -378,12 +378,12 @@ begin
             if print_ and null pih then <<
               terpri()$
               write"Inhomogeneous part: "$
-              mathprint qih$
+%              mathprint qih$ %@!@!@!@!
+              type_pre_ex qih$
               write"can not be integrated explicitly wrt. ",v$
             >>$
             if pri then <<write"nach intpde(qih):",pih$terpri()$
                           write"genflag=",genflag$terpri()>>$
-
             if pih then
             if zerop cadr pih then
             <<qih:=car pih$n:=add1 n$iflag:='success$
@@ -1033,10 +1033,17 @@ begin scalar f,ft,l,l1,l2,l3,l4,vl,k,s,a,iflag,flag$
           if l4 then <<
             % no constants of integration have been added yet so 
             % added cases do not involve constants of integration
-            for each l2 in l4 do 
-            % <<write"BBBB"$terpri()$
-            to_do_list:=union(list(list('split_into_cases,l2)),to_do_list);
-            % >>$
+            % for each l2 in l4 do 
+            % to_do_list:=union(list(list('split_into_cases,l2)),to_do_list);
+
+            % The above to_do_list:=.. statement can only be issued if
+            % that expression ex is known not to be an equation or
+            % equal zero modulo equations.  Reason: If the equation
+            % ex=0 exists then the case ex <> 0 is quickly lead to a
+            % conradiction and the case ex=0 does not give anything
+            % new and will execute again the same integration and the
+            % same case distinction.
+
             flag:='needs_case_split
           >>    else <<
             k:=reval subst(a,'v_a_r_,k)$
@@ -1470,7 +1477,16 @@ end$
 
 symbolic procedure integrate_one_pde(pdes,genintflag,fullint)$  
 %  trying to integrate one pde
-begin scalar l,l1,m,p,pdescp$ % ,nvmax,h,f$
+begin scalar l,l1,m,p,pdescp,tdlcp$ % ,nvmax,h,f$
+
+  % For non-linear differential equations it can happen, that integrations 
+  % of, for example inhomogeneous term lead to case distinctions on
+  % constants/functions which have been the result of earlier integrations. 
+  % But if the integration is afterall not completed and therefore not done, 
+  % and therefore no additions should have been added to to_do_list which
+  % involve only new constants/functions.
+  tdlcp:=to_do_list$
+
   % nvmax:=0;
   % for each f in ftem_ do if (h:=fctlength f)>nvmax then nvmax:=h;
   % at first selecting all eligible de's
@@ -1509,6 +1525,15 @@ begin scalar l,l1,m,p,pdescp$ % ,nvmax,h,f$
     >>                                                else l1:=cdr l1$
     % if fullint then m:=-1 else 
     m:=sub1 m
+  >>$
+
+  if null p then <<
+    to_do_list:=cons(1,to_do_list);
+    L:=to_do_list;
+    while cdr l neq tdlcp do
+    if freeoflist(cadr l,ftem_) then rplacd(l,cddr l)
+                                else l:=cdr l;
+    to_do_list:=cdr to_do_list$
   >>$
 return p$
 end$
@@ -2369,7 +2394,19 @@ begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli,ld$
                         reval list('df,ford,xnew,j), oldde)>>$
  algebraic !!arbconst:=0$
  %newde:=algebraic(first odesolve(symbolic oldde,symbolic ford_,symbolic xnew))$
- newde:=algebraic(first lisp err_catch_odesolve(oldde,ford_,xnew))$
+ %newde:=algebraic(first lisp err_catch_odesolve(oldde,ford_,xnew))$
+
+ newde:=err_catch_odesolve(oldde,ford_,xnew)$
+ if newde and (car newde='list) and cdr newde and cddr newde then return <<
+  if print_ then <<terpri()$
+   write "The ode has more than one solution."$
+   algebraic write "Equation is: ",algebraic symbolic oldde$
+   algebraic write "Solution is: ",algebraic symbolic newde
+  >>;
+  nil
+ >>                                                          else
+ newde:=cadr newde$
+
  if null newde then return nil;
 
  % Check that the coefficient of the highest power of the highest derivative
@@ -2382,6 +2419,16 @@ begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli,ld$
  h:=algebraic(coeff(lisp oldde,lisp ld));
  while cdr h do h:=cdr h$
  h:=simp car h;
+ h:=simplifySQ(h,ftem,t,nil,t)$ 
+ if null cdr h then h:=car h
+               else <<
+  j:=car h; h:=cdr h$
+  while h do <<
+   j:=multsq(car h,j)$ h:=cdr h
+  >>$
+  h:=j
+ >>$
+
  if not freeoflist(h,ftem) and not member(h,ineq_) then return <<
   % This case can be added because h does not contain new
   % constants of integration.

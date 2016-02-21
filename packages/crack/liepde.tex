@@ -230,10 +230,12 @@ symmetry. If a prolongation of the symmetry vector shall be calculated
 then the order of this prolongation can be specified by the setting 
 \verb+LISP(PROLONG_ORDER:= ...)$+ (see last example in {\tt LIEPDE.TST}). 
 
-With \verb+ OFF BATCH_MODE$+ the overdetermined system can be solved
-interactively and with 
-\verb+ ON BATCH_MODE$+ the program {\tt CRACK} will try to solve the
-symmetry conditions automatically.
+With \verb+LISP(BATCH_MODE_SUB:=nil}$+ one can solve the overdetermined system 
+interactively. By default the program {\tt CRACK} will try to solve the
+symmetry conditions automatically. Interactive solution is to be preferred if
+the computation is very large or if the symmetry condition is non-linear, 
+i.e.\ if {\it flist} contains parameters of the equation which also have 
+to be computed.
 
 Flags that control the solution of the symmetry conditions by {\tt CRACK}
 are shown after pressing {\tt h} in interactive mode. You can also 

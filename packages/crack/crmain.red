@@ -134,6 +134,17 @@ begin scalar el,il,fl,vl,l,l1,l2,a,b,n,m,k,p,pdes$
  vl:=if pairp vl and (car vl='list) then cdr vl else list vl$
  il:=if pairp il and (car il='list) then cdr il else list il$
  vl_:=union(argset fl,vl)$  vl:=nil;
+
+ % check that functions are atoms
+ l:=fl$
+ while l and atom car l do l:=cdr l$
+ if l then <<
+   write"The function "$terpri()$
+   write car l$ terpri()$
+   write"is not a single symbol!"$terpri()$
+   rederr " "
+ >>$
+
  % orderings_:=make_orderings(fl, vl_)$        % Orderings support!
  if vl_ then fl:=fctsort fl$
  fsub_:=nil$                   
@@ -263,7 +274,7 @@ begin scalar el,il,fl,vl,l,l1,l2,a,b,n,m,k,p,pdes$
  if filep "stop_now" and old_history then <<
   write"######## WARNING: The file 'stop_now' exists already at the start of the "$terpri()$
   write"######## computation which will set the variable old_history to nil ! "$terpri()$
-  write"######## --> delete 'stop_now' if old_history should be used. "$terpri()
+  write"######## --> delete 'stop_now' with 'bm' if old_history should be used. "$terpri()
  >>$
 
  % the computation:
@@ -323,20 +334,9 @@ begin scalar el,il,fl,vl,l,l1,l2,a,b,n,m,k,p,pdes$
  recover_reduce_flags()$   % giving the REDUCE flags their backup value
  
  % deleting spurious un-needed files
- if print_ and (null collect_sol) and (null paracrack_initialized) then <<
-  change_prompt_to ""$ 
-  write"!!!!! Delete generated files including solutions? (Y/N) "$terpri()$
-  repeat p:=termread() until (p='y) or (p='n)$
-  if p='y then <<
-   write"!!!!! Are you sure you want to delete all files generated in this session? (Y/N) "$terpri()$
-   repeat p:=termread() until (p='y) or (p='n)$
-   if p='y then <<
-    p:=bldmsg("rm ??%w*",compress cons('!",cdddr explode session_))$
-    system p
-   >>
-  >>;
-  restore_interactive_prompt()$ 
- >>$
+ if print_ and (null collect_sol) and (null paracrack_initialized) and session_ 
+ then delete_generated_files()$ % session_=nil if stop through 'qq input
+
  old_history:=nil$
 
  % Stop of the FORM computer algebra system which was
@@ -356,6 +356,22 @@ begin scalar el,il,fl,vl,l,l1,l2,a,b,n,m,k,p,pdes$
  >>$
  return l 
 
+end$
+
+symbolic procedure delete_generated_files()$
+begin scalar p$
+ change_prompt_to ""$ 
+ write"!!!!! Delete generated files including solutions? (Y/N) "$
+ repeat p:=termread() until (p='y) or (p='n)$
+ if p='y then <<
+  write"!!!!! Are you sure you want to delete all files generated in this session? (Y/N) "$
+  repeat p:=termread() until (p='y) or (p='n)$
+  if p='y then <<
+   p:=bldmsg("rm ??%w*",compress cons('!",cdddr explode session_))$
+   system p
+  >>
+ >>;
+ restore_interactive_prompt()$ 
 end$
 
 !#if (memq 'csl lispsystem!*)    
@@ -505,7 +521,6 @@ again:
         % vl_ for historical reasons, to be cleaned up some time 
         % the 1st arg. pdes for all current equations
         % the 4th arg. pdes for all applicable equations
-
         if size_watch and (contradiction_ or (l and (length l > 1))) then
         size_hist:=cons(cons(get(carpl,'no),si_hi),size_hist);
         if (fixp size_watch) and  
@@ -619,8 +634,9 @@ again:
         l:=termxread()$
         for each s in pdes do 
         if not freeof(l,s) then l:=subst({'!*sq,get(s,'sqval),t},s,l)$
+        l:=reval l$
         for each s in forg do 
-        if (pairp s) and (car s='equal) then l:=subst({'!*sq,caddr s,t},cadr s,l)$
+        if (pairp s) and (car s='equal) then l:=reval subst({'!*sq,caddr s,t},cadr s,l)$
 	terpri()$
         mathprint(reval l)
       >>
@@ -719,14 +735,11 @@ again:
             ps:=if to_do_list then 'to_do
                               else nth(full_proc_list_,s);
             l:=apply(ps,list list(pdes,forg,vl_,pdes))$
-
             if (repeat_mode neq t) and null l and null contradiction_ 
                and null to_do_list and size_watch and not fixp size_watch then 
             history_:=cons(bldmsg("*** %w un-succ.",ps),cons('ig,history_))$
-
             if size_watch and (l or contradiction_) then 
             size_hist:=cons(cons(s,si_hi),size_hist);
-
             if (fixp size_watch) and (loopcount neq 0) and 
                ((loopcount-size_watch*(loopcount/size_watch))=0) then 
             cut_size_hist();
@@ -796,6 +809,36 @@ again:
        contradiction_:=t;
        stop_:=t
       >>
+
+      else if s='qq then << % quit the complete crack run altogether
+       change_prompt_to ""$
+       write"!!!!! Do you want to stop the computation completely on all levels? (Y/N) "$
+       repeat s:=termread() until (s='y) or (s='n)$
+       if s='y then <<
+        write"!!!!! Are you sure? (Y/N) "$
+        repeat s:=termread() until (s='y) or (s='n)$
+        restore_interactive_prompt()$
+        if s='y then <<
+         write"This was your input (uncleaned): "$terpri()$
+         pri_hist(history_)$     terpri()$
+         write"This was your input (cleaned): "$terpri()$
+         pri_hist(clean_hist())$ terpri()$
+         if eqn_to_be_gen and eqn_input and (eqn_input neq 'done) then <<
+          close eqn_input; eqn_input:='done
+         >>$
+         contradiction_:=t;
+         stop_:=t;
+         level_:=nil$
+         stepcounter_:=0$
+         batchcount_:=-1$
+         delete_generated_files()$ % called also at the end but there but 
+                                   % there it thinks to start case 2.
+         session_:=nil$
+         rederr ""$
+        >>
+       >>
+      >>
+
       % to change flags & parameters -----------------------
       else if s='pl then <<
         change_prompt_to "Print length : "$ 
@@ -1842,7 +1885,7 @@ symbolic procedure print_hd()$
 symbolic procedure print_hp()$
 <<terpri()$
   for each h in '(i_a i_g i_t i_p1 i_p2 i_!# i_l i_sb i_rb i_bm
-                  i_an i_rs i_x i_q i_qh) do <<
+                  i_an i_rs i_x i_q i_qh i_qq) do <<
     if (length explode h<4) or (h='i_!#) then
     write compress cddr explode h,"  : ",car get(h,'description)
                                          else
@@ -2656,7 +2699,7 @@ begin scalar h,hh,s,pdes,forg,contrad,n,pf,q,sqf,l1,l2,result,intact,
   % if not may_vanish(h) then return <<
 
   print_bak:=print_$ print_:=nil$ % not to print the finding of a contradiction
-% h:=simplifypde(h,smemberl(ftem_,h),t,nil)$     % (h,ftem,tofactor,eqn_name)$
+% h:=simplifypde(h,smemberl(ftem_,h),t,nil)$   % (h,ftem,tofactor,eqn_name)$
   hh:=simplifySQ(h,smemberl(ftem_,h),t,nil,t)$ % (p,ftem,fctr,en,sep)$ 
   if hh={(1 . 1)} then contradiction_:=t$
   print_:=print_bak$
@@ -2774,7 +2817,6 @@ again:
     l1:=crackmain_if_possible_remote(if null s then pdes 
                                                else eqinsert(q,pdes),forg)
   >>;
-
   forg:=restore_and_merge(l1,pdes,forg)$  % also necessary if l1=nil
   pdes:= car forg; 
   forg:=cadr forg;

@@ -415,16 +415,7 @@ begin scalar histy,l1,l4,nv,vl1,nv1,h,x,y,f,ft,aa,bb,cc,kk,
         ft:=nil$
 
         % Before the last division the equation was a product of an
-        % (car ft)-dep factor and an (car ft)-indep factor. So this
-        % implies that it is a non-linear problem because each term
-        % has a (car ft)-dependent factor and car ft does not depend
-        % on all variables but those variables on which car ft does
-        % not depend on come up in other functions (oterwise it would
-        % not be a ** equation) but these other functions then must
-        % come up in the factors to the (car-ft) dependent factors,
-        % thus the equations are non-linear. This does not have to
-        % mean that cases need to be investigated because the
-        % wronskian determinant may be non-zeero.
+        % (car ft)-dep factor and an (car ft)-indep factor. 
         %      So this sequence of divisions and differentiations
         % basically lead to a direct separation because the (car
         % ft)-dependent factors were known to be functionally
@@ -567,29 +558,66 @@ symbolic procedure felim(q,f,ftem,vl)$
   %  }
   % felim does not consider whether divisors can become identically 
   % zero or not. This is done in partitn after felim is called.
-begin scalar a,b,l,l1,ft1,v,prflag,f1$
-  %--- getting rid of f through diff. wrt. v
-  v:=car setdiff(vl,fctargs f)$  
+begin scalar a,b,l,l1,ft1,v,prflag,f1,vli$
 
-  %--- ft1 are all v-independent functions
-  %--- In the call to separ we want to separate wrt. v so in the call 
-  %    of separ one has to pass on only v-independent functions ft1 as
-  %    functions to be determined
-  ft1:=nil$
-  for each f1 in ftem do if my_freeof(f1,v) then ft1:=cons(f1,ft1)$
+  % vl may contain more variables than in q if earlier eliminations of
+  % functions also killed the dependence on some variable v1 and then
+  % differentiation by v1 should not be performed to get rid of f.
+  for each v in vl do if not my_freeof(q,v) then l:=cons(v,l);
+  vl:=l; l:=nil;
 
-  %--- To run separ, functions ft1 should not be in the denominator
+  % Determination of a variable v such that differentiation wrt. v we 
+  % get rid of f but not of everything.
+  vli:=setdiff(vl,fctargs f)$
+  repeat <<
+   v:=car vli; vli:=cdr vli;
 
-  if pairp q and (car q='quotient) and smemberl(ft1,caddr q) then <<
-   if tr_gensep then <<
-    terpri()$
-    write "The quotient of the expression to be separated contains one or more ",
-          v,"-independent function: ",smemberl(ft1,caddr q),
-          " which prevents further continuation. (This should not occur anymore.)"
+   %--- In the following ft1 are all v-independent functions.
+   %    We call separ to separate wrt. v so in
+   %    the call of separ one has to pass on only v-independent functions (ftl)
+   ft1:=nil$
+   for each f1 in ftem do if my_freeof(f1,v) then ft1:=cons(f1,ft1)$
+
+   %--- To run separ, functions ft1 should not be in the denominator
+   if pairp q and (car q='quotient) and smemberl(ft1,caddr q) then <<
+    if tr_gensep then <<
+     terpri()$
+     write "The quotient of the expression to be separated contains one or more ",
+           v,"-independent function: ",smemberl(ft1,caddr q),
+           " which prevents further continuation. (This should not occur anymore.)"
+    >>
+   >>                                                         else
+   <<prflag:=print_$print_:=nil$
+    l:=separ(q,ft1,list v,nil,nil)$ % det. all lin. ind. factors involving v
+    print_:=prflag$
+    if l then if null cdr l and my_freeof(cdar l,v) then l:=nil
    >>
-  >>                                                         else
+  >> until l or null vli$
+  if null l then return <<
+   write"##### The expression "$
+   mathprint q$
+   write"is supposed to be an indirectly separable expression. But after "$
+   write"dropping the ",v," dependent factor "$
+   mathprint caar l$
+   write"the remaining factor "$
+   mathprint cadr l$
+   write"is independent of all variables on which ",f," does not depend on. "$
+   write"Therefore this factor is not an indirectly separable expression "$
+   write"which is very strange #####."$
+   nil  % list(q, cons(v,nil))
+  >>        else
   <<prflag:=print_$print_:=nil$
-    l:=separ(q,ft1,list v,nil,nil)$ % det. all lin. ind. factors with v
+    l:=separ(q,ft1,list v,nil,nil)$ % det. all lin. ind. factors involving v
+    print_:=prflag$
+
+    if tr_gensep then
+    <<terpri()$write "To get rid of ",f,
+		     " we will differentiate w.r.t. : ",v>>$
+
+    %--- l is a list of dotted pairs 'a' each representing a term in q 
+    % where car(a) is the product of v-dep. factors and cdr(a) the
+    % product of v-independent factors, some of them involve the function f
+    % which we want to get rid of by differentiation.
 
     % now sorting elements of l such that those with many v-dependent terms
     % come first in this list and further below come last in the divisions
@@ -606,22 +634,15 @@ begin scalar a,b,l,l1,ft1,v,prflag,f1$
                                                         else delength car b,b)
        collect cdr a$
 
-    if tr_gensep then
-    <<terpri()$write "To get rid of ",f,
-		     " we will differentiate w.r.t. : ",v>>$
-    print_:=prflag$
+    %--- Now a list l1 of those car(a) of 'a' being elements of l is generated                             
+    % for which cdr(a) depends on f. l1 is the list of divisions that will                             
+    % be done each one followed by a differentiation.                                                  
+    % Here the list of divisions is reversed, so therefore the                                         
+    % divisions with the fewest terms come first.                                                      
 
-    %--- l is a list of dotted pairs a each representing a term in q 
-    % where car(a) is the product of v-dep. factors and cdr(a) the
-    % product of v-independent factors
-    %--- A list l1 of car(a) is generated for which cdr(a) depends
-    % on f. l1 is the list of divisions to be done before differen.
-    % Here the list of divisions is reversed, so therefore the
-    % divisions with the fewest terms come first.
     l1:=nil$
     while l do
-    <<a:=car l$
-      b:=nil$
+    <<a:=car l$ % a= (v-dep-factor . v-indep-factor)
       if not freeof(cdr a,f) and (not zerop car a) then
       l1:=cons(car a,l1)$
       l:=cdr l
@@ -634,6 +655,7 @@ begin scalar a,b,l,l1,ft1,v,prflag,f1$
     %--- Now the divisions and differentiations are to be done
     % l:=nil$ % necessary initialization (already guarateed)
     while l1 do <<
+
 !#if (equal version!* "REDUCE 3.6")
       b:=reval aeval car l1$ %--- b is the v-dep. coefficient   
 !#else          
@@ -652,7 +674,7 @@ begin scalar a,b,l,l1,ft1,v,prflag,f1$
 !#endif
         %--- for later backward integrations: extension of the history
         l:=cons(b . q ,l)$  %--- new: q is the equ. before division & diff.
-        % l will be returned later by felim unless the last q=0 them l0 is returned
+        % l will be returned later by felim unless the last q=0 then 0 is returned
         %--- l1 has to be updated as the coefficients
         % change through division and differentiation
 	l1:=for each c in l1 collect
@@ -676,9 +698,14 @@ begin scalar a,b,l,l1,ft1,v,prflag,f1$
     if zerop q then <<terpri()$
       write"This series of divisions and differentiations shows that the expression ",
            "at the start of eliminating ",f," can be directly separated, so no ",
-           "backintegration of these last steps for eliminating ",f," is needed."
+           "backintegration of the last step for eliminating ",f," is needed.";
+
+      % caadr l is the factor of the factorization of q:
+      q:=cdar l$ 
+      l:=cdr l
     >>         else <<terpri()$
-      write "This new expression should not depend on ",f," : "$
+      write "This new expression should either not depend on ",f," or not depend ",
+            "on ",v," in which case a new differentiation variable is needed."$
       eqprint q$
       if l then <<write"To invert the last steps one has to integr. wrt. ",v$ 
         terpri()$
@@ -828,11 +855,11 @@ begin scalar succ,ft,q,l,v,v1,vf,s1,s2,p,f1,f2,fctr,check_sum,
           allfnew:=append(fnew_,allfnew)$
           ftem:=union(fnew_,ftem);
           % car h is the coefficient dropped through direct separation          
-          if succ then check_sum:={'difference,check_sum,{'times,q,car h}};     % <-------- changed  %22.8.08
-%          if succ then check_sum:={'DIFFERENCE,check_sum,q};                     % <-------- new    %21.8.08
+          if succ then check_sum:={'difference,check_sum,{'times,q,car h}}; % <-------- changed  %22.8.08
+%          if succ then check_sum:={'DIFFERENCE,check_sum,q};               % <-------- new    %21.8.08
         >>$
-        (car h . q) % the value to be collected to give the new l4              % <-------- changed %22.8.08
-%         (1 . q) % the value to be collected to give the new l4                  % <-------- new  %21.8.08
+        (car h . q) % the value to be collected to give the new l4          % <-------- changed %22.8.08
+%         (1 . q) % the value to be collected to give the new l4            % <-------- new  %21.8.08
       >>;
       if succ then <<
         check_sum:=reval check_sum$
@@ -1583,6 +1610,525 @@ end$
 
 endmodule$
 
+%*********************************************************************
+module parsep_alg$
+%*********************************************************************
+%  Routines for the partial separation of algebraic equations
+%  Author: Thomas Wolf, Jan 2016
+
+symbolic procedure get_special_alg_sol1(arglist)$
+err_catch_spec_alg_sol(1,arglist)$
+
+symbolic procedure get_special_alg_sol2(arglist)$
+err_catch_spec_alg_sol(2,arglist)$
+
+symbolic procedure err_catch_spec_alg_sol(mode,arglist)$
+% The purpose of this procedure is only to allow manual interrupts
+% without crashing the whole computation.
+begin scalar h,bak,bakup_bak$
+ bak:=max_gc_counter;
+ max_gc_counter:=my_gc_counter+max_gc_spec_alg_sol;
+ bakup_bak:=backup_; backup_:='max_gc_spec_alg_sol;
+ if mode=1 then h:=errorset({'spec_alg_sol1,mkquote arglist},nil,nil) where !*protfg=t;
+ if mode=2 then h:=errorset({'spec_alg_sol2,mkquote arglist},nil,nil) where !*protfg=t;
+ erfg!*:=nil; 
+ max_gc_counter:=bak;
+ backup_:=bakup_bak;
+ return if null h or errorp h then nil
+                              else car h
+end$
+
+symbolic procedure print_pl(pdes)$
+begin scalar p,h,hh$
+ while pdes do <<
+  p:=car pdes; pdes:=cdr pdes;
+  write p,"(",get(p,'terms)$
+  if (h:=get(p,'starde)) then <<
+   for hh:=1:(1+caar h) do write"*"$
+  >>$
+  if pairp get(p,'fac) then write"#"$
+  if get(p,'case2sep) then write"!"$
+  if flin_ and get(p,'allvarfcts) and
+     freeoflist(get(p,'allvarfcts),flin_) then write"a"$
+  if null lin_problem and get(p,'linear_) then write"l"$
+  write")"$
+  if pdes then write","$
+ >>
+end$
+
+symbolic procedure spec_alg_sol1(arglist)$
+begin scalar pdes,pli,p,f,f2,co,fs,fscp,cli,conli,cop,linfli,alllinfli,
+             h,hh,fctz,plicop,p2,p3,p4,rtrn,newpdes,verbtm,hipo,cpu,gc$
+
+ % - This procedure is for finding special solutions to algebraic polynomial 
+ %   problems which are underdetermined.
+ % - This procedure is only called when there is no unknown that occurs in at
+ %   least equation linearly. In other words, in all equations all unknows 
+ %   occur at least quadratically.
+ % - This procedure sets coefficients of higher powers to zero if the
+ %   coefficient is linear in some function
+ % - a system where it works:         0 = x^2y   + xy^2 + A
+ % - a system where it does not work: 0 = x^2y^2 + xy^2 + A
+
+ % Strategy: At least in calcrostic applications there are many equations
+ % which can be linearized by finding substitutions that make coefficients of
+ % higher powers of at least one function to zero. If one wanted to find as
+ % many special solutions as possible then one would have to consider all
+ % possible sequences of linearizations, i.e. all possible sequences of
+ % picking from all equations, from all their linearizable functions, from all
+ % ways that accomplish a linearization of that function in that equation.
+ % --> Once one gives up finding the general solution the emphasis is then
+ % also not to find the most general special solution at a very high cost.<--
+ % We therefore proceed by giving the user the option to select which of the
+ % linearizable function should be linearized and once that is selected, the
+ % coefficients to vanish are added as new equations to the system of
+ % equations and it is left to crack running automatically or interactively to
+ % either find the quickest way to a solution of that enlarged system or to go
+ % through all case distinctions. The alternative would be to use the reduce
+ % command SOLVE and derive all solutions that linearize a function in an
+ % equation at once. Then case distinctions would have to be performed. One
+ % problem is that the standard module 44 (split_into_cases) is currently
+ % designed to consider a single expression to be zero or non-zero and not for
+ % a set of equations to be zero or at least one not to be zero. To generalize
+ % module 44 for that tast would imply some serious programming effort. Also,
+ % in using the Reduce SOLVE command, new parameters arbcomplex(i) would be
+ % introduced which would have to be added to the set uf unknowns which would
+ % add more programming effort.
+
+ % Computation: each equation p is checked for each of its variables f whether 
+ % all coefficients c_i of f^i, i>1 set to 0 gives a solvable system (using
+ % the REDUCE solve command which among other techniques also uses
+ % factorization). If the system c_i=0 for all i>1 has a solution then this
+ % does not necessarily mean that p=0 is linearizable wrt. f because this
+ % solution may make c_1=0 but c_0<>0 or c_0=0 and c_1<>0 which also gives a
+ % contradiction because we only want solutions where all f<>0.
+
+ % To do:
+ % - Check which computational step takes very long for large equations
+ % - Do not check the separability + solvability of large equations if one
+ %   smaller equation passes the test for separability and solvability.
+ % - Do recursively a partial splitting of coefficients.
+ % - Stop if the system consists of only one equation which has not term that is
+ %   linear in any one unknown. In other words stop if every term contains only
+ %   unknowns with an exponent >1.
+ % - Implement splitting method 3.
+ % - Select the equation to be splitted and the splitting variable according to
+ %   the length of the linear equation that would result and that would be used
+ %   for substitution which should be as short as possible.
+
+ % verbtm:=t$ 
+ if print_ then <<
+  write "WARNING: If this module is successful, it will most likely lead"$terpri()$
+  write "         to a loss of solutions admitted by the new system."$terpri() 
+ >>$
+
+ pdes:=if expert_mode then selectpdes(car arglist,1)
+                      else reverse cadddr arglist$
+
+ if print_ then <<
+  write"Available equations: "$ print_pl(pdes)$ terpri()
+ >>;
+ pli:=nil;  % a list of linearizable equations with a list of linearized 
+            % functions and the coefficients of higher powers
+ while pdes do <<   % check each equation p
+  p:=car pdes;  pdes:=cdr pdes;
+  if verbtm and print_ then <<write"Consideration of equation ",p$terpri() >>$
+  fs:=get(p,'fcts);
+  fscp:=fs$
+
+  cli:=nil;
+  while fs do <<      % check each occuring function f in p
+   f:=car fs; fs:=cdr fs;
+   if not freeof(get(p,'non_rat_kern),f) then 
+   if print_ then <<
+    write f," occurs non-rationally"$
+    terpri()
+   >>        else                        else << % f must occur only rationally
+
+    if !*time then <<
+     cpu:=time()$
+     gc:=gctime()$
+     write"checking degree and coeff of ",f$terpri()$
+    >>;
+    hipo:=degree_SF(numr get(p,'sqval),f)$
+    if !*time then <<
+     terpri()$
+     write "degree: ",hipo,"   time: ", time() - cpu,
+           " ms,   GC time : ", gctime() - gc," ms"$ 
+     cpu:=time()$
+     gc:=gctime()
+    >>;
+    co:=cdr algebraic(coeff(lisp {'!*sq,get(p,'sqval),t},lisp f));
+    if !*time then <<
+     terpri()$
+     write "time for coeff: ", time() - cpu,
+           " ms,   GC time : ", gctime() - gc," ms"$ 
+    >>;
+    if hipow!* > 0 then  % this should always be the case otherwise 
+                         % f would not be in get(p,'fcts)
+    if hipow!* = 1 then << % should not be the case because this module should only
+                           % be called if case generating substitutions are not working
+     fs:=nil; pdes:=nil; 
+     if print_ then <<
+      write"##### Equation ",p," is linear in ",f,". --> Use module 21"$
+      if null subst_3 or 
+         (subst_3<1000000) then write" if necessary with 'as subst_3 1000000);'. "$ 
+      terpri()
+     >>        else
+    >>             else <<
+
+     % If any one coefficient of f^n, n>1 is known to be <>0 then try a different f.
+     conli:=cddr co;
+     while conli and simplifySQ(simp car conli,ftem_,t,nil,nil) neq {(1 . 1)}
+     do conli:=cdr conli$
+
+     if conli then 
+     if verbtm and print_ then <<
+      write "a power of ",f," has a non-vanishing coefficient"$
+      terpri()
+     >>        else
+              else << % otherwise no chance to get all coefficients to zero
+      % Now checking whether there are enough linearly occuring functions in
+      % each coefficient.
+      conli:=cddr co;
+      alllinfli:=nil;
+      while conli do << % for each coefficient cop find all functions that occur
+                        % linearly in cop or a factor of cop
+       cop:=car conli; conli:=cdr conli; 
+       linfli:=nil;
+       fctz:=factorize cop$
+       for each ftr in fctz do
+       for each f2 in fscp do <<
+        h:=degree_SF(numr simp ftr,f2)$
+        if h=1 then linfli:=union({f2},linfli)
+       >>$
+       if null linfli then << 
+        alllinfli:=nil; 
+        conli:=nil;
+        if verbtm and print_ then <<
+         write"One coefficient of ",f," has no linear function."$terpri()
+        >>
+       >>             else alllinfli:=union(linfli,alllinfli)
+      >>$
+      if alllinfli then << % otherwise at least one coefficient can not be made zero
+       h:=solveeval {cons('list,cddr co),cons('list,alllinfli)};
+       if length h > 1 then <<
+        % We are not collecting solutions anymore:
+        % h:=cons('LIST,for each hh in cdr h collect % hh is a solution
+        %    cons('LIST,cons(algebraic(f=-(lisp car co)/(lisp cadr co)),cddr hh)));
+        cli:=cons((f . co),cli)
+       >>
+      >>
+     >>
+    >>
+   >>
+  >>$ % while fs do
+  if cli then pli:=cons((p . cli),pli)
+ >>$ % while pdes do 
+
+ % pli has the following structure
+ % ((separable_equation 
+ %   (separable_function_f
+ %    coeff_of_f^0 coeff_of_f^1 coeff_of_f^2 ... % all prefixed SQ
+ %   )
+ %   ...
+ %  )
+ %  ...
+ % )
+
+selectagain:
+
+ if pli then <<
+  % show linearizations
+  if verbtm and print_ then <<
+   write"Available linearizations: "$terpri()$
+   for each h in pli do <<
+    write"equation: ",car h,"(",get(car h,'terms),")"$ terpri()$
+    for each hh in cdr h do <<
+     write"linearized function: ",car hh$terpri()$
+    >>
+   >>
+  >>$
+
+  % find the info for the selected equation
+  if null expert_mode then p:=caar pli
+                      else <<
+   % We assume that print_ is not null if expert_mode=t
+   write"If you do not want to proceed then enter ';' else input the equation name: "$
+   change_prompt_to ""$
+   p:=termread()$
+  >>$
+
+  if p neq '!; then <<
+   hh:=pli$
+   while hh and caar hh neq p do hh:=cdr hh$
+   if null hh then <<
+    write"This is not one of the linearizable equations"$ terpri()
+   >>         else <<
+
+    % find the info for the selected function
+    if null expert_mode then f:=caar cdar pli
+                        else <<
+     % We assume that print_ is not null if expert_mode=t
+     write"What is the name of the linearized function: "$
+     f:=termread()$
+    >>$
+
+    if verbtm and print_ then <<
+     write"Next try is equation ",p,"(",get(p,'terms),") splitted wrt ",f$ 
+     terpri()
+    >>$
+
+    hh:=cdar hh;
+    while hh and caar hh neq f do hh:=cdr hh$
+    if null hh then <<
+     % This can only happen for expert_mode=t, i.e. print_ not nil
+     write"This is not one of the linearizable unknowns"$ terpri()
+    >>         else <<
+     co:=cdar hh$
+     newpdes:=
+     mkeqSQlist(cons(simp algebraic((lisp car co)+(lisp f)*(lisp cadr co)),
+                     for each hh in cddr co collect simp hh),
+                nil,nil,get(p,'fcts),vl_,allflags_,t,list(0),car arglist)$
+     if contradiction_ then <<
+      if verbtm and print_ then <<
+       write"This choice of equation and function lead to a contradiction with ",
+            "previous inequalities. Choose a different equation or function."$
+       terpri()$
+      >>$
+      contradiction_:=nil;
+
+      % Now deleting the pair (p(f co0 co1 ..)) from pli and 
+      plicop:=nil$
+      for each p2 in pli do 
+      if car p2 neq p then plicop:=cons(p2,plicop) 
+                      else <<
+       p4:=nil$
+       for each p3 in cdr p2 do 
+       if car p3 neq f then p4:=cons(p3,p4);
+       if p4 then plicop:=cons((car p2 . p4),plicop)
+
+      >>;
+      pli:=reverse plicop; plicop:=nil$
+      restore_interactive_prompt()$
+      rtrn:=nil;
+      goto selectagain
+     >>                else <<
+      drop_pde(p,nil,nil)$
+      if print_ then <<
+       write"Replaced equation: ",p$ terpri()$       
+       write"New equations: "$
+       print_pl(newpdes)
+      >>$
+      restore_interactive_prompt()$
+      rtrn:={append(newpdes,delete(p,car arglist)),cadr arglist}
+     >>
+    >>  % the selected function has been found
+   >>  % the selected pde has been found
+  >>$ % intention to linearize
+ >>$ % if pli then
+ return rtrn
+end$
+
+symbolic procedure spec_alg_sol2(arglist)$
+begin scalar pdes,pli,p,f,co,fs,h,p2,rtrn,verbtm,gc,cpu,best,hipo$
+ % This is an implementation of the 3rd splitting method as described in
+ % gencal.tex.
+
+ % IMPORTANT: 
+ % EITHER have module 44 do the =0 case first and the <>0 case second,
+ % OR run the computation interactively and quit the <>0 case with the
+ %    qh command right when it starts first,
+ % OR find a way to pass more information to module 44 when being
+ %    started through a to_do_list
+
+ verbtm:=t$ 
+
+ pdes:=if expert_mode then selectpdes(car arglist,1)
+                      else reverse cadddr arglist$
+ if print_ then <<
+  write"Available equations: "$print_pl(pdes)
+ >>;
+
+ % Creation of pli which has the following structure
+ % ((separable_equation_p
+ %   separable_function_f
+ %   simp(coeffn(p,f,0)+f*coeffn(p,f,1))
+ %   hipo
+ %   #OfTerms(coeffn(p,f,0))
+ %   #OfTerms(coeffn(p,f,1))
+ %  )
+ %  ...
+ % )
+ % and is already initialized to nil
+
+ while pdes do <<   % check each equation p
+  p:=car pdes;  pdes:=cdr pdes;
+  % One could consider to record if an equation is fully investigated
+  % concerning partial splittings but only if that module is really often
+  % used. Then p would not be investigated now.
+
+  if verbtm and print_ then <<write"Consideration of equation ",p$terpri() >>$
+  fs:=get(p,'fcts);
+  while fs do <<      % check each occuring function f in p
+   f:=car fs; fs:=cdr fs;
+   if not freeof(get(p,'non_rat_kern),f) then 
+   if print_ then <<
+    write f," occurs non-rationally"$
+    terpri()
+   >>        else                        else << % f must occur only rationally
+    if !*time then <<
+     cpu:=time()$
+     gc:=gctime()$
+     write"checking degree and coeff of ",f$terpri()$
+    >>;
+    hipo:=degree_SF(numr get(p,'sqval),f)$
+    if !*time then <<
+     terpri()$
+     write "degree: ",hipo,"   time: ", time() - cpu,
+           " ms,   GC time : ", gctime() - gc," ms"$ 
+     cpu:=time()$
+     gc:=gctime()
+    >>;
+    co:=cdr algebraic(coeff(lisp {'!*sq,get(p,'sqval),t},lisp f));
+    if !*time then <<
+     terpri()$
+     write "time for coeff: ", time() - cpu,
+           " ms,   GC time : ", gctime() - gc," ms"$ 
+    >>;
+    if hipow!* > 0 then  % this should always be the case otherwise 
+                         % f would not be in get(p,'fcts)
+    if hipow!* = 1 then << % should not be the case because this module should only
+                           % be called if case generating substitutions are not working
+     fs:=nil; pdes:=nil; 
+     if print_ then <<
+      write"##### Equation ",p," is linear in ",f,". --> Use module 21"$
+      if null subst_3 or 
+         (subst_3<1000000) then write" if necessary with 'as subst_3 1000000);'. "$ 
+      terpri()
+     >>        else
+    >>             else 
+    if null numr cadr co then if verbtm and print_ then <<
+     write f," does not come up linearly in ",p$
+     terpri()
+    >>                                             else
+                         else <<
+     p2:=addsq(simp car co,multsq(mksq(f,1),simp cadr co));
+     if simplifySQ(p2,ftem_,t,nil,nil) = {(1 . 1)} then <<
+      write"The linear part of ",f," in ",p," is non-zero. "$
+      terpri()
+     >>                                            else <<
+      pli:=cons({p,f,p2,hipow!*,no_of_tm_sf numr simp car co,
+                 no_of_tm_sf numr simp cadr co},pli);
+      if null best then best:=car pli else
+      % here comes the heuristic for chosing the extra equation @@@@@@
+      if (     car cdddar pli <   car cdddr best                 ) or
+         ((    car cdddar pli =   car cdddr best           ) and
+          ((  cadr cdddar pli <  cadr cdddr best      ) or
+           (( cadr cdddar pli =  cadr cdddr best) and
+            (caddr cdddar pli < caddr cdddr best)     )    )     ) then best:=car pli
+     >>
+    >>
+   >>
+  >>  % while fs do
+ >>$ % while pdes do 
+
+ % show linearizations
+ if verbtm and print_ then <<
+  write"Available linearizations: "$terpri()$
+  for each h in pli do <<
+   write"equation: ",car h,"(",get(car h,'terms),")"$ terpri()$
+   write" linearized function: ",cadr h,
+        " hipow: "  ,     cadddr h,
+        " #terms0: ", car cddddr h,
+        " #terms1: ",cadr cddddr h $
+   terpri()$
+  >>
+ >>$
+
+ if pli and expert_mode then <<
+
+  % Now select an equation and function for substitution:
+
+  % find the info for the selected equation
+  % We assume that print_ is not null if expert_mode=t
+  write"If you do not want to proceed then enter ';' else input the equation name: "$
+  change_prompt_to ""$
+  p:=termread()$
+
+  if p neq '!; then <<
+   while pli and caar pli neq p do pli:=cdr pli$
+   if null pli then <<
+    write"This is not one of the linearizable equations"$ terpri()
+   >>          else <<
+
+    % find the info for the selected function
+    % We assume that print_ is not null if expert_mode=t
+    write"What is the name of the linearized function: "$
+    f:=termread()$
+
+    while pli and ((caar pli neq p) or (cadar pli neq f)) do pli:=cdr pli$
+    if null pli then <<
+     % This can only happen for expert_mode=t, i.e. print_ not nil
+     write"This is not one of the linearizable unknowns"$ terpri()
+    >>         else 
+    best:=car pli
+   >>  % the selected pde has been found
+  >>$ % intention to linearize
+
+  restore_interactive_prompt()$
+ >>$ % if pli and expert_mode then 
+ 
+ if best then <<
+  if verbtm and print_ then <<
+   write"Next try is equation ",car best,"(",get(car best,'terms),
+        ") splitted wrt ",cadr best$ 
+   terpri()
+  >>$
+  to_do_list:=cons({'split_into_cases,caddr best},to_do_list)$
+  rtrn:=arglist
+ >>$
+
+ return rtrn
+end$
+
+symbolic procedure quit_if_no_alg_sol(arglist)$
+% This procedure stops the computation of the current case if there is
+% an algebraic equation in only one function where the equation is not
+% linear and already tested for factorization. If it is not tested for
+% factorization then the factorization test is put on the to-do list.
+% This procedure is in this module because it is to be used together
+% with procedure spec_alg_sol() above.
+
+begin scalar pdes,p,rtrn$ 
+ pdes:=car arglist$
+ while pdes and null contradiction_ do <<
+  p:=car pdes; pdes:=cdr pdes;
+  if (1=length get(p,'fcts)) and
+     (1=length get(p,'kern)) and
+     null get(p,'linear_) then
+  if 2=get(p,'fac) then <<
+   terpri()$
+   write"Equation ",p," has no rational solution: "$terpri()$
+   mathprint {'!*SQ,get(p,'sqval),nil}$
+   contradiction_:=t 
+  >>               else
+  if (null get(p,'fac)) or (1=get(p,'fac)) then <<
+   rtrn:=arglist;
+   if print_ then <<terpri()$write p," is to be factorized next."$ terpri() >>$
+   to_do_list:=cons(list('find_factorization,list p),to_do_list);
+  >>                                       else <<
+   rtrn:=arglist;
+   if print_ then <<terpri()$write p," is to be case splitted next."$ terpri() >>$
+   to_do_list:=union({list('factorize_any,list p)},to_do_list)
+  >>
+ >>;
+ if contradiction_ then rtrn:=nil$
+ return rtrn
+end$
+
+endmodule$
+
 end$
 -----------------------------------------------------
 module gensep_lin:
@@ -1615,6 +2161,12 @@ gen_separation2       (48)
         sep(p,ftem,varl,nil,nil)$   (in linear case sep(p,ftem,varl,nonrat,pdes) )
   eqinsert
 
+module parsep_alg$
+
+  get_special_alg_sol1
+  get_special_alg_sol2
+  quit_if_no_alg_sol
+
 ------------------------------------------------------
 
 module gensep_lin:
@@ -1645,6 +2197,10 @@ tr separizable
 tr newgensep
 tr gen_separation2
 tr separ2
+
+module parsep_alg$
+
+tr get_special_alg_sol
 
 ---------
 
