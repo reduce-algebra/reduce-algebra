@@ -1698,6 +1698,9 @@ bool Idelete(const char *name, int len)
     return true;
 }
 
+// I note that these days I have a much more proper crc64 function to use
+// that will compute a proper CRC value.
+
 #define update_crc(chk, c)                      \
     chk_temp = (chk << 7);                      \
     chk = ((chk >> 25) ^                        \
@@ -2250,6 +2253,8 @@ bool Iwrite(const void *buff, int32_t size)
             (fwrite(p, 1, (size_t)size, binary_write_file) != (size_t)size);
 }
 
+#ifndef EXPERIMENT
+
 //
 // Now code that maps real pointers into references relative
 // to page numbers.  Here I will also go to the trouble of putting zero
@@ -2501,6 +2506,7 @@ static void unadjust_all(void)
     unadjust_bpsheap();
 }
 
+#endif // EXPERIMENT
 
 void preserve_native_code(void)
 {
@@ -2555,7 +2561,7 @@ void preserve(const char *banner, int len)
 //
     for (i=0; i<=50; i++) workbase[i] = nil;
     exit_tag = exit_value = catch_tags =
-                                codevec = litvec = B_reg = faslvec = faslgensyms = nil;
+        codevec = litvec = B_reg = faslvec = faslgensyms = nil;
 
 //
 // Any new-style native code is now declared discarded and the previous
@@ -2571,7 +2577,9 @@ void preserve(const char *banner, int len)
     }
 
     Lmapstore(nil, fixnum_of_int(4)); // Reset all counts to zero.
+#ifndef EXPERIMENT
     reclaim(nil, "preserve", GC_PRESERVE, 0); // FULL garbage collection
+#endif
     nil = C_nil;
 //
 // if the user generated a SIGINT this is where it gets noticed...
@@ -2592,19 +2600,33 @@ void preserve(const char *banner, int len)
         get_user_files_checksum((unsigned char *)&msg[90]);
 // 106 to 109 free at present but available if checksum goes to 160 bits
         msg[110] = 0;
+#ifdef EXPERIMENT
+        msg[111] = 0;
+#else
 // The final byte at 111 indicates whether compression is to be used
         {   int32_t cc = compression_worth_while;
             int fg = 0;
             while (cc > 128) fg++, cc >>= 1;
             msg[111] = (char)fg;
         }
+#endif
+
+#ifdef EXPERIMENT
+        Iwrite(msg, 112); // Exactly 112 bytes in the header records
+#else
         Cfwrite(msg, 112); // Exactly 112 bytes in the header records
+#endif
     }
 
+#ifdef EXPERIMENT
+    write_everything();
+#else
     unadjust_all();    // Turn all pointers into base-offset form
+#endif
 
     Cfwrite("\nNilseg:", 8);
     copy_into_nilseg(true);
+#ifndef EXPERIMENT
     {   LispObject saver[9];
         for (i=0; i<9; i++)
             saver[i] = BASE[i+13],
@@ -2643,6 +2665,7 @@ void preserve(const char *banner, int len)
     {   intptr_t p = (intptr_t)bps_pages[i];
         Cfwrite((const char *)doubleword_align_up(p), CSL_PAGE_SIZE);
     }
+#endif // EXPERIMENT
 
 #ifndef COMMON
     Cfwrite("\n\nEnd of CSL dump file\n\n", 24);

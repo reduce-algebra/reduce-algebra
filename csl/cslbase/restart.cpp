@@ -101,6 +101,8 @@ extern int load_count, load_limit;
 
 LispObject address_sign;
 
+#ifndef EXPERIMENT
+
 //
 // OK, so I will write a short essay here about the issues of converting
 // between 32 and 64-bit formats. Let me deal with the easier case first.
@@ -225,6 +227,8 @@ LispObject address_sign;
 
 
 static int converting_to_32 = 0, converting_to_64 = 0;
+
+#endif // EXPERIMENT
 
 LispObject C_nil;
 LispObject *stackbase;
@@ -613,6 +617,8 @@ void relocate_native_function(unsigned char *bps)
     }
 }
 
+#ifndef EXPERIMENT
+
 static int32_t fread_count;
 static unsigned char *fread_ptr;
 
@@ -766,6 +772,11 @@ static void Cfread(char *p, int32_t n)
     fread_ptr = ptr;
 }
 
+#endif
+
+// On a TEMPORARY (I hope) basis I need convert_fp_rep because it is
+// used from fasl.cpp...
+
 //
 // There is a misery here in that the width of a Lisp_Object on the
 // current architecture can not be a compile-time constant and so I can
@@ -854,6 +865,8 @@ void convert_fp_rep(void *p, int old_rep, int new_rep, int type)
     }
     return;
 }
+
+#ifndef EXPERIMENT
 
 #define PAGE_MASK               ((((uint32_t)1) << (32-PAGE_BITS)) - 1)
 #define OFFSET_MASK             ((((uint32_t)1) << PAGE_BITS) - 1)
@@ -1074,6 +1087,8 @@ static void adjust_consheap(void)
     }
 }
 
+#endif // EXPERIMENT
+
 entry_point1 entries_table1[] =
 {
 //
@@ -1293,7 +1308,7 @@ entry_pointn entries_tableio[] =
 
 #define entry_table_sizeio ((int)(sizeof(entries_tableio)/sizeof(entries_tableio[0])))
 
-
+#ifndef EXPERIMENT
 
 static struct entry_lookup1
 {   int32_t code;
@@ -2340,6 +2355,8 @@ void adjust_all(void)
     adjust_bpsheap();
 }
 
+#endif // EXPERIMENT
+
 static void *allocate_page(const char *why)
 {   if (pages_count == 0) fatal_error(err_no_store);
     return pages[--pages_count];
@@ -2726,7 +2743,9 @@ static void init_heap_segments(double store_size)
     new_vheap_pages = (void **)my_malloc_2(MAX_PAGES*sizeof(void *));
     new_bps_pages = (void **)my_malloc_2(MAX_BPS_PAGES*sizeof(void *));
     new_native_pages = (void **)my_malloc_2(MAX_NATIVE_PAGES*sizeof(void *));
+#ifndef EXPERIMENT
     pair_c = (unsigned char *)my_malloc_2(CODESIZE);
+#endif
 //
 // Sets up codebuffer for jit functions
 //
@@ -2767,12 +2786,14 @@ static void init_heap_segments(double store_size)
     jit_space_p = jit_space;
 #endif
 
+#ifndef EXPERIMENT
 //
 // The next line is utterly unsatisfactory at present
 //
     char_stack = (unsigned char *)my_malloc_2(CSL_PAGE_SIZE+16 /*CODESIZE*/);
     pair_prev = (unsigned short int *)
                 my_malloc_2(CODESIZE*sizeof(unsigned short int));
+#endif
     if (pages == NULL ||
 #ifdef CONSERVATIVE
         page_map == NULL ||
@@ -2784,10 +2805,12 @@ static void init_heap_segments(double store_size)
         heap_pages == NULL ||
         vheap_pages == NULL ||
         bps_pages == NULL ||
-        native_pages == NULL ||
+#ifndef EXPERIMENT
         pair_c == NULL ||
         char_stack == NULL ||
-        pair_prev == NULL)
+        pair_prev == NULL ||
+#endif
+        native_pages == NULL)
     {   fatal_error(err_no_store);
     }
 
@@ -3240,7 +3263,9 @@ static void record_dynamic_module(char *name, setup_type_1 *entries)
     }
 }
 
-static void warm_setup()
+#ifndef EXPERIMENT
+
+void warm_setup()
 {
 //
 // Here I need to read in the bulk of the checkpoint file.
@@ -3844,6 +3869,8 @@ static void warm_setup()
     }
     inject_randomness((int)clock());
 }
+
+#endif
 
 static char dll_cache_directory[LONGEST_LEGAL_FILENAME] = {0};
 
@@ -6063,6 +6090,30 @@ void setup(int restart_flag, double store_size)
                         filename);
             my_exit(EXIT_FAILURE);
         }
+#ifdef EXPERIMENT
+        Iread(junkbuf, 112);
+        if (init_flags & INIT_VERBOSE)
+        {   term_printf("Created: %.25s\n", &junkbuf[64]);
+            // Time dump was taken
+        }
+        unsigned char chk[16];
+        get_user_files_checksum(chk);
+        for (i=0; i<16; i++)
+        {   if (chk[i] != (junkbuf[90+i] & 0xff))
+            {   term_printf(
+                    "\n+++ Image file belongs with a different version\n");
+                term_printf(
+                    "    of the executable file (incompatible code\n");
+                term_printf(
+                    "    has been optimised into C and incorporated)\n");
+                term_printf(
+                    "    Unable to use this image file, so stopping\n");
+                term_printf(
+                    "    File is: %s\n", filename);
+                my_exit(EXIT_FAILURE);
+            }
+        }
+#else
 //
 // I read input via a buffer of size FREAD_BUFFER_SIZE, which I pre-fill
 // at this stage before I even try to read anything
@@ -6100,6 +6151,7 @@ void setup(int restart_flag, double store_size)
                 }
             }
         }
+#endif // EXPERIMENT
 //
 // To make things more responsive for the user I will display a
 // banner rather early (before reading the bulk of the image file).
@@ -6133,6 +6185,7 @@ void setup(int restart_flag, double store_size)
                 }
             }
         }
+#ifndef EXPERIMENT
 //
 // Now I need to start worrying about 32 vs 64-bit image files.
 //
@@ -6166,6 +6219,11 @@ void setup(int restart_flag, double store_size)
             fflush(stderr);
         }
 #endif
+#endif // !EXPERIMENT
+
+#ifdef EXPERIMENT
+        Iread(junkbuf, 8);
+#else // EXPERIMENT
         Cfread(junkbuf, 8);
 //
 // If the heap image had been made on a 64-bit machine but the current
@@ -6320,6 +6378,7 @@ void setup(int restart_flag, double store_size)
             my_exit(EXIT_FAILURE);
         }
         // The saved value of NIL is not needed in this case
+#endif // EXPERIMENT
     }
     else
     {   for (i=first_nil_offset; i<last_nil_offset; i++)

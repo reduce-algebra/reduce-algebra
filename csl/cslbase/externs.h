@@ -948,12 +948,14 @@ extern bool do_not_kill_native_code;
 extern void        set_fns(LispObject sym, one_args *f1,
                            two_args *f2, n_args *fn);
 extern void        setup(int restartp, double storesize);
-extern LispObject simplify_string(LispObject s);
+extern void        warm_setup();
+extern void        write_everything();
+extern LispObject  simplify_string(LispObject s);
 extern bool        stringp(LispObject a);
 extern "C" LispObject times2(LispObject a, LispObject b);
-extern int32_t       thirty_two_bits(LispObject a);
+extern int32_t     thirty_two_bits(LispObject a);
 #ifdef HAVE_INT64_T
-extern int64_t       sixty_four_bits(LispObject a);
+extern int64_t     sixty_four_bits(LispObject a);
 #endif
 
 #ifdef DEBUG

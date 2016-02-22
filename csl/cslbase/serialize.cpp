@@ -1,11 +1,11 @@
-// serialize.cpp                      Copyright (C) 1990-2016 Codemist Ltd
+// serialize.cpp                                Copyright (C) 2016 Codemist
 
 
 // $Id$
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -218,11 +218,20 @@ static bool descend_symbols = true;
 #define   SER_DUPCONS      0x0f    // cons cell that is referred to multiple times
 #define   SER_DUP          0x10    // used with items that have multiple references
 #define   SER_BITVEC       0x11    // bit-vector
+#define   SER_NIL          0x12    // the very special case of NIL
+#define   SER_END          0x13    // a redundant marker for end of heap dump
 
 // The ones from here on have not yet been allocated
 
-#define   SER_XXX12        0x12
-#define   SER_XXX13        0x13
+// Ideas:   SER_SYMBOL_CONS        for     "sym "
+//          SER_SYMBOL_NIL                 "sym)"
+//          SER_CONS_SYMBOL_CONS           "(sym "
+//          SER_DUPSYMBOL_CONS
+//          SER_DUPSYMBOL_NIL
+//          SER_CONS_DUPSYMBOL_CONS
+//          SER_CONSCONS                   "(("
+//          SER_CONS_CONS_CONS             "((("
+
 #define   SER_XXX14        0x14
 #define   SER_XXX15        0x15
 #define   SER_XXX16        0x16
@@ -237,8 +246,7 @@ static bool descend_symbols = true;
 #define   SER_XXX1f        0x1f
 
 // The next two opcodes make it possible for me to re-use one of the
-// 64 most recent shared items in a single byte. My bet is that NIL will
-// almost always be coped with this way.
+// 64 most recent shared items in a single byte.
 #define SER_BACKREF0 0x20     // reference to item 1 to 32 ago
 #define SER_BACKREF1 0x40     // reference to item 33 to 64 ago
 // I expect strings to be important enough that at least short ones have
@@ -258,7 +266,10 @@ static bool descend_symbols = true;
 #define SER_BVECTOR  0xc0     // vector holding binary info
 
 // At present I have an unallocated code that will be usable to cope with
-// cases where I have not yet thought hard enought!
+// cases where I have not yet thought hard enought! At present the only idea
+// I have for this is "SER_CONS_BACKREF" to correspond to the sequence
+// of SER_CONS followewd by a backref to one of the last 32 items. This
+// is not terribly compelling!
 #define SER_SPARE    0xe0
 
 
@@ -305,7 +316,7 @@ void reader_setup_repeats(size_t n)
     repeat_heap_size = n;
     repeat_count = 0;
     if (n == 0) return; // No repeats present, so not table needed.
-    repeat_heap = (LispObject *)malloc(n*sizeof(LispObject));
+    repeat_heap = (LispObject *)malloc((n+1)*sizeof(LispObject));
     if (repeat_heap == NULL)
     {   printf("\n+++ unable to allocate repeat heap\n");
         abort();
@@ -320,7 +331,7 @@ void writer_setup_repeats()
     repeat_heap_size = repeat_hash.count;
     repeat_count = 0;
     repeat_heap =
-        (LispObject *)malloc(repeat_heap_size*sizeof(LispObject));
+        (LispObject *)malloc((repeat_heap_size+1)*sizeof(LispObject));
     if (repeat_heap == NULL)
     {   printf("\n+++ unable to allocate repeat heap\n");
         abort();
@@ -334,22 +345,25 @@ void writer_setup_repeats()
 // NOTE that index value zero is not used.
 //
 // The implementation here uses a binary heap as a priority queue
-// and if an item outside the first 64 is accesses it brings it to the
-// front of the queue.
+// so that in there are N items in it bringing something to the top
+// costs log(n) steps. This is intended to be a compromise between
+// a scheme that brings each referenced item to the front demoting
+// all other items one place (and having linear cost per access) and
+// not using move-to-front at all.
 
 
 LispObject reader_repeat_old(size_t n)
-{
-//  printf("reader_repeat_old %" PRIuPTR "\n", (uintptr_t)n);
-    if (n <= 64) return repeat_heap[n];
+{   if (n == 1) return repeat_heap[1];
+    LispObject w;
     for (;;)
     {   size_t n2 = n/2;           // parent in binary heap
-        LispObject w = repeat_heap[n];
+        w = repeat_heap[n];
         repeat_heap[n] = repeat_heap[n2];
         repeat_heap[n2] = w;
-        if (n2 == 1) return w;  // item has been moved to front
+        if (n2 == 1) break;  // item has been moved to front
         n = n2;
     }
+    return w;
 }
 
 // Given an item that is now seen for the first time but that it is known
@@ -357,9 +371,7 @@ LispObject reader_repeat_old(size_t n)
 // it falls beyond the first 64 bring it to the first position.
 
 LispObject reader_repeat_new(LispObject x)
-{
-//  printf("reader_repeat_new %" PRIxPTR "\n", (uintptr_t)x);
-    repeat_heap[++repeat_count] = x;
+{   repeat_heap[++repeat_count] = x;
     return reader_repeat_old(repeat_count);
 }
 
@@ -379,21 +391,18 @@ LispObject reader_repeat_new(LispObject x)
 // new item is to be entered in the repeat heap.
 
 size_t find_index_in_repeats(size_t h)
-{
-    printf("find_index_in_repeats %" PRIxPTR "\n", (uintptr_t)h);
-    size_t n = hash_get_value(&repeat_hash, h);
-    printf("payload %" PRIxPTR "\n", (uintptr_t)n);
+{   size_t n = hash_get_value(&repeat_hash, h);
 // if n == 0 then this is the first time we have seen this item. So it
 // needs to be inserted into repeat_hash.
     if (n == 0)
     {   n = ++repeat_count;
+        repeat_heap[n] = h;
         hash_set_value(&repeat_hash, h, n);
-        printf("set payload %" PRIxPTR "\n", (uintptr_t)n);
     }
+    if (n == 1) return 1;
 // I now need to perform the same move-to-top operation that will be performed
-// during reading. But as I do so I will need to update values in the repeat_heap
-// so it can point to where any particulat item will be.
-    if (n <= 64) return n;
+// during reading. But as I do so I will need to update values in the
+// repeat_hash so that I can still find the moved items.
     h = n;
     for (;;)
     {   size_t n2 = n/2;           // parent in binary heap
@@ -402,9 +411,10 @@ size_t find_index_in_repeats(size_t h)
         hash_set_value(&repeat_hash, repeat_heap[n2],  n);
         repeat_heap[n2] = w;
         hash_set_value(&repeat_hash, w, n2);
-        if (n2 == 1) return h;  // item has been moved to front
+        if (n2 == 1) break;  // item has been moved to front
         n = n2;
     }
+    return h;
 }
 
 
@@ -412,7 +422,7 @@ size_t find_index_in_repeats(size_t h)
 // just a test harness and does not reflect what I will eventually need
 // to do!
 
-#define SERSIZE 10000
+#define SERSIZE 1000000
 int sercounter = 0;
 int serincount = 0;
 unsigned char serbuffer[SERSIZE];
@@ -424,7 +434,7 @@ int read_byte()
     {   printf("\nRead too much\n");
         abort();
     }
-    printf("Input byte %.2x\n", serbuffer[serincount]);
+//  printf("Input byte %.2x\n", serbuffer[serincount]);
     fflush(stdout);
     return serbuffer[serincount++];
 }
@@ -438,6 +448,10 @@ void write_byte(int byte, const char *msg, ...)
 {
     va_list a;
     if (sercounter < SERSIZE) serbuffer[sercounter++] = byte;
+    else
+    {   printf("Serialization buffer overflow\n");
+        abort();
+    }
     printf("%.2x: ", byte & 0xff);
     va_start(a, msg);
     vprintf(msg, a);
@@ -593,18 +607,22 @@ void write_f64(double f)
 // At present I am not supporting long doubles. There are multiple issues,
 // including a strong lack of consistency and compatibility across machines,
 // and pain trying to provide portable and fully accurate elementary
-// functions. So I make them synomymous with regular doubles.
+// functions. So I make them synomymous with regular doubles. If I was only
+// concerned with simle arithmetic (ie not the elementary functions) and
+// I was not concerned with portability I could use the C++ "long double"
+// type which is an 80-bit representation on Intel machines and can be
+// all sorts of other things elsewhere!
 
 typedef union _float128u
 {   char i[16];
-    /*long*/ double f;
+    double f;
 } float128u;
 
 long double read_f128()
 {   return read_f64();
 }
 
-void write_f128(/*long*/ double f)
+void write_f128(double f)
 {   write_f64(f);
 }
 
@@ -842,7 +860,7 @@ bool insert_codepointer(uintptr_t x)
 
 uint64_t use_setup(uint64_t crc, const setup_type *p)
 {   while (p->name != NULL)
-    {   printf("[%d] Name: %s\n", ncodepointers, p->name);
+    {   // printf("[%d] Name: %s\n", ncodepointers, p->name);
         unsigned char n = 0;
         if (insert_codepointer((uintptr_t)(p->one))) n += 1;
         if (insert_codepointer((uintptr_t)(p->two))) n += 2;
@@ -853,6 +871,8 @@ uint64_t use_setup(uint64_t crc, const setup_type *p)
     }
     return crc;
 }
+
+uint64_t function_crc = 0;
 
 void set_up_function_tables()
 {   uint64_t crc = 0;
@@ -900,6 +920,7 @@ void set_up_function_tables()
     printf("There are %u entries in the code pointer table\n",
         (unsigned int)ncodepointers);
     printf("CRC for table of defined entrypoints = %" PRIx64 "\n", crc);
+    function_crc = crc;
 }
 
 void *read_function()
@@ -1005,8 +1026,7 @@ down:
 // fixnum or a boxnum as relevant. If it creates a boxnum then that could
 // possibly be a shared object, and against the possibility of that I set
 // pbase so that a SER_DUP opcode can behave meaningfully.
-// @@@ At present I only ever re-create a fixnum.
-            prev = *p = fixnum_of_int(read_u64());
+            prev = *p = make_lisp_integer64(read_u64());
             goto up;
 
         case SER_NEGFIXNUM:
@@ -1016,8 +1036,7 @@ down:
 // arrange that the set of values that pack into a given number of bytes
 // matches 2s complement. Eg with just 1 following byte the range goes from
 // -128 to +127 (rather than -127 to +127).
-// @@@ At present I only ever re-create a fixnum.
-            prev = *p = fixnum_of_int(-1-read_u64());
+            prev = *p = make_lisp_integer64(-1-read_u64());
             goto up;
 
         case SER_RAWSYMBOL:
@@ -1073,7 +1092,8 @@ down:
         case SER_FLOAT128:
 // a 128-bit (double-length) float. Note that this may not use all
 // 128 bits and that cross-platform compatibility for floats of over 64
-// bits is really very uncertain at present!
+// bits is really very uncertain at present! Well right now it behaves
+// jlisp like DOUBLE_FLOAT and uses a 64-bit representation.
             prev = *p = make_boxfloat(read_f128(), TYPE_LONG_FLOAT);
             goto up;
 
@@ -1099,8 +1119,14 @@ down:
             }
             goto up;
 
-        case SER_XXX12:
-        case SER_XXX13:
+        case SER_NIL:
+            prev = *p = C_nil;
+            goto up;
+
+        case SER_END:
+            printf("End of dump marker found - this is an error situation\n");
+            abort();
+
         case SER_XXX14:
         case SER_XXX15:
         case SER_XXX16:
@@ -1218,8 +1244,9 @@ down:
 // sequence showing how many 4-byte units follow. In the case of bit, byte and
 // halfword vectors the tag bits contain information to show how much
 // of the very last word will be in use. That has to be extracted so I know
-// just how much to read. The length code that follows the SER_BVECTOR
-// opcode measures in units of 4-byte words.
+// just how much to read.
+// The length code that follows the SER_BVECTOR opcode measures in units
+// of 4-byte words.
         w = 4*read_u64();
 // Here I have assembled 7 bits of type information in c. CCCCC comes from the
 // opcode. The header I want for my vector will be
@@ -1551,6 +1578,7 @@ down:
                                         // if I detect it and do not crash.
         goto up;
     }
+    else if (p == C_nil) goto up;
     switch (p & TAG_BITS)
     {
     default:
@@ -1746,16 +1774,20 @@ void write_data(LispObject p)
     size_t i;
 down:
     if (p == 0) p = SPID_NIL; // reload as a SPID.
+    else if (p == C_nil)
+    {   write_byte(SER_NIL, "nil");
+        goto up;
+    }
     if ((i = hash_lookup(&repeat_hash, p)) != (size_t)(-1))
     {   if (hash_get_value(&repeat_hash, i) != 0)
         {   size_t n = find_index_in_repeats(i);
             char msg[20];
             sprintf(msg, "back %" PRIuPTR, (uintptr_t)n);
             if (n <= 32) write_byte(SER_BACKREF0 + n - 1, msg);
-            else if (n <= 64) write_byte(SER_BACKREF0 + n - 33, msg);
+            else if (n <= 64) write_byte(SER_BACKREF1 + n - 33, msg);
             else
             {   write_byte(SER_BIGBACKREF, msg);
-                write_u64(n);
+                write_u64(n - 65);
             }
             goto up;
         }
@@ -1906,6 +1938,47 @@ down:
             if (i != (size_t)-1) write_byte(SER_DUP, "dup bitvector");
             goto up;
         }
+// If I have a big-integer that uses at most two (32-bit) words then
+// I can transmit it as a big fixnum. I know that a 3-word bignum can
+// sometimes fit within 64-bits, but I do not detect and handle that
+// case here. The main concern I have here is that if I move to making
+// fixnums 60-bits wide in the future that the range that they cover is
+// handled nicely, and here it is!
+// Observe that the type returned by bignum_digits(p)[n] is uint32_t and
+// that although most digits in a bignum are unsigned the most significant
+// one must be treated as signed. So I cast to int32_t before vasting to
+// int64_t to ensure that the sign gets propagated the way I need it to.
+        else if (is_bignum_header(h))
+        {   if (length_of_header(h) == CELL+4)
+            {   int64_t n = (int32_t)bignum_digits(p)[0];
+                char msg[16];
+                sprintf(msg, "int value=%" PRId64, n);
+                if (n < 0)
+                {   write_byte(SER_NEGFIXNUM, msg);
+                    write_u64(-n-1);
+                }
+                else
+                {   write_byte(SER_POSFIXNUM, msg);
+                    write_u64(n);
+                }
+                goto up;
+            }
+            else if (length_of_header(h) == CELL+8)
+            {   int64_t n = (int32_t)bignum_digits(p)[0] |
+                     ((int64_t)(int32_t)bignum_digits(p)[1] << 31);
+                char msg[16];
+                sprintf(msg, "int value=%" PRId64, n);
+                if (n < 0)
+                {   write_byte(SER_NEGFIXNUM, msg);
+                    write_u64(-n-1);
+                }
+                else
+                {   write_byte(SER_POSFIXNUM, msg);
+                    write_u64(n);
+                }
+                goto up;
+            }
+        }
 //
 // The general code here writes out a vector where its contents are
 // binary data. This needs to use separate code for each sort of data
@@ -2016,9 +2089,15 @@ down:
                 write_f64(double_float_val(p));
             }
             break;
-        default:
         case TYPE_LONG_FLOAT:
-            printf("long floats not supported\n");
+            {   char msg[32];
+                sprintf(msg, "long double %.16g", (double)long_float_val(p));
+                write_byte(SER_FLOAT128, msg);
+                write_f64((double)long_float_val(p));
+            }
+            break;
+        default:
+            printf("floating point representation not recognized\n");
             abort();
         }
         if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly referenced vector");
@@ -2178,5 +2257,749 @@ LispObject Lunserialize(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
+#ifdef EXPERIMENT
+
+// Here I will comments onw how the previous version of warm_setup (and
+// hence "preserve") worked, and how the new one does. The intent is that this
+// will first help me know what I am doing as I code the new version, and
+// document some of the design decisions. Both the old ones and their
+// consequences and the new ones and why I wanted to change things.
+//
+// First an overview of the old code. I dumped a heap image by taking
+// each page of the heap and writing it out almost unaltered but with its
+// address in memory attached. Well that was the original ideal but because
+// pages wre not going to be loaded back at the same addresses and I could
+// only guarantee consistency of relative addresses within a block I needed
+// to "unadjust" each pointer in the heap so it became encoded as a
+// block-number together with an offset. So I had to have code that
+// scanned the heap parsing it to identify every object, and I needed to
+// detect where within objects there were pointers. I also run a simplified
+// zip-like compression process to keep image files compact.
+//
+// To reload I could originally just read back blocks and "adjust" to put
+// pointers back to their native state. However a few years later I needed
+// to support both 32 and 64-bit architectures and I wanted to allow images
+// made on one to load on the other. That involved parsing blocks of memory
+// and halving or doubling the width of pointers.
+//
+// To cope with native code entrypoints I re-ran the normal heap
+// initialization code on an image once it had been reloaded. That puts the
+// entrypoint of CAR back as it should, and similarly for all other
+// built in functions. Doing things that way makes it way harder to cope with
+// cases where functions have been undefined, redefined or had their
+// definitions copied.
+//
+// Overall although the old scheme worked it was complicated and somewhat ugly.
+// I wanted to to introduce an option whereby 32-bit machines could have
+// 28-bit fixnums but 64-bit machines bigger ones - adapting the conversion
+// of images across dump/restart for that was going to be messy. Supporting
+// dynamically-compiled native code seemed awkward. The possibility of a trail
+// of residual bugs was a worry.
+//
+// So now I will describe the newer scheme. It dumps a heap starting from
+// every unambiguous lisp-base. In effect it is a print procedure that
+// does a pre-scan of all the data so as to detect where structures are
+// shared or looped, but then writes out the data in a sequential form.
+// I already have a "printl" that prints potentially cyclic lists in
+// normal character form - but the version used here uses a more compressed
+// bytecode notation, and tried to represent common things particularly
+// efficiently. Lists are in general transmitted with one byte for each CONS
+// cell, and strings often have a single prefix byte ahead of the bytes that
+// make up the string content. Creating the linear representation of data
+// is done using a pointer-reversal scheme that temporarily overwrites things
+// while writing them out, but by its nature restores them when it is
+// complete. This results in the code using only bounded stack space. The
+// reading code also uses pointer reversal for almost all its recursion.
+//
+// I believe that the new code ends up shorter and neater, and my hope is
+// that it will lead to a more compact representation of heap images and that
+// it will be fast. The previous one expected to be fast since the writing
+// and reading of images was basically simple block IO operations, but the
+// scanning of the head to alter the representationof pointers was messy and
+// poitentially costly (but was a cache-friendly linear scan of memory). Here
+// there is a risk that writing images may be more expensive, but I am
+// expecting that loading will be at least as fast as it used to be.
+//
+// My very first experiment has been to start a cold-start CSL and go
+// "preserve". That seems to create a serialized form of everything that is
+// around 24K bytes long, while the image using the previous version was
+// of size 43K. Until I can reload images and verify that everything works
+// this is very provisional and uncertain, but is feels encouraging to
+// me.
+
+
+void write_everything()
+{
+    LispObject nil = C_nil;
+    copy_into_nilseg(false);
+    if (!setup_codepointers)
+    {   set_up_function_tables();
+        setup_codepointers = true;
+    }
+    descend_symbols = true;
+    sercounter = 0;
+    hash_init(&repeat_hash, 13); // allow 8K entries to start with.
+// First scan the components of NIL. I have to do this because even with
+// descend_symbols set to true the scanning code views NIL as such a special
+// case that it does not descend through it or view multiple references to
+// it as worth noting.
+    scan_data(qvalue(nil));
+    scan_data(qenv(nil));
+    scan_data(qpname(nil));
+    scan_data(qplist(nil));
+    scan_data(qfastgets(nil));
+    scan_data(qpackage(nil));
+// Next the major list-bases.
+    for (int i = first_nil_offset; i<last_nil_offset; i++) scan_data(BASE[i]);
+// The following two are not full list bases - they are weak pointers. I hope
+// that in a while I will re-work how I get hash tables rehashed following
+// garbage collection and preserve/restart do I will not end up needing these
+// lists at all.
+    scan_data(eq_hash_tables);
+    scan_data(equal_hash_tables);
+// Now I should have identified all cyclice and shared data - including
+// eveything in the object list/package structures.
+    release_map();
+    writer_setup_repeats();
+// At the start of a heap image I have a CRC for the tables of function
+// entrypoints, then the number of repeated objects.
+    write_u64(function_crc);
+    write_u64(repeat_heap_size);
+// Now inspect all structures again, this time writing a serialize3d form
+// for everything.
+    write_data(qvalue(nil));
+    write_data(qenv(nil));
+    write_data(qpname(nil));
+    write_data(qplist(nil));
+    write_data(qfastgets(nil));
+    write_data(qpackage(nil));
+// Next the major list-bases.
+    for (int i = first_nil_offset; i<last_nil_offset; i++) write_data(BASE[i]);
+// The following two are not full list bases - they are weak pointers. I hope
+// that in a while I will re-work how I get hash tables rehashed following
+// garbage collection and preserve/restart do I will not end up needing these
+// lists at all.
+    write_data(eq_hash_tables);
+    write_data(equal_hash_tables);
+// Tidy up at the end. I do not logically need an exlicit end of data marker
+// in the serialised form, but putting one there seems lile a way to make
+// me feel more robust against corrupred image files.
+    write_byte(SER_END, "end of data");
+    hash_finalize(&repeat_hash);
+    if (repeat_heap_size != 0)
+    {   repeat_heap_size = 0;
+        free(repeat_heap);
+    }
+    repeat_heap = NULL;
+}
+
+void warm_setup()
+{
+#if 0
+//
+// Here I need to read in the bulk of the checkpoint file.
+//
+    LispObject nil = C_nil;
+    int32_t i;
+//
+// NOTE that I have made these variable of type int32_t so that
+// their size is the same (ie 4) whether I am on a 32 or 64-bit machine
+//
+    Cfread((char *)&heap_pages_count, sizeof(heap_pages_count));
+    Cfread((char *)&vheap_pages_count, sizeof(vheap_pages_count));
+    Cfread((char *)&bps_pages_count, sizeof(bps_pages_count));
+
+    heap_pages_count = flip_32(heap_pages_count);
+    vheap_pages_count = flip_32(vheap_pages_count);
+    bps_pages_count = flip_32(bps_pages_count);
+
+//
+// Here I want to arrange to have at least one free page after re-loading
+// an image.  If malloc can give me enough I grab it here. Note that I do
+// not yet know how many pages will be needed for hard code, which is a
+// bit of a nuisance!
+// And if I am loading a 32-bit image on a 64-bit machine I will arrange that
+// all the pages that I reload stuff into here are (temporarily) double
+// the usual size. Because the 32-bit image was created on a 32-bit system (!)
+// it can have a total heap of at most 2Gb, ie 512 pages (for so long as my
+// page size is 4Mb, ie PAGE_BITS=22). So I could have a bitmap that
+// indicated which of the first up to 512 pages was oversized if I was
+// worried. Right now I will just allocate the memory large and on a 64-bit
+// machine not worry about the waste if later on I do not use half of it!
+//
+// When I look at a Reduce image I find that the (compressed) main heap image
+// is around 0.5Mb for a normal Reduce and just over 1Mb for the bulkier
+// bootstrap version. That is just the heap image part of the full image file.
+// A consequence of this is that if my pages are 4Mb each even after
+// decompression I will use just one page each of cons, vector and bps heap
+// here. However potentially somebody could use "preserve" to capture the
+// state in the middle of a huge calculation, in which case life would
+// end up messier... with LOTS of oversized pages.
+//
+    i = heap_pages_count+vheap_pages_count+
+        bps_pages_count+1 - pages_count;
+#ifdef MEMORY_TRACE
+//
+// The MEMORY_TRACE options requires that all store be in a single
+// contiguous chunk, and hence can not cope with any piecemeal allocation
+// in the form that follows. That means it is incompatible with loading
+// 32-bit images on a 64-bit machine! So if I find anybody trying I
+// abort. OK so the message merely says "not enough memory" but that is better
+// than trying to continue and then crashing messily!
+//
+    if (i > 0 || converting_to_64) fatal_error(err_no_store);
+#else
+//
+// If I am converting to 64-bits I need all my memory here to be
+// contiguous. So rather than check I have enough here I will do
+// that later,,,
+//
+    if (i>0 && converting_to_64) fatal_error(err_no_store);
+    while (i-- > 0)
+    {   void *page = my_malloc_1((size_t)(CSL_PAGE_SIZE + 16));
+        if (page == NULL)
+        {   fatal_error(err_no_store);
+        }
+        else pages[pages_count++] = page;
+    }
+//
+// Now I have at least just enough pages to load op the heap image. Well I
+// really hope I have a fair amount in hand or else garbage collection will
+// be a pain! But at least we can get started. Depending on how full memory
+// looks I will select the type for the first garbage collection. See
+// comments in gc.c for further thoughts about this.
+//
+    gc_method_is_copying = (pages_count >
+                            3*(heap_pages_count +
+                               (3*(vheap_pages_count +
+                                   bps_pages_count +
+                                   native_pages_count))/2));
+#endif
+    {   char dummy[16];
+        Cfread(dummy, 8);
+    }
+#ifdef MEMORY_TRACE
+#ifndef CHECK_ONLY
+    memory_comment(6);  // vector heap
+#endif
+#endif
+    for (i=0; i<vheap_pages_count; i++)
+    {   intptr_t p;
+// When I want to make the page double size I do TWO allocations here.
+        if (converting_to_64) allocate_page("vheap 64-bit padder");
+        vheap_pages[i] = allocate_page("vheap reload");
+        p = doubleword_align_up((intptr_t)vheap_pages[i]);
+//
+// Vheap pages that need expanding to 64-bits will most easily by copied
+// in an order that goes best if I put the initial raw 32-bit data in the
+// top half of the double-sized page.
+//
+        if (converting_to_64)
+        {   Cfread(CSL_PAGE_SIZE+(char *)p, CSL_PAGE_SIZE);
+// For convenience later I copy the length field down to the bottom now
+            car32(p) = car32(CSL_PAGE_SIZE+(char *)p);
+        }
+        else Cfread((char *)p, CSL_PAGE_SIZE);
+    }
+
+    {   char dummy[16];
+        Cfread(dummy, 8);
+    }
+#ifdef MEMORY_TRACE
+#ifndef CHECK_ONLY
+    memory_comment(5);  // cons heap
+#endif
+#endif
+    for (i=0; i<heap_pages_count; i++)
+    {   intptr_t p;
+// When I want to make the page double size I do TWO allocations here.
+        if (converting_to_64) allocate_page("heap 64-bit padder");
+        heap_pages[i] = allocate_page("heap reload");
+        p = quadword_align_up((intptr_t)heap_pages[i]);
+        Cfread((char *)p, CSL_PAGE_SIZE);
+    }
+
+    {   char dummy[16];
+        Cfread(dummy, 8);
+    }
+#ifdef MEMORY_TRACE
+#ifndef CHECK_ONLY
+    memory_comment(14);  // BPS heap
+#endif
+#endif
+    for (i=0; i<bps_pages_count; i++)
+    {   intptr_t p;
+// When I want to make the page double size I do TWO allocations here.
+        if (converting_to_64) allocate_page("bps 64-bit padder");
+        bps_pages[i] = allocate_page("bps reload");
+        p = doubleword_align_up((intptr_t)bps_pages[i]);
+// Same issue as for Vheap pages
+        if (converting_to_64)
+        {   Cfread(CSL_PAGE_SIZE+(char *)p, CSL_PAGE_SIZE);
+            car32(p) = car32(CSL_PAGE_SIZE+(char *)p);
+        }
+        else Cfread((char *)p, CSL_PAGE_SIZE);
+    }
+
+    {   char endmsg[32];
+        Cfread(endmsg, 24);  // the termination record
+//
+// Although I check here I will not make the system crash if I see an
+// error - at least until I have tested things and found this test
+// properly reliable.
+//
+#ifdef COMMON
+        if (strncmp(endmsg, "\n\nEnd of CCL dump file\n\n", 24) != 0)
+#else
+        if (strncmp(endmsg, "\n\nEnd of CSL dump file\n\n", 24) != 0)
+#endif
+        {   term_printf("\n+++ Bad end record |%s|\n", endmsg);
+        }
+    }
+//
+// There is a delicacy here - Cfread uses Iread to read chunks of
+// data from the real input file, but it never goes beyond the recorded
+// end of file mark.  This buffering ensures that at this stage any
+// pending part-word of data will have been read - this because the
+// read buffer used is a multiple of 4 bytes long.  This point matters
+// with regard to checksum validation on these files. For an image in a native
+// directory I must have set up the initial read_bytes_remaining allowing for
+// the final checksum...
+//
+    {   LispObject w = error_output;
+        error_output = 0;
+        if (IcloseInput(true))
+        {
+//
+// I write a moan to stderr, even though in some cases this will not be
+// visible, because the general-purpose Lisp print streams have not yet been
+// fully set up. So on some windowed platforms this message, if it appears
+// at all, may show up in an unusual way. Sorry!
+//
+            fprintf(stderr, "\n+++ Initial Image file checksum failure\n");
+        }
+        error_output = w;
+    }
+
+#ifndef MEMORY_TRACE
+    if (converting_to_64)
+    {
+//
+// Now if the heap image was a 32-bit one but I am now on a 64-bit machine
+// I will allocate more pages (if necessary) to ensure that a copying
+// garbage collection will be possible.
+//
+        i = 2*heap_pages_count+3*vheap_pages_count+
+            3*bps_pages_count - pages_count;
+        while (i-- > 0)
+        {   void *page = my_malloc_1((size_t)(CSL_PAGE_SIZE + 16));
+            if (page == NULL)
+            {   fatal_error(err_no_store);
+            }
+            else pages[pages_count++] = page;
+        }
+        gc_method_is_copying = 1;
+    }
+#endif // MEMORY_TRACE
+
+#ifdef MEMORY_TRACE
+#ifndef CHECK_ONLY
+    memory_comment(9);  // adjusting
+#endif
+#endif
+    inject_randomness((int)clock());
+    adjust_all();
+
+#ifdef MEMORY_TRACE
+#ifndef CHECK_ONLY
+    memory_comment(12);  // remainder of setup
+#endif
+#endif
+//
+// An explanation is needed here. Hash tables can be really odd things in
+// that if they are keyed on the EQ test they are based on memory addresses
+// that objects lie at. So the garbage collector has to do magic things with
+// them! I therefore keep a list of all hash tables, but it must not be
+// processed in a naive way. I keep it in a variable that is NOT in the range
+// of places where the garbage collector normally looks. But when it comes
+// to preserve and restart I need to save the information, so I have the two
+// lists I need saved in the nilseg under the aliass eq_hash_table_list and
+// equal_hash_table_list. As soon as I can I extract them and put them
+// back in the magic special places they need to live.
+//
+    eq_hash_tables = eq_hash_table_list;
+    equal_hash_tables = equal_hash_table_list;
+    eq_hash_table_list = equal_hash_table_list = nil;
+    {   LispObject qq;
+        for (qq = eq_hash_tables; qq!=nil; qq=qcdr(qq))
+        {   if (!is_vector(qcar(qq)))
+            {   printf("qq=%p should be a vector\n", (void *)qcar(qq));
+                exit(4);
+            }
+            rehash_this_table(qcar(qq));
+        }
+        for (qq = equal_hash_tables; qq!=nil; qq=qcdr(qq))
+        {   if (!is_vector(qcar(qq)))
+            {   printf("qq=%p should be a vector\n", (void *)qcar(qq));
+                exit(4);
+            }
+            rehash_this_table(qcar(qq));
+        }
+    }
+
+//
+// The following few lines allude to a historical oddity from before the time
+// when 32 bit and 64-bit images could be used interchangably. The fields
+// stored used to be explicitly 32-bit ones even on a 64-bit machine. Now they
+// are 64-bit values in that case. When they were 32-bit values on a 64-bit
+// machine they lived in the low memory address of that (double)word. Now
+// where they live depends on the byte order of the machine that wrote them!
+// this all really messes up conversion between different word lengths and
+// different byte orderings. Part of the hack to unwind that is that if I am
+// NOW on a 64-bit machine I may end up after flipping with data in the
+// top not the low part of the 64-bit words, so I patch that.
+//
+    gensym_ser = flip_bytes(gensym_ser);
+    print_precision = flip_bytes(print_precision);
+    miscflags = flip_bytes(miscflags);
+    current_modulus = flip_bytes(current_modulus);
+    fastget_size = flip_bytes(fastget_size);
+    package_bits = flip_bytes(package_bits);
+    modulus_is_large = flip_bytes(modulus_is_large);
+//
+// The adjustments used here can arise when I have read a 32-bit image in
+// on a 64-bit machine, but may possibly arise if I load an ancient 64-bit
+// image on a computer with the opposite byte order. I think one might say
+// that this sort of trouble relates to my breaching various rules related
+// to strict aliasing! Observe that I expect and indeed demand that the
+// quantities stored here are really just 31-bits - that is to reduce pain
+// associated with sign extension into the high 32-bits of a 64-bit value.
+// So you see it seems best to do this even if I am not converting from
+// 32 to 64 bits.
+//
+    if (SIXTY_FOUR_BIT)
+    {   if ((int32_t)gensym_ser==0)
+            gensym_ser =
+                (LispObject)(((int64_t)gensym_ser)>>32) & 0x7fffffff;
+        if ((int32_t)print_precision==0)
+            print_precision =
+                (LispObject)(((int64_t)print_precision)>>32) & 0x7fffffff;
+        if ((int32_t)miscflags==0)
+            miscflags =
+                (LispObject)(((int64_t)miscflags)>>32) & 0x7fffffff;
+        if ((int32_t)current_modulus==0)
+            current_modulus =
+                (LispObject)(((int64_t)current_modulus)>>32) & 0x7fffffff;
+        if ((int32_t)fastget_size==0)
+            fastget_size =
+                (LispObject)(((int64_t)fastget_size)>>32) & 0x7fffffff;
+        if ((int32_t)package_bits==0)
+            package_bits =
+                (LispObject)(((int64_t)package_bits)>>32) & 0x7fffffff;
+        if ((int32_t)modulus_is_large==0)
+            modulus_is_large =
+                (LispObject)(((int64_t)modulus_is_large)>>32) & 0x7fffffff;
+    }
+
+    set_up_functions(1);
+    set_up_variables(1);
+//
+// Now I have closed the main heap image, but if there is any hard machine
+// code available for this architecture I should load it. When I do this
+// the main heap has been loaded and relocated and all the entrypoints
+// in it that relate to kernel code have been inserted.
+//
+    if (native_code_tag != 0) // Not worth trying if none available
+    {   if (!IopenRoot(NULL, -native_code_tag, 0))
+        {   int32_t nn = Igetc() & 0xff;
+            nn = nn + ((Igetc() & 0xff) << 8);
+            native_pages_count = nn;
+            for (i=0; i<native_pages_count; i++)
+            {   intptr_t p;
+//
+// Because I did not know earlier how many pages would be needed here I
+// may not have overall enough. So I expand my heap (if possible)
+// when things start to look tight here.
+//
+                if (pages_count <= 1)
+                {   void *page = my_malloc_1((size_t)(CSL_PAGE_SIZE + 16));
+                    if (page == NULL)
+                    {   fatal_error(err_no_store);
+                    }
+                    else pages[pages_count++] = page;
+                }
+                native_pages[i] = allocate_page("native code");
+                p = (intptr_t)native_pages[i];
+                p = doubleword_align_up(p);
+                fread_count = 0;
+                Cfread((char *)p, CSL_PAGE_SIZE);
+                native_fringe = car32(p);
+                relocate_native_code((unsigned char *)p, native_fringe);
+            }
+            IcloseInput(true);
+        }
+    }
+//
+// With a warm start I must instate the definitions of all functions
+// that may have been compiled into hard code on this platform. Functions that
+// may be hard-coded on SOME platform may also be in a mess and will have
+// a byte-coded definition put back in place at this point. Observe that this
+// happens AFTER the system has otherwise been loaded and relocated.
+//
+    {   LispObject f_list = native_code, byte_code_def;
+        do_not_kill_native_code = 1;
+        while (f_list != nil)
+        {   LispObject w, fn, defs;
+            int32_t nargs;
+            int instated_something = 0;
+            byte_code_def = nil;
+            w = qcar(f_list);
+            f_list = qcdr(f_list);
+            fn = qcar(w); w = qcdr(w);
+            nargs = int_of_fixnum(qcar(w));
+            defs = qcdr(w);
+            while (defs != nil)
+            {   int32_t n, tag, type, off;
+                intptr_t page;
+                void *e;
+                w = qcar(defs);
+                defs = qcdr(defs);
+                n = int_of_fixnum(qcar(w));
+                w = qcdr(w);
+                tag = (n >> 20) & 0xff;
+                type = (n >> 18) & 0x3;
+                page = n & 0x3ffff;
+                if (tag == 0)
+                {   byte_code_def = qcdr(w);
+                    continue;
+                }
+                if (tag != native_code_tag) continue; // Not for me today
+                instated_something = 1;
+                off = int_of_fixnum(qcar(w));
+                w = qcdr(w);
+//
+// Now fn should be a symbol, the function to be defined. w is the thing to go
+// into its environment cell. page and off define a location in the hard
+// code space and type tells me which of the 3 function cells to put that in.
+//
+// I will not (yet) mess around with the removal of C definition
+// flags and all the other delicacies. Note that this means attempts to
+// redefine built-in functions with user-provided native code varients
+// may cause all sorts of muddle! Please do not try it, but when you
+// do (!) tell me and I will attempt to work out what ought to happen.
+// Maybe it will all be OK provided that a consistent byte-code definition
+// is in place before any native code gets generated.
+//
+                page = (intptr_t)native_pages[page];
+                page = doubleword_align_up(page);
+                e = (void *)((char *)page + off);
+                switch (type)
+                {
+//
+// Warning - I just support nargs being a simple integer here, with no
+// fancy encoding for variable numbers of args or &rest args etc. I think
+// that for native code all such cases need to be dealt with via non-zero
+// type code so that the 3 individual function cells get filled in one
+// by 1.
+//
+                    case 0: switch (nargs)
+                        {   case 0: set_fns(fn, wrong_no_0a, wrong_no_0b, (n_args *)e);
+                                break;
+                            case 1: set_fns(fn, (one_args *)e, too_many_1, wrong_no_1);
+                                break;
+                            case 2: set_fns(fn, too_few_2, (two_args *)e, wrong_no_2);
+                                break;
+                            case 3: set_fns(fn, wrong_no_3a, wrong_no_3b, (n_args *)e);
+                                break;
+                            default:set_fns(fn, wrong_no_na, wrong_no_nb, (n_args *)e);
+                                break;
+                        }
+                        break;
+//
+// A non-zero type field allows me to fill in just one of the function cells.
+// Note that I ought to arrange to get ALL of them filled in somehow, either
+// by using type=0 or by using all three of type = 1,2,3.
+//
+                    case 1: ifn1(fn) = (intptr_t)e;
+                        break;
+                    case 2: ifn2(fn) = (intptr_t)e;
+                        break;
+                    case 3: ifnn(fn) = (intptr_t)e;
+                        break;
+                }
+                qenv(fn) = w;
+            }
+            if (!instated_something && byte_code_def != nil)
+            {   w = cons(fixnum_of_int(nargs), byte_code_def);
+//
+// You can look at this bit of code and moan, saying "What happens if
+// the call to CONS causes a garbage collection?". Well I have this policy
+// that garbage collection attempts during startup should be thought of
+// as fatal, and that the user should give enough memory to make it possible
+// to get at least started. I hope that I do not generate much litter here
+// and in other places within the startup code. Not thinking about GC
+// safety leaves the code neater and easier to work with.
+//
+                Lsymbol_set_definition(nil, fn, w);
+            }
+        }
+        do_not_kill_native_code = 0;
+    }
+//
+// The stuff above is about the internal native compilation that I am no
+// longer pursuing. Well I may look back at it some day, but it would
+// involve CSL itselh having compiler back-ends for all relevant architectures
+// and now I am moving to using a local C compiler to do that stuff.
+//
+    {   LispObject n = native_defs;
+        const char *p;
+        while (n != nil)
+        {   LispObject w, name, mod, fname, env, env1, checksum;
+            setup_type_1 *table, *tp;
+            uint32_t *pp;
+            size_t len;
+            name = qcar(n);
+            n = qcdr(n);
+            w = get(name, nativecoded_symbol);
+            if (consp(w))
+            {   mod = qcar(w);
+                w = qcdr(w);
+                if (consp(w))
+                {   fname = qcar(w);
+                    w = qcdr(w);
+                    if (consp(w))
+                    {   checksum = qcar(w);
+                        env = qcdr(w);
+                    }
+                    else continue;
+                }
+                else continue;
+            }
+            else continue;
+//
+// If I get here I have
+//   name     the Lisp symbol that may get a native definition
+//   mod      a string that names the module it lives in
+//   fname    the name of the function in the native code to load
+//   env      an environment to give the native definition
+//   checksum module checksum
+// name and fname may differ, for instance fname is the name that the
+// function had when it was compiled, but a copy of the definition may
+// have been copied to name...
+//
+#ifdef TRACE_NATIVE
+            trace_printf("Possible native def: ");
+            prin_to_trace(name);
+            trace_printf("\nmodule: ");
+            prin_to_trace(mod);
+            trace_printf("\nfname: ");
+            prin_to_trace(fname);
+            trace_printf("\nEnv: ");
+            prin_to_trace(env);
+            trace_printf("\nChecksum: ");
+            prin_to_trace(checksum);
+            trace_printf("\n");
+#endif
+//
+// First I will try to ensure that the module concerned gets loaded. It
+// may have been already, in which case I just need its handle.
+//
+            push4(name, fname, env, n);
+#ifdef EMBEDDED
+            continue;
+#else // EMBEDDED
+            table = find_def_table(mod, checksum);
+            pop4(n, env, fname, name);
+            if (table == NULL) continue;  // This module is not available
+#endif // EMBEDDED
+#ifdef TRACE_NATIVE
+            trace_printf("setup table at %p\n", table);
+#endif
+// Now seek for fname in there...
+            tp = table;
+            while (tp->name != NULL) tp++;
+#ifdef SOON
+            modname = "???";
+            if (strcmp(modname, (char *)tp->one) != 0)
+            {   trace_printf("Module name %s disagrees with %s\n",
+                             modname, (char *)tp->one);
+                continue;
+            }
+#else
+#ifdef DEBUG_NATIVE
+            modname = "???";
+            trace_printf("module itself says it is called %s, wants to be %s\n", (char *)tp->one, modname);
+#endif
+#endif
+            push4(name, fname, env, n);
+            p = get_string_data(fname, "restart:native_code", &len);
+            pop4(n, env, fname, name);
+            nil = C_nil;
+            if (exception_pending()) continue;
+            while (tp!=table)
+            {   tp--;
+                if (strncmp(p, tp->name, len) == 0 &&
+                    strlen(tp->name)==len)
+                {   p = NULL;
+                    break;
+                }
+            }
+            if (p != NULL) continue;
+//
+// I will ONLY install native code if I have a bytecoded version in place
+// already. Note that I will require the function now about to be
+// redefined to have a bytecoded form that agrees wrt a checksum with the
+// native code version from the dynamically loaded module.
+// WELL there is an issue about the tail-call specials. They have a
+// symbol in the env cell and no checksum for me to look at at all. I
+// think I will just trust things in those cases.
+//
+            env1 = qenv(name);
+#ifdef TRACE_NATIVE
+            prin_to_trace(env1);
+            trace_printf(" is the bytecoded version\n");
+#endif
+            if (!is_symbol(env))
+            {   if (!consp(env1) || !is_bps(qcar(env1))) continue;
+                env1 = qcdr(env1);
+                if (!is_vector(env1)) continue;
+                env1 = Lgetv(nil, env1, Lupbv(nil, env1));
+#ifdef TRACE_NATIVE
+                prin_to_trace(env1); trace_printf(" should be checksum again\n");
+#endif
+                if (!is_numbers(env1) || !is_bignum(env1)) continue;
+                pp = bignum_digits(env1);
+#ifdef TRACE_NATIVE
+                trace_printf("%u %u vs %u %u\n", pp[0], pp[1], tp->c2, tp->c1);
+#endif
+                if (pp[0] != tp->c2 || pp[1] != tp->c1) continue;
+            }
+            if (load_limit != 0x7fffffff)
+            {   if (load_count >= load_limit) continue;
+                prin_to_trace(name);
+                trace_printf(" : %d\n", load_count++);
+            }
+//
+// Gosh: now I can actually make the function available to users!
+//
+#ifdef TRACE_NATIVE
+            trace_printf("actually set up native function\n");
+#endif
+//
+// The symbol I am about to define is already on native_defs and
+// has all the property-list info that it needs, so I am in the
+// happy situation of not needing to do much here.
+//
+            ifn1(name) = (intptr_t)tp->one;
+            ifn2(name) = (intptr_t)tp->two;
+            ifnn(name) = (intptr_t)tp->n;
+            qenv(name) = env;
+        }
+    }
+    inject_randomness((int)clock());
+#endif // 0
+}
+
+#endif // EXPERIMENT
 
 // end of serialize.cpp

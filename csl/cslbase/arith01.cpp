@@ -304,10 +304,11 @@ int64_t sixty_four_bits(LispObject a)
             {   int len = bignum_length(a);
                 switch (len)
                 {   case CELL+4:
-                        return (int64_t)bignum_digits(a)[0]; // One word bignum
+// One word bignum. Double caset to stress sign extension.
+                        return (int64_t)(int32_t)bignum_digits(a)[0];
                     case CELL+8:
                         return bignum_digits(a)[0] |
-                               ((int64_t)bignum_digits(a)[1] << 31);
+                               ((int64_t)(int32_t)bignum_digits(a)[1] << 31);
                     default:
                         return bignum_digits(a)[0] |
                                ((int64_t)bignum_digits(a)[1] << 31) |
