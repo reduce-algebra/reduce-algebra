@@ -15,20 +15,21 @@ static PyObject *RedPy_procNew(PyObject *self, PyObject *args) {
     return NULL;
   RedMsg_cfprintf(debugfile,"after Parse: %s\n",fromPython);
   p = RedProc_new(fromPython);
-  RedMsg_cfprintf(debugfile,"after new: %lld",p);
-  RedProc_cfprint(debugfile,p);
-  tmp = Py_BuildValue("{sKsK}}",
-		      "processId",
-		      p->processId,
+  RedMsg_cfprintf(debugfile, "after new: %s, %p, %s, %p\n", "handle", p, "processId", p->processId);
+  /* RedProc_cfprint(debugfile,p); */
+  tmp = Py_BuildValue("{slsl}",
 		      "handle",
-		      p);
+		      p,
+		      "processId",
+		      p->processId
+		      );
   return tmp;
 }
 
 static PyObject *RedPy_procDelete(PyObject *self, PyObject *args) {
   RedProc p;
 
-  if (! PyArg_Parse(args,"(K)",&p))
+  if (! PyArg_Parse(args,"(l)",&p))
     return NULL;
   RedProc_delete(p);
   return Py_BuildValue("");
@@ -44,7 +45,7 @@ static PyObject *RedPy_ansNew(PyObject *self, PyObject *args) {
   Py_BEGIN_ALLOW_THREADS
   ans = RedAns_new(p,fromPython);
   Py_END_ALLOW_THREADS
-  return Py_BuildValue("{s{sisisssssssssisisi}sK}})",
+  return Py_BuildValue("{s{sisisssssssssisisi}sl})",
 		       "data",
 		       "statcounter",ans->statcounter,
 		       "symbolic",ans->symbolic,
@@ -61,7 +62,7 @@ static PyObject *RedPy_ansNew(PyObject *self, PyObject *args) {
 static PyObject *RedPy_ansDelete(PyObject *self, PyObject *args) {
   RedAns ans;
 
-  if (!PyArg_Parse(args,"(K)",&ans))
+  if (!PyArg_Parse(args,"(l)",&ans))
     return NULL;
   RedAns_delete(ans);
   return Py_BuildValue("");

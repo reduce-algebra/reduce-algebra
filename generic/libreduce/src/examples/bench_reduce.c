@@ -6,7 +6,7 @@
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-  
+
       * Redistributions of source code must retain the relevant
         copyright notice, this list of conditions and the following
         disclaimer.
@@ -14,7 +14,7 @@
         copyright notice, this list of conditions and the following
         disclaimer in the documentation and/or other materials provided
         with the distribution.
-  
+
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// #define REDUCE to the absolute path of your reduce binary 
+// #define REDUCE to the absolute path of your reduce binary
 //                here this is done in the Makefile
 
 int main(int argc,char **argv,char **envp) {

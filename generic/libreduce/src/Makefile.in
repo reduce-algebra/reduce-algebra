@@ -34,7 +34,7 @@ LIBS = @LIBS@
 
 FAT = @FAT@
 
-CFLAGS = $(FAT) @DEFS@ -I. @PYTHON_CPPFLAGS@ -fPIC -g
+CFLAGS = $(FAT) @DEFS@ -I. -fPIC -g
 
 LDFLAGS = @LDFLAGS@
 
@@ -55,7 +55,7 @@ libreduce.so: $(OBJ)
 	gcc $(FAT) -shared $(OBJ) -o libreduce.so
 
 RedPy.so: $(OBJ) RedPy.o
-	gcc $(FAT) -shared $(OBJ) RedPy.o @PYTHON_LDFLAGS@ -o RedPy.so
+	gcc $(FAT) -shared $(OBJ) RedPy.o $(shell python-config --ldflags) -o RedPy.so
 
 RedProc.o: $(srcdir)/RedProc.c $(srcdir)/reduce.h config.h
 	$(CC) -c $(CFLAGS) -o RedProc.o $(srcdir)/RedProc.c
@@ -66,7 +66,7 @@ RedMsg.o: $(srcdir)/RedMsg.c $(srcdir)/reduce.h config.h
 StrBuf.o: $(srcdir)/StrBuf.c
 	$(CC) -c $(CFLAGS) -o StrBuf.o $(srcdir)/StrBuf.c
 RedPy.o: $(srcdir)/RedPy.c
-	$(CC) -c $(CFLAGS) -I/usr/include/Python2.5 -o RedPy.o $(srcdir)/RedPy.c
+	$(CC) -c $(CFLAGS) $(shell python-config --includes) -o RedPy.o $(srcdir)/RedPy.c
 
 lrtest: $(srcdir)/examples/lrtest.c libreduce.a $(srcdir)/reduce.h
 	mkdir -p examples
