@@ -1,4 +1,4 @@
-//  arith01.cpp                    Copyright (C) 1990-2016 Codemist Ltd
+//  arith01.cpp                           Copyright (C) 1990-2016 Codemist
 
 //
 // Arithmetic functions.
@@ -293,8 +293,6 @@ int32_t thirty_two_bits(LispObject a)
     }
 }
 
-#ifdef HAVE_INT64_T
-
 int64_t sixty_four_bits(LispObject a)
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
@@ -324,8 +322,6 @@ int64_t sixty_four_bits(LispObject a)
             return 0;
     }
 }
-
-#endif
 
 LispObject make_complex(LispObject r, LispObject i)
 {   LispObject v, nil = C_nil;
@@ -770,7 +766,7 @@ static LispObject plusbb(LispObject a, LispObject b)
 // I forge a header word to allow the garbage collector to skip over
 // (and in due course reclaim) the space that turned out not to be needed.
 //
-            if (i != j) bignum_digits(c)[j] = make_bighdr(i - j);
+            if (i != j) *(Header *)&bignum_digits(c)[j] = make_bighdr(i - j);
             return c;
         }
 //
@@ -806,7 +802,7 @@ static LispObject plusbb(LispObject a, LispObject b)
             {   i = (i+1) | 1;
                 j = (j+1) | 1;     // Round up to odd index
             }
-            if (i != j) bignum_digits(c)[j] = make_bighdr(i - j);
+            if (i != j) *(Header *)&bignum_digits(c)[j] = make_bighdr(i - j);
             return c;
         }
         return c;

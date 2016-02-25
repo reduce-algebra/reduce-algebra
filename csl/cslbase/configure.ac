@@ -1,6 +1,6 @@
 ## Process this file with autoconf to produce a configure script.
 
-# A C Norman.                                         2008-2015
+# A C Norman.                                         2008-2016
 
 #
 # Special flags that can be used here:
@@ -131,16 +131,6 @@ AC_ARG_WITH(crlibm,
 if test "x$with_crlibm" != "xno"
 then
   AC_DEFINE(HAVE_CRLIBM, [1], [Correct Rounding maths library should be used])
-fi
-
-AC_ARG_WITH(boehm,
-   AC_HELP_STRING([--with-boehm], [Can be used to disable use of boehm]),
-   [],
-   [with_boehm="no"])
-
-if test "x$with_boehm" != "xno"
-then
-  AC_DEFINE(HAVE_BOEHM, [1], [Boehm conservative collector should be available])
 fi
 
 if test "x$BUILTFOR" = "xunknown"
@@ -568,6 +558,19 @@ then
 # on the option!
   CPPFLAGS="$CPPFLAGS -DEXPERIMENT=1"
   AC_DEFINE(EXPERIMENT, [1], [True if this is an experimental testing mode variant])
+fi
+
+# Note that if I go "--enable-test" that causes a default "--with-boehm",
+# so that the conservative garbage collector will be available.
+
+AC_ARG_WITH(boehm,
+   AC_HELP_STRING([--with-boehm], [Can be used to disable use of boehm]),
+   [],
+   [with_boehm=$enable_test])
+
+if test "x$with_boehm" != "xno"
+then
+  AC_DEFINE(HAVE_BOEHM, [1], [Boehm conservative collector should be available])
 fi
 
 # Want to build "embedded" variant?

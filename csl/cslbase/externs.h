@@ -1,4 +1,4 @@
-// externs.h                            Copyright (C) Codemist 1989-2015
+// externs.h                              Copyright (C) Codemist 1989-2016
 
 //
 //   Main batch of extern declarations.
@@ -6,7 +6,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -954,9 +954,10 @@ extern LispObject  simplify_string(LispObject s);
 extern bool        stringp(LispObject a);
 extern "C" LispObject times2(LispObject a, LispObject b);
 extern int32_t     thirty_two_bits(LispObject a);
-#ifdef HAVE_INT64_T
 extern int64_t     sixty_four_bits(LispObject a);
-#endif
+
+extern uint64_t crc64(uint64_t crc, const void *buf, size_t size);
+extern uint32_t crc32(uint32_t crc, const void *buf, size_t size);
 
 #ifdef DEBUG
 extern void validate_string_fn(LispObject a, const char *f, int l);

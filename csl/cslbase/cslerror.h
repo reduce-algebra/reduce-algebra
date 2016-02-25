@@ -1,4 +1,4 @@
-//  cslerror.h                        Copyright (C) 1989-2015 Codemist Ltd
+//  cslerror.h                             Copyright (C) 1989-2016 Codemit
 
 //
 // Error codes and functions.
@@ -7,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -94,47 +94,53 @@ extern "C" void fatal_error(int code, ...);
 #define err_bad_car               0      // + the atom
 #define err_bad_cdr               1      // + the atom
 #define err_no_store              2      // no extras
-#define err_undefined_function_1  3      // + fn name
-#define err_undefined_function_2  4      // + fn name
-#define err_undefined_function_n  5      // + fn name
-#define err_wrong_no_args         6      // fn name, actual arg count
-#define err_unbound_lexical       7      // + name
-#define err_bad_rplac             8      // + atom
-#define err_bad_arith             9      // + bad value
-#define err_redef_special        10      // + name
-#define err_bad_arg              11      // + offending value
-#define err_bad_declare          12      // + offending value
-#define err_bad_fn               13      // + offending value
-#define err_unset_var            14      // + name
-#define err_too_many_args1       15      // no extras
-#define err_too_many_args2       16      // no extras
-#define err_bad_apply            17      // + bad thing
-#define err_macroex_hook         18      // what it is
-#define err_block_tag            19      // bad tag
-#define err_go_tag               20      // bad tag
-#define err_excess_args          21
-#define err_insufficient_args    22
-#define err_bad_bvl              23      // + offending value
-#define err_bad_keyargs          24
-#define err_write_err            25
-#define err_bad_endp             26      // + the non-null atom
-#define err_no_fasldir           27
-#define err_no_fasl              28      // plus module name
-#define err_open_failed          29      // plus file name
-#define err_pipe_failed          30      // plus command for execution
-#define err_stack_overflow       31
-#define err_top_bit              32
-#define err_mem_spans_zero       33
-#define err_no_longer_used       34      // available for re-use
-#define err_no_tempdir           35
+#define err_undefined_function_0  3      // + fn name
+#define err_undefined_function_1  4      // + fn name
+#define err_undefined_function_2  5      // + fn name
+#define err_undefined_function_3  6      // + fn name
+#define err_undefined_function_n  7      // + fn name
+#define err_wrong_no_args         8      // fn name, actual arg count
+#define err_unbound_lexical       9      // + name
+#define err_bad_rplac            10      // + atom
+#define err_bad_arith            11      // + bad value
+#define err_redef_special        12      // + name
+#define err_bad_arg              13      // + offending value
+#define err_bad_declare          14      // + offending value
+#define err_bad_fn               15      // + offending value
+#define err_unset_var            16      // + name
+#define err_too_many_args0       17      // no extras
+#define err_too_many_args1       18      // no extras
+#define err_too_many_args2       19      // no extras
+#define err_too_many_args3       20      // no extras
+#define err_bad_apply            21      // + bad thing
+#define err_macroex_hook         22      // what it is
+#define err_block_tag            23      // bad tag
+#define err_go_tag               24      // bad tag
+#define err_excess_args          25
+#define err_insufficient_args    26
+#define err_bad_bvl              27      // + offending value
+#define err_bad_keyargs          28
+#define err_write_err            29
+#define err_bad_endp             30      // + the non-null atom
+#define err_no_fasldir           31
+#define err_no_fasl              32      // plus module name
+#define err_open_failed          33      // plus file name
+#define err_pipe_failed          34      // plus command for execution
+#define err_stack_overflow       35
+#define err_top_bit              36
+#define err_mem_spans_zero       37
+#define err_no_longer_used       38      // available for re-use
+#define err_no_tempdir           39
 
 #ifdef INCLUDE_ERROR_STRING_TABLE
 static const char *error_message_table[] =
 {   "attempt to take car of an atom",
     "attempt to take cdr of an atom",
     "insufficient freestore to run this package",
+    "undefined function (0 arg)",
     "undefined function (1 arg)",
     "undefined function (2 args)",
+    "undefined function (3 arg)",
     "undefined function",
     "wrong number of arguments",
     "unbound lexical variable",
@@ -145,8 +151,10 @@ static const char *error_message_table[] =
     "bad use of declare",
     "attempt to apply non-function",
     "unset variable",
-    "too many arguments",
-    "too many arguments",
+    "too many arguments for 0-arg function",
+    "too many arguments for 1-arg function",
+    "too many arguments for 2-arg function",
+    "too many arguments for 3-arg function",
     "object not valid as a function (apply,",
     "macroexpand-hook failure",
     "block tag not found",

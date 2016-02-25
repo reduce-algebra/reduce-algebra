@@ -1,4 +1,4 @@
-// stream.h                        Copyright (C) Codemist Ltd, 1995-2015
+// stream.h                        Copyright (C) Codemist Ltd, 1995-2016
 
 //
 // Header defining the structure of stream objects in CSL, and also
@@ -7,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -123,16 +123,16 @@ extern char memory_print_buffer[MAX_PROMPT_LENGTH];
 //
 //  typedef struct Lisp_STREAM
 //  {
-//      Header h;                               0
+//      Header h;                              0
 //      LispObject type;                       CELL
 //      LispObject write_data;                 2*CELL
 //      LispObject read_data;                  3*CELL
-//      FILE *file;                             4*CELL
-//      character_stream_writer *write_fn;      5*CELL
-//      other_stream_op *write_other_fn;        6*CELL
-//      intptr_t line_length;                   7*CELL
-//      intptr_t byte_pos;                      8*CELL
-//      intptr_t char_pos;                      9*CELL
+//      FILE *file;                            4*CELL
+//      character_stream_writer *write_fn;     5*CELL
+//      other_stream_op *write_other_fn;       6*CELL
+//      intptr_t line_length;                  7*CELL
+//      intptr_t byte_pos;                     8*CELL
+//      intptr_t char_pos;                     9*CELL
 //      character_stream_reader *read_fn;      10*CELL
 //      other_stream_op *read_other_fn;        11*CELL
 //      intptr_t pushed_char;                  12*CELL

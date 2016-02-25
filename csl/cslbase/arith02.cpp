@@ -1572,7 +1572,7 @@ static LispObject timesbb(LispObject a, LispObject b)
     if ((SIXTY_FOUR_BIT && ((lenc & 1) == 0)) ||
         (!SIXTY_FOUR_BIT && ((lenc & 1) != 0)))
         bignum_digits(c)[lenc-1] = 0; // tidy up
-    else bignum_digits(c)[lenc-1] = make_bighdr(2);
+    else *(Header *)&bignum_digits(c)[lenc-1] = make_bighdr(2);
     return c;
 chop2:
 //
