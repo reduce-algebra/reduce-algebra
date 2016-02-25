@@ -645,7 +645,7 @@ LispObject gcd(LispObject a, LispObject b)
                         new_lena = (new_lena + 1) & 0xfffffffeU;
                     }
                     if (new_lena != lena)
-                        *(header *)&bignum_digits(a)[new_lena+1] =
+                        *(Header *)&bignum_digits(a)[new_lena+1] =
                             make_bighdr(lena - new_lena);
                     return a;
                 }
