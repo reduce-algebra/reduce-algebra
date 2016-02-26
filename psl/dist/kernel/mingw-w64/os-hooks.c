@@ -49,6 +49,7 @@ jmp_buf mainenv;
 char * abs_execfilepath;
  
 int Debug = 0;
+char * cygdrive_prefix = NULL;
 
 extern void gcleanup ();
 
@@ -70,7 +71,8 @@ char *argv[];
   setvbuf(stdout,NULL,_IONBF,BUFSIZ);
   if (argc > 0)
     abs_execfilepath = _fullpath(NULL,argv[0],_MAX_PATH);
-  
+
+  cygdrive_prefix = getenv("BPSL_CYGDRIVE_PREFIX");
   if (getenv("BPSL_DEBUG") != NULL) 
      Debug = 1;
  
@@ -104,7 +106,37 @@ char * get_execfilepath ()
 clear_iob()
 {
 }
- 
+
+char winpathbuffer[_MAX_PATH];
+
+char *
+cygpath2winpath(char * cygpath)
+{
+  if (Debug > 0) {
+    fprintf(stderr,"input cygpath: %s\n",cygpath);
+    fprintf(stderr,"prefix is %s\n",cygdrive_prefix == NULL ? "(NULL)" : cygdrive_prefix);
+  }
+
+  if (cygdrive_prefix != NULL && strlen(cygdrive_prefix) > 1 && cygpath[0] == '/' &&
+      strncmp(cygpath,cygdrive_prefix,strlen(cygdrive_prefix))==0 && cygpath[strlen(cygdrive_prefix)] == '/') {
+
+    strcpy(winpathbuffer,cygpath + strlen(cygdrive_prefix));
+    if (Debug > 0) {
+      fprintf(stderr,"prefix found, rest is: %s\n",winpathbuffer);
+    }
+    
+    if (winpathbuffer[1] != 0 && winpathbuffer[2] == '/') {
+      winpathbuffer[0] = winpathbuffer[1];
+      winpathbuffer[1] = ':';
+      return winpathbuffer;
+    }
+  }
+  return cygpath;  
+}
+
+
+
+
 /*
  *    Some static area must be initialized on hot start.
  *    There may be other area to be initialized but we have no idea

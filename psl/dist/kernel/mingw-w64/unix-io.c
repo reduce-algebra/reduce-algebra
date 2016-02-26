@@ -64,7 +64,8 @@
  
 #include <stdio.h>
 #include <stdlib.h>
- 
+#include <string.h>
+
 /* There is an assumption here that coercing addresses into ints is OK */
 /*
 asm("   alias   _unix_stdin,UNIXSTDIN");
@@ -89,6 +90,8 @@ extern int unixnull[2], unixeof[2];
 #ifndef NUL
 # define NUL (0)
 #endif
+
+char * cygpath2winpath(char * cygpath);
 
 /* Tag( unixinitio )
  */
@@ -165,6 +168,11 @@ char *expand_file_name(fname)
 char *fname;
 {
   char *c, *t, *e, *s, save;
+  /* check CYGDRIVE_PREFIX and strip trailing slashes */
+  char *prefix = getenv("CYGDRIVE_PREFIX");
+  while (prefix != NULL && prefix[strlen(prefix)-1] == '/') {
+    prefix[strlen(prefix)-1] = 0;
+  }
   c = copy;
   s = fname;
   while (*c++ = *s++);
@@ -197,7 +205,7 @@ char *fname;
       ;
       *c = '\0';
   }
-  return (collect);
+  return (cygpath2winpath(collect));
 }
 
 FILE* unixopen(filename, type)
@@ -318,7 +326,7 @@ char *
 external_fullpath(relpath)
      char * relpath;
 {
-  return _fullpath(NULL,relpath,_MAX_PATH);
+  return _fullpath(NULL,expand_file_name(relpath),_MAX_PATH);
 }
 
 long long xgetw (f)

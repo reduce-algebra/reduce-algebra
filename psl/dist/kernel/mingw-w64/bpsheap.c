@@ -147,216 +147,223 @@ return(p);
 }
 
 int creloc (long long array[], long len, long long diff, long long lowb);
+char * cygpath2winpath(char * cygpath);
 
 setupbpsandheap(argc,argv)
 int argc;
 char *argv[];
-{ long long ohl,ohtb,ohlb,ohub,hl,htb,hlb,hub,diff;
-int memset = 1;
-FILE * imago;
-long long headerword [8];
-long long i, total, bpssize, heapsize, mallocsize;
-long long current_size_in_bytes, heapsize_in_bytes;
-double bpspercent, heappercent;
-char   *argp, *scanptr, *scanformat;
-int ii1,ii2,ii3,ii4,ii5,ii6,ii7,ii8,ii9,ii10,ii11;
-long hugo;
-
-char *prog;
-char *imagefile_default;
-
-total        = MINSIZE;
-mallocsize    = MALLOCSIZE;
-
-for (i=1; i<argc-1; i++)
 {
-argp = argv[i];
-if (*argp++ == '-')
-{
-  scanformat = "";
-  switch (*argp++) {
-    case 't': scanptr = (char *)&total;
-	      memset = 1;
-	      switch (*argp) {
-	case 'x': scanformat = "%x";
+  long long ohl,ohtb,ohlb,ohub,hl,htb,hlb,hub,diff;
+  int memset = 1;
+  FILE * imago;
+  long long headerword [8];
+  long long i, total, bpssize, heapsize, mallocsize;
+  long long current_size_in_bytes, heapsize_in_bytes;
+  double bpspercent, heappercent;
+  char   *argp, *scanptr, *scanformat;
+  int ii1,ii2,ii3,ii4,ii5,ii6,ii7,ii8,ii9,ii10,ii11;
+  long hugo;
+
+  char *prog;
+  char *imagefile_default;
+
+  total        = MINSIZE;
+  mallocsize    = MALLOCSIZE;
+
+  for (i=1; i<argc-1; i++)
+    {
+      argp = argv[i];
+      if (*argp++ == '-')
+	{
+	  scanformat = "";
+	  switch (*argp++) {
+	  case 't': scanptr = (char *)&total;
+	    memset = 1;
+	    switch (*argp) {
+	    case 'x': scanformat = "%x";
 	      break;
-		case 'd': scanformat = "%d";
-			  break;
-      }
+	    case 'd': scanformat = "%d";
 	      break;
-    case 'm': scanptr = (char *)&mallocsize;
-	      switch (*argp) {
-		case 'x': scanformat = "%lx";
-			  break;
-		case 'd': scanformat = "%ld";
-			  break;
-	      }
+	    }
+	    break;
+	  case 'm': scanptr = (char *)&mallocsize;
+	    switch (*argp) {
+	    case 'x': scanformat = "%lx";
 	      break;
-   case 'f': imagefile = argv[i+1]; break;
-  }
-  if (*scanformat != 0)
-    sscanf(argv[i+1],scanformat,scanptr);
-}
-}   /* end of for loop -- arg vector searched */
+	    case 'd': scanformat = "%ld";
+	      break;
+	    }
+	    break;
+	  case 'f': imagefile = argv[i+1]; break;
+	  }
+	  if (*scanformat != 0)
+	    sscanf(argv[i+1],scanformat,scanptr);
+	}
+    }   /* end of for loop -- arg vector searched */
 
-/* insure valid values */
+  /* insure valid values */
 
-if (total < 1000000)  total = total * 1000000;
+  if (total < 1000000)  total = total * 1000000;
 
-if (total == 0)
-total = MINSIZE;
+  if (total == 0)
+    total = MINSIZE;
 
-if (mallocsize <= 0)
-mallocsize = MALLOCSIZE;
+  if (mallocsize <= 0)
+    mallocsize = MALLOCSIZE;
 
-/* Reserve some space for C's usr of io buffers, etc. By mallocing then
-freeing, the memory is sbrk'ed onto the image, but available for future
-calls to malloc, which will not need to call sbrk again. */
+  /* Reserve some space for C's usr of io buffers, etc. By mallocing then
+     freeing, the memory is sbrk'ed onto the image, but available for future
+     calls to malloc, which will not need to call sbrk again. */
 
-bpssize = BPSSIZE;
-heapsize_in_bytes = total - bpssize;
+  bpssize = BPSSIZE;
+  heapsize_in_bytes = total - bpssize;
 
-/* On systems in which the image does not start at address 0, this won't
-really allocate the full maximum, but close enough. */
+  /* On systems in which the image does not start at address 0, this won't
+     really allocate the full maximum, but close enough. */
 #if (USE_WIN_HEAPFUNCTIONS != 1)
-current_size_in_bytes = (((long long) sbrk(0))<<5)>>5;
+  current_size_in_bytes = (((long long) sbrk(0))<<5)>>5;
 #endif
-max_image_size = 0x1000000000000LL; /* 1 more than allowable size */
+  max_image_size = 0x1000000000000LL; /* 1 more than allowable size */
 
-if ((heapsize_in_bytes + current_size_in_bytes) >= max_image_size) {
-heapsize_in_bytes = max_image_size - current_size_in_bytes;
-total = heapsize_in_bytes + bpssize;
-printf("total %llx %llx %llx\n",heapsize_in_bytes , current_size_in_bytes,total);
-printf("Size requested will result in pointer values larger than\n");
-printf(" PSL items can handle. Will allocate maximum size instead.\n\n");
-}
+  if ((heapsize_in_bytes + current_size_in_bytes) >= max_image_size) {
+    heapsize_in_bytes = max_image_size - current_size_in_bytes;
+    total = heapsize_in_bytes + bpssize;
+    printf("total %llx %llx %llx\n",heapsize_in_bytes , current_size_in_bytes,total);
+    printf("Size requested will result in pointer values larger than\n");
+    printf(" PSL items can handle. Will allocate maximum size instead.\n\n");
+  }
 
 #if (NUMBEROFHEAPS == 2)
-heapsize =(heapsize_in_bytes / 8) * 4;  /* insure full words */
+  heapsize =(heapsize_in_bytes / 8) * 4;  /* insure full words */
 #else
-heapsize =(heapsize_in_bytes / 8) * 8;  /* insure full words */
+  heapsize =(heapsize_in_bytes / 8) * 8;  /* insure full words */
 #endif
 
-heappercent = ((float) (total - bpssize) / total) * 100.0;
-bpspercent  = ((float) bpssize / total) * 100.0;
+  heappercent = ((float) (total - bpssize) / total) * 100.0;
+  bpspercent  = ((float) bpssize / total) * 100.0;
 
-if (imagefile == NULL)
-{
-prog = strrchr(argv[0], '\\');
-if (prog == NULL)
-prog = argv[0];
-else
-prog++;
+  if (imagefile == NULL)
+    {
+      prog = strrchr(argv[0], '\\');
+      if (prog == NULL)
+	prog = argv[0];
+      else
+	prog++;
+      
+      if (strncmp (prog, "bpsl", 4))
+	{
+	  imagefile_default = malloc (strlen(argv[0]) + 5);
+	  strcpy(imagefile_default, argv[0]);
+	  strcat(imagefile_default, ".img");
+	  
+	  if (access(imagefile_default, R_OK) == 0)
+	    imagefile = imagefile_default;
+	  else
+	    free (imagefile_default);
+	}
+    }
 
-if (strncmp (prog, "bpsl", 4))
-{
-  imagefile_default = malloc (strlen(argv[0]) + 5);
-  strcpy(imagefile_default, argv[0]);
-  strcat(imagefile_default, ".img");
-
-  if (access(imagefile_default, R_OK) == 0)
-    imagefile = imagefile_default;
-  else
-    free (imagefile_default);
-}
-}
-
-if (imagefile == NULL) {
-  if (Debug > 0) {
-    printf("Setting heap limit as follows:\n");
-    printf("Total heap & bps space = %lld (%llx) bps = %.2f, heap = %.2f\n",
-           total, total, bpspercent, heappercent);
+  if (imagefile == NULL) {
+    if (Debug > 0) {
+      printf("Setting heap limit as follows:\n");
+      printf("Total heap & bps space = %lld (%llx) bps = %.2f, heap = %.2f\n",
+	     total, total, bpspercent, heappercent);
+    }
   }
-}
 
-setupbps();
-getheap(heapsize);
+  setupbps();
+  getheap(heapsize);
 
-if (imagefile == NULL) {
-printf("bpsaddr = %lld (%llX), heapaddr = %lld (%llX)\n",
- bpslowerbound, bpslowerbound,
- heaplowerbound, heaplowerbound);
+  if (imagefile == NULL) {
+    printf("bpsaddr = %lld (%llX), heapaddr = %lld (%llX)\n",
+	   bpslowerbound, bpslowerbound,
+	   heaplowerbound, heaplowerbound);
 
-printf("bpssize = %lld (%llX), heapsize = %lld (%llX)\nTotal image size = %lld (%llX)\n",
- bpssize, bpssize,
- heapsize, heapsize,
+    printf("bpssize = %lld (%llX), heapsize = %lld (%llX)\nTotal image size = %lld (%llX)\n",
+	   bpssize, bpssize,
+	   heapsize, heapsize,
 #if (USE_WIN_HEAPFUNCTIONS == 1)
- oldbreakvalue, oldbreakvalue);
+	   oldbreakvalue, oldbreakvalue);
 #else
- (long long) sbrk(0), (long long) sbrk(0));
+    (long long) sbrk(0), (long long) sbrk(0));
 #endif
 }
 
 if (imagefile != NULL) {
-ohl = oldheaplowerbound; ohub = oldheapupperbound;
-ohl =  oldheaplast; ohtb = oldheaptrapbound;
-hlb = heaplowerbound; hub = heapupperbound;
-hl =  heaplast; htb = heaptrapbound;
-/* save the new values around restore of the old ones */
+  ohl = oldheaplowerbound; ohub = oldheapupperbound;
+  ohl =  oldheaplast; ohtb = oldheaptrapbound;
+  hlb = heaplowerbound; hub = heapupperbound;
+  hl =  heaplast; htb = heaptrapbound;
+  /* save the new values around restore of the old ones */
 
-imago = fopen (imagefile,"rb");
-if (imago == NULL) { perror (imagefile); exit (-1); }
-printf("Loading image file: %s \n",imagefile); 
-fread (headerword,8,2,imago);
-unexec();      /* set control vector */
-if (bpscontrol[0] != headerword[0] 
-	|| bpscontrol[1] != headerword[1])
-		{ printf(" Cannot start the image with this bpsl \n");
-                  printf(" %lx != %llx, %lx != %llx\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
-		  exit (-19);}
-       fread (headerword,8,4,imago);
-       hugo = fread (&symval,1,headerword[0],imago);
-       if (Debug > 0) {
-         printf("neu: %lx => %lx\n",hlb, heaplowerbound);
-       }
-       diff = hlb-heaplowerbound;
-//       if (hlb < heaplowerbound)
-//             {creloc(&symval,headerword[0]/8,diff,hlb -1);} 
-//        else
-	 {creloc(&symval,headerword[0]/8,diff, heaplowerbound -1);}
+  imagefile = cygpath2winpath(imagefile);
+  imago = fopen (imagefile,"rb");
+  if (imago == NULL) {
+    perror (imagefile);
+    exit (-1);
+  }
+  printf("Loading image file: %s \n",imagefile); 
+  fread (headerword,8,2,imago);
+  unexec();      /* set control vector */
+  if (bpscontrol[0] != headerword[0] || bpscontrol[1] != headerword[1])
+    { printf(" Cannot start the image with this bpsl \n");
+      printf(" %lx != %llx, %lx != %llx\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
+      exit (-19);
+    }
+  fread (headerword,8,4,imago);
+  hugo = fread (&symval,1,headerword[0],imago);
+  if (Debug > 0) {
+    printf("neu: %lx => %lx\n",hlb, heaplowerbound);
+  }
+  diff = hlb-heaplowerbound;
+  //       if (hlb < heaplowerbound)
+  //             {creloc(&symval,headerword[0]/8,diff,hlb -1);} 
+  //        else
+  {creloc(&symval,headerword[0]/8,diff, heaplowerbound -1);}
 
-       if (hugo != headerword[0]) read_error();
-
-       hugo = fread ((char*)hlb,1,headerword[1],imago);
-//       if (hlb < heaplowerbound)
-//	 {creloc((long long *)hlb,headerword[1]/8,diff,hlb -1);}
-//       else
-	 {creloc((long long *)hlb,headerword[1]/8,diff, heaplowerbound -1);}
-       heaplast += diff;
-
-       if (hugo != headerword[1]) read_error();
-       hugo = fread (&hashtable,1,headerword[2],imago);
-       if (hugo != headerword[2]) read_error();
-       hugo = fread ((char*)bpslowerbound,1,headerword[3],imago);
-       if (hugo != headerword[3]) read_error();
-       fclose (imago);
-       if (memset) {
-        oldheaplowerbound = ohl; oldheapupperbound = ohub;
-        oldheaplast = ohl; oldheaptrapbound = ohtb;
-        heaplowerbound = hlb; heapupperbound = hub;
-        heaptrapbound = htb;}
-       abs_imagefile = _fullpath(NULL,imagefile,_MAX_PATH);
-       return (4711);
-     }
+  if (hugo != headerword[0]) read_error();
+  
+  hugo = fread ((char*)hlb,1,headerword[1],imago);
+  //       if (hlb < heaplowerbound)
+  //	 {creloc((long long *)hlb,headerword[1]/8,diff,hlb -1);}
+  //       else
+  {creloc((long long *)hlb,headerword[1]/8,diff, heaplowerbound -1);}
+  heaplast += diff;
+  
+  if (hugo != headerword[1]) read_error();
+  hugo = fread (&hashtable,1,headerword[2],imago);
+  if (hugo != headerword[2]) read_error();
+  hugo = fread ((char*)bpslowerbound,1,headerword[3],imago);
+  if (hugo != headerword[3]) read_error();
+  fclose (imago);
+  if (memset) {
+    oldheaplowerbound = ohl; oldheapupperbound = ohub;
+    oldheaplast = ohl; oldheaptrapbound = ohtb;
+    heaplowerbound = hlb; heapupperbound = hub;
+    heaptrapbound = htb;}
+  abs_imagefile = _fullpath(NULL,imagefile,_MAX_PATH);
+  return (4711);
+ }
 return (0);
 
 }
 
 read_error()
-  {
-    printf("file too short\n");
-    exit(-1);
-  }
+{
+  printf("file too short\n");
+  exit(-1);
+}
 
 /* The current procedure is to convert the starting address of the char
    array defined in bps.c to an address and store it in nextbps. A check
    is made to make sure that nextbps falls on an even word boundry.
- */
+*/
 
 extern int mprotect_exec (char *p,  long long bpssize);
 
 setupbps ()
-{ char *p = (char *) bps;
+{
+  char *p = (char *) bps;
   long long bpssize;
   char c;
 
@@ -441,7 +448,7 @@ allocatemorebps()
 
 
 getheap(heapsize)
-     long long heapsize;
+long long heapsize;
 {
 
 #if (USE_WIN_HEAPFUNCTIONS == 1)
