@@ -267,6 +267,23 @@ par2))        ((and (smallimmediatep par1) (effap par2)) (lth-imm8-effa '(131 56
 par2))        ((and (stdimmediatep par1) (effap par2)) (lth-imm-effa '(129 56) 
 par1                                                                 par2)))
 
+ (defopcode cmpq (par1 par2) ((and (stdimmediatep par1) (effap par2)) (
+op-imm-effa                                                                        
+'                                                                                   
+(                                                                                    
+129                                                                                      
+56)                                                                                
+par1                                                                               
+par2)))
+ (defoplength cmpq (par1 par2) ((and (stdimmediatep par1) (effap par2)) (
+lth-imm-effa                                                                          
+'                                                                                      
+(                                                                                       
+129                                                                                         
+56)                                                                                   
+par1                                                                                  
+par2)))
+
  (defopcode cqto (par1 par2) (t (op-byte '(72 153))))
  (defoplength cqto (par1 par2) (t (lth-byte '(72 153))))
 

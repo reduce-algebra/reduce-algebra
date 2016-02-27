@@ -134,8 +134,7 @@
 (DefList '((LAnd &) 
   (LOr !!)) 'BinaryASMOp)
 
-(DefList '(     (t1 "%rdi") 
-  		(t2 "%rsi") 
+(DefList '(     (t1 "%rdi") (t2 "%rsi") 
                 (eax "%rax") (al "%al") (ax "%ax")
                 (rdx "%rdx") (rdi "%rdi") (rsi "%rsi")
                 (ecx "%ecx") (edx "%edx")
