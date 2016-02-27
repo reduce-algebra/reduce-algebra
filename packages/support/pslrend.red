@@ -502,6 +502,8 @@ load str!-search;
 load numeric!-ops;
 load chars;
 
+%% prevent redefinition
+if getd 'get!-image!-path then flag('(get!-image!-path),'lose);
 %%
 %% extract image file name from command line arguments
 %%
