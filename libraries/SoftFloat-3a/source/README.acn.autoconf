@@ -1,0 +1,13 @@
+Arthur Norman has provided a configure.ac and Makefile.am file
+here that build at least a crude version of this library almost
+anywhere.
+
+When you go "make install" this puts a softfloat.h and softfloat_types.h
+that set LITTLE_ENDIAN and guesses about the speed og 64-bit arithmetic
+on your machine.
+
+It is very probable that by performing more careful custimisation in the
+build that performance could be enhanced.
+
+This build always creates a library that arranhes working precision values
+as for Intel SSE floating point.

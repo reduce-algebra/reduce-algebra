@@ -89,7 +89,7 @@ case $a in
 *--without-csl* | *with-csl=no*)
   ;;
 *--with-csl*)
-  L="$L ./csl ./csl/cslbase ./csl/cslbase/crlibm"
+  L="$L ./csl ./csl/cslbase ./libraries/SoftFloat-3a/source"
   case $a in
   *--without-fox* | *with-fox=no* | \
   *--without-gui* | *with-gui=no*)
@@ -121,7 +121,17 @@ do
   then
     cd $d
     printf "autoreconf -f -i -v\n"
-    autoreconf -f -i -v
+    case $d in
+    *SoftFloat*)
+# For the softfloat library I wo not wnat to execure autoheader.
+      export AUTOHEADER=echo; autoreconf -f -i -v
+      unset AUTOHEADER
+      ;;
+    *)
+      autoreconf -f -i -v
+      ;;
+    esac
+    unset AUTOHEADER
     cd $here
   fi
 done

@@ -44,6 +44,7 @@ plain_bootstrapreduce = bootstrapreduce
 plain_fwindemo = fwindemo
 plain_wxpsl = wxpsl
 plain_termdemo = termdemo
+plain_softfloatdemo = softfloatdemo
 plain_foxdemo  = foxdemo
 plain_fontdemo = fontdemo
 plain_showmathdemo = showmathdemo
@@ -61,6 +62,7 @@ plain_bootstrapreduce = bootstrapreduce.unnecessary.except.on.windows
 plain_fwindemo = fwindemo.unnecessary.except.on.windows
 plain_wxpsl = wxpsl.unnecessary.except.on.windows
 plain_termdemo = termdemo.unnecessary.except.on.windows
+plain_softfloatdemo = softfloatdemo.unnecessary.except.on.windows
 plain_foxdemo  = foxdemo.unnecessary.except.on.windows
 plain_fontdemo = fontdemo.unnecessary.except.on.windows
 plain_showmathdemo = showmathdemo.unnecessary.except.on.windows
@@ -87,6 +89,7 @@ endif !exeext
 .PHONY: $(plain_wxshowmath)
 .PHONY: $(plain_wxshowmathdemo)
 .PHONY: $(plain_termdemo)
+.PHONY: $(plain_softfloatdemo)
 .PHONY: $(plain_dyndemo)
 .PHONY: $(plain_gctest)
 
@@ -196,12 +199,12 @@ bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
 endif !wx
 if mac_framework
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
-	termdemo$(EXEEXT) $(foxdemotarget) \
+	termdemo$(EXEEXT) softfloatdemo$(EXEEXT) $(foxdemotarget) \
 	$(wxdemotarget)
 else !mac_framework
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
-	termdemo$(EXEEXT) $(foxdemotarget) dyndemo$(EXEEXT) \
-	$(wxdemotarget)
+	termdemo$(EXEEXT) softfloatdemo$(EXEEXT) $(foxdemotarget) \
+	dyndemo$(EXEEXT) $(wxdemotarget)
 endif !mac_framework
 
 if boehm
@@ -714,13 +717,7 @@ $(CRLIBMDEPS):
 
 else !crlibm
 CRINC =
-
-# It is important for the next line that restart.$(OBJEXT) is created from
-# restart.cpp using a generic default rule - otherwise the lack of
-# explicit actions here would hurt.
-restart.$(OBJEXT):	machineid.cpp
-csl-restart.$(OBJEXT):	machineid.cpp
-reduce-restart.$(OBJEXT):	machineid.cpp
+CRDEP =
 
 endif !crlibm
 
@@ -755,144 +752,165 @@ $(BOEHMDEPS):
 
 else !boehm
 BOEHMINC =
-
-restart.$(OBJEXT):	machineid.cpp
-csl-restart.$(OBJEXT):	machineid.cpp
-reduce-restart.$(OBJEXT):	machineid.cpp
+BOEHMDEP =
 
 endif !boehm
 
-if crlibmorboehm
+
+SOFTFLOATDEPS=../lib/libsoftfloat.a ../include/softfloat.h
+
+SOFTFLOATDEP = ../include/softfloat.h
+SOFTFLOATINC = -I../include
+AM_CPPFLAGS     += $(SOFTFLOATINC)
+reduce_CPPFLAGS += $(SOFTFLOATINC)
+csl_CPPFLAGS    += $(SOFTFLOATINC)
+softfloatdemo_CPPFLAGS = $(SOFTFLOATINC)
+
+# The following ugly dependencies are here so that one can go, for
+# instance, "make csl.o" in a clean tree and softfloat building will get
+# triggered.
+
+
+csl_LDADD += -L../lib -lsoftfloat
+bootstrapreduce_LDADD += -L../lib -lsoftfloat
+reduce_LDADD += -L../lib -lsoftfloat
+softfloatdemo_LDADD = -L../lib -lsoftfloat
+
+csl_DEPENDENCIES += $(SOFTFLOATDEPS)
+bootstrapreduce_DEPENDENCIES += $(SOFTFLOATDEPS)
+reduce_DEPENDENCIES += $(SOFTFLOATDEPS)
+softfloatdemo_DEPENDENCIES = $(SOFTFLOATDEPS)
+
+$(SOFTFLOATDEPS):
+	$(TRACE)@cd ../softfloat && $(MAKE) install
 
 # Note that all the compilation of these files must be performed using
 # a Make "default" action so that the dependencies shown here are not
 # taken as specifing conflicting actions.
 
-arith01.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-arith02.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-arith03.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-arith04.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-arith05.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-arith06.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-arith07.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-arith08.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-arith09.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-cslmpi.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-cslread.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-eval1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-eval2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-eval3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-eval4.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-print.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-pro.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) machineid.cpp
-stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+arith01.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith02.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith03.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith04.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith05.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith06.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith07.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith08.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith09.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+cslmpi.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+cslread.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+eval1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+eval2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+eval3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+eval4.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+print.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+pro.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) machineid.cpp
+stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 
-csl-arith01.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-arith02.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-arith03.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-arith04.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-arith05.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-arith06.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-arith07.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-arith08.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-arith09.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-cslmpi.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-cslread.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-eval1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-eval2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-eval3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-eval4.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-print.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-pro.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) machineid.cpp
-csl-stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-csl-sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-arith01.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith02.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith03.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith04.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith05.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith06.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith07.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith08.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith09.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-cslmpi.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-cslread.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-eval1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-eval2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-eval3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-eval4.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-print.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-pro.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) machineid.cpp
+csl-stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 
-reduce-arith01.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-arith02.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-arith03.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-arith04.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-arith05.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-arith06.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-arith07.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-arith08.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-arith09.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-cslmpi.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-cslread.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-eval1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-eval2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-eval3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-eval4.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-print.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-pro.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) machineid.cpp
-reduce-stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-reduce-sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-arith01.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith02.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith03.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith04.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith05.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith06.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith07.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith08.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith09.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-cslmpi.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-cslread.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-eval1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-eval2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-eval3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-eval4.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-print.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-pro.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) machineid.cpp
+reduce-stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 
-
-endif crlibmorboehm
 
 # If one of the major foundations of this Makefile have a date later than that
 # on fxver.h then make does a futile recursion to try to fix it and in the
@@ -1471,6 +1489,9 @@ endif wx
 $(plain_termdemo):	termdemo.exe
 	echo "make termdemo.exe is preferred"
 
+$(plain_softfloatdemo):	softfloatdemo.exe
+	echo "make softfloatdemo.exe is preferred"
+
 $(plain_dyndemo):	dyndemo.exe
 	echo "make dyndemo.exe is preferred"
 
@@ -1501,6 +1522,9 @@ endif wx
 
 termdemo_SOURCES=termdemo.cpp termed.cpp
 termdemo_LIBS=
+
+softfloatdemo_SOURCES=softfloatdemo.cpp
+softfloatdemo_LIBS=
 
 #
 # Possibly unreasonably (but it is WHAT I DO!) image files for CSL live
@@ -2209,9 +2233,9 @@ guisrc=
 endif !wx
 endif !fox
 if wx
-mainsrc=$(guisrc) $(fwindemo_SOURCES) $(wxpsl_SOURCES) $(termdemo_SOURCES) $(reduce_SOURCES)
+mainsrc=$(guisrc) $(fwindemo_SOURCES) $(wxpsl_SOURCES) $(termdemo_SOURCES) $(softfloatdemo_SOURCES) $(reduce_SOURCES)
 else !wx
-mainsrc=$(guisrc) $(fwindemo_SOURCES) $(termdemo_SOURCES) $(reduce_SOURCES)
+mainsrc=$(guisrc) $(fwindemo_SOURCES) $(termdemo_SOURCES) $(softfloatdemo_SOURCES) $(reduce_SOURCES)
 endif !wx
 srcfiles=$(mainsrc) $(csl_SOURCES)
 
@@ -2225,9 +2249,9 @@ guibin=
 endif !wx
 endif !fox
 if wx
-mainbin=$(guibin) fwindemo$(EXEEXT) wxpsl$(EXEEXT) termdemo$(EXEEXT) reduce$(EXEEXT)
+mainbin=$(guibin) fwindemo$(EXEEXT) wxpsl$(EXEEXT) termdemo$(EXEEXT) softfloatdemo$(EXEEXT) reduce$(EXEEXT)
 else !wx
-mainbin=$(guibin) fwindemo$(EXEEXT) termdemo$(EXEEXT) reduce$(EXEEXT)
+mainbin=$(guibin) fwindemo$(EXEEXT) termdemo$(EXEEXT) softfloatdemo$(EXEEXT) reduce$(EXEEXT)
 endif !wx
 if windows
 if wx

@@ -334,6 +334,8 @@ AC_ARG_WITH(cygbuild64,[  --with-cygbuild64       stray option from the Reduce b
 AC_ARG_WITH(build,     [  --with-build            stray option from the Reduce build setup])
 AC_ARG_WITH(pslbuild,  [  --with-pslbuild         stray option from the Reduce build setup])
 AC_ARG_WITH(boehm,     [  --with-boehm            stray option from the Reduce build setup])
+AC_ARG_ENABLE(test,    [  --enable-test           stray option from the Reduce build setup])
+AC_ARG_WITH(autogen,   [  --with-autogen          stray option from the Reduce build setup])
 
 # Substitute variables in output files
 AC_SUBST(GL_LIBS)

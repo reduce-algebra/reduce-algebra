@@ -1512,7 +1512,6 @@ AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")
 AM_CONDITIONAL(valgrind, test "x$VALGRIND" = "xvalgrind")
 AM_CONDITIONAL(crlibm, test "x$with_crlibm" != "xno")
 AM_CONDITIONAL(boehm, test "x$with_boehm" != "xno")
-AM_CONDITIONAL(crlibmorboehm, test "x$with_crlibm" != "xno" || "x$with_boehm" != "xno")
 
 AC_OUTPUT
 

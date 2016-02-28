@@ -643,6 +643,8 @@ case $inplace in
             if test "x$CC$CPP$CXX$CXXCPP" != "x"
             then
               passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+            else
+              passcc=""
             fi
             AC_MSG_NOTICE([passcc = $passcc])
 # If I am running in a cygwin-32 shell and building for cygwin-32, or
@@ -699,6 +701,8 @@ case $inplace in
               if test "x$CC$CPP$CXX$CXXCPP" != "x"
               then
                 passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+              else
+                passcc=""
               fi
               AC_MSG_NOTICE([passcc = $passcc])
               pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
@@ -724,6 +728,8 @@ case $inplace in
       if test "x$CC$CPP$CXX$CXXCPP" != "x"
       then
         passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+      else
+        passcc=""
       fi
       AC_MSG_NOTICE([passcc = $passcc])
       pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
@@ -766,6 +772,8 @@ case $inplace in
       if test "x$CC$CPP$CXX$CXXCPP" != "x"
       then
         passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+      else
+        passcc=""
       fi
       case $host in
       i386* | i486* | i586* | i686*)
@@ -812,15 +820,14 @@ case $inplace in
         esac
       done
       AC_MSG_NOTICE([passcc = $passcc])
-      doconfig="$SHELL \"$abssrcdir/csl/cslbase/crlibm/configure\" $filter \
+      doconfig="$SHELL \"$abssrcdir/libraries/crlibm/configure\" $filter \
             $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             --prefix=\"$builddir\""
       AC_MSG_NOTICE([doconfig = $doconfig])
       eval "$doconfig"
       cd "$builddir"
-fi
-
+    fi
 
     cd "$abssrcdir"
   fi
@@ -1134,6 +1141,8 @@ then
     if test "x$CC$CPP$CXX$CXXCPP" != "x"
     then
       passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+    else
+      passcc=""
     fi
     AC_MSG_NOTICE([passcc = $passcc pass_host=$pass_host])
     doconfig="$SHELL \"$abssrcdir/csl/wxWidgets/configure\" $wx \
@@ -1168,6 +1177,8 @@ then
     if test "x$CC$CPP$CXX$CXXCPP" != "x"
     then
       passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+    else
+      passcc=""
     fi
     AC_MSG_NOTICE([passcc = $passcc])
     doconfig="$SHELL \"$abssrcdir/csl/fox/configure\" $ac_configure_args \
@@ -1180,24 +1191,29 @@ then
     eval "$doconfig"
     cd "$builddir"
 
-    if test -d "$abssrcdir/csl/foxtests"
-    then
-      AC_MSG_NOTICE([About to configure FOX tests])
-      mkdir -p foxtests
-      cd foxtests
+# I will not configure the FOX tests any more - anybody who wants to use
+# them can do that manually.
 
-      if test "x$CC$CPP$CXX$CXXCPP" != "x"
-      then
-        passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-      fi
-      AC_MSG_NOTICE([passcc = $passcc])
-      doconfig="$SHELL \"$abssrcdir/csl/foxtests/configure\" $ac_configure_args \
-            $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-            --with-fox=\"$builddir\" --with-fox-pending=yes $extras"
-      AC_MSG_NOTICE([doconfig = $doconfig])
-      eval "$doconfig"
-    fi
+#   if test -d "$abssrcdir/csl/foxtests"
+#   then
+#     AC_MSG_NOTICE([About to configure FOX tests])
+#     mkdir -p foxtests
+#     cd foxtests
+#
+#     if test "x$CC$CPP$CXX$CXXCPP" != "x"
+#     then
+#       passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+#     else
+#       passcc=""
+#     fi
+#     AC_MSG_NOTICE([passcc = $passcc])
+#     doconfig="$SHELL \"$abssrcdir/csl/foxtests/configure\" $ac_configure_args \
+#           $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+#           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
+#           --with-fox=\"$builddir\" --with-fox-pending=yes $extras"
+#     AC_MSG_NOTICE([doconfig = $doconfig])
+#     eval "$doconfig"
+#   fi
 
     cd "$builddir"
   fi
@@ -1215,6 +1231,8 @@ else
   if test "x$CC$CPP$CXX$CXXCPP" != "x"
   then
     passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+  else
+    passcc=""
   fi
   case $host in
   i386* | i486* | i586* | i686*)
@@ -1261,7 +1279,7 @@ else
     esac
   done
   AC_MSG_NOTICE([passcc = $passcc])
-  doconfig="$SHELL \"$abssrcdir/csl/cslbase/crlibm/configure\" $filter \
+  doconfig="$SHELL \"$abssrcdir/libraries/crlibm/configure\" $filter \
         $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
         --prefix=\"$builddir\""
@@ -1282,6 +1300,8 @@ else
   if test "x$CC$CPP$CXX$CXXCPP" != "x"
   then
     passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+  else
+    passcc=""
   fi
   filter=""
   for x in $ac_configure_args
@@ -1341,6 +1361,69 @@ else
         --enable-thread-local-alloc \
         --enable-parallel-mark \
         --without-libatomic-ops"
+  AC_MSG_NOTICE([doconfig = $doconfig])
+  eval "$doconfig"
+
+  cd "$builddir"
+fi
+
+# I do not provide any way to disable building of softfloat!
+if test "x$with_libsoftfloat" == "xno"
+then
+  AC_MSG_NOTICE([libsoftfloat will not be used here])
+else
+  AC_MSG_NOTICE([About to configure libsoftfloat])
+  mkdir -p softfloat
+  cd softfloat
+
+  if test "x$CC$CPP$CXX$CXXCPP" != "x"
+  then
+    passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+  else
+    passcc=""
+  fi
+  filter=""
+  for x in $ac_configure_args
+  do
+    case $x in
+    \'--with-force*\' | \
+    \'--with*-autogen*\' | \
+    \'--with-mingw*\' | \
+    \'--with-lto*\' | \
+    \'--with-m32*\' | \
+    \'--with-m64*\' | \
+    \'--with*-gui*\' | \
+    \'--with*-xft*\' | \
+    \'--with*-xim*\' | \
+    \'--with-smallpage*\' | \
+    \'--with*-fox*\' | \
+    \'--with*-wx*\' | \
+    \'--with-cyg*\' | \
+    \'--with-csl*\' | \
+    \'--with-psl*\' | \
+    \'--with-build*\' | \
+    \'--with-pslbuild*\' | \
+    \'--with*-crlibm*\' | \
+    \'--with*-boehm*\' | \
+    \'--enable-debug*\' | \
+    \'--enable-conservative*\' | \
+    \'--enable-test*\' | \
+    \'--enable-jit*\' | \
+    \'--enable-static*\' | \
+    \'--enable-silent*\' | \
+    \'--disable-silent*\' )
+      ;;
+    *)
+      filter="$filter $x"
+      ;;
+    esac
+  done
+  AC_MSG_NOTICE([passcc = $passcc])
+  doconfig="$SHELL \"$abssrcdir/libraries/SoftFloat-3a/source/configure\" \
+        $filter \
+        $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+        CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
+        --prefix=\"$builddir\""
   AC_MSG_NOTICE([doconfig = $doconfig])
   eval "$doconfig"
 
