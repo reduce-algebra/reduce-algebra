@@ -64,49 +64,49 @@ extern "C"
 static int f128M_exponent(const float128_t *p)
 {
 #ifdef LITTLEENDIAN
-    return ((p->v[0] >> 48) & 0x7fff) - 0x3fff;
-#else
     return ((p->v[1] >> 48) & 0x7fff) - 0x3fff;
+#else
+    return ((p->v[0] >> 48) & 0x7fff) - 0x3fff;
 #endif
 }
 
 static void f128M_set_exponent(float128_t *p, int n)
 {
 #ifdef LITTLEENDIAN
-    p->v[0] = (p->v[0] & 0x8000ffffffffffff) | (((uint64_t)n + 0x3fff) << 48);
+    p->v[0] = (p->v[1] & 0x8000ffffffffffff) | (((uint64_t)n + 0x3fff) << 48);
 #else
-    p->v[1] = (p->v[1] & 0x8000ffffffffffff) | (((uint64_t)n + 0x3fff) << 48);
+    p->v[1] = (p->v[0] & 0x8000ffffffffffff) | (((uint64_t)n + 0x3fff) << 48);
 #endif
 }
 
 static bool f128M_infinite(const float128_t *p)
 {
 #ifdef LITTLEENDIAN
-    return (((p->v[0] >> 48) & 0x7fff) == 0x7fff) &&
-            ((p->v[0] & 0xffffffffffff) == 0) &&
-            (p->v[1] == 0);
-#else
     return (((p->v[1] >> 48) & 0x7fff) == 0x7fff) &&
             ((p->v[1] & 0xffffffffffff) == 0) &&
             (p->v[0] == 0);
+#else
+    return (((p->v[0] >> 48) & 0x7fff) == 0x7fff) &&
+            ((p->v[0] & 0xffffffffffff) == 0) &&
+            (p->v[1] == 0);
 #endif
 }
 
 static bool f128M_negative(const float128_t *x)
 {
 #ifdef LITTLEENDIAN
-    return ((int64_t)x->v[0]) < 0;
-#else
     return ((int64_t)x->v[1]) < 0;
+#else
+    return ((int64_t)x->v[0]) < 0;
 #endif
 }
 
 static void f128M_negate(float128_t *x)
 {
 #ifdef LITTLEENDIAN
-    x->v[0] ^= 0x8000000000000000;
-#else
     x->v[1] ^= 0x8000000000000000;
+#else
+    x->v[0] ^= 0x8000000000000000;
 #endif
 }
 
@@ -119,35 +119,22 @@ static void f128M_negate(float128_t *x)
 // I am following the scheme from T J Dekker, Numer Math 18 224-242 (1971).
 
 
-// Because I have no special reason to care about the layout in memory of
-// my 256-bit floating point representation I will use the same structure
-// definition for ir regardless of the endianness of the machine I am on.
-
 typedef struct _float256_t
 {
+#ifdef LITTLEENDIAN
+    float128_t lo;
+    float128_t hi;
+#else
     float128_t hi;
     float128_t lo;
+#endif
 } float256_t;
 
-// It is convenient to have a number of consiants available. The
-// values I have here are 0, 1, 10, 0.1 and 2^4096 all as 128-bit
-// numbers, and 10 and 0.1 as 256-bit ones.
+// It is convenient to have a number of constants available. The
+// values I have here are 0, 1, 10, 0.1, 10^17, 10^18 and 2^4096
+// all as 128-bit numbers, and 1, 10 and 0.1 as 256-bit ones.
 
 #ifdef LITTLEENDIAN
-
-float128_t f128_0      = {0x0000000000000000, 0},
-           f128_1      = {0x3fff000000000000, 0},
-           f128_10     = {0x4002400000000000, 0},
-           f128_10_17  = {0x40376345785d8a00, 0},
-           f128_10_18  = {0x403abc16d674ec80, 0},
-           f128_r10    = {0x3ffb999999999999, 0x999999999999999a},
-           f128_N1     = {0x4fff000000000000, 0}; // 2^4096
-
-float256_t f256_1      = {{0x3fff000000000000, 0}, {0,0}},
-           f256_10     = {{0x4002400000000000, 0}, {0,0}},
-           f256_r10    = {{0x3ffb999999999999, 0x9999999999999999},
-                          {0x3f8a333333333333, 0x3333333333333333}};
-#else
 
 float128_t f128_0      = {0, 0x0000000000000000},
            f128_1      = {0, 0x3fff000000000000},
@@ -155,11 +142,26 @@ float128_t f128_0      = {0, 0x0000000000000000},
            f128_10_17  = {0, 0x40376345785d8a00},
            f128_10_18  = {0, 0x403abc16d674ec80},
            f128_r10    = {0x999999999999999a, 0x3ffb999999999999},
-           f128_N1     = {0, 0x4fff000000000000};
+           f128_N1     = {0, 0x4fff000000000000}; // 2^4096
 
-float256_t f256_10     = {{0, 0x4002400000000000}, {0,0}},
-           f256_r10    = {{0x9999999999999999, 0x3ffb999999999999},
-                          {0x3333333333333333, 0x3f8a333333333333}};
+float256_t f256_1      = {{0,0}, {0, 0x3fff000000000000}},
+           f256_10     = {{0,0}, {0, 0x4002400000000000}},
+           f256_r10    = {{0x3333333333333333, 0x3f8a333333333333},
+                          {0x9999999999999999, 0x3ffb999999999999}};
+#else
+
+float128_t f128_0      = {0x0000000000000000, 0},
+           f128_1      = {0x3fff000000000000, 0},
+           f128_10     = {0x4002400000000000, 0},
+           f128_10_17  = {0x40376345785d8a00, 0},
+           f128_10_18  = {0x403abc16d674ec80, 0},
+           f128_r10    = {0x3ffb999999999999, 0x999999999999999a},
+           f128_N1     = {0x4fff000000000000, 0};
+
+float256_t f256_1      = {{0x3fff000000000000, 0}, {0,0}},
+           f256_10     = {{0x4002400000000000, 0}, {0,0}},
+           f256_r10    = {{0x3ffb999999999999, 0x9999999999999999},
+                          {0x3f8a333333333333, 0x3333333333333333}};
 #endif
 
 // f256M_add adds two long numbers. As noted avove you should keep the
@@ -407,6 +409,11 @@ static void show(const char *s, float128_t *p)
 int main(int argc, char *argv[])
 {
     float128_t a, b, c, d, e, f,g,h,w1, w2;
+#ifdef LITTLEENDIAN
+    printf("Expectiing a little-endian version\n");
+#else
+    printf("Expectiing a big-endian version\n");
+#endif
 
     ui32_to_f128M(0, &f128_0);
 

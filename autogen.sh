@@ -121,17 +121,7 @@ do
   then
     cd $d
     printf "autoreconf -f -i -v\n"
-    case $d in
-    *SoftFloat*)
-# For the softfloat library I wo not wnat to execure autoheader.
-      export AUTOHEADER=echo; autoreconf -f -i -v
-      unset AUTOHEADER
-      ;;
-    *)
-      autoreconf -f -i -v
-      ;;
-    esac
-    unset AUTOHEADER
+    autoreconf -f -i -v
     cd $here
   fi
 done

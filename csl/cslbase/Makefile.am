@@ -911,6 +911,7 @@ reduce-stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 
+softfloatdemo-softfloatdemo.$(OBJEXT):	$(SOFTFLOATDEP)
 
 # If one of the major foundations of this Makefile have a date later than that
 # on fxver.h then make does a futile recursion to try to fix it and in the
