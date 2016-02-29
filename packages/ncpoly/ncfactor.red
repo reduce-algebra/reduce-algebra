@@ -27,7 +27,7 @@ module ncfactor;  % factorization for non-commutative polynomials.
 
 
 % version 1.4: using the commutative factorizer as preprocessor.
-% Oct 2001: using "sove", hoping, that the user did not switch off 'varopt'.
+% Oct 2001: using "solve", hoping, that the user did not switch off 'varopt'.
 
 share nc_factor_time;    % time limit in milliseconds.
 
@@ -242,17 +242,21 @@ symbolic procedure nc_factorize2(u,ev,rs,mx,all);
    if !*trnc and so then<<prin2"free:";prin2t so>>;
    if so then sol:={(so.1).for each v in vl collect v.0};
    if null sol or all then sol:=append(sol,nc_factsolve(s,vl,all));
-   if null sol then return nil;
+   if null sol then 
+      << if !*trnc then <<
+	 prin2t "no internal solutions";
+ 	 prin2t "=====================================">>;
+      return nil>>;
    if !*trnc then
    <<prin2t "internal solutions:";
-     for each s in so do
+     for each s in sol do
      <<for each q in s do
        <<writepri(mkquote car q,'first);
          writepri(mkquote " = ",nil);
          writepri(mkquote cdr q,'last)>>;
        prin2t "=====================================">>;
    % prin2 "check internal solution:";
-   % for each e in s do writepri(mkquote aeval sublis(so,e),'only);
+   % for each e in s do writepri(mkquote aeval sublis(sol,e),'only);
    >>;
 coll:nc_factorize_timecheck();
    so:=car sol;sol:=cdr sol;
@@ -313,11 +317,14 @@ symbolic procedure nc_factsolve(s,vl,all);
     <<prin2 "solving ";
       prin2 length s;prin2 " polynomial equations for ";
       prin2 length vl;
-      prin2t"variables";
+      prin2t" variables";
       for each e in s do writepri(mkquote e,'only)>>;
         % modification HM 24.10.2001: introduction of the fluid variable
         % '*varoptt' and setting it 't' locally.
    w:=(cdr solveeval{'list.s,'list.vl} where dipvars!*=nil);
+   if !*trnc then
+    <<prin2 "solve returned";
+      for each sl in w do writepri(mkquote sl,'only)>>;
      % Select appropriate solution.
  loop:nc_factorize_timecheck();
    if null w then go to done;
@@ -339,6 +346,10 @@ symbolic procedure nc_factsolve(s,vl,all);
    if all then go to loop;
  done:sol:=for each s in sol collect append(sb,s);
    if !*trnc then
+    if null sol then 
+    <<prin2t "no solutions";
+      prin2t "-------------------------">>
+    else
     <<prin2t "solutions:";
       for each w in sol do
        writepri(mkquote('list.
