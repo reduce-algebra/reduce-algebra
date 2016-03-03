@@ -502,6 +502,10 @@ static uint32_t hash_eql(LispObject key)
         {   double fp;
             uint32_t i[2];
         } nasty_union;
+        union nasty2
+        {   float128_t fp;
+            uint32_t i[sizeof(float128_t)/4];
+        } nasty2_union;
         nasty_union.i[0] = nasty_union.i[1] = 0;
         switch (h)
         {   case TYPE_SINGLE_FLOAT:
@@ -518,9 +522,13 @@ static uint32_t hash_eql(LispObject key)
                 if (nasty_union.fp == -0.0) nasty_union.fp = 0.0;
                 break;
             case TYPE_LONG_FLOAT:
-                nasty_union.fp = (double)long_float_val(key);
-                if (nasty_union.fp == -0.0) nasty_union.fp = 0.0;
-                break;
+                {   nasty2_union.fp = long_float_val(key);
+// Here I will leave +0.0 and -0.0 hashing differently!
+                    uint32_t h128 = 0;
+                    for (unsigned int i=0; i<sizeof(float128_t)/4; i++)
+                        h128 = update_hash(h128, nasty2_union.i[i]);
+                    return h128;
+                }
             default:
                 nasty_union.fp = 0.0;
         }

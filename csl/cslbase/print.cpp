@@ -3205,7 +3205,9 @@ restart:
                     break;
                 case TYPE_LONG_FLOAT:
 // This just uses a regular double...
-                    fp_sprint(my_buff, (double)long_float_val(u), print_precision);
+//                  fp_sprint(my_buff, (double)long_float_val(u), print_precision);
+// Temporary hack just so things compile! Obviously not good!!!!
+                    fp_sprint(my_buff, 999.999, print_precision);
                     break;
                 default:
                     sprintf(my_buff, "?%.8lx?", (long)(uint32_t)u);

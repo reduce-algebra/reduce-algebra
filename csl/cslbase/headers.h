@@ -139,6 +139,15 @@
 #include <signal.h>
 #endif
 
+extern "C"
+{
+// At present softfloat.h needs includion in C mode not C++ mode.
+// This must be included before tags.h.
+
+#include "softfloat.h"
+}
+
+
 #include "machine.h"
 #include "tags.h"
 #include "cslerror.h"

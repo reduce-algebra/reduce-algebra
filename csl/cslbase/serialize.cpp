@@ -201,7 +201,7 @@ static bool descend_symbols = true;
 #define   SER_FLOAT28      0x09    // short float
 #define   SER_FLOAT32      0x0a    // single float
 #define   SER_FLOAT64      0x0b    // double float
-#define   SER_FLOAT128     0x0c    // long float (not supported)
+#define   SER_FLOAT128     0x0c    // long float
 #define   SER_CHARSPID     0x0d    // char object, "special identifier" etc
 #define   SER_CONS         0x0e    // cons cell
 #define   SER_DUPCONS      0x0f    // cons cell that is referred to multiple times
@@ -497,6 +497,12 @@ void write_u64(uint64_t n)
 // act accordingly. This should already have been done, and current_fp_rep
 // should give information!
 
+// Note that the type-punning used here (even as against an array of char)
+// seems to go beyond what C++ guarantees to support. I believe that at
+// least at present gcc guarantees to treat it in a way where those of an
+// old-fashioned recollection of "the spirit of C" will not be upset. So
+// I hope that this will work.
+
 typedef union _float32u
 {   char i[4];
     float f;
@@ -583,26 +589,28 @@ void write_f64(double f)
     }
 }
 
-// At present I am not supporting long doubles. There are multiple issues,
-// including a strong lack of consistency and compatibility across machines,
-// and pain trying to provide portable and fully accurate elementary
-// functions. So I make them synomymous with regular doubles. If I was only
-// concerned with simle arithmetic (ie not the elementary functions) and
-// I was not concerned with portability I could use the C++ "long double"
-// type which is an 80-bit representation on Intel machines and can be
-// all sorts of other things elsewhere!
 
-typedef union _float128u
-{   char i[16];
-    double f;
-} float128u;
-
-long double read_f128()
-{   return read_f64();
+float128_t read_f128()
+{   float128_t r;
+#ifdef LITTLEENDIAN
+    r.v[0] = read_u64();
+    r.v[1] = read_u64();
+#else
+    r.v[1] = read_u64();
+    r.v[0] = read_u64();
+#endif
+    return r;
 }
 
-void write_f128(double f)
-{   write_f64(f);
+void write_f128(float128_t f)
+{
+#ifdef LITTLEENDIAN
+    write_u64(f.v[0]);
+    write_u64(f.v[1]);
+#else
+    write_u64(f.v[1]);
+    write_u64(f.v[0]);
+#endif
 }
 
 // At times I need to read and write values that are the entrypoints of
@@ -1176,11 +1184,9 @@ down:
                     goto up;
 
                 case SER_FLOAT128:
-// a 128-bit (double-length) float. Note that this may not use all
-// 128 bits and that cross-platform compatibility for floats of over 64
-// bits is really very uncertain at present! Well right now it behaves
-// jlisp like DOUBLE_FLOAT and uses a 64-bit representation.
-                    prev = *p = make_boxfloat(read_f128(), TYPE_LONG_FLOAT);
+// a 128-bit (double-length) float.
+                    prev = *p = make_boxfloat(0.0, TYPE_LONG_FLOAT);
+                    long_float_val(prev) = read_f128();
                     goto up;
 
                 case SER_CHARSPID:
@@ -2161,9 +2167,10 @@ down:
                 break;
                 case TYPE_LONG_FLOAT:
                 {   char msg[32];
-                    sprintf(msg, "long double %.16g", (double)long_float_val(p));
+// At present I do not have a good scheme to display the 128-bit float value.
+                    sprintf(msg, "long double");
                     write_byte(SER_FLOAT128, msg);
-                    write_f64((double)long_float_val(p));
+                    write_f128(long_float_val(p));
                 }
                 break;
                 default:

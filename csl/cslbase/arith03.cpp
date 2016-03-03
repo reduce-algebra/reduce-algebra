@@ -1226,15 +1226,20 @@ static LispObject quotfs(LispObject a, LispObject b)
 
 static LispObject quotff(LispObject a, LispObject b)
 {   int32_t ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
-    double d = float_of_number(b);
-    if (d == 0.0) return aerror2("bad arg for quotient", a, b);
-    d = float_of_number(a) / d;
+    int32_t hc;
+// If EITHER argument is a long float I will need to do things differently,
+// bacause I can not use machine-native arithmetic on float128_t.
     if (ha == TYPE_LONG_FLOAT || hb == TYPE_LONG_FLOAT)
-        ha = TYPE_LONG_FLOAT;
+    {   float128_t x, y, z;
+        x = float128_of_number(a);
+        y = float128_of_number(b);
+        f128M_div(&x, &y, &z);
+        return make_boxfloat128(z);
+    }
     else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
-        ha = TYPE_DOUBLE_FLOAT;
-    else ha = TYPE_SINGLE_FLOAT;
-    return make_boxfloat(d, ha);
+        hc = TYPE_DOUBLE_FLOAT;
+    else hc = TYPE_SINGLE_FLOAT;
+    return make_boxfloat(float_of_number(a) / float_of_number(b), hc);
 }
 
 LispObject quot2(LispObject a, LispObject b)

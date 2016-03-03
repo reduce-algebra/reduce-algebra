@@ -1085,12 +1085,15 @@ typedef struct Single_Float
 {   Header header;
     union float_or_int
     {   float f;
+        float32_t f32;
         int32_t i;
     } f;
 } Single_Float;
 
 #define single_float_val(v) \
     (((Single_Float *)((char *)(v)-TAG_BOXFLOAT))->f.f)
+#define float32_t_val(v) \
+    (((Single_Float *)((char *)(v)-TAG_BOXFLOAT))->f.f32)
 
 //
 // The structures here are not actually used - because I can not get
@@ -1106,6 +1109,7 @@ typedef struct Single_Float
 //  #endif
 //      union double_or_ints {
 //          double f;         // padded to doubleword align the data.
+//          float64_t f64;
 //          int32_t i[2];
 //      } f;
 //  } Double_Float;
@@ -1114,42 +1118,45 @@ typedef struct Single_Float
 #define SIZEOF_DOUBLE_FLOAT     16
 #define double_float_addr(v)    ((double *)((char *)(v) + \
                                    (8-TAG_BOXFLOAT)))
+// on 32-bit machines there has to be a padding work in a double_float,
+// and this lets me clear it out.
+#define double_float_pad(v)     (*(int32_t *)((char *)(v) + \
+                                   (4-TAG_BOXFLOAT)))
 #define double_float_val(v)     (*(double *)((char *)(v) + \
+                                   (8-TAG_BOXFLOAT)))
+#define float64_t_val(v)        (*(float64_t *)((char *)(v) + \
                                    (8-TAG_BOXFLOAT)))
 
 //
 // Again I do not actually introduce the struct...
 //
-// Note that long floats are a bad idea.
-// (1) "long double" may exist in C, buts its precision etc are not
-//     standardised.
-// (2) Elementary functions etc would be a huge pain for long doubles.
-// (3) On Intel you typically only get 80 bits - ie not very much better
-//     than regular doubles!
-// The type is perhaps useful for "working precision" while implementing
-// code to support doubles, but then there is you can not count on portable
-// characteristics it is not a terribly good thing to expose it as part of
-// a user-visible interface. So I will make the Lisp level long floats
-// behave as ordinary doubles.
+// For "long double" I use float128_t as implemented in the SoftFloat_3a
+// library. This represents each float with 16-bits of exponent and 113
+// bits of mantissa (including the hidden bit). Basic arithmetic is
+// supported, but not the elemantary functions. I am going to ASSUME that
+// everything can be aligned at 8-byte boundaries.
 //
 //  typedef struct Long_Float
 //  {
-//                          // For use if I ever wanted an 80-bit float type.
 //      Header header;
 //  #ifndef SIXTY_FOUR_BIT  // Illegal #ifdef here!
 //      junk padding;
 //  #endif
 //      union long_or_ints {
-//          double f;
-//          int32_t i[4];
+//          float128_t f128;
+//          int32_t i[8];
 //      } f;
 //  } Long_Float;
 //
 
-#define SIZEOF_LONG_FLOAT       16
-#define long_float_addr(v)      ((double *)((char *)(v) + \
+#define SIZEOF_LONG_FLOAT       24
+#define long_float_addr(v)      ((float128_t *)((char *)(v) + \
                                    (8-TAG_BOXFLOAT)))
-#define long_float_val(v)       (*(double *)((char *)(v) + \
+#define long_float_pad(v)       (*(int32_t *)((char *)(v) + \
+                                   (4-TAG_BOXFLOAT)))
+#define long_float_val(v)       (*(float128_t *)((char *)(v) + \
+                                   (8-TAG_BOXFLOAT)))
+#define float128_t_val(v)       (*(float128_t *)((char *)(v) + \
                                    (8-TAG_BOXFLOAT)))
 
 #define word_align_up(n) ((LispObject)(((intptr_t)(n) + 3) & (-4)))
@@ -1163,7 +1170,8 @@ typedef struct Single_Float
 //
 // For the benefit of 64-bit architectures I will make the big blocks
 // of memory that I use 128-bit aligned. This may help me at
-// one delicate place in the garbage collector!
+// one delicate place in the garbage collector! But I really rather hope
+// I do not rely on this at all much.
 //
 #define quadword_align_up(n) ((LispObject)(((intptr_t)(n) + 15) & (-16)))
 #define quadword_align_down(n) ((LispObject)((intptr_t)(n) & (-16)))
@@ -1203,14 +1211,15 @@ typedef struct Single_Float
 
 // The C and C++ refuse to define the behaviour of right shifts
 // on signed types. The underlying reason may relate to the possibility that
-// numbers might be stored in sign-and-magniture notation or some other
-// scheme other than the 2s complement that is in pracise universal these
+// numbers might be stored in sign-and-magnitude notation or some other
+// scheme other than the 2s complement that is in practise universal these
 // days. The macro here assumes 2s complement arithmetic, but first tests
 // for that and if so just does the shift. Otherwise it arranges to extend
 // the sign bit manually, using division by powers of 2 on unsigned values
 // to do the main shift operation. I believe that even though this looks
 // rather messy here it will lead to simple compiled code with modern C++
-// compilers.
+// compilers. Note that what I provide here is ONLY for 32-bit values.
+// I would need something similar for 64-bit ones!
 
 #define ASR(v, n) \
   (((-1) >> 1) == -1 ? ((int32_t)(v)) >> (n) : \

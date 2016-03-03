@@ -3038,7 +3038,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // At one stage I detected (on of the) VAX representations and the one used
 // by the IBM s60/s370. These days I am only going to recognise cases that
 // use IEEE layout. Even with that the example machines noted here reveal
-// that evenb though IEEE explains what bits should be in the floating point
+// that even though IEEE explains what bits should be in the floating point
 // value different manufacturers pack the words and bytes in a variety of
 // ways! Well the mere shuffling of bytes is something I can deal with. If I
 // really needed to make image files portable to old-style IBM mainframes
@@ -3046,10 +3046,18 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // what I have here would moan. But if I just override the moan I will
 // be able to build images and reload them on that particular machine.
 //
+// It seems that REALLY OLD version of ARM software - possibly before
+// hardware floating point was generally installed there, used little endian
+// representations except that the two 32-bit units of a 64-bit float were
+// stored with the more significant one first. A test in 2016 on a Raspberry
+// Pi indicates that things are now such that the ARM seems to match the Intel
+// layout. That means that the only two orders I am now aware of arising are
+// fully little endian and fully big endian. In the notation used here this
+// is either nothing or is both byte and words swapped.
                 case 0x2449:    current_fp_rep = 0;
-                    break;           // Intel, MIPS
+                    break;           // Intel, MIPS, modern ARM
                 case 0x49c2:    current_fp_rep = FP_WORD_ORDER;
-                    break;           // ARM
+                    break;           // ancient ARM!!!
                 case 0x4924:    current_fp_rep = FP_BYTE_ORDER;
                     break;           // may never happen?
                 case 0xc249:    current_fp_rep = FP_WORD_ORDER|FP_BYTE_ORDER;

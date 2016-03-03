@@ -225,10 +225,11 @@ endif !cygwin
 
 
 core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
-		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp arith11.cpp \
-		arith12.cpp arith13.cpp bytes1.cpp char.cpp cslmpi.cpp eval1.cpp eval2.cpp \
-		eval3.cpp eval4.cpp fns1.cpp fns2.cpp fns3.cpp inthash.cpp \
-		print.cpp cslread.cpp restart.cpp serialize.cpp sysfwin.cpp
+		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp \
+		arith11.cpp arith12.cpp arith13.cpp arith14.cpp bytes1.cpp \
+		char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp eval4.cpp \
+		fns1.cpp fns2.cpp fns3.cpp inthash.cpp print.cpp cslread.cpp \
+		restart.cpp serialize.cpp sysfwin.cpp
 
 demo_sources = csl.cpp fasl.cpp cslgc.cpp preserve.cpp
 
@@ -801,6 +802,7 @@ arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith14.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
@@ -842,6 +844,7 @@ csl-arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl-arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl-arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl-arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith14.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl-bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl-char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl-csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
@@ -883,6 +886,7 @@ reduce-arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith14.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
@@ -1524,7 +1528,7 @@ endif wx
 termdemo_SOURCES=termdemo.cpp termed.cpp
 termdemo_LIBS=
 
-softfloatdemo_SOURCES=softfloatdemo.cpp
+softfloatdemo_SOURCES=softfloatdemo.cpp arith14.cpp
 softfloatdemo_LIBS=
 
 #

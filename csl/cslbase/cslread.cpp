@@ -743,11 +743,20 @@ LispObject intern(int len, bool escaped)
                     single_float_val(r) = f;
                     return r;
                 default:
-//      case 2: case 3:
+                case 2:
                     r = getvector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT,
                                   SIZEOF_DOUBLE_FLOAT);
                     errexit();
                     double_float_val(r) = d;
+                    return r;
+                case 3:
+                    r = getvector(TAG_BOXFLOAT, TYPE_LONG_FLOAT,
+                                  SIZEOF_LONG_FLOAT);
+                    errexit();
+                    {   union { float64_t fs; double f;} f;
+                        f.f = d;
+                        f64_to_f128M(f.fs, &long_float_val(r));
+                    }
                     return r;
             }
         }

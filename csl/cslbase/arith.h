@@ -182,7 +182,9 @@ extern "C" LispObject add1(LispObject p);
 extern "C" LispObject sub1(LispObject p);
 extern "C" LispObject integerp(LispObject p);
 extern double float_of_number(LispObject a);
+extern float128_t float128_of_number(LispObject a);
 extern LispObject make_boxfloat(double a, int32_t type);
+extern LispObject make_boxfloat128(float128_t a);
 extern LispObject make_complex(LispObject r, LispObject i);
 extern LispObject make_ratio(LispObject p, LispObject q);
 extern "C" LispObject ash(LispObject a, LispObject b);
@@ -281,6 +283,44 @@ extern int karatsuba_parallel;
 #define KARATSUBA_CUTOFF 12
 
 #endif
+
+// Now some stuff relating to the float128_t type
+
+extern "C" int f128M_exponent(const float128_t *p);
+extern "C" void f128M_set_exponent(float128_t *p, int n);
+extern "C" void f128M_ldexp(float128_t *p, int n);
+extern "C" bool f128M_infinite(const float128_t *p);
+extern "C" bool f128M_nan(const float128_t *x);
+extern "C" bool f128M_subnorm(const float128_t *x);
+extern "C" bool f128M_negative(const float128_t *x);
+extern "C" void f128M_negate(float128_t *x);
+extern "C" void f128M_split(
+    const float128_t *x, float128_t *yhi, float128_t *ylo);
+
+extern "C" float128_t f128_0, f128_1, f128_10, f128_10_17,
+           f128_10_18, f128_r10, f128_N1;
+
+typedef struct _float256_t
+{
+#ifdef LITTLEENDIAN
+    float128_t lo;
+    float128_t hi;
+#else
+    float128_t hi;
+    float128_t lo;
+#endif
+} float256_t;
+
+extern "C" void f256M_mul(
+    const float256_t *x, const float256_t *y, float256_t *z);
+
+extern "C" float256_t f256_1, f256_10, f256_r10;
+
+extern "C" void f128M_print_E(int width, int precision, float128_t *p);
+extern "C" void f128M_print_F(int width, int precision, float128_t *p);
+extern "C" void f128M_print_G(int width, int precision, float128_t *p);
+
+
 
 #endif // header_arith_h
 

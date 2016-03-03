@@ -40,7 +40,6 @@
 
 #include "headers.h"
 
-
 //
 // I start off with a collection of utility functions that create
 // Lisp structures to represent various sorts of numbers
@@ -140,8 +139,9 @@ LispObject make_sfloat(double d)
 
 LispObject make_boxfloat(double a, int32_t type)
 //
-// Make a boxed float (single, double or long according to the type specifier)
-// if type==0 this makes a short float
+// Make a boxed float (single, double according to the type specifier)
+// if type==0 this makes a short float.
+// 128-bit floats must be made using make_boxfloat128.
 //
 {   LispObject r, nil;
     switch (type)
@@ -163,21 +163,28 @@ LispObject make_boxfloat(double a, int32_t type)
         default: // TYPE_DOUBLE_FLOAT I hope
             r = getvector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT, SIZEOF_DOUBLE_FLOAT);
             errexit();
+            if (!SIXTY_FOUR_BIT) double_float_pad(r) = 0;
             double_float_val(r) = a;
             return r;
-        case TYPE_LONG_FLOAT:
-            r = getvector(TAG_BOXFLOAT, TYPE_LONG_FLOAT, SIZEOF_LONG_FLOAT);
-            errexit();
-            long_float_val(r) = a;
-            return r;
     }
+}
+
+LispObject make_boxfloat128(float128_t a)
+{   LispObject r, nil;
+    r = getvector(TAG_BOXFLOAT, TYPE_LONG_FLOAT, SIZEOF_LONG_FLOAT);
+    errexit();
+    if (!SIXTY_FOUR_BIT) long_float_pad(r) = 0;
+    long_float_val(r) = a;
+    return r;
 }
 
 static double bignum_to_float(LispObject v, int32_t h, int *xp)
 //
 // Convert a Lisp bignum to get a floating point value.  This uses at most the
 // top 3 digits of the bignum's representation since that is enough to achieve
-// full double precision accuracy.
+// full double precision accuracy. Note that this is 3 words not 2 because
+// the top word of the bignum might have only 1 bit in it, so the top 2 words
+// of a nignum might only provide 1+31 bits of significance.
 // This can not overflow, because it leaves an exponent-adjustment value
 // in *xp. You need ldexp(r, *xp) afterwards.
 //
@@ -200,13 +207,66 @@ static double bignum_to_float(LispObject v, int32_t h, int *xp)
     return r;
 }
 
+#ifdef LITTLEENDIAN
+static float128_t f128_TWO_31 = {0, 0x401e000000000000};
+#else
+statuc float128_t f128_TWO_31 = {0x401e000000000000, 0};
+#endif
+
+static float128_t bignum_to_float128(LispObject v, int32_t h, int *xp)
+//
+// Convert a Lisp bignum to get a 128-bit floating point value.
+// This uses at most the top 5 digits of the bignum's representation
+// since that is enough to achieve full accuracy.
+// This can not overflow, because it leaves an exponent-adjustment value
+// in *xp. You need "ldexp128(r, *xp)" afterwards.
+//
+{   int32_t n = (h-CELL-4)/4;  // Last index into the data
+    int x = 31*(int)n;
+    int32_t msd = (int32_t)bignum_digits(v)[n];
+// NB signed conversion on next line
+    float128_t r, w1, w2;
+    i32_to_f128M(msd, &r);
+    switch (n)
+    {
+        default:        // for very big numbers combine in 5 digits
+            ui32_to_f128M(bignum_digits(v)[--n], &w1);
+            f128M_mul(&r, &f128_TWO_31, &w2);
+            f128M_add(&w1, &w2, &r);
+            x -= 31;
+        // drop through
+        case 3:
+            ui32_to_f128M(bignum_digits(v)[--n], &w1);
+            f128M_mul(&r, &f128_TWO_31, &w2);
+            f128M_add(&w1, &w2, &r);
+            x -= 31;
+        // drop through
+        case 2:
+            ui32_to_f128M(bignum_digits(v)[--n], &w1);
+            f128M_mul(&r, &f128_TWO_31, &w2);
+            f128M_add(&w1, &w2, &r);
+            x -= 31;
+        // drop through
+        case 1:
+            ui32_to_f128M(bignum_digits(v)[--n], &w1);
+            f128M_mul(&r, &f128_TWO_31, &w2);
+            f128M_add(&w1, &w2, &r);
+            x -= 31;
+        // drop through
+        case 0: break;  // do no more
+    }
+    *xp = x;
+    return r;
+}
+
 double float_of_number(LispObject a)
 //
 // Return a (double precision) floating point value for the given Lisp
 // number, or 0.0 in case of trouble.  This is often called in circumstances
 // where I already know the type of its argument and so its type-dispatch
 // is unnecessary - in doing so I am trading off performance against
-// code repetition.
+// code repetition. Be aware that for long floats I will need to do something
+// different!
 //
 {   if (is_fixnum(a)) return (double)int_of_fixnum(a);
 #ifdef SHORT_FLOAT
@@ -224,7 +284,11 @@ double float_of_number(LispObject a)
             case TYPE_DOUBLE_FLOAT:
                 return double_float_val(a);
             case TYPE_LONG_FLOAT:
-                return (double)long_float_val(a);
+                {   float128_t w = long_float_val(a);
+                    union { float64_t sf; double f; } f;
+                    f.sf = f128M_to_f64(&w);
+                    return f.f;
+                }
             default:
                 return 0.0;
         }
@@ -243,10 +307,10 @@ double float_of_number(LispObject a)
                 a = denominator(a);
                 if (is_fixnum(na)) r1 = float_of_number(na), x1 = 0;
                 else r1 = bignum_to_float(na,
-                                              length_of_header(numhdr(na)), &x1);
+                                  length_of_header(numhdr(na)), &x1);
                 if (is_fixnum(a)) r1 = r1 / float_of_number(a), x2 = 0;
                 else r1 = r1 / bignum_to_float(a,
-                                                   length_of_header(numhdr(a)), &x2);
+                                  length_of_header(numhdr(a)), &x2);
 // Floating point overflow can only arise in this ldexp()
                 return ldexp(r1, x1 - x2);
             }
@@ -257,6 +321,79 @@ double float_of_number(LispObject a)
 // this OUGHT not to arrive - bit raising an exception seems over-keen.
 //
                 return 0.0;
+        }
+    }
+}
+
+float128_t float128_of_number(LispObject a)
+//
+// Return a 128-bit floating point value for the given Lisp
+// number, or 0.0 in case of trouble.
+//
+{   float128_t r;
+    float64_t r64;
+    float32_t r32;
+    if (is_fixnum(a))
+    {   i64_to_f128M((int64_t)int_of_fixnum(a), &r);
+        return r;
+    }
+#ifdef SHORT_FLOAT
+    else if (is_sfloat(a))
+    {   Float_union w;
+        w.i = a - TAG_SFLOAT;
+        f32_to_f128M(w.f32, &r);
+        return r;
+    }
+#endif
+    else if (is_bfloat(a))
+    {   int32_t h = type_of_header(flthdr(a));
+        switch (h)
+        {   case TYPE_SINGLE_FLOAT:
+                r32 = float32_t_val(a);
+                f32_to_f128M(r32, &r);
+                return r;
+            case TYPE_DOUBLE_FLOAT:
+                r64 = float64_t_val(a);
+                f64_to_f128M(r64, &r);
+                return r;
+            case TYPE_LONG_FLOAT:
+                return float128_t_val(a);
+            default:
+                i32_to_f128M(0, &r);
+                return r;
+        }
+    }
+    else
+    {   Header h = numhdr(a);
+        int x1;
+        float128_t r1, r2, w;
+        switch (type_of_header(h))
+        {   case TYPE_BIGNUM:
+                r1 = bignum_to_float128(a, length_of_header(h), &x1);
+                f128M_ldexp(&r1, x1);
+                return r1;
+            case TYPE_RATNUM:
+            {   int x2;
+                LispObject na = numerator(a);
+                a = denominator(a);
+                if (is_fixnum(na)) r1 = float128_of_number(na), x1 = 0;
+                else r1 = bignum_to_float128(na,
+                                  length_of_header(numhdr(na)), &x1);
+                if (is_fixnum(a)) r2 = float128_of_number(a), x2 = 0;
+                else r2 = bignum_to_float128(a,
+                                  length_of_header(numhdr(a)), &x2);
+                f128M_div(&r1, &r2, &w);
+                f128M_ldexp(&w, x1 - x2);
+                return w;
+            }
+            default:
+//
+// If the value was non-numeric or a complex number I hand back 0.0,
+// and since I am supposed to have checked the object type already
+// this OUGHT not to arrive - but raising an exception seems over-keen.
+//
+                i32_to_f128M(0, &r);
+                return r;
         }
     }
 }
@@ -936,18 +1073,20 @@ static LispObject plusff(LispObject a, LispObject b)
 // messing about.
 //
 {   int32_t ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
-    double d;
-//
-// This is written as a declaration followed by a separate assignment to
-// d because I hit a compiler bug on a VAX once otherwise.
-//
-    d = float_of_number(a) + float_of_number(b);
+    int32_t hc = ha;
+// If EITHER argument is a long float I will need to do things differently,
+// bacause I can not use machine-native arithmetic on float128_t.
     if (ha == TYPE_LONG_FLOAT || hb == TYPE_LONG_FLOAT)
-        ha = TYPE_LONG_FLOAT;
+    {   float128_t x, y, z;
+        x = float128_of_number(a);
+        y = float128_of_number(b);
+        f128M_add(&x, &y, &z);
+        return make_boxfloat128(z);
+    }
     else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
-        ha = TYPE_DOUBLE_FLOAT;
-    else ha = TYPE_SINGLE_FLOAT;
-    return make_boxfloat(d, ha);
+        hc = TYPE_DOUBLE_FLOAT;
+    else hc = TYPE_SINGLE_FLOAT;
+    return make_boxfloat(float_of_number(a) + float_of_number(b), hc);
 }
 
 //

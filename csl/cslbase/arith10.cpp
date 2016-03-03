@@ -1541,6 +1541,9 @@ LispObject Lexpt(LispObject nil, LispObject a, LispObject b)
             restype = n;
     }
     else if (restype == 0) restype = TYPE_SINGLE_FLOAT;
+// At least for now I do not support long floats here - I demote to double
+// floats.
+    if (restype = TYPE_LONG_FLOAT) restype = TYPE_DOUBLE_FLOAT;
     if ((is_numbers(a) && is_complex(a)) ||
         (is_numbers(b) && is_complex(b)))
     {   c1 = complex_of_number(a);

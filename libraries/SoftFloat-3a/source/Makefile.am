@@ -304,13 +304,21 @@ libsoftfloat_a_SOURCES = $(SOFTFLOAT_PRIMITIVES) \
 	$(SOFTFLOAT_SPECIALIZE) $(SOFTFLOAT_OTHERS)
 
 # I want the version of softfloat.h that is installed to capture all the
-# options used to build this version. Forthat to happen it can not rely
+# options used to build this version. For that to happen it can not rely
 # on macros defined via "-Dxxx" on the compiler command line, so I make
 # a special version of softfloat_types.h that includes endianness information
-# and the like.
+# and the like. But I really do not want all the miscellaneous junk
+# definitions that automake has put in there too - and some of them could
+# clash with the needs of other users. So I use "grep" to extract just
+# what I believe I need. This is ugly! Can somebody find a nicer
+# solution?
+#
+# If I optimise things at a later stage this may get was nastier, e.g.
+# if I put "#define float32_t float" in platform.h
 
 softfloat_types.h:	platform.h $(srcdir)/include/softfloat_types.h
-	cat platform.h $(srcdir)/include/softfloat_types.h > softfloat_types.h
+	grep 'LITTLEENDIAN\|SOFTFLOAT\|inline' platform.h > platform.tmp
+	cat platform.tmp $(srcdir)/include/softfloat_types.h > softfloat_types.h
 
 include_HEADERS = include/softfloat.h softfloat_types.h
 

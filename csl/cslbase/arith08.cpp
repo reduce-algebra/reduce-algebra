@@ -407,7 +407,8 @@ static LispObject Lfloat_denormalized_p(LispObject nil, LispObject a)
                     x = ((Single_Float *)((char *)a-TAG_BOXFLOAT))->f.i & 0x7f800000;
                     return onevalue(x == 0 ? lisp_true : nil);
                 case TYPE_LONG_FLOAT:
-                    if (long_float_val(a) == 0.0) return onevalue(nil);
+                    if (f128M_eq(&long_float_val(a), &f128_0))
+                        return onevalue(nil);
                     x = ((int32_t *)long_float_addr(a))[
                             current_fp_rep&FP_WORD_ORDER ? 0 : 1] & 0x7ff00000;
                     return onevalue(x == 0 ? lisp_true : nil);
@@ -438,7 +439,7 @@ static LispObject Lfloat_infinity_p(LispObject nil, LispObject a)
                     if (1.0 / single_float_val(a) != 0.0) return onevalue(nil);
                     return onevalue(lisp_true);
                 case TYPE_LONG_FLOAT:
-                    if (1.0 / long_float_val(a) != 0.0) return onevalue(nil);
+                    if (f128M_infinite(&long_float_val(a))) return onevalue(nil);
                     return onevalue(lisp_true);
                 case TYPE_DOUBLE_FLOAT:
                     if (1.0 / double_float_val(a) != 0.0) return onevalue(nil);
@@ -479,7 +480,7 @@ static LispObject Lfp_infinite(LispObject nil, LispObject a)
                     if (1.0 / single_float_val(a) != 0.0) return onevalue(nil);
                     return onevalue(lisp_true);
                 case TYPE_LONG_FLOAT:
-                    if (1.0 / long_float_val(a) != 0.0) return onevalue(nil);
+                    if (f128M_infinite(&long_float_val(a))) return onevalue(nil);
                     return onevalue(lisp_true);
                 case TYPE_DOUBLE_FLOAT:
                     if (1.0 / double_float_val(a) != 0.0) return onevalue(nil);
@@ -513,9 +514,9 @@ static LispObject Lfp_nan(LispObject nil, LispObject a)
                         return onevalue(nil);
                     return onevalue(lisp_true);
                 case TYPE_LONG_FLOAT:
-                    if (long_float_val(a) == long_float_val(a))
-                        return onevalue(nil);
-                    return onevalue(lisp_true);
+                    if (f128M_nan(&long_float_val(a)))
+                        return onevalue(lisp_true);
+                    return onevalue(nil);
                 case TYPE_DOUBLE_FLOAT:
 // a NaN should not be equal even to itself, but beware any compiler that
 // tries to be clever here and things otherwise!
@@ -554,13 +555,13 @@ static LispObject Lfp_finite(LispObject nil, LispObject a)
                 }
                 return onevalue(nil);
                 case TYPE_LONG_FLOAT:
-                {   double f = long_float_val(a);
-                    if (f-f == 0.0)
+                {   if (!f128M_infinite(&long_float_val(a)) &&
+                        !f128M_nan(&long_float_val(a)))
                         return onevalue(lisp_true);
                 }
                 return onevalue(nil);
 //
-// If something is infinite oa a NaN then subtracting it from itself yields
+// If something is infinite or a NaN then subtracting it from itself yields
 // a NaN. For any finite value the subtraction should give zero.
 //
                 case TYPE_DOUBLE_FLOAT:
@@ -600,10 +601,9 @@ static LispObject Lfp_subnorm(LispObject nil, LispObject a)
                     x = ((Single_Float *)((char *)a-TAG_BOXFLOAT))->f.i & 0x7f800000;
                     return onevalue(x == 0 ? lisp_true : nil);
                 case TYPE_LONG_FLOAT:
-                    if (long_float_val(a) == 0.0) return onevalue(nil);
-                    x = ((int32_t *)long_float_addr(a))[
-                            current_fp_rep&FP_WORD_ORDER ? 0 : 1] & 0x7ff00000;
-                    return onevalue(x == 0 ? lisp_true : nil);
+                    if (f128M_subnorm(&long_float_val(a)))
+                        return onevalue(lisp_true);
+                    return onevalue(nil);
                 case TYPE_DOUBLE_FLOAT:
                     if (double_float_val(a) == 0.0) return onevalue(nil);
                     x = ((int32_t *)double_float_addr(a))[
@@ -644,13 +644,8 @@ static LispObject Lfp_signbit(LispObject nil, LispObject a)
                     return onevalue(x < 0 ? lisp_true : nil);
 #endif
                 case TYPE_LONG_FLOAT:
-#ifdef HAVE_SIGNBIT
-                    return onevalue(signbit(long_float_val(a)) ? lisp_true : nil);
-#else
-                    x = ((int32_t *)long_float_addr(a))[
-                            current_fp_rep&FP_WORD_ORDER ? 0 : 1];
-                    return onevalue(x < 0 ? lisp_true : nil);
-#endif
+                    return onevalue(f128M_negative(&long_float_val(a)) ?
+                                    lisp_true : nil);
                 case TYPE_DOUBLE_FLOAT:
 #ifdef HAVE_SIGNBIT
                     return onevalue(signbit(double_float_val(a)) ? lisp_true : nil);
