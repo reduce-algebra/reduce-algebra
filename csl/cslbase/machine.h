@@ -49,6 +49,14 @@
 #ifndef header_machine_h
 #define header_machine_h 1
 
+extern "C"
+{
+// At present softfloat.h needs includion in C mode not C++ mode.
+// This must be included before tags.h.
+
+#include "softfloat.h"
+}
+
 
 //
 // I will decode information that config.h has given me and define a simple
