@@ -73,6 +73,9 @@ static void display(PROC_handle p)
         else if (PROC_symbol(p))
         {   printf("%s", PROC_symbol_name(p));
         }
+        else if (PROC_string(p))
+        {   printf("\"%s\"", PROC_string_data(p));
+        }
         else if (PROC_fixnum(p))
         {   printf("%d", PROC_integer_value(p));
         }
@@ -149,6 +152,26 @@ int testcase()
     E(PROC_simplify());
     E(PROC_make_printable());
     display(PROC_get_value());           // with luck this is 1/(x^6-1)
+
+// Here is an illustration of passing a bit of Lisp in a string! The
+// initial string contains pretty well arbitrary Lisp stoff. This represents
+// a pretty-well absolute escape scheme and I hope it is not used at all
+// often.
+    E(PROC_push_string("(dotimes (i 6) (print (times i i i)))"));
+    E(PROC_make_function_call("quote",1));
+// Turn the string into a list of characters (omitting the quote marks)
+    E(PROC_make_function_call("print",1));
+    E(PROC_make_function_call("explodec",1));
+// In CSL "compress" is "read-from list"
+    E(PROC_make_function_call("compress",1));
+    E(PROC_make_function_call("print",1));
+// Now evaluate it.
+    E(PROC_dup());
+    display(PROC_get_value());
+    E(PROC_lisp_eval());
+    display(PROC_get_value());
+// Evaluation leaves the (unwanted) result on the top of the stack.
+//    E(PROC_pop());
     return 0;
 }
 
@@ -177,7 +200,7 @@ static int submain(int argc, char *argv[])
     ibuff[0] = 0;
     PROC_set_callbacks(iget, iput);
 
-    if ((rc = testcase()) != 0) printf("Return code = %d\n", rc);
+    if ((rc = testcase()) != 0) printf("\n+++ Return code = %d\n", rc);
 
     rc = cslfinish(iput);
     printf("\nBuffered output is <%s>\n\n", obuff);

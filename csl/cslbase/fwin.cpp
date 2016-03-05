@@ -877,6 +877,7 @@ void sigint_handler(int code)
 
 #endif // EMBEDDED
 
+
 #ifdef SIGBREAK
 
 void sigbreak_handler(int code)

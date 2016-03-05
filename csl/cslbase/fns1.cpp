@@ -2335,7 +2335,11 @@ LispObject Lopen_foreign_library(LispObject nil, LispObject name)
 //
     printf("open-library Linux/Mac/BSD/Unix etc %s\n", libname);
 #endif
+#ifdef EMBEDDED
+    a = NULL;
+#else
     a = dlopen(libname, RTLD_NOW | RTLD_GLOBAL);
+#endif
     if (a == NULL)
     {
 #ifdef DEBUG
@@ -2386,10 +2390,14 @@ LispObject Lfind_foreign_function(LispObject nil, LispObject name,
 #else
     printf("name to look up = %s\n", sname);
 #endif
+#ifdef EMBEDDED
+    b = NULL;
+#else
 #ifdef WIN32
     b = (void *)GetProcAddress(a, sname);
 #else
     b = dlsym(a, sname);
+#endif
 #endif
     if (b == NULL) return onevalue(nil);
     r = encapsulate_pointer(b);
