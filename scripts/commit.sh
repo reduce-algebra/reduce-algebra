@@ -62,8 +62,9 @@ grep ^D < /tmp/svnstatus >> /tmp/svndiffs
 grep ^M < /tmp/svnstatus >> /tmp/svndiffs
 cut -b 9- < /tmp/svndiffs > /tmp/svnfiles
 gen="aclocal.m4 compile config.guess config.sub configure depcomp Makefile.in \
-install-sh ltmain.sh missing test-driver config.h.in mdate-sh mkinstalldirs \
-py-compile texinfo.tex ylwrap ar-lib"
+  install-sh ltmain.sh missing test-driver config.h.in mdate-sh mkinstalldirs \
+  py-compile texinfo.tex ylwrap ar-lib libtool.m4 ltoptions.m4 \
+  ltsugar.m4 ltversion.m4 lt~obsolete.m4"
 for x in $gen
 do
 # printf "Getting rid of %s\n" "$x"
