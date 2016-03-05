@@ -3363,7 +3363,7 @@ int cslfinish(character_writer *w)
     return return_code;
 }
 
-int execute_lisp_function(char *fname,
+int execute_lisp_function(const char *fname,
                           character_reader *r,
                           character_writer *w)
 {   LispObject nil;
@@ -3529,7 +3529,7 @@ int PROC_set_callbacks(character_reader *r,
     return 0;   // can never report failure
 }
 
-int PROC_load_package(char *name)
+int PROC_load_package(const char *name)
 {   LispObject nil = C_nil;
     LispObject w = nil, w1 = nil;
 #ifdef CONSERVATIVE
@@ -3559,7 +3559,7 @@ int PROC_load_package(char *name)
     return 0;
 }
 
-int PROC_set_switch(char *name, int val)
+int PROC_set_switch(const char *name, int val)
 {   LispObject nil = C_nil;
     LispObject w = nil, w1 = nil;
 #ifdef CONSERVATIVE

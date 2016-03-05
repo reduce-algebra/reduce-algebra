@@ -3,18 +3,51 @@ possible complication and with the least reasonable reliance on system
 support. It builds in a way that might suit small platforms, and so will be
 slower than the normal version of reduce.
 It does not provide a GUI or any other clevers. It is expected that it JUST
-needs a bunch of files of C code to be compiled and linked together. You
+needs a bunch of files of C++ code to be compiled and linked together. You
 should not expect "help" capability etc, but the ALGEBRA bits of Reduce
 should work the way they always have.
 
-I hope it will end up with recipes to cross-compile or custom-build Reduce
-for a variety of interesting situations.
+This is at present set up so that it ONLY compiles using "gcc -m32" which
+is required to generate 32-bit executables. Under cygwin on Windows that
+will be straightforward. On a 64-bit Linux you will need to have multilib
+support installed and you may find it easier to move to a 32-bit Linux
+virtual machine.
 
-The reduce-image directory builds a version of Reduce on the current computer
-(whatever that is) and uses it to create a file "reduce.img". This image file
-will be needed by all other variants here. minireduce-image is much the
-same but builds a custom cut-down version for use when memory may be tight and
-some of the more advanced packages are not required.
+When this was set up in 2009 CSL was self-contained. Now it is 2016 and the
+code relies on external libraries: crlibm and SoftFloat-3a. They are both
+built using autoconf here, and the relevant headers in library files end
+up in "include" and "lib" much as you would expect.
 
-                                 Arthur Norman.   July 2009 - August 2011
+At the top level you can go either "make reduce" or "make minireduce" and
+those use the reduce-image and minireduce-image directories to make either
+a more or less full version of Reduce or one with a much smaller collection
+of packages (which may be of use if you do not need advanced feature and you
+care about memory footprint). After one of those has been built you can
+go "make proc" which makes a "procedural" Reduce in the "procedural"
+directory. This illustrates how Reduce can be driven from external C or
+C++ code.
+
+The code here is NOT intended for making systems for distribution or release
+to end users. Before anything like that the very simple Makefiles used here
+would need to be turned into something rather closer to the autoconf and
+automake supported build scheme used for the full code, so that platform
+dependencies (among other thinsg 32 vs. 64-bit) would be handled neatly.
+User interfaces and error recovery will be weak here. The fixed files here
+called "config.h" give some indication of the range of issues that full
+system support might involve. It is also very plausible that the code here
+would (for many uses) want to be build not in the form of a free-standing
+application, but as a dynamically loadable library. Part of the idea of
+having simple and rather rigit Makefiles here is to provide those who might
+want to do things like that a simple basis to start their work from.
+
+If you are going to end up producing a version of Reduce that is for general
+distribution (but with your own custom interfaces or whatever) I hope that
+the scheme as set up here will let you get started, but PLEASE when you get
+towards something for release look into something using the proper full
+build mechanism.
+
+
+
+
+                                 Arthur Norman.   July 2009 - March 2016
 

@@ -2847,7 +2847,9 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             long int gct = (long int)(100.0 * gc_time);
             async_type = QUERY_INTERRUPT;     // accepted!
             fwin_acknowledge_tick();
+#ifndef EMBEDDED
             report_time(t, gct);
+#endif
             time_now = (int)consolidated_time[0];
             if ((time_limit >= 0 && time_now > time_limit) ||
                 (io_limit >= 0 && io_now > io_limit))
@@ -2976,7 +2978,9 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // sense if GC messages are almost always disabled - maybe that will
 // be the case!
 //
+#ifndef EMBEDDED
         report_time(t, gct);
+#endif
         time_now = (int)consolidated_time[0];
         if (verbos_flag & 1)
         {   freshline_trace();

@@ -841,7 +841,6 @@ int main(int argc, const char *argv[])
 #ifdef WIN32
     sort_out_windows_console(windowed);
 #endif // WIN32
-#endif // EMBEDDED
 
 // Windowed or not, if there is an argument "-b" or "-bxxxx" then the
 // string xxx will do something about screen colours. An empty string
@@ -876,6 +875,7 @@ void sigint_handler(int code)
     return;
 }
 
+#endif // EMBEDDED
 
 #ifdef SIGBREAK
 

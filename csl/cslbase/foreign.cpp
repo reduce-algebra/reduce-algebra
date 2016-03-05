@@ -123,14 +123,14 @@ static void *callbacks[33];
 
 typedef void *PROC_handle;
 
-#define execute_lisp_function             ((int (*)(char *, void *, void *))callbacks[0])
+#define execute_lisp_function             ((int (*)(const char *, void *, void *))callbacks[0])
 #define PROC_set_callbacks                ((int (*)(void *, void *))callbacks[1])
-#define PROC_load_package                 ((int (*)(char *))callbacks[2])
-#define PROC_set_switch                   ((int (*)(char *))callbacks[3])
-#define PROC_gc_messages                  ((int (*)(char *,int))callbacks[4])
+#define PROC_load_package                 ((int (*)(const char *))callbacks[2])
+#define PROC_set_switch                   ((int (*)(const char *))callbacks[3])
+#define PROC_gc_messages                  ((int (*)(const char *,int))callbacks[4])
 #define PROC_clear_stack                  ((int (*)())callbacks[5])
-#define PROC_push_symbol                  ((int (*)(char *))callbacks[6])
-#define PROC_push_string                  ((int (*)(char *))callbacks[7])
+#define PROC_push_symbol                  ((int (*)(const char *))callbacks[6])
+#define PROC_push_string                  ((int (*)(const char *))callbacks[7])
 #define PROC_push_small_integer           ((int (*)(int32_t))callbacks[8])
 #define PROC_push_big_integer             ((int (*)(const char *))callbacks[9])
 #define PROC_push_floating                ((int (*)(double))callbacks[10])
@@ -153,7 +153,7 @@ typedef void *PROC_handle;
 #define PROC_integer_value                ((int32_t (*)(PROC_handle))callbacks[27])
 #define PROC_floating_value               ((double (*)(PROC_handle))callbacks[28])
 #define PROC_symbol_name                  ((const char *(*)(PROC_handle))callbacks[29])
-#define PROC_string_data                  ((cinst char *(*)(PROC_handle))callbacks[30])
+#define PROC_string_data                  ((cinst const char *(*)(PROC_handle))callbacks[30])
 #define PROC_lisp_eval                    ((int (*)())callbacks[31])
 #define PROC_get_raw_value                ((PROC_handle (*)())callbacks[32])
 

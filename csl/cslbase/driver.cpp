@@ -1,8 +1,8 @@
-//  driver.cpp                             Copyright (C) 2010 Codemist Ltd
+//  driver.cpp                                  Copyright (C) 2016 Codemist
 
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist                          A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -112,7 +112,7 @@ int testcase()
 // sent back via the writer callback. Most people would probably
 // explicitly switch gc messages off here!
 //
-    E(PROC_gc_messages(7));      // Messages from garbage collector etc
+    E(PROC_gc_messages(1));      // Messages from garbage collector etc
     E(PROC_set_switch("int", 0));// Running in "batch" mode, so do not even
     // attempt to make any interactive queries
     // about anything.
@@ -155,7 +155,8 @@ int testcase()
 extern const char *programDir;
 
 static int submain(int argc, char *argv[])
-{   char imageName[256], *nargv[5];
+{   char imageName[256];
+    const char *nargv[5];
     int rc;
 
     sprintf(imageName, "%s/reduce.img", programDir);

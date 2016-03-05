@@ -1,4 +1,4 @@
-// proc.h                              Copyright (C) 2010 Codemist Ltd
+// proc.h                                       Copyright (C) 2016 Codemist
 
 #ifndef header_proc_h
 #define header_proc_h 1
@@ -6,7 +6,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -40,6 +40,13 @@
 //
 // Definitions useful for driving the procedural interface to Reduce...
 //
+
+// It may be useful to call this at the start...
+extern "C" int find_program_directory(const char *argv0);
+
+// .. and this to exit
+
+extern void my_exit(int n);
 
 //
 // These types are used for callback functions used to send and receive
@@ -105,7 +112,7 @@ extern int cslfinish(character_writer *wr);
 // easier to use.
 //
 
-extern int execute_lisp_function(char *fname,
+extern int execute_lisp_function(const char *fname,
                                  character_reader *r,
                                  character_writer *w);
 
@@ -172,7 +179,7 @@ extern int PROC_set_callbacks(character_reader *r,
 // Load a Reduce "package".
 //
 
-int PROC_load_package(char *name);
+int PROC_load_package(const char *name);
 
 //
 // Set of clear a Reduce switch. As on "on expandlogs;"
@@ -180,7 +187,7 @@ int PROC_load_package(char *name);
 // Use 0 to switch something off and 1 to switch it on.
 //
 
-int PROC_set_switch(char *name, int val);
+int PROC_set_switch(const char *name, int val);
 
 //
 // Set level of garbage collector noise. This might often be a bit irrelevant,

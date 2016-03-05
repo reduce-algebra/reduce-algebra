@@ -1,4 +1,4 @@
-// bytes.cpp                         Copyright (C) 1991-2015, Codemist Ltd
+// bytes.cpp                         Copyright (C) 1991-2016, Codemist Ltd
 //
 //
 // version of bytes1.c that does not keep counts of how many
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -50,6 +50,6 @@
 
 #define NO_BYTECOUNT 1
 
-#include "bytes1.c"
+#include "bytes1.cpp"
 
 // end of bytes.cpp

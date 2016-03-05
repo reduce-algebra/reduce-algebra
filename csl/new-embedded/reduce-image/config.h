@@ -48,7 +48,7 @@
 #define HAVE_INTPTR_T 1
 
 /* Define to 1 if you have the <inttypes.h> header file. */
-/* #undef HAVE_INTTYPES_H */
+#define HAVE_INTTYPES_H 1
 
 /* Define to 1 if you have the `curses' library (-lcurses). */
 /* #undef HAVE_LIBCURSES */
