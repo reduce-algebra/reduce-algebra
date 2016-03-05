@@ -57,7 +57,7 @@ image.cpp:	make-image reduce.img
 clean:
 	-rm -f *.o reduce hello reduce.img image.log make-image image.cpp
 
-HEADERS = config.h \
+HEADERS = ../include/config.h \
 	$(S)/arith.h $(S)/bytes.h $(S)/clsyms.h $(S)/cslerror.h \
 	$(S)/cslread.h $(S)/entries.h $(S)/externs.h $(S)/fwin.h \
 	$(S)/headers.h $(S)/machine.h $(S)/proc.h $(S)/sockhdr.h \

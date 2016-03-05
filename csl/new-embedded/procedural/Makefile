@@ -43,7 +43,7 @@ reduce:		arith01.o arith02.o arith03.o arith04.o arith05.o \
 clean:
 	-rm -f *.o reduce hello reduce.img
 
-HEADERS = config.h \
+HEADERS = ../include/config.h \
 	$(S)/arith.h $(S)/bytes.h $(S)/clsyms.h $(S)/cslerror.h \
 	$(S)/cslread.h $(S)/entries.h $(S)/externs.h $(S)/fwin.h \
 	$(S)/headers.h $(S)/machine.h $(S)/proc.h $(S)/sockhdr.h \
