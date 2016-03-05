@@ -717,8 +717,8 @@ int main(int argc, const char *argv[])
                 "argc == 0. You tried to launch the code in a funny way?\n");
         return 1;
     }
-    if (find_program_directory(argv[0]))
-    {   fprintf(stderr, "Unable to identify program name and directory\n");
+    if ((i = find_program_directory(argv[0])) != 0)
+    {   fprintf(stderr, "Unable to identify program name and directory (%d)\n", i);
         return 1;
     }
     texmacs_mode = 0;
@@ -1716,7 +1716,7 @@ void process_file_name(char *filename, const char *old, size_t n)
         }
     }
 #else // WIN32
-#ifdef __APPLE__
+#if defined __APPLE__ && !defined EMBEDDED
 //
 // For MacOS the issue of "aliases" arises. The "preferred" file system
 // is HFS+ and that supports both links and aliases, but at the very least
@@ -1903,17 +1903,16 @@ int Cmkdir(const char *s)
 
 #include <utime.h>
 
-#ifdef EMBEDDED
-#ifdef __ARM_EABI__
+#if defined EMBEDDED && defined __ARM_EABI__ && !defined __linux__
 
 void utime(const char *s, struct utimbuf *t);
 
-#endif // __ARM_EABI__
-#endif // EMBEDDED
+#endif // EMBEDDED etc
 
 void set_filedate(char *name, unsigned long int datestamp,
                   unsigned long int filetype)
 {
+#ifndef EMBEDDED
 #ifdef UTIME_TIME_T
     time_t tt[2];
 #else // UTIME_TIME_T
@@ -1931,6 +1930,7 @@ void set_filedate(char *name, unsigned long int datestamp,
     tt.actime = tt.modtime = t0;
 #endif // UTIME_TIME_T
     utime(name, &tt);
+#endif // EMBEDDED
 }
 
 void put_fileinfo(date_and_type *p, char *name)
@@ -2746,13 +2746,13 @@ int get_users_home_directory(char *b, size_t len)
 #endif // DO_NOT_USE_GETUID
 
 #ifdef EMBEDDED
-#ifdef __ARM_EABI__
+#if defined __ARM_EABI__ && !defined __linux__
 
     int rmdir(const char *s)
     {   return 0;
     }
 
-    char *getcwd(char *s, size_t n)
+    const char *getcwd(char *s, size_t n)
     {   return ".";
     }
 

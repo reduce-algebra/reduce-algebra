@@ -185,6 +185,8 @@ static int submain(int argc, char *argv[])
     const char *nargv[5];
     int rc;
 
+    printf("Start of demo of embedded driver\n");
+
     sprintf(imageName, "%s/reduce.img", programDir);
     nargv[0] = argv[0];
     nargv[1] = "-i";

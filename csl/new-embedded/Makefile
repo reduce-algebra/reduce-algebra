@@ -18,30 +18,48 @@
 # You should go either "make reduce" or "make minireduce" first to create
 # the version of "reduce.img" that interests you.
 
+# Here I always use gcc. If by default it gives me a 32-bit world
+# then I use it simply. In not I will give it the flag "-m32" which may
+# not always be supported but is by best bet. Those who wish to use other
+# compilers etc need to make their own adjustments!
+
+SIZE:=$(shell g++ checksize.cpp -o checksize && ./checksize 2>&1)
+ifeq ($(findstring [[4]],$(SIZE)), [[4]])
+CFLAGS=
+else
+CFLAGS=-m32
+endif
+
 .PHONY:	reduce
 reduce: lib/libcrlibm.a lib/libsoftfloat.a
-	cd reduce-image && make reduce.img && cp reduce.img ..
+	cd reduce-image && \
+		make CFLAGS=$(CFLAGS) reduce.img && \
+		cp reduce.img ..
 
 lib/libcrlibm.a:
 	mkdir -p crlibm
-	cd crlibm && CFLAGS=-m32 `pwd`/../../../libraries/crlibm/configure --prefix=`pwd`/..
+	cd crlibm && CFLAGS=$(CFLAGS) \
+		`pwd`/../../../libraries/crlibm/configure --prefix=`pwd`/..
 	cd crlibm && make install
 
 lib/libsoftfloat.a:
 	mkdir -p softfloat
-	cd softfloat && CFLAGS=-m32 `pwd`/../../../libraries/SoftFloat-3a/source/configure --prefix=`pwd`/..
+	cd softfloat && CFLAGS=$(CFLAGS) \
+		`pwd`/../../../libraries/SoftFloat-3a/source/configure --prefix=`pwd`/..
 	cd softfloat && make install
 
 .PHONY:	minireduce
 minireduce:	lib/libcrlibm.a lib/libsoftfloat.a
-	cd minireduce-image && make reduce.img && cp reduce.img ..
+	cd minireduce-image && \
+		make CFLAGS=$(CFLAGS) reduce.img && \
+		cp reduce.img ..
 
 # So far I provide only one sample. I call it "proc" and it illustrates
 # a procedural interface into Reduce.
 
 .PHONY:	proc
 proc:	lib/libcrlibm.a lib/libsoftfloat.a reduce.img
-	cd procedural && make
+	cd procedural && make CFLAGS=$(CFLAGS)
 
 # If you go "make proc" without having gone either "make reduce" or
 # "make minireduce" first it will default to the full build

@@ -9,7 +9,7 @@
 # virtual machine and use that.
 
 CC=g++
-CFLAGS=-m32 -O2 -I. -I../include -L../lib \
+CPPFLAGS=$(CFLAGS) -O2 -I. -I../include -L../lib \
     -DPAGE_BITS=19 -DHAVE_CONFIG_H=1 \
     -DHAVE_CRLIBM=1 -DEMBEDDED=1
 
@@ -27,7 +27,7 @@ reduce:		arith01.o arith02.o arith03.o arith04.o arith05.o \
 		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o cslgc.o \
 		preserve.o print.o restart.o sysfwin.o termed.o \
 		inthash.o serialize.o stubs.o
-	$(CC) $(CFLAGS) arith01.o arith02.o arith03.o arith04.o arith05.o \
+	$(CC) $(CPPFLAGS) arith01.o arith02.o arith03.o arith04.o arith05.o \
 		arith06.o arith07.o arith08.o arith09.o arith10.o \
 		arith11.o arith12.o arith13.o arith14.o bytes.o char.o \
 		csl.o cslmpi.o cslread.o eval1.o eval2.o eval3.o \
@@ -37,7 +37,7 @@ reduce:		arith01.o arith02.o arith03.o arith04.o arith05.o \
 		-lcrlibm -lsoftfloat -lm -o reduce
 
 .cpp.o:                                                                          <
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) -c -o $@ $<
 
 # Create the reduce.img file
 
@@ -47,7 +47,7 @@ reduce.img:	reduce
 		-D@srcdir=$(S) -D@reduce=$(R) -o reduce.img -- image.log
 
 make-image:	../make-image.cpp
-	$(CC) $(CFLAGS) ../make-image.cpp -o make-image
+	$(CC) $(CPPFLAGS) ../make-image.cpp -o make-image
 
 image.cpp:	make-image reduce.img
 	./make-image

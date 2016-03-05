@@ -114,7 +114,7 @@
 %(dvfsf         "redlog/dvfsf"                               csl psl)
 %(acfsf         "redlog/acfsf"                               csl psl)
 %(dcfsf         "redlog/dcfsf"                               csl psl)
- (geometry      "geometry"                                   csl psl)
+%(geometry      "geometry"                                   csl psl)
 %(ibalp         "redlog/ibalp"          test                 csl psl)
 %(pasf          "redlog/pasf"           test                 csl psl)
 %(qqe           "redlog/qqe"                                 csl psl)

@@ -3477,8 +3477,8 @@ int main(int argc, const char *argv[])
 int ENTRYPOINT(int argc, const char *argv[])
 {   int res;
 #ifdef EMBEDDED
-    if (find_program_directory(argv[0]))
-    {   fprintf(stderr, "Unable to identify program name and directory\n");
+    if ((res = find_program_directory(argv[0])) != 0)
+    {   fprintf(stderr, "Unable to identify program name and directory (%d)\n", res);
         return 1;
     }
 #endif
