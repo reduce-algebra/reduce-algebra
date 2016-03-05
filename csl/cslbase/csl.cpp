@@ -3950,6 +3950,7 @@ int PROC_lisp_eval()
     C_stackbase = (LispObject *)&sp;
 #endif
     if (procstack == nil) return 1; // stack is empty
+Lprint(nil, qcar(procstack)); // @@@  
     w = Ceval(qcar(procstack), nil);
     nil = C_nil;
     if (exception_pending())

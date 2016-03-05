@@ -107,6 +107,23 @@ static void display(PROC_handle p)
 
 #define E(x) if (rc=(x)) return (rc*1000000 + __LINE__)
 
+int obey_lisp_from_string(const char *s)
+{   int rc;
+    E(PROC_push_string(s));
+// Turn the string into a list of characters (omitting the quote marks)
+    E(PROC_make_function_call("explodec",1));
+// In CSL "compress" is "read-from list"
+    E(PROC_make_function_call("compress",1));
+// The above is code that constructs something to evaluate, so I need
+// double evaluation to get anything to happen!
+    E(PROC_make_function_call("eval",1));
+// Now evaluate the expression I have built.
+    E(PROC_lisp_eval());
+// EVAL leaves a result on the stack - I do not need it.
+    E(PROC_pop());
+    return 0; // success here
+}
+
 int testcase()
 {   PROC_handle p;
     int rc;
@@ -157,21 +174,7 @@ int testcase()
 // initial string contains pretty well arbitrary Lisp stoff. This represents
 // a pretty-well absolute escape scheme and I hope it is not used at all
 // often.
-    E(PROC_push_string("(dotimes (i 6) (print (times i i i)))"));
-    E(PROC_make_function_call("quote",1));
-// Turn the string into a list of characters (omitting the quote marks)
-    E(PROC_make_function_call("print",1));
-    E(PROC_make_function_call("explodec",1));
-// In CSL "compress" is "read-from list"
-    E(PROC_make_function_call("compress",1));
-    E(PROC_make_function_call("print",1));
-// Now evaluate it.
-    E(PROC_dup());
-    display(PROC_get_value());
-    E(PROC_lisp_eval());
-    display(PROC_get_value());
-// Evaluation leaves the (unwanted) result on the top of the stack.
-//    E(PROC_pop());
+    E(obey_lisp_from_string("(dotimes (i 7) (print (times i i i i)))"));
     return 0;
 }
 
