@@ -1247,7 +1247,7 @@ symbolic procedure fancy!-adjust!-bkt!-levels u;
 
 symbolic procedure fancy!-exptpri(l,p);
 % Prints expression in an exponent notation.
-   (begin scalar !*list,pp,q,w,w1,w2,pos,tpos,fl;
+   (begin scalar !*list,pp,w,w1,w2,pos,tpos,fl;
       pos:=fancy!-pos!*; tpos:=fancy!-texpos; fl:=fancy!-line!*;
       w1 := cadr l; w2 := caddr l;
       pp := eqcar(w1, 'quotient) or
@@ -1261,7 +1261,9 @@ symbolic procedure fancy!-exptpri(l,p);
           then w2 := list('minus,list(car w2,cadadr w2,caddr w2))
           else w2 := negnumberchk w2;
       if pp then <<
-          if fancy!-in!-brackets({'fancy!-maprint, mkquote w1,mkquote q},
+          if fancy!-in!-brackets({'fancy!-maprint,
+                                   mkquote w1,
+                                   get('expt,'infix)},
                                  '!(, '!))='failed
             then return fancy!-fail(pos,tpos,fl) >>
       else if fancy!-maprint(w1,get('expt,'infix))='failed
