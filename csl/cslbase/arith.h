@@ -314,13 +314,20 @@ typedef struct _float256_t
 extern "C" void f256M_mul(
     const float256_t *x, const float256_t *y, float256_t *z);
 
-extern "C" float256_t f256_1, f256_10, f256_r10;
+extern "C" float256_t f256_1, f256_10, f256_r10, f256_5, f256_r5;
 
-extern "C" void f128M_print_E(int width, int precision, float128_t *p);
-extern "C" void f128M_print_F(int width, int precision, float128_t *p);
-extern "C" void f128M_print_G(int width, int precision, float128_t *p);
+// These print 128-bit floats in teh various standard styles, returning the
+// number of characters used. The "sprint" versions put their result in
+// a buffer, while "print" goes to stdout.
 
+extern "C" int f128M_sprint_E(char *s, int width, int precision, float128_t *p);
+extern "C" int f128M_sprint_F(char *s, int width, int precision, float128_t *p);
+extern "C" int f128M_sprint_G(char *s, int width, int precision, float128_t *p);
+extern "C" int f128M_print_E(int width, int precision, float128_t *p);
+extern "C" int f128M_print_F(int width, int precision, float128_t *p);
+extern "C" int f128M_print_G(int width, int precision, float128_t *p);
 
+extern "C" float128_t atof128(const char *s);
 
 #endif // header_arith_h
 

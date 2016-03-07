@@ -1,7 +1,11 @@
 //  arith14.cpp                                Copyright (C) 2016 Codemist
 
 //
-// Support for 128-bit floats
+// Support for 128-bit floats using the SoftFloat-3a package - this
+// provides some additional low level primitives that I want (eg tests for
+// infinities and NaNs), and then implements conversion to and from
+// character strings. To get the conversions accurate there is skeletal
+// support for 256-bit "float128-float128" arithmetic.
 //
 
 /**************************************************************************
@@ -45,29 +49,35 @@
 
 float128_t f128_0      = {0, 0x0000000000000000},
            f128_1      = {0, 0x3fff000000000000},
+           f128_10_16  = {0, 0x40341c37937e0800},
            f128_10_17  = {0, 0x40376345785d8a00},
            f128_10_18  = {0, 0x403abc16d674ec80},
            f128_N1     = {0, 0x4fff000000000000}; // 2^4096
 
 float256_t f256_1      = {{0,0}, {0, 0x3fff000000000000}},         //@
+           f256_5      = {{0,0}, {0, 0x4001400000000000}},
            f256_10     = {{0,0}, {0, 0x4002400000000000}},
+           f256_r5     = {{0x3333333333333333, 0x3f8b333333333333},
+                          {0x9999999999999999, 0x3ffc999999999999}},
            f256_r10    = {{0x3333333333333333, 0x3f8a333333333333},
                           {0x9999999999999999, 0x3ffb999999999999}};
 #else
 
 float128_t f128_0      = {0x0000000000000000, 0},
            f128_1      = {0x3fff000000000000, 0},
+           f128_10_16  = {0x40341c37937e0800, 0},
            f128_10_17  = {0x40376345785d8a00, 0},
            f128_10_18  = {0x403abc16d674ec80, 0},
            f128_N1     = {0x4fff000000000000, 0};
 
 float256_t f256_1      = {{0x3fff000000000000, 0}, {0,0}},         //@
+           f256_5      = {{0x4001400000000000, 0}, {0,0}},
            f256_10     = {{0x4002400000000000, 0}, {0,0}},
+           f256_r5     = {{0x3ffc999999999999, 0x9999999999999999},
+                          {0x3f8b333333333333, 0x3333333333333333}},
            f256_r10    = {{0x3ffb999999999999, 0x9999999999999999},
                           {0x3f8a333333333333, 0x3333333333333333}};
 #endif
-
-
 
 bool f128M_zero(const float128_t *p)
 {
@@ -320,7 +330,7 @@ static void f256M_pow(const float256_t *x, unsigned int n, float256_t *y)
 
 
 // This converts a number from foating point to character representation.
-// The reult is true if the original number was nagative, and *pdecexp gets
+// The reult is true if the original number was negative, and *pdecexp gets
 // the decimal exponent. The buffer s is filled with 34 digits (or one of the
 // strings "inf" or "nan" plus a terminating nul.In a printed representation
 // these digits need displaying as [-]d.dddddddddExxx
@@ -383,14 +393,27 @@ bool f128M_sprint(char *s, float128_t *p, int *pdecexp)
     int decexp = 0;
     if (d_decexp >= 18.0)
     {   float256_t w3;
-// multiply by a power of 0.1
-        f256M_pow(&f256_r10, decexp = (int)(d_decexp-17.0), &w3);
+// multiply by a power of 0.1. Note that the largest possible finite number
+// is around 1.19e4932 and to scale that down to 10^17 or so involves
+// multiplying by a number where which is about 10^17 times as big as
+// the smallest normaised number. But in the double-double representation
+// in use here that would mean that its low half could be sub-normal, and so
+// I do the division as (n/5^K)/2^K where the scaling by a power of 2
+// is certainly safe.
+        f256M_pow(&f256_r5, decexp = (int)(d_decexp-17.0), &w3);
+        f128M_ldexp(&w3.hi, -decexp);
+        f128M_ldexp(&w3.lo, -decexp);
         f256M_mul(&w1, &w3, &w2);
     }
     else if (d_decexp < 17.0)
     {   float256_t w3;
-// multiply by a power of 10.0
-        f256M_pow(&f256_10, decexp = (int)(18.0-d_decexp), &w3);
+// multiply by a power of 10.0. Well this could cause overflow issues
+// if the number I am trying to print is really tiny. To avoid that instead
+// of multiplying by 10^K I will multiply by 5^K (not risking anything at
+// all bad) and then increment the exponent by K. 
+        f256M_pow(&f256_5, decexp = (int)(18.0-d_decexp), &w3);
+        f128M_ldexp(&w3.hi, decexp);
+        f128M_ldexp(&w3.lo, decexp);
         decexp = -decexp;
         f256M_mul(&w1, &w3, &w2);
     }
@@ -403,7 +426,7 @@ bool f128M_sprint(char *s, float128_t *p, int *pdecexp)
 // high part of a float256_t is rounded properly.
 //  printf("near 1.0: %.16" PRIx64 " %.16" PRIx64 " %.16" PRIx64 " %.16" PRIx64 "\n",
 //          w2.hi.v[0], w2.hi.v[1], w2.lo.v[0], w2.lo.v[1]);
-// While hi<1.0e17 or (hi==1.0e17 && lo<0.0) ...
+// while hi<1.0e17 or (hi==1.0e17 && lo<0.0) ...
     while (f128M_lt(&w2.hi, &f128_10_17) ||
            (f128M_eq(&w2.hi, &f128_10_17) &&
             f128M_lt(&w2.lo, &f128_0)))
@@ -450,7 +473,7 @@ void f128M_print(float128_t *p)
     int decexp;
     bool neg = f128M_sprint(s, p, &decexp);
     if (!isdigit(s[0])) printf("%s%s\n", neg ? "-" : "", s);
-    else printf("%s%c.%sQ%d\n", neg ? "-" : "", s[0], &s[1], decexp);
+    else printf("%s%c.%sL%d\n", neg ? "-" : "", s[0], &s[1], decexp);
 }
 
 // This rounds the number in the buffer to have ndigits after where the
@@ -483,101 +506,321 @@ static bool round_at(char *s, int ndigits)
         }
         s[p--] = '0';  // need to carry.
     }
-// If I haev dropped out of the loop it means that I have rounded an
+// If I have dropped out of the loop it means that I have rounded an
 // initial '9' up.
     s[0] = '1';        // the remaining relevant digits will all be '0' here.
     return true;
 }
 
-static void pad_by(int n, int filler='#')
+// This is used to put in blanks to fill to the specified width.
+
+static char *pad_by(char *r, int n)
 {
-    while (n-- > 0) putchar(filler);
+    while (n-- > 0) *r++ = ' ';
+    *r = 0;
+    return r;
+}
+
+// This is used to insert a string of '0' chararacters.
+
+static char *pad_by_zero(char *r, int n)
+{
+    if (n > 12) r += sprintf(r, "000{%d}000", n);
+    else while (n-- > 0) *r++ = '0';
+    *r = 0;
+    return r;
 }
 
 // Print using "e" format
 
-void f128M_print_E(int width, int prec, float128_t *p)
-{   char s[36];
+int f128M_sprint_E(char *r, int width, int prec, float128_t *p)
+{   char s[36], *original_r = r;
     int decexp;
     bool sign = f128M_sprint(s, p, &decexp);
+// I limit the requested precision to 9999 so that the {NNNN} abbreviations
+// only ever need 4 digits. A precision less than 1 can not make sense.
     if (prec < 1) prec = 1;
+    else if (prec > 9999) prec = 9999;
     if (sign) width--;
     if (!isdigit(s[0]))
-    {   pad_by(width-strlen(s));
-        if (sign) putchar('-');
-        fputs(s, stdout);
+    {   r = pad_by(r, width-strlen(s));
+        if (sign) *r++ = '-';
+        strcpy(r, s);
+        return (r - original_r) + strlen(r);
     }
     else
     {   char ebuf[8];
         if (round_at(s, prec)) decexp++;
 // I format the exponent so I can see how many characters that uses.
         width -= sprintf(ebuf, "e%02d", decexp);
-        pad_by(width - prec - 1);
+        r = pad_by(r, width - prec - 1);
         if (prec >= 34)
-        {   printf("%c.%.33s", s[0], &s[1]);
-            pad_by(prec-33, '0');
-            fputs(ebuf, stdout);
+        {   r += sprintf(r, "%c.%.33s", s[0], &s[1]);
+            r = pad_by_zero(r, prec-33);
+            strcpy(r, ebuf);
+            r += strlen(r);
         }
-        else printf("%c.%.*s%s", s[0], prec-1, &s[1], ebuf);
+        else r += sprintf(r, "%c.%.*s%s", s[0], prec-1, &s[1], ebuf);
     }
+// The longest possible output here will be along the lines of
+//  -1.123456789012345678901234567890123000{NNNN}000e-NNNN
+// ie 54 chars plus the terminating '\0'. Well if width is greater
+// then 54 this can be left-padded with blanks up to width.
+    return r - original_r;
 }
 
-// This will be for "F" format. At present it is merely a copy of the "E"
-// format code!
+int f128M_print_E(int width, int prec, float128_t *p)
+{   char buffer[64];
+    int r = 0;
+    while (width > 63)
+    {   putchar(' ');
+        r++;
+        width--;
+    }
+// Oh dear - if prec is huge this may display something like
+//      1.000...000E12
+// with a HUGE number of zeros, swamping the buffer. Well that pain is
+// avoided by having f128M_sprint arrange to insert {NNNN} in place of
+// long strings of zeros...
+    r += f128M_sprint_E(buffer, width, prec, p);
+    fputs(buffer, stdout);
+    return r;
+}
 
-void f128M_print_F(int width, int prec, float128_t *p)
-{   char s[36];
+
+// This will be for "F" format.
+
+int f128M_sprint_F(char *r, int width, int prec, float128_t *p)
+{   char s[36], *original_r = r;
     int decexp;
     bool sign = f128M_sprint(s, p, &decexp);
-    if (prec < 1) prec = 1;
+    if (prec < 0) prec = 0;
+    else if (prec > 9999) prec = 9999;
     if (sign) width--;
+// Infinities and NaNs are displayed with scant regard to the requested
+// precision, but the do honour the width request.
     if (!isdigit(s[0]))
-    {   pad_by(width-strlen(s));
-        if (sign) putchar('-');
-        fputs(s, stdout);
+    {   r = pad_by(r, width-strlen(s));
+        if (sign) *r++ = '-';
+        strcpy(r, s);
+        return (r - original_r) + strlen(r);
     }
+// The "F" print format is basically abominable in that it can lead to
+// absurdly long output. There are three bad cases
+// (1)    %9999.2F           generates a silly number of leading blanks
+// (2)    %.2F in 1.23e1234  has to display >1K chars before the "."
+// (3)    %.9999F            has to generate many chars after the "."
+// I will take the view that for sprint the first of these is something that
+// the user has done and they know how big a buffer to provide - so I view
+// it as not terribly much of a problem. For the other two I will introduce
+// an abbreviation so that long strings of "0" characters can be mapped to
+// appear as "000{1234}000" with the section with brackes denoting that
+// man digits. I will then limit widths to be no greater than 9999 so I
+// only need 4 digits. I will use this whenever there would otherwise have
+// been a string of more than 12 '0' chars inserted.
+// I think that makes the longest possible output something like
+// -1234567890123456789012345678901234000{NNNN}000.000{NNNN}000
+// or maybe
+// -0.000{NNNN}0001234567890123456789012345678901234000{NNNN}000
+// which I make 61 characters (plus the terminating '\0').
+//
+// I have several cases to consider here:
+// decexp >= 34
+//     nnnnnn[00000000000].[0000]       no rounding
+//      (34)  (decexp-33)  (prec)
+//
+// decexp < 34 && decexp >= 0 && prec > 34-decexp
+//     nnnnnnnnnn.nnnnnnnnnnn[000000]   no rounding
+//     (decexp+1) (33-decexp) (prec+decexp-33)
+//
+// As above with prec smaller
+//     nnnnnnnnnn.nnnnnnn               round at decexp+prec+1
+//     (decexp+1)  (prec)
+//
+// decexp < 0 && prec+decexp+1 <= 34
+//     0.[0000000000]nnnnnnnnnnnnnn     round at prec+decexp+1
+//       (-decexp-1) (prec+decexp+1)
+//
+// decexp < 0, prec bigger
+//     0.[0000000000]nnnnnn[0000000000000000]   no rounding
+//       (-decexp-1)  (34)  (prec+decexp-33)
     else
-    {   char ebuf[8];
-        if (round_at(s, prec)) decexp++;
-// I format the exponent so I can see how many characters that uses.
-        width -= sprintf(ebuf, "e%02d", decexp);
-        pad_by(width - prec - 1);
-        if (prec >= 34)
-        {   printf("%c.%.33s", s[0], &s[1]);
-            pad_by(prec-33, '0');
-            fputs(ebuf, stdout);
+    {   if (round_at(s, decexp+prec)) decexp++;
+        if (decexp >= 34)
+        {   r += sprintf(r, "%.34s", s);
+            r = pad_by_zero(r, decexp-33);
+            *r++ = '.';
+            r = pad_by_zero(r, prec);
         }
-        else printf("%c.%.*s%s", s[0], prec-1, &s[1], ebuf);
+        else if (decexp >= 0)
+        {   r += sprintf(r, "%.*s.%.*s",
+                decexp+1, s, 33-decexp, &s[decexp+1]);
+           r = pad_by_zero(s, prec+decexp-33);
+        }
+        else if (prec+decexp+1 <= 34)
+        {   r += sprintf(r, "0.");
+            r = pad_by_zero(r, -decexp-1);
+            r += sprintf(r, "%.*s", prec+decexp+1, s);
+        }
+        else
+        {   r += sprintf(r, "0.");
+            r = pad_by_zero(r, -decexp-1);
+            r += sprintf(r, "%.34s", s);
+            r = pad_by_zero(r, prec+decexp-33);
+        }
     }
+    return r - original_r;
 }
+
+int f128M_print_F(int width, int prec, float128_t *p)
+{   char buffer[64];
+    int r = 0;
+    while (width > 63)
+    {   putchar(' ');
+        r++;
+        width--;
+    }
+    r += f128M_sprint_F(buffer, width, prec, p);
+    fputs(buffer, stdout);
+    return r;
+}
+
 
 // Finally for "G" format.
 
-void f128M_print_G(int width, int prec, float128_t *p)
+int f128M_sprint_G(char *r, int width, int prec, float128_t *p)
 {   char s[36];
     int decexp;
-    bool sign = f128M_sprint(s, p, &decexp);
+// This implementation does the conversion twice, which is clumsy.  It also
+// makes its choice as between use of E and F format before rounding. This
+// letter could hurt when printing 9.99999e3 in precision 3. Here the
+// exponent and precision are both 3 so F format will be used, asking for
+// no digits beyond the decimal point. This asks the F printer to print
+// as 999.[999] and I expect it will round this to 1000. which ought to
+// have been rendered as 1.e03.
+    f128M_sprint(s, p, &decexp);
     if (prec < 1) prec = 1;
-    if (sign) width--;
-    if (!isdigit(s[0]))
-    {   pad_by(width-strlen(s));
-        if (sign) putchar('-');
-        fputs(s, stdout);
-    }
-    else
-    {   char ebuf[8];
-        if (round_at(s, prec)) decexp++;
-// I format the exponent so I can see how many characters that uses.
-        width -= sprintf(ebuf, "e%02d", decexp);
-        pad_by(width - prec - 1);
-        if (prec >= 34)
-        {   printf("%c.%.33s", s[0], &s[1]);
-            pad_by(prec-33, '0');
-            fputs(ebuf, stdout);
-        }
-        else printf("%c.%.*s%s", s[0], prec-1, &s[1], ebuf);
-    }
+    else if (prec > 9999) prec = 9999;
+// I should call the E or F printer routines and then trim trailing zeros
+// etc here... I may come back to that later.
+    if (decexp < -4 || decexp > prec)
+        return f128M_sprint_E(r, width, prec, p);
+    else return f128M_sprint_F(r, width, prec-decexp, p);
 }
 
+int f128M_print_G(int width, int prec, float128_t *p)
+{   char buffer[64];
+    int r = 0;
+    while (width > 63)
+    {   putchar(' ');
+        r++;
+        width--;
+    }
+    r += f128M_sprint_G(buffer, width, prec, p);
+    fputs(buffer, stdout);
+    return r;
+}
+
+// I also want to be able to read float128_t values...
+
+float128_t atof128(const char *s)
+{   int x = 0;
+    bool sign = false, seen = false, dotseen = false;
+    uint64_t z[3];
+    int nz = 0, n = 0;
+    z[0] = z[1] = z[2] = 0;
+    if (*s == '+') s++;
+    else if (*s == '-')
+    {   sign = true;
+        s++;
+    }
+// To start with I will collect 3 chunks each of 16 decimal digits.
+    while (*s != 0)
+    {   int c = *s++;
+        if (c == '.')
+        {   dotseen = true;
+            continue;
+        }
+        if (!seen && c == '0')
+        {   if (dotseen) x--;
+            continue;
+        }
+        seen = true;
+        if (!isdigit(c)) break; // probably exponent marker.
+        if (nz < 3) z[nz] = 10*z[nz] + (c - '0');
+        if (!dotseen) x++;
+        if (++n == 16)
+        {   nz++;
+            n = 0;
+        }
+    }
+    switch (nz)
+    {
+    case 0: if (!dotseen) x += 16;
+    case 1: if (!dotseen) x += 16;
+    case 2:
+        while (++n != 17)
+        {   z[nz] *= 10;
+            if (!dotseen) x++;
+        }
+    default:
+        break;
+    }
+// Now my number is {z[0], z[1], z[2]} with in base 10^16, with x digits
+// of that after the decimal point.
+    s--; // move back to re-investigate the char that ended the mantissa
+    switch (*s)
+    {
+// I allow all even slightly plausible exponent signifiers.
+    case 'e': case 'E':
+    case 's': case 'S':
+    case 'f': case 'F':
+    case 'd': case 'D':
+    case 'l': case 'L':
+        s++;
+// atoi() would allow whitespace after the exponent signifier and before
+// the exponent itself.
+        x += atoi(s);
+    default:
+        break;
+    }
+// Where I am now is that I have z[0]:z[1] . z[2] where each digit is
+// 16 decimals. The bit before the "." will be exactly representable as
+// an integer in the 128-bit format. 
+    printf("atof128 %.16" PRId64 " %.16" PRId64 " %.16" PRId64 " E%d\n",
+       z[0], z[1], z[2], x);
+    float128_t u, v, w;
+    ui64_to_f128M(z[0], &u);
+    f128M_mul(&u, &f128_10_16, &v);
+    ui64_to_f128M(z[1], &u);
+    f128M_add(&u, &v, &w);
+    ui64_to_f128M(z[2], &u);
+    f128M_div(&u, &f128_10_16, &v);
+    printf("w: "); f128M_print_E(0, 35, &w); printf("\n");
+    printf("v: "); f128M_print_E(0, 35, &v); printf("\n");
+// Now (w,v) are a pair of 128-bit floats that can be viewed as a 256-bit
+// value which just needs scaling by 10^(x-32) to get my final result.
+    float256_t j, k, l;
+    j.hi = w;
+    j.lo = v;
+    if (x >= 32)
+    {   f256M_pow(&f256_5, x-32, &k);
+        f128M_ldexp(&k.hi, x-32);
+        f128M_ldexp(&k.lo, x-32);
+    }
+    else
+    {   f256M_pow(&f256_r5, 32-x, &k);
+        f128M_ldexp(&k.hi, x-32);
+        f128M_ldexp(&k.lo, x-32);
+    }
+    f256M_mul(&j, &k, &l);
+    float128_t r;
+    f128M_add(&l.hi, &l.lo, &r);
+    if (sign) f128M_negate(&r);
+    printf("Final: "); f128M_print_E(0, 35, &r); printf("\n");
+    printf("Final: "); f128M_print_F(0, 45, &r); printf("\n");
+    printf("Final: "); f128M_print_G(0, 40, &r); printf("\n");
+    return r;
+}
 
 // end of arith14.cpp

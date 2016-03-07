@@ -98,34 +98,15 @@
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
 #else
-//
-// If <inttypes.h> is not available I will try some things that probably
-// work on the most common gcc systems but which may need more work on
-// other platforms.
-//
-#if defined __x86_64 || (defined __SIZEOF_PTRDIFF_T__ && __SIZEOF_PTRDIFF_T__ == 8)
-#define PRIdPTR "lld"
-#define PRIuPTR "llu"
-#define PRIxPTR "llx"
-#else
-#define PRIdPTR "d"
-#define PRIuPTR "u"
-#define PRIxPTR "x"
-#endif
+// I am also going to rely on correctness including on the 64-bit mingw
+// compilers where at one stage I had to do special things here to work
+// around a temporary issue that related to their use of the Microsoft
+// C libraries rather than the GNU ones.
+#error inttypes.h is now required for building CSL
 #endif
 
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-#endif
-
-#ifdef WIN64
-// The mingw64 build that I use seems to get messed up by cinttypes
-#undef PRIdPTR
-#undef PRIuPTR
-#undef PRIxPTR
-#define PRIdPTR "lld"
-#define PRIuPTR "llu"
-#define PRIxPTR "llx"
 #endif
 
 #ifndef UNDER_CE

@@ -320,7 +320,7 @@ static LispObject Lsilent_system(LispObject nil, LispObject a)
 // its console hidden - but it does not give an opportunity to wait until
 // the command that was executed has completed. I will leave this code
 // here for now since I may find I want to re-use it (eg for opening
-// documents). But the code bwlow that explicitly creates a process is
+// documents). But the code below that explicitly creates a process is
 // what I reaaly need here.
 //
     i = 0;
@@ -467,15 +467,13 @@ LispObject intern(int len, bool escaped)
 //
 {   int i, numberp = escaped ? -1 : 0;
     int fplength = 2;
-#ifdef COMMON
     int explicit_fp_format = 0;
-#endif
     LispObject nil = C_nil;
     stackcheck0(0);
     for (i=0; i<len; i++)
     {   int c = boffo_char(i);
         switch (numberp)
-    {       default:
+        {   default:
                 break;
             case 0:
                 if (c == '+' || c == '-')
@@ -502,41 +500,35 @@ LispObject intern(int len, bool escaped)
                     case '.':   numberp = 5;    continue;
                     case 'e': case 'E':
 //
-// in CSL mode I will read all floating point numbers as if they had been
-// double-precision, so I disable recognition of s,f,d and l exponent
-// markers and force the length. In Common Lisp mode I have to look at the
-// value of *read-default-float-format* to see what to do.
+// I now allow various exponent signifiers as per Common Lisp:
+//   1.23e34    default (which is usually double)
+//   1.23s34    short float - 28 bits
+//   1.23f34    single float - 32 bits
+//   1.23d34    double float - 64 bits
+//   1.23l34    long float - 128 bits
 //
                         numberp = 9;
                         continue;
                     case 's': case 'S':
                         boffo_char(i) = 'e';
-#ifdef COMMON
                         explicit_fp_format = 1;
-#endif
                         fplength = 0;
                         numberp = 9;
                         continue;
                     case 'f': case 'F':
                         boffo_char(i) = 'e';
-#ifdef COMMON
                         explicit_fp_format = 1;
-#endif
                         fplength = 1;
                         numberp = 9;
                         continue;
                     case 'd': case 'D':
                         boffo_char(i) = 'e';
-#ifdef COMMON
                         explicit_fp_format = 1;
-#endif
                         numberp = 9;
                         continue;
                     case 'l': case 'L':
                         boffo_char(i) = 'e';
-#ifdef COMMON
                         explicit_fp_format = 1;
-#endif
                         fplength = 3;
                         numberp = 9;
                         continue;
@@ -564,34 +556,26 @@ LispObject intern(int len, bool escaped)
                         numberp = 9;
                         continue;
                     case 's': case 'S':
-                        // Clobbering the string is a DISASTER if it is not in fact numeric
+// Clobbering the string is a DISASTER if it is not in fact numeric
                         boffo_char(i) = 'e';
-#ifdef COMMON
                         explicit_fp_format = 1;
-#endif
                         fplength = 0;
                         numberp = 9;
                         continue;
                     case 'f': case 'F':
                         boffo_char(i) = 'e';
-#ifdef COMMON
                         explicit_fp_format = 1;
-#endif
                         fplength = 1;
                         numberp = 9;
                         continue;
                     case 'd': case 'D':
                         boffo_char(i) = 'e';
-#ifdef COMMON
                         explicit_fp_format = 1;
-#endif
                         numberp = 9;
                         continue;
                     case 'l': case 'L':
                         boffo_char(i) = 'e';
-#ifdef COMMON
                         explicit_fp_format = 1;
-#endif
                         fplength = 3;
                         numberp = 9;
                         continue;
@@ -683,8 +667,11 @@ LispObject intern(int len, bool escaped)
 // Beware bignum issue here... but take view that ratios are not used!
 // I think I am expressing concern that a this ONLY deals with rational
 // number input where both numerator and denominator are small enough to
-// end up as fixnums, and it does not check for overflow. Thius 22/7 will
-// be OK but 12345678987654321/3 will not.
+// end up as fixnums, and it does not check for overflow. Thus 22/7 will
+// be OK but 12345678987654321/3 will not. This is laziness I guess and
+// some time ideally I would come and fix this so it uses the same
+// strategy as used for bignums to read ratios with big numerators and/or
+// denominators.
 //
             boffo_char(boffop) = 0;
 // p and q were made int not int32_t to match up with the %d in scanf ...
@@ -715,6 +702,7 @@ LispObject intern(int len, bool escaped)
 // vector, but is only set up as such in COMMON mode.
 //
             float f;
+            float128_t ll;
 #ifdef COMMON
             if (!explicit_fp_format && is_symbol(read_float_format))
             {   LispObject w = qvalue(read_float_format);
@@ -725,18 +713,19 @@ LispObject intern(int len, bool escaped)
             }
 #endif
             boffo_char(boffop) = 0;
-            d = atof((char *)&boffo_char(0));
             switch (fplength)
             {
-#ifdef SHORT_FLOAT
                 case 0:
+#ifdef SHORT_FLOAT
                 {   Float_union ff;
-                    ff.f = (float)d;
+                    ff.f = (float)atof((char *)&boffo_char(0));
                     return TAG_SFLOAT + (ff.i & ~(int32_t)0xf);
                 }
+#else
+                printf("Short-float now turned into single\n");
 #endif
                 case 1:
-                    f = (float)d;
+                    f = (float)atof((char *)&boffo_char(0));
                     r = getvector(TAG_BOXFLOAT, TYPE_SINGLE_FLOAT,
                                   sizeof(Single_Float));
                     errexit();
@@ -744,19 +733,18 @@ LispObject intern(int len, bool escaped)
                     return r;
                 default:
                 case 2:
+                    d = atof((char *)&boffo_char(0));
                     r = getvector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT,
                                   SIZEOF_DOUBLE_FLOAT);
                     errexit();
                     double_float_val(r) = d;
                     return r;
                 case 3:
+                    ll = atof128((char *)&boffo_char(0));
                     r = getvector(TAG_BOXFLOAT, TYPE_LONG_FLOAT,
                                   SIZEOF_LONG_FLOAT);
                     errexit();
-                    {   union { float64_t fs; double f;} f;
-                        f.f = d;
-                        f64_to_f128M(f.fs, &long_float_val(r));
-                    }
+                    long_float_val(r) = ll;
                     return r;
             }
         }
@@ -3194,9 +3182,15 @@ static LispObject read_s(LispObject stream)
                     }
                 }
 // accept possible exponent
-                if (curchar == 'e' || curchar == 'E')
+                if (curchar == 'e' || curchar == 'E' ||
+// Extend syntax to support more exponent signifiers. This is a change so
+// that e.g "1.23D45" will now be parsed as one symbol not two.
+                    curchar == 's' || curchar == 'S' ||
+                    curchar == 'f' || curchar == 'F' ||
+                    curchar == 'd' || curchar == 'D' ||
+                    curchar == 'l' || curchar == 'L')
                 {   push(stream);
-                    packbyte('e');
+                    packbyte(curchar);
                     pop(stream);
                     curchar = getc_stream(stream);
                     errexit();

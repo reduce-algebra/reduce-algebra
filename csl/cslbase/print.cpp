@@ -1803,7 +1803,7 @@ static LispObject Lprint_precision(LispObject nil, LispObject a)
     if (a == nil) return onevalue(fixnum_of_int(old));
     if (!is_fixnum(a)) return aerror1("print-precision", a);
     print_precision = int_of_fixnum(a);
-    if (print_precision > 16 || print_precision < 1)
+    if (print_precision > 36 || print_precision < 1)
         print_precision = 15;
     return onevalue(fixnum_of_int(old));
 }
@@ -1915,6 +1915,69 @@ static void fp_sprint(char *buff, double x, int prec)
 // Three-digit exponent with leading zero gets trimmed here
     else if (*buff == '0' && *(buff+2) != 0) char_del(buff);
 }
+
+
+static void fp_sprint128(char *buff, float128_t x, int prec)
+{
+#ifdef DEBUG
+    volatile char *fullbuff = buff; // Useful for when running under a debugger
+    (void)fullbuff;
+#endif
+    if (f128M_eq(&x, &f128_0))
+    {   if (f128M_negative(&x)) strcpy(buff, "-0.0");
+        else strcpy(buff, "0.0");
+        return;
+    }
+    if (f128M_nan(&x))
+    {   strcpy(buff, "NaN");
+        return;
+    }
+    if (f128M_infinite(&x))
+    {   if (f128M_negative(&x)) strcpy(buff, "minusinf");
+        else strcpy(buff, "inf");
+        return;
+    }
+    if (f128M_negative(&x))
+    {   *buff++ = '-';
+        f128M_negate(&x);
+    }
+    f128M_sprint_G(buff, 0, prec, &x);
+
+printf("Raw printing gives \"%s\"\n", buff); // @@@
+
+// I rather hope that my own print routine is not degenerate so some of
+// these fix-ups are not necessary, but I will leave them in just to be
+// really safe.
+    if (*buff == '+') char_del(buff);      // Explicit "+" not wanted
+    if (*buff == '.') char_ins(buff, '0'); // turn .nn to 0.nn
+    else if (*buff == 'e')                 // turn Ennn to 0.0Ennn
+    {   char_ins(buff, '0');
+        char_ins(buff, '.');
+        char_ins(buff, '0');
+    }
+// Common Lisp can use "l" or "L" as the exponent marker in a long float,
+// so in the processing here I will detect "l" just in case at a later
+// stage I move to adopting that as a print convention.
+#define exponent_mark(c) ((c)=='e'||(c)=='l')
+    while (*buff != 0 && *buff != '.' && exponent_mark(*buff)) buff++;
+    if (*buff == 0 || exponent_mark(*buff))     // ddd to ddd.0
+    {   char_ins(buff, '0');            // and dddEnnn to ddd.0Ennn
+        char_ins(buff, '.');
+    }
+    while (*buff != 0 && exponent_mark(*buff)) buff++;
+    if (*(buff-1) == '.') char_ins(buff++, '0');// ddd. to ddd.0
+    while (*(buff-1) == '0' &&                  // ddd.nnn0 to ddd.nnn
+           *(buff-2) != '.') char_del(--buff);
+    if (*buff == 0) return; // no exponent mark present
+    buff++;
+    if (*buff == 0) strcpy(buff, "+e00");
+    else if (isdigit((unsigned char)*buff)) char_ins(buff, '+');
+    buff++;
+    if (*(buff+1) == 0) char_ins(buff, '0');
+    else if (*buff == '0' && *(buff+2) != 0) char_del(buff);
+}
+
+
 static int32_t local_gensym_count;
 
 //
@@ -3177,37 +3240,99 @@ restart:
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(u)))
             {   case TYPE_SINGLE_FLOAT:
-                    fp_sprint(my_buff, (double)single_float_val(u), print_precision);
+// The casts to "uint32_t *" here break the strict aliasing rules. If I was
+// more cautious I would use a union, which (I believe) would cause gcc (at
+// least) to guarantee to treat me kindly despite this. But even with that
+// I would be relying on behaviour not blessed by the current C++ standards.
+                    if (escaped_printing & escape_checksum)
+                    {   int32_t v = intfloat32_t_val(u);
+                        sprintf(my_buff, "@F%.8x", v);
+                    }
+                    else if (escaped_printing & escape_hex)
+                    {   uint32_t *p = (uint32_t *)&single_float_val(u);
+                        sprintf(my_buff, "{%.8" PRIx32 ":%#.8g}",
+                            p[0], single_float_val(u));
+                    }
+                    else if (escaped_printing & escape_octal)
+                    {   uint32_t *p = (uint32_t *)&double_float_val(u);
+                        sprintf(my_buff, "{%.11" PRIo32 ":%#.8g}",
+                                p[0], single_float_val(u));
+                    }
+                    else fp_sprint(my_buff, (double)single_float_val(u), print_precision);
                     break;
                 case TYPE_DOUBLE_FLOAT:
 //
 // Hexadecimal printing of floating point numbers is only provided for
 // here to help with nasty low-level debugging.  The output will not be
-// directly re-readable.  It is only provided for the (default) double-
-// precision numbers.  Use (prinhex ..) to activate it.
+// directly re-readable.
 //
-                    if (escaped_printing & escape_hex)
-                    {   uint32_t *p = (uint32_t *)((char *)u + 1);
-                        int q = current_fp_rep & FP_WORD_ORDER;
-                        sprintf(my_buff, "{%.8lx/%.8lx:%#.8g}",
-                                (long)(uint32_t)p[1-q],
-                                (long)(uint32_t)p[q],
-                                double_float_val(u));
+                    if (escaped_printing & escape_checksum)
+                    {   int64_t v = intfloat64_t_val(u);
+                        sprintf(my_buff, "@F%.8" PRIx64, v);
+                    }
+                    else if (escaped_printing & escape_hex)
+                    {   uint32_t *p = (uint32_t *)&double_float_val(u);
+                        int q = (current_fp_rep & FP_WORD_ORDER) ? 1 : 0;
+                        sprintf(my_buff, "{%.8" PRIx32 "/%.8" PRIx32 ":%#.15g}",
+                            p[1-q], p[q], double_float_val(u));
                     }
                     else if (escaped_printing & escape_octal)
-                    {   uint32_t *p = (uint32_t *)((char *)u + 1);
-                        int q = current_fp_rep & FP_WORD_ORDER;
-                        sprintf(my_buff, "{%.11lo/%.11lo:%#.8g}",
-                                (long)p[1-q], (long)p[q],
-                                double_float_val(u));
+                    {   uint32_t *p = (uint32_t *)&double_float_val(u);
+                        int q = (current_fp_rep & FP_WORD_ORDER) ? 1 : 0;
+                        sprintf(my_buff, "{%.11" PRIo32 "/%.11" PRIo32 ":%#.8g}",
+                            p[1-q], p[q], double_float_val(u));
                     }
                     else fp_sprint(my_buff, double_float_val(u), print_precision);
                     break;
                 case TYPE_LONG_FLOAT:
-// This just uses a regular double...
-//                  fp_sprint(my_buff, (double)long_float_val(u), print_precision);
-// Temporary hack just so things compile! Obviously not good!!!!
-                    fp_sprint(my_buff, 999.999, print_precision);
+                    if (escaped_printing & escape_checksum)
+                    {   int64_t v0 = intfloat128_t_val0(u);
+                        int64_t v1 = intfloat128_t_val1(u);
+#ifdef LITTLEENDIAN
+                        sprintf(my_buff, "@F%.8" PRIx64 "/%" PRIx64, v1, v0);
+#else
+                        sprintf(my_buff, "@F%.8" PRIx64 "/%" PRIx64, v0, v1);
+#endif
+                    }
+                    else if (escaped_printing & escape_hex)
+                    {   uint32_t *p = (uint32_t *)&long_float_val(u);
+                        char *o = my_buff;
+#ifdef LITTLEENDIAN
+                        o += sprintf(o, "{%.8" PRIx32, p[3]);
+                        o += sprintf(o, "/%.8" PRIx32, p[2]);
+                        o += sprintf(o, "/%.8" PRIx32, p[1]);
+                        o += sprintf(o, "/%.8" PRIx32, p[0]);
+#else
+                        o += sprintf(o, "{%.8" PRIx32, p[0]);
+                        o += sprintf(o, "/%.8" PRIx32, p[1]);
+                        o += sprintf(o, "/%.8" PRIx32, p[2]);
+                        o += sprintf(o, "/%.8" PRIx32, p[3]);
+#endif
+                        *o++ = ':';
+                        o += f128M_sprint_G(o, 0, 34, &long_float_val(u));
+                        *o++ = '}';
+                        *o = 0;
+                    }
+                    else if (escaped_printing & escape_octal)
+                    {   uint32_t *p = (uint32_t *)&long_float_val(u);
+                        char *o = my_buff;
+#ifdef LITTLEENDIAN
+                        o += sprintf(o, "{%.11" PRIo32, p[3]);
+                        o += sprintf(o, "/%.11" PRIo32, p[2]);
+                        o += sprintf(o, "/%.11" PRIo32, p[1]);
+                        o += sprintf(o, "/%.11" PRIo32, p[0]);
+#else
+                        o += sprintf(o, "{%.11" PRIo32, p[0]);
+                        o += sprintf(o, "/%.11" PRIo32, p[1]);
+                        o += sprintf(o, "/%.11" PRIo32, p[2]);
+                        o += sprintf(o, "/%.11" PRIo32, p[3]);
+#endif
+                        *o++ = ':';
+                        o += f128M_sprint_G(o, 0, 34, &long_float_val(u));
+                        *o++ = '}';
+                        *o = 0;
+                    }
+                    else fp_sprint128(my_buff, long_float_val(u), print_precision);
                     break;
                 default:
                     sprintf(my_buff, "?%.8lx?", (long)(uint32_t)u);

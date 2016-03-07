@@ -1094,6 +1094,8 @@ typedef struct Single_Float
     (((Single_Float *)((char *)(v)-TAG_BOXFLOAT))->f.f)
 #define float32_t_val(v) \
     (((Single_Float *)((char *)(v)-TAG_BOXFLOAT))->f.f32)
+#define intfloat32_t_val(v) \
+    (((Single_Float *)((char *)(v)-TAG_BOXFLOAT))->f.i)
 
 //
 // The structures here are not actually used - because I can not get
@@ -1111,6 +1113,7 @@ typedef struct Single_Float
 //          double f;         // padded to doubleword align the data.
 //          float64_t f64;
 //          int32_t i[2];
+//          int64_t ii;
 //      } f;
 //  } Double_Float;
 //
@@ -1125,6 +1128,8 @@ typedef struct Single_Float
 #define double_float_val(v)     (*(double *)((char *)(v) + \
                                    (8-TAG_BOXFLOAT)))
 #define float64_t_val(v)        (*(float64_t *)((char *)(v) + \
+                                   (8-TAG_BOXFLOAT)))
+#define intfloat64_t_val(v)     (*(int64_t *)((char *)(v) + \
                                    (8-TAG_BOXFLOAT)))
 
 //
@@ -1144,7 +1149,8 @@ typedef struct Single_Float
 //  #endif
 //      union long_or_ints {
 //          float128_t f128;
-//          int32_t i[8];
+//          int32_t i[4];
+//          int64_t ii[2];
 //      } f;
 //  } Long_Float;
 //
@@ -1158,6 +1164,10 @@ typedef struct Single_Float
                                    (8-TAG_BOXFLOAT)))
 #define float128_t_val(v)       (*(float128_t *)((char *)(v) + \
                                    (8-TAG_BOXFLOAT)))
+#define intfloat128_t_val0(v)   (*(int64_t *)((char *)(v) + \
+                                   (8-TAG_BOXFLOAT)))
+#define intfloat128_t_val1(v)   (*(int64_t *)((char *)(v) + \
+                                   (16-TAG_BOXFLOAT)))
 
 #define word_align_up(n) ((LispObject)(((intptr_t)(n) + 3) & (-4)))
 

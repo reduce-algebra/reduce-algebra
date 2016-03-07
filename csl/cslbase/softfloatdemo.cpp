@@ -89,6 +89,10 @@ int main(int argc, char *argv[])
     show("lo", &w2);
     show("10^17", &f);
     show("10^18", &g);
+    ui64_to_f128M(10000000000000000, &g);
+    printf("%.16" PRIx64 "/%.16" PRIx64 "\n",
+        ((int64_t *)&g)[1], ((int64_t *)&g)[0]);
+    show("10^16", &g);
 
     float256_t dd,ee,ff;
 // Now verify the value I am using for the 256-bit version of 0.1
