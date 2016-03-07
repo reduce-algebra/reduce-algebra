@@ -21,6 +21,18 @@ AC_C_BIGENDIAN(
   AC_DEFINE(LITTLEENDIAN, [1], [Indicate byte order]),
   AC_MSG_ERROR([Unable to determine byte-order for this system]))
 
+echo "/*" > platform.h
+echo " * \"platform.h\", created automatically by the \"configure\" script" >> platform.h
+echo " *" >> platform.h
+echo " * This has just a minimum collection of definitions to allow" >> platform.h 
+echo " * the SoftFloat library to be used." >> platform.h
+echo " */" >> platform.h
+
+if test "$ac_cv_c_bigendian" = "no"
+then
+  echo "#define LITTLEENDIAN 1" >> platform.h
+fi
+
 # I will suppose that if I am on a machine where pointers are 64-bits then
 # 64-bit arithmetic will be fast, and that otherwise it may not be. This
 # may not be quite fair on some 32-bit platforms, but since this is mainly
@@ -45,6 +57,8 @@ AC_MSG_NOTICE([machine_size computed as $machine_size])
 # around their definitions.
   AC_DEFINE(SOFTFLOAT_FAST_INT64,[1],[Assume a modern machine])
   AC_DEFINE(SOFTFLOAT_FAST_DIV64TO32,[1],[Assume a modern machine])
+  echo "#define SOFTFLOAT_FAST_INT64 1" >> platform.h
+  echo "#define SOFTFLOAT_FAST_DIV64TO32 1" >> platform.h
 #fi
 
 CPPFLAGS="$CPPFLAGS -I$srcdir -I$srcdir/8086-SSE -I$srcdir/include"
@@ -71,7 +85,7 @@ AC_C_INLINE()
 # AC_DEFINE(INLINE, inline, [])
 # AC_DEFINE(INLINE_LEVEL, 5, [depth of inlining to be used])
 
-AC_CONFIG_HEADERS([platform.h])
+echo "/* end of platform.h  */" >> platform.h
 
 AC_OUTPUT
 

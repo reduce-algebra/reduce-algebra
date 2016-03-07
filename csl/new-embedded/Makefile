@@ -69,7 +69,8 @@ reduce.img:	reduce
 # Obviously one needs to tidy up occasionally.
 
 clean:
-	-rm -f reduce.img lib/* include/*
+	-rm -f reduce.img lib/* include/crlibm_config.h include/crlibm.h \
+		include/scs.h include/softfloat.h include/softfloat_types.h
 	if test -d crlibm; then cd crlibm && make clean; fi
 	if test -d softfloat; then cd softfloat && make clean; fi
 	cd reduce-image && make clean
