@@ -702,7 +702,7 @@ asserted procedure vsub!-2!-1!-leq!-1(at: QfFormula, pr: VSpr, theo: Theory): Qf
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
       return ofsf_iparse(
-   	 2*a**2*bb - a*aa*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb >= 0 or
+   	 2*a*bb - aa*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb >= 0 or
       	 aa >= 0 and a*bb**2 + aa**2*c - aa*b*bb <= 0
 	    )
    end;
@@ -714,7 +714,7 @@ asserted procedure vsub!-2!-1!-leq!-2(at: QfFormula, pr: VSpr, theo: Theory): Qf
       {aa, bb} := coeffs g;
       {a, b, c} := coeffs f;
       return ofsf_iparse(
-   	 2*a**2*bb - a*aa*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb >= 0 or
+   	 2*a*bb - aa*b <= 0 and a*bb**2 + aa**2*c - aa*b*bb >= 0 or
       	 aa <= 0 and a*bb**2 + aa**2*c - aa*b*bb <= 0
 	    )
    end;
