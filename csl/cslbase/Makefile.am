@@ -500,6 +500,17 @@ libdyndemo.a: $(srcdir)/dyndemo.def
 endif cygwin
 endif !windows
 
+dyndemo$(EXEEXT): $(dyndemo_OBJECTS) $(dyndemo_DEPENDENCIES)
+	-$(RM) -f dyndemo$(EXEEXT)
+	$(CXXLINKTO) $(DEST)dyndemo$(EXEEXT) $(dyndemo_OBJECTS) $(LIBS)
+if !debug
+if !darwin
+	$(STRIP) dyndemo$(EXEEXT)
+endif !darwin
+endif !debug
+
+
+
 if windows
 
 # Even on Windows I will try to use commands "cp" and "rm", and in general
@@ -738,6 +749,8 @@ reduce_CPPFLAGS += $(BOEHMINC)
 csl_CPPFLAGS    += $(BOEHMINC)
 gctest_CPPFLAGS    += $(BOEHMINC)
 
+
+
 csl_LDADD += ../lib/libgc.a
 bootstrapreduce_LDADD += ../lib/libgc.a
 reduce_LDADD += ../lib/libgc.a
@@ -750,6 +763,15 @@ gctest_DEPENDENCIES += $(BOEHMDEPS)
 
 $(BOEHMDEPS):
 	$(TRACE)@cd ../boehm && $(MAKE) install
+
+gctest$(EXEEXT): $(gctest_OBJECTS) $(gctest_DEPENDENCIES)
+	-$(RM) -f gctest$(EXEEXT)
+	$(CXXLINKTO) $(DEST)gctest$(EXEEXT) $(gctest_OBJECTS) $(gctest_LDADD) $(LIBS)
+if !debug
+if !darwin
+	$(STRIP) gctest$(EXEEXT)
+endif !darwin
+endif !debug
 
 else !boehm
 BOEHMINC =
@@ -1526,10 +1548,28 @@ wxpsl_SOURCES=wxpsl.cpp $(fwin_sources)
 endif wx
 
 termdemo_SOURCES=termdemo.cpp termed.cpp
-termdemo_LIBS=
+termdemo_LIBS = $(FOX_LIBS)
+
+termdemo$(EXEEXT): $(termdemo_OBJECTS) $(termdemo_DEPENDENCIES)
+	-$(RM) -f termdemo$(EXEEXT)
+	$(CXXLINKTO) $(DEST)termdemo$(EXEEXT) $(termdemo_OBJECTS) $(LIBS)
+if !debug
+if !darwin
+	$(STRIP) termdemo$(EXEEXT)
+endif !darwin
+endif !debug
 
 softfloatdemo_SOURCES=softfloatdemo.cpp arith14.cpp
 softfloatdemo_LIBS=
+
+softfloatdemo$(EXEEXT): $(softfloatdemo_OBJECTS) $(softfloatdemo_DEPENDENCIES)
+	-$(RM) -f softfloatdemo$(EXEEXT)
+	$(CXXLINKTO) $(DEST)softfloatdemo$(EXEEXT) $(softfloatdemo_OBJECTS) $(softfloatdemo_LDADD) $(LIBS)
+if !debug
+if !darwin
+	$(STRIP) softfloatdemo$(EXEEXT)
+endif !darwin
+endif !debug
 
 #
 # Possibly unreasonably (but it is WHAT I DO!) image files for CSL live

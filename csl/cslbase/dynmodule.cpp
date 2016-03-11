@@ -45,7 +45,7 @@ extern int variable_in_base;
 extern int function_in_base(int x);
 };
 
-int callme(int x)
+extern "C" int callme(int x)
 {
 //
 // This test code references a variable in the base code here, and on Linux

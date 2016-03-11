@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
     printf("Dynamic loading test code for *ix, BSD, MacOSX etc\n");
     fflush(stdout);
     a = dlopen("./dynmodule.so", RTLD_NOW | RTLD_GLOBAL);
+    printf("Result of call to dlopen is in 'a'\n");
     printf("a = %p\n", a);
     fflush(stdout);
     if (a == NULL)
@@ -97,6 +98,7 @@ int main(int argc, char *argv[])
     }
     b = (onearg *)dlsym(a, "callme");
 #endif
+    printf("The 'callme' entrypoint should now be in b\n");
     printf("b = %p\n", b);
     fflush(stdout);
     if (b == NULL) return 0;
