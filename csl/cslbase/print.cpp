@@ -1850,6 +1850,7 @@ static void char_ins(char *s, int c)
     }
     *(s+1) = *s;
     *s = c;
+    printf("After char_ins \"%s\"\n", s);
 }
 
 static void fp_sprint(char *buff, double x, int prec)
@@ -1919,6 +1920,7 @@ static void fp_sprint(char *buff, double x, int prec)
 
 static void fp_sprint128(char *buff, float128_t x, int prec)
 {
+    char *saveb = buff;
 #ifdef DEBUG
     volatile char *fullbuff = buff; // Useful for when running under a debugger
     (void)fullbuff;
@@ -1950,24 +1952,27 @@ printf("Raw printing gives \"%s\"\n", buff); // @@@
 // really safe.
     if (*buff == '+') char_del(buff);      // Explicit "+" not wanted
     if (*buff == '.') char_ins(buff, '0'); // turn .nn to 0.nn
-    else if (*buff == 'e')                 // turn Ennn to 0.0Ennn
+// Common Lisp can use "l" or "L" as the exponent marker in a long float,
+// so in the processing here I will detect "l" just in case at a later
+// stage I move to adopting that as a print convention.
+#define exponent_mark(c) ((c)=='e' || (c)=='l')
+    else if (exponent_mark(*buff))                 // turn Ennn to 0.0Ennn
     {   char_ins(buff, '0');
         char_ins(buff, '.');
         char_ins(buff, '0');
     }
-// Common Lisp can use "l" or "L" as the exponent marker in a long float,
-// so in the processing here I will detect "l" just in case at a later
-// stage I move to adopting that as a print convention.
-#define exponent_mark(c) ((c)=='e'||(c)=='l')
-    while (*buff != 0 && *buff != '.' && exponent_mark(*buff)) buff++;
+    while (*buff != 0 && *buff != '.' && !exponent_mark(*buff)) buff++;
+printf("Point A, buff=\"%s\" saveb=\"%s\"\n", buff, saveb);
     if (*buff == 0 || exponent_mark(*buff))     // ddd to ddd.0
     {   char_ins(buff, '0');            // and dddEnnn to ddd.0Ennn
         char_ins(buff, '.');
     }
-    while (*buff != 0 && exponent_mark(*buff)) buff++;
+    while (*buff != 0 && !exponent_mark(*buff)) buff++;
+printf("Point B, buff=\"%s\" saveb=\"%s\"\n", buff, saveb);
     if (*(buff-1) == '.') char_ins(buff++, '0');// ddd. to ddd.0
     while (*(buff-1) == '0' &&                  // ddd.nnn0 to ddd.nnn
            *(buff-2) != '.') char_del(--buff);
+printf("Point C, buff=\"%s\" saveb=\"%s\"\n", buff, saveb);
     if (*buff == 0) return; // no exponent mark present
     buff++;
     if (*buff == 0) strcpy(buff, "+e00");
@@ -1975,6 +1980,7 @@ printf("Raw printing gives \"%s\"\n", buff); // @@@
     buff++;
     if (*(buff+1) == 0) char_ins(buff, '0');
     else if (*buff == '0' && *(buff+2) != 0) char_del(buff);
+printf("Point E, buff=\"%s\" saveb=\"%s\"\n", buff, saveb);
 }
 
 

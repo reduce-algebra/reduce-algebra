@@ -314,6 +314,9 @@ typedef struct _float256_t
 extern "C" void f256M_mul(
     const float256_t *x, const float256_t *y, float256_t *z);
 
+extern "C" void f256M_add(
+    const float256_t *x, const float256_t *y, float256_t *z);
+
 extern "C" float256_t f256_1, f256_10, f256_r10, f256_5, f256_r5;
 
 // These print 128-bit floats in teh various standard styles, returning the

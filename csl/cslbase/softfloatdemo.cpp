@@ -61,6 +61,20 @@ static void show(const char *s, float128_t *p)
     printf("\n");
 }
 
+static void show256(float256_t *p)
+{
+    float256_t q, r;
+    q = *p;
+    printf("%.16" PRIx64 " %.16" PRIx64 "\n", q.hi.v[1], q.hi.v[0]);
+    q.lo = f128_0;
+    q.hi.v[0] = 0;
+    q.hi.v[1] ^= 0x8000000000000000;
+    f256M_add(p, &q, &r);
+    printf("%.16" PRIx64 " %.16" PRIx64 "\n", r.hi.v[1], r.hi.v[0]);
+} 
+
+float256_t f256_1;
+
 int main(int argc, char *argv[])
 {
     float128_t a, b, c, d, e, f, g, w1, w2;
@@ -70,6 +84,7 @@ int main(int argc, char *argv[])
     printf("Testing using a big-endian version\n");
 #endif
     printf("alignof(float128_t) = %u\n", (unsigned int)alignof(float128_t));
+
     ui32_to_f128M(0, &f128_0);
 
     ui32_to_f128M(1, &a);
@@ -101,9 +116,15 @@ int main(int argc, char *argv[])
     f128M_div(&a, &b, &c); // 0.099609375
     f128M_sub(&f256_r10.hi, &c, &dd.hi);
     dd.lo = f256_r10.lo;
+    f256_1.hi = f128_1;
+    f256_1.lo = f128_0;
     f256M_mul(&f256_1, &dd, &ee);
     show("1/10.hi - 51/512", &ee.hi);
     show("1/10.lo - 51/512", &ee.lo);
+
+    f256M_mul(&f256_r10, &f256_r10, &ee);
+    show("1/100.hi - 51/512", &ee.hi);
+    show("1/100.lo - 51/512", &ee.lo);
 
     dd = f256_r10;              // 0.1
     show("1/10.hi", &dd.hi);
@@ -115,6 +136,7 @@ int main(int argc, char *argv[])
   
     ui32_to_f128M(0x80000000u, &a);
     show("2^32", &a);
+    show256(&f256_r10);
     return 0;
 }
 
