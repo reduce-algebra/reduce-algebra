@@ -161,14 +161,21 @@ symbolic procedure scalprod(u,v);
 
 symbolic procedure multm(u,v);
    %returns matrix product of two matrix canonical forms U and V;
-   (for each y in u
-      collect for each k in x collect subs2 scalprod(y,k))
-     where x = tp1 v;
+   %E.S.: Added 1x1 case (the first two clauses of the if).
+   if (length u = 1) and (length car u = 1)
+      then  for each j in v collect for each k in j collect multsq(caar u,k)
+    else if (length v = 1) and (length car v = 1)
+      then  for each j in u collect for each k in j collect multsq(k,caar v)
+    else ((for each y in u
+             collect for each k in x collect subs2 scalprod(y,k))
+           where x = tp1 v);
 
 symbolic procedure multsm(u,v);
    %returns product of standard quotient U and matrix standard form V;
    if u = (1 ./ 1) then v
-    else for each j in v collect for each k in j collect multsq(u,k);
+% E.S.: changed the following line to preserve the ordering of noncom scalars.
+%    else for each j in v collect for each k in j collect multsq(u,k);
+    else for each j in v collect for each k in j collect multsq(k,u);
 
 % Explicit substitution code for matrices.
 

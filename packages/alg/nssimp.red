@@ -40,10 +40,11 @@ symbolic procedure nssimp(u,v);
    %quotients and the M(I,J) non-commuting expressions;
    %N. B: the products in M(I,J) are returned in reverse order
    %(to facilitate, e.g., matrix augmentation);
-   begin scalar r,s,w,x,y,z;
+   begin scalar ncx,r,s,w,x,y,z;
         u := dsimp(u,v);
     a:  if null u then return z;
         w := car u;
+        ncx := nil;
     c:  if null w then go to d
          else if numberp(r := car w)
                 or not(eqcar(r,'!*div) or
@@ -51,11 +52,21 @@ symbolic procedure nssimp(u,v);
                           then getrtype(r :=
                                         eval!-yetunknowntypeexpr(r,nil))
                          else s) eq v)
-% E.S.: We should not reverse the order of the scalar part of the expression
-% as they may contain non commutative functions.
-%         then x := aconc!*(x,r)
-          then x := r . x
-         else y := aconc!*(y,r);
+% E.S.:
+%        then x := aconc!*(x,r)
+%         else y := aconc!*(y,r);
+% Replaced the two commented out lines by
+          then if (v eq 'matrix) and noncomp r
+                  then if cdr w then ncx := r . ncx
+                        else y := aconc!*(y,mkscalmat mk!*sq simptimes (r . ncx))
+         else x := aconc!*(x,r)
+         else <<if ncx 
+                   then y := aconc!*(y,mkscalmat mk!*sq simptimes ncx);
+                ncx := nil;
+                y := aconc!*(y,r)>>;
+% in order to deal with matrix expressions containing noncom quantities. Left/right
+% multiplication of scalar noncom expressions with matrices was not correct before.
+% To achieve this the scalar noncom quantities are now wrapped as 1x1 matrices.
         w := cdr w;
         go to c;
     d:  if null y then go to er;
