@@ -42,6 +42,7 @@
 #include "crlibm.h"
 #endif
 
+#include <signal.h>
 #include <windows.h>
 #include <excpt.h>
 
@@ -51,7 +52,29 @@ char * abs_execfilepath;
 int Debug = 0;
 char * cygdrive_prefix = NULL;
 
+extern void * saved_pxcptinfoptrs;
+
 extern void gcleanup ();
+
+// Install a global Vectored exception handler for exceptions in Lisp code
+// to call the standard handler _gnu_exception_handler after saving the pointer
+// to the exception info area, for use in trap.sl
+
+LONG WINAPI
+GlobalVectoredHandler1(
+    struct _EXCEPTION_POINTERS *ExceptionInfo
+    )
+{
+//    PCONTEXT Context;
+//    PEXCEPTION_RECORD eRecord;
+//    
+//    eRecord = ExceptionInfo->ExceptionRecord;
+//    Context = ExceptionInfo->ContextRecord;
+
+    saved_pxcptinfoptrs = (void *)ExceptionInfo;
+    return _gnu_exception_handler(ExceptionInfo);
+}
+
 
 
 main(argc,argv)
@@ -78,8 +101,10 @@ char *argv[];
  
   val=setjmp(mainenv);        /* set non-local return point for exit    */
  
-  if (val == 0)
+  if (val == 0) {
+     AddVectoredExceptionHandler(1,GlobalVectoredHandler1);
      psl_main(argc,copy_argv(argc,argv));
+  }
  
   gcleanup ();
   exit(0);
@@ -136,7 +161,6 @@ cygpath2winpath(char * cygpath)
 
 
 
-
 /*
  *    Some static area must be initialized on hot start.
  *    There may be other area to be initialized but we have no idea
@@ -155,7 +179,12 @@ clear_dtabsize()
  int i;
  }
 
-//__asm__ (".safeseh exception_handler");
+// The following attempt to install a Structured exception handler did not work,
+// probably because Lisp doesn't use the stack in the same way as C/C++.
+// In particular, it seems that you must not change the value of the stack pointer
+// without putting corresponding info into the excpetin handler structure
+
+#if 0
 
 LONG exception_handler(PEXCEPTION_RECORD e, void *frame, PCONTEXT c, void *dispatch)
 {
@@ -218,13 +247,15 @@ extern char __bss_start__[];
 
 void * install_function_table(ULONG64 codebase, ULONG size)
 {
+  return (void *)codebase;
   /* The annoying thing about Win64 SEH is that the offsets in
    * function tables are 32-bit integers, and the exception handler
    * itself must reside between the start and end pointers, so
    * we stick everything at the beginning of the code heap and
    * generate a small trampoline that jumps to the real
    * exception handler. */
-  ULONG64 base = (ULONG64)__bss_start__;
+  //ULONG64 base = (ULONG64)__bss_start__;
+  ULONG64 base = (ULONG64)__ImageBase;
   struct seh_data *seh_area = (struct seh_data *)codebase;
   int len = copy_exception_trampoline(&(seh_area->handler[0]));
   struct UNWIND_INFO *unwind_info = &seh_area->unwind_info;
@@ -247,3 +278,4 @@ void * install_function_table(ULONG64 codebase, ULONG size)
   }
   return (void *)(codebase + sizeof(struct seh_data));
 }
+#endif

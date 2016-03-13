@@ -177,6 +177,7 @@
    unixnull
    unixeof
    unixtty
+   saved_pxcptinfoptrs
    ))
 
 (internal-global
@@ -243,6 +244,7 @@
   (setq unixnull nil)
   (setq unixeof nil)
   (setq unixtty nil)
+  (setq saved_pxcptinfoptrs 0)
   (setq ***MUST-BE-NIL*** NIL)
   (setq ***MUST-BE-NIL-TOO*** NIL)
   (setq *fastcar nil)

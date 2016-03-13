@@ -1,5 +1,5 @@
-s/main/psl_main/g
-s/\*jumphugo %eax/jmp  \*%eax/g
-s/mov \[\[/mov $\[\[/g
-s/cmp \[\[/cmp $\[\[/g
- 
+s/^main:/psl_main:/g
+s/ main/ psl_main/g
+s/\*jumphugo %rax/jmp  \*%rax/g
+s/cmp \$/cmpq $/g
+

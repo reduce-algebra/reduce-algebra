@@ -86,8 +86,6 @@ extern void *sbrk (long long size);
 
 #endif
 
-void *install_function_table(ULONG64 codebase, ULONG size);
-
 
 /* Use 1 if using compacting collector ($pxnk/compact-gc.sl).
 Use 2 if using copying collector ($pnk/copying-gc.sl).
@@ -372,9 +370,7 @@ setupbps ()
   lastbps  =  ((long long)bps + BPSSIZE) & ~7;    /* Down to a multiple of 8. */
   p = (char *)(( bpslowerbound  -1) & ~(PAGESIZE-1));
   bpssize =  ((BPSSIZE + PAGESIZE-1) & ~(PAGESIZE-1));
-  if (!(nextbps = (long long) install_function_table ((ULONG64) nextbps, bpssize))) {
-    exit(-1);
-  }
+
   if (!mprotect_exec (p, bpssize)) {
     perror("Couldn’t mprotect");
     exit(errno);
@@ -431,9 +427,6 @@ allocatemorebps()
 
 #endif
 
-  if (!install_function_table ((ULONG64) nextbps, EXTRABPSSIZE)) {
-    exit(-1);
-  }
   if (!mprotect_exec ((char *)nextbps, EXTRABPSSIZE)) {
     perror("Couldn’t mprotect");
     nextbps = old_nextbps;

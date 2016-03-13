@@ -58,7 +58,7 @@
 #
 ##############################################################################
  
-PROOT   = /opt/src/build/reduce-algebra/psl-0594/psl
+PROOT   = /home/rainer/software/reduce/psl
  
 #### MACHINE = unix386
 PSL	= $(PROOT)/dist
@@ -175,17 +175,16 @@ $(USERDIR)/bpsl.exe: $(CFILES)  \
 
 $(USERDIR)/dmain.o: $(USERDIR)/dmain.s 
 	cp $(USERDIR)/dmain.s $(USERDIR)/dmain.s.orig
-	sed -f $(PXK)/dmain.linux.sed -i $(USERDIR)/dmain.s
+	sed -f $(PXK)/dmain.sed -i $(USERDIR)/dmain.s
 	$(ASPROG) $(ASARGS) -o $(USERDIR)/dmain.o $(USERDIR)/dmain.s
 
 $(USERDIR)/main.o: $(USERDIR)/main.s
 	cp $(USERDIR)/main.s $(USERDIR)/main.s.orig
-	sed -f $(PXK)/main.local.sed -i $(USERDIR)/main.s
-	sed -f $(PXK)/main.linux.sed -i $(USERDIR)/main.s
+	sed -f $(PXK)/main.sed -i $(USERDIR)/main.s
 	$(ASPROG) $(ASARGS) -o $(USERDIR)/main.o $(USERDIR)/main.s
 
-$(USERDIR)/main.s: $(BFILES) $(SLFILES) $(PXK)/main.linux.sed \
-		$(PXK)/dmain.linux.sed
+$(USERDIR)/main.s: $(BFILES) $(SLFILES) $(PXK)/main.sed \
+		$(PXK)/dmain.sed
 	-rm -f $(USERDIR)/$(MACHINE).sym
 	cp $(PC)/bare-psl.sym $(USERDIR)/$(MACHINE).sym
 	(cd $(USERDIR)/; \

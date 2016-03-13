@@ -43,7 +43,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-(fluid '(errornumber*))
+(fluid '(errorstack* errornumber* errorcall* errorstring* sigaddr*))
 
 (compiletime
  (progn
@@ -64,13 +64,38 @@
              *sigcalls*))
        % Return the the function definition for the signal handler.
        `((*entry ,function expr 0)
+     
+        % WinNt: handler is called with description in stack
+        % don't need SIGRELSE
      ,handler
-     (*move (wconst ,signumber) (reg 1))
-     (*move (reg 1)(fluid errornumber*))
-     (*move ,handler (reg 2))
-     (*link sigrelse expr 2)
-     (*move (quote ,errorstring) (reg 1))
-     (*jcall sigunwind))
+     (*move (frame 2) (fluid errornumber*))  % number of signal received
+     (push (reg rbp))                        % save a couple of registers
+     (*move (reg st) (reg rbp))
+     (push (reg rbp))
+     (push (reg 2))
+     (*move ($fluid saved_pxcptinfoptrs) (reg 1)) % grabs the pointer to a
+                                             % EXCEPTION_POINTERS structure
+                                             % which contains
+     (*move (memory (reg 1) 0) (reg 2))      % addr of exception info and
+     (*move (memory (reg 1) 8) (reg 3))      % addr of thread context
+     (*move (memory (reg 2) 0) (reg 4))      % exception code (type)
+     (*move (memory (reg 3) 248) (fluid sigaddr*))
+                                             % instruction pointer at fault
+     (*move (memory (reg 3) 152) (reg 1))    % stack pointer at fault
+     (*move (reg 1) (fluid errorstack*))
+     (*move ($fluid errorcall*) (reg 2))     
+     (*move (reg 2) (displacement (reg 3) 248))
+                                             % overwrite address of faulted
+					     % instruction by address of
+ 					     % function errortrap
+     (*move (quote ,errorstring) (fluid errorstring*))
+                                             % string for error message
+     (*link initializeinterrupts-1 expr 0)
+     (pop (reg 2)) 		             % restored saved registers
+     (pop (reg rbp))
+     (*move (reg rbp) (reg st))
+     (pop (reg rbp))
+     (ret))
        )
  
    % Return the entry point list. Defined as a cmacro.
@@ -85,13 +110,14 @@
  
  
 (lap '(
-   % (*sigsetup 1  Huphandler  Huphandlerinstruction  "Hup")
-       (*sigsetup 2  Inthandler  IntHandlerInstruction  "Interrupt")
+       (*sigsetup 2  Inthandler  IntHandlerInstruction  "External Interrupt")
        (*sigsetup 4  IllHandler  IllHandlerInstruction  "Illegal Instruction")
-       (*sigsetup 6  IotHandler  AbrtHandlerInstruction  "Abort")
-       (*sigsetup 8  FpeHandler  FpeHandlerInstruction "Floating Pt Exception")
-       (*sigsetup 11 SegHandler  SegHandlerInstruction
-                                    "Segmentation Violation")
+       (*sigsetup 8  FpeHandler  FpeHandlerInstruction  "Floating Point Exception")
+       (*sigsetup 11 SegHandler  SegHandlerInstruction  "Segmentation Violation")
+       (*sigsetup 15 KillHandler KillHandlerInstruction "Kill Signal")
+       (*sigsetup 21 IOVHandler  IOVHandlerInstruction  "Terminal Interrupt")
+       (*sigsetup 22 ALGHandler  ALGHandlerInstruction  "Abort")
+
        (*entry initializeinterrupts-1 expr 0)
        (*sigcall)
        (*exit 0)))
@@ -126,6 +152,14 @@
      (*jcall error) 
      ))
 
+(de errortrap ()
+  (progn
+    (ieee_handler)   % clear fp status
+    (error (wplus2 errornumber* 10000)
+           (build-trap-message errorstring* sigaddr*))))
+
+(setq errorcall* (wgetv symfnc (id2int 'errortrap)))
+ 
 (lap '((*entry *freset expr 0)
        (*move 100000 (reg 5))
      lab
@@ -152,8 +186,11 @@
     (let (extra-info)
       (if (funboundp 'code-address-to-symbol)
         (setf extra-info
-          (bldmsg "%w%n%w%n%w"
-              " : the name of the routine that trapped can't be"
+          (bldmsg "%w%x%w%n%w%n%w"
+	      " at address 0x"
+	      (inf trap-addr)
+              " :"
+	      " the name of the routine that trapped can't be"
               " reported unless the function CODE-ADDRESS-TO-SYMBOL"
               " has been defined, by loading ADDR2ID."))
     % else, get the name of the offending function

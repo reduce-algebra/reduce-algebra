@@ -365,6 +365,8 @@ unixeof:
  .globl unixtty
 unixtty:
  .quad [[253<<56]+295]
+ .globl saved_pxcptinfoptrs
+saved_pxcptinfoptrs:
  .quad [[253<<56]+296]
  .quad [[253<<56]+297]
  .quad [[253<<56]+298]
@@ -373,9 +375,9 @@ unixtty:
  .quad [[253<<56]+301]
  .quad [[253<<56]+302]
  .quad [[253<<56]+303]
+ .quad [[253<<56]+304]
  .globl stacklowerbound
 stacklowerbound:
- .quad [[253<<56]+304]
  .quad [[253<<56]+305]
  .quad [[253<<56]+306]
  .quad [[253<<56]+307]
@@ -401,11 +403,11 @@ stacklowerbound:
  .quad [[253<<56]+327]
  .quad [[253<<56]+328]
  .quad [[253<<56]+329]
- .quad 492
+ .quad [[253<<56]+330]
+ .quad 493
  .quad symnam
- .quad [[253<<56]+332]
+ .quad [[253<<56]+333]
  .quad [[254<<56]+128]
- .quad [[253<<56]+334]
  .quad [[253<<56]+335]
  .quad [[253<<56]+336]
  .quad [[253<<56]+337]
@@ -416,18 +418,18 @@ stacklowerbound:
  .quad [[253<<56]+342]
  .quad [[253<<56]+343]
  .quad [[253<<56]+344]
+ .quad [[253<<56]+345]
  .quad symprp
  .quad symget
  .quad symval
- .quad [[253<<56]+348]
  .quad [[253<<56]+349]
  .quad [[253<<56]+350]
  .quad [[253<<56]+351]
  .quad [[253<<56]+352]
  .quad [[253<<56]+353]
  .quad [[253<<56]+354]
+ .quad [[253<<56]+355]
  .quad [[254<<56]+128]
- .quad [[253<<56]+356]
  .quad [[253<<56]+357]
  .quad [[253<<56]+358]
  .quad [[253<<56]+359]
@@ -435,8 +437,8 @@ stacklowerbound:
  .quad [[253<<56]+361]
  .quad [[253<<56]+362]
  .quad [[253<<56]+363]
+ .quad [[253<<56]+364]
  .quad symfnc
- .quad [[253<<56]+365]
  .quad [[253<<56]+366]
  .quad [[253<<56]+367]
  .quad [[253<<56]+368]
@@ -563,7 +565,8 @@ stacklowerbound:
  .quad [[253<<56]+489]
  .quad [[253<<56]+490]
  .quad [[253<<56]+491]
-  .space 516072
+ .quad [[253<<56]+492]
+  .space 516064
  .globl symprp
 symprp:
  .quad [[254<<56]+128]
@@ -1058,7 +1061,8 @@ symprp:
  .quad [[254<<56]+128]
  .quad [[254<<56]+128]
  .quad [[254<<56]+128]
-  .space 516072
+ .quad [[254<<56]+128]
+  .space 516064
  .globl symnam
 symnam:
  .globl l0318
@@ -2045,7 +2049,9 @@ symnam:
  .quad [[4<<56]+l0808]
  .globl l0809
  .quad [[4<<56]+l0809]
-  .space 516072
+ .globl l0810
+ .quad [[4<<56]+l0810]
+  .space 516064
  .globl symfnc
 symfnc:
  .quad undefinedfunction
@@ -2326,6 +2332,7 @@ symfnc:
  .quad undefinedfunction
  .globl l0003
  .quad l0003
+ .quad undefinedfunction
  .quad undefinedfunction
  .quad undefinedfunction
  .quad undefinedfunction
@@ -2710,7 +2717,7 @@ symfnc:
  .quad undefinedfunction
  .globl lastkernel
  .quad lastkernel
-  .space 516072
+  .space 516064
  .globl symget
 symget:
  .quad [[254<<56]+128]
@@ -3205,4 +3212,5 @@ symget:
  .quad [[254<<56]+128]
  .quad [[254<<56]+128]
  .quad [[254<<56]+128]
-  .space 516072
+ .quad [[254<<56]+128]
+  .space 516064
