@@ -567,7 +567,7 @@
 		(prin2t "****** Fall noch nicht vorgesehen") 
 		(modR/Merror op2)) 
 	  (return 1))
-	 ((labelp base) (return 6))
+	 ((labelp base) (return 5))
 	 (t (modR/Merror op2))))) 
 	    
 % Procedures to compute specific OperandRegisterNumber!*
