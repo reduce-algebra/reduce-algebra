@@ -127,8 +127,8 @@ uxquotient(f1,f2,f3)
 {
   feclearexcept(FE_OVERFLOW | FE_DIVBYZERO);
   *f1 = *f2 / *f3;
-  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
-  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID);
+  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID); return (0);}
   return (1);
 }
 
