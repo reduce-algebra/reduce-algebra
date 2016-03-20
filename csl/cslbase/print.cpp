@@ -1850,7 +1850,7 @@ static void char_ins(char *s, int c)
     }
     *(s+1) = *s;
     *s = c;
-    printf("After char_ins \"%s\"\n", s);
+//  printf("After char_ins \"%s\"\n", s);
 }
 
 static void fp_sprint(char *buff, double x, int prec)

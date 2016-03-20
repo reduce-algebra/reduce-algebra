@@ -1239,7 +1239,10 @@ static LispObject quotff(LispObject a, LispObject b)
     else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
         hc = TYPE_DOUBLE_FLOAT;
     else hc = TYPE_SINGLE_FLOAT;
-    return make_boxfloat(float_of_number(a) / float_of_number(b), hc);
+    double d;
+    if ((d = float_of_number(b)) == 0.0)
+        return aerror2("bad arg for quotient", a, b);
+    else return make_boxfloat(float_of_number(a) / d, hc);
 }
 
 LispObject quot2(LispObject a, LispObject b)
