@@ -129,8 +129,8 @@ uxquotient(f1,f2,f3)
      double *f1, *f2, *f3;
 {
   *f1 = *f2 / *f3;
-  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
-    {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID) != 0)
+    {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID) ; return (0);}
   return (1);
 }
 
