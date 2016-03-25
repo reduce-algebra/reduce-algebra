@@ -45,6 +45,8 @@
 #include <signal.h>
 #include <windows.h>
 #include <excpt.h>
+#include <float.h>
+#include <fenv.h>
 
 jmp_buf mainenv;
 char * abs_execfilepath;
@@ -55,6 +57,8 @@ char * cygdrive_prefix = NULL;
 extern void * saved_pxcptinfoptrs;
 
 extern void gcleanup ();
+
+void init_fp();
 
 // Install a global Vectored exception handler for exceptions in Lisp code
 // to call the standard handler _gnu_exception_handler after saving the pointer
@@ -102,14 +106,25 @@ char *argv[];
   val=setjmp(mainenv);        /* set non-local return point for exit    */
  
   if (val == 0) {
-     AddVectoredExceptionHandler(1,GlobalVectoredHandler1);
-     psl_main(argc,copy_argv(argc,argv));
+    init_fp();
+    AddVectoredExceptionHandler(1,GlobalVectoredHandler1);
+    psl_main(argc,copy_argv(argc,argv));
   }
  
   gcleanup ();
   exit(0);
 }
  
+void init_fp()
+{
+  unsigned int cw, cwOriginal;
+  
+  _clearfp();			/* always call _clearfp before setting the control word */
+
+  cw = ~(_EM_OVERFLOW|_EM_ZERODIVIDE|_EM_INVALID);
+  cwOriginal = _controlfp(cw, _MCW_EM); //Set it.   
+}
+
 
 os_startup_hook(argc, argv)
      int argc;

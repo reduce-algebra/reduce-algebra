@@ -43,7 +43,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-(fluid '(errorstack* errornumber* errorcall* errorstring* sigaddr*))
+(fluid '(errorstack* errornumber* errorcall* errorstring* sigaddr* exceptioncode*))
 
 (compiletime
  (progn
@@ -78,7 +78,8 @@
                                              % which contains
      (*move (memory (reg 1) 0) (reg 2))      % addr of exception info and
      (*move (memory (reg 1) 8) (reg 3))      % addr of thread context
-     (*move (memory (reg 2) 0) (reg 4))      % exception code (type)
+     (*move (memory (reg 2) 0) (fluid exceptioncode*))
+                                             % exception code (type)
      (*move (memory (reg 3) 248) (fluid sigaddr*))
                                              % instruction pointer at fault
      (*move (memory (reg 3) 152) (reg 1))    % stack pointer at fault
@@ -89,7 +90,7 @@
 					     % instruction by address of
  					     % function errortrap
      (*move (quote ,errorstring) (fluid errorstring*))
-                                             % string for error message
+					     % string for error message
      (*link initializeinterrupts-1 expr 0)
      (pop (reg 2)) 		             % restored saved registers
      (pop (reg rbp))
@@ -121,7 +122,7 @@
        (*entry initializeinterrupts-1 expr 0)
        (*sigcall)
        (*exit 0)))
- 
+
 (de initializeinterrupts ()
        (ieee_flags (strbase (strinf "set")) (strbase (strinf "direction"))
 				(strbase (strinf "tozero")) 0)
@@ -156,7 +157,18 @@
   (progn
     (ieee_handler)   % clear fp status
     (error (wplus2 errornumber* 10000)
-           (build-trap-message errorstring* sigaddr*))))
+           (build-trap-message
+	    (cond
+	     ((weq exceptioncode* 16#c0000091) "Floating point overflow")
+	     ((weq exceptioncode* 16#c000008e) "Floating point division by zero")
+	     ((weq exceptioncode* 16#c000008d) "Denormal operand in floating point")
+	     ((weq exceptioncode* 16#c000008f) "Floating point inexact result")
+	     ((weq exceptioncode* 16#c0000090) "Invalid floating point operation")
+	     ((weq exceptioncode* 16#c0000092) "Floating point stack over-/underflow")
+	     ((weq exceptioncode* 16#c0000093) "Floating point underflow")
+	     (t errorstring*)
+	     )
+	    sigaddr*))))
 
 (setq errorcall* (wgetv symfnc (id2int 'errortrap)))
  
@@ -184,19 +196,19 @@
 
 (de build-trap-message (trap-type trap-addr)
     (let (extra-info)
-      (if (funboundp 'code-address-to-symbol)
-        (setf extra-info
-          (bldmsg "%w%x%w%n%w%n%w"
-	      " at address 0x"
-	      (inf trap-addr)
-              " :"
-	      " the name of the routine that trapped can't be"
-              " reported unless the function CODE-ADDRESS-TO-SYMBOL"
-              " has been defined, by loading ADDR2ID."))
-    % else, get the name of the offending function
-    (setf extra-info (bldmsg "%w%w"
-                 " in "
-                 (code-address-to-symbol (inf trap-addr))))
+      (cond ((funboundp 'code-address-to-symbol)
+	     (setf extra-info
+		   (bldmsg "%w%x%w%n%w%n%w%n%w"
+			   " at address 0x"
+			   (inf trap-addr)
+			   " :"
+			   " the name of the routine that trapped can't be"
+			   " reported unless the function CODE-ADDRESS-TO-SYMBOL"
+			   " has been defined, by loading ADDR2ID.")))
+	     % else, get the name of the offending function
+	     ((setf extra-info (code-address-to-symbol (inf trap-addr)))
+	      (setf extra-info (bldmsg "%w%w" " in " extra-info)))
+	     (t (setf extra-info (bldmsg "%w%x" " at address 0x" (inf trap-addr))))
       )
       (bldmsg "%w%w" trap-type extra-info)))
  

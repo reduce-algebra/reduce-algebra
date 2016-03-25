@@ -33,6 +33,7 @@ setlinebuf()
  
 ieee_handler()
 {
+  _clearfp();
 }
 
 ualarm()
