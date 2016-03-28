@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+<%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % File:  pxu/disassemble.sl -  disassembler for i486 
 %
@@ -11,7 +11,9 @@
 %
 (compiletime (load common))
 
-(fluid '(bytes* lth* reg* regnr* segment*  symvalhigh symfnchigh *curradr* *currinst*))
+(fluid '(*gassyntax))
+
+(fluid '(bytes* lth* reg* xreg* regnr* segment*  symvalhigh symfnchigh *curradr* *currinst*))
 
           (de getwrd(a)(getmem a))
 
@@ -149,6 +151,8 @@
 
 (fi 16#80 Grp1 ((E b)(I b)) ((E v)(I v)) nil ((E v)(I b))) % grp1
 
+(fi 16#84 test ((G b) (E b)) ((G v) (E v)))
+
 (fi 16#86 xchg ((E b) (G b)) ((E v) (G v)))
 
 (fi 16#88 mov  ((E b)(G b)) ((E v) (G v))  ((G b)(E b)) ((G v) (E v)))
@@ -159,6 +163,8 @@
 
 (fi 16#91 xchg (ecx eax)(edx eax)(ebx eax)(esp eax)(ebp eax)(esi eax)(edi eax))
 
+(fi 16#98 convert (nil))
+
 (fi 16#9a call (A p))
 
 (fi 16#a0 mov (AL (O b)) (eax (O v)) ((O b) AL) ((O v) EAX))
@@ -166,7 +172,7 @@
 (fi 16#b0 mov ((I b) AL)((I b) CL)((I b) DL)((I b) BL)
               ((I b) AH)((I b) CH)((I b) DH)((I b) BH))
 
-(fi 16#b8 mov ((I v) EAX)((I v) ECX)((I v) ECX)((I v) EBX)
+(fi 16#b8 mov (EAX (I v))(ECX (I v))(EDX (I v))(EBX (I v))
               ((I v) ESP)((I v) EBP)((I v) ESI)((I v) EDI))
 
 (fi 16#c0 shift ((E b)(I b)) ((E v)(I b)))
@@ -177,15 +183,51 @@
 
 (fi 16#d0 shift ((E b) 1) ((E v) 1) ((E b) CL) ((E v) CL))
 
+(fi 16#d8 x87fpu ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)) ((ST fl)))
+
 (fi 16#e8 call ((A v)))
 
 (fi 16#e9 jmp ((J v)) ((A p)) ((J b)))
+
+(fi 16#f6  Grp3 ((E b)) ((E v)))
 
 (fi 16#ff  Grp5 ((E v)))   % grp5
 
 % second group
 
 (setq instrs* 'instrs2)
+
+(fi 16#10 (sse mov) ((V s) (W s)) ((W s) (V s)))
+(fi 16#12 (sse movl) ((V q) (UMW q)) ((M q) (V q)))
+(fi 16#14 (sse unpckl) ((V s) (W s)) ((W s) (V s)))
+(fi 16#16 (sse movh) ((V q) (UM q)) ((M q) (V q)))
+
+(fi 16#28 (sse movap) ((V) (W)) ((W) (V)))
+(fi 16#2a (sse cvti) ((V) (Q)))
+
+(fi 16#2c (sse cvtt) ((G) (W)))
+(fi 16#2d (sse cvt2i) ((G) (W)))
+(fi 16#2e (sse ucomis) ((V) (W)))
+(fi 16#2f (sse comis) ((V) (W)))
+
+(fi 16#51 (sse sqrt) ((V) (W)))
+(fi 16#52 (sse rsqrt) ((V) (W)))
+(fi 16#53 (sse rcp) ((V) (W)))
+(fi 16#54 (sse and) ((V) (W)))
+(fi 16#55 (sse andn) ((V) (W)))
+(fi 16#56 (sse or) ((V) (W)))
+(fi 16#57 (sse xor) ((V) (W)))
+(fi 16#58 (sse add) ((V) (W)))
+(fi 16#59 (sse mul) ((V) (W)))
+(fi 16#5a (sse cvts) ((V) (W)))
+(fi 16#5b (sse cvtd) ((V) (W)))
+(fi 16#5c (sse sub) ((V) (W)))
+(fi 16#5d (sse min) ((V) (W)))
+(fi 16#5e (sse div) ((V) (W)))
+(fi 16#5f (sse max) ((V) (W)))
+
+(fi 16#7e (sse movw) ((E q) (V q)))
+(fi 16#7f (sse movwa) ((W q) (V q)))
 
 (fi 16#80 JO  ((j v)))
 (fi 16#81 JNO ((j v)))
@@ -204,6 +246,7 @@
 (fi 16#8e Jle ((j v)))
 (fi 16#8f Jnle((j v)))
 
+(fi 16#ae Grp15 ((M)))
 
 (fi 16#af imul ((G v)(E v)))
 
@@ -224,20 +267,32 @@
 (setq rregs  '("rax" "rcx" "rdx" "rbx" "rsp" "rbp" "rsi" "rdi"
                "r8" "r9" "r10" "r11" "r12" "r13" "r14" "r15"))
 
-(fluid '( the-instruction* addr* rex_w rex_r rex_x rex_b))
+(fluid '( the-instruction* addr* rex_w rex_r rex_x rex_b size-override* rep-prefix* !0f-prefix* mod-is-3*))
 
 (de decode(p1 pl addr*)
   (prog(i lth name with-rex)
-      (setq rex_w nil rex_r nil rex_x nil rex_b nil)
+      (setq rex_w nil rex_r nil rex_x nil rex_b nil size-override* nil rep-prefix* nil !0f-prefix* nil
+	    mod-is-3* nil)
       (setq lth 1)
+      (when (or (weq p1 16#66) (weq p1 16#67))
+         (setq size-override* p1)
+	 (setq p1 (pop pl))
+         (setq lth 2))
+      (when (or (weq p1 16#f2) (weq p1 16#f3))
+         (setq rep-prefix* p1)
+	 (setq p1 (pop pl))
+         (setq lth (add1 lth)))
       (when (and (wlessp p1 16#50) (wgeq p1 16#48))
          (decode-rex-prefix p1)
          (setq p1 (pop pl))
-         (setq lth 2))
+         (setq lth (add1 lth)))
       (setq i (assoc p1 instrs1))
+      (when (eqcar i 'f87fpu)
+	(setq i (decode-f87fpu p1 pl addr*)))
       (when (eq p1 16#0f)
+            (setq !0f-prefix* t)
             (setq p1 (pop pl))
-            (setq lth 2)
+            (setq lth (add1 lth))
             (setq i (assoc p1 instrs2)))
       (when (not i)(return (cons lth nil)))
       (setq the-instruction* i)
@@ -257,19 +312,28 @@
 
 
 (de decode-operands(bytes* lth* pat)
-  (prog (r reg*)
+  (prog (r reg* xreg*)
     (when (eqcar pat nil) (go done))
     (push (cons 'op1 (decode-operand1 (pop pat))) r)
     (when pat
         (push (cons 'op2 (decode-operand1 (pop pat))) r))
  done
+    (when *gassyntax
+      (setq reg* (bldmsg "%%%w" reg*) xreg* (bldmsg "%%%w" xreg*)))
     (setq r (subst reg* 'reg r))
+    (setq r (subst xreg* 'xreg r))
     (return (cons lth* r))))
+
+(deflist '((eax rax) (ebx rbx) (ecx rcx) (edx rdx) (ebp rbp) (esp rsp) (esi rsi) (edi rsi)) 'reg64)
 
 (de decode-operand1(p)
  (let(w)
-  (cond ((atom p) p)
+  (cond ((and rex_w (setq w (get p 'reg64)))
+	 (if *gassyntax (bldmsg "%%%w" w) w))
+	((atom p) 
+	 (if (and *gassyntax (idp p)) (bldmsg "%%%w" p) p))
         ((eq (car p) 'G) 'reg)
+        ((eq (car p) 'V) 'xreg)
            % immediate byte
         ((equal p '(I b)) 
          (setq  lth* (add1 lth*))
@@ -298,6 +362,9 @@
         ((eqcar p 'E) (decode-modrm p))
         ((eqcar p 'R) (decode-modrm p))
         ((eqcar p 'M) (decode-modrm p))
+	((eqcar p 'W) (decode-modrm p))
+	((eqcar p 'UMW) (decode-modrm p))
+	((eqcar p 'UM) (decode-modrm p))
              % offset
         ((equal p '(o b))
          (setq lth!* (plus lth!* 1))
@@ -307,18 +374,24 @@
          (setq lth!* (plus lth!* 4))
          (bytes2word))
          
+	((eqcar p 'ST) % f87fpu instruction
+	 (if (eq (wand (car bytes*) 2#11000000) 2#11000000)
+	     (decode-f87fpu p)
+	   (decode-modrm p)))
         (t (terpri)
            (prin2t (list "dont know operand declaration:" p))
            (stderror "disassemble")))))
 
 (de decode-modrm(p)
-   (prog(mod rm b w)
+   (prog(mod rm b w usexmm)
      (setq b (pop bytes*)) (setq  lth* (add1 lth*))
      (setq mod (wshift b -6))
      (setq regnr* (wand 7 (wshift b -3)))
      (when rex_r (setq regnr* (wplus2 regnr* 8)))
      (setq reg* (reg-m regnr*))
+     (setq xreg* (reg-xmm regnr*))
      (setq rm (wand 7 b))
+     (setq usexmm (and !0f-prefix* (not (eqcar p 'E))))
      (when rex_b (setq rm (wplus2 rm 8)))
        %(terpri)(prin2t(list "modrm" b mod regnr* rm)) (print bytes*)
      (return
@@ -339,28 +412,43 @@
                       (bldmsg " -> %w" 
                        (safe-int2id (wshift (wdifference w symval) -3))))))
               (bldmsg "*%w" w))
-        ((eq mod 0) (bldmsg "[%w]" (reg-m rm) ))
+        ((eq mod 0) (if *gassyntax
+			(bldmsg "(%%%w)" (reg-m rm))
+		      (bldmsg "[%w]" (reg-m rm) )))
         ((eq mod 1) 
               (setq  lth* (add1 lth*))
-              (bldmsg "[%w+%w]" (reg-m rm)(pop bytes*)))
+	      (if *gassyntax 
+		  (bldmsg "%w(%%%w)" (pop bytes*)(reg-m rm))
+		(bldmsg "[%w+%w]" (reg-m rm)(pop bytes*))))
         ((eq mod 2) 
               (setq  lth* (plus 4 lth*))
-              (bldmsg "[%w+%w]" (reg-m rm) (bytes2word)))
-        ((eq mod 3)  (bldmsg "%w" (reg-m rm)))) )))
+	      (if *gassyntax
+		  (bldmsg "%w(%%%w)" (bytes2word) (reg-m rm))
+		(bldmsg "[%w+%w]" (reg-m rm) (bytes2word))))
+        ((eq mod 3)
+	 (setq mod-is-3* t)
+	 (bldmsg (if *gassyntax "%%%w" "%w") (if usexmm (reg-xmm rm) (reg-m rm)))
+	 )) )))
               
 (de decode-sib(p mod)
-   (prog(ss index base offset seg b w)
+   (prog(scale index base offset seg b w)
      (setq b (pop bytes*))
      (setq  lth* (add1 lth*))
-     (setq ss (wshift b -6))
+     (setq scale (lsh 1 (wshift b -6)))     
      (setq index (wand 7 (wshift b -3)))
      (when rex_x (setq index (wplus2 index 8)))
      (when (eq index 4) (setq index ""))  % erstmal
      (setq base (wand 7 b))
      (when rex_b (setq base (wplus2 base 8)))
      (setq offset "")
+     (cond ((and (not rex_w) (eq scale 1)) (setq reg* (reg-m8 regnr*)))
+	   ((and (not rex_w) (eq scale 2)) (setq reg* (reg-m16 regnr*))))
      (when (eq mod 1)
-           (setq offset (bldmsg "+%w" (pop bytes*)))
+           (setq offset (pop bytes*))
+	   (setq offset
+		 (if (greaterp offset 127) 
+		     (bldmsg "%w" (difference offset 256))
+		   (bldmsg "+%w" offset)))
             (setq  lth* (add1 lth*)))
      (when (eq mod 2)
            (setq w (bytes2word))
@@ -379,17 +467,24 @@
                      (setq *comment
                       (bldmsg " -> %w"
                        (safe-int2id (wshift (wdifference w symval) -3))))))
-           (return (bldmsg "[%x%w]" w index)))
+           (if *gassyntax 
+	       (return (bldmsg "*0x%x%w" w index))
+	     (return (bldmsg "[%x%w]" w index))))
      (setq seg
        (cond (segment* segment*)
-             ((or (eq base 2#100)(eq base 2#101)) "")
-             (t "ss")))
+             (t "")))
      (setq segment* nil)
-     (return (bldmsg "%w[%w%w%w]" seg (reg-m base) index offset))))
-
+     (if *gassyntax 
+	 (return (bldmsg "%w(%%%w%w)" offset (reg-m base)
+			 (if (equal index "") "" (bldmsg ",%%%w,%d" (reg-m index) scale))))
+       (return (bldmsg "[%%%w%w%w]" (reg-m base) 
+		       (if (equal index "") ""
+			 (bldmsg "+%%%w*%w" (reg-m index) scale))
+		       offset))))
+   )
 
 (de reg-m(n)
-  (if rex_w (reg-m64 n)
+  (if (or rex_w !0f-prefix*) (reg-m64 n)
   (cond ((eq n 0) 'eax)
         ((eq n 1) 'ecx)
         ((eq n 2) 'edx)
@@ -398,6 +493,26 @@
         ((eq n 5) 'ebp)
         ((eq n 6) 'esi)
         ((eq n 7) 'edi))))
+
+(de reg-m16(n)
+  (cond ((eq n 0) 'ax)
+        ((eq n 1) 'cx)
+        ((eq n 2) 'dx)
+        ((eq n 3) 'bx)
+        ((eq n 4) 'sp)
+        ((eq n 5) 'bp)
+        ((eq n 6) 'si)
+        ((eq n 7) 'di)))
+
+(de reg-m8(n)
+  (cond ((eq n 0) 'al)
+        ((eq n 1) 'cl)
+        ((eq n 2) 'dl)
+        ((eq n 3) 'bl)
+        ((eq n 4) 'ah)
+        ((eq n 5) 'ch)
+        ((eq n 6) 'dh)
+        ((eq n 7) 'bh)))
 
 (de reg-m64(n)
   (cond ((eq n 0) 'rax)
@@ -417,6 +532,27 @@
         ((eq n 14) 'r14)
         ((eq n 15) 'r15)))
 
+(de reg-xmm(n)
+  (cond ((eq n 0) 'xmm0)
+        ((eq n 1) 'xmm1)
+        ((eq n 2) 'xmm2)
+        ((eq n 3) 'xmm3)
+        ((eq n 4) 'xmm4)
+        ((eq n 5) 'xmm5)
+        ((eq n 6) 'xmm6)
+        ((eq n 7) 'xmm7)
+        ((eq n 8) 'xmm8)
+        ((eq n 9) 'xmm9)
+        ((eq n 10) 'xmm10)
+        ((eq n 11) 'xmm11)
+        ((eq n 12) 'xmm12)
+        ((eq n 13) 'xmm13)
+        ((eq n 14) 'xmm14)
+        ((eq n 15) 'xmm15)))
+
+(de decode-f87fpu (p1 pl addr)
+  
+)
 
 (de bytes2word()
   (prog(w)
@@ -435,8 +571,8 @@
      (when (stringp w) 
        (setq *comment (bldmsg """%w""" w))
        (return 'string))
-     (when (eq (wand w 16#ffffff) 0) (return 'CAR))
-     (when (eq (wand w 16#ffffff) 8) (return 'CDR))
+%     (when (eq (wand w 16#ffffff) 0) (return 'CAR))
+%     (when (eq (wand w 16#ffffff) 8) (return 'CDR))
      (return (sys2int w))))
 
 (de xgreaterp(a b)(and (numberp a)(numberp b)(greaterp a b)))
@@ -455,13 +591,160 @@
        ((eq regnr* 2#100) 'jump)
        ))
 
+(de namegrp3()
+ (cond ((eq regnr* 000) 'test)
+       ((eq regnr* 2#010) 'not)
+       ((eq regnr* 2#011) 'neg)
+       ((eq regnr* 2#100) 'mul)
+       ((eq regnr* 2#101) 'imul)
+       ((eq regnr* 2#110) 'div)
+       ((eq regnr* 2#111) 'idiv)
+       ))
+
+(de namegrp15()
+ (cond ((eq regnr* 000) 'fxsave)
+       ((eq regnr* 2#001) 'fxrstor)
+       ((eq regnr* 2#010) 'ldmxcsr)
+       ((eq regnr* 2#011) 'stmxcsr)
+       ((eq regnr* 2#100) 'xsave)
+       ((eq regnr* 2#101) 'lfence)
+       ((eq regnr* 2#110) 'mfence)
+       ((eq regnr* 2#111) 'sfence)
+       ))
+
 (de nameshift()
  (cond
        ((eq regnr* 4) 'shl)
        ((eq regnr* 7) 'sar)
        ((eq regnr* 5) 'shr)))
 
+(de nameconvert()
+ (if (eq size-override* 16#66) 'cbw 'cwde))
 
+(de name-f87fpu())
+
+(de name-sse (rest)
+  (or (name-sse1 rest) (name-sse2 rest) (name-sse3 rest)))
+
+(de name-sse1 (rest)
+  (cond ((eqcar rest 'mov)
+         (cond ((eq size-override* 16#66) 'movupd)
+	       ((eq rep-prefix* 16#f3) 'movss)
+	       ((eq rep-prefix* 16#f2) 'movsd)
+	       (t 'movups)))
+	((eqcar rest 'movl)
+         (cond ((eq size-override* 16#66) 'movlpd)
+	       ((eq rep-prefix* 16#f3) 'movsldup)
+	       ((eq rep-prefix* 16#f2) 'movddup)
+	       (mod-is-3* 'movehlps)
+	       (t 'movlps)))
+	((eqcar rest 'unpckl)
+         (cond ((eq size-override* 16#66) 'unpcklps)
+	       (t 'unpcklpd)))
+	((eqcar rest 'movh)
+         (cond ((eq size-override* 16#66) 'movhpd)
+	       (mod-is-3* 'movelhps) 
+	       (t 'movhps)))
+	((eqcar rest 'movap)
+	 (cond ((eq size-override* 16#66) 'movapd)
+	       (t 'movaps)))
+	((eqcar rest 'cvti)
+	 (cond ((eq size-override* 16#66) 'cvtpi2pd)
+	       ((eq rep-prefix* 16#f3) 'cvtsi2ss)
+	       ((eq rep-prefix* 16#f2) 'cvtsi2sd)
+	       (t 'cvtpi2ps)))
+	((eqcar rest 'cvtt)
+	 (cond ((eq size-override* 16#66) 'cvttpd2pi)
+	       ((eq rep-prefix* 16#f3) 'cvttss2si)
+	       ((eq rep-prefix* 16#f2) 'cvttsd2si)
+	       (t 'cvttps2pi)))
+	((eqcar rest 'cvt2i)
+	 (cond ((eq size-override* 16#66) 'cvtpd2pi)
+	       ((eq rep-prefix* 16#f3) 'cvtss2si)
+	       ((eq rep-prefix* 16#f2) 'cvtsd2si)
+	       (t 'cvtps2pi)))
+	((eqcar rest 'ucomis)
+	 (cond ((eq size-override* 16#66) 'ucomisd)
+	       (t 'ucomiss)))
+	((eqcar rest 'comis)
+	 (cond ((eq size-override* 16#66) 'comisd)
+	       (t 'comiss)))
+	))
+
+(de name-sse2 (rest)
+  (cond	((eqcar rest 'sqrt)
+	 (cond ((eq size-override* 16#66) 'sqrtpd)
+	       ((eq rep-prefix* 16#f3) 'sqrtss)
+	       ((eq rep-prefix* 16#f2) 'sqrtsd)
+	       (t 'sqrtps)))
+	((eqcar rest 'rsqrt)
+	 (cond ((eq rep-prefix* 16#f3) 'rsqrtss)
+	       (t 'rsqrtps)))
+	((eqcar rest 'rcp)
+	 (cond ((eq rep-prefix* 16#f3) 'rcpss)
+	       (t 'rcpps)))
+	((eqcar rest 'and)
+	 (cond ((eq size-override* 16#66) 'andpd)
+	       (t 'andps)))
+	((eqcar rest 'andn)
+	 (cond ((eq size-override* 16#66) 'andnpd)
+	       (t 'andnps)))
+	((eqcar rest 'or)
+	 (cond ((eq size-override* 16#66) 'orpd)
+	       (t 'orps)))
+	((eqcar rest 'xor)
+	 (cond ((eq size-override* 16#66) 'xorpd)
+	       (t 'xorps)))
+	((eqcar rest 'add)
+	 (cond ((eq size-override* 16#66) 'addpd)
+	       ((eq rep-prefix* 16#f3) 'addss)
+	       ((eq rep-prefix* 16#f2) 'addsd)
+	       (t 'addps)))
+	((eqcar rest 'mul)
+	 (cond ((eq size-override* 16#66) 'mulpd)
+	       ((eq rep-prefix* 16#f3) 'mulss)
+	       ((eq rep-prefix* 16#f2) 'mulsd)
+	       (t 'mulps)))
+	((eqcar rest 'cvts)
+	 (cond ((eq size-override* 16#66) 'cvtpd2ps)
+	       ((eq rep-prefix* 16#f3) 'cvtss2sd)
+	       ((eq rep-prefix* 16#f2) 'cvtsd2ss)
+	       (t 'cvtps2pd)))
+	((eqcar rest 'cvtd)
+	 (cond ((eq size-override* 16#66) 'cvtps2dq)
+	       ((eq rep-prefix* 16#f3) 'cvttps2dq)
+	       (t 'cvtdq2ps)))
+	((eqcar rest 'sub)
+	 (cond ((eq size-override* 16#66) 'subpd)
+	       ((eq rep-prefix* 16#f3) 'subss)
+	       ((eq rep-prefix* 16#f2) 'subsd)
+	       (t 'subps)))
+	((eqcar rest 'min)
+	 (cond ((eq size-override* 16#66) 'minpd)
+	       ((eq rep-prefix* 16#f3) 'minss)
+	       ((eq rep-prefix* 16#f2) 'minsd)
+	       (t 'minps)))
+	((eqcar rest 'div)
+	 (cond ((eq size-override* 16#66) 'divpd)
+	       ((eq rep-prefix* 16#f3) 'divss)
+	       ((eq rep-prefix* 16#f2) 'divsd)
+	       (t 'divps)))
+	((eqcar rest 'max)
+	 (cond ((eq size-override* 16#66) 'maxpd)
+	       ((eq rep-prefix* 16#f3) 'maxss)
+	       ((eq rep-prefix* 16#f2) 'maxsd)
+	       (t 'maxps)))
+	))
+
+(de name-sse3 (rest)
+    (cond ((eqcar rest 'movw)
+	   (cond ((eq rep-prefix* 16#f3) 'movq)
+		 (t 'movd)))
+	  ((eqcar rest 'movwa)
+	   (cond ((eq size-override* 16#66) 'movdqa)
+		 ((eq rep-prefix* 16#f3) 'movdqu)
+		 (t 'movq)))
+	  ))
 
 (de disassemble (fkt)
    (prog(base instr jk jk77 p1 pp lth pat x
@@ -552,11 +835,19 @@ loop
 
          (when (eq name 'grp1) (setq name (namegrp1)))
          (when (eq name 'grp5) (setq name (namegrp5)))
+         (when (eq name 'grp3) (setq name (namegrp3)))
          (when (eq name 'shift)(setq name (nameshift)))
+         (when (eq name 'convert)(setq name (nameconvert)))
+	 (when (eq name 'x87fpu) (setq name (name-x87fpu)))
+	 (when (eqcar name 'sse) (setq name (name-sse (cdr name))))
+         (when (eq name 'grp15) (setq name (namegrp15)))
 
          (cond ((atsoc 'op2 instr)
-                (setq pat (list (cdr (atsoc 'op1 instr)) ","
-                                (cdr (atsoc 'op2 instr)) )))
+		(if *gassyntax
+		    (setq pat (list (cdr (atsoc 'op2 instr)) ","
+				    (cdr (atsoc 'op1 instr)) ))
+		  (setq pat (list (cdr (atsoc 'op1 instr)) ","
+				  (cdr (atsoc 'op2 instr)) ))))
                ((atsoc 'op1 instr)
                 (setq pat (list (cdr (atsoc 'op1 instr)))))
                (t (setq pat nil)))
@@ -577,13 +868,14 @@ loop
          (when (greaterp lth 4) (prin2 " ") (prinbnx (pop pp) 2))
          (when (greaterp lth 5) (prin2 " ") (prinbnx (pop pp) 2))
          (when (greaterp lth 6) (prin2 " ") (prinbnx (pop pp) 2))
-         (ttab 35)
+         (when (greaterp lth 7) (prin2 " ") (prinbnx (pop pp) 2))
+         (ttab 38)
          (when name (prin2 name))
-         (ttab 43)
-         (prinblx (subla instr pat))
+         (ttab 46)
+         (if pat (prinblx (subla instr pat)))
          (prin2 "    ")
 
-         (when *comment (ttab 60) (prin2 *comment))
+         (when *comment (ttab 63) (prin2 *comment))
          (setq *comment nil)
          (setq base (plus2 base lth))
          (setq lc (add1 lc))
