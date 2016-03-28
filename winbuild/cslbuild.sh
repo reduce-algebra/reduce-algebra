@@ -18,15 +18,9 @@
 #     rely of cygwin 32-to-64 cross compilation, but I do use a very curious
 #     little program to "change gear" from 32 to 64-bit cygwin!
 #
-# (2) ##You are either using a 32-bit version of Windows or you are launching
-#     ##this script from cygwin32 and you do not have cygwin64 installed. The
-#     ##cygwin64 binaries will be created using a cross-build via the toolchain
-#     ##x86_64-pc-cygwin. This is expected to work but I also generally believe
-#     ##that the cross-toolchain will be less well tested and supported than
-#     ##the native 64-bit one, and that is why I prefer (1) despite the odd
-#     ##nature of the gear-change fronm 32 to 64-bit cygwin worlds.
-#### This capability has to be withdrawn because cygwin have withdrawn many
-#### of the cygwin64-* libraries from their 32-bit product.
+# [I used to have a case (2) here where a 32-bit cygwin cross-built 64-bit
+#  cygwin executables, but that is no longer viable because cygwin have
+#  withdrawn various of the libraries that are required]
 #
 # (3) This script is launched from a cygwin64 shell but 32-bit cygwin is
 #     also installed. Here the cygwin32 binaries can NOT be built (easily)
@@ -73,7 +67,6 @@ case $cygwin in
   then
     buildcase=1
   else
-    buildcase=2
     printf "\n++++ Building on a 32-bit host is no longer supported ++++\n"
     printf "cygwin do not provide cygwin64-* libraries in that world\n"
     exit 1
@@ -94,11 +87,8 @@ esac
 # Sometimes I will need the "other" cygwin installed as well. Detect that
 # case and check that all will be well...
 
-case buildcase in
-1 | 3)
-  ./cygalt ../scripts/cygwin-sanity-check.sh
-  ;;
-esac
+../scripts/cygwin-sanity-check.sh
+./cygalt ../scripts/cygwin-sanity-check.sh
 
 
 # Configure and build CSL version from scratch
@@ -113,11 +103,11 @@ esac
 
 ./cslwin32.sh
 
-# (2) a cygwin32 version. This uses native compilation in cases 1 and 2
+# (2) a cygwin32 version. This uses native compilation in case 1
 #     and temporary version flipping in case 3
 
 case $buildcase in
-1 | 2)
+1)
   ./cslcyg32.sh
   ;;
 3)
@@ -132,10 +122,10 @@ esac
 
 ./cslwin64.sh
 
-# (4) a cygwin64 version
+# (4) a cygwin64 version. Temp version flipping if needbe.
 
 case $buildcase in
-1 | 2)
+1)
   ./cslcyg64x.sh
   ;;
 3)
@@ -186,5 +176,3 @@ ls -lh cslbuild
 
 
 # Reduce built in the cslbuild directory
-
-

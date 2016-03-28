@@ -17,7 +17,14 @@ pushd cslcyg32
 
 mkdir crlibm
 pushd crlibm
-../../cygalt $reduce/csl/cslbase/crlibm/configure \
+../../cygalt $reduce/libraries/crlibm/configure \
+    --prefix=$reduce/winbuild/cslcyg32
+../../cygalt make install
+popd
+
+mkdir softfloat
+pushd softfloat
+../../cygalt $reduce/libraries/SoftFloat-3a/configure \
     --prefix=$reduce/winbuild/cslcyg32
 ../../cygalt make install
 popd

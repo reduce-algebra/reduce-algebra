@@ -8,7 +8,7 @@
 if test  "x`uname -m`" != "xx86_64"
 then
   printf "This script needs to be run in a 64-bit cygwin environment\n"
-  printf "You seem bot to be in one, so I am giving up\n"
+  printf "You seem not to be in one, so I am giving up\n"
   exit 1
 fi
 
@@ -25,7 +25,13 @@ pushd cslcyg64
 
 mkdir crlibm
 pushd crlibm
-$reduce/csl/cslbase/crlibm/configure --prefix=$here/cslcyg64
+$reduce/libraries/crlibm/configure --prefix=$here/cslcyg64
+make install
+popd
+
+mkdir softfloat
+pushd softfloat
+$reduce/libraries/SoftFloat-3a/configure --prefix=$here/cslcyg64
 make install
 popd
 

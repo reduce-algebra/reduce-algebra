@@ -16,7 +16,13 @@ pushd cslcyg32
 
 mkdir crlibm
 pushd crlibm
-$reduce/csl/cslbase/crlibm/configure --prefix=$here/cslcyg32
+$reduce/libraries/crlibm/configure --prefix=$here/cslcyg32
+make install
+popd
+
+mkdir softfloat
+pushd softfloat
+$reduce/libraries/SoftFloat-3a/configure --prefix=$here/cslcyg32
 make install
 popd
 

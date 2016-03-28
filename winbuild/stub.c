@@ -565,7 +565,6 @@ int main(int argc, char* argv[])
     for (i=1; i<argc; i++)
     {   if (strcmp(argv[i], "--") == 0) dashdash = 1;
         else if (strcmp(argv[i], "--cygwin") == 0) force_cygwin = 1;
-        }
     }
     if (!force_cywgin &&
         (gcsbi ||              // console available: can use Windows API

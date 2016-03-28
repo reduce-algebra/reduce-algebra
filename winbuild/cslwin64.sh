@@ -16,7 +16,14 @@ pushd cslwin64
 
 mkdir crlibm
 pushd crlibm
-$reduce/csl/cslbase/crlibm/configure --prefix=$here/cslwin64 \
+$reduce/libraries/crlibm/configure --prefix=$here/cslwin64 \
+    --host=x86_64-w64-mingw32
+make install
+popd
+
+mkdir softfloat
+pushd softfloat
+$reduce/libraries/SoftFloat-3a/configure --prefix=$here/cslwin64 \
     --host=x86_64-w64-mingw32
 make install
 popd

@@ -80,6 +80,6 @@ reduce-source-psl-$(SNAPSHOT).tar.bz2:
 		reduce-source-$(SNAPSHOT)/psl
 
 clean:
-	rm *.deb *.rpm *.stamp
+	rm -f *.deb *.rpm *.stamp
 
 # end of Makefile
