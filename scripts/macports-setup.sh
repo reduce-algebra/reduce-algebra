@@ -41,6 +41,7 @@
 # polyml      My experiment with an ML implementation of TeX layout
 #             algorithms needs this.
 # psutils,
+# subversion  a newer version than the one that comes with OSX/Xcode
 # TeX stuff   For building documentation
 # vim         Some of you may want emacs (too?)
 # wget        For fetching stuff from elsewhere.
@@ -89,6 +90,7 @@ sudo port install          \
   pkgconfig                \
   polyml                   \
   psutils                  \
+  subversion               \
   texlive-fonts-extra      \
   texlive-htmlxml          \
   texlive-latex-extra      \

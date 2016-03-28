@@ -14,21 +14,27 @@
 #     cygwin32 Reduce natively and win32 and win64 using i686-w64-mingw32 and
 #     x86_64-w64-mingw32. To build a cygwin64 version it will temporarily
 #     divert into cygwin64 so that that is performed a a native build there.
+#     By doing the temporary diversion into cygwin64 I do not end up trying to
+#     rely of cygwin 32-to-64 cross compilation, but I do use a very curious
+#     little program to "change gear" from 32 to 64-bit cygwin!
 #
-# (2) You are either using a 32-bit version of Windows or you are launching
-#     this script from cygwin32 and you do not have cygwin64 installed. The
-#     cygwin64 binaries will be created using a cross-build via the toolchain
-#     x86_64-pc-cygwin. This is expected to work but I also generally believe
-#     that the cross-toolchain will be less well tested and supported than
-#     the native 64-bit one, and that is why I prefer (1) despite the odd
-#     nature of the gear-change fronm 32 to 64-bit cygwin worlds.
+# (2) ##You are either using a 32-bit version of Windows or you are launching
+#     ##this script from cygwin32 and you do not have cygwin64 installed. The
+#     ##cygwin64 binaries will be created using a cross-build via the toolchain
+#     ##x86_64-pc-cygwin. This is expected to work but I also generally believe
+#     ##that the cross-toolchain will be less well tested and supported than
+#     ##the native 64-bit one, and that is why I prefer (1) despite the odd
+#     ##nature of the gear-change fronm 32 to 64-bit cygwin worlds.
+#### This capability has to be withdrawn because cygwin have withdrawn many
+#### of the cygwin64-* libraries from their 32-bit product.
 #
 # (3) This script is launched from a cygwin64 shell but 32-bit cygwin is
 #     also installed. Here the cygwin32 binaries can NOT be built (easily)
 #     using i686-pc-cygwin cross compilation because (at the time of writing)
 #     cygwin does not provide all the libraries needed (eg Xft and fontconfig).
 #     Thus there will be temporary diversion into cygwin32 for building that
-#     version.
+#     version. This context switch into 32-bit cygwin is now officially the
+#     best that cygwin will support.
 #
 # In cases the x86_64-pc-windows versions should create 64-bit image files
 # and I will use those. In case 2 I will use the image file made for
@@ -68,6 +74,9 @@ case $cygwin in
     buildcase=1
   else
     buildcase=2
+    printf "\n++++ Building on a 32-bit host is no longer supported ++++\n"
+    printf "cygwin do not provide cygwin64-* libraries in that world\n"
+    exit 1
   fi
   ;;
 64)

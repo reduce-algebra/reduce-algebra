@@ -531,7 +531,15 @@ case $inplace in
 # Now I am configuring for CSL and am doing so from the top directory. If
 # I am on Windows I will configure for variants:
 #   i686-pc-cygwin
-#   x86_64-pc-cygwin
+##### As of March 2016 cygwin have withdrawn support for building 64-bit
+##### cygwin code from a 32-bit cygwin shell. I therefore need to remove
+##### attempts to use that capability. The result is that if you are in a
+##### cygwin32 shell you can only build 32-bit cywgin executables and
+##### equivalently with 64-bit cygwin. For now I will not guarantee what
+##### will happen here if you run configure/make from a 64-big cygwin shell,
+##### and I will only support 32-bit cygwin until I have more time to work
+##### out some way around this inconvenience.
+#####   x86_64-pc-cygwin
 #   i686-w64-mingw
 #   x86_64-w64-mingw
 # I will run the configure script for one of those if I have the relevant
@@ -555,12 +563,18 @@ case $inplace in
       else
         have_cyg32="no"
       fi
+#### Even if the compiler is present the various libraries that I need
+#### will not be these days!
+      have_cyg32="no"
       if test -x /usr/bin/x86_64-pc-cygwin-gcc
       then
         have_cyg64="yes"
       else
         have_cyg64="no"
       fi
+#### Even if the compiler is present the various libraries that I need
+#### will not be these days!
+      have_cyg64="no"
       if test -x /usr/bin/i686-w64-mingw32-gcc
       then
         have_mingw32="yes"
@@ -587,6 +601,10 @@ case $inplace in
 # running on cyg32 but only the 64-bit if I am on cyg64. Well as of February
 # 2015 I can not cross-build the wxWidgets version for cyg64 using cyg32...
 #
+# As of March 2016 cygwin has rather abruptly withdraw many of the libraries
+# use to buyild 64-bit cygwin code on a 32-bit cywgin host, so the hope I
+# expressed above is dashed not just now but in a thorough and permenent way.
+#
 # Note that I will need to coordinte what I do here with the scripts in
 # winbuild that arrange to create all possible versions... and I probably
 # want an option that will cause this configure scrrip to fall back and make
@@ -597,7 +615,8 @@ case $inplace in
         then
           cygplatforms="i686-pc-cygwin"
         else
-          cygplatforms="i686-pc-cygwin x86_64-pc-cygwin"
+####      cygplatforms="i686-pc-cygwin x86_64-pc-cygwin"
+          cygplatforms="i686-pc-cygwin"
         fi
       fi
       if test "x$cyg64" = "xyes"

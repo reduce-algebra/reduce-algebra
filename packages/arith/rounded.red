@@ -495,14 +495,14 @@ symbolic procedure safe!-fp!-plus(u, v);
 % 2.0^(-44), but the test here that sees if adding a small fraction of
 % r to u makes no difference avoids the absolute value conversions.
 % The largest possible value for the LHS arises if u is the biggest possible
-% number and v the most negative possible balue. This is still in range
+% number and v the most negative possible value. This is still in range
 % (ie it does not overflow to give an infinity). That is a plausible reason
 % for the test having a "-" not a "+" in it.
 % I *REALLY think that returning 0.0 here rather than the value that would
 % naturally be computed is WRONG.
     else if u - r*0.001953125 = u then return 0.0
 % I want to test if the result is infinite. To do this I subtract it
-% fr4om itself. Any finite number will lead to 0.0, but (infinity-infinity)
+% from itself. Any finite number will lead to 0.0, but (infinity-infinity)
 % yields a NaN which is not equal to 0.0.
     else if r-r = 0.0 then return r
 % ... the result overflowed and r was an IEEE infinity.

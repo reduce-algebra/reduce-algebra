@@ -11,7 +11,7 @@
 # a starting point.
 #
 # In January 2015 I believe that if I run under cygwin32 I can build
-# binaries for i686-pc-cygwin, i686-pc-windows, x86_64-pc-cygwin
+# binaries for i686-pc-cygwin, i686-pc-windows, XXXx86_64-pc-cygwinXXX
 # and x86_64-pc-windows. If I am running on top of a 64-bit version of
 # Windows I can create the Reduce image files using any of these apart
 # from x86_64-pc-cygwin. If I am running on a 32-bit release of Windows
@@ -31,6 +31,10 @@
 # is possible to cross-build it will be safer to install both the 32- and
 # 64-bit systems and use each for building its own version of Reduce.
 #
+# March 2016: cygwin are withdrawing cygwin64-* libraries etc as things that
+# users can exploit to cross-build 64-bit cygwin applicatiosn on aq 32-bit
+# playform.
+#
 # This script detects which cygwin version it is run under and proposes
 # packages to install such that when their dependencies are also installed
 # things should be OK. The set of packages here will suffice for the
@@ -42,7 +46,7 @@
 # libgtk2.0 is not provided in versions for cross building between 32 and
 # 64-bit versions of cygwin.
 
-# [Reviewed January 2016]
+# [Reviewed March 2016]
 
 pneed=""
 need=""
@@ -50,10 +54,9 @@ need=""
 case `uname -m` in
 i686)
     width="x86"
-    for m in automake bc bison cygwin64-gcc-g++ cygwin64-libtool \
-        cygwin64-libXext cygwin64-libXft cygwin64-ncurses cygwin64-libpng \
-        cygwin64-zlib gcc-g++ libgtk2.0-devel libncurses-devel \
-        libpng15-devel libtool libXext-devel libXft-devel make \
+    for m in automake bc bison cygwin64-gcc-g++ \
+        gcc-g++ libgtk2.0-devel libncurses-devel \
+        libpng-devel libtool libXext-devel libXft-devel make \
         mingw64-i686-gcc-g++ mingw64-i686-zlib mingw64-x86_64-gcc-g++ \
         mingw64-x86_64-zlib openssh subversion time wget
     do
@@ -78,8 +81,8 @@ i686)
 x86_64)
     width="x86_64"
     for m in automake bc bison cygwin32-gcc-g++ \
-        cygwin32-ncurses cygwin32-zlib gcc-g++ libgtk2.0-devel \
-        libncurses-devel libpng15-devel libtool libXext-devel libXft-devel \
+        gcc-g++ libgtk2.0-devel \
+        libncurses-devel libpng-devel libtool libXext-devel libXft-devel \
         make mingw64-i686-gcc-g++ mingw64-i686-zlib mingw64-x86_64-gcc-g++ \
         mingw64-x86_64-zlib openssh subversion time wget
     do

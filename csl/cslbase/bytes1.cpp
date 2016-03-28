@@ -1,11 +1,11 @@
-// bytes1.cpp                        Copyright (C) 1991-2015, Codemist Ltd
+// bytes1.cpp                        Copyright (C) 1991-2016, Codemist Ltd
 //
 //
 // Bytecode interpreter for Lisp
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -989,50 +989,6 @@ extern int profile_count_mode;
 
 static uint64_t total = 0, frequencies[256];
 
-//
-// Another horrid issue! On a 32-bit machine I keep profile counts in a
-// 32-bit field, and now in 2015 it only takes a couple of seconds for a tight
-// loop to cause that to overflow. That is a misery! So to increment counts
-// I will keep everything in the main count field in 64-bit systems and
-// use a property-list field as an extension on 32-bit ones (giving me
-// a limit at 30+27=57 bits in that case). This should result in absolute
-// compatibility as to statistics gathered, but the way I have implemented
-// it can leave a property list entry in 32-bit images that will not be used
-// in 64-bit contexts.
-//
-static int increment_counter(LispObject nil, int n)
-{
-//
-// C does not let me make the test on word-size a compile time test, so I
-// need to hope that the compiler optimises this apparently dynamic test
-// away for me.
-//
-//  if (CELL == 8)
-    qcount(elt(litvec, 0)) += n;
-//  else
-//  {   LispObject name = elt(litvec, 0);
-//      uint64_t count = qcount(name) + n;
-//      if ((count & 0xc0000000) != 0)
-//      {   uintptr_t extra = (count >> 30) & 0x3;
-//          LispObject prop = get(name, count_high);
-//          if (is_fixnum(prop)) extra += int_of_fixnum(prop);
-//          putprop(name, count_high, fixnum_of_int(extra));
-//          count &= 0x3fffffff;
-//      }
-//      qcount(name) = count;
-//
-// Unfortunately it is at least possible that "put" might report an error
-// here, so I need to check for that.
-//
-//      nil = C_nil;
-//      if (exception_pending())
-//      {   flip_exception();
-//          return 1;
-//      }
-//  }
-    return 0;
-}
-
 #endif
 
 LispObject bytecounts(LispObject nil, int nargs, ...)
@@ -1511,7 +1467,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
 #endif
     litvec = lit;
 #ifndef NO_BYTECOUNT
-    if (increment_counter(nil, profile_count_mode ? 1 : 30)) return nil;
+    qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
     // Attribute 30-bytecode overhead to entry sequence
 #endif
 //
@@ -1579,9 +1535,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
     {
 //      HANDLE_BLIP;
 #ifndef NO_BYTECOUNT
-        if (!profile_count_mode)
-        {   if (increment_counter(nil, 1)) goto pop_stack_and_exit;
-        }
+        if (!profile_count_mode) qcount(elt(litvec, 0)) += 1;
         total++;
         frequencies[*ppc]++;
 #endif
@@ -5079,8 +5033,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
             stack = ((LispObject *)((intptr_t)entry_stack & ~(intptr_t)1));
             ppc = (unsigned char *)data_of_bps(codevec);
 #ifndef NO_BYTECOUNT
-            if (increment_counter(nil, profile_count_mode ? 1 : 30))
-                goto pop_stack_and_exit;
+            qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
 #endif
             continue;
         }
@@ -5110,8 +5063,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
             pop2(codevec, litvec);
             ppc = (unsigned char *)data_of_bps(codevec);
 #ifndef NO_BYTECOUNT
-            if (increment_counter(nil, profile_count_mode ? 1 : 30))
-                goto pop_stack_and_exit;
+            qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
 #endif
             continue;
         }
@@ -5199,8 +5151,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
             push(A_reg);
             ppc = (unsigned char *)data_of_bps(codevec);
 #ifndef NO_BYTECOUNT
-            if (increment_counter(nil, profile_count_mode ? 1 : 30))
-                goto pop_stack_and_exit;
+            qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
 #endif
             continue;
         }
@@ -5227,8 +5178,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
             pop2(codevec, litvec);
             ppc = (unsigned char *)data_of_bps(codevec);
 #ifndef NO_BYTECOUNT
-            if (increment_counter(nil, profile_count_mode ? 1 : 30))
-                goto pop_stack_and_exit;
+            qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
 #endif
             continue;
         }
@@ -5340,8 +5290,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
             push2(B_reg, A_reg);
             ppc = (unsigned char *)data_of_bps(codevec);
 #ifndef NO_BYTECOUNT
-            if (increment_counter(nil, profile_count_mode ? 1 : 30))
-                goto pop_stack_and_exit;
+            qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
 #endif
             continue;
         }
@@ -5368,8 +5317,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
             pop2(codevec, litvec);
             ppc = (unsigned char *)data_of_bps(codevec);
 #ifndef NO_BYTECOUNT
-            if (increment_counter(nil, profile_count_mode ? 1 : 30))
-                goto pop_stack_and_exit;
+            qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
 #endif
             continue;
         }
@@ -5459,8 +5407,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
             push3(r2, B_reg, A_reg);
             ppc = (unsigned char *)data_of_bps(codevec);
 #ifndef NO_BYTECOUNT
-            if (increment_counter(nil, profile_count_mode ? 1 : 30))
-                goto pop_stack_and_exit;
+            qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
 #endif
             continue;
         }
@@ -5487,8 +5434,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
             pop2(codevec, litvec);
             ppc = (unsigned char *)data_of_bps(codevec);
 #ifndef NO_BYTECOUNT
-            if (increment_counter(nil, profile_count_mode ? 1 : 30))
-                goto pop_stack_and_exit;
+            qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
 #endif
             continue;
         }

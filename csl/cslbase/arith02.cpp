@@ -1723,7 +1723,8 @@ static LispObject timesff(LispObject a, LispObject b)
 //
 // multiply boxed floats - see commentary on plusff()
 //
-{   int32_t ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
+{
+    int32_t ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
     int32_t hc;
     if (ha == TYPE_LONG_FLOAT || hb == TYPE_LONG_FLOAT)
     {   float128_t x, y, z;
@@ -1735,7 +1736,26 @@ static LispObject timesff(LispObject a, LispObject b)
     else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
         hc = TYPE_DOUBLE_FLOAT;
     else hc = TYPE_SINGLE_FLOAT;
-    return make_boxfloat(float_of_number(a) * float_of_number(b), hc);
+    double r = float_of_number(a) * float_of_number(b);
+// I am going to assume that I have IEEE arithmetic set if a mode where
+// edge-case calculations return an infinity or a NaN. Both these cases
+// can arise here.  huge*huge can yield an infinity, while if somehow
+// one already had an infinity then multiplying it by 0.0 will give a NaN.
+// I use the arithmetic tests here since the stand a chance of working
+// "almost everywhere". There are two serious alternatives. One is to
+// use fetestexcept() [and variations on that on platforms where it is
+// not available] to test after performing an operation. That is perhaps
+// standardized in C++11, but support may still be patchy across the compilers
+// that people are still using. The other would be to arrange that overflow
+// etc raised traps/exceptions that then get reconised and handled.
+// Portability there is also delicate and the trap handling is messy. So the
+// somewhat odd tests here at present seems safest to me. Note that
+// 1.0/MAX_DOUBLE is non-zero on a proper IEEE system because sub-normalised
+// numbers provide significant footroom.
+#if CHECK_FOR_OVERFLOW
+    if (1.0/r == 0.0 || r != r) return aerror("floating point times");
+#endif
+    return make_boxfloat(r, hc);
 }
 
 //
@@ -1746,7 +1766,7 @@ static LispObject timesff(LispObject a, LispObject b)
 #ifdef TEST_BIGNUM
 
 //
-// If I have suspicions about the behaviour of the ariithmetic code I can
+// If I have suspicions about the behaviour of the arithmetic code I can
 // do some degree of extra testing. Eg I can compute the same value twice
 // (once inefficiently) and compare results.
 //
