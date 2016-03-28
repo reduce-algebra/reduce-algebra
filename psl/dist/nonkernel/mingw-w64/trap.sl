@@ -69,10 +69,12 @@
         % don't need SIGRELSE
      ,handler
      (*move (frame 2) (fluid errornumber*))  % number of signal received
-     (push (reg rbp))                        % save a couple of registers
+     (push (reg rbp))                        % save a couple of registers (rbp, rsp, rbx, rdi, rsi) 
      (*move (reg st) (reg rbp))
      (push (reg rbp))
      (push (reg 2))
+     (push (reg rdi))
+     (push (reg rsi))
      (*move ($fluid saved_pxcptinfoptrs) (reg 1)) % grabs the pointer to a
                                              % EXCEPTION_POINTERS structure
                                              % which contains
@@ -91,8 +93,12 @@
  					     % function errortrap
      (*move (quote ,errorstring) (fluid errorstring*))
 					     % string for error message
+     (push (reg 1))
      (*link initializeinterrupts-1 expr 0)
-     (pop (reg 2)) 		             % restored saved registers
+     (pop (reg 1))
+     (pop (reg rsi)) 		             % restored saved registers
+     (pop (reg rdi))
+     (pop (reg 2))
      (pop (reg rbp))
      (*move (reg rbp) (reg st))
      (pop (reg rbp))
