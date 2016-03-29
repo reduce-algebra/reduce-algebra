@@ -7,7 +7,27 @@
 #
 #   cslbuild1.sh [cyg32/win32/cyg64/win64] [cygalt/]
 
+# There is a mess in some of what I do because cygwin32 and cygwin64 will
+# each have their own separate root file-systems and home directories. The
+# consequence is that paths such as /something, /home/username/something and
+# /usr/bin/something can refer to Windows paths c:\cygwin\something or
+# c:\cygwin64\something (etc) depending on which is in use. To avoid
+# any confusion when I use my "cygalt" program and pass paths to scripts
+# I want to construct very plain explicit absolute paths. I start with
+# "cygpath -a ." which may deliver something like "/cygdrive/path1/path2/"
+# and which leaves a "/" on the end of its result. I remove the trailing "/",
+# then convert to a "mixed" path, which may be "C:/cygwin/path1/path2", but
+# is now a proper absolute path regardless of any mounted cygwin folders such
+# as "/usr/bin" and "home". To get that back to be suitable for use as a
+# cygwin path I put "/cygpath" on the start and remove the ":". I do not
+# seem to be able to use cygpath, since for instance that maps "C:\cygwin\home"
+# to just "/home" on 32-bit cygwin but "C:\cygwin64\home" to "/home" in the
+# 64-bit world.  
+
 here=`cygpath -a .`
+here=${here%/}
+here=`cygpath -m $here`
+here=`echo /cygdrive/$here | sed -e 's/://'`
 reduce="$here/C"
 
 case $1 in
