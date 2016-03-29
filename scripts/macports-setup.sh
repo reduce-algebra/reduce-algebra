@@ -1,6 +1,6 @@
 #! /bin/sh -v
 
-# scripts/macports.sh
+# scripts/macports-setup.sh
 #
 # This script assumes that MacPorts has already been installed and that
 # relevant changes have been made to your PATH so that it is ready for use.
@@ -57,12 +57,12 @@ cd $here
 #   macosx_deployment_target 10.10
 #   buildfromsource always
 
-conf=/opt/local/etc/macports/macport.conf
+conf=/opt/local/etc/macports/macports.conf
 if ! test -f $conf || \
    ! grep macosx_deployment_target $conf > /dev/null || \
    ! grep "buildfromsource always" $conf > /dev/null
 then
-  printf "macport.conf seems not to exist, or does not contain the lines\n"
+  printf "macports.conf seems not to exist, or does not contain the lines\n"
   printf "   macosx_deployment_target 10.10\n"
   printf "   buildfromsource always\n"
   printf "Please correct that and try again.\n"
