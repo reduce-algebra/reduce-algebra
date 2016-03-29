@@ -566,7 +566,7 @@ int main(int argc, char* argv[])
     {   if (strcmp(argv[i], "--") == 0) dashdash = 1;
         else if (strcmp(argv[i], "--cygwin") == 0) force_cygwin = 1;
     }
-    if (!force_cywgin &&
+    if (!force_cygwin &&
         (gcsbi ||              // console available: can use Windows API
          dashdash ||           // "--" seen: no console API needed
          t0==FILE_TYPE_DISK || // stdin or stdout disk: no console API needed

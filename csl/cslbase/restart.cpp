@@ -371,6 +371,7 @@ int native_code_tag;
 int32_t native_pages_changed;
 int32_t native_fringe;
 int current_fp_rep;
+bool trap_floating_overflow = true;
 static int old_fp_rep;
 static bool flip_needed;
 static int old_page_bits;
@@ -6519,8 +6520,8 @@ void copy_into_nilseg(int fg)
 
     int i;
     if (fg)     // move non list bases too
-    {   BASE[12]                                 = byteflip;
-        BASE[13]                                 = codefringe;
+    {   BASE[12]                                = byteflip;
+        BASE[13]                                = codefringe;
         *(LispObject volatile *)&BASE[14]       = codelimit;
 //
 // The messing around here is to ensure that on 64-bit architectures
@@ -6529,11 +6530,11 @@ void copy_into_nilseg(int fg)
 #ifdef COMMON
         *(LispObject * volatile *)&BASE[16] = stacklimit;
 #else
-        *(LispObject * volatile *)&BASE[15] = stacklimit;
+        *(LispObject * volatile *)&BASE[15]  = stacklimit;
 #endif
         BASE[18]                             = fringe;
-        *(LispObject volatile *)&BASE[19]   = heaplimit;
-        *(LispObject volatile *)&BASE[20]   = vheaplimit;
+        *(LispObject volatile *)&BASE[19]    = heaplimit;
+        *(LispObject volatile *)&BASE[20]    = vheaplimit;
         BASE[21]                             = vfringe;
         BASE[22]                             = miscflags;
 
@@ -6546,6 +6547,7 @@ void copy_into_nilseg(int fg)
         BASE[30]                             = fastget_size;
         BASE[31]                             = package_bits;
         BASE[32]                             = modulus_is_large;
+        BASE[33]                             = (int)trap_floating_overflow;
     }
 //
 // Entries 50 and 51 are used for chains of hash tables, and so get
@@ -6726,6 +6728,7 @@ void copy_out_of_nilseg(int fg)
         fastget_size     = BASE[30];
         package_bits     = BASE[31];
         modulus_is_large = BASE[32];
+        trap_floating_overflow = (bool)BASE[33];
     }
 
     current_package       = BASE[52];

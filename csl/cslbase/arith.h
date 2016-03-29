@@ -93,6 +93,31 @@
 #define clear_top_bit(n)   ((n) & 0x7fffffff)
 #define signed_overflow(n) top_bit_set((n) ^ (((int32_t)(n))<<1))
 
+// The following tests for IEEE infinities and NaNs depends on arithmetic
+// being regular double-precision rounded to a 64-bit double at each stage.
+// An old-enough Intel system might have used the 8087-style 80-bit floating
+// point and hance could cause trouble. I hope that all modern compilers
+// for that architecture will use SSE instructions that behave in a more
+// obvious IEEE manner.
+#define floating_edge_case(r) (1.0/(r) == 0.0 || (r) != (r))
+#define floating_clear_flags() ((void)0)
+// An alternative possible implementation could go
+//    #include <fenv.h>
+//    {
+//    #pragma STDC FENV_ACCESS ON
+//        <arithmetic>
+//        if (fetestexcept(FE_OVERFLOW | FE_INVALID | FE_DIVBYZERO))
+//        {   feclearexcept(FE_ALL_EXCEPT);
+//            ..
+//        }
+//    }
+// The pragma came in with C99 and C++11, but at the time of writing gcc
+// and g++ do not support it. When and if they do I may move to the
+// second implementation!
+
+#define floating_edge_case128(r) \
+    (f128M_infinite(r) || f128M_nan(r))
+
 #ifdef HAVE_UINT64_T
 //
 // Here I do some arithmetic in-line. In the following macros I need to

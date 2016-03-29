@@ -397,6 +397,13 @@ static LispObject timesic(LispObject a, LispObject b)
 
 static LispObject timesif(LispObject a, LispObject b)
 {   double d = (double)int_of_fixnum(a) * float_of_number(b);
+    if (trap_floating_overflow &&
+        floating_edge_case(d))
+    {   floating_clear_flags();
+        return aerror("floating point times");
+    }
+// if b was a single or short float then there can be an overflow to infinity
+// within make_boxfloat...
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
@@ -413,6 +420,11 @@ static LispObject timessb(LispObject a, LispObject b)
 
 static LispObject timessf(LispObject a, LispObject b)
 {   double d = float_of_number(a) * float_of_number(b);
+    if (trap_floating_overflow &&
+        floating_edge_case(d))
+    {   floating_clear_flags();
+        return aerror("floating point times");
+    }
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
@@ -1731,6 +1743,11 @@ static LispObject timesff(LispObject a, LispObject b)
         x = float128_of_number(a);
         y = float128_of_number(b);
         f128M_mul(&x, &y, &z);
+        if (trap_floating_overflow &&
+            floating_edge_case128(&z))
+        {   floating_clear_flags();
+            return aerror("floating point times");
+        }
         return make_boxfloat128(z);
     }
     else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
@@ -1751,10 +1768,12 @@ static LispObject timesff(LispObject a, LispObject b)
 // Portability there is also delicate and the trap handling is messy. So the
 // somewhat odd tests here at present seems safest to me. Note that
 // 1.0/MAX_DOUBLE is non-zero on a proper IEEE system because sub-normalised
-// numbers provide significant footroom.
-#if CHECK_FOR_OVERFLOW
-    if (1.0/r == 0.0 || r != r) return aerror("floating point times");
-#endif
+// numbers provide significant footroom (headroom would be room at the top!).
+    if (trap_floating_overflow &&
+        floating_edge_case(r))
+    {   floating_clear_flags();
+        return aerror("floating point times");
+    }
     return make_boxfloat(r, hc);
 }
 

@@ -547,6 +547,12 @@ LispObject Lmod(LispObject nil, LispObject p, LispObject q)
     return onevalue(p);
 }
 
+LispObject Ltrap_floating_overflow(LispObject nil, LispObject a)
+{   bool o = trap_floating_overflow;
+    trap_floating_overflow = (a != nil);
+    return onevalue(Lispify_predicate(o));
+}
+
 LispObject Lplus2(LispObject nil, LispObject p, LispObject q)
 {   if (is_fixnum(p) && is_fixnum(q))
     {   int32_t c = int_of_fixnum(p) + int_of_fixnum(q);
@@ -1759,6 +1765,7 @@ setup_type const arith06_setup[] =
     {"md5",                     Lmd5, too_many_1, wrong_no_1},
     {"md5string",               Lmd5string, too_many_1, wrong_no_1},
     {"md60",                    Lmd60, too_many_1, wrong_no_1},
+    {"trap-floating-overflow",  Ltrap_floating_overflow, too_many_1, wrong_no_1},
 #ifdef COMMON
     {"*",                       Lidentity, Ltimes2, Ltimes},
     {"+",                       Lidentity, Lplus2, Lplus},

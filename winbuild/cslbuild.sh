@@ -101,17 +101,17 @@ esac
 # the build platform.
 #
 
-./cslwin32.sh
+./cslbuild1.sh win32
 
 # (2) a cygwin32 version. This uses native compilation in case 1
 #     and temporary version flipping in case 3
 
 case $buildcase in
 1)
-  ./cslcyg32.sh
+  ./cslbuild1.sh cyg32
   ;;
 3)
-  ../cslcyg32x.sh
+  ../cslbuild1.sh cyg32 cygalt
   ;;
 esac
 
@@ -120,16 +120,16 @@ esac
 #     a version of that from somewhere that may not be useful for this
 #     build.
 
-./cslwin64.sh
+./cslbuild1.sh win64
 
 # (4) a cygwin64 version. Temp version flipping if needbe.
 
 case $buildcase in
 1)
-  ./cslcyg64x.sh
+  ./cslbuild1.sh cyg64 cygalt
   ;;
 3)
-  ./cslcyg64.sh
+  ./cslbuild1.sh cyg64
   ;;
 esac
 

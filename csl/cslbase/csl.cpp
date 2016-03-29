@@ -936,6 +936,7 @@ static void lisp_main(void)
     crlibstatus = crlibm_init();
     atexit(tidy_up_crlibm);
 #endif
+    trap_floating_overflow = true;
     tty_count = 0;
     while (true)
 //

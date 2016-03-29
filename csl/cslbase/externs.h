@@ -802,6 +802,7 @@ extern double consolidated_time[10], gc_time;
 extern bool volatile already_in_gc, tick_on_gc_exit;
 extern bool volatile interrupt_pending, tick_pending;
 extern int deal_with_tick(void);
+extern bool trap_floating_overflow;
 extern int current_fp_rep;
 extern const char *errorset_msg;
 extern int errorset_code;
@@ -1017,7 +1018,7 @@ extern void validate_string_fn(LispObject a, const char *f, int l);
 // The test here says:
 //   If a and b are EQ then they are EQUAL,
 //   else if a and b have different types they are not EQUAL
-//   else if a has type 1, 2, 3 or 4 (ie fixnum, odds, sfloat, symbol)
+//   else if a has type fixnum, odds, sfloat, symbol
 //            then they are not EQUAL (those types need to be EQ to be EQUAL)
 //   otherwise call equal_fn(a, b) to decide the issue.
 //
