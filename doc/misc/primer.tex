@@ -1,1 +1,2414 @@
-../primers/primer.tex
+\documentclass[11pt]{article}
+\newcommand{\reduce}{\small REDUCE}
+\newcommand{\ttindex}[1]{\index{#1@{\texttt{#1}}}}
+
+\usepackage{makeidx}
+\usepackage{hyperref}
+
+%\renewcommand{\rmdefault}{uaq}
+%\renewcommand{\sfdefault}{ugq}
+
+\title{REDUCE Symbolic Mode Primer}
+%\date{}
+\author{
+Herbert Melenk\\
+Konrad-Zuse-Zentrum
+f\"ur Informationstechnik Berlin\\
+Takustrasse 7,
+14195 Berlin-Dahlem,
+Germany\\
+\texttt{melenk@zib.de}}
+
+\makeindex
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+This document should explain some essential technical details for
+symbolic mode programming in {\reduce} for those who
+have some experience in {\reduce} algebraic programming
+and need to write a program in symbolic mode. For a general
+introduction to {\reduce} please consult the {\reduce} User's
+Manual or one of the available books, e.g.,  ``Algebraic
+computing with REDUCE'' by Malcolm MacCallum and Francis
+Wright (Oxford Press).
+
+This text cannot be complete, as the set of facilities
+available in {\reduce} is so rich that it would take years
+to describe all and months to read and understand such text.
+So a good policy for entering the business of symbolic mode
+programming is to study the source files---the
+liberal {\reduce} distribution policy simplifies this---and
+to understand those parts which contribute to the
+field which one would like to use. This text tries to
+collect in one place some of the wide spread basic information
+in order to facilitate your walk through the {\reduce} mountains.
+
+When should you write a program in symbolic mode?
+Symbolic programs are not \textit{a priori} better than algebraic
+programs---the essential thing is the mathematics which they
+implement. A common prejudice is that symbolic programs
+are more ``efficient.'' This is true only if you can
+save in symbolic mode substantial algebraic evaluation
+steps. As long as most of the
+computing time is needed for a few big calculations steps
+(integrals, equation solving, polynomial gcd computation, etc.)
+you will gain nothing when calling the same procedures
+from symbolic mode. However, if you need structures
+which are not present in algebraic mode or if you
+can design an evaluation avoiding lots of conversions,
+the step to symbolic mode programming is justified.
+
+As it is very difficult to design non-trivial but short
+examples for symbolic mathematical programming no
+attempt has been made in that direction. The examples
+in this text all are silly; please look at the
+sources of {\reduce} for meaningful material. The following pieces
+of the sources are good points for first reading as they
+provide a substantial functionality within a few pages
+of code:
+\begin{enumerate}
+\item module \texttt{polrep} in package \texttt{poly}: routines
+   addf, addd and addm, the heart of standard form and
+   standard quotient arithmetic,
+\item module \texttt{det} in package \texttt{matrix}: internal
+   arithmetic with symbolic entities (standard quotients)
+   and clever local data structure,
+\item module \texttt{rational} in package \texttt{poly}: implementation
+   of a typical {\reduce} domain,
+\item module \texttt{maxmin} in package \texttt{alg}: a typical
+   simplification routine for an operator,
+\item module \texttt{algbool} in package \texttt{alg}: demonstrates
+   how to supply ``small'' pieces of symbolic code for
+   algebraic use.
+\end{enumerate}
+
+For symbolic mode programming you will urgently need the
+\emph{Standard LISP Report} which describes
+the basic LISP functions; these will be available under all
+{\reduce} implementations and they guarantee an optimum
+of portability. However, in the course of the
+years {\reduce} has imported some additional functions on the
+LISP level -- they have been implemented on top of Standard LISP
+and live in the module \texttt{support}\index{support} of
+the package \texttt{rlisp.red}.
+In order to prevent the reinvention of the wheel these functions
+are described in the appendix as an extension to the
+\emph{Standard LISP Report}.
+
+The description is based on the recent version of REDUCE. Some of the
+described features are not available in earlier versions.
+
+\section{A very short course on RLISP}
+
+\subsection{What is RLISP?}
+
+As you will know {\reduce} is based on the programming
+language LISP, or to be more exact, on the LISP dialect
+\texttt{Standard LISP}. Fortunately
+\ttindex{LISP} \ttindex{Standard LISP}
+you need not learn the syntax of this language with its
+large number of brackets - the {\reduce}
+language is used for algebraic programming as well as
+for symbolic programs and in that mode it allows you to
+use all of the rich LISP data structures. It is LISP
+semantics in high level {\reduce} syntax. In the following
+it is expected that you are familiar with the {\reduce}
+programming language as far as it is used for algebraic
+mode programs. You should know how to write a (recursive) procedure
+with parameters and local variables, how to build loops,
+while blocks, \texttt{if-then-else} clauses and \texttt{begin-end} resp $<< - >>$
+blocks. If not, please study the {\reduce} manual first
+or have a look at the source files of the {\reduce}
+kernel - this is the best method for learning how to
+program in RLISP.
+
+\subsection{Modes and function classes}
+
+The symbols \texttt{symbolic} (or equivalent \texttt{lisp})
+\ttindex{symbolic} \ttindex{LISP}
+and \texttt{algebraic} \ttindex{algebraic}
+ play a double role: as a statement
+they switch the evaluation mode globally to \emph{symbolic}
+or \emph{algebraic mode} respectively, as a \emph{mode prefix}
+\index{mode prefix} they tell the
+{\reduce} evaluator that one isolated evaluation should
+be done in the named mode. The scope of this prefix use
+can be rather narrow (e.g., one single expression) or
+cover a larger piece of code up to a complete procedure.
+Typically procedures in symbolic modules should be tagged
+``symbolic'' explicitly although this might be redundant
+information in a totally symbolic context. If a procedure
+needs an evaluation mode different from the actual global
+one the \emph{mode prefix} must be set.
+
+In symbolic mode there are two additional procedure types
+available, \texttt{macro} \ttindex{macro} and \texttt{smacro}\ttindex{smacro}.
+The discussion of \texttt{macro}s is beyond the scope of
+this document - their use requires extensive knowledge of
+LISP. On the other hand \texttt{smacro}s are frequently use
+in {\reduce} and you will see lots of them in the sources.
+An \texttt{smacro} (an abbreviation for ``substitution macro'')
+is an ordinary procedure tagged with
+the symbol ``smacro'' and usually with a rather small body.
+At source read time (or better: at {\reduce} translator
+time) any call for an \texttt{smacro} will be replaced
+literally by the body of the \texttt{smacro} procedure
+which saves execution time for the call protocol at
+run time. So the purpose of \texttt{smacro}s is twofold:
+encapsulation of frequently used pieces of code and
+an increased efficiency (avoiding function calls).
+Example:
+\begin{verbatim}
+   smacro procedure my_diff(x,y); x-y;
+
+   symbolic procedure hugo(a,b); my_diff(a,b);
+\end{verbatim}
+Here the formal function call \emph{my\_diff} in the
+procedure literally is replaced by the body of the
+\texttt{smacro} where $x$ and $y$ are replaced by $a$ and
+$b$. Obviously this translation can be done only if
+the \texttt{smacro} declaration is entered in a {\reduce}
+session before the first reference. And later changes
+of an \texttt{smacro} don't affect previously translated
+references.
+
+Sometimes in older {\reduce} sources you will find
+the symbol \texttt{expr}\ttindex{expr} in front of a procedure declaration.
+This is more or less useless as the absence of \texttt{macro}
+or \texttt{smacro} symbols indicates that a procedure is
+of type \texttt{expr} - the default Standard LISP procedure type.
+
+
+\subsection{Evaluation model, symbols, and variables}
+
+The main difference between algebraic and symbolic
+mode lies in the \texttt{evaluation model}\ttindex{evaluation model}:
+\begin{itemize}
+\item In algebraic mode a symbol stands for itself
+as unknown as long as no value is assigned; after
+an assignment it plays the role of a representative
+for that value just like a variable in a standard
+programming language:
+\begin{verbatim}
+   1: x;
+   X
+   2: x := y+1$
+   3: x;
+   Y + 1
+\end{verbatim}
+
+In symbolic mode there
+is a clear barrier between the role of a symbol as
+variable of the programming language RLISP,
+a named item which represents some variable value,
+and the role to be part of an algebraic expression. If you mean
+the \emph{symbol x} you must write $'x$; without
+the quote tag $x$ is considered as \emph{variable x}
+and it will be asked for its value which is NOT $'x$
+initially. Uninitialized variables cause bugs.
+\item Consequently all variables \texttt{must be
+declared}.
+
+\item  In algebraic mode $u := (x+1)^\wedge 2;$
+\footnote{In this text the caret symbol ``$^\wedge$'' is
+used for exponentiation instead of the older
+FORTRAN-like operator ``**.''}
+means  {it compute a formula by expanding (x+1)*(x+1);
+if a value had been assigned to x, substitute the value for x}.
+In symbolic mode an algebraic expression is interpreted
+as statement to compute a numeric value, just like in \emph{C}
+or \emph{Pascal}.
+So $u := (x+1)^\wedge 2;$ in symbolic mode means: ``take the
+value of variable $x$ which is expected to be number,
+add 1, square and assign the resulting number to
+the variable $u$.''
+
+\item If you want to refer to an
+\texttt{algebraic expression} as a data object, you
+must code it as an \texttt{algebraic form}\index{algebraic form}
+(see below)
+and mark it as \texttt{constant}\ttindex{constant}
+by a \texttt{quote}\ttindex{quote}
+character. The only constants which don't need a
+\texttt{quote} are numbers and strings.
+Example:
+\begin{verbatim}
+   u := '(expt (plus x 1) 2);
+\end{verbatim}
+assigns the (algebraic) expression $(x+1)^\wedge 2$ to the variable $u$.
+
+\item algebraic mode implicitly supports standard arithmetic
+and algebraic evaluation
+for mathematical expressions of arbitrary complexity and
+for numbers from various domains. In symbolic mode,
+arithmetic with infix operators $+\,-\,*\, ^\wedge \,/$
+is supported only for the basic LISP numbers
+(mainly integers). All arithmetic for formulas, even
+for domain elements such as rounded numbers, complex
+numbers etc. has to be performed by calling explicitly
+the functions which can do that job or by calling
+explicitly the {\reduce} evaluator \texttt{reval}\index{reval}
+resp  \texttt{aeval}\index{aeval} (see below).
+\end{itemize}
+
+So symbolic mode programs are much more similar to
+programs in conventional programming languages such as
+Pascal or C. All algebraic functionality of {\reduce} is
+available only as an explicit subroutine interface.
+In contrast to algebraic mode nothing is done implicitly
+for you.
+
+\subsection{Variable types}
+
+RLISP supports in symbolic mode the following classes of variables:
+
+\begin{itemize}
+\item \texttt{Local variables}\index{local variables} in a procedure are
+ those
+  \begin{itemize}
+   \item declared in the parameter list,
+   \item declared in a \texttt{scalar}\ttindex{scalar}
+      or \texttt{integer}\ttindex{integer}
+       statement in a begin-end block,
+   \item bound in the right-hand side of a \texttt{where statement}
+   \item  implicitly introduced in a \texttt{for statement}
+      \ttindex{for statement}.
+  \end{itemize}
+ These are
+ valid only inside their local context. \texttt{scalar} variables
+ are initialized to $nil$, \texttt{integer} to 0 unless they
+ have a special initialization value (property \texttt{initvalue*}\index{initvalue*}).
+\begin{verbatim}
+   symbolic procedure my_adder(x, y);
+      begin integer r;
+         r := x+y;
+         return r
+      end;
+\end{verbatim}
+In this routine $x$, $y$, and $r$ are local variables.
+
+In algebraic mode the \texttt{where} statement is used to activate
+one or more rules locally. In symbolic mode only rules
+of the form \verb+<name>=<value>+ are allowed on the right-hand
+side of a \texttt{where} statement.
+
+\item \texttt{Global}\index{global} variables have to be declared
+ in a statement $global\, '(v_1\,v_2\,\cdots);$ These
+ can be accessed from everywhere once they have been
+ declared. Important: Declare them before you use
+ them for the first time in a session. They are
+ initially set to $nil$.
+\begin{verbatim}
+   global '(my_support!* my_quotient!*);
+\end{verbatim}
+ It is a common practice to use a trailing asterisk in names
+ for global and fluid variables such that they easily
+ can be distinguished from locals. Names of global variables
+ may not be used as local variables.
+
+\item \texttt{Fluid}\ttindex{fluid} variables are similar to global
+ variables as they can be accessed from everywhere. But
+ in contrast to globals a \texttt{fluid} variable can occur as a local
+ variable in a procedure. It then has temporarily the value
+ assigned in the procedure (we say ``it is rebound'');
+ this value will be accessible globally by nested procedures
+ as long as the rebinding procedure is not yet terminated.
+ After termination the previous value is reassigned.
+ Fluid variables are declared in a statement
+ $fluid\,'(v_1\,v_2\,\cdots);$. Like global variables they
+ must be declared before use and they are initially set to $nil$.
+\begin{verbatim}
+   fluid '(my_var!*);
+   my_var!* := 'x;
+   procedure compute(ex, my_var!*);
+      do_some_work(ex);
+\end{verbatim}
+ In this case the variable $my\_var*$ has been initialized
+to the symbol $x$. If then a call $compute('a,'z)$ is
+performed, the variable $my\_var*$ will be set to $z$
+during the execution of the body of $compute$.
+
+\item A \texttt{switch}\ttindex{switch} can be declared using the
+ \texttt{switch} statement $switch\,s_1,s_2\cdots;$ where
+ $s_1,s_2,\cdots$ are symbols. {\reduce}
+ automatically connects a fluid variable with each switch
+ by prefixing an asterisk to the symbol name. This variable
+ represents the $value$ of the switch, which is either
+ $nil$ or $t$ and is set by the statements \texttt{on}\ttindex{on} and
+ \texttt{off}\ttindex{off}.
+ E.g., the switch $nat$ has the associated global variable
+ $*nat$.
+\item \texttt{share}\ttindex{share} variables are also global variables
+ which are handled specially by the {\reduce} evaluator
+ such that their symbolic mode values are identical with their
+ role as symbols in algebraic mode.
+\end{itemize}
+
+\subsection{Symbols, numbers, and strings}
+
+A \texttt{symbol}\ttindex{symbol} or \texttt{id}\ttindex{id}
+\footnote{``id'' is an abbreviation for ``identifier.''}
+in LISP is a unit which has a name, in the standard
+case beginning with a letter and followed by letters and digits.
+Special characters in a name or a leading digit have to be
+flagged by a preceding exclamation mark. Symbols are the same
+entities as in algebraic mode. Symbols
+are unique in the system. You may view a symbol as a data
+structure with four slots, the \textit{name} with is always a string,
+the \textit{value cell} to store assigned values,
+the \textit{function cell}
+\footnote{There are LISP systems which support only one cell
+for value and function -- in such systems a symbol can represent
+only a variable or a function exclusively.}
+to point to an assigned program structure
+and the \textit{property cell} as anchor of the property list.
+Initially all cells except the name cell are marked empty.
+
+
+In contrast to algebraic mode in LISP, only integers and
+floating point numbers (which don't exist in that form
+in algebraic mode) are considered as numbers. All other
+numeric quantities from algebraic mode such as rationals, rounded numbers,
+Gaussian integers are composite data structures encoded in
+the {\reduce} domain structure (see below).
+
+Just as in algebraic mode, a sequence of characters enclosed
+in string quotes is a string. Functions for manipulating symbols,
+numbers  and strings
+are\footnote{Read the trailing $p$ in names like ``idp,'' ``numberp'' etc.
+as ``predicate,'' e.g., ``numberp'' meaning ``number predicate.''}:
+\begin{center}
+\begin{tabular}{|r|l|}
+\hline
+   idp(q)  & true if q is a symbol \\
+   numberp(q) & true if q is a number \\
+   stringp(q) & true if q is a string \\
+   liter(q)   & true if q is a single alphabetic character symbol\\
+   digit(q)   & true if a is a digit character symbol\\
+   intern(s)  & make a symbol from a string \\
+   explode(a) & decompose a symbol/number/string into its characters \\
+   explode2(a)& explode, but without escape characters\\
+   compress(l)& make a symbol/number/string from a list of characters \\
+   gensym()   & generate a new symbol\\
+\hline
+\end{tabular}
+\end{center}
+\ttindex{idp}\ttindex{numberp}\ttindex{stringp}
+\ttindex{intern}\ttindex{explode}\ttindex{compress}\ttindex{gensym}
+\ttindex{liter}\ttindex{digit}
+
+The functions \texttt{gensym}  and \texttt{compress} make symbols which are
+not yet ``internal:'' they are unique, but there may be
+other symbols with the same name.
+It makes debugging especially hard if you cannot
+access the symbol by its name of course. The function \texttt{intern}
+can be used to convert such a symbol into an internal one -
+then every reference to the symbol name guarantees
+access to the desired object.
+
+\subsection{Boolean values}
+
+There are two special symbols named $nil$ and $t$. $nil$ is
+used at the same time for the empty list and the Boolean
+value ``false'' \ttindex{false} \ttindex{true} \ttindex{Boolean value}.
+Any value other than $nil$ is considered as
+``true'' in conditional statements. In order to facilitate programming,
+the symbol $nil$ has the preassigned constant value $nil$ such
+that a quote here is superfluous. And for the same reason
+the symbol $t$ evaluates to itself
+ - this symbol can be used if the Boolean value ``true''
+is needed explicitly, e.g., as a return value. But please keep
+in mind that any non-$nil$ value can play this role. In contrast to
+algebraic mode the number zero does \textbf{not} represent the
+Boolean value ``false.''
+
+\subsection{Pairs and lists}
+
+The central structure of LISP is the \texttt{pair}\ttindex{pair}.
+The external representation of a pair of two objects
+is $( obj_1 . obj_2)$.  Here the infix dot is used
+as print symbol as well as infix constructor.
+It is often useful to use a double box for
+representing a pair graphically, e.g.,  for $(10\, . \,20)$:
+{\nopagebreak[3]
+\begin{verbatim}
+            .---------.
+            | 10 | 20 |
+            `---------'
+\end{verbatim}
+}
+
+Functions:
+\begin{center}
+\begin{tabular}{|r|l|}
+  \hline
+  $o_1\ .\ o_2$  & (infix) construct pair $(o_1\ .\ o_2)$ \\
+  cons($o_1$, $o_2$) & the same as $o_1\ .\ o_2$ \\
+  pairp($q$) & true if $q$ is a pair \\
+  car($q$)   & extract the first object from a pair \\
+  cdr($q$)   & extract the second object from a pair \\
+  \hline
+\end{tabular}
+\end{center}
+\ttindex{cons}
+\ttindex{.}\ttindex{pairp}\ttindex{car}\ttindex{cdr}
+
+The pair is a very general construct - since its objects themselves
+can be pairs, arbitrary trees \ttindex{tree} and data structures can be
+built. E.g.,  $((a . b) . (c . d))$
+{\nopagebreak[3]
+\begin{verbatim}
+            .--------.
+            | *  | * |
+            `/------\'
+            /        \
+           /          \
+        .-------.    .-------.
+        | a | b |    | c | d |
+        `-------'    `-------'
+\end{verbatim}
+}
+
+
+On the other hand, structures with many members
+lead to a very complicated representation if printed using
+the above notation. Therefore the \texttt{list}\ttindex{list} concept has been
+introduced which allows one to use a special class of pair trees in a
+simplified form:
+\begin{itemize}
+\item in a pair with second element $nil$ the dot and the nil
+ are omitted: $(A.nil)$ = $(A)$.
+\item for a pair with another pair as second element  one bracket
+ pair and the dot are omitted: $(B.(A))$ = $(B\, A)$, $(C.(B\, A))$ =
+  $(C\, B\, A)$.
+\end{itemize}
+
+So the \texttt{list} is a linear sequence of pairs, where
+the $car$s contain the ``data'' items, while the $cdr$s contain
+the reference to the successors. The last successor is $nil$, which
+signals the end of the linear list.
+For the graphical representation of linear lists horizontally
+aligned double boxes are useful, e.g., for $(C\, B\, A)$
+{\nopagebreak[3]
+\begin{verbatim}
+        .-------.    .-------.    .-------.
+        | c | *-+--->| b | *-+--->| a |nil|
+        `-------'    `-------'    `-------'
+\end{verbatim}
+}
+or with omitting the final $nil$
+{\nopagebreak[3]
+\begin{verbatim}
+        .-------.    .-------.    .-------.
+        | c | *-+--->| b | *-+--->| a | / |
+        `-------'    `-------'    `-------'
+\end{verbatim}
+}
+The \texttt{list notation} \ttindex{list notation} is
+much simpler than the \texttt{dot notation}\ttindex{dot notation} - unfortunately
+the dots cannot be avoided completely because pairs with
+id's or numbers in the $cdr$ part occur and they play an
+important role.
+
+Lists can be nested; an example is  the internal representation of
+algebraic forms (see below) which uses linear lists; e.g.,
+$(x+1)^2$ would be represented by lists as
+\begin{verbatim}
+   (expt (plus x 1) 2)
+\end{verbatim}
+Here the top level list has three elements $expt$, $(plus \, x \, 1)$
+and $2$ where the second element itself is a linear list of
+length 3.
+{\nopagebreak[3]
+\begin{verbatim}
+        .-------.    .-------.    .-------.
+        |expt| *+--->| * | *-+--->| 2 | / |
+        `-------'    `-|-----'    `-------'
+                       |
+                      .-------.    .-------.    .-------.
+                      |plus| *+--->| x | *-+--->| 1 | / |
+                      `-------'    `-------'    `-------'
+\end{verbatim}
+}
+In this graph the \texttt{car}s contain the symbols or numbers
+or they point to substructures (downwards) while the \texttt{cdr}s
+point to the successors (to the right) until the end is reached.
+
+As mentioned already there can
+be mixtures of both forms if one $cdr$ is not $nil$:
+$(A (B.C) D.E)$ - here the second element of the list is
+a pair $(A.B)$, the third element is $D$ and there is
+no fourth element - the list ends with a non $nil$ symbol.
+
+{\nopagebreak[3]
+\begin{verbatim}
+        .-------.    .-------.    .-------.
+        | a | *-+--->| * | *-+--->| d | e |
+        `-------'    `-|-----'    `-------'
+                       |
+                      .-------.
+                      | b | c |
+                      `-------'
+\end{verbatim}
+}
+\noindent
+The empty list $()$ is identical to the symbol $\texttt{nil}$.
+Note that the {\reduce} \texttt{algebraic forms}\index{algebraic forms}
+are LISP lists where all lists are terminated by a $nil$.
+
+Functions on lists:
+\begin{center}
+\begin{tabular}{|r|l|}
+  \hline
+  \{$o_1$, $o_2$, \dots,~$o_n$\} & construct list $(o_1\, o_2\, \cdots\, o_n)$ \\
+  list($o_1$, $o_2$, \dots,~$o_n$) & the same as $\{o_1, o_2, \dots, o_n\}$ \\
+  $o_1\ .\ l_1$  & (infix) put $o_1$ in front of list $l_1$ \\
+  pairp($q$) & true if $q$ is a pair (or a list) \\
+  atom($q$)  & true if $q$ is  NOT a pair/list  \\
+  null($q$) & true if $q$ = $nil$ (i.e. empty list) \\
+  car($q$)   & extract the first object from a list \\
+  cdr($q$)   & extract the part of the list behind the first element \\
+  nth($q$, $n$) & extract the $n$-th element from list $q$\\
+  length($q$) & count the number of elements of list $q$\\
+  reverse($q$) & reverse a list $q$\\
+  append($a$, $b$)& append $b$ to the end of a copy of $a$\\
+  member($a$, $l$) & test if $a$ is equal to one member of $l$\\
+  memq($a$, $l$) & test if $a$ is identical one member of $l$\\
+  delete($a$, $l$) & delete $a$ from list $l$\\
+  \hline
+\end{tabular}
+\end{center}
+\ttindex{list}\ttindex{\{}\ttindex{\}}
+\ttindex{.}\ttindex{pairp}\ttindex{atom}
+\ttindex{null}\ttindex{car}\ttindex{cdr}\ttindex{nth}
+\ttindex{length}\ttindex{reverse}\ttindex{append}
+\ttindex{member}\ttindex{memq}
+
+Remarks:
+\begin{itemize}
+\item All of the above functions are non destructive: an
+  input list remains as it has been before - the value of each
+  access function is a reference to the corresponding part of the
+  structure.
+\item The access functions can operate only if the desired elements
+  are really there; e.g.,  if $nth$ with 4 is applied to a 3 element
+  list produces an error, and $car$ or $cdr$ applied to any symbol
+  or number (including $nil$) will fail.
+\item Nested calls of $car$ and $cdr$ can be abbreviated by
+  combining the a's and d's between c and r up to four inner a/d letters.
+  E.g., $cadr(u)$ = $car(cdr(u))$ \ttindex{c...r}
+   - this is the direct access
+  to the second element, $caddr$ returns the third element and
+  $cadddr$ the fourth element.
+\item Although the functions $first$, $second$, $third$, $rest$
+  known from algebraic mode operate in some {\reduce}
+  implementations in symbolic mode as synonyms of $car$,
+  $cadr$, $caddr$, $cdr$, they should not be used here as
+  this is the case in all {\reduce} versions.
+\item The functions $member$ and $memq$ not only test the membership:
+  if $a$ is member of the list $l$, $member$ (or $memq$) returns the (first)
+  pair which contains $a$ as its $car$. E.g., $memq('b,'(a\ b\ c))$
+  returns $(b\ c)$. This can be used either if you want to replace
+  this item in the list, or if you want to process the part after
+  the search item.
+  The function $memq$ looks for a member of the list which is \textbf{eq}
+  to the object, while $member$ uses \textbf{equal} as test (see discussion
+  of equality below).  If applicable, $memq$ is substantially faster than
+  $member$.
+\item $Delete$ produces a copy of the top level pair sequence leaving
+  out the first occurrence of the search item: the original list is
+  not changed, and a possible second occurrence of the search item
+  in the list is not removed. $delete('a,'(0\,a\,b\,a))$ will result
+  in $(0\,b\,a)$ where the part $(b\,a)$ is the original tail of the
+  input list while the pairs in front of the original first $a$
+  are new.
+\end{itemize}
+
+{\nopagebreak[3]
+Examples: let $u$ be a variable with value $(A (B.C) NIL (D))$.  Then
+\begin{center}
+\begin{tabular}{rl}
+  pairp($u$)       & = t\\
+  length($u$)      & = 4\\
+  null($u$)        & = nil\\
+  car($u$)         & = A\\
+  cadr($u$)        & = (B . C)\\
+  caadr($u$)       & = B\\
+  cdadr($u$)       & = C\\
+  cdr($u$)         & = ((B . C) NIL (D))\\
+  length cdr($u$)  & = 3\\
+  cddr($u$)        & = (nil (D))\\
+  null cddr($u$)   & = nil\\
+  caddr($u$)       & = nil\\
+  null caddr($u$)  & = t\\
+  cdddr($u$)       & = ((D))\\
+  cddddr($u$)      & = nil\\
+  null cddddr($u$) & = t\\
+\end{tabular}
+\end{center}
+}
+
+All data which are not pairs (or lists) are classified
+as \texttt{atoms}\ttindex{atom}: symbols, numbers, strings, vectors(see below)
+and, just as in real world, they are not very atomic -- there
+are tools to crack them.
+
+\subsection{Programming with lists}
+
+There are several methods available to construct a list:
+\begin{verbatim}
+   u := nil;
+   u := 1 . u;
+   u := 2 . u;
+\end{verbatim}
+Starting with an empty list, elements are pushed on its front
+one after the other, here giving $(2\,\, 1)$. Please note the
+blank between the number and the dot: this is necessary as otherwise
+the dot would have been parsed as part of the number representing a
+floating point value.
+\begin{verbatim}
+   u := {9, 10};
+   u := 1 . u;
+   u := 2 . u;
+\end{verbatim}
+The same, here not starting with the empty list giving $(2\,\, 1\,\, 9\,\, 10)$.
+The \texttt{for statement} \ttindex{for statement} has special forms
+to  handle lists:
+\begin{itemize}
+\item \texttt{for each}\ttindex{for each} $x$ \texttt{in} $l$ $\cdots$ performs an
+  action elementwise for the elements in list $l$; the elements
+  are accessible by the automatically declared local variable $x$
+  one after the other.
+\item the iterator actions \texttt{collect}\ttindex{collect} and \texttt{join}
+\ttindex{join}
+  allow you to construct lists:
+  \begin{itemize}
+  \item \texttt{collect} generates a list where each
+       iteration step produces exactly one element,
+  \item \texttt{join} expects that each iteration step produces a
+       complete list (or $nil$) and joins them to one long list.
+  \end{itemize}
+\end{itemize}
+Examples: let, e.g., $l$ be a list of numbers
+$(1\,\, -2\,\, 3\,\, -4\,\, 5\,\, -6)$:
+\begin{verbatim}
+   m := for each x in l sum x;
+\end{verbatim}
+$m$ will be the sum of the elements,
+\begin{verbatim}
+   s := for each x in l collect x*x;
+\end{verbatim}
+$s$ is computed as list with the numbers from $x$ squared,
+\begin{verbatim}
+   p := for each x in l join
+           if x > 0 then {x} else nil;
+\end{verbatim}
+in this loop the positive numbers produce one element
+lists, while the negative numbers are mapped to nil; joined
+together the result is a list with only the positive
+elements,
+\begin{verbatim}
+   r := for i := 1:10 collect -r;
+\end{verbatim}
+here the result is the list with numbers $(-1\,\, -2\,\, -3 \cdots -10)$.
+The lists produced by \emph{collect} and \emph{join} are in ``correct''
+order.
+\textbf{Warning}: In symbolic mode  \emph{join} links the lists
+\textbf{in place} for maximum speed\footnote{In algebraic mode \emph{join} operates differently: the operands
+are copied before linking them into one result list.}:
+The last \emph{CDR} pointer  of the first list is modified to
+point to the head of the second list , and so on.
+This is no problem if the joined objects are freshly built
+structures, or if there are no other references to them.
+If the in -- place operation is dangerous for your application,
+you must copy the structure before, e.g., by a call to \emph{append}
+with \emph{NIL} as second argument:
+\begin{verbatim}
+   r := for i := 1:10 join
+           append(my_extract(u,r), nil);
+\end{verbatim}
+In this example, the top level chain of the results of \emph{my\_extract}
+is copied such that the original structure is not modified when
+joining.
+
+
+Another very common style for list operations is to use
+iterative or recursive programs. The following programs each
+sum the elements of the list:
+\begin{verbatim}
+   symbolic procedure sum_1(l);
+      begin  integer n;
+         while l do <<
+            n := n+car l;
+            l := cdr l
+         >>;
+      return n
+   end;
+\end{verbatim}
+This program picks in each step of the the while loop one
+element from the list and sets the variable $l$ to
+the successor position; the loop terminates as soon as the
+successor $nil$ is found .
+\begin{verbatim}
+   symbolic procedure sum_2(l);
+      if null l then 0 else car l + sum_2(cdr l);
+\end{verbatim}
+This program uses recursion for the same task.
+The program will go down the list until $nil$ is found,
+then set the sum to $0$ and when coming back from the
+recursion add the elements to the sum so far.
+\begin{verbatim}
+   symbolic procedure sum_3(l); sum_31(l, 0); % initializing
+   symbolic procedure sum_31(l, n);
+      if null l then n else sum_31(cdr l, car l+n);
+\end{verbatim}
+The third example is a bit tricky: it initializes
+the sum to 0, and when stepping down in the
+recursion the sum is updated and passed to the next
+recursion level as a parameter.
+
+It is also very common to produce lists in recursive style,
+e.g., inverting the signs in a list of numbers could be written as
+\begin{verbatim}
+   symbolic procedure invertsgn(l);
+      if null l then nil else -car l . invertsgn(cdr l);
+\end{verbatim}
+and with most LISP compilers this program would as  efficient
+as  the corresponding loop
+\begin{verbatim}
+   for each x in l collect -x;
+\end{verbatim}
+but produce less code.
+Note that as with \emph{for each - collect}, the elements in the resulting
+list will be in the original order.
+The recursive programming style is typical for LISP and it
+is used for  hundreds of {\reduce} routines.
+
+\subsection{In-place operations}
+
+All list construction  described so far except \textbf{join}
+is of a copying nature:
+every construction by the dot or the curly brackets always creates
+fresh pairs and an old list is untouched. However, there are operations
+to modify elements or the structure of an existing list in place. These should
+be used only with greatest care: if there is another reference to the list,
+its structure will be modified too, a possibly unwanted side effect.
+The functions
+are\footnote{Read ``reversip'' as ``reverse-in-place'' and ``nconc'' as
+``concatenate.''}:
+\begin{center}
+\begin{tabular}{|r|l|} \hline
+ car l := u & replace first element of $l$ by $u$ \\
+ rplaca(l,u) & old form for car l := u\\
+ cdr l := u & replace cdr part of $l$ by $u$ \\
+ rplacd(l,u) & old form for cdr l := u\\
+ nth(l,j) := u & replace the j-th element of $l$ by $u$\\
+ nconc(a,b)  & insert $b$ as cdr in the last pair of $a$\\
+ reversip(l) & invert the sequence of $l$ using the same pairs again\\
+\hline
+\end{tabular}
+\end{center}
+\ttindex{nth}\ttindex{car}\ttindex{cdr}\ttindex{nconc}\ttindex{reversip}
+
+
+\subsection{Equal tests: Equality vs.\  Identity}
+
+There are two classes of equality in LISP, $eq$ and $equal$,
+\ttindex{eq} \ttindex{equal}  \ttindex{=}
+in {\reduce} written as the infix operators \texttt{eq}, and
+equal sign $=$ respectively. As  symbols are unique,
+both are equivalent for them: if symbols are \texttt{equal},
+they are \texttt{eq}.
+
+$u := 'a; v := 'a;$ $u\, eq\, v \Rightarrow t$
+
+\noindent
+here the variables $u$ and $v$ represent the same symbol
+and consequently they are \texttt{eq}.
+
+For lists, things are different. Here we must distinguish
+between references to pairs which contain the same contents
+(``equal'') or references to the same identical pair
+instance(``\texttt{eq}'').
+A pair is \texttt{eq}
+to itself only, but it is \texttt{equal} to a different pair if
+their $car$s and $cdr$s are \texttt{equal} - this is a
+recursive definition. Example:
+
+$u := \{1,2\}; v := \{1,2\}; w := u;$
+
+$u = v \Rightarrow t$, $u = w \Rightarrow t$
+
+$u\,\,eq\,\,v \Rightarrow nil$, $u\,\,eq\,\,w \Rightarrow t$
+
+Here $u$, $v$, and $w$ have as values pairs with same $car$s
+and \texttt{equal} $cdr$s, but only $u$ and $w$ refer to
+the identical pair because for $v$ fresh pairs have
+been built.
+In some points {\reduce} relies on identity of some structures,
+e.g., for composite kernels \index{kernel} of
+\texttt{standard forms}\index{standard forms}.
+
+\subsection{Properties, Flags}
+
+Another important concept of LISP is the ability to
+assign \texttt{properties}\ttindex{property} and
+\texttt{flags}\ttindex{flag} to each
+symbol. A \texttt{property} is a symbol (a ``name'') together
+with a value. Both, property name and property value are
+completely free. Properties are set by the function \texttt{put}
+\ttindex{put} and read by the function \texttt{get}\ttindex{get}.
+\begin{verbatim}
+   put('hugo, 'evaluator, 'compute_hugo);
+      . . .
+   get('hugo, 'evaluator); => compute_hugo
+   get('otto, 'evaluator); => nil
+\end{verbatim}
+A property-value pair remains assigned for a symbol until the value is
+replaced by a different value or until the property is removed
+by \texttt{remprop}\ttindex{remprop}.
+
+A \texttt{flag} is similar to a property, but
+it represents only the values ``yes'' or ``no'' (= flag is
+present or absent). The functions for setting and
+testing flags are \texttt{flag}\ttindex{flag} and \texttt{flagp}\index{flagp},
+\texttt{remflag}\index{remflag} for removal.
+
+As most other LISP programs, {\reduce} makes extensive use of properties.
+E.g., the  algebraic properties of an operator are encoded
+in that way. So the symbol $plus$ has among others the {\reduce}
+properties $prtch=+$ (the print character),
+$infix=26$\footnote{This number may change if additional operators
+of lower precedence are introduced}
+(the precedence among the infix operators), $simpfn=simpplus$
+(the name of the routine responsible for its simplification)
+and the flags $symmetric$, $realvalued$, $nary$ and some more.
+These allow a data driven programming model which has been used
+in the LISP world for decades already: if the simplifier
+operates on an expression, it asks the leading operator for
+its simplification function; if there is one (and there will be
+one for all operators), this function is invoked to do the job.
+
+There are various fields where this type of programming is used
+inside {\reduce}, e.g., the complete domain arithmetic has been
+implemented in that way: any non-integer domain element is encoded
+as a list with a leading symbol (the domain mode) which contains
+all knowledge about arithmetic, conversion, printing etc.\  for
+this domain as properties and flags.
+
+If your {\reduce} system is based on PSL, you can inspect a
+property list by calling the function $prop$\ttindex{prop} which
+has one argument (the symbol to be inspected) and which returns
+the properties and flags as list, e.g.:
+\begin{verbatim}
+   a := mat((1,2),(3,4));
+   prop 'a;
+   prop 'mat;
+   prop 'matrix;
+\end{verbatim}
+
+
+\subsection{Alists}
+
+Another frequently used LISP structure is the
+\texttt{association list}\ttindex{association list}
+(\texttt{alist}\ttindex{alist}), which is
+an associative memory: a list where each element
+is a pair with a search item and a value item.
+The function \texttt{assoc}\ttindex{assoc} picks the pair for
+a given search item out of the \texttt{alist}.
+For example constructing a multiplier with memory:
+{\nopagebreak[3]
+\begin{verbatim}
+   fluid '(product_database*);
+   symbolic procedure multiply(u, v);
+      begin scalar w, r;
+         w := u . v;
+         r := assoc(w, product_database*);
+         if r then return cdr r;  % found
+         r := u*v;
+         product_database* := (w . r) . product_database*;
+         return r
+      end;
+\end{verbatim}
+}
+here the pair $u.v$ is used as search item. If an
+entry is found in the database, its value part is
+returned. Otherwise  the product is computed and
+the new entry is added to the database. After calling
+this function with arguments 2 and 3, and then with 2 and 6 the
+structure would be
+{\nopagebreak[3]
+\begin{verbatim}
+     .-------.    .-------.
+     | * | *-+--->| * | / |
+     `-|-----'    `-|-----'
+       |            |
+     .-------.    .-------.
+     | * | 6 |    | * | 12|
+     `-|-----'    `-|-----'
+       |            |
+     .-------.    .-------.
+     | 2 | 3 |    | 2 | 6 |
+     `-------'    `-------'
+\end{verbatim}
+}
+Here each element in the top level list points to one
+generalized name-value pair, where the name itself is a structure
+(here a pair of two numbers). {\reduce} uses association lists
+for many different purposes; e.g., if an expression is simplified,
+the expression and its simplified variant are stored in an
+association list such that for a second access to the same expression
+its simplified form is immediately accessible.
+
+
+\subsection{Vectors}
+
+Lists enable access of items of a linear collection by
+position number using the function \texttt{nth}; however, this
+access is inefficient if used frequently because for
+every access the sequence of pairs has to be traversed
+until the desired object is reached. An alternative
+structure for direct access by element number in
+symbolic mode is the \texttt{vector}\ttindex{vector}. The first element
+in a vector has the index $0$. \ttindex{putv}\ttindex{getv}\ttindex{upbv}
+\begin{center}
+\begin{tabular}{|r|l|} \hline
+ v:=mkvect(n) & create a vector of length $n$ \\
+ putv(v,m,u)  & put value $u$ into $m$th slot of vector $v$\\
+ getv(v,m)    & extract element $m$ from vector $v$ \\
+ upbv(v)      & returns upper bound for $v$ \\
+\hline
+\end{tabular}
+\end{center}
+\ttindex{mkvect}\ttindex{getv}\ttindex{putv}\ttindex{upbv}
+Note that \texttt{putv} is a ``destructive'' operation.
+\section{Algebraic data formats and evaluation}
+
+\subsection{Prefix forms}
+
+The basic format for representing mathematical
+formulae is the \texttt{algebraic form} \ttindex{ algebraic form}: an
+expression is internally encoded as a list
+with \texttt{prefix}\index{ prefix} operators:
+\begin{itemize}
+\item the first element of a list is an operator,
+\item the following elements of a list are the arguments
+  which can be symbols (unknowns), numbers or
+  \texttt{algebraic forms} in prefix notation.
+\end{itemize}
+
+Examples:
+
+$x+1 \Rightarrow (PLUS\,\, X\,\, 1)$
+
+$x+y+1 \Rightarrow (PLUS\,\, X\,\, Y\,\, 1)$
+
+$x+ y*z + 1 \Rightarrow (PLUS\,\, X\,\, (TIMES\,\, Y\,\, Z)\,\, 1)$
+
+$x^\wedge (y+1) \Rightarrow (EXPT\,\, X\,\, (PLUS\,\, Y\,\, 1))$
+
+Algebraic forms are used for many purposes, for data input,
+for transferring data between various system components and
+for output. To get a feel as to how algebraic forms look
+like, you can make {\reduce} display them for you, e.g.,
+by the following sequence:
+
+\begin{verbatim}
+   u := (x+y)^3/(log z-sqrt 2);
+   symbolic reval 'u;
+\end{verbatim}
+
+The first statement assigns an algebraic expression to a
+variable as usual in algebraic mode, and the second statement
+forces {\reduce} to print the algebraic form corresponding
+to this expression in symbolic mode.
+
+\subsection{*SQ}
+
+{\reduce} uses internally a different
+representation for algebraic expressions, the
+\texttt{standard quotient}\index{standard quotient}(\texttt{SQ},
+see below). As conversion
+between algebraic forms and standard quotients is expensive,
+{\reduce} tries to keep the data as long in \texttt{SQ}
+form as possible. For this purpose there is a special
+variant of the algebraic form $(*SQ \,\,  u \,\, ind)$: here the
+internal operator $*SQ$ indicates that the parameter $u$
+is not an algebraic form but a standard quotient. If such
+expression is evaluated, {\reduce} detects
+immediately that it will find the standard quotient
+already as the second element of the list and no more
+conversion is necessary.
+
+However, if since creation of this
+form some values in the system have been changed, the
+form $u$ might be no longer the ``correct'' standard
+quotient; e.g., one of its unknowns might have a value
+now. For this purpose the third element $ind$ in the list
+has been introduced: As long as the form $u$ is the correct
+one, it will be $T$. As soon as a significant value in the
+system changes which might affect the validity of $u$,
+{\reduce} switches all $ind$ elements in the $*SQ$ forms
+swimming around to $nil$. So the evaluator decides from the
+second parameter whether to use $u$ unchanged or
+to re-evaluate.
+
+By the way, the global replacement of the second parameter
+in the $*SQ$ forms is a good example of an in-place
+list operation with a wanted side effect:
+{\reduce} maintains a unique  list $*sqvar*=(t)$ and all
+$*SQ$ forms are built with this list as last pair.
+If the environment changes it is sufficient to replace
+this single \textbf{$t$} in $*sqvar*$ by $nil$ and all $*SQ$ forms
+built with the actual $*sqvar*$-tail inherit this
+automatically switching from $t$ to $nil$;
+{\reduce} then creates a fresh list $*sqvar*=(t)$
+to be used for the next generation of $*SQ$ forms.
+
+\subsection{Composite forms}
+
+\subsubsection{Lists and equations}
+
+For algebraic mode, lists are represented by the prefix
+operator $LIST$. From the symbolic mode standpoint it may
+appear a bit curious that one has to insert
+the symbol $LIST$ into a list in order to make it
+a correct algebraic object, but this is necessary
+in the prefix algebraic context.
+E.g., try in algebraic mode
+
+\begin{verbatim}
+   u := {a,b,{c,d},e};
+   lisp reval 'u;
+\end{verbatim}
+you will see the result $(LIST\,\, A\,\, B\,\, (LIST\,\, C\,\, D)\,\, E)$.
+
+Correspondingly \texttt{equations}\index{equation} are represented by
+the prefix operator $EQUAL$ followed by the right-hand and
+the left-hand sides as parameters, e.g., $x=sqrt(2)$
+is represented as $(EQUAL\,\, X\,\,(SQRT\,\, 2))$.
+
+The result of $solve(x^\wedge2 = 2, x)$ is an instructive
+mixture of all these forms:
+\begin{verbatim}
+(LIST (EQUAL X (!*SQ (((((EXPT 2 (QUOTIENT 1 2)). 1). -1)). 1) T))
+      (EQUAL X (!*SQ (((((EXPT 2 (QUOTIENT 1 2)). 1).  1)). 1) T)))
+\end{verbatim}
+this form is a list with two equations and the equations
+have $*SQ$ forms as right-hand sides.
+
+\subsubsection{Matrices}
+
+A \texttt{matrix}\ttindex{matrix} too is represented internally by
+a prefix form with operator $MAT$ followed by the rows;
+each row is a list containing the elements as algebraic
+forms. The elements can be accessed easily using the
+access function $nth$. Example: the matrix $mat((1,2),(3,4))$
+is encoded as $(MAT\,\,(1\,\, 2)\,\, (3\,\, 4))$.
+The form $nth(nth(m,3),2)$ gives access to the element (2,2).
+Be careful if you use this form for an assignment:
+$nth(nth(m,3),2):=17;$ is an in-place operation.
+You can create a matrix easily by a symbolic program, e.g.,
+a n*n unit matrix
+\begin{verbatim}
+   symbolic procedure my_unit_matrix(n);
+      'mat . for i := 1:n collect
+          for j := 1:n collect if i=j then 1 else 0;
+\end{verbatim}
+
+\subsection{Algebraic evaluator: reval, aeval, aeval*}
+
+The main entries to the algebraic evaluator are the
+symbolic mode functions \texttt{reval}\ttindex{reval} and
+\texttt{aeval}\ttindex{aeval}.
+Both have as input an algebraic expression
+and return the fully evaluated result. Reval always returns
+an algebraic form in full prefix operator form, while
+aeval tries to keep the result in $*SQ$-form whenever
+possible. Almost all algebraic functionality of {\reduce} can be
+invoked by calling these procedures, e.g.
+
+\begin{verbatim}
+   reval '(solve (plus (expt x 2) 3) x);
+\end{verbatim}
+
+If you turn on the switch \texttt{defn} in algebraic mode
+you will see that {\reduce} translates most statements
+into calls for \texttt{aeval}.
+
+Reval and aeval are also adequate tools for accessing
+the values of algebraic quantities and for evaluation of
+unevaluated procedure parameters; they do the complete
+job for you.
+
+ However, there is one exception:
+the left-hand side of an equation in general is not
+evaluated by \texttt{reval} and \texttt{aeval}. E.g.,
+
+\begin{verbatim}
+   l := a=b;
+   a := 17; b := 4;
+   symbolic reval 'l;
+\end{verbatim}
+produces the output $(EQUAL\,\, A\,\, 4)$. If you write
+a program for equations you either should evaluate
+the left-hand sides yourself by calling \texttt{reval}
+or rebind the internal switch  \texttt{*evallhseqp}\ttindex{evallhseqp}
+\footnote{Read ``evallhseqp'' as ``evaluate left-hand side
+of equations predicate.''}
+locally(!) by $t$ - then {\reduce} will evaluate both sides
+of an equation.
+
+{\reduce} maintains an internal buffer \texttt{alglist*}\ttindex{aglist*}
+where all evaluation results are stored such that a repeated request
+for the same evaluation can be satisfied by a simple and fast table
+lookup\footnote{The use of \texttt{alglist*} is controlled by an internal
+switch \texttt{*uncached}\ttindex{*uncached}\ttindex{uncached}: if this
+variable has a non-nil value, the caching is suppressed.}.
+As a side effect, \texttt{aeval} resets \texttt{alglist*}
+empty before starting a
+computation\footnote{Of course, there are many more places where \texttt{alglist*}
+needs to be reset; e.g., any assignment causes \texttt{alglist*} to be
+reset because the assigned value might make one of the stored values
+invalid.}. There is a second function
+\texttt{aeval*}\ttindex{aeval*}: this function performs the same
+operation, but in contrast to \texttt{aeval} it does not reset
+\texttt{alglist*} and can profit from previous results. The {\reduce}
+uses both, \texttt{aeval} and \texttt{aeval*} depending of the specific
+environment of a translated statement.
+
+\section{Standard Forms and Standard Quotients}
+
+\subsection{Introduction}
+
+On of the most important tasks performed by a computer algebra
+system is the reduction of an algebraic expression to a
+canonical form. A reduction process is canonical if it
+guarantees that two expressions are transformed to the
+same form if and only if they are algebraically identical.
+Unfortunately canonical forms are not known for all algebraic
+objects, e.g., for surds. The canonical form of {\reduce}
+is the \texttt{standard quotient}\ttindex{standard quotient}
+(``\texttt{SQ}'') which is
+a quotient of two \texttt{standard forms}\ttindex{standard form} (``\texttt{SF}'').
+An \texttt{SF} is a polynomial in internal representation and
+an \texttt{SQ} is a quotient of two polynomials, a
+rational function. At the same time \texttt{SQ} and
+\texttt{SF} are the forms  used internally for most arithmetic.
+
+In this section the structures of \texttt{SF} and \texttt{SQ}
+are described, followed by a list of operations on these. For
+programming and debugging in symbolic mode it is often
+necessary to decipher an expression of this type.
+However, the knowledge about this part of the internal
+{\reduce} structure should never be used to access
+\texttt{SF} of \texttt{SQ} directly by LISP primitives. Instead
+use only ``official'' primitives supplied by {\reduce}.
+
+\subsection{Coefficients}
+
+\ttindex{coefficient domains}
+The coefficients in \texttt{SF} and \texttt{SQ} are the ``numbers''
+from various algebraic contexts. They are called \texttt{domain}\ttindex{domain}
+elements  and uniformly represented either
+as integer numbers or pairs where the \texttt{car} part contains
+an identifier describing the domain and its arithmetic
+by its \texttt{properties}\ttindex{property};
+the \texttt{cdr} part describes the value.
+
+\begin{enumerate}
+\item{Integers}: integer numbers $\in \textbf{Z}$ represent integer
+coefficients directly,
+\item{Gaussian integers}: complex numbers with integer real and
+imaginary part \emph{(:gi: re . im)} with $re,im \in \textbf{Z}$,
+\item{Rational numbers}: quotients of integers
+\emph{(:rn: nu . de)} with $nu,de \in \textbf{Z}$,
+\item{Modular numbers}: numbers modulo the current prime
+\emph{(:mod: . j)} where $0 \leq j < currentmodulus*$
+\footnote{The upper half of the modular numbers are printed as negative
+numbers if the switch \texttt{balanced\_mod}\ttindex{balanced\_mod}
+is on; however, that does not affect the internal representation
+which uses always integers $\geq 0$}.
+\item{Rounded numbers}: floating point numbers extended in
+precision and magnitude \emph{(:rd: . fp)} with LISP floating point number
+$fp$ or \emph{(:rd: mant . exp)} with integers $mant$ and $exp$
+representing an extended floating point value,
+\item{Rounded complex numbers}: numbers with rounded real
+and imaginary parts \emph{(:gr: fre . fim)} with LISP floating point numbers
+$fre$ and $fim$ or \emph{(:gr: (rmant . rexp) . (imant . iexp))} with
+extended real and imaginary parts.
+\end{enumerate}
+
+The neutral elements \emph{zero} and \emph{one} for
+addition and multiplication respectively are identical
+for all domains: \emph{zero} is represented as $nil$ and \emph{one} by the
+integer number 1.
+
+The list of domains is open ended: if a new coefficient domain
+is required for an application field, this can be created and linked
+to the system at any time. The necessary structure is described
+in the source file for the module $dmodeop$\index{dmodeop module}.
+
+The tag of the currently active domain is stored in the value of the
+variable \texttt{dmode*}\ttindex{dmode*}.
+$nil$ represents the default domain (integers).
+This variable should not be modified directly - instead use
+the function \texttt{setdmode}\ttindex{setdmode}:
+
+\begin{verbatim}
+   setdmode(DOM:domain,MODE:bool);
+\end{verbatim}
+where $domain$ is a domain name (e.g., $'rational$) and the Boolean
+second parameter tells whether to activate ($t$) or to deactivate
+($nil$) the domain. Note that $setdmode$ does not
+set \texttt{on} the corresponding switches.
+You \emph{must} do that yourself.
+E.g., for a proper activation and deactivation of complex rounded
+call
+\begin{verbatim}
+   !*rounded := t;
+   setdmode('rounded, t);
+   !*complex := t;
+   setdmode('complex, t);
+      . . .  % do your computation
+   setdmode('complex, nil);
+   !*complex := nil;
+   setdmode('rounded, nil);
+   !*rounded := nil;
+\end{verbatim}
+
+In order to convert the domain tag into the domain name
+use the property \texttt{dname}\ttindex{dname}, e.g.
+\begin{verbatim}
+   get(dmode!*,'dname);
+\end{verbatim}
+will result in the name of the current domain.
+
+\subsection{Generic arithmetic with domain elements}
+
+There is a complete set of arithmetic functions for performing
+arithmetic operations with domain elements:
+
+\begin{center}
+\begin{tabular}{|r|l|} \hline
+    !:zerop($a$)           & test $a=0$ \\
+    !:plus($a$, $b$)       & $a+b$ \\
+    !:difference($a$, $b$) & $a-b$ \\
+    !:minus($a$)           & $-a$  \\
+    !:minusp($a$)          & test $a<0$ \\
+    !:times($a$, $b$)      & $a\cdot b$ \\
+    !:quotient($a$, $b$)   & $a/b$ \\
+    !:recip($a$)           & $1/b$ \\
+    !:expt($a$, $n$)       & $a^n$ \\
+    !:gcd($a$, $b$)        & greatest common divisor of $a$ and $b$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Kernels and kernel order}
+
+\texttt{Kernels} are the ``unknowns'' in a polynomial.
+A \ttindex{kernel}\texttt{kernel}
+can be an
+\begin{itemize}
+\item{identifier}, e.g., $x$, $alpha$, represented as LISP symbols
+$X$, $ALPHA$,
+\item{operator form}, e.g., $sin(alpha)$, $sqrt(x+1)$, $bessel(j,x)$,
+represented as algebraic expressions $(SIN\,\, ALPHA)$,
+$(EXPT\,\,(PLUS\,\, X\,\, 1)\,\, (QUOTIENT\,\, 1\,\, 2))$, $(BESSEL\,\, J\,\, X)$,
+\item{standard form}, e.g., $(((A\,\,.\,\,1)\,\,.\,\,1)\,\,.\,\,1)$.
+This option is used only if the default mode of full expansions is
+turned off (see below: non-expanded standard form).
+\end{itemize}
+It is essential for the operation of {\reduce} that kernels are unique.
+This is no problem for ids as these are unique by LISP definition.
+For composite kernels {\reduce} ensures that these are
+made unique before they enter a \texttt{standard form}.
+\emph{Never construct a composite kernel by hand!} Instead use
+the function \texttt{*a2k}\ttindex{*a2k} for converting an algebraic expression
+into a kernel or use $simp$ (see below). On the other hand,
+the uniqueness of kernels is of big advantage for comparisons:
+The equality can be tested with $eq$ instead of = and faster $memq$ and
+$atsoc$ can be used instead of $member$ and $assoc$.
+
+The set of all kernels is totally ordered by
+the \texttt{kernel order}\ttindex{kernel order}.
+{\reduce} has by default some ordering, which is roughly based
+on lexicographic comparison. The ordering can be changed internally
+by calling \texttt{setkorder}\ttindex{setkorder}
+(corresponding to the algebraic statement
+\texttt{korder}\ttindex{korder})  with a list of kernels as its single argument.
+These kernels
+precede all other kernels in the given sequence. \texttt{Setkorder} returns
+the previous kernel order. It is a good policy to restore
+the old order after you have changed it:
+\begin{verbatim}
+   begin scalar oldorder, ...;
+      oldorder := setkorder '(x y z);
+         . . .
+      setkorder oldorder;
+         . . .
+     end;
+\end{verbatim}
+The current kernel order list is the value of the variable
+\texttt{kord*}\ttindex{kord*}.
+The value $nil$ signals that the default ordering is active.
+
+To check the default system order of two algebraic expressions use the
+function \texttt{ordp}\ttindex{ordp} with two arguments,
+which returns true if the
+first argument is lower or equal in the ordering sequence as the second one.
+This check does \emph{not} consider the actual \texttt{kord*}.
+For kernels there use an extended order check function
+\texttt{ordop}\ttindex{ordop}, which does consider the actual \texttt{kord*}.
+However, you need to call these functions only rarely as the
+algebraic engine of {\reduce} maintains a proper order in any
+context.
+
+\subsection{Standard form structure}
+
+A \texttt{standard form}\ttindex{standard form} is a polynomial in internal recursive
+representation where the kernel order defines the recursive
+structure. E.g., with kernel order $(x\,\,y)$ the polynomial
+$x^2y +x^2 + 2xy + y^2 + x + 3$ is represented as a polynomial
+in $x$ with coefficients which are polynomials in $y$ and integer coefficients:
+$x^2*(y*1+1) + x*(y*2+1) +(y^2*1 +3)$; for better correspondence
+with the internal representation here the integer coefficients
+are in the trailing position and the trivial coefficients $1$ are
+included.
+A standard form is
+
+\begin{itemize}
+\item $<$domain element$>$
+\item $<$mvar$>$\ .** $<$ldeg$>$\ .* $<$lc$>$\ .+ $<$red$>$,
+    internally represented as \emph{(((mvar.ldeg).lc).red)}
+\end{itemize}
+with the components
+\begin{itemize}
+\item \emph{mvar}: the leading kernel,
+\item \emph{ldeg}: an integer representing the power of $mvar$ in the leading
+ term,
+\item\emph{lc}: the leading coefficient is itself a standard form,
+ not containing $mvar$ any more,
+\item\emph{red}: the reductum too is a standard form, containing $mvar$
+  at most in powers below $ldeg$.
+\end{itemize}
+Note that any standard form ends with a domain element which
+is  $nil$ if there is no constant term.
+ E.g., the above polynomial
+will be represented internally by
+
+\begin{verbatim}
+   (((X. 2) ((Y. 1). 1). 1) ((X. 1) ((Y. 1). 2). 1) ((Y. 2). 1). 3)
+\end{verbatim}
+
+with the components
+\begin{itemize}
+\item{mvar}: \verb+X+
+\item{ldeg}: \verb+2+
+\item{lc}: \verb+((Y. 1). 1). 1)+  = $(y+1)$
+\item{red}: \verb+(((X. 1) ((Y. 1). 2). 1) ((Y. 2). 1). 3)+ \\
+ = $ x(2y+1)+y^2+3$.
+\end{itemize}
+
+\subsection{Operations on standard forms}
+
+Arithmetic with standard forms is performed by the
+functions\footnote{Be careful not to intermix
+the names ``minusf'' and ``negf.''
+And take into account that \texttt{minusf} will return a positive result
+only if the value is definitely known to be less that 0.}
+\begin{center}
+\begin{tabular}{|r|l|} \hline
+    null($f$)    & test $f=0$ \\
+    minusf($f$)  & test $f<0$ (formally) \\
+    domainp($f$) & test if $f$ is a domain element (e.g., a number) \\
+    addf($f_1$, $f_2$)& $f_1 + f_2$ \\
+    negf($f$)    & $-f$ \\
+    addf($f_1$, $\textrm{negf\ } f_2$) & $f_1 - f_2$ \\
+    multf($f_1$, $f_2$) & $f_1 \cdot f_2$ \\
+    mksp($f_1$, $n$) & compute $f_1^n$ \\
+    quotf($f_1$, $f_2$) & $f_1/f_2$ if divisible, else $nil$ \\
+    quotfx($f_1$, $f_2$) & $f_1/f_2$ divisibility assumed, no check \\
+    qremf($f_1$, $f_2$) & pair (quotient . remainder) \\
+\hline
+\end{tabular}
+\end{center}
+\ttindex{null}\ttindex{domainp}\ttindex{addf}
+\ttindex{negf}\ttindex{multf}\ttindex{mksp}
+\ttindex{quotf}\ttindex{qremf}
+
+As standard forms are a superset of domain elements these
+functions also can be used for arithmetic with domain elements
+or for combining standard forms with integer numbers. They
+can even be used to compute with integers as long as these
+are regarded as ``degenerate'' polynomials.
+
+
+For access of the components of a standard form
+there are functions
+
+\begin{center}
+\begin{tabular}{|r|l|} \hline
+    mvar($f$)    & extract leading kernel \\
+    ldeg($f$)    & extract leading degree \\
+    lc($f$)      & extract leading coefficient \\
+    red($f$)     & extract reductum $f$\\  \hline
+\end{tabular}
+\end{center}
+\ttindex{mvar}\ttindex{ldeg}\ttindex{lc}\ttindex{red}
+
+These functions can be applied only if the form
+is not a domain element. The following example presents
+a typical function evaluating a standard form; it looks for the
+maximum power of a specified kernel $y$ in a standard form $f$:
+
+\begin{verbatim}
+   symbolic procedure my_maxpow(f, y);
+      if domainp f then
+         0
+      else if mvar f eq y then
+         ldeg f
+      else
+         max(my_maxpow(lc f, d), my_maxpow(red f, d));
+\end{verbatim}
+
+This function has a double recursion which is typically
+for functions traversing standard forms: if the top node is
+not trivial (\texttt{domainp}) or not a power of $y$
+the procedure branches to the
+coefficient form and to the reductum form - both
+can contain references to the kernel $y$. Kernels are
+unique in the system and therefore the equality test is
+performed by \texttt{eq}.
+
+For the initial construction of a standard form a safe and efficient
+way is to build an algebraic expression first and convert
+it using $simp$ (see below) or to use the arithmetic functions
+above too. For elementary conversions use
+
+\begin{center}
+\begin{tabular}{|r|l|} \hline
+    *k2f($k$)      &  convert unique kernel $k$ to {\ SF} \\
+    numr simp($a$) & convert algebraic expression $a$ to \texttt{SF}\\
+    prepf($f$)     & convert a \texttt{SF} $f$ to an algebraic expression\\
+\hline
+\end{tabular}
+\end{center}
+Note that integers are already an \texttt{SF} and so need not be converted.
+
+Although the are infix macros \fbox{.**} , \fbox{.*} , \fbox{.+} to
+construct standard forms, they should be avoided unless
+you are completely sure what you are doing: they construct
+without any consistency checks, and wrong structures may lead
+to inconsistent results; such cases are difficult to debug.
+
+\subsection{Reordering}
+
+If you change the \texttt{kernel order}\ttindex{kernel order} it is
+necessary to reorder \texttt{standard forms} if they
+are processed under the new order by calling
+
+\begin{center}
+\begin{tabular}{|r|l|} \hline
+    reorder($f$)    & reorders $f$ to the current order \\ \hline
+\end{tabular}
+\end{center}
+\ttindex{reorder}
+
+Please ensure that you never use a standard form which does
+not correspond to the actual order - otherwise very
+strange results can occur. Freshly created standard
+forms will always have the current order.
+
+\subsection{Standard Quotients}
+
+A \texttt{standard quotient}\ttindex{standard quotient} is a pair of
+\texttt{standard forms}
+$( numr\,\,./\,\,denr)$, in LISP represented as $(numr\,\,.\,\,denr)$.
+If the denominator is trivial, the standard form $1$ is
+used. The constructor, selector  and conversion functions are
+
+\begin{center}
+\begin{tabular}{|r|l|} \hline
+    numr($q$)     & select the numerator part \\
+    denr($q$)     & select the denominator part \\
+    f2q($f$)      & convert a standard form $f$ to \texttt{SQ}\\
+    simp($a$)     & convert algebraic form $a$ to \texttt{SQ}\\
+    prepsq($q$)   & convert \texttt{SQ} to algebraic form\\
+\hline
+\end{tabular}
+\end{center}
+\ttindex{numr}\ttindex{denr}\ttindex{f2q}
+\ttindex{simp}\ttindex{prepsq}
+
+
+Arithmetic with standard quotients is performed by the
+functions
+\begin{center}
+\begin{tabular}{|r|l|} \hline
+    addsq($q_1$, $q_2$)   & $q_1 + q_2$\\
+    negsq($q$)            & $-q$ \\
+    subtrsq($q_1$, $q_2$) & $q_1 - q_2$ \\
+    multsq($q_1$, $q_2$)  & $q_1 \cdot q_2$ \\
+    quotsq($q_1$, $q_2$)  & $q1/q2$ \\
+\hline
+\end{tabular}
+\end{center}
+\ttindex{addsq}\ttindex{negsq}\ttindex{subtrsq}
+\ttindex{multsq}\ttindex{quotsq}
+
+Note that there is no zero test for standard quotients; instead
+use the zero test for the numerator $null(numr(q))$.
+
+When should you use \texttt{standard quotients} and when \texttt{standard forms}?
+If you are sure that no denominator other
+than one can occur you should use \texttt{standard forms}, otherwise
+\texttt{standard quotients} are the only possible choice. You can of course
+mix arithmetic with both, however that strategy is
+not recommended unless you keep track carefully;
+debugging is hard. Arithmetic functions have been coded
+for maximum efficiency: none of them test the validity of their
+arguments.
+
+\subsection{Substitutions}
+
+For \texttt{substituting}\ttindex{substituting} kernels in \texttt{standard forms}
+or  \texttt{standard quotients}
+by other kernels or arbitrary algebraic expressions the
+following functions are available \index{subf}\index{subsq}:
+\begin{center}
+\begin{tabular}{|r|l|} \hline
+    subf($f$, $a$) & substitute $a$ in \texttt{SF} $f$ \\
+    subsq($q$, $a$) & substitute $a$ in \texttt{SQ} $q$ \\
+\hline
+\end{tabular}
+\end{center}
+where a is a list of pairs, each with a kernel to be replaced
+in the $car$ and its replacement as algebraic form in the $cdr$
+\footnote{The second argument of \texttt{subf} and \texttt{subsq}
+is a typical association list structure.},
+e.g.
+\begin{verbatim}
+   hugo := simp('(expt(plus x y) 10));
+   otto := subsq(hugo, '((x . 5) (y . (plus a b))));
+\end{verbatim}
+Here $x$ is replaced by 5 while y is replaced by $a+b$.
+
+Note that
+\begin{itemize}
+\item both \texttt{subf} and \texttt{subsq} return a \texttt{standard quotient}
+(the substitution might have caused a non trivial denominator),
+\item \texttt{subf} and \texttt{subsq} also introduce substitutions which have been
+coded in rules - so it makes sense to call these routines with
+$nil$ as the second argument if you have introduced a new rule and
+some standard forms or standard quotients need to be re simplified
+under these.
+\end{itemize}
+
+\subsection{Useful facilities for standard forms}
+
+\subsubsection{Kernel list}
+
+The function \texttt{kernels}\ttindex{kernel} extracts all kernels
+from a standard form and returns them as list.
+\begin{verbatim}
+   kernels numr simp '(plus (expt x 3)(expt y 4));
+\end{verbatim}
+\noindent
+will result in $(x\,y)$.
+
+
+\subsubsection{Greatest common divisor}
+
+The greatest common divisor of two polynomials is computed
+by the function \ttindex{gcdf}\texttt{*gcdf}. It takes as arguments
+two standard forms and returns a standard form or a 1
+if there is no non trivial common divisor.
+
+\subsubsection{Factorization}
+
+The function \texttt{fctrf}\ttindex{fctrf} is the interface for calling the
+\texttt{factorizer}\ttindex{factorizer}. It takes a standard form as parameter
+and returns a list which contains
+
+\begin{itemize}
+\item as first element the content of the polynomial - that is
+the gcd of the coefficients or the ``common numeric factor,''
+\item as second and following elements the factors in the
+form $(\texttt{SF} . m)$ where \texttt{SF} is the factor as standard
+form and $m$ is its multiplicity.
+\end{itemize}
+So calling $fctrf$ for  $2x^2-2$ will result in
+\begin{verbatim}
+   (2 ((((X . 1) . 1) . 1) . 1) ((((X . 1) . 1) . -1) . 1))
+\end{verbatim}
+
+Here you see the common domain factor 2 and the two factors
+$x+1$ and $x-1$ as standard forms paired with their multiplicity
+$1$.
+
+\subsection{Variant: non-expanded standard forms}
+
+The standard form structure described so far is used by default
+for the fully expanded expressions with common denominator.
+By setting  \texttt{on factor}\ttindex{factor},
+\texttt{off exp}\ttindex{exp}, or \texttt{off mcd}\ttindex{mcd}
+the slots $mvar$ and $ldeg$ may be used in an extended style:
+\begin{itemize}
+\item $ldeg$ can be a negative number to represent a reciprocal factor,
+
+\begin{verbatim}
+off mcd; (x*a+y*b)/(a*b);
+
+ -1      -1
+a  *y + b  *x
+
+lisp ws;
+(!*sq ((((a . -1) ((y . 1) . 1)) ((b . -1) ((x . 1) . 1))) . 1) t)
+\end{verbatim}
+    Here the numerator form of the standard quotient is a sum where each
+    term is a product of one kernel with a positive and one kernel with
+    a negative exponent.
+
+\item $mvar$ may be a standard form to represent a factored polynomial,
+\begin{verbatim}
+on factor; (x^2+y)^2*(y+1);
+
+  2     2
+(x  + y) *(y + 1)
+
+lisp ws;
+
+(!*sq (((((((x . 2) . 1) ((y . 1) . 1)) . 2) (((((y . 1) . 1) . 1)
+   . 1) . 1))) . 1) t)
+\end{verbatim}
+    Here the numerator is a standard form in factored form where the inner polynomials
+    $(x+y)$ and $(y+1)$ are used as $mvar$s, the first one with the exponent 2
+    and the second one with exponent 1.
+\end{itemize}
+
+Special functions to work with composite standard forms:
+\begin{center}
+\begin{tabular}{|r|l|} \hline
+    sfp($m$)    & test if $m$ is a standard form (t) or a kernel (nil) \\
+    expnd($f$)  & expand a standard form $f$ \\
+\hline
+\end{tabular}
+\end{center}
+\ttindex{sfp}\ttindex{expnd}
+
+To distinguish between factored and expanded standard forms, use the
+predicated \texttt{sfp}: sfp applied to $mvar$ of a standard form returns T
+if the main variable slot is occupied by a nested standard form.
+To expand a factored standard form you may use the function \texttt{expnd};
+however, you need to turn the switch $exp$ on
+during that call, e.g.,
+\begin{verbatim}
+   u := expnd u where !*exp=t;
+\end{verbatim}
+Don't build non--expanded standard forms yourself -- otherwise you run
+the risk to produce objects with a bad structure (e.g., a wrong term
+order) resulting in wrong computational results. You better rely on the
+standard routines for manipulating these objects -- as soon as
+$*exp$ is off and $*factor$ is on they produce the product forms
+anyway.
+\section{Communication between algebraic and symbolic modes}
+
+The main aim of programs written in symbolic mode
+is to implement the evaluation steps to be invoked from
+algebraic mode (top level {\reduce}). This section describes
+how to link symbolic routines to algebraic mode
+and how to exchange data between the modes.
+
+
+\subsection{Algebraic variables}
+
+A variable which has been declared \texttt{share}\ttindex{share} by the {\reduce}
+$share$ command is accessible from both modes in the
+same style and it represents the same algebraic value.
+A share variable is the easiest way to transfer data
+between the modes. The only restriction is that a
+symbolic program should assign only a legal algebraic
+form to it - otherwise a later access in algebraic mode
+can lead to problems. Example:
+
+\begin{verbatim}
+   share hugo;
+   hugo := (x+y)^2$
+   hugo;
+   symbolic;
+   hugo := reval {'sqrt,hugo};
+   algebraic;
+   hugo;
+\end{verbatim}
+
+Variables which have not been declared $share$ have
+different values in symbolic and algebraic mode.
+Nevertheless a symbolic mode program has access to the
+algebraic value of a symbol:
+\begin{itemize}
+\item \texttt{reval(x)}\ttindex{reval}: if the value of $x$ is a symbol
+or if the parameter of $reval$ is a directly quoted symbol
+the function returns the algebraic value associated with this
+symbol, e.g., $reval('y)$,
+\item \texttt{setk}\ttindex{setk}\texttt{(x,y)} sets the algebraic value of the expression
+ $x$ which then must be a symbol (or more general:
+a \texttt{kernel}\ttindex{kernel})
+to  $y$, e.g., $setk('z,reval'(plus\, u\, 17))$
+\footnote{Read ``setk'' as ``set kernel value,'' the {\reduce}
+equivalent to the Standard LISP assignment function ``setq.''}
+\end{itemize}
+
+Of course a clever LISP programmer easily sees how {\reduce}
+organizes the assignment and storage of values to algebraic variables
+in property lists, and he might be attempted
+to use this knowledge for ``easier'' access; please resist:
+otherwise your program might not run in a future
+version of {\reduce}.
+
+
+\subsection{Calling symbolic routines from algebraic mode}
+
+{\reduce} offers various ways to use symbolic routines
+in algebraic mode such that they appear on the
+algebraic level as genuine parts of {\reduce}.
+These mainly differ in their strategy of evaluating parameters
+(and results).
+
+\subsubsection{Common protocol}
+
+Some general protocol rules apply for {\reduce} symbolic mode
+routines:
+\begin{itemize}
+\item A routine should check its parameters carefully; in
+  the case of illegal parameters the {\reduce} error handlers
+  should be invoked (see below).
+\item If a routine cannot process its parameters for mathematical
+  reasons it best returns the expression which had caused the call
+  unchanged.
+\item Evaluators should operate silently; events such as messages needed
+  for testing and program development should be carried out in
+  dependency of a switch.
+\item A routine should return its result as a value
+  rather than printing it; for an isolated call in interactive
+  mode a printed result would be sufficient, but for following evaluation
+  steps the availability of an algebraic value is essential.
+\end{itemize}
+
+\subsubsection{Symbolic operator}
+
+The simplest way to link a symbolic procedure to algebraic
+mode is the \texttt{symbolic operator}\ttindex{symbolic operator} declaration.
+In that case the routine can be called by its proper name in algebraic
+mode with {\reduce} first evaluating its parameters to fully
+simplified algebraic forms. Upon return the result
+should also be an algebraic form (or NIL). Example:
+
+\begin{verbatim}
+   symbolic procedure my_plus(a,b);
+      begin scalar r;
+         print a; print b;
+         r := reval{'plus,a,b};
+         print r;
+         return r
+      end;
+
+   symbolic operator my_plus;
+\end{verbatim}
+
+This routine receives two algebraic expressions and computes
+their sum by calling the algebraic evaluator.
+The calls the the LISP function \texttt{print} have been inserted here
+and in the following examples to show you the forms passed to the routine.
+
+\subsubsection{Polyfn}
+
+If the symbolic routine is specialized for computations
+with pure polynomials it can be declared \texttt{polyfn}\ttindex{polyfn}.
+{\reduce} will evaluate the arguments for such a routine
+to \texttt{standard forms}\ttindex{standard forms} and expects that
+the result also will have that form.
+Example:
+
+\begin{verbatim}
+   symbolic procedure poly_plus(a,b);
+      begin scalar r;
+         print a; print b;
+         r := addf(a,b);
+         print r;
+         return r;
+      end;
+
+   put('poly_plus,'polyfn,'poly_plus);
+\end{verbatim}
+
+This routine also adds its arguments
+but it is specialized for polynomials. If called with
+a non-polynomial form an error message will be generated.
+In the \texttt{put} statement the first argument is the algebraic
+operator name and the third one is the name of the associated
+evaluator function. These may differ.
+
+\subsubsection{Psopfn}
+
+The most general type of function is that of a \texttt{psopfn}\ttindex{psopfn}.
+{\reduce} will not evaluate the parameters for such a routine,
+instead it passes the unevaluated list of parameters to the
+function. The routine has to evaluate its parameters itself (of course
+using the services of $reval$ and friends). So a \texttt{psopfn}
+can handle variable numbers of parameters. The result must
+be an algebraic expression or $nil$. Example:
+
+\begin{verbatim}
+   symbolic procedure multi_plus0 u;
+      begin scalar r;
+         r := 0;
+         for each x in u do <<
+            x := reval x; print x;
+            r := reval{'plus,r,x}
+         >>;
+         print r;
+         return r
+      end;
+
+   put('multi_plus,'psopfn,'multi_plus0);
+\end{verbatim}
+
+This routine can be called with an arbitrary number of
+parameters; it will evaluate them one after the other,
+add them by calling $reval$ and return the sum as result.
+Note that the name used in algebraic mode is $multi\_plus$
+which is different from the name of the symbolic routine
+doing the work. This is necessary because otherwise
+the argument count check of {\reduce} would complain
+as soon as the routine is called with more than one argument.
+
+In the next example a \texttt{psopfn} implements an operator with a
+fixed number of arguments; it expects two numbers as
+arguments and performs an extensive checking as any such routine
+should do; again the name of the routine and the algebraic mode operator
+are different:
+\begin{verbatim}
+   symbolic procedure bin_plus0 u;
+      begin scalar p1,p2,r;
+         if length u neq 2 then
+            rederr "illegal number of arguments";
+         p1 := reval car u; p2 := reval cadr u;
+         if not numberp p1 then typerr(p1,"number");
+         if not numberp p2 then typerr(p2,"number");
+         r := p1+p2;
+         return r
+   end;
+
+   put('bin_plus,'psopfn,'bin_plus0);
+\end{verbatim}
+The functions \texttt{typerr}\ttindex{typerr} and \texttt{rederr}\ttindex{rederr} are
+explained in the section \emph{error management}.
+
+\subsubsection{Simpfn}
+
+When you declare a new algebraic operator and want to assign a
+special evaluation mode for it which cannot be written
+in algebraic mode (e.g., as a rule set) you can create a
+simplifier which has the task to convert each operator
+expression to a \texttt{standard quotient}\ttindex{standard quotient}.
+A simplifier function is linked to the operator by
+the property \texttt{simpfn}\ttindex{simpfn}
+and has one argument which is the unevaluated parameter
+list of the operator expression. It will be called
+every time the operator appears in an expression. It
+must return a standard quotient. Example:
+
+\begin{verbatim}
+   algebraic operator op_plus;
+
+   symbolic procedure simp_op_plus u;
+      begin scalar r;
+         r := simp 0;
+         for each x in u do <<
+            x := simp x; print x;
+            r := addsq(r,x)
+         >>;
+         return print r
+      end;
+
+   put('op_plus,'simpfn,'simp_op_plus);
+\end{verbatim}
+
+In many cases the simpfn is the method of choice as it is
+best integrated into the {\reduce} evaluation process: its
+results can immediately be used for subsequent calculations
+while algebraic form results need to be converted to
+standard quotients before combining them with other
+formulae.
+
+Note that a simpfn which  cannot simplify its
+argument must nevertheless return a \texttt{standard quotient},
+then with the unevaluable form as kernel. E.g., a function
+for supporting the algebraic evaluation of the operator ``$<$:''
+
+\begin{verbatim}
+   algebraic operator <;
+
+   symbolic procedure simp_lessp u;
+      begin scalar a1,a2,d;
+         a1 := simp car u; a2 := simp cadr u;
+         d := subtrsq(a1,a2);
+         if domainp denr d and domainp numr d then
+            return if !:minusp numr d then simp 1 else simp 0;
+         return mksq({'lessp,prepsq a1,prepsq a2},1)
+     end;
+
+   put('lessp,'simpfn,'simp_lessp);
+\end{verbatim}
+
+Here all comparisons with numeric items are reduced to zero or one
+because of the equivalence of zero and ``false'' in algebraic mode, while
+in all other cases the non-evaluable expression is returned mapped by
+the function \texttt{mksq}\ttindex{mksq} which converts an algebraic
+expression into a standard quotient, ensuring the
+identity of composite kernels (see the section \texttt{standard forms})
+\ttindex{standard form}\ttindex{standard quotient}.
+
+\subsection{Statements, forms}
+
+An additional way to link symbolic entries to algebraic
+mode is to invent a new syntactical unit. A {\reduce}
+statement is introduced by assigning the
+property \texttt{stat}\ttindex{stat} = \texttt{rlis}\ttindex{rlis}
+to the leading keyword
+of the new statement. The corresponding function will be called with
+one parameter which is a list of the (unevaluated)
+parameters of the statement. A statement normally
+is called for its side effect rather than for its
+value - so the result will be not interpreted as
+an algebraic quantity (\texttt{ws}\ttindex{WS} not set, printed
+as symbolic list etc.). Example:
+
+\begin{verbatim}
+   put('my_add,'stat,'rlis);
+
+   symbolic procedure my_add u;
+      begin scalar r;
+         r := 0;
+         for each x in u do <<
+            x := reval x;
+            r := reval{'plus,x,r}
+         >>;
+        return r
+      end;
+\end{verbatim}
+
+to be called by a statement
+\begin{verbatim}
+   my_add x,x^2,x^3;
+\end{verbatim}
+
+A statement without parameters is introduced by the
+property - value pair
+\texttt{stat}\ttindex{stat} = \texttt{endstat}\ttindex{endstat}
+because the statement ``end'' is the most prominent
+representative of this class.
+
+For a more complicated syntax you can write a function
+which preprocesses a statement before evaluating
+it. Such preprocessors are linked to the leading
+keyword by the property \texttt{formfn}\ttindex{formfn}. However
+writing a formfn is rather difficult as you will
+have to organize the reading of the rest of the
+statement yourself. This approach is not recommended
+as the \texttt{formfn} interface is rather delicate
+and might be subject to future changes.
+
+\subsection{Printing and messages}
+
+For printing in symbolic mode you can use the Standard LISP
+functions
+
+\begin{center}
+\begin{tabular}{|r|l|}\hline
+   print(u) & print u with LISP syntax and following linefeed\\
+   prin1(u) & print u with LISP syntax but without linefeed\\
+   prin2(u) & print u without LISP syntax and without linefeed\\
+   prin2t(u)& print u without LISP syntax but with linefeed\\
+   terpri() & print a single linefeed\\ \hline
+\end{tabular}
+\end{center}
+
+\emph{LISP syntax} here means that a string is surrounded by
+string quotes and special characters in a symbol are
+tagged by an exclamation mark.
+
+However if you want to print an algebraic expression
+in the same style as the {\reduce} \texttt{write}\ttindex{write}
+statement you should use the function \texttt{writepri}\ttindex{writepri}.
+This function needs two arguments, the first one
+is the object to be printed which must be a string,
+a number or an algebraic expression tagged with
+a dynamic quote, e.g., using the function \texttt{mkquote}\ttindex{mkquote}.
+The second argument is one of $only$,
+$first$, $nil$, and $last$ and controls line feeds.
+Example:
+
+\begin{verbatim}
+   <<
+      u := '(expt x 2);
+      writepri(" u= ",'first);
+      writepri(mkquote u,nil);
+      writepri(" printed in algebraic style",'last)
+   >>;
+\end{verbatim}
+
+For printing one single algebraic form you can also use the
+function \texttt{mathprint}\ttindex{mathprint}:
+
+\begin{verbatim}
+   u := '(expt x 3);
+   print u;
+   mathprint u;
+\end{verbatim}
+
+\section{Error management}
+
+\subsection{Issue an error message}
+When programming an application in symbolic mode, it may be
+necessary to report an exception to the user, e.g.,
+if an algebraic prerequisite for applying the algorithm is
+not fulfilled.
+There are several routines for signaling an error in
+symbolic mode:
+
+\begin{itemize}
+\item The easiest way to complain about a bad algebraic form is
+  to call \texttt{typerr}\ttindex{typerr}. This function has two parameters
+  $typerr(exp,str)$: the first one is an algebraic expression,
+  the bad object, and the second one is a string which describes
+  what the object should have been. When printed {\reduce}
+  will report $exp$ in mathematical notation and insert a string
+  ``illegal as.'' The current program is terminated.
+\begin{verbatim}
+    u := '(plus x 1);
+       . . .
+    if not numberp u then typerr(u,"number");
+\end{verbatim}
+\item A general error can be reported using the function
+  \texttt{rederr}\ttindex{rederr}; it prints some asterisks
+  and then its argument in pure LISP style (no mathematical format);
+  the argument can be a list - in that case the surrounding
+  brackets are omitted in output. The current program is terminated.
+\begin{verbatim}
+   rederr "algorithm not applicable if denominator neq 1";
+   rederr {"never call me with ",u," again"};
+\end{verbatim}
+\item Similar to \emph{rederr} the routine \texttt{rerror}\ttindex{rerror}
+ terminates the run with an error message; it has
+ been designed for usage in a {\reduce} package enabling
+ the error handler to localize the error reason and to
+ provide additional information to the end user (e.g.,
+ via a \texttt{help}\ttindex{help} system). It has 3 parameters:
+ $rerror(pack,nbr,mess)$ where $pack$ is the name of
+ the package (usually a quoted identifier), $nbr$ is
+ an integer error number local to the package, beginning
+ with 1 and $mess$  is the error message just like \emph{rederr}.
+\begin{verbatim}
+   rerror('asys,13,"remainder not zero");
+\end{verbatim}
+ Wherever possible \texttt{rerror} should be used instead of
+ \texttt{rederr}.
+\end{itemize}
+
+\subsection{Catching errors}
+
+On the other hand a symbolic program might want to react
+to an exception which occurred in a calculation branch.
+{\reduce} supports this by encapsulation with the routines
+\texttt{errorset*}\ttindex{errorset*} and \texttt{errorset}
+\ttindex{errorset}. You have to
+construct the action to be encapsulated as a subroutine
+call in prefix LISP syntax which is identical to
+algebraic form syntax: a list where the first element
+is the name of the function (usually a
+quoted symbol) followed by the arguments; these
+must be tagged by quote, best using the function
+\texttt{mkquote}\ttindex{mkquote}.
+The second parameter describes the error mode: if $t$, an eventual
+error during the evaluation will be reported to the user,
+if $nil$ the error message will be suppressed. \texttt{errorset}
+additionally has a third parameter which tells the
+error manager whether to print a backtrace or not in an
+error case. The result of these functions will be
+\begin{itemize}
+\item in the case of an error an error code (its form depends
+  on the underlying LISP system),
+\item otherwise the result of the computed value as \texttt{car} of a list.
+\end{itemize}
+You should use the function \texttt{errorp}\ttindex{errorp} for testing
+whether the call failed or not; in the positive case
+pick out the result by a $car$
+access. Example:
+\begin{verbatim}
+   begin scalar u,v;
+         . . .
+      q := errorset!*({'quotsq,mkquote(u),mkquote(v)},nil);
+      if errorp q then
+         rederr "division failed"
+      else
+         q := car q;
+         . . .
+\end{verbatim}
+Note that you cannot write the expression to be
+encapsulated in {\reduce} syntax here. And also $'(quotsq\,\, u\,\, v)$
+would be incorrect because then $u$ and $v$ were
+constants and not references to the local
+variables $u$ and $v$. Only the $mkquote$ expressions
+guarantee that at run time a list is generated where
+the values of $u$ and $v$ are inserted as parameters for
+the call.
+\section{Compiling, modules, packages}
+
+\subsection{Program modules}
+
+It is a good practice to design a complex program
+group in separate modules each residing in a
+separate source file. You can use the {\reduce}
+statement pair \texttt{module}\ttindex{module} -
+\texttt{endmodule}\ttindex{endmodule}
+to reflect this structure. A module has a name
+which often will be identical with its source file
+(without extension, of course). This correspondence
+is not essential, but is very practical for the daily
+work. As a side effect \texttt{module} switches automatically
+to symbolic mode during input and \texttt{endmodule} switches
+back to the original mode. A typical module in a file
+would look like
+
+\begin{verbatim}
+   module alggeo1; % Primitives for algebraic geometry.
+
+    % Author: Hugo Nobody, Nirwanatown, Utopia.
+
+    .......   the symbolic mode code
+
+   endmodule;
+   end;
+\end{verbatim}
+
+If this module resides in a file $alggeo1.red$ it can
+either be read into a {\reduce} session by
+\begin{verbatim}
+   in "alggeo1.red"$
+\end{verbatim}
+or it can be compiled to a fast loadable binary by
+\begin{verbatim}
+   faslout "alggeo1";
+   in "alggeo1.red"$
+   faslend;
+\end{verbatim}
+You then can load this module by {load alggeo}.
+
+Although {\reduce} currently does not yet rely exclusively on
+declarations \texttt{exports}\ttindex{exports} and \texttt{imports}
+\ttindex{imports}, these should be used in order to be
+safe for the future. \texttt{exports} should name all
+entry points which the module offers for external access
+and \texttt{imports} is the list of modules
+or packages which the module needs at run time or
+during compilation.
+
+\subsection{Packages}
+
+If your application consists of several modules you can
+design it as a \texttt{package}\index{package}. A package is a
+collection of modules which form a unit but allow you an individual
+management, e.g., updating and recompilation. A package
+is defined by a header module which should have the
+name of the package as the module name. This module
+then contains a declaration for the package by the
+function \texttt{create-package}\index{create-package}, which expects as
+first parameter a list of the modules which belong to the package
+(this list must begin with the header package) and
+a second dummy parameter to be set to $nil$ (this
+parameter is meaningful only for modules in the
+{\reduce} kernel). Additionally the header
+module should contain all global declarations
+for the complete package, e.g., \texttt{fluid, global}
+declarations and \texttt{exports} and \texttt{imports}
+statements.
+Also, all macros, smacros used in more than one module
+in the package should be defined in the header module.
+
+As long as you develop your
+application and frequently recompile single modules
+it would be practical to replace the function
+\texttt{create-package} by a loop calling \texttt{load\_package} (please
+note the underscore: \texttt{load-package} is a different
+function not usable here). You then can load the complete package
+by one call to \texttt{load\_package} for the header
+module. Example:
+
+\begin{verbatim}
+   module alggeo; % Algebraic geometry support.
+
+    % Author: Hugo Nobody, Nirwanatown, Utopia.
+
+   % create_package('(alggeo alggeo1 alggeo2 alggeo3));
+   for each x in '(alggeo1 alggeo2 alggeo3) do load x;
+
+   fluid '(alggeo_vars!* ......);
+   exports ...
+        ... and so on
+
+   endmodule;
+   end;
+\end{verbatim}
+Later you can replace the load loop \texttt{load} by a correct
+\texttt{create-package} expression - you will then have to compile the
+object as one big binary with the header module as the first
+entry.
+
+For compiling you use the function \texttt{faslout} which creates
+a fast loading file - see the corresponding section in the User's
+manual.
+\section{Coding suggestions}
+
+In order to guarantee that your program is as portable
+and version independent as possible
+the following rules may be useful. Note that these are recommendations
+only - your program may do a good job for you even if
+you ignore all of them.
+
+\begin{itemize}
+\item Don't use functions from the underlying LISP which are
+  not explicitly part of {\reduce} or \texttt{standard lisp}
+  - they will probably be missing in other support systems.
+\item Don't rely on character case.
+  Some implementations support upper case
+  output, others prefer lower case. As the tendency goes
+  towards lower case, the best policy is to use lower
+  case characters only, except in strings or comments.
+\item Use proper indentation. Take the {\reduce}
+  sources as example. If the indentation corresponds
+  to the block structure your programs will be better
+  readable.
+\item Don't produce lines with more than 72 characters.
+  There are still computers and networks around which
+  have problem if the size of the good old punched card
+  is exceeded.
+\item Write comments. The major entry point routines of your
+  symbolic code should have one comment line following the
+  procedure declaration; this comment should be one or more
+  complete English sentences, beginning with an upper case
+  character and ending with a dot.
+\item Try to avoid name conflicts. It is a common policy to
+  name global and fluid variables with a trailing asterisk
+  and to use a common name prefix for the procedure names.
+\item If you produce a large piece of software, organize it as
+  a {\reduce} package.
+\end{itemize}
+
+
+\section{Appendix: Standard LISP extensions}
+
+The following typical LISP functions are defined in the \texttt{support}
+module of the \texttt{rlisp}  package.
+
+\vspace{5mm}
+\texttt{atsoc}($u$:any, $p$:alist)
+
+\noindent
+Same as \texttt{assoc}, but using the operator $eq$ instead of $equal$
+for the search. $atsoc$ can be applied only if the identity
+of the object to be searched for is guaranteed, e.g.,  for symbols.
+It is substantially faster than \texttt{assoc}.
+
+\vspace{5mm}
+\texttt{copyd}($u$:id, $v$:id)
+
+\noindent
+Copies the procedure definition of $v$ to the symbol $u$. Afterwards
+the procedure can be called by using the name $u$.  Frequently
+used for embedding a function, e.g., for implementing a private
+trace:
+\begin{verbatim}
+   if null getd 'myprog_old then copyd('myprog_old,'myprog);
+   symbolic procedure myprog(u);
+      <<
+         print {"calling myprog with parameter ",u};
+         myprog_old(u)
+      >>;
+\end{verbatim}
+
+\vspace{5mm}
+\texttt{eqcar}($u$:any, $v$:any)
+
+\noindent
+Implements the frequently needed test \emph{pairp u and car u eq v}.
+
+\vspace{5mm}
+\texttt{listp}($u$:any)
+
+\noindent
+Returns t if $u$ is a top level list ending with a $nil$.
+
+\vspace{5mm}
+\texttt{mkquote}($u$:any)
+
+\noindent
+tags $u$ with a quote. This function is useful for cases where
+a LISP eval situation is given, e.g, for coding for an $errorset$
+or for $writepri$.
+
+\vspace{5mm}
+\texttt{reversip}($u$:list)
+
+\noindent
+Reverses the elements of $l$ in place - faster than $reverse$, but
+desctroys the input list.
+
+\vspace{5mm}
+\texttt{smember}($u$:any, $v$:any)
+
+\noindent
+Similar to $member$ this routine tests whether $u$ occurs in
+the structure $v$, however in an arbitrarily deep nesting.
+While $member$ tests only the top level
+list, $smember$ descends down all branches of the tree.
+
+\vspace{5mm}
+\texttt{smemq}($u$:any, $v$:any)
+
+\noindent
+Same as $smember$, however using $eq$ as test instead of $equal$.
+
+\vspace{5mm}
+\noindent
+The following routines handle lists as sets (every element
+at most once):
+
+\texttt{union}($u$:any, $v$:any)
+
+\texttt{intersection}($u$:any, $v$:any)
+
+\texttt{setdiff}($u$:any, $v$:any)  % set difference
+
+\vspace{5mm}
+\noindent
+The Standard LISP \texttt{apply} function requires that the parameters
+for the function to be applied are encoded as a list. For standard
+cases of 1,2 or 3 parameters the following variants allow an easier
+encoding:
+
+\texttt{apply1}($u$:id, $u$:any)
+
+\texttt{apply2}($u$:id, $u$:any, $v$:any)
+
+\texttt{apply3}($u$:id, $u$:any, $v$:any, $w$:any)
+
+\printindex
+\end{document}
