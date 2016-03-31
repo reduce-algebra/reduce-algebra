@@ -19,7 +19,10 @@ until [ ${SUCCESS} = 1 ] ; do
    RUNS=`expr ${RUNS} + 1`
    if [ ${RUNS} -gt ${MAXRUNS} ] ; then
       echo >&2 Maximum number of runs reached. Stop.
-      exit 1
+# See comments in ../misc/mkpdf.sh as to who I return with a return code of 0
+# not 1 when cross references fail to converge.
+#     exit 1
+      exit 0
    fi
 #   checksum ${JOBNAME}.aux
 done
