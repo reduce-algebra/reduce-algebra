@@ -16,11 +16,11 @@ until [ ${SUCCESS} = 1 ] ; do
    RUNS=`expr ${RUNS} + 1`
    if [ ${RUNS} -gt ${MAXRUNS} ] ; then
       echo >&2 Maximum number of runs reached. Stop.
-# If I go "exit 1" that tends to disrupt higher level scripts, so even though
-# looping here is bad I will exit cleanly. The consequence could be that some
-# cross-references will end up incorrect.
+# The code here USED to go "exit 1" but that stopped higher level scripts.
+# I will now merely pretend that I had achieved convergence. The result may
+# be that some cross-references end up incorrect in the generated file.
 #     exit 1
-      exit 0
+      SUCCESS=1
    fi
 #   checksum ${JOBNAME}.aux
 done
