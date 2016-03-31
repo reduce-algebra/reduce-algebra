@@ -118,7 +118,7 @@ $(PL)/if-system.b: $(PU)/if-system.sl
 	(cd $(PU) ; make $(MFLAGS) MACHINE=$(MACHINE) $(PL)/if-system.b)
 
 $(PL)/fasl-decls.b: $(PXK)/fasl-decls.sl 
-	(cd $(PXK) ; make $(MFLAGS)MACHINE=$(MACHINE)  $(PL)/fasl-decls.b)
+	(cd $(PXK) ; make $(MFLAGS) MACHINE=$(MACHINE)  $(PL)/fasl-decls.b)
 
 $(PL)/fast-vector.b: $(PU)/fast-vector.sl
 	(cd $(PU) ; make $(MFLAGS) MACHINE=$(MACHINE) $(PL)/fast-vector.b)
