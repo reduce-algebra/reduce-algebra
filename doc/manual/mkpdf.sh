@@ -13,6 +13,7 @@ rm -f ${JOBNAME}.ind
 
 # Run latex until it no longer complains about cross references
 until [ ${SUCCESS} = 1 ] ; do
+   rm -f ${JOBNAME}.log
    pdflatex ${JOBNAME}
    fgrep -q "Rerun to get cross-references right." ${JOBNAME}.log || SUCCESS=1
    RUNS=`expr ${RUNS} + 1`
