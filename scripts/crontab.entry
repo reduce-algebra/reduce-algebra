@@ -1,0 +1,19 @@
+SHELL=/bin/bash
+# This is a crontab entry for use on a Macintosh that is to be used to create
+# regular snapshots. It tries croncheck.sh every 10 minutes between midnight
+# and 8pm. The reasoning behind the evening gap was that when using it on my
+# private laptop I did not want a rebuild to start in the evening when I might
+# be about to switch the machine off. The script croncheck.sh will almost
+# always make a very brief check and then stop, so calling it often through
+# the day should not be disruptive.
+# To install this file go
+#   crontab crontab.entry
+# and to check that it is present try
+#   crontab -l
+# If you ever wanted to remove it, then "crontab -r" will do the job for you.
+# Apple would wish to draw your attention to "launchd" as their proprietary
+# alternative to cron.
+MAILTO=""
+PATH=/opt/local/bin:/opt/local/sbin:/opt/local/bin:/opt/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+5,15,25,35,45,55 0-20 * * * $HOME/croncheck.sh
+
