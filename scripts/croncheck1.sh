@@ -133,7 +133,7 @@ ssh -p $LINUX_PORT $LINUX_USER@localhost sudo /sbin/shutdown -h now
 
 
 # Start a Windows build. This will take a long time!
-vboxmanage startvm $WINDOWS_MC -type headless
+vboxmanage startvm $WINDOWS_VM -type headless
 
 # Wait until virtualbox is running. I do this by sending ssh requests
 # repeatedly until ons is responded to. I will try up to 40 at 30-second
