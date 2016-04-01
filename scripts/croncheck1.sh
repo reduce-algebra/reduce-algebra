@@ -117,6 +117,7 @@ ssh -p $LINUX_PORT $LINUX_USER@localhost touch debianbuild/C.stamp
 
 ssh -p $LINUX_PORT $LINUX_USER@localhost \( \
   cd debianbuild \; \
+  pushd C \; ./autogen.sh \; popd \; \
   time make \)
 
 # Recover the built files.
@@ -174,6 +175,7 @@ ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost touch winbuild/C.stamp
 
 ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost \( \
   cd winbuild \; \
+  pushd C \; ./autogen.sh \; popd \; \
   time make \)
 
 # Recover the built files.
@@ -193,6 +195,7 @@ ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost shutdown /p
 # the sources.
 
 pushd macbuild
+pushd C ; ./autogen.sh ; popd
 make
 cp Reduce*.dmg $HOME/snapshots/Reduce-snapshot_`date "+%Y%m%d"`.dmg
 popd
