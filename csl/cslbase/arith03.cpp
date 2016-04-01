@@ -303,6 +303,11 @@ static LispObject quotif(LispObject a, LispObject b)
 {   double d = float_of_number(b);
     if (d == 0.0) return aerror2("bad arg for quotient", a, b);
     d = (double)int_of_fixnum(a) / d;
+    if (trap_floating_overflow &&
+        floating_edge_case(d))
+    {   floating_clear_flags();
+        return aerror("floating point quotient");
+    }
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
@@ -334,6 +339,11 @@ static LispObject quotsf(LispObject a, LispObject b)
 {   double d = float_of_number(b);
     if (d == 0.0) return aerror2("bad arg for quotient", a, b);
     d = float_of_number(a) / d;
+    if (trap_floating_overflow &&
+        floating_edge_case(d))
+    {   floating_clear_flags();
+        return aerror("floating point quotient");
+    }
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
@@ -1208,6 +1218,11 @@ static LispObject quotfi(LispObject a, LispObject b)
 {   double d;
     if (b == fixnum_of_int(0)) return aerror2("bad arg for quotient", a, b);
     d = float_of_number(a) / (double)int_of_fixnum(b);
+    if (trap_floating_overflow &&
+        floating_edge_case(d))
+    {   floating_clear_flags();
+        return aerror("floating point quotient");
+    }
     return make_boxfloat(d, type_of_header(flthdr(a)));
 }
 
@@ -1215,6 +1230,11 @@ static LispObject quotfs(LispObject a, LispObject b)
 {   double d = float_of_number(b);
     if (d == 0.0) return aerror2("bad arg for quotient", a, b);
     d = float_of_number(a) / d;
+    if (trap_floating_overflow &&
+        floating_edge_case(d))
+    {   floating_clear_flags();
+        return aerror("floating point quotient");
+    }
     return make_boxfloat(d, type_of_header(flthdr(a)));
 }
 
@@ -1234,6 +1254,9 @@ static LispObject quotff(LispObject a, LispObject b)
         x = float128_of_number(a);
         y = float128_of_number(b);
         f128M_div(&x, &y, &z);
+        if (trap_floating_overflow &&
+            floating_edge_case128(&z))
+            return aerror("floating point quotient");
         return make_boxfloat128(z);
     }
     else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
@@ -1242,6 +1265,11 @@ static LispObject quotff(LispObject a, LispObject b)
     double d;
     if ((d = float_of_number(b)) == 0.0)
         return aerror2("bad arg for quotient", a, b);
+    if (trap_floating_overflow &&
+        floating_edge_case(d))
+    {   floating_clear_flags();
+        return aerror("floating point quotient");
+    }
     else return make_boxfloat(float_of_number(a) / d, hc);
 }
 

@@ -403,7 +403,7 @@ static LispObject timesif(LispObject a, LispObject b)
         return aerror("floating point times");
     }
 // if b was a single or short float then there can be an overflow to infinity
-// within make_boxfloat...
+// within make_boxfloat... which will be detected there.
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
@@ -1745,9 +1745,7 @@ static LispObject timesff(LispObject a, LispObject b)
         f128M_mul(&x, &y, &z);
         if (trap_floating_overflow &&
             floating_edge_case128(&z))
-        {   floating_clear_flags();
             return aerror("floating point times");
-        }
         return make_boxfloat128(z);
     }
     else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)

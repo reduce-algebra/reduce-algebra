@@ -5,7 +5,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2015, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -2494,6 +2494,8 @@ int name_matches(LispObject a, const char *s)
     else return 0;
 }
 
+// I rather strongly believe that by using libffi I could make the code
+// here a LOT nicer!
 
 LispObject callforeign(void *f, int returntype, int nargs, int signature)
 {   LispObject nil = C_nil;

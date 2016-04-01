@@ -78,6 +78,7 @@ LispObject Lfloat_2(LispObject, LispObject a, LispObject b)
     else if (!is_bfloat(b)) return aerror1("bad arg for float",  b);
     else
     {   double d = float_of_number(a);
+// I will allow overflows and NaNs to be detected within make_boxfloat
         return onevalue(make_boxfloat(d, type_of_header(flthdr(b))));
     }
 }
@@ -1003,11 +1004,12 @@ LispObject Lrational(LispObject nil, LispObject a)
 static LispObject Lmanexp(LispObject nil, LispObject a)
 {   int x;
     double f;
-    if (! is_float(a))  aerror1("arg is not a floating-point number", a);
+// AT present I do not support 128-bit floats here @@@
+    if (!is_float(a))  aerror1("arg is not a floating-point number", a);
     f = float_of_number(a);
     f = frexp(f, &x);
     errexit();
-    return onevalue(cons(make_boxfloat(f,TYPE_DOUBLE_FLOAT),
+    return onevalue(cons(make_boxfloat(f, TYPE_DOUBLE_FLOAT),
                          fixnum_of_int(x)));
 }
 
@@ -1030,7 +1032,7 @@ static LispObject Lrationalize(LispObject nil, LispObject a)
 // are a repeatable set of initial "random" values.
 //
 // Well this was now implemented quite a long while ago and the standards
-// for pseudo-random sequences have probably moved on sunstantially. So this
+// for pseudo-random sequences have probably moved on substantially. So this
 // probably really deserves review!
 //
 

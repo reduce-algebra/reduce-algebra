@@ -4740,6 +4740,8 @@ static LispObject Lbinary_readfloat(LispObject nil, int nargs, ...)
     errexit();
     argcheck(nargs, 0, "binary-readfloat");
     if (binary_infile == NULL) return onevalue(r);
+// Note that the code here treats the float as binary data so infinities and
+// NaNs are never anything special.
     w = (int32_t)GETC(binary_infile) & 0xff;
     w = (w<<8) | ((int32_t)GETC(binary_infile) & 0xff);
     w = (w<<8) | ((int32_t)GETC(binary_infile) & 0xff);

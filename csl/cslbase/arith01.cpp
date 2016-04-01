@@ -152,6 +152,11 @@ LispObject make_boxfloat(double a, int32_t type)
 #else
             Float_union aa;
             aa.f = (float)a;
+            if (trap_floating_overflow &&
+                floating_edge_case(aa.f))
+            {   floating_clear_flags();
+                return aerror("exception with short float");
+            }
             return (aa.i & ~(intptr_t)0xf) + TAG_SFLOAT;
 #endif
         }
@@ -159,12 +164,22 @@ LispObject make_boxfloat(double a, int32_t type)
             r = getvector(TAG_BOXFLOAT, TYPE_SINGLE_FLOAT, sizeof(Single_Float));
             errexit();
             single_float_val(r) = (float)a;
+            if (trap_floating_overflow &&
+                floating_edge_case(single_float_val(r)))
+            {   floating_clear_flags();
+                return aerror("exception with single float");
+            }
             return r;
         default: // TYPE_DOUBLE_FLOAT I hope
             r = getvector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT, SIZEOF_DOUBLE_FLOAT);
             errexit();
             if (!SIXTY_FOUR_BIT) double_float_pad(r) = 0;
             double_float_val(r) = a;
+            if (trap_floating_overflow &&
+                floating_edge_case(double_float_val(r)))
+            {   floating_clear_flags();
+                return aerror("exception with double float");
+            }
             return r;
     }
 }
@@ -175,6 +190,9 @@ LispObject make_boxfloat128(float128_t a)
     errexit();
     if (!SIXTY_FOUR_BIT) long_float_pad(r) = 0;
     long_float_val(r) = a;
+    if (trap_floating_overflow &&
+        floating_edge_case128(&long_float_val(r)))
+        return aerror("exception with long float");
     return r;
 }
 
@@ -186,8 +204,20 @@ static double bignum_to_float(LispObject v, int32_t h, int *xp)
 // the top word of the bignum might have only 1 bit in it, so the top 2 words
 // of a nignum might only provide 1+31 bits of significance.
 // This can not overflow, because it leaves an exponent-adjustment value
-// in *xp. You need ldexp(r, *xp) afterwards.
+// in *xp. You need ldexp(r, *xp) afterwards, and THAT is where any overflow
+// can arise.
 //
+// Well my remark about only needing to look at 3 words is wrong if I want
+// a floating result that is always correctly rounded to even (as per IEEE).
+// Suppose I had a floating point format with 12-bit (plus an implicit bit)
+// mantissa, then consider an integer such as
+//    0x122280000000x
+//       ===
+// where I have underlined the 12 bits that will appear explicitly in the
+// floating point rendition. If x is zero then round-to-even will yield
+// a floating point value [1]222, while if x is non-zero I will need to round
+// up and deliver [1]223. There could be very very many zeros before the "x",
+// bounded only by the limit on exponents. 
 {   int32_t n = (h-CELL-4)/4;  // Last index into the data
     int x = 31*(int)n;
     int32_t msd = (int32_t)bignum_digits(v)[n];
@@ -221,6 +251,10 @@ static float128_t bignum_to_float128(LispObject v, int32_t h, int *xp)
 // This can not overflow, because it leaves an exponent-adjustment value
 // in *xp. You need "ldexp128(r, *xp)" afterwards.
 //
+// WELL actually just using the top 5 digits us not enough! Consider an
+// integer whose mantissa has 0.5 in the last place, then a long string of
+// zero bits and then MAYBE a final trailing 1 that could force rounding up
+// rather than down...
 {   int32_t n = (h-CELL-4)/4;  // Last index into the data
     int x = 31*(int)n;
     int32_t msd = (int32_t)bignum_digits(v)[n];
@@ -718,6 +752,15 @@ static LispObject plusif(LispObject a, LispObject b)
 // Fixnum plus boxed-float.
 //
 {   double d = (double)int_of_fixnum(a) + float_of_number(b);
+// The test here is redundant because make_boxfloat would also check for
+// infinity and NaN. However I test here because in the common case of
+// double floats (ie the default) it lets the diagnostic tell me that I
+// was doing PLUS rather than any other operation.
+    if (trap_floating_overflow &&
+        floating_edge_case(d))
+    {   floating_clear_flags();
+        return aerror("floating point plus");
+    }
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
@@ -735,6 +778,11 @@ static LispObject plussf(LispObject a, LispObject b)
 // is separated just for (minor) efficiency reasons.
 //
 {   double d = float_of_number(a) + float_of_number(b);
+    if (trap_floating_overflow &&
+        floating_edge_case(d))
+    {   floating_clear_flags();
+        return aerror("floating point plus");
+    }
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
@@ -1081,11 +1129,19 @@ static LispObject plusff(LispObject a, LispObject b)
         x = float128_of_number(a);
         y = float128_of_number(b);
         f128M_add(&x, &y, &z);
+        if (trap_floating_overflow &&
+            floating_edge_case128(&z))
+            return aerror("floating point plus");
         return make_boxfloat128(z);
     }
     else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
         hc = TYPE_DOUBLE_FLOAT;
     else hc = TYPE_SINGLE_FLOAT;
+    if (trap_floating_overflow &&
+        floating_edge_case(a))
+    {   floating_clear_flags();
+        return aerror("floating point plus");
+    }
     return make_boxfloat(float_of_number(a) + float_of_number(b), hc);
 }
 

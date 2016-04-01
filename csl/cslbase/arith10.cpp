@@ -403,6 +403,8 @@ static LispObject make_complex_float(Complex v, LispObject a)
 #endif
     if (is_bfloat(a)) type = type_of_header(flthdr(a));
     else type = TYPE_SINGLE_FLOAT;
+// There are MANY uses of make_boxfloat here. In pretty well all cases I let
+// make_boxfloat do any overflow checks, and I do not support 128-bit floats.
     a1 = make_boxfloat(v.real, type);
     errexit();
     a2 = make_boxfloat(v.imag, type);
@@ -1293,6 +1295,11 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
         {   double (*rl)(double) = trig_functions[which_one].real;
             if (rl == NULL) return aerror("unimplemented trig function");
             d = (*rl)(d);
+            if (trap_floating_overflow &&
+                floating_edge_case(d))
+            {   floating_clear_flags();
+                return aerror("error in floating point elementary function");
+            }
             a = make_boxfloat(d, restype);
             errexit();
             return onevalue(a);
@@ -1305,6 +1312,13 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
             if (rl == 0) return aerror("unimplemented trig function");
             c1r = (*rl)(d);
             c1i = (*im)(d);
+            if (trap_floating_overflow &&
+                (floating_edge_case(c1r) ||
+                 floating_edge_case(c1i)))
+            {   floating_clear_flags();
+                return aerror("error in floating point elementary function");
+            }
+            a = make_boxfloat(d, restype);
 //
 // if the imaginary part of the value is zero then I will return a real
 // answer - this is correct since the original argument was real, but
@@ -1320,7 +1334,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
 // For now at least I will keep raising an error in cases where the
 // result would not be real
 //
-            return aerror("Elementary function argugemt out of range");
+            return aerror("Elementary function argument out of range");
 #endif
             rp = make_boxfloat(c1r, restype);
             errexit();
@@ -1448,6 +1462,11 @@ static LispObject Lhypot(LispObject nil, LispObject a, LispObject b)
     }
     a = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
     errexit();
+    if (trap_floating_overflow &&
+        floating_edge_case(a))
+    {   floating_clear_flags();
+        return aerror("floating point hypotenuse");
+    }
     return onevalue(a);
 }
 

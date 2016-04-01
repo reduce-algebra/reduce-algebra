@@ -1,4 +1,4 @@
-//  restart.cpp                       Copyright (C) 1989-2015 Codemist Ltd
+//  restart.cpp                       Copyright (C) 1989-2016 Codemist Ltd
 
 //
 // Code needed to start off Lisp when no initial heap image is available,
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1645,6 +1645,7 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
                         switch (type_of_header(h))
                         {   case TYPE_DOUBLE_FLOAT:
                             case TYPE_VECFLOAT64:
+//@@@ At present long floats do not survice checkpoint & restart!
                             case TYPE_LONG_FLOAT:
 //
 // double precision floating point data has to remain 64-bit aligned, and so
@@ -4807,8 +4808,7 @@ static void cold_setup()
         qvalue(w) = value;
     make_constant("most-positive-fixnum", fixnum_of_int(0x07ffffff));
     make_constant("most-negative-fixnum", fixnum_of_int(0xf8000000));
-// #undef  TYPE_LONG_FLOAT
-// #define TYPE_LONG_FLOAT TYPE_DOUBLE_FLOAT
+// TYPE_LONG_FLOAT is a worry here.
     make_constant("pi",
                   make_boxfloat(3.141592653589793238, TYPE_LONG_FLOAT));
     append_symbol       = make_undefined_symbol("append");
@@ -5546,7 +5546,8 @@ static void set_up_variables(int restart_flag)
                   make_boxfloat(FLT_EPSILON, TYPE_SINGLE_FLOAT));
     make_constant("double-float-epsilon",
                   make_boxfloat(DBL_EPSILON, TYPE_DOUBLE_FLOAT));
-// For now "long" = "double"
+// Now that LONG FLOAT is 128-bits all the literals set up here are
+// liable to be incorrect!
     make_constant("long-float-epsilon",
                   make_boxfloat(DBL_EPSILON, TYPE_LONG_FLOAT));
 //

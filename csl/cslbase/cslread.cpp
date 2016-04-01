@@ -719,6 +719,11 @@ LispObject intern(int len, bool escaped)
 #ifdef SHORT_FLOAT
                 {   Float_union ff;
                     ff.f = (float)atof((char *)&boffo_char(0));
+                    if (trap_floating_overflow &&
+                        floating_edge_case(ff.f))
+                    {   floating_clear_flags();
+                        return aerror("bad short float input");
+                    }
                     return TAG_SFLOAT + (ff.i & ~(int32_t)0xf);
                 }
 #else
@@ -730,6 +735,11 @@ LispObject intern(int len, bool escaped)
                                   sizeof(Single_Float));
                     errexit();
                     single_float_val(r) = f;
+                    if (trap_floating_overflow &&
+                        floating_edge_case(single_float_val(r)))
+                    {   floating_clear_flags();
+                        return aerror("bad single float input");
+                    }
                     return r;
                 default:
                 case 2:
@@ -738,9 +748,17 @@ LispObject intern(int len, bool escaped)
                                   SIZEOF_DOUBLE_FLOAT);
                     errexit();
                     double_float_val(r) = d;
+                    if (trap_floating_overflow &&
+                        floating_edge_case(d))
+                    {   floating_clear_flags();
+                        return aerror("bad double float input");
+                    }
                     return r;
                 case 3:
                     ll = atof128((char *)&boffo_char(0));
+                    if (trap_floating_overflow &&
+                        floating_edge_case128(&ll))
+                        return aerror("bad long float input");
                     r = getvector(TAG_BOXFLOAT, TYPE_LONG_FLOAT,
                                   SIZEOF_LONG_FLOAT);
                     errexit();

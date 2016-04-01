@@ -176,6 +176,9 @@ LispObject negate(LispObject a)
         }
         case TAG_BOXFLOAT:
         {   double d = float_of_number(a);
+// Trying to negate an infinity or a NaN could yield another edge case,
+// however it does not seem proper to test for that here since if I
+// am trapping overflows (ect) that will already have happened.
             return make_boxfloat(-d, type_of_header(flthdr(a)));
         }
         default:

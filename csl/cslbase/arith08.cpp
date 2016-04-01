@@ -329,20 +329,18 @@ static LispObject Lrealpart(LispObject, LispObject a)
 }
 #endif // COMMON
 
-//
-// This now does special things for NaNs and infinities. For a NaN is just
-// returns nil. For an infinity a returns an exponent value that is 1000000,
-// much larger than any proper value.
-// I iught to worry about negative zero tooo...
-//
-
 static LispObject Ldecode_float(LispObject nil, LispObject a)
 {   double d, neg = 1.0;
     int x;
     LispObject sign;
+// @@@ This does not deal with 129-bit floats yet.
     if (!is_float(a)) return aerror("decode-float");
     d = float_of_number(a);
-    if (!(d == d)) return onevalue(nil); // a NaN
+    if (floating_edge_case(d))
+    {   if (trap_floating_overflow) return aerror("decode-float");
+        else return onevalue(nil); // infinity or NaN
+    }
+// Ha ha ha - I detect -0.0 here.
     if (d < 0.0 || (d == 0.0 && 1.0/d < 0)) d = -d, neg = -1.0;
     if (d == 0.0) x = 0;
     else if (1.0/d == 0.0)               // An infinity
@@ -737,6 +735,7 @@ static LispObject Lfloat_sign2(LispObject, LispObject a, LispObject b)
     if (float_of_number(a) < 0.0) d = -d;
     if (is_sfloat(b)) return onevalue(make_sfloat(d));
     else if (!is_bfloat(b)) return aerror1("bad arg for float-sign",  b);
+// make_boxfloat may detect infinity or NaN.
     else return onevalue(make_boxfloat(d, type_of_header(flthdr(b))));
 }
 
@@ -867,6 +866,7 @@ static LispObject Lscale_float(LispObject, LispObject a, LispObject b)
     double d = float_of_number(a);
     if (!is_fixnum(b)) return aerror("scale-float");
     d = ldexp(d, int_of_fixnum(b));
+// Overflows etc handled by make_boxfloat. 128-bit floats not supported.
     if (is_sfloat(a)) return onevalue(make_sfloat(d));
     else if (!is_bfloat(a)) return aerror1("bad arg for scale-float",  a);
     else return onevalue(make_boxfloat(d, type_of_header(flthdr(a))));
