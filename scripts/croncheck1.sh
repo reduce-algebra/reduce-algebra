@@ -74,7 +74,7 @@ vboxmanage startvm $LINUX_VM -type headless
 
 for x in `seq 1 20`
 do
-  hello=`ssh -p $LINUX_PORT ${LINUX_USER}localhost printf "hello"`
+  hello=`ssh -p $LINUX_PORT $LINUX_USER@localhost printf "hello"`
   if test "x$hello" = "xhello"
   then
     break
@@ -95,8 +95,8 @@ done
 # First I will clear away any previous version on the VM and copy across
 # files from the host.
 
-ssh -p $LINUX_PORT ${LINUX_USER}localhost rm -rf debianbuild
-scp -r -P $LINUX_PORT debianbuild ${LINUX_USER}localhost:.
+ssh -p $LINUX_PORT $LINUX_USER@localhost rm -rf debianbuild
+scp -r -P $LINUX_PORT debianbuild $LINUX_USER@localhost:.
 
 # This next line copies all the files across using tar to pack and unpack so
 # that there is only a single ssh transaction. Whether this is really better
@@ -105,30 +105,30 @@ scp -r -P $LINUX_PORT debianbuild ${LINUX_USER}localhost:.
 
 pushd macbuild
 tar cfz - C | \
-  ssh -p $LINUX_PORT ${LINUX_USER}localhost \
+  ssh -p $LINUX_PORT $LINUX_USER@localhost \
     \( cd debianbuild \; tar xfz - \)
 popd
 
 # Create the file that marks the source files as present and up to date
 
-ssh -p $LINUX_PORT ${LINUX_USER}localhost touch debianbuild/C.stamp
+ssh -p $LINUX_PORT $LINUX_USER@localhost touch debianbuild/C.stamp
 
 # Now do the main build of all the Linux binaries and packages.
 
-ssh -p $LINUX_PORT ${LINUX_USER}localhost \( \
+ssh -p $LINUX_PORT $LINUX_USER@localhost \( \
   cd debianbuild \; \
   time make \)
 
 # Recover the built files.
-scp -P $LINUX_PORT ${LINUX_USER}localhost:debianbuild/\*.deb $HOME/snapshots
-scp -P $LINUX_PORT ${LINUX_USER}localhost:debianbuild/\*.rpm $HOME/snapshots
+scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.deb $HOME/snapshots
+scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.rpm $HOME/snapshots
 
 # Shut down the guest. I do this by issing a command within the VM rather
 # than by an externally forced power-down since I hope that will count
 # as kinder. But done this way means that the account used on the VM has
 # to have "sudo" rights without neeting to quote a password.
 
-ssh -p $LINUX_PORT ${LINUX_USER}localhost sudo /sbin/shutdown -h now
+ssh -p $LINUX_PORT $LINUX_USER@localhost sudo /sbin/shutdown -h now
 
 
 
@@ -143,7 +143,7 @@ vboxmanage startvm $WINDOWS_MC -type headless
 
 for x in `seq 1 40`
 do
-  hello=`ssh -p $LINUX_PORT ${LINUX_USER}localhost printf "hello"`
+  hello=`ssh -p $LINUX_PORT $LINUX_USER@localhost printf "hello"`
   if test "x$hello" = "xhello"
   then
     break
@@ -155,14 +155,14 @@ done
 # Now in a way that is just as was done for Linux I will put the
 # necessary files on the Windows guest VM
 
-ssh -p $WINDOWS_PORT ${WINDOWS_USER}localhost rm -rf winbuild
-scp -r -P $WINDOWS_PORT winbuild ${WINDOWS_USER}localhost:.
+ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost rm -rf winbuild
+scp -r -P $WINDOWS_PORT winbuild $WINDOWS_USER@localhost:.
 pushd macbuild
 tar cfz - C | \
-  ssh -p $WINDOWS_PORT ${WINDOWS_USER}localhost \
+  ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost \
     \( cd winbuild \; tar xfz - \)
 popd
-ssh -p $WINDOWS_PORT ${WINDOWS_USER}localhost touch winbuild/C.stamp
+ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost touch winbuild/C.stamp
 
 # That ha snow established the winbuild directory...
 
@@ -172,19 +172,19 @@ ssh -p $WINDOWS_PORT ${WINDOWS_USER}localhost touch winbuild/C.stamp
 # several hours to complete. The versions built are
 #   csl-win32, csl-win64, csl-cygwin32, csl-cygwin64, psl-win32 and psl-win64
 
-ssh -p $WINDOWS_PORT ${WINDOWS_USER}localhost \( \
+ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost \( \
   cd winbuild \; \
   time make \)
 
 # Recover the built files.
-scp -P $WINDOWS_PORT ${WINDOWS_USER}localhost:winbuild/\*.exe $HOME/snapshots
+scp -P $WINDOWS_PORT $WINDOWS_USER@localhost:winbuild/\*.exe $HOME/snapshots
 
 # Shut down the guest. I do this by issing a command within the VM rather
 # than by an externally forced power-down since I hope that will count
 # as kinder. But done this way means that the account used on the VM has
 # to have "sudo" rights without neeting to quote a password.
 
-ssh -p $WINDOWS_PORT ${WINDOWS_USER}localhost shutdown /p
+ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost shutdown /p
 
 
 # Now make the Mac version. I wanted the archive unpacked early since that
