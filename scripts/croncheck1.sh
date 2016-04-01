@@ -143,7 +143,7 @@ vboxmanage startvm $WINDOWS_MC -type headless
 
 for x in `seq 1 40`
 do
-  hello=`ssh -p $LINUX_PORT $LINUX_USER@localhost printf "hello"`
+  hello=`ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost printf "hello"`
   if test "x$hello" = "xhello"
   then
     break
