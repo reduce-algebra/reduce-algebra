@@ -197,7 +197,7 @@ ssh -p $LINUX32_PORT $LINUX32_USER@localhost \( \
 scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.deb $HOME/snapshots
 scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.rpm $HOME/snapshots
 
-ssh -p $LINUX32_PORT $LINUX32_USER@localhost sudo \
+ssh -p $LINUX32_PORT $LINUX32_USER@localhost \
   \( sudo apt-get update \; \
      sudo apt-get upgrade \; \
      sudo apt-get dist-upgrade \; \
