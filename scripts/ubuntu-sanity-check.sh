@@ -14,7 +14,7 @@ sudo apt-get install \
     alien \
     autoconf \
     devscripts \
-    imagemagic \
+    imagemagick \
     libedit-dev \
     libgtk2.0-dev \
     libncurses5-dev \
