@@ -133,6 +133,11 @@ LispObject make_sfloat(double d)
 #else
     Float_union w;
     w.f = (float)d;
+    if (trap_floating_overflow &&
+        floating_edge_case(w.f))
+    {   floating_clear_flags();
+        return aerror("exception with short float");
+    }
     return (w.i & ~(int32_t)0xf) + TAG_SFLOAT;
 #endif
 }
@@ -202,7 +207,7 @@ static double bignum_to_float(LispObject v, int32_t h, int *xp)
 // top 3 digits of the bignum's representation since that is enough to achieve
 // full double precision accuracy. Note that this is 3 words not 2 because
 // the top word of the bignum might have only 1 bit in it, so the top 2 words
-// of a nignum might only provide 1+31 bits of significance.
+// of a bignum might only provide 1+31 bits of significance.
 // This can not overflow, because it leaves an exponent-adjustment value
 // in *xp. You need ldexp(r, *xp) afterwards, and THAT is where any overflow
 // can arise.
@@ -223,15 +228,57 @@ static double bignum_to_float(LispObject v, int32_t h, int *xp)
     int32_t msd = (int32_t)bignum_digits(v)[n];
 // NB signed conversion on next line
     double r = (double)msd;
-    switch (n)
-{       default:        // for very big numbers combine in 3 digits
-            r = TWO_31*r + (double)bignum_digits(v)[--n];
+// If I have a one-word bignum then there is no messing around needed and the
+// number will be converted to floating point without any rounding.
+    if (n != 0)
+    {   if (n == 1)
+        {   r = TWO_31*r + (double)bignum_digits(v)[--n];
+// A two-word bignum may involve rounding, but each digit can be
+// converted exactly and a correct result should emerge from the single
+// addition that combines low and high parts.
             x -= 31;
-        // drop through
-        case 1: r = TWO_31*r + (double)bignum_digits(v)[--n];
-            x -= 31;
-        // drop through
-        case 0: break;  // do no more
+        }
+        else
+        {   int32_t lo;
+// Here I have a bignum with at least 3 digits. I will do different things
+// based on whether there are less than or more then 16 bits in use in the
+// most significant digit
+            if (-0x10000 < msd && msd < 0x10000)
+            {
+// Here the top digit is reasonably small, so I can combine the top two
+// digits to get a value that will be at worst 48-bits wide and hence
+// will be converted to floating point without any rounding at all.
+                r = TWO_31*r + (double)bignum_digits(v)[--n];
+                x -= 31;
+// Now I need to combine in lower order bits
+                lo = bignum_digits(v)[--n];
+                while (n > 0)
+                {   if (bignum_digits(v)[--n] != 0) lo |= 1;
+                }
+// The bottom bit of lo will be well below the bits that contribute
+// directly to the result, but by ORing in 1 there if any lower word is
+// non-zero I will force rounding up in some cases where it is needed.
+                r = TWO_31*r + (double)lo;
+                x -= 31;
+            }
+            else
+            {
+// Here the top digit is reasonably large, so I will combine it with the
+// top 15 bits from the second highest digit. That will give me a value
+// using between 31 and 46 bits. This can be computed without rounding.
+                int32_t mid = bignum_digits(v)[--n];
+                r = 32768.0*r + (double)(mid >> 16);
+                x -= 15;
+                lo = bignum_digits(v)[--n];
+                mid = ((mid & 0xffff) << 15) | (lo >> 16);
+                if ((lo & 0xffff) != 0) mid |= 1;
+                while (n > 0)
+                {   if (bignum_digits(v)[--n] != 0) mid |= 1;
+                }
+                r = TWO_31*r + (double)mid;
+                x -= 31;
+            }
+        }
     }
     *xp = x;
     return r;
