@@ -165,7 +165,7 @@ tar cfz - C | \
 popd
 ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost touch winbuild/C.stamp
 
-# That ha snow established the winbuild directory...
+# That has now established the winbuild directory...
 
 # Now do the main build of all the Windows binaries and packages.
 
