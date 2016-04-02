@@ -255,7 +255,8 @@ ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost \( \
   time make \)
 
 # Recover the built files.
-scp -P $WINDOWS_PORT $WINDOWS_USER@localhost:winbuild/\*.exe $HOME/snapshots
+scp -P $WINDOWS_PORT $WINDOWS_USER@localhost:winbuild/Output/Reduce-Setup.exe \
+    $HOME/snapshots/Reduce-Setup_`date +"%Y%m%d"`.exe
 
 # Shut down the guest. I do this by issing a command within the VM rather
 # than by an externally forced power-down since I hope that will count
