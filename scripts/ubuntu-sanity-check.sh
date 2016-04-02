@@ -11,19 +11,26 @@
 # a starting point not a guaranteed solution. (ACN: April 2016)
 
 sudo apt-get install \
-    libtool-bin \
-    ubuntu-restricted-addons \
-    xorg-dev \
-    texlive-fonts-extra \
-    libgtk2.0-dev \
+    alien \
+    autoconf \
     devscripts \
-    deborphan \
-    libncurses5-dev \
-    linux-generic \
-    ubuntu-desktop \
-    subversion \
+    imagemagic \
     libedit-dev \
+    libgtk2.0-dev \
+    libncurses5-dev \
+    libtool-bin \
+    linux-generic \
+    rpm \
+    ssh \
+    subversion \
+    tex4ht \
+    texlive-fonts-extra \
+    texlive-fonts-recommended \
+    texlive-latex-recommended \
+    ubuntu-desktop \
     ubuntu-minimal \
-    ubuntu-standard
+    ubuntu-restricted-addons \
+    ubuntu-standard \
+    xorg-dev
 
 # end of script

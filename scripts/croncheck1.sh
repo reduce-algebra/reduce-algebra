@@ -173,8 +173,15 @@ ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost touch winbuild/C.stamp
 # several hours to complete. The versions built are
 #   csl-win32, csl-win64, csl-cygwin32, csl-cygwin64, psl-win32 and psl-win64
 
+# I do not fully understand why the setting of PATH here is vital, but it
+# seems to be. Without it x86_64-w64-mingw32-gcc fails in a way that seems to
+# indicate that it compiles the code in 64-bit mode then tries to assemble
+# it using a 32-bit assembler (which then onbiously chokes on the 64-bit
+# assembly syntax passed to it).
+
 ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost \( \
   cd winbuild \; \
+  export PATH=/usr/local/bin:/usr/bin:\$PATH \; \
   pushd C \; ./autogen.sh \; popd \; \
   time make \)
 
