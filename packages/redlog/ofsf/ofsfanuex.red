@@ -36,25 +36,28 @@ lisp <<
 >>;
 
 module ofsfanuex;
-% ANUEX - a package for primitive or hierarchical representation of algebraic
+% ANUEX: a package for primitive or hierarchical representation of algebraic
 % numbers and expressions in algebraic numbers (algebraic polynomials). The
-% features include incremental real root isolation and factorisation.
+% features include incremental real root isolation and factorization.
 
-% Algebraic number (Aex) consists of a rational polynomial with a context (Ctx).
-% Context binds some of the variables to algebraic numbers (Anu). Algebraic
-% number consists of a univariate (one free variable) Aex together with rational
-% internval such that the Aex has exactly one root in this interval.
+% An algebraic number (Aex) consists of a rational polynomial with a context
+% (Ctx). A context binds some of the variables to algebraic numbers (Anu). An
+% algebraic number consists of a univariate (one free variable) Aex together
+% with a rational interval such that the Aex has exactly one real root in this
+% interval.
 
 % Some of the basic algorithms (rem, psrem, gcd) were inspired by book "Groebner
 % bases" by Becker, Weispfenning, and Kredel.
 
 % Conventions:
-% Functions working with Aex and Anu rely on and ensure that the following hold:
-% 1) Bound variables are "big," w.r.t. ordop: For every free variable x and a
-% bound variable y ordop(x, y) = t. This imples that in a univariate Aex the
-% free variable is the main variable of the rational polynomial.
+% Functions working with Aex and Anu rely on and ensure that the following
+% properties hold:
+% 1) Bound variables are "big," w.r.t. ordop in the followin sense: For every
+% free variable x and a bound variable y we have (ordop(x, y) and x neq y) = t.
+% This implies that in a univariate Aex the free variable is the main variable
+% of the rational polynomial.
 % 2) If a variable x is bound to an Anu, the main variable of the algebraic
-% polynomial defining this number is x.
+% polynomial defining this algebraic number is x.
 
 fluid '(bigvarpref!* bigvarcount!* smallvarpref!* smallvarcount!*);
 bigvarpref!* := 'zzzzz;
@@ -432,7 +435,7 @@ asserted procedure ctx_add(c: AexCtx, ia: DottedPair): AexCtx;
       assert(not (car ia memq ctx_idl c));
       ial := ctx_ial c;
       var := car ia;
-      while ial and ordop(var, caar ial) do <<
+      while ial and ordop(caar ial, var) do <<
 	 w := pop ial;
 	 prevl := w . prevl
       >>;
@@ -1648,7 +1651,7 @@ asserted procedure anu_rename(a: Anu, xnew: Kernel);
 
 asserted procedure anu_check(a: Anu): Boolean;
    % Algebraic number check.
-   begin scalar dp,x,l,r,s,valid;
+   begin scalar dp, x, l, r, s, valid;
       valid := t;
       dp := anu_dp a;
       x := aex_fvarl dp; % tmp
@@ -1676,52 +1679,54 @@ asserted procedure aex_badp(aex: Aex, fvn: Integer): ExtraBoolean;
    begin scalar varl, ctx, ial, brk, v, anu, bvarl, fvarl, fv, bv, scbvarl;
       if not eqcar(aex, 'aex) then
 	 return 1;
-      varl := kernels numr cadr aex;
-      ctx := caddr aex;
+      varl := kernels numr aex_ex aex;
+      ctx := aex_ctx aex;
       if not eqcar(ctx, 'ctx) then
 	 return 2;
-      ial := cadr ctx;
+      ial := ctx_ial ctx;
       brk := nil; while not brk and ial do <<
 	 v . anu := pop ial;
 	 % if not (v memq varl) then
 	 %    brk := 3;
 	 if not brk and ial and (not ordop(v, caar ial) or v eq caar ial) then
-	    brk := 4;
+	    brk := 4;  % bound variables in the context of [aex] are not sorted w.r.t. ordop
 	 if not brk and v neq aex_mvar anu_dp anu then
-	    brk := 5;
+	    brk := 5;  % variable [v] is not defined by Aex with main variable [v]
 	 brk := brk or anu_badp anu
       >>;
       if brk then
 	 return brk;
-      bvarl := for each pr in cadr ctx collect car pr;
+      bvarl := for each pr in ctx_ial aex_ctx aex collect car pr;
       fvarl := lto_setminus(varl, bvarl);
       if not eqn(fvn, -1) and not eqn(length fvarl, fvn) then
-	 return 6;
+	 return 6;  % the number of variables in [aex] is not as expected
       brk := nil; while not brk and fvarl do <<
 	 fv := pop fvarl;
 	 scbvarl := bvarl;
 	 while not brk and scbvarl do <<
 	    bv := pop scbvarl;
-	    if not ordop(fv, bv) and fv neq bv then
-	       brk := 7
+	    if ordop(bv, fv) and bv neq fv then
+	       brk := 7  % bound variable [bv] is smaller than free variable [fv] w.r.t. ordop
 	 >>
       >>;
       return brk
    end;
 
 asserted procedure anu_badp(anu: Anu): ExtraBoolean;
-   begin scalar aex, iv, w;
+   begin scalar aex, iv, lb, rb, w;
       if not eqcar(anu, 'anu) then
 	 return 11;
-      aex := cadr anu;
-      iv := caddr anu;
+      aex := anu_dp anu;
+      iv := anu_iv anu;
       if not pairp iv then
 	 return 12;
-      if not pairp car iv or not rationalp car iv then
+      lb := iv_lb iv;
+      if not pairp lb or not rationalp lb then
 	 return 13;
-      if not pairp cdr iv or not rationalp cdr iv then
+      rb := iv_rb iv;
+      if not pairp rb or not rationalp rb then
 	 return 14;
-      if not sfto_lessq(car iv, cdr iv) then
+      if not sfto_lessq(lb, rb) then
 	 return 15;
       w := aex_badp(aex, 1);
       if w then
