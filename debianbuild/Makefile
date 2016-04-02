@@ -25,7 +25,6 @@ $(BUILDTOPDIR).stamp:
 	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) | tee $(BUILDTOPDIR).log
 	( cd $(BUILDTOPDIR) ; ./autogen.sh -f )
 	-rm -rf reduce-source-$(SNAPSHOT)
-	cp -r $(BUILDTOPDIR) reduce-source-$(SNAPSHOT)
 	touch $(BUILDTOPDIR).stamp
 
 reduce-packages:	$(BUILDTOPDIR).stamp debpackages rpmpackages
@@ -38,7 +37,8 @@ rpmpackages:
 
 
 source-archive:
-	-rm -rf *.tar.bz2
+	-rm -rf reduce-source-$(SNAPSHOT) *.tar.bz2
+	cp -r $(BUILDTOPDIR) reduce-source-$(SNAPSHOT)
 	$(MAKE) reduce-source-core-$(SNAPSHOT).tar.bz2
 	$(MAKE) reduce-source-csl-$(SNAPSHOT).tar.bz2
 	$(MAKE) reduce-source-csl-embedded-$(SNAPSHOT).tar.bz2

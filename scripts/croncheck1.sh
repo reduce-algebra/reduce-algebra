@@ -16,9 +16,35 @@ WINDOWS_USER=
 # guest.
 WINDOWS_PORT=2201
 
+# "Linux" is a 64-bit Linux machine and the only special things it should
+# need to have set up are
+# (a) virualbox should forward port 2202 to its port 22 to allow ssh access
+#     from the host.
+# (b) .ssh/authorized_keys of the user involved should contain the public
+#     keys of the user on the host (which should not require any extra
+#     pass-phrase). With (a) and (b) in place it should be possible to go
+#           vboxmanage startvm linux -type headless
+#           ssh -p 2202 username@localhost <some command>
+# (c) the user of the vm should have an entry in /etc/sudoers that reads
+#           username ALL=(ALL) NOPASSWD: ALL
+#     and the intent of this is so that it is possible to go
+#           /sbin/shutdown -h now
+#     within the VM without needing to quote a password.
+# Points (b) and (c) significantly compromise the security of the VM, but
+# it is only a VIRTUAL machine and the host computer has extreme access to
+# it already, so extra security within it is not that amazingly important.
+# Furthermore it is expected that the only use of it will be for running
+# the tasks that generate Reduce snapshots. It will not be used for web access
+# or email or other potentially risky things, and it will have a fairly
+# minimal number of packages installed.
+
 LINUX_VM=linux
 LINUX_USER=
 LINUX_PORT=2202
+
+LINUX32_VM=linux32
+LINUX32_USER=
+LINUX32_PORT=2203
 
 # I *HOPE* that while the above entries may need customising or
 
@@ -65,7 +91,8 @@ make clean
 make C.stamp
 popd
 
-# Next launch a VM to regenerate a Linux distribution
+# Next launch a VM to regenerate a 64-bit Linux distribution
+
 vboxmanage startvm $LINUX_VM -type headless
 
 # Wait until virtualbox is running. I do this by sending ssh requests
@@ -83,16 +110,7 @@ do
   sleep 30
 done
 
-# Note that for the shared folder to be mountable, even when labelled as
-# automount by virtualbox, the account that you log in to on the Linux
-# client must be a member of the vboxsf group. For the "sudo /sbin/shutdown"
-# command to work that user also has to be marked as one where they can
-# use "sudo" without a need to quote a password. That will involve a line
-# like
-#   <username> ALL=(ALL) NOPASSWD:ALL
-# in /etc/sudoers
-
-# First I will clear away any previous version on the VM and copy across
+# First I will clear away any previous files on the VM and copy across
 # files from the host.
 
 ssh -p $LINUX_PORT $LINUX_USER@localhost rm -rf debianbuild
@@ -127,17 +145,68 @@ scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.rpm $HOME/snapshots
 # Shut down the guest. I do this by issing a command within the VM rather
 # than by an externally forced power-down since I hope that will count
 # as kinder. But done this way means that the account used on the VM has
-# to have "sudo" rights without neeting to quote a password.
+# to have "sudo" rights without neeting to quote a password. I take the
+# opportunity to install any updates that there might be to the Linux
+# system. By doing that at the end of my job I will power down after
+# installing the updates so that the next boot will have a chance to see
+# them fully in place.
 
-ssh -p $LINUX_PORT $LINUX_USER@localhost sudo /sbin/shutdown -h now
+ssh -p $LINUX_PORT $LINUX_USER@localhost \
+  \( sudo apt-get update \; \
+     sudo apt-get upgrade \; \
+     sudo apt-get dist-upgrade \; \
+     sudo /sbin/shutdown -h now \)
+
+# Launch a VM to regenerate a 32-bit Linux distribution. This recipe
+# is the same as that use for a 64-bit Linux.
+
+vboxmanage startvm $LINUX32_VM -type headless
+
+for x in `seq 1 20`
+do
+  hello=`ssh -p $LINUX32_PORT $LINUX32_USER@localhost printf "hello"`
+  if test "x$hello" = "xhello"
+  then
+    break
+  fi
+  printf "Sleeping to allow Linux VM to start up...\n"
+  sleep 30
+done
+
+ssh -p $LINUX32_PORT $LINUX32_USER@localhost rm -rf debianbuild
+scp -r -P $LINUX32_PORT debianbuild $LINUX32_USER@localhost:.
+
+pushd macbuild
+tar cfz - C | \
+  ssh -p $LINUX32_PORT $LINUX32_USER@localhost \
+    \( cd debianbuild \; tar xfz - \)
+popd
+
+ssh -p $LINUX32_PORT $LINUX32_USER@localhost touch debianbuild/C.stamp
+
+ssh -p $LINUX32_PORT $LINUX32_USER@localhost \( \
+  cd debianbuild \; \
+  pushd C \; ./autogen.sh \; popd \; \
+  time make \)
+
+scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.deb $HOME/snapshots
+scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.rpm $HOME/snapshots
+
+ssh -p $LINUX32_PORT $LINUX32_USER@localhost sudo \
+  \( sudo apt-get update \; \
+     sudo apt-get upgrade \; \
+     sudo apt-get dist-upgrade \; \
+     sudo /sbin/shutdown -h now \)
 
 
 
-# Start a Windows build. This will take a long time!
+# Start a Windows build. This can take a long time if Windows has
+# concluded that it needs to install a large number of updates.
+
 vboxmanage startvm $WINDOWS_VM -type headless
 
 # Wait until virtualbox is running. I do this by sending ssh requests
-# repeatedly until ons is responded to. I will try up to 40 at 30-second
+# repeatedly until one is responded to. I will try up to 40 at 30-second
 # intervals, so I am requiring the VM to have stablised within 20 minutes.
 # The long delay I allow is to cope with the possibility that Widdows might
 # take several ages doing an automatic installation of updates.
