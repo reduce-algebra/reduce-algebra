@@ -59,6 +59,11 @@ then
   LINUX_USER=`whoami`
 fi
 
+if test "x$LINUX32_USER" = "x"
+then
+  LINUX32_USER=`whoami`
+fi
+
 # Keep a backup of the previous snapshots and start with an empty
 # directory for the new ones I am about to create.
 
