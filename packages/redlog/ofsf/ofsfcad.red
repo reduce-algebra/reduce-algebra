@@ -41,12 +41,15 @@ fluid '(ofsf_wd!*);
 
 ofsf_wd!* := "/tmp/";  % will be concatenated - use trailing slash
 
-switch rlqegen1,rlcadans,rlcadtree2dot,rlcadrmwc;
+switch rlqegen1,rlcadans,rlcadrmwc,rlcadtree2dot,rlcadtree2tgf,rlcadtree2gml,rlcadtree2gmlxml;
 
 off1 'rlqegen1;
 off1 'rlcadans;
-off1 'rlcadtree2dot;
 on1 'rlcadrmwc;
+off1 'rlcadtree2dot;
+off1 'rlcadtree2tgf;
+off1 'rlcadtree2gml;
+on1 'rlcadtree2gmlxml;
 
 struct CadData checked by CadDataP;
 struct Acell checked by AcellP;
@@ -291,11 +294,12 @@ asserted procedure ofsf_cadextension(cd: CadData): Any;
 	    ioto_prin2 {length atree_childrenatlevel(dd, i), ","};
 	 ioto_prin2t length atree_childrenatlevel(dd, r)
       >>;
-      if !*rlcadtree2dot then <<
+      if !*rlcadtree2dot then
 	 atree_2dot(dd, lto_sconcat{ofsf_wd!*, "cadtree.dot"});
-	 atree_2tgf(dd, lto_sconcat{ofsf_wd!*, "cadtree.tgf"});
-	 atree_2gml(dd, lto_sconcat{ofsf_wd!*, "cadtree.gml"})
-      >>;
+      if !*rlcadtree2tgf then
+	 atree_2dot(dd, lto_sconcat{ofsf_wd!*, "cadtree.tgf"});
+      if !*rlcadtree2gml then
+	 atree_2gml(dd, lto_sconcat{ofsf_wd!*, "cadtree.gml"});
       caddata_putdd(cd, dd);
       % if !*rlverbose then <<
       % 	 ioto_tprin2t {"+ CAD tree:"};
@@ -1328,11 +1332,57 @@ asserted procedure atree_2gml(tt: Atree, filename: String): Any;
 
 asserted procedure atree_2gml_nodes(tt: Atree, number: Integer): Integer;
    begin scalar childlist;
-      atree_2gml_node(tt, number);
+      if !*rlcadtree2gmlxml then
+	 atree_2gml_node_xml(tt, number)
+      else
+      	 atree_2gml_node(tt, number);
       childlist := atree_childl tt;
       for each child in childlist do
 	 number := atree_2gml_nodes(child, number + 1);
       return number
+   end;
+
+asserted procedure atree_2gml_node_xml(tt: Atree, number: Integer): Any;
+   begin scalar nat, c, tv, color;
+      nat := !*nat;
+      off1 'nat;
+      c := atree_rootcell tt;
+      tv := acell_gettv c;
+      color := if tv eq 'true then
+	 "#00FF00"
+      else if tv eq 'false then
+	 "#FF0000"
+      else
+	 "#C0C0C0";
+      ioto_prin2t "node [";
+      ioto_prin2t {"id ", number};
+      ioto_prin2t "label """;
+      ioto_prin2t "<node>";
+      ioto_prin2t {"<tv>", tv, "</tv>"};
+      ioto_prin2t {"<idx>", acell_getidx c, "</idx>"};
+      ioto_prin2t "<tp>";
+      for each anu in reverse acell_getsp c do <<
+	 ioto_prin2t "<assignment>";
+	 ioto_prin2t {"<var>", aex_mvar anu_dp anu, "</var>"};
+	 ioto_prin2t "<poly>";
+	 mathprint prepsq aex_ex anu_dp anu;
+ 	 ioto_prin2t "</poly>";
+	 ioto_prin2t "<lb>";
+	 mathprint prepsq iv_lb anu_iv anu;
+	 ioto_prin2t "</lb>";
+	 ioto_prin2t "<rb>";
+	 mathprint prepsq iv_rb anu_iv anu;
+	 ioto_prin2t "</rb>";
+	 ioto_prin2t "</assignment>"
+      >>;
+      ioto_prin2t "</tp>";
+      ioto_prin2t {"<desc>", acell_getdesc c, "</desc>"};
+      ioto_prin2t {"<tl>", acell_gettl c, "</tl>"};
+      ioto_prin2t "</node>";
+      ioto_prin2t """";
+      ioto_prin2t {"graphics [", "fill """, color, """]"};
+      ioto_prin2t "]";
+      if nat then on1 'nat
    end;
 
 asserted procedure atree_2gml_node(tt: Atree, number: Integer): Any;
