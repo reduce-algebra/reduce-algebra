@@ -1641,17 +1641,21 @@ asserted procedure ofsf_signofpolyfo(f: SF, s: Integer): QfFormula;
    else if eqn(s, 1) then
       ofsf_0mk2('greaterp, f);
 
-asserted procedure ofsf_evalqff(f: QfFormula, sp: AnuList, idl: List): Id;
+asserted procedure ofsf_evalqff(f: QfFormula, sp: AnuList, varl: List): Id;
    % Evaluate quantifier-free formula at sample point. Returns ['true] or
    % ['false], i.e., the truth value of f(x_1,...,x_r) at point [sp].
+   % WARNING: This and essentially all underlying procedures assume that the
+   % variables in [varl] are reversed, i.e., if we want the truth value of
+   % f(x_1,...,x_r) at sample point (a_1,...,a_r), then we call [ofsf_evalqff(f,
+   % {a_1,...,a_r}, {x_r,...,x_1})].
    if !*rlcadfasteval then
-      ofsf_evalqff!-fast(f, sp, idl)
+      ofsf_evalqff!-fast(f, sp, varl)
    else
-      cl_simpl(cl_apply2ats1(f, function ofsf_subsignat, {sp, idl}), nil, -1);
+      cl_simpl(cl_apply2ats1(f, function ofsf_subsignat, {sp, varl}), nil, -1);
 
-asserted procedure ofsf_evalsignf(f: SF, sp: AnuList, idl: List): SF;
+asserted procedure ofsf_evalsignf(f: SF, sp: AnuList, varl: List): SF;
    % Algebraic number evaluate sign of standard form at sample point.
-   numr simp aex_sgn ofsf_subsp(aex_fromsf f, sp, idl);
+   numr simp aex_sgn ofsf_subsp(aex_fromsf f, sp, varl);
 
 asserted procedure ofsf_trialevalsgnf(f: SF, sp: AnuList): SF;
    % Trial evaluation of sign of a SF at a sample point. The sample point needs
@@ -1673,34 +1677,34 @@ asserted procedure ofsf_sgnf4(f: SF, sp: AnuList): Any;
 	 "?"
    >>;
 
-asserted procedure ofsf_subsignat(at: QfFormula, sp: AnuList, idl: List): QfFormula;
+asserted procedure ofsf_subsignat(at: QfFormula, sp: AnuList, varl: List): QfFormula;
    % Substitute sign in atomic formula. Returns an OFSF atomic formula. Returns
    % [at] with the left-hand side $f$ replaced by the sign of $f([sp])$, or a
    % simpler version of f under the context of sp.
-   ofsf_0mk2(ofsf_op at, ofsf_evalsignf(ofsf_arg2l at, sp, idl));
+   ofsf_0mk2(ofsf_op at, ofsf_evalsignf(ofsf_arg2l at, sp, varl));
 
-asserted procedure ofsf_evalqff!-fast(f: QfFormula, sp: AnuList, idl: List): Id;
+asserted procedure ofsf_evalqff!-fast(f: QfFormula, sp: AnuList, varl: List): Id;
    % Evaluate quantifier-free formula at sample point fast. [f] is a
    % quantifier-free OFSF formula in NNF; Returns ['true] or ['false]. Returns
    % the truth value of $f(x_1,\ldots,x_r)$ at point [sp].
    if cl_atfp f then
-      ofsf_simplat1(ofsf_subsignat(f, sp, idl), nil)
+      ofsf_simplat1(ofsf_subsignat(f, sp, varl), nil)
    else
-      ofsf_evalqff!-fast1(f, sp, idl);
+      ofsf_evalqff!-fast1(f, sp, varl);
 
-asserted procedure ofsf_evalqff!-fast1(f: QfFormula, sp: AnuList, idl: List): Id;
+asserted procedure ofsf_evalqff!-fast1(f: QfFormula, sp: AnuList, varl: List): Id;
    % Evaluate quantifier-free formula at sample point fastly subroutine. [f] is
-   % a quantifier-free OFSF formula in NNF; [sp] is a sample point; [idl] is a
+   % a quantifier-free OFSF formula in NNF; [sp] is a sample point; [varl] is a
    % LIST of identifiers. Returns ['true] or ['false]. Returns the truth value
    % of $f(x_1,\ldots,x_r)$ at point [sp].
    if rl_tvalp f then
       f
    else
-      ofsf_evalqff!-gand(rl_op f, rl_argn f, sp, idl);
+      ofsf_evalqff!-gand(rl_op f, rl_argn f, sp, varl);
 
-asserted procedure ofsf_evalqff!-gand(gand, argl, sp: AnuList, idl: List): Id;
+asserted procedure ofsf_evalqff!-gand(gand, argl, sp: AnuList, varl: List): Id;
    % Evaluate quantifier-free formula at sample point generic and. [gand] is one
-   % of [and], [or]; [argl] is a list of formulas; [sp] is a sample point; [idl]
+   % of [and], [or]; [argl] is a list of formulas; [sp] is a sample point; [varl]
    % is a LIST of identifiers. Returns ['true] or ['false]. Returns the truth
    % value of $([gand] . [argl])(x_1,\ldots,x_r)$ at point [sp].
    begin scalar gfalse,arg,cargl,c;
@@ -1709,7 +1713,7 @@ asserted procedure ofsf_evalqff!-gand(gand, argl, sp: AnuList, idl: List): Id;
 	 arg := car argl;
 	 argl := cdr argl;
 	 if cl_atfp arg then
-	    (if ofsf_simplat1(ofsf_subsignat(arg,sp,idl),nil) eq gfalse then
+	    (if ofsf_simplat1(ofsf_subsignat(arg,sp,varl),nil) eq gfalse then
 	       c := nil)
 	 else
 	    cargl := arg . cargl
@@ -1719,7 +1723,7 @@ asserted procedure ofsf_evalqff!-gand(gand, argl, sp: AnuList, idl: List): Id;
       c := t; while cargl and c do <<
 	 arg := car cargl;
 	 cargl := cdr cargl;
-	 if ofsf_evalqff!-fast1(arg,sp,idl) eq gfalse then
+	 if ofsf_evalqff!-fast1(arg,sp,varl) eq gfalse then
 	    c := nil
       >>;
       if not c then
