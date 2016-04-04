@@ -28,31 +28,31 @@ all:	package-mac
 $(BUILDTOPDIR).stamp:
 	rm -rf $(BUILDTOPDIR)
 	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) > $(BUILDTOPDIR).log
-	(cd $(BUILDTOPDIR) ; ./autogen.sh -f )
-	(cd $(BUILDTOPDIR) ; ../make.source.sh ) 
+	( pushd $(BUILDTOPDIR) ; ./autogen.sh -f ; popd )
+	( pushd $(BUILDTOPDIR) ; ../make.source.sh ; popd ) 
 	touch $(BUILDTOPDIR).stamp
 
 csl.stamp:	$(BUILDTOPDIR).stamp
-	(cd $(BUILDTOPDIR) ; ./configure --with-csl ; \
-		script ../csl.log time make csl )
+	( pushd $(BUILDTOPDIR) ; ./configure --with-csl ; \
+		script ../csl.log time make csl ; popd )
 	touch csl.stamp
 
 psl.stamp:	$(BUILDTOPDIR).stamp
-	(cd $(BUILDTOPDIR) ; ./configure --with-psl ; \
-		script ../psl.log time make psl )
+	( pushd $(BUILDTOPDIR) ; ./configure --with-psl ; \
+		script ../psl.log time make psl ; popd )
 	touch psl.stamp
 
 # Documentation is also re-generated in the clean tree so that regardless
 # of history it should end up fresh and tidy.
 
 docs.stamp:	$(BUILDTOPDIR).stamp
-	(cd $(BUILDTOPDIR)/doc/misc ; script ../../../docmisc.log time make )
-	(cd $(BUILDTOPDIR)/doc/manual ; script ../../../docmanual.log time make )
+	( pushd $(BUILDTOPDIR)/doc/misc ; script ../../../docmisc.log time make ; popd )
+	( pushd $(BUILDTOPDIR)/doc/manual ; script ../../../docmanual.log time make ; popd )
 	touch docs.stamp
 
 package-mac:	$(BUILDTOPDIR).stamp csl.stamp psl.stamp docs.stamp
 #
-# Something like the folling lines that do a "saveimage" will be needed
+# Something like the following lines that do a "saveimage" will be needed
 # so that the runpsl.sh script that I provide should (at least ideally)
 # work even when the directory in which all the PSL files are kept gets
 # moved. Note that the runpsl.sh script can establish an environment variable

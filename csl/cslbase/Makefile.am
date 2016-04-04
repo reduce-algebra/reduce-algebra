@@ -595,7 +595,7 @@ cygwin-isatty.exe:	$(srcdir)/cygwin-isatty.cpp
 
 cygwin64-isatty.exe:	$(srcdir)/cygwin-isatty.cpp
 	if test -x /usr/bin/x86_64-pc-cygwin-g++.exe; then x86_64-pc-cygwin-g++ -O3 $(srcdir)/cygwin-isatty.cpp -o cygwin64-isatty.exe; else $(CP) $(srcdir)/premade-cygwin64-isatty.exe .; \
-	  if test -s /usr/bin/x86_64-pc-cygwin-strip.exe; then x86_64-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi fi
+	  if test -s /usr/bin/x86_64-pc-cygwin-strip.exe; then x86_64-pc-cygwin-strip cygwin64-isatty.exe; else strip cygwin64-isatty.exe; fi fi
 
 not-under-cygwin.exe:	$(srcdir)/not-under-cygwin.cpp
 	i686-w64-mingw32-g++ -O3 $(srcdir)/not-under-cygwin.cpp -o not-under-cygwin.exe

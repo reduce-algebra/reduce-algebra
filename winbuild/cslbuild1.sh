@@ -56,7 +56,7 @@ if test "x$2" = "x"
 then
   cygalt=""
 else
-  cygalt="../../cygalt.exe"
+  cygalt="$here/cygalt.exe"
 fi
 
 rm -rf csl$1

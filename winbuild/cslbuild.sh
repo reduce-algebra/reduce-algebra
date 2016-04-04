@@ -87,8 +87,8 @@ esac
 # Sometimes I will need the "other" cygwin installed as well. Detect that
 # case and check that all will be well...
 
-../scripts/cygwin-sanity-check.sh
-./cygalt ../scripts/cygwin-sanity-check.sh
+C/scripts/cygwin-sanity-check.sh
+./cygalt C/scripts/cygwin-sanity-check.sh
 
 
 # Configure and build CSL version from scratch

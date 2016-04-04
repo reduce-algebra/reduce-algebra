@@ -1,7 +1,26 @@
 #! /bin/bash -v
 
+# My intent now is that this script can be launched from anywhere, but it
+# lives within the scripts directory of a checkout of Reduce and it will
+# end up placing snapshots in a snapshots directort of that copy of Reduce.
+
+current=`pwd -P`
+here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
+here=`cd \`dirname "$here"\` ; pwd -P`
+
+printf "current directory=$current, script=$here/croncheck1.sh"
+
+# I will have the reduce working copy as my current directory for the
+# bulk of the time I run this script.
+
+pushd $here/..
+
+
+# Now I set up some (potentially) setup-specific configuration data - the
+# names and ports use dby the virtual machines I will activate.
+
 # WINDOWS_VM is the name of a virtual box VM that will run Windows.
-WINDOWS_VM=windows
+WINDOWS_VM=REDUCE-pkg-factory-Windows
 # WINDOWS_USER can be an empty string if the user-name that will be
 # used on the VM matches that used on the host. Otherwise it can be set
 # as in WINDOWS_USER="acn1" with a name that will be used with ssh to
@@ -26,9 +45,11 @@ WINDOWS_PORT=2201
 #           vboxmanage startvm linux -type headless
 #           ssh -p 2202 username@localhost <some command>
 # (c) the user of the vm should have an entry in /etc/sudoers that reads
-#           username ALL=(ALL) NOPASSWD: ALL
-#     and the intent of this is so that it is possible to go
-#           /sbin/shutdown -h now
+#           %sudo ALL=(ALL) NOPASSWD: ALL
+#     (and the user a member of the sudo group).
+#     The intent of this is so that it is possible to go
+#           sudo apt-get ...
+#           sudo /sbin/shutdown -h now
 #     within the VM without needing to quote a password.
 # Points (b) and (c) significantly compromise the security of the VM, but
 # it is only a VIRTUAL machine and the host computer has extreme access to
@@ -38,15 +59,16 @@ WINDOWS_PORT=2201
 # or email or other potentially risky things, and it will have a fairly
 # minimal number of packages installed.
 
-LINUX_VM=linux
+LINUX_VM=REDUCE-pkg-factory-Ubuntu
 LINUX_USER=
 LINUX_PORT=2202
 
-LINUX32_VM=linux32
+LINUX32_VM=REDUCE-pkg-factory-Ubuntu32
 LINUX32_USER=
 LINUX32_PORT=2203
 
-# I *HOPE* that while the above entries may need customising or
+# I *HOPE* that while the above entries may need customising or adjusting that
+# the rest of this script can work unchanged.
 
 
 if test "x$WINDOWS_USER" = "x"
@@ -77,15 +99,14 @@ then
   mv snapshots old-snapshots
 fi
 
+mkdir snapshots
+
 # I need the following so I grab the correct version of svn, as installed via
 # macports! An in general to be certain that I can use macports things.
 
 export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
 
-mkdir snapshots
-
 # Ensure that my copy of Reduce is fully up to date.
-pushd reduce-distribution
 svn -R revert .
 svn update
 
@@ -129,7 +150,7 @@ scp -r -P $LINUX_PORT debianbuild $LINUX_USER@localhost:.
 pushd macbuild
 tar cfz - C | \
   ssh -p $LINUX_PORT $LINUX_USER@localhost \
-    \( cd debianbuild \; tar xfz - \)
+    \( cd debianbuild \; tar --warning=no-unknown-keyword xfz - \)
 popd
 
 # Create the file that marks the source files as present and up to date
@@ -144,8 +165,8 @@ ssh -p $LINUX_PORT $LINUX_USER@localhost \( \
   time make \)
 
 # Recover the built files.
-scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.deb $HOME/snapshots
-scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.rpm $HOME/snapshots
+scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.deb $here/../snapshots
+scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.rpm $here/../snapshots
 
 # Shut down the guest. I do this by issing a command within the VM rather
 # than by an externally forced power-down since I hope that will count
@@ -184,7 +205,7 @@ scp -r -P $LINUX32_PORT debianbuild $LINUX32_USER@localhost:.
 pushd macbuild
 tar cfz - C | \
   ssh -p $LINUX32_PORT $LINUX32_USER@localhost \
-    \( cd debianbuild \; tar xfz - \)
+    \( cd debianbuild \; tar --warning=no-unknown-keyword xfz - \)
 popd
 
 ssh -p $LINUX32_PORT $LINUX32_USER@localhost touch debianbuild/C.stamp
@@ -194,8 +215,8 @@ ssh -p $LINUX32_PORT $LINUX32_USER@localhost \( \
   pushd C \; ./autogen.sh \; popd \; \
   time make \)
 
-scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.deb $HOME/snapshots
-scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.rpm $HOME/snapshots
+scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.deb $here/../snapshots
+scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.rpm $here/../snapshots
 
 ssh -p $LINUX32_PORT $LINUX32_USER@localhost \
   \( sudo apt-get update \; \
@@ -235,7 +256,7 @@ scp -r -P $WINDOWS_PORT winbuild $WINDOWS_USER@localhost:.
 pushd macbuild
 tar cfz - C | \
   ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost \
-    \( cd winbuild \; tar xfz - \)
+    \( cd winbuild \; tar --warning=no-unknown-keyword xfz - \)
 popd
 ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost touch winbuild/C.stamp
 
@@ -261,7 +282,7 @@ ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost \( \
 
 # Recover the built files.
 scp -P $WINDOWS_PORT $WINDOWS_USER@localhost:winbuild/Output/Reduce-Setup.exe \
-    $HOME/snapshots/Reduce-Setup_`date +"%Y%m%d"`.exe
+    $here/../snapshots/Reduce-Setup_`date +"%Y%m%d"`.exe
 
 # Shut down the guest. I do this by issing a command within the VM rather
 # than by an externally forced power-down since I hope that will count
@@ -279,12 +300,14 @@ ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost shutdown /p
 pushd macbuild
 pushd C ; ./autogen.sh ; popd
 make
-cp Reduce*.dmg $HOME/snapshots/Reduce-snapshot_`date "+%Y%m%d"`.dmg
+cp Reduce*.dmg $here/../snapshots/Reduce-snapshot_`date "+%Y%m%d"`.dmg
 popd
 
-popd
 printf "Can now copy these files to sourceforge:\n"
 
-ls -l snapshots
+ls -l $here/../snapshots
+
+# I believe everything should be complete now.
+popd
 
 exit 0
