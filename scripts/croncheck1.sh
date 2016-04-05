@@ -6,14 +6,15 @@
 
 current=`pwd -P`
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
-here=`pwd -P`
+here=`cd "$here";pwd -P`
 
-printf "current directory=$current, script=$here/croncheck1.sh"
+printf "current directory=$current\n"
+printf "script=$here/croncheck1.sh\n"
 
 # I will have the reduce working copy as my current directory for the
 # bulk of the time I run this script.
 
-pushd $here/..
+pushd $here
 
 export today=`date +"%Y%m%d"`
 
@@ -198,9 +199,9 @@ scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.rpm $here/../snapshots
 # them fully in place.
 
 ssh -p $LINUX_PORT $LINUX_USER@localhost \
-  \( sudo apt-get update \; \
-     sudo apt-get upgrade \; \
-     sudo apt-get dist-upgrade \; \
+  \( sudo apt-get -y update \; \
+     sudo apt-get -y upgrade \; \
+     sudo apt-get -y dist-upgrade \; \
      sudo /sbin/shutdown -h now \)
 
 # Launch a VM to regenerate a 32-bit Linux distribution. This recipe
@@ -240,9 +241,9 @@ scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.deb $here/../snapsho
 scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.rpm $here/../snapshots
 
 ssh -p $LINUX32_PORT $LINUX32_USER@localhost \
-  \( sudo apt-get update \; \
-     sudo apt-get upgrade \; \
-     sudo apt-get dist-upgrade \; \
+  \( sudo apt-get -y update \; \
+     sudo apt-get -y upgrade \; \
+     sudo apt-get -y dist-upgrade \; \
      sudo /sbin/shutdown -h now \)
 
 
@@ -312,10 +313,13 @@ scp -P $WINDOWS_PORT $WINDOWS_USER@localhost:winbuild/Output/Reduce-Setup.exe \
 # than by an externally forced power-down since I hope that will count
 # as kinder. 
 #
-# Note that under cygwin the command "shutdown" is a cygwin one not the
-# windows version!
+# Note that under cygwin sometimes a cygwin program called "shutdown" can
+# be installed, masking the native Windows one. I will try to call the
+# native Windows version here. Further I am expecting that I have a 64-bit
+# version of Windows but that I am running 32-bit cygwin for sshd, and so
+# the SysWOW64 directory is liable to be the correct place to work from.
 
-ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost shutdown -s -f now
+ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost \$WINDIR/SysWOW64/shutdown /s /t 1
 
 # Now make the Mac version. I wanted the archive unpacked early since that
 # is what I copy for use on the other platforms, and doing things that way

@@ -24,6 +24,10 @@ if test $now -lt $req || \
    test `date %H` -gt 21
 then
   left=$((($req - $now) / 3600))
+# I will keep an old version of the logf, but then preserve just the last 20
+# lines from it.
+  mv croncheck.log croncheck.log.old
+  tail -20 croncheck.log.old > croncheck.log
   printf "Time %s (%d hours to go)\n" "`date`" $left >> croncheck.log
 # printf "Nothing needs doing right now (%s:%s:%s)\n" `whoami` `pwd` $USER >> croncheck.log
   exit 0
@@ -35,7 +39,8 @@ next=$(($now + 600000))
 printf "$next" > croncheck.dat
 
 # I do the bulk of the work in a separate file croncheck1.sh and keep
-# a log of all the output it creates.
+# a log of all the output it creates. Note that this is run on a Macintosh
+# hence the exact order of arguments passed to the "script" command.
 
 script croncheck1.log bash -v ./croncheck1.sh
 
