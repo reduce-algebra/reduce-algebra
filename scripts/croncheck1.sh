@@ -1,12 +1,23 @@
 #! /bin/bash -v
 
+# This should build Windows, Linux64. Linux32 and Macintosh packages for
+# Reduce. If it is given an argument "--noupdate" it will not update the
+# local tree. This option will be very useful during development and testing!
+
+noupdate="no"
+if test "x$1" = "x--noupdate"
+then
+  noupdate="yes"
+  printf "\n+++ --noupdate option set\n"
+fi
+
 # My intent now is that this script can be launched from anywhere, but it
 # lives within the scripts directory of a checkout of Reduce and it will
 # end up placing snapshots in a snapshots directort of that copy of Reduce.
 
 current=`pwd -P`
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
-here=`cd "$here";pwd -P`
+here=`cd \`dirname "$here"\` ; pwd -P`
 
 printf "current directory=$current\n"
 printf "script=$here/croncheck1.sh\n"
@@ -14,12 +25,12 @@ printf "script=$here/croncheck1.sh\n"
 # I will have the reduce working copy as my current directory for the
 # bulk of the time I run this script.
 
-pushd $here
+pushd $here/..
 
 export today=`date +"%Y%m%d"`
 
 # Now I set up some (potentially) setup-specific configuration data - the
-# names and ports use dby the virtual machines I will activate.
+# names and ports used by the virtual machines I will activate.
 
 # WINDOWS_VM is the name of a virtual box VM that will run Windows.
 WINDOWS_VM=REDUCE-pkg-factory-Windows
@@ -125,8 +136,15 @@ export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
 # reverted (almost?) everything. Things behaved a lot better when we placed
 # the Reduce tree on a modern native file-system for the host.
 
-svn -R revert .
-svn update
+# The --noupdate option is useful if you have a new experimental version of
+# this script and wish to try it. Otherwise it will be put back to its
+# canonical state when you try to use it!
+
+if test "$noupdate" = "no"
+then
+  svn -R revert .
+  svn update
+fi
 
 # Unpack as for a local build. This will create the macbuild/C directory
 # as a tidy copy of the current revision. I try to do this operation
@@ -171,7 +189,7 @@ scp -r -P $LINUX_PORT debianbuild $LINUX_USER@localhost:.
 pushd macbuild
 tar cfz - C | \
   ssh -p $LINUX_PORT $LINUX_USER@localhost \
-    \( cd debianbuild \; tar --warning=no-unknown-keyword xfz - \)
+    \( cd debianbuild \; tar xfz - --warning=no-unknown-keyword \)
 popd
 
 # Create the file that marks the source files as present and up to date
@@ -227,7 +245,7 @@ scp -r -P $LINUX32_PORT debianbuild $LINUX32_USER@localhost:.
 pushd macbuild
 tar cfz - C | \
   ssh -p $LINUX32_PORT $LINUX32_USER@localhost \
-    \( cd debianbuild \; tar --warning=no-unknown-keyword xfz - \)
+    \( cd debianbuild \; tar xfz - --warning=no-unknown-keyword \)
 popd
 
 ssh -p $LINUX32_PORT $LINUX32_USER@localhost touch debianbuild/C.stamp
@@ -281,7 +299,7 @@ scp -r -P $WINDOWS_PORT winbuild $WINDOWS_USER@localhost:.
 pushd macbuild
 tar cfz - C | \
   ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost \
-    \( cd winbuild \; tar --warning=no-unknown-keyword xfz - \)
+    \( cd winbuild \; tar xfz - --warning=no-unknown-keyword \)
 popd
 ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost touch winbuild/C.stamp
 
@@ -329,6 +347,10 @@ ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost \$WINDIR/SysWOW64/shutdown /s /t 1
 pushd macbuild
 # Now I very much hope that C and C.stamp are both present here!
 pushd C ; ./autogen.sh ; popd
+# I rather expect that C.stamp ought to be present still, and so the
+# "make" here should not need to do anything by way of re-generating the
+# C directory...
+touch C.stamp
 make
 cp Reduce*.dmg $here/../snapshots/Reduce-snapshot_$today.dmg
 popd

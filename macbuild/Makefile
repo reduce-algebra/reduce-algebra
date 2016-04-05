@@ -29,7 +29,7 @@ $(BUILDTOPDIR).stamp:
 	rm -rf $(BUILDTOPDIR)
 	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) > $(BUILDTOPDIR).log
 	( pushd $(BUILDTOPDIR) ; ./autogen.sh -f ; popd )
-	( pushd $(BUILDTOPDIR) ; ../make.source.sh ; popd ) 
+	./make.source.sh 
 	touch $(BUILDTOPDIR).stamp
 
 csl.stamp:	$(BUILDTOPDIR).stamp
