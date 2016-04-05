@@ -52,21 +52,12 @@ symbolic procedure nssimp(u,v);
                           then getrtype(r :=
                                         eval!-yetunknowntypeexpr(r,nil))
                          else s) eq v)
-% E.S.:
-%        then x := aconc!*(x,r)
-%         else y := aconc!*(y,r);
-% Replaced the two commented out lines by
+% E.S.: When the simplification mode is matrix the following wraps noncom
+%       scalar expressions as 1x1 matrices to preserve multiplication order.
           then if (v eq 'matrix) and noncomp r
-                  then if cdr w then ncx := r . ncx
-                        else y := aconc!*(y,mkscalmat mk!*sq simptimes (r . ncx))
+                  then y := aconc!*(y,mkscalmat mk!*sq simptimes (r . nil))
          else x := aconc!*(x,r)
-         else <<if ncx 
-                   then y := aconc!*(y,mkscalmat mk!*sq simptimes ncx);
-                ncx := nil;
-                y := aconc!*(y,r)>>;
-% in order to deal with matrix expressions containing noncom quantities. Left/right
-% multiplication of scalar noncom expressions with matrices was not correct before.
-% To achieve this the scalar noncom quantities are now wrapped as 1x1 matrices.
+         else y := aconc!*(y,r);
         w := cdr w;
         go to c;
     d:  if null y then go to er;
