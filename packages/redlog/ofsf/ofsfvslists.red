@@ -37,8 +37,9 @@ lisp <<
 
 module ofsfvslists;
 
-fluid '(rlclustering!*);
+fluid '(rlclustering!* rlmaxdeg!*);
 rlclustering!* := t;
+rlmaxdeg!* := 3;
 
 fluid '(rsl!-alist!* rsl!-alist!-clustering!* guard!-fnalist!* vsub!-fnalist!*);
 
@@ -2613,6 +2614,8 @@ asserted procedure vsub_compute!-rsl(op: Id, f: SF, x: Kernel, s: Any): Any;
    % specification lists.
    begin scalar w;
       assert(sfto_mvartest(f, x));
+      if ldeg f > rlmaxdeg!* then
+	 return 'failed;
       w := if rlclustering!* then
 	 assoc({ldeg f, s, op}, rsl!-alist!-clustering!*)
       else
