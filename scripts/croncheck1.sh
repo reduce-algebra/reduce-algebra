@@ -6,7 +6,7 @@
 
 current=`pwd -P`
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
-here=`cd \`dirname "$here"\` ; pwd -P`
+here=`pwd -P`
 
 printf "current directory=$current, script=$here/croncheck1.sh"
 
@@ -15,6 +15,7 @@ printf "current directory=$current, script=$here/croncheck1.sh"
 
 pushd $here/..
 
+export today=`date +"%Y%m%d"`
 
 # Now I set up some (potentially) setup-specific configuration data - the
 # names and ports use dby the virtual machines I will activate.
@@ -63,6 +64,8 @@ LINUX_VM=REDUCE-pkg-factory-Ubuntu
 LINUX_USER=
 LINUX_PORT=2202
 
+# LINUX32 is much like LINUX but is a 32-bit version on port 2203.
+
 LINUX32_VM=REDUCE-pkg-factory-Ubuntu32
 LINUX32_USER=
 LINUX32_PORT=2203
@@ -71,19 +74,27 @@ LINUX32_PORT=2203
 # the rest of this script can work unchanged.
 
 
+
+
+# If the script above had not indicated what account to use on the
+# virtual machines assume it is the same as the one in use on the host
+# machine.
+
+CURRENT_USER=`whoami`
+
 if test "x$WINDOWS_USER" = "x"
 then
-  WINDOWS_USER=`whoami`
+  WINDOWS_USER=$CURRENT_USER
 fi
 
 if test "x$LINUX_USER" = "x"
 then
-  LINUX_USER=`whoami`
+  LINUX_USER=$CURRENT_USER
 fi
 
 if test "x$LINUX32_USER" = "x"
 then
-  LINUX32_USER=`whoami`
+  LINUX32_USER=$CURRENT_USER
 fi
 
 # Keep a backup of the previous snapshots and start with an empty
@@ -102,17 +113,25 @@ fi
 mkdir snapshots
 
 # I need the following so I grab the correct version of svn, as installed via
-# macports! An in general to be certain that I can use macports things.
+# macports! And in general to be certain that I can use macports things. The
+# small number of commands I have obeyed so far do not depend on this.
 
 export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
 
-# Ensure that my copy of Reduce is fully up to date.
+# Ensure that my copy of Reduce is fully up to date. I will mention here
+# that at one stage we have the Reduce files on a drive that had been
+# formatted as a variant on FAT32, and in that case "svn revert" always
+# reverted (almost?) everything. Things behaved a lot better when we placed
+# the Reduce tree on a modern native file-system for the host.
+
 svn -R revert .
 svn update
 
-# Unpack as for a local build
+# Unpack as for a local build. This will create the macbuild/C directory
+# as a tidy copy of the current revision. I try to do this operation
+# just once. It will do "svn export" to create a directory macbuild/C.
+
 pushd macbuild
-rm -rf C
 make clean
 make C.stamp
 popd
@@ -125,6 +144,7 @@ vboxmanage startvm $LINUX_VM -type headless
 # repeatedly until ons is responded to. I will try up to 20 at 30-second
 # intervals, so I am requiring the VM to have stablised within 10 minutes.
 
+sleep 5
 for x in `seq 1 20`
 do
   hello=`ssh -p $LINUX_PORT $LINUX_USER@localhost printf "hello"`
@@ -188,6 +208,7 @@ ssh -p $LINUX_PORT $LINUX_USER@localhost \
 
 vboxmanage startvm $LINUX32_VM -type headless
 
+sleep 5
 for x in `seq 1 20`
 do
   hello=`ssh -p $LINUX32_PORT $LINUX32_USER@localhost printf "hello"`
@@ -226,8 +247,10 @@ ssh -p $LINUX32_PORT $LINUX32_USER@localhost \
 
 
 
-# Start a Windows build. This can take a long time if Windows has
-# concluded that it needs to install a large number of updates.
+# Start a Windows build. This can take some time if Windows has
+# concluded that it needs to complete the installation of a large number
+# of updates, but since it the VM will be being updated reasonably regularly
+# I hope that will never be the case.
 
 vboxmanage startvm $WINDOWS_VM -type headless
 
@@ -237,6 +260,7 @@ vboxmanage startvm $WINDOWS_VM -type headless
 # The long delay I allow is to cope with the possibility that Widdows might
 # take several ages doing an automatic installation of updates.
 
+sleep 20
 for x in `seq 1 40`
 do
   hello=`ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost printf "hello"`
@@ -271,7 +295,7 @@ ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost touch winbuild/C.stamp
 # I do not fully understand why the setting of PATH here is vital, but it
 # seems to be. Without it x86_64-w64-mingw32-gcc fails in a way that seems to
 # indicate that it compiles the code in 64-bit mode then tries to assemble
-# it using a 32-bit assembler (which then onbiously chokes on the 64-bit
+# it using a 32-bit assembler (which then obviously chokes on the 64-bit
 # assembly syntax passed to it).
 
 ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost \( \
@@ -282,15 +306,16 @@ ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost \( \
 
 # Recover the built files.
 scp -P $WINDOWS_PORT $WINDOWS_USER@localhost:winbuild/Output/Reduce-Setup.exe \
-    $here/../snapshots/Reduce-Setup_`date +"%Y%m%d"`.exe
+    $here/../snapshots/Reduce-Setup_$today.exe
 
 # Shut down the guest. I do this by issing a command within the VM rather
 # than by an externally forced power-down since I hope that will count
-# as kinder. But done this way means that the account used on the VM has
-# to have "sudo" rights without neeting to quote a password.
+# as kinder. 
+#
+# Note that under cygwin the command "shutdown" is a cygwin one not the
+# windows version!
 
-ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost shutdown /p
-
+ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost shutdown -s -f now
 
 # Now make the Mac version. I wanted the archive unpacked early since that
 # is what I copy for use on the other platforms, and doing things that way
@@ -298,9 +323,10 @@ ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost shutdown /p
 # the sources.
 
 pushd macbuild
+# Now I very much hope that C and C.stamp are both present here!
 pushd C ; ./autogen.sh ; popd
 make
-cp Reduce*.dmg $here/../snapshots/Reduce-snapshot_`date "+%Y%m%d"`.dmg
+cp Reduce*.dmg $here/../snapshots/Reduce-snapshot_$today.dmg
 popd
 
 printf "Can now copy these files to sourceforge:\n"
