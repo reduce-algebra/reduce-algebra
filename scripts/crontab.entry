@@ -15,5 +15,5 @@ SHELL=/bin/bash
 # alternative to cron.
 MAILTO=""
 PATH=/opt/local/bin:/opt/local/sbin:/opt/local/bin:/opt/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
-5,15,25,35,45,55 0-20 * * * $HOME/croncheck.sh
+5,15,25,35,45,55 0-20 * * * @@@/croncheck.sh
 
