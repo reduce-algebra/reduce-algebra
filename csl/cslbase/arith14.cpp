@@ -300,8 +300,8 @@ static void f128X_print(float128_t *v)
 
 bool f128M_sprint(char *s, float128_t *p, int *pdecexp)
 {
-    char *ssave = s;
-    printf("raw data: %.16" PRIx64 " %.16" PRIx64 "\n", p->v[HIPART], p->v[LOPART]);
+//  char *ssave = s;
+//  printf("raw data: %.16" PRIx64 " %.16" PRIx64 "\n", p->v[HIPART], p->v[LOPART]);
 // I deal with a number of special cases first. +0.0 and -0.0 ...
     if (f128M_eq(p, &f128_0))
     {   for (int i=0; i<34; i++) *s++ = '0';
@@ -317,7 +317,6 @@ bool f128M_sprint(char *s, float128_t *p, int *pdecexp)
         *s++ = 0;
         *pdecexp = 0;
         return f128M_negative(p);
-;
     }
 // NaNs. I do not distinguish between signalling and non-signalling ones.
     int exponent = f128M_exponent(p);
@@ -353,7 +352,7 @@ bool f128M_sprint(char *s, float128_t *p, int *pdecexp)
 // Now the decimal exponent will be around exponent*log_{10}(2)
    double d_decexp = 0.301029995663981195*(double)exponent;
 // Now I want to multiply the value I have by 10^(-decexp)
-    printf("d_decexp = %.3f\n", d_decexp);
+//  printf("d_decexp = %.3f\n", d_decexp);
     int decexp = 0;
     if (d_decexp >= 18.0)
     {   float256_t w3;
@@ -382,9 +381,9 @@ bool f128M_sprint(char *s, float128_t *p, int *pdecexp)
         f256M_mul(&w1, &w3, &w2);
     }
     else w2 = w1;
-    printf("roughly scaled: ");
-    f128X_print(&w2.hi); printf(" : "); f128X_print(&w2.lo);
-    printf("\n");
+//  printf("roughly scaled: ");
+//  f128X_print(&w2.hi); printf(" : "); f128X_print(&w2.lo);
+//  printf("\n");
 // Now I rather expect that w2 is not that far from 1.0e17. Further the
 // above scaling will have performed at most around 30 multiplications
 // so can not have wrecked accuracy TOO much. I will do the final adjustment
@@ -398,7 +397,7 @@ bool f128M_sprint(char *s, float128_t *p, int *pdecexp)
            (f128M_eq(&w2.hi, &f128_10_17) &&
             f128M_lt(&w2.lo, &f128_0)))
     {   float256_t w3;
-        printf("Multiply by 10\n");
+//      printf("Multiply by 10\n");
         f256M_mul(&w2, &f256_10, &w3);
         w2 = w3;
 //      printf("times 10: %.16" PRIx64 " %.16" PRIx64 " %.16" PRIx64 " %.16" PRIx64 "\n",
@@ -410,15 +409,15 @@ bool f128M_sprint(char *s, float128_t *p, int *pdecexp)
            (f128M_eq(&w2.hi, &f128_10_18) &&
             !f128M_lt(&w2.lo, &f128_0)))
     {   float256_t w3;
-        printf("Multiply by 0.1\n");
-    printf("my num: ");
-    f128X_print(&w2.hi); printf(" : "); f128X_print(&w2.lo);
-    printf("\n0.1: ");
-    f128X_print(&f256_r10.hi); printf(" : "); f128X_print(&f256_r10.lo);
+//      printf("Multiply by 0.1\n");
+//      printf("my num: ");
+//      f128X_print(&w2.hi); printf(" : "); f128X_print(&w2.lo);
+//      printf("\n0.1: ");
+//      f128X_print(&f256_r10.hi); printf(" : "); f128X_print(&f256_r10.lo);
         f256M_mul(&w2, &f256_r10, &w3);
-    printf("\nproduct: ");
-    f128X_print(&w3.hi); printf(" : "); f128X_print(&w3.lo);
-    printf("\n");
+//      printf("\nproduct: ");
+//      f128X_print(&w3.hi); printf(" : "); f128X_print(&w3.lo);
+//      printf("\n");
         w2 = w3;
 //      printf("div 10: %.16" PRIx64 " %.16" PRIx64 " %.16" PRIx64 " %.16" PRIx64 "\n",
 //              w2.hi.v[HIPART], w2.hi.v[LOPART], w2.lo.v[HIPART], w2.lo.v[LOPART]);
@@ -430,7 +429,7 @@ bool f128M_sprint(char *s, float128_t *p, int *pdecexp)
 //          w2.hi.v[HIPART], w2.hi.v[LOPART], w2.lo.v[HIPART], w2.lo.v[LOPART]);
     float128_t v;
     f128M_add(&w2.hi, &w2.lo, &v);
-    printf("[1.0e17,1.0e18) as single: %.16" PRIx64 " %.16" PRIx64 "\n", v.v[HIPART], v.v[LOPART]);
+//  printf("[1.0e17,1.0e18) as single: %.16" PRIx64 " %.16" PRIx64 "\n", v.v[HIPART], v.v[LOPART]);
     uint64_t d = f128M_to_ui64(&v, softfloat_round_min, false);
     s += sprintf(s, "%.17" PRIu64, d);
     float128_t w3, w4;
@@ -441,7 +440,7 @@ bool f128M_sprint(char *s, float128_t *p, int *pdecexp)
     d = f128M_to_ui64(&v, softfloat_round_near_even, false);
     s += sprintf(s, "%.17" PRIu64, d);
     *pdecexp = decexp + 17;
-    printf("%c<%s> L %d\n", result ? '-' : '+', ssave, *pdecexp);
+//  printf("%c<%s> L %d\n", result ? '-' : '+', ssave, *pdecexp);
     return result;
 }
 
@@ -469,7 +468,7 @@ static bool round_at(char *s, int ndigits)
     if (s[ndigits] < '5') return false;
 // If the digits beyond where I am are "50000...0" and I the digit I would
 // change on rounding up is even then I will round down.
-    if (s[ndigits] == '5' && (s[ndigits-1]%2 == 0))
+    if (s[ndigits] == '5' && (ndigits == 0 || s[ndigits-1]%2 == 0))
     {   int p = ndigits+1;
         while (p < 34 && s[p] == '0') p++;
         if (p >= 34) return false;
@@ -588,7 +587,7 @@ int f128M_sprint_F(char *r, int width, int prec, float128_t *p)
     bool sign = f128M_sprint(s, p, &decexp);
     if (prec < 0) prec = 0;
     else if (prec > 9999) prec = 9999;
-printf("sprint_F %d,%d: %s\n", prec, decexp, s); //@@@
+//  printf("sprint_F %d,%d: %s\n", prec, decexp, s);
     if (sign) width--;
 // Infinities and NaNs are displayed with scant regard to the requested
 // precision, but they do honour the width request.
@@ -633,7 +632,7 @@ printf("sprint_F %d,%d: %s\n", prec, decexp, s); //@@@
 // and the number of sigits after the decimal point that F notation has
 // asked for.
     if (round_at(s, decexp+prec+1)) decexp++;
-printf("after rounding at decexp+prec decexp=%d:%s\n", decexp, s);
+//  printf("after rounding at decexp+prec decexp=%d:%s\n", decexp, s);
     if (decexp >= 34)
     {   r += sprintf(r, "%.34s", s);
         r = pad_by_zero(r, decexp-33);
@@ -641,7 +640,7 @@ printf("after rounding at decexp+prec decexp=%d:%s\n", decexp, s);
         r = pad_by_zero(r, prec);
     }
     else if (decexp >= 0)
-    {   printf("decexp=%d prec=%d s=%s ####1\n", decexp, prec, s);
+    {   // printf("decexp=%d prec=%d s=%s ####1\n", decexp, prec, s);
         int fdig = 33-decexp;
         if (fdig > prec) fdig = prec;
         r += sprintf(r, "%.*s.%.*s",
@@ -649,21 +648,16 @@ printf("after rounding at decexp+prec decexp=%d:%s\n", decexp, s);
         r = pad_by_zero(r, prec-fdig);
     }
     else if (prec+decexp+1 <= 34)
-    {   printf("decexp=%d prec=%d s=%s ####2\n", decexp, prec, s);
-        printf("0.[0*]xx case\n");
+    {   // printf("decexp=%d prec=%d s=%s ####2\n", decexp, prec, s);
         r += sprintf(r, "0.");
         int pp = -decexp-1;
-// There is perhaps a problem here when, for instance,
-//   0.000999
-// is printed with precision 3, because the right now I am not confident that
-// rounding will happen properly.
         if (pp > prec) pp = prec;
         r = pad_by_zero(r, pp);
         if (prec+decexp+1 > 0)
             r += sprintf(r, "%.*s", prec+decexp+1, s);
     }
     else
-    {   printf("decexp=%d prec=%d s=%s ####3\n", decexp, prec, s);
+    {   // printf("decexp=%d prec=%d s=%s ####3\n", decexp, prec, s);
         r += sprintf(r, "0.");
         r = pad_by_zero(r, -decexp-1);
         r += sprintf(r, "%.34s", s);
@@ -699,7 +693,7 @@ int f128M_sprint_G(char *r, int width, int prec, float128_t *p)
 // as 999.[999] and I expect it will round this to 1000. which ought to
 // have been rendered as 1.e03.
     f128M_sprint(s, p, &decexp);
-printf("G measure sprint_g %d,%d: %s\n", prec, decexp, s); //@@@
+//  printf("G measure sprint_g %d,%d: %s\n", prec, decexp, s); //@@@
     if (prec < 1) prec = 1;
     else if (prec > 9999) prec = 9999;
     if (decexp < -4 || decexp > prec)
@@ -785,9 +779,9 @@ float128_t atof128(const char *s)
     }
 // Where I am now is that I have z[0]:z[1] . z[2] where each digit is
 // 16 decimals. The bit before the "." will be exactly representable as
-// an integer in the 128-bit format. 
-    printf("atof128 %.16" PRId64 " %.16" PRId64 " %.16" PRId64 " E%d\n",
-       z[0], z[1], z[2], x);
+// an integer in the 128-bit format.
+//  printf("atof128 %.16" PRId64 " %.16" PRId64 " %.16" PRId64 " E%d\n",
+//     z[0], z[1], z[2], x);
     float128_t u, v, w;
     ui64_to_f128M(z[0], &u);          // u = (float128_t)z[0];
     f128M_mul(&u, &f128_10_16, &v);   // v = u * 10^16;
@@ -795,8 +789,8 @@ float128_t atof128(const char *s)
     f128M_add(&u, &v, &w);            // w = u + v;
     ui64_to_f128M(z[2], &u);          // u = (float128_t)z[2];
     f128M_div(&u, &f128_10_16, &v);   // v = u / 10^16;
-    printf("w: "); f128X_print(&w); printf("\n");
-    printf("v: "); f128X_print(&v); printf("\n");
+//  printf("w: "); f128X_print(&w); printf("\n");
+//  printf("v: "); f128X_print(&v); printf("\n");
 // Now (w,v) are a pair of 128-bit floats that can be viewed as a 256-bit
 // value which just needs scaling by 10^(x-32) to get my final result.
     float256_t j, k, l;
@@ -812,26 +806,26 @@ float128_t atof128(const char *s)
         f128M_ldexp(&k.hi, x-32);
         f128M_ldexp(&k.lo, x-32);
     }
-    printf("10^%d: ", x-32);
-    f128X_print(&k.hi);
-    printf(" : ");
-    f128X_print(&k.lo);
-    printf("\n");
+//  printf("10^%d: ", x-32);
+//  f128X_print(&k.hi);
+//  printf(" : ");
+//  f128X_print(&k.lo);
+//  printf("\n");
     f256M_mul(&j, &k, &l);
-    printf("res_256: ");
-    f128X_print(&l.hi);
-    printf(" : ");
-    f128X_print(&l.lo);
-    printf("\n");
+//  printf("res_256: ");
+//  f128X_print(&l.hi);
+//  printf(" : ");
+//  f128X_print(&l.lo);
+//  printf("\n");
     float128_t r;
     f128M_add(&l.hi, &l.lo, &r);
     if (sign) f128M_negate(&r);
-    printf("res128: ");
-    f128X_print(&r);
-    printf("\n");
-    printf("Final: "); f128M_print_E(0, 35, &r); printf("\n");
-    printf("Final: "); f128M_print_F(0, 45, &r); printf("\n");
-    printf("Final: "); f128M_print_G(0, 40, &r); printf("\n");
+//  printf("res128: ");
+//  f128X_print(&r);
+//  printf("\n");
+//  printf("Final: "); f128M_print_E(0, 35, &r); printf("\n");
+//  printf("Final: "); f128M_print_F(0, 45, &r); printf("\n");
+//  printf("Final: "); f128M_print_G(0, 40, &r); printf("\n");
     return r;
 }
 

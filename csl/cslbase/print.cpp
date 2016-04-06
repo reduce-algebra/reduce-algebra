@@ -1944,9 +1944,8 @@ static void fp_sprint128(char *buff, float128_t x, int prec)
         f128M_negate(&x);
     }
     f128M_sprint_G(buff, 0, prec, &x);
-
-printf("Raw printing gives \"%s\"\n", buff); // @@@
-
+//  printf("Raw printing gives \"%s\"\n", buff);
+//
 // I rather hope that my own print routine is not degenerate so some of
 // these fix-ups are not necessary, but I will leave them in just to be
 // really safe.
@@ -1962,17 +1961,17 @@ printf("Raw printing gives \"%s\"\n", buff); // @@@
         char_ins(buff, '0');
     }
     while (*buff != 0 && *buff != '.' && !exponent_mark(*buff)) buff++;
-printf("Point A, buff=\"%s\" saveb=\"%s\"\n", buff, saveb);
+//  printf("Point A, buff=\"%s\" saveb=\"%s\"\n", buff, saveb);
     if (*buff == 0 || exponent_mark(*buff))     // ddd to ddd.0
     {   char_ins(buff, '0');            // and dddEnnn to ddd.0Ennn
         char_ins(buff, '.');
     }
     while (*buff != 0 && !exponent_mark(*buff)) buff++;
-printf("Point B, buff=\"%s\" saveb=\"%s\"\n", buff, saveb);
+//  printf("Point B, buff=\"%s\" saveb=\"%s\"\n", buff, saveb);
     if (*(buff-1) == '.') char_ins(buff++, '0');// ddd. to ddd.0
     while (*(buff-1) == '0' &&                  // ddd.nnn0 to ddd.nnn
            *(buff-2) != '.') char_del(--buff);
-printf("Point C, buff=\"%s\" saveb=\"%s\"\n", buff, saveb);
+//  printf("Point C, buff=\"%s\" saveb=\"%s\"\n", buff, saveb);
     if (*buff == 0) return; // no exponent mark present
     buff++;
     if (*buff == 0) strcpy(buff, "+e00");
@@ -1980,7 +1979,7 @@ printf("Point C, buff=\"%s\" saveb=\"%s\"\n", buff, saveb);
     buff++;
     if (*(buff+1) == 0) char_ins(buff, '0');
     else if (*buff == '0' && *(buff+2) != 0) char_del(buff);
-printf("Point E, buff=\"%s\" saveb=\"%s\"\n", buff, saveb);
+//  printf("Point E, buff=\"%s\" saveb=\"%s\"\n", buff, saveb);
 }
 
 
