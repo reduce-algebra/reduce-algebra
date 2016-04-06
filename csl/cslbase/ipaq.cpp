@@ -4,15 +4,15 @@
 // system). I am not going to guarantee or even worry too much (to start
 // with at least) about support of other platform variants.
 //
-// This code has not been looked at for many years ans so should be
+// This code has not been looked at for many years and so should be
 // assumed to be out of date and broken. It is left here in case it
 // forms a useful starting-point for soem future project.
 //
-//                                 A C Norman, Codemist Ltd, March 2005
+//                                 A C Norman, Codemist    , March 2005
 //
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

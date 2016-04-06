@@ -1,10 +1,10 @@
 %  
 % Compiler from Lisp into byte-codes for use with CSL/CCL.
-%       Copyright (C) Codemist Ltd, 1990-2015
+%       Copyright (C) Codemist, 1990-2016
 %
 
 %%
-%% Copyright (C) 2015,              A C Norman, Codemist Ltd
+%% Copyright (C) 2016,              A C Norman, Codemist
 %%
 %% Redistribution and use in source and binary forms, with or without
 %% modification, are permitted provided that the following conditions are

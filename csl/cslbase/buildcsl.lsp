@@ -8,7 +8,7 @@
 %
 
 %%
-%% Copyright (C) 2010, A C Norman, Codemist Ltd.                          *
+%% Copyright (C) 2016, A C Norman, Codemist.                              *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *

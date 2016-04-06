@@ -1,9 +1,9 @@
-// charmetrics.cpp                         Copyright (C) 2015 Codemist Ltd
+// charmetrics.cpp                              Copyright (C) 2016 Codemist
 
 //=======================================================================//
 //                                                                       //
 //  WARNING. In "-DCREATE=1" mode this program takes about 40 minutes    //
-//  of CPU time on a computer that in 2015 counts as fairly fast. So     //
+//  of CPU time on a computer that in 2016 counts as fairly fast. So     //
 //  when you run it be prepared to be reasonably patient. The slow run   //
 //  really only needed to be done once to extract font information from  //
 //  a collection of ".afm" files and form it into a compact table, so it //
@@ -12,11 +12,8 @@
 //=======================================================================//
 
 
-// $Id$
-
-
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -43,6 +40,9 @@
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
+
+
+// $Id$
 
 
 #ifdef CREATE
@@ -1483,14 +1483,11 @@ int main(int argc, char *argv[])
 
     {   FILE *dest = fopen("charmetrics.h", "w");
         FILE *rdest = fopen("charmetrics.red", "w");
-        fprintf(dest, "// charmetrics.h                           Copyright (C) 2015 Codemist Ltd\n");
-        fprintf(dest, "\n");
-        fprintf(dest, "\n");
-        fprintf(dest, "// $Id$\n");
+        fprintf(dest, "// charmetrics.h                               Copyright (C) 2016 Codemist\n");
         fprintf(dest, "\n");
         fprintf(dest, "\n");
         fprintf(dest, "/**************************************************************************\n");
-        fprintf(dest, " * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *\n");
+        fprintf(dest, " * Copyright (C) 2016, Codemist.                         A C Norman       *\n");
         fprintf(dest, " *                                                                        *\n");
         fprintf(dest, " * Redistribution and use in source and binary forms, with or without     *\n");
         fprintf(dest, " * modification, are permitted provided that the following conditions are *\n");
@@ -1517,6 +1514,9 @@ int main(int argc, char *argv[])
         fprintf(dest, " * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *\n");
         fprintf(dest, " * DAMAGE.                                                                *\n");
         fprintf(dest, " *************************************************************************/\n");
+        fprintf(dest, "\n");
+        fprintf(dest, "// $Id$\n");
+        fprintf(dest, "\n");
         fprintf(dest, "\n");
         fprintf(dest, "#ifndef __STDC_CONSTANT_MACROS\n");
         fprintf(dest, "#define __STDC_CONSTANT_MACROS 1\n");

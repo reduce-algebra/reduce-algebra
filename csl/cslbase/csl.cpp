@@ -1,4 +1,4 @@
-// csl.cpp                            Copyright (C) 1989-2016 Codemist Ltd
+// csl.cpp                            Copyright (C) 1989-2016 Codemist    
 
 //
 // This is Lisp system for use when delivering Lisp applications
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -2107,7 +2107,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
                 case 'c':
                     fwin_restore();
-                    term_printf("\nCSL was coded by Codemist Ltd, 1988-2012\n");
+                    term_printf("\nCSL was coded by Codemist    , 1988-2012\n");
                     term_printf("Distributed under the Modified BSD License\n");
                     term_printf("See also --help\n");
                     continue;

@@ -1,4 +1,4 @@
-% "jcomp.red"                 Copyright 1991-2013,  Codemist Ltd
+% "jcomp.red"                 Copyright 1991-2016,  Codemist
 %
 % Compiler that turns Lisp code into Java in a way that fits in
 % with the conventions used with Jlisp
@@ -10,7 +10,7 @@
 % generate Java over time.
 
 %%
-%% Copyright (C) 2013, following the master REDUCE source files.          *
+%% Copyright (C) 2016, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *
@@ -974,11 +974,11 @@ symbolic procedure j!:print!-init();
    j!:printf "\n";
    j!:printf "//\n";
    j!:printf "// This file is part of the Jlisp implementation of Standard Lisp\n";
-   j!:printf "// Copyright \u00a9 (C) Codemist Ltd, 1998-2013.\n";
+   j!:printf "// Copyright \u00a9 (C) Codemist, 1998-2016.\n";
    j!:printf "//\n";
    j!:printf "\n";
    j!:printf "/**************************************************************************\n";
-   j!:printf " * Copyright (C) 1998-2013, Codemist Ltd.                      A C Norman *\n";
+   j!:printf " * Copyright (C) 1998-2013, Codemist.                          A C Norman *\n";
    j!:printf " *                            also contributions from Vijay Chauhan, 2002 *\n";
    j!:printf " * Derived from the main Reduce source files, so also rights from there.  *\n";
    j!:printf " *                                                                        *\n";

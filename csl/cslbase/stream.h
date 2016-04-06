@@ -1,4 +1,4 @@
-// stream.h                        Copyright (C) Codemist Ltd, 1995-2016
+// stream.h                              Copyright (C) Codemist, 1995-2016
 
 //
 // Header defining the structure of stream objects in CSL, and also

@@ -1,8 +1,8 @@
-// makeheaders.cpp                     Copyright (C) 2005-2015 Codemist Ltd
+// makeheaders.cpp                     Copyright (C) 2005-2015 Codemist    
 
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

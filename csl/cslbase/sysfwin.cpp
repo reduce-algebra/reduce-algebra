@@ -1,4 +1,4 @@
-// sysfwin.cpp                      Copyright (C) 1989-2016 Codemist Ltd
+// sysfwin.cpp                      Copyright (C) 1989-2016 Codemist    
 
 //
 // System-specific code for use with the "fwin" window interface code.
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -775,19 +775,9 @@ int32_t ok_to_grab_memory(int32_t current)
 
 #ifdef WIN32
 
-//
-// The GetSystemInfo call in Windows is available on Windows 2000,
-// XP and Vista (together with corresponding server varients of the
-// system), so by including the following lines I am cutting myself
-// off from Windows 98 and ME. I find it hard (in September 2008) to believe
-// that this will be a serious limitation in the use of this code. But if it
-// was essential to handle them it would be possible to do a dynamic search
-// for the GetSystemInfo entry in the DLLs and only use if when present.
-//
-
 int number_of_processors()
 {   SYSTEM_INFO si;
-    GetSystemInfo(&si);
+    GetSystemInfo(&si);  // Not supported by Windowes 95/98!
     return (int)si.dwNumberOfProcessors;
 }
 

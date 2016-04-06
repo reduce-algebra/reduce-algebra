@@ -1,4 +1,4 @@
-//  restart.cpp                       Copyright (C) 1989-2016 Codemist Ltd
+//  restart.cpp                       Copyright (C) 1989-2016 Codemist    
 
 //
 // Code needed to start off Lisp when no initial heap image is available,
@@ -5493,7 +5493,7 @@ static void set_up_variables(int restart_flag)
                     sprintf(about_box_rights_2, "%.*s",
                             n > 31 ? 31 : n, &celt(w1, 0));
                 }
-                else strcpy(about_box_rights_2, "Codemist Ltd");
+                else strcpy(about_box_rights_2, "Codemist    ");
 #endif
             }
             else

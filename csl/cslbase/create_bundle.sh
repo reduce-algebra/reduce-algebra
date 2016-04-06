@@ -73,11 +73,11 @@ echo "<string>1</string>" >> $P
 echo "<key>CFBundleShortVersionString</key>" >> $P
 echo "<string>1</string>" >> $P
 echo "<key>CFBundleGetInfoString</key>" >> $P
-echo "<string>$1 version 1, (C) 2015 Codemist Ltd</string>" >> $P
+echo "<string>$1 version 1, (C) 2016 Codemist</string>" >> $P
 echo "<key>CFBundleLongVersionString</key>" >> $P
-echo "<string>1, (C) 2015 Codemist Ltd</string>" >> $P
+echo "<string>1, (C) 2016 Codemist</string>" >> $P
 echo "<key>NSHumanReadableCopyright</key>" >> $P
-echo "<string>Copyright 2015 Codemist Ltd</string>" >> $P
+echo "<string>Copyright 2016 Codemist</string>" >> $P
 echo "<key>LSRequiresCarbon</key>" >> $P
 echo "<true/>" >> $P
 echo "<key>CSResourcesFileMapped</key>" >> $P

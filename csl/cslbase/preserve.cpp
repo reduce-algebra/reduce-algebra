@@ -1,7 +1,7 @@
-// preserve.cpp                       Copyright (c) Codemist Ltd, 1990-2016
+// preserve.cpp                       Copyright (c) Codemist    , 1990-2016
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -679,7 +679,7 @@ void Iinit(void)
                                      i == output_directory ? PDS_OUTPUT :
                                      PDS_INPUT);
     }
-    CSL_MD5_Update((unsigned char *)"Copyright 2016 Codemist Ltd", 24);
+    CSL_MD5_Update((unsigned char *)"Copyright 2016 Codemist    ", 24);
 }
 
 void Icontext(Ihandle *where)
@@ -931,7 +931,7 @@ static bool open_input(directory *d, const char *name, int len,
 }
 
 void IreInit(void)
-{   CSL_MD5_Update((unsigned char *)"Copyright 2016 Codemist Ltd", 24);
+{   CSL_MD5_Update((unsigned char *)"Copyright 2016 Codemist    ", 24);
     CSL_MD5_Update((unsigned char *)"memory.u", 8);
 }
 

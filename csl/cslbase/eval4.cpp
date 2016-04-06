@@ -1,11 +1,11 @@
-// eval4.cpp                         Copyright (C) 1991-2015, Codemist Ltd
+// eval4.cpp                         Copyright (C) 1991-2015, Codemist    
 
 //
 // Bytecode interpreter/main interpreter interfaces
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

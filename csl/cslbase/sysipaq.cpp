@@ -1,4 +1,4 @@
-// sysipaq.cpp                      Copyright (C) 1989-2015 Codemist Ltd
+// sysipaq.cpp                      Copyright (C) 1989-2015 Codemist    
 
 // *** THIS CODE IS NO LONGER MAINTAINED ***
 
@@ -27,7 +27,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -387,7 +387,7 @@ int fwin_windowmode()
 char about_box_title[32] = "About Reduce";
 char about_box_description[32] = "Version ???";
 char about_box_rights_1[32] = "A C Hearn";
-char about_box_rights_2[32] = "Codemist Ltd";
+char about_box_rights_2[32] = "Codemist    ";
 char about_box_rights_3[32] = "Ipaq version March 2005";
 
 int get_current_directory(char *s, size_t n)

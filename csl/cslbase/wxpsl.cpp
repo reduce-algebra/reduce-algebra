@@ -1,4 +1,4 @@
-// wxpsl.cpp                                Copyright (C) Codemist Ltd 2011
+// wxpsl.cpp                                Copyright (C) Codemist     2011
 
 //
 // This code borrows from the redfront package by Dolzmann and Sturm,
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist.                         A C Norman       *
  *      parts of the code Copyright Andreas Dolzmann and Thomas Sturm     *
  *      with earlier development by Chris Cannam and Winfried Neun.       *
  *                                                                        *

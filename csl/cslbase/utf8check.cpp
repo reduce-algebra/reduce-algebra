@@ -1,4 +1,4 @@
-// utfcheck.cpp                           Copyright (C) 2015 Codemist Ltd
+// utfcheck.cpp                           Copyright (C) 2016 Codemist    
 
 //
 // This is a pretty silly program! It looks at Unicode characters and tests
@@ -20,7 +20,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

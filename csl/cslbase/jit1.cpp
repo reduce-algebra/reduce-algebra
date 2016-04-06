@@ -1,4 +1,4 @@
-// jit1.cpp                          Copyright (C) 2006-2015, Codemist Ltd
+// jit1.cpp                          Copyright (C) 2006-2015, Codemist    
 //                                                and J O'Connell
 
 //
@@ -10,7 +10,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

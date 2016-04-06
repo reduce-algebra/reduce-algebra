@@ -1,5 +1,5 @@
 //
-// "fwin.h"                                       2003-1014, A C Norman
+// "fwin.h"                                       2003-2016, A C Norman
 //
 // This defines the public interface supported by the "fwin" window
 // interface.
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 1014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

@@ -1,4 +1,4 @@
-//  stubs.cpp                         Copyright (C) 1990-2015 Codemist Ltd
+//  stubs.cpp                         Copyright (C) 1990-2015 Codemist    
 
 //
 // Placeholder for compiler-generated C code.
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

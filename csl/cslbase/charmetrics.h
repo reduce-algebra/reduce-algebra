@@ -1,11 +1,9 @@
-// charmetrics.h                           Copyright (C) 2015 Codemist Ltd
+// charmetrics.h                                Copyright (C) 2016 Codemist
 
-
-// $Id$
 
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -32,6 +30,10 @@
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
+
+
+// $Id$
+
 
 #if defined __cplusplus && !defined __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS 1
