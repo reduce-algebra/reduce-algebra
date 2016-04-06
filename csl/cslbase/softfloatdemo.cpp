@@ -83,7 +83,6 @@ int main(int argc, char *argv[])
 #else
     printf("Testing using a big-endian version\n");
 #endif
-    printf("alignof(float128_t) = %u\n", (unsigned int)alignof(float128_t));
 
     ui32_to_f128M(0, &f128_0);
 
@@ -137,6 +136,44 @@ int main(int argc, char *argv[])
     ui32_to_f128M(0x80000000u, &a);
     show("2^32", &a);
     show256(&f256_r10);
+
+// What was shown above was from when I was doing rather basic tests. Now I
+// will exercise printing
+   
+    ui64_to_f128M(INT64_C(1000000000000000), &a);  // 10^15
+    f128M_mul(&a, &a, &b);                         // 10^30
+    f128M_mul(&b, &b, &c);                         // 10^60
+    ui32_to_f128M(7, &b);
+    f128M_div(&c, &b, &a);                // 10^60/7
+    ui32_to_f128M(10, &c);
+    show("10^60/7", &a);
+    for (int x=0; x<120; x++)
+    {   for (int p=3; p<80; p++)
+        {   char bb[256];
+            f128M_sprint_F(bb, 120, p, &a);
+            printf("@@%3d, %3d : %s\n", x, p, bb);
+        }
+        f128M_div(&a, &c, &b);
+        a = b;
+    }
+    ui64_to_f128M(INT64_C(1000000000000000), &a);  // 10^15
+    f128M_mul(&a, &a, &b);                         // 10^30
+    f128M_mul(&b, &b, &c);                         // 10^60
+    ui32_to_f128M(7, &b);
+    f128M_div(&c, &b, &a);                         // 10^60/7
+    ui32_to_f128M(6, &d);
+    f128M_mul(&a, &d, &e);
+    a = e;                                         //(6/7)*10^60
+    ui32_to_f128M(10, &c);
+    for (int x=0; x<120; x++)
+    {   for (int p=3; p<80; p++)
+        {   char bb[256];
+            f128M_sprint_F(bb, 120, p, &a);
+            printf("@@%3d, %3d : %s\n", x, p, bb);
+        }
+        f128M_div(&a, &c, &b);
+        a = b;
+    }
     return 0;
 }
 

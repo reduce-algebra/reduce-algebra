@@ -453,29 +453,29 @@ void f128M_print(float128_t *p)
     else printf("%s%c.%sL%d\n", neg ? "-" : "", s[0], &s[1], decexp);
 }
 
-// This rounds the number in the buffer to have ndigits after where the
-// decimal point will be. 
+// This rounds the number in the buffer to have ndigits in all.
 // When I round it is possible to generate an overflow. Consider the case of
-// 9.9996 rounded to 3 figures after the point. It should end up as
+// 9.9996 rounded to 4 figures. It should end up as
 // 10.000, except that what I want to do is shift that along so it comes
-// out as "1.000" with the exponent incremented. Rounding to 0 digits will
+// out as "1.000" with the exponent incremented. Rounding to 1 digits will
 // leave just the integer part, while rounding to 33 (or more) places
 // should not change anything because there are no digits beyond there.
+// Rounding to 0 digits should yield either "0" or "1". 
 
 static bool round_at(char *s, int ndigits)
 {
-    if (ndigits < 0 || ndigits >= 33) return false;
+    if (ndigits < 0 || ndigits >= 34) return false;
 // If the digits just beyond where I am is < '5' I will truncate down.
-    if (s[ndigits+1] < '5') return false;
+    if (s[ndigits] < '5') return false;
 // If the digits beyond where I am are "50000...0" and I the digit I would
 // change on rounding up is even then I will round down.
-    if (s[ndigits+1] == '5' && (s[ndigits]%2 == 0))
-    {   int p = ndigits+2;
+    if (s[ndigits] == '5' && (s[ndigits-1]%2 == 0))
+    {   int p = ndigits+1;
         while (p < 34 && s[p] == '0') p++;
         if (p >= 34) return false;
     }
 // Here I need to round up.
-    int p = ndigits;
+    int p = ndigits-1;
     while (p >= 0)
     {   if (s[p] != '9')
         {   s[p]++;
@@ -498,11 +498,26 @@ static char *pad_by(char *r, int n)
     return r;
 }
 
-// This is used to insert a string of '0' chararacters.
+// This is used to insert a string of '0' chararacters. If it woule be
+// a very long string I abbreviate it using the notation "0000{NNN}0000"
+// where the {NNN} stands for a sequence on NNN zeros. This can not be
+// triggered within parts of the number that are significant. It happens
+// with huge numbers in F format that may end up with integer parts such as
+//                 XXXXX...XXXXX00000...00000.0
+// with 34 digits (the most needed for full indication of a 128-bit float) in
+// the string XX..XX but then very many zeros before the decimal point.
+// It might also arise with F format if the user specified a HUGE precision
+// and either leading or trailing zeros surround the digits that are
+// actually significant, as in
+//     0.00000...00000XXXXX...XXXXX00000...00000
+// Observe that the smallest value that will appear as NNN will be 3, when
+// "00000{4}00000" stands for 14 zeros in a row, so it just saves space:
+// "00000000000000"
+//
 
 static char *pad_by_zero(char *r, int n)
 {
-    if (n > 12) r += sprintf(r, "000{%d}000", n);
+    if (n >= 14) r += sprintf(r, "00000{%d}00000", n-10);
     else while (n-- > 0) *r++ = '0';
     *r = 0;
     return r;
@@ -527,7 +542,7 @@ int f128M_sprint_E(char *r, int width, int prec, float128_t *p)
     }
     else
     {   char ebuf[8];
-        if (round_at(s, prec)) decexp++;
+        if (round_at(s, prec+1)) decexp++;
 // I format the exponent so I can see how many characters that uses.
         width -= sprintf(ebuf, "e%02d", decexp);
         r = pad_by(r, width - prec - 1);
@@ -573,9 +588,10 @@ int f128M_sprint_F(char *r, int width, int prec, float128_t *p)
     bool sign = f128M_sprint(s, p, &decexp);
     if (prec < 0) prec = 0;
     else if (prec > 9999) prec = 9999;
+printf("sprint_F %d,%d: %s\n", prec, decexp, s); //@@@
     if (sign) width--;
 // Infinities and NaNs are displayed with scant regard to the requested
-// precision, but the do honour the width request.
+// precision, but they do honour the width request.
     if (!isdigit(s[0]))
     {   r = pad_by(r, width-strlen(s));
         if (sign) *r++ = '-';
@@ -601,50 +617,57 @@ int f128M_sprint_F(char *r, int width, int prec, float128_t *p)
 // -0.000{NNNN}0001234567890123456789012345678901234000{NNNN}000
 // which I make 61 characters (plus the terminating '\0').
 //
-// I have several cases to consider here:
-// decexp >= 34
-//     nnnnnn[00000000000].[0000]       no rounding
-//      (34)  (decexp-33)  (prec)
-//
-// decexp < 34 && decexp >= 0 && prec > 34-decexp
-//     nnnnnnnnnn.nnnnnnnnnnn[000000]   no rounding
-//     (decexp+1) (33-decexp) (prec+decexp-33)
-//
-// As above with prec smaller
-//     nnnnnnnnnn.nnnnnnn               round at decexp+prec+1
-//     (decexp+1)  (prec)
-//
-// decexp < 0 && prec+decexp+1 <= 34
-//     0.[0000000000]nnnnnnnnnnnnnn     round at prec+decexp+1
-//       (-decexp-1) (prec+decexp+1)
-//
-// decexp < 0, prec bigger
-//     0.[0000000000]nnnnnn[0000000000000000]   no rounding
-//       (-decexp-1)  (34)  (prec+decexp-33)
-    else
-    {   if (round_at(s, decexp+prec)) decexp++;
-        if (decexp >= 34)
-        {   r += sprintf(r, "%.34s", s);
-            r = pad_by_zero(r, decexp-33);
-            *r++ = '.';
-            r = pad_by_zero(r, prec);
-        }
-        else if (decexp >= 0)
-        {   r += sprintf(r, "%.*s.%.*s",
-                decexp+1, s, 33-decexp, &s[decexp+1]);
-           r = pad_by_zero(s, prec+decexp-33);
-        }
-        else if (prec+decexp+1 <= 34)
-        {   r += sprintf(r, "0.");
-            r = pad_by_zero(r, -decexp-1);
+// I have a whole slew of different cases to consider here! These need
+// to be separated in term of how the digits making up the significant
+// part of the result fall relative to (a) the decimal point and (b) the
+// right hand end of the desired result, and where strings of zeros need to
+// be inserted. Eg some of the cases are in the patterns:
+//     xxxxxxxx00000000.00000000
+//                 xxxx.xx(xx)
+//                 xxxx.xxxx00000000
+//                    0.00000000xxxx(xxxx)
+//                    0.00000000xxxxxxxx00000000
+// where xxxxxxxx denote significant digits, (xxxx) digits that are to
+// be truncated and 00000000 could be almost arbitrarily long sequences of
+// zero characters dependent on the magnitude of the number being displayed
+// and the number of sigits after the decimal point that F notation has
+// asked for.
+    if (round_at(s, decexp+prec+1)) decexp++;
+printf("after rounding at decexp+prec decexp=%d:%s\n", decexp, s);
+    if (decexp >= 34)
+    {   r += sprintf(r, "%.34s", s);
+        r = pad_by_zero(r, decexp-33);
+        *r++ = '.';
+        r = pad_by_zero(r, prec);
+    }
+    else if (decexp >= 0)
+    {   printf("decexp=%d prec=%d s=%s ####1\n", decexp, prec, s);
+        int fdig = 33-decexp;
+        if (fdig > prec) fdig = prec;
+        r += sprintf(r, "%.*s.%.*s",
+            decexp+1, s, fdig, &s[decexp+1]);
+        r = pad_by_zero(r, prec-fdig);
+    }
+    else if (prec+decexp+1 <= 34)
+    {   printf("decexp=%d prec=%d s=%s ####2\n", decexp, prec, s);
+        printf("0.[0*]xx case\n");
+        r += sprintf(r, "0.");
+        int pp = -decexp-1;
+// There is perhaps a problem here when, for instance,
+//   0.000999
+// is printed with precision 3, because the right now I am not confident that
+// rounding will happen properly.
+        if (pp > prec) pp = prec;
+        r = pad_by_zero(r, pp);
+        if (prec+decexp+1 > 0)
             r += sprintf(r, "%.*s", prec+decexp+1, s);
-        }
-        else
-        {   r += sprintf(r, "0.");
-            r = pad_by_zero(r, -decexp-1);
-            r += sprintf(r, "%.34s", s);
-            r = pad_by_zero(r, prec+decexp-33);
-        }
+    }
+    else
+    {   printf("decexp=%d prec=%d s=%s ####3\n", decexp, prec, s);
+        r += sprintf(r, "0.");
+        r = pad_by_zero(r, -decexp-1);
+        r += sprintf(r, "%.34s", s);
+        r = pad_by_zero(r, prec+decexp-33);
     }
     return r - original_r;
 }
@@ -676,6 +699,7 @@ int f128M_sprint_G(char *r, int width, int prec, float128_t *p)
 // as 999.[999] and I expect it will round this to 1000. which ought to
 // have been rendered as 1.e03.
     f128M_sprint(s, p, &decexp);
+printf("G measure sprint_g %d,%d: %s\n", prec, decexp, s); //@@@
     if (prec < 1) prec = 1;
     else if (prec > 9999) prec = 9999;
     if (decexp < -4 || decexp > prec)

@@ -39,7 +39,7 @@
 #define __STDC_CONSTANT_MACROS 1
 #endif
 
-#include <cstdint>
+#include <stdint.h>
 
 // Character metric hash table created using the program charmetrics.c
 // sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfontxs

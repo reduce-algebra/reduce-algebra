@@ -33,7 +33,7 @@
 // $Id$
 
 
-// Without the fullowing things like UINT64_C will not be available.
+// Without the following things like UINT64_C will not be available.
 #ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS 1
 #endif
