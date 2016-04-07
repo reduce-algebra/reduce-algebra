@@ -395,9 +395,12 @@ begin scalar h1,h2,h3,p,q$
  % whenever a new inequality is known.
  if null lin_problem then
  for each h2 in pdes do
- if null get(h2,'linear_) and 
-    null flagp(h2,'to_gensep) and 
-    get(h2,'starde) then flag1(h2,'to_gensep)$
+ if null get(h2,'linear_) then <<
+  if null flagp(h2,'to_gensep) and 
+     get(h2,'starde) then flag1(h2,'to_gensep)$
+  if null flagp(h2,'to_int) then flag1(h2,'to_int)$
+  if null flagp(h2,'to_fullint) then flag1(h2,'to_fullint)
+ >>$
 
  if simpli then h1:=simplifySQ(newineq,ftem_,t,nil,t) % h1 is a list of factors
            else h1:=list newineq$

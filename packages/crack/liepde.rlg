@@ -1,94 +1,7 @@
-load liepde;
+off echo;
 
 
-
-%*******************************************************************%
-%                                                                   %
-%                      L I E P D E . T S T                          %
-%                      -------------------                          %
-%  liepde.tst contains test examples for the program liepde.red.    %
-%                                                                   %
-%  Author of this file: Thomas Wolf                                 %
-%  Date:  21. April 1998, 6. May 2003, 14. Feb 2006                 %
-%                                                                   %
-%  Details about the syntax of liepde.red are given in liepde.tex.  %
-%                                                                   %
-%  To run this demo you need to load liepde and crack through       %
-%     load crack,liepde$                                            %
-%  and to read in this file as                                      %
-%     in "liepde.tst"$                                              %
-%  If you got the source code of a newer version of liepde then     %
-%  either read it in through                                        %
-%     in "crack.red","liepde.red"$                                  %
-%  (with the appropriate directory name in front of liepde.red)     %
-%  or, to speed up the calculation, you compile before with         %
-%     faslout "crack"$                                              %
-%     in "crack.red"$                                               %
-%     faslend$                                                      %
-%     faslout "liepde"$                                             %
-%     in "liepde.red"$                                              %
-%     faslend$                                                      %
-%  and then load both it with                                       %
-%     load crack,liepde$                                            %
-%                                                                   %
-%*******************************************************************%
-
-lisp(depl!*:=nil)$
-
-     % clearing of all dependences
-lisp(print_:=nil)$
-
-       
-on dfprint$
-
-
-
-COMMENT
--------------------------------------------------------
-The following runs demonstrate the program LIEPDE for 
-the computation of infinitesimal symmetries. Times given
-below refer to a 8 MB session under LINUX on a 133 MHz
-Pentium PC with the CRACK version of April 1998 running
-PSL Reduce.
--------------------------------------------------------$
-
-
-lisp(prelim_:=nil)$
-
-      % not necessary as this is the default value
-lisp(individual_:=nil)$
-
-  % not necessary as this is the default value
-
-COMMENT
--------------------------------------------------------
-The first example is a single ODE with a parametric
-function f=f(x) for which point symmetries are to be
-determined.
-(Time ~ 6 sec.)$
-
-write"-------------------------------------------------------"$
-
-
--------------------------------------------------------
-
-
-lisp(freeint_:=nil)$
-
- % This enables the solution of differential equ.s in
-                     % which unevaluated integrals remain. This becomes
-                     % necessary in this example through the parametric
-                     % function f=f(x)
-depend y,x$
-
-
-depend f,x$
-
-
-liepde({df(y,x,2)=-(y+3*f)*df(y,x)+y**3-f*y**2-(2*f**2+df(f,x))*y, 
-        {y}, {x}},
-       {"point"},{},{})$
-
+===============================================================
 
 --------------------------------------------------------------------------
 
@@ -240,33 +153,6 @@ is replaced by e_17:
 
 
 >>>>>>>>> Solution : 
-equations : 
-
-e_16 : 
-0=c_1  - c_1*f + c_10
-     x
-
-
-
-Functions : 
-       c_1   - c_1 *f + 3*c_1 *y - f *c_1
-          2x      x          x      x
-eta_y=------------------------------------
-                       3
-
-
-xi_x= - c_1
-
-c_1(x), c_10
-with 8 terms
-
-Variables : x, y
-number of equations : 1
-total no of terms   : 3
-1 equation in 1 variable: e_16(3)
-1 function with 1 argument  : c_1(1)
-1 constant : c_10(1)
-
 This is the end of the CRACK run
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -287,40 +173,7 @@ which still have to satisfy:
 
 -------- 
 
-nodepnd {y,f}$
-
-
-lisp(freeint_:=t)$
-
-   % Because the simplification of differential
-                     % expressions which involve unevaluated integrals
-                     % may provide difficulties such solutions involving
-                     % unevaluated integrals are disabled.
-
-COMMENT
--------------------------------------------------------
-The following example demonstrates a number of things.
-The Burgers equation is investigated concerning third
-order symmetries. The equation is used to substitute
-df(u,t) and all derivatives of df(u,t). This computation
-also shows that any equations that remain unsolved are
-returned, like in this case the heat quation.
-(Time ~ 15 sec.)$
-
-write"-------------------------------------------------------"$
-
-
--------------------------------------------------------
-
-
-nodepnd {u}$
-
-
-depend u,t,x$
-
-
-liepde({df(u,t)=df(u,x,2)+df(u,x)**2,{u},{t,x}},{"general",3},{},{})$
-
+===============================================================
 
 --------------------------------------------------------------------------
 
@@ -548,29 +401,6 @@ c_29= - 2*c_31*t - c_39
 
 
 >>>>>>>>> Solution : 
-equations : 
-
-e_31 : 
-0=c_27  - c_27
-      t       2x
-
-
-
-Functions : 
-eta_u= expr. with 40 terms in c_39, c_37, c_38, c_33, c_34, c_35, c_36, c_30, 
-c_31, c_32, c_27
-c_27(t,x), c_32, c_31, c_30, c_36, c_35, c_34, c_33, c_38, 
-c_37, c_39
-with 51 terms
-
-Variables : t, x, u, u`2, u`2`2, u`2`2`2
-number of equations : 1
-total no of terms   : 2
-1 equation in 2 variables: e_31(2)
-1 function with 2 arguments : c_27(1)
-10 constants : c_32(0),c_31(0),c_30(0),
-  c_36(0),c_35(0),c_34(0),c_33(0),c_38(0),c_37(0),c_39(0)
-
 This is the end of the CRACK run
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -694,27 +524,7 @@ which still has to satisfy:
 
 -------- 
 
-
-COMMENT
--------------------------------------------------------
-Now the same equation is investigated, this time only
-df(u,x,2) and its derivatives are substituted. As a
-consequence fewer jet-variables (u-derivatives of lower
-order) are generated in the process of formulating the
-symmetry conditions. Fewer jet-variables in which the
-conditions have to be fulfilled identically mean less
-overdetermined conditions and more solutions which to
-compute takes longer than before.
-(Time ~ 85 sec.)$
-
-write"-------------------------------------------------------"$
-
-
--------------------------------------------------------
-
-
-liepde({df(u,x,2)=df(u,t)-df(u,x)**2,{u},{t,x}},{"general",3},{},{})$
-
+===============================================================
 
 --------------------------------------------------------------------------
 
@@ -1228,36 +1038,6 @@ c_101, c_100, c_99, c_108, c_107, c_117, c_119 found in e_36 : 17 factors in 7
 
 
 >>>>>>>>> Solution : 
-equations : 
-
-e_25 : 
-0=c_85  - c_85
-      t       2x
-
-
-
-Functions : 
-eta_u= expr. with 239 terms in c_119, c_116, c_117, c_118, c_114, c_115, c_110, 
-c_111, c_112, c_113, c_105, c_106, c_107, c_108, c_109, c_97, c_98, c_99, c_100
-, c_101, c_102, c_103, c_91, c_92, c_93, c_94, c_95, c_96, c_85
-c_85(t,x), c_96, c_95, c_94, c_93, c_92, c_91, c_103, c_102, 
-c_101, c_100, c_99, c_98, c_97, c_109, c_108, c_107, c_106, 
-c_105, c_113, c_112, c_111, c_110, c_115, c_114, c_118, 
-c_117, c_116, c_119
-with 268 terms
-
-Variables : t, x, u, u`2, u`1, u`1`1, u`1`2, u`1`1`2, 
-u`1`1`1
-number of equations : 1
-total no of terms   : 2
-1 equation in 2 variables: e_25(2)
-1 function with 2 arguments : c_85(1)
-28 constants : c_96(0),c_95(0),c_94(0),
-  c_93(0),c_92(0),c_91(0),c_103(0),c_102(0),c_101(0),c_100(0),c_99(0),c_98(0),
-  c_97(0),c_109(0),c_108(0),c_107(0),c_106(0),c_105(0),c_113(0),c_112(0),c_111(0
-),
-  c_110(0),c_115(0),c_114(0),c_118(0),c_117(0),c_116(0),c_119(0)
-
 This is the end of the CRACK run
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1653,86 +1433,7 @@ which still has to satisfy:
 
 -------- 
 
-nodepnd {u}$
-
-
-
-COMMENT
--------------------------------------------------------
-The following example includes the Karpman equations
-for three unknown functions in 4 variables. 
-
-If point symmetries are to be computed for a single
-equation or a system of equations of higher than first
-order then there is the option to formulate at first
-preliminary conditions for each equation, have CRACK
-solving these conditions before the full set of conditions
-is formulated and solved. This strategy is adopted if a
-lisp flag prelim_ has the value t. The default value
-is nil. 
-
-Similarly, if a system of equations is to be investigated
-and a flag individual_ has the value t then symmetry
-conditions are formulated and investigated for each
-individual equation successively. The default value is nil.
-
-It is advantageous to split a large set of conditions
-into smaller sets to be investigated successively if
-each set is sufficiently overdetermined to be solvable
-quickly. Then any substitutions are done in the smaller
-set and the next set of conditions is shorter. For
-example, for the Karpman equations below the speedup for
-prelim_:=t and individual_:=t is a factor of 10.
-(Time ~ 1 min.)$
-
-write"-------------------------------------------------------"$
-
-
--------------------------------------------------------
-
-
-lisp(prelim_:=t)$
-
-
-lisp(individual_:=t)$
-
-
-
-depend r,x,y,z,t$
-
-
-depend f,x,y,z,t$
-
-
-depend v,x,y,z,t$
-
-
-
-liepde({
-
-first 
-solve(
-        {df(r,t) + w1*df(r,z)
-         + s1*(df(r,x)*df(f,x)+df(r,y)*df(f,y)+r*df(f,x,2)/2+r*df(f,y,2)/2) 
-         + s2*(df(r,z)*df(f,z)+r*df(f,z,2)/2),
- 
-         df(f,t) + w1*df(f,z) 
-         - (s1*(df(r,x,2)/r+df(r,y,2)/r-df(f,x)**2-df(f,y)**2) +
-            s2*(df(r,z,2)/r-df(f,z)**2))/2 + a1*v,
-       
-         df(v,t,2) - w2**2*(df(v,x,2)+df(v,y,2)+df(v,z,2))
-         - 2*a2*r*(df(r,x,2)+df(r,y,2)+df(r,z,2))
-         - 2*a2*(df(r,x)**2+df(r,y)**2+df(r,z)**2)},
-         
-        {df(v,x,2), df(r,x,2), df(f,x,2)}         
- 
-     )         
-         , {r,f,v}, {x,y,z,t}},
-
-       {"point"}, 
-       
-       {},{})$
-
+===============================================================
 
 --------------------------------------------------------------------------
 
@@ -1956,47 +1657,6 @@ From now on lexicographic ordering of derivatives.
 The current variable ordering is going to be reversed.
 
 >>>>>>>>> Solution : 
-equations : 
-
-e_43 : 
-0=c_133  + c_134
-       x        y
-
-
-e_36 : 
-0=c_132 *s1 + c_134 *s2
-       x           z
-
-
-e_25 : 
-0=c_132 *s1 + c_133 *s2
-       y           z
-
-
-
-Functions : eta_v(r,f,v,t,z,y,x), eta_f(r,f,v,t,z,y,x), eta_r(r,f,v,t,z,y,x), 
-xi_t=c_131
-
-
-xi_z= - c_132
-
-
-xi_y= - c_133
-
-
-xi_x= - c_134
-
-c_132(t,z,y,x), c_133(t,z,y,x), c_134(t,z,y,x), c_131(t)
-with 11 terms
-
-Variables : r, f, v, t, z, y, x
-number of equations : 3
-total no of terms   : 6
-3 equations in 4 variables: e_25(2),e_36(2),e_43(2)
-3 functions with 7 arguments : eta_v(0),eta_f(0),eta_r(0)
-3 functions with 4 arguments : c_132(2),c_133(2),c_134(2)
-1 function with 1 argument  : c_131(0)
-
 This is the end of the CRACK run
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2023,36 +1683,6 @@ e_6 is a consequence of e_1.
 The current variable ordering is going to be reversed.
 
 >>>>>>>>> Solution : 
-equations : 
-
-e_3 : 
-0=c_133  + c_134
-       x        y
-
-
-e_2 : 
-0=c_132 *s1 + c_134 *s2
-       x           z
-
-
-e_1 : 
-0=c_132 *s1 + c_133 *s2
-       y           z
-
-
-
-Functions : eta_r(r,f,v,t,z,y,x), eta_f(r,f,v,t,z,y,x), eta_v(r,f,v,t,z,y,x), 
-c_132(t,z,y,x), c_133(t,z,y,x), c_134(t,z,y,x), c_131(t)
-with 7 terms
-
-Variables : r, f, v, t, z, y, x
-number of equations : 3
-total no of terms   : 6
-3 equations in 4 variables: e_1(2),e_2(2),e_3(2)
-3 functions with 7 arguments : eta_r(0),eta_f(0),eta_v(0)
-3 functions with 4 arguments : c_132(2),c_133(2),c_134(2)
-1 function with 1 argument  : c_131(0)
-
 This is the end of the CRACK run
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2149,34 +1779,6 @@ c_135= - c_141
 
 
 >>>>>>>>> Solution : 
-equations : 
-
-e_6 : 
-0=c_140  + c_141
-       x        y
-
-
-
-Functions : eta_v(x,y,z,t,v,f,r), eta_f(x,y,z,t,v,f,r), eta_r(x,y,z,t,v,f,r), 
-c_134=c_141
-
-
-c_133=c_140
-
-
-c_132= - c_139
-
-c_131(t), c_140(x,y), c_141(x,y), c_139(z)
-with 10 terms
-
-Variables : x, y, z, t, v, f, r
-number of equations : 1
-total no of terms   : 2
-1 equation in 2 variables: e_6(2)
-3 functions with 7 arguments : eta_v(0),eta_f(0),eta_r(0)
-2 functions with 2 arguments : c_140(1),c_141(1)
-2 functions with 1 argument  : c_131(0),c_139(0)
-
 This is the end of the CRACK run
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2188,218 +1790,8 @@ eta_v(x,y,z,t,v,f,r), c_140(x,y), c_141(x,y), c_139(z)
 Start of splitting equations
 39 equations result
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This is CRACK - a solver for overdetermined partial differential equations
-
-e_6 is a consequence of e_3.
-e_7 is a consequence of e_1.
-e_8 is a consequence of e_3.
-e_10 is a consequence of e_4.
-e_13 is a consequence of e_1.
-e_15 is a consequence of e_4.
-e_22 is a consequence of e_19.
-e_23 is a consequence of e_20.
-e_26 is a consequence of e_20.
-e_32 is a consequence of e_30.
-e_34 is a consequence of e_30.
-e_36 is a consequence of e_28.
-e_38 is a consequence of e_28.
-e_40 is a consequence of e_3.
-new function: c_142(x,y,z,t,f,r)
-Integration of e_37
-
-Substitution of eta_r(x,y,z,t,v,f,r) by an expression in 
-c_142(x,y,z,t,f,r) found in e_37 : 
-eta_r= - c_142
-
-
-new function: c_143(x,y,z,t,f,r)
-Integration of e_28
-
-e_25 is a consequence of e_19.
-Substitution of eta_f(x,y,z,t,v,f,r) by an expression in 
-c_143(x,y,z,t,f,r) found in e_28 : 
-eta_f= - c_143
-
-
-Separation of e_39 yields (e_41 e_42)
-
-new function: c_144(x,y,z,t,f)
-Integration of e_41
-
-Substitution of c_143(x,y,z,t,f,r) by an expression in 
-c_144(x,y,z,t,f) found in e_41 : 
-c_143= - c_144
-
-
-new function: c_145(y,z,t,f)
-Integration of e_21
-
-Substitution of c_144(x,y,z,t,f) by an expression in 
-c_145(y,z,t,f) found in e_21 : 
-c_144= - c_145
-
-
-new function: c_146(x,y,z,t,r)
-Integration of e_18
-
-Substitution of c_142(x,y,z,t,f,r) by an expression in 
-c_146(x,y,z,t,r) found in e_18 : 
-c_142= - c_146
-
-
-new function: c_147(z,t,f)
-Integration of e_24
-
-Substitution of c_145(y,z,t,f) by an expression in 
-c_147(z,t,f) found in e_24 : 
-c_145= - c_147
-
-
-new function: c_148(z,t)
-new function: c_149(z,t)
-Integration of e_1
-
-Substitution of c_147(z,t,f) by an expression in 
-c_149(z,t), c_148(z,t) found in e_1 : 
-c_147= - (c_148 + c_149*f)
-
-
-Separation of e_42 yields (e_43 e_44)
-
-Separation of e_27 yields (e_45 e_46)
-
-new function: c_150(t)
-Integration of e_45
-
-Substitution of c_149(z,t) by an expression in 
-c_150(t) found in e_45 : 
-c_149= - c_150
-
-
-generalized separation of e_17
-new function: c_151(x)
-separation yields 2 new equations : e_48,e_47
-
-generalized separation of e_48
-new constant: c_152
-separation yields 2 new equations : e_50,e_49
-
-Substitution of c_151(x) by an expression in 
-c_152 found in e_50 : 
-c_151= - c_152
-
-
-The current variable ordering is going to be reversed.
-
->>>>>>>>> Solution : 
-equations : 
-
-e_47 : 
-0=c_141  - c_152
-       x
-
-
-e_49 : 
-0=c_139  + c_152
-       z
-
-
-e_12 : 
-0=c_140  - c_141
-       y        x
-
-
-e_3 : 
-0=c_140  + c_141
-       x        y
-
-
-e_16 : 
-0=c_139  *r - 2*c_146
-       2z            z
-
-
-e_2 : 
-0=c_146 *r - c_146
-       r
-
-
-e_11 : 
-0=c_140  *r + c_140  *r + 2*c_146
-       2x          2y            y
-
-
-e_5 : 
-0=c_141  *r + c_141  *r + 2*c_146
-       2x          2y            x
-
-
-e_44 : 
-0=2*c_146  + 2*c_146 *w1 - c_148  *r*s2
-         t          z           2z
-
-
-e_14 : 
-0=2*c_139 *r + 2*c_141 *r - c_146 *r + c_146
-         z            x          r
-
-
-e_9 : 
-0=2*c_140 *r - 2*c_141 *r + c_146 *r - c_146
-         y            x          r
-
-
-e_29 : 
-0=c_131 *r + 2*c_141 *r - c_146 *r + c_146 + c_150*r
-       t            x          r
-
-
-e_46 :  6 terms, with derivatives of functions of all 5 variables: r,t,z,y,x
-
- (c_146 ,c_146)
-       r
-
-
-
-Functions : 
-eta_r=c_146
-
-
-eta_f= - c_148 + c_150*f
-
-eta_v(r,f,v,t,z,y,x), c_140(y,x), c_141(y,x), c_131(t), c_139(z), 
-c_146(r,t,z,y,x), c_148(t,z), c_150(t), c_152
-with 12 terms
-
-Variables : r, f, v, t, z, y, x
-number of equations : 13
-total no of terms   : 40
-9 equations in 5 variables: e_46(6),e_29(5),e_9(4),e_14(4),e_44(3),
-  e_5(3),e_11(3),e_2(2),e_16(2)
-3 equations in 2 variables: e_3(2),e_12(2),e_47(2)
-1 equation in 1 variable: e_49(2)
-1 function with 7 arguments : eta_v(0)
-1 function with 5 arguments : c_146(9)
-3 functions with 2 arguments : c_140(4),c_141(8),c_148(2)
-3 functions with 1 argument  : c_131(1),c_139(4),c_150(2)
-1 constant : c_152(2)
-
-This is the end of the CRACK run
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Remaining free functions after the last CRACK-run:
-c_139(z), c_131(t), c_141(y,x), c_140(y,x), eta_v(r,f,v,t,z,y,x), 
-c_146(r,t,z,y,x), c_148(t,z), c_150(t), c_152
-
-
 Start of splitting equations
-36 equations result
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This is CRACK - a solver for overdetermined partial differential equations
-
-contradiction : 28 factors in 5 terms
+37 equations result
 
 Start of splitting equations
 47 equations result
@@ -2407,594 +1799,458 @@ Start of splitting equations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 This is CRACK - a solver for overdetermined partial differential equations
 
+e_7 is a consequence of e_3.
 e_8 is a consequence of e_4.
-e_9 is a consequence of e_5.
-e_22 is a consequence of e_3.
-e_26 is a consequence of e_23.
-e_38 is a consequence of e_3.
-e_39 is a consequence of e_36.
-e_45 is a consequence of e_36.
-e_50 is a consequence of e_3.
+e_21 is a consequence of e_2.
+e_25 is a consequence of e_22.
+e_37 is a consequence of e_2.
+e_38 is a consequence of e_35.
+e_44 is a consequence of e_35.
+e_49 is a consequence of e_2.
+e_54 is a consequence of e_50.
 e_55 is a consequence of e_51.
-e_56 is a consequence of e_52.
+e_58 is a consequence of e_50.
 e_59 is a consequence of e_51.
-e_60 is a consequence of e_52.
-e_66 is a consequence of e_3.
+e_65 is a consequence of e_2.
+e_66 is a consequence of e_62.
 e_67 is a consequence of e_63.
-e_68 is a consequence of e_64.
-e_70 is a consequence of e_41.
-e_72 is a consequence of e_64.
-e_78 is a consequence of e_76.
-e_80 is a consequence of e_76.
-e_83 is a consequence of e_82.
-e_87 is a consequence of e_41.
-e_88 is a consequence of e_3.
-new function: c_153(x,y,z,t,f,r)
+e_69 is a consequence of e_40.
+e_71 is a consequence of e_63.
+e_77 is a consequence of e_75.
+e_79 is a consequence of e_75.
+e_83 is a consequence of e_81.
+e_87 is a consequence of e_2.
+e_90 is a consequence of e_2.
+e_91 is a consequence of e_85.
+e_92 is a consequence of e_2.
+e_94 is a consequence of e_88.
+e_96 is a consequence of e_40.
+e_97 is a consequence of e_85.
+e_99 is a consequence of e_88.
+e_106 is a consequence of e_103.
+e_107 is a consequence of e_104.
+e_110 is a consequence of e_104.
+e_112 is a consequence of e_82.
+e_116 is a consequence of e_114.
+e_118 is a consequence of e_114.
+e_120 is a consequence of e_82.
+e_121 is a consequence of e_81.
+e_122 is a consequence of e_82.
+e_124 is a consequence of e_2.
+new function: c_142(x,y,z,t,f,r)
 Integration of e_82
 
-e_23 is a consequence of e_33.
-e_63 is a consequence of e_71.
-e_52 is a consequence of e_81.
-e_42 is a consequence of e_36.
-e_74 is a consequence of e_44.
-e_29 is a consequence of e_33.
-Substitution of eta_r(x,y,z,t,v,f,r) by an expression in 
-c_153(x,y,z,t,f,r) found in e_82 : 
-eta_r= - c_153
+e_4 is a consequence of e_17.
+e_119 is a consequence of e_81.
+e_88 is a consequence of e_81.
+e_102 is a consequence of e_74.
+e_103 is a consequence of e_109.
+Substitution of eta_f(x,y,z,t,v,f,r) by an expression in 
+c_142(x,y,z,t,f,r) found in e_82 : 
+eta_f= - c_142
 
 
-new function: c_154(x,y,z,t,f,r)
+new function: c_143(x,y,z,t,f,r)
 Integration of e_81
 
-e_13 is a consequence of e_18.
-e_5 is a consequence of e_18.
-Substitution of eta_f(x,y,z,t,v,f,r) by an expression in 
-c_154(x,y,z,t,f,r) found in e_81 : 
-eta_f= - c_154
+e_22 is a consequence of e_32.
+e_70 is a consequence of e_62.
+e_41 is a consequence of e_35.
+e_12 is a consequence of e_17.
+e_28 is a consequence of e_32.
+e_73 is a consequence of e_101.
+e_43 is a consequence of e_101.
+Substitution of eta_r(x,y,z,t,v,f,r) by an expression in 
+c_143(x,y,z,t,f,r) found in e_81 : 
+eta_r= - c_143
 
 
-new function: c_155(x,y,z,t,v,r)
-Integration of e_20
+Separation of e_123 yields (e_7 e_8)
 
-e_15 is a consequence of e_75.
+new function: c_144(x,y,z,t,v,r)
+Integration of e_19
+
+e_3 is a consequence of e_74.
 Substitution of eta_v(x,y,z,t,v,f,r) by an expression in 
-c_155(x,y,z,t,v,r) found in e_20 : 
-eta_v= - c_155
+c_144(x,y,z,t,v,r) found in e_19 : 
+eta_v= - c_144
 
 
-new function: c_156(x,y,z,t,r)
-Integration of e_75
+new function: c_145(x,y,z,t,f)
+Integration of e_7
 
-e_53 is a consequence of e_6.
-e_57 is a consequence of e_10.
-e_51 is a consequence of e_4.
-e_12 is a consequence of e_4.
-Substitution of c_153(x,y,z,t,f,r) by an expression in 
-c_156(x,y,z,t,r) found in e_75 : 
-c_153= - c_156
-
-
-new function: c_157(x,y,z,t,r)
-new function: c_158(x,y,z,t,r)
-Integration of e_36
-
-Substitution of c_155(x,y,z,t,v,r) by an expression in 
-c_158(x,y,z,t,r), c_157(x,y,z,t,r) found in e_36 : 
-c_155= - (c_157 + c_158*v)
+e_74 is a consequence of e_14.
+e_105 is a consequence of e_5.
+e_108 is a consequence of e_9.
+Substitution of c_142(x,y,z,t,f,r) by an expression in 
+c_145(x,y,z,t,f) found in e_7 : 
+c_142= - c_145
 
 
-Separation of e_34 yields (e_99 e_98)
+new function: c_146(x,y,z,t,r)
+new function: c_147(x,y,z,t,r)
+Integration of e_35
 
-Separation of e_32 yields (e_101 e_100)
-
-Separation of e_35 yields (e_103 e_102)
-
-e_102 is a consequence of e_33.
-Separation of e_27 yields (e_8 e_9)
-
-Separation of e_24 yields (e_22 e_26)
-
-Separation of e_21 yields (e_38 e_39)
-
-e_38 is a consequence of e_100.
-Separation of e_25 yields (e_45 e_50)
-
-e_45 is a consequence of e_100.
-Separation of e_19 yields (e_55 e_56)
-
-e_55 is a consequence of e_33.
-Separation of e_31 yields (e_59 e_60)
-
-e_59 is a consequence of e_33.
-Separation of e_28 yields (e_66 e_67)
-
-e_66 is a consequence of e_100.
-Separation of e_2 yields (e_68 e_70)
-
-e_68 is a consequence of e_33.
-Separation of e_7 yields (e_72 e_78)
-
-e_72 is a consequence of e_33.
-Separation of e_11 yields (e_80 e_83)
-
-e_80 is a consequence of e_33.
-Separation of e_14 yields (e_87 e_88)
-
-e_87 is a consequence of e_33.
-Separation of e_30 yields (e_79 e_77)
-
-Separation of e_84 yields (e_76 e_64)
-
-Separation of e_48 yields (e_23 e_63 e_52)
-
-e_23 is a consequence of e_33.
-new function: c_159(y,z,t,f,r)
-Integration of e_6
-
-Substitution of c_154(x,y,z,t,f,r) by an expression in 
-c_159(y,z,t,f,r) found in e_6 : 
-c_154= - c_159
+Substitution of c_144(x,y,z,t,v,r) by an expression in 
+c_147(x,y,z,t,r), c_146(x,y,z,t,r) found in e_35 : 
+c_144= - (c_146 + c_147*v)
 
 
-new function: c_160(y,z,t,f)
-Integration of e_4
+Separation of e_33 yields (e_25 e_21)
 
-Substitution of c_159(y,z,t,f,r) by an expression in 
-c_160(y,z,t,f) found in e_4 : 
-c_159= - c_160
+Separation of e_31 yields (e_38 e_37)
+
+Separation of e_34 yields (e_49 e_44)
+
+e_44 is a consequence of e_32.
+Separation of e_26 yields (e_54 e_55)
+
+Separation of e_23 yields (e_58 e_59)
+
+Separation of e_20 yields (e_65 e_66)
+
+e_65 is a consequence of e_37.
+Separation of e_1 yields (e_67 e_69)
+
+e_67 is a consequence of e_32.
+Separation of e_24 yields (e_71 e_77)
+
+e_71 is a consequence of e_37.
+Separation of e_30 yields (e_79 e_83)
+
+e_79 is a consequence of e_32.
+Separation of e_18 yields (e_87 e_90)
+
+e_87 is a consequence of e_32.
+Separation of e_6 yields (e_91 e_92)
+
+e_91 is a consequence of e_32.
+Separation of e_29 yields (e_94 e_96)
+
+Separation of e_27 yields (e_97 e_99)
+
+e_97 is a consequence of e_37.
+Separation of e_10 yields (e_106 e_107)
+
+e_106 is a consequence of e_32.
+Separation of e_84 yields (e_110 e_112)
+
+Separation of e_13 yields (e_116 e_118)
+
+e_116 is a consequence of e_32.
+Separation of e_47 yields (e_120 e_121 e_122)
+
+e_120 is a consequence of e_32.
+new function: c_148(x,y,z,t,r)
+Integration of e_14
+
+e_52 is a consequence of e_5.
+e_56 is a consequence of e_9.
+Substitution of c_143(x,y,z,t,f,r) by an expression in 
+c_148(x,y,z,t,r) found in e_14 : 
+c_143= - c_148
 
 
-new function: c_161(x,y,z,t)
-Integration of e_103
+new function: c_149(y,z,t,f)
+Integration of e_5
 
-Substitution of c_157(x,y,z,t,r) by an expression in 
-c_161(x,y,z,t) found in e_103 : 
-c_157= - c_161
+Substitution of c_145(x,y,z,t,f) by an expression in 
+c_149(y,z,t,f) found in e_5 : 
+c_145= - c_149
 
 
-new function: c_162(x,y,z,t)
-Integration of e_33
+new function: c_150(x,y,z,t)
+Integration of e_49
 
-Substitution of c_158(x,y,z,t,r) by an expression in 
-c_162(x,y,z,t) found in e_33 : 
+Substitution of c_146(x,y,z,t,r) by an expression in 
+c_150(x,y,z,t) found in e_49 : 
+c_146= - c_150
+
+
+new function: c_151(x,y,z,t)
+Integration of e_32
+
+Substitution of c_147(x,y,z,t,r) by an expression in 
+c_151(x,y,z,t) found in e_32 : 
+c_147= - c_151
+
+
+new function: c_152(y,z,t)
+new function: c_153(y,z,t)
+Integration of e_85
+
+Substitution of c_149(y,z,t,f) by an expression in 
+c_153(y,z,t), c_152(y,z,t) found in e_85 : 
+c_149= - (c_152 + c_153*f)
+
+
+Separation of e_9 yields (e_117 e_124)
+
+Separation of e_8 yields (e_115 e_114)
+
+Separation of e_60 yields (e_4 e_119)
+
+Separation of e_111 yields (e_104 e_88)
+
+e_104 is a consequence of e_4.
+Separation of e_118 yields (e_102 e_103)
+
+e_102 is a consequence of e_4.
+Separation of e_112 yields (e_82 e_51)
+
+Separation of e_122 yields (e_80 e_78)
+
+e_80 is a consequence of e_82.
+new function: c_154(x,y,z,t)
+new function: c_155(x,y,z,t)
+Integration of e_62
+
+Substitution of c_148(x,y,z,t,r) by an expression in 
+c_155(x,y,z,t), c_154(x,y,z,t) found in e_62 : 
+c_148= - (c_154 + c_155*r)
+
+
+Separation of e_59 yields (e_75 e_76)
+
+Separation of e_55 yields (e_22 e_63)
+
+Separation of e_48 yields (e_41 e_70)
+
+e_41 is a consequence of e_86.
+Separation of e_98 yields (e_28 e_12)
+
+e_28 is a consequence of e_86.
+e_12 is a consequence of e_101.
+Separation of e_93 yields (e_43 e_73)
+
+e_43 is a consequence of e_86.
+e_73 is a consequence of e_40.
+Separation of e_110 yields (e_123 e_81)
+
+e_123 is a consequence of e_86.
+Separation of e_113 yields (e_16 e_17)
+
+e_16 is a consequence of e_86.
+Separation of e_61 yields (e_3 e_15)
+
+e_3 is a consequence of e_86.
+Separation of e_53 yields (e_74 e_19)
+
+e_74 is a consequence of e_86.
+Separation of e_57 yields (e_105 e_109)
+
+e_105 is a consequence of e_86.
+Separation of e_89 yields (e_7 e_108)
+
+e_7 is a consequence of e_75.
+e_108 is a consequence of e_64.
+Separation of e_100 yields (e_33 e_35)
+
+Separation of e_69 yields (e_34 e_31)
+
+e_34 is a consequence of e_86.
+Separation of e_88 yields (e_26 e_44)
+
+e_26 is a consequence of e_86.
+Separation of e_119 yields (e_20 e_23)
+
+e_20 is a consequence of e_86.
+Separation of e_83 yields (e_1 e_65)
+
+e_1 is a consequence of e_86.
+e_65 is a consequence of e_99.
+Separation of e_95 yields (e_24 e_67)
+
+e_24 is a consequence of e_22.
+Separation of e_96 yields (e_30 e_71)
+
+e_30 is a consequence of e_33.
+Separation of e_92 yields (e_18 e_79)
+
+e_18 is a consequence of e_86.
+Separation of e_90 yields (e_6 e_87)
+
+e_6 is a consequence of e_86.
+Separation of e_107 yields (e_29 e_91)
+
+e_29 is a consequence of e_86.
+Separation of e_114 yields (e_97 e_27)
+
+Separation of e_121 yields (e_106 e_10 e_84)
+
+e_106 is a consequence of e_86.
+Separation of e_103 yields (e_116 e_13)
+
+e_116 is a consequence of e_86.
+Separation of e_51 yields (e_120 e_47)
+
+Separation of e_78 yields (e_56 e_52 e_50)
+
+Substitution of c_154(x,y,z,t) found in e_86 : 
+c_154=0
+
+
+e_66 is a consequence of e_10.
+Substitution of c_151(x,y,z,t) by an expression in 
+c_141(x,y) found in e_81 : 
+c_151= - 2*c_141
+                x
+
+
+e_72 is a consequence of e_42.
+e_77 is a consequence of e_40.
+e_99 is a consequence of e_101.
+e_31 is a consequence of e_70.
+e_79 is a consequence of e_19.
+e_87 is a consequence of e_15.
+e_91 is a consequence of e_109.
+e_71 is a consequence of e_42.
+e_13 is a consequence of e_23.
+Substitution of c_155(x,y,z,t) by an expression in 
+c_141(x,y) found in e_10 : 
+c_155= - c_141
+              x
+
+
+e_35 is a consequence of e_42.
+e_15 is a consequence of e_17.
+e_19 is a consequence of e_40.
+e_109 is a consequence of e_101.
+e_23 is a consequence of e_44.
+e_67 is a consequence of e_68.
+Substitution of c_153(y,z,t) found in e_70 : 
+c_153=0
+
+
+new function: c_156(z,t)
+Integration of e_117
+
+Substitution of c_152(y,z,t) by an expression in 
+c_156(z,t) found in e_117 : 
+c_152= - c_156
+
+
+new function: c_157(y)
+new function: c_158(y)
+Integration of e_76
+
+e_64 is a consequence of e_36.
+Substitution of c_141(x,y) by an expression in 
+c_158(y), c_157(y) found in e_76 : 
+c_141= - (c_157 + c_158*x)
+
+
+Separation of e_36 yields (e_14 e_11)
+
+e_11 is a consequence of e_84.
+new function: c_159(t)
+new function: c_160(t)
+Integration of e_27
+
+Substitution of c_156(z,t) by an expression in 
+c_160(t), c_159(t) found in e_27 : 
+c_156= - (c_159 + c_160*z)
+
+
+new constant: c_161
+new constant: c_162
+Integration of e_42
+
+Substitution of c_139(z) by an expression in 
+c_162, c_161 found in e_42 : 
+c_139= - (c_161 + c_162*z)
+
+
+e_39 is a consequence of e_68.
+e_47 is a consequence of e_52.
+Substitution of c_158(y) by an expression in 
+c_162 found in e_101 : 
 c_158= - c_162
 
 
-new function: c_163(x,y,z,t)
-new function: c_164(x,y,z,t)
-Integration of e_71
+Substitution of c_160(t) by an expression in 
+c_162 found in e_44 : 
+       c_162*w1
+c_160=----------
+          s2
 
-Substitution of c_156(x,y,z,t,r) by an expression in 
-c_164(x,y,z,t), c_163(x,y,z,t) found in e_71 : 
-c_156= - (c_163 + c_164*r)
 
+new constant: c_163
+new constant: c_164
+Integration of e_14
 
-Separation of e_9 yields (e_74 e_42)
+Substitution of c_157(y) by an expression in 
+c_164, c_163 found in e_14 : 
+c_157= - (c_163 + c_164*y)
 
-Separation of e_26 yields (e_82 e_29)
 
-Separation of e_77 yields (e_5 e_13)
-
-Separation of e_64 yields (e_18 e_81)
-
-Separation of e_52 yields (e_16 e_15 e_17)
-
-e_67 is a consequence of e_44.
-e_50 is a consequence of e_41.
-Substitution of c_162(x,y,z,t) by an expression in 
-c_164(x,y,z,t) found in e_39 : 
-c_162=2*c_164
-
-
-new function: c_165(y,z,t)
-Integration of e_29
-
-e_65 is a consequence of e_37.
-Substitution of c_164(x,y,z,t) by an expression in 
-c_165(y,z,t) found in e_29 : 
-c_164= - c_165
-
-
-new function: c_166(y,z,t)
-Integration of e_82
-
-Substitution of c_163(x,y,z,t) by an expression in 
-c_166(y,z,t) found in e_82 : 
-c_163= - c_166
-
-
-new function: c_167(z,t)
-Integration of e_74
-
-e_18 is a consequence of e_16.
-Substitution of c_166(y,z,t) by an expression in 
-c_167(z,t) found in e_74 : 
-c_166= - c_167
-
-
-new function: c_168(z,t)
-Integration of e_42
-
-e_40 is a consequence of e_69.
-Substitution of c_165(y,z,t) by an expression in 
-c_168(z,t) found in e_42 : 
-c_165= - c_168
-
-
-new function: c_169(z,t,f)
-Integration of e_10
-
-Substitution of c_160(y,z,t,f) by an expression in 
-c_169(z,t,f) found in e_10 : 
-c_160= - c_169
-
-
-new function: c_170(t)
-Integration of e_5
-
-Substitution of c_167(z,t) by an expression in 
-c_170(t) found in e_5 : 
-c_167= - c_170
-
-
-new function: c_171(t)
-replacing df(c_131,t) by c_171(t)
-
-new function: c_172(z)
-replacing df(c_139,z) by c_172(z)
-
-e_43 is a consequence of e_73.
-e_44 is a consequence of e_85.
-e_13 is a consequence of e_73.
-Substitution of c_172(z) by an expression in 
-c_152 found in e_86 : 
-c_172= - c_152
-
-
-new function: c_173(x,y,t,r)
-Integration of e_89
-
-Substitution of c_146(x,y,z,t,r) by an expression in 
-c_173(x,y,t,r) found in e_89 : 
-c_146= - c_173
-
-
-new function: c_174(t)
-Integration of e_73
-
-e_17 is a consequence of e_81.
-Substitution of c_168(z,t) by an expression in 
-c_174(t) found in e_73 : 
-c_168= - c_174
-
-
-e_95 is a consequence of e_41.
-e_94 is a consequence of e_85.
-Substitution of c_173(x,y,t,r) by an expression in 
-c_141(x,y), c_174(t) found in e_76 : 
-c_173=r*( - 2*c_141  + c_174)
-                   x
-
-
-Separation of e_63 yields (e_51 e_57)
-
-e_57 is a consequence of e_85.
-e_83 is a consequence of e_49.
-Substitution of c_174(t) by an expression in 
-c_152 found in e_60 : 
-c_174=c_152
-
-
-new function: c_175(t)
-new function: c_176(t)
-Integration of e_93
-
-Substitution of c_148(z,t) by an expression in 
-c_176(t), c_175(t) found in e_93 : 
-c_148= - (c_175 + c_176*z)
-
-
-new constant: c_177
-Integration of e_46
-
-Substitution of c_171(t) by an expression in 
-c_177 found in e_46 : 
-c_171= - c_177
-
-
-new function: c_178(z,t)
-Integration of e_58
-
-e_70 is a consequence of e_85.
-e_49 is a consequence of e_85.
-Substitution of c_169(z,t,f) by an expression in 
-c_178(z,t) found in e_58 : 
-c_169= - c_178
-
-
-Separation of e_81 yields (e_12 e_75)
-
-new constant: c_179
-Integration of e_12
-
-Substitution of c_150(t) by an expression in 
-c_179 found in e_12 : 
-c_150= - c_179
-
-
-Substitution of c_161(x,y,z,t) by an expression in 
-c_178(z,t), c_176(t), c_175(t) found in e_75 : 
-       c_175  + c_176 *z - c_178 *w1
-            t        t          z
-c_161=-------------------------------
-                    a1
-
-
-e_56 is a consequence of e_85.
-Substitution of c_177 by an expression in 
-c_152, c_179 found in e_62 : 
-c_177=2*c_152 + c_179
-
-
-new function: c_180(t)
-Integration of e_61
-
-e_88 is a consequence of e_85.
-Substitution of c_178(z,t) by an expression in 
-c_180(t), c_152 found in e_61 : 
-        - (c_152*w1*z + c_180)
-c_178=-------------------------
-                 s2
-
-
-Separation of e_15 yields (e_34 e_36)
-
-new constant: c_181
-new constant: c_182
-new constant: c_183
-Integration of e_36
-
-Substitution of c_176(t) by an expression in 
-c_183, c_182, c_181 found in e_36 : 
-                           2
-        - 2*c_181 - c_182*t  - 2*c_183*t
-c_176=-----------------------------------
-                       2
-
-
-Separation of e_97 yields (e_35 e_32 e_102)
-
-Substitution of c_183 found in e_35 : 
-c_183=0
-
-
-Substitution of c_182 found in e_32 : 
-c_182=0
-
-
-new constant: c_184
-new constant: c_185
-new constant: c_186
-Integration of e_34
-
-Substitution of c_175(t) by an expression in 
-c_186, c_185, c_184 found in e_34 : 
-                           2
-        - 2*c_184 - c_185*t  - 2*c_186*t
-c_175=-----------------------------------
-                       2
-
-
-new function: c_187(y)
-Integration of e_85
-
-e_41 is a consequence of e_54.
-e_92 is a consequence of e_37.
-e_91 is a consequence of e_69.
-e_78 is a consequence of e_54.
-Substitution of c_141(x,y) by an expression in 
-c_187(y), c_152 found in e_85 : 
-c_141=c_152*x - c_187
-
-
-Substitution of c_179 found in e_96 : 
-c_179=0
-
-
-Substitution of c_152 found in e_47 : 
-c_152=0
-
-
-Substitution of c_181 found in e_102 : 
-c_181=0
-
-
-new constant: c_188
-Integration of e_53
-
-Substitution of c_139(z) by an expression in 
-c_188 found in e_53 : 
-c_139= - c_188
-
-
-new function: c_189(x)
-Integration of e_54
-
-Substitution of c_140(x,y) by an expression in 
-c_189(x) found in e_54 : 
-c_140= - c_189
-
-
-new constant: c_190
-new constant: c_191
-Integration of e_37
-
-Substitution of c_187(y) by an expression in 
-c_191, c_190 found in e_37 : 
-c_187= - (c_190 + c_191*y)
-
-
-new constant: c_192
-Integration of e_20
+new constant: c_165
+new constant: c_166
+Integration of e_45
 
 Substitution of c_131(t) by an expression in 
-c_192 found in e_20 : 
-c_131= - c_192
+c_166, c_165 found in e_45 : 
+c_131= - (c_165 + c_166*t)
 
 
-new constant: c_193
-new constant: c_194
-Integration of e_69
-
-Substitution of c_189(x) by an expression in 
-c_194, c_193 found in e_69 : 
-c_189= - (c_193 + c_194*x)
+Substitution of c_166 by an expression in 
+c_162 found in e_17 : 
+c_166=2*c_162
 
 
-Substitution of c_191 by an expression in 
-c_194 found in e_3 : 
-c_191= - c_194
+Substitution of c_162 found in e_46 : 
+c_162=0
+
+
+Substitution of c_150(x,y,z,t) by an expression in 
+c_159(t) found in e_52 : 
+       c_159
+            t
+c_150=--------
+         a1
+
+
+new function: c_167(x)
+Integration of e_40
+
+Substitution of c_140(x,y) by an expression in 
+c_167(x) found in e_40 : 
+c_140= - c_167
+
+
+new constant: c_168
+new constant: c_169
+Integration of e_68
+
+Substitution of c_167(x) by an expression in 
+c_169, c_168 found in e_68 : 
+c_167= - (c_168 + c_169*x)
+
+
+Substitution of c_164 by an expression in 
+c_169 found in e_2 : 
+c_164= - c_169
+
+
+new constant: c_170
+new constant: c_171
+new constant: c_172
+Integration of e_50
+
+Substitution of c_159(t) by an expression in 
+c_172, c_171, c_170 found in e_50 : 
+                           2
+        - 2*c_170 - c_171*t  - 2*c_172*t
+c_159=-----------------------------------
+                       2
 
 
 
 >>>>>>>>> Solution : 
-no equations
-
-
-Functions : 
-       c_180
-eta_f=-------
-        s2
-
-
-eta_r=c_170
-
-
-       c_185*t + c_186
-eta_v=-----------------
-             a1
-
-
-c_146=0
-
-
-c_141=c_190 - c_194*y
-
-
-c_140=c_193 + c_194*x
-
-
-                        2
-       2*c_184 + c_185*t  + 2*c_186*t
-c_148=--------------------------------
-                     2
-
-
-c_139= - c_188
-
-
-c_131= - c_192
-
-
-c_150=0
-
-
-c_152=0
-
-c_170(t), c_180(t), c_186, c_185, c_184, c_188, c_190, c_192, 
-c_194, c_193
-with 26 terms
-
-Variables : x, y, z, t, v, f, r
-no equations
-2 functions with 1 argument  : c_170(0),c_180(0)
-8 constants : c_186(0),c_185(0),c_184(0),
-  c_188(0),c_190(0),c_192(0),c_194(0),c_193(0)
-
 This is the end of the CRACK run
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -------- 1. Symmetry:
-
-xi_x=0
-
-xi_y=1
-
-xi_z=0
-
-xi_t=0
-
-eta_r=0
-
-eta_f=0
-
-eta_v=0
-
--------- 2. Symmetry:
-
-xi_x= - y
-
-xi_y=x
-
-xi_z=0
-
-xi_t=0
-
-eta_r=0
-
-eta_f=0
-
-eta_v=0
-
--------- 3. Symmetry:
-
-xi_x=0
-
-xi_y=0
-
-xi_z=0
-
-xi_t=1
-
-eta_r=0
-
-eta_f=0
-
-eta_v=0
-
--------- 4. Symmetry:
-
-xi_x=1
-
-xi_y=0
-
-xi_z=0
-
-xi_t=0
-
-eta_r=0
-
-eta_f=0
-
-eta_v=0
-
--------- 5. Symmetry:
-
-xi_x=0
-
-xi_y=0
-
-xi_z=1
-
-xi_t=0
-
-eta_r=0
-
-eta_f=0
-
-eta_v=0
-
--------- 6. Symmetry:
 
 xi_x=0
 
@@ -3010,7 +2266,7 @@ eta_f=1
 
 eta_v=0
 
--------- 7. Symmetry:
+-------- 2. Symmetry:
 
 xi_x=0
 
@@ -3029,7 +2285,7 @@ eta_f= - t
 eta_v=-----
        a1
 
--------- 8. Symmetry:
+-------- 3. Symmetry:
 
 xi_x=0
 
@@ -3047,9 +2303,57 @@ eta_f= - t
 eta_v=----
        a1
 
--------- 9. Symmetry:
+-------- 4. Symmetry:
 
 xi_x=0
+
+xi_y=1
+
+xi_z=0
+
+xi_t=0
+
+eta_r=0
+
+eta_f=0
+
+eta_v=0
+
+-------- 5. Symmetry:
+
+xi_x= - y
+
+xi_y=x
+
+xi_z=0
+
+xi_t=0
+
+eta_r=0
+
+eta_f=0
+
+eta_v=0
+
+-------- 6. Symmetry:
+
+xi_x=0
+
+xi_y=0
+
+xi_z=0
+
+xi_t=1
+
+eta_r=0
+
+eta_f=0
+
+eta_v=0
+
+-------- 7. Symmetry:
+
+xi_x=1
 
 xi_y=0
 
@@ -3063,15 +2367,13 @@ eta_f=0
 
 eta_v=0
 
-with c_180(t)
-
--------- 10. Symmetry:
+-------- 8. Symmetry:
 
 xi_x=0
 
 xi_y=0
 
-xi_z=0
+xi_z=1
 
 xi_t=0
 
@@ -3080,92 +2382,11 @@ eta_r=0
 eta_f=0
 
 eta_v=0
-
-with c_170(t)
 
 
 -------- 
 
-
-nodepnd {r,f,v}$
-
-
-
-COMMENT
--------------------------------------------------------
-In the following example a system of two equations (by
-V.Sokolov) is investigated concerning a special ansatz for
-4th order symmetries. The ansatz for the symmetries includes
-two unknown functions f,g. Because x is the second variable
-in the list of variables {t,x}, the name u!`2 stands for
-df(u,x).
-Because higher order symmetries are investigated we have
-to set prelim_:=nil. The symmetries to be calculated are
-lengthy and therefore conditions are not very overdetermined.
-In that case CRACK can take long to solve a single 
-subset of conditions. The complete set of conditions would
-have been more overdetermined and easier to solve. Therefore
-the advantage of first formulating all conditions and then
-solving them together with one CRACK call is that having
-more equations, the chance of finding short integrable
-equations among then is higher, i.e. CRACK has more freedom
-in optimizing the computation. Therefore individual_:=nil
-is more appropriate in this example.
-
-Because 4th order conditions are to be computed the
-`binding stack size' is increased.
-(Time ~ 5 min.)$
-
-write"-------------------------------------------------------"$
-
-
--------------------------------------------------------
-
-
-lisp(prelim_:=nil)$
-
-
-lisp(individual_:=nil)$
-
-
-lisp(if getd 'set_bndstk_size then set_bndstk_size(7000))$
-
-
-
-nodepnd {u,v}$
-
-
-depend  u,x,t$
-
-
-depend  v,x,t$
-
-
-
-des:={df(u,t)=+df(u,x,2) + (u + v)*df(u,x) + u*df(v,x),
-      df(v,t)=-df(v,x,2) + (u + v)*df(v,x) + v*df(u,x)
-     }$
-
-
-
-nodepnd {f,g}$
-
-
-depend f,t,x,u,v,u!`2,v!`2,u!`2!`2,v!`2!`2,u!`2!`2!`2,v!`2!`2!`2$
-
-
-depend g,t,x,u,v,u!`2,v!`2,u!`2!`2,v!`2!`2,u!`2!`2!`2,v!`2!`2!`2$
-
-
-liepde({des,{u,v},{t,x}},
-       {xi_t=0,
-        xi_x=0,
-        eta_u=+df(u,x,4)+f,
-        eta_v=-df(v,x,4)+g
-       },
-       {f,g},{}
-      )$
-
+===============================================================
 Your ansatz for the symmetry needs to be homogeneous, i.e. 
 substituting all unknown functions and constants to be computed 
 (which do not occur in the equation) to zero needs to make the 
@@ -3192,37 +2413,7 @@ To fix your ansatz you could, for example, simply multiply all
 non-vanishing parts on all right hand sides in your ansatz with one 
 and the same unknown constant, say cc, and add cc to the list of unknowns 
 to be computed and to the list of non-vanishing expressions.
-nodepnd {f,g}$
-
-
-
-COMMENT
--------------------------------------------------------
-A relative new feature of the package CRACK is to be able to solve
-non-linear problems where unknowns to be determined may appear in
-exponents. This is the case when parameters in a differential equation
-is to be determined such that symmetries exist. The following ODE is
-such an example where the exponent `n' is to be determined so that
-the ODE has one or more symmetries. 
-  Something else is demonstrated in the following example. The
-parameter prolong_order allows to compute and print the prolongation
-of each of the found symmetry generators. In the following example
-all found symmetry generators are prolonged to order 2.$
-
-write"-------------------------------------------------------"$
-
-
--------------------------------------------------------
-
-
-lisp(prolong_order:=2)$
-
-
-depend y,x$
-
-
-liepde({df(y,x,2) = x**n*y**2,y,x},{"point"},{n},{})$
-
+===============================================================
 
 --------------------------------------------------------------------------
 
@@ -3246,23 +2437,23 @@ Start of splitting equations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 This is CRACK - a solver for overdetermined partial differential equations
 
-new function: c_195(x)
-new function: c_196(x)
+new function: c_173(x)
+new function: c_174(x)
 Integration of e_1
 
 Substitution of xi_x(x,y) by an expression in 
-c_196(x), c_195(x) found in e_1 : 
-xi_x= - (c_195 + c_196*y)
+c_174(x), c_173(x) found in e_1 : 
+xi_x= - (c_173 + c_174*y)
 
 
-new function: c_197(x)
-new function: c_198(x)
+new function: c_175(x)
+new function: c_176(x)
 Integration of e_2
 
 Substitution of eta_y(x,y) by an expression in 
-c_196(x), c_198(x), c_197(x) found in e_2 : 
+c_174(x), c_176(x), c_175(x) found in e_2 : 
                   2
-eta_y= - (c_196 *y  + c_197 + c_198*y)
+eta_y= - (c_174 *y  + c_175 + c_176*y)
                x
 
 
@@ -3270,38 +2461,38 @@ Separation of e_3 yields (e_6 e_5 e_7)
 
 Separation of e_4 yields (e_11 e_10 e_8 e_9)
 
-Substitution of c_196(x) found in e_5 : 
-c_196=0
+Substitution of c_174(x) found in e_5 : 
+c_174=0
 
 
-new constant: c_199
-new constant: c_200
+new constant: c_177
+new constant: c_178
 Integration of e_11
 
-Substitution of c_197(x) by an expression in 
-c_200, c_199 found in e_11 : 
-c_197= - (c_199 + c_200*x)
+Substitution of c_175(x) by an expression in 
+c_178, c_177 found in e_11 : 
+c_175= - (c_177 + c_178*x)
 
 
-new constant: c_201
+new constant: c_179
 Integration of e_7
 
-Substitution of c_198(x) by an expression in 
-c_195(x), c_201 found in e_7 : 
-       c_195  + c_201
+Substitution of c_176(x) by an expression in 
+c_173(x), c_179 found in e_7 : 
+       c_173  + c_179
             x
-c_198=----------------
+c_176=----------------
              2
 
 
 Inhomogeneous part: 
    n              n
-4*x *c_200*x + 4*x *c_199
+4*x *c_178*x + 4*x *c_177
 
 can not be integrated explicitly wrt. x
 The integrated equation: 
    (2*n)/5
-5*x       *c_195
+5*x       *c_173
 
 
 An integrating factor has been found:
@@ -3313,7 +2504,7 @@ An integrating factor has been found:
 
 Inhomogeneous part: 
  (2*n)/5
-x       *c_201
+x       *c_179
 
 can not be integrated explicitly wrt. x
 New level :     1.
@@ -3345,31 +2536,31 @@ n + 1
 
 Inhomogeneous part: 
     n                n              n          2      n        2
- 4*x *c_199*n*x + 8*x *c_199*x + 4*x *c_200*n*x  + 4*x *c_200*x
+ 4*x *c_177*n*x + 8*x *c_177*x + 4*x *c_178*n*x  + 4*x *c_178*x
 -----------------------------------------------------------------
                            2
                           n  + 3*n + 2
 
 can not be integrated explicitly wrt. x
-new constant: c_202
+new constant: c_180
 Inhomogeneous part: 
                              2      n        2      n          2      n
-2*c_202 + 3*c_202*n + c_202*n  + 4*x *c_200*x  + 4*x *c_200*n*x  + 8*x *c_199*x
+2*c_180 + 3*c_180*n + c_180*n  + 4*x *c_178*x  + 4*x *c_178*n*x  + 8*x *c_177*x
 
       n
- + 4*x *c_199*n*x
+ + 4*x *c_177*n*x
 
 can not be integrated explicitly wrt. x
 Not enough integrations to solve for a function, or,
 substitution prevented through non-linearity.
-new constant: c_203
+new constant: c_181
 Integration of e_9
 
-Substitution of c_195(x) by an expression in 
-n, c_201, c_203 found in e_9 : 
+Substitution of c_173(x) by an expression in 
+n, c_179, c_181 found in e_9 : 
            (2*n)/5
-        - x       *c_201*x + 2*c_203*n + 5*c_203
-c_195=-------------------------------------------
+        - x       *c_179*x + 2*c_181*n + 5*c_181
+c_173=-------------------------------------------
                    (2*n)/5
                   x       *(2*n + 5)
 
@@ -3418,12 +2609,12 @@ The list of inequalities got extended by:
 
 Separation of e_12 yields (e_15 e_14 e_13)
 
-Substitution of c_199 found in e_15 : 
-c_199=0
+Substitution of c_177 found in e_15 : 
+c_177=0
 
 
-Substitution of c_200 found in e_14 : 
-c_200=0
+Substitution of c_178 found in e_14 : 
+c_178=0
 
 
 New level :     1.1.1.1.1.1.
@@ -3449,62 +2640,15 @@ n
 
 The lexicographical ordering of unknowns is changed
 because n has to be non-zero, giving n a low priority.
-Old ordering: n,c_201,c_203
-New ordering: c_201,c_203,n
+Old ordering: n,c_179,c_181
+New ordering: c_179,c_181,n
 
-Substitution of c_203 found in e_13 : 
-c_203=0
+Substitution of c_181 found in e_13 : 
+c_181=0
 
 
 
 >>>>>>>>> Solution of level 1111111 : 
-no equations
-
-
-Non-vanishing expressions: n
-
-n + 5
-
-
-7*n + 20
-
-
-7*n + 15
-
-
- 3      2
-n  + 6*n  + 11*n + 6
-
-
-n + 3
-
-
-2*n + 5
-
-
-n + 2
-
-
-n + 1
-
-
-Functions : 
-       c_201*y*( - n - 2)
-eta_y=--------------------
-            2*n + 5
-
-
-      c_201*x
-xi_x=---------
-      2*n + 5
-
-n, c_201
-with 9 terms
-
-Variables : x, y
-no equations
-2 constants : c_201(0),n(0)
-
 Back to level : 1.1.1.1.1.1.
 
 New level :     1.1.1.1.1.1.2.
@@ -3520,29 +2664,6 @@ n=0
 
 
 >>>>>>>>> Solution of level 1111112 : 
-no equations
-
-
-Functions : 
-        - 2*c_201*y
-eta_y=--------------
-            5
-
-
-      c_201*x - 5*c_203
-xi_x=-------------------
-              5
-
-
-n=0
-
-c_201, c_203
-with 7 terms
-
-Variables : x, y
-no equations
-2 constants : c_201(0),c_203(0)
-
 Back to level : 1.1.1.1.1.1.
 
 This completes the investigation of all cases of a case-distinction.
@@ -3557,8 +2678,8 @@ n
 
 The lexicographical ordering of unknowns is changed
 because n has to be non-zero, giving n a low priority.
-Old ordering: n,c_201,c_203
-New ordering: c_201,c_203,n
+Old ordering: n,c_179,c_181
+New ordering: c_179,c_181,n
 CRACK is now called with the assumption 0 = e_19 : 
 0=n + 5
 
@@ -3570,29 +2691,6 @@ n= - 5
 
 
 >>>>>>>>> Solution of level 111112 : 
-no equations
-
-
-Functions : 
-       y*( - 3*c_201 - 5*c_203*x)
-eta_y=----------------------------
-                   5
-
-
-      x*( - c_201 - 5*c_203*x)
-xi_x=--------------------------
-                 5
-
-
-n= - 5
-
-c_201, c_203
-with 9 terms
-
-Variables : x, y
-no equations
-2 constants : c_201(0),c_203(0)
-
 Back to level : 1.1.1.1.1.
 
 This completes the investigation of all cases of a case-distinction.
@@ -3607,8 +2705,8 @@ n
 
 The lexicographical ordering of unknowns is changed
 because n has to be non-zero, giving n a low priority.
-Old ordering: n,c_200,c_199,c_201,c_203
-New ordering: c_200,c_199,c_201,c_203,n
+Old ordering: n,c_178,c_177,c_179,c_181
+New ordering: c_178,c_177,c_179,c_181,n
 CRACK is now called with the assumption 0 = e_13 : 
 0=7*n + 20
 
@@ -3625,48 +2723,19 @@ n=-------
 
 Separation of e_14 yields (e_16 e_15)
 
-Substitution of c_199 found in e_16 : 
-c_199=0
+Substitution of c_177 found in e_16 : 
+c_177=0
 
 
-Substitution of c_203 by an expression in 
-c_200 found in e_15 : 
-       343*c_200
-c_203=-----------
+Substitution of c_181 by an expression in 
+c_178 found in e_15 : 
+       343*c_178
+c_181=-----------
           12
 
 
 
 >>>>>>>>> Solution of level 11112 : 
-no equations
-
-
-Non-vanishing expressions: n
-
-Functions : 
-               8/7                     2
-        - 245*x   *c_200*y + 15*c_200*x  - 18*c_201*x*y
-eta_y=--------------------------------------------------
-                             15*x
-
-
-                 8/7
-      7*( - 245*x   *c_200 - 12*c_201*x)
-xi_x=------------------------------------
-                      60
-
-
-    - 20
-n=-------
-     7
-
-c_200, c_201
-with 11 terms
-
-Variables : x, y
-no equations
-2 constants : c_200(0),c_201(0)
-
 Back to level : 1.1.1.1.
 
 This completes the investigation of all cases of a case-distinction.
@@ -3681,8 +2750,8 @@ n
 
 The lexicographical ordering of unknowns is changed
 because n has to be non-zero, giving n a low priority.
-Old ordering: n,c_200,c_199,c_201,c_203
-New ordering: c_200,c_199,c_201,c_203,n
+Old ordering: n,c_178,c_177,c_179,c_181
+New ordering: c_178,c_177,c_179,c_181,n
 CRACK is now called with the assumption 0 = e_13 : 
 0=7*n + 15
 
@@ -3699,48 +2768,19 @@ n=-------
 
 Separation of e_14 yields (e_15 e_16)
 
-Substitution of c_200 found in e_15 : 
-c_200=0
+Substitution of c_178 found in e_15 : 
+c_178=0
 
 
-Substitution of c_203 by an expression in 
-c_199 found in e_16 : 
-        - 343*c_199
-c_203=--------------
+Substitution of c_181 by an expression in 
+c_177 found in e_16 : 
+        - 343*c_177
+c_181=--------------
             12
 
 
 
 >>>>>>>>> Solution of level 1112 : 
-no equations
-
-
-Non-vanishing expressions: n
-
-Functions : 
-            6/7
-       245*x   *c_199*y + 20*c_199*x + 4*c_201*x*y
-eta_y=---------------------------------------------
-                          20*x
-
-
-              6/7
-      7*(245*x   *c_199 + 12*c_201*x)
-xi_x=---------------------------------
-                    60
-
-
-    - 15
-n=-------
-     7
-
-c_199, c_201
-with 11 terms
-
-Variables : x, y
-no equations
-2 constants : c_199(0),c_201(0)
-
 Back to level : 1.1.1.
 
 This completes the investigation of all cases of a case-distinction.
@@ -3755,8 +2795,8 @@ n
 
 The lexicographical ordering of unknowns is changed
 because n has to be non-zero, giving n a low priority.
-Old ordering: n,c_200,c_199,c_201,c_203
-New ordering: c_200,c_199,c_201,c_203,n
+Old ordering: n,c_178,c_177,c_179,c_181
+New ordering: c_178,c_177,c_179,c_181,n
 CRACK is now called with the assumption 0 = e_13 : 
 0=n + 3
 
@@ -3796,41 +2836,20 @@ n= - 3
 
 Separation of e_15 yields (e_18 e_17 e_16)
 
-Substitution of c_199 found in e_18 : 
-c_199=0
+Substitution of c_177 found in e_18 : 
+c_177=0
 
 
-Substitution of c_200 found in e_17 : 
-c_200=0
+Substitution of c_178 found in e_17 : 
+c_178=0
 
 
-Substitution of c_203 found in e_16 : 
-c_203=0
+Substitution of c_181 found in e_16 : 
+c_181=0
 
 
 
 >>>>>>>>> Solution of level 1122 : 
-no equations
-
-
-Non-vanishing expressions: n
-
-Functions : 
-eta_y= - c_201*y
-
-
-xi_x= - c_201*x
-
-
-n= - 3
-
-c_201
-with 4 terms
-
-Variables : x, y
-no equations
-1 constant : c_201(0)
-
 Back to level : 1.1.2.
 
 This completes the investigation of all cases of a case-distinction.
@@ -3864,57 +2883,38 @@ n
 
 The lexicographical ordering of unknowns is changed
 because n has to be non-zero, giving n a low priority.
-Old ordering: c_195,n,c_200,c_199,c_201
-New ordering: c_195,c_200,c_199,c_201,n
+Old ordering: c_173,n,c_178,c_177,c_179
+New ordering: c_173,c_178,c_177,c_179,n
 
 Substitution of n found in e_12 : 
 n= - 2
 
 
-new constant: c_204
+new constant: c_182
 Integration of e_16
 
-Substitution of c_195(x) by an expression in 
-c_201, c_204 found in e_16 : 
+Substitution of c_173(x) by an expression in 
+c_179, c_182 found in e_16 : 
        4/5
-c_195=x   *c_204 - c_201*x
+c_173=x   *c_182 - c_179*x
 
 
 Separation of e_15 yields (e_19 e_18 e_17)
 
-Substitution of c_204 found in e_19 : 
-c_204=0
+Substitution of c_182 found in e_19 : 
+c_182=0
 
 
-Substitution of c_199 found in e_18 : 
-c_199=0
+Substitution of c_177 found in e_18 : 
+c_177=0
 
 
-Substitution of c_200 found in e_17 : 
-c_200=0
+Substitution of c_178 found in e_17 : 
+c_178=0
 
 
 
 >>>>>>>>> Solution of level 121 : 
-no equations
-
-
-Functions : 
-eta_y=0
-
-
-xi_x=c_201*x
-
-
-n= - 2
-
-c_201
-with 3 terms
-
-Variables : x, y
-no equations
-1 constant : c_201(0)
-
 Back to level : 1.2.
 
 New level :     1.2.2.
@@ -3925,8 +2925,8 @@ n
 
 The lexicographical ordering of unknowns is changed
 because n has to be non-zero, giving n a low priority.
-Old ordering: c_195,n,c_200,c_199,c_201
-New ordering: c_195,c_200,c_199,c_201,n
+Old ordering: c_173,n,c_178,c_177,c_179
+New ordering: c_173,c_178,c_177,c_179,n
 CRACK is now called with the assumption 0 = e_15 : 
 0=n + 1
 
@@ -3936,56 +2936,33 @@ Substitution of n found in e_15 :
 n= - 1
 
 
-new constant: c_205
+new constant: c_183
 Integration of e_17
 
-Substitution of c_195(x) by an expression in 
-c_201, c_205 found in e_17 : 
+Substitution of c_173(x) by an expression in 
+c_179, c_183 found in e_17 : 
           2/5
-       3*x   *c_205 - c_201*x
-c_195=------------------------
+       3*x   *c_183 - c_179*x
+c_173=------------------------
                  3
 
 
 Separation of e_16 yields (e_21 e_19 e_18)
 
-Substitution of c_205 found in e_21 : 
-c_205=0
+Substitution of c_183 found in e_21 : 
+c_183=0
 
 
-Substitution of c_199 found in e_19 : 
-c_199=0
+Substitution of c_177 found in e_19 : 
+c_177=0
 
 
-Substitution of c_200 found in e_18 : 
-c_200=0
+Substitution of c_178 found in e_18 : 
+c_178=0
 
 
 
 >>>>>>>>> Solution of level 122 : 
-no equations
-
-
-Functions : 
-        - c_201*y
-eta_y=------------
-           3
-
-
-      c_201*x
-xi_x=---------
-         3
-
-
-n= - 1
-
-c_201
-with 6 terms
-
-Variables : x, y
-no equations
-1 constant : c_201(0)
-
 Back to level : 1.2.
 
 This completes the investigation of all cases of a case-distinction.
@@ -4002,8 +2979,8 @@ n
 
 The lexicographical ordering of unknowns is changed
 because n has to be non-zero, giving n a low priority.
-Old ordering: c_195,n,c_200,c_199,c_201
-New ordering: c_195,c_200,c_199,c_201,n
+Old ordering: c_173,n,c_178,c_177,c_179
+New ordering: c_173,c_178,c_177,c_179,n
 CRACK is now called with the assumption 0 = e_12 : 
 0=2*n + 5
 
@@ -4030,55 +3007,32 @@ n=------
     2
 
 
-new constant: c_206
+new constant: c_184
 Integration of e_14
 
-Substitution of c_195(x) by an expression in 
-c_201, c_206 found in e_14 : 
-       x*( - log(x)*c_201 + 5*c_206)
-c_195=-------------------------------
+Substitution of c_173(x) by an expression in 
+c_179, c_184 found in e_14 : 
+       x*( - log(x)*c_179 + 5*c_184)
+c_173=-------------------------------
                      5
 
 
 Separation of e_15 yields (e_18 e_17 e_16)
 
-Substitution of c_199 found in e_18 : 
-c_199=0
+Substitution of c_177 found in e_18 : 
+c_177=0
 
 
-Substitution of c_200 found in e_17 : 
-c_200=0
+Substitution of c_178 found in e_17 : 
+c_178=0
 
 
-Substitution of c_201 found in e_16 : 
-c_201=0
+Substitution of c_179 found in e_16 : 
+c_179=0
 
 
 
 >>>>>>>>> Solution of level 21 : 
-no equations
-
-
-Functions : 
-        - c_206*y
-eta_y=------------
-           2
-
-
-xi_x= - c_206*x
-
-
-    - 5
-n=------
-    2
-
-c_206
-with 6 terms
-
-Variables : x, y
-no equations
-1 constant : c_206(0)
-
 Back to level : 2.
 
 New level :     2.2.
@@ -4380,7 +3334,7 @@ xi_x=2*x
 eta_y=y
 
             1                3
-         - ---*y *c_201*n - ---*y *c_201
+         - ---*y *c_179*n - ---*y *c_179
             2   x            2   x
 eta_yx=----------------------------------
                          5
@@ -4388,7 +3342,7 @@ eta_yx=----------------------------------
                          2
 
              1   n          2      n        2
-          - ---*x *c_201*n*y  - 2*x *c_201*y
+          - ---*x *c_179*n*y  - 2*x *c_179*y
              2
 eta_yxx=--------------------------------------
                             5
@@ -4397,13 +3351,4 @@ eta_yxx=--------------------------------------
 
 
 -------- 
-
-nodepnd {y}$
-
-
-lisp(prolong_order:=0)$
-
-
-
-end$
 

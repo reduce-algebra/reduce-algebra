@@ -1,5 +1,4 @@
-load liepde;
-
+off echo;
 %*******************************************************************%
 %                                                                   %
 %                      L I E P D E . T S T                          %
@@ -31,29 +30,26 @@ load liepde;
 %                                                                   %
 %*******************************************************************%
 
+% load crack,liepde$
+
 lisp(depl!*:=nil)$     % clearing of all dependences
 lisp(print_:=nil)$       
 on dfprint$
 
-COMMENT
--------------------------------------------------------
-The following runs demonstrate the program LIEPDE for 
-the computation of infinitesimal symmetries. Times given
-below refer to a 8 MB session under LINUX on a 133 MHz
-Pentium PC with the CRACK version of April 1998 running
-PSL Reduce.
--------------------------------------------------------$
+COMMENT -------------------------------------------------------------
+The following runs demonstrate the program LIEPDE for the computation
+of infinitesimal symmetries. Times given below refer to a 8 MB session
+under LINUX on a 133 MHz Pentium PC with the CRACK version of April
+1998 running PSL Reduce.$
 
 lisp(prelim_:=nil)$      % not necessary as this is the default value
 lisp(individual_:=nil)$  % not necessary as this is the default value
 
-COMMENT
--------------------------------------------------------
+COMMENT -------------------------------------------------------------
 The first example is a single ODE with a parametric
 function f=f(x) for which point symmetries are to be
-determined.
-(Time ~ 6 sec.)$
-write"-------------------------------------------------------"$
+determined. (Time ~ 6 sec.)$
+write"==============================================================="$
 
 lisp(freeint_:=nil)$ % This enables the solution of differential equ.s in
                      % which unevaluated integrals remain. This becomes
@@ -70,65 +66,54 @@ lisp(freeint_:=t)$   % Because the simplification of differential
                      % may provide difficulties such solutions involving
                      % unevaluated integrals are disabled.
 
-COMMENT
--------------------------------------------------------
-The following example demonstrates a number of things.
-The Burgers equation is investigated concerning third
-order symmetries. The equation is used to substitute
-df(u,t) and all derivatives of df(u,t). This computation
-also shows that any equations that remain unsolved are
-returned, like in this case the heat quation.
-(Time ~ 15 sec.)$
-write"-------------------------------------------------------"$
+COMMENT -------------------------------------------------------------
+The following example demonstrates a number of things.  The Burgers
+equation is investigated concerning third order symmetries. The
+equation is used to substitute df(u,t) and all derivatives of df(u,t). 
+This computation also shows that any equations that remain unsolved 
+are returned, like in this case the heat quation. (Time ~ 15 sec.)$
+write"==============================================================="$
 
 nodepnd {u}$
 depend u,t,x$
 liepde({df(u,t)=df(u,x,2)+df(u,x)**2,{u},{t,x}},{"general",3},{},{})$
 
-COMMENT
--------------------------------------------------------
-Now the same equation is investigated, this time only
-df(u,x,2) and its derivatives are substituted. As a
-consequence fewer jet-variables (u-derivatives of lower
-order) are generated in the process of formulating the
-symmetry conditions. Fewer jet-variables in which the
-conditions have to be fulfilled identically mean less
-overdetermined conditions and more solutions which to
-compute takes longer than before.
-(Time ~ 85 sec.)$
-write"-------------------------------------------------------"$
+COMMENT -------------------------------------------------------------
+Now the same equation is investigated, this time only df(u,x,2) and
+its derivatives are substituted. As a consequence fewer jet-variables
+(u-derivatives of lower order) are generated in the process of
+formulating the symmetry conditions. Fewer jet-variables in which the
+conditions have to be fulfilled identically mean less overdetermined
+conditions and more solutions which to compute takes longer than
+before.$
+write"==============================================================="$
 
 liepde({df(u,x,2)=df(u,t)-df(u,x)**2,{u},{t,x}},{"general",3},{},{})$
 nodepnd {u}$
 
-COMMENT
--------------------------------------------------------
-The following example includes the Karpman equations
-for three unknown functions in 4 variables. 
+COMMENT -------------------------------------------------------------
+The following example includes the Karpman equations for three unknown
+functions in 4 variables.
 
-If point symmetries are to be computed for a single
-equation or a system of equations of higher than first
-order then there is the option to formulate at first
-preliminary conditions for each equation, have CRACK
-solving these conditions before the full set of conditions
-is formulated and solved. This strategy is adopted if a
-lisp flag prelim_ has the value t. The default value
-is nil. 
+If point symmetries are to be computed for a single equation or a
+system of equations of higher than first order then there is the
+option to formulate at first preliminary conditions for each equation,
+have CRACK solving these conditions before the full set of conditions
+is formulated and solved. This strategy is adopted if a lisp flag
+prelim_ has the value t. The default value is nil.
 
-Similarly, if a system of equations is to be investigated
-and a flag individual_ has the value t then symmetry
-conditions are formulated and investigated for each
-individual equation successively. The default value is nil.
+Similarly, if a system of equations is to be investigated and a flag
+individual_ has the value t then symmetry conditions are formulated
+and investigated for each individual equation successively. The
+default value is nil.
 
-It is advantageous to split a large set of conditions
-into smaller sets to be investigated successively if
-each set is sufficiently overdetermined to be solvable
-quickly. Then any substitutions are done in the smaller
-set and the next set of conditions is shorter. For
-example, for the Karpman equations below the speedup for
-prelim_:=t and individual_:=t is a factor of 10.
-(Time ~ 1 min.)$
-write"-------------------------------------------------------"$
+It is advantageous to split a large set of conditions into smaller
+sets to be investigated successively if each set is sufficiently
+overdetermined to be solvable quickly. Then any substitutions are done
+in the smaller set and the next set of conditions is shorter. For
+example, for the Karpman equations below the speedup for prelim_:=t
+and individual_:=t is a factor of 10. (Time ~ 1 min.)$
+write"==============================================================="$
 
 lisp(prelim_:=t)$
 lisp(individual_:=t)$
@@ -164,31 +149,28 @@ solve(
 
 nodepnd {r,f,v}$
 
-COMMENT
--------------------------------------------------------
-In the following example a system of two equations (by
-V.Sokolov) is investigated concerning a special ansatz for
-4th order symmetries. The ansatz for the symmetries includes
-two unknown functions f,g. Because x is the second variable
-in the list of variables {t,x}, the name u!`2 stands for
-df(u,x).
-Because higher order symmetries are investigated we have
-to set prelim_:=nil. The symmetries to be calculated are
-lengthy and therefore conditions are not very overdetermined.
-In that case CRACK can take long to solve a single 
-subset of conditions. The complete set of conditions would
-have been more overdetermined and easier to solve. Therefore
-the advantage of first formulating all conditions and then
-solving them together with one CRACK call is that having
-more equations, the chance of finding short integrable
-equations among then is higher, i.e. CRACK has more freedom
-in optimizing the computation. Therefore individual_:=nil
-is more appropriate in this example.
+COMMENT -------------------------------------------------------------
+In the following example a system of two equations (by V.Sokolov) is
+investigated concerning a special ansatz for 4th order symmetries. The
+ansatz for the symmetries includes two unknown functions f,g. Because
+x is the second variable in the list of variables {t,x}, the name u!`2
+stands for df(u,x).
 
-Because 4th order conditions are to be computed the
-`binding stack size' is increased.
-(Time ~ 5 min.)$
-write"-------------------------------------------------------"$
+Because higher order symmetries are investigated we have to set
+prelim_:=nil. The symmetries to be calculated are lengthy and
+therefore conditions are not very overdetermined.  In that case CRACK
+can take long to solve a single subset of conditions. The complete set
+of conditions would have been more overdetermined and easier to
+solve. Therefore the advantage of first formulating all conditions and
+then solving them together with one CRACK call is that having more
+equations, the chance of finding short integrable equations among then
+is higher, i.e. CRACK has more freedom in optimizing the
+computation. Therefore individual_:=nil is more appropriate in this
+example.
+
+Because 4th order conditions are to be computed the `binding stack
+size' is increased. (Time ~ 5 min.)$
+write"==============================================================="$
 
 lisp(prelim_:=nil)$
 lisp(individual_:=nil)$
@@ -215,19 +197,19 @@ liepde({des,{u,v},{t,x}},
       )$
 nodepnd {f,g}$
 
-COMMENT
--------------------------------------------------------
+COMMENT -------------------------------------------------------------
 A relative new feature of the package CRACK is to be able to solve
 non-linear problems where unknowns to be determined may appear in
 exponents. This is the case when parameters in a differential equation
 is to be determined such that symmetries exist. The following ODE is
-such an example where the exponent `n' is to be determined so that
-the ODE has one or more symmetries. 
+such an example where the exponent `n' is to be determined so that the
+ODE has one or more symmetries.
+
   Something else is demonstrated in the following example. The
 parameter prolong_order allows to compute and print the prolongation
-of each of the found symmetry generators. In the following example
-all found symmetry generators are prolonged to order 2.$
-write"-------------------------------------------------------"$
+of each of the found symmetry generators. In the following example all
+found symmetry generators are prolonged to order 2.$
+write"==============================================================="$
 
 lisp(prolong_order:=2)$
 depend y,x$

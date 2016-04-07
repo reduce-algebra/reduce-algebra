@@ -1,4 +1,4 @@
-load crack,applysym$
+off echo;
 %*******************************************************************%
 %                                                                   %
 %                    A P P L Y S Y M . T S T                        %
@@ -28,25 +28,25 @@ load crack,applysym$
 %                                                                   %
 %*******************************************************************%
 
-lisp(depl!*:=nil)$     % clearing of all dependencies
+load crack$ %,applysym$
+
+lisp(depl!*:=nil)$   % clearing of all dependencies
 lisp(print_:=nil)$   % to avoid printing the process of solving the char. sys.
 lisp(print_more:=t)$ % to print some verbal comments about the solution  
 on dfprint$          % to print derivatives as subscripts
 
-COMMENT
--------------------------------------------------------
-This file is supposed to provide an automatic test of
-the program APPLYSYM. On the other hand the application
-of APPLYSYM is an interactive process, therefore the
-interested user should inspect the example described
-in APPLYSYM.TEX which demonstrates the application
-of symmetries to integrate a 2nd order ODE.
-Here the program QUASILINPDE for integrating first
-order quasilinear PDE is demonstrated.
-The following equation comes up in the elimination
-of resonant terms in normal forms of singularities
-of vector fields (C.Herssens, P.Bonckaert, Limburgs
-Universitair Centrum/Belgium, private communication);
+COMMENT -------------------------------------------------------------
+This file is supposed to provide an automatic test of the program
+APPLYSYM. On the other hand the application of APPLYSYM is an
+interactive process, therefore the interested user should inspect the
+example described in APPLYSYM.TEX which demonstrates the application
+of symmetries to integrate a 2nd order ODE.  Here the program
+QUASILINPDE for integrating first order quasilinear PDE is
+demonstrated.  The following equation comes up in the elimination of
+resonant terms in normal forms of singularities of vector fields
+(C.Herssens, P.Bonckaert, Limburgs Universitair Centrum/Belgium,
+private communication);
+
 write"-------------------"$
 lisp(print_:=nil)$
 
@@ -54,8 +54,7 @@ depend w,x,y,z$
 quasilinpde( df(w,x)*x+df(w,y)*y+2*df(w,z)*z-2*w-x*y,  w,  {x,y,z} )$
 nodepend w,x,y,z$
 
-COMMENT
--------------------------------------------------------
+COMMENT -------------------------------------------------------------
 The result means that w is defined implicitly through 
 
         x*y    - log(z)*x*y + 2*w      y              
@@ -72,10 +71,9 @@ w = log(z)*x*y/2 + z*f(-----,---------)
 
 with an arbitrary function f of 2 arguments.
 -------------------------------------------------------
-The following PDEs are taken from E. Kamke,
-Loesungsmethoden und Loesungen von Differential-
-gleichungen, Partielle Differentialgleichungen
-erster Ordnung, B.G. Teubner, Stuttgart (1979);
+The following PDEs are taken from E. Kamke, Loesungsmethoden und
+Loesungen von Differential- gleichungen, Partielle Differential-
+gleichungen erster Ordnung, B.G. Teubner, Stuttgart (1979);
 
 write"-------------------"$% equation 1.4 ----------------------
 lisp(depl!*:=nil)$

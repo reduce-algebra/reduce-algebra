@@ -293,7 +293,8 @@ begin
     inverse_trafo_list_incomplete:=nil;
     condi:=split_simp(condi,inequ,fl,vl,nil)$
     solns:=crack(condi,inequ,fl,vl);
-    save_all_sol(solns);
+    % If solutions are needed afterwards then comment out the next line:
+    % save_all_sol(solns);
     %--- postprocessing
     lisp 
     if done_trafo and cdr done_trafo then <<

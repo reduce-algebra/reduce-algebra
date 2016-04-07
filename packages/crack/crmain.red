@@ -223,7 +223,6 @@ begin scalar el,il,fl,vl,l,l1,l2,a,b,n,m,k,p,pdes$
                   allflags_,t,%orderings_prop_list_all(),
                   list(0),nil)$
  if contradiction_ then return {'list}$
-
  if equations_file="" then <<
   l:=pdes;
   while l and get(car l,'linear_) do l:=cdr l;
@@ -320,12 +319,16 @@ begin scalar el,il,fl,vl,l,l1,l2,a,b,n,m,k,p,pdes$
  % delete file with empty sol_list
  if null collect_sol then delete_empty_sol_list_file()$
 
- % statements to free space and to make later crack-calls more natural
+ % statements to free space and to make later crack-calls independent of 
+ % current setting, calling setcrackflags() would set print_:=12
+
  nequ_:=1$
  recycle_eqns:=nil . nil$
  recycle_fcts:=nil$
  recycle_ids:=nil$
+ lin_problem:=nil$
  flin_:=nil$
+ fhom_:=nil$
 
  % close the equation input file
  if eqn_input='done then eqn_input:=nil else
@@ -367,6 +370,7 @@ begin scalar p$
   write"!!!!! Are you sure you want to delete all files generated in this session? (Y/N) "$
   repeat p:=termread() until (p='y) or (p='n)$
   if p='y then <<
+   sol_list_file_created:=nil; % for later calls of crack
    p:=bldmsg("rm ??%w*",compress cons('!",cdddr explode session_))$
    system p
   >>
@@ -1577,10 +1581,13 @@ again:
     % integrating df(f,..)=.. :
     forg:=forg_int(forg,ftem_)$
 
-    if null collect_sol then <<s:=print_;print_:=100>>$
+    if null collect_sol and  (
+     stop_                 or 
+     null(getd 'crack_out) or 
+     null call_crack_out     ) then
     print_pde_forg_ineq(pdes,(ineq_ . ineq_or),
                         append(forg,setdiff(ftem_,forg)),vl_)$
-    if null collect_sol then print_:=s$
+
     if not stop_ then <<
       % The following is a procedure the user can define to do
       % specific operations with each solution, e.g. substitution of

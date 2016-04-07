@@ -410,13 +410,13 @@ for the function(s): u(x,t)
 Currently conservation laws with a conserved density
 of order 0 are determined
 ======================================================
-c_233 = c_233(x,t) is not constant.
-c_237 = c_237(t) is not constant.
+c_231 = c_231(x,t) is not constant.
+c_235 = c_235(t) is not constant.
 There are remaining conditions: 
                         1
-{2*(c_233  + c_233   + ---*c_237)}
+{2*(c_231  + c_231   + ---*c_235)}
          t        5x    2
-for the functions: c_237(t), c_233(x,t)
+for the functions: c_235(t), c_231(x,t)
 - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 Conservation law:
@@ -457,17 +457,17 @@ b=0
 a=0
 
 
-  (  - c_233  ) * ( u  + u   )
+  (  - c_231  ) * ( u  + u   )
             x        t    5x
 
  = 
 
-df(  - c_233 *u, t )
+df(  - c_231 *u, t )
             x
 
 +
 
-df( c_233 *u + c_233  *u  - c_233  *u   + c_233  *u   - c_233 *u   + c_237*u, x
+df( c_231 *u + c_231  *u  - c_231  *u   + c_231  *u   - c_231 *u   + c_235*u, x
          t          4x  x        3x  2x        2x  3x        x  4x
 
  )
@@ -1121,13 +1121,13 @@ df(  - 4*u  *u + 4*u  *u  - 2*u    - a*u , x )
           4x        3x  x      2x
 
 ======================================================
-c_281 = c_281(t) is not constant.
-c_276 = c_276(x,t) is not constant.
-c_351 = c_351(t) is not constant.
+c_279 = c_279(t) is not constant.
+c_274 = c_274(x,t) is not constant.
+c_349 = c_349(t) is not constant.
 There are remaining conditions: 
-{c_276  + c_276   - c_281 *x + c_351}
+{c_274  + c_274   - c_279 *x + c_349}
       t        5x        t
-for the functions: c_351(t), c_281(t), c_276(x,t)
+for the functions: c_349(t), c_279(t), c_274(x,t)
 - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 Conservation law:
@@ -1196,20 +1196,20 @@ b=0
 a=0
 
 
-  (  - (c_276  - c_281) ) * ( u  + u   )
+  (  - (c_274  - c_279) ) * ( u  + u   )
              x                 t    5x
 
  = 
 
-df(  - c_276 *u + c_281*u, t )
+df(  - c_274 *u + c_279*u, t )
             x
 
 +
 
-df( c_276 *u + c_276  *u  - c_276  *u   + c_276  *u   - c_276 *u   - c_281 *u*x
+df( c_274 *u + c_274  *u  - c_274  *u   + c_274  *u   - c_274 *u   - c_279 *u*x
          t          4x  x        3x  2x        2x  3x        x  4x        t
 
- + u  *c_281 + c_351*u, x )
+ + u  *c_279 + c_349*u, x )
     4x
 
 ======================================================
@@ -1376,59 +1376,7 @@ for the function(s): x(t), y(t), z(t)
 ======================================================
 A special ansatz of order 0 for the conserved current is investigated.
 
-c_482 = c_482(x) is not constant.
-- - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-Conservation law:
-
-s=0
-
-
-  ( 0 ) * ( z  + b*z - x*y )
-             t
-
-+ ( 0 ) * ( y  - r*x - x*z + y )
-             t
-
-+ ( c_482  ) * ( x  )
-         x        t
-
- = 
-
-df( c_482, t )
-
-======================================================
-
-Conservation law:
-
-b=2*s
-
-
-       2*s*t
-  ( 2*e      ) * ( z  + 2*s*z - x*y )
-                    t
-
-+ ( 0 ) * ( y  - r*x - x*z + y )
-             t
-
-           2*s*t
-      - 2*e     *x
-+ ( --------------- ) * ( x  + s*x - s*y )
-           s               t
-
- = 
-
-        2*s*t        2*s*t  2
-     2*e     *s*z - e     *x
-df( --------------------------, t )
-                s
-
-======================================================
-There are remaining conditions: 
-     2*s*t            1   2*s*t          1   2*t
-{2*(e     *c_488*s - ---*e     *c_488 + ---*e   *c_477*r)}
-                      2                  2
-for the functions: c_488, c_477, s, r
+c_463 = c_463(x) is not constant.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 Conservation law:
@@ -1436,85 +1384,83 @@ Conservation law:
 b=1
 
 
-        2*s*t          2*t            2*t
-  ( 2*(e     *c_488 + e   *c_477*r + e   *c_477*z) ) * ( z  - x*y + z )
-                                                          t
-
-          2*t
-+ (  - 2*e   *c_477*y ) * ( y  - r*x - x*z + y )
-                             t
-
-           2*s*t
-      - 2*e     *c_488*x
-+ ( --------------------- ) * ( x  + s*x - s*y )
-              s                  t
-
- = 
-
-        2*s*t              2*s*t        2      2*t                2*t          2
-df( (2*e     *c_488*s*z - e     *c_488*x  + 2*e   *c_477*r*s*z - e   *c_477*s*y
-
-         2*t          2
-      + e   *c_477*s*z )/s, t )
-
-======================================================
-c_462 = c_462(x) is not constant.
-- - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-Conservation law:
-
 s=0
 
 
-r=0
-
-
-  ( 0 ) * ( z  + b*z - x*y )
+  ( 0 ) * ( z  - x*y + z )
              t
 
-+ ( 0 ) * ( y  - x*z + y )
++ ( 0 ) * ( y  - r*x - x*z + y )
              t
 
-+ ( c_462  ) * ( x  )
++ ( c_463  ) * ( x  )
          x        t
 
  = 
 
-df( c_462, t )
+df( c_463, t )
 
 ======================================================
 
 Conservation law:
 
-r=0
+b=1
 
 
-   1
-s=---*b
-   2
+s=1
 
 
-     b*t
-  ( e    ) * ( z  + b*z - x*y )
-                t
+           2*t
+      - 2*e   *z
+  ( ------------- ) * ( z  - x*y + z )
+          r              t
 
-+ ( 0 ) * ( y  - x*z + y )
-             t
+        2*t
+     2*e   *y
++ ( ---------- ) * ( y  - r*x - x*z + y )
+        r             t
 
-           b*t
-      - 2*e   *x              1         1
-+ ( ------------- ) * ( x  + ---*b*x - ---*b*y )
-          b              t    2         2
+          2*t
++ (  - 2*e   *x ) * ( x  + x - y )
+                       t
 
  = 
 
-      b*t        b*t  2
-     e   *b*z - e   *x
-df( --------------------, t )
-             b
+         2*t    2    2*t  2    2*t  2
+      - e   *r*x  + e   *y  - e   *z
+df( ----------------------------------, t )
+                    r
 
 ======================================================
-c_441 = c_441(x) is not constant.
+
+Conservation law:
+
+b=1
+
+
+   1
+s=---
+   2
+
+
+     t
+  ( e  ) * ( z  - x*y + z )
+              t
+
++ ( 0 ) * ( y  - r*x - x*z + y )
+             t
+
+          t               1       1
++ (  - 2*e *x ) * ( x  + ---*x - ---*y )
+                     t    2       2
+
+ = 
+
+        t  2    t
+df(  - e *x  + e *z, t )
+
+======================================================
+c_480 = c_480(x) is not constant.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 Conservation law:
@@ -1563,12 +1509,12 @@ b=1
 + ( 0 ) * ( y  - x*z + y )
              t
 
-+ ( c_441  ) * ( x  )
++ ( c_480  ) * ( x  )
          x        t
 
  = 
 
-df( c_441, t )
+df( c_480, t )
 
 ======================================================
 
@@ -1611,6 +1557,38 @@ s=---
    2
 
 
+       2*t
+  ( 2*e   *z ) * ( z  - x*y + z )
+                    t
+
+          2*t
++ (  - 2*e   *y ) * ( y  - x*z + y )
+                       t
+
+                  1       1
++ ( 0 ) * ( x  + ---*x - ---*y )
+             t    2       2
+
+ = 
+
+        2*t  2    2*t  2
+df(  - e   *y  + e   *z , t )
+
+======================================================
+
+Conservation law:
+
+b=1
+
+
+r=0
+
+
+   1
+s=---
+   2
+
+
      t
   ( e  ) * ( z  - x*y + z )
               t
@@ -1631,33 +1609,49 @@ df(  - e *x  + e *z, t )
 
 Conservation law:
 
-b=1
+b=2*s
 
 
-r=0
-
-
-   1
-s=---
-   2
-
-
-       2*t
-  ( 2*e   *z ) * ( z  - x*y + z )
+       2*s*t
+  ( 2*e      ) * ( z  + 2*s*z - x*y )
                     t
 
-          2*t
-+ (  - 2*e   *y ) * ( y  - x*z + y )
-                       t
++ ( 0 ) * ( y  - r*x - x*z + y )
+             t
 
-                  1       1
-+ ( 0 ) * ( x  + ---*x - ---*y )
-             t    2       2
+           2*s*t
+      - 2*e     *x
++ ( --------------- ) * ( x  + s*x - s*y )
+           s               t
 
  = 
 
-        2*t  2    2*t  2
-df(  - e   *y  + e   *z , t )
+        2*s*t        2*s*t  2
+     2*e     *s*z - e     *x
+df( --------------------------, t )
+                s
+
+======================================================
+c_444 = c_444(x) is not constant.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Conservation law:
+
+s=0
+
+
+  ( 0 ) * ( z  + b*z - x*y )
+             t
+
++ ( 0 ) * ( y  - r*x - x*z + y )
+             t
+
++ ( c_444  ) * ( x  )
+         x        t
+
+ = 
+
+df( c_444, t )
 
 ======================================================
 

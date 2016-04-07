@@ -130,7 +130,7 @@ begin
  %		    % name of the session, used to generate filename
  %		    % for backup when case splitting
  setq(session_,bldmsg("%w%d-","bu",random 1000000));
-
+ sol_list_file_created:=nil
 end$
 
 symbolic procedure start_sol_list_file$
@@ -784,7 +784,7 @@ para_case_dir:=""$    put('para_case_dir,'description,list("the directory in whi
 % (x**(5/4))**(4/5) - x;  --->   0
 
 
-version_date:="2016-02-17"$
+version_date:="2016-04-07"$
 put('!*notseparate,'description,list("Date of last change."))$
 
 algebraic(off combineexpt)$ % put(','description,list(""))$

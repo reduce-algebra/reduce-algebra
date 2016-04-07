@@ -707,6 +707,10 @@ begin scalar l,h,h2,h3,h4,nvars,rational,nonrational,allvarfcts,
    put(equ,'linear_,
        if nonrational then nil else
        if lin_problem then t else 
+       % if the above line is active (not commented out) then after 
+       % a linear problem the next problem is automatically taken to 
+       % be linear too, if it is active allows to declare large 
+       % systems as linear avoiding costly checking
        if not freeof(denr sqval,ftem) then nil else
        if lin_check_SQ(((first_term_SF numr sqval) . 1),ftem) then
        if lin_check_SQ(sqval,ftem) then t else nil    else nil)$
@@ -844,7 +848,7 @@ end$
 %  write"reval val=",valu$terpri()
 % >>                                       else 
 %%    for each l in cdr valu do
-%%    if null may_vanish l then addineq(pdes,reval{'difference,valu,l})
+%%    if null may_vanish l then addineq(pdes,reval{'DIFFERENCE,valu,l})
 % if null may_vanish cadr  valu then addineq(pdes,caddr valu) else 
 % if null may_vanish caddr valu then addineq(pdes,cadr  valu)
 %end$
@@ -1267,8 +1271,8 @@ symbolic procedure type_pre_ex(p)$
 % p is an expression in prefix form
 if print_ then mathprint 
 if pairp p and 
-   (((car p = 'plus    ) and ( length       p > print_     )) or
-    ((car p = 'quotient) and ((length cadr  p > print_) or
+   (((car p = 'PLUS    ) and ( length       p > print_     )) or
+    ((car p = 'QUOTIENT) and ((length cadr  p > print_) or
                               (length caddr p > print_)    ))    )
 then bldmsg("%w%d%w"," ",no_of_tm_sf numr p," terms ")
 else p$
@@ -2779,7 +2783,7 @@ begin scalar inhom,f;
  for each f in fl do inhom:=err_catch_sub(f,0,inhom);
  return <<
   for each f in fl do pde:=subst({'times,lin_test_const,f},f,pde);
-  freeof(reval {'quotient,{'difference,pde,inhom},lin_test_const},lin_test_const)
+  freeof(reval {'quotient,{'DIFFERENCE,pde,inhom},lin_test_const},lin_test_const)
  >>   
 end$
 
@@ -2833,7 +2837,7 @@ symbolic procedure plot_non0_separants(s)$
 % the symbol is non-zero.
 begin scalar dv,dl,dlc,dr,fdl,avf,ur;
  if (userrules_ neq {'list}) and
-    (zerop reval {'difference,
+    (zerop reval {'DIFFERENCE,
                   car  cdadr userrules_,
                   cadr cdadr userrules_})
  then <<ur:=t; algebraic (clearrules lisp userrules_) >>$
@@ -3487,7 +3491,7 @@ begin scalar p,h,f$
  f:=cadadr ex$
  if pairp p and (car p='plus)
     then p:=reval cons('plus,cons(list('minus,cadr ex),cdr p))
-    else p:=reval list('difference,p,cadr ex)$
+    else p:=reval list('DIFFERENCE,p,cadr ex)$
  p:=integratepde(p,cons(f,fges),nil,nil,nil)$
  if p and (car p) and not cdr p then 
     <<h:=car lderiv(car p,f,fctargs f)$
@@ -6034,11 +6038,11 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak,modular_bak,
   modular_bak:=!*modular;  
   if !*modular then off modular$ 
   % simp converts prefixed SQ into SQ and resimp gets rid of :mod:
-  h:=errorset({'reval,list('factorize,mkquote mk!*sq resimp simp a)},nil,nil) 
+  h:=errorset({'reval,list('FACTORIZE,mkquote mk!*sq resimp simp a)},nil,nil) 
      where !*protfg=t;                                     % reval --> aeval for speedup
   if modular_bak then on modular
  >>           else
- h:=errorset({'reval,list('factorize,mkquote a)},nil,nil)  % reval --> aeval for speedup
+ h:=errorset({'reval,list('FACTORIZE,mkquote a)},nil,nil)  % reval --> aeval for speedup
     where !*protfg=t;
  if modular_bak then on modular$
  if rational_changed then <<off msg$ algebraic(off rational)$ on msg>>$
@@ -6081,11 +6085,11 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak,
   modular_bak:=!*modular;  
   if !*modular then off modular$ 
   % simp converts prefixed SQ into SQ and resimp gets rid of :mod:
-  h:=errorset(list('factorize,mkquote mk!*sq resimp simp a),nil,nil) 
+  h:=errorset(list('FACTORIZE,mkquote mk!*sq resimp simp a),nil,nil) 
      where !*protfg=t;
   if modular_bak then on modular
  >>           else
- h:=errorset(list('factorize,mkquote a),nil,nil) where !*protfg=t;
+ h:=errorset(list('FACTORIZE,mkquote a),nil,nil) where !*protfg=t;
 
  if rational_changed then <<off msg$ algebraic(off rational)$ on msg>>$
  if no_powers_changed then algebraic(on nopowers)$
@@ -6155,7 +6159,7 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak;
  kernlist!*bak:=kernlist!*$
  kord!*bak:=kord!*$
  bakup_bak:=backup_;backup_:='max_gc_fac$
- h:=errorset({'aeval,list('list,''gcd,mkquote a,mkquote b)},nil,nil)
+ h:=errorset({'aeval,list('list,''GCD,mkquote a,mkquote b)},nil,nil)
     where !*protfg=t;
  kernlist!*:=kernlist!*bak$
  kord!*:=kord!*bak;
@@ -7309,7 +7313,7 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
      a:=car try_to_sub_cp; try_to_sub_cp:=cdr try_to_sub_cp;
      if tr_merge then <<write"try to sub next: ",a$terpri()>>$
      if not freeof(sb,a) and lin_check(sb,{a}) then <<
-      num_sb:=reval {'difference, sb,{'times,a,coeffn(sb,a,1)}};
+      num_sb:=reval {'DIFFERENCE, sb,{'times,a,coeffn(sb,a,1)}};
       if tr_merge then <<write"num_sb="$mathprint num_sb>>$
 %      singular_ex_cp:=singular_ex;
 %      while singular_ex_cp do << 
@@ -7370,7 +7374,7 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
        
          h:=append(regular_sb,singular_sb);
          while h and a neq cadar h do h:=cdr h;
-         if h then remain_c2:=append(remain_c2,list {'difference,caddar h,caddr b});
+         if h then remain_c2:=append(remain_c2,list {'DIFFERENCE,caddar h,caddr b});
 	 if tr_merge then <<write"remain_c2="$print_indexed_list(cdr remain_c2)>>$
          singular_ex_cp:=nil;
          try_to_sub:=delete(a,try_to_sub);
@@ -7438,7 +7442,7 @@ begin scalar eli_2,singular_eli,regular_eli,a,b,cond2,sb,remain_sb,
 %  while try_to_sub_cp do <<
 %   a:=car try_to_sub_cp; try_to_sub_cp:=cdr try_to_sub_cp;
 %   if not freeof(sb_cp,a) and lin_check(sb_cp,{a}) then <<
-%    num_sb:={'difference, sb_cp,{'times,a,coeffn(sb_cp,a,1)}};
+%    num_sb:={'DIFFERENCE, sb_cp,{'times,a,coeffn(sb_cp,a,1)}};
 %
 %    singular_ex_cp:=singular_ex;
 %    while singular_ex_cp do << 
@@ -7769,7 +7773,7 @@ symbolic procedure add_to_sol_list$  % Sergey's version
 if sol_list then 
 begin scalar fl,fpid,file,pipein,st,cnt,a,save,ofl!*bak; %,fd
 
- file := bldmsg("%wsol_list", session_);
+ file := bldmsg("%wsol_list",session_);
  fpid := bldmsg("%s.%w",file,getpid());
 
  cnt:=0;
@@ -8283,8 +8287,8 @@ begin scalar session_bak,set1,set2,sol_list1,sol_list2,echo_bak,semic_bak$
 
 end$
 
-symbolic operator clear_files$
-symbolic procedure clear_files$
+symbolic operator clear_session_files$
+symbolic procedure clear_session_files$
 begin scalar s$
  s:=explode session_;
  s:=compress cons(car s,cdddr s)$
@@ -8760,7 +8764,7 @@ module consistency_checks$
 %  h:=get(p,'histry_);
 %  for each q in pdes do
 %  h:=subst(prepsq get(q,'sqval),q,h)$
-%  if not zerop reval {'difference,prepsq get(p,'sqval),h} then <<
+%  if not zerop reval {'DIFFERENCE,prepsq get(p,'sqval),h} then <<
 %   write"The history value of ",p," is not correct!"$
 %   k:=t$
 %   terpri()
@@ -9281,7 +9285,7 @@ module let_rule_handling$
 symbolic procedure copyrule2eqn(h,pdes)$
 % h = {'replaceby,f, {'!*sq,...,t}}
 begin scalar l$
- l:=mkeqSQ(simp!* {'difference,cadr h,caddr h},nil,nil,ftem_,vl_,
+ l:=mkeqSQ(simp!* {'DIFFERENCE,cadr h,caddr h},nil,nil,ftem_,vl_,
                     allflags_,t,list(0),nil,pdes)$
  pdes:=eqinsert(l,pdes);
  return pdes

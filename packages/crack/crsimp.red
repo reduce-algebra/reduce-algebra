@@ -1067,7 +1067,7 @@ again:
         if print_ then <<
           write"The coefficient to be set = 0 in the first subcase is:"$
           %h:=print_all;          print_all:=t;
-          hh:=print_;            print_:=300;
+          hh:=print_;            print_:=30;
           typeeqlist(list q);
           %print_all:=h;
           print_:=hh
