@@ -33,8 +33,16 @@ debpackages:
 	cd reduce ; debuild --set-envvar BUILDTOPDIR=$(realpath $(BUILDTOPDIR)) -b -us -uc
 
 rpmpackages:
-	fakeroot alien -k -r reduce-*_$(SNAPSHOT)_*.deb
-
+	for f in reduce-*_$(SNAPSHOT)_*.deb ; \
+	  do echo $$f ; \
+             msg=`fakeroot alien -k -r -g $${f}` ; \
+	     msg=$${msg#Directory } ; dir=$${msg% prepared*} ; \
+	     arch=$${f##*_} ; arch=$${arch%.deb} ; rpmarch=`echo $${arch} | sed -e 's/all/noarch/' -e 's/amd64/x86_64/'` ; \
+             (cd $${dir} ; \
+              sed -i -e '/^%dir "\(\/\|\/usr\/\|\/usr\/bin\/\|\/usr\/lib\/\|\/usr\/share\/\|\/usr\/share\/doc\/\|\/etc\/\)"/d' *.spec ; \
+	      rpmbuild -bb --buildroot=`pwd` --target=$${rpmarch} *.spec ) ; \
+	  done
+          
 
 source-archive:
 	-rm -rf reduce-source-$(SNAPSHOT) *.tar.bz2
