@@ -34,13 +34,16 @@ debpackages:
 
 rpmpackages:
 	for f in reduce-*_$(SNAPSHOT)_*.deb ; \
-	  do echo $$f ; \
+	  do \
              msg=`fakeroot alien -k -r -g $${f}` ; \
 	     msg=$${msg#Directory } ; dir=$${msg% prepared*} ; \
 	     arch=$${f##*_} ; arch=$${arch%.deb} ; rpmarch=`echo $${arch} | sed -e 's/all/noarch/' -e 's/amd64/x86_64/'` ; \
-             (cd $${dir} ; \
-              sed -i -e '/^%dir "\(\/\|\/usr\/\|\/usr\/bin\/\|\/usr\/lib\/\|\/usr\/share\/\|\/usr\/share\/doc\/\|\/etc\/\)"/d' *.spec ; \
-	      rpmbuild -bb --buildroot=`pwd` --target=$${rpmarch} *.spec ) ; \
+             pkg=$${f%.deb} ; \
+             (cd $${dir} ; tar -c -z -f ../$${pkg}.tgz --exclude='*.spec' . ) ; \
+	     sed -i -e '/^%dir "\(\/\|\/usr\/\|\/usr\/bin\/\|\/usr\/lib\/\|\/usr\/share\/\|\/usr\/share\/doc\/\|\/etc\/\)"/d' $${dir}/*.spec ; \
+	     rpmbuild -bb --buildroot=`pwd`/$${dir} --target=$${rpmarch} $${dir}/*.spec >tmp.log 2>&1 ; \
+             test -n "$?" && echo Build of $${dir} failed: $?, log file follows: && cat tmp.log ; \
+	     rm -f tmp.log ; \
 	  done
           
 
