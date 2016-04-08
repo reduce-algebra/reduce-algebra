@@ -39,11 +39,13 @@ rpmpackages:
 	     msg=$${msg#Directory } ; dir=$${msg% prepared*} ; \
 	     arch=$${f##*_} ; arch=$${arch%.deb} ; rpmarch=`echo $${arch} | sed -e 's/all/noarch/' -e 's/amd64/x86_64/'` ; \
              pkg=$${f%.deb} ; \
-             (cd $${dir} ; tar -c -z -f ../$${pkg}.tgz --exclude='*.spec' . ) ; \
-	     sed -i -e '/^%dir "\(\/\|\/usr\/\|\/usr\/bin\/\|\/usr\/lib\/\|\/usr\/share\/\|\/usr\/share\/doc\/\|\/etc\/\)"/d' $${dir}/*.spec ; \
-	     rpmbuild -bb --buildroot=`pwd`/$${dir} --target=$${rpmarch} $${dir}/*.spec >tmp.log 2>&1 ; \
-             test -n "$?" && echo Build of $${dir} failed: $?, log file follows: && cat tmp.log ; \
-	     rm -f tmp.log ; \
+             (cd $${dir} ; \
+	      tar -c -z -f ../$${pkg}.tgz --exclude='*.spec' . ; \
+	      sed -i -e '/^%dir "\(\/\|\/usr\/\|\/usr\/bin\/\|\/usr\/lib\/\|\/usr\/share\/\|\/usr\/share\/doc\/\|\/etc\/\)"/d' *.spec ; \
+	      rpmbuild -bb --buildroot=`pwd` --target=$${rpmarch} *.spec >/tmp/$${dir}.log 2>&1 ; \
+              test -n "$?" && echo Build of $${dir} failed: $?, log file follows: && cat /tmp/$${dir}.log ; \
+	      echo rm -f /tmp/$${dir}.log ; \
+             ) ; \
 	  done
           
 
