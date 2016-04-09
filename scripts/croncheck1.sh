@@ -206,6 +206,7 @@ ssh -p $LINUX_PORT $LINUX_USER@localhost \( \
 # Recover the built files.
 scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.deb $here/../snapshots
 scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.rpm $here/../snapshots
+scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.tgz $here/../snapshots
 
 # Shut down the guest. I do this by issing a command within the VM rather
 # than by an externally forced power-down since I hope that will count
