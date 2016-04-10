@@ -42,7 +42,6 @@ rpmpackages:
              (cd $${dir} ; \
 	      tar -c -z -f ../$${pkg}.tgz --exclude='*.spec' . ; \
 	      sed -i -e '/^%dir "\(\/\|\/usr\/\|\/usr\/bin\/\|\/usr\/lib\/\|\/usr\/share\/\|\/usr\/share\/doc\/\|\/etc\/\)"/d' *.spec ; \
-
 	      rpmbuild -bb --buildroot=`pwd` --target=$${rpmarch} *.spec >/tmp/$${dir}.log 2>&1 ; \
               test -n "$?" && echo Build of $${dir} failed: $?, log file follows: && cat /tmp/$${dir}.log ; \
 	      echo rm -f /tmp/$${dir}.log ; \
@@ -120,6 +119,6 @@ reduce-source-psl-$(SNAPSHOT).tar.bz2:
 
 clean:
 	rm -rf $(BUILDTOPDIR) $(BUILDTOPDIR).log
-	rm -f *.deb *.rpm *.stamp
+	rm -f *.deb *.rpm *.tgz *.tar.bz2 *.stamp
 
 # end of Makefile
