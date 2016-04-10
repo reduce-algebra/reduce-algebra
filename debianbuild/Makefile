@@ -27,7 +27,7 @@ $(BUILDTOPDIR).stamp:
 	-rm -rf reduce-source-$(SNAPSHOT)
 	touch $(BUILDTOPDIR).stamp
 
-reduce-packages:	$(BUILDTOPDIR).stamp debpackages rpmpackages
+reduce-packages:	$(BUILDTOPDIR).stamp debpackages rpmpackages tarpackages
 
 debpackages:
 	cd reduce ; debuild --set-envvar BUILDTOPDIR=$(realpath $(BUILDTOPDIR)) -b -us -uc
@@ -42,12 +42,37 @@ rpmpackages:
              (cd $${dir} ; \
 	      tar -c -z -f ../$${pkg}.tgz --exclude='*.spec' . ; \
 	      sed -i -e '/^%dir "\(\/\|\/usr\/\|\/usr\/bin\/\|\/usr\/lib\/\|\/usr\/share\/\|\/usr\/share\/doc\/\|\/etc\/\)"/d' *.spec ; \
+
 	      rpmbuild -bb --buildroot=`pwd` --target=$${rpmarch} *.spec >/tmp/$${dir}.log 2>&1 ; \
               test -n "$?" && echo Build of $${dir} failed: $?, log file follows: && cat /tmp/$${dir}.log ; \
 	      echo rm -f /tmp/$${dir}.log ; \
              ) ; \
 	  done
-          
+
+TARDEST=/tmp/reduce-snapshot-$(SNAPSHOT)
+
+tarpackages:
+# This assumes that both the CSL and PSL versions have already been built in
+# the $(BUILDTOPDIR) directory.
+	rm -rf $(TARDEST)
+	mkdir $(TARDEST)
+	mkdir $(TARDEST)/csl
+	mkdir $(TARDEST)/psl
+	mkdir $(TARDEST)/reduce.doc
+	cp $(BUILDTOPDIR)/scripts/cslhere.sh $(TARDEST)/redcsl
+	cp $(BUILDTOPDIR)/scripts/pslhere.sh $(TARDEST)/redpsl
+	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/csl $(TARDEST)/csl
+	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/csl.img $(TARDEST)/csl
+	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce $(TARDEST)/csl
+	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce.img $(TARDEST)/csl
+	cp -r $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce.fonts $(TARDEST)/csl
+	cp -r $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce.resources $(TARDEST)/csl
+	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce.doc/BINARY-LICENSE.txt $(TARDEST)/reduce.doc
+	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce.doc/BSD-LICENSE.txt $(TARDEST)/reduce.doc
+        if test -f $(BUILDTOPDIR)/pslbuild/*ubuntu*/64; then cp -r $(BUILDTOPDIR)/pslbuild/*ubuntu*/64 $(TARDEST)/psl; fi
+        cp -r $(BUILDTOPDIR)/pslbuild/*ubuntu*/psl $(TARDEST)/psl
+        cp -r $(BUILDTOPDIR)/pslbuild/*ubuntu*/red $(TARDEST)/psl
+        tar cfj reduce-freestanding-$(SNAPSHOT).tar.bz2 -C /tmp reduce-snapshot-$(SNAPSHOT)
 
 source-archive:
 	-rm -rf reduce-source-$(SNAPSHOT) *.tar.bz2
