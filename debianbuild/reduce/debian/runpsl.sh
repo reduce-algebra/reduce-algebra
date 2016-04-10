@@ -9,8 +9,10 @@ x86_64)
       ;;
 esac
 
-bin="$TOPDIR/usr/lib/reduce/pslbuild/psl/bpsl"
-img="$TOPDIR/usr/lib/reduce/pslbuild/red/reduce.img"
+MYDIR=`dirname $0`
+PSLBUILDDIR=`realpath $MYDIR/../lib/reduce/pslbuild`
+bin="$PSLBUILDDIR/psl/bpsl"
+img="$PSLBUILDDIR/red/reduce.img"
 
 exec $bin -td $STORE -f $img $*
 

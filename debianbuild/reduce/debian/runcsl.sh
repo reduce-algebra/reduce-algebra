@@ -1,4 +1,6 @@
 #! /bin/sh
 
-exec $TOPDIR/usr/lib/reduce/cslbuild/csl/reduce $*
+MYDIR=`dirname $0`
+CSLBUILDDIR=`realpath $MYDIR/../lib/reduce/cslbuild`
+exec $CSLBUILDDIR/csl/reduce $*
 
