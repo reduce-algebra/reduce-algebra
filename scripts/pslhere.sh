@@ -6,7 +6,7 @@ here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
 here=`cd \`dirname "$here"\` ; pwd -P`
 
 STORE=16000000
-if test -f $here/psl/64
+if test -f $here/psl/psl/64
 then
   STORE=1000
 fi

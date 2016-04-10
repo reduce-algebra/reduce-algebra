@@ -61,6 +61,7 @@ tarpackages:
 	mkdir $(TARDEST)/reduce.doc
 	cp $(BUILDTOPDIR)/scripts/cslhere.sh $(TARDEST)/redcsl
 	cp $(BUILDTOPDIR)/scripts/pslhere.sh $(TARDEST)/redpsl
+	cp -r $(BUILDTOPDIR)/xmpl $(TARDEST)
 	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/csl $(TARDEST)/csl
 	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/csl.img $(TARDEST)/csl
 	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce $(TARDEST)/csl
@@ -69,10 +70,9 @@ tarpackages:
 	cp -r $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce.resources $(TARDEST)/csl
 	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce.doc/BINARY-LICENSE.txt $(TARDEST)/reduce.doc
 	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce.doc/BSD-LICENSE.txt $(TARDEST)/reduce.doc
-        if test -f $(BUILDTOPDIR)/pslbuild/*ubuntu*/64; then cp -r $(BUILDTOPDIR)/pslbuild/*ubuntu*/64 $(TARDEST)/psl; fi
-        cp -r $(BUILDTOPDIR)/pslbuild/*ubuntu*/psl $(TARDEST)/psl
-        cp -r $(BUILDTOPDIR)/pslbuild/*ubuntu*/red $(TARDEST)/psl
-        tar cfj reduce-freestanding-$(SNAPSHOT).tar.bz2 -C /tmp reduce-snapshot-$(SNAPSHOT)
+	cp -r $(BUILDTOPDIR)/pslbuild/*ubuntu*/psl $(TARDEST)/psl
+	cp -r $(BUILDTOPDIR)/pslbuild/*ubuntu*/red $(TARDEST)/psl
+	tar cfj reduce-freestanding-$(SNAPSHOT).tar.bz2 -C /tmp reduce-snapshot-$(SNAPSHOT)
 
 source-archive:
 	-rm -rf reduce-source-$(SNAPSHOT) *.tar.bz2
@@ -119,6 +119,7 @@ reduce-source-psl-$(SNAPSHOT).tar.bz2:
 		reduce-source-$(SNAPSHOT)/psl
 
 clean:
+	rm -rf $(BUILDTOPDIR) $(BUILDTOPDIR).log
 	rm -f *.deb *.rpm *.stamp
 
 # end of Makefile
