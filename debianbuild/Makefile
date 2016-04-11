@@ -1,5 +1,6 @@
 
 SNAPSHOT=$(shell LANG=C date "+%Y%m%d")
+MACHINE=$(shell uname -m)
 NOW=$(shell LANG=C date "+%a, %d %b %Y %T %z")
 CHANGELOG=reduce/debian/changelog
 BUILDTOPDIR=C
@@ -48,7 +49,7 @@ rpmpackages:
              ) ; \
 	  done
 
-TARDEST=/tmp/reduce-snapshot-$(SNAPSHOT)
+TARDEST=/tmp/reduce-snapshot-$(MACHINE)-$(SNAPSHOT)
 
 tarpackages:
 # This assumes that both the CSL and PSL versions have already been built in
