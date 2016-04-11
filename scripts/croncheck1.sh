@@ -259,8 +259,8 @@ ssh -p $LINUX32_PORT $LINUX32_USER@localhost \( \
 
 scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.deb $here/../snapshots
 scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.rpm $here/../snapshots
-scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.tgz $here/../snapshots
-scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.tar.bz2 $here/../snapshots
+scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.tgz $here/../snapshots
+scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.tar.bz2 $here/../snapshots
 
 ssh -p $LINUX32_PORT $LINUX32_USER@localhost \
   \( sudo apt-get -y update \; \
