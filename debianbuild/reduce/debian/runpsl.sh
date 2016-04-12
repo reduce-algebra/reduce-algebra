@@ -10,7 +10,7 @@ x86_64)
 esac
 
 MYDIR=`dirname $0`
-PSLBUILDDIR=`realpath $MYDIR/../lib/reduce/pslbuild`
+PSLBUILDDIR=`readlink -m $MYDIR/../lib/reduce/pslbuild`
 bin="$PSLBUILDDIR/psl/bpsl"
 img="$PSLBUILDDIR/red/reduce.img"
 
