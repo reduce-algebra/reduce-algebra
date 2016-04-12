@@ -13,22 +13,22 @@ off echo;
 %  Date:   15. June 1999, 6. May 2003                               %
 %                                                                   %
 %  Details about the syntax of conlaw1-4 are given in conlaw.tex.   %
-%  To run this file read in or load crack, conlaw0 before.          %
+%  To run this file read in or load crack, conlaw0, ..., conlaw4    %
+%  before.                                                          %
 %                                                                   %
 %  The statement lisp(print_:=nil); suppresses output of the        %
 %  computation. To see details of it do lisp(print_:=50).           %
 %                                                                   %
 %*******************************************************************%
 
-load crack ; % ,conlaw0,conlaw1,conlaw2,conlaw3,conlaw4$
+% load crack,conlaw0,conlaw1,conlaw2,conlaw3,conlaw4$
 
 lisp(depl!*:=nil)$     % clearing of all dependencies
-%setcrackflags()$       % standart flags
 lisp(print_:=nil)$     % no output of the calculation
 
 %% off batch_mode$
 
-comment -------------------------------------------------------------
+COMMENT -------------------------------------------------------------
 The following example calculates all conservation laws of the KdV-
 equation with a characteristic function of order not higher than two;
 
@@ -37,7 +37,7 @@ depend u,x,t$          % declares u to be a function of x,t
 conlaw4({{df(u,t) = u*df(u,x)+df(u,x,3)}, {u}, {t,x}},
         {0, 2, t, {}, {}}                             )$
 
-comment -------------------------------------------------------------
+COMMENT -------------------------------------------------------------
 The next example demonstrates that one can specify an ansatz
 for the characteristic function of one or more equations of the
 PDE-system. In this example all conservation laws of the wave
@@ -64,10 +64,11 @@ q_1:=r*df(u,x,2)$
 conlaw2({{df(u,t)=df(v,x),
           df(v,t)=df(u,x) }, {u,v}, {t,x}},
         {2, 2, t, {r}, {}})$
+
 clear q_1$
 nodepnd {q_1}$
 
-comment -------------------------------------------------------------
+COMMENT -------------------------------------------------------------
 For the Burgers equation the following example finds all conservation
 laws of zero'th order in the characteristic function up to the solution
 of the linear heat equation. This is an example for what happens when 
@@ -80,7 +81,7 @@ depend u,x,t$
 conlaw1({{df(u,t)=df(u,x,2)+df(u,x)**2/2}, {u}, {t,x}}, 
         {0, 0, t, {}, {}}                              )$      
 
-comment -------------------------------------------------------------
+COMMENT -------------------------------------------------------------
 In this example all conservation laws of the Ito system are calculated
 that have a conserved density of order not higher than one.
 This is a further example of non-polynomial conservation laws;
@@ -92,7 +93,7 @@ conlaw1({{df(u,t)=df(u,x,3)+6*u*df(u,x)+2*v*df(v,x),
           df(v,t)=2*df(u,x)*v+2*u*df(v,x)           }, {u,v}, {t,x}},
         {0, 1, t, {}, {}})$
 
-comment -------------------------------------------------------------
+COMMENT -------------------------------------------------------------
 In the next example the 5th order Korteweg - de Vries equation is
 investigated concerning conservation laws of order 0 and 1 in the
 conserved density P_t. Parameters a,b,c in the PDE are determined
@@ -108,14 +109,34 @@ conlaw1({{df(u,t)=-df(u,x,5)-a*u**2*df(u,x)
          {u}, {t,x}},
         {0, 1, t, {a,b,c}, {}})$
 
-comment -------------------------------------------------------------
+COMMENT -------------------------------------------------------------
 conlawi can also be used to determine first integrals of ODEs.
 The generality of the ansatz is not just specified by the order.
 For example, the Lorentz system below is a first order system
 therefore any first integrals are zero order expressions.
 The ansatz to be investigated below looks for first integrals of
 the form a1(x,1)+a2(y,t)+a3(x,t)=const. and determines parameters
-s,b,r such that first integrals exist;
+s,b,r such that first integrals exist.
+
+The solution strategy is encoded in the lisp variable proc_list_. The 
+default value is available under default_proc_list_. This usually does 
+a good job but sometimes one gets a better or faster result by modifying 
+this list and thus the strategy. In this computation the default 
+proc_list_ performs integrations early and leads in one case to an 
+equation which is separable but non-polynomial and can not be solved 
+completely automatically. In this example it is better to perform 
+reductions (module 'diff_length_reduction') and Groebner Basis steps 
+(module 'decoupling') with a higher priority than integrations, i.e. to 
+place them before modules 'full_integration' and 'integration'. One can 
+do that modification to proc_list_ interactively by the command OFF
+BATCH_MODE before calling conlaw and then interactively 'cp' in the 
+crack run. But then all computational steps would be shown, so for 
+the purpose of this test file we simply compose proc_list_ as below. 
+For more serious computations many more modules can and should be used.
+
+A different feature of this computation is that case splittings lead 
+to many solutions that can be merged (manually) to 4 solutions 
+corresponding to the cases b=2*s| s=1, b=1| r=0, b=1| s=0. ;
 
 nodepnd {x,y,z,a1,a2,a3,b,s,r}$
 depend x,t$
@@ -124,6 +145,22 @@ depend z,t$
 depend a1,x,t$
 depend a2,y,t$
 depend a3,z,t$
+
+lisp << proc_list_:='(
+ to_do
+ separation
+ subst_level_35
+ diff_length_reduction  
+ decoupling 
+ full_integration        
+ gen_separation 
+ integration 
+ subst_level_4
+ case_gen_separation
+ find_factorization        
+ factorize_any
+ )
+>>$
 
 p_t:=a1+a2+a3$
 conlaw1({{df(x,t) = - s*x + s*y,
@@ -136,8 +173,10 @@ conlaw1({{df(x,t) = - s*x + s*y,
 clear p_t$
 nodepnd {u,v,r,p_t,x,y,z,a1,a2,a3,b,s,r}$
 
-lisp <<
-  delete!-file!-match "bu*sol_list";
-  delete!-file!-match "ct*-" >>$
+%lisp <<
+%  delete!-file!-match "bu*sol_list";
+%  delete!-file!-match "so*-*";
+%  delete!-file!-match "ct*-" 
+%>>$
 
 end$
