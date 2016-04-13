@@ -56,12 +56,6 @@ then
   touch ./cslbase/gc-7/reconf.stamp
 fi
 
-if ! test -f ./cslbase/crlibm/reconf.stamp
-then
-  L="$L ./cslbase/crlibm"
-  touch ./cslbase/crlibm/reconf.stamp
-fi
-
 for d in $L
 do
   printf "\nautoreconf in directory '%s'\n" $d
