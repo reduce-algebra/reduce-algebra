@@ -370,7 +370,7 @@ case $host in
   XLIBS="-lXext -lX11 -lXft -lfontconfig"
   macintosh_build="yes"
   darwin_build="yes"
-  if test "x$CC$CXX" == "x" || (test "x$CC" == "xgcc" && test "x$CXX" == "xg++")
+  if test "x$CC$CXX" = "x" || (test "x$CC" = "xgcc" && test "x$CXX" = "xg++")
   then
 # The following line was suggested by the libEDIT configuration files.
 # Even though I no longer use libEDIT I will keep it!

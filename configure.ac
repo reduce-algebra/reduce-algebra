@@ -779,7 +779,7 @@ case $inplace in
 # because of messy details of how the PSL version is configured here.
 # Right now I do not want to write out an explanatio of all the horrid
 # details.
-    if test "x$with_crlibm" == "xno"
+    if test "x$with_crlibm" = "xno"
     then
       AC_MSG_NOTICE([crlibm will not be used here])
     else
@@ -1239,7 +1239,7 @@ then
 
 fi
 
-if test "x$with_crlibm" == "xno"
+if test "x$with_crlibm" = "xno"
 then
   AC_MSG_NOTICE([crlibm will not be used here])
 else
@@ -1308,7 +1308,7 @@ else
   cd "$builddir"
 fi
 
-if test "x$with_boehm" == "xno"
+if test "x$with_boehm" = "xno"
 then
   AC_MSG_NOTICE([boehm will not be used here])
 else
@@ -1387,7 +1387,7 @@ else
 fi
 
 # I do not provide any way to disable building of softfloat!
-if test "x$with_libsoftfloat" == "xno"
+if test "x$with_libsoftfloat" = "xno"
 then
   AC_MSG_NOTICE([libsoftfloat will not be used here])
 else
