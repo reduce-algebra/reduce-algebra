@@ -13,7 +13,7 @@ fi
 
 # My intent now is that this script can be launched from anywhere, but it
 # lives within the scripts directory of a checkout of Reduce and it will
-# end up placing snapshots in a snapshots directort of that copy of Reduce.
+# end up placing snapshots in a snapshots directory of that copy of Reduce.
 
 current=`pwd -P`
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
@@ -123,6 +123,9 @@ then
 fi
 
 mkdir snapshots
+mkdir snapshots/linux-rpm
+mkdir snapshots/linux-deb
+mkdir snapshots/linux-tar
 
 # I need the following so I grab the correct version of svn, as installed via
 # macports! And in general to be certain that I can use macports things. The
@@ -204,10 +207,10 @@ ssh -p $LINUX_PORT $LINUX_USER@localhost \( \
   time make \)
 
 # Recover the built files.
-scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.deb $here/../snapshots
-scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.rpm $here/../snapshots
-scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.tgz $here/../snapshots
-scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.tar.bz2 $here/../snapshots
+scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.deb $here/../snapshots/linux-deb
+scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.rpm $here/../snapshots/linux-rpm
+scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.tgz $here/../snapshots/linux-tar
+scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.tar.bz2 $here/../snapshots/linux-tar
 
 # Shut down the guest. I do this by issing a command within the VM rather
 # than by an externally forced power-down since I hope that will count
@@ -257,10 +260,10 @@ ssh -p $LINUX32_PORT $LINUX32_USER@localhost \( \
   pushd C \; ./autogen.sh \; popd \; \
   time make \)
 
-scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.deb $here/../snapshots
-scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.rpm $here/../snapshots
-scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.tgz $here/../snapshots
-scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.tar.bz2 $here/../snapshots
+scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.deb $here/../snapshots/linux-deb
+scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.rpm $here/../snapshots/linux-rpm
+scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.tgz $here/../snapshots/linux-tar
+scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.tar.bz2 $here/../snapshots/linux-tar
 
 ssh -p $LINUX32_PORT $LINUX32_USER@localhost \
   \( sudo apt-get -y update \; \
