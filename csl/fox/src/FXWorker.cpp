@@ -634,7 +634,9 @@ FXFont *selectFont(const char *name, int size,
 // I will only use half the available width. This must be a matter where
 // taste comes in, so others may have different views.
     double bestSize;
-    if (rootWidth > 1100)     // try to 60% fill the root width
+    if (rootWidth > 1600)     // try to 45% fill the root width
+        bestSize = (double)pointSize*0.45/fill;
+    else if (rootWidth > 1100)     // try to 60% fill the root width
         bestSize = (double)pointSize*0.6/fill;
     else if (rootWidth > 900) // try to fill 0.75 the root width
         bestSize = (double)pointSize*0.75/fill;
@@ -644,6 +646,19 @@ FXFont *selectFont(const char *name, int size,
 // I think that I will avoid over-teeny fonts come what may. So I will
 // increate the selected size so that I always use at least 8pt.
     if (pointSize < 80) pointSize = 80;
+#ifdef __APPLE__
+// This is going to arrange that the size requested is one that is liable
+// to be available in the Menlo font. If I do not do this I get garbage
+// back as the reported size when I activate the dialog to select a new
+// font.
+    pointSize = 10*((pointSize + 5)/10); // Round to a multiple of 10
+    if (pointSize < 80) pointSize = 80;
+    if (pointSize == 130) pointSize = 140;
+    else if (pointSize == 150) pointSize = 160;
+    else if (pointSize == 170) pointSize = 180;
+    else if (pointSize == 190) pointSize = 200;
+    else if (pointSize > 200) pointSize = 200;
+#endif
     fd.size = pointSize;
     delete f;
 // Finally create a fond that is the size that may make sense!

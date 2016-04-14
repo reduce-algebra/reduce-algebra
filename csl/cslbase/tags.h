@@ -1,4 +1,4 @@
-// tags.h                                 Copyright (C) Codemist 1990-2016
+ 
 
 //
 //   Data-structure and tag bit definitions, also common C macros
@@ -422,12 +422,12 @@ typedef uintptr_t Header;
 //
 // For a first version here objects will have a header word with the following
 // format:
-//    xxxx:xxxx:xxxx:xxxx:xxxx:x  yyy:yy zz g100
+//    xxxx:xxxx:xxxx:xxxx:xxxx:x  yyy:yy zz g010
 //             21-bits            5-bits  2   4
 // The low 3 bits are always TAG_HDR_IMMED, and at present g is reserved
 // for use by the garbage collector.
 //
-// I will use a shift by Tw to cope with the width of g100 with
+// I will use a shift by Tw to cope with the width of g010 with
 // Tw=4 for now but potentially Tw=3 in the future
 
 #define Tw (4)
@@ -538,26 +538,26 @@ typedef uintptr_t Header;
 
 // The codes for yyyyy are as follows:
 
-//   xxx:00 00 g100  symbol header
-//   xxx:01 00 g100  character
-//   xxx:10 00 g100  handle for bytecode. Why do I do it this way?
-//   xxx:11 00 g100  special marker identifier (Spid) for internal use
+//   xxx:00 00 g010  symbol header
+//   xxx:01 00 g010  character
+//   xxx:10 00 g010  handle for bytecode. Why do I do it this way?
+//   xxx:11 00 g010  special marker identifier (Spid) for internal use
 
-//   000:00 01 g100  simple vector
-//   000:01 01 g100  array
-//   000:10 01 g100  structure
-//   000:11 01 g100  object
-//   001:00 01 g100  hash table
-//   001:01 01 g100  hash table with rehash pending
-//   001:10 01 g100  (spare: 1 code)
-//   001:11 01 g100  rational number  *
-//   010:xx 01 g100  (spare: 4 codes)
-//   011:11 01 g100  complex number   *
-//   100:xx 01 g100  stream and mixed1, 2 and 3
-//   1x1:11 01 g100  (spare, but classifies as a number: 2 codes)
-//   1xx:xx 01 g100  (spare: 14 codes)
+//   000:00 01 g010  simple vector
+//   000:01 01 g010  array
+//   000:10 01 g010  structure
+//   000:11 01 g010  object
+//   001:00 01 g010  hash table
+//   001:01 01 g010  hash table with rehash pending
+//   001:10 01 g010  (spare: 1 code)
+//   001:11 01 g010  rational number  *
+//   010:xx 01 g010  (spare: 4 codes)
+//   011:11 01 g010  complex number   *
+//   100:xx 01 g010  stream and mixed1, 2 and 3
+//   1x1:11 01 g010  (spare, but classifies as a number: 2 codes)
+//   1xx:xx 01 g010  (spare: 14 codes)
 
-//   yyy:yy 10 g100  bit-vector with yyyyy (1 to 32) bits in final word.
+//   yyy:yy 10 g010  bit-vector with yyyyy (1 to 32) bits in final word.
 
 // The final column here explains what size units of storage fit within
 // the object. For (eg) "encapsulated general pointer" I have made it
@@ -565,38 +565,38 @@ typedef uintptr_t Header;
 // those sorts of data to survice serialization, so I annotate them here
 // as "64?".
 
-//   000:00 11 g100  vec8-1                         8
-//   000:01 11 g100  string-1                       8
-//   000:10 11 g100  bytecode-1                     8
-//   000:11 11 g100  vec16-1                        16
-//   001:00 11 g100  vec32                          32
-//   001:01 11 g100  vec64                          64
-//   001:10 11 g100  vec128                         128
-//   001:11 11 g100  bignum            *            32
-//   010:00 11 g100  vec8-2                         8
-//   010:01 11 g100  string-2                       8
-//   010:10 11 g100  bytecode-2                     8
-//   010:11 11 g100  maple-ref                      64?
-//   011:00 11 g100  foreign                        64?
-//   011:01 11 g100  encapsulated-sp                64?
-//   011:10 11 g100  encapsulated general pointer   64?
-//   011:11 11 g100  float32           *            F32
-//   100:00 11 g100  vec8-2                         8
-//   100:01 11 g100  string-3                       8
-//   100:10 11 g100  bytecode-3                     8
-//   100:11 11 g100  vec16-2                        16
-//   101:00 11 g100  vecflt32                       F32
-//   101:01 11 g100  vecflt64                       F64
-//   101:10 11 g100  vecflt128                      F128
-//   101:11 11 g100  float64           *            F64
-//   110:00 11 g100  vec8-3                         8
-//   110:01 11 g100  string-4                       8
-//   110:10 11 g100  bytecode-4                     8
-//   110:11 11 g100  nativecode                     8
-//   111:00 11 g100  (spare: 1 code)                X
-//   111:01 11 g100  (spare: 1 code)                X
-//   111:10 11 g100  (spare: 1 code)                X
-//   111:11 11 g100  float128          *            F128
+//   000:00 11 g010  vec8-1                         8
+//   000:01 11 g010  string-1                       8
+//   000:10 11 g010  bytecode-1                     8
+//   000:11 11 g010  vec16-1                        16
+//   001:00 11 g010  vec32                          32
+//   001:01 11 g010  vec64                          64
+//   001:10 11 g010  vec128                         128
+//   001:11 11 g010  bignum            *            32
+//   010:00 11 g010  vec8-2                         8
+//   010:01 11 g010  string-2                       8
+//   010:10 11 g010  bytecode-2                     8
+//   010:11 11 g010  maple-ref                      64?
+//   011:00 11 g010  foreign                        64?
+//   011:01 11 g010  encapsulated-sp                64?
+//   011:10 11 g010  encapsulated general pointer   64?
+//   011:11 11 g010  float32           *            F32
+//   100:00 11 g010  vec8-2                         8
+//   100:01 11 g010  string-3                       8
+//   100:10 11 g010  bytecode-3                     8
+//   100:11 11 g010  vec16-2                        16
+//   101:00 11 g010  vecflt32                       F32
+//   101:01 11 g010  vecflt64                       F64
+//   101:10 11 g010  vecflt128                      F128
+//   101:11 11 g010  float64           *            F64
+//   110:00 11 g010  vec8-3                         8
+//   110:01 11 g010  string-4                       8
+//   110:10 11 g010  bytecode-4                     8
+//   110:11 11 g010  nativecode                     8
+//   111:00 11 g010  (spare: 1 code)                X
+//   111:01 11 g010  (spare: 1 code)                X
+//   111:10 11 g010  (spare: 1 code)                X
+//   111:11 11 g010  float128          *            F128
 
 // I have tests that let me discern the size of storage units within a
 // vector. This matters for serialisation and deserialisation because the
@@ -617,7 +617,7 @@ typedef uintptr_t Header;
 #define vector_f64(h)  (((0x00a00000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0)
 #define vector_f128(h) (((0x80400000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0)
 
-// I have made the allocation so that any header of the form xx1:11x1:g100
+// I have made the allocation so that any header of the form xx1:11x1:g010
 // is the header of a number.
 
 

@@ -1543,12 +1543,12 @@ long FXTerminal::onCmdFont(FXObject *c, FXSelector s, void *ptr)
     keyFlags &= ~ESC_PENDING;
     FXFontDialog d(this, "Font", DECOR_BORDER|DECOR_TITLE);
     FXFontDesc description;
-FILE *f = fopen("/tmp/font.log", "a");
-fprintf(f, "onCmdFont\n"); fflush(f);
+//FILE *f = fopen("/tmp/font.log", "a");
+//fprintf(f, "onCmdFont\n"); fflush(f);
     font->getFontDesc(description);    // information about the current font ..
-fprintf(f, "onCmdFont current face as requested <%s>\n", description.face); fflush(f);
+//fprintf(f, "onCmdFont current face as requested <%s>\n", description.face); fflush(f);
     strcpy(description.face, font->getActualName().text());
-fprintf(f, "onCmdFont actual face in use <%s>\n", description.face); fflush(f);
+//fprintf(f, "onCmdFont actual face in use <%s>\n", description.face); fflush(f);
     description.flags =
         (description.flags & ~FXFont::Variable) | FXFont::Fixed;
     d.setFontSelection(description);   // .. and make that default choice!
@@ -1558,21 +1558,21 @@ fprintf(f, "onCmdFont actual face in use <%s>\n", description.face); fflush(f);
     if (d.execute())
     {   FXFont *o = font;
         d.getFontSelection(description);
-fprintf(f, "new face <%s>\n", description.face); fflush(f);
+//fprintf(f, "new face <%s>\n", description.face); fflush(f);
         FXFont *newFont = new FXFont(application_object, description);
         newFont->create();
-fprintf(f, "new actual name = %s\n", newFont->getActualName().text());
+//fprintf(f, "new actual name = %s\n", newFont->getActualName().text());
         if (!newFont->isFontMono())
         {   delete newFont;
             FXMessageBox::error(this, MBOX_OK, "Error",
                 "You must select a fixed-pitch font");
-fclose(f);
+//fclose(f);
             return 1;
         }
         setFont(newFont);
         delete o;                     // I must delete the old font.
     }
-fclose(f);
+//fclose(f);
     setFocus();   // I am uncertain, but without this I lose focus...
     return 1;
 }
@@ -2259,7 +2259,14 @@ void FXTerminal::setFont(FXFont *font0)
 // the same font and screen configuration will apply
     FXRegistry *reg = &(application_object->reg());
     reg->writeStringEntry("screen", "fontname",  font0->getName().text());
-    reg->writeIntEntry("screen", "fontsize",     font0->getSize());
+    int fs = font0->getSize();
+#ifdef __APPLE__
+    fs = 10*((fs+5)/10);
+    if (fs > 120 && ((fs/10) & 1) != 0) fs += 10;
+    if (fs < 80) fs = 80;
+    else if (fs > 200) fs = 200;
+#endif
+    reg->writeIntEntry("screen", "fontsize",     fs);
     reg->writeIntEntry("screen", "fontweight",   font0->getWeight());
     reg->writeIntEntry("screen", "fontslant",    font0->getSlant());
     reg->writeIntEntry("screen", "fontencoding", font0->getEncoding());

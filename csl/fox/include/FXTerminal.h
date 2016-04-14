@@ -481,7 +481,7 @@ extern FXTerminal *text;
 #define DEFAULT_FONT_NAME "Courier New"
 #else
 #ifdef __APPLE__
-#define DEFAULT_FONT_NAME "Courier New"
+#define DEFAULT_FONT_NAME "Menlo [bitstream]"
 #else
 #define DEFAULT_FONT_NAME "courier"
 #endif

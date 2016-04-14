@@ -19,6 +19,7 @@
 rm -rf fontconfig-2.11.1
 tar xvfj ../support-packages/fontconfig-2.11.1.tar.bz2
 cd fontconfig-2.11.1
+export MACOSX_DEPLOYMENT_TARGET=10.10
 ./configure --enable-static
 make
 sudo cp src/.libs/libfontconfig.a /opt/local/lib

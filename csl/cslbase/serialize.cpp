@@ -2207,7 +2207,7 @@ down:
 // Immediate data (eg characters and SPIDs).
         {   char msg[40];
             uint64_t nn = ((uint64_t)p) >> (Tw+2);
-            sprintf(msg, "char/spid, value=#%" PRIx64, nn);
+            sprintf(msg, "char/spid, value=%#" PRIx64, (uint64_t)p);
             write_byte(SER_CHARSPID, msg);
             write_u64(nn);
         }
