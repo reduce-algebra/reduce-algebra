@@ -1016,16 +1016,19 @@ asserted procedure ofsf_nextcell(ncbuffer: List, sp: AnuList, iri: Iri, xj: Kern
 	 ncb_put('finished, ncbuffer);
 	 return nil
       >>;
-      if cell then <<
-	 if not ((!*rlcadfulldimonly and j > k) or (!*rlqegen1 and j <= min2(1, k))) then
-	    return cell;
-      	 if ofsf_cadverbosep() then <<
-	    if !*rlcadfulldimonly and j > k then
-	       ioto_prin2 {"(", j, ":F)"};
-	    if !*rlqegen1 and j <= min2(1, k) then
+      if cell then
+	 % parameter space has indices j = 1, ..., k
+	 if !*rlcadfulldimonly and j > k then <<
+	    % we are in quantified space
+      	    if ofsf_cadverbosep() then
+	       ioto_prin2 {"(", j, ":F)"}
+	 >> else if !*rlqegen1 and k neq 0 and eqn(j, 1) then <<
+	    % there are parameters and we are in the base phase, i.e., the first variable
+	    % originally this condition was [j <= min2(1, k)]
+      	    if ofsf_cadverbosep() then
 	       ioto_prin2 {"(", j, ":G)"}
-	 >>
-      >>;
+	 >> else
+	    return cell;
       % There is no cell left, we need to get a root to get the next two cells.
       tgroot := iri_nextroot iri;
       cind := 2*(length iri_rootl iri);
@@ -1373,6 +1376,9 @@ asserted procedure atree_2gml_node_xml(tt: Atree, number: Integer): Any;
 	 ioto_prin2t "<rb>";
 	 mathprint prepsq iv_rb anu_iv anu;
 	 ioto_prin2t "</rb>";
+	 ioto_prin2t "<floatapp>";
+	 mathprint anu_evalf anu;
+	 ioto_prin2t "</floatapp>";
 	 ioto_prin2t "</assignment>"
       >>;
       ioto_prin2t "</tp>";
@@ -1380,7 +1386,13 @@ asserted procedure atree_2gml_node_xml(tt: Atree, number: Integer): Any;
       ioto_prin2t {"<tl>", acell_gettl c, "</tl>"};
       ioto_prin2t "</node>";
       ioto_prin2t """";
-      ioto_prin2t {"graphics [", "fill """, color, """]"};
+      ioto_prin2t "graphics [";
+      ioto_prin2t {"fill """, color, """"};
+      if evenp acell_getidx c then
+      	 ioto_prin2t "type ""rectangle"""
+      else
+      	 ioto_prin2t "type ""triangle""";
+      ioto_prin2t "]";
       ioto_prin2t "]";
       if nat then on1 'nat
    end;
