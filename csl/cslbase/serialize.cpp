@@ -1941,10 +1941,13 @@ down:
 // will be 1 byte long in easy cases but can cope with 2^64 possibilities in
 // all if necessary.
             printf("header : %" PRIxPTR "\n", qheader(p));
-            LispObject name = qpname(p);
-            if (is_vector(name) && is_string(name))
-            {   printf("Symbol name: %.*s\n",
-                    (int)length_of_byteheader(vechdr(name)), &celt(name, 0));
+            {   LispObject name = qpname(p);
+                if (is_vector(name) && is_string(name))
+                {   printf("Symbol name: %.*s\n",
+                        (int)length_of_byteheader(vechdr(name)),
+                        &celt(name, 0));
+                }
+            }
             write_u64((uint64_t)qheader(p)>>(Tw+4));
             printf("qfn0 : %" PRIxPTR "\n", (intptr_t)qfn0(p));
             write_u64(code_up_codepointer((void *)(qfn0(p))));
