@@ -341,7 +341,7 @@ const unsigned char *binary_read_filep;
 #else
 FILE *binary_read_file;
 #endif
-static FILE *binary_write_file;
+FILE *binary_write_file;
 static uint32_t subfile_checksum;
 static long int read_bytes_remaining, write_bytes_written;
 directory *fasl_files[MAX_FASL_PATHS];
@@ -2567,7 +2567,7 @@ void preserve(const char *banner, int len)
 // Any new-style native code is now declared discarded and the previous
 // (and portable) bytecode version gets put back. But the list showing what
 // functions might possibly have native versions is kept around.
-//
+// [This scheme is not in use yet]
     {   LispObject w = native_defs;
         while (consp(w))
         {   LispObject name = qcar(w);
@@ -2622,11 +2622,17 @@ void preserve(const char *banner, int len)
     write_everything();
 #else
     unadjust_all();    // Turn all pointers into base-offset form
+    Cfwrite("\nNilseg:", 8);
 #endif
 
-    Cfwrite("\nNilseg:", 8);
     copy_into_nilseg(true);
-#ifndef EXPERIMENT
+#ifdef EXPERIMENT
+#ifndef COMMON
+    Iwrite("\n\nEnd of CSL dump file\n\n", 24);
+#else
+    Iwrite("\n\nEnd of CCL dump file\n\n", 24);
+#endif
+#else
     {   LispObject saver[9];
         for (i=0; i<9; i++)
             saver[i] = BASE[i+13],
@@ -2665,13 +2671,13 @@ void preserve(const char *banner, int len)
     {   intptr_t p = (intptr_t)bps_pages[i];
         Cfwrite((const char *)doubleword_align_up(p), CSL_PAGE_SIZE);
     }
-#endif // EXPERIMENT
-
 #ifndef COMMON
     Cfwrite("\n\nEnd of CSL dump file\n\n", 24);
 #else
     Cfwrite("\n\nEnd of CCL dump file\n\n", 24);
 #endif
+#endif // EXPERIMENT
+
 //
 // Here I pad the image file to be a multiple of 4 bytes long.  Since it is a
 // binary file the '\n' characters I put in will always be just 1 byte each

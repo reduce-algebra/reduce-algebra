@@ -3,7 +3,107 @@
 
 
 This note is to help me while I design and implement one, and comments on
-changes from a previous world.
+changes from a previous world. This is a fresh version of these notes and
+is being starte din April 2016. The older version remains tagged on at the
+end.
+
+When I am given a value that might be a pointer I need to be able to
+tell if it is a pointer to the header of an item that could be alive.
+A special problem with this is a pointer into the middle of a huge
+vector of binary information: this is an issue because any the vector
+could contain arbitrary bit-patterns at any fixed addresses computed
+relative to the purported pointer.
+
+Perhaps I should hope that there are few enough ambiguous roots that this
+is not really liable to be a huge performance issue. Let me have a page
+size (maybe 2M or 8M??) and organise most memory as chunks of that size
+allocated on boundaries that are multiples of that. I observe with some
+displeasure that (probably as a security measure) some systems make
+succesive allocations thoroughly non-consecutive and so doing multiple
+modest size calls to malloc is going to be a bad idea, and I should expect
+to see worst-case wastage because of malloc returning deliberately
+awkwardly aligned chunks. So maybe I will do malloc() in 128Mbyte chunks
+and then sub-allocate from that in 2Mbyte units.
+
+  bool validate_ambiguous_pointer(uintptr_t p)
+  {   uintptr_t page = p & ~(PAGE_SIZE-1);       // page start
+      size_t r = hash_lookup(&pagehash, page);
+      if (r == (size_t)(-1)) return false;
+      ...
+  }
+where hash_lookup is from my inhash.c implementation and performs at worst
+4 probes. This uses a hash table of all allocated pages, but that can have
+quite high occupancy and so is not that dreadfully much bigger than the
+using a simple linear table.
+
+The use of pages like that deals with small and medium sized objects quite
+nicely, but would tend to limit the size of the biggest legal object. I can
+perhaps allocate huge objects to dedicated blocks of consecutive pages. If
+I put ONLY the huge object in the multi-page cluster I could waste almost
+PAGE_SIZE in unused space. If when I allocate a huge object I place it
+so that it stats within the first page and ends at the end of the last one
+then I can use the remainder of the first page normally. Ambiguous pointers
+to the start of the object will still be coped with properly.
+
+Pages can be in one of several states:
+(1) A page that allocation is currently active in, so it contains some
+active data but some free space at the end. Thinking for the future I want
+it to be possible that there are several such on a one-per-thread basis.
+(2) Allocated in but now full.
+(3) An active block that will be followed by some "subsequent blocks"
+(4) In use as a "subsequent block" holding part of a large object.
+(5) Totally empty.
+(6) Mostly empty, but some potentially active items are present in it
+because they were pinned by ambiguous pointers at the time of a previous
+garbage collection.
+(7) As (6) but this is the first block of a run so this is followed by
+one or more type (4) blocks.  
+
+Pages of type (4) do not have space for any administrative data within them
+at all. All other sorts can have a header at the start and then a bitmap
+region.
+
+When a page is considered for release it is necessary to check if
+any items within it are pinned. If so it normally goes to type (6). If
+if is type (3) then if the large items at its end was pinned then it has to
+turn into type (7), otherwise it can go into type (6) or type (5) as
+appropriate. 
+
+When any page is put into type (5) a check can be made of the addresses both
+PAGE_SIZE above and below it. If one or both of them are valid block and
+they are alread type (5) then they should be collected so there is a
+record of fully free consecutive blocks. This can be used on a first-fit
+basis when wanting to allocate new big blocks.
+
+Haha - let me try this as the way of recording free pages. There will be
+a number of blocks of consecutive pages. Each such block is linked to
+the other blocks using double-linked lists (ie pointers both forward and
+backwards). Each page contains the offset from its start to the final page
+in the block. The final page contains a back-reference to the first one
+in the block.
+There can be three chains of blocks. One is for individual pages that
+have some pinned data within them. The next is for individual pages that
+are totally empty. The final one is for blocks make up of multiple
+consecutive empty pages.
+
+Allocating a new single block takes from the first of these chains it can.
+if it has to take from the last one it uses the first page of a block, and
+it has to update the last page of that block, but it does not have to
+touch any of the ones in between. Allocating a single page has O(1) cost.
+
+Allocating a consecutive sequence only looks in the third chain, and on
+a first fit basis it can find a block that is big enough. Once that is done
+the rest of the tidting up is O(1). Fragmentation can cause the allocation
+to fail.
+
+If a pages is freed I think that consolidating with adjacent pages is also
+a O(1) task.
+
+
+
+
+
+========================== previous version =============================
 
 (a) I can do an existing-style garbage collection during PRESERVE since
 at that stage there ought not to be any stack to mark. Thus I can guarantee

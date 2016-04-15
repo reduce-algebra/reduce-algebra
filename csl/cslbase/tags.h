@@ -436,8 +436,8 @@ typedef uintptr_t Header;
 // The zz bits are
 //        00    symbol header, character literal, special identifier (Spid)
 //        01    vector containing Lisp pointers
-//        10    vector containing binary data
-//        11    bit-vectors
+//        10    bit-vectors
+//        11    vector containing binary data
 //
 // The bits yyyyy are used to indicate which case within each above category
 // applies. For class "00" only the two low bits are used, so there are then
@@ -526,9 +526,9 @@ typedef uintptr_t Header;
 #endif // COMMON
 
 #define symhdr_length       (doubleword_align_up(sizeof(Symbol_Head)))
-#define is_symbol_header(h) (((int)h & (0x3<<Tw)) == TYPE_SYMBOL)
+#define is_symbol_header(h) (((int)h & (0xf<<Tw)) == TYPE_SYMBOL)
 #define is_symbol_header_full_test(h) \
-    (((int)h & ((0x3<<Tw) + TAG_BITS)) == (TYPE_SYMBOL + TAG_HDR_IMMED))
+    (((int)h & ((0xf<<Tw) + TAG_BITS)) == (TYPE_SYMBOL + TAG_HDR_IMMED))
 #define header_fastget(h)   (((h) >> SYM_FASTGET_SHIFT) & 0x3f)
 #define is_number_header_full_test(h) \
     (((int)h & ((0x1d<<Tw) + TAG_BITS)) == ((0x1d<<Tw) + TAG_HDR_IMMED))
@@ -551,7 +551,7 @@ typedef uintptr_t Header;
 //   001:01 01 g010  hash table with rehash pending
 //   001:10 01 g010  (spare: 1 code)
 //   001:11 01 g010  rational number  *
-//   010:xx 01 g010  (spare: 4 codes)
+//   010:xx 01 g010  (spare: 4 codes, one a "number")
 //   011:11 01 g010  complex number   *
 //   100:xx 01 g010  stream and mixed1, 2 and 3
 //   1x1:11 01 g010  (spare, but classifies as a number: 2 codes)
@@ -1222,7 +1222,7 @@ typedef struct Single_Float
 // The C and C++ refuse to define the behaviour of right shifts
 // on signed types. The underlying reason may relate to the possibility that
 // numbers might be stored in sign-and-magnitude notation or some other
-// scheme other than the 2s complement that is in practise universal these
+// scheme other than the 2s complement that is in practice universal these
 // days. The macro here assumes 2s complement arithmetic, but first tests
 // for that and if so just does the shift. Otherwise it arranges to extend
 // the sign bit manually, using division by powers of 2 on unsigned values
@@ -1230,6 +1230,9 @@ typedef struct Single_Float
 // rather messy here it will lead to simple compiled code with modern C++
 // compilers. Note that what I provide here is ONLY for 32-bit values.
 // I would need something similar for 64-bit ones!
+
+// Maybe it will be more sense if I just insist that CSL will only run on
+// systems where right shifts on signed values are arithmetic!
 
 #define ASR(v, n) \
   (((-1) >> 1) == -1 ? ((int32_t)(v)) >> (n) : \

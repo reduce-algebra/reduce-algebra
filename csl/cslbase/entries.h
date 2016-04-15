@@ -260,6 +260,7 @@ extern "C" LispObject Lrds(LispObject env, LispObject a);
 extern "C" LispObject Lremd(LispObject env, LispObject a);
 extern "C" LispObject Lreverse(LispObject env, LispObject a);
 extern "C" LispObject Lserialize(LispObject env, LispObject a);
+extern "C" LispObject Lserialize1(LispObject env, LispObject a);
 extern "C" LispObject Lsetpchar(LispObject env, LispObject a);
 extern "C" LispObject Lset_small_modulus(LispObject env, LispObject a);
 extern "C" LispObject Lsmkvect(LispObject env, LispObject a);

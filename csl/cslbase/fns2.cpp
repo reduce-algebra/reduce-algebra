@@ -4610,6 +4610,7 @@ setup_type const funcs2_setup[] =
 #endif
     {"symbol-package",          Lsymbol_package, too_many_1, wrong_no_1},
     {"serialize",               Lserialize, too_many_1, wrong_no_1},
+    {"full-serialize",          Lserialize1, too_many_1, wrong_no_1},
     {"unserialize",             wrong_no_0a, wrong_no_0b, Lunserialize},
     {NULL,                      0, 0, 0}
 };

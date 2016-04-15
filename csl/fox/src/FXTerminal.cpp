@@ -2260,12 +2260,11 @@ void FXTerminal::setFont(FXFont *font0)
     FXRegistry *reg = &(application_object->reg());
     reg->writeStringEntry("screen", "fontname",  font0->getName().text());
     int fs = font0->getSize();
-#ifdef __APPLE__
-    fs = 10*((fs+5)/10);
-    if (fs > 120 && ((fs/10) & 1) != 0) fs += 10;
+    fs = 10*((fs + 5)/10); // Round to a multiple of 10
     if (fs < 80) fs = 80;
     else if (fs > 200) fs = 200;
-#endif
+    else if (fs > 120 &&
+             ((fs/10) & 1) != 0) fs += 10;
     reg->writeIntEntry("screen", "fontsize",     fs);
     reg->writeIntEntry("screen", "fontweight",   font0->getWeight());
     reg->writeIntEntry("screen", "fontslant",    font0->getSlant());

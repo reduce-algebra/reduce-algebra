@@ -481,7 +481,9 @@ extern FXTerminal *text;
 #define DEFAULT_FONT_NAME "Courier New"
 #else
 #ifdef __APPLE__
-#define DEFAULT_FONT_NAME "Menlo [bitstream]"
+// As of April 2016 it seems that Menlo is probably a better
+// default font to use on a Macintosh than Courier...
+#define DEFAULT_FONT_NAME "Menlo"
 #else
 #define DEFAULT_FONT_NAME "courier"
 #endif

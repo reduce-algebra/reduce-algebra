@@ -734,7 +734,23 @@ int main(int argc, const char *argv[])
         }
         else if (strcmp(argv[i], "--args") == 0) break;
     }
-
+#ifdef __APPLE__
+// I am uncertain about this but hope this improves behaviour. It may be that
+// it is a penalty that arises when fontconfig is linked in statically.
+    {   FILE *f = fopen("/opt/X11/lib/X11/fontconfig/fonts.conf", "r");
+        if (f == NULL)
+        {   fprintf(stderr, "fontconfig configuration file now where I expect it to be...\n");
+            fprintf(stderr, "Have you installed XQuartz?\n");
+            fprintf(stderr, "You may need to set FONTCONFIG_PATH.\n");
+        }
+        else
+        {   fclose(f);
+            setenv("FONTCONFIG_PATH",
+                   "/opt/X11/lib/X11/fontconfig",
+                   0);  // If a value already exists leave it alone.
+        }
+    }
+#endif
 #ifdef PART_OF_FOX
 //
 // As the very first thing I will do, I will seek an argument

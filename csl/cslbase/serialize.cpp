@@ -405,7 +405,7 @@ size_t find_index_in_repeats(size_t h)
 // just a test harness and does not reflect what I will eventually need
 // to do!
 
-#define SERSIZE 1000000
+#define SERSIZE 4000000
 int sercounter = 0;
 int serincount = 0;
 unsigned char serbuffer[SERSIZE];
@@ -429,15 +429,12 @@ int read_byte()
 void write_byte(int byte, const char *msg, ...)
 {   va_list a;
     if (sercounter < SERSIZE) serbuffer[sercounter++] = byte;
-    else
-    {   printf("Serialization buffer overflow\n");
-        abort();
-    }
     printf("%.2x: ", byte & 0xff);
     va_start(a, msg);
     vprintf(msg, a);
     printf("\n");
     va_end(a);
+    if (binary_write_file != NULL) Iputc(byte);
 }
 
 // This reads from 1 to 9 bytes in a variable length encoding to make up an
@@ -463,7 +460,7 @@ uint64_t read_u64()
 void write_u64(uint64_t n)
 {   char msg[32];
     if (n == (n & 0x7f))
-    {   sprintf(msg, "%#.2x = %d", (int)n, (int)n);
+    {   sprintf(msg, "small int %#.2x = %d", (int)n, (int)n);
         write_byte(n | 0x80, msg);
         return;
     }
@@ -1938,19 +1935,31 @@ down:
             }
 // I have not sorted out the bit that follows yet!
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-            write_byte(SER_RAWSYMBOL, "symbol header");
+            write_byte(SER_RAWSYMBOL, "raw symbol header");
 // Here I need to cope with the tagging bits and function cells, and
 // the count field... Each of these uses a variable length coding scheme that
 // will be 1 byte long in easy cases but can cope with 2^64 possibilities in
 // all if necessary.
+            printf("header : %" PRIxPTR "\n", qheader(p));
+            LispObject name = qpname(p);
+            if (is_vector(name) && is_string(name))
+            {   printf("Symbol name: %.*s\n",
+                    (int)length_of_byteheader(vechdr(name)), &celt(name, 0));
             write_u64((uint64_t)qheader(p)>>(Tw+4));
+            printf("qfn0 : %" PRIxPTR "\n", (intptr_t)qfn0(p));
             write_u64(code_up_codepointer((void *)(qfn0(p))));
+            printf("qfn1 : %" PRIxPTR "\n", (intptr_t)qfn1(p));
             write_u64(code_up_codepointer((void *)(qfn1(p))));
+            printf("qfn2 : %" PRIxPTR "\n", (intptr_t)qfn2(p));
             write_u64(code_up_codepointer((void *)(qfn2(p))));
+            printf("qfn3 : %" PRIxPTR "\n", (intptr_t)qfn3(p));
             write_u64(code_up_codepointer((void *)(qfn3(p))));
+            printf("qfn4 : %" PRIxPTR "\n", (intptr_t)qfn4(p));
             write_u64(code_up_codepointer((void *)(qfn4(p))));
+            printf("qcount : %" PRIx64 "\n", (int64_t)qcount(p));
             write_u64(qcount(p));
             w = p;
+            printf("qpackage : %" PRIxPTR "\n", (intptr_t)qpackage(p));
             p = qpackage(p);
             qpackage(w) = b;
             b = (LispObject)&qpackage(w) + BACKPOINTER_SYMBOL;
@@ -2303,6 +2312,28 @@ LispObject Lserialize(LispObject nil, LispObject a)
         setup_codepointers = true;
     }
     descend_symbols = false;
+    sercounter = 0;
+    hash_init(&repeat_hash, 13); // allow 8K entries to start with.
+    scan_data(a);
+    release_map();
+    writer_setup_repeats();
+    write_u64(repeat_heap_size);
+    write_data(a);
+    hash_finalize(&repeat_hash);
+    if (repeat_heap_size != 0)
+    {   repeat_heap_size = 0;
+        free(repeat_heap);
+    }
+    repeat_heap = NULL;
+    return onevalue(nil);
+}
+
+LispObject Lserialize1(LispObject nil, LispObject a)
+{   if (!setup_codepointers)
+    {   set_up_function_tables();
+        setup_codepointers = true;
+    }
+    descend_symbols = true;
     sercounter = 0;
     hash_init(&repeat_hash, 13); // allow 8K entries to start with.
     scan_data(a);

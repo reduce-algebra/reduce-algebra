@@ -627,6 +627,8 @@ const unsigned char *binary_read_filep;
 extern FILE *binary_read_file;
 #endif
 
+extern FILE *binary_write_file;
+
 extern int boffop;
 extern void packbyte(int c);
 
