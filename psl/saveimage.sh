@@ -40,34 +40,53 @@ case $a in
   ;;
 esac
 
-builddir="$1"
-imagedir="$2"
-if test -d "$imagedir"
+if test -nz "$2"
 then
-  :
-else
+  builddir="$1"
+  imagedir="$2"
+  logdir="$builddir/log"
   mkdir -p "$imagedir"
-fi
 
-if test -z "$3"
-then
-  topdir="$here"
+  if test -z "$3"
+  then
+    topdir="$here"
+  else
+    topdir="$3"
+  fi
+
+  cfasl="$builddir/red"
+
+  bhere="$builddir"
+
+  logfile=saveimage.blg
+
 else
-  topdir="$3"
+
+  builddir=.
+  imagedir=../red
+  logdir=../buildlogs
+  cfasl=red
+
+  bhere=`pwd`
+
+  logfile=reduce.img.blg
+
+  echo Create red/reduce.img for architecture $1
 fi
 
 cpsldir=`echo $c | sed -e 's+/[^/]*$++'`
 creduce=$cpsldir/..
 chere=`pwd`
-cfasl="$builddir/red"
 
 if test -x /usr/bin/cygpath
 then
   psldir=`cygpath -m "$cpsldir"`
   reduce=`cygpath -m "$creduce"`
   here=`cygpath -m "$chere"`
+  bhere=`cygpath -m "$bhere"`
   fasl=`cygpath -m "$cfasl"`
   imagedir=`cygpath -m "$imagedir"`
+  logdir=`cygpath -m "$logdir"`
 else
   psldir="$cpsldir"
   reduce="$creduce"
@@ -84,19 +103,14 @@ fi
 
 export here fasl psldir reduce
 
-if test -d "$here/log"
-then
-  :
-else
-  mkdir -p "$here/log"
-fi
+mkdir -p "$logdir"
 
 cd "$builddir"
-bhere=`pwd`
-test -x /usr/bin/cygpath && bhere=`cygpath -m $bhere`
+
 cd psl
 
-./bpsl -td $STORE <<XXX > "$here/log/reduce.blg"
+./bpsl -td $STORE <<XXX > "$logdir/$logfile"
+
 % This re-starts a bare reduce and loads in the modules compiled
 % by the very first step. It then checkpoints a system that can be
 % used to rebuild all other modules.
@@ -152,7 +166,7 @@ cd psl
 
 (put 'fancy 'simpfg
   '((t (load fmprint) (fmp!-switch t))
-    (nil (fmp!-switch nil)) ))
+    (nil (load fmprint) (fmp!-switch nil)) ))
 
 % implant graphics mode switch
 
@@ -186,10 +200,13 @@ cd psl
 (setq loaddirectories!* (quote ("" "$topdir/red/" "$topdir/psl/")))
 
 (savesystem "REDUCE" "$imagedir/reduce" (quote ((commandline_setq)
+                                                (set-load-directories)
                                                 (read-init-file "reduce")
 			(cond ((member "--texmacs" (vector2list unixargs!*))
 						(load tmprint))))))
 (bye)
 
 XXX
+
+cd $chere
 
