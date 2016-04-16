@@ -1,9 +1,5 @@
 #! /bin/bash
 
-# First verify that I have as much of cygwin installed as I am liable to need
-
-../scripts/cygwin-sanity-check.sh
-
 # Ha ha ha - there are a whole range of configurations where you may launch
 # this script. I will mostly test the one that applies to me, but I will
 # document the rest here and may try to support more of them:

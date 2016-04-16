@@ -165,6 +165,11 @@ vboxmanage startvm $LINUX_VM -type headless
 # Wait until virtualbox is running. I do this by sending ssh requests
 # repeatedly until ons is responded to. I will try up to 20 at 30-second
 # intervals, so I am requiring the VM to have stablised within 10 minutes.
+# But note that this timeout is not very reliably enforced. For instance
+# if you have not used ssh to contact the VM before then ssh will pause
+# and ask you to confirm that you believe the machine you are contacting
+# is the one you intend, and that does not seem to time-out ever, so that
+# (at least) can cause this script to hang without limit.
 
 sleep 5
 for x in `seq 1 20`
@@ -283,7 +288,7 @@ vboxmanage startvm $WINDOWS_VM -type headless
 # Wait until virtualbox is running. I do this by sending ssh requests
 # repeatedly until one is responded to. I will try up to 40 at 30-second
 # intervals, so I am requiring the VM to have stablised within 20 minutes.
-# The long delay I allow is to cope with the possibility that Widdows might
+# The long delay I allow is to cope with the possibility that Windows might
 # take several ages doing an automatic installation of updates.
 
 sleep 20
