@@ -40,7 +40,7 @@ case $a in
   ;;
 esac
 
-if test -nz "$2"
+if test -n "$2"
 then
   builddir="$1"
   imagedir="$2"
