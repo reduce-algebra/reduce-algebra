@@ -40,53 +40,34 @@ case $a in
   ;;
 esac
 
-if test -n "$2"
+builddir="$1"
+imagedir="$2"
+if test -d "$imagedir"
 then
-  builddir="$1"
-  imagedir="$2"
-  logdir="$builddir/log"
-  mkdir -p "$imagedir"
-
-  if test -z "$3"
-  then
-    topdir="$here"
-  else
-    topdir="$3"
-  fi
-
-  cfasl="$builddir/red"
-
-  bhere="$builddir"
-
-  logfile=saveimage.blg
-
+  :
 else
+  mkdir -p "$imagedir"
+fi
 
-  builddir=.
-  imagedir=../red
-  logdir=../buildlogs
-  cfasl=red
-
-  bhere=`pwd`
-
-  logfile=reduce.img.blg
-
-  echo Create red/reduce.img for architecture $1
+if test -z "$3"
+then
+  topdir="$here"
+else
+  topdir="$3"
 fi
 
 cpsldir=`echo $c | sed -e 's+/[^/]*$++'`
 creduce=$cpsldir/..
 chere=`pwd`
+cfasl="$builddir/red"
 
 if test -x /usr/bin/cygpath
 then
   psldir=`cygpath -m "$cpsldir"`
   reduce=`cygpath -m "$creduce"`
   here=`cygpath -m "$chere"`
-  bhere=`cygpath -m "$bhere"`
   fasl=`cygpath -m "$cfasl"`
   imagedir=`cygpath -m "$imagedir"`
-  logdir=`cygpath -m "$logdir"`
 else
   psldir="$cpsldir"
   reduce="$creduce"
@@ -103,14 +84,19 @@ fi
 
 export here fasl psldir reduce
 
-mkdir -p "$logdir"
+if test -d "$here/log"
+then
+  :
+else
+  mkdir -p "$here/log"
+fi
 
 cd "$builddir"
-
+bhere=`pwd`
+test -x /usr/bin/cygpath && bhere=`cygpath -m $bhere`
 cd psl
 
-./bpsl -td $STORE <<XXX > "$logdir/$logfile"
-
+./bpsl -td $STORE <<XXX > "$here/log/reduce.blg"
 % This re-starts a bare reduce and loads in the modules compiled
 % by the very first step. It then checkpoints a system that can be
 % used to rebuild all other modules.
@@ -207,6 +193,4 @@ cd psl
 (bye)
 
 XXX
-
-cd $chere
 
