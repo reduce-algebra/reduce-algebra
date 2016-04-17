@@ -55,7 +55,7 @@ WINDOWS_PORT=2201
 # (b) .ssh/authorized_keys of the user involved should contain the public
 #     keys of the user on the host (which should not require any extra
 #     pass-phrase). With (a) and (b) in place it should be possible to go
-#           vboxmanage startvm linux -type headless
+#           $TIMEOUT vboxmanage startvm linux -type headless
 #           ssh -p 2202 username@localhost <some command>
 # (c) the user of the vm should have an entry in /etc/sudoers that reads
 #           %sudo ALL=(ALL) NOPASSWD: ALL
@@ -133,6 +133,23 @@ mkdir snapshots/linux-tar
 
 export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
 
+# If the command "timeout" has been installed (and i hope it has!) then
+# I will limit the time spent in any use of ssh or scp to 10 minutes. That
+# time limit should be hugely longer than can be really needed, but is there
+# because otherwise there are circumstances when the script can get stalled
+# on an indefinite basis. Indeed just to be cautios I will apply timeouts to
+# a range of other command used here... for instance for the remote builds
+# on virtual machines I will allow 8 hours!
+
+if which timeout > /dev/null 2>/dev/null
+then
+  TIMEOUT="timeout 10m"
+  LONGTIMEOUT="timeout 8h"
+else
+  TIMEOUT=""
+  LONGTIMEOUT=""
+fi
+
 # Ensure that my copy of Reduce is fully up to date. I will mention here
 # that at one stage we have the Reduce files on a drive that had been
 # formatted as a variant on FAT32, and in that case "svn revert" always
@@ -145,8 +162,8 @@ export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
 
 if test "$noupdate" = "no"
 then
-  svn -R revert .
-  svn update
+  $TIMEOUT svn -R revert .
+  $TIMEOUT svn update
 fi
 
 # Unpack as for a local build. This will create the macbuild/C directory
@@ -155,12 +172,12 @@ fi
 
 pushd macbuild
 make clean
-make C.stamp
+$TIMEOUT make C.stamp
 popd
 
 # Next launch a VM to regenerate a 64-bit Linux distribution
 
-vboxmanage startvm $LINUX_VM -type headless
+$TIMEOUT vboxmanage startvm $LINUX_VM -type headless
 
 # Wait until virtualbox is running. I do this by sending ssh requests
 # repeatedly until ons is responded to. I will try up to 20 at 30-second
@@ -174,7 +191,7 @@ vboxmanage startvm $LINUX_VM -type headless
 sleep 5
 for x in `seq 1 20`
 do
-  hello=`ssh -p $LINUX_PORT $LINUX_USER@localhost printf "hello"`
+  hello=`TIMEOUT ssh -p $LINUX_PORT $LINUX_USER@localhost printf "hello"`
   if test "x$hello" = "xhello"
   then
     break
@@ -186,8 +203,8 @@ done
 # First I will clear away any previous files on the VM and copy across
 # files from the host.
 
-ssh -p $LINUX_PORT $LINUX_USER@localhost rm -rf debianbuild
-scp -r -P $LINUX_PORT debianbuild $LINUX_USER@localhost:.
+$TIMEOUT ssh -p $LINUX_PORT $LINUX_USER@localhost rm -rf debianbuild
+$TIMEOUT scp -r -P $LINUX_PORT debianbuild $LINUX_USER@localhost:.
 
 # This next line copies all the files across using tar to pack and unpack so
 # that there is only a single ssh transaction. Whether this is really better
@@ -196,26 +213,26 @@ scp -r -P $LINUX_PORT debianbuild $LINUX_USER@localhost:.
 
 pushd macbuild
 tar cfz - C | \
-  ssh -p $LINUX_PORT $LINUX_USER@localhost \
+  $TIMEOUT ssh -p $LINUX_PORT $LINUX_USER@localhost \
     \( cd debianbuild \; tar xfz - --warning=no-unknown-keyword \)
 popd
 
 # Create the file that marks the source files as present and up to date
 
-ssh -p $LINUX_PORT $LINUX_USER@localhost touch debianbuild/C.stamp
+$TIMEOUT ssh -p $LINUX_PORT $LINUX_USER@localhost touch debianbuild/C.stamp
 
 # Now do the main build of all the Linux binaries and packages.
 
-ssh -p $LINUX_PORT $LINUX_USER@localhost \( \
+$LONGTIMEOUT ssh -p $LINUX_PORT $LINUX_USER@localhost \( \
   cd debianbuild \; \
   pushd C \; ./autogen.sh \; popd \; \
   time make \)
 
 # Recover the built files.
-scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.deb $here/../snapshots/linux-deb
-scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.rpm $here/../snapshots/linux-rpm
-scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.tgz $here/../snapshots/linux-tar
-scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.tar.bz2 $here/../snapshots/linux-tar
+$TIMEOUT scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.deb $here/../snapshots/linux-deb
+$TIMEOUT scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.rpm $here/../snapshots/linux-rpm
+$TIMEOUT scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.tgz $here/../snapshots/linux-tar
+$TIMEOUT scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.tar.bz2 $here/../snapshots/linux-tar
 
 # Shut down the guest. I do this by issing a command within the VM rather
 # than by an externally forced power-down since I hope that will count
@@ -226,7 +243,7 @@ scp -P $LINUX_PORT $LINUX_USER@localhost:debianbuild/\*.tar.bz2 $here/../snapsho
 # installing the updates so that the next boot will have a chance to see
 # them fully in place.
 
-ssh -p $LINUX_PORT $LINUX_USER@localhost \
+$TIMEOUT ssh -p $LINUX_PORT $LINUX_USER@localhost \
   \( sudo apt-get -y update \; \
      sudo apt-get -y upgrade \; \
      sudo apt-get -y dist-upgrade \; \
@@ -235,12 +252,12 @@ ssh -p $LINUX_PORT $LINUX_USER@localhost \
 # Launch a VM to regenerate a 32-bit Linux distribution. This recipe
 # is the same as that use for a 64-bit Linux.
 
-vboxmanage startvm $LINUX32_VM -type headless
+$TIMEOUT vboxmanage startvm $LINUX32_VM -type headless
 
 sleep 5
 for x in `seq 1 20`
 do
-  hello=`ssh -p $LINUX32_PORT $LINUX32_USER@localhost printf "hello"`
+  hello=`$TIMEOUT ssh -p $LINUX32_PORT $LINUX32_USER@localhost printf "hello"`
   if test "x$hello" = "xhello"
   then
     break
@@ -249,28 +266,28 @@ do
   sleep 30
 done
 
-ssh -p $LINUX32_PORT $LINUX32_USER@localhost rm -rf debianbuild
-scp -r -P $LINUX32_PORT debianbuild $LINUX32_USER@localhost:.
+$TIMEOUT ssh -p $LINUX32_PORT $LINUX32_USER@localhost rm -rf debianbuild
+$TIMEOUT scp -r -P $LINUX32_PORT debianbuild $LINUX32_USER@localhost:.
 
 pushd macbuild
 tar cfz - C | \
-  ssh -p $LINUX32_PORT $LINUX32_USER@localhost \
+  $TIMEOUT ssh -p $LINUX32_PORT $LINUX32_USER@localhost \
     \( cd debianbuild \; tar xfz - --warning=no-unknown-keyword \)
 popd
 
-ssh -p $LINUX32_PORT $LINUX32_USER@localhost touch debianbuild/C.stamp
+$TIMEOUT ssh -p $LINUX32_PORT $LINUX32_USER@localhost touch debianbuild/C.stamp
 
-ssh -p $LINUX32_PORT $LINUX32_USER@localhost \( \
+$LONGTIMEOUT ssh -p $LINUX32_PORT $LINUX32_USER@localhost \( \
   cd debianbuild \; \
   pushd C \; ./autogen.sh \; popd \; \
   time make \)
 
-scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.deb $here/../snapshots/linux-deb
-scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.rpm $here/../snapshots/linux-rpm
-scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.tgz $here/../snapshots/linux-tar
-scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.tar.bz2 $here/../snapshots/linux-tar
+$TIMEOUT scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.deb $here/../snapshots/linux-deb
+$TIMEOUT scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.rpm $here/../snapshots/linux-rpm
+$TIMEOUT scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.tgz $here/../snapshots/linux-tar
+$TIMEOUT scp -P $LINUX32_PORT $LINUX32_USER@localhost:debianbuild/\*.tar.bz2 $here/../snapshots/linux-tar
 
-ssh -p $LINUX32_PORT $LINUX32_USER@localhost \
+$TIMEOUT ssh -p $LINUX32_PORT $LINUX32_USER@localhost \
   \( sudo apt-get -y update \; \
      sudo apt-get -y upgrade \; \
      sudo apt-get -y dist-upgrade \; \
@@ -283,7 +300,7 @@ ssh -p $LINUX32_PORT $LINUX32_USER@localhost \
 # of updates, but since it the VM will be being updated reasonably regularly
 # I hope that will never be the case.
 
-vboxmanage startvm $WINDOWS_VM -type headless
+$TIMEOUT vboxmanage startvm $WINDOWS_VM -type headless
 
 # Wait until virtualbox is running. I do this by sending ssh requests
 # repeatedly until one is responded to. I will try up to 40 at 30-second
@@ -294,7 +311,7 @@ vboxmanage startvm $WINDOWS_VM -type headless
 sleep 20
 for x in `seq 1 40`
 do
-  hello=`ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost printf "hello"`
+  hello=`$TIMEOUT ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost printf "hello"`
   if test "x$hello" = "xhello"
   then
     break
@@ -306,14 +323,14 @@ done
 # Now in a way that is just as was done for Linux I will put the
 # necessary files on the Windows guest VM
 
-ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost rm -rf winbuild
-scp -r -P $WINDOWS_PORT winbuild $WINDOWS_USER@localhost:.
+$TIMEOUT ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost rm -rf winbuild
+$TIMEOUT scp -r -P $WINDOWS_PORT winbuild $WINDOWS_USER@localhost:.
 pushd macbuild
 tar cfz - C | \
-  ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost \
+  $TIMEOUT ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost \
     \( cd winbuild \; tar xfz - --warning=no-unknown-keyword \)
 popd
-ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost touch winbuild/C.stamp
+$TIMEOUT ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost touch winbuild/C.stamp
 
 # That has now established the winbuild directory...
 
@@ -329,14 +346,14 @@ ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost touch winbuild/C.stamp
 # it using a 32-bit assembler (which then obviously chokes on the 64-bit
 # assembly syntax passed to it).
 
-ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost \( \
+$LONGTIMEOUT ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost \( \
   cd winbuild \; \
   export PATH=/usr/local/bin:/usr/bin:\$PATH \; \
   pushd C \; ./autogen.sh \; popd \; \
   time make \)
 
 # Recover the built files.
-scp -P $WINDOWS_PORT $WINDOWS_USER@localhost:winbuild/Output/Reduce-Setup.exe \
+$TIMEOUT scp -P $WINDOWS_PORT $WINDOWS_USER@localhost:winbuild/Output/Reduce-Setup.exe \
     $here/../snapshots/Reduce-Setup_$today.exe
 
 # Shut down the guest. I do this by issing a command within the VM rather
@@ -349,7 +366,7 @@ scp -P $WINDOWS_PORT $WINDOWS_USER@localhost:winbuild/Output/Reduce-Setup.exe \
 # version of Windows but that I am running 32-bit cygwin for sshd, and so
 # the SysWOW64 directory is liable to be the correct place to work from.
 
-ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost \$WINDIR/SysWOW64/shutdown /s /t 1
+$TIMEOUT ssh -p $WINDOWS_PORT $WINDOWS_USER@localhost \$WINDIR/SysWOW64/shutdown /s /t 1
 
 # Now make the Mac version. I wanted the archive unpacked early since that
 # is what I copy for use on the other platforms, and doing things that way
@@ -363,7 +380,7 @@ pushd C ; ./autogen.sh ; popd
 # "make" here should not need to do anything by way of re-generating the
 # C directory...
 touch C.stamp
-make
+$LONGTIMEOUT make
 cp Reduce*.dmg $here/../snapshots/Reduce-snapshot_$today.dmg
 popd
 

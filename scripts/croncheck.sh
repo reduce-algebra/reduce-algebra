@@ -18,29 +18,43 @@ then
   req=0
 fi
 
-# If either the last set of snapshots are less than (about) a week old
-# or if it is 10pm or later I will not do anything just now. The limitation
-# on late-night processing is so that the creation of snapshots will
-# tend not to happen over the time when the clock moves from one day to
-# the next. And perhaps because there seems more of a risk that I will switch
-# my computer off as the evening wears on.
-if test $now -lt $req || \
-   test `date %H` -gt 21
+# If the last set of snapshots are less than (about) a week old
+# I will not do anything just now.
+if test $now -lt $req
 then
-  left=$((($req - $now) / 3600))
-# I will keep an old version of the logf, but then preserve just the last 20
+  left=$((($req - $now + 3599) / 3600))
+  prevlog=`tail -1 $here/croncheck.log`
+  if test $left -lt 4
+  then
+    newmsg="About $left hours before next snapshot"
+  elif test $left -lt 12
+  then
+    newmsg="Less than 12 hours until next snapshot"
+  elif test $left -lt 24
+  then
+    newmsg="Less than a day until next snapshot"
+  else
+    daysleft=$(($left / 24))
+    newmsg="About $daysleft days until next snapshot"
+  fi
+  if test "$newmsg" = "$prevlog"
+  then
+    exit 0
+  fi
+# I will keep an old version of the log, but then preserve just the last 30
 # lines from it.
   mv $here/croncheck.log $here/croncheck.log.old
-  tail -20 $here/croncheck.log.old > $here/croncheck.log
-  printf "Time %s (%d hours to go)\n" "`date`" $left >> $here/croncheck.log
-# printf "Nothing needs doing right now (%s:%s:%s)\n" `whoami` `pwd` $USER >> croncheck.log
+  tail -30 $here/croncheck.log.old > $here/croncheck.log
+  printf "$newmsg\n" >> $here/croncheck.log
   exit 0
 fi
-printf "Time %s run croncheck task (%s:%s:%s)\n" "`date`" `whoami` `pwd` $USER >> $here/croncheck.log
+printf "Starting snapshot build at %s\n" "`date`" >> $here/croncheck.log
 
 # Arrange that the next attempt to build will not happen for another week.
 next=$(($now + 600000))
 printf "$next" > $here/croncheck.dat
+nextdate=`date -j -f %s $next`
+printf "Next build scheduled for $nextdate\n" >> $here/croncheck.log
 
 # I do the bulk of the work in a separate file croncheck1.sh and keep
 # a log of all the output it creates. Note that this is run on a Macintosh

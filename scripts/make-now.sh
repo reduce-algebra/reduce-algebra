@@ -9,6 +9,8 @@
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
 here=`cd \`dirname "$here"\` ; pwd -P`
 
+printf "make-now.sh invoked at %s\n", "`date`" >> $here/croncheck.log
+
 touch $here/mac-dummy.stamp
 rm $here/mac*.stamp
 echo `date +%s` > $here/croncheck.dat

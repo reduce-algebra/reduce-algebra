@@ -40,11 +40,17 @@
 # netpbm      Used for documentation
 # polyml      My experiment with an ML implementation of TeX layout
 #             algorithms needs this.
-# psutils,
+# psutils
 # subversion  a newer version than the one that comes with OSX/Xcode
 # TeX stuff   For building documentation
+# timeout     Handy for making some scripts more robust
 # vim         Some of you may want emacs (too?)
 # wget        For fetching stuff from elsewhere.
+
+# Let me again stress that some of the above are not shown because they
+# are themselves needed for building Reduce, but because they call in
+# dependencies that are. Some may be used when building optional or
+# experimental variants on Reduce.
 
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
 here=`cd \`dirname "$here"\` ; pwd -P`
@@ -56,6 +62,13 @@ cd $here
 # If it is then it should have the following two lines present:
 #   macosx_deployment_target 10.10
 #   buildfromsource always
+# My check is CRUDE here and can be confused in both directions. For instance
+# a line "buildfromsource always" with a comment marker in front of it might
+# be spotted by "grep" here and accepted even though it is not operational,
+# and a line with one of these directive but with variant whitespace (eg a
+# a tab rather than a single space) between the words might not get noticed.
+# I suggest you review the file by hand! But having a very simple test here
+# is perhaps better than nothing.
 
 conf=/opt/local/etc/macports/macports.conf
 if ! test -f $conf || \
@@ -94,6 +107,7 @@ sudo port install          \
   texlive-fonts-extra      \
   texlive-htmlxml          \
   texlive-latex-extra      \
+  timeout                  \
   vim                      \
   wget
 
