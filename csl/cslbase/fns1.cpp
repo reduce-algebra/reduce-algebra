@@ -2382,14 +2382,14 @@ LispObject Lfind_foreign_function(LispObject nil, LispObject name,
     errexit();
     if (len > sizeof(sname)-2) len = sizeof(sname)-2;
     sprintf(sname, "%.*s", (int)len, w);
-//
-// Again I will leave the print statement in on a temporary basis...
-//
-#ifdef __CYGWIN__
-    printf("name to look up = %s\r\n", sname);
-#else
-    printf("name to look up = %s\n", sname);
-#endif
+//=== //
+//=== // Again I will leave the print statement in on a temporary basis...
+//=== //
+//=== #ifdef __CYGWIN__
+//===     printf("name to look up = %s\r\n", sname);
+//=== #else
+//===     printf("name to look up = %s\n", sname);
+//=== #endif
 #ifdef EMBEDDED
     b = NULL;
 #else
