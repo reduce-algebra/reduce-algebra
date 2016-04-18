@@ -1628,6 +1628,29 @@ asserted procedure anu_evalf(a: Anu): Floating;
 asserted procedure anu_approxEqualEnough(lb: Floating, ub: Floating): Boolean;
    eqn(fix(lb * 10^anu_precision!*) - fix(ub * 10^anu_precision!*), 0);
 
+asserted procedure anu_evalfR(a: Anu): Any;
+   % Algebraic number evaluate floating point. Returns a floating point
+   % approximation of [a], which is precise up to [anu_precision!*] decimal
+   % places.
+   begin scalar iv, ra, lb, ub;
+      ra := a;
+      repeat <<
+      	 ra := anu_refine ra;
+	 iv := anu_iv ra;
+	 lb := evalf0 {{'quotient, numr car iv or 0, denr car iv}};
+	 ub := evalf0 {{'quotient, numr cdr iv or 0, denr cdr iv}};
+      >> until anu_approxEqualEnoughR(lb, ub);
+      return lb
+   end;
+
+asserted procedure anu_approxEqualEnoughR(lb: Floating, ub: Floating): Boolean;
+   begin integer l, u, p;
+      p := 10^precision(0);
+      l := ((p * numr w) / denr w) where w = simp lb;
+      u := ((p * numr w) / denr w) where w = simp ub;
+      return eqn(l, u)
+   end;
+
 asserted procedure anu_rename(a: Anu, xnew: Kernel);
    begin scalar aex, rp, varl, x, varal, rpnew, ialnew, w;
       aex := anu_dp a;

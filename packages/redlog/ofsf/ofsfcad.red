@@ -1377,7 +1377,7 @@ asserted procedure atree_2gml_node_xml(tt: Atree, number: Integer): Any;
 	 mathprint prepsq iv_rb anu_iv anu;
 	 ioto_prin2t "</rb>";
 	 ioto_prin2t "<floatapp>";
-	 mathprint anu_evalf anu;
+	 mathprint anu_evalfR anu;
 	 ioto_prin2t "</floatapp>";
 	 ioto_prin2t "</assignment>"
       >>;
@@ -1391,28 +1391,24 @@ asserted procedure atree_2gml_node_xml(tt: Atree, number: Integer): Any;
       if evenp acell_getidx c then
       	 ioto_prin2t "type ""rectangle"""
       else
-      	 ioto_prin2t "type ""triangle""";
+      	 ioto_prin2t "type ""ellipse""";
       ioto_prin2t "]";
       ioto_prin2t "]";
       if nat then on1 'nat
    end;
 
 asserted procedure atree_2gml_node(tt: Atree, number: Integer): Any;
-   begin scalar c, tv, anul, n, color;
+   begin scalar c, tv, anul, n, color, tpl;
       ioto_prin2t "node [";
       ioto_prin2t {"id ", number};
       c := atree_rootcell tt;
       ioto_prin2t "label """;
-      ioto_prin2t {"idx: ", acell_getidx c};
-      ioto_prin2 "tp: (";
-      anul := reverse acell_getsp c;
-      n := length anul;
-      for i := 1 : (n - 1) do
-      	 ioto_prin2 {anu_evalf nth(anul, i), ", "};
-      if n > 0 then ioto_prin2 anu_evalf nth(anul, n);
-      ioto_prin2t ")";
-      ioto_prin2t {"desc: ", acell_getdesc c};
-      ioto_prin2t {"tl: ", acell_gettl c};
+      ioto_prin2t {"idx = ", acell_getidx c};
+      anul := for each anu in reverse acell_getsp c collect
+	 anu_evalfR anu;
+      mathprint {'equal, 'tp, 'list . anul};
+      ioto_prin2t {"desc = ", acell_getdesc c};
+      ioto_prin2t {"tl = ", acell_gettl c};
       ioto_prin2t """";
       % color
       tv := acell_gettv c;
