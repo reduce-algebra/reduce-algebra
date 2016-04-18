@@ -191,7 +191,7 @@ $TIMEOUT vboxmanage startvm $LINUX_VM -type headless
 sleep 5
 for x in `seq 1 20`
 do
-  hello=`TIMEOUT ssh -p $LINUX_PORT $LINUX_USER@localhost printf "hello"`
+  hello=`$TIMEOUT ssh -p $LINUX_PORT $LINUX_USER@localhost printf "hello"`
   if test "x$hello" = "xhello"
   then
     break
