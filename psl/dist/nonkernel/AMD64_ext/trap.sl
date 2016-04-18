@@ -144,7 +144,7 @@
      (pop (reg 2))
      (*move (fluid errornumber*) (reg 1))
      (*wplus2 (reg 1)(wconst 10000))
-     (*jcall error) 
+     (*jcall error-trap) 
      ))
 
 (lap '((*entry *freset expr 0)
@@ -169,18 +169,24 @@
        (wait)
        (*exit 0)))
 
+(de error-trap (errornumber errorstring)
+  (error errornumber (build-trap-message errorstring sigaddr*)))
+
 (de build-trap-message (trap-type trap-addr)
     (let (extra-info)
-      (if (funboundp 'code-address-to-symbol)
-        (setf extra-info
-          (bldmsg "%w%n%w%n%w"
-              " : the name of the routine that trapped can't be"
-              " reported unless the function CODE-ADDRESS-TO-SYMBOL"
-              " has been defined, by loading ADDR2ID."))
-    % else, get the name of the offending function
-    (setf extra-info (bldmsg "%w%w"
-                 " in "
-                 (code-address-to-symbol (inf trap-addr))))
+      (cond ((funboundp 'code-address-to-symbol)
+	     (setf extra-info
+		   (bldmsg "%w%x%w%n%w%n%w%n%w"
+			   " at address 0x"
+			   (inf trap-addr)
+			   " :"
+			   " the name of the routine that trapped can't be"
+			   " reported unless the function CODE-ADDRESS-TO-SYMBOL"
+			   " has been defined, by loading ADDR2ID.")))
+	    % else, get the name of the offending function
+	    ((setf extra-info (code-address-to-symbol (inf trap-addr)))
+	     (setf extra-info (bldmsg "%w%w" " in " extra-info)))
+	    (t (setf extra-info (bldmsg "%w%x" " at address 0x" (inf trap-addr))))
       )
       (bldmsg "%w%w" trap-type extra-info)))
  
