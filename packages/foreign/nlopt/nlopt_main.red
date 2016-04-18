@@ -491,7 +491,7 @@ procedure nlopt_add_equality_constraint(fun,tol);
       ret_check("nlopt_optimize", r);
    end;
 
-% Scalar inequality constraints should be expressed as g(x) ≤ 0.
+% Scalar inequality constraints should be expressed as g(x) b	$ 0.
 procedure nlopt_add_inequality_constraint(fun,tol);
    begin scalar savedmode, r;
       if not getd(fun) then
@@ -615,15 +615,18 @@ procedure nlopt_set_local_optimizer(alg);
 % The algorithm requires that the objective function F(x)
 % returns Inf at any x that violates the (arbitrary) constraints.
 
-% In lisp mode, these procedures return 'inf' and 'minusinf' respectively.
-% Check by 
-%   float!-infinity!-p nlopt_inf();
-%   float!-infinity!-p nlopt_minf();
-procedure nlopt_inf();
-   1e400;  % inf;
-
-procedure nlopt_minf();
-   -1e400; %  minusinf;
+%- % On a temporary basis these few lines are commented out while CSL and PSL
+%- % decide  just what to do about exceptional floating point values.
+%- %
+%- % In lisp mode, these procedures return 'inf' and 'minusinf' respectively.
+%- % Check by
+%- %   float!-infinity!-p nlopt_inf();
+%- %   float!-infinity!-p nlopt_minf();
+%- procedure nlopt_inf();
+%-    1e400;  % inf;
+%-
+%- procedure nlopt_minf();
+%-    -1e400; %  minusinf;
 
 
 
