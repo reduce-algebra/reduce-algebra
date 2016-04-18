@@ -143,8 +143,11 @@ export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
 
 if which timeout > /dev/null 2>/dev/null
 then
-  TIMEOUT="timeout 10m"
-  LONGTIMEOUT="timeout 8h"
+# Some documentation for "Timeout" suggests can use time specifications
+# such as 10m and 8h here, but my experience seems to be that I need to quote
+# a time period in seconds.
+  TIMEOUT="timeout 600"
+  LONGTIMEOUT="timeout 28800"
 else
   TIMEOUT=""
   LONGTIMEOUT=""
