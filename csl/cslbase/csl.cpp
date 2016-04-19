@@ -1750,6 +1750,22 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
                         else if (strcmp(w, "texmacs") == 0)
                         { }
+/*! options [--no-rcfile] \item [{\ttfamily --no-rcfile}] \index{{\ttfamily --no-rcfile}}
+ * Instruct the system not to read a user-specific configuation file, which
+ * make have such a names as ``{\ttfamily .reducerc}'', at startup time. This
+ * can be useful during system building where utterly self-contained and
+ * predictable behaviour is important.
+ */
+                        if (strcmp(w, "no-rcfile") == 0)
+                        {   if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
+                                symbols_to_define[number_of_symbols_to_define] =
+                                    "no_init_file",
+                                undefine_this_one[number_of_symbols_to_define++] = false;
+                            else
+                            {   fwin_restore();
+                                term_printf("Too many requests: \"--no-rcfile\" ignored\n");
+                            }
+                        }
 /*! options [--gui] \item [{\ttfamily --gui}] \index{{\ttfamily --gui}}
  * Encourage the system to run in its own window. Similar behaviour
  * to {\ttfamily -w+}.
@@ -2126,7 +2142,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     else break; // Illegal at end of command-line
                     if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
                         symbols_to_define[number_of_symbols_to_define] = w,
-                                undefine_this_one[number_of_symbols_to_define++] = false;
+                        undefine_this_one[number_of_symbols_to_define++] = false;
                     else
                     {   fwin_restore();
                         term_printf("Too many \"-D\" requests: ignored\n");
@@ -2350,7 +2366,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
                         symbols_to_define[number_of_symbols_to_define] =
                             "*backtrace",
-                            undefine_this_one[number_of_symbols_to_define++] = false;
+                        undefine_this_one[number_of_symbols_to_define++] = false;
                     else
                     {   fwin_restore();
                         term_printf("Too many requests: \"-G\" ignored\n");
@@ -3951,7 +3967,6 @@ int PROC_lisp_eval()
     C_stackbase = (LispObject *)&sp;
 #endif
     if (procstack == nil) return 1; // stack is empty
-Lprint(nil, qcar(procstack)); // @@@  
     w = Ceval(qcar(procstack), nil);
     nil = C_nil;
     if (exception_pending())

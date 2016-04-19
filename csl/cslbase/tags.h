@@ -816,7 +816,7 @@ typedef uintptr_t Header;
 
 #define TYPE_SIMPLE_VEC   ( 0x01 <<Tw) // simple general vector
 #define TYPE_HASH         ( 0x11 <<Tw) // hash table
-#define TYPE_HASHX        ( 0x15 <<Tw) // hash table in need of re-hashing
+//#define TYPE_HASHX      ( 0x15 <<Tw) // hash table in need of re-hashing
 #define TYPE_ARRAY        ( 0x05 <<Tw) // header record for general array
 #define TYPE_STRUCTURE    ( 0x09 <<Tw) // includes packages etc possibly
 #define TYPE_OBJECT       ( 0x0d <<Tw) // and "object"
