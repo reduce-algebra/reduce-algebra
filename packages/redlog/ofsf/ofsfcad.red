@@ -1340,7 +1340,7 @@ asserted procedure atree_2gml_nodes(tt: Atree, number: Integer): Integer;
       else
       	 atree_2gml_node(tt, number);
       childlist := atree_childl tt;
-      for each child in childlist do
+      for each child in reverse childlist do
 	 number := atree_2gml_nodes(child, number + 1);
       return number
    end;
@@ -1389,17 +1389,17 @@ asserted procedure atree_2gml_node_xml(tt: Atree, number: Integer): Any;
       % color and shape
       ioto_prin2t "graphics [";
       ioto_prin2t {"fill """, color, """"};
-      if evenp acell_getidx c then  % even index denotes a zero-dimensional cell
-      	 ioto_prin2t "type ""rectangle"""
+      if evenp acell_getidx c then  % even index denotes a full-dimensional cell
+      	 ioto_prin2t "type ""ellipse"""
       else
-      	 ioto_prin2t "type ""ellipse""";
+      	 ioto_prin2t "type ""rectangle""";
       ioto_prin2t "]";
       ioto_prin2t "]";
       if nat then on1 'nat
    end;
 
 asserted procedure atree_2gml_node(tt: Atree, number: Integer): Any;
-   begin scalar c, tv, anul, n, color, tpl;
+   begin scalar c, tv, anul, varl, n, color, tpl;
       ioto_prin2t "node [";
       ioto_prin2t {"id ", number};
       c := atree_rootcell tt;
@@ -1407,9 +1407,11 @@ asserted procedure atree_2gml_node(tt: Atree, number: Integer): Any;
       ioto_prin2t {"idx = ", acell_getidx c};
       anul := for each anu in reverse acell_getsp c collect
 	 anu_evalfR anu;
-      mathprint {'equal, 'tp, 'list . anul};
-      ioto_prin2t {"desc = ", acell_getdesc c};
-      ioto_prin2t {"tl = ", acell_gettl c};
+      varl := for each anu in reverse acell_getsp c collect
+	 aex_mvar anu_dp anu;
+      mathprint {'equal, 'list . varl, 'list . anul};
+      % ioto_prin2t {"desc = ", acell_getdesc c};
+      mathprint {'equal, 'tl, 'list . acell_gettl c};
       ioto_prin2t """";
       % color and shape
       tv := acell_gettv c;
@@ -1421,10 +1423,10 @@ asserted procedure atree_2gml_node(tt: Atree, number: Integer): Any;
 	 "#C0C0C0";
       ioto_prin2t "graphics [";
       ioto_prin2t {"fill """, color, """"};
-      if evenp acell_getidx c then  % even index denotes a zero-dimensional cell
-      	 ioto_prin2t "type ""rectangle"""
+      if evenp acell_getidx c then  % even index denotes a full-dimensional cell
+      	 ioto_prin2t "type ""ellipse"""
       else
-      	 ioto_prin2t "type ""ellipse""";
+      	 ioto_prin2t "type ""rectangle""";
       ioto_prin2t "]";
       ioto_prin2t "]"
    end;
@@ -1433,7 +1435,7 @@ asserted procedure atree_2gml_edges(tt: Atree, number: Integer): Integer;
    begin scalar childlist, mynumber;
       mynumber := number;
       childlist := atree_childl tt;
-      for each child in childlist do <<
+      for each child in reverse childlist do <<
 	 atree_2gml_edge(mynumber, number + 1);
 	 number := atree_2gml_edges(child, number + 1)
       >>;
