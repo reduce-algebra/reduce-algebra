@@ -1386,9 +1386,10 @@ asserted procedure atree_2gml_node_xml(tt: Atree, number: Integer): Any;
       ioto_prin2t {"<tl>", acell_gettl c, "</tl>"};
       ioto_prin2t "</node>";
       ioto_prin2t """";
+      % color and shape
       ioto_prin2t "graphics [";
       ioto_prin2t {"fill """, color, """"};
-      if evenp acell_getidx c then
+      if evenp acell_getidx c then  % even index denotes a zero-dimensional cell
       	 ioto_prin2t "type ""rectangle"""
       else
       	 ioto_prin2t "type ""ellipse""";
@@ -1410,11 +1411,21 @@ asserted procedure atree_2gml_node(tt: Atree, number: Integer): Any;
       ioto_prin2t {"desc = ", acell_getdesc c};
       ioto_prin2t {"tl = ", acell_gettl c};
       ioto_prin2t """";
-      % color
+      % color and shape
       tv := acell_gettv c;
-      color := if tv eq 'true then "#00FF00"
-      else if tv eq 'false then "#FF0000" else "#C0C0C0";
-      ioto_prin2t {"graphics [", "fill """, color, """]"};
+      color := if tv eq 'true then
+	 "#00FF00"
+      else if tv eq 'false then
+	 "#FF0000"
+      else
+	 "#C0C0C0";
+      ioto_prin2t "graphics [";
+      ioto_prin2t {"fill """, color, """"};
+      if evenp acell_getidx c then  % even index denotes a zero-dimensional cell
+      	 ioto_prin2t "type ""rectangle"""
+      else
+      	 ioto_prin2t "type ""ellipse""";
+      ioto_prin2t "]";
       ioto_prin2t "]"
    end;
 
