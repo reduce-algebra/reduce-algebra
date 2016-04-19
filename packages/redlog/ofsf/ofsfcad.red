@@ -1437,6 +1437,45 @@ asserted procedure atree_2gml_edge(efrom: Integer, eto: Integer): Any;
       ioto_prin2t "]"
    end;
 
+asserted procedure atree_deleteFalseLeaves(tt: Atree): Atree;
+   % Prune [tt] by removing all leaves of maximal depth that are [false].
+   begin scalar w;
+      if !*rlverbose then
+	 ioto_tprin2 "+ deleting false leaves ...";
+      w := atree_deleteFalseLeaves1(tt, 0, atree_depth tt);
+      if !*rlverbose then
+	 ioto_prin2t " done";
+      return w
+   end;
+
+asserted procedure atree_deleteFalseLeaves1(tt: Atree, n: Integer, dpth: Integer): ExtraBoolean;
+   % Returns a pruned sub-Atree, possibly [nil].
+   begin scalar r, cl, ntt, w;
+      r := atree_rootcell tt;
+      if eqn(n, dpth) and acell_gettv r eq 'false then
+ 	 return nil;
+      cl := for each c in atree_childl tt join <<
+	 w := atree_deleteFalseLeaves1(c, n+1, dpth);
+	 if w then {w}
+      >>;
+      ntt := atree_mk r;
+      atree_setchildl(ntt, cl);
+      return ntt
+   end;
+
+asserted procedure atree_depth(tt: Atree): Integer;
+   atree_depth1(tt, 0);
+
+asserted procedure atree_depth1(tt: Atree, n: Integer): Integer;
+   begin integer d; scalar cl;
+      cl := atree_childl tt;
+      if null cl then
+      	 return n;
+      for each c in cl do
+	 d := max2(d, atree_depth1(c, n+1));
+      return d
+   end;
+
 % CAD solution formula
 
 % Andreas' solution formula construction for the decision case. That is, the
