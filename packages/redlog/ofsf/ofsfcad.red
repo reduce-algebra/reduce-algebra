@@ -1340,7 +1340,7 @@ asserted procedure atree_2gml_nodes(tt: Atree, number: Integer): Integer;
       else
       	 atree_2gml_node(tt, number);
       childlist := atree_childl tt;
-      for each child in reverse childlist do
+      for each child in childlist do
 	 number := atree_2gml_nodes(child, number + 1);
       return number
    end;
@@ -1435,7 +1435,7 @@ asserted procedure atree_2gml_edges(tt: Atree, number: Integer): Integer;
    begin scalar childlist, mynumber;
       mynumber := number;
       childlist := atree_childl tt;
-      for each child in reverse childlist do <<
+      for each child in childlist do <<
 	 atree_2gml_edge(mynumber, number + 1);
 	 number := atree_2gml_edges(child, number + 1)
       >>;
