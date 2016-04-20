@@ -59,6 +59,7 @@ tarpackages:
 	mkdir $(TARDEST)/csl
 	mkdir $(TARDEST)/psl
 	mkdir $(TARDEST)/reduce.doc
+	cp $(BUILDTOPDIR)/doc/manual/manual.pdf $(TARDEST)/manual.pdf
 	cp $(BUILDTOPDIR)/scripts/cslhere.sh $(TARDEST)/redcsl
 	cp $(BUILDTOPDIR)/scripts/pslhere.sh $(TARDEST)/redpsl
 	cp -r $(BUILDTOPDIR)/xmpl $(TARDEST)
