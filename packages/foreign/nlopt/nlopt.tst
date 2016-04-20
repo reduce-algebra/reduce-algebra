@@ -46,7 +46,7 @@ procedure rosenbrock_f(x);
       a := x.2 - (x.1)^2;
       b := 1 - x.1;
       return 100*a^2 + b^2;
-   end;
+   end$
 
 % 30-dimensional
 procedure rosenbrock30_f(x);
@@ -58,14 +58,14 @@ procedure rosenbrock30_f(x);
 	f := f + 100*a^2 + b^2;
      >>;
      return f;
-   end;
+   end$
 
 procedure mc_cormic_f(x);
    begin scalar a,b;
       a := x.1 + x.2;  
       b := x.1 - x.2;
       return sin(a) + b^2 - 1.5*x.1 + 2.5*x.2 + 1;
-   end;
+   end$
 
 
 % ============================================================================
@@ -77,10 +77,10 @@ procedure tst_ros(x0,M,alg);
       nlopt_set_upper_bounds({2,2});
       nlopt_set_min_objective(rosenbrock_f);
       ans := nlopt_optimize(x0);
-      write nlopt_algorithm_name(alg), ":";
+      write nlopt_algorithm_name(nlopt_get_algorithm()), ":";
       nlopt_destroy();
       return ans;
-   end;
+   end$
 
 procedure tst_ros30(x0,M,alg);
    begin scalar ans;
@@ -90,10 +90,10 @@ procedure tst_ros30(x0,M,alg);
       nlopt_set_upper_bounds(for i := 1:30 collect 30);
       nlopt_set_min_objective(rosenbrock30_f);
       ans := nlopt_optimize(x0);
-      write nlopt_algorithm_name(alg), ":";
+      write nlopt_algorithm_name(nlopt_get_algorithm()), ":";
       nlopt_destroy();
       return ans;
-   end;
+   end$
 
 procedure tst_mc(x0,M,alg);
    begin scalar ans;
@@ -103,10 +103,10 @@ procedure tst_mc(x0,M,alg);
       nlopt_set_upper_bounds({4,4});
       nlopt_set_min_objective(mc_cormic_f);
       ans := nlopt_optimize(x0);
-      write nlopt_algorithm_name(alg), ":";
+      write nlopt_algorithm_name(nlopt_get_algorithm()), ":";
       nlopt_destroy();
       return ans;
-   end;
+   end$
 
 
 %% ============================================================================
@@ -118,7 +118,7 @@ procedure sqt_f(x);
       s := sqrt(x.2);
 %      return s;
       return append({s}, {0,0.5/s});
-   end;
+   end$
 
 procedure sq_c1(x);
    begin scalar a,b,f,df;
@@ -129,7 +129,7 @@ procedure sq_c1(x);
 %      return f;
       df := {3*a*(a*x.1 + b)^2, -1.0};   % gradient
       return append({f}, df);
-   end;
+   end$
 procedure sq_c2(x);
    begin scalar a,b,f,df;
       a := -1;  b := 1;
@@ -137,7 +137,7 @@ procedure sq_c2(x);
 %      return f;
       df := {3*a*(a*x.1 + b)^2, -1.0};   % gradient
       return append({f}, df);
-   end;
+   end$
 
 % Combination of the two constraints
 % x2 >= (a1*x1+b1)^3, x2 >= (a2*x1+b2)^3
@@ -155,7 +155,7 @@ procedure sq_c1c2(x);
       dc1 := sub({a=2, b=0}, dC);
       dc2 := sub({a=-1,b=1}, dC);
       return appendn({c1,c2},dc1,dc2);  % in 'assist' package
-   end;
+   end$
 
 
 procedure tst_tut(x0,M,alg);
@@ -171,11 +171,12 @@ procedure tst_tut(x0,M,alg);
       % nlopt_set_stopval(sqrt(8./27)+1e-3);
       nlopt_set_maxeval(M);
       ans := nlopt_optimize(x0);
+      write nlopt_algorithm_name(nlopt_get_algorithm()), ":";
       write nlopt_algorithm_name(alg), ":";
       nlopt_destroy();
       write "answer should be 0.544331 @ (0.333333,0.296296): ";
       return ans;
-   end;
+   end$
 
 
 
@@ -184,19 +185,19 @@ procedure tst_tut(x0,M,alg);
 %% =========================================================================
 
 procedure H(x);
-   - for each xi in x sum xi*log(xi);  % Reduce treats 0*log(0) properly
+   - for each xi in x sum xi*log(xi)$  % Reduce treats 0*log(0) properly
 
 procedure sum_c(x);
-  (for each xi in x sum xi) - 1;
+  (for each xi in x sum xi) - 1$
 
 procedure nonneg_c(x);
-   for each xi in x collect -xi;
+   for each xi in x collect -xi$
 
 procedure mean_c(x);
    begin scalar n, m1;
       n := length(x);
       return (for i := 1:n sum i*part(x,i)) - mean;
-   end;
+   end$
 
 % An n-sided die with a specified average throw 'av'
 procedure tst_die(n,av,tol,M,alg);
@@ -211,15 +212,15 @@ procedure tst_die(n,av,tol,M,alg);
       nlopt_add_inequality_mconstraint(nonneg_c,n,mtol);
       % equalities are expressed as <expn> = 0:
       nlopt_add_equality_constraint(sum_c,tol);
-       % 'mean' is global; inelegant, but I can't think of a better way right now.
+      % 'mean' is global; inelegant, but I can't think of a better way right now.
       mean := av;
       nlopt_add_equality_constraint(mean_c,tol);
       nlopt_set_xtol_rel(1e-6);
       ans := nlopt_optimize(x0);
       nlopt_destroy();
-      write nlopt_algorithm_name(alg), ":";
+      write nlopt_algorithm_name(nlopt_get_algorithm()), ":";
       return ans;
-   end;
+   end$
 
 
 
@@ -232,7 +233,7 @@ procedure testopt(algorithm, problem);
       % need some data structure (association list?) to hold dimension, constraints/bounds, ...
       nlopt_create(algorithm,dim);
       nlopt_set_min_objective(problem);
-   end;
+   end$
 
 
 
