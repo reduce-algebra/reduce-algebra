@@ -285,9 +285,9 @@ static double bignum_to_float(LispObject v, int32_t h, int *xp)
 }
 
 #ifdef LITTLEENDIAN
-static float128_t f128_TWO_31 = {0, 0x401e000000000000};
+static float128_t f128_TWO_31 = {{0, INT64_C(0x401e000000000000)}};
 #else
-statuc float128_t f128_TWO_31 = {0x401e000000000000, 0};
+statuc float128_t f128_TWO_31 = {{INT64_C(0x401e000000000000), 0}};
 #endif
 
 static float128_t bignum_to_float128(LispObject v, int32_t h, int *xp)

@@ -76,14 +76,20 @@ else
   CFLAGS="$CFLAGS -O2"
 fi
 
-# At present I am not defining either INLINE or INLINE_LEVEL
-# but I probably could after use of AC_C_INLINE. But I then need
-# to check whether that has gone "#define inline" to map the keyword onto
-# an empty string because if it has I ought not to try setting INLINE_DEPTH.
-
 AC_C_INLINE()
-# AC_DEFINE(INLINE, inline, [])
-# AC_DEFINE(INLINE_LEVEL, 5, [depth of inlining to be used])
+
+# The documentation for SoftFloat suggests that "extern inline" is a good
+# thing to use with gcc, but in fact it is only a good thing to use with
+# older versions of gcc. Since there has been support for the official
+# standard for "inline" it seems that the word "static" is way safer. I
+# have first tested this on Ubuntu 15.10 and Windows/cygwin but need to check
+# various other platforms before I can really relax!
+
+if test $ac_cv_c_inline != "no"
+then
+  echo "#define INLINE static inline" >> platform.h
+  echo "#define INLINE_LEVEL 5" >> platform.h
+fi  
 
 echo "/* end of platform.h  */" >> platform.h
 

@@ -413,7 +413,7 @@ static LispObject Lfloat_denormalized_p(LispObject nil, LispObject a)
                 case TYPE_DOUBLE_FLOAT:
                     if (double_float_val(a) == 0.0) return onevalue(nil);
                     {   int64_t x = *((int64_t *)double_float_addr(a)) &
-                                    0x7ff0000000000000;
+                                    INT64_C(0x7ff0000000000000);
                         return onevalue(x == 0 ? lisp_true : nil);
                     }
             }

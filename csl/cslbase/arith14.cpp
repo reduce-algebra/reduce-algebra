@@ -47,34 +47,34 @@
 
 #ifdef LITTLEENDIAN
 
-float128_t f128_0      = {0, 0x0000000000000000},
-           f128_1      = {0, 0x3fff000000000000},
-           f128_10_16  = {0, 0x40341c37937e0800},
-           f128_10_17  = {0, 0x40376345785d8a00},
-           f128_10_18  = {0, 0x403abc16d674ec80},
-           f128_N1     = {0, 0x4fff000000000000}; // 2^4096
+float128_t f128_0      = {{0, INT64_C(0x0000000000000000)}},
+           f128_1      = {{0, INT64_C(0x3fff000000000000)}},
+           f128_10_16  = {{0, INT64_C(0x40341c37937e0800)}},
+           f128_10_17  = {{0, INT64_C(0x40376345785d8a00)}},
+           f128_10_18  = {{0, INT64_C(0x403abc16d674ec80)}},
+           f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
 
-float256_t f256_5      = {{0,0}, {0, 0x4001400000000000}},
-           f256_10     = {{0,0}, {0, 0x4002400000000000}},
-           f256_r5     = {{0x999999999999999a, 0xbf8a999999999999},
-                          {0x999999999999999a, 0x3ffc999999999999}},
-           f256_r10    = {{0x999999999999999a, 0xbf89999999999999},
-                          {0x999999999999999a, 0x3ffb999999999999}};
+float256_t f256_5      = {{{0,0}}, {{0, INT64_C(0x4001400000000000)}}},
+           f256_10     = {{{0,0}}, {{0, INT64_C(0x4002400000000000)}}},
+           f256_r5     = {{{INT64_C(0x999999999999999a), INT64_C(0xbf8a999999999999)}},
+                          {{INT64_C(0x999999999999999a), INT64_C(0x3ffc999999999999)}}},
+           f256_r10    = {{{INT64_C(0x999999999999999a), INT64_C(0xbf89999999999999)}},
+                          {{INT64_C(0x999999999999999a), INT64_C(0x3ffb999999999999)}}};
 #else
 
-float128_t f128_0      = {0x0000000000000000, 0},
-           f128_1      = {0x3fff000000000000, 0},
-           f128_10_16  = {0x40341c37937e0800, 0},
-           f128_10_17  = {0x40376345785d8a00, 0},
-           f128_10_18  = {0x403abc16d674ec80, 0},
-           f128_N1     = {0x4fff000000000000, 0};
+float128_t f128_0      = {{INT64_C(0x0000000000000000), 0}},
+           f128_1      = {{INT64_C(0x3fff000000000000), 0}},
+           f128_10_16  = {{INT64_C(0x40341c37937e0800), 0}},
+           f128_10_17  = {{INT64_C(0x40376345785d8a00), 0}},
+           f128_10_18  = {{INT64_C(0x403abc16d674ec80), 0}},
+           f128_N1     = {{INT64_C(0x4fff000000000000), 0}};
 
-float256_t f256_5      = {{0x4001400000000000, 0}, {0,0}},
-           f256_10     = {{0x4002400000000000, 0}, {0,0}},
-           f256_r5     = {{0x3ffc999999999999, 0x999999999999999a},
-                          {0xbf8a999999999999, 0x999999999999999a}},
-           f256_r10    = {{0x3ffb999999999999, 0x999999999999999a},
-                          {0bf899999999999999, 0x999999999999999a}};
+float256_t f256_5      = {{{INT64_C(0x4001400000000000), 0}}, {{0,0}}},
+           f256_10     = {{{INT64_C(0x4002400000000000), 0}}, {{0,0}}},
+           f256_r5     = {{{INT64_C(0x3ffc999999999999), INT64_C(0x999999999999999a)}},
+                          {{INT64_C(0xbf8a999999999999), INT64_C(0x999999999999999a)}}},
+           f256_r10    = {{{INT64_C(0x3ffb999999999999), INT64_C(0x999999999999999a)}},
+                          {{INT64_C(0xf899999999999999), INT64_C(0x999999999999999a)}}};
 #endif
 
 #ifdef LITTLEENDIAN
@@ -87,14 +87,14 @@ float256_t f256_5      = {{0x4001400000000000, 0}, {0,0}},
 
 bool f128M_zero(const float128_t *p)
 {
-    return ((p->v[HIPART] & 0x7fffffffffffffff) == 0) &&
+    return ((p->v[HIPART] & INT64_C(0x7fffffffffffffff)) == 0) &&
             (p->v[LOPART] == 0);
 }
 
 bool f128M_infinite(const float128_t *p)
 {
     return (((p->v[HIPART] >> 48) & 0x7fff) == 0x7fff) &&
-            ((p->v[HIPART] & 0xffffffffffff) == 0) &&
+            ((p->v[HIPART] & INT64_C(0xffffffffffff)) == 0) &&
             (p->v[LOPART] == 0);
 }
 
@@ -103,14 +103,14 @@ bool f128M_infinite(const float128_t *p)
 bool f128M_subnorm(const float128_t *p)
 {
     return (((p->v[HIPART] >> 48) & 0x7fff) == 0) &&
-            (((p->v[HIPART] & 0xffffffffffff) != 0) ||
+            (((p->v[HIPART] & INT64_C(0xffffffffffff)) != 0) ||
              (p->v[LOPART] != 0));
 }
 
 bool f128M_nan(const float128_t *p)
 {
     return (((p->v[HIPART] >> 48) & 0x7fff) == 0x7fff) &&
-            (((p->v[HIPART] & 0xffffffffffff) != 0) ||
+            (((p->v[HIPART] & INT64_C(0xffffffffffff)) != 0) ||
              (p->v[LOPART] != 0));
 }
 
@@ -127,7 +127,8 @@ int f128M_exponent(const float128_t *p)
 
 void f128M_set_exponent(float128_t *p, int n)
 {
-    p->v[HIPART] = (p->v[HIPART] & 0x8000ffffffffffff) | (((uint64_t)n + 0x3fff) << 48);
+    p->v[HIPART] = (p->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
+        (((uint64_t)n + 0x3fff) << 48);
 }
 
 void f128M_ldexp(float128_t *p, int x)
@@ -138,12 +139,12 @@ void f128M_ldexp(float128_t *p, int x)
     x = ((p->v[HIPART] >> 48) & 0x7fff) + x;
 // In case of overflow leave an infinity of the right sign.
     if (x >= 0x7fff)
-    {   p->v[HIPART] |= 0x7fff000000000000;
-        p->v[HIPART] &= 0xffff000000000000;
+    {   p->v[HIPART] |= INT64_C(0x7fff000000000000);
+        p->v[HIPART] &= INT64_C(0xffff000000000000);
         p->v[LOPART] = 0;
     }
     if (x < -114) // Without doubt underflowing to zero
-    {   p->v[HIPART] &= 0x7fffffffffffffff; // preserve sign of input
+    {   p->v[HIPART] &= INT64_C(0x8000000000000000); // preserve sign of input
         p->v[LOPART] = 0;
         return;
     }
@@ -152,17 +153,19 @@ void f128M_ldexp(float128_t *p, int x)
 // I deal with this by first forcing the exponent to be one that will
 // not lead to a sub-norm and then using a multiply to scale it down.
     if (x <= 0)
-    {   p->v[HIPART] = (p->v[HIPART] & 0x8000ffffffffffff) | ((uint64_t)(x+4096) << 48);
+    {   p->v[HIPART] = (p->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
+            ((uint64_t)(x+4096) << 48);
         float128_t w1;
         f128M_div(p, &f128_N1, &w1);
         *p = w1;
     }
-    else p->v[HIPART] = (p->v[HIPART] & 0x8000ffffffffffff) | ((uint64_t)x << 48);
+    else p->v[HIPART] = (p->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
+        ((uint64_t)x << 48);
 }
 
 void f128M_negate(float128_t *x)
 {
-    x->v[HIPART] ^= 0x8000000000000000;
+    x->v[HIPART] ^= INT64_C(0x8000000000000000);
 }
 
 // I will want working precision even higher than 128-bits. I will
@@ -214,7 +217,7 @@ void f128M_split(const float128_t *x, float128_t *yhi, float128_t *ylo)
 // I clear 57 bits at the low end of yhi. This leaves 56 bits (maximum) in
 // the mantissa, and if you multiply two values each of which have just 56
 // bits the result as a float128 should be exact.
-    yhi->v[LOPART] &= ~0x1ffffffffffffff;
+    yhi->v[LOPART] &= INT64_C(0xf700000000000000);
     f128M_sub(x, yhi, ylo);
 }
 

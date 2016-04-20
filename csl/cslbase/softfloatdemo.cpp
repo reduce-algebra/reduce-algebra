@@ -53,6 +53,10 @@
 
 #include "headers.h"
 
+// There are a collection of places where I use the INT64_C() macro when
+// I write large integer literals. This ought not to be needed in C++ code,
+// but some older versions of g++ pre-date that upgrade, and so putting it
+// allows me to build this code on (eg) the 32-bit edition of Fedora 9.
 
 static void show(const char *s, float128_t *p)
 {
@@ -68,7 +72,7 @@ static void show256(float256_t *p)
     printf("%.16" PRIx64 " %.16" PRIx64 "\n", q.hi.v[1], q.hi.v[0]);
     q.lo = f128_0;
     q.hi.v[0] = 0;
-    q.hi.v[1] ^= 0x8000000000000000;
+    q.hi.v[1] ^= INT64_C(0x8000000000000000);
     f256M_add(p, &q, &r);
     printf("%.16" PRIx64 " %.16" PRIx64 "\n", r.hi.v[1], r.hi.v[0]);
 } 
@@ -90,8 +94,8 @@ int main(int argc, char *argv[])
     ui32_to_f128M(7, &b);
     f128M_div(&a, &b, &c);
     ui64_to_f128M(10, &d);
-    ui64_to_f128M(100000000000000000, &f);
-    ui64_to_f128M(1000000000000000000, &g);
+    ui64_to_f128M(INT64_C(100000000000000000), &f);
+    ui64_to_f128M(INT64_C(1000000000000000000), &g);
     f128M_div(&a, &d, &e);
     show("1", &a);
     show("7", &b);
@@ -103,7 +107,7 @@ int main(int argc, char *argv[])
     show("lo", &w2);
     show("10^17", &f);
     show("10^18", &g);
-    ui64_to_f128M(10000000000000000, &g);
+    ui64_to_f128M(INT64_C(10000000000000000), &g);
     printf("%.16" PRIx64 "/%.16" PRIx64 "\n",
         ((int64_t *)&g)[1], ((int64_t *)&g)[0]);
     show("10^16", &g);

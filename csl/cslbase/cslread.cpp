@@ -121,8 +121,8 @@ void validate_string_fn(LispObject s, const char *file, int line)
                 fprintf(stderr, "\n+++ Bad string at %s %d\n", file, line);
                 fprintf(stderr, "Header = %" PRIxPTR "\n", vechdr(s));
                 fprintf(stderr, "length = %d bytelength = %d\n",
-                    length_of_header(vechdr(s)),
-                    length_of_byteheader(vechdr(s)));
+                    (int)length_of_header(vechdr(s)),
+                    (int)length_of_byteheader(vechdr(s)));
                 fprintf(stderr, "messed at len:%d len1:%d [%x]\n",
                         len, len1, celt(s, len-CELL));
                 for (i=0; i<len1; i++)
