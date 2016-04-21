@@ -1,0 +1,56 @@
+Installation Instructions
+-------------------------
+
+To build and install WinEditLine, do the following:
+
+1. From a MSYS/MinGW shell
+
+cd in the WinEditLine root folder, then issue the following commands:
+
+$ mkdir build
+$ cd build
+$ cmake -G"MSYS Makefiles" ..
+$ make install
+
+
+2. From a Windows CMD shell
+
+cd in the WinEditLine root folder, then issue the following commands:
+
+C:\Users\ptosco> mkdir build
+C:\Users\ptosco> cd build
+
+then, for a 32-bit build:
+
+C:\Users\ptosco> cmake -G"Visual Studio 10" ..
+C:\Users\ptosco> c:\Windows\Microsoft.NET\Framework\v4.0.30319\^
+MSBuild.exe /p:Configuration=Release INSTALL.vcxproj
+
+instead, for a 64-bit build:
+
+C:\Users\ptosco> cmake -G"Visual Studio 10 Win64" ..
+C:\Users\ptosco> c:\Windows\Microsoft.NET\Framework64\v4.0.30319\^
+MSBuild.exe /p:Configuration=Release INSTALL.vcxproj
+
+The path to the MSBuild.exe binary might vary depending on the
+installation on your system.
+
+
+
+Static libraries are installed in the lib32, lib64 folders, while
+DLLs and test programs are installed in the bin32, bin64 folders;
+all these folders are located in the WinEditLine root directory.
+edit_test.exe and edit_test_dll.exe are test programs which can
+be used to verify that both static and shared libedit versions have
+been built and work correctly. libedit_test_dll.c is a nice, portable
+example contributed by Tim Hudson which shows how to build programs
+without introducing an explicit dependency from libedit: if the
+libedit shared library is installed in the system, then it will be
+loaded at runtime and used, otherwise the calling program will
+fall back on standard fgets(). libedit_test.c is a standard example
+of static linking against libedit_static.a/edit_static.lib.
+
+Pre-built static libraries and DLLs are provided for both 32 and
+64-bit Windows in the lib32, lib64, bin32, bin64 folders. Files
+whose name starts with "libedit" were built with MinGW compilers,
+while those starting with "edit" were built with MSVC 2010.

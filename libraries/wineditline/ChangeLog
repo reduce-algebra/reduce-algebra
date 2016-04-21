@@ -1,0 +1,122 @@
+WinEditLine's (formerly MinGWEditLine) ChangeLog
+------------------------------------------------
+
+*** March 8, 2016: release of WinEditLine 2.102 ***
+
+  Changes with respect to the previous version include:
+
+  - history_length() now reports the correct history length (it used
+    to report the actual length + 1)
+  - current_history() now correctly reports the current history entry
+  - previous_history() and next_history() do not allow going outside
+    history boundaries
+  - where_history() is now 1-based as in libedit/readline
+  - set_current_pos() is now 1-based as in libedit/readline
+  - fixed the DLL name in libedit_test_dll.c
+  
+
+*** April 12, 2014: release of WinEditLine 2.101 ***
+
+  Changes with respect to the previous version include:
+
+  - CMakeLists.txt was modified so that now both MinGW and MSVC
+    compilers generate a DLL file with the same name (edit.dll);
+    thanks to Peter Frentrup for suggesting this fix
+  - Fixed a bug in readline(): when signal(SIGINT, SIG_IGN) was used
+    to ignore CTRL+C, WinEditLine crashed instead of returning NULL
+    if CTRL+C was pressed at the beginning of the line (thanks to
+    Peter Frentrup for reporting this)
+
+
+*** January 13, 2014: release of WinEditLine 2.1 ***
+
+  Changes with respect to the previous version include:
+
+  - Switched to CMake as build system
+  - Now the library can be built with both MinGW compilers and
+    Microsoft Visual Studio compilers; this is the reason why
+    the library has been renamed from MinGWEditLine to WinEditLine
+  - Added the rl_free() function to allow user programs freeing
+    memory allocated in the library without causing a segmentation
+    fault (see below)
+  - For the same reason, the rl_user_completion_entry_free_function
+    symbol has been added. This pointer, if set by the user, should
+    point to a user-defined function which takes a void* argument
+    and should simply call free() on the void* argument. This
+    function is called by the library to free memory allocated by a
+    user-defined custom completion function (if any)
+  - Freeing memory by calling rl_free() and the user-defined function
+    pointed by rl_user_completion_entry_free_function instead of
+    free() is mandatory whenever a) the user program links to the
+    DLL instead of the static library and b) the DLL links to a
+    different runtime compared to the user program (e.g., this
+    happens if the user program is built with GCC and links to
+    a MSVC-built DLL, or viceversa). The same issue has also led to
+    the implementation of the rl_free() function in GNU Readline
+  - Added a few symbols which were not exported to the DLL
+  - Handling of quotes in filename completion is much improved
+
+
+*** June 20, 2012: release of MinGWEditLine 2.07 ***
+
+  Changes with respect to the previous version include:
+
+  - A blank line is not introduced anymore at the bottom of the
+    console window
+
+
+*** June 19, 2012: release of MinGWEditLine 2.06 ***
+
+  Changes with respect to the previous version include:
+
+  - Improved redraw performance when dealing with large command
+    lines
+  - Fixed a potential buffer overflow issue in displaying long
+    history lines
+  - Fixed an issue which might arise in certain cases when using
+    CTRL+W (delete-word)
+  - Switched from autotools to standard makefiles for 32/64-bit
+    platforms
+  - Added test programs which can be built by "make test"
+  - In addition to the static library now a DLL is also built
+    (thanks to Tim Hudson at CryptSoft for the useful discussion)
+  - Most common emacs key bindings are now supported (again, thanks
+    to Tim Hudson for the suggestion)
+
+
+*** June 13, 2012: release of MinGWEditLine 2.04 ***
+
+  Changes with respect to the previous version include:
+
+  - Fixed a number of issues which might arise using console windows
+    with different screen buffer sizes
+  - Fixed an issue connected with pasting UNIX-encoded clipboard
+    contents
+
+
+*** June 4, 2012: release of MinGWEditLine 2.02 ***
+
+  Changes with respect to the previous version include:
+
+  - Added synchronization between wide-char and multibyte strings in
+    _el_insert_char() and _el_delete_char() to avoid potential issues
+    with custom completing functions or signal handling functions
+
+
+*** June 2, 2012: release of MinGWEditLine 2.01 ***
+
+  Changes with respect to the previous version include:
+
+  - Support for rl_basic_word_break_characters[] and
+    rl_completer_word_break_characters[] variables
+  - Better handling of CTRL+C events (if the current line is not
+    empty the function returns an empty string, otherwise CTRL+C is
+    not intercepted)
+  - MinGWEditLine does not crash anymore if a program omits calling
+    using_history() before calling history-related functions
+  - The prototype of readline() has been corrected to match
+    GNU Readline's and EditLine's readline() prototypes
+  - Minor bugfixes
+
+
+*** May 21, 2012: release of MinGWEditLine 2.0 ***
