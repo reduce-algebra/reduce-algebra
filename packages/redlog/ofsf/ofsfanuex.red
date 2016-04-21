@@ -1610,10 +1610,29 @@ asserted procedure anu_refineip(a: Anu, s: AexList): Anu;
       return a
    end;
 
+asserted procedure anu_approx(a: Anu): Rational;
+   % Algebraic number approximate with a rational. Returns a rational
+   % approximation of [a], which is precise up to [anu_precision!*]
+   % decimal places.
+   begin scalar iv, ra, lb, ub;
+      ra := a;
+      repeat <<
+      	 ra := anu_refine ra;
+	 iv := anu_iv ra;
+	 lb := iv_lb iv;
+	 ub := iv_rb iv
+      >> until anu_approxEnough(lb, ub);
+      return lb
+   end;
+
+asserted procedure anu_approxEnough(lb: Rational, ub: Rational): Boolean;
+   rat_less(rat_minus(ub, lb), 1 ./ (10^anu_precision!*));
+
 asserted procedure anu_evalf(a: Anu): Floating;
-   % Algebraic number evaluate floating point. Returns a floating point
-   % approximation of [a], which is precise up to [anu_precision!*] decimal
-   % places.
+   % Algebraic number evaluate floating point. Returns a floating
+   % point approximation of [a], which is precise up to
+   % [anu_precision!*] decimal places. Machine floats are used for
+   % this computation.
    begin scalar iv, ra, lb, ub;
       ra := a;
       repeat <<
@@ -1629,16 +1648,16 @@ asserted procedure anu_approxEqualEnough(lb: Floating, ub: Floating): Boolean;
    eqn(fix(lb * 10^anu_precision!*) - fix(ub * 10^anu_precision!*), 0);
 
 asserted procedure anu_evalfR(a: Anu): Any;
-   % Algebraic number evaluate floating point. Returns a floating point
-   % approximation of [a], which is precise up to [anu_precision!*] decimal
-   % places.
+   % Algebraic number evaluate floating point. Returns a floating
+   % point approximation of [a], which is precise up to [precision(0)]
+   % decimal places. Reduce floats are used for this computation.
    begin scalar iv, ra, lb, ub;
       ra := a;
       repeat <<
       	 ra := anu_refine ra;
 	 iv := anu_iv ra;
-	 lb := evalf0 {{'quotient, numr car iv or 0, denr car iv}};
-	 ub := evalf0 {{'quotient, numr cdr iv or 0, denr cdr iv}};
+	 lb := evalf0 {{'quotient, numr iv_lb iv or 0, denr iv_lb iv}};
+	 ub := evalf0 {{'quotient, numr iv_rb iv or 0, denr iv_rb iv}};
       >> until anu_approxEqualEnoughR(lb, ub);
       return lb
    end;
