@@ -1646,8 +1646,8 @@ asserted procedure anu_evalfR(a: Anu): Any;
 asserted procedure anu_approxEqualEnoughR(lb: Floating, ub: Floating): Boolean;
    begin integer l, u, p;
       p := 10^precision(0);
-      l := ((p * numr w) / denr w) where w = simp lb;
-      u := ((p * numr w) / denr w) where w = simp ub;
+      l := ((p * sfto_sf2int numr w) / denr w) where w = simp lb;
+      u := ((p * sfto_sf2int numr w) / denr w) where w = simp ub;
       return eqn(l, u)
    end;
 
