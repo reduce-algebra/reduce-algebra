@@ -2356,9 +2356,7 @@ static void unadjust_vecheap(void)
                 unadjust(&qpname(s));
                 unadjust(&qplist(s));
                 unadjust(&qfastgets(s));
-#if defined COMMON //|| defined EXPERIMENT
                 unadjust(&qpackage(s));
-#endif
                 low += symhdr_length;
                 continue;
             }
@@ -2489,9 +2487,7 @@ static void unadjust_all(void)
     unadjust(&(qpname(nil)));       // not a gensym
     unadjust(&(qplist(nil)));
     unadjust(&(qfastgets(nil)));
-#if defined COMMON //|| defined EXPERIMENT
     unadjust(&(qpackage(nil)));
-#endif
 
     copy_into_nilseg(true);
     eq_hash_table_list = eq_hash_tables;

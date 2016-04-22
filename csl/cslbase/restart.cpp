@@ -2065,9 +2065,7 @@ static void adjust_vecheap(void)
                 adjust(&qpname(ss));
                 adjust(&qplist(ss));
                 adjust(&qfastgets(ss));
-#if defined COMMON //|| defined EXPERIMENT
                 adjust(&qpackage(ss));
-#endif
 //
 // The mess here is because when CSL is re-loaded the position of all
 // C-coded entrypoints will very probably have changed since the
@@ -2343,9 +2341,7 @@ void adjust_all(void)
     adjust(&(qpname(nil)));     // not a gensym
     adjust(&(qplist(nil)));
     adjust(&(qfastgets(nil)));
-#if defined COMMON //|| defined EXPERIMENT
     adjust(&(qpackage(nil)));
-#endif
 
     copy_into_nilseg(false);
     for (i = first_nil_offset; i<last_nil_offset; i++)
@@ -4702,14 +4698,6 @@ static void cold_setup()
 #define boffo_size 256
     boffo = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+boffo_size);
     memset((void *)((char *)boffo + (CELL - TAG_VECTOR)), '@', boffo_size);
-#ifndef COMMON
-    if (current_package == nil)
-    {   current_package      = make_undefined_symbol("*package*");
-        qheader(current_package) |= SYM_SPECIAL_VAR;
-        lisp_package = qvalue(current_package) = qvalue(nil);
-        qvalue(nil) = nil;
-    }
-#else
 //
 // The next line has hidden depths.  When it is obeyed during cold start
 // the C variable *package* has the value nil, hence make_symbol
@@ -4720,11 +4708,7 @@ static void cold_setup()
     qheader(current_package)|= SYM_SPECIAL_VAR;
     lisp_package = qvalue(current_package)  = qpackage(nil);
     qvalue(nil)              = nil;          // Whew!
-#endif
-    qvalue(nil)              = nil;
-//  qpackage(nil) = qpackage(current_package) = lisp_package;
-//  printf("nil=%p, lisp_package=%p, current_package=%p\n",
-//      (void *)nil, (void *)lisp_package, (void *)current_package);
+    qpackage(nil) = qpackage(current_package) = lisp_package;
 
     B_reg = nil;                             // safe for GC
     unset_var                = make_undefined_symbol("~indefinite-value~");

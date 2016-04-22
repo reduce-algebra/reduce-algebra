@@ -558,12 +558,13 @@ static bool check_no_unwanted_keys(LispObject restarg, LispObject ok_keys)
 static bool check_keyargs_even(LispObject restarg)
 //
 // check that list is even length with alternate items symbols in
-// the keyword package.
+// the keyword package. Return true in BAD case.
 //
 {   LispObject nil = C_nil;
     while (restarg!=nil)
     {   LispObject q = qcar(restarg);
-        if (!is_symbol(q) || qpackage(q) != qvalue(keyword_package)) return true;
+        if (!is_symbol(q) || qpackage(q) != qvalue(keyword_package))
+            return true;
         restarg = qcdr(restarg);
         if (restarg==nil) return true;      // Odd length is wrong
         restarg = qcdr(restarg);

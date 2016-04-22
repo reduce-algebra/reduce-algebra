@@ -309,9 +309,7 @@ top:
             validate(qvalue(p), __LINE__);
             validate(qenv(p), __LINE__);
             validate(qpname(p), __LINE__);
-#if defined COMMON //|| defined EXPERIMENT
             validate(qpackage(p), __LINE__);
-#endif // COMMON
             validate(qplist(p), __LINE__);
             return;
 
@@ -569,7 +567,6 @@ descend:
                 p = w;
                 goto descend;
             }
-#if defined COMMON //|| defined EXPERIMENT
             w = qpackage(p);
             if (!is_immed(w) && w != nil)
             {   qpackage(p) = flip_mark_bit_p(b);
@@ -577,7 +574,6 @@ descend:
                 p = w;
                 goto descend;
             }
-#endif // COMMON
 //
 // When all components of the vector are marked I climb up the
 // back-pointer chain.
@@ -753,13 +749,11 @@ ascend:
             }
 
         case TAG_SYMBOL:
-#if defined COMMON //|| defined EXPERIMENT
             w = qpackage(b);
             if (!is_immed(w) && is_marked_p(w))
             {   qpackage(b) = p;
                 goto try_nothing;
             }
-#endif // COMMON
             w = qfastgets(b);
             if (!is_immed(w) && is_marked_p(w))
             {   qfastgets(b) = p;
@@ -814,14 +808,12 @@ ascend:
                 goto descend;
             }
         try_package:
-#if defined COMMON //|| defined EXPERIMENT
             p = qpackage(b);
             if (!is_immed(p) && p != nil && !is_marked_p(p))
             {   qpackage(b) = w;
                 goto descend;
             }
         try_nothing:
-#endif // COMMON
             q = &qheader(b);
             p = *q;
             b = flip_mark_bit_p(w);
@@ -987,14 +979,12 @@ ascend_from_vector:
             }
 
         case TAG_SYMBOL:
-#if defined COMMON //|| defined EXPERIMENT
             w = qpackage(b);
             if (!is_immed(w) && is_marked_p(w))
             {   qpackage(b) = p;
                 *q = flip_mark_bit_p((LispObject *)&qpackage(b));
                 goto try_nothing;
             }
-#endif // COMMON
             w = qfastgets(b);
             if (!is_immed(w) && is_marked_p(w))
             {   qfastgets(b) = p;
@@ -1228,9 +1218,7 @@ top:
             {   non_recursive_mark(&qvalue(p));
                 non_recursive_mark(&qenv(p));
                 non_recursive_mark(&qpname(p));
-#if defined COMMON //|| defined EXPERIMENT
                 non_recursive_mark(&qpackage(p));
-#endif // COMMON
             }
             else
             {   q = qvalue(p);
@@ -1245,11 +1233,9 @@ top:
                 q = qfastgets(p);
                 if (!is_immed(q) && q != nil)
                     *++sp = (LispObject)&qfastgets(p);
-#if defined COMMON //|| defined EXPERIMENT
                 q = qpackage(p);
                 if (!is_immed(q) && q != nil)
                     *++sp = (LispObject)&qpackage(p);
-#endif // COMMON
             }
             pp = &qplist(p);    // iterate into plist not value?
             goto top;
@@ -1781,9 +1767,7 @@ static void relocate_vecheap(void)
                         getvecs += doubleword_align_up(
                                        length_of_header(vechdr(e)));
                 }
-#ifdef COMMON
                 relocate(&(s->package));
-#endif // COMMON
                 low += symhdr_length;
                 symbol_heads += symhdr_length;
                 continue;
@@ -2237,12 +2221,6 @@ static void copy(LispObject *p)
                     p = &(((Symbol_Head *)tr_vfr)->pname);
                     break;
                 case DONE_PNAME:
-#ifndef COMMON
-                    next = CONT;
-                    p = &(((Symbol_Head *)tr_vfr)->plist);
-                    tr_vfr = tr_vfr + symhdr_length;
-                    break;
-#else // COMMON
                     next = DONE_PLIST;
                     p = &(((Symbol_Head *)tr_vfr)->plist);
                     break;
@@ -2251,7 +2229,6 @@ static void copy(LispObject *p)
                     p = &(((Symbol_Head *)tr_vfr)->package);
                     tr_vfr = tr_vfr + symhdr_length;
                     break;
-#endif // COMMON
                 default:
                     p = (LispObject *)(tr + next);
                     next -= CELL;
@@ -3146,9 +3123,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         copy(&(qplist(nil)));
         copy(&(qpname(nil)));
         copy(&(qfastgets(nil)));
-#if defined COMMON //|| defined EXPERIMENT
         copy(&(qpackage(nil)));
-#endif // COMMON
 
 //
 // I dislike the special treatment of current_package that follows. Maybe
@@ -3271,9 +3246,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         relocate(&(qplist(nil)));
 //      relocate(&(qpname(nil)));   never a cons cell
         relocate(&(qfastgets(nil)));
-#if defined COMMON //|| defined EXPERIMENT
         relocate(&(qpackage(nil)));
-#endif // COMMON
 
         for (i = first_nil_offset; i<last_nil_offset; i++)
             relocate(&BASE[i]);
