@@ -608,7 +608,8 @@ load!-module "user";
 in "$reduce/packages/support/remake.red"$
 
 global '(reduce_base_modules reduce_extra_modules
-         reduce_test_cases reduce_regression_tests);
+         reduce_test_cases reduce_regression_tests
+         !*reduce!-packages!*);
 
 symbolic procedure get_configuration_data();
 % Read data from a configuration file that lists the modules that must
@@ -669,6 +670,7 @@ symbolic procedure get_configuration_data();
 %   princ "reduce_extra_modules: "; print reduce_extra_modules;
 %   princ "reduce_test_cases: "; print reduce_test_cases;
 %   princ "reduce_regression_tests: "; print reduce_regression_tests;
+    !*reduce!-packages!* := append(reduce_base_modules, reduce_extra_modules);
     return;
   end;
 
