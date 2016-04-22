@@ -155,7 +155,10 @@
 
 (fi 16#86 xchg ((E b) (G b)) ((E v) (G v)))
 
-(fi 16#88 mov  ((E b)(G b)) ((E v) (G v))  ((G b)(E b)) ((G v) (E v)))
+(fi 16#88 movb ((E b)(G b)))
+(fi 16#89 mov  ((E v) (G v)))
+(fi 16#8a movb ((G b)(E b)))
+(fi 16#8b mov  ((G v) (E v)))
 
 (fi 16#8d lea  ((G v) (M)))
 
@@ -271,7 +274,8 @@
 (setq rregs  '("rax" "rcx" "rdx" "rbx" "rsp" "rbp" "rsi" "rdi"
                "r8" "r9" "r10" "r11" "r12" "r13" "r14" "r15"))
 
-(fluid '( the-instruction* addr* rex_w rex_r rex_x rex_b size-override* sse-prefix* !0f-prefix* mod-is-3*))
+(fluid '( the-instruction* addr* rex_w rex_r rex_x rex_b size-override* sse-prefix* !0f-prefix* mod-is-3*
+			   byte-operand*))
 
 (de decode(p1 pl addr*)
   (prog(i lth name with-rex)
@@ -319,7 +323,7 @@
 
 
 (de decode-operands(bytes* lth* pat)
-  (prog (r reg* xreg*)
+  (prog (r reg* xreg* byte-operand*)
     (when (eqcar pat nil) (go done))
     (push (cons 'op1 (decode-operand1 (pop pat) t)) r)
     (when pat
@@ -339,7 +343,9 @@
 	 (if *gassyntax (bldmsg "%%%w" w) w))
 	((atom p) 
 	 (if (and *gassyntax (idp p)) (bldmsg "%%%w" p) p))
-        ((eq (car p) 'G) 'reg)
+        ((eq (car p) 'G) 
+	 (if (eqcar (cdr p) 'b) (setq byte-operand* t))
+	 'reg)
         ((eq (car p) 'V) 'xreg)
            % immediate byte
         ((equal p '(I b)) 
@@ -448,8 +454,8 @@
      (setq base (wand 7 b))
      (when rex_b (setq base (wplus2 base 8)))
      (setq offset "")
-     (cond ((and (not rex_w) (eq scale 1)) (setq reg* (reg-m8 regnr*)))
-	   ((and (not rex_w) (eq scale 2)) (setq reg* (reg-m16 regnr*))))
+     (cond ((and (not rex_w) (eq size-override* 16#66)) (setq reg* (reg-m16 regnr*)))
+	   ((or byte-operand* (and (not rex_w) (eq scale 1))) (setq reg* (reg-m8 regnr*))))
      (when (eq mod 1)
            (setq offset (pop bytes*))
 	   (setq offset
@@ -1040,6 +1046,7 @@ loop
          (setq lth (pop instr))
          (setq name (when instr (pop instr)))
 
+         (when (and (eq name 'mov) (eq size-override* 16#66)) (setq name 'movw))
          (when (eq name 'grp1) (setq name (namegrp1)))
          (when (eq name 'grp5) (setq name (namegrp5)))
          (when (eq name 'grp3) (setq name (namegrp3)))
