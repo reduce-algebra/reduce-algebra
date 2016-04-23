@@ -274,7 +274,7 @@ procedure redfront_send!-modules();
 % implemetinting the macro as one big function rather than as several
 % several smaller and neater ones.
 
-symbolic macro procedure redfront_package_names();
+symbolic macro procedure redfront_package_names u;
   begin
     scalar fn,i,w,e,basel,extral;;
     fn := "$reduce/packages/package.map";
