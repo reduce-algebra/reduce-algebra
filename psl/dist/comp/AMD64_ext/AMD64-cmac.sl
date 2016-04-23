@@ -142,9 +142,9 @@
  
 %---------------------------------------------------------
 % The following set of predicates describes certain classes of
-% register classes. RegP tests if the ophe operand is a valid 68000 register.%
+% register classes. RegP tests if the ophe operand is a valid x86_64 register.%
 %
-% RegP  any 80386 register
+% RegP  any x86_64 register
 % FakeRegP tests for argument register numbers greater than LastActualReg
  
  
@@ -155,7 +155,7 @@
     (AND (eqcar Regname 'reg)
 	 (MemQ (cadr RegName) 
 	  '( 1  2  3  4  5 st t1 t2 rax rcx rdx rbx rsp rbp rsi rdi
-				eax ebx edx
+				eax ebx edx r8 r9 r10 r11 r12 r13 r14 r15
             nil heaplast heaptrapbound
 	    bndstkptr bndstklowerbound
 	    bndstkupperbound t3 t4 al  cl ax cx es cs ss ds fs gs))))
