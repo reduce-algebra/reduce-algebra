@@ -26,6 +26,28 @@ rfpsl_LDADD = ../lib/libedit.a -lncurses
 rfcsl_DEPENDENCIES = ../lib/libedit.a
 rfpsl_DEPENDENCIES = ../lib/libedit.a
 
+# The next bunch are to get libedit built before attempts to build other
+# things. It is in fact the header files installed by libedit that matter
+# first.
+
+rfcsl-redchild.$(OBJEXT):	../lib/libedit.a
+rfcsl-reddeb.$(OBJEXT):		../lib/libedit.a
+rfcsl-redfront.$(OBJEXT):	../lib/libedit.a
+rfcsl-redline.$(OBJEXT):	../lib/libedit.a
+rfcsl-redparent.$(OBJEXT):	../lib/libedit.a
+rfcsl-redsig.$(OBJEXT):		../lib/libedit.a
+rfcsl-redstrings.$(OBJEXT):	../lib/libedit.a
+rfcsl-findself.$(OBJEXT):	../lib/libedit.a
+
+rfpsl-redchild.$(OBJEXT):	../lib/libedit.a
+rfpsl-reddeb.$(OBJEXT):		../lib/libedit.a
+rfpsl-redfront.$(OBJEXT):	../lib/libedit.a
+rfpsl-redline.$(OBJEXT):	../lib/libedit.a
+rfpsl-redparent.$(OBJEXT):	../lib/libedit.a
+rfpsl-redsig.$(OBJEXT):		../lib/libedit.a
+rfpsl-redstrings.$(OBJEXT):	../lib/libedit.a
+rfpsl-findself.$(OBJEXT):	../lib/libedit.a
+
 ../lib/libedit.a:
 	cd ../libedit && $(MAKE) install
 
@@ -38,7 +60,7 @@ rfcslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 	$(srcdir)/redstrings.c $(srcdir)/findself.c \
 	../wineditline/src/editline.c ../wineditline/src/fn_complete.c \
 	../wineditline/src/history.c
-	i686-w64-mingw32-gcc $(CFLAGS) -DCSL=1 -DBUILD_TIME="$(DATESTAMP)" \
+	i686-w64-mingw32-gcc $(CFLAGS) -DCSL=1 -DBUILDTIME="\"$(DATESTAMP)\"" \
 		$(srcdir)/redchild.c $(srcdir)/reddeb.c \
 		$(srcdir)/redfront.c $(srcdir)/redline.c \
 		$(srcdir)/redparent.c $(srcdir)/redsig.c \
@@ -55,7 +77,7 @@ rfpslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 	$(srcdir)/redstrings.c $(srcdir)/findself.c \
 	../wineditline/src/editline.c ../wineditline/src/fn_complete.c \
 	../wineditline/src/history.c
-	i686-w64-mingw32-gcc $(CFLAGS) -DPSL=1 -DBUILD_TIME="$(DATESTAMP)" \
+	i686-w64-mingw32-gcc $(CFLAGS) -DPSL=1 -DBUILDTIME="\"$(DATESTAMP)\"" \
 		$(srcdir)/redchild.c $(srcdir)/reddeb.c \
 		$(srcdir)/redfront.c $(srcdir)/redline.c \
 		$(srcdir)/redparent.c $(srcdir)/redsig.c \

@@ -565,11 +565,13 @@ char **create_call(int argc,char *argv[]) {
    reducename = (char *)malloc(strlen(programDir) + 16);
    sprintf(reducename, "%s/redpsl", programDir);
 #ifdef NATIVE_WINDOWS
-   strcat(reducename, ".bat"
+   strcat(reducename, ".bat");
 #endif
 
   if ((tempfd = open(reducename,O_RDONLY)) == -1)
-  { perror("cannot open CSL Reduce executable (%s)", reducename);
+  {  char errstr[1024];
+     sprintf(errstr,"cannot open CSL executable (%s)", reducename);
+     perror(errstr);
     rf_exit(-1);
   }
   else close(tempfd);
