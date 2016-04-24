@@ -64,8 +64,8 @@ global '(!$eol!$
          switches!*
          symchar!*);
 
-author1!* := "A C Hearn, 2008-14";
-author2!* := "Codemist Ltd, 2008-14";
+author1!* := "A C Hearn, 1971-2016";
+author2!* := "Codemist, 1989-2016";
 
 % Lists of packages & switches...
 

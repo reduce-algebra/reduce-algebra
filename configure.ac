@@ -144,7 +144,7 @@ then
   fi
 
   here=`pwd`
-  cd $srcdir
+  cd $abssrcdir
   printf "Regenerate autoconf-related files\n"
   if ! ./autogen.sh $ac_configure_args
   then
@@ -157,8 +157,8 @@ then
 # the first argument in the re-try. This is because otherwise some malformed
 # input olater on (eg "--") could cause it not to be recognised, leading
 # to an infinite cycle of attempted re-generation!
-  printf "Restart: $srcdir/configure --without-autogen $ac_configure_args\n"
-  exec /bin/sh -c "$srcdir/configure --without-autogen $ac_configure_args"
+  printf "Restart: $abssrcdir/configure --without-autogen $ac_configure_args\n"
+  exec /bin/sh -c "$abssrcdir/configure --without-autogen $ac_configure_args"
 fi
 
 AC_CANONICAL_HOST()
@@ -197,13 +197,6 @@ AC_ARG_WITH(force,
   AC_HELP_STRING([--with-force], [Forces refresh of windows varients]),
   [],
   [with_force="no"])
-
-AC_ARG_WITH(crlibm,
-  AC_HELP_STRING([--with-crlibm], [Can be used to disable use of crlibm library]),
-  [],
-  [with_crlibm="yes"])
-
-AC_MSG_NOTICE([with_crlibm = $with_crlibm])
 
 AC_ARG_WITH(boehm,
   AC_HELP_STRING([--with-boehm], [Can be used to disable use of boehm collector]),
@@ -454,8 +447,8 @@ esac
 # detected. But the reconfig step messes that up and anyway it is a delicate
 # cheat. So here is a different delicate cheat!
 
-rm -f ./testfile.tst "$srcdir/testfile.tst"
-touch "$srcdir/testfile.tst"
+rm -f ./testfile.tst "$abssrcdir/testfile.tst"
+touch "$abssrcdir/testfile.tst"
 if test -f ./testfile.tst
 then
   rm -f ./testfile.tst
@@ -499,14 +492,17 @@ then
       build="i686-pc-windows"
     fi
   else
-    build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host"`
+    build=`eval "$SHELL \"$abssrcdir/scripts/findhost.sh\" $host"`
   fi
 else
-  build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host $ac_configure_args"`
+  build=`eval "$SHELL \"$abssrcdir/scripts/findhost.sh\" $host $ac_configure_args"`
 fi
 
 AC_MSG_NOTICE([Will build in the $build subdirectory])
 
+# There are many configure options that are valid or relevant at the
+# top level but are not needed for sub-configure calls
+filtered=`$abssrcdir/scripts/filter.sh "$ac_configure_args"`
 
 case $inplace in
   yes)
@@ -626,7 +622,7 @@ case $inplace in
       AC_MSG_NOTICE([cygplatfroms = $cygplatforms])
       for buildmc in $cygplatforms
       do
-        build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $buildmc $ac_configure_args" --with-cygwin`
+        build=`eval "$SHELL \"$abssrcdir/scripts/findhost.sh\" $buildmc $ac_configure_args" --with-cygwin`
         AC_MSG_NOTICE([buildmc=$buildmc => build=$build])
         pass_host=""
         case `uname -m -o` in
@@ -708,7 +704,7 @@ case $inplace in
       then
         for buildmc in "i686-w64-mingw32" "x86_64-w64-mingw32"
         do
-          build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $buildmc $ac_configure_args"`
+          build=`eval "$SHELL \"$abssrcdir/scripts/findhost.sh\" $buildmc $ac_configure_args"`
           if test -x /usr/bin/$buildmc-gcc && test "x$with_cygwin" = "xno"
           then
             if test "x$with_force" != "xno" ||
@@ -777,83 +773,67 @@ case $inplace in
 # I have the configuration for crlibm here as a repeat copy of the code
 # used to configure it for use with CSL. This is UGLY but is like this
 # because of messy details of how the PSL version is configured here.
-# Right now I do not want to write out an explanatio of all the horrid
+# Right now I do not want to write out an explanation of all the horrid
 # details.
-    if test "x$with_crlibm" = "xno"
+    AC_MSG_NOTICE([About to configure crlibm])
+    builddir=`pwd`
+    mkdir -p crlibm
+    cd crlibm
+
+    if test "x$CC$CPP$CXX$CXXCPP" != "x"
     then
-      AC_MSG_NOTICE([crlibm will not be used here])
+      passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
     else
-      AC_MSG_NOTICE([About to configure crlibm])
-      builddir=`pwd`
-      mkdir -p crlibm
-      cd crlibm
-
-      if test "x$CC$CPP$CXX$CXXCPP" != "x"
-      then
-        passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-      else
-        passcc=""
-      fi
-      case $host in
-      i386* | i486* | i586* | i686*)
-        passcc="$passcc --enable-sse2"
-        ;;
-      esac
-      filter=""
-      for x in $ac_configure_args
-      do
-# The processing here is so that I do not pass CSL or REDUCE-specific
-# configuration flags down when configuring crlibm. This then has to have
-# a catalogue of all the options I need to ignore. Messy!
-        case $x in
-        \'--with-force*\' | \
-        \'--with*-autogen*\' | \
-        \'--with-mingw*\' | \
-        \'--with-lto*\' | \
-        \'--with-m32*\' | \
-        \'--with-m64*\' | \
-        \'--with*-gui*\' | \
-        \'--with*-xft*\' | \
-        \'--with*-xim*\' | \
-        \'--with-smallpage*\' | \
-        \'--with*-fox*\' | \
-        \'--with*-wx*\' | \
-        \'--with-cyg*\' | \
-        \'--with-csl*\' | \
-        \'--with-psl*\' | \
-        \'--with-build*\' | \
-        \'--with-pslbuild*\' | \
-        \'--with*-crlibm*\' | \
-        \'--with*-boehm*\' | \
-        \'--enable-debug*\' | \
-        \'--enable-conservative*\' | \
-        \'--enable-test*\' | \
-        \'--enable-jit*\' | \
-        \'--enable-static*\' | \
-        \'--enable-silent*\' | \
-        \'--disable-silent*\' )
-          ;;
-        *)
-          filter="$filter $x"
-          ;;
-        esac
-      done
-      AC_MSG_NOTICE([passcc = $passcc])
-      doconfig="$SHELL \"$abssrcdir/libraries/crlibm/configure\" $filter \
-            $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-            --prefix=\"$builddir\""
-      AC_MSG_NOTICE([doconfig = $doconfig])
-      eval "$doconfig"
-      cd "$builddir"
+      passcc=""
     fi
+    case $host in
+    i386* | i486* | i586* | i686*)
+      passcc="$passcc --enable-sse2"
+      ;;
+    esac
 
-    cd "$abssrcdir"
+    AC_MSG_NOTICE([passcc = $passcc])
+    doconfig="$SHELL \"$abssrcdir/libraries/crlibm/configure\" $filtered \
+          $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+          CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
+          --prefix=\"$builddir\""
+    AC_MSG_NOTICE([doconfig = $doconfig])
+    eval "$doconfig"
+    cd "$builddir"
+
+    AC_MSG_NOTICE([About to configure libedit])
+    mkdir -p libedit
+    cd libedit
+
+    doconfig="$SHELL \"$abssrcdir/libraries/libedit-20140620-3.1/configure\" \
+          $filtered \
+          CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+          CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
+          --prefix=\"$builddir\""
+    AC_MSG_NOTICE([doconfig = $doconfig])
+    eval "$doconfig"
+
+    cd "$builddir"
+
+    ln -f -s $abssrcdir/libraries/wineditline .
+
+    AC_MSG_NOTICE([About to configure redfront])
+    mkdir -p redfront
+    cd redfront
+
+    doconfig="$SHELL \"$abssrcdir/generic/newfront/configure\" $filtered \
+          CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+          CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
+          --prefix=\"$builddir\""
+    AC_MSG_NOTICE([doconfig = $doconfig])
+    eval "$doconfig"
+
+    cd "$builddir"
   fi
   exit 0
   ;;
   *)
-  AC_MSG_NOTICE([+++ standard build case, srcdir = $srcdir = "$abssrcdir"])
+  AC_MSG_NOTICE([+++ standard build case, abssrcdir = $abssrcdir = "$abssrcdir"])
   ;;
 esac
 
@@ -1209,32 +1189,6 @@ then
     AC_MSG_NOTICE([doconfig = $doconfig])
     eval "$doconfig"
     cd "$builddir"
-
-# I will not configure the FOX tests any more - anybody who wants to use
-# them can do that manually.
-
-#   if test -d "$abssrcdir/csl/foxtests"
-#   then
-#     AC_MSG_NOTICE([About to configure FOX tests])
-#     mkdir -p foxtests
-#     cd foxtests
-#
-#     if test "x$CC$CPP$CXX$CXXCPP" != "x"
-#     then
-#       passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-#     else
-#       passcc=""
-#     fi
-#     AC_MSG_NOTICE([passcc = $passcc])
-#     doconfig="$SHELL \"$abssrcdir/csl/foxtests/configure\" $ac_configure_args \
-#           $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-#           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-#           --with-fox=\"$builddir\" --with-fox-pending=yes $extras"
-#     AC_MSG_NOTICE([doconfig = $doconfig])
-#     eval "$doconfig"
-#   fi
-
-    cd "$builddir"
   fi
 
 fi
@@ -1258,47 +1212,8 @@ else
     passcc="$passcc --enable-sse2"
     ;;
   esac
-  filter=""
-  for x in $ac_configure_args
-  do
-# The processing here is so that I do not pass CSL or REDUCE-specific
-# configuration flags down when configuring crlibm. This then has to have
-# a catalogue of all the options I need to ignore. Messy!
-    case $x in
-    \'--with-force*\' | \
-    \'--with*-autogen*\' | \
-    \'--with-mingw*\' | \
-    \'--with-lto*\' | \
-    \'--with-m32*\' | \
-    \'--with-m64*\' | \
-    \'--with*-gui*\' | \
-    \'--with*-xft*\' | \
-    \'--with*-xim*\' | \
-    \'--with-smallpage*\' | \
-    \'--with*-fox*\' | \
-    \'--with*-wx*\' | \
-    \'--with-cyg*\' | \
-    \'--with-csl*\' | \
-    \'--with-psl*\' | \
-    \'--with-build*\' | \
-    \'--with-pslbuild*\' | \
-    \'--with*-crlibm*\' | \
-    \'--with*-boehm*\' | \
-    \'--enable-debug*\' | \
-    \'--enable-conservative*\' | \
-    \'--enable-test*\' | \
-    \'--enable-jit*\' | \
-    \'--enable-static*\' | \
-    \'--enable-silent*\' | \
-    \'--disable-silent*\' )
-      ;;
-    *)
-      filter="$filter $x"
-      ;;
-    esac
-  done
   AC_MSG_NOTICE([passcc = $passcc])
-  doconfig="$SHELL \"$abssrcdir/libraries/crlibm/configure\" $filter \
+  doconfig="$SHELL \"$abssrcdir/libraries/crlibm/configure\" $filtered \
         $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
         --prefix=\"$builddir\""
@@ -1322,44 +1237,6 @@ else
   else
     passcc=""
   fi
-  filter=""
-  for x in $ac_configure_args
-  do
-# The processing here is so that I do not pass CSL or REDUCE-specific
-# configuration flags down when configuring crlibm. This then has to have
-# a catalogue of all the options I need to ignore. Messy!
-    case $x in
-    \'--with-force*\' | \
-    \'--with-mingw*\' | \
-    \'--with-lto*\' | \
-    \'--with-m32*\' | \
-    \'--with-m64*\' | \
-    \'--with*-gui*\' | \
-    \'--with*-xft*\' | \
-    \'--with*-xim*\' | \
-    \'--with-smallpage*\' | \
-    \'--with*-fox*\' | \
-    \'--with*-wx*\' | \
-    \'--with-cyg*\' | \
-    \'--with-csl*\' | \
-    \'--with-psl*\' | \
-    \'--with-build*\' | \
-    \'--with-pslbuild*\' | \
-    \'--with*-crlibm*\' | \
-    \'--with*-boehm*\' | \
-    \'--enable-debug*\' | \
-    \'--enable-conservative*\' | \
-    \'--enable-test*\' | \
-    \'--enable-jit*\' | \
-    \'--enable-static*\' | \
-    \'--enable-silent*\' | \
-    \'--disable-silent*\' )
-      ;;
-    *)
-      filter="$filter $x"
-      ;;
-    esac
-  done
   case $build in
   *windows* | *win32* | *mingw*)
     thr="win32"
@@ -1369,7 +1246,7 @@ else
     ;;
   esac
   AC_MSG_NOTICE([passcc = $passcc])
-  doconfig="$SHELL \"$abssrcdir/csl/cslbase/gc-7/configure\" $filter \
+  doconfig="$SHELL \"$abssrcdir/csl/cslbase/gc-7/configure\" $filtered \
         $pass_host \
         CPPFLAGS=\"$CPPFLAGS -DDONT_ADD_BYTE_AT_END=1\" \
         CFLAGS=\"$CFLAGS\" \
@@ -1386,68 +1263,55 @@ else
   cd "$builddir"
 fi
 
-# I do not provide any way to disable building of softfloat!
-if test "x$with_libsoftfloat" = "xno"
+AC_MSG_NOTICE([About to configure libsoftfloat])
+mkdir -p softfloat
+cd softfloat
+
+if test "x$CC$CPP$CXX$CXXCPP" != "x"
 then
-  AC_MSG_NOTICE([libsoftfloat will not be used here])
+  passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
 else
-  AC_MSG_NOTICE([About to configure libsoftfloat])
-  mkdir -p softfloat
-  cd softfloat
-
-  if test "x$CC$CPP$CXX$CXXCPP" != "x"
-  then
-    passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-  else
-    passcc=""
-  fi
-  filter=""
-  for x in $ac_configure_args
-  do
-    case $x in
-    \'--with-force*\' | \
-    \'--with*-autogen*\' | \
-    \'--with-mingw*\' | \
-    \'--with-lto*\' | \
-    \'--with-m32*\' | \
-    \'--with-m64*\' | \
-    \'--with*-gui*\' | \
-    \'--with*-xft*\' | \
-    \'--with*-xim*\' | \
-    \'--with-smallpage*\' | \
-    \'--with*-fox*\' | \
-    \'--with*-wx*\' | \
-    \'--with-cyg*\' | \
-    \'--with-csl*\' | \
-    \'--with-psl*\' | \
-    \'--with-build*\' | \
-    \'--with-pslbuild*\' | \
-    \'--with*-crlibm*\' | \
-    \'--with*-boehm*\' | \
-    \'--enable-debug*\' | \
-    \'--enable-conservative*\' | \
-    \'--enable-test*\' | \
-    \'--enable-jit*\' | \
-    \'--enable-static*\' | \
-    \'--enable-silent*\' | \
-    \'--disable-silent*\' )
-      ;;
-    *)
-      filter="$filter $x"
-      ;;
-    esac
-  done
-  AC_MSG_NOTICE([passcc = $passcc])
-  doconfig="$SHELL \"$abssrcdir/libraries/SoftFloat-3a/source/configure\" \
-        $filter \
-        $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-        CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-        --prefix=\"$builddir\""
-  AC_MSG_NOTICE([doconfig = $doconfig])
-  eval "$doconfig"
-
-  cd "$builddir"
+  passcc=""
 fi
+AC_MSG_NOTICE([passcc = $passcc])
+doconfig="$SHELL \"$abssrcdir/libraries/SoftFloat-3a/source/configure\" \
+      $filtered \
+      $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+      CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
+      --prefix=\"$builddir\""
+AC_MSG_NOTICE([doconfig = $doconfig])
+eval "$doconfig"
+
+cd "$builddir"
+
+AC_MSG_NOTICE([About to configure libedit])
+mkdir -p libedit
+cd libedit
+
+doconfig="$SHELL \"$abssrcdir/libraries/libedit-20140620-3.1/configure\" \
+      $filtered \
+      CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+      CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
+      --prefix=\"$builddir\""
+AC_MSG_NOTICE([doconfig = $doconfig])
+eval "$doconfig"
+
+cd "$builddir"
+
+ln -f -s $abssrcdir/libraries/wineditline .
+
+AC_MSG_NOTICE([About to configure redfront])
+mkdir -p redfront
+cd redfront
+
+doconfig="$SHELL \"$abssrcdir/generic/newfront/configure\" $filtered \
+      CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+      CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
+      --prefix=\"$builddir\""
+AC_MSG_NOTICE([doconfig = $doconfig])
+eval "$doconfig"
+
+cd "$builddir"
 
 ###############################################################################
 

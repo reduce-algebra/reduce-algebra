@@ -1,11 +1,11 @@
-/* FXReduceMenus.cpp                    Copyright (C) 2014 Codemist Ltd */
+/* FXReduceMenus.cpp                        Copyright (C) 2016 Codemist */
 
 
 /* $Id$ */
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2008, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

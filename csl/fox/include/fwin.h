@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 1014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 1014, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

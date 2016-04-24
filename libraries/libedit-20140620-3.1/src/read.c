@@ -50,6 +50,7 @@ __RCSID("$NetBSD: read.c,v 1.70 2013/05/27 23:55:55 christos Exp $");
 #include <unistd.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <sys/ioctl.h>
 #include "el.h"
 
 #define OKCMD	-1	/* must be -1! */

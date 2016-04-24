@@ -1,0 +1,324 @@
+.\" --------------------------------------------------------------------
+.\" $Id: redfront.1 524 2010-01-06 17:25:18Z thomas-sturm $
+.\" --------------------------------------------------------------------
+.\" Copyright (c) 2006-2010 Thomas Sturm
+.\" --------------------------------------------------------------------
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\"
+.\"    * Redistributions of source code must retain the relevant
+.\"      copyright notice, this list of conditions and the following
+.\"      disclaimer.
+.\"    * Redistributions in binary form must reproduce the above
+.\"      copyright notice, this list of conditions and the following
+.\"      disclaimer in the documentation and/or other materials provided
+.\"      with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+.\" "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+.\" LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+.\" A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+.\" OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+.\" SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+.\" LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+.\" DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+.\" THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+.\" OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd Jan 6, 2010
+.Os
+.Dt REDFRONT 1
+.Sh NAME
+.Nm redfront , rfcsl, rfpsl
+.Nd REDUCE frontend
+.Sh SYNOPSIS
+.Nm
+.Op Fl bhuvV
+.Op Fl c Ar colorspec
+.Op Oo Fl m Oc Ar bytes Ns Oo kKmM Oc
+.Op Fl - Ar ...
+.Nm rfcsl
+.Op Fl bhuvV
+.Op Fl c Ar colorspec
+.Op Fl - Ar ...
+.br
+.Nm rfpsl
+.Op Fl bhuvV
+.Op Fl c Ar colorspec
+.Op Oo Fl m Oc Ar bytes Ns Oo kKmM Oc
+.Op Fl - Ar ...
+.Sh DESCRIPTION
+.Nm
+is a terminal-based interactive frontend for the
+.Xr reduce 1
+computer algebra system. It uses the
+.Xr editline 3
+library to provide editing facilities.
+.Pp
+This man page only covers
+.Nm Ns Li .
+For information on REDUCE find its documentation at
+http://www.reduce-algebra.com.
+.Pp
+The executable REDUCE to be used by
+.Nm
+is compiled into the program. After proper installation you will find in
+the
+.Pa bin
+directory of your REDUCE tree symbolic links
+.Nm rfcsl
+and/or
+.Nm rfpsl
+for your CSL-based and PSL-based REDUCE, respectively.
+.Pp
+The following options are available:
+.Bl -tag -width indent
+.It Fl b
+Black-and-white mode. That is, do not adjust any terminal colors.
+.It Fl c Ar colorspec
+The format of the
+.Ar colorspec
+string is adopted from the
+.Ev LSCOLOR
+environment variable of
+.Xr ls 1 .
+It is a concatenation of pairs of the format
+.Ar f Ns Ar b ,
+where
+.Ar f
+is the foreground color and
+.Ar b
+is the background color.
+.Pp
+The color designators are as follows:
+.Pp
+.Bl -tag -width 4n -offset indent -compact
+.It Sy a
+black
+.It Sy b
+red
+.It Sy c
+green
+.It Sy d
+brown
+.It Sy e
+blue
+.It Sy f
+magenta
+.It Sy g
+cyan
+.It Sy h
+light grey
+.It Sy A
+bold black, usually shows up as dark grey
+.It Sy B
+bold red
+.It Sy C
+bold green
+.It Sy D
+bold brown, usually shows up as yellow
+.It Sy E
+bold blue
+.It Sy F
+bold magenta
+.It Sy G
+bold cyan
+.It Sy H
+bold light grey; looks like bright white
+.It Sy x
+default foreground or background
+.El
+.Pp
+Note that the above are standard
+\*[Ai]
+colors.
+The actual display may differ
+depending on the color capabilities of the terminal in use.
+.Pp
+The order of the attributes are as follows:
+.Pp
+.Bl -enum -offset indent -compact
+.It
+.Nm
+output,
+.It
+.Xr reduce 1
+output that is not typeset as a mathematical formula,
+.It
+.Xr reduce 1
+prompts,
+.It
+input lines,
+.It
+.Xr reduce 1
+output that is typeset as a mathematical formula. As a rule these are
+the evaluation results in the algebraic mode,
+.It
+debugging output, which appears only when
+.Nm
+is configured and compiled for debugging.
+.El
+.Pp
+Except for the debugging output color the chosen order of the colors is as they
+appear on the screen when starting
+.Nm .
+.Pp
+The default is
+.Qq "fxxxbxbxexgx" ,
+i.e. magenta
+.Nm
+output, general
+.Xr reduce 1
+output in the terminal foreground color, red prompts, red input lines,
+blue mathematical output, and cyan debugging messages, where the
+background is generally the default terminal background.
+.It Fl h
+Print a help message
+.It Oo Fl m Oc Ar bytes Oo kKmM Oc
+[PSL-based REDUCE only] Specify the number of bytes used for the Lisp
+heap. Case insensitive k ("kilo") is expanded to 000, and m ("mega") is
+expanded to 000000.
+.Pp
+On PSL based 64 bit systems, heap sizes less than one million are
+multiplied on the REDUCE side by one million. This happens after the
+expansion of k and m. For instance, 1 = 1m yields 1 MB, and 1k yields
+1000 MB. Consequently, k denotes GB until 1000k, which is again 1 MB. At
+present, this mechanism should be used in order to avoid a possible
+integer overflow in the heap size argument to the underlying binary PSL.
+.Pp
+For historical reasons, it is also possible to drop the
+.Fl m
+passing the heap size as a command instead of as an option. This variant
+is deprecated and likely to be removed in the future.
+.It Fl u
+Automatically load the
+.Xr reduce 1
+package
+.Qq utf8
+at startup. This uses unicode characters for the mathematical output.
+Note that the use of
+.Fl u
+requires a UTF-8-capable terminal, which is not checked by
+.Nm .
+.It Fl v | V
+Print a more verbose banner message. In addition, print information when
+updating the internal database of known packages, modules, and switches
+(see Section on TAB Completion below).
+.It Fl -
+A command line argument of "--" marks the end of option arguments. Any
+arguments following this are directly passed to the REDUCE program
+spawned by
+.Nm ,
+in addition and after those generated by
+.Nm .
+For this sake, we consider the memory specification an option also when
+not using the
+.Fl m
+format.
+.El
+.Sh "KEY BINDINGS"
+The
+.Xr editline 3
+command line_help, which is bound to the function key F2 by default,
+displays all current bindings of key sequences to
+.Xr editline 3
+commands.
+.Sh "TAB COMPLETION"
+The string "load_" is completed to "load_package." After "load_package"
+Reduce package names are completed. Reduce packages in this sense are
+exactly those listed in trunk/packages/package.map.
+.Nm rfpsl
+completes these package names also after all other load commands besides
+"load_package".
+.Nm rfcsl,
+in contrast, completes after any load command other than "load_package"
+loadable modules, which establish a quite comprehensive superset of the
+Reduce packages.
+.Pp
+After double quotes there are filenames completed with respect to the
+directory that
+.Nm redfront
+has been started in.
+.Pp
+After "on" and "off" there are switch names completed. To cover also
+switches that become available during a session via explicit declaration
+or loading or reading packages or modules, the database of
+.Nm redfront
+can be explicitly updated via the
+.Xr editline 3
+command line_learn_completion, which is bound to ESC-Z by default. With
+the
+.Fl V | v
+option there is some information printend when updating.
+.Sh "IMPLEMENTATION NOTES"
+For redfront 1 KB is 1000 Bytes in contrast to 1024 Bytes, 1 MB is 1000
+KB, and so on.
+.Pp
+PSL based REDUCE on 32 bit systems generally does not admit more than
+128m heap size. On some systems (e.g. Mac G4, Solaris) this even reduces
+to 64m. On some architectures the command and the
+.Fl m
+option are generally ignored on the REDUCE side. The heap is then set to
+the maximum possible size.
+.Sh "FILES"
+.Bl -tag -width indent
+.It Pa $HOME/.reduce_history
+stores command history between sessions.
+.It Pa $PWD/.editrc , Pa $HOME/.editrc
+are
+.Xr editline 3
+configuration files, in which global settings as well as particular
+settings for
+.Nm
+can be made. See
+.Xr editrc 5
+for details. At startup
+.Nm
+sources the first one of these that exists.
+.El
+.Sh "SEE ALSO"
+.Xr editline 3
+.Sh EXAMPLES
+The following starts
+.Nm
+for PSL-based
+.Xr reduce 1
+via the corresponding symbolic link with unicode support and 1 GB heap
+on a 64 bit architecture:
+.Pp
+.Dl "rfpsl -u -m 1k"
+.Sh HISTORY
+The first version of
+.Nm
+was derived from an
+.Xr X 7
+interface by C. Cannam and W. Neun. Earlier versions have been realized
+and distributed by W. Neun and by A. Dolzmann and T. Sturm starting in
+1999.
+.Sh "AUTHORS"
+.An T. Sturm
+.Aq sturm@redlog.eu
+.Sh "BUGS"
+Due to limitations of
+.Xr editline 3
+the prompt coloring does not work. The prompt generally receives the
+same color as the input.
+.Pp
+The builtin
+.Xr editline 3
+command line_help (bound to F2) for displaying all current key bindings
+appears to have some problems with correctly printing key sequences.
+.Pp
+The choice of background colors with
+.Fl c
+is not implemented yet. Nevertheless, choices must be specified in the
+.Ar colorspec
+argument, which are generally treated like
+.Qq x
+at present.
+.Pp
+The PSL heapsize selection policy for 64 bit architectures in contrast
+to 32 bit architectures (necessary to avoid some integer overflows on
+the former) is unintuitive and should probably be hidden via redfront.

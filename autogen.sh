@@ -42,12 +42,10 @@ fi
 # There are some directories that I have chosen not to process here:
 #  ./csl/foxtests
 #  ./generic/libreduce/src
-#  ./generic/redfront/libedit-20140620-3.1
-#  ./generic/redfront/src
 # taking a view that people who wish to build those already have to take
 # special steps... and so they can run autoconf etc for themselves if it
 # is needed. If I did so here it would slow things down for everybody in
-# a way I would view as unhelpful.
+# a way I would view as unhelpful. And this is already slow enough!
 
 printf "autogen.sh arguments: $*\n"
 
@@ -60,7 +58,8 @@ fi
 
 # Here are the directories that I will always process...
 
-L=". ./scripts libraries/crlibm"
+L=". ./scripts ./libraries/crlibm ./libraries/libedit-20140620-3.1 \
+   ./generic/newfront"
 
 case $a in
 *--without-psl* | *with-psl=no*)
