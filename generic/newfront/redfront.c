@@ -523,99 +523,70 @@ void rf_exit(int ecode) {
 
 char **create_call(int argc,char *argv[]) {
   char **nargv;
+  char *reducename;
   int tempfd;
-  int i,xa0;
+  int i,j,xa0;
 
   deb_fprintf(stderr,"entering create_call\n");
 
   nargv = (char **)malloc((argc - xargstart + 6)*sizeof(char *));
 
 #ifdef PSL
+   reducename = (char *)malloc(strlen(programDir) + 16);
+   sprintf(reducename, "%s/redpsl", programDir);
 
-#define BPSL "bpsl" // @@@
-
-  if ((tempfd = open(BPSL,O_RDONLY)) == -1) {  /* Does not check x */
+  if ((tempfd = open(reducename,O_RDONLY)) == -1) {  /* Does not check x */
     char errstr[1024];
-    sprintf(errstr,"cannot open PSL executable");
+    sprintf(errstr,"cannot open PSL executable (%s)", reducename);
     perror(errstr);
     rf_exit(-1);
   } else
     close(tempfd);
 
-#define REDIMG "reduce.img" // @@@
-
-  if ((tempfd = open(REDIMG,O_RDONLY)) == -1) {
-    char errstr[1024];
-    sprintf(errstr,"cannot open PSL image file");
-    perror(errstr);
-    rf_exit(-1);
-  } else
-    close(tempfd);
-
-  if (strcmp(memory,"0") == 0) {
-    char *sixtyfour;
-    int i;
-    /* malloc one more in case the name of bpsl is only 1 char: */
-    sixtyfour = (char *)malloc((strlen(BPSL)+1+1)*sizeof(char));
-    strcpy(sixtyfour,BPSL);
-    i = strlen(BPSL);
-    while (sixtyfour[i-1] != '/')
-	i--;
-    sixtyfour[i++] = '6';
-    sixtyfour[i++] = '4';
-    sixtyfour[i] = (char)0;
-    deb_fprintf(stderr,"checking for %s ... ",sixtyfour);
-    if ((tempfd = open(sixtyfour,O_RDONLY)) != -1) {
-	close(tempfd);
-	deb_fprintf(stderr,"positive\n");
-	memory = "2000";
-    } else {
-	deb_fprintf(stderr,"negative\n");
-	memory = "16000000";
-    }
+/*
+ * If I launch psl using the "redpsl" script than that will cope with
+ * selecting a default memory - so if none is specified by the user
+ * of rfpsl I do not have anything to do here.
+ */
+  j = 0;
+  nargv[j++] = reducename;
+  if (strcmp(memory, "0") != 0)  /* Actually I think this just becomed
+                                    a regular extra argument */
+  { nargv[j++] = "-td";
+    nargv[j++] = memory;
   }
-
-  nargv[0] = BPSL;
-  nargv[1] = "-td";
-  nargv[2] = memory;
-  nargv[3] = "-f";
-  nargv[4] = REDIMG;
   for (i = xargstart; i < argc; i++)
-    nargv[i - xargstart + 5] = argv[i];
-  nargv[argc - xargstart + 5] = (char *)0;
+    nargv[j++] = argv[i];
+  nargv[j] = (char *)0;
 
 
 #else  /* Now the CSL version */
 
-
+   reducename = (char *)malloc(strlen(programDir) + 16);
+   sprintf(reducename, "%s/redpsl", programDir);
 #ifdef NATIVE_WINDOWS
-#define REDUCE "redcsl.bat" // @@@
-#else
-#define REDUCE "redcsl" // @@@
+   strcat(reducename, ".bat"
 #endif
 
-  if ((tempfd = open(REDUCE,O_RDONLY)) == -1)
-  { perror("cannot open CSL Reduce executable");
+  if ((tempfd = open(reducename,O_RDONLY)) == -1)
+  { perror("cannot open CSL Reduce executable (%s)", reducename);
     rf_exit(-1);
   }
   else close(tempfd);
 
-  nargv[0] = REDUCE;
-  nargv[1] = "-w";
-  nargv[2] = "-b";
-  if (verbose) {
-    nargv[3] = "-V";
-    xa0 = 4;
-  } else
-    xa0 = 3;
+  j = 0;
+  nargv[j++] = reducename;
+  nargv[j++] = "-w";
+  nargv[j++] = "-b";
+  if (verbose)           /* This could perhaps be a simple general case arg */
+    nargv[j++] = "-V";
   for (i = xargstart; i < argc; i++)
-    nargv[i - xargstart + xa0] = argv[i];
-  for (i = xa0; i <= 5; i++)
-    nargv[argc - xargstart + i] = (char *)0;
+    nargv[j++] = argv[i];
+  nargv[j] = (char *)0;
 
 #endif
 
-  for (i = 0; i <= argc - xargstart + 5; i++)
+  for (i = 0; nargv[i] != (char *)0; i++)
     deb_fprintf(stderr,"argv[%d]=%s\n",i,nargv[i]);
 
   deb_fprintf(stderr,"leaving create_call\n");

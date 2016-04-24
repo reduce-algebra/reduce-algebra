@@ -503,6 +503,7 @@ AC_MSG_NOTICE([Will build in the $build subdirectory])
 # There are many configure options that are valid or relevant at the
 # top level but are not needed for sub-configure calls
 filtered=`$abssrcdir/scripts/filter.sh "$ac_configure_args"`
+nohost=`$abssrcdir/scripts/nohost.sh "$ac_configure_args"`
 
 case $inplace in
   yes)
@@ -806,7 +807,7 @@ case $inplace in
     cd libedit
 
     doconfig="$SHELL \"$abssrcdir/libraries/libedit-20140620-3.1/configure\" \
-          $filtered \
+          $nohost \
           CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
           --prefix=\"$builddir\""
@@ -821,7 +822,7 @@ case $inplace in
     mkdir -p redfront
     cd redfront
 
-    doconfig="$SHELL \"$abssrcdir/generic/newfront/configure\" $filtered \
+    doconfig="$SHELL \"$abssrcdir/generic/newfront/configure\" $nohost \
           CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
           --prefix=\"$builddir\""
@@ -1289,7 +1290,7 @@ mkdir -p libedit
 cd libedit
 
 doconfig="$SHELL \"$abssrcdir/libraries/libedit-20140620-3.1/configure\" \
-      $filtered \
+      $nohost \
       CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
       CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
       --prefix=\"$builddir\""
@@ -1304,7 +1305,7 @@ AC_MSG_NOTICE([About to configure redfront])
 mkdir -p redfront
 cd redfront
 
-doconfig="$SHELL \"$abssrcdir/generic/newfront/configure\" $filtered \
+doconfig="$SHELL \"$abssrcdir/generic/newfront/configure\" $nohost \
       CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
       CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
       --prefix=\"$builddir\""
