@@ -205,6 +205,12 @@ procedure ioto_prtbop(b, op);
       b
    >>;
 
+asserted procedure ioto_sxread(s: String): Any;
+   begin scalar peekchar!*;
+      peekchar!* := explodec s;
+      return xread t
+   end;
+
 endmodule;  % [ioto]
 
 end;  % of file
