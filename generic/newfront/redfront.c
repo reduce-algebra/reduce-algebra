@@ -422,7 +422,6 @@ void print_banner(int vb) {
   textcolor(redfrontcolor);
 
   if (vb) {
-#define BUILDTIME "today" // @@@
     printf("%s %s/%d, built %s ...\n",
 	   PACKAGE_NAME,
 	   PACKAGE_VERSION,

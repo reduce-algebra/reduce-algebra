@@ -9,7 +9,7 @@ dist_bin_SCRIPTS = rfpslwin.exe rfcslwin.exe
 endif
 
 DATESTAMP = $(shell date +%d-%b-%Y)
-CPPFLAGS += -DBUILD_TIME="$(DATESTAMP)"
+CPPFLAGS += -DBUILDTIME="\"$(DATESTAMP)\""
 
 rfcsl_SOURCES = redchild.c reddeb.c redfront.c redline.c \
 	redparent.c redsig.c redstrings.c findself.c
