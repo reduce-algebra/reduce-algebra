@@ -31,6 +31,14 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <unistd.h>
+#ifndef WIN32
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <glob.h>
+#endif
 
 #include "findself.h"
 
@@ -38,7 +46,7 @@
 
 int programNameDotCom = 0;
 const char *programDir = ".";
-char *programName = "redfront";
+const char *programName = "redfront";
 const char *fullProgramName = "./redfront";
 
 
@@ -150,6 +158,17 @@ int find_program_directory(const char *argv0)
 
 #else // WIN32
 
+int get_current_directory(char *s, size_t n)
+{   if (getcwd(s, n) == 0)
+    {   switch(errno)
+        {   case ERANGE: return -2; // negative return value flags an error.
+            case EACCES: return -3;
+            default:     return -4;
+        }
+    }
+    else return strlen(s);
+}
+
 // Different systems put or do not put underscores in front of these
 // names. My adaptation here should give me a chance to work whichever
 // way round it goes.
@@ -244,7 +263,7 @@ int find_program_directory(const char *argv0)
             }
         }
         else
-        {   const char *path = my_getenv("PATH");
+        {   const char *path = getenv("PATH");
 //
 // I omit checks for names of shell built-in functions, since my code is
 // actually being executed by here. So I get my search path and look

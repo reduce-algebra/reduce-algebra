@@ -55,7 +55,7 @@ extern const char *programDir;
  * Name of the program, without any ".exe" (etc) suffix. So this will
  * typically be "rfcsl" or "rfpsl" in this case.
  */
-extern char *programName;
+extern const char *programName;
 
 /*
  * Full name of executable, formed from concatenation of the above two.
