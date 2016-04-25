@@ -33,7 +33,10 @@
 #endif
 
 
-/* call passing argv[0] to set the strings listed below */
+/*
+ * call passing argv[0] to set the strings listed below
+ */
+
 extern int find_program_directory(const char *argv0);
 
 #define LONGEST_LEGAL_FILENAME 1000

@@ -689,10 +689,18 @@ strl line_learn_until_prompt(char der_prompt[],const char *what){
 }
 
 char *line_histname(void) {
-  char *hname;
-
-  hname = (char *)malloc(strlen(getenv("HOME"))+strlen("/.reduce_history")+1);
-  sprintf(hname,"%s/.reduce_history",getenv("HOME"));
+  char *hname, *hname1;
+#ifdef NATIVE_WINDOWS
+  hname1 = getenv("USERPROFILE");
+  if (hname1 == NULL) hname1 = ".";
+  hname = (char *)malloc(strlen(hname1)+strlen("/.reduce_history")+1);
+  sprintf(hname,"%s/.reduce_history",hname1);
+#else
+  hname1 = getenv("HOME");
+  if (hname1 == NULL) hname1 = "/tmp";
+  hname = (char *)malloc(strlen(hname1)+strlen("/.reduce_history")+1);
+  sprintf(hname,"%s/.reduce_history",hname1);
+#endif
   return hname;
 }
 

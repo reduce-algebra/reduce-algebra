@@ -162,6 +162,12 @@ void deb_init(void);
 int deb_fprintf(FILE *,const char *,...);
 void deb_cleanup(void);
 
+#ifdef DEBUG
+#define Q deb_fprintf(stderr, "@line %d file %s\n", __LINE__, __FILE__)
+#else
+#define Q ((void)0)
+#endif
+
 #define BLACK 0
 #define RED 1
 #define GREEN 2

@@ -32,51 +32,12 @@
 
 #ifdef DEBUG
 
+
 /*
- * This has been changed to use Windows or POSIX mutexes rather than
- * some Sys V features...
+ * There used to be code involving a mutex here, but that would not have
+ * been effective across the two branches of a fork, even if it had
+ * really been needed!
  */
-
-#ifdef WIN32
-
-#include <windows.h>
-
-// On Windows I can use CRITICAL_SECTIONs rather than real mutexes, and the
-// performance difference is quite substantial when contention is reasonably
-// low. The key issue is that a CRITICAL_SECTION does its initial checks in
-// user-mode and only upgrades to kernel mode in the complicated cases. A
-// side effect of this is that all use of one of these locks must occur
-// within a single process, while more general mutexes support use even
-// when multiple processes are present.
-
-// I will not destroy mutexes at the end of a run - they can be cleaned up
-// as the application exits.
-
-CRITICAL_SECTION logmutex;
-
-#define CREATELOGMUTEX     InitializeCriticalSection(&logmutex)
-#define LOCKLOGMUTEX       EnterCriticalSection(&logmutex)
-#define UNLOCKLOGMUTEX     LeaveCriticalSection(&logmutex)
-
-#else
-
-#include <pthread.h>
-#include <unistd.h>
-
-pthread_mutex_t logmutex = PTHREAD_MUTEX_INITIALIZER;
-
-// Using Posix threads I initialise the mutexes statically.
-
-#define CREATELOGMUTEX     // Nothing
-#define LOCKLOGMUTEX       if (pthread_mutex_lock(&logmutex) != 0) \
-                           { fprintf(stderr, "locking failed\n"); exit(1); }
-#define UNLOCKLOGMUTEX     if (pthread_mutex_unlock(&logmutex) != 0) \
-                           { fprintf(stderr, "locking failed\n"); exit(1); }
-
-
-#endif
-
-
 
 int debug = 1;
 
@@ -88,13 +49,10 @@ extern int outputcolor;
 extern int debugcolor;
 
 void deb_init(void);
-int deb_mutex(int op);
 int deb_fprintf(FILE *,const char *msg,...);
 void deb_cleanup(void);
 
 void deb_init(void) {
-  CREATELOGMUTEX;
-  deb_fprintf(stderr,"deb: created mutex\n");
 }
 
 int deb_fprintf(FILE *file,const char *msg,...) {
@@ -104,12 +62,10 @@ int deb_fprintf(FILE *file,const char *msg,...) {
 
   va_start(ap,msg);
   if (debug && file) {
-    LOCKLOGMUTEX;
     oldcolor = textcolor(debugcolor);
     ecode = vfprintf(file,msg,ap);
     textcolor(oldcolor);
     fflush(file);
-    UNLOCKLOGMUTEX;
   }
   va_end(ap);
 

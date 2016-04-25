@@ -1,6 +1,6 @@
 # Makefile.am for redfront project
 
-# $Id:
+#    $Id$
 
 bin_PROGRAMS = rfpsl rfcsl
 
@@ -20,7 +20,8 @@ if !DEBUG
 	strip rfcsl$(EXEEXT)
 	strip rfpsl$(EXEEXT)
 endif
-	cp rfcsl$(EXEEXT) rfpsl$(EXEEXT) $(srcdir)/../../bin
+	cp rfcsl$(EXEEXT) $(srcdir)/../../bin
+	cp rfpsl$(EXEEXT) $(srcdir)/../../bin
 if WINDOWS
 if !DEBUG
 	i686-w64-mingw32-strip rfcslwin.exe
