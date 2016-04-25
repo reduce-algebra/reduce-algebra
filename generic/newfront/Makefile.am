@@ -19,14 +19,13 @@ redfront.marker:	$(progs)
 if !DEBUG
 	strip rfcsl$(EXEEXT)
 	strip rfpsl$(EXEEXT)
-#endif
+endif
 	cp rfcsl$(EXEEXT) rfpsl$(EXEEXT) $(srcdir)/../../bin
 if WINDOWS
-if !debug
+if !DEBUG
 	i686-w64-mingw32-strip rfcslwin.exe
 	i686-w64-mingw32-strip rfpslwin.exe
 endif
-#endif
 # On Windows generally PATHEXT will pick up a ".com" file before a ".exe"
 # one. However Cygwin sees ".exe" rather than ".com". So by giving the
 # native windows versions a ".com" suffix it becomes possible to launch them
