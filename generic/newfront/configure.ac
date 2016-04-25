@@ -44,9 +44,6 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AC_CANONICAL_HOST
 
-
-
-
 # Checks for programs.
 AC_PROG_CC
 
@@ -104,6 +101,10 @@ AC_ARG_ENABLE(color,
   fi,
   AC_DEFINE(HAVE_COLOR,1,[Define for color terminal support]))
 
+AC_DEFINE(HAVE_HISTORY,1,[Always enable history])
+AC_DEFINE(LITHIST,1,[bash-style history treatment])
+AC_DEFINE(IGNOREDUPS,1,[do not put duplicated items in history list])
+
 AC_ARG_WITH(hist-size,[  --with-hist-size=LINES  length of the .reduce_history file [[LINES=10000]]],
   histfilesize=$withval,histfilesize=10000)
 
@@ -119,6 +120,11 @@ then
   AC_DEFINE(DEBUG,1,[Define this for debug information on signals and files])
   CFLAGS="$CFLAGS -O1 -g"
 fi)
+
+if ! test "x$debug" = "xyes"
+then
+  CFLAGS="$CFLAGS -O3"
+fi
 
 AM_CONDITIONAL(DEBUG,   test "x$debug" = "xyes")
 AM_CONDITIONAL(WINDOWS, test "x$on_windows" = "xyes")

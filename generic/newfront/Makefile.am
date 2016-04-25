@@ -3,10 +3,30 @@
 # $Id:
 
 bin_PROGRAMS = rfpsl rfcsl
+progs = rfcsl$(EXEEXT) rfpsl$(EXEEXT)
 
 if WINDOWS
 dist_bin_SCRIPTS = rfpslwin.exe rfcslwin.exe
+progs += rfcslwin$(EXEEXT) rfpslwin$(EXEEXT)
 endif
+
+# This little bit of trickers is intended to arrange that if you go
+# just "make" it will build all the executables and copy them into the
+# trunk/bin directory. This depends on the location within the Reduce
+# tree that the sources for redfront live. This is also somewhere where I
+# can strip the binaries of unnecessary symbol tables.
+
+noinst_SCRIPTS = redfront.marker
+redfront.marker:	$(progs)
+if !DEBUG
+	strip rfcsl$(EXEEXT)
+	strip rfpsl$(EXEEXT)
+if WINDOWS
+	i686-w64-mingw32-strip rfcslwin.exe
+	i686-w64-mingw32-strip rfpslwin.exe
+endif
+endif
+	cp $(progs) $(srcdir)/../../bin
 
 DATESTAMP = $(shell date +%d-%b-%Y)
 CPPFLAGS += -DBUILDTIME="\"$(DATESTAMP)\""
@@ -55,12 +75,15 @@ rfpsl-findself.$(OBJEXT):	../lib/libedit.a
 # there is no flexibility in the way they should be built. I compile
 # the wineditline in library right in along with the redfront stuff.
 
+MOSTLYCLEANFILES = rfcslwin.exe rfpslwin.exe
+
 rfcslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 	$(srcdir)/redline.c $(srcdir)/redparent.c $(srcdir)/redsig.c \
 	$(srcdir)/redstrings.c $(srcdir)/findself.c \
 	../wineditline/src/editline.c ../wineditline/src/fn_complete.c \
 	../wineditline/src/history.c
-	i686-w64-mingw32-gcc $(CFLAGS) -DCSL=1 -DBUILDTIME="\"$(DATESTAMP)\"" \
+	i686-w64-mingw32-gcc $(CFLAGS) -DCSL=1 \
+		-DBUILDTIME="\"$(DATESTAMP)\"" \
 		$(srcdir)/redchild.c $(srcdir)/reddeb.c \
 		$(srcdir)/redfront.c $(srcdir)/redline.c \
 		$(srcdir)/redparent.c $(srcdir)/redsig.c \
@@ -68,16 +91,14 @@ rfcslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 		-I ../wineditline/src ../wineditline/src/editline.c \
 		../wineditline/src/fn_complete.c ../wineditline/src/history.c \
 		-o rfcslwin.exe
-if !DEBUG
-	i686-w64-mingw32-strip rfcslwin.exe
-endif
 
 rfpslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 	$(srcdir)/redline.c $(srcdir)/redparent.c $(srcdir)/redsig.c \
 	$(srcdir)/redstrings.c $(srcdir)/findself.c \
 	../wineditline/src/editline.c ../wineditline/src/fn_complete.c \
 	../wineditline/src/history.c
-	i686-w64-mingw32-gcc $(CFLAGS) -DPSL=1 -DBUILDTIME="\"$(DATESTAMP)\"" \
+	i686-w64-mingw32-gcc $(CFLAGS) -DPSL=1 \
+		-DBUILDTIME="\"$(DATESTAMP)\"" \
 		$(srcdir)/redchild.c $(srcdir)/reddeb.c \
 		$(srcdir)/redfront.c $(srcdir)/redline.c \
 		$(srcdir)/redparent.c $(srcdir)/redsig.c \
@@ -85,9 +106,6 @@ rfpslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 		-I ../wineditline/src ../wineditline/src/editline.c \
 		../wineditline/src/fn_complete.c ../wineditline/src/history.c \
 		-o rfpslwin.exe
-if !DEBUG
-	i686-w64-mingw32-strip rfpslwin.exe
-endif
 
 if WINDOWS
 
@@ -96,10 +114,11 @@ plain_RFPSL = rfpsl
 plain_RFCSLWIN = rfcslwin
 plain_RFPSLWIN = rfpslwin
 
+.PHONY:	redfront.marker
 .PHONY: $(plain_RFCSL)
 .PHONY: $(plain_RFPSL)
 .PHONY: $(plain_RFCSLWIN)
-.PHONY: $(plain_RFPSLWIN)
+.PHONY:	$(plain_RFPSLWIN)
 
 $(plain_RFCSL):	rfcsl.exe
 	echo "make rfcsl.exe is perhaps clearer"
@@ -113,6 +132,8 @@ $(plain_RFCSLWIN):	rfcslwin.exe
 $(plain_RFPSLWIN):	rfpslwin.exe
 	echo "make rfpslwin.exe is perhaps clearer"
 
+else
+.PHONY:	redfront.marker
 endif
 
 # end of Makefile.am

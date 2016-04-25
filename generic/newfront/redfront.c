@@ -259,7 +259,7 @@ void parse_args(int argc,char **argv) {
   }
 
 #ifdef PSL
-  memory = parse_memarg(memory==NULL ? 0 : memory,argv[0]);
+  memory = parse_memarg(memory==NULL ? "0" : memory,argv[0]);
 #endif
 }
 
@@ -534,6 +534,9 @@ char **create_call(int argc,char *argv[]) {
 #ifdef PSL
    reducename = (char *)malloc(strlen(programDir) + 16);
    sprintf(reducename, "%s/redpsl", programDir);
+#ifdef NATIVE_WINDOWS
+   strcat(reducename, ".bat");
+#endif
 
   if ((tempfd = open(reducename,O_RDONLY)) == -1) {  /* Does not check x */
     char errstr[1024];
@@ -550,7 +553,8 @@ char **create_call(int argc,char *argv[]) {
  */
   j = 0;
   nargv[j++] = reducename;
-  if (strcmp(memory, "0") != 0)  /* Actually I think this just becomed
+  if (memory != NULL &&
+      strcmp(memory, "0") != 0)  /* Actually I think this just becomes
                                     a regular extra argument */
   { nargv[j++] = "-td";
     nargv[j++] = memory;
@@ -563,7 +567,7 @@ char **create_call(int argc,char *argv[]) {
 #else  /* Now the CSL version */
 
    reducename = (char *)malloc(strlen(programDir) + 16);
-   sprintf(reducename, "%s/redpsl", programDir);
+   sprintf(reducename, "%s/redcsl", programDir);
 #ifdef NATIVE_WINDOWS
    strcat(reducename, ".bat");
 #endif
