@@ -304,6 +304,44 @@ int read_history(const char *filename)
   return 0;
 }
 
+/*
+At present these entrypoints maintain information about the number of
+entries where the history list would be limited, but no limiting actually
+happens! Putting some in to the code trhat adds entries to history should
+in fact be easy, but does not seem urgent at present.
+*/
+
+int history_stifle = -1;
+
+/*
+this function sets a limit to the number of history items that will be stored
+*/
+
+void stifle_history(int n)
+{
+   if (n >= 0) history_stifle = n;
+   else history_stifle = DEFAULT_HISTORY_SIZE;
+}
+
+/*
+this function clears any limit to the number of history items that will be
+ stored and returns the previous limit, or a negative number if there was none.
+*/
+
+int unstifle_history()
+{
+   int r = history_stifle;
+   history_stifle = -1;
+   return r;
+}
+
+int history_is_stifled()
+{
+   if (history_stifle >= 0) return 1;
+   else return 0;
+}
+
+
 
 /*
 this function writes history to a text

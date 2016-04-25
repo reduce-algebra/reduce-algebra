@@ -33,8 +33,8 @@ endif
 # files "redcsl" (a cygwin/linux/etc shell script) and "redcsl.bat" and again
 # native windows picks up the one that makes sense if the user just goes
 # "redcsl".
-	cp rfcsl$(EXEEXT) $(srcdir)/../../bin/rfcsl.com
-	cp rfpsl$(EXEEXT) $(srcdir)/../../bin/rfpsl.com
+	cp rfcslwin$(EXEEXT) $(srcdir)/../../bin/rfcsl.com
+	cp rfpslwin$(EXEEXT) $(srcdir)/../../bin/rfpsl.com
 endif
 
 DATESTAMP = $(shell date +%d-%b-%Y)
@@ -93,6 +93,8 @@ rfcslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 	../wineditline/src/history.c
 	i686-w64-mingw32-gcc $(CFLAGS) -DCSL=1 \
 		-DBUILDTIME="\"$(DATESTAMP)\"" \
+		-DHAVE_HISTORY=1 -DLITHIST=1 \
+		-DIGNOREDUPS=1 -DHISTFILESIZE=10000 \
 		$(srcdir)/redchild.c $(srcdir)/reddeb.c \
 		$(srcdir)/redfront.c $(srcdir)/redline.c \
 		$(srcdir)/redparent.c $(srcdir)/redsig.c \
@@ -108,6 +110,8 @@ rfpslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 	../wineditline/src/history.c
 	i686-w64-mingw32-gcc $(CFLAGS) -DPSL=1 \
 		-DBUILDTIME="\"$(DATESTAMP)\"" \
+		-DHAVE_HISTORY=1 -DLITHIST=1 \
+		-DIGNOREDUPS=1 -DHISTFILESIZE=10000 \
 		$(srcdir)/redchild.c $(srcdir)/reddeb.c \
 		$(srcdir)/redfront.c $(srcdir)/redline.c \
 		$(srcdir)/redparent.c $(srcdir)/redsig.c \

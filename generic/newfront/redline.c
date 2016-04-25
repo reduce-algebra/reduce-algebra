@@ -591,7 +591,11 @@ void line_add_history(char this_command[]) {
 void line_end_history(void) {
 #ifdef HAVE_HISTORY
   char *hname;
-
+/*
+ * stifle_history discards all bu the last N items in the history list.
+ * in this case the limit is 10000 and so it is really not liable to do
+ * anything much!
+ */
   stifle_history(HISTFILESIZE);
   hname = line_histname();
   write_history(hname);
