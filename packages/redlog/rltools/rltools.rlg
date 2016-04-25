@@ -4011,18 +4011,72 @@ times 3430 (expt x 2) (expt y 3)) (times 12005 x (expt y 4)) (times 16807 (expt
 y 5)))
 
 
+off nat;
+
+
+nil
+
+
 s := ioto_smaprin form;
 
 
 "x**5 + 35*x**4*y + 490*x**3*y**2 + 3430*x**2*y**3 + 12005*x*y**4 + 16807*y**5"
 
 
-ioto_sxread s;
+form := ioto_sxread s;
 
 
 (plus (expt x 5) (times 35 (expt x 4) y) (times 490 (expt x 3) (expt y 2)) (
 times 3430 (expt x 2) (expt y 3)) (times 12005 x (expt y 4)) (times 16807 (expt
 y 5)))
+
+
+on nat;
+
+
+nil
+
+
+s := ioto_smaprin form;
+
+
+
+" 5       4          3  2         2  3            4          5
+x  + 35*x *y + 490*x *y  + 3430*x *y  + 12005*x*y  + 16807*y"
+
+
+prin2t s$
+
+
+ 5       4          3  2         2  3            4          5
+x  + 35*x *y + 490*x *y  + 3430*x *y  + 12005*x*y  + 16807*y
+
+
+linelength 40;
+
+
+80
+
+
+s := ioto_smaprin form;
+
+
+
+" 5       4          3  2         2  3
+x  + 35*x *y + 490*x *y  + 3430*x *y
+
+            4          5
+ + 12005*x*y  + 16807*y"
+
+
+prin2t s$
+
+
+ 5       4          3  2         2  3
+x  + 35*x *y + 490*x *y  + 3430*x *y
+
+            4          5
+ + 12005*x*y  + 16807*y
 
 
 end;

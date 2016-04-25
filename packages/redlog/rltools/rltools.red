@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm
+% (c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2016 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@
 lisp <<
    fluid '(rltools_rcsid!* rltools_copyright!*);
    rltools_rcsid!* := "$Id$";
-   rltools_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm"
+   rltools_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2016 T. Sturm"
 >>;
 
 module rltools;
@@ -41,7 +41,18 @@ create!-package('(rltools ioto lto sfto sftoresultant),nil);
 
 fluid '(!*rlbrkcxk);
 fluid '(!*rlverbose);
+
 fluid '(kord!*);
+
+fluid '(!*fort);
+fluid '(posn!*);
+fluid '(orig!*);
+fluid '(ycoord!*);
+fluid '(ymax!*);
+fluid '(ymin!*);
+fluid '(pline!*);
+fluid '(overflowed!*);
+fluid '(testing!-width!*);
 fluid '(rlsmaprinbuf!*);
 
 exports ioto_prin2,ioto_tprin2,ioto_prin2t,ioto_tprin2t,ioto_prtmsg,

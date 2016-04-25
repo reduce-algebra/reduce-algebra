@@ -227,32 +227,110 @@ asserted procedure ioto_sxread(s: String): Any;
 
 asserted procedure ioto_smaprin(u: List): String;
    % This function is a variant of mathprint that prints into strings instead of
-   % stdout. At the present stage it forces "off nat" output.
+   % stdout. It is expected to work with both "off nat" and "on nat." utf8 is
+   % ignored, Fortran printing is not supported, and TeX printing via
+   % tri/tri.red has not been considered so far. With "on nat" linelength() is
+   % used. Leading and training newlines are trimmed. The "on nat" string prints
+   % nicely with prin2t.
    %
-   begin scalar outputhandler!*, rlsmaprinbuf!*, !*nat;
+   begin scalar outputhandler!*, rlsmaprinbuf!*, !*utf8;
       outputhandler!* := 'ioto_smaprinoh;
+      % terpri!*() around maprin appears to be necessary for proper
+      % initialization and finalization; compare mathprint in mathpr/mprint.red.
+      % We use nil as an argument to supress newlines around our string.
+      if !*nat then
+ 	 terpri!* nil;
       maprin u;
+      if !*nat then
+ 	 terpri!* nil;
+      % Trim one trailing newline:
+      if !*nat then
+      	 rlsmaprinbuf!* := cdr rlsmaprinbuf!*;
       return id2string compress reversip rlsmaprinbuf!*
    end;
 
 asserted procedure ioto_smaprinoh(m: Any, l: Any): Any;
-   % An output handler to divert prin2!* output into a the fluid string
-   % rlmaprinbuf!* for use with ioto_smaprin. This is quite provisional but
-   % appears to work in the "off nat" situation. TS is a bit worried about not
-   % handling m='assignpri.
+   % An output handler for use with ioto_smaprin. It diverts prin2!* output into
+   % a the fluid string rlmaprinbuf!*.
    %
    if m eq 'maprin then
+      % Recurse and on rely on what is there ...
       maprint(l, 0)
    else if m eq 'prin2!* then
-      for each c in explodec l do <<
-	 push('!!, rlsmaprinbuf!*);
-	 push(c, rlsmaprinbuf!*)
-      >>
-   else if m eq 'terpri then <<
-      push('!!, rlsmaprinbuf!*);
-      push(!$eol!$, rlsmaprinbuf!*)
-   >> else
+      if !*nat then
+	 % With "on nat" nothing is really printed. So we can rely on what is
+	 % there. We must lambda bind outputhandler!* to nil to avoind an
+	 % infinite recursion. A cleaner solution would be splitting prin2!*
+	 % into a wrapper that checks for outputhandler!* and calls a work
+	 % horse (as is the case with maprin/maprint above).
+	 prin2!* l where outputhandler!* = nil
+      else
+	 % With "off nat" prin2!* would actually prin2 to stdout. We catch it.
+	 % Luckily there is noting sophisticated to do.
+      	 for each c in explodec l do
+	    ioto_smaprinbuf c
+   else if m eq 'terpri then
+      % Here is where the actual printing takes place with "on nat." We must
+      % catch this.
+      ioto_terpri!* l
+   else
+      % m = 'assignpri might be something to add in the future. TS does not
+      % quite understand whether this would be useful or occur naturally.
       rederr {"unknown method ", m, " in redfront_oh"};
+
+asserted procedure ioto_terpri!*(u: Boolean);
+   % This is an adapted copy of terpri!*() from mathpr/mprint.red. It would be
+   % nicer not to duplicate code.
+   %
+   begin integer n;
+      if testing!-width!* then
+ 	 return overflowed!* := t;
+      if !*fort then
+ 	 rederr "ioto_smaprin: Fortran output not supported";
+      if !*nat and pline!* then <<
+	 pline!* := reverse pline!*;
+	 for n := ymax!* step -1 until ymin!* do <<
+	    ioto_scprint(pline!*, n);
+	    ioto_smaprinbuf !$eol!$
+ 	 >>;
+	 pline!* := nil
+      >>;
+      if u then
+	 ioto_smaprinbuf !$eol!$;
+      posn!* := orig!*;
+      ycoord!* := ymax!* := ymin!* := 0
+   end;
+
+asserted procedure ioto_scprint(u: List, n: Integer);
+   % This is an adapted copy of scprint() from mathpr/mprint.red. It would be
+   % nicer not to duplicate code. u is one line of "on nat" output as a list
+   % containing strings some compressed encoding of whitespace.
+   %
+   begin scalar m;
+      posn!* := 0;
+      for each v in u do <<
+	 if cdar v = n then <<
+	    m := caaar v - posn!*;
+	    if m geq 0 then
+ 	       for i := 1:m do
+		  ioto_smaprinbuf '! ;
+	    for each c in explodec cdr v do
+	       ioto_smaprinbuf c;
+	    posn!* := cdaar v
+ 	 >>
+      >>
+   end;
+
+asserted procedure ioto_smaprinbuf(c: Id): List;
+   % This flushes characters into our print buffer for later compression into a
+   % string. We preceed every char with a quoting exclamation mark. The chars
+   % originate from explode c, which behaves like explode rather than like
+   % explode2.
+   %
+   <<
+      push('!!, rlsmaprinbuf!*);
+      push(c, rlsmaprinbuf!*)
+   >>;
 
 endmodule;  % [ioto]
 
