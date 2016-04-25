@@ -43,4 +43,12 @@ g := df(f, v)$
 
 hu := fastresultant(f, g, v);
 
+lisp;
+
+form := reval '(expt (plus x (times 7 y)) 5);
+
+s := ioto_smaprin form;
+
+ioto_sxread s;
+
 end; % of file

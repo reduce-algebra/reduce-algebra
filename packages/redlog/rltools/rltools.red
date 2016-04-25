@@ -39,7 +39,10 @@ module rltools;
 
 create!-package('(rltools ioto lto sfto sftoresultant),nil);
 
-fluid '(!*rlbrkcxk !*rlverbose kord!*);
+fluid '(!*rlbrkcxk);
+fluid '(!*rlverbose);
+fluid '(kord!*);
+fluid '(rlsmaprinbuf!*);
 
 exports ioto_prin2,ioto_tprin2,ioto_prin2t,ioto_tprin2t,ioto_prtmsg,
    ioto_cterpri,ioto_cplu,ioto_realtime,ioto_flush,ioto_datestamp,

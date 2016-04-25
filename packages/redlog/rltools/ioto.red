@@ -206,10 +206,53 @@ procedure ioto_prtbop(b, op);
    >>;
 
 asserted procedure ioto_sxread(s: String): Any;
+   % Use the RLISP parser xread in rlisp/xread.red to parse a string. The RLISP
+   % syntax within blocks suggests to some extent that !*semicol!* separates
+   % expressions in contrast to terminating them. However, xread heavily relies
+   % on finally coming across a !*semicol!*. We explicitly append a !*semicol!*
+   % to the argument s here and parse only the first expression. That is, the
+   % following all parse as (plus x 1):
+   % (a) s = "x+1"
+   % (b) s = "x+1;"
+   % (c) s = "x+1; y;"
+   % Unparsed characters like "y" in (c) will have no effect on the parser after
+   % termination of ioto_sxread.
+   %
    begin scalar peekchar!*;
-      peekchar!* := explodec s;
+      % In this particular situation TS feels safer to use {'!;} instead of
+      % '(!;) although the latter should be fine.
+      peekchar!* := nconc(explodec s, {'!;});
       return xread t
    end;
+
+asserted procedure ioto_smaprin(u: List): String;
+   % This function is a variant of mathprint that prints into strings instead of
+   % stdout. At the present stage it forces "off nat" output.
+   %
+   begin scalar outputhandler!*, rlsmaprinbuf!*, !*nat;
+      outputhandler!* := 'ioto_smaprinoh;
+      maprin u;
+      return id2string compress reversip rlsmaprinbuf!*
+   end;
+
+asserted procedure ioto_smaprinoh(m: Any, l: Any): Any;
+   % An output handler to divert prin2!* output into a the fluid string
+   % rlmaprinbuf!* for use with ioto_smaprin. This is quite provisional but
+   % appears to work in the "off nat" situation. TS is a bit worried about not
+   % handling m='assignpri.
+   %
+   if m eq 'maprin then
+      maprint(l, 0)
+   else if m eq 'prin2!* then
+      for each c in explodec l do <<
+	 push('!!, rlsmaprinbuf!*);
+	 push(c, rlsmaprinbuf!*)
+      >>
+   else if m eq 'terpri then <<
+      push('!!, rlsmaprinbuf!*);
+      push(!$eol!$, rlsmaprinbuf!*)
+   >> else
+      rederr {"unknown method ", m, " in redfront_oh"};
 
 endmodule;  % [ioto]
 
