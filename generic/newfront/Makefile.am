@@ -3,11 +3,9 @@
 # $Id:
 
 bin_PROGRAMS = rfpsl rfcsl
-progs = rfcsl$(EXEEXT) rfpsl$(EXEEXT)
 
 if WINDOWS
 dist_bin_SCRIPTS = rfpslwin.exe rfcslwin.exe
-progs += rfcslwin$(EXEEXT) rfpslwin$(EXEEXT)
 endif
 
 # This little bit of trickers is intended to arrange that if you go
@@ -21,12 +19,24 @@ redfront.marker:	$(progs)
 if !DEBUG
 	strip rfcsl$(EXEEXT)
 	strip rfpsl$(EXEEXT)
+#endif
+	cp rfcsl$(EXEEXT) rfpsl$(EXEEXT) $(srcdir)/../../bin
 if WINDOWS
+if !debug
 	i686-w64-mingw32-strip rfcslwin.exe
 	i686-w64-mingw32-strip rfpslwin.exe
 endif
+#endif
+# On Windows generally PATHEXT will pick up a ".com" file before a ".exe"
+# one. However Cygwin sees ".exe" rather than ".com". So by giving the
+# native windows versions a ".com" suffix it becomes possible to launch them
+# as just "rfcsl" and "rfpsl". Note that for reduce itself there will be
+# files "redcsl" (a cygwin/linux/etc shell script) and "redcsl.bat" and again
+# native windows picks up the one that makes sense if the user just goes
+# "redcsl".
+	cp rfcsl$(EXEEXT) $(srcdir)/../../bin/rfcsl.com
+	cp rfpsl$(EXEEXT) $(srcdir)/../../bin/rfpsl.com
 endif
-	cp $(progs) $(srcdir)/../../bin
 
 DATESTAMP = $(shell date +%d-%b-%Y)
 CPPFLAGS += -DBUILDTIME="\"$(DATESTAMP)\""
