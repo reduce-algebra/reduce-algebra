@@ -225,6 +225,10 @@ symbolic procedure redfront_oblist();
     return redfront_l!*;
   end;
 
+!#else
+
+symbolic procedure redfront_oblist(); oblist();
+
 !#endif
 
 procedure redfront_swl();
