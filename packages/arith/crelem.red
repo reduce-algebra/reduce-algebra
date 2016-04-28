@@ -156,13 +156,77 @@ symbolic procedure crexp!* u;
 % in general change the cut structure.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-symbolic procedure crasin!* u; 
-% Branch-cut is {r | r real & (r>=1 or r<=-1)}
-cr!:minus timesi!* crasinh!* timesi!* u;
+% a utility procedure used to calculate the arguments for acos and acosh 
+% used in the four procedures for acos, asin, acosh and asinh. 
+symbolic procedure invfnargs(x, y);
+begin scalar ssq, hyp, n, s;
+  ssq := rd!:plus(rd!:times(x, x), rd!:times(y, y));
+  % n = 2(x^2-y^2)-1
+  n := rd!:difference(rd!:times(rd!:difference (x, y),
+                                rd!:times(i2rd!* 2, rd!:plus(x, y))),
+                      i2rd!* 1 );
+                                   
+  hyp := rdhypot!*(rd!:difference(ssq, i2rd!* 1),
+                   rd!:times(i2rd!* 2, y));
+  s := rd!:plus(ssq, hyp);
+  % NB n/s = ssq-hyp, but this method reduces rounding errors somewhat
+  % at the expense of a few extra arithmetic operations.
+  return s . rd!:quotient(n, s);
+end;
 
-symbolic procedure cracos!* u;
-   cr!:plus(cr!:times(crhalf!*(),crpi!*()),
-      timesi!* crasinh!* timesi!* u);
+symbolic procedure crasin!* z;
+% This version uses the formula for the real and imag parts u & v of asin z
+%   u = acos(sqrt((x^2+y^2-1)^2+4x^2)-x^2-y^2)/2
+%                                                where z = x+i*y
+%   v = acosh(x^2+y^2+sqrt((x^2+y^2-1)^2+4y^2))/2
+% involving only calls to versions of acos, acosh and sqrt from rdelem.red.
+% It is faster than the  method using complex logarithm and sqrt
+% by a factor of around 4 for the default precision
+% and a factor of about 1.25 for bigfloats
+begin scalar rp, ip, args, u, v;
+  rp := tagrl z; ip := tagim z;
+  args := invfnargs(rp, ip);
+  v := rd!:quotient(rdacosh!* car args, i2rd!* 2);
+  % the test for zero real part of z avoids problems than occur when
+  % the argument of rdacos!* is greater than the exact result 1 due to rounding
+  u := if rd!:zerop rp then i2rd!* 0 
+       else rd!:quotient(rdacos!* rd!:minus cdr args, i2rd!* 2);
+
+  return mkcr(if rd!:minusp rp then rd!:minus u else u,
+              if rd!:minusp ip or (rd!:zerop ip and not rd!:minusp rp)
+              then rd!:minus v else v);
+end;
+
+% symbolic procedure crasin!* u; 
+% Branch-cut is {r | r real & (r>=1 or r<=-1)}
+% cr!:minus timesi!* crasinh!* timesi!* u;
+
+symbolic procedure cracos!* z;
+% This version uses the formula for the real and imag parts u & v of acos z
+%   u = acos(x^2+y^2-sqrt((x^2+y^2-1)^2+4y^2))/2
+%                                                   where z = x+i*y
+%   v = acosh(x^2+y^2+sqrt((x^2+y^2-1)^2+4y^2))/2
+% involving only calls to versions of acos, acosh and sqrt from rdelem.red.
+% It is faster than the  method using complex logarithm and sqrt
+% by a factor of around 4 for the default precision
+% and a factor of about 1.25 for bigfloats
+begin scalar rp, ip, args,  u, v;
+  rp := tagrl z; ip := tagim z;
+  args := invfnargs(rp, ip);
+  % the test for zero real part of z avoids problems than occur when
+  % the argument of rdacos!* is less than the exact result -1 due to rounding
+  u := rd!:quotient(if rd!:zerop rp then rdpi!*() 
+                    else rdacos!* cdr args,
+                    i2rd!* 2);
+  v := rd!:quotient(rdacosh!* car args, i2rd!* 2);
+  return mkcr(if rd!:minusp rp then  rd!:difference(rdpi!*(), u) else u,
+              if rd!:minusp ip or (rd!:zerop ip and not rd!:minusp rp)
+              then v else rd!:minus v);
+end;
+  
+% symbolic procedure cracos!* u;
+%   cr!:plus(cr!:times(crhalf!*(),crpi!*()),
+%      timesi!* crasinh!* timesi!* u);
 
 symbolic procedure cratan!* u;
 % Branch points at +i and -i are singular
@@ -192,14 +256,37 @@ symbolic procedure crasec!* u; cracos!* cr!:quotient(i2cr!* 1,u);
 
 symbolic procedure cracsc!* u; crasin!* cr!:quotient(i2cr!* 1,u);
 
-symbolic procedure crasinh!* u;
+symbolic procedure crasinh!* z;
+% This version uses the formula for the real and imag parts u & v of asinh z
+%   u = acosh(x^2+y^2+sqrt((x^2+y^2-1)^2+4x^2))/2 
+%                                                   where z = x+i*y
+%   v = acos(sqrt((x^2+y^2-1)^2+4x^2)-x^2-y^2)/2
+% involving only calls to versions of acos, acosh and sqrt from rdelem.red.
+% It is faster than the  method using complex logarithm and sqrt
+% by a factor of around 4 for the default precision
+% and a factor of about 1.25 for bigfloats
+begin scalar rp, ip, args, u, v;
+  rp := tagrl z; ip := tagim z;
+  args := invfnargs(ip, rp);
+  u := rd!:quotient(rdacosh!* car args, i2rd!* 2);
+  % the test for zero imaginary part of z avoids problems than occur when
+  % the argument of rdacos!* is greater than the exact result 1 due to rounding
+  v := if rd!:zerop ip then i2rd!* 0 
+       else rd!:quotient(rdacos!* rd!:minus cdr args, i2rd!* 2);
+
+  return mkcr(if rd!:minusp rp or (rd!:zerop rp and rd!:minusp ip)
+              then rd!:minus u else u,
+              if rd!:minusp ip then rd!:minus v else v);
+end;
+
+% symbolic procedure crasinh!* u;
 % Branch-cut is taken to be {r*i |r real & (r>=1 or r<= -1)}
 % The upper-half belongs to the first quadrant and the lower-half to the third
 % The condition asinh(-z) =-asinh z is maintained on the cut.
 %
 % This (Kahan's) simple formula is faster than the 'optimised' versions below
 %  and seems to produce equally accurate results.
-    crlog!* cr!:plus(u, crsqrt!* cr!:plus(i2cr!* 1,cr!:times(u,u)));
+%    crlog!* cr!:plus(u, crsqrt!* cr!:plus(i2cr!* 1,cr!:times(u,u)));
 
 % symbolic procedure crasinh!* u;
 %    crlog!* cr!:plus(u,
@@ -229,10 +316,32 @@ symbolic procedure crasinh!* u;
 %                rl = tagrl u)
 %      where s = cr!:times(u,u);
 
+symbolic procedure cracosh!* z;
+% This version uses the formula for the real and imag parts u & v of acosh z
+%   u = acosh(x^2+y^2+sqrt((x^2+y^2-1)^2+4y^2))/2
+%                                                    where z = x+i*y
+%   v = acos(x^2+y^2-sqrt((x^2+y^2-1)^2+4y^2))/2
+% involving only calls to versions of acos, acosh and sqrt from rdelem.red.
+% It is faster than the  method using complex logarithm and sqrt
+% by a factor of around 4 for the default precision
+% and a factor of about 1.25 for bigfloats
+begin scalar rp, ip, args, u, v;
+  rp := tagrl z; ip := tagim z;
+  args := invfnargs(rp, ip);
+  u := rd!:quotient(rdacosh!* car args, i2rd!* 2);
+  % the test for zero real part of z avoids problems than occur when
+  % the argument of rdacos!* is less than the exact result -1 due to rounding
+  v := rd!:quotient(if rd!:zerop rp then rdpi!*() 
+                    else rdacos!* cdr args, 
+                    i2rd!* 2);
+  return mkcr(u, if rd!:minusp ip then rd!:minus v1 else v1)
+          where v1 = if rd!:minusp rp then rd!:difference(rdpi!*(), v) else v;
+end;
+
 % symbolic procedure cracosh!* u;
 %    crlog!* cr!:plus(u,crsqrt!* cr!:differ(cr!:times(u,u),i2cr!* 1));
 
-symbolic procedure cracosh!* u;
+% symbolic procedure cracosh!* u;
 % The original version above used the formula
 %     acosh z = log(z+sqrt(z^2-1))
 % The branch cuts were the portions of the real axis |r| >=1  
@@ -245,8 +354,8 @@ symbolic procedure cracosh!* u;
 % Beware of 'simplifications' such as combining sqrts; these may alter the cuts
 %
 % Produces same result as Kahan's formula below, but is faster.
-   crlog!* cr!:plus(u,cr!:times(crsqrt!* cr!:differ(u, i2cr!* 1),
-                                crsqrt!* cr!:plus(u, i2cr!* 1)));
+%   crlog!* cr!:plus(u,cr!:times(crsqrt!* cr!:differ(u, i2cr!* 1),
+%                                crsqrt!* cr!:plus(u, i2cr!* 1)));
 
 % symbolic procedure cracosh1!* u;
 % % This improved version uses Kahan's formula
