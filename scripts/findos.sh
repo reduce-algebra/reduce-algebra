@@ -23,7 +23,8 @@ case `uname -a` in
   exit
   ;;
 FreeBSD*)
-  echo "freebsd"
+  version=`uname -r | sed -e 's/-.*$//'`
+  echo "freebsd$version"
   exit
   ;;
 esac
