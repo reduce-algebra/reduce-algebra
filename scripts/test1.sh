@@ -281,6 +281,8 @@ ulimit -c 60
 SED1='/^Total time taken:/d;
       /^Number of garbage/d;
       /^Time: /d;
+      /^Realtime: /d;
+      / cpu time :/d;
       /^CRACK needed :/d;
       /^time for init/d;
       /^+++ levelt compiled/d;

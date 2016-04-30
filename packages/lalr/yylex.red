@@ -498,7 +498,7 @@ symbolic procedure lex_skipping(w, x);
 % It recognize the quote prefix, as in '(lisp expression) and
 % `(backquoted thing).  The return value is a numeric code.
 % It leaves a variable lex_escaped true if the "word" that was
-% read had any "!" characers used to escape parts of it.
+% read had any "!" characters used to escape parts of it.
 
 global '(lex_peeked lex_peeked_yylval lex_peeked_escaped);
 
@@ -596,7 +596,6 @@ symbolic procedure lex_basic_token();
           yyreadch() >> until not (lex_char = '!");
       end;
       yylval := list2widestring reversip cdr r;
-      lex_char := w;
       return lex_string_code >>
 % "'" and "`"(backquote) introduce Lisp syntax S-expressions
     else if lex_char = '!' then <<

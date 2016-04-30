@@ -33,25 +33,25 @@ endif
 .PHONY:	reduce
 reduce: lib/libcrlibm.a lib/libsoftfloat.a
 	cd reduce-image && \
-		make CFLAGS=$(CFLAGS) reduce.img && \
+		$(MAKE) CFLAGS=$(CFLAGS) reduce.img && \
 		cp reduce.img ..
 
 lib/libcrlibm.a:
 	mkdir -p crlibm
 	cd crlibm && CFLAGS=$(CFLAGS) \
 		`pwd`/../../../libraries/crlibm/configure --prefix=`pwd`/..
-	cd crlibm && make install
+	cd crlibm && $(MAKE) install
 
 lib/libsoftfloat.a:
 	mkdir -p softfloat
 	cd softfloat && CFLAGS=$(CFLAGS) \
 		`pwd`/../../../libraries/SoftFloat-3a/source/configure --prefix=`pwd`/..
-	cd softfloat && make install
+	cd softfloat && $(MAKE) install
 
 .PHONY:	minireduce
 minireduce:	lib/libcrlibm.a lib/libsoftfloat.a
 	cd minireduce-image && \
-		make CFLAGS=$(CFLAGS) reduce.img && \
+		$(MAKE) CFLAGS=$(CFLAGS) reduce.img && \
 		cp reduce.img ..
 
 # So far I provide only one sample. I call it "proc" and it illustrates
@@ -59,7 +59,7 @@ minireduce:	lib/libcrlibm.a lib/libsoftfloat.a
 
 .PHONY:	proc
 proc:	lib/libcrlibm.a lib/libsoftfloat.a reduce.img
-	cd procedural && make CFLAGS=$(CFLAGS)
+	cd procedural && $(MAKE) CFLAGS=$(CFLAGS)
 
 # If you go "make proc" without having gone either "make reduce" or
 # "make minireduce" first it will default to the full build
@@ -71,10 +71,10 @@ reduce.img:	reduce
 clean:
 	-rm -f reduce.img lib/* include/crlibm_config.h include/crlibm.h \
 		include/scs.h include/softfloat.h include/softfloat_types.h
-	if test -d crlibm; then cd crlibm && make clean; fi
-	if test -d softfloat; then cd softfloat && make clean; fi
-	cd reduce-image && make clean
-	cd minireduce-image && make clean
-	cd procedural && make clean
+	if test -d crlibm; then cd crlibm && $(MAKE) clean; fi
+	if test -d softfloat; then cd softfloat && $(MAKE) clean; fi
+	cd reduce-image && $(MAKE) clean
+	cd minireduce-image && $(MAKE) clean
+	cd procedural && $(MAKE) clean
 
 # end of Makefile

@@ -66,28 +66,3 @@ screenshots_DATA = $(SCREENSHOTS_FILES)
 
 EXTRA_DIST = $(screenshots_DATA)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

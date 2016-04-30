@@ -22,11 +22,11 @@ all:
 	mkdir -p $(BUILD); \
 	cd $(BUILD); \
 	../src/configure --disable-universal; \
-	make
+	$(MAKE)
 
 clean:
-	cd $(BUILD) && make clean
+	cd $(BUILD) && $(MAKE) clean
 
 distclean: all
-	cd $(BUILD) && make distclean
+	cd $(BUILD) && $(MAKE) distclean
 	/bin/rm -rf $(BUILD)

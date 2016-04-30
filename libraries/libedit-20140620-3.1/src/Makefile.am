@@ -62,7 +62,7 @@ libedit_la_SOURCES += eln.c
 endif
 
 EXTRA_DIST = makelist shlib_version
-nobase_include_HEADERS = histedit.h editline/readline.h
+nobase_include_HEADERS = filecomplete.h histedit.h chartype.h sys.h editline/readline.h
 
 nodist_libedit_la_SOURCES = $(BUILT_SOURCES)
 

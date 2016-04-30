@@ -311,7 +311,7 @@ AS_IF([test "$editline" = yes &&
 
 AS_IF([test "$editline" = yes],
    AC_CHECK_LIB(edit,using_history,
-      [LIBS="-ledit $LIBS"
+      [LIBS="$libeditpath/lib/libedit.a $LIBS"
 dnl I am adding the libedit/src for filecomplete.h. This is going to
 dnl be used even with the system libedit for Darwin universal builds.
 #       CFLAGS="$CFLAGS -I$abssrcdir/generic/redfront/libedit/src"

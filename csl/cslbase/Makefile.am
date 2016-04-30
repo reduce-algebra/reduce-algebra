@@ -1097,11 +1097,11 @@ else !gui
 endif !gui
 if !cygwin
 if cyg32
-	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && make csl.exe; fi
+	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && $(MAKE) csl.exe; fi
 endif cyg32
 	if test -x $(with_cygbuild)/csl/csl.exe; then $(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe; fi
 if cyg64
-	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make csl.exe; fi
+	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && $(MAKE) csl.exe; fi
 endif cyg64
 	if test -x $(with_cygbuild64)/csl/csl.exe; then $(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe; fi
 endif !cygwin
@@ -1149,11 +1149,11 @@ else !gui
 endif !gui
 if !cygwin
 if cyg32
-	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && make reduce.exe; fi
+	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && $(MAKE) reduce.exe; fi
 endif cyg32
 	if test -x $(with_cygbuild)/csl/reduce.exe; then $(CP) $(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe; fi
 if cyg64
-	if test "x$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make reduce.exe; fi
+	if test "x$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && $(MAKE) reduce.exe; fi
 endif cyg64
 	if test -x $(with_cygbuild64)/csl/reduce.exe; then $(CP) $(with_cygbuild64)/csl/reduce.exe cygwin64-reduce.exe; fi
 endif !cygwin
@@ -1209,11 +1209,11 @@ if windows
 	$(CP) $(srcdir)/bootstrapreduce .
 if !cygwin
 if cyg32
-	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && make bootstrapreduce.exe; fi
+	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && $(MAKE) bootstrapreduce.exe; fi
 endif cyg32
 	if test -x $(with_cygbuild)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe; fi
 if cyg64
-	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make bootstrapreduce.exe; fi
+	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && $(MAKE) bootstrapreduce.exe; fi
 endif cyg64
 	if test -x $(with_cygbuild64)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe; fi
 endif !cygwin
@@ -1248,11 +1248,11 @@ else !gui
 endif !gui
 if !cygwin
 if cyg32
-	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && make fwindemo.exe; fi
+	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && $(MAKE) fwindemo.exe; fi
 endif cyg32
 	if test -x $(with_cygbuild)/csl/fwindemo.exe; then $(CP) $(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe; fi
 if cyg64
-	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make fwindemo.exe; fi
+	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && $(MAKE) fwindemo.exe; fi
 endif cyg64
 	if test -x $(with_cygbuild64)/csl/fwindemo.exe; then $(CP) $(with_cygbuild64)/csl/fwindemo.exe cygwin64-fwindemo.exe; fi
 endif !cygwin
@@ -1430,66 +1430,66 @@ if exeext
 
 if cygwin
 $(plain_csl):	csl.exe
-	echo "make csl.exe is preferred"
+	echo "(MAKE) csl.exe is preferred"
 
 $(plain_reduce):	reduce.exe
-	echo "make reduce.exe is preferred"
+	echo "(MAKE) reduce.exe is preferred"
 
 $(plain_bootstrapreduce):	bootstrapreduce.exe
-	echo "make bootstrapreduce.exe is preferred"
+	echo "(MAKE) bootstrapreduce.exe is preferred"
 
 $(plain_fwindemo):	fwindemo.exe
-	echo "make fwindemo.exe is preferred"
+	echo "(MAKE) fwindemo.exe is preferred"
 
 if wx
 $(plain_wxpsl):	wxpsl.exe
-	echo "make wxpsl.exe is preferred"
+	echo "(MAKE) wxpsl.exe is preferred"
 endif wx
 
 else !cygwin
 if gui
 $(plain_csl):	csl.exe csl$(COM)
-	echo "make csl.exe is preferred"
+	echo "(MAKE) csl.exe is preferred"
 
 $(plain_reduce):	reduce.exe reduce$(COM)
-	echo "make reduce.exe is preferred"
+	echo "(MAKE) reduce.exe is preferred"
 
 $(plain_bootstrapreduce):	bootstrapreduce.exe
-	echo "make bootstrapreduce.exe is preferred"
+	echo "(MAKE) bootstrapreduce.exe is preferred"
 
 $(plain_fwindemo):	fwindemo.exe fwindemo$(COM)
-	echo "make fwindemo.exe is preferred"
+	echo "(MAKE) fwindemo.exe is preferred"
 
 if wx
 $(plain_wxpsl):	wxpsl.exe wxpsl$(COM)
-	echo "make wxpsl.exe is preferred"
+	echo "(MAKE) wxpsl.exe is preferred"
 endif wx
 
 else !gui
 $(plain_csl):	csl.exe
-	echo "make csl.exe is preferred"
+	echo "(MAKE) csl.exe is preferred"
 
 $(plain_reduce):	reduce.exe
-	echo "make reduce.exe is preferred"
+	echo "(MAKE) reduce.exe is preferred"
 
 $(plain_bootstrapreduce):	bootstrapreduce.exe
-	echo "make bootstrapreduce.exe is preferred"
+	echo "(MAKE) bootstrapreduce.exe is preferred"
 
 $(plain_fwindemo):	fwindemo.exe
-	echo "make fwindemo.exe is preferred"
+	echo "(MAKE) fwindemo.exe is preferred"
 
 endif !gui
 endif !cygwin
 if fox
 
 $(plain_foxdemo):	foxdemo.exe
-	echo "make foxdemo.exe is preferred"
+	echo "(MAKE) foxdemo.exe is preferred"
 
 $(plain_fontdemo):	fontdemo.exe
-	echo "make fontdemo.exe is preferred"
+	echo "(MAKE) fontdemo.exe is preferred"
 
 $(plain_showmathdemo):	showmathdemo.exe
-	echo "make showmathdemo.exe is preferred"
+	echo "(MAKE) showmathdemo.exe is preferred"
 
 
 endif fox
@@ -1497,35 +1497,35 @@ endif fox
 if wx
 
 $(plain_wxdemo):	wxdemo.exe
-	echo "make wxdemo.exe is preferred"
+	echo "(MAKE) wxdemo.exe is preferred"
 
 $(plain_wxfontdemo):	wxfontdemo.exe
-	echo "make wxfontdemo.exe is preferred"
+	echo "(MAKE) wxfontdemo.exe is preferred"
 
 $(plain_wxdvi):	wxdvi.exe
-	echo "make wxdvi.exe is preferred"
+	echo "(MAKE) wxdvi.exe is preferred"
 
 $(plain_wxshowmath):	wxshowmath.exe
-	echo "make wxshowmath.exe is preferred"
+	echo "(MAKE) wxshowmath.exe is preferred"
 
 $(plain_wxshowmathdemo):	wxshowmathdemo.exe
-	echo "make wxshowmathdemo.exe is preferred"
+	echo "(MAKE) wxshowmathdemo.exe is preferred"
 
 endif wx
 
 $(plain_termdemo):	termdemo.exe
-	echo "make termdemo.exe is preferred"
+	echo "(MAKE) termdemo.exe is preferred"
 
 $(plain_softfloatdemo):	softfloatdemo.exe
-	echo "make softfloatdemo.exe is preferred"
+	echo "(MAKE) softfloatdemo.exe is preferred"
 
 $(plain_dyndemo):	dyndemo.exe
-	echo "make dyndemo.exe is preferred"
+	echo "(MAKE) dyndemo.exe is preferred"
 
 if boehm
 
 $(plain_gctest):	gctest.exe
-	echo "make gctest.exe is preferred"
+	echo "(MAKE) gctest.exe is preferred"
 
 endif boehm
 
@@ -1873,14 +1873,14 @@ endif !canrun
 bootstraprecompile:
 if canrun
 	chmod 664 $(gensrc)/*
-	if !test -f bootstrapreduce.img; then make bootstrapreduce.img; fi
+	if !test -f bootstrapreduce.img; then $(MAKE) bootstrapreduce.img; fi
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/recompile.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-l buildlogs/$(which).log -Dwhich=$(which)
 	chmod 664 $(gensrc)/*
-	make -t bootstrapreduce.img > /dev/null
+	$(MAKE) -t bootstrapreduce.img > /dev/null
 else !canrun
 	echo Can not build images on this platfrom
 endif !canrun
@@ -1888,14 +1888,14 @@ endif !canrun
 recompile:
 if canrun
 	chmod 664 $(gensrc)/*
-	if !test -f $(REDUCE_IMG); then make $(REDUCE_IMG); fi
+	if !test -f $(REDUCE_IMG); then $(MAKE) $(REDUCE_IMG); fi
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	./reduce$(COM) -v -w $(CYGSRC)/recompile.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-l buildlogs/$(which).log -Dwhich=$(which)
 	chmod 664 $(gensrc)/*
-	make -t $(REDUCE_IMG) > /dev/null
+	$(MAKE) -t $(REDUCE_IMG) > /dev/null
 else !canrun
 	echo Can not build images on this platfrom
 endif !canrun
@@ -2356,7 +2356,7 @@ $(srcdir)/../../bin/rfcsl$(EXEEXT): \
 		$(srcdir)/../../generic/newfront/redparent.c \
 		$(srcdir)/../../generic/newfront/redsig.c \
 		$(srcdir)/../../generic/newfront/redstrings.c
-	cd ../redfront && make
+	cd ../redfront && $(MAKE)
 
 
 showhost:

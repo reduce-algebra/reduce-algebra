@@ -39,6 +39,8 @@
 # Specify the name of this "application" and a version number
 AC_INIT([REDUCE],[7.00])
 
+AC_CONFIG_AUX_DIR([.])
+
 # automake 1.13 was the first to support AC_CONFIG_MACRO_DIRS
 AM_INIT_AUTOMAKE([1.13 -Wno-portability -Wno-override foreign dist-bzip2])
 AC_CONFIG_MACRO_DIRS([m4])
@@ -943,7 +945,7 @@ AC_ARG_ENABLE(static,
   [enable_static="no"])
 AC_MSG_RESULT([$enable_static])
 
-# In lots of cases I will be using gcc. In that case I will use -O2 for
+# In lots of cases I will be using gcc. In that case I will use -O3 for
 # release code, but -O0 when debugging. I also stick in -Wall so I get
 # loads of comments about code style etc. For other C compilers I do
 # not set any optimisation flags but I do expect "-g" to be available
@@ -960,12 +962,15 @@ AC_MSG_RESULT([$enable_static])
 # though it hits performance a little. Furthermore in 2008 I found that
 # some things behaved in ways I did not understand with "-O1 -g" hence I
 # drop back to "-O0 -g".
-#
+# Now in 2016 I am moving back to -O3 for production use, but will remain
+# with a very conservative -O0 for debugging builds. Please note that these
+# settings are applied if the compiler is detected as gcc. Also note that
+# I may try to disable optimisations that exploit the strict aliasing rules.
 
 LOWOPT="-O0"
 if test "x$HIGHOPT" = "x"
 then
-  HIGHOPT="-O2"
+  HIGHOPT="-O3"
 fi
 
 case $CC in
@@ -991,6 +996,8 @@ fi
 
 if test "x$GCC" = "xyes"
 then
+  NSA=
+# NSA="-fno-strict-aliasing"
   if test "x$enable_debug" = "xyes"
   then
 # If only to see how many people get upset, I will put "-pg" in the command
@@ -1004,14 +1011,18 @@ then
 # used... but I will leave people to adjust for that manually.
     PROFILE="-pg"
 #   PROFILE=""
-    CFLAGS="${CFLAGS} -fno-strict-aliasing ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
-    CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
-    DLL_CFLAGS="${DLL_CFLAGS} -fno-strict-aliasing ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
+    CFLAGS="${CFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
+    CXXFLAGS="${CXXFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
+    DLL_CFLAGS="${DLL_CFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
     LDFLAGS="${LDFLAGS} -g ${PROFILE}"
   else
-    CFLAGS="$CFLAGS -fno-strict-aliasing ${HIGHOPT} -Wall"
-    CXXFLAGS="$CXXFLAGS -fno-strict-aliasing ${HIGHOPT} -Wall"
-    DLL_CFLAGS="${DLL_CFLAGS} -fno-strict-aliasing ${HIGHOPT}"
+# As of April 2016 my belief is that gcc with strict aliasing enabled breaks
+# some things. I do not understand exactly what, but implementing dynamic
+# memory allocation is just the sort of area where the strict aliasing
+# rule sin general are a total misery and disaster!
+    CFLAGS="$CFLAGS ${NSA} ${HIGHOPT} -Wall"
+    CXXFLAGS="$CXXFLAGS ${NSA} ${HIGHOPT} -Wall"
+    DLL_CFLAGS="${DLL_CFLAGS} ${NSA} ${HIGHOPT}"
   fi
   if test "x$enable_static" = "xyes"
   then

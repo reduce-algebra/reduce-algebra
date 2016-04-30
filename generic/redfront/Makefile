@@ -50,13 +50,13 @@ $(BUILD)/redfront/redfront: $(BUILD)/libedit/include/editline/readline.h src/con
 	mkdir -p $(BUILD)/redfront; \
 	cd $(BUILD)/redfront; \
 	../../src/configure --with-libedit=$(abspath $(BUILD)/libedit); \
-	make
+	$(MAKE)
 
 $(BUILD)/redfront-debug/redfront: $(BUILD)/libedit/include/editline/readline.h src/configure
 	mkdir -p $(BUILD)/redfront-debug; \
 	cd $(BUILD)/redfront-debug; \
 	../../src/configure --with-libedit=$(abspath $(BUILD)/libedit) --enable-debug; \
-	make
+	$(MAKE)
 
 $(LIBEDIT):
 	tar xvf ../../libedit/$(LIBEDIT_TGZ)
@@ -66,7 +66,7 @@ $(BUILD)/libedit/include/editline/readline.h: $(LIBEDIT)
 	mkdir -p $(BUILD_LIBEDIT)
 	cd $(BUILD_LIBEDIT); \
 	../../$(LIBEDIT)/configure --prefix=$$(pwd) --disable-dependency-tracking; \
-	make install
+	$(MAKE) install
 
 install-home-bin: install-home-bin-csl install-home-bin-psl
 
@@ -127,15 +127,15 @@ uninstall-psl:
 	fi
 
 clean:
-	cd $(BUILD)/libedit && make clean
-	cd $(BUILD)/redfront && make clean
+	cd $(BUILD)/libedit && $(MAKE) clean
+	cd $(BUILD)/redfront && $(MAKE) clean
 
 distclean: uninstall
 	/bin/rm -rf $(BUILD) csl psl libedit*
 	cd ../../bin && rm -f rfcsl rfpsl
 
 maintainer-clean: distclean
-	cd src && make -f Makefile.in maintainer-clean
+	cd src && $(MAKE) -f Makefile.in maintainer-clean
 
 echo:
 	@echo $(BUILD)
