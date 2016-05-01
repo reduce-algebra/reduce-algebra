@@ -1430,66 +1430,66 @@ if exeext
 
 if cygwin
 $(plain_csl):	csl.exe
-	echo "(MAKE) csl.exe is preferred"
+	echo "$(MAKE) csl.exe is preferred"
 
 $(plain_reduce):	reduce.exe
-	echo "(MAKE) reduce.exe is preferred"
+	echo "$(MAKE) reduce.exe is preferred"
 
 $(plain_bootstrapreduce):	bootstrapreduce.exe
-	echo "(MAKE) bootstrapreduce.exe is preferred"
+	echo "$(MAKE) bootstrapreduce.exe is preferred"
 
 $(plain_fwindemo):	fwindemo.exe
-	echo "(MAKE) fwindemo.exe is preferred"
+	echo "$(MAKE) fwindemo.exe is preferred"
 
 if wx
 $(plain_wxpsl):	wxpsl.exe
-	echo "(MAKE) wxpsl.exe is preferred"
+	echo "$(MAKE) wxpsl.exe is preferred"
 endif wx
 
 else !cygwin
 if gui
 $(plain_csl):	csl.exe csl$(COM)
-	echo "(MAKE) csl.exe is preferred"
+	echo "$(MAKE) csl.exe is preferred"
 
 $(plain_reduce):	reduce.exe reduce$(COM)
-	echo "(MAKE) reduce.exe is preferred"
+	echo "$(MAKE) reduce.exe is preferred"
 
 $(plain_bootstrapreduce):	bootstrapreduce.exe
-	echo "(MAKE) bootstrapreduce.exe is preferred"
+	echo "$(MAKE) bootstrapreduce.exe is preferred"
 
 $(plain_fwindemo):	fwindemo.exe fwindemo$(COM)
-	echo "(MAKE) fwindemo.exe is preferred"
+	echo "$(MAKE) fwindemo.exe is preferred"
 
 if wx
 $(plain_wxpsl):	wxpsl.exe wxpsl$(COM)
-	echo "(MAKE) wxpsl.exe is preferred"
+	echo "$(MAKE) wxpsl.exe is preferred"
 endif wx
 
 else !gui
 $(plain_csl):	csl.exe
-	echo "(MAKE) csl.exe is preferred"
+	echo "$(MAKE) csl.exe is preferred"
 
 $(plain_reduce):	reduce.exe
-	echo "(MAKE) reduce.exe is preferred"
+	echo "$(MAKE) reduce.exe is preferred"
 
 $(plain_bootstrapreduce):	bootstrapreduce.exe
-	echo "(MAKE) bootstrapreduce.exe is preferred"
+	echo "$(MAKE) bootstrapreduce.exe is preferred"
 
 $(plain_fwindemo):	fwindemo.exe
-	echo "(MAKE) fwindemo.exe is preferred"
+	echo "$(MAKE) fwindemo.exe is preferred"
 
 endif !gui
 endif !cygwin
 if fox
 
 $(plain_foxdemo):	foxdemo.exe
-	echo "(MAKE) foxdemo.exe is preferred"
+	echo "$(MAKE) foxdemo.exe is preferred"
 
 $(plain_fontdemo):	fontdemo.exe
-	echo "(MAKE) fontdemo.exe is preferred"
+	echo "$(MAKE) fontdemo.exe is preferred"
 
 $(plain_showmathdemo):	showmathdemo.exe
-	echo "(MAKE) showmathdemo.exe is preferred"
+	echo "$(MAKE) showmathdemo.exe is preferred"
 
 
 endif fox
@@ -1497,35 +1497,35 @@ endif fox
 if wx
 
 $(plain_wxdemo):	wxdemo.exe
-	echo "(MAKE) wxdemo.exe is preferred"
+	echo "$(MAKE) wxdemo.exe is preferred"
 
 $(plain_wxfontdemo):	wxfontdemo.exe
-	echo "(MAKE) wxfontdemo.exe is preferred"
+	echo "$(MAKE) wxfontdemo.exe is preferred"
 
 $(plain_wxdvi):	wxdvi.exe
-	echo "(MAKE) wxdvi.exe is preferred"
+	echo "$(MAKE) wxdvi.exe is preferred"
 
 $(plain_wxshowmath):	wxshowmath.exe
-	echo "(MAKE) wxshowmath.exe is preferred"
+	echo "$(MAKE) wxshowmath.exe is preferred"
 
 $(plain_wxshowmathdemo):	wxshowmathdemo.exe
-	echo "(MAKE) wxshowmathdemo.exe is preferred"
+	echo "$(MAKE) wxshowmathdemo.exe is preferred"
 
 endif wx
 
 $(plain_termdemo):	termdemo.exe
-	echo "(MAKE) termdemo.exe is preferred"
+	echo "$(MAKE) termdemo.exe is preferred"
 
 $(plain_softfloatdemo):	softfloatdemo.exe
-	echo "(MAKE) softfloatdemo.exe is preferred"
+	echo "$(MAKE) softfloatdemo.exe is preferred"
 
 $(plain_dyndemo):	dyndemo.exe
-	echo "(MAKE) dyndemo.exe is preferred"
+	echo "$(MAKE) dyndemo.exe is preferred"
 
 if boehm
 
 $(plain_gctest):	gctest.exe
-	echo "(MAKE) gctest.exe is preferred"
+	echo "$(MAKE) gctest.exe is preferred"
 
 endif boehm
 

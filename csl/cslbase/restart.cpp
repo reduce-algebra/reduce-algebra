@@ -1430,7 +1430,7 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
 {   if (!SIXTY_FOUR_BIT)
     {   int32_t *newp;  // specific widths used here
         int64_t *oldp;
-        size_t i, len;
+        size_t i, len, lose = 0;
 #ifdef DEBUG_WIDTH
         int ii;
 #endif
@@ -1543,15 +1543,19 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
 #endif
                         newp = (int32_t *)p;
                         oldp = (int64_t *)p;
+// lose will be the number of 32-bit units I shrink by. I count 1 to
+// start with for the header word.
+                        lose = 1;
                         for (i=8; i<len; i+=8)
                         {   ++newp;
                             ++oldp;
                             *newp = shrink_to_32(*oldp);
+                            lose++;
                         }
 //
 // Now the length needed in the new header will be (newp-p+4)
 //
-                        h1 = (h & 0x3ff) | ((((char *)newp)-p+4)<<10);
+                        h1 = h - (lose << (Tw+7));
 #ifdef DEBUG_WIDTH
                         printf("new object length = %d, h=%.8x\n",
                                (int)(((char *)newp)-p+4), (int)h1);
@@ -1645,7 +1649,7 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
                         switch (type_of_header(h))
                         {   case TYPE_DOUBLE_FLOAT:
                             case TYPE_VECFLOAT64:
-//@@@ At present long floats do not survice checkpoint & restart!
+//@@@ At present long floats do not survive checkpoint & restart!
                             case TYPE_LONG_FLOAT:
 //
 // double precision floating point data has to remain 64-bit aligned, and so
@@ -1653,6 +1657,7 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
 // padding word ahead of it.
 //
                                 *(uint32_t *)(p+4) = 0;
+// Size of floats is the same in each case.
                                 *(LispObject *)p = flip_32(h);  // write back header
                                 break;
                             default:
@@ -1674,12 +1679,14 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
 // Here I write the header word back into memory shortening things by
 // 4 bytes because the header has changed from a 64 to a 32-bit value.
 // But I then expect to find the next item the distance on that the
-// 64-bit header indicated.
+// 64-bit header indicated. Note that all the binary data here stays the
+// same length itself, and that even for bitvectors, strings etc I can
+// shrink by 4 bytes by the same change to the header word.
 //
 #ifdef DEBUG_WIDTH
-                                printf("h=%.8x h1=%.8x\n", (int)h, (int)h - (4<<10));
+                                printf("h=%.8x h1=%.8x\n", (int)h, (int)h - (1<<(Tw+7)));
 #endif
-                                *(LispObject *)p = flip_32(h - (4<<10));  // write back header
+                                *(LispObject *)p = flip_32(h - (1<<(Tw+7)));  // write back header
                         }
 #ifdef DEBUG_WIDTH
                         for (i=-16; i<=8; i+=4) printf("%.8x ", *(int32_t *)(p+len+i)); printf("\n");
@@ -1958,7 +1965,7 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
 // The vector increases in size of 4 bytes because the header-word is
 // twice as wide.
 //
-                        *newp++ = flip_64(h + (4<<10));
+                        *newp++ = flip_64(h + (1<<(Tw+7)));
                         oldp++;
 // Now newp, oldp point at the raw data. Copy it down
                         for (i=4; i<len; i+=4)
@@ -2242,7 +2249,7 @@ static void adjust_bpsheap(void)
                 len32 = doubleword_align_up(len);
                 len64 = doubleword_align_up(len + 4);
                 gap = 2*len32 - len64;
-                *(int64_t *)fr = flip_64(h + (4<<10)); // write new header
+                *(int64_t *)fr = flip_64(h + (1<<(Tw+7))); // write new header
 //
 // Now copy the data down as raw 32-bit words with no byte-flipping.
 // This will NOT be sufficient if I were ever to implement the
@@ -2294,7 +2301,7 @@ static void adjust_bpsheap(void)
                         *(int32_t *)(fr+llen-4) = 0;
                         if (doubleword_align_up(len-4) != llen)
                             *(Header *)(fr+llen-8) = make_padder(8);
-                        h -= (4<<10); // reduce length of the BPS object
+                        h -= (1<<(Tw+7)); // reduce length of the BPS object
                     }
                     *(Header *)fr = h;
                     break;
