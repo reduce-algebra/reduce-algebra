@@ -171,7 +171,7 @@
 
 (de returnaddressp (x)
   (prog (s y)
-        (unless (and (intp x) (wgreaterp x 200000)) (return nil))
+        (unless (and (intp x) (wgreaterp x 16#400000)) (return nil))
         % Actually, top bits must                                          
         % be 0 or -1 due to                                                
         % 9836 assembler, linker                                           
