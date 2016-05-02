@@ -68,6 +68,17 @@ AS_IF([test "$EXEEXT" = .exe],
    AC_DEFINE(USE_PIPES,0,[Define to 1 for using pipes instead if sockets]))
    COMEXT=""])
 
+AC_ARG_ENABLE(windows,
+  AC_HELP_STRING([--enable-windows],
+    [Temporary: enable building rdcslwin and rfpslwin]),
+  [enable_windows="$enableval"],
+  [enable_windows="no"])
+
+if test "x$enable_windows" = "xno"
+then
+  on_windows="no"
+fi
+
 # Checks for libraries.
 
 curses_header="no"
@@ -75,7 +86,7 @@ AC_CHECK_HEADER(curses.h,
   [AC_DEFINE(HAVE_CURSES_H, [1], [Header file curses.h available])
    curses_header="yes"])
 AC_CHECK_HEADER(ncurses.h,
-  [AC_DEFINE(HAVE_NCURSES_H, [], [Header file ncurses.h available])
+  [AC_DEFINE(HAVE_NCURSES_H, [1], [Header file ncurses.h available])
    curses_header="yes"])
 if test "x$curses_header" = "xno"
 then
@@ -90,26 +101,6 @@ AC_CHECK_HEADERS(wait.h sys/wait.h,break)
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(waitpid)
 AC_CHECK_FUNCS(setlinebuf)
-
-AC_ARG_ENABLE(color,
-  AC_HELP_STRING([--disable-color],[do not color any text]),
-  if test "$enableval" = no
-  then
-    AC_DEFINE(HAVE_COLOR,0,[Define for color terminal support])
-  else
-    AC_DEFINE(HAVE_COLOR,1,[Define for color terminal support])
-  fi,
-  AC_DEFINE(HAVE_COLOR,1,[Define for color terminal support]))
-
-AC_DEFINE(HAVE_HISTORY,1,[Always enable history])
-AC_DEFINE(LITHIST,1,[bash-style history treatment])
-AC_DEFINE(IGNOREDUPS,1,[do not put duplicated items in history list])
-
-AC_ARG_WITH(hist-size,[  --with-hist-size=LINES  length of the .reduce_history file [[LINES=10000]]],
-  histfilesize=$withval,histfilesize=10000)
-
-AC_DEFINE_UNQUOTED(HISTFILESIZE,$histfilesize,
-  [Define the maximum number of lines in your .reduce_history])
 
 AC_ARG_ENABLE(debug,
   AC_HELP_STRING([--enable-debug],

@@ -31,6 +31,14 @@
 /*
  * Further work by A C Norman, 2016, to remove any trace of us of the
  * full GPL readline library and to move towards support for Windows.
+ *
+ * Note that this code is keyed to the EXACT version of linedit that is
+ * distributed in the Reduce tree with it. That version has been adjusted
+ * so it builds under cygwin and so that a couple more header files are
+ * exported (the latter because the redfront code relied on functions
+ * defined in those headers, and it seems much better to export the
+ * definitive headers than to transcribe definitions from them into the
+ * redfront source code).
  */
 
 #if defined WIN32 && ! defined __CYGWIN__
@@ -63,7 +71,6 @@
 #define PACKAGE_VERSION "0.073"
 #define USE_PIPES 1
 #define PACKAGE_BUGREPORT "'http://sourceforge.net/reduce-algebra"
-#define HAVE_COLOR 1
 
 #endif
 
@@ -100,8 +107,24 @@ typedef void (*sig_t)(int);
 
 #endif
 
-#include <editline/readline.h>
-#include <histedit.h>
+#include "editline/readline.h"
+#include "histedit.h"
+/*
+ * The redfront code access a number of things that where not initially
+ * provided by the standard libexit/editline headers, so I adjusted
+ * libedit to export the files that were needed. However the Windows
+ * version is different...
+ */
+#ifndef __MINGW32__
+#include "sys.h"
+#include "chartype.h"
+#endif
+
+/*
+ * This sets the amount of history that can be stored to a value so
+ * large that it is in effect unlimited.
+ */
+#define HISTFILESIZE 10000
 
 #ifdef NATIVE_WINDOWS
 #define HANDLE_T HANDLE

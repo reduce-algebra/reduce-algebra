@@ -225,7 +225,6 @@ int badline(const char line[]) {
 
 
 char *append_line(char *c,char *l) {
-#ifdef HAVE_HISTORY
   char *s;
   int lenc,lenl;
 
@@ -239,15 +238,7 @@ char *append_line(char *c,char *l) {
   *s = 0;
   if (c != (char *)NULL) {
     strcpy(s,c);
-    if (lenc != 0 && lenl != 0) {
-      if (LITHIST)
-	strcat(s,"\x0a");
-      else {
-	strcat(s," ");
-	while (l && isspace(*l))
-	  l++;
-      }
-    }
+    if (lenc != 0 && lenl != 0) strcat(s,"\x0a");
   }
 
   if (l != (char *)NULL)
@@ -256,7 +247,6 @@ char *append_line(char *c,char *l) {
   deb_fprintf(stderr,"parent: s=%s ... leaving append_line()\n",s);
 
   return s;
-#endif
 }
 
 void send_reduce(char line[]) {

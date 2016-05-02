@@ -5,7 +5,7 @@
 bin_PROGRAMS = rfpsl rfcsl
 
 if WINDOWS
-dist_bin_SCRIPTS = rfpslwin.exe rfcslwin.exe
+#dist_bin_SCRIPTS = rfpslwin.exe rfcslwin.exe
 endif
 
 # This little bit of trickers is intended to arrange that if you go

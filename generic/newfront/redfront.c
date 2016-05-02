@@ -478,7 +478,7 @@ int textcolor(int fg) {
 }
 
 void textcolor1(int attr, int fg, int bg) {
-  if (color && HAVE_COLOR) {
+  if (color) {
     char command[13];
 
     stextcolor1(command,attr,fg,bg);
@@ -492,7 +492,7 @@ void stextcolor1(char command[],int attr,int fg,int bg) {
 }
 
 void resetcolor(void) {
-  if (color && HAVE_COLOR) {
+  if (color) {
     printf("%c[0m",0x1B);
     fflush(stdout);
   }

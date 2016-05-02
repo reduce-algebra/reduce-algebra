@@ -146,7 +146,6 @@ Result: (1 symbol)
 Result: (3 200)
 Result: (3 3.542)
 Result: (2 "a string")
-Result: (1 nil)
 Result: (4 (quote (quoted lisp)))
 Result: (4 (backquote (backquoted (!, comma) (!,!@ comma_at))))
 Result: (1 !+)
@@ -160,10 +159,7 @@ Result: (5 begin)
 Result: (1 !;)
 Result: (1 !;)
 Result: (1 !;)
-
-nil
- ;
-
+Result: (1 !;)
 
 nil
 
@@ -578,12 +574,8 @@ a*b+c*d;
 pparse()$
 
 
-a * (b/c + d/e/f) ^ 2 ^ g - "str" 
+a * (b/c + d/e/f) ^ 2 ^ g - "str" ;
 = (diff (tms a (pow (plus (quot b c) (quot (quot d e) f)) (pow 2 g))) "str")
-;
-
-
-nil
 
 
 % Demonstrate various of the short-hand notations...
@@ -923,10 +915,3 @@ mini_language := '(
 end;
 
 nil
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 288 ms  plus GC time: 6 ms
-
-End of Lisp run after 0.28+0.06 seconds
-real 0.56
-user 0.01
-sys 0.09

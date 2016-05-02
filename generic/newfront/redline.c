@@ -50,22 +50,8 @@ static strl line_loadlist = NULL;
 static strl line_adhoclist = NULL;
 
 
-#ifdef HAVE_LIBEDIT
-
-#ifdef HAVE_FILECOMPLETE_H
+#ifndef __MINGW32__
 #include <filecomplete.h>
-#else
-
-int fn_complete(EditLine *,
-    char *(*)(const char *, int),
-    char **(*)(const char *, int, int),
-    const char *, const char *, const char *(*)(const char *), size_t,
-    int *, int *, int *, int *);
-
-void fn_display_match_list(EditLine *, char **, size_t, size_t);
-char *fn_tilde_expand(const char *);
-char *fn_filename_completion_function(const char *, int);
-
 #endif
 
 #include <sys/stat.h>
@@ -75,9 +61,12 @@ char *fn_filename_completion_function(const char *, int);
 
 extern int verbose;
 
+#ifndef __MINGW32__
 static EditLine *e;
 static History *h;
 static HistEvent ev;
+#endif
+
 static char line_prompt[50];
 
 static char line_break_chars[] = {' ', '\t', '\n', '"', '\\', '\'', '`', '@',
@@ -360,7 +349,13 @@ char *line_quit(const char *quit) {
 char *line_color_prompt(char der_prompt[]) {
   if (color) {
     char tmp[50];
-
+/*
+ * Note two big constraints here. The first is that that prompt passed
+ * down may not be longer than around 24 or 25 characters because all the
+ * escape sequences here use up half the 50-characters of buffer space
+ * allocated. The second is that the prompt must not contain an instance of
+ * the character PROMPT_IGNORE (which appears to be '@' at present).
+ */
     strcpy(tmp,der_prompt);
 #ifdef EL_PROMPT_ESC
     sprintf(der_prompt,"%c%c[%d;%d;%dm%c%s%c%c[%d;%d;%dm%c",
@@ -379,239 +374,39 @@ void line_end(void) {
 }
 
 void line_init_history(void) {
-#ifdef HAVE_HISTORY
   char *hname;
 
   h = history_init();
   el_set(e,EL_HIST,history,h);
   history(h,&ev,H_SETSIZE,HISTFILESIZE);
-  history(h,&ev,H_SETUNIQUE,IGNOREDUPS);
+  history(h,&ev,H_SETUNIQUE,1); /* Ignore duplicates */
   hname = line_histname();
   history(h,&ev,H_LOAD,hname);
   free(hname);
-#endif
 }
 
 void line_add_history(char this_command[]) {
-#ifdef HAVE_HISTORY
   if (this_command != (char *)NULL && *this_command != 0) {
     history(h,&ev,H_ENTER,this_command);
     free(this_command);
   }
-#endif
 }
 
 void line_end_history(void) {
-#ifdef HAVE_HISTORY
   char *hname;
 
   history(h,&ev,H_SETSIZE,HISTFILESIZE);
   hname = line_histname();
   history(h,&ev,H_SAVE,hname);
   free(hname);
-#endif
 }
-
-#else
-
-void line_init(void);
-void line_learn_completion(char *);
-strl line_learn_until_prompt(char *,const char *);
-char *line_read(char *);
-char *line_quit(const char *);
-char *line_color_prompt(char *);
-void line_end(void);
-void line_init_history(void);
-void line_add_history(char *);
-void line_end_history(void);
-char *line_histname(void);
-char *line_switch_completion_function(const char *, int);
-char *line_pack_completion_function(const char *, int);
-char *line_load_completion_function(const char *, int);
-char *line_strl_completion_function(const char *, int, strl);
-
-
-
-
-char **line_completion_list(const char *text, int start, int end) {
-  char **matches = (char **)NULL;
-  char *ctemp = rl_line_buffer;
-  int i = 0;
-
-  /* skip whitespace at beginning of line before completion */
-  while (i < rl_point && isspace(rl_line_buffer[i])) {
-    i++;
-  }
-  ctemp += i;
-
-  if (strncmp(ctemp,"load_package",12) == 0) {
-    return rl_completion_matches(text, line_pack_completion_function);
-  }
-  else if (strncmp(ctemp,"load",4) == 0) {
-    return rl_completion_matches(text, line_load_completion_function);   
-  }
-  else if (*ctemp=='"') {
-    return rl_completion_matches(text, rl_filename_completion_function);
-  }
-  else if (strncmp(ctemp,"on",2) == 0 || strncmp(ctemp,"off",3) == 0) {
-    return rl_completion_matches(text, line_switch_completion_function);
-  }
-
-  return matches;
-}
-
-char *line_switch_completion_function(const char *text, int state) {
-  return line_strl_completion_function(text,state,line_switchlist);
-}
-
-char *line_pack_completion_function(const char *text, int state) {
-  return line_strl_completion_function(text,state,line_packlist);
-}
-
-char *line_load_completion_function(const char *text, int state) {
-  return line_strl_completion_function(text,state,line_loadlist);
-}
-
-char *line_strl_completion_function(const char *text, int state,strl clist) {
-  char *res;
-  const char *this;
-  static strl clist_current = NULL;
-
-  if (!state) {
-    clist_current = clist;
-  }
-
-  while (clist_current) {
-    this = clist_current->this;
-    clist_current = clist_current->next;
-    // printf("\nclist_current=%d, text=%s, this=%s",clist_current,text,this);
-    if (strncmp(text,this,strlen(text)) == 0) {
-      // printf("\nHit!");
-      res = malloc((strlen(this)+1)*sizeof(char));
-      strcpy(res,this);
-      return res;
-    }
-  }
-
-  return NULL;
-}
-
-
-
-void line_init(void) {
-  /* Allow conditional parsing of the ~/.inputrc file. */
-  rl_readline_name = "redfront";
-
-  /* Tell the completer that we want a crack first. */
-  rl_attempted_completion_function = line_completion_list;
-};
-
-char *line_read(char *prompt) {
-  static char *line=NULL;
-  if (line)
-    free(line);
-  line = readline(prompt);
-  return line;
-}
-
-char *line_quit(const char *quit) {
-  static char *line=NULL;
-
-  if (line != NULL)
-    free(line);
-  line = malloc((strlen(quit) + 2)* sizeof(char));
-  sprintf(line,"%s\n",quit);
-  textcolor(inputcolor);
-  printf("%s",line);
-  textcolor(normalcolor);
-  return line;
-}
-
-char *line_color_prompt(char der_prompt[]) {
-  if (color && HAVE_COLOR) {
-    char help_prompt[50];
-
-    strcpy(help_prompt,der_prompt);
-#ifdef NATIVE_WINDOWS
-/*
- * At least as I start work with it the Windows version of libedit does not
- * define RL_PROMPT_xxx_IGNORE. It may be that it does not support colour
- * fully. AT present I will merely disable putting those marker bytes out,
- * so that I can at least build and test things.
- */
-    sprintf(der_prompt,"%c[%d;%d;%dm%s%c[%d;%d;%dm",
-	    0x1B,0,promptcolor+30,9+40,
-	    help_prompt,
-	    0x1B,0,inputcolor+30,9+40);
-#else
-    sprintf(der_prompt,"%c%c[%d;%d;%dm%c%s%c%c[%d;%d;%dm%c",
-	    RL_PROMPT_START_IGNORE,
-	    0x1B,0,promptcolor+30,9+40,
-	    RL_PROMPT_END_IGNORE,
-	    help_prompt,
-	    RL_PROMPT_START_IGNORE,
-	    0x1B,0,inputcolor+30,9+40,
-	    RL_PROMPT_END_IGNORE);
-#endif
-  }
-  return der_prompt;
-}
-
-void line_end(void) {
-#ifndef NATIVE_WINDOWS
-  rl_cleanup_after_signal();
-#endif
-}
-
-void line_init_history(void) {
-#ifdef HAVE_HISTORY
-  char *hname;
-
-  using_history();
-  hname = line_histname();
-  read_history(hname);
-  free(hname);
-#endif
-}
-
-void line_add_history(char this_command[]) {
-#ifdef HAVE_HISTORY
-  HIST_ENTRY *ph;
-
-  if ((this_command != (char *)NULL) && *this_command != 0) {
-    while (next_history())
-      ;
-    if (!(ph = previous_history()) || strcmp(this_command,ph->line) != 0)
-      add_history(this_command);
-    free(this_command);
-  }
-#endif
-}
-
-void line_end_history(void) {
-#ifdef HAVE_HISTORY
-  char *hname;
-/*
- * stifle_history discards all bu the last N items in the history list.
- * in this case the limit is 10000 and so it is really not liable to do
- * anything much!
- */
-  stifle_history(HISTFILESIZE);
-  hname = line_histname();
-  write_history(hname);
-  free(hname);
-#endif
-}
-
-#endif
 
 void line_learn_completion(char der_prompt[]) {
   char tmp[1024];
 
   vbprintf("Redfront learned ");
 
-#define PACKAGE_MAP "package.map" // @@@
-  sprintf(tmp,"lisp redfront_send!-packages(\"%s\")$",PACKAGE_MAP);
+  sprintf(tmp,"lisp redfront_send!-packages(nil)$");
   line_packlist = strl_delete(line_packlist);
   send_reduce(tmp);
   line_packlist = line_learn_until_prompt(der_prompt,"packages");
