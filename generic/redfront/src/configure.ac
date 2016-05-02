@@ -195,8 +195,8 @@ AC_DEFINE_UNQUOTED(PACKAGE_MAP,"$packagemap",
 	[Define the location of package.map])
 
 dnl Checks for libraries.
-dnl AC_CHECK_LIB(termcap,main,LIBS="-ltermcap $LIBS",\
-dnl AC_MSG_ERROR("install a termcap library first"))
+AC_CHECK_LIB(termcap,main,LIBS="-ltermcap $LIBS",\
+AC_MSG_ERROR("install a termcap library first"))
   curses_header="no"
   AC_CHECK_HEADER(curses.h,
     [AC_DEFINE(HAVE_CURSES_H, [1], [Header file curses.h available])
@@ -311,7 +311,7 @@ AS_IF([test "$editline" = yes &&
 
 AS_IF([test "$editline" = yes],
    AC_CHECK_LIB(edit,using_history,
-      [LIBS="$libeditpath/lib/libedit.a $LIBS"
+      [LIBS="$editlinepath/lib/libedit.a $LIBS"
 dnl I am adding the libedit/src for filecomplete.h. This is going to
 dnl be used even with the system libedit for Darwin universal builds.
 #       CFLAGS="$CFLAGS -I$abssrcdir/generic/redfront/libedit/src"
