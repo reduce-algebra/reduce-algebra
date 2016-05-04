@@ -139,15 +139,28 @@ void child(char *nargv[]) {
 #endif /* NATIVE_WINDOWS */
 
 void child_signalHandlers(void) {
-#ifndef NATIVE_WINDOWS
+/*
+ * Some of these signals may not be supported on some platforms. I have
+ * replaced tests that indicated which were believed present on Windows
+ * and LINUX with more generic tests... clumsier but more generic I hope.
+ */
+#ifdef SIGQUIT
   signal(SIGQUIT,SIG_DFL);
-  signal(SIGHUP,SIG_DFL);
-  signal(SIGTSTP,SIG_IGN);
-#ifndef LINUX
-  signal(SIGBUS,SIG_DFL);
 #endif
+#ifdef SIGHUP
+  signal(SIGHUP,SIG_DFL);
+#endif
+#ifdef SIGTSTP
+  signal(SIGTSTP,SIG_IGN);
+#endif
+#ifdef SIGPIPE
   signal(SIGPIPE,SIG_DFL);
+#endif
+#ifdef SIGCHLD
   signal(SIGCHLD,SIG_DFL);
+#endif
+#ifdef SIGBUS
+  signal(SIGBUS,SIG_DFL);
 #endif
   signal(SIGINT,SIG_DFL);
   signal(SIGILL,SIG_DFL);

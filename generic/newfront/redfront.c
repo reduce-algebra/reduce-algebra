@@ -106,32 +106,15 @@ int inputcolor = DEFAULT_INPUTCOLOR;	   /* REDUCE input line */
 int outputcolor = DEFAULT_OUTPUTCOLOR;	   /* REDUCE mathprint output */
 int debugcolor = DEFAULT_DEBUGCOLOR;	   /* REDFRONT DEBUG output */
 
-void parse_args(int,char **);
-void init_channels(void);
-void print_banner(int);
-int parse_colarg(char *);
-int map_colour(int);
-char *parse_memarg(char *,char *);
-void print_usage(char *);
-void print_help(char *);
-int textcolor(int);
-void textcolor1(int,int,int);
-void stextcolor1(char *,int,int,int);
-void resetcolor(void);
-int vbprintf(const char *,...);
-void rf_exit(int);
-char **create_call(int, char **);
+
+
+
+
 
 int main(int argc,char **argv,char **envp) {
   char **nargv;
 
   find_program_directory(argv[0]);
-#ifdef DEBUG
-  printf("fullProgramName = <%s>\n", fullProgramName);
-  printf("programName = <%s>\n", programName);
-  printf("programDir = <%s>\n", programDir);
-  printf("programNameDotCom = %d\n", programNameDotCom);
-#endif
 
   parse_args(argc,argv);
 

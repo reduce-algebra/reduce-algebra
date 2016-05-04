@@ -49,11 +49,6 @@ static strl line_packlist = NULL;
 static strl line_loadlist = NULL;
 static strl line_adhoclist = NULL;
 
-
-#ifndef __MINGW32__
-#include <filecomplete.h>
-#endif
-
 #include <sys/stat.h>
 
 #define PROMPT_IGNORE '@'
@@ -69,7 +64,7 @@ static HistEvent ev;
 
 static char line_prompt[50];
 
-static char line_break_chars[] = {' ', '\t', '\n', '"', '\\', '\'', '`', '@',
+static Char line_break_chars[] = {' ', '\t', '\n', '"', '\\', '\'', '`', '@',
 				  '$', '>', '<', '=', ';', '|', '&', '{', '(',
 				  ',', '\0'};
 
@@ -81,7 +76,7 @@ char *line_get_prompt(EditLine *);
 char *line_get_rprompt(EditLine *);
 unsigned char line_complete(EditLine *,int);
 unsigned char line_fn_complete(EditLine *,char *(*)(const char *, int),
-			       const char *, const char *(*)(const char *),
+			       const Char *, const char *(*)(const char *),
 			       size_t);
 char *line_filename_completion_function(const char *, int);
 const char *line_append_char_function(const char *);
@@ -192,7 +187,7 @@ unsigned char line_complete(EditLine *ignore,int invoking_key)
 
 unsigned char line_fn_complete(EditLine *el,
 			       char *(*complet_func)(const char *, int),
-			       const char *word_break,
+			       const Char *word_break,
 			       const char *(*app_func)(const char *),
 			       size_t query_items) {
   return (unsigned char )fn_complete(el,

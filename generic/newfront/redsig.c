@@ -63,8 +63,10 @@ RETSIGTYPE sig_sigGen(int arg) {
   sig_killChild();
   line_end();
   switch (arg) {
-#ifndef NATIVE_WINDOWS
+#ifdef SIGQUIT
   case SIGQUIT:
+#endif
+#ifdef SIGHUP
   case SIGHUP:
 #endif
   case SIGTERM:
@@ -84,7 +86,7 @@ RETSIGTYPE sig_sigGen(int arg) {
 }
 
 void sig_killChild(void) {
-#ifndef NATIVE_WINDOWS
+#ifdef SIGCHLD
   signal(SIGCHLD,SIG_IGN);
 #endif
 #ifdef NATIVE_WINDOWS
@@ -165,29 +167,36 @@ RETSIGTYPE sig_sigTstp(int arg) {
 }
 
 void sig_installHandlers(void) {
-#ifndef NATIVE_WINDOWS
+#ifdef SIGQUIT
   sig_signal(SIGQUIT,sig_sigGen);
-  sig_signal(SIGQUIT,sig_sigGen);
+#endif
+#ifdef SIGHUP
   sig_signal(SIGHUP,sig_sigGen);
 #endif
+#ifdef SIGTSTP
+  sig_signal(SIGTSTP,sig_sigTstp);
+#endif
+#ifdef SIGBUS
+  sig_signal(SIGBUS,sig_sigGen);
+#endif
+#ifdef SIGPIPE
+  sig_signal(SIGPIPE,sig_sigGen);
+#endif
+#ifdef SIGCHLD
+  sig_signal(SIGCHLD,sig_sigChld);
+#endif
+  sig_signal(SIGILL,sig_sigGen);
+  sig_signal(SIGSEGV,sig_sigGen);
+  sig_signal(SIGTERM,sig_sigGen);
+/*
+ * For PSL it is useful to send a SIGINT onwards. Iguess that for
+ * CSL it is not.
+ */
 #ifdef PSL
   sig_signal(SIGINT,sig_sigGen);
 #else
   sig_signal(SIGINT,SIG_IGN);
 #endif
-  sig_signal(SIGILL,sig_sigGen);
-#ifndef NATIVE_WINDOWS
-  sig_signal(SIGTSTP,sig_sigTstp);
-#ifndef LINUX
-  sig_signal(SIGBUS,sig_sigGen);
-#endif
-#endif
-  sig_signal(SIGSEGV,sig_sigGen);
-#ifndef NATIVE_WINDOWS
-  sig_signal(SIGPIPE,sig_sigGen);
-  sig_signal(SIGCHLD,sig_sigChld);
-#endif
-  sig_signal(SIGTERM,sig_sigGen);
 }
 
 sig_t sig_signal(int sig, sig_t func) {
@@ -208,38 +217,85 @@ const char *sig_identify(int signo) {
   case SIGINT:    return "SIGINT";
   case SIGILL:    return "SIGILL";
   case SIGABRT:   return "SIGABRT";
-#ifdef SIGEMT
-  case SIGEMT:    return "SIGEMT";
-#endif
   case SIGFPE:    return "SIGFPE";
   case SIGSEGV:   return "SIGSEGV";
   case SIGTERM:   return "SIGTERM";
+/*
+ * The following may not be available on all platforms!
+ */
+#ifdef SIGEMT
+  case SIGEMT:    return "SIGEMT";
+#endif
 #ifdef SIGINFO
   case SIGINFO:   return "SIGINFO";
 #endif
-#ifndef NATIVE_WINDOWS
+#ifdef SIGHUP
   case SIGHUP:    return "SIGHUP";
+#endif
+#ifdef SIGQUIT
   case SIGQUIT:   return "SIGQUIT";
+#endif
+#ifdef SIGTRAP
   case SIGTRAP:   return "SIGTRAP";
+#endif
+#ifdef SIGKILL
   case SIGKILL:   return "SIGKILL";
+#endif
+#ifdef SIGBUS
   case SIGBUS:    return "SIGBUS";
+#endif
+#ifdef SIGSYS
   case SIGSYS:    return "SIGSYS";
+#endif
+#ifdef SIGPIPE
   case SIGPIPE:   return "SIGPIPE";
+#endif
+#ifdef SIGALARM
   case SIGALRM:   return "SIGALRM";
+#endif
+#ifdef SIGURG
   case SIGURG:    return "SIGURG";
+#endif
+#ifdef SIGSTOP
   case SIGSTOP:   return "SIGSTOP";
+#endif
+#ifdef SIGTSTP
   case SIGTSTP:   return "SIGTSTP";
+#endif
+#ifdef SIGCONT
   case SIGCONT:   return "SIGCONT";
+#endif
+#ifdef SIGCHLD
   case SIGCHLD:   return "SIGCHLD";
+#endif
+#ifdef SIGTTIN
   case SIGTTIN:   return "SIGTTIN";
+#endif
+#ifdef SIGTTOU
   case SIGTTOU:   return "SIGTTOU";
+#endif
+#ifdef SIGIO
   case SIGIO:     return "SIGIO";
+#endif
+#ifdef SIGXCPU
   case SIGXCPU:   return "SIGXCPU";
+#endif
+#ifdef SIGXFSZ
   case SIGXFSZ:   return "SIGXFSZ";
+#endif
+#ifdef SIGVTALRM
   case SIGVTALRM: return "SIGVTALRM";
+#endif
+#ifdef SIGPROF
   case SIGPROF:   return "SIGPROF";
+#endif
+#ifdef SIGWINCH
   case SIGWINCH:  return "SIGWINCH";
+#endif
+#ifdef SIGUSR1
   case SIGUSR1:   return "SIGUSR1";
+#endif
+#ifdef SIGUSR2
   case SIGUSR2:   return "SIGUSR2";
 #endif
   }

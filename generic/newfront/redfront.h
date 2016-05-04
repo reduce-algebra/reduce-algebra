@@ -55,20 +55,19 @@
 #endif
 #endif
 
-
-#ifdef HAVE_CONFIG_H
 /*
- * For the main build of this code I will *NOT* have a config.h file
- * present!
+ * I will expect the copy of linbedit that I link to to have been configured
+ * and built with --enable-widec, and that is what happens with the scripts
+ * in use here. In a number of places I expect that this will provide
+ * enhanced support for international charafters.
  */
-#include "config.h"
-#endif
+#define WIDECHAR 1
 
 #ifdef NATIVE_WINDOWS
 
 #define RETSIGTYPE void
 #define PACKAGE_NAME "winredfront"
-#define PACKAGE_VERSION "0.073"
+#define PACKAGE_VERSION "0.51"
 #define USE_PIPES 1
 #define PACKAGE_BUGREPORT "'http://sourceforge.net/reduce-algebra"
 
@@ -107,8 +106,6 @@ typedef void (*sig_t)(int);
 
 #endif
 
-#include "editline/readline.h"
-#include "histedit.h"
 /*
  * The redfront code access a number of things that where not initially
  * provided by the standard libexit/editline headers, so I adjusted
@@ -119,6 +116,15 @@ typedef void (*sig_t)(int);
 #include "sys.h"
 #include "chartype.h"
 #endif
+
+#include "editline/readline.h"
+#include "histedit.h"
+
+#ifndef __MINGW32__
+#include "filecomplete.h"
+#endif
+
+
 
 /*
  * This sets the amount of history that can be stored to a value so
@@ -201,4 +207,21 @@ void deb_cleanup(void);
 #define WHITE 7
 #define USER 9
 
+extern void parse_args(int,char **);
+extern void init_channels(void);
+extern void print_banner(int);
+extern int parse_colarg(char *);
+extern int map_colour(int);
+extern char *parse_memarg(char *,char *);
+extern void print_usage(char *);
+extern void print_help(char *);
+extern int textcolor(int);
+extern void textcolor1(int,int,int);
+extern void stextcolor1(char *,int,int,int);
+extern void resetcolor(void);
+extern int vbprintf(const char *,...);
+extern void rf_exit(int);
+extern char **create_call(int, char **);
+
 /* end of redfront.h */
+
