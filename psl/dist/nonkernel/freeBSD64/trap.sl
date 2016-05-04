@@ -43,7 +43,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-(fluid '(errornumber*))
+(fluid '(errornumber* sigaddr*))
 
 (compiletime
  (progn
@@ -68,6 +68,7 @@
      (*move (wconst ,signumber) (reg 1))
      (*move (reg 1)(fluid errornumber*))
      (*move ,handler (reg 2))
+     (*move (memory (reg rdx) 176) (fluid sigaddr*))   % instruction pointer at fault
      (*link sigrelse expr 2)
      (*move (quote ,errorstring) (reg 1))
      (*jcall sigunwind))
@@ -127,12 +128,21 @@
      % (*link build-trap-message expr 2)     % This leaves its result in reg
                                            % 1, so the new message is
      (push (reg 1))
+     % if this is a terminal interrupt (errornumber* = 2) we check
+     % whether it occured within lisp code. If not, just return.
+     (*jumpnoteq (label in-lisp) (fluid errornumber*) 2)
+     (*move (fluid sigaddr*) (reg 1))
+     (*link codeaddressp expr 1)
+     (!*jumpnoteq (label in-lisp) (reg 1) (quote nil))
+     (pop (reg 1))
+     (ret)
+    in-lisp
      (*link *freset expr 0)
      (*link initializeinterrupts expr 0) % MK
      (pop (reg 2))
      (*move (fluid errornumber*) (reg 1))
      (*wplus2 (reg 1)(wconst 10000))
-     (*jcall error) 
+     (*jcall error-trap) 
      ))
 
 (lap '((*entry *freset expr 0)
@@ -157,18 +167,24 @@
        (wait)
        (*exit 0)))
 
+(de error-trap (errornumber errorstring)
+  (error errornumber (build-trap-message errorstring sigaddr*)))
+
 (de build-trap-message (trap-type trap-addr)
     (let (extra-info)
-      (if (funboundp 'code-address-to-symbol)
-        (setf extra-info
-          (bldmsg "%w%n%w%n%w"
-              " : the name of the routine that trapped can't be"
-              " reported unless the function CODE-ADDRESS-TO-SYMBOL"
-              " has been defined, by loading ADDR2ID."))
-    % else, get the name of the offending function
-    (setf extra-info (bldmsg "%w%w"
-                 " in "
-                 (code-address-to-symbol (inf trap-addr))))
+      (cond ((funboundp 'code-address-to-symbol)
+	     (setf extra-info
+		   (bldmsg "%w%x%w%n%w%n%w%n%w"
+			   " at address 0x"
+			   (inf trap-addr)
+			   " :"
+			   " the name of the routine that trapped can't be"
+			   " reported unless the function CODE-ADDRESS-TO-SYMBOL"
+			   " has been defined, by loading ADDR2ID.")))
+	    % else, get the name of the offending function
+	    ((setf extra-info (code-address-to-symbol (inf trap-addr)))
+	     (setf extra-info (bldmsg "%w%w" " in " extra-info)))
+	    (t (setf extra-info (bldmsg "%w%x" " at address 0x" (inf trap-addr))))
       )
       (bldmsg "%w%w" trap-type extra-info)))
  
