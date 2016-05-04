@@ -151,9 +151,10 @@ cd psl
 
 (savesystem "REDUCE" "../red/reduce" (quote ((commandline_setq)
                                              (set-load-directories)
-                                             (read-init-file "reduce")
-			(cond ((member "--texmacs" (vector2list unixargs!*))
-						(load tmprint))))))
+                                             (cond ((null (member "--no-rcfile" (vector2list unixargs!*)))
+                                                    (read-init-file "reduce")))
+		              	             (cond ((member "--texmacs" (vector2list unixargs!*))
+						    (load tmprint))))))
 (bye)
 
 XXX
