@@ -49,6 +49,19 @@
 #include <math.h>
 #include <fenv.h>
 
+#ifdef USE_CRLIBM
+#include "crlibm.h"
+
+#define sin	sin_rn
+#define cos	cos_rn
+#define tan 	tan_rn
+#define asin	asin_rn
+#define acos	acos_rn
+#define atan	atan_rn
+#define exp	exp_rn
+#define log	log_rn
+
+#endif
 
 /* Tag( uxfloat )
  */

@@ -1,0 +1,3 @@
+cc  -g -o bpsl -w -DBPSSIZE=20500000 -DUSE_CRLIBM=1 bps.c bpsheap.c echo.c file-status.c float.c \
+   os-hooks.c pslextras.c pslsocket.c pwd-fn.c sigs.c unix-io.c creloc.c \
+   -DLINUX main.o dmain.o -L . -lcrlibm -lm

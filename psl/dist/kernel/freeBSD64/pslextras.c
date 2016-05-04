@@ -90,6 +90,16 @@ struct stat *buf;
     return stat(expand_file_name(path), buf);
 }
  
+
+int external_mkdir (name, mode)
+    int mode;
+    char * name;
+ { return mkdir (name, mode); }
+
+int external_rmdir (name)
+    char * name;
+ { return rmdir (name); }
+
 /* Tag( external_link )
  */
 int external_link (path1, path2)
