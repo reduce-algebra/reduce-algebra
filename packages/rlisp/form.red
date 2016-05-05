@@ -154,7 +154,7 @@ symbolic procedure form1(u,vars,mode);
 %         and (mode eq 'symbolic or intexprlisp(cdr u,vars))
           and mode eq 'symbolic
         then return list('getel,intargfn(u,vars,mode))
-       else if cdr u and (get(car u,'rtype) eq 'vector
+       else if pairp cdr u and (get(car u,'rtype) eq 'vector
              or vectorp cadr u or flagpcar(cadr u,'vecfn))
         then return getvect(u,vars,mode)
        else if flagp(car u,'modefn)
