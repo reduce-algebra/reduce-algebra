@@ -272,7 +272,7 @@ fi
 # slowest ones may take almost 15 seconds. The idea behind applying a
 # ulimit here is to avoid trouble when and if a test script loops.
  
-ulimit -c 60
+ulimit -c 60 2>/dev/null
 
 # There are a number of "sed" operations I use to tidy up logs files
 # so that comparisons do not show up frivolous differences. I put the
