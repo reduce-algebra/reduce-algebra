@@ -68,17 +68,6 @@ AS_IF([test "$EXEEXT" = .exe],
    AC_DEFINE(USE_PIPES,0,[Define to 1 for using pipes instead if sockets]))
    COMEXT=""])
 
-AC_ARG_ENABLE(windows,
-  AC_HELP_STRING([--enable-windows],
-    [Temporary: enable building rdcslwin and rfpslwin]),
-  [enable_windows="$enableval"],
-  [enable_windows="no"])
-
-if test "x$enable_windows" = "xno"
-then
-  on_windows="no"
-fi
-
 # Checks for libraries.
 
 curses_header="no"

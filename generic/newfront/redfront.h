@@ -67,7 +67,7 @@
 
 #define RETSIGTYPE void
 #define PACKAGE_NAME "winredfront"
-#define PACKAGE_VERSION "0.51"
+#define PACKAGE_VERSION "3.3"
 #define USE_PIPES 1
 #define PACKAGE_BUGREPORT "'http://sourceforge.net/reduce-algebra"
 
@@ -112,20 +112,13 @@ typedef void (*sig_t)(int);
  * libedit to export the files that were needed. However the Windows
  * version is different...
  */
-#ifndef __MINGW32__
+#ifndef NATIVE_WINDOWS
 #include "sys.h"
 #include "chartype.h"
 #endif
 
 #include "editline/readline.h"
 #include "histedit.h"
-
-#ifndef __MINGW32__
-#include "filecomplete.h"
-#endif
-
-
-
 /*
  * This sets the amount of history that can be stored to a value so
  * large that it is in effect unlimited.
@@ -155,6 +148,13 @@ struct oStrl {
 };
 
 typedef struct oStrl *strl;
+
+#ifdef NATIVE_WINDOWS
+#include "redlinewin.h"
+#else
+#include "redline.h"
+#include "filecomplete.h"
+#endif
 
 int textcolor(int);
 void resetcolor(void);

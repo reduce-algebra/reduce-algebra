@@ -1385,17 +1385,17 @@ static int fold_cons_heap(void)
     int top_page_number = 0,
         bottom_page_number = (int)heap_pages_count - 1;
     void *top_page = heap_pages[top_page_number],
-          *bottom_page = heap_pages[bottom_page_number];
+         *bottom_page = heap_pages[bottom_page_number];
     char *top_low = (char *)quadword_align_up((intptr_t)top_page),
-          *bottom_low = (char *)quadword_align_up((intptr_t)bottom_page);
+         *bottom_low = (char *)quadword_align_up((intptr_t)bottom_page);
     char *top_start = top_low + CSL_PAGE_SIZE,
-          *bottom_start = bottom_low + CSL_PAGE_SIZE;
+         *bottom_start = bottom_low + CSL_PAGE_SIZE;
 //
 // BEWARE if the lengths here might be marked to indicate a double-sized
 // page.
 //
     char *top_fringe = top_low + car32(top_low),
-          *bottom_fringe = bottom_low + car32(bottom_low);
+         *bottom_fringe = bottom_low + car32(bottom_low);
     if (bottom_fringe != (char *)fringe)
     {   term_printf("disaster wrt heap fringe %p %p\n",
                     (void *)bottom_fringe, (void *)fringe);
@@ -1619,6 +1619,7 @@ static void move_vec_heap(void)
     {   void *page = vheap_pages[page_number];
         char *low = (char *)doubleword_align_up((intptr_t)page);
         char *fr = low + car32(low);
+// @@@ The next line looks suspicious to me...
         *(LispObject *)fr = set_mark_bit_h(TAG_HDR_IMMED + (8<<10));
         low += 8;
         for (;;)
@@ -2529,11 +2530,11 @@ static void tidy_fringes(void)
 // vfringe is stashed away at the end of its page.
 //
 {   char *fr = (char *)fringe,
-          *vf = (char *)vfringe,
-           *cf = (char *)codefringe,
-            *hl = (char *)heaplimit,
-             *vl = (char *)vheaplimit,
-              *cl = (char *)codelimit;
+         *vf = (char *)vfringe,
+         *cf = (char *)codefringe,
+         *hl = (char *)heaplimit,
+         *vl = (char *)vheaplimit,
+         *cl = (char *)codelimit;
     int32_t len = (int32_t)(fr - (hl - SPARE));
 //
 // If I used the top bit of this location to save info that a page

@@ -57,7 +57,25 @@
  * ref: ISO/IEC DTR 19769
  */
 #if WCHAR_MAX < INT32_MAX
+#ifdef __GNUC__
+/*
+ * Note that the "#warning" directive is not part of standard C. However
+ * it is supported by gcc and clang (and clang, at least on a Macintosh,
+ * predefined __GNUC__). So I will enable this just in cases where I am
+ * confident that it will be a warning and not an error.
+ */
 #warning Build environment does not support non-BMP characters
+#else
+/*
+ * On other compilers I am going to hope that there is no built-in
+ * pragma called "warn_the_user" and that the compiler will report
+ * when an undefined pragma is encountered. I might have hoped that
+ * "#pragma warning ..." would be the idiom to use, but there are cases
+ * where that is used to control when the compiler generates warnings rather
+ * than to generate one instantly.
+ */
+#pragma warn_the_user "Build environment does not support non-BMP characters"
+#endif
 #endif
 
 #ifndef HAVE_WCSDUP

@@ -14,6 +14,9 @@ a) Department of Drug Science and Technology,
 http://mingweditline.sourceforge.net/
 
 
+Some adaptations by Arthur Norman to allow this to fit in better with the
+"redfront" program used as part of Reduce. May 2016.
+
 WinEditLine (formerly MinGWEditLine) is a BSD-licensed, open-source
 software aimed at implementing most of the functionality of the GNU
 Readline library in the framework of the native Windows Console.

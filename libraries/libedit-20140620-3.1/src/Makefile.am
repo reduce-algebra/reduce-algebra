@@ -35,6 +35,9 @@ historyn.c: Makefile $(srcdir)/history.c
 	AWK=$(AWK) sh $(srcdir)/makelist -n $(srcdir)/history.c > $@
 
 CLEANFILES = $(BUILT_SOURCES)
+# This file has been edited (May 2016) so that more header files get
+# installed. This is important for use with redfront which was otherwise
+# using its own (incorrect) transcriptions of some of the declarations.
 
 lib_LTLIBRARIES    = libedit.la
 libedit_la_SOURCES = chared.c common.c el.c emacs.c hist.c keymacro.c map.c chartype.c parse.c \

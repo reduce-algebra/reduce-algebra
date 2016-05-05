@@ -4,8 +4,12 @@
 
 bin_PROGRAMS = rfpsl rfcsl
 
+
 if WINDOWS
-#dist_bin_SCRIPTS = rfpslwin.exe rfcslwin.exe
+dist_bin_SCRIPTS = rfpslwin.exe rfcslwin.exe
+progs = rfpsl.exe rfcsl.exe rfpslwin.exe rfcslwin.exe
+else
+progs = rfpsl rfcsl
 endif
 
 # This little bit of trickers is intended to arrange that if you go
@@ -88,7 +92,7 @@ rfpsl-findself.$(OBJEXT):	../lib/libedit.a
 MOSTLYCLEANFILES = rfcslwin.exe rfpslwin.exe
 
 rfcslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
-	$(srcdir)/redline.c $(srcdir)/redparent.c $(srcdir)/redsig.c \
+	$(srcdir)/redlinewin.c $(srcdir)/redparent.c $(srcdir)/redsig.c \
 	$(srcdir)/redstrings.c $(srcdir)/findself.c \
 	../wineditline/src/editline.c ../wineditline/src/fn_complete.c \
 	../wineditline/src/history.c
@@ -97,7 +101,7 @@ rfcslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 		-DHAVE_HISTORY=1 -DLITHIST=1 \
 		-DIGNOREDUPS=1 -DHISTFILESIZE=10000 \
 		$(srcdir)/redchild.c $(srcdir)/reddeb.c \
-		$(srcdir)/redfront.c $(srcdir)/redline.c \
+		$(srcdir)/redfront.c $(srcdir)/redlinewin.c \
 		$(srcdir)/redparent.c $(srcdir)/redsig.c \
 		$(srcdir)/redstrings.c $(srcdir)/findself.c \
 		-I ../wineditline/src ../wineditline/src/editline.c \
@@ -105,7 +109,7 @@ rfcslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 		-o rfcslwin.exe
 
 rfpslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
-	$(srcdir)/redline.c $(srcdir)/redparent.c $(srcdir)/redsig.c \
+	$(srcdir)/redlinewin.c $(srcdir)/redparent.c $(srcdir)/redsig.c \
 	$(srcdir)/redstrings.c $(srcdir)/findself.c \
 	../wineditline/src/editline.c ../wineditline/src/fn_complete.c \
 	../wineditline/src/history.c
@@ -114,7 +118,7 @@ rfpslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 		-DHAVE_HISTORY=1 -DLITHIST=1 \
 		-DIGNOREDUPS=1 -DHISTFILESIZE=10000 \
 		$(srcdir)/redchild.c $(srcdir)/reddeb.c \
-		$(srcdir)/redfront.c $(srcdir)/redline.c \
+		$(srcdir)/redfront.c $(srcdir)/redlinewin.c \
 		$(srcdir)/redparent.c $(srcdir)/redsig.c \
 		$(srcdir)/redstrings.c $(srcdir)/findself.c \
 		-I ../wineditline/src ../wineditline/src/editline.c \

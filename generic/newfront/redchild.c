@@ -59,7 +59,6 @@ void child(char *nargv[]) {
  */
   while ((a = *p++) != NULL)
   {  int c;
-printf("next arg is %s\n", a);
      CC('"');
      while ((c = *a++) != 0)
      {   if (c == '"') CC('\\');
@@ -167,4 +166,5 @@ void child_signalHandlers(void) {
   signal(SIGSEGV,SIG_DFL);
   signal(SIGTERM,SIG_DFL);
 }
+
 /* end of redchild.c */

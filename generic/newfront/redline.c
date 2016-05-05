@@ -30,20 +30,6 @@
 
 #include "redfront.h"
 
-extern int redfrontcolor;
-extern int normalcolor;
-extern int promptcolor;
-extern int inputcolor;
-extern int outputcolor;
-extern int debugcolor;
-
-extern int color;
-
-#define SKIPPING_WHITESPACE 1
-#define READING_PROMPT 2
-#define LEARNING 3
-#define FINISHED 0
-
 static strl line_switchlist = NULL;
 static strl line_packlist = NULL;
 static strl line_loadlist = NULL;
@@ -51,50 +37,12 @@ static strl line_adhoclist = NULL;
 
 #include <sys/stat.h>
 
-#define PROMPT_IGNORE '@'
-#define QUERY_ITEMS 100
-
-extern int verbose;
-
-#ifndef __MINGW32__
-static EditLine *e;
-static History *h;
-static HistEvent ev;
-#endif
-
 static char line_prompt[50];
 
 static Char line_break_chars[] = {' ', '\t', '\n', '"', '\\', '\'', '`', '@',
 				  '$', '>', '<', '=', ';', '|', '&', '{', '(',
 				  ',', '\0'};
 
-void line_init(void);
-unsigned char _line_learn_completion(EditLine *,int);
-void line_learn_completion(char *);
-strl line_learn_until_prompt(char *,const char *);
-char *line_get_prompt(EditLine *);
-char *line_get_rprompt(EditLine *);
-unsigned char line_complete(EditLine *,int);
-unsigned char line_fn_complete(EditLine *,char *(*)(const char *, int),
-			       const Char *, const char *(*)(const char *),
-			       size_t);
-char *line_filename_completion_function(const char *, int);
-const char *line_append_char_function(const char *);
-char *line_switch_completion_function(const char *, int);
-char *line_pack_completion_function(const char *, int);
-char *line_load_completion_function(const char *, int);
-char *line_strl_completion_function(const char *, int, strl);
-char *line_adhoc_completion_function(const char *, int);
-const char *line_append_no_char(const char *);
-unsigned char line_help(EditLine *,int);
-char *line_read(char *);
-char *line_quit(const char *);
-char *line_color_prompt(char *);
-void line_end(void);
-void line_init_history(void);
-void line_add_history(char *);
-void line_end_history(void);
-char *line_histname(void);
 
 void line_init(void) {
   e = el_init("redfront",stdin,stdout,stderr);
@@ -343,23 +291,21 @@ char *line_quit(const char *quit) {
 
 char *line_color_prompt(char der_prompt[]) {
   if (color) {
-    char tmp[50];
-/*
- * Note two big constraints here. The first is that that prompt passed
- * down may not be longer than around 24 or 25 characters because all the
- * escape sequences here use up half the 50-characters of buffer space
- * allocated. The second is that the prompt must not contain an instance of
- * the character PROMPT_IGNORE (which appears to be '@' at present).
- */
+    char tmp[100];
+    if (strlen(der_prompt) + 26 > sizeof(tmp)-8)
+    {   fprintf(stderr, "\nBuffer overflow with long prompt string\n");
+        abort();
+    }
     strcpy(tmp,der_prompt);
-#ifdef EL_PROMPT_ESC
+/*
+ * I suspect the issue is within libedit - and I will need to investigate -
+ * but the recolouring of the prompt that should be expected here seems
+ * not to occur. I suspect that PROMPT_IGNORE is having a bad effect???
+ */
     sprintf(der_prompt,"%c%c[%d;%d;%dm%c%s%c%c[%d;%d;%dm%c",
 	    PROMPT_IGNORE,0x1B,0,promptcolor+30,9+40,PROMPT_IGNORE,
 	    tmp,
 	    PROMPT_IGNORE,0x1B,0,inputcolor+30,9+40,PROMPT_IGNORE);
-#else
-    sprintf(der_prompt, "%s", tmp);
-#endif
   }
   return der_prompt;
 }
@@ -480,17 +426,10 @@ strl line_learn_until_prompt(char der_prompt[],const char *what){
 
 char *line_histname(void) {
   char *hname, *hname1;
-#ifdef NATIVE_WINDOWS
-  hname1 = getenv("USERPROFILE");
-  if (hname1 == NULL) hname1 = ".";
-  hname = (char *)malloc(strlen(hname1)+strlen("/.reduce_history")+1);
-  sprintf(hname,"%s/.reduce_history",hname1);
-#else
   hname1 = getenv("HOME");
   if (hname1 == NULL) hname1 = "/tmp";
   hname = (char *)malloc(strlen(hname1)+strlen("/.reduce_history")+1);
   sprintf(hname,"%s/.reduce_history",hname1);
-#endif
   return hname;
 }
 
