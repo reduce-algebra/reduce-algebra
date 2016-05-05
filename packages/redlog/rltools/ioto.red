@@ -243,9 +243,9 @@ asserted procedure ioto_smaprin(u: List): String;
       maprin u;
       if !*nat then
  	 terpri!* nil;
-      % Trim one trailing newline:
+      % Trim one trailing newline (and preceding escape char):
       if !*nat then
-      	 rlsmaprinbuf!* := cdr rlsmaprinbuf!*;
+      	 rlsmaprinbuf!* := cddr rlsmaprinbuf!*;
       return id2string compress reversip rlsmaprinbuf!*
    end;
 
