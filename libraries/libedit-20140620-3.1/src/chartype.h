@@ -50,6 +50,21 @@
  * At present I find it hard to see the possibility of modern machines that
  * do not use the first 127 codepoints as expected. A LONG while in the past
  * one might have had EBCDIC.   ACN May 2016
+ *
+ * Aha - I have done some more research. In some cases especially in CJK
+ * markets wide strings might be encoded with each wchar_t holding just
+ * a concatenation of bytes from an earlier multi-byte extended representation,
+ * and that could perhaps lead to the presence of bytes in the range 0-127
+ * not standing for ASCII characters. That would relate to ISO 2022. The
+ * code here in libedit really wants wchar_t to be a 32-bit type so that
+ * *ALL* Unicode characters can be represented. Where that is the case it
+ * will be able to accept UTF-8 input. On platforms where wchar_t is only
+ * a 16-bit type it will only be possible to cope with characters in the
+ * basic multilingual plane. The most common symbols NOT present there are
+ * perhaps some mathematical symbols and alphabets (including Gothic) and
+ * a load of Emojis. So those who use them and try (for instance) using copy
+ * and paste to insert them input input should be aware that on some platforms
+ * they will not be well supported.
  */
 
 /* Ideally we should also test the value of the define to see if it
