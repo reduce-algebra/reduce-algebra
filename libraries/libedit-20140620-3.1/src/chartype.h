@@ -39,17 +39,35 @@
 
 
 #ifdef WIDECHAR
+/*
+ * The test here in the original version of the source had a white-list
+ * of platforms and gave an "#error" if there wa an attempt to build
+ * otherwise. The list did not include FreeBSD and so for utterly
+ * frivolous reasons the code would not compile there. I have changed the
+ * error to a warning. If __GNUC__ is defined there should be a "#warning"
+ * directive that can be used, otherwise I hope that use of a (probably)
+ * undefined #pragma will cause the compiler to say something.
+ * At present I find it hard to see the possibility of modern machines that
+ * do not use the first 127 codepoints as expected. A LONG while in the past
+ * one might have had EBCDIC.   ACN May 2016
+ */
 
 /* Ideally we should also test the value of the define to see if it
  * supports non-BMP code points without requiring UTF-16, but nothing
  * seems to actually advertise this properly, despite Unicode 3.1 having
  * been around since 2001... */
-#if !defined(__NetBSD__) && !defined(__sun) && !(defined(__APPLE__) && defined(__MACH__))
+#if !defined(__NetBSD__) && !defined(__sun) && \
+    !(defined(__APPLE__) && defined(__MACH__)) && \
+    !defined(__FreeBSD__) && !defined(__CYGWIN__)
 #ifndef __STDC_ISO_10646__
 /* In many places it is assumed that the first 127 code points are ASCII
  * compatible, so ensure wchar_t indeed does ISO 10646 and not some other
  * funky encoding that could break us in weird and wonderful ways. */
-	#error wchar_t must store ISO 10646 characters
+#ifdef __GNUC__
+	#warning wchar_t must store ISO 10646 characters
+#else
+	#pragra warn_the_user wchar_t must store ISO 10646 characters
+#endif
 #endif
 #endif
 
