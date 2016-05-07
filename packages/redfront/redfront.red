@@ -342,7 +342,7 @@ onoff('output,cadr redfront_switches!*);
 
 crbuf!* := nil;
 inputbuflis!* := nil;
-!*lessspace := t;
+%!*lessspace := t;
 statcounter := 0;
 
 endmodule;
