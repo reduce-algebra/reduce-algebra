@@ -103,27 +103,46 @@ symbolic procedure map!-frvarsof(q,l);
      if q member l then l else q.l
   else map!-frvarsof(cdr q,map!-frvarsof(car q,l));
 
+symbolic procedure formselect(u,vars,mode);
+   begin scalar c;
+     c := cadr u;
+     c := if idp c and get(c,'number!-of!-args) = 1
+        then quote!-select!-bool(freequote formbool({c,{'!~,'!&!&}},
+                                                    vars,mode),vars)
+      else if eqcar(c,'replaceby)
+        then {'list,mkquote car c,form1(cadr c,vars,mode),
+              quote!-select!-bool(freequote !*s2arg(formbool(caddr c,
+                                                    vars,mode),vars),vars)}
+      else quote!-select!-bool(freequote formbool(c,vars,mode),vars);
+     return {'list,''select,c,form1(caddr u,vars,mode)}
+   end;
+
+symbolic procedure quote!-select!-bool(u,vars);
+   'list . for each j in u collect 
+               if atom j 
+                  then if atsoc(j,vars) then {'mkquote,j}
+                        else mkquote j
+                else quote!-select!-bool(j,vars);
+
 symbolic procedure select!-eval u;
  % select from a list l members according to a boolean test.
- begin scalar l,w,v,r;
-  l := reval cadr u; w := car u;
-  if atom l or (car l neq'list and not flagp(car l,'nary)) then
+   begin scalar l,w,r;
+     w := car u;
+     l := reval cadr u;
+     if atom l or (car l neq'list and not flagp(car l,'nary)) then
            typerr(l,"select operand");
-  if idp w and get(w,'number!-of!-args)=1 then w:={w,{'~,'!&!&}};
-  if eqcar(w,'replaceby) then <<v:=cadr w;w:=caddr w>>;
-  w:=freequote formbool(w,nil,'algebraic);
-  if v then w:={'replaceby,v,w};
-  r:=for each q in
-        pair(cdr map!-eval1(l,w,function identity!-function,'lispeval),cdr l)
-      join if car q and car q neq 0 then {cdr q};
-  if r then return car l . r;
-  if (r:=atsoc(car l,'((plus . 0)
-                       (times . 1)
-		       (and . 1)
-                       (or . 0)
-		       (list . (list)))))
-    then return cdr r
-   else rederr {"empty selection for operator ",car l}
+     r := for each q in
+           pair(cdr map!-eval1(l,w,function identity!-function,'lispeval),
+                cdr l)
+            join if car q and car q neq 0 then {cdr q};
+     if r then return car l . r;
+     if (r := atsoc(car l,'((plus . 0)
+                           (times . 1)
+                           (and . 1)
+                           (or . 0)
+                           (list . (list)))))
+        then return cdr r
+      else rederr {"empty selection for operator ",car l}
  end;
 
 symbolic procedure freequote u;
@@ -133,6 +152,8 @@ symbolic procedure freequote u;
    then mkquote{'!~,cadr caddr u}
   else (if v=u then u else v)
         where v = freequote car u . freequote cdr u;
+
+put('select,'formfn,'formselect);
 
 put('select,'psopfn,'select!-eval);
 

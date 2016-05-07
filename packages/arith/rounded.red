@@ -124,7 +124,6 @@ put('!:rd!:,'minus,'rd!:minus);
 put('!:rd!:,'rootfn,'rd!:root);
 put('!:rd!:,'!:rn!:,'!*rd2rn);
 put('!:rn!:,'!:rd!:,'!*rn2rd);
-put('!:rd!:,'formfn,'rd!:quote);
 
 symbolic procedure round!* x;
    % Returns actual number representation, as either float or bfloat.
@@ -259,8 +258,6 @@ symbolic procedure !*rn2rd u;
    % number to the system precision, after testing to number
    mkround chkrn!* r2bf cdr u;
 
-symbolic procedure rd!:quote(u,vars,mode);
-   mkquote u;
 
 minprec!# := min(6,!!flprec-2);
 
