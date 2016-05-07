@@ -359,8 +359,9 @@ symbolic procedure limsimp(ex,x);
       if y eq 'plus then go to ret;
       if y eq 'expt then if ex then return ex else ex := ex0 . 1;
       if z then<<z := car ex; c := cdr ex>>
-         else <<z := prepsq !*f2q numr(ex := simp!* ex);
-                c := prepsq !*f2q denr ex>>;
+         else <<ex := simp!* ex;
+                z := prepf numr ex;
+                c := prepf denr ex>>;
       ex := lhopital(z,c,x,0);
  ret: if m and prepsq simp!* ex neq 'failed then
          ex := aeval lminus2 ex;
@@ -421,7 +422,7 @@ symbolic procedure limsort(ex,x);
          << q := numr(s := simp!* limit00(simp!* c,x));
             if domainp q then << if not !:zerop q then nrms := q . nrms
                                   else zros := c . zros >>
-             else if caaar q memq '(failed infinity) then infs := c.infs
+             else if mvar q memq '(failed infinity) then infs := c.infs
              else nrms := (prepsq s) . nrms >>;
       return list(zros,infs,nrms) end;
 
@@ -552,9 +553,7 @@ symbolic procedure limitest(ex,x,a);
        if cadr ex eq 'e then ex := list('exp,caddr ex)
        else return exptest(cadr ex,caddr ex,x,a);
     if (y := get(car ex,'fixfn)) then
-       <<arg := cadr ex; val := limitset(arg,x,a);
-         return apply1(y,
-          if val then val else limitest(arg,x,a))>>
+       return apply1(y,limfix(cadr ex,x,a))
     else if (y := get(car ex,'limcomb)) then
        return apply3(y,cdr ex,x,a) end;
 
