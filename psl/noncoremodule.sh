@@ -55,7 +55,7 @@ fi
 
 export fasl psldir reduce
 
-psl/bpsl -td $STORE -f red/reduce.img <<XXX > buildlogs/$1.blg
+psl/bpsl -td $STORE -f red/reduce.img --no-rcfile <<XXX > buildlogs/$1.blg
 
 symbolic;
 
