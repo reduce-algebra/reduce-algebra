@@ -1034,25 +1034,26 @@ operator, or an algebraic expression with one free variable.
 
 It is used with the syntax:
 \begin{verbatim}
-   MAP(U:function,V:object)
+   MAP(FNC:function,OBJ:object)
 \end{verbatim}
-Here \texttt{object} is a list, a matrix or an operator expression.
-\texttt{Function} can be one of the following:
+Here \texttt{OBJ} is a list, a matrix or an operator expression.
+\texttt{FNC} can be one of the following:
 \begin{enumerate}
-\item the name of an operator for a single argument: the operator
-is evaluated once with each element of \texttt{object} as its single argument;
-\item an algebraic expression with exactly one free variable, that is
+\item the name of an operator with a single argument: the operator
+is evaluated once with each element of \texttt{OBJ} as its single argument;
+\item an algebraic expression with exactly one free variable, i.e.
 a variable preceded by the tilde symbol. The expression
-is evaluated for each element of \texttt{object}, where the element is
+is evaluated for each element of \texttt{OBJ}, with the element
 substituted for the free variable;
 \item a replacement rule of the form \texttt{var => rep}
 where \texttt{var} is a variable (a kernel without a subscript)
 and \texttt{rep} is an expression that contains \texttt{var}.
-\texttt{Rep} is evaluated for each element of \texttt{object} where
-the element is substituted for  \texttt{var}. \texttt{Var} may be
+The replacement expression \texttt{rep} is evaluated for each element of 
+\texttt{OBJ} with
+the element substituted for  \texttt{var}. The variable \texttt{var} may be
 optionally preceded by a tilde.
 \end{enumerate}
-The rule form  for \texttt{function} is needed when more than
+The rule form  for \texttt{FNC} is needed when more than
 one free variable occurs.
 
 Examples:
@@ -1074,7 +1075,7 @@ Examples:
 \end{verbatim}
 
 You can use \texttt{MAP} in nested expressions. However, you cannot
-apply \texttt{MAP} to a non-composed object, e.g. an identifier or a number.
+apply \texttt{MAP} to a non-composite object, e.g. an identifier or a number.
 
 
 \section{MKID Operator}\ttindex{MKID}
@@ -1174,30 +1175,30 @@ The \texttt{SELECT} operator extracts from a list,
 or from the arguments of an n--ary operator, elements corresponding
 to a boolean predicate. It is used with the syntax:
 \begin{syntax}
-  \texttt{SELECT(}\meta{U:function},\meta{V:list}\texttt{)}
+  \texttt{SELECT(}\meta{FNC:function},\meta{LST:list}\texttt{)}
 \end{syntax}
 
-\texttt{Function} can be one of the following forms:
+\texttt{FNC} can be one of the following forms:
 \begin{enumerate}
-\item the name of an operator for a single argument: the operator
-is evaluated once with each element of \texttt{object} as its single argument;
-\item an algebraic expression with exactly one free variable, that is
+\item the name of an operator with a single argument: the operator
+is evaluated once on each element of \texttt{LST};
+\item an algebraic expression with exactly one free variable, i.e.
 a variable preceded by the tilde symbol. The expression
-is evaluated for each element of \meta{object}, where the element is
+is evaluated for each element of \meta{LST}, with the element
 substituted for the free variable;
 \item a replacement rule of the form \meta{var} \texttt{=>} \meta{rep}
 where \meta{var} is a variable (a kernel without subscript)
 and \meta{rep} is an expression that contains \meta{var}.
-\meta{rep} is evaluated for each element of \texttt{object} where
-the element is substituted for  \meta{var}. \meta{var} may be
+\meta{rep} is evaluated for each element of \texttt{LST} with
+the element substituted for  \meta{var}. \meta{var} may be
 optionally preceded by a tilde.
 \end{enumerate}
-The rule form  for \texttt{function} is needed when more than
+The rule form  for \texttt{FNC} is needed when more than
 one free variable occurs.
 
-The result of evaluating \texttt{function} is
+The result of evaluating \texttt{FNC} is
 interpreted as a boolean value corresponding to the conventions of
-{\REDUCE}. These values are composed with the leading operator of the
+\REDUCE. These values are composed with the leading operator of the
 input expression.
 
 \textit{Examples:}\nopagebreak
