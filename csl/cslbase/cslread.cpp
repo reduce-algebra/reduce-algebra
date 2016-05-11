@@ -903,6 +903,8 @@ static bool add_to_hash(LispObject s, LispObject vector, uint32_t hash)
 //
 // size is expected to be a power of 2 here.
 //
+// When I *know* I am inserting in a table I do not need to do any
+// key comparisons - I just scan until I find an empty slot in the table.
     while (++probes <= size)
     {   if (is_fixnum(elt(vector, i)))
         {   elt(vector, i) = s;
@@ -1186,6 +1188,11 @@ try_again:
 
 static bool rehash_pending = false;
 
+#ifdef HASH_STATISTICS
+uint64_t Nhget=0, Nhgetp=0, Nhput1=0, Nhputp1=0, Nhput2=0, Nhputp2=0, Nhputtmp=0;
+uint64_t Noget=0, Nogetp=0, Noput=0, Noputp=0, Noputtmp=0;
+#endif
+
 static LispObject lookup(LispObject str, int32_t strsize,
                          LispObject v, LispObject nv, uint32_t hash)
 //
@@ -1220,6 +1227,9 @@ static LispObject lookup(LispObject str, int32_t strsize,
 // these two implementations of hashing!
 //
 {   Header h;
+#ifdef HASH_STATISTICS
+    Noputtmp = 0;
+#endif
     size_t size, i = int_of_fixnum(nv), step, n;
     if (i != 1)
     {   i = (hash ^ (hash >> 16)) % i; // Segmented - find correct segment
@@ -1246,11 +1256,19 @@ static LispObject lookup(LispObject str, int32_t strsize,
         {   pn = qpname(w);
             validate_string(pn);
 // v comes out of a package so has a proper pname
+#ifdef HASH_STATISTICS
+            Noputtmp++;  // A prob...
+#endif
             if (memcmp((char *)str + (CELL-TAG_VECTOR),
                        (char *)pn + (CELL-TAG_VECTOR),
                        (size_t)strsize) == 0 &&
                 length_of_byteheader(vechdr(pn)) == (size_t)strsize+CELL)
             {   if (4*n > 3*size) rehash_pending = true;
+#ifdef HASH_STATISTICS
+// If the symbol was already present I count up in (Noget, Nogetp)
+                Noget++;
+                Nogetp += Noputtmp;
+#endif
                 return w;
             }
         }
@@ -1875,6 +1893,12 @@ LispObject iintern(LispObject str, int32_t h, LispObject p, int str_is_ok)
     }
     {   LispObject s;
         push2(str, p);
+// Here I was looking up a symbol and it did not exist so I need to
+// create it.
+#ifdef HASH_STATISTICS
+        Noput++;
+        Noputp += Noputtmp;
+#endif
         s = (LispObject)getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
         pop(p);
         errexit();

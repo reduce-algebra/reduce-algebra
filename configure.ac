@@ -203,6 +203,15 @@ AC_ARG_WITH(boehm,
   [],
   [with_boehm="no"])
 
+# I could provide a --with-libedit=... option but the plan here is that
+# the version used will only change during transitions made by the developers
+# and so I limit myself to a fixed setting here. No ordinary person should
+# ever need to alter this.
+
+# This is set here so that if I need to experiment with or chance to a
+# different version that will be reasonably tidy.
+LIBEDIT_VERSION=20140620-3.1
+
 # For now I will insist on an explicit request for this...
 AC_MSG_NOTICE([with_boehm = $with_boehm])
 
@@ -805,8 +814,7 @@ case $inplace in
     AC_MSG_NOTICE([About to configure libedit])
     mkdir -p libedit
     cd libedit
-
-    doconfig="$SHELL \"$abssrcdir/libraries/libedit-20140620-3.1/configure\" \
+    doconfig="$SHELL \"$abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure\" \
           $nohost \
           CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
@@ -1289,7 +1297,7 @@ AC_MSG_NOTICE([About to configure libedit])
 mkdir -p libedit
 cd libedit
 
-doconfig="$SHELL \"$abssrcdir/libraries/libedit-20140620-3.1/configure\" \
+doconfig="$SHELL \"$abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure\" \
       $nohost \
       CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
       CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \

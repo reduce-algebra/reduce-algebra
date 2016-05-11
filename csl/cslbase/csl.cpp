@@ -3355,6 +3355,18 @@ int cslfinish(character_writer *w)
                                          (double)(read_clock() - base_time)/
                                          (double)CLOCKS_PER_SEC));
         long int gct = (long int)(100.0 * gc_time);
+#ifdef HASH_STATISTICS
+        term_printf("oblist: found: %" PRIu64 " probes: %" PRIu64 " (%.2f)\n"
+                    "        added: %" PRIu64 " probes: %" PRIu64 " (%.2f)\n",
+            Noget, Nogetp, Nogetp/(double)Noget,
+            Noput, Noputp, Noputp/(double)Noput);
+        term_printf("hash lookup: %" PRIu64 " probes: %" PRIu64 " (%.2f)\n"
+                    "   inserted: %" PRIu64 " probes: %" PRIu64 " (%.2f)\n"
+                    "    updated: %" PRIu64 " probes: %" PRIu64 " (%.2f)\n",
+            Nhget, Nhgetp, Nhgetp/(double)Nhget,
+            Nhput1, Nhputp1, Nhputp1/(double)Nhput1,
+            Nhput2, Nhputp2, Nhputp2/(double)Nhput2);
+#endif
         term_printf("\n\nEnd of Lisp run after %ld.%.2ld+%ld.%.2ld seconds\n",
                     t/100, t%100, gct/100, gct%100);
     }

@@ -4,7 +4,7 @@
 %
 % This is where (for now) I will put documentation of the syntax I
 % will use when creating a grammer. There is a main function called
-% lalr_construct_parser and that is passed a list that describes
+% lalr_create_parser and that is passed a list that describes
 % a grammar. It is in the form of a sequence of productions, and the first
 % one given is taken to be the top-level target.
 %
@@ -161,36 +161,44 @@ on lalr_verbose;
 % undo that setting. I will omit semantic actions here so that the default
 % action of building a form of tree is used.
 
-
+% There seems to be an issue here in that if I use a name for a non-terminal
+% that is the same as one used for a terminal thinsg get confused. So I had
+% originally hoped and expected to write just 'c' for the name of the
+% non-terminal here are use '"c"' to denote the terminal. However when I
+% try that I find that internally the names and up clashing to rather bad
+% effect. I will look into this later since it is merely a matter of surface
+% notation!  Also in the input to semantic actions the values passed when a
+% terminal is matched may at present be the internal numeric code allocated
+% to that terminal, not a "sensible" value. Agian this is a small issue.
 
 grammar := '(
-  (s  ((c c)    )   % One production for S, no semantic actions
+  (s  ((cc cc)  )   % One production for S, no explicit semantic here
   )
-  (c  (("c" c)  )   % First production for C
-      (("d")    )   % Second production for C
+  (cc (("c" cc) (list 'c !$2))   % First production for C
+      (("d")    'd           )   % Second production for C
   ));
 
-lalr_construct_parser grammar;
+g := lalr_create_parser(nil, grammar);
 
-symbolic procedure pparse();
+symbolic procedure pparse g;
   begin
     scalar r;
-    r := yyparse();
+    r := yyparse g;
     terpri();
     princ "= ";
     print r
   end;
 
-pparse()$
+pparse g$
 
 c c c d c d ;
 
-pparse()$
+pparse g$
 
 d d ;
 
 
-% Now switch off the tracing. It is useful whiloe debugging this
+% Now switch off the tracing. It is useful while debugging this
 % package but is typically rather over the top for normal use.
 
 off tracelex, lalr_verbose;
@@ -219,14 +227,14 @@ g4_46 := '((s   ((l "=" r)   (neatprintc "## S => L = R")
            (r   ((l)         (neatprintc "## R => L")
                              !$1)));
 
-lalr_construct_parser g4_46;
+g := lalr_create_parser(nil, g4_46);
 
-pparse()$
+pparse g$
 
 leftsym = rightsym ;
 
 
-pparse()$
+pparse g$
 
 ****abc = *def ;
 
@@ -236,13 +244,13 @@ pparse()$
 % cases where two operators have the same precedence.
 
 gtest := '((s  ((p))
-               ((s "^" s) (list 'pow !$1 !$3))
-               ((s "**" s) (list 'pow !$1 !$3))
-               ((s "*" s) (list 'tms !$1 !$3))
-               ((s "/" s) (list 'quot !$1 !$3))
+               ((s "^" s) (list 'expt !$1 !$3))
+               ((s "**" s) (list 'expt !$1 !$3))
+               ((s "*" s) (list 'times !$1 !$3))
+               ((s "/" s) (list 'quotient !$1 !$3))
                ((s "+" s) (list 'plus !$1 !$3))
-               ((s "-" s) (list 'diff !$1 !$3))
-               ((s "=" s) (list 'eq !$1 !$3))
+               ((s "-" s) (list 'difference !$1 !$3))
+               ((s "=" s) (list 'equal !$1 !$3))
                (("-" s) (list 'minus !$2))
                (("+" s) !$2))
 
@@ -256,98 +264,97 @@ gtest := '((s  ((p))
 % and after that "+" and "-". Finally "=" has lowest precedence and
 % must not associate with itself, so (a=b=c) should be a syntax error.
 
-lalr_precedence '(!:right ("^" "**") !:left ("*" "/") ("+" "-") !:none "=");
+p := '(!:right ("^" "**") !:left ("*" "/") ("+" "-") !:none "=");
 
-lalr_construct_parser gtest;
+g := lalr_create_parser(p, gtest);
 
-pparse()$
+pparse g$
 a^b^c;
 
-pparse()$
+pparse g$
 a*b+c*d;
 
-pparse()$
+pparse g$
 a * (b/c + d/e/f) ^ 2 ^ g - "str" ;
 
 % Demonstrate various of the short-hand notations...
 
-lalr_construct_parser '(
+g := lalr_create_parser(nil, '(
  (s
 % (opt ...) means that the included material is optional.
-          (("begin" (opt "and" "also") "end"))));
+          (("begin" (opt "and" "also") "end")))));
 
-pparse()$
+pparse g$
 begin end
 ;;
 
-pparse()$
+pparse g$
 begin and also end
 ;;
 
-lalr_construct_parser '(
+g := lalr_create_parser(nil, '(
  (s
 % (star ...) is for zero or mor instances of something.
-          (((star "a") "end") !$1)));
+          (((star "a") "end") !$1))));
 
-pparse()$
+pparse g$
 end
 ;;
 
-pparse()$
+pparse g$
 a a a a a a end
 ;;
 
-lalr_construct_parser '(
+g := lalr_create_parser(nil, '(
  (s
 % (plus ...) is for one or more repetitions of an item
-          (((plus "a") "end") !$1)));
+          (((plus "a") "end") !$1))));
 
-pparse()$
+pparse g$
 a end
 ;;
 
-pparse()$
+pparse g$
 a a a a a a end
 ;;
 
-lalr_construct_parser '(
+g := lalr_create_parser(nil, '(
  (s
 % (list delimiter item-description) is a sequence of zero
 % or more items, and if there are several that are separated by the
 % indicated delimiter. 
-          (((list ";" !:symbol) "eof") !$1)));
+          (((list ";" !:symbol) "eof") !$1))));
 
-pparse()$
+pparse g$
 
 several ; words ; here eof
 ;;
 
-lalr_construct_parser '(
+g := lalr_create_parser(nil, '(
  (s
 % (listplus delimiter item-description) is as (list ...) however it
 % requires at least one item.
-          (((listplus ";" !:symbol) "eof") !$1)));
+          (((listplus ";" !:symbol) "eof") !$1))));
 
-pparse()$
+pparse g$
 
 several ; words ; here eof
 ;;
 
-lalr_construct_parser '(
+g := lalr_create_parser(nil, '(
  (s
 % (or x y z) may be a more compact way of writing what could
 % otherwise by given as multiple productions, so for instance
 % (or "+" "-" "*" "/") would match one of the listed operators.
-          (((star (or "a" "b")) "end") !$1)));
+          (((star (or "a" "b")) "end") !$1))));
 
-pparse()$
+pparse g$
 end
 ;;
 
-pparse()$
+pparse g$
 a b b a end
 ;;
-
 
 % The next example shows all the above put together to parse what is
 % in effect a small programming language. Although it is not yet a large
@@ -355,11 +362,11 @@ a b b a end
 % parser generator can be if ut used what Aho, Sethi and Ullman describe as
 % the "Easy but space-consuming LALR table construction" method.
 
-lalr_precedence '(!:left ("*" "/")
-                         ("+" "-")
-                  !:none ("<" "<=" "==" "neq" ">=" ">")
-                  !:right ":=" "="
-                  !:left ("then" "else" "return"));
+p := '(!:left ("*" "/")
+              ("+" "-")
+       !:none ("<" "<=" "==" "neq" ">=" ">")
+       !:right ":=" "="
+       !:left ("then" "else" "return"));
 
 mini_language := '(
  (program
@@ -394,7 +401,7 @@ mini_language := '(
 (closedexpression
           ((!:symbol))
           ((!:number))
-          ((plus !:string))  % Several strings in a row just concatenate
+          (((plus !:string))) % Several strings in a row just concatenate
           (("let" sequence "in" sequence "end") (list 'letstat !$2 !$4))
           (("(" exprlist ")") (cons 'paren !$2))
           (("(" sequence ")") (cons 'paren !$2))
@@ -405,23 +412,25 @@ mini_language := '(
 (sequence
           (((list ";" expression)))))$
 
-% The grammar shown here can be processed, however at the moment the
-% code in genparser.red uses the "simple but inefficient" scheme from Aho
-% et al. to generate LALR parsing tables and a consequence is that even for
-% this apparently reasonable grammar it takes a remarkably long time and
-% way too much memory. When the parser-generator has been upgraded to
-% merge states as they are constructed it will only take seconds (rather than
-% many minutes) to deal with this and the example can be re-enabled.
-%                                                     ACN   January 2015
-
-% lalr_construct_parser mini_language;
+% The grammar shown here used to fail for lack of space. It should now
+% behave.
+% One issue it reveals at right now is that the processing here does not
+% keep the types of terminal symbols under control carefully enough, so the
+% numeric values 22 and 33 in the sample text get transliterated back into
+% terminal symbols that happen to have ended up allocated numeric codes
+% 22 and 33. This NEEDS fixing, but is not really an issue for the
+% code that manufactures parsing tables.
 %
-% pparse()$
-%
-% fun f(a,b) = a + b;
-% f(22,33)
-% eof
+%                                                       ACN   May 2016
 
+on tracelex, lalr_verbose;
+
+g := lalr_create_parser(p, mini_language);
+
+pparse g$
+fun f(a,b) = a + b;
+f(22,33)
+eof
 
 end;
 

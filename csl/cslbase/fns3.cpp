@@ -1238,6 +1238,9 @@ LispObject Lget_hash(LispObject nil, int nargs, ...)
         {   mv_2 = nil;
             work_0 = v;
             hashoffset = p;
+#ifdef HASH_STATISTICS
+            Nhget++;              // item not present
+#endif
             return nvalues(dflt, 2);
         }
         if (q == SPID_HASH1)
@@ -1270,10 +1273,16 @@ LispObject Lget_hash(LispObject nil, int nargs, ...)
                     errexit();
                     break;
             }
+#ifdef HASH_STATISTICS
+        Nhgetp++;
+#endif
         if (cf)
         {   mv_2 = lisp_true;
             work_0 = v;
             hashoffset = p;
+#ifdef HASH_STATISTICS
+            Nhget++;              // item found
+#endif
             return nvalues(ht_elt(v, p+2), 2);
         }
         p = p + hashstride;
@@ -1509,11 +1518,26 @@ LispObject Lput_hash(LispObject nil, int nargs, ...)
     if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_HASH)
         return aerror1("puthash", tab);
     push3(key, tab, val);
+// I call Lget_hash here and that updates the GET statistics. So I fiddle
+// things a bit to arrange that the GET numbers do not end up changed after
+// and and that I know how many probes were performed.
+#ifdef HASH_STATISTICS
+    Nhputtmp = Nhgetp;
+#endif
     Lget_hash(nil, 3, key, tab, nil);
+#ifdef HASH_STATISTICS
+    Nhputtmp = Nhgetp - Nhputtmp;
+    Nhgetp -= Nhputtmp;
+    Nhget--;
+#endif
     pop3(val, tab, key);
     errexit();
     if (mv_2 == nil)    // Not found, thus I point at an empty slot
     {   //@@printf("Item not already present %d %d\n", hashgap, hashoffset);
+#ifdef HASH_STATISTICS
+        Nhputp1 += Nhputtmp;
+        Nhput1++;               // adding a NEW item
+#endif
         if (hashgap >= 0) hashoffset = hashgap;
         ht_elt(work_0, hashoffset+1) = key;
         ht_elt(work_0, hashoffset+2) = val;
@@ -1566,6 +1590,7 @@ LispObject Lput_hash(LispObject nil, int nargs, ...)
 // enlargement here....
 //
                 push3(v, tab, val);
+// Re-inserting will add to the counts for hash PUT operations.
                 Lput_hash(nil, 3, key1, tab, val1);
                 pop3(val, tab, v);
                 large_hash_table = large; // Maybe scrabled by put_hash
@@ -1574,7 +1599,12 @@ LispObject Lput_hash(LispObject nil, int nargs, ...)
         return onevalue(val);
     }
     else
-    {   ht_elt(work_0, hashoffset+2) = val;
+    {
+#ifdef HASH_STATISTICS
+        Nhputp2 += Nhputtmp; // Count cases wheer an existing item is updated.
+        Nhput2++;
+#endif
+        ht_elt(work_0, hashoffset+2) = val;
 //@@    printf("hash entry updated\n");
         return onevalue(val);
     }

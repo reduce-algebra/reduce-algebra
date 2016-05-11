@@ -1149,6 +1149,11 @@ extern unsigned long jit_size;
 #define JIT_INIT_SIZE 8192
 #endif
 
+#ifdef HASH_STATISTICS
+extern uint64_t Nhget, Nhgetp, Nhput1, Nhputp1, Nhput2, Nhputp2, Nhputtmp;
+extern uint64_t Noget, Nogetp, Noput, Noputp, Noputtmp;
+#endif
+
 #endif // header_externs_h
 
 // end of externs.h

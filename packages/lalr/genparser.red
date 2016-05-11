@@ -1,64 +1,204 @@
 % genparser.red
 
-% Author: Arthur Norman
+
+%==============================================================================
+% This is a LALR(1) parser generator, which takes the specification of an 
+% appropriate grammar and outputs a parser for that grammar. The parser 
+% consists of a set of tables and other information intended to be used by
+% yyparse.red's yyparse() procedure. 
+%
+% The core algorithm is the "efficient" construction given by the Dragon Book,
+% where the LR(0) itemset collection is generated and then transformed into
+% the LALR itemset collection by a process of spontaneous generation and
+% propagation of lookaheads.
+%==============================================================================
+
+% Copyright Zach Hauser and Arthur Norman, 2016
 
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
 % $Id$
 
-module 'genparser;
+%==============================================================================
+% Fluid Variables & Symbol Properties (& general notes)
+%==============================================================================
+
+% These four structures are created early on by lalr_set_grammar() for later
+% reference. The first two are lists of grammar symbols: symbols contains 
+% all nonterminals and terminals, while nonterminals contains only those. 
+%
+% This is a logical place to explain that, after lalr_set_grammar() does its 
+% work, nonterminals are represented as Lisp symbols while terminals are 
+% represented by their respective lexer category codes (integers), obtained 
+% from yylex.red. For this reason, the code occasionally uses numberp and idp 
+% to determine whether a particular grammar symbol is a terminal or nonterminal.
+%
+% lex_context is the data structure representing a particular parser's lexer. 
+% It is obtained from lex_save_context() in yylex.red in order to be later
+% fed into lex_restore_context() to "switch back" to the appropriate lexer. 
+% It is not examined or deconstructed in this file, but merely stored early on
+% in order to be included in the final structure representing the parser that
+% is constructed.
+%
+% The precedence_table stores information about the precedence and 
+% associativity of terminals (if provided). It is a vector indexed by terminal
+% (i.e., by lexer category code), where each entry is a dotted pair of 
+% precedence (an integer, with 0 indicating the highest precedence and higher 
+% numbers indicating lower precedence) and associativity (!:right, !:left, or
+% !:none). lalr_precedence and lalr_associativity are provided as convenience
+% functions for reading from the precedence_table. 
+fluid '(symbols nonterminals lex_context precedence_table);
+
+symbolic procedure lalr_precedence terminal;
+  begin 
+    scalar x;
+    if (x := getv(precedence_table, terminal)) then
+      return car x
+  end;
+
+symbolic procedure lalr_associativity terminal;
+  begin 
+    scalar x;
+    if (x := getv(precedence_table, terminal)) then 
+      return cdr x
+  end;
+
+% The following structure is provided for use by genparserprint.red, in which 
+% lives all the code for printing diagnostic information during the parser 
+% generation process. It is a simple association list from lexer category code
+% to the terminal as a Lisp symbol.
+fluid '(terminal_codes nonterminal_codes);
+
+fluid '(reduction_info);
+
+% Together, the following two structures represent the collection of itemsets 
+% (first LR(0) and then LALR) used to construct the parsing tables.
+%
+% The itemset_collection is a list of indexed itemsets (dotted pair of itemset   
+% and integer index), where each itemset is a list of items. Initially, when 
+% the items are LR(0), the item [A -> ab.cd] would be represented as simply 
+%         '(A a b !. c d). 
+% When the items are LALR, the item [A -> ab.cd, u/v/x] would be represented as 
+%         '((A a b !. c d) u v x). 
+%
+% The goto_table describes the GOTO transitions between the itemsets. It is 
+% implemented as a hashtable of alists, as follows. If B = GOTO(A, X) where 
+% A,B are itemsets and X is a grammar symbol (terminal or nonterminal), then 
+% gethash(X, goto_table) will return an alist containing the entry (A . B). 
+% Note that A,B are the actual indexed itemset objects from itemset_collection.
+%
+% lalr_add_goto and lalr_goto are provided as convenience functions
+% for constructing and reading from the goto_table.
+%
+% Both itemset_collection (as the LR(0) collection) and goto_table are  
+% initially constructed by lalr_generate_lr0_collection(), and 
+% lalr_generate_collection() then modifies itemset_collection by adding 
+% lookaheads to convert it into the LALR collection.  
+fluid '(itemset_collection goto_table);
+
+symbolic procedure lalr_add_goto(src, x, dest);
+  puthash(x, goto_table, (src . dest) . gethash(x, goto_table));
+
+symbolic procedure lalr_goto(src, x);
+  begin 
+    scalar result_i_itemset;
+    if result_i_itemset := assoc(src, gethash(x, goto_table)) then
+      return cdr result_i_itemset 
+    else  
+      return nil
+  end;
+
+% In addition to the fluid variables described above, we store data relating 
+% to each nonterminal in its property list (temporarily lalr_cleanup() clears 
+% these properties out at the very end). 
+% 
+% For some nonterminal X:
+% 
+% 'lalr_produces holds a list of productions, where each production is a dotted
+% pair of right-hand-side and semantic action. For example, if there is a 
+% production [X -> a "+" b {plus !$1 !$3}], then the list of productions will
+% include '((a "+" b) plus !$1 !$3).
+% 
+% 'lalr_first holds the list of terminals that make up the FIRST set of X, as
+% defined by the Dragon Book.
+%
+% 'lalr_nonterminal_code holds a unique integer code for X. These are assigned
+% by lalr_set_grammar() but not actually used until the construction of the 
+% parser tables. (As mentioned, throughout almost all the parser generation, 
+% code, nonterminals are stored as Lisp symbols).
+%
+% lalr_productions is a convenience function for accessing the 'lalr_produces
+% property.
+
+symbolic procedure lalr_productions x;
+  get(x, 'lalr_produces);
+
+%==============================================================================
 
 
-%=============================================================================
-%
-% This is an LALR(1) parser generator, which can take the
-% specification of a grammar and construct tables that direct the
-% generic parser skeleton.
-%
-%=============================================================================
 
-%
-% The entry-point of thie code will be lalr_construct_parser, defined
-% towards the end of the file.
-%
+%==============================================================================
+% lalr_create_parser() main driver function and entry point for genparser.red,
+%                        and its cleanup function lalr_cleanup().
+%==============================================================================
 
+% This function is the entry point for genparser.red -- ideally the only 
+% function that users of this code need to worry about. It receives the 
+% complete description of a grammar, and returns a LALR parser for that grammar.
 %
-% A grammar is represented as a list of rules. A rule
-%      sym : x y z { p q r }
-%          | x y z { p q r }
-%          ;
-% maps onto the list
-%      (sym   ((x y z) p q r)
-%             ((x y z) p q r))
-% and items on the right hand side can be symbols or strings. Strings
-% stand for terminals. Symbols that are mentioned on a left hand side of
-% a production are non-terminals, terminals should be written as strings
-% or one of a range of special markers such as !:symbol, !:number,
-% !:string or !:list.
-% The term !:list refers to a Reduce-style Lisp quoted expression introduced
-% with either a forward or a back-quote, as in
-%       '(some quoted lisp-like data)
+% precedence_list: an optional (can be nil) list of operator precedence
+%                  declarations, ordered by decreasing precedence. Each element
+%                  of the list is either 
+%                     - a single terminal symbol
+%                     - a list of terminal symbols (which indicates that they 
+%                       all share the same precedence level)
+%                     - an associativity directive (!:right, !:left, or !:none),
+%                       which applies until the next associativity directive in
+%                       the list (note: the default associativity is !:left)
+%                  For example:
+%                     '(!:right "^" !:left ("*" "/") ("+" "-") !:none "=")
+% 
+% grammar: the grammar is passed as a list of rules. Each rule is a dotted pair
+%          of nonterminal and a list of productions, where each production is a
+%          dotted pair of right-hand-side and semantic action. For example, the
+%          toy expression grammar
+%             expr   -> expr "+" expr { plus !$1 !$3 } | 
+%                       expr "*" expr { times !$1 !$3 } | 
+%                       number 
+%             number -> "~" <number> { minus !$1} |
+%                       <number>
+%          would be represented by the structure
+%             '((expr   ((expr "+" expr) plus !$1 !$3)
+%                       ((expr "*" expr) times !$1 $3)
+%                       ((number)))
+%               (number (("~" !:number) minus !$1)
+%                       ((!:number))))
+%          Note that terminals are represented by strings or one of the special
+%          tokens recognized by the core lexer: !:symbol, !:string, or !:number.  %% test and add the others
+%          Nonterminals are represented by symbols. 
 %
 % In addition it will be possible to write shorthand items on the right
 % hand side of a production:
@@ -110,920 +250,63 @@ module 'genparser;
 %   (G ((A))
 %      ((B))
 %      ((C)))
-
-% Precedence can be applied using a call such as
-%   lalr_precedence '(!:right "^" !:left ("*" "/") ("+" "-") !:none "=");
-% where terminal symbols are listed from highest to lowest precedence. The
-% words !:left and !:right indicate that until further notice symbols
-% associate in that direction. The token !:none introduces items that must
-% not associate. So after the above the following apply
-%     a^b^c      =>    a^(b^c)
-%     a+b+c      =>    (a+b)+c
-%     a=b=c      =>    error message.
-%     a+b^c*d=e  =>    (a+((b^c)*d))=e
 %
-% Symbols (represented as strings) can either be listed individually or put
-% in groups that will then all share the same precedence levels.
-% The default associativity will be !:left.
-
-% Here is an example of a rather trivial grammar where I have not put in
-% an actions at all and where I have used multiple rules rather than
-% a precedence declaration:
-
-%    ((E    ((S))            The first symbol defined is the top-level
-%           ((E "+" S))      target for the grammar.
-%           ((E "-" S)))
-%     (S    ((P))
-%           ((S "*" P))
-%           ((S "/" P)))
-%     (P    (( "(" E ")" ))
-%           ((!:symbol))     "!:symbol" and "!:number" are
-%           ((!:number))))   items known to the lexer.
-
-% It will also be possible to put a sequence of semantic actions associated
-% with each production. For instance the start of the above could have
-% read
-%    ((E    ((S)         (print !$1))
-%           ((E "+" S)   (list 'plus !$1 !$3))
-%           ...
-% and in semantic actions the symbol !$1 (etc) refer to the semantic
-% values associated with the corresponding entity in the production. There
-% may be several actions in a sequence and the value yielded by the final
-% one is the value returned. If no semantic action is specified a default
-% value will be returned. If there is only one symbol making up the
-% right hand size of the production then the value is the value derived
-% from that, otherwise it is a list of the values from each symbol.
-% Thus to revisit the current example the default behaviour is as from
-%    ((E    ((S)         !$1)
-%           ((E "+" S)   (list !$1 !$2 !$3))
-
-
-inline procedure lalr_productions x;
-    get(x, 'produces);
-
-inline procedure lalr_set_productions(x, y);
-    put(x, 'produces, y);
-
-fluid '(lex_codename lalr_precedence!* lalr_precedence_table);
-
-symbolic procedure lalr_precedence l;
-  begin
-    scalar n, dir, w;
-% Clear out any previous settings.
-    for each x in lalr_precedence!* do remprop(x, 'lalr_precedence);
-    lalr_precedence!* := nil;
-    n := 1;
-% Count how many items may be being given precedence settings
-    for each x in l do
-      if atom x then n := n + 1
-      else n := n + length x;
-    n := 3*n;
-    dir := -1; % Start off as ":left"
-    for each x in l do
-      if x = '!:left then dir := -1
-      else if x = '!:right then dir := 1
-      else if x = '!:none then dir := 0
-      else <<
-        n := n-3;
-        for each y in (if atom x then list x else x) do <<
-          w := intern y;
-          lalr_precedence!* := w . lalr_precedence!*;
-          put(w, 'lalr_precedence, (n+dir) . (n-dir));
-          if !*lalr_verbose then <<
-            princ "Predecence for "; prin y;
-            princ " is "; print get(w, 'lalr_precedence) >> >> >>;
-    return nil
-  end;
-
 %
-% lalr_set_grammar G expects that G will be a list of productions
-% in the format described earlier. The symbol mentioned on the left of the
-% first production will be taken as the starting symbol. This just
-% stores the grammar in places where I can work on it and collects
-% simple basic information about it.
 %
-
-symbolic procedure lalr_set_grammar g;
+% returns: a structure representing a complete LALR parser (and associated 
+%          lexer) for the given grammar. The structure is intended to be passed
+%          as the argument to yyparse() in yyparse.red. 
+symbolic procedure lalr_create_parser (precedence_list, grammar);
   begin
-    scalar name, vals, tnum, n, w;
 
-    lex_cleanup();       % So that any previous grammar does not interfere.
-    terminals := non_terminals := nil;
+    % These are the fluid variables described above and used by the rest of the 
+    % code, plus the parser tables themselves.
+    scalar symbols, nonterminals, lex_context, precedence_table, 
+           terminal_codes, itemset_collection, goto_table, 
+           reduction_info, compressed_action_table, compressed_goto_table;
 
-% I will start by augmenting the grammar with an initial production of the
-% form "S' ::= S". For this to be valid the user had better not have used
-% S' as the name of an existing non-terminal. The purpose of having an
-% augmented grammar like this is so that when S' is ready to reduce the
-% parser will "accept". Note I make that a capital "S" here. To be generous
-% I will only do this if the name !S!' is not already being used, but if
-% the user supplies a production for !S!' directly they had better do so in a
-% way that does not upset things!
-    if not assoc('!S!', g) then
-      g := list('!S!', list list caar g) . g;
+    % Analyze the grammar, setting fluid variables and symbol properties
+    % for further reference and modification. After this, we don't need to 
+    % look at the arguments (precedence_list and grammar) again.
+    lalr_set_grammar(precedence_list, lalr_expand_grammar grammar);
 
-% Before doing a lot more I collect lists of symbols present in the grammar.
-    for each x in g do <<
-      name := car x; vals := cdr x;
-% I build a list of the names that appear on the left of productions, and
-% these are my non-terminals. I think this allows me to have several
-% rules defining one non-terminal and the code collects and consolidates
-% all the things it might have on the right hand side of productions.
-      if name member non_terminals then
-        vals := append(vals, lalr_productions name)
-      else non_terminals := name . non_terminals;
-      lalr_set_productions(name, vals) >>;
+    % Generate the LR(0) itemset collection and then convert it to the final 
+    % LALR(1) itemset collection. After this, all the fluid variables are in
+    % their final state.
+    goto_table := mkhash(length symbols, 1, 1.5);
+    lalr_generate_lr0_collection();
+    lalr_generate_collection();
 
-% Next I will collect the set of terminals. There are a few special
-% symbols that will stand for predefined classes of item. Well maybe at
-% some stage I will want to partition !:number into !:integer and
-% !:float, or add !:space, !:eol ... but right now the list set up
-% here is all I support. The meaning of these is:
-%  !:eof         End of file.
-%  !:symbol      Symbols can be either a single punctuation mark or
-%                a letter followed by letters, digits and underscores,
-%                subject to the sequence concerned not forming a terminal.
-%                Any characters that is prefixed with an exclamation mark
-%                is treated as a letter, but the poresence of an exclamation
-%                mark will prevent the resulting item being accepred as
-%                a terminal. Thus probably "<" would come out as a special
-%                token for "less than" while "!<" is a !:symbol whose name
-%                is spelt "<".
-%  !:number      A string of digits, optionally followed by a "." and
-%                perhaps more digits, optionally followed by and "e"
-%                or "E", an optional sign and yet more digits. I expect that
-%                at some stage I will add support for hex values as in
-%                "0xffff" but that is not done yet.
-%  !:string      Strings and enclosed in double quotes. A doubled
-%                double-quote within can be used to include a single '"'
-%                character within the string.
-%  !:list        A "'" or "`" character followed by a Lisp-like S-expression.
-%                This is a notation as used in Rlisp.
+    % Assign each unique "reduction" a numerical code and store the relevant
+    % information for each reduction in a single structure. The parser's action
+    % table will refer to each reduction by its code.
+    reduction_info := lalr_process_reductions();
 
-    terminals := nil;
+    % Analyze the LALR(1) itemset collection to create the parser's action
+    % and goto tables (as described by the Dragon Book).  
+    compressed_action_table := lalr_make_compressed_action_table();
+    compressed_goto_table := lalr_make_compressed_goto_table();
 
-    for each x in g do            % Each rule...
-      for each vv in cdr x do   % ... may have multiple options
-        for each v in car vv do if stringp v then % tokens in a production
-          terminals := union(list v, terminals);
-% I inform the lexer of the terminals that are to be processed, This will
-% allocate numeric codes which are stored as the lex_code property of the
-% symbol whose name matches the string concerned.
-    lex_keywords terminals;
-%
-% It is handy to have a list of all the symbols that might arise - including
-% both terminals and non-terminals. 
-    symbols := append(non_terminals,
-      append('(!:eof !:symbol !:string !:number !:list), terminals));
-    lalr_precedence_table := mkvect sub1 (n := length symbols);
-    for each x in lalr_precedence!* do <<
-      tnum := get(x, 'lex_code);
-      if tnum then
-        putv(lalr_precedence_table, tnum, get(x, 'lalr_precedence)) >>;
-% I reverse the list of non-terminals here so that the starting symbol
-% will be the first item.
-    non_terminals := reversip non_terminals;
-% Now I allocate numeric codes for all non-terminals, with 0 for the
-% start symbol. On the stack terminals should be used to look up actions
-% an non-terminals to look up gotos so I might believe I could re-use the
-% same sequence of integer codes - but maybe would be cleaner to use non-
-% overlapping ranges of values?
-    tnum := -1;
-    for each v in non_terminals do
-      put(v, 'non_terminal_code, tnum := tnum+1);
+    % The only global state we've polluted is the nonterminal symbols' 
+    % property lists, so we clean that up here. 
+    lalr_cleanup();
 
-    goto_cache := mkhash(length non_terminals, 1, 1.5);
-    if !*lalr_verbose then lalr_display_symbols();
-
-% Map all terminals in the productions onto their numeric codes. Start by
-% building an association list that will help.
-    w := nil;
-    for each s in terminals do
-      w := (s . get(intern s, 'lex_code)) . w;
-    for each s in '(!:eof !:symbol !:string !:number !:list) do
-      w := (s . get(s, 'lex_fixed_code)) . w;
-% Use the map to re-work the list of productions.
-    for each x in non_terminals do
-      lalr_set_productions(x, 
-        for each y in lalr_productions x collect
-          sublis(w, car y) . cdr y);
-
-% Map all actions onto numeric codes, such that identical actions all have the
-% same code
-    action_map := nil;
-    tnum := -1;
-    for each x in non_terminals do
-      for each a in lalr_productions x do <<
-% I will allocate one action code for each case where I have a distinct
-% non-terminal A with a number n of items in the associated production
-% and a particular semantic action S.
-        w := assoc((x . length car a) . cdr a, action_map);
-        if null w then <<
-          w := ((x . length car a) . cdr a) . (tnum := tnum + 1);
-          action_map := w . action_map >>;
-% I update the actual production to put the action's numeric code in
-% in place of the action itself.
-        rplacd(a, list cdr w) >>;
-    action_map := reversip action_map;
-    if not zerop posn() then terpri();
-    princ tnum; printc " semantic actions";
-    action_fn := mkvect sub1 tnum;
-    action_n := mkvect8 sub1 tnum;
-    action_a := mkvect16 sub1 tnum;
-    action_first_error := tnum;
-    if !*lalr_verbose then lalr_print_action_map();
-
-% Now whenever I start to set up a new grammar I need the FIRST information
-% so I may as well compute it here.
-    lalr_calculate_first non_terminals;
-% OK that is enough for now. I have accepted the grammar and set up basic
-% information about it...
-  end;
-
-%
-% Especially while I develop and debug this it matters to me that I have
-% code that can display the LR-states and other bits of information that
-% are worked with here - ideally in as neat a way as reasonable.
-
-symbolic procedure lalr_prin_symbol x;
-  begin
-    scalar w;
-% Item zero is a pseudo-token used to mark the end of input.
-    if x = 0 then princ "$"
-    else if x = nil then princ "<empty>"
-    else if x = '!. then princ "."
-    else if numberp x and (w := assoc(x, lex_codename)) then <<
-      princ '!"; princ cdr w; princ '!" >>
-    else if stringp x then prin x
-% I print the name of the symbol in upper case even if it was in lower or
-% mixed case internally. I might worry about the consequences if both (say)
-% "L" and "l" occur in the same grammar!
-    else for each c in explode2uc x do princ c
-  end;
-
-symbolic procedure lalr_decode_symbol x;
-  begin
-    scalar w;
-    if x = 0 then return '!$eof!$
-    else if x = nil then return nil
-    else if x = '!. then return "."
-    else if numberp x and (w := assoc(x, lex_codename)) then
-      return cdr w
-    else if stringp x then return x
-    else return intern list2string (for each c in explode2uc x collect c)
-  end;
-
-symbolic procedure lalr_display_symbols();
-  begin
-    scalar w;
-    if not zerop posn() then terpri();
-    princ "Terminal symbols are:"; terpri();
-    for each x in '(!:eof !:symbol !:string !:number !:list) do <<
-      if posn() > 55 then << terpri(); princ "    " >>
-      else princ " ";
-      prin x; princ ":"; prin get(x, 'lex_fixed_code) >>;
-    for each x in terminals do <<
-      if posn() > 55 then << terpri(); princ "    " >>
-      else princ " ";
-      prin x;
-      w := intern x;
-      princ ":"; prin get(w, 'lex_code);
-      if w := get(w, 'lalr_precedence) then prin w >>;
-    terpri();
-    princ "Non-terminal symbols are:"; terpri();
-    for each x in non_terminals do begin
-      scalar w;
-      princ "["; prin get(x, 'non_terminal_code); princ "]";
-      lalr_prin_symbol x;
-      w := ":";
-      for each y in lalr_productions x do <<
-        ttab 20; princ w; w := "|";
-        for each z in car y do << princ " "; lalr_prin_symbol z >>;
-        if posn() > 48 then terpri();
-        ttab 48;
-        princ "{";
-        if cdr y then for each z in cdr y do << princ " "; prin z >>;
-        princ " }";
-        terpri() >>;
-      ttab 20;
-      princ ";";
-      terpri() end;
-    terpri();
-  end;
-
-symbolic procedure lalr_print_action_map();
-  begin
-    princ "Action map:"; terpri();
-    for each x in action_map do <<
-      prin cdr x; princ ":"; ttab 12; prin cdar x; terpri() >>
-  end;
-
-% The intent is that lalr_cleanup() should tidy up ALL global state used
-% while parse tables are being constructed. But it leaves the parse
-% tables that are needed in use.
+    return list(lex_context, compressed_action_table, reduction_info, 
+                compressed_goto_table, nonterminal_codes, terminal_codes)
+  end; 
 
 symbolic procedure lalr_cleanup();
-  begin
-    for each x in append(terminals, non_terminals) do <<
-      remprop(x, 'produces);
-      remprop(x, 'lalr_first);
-      remprop(x, 'non_terminal_code) >>;
-%   terminals := nil;
-%   non_terminals := nil;    % needed by find_goto!
-    symbols := nil;
-    goto_cache := action_map := nil;
-%   lex_cleanup()     % @@@@ review this!
-  end;
+  for each symbol in symbols do <<
+    put(symbol, 'lalr_produces, nil);
+    put(symbol, 'lalr_first, nil);
+    put(symbol, 'lalr_nonterminal_code, nil) >>;
 
-symbolic procedure lalr_action(lhs, rhs);
-  cdr assoc(rhs, lalr_productions lhs);
+%==============================================================================
 
-symbolic procedure lalr_print_firsts g;
-  begin
-    princ "FIRST sets for each non-terminal:"; terpri();
-    for each x in g do <<
-      lalr_prin_symbol x;
-      princ ": ";
-      ttab 15;
-      for each y in sort(get(x, 'lalr_first), function ordp) do <<
-        princ " "; lalr_prin_symbol y >>;
-      terpri() >>
-  end;
-
-symbolic procedure lalr_calculate_first g;
-% The "first" set associated with a non-terminal is a collection of all
-% the terminals that could possibly be the first symbol of a string
-% derived from it. Thus if there is any chain
-%    S :   P Q R
-%    P :   X Y Z
-%    X :   a ...
-% then a is in the first set of S.
 %
-% As an added complication if it is necessary to allow for cases such as
-%    S :   P Q R  note that because P may be empty the first symbol of
-%                 S may come from Q not P.
-%    P :   X Y    note that there is a derivation from P to empty.
-%    X :          note empty right hand size here.
-%    Y :
-%    Q :   a ...
-% however "empty" should only go into the first set of a symbol if ALL
-% the items on the RHs can generate empty.
-  begin
-    scalar w, y, z, more_added;
-%   princ "lalr_calculate_first "; print g;
-% Any symbol that can directly reduce to empty has empty in its FIRST set.
-    for each x in g do
-      if assoc(nil, lalr_productions x) then put(x, 'lalr_first, '(nil));
-    repeat <<
-      more_added := nil;
-      for each x in g do <<
-        z := get(x, 'lalr_first);
-%       if !*lalr_verbose then <<
-%         princ "[calculate_first] Scan "; prin x; princ " : "; prin z;
-%         princ " / "; print lalr_productions x >>;
-        for each y1 in lalr_productions x do <<
-          y := car y1;
-          while y and
-                not numberp car y
-                and member(nil, (w := get(car y, 'lalr_first))) do <<
-            z := union(delete(nil, w), z);
-            y := cdr y >>;
-          if null y then z := union('(nil), z)
-          else if numberp car y then z := union(list car y, z)
-          else z := union(get(car y, 'lalr_first), z) >>;
-        if z neq get(x, 'lalr_first) then more_added := t;
-        put(x, 'lalr_first, z) >>
-    >> until not more_added;
-    if !*lalr_verbose then lalr_print_firsts g;
-    return nil
-  end;
-
-symbolic procedure lalr_first l;
-  begin
-    scalar r, w;
-    while l and
-          not numberp car l and
-          (nil member (w := get(car l, 'lalr_first))) do <<
-      r := union(delete(nil, w), r);
-      l := cdr l >>;
-    if null l then r := nil . r
-    else if numberp car l then r := union(list car l, r)
-    else r := union(w, r);
-    return r
-  end;
-
-
-% The next few procedures are as documented in Figure 4.38 of Red Dragon
-
-symbolic procedure lalr_print_items(heading, cc);
-  begin
-    princ heading;
-    terpri();
-    for each y in cc do <<
-      princ "Item number "; prin cdr y; terpri();
-      for each x in sort(car y, function ordp) do <<
-        princ "  "; lalr_prin_symbol caar x; princ " ->";
-        for each y in cdar x do << princ " "; lalr_prin_symbol y >>;
-        princ "  :  ";
-        lalr_prin_symbol cadr x;
-        terpri() >>;
-      for each x in sort(hashcontents goto_cache, function ordp) do
-        for each xx in cdr x do
-          if car xx = cdr y then <<
-            ttab 10; lalr_prin_symbol car x;
-            princ " GOTO state "; prin cdr xx; terpri() >> >>;
-    princ "End of ";
-    printc heading
-  end;
-
-fluid '(item_count);
-
-symbolic procedure lalr_items();
-  begin
-    scalar c, val, done, w, w1, w2, n, x1;
-    item_count := 0;
-    val := lalr_productions '!S!';
-    if cdr val then error(0, "Starting state must only reduce to one thing")
-    else val := caar val;
-    n := 0;
-% This is where I introduce code zero for "$", the notional symbol that
-% exists after the material that I actually parse.
-    c := list (lalr_closure list list(('!S!' . '!. . val), 0) . n);
-    repeat <<
-      done := nil;
-      for each i in c do
-        for each x in symbols do <<
-          x1 := (stringp x and get(intern x, 'lex_code)) or
-                (idp x and get(x, 'lex_fixed_code));
-          if null x1 then x1 := x;
-          if w := lalr_goto(car i, x1) then <<
-% The lalr_goto computed here is a new set of states. If it is EXACTLY
-% one that has already been seen then all I need to do is update the
-% goto cache.
-            w1 := assoc(w, c);
-            if w1 then <<
-              w2 := gethash(x1, goto_cache);
-              if not assoc(cdr i, w2) then
-                puthash(x1, goto_cache, (cdr i . cdr w1) . w2) >>
-% Here I should check if the core of the new item is the same as the core
-% of any existing one, and if so I can merge. This operation is the one
-% that will make this a characteristically LALR parser and performing the
-% merge here will be the key to efficient generation of parsing tables.
-% @@@@@@@@@@@@ work to do here @@@@@@@@@@@@@
-%
-%
-% If the set has not been seen at all before then it should be allocated
-% a number and added to my collection.
-              else <<
-                item_count := item_count + 1;
-                c := (w . (n := n + 1)) . c;
-                puthash(x1, goto_cache,
-                           (cdr i . n) . gethash(x1, goto_cache));
-                done := t >> >> >>
-    >> until not done;
-    c := reversip c;   % So that item numbers come out in nicer order.
-%
-% I think that I can now manage without seeing the LR(1) items...
-%   if !*lalr_verbose then lalr_print_items("LR(1) Items:", c);
-%
-    princ "Number of items put into goto cache = "; print item_count;
-    return c
-  end;
-
-% The closure of an item is obtained by taking a set of productions that
-% each have a dot and adding new ones using the rule that if the
-% sequence ... DOT v ... is present and the grammar contains a rule
-% v : x y z then "v : DOT x y z" will be added to the set. 
-
-symbolic procedure lalr_closure i;
-  begin
-    scalar pending, a, rule, tail, ff, w;
-    pending := i;
-    while pending do <<
-      ff := car pending;  % [(A -> alpha . B beta), a]
-      pending := cdr pending;
-      rule := car ff; a := cadr ff; tail := cdr ('!. member rule);
-      if tail and not numberp car tail then <<
-        ff := lalr_first append(cdr tail, list a);
-        for each p in lalr_productions car tail do
-          for each b in ff do <<
-            w := list(car tail . '!. . car p, b);
-% It might be better to store items as hash tables, since then the
-% member-check here would be much faster.
-            if not (w member i) then <<
-              i := w . i;
-              pending := w . pending >> >> >> >>;
-    return i
-  end;
-
-
-% A key operation in the construction of the parsing tables is that
-% of moving an index along a list of symbols. The index is conventionally
-% indicted by a dot.
-%    lalr_move_dot(z, x)
-% takes a list which should have a dot somewhere in it, and if it finds
-%      ... DOT x ...
-% it will return an updated list with the dot moved, i.e.
-%      ... x DOT ...
-% while if the symbol after the dot is not an x it will return nil as
-% an indication that moving the dot is not to be done here.
-
-symbolic procedure lalr_move_dot(z, x);
-  begin
-    scalar r;
-    while not (car z = '!.) do <<
-      r := car z . r;
-      z := cdr z >>;
-    z := cdr z;
-    if not (z and car z = x) then return nil;
-    z := car z . '!. . cdr z;
-    while r do <<
-      z := car r . z;
-      r := cdr r >>;
-    return z
-  end;
-
-% lalr_goto(i, x) takes a list of states (which contain lists each with a
-% dot in) and a symbol x. It uses lalr_move_dot to try to move the dot
-% forward across an x. It collects all the resulting new configurations.
-% At the end it forms the closure of what it has found.
-
-symbolic procedure lalr_goto(i, x);
-  begin
-    scalar j, w;
-    for each z in i do <<
-      w := lalr_move_dot(car z, x);
-      if w then j := list(w, cadr z) . j >>;
-    return lalr_closure j
-  end;
-
-symbolic procedure lalr_cached_goto(i, x);
-  cdr assoc(i, gethash(x, goto_cache));
-
-% Next part of Algorithm 4.11 from the Red Dragon
-
-symbolic procedure lalr_remove_duplicates x;
-  begin
-    scalar r;
-    for each a in x do
-      if not member(a, r) then r := a . r;
-    return reversip r
-  end;
-
-symbolic procedure lalr_core i;
-  lalr_remove_duplicates for each x in car i collect car x;
-
-symbolic procedure lalr_same_core(i1, i2);
-  lalr_core i1 = lalr_core i2;
-
-% cc is a list of items, while i is a single item. If cc already contains
-% an item with the same core as I then merge i into that, and adjust any
-% goto records either out of or into i to refer now to the thing merged
-% with.
-
-symbolic procedure lalr_insert_core(i, cc);
- if null cc then list i
- else if lalr_same_core(i, car cc) then <<
-   renamings := (cdr i . cdar cc) . renamings;
-   (union(car i, caar cc) . cdar cc) . cdr cc >>
- else car cc . lalr_insert_core(i, cdr cc);
-
-symbolic procedure lalr_rename_gotos();
-  begin
-    scalar w, x1;
-    for each x in symbols do <<
-      x1 := (stringp x and get(intern x, 'lex_code)) or
-            (idp x and get(x, 'lex_fixed_code));
-      if null x1 then x1 := x;
-      w := sublis(renamings, gethash(x1, goto_cache));
-      puthash(x1, goto_cache, lalr_remove_duplicates w) >>
-  end;
-
-% Part of Algorithm 4.10 of the Red Dragon
-
-symbolic procedure lalr_print_actions action_table;
-  begin
-    scalar w;
-    princ "Actions:"; terpri();
-    for each x in action_table do
-      for each xx in cdr x do <<
-        prin car x;  ttab 20;
-        lalr_prin_symbol car xx; ttab 40;
-        w := cadr xx;
-        if eqcar(w, 'reduce) then <<
-          princ "reduce ";
-          lalr_prin_symbol caadr w;
-          princ " ->";
-          for each v in cdadr w do << princ " "; lalr_prin_symbol v >>;
-          princ " {";
-          for each v in caddr w do << princ " "; prin v >>;
-          princ " }";
-          terpri() >>
-        else << prin w; terpri() >> >>
-  end;
-
-fluid '(lalr_action_counter);
-lalr_action_counter := 0;
-
-% I create names for the functions that implement semantic actions. Well
-% I could base them on a checksum of the action itself, but using a simple
-% sequence is easier.
-
-symbolic procedure lalr_gensym();
-  intern concat("lalr_action_function_",
-    list2string explode (lalr_action_counter := add1 lalr_action_counter));
-
-symbolic procedure lalr_make_arglist n;
-  for i := 1:n collect
-    intern list2string ('!$ . explode2 i);
-
-symbolic procedure lalr_make_actions c;
-  begin
-    scalar action_table, aa, j, w;
-    for each i in c do <<
-      aa := nil;
-      for each r in car i do <<
-        w := cdr ('!. member cdar r);
-        if w and numberp car w then <<
-          j := lalr_cached_goto(cdr i, car w);
-          aa := list(car w, list('shift, j)) . aa >>
-        else if null w and not (caar r = '!S!') then <<
-          w := reverse cdr reverse car r;
-          aa := list(cadr r, list('reduce, w, lalr_action(car w, cdr w))) .
-                aa >>
-        else if null w and caar r = '!S!' then
-          aa := list(0, 'accept) . aa >>;
-        action_table := (cdr i . lalr_remove_duplicates aa) . action_table >>;
-    action_table := lalr_resolve_conflicts action_table;
-    princ "Action index size = "; print caar action_table;
-    action_index := mkvect16 caar action_table;
-    action_table := reversip action_table;
-    if !*lalr_verbose then lalr_print_actions action_table;
-    j := 0; w := nil;
-    for each x in action_table do <<
-      putv16(action_index, car x, j);
-      for each y on cdr x do begin
-        scalar tt, rr, rx, ff, fn, rn, ra;
-% The final terminal in each search-chunk will be stored as
-% "-1" which is a wild-card. This will then be the action that is
-% carried out if a syntax error is present.
-        if null cdr y then tt := -1 else tt := caar y;
-        rr := cadar y;
-        if rr = 'accept then rr := 0
-        else if car rr = 'shift then rr := cadr rr
-        else <<  % (reduce (A b c d) (rule#))
-          rr := cdr rr;
-          rx := caadr rr;       % index of semantic action
-          ra := caar rr;        % non-terminal to reduce to
-          rn := length cdar rr; % number of items to pop
-          ff := rassoc(rx, action_map);
-          if ff then ff := car ff;
-% ff is now ((A . n) . '(s1 s2 ...)) where A is the non-terminal,
-% n the number of items on the RHS of the production and the sequence
-% s1, s2,... is the semantic action list. If the action list is empty
-% I will put nil as the action function, otherwise I will construct
-% a function to call.
-          if null cdr ff then putv(action_fn, rx-1, nil)
-          else <<
-            fn := cdr ff;
-            ff := 'lambda . lalr_make_arglist cdar ff . fn;
-            fn := lalr_gensym(); % Name for generated function
-% I do not want messages from the Lisp compiler here!
-            putd(fn, 'expr, ff) where !*pwrds = nil;
-            putv(action_fn, rx-1, fn) >>;
-          putv8(action_n, rx-1, rn);
-          putv16(action_a, rx-1, get(ra, 'non_terminal_code));
-          rr := -rx >>;
-          w := (tt . rr) . w;
-          j := j + 1 end >>;
-    princ "Action terminal table size = "; print j;
-    action_terminal := mkvect16 sub1 j;
-    action_result := mkvect16 sub1 j;
-    while j > 0 do <<
-      j := j - 1;
-      putv16(action_terminal, j, caar w);
-      putv16(action_result, j, cdar w);
-      w := cdr w >>
-  end;
-
-% The action table that is initially created may contain conflicts.
-% Here I will detect and deal with them. The procedures I will apply will be
-% (1) reduce-reduce conflict: warn the user and use the reduction given
-%     earliest in the grammar. That is remarkably easy to arrange in that
-%     I have given numerical codes to each non-terminal and and reduce
-%     is of the form "S -> ..." so I just keep the one where the
-%     non-terminal S has the lowest valued code.
-% (2) shift-reduce conflict:
-%        nn    x    (shift mm)
-%        nn    x    reduce A -> B y C { Q }
-% where nn is the state, x the look-ahead symbol and the shift and
-% reductions are as shown. I will look at the last terminal symbol in the
-% reducion, here y. I then compare the right precedence of y with the
-% left precedence of x. If it is strictly higher I will keep the reduce,
-% otherwise the shift. The precedences I will use will be whatever
-% lalr_precedence had established.
-%
-% If no explicit precedence had been given then I will warn the user and
-% prefer the shift operation.
-%
-% There can never be two (or more) shifts in one action (ie shift-shift
-% conflicts can never arise). Thus if there are three or more conflicting
-% actions all but one must be reduces. So I will resolve the reduce-reduce
-% conflicts first (by issuing a warning and then keeping the one that
-% came first in the original grammar) and finally address any shift-reduce
-% issue.
-
-
-symbolic procedure lalr_resolve_conflicts action_table;
-  begin
-    scalar r;
-%   terpri(); prettyprint action_table;
-    for each x in action_table do
-      r := (car x . lalr_resolve_conflicts1 cdr x) . r;
-%   terpri(); prettyprint r;
-    return reverse r;
-  end;
-
-% In fact this function is provided in alg/sort.red so is not needed here.
-% symbolic procedure lesspcar(a, b);
-%   car a < car b;
-
-symbolic procedure lalr_resolve_conflicts1 x;
-  begin
-    scalar r, w, x2, s, shift, reduce, rterm, p1, p2;
-% Here I have a list of items each of which is of the form
-%        (k (shift n))
-% or     (k (reduce (X ...) ..)
-% where k is a numeric code standing for a terminal. I want to identify all
-% cases where there are repeats on k. So I will sort on that field and then
-% matching cases will be adjacent.
-% came first in that.
-    x := sort(x, function lesspcar);
-    while x do <<
-      w := list car x;
-      x := cdr x;
-      while x and caar x = caar w do <<
-        w := car x . w;
-        x := cdr x >>;
-% Now w is a set of cases all with the same next symbol. If this
-% has more than one item in it I have a conflict.
-      if cdr w then << % conflict resolution here
-        shift := reduce := nil;
-        for each q in w do
-          if eqcar(cadr q, 'shift) then shift := q
-          else if null reduce then reduce := q
-          else <<
-% I think that proper people view a reduce/reduce conflict as a real
-% problem with that grammar - one that needs correcting. So I will
-% generate a message and then run with whichever of the two reductions
-% I happen to have seen first. I will not guarantee that this strategy
-% relates to the order in which rules were specified in the grammar.
-            if not zerop posn() then terpri();
-            princ "+++++ Reduce/reduce conflict on ";
-            prin cadr cadr reduce;
-            princ " and ";
-            print cadr cadr q;
-            princ "Resolved in favour of ";
-            print cadr cadr reduce >>;
-          if shift and reduce then <<
-            rterm := nil;
-            s := cadr cadr reduce;
-            for each s1 in cdr s do
-              if numberp s1 then rterm := s1;
-            p1 := getv(lalr_precedence_table, car shift);
-            if rterm then p2 := getv(lalr_precedence_table, rterm)
-            else p2 := nil;
-            if !*lalr_verbose then <<
-              if not zerop posn() then terpri();
-              princ "Shift/reduce conflict: ";
-              princ "P1="; prin p1;
-              princ "  P2="; print p2 >>;
-% Unless both symbols had been given explicit precedences I will
-% resolve in favour of SHIFT, but display a message saying that that is
-% what I am doing.
-            if p1 and p2 then <<
-% If left and right precedents are the same that disallows all associativity
-% so I will discard both actions. The result should be that if the parser
-% reaches that state it will end up reporting an error.
-              if car p1 = cdr p2 then shift := reduce := nil
-              else if car p1 > cdr p2 then reduce := nil
-              else shift := nil >>
-            else <<
-              if not zerop posn() then terpri();
-              princ "+++ Shift/reduce conflict for ";
-              s := cadr cadr reduce;
-              lalr_prin_symbol car s;
-              princ " ->";
-              for each s1 in cdr s do <<
-                princ " ";
-                lalr_prin_symbol s1 >>;
-              princ " followed  by ";
-              lalr_prin_symbol car shift;
-              terpri();
-              printc "Resolved in favour of the shift operation";
-              reduce := nil >> >>;
-        if shift then w := list shift
-        else if reduce then w := list reduce
-        else w := nil >>;
-      if w then r := car w . r >>;
-%   terpri();
-%   prettyprint r;
-    return r;
-  end;
-
-symbolic procedure lalr_most_common_dest p;
-  begin
-    scalar r, w;
-    for each x in p do
-      if (w := assoc(cdr x, r)) then rplacd(w, cdr w + 1)
-      else r := (cdr x . 1) . r;
-    w := car r;
-    for each x in cdr r do if cdr x > cdr w then w := x;
-    return car w
-  end;
-
-symbolic procedure lalr_print_generic_vector v;
-  begin
-    scalar ch;
-    ch := '![;
-    for i := 0:upbv v do <<
-      princ ch;
-      ch := '! ;
-      prin getv(v, i) >>;
-    princ '!];
-    terpri();
-    return v
-  end;
-
-% I display something that is notionally a vector of bytes using the
-% format
-%      #V8[b0, b1, ..., bn]
-% and one that will contain 16-bit values as
-%      #V16[w0, w1, ..., wn]
-% and in CSL I have specialist arrays that provide support for just that -
-% however I can use regular Lisp arrays instead with only modest waste of
-% space and that is what I do on PSL.
-
-symbolic procedure lalr_print_byte_vector v;
-  begin
-    scalar ch;
-    ch := '!#!V8![;
-    for i := 0:upbv v do <<
-      princ ch;
-      ch := '! ;
-      prin getv8(v, i) >>;
-    princ '!];
-    terpri();
-    return v
-  end;
-
-symbolic procedure lalr_print_shortnum_vector v;
-  begin
-    scalar ch;
-    ch := '!#!V16![;
-    for i := 0:upbv v do <<
-      princ ch;
-      ch := '! ;
-      prin getv16(v, i) >>;
-    princ '!];
-    terpri();
-    return v
-  end;
-
-symbolic procedure lalr_make_gotos();
-  begin
-    scalar p, r1, w, r;
-    p := 0;
-    for each x in sort(hashcontents goto_cache, function ordp) do
-      if not numberp car x then <<
-        if !*lalr_verbose then
-          for each xx in cdr x do <<
-            prin car xx; ttab 10; lalr_prin_symbol car x;
-          princ " GOTO state "; prin cdr xx; terpri() >>;
-          w := get(car x, 'non_terminal_code);
-          if not fixp w then error(99, list('lalr_make_gotos, x, w));
-          r1 := (w . p) . r1;
-          if cdr x then <<
-            w := lalr_most_common_dest cdr x;
-            for each xx in cdr x do if not (cdr xx = w) then <<
-              r := xx . r;
-              p := p + 1 >>;
-            r := ((-1) . w) . r;
-            p := p + 1 >> >>;
-    goto_index := mkvect16 sub1 length non_terminals;
-    princ "goto table size = "; print p;
-    goto_old_state := mkvect16 sub1 p;
-    goto_new_state := mkvect16 sub1 p;
-    for each x in r1 do putv16(goto_index, car x, cdr x);
-    while p > 0 do <<
-      p := p - 1;
-      putv16(goto_old_state, p, caar r);
-      putv16(goto_new_state, p, cdar r);
-      r := cdr r >>;
-    if !*lalr_verbose then <<
-      princ "goto_index: ";     lalr_print_shortnum_vector goto_index;
-      princ "goto_old_state: "; lalr_print_shortnum_vector goto_old_state;
-      princ "goto_new_state: "; lalr_print_shortnum_vector goto_new_state >>
-  end;
+% Deal with the grammar features that can be covered by a form of macro
+% expansion. So for instance (star XXX) will expand into rules that
+% accept zero or more instances of whatever XXX would match.
 
 fluid '(pending_rules!*);
 
@@ -1046,20 +329,28 @@ symbolic procedure expand_rule u;
     for each x in cdr u collect
       ((for each y in car x collect expand_terminal y) . cdr x);
 
+global '(expansion_count);
+expansion_count := 0;
+
+symbolic procedure expansion_name();
+  compress append(explode 'lalr_internal_,
+      explode (expansion_count := expansion_count + 1));
+  
+
 symbolic procedure expand_terminal z;
   begin
     scalar g1, g2, g3;
     if atom z then return z
     else if eqcar(z, 'opt) then <<
-      g1 := gensym();
+      g1 := expansion_name();
       pending_rules!* :=
         list(g1,
              '(()),
              list cdr z) . pending_rules!*;
       return g1 >>
     else if eqcar(z, 'star) then <<
-      g1 := gensym();
-      g2 := gensym();
+      g1 := expansion_name();
+      g2 := expansion_name();
       if cdr z and null cddr z and atom cadr z then g2 := cadr z
       else pending_rules!* := list(g2, list cdr z) . pending_rules!*;
       pending_rules!* :=
@@ -1068,8 +359,8 @@ symbolic procedure expand_terminal z;
              list(list(g2, g1), '(cons !$1 !$2))) . pending_rules!*;
       return g1 >>
     else if eqcar(z, 'plus) then <<
-      g1 := gensym();
-      g2 := gensym();
+      g1 := expansion_name();
+      g2 := expansion_name();
       if cdr z and null cddr z and atom cadr z then g2 := cadr z
       else pending_rules!* := list(g2, list cdr z) . pending_rules!*;
       pending_rules!* :=
@@ -1078,9 +369,9 @@ symbolic procedure expand_terminal z;
              list(list(g2, g1), '(cons !$1 !$2))) . pending_rules!*;
       return g1 >>
     else if eqcar(z, 'list) and cdr z then <<
-      g1 := gensym();
-      g2 := gensym();
-      g3 := gensym();
+      g1 := expansion_name();
+      g2 := expansion_name();
+      g3 := expansion_name();
       if cddr z and null cdddr z and atom caddr z then g2 := caddr z
       else pending_rules!* := list(g2, list cddr z) . pending_rules!*;
       pending_rules!* :=
@@ -1093,9 +384,9 @@ symbolic procedure expand_terminal z;
              list(list(g2, g3), '(cons !$1 !$2))) . pending_rules!*;
       return g1 >>
     else if eqcar(z, 'listplus) and cdr z then <<
-      g1 := gensym();
-      g2 := gensym();
-      g3 := gensym();
+      g1 := expansion_name();
+      g2 := expansion_name();
+      g3 := expansion_name();
       if cddr z and null cdddr z and atom caddr z then g2 := caddr z
       else pending_rules!* := list(g2, list cddr z) . pending_rules!*;
       pending_rules!* :=
@@ -1107,47 +398,800 @@ symbolic procedure expand_terminal z;
              list(list(g2, g3), '(cons !$1 !$2))) . pending_rules!*;
       return g1 >>
     else if eqcar(z, 'or) then <<
-      g1 := gensym();
+      g1 := expansion_name();
       pending_rules!* :=
         (g1 . for each q in cdr z collect list list q) . pending_rules!*;
       return g1 >>
     else error(0, "Invalid item in a rule")
   end;
 
-% A main driver function that performs all the steps involved
-% in building parse tables for a given grammar.
 
-symbolic procedure lalr_construct_parser g;
+
+%==============================================================================
+
+
+
+%==============================================================================
+% lalr_set_grammar()   this section analyzes the precedence_list and grammar
+%                      structure, stashing all the information the rest of the
+%                      code will need in fluid variables and symbol property
+%                      lists. 
+%==============================================================================
+
+symbolic procedure carrassoc(key, alist);
   begin
-    scalar c, cc, renamings;
-    g := lalr_expand_grammar g; % Deal with "opt", "star" etc.
-    lalr_set_grammar g;
-%
-% The procedure used here at present is a naive one that first creates
-% a full set of LR(1) items and only then detects commonalities. For
-% medium to large grammars this will be infeasibly inefficient, so it
-% will be important to do the merging on-the-fly as the various sets
-% are collected. However this one is simple (or at least simpler) to
-% understand and code and maybe works well enough for small grammars.
-%
-    c := lalr_items();
-    renamings := nil;
-    for each i in c do cc := lalr_insert_core(i, cc);
-    lalr_rename_gotos();
-    if !*lalr_verbose then lalr_print_items("Merged Items:", cc);
-    lalr_make_actions cc;
-    if !*lalr_verbose then <<
-      princ "action_index "; lalr_print_shortnum_vector action_index;
-      princ "action_terminal "; lalr_print_shortnum_vector action_terminal;
-      princ "action_result "; lalr_print_shortnum_vector action_result;
-      princ "action_fn "; lalr_print_generic_vector action_fn;
-      princ "action_n "; lalr_print_byte_vector action_n;
-      princ "action_A "; lalr_print_shortnum_vector action_a >>;
-    lalr_make_gotos();
-    lalr_cleanup()
+    scalar w;
+    if not atom (w := rassoc(key, alist)) then return car w;
+    terpri();
+    princ "RASSOC trouble: "; prin key; princ " "; print alist;
+    rederr "rassoc trouble"
   end;
 
-endmodule;
+symbolic procedure lalr_set_grammar(precedence_list, grammar);
+  begin
+    scalar terminals; 
+    grammar := lalr_augment_grammar grammar;
+
+    nonterminals := lalr_collect_nonterminals grammar;
+    terminals := lalr_collect_terminals grammar;
+    terminal_codes := lalr_get_lex_codes terminals;
+    lalr_set_nonterminal_codes();
+
+    precedence_table := lalr_create_precedence_table (precedence_list, 
+                                                      terminal_codes);
+
+    lalr_process_productions(grammar, terminal_codes);
+
+    lalr_precalculate_first_sets();
+
+    terminals := for each terminal in terminals collect  
+                    carrassoc(intern terminal, terminal_codes);
+    symbols := append(nonterminals, terminals);
+
+    if !*lalr_verbose then <<
+      lalr_print_terminals_and_codes terminals;
+      lalr_print_nonterminals_and_productions();
+      lalr_print_first_information() >>
+  end;
+
+symbolic procedure lalr_augment_grammar grammar;
+  begin
+    if assoc('!S!', grammar) then
+      return grammar
+    else 
+      return list('!S!', list list caar grammar) . grammar
+  end;
+
+symbolic procedure lalr_create_precedence_table (precedence_list, lex_codes);
+  begin
+    scalar table, associativity, next_precedence, terminal_code, w;
+    table := mkvect caar lex_codes;
+    next_precedence := 0;
+    associativity := '!:left;
+    for each x in precedence_list do <<
+      if x member '(!:left !:none !:right) then 
+        associativity := x
+      else <<
+        for each xx in (if atom x then list x else x) do <<
+          w := rassoc(intern xx, lex_codes);
+% The precedence information could perhaps try to specify a precedence for
+% some symbol not used in the grammar, and then rassoc here would have
+% returned nil. Ignore settings on such symbols.
+          if w then <<
+            terminal_code := car w;
+            putv(table, terminal_code, next_precedence . associativity) >> >>;
+        next_precedence := next_precedence + 1 >> >>;
+    return table
+  end;
+
+symbolic procedure lalr_set_nonterminal_codes;
+  begin
+    scalar code;
+    code := 0;
+    for each x in nonterminals do <<
+      if x = '!S!' then 
+        put(x, 'lalr_nonterminal_code, -1)
+      else <<
+        put(x, 'lalr_nonterminal_code, code);
+        if !*lalr_verbose then 
+          nonterminal_codes := (code . x) . nonterminal_codes;
+        code := code + 1 >> >>;
+      if !*lalr_verbose then 
+        nonterminal_codes := ((-1) . '!S!') . nonterminal_codes;
+  end;
+
+symbolic procedure lalr_process_productions(grammar, lex_codes);
+  begin
+    scalar x, productions, productions_processed, w, rule, semantic_action;
+    for each productions in grammar do <<
+      x := car productions;
+      productions_processed := nil;
+      for each production in cdr productions do <<
+        rule := car production;
+        semantic_action := cdr production;
+        rule := for each symbol in rule collect
+                  (if (intern symbol) member nonterminals then 
+                     intern symbol
+                   else
+                     carrassoc(intern symbol, lex_codes));
+        production := rule . semantic_action;
+        productions_processed := production . productions_processed >>;
+      if (w := get(intern x, 'lalr_produces)) then
+        productions_processed := append(w, productions_processed);
+      put(intern x, 'lalr_produces, productions_processed) >>
+  end;
+
+symbolic procedure lalr_precalculate_first_sets;
+  begin
+    scalar more_added, x_first_set, rhs, w;
+    repeat << 
+      more_added := nil;
+      for each x in nonterminals do <<
+        x_first_set := get(x, 'lalr_first);
+        for each production in lalr_productions x do <<
+          rhs := car production;
+          while rhs and 
+                not numberp car rhs and 
+                member(nil, (w := get(car rhs, 'lalr_first))) do <<
+            x_first_set := union(delete(nil, w), x_first_set);
+            rhs := cdr rhs >>;
+          if null rhs then 
+            x_first_set := union('(nil), x_first_set)
+          else if numberp car rhs then 
+            x_first_set := union(list car rhs, x_first_set)
+          else
+            x_first_set := union(get(car rhs, 'lalr_first), x_first_set) >>;
+        if x_first_set neq get(x, 'lalr_first) then <<
+          more_added := t;
+          put(x, 'lalr_first, x_first_set) >> >>
+    >> until not more_added
+  end;
+
+symbolic procedure lalr_collect_nonterminals grammar;
+  lalr_remove_duplicates 
+    (for each productions in grammar collect intern car productions);
+
+symbolic procedure lalr_collect_terminals grammar; 
+  begin
+    scalar rhs_symbols;
+    for each productions in grammar do 
+      for each production in cdr productions do 
+        for each symbol in car production do 
+          if not (symbol member rhs_symbols) then
+            rhs_symbols := symbol . rhs_symbols;
+    return setdiff(rhs_symbols, nonterminals)
+  end;
+
+symbolic procedure lalr_get_lex_codes terminals;
+  begin
+    scalar nonstandard_terminals, prev_lex_context, lex_codes;
+    for each terminal in terminals do
+      if stringp terminal then 
+        nonstandard_terminals := terminal . nonstandard_terminals;
+    prev_lex_context := lex_save_context();
+    lex_cleanup();
+    lex_keywords nonstandard_terminals;
+    lex_context := lex_save_context();
+    lex_codes := lex_export_codes();
+    lex_restore_context(prev_lex_context);
+    return lex_codes
+  end;
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This section generates the LR0 item collection.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Generates the collection of LR(0) itemsets for the grammar (which must have
+% already been analyzed by lalr_set_grammar, so that lalr_productions works
+% and the symbols list exists).
+%
+% Effects: initializes itemset_collection and goto_table
+%
+% The algorithm is taken from the Dragon Book (Figure 4.33), but arranges to 
+% process each itemset only once.
+symbolic procedure lalr_generate_lr0_collection;
+  begin
+    scalar pending, previous_i, i_itemset, itemset, 
+           goto_itemset, goto_itemset1, i_goto_itemset;
+    itemset_collection := list (lalr_lr0_initial_itemset() . 0);
+    pending := list car itemset_collection;    
+    previous_i := 0;
+
+    while pending do <<
+      i_itemset := car pending;
+      pending := cdr pending;
+      itemset := car i_itemset;
+
+      % For each grammar symbol, compute the goto itemset. If we've already
+      % discovered this itemset, simply update the goto_table. If it's new, 
+      % allocate it an index and add it to itemset_collection first. 
+      for each x in symbols do <<
+        if goto_itemset := lalr_compute_lr0_goto(itemset, x) then <<
+          if goto_itemset1 := assoc(goto_itemset, itemset_collection) then
+            i_goto_itemset := goto_itemset1  
+          else <<
+            i_goto_itemset := goto_itemset . (previous_i := previous_i + 1);
+            itemset_collection := i_goto_itemset . itemset_collection;
+            pending := i_goto_itemset . pending >>;
+          lalr_add_goto(i_itemset, x, i_goto_itemset) >> >> >>;
+
+    %% if !*lalr_verbose then 
+    %%  lalr_print_lr0_collection()
+  end;
+
+% Simply constructs the initial itemset, which is the closure of
+% the itemset comprising only the initial production [S' -> .S].
+symbolic procedure lalr_lr0_initial_itemset;
+  begin
+    scalar start_symbol, initial_item;
+    start_symbol := caaar lalr_productions '!S!';
+    initial_item := list('!S!', '!., start_symbol);
+    return lalr_lr0_closure list initial_item
+  end;
+
+
+
+% Implements the function GOTO (for LR(0) itemsets) described in the Dragon 
+% Book. 
+%
+% Note: this procedure is not aware of itemset_collection or 
+% goto_table, and returns brand new objects. The itemset parameter is a list 
+% of LR(0) items (the index from itemset_collection is not included).  
+symbolic procedure lalr_compute_lr0_goto(itemset, x);
+  begin
+    scalar result_kernel, result_item;
+    for each item in itemset do 
+      if (result_item := lalr_lr0_move_dot(item, x)) then
+        result_kernel := result_item . result_kernel;
+    return lalr_lr0_closure result_kernel
+  end;
+
+
+
+% This procedure attempts to "move the dot" in an LR(0) item. Specifically, if
+% for the LR(0) item [A -> bc.de], if d=x (the parameter x), then it returns
+% [A -> bcd.e] and otherwise nil. 
+symbolic procedure lalr_lr0_move_dot(item, x);
+  begin
+    scalar r;
+    while not (car item = '!.) do <<
+      r := car item . r;
+      item := cdr item >>;
+    item := cdr item;
+    if not (item and car item = x) then return nil;
+    item := car item . '!. . cdr item;
+    while r do <<
+      item := car r . item;
+      r := cdr r >>;
+    return item
+  end;
+
+
+
+% Implements the function CLOSURE (for LR(0) items) described in the Dragon 
+% Book. 
+%
+% Note: this procedure is not aware of itemset_collection or 
+% goto_table, and returns brand new objects (though original items are 
+% retained). The itemset parameter is a list of LR(0) items (the index from 
+% itemset_collection is not included).
+%
+% Implementation is based on Figure 4.32 in the Dragon Book, although some 
+% effort is made to avoid duplicate work.
+symbolic procedure lalr_lr0_closure itemset;
+  begin
+    scalar added, pending, tail, x, rule, new_items, y;
+    for each item in itemset do <<
+      tail := cdr ('!. member item);
+      if tail and (x := car tail) and idp x and not (x member pending) then 
+        pending := x . pending >>;
+
+    while pending do <<
+      x := car pending;
+      pending := cdr pending;
+      added := x . added;
+
+      for each production in lalr_productions x do << % [x -> abc] as (a b c)
+        rule := car production;
+        new_items := (x . '!. . rule) . new_items;
+        if rule and (y := car rule) and idp y 
+                           and not (y member added or y member pending) then 
+          pending := y . pending >> >>;
+
+    % new_items has no duplicates because we made sure to check the added list
+    % but there may be overlap with the initial items in the itemset.
+    return union(itemset, new_items) 
+  end;
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% This section converts the LR(0) itemset collection into the LALR collection.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Converts the collection of LR(0) itemsets for the grammar (which must have
+% already been generated by lalr_generate_lr0_collection) to the LALR 
+% collection.
+%
+% Effects: modifies itemset_collection
+%
+% The algorithm is adapted from the Dragon Book (Algorithm 4.63). 
+symbolic procedure lalr_generate_collection;
+  begin
+    scalar itemset0, propagation_list;
+
+    % First we must convert the items from their LR(0) format to a format that
+    % can have lookaheads. We also take the opportunity to strip each itemset
+    % down to its kernel. Note that we preserve the identity of the i_itemsets, 
+    % because the goto_table links between them. 
+    for each i_itemset in itemset_collection do 
+      rplaca(i_itemset, lalr_lr0_itemset_to_lalr_kernel car i_itemset);
+
+    % Hereafter all operations on the individual LALR items (adding lookaheads)
+    % preserve their identity, because the propagation_list links between them.
+
+    % Determine all spontaneously generated lookaheads and all item -> item
+    % lookahead propagation pairs. 
+    propagation_list := lalr_analyze_lookaheads();
+
+    % Add the special lookahead 0 (end-of-input character $) to the initial
+    % item [S' -> S]. 
+    itemset0 := carrassoc(0, itemset_collection);
+    lalr_add_lookahead(car itemset0, 0);
+
+    % Propagate all lookaheads until the LALR collection is complete.
+    lalr_propagate_lookaheads(propagation_list);
+
+    % Expand out the kernels to the full itemsets.
+    for each i_itemset in itemset_collection do 
+      rplaca(i_itemset, lalr_closure car i_itemset);
+
+    if !*lalr_verbose then 
+      lalr_print_collection()
+  end;
+
+
+
+% This procedure converts an LR0 itemset to its LALR kernel. This is really
+% two separate jobs and perhaps I shouldn't have combined them. First, we 
+% examine each item and only retain it if it is a kernel item. Second, we wrap
+% each item (already a list, e.g. 
+%     '(A a !. b c) corresponding to LR(0) item [A -> a.bc]
+% in another list, which leaves room to stash lookahead symbols. 
+symbolic procedure lalr_lr0_itemset_to_lalr_kernel itemset;
+  begin
+    scalar kernel;
+    for each item in itemset do 
+      if (car item = '!S!') or (cadr item neq '!.) then 
+        kernel := (list item) . kernel;
+    return kernel
+  end;
+
+
+
+% This procedure destructively adds a lookahead symbol to a LALR item.
+symbolic procedure lalr_add_lookahead(item, lookahead);
+  if item then 
+    rplacd(item, lookahead . cdr item)
+  else 
+    rplacd(item, list lookahead);
+
+
+
+% Repeatedly passes over a provided propagation_list, which links item pairs
+% (src . dest), until all lookaheads from src are propagated to dest.
+symbolic procedure lalr_propagate_lookaheads propagation_list;
+  begin
+    scalar more_propagated, src, dest;
+    repeat <<
+      more_propagated := nil;
+      for each item_pair in propagation_list do <<
+        src := car item_pair; dest := cdr item_pair;
+        for each lookahead in cdr src do 
+          if not (lookahead member (cdr dest)) then <<
+            lalr_add_lookahead(dest, lookahead);
+            more_propagated := t >> >> 
+    >> until not more_propagated
+  end;
+
+
+
+% This is the core of the LR(0)-to-LALR conversion algorithm, and is just a 
+% wrapper (to iterate through all itemsets) around Algorithm 4.62 in the Dragon 
+% Book. 
+%
+% Effects: adds all spontaneously generated lookaheads to the items in
+%          itemset_collection (note: item identity is preserved)
+%
+% Returns: a list  of item pairs (src . dest), such that all lookaheads from
+%          item src should propagate to item dest
+symbolic procedure lalr_analyze_lookaheads;
+  begin
+    scalar propagation_list, lookaheads, dest_i_itemset, dest_item, dummy_item,
+           byxd, xd, x, d;
+    for each src_i_itemset in itemset_collection do 
+      for each src_item in car src_i_itemset do << % Algorithm 4.62
+        dummy_item := (car src_item) . '(-1); % -1 is the dummy lookahead #
+        for each dummy_closure_item in lalr_closure list dummy_item do <<
+
+          % dummy_closure_item: [B -> y.xd, u/v] where y,d are 0+ grammar 
+          % symbols, x is 0-1 grammar symbols
+          byxd := car dummy_closure_item; % [B - y.xd]
+          lookaheads := cdr dummy_closure_item; % [u/v]
+
+          if xd := cdr ('!. member byxd) then <<
+            x := car xd; d := cdr xd;
+            dest_i_itemset := lalr_goto(src_i_itemset, x);
+            dest_item := lalr_item_with_rule(
+                        lalr_lr0_move_dot(byxd,x), car dest_i_itemset);
+
+            for each a in lookaheads do % now considering item [B -> y.xd, a]
+              if a = -1 then % lookaheads propagate
+                propagation_list := (src_item . dest_item) . propagation_list
+              else % lookahead a is spontaneously generated
+                lalr_add_lookahead(dest_item, a) >> >> >>;
+
+    return propagation_list
+  end;
+
+
+
+% Searches the given itemset for the LALR item with the given production rule.
+% (Or in other words, with the given "LR(0) core".)
+symbolic procedure lalr_item_with_rule(rule, itemset);
+  begin
+    scalar result;
+    while itemset do <<
+      if caar itemset = rule then <<
+        result := car itemset;
+        itemset := nil >>
+      else 
+        itemset := cdr itemset >>;
+    return result
+  end;  
+
+
+
+% Computes the LALR closure of an itemset. Note: this procedure is not aware of 
+% itemset_collection or goto_table, and returns brand new objects (though 
+% original items are retained). The itemset parameter is a list of LALR items 
+% (the index from itemset_collection is not included). 
+%
+% The implementation is essentially the algorithm from Figure 4.40 in the 
+% Dragon Book, though some care is taken not to do duplicate work. 
+%
+% The added complexity over lalr_lr0_closure essentially comes from this: 
+% suppose that at one iteration of the loop, the closure operation generates  
+% the item [B -> y, a/b/c/d], but a previous iteration generated [B -> y, b/d].
+% Then we need to add the lookaheads a/c to the existing [B -> y, b/d] object 
+% (to create [B -> y, a/b/c/d], represented as '((B y) a/b/c/d)), but we only 
+% want to add [B -> y, a/c] to the pending list.
+symbolic procedure lalr_closure itemset;
+  begin
+    scalar pending, item, tail, x, gen_lookaheads, gen_rule, gen_item; 
+    pending := itemset;
+    while pending do <<
+      item := car pending;
+      pending := cdr pending;
+
+      for each lookahead in cdr item do <<
+        tail := cdr ('!. member car item);
+        if tail and (x := car tail) and idp x then
+          for each production in lalr_productions x do << % [B -> y]
+            gen_lookaheads := lalr_first append(cdr tail, list lookahead);
+
+            gen_rule := x . '!. . car production;
+            gen_item := lalr_item_with_rule(gen_rule, itemset);
+            if gen_item then 
+              gen_lookaheads := setdiff(gen_lookaheads, cdr gen_item) 
+            else <<
+              gen_item := gen_rule . nil;
+              itemset := gen_item . itemset >>;
+
+            if gen_lookaheads then <<
+              pending := (gen_rule . gen_lookaheads) . pending;
+              for each gen_lookahead in gen_lookaheads do
+                lalr_add_lookahead(gen_item, gen_lookahead) >> >> >> >>;
+    return itemset
+  end;
+
+
+
+symbolic procedure lalr_first string;
+  begin
+    scalar results, w;
+    while string and
+          not numberp car string and
+          (nil member (w := get(car string, 'lalr_first))) do <<
+      results := union(delete(nil, w), results);
+      string := cdr string >>;
+    if null string then results := nil . results
+    else if numberp car string then results := union(list car string, results)
+    else results := union(w, results);
+    return results
+  end;
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% In this section, make_compressed_action_table examines the itemset_collection
+%% and goto_table in order to make the ACTION portion of the ACTION/GOTO 
+%% parser table described by the Dragon Book.
+%%
+%% The compression method is based off the discussion of compressed LALR 
+%% parsing tables in the Dragon Book. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% reqs ordered itemset collection %% wait... does it? why?
+symbolic procedure lalr_make_compressed_action_table;
+  begin
+    scalar table;
+    table := mkvect sub1 length itemset_collection;
+    for each i_itemset in itemset_collection do 
+      putv(table, cdr i_itemset, lalr_make_compressed_action_row i_itemset);
+    if !*lalr_verbose then
+      lalr_print_compressed_action_table table;
+    return table;
+  end;
+
+symbolic procedure lalr_make_compressed_action_row i_itemset;
+  begin
+    scalar action_list;
+    action_list := lalr_list_of_actions i_itemset;
+    action_list := lalr_resolve_conflicts(action_list, cdr i_itemset);
+    return lalr_make_compressed_action_row1 action_list;
+  end;
+
+symbolic procedure lalr_resolve_conflicts(action_list, itemset_i); 
+  begin
+    scalar conflicting_actions, results, shift, reduce, chosen_action,
+           shift_op, reduce_op, associativity, 
+           shift_precedence, reduce_precedence;
+    action_list := sort(action_list, function lesspcar);
+    while action_list do <<
+      conflicting_actions := list car action_list;
+      action_list := cdr action_list;
+      while action_list and caar action_list = caar conflicting_actions do <<
+        conflicting_actions := car action_list . conflicting_actions;
+        action_list := cdr action_list >>;
+
+      shift := reduce := chosen_action := nil;
+      if null cdr conflicting_actions then
+        chosen_action := car conflicting_actions
+      else
+        for each action in conflicting_actions do <<
+          if caadr action = 'shift then 
+            shift := action
+          else if null reduce then % handles accept as well?
+            reduce := action
+          else % reduce-reduce conflict - keep first reduction seen
+            lalr_warn_reduce_reduce_conflict(reduce, action, itemset_i);
+
+          if shift and reduce then << % shift-reduce conflict
+            shift_op := car shift; % terminal after dot
+            for each symbol in cadr cadr reduce do % the rule
+              if numberp symbol then
+                reduce_op := symbol;
+
+            if shift_op and reduce_op then <<
+              shift_precedence := lalr_precedence shift_op;
+              reduce_precedence := lalr_precedence reduce_op;
+              if shift_precedence and reduce_precedence then 
+                if shift_precedence = reduce_precedence then <<
+                  associativity := lalr_associativity shift_op;
+                  if associativity = '!:left then
+                    shift := nil
+                  else if associativity = '!:right then 
+                    reduce := nil
+                  else
+                    shift := reduce := nil >>
+                else if shift_precedence < reduce_precedence then
+                  reduce := nil
+                else 
+                  shift := nil >> >> >>;
+
+      if shift and reduce then 
+        lalr_warn_shift_reduce_conflict(shift, reduce, itemset_i);
+      chosen_action := chosen_action or shift or reduce;
+      if chosen_action then
+        results := chosen_action . results >>;
+    return results
+  end;
+
+symbolic procedure lalr_list_of_actions i_itemset;
+  begin
+    scalar actions, lhs, terminal, tail, rule, reduction_i, goto_i;
+    for each item in car i_itemset do <<
+      lhs := caar item;
+      tail := cdr ('!. member car item);
+      if tail and numberp car tail then <<
+        terminal := car tail;
+        goto_i := cdr lalr_goto(i_itemset, terminal);
+        actions := list(terminal, list('shift, goto_i)) . actions >>
+      else if null tail and lhs neq '!S!' then <<
+        rule := delete('!., car item);
+        reduction_i := lalr_reduction_index rule;
+        for each lookahead in cdr item do 
+          actions := list(lookahead, 
+                          list('reduce, rule, reduction_i)) . actions >>
+      else if null tail and lhs = '!S!' then 
+        actions := list(0, '(accept)) . actions >>;
+    return lalr_remove_duplicates actions;
+  end;
+
+symbolic procedure lalr_remove_duplicates x;
+  begin
+    scalar r;
+    for each a in x do
+      if not member(a, r) then r := a . r;
+    return reversip r
+  end;
+
+symbolic procedure lalr_make_compressed_action_row1 action_list;
+  begin
+    scalar most_common_reduction, row, terminal, action_type;
+    most_common_reduction := lalr_most_common_reduction action_list;
+    for each action in action_list do 
+      if cadr action neq most_common_reduction then <<
+        terminal := car action;
+        action_type := caadr action;
+        if action_type = 'shift then 
+          row := (terminal . cadadr action) . row
+        else if action_type = 'accept then
+          row := (terminal . 0) . row
+        else if action_type = 'reduce then 
+          row := (terminal . -(car cddadr action)) . row >>;
+    if most_common_reduction then
+      most_common_reduction := 
+        if car most_common_reduction = 'accept then 0
+        else -(caddr most_common_reduction);
+    return row . most_common_reduction
+  end;
+
+symbolic procedure lalr_most_common_reduction action_list;
+  begin
+    scalar reduction_count, reduction, w;
+    for each action in action_list do
+      if caadr action = 'reduce or caadr action = 'accept then <<
+        reduction := cadr action;
+        if (w := assoc(action, reduction)) then rplacd(w, cdr w + 1)
+        else reduction_count := (reduction . 1) . reduction_count >>;
+    if reduction_count then <<
+      w := car reduction_count;
+      for each entry in cdr reduction_count do 
+        if cdr entry > cdr w then 
+          w := entry;
+      return car w >>
+    else
+      return nil
+  end;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% In this section, make_ examines the itemset_collection
+%% and goto_table in order to make the GOTO portion of the ACTION/GOTO 
+%% parser table described by the Dragon Book.
+%%
+%% The compression method is based off the discussion of compressed LALR 
+%% parsing tables in the Dragon Book. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+symbolic procedure lalr_make_compressed_goto_table;
+  begin
+    scalar table, column;
+    table := mkvect sub1 length nonterminals;
+    for each x in nonterminals do % ordered by nonterminal code
+      if x neq '!S!' then <<
+        column := lalr_make_compressed_goto_column x;
+        putv(table, get(x, 'lalr_nonterminal_code), column) >>;
+    if !*lalr_verbose then 
+      lalr_print_compressed_goto_table table;
+    return table
+  end;
+
+symbolic procedure lalr_make_compressed_goto_column x;
+  begin
+    scalar goto_list, column, most_common_dest;
+    goto_list := for each entry in gethash(x, goto_table) collect
+                (cdar entry . cddr entry);
+    most_common_dest := lalr_most_common_dest goto_list;
+    for each entry in goto_list do 
+      if cdr entry neq most_common_dest then
+        column := entry . column;
+    return column . most_common_dest
+  end;
+
+symbolic procedure lalr_most_common_dest goto_list;
+  begin
+    scalar dest_count, w;
+    for each entry in goto_list do
+      if (w := assoc(cdr entry, dest_count)) then rplacd(w, cdr w + 1)
+      else dest_count := (cdr entry . 1) . dest_count;
+    w := car dest_count;
+    for each entry in cdr dest_count do if cdr entry > cdr w then w := entry;
+    return car w
+  end;
+
+
+%%%
+%
+%
+% includes a useless reduction for S' -> S
+symbolic procedure lalr_process_reductions;
+  begin
+    scalar reduction_codes, code, n_reductions, canonical_reduction, 
+           coded_canonical_reduction, rhs_length, lhs, fn, 
+           reduction_fn, reduction_lhs, reduction_rhs_length;
+
+    code := -1;
+    % print nonterminals; print lalr_productions car nonterminals; error(1,"");
+    for each x in nonterminals do 
+      for each production in lalr_productions x do <<
+        canonical_reduction := (x . length car production) . cdr production;
+        coded_canonical_reduction := assoc(canonical_reduction,reduction_codes);
+        if null coded_canonical_reduction then <<
+          coded_canonical_reduction := canonical_reduction . (code := code + 1);
+          reduction_codes := coded_canonical_reduction . reduction_codes >>;
+        rplacd(production, cdr coded_canonical_reduction) >>;
+
+    n_reductions := code + 1;
+    reduction_fn := mkvect sub1 n_reductions;
+    reduction_lhs := mkvect16 sub1 n_reductions;
+    reduction_rhs_length := mkvect8 sub1 n_reductions;
+    for each coded_canonical_reduction in reduction_codes do <<
+      code := cdr coded_canonical_reduction;
+      rhs_length := cdaar coded_canonical_reduction;
+      lhs := get(caaar coded_canonical_reduction, 'lalr_nonterminal_code);
+      putv16(reduction_lhs, code, lhs);
+      putv8(reduction_rhs_length, code, rhs_length);
+
+      if (cdar coded_canonical_reduction) then <<
+        fn := cdar coded_canonical_reduction;
+        fn := lalr_construct_fn(fn, rhs_length) >>
+      else
+        fn := nil;
+      putv(reduction_fn, code, fn) >>;
+
+    return list(reduction_fn, reduction_rhs_length, reduction_lhs);
+  end;
+
+symbolic procedure cdrassoc(key, alist);
+  begin
+    scalar w;
+    if not atom (w := assoc(key, alist)) then return cdr w;
+    terpri();
+    princ "ASSOC trouble: "; prin key; princ " "; print alist;
+    rederr "assoc trouble"
+  end;
+
+
+
+symbolic procedure lalr_reduction_index rule;
+  begin
+    scalar x, rhs;
+    x := car rule; rhs := cdr rule;
+    return cdrassoc(rhs, lalr_productions x)
+  end;
+
+
+symbolic procedure lalr_construct_fn(lambda_expr, args_n);
+  begin
+    scalar fn;
+    fn := gensym1 'action;
+    lambda_expr := 'lambda  . lalr_make_arglist args_n . lambda_expr;
+    putd(fn, 'expr, lambda_expr) where !*pwrds = nil;
+    return fn
+  end;
+
+symbolic procedure lalr_make_arglist n;
+  for i := 1:n collect
+    intern list2string ('!$ . explode2 i);
+
 
 end;
-

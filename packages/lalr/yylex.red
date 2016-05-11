@@ -1,6 +1,6 @@
 % yylex.red
 
-% Author: Arthur Norman
+% Author: Arthur Norman, with changes by Zach Hauser, 2016
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -231,6 +231,40 @@ symbolic procedure lex_cleanup();
                       (3 . !:number) (4 . !:list));
   end;
 
+% The following pair of procedures provide for switching back and forth  
+% between "different lexers".
+% 
+% Specifically, lex_save_context() returns some data that, when fed back into 
+% lex_restore_context(), should have everything right back at the point after 
+% you made your lex_keywords calls but before you called lex_init(). 
+symbolic procedure lex_save_context();
+  mapcar(lex_codename,
+    function (lambda w; get(intern cdr w, 'lex_dipthong) . w));
+
+symbolic procedure lex_restore_context(context);
+  begin
+    scalar token, dipthong, code;
+    lex_cleanup();
+    for each x in context do <<
+      dipthong := car x; code := cadr x; token := intern cddr x; 
+      if not get(token, 'lex_fixed_code) then <<
+        if code > lex_next_code then lex_next_code := code;
+        put(token, 'lex_dipthong, dipthong);
+        put(token, 'lex_code, code);
+        lex_codename := (code . token) . lex_codename;
+        lex_keyword_names := token . lex_keyword_names >> >>
+  end;
+
+% This procedure returns an association list mapping from integer category 
+% codes (same as returned by yylex()) to tokens (as symbols). The list is 
+% ordered by category code (decreasing). 
+%
+% If the lexer's internals are changed around such that lex_codename 
+% disappears (perhaps, is replaced by a hash table), this should continue
+% to export the same structure for consumption by other code, like 
+% the parser generator.
+symbolic procedure lex_export_codes(); 
+  sort(lex_codename, function ordopcar); %% does this do what i think
 
 % I keep a circular buffer with the last 64 characters that have been
 % read. Initially the buffer contains NILs rather than characters, so I can
@@ -498,7 +532,7 @@ symbolic procedure lex_skipping(w, x);
 % It recognize the quote prefix, as in '(lisp expression) and
 % `(backquoted thing).  The return value is a numeric code.
 % It leaves a variable lex_escaped true if the "word" that was
-% read had any "!" characters used to escape parts of it.
+% read had any "!" characers used to escape parts of it.
 
 global '(lex_peeked lex_peeked_yylval lex_peeked_escaped);
 
