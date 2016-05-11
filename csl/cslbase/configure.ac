@@ -82,6 +82,14 @@ AC_ARG_WITH(psl,
   [],
   [with_psl="no"])
 
+# By configureing "--without-redfront" you can avoid having a CSL built
+# making an attempt to coompile and instate the newfront version of redfront.
+
+AC_ARG_WITH(redfront,
+  AC_HELP_STRING([--with-redfront], [Build and install redfront]),
+  [],
+  [with_redfront="yes"])
+
 AC_ARG_WITH(mingw64,
   AC_HELP_STRING([--with-mingw64], [this option is ignored here!]),
   [],
@@ -1523,6 +1531,7 @@ AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")
 AM_CONDITIONAL(valgrind, test "x$VALGRIND" = "xvalgrind")
 AM_CONDITIONAL(crlibm, test "x$with_crlibm" != "xno")
 AM_CONDITIONAL(boehm, test "x$with_boehm" != "xno")
+AM_CONDITIONAL(redfront, test "x$with_redfront" != "xno")
 
 AC_OUTPUT
 

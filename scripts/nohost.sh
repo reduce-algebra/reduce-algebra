@@ -30,6 +30,7 @@ do
   \'--with-pslbuild*\' | \
   \'--with*-crlibm*\' | \
   \'--with*-boehm*\' | \
+  \'--with*-redfront*\' | \
   \'--enable-debug*\' | \
   \'--enable-conservative*\' | \
   \'--enable-test*\' | \

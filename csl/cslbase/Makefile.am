@@ -2338,7 +2338,8 @@ ARCHIVE=reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2
 endif !windows
 	if test "x$(savedest)" != "x"; then scp $(ARCHIVE) $(savedest); fi
 
-# This little bit of trickers is intended to arrange that if you go
+if redfront
+# This little bit of trickieness is intended to arrange that if you go
 # just "make" it will, in addition to everything else, have a go at
 # building and installing redfront if that is needed. It assumes that
 # when rfcsl$(EXEEXT) is build that rfpsl etc get built too.
@@ -2358,6 +2359,7 @@ $(srcdir)/../../bin/rfcsl$(EXEEXT): \
 		$(srcdir)/../../generic/newfront/redstrings.c
 	cd ../redfront && $(MAKE)
 
+endif redfront
 
 showhost:
 	echo host = $(HOST)

@@ -1662,6 +1662,7 @@ LispObject Lsymbol_function(LispObject nil, LispObject a)
 // from the name 'apply of the base function, while in Standard Lisp a name
 // like apply775 is needed to make the distinction (easily) visible.
 //
+        get_pname(a);  // to do with unprinted gensyms.
 #ifdef COMMON
         b = Lgensym2(nil, a);
 #else
