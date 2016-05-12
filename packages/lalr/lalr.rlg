@@ -199,10 +199,8 @@ grammar := '(
   )
   (cc (("c" cc) (list 'c !$2))   % First production for C
       (("d")    'd           )   % Second production for C
-  ));
+  ))$
 
-
-((s ((cc cc))) (cc (("c" cc) (list (quote c) !$2)) (("d") (quote d))))
 
 
 g := lalr_create_parser(nil, grammar)$
@@ -275,7 +273,7 @@ STATE TERMINAL      ACTION
 4     c             shift to state 4
       d             shift to state 3
 5     <any>         reduce by #3: CC -> [2 symbols] (lambda (!$1 !$2) (list (
-quote c) !$2))
+                                                    quote c) !$2))
 6     <any>         reduce by #1: S -> [2 symbols] 
 
 === GOTO TABLE ===
@@ -293,7 +291,7 @@ symbolic procedure pparse g;
     r := yyparse g;
     terpri();
     princ "= ";
-    print r
+    portable_print r
   end;
 
 
@@ -318,7 +316,8 @@ On lookahead -1, reduce 1 symbols to nonterminal CC, and goto state 5
 On lookahead -1, reduce 2 symbols to nonterminal CC, and goto state 6
 On lookahead -1, reduce 2 symbols to nonterminal S, and goto state 1
 Seems to have finished... 
-= ((c (c (c d))) (c d))
+= 
+((c (c (c d))) (c d))
 ;
 
 
@@ -335,7 +334,8 @@ d Shift token 6 onto stack, and shift to state 3
 On lookahead -1, reduce 1 symbols to nonterminal CC, and goto state 6
 On lookahead -1, reduce 2 symbols to nonterminal S, and goto state 1
 Seems to have finished... 
-= (d d)
+= 
+(d d)
 ;
 
 
@@ -378,13 +378,8 @@ g4_46 := '((s   ((l "=" r)   (neatprintc "## S => L = R")
                 ((!:symbol)  (neatprintc "## L => symbol")
                              !$1))
            (r   ((l)         (neatprintc "## R => L")
-                             !$1)));
+                             !$1)))$
 
-
-((s ((l "=" r) (neatprintc "## S => L = R") (list (quote equal) !$1 !$3)) ((r) (
-neatprintc "## S => R") !$1)) (l (("*" r) (neatprintc "## L => * R") (list (
-quote star) !$2)) ((!:symbol) (neatprintc "## L => symbol") !$1)) (r ((l) (
-neatprintc "## R => L") !$1)))
 
 
 g := lalr_create_parser(nil, g4_46)$
@@ -402,7 +397,8 @@ leftsym
 ## R => L
 ## S => L = R
 
-= (equal leftsym rightsym)
+= 
+(equal leftsym rightsym)
 ;
 
 
@@ -431,7 +427,8 @@ pparse g$
 ## R => L
 ## S => L = R
 
-= (equal (star (star (star (star abc)))) (star def))
+= 
+(equal (star (star (star (star abc)))) (star def))
 ;
 
 
@@ -457,15 +454,8 @@ gtest := '((s  ((p))
            (p  (("(" s ")") !$2)
                ((!:symbol))
                ((!:string))
-               ((!:number))));
+               ((!:number))))$
 
-
-((s ((p)) ((s "^" s) (list (quote expt) !$1 !$3)) ((s "**" s) (list (quote expt)
-!$1 !$3)) ((s "*" s) (list (quote times) !$1 !$3)) ((s "/" s) (list (quote
-quotient) !$1 !$3)) ((s "+" s) (list (quote plus) !$1 !$3)) ((s "-" s) (list (
-quote difference) !$1 !$3)) ((s "=" s) (list (quote equal) !$1 !$3)) (("-" s) (
-list (quote minus) !$2)) (("+" s) !$2)) (p (("(" s ")") !$2) ((!:symbol)) ((
-!:string)) ((!:number))))
 
 
 % "^" and "**" both have the same high precedence and are right
@@ -473,10 +463,8 @@ list (quote minus) !$2)) (("+" s) !$2)) (p (("(" s ")") !$2) ((!:symbol)) ((
 % and after that "+" and "-". Finally "=" has lowest precedence and
 % must not associate with itself, so (a=b=c) should be a syntax error.
 
-p := '(!:right ("^" "**") !:left ("*" "/") ("+" "-") !:none "=");
+p := '(!:right ("^" "**") !:left ("*" "/") ("+" "-") !:none "=")$
 
-
-(!:right ("^" "**") !:left ("*" "/") ("+" "-") !:none "=")
 
 
 g := lalr_create_parser(p, gtest)$
@@ -487,22 +475,25 @@ pparse g$
 
 
 a^b^c;
-= (expt a (expt b c))
+= 
+(expt a (expt b c))
 
 
 pparse g$
 
 
 a*b+c*d;
-= (plus (times a b) (times c d))
+= 
+(plus (times a b) (times c d))
 
 
 pparse g$
 
 
 a * (b/c + d/e/f) ^ 2 ^ g - "str" ;
-= (difference (times a (expt (plus (quotient b c) (quotient (quotient d e) f)) (
-expt !:string g))) "str")
+= 
+(difference (times a (expt (plus (quotient b c) (quotient (quotient d e) f)
+) (expt !:string g))) "str")
 
 
 % Demonstrate various of the short-hand notations...
@@ -519,7 +510,8 @@ pparse g$
 
 begin end
 
-= (begin nil end)
+= 
+(begin nil end)
 ;
 
 
@@ -535,7 +527,8 @@ pparse g$
 
 begin and also end
 
-= (begin (and also) end)
+= 
+(begin (and also) end)
 ;
 
 
@@ -558,7 +551,8 @@ pparse g$
 
 end
 
-= nil
+= 
+nil
 ;
 
 
@@ -574,7 +568,8 @@ pparse g$
 
 a a a a a a end
 
-= (a a a a a a)
+= 
+(a a a a a a)
 ;
 
 
@@ -597,7 +592,8 @@ pparse g$
 
 a end
 
-= (a)
+= 
+(a)
 ;
 
 
@@ -613,7 +609,8 @@ pparse g$
 
 a a a a a a end
 
-= (a a a a a a)
+= 
+(a a a a a a)
 ;
 
 
@@ -639,7 +636,8 @@ pparse g$
 
 several ; words ; here eof
 
-= (several words here)
+= 
+(several words here)
 ;
 
 
@@ -664,7 +662,8 @@ pparse g$
 
 several ; words ; here eof
 
-= (several words here)
+= 
+(several words here)
 ;
 
 
@@ -689,7 +688,8 @@ pparse g$
 
 end
 
-= nil
+= 
+nil
 ;
 
 
@@ -705,7 +705,8 @@ pparse g$
 
 a b b a end
 
-= (a b b a)
+= 
+(a b b a)
 ;
 
 
@@ -749,9 +750,9 @@ mini_language := '(
           ((expression ":=" expression) (list 'setq !$1 !$3))
           (("fun" funcall "=" expression) (list 'fun !$2 !$4))
           (("if" sequence "then" expression)
-             (list 'cond, list(!$2, !$4)))
+             (list 'cond (list !$2 !$4)))
           (("if" sequence "then" sequence "else" expression)
-             (list 'cond, list(!$2, !$4), list(t, !$6)))
+             (list 'cond (list !$2 !$4) (list t !$6)))
           (("go" (opt "to") !:symbol) (list 'go !$3))
           (("goto" !:symbol) (list 'go !$2))
           (("return" expression)))
@@ -878,32 +879,32 @@ Token '!,' allocated code 35
                     | go LALR_INTERNAL_18 :symbol 
                                                 { ((list (quote go) !$3)) }
                     | if SEQUENCE then SEQUENCE else EXPRESSION 
-                                                { ((list (quote cond) !, list (
-!$2 !, !$4) !, list (t !, !$6))) }
+                                                { ((list (quote cond) (list 
+                                                  !$2 !$4) (list t !$6))) }
                     | if SEQUENCE then EXPRESSION 
-                                                { ((list (quote cond) !, list (
-!$2 !, !$4))) }
+                                                { ((list (quote cond) (list 
+                                                  !$2 !$4))) }
                     | fun FUNCALL = EXPRESSION  { ((list (quote fun) !$2 !$4)) }
-                    | EXPRESSION := EXPRESSION  { ((list (quote setq) !$1 !$3))
- }
-                    | EXPRESSION > EXPRESSION   { ((list (quote greaterp) !$1
-!$3)) }
+                    | EXPRESSION := EXPRESSION  { ((list (quote setq) !$1 !$3)
+                                                  ) }
+                    | EXPRESSION > EXPRESSION   { ((list (quote greaterp) !$1 
+                                                  !$3)) }
                     | EXPRESSION => EXPRESSION  { ((list (quote geq) !$1 !$3)) }
                     | EXPRESSION neq EXPRESSION { ((list (quote neq) !$1 !$3)) }
-                    | EXPRESSION == EXPRESSION  { ((list (quote equals) !$1 !$3)
-) }
-                    | EXPRESSION <= EXPRESSION  { ((list (quote lesseq) !$1 !$3)
-) }
-                    | EXPRESSION < EXPRESSION   { ((list (quote lessp) !$1 !$3))
- }
-                    | EXPRESSION - EXPRESSION   { ((list (quote difference) !$1
-!$3)) }
-                    | EXPRESSION + EXPRESSION   { ((list (quote plus) !$1 !$3))
- }
-                    | EXPRESSION / EXPRESSION   { ((list (quote quotient) !$1
-!$3)) }
-                    | EXPRESSION * EXPRESSION   { ((list (quote times) !$1 !$3))
- }
+                    | EXPRESSION == EXPRESSION  { ((list (quote equals) !$1 
+                                                  !$3)) }
+                    | EXPRESSION <= EXPRESSION  { ((list (quote lesseq) !$1 
+                                                  !$3)) }
+                    | EXPRESSION < EXPRESSION   { ((list (quote lessp) !$1 
+                                                  !$3)) }
+                    | EXPRESSION - EXPRESSION   { ((list (quote difference) 
+                                                  !$1 !$3)) }
+                    | EXPRESSION + EXPRESSION   { ((list (quote plus) !$1 !$3)
+                                                  ) }
+                    | EXPRESSION / EXPRESSION   { ((list (quote quotient) !$1 
+                                                  !$3)) }
+                    | EXPRESSION * EXPRESSION   { ((list (quote times) !$1 
+                                                  !$3)) }
                     | FUNCALL                   { nil }
 
 [4] LALR_INTERNAL_18: to                        { nil }
@@ -916,8 +917,8 @@ Token '!,' allocated code 35
                     | ( SEQUENCE )              { ((cons (quote paren) !$2)) }
                     | ( EXPRLIST )              { ((cons (quote paren) !$2)) }
                     | let SEQUENCE in SEQUENCE end 
-                                                { ((list (quote letstat) !$2 !$4
-)) }
+                                                { ((list (quote letstat) !$2 
+                                                  !$4)) }
                     | LALR_INTERNAL_19          { nil }
                     | :number                   { nil }
                     | :symbol                   { nil }
@@ -4236,8 +4237,9 @@ STATE TERMINAL      ACTION
 5     <any>         reduce by #26: FUNCALL -> [1 symbols] 
 6     <any>         reduce by #30: CLOSEDEXPRESSION -> [1 symbols] 
 7     :string       shift to state 7
-      <any>         reduce by #32: LALR_INTERNAL_19 -> [1 symbols] (lambda (!$1)
-(list !$1))
+      <any>         reduce by #32: LALR_INTERNAL_19 -> [1 symbols] (lambda (
+                                                                   !$1) (list 
+                                                                   !$1))
 8     :symbol       shift to state 14
       :string       shift to state 7
       :number       shift to state 11
@@ -4338,8 +4340,10 @@ STATE TERMINAL      ACTION
       =>            shift to state 24
       >             shift to state 23
       :=            shift to state 22
-      <any>         reduce by #10: EXPRESSION -> [4 symbols] (lambda (!$1 !$2
-!$3 !$4) (list (quote fun) !$2 !$4))
+      <any>         reduce by #10: EXPRESSION -> [4 symbols] (lambda (!$1 !$2 
+                                                             !$3 !$4) (list (
+                                                             quote fun) !$2 
+                                                             !$4))
 22    :symbol       shift to state 14
       :string       shift to state 7
       :number       shift to state 11
@@ -4462,49 +4466,65 @@ STATE TERMINAL      ACTION
       (             shift to state 9
       [             shift to state 8
 33    =>            shift to state 24
-      <any>         reduce by #21: EXPRESSION -> [3 symbols] (lambda (!$1 !$2
-!$3) (list (quote times) !$1 !$3))
+      <any>         reduce by #21: EXPRESSION -> [3 symbols] (lambda (!$1 !$2 
+                                                             !$3) (list (
+                                                             quote times) !$1 
+                                                             !$3))
 34    =>            shift to state 24
-      <any>         reduce by #20: EXPRESSION -> [3 symbols] (lambda (!$1 !$2
-!$3) (list (quote quotient) !$1 !$3))
+      <any>         reduce by #20: EXPRESSION -> [3 symbols] (lambda (!$1 !$2 
+                                                             !$3) (list (
+                                                             quote quotient) 
+                                                             !$1 !$3))
 35    *             shift to state 32
       /             shift to state 31
       =>            shift to state 24
-      <any>         reduce by #19: EXPRESSION -> [3 symbols] (lambda (!$1 !$2
-!$3) (list (quote plus) !$1 !$3))
+      <any>         reduce by #19: EXPRESSION -> [3 symbols] (lambda (!$1 !$2 
+                                                             !$3) (list (
+                                                             quote plus) !$1 
+                                                             !$3))
 36    *             shift to state 32
       /             shift to state 31
       =>            shift to state 24
-      <any>         reduce by #18: EXPRESSION -> [3 symbols] (lambda (!$1 !$2
-!$3) (list (quote difference) !$1 !$3))
+      <any>         reduce by #18: EXPRESSION -> [3 symbols] (lambda (!$1 !$2 
+                                                             !$3) (list (
+                                                             quote difference)
+                                                             !$1 !$3))
 37    *             shift to state 32
       /             shift to state 31
       +             shift to state 30
       -             shift to state 29
       =>            shift to state 24
-      <any>         reduce by #17: EXPRESSION -> [3 symbols] (lambda (!$1 !$2
-!$3) (list (quote lessp) !$1 !$3))
+      <any>         reduce by #17: EXPRESSION -> [3 symbols] (lambda (!$1 !$2 
+                                                             !$3) (list (
+                                                             quote lessp) !$1 
+                                                             !$3))
 38    *             shift to state 32
       /             shift to state 31
       +             shift to state 30
       -             shift to state 29
       =>            shift to state 24
-      <any>         reduce by #16: EXPRESSION -> [3 symbols] (lambda (!$1 !$2
-!$3) (list (quote lesseq) !$1 !$3))
+      <any>         reduce by #16: EXPRESSION -> [3 symbols] (lambda (!$1 !$2 
+                                                             !$3) (list (
+                                                             quote lesseq) 
+                                                             !$1 !$3))
 39    *             shift to state 32
       /             shift to state 31
       +             shift to state 30
       -             shift to state 29
       =>            shift to state 24
-      <any>         reduce by #15: EXPRESSION -> [3 symbols] (lambda (!$1 !$2
-!$3) (list (quote equals) !$1 !$3))
+      <any>         reduce by #15: EXPRESSION -> [3 symbols] (lambda (!$1 !$2 
+                                                             !$3) (list (
+                                                             quote equals) 
+                                                             !$1 !$3))
 40    *             shift to state 32
       /             shift to state 31
       +             shift to state 30
       -             shift to state 29
       =>            shift to state 24
-      <any>         reduce by #14: EXPRESSION -> [3 symbols] (lambda (!$1 !$2
-!$3) (list (quote neq) !$1 !$3))
+      <any>         reduce by #14: EXPRESSION -> [3 symbols] (lambda (!$1 !$2 
+                                                             !$3) (list (
+                                                             quote neq) !$1 
+                                                             !$3))
 41    *             shift to state 32
       /             shift to state 31
       +             shift to state 30
@@ -4516,15 +4536,19 @@ STATE TERMINAL      ACTION
       =>            shift to state 24
       >             shift to state 23
       :=            shift to state 22
-      <any>         reduce by #13: EXPRESSION -> [3 symbols] (lambda (!$1 !$2
-!$3) (list (quote geq) !$1 !$3))
+      <any>         reduce by #13: EXPRESSION -> [3 symbols] (lambda (!$1 !$2 
+                                                             !$3) (list (
+                                                             quote geq) !$1 
+                                                             !$3))
 42    *             shift to state 32
       /             shift to state 31
       +             shift to state 30
       -             shift to state 29
       =>            shift to state 24
-      <any>         reduce by #12: EXPRESSION -> [3 symbols] (lambda (!$1 !$2
-!$3) (list (quote greaterp) !$1 !$3))
+      <any>         reduce by #12: EXPRESSION -> [3 symbols] (lambda (!$1 !$2 
+                                                             !$3) (list (
+                                                             quote greaterp) 
+                                                             !$1 !$3))
 43    *             shift to state 32
       /             shift to state 31
       +             shift to state 30
@@ -4536,8 +4560,10 @@ STATE TERMINAL      ACTION
       =>            shift to state 24
       >             shift to state 23
       :=            shift to state 22
-      <any>         reduce by #11: EXPRESSION -> [3 symbols] (lambda (!$1 !$2
-!$3) (list (quote setq) !$1 !$3))
+      <any>         reduce by #11: EXPRESSION -> [3 symbols] (lambda (!$1 !$2 
+                                                             !$3) (list (
+                                                             quote setq) !$1 
+                                                             !$3))
 44    ;             shift to state 53
       *             shift to state 32
       /             shift to state 31
@@ -4578,8 +4604,10 @@ STATE TERMINAL      ACTION
       >             shift to state 23
       :=            shift to state 22
       else          reduce by #42: LALR_INTERNAL_26 -> [0 symbols] 
-      <any>         reduce by #9: EXPRESSION -> [4 symbols] (lambda (!$1 !$2 !$3
-!$4) (list (quote cond) !, list (!$2 !, !$4)))
+      <any>         reduce by #9: EXPRESSION -> [4 symbols] (lambda (!$1 !$2 
+                                                            !$3 !$4) (list (
+                                                            quote cond) (list 
+                                                            !$2 !$4)))
 49    else          shift to state 50
 50    :symbol       shift to state 14
       :string       shift to state 7
@@ -4603,10 +4631,15 @@ STATE TERMINAL      ACTION
       =>            shift to state 24
       >             shift to state 23
       :=            shift to state 22
-      <any>         reduce by #8: EXPRESSION -> [6 symbols] (lambda (!$1 !$2 !$3
-!$4 !$5 !$6) (list (quote cond) !, list (!$2 !, !$4) !, list (t !, !$6)))
-52    <any>         reduce by #39: LALR_INTERNAL_24 -> [2 symbols] (lambda (!$1
-!$2) (cons !$1 !$2))
+      <any>         reduce by #8: EXPRESSION -> [6 symbols] (lambda (!$1 !$2 
+                                                            !$3 !$4 !$5 !$6) (
+                                                            list (quote cond) 
+                                                            (list !$2 !$4) (
+                                                            list t !$6)))
+52    <any>         reduce by #39: LALR_INTERNAL_24 -> [2 symbols] (lambda (
+                                                                   !$1 !$2) (
+                                                                   cons !$1 
+                                                                   !$2))
 53    :symbol       shift to state 14
       :string       shift to state 7
       :number       shift to state 11
@@ -4631,14 +4664,18 @@ STATE TERMINAL      ACTION
       >             shift to state 23
       :=            shift to state 22
       <any>         reduce by #42: LALR_INTERNAL_26 -> [0 symbols] 
-55    <any>         reduce by #41: LALR_INTERNAL_26 -> [3 symbols] (lambda (!$1
-!$2 !$3) (cons !$2 !$3))
+55    <any>         reduce by #41: LALR_INTERNAL_26 -> [3 symbols] (lambda (
+                                                                   !$1 !$2 
+                                                                   !$3) (cons 
+                                                                   !$2 !$3))
 56    :symbol       shift to state 58
 57    <any>         reduce by #23: LALR_INTERNAL_18 -> [1 symbols] 
-58    <any>         reduce by #7: EXPRESSION -> [3 symbols] (lambda (!$1 !$2 !$3
-) (list (quote go) !$3))
-59    <any>         reduce by #6: EXPRESSION -> [2 symbols] (lambda (!$1 !$2) (
-list (quote go) !$2))
+58    <any>         reduce by #7: EXPRESSION -> [3 symbols] (lambda (!$1 !$2 
+                                                            !$3) (list (quote 
+                                                            go) !$3))
+59    <any>         reduce by #6: EXPRESSION -> [2 symbols] (lambda (!$1 !$2) 
+                                                            (list (quote go) 
+                                                            !$2))
 60    *             shift to state 32
       /             shift to state 31
       +             shift to state 30
@@ -4665,8 +4702,13 @@ list (quote go) !$2))
       [             shift to state 8
       <any>         reduce by #40: LALR_INTERNAL_24 -> [0 symbols] 
 63    end           shift to state 64
-64    <any>         reduce by #29: CLOSEDEXPRESSION -> [5 symbols] (lambda (!$1
-!$2 !$3 !$4 !$5) (list (quote letstat) !$2 !$4))
+64    <any>         reduce by #29: CLOSEDEXPRESSION -> [5 symbols] (lambda (
+                                                                   !$1 !$2 
+                                                                   !$3 !$4 
+                                                                   !$5) (list 
+                                                                   (quote 
+                                                                   letstat) 
+                                                                   !$2 !$4))
 65    ;             shift to state 53
       *             shift to state 32
       /             shift to state 31
@@ -4684,12 +4726,22 @@ list (quote go) !$2))
 66    )             shift to state 70
 67    <any>         reduce by #33: EXPRLIST -> [1 symbols] 
 68    )             shift to state 69
-69    <any>         reduce by #28: CLOSEDEXPRESSION -> [3 symbols] (lambda (!$1
-!$2 !$3) (cons (quote paren) !$2))
-70    <any>         reduce by #28: CLOSEDEXPRESSION -> [3 symbols] (lambda (!$1
-!$2 !$3) (cons (quote paren) !$2))
-71    <any>         reduce by #34: LALR_INTERNAL_21 -> [2 symbols] (lambda (!$1
-!$2) (cons !$1 !$2))
+69    <any>         reduce by #28: CLOSEDEXPRESSION -> [3 symbols] (lambda (
+                                                                   !$1 !$2 
+                                                                   !$3) (cons 
+                                                                   (quote 
+                                                                   paren) !$2)
+                                                                   )
+70    <any>         reduce by #28: CLOSEDEXPRESSION -> [3 symbols] (lambda (
+                                                                   !$1 !$2 
+                                                                   !$3) (cons 
+                                                                   (quote 
+                                                                   paren) !$2)
+                                                                   )
+71    <any>         reduce by #34: LALR_INTERNAL_21 -> [2 symbols] (lambda (
+                                                                   !$1 !$2) (
+                                                                   cons !$1 
+                                                                   !$2))
 72    :symbol       shift to state 14
       :string       shift to state 7
       :number       shift to state 11
@@ -4714,8 +4766,10 @@ list (quote go) !$2))
       :=            shift to state 22
       ,             shift to state 72
       <any>         reduce by #37: LALR_INTERNAL_23 -> [0 symbols] 
-74    <any>         reduce by #36: LALR_INTERNAL_23 -> [3 symbols] (lambda (!$1
-!$2 !$3) (cons !$2 !$3))
+74    <any>         reduce by #36: LALR_INTERNAL_23 -> [3 symbols] (lambda (
+                                                                   !$1 !$2 
+                                                                   !$3) (cons 
+                                                                   !$2 !$3))
 75    *             shift to state 32
       /             shift to state 31
       +             shift to state 30
@@ -4730,12 +4784,20 @@ list (quote go) !$2))
       ,             shift to state 72
       <any>         reduce by #37: LALR_INTERNAL_23 -> [0 symbols] 
 76    ]             shift to state 77
-77    <any>         reduce by #27: CLOSEDEXPRESSION -> [3 symbols] (lambda (!$1
-!$2 !$3) (cons (quote bracket) !$2))
-78    <any>         reduce by #31: LALR_INTERNAL_19 -> [2 symbols] (lambda (!$1
-!$2) (cons !$1 !$2))
-79    <any>         reduce by #2: LALR_INTERNAL_15 -> [2 symbols] (lambda (!$1
-!$2) (cons !$1 !$2))
+77    <any>         reduce by #27: CLOSEDEXPRESSION -> [3 symbols] (lambda (
+                                                                   !$1 !$2 
+                                                                   !$3) (cons 
+                                                                   (quote 
+                                                                   bracket) 
+                                                                   !$2))
+78    <any>         reduce by #31: LALR_INTERNAL_19 -> [2 symbols] (lambda (
+                                                                   !$1 !$2) (
+                                                                   cons !$1 
+                                                                   !$2))
+79    <any>         reduce by #2: LALR_INTERNAL_15 -> [2 symbols] (lambda (
+                                                                  !$1 !$2) (
+                                                                  cons !$1 
+                                                                  !$2))
 80    :symbol       shift to state 14
       :string       shift to state 7
       :number       shift to state 11
@@ -4760,9 +4822,12 @@ list (quote go) !$2))
       >             shift to state 23
       :=            shift to state 22
       <any>         reduce by #4: LALR_INTERNAL_17 -> [0 symbols] 
-82    <any>         reduce by #3: LALR_INTERNAL_17 -> [3 symbols] (lambda (!$1
-!$2 !$3) (cons !$2 !$3))
-83    <any>         reduce by #1: PROGRAM -> [2 symbols] (lambda (!$1 !$2) !$1)
+82    <any>         reduce by #3: LALR_INTERNAL_17 -> [3 symbols] (lambda (
+                                                                  !$1 !$2 !$3)
+                                                                  (cons !$2 
+                                                                  !$3))
+83    <any>         reduce by #1: PROGRAM -> [2 symbols] (lambda (!$1 !$2) 
+                                                         !$1)
 
 === GOTO TABLE ===
 NONTERMINAL         SRC     DEST
@@ -4933,7 +4998,8 @@ On lookahead 5, reduce 2 symbols to nonterminal LALR_INTERNAL_15
 Shift token 5 onto stack, and shift to state 83
 On lookahead -1, reduce 2 symbols to nonterminal PROGRAM, and goto state 1
 Seems to have finished... 
-= ((fun (f (paren a b)) (plus a b)) (f (paren then ![)))
+= 
+((fun (f (paren a b)) (plus a b)) (f (paren then ![)))
 
 end;
 

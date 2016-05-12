@@ -176,7 +176,7 @@ grammar := '(
   )
   (cc (("c" cc) (list 'c !$2))   % First production for C
       (("d")    'd           )   % Second production for C
-  ));
+  ))$
 
 g := lalr_create_parser(nil, grammar)$
 
@@ -186,7 +186,7 @@ symbolic procedure pparse g;
     r := yyparse g;
     terpri();
     princ "= ";
-    print r
+    portable_print r
   end;
 
 pparse g$
@@ -225,7 +225,7 @@ g4_46 := '((s   ((l "=" r)   (neatprintc "## S => L = R")
                 ((!:symbol)  (neatprintc "## L => symbol")
                              !$1))
            (r   ((l)         (neatprintc "## R => L")
-                             !$1)));
+                             !$1)))$
 
 g := lalr_create_parser(nil, g4_46)$
 
@@ -257,14 +257,14 @@ gtest := '((s  ((p))
            (p  (("(" s ")") !$2)
                ((!:symbol))
                ((!:string))
-               ((!:number))));
+               ((!:number))))$
 
 % "^" and "**" both have the same high precedence and are right
 % associative. Next come "*" and "/" which are left associative,
 % and after that "+" and "-". Finally "=" has lowest precedence and
 % must not associate with itself, so (a=b=c) should be a syntax error.
 
-p := '(!:right ("^" "**") !:left ("*" "/") ("+" "-") !:none "=");
+p := '(!:right ("^" "**") !:left ("*" "/") ("+" "-") !:none "=")$
 
 g := lalr_create_parser(p, gtest)$
 
@@ -387,9 +387,9 @@ mini_language := '(
           ((expression ":=" expression) (list 'setq !$1 !$3))
           (("fun" funcall "=" expression) (list 'fun !$2 !$4))
           (("if" sequence "then" expression)
-             (list 'cond, list(!$2, !$4)))
+             (list 'cond (list !$2 !$4)))
           (("if" sequence "then" sequence "else" expression)
-             (list 'cond, list(!$2, !$4), list(t, !$6)))
+             (list 'cond (list !$2 !$4) (list t !$6)))
           (("go" (opt "to") !:symbol) (list 'go !$3))
           (("goto" !:symbol) (list 'go !$2))
           (("return" expression)))

@@ -86,10 +86,11 @@ symbolic procedure lalr_prin_reduction code;
     reduction_lhs := third reduction_info;
     princ "reduce by #"; prin code; princ ": ";
     lalr_prin_nonterminal getv16(reduction_lhs, code); 
-    princ " -> ["; prin getv8(reduction_rhs_length, code); princ " symbols] ";
+    princ " -> ["; prin getv8(reduction_rhs_length, code);
+                   princ " symbols] ";
 % He ha - if !*comp is set then the reduction function gets compiled and
 % its source is not readily visible for display here.
-    if (fn := getv(reduction_fn, code)) then prin cdr getd fn;
+    if (fn := getv(reduction_fn, code)) then prin_with_margin cdr getd fn;
   end;
 
 symbolic procedure lalr_print_lr0_collection; 
@@ -181,7 +182,7 @@ symbolic procedure lalr_print_nonterminals_and_productions;
   >>;
 
 symbolic procedure lalr_prin_semantic_action semantic_action;
-  prin semantic_action;
+  prin_with_margin semantic_action;
 
 symbolic procedure lalr_prin_rhs rhs;
   if rhs = nil then 

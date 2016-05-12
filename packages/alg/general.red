@@ -302,6 +302,92 @@ symbolic procedure arg1of2(u, v); u;
 
 symbolic procedure arg2of2(u, v); v;
 
+% Sometimes I want to print a Lisp expression starting at the current
+% column and with confidence that My Lisp system will keep output within
+% consistent line-length limits. Here I provide functions to do that which
+% might lead to a display of the style:    (here is where I start an if
+%                                          something is not going to fit
+%                                          on the line I wrap to the
+%                                          starting column. If
+%                      someextraordinaryilylongstmbolisincludedthatcannot
+%                                          cope with the given width I
+%                                          will right-align it as shown.
+%
+% This is a further follow on from portable_print.
+%
+
+symbolic procedure prin_with_margin u;
+   print_with_margin_sub(u, posn(), linelength nil-2, function explode);
+
+symbolic procedure princ_with_margin u;
+   print_with_margin_sub(u, posn(), linelength nil-2, function explode2);
+
+symbolic procedure print_with_margin u;
+ << prin_with_margin u;
+    terpri();
+    u >>;
+
+symbolic procedure printc_with_margin u;
+ << princ_with_margin u;
+    terpri();
+    u >>;
+
+% I will cope with symbols, numbers, strings and lists. Vectors and other
+% objects will be rendered cryptically at best.
+
+symbolic procedure print_with_margin_sub(u, left, right, explfn);
+  begin
+    scalar v;
+% Override pathologically narrow cases.
+    if right < 10 then right := 10;
+    if left > right-10 then left := right-10;
+    v := u;
+% Cope with lists.
+    if not atom v then <<
+      if posn() >= right then << terpri(); ttab left >>;
+      prin2 "(";
+      print_with_margin_sub(car v, left, right, explfn);
+      while not atom (v := cdr v) do <<
+        if posn() >= right then << terpri(); ttab left >>
+        else prin2 " ";
+        print_with_margin_sub(car v, left, right, explfn) >>;
+      if not null v then <<
+        if posn() >= right-1 then << terpri(); ttab left; prin2 ". " >>
+        else prin2 " .";
+        print_with_margin_sub(v, left, right, explfn) >>;
+        if posn() >= right then << terpri(); ttab left >>;
+        prin2 ")";
+      return u >>;
+% Here I have something atomic. Use the explode operator I was handed
+% to see how long its printed representation would be.
+    v := apply(explfn, list u);
+% In the case of unreasonably long atoms I will need to split things
+% across lines, and I come back to here when I have made at least some
+% headway.
+verylong:
+    if posn() + length v < right then <<
+      for each c in v do prin2 c;
+      return u >>
+    else if length v <= right-left then <<
+      terpri();
+      ttab left;
+      for each c in v do prin2 c;
+      return u >>
+    else if length v < right then <<
+      terpri();
+      ttab(right - length v);
+      for each c in v do prin2 c;
+      return u >>
+    else <<
+      if posn() >= right-5 then << terpri(); ttab left >>;
+      while posn() < right-1 do <<
+        prin2 car v;
+        v := cdr v >>;
+      prin2 "\";
+      terpri();
+      go to verylong >>
+  end;
+
 endmodule;
 
 end;
