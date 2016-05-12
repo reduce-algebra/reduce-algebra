@@ -95,7 +95,7 @@ symbolic procedure lalr_prin_reduction code;
 symbolic procedure lalr_print_lr0_collection; 
   begin
     scalar i_goto;
-    printc "=== LR(0) ITEMSET COLLECTION ==="; terpri();
+    princ "=== LR(0) ITEMSET COLLECTION ==="; terpri();
     for each i_itemset in reverse itemset_collection do <<
       princ "Itemset "; prin cdr i_itemset; terpri();
       for each item in sort(car i_itemset, function ordp) do <<
@@ -113,7 +113,7 @@ symbolic procedure lalr_print_lr0_collection;
 symbolic procedure lalr_print_collection; 
   begin
     scalar i_goto;
-    printc "=== LALR ITEMSET COLLECTION ==="; terpri();
+    princ "=== LALR ITEMSET COLLECTION ==="; terpri();
     for each i_itemset in reverse itemset_collection do <<
       princ "Itemset "; prin cdr i_itemset; terpri();
       for each item in sort(car i_itemset, function ordp) do <<
@@ -136,7 +136,7 @@ symbolic procedure lalr_print_collection;
 
 symbolic procedure lalr_print_first_information;
   <<
-    printc "=== FIRST sets for each nonterminal ===";
+    princ "=== FIRST sets for each nonterminal ==="; terpri();
     for each nt in nonterminals do <<
       lalr_prin_symbol nt; princ ":"; ttab 20;
       for each terminal in get(nt, 'lalr_first) do <<
@@ -147,7 +147,7 @@ symbolic procedure lalr_print_first_information;
 
 symbolic procedure lalr_print_terminals_and_codes terminals;
   << 
-    printc "=== Terminal symbols ==="; 
+    princ "=== Terminal symbols ==="; terpri();
     for each terminal in terminals do <<
       princ "   "; lalr_prin_symbol terminal; 
       princ " ["; prin terminal; princ "]";
@@ -161,7 +161,7 @@ symbolic procedure lalr_print_terminals_and_codes terminals;
 
 symbolic procedure lalr_print_nonterminals_and_productions;
   <<  
-    print "=== Nonterminal symbols ===";
+    princ "=== Nonterminal symbols ==="; terpri();
     for each nt in nonterminals do <<
       princ "["; prin get(nt, 'lalr_nonterminal_code); princ "] ";
       lalr_prin_symbol nt;

@@ -178,7 +178,7 @@ grammar := '(
       (("d")    'd           )   % Second production for C
   ));
 
-g := lalr_create_parser(nil, grammar);
+g := lalr_create_parser(nil, grammar)$
 
 symbolic procedure pparse g;
   begin
@@ -227,7 +227,7 @@ g4_46 := '((s   ((l "=" r)   (neatprintc "## S => L = R")
            (r   ((l)         (neatprintc "## R => L")
                              !$1)));
 
-g := lalr_create_parser(nil, g4_46);
+g := lalr_create_parser(nil, g4_46)$
 
 pparse g$
 
@@ -266,7 +266,7 @@ gtest := '((s  ((p))
 
 p := '(!:right ("^" "**") !:left ("*" "/") ("+" "-") !:none "=");
 
-g := lalr_create_parser(p, gtest);
+g := lalr_create_parser(p, gtest)$
 
 pparse g$
 a^b^c;
@@ -282,7 +282,7 @@ a * (b/c + d/e/f) ^ 2 ^ g - "str" ;
 g := lalr_create_parser(nil, '(
  (s
 % (opt ...) means that the included material is optional.
-          (("begin" (opt "and" "also") "end")))));
+          (("begin" (opt "and" "also") "end")))))$
 
 pparse g$
 begin end
@@ -295,7 +295,7 @@ begin and also end
 g := lalr_create_parser(nil, '(
  (s
 % (star ...) is for zero or mor instances of something.
-          (((star "a") "end") !$1))));
+          (((star "a") "end") !$1))))$
 
 pparse g$
 end
@@ -308,7 +308,7 @@ a a a a a a end
 g := lalr_create_parser(nil, '(
  (s
 % (plus ...) is for one or more repetitions of an item
-          (((plus "a") "end") !$1))));
+          (((plus "a") "end") !$1))))$
 
 pparse g$
 a end
@@ -323,7 +323,7 @@ g := lalr_create_parser(nil, '(
 % (list delimiter item-description) is a sequence of zero
 % or more items, and if there are several that are separated by the
 % indicated delimiter. 
-          (((list ";" !:symbol) "eof") !$1))));
+          (((list ";" !:symbol) "eof") !$1))))$
 
 pparse g$
 
@@ -334,7 +334,7 @@ g := lalr_create_parser(nil, '(
  (s
 % (listplus delimiter item-description) is as (list ...) however it
 % requires at least one item.
-          (((listplus ";" !:symbol) "eof") !$1))));
+          (((listplus ";" !:symbol) "eof") !$1))))$
 
 pparse g$
 
@@ -346,7 +346,7 @@ g := lalr_create_parser(nil, '(
 % (or x y z) may be a more compact way of writing what could
 % otherwise by given as multiple productions, so for instance
 % (or "+" "-" "*" "/") would match one of the listed operators.
-          (((star (or "a" "b")) "end") !$1))));
+          (((star (or "a" "b")) "end") !$1))))$
 
 pparse g$
 end
@@ -366,7 +366,7 @@ p := '(!:left ("*" "/")
               ("+" "-")
        !:none ("<" "<=" "==" "neq" ">=" ">")
        !:right ":=" "="
-       !:left ("then" "else" "return"));
+       !:left ("then" "else" "return"))$
 
 mini_language := '(
  (program
@@ -425,7 +425,7 @@ mini_language := '(
 
 on tracelex, lalr_verbose;
 
-g := lalr_create_parser(p, mini_language);
+g := lalr_create_parser(p, mini_language)$
 
 pparse g$
 fun f(a,b) = a + b;

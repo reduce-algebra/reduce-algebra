@@ -382,6 +382,9 @@ symbolic inline procedure princ x; prin2 x;
 symbolic inline procedure prin x;  prin1 x;
 symbolic inline procedure printc x; << prin2 x; terpri(); x >>;
 
+symbolic procedure ttab n;
+  while posn() < n do prin2 " ";
+
 symbolic inline procedure list!-to!-vector a; list2vector a;
 
 symbolic procedure hexdig w;
@@ -403,6 +406,11 @@ symbolic procedure explodehex n;
     return r
   end;
 
+symbolic procedure plist x;
+  prop x;
+
+symbolic procedure symbol!-name x;
+  id2string x;
 
 % A function to expand a filename glob (pattern) via a pipe
 %  A couple of tricky issues here:

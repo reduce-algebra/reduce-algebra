@@ -674,16 +674,8 @@ symbolic procedure subst(a, b, c);
     else return sa . sd
   end;
 
-
-% A few more names to make it easier for anybody used to CSL namings.
-
-symbolic procedure plist x;
-  prop x;
-
-symbolic procedure symbol!-name x;
-  id2string x;
-
 global '(!*psl !*csl);
+
 !*psl := t;
 !*csl := nil;
 

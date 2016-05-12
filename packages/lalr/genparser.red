@@ -296,7 +296,7 @@ symbolic procedure lalr_create_parser (precedence_list, grammar);
   end; 
 
 symbolic procedure lalr_cleanup();
-  for each symbol in symbols do <<
+  for each symbol in symbols do if idp symbol then <<
     put(symbol, 'lalr_produces, nil);
     put(symbol, 'lalr_first, nil);
     put(symbol, 'lalr_nonterminal_code, nil) >>;
@@ -335,7 +335,6 @@ expansion_count := 0;
 symbolic procedure expansion_name();
   compress append(explode 'lalr_internal_,
       explode (expansion_count := expansion_count + 1));
-  
 
 symbolic procedure expand_terminal z;
   begin
@@ -948,12 +947,22 @@ symbolic procedure lalr_make_compressed_action_row i_itemset;
     return lalr_make_compressed_action_row1 action_list;
   end;
 
+% I sort the actions by number first, but when numbers match I put
+% SHIFT ahead of REDUCE
+
+symbolic procedure orderactions(a, b);
+  if car a < car b then t
+  else if car a > car b then nil
+  else if caadr a = caadr b then ordp(cdr a, cdr b)
+  else if caadr a = 'shift then t
+  else nil; 
+
 symbolic procedure lalr_resolve_conflicts(action_list, itemset_i); 
   begin
     scalar conflicting_actions, results, shift, reduce, chosen_action,
            shift_op, reduce_op, associativity, 
            shift_precedence, reduce_precedence;
-    action_list := sort(action_list, function lesspcar);
+    action_list := sort(action_list, function orderactions);
     while action_list do <<
       conflicting_actions := list car action_list;
       action_list := cdr action_list;
@@ -1183,7 +1192,7 @@ symbolic procedure lalr_reduction_index rule;
 symbolic procedure lalr_construct_fn(lambda_expr, args_n);
   begin
     scalar fn;
-    fn := gensym1 'action;
+    fn := gensym();
     lambda_expr := 'lambda  . lalr_make_arglist args_n . lambda_expr;
     putd(fn, 'expr, lambda_expr) where !*pwrds = nil;
     return fn

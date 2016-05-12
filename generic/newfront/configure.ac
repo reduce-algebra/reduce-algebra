@@ -79,7 +79,10 @@ AC_CHECK_HEADER(ncurses.h,
    curses_header="yes"])
 if test "x$curses_header" = "xno"
 then
-  AC_MSG_ERROR([neither "curses.h" nor "ncurses.h" found])
+# If you are going to build for native Windows then not having curses
+# or ncurses is expected and not an error. For Cygwin and all non-Windows
+# platforms it would be a disaster.
+  AC_MSG_NOTICE([neither "curses.h" nor "ncurses.h" found])
 fi
 
 AC_CHECK_LIB(socket,socketpair,LIBS="-lsocket $LIBS")

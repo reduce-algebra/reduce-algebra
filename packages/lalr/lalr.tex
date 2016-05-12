@@ -1,82 +1,203 @@
-\documentclass[12pt]{article}
-\title{LALR: A parser generator}
-\author{Arthur Norman}
+\documentclass{article}
+\title{LALR}
+\author{A C Norman}
 \begin{document}
-\maketitle
 
-This code serves the same sort of purpose as the well known utilities
-\verb+yacc+ and \verb+bison+, in that it accepts a specification of a
-contex free grammar and builds a parser for the language that it describes.
-The techniques used are those described in standard texts (eg Aho, Lam,
-Sethi and Ullman) as ``LALR''.
+This package provides a parser-generator, somewhat styled after
+{\ttfamily yacc} or the many programs available for use with other
+languages. You present it with a phrase structure grammar and it
+generates a set of tables that can then be used by the function
+{\ttfamily yyparse} to read in material in the syntax that you specified.
+Internally it uses a very well established technique known ``LALR'' which
+takes the grammar are derives the description of a stack automaton that
+can accept it. Details of the procedure can be found in standard books
+on compiler construction, such as the one by Aho, Ullman Lam and Sethi.
 
-Grammars are presented to the code here as lists. In a grammar
-strings will denote terminal symbols and most symbols non-terminals. A
-small number of special symbols will stand for classes of terminal that
-are especially useful.
+At the time of writing this explanation the code is not in its final form,
+so this will describe the current state and include a few notes on what
+might chaneg in the future.
 
-A grammar is given as a list of rules. Each rule has a single non-terminal
-and then a seqence of productions for it. Each production can optionally
-be provided with an associated semantic action.
+Building a parser is done in Reduce symbolic mode, so say "{\ttfamily
+symbolic;}" or "{\ttfamily lisp;}" before starting your work.
 
+To use the code here you use a function {\ttfamily lalr\_create\_parser},
+giving it two arguments. The first indicates precedence information and
+will be described later: for now just pass the value {\ttfamily nil}.
+The second argument is a list of productions, and the first one of these
+is taken to be the top-level target for the whole grammar.
+
+Each production is in the form
 \begin{verbatim}
- GRAMMAR ::= "(" GTAIL
-         ;
-
- GTAIL   ::= ")"         % Sequence of rules
-         |   RULE GTAIL
-         ;
-
- RULE    ::= "(" nonterminal RULETAIL
-         ;
-
- RULETAIL::= ")"         % Sequence of productions
-         | PRODUCTION RULETAIL
-         ;
-
- PRODUCTION ::= "(" "(" PT1 PT2
-         ;
-
- PT1     ::= ")"         % Symbols to make one production
-         | nonterminal PT1
-         | terminal PT1
-         ;
-
- PT2     ::= ")"         % Semantic actions as Lisp code
-         | lisp-s-expressoin PT2
-         ; 
+    (LHS   ((rhs1.1 rhs1.2 ...) a1.1 a1.2 ...)
+           ((rhs2.1 rhs2.1 ...) a2.1 a2.2 ...)
+           ...)
 \end{verbatim}
+\noindent which in regular publication style for grammars might be interpreted
+as meaning
+\begin{tabular}
+     LHS ::= rhs1.1 rhs1.2 ... { a1.1 a1.2 ... }
+         |   rhs2.1 rhs2.2 ... { a2.1 a2.2 ... }
+         ...
+         ;
+\end{tabular}
+%@@@@
+Each LHS is treated as a non-terminal symbol and is specified as a simple
+name. Note that by default the Reduce parser will be folding characters
+within names to lower case and so it will be best to choose names for
+non-terminals that are unambiguous even when case-folded, but I would like
+to establish a convention that in source code they are written in capitals.
+%
+The rhs items may be either non-terminals (identified because they are
+present in the left hand side of some production) or terminals. Terminal
+symbols can be specified in two different ways.
+The lexer has built-in recipies that decode certain sequences of characters
+and return the special markers for !:symbol, !:number, !:string, !:list for
+commonly used cases. In these cases the variable yylval gets left set
+to associated data, so for instance in the case of !:symbol it gets set
+to the particular symbol concerned.
+The token type :list is used for Lisp or rlisp-like notation where the
+input contains
+    'expression
+or  `expression
+so for instance the input `(a b c) leads to the lexer returning !:list and
+yylvel being set to (backquote (a b c)). This treatment is specialised for
+handling rlisp-like syntax.
+%
+Other terminals are indicated by writing a string. That may either
+consist of characters that would otherwise form a symbol (ie a letter
+followed by letters, digits and underscores) or a sequence of
+non-alphanumeric characters. In the latter case if a sequence of three or
+more punctuation marks make up a terminal then all the shorter prefixes
+of it will also be grouped to form single entities. So if "<-->" is a
+terminal then '<', '<-' and '<--' will each by parsed as single tokens, and
+any of them that are not used as terminals will be classified as !:symbol.
+%
+As well as terminals and non-terminals (which are wrirrent as symbols or
+strings) it is possible to write one of
+    (OPT s1 s2 ...)           0 or 1 instances of the sequence s1, ...
+    (STAR s1 s2 ...)          0, 1, 2, ... instances
+    (PLUS s1 s2 ...)          1, 2, 3, ... instances
+    (LIST sep s1 s2 ...)      like (STAR s1 s2 ...) but with the single
+                              item sep between each instance.
+    (LISTPLUS sep s1 ...)     like (PLUS s2 ...) but with sep interleaved.
+    (OR s1 s2 ...)            one or other of the tokens shown.
+%
+When the lexer processes input it will return a numeric code that identifies
+the type of the item seen, so in a production one might write
+    (!:symbol ":=" EXPRESSION)
+and as it recognises the first two tokens the lexer will return a numeric
+code for !:symbol (and set yylval to the actual symbol as seen) and then
+a numeric code that it allocates for ":=". In the latter case it will
+also set yylval to the symbol !:!= in case that is useful.
+%
+Precedence can be set using lalr_precedence. See examples lower down in this
+file.
 
-Before specifying a grammar it is possible to declare the precedence and
-associativity of some of the terminal symbols it will use. Here is an
-example:
-\begin{verbatim}
- lalr_precedence '("." !:right "^" !:left ("*" "/") ("+" "-"));
-\end{verbatim}
-\noindent will arrange that the token ``\verb@.@'' has highest precedence
-and that it is left associative. Next comes ``\verb@^@'' which is right
-associative.
-Both ``\verb@*@'' and ``\verb@/@'' have the same precedence and both are
-left associative, and finally ``\verb@+@'' and ``\verb@-@'' are also equal
-in precedence but lower than ``\verb@*@''.
+Limitations are
+(1) At present the parser generator will not cope with large grammars
+    because it does not merge rules promptly enough.
+(2) The lexer is hand-written and can not readily be reconfigured for
+    use with languages other than rlisp. For instance it has use of "!"
+    as a character escape built into it.
+%
+%
 
-With those precedences in place one could specify a grammar by
-\begin{verbatim}
- lalr_construct_parser '(
-    (S  ((!:symbol))
-        ((!:number))
-        ((S "." S))
-        ((S "^" S))
-        ((S "*" S))
-        ((S "/" S))
-        ((S "+" S))
-        ((S "-" S))));
-\end{verbatim}
 
-The special markers \verb+!:symbol+ and \verb+!:number+ will match any
-symbols or numbers -- for commentary on what count as such see the discussion
-of the lexter later on. The strings stand for fixed tokens and by virtue
-of them being used in the grammer the lexer will recognise them specially.
 
+lex_cleanup();
+lex_keywords '("begin" "<=>" "<==");
+
+on lalr_verbose;
+
+Here I set up a sample grammar
+   S' -> S
+   S  -> C C        { }
+   C  -> "c" C      { }
+       | "d"        { }
+This is example 4.42 from Aho, Sethi and Ullman's Red Dragon book.
+It is example 4.54 in the more recent Purple book.
+
+
+grammar := '(
+  (s  ((cc cc)  )   % One production for S, no explicit semantic here
+  )
+  (cc (("c" cc) (list 'c !$2))   % First production for C
+      (("d")    'd           )   % Second production for C
+  ));
+
+
+g := lalr_create_parser(nil, '(
+ (s
+(or x y z) may be a more compact way of writing what could
+otherwise by given as multiple productions, so for instance
+(or "+" "-" "*" "/") would match one of the listed operators.
+          (((star (or "a" "b")) "end") !$1))))$
+
+
+The next example shows all the above put together to parse what is
+in effect a small programming language. Although it is not yet a large
+grammar it illustrates painfull clearly how poor performange of the
+parser generator can be if ut used what Aho, Sethi and Ullman describe as
+the "Easy but space-consuming LALR table construction" method.
+
+p := '(!:left ("*" "/")
+              ("+" "-")
+       !:none ("<" "<=" "==" "neq" ">=" ">")
+       !:right ":=" "="
+       !:left ("then" "else" "return"));
+
+mini_language := '(
+ (program
+          (((listplus ";" expression) "eof") !$1))
+
+ (expression
+          ((funcall))
+          ((expression "*" expression) (list 'times !$1 !$3))
+          ((expression "/" expression) (list 'quotient !$1 !$3))
+          ((expression "+" expression) (list 'plus !$1 !$3))
+          ((expression "-" expression) (list 'difference !$1 !$3))
+          ((expression "<" expression) (list 'lessp !$1 !$3))
+          ((expression "<=" expression) (list 'lesseq !$1 !$3))
+          ((expression "==" expression) (list 'equals !$1 !$3))
+          ((expression "neq" expression) (list 'neq !$1 !$3))
+          ((expression "=>" expression) (list 'geq !$1 !$3))
+          ((expression ">" expression) (list 'greaterp !$1 !$3))
+          ((expression ":=" expression) (list 'setq !$1 !$3))
+          (("fun" funcall "=" expression) (list 'fun !$2 !$4))
+          (("if" sequence "then" expression)
+             (list 'cond, list(!$2, !$4)))
+          (("if" sequence "then" sequence "else" expression)
+             (list 'cond, list(!$2, !$4), list(t, !$6)))
+          (("go" (opt "to") !:symbol) (list 'go !$3))
+          (("goto" !:symbol) (list 'go !$2))
+          (("return" expression)))
+
+(funcall
+          ((closedexpression))
+          ((funcall closedexpression)))
+
+(closedexpression
+          ((!:symbol))
+          ((!:number))
+          (((plus !:string))) % Several strings in a row just concatenate
+          (("let" sequence "in" sequence "end") (list 'letstat !$2 !$4))
+          (("(" exprlist ")") (cons 'paren !$2))
+          (("(" sequence ")") (cons 'paren !$2))
+          (("[" exprlist "]") (cons 'bracket !$2)))
+
+(exprlist (((list "," expression))))
+
+(sequence
+          (((list ";" expression)))))$
+
+on tracelex, lalr_verbose;
+
+g := lalr_create_parser(p, mini_language)$
+
+yyparse g$
+fun f(a,b) = a + b;
+f(22,33)
+eof
 
 \end{document}
+
