@@ -1162,31 +1162,6 @@ end$
 
 % ======================================================================
 
-% ----------------------------------------------------------------------
-
-% select patch by W. Neun 12.96
-
-symbolic procedure select!-eval u;
- % select from a list l members according to a boolean test.
- begin scalar l,w,v,r;
-  l := reval cadr u; w := car u;
-  if atom l or (car l neq'list and not flagp(car l,'nary)) then
-           typerr(l,"select operand");
-  if idp w and get(w,'number!-of!-args)=1 then w:={w,{'~,'!&!&}};
-  if eqcar(w,'replaceby) then <<v:=cadr w;w:=caddr w>>;
-  w:=freequote formbool(w,nil,'algebraic);
-  if v then w:={'replaceby,v,w};
-  r:=for each q in
-        pair(cdr map!-eval1(l,w,function identity!-function,'lispeval),cdr l)
-      join if car q and car q neq 0 then {cdr q};
-  if r then return car l . r;
-  if (r:=atsoc(car l,'((plus . 0)(times . 1)(and . 1)(or . 0))))
-    then return cdr r
-   %else rederr {"empty selection for operator ",car l}
-    else return list('list);
-end$
-
-% ======================================================================
 
 algebraic procedure type_homogeneous(f,z);
 begin
