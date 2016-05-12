@@ -302,16 +302,16 @@ pparse g$
 
 
 
-c Shift token 5 onto stack, and shift to state 4
-c Shift token 5 onto stack, and shift to state 4
-c Shift token 5 onto stack, and shift to state 4
-d Shift token 6 onto stack, and shift to state 3
+c Shift token c onto stack, and shift to state 4
+c Shift token c onto stack, and shift to state 4
+c Shift token c onto stack, and shift to state 4
+d Shift token d onto stack, and shift to state 3
 On lookahead -1, reduce 1 symbols to nonterminal CC, and goto state 5
 On lookahead -1, reduce 2 symbols to nonterminal CC, and goto state 5
 On lookahead -1, reduce 2 symbols to nonterminal CC, and goto state 5
 On lookahead -1, reduce 2 symbols to nonterminal CC, and goto state 2
-c Shift token 5 onto stack, and shift to state 4
-d Shift token 6 onto stack, and shift to state 3
+c Shift token c onto stack, and shift to state 4
+d Shift token d onto stack, and shift to state 3
 On lookahead -1, reduce 1 symbols to nonterminal CC, and goto state 5
 On lookahead -1, reduce 2 symbols to nonterminal CC, and goto state 6
 On lookahead -1, reduce 2 symbols to nonterminal S, and goto state 1
@@ -328,9 +328,9 @@ pparse g$
 
 
 
-d Shift token 6 onto stack, and shift to state 3
+d Shift token d onto stack, and shift to state 3
 On lookahead -1, reduce 1 symbols to nonterminal CC, and goto state 2
-d Shift token 6 onto stack, and shift to state 3
+d Shift token d onto stack, and shift to state 3
 On lookahead -1, reduce 1 symbols to nonterminal CC, and goto state 6
 On lookahead -1, reduce 2 symbols to nonterminal S, and goto state 1
 Seems to have finished... 
@@ -493,7 +493,7 @@ pparse g$
 a * (b/c + d/e/f) ^ 2 ^ g - "str" ;
 = 
 (difference (times a (expt (plus (quotient b c) (quotient (quotient d e) f)
-) (expt !:string g))) "str")
+) (expt 2 g))) "str")
 
 
 % Demonstrate various of the short-hand notations...
@@ -4887,7 +4887,7 @@ yylex initialized
 
 fun 
 yylex = fun type 20
-Shift token 20 onto stack, and shift to state 17
+Shift token fun onto stack, and shift to state 17
 f(
 yylex = f type 1
 Shift token f onto stack, and shift to state 14
@@ -4895,7 +4895,7 @@ On lookahead -1, reduce 1 symbols to nonterminal CLOSEDEXPRESSION
 , and goto state 5
 On lookahead -1, reduce 1 symbols to nonterminal FUNCALL, and goto state 18
 yylex = !( type 31
-Shift token 31 onto stack, and shift to state 9
+Shift token !( onto stack, and shift to state 9
 a,
 yylex = a type 1
 Shift token a onto stack, and shift to state 14
@@ -4904,7 +4904,7 @@ On lookahead -1, reduce 1 symbols to nonterminal CLOSEDEXPRESSION
 On lookahead -1, reduce 1 symbols to nonterminal FUNCALL, and goto state 4
 yylex = !, type 35
 On lookahead 35, reduce 1 symbols to nonterminal EXPRESSION, and goto state 65
-Shift token 35 onto stack, and shift to state 72
+Shift token !, onto stack, and shift to state 72
 b)
 yylex = b type 1
 Shift token b onto stack, and shift to state 14
@@ -4920,13 +4920,13 @@ On lookahead 32, reduce 3 symbols to nonterminal LALR_INTERNAL_23
 On lookahead 32, reduce 2 symbols to nonterminal LALR_INTERNAL_21
 , and goto state 67
 On lookahead 32, reduce 1 symbols to nonterminal EXPRLIST, and goto state 66
-Shift token 32 onto stack, and shift to state 70
+Shift token !) onto stack, and shift to state 70
 On lookahead -1, reduce 3 symbols to nonterminal CLOSEDEXPRESSION
 , and goto state 19
 On lookahead -1, reduce 2 symbols to nonterminal FUNCALL, and goto state 18
  = 
 yylex = != type 14
-Shift token 14 onto stack, and shift to state 20
+Shift token != onto stack, and shift to state 20
 a 
 yylex = a type 1
 Shift token a onto stack, and shift to state 14
@@ -4936,7 +4936,7 @@ On lookahead -1, reduce 1 symbols to nonterminal FUNCALL, and goto state 4
 +
 yylex = !+ type 9
 On lookahead 9, reduce 1 symbols to nonterminal EXPRESSION, and goto state 21
-Shift token 9 onto stack, and shift to state 30
+Shift token !+ onto stack, and shift to state 30
  b;
 yylex = b type 1
 Shift token b onto stack, and shift to state 14
@@ -4947,7 +4947,7 @@ yylex = !; type 6
 On lookahead 6, reduce 1 symbols to nonterminal EXPRESSION, and goto state 35
 On lookahead 6, reduce 3 symbols to nonterminal EXPRESSION, and goto state 21
 On lookahead 6, reduce 4 symbols to nonterminal EXPRESSION, and goto state 3
-Shift token 6 onto stack, and shift to state 80
+Shift token !; onto stack, and shift to state 80
 
 f(
 yylex = f type 1
@@ -4956,7 +4956,7 @@ On lookahead -1, reduce 1 symbols to nonterminal CLOSEDEXPRESSION
 , and goto state 5
 On lookahead -1, reduce 1 symbols to nonterminal FUNCALL, and goto state 4
 yylex = !( type 31
-Shift token 31 onto stack, and shift to state 9
+Shift token !( onto stack, and shift to state 9
 22,
 yylex = 22 type 3
 Shift token 22 onto stack, and shift to state 11
@@ -4965,7 +4965,7 @@ On lookahead -1, reduce 1 symbols to nonterminal CLOSEDEXPRESSION
 On lookahead -1, reduce 1 symbols to nonterminal FUNCALL, and goto state 4
 yylex = !, type 35
 On lookahead 35, reduce 1 symbols to nonterminal EXPRESSION, and goto state 65
-Shift token 35 onto stack, and shift to state 72
+Shift token !, onto stack, and shift to state 72
 33)
 yylex = 33 type 3
 Shift token 33 onto stack, and shift to state 11
@@ -4981,7 +4981,7 @@ On lookahead 32, reduce 3 symbols to nonterminal LALR_INTERNAL_23
 On lookahead 32, reduce 2 symbols to nonterminal LALR_INTERNAL_21
 , and goto state 67
 On lookahead 32, reduce 1 symbols to nonterminal EXPRLIST, and goto state 66
-Shift token 32 onto stack, and shift to state 70
+Shift token !) onto stack, and shift to state 70
 On lookahead -1, reduce 3 symbols to nonterminal CLOSEDEXPRESSION
 , and goto state 19
 On lookahead -1, reduce 2 symbols to nonterminal FUNCALL, and goto state 4
@@ -4995,11 +4995,11 @@ On lookahead 5, reduce 3 symbols to nonterminal LALR_INTERNAL_17
 , and goto state 79
 On lookahead 5, reduce 2 symbols to nonterminal LALR_INTERNAL_15
 , and goto state 2
-Shift token 5 onto stack, and shift to state 83
+Shift token eof onto stack, and shift to state 83
 On lookahead -1, reduce 2 symbols to nonterminal PROGRAM, and goto state 1
 Seems to have finished... 
 = 
-((fun (f (paren a b)) (plus a b)) (f (paren then ![)))
+((fun (f (paren a b)) (plus a b)) (f (paren 22 33)))
 
 end;
 

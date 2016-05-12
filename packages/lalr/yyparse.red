@@ -82,16 +82,21 @@ fluid '(parser_action_table parser_goto_table);
 %     production, as its integer nonterminal code. This is then used to lookup
 %     the destination state from the GOTO table, to push onto the state stack.
 % 
-% Note that reduction_lhs and reduction_rhs_n are CSL fixnum vectors.
+% Note that reduction_lhs and reduction_rhs_n are CSL fixnum vectors. For PSL
+% I have a compatibility fragment that uses simple Lisp vectors to store
+% the same information, but less compactly.
+
 fluid '(reduction_fn reduction_lhs reduction_rhs_n);
 
 % This is an alist from nonterminal category code to nonterminal symbol, 
 % provided strictly for verbose printing purposes. Note that genparserprint.red
 % provides a lalr_prin_nonterminal function that expects a global/fluid called
 % nonterminal_codes to be initialized in this format -- convenient!
+
 fluid '(nonterminal_codes);
 
 % Ditto for terminal symbols.
+
 fluid '(terminal_codes);
 
 % This function deconstructs the parser structure passed to yyparse() and 
@@ -101,6 +106,7 @@ fluid '(terminal_codes);
 % stored as a fluid variable above) is the lex_context structure that needs
 % to be passed to lex_restore_context (in yylex.red) so that the lexer will 
 % provide the correct tokens for this grammar.
+
 symbolic procedure set_parser parser;
   begin
     scalar w;
@@ -165,7 +171,7 @@ symbolic procedure yyparse parser;
     % action.
     scalar parser_action_table, parser_goto_table, 
            reduction_fn, reduction_lhs, reduction_rhs_n, 
-           nonterminal_codes,
+           terminal_codes, nonterminal_codes,
            sym_stack, state_stack, next_input, w;
 
 
@@ -196,7 +202,7 @@ symbolic procedure yyparse parser;
           next_input = lex_string_code or
           next_input = lex_list_code then
           sym_stack := yylval . sym_stack
-        else sym_stack := next_input . sym_stack;    
+        else sym_stack := cdrassoc(next_input, terminal_codes) . sym_stack;    
         state_stack := w . state_stack;                 
         next_input := -1;                               
         if !*lalr_verbose then << %% should we decode the terminal code here?
@@ -212,10 +218,7 @@ symbolic procedure yyparse parser;
         lhs := getv16(reduction_lhs, w);            
         w := nil;
         for i := 1:rhs_n do <<
-          name := car sym_stack;
-          if fixp name and assoc(name, terminal_codes) then
-            name := cdrassoc(name, terminal_codes);
-          w := name . w;
+          w := car sym_stack . w;
           sym_stack := cdr sym_stack;
           state_stack := cdr state_stack >>;
 

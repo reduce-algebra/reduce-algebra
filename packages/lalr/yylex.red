@@ -121,7 +121,7 @@ put('!:number, 'lex_fixed_code, 3);
 put('!:list,   'lex_fixed_code, 4);
 
 % lex_codename is just used when generating trace output and maps from
-% numeric codes back to the corresponding terminal symbols. Because it isd
+% numeric codes back to the corresponding terminal symbols. Because it is
 % only used for tracing I am not concerned about performance and I will use
 % a simple association list.
 
