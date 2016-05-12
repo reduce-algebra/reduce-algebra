@@ -130,6 +130,7 @@
  (mathml        "mathml"                test                 csl psl)
  (mathmlom      "mathml"                test                 csl psl)
  (rltools       "redlog/rltools"        test                 csl psl)
+ (rlsupport     "redlog/rlsupport" 			     csl psl)
  (redlog        "redlog/rl"             test                 csl psl)
  (cgb           "cgb"                   test                 csl psl)
  (cl            "redlog/cl"                                  csl psl)

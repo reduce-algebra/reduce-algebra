@@ -151,6 +151,9 @@ procedure lto_cassoc(key,al);
    % $[key]=k_i$, [nil] else.
    (if x then cdr x) where x=assoc(key,al);
 
+asserted procedure lto_eatsoc(key: Id, al: Alist, emsg: List);
+   (if x then cdr x else rederr emsg) where x=assoc(key,al);
+
 procedure lto_appendn(l);
    for each x in l join append(x,nil);
 
@@ -596,6 +599,17 @@ procedure lto_maxkl(kl);
 
 asserted procedure lto_0listp(l: List): Boolean;
    null l or eqn(car l, 0) and lto_0listp cdr l;
+
+asserted procedure lto_alphap(x: Id): ExtraBoolean;
+   begin scalar alphabet, c, l;
+      alphabet := '(a b c d e f g h i j k l m n o p q r s t u v w x y z
+	 A B C D E F G H I J K L M N O P Q R S T U V W X Y Z);
+      c := t;
+      l := explode x;
+      while c and l do
+	 c := pop l memq alphabet;
+      return c
+   end;
 
 endmodule;  % [lto]
 

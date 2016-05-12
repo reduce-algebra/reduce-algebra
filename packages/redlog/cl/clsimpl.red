@@ -55,7 +55,7 @@ procedure cl_simpl(f,atl,n);
  	 return cl_simpl1(f,nil,n,nil);
       atl := cl_sitheo atl;
       if atl eq 'inctheo then
-	 return 'inctheo;
+	 return rl_exc 'inctheo;
       w := rl_smupdknowl('and,atl,nil,n+1);
       if w eq 'false then return 'inctheo;
       return cl_simpl1(f,w,n,nil)

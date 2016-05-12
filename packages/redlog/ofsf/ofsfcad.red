@@ -77,11 +77,14 @@ asserted procedure ofsf_gcad(phi: Formula, prjordl: List, aaplus: List): DottedP
    % that $\bigwedge\theta$ implies ([phi] equivalent to [phip])$.
    begin scalar !*rlqegen;
       !*rlqegen := t;
-      return ofsf_cad(phi, prjordl, aaplus)
+      return ofsf_cad1(phi, prjordl, aaplus)
    end;
 
 % rlcad entry point
-asserted procedure ofsf_cad(phi: Formula, prjordl: List, aaplus: List): Any;
+asserted procedure ofsf_cad(phi: Formula, prjordl: List, aaplus: List): Formula;
+   cdr ofsf_cad1(phi, prjordl, aaplus);
+
+asserted procedure ofsf_cad1(phi: Formula, prjordl: List, aaplus: List): DottedPair;
    % Ordered field standard form cylindrical algebraic decomposition. [phi] is a
    % formula, [prjordl] is a list of variables (projection order), and [aaplus]
    % is a list of SF. Returns a pair [theta . phip], where [theta] is a list of

@@ -555,6 +555,10 @@ defautoload(lto_at2str, rltools, expr, 1);
 
 defautoload(lto_sconcat, rltools, expr, 1);
 
+defautoload(lto_eatsoc, rltools, expr, 3);
+
+defautoload(lto_alphap, rltools, expr, 1);
+
 symbolic operator fastresultant;
 defautoload(fastresultant, rltools, expr, 3);
 
@@ -562,12 +566,23 @@ defautoload(sfto_res, rltools, expr, 3);
 
 defautoload(sfto_res2, rltools, expr, 3);
 
-% Qhull entry point
+% Rlsupport entry points
 
-symbolic operator qhull;
-defautoload(qhull, qhull, expr, 1);
+put('rl_type, 'stat, 'rl_typeStat);
+defautoload(rl_typeStat, rlsupport, expr, 0);
 
-defautoload(qhull_qhull, qhull, expr, 1);
+put('rl_service, 'stat, 'rl_serviceStat);
+defautoload(rl_serviceStat, rlsupport, expr, 0);
+
+defautoload(rl_servicewrapper, rlsupport, expr, 6);
+
+defautoload(rl_exception, rlsupport, expr, 1);  % temporary
+
+defautoload(rl_exceptionp, rlsupport, expr, 1);  % temporary
+
+defautoload(rl_exc, rlsupport, expr, 1);
+
+defautoload(rl_excp, rlsupport, expr, 1);
 
 % Redlog entry points
 
@@ -575,6 +590,15 @@ put('rlset, 'psopfn, 'rl_set!$);
 defautoload(rl_set!$, redlog, expr, 1);
 
 defautoload(rl_set, redlog, expr, 1);
+
+defautoload(rl_copyc, redlog, expr, 2);
+
+% Qhull entry point
+
+symbolic operator qhull;
+defautoload(qhull, qhull, expr, 1);
+
+defautoload(qhull_qhull, qhull, expr, 1);
 
 % Gurobi entry points
 

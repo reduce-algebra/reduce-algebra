@@ -598,14 +598,6 @@ procedure rl_a2s!-var(u);
       return w
    end;
 
-procedure rl_a2s!-number(n);
-   % Algebraic to symbolic number.
-   begin
-      n := reval n;
-      if not numberp n then typerr(n,"number");
-      return n
-   end;
-
 procedure rl_a2s!-sf(n);
    % Algebraic to symbolic standard form.
    begin
@@ -620,19 +612,6 @@ procedure rl_a2s!-id(k);
       k := reval k;
       if not idp k then typerr(k,"identifier");
       return k
-   end;
-
-procedure rl_a2s!-atl(l);
-   % Algebraic to symbolic atomic formula list.
-   begin scalar w,!*rlsimpl;
-      l := reval l;
-      if not eqcar(l,'list) then
- 	 typerr(l,"list");
-      return for each x in cdr l collect <<
-	 if rl_cxp rl_op (w := rl_simp x) then
-	    typerr(x,"atomic formula");
-      	 w
-      >>
    end;
 
 procedure rl_a2s!-stringl(l);
@@ -707,11 +686,6 @@ procedure rl_s2a!-opt(res);
    else
       {'list,mk!*sq car res,'list . for each x in cadr res collect 'list . x};
 
-procedure rl_s2a!-atl(l);
-   'list . for each x in l collect rl_mk!*fof x;
-
-copyd('rl_s2a!-fl,'rl_s2a!-atl);
-
 procedure rl_s2a!-ml(ml,s2acar);
    'list . for each p in ml collect {'list,apply(s2acar,{car p}),cdr p};
 
@@ -783,21 +757,6 @@ procedure rl_a2s!-aqepoints(u);
       >>
    end;
 
-procedure rl_s2a!-idlist(l);
-   'list . l;
-
-procedure rl_a2s!-idlist(u);
-   begin scalar w;
-      w := reval u;
-      if not eqcar(w,'list) then
-         typerr(w,"list");
-      w := cdr w;
-      for each x in w do
-	 if not idp x then
-	    typerr(x,"identifier");
-      return w
-   end;
-
 procedure rl_s2a!-qsatoptions(l);
    'list . l;
 
@@ -842,11 +801,8 @@ procedure rl_s2a!-ghqe(l);
 procedure rl_a2s!-sf(x);
    numr simp x;
 
-procedure rl_a2s!-sflist(pl);
-   for each p in cdr pl collect numr simp p;
-
 procedure rl_s2a!-sflistlist(sfll);
-   % . [sfll] is a list of list of SF.
+   % [sfll] is a list of list of SF.
    begin scalar fl,f;
       return 'list . for each fl in sfll collect
 	 'list . for each f in fl collect prepf f

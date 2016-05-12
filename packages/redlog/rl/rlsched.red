@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(rl_sched_rcsid!* rl_sched_copyright!*);
@@ -43,8 +43,8 @@ rl_mkserv('subfof,'(dummy dummy),nil,nil,nil,nil);
 
 rl_mkserv('identifyonoff,'(reval),nil,nil,'null,nil);
 
-rl_mkserv('simpl,'(rl_simp),
-   '(rl_a2s!-atl rl_a2s!-number),'((list) -1),'rl_s2a!-simpl,t);
+%% rl_mkserv('simpl,'(rl_simp),
+%%    '(rl_a2s!-atl rl_a2s!-number),'((list) -1),'rl_s2a!-simpl,t);
 
 rl_mkserv('thsimpl,'(rl_a2s!-atl),nil,nil,'rl_s2a!-atl,t);
 
@@ -183,8 +183,8 @@ rl_mkserv('xqe,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
 rl_mkserv('xqea,'(rl_simp),nil,nil,'rl_s2a!-qea,t);
 
-rl_mkserv('cad,'(rl_simp),'(rl_a2s!-idlist rl_a2s!-sflist),'((list) (list)),
-   function(lambda x; rl_mk!*fof cdr x),t);
+%% rl_mkserv('cad,'(rl_simp),'(rl_a2s!-idlist rl_a2s!-sflist),'((list) (list)),
+%%    function(lambda x; rl_mk!*fof cdr x),t);
 
 rl_mkserv('gcad,'(rl_simp),'(rl_a2s!-idlist rl_a2s!-sflist),'((list) (list)),
    'rl_s2a!-gqe,t);
@@ -256,7 +256,7 @@ rl_mkserv('tropsat, '(rl_simp), nil, nil, 'aeval, t);
 
 rl_mkserv('ptropsat, '(rl_simp), nil, nil, 'aeval, t);
 
-rl_mkserv('dpep,'(rl_simp),'(rl_a2s!-number),'(20), function(lambda x; rl_mk!*fof cdr x),t);
+rl_mkserv('dpep,'(rl_simp),'(rl_a2s!-number),'(20), 'rl_mk!*fof, t);
 
 rl_mkserv('vsl,'(rl_a2s!-atl),nil,nil,'rl_mk!*fof,t);
 

@@ -2792,7 +2792,7 @@ procedure ofsf_fbqe(f, theo);
    else <<
       if !*rlverbose then
 	 ioto_prin2t "ofsf_cad with optimization of projection order";
-      ofsf_cad(f, ofsf_cadporder f, theo)
+      ofsf_cad1(f, ofsf_cadporder f, theo)
    >>;
 
 procedure ofsf_fbexternal(f,call,name);

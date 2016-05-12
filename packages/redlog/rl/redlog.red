@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 A. Dolzmann and T. Sturm, 2010-2011 T. Sturm
+% (c) 1995-2009 A. Dolzmann and T. Sturm, 2010-2016 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -31,13 +31,13 @@
 lisp <<
    fluid '(rl_rcsid!* rl_copyright!*);
    rl_rcsid!* := "$Id$";
-   rl_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm"
+   rl_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2016 T. Sturm"
 >>;
 
 module redlog;
 % Reduce logic component.
 
-create!-package('(redlog rlami rlsched rlcont rlhelp rlsl rlslv),nil);
+create!-package('(redlog rlami rltypes rlservices rlsched rlcont rlhelp rlsl rlslv),nil);
 
 load!-package 'rltools;  % rlhelp needs ioto.
 
@@ -829,14 +829,6 @@ procedure rl_mkexternal(x,f,xf);
 	 al := (f . xf) . al;
       return put(x,'rl_external,al)
    end;
-
-flag('(rl_exception),'assert_ignore);
-
-inline procedure rl_exception(s);
-   'rl_exception . s;
-
-inline procedure rl_exceptionp(s);
-   eqcar(s,'rl_exception);
 
 endmodule;  % [redlog]
 
