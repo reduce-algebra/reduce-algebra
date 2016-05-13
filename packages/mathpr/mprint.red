@@ -499,6 +499,8 @@ symbolic procedure boolvalpri u;
 
 put('boolvalue!*,'prifn,'boolvalpri);
 
+put('bool!-eval,'prifn,'boolvalpri);
+
 put('prog,'prifn,'progpri);
 
 put('progn,'prifn,'progpri);
@@ -513,6 +515,24 @@ symbolic procedure holdpri u;
   << if not atom cadr u then prin2!* "(";
      maprin cadr u;
      if not atom cadr u then prin2!* ")" >>;
+
+symbolic procedure wherepri u;
+  << prin2!* "(";
+     prin2!* "("; maprin caddr u; prin2!* ")";
+     prin2!* " where ";
+     if eqcar(cadr u,'list) and null cddr cadr u 
+       then maprin cadr cadr u
+      else maprin cadr u;
+     prin2!* ")" >>;
+
+put('whereexp,'prifn,'wherepri);
+
+symbolic procedure revalxpri u;
+   << u := lispeval cadr u;
+      if not atom u and not atom car u then u := prepf u;
+      maprin u; >>;
+
+put ('revalx,'prifn,'revalxpri);
 
 
 endmodule;
