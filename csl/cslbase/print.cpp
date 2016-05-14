@@ -2642,6 +2642,7 @@ restart:
                     // Drop through
 #endif
                 case TYPE_SIMPLE_VEC:
+                case TYPE_OBJECT:
                 case TYPE_HASH:
                 {
 #ifndef COMMON
@@ -2658,6 +2659,10 @@ restart:
                         else if (type_of_header(h) == TYPE_HASH)
                         {   outprefix(blankp, 3);
                             putc_stream('#', active_stream); putc_stream('H', active_stream); putc_stream('(', active_stream);
+                        }
+                        else if (type_of_header(h) == TYPE_OBJECT)
+                        {   outprefix(blankp, 3);
+                            putc_stream('#', active_stream); putc_stream('O', active_stream); putc_stream('(', active_stream);
                         }
                         else
                         {   outprefix(blankp, 2);

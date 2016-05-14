@@ -435,7 +435,7 @@ static void non_recursive_mark(LispObject *top)
                w,
                nil = C_nil;
     Header h, *q;
-    intptr_t i;
+    size_t i;
 //
 // When I get to descend I have b as an unmarked address that is either
 // equal to top, or is a back-pointer as set up below.  p is a normal
@@ -1113,7 +1113,7 @@ static void mark(LispObject *pp)
     LispObject p, q, nil = C_nil;
     LispObject *sp = stack, *sl = stacklimit;
     Header h;
-    intptr_t i;
+    size_t i;
     *++sp = (LispObject)NULL;
 top:
 //
@@ -1735,7 +1735,7 @@ static void relocate_consheap(int bottom_page_number)
 
 static void relocate_vecheap(void)
 {   int page_number;
-    intptr_t i;
+    size_t i;
     for (page_number = 0; page_number < vheap_pages_count; page_number++)
     {   void *page = vheap_pages[page_number];
         char *low = (char *)doubleword_align_up((intptr_t)page);

@@ -229,7 +229,7 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		arith11.cpp arith12.cpp arith13.cpp arith14.cpp bytes1.cpp \
 		char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp eval4.cpp \
 		fns1.cpp fns2.cpp fns3.cpp inthash.cpp print.cpp cslread.cpp \
-		restart.cpp serialize.cpp sysfwin.cpp
+		restart.cpp lisphash.cpp serialize.cpp sysfwin.cpp
 
 demo_sources = csl.cpp fasl.cpp cslgc.cpp preserve.cpp
 
@@ -838,6 +838,7 @@ fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+lisphash.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
@@ -880,6 +881,7 @@ csl-fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl-fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl-fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-lisphash.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl-jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl-jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
@@ -922,6 +924,7 @@ reduce-fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-lisphash.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)

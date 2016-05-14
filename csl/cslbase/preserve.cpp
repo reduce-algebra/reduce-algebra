@@ -2337,7 +2337,8 @@ static void unadjust_consheap(void)
 }
 
 static void unadjust_vecheap(void)
-{   int32_t page_number, i;
+{   int32_t page_number;
+    size_t i;
     for (page_number = 0; page_number < vheap_pages_count; page_number++)
     {   void *page = vheap_pages[page_number];
         char *low = (char *)doubleword_align_up((intptr_t)page);

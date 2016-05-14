@@ -170,7 +170,7 @@ typedef intptr_t LispObject;
 // size of the basic unit of memory within which CSL works.
 //
 
-#define CELL ((intptr_t)sizeof(LispObject))
+#define CELL ((size_t)sizeof(LispObject))
 
 //
 // LispObject is a datatype where the low 3 bits are used as tags -
@@ -334,7 +334,7 @@ extern LispObject address_sign;  // 0, 0x80000000 or 0x8000000000000000
 #define consp(p)     is_cons(p)
 #define symbolp(p)   is_symbol(p)
 
-// For Common Lisp it would ne necessary to detect and trap any attempt
+// For Common Lisp it would be necessary to detect and trap any attempt
 // to take CAR or CDR of NIL and do something special.
 #define car_legal(p) is_cons(p)
 
@@ -816,7 +816,7 @@ typedef uintptr_t Header;
 
 #define TYPE_SIMPLE_VEC   ( 0x01 <<Tw) // simple general vector
 #define TYPE_HASH         ( 0x11 <<Tw) // hash table
-//#define TYPE_HASHX      ( 0x15 <<Tw) // hash table in need of re-hashing
+#define TYPE_HASHX        ( 0x15 <<Tw) // hash table in need of re-hashing
 #define TYPE_ARRAY        ( 0x05 <<Tw) // header record for general array
 #define TYPE_STRUCTURE    ( 0x09 <<Tw) // includes packages etc possibly
 #define TYPE_OBJECT       ( 0x0d <<Tw) // and "object"
@@ -828,7 +828,7 @@ typedef uintptr_t Header;
 #define TYPE_VECFLOAT64   ( 0x57 <<Tw) // contains double-precision floats
 #define TYPE_VECFLOAT128  ( 0x5b <<Tw) // contains long double floats
 
-// The next items live amongst the vectors that hold LIsp pointers, but only
+// The next items live amongst the vectors that hold Lisp pointers, but only
 // the first three items are pointers - the rest of the stuff is binary
 // data. This arrangements was required for streams, and the three other
 // "mixed" cases are just in case anybody finds them useful.
@@ -850,7 +850,7 @@ typedef uintptr_t Header;
 #define SPID_CATCH          (TAG_SPID+0x0200)  // CATCH frame on stack
 #define SPID_PROTECT        (TAG_SPID+0x0300)  // UNWIND_PROTECT on stack
 #define SPID_HASH0          (TAG_SPID+0x0400)  // Empty hash slot
-#define SPID_HASH1          (TAG_SPID+0x0500)  // Deleted hash slot
+#define SPID_HASH1          (TAG_SPID+0x0500)  // Deleted hash item (tombstone)
 #define SPID_GCMARK         (TAG_SPID+0x0600)  // Used by GC as sentinel
 #define SPID_NOINPUT        (TAG_SPID+0x0700)  // Used by (read) in #X()
 #define SPID_ERROR          (TAG_SPID+0x0800)  // Used to indicate error
@@ -1171,10 +1171,10 @@ typedef struct Single_Float
 
 #define word_align_up(n) ((LispObject)(((intptr_t)(n) + 3) & (-4)))
 
-#define doubleword_align_up(n) ((LispObject)(((intptr_t)(n) + 7) & (-8)))
-#define doubleword_align_down(n) ((LispObject)((intptr_t)(n) & (-8)))
+#define doubleword_align_up(n) ((uintptr_t)(((intptr_t)(n) + 7) & (-8)))
+#define doubleword_align_down(n) ((uintptr_t)((intptr_t)(n) & (-8)))
 
-#define object_align_up(n) ((LispObject)(((intptr_t)(n) + \
+#define object_align_up(n) ((uintptr_t)(((intptr_t)(n) + \
                             sizeof(LispObject) - 1) & (-sizeof(LispObject))))
 
 //
@@ -1183,8 +1183,8 @@ typedef struct Single_Float
 // one delicate place in the garbage collector! But I really rather hope
 // I do not rely on this at all much.
 //
-#define quadword_align_up(n) ((LispObject)(((intptr_t)(n) + 15) & (-16)))
-#define quadword_align_down(n) ((LispObject)((intptr_t)(n) & (-16)))
+#define quadword_align_up(n) ((uintptr_t)(((intptr_t)(n) + 15) & (-16)))
+#define quadword_align_down(n) ((uintptr_t)((intptr_t)(n) & (-16)))
 
 //
 // values to go in exit_reason at times when exception_pending() is true.
