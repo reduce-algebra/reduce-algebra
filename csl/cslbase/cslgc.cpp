@@ -2745,7 +2745,7 @@ LispObject use_gchook(LispObject p, LispObject arg)
 static double prev_consolidated = 0.0;
 static int prev_consolidated_set = 1;
 
-int garbage_collection_permitted = 0;
+bool garbage_collection_permitted = false;
 
 #ifdef DEBUG_WITH_HASH
 #define GCHASH 10000

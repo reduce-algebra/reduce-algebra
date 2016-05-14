@@ -5021,7 +5021,7 @@ static int alpha0(const void *a, const void *b)
 
 static void set_up_variables(int restart_flag)
 {   LispObject nil = C_nil, w, w1;
-    size_t i;
+    int i;
 #ifdef COMMON
     LispObject saved_package = CP;
     CP = find_package("LISP", 4);
@@ -5030,7 +5030,7 @@ static void set_up_variables(int restart_flag)
     input_libraries = make_undefined_symbol("input-libraries");
     qheader(input_libraries)  |= SYM_SPECIAL_VAR;
     qvalue(input_libraries) = nil;
-    for (i=number_of_fasl_paths-1; i>=0; i--)
+    for (i=(int)number_of_fasl_paths-1; i>=0; i--)
         qvalue(input_libraries) = cons(SPID_LIBRARY + (((int32_t)i)<<20),
                                        qvalue(input_libraries));
     output_library = make_undefined_symbol("output-library");
@@ -5089,7 +5089,7 @@ static void set_up_variables(int restart_flag)
         LispObject n = features_symbol;
         char opsys[32];
         char *p1 = opsys, *p2 = OPSYS;
-        size_t ii;
+        int ii;
         while ((*p1++ = toupper(*p2++)) != 0);
         *p1 = 0;
         /*! lispsys [opsys] \item [{\itshape operating system identity}] \index{{\ttfamily operating system identity}}
@@ -5128,7 +5128,7 @@ static void set_up_variables(int restart_flag)
         w = acons(make_keyword("LINKER"),
                   make_undefined_symbol(linker_type), w);
         w1 = nil;
-        for (ii=sizeof(compiler_command)/sizeof(compiler_command[0])-1;
+        for (ii=(int)(sizeof(compiler_command)/sizeof(compiler_command[0])-1);
              ii>=0;
              ii--)
             w1 = cons(make_undefined_symbol(compiler_command[ii]), w1);
@@ -5265,7 +5265,7 @@ static void set_up_variables(int restart_flag)
          */
 
         w = cons(make_keyword(OPSYS), nil);
-        size_t ii;
+        int ii;
 #if defined WIN64 || defined __WIN64__ || defined WIN32
 //
 // In the WIN64 case I will ALSO tell the user than I am "win32". This is
@@ -5282,7 +5282,7 @@ static void set_up_variables(int restart_flag)
         w = acons(make_keyword("linker"),
                   make_undefined_symbol(linker_type), w);
         w1 = nil;
-        for (ii=sizeof(compiler_command)/sizeof(compiler_command[0])-1;
+        for (ii=(int)(sizeof(compiler_command)/sizeof(compiler_command[0])-1);
              ii>=0;
              ii--)
             w1 = cons(make_undefined_symbol(compiler_command[ii]), w1);
@@ -6053,10 +6053,10 @@ void setup(int restart_flag, double store_size)
 //            allocated, and to re-use what there is.
 //    4, 8, ...   not used yet!
 //
-    size_t i;
+    int32_t i;
     LispObject nil;
     if ((restart_flag & 2) != 0) init_heap_segments(store_size);
-    garbage_collection_permitted = 0;
+    garbage_collection_permitted = false;
     nil = C_nil;
 #ifdef TIDY_UP_MEMORY_AT_START
 //
@@ -6460,7 +6460,7 @@ void setup(int restart_flag, double store_size)
     copy_into_nilseg(false);
     validate_all("restarting", __LINE__, __FILE__);
 #endif
-    garbage_collection_permitted = 1;
+    garbage_collection_permitted = true;
     return;
 }
 

@@ -607,7 +607,7 @@ extern int trace_all;
 extern const char *name_of_caller;
 #endif
 
-extern int garbage_collection_permitted;
+extern bool garbage_collection_permitted;
 
 #define MAX_INPUT_FILES         40  // limit on command-line length
 #define MAX_SYMBOLS_TO_DEFINE   40
