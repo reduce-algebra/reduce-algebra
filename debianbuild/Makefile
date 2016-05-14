@@ -69,10 +69,13 @@ tarpackages:
 	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce.img $(TARDEST)/csl
 	cp -r $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce.fonts $(TARDEST)/csl
 	cp -r $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce.resources $(TARDEST)/csl
+	cp $(BUILDTOPDIR)/generic/newfront/build/rfcsl $(TARDEST)
 	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce.doc/BINARY-LICENSE.txt $(TARDEST)/reduce.doc
 	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce.doc/BSD-LICENSE.txt $(TARDEST)/reduce.doc
 	cp -r $(BUILDTOPDIR)/pslbuild/*ubuntu*/psl $(TARDEST)/psl
 	cp -r $(BUILDTOPDIR)/pslbuild/*ubuntu*/red $(TARDEST)/psl
+	cp $(BUILDTOPDIR)/generic/newfront/build/rfpsl $(TARDEST)
+	chmod +x $(TARDEST)/redcsl $(TARDEST)/redpsl $(TARDEST)/rfcsl $(TARDEST)/rfpsl 
 	tar cfj reduce-freestanding_$(SNAPSHOT)_$(MACHINE).tar.bz2 -C /tmp reduce-snapshot_$(SNAPSHOT)_$(MACHINE)
 
 source-archive:

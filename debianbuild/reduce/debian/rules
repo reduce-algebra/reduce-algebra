@@ -36,8 +36,10 @@ EXTRADOCIMAGEBASENAMES=bild cmsy10 gnuplotex turtleeg
 
 GENERICTOPDIR=$(TOPDIR)/generic
 
-REDFRONTSRCDIR=$(GENERICTOPDIR)/redfront/src
-REDFRONTBUILDDIR=$(GENERICTOPDIR)/redfront/$(BUILDDIR)/redfront
+REDFRONTSRCDIR=$(GENERICTOPDIR)/newfront
+REDFRONTBUILDDIR=$(GENERICTOPDIR)/newfront/build
+LIBEDITSRCDIR=$(TOPDIR)/libraries/libedit-20140620-3.1
+LIBEDITBUILDDIR=$(GENERICTOPDIR)/newfront/libedit
 
 INSTALLDIR:=debian/tmp
 SHAREDIR=$(INSTALLDIR)/usr/share/reduce
@@ -67,8 +69,10 @@ distclean:
 ifneq ($(BUILDPSL),)
 	-test -d $(PSLBUILDDIR) && make -C $(PSLBUILDDIR) distclean
 endif
-	rm -rf $(GENERICTOPDIR)/redfront/$(BUILDDIR)
-	rm -f $(REDFRONTSRCDIR)/Makefile $(REDFRONTSRCDIR)/config.h   
+	rm -rf $(GENERICTOPDIR)/newfront/build
+	rm -rf $(GENERICTOPDIR)/newfront/libedit
+	rm -rf $(GENERICTOPDIR)/newfront/lib
+	rm -rf $(GENERICTOPDIR)/newfront/include
 
 clean: 
 	dh_clean
@@ -79,8 +83,10 @@ clean:
 ifneq ($(BUILDPSL),)   
 	-test -d $(PSLBUILDDIR) && make -C $(PSLBUILDDIR) clean
 endif
-	rm -rf $(GENERICTOPDIR)/redfront/$(BUILDDIR)
-	rm -f $(REDFRONTSRCDIR)/Makefile $(REDFRONTSRCDIR)/config.h   
+	rm -rf $(GENERICTOPDIR)/newfront/build
+	rm -rf $(GENERICTOPDIR)/newfront/libedit
+	rm -rf $(GENERICTOPDIR)/newfront/lib
+	rm -rf $(GENERICTOPDIR)/newfront/include
 
 #override_dh_auto_configure:
 configure: configure-stamp
@@ -91,8 +97,10 @@ ifneq ($(BUILDPSL),)
 	cd $(TOPDIR) ; ./configure --with-psl
 endif
 	mkdir -p $(REDFRONTBUILDDIR)
-	cd $(REDFRONTSRCDIR) ; autoconf ; autoheader
-	cd $(REDFRONTBUILDDIR) ; ../../src/configure --with-libedit --with-redfront-root=/usr/share/reduce-addons/redfront --with-package-map=/usr/share/reduce/packages/package.map --with-csl-reduce=/usr/share/reduce/cslbuild/csl/reduce --with-bpsl=/usr/share/reduce/pslbuild/psl/bpsl --with-reduce-img=/usr/share/reduce/pslbuild/red/reduce.img
+	cd $(REDFRONTSRCDIR) ; autoreconf -f -i -v
+	cd $(REDFRONTBUILDDIR) ; ../configure
+	mkdir -p $(LIBEDITBUILDDIR)
+	cd $(LIBEDITBUILDDIR) ; autoreconf -f -i -v; $(LIBEDITSRCDIR)/configure --prefix=$(REDFRONTSRCDIR)
 	touch configure-stamp
 
 
@@ -106,6 +114,7 @@ ifneq ($(BUILDPSL),)
 endif
 	cd $(DOCMISCDIR) ; make
 	cd $(DOCSRCDIR) ; make
+	cd $(LIBEDITBUILDDIR) ; make install
 	cd $(REDFRONTBUILDDIR) ; make
 	touch build-stamp
 
@@ -123,7 +132,6 @@ install-stamp: build-stamp
 	for n in $(EXTRADOCIMAGEBASENAMES); do cp $(DOCSRCDIR)/${n}*.png $(DOCDIR) ; done
 	cp $(DOCDIR)/$(DOCBASENAME).html $(DOCDIR)/index.html
 	chmod -x $(DOCDIR)/*
-	cp $(REDFRONTSRCDIR)/README $(ADDONDOCDIR)/README
 	cp $(GENERICTOPDIR)/breduce/breduce.tex $(GENERICTOPDIR)/breduce/breduce.bbl $(GENERICTOPDIR)/breduce/breduce.pdf $(ADDONDOCDIR)
 # copy man files
 	cp debian/redcsl.1 debian/redpsl.1 $(MANDIR)/man1
@@ -160,9 +168,8 @@ endif
 	cp -a debian/runpsl.sh $(BINDIR)/redpsl
 	cp -a debian/runcsl.sh $(BINDIR)/redcsl
 # copy rest
-	cp $(REDFRONTBUILDDIR)/redfront $(BINDIR)
-	ln -s redfront $(BINDIR)/rfcsl
-	ln -s redfront $(BINDIR)/rfpsl
+	cp $(REDFRONTBUILDDIR)/rfcsl $(BINDIR)
+	cp $(REDFRONTBUILDDIR)/rfpsl $(BINDIR)
 	cp $(GENERICTOPDIR)/breduce/breduce $(BINDIR)
 	cp $(GENERICTOPDIR)/emacs/reduce-mode.el $(EMACSSITELISPDIR)
 	cp debian/50reduce-emacs.el $(EMACSSITESTARTDIR)
