@@ -12,11 +12,16 @@ cp README.for.distribution distrib/README
 cp -r $1/cslbuild/*/csl/*.app distrib/csl
 cp runcsl.sh distrib/csl/redcsl
 chmod +x distrib/csl/redcsl
+cp $1/cslbuild/*/redfront/rfcsl distrib/csl/rfcsl
+chmod +x distrib/csl/rfcsl
 
 cp -r $1/pslbuild/*/psl distrib/psl
 cp -r $1/pslbuild/*/red distrib/psl
 cp runpsl.sh distrib/psl/redpsl
 chmod +x distrib/psl/redpsl
+# Note (ha ha) that rfpsl gets build in the cslbuild part of the tree.
+cp $1/cslbuild/*/redfront/rfpsl distrib/psl/rfpsl
+chmod +x distrib/psl/rfpsl
 
 cp Reduce-source.tar.bz2 distrib/Reduce_source_`date +%Y%m%d`.tar.bz2
 

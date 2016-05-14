@@ -3,9 +3,6 @@
 BUILDTOPDIR=C
 REVISION=HEAD
 
-# At present this merely make a .tar.bz2 file... not a proper Macintosh
-# installer.
-
 all:	package-mac
 
 # The sub-parts of this build process are controlled by a collection
