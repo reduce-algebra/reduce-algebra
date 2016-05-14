@@ -380,7 +380,7 @@ static LispObject Lsilent_system(LispObject nil, LispObject a)
 
 #endif
 
-static uint32_t hash_lisp_string_with_length(LispObject s, int32_t n)
+static uint32_t hash_lisp_string_with_length(LispObject s, size_t n)
 {
 //
 // I start off the hash calculation with something that depends on the
@@ -390,7 +390,7 @@ static uint32_t hash_lisp_string_with_length(LispObject s, int32_t n)
 // preserves the hash values that I historically used on 32-bit machines
 // and so 32-bit image files should remain valid.
 //
-    uint32_t hh = 0x01000000 + n - CELL + 4;
+    size_t hh = 0x01000000 + n - CELL + 4;
     uint32_t *b = (uint32_t *)((char *)s + (CELL-TAG_VECTOR));
     char *b1;
     while (n >= CELL+4)  // Do as much as is possible word at a time
@@ -2154,10 +2154,12 @@ LispObject Lunintern_2(LispObject nil, LispObject sym, LispObject pp)
     if (remob(sym, packint_(package), packvint_(package)))
     {   LispObject n = packnint_(package);
         LispObject v = packint_(package);
-        int32_t used = int_of_fixnum(packvint_(package));
+        size_t used = int_of_fixnum(packvint_(package));
         if (used == 1) used = length_of_header(vechdr(v)) - CELL;
         else used = CHUNK_SIZE*used;
-        if ((int32_t)n < used && used>(CELL*INIT_OBVECI_SIZE+CELL))
+// I think that the next lien is playing silly whatsits wrt the representation
+// of the fixnum n and its numeric meaning...
+        if ((size_t)n < used && used>(CELL*INIT_OBVECI_SIZE+CELL))
         {   stackcheck2(0, package, v);
             push(package);
             v = rehash(v, packvint_(package), -1);

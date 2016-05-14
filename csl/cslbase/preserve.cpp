@@ -658,7 +658,7 @@ static int unpending(directory *d)
 }
 
 void Iinit(void)
-{   int i;
+{   size_t i;
     Istatus = I_INACTIVE;
     current_input_directory = NULL;
     current_output_entry = NULL;
@@ -1454,7 +1454,7 @@ bool IopenRoot(char *expanded_name, int hard, int sixtyfour)
 // command line (or by default).
 //
 {   const char *n;
-    int i;
+    size_t i;
     if (hard == 0) hard = IMAGE_CODE;
     for (i=0; i<number_of_fasl_paths; i++)
     {
@@ -2098,7 +2098,7 @@ bool Ifinished(void)
 // Actually only output files are a real issue here. And then only
 // the ones that are flagged as needing compaction.
 //
-    int j;
+    size_t j;
     bool failed = false;
     for (j=0; j<number_of_fasl_paths; j++)
         if (finished_with(j)) failed = true;

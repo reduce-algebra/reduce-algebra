@@ -1374,10 +1374,10 @@ character_writer *procedural_output;
 
 bool undefine_this_one[MAX_SYMBOLS_TO_DEFINE];
 
-int number_of_input_files = 0,
+size_t number_of_input_files = 0,
     number_of_symbols_to_define = 0,
-    number_of_fasl_paths = 0,
-    init_flags = 0;
+    number_of_fasl_paths = 0;
+int init_flags = 0;
 
 #ifdef WINDOW_SYSTEM
 FILE *alternative_stdout = NULL;
@@ -3291,7 +3291,7 @@ static void cslaction(void)
 #endif
         if (number_of_input_files == 0) lisp_main();
         else
-        {   int i;
+        {   size_t i;
             for (i=0; i<number_of_input_files; i++)
             {   if (strcmp(files_to_read[i], "-") == 0)
                 {   non_terminal_input = NULL;

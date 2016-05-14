@@ -1864,7 +1864,7 @@ void unwind_stack(LispObject *entry_stack, bool findcatch)
 {   LispObject *sp = stack;
     while (sp != entry_stack)
     {   LispObject bv, w;
-        int32_t n;
+        size_t n;
         w = *sp--;
         if (findcatch && w == SPID_CATCH) break;
         if (w == (LispObject)SPID_FBIND)

@@ -2027,7 +2027,7 @@ static void putc_utf8(int n)
 
 void internal_prin(LispObject u, int blankp)
 {   LispObject w, nil = C_nil;
-    int32_t len, lenchars, k;
+    size_t len, lenchars, k;
     char my_buff[68];
     int bl = blankp & 2;
 #ifdef COMMON
@@ -4283,7 +4283,7 @@ LispObject Lwidelengthc(LispObject nil, LispObject a)
 LispObject Ldebug_print(LispObject nil, LispObject a)
 {   LispObject stream = qvalue(standard_output);
     Header h;
-    int i, len;
+    size_t i, len;
     const char *p;
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
@@ -4787,7 +4787,7 @@ static LispObject Lopen_library(LispObject nil, LispObject file,
 {   char filename[LONGEST_LEGAL_FILENAME];
     size_t len = 0;
     bool forinput = (dirn==nil);
-    int i;
+    size_t i;
     const char *w = get_string_data(file, "open-library", &len);
     char *w1;
     errexit();

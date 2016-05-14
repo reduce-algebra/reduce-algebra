@@ -230,7 +230,8 @@ static LispObject timesis(LispObject a, LispObject b)
 //
 
 static LispObject timesib(LispObject a, LispObject b)
-{   int32_t aa = int_of_fixnum(a), lenb, i;
+{   int32_t aa = int_of_fixnum(a);
+    size_t lenb, i;
     uint32_t carry, ms_dig, w;
     LispObject c, nil;
 //
@@ -439,10 +440,10 @@ static LispObject timessf(LispObject a, LispObject b)
 
 
 static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
-                       uint32_t *d, int32_t lena, int32_t lenb, int32_t lenc);
+                       uint32_t *d, size_t lena, size_t lenb, size_t lenc);
 
 static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
-                        uint32_t *d, int32_t lena, int32_t lenb, int32_t lenc)
+                        uint32_t *d, size_t lena, size_t lenb, size_t lenc)
 //
 // Here both a and b are big, with lena <= lenb.  Split each into two chunks
 // of size (lenc/4), say (a1,a2) and (b1,b2), and compute each of
@@ -457,11 +458,11 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
 // all zero) I do things in a more straightforward way.  I require that on
 // entry to this code lenc<4 < lenb <= lenc/2.
 //
-{   int32_t h = lenc/4;   // lenc must have been made even enough...
-    int32_t lena1 = lena - h;
-    int32_t lenb1 = lenb - h;
+{   size_t h = lenc/4;   // lenc must have been made even enough...
+    size_t lena1 = lena - h;
+    size_t lenb1 = lenb - h;
     uint32_t carrya, carryb;
-    int32_t i;
+    size_t i;
 //
 // if the top half of a would be all zero I go through a separate path,
 // doing just two subsidiary multiplications.
@@ -888,7 +889,7 @@ static int semaphore_usage = 0;
 
 #endif // ! WITH_CILK
 static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
-                         uint32_t *d, int32_t lena, int32_t lenb, int32_t lenc)
+                         uint32_t *d, size_t lena, size_t lenb, size_t lenc)
 //
 // Here both a and b are big, with lena <= lenb.  Split each into two chunks
 // of size (lenc/4), say (a1,a2) and (b1,b2), and compute each of
@@ -903,11 +904,11 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 // all zero) I do things in a more straightforward way.  I require that on
 // entry to this code lenc<4 < lenb <= lenc/2.
 //
-{   int32_t h = lenc/4;   // lenc must have been made even enough...
-    int32_t lena1 = lena - h;
-    int32_t lenb1 = lenb - h;
+{   size_t h = lenc/4;   // lenc must have been made even enough...
+    size_t lena1 = lena - h;
+    size_t lenb1 = lenb - h;
     uint32_t carry, asumcarry, bsumcarry, carryc, carryc1, carryc2;
-    int32_t i;
+    size_t i;
     shownum(stdout, a, lena, "a");
     shownum(stdout, b, lenb, "b");
 //
@@ -1247,16 +1248,16 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 #endif // Thread support
 
 static void long_times2(uint32_t *c, uint32_t *a, uint32_t *b,
-                        int32_t lena, int32_t lenb, int32_t lenc)
+                        size_t lena, size_t lenb, size_t lenc)
 //
 // This case is standard old fashioned long multiplication.  Dump the
 // result into c.
 //
-{   int32_t i;
+{   size_t i;
     for (i=0; i<lenc; i++) c[i] = 0;
     for (i=0; i<lena; i++)
     {   uint32_t carry = 0, da = a[i];
-        int32_t j;
+        size_t j;
 //
 // When I multiply by (for instance) a high power of 2 there will
 // be plenty of zero digits in the number being worked with, and
@@ -1264,7 +1265,7 @@ static void long_times2(uint32_t *c, uint32_t *a, uint32_t *b,
 //
         if (da != 0)
         {   for (j=0; j<lenb; j++)
-            {   int32_t k = i + j;
+            {   size_t k = i + j;
                 Dmultiply(carry, c[k], da, b[j],
 // NB the addition here is OK and fits into a 32-bit unsigned result
                           carry + c[k]);
@@ -1275,11 +1276,11 @@ static void long_times2(uint32_t *c, uint32_t *a, uint32_t *b,
 }
 
 #if defined HAVE_LIBPTHREAD || defined WIN32
-int karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
+size_t karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
 #endif
 
 static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
-                       uint32_t *d, int32_t lena, int32_t lenb, int32_t lenc)
+                       uint32_t *d, size_t lena, size_t lenb, size_t lenc)
 //
 // This decides if a multiplication is big enough to benefit from
 // decomposition a la Karatsuba.
@@ -1290,12 +1291,12 @@ static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
 //
 {   if (lenb < lena)
     {   uint32_t *t1;
-        int32_t t2;
+        size_t t2;
         t1 = a; a = b; b = t1;
         t2 = lena; lena = lenb; lenb = t2;
     }
     if (4*lenb <= lenc) // In this case I should shrink lenc a bit..
-    {   int32_t newlenc = (lenb+1)/2;
+    {   size_t newlenc = (lenb+1)/2;
         int k = 0;
         while (newlenc > KARATSUBA_CUTOFF)
         {   newlenc = (newlenc + 1)/2;
@@ -1332,7 +1333,7 @@ static LispObject timesbb(LispObject a, LispObject b)
 //
 {   int sign = 1;
     LispObject c, d, nil;
-    int32_t lena, lenb, lenc, i;
+    size_t lena, lenb, lenc, i;
     lena = (bignum_length(a) - CELL)/4;
     lenb = (bignum_length(b) - CELL)/4;
     if (lena == 1 && lenb == 1)
@@ -1418,7 +1419,7 @@ static LispObject timesbb(LispObject a, LispObject b)
 // being related to the size of the numbers being handled.
 //
     if (lena > KARATSUBA_CUTOFF)
-    {   int32_t lend;
+    {   size_t lend;
         int k = 0;
 //
 // I pad lenc up to have a suitably large power of 2 as a factor so
@@ -1454,7 +1455,7 @@ static LispObject timesbb(LispObject a, LispObject b)
 // but it should not cause clutter when not used.
 //
         if (multiplication_buffer == nil ||
-            (4*lend+CELL) > (intptr_t)length_of_header(numhdr(multiplication_buffer)))
+            (4*lend+CELL) > length_of_header(numhdr(multiplication_buffer)))
         {   push(c);
             multiplication_buffer =
                 getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lend);
@@ -1501,7 +1502,7 @@ static LispObject timesbb(LispObject a, LispObject b)
 // is active in it.
 //
     errexit();
-    {   int32_t newlenc = lena + lenb;
+    {   size_t newlenc = lena + lenb;
 //
 // I tidy up by putting a zero in any padding word above the top of the
 // active data, and by inserting a header in space that gets trimmed off
@@ -1736,8 +1737,8 @@ static LispObject timesff(LispObject a, LispObject b)
 // multiply boxed floats - see commentary on plusff()
 //
 {
-    int32_t ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
-    int32_t hc;
+    int ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
+    int hc;
     if (ha == TYPE_LONG_FLOAT || hb == TYPE_LONG_FLOAT)
     {   float128_t x, y, z;
         x = float128_of_number(a);
@@ -1845,7 +1846,7 @@ LispObject times2(LispObject a, LispObject b)
                     return timesis(a, b);
 #endif
                 case TAG_NUMBERS:
-                {   int32_t hb = type_of_header(numhdr(b));
+                {   int hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
                             return timesib(a, b);
@@ -1875,7 +1876,7 @@ LispObject times2(LispObject a, LispObject b)
                     return (aa.i & ~(int32_t)0xf) + TAG_SFLOAT;
                 }
                 case TAG_NUMBERS:
-                {   int32_t hb = type_of_header(numhdr(b));
+                {   int hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
                             return timessb(a, b);
@@ -1894,7 +1895,7 @@ LispObject times2(LispObject a, LispObject b)
             }
 #endif
         case TAG_NUMBERS:
-        {   int32_t ha = type_of_header(numhdr(a));
+        {   int ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
                     switch ((int)b & TAG_BITS)
@@ -1905,7 +1906,7 @@ LispObject times2(LispObject a, LispObject b)
                             return timesbs(a, b);
 #endif
                         case TAG_NUMBERS:
-                        {   int32_t hb = type_of_header(numhdr(b));
+                        {   int hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
                                     return timesbb(a, b);
@@ -1931,7 +1932,7 @@ LispObject times2(LispObject a, LispObject b)
                             return timesrs(a, b);
 #endif
                         case TAG_NUMBERS:
-                        {   int32_t hb = type_of_header(numhdr(b));
+                        {   int hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
                                     return timesrb(a, b);
@@ -1957,7 +1958,7 @@ LispObject times2(LispObject a, LispObject b)
                             return timescs(a, b);
 #endif
                         case TAG_NUMBERS:
-                        {   int32_t hb = type_of_header(numhdr(b));
+                        {   int hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
                                     return timescb(a, b);
@@ -1986,7 +1987,7 @@ LispObject times2(LispObject a, LispObject b)
                     return timesfs(a, b);
 #endif
                 case TAG_NUMBERS:
-                {   int32_t hb = type_of_header(numhdr(b));
+                {   int hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
                             return timesfb(a, b);

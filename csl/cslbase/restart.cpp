@@ -2017,9 +2017,9 @@ static void adjust_vecheap(void)
     for (page_number = 0; page_number < vheap_pages_count; page_number++)
     {   void *page = vheap_pages[page_number];
         char *low = (char *)doubleword_align_up((intptr_t)page);
-        int32_t len = flip_32((uint32_t)car32(low));
+        size_t len = flip_32((uint32_t)car32(low));
         char *fr;
-        int i;
+        size_t i;
 #ifdef DEBUG_WIDTH
         printf("len = %d = %x (%d:%.8x)\n", len, len, car32(low), car32(low));
         for (i=0; i<4*32; i+=4)
@@ -2201,12 +2201,12 @@ static void adjust_bpsheap(void)
 // allowing for word length changes. What a shame!
 //
 {   int32_t page_number;
-    int32_t i;
+    size_t i;
     codelimit = codefringe = 0;
     for (page_number = 0; page_number < bps_pages_count; page_number++)
     {   void *page = bps_pages[page_number];
         char *low = (char *)doubleword_align_up((intptr_t)page);
-        int32_t len = flip_32((uint32_t)car32(low));
+        size_t len = flip_32((uint32_t)car32(low));
         char *fr;
 //
 // The BPS heap also has to double its size if I am converting to a 64-bit
@@ -2240,7 +2240,7 @@ static void adjust_bpsheap(void)
 //
             while (oldfr < low + 2*CSL_PAGE_SIZE)
             {   Header h = (Header)flip_32(*(uint32_t *)oldfr);
-                int32_t len, len32, len64, gap;
+                size_t len, len32, len64, gap;
                 len = length_of_header(h); // 32 bit hdr + actual data
 //
 // Now establish the amount of space that will be used in both 32 and 64
@@ -2272,7 +2272,7 @@ static void adjust_bpsheap(void)
 
         while (fr < low + (converting_to_64 ? 2*CSL_PAGE_SIZE : CSL_PAGE_SIZE))
         {   Header h;
-            int32_t len, llen;
+            size_t len, llen;
             if (converting_to_32) h = (Header)flip_64(*(int64_t *)fr);
             else h = flip_bytes(*(Header *)fr);
             len = length_of_header(h);
@@ -3067,7 +3067,7 @@ static LispObject Lcheck_c_code(LispObject nil, int nargs, ...)
     va_list a;
     char *p;
     const char *sname;
-    int i;
+    size_t i;
     argcheck(nargs, 4, "check-c-code");
     va_start(a, nargs);
     name = va_arg(a, LispObject);
@@ -3145,7 +3145,7 @@ static setup_type const restart_setup[] =
 
 
 static void create_symbols(setup_type const s[], int restart_flag)
-{   int i;
+{   size_t i;
     for (i=0; s[i].name != NULL; i++)
         make_symbol(s[i].name, restart_flag, s[i].one, s[i].two, s[i].n);
 }
@@ -3153,7 +3153,7 @@ static void create_symbols(setup_type const s[], int restart_flag)
 static int32_t defined_symbols;
 
 static void count_symbols(setup_type const s[])
-{   int i;
+{   size_t i;
     for (i=0; s[i].name != NULL; i++) defined_symbols++;
 }
 
@@ -3207,8 +3207,8 @@ static void record_dynamic_module(char *name, setup_type_1 *entries)
     loaded_dynamic_count++;
     if (3*loaded_dynamic_count >= 2*loaded_dynamic_size)
     {   dynamic_modules *newtable;
-        unsigned int newsize;
-        unsigned int i;
+        size_t newsize;
+        size_t i;
         if (loaded_dynamic_size == 0)
             newsize = INITIAL_DYNAMIC_MODULE_HASH_SIZE;
         else
@@ -4588,7 +4588,7 @@ LispObject Linstate_c_code(LispObject nil, LispObject name, LispObject fns)
 static void cold_setup()
 {   LispObject nil = C_nil, w;
     void *p;
-    int i;
+    size_t i;
     p = vheap_pages[vheap_pages_count++] = allocate_page("vheap cold setup");
     vfringe = (LispObject)(8 + (char *)doubleword_align_up((intptr_t)p));
     vheaplimit = (LispObject)((char *)vfringe + (CSL_PAGE_SIZE - 16));
@@ -4675,14 +4675,14 @@ static void cold_setup()
     packext_(CP) = getvector_init(CELL*(1+INIT_OBVECX_SIZE), fixnum_of_int(0));
     packvext_(CP) = fixnum_of_int(1);
     packnext_(CP) = fixnum_of_int(1); // Allow for nil
-    {   int i = (int)(hash_lisp_string(qpname(nil)) &
+    {   size_t i = (int)(hash_lisp_string(qpname(nil)) &
                       (INIT_OBVECX_SIZE - 1));
         elt(packext_(CP), i) = nil;
     }
 #else
     packnint_(CP) = fixnum_of_int(1); // Allow for nil
 // Place NIL into the table.
-    {   int i = (int)(hash_lisp_string(qpname(nil)) &
+    {   size_t i = (int)(hash_lisp_string(qpname(nil)) &
                       (INIT_OBVECI_SIZE - 1));
         elt(packint_(CP), i) = nil;
     }
@@ -4916,7 +4916,7 @@ void set_up_functions(int restart_flag)
 // actual addresses associated with C entrypoints will vary from version
 // to version of the binary of the system.
 //
-    int i;
+    size_t i;
 #ifdef COMMON
 //
 // In Common Lisp mode it could be that the user had something other than the
@@ -5021,7 +5021,7 @@ static int alpha0(const void *a, const void *b)
 
 static void set_up_variables(int restart_flag)
 {   LispObject nil = C_nil, w, w1;
-    int i;
+    size_t i;
 #ifdef COMMON
     LispObject saved_package = CP;
     CP = find_package("LISP", 4);
@@ -5089,7 +5089,7 @@ static void set_up_variables(int restart_flag)
         LispObject n = features_symbol;
         char opsys[32];
         char *p1 = opsys, *p2 = OPSYS;
-        int ii;
+        size_t ii;
         while ((*p1++ = toupper(*p2++)) != 0);
         *p1 = 0;
         /*! lispsys [opsys] \item [{\itshape operating system identity}] \index{{\ttfamily operating system identity}}
@@ -5265,7 +5265,7 @@ static void set_up_variables(int restart_flag)
          */
 
         w = cons(make_keyword(OPSYS), nil);
-        int ii;
+        size_t ii;
 #if defined WIN64 || defined __WIN64__ || defined WIN32
 //
 // In the WIN64 case I will ALSO tell the user than I am "win32". This is
@@ -6034,7 +6034,7 @@ static void get_checksum(const setup_type *p)
 }
 
 void get_user_files_checksum(unsigned char *b)
-{   int i;
+{   size_t i;
     CSL_MD5_Init();
     for (i=0; setup_tables[i]!=NULL; i++)
         get_checksum(setup_tables[i]);
@@ -6053,7 +6053,7 @@ void setup(int restart_flag, double store_size)
 //            allocated, and to re-use what there is.
 //    4, 8, ...   not used yet!
 //
-    int i;
+    size_t i;
     LispObject nil;
     if ((restart_flag & 2) != 0) init_heap_segments(store_size);
     garbage_collection_permitted = 0;
@@ -6476,7 +6476,7 @@ int hash_sequence_number = 1;
 uint32_t hash_for_checking(LispObject a, int depth)
 {
     Header h;
-    int i;
+    size_t i;
     uint32_t r;
     if (depth > HASHDEPTH) return 12345;
     if (is_fixnum(a)) return (uint32_t)a;
@@ -6511,7 +6511,7 @@ void copy_into_nilseg(int fg)
 {   LispObject nil = C_nil;
     multiplication_buffer = nil;
 
-    int i;
+    size_t i;
     if (fg)     // move non list bases too
     {   BASE[12]                                = byteflip;
         BASE[13]                                = codefringe;
@@ -6701,7 +6701,7 @@ void copy_into_nilseg(int fg)
 
 void copy_out_of_nilseg(int fg)
 {   LispObject nil = C_nil;
-    int i;
+    size_t i;
     if (fg)
     {   byteflip         = BASE[12];
         codefringe       = BASE[13];

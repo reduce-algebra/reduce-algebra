@@ -1138,7 +1138,7 @@ static LispObject *do_freebind(LispObject bvec, LispObject *stack)
 
 static LispObject *do_freerstr(LispObject *stack)
 {   LispObject bv;
-    int32_t n;
+    size_t n;
     popv(1);
     pop(bv);
     n = length_of_header(vechdr(bv));

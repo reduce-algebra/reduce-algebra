@@ -648,10 +648,10 @@ extern void report_file(const char *s);
 extern bool undefine_this_one[MAX_SYMBOLS_TO_DEFINE];
 extern int errorset_min, errorset_max;
 
-extern int number_of_input_files,
+extern size_t number_of_input_files,
        number_of_symbols_to_define,
-       number_of_fasl_paths,
-       init_flags;
+       number_of_fasl_paths;
+extern int init_flags;
 
 extern int native_code_tag;
 

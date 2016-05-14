@@ -279,7 +279,7 @@ extern sem_t kara_sem1a, kara_sem1b, kara_sem1c,
        kara_sem2a, kara_sem2b, kara_sem2c;
 #endif
 
-extern int karatsuba_parallel;
+extern size_t karatsuba_parallel;
 
 //
 // Tests on my Intel i7 4770K system running Windows 7 (64-bit) I find that
