@@ -63,6 +63,20 @@ rm -rf csl$1
 mkdir csl$1
 pushd csl$1
 
+mkdir libedit
+pushd libedit
+$cygalt $reduce/libraries/libedit-20140620-3.1/configure --prefix=$here/csl$1
+$cygalt make install
+popd
+
+ln -s $reduce/libraries/wineditline .
+
+mkdir redfront
+pushd redfront
+$cygalt $reduce/generic/newfront/configure
+make
+popd
+
 mkdir crlibm
 pushd crlibm
 $cygalt $reduce/libraries/crlibm/configure $host --prefix=$here/csl$1

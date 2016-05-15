@@ -97,6 +97,8 @@ Source: "cslbuild\reduce.img"; DestDir: "{app}\lib\csl\"; Components: csl;
 Source: "cslbuild\reduce.fonts\*.*"; DestDir: "{app}\lib\csl\reduce.fonts"; Components: csl;
 Source: "cslbuild\reduce.resources\*.*"; DestDir: "{app}\lib\csl\reduce.resources"; Components: csl;
 Source: "@here@\redcsl.bat"; DestDir: "{app}\bin\"; Components: csl;
+Source: "@here@\redcsl"; DestDir: "{app}\bin\"; Components: csl;
+Source: "@here@\cslcyg32\redfront\rfcsl.exe"; DestDir: "{app}\bin\"; Components: csl;
 
 Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\csl\"; Components: csl;
 
@@ -108,6 +110,9 @@ Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\csl\"; Component
 Source: "@here@\C\pslbuild\i686-pc-windows\psl\*"; DestDir: "{app}\lib\psl\psl\"; Components: psl32
 Source: "@here@\C\pslbuild\i686-pc-windows\red\*.b"; DestDir: "{app}\lib\psl\red\"; Components: psl32
 Source: "@here@\C\pslbuild\i686-pc-windows\red\*.lap"; DestDir: "{app}\lib\psl\red\"; Components: psl32; Flags: skipifsourcedoesntexist
+Source: "@here@\redpsl.sh"; DestDir: "{app}\bin\"; DestName: "redpsl"; Components: psl32;
+Source: "@here@\cslcyg32\redfront\rfpsl.exe"; DestDir: "{app}\bin\"; Components: psl32;
+
 
 Source: "@here@\C\pslbuild\x86_64-pc-windows\psl\*"; DestDir: "{app}\lib\psl\psl\"; Components: psl64
 Source: "@here@\C\pslbuild\x86_64-pc-windows\red\*.b"; DestDir: "{app}\lib\psl\red\"; Components: psl64
@@ -119,6 +124,10 @@ Source: "@here@\redpsl.bat"; DestDir: "{app}\bin\"; Components: psl32 psl64; Che
 ;;;Source: "@here@\redpslw.bat"; DestDir: "{app}\bin\"; Components: psl32
 Source: "@here@\redpsl64.bat"; DestName: "redpsl.bat"; DestDir: "{app}\bin\"; Components: psl64
 ;;;Source: "@here@\redpsl64w.bat"; DestName: "redpslw.bat"; DestDir: "{app}\bin\"; Components: psl64
+Source: "@here@\redpsl64.sh"; DestDir: "{app}\bin\"; DestName: "redpsl"; Components: psl64;
+Source: "@here@\cslcyg32\redfront\rfcsl.exe"; DestDir: "{app}\bin\"; Components:
+ csl;
+
 
 
 [Icons]
@@ -130,6 +139,12 @@ Name: "{group}\PSL Reduce"; Filename: "{app}\bin\redpsl.bat"; IconFileName: "{ap
 [Run]
 Filename: "{app}\lib\gp460-win32-setup.exe"; Description: "Install Gnuplot"; Flags: postinstall; Check: MyGnuPlotCheck
 Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\lib\csl\reduce.exe"" redcsl"; Flags: runhidden; Components: csl
+Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\rfcsl"" rfcsl"; Flags: runhidden; Components: csl
+;;; Perhaps the make-cygwin-symlink program will not be there if you only
+;;; install the PSL version?
+Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\redpsl"" redpsl"; Flags: runhidden; Components: psl32 psl64
+Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\rfpsl"" rfpsl"; Flags: runhidden; Components: psl32 psl64
+
 
 [Code]
 var
