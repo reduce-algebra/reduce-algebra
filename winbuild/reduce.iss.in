@@ -97,7 +97,7 @@ Source: "cslbuild\reduce.img"; DestDir: "{app}\lib\csl\"; Components: csl;
 Source: "cslbuild\reduce.fonts\*.*"; DestDir: "{app}\lib\csl\reduce.fonts"; Components: csl;
 Source: "cslbuild\reduce.resources\*.*"; DestDir: "{app}\lib\csl\reduce.resources"; Components: csl;
 Source: "@here@\redcsl.bat"; DestDir: "{app}\bin\"; Components: csl;
-Source: "@here@\redcsl"; DestDir: "{app}\bin\"; Components: csl;
+Source: "@here@\redcsl.sh"; DestDir: "{app}\bin\"; Components: csl;
 Source: "@here@\cslcyg32\redfront\rfcsl.exe"; DestDir: "{app}\bin\"; Components: csl;
 
 Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\csl\"; Components: csl;
