@@ -10,7 +10,7 @@ do
 # configuration flags down when configuring sub-packaged. This then has
 # to have a catalogue of all the options I need to ignore. Messy!
   case $x in
-  \'--host=*\' | \ 
+  \'--host=*\' | \
   \'--with-force*\' | \
   \'--with*-autogen*\' | \
   \'--with-mingw*\' | \
