@@ -74,7 +74,7 @@ ln -s $reduce/libraries/wineditline .
 mkdir redfront
 pushd redfront
 $cygalt $reduce/generic/newfront/configure
-make
+$cygalt make
 popd
 
 mkdir crlibm
