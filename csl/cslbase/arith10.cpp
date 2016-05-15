@@ -1460,13 +1460,13 @@ static LispObject Lhypot(LispObject nil, LispObject a, LispObject b)
 //
         r = v * sqrt(1.0 + r*r);
     }
-    a = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
-    errexit();
     if (trap_floating_overflow &&
-        floating_edge_case(a))
+        floating_edge_case(r))
     {   floating_clear_flags();
         return aerror("floating point hypotenuse");
     }
+    a = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
+    errexit();
     return onevalue(a);
 }
 
