@@ -122,7 +122,7 @@ Source: "@here@\redpsl.bat"; DestDir: "{app}\bin\"; Components: psl32 psl64; Che
 Source: "@here@\redpsl64.bat"; DestName: "redpsl.bat"; DestDir: "{app}\bin\"; Components: psl64
 ;;;Source: "@here@\redpsl64w.bat"; DestName: "redpslw.bat"; DestDir: "{app}\bin\"; Components: psl64
 Source: "@here@\redpsl64.sh"; DestDir: "{app}\bin\"; DestName: "redpsl"; Components: psl64;
-Source: "@here@\cslcyg32\redfront\rfpsl64.exe"; DestDir: "{app}\bin\"; Destname: "rfpsl"; Components: psl64;
+Source: "@here@\cslcyg64\redfront\rfpsl.exe"; DestDir: "{app}\bin\"; Destname: "rfpsl"; Components: psl64;
 
 Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\psl\"; Components: psl32 psl64;
 
