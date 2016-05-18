@@ -32,8 +32,9 @@
 # 64-bit systems and use each for building its own version of Reduce.
 #
 # March 2016: cygwin are withdrawing cygwin64-* libraries etc as things that
-# users can exploit to cross-build 64-bit cygwin applicatiosn on aq 32-bit
-# playform.
+# users can exploit to cross-build 64-bit cygwin applicatiosn on a 32-bit
+# platform. May 2016: I should really cope with people who run as standard
+# using cygwin64...
 #
 # This script detects which cygwin version it is run under and proposes
 # packages to install such that when their dependencies are also installed
@@ -46,10 +47,16 @@
 # libgtk2.0 is not provided in versions for cross building between 32 and
 # 64-bit versions of cygwin.
 
-# [Reviewed March 2016]
+# [Reviewed My 2016]
 
 pneed=""
 need=""
+
+fordistrib="texlive-collection-latexrecommended \
+  texlive-collection-latexextra \
+  texlive-collection-fonts-recommended \
+  texlive-collection-fonts-extra \
+  texlive-collection-htmlxml"
 
 case `uname -m` in
 i686)
@@ -59,7 +66,8 @@ i686)
         gcc-g++ libgtk2.0-devel libncurses-devel \
         libpng-devel libtool libXext-devel libXft-devel make \
         mingw64-i686-gcc-g++ mingw64-i686-zlib mingw64-x86_64-gcc-g++ \
-        mingw64-x86_64-zlib openssh subversion time wget
+        mingw64-x86_64-zlib openssh subversion time wget \
+        $fordistrib
     do
       if cygcheck -c -d $m | grep $m > /dev/null
       then
@@ -86,7 +94,8 @@ x86_64)
         gcc-g++ libgtk2.0-devel \
         libncurses-devel libpng-devel libtool libXext-devel libXft-devel \
         make mingw64-i686-gcc-g++ mingw64-i686-zlib mingw64-x86_64-gcc-g++ \
-        mingw64-x86_64-zlib openssh subversion time wget
+        mingw64-x86_64-zlib openssh subversion time wget \
+        $fordistrib
     do
       if cygcheck -c -d $m | grep $m > /dev/null
       then

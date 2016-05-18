@@ -453,21 +453,21 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
 // where in the last case a1+a2 and b1+b2 can be computed keeping their
 // carry bits as k1 and k2 (so that a1+a2 and b1+b2 are restricted to
 // size lenb). The chunks can then be combined with a few additions and
-// subtractions to form the product that is really wanted.  If in fact a
-// was shorter than lenc/4 (so that after a is split up the top half is
+// subtractions to form the product that is really wanted.  If in fact (a)
+// was shorter than lenc/4 (so that after (a) is split up the top half is
 // all zero) I do things in a more straightforward way.  I require that on
 // entry to this code lenc<4 < lenb <= lenc/2.
 //
 {   size_t h = lenc/4;   // lenc must have been made even enough...
-    size_t lena1 = lena - h;
+    size_t lena1 = lena < h ? 0 : lena - h;
     size_t lenb1 = lenb - h;
     uint32_t carrya, carryb;
     size_t i;
 //
-// if the top half of a would be all zero I go through a separate path,
+// if the top half of (a) would be all zero I go through a separate path,
 // doing just two subsidiary multiplications.
 //
-    if (lena1 <= 0)
+    if (lena1 == 0)
     {   long_times(c+h, a, b+h, d, lena, lenb-h, 2*h);
         for (i=0; i<h; i++) c[3*h+i] = 0;
         long_times(d, a, b, c, lena, h, 2*h);
@@ -899,13 +899,13 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 // where in the last case a1+a2 and b1+b2 can be computed keeping their
 // carry bits as k1 and k2 (so that a1+a2 and b1+b2 are restricted to
 // size lenb). The chunks can then be combined with a few additions and
-// subtractions to form the product that is really wanted.  If in fact a
-// was shorter than lenc/4 (so that after a is split up the top half is
+// subtractions to form the product that is really wanted.  If in fact (a)
+// was shorter than lenc/4 (so that after (a) is split up the top half is
 // all zero) I do things in a more straightforward way.  I require that on
 // entry to this code lenc<4 < lenb <= lenc/2.
 //
 {   size_t h = lenc/4;   // lenc must have been made even enough...
-    size_t lena1 = lena - h;
+    size_t lena1 = lena < h ? 0 : lena - h;
     size_t lenb1 = lenb - h;
     uint32_t carry, asumcarry, bsumcarry, carryc, carryc1, carryc2;
     size_t i;
@@ -917,7 +917,7 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 // only have a single sub-task to delegate work to and so the potential
 // speedup from parallel working is reduced.
 //
-    if (lena1 <= 0)
+    if (lena1 == 0)
     {   kara_1_c = c+h;         // set up input data for worker 1
         kara_1_a = a;
         kara_1_b = b+h;
@@ -1311,7 +1311,7 @@ static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
     }
 #if defined HAVE_LIBPTHREAD || defined WIN32
     if (lena > karatsuba_parallel)
-    {   int save = karatsuba_parallel;
+    {   size_t save = karatsuba_parallel;
 //
 // I will only allow a single level of the recursion to use threads, and I
 // achieve that by temporarily resetting the cut-off here...

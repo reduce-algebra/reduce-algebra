@@ -693,10 +693,11 @@ uint32_t hash_equal(LispObject key)
                         r = update_hash(r, ea);
                     }
                 }
-                while ((len -= CELL) >= 0)
-                {   LispObject ea =
-                        *((LispObject *)((char *)key + CELL +
-                                         offset + len - TAG_VECTOR));
+                while (len != 0)
+                {   LispObject ea;
+                    len -= CELL;
+                    ea = *((LispObject *)((char *)key + CELL +
+                                          offset + len - TAG_VECTOR));
 //@@printf("Hashing item at offset %d in vector (o=%d)\n", offset+len, offset);
                     r = update_hash(r, hash_equal(ea));
                     nil = C_nil;
@@ -1201,8 +1202,10 @@ void rehash_this_table(LispObject v)
                 }
             }
         }
-        while (--many >= 0)
+        while (many != 0)
+        {   many--;
             reinsert_hash(v, size, flavour, pendkey[many], pendval[many]);
+        }
     }
     large_hash_table = old_large;
 }

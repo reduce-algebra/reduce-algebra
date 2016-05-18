@@ -619,7 +619,7 @@ extern const char *files_to_read[MAX_INPUT_FILES],
 extern int csl_argc;
 extern const char **csl_argv;
 extern bool fasl_output_file;
-extern int output_directory;
+extern size_t output_directory;
 
 #ifdef BUILTIN_IMAGE
 const unsigned char *binary_read_filep;

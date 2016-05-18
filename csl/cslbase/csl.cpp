@@ -1368,7 +1368,7 @@ static long int initial_random_seed, seed2;
 const char *files_to_read[MAX_INPUT_FILES],
            *symbols_to_define[MAX_SYMBOLS_TO_DEFINE],
            *fasl_paths[MAX_FASL_PATHS];
-int output_directory;
+size_t output_directory;
 character_reader *procedural_input;
 character_writer *procedural_output;
 
@@ -1651,7 +1651,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     ignore_restart_fn = false;
     spool_file = NULL;
     spool_file_name[0] = 0;
-    output_directory = 0x80000000;
+    output_directory = 0x80000000u;
     number_of_input_files = 0;
     number_of_symbols_to_define = 0;
     number_of_fasl_paths = 0;

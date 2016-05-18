@@ -5021,7 +5021,7 @@ static int alpha0(const void *a, const void *b)
 
 static void set_up_variables(int restart_flag)
 {   LispObject nil = C_nil, w, w1;
-    int i;
+    size_t i;
 #ifdef COMMON
     LispObject saved_package = CP;
     CP = find_package("LISP", 4);
@@ -5030,11 +5030,11 @@ static void set_up_variables(int restart_flag)
     input_libraries = make_undefined_symbol("input-libraries");
     qheader(input_libraries)  |= SYM_SPECIAL_VAR;
     qvalue(input_libraries) = nil;
-    for (i=(int)number_of_fasl_paths-1; i>=0; i--)
-        qvalue(input_libraries) = cons(SPID_LIBRARY + (((int32_t)i)<<20),
+    for (i=number_of_fasl_paths; i!=0; i--)
+        qvalue(input_libraries) = cons(SPID_LIBRARY + (((int32_t)(i-1))<<20),
                                        qvalue(input_libraries));
     output_library = make_undefined_symbol("output-library");
-    qvalue(output_library)  = output_directory < 0 ? nil :
+    qvalue(output_library)  = (output_directory & 0x80000000u) != 0 ? nil :
                               SPID_LIBRARY + (((int32_t)output_directory)<<20);
 //
 // The Lisp variable lispsystem* gets set here. (in Common mode it is
@@ -5128,10 +5128,10 @@ static void set_up_variables(int restart_flag)
         w = acons(make_keyword("LINKER"),
                   make_undefined_symbol(linker_type), w);
         w1 = nil;
-        for (ii=(int)(sizeof(compiler_command)/sizeof(compiler_command[0])-1);
-             ii>=0;
+        for (ii=sizeof(compiler_command)/sizeof(compiler_command[0]);
+             ii!=0;
              ii--)
-            w1 = cons(make_undefined_symbol(compiler_command[ii]), w1);
+            w1 = cons(make_undefined_symbol(compiler_command[ii-1]), w1);
 
         /*! lispsys [compiler-command] \item[{\ttfamily (compiler!-command . command)}] \index{{\ttfamily (compiler"!-command . command)}}
          * The value associated with this key is a string that was used to compile the
@@ -5282,10 +5282,10 @@ static void set_up_variables(int restart_flag)
         w = acons(make_keyword("linker"),
                   make_undefined_symbol(linker_type), w);
         w1 = nil;
-        for (ii=(int)(sizeof(compiler_command)/sizeof(compiler_command[0])-1);
-             ii>=0;
+        for (ii=sizeof(compiler_command)/sizeof(compiler_command[0]);
+             ii!=0;
              ii--)
-            w1 = cons(make_undefined_symbol(compiler_command[ii]), w1);
+            w1 = cons(make_undefined_symbol(compiler_command[ii-1]), w1);
         w = acons(make_keyword("compiler-command"), w1, w);
 #endif
         defined_symbols = 0;
@@ -6309,8 +6309,8 @@ void setup(int restart_flag, double store_size)
             {   term_printf("\n+++ The checkpoint file is corrupt\n");
                 my_exit(EXIT_FAILURE);
             }
-            for (i=last_nil_offset-1; i>=0; i--)
-            {   *(int64_t *)((char *)BASE+8*i) =
+            for (i=last_nil_offset; i!=0; i--)
+            {   *(int64_t *)((char *)BASE+8*(i-1)) =
                     expand_to_64(*(int32_t *)((char *)BASE+4*i));
             }
         }
