@@ -1587,10 +1587,10 @@ symbolic restart!-csl nil;
 (load!-package 'entry)
 
 
-(setq version!* (compress '!" .
+(setq version!* (compress (cons '!"
   (append
     (explodec "Reduce (Free CSL version, revision ")
-    (append (explodec revision!*) (explodec ")""")))))
+    (append (explodec revision!*) (explodec ")"""))))))
 
 (setq date!* (date))
 
