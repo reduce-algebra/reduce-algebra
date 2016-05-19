@@ -818,7 +818,7 @@ case $inplace in
           $nohost \
           CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-          --enable-widec --prefix=\"$builddir\""
+          --enable-widec=yes --prefix=\"$builddir\""
     AC_MSG_NOTICE([doconfig = $doconfig])
     eval "$doconfig"
 
@@ -1301,7 +1301,7 @@ doconfig="$SHELL \"$abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure\" \
       $nohost \
       CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
       CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-      --enable-widec --prefix=\"$builddir\""
+      --enable-widec=yes --prefix=\"$builddir\""
 AC_MSG_NOTICE([doconfig = $doconfig])
 eval "$doconfig"
 
