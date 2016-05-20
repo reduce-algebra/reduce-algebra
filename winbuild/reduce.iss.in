@@ -98,7 +98,7 @@ Source: "cslbuild\reduce.fonts\*.*"; DestDir: "{app}\lib\csl\reduce.fonts"; Comp
 Source: "cslbuild\reduce.resources\*.*"; DestDir: "{app}\lib\csl\reduce.resources"; Components: csl;
 Source: "@here@\redcsl.bat"; DestDir: "{app}\bin\"; Components: csl;
 Source: "@here@\redcsl.sh"; DestDir: "{app}\bin\"; DestName: "redcsl"; Components: csl;
-ource: "@here@\cslcyg32\redfront\rfcsl.exe"; DestDir: "{app}\bin\"; Components: csl;
+Source: "@here@\cslcyg32\redfront\rfcsl.exe"; DestDir: "{app}\bin\"; Components: csl;
 Source: "@here@\cslcyg64\redfront\rfcsl.exe"; DestDir: "{app}\bin\"; DestName: "rfcslcyg64"; Components: csl;
 
 
