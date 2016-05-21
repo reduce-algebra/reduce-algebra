@@ -99,7 +99,7 @@ Source: "cslbuild\reduce.resources\*.*"; DestDir: "{app}\lib\csl\reduce.resource
 Source: "@here@\redcsl.bat"; DestDir: "{app}\bin\"; Components: csl;
 Source: "@here@\redcsl.sh"; DestDir: "{app}\bin\"; DestName: "redcsl"; Components: csl;
 Source: "@here@\cslcyg32\redfront\rfcsl.exe"; DestDir: "{app}\bin\"; Components: csl;
-Source: "@here@\cslcyg64\redfront\rfcsl.exe"; DestDir: "{app}\bin\"; DestName: "rfcslcyg64"; Components: csl;
+Source: "@here@\cslcyg64\redfront\rfcsl.exe"; DestDir: "{app}\bin\"; DestName: "rfcslcyg64.exe"; Components: csl;
 
 
 Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\csl\"; Components: csl;
@@ -125,7 +125,7 @@ Source: "@here@\redpsl.bat"; DestDir: "{app}\bin\"; Components: psl32 psl64; Che
 Source: "@here@\redpsl64.bat"; DestName: "redpsl.bat"; DestDir: "{app}\bin\"; Components: psl64
 ;;;Source: "@here@\redpsl64w.bat"; DestName: "redpslw.bat"; DestDir: "{app}\bin\"; Components: psl64
 Source: "@here@\redpsl64.sh"; DestDir: "{app}\bin\"; DestName: "redpsl"; Components: psl64;
-Source: "@here@\cslcyg64\redfront\rfpsl.exe"; DestDir: "{app}\bin\"; Destname: "rfpslcyg64"; Components: psl32 psl64;
+Source: "@here@\cslcyg64\redfront\rfpsl.exe"; DestDir: "{app}\bin\"; Destname: "rfpslcyg64.exe"; Components: psl32 psl64;
 
 Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\psl\"; Components: psl32 psl64;
 
@@ -140,7 +140,7 @@ Name: "{group}\PSL Reduce"; Filename: "{app}\bin\redpsl.bat"; IconFileName: "{ap
 Filename: "{app}\lib\gp460-win32-setup.exe"; Description: "Install Gnuplot"; Flags: postinstall; Check: MyGnuPlotCheck
 Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\lib\csl\reduce.exe"" redcsl"; Flags: runhidden; Components: csl
 Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\bin\rfcsl.exe"" ""{app}\bin\rfcslcyg64.exe"" rfcsl"; Flags: runhidden; Components: csl
-Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\redpsl"" redpsl"; Flags: runhidden; Components: psl32 psl64
+Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\bin\redpsl"" redpsl"; Flags: runhidden; Components: psl32 psl64
 Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\rfpsl.exe"" ""{app}\bin\rfpslcyg64.exe"" rfpsl"; Flags: runhidden; Components: psl32 psl64
 
 
