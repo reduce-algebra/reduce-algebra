@@ -141,7 +141,7 @@ Filename: "{app}\lib\gp460-win32-setup.exe"; Description: "Install Gnuplot"; Fla
 Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\lib\csl\reduce.exe"" redcsl"; Flags: runhidden; Components: csl
 Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\bin\rfcsl.exe"" ""{app}\bin\rfcslcyg64.exe"" rfcsl"; Flags: runhidden; Components: csl
 Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\bin\redpsl"" redpsl"; Flags: runhidden; Components: psl32 psl64
-Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\rfpsl.exe"" ""{app}\bin\rfpslcyg64.exe"" rfpsl"; Flags: runhidden; Components: psl32 psl64
+Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\bin\rfpsl.exe"" ""{app}\bin\rfpslcyg64.exe"" rfpsl"; Flags: runhidden; Components: psl32 psl64
 
 
 [Code]
