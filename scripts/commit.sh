@@ -20,7 +20,8 @@
 # some of its sub-scripts will not be so generous. So find out where it
 # lives so that other locations can be found relative to that.
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
-here=`cd \`dirname "$here"\` ; pwd -P`
+here=`dirname "$here"`
+here=`cd "$here"; pwd -P`
 
 rev=`$here/revision.sh`
 # I will predict that the revision after this checkin increments by 1!

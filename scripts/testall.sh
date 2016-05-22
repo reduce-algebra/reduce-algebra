@@ -29,7 +29,8 @@
 # current when this script was invoked.
 
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
-here=`cd \`dirname "$here"\` ; pwd -P`
+here=`dirname "$here"`
+here=`cd "$here"; pwd -P`
 here=`dirname "$here"`
 
 # Well I want to tidy up files relating to platforms being tested so I

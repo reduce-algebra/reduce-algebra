@@ -3,7 +3,8 @@
 # needs to know where it lives so it can chain down to a file that is
 # at a location relative to it.
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
-here=`cd \`dirname "$here"\` ; pwd -P`
+here=`dirname "$here"`
+here=`cd "$here"; pwd -P`
 
 STORE=16000000
 if test -f $here/psl/psl/64

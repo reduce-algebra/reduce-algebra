@@ -9,7 +9,8 @@
 # shell scripts as well as Lisp code is that is useful.
 
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
-here=`cd \`dirname "$here"\` ; pwd -P`
+here=`dirname "$here"`
+here=`cd "$here"; pwd -P`
 here=`dirname "$here"`
 
 grep csl $here/packages/package.map | grep test | \

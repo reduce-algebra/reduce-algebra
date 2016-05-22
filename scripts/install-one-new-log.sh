@@ -7,7 +7,8 @@
 # to access files etc I need to know where it lives.
 
 a="$0";while test -L "$a";do a=`ls -ld "$a" | sed 's/.*-> //'`;done
-echo `cd \`dirname "$a"\` ; pwd -P`
+here=`dirname "$here"`
+here=`cd "$here"; pwd -P`
 here=`dirname "$here"`
 
 p=${1:-alg}

@@ -54,8 +54,8 @@ need=""
 
 fordistrib="texlive-collection-latexrecommended \
   texlive-collection-latexextra \
-  texlive-collection-fonts-recommended \
-  texlive-collection-fonts-extra \
+  texlive-collection-fontsrecommended \
+  texlive-collection-fontsextra \
   texlive-collection-htmlxml"
 
 case `uname -m` in

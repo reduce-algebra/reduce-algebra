@@ -3,7 +3,8 @@
 # Install a single log file with the ".new" suffix
 
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
-here=`cd \`dirname "$here"\` ; pwd -P`
+here=`dirname "$here"`
+here=`cd "$here"; pwd -P`
 
 echo Installing log $1 into $2
 

@@ -8,7 +8,8 @@
 # any other information.
 
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
-here=`cd \`dirname "$here"\` ; pwd -P`
+here=`dirname "$here"`
+here=`cd "$here"; pwd -P`
 
 # I will REQUIRE three vmware virtual machines, "REDUCE-pkg-factory-Windows",
 # "REDUCE-pkg-factory-Ubuntu" and "REDUCE-pkg-factory-Ubuntu32".
