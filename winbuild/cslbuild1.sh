@@ -25,9 +25,9 @@
 # 64-bit world.  
 
 here=`cygpath -a .`
-here=${here%/}
-here=`cygpath -m $here`
-here=`echo /cygdrive/$here | sed -e 's/://'`
+here="${here%/}"
+here=`cygpath -m "$here"`
+here=`echo /cygdrive/"$here" | sed -e 's/://'`
 reduce="$here/C"
 
 case $1 in
