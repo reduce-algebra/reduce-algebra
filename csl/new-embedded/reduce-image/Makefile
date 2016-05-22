@@ -24,14 +24,14 @@ reduce:		arith01.o arith02.o arith03.o arith04.o arith05.o \
 		arith06.o arith07.o arith08.o arith09.o arith10.o \
 		arith11.o arith12.o arith13.o arith14.o bytes.o char.o \
 		csl.o cslmpi.o cslread.o eval1.o eval2.o eval3.o \
-		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o cslgc.o \
+		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o cslgc.o lisphash.o \
 		preserve.o print.o restart.o sysfwin.o termed.o \
 		inthash.o serialize.o stubs.o
 	$(CC) $(CPPFLAGS) arith01.o arith02.o arith03.o arith04.o arith05.o \
 		arith06.o arith07.o arith08.o arith09.o arith10.o \
 		arith11.o arith12.o arith13.o arith14.o bytes.o char.o \
 		csl.o cslmpi.o cslread.o eval1.o eval2.o eval3.o \
-		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o cslgc.o \
+		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o cslgc.o lisphash.o \
 		preserve.o print.o restart.o sysfwin.o termed.o \
 		inthash.o serialize.o stubs.o \
 		-lcrlibm -lsoftfloat -lm -o reduce
@@ -97,6 +97,7 @@ fns2.o:		$(S)/fns2.cpp $(HEADERS)
 fns3.o:		$(S)/fns3.cpp $(HEADERS)
 fwin.o:		$(S)/fwin.cpp $(HEADERS)
 cslgc.o:	$(S)/cslgc.cpp $(HEADERS)
+lisphash.o:	$(S)/lisphash.cpp $(HEADERS)
 preserve.o:	$(S)/preserve.cpp $(HEADERS)
 print.o:	$(S)/print.cpp $(HEADERS)
 restart.o:	$(S)/restart.cpp machineid.cpp $(HEADERS)
