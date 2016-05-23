@@ -33,10 +33,9 @@ Commentary and further explanation
 
 The CSL-based binary versions of Reduce are linked with code that is subject
 to the LGPL 2.1. A copy of that license is present in the reduce.doc directory
-(which is where this file is). As of March 2009 the LGPL library involved
-is the FOX GUI toolkit - in future it is possible that some code will
-use the Qt library. The use of these (and any other LGPL code) is covered by
-the LGPL.
+(which is where this file is). As of May 2016 the LGPL libraries involved
+are FOX GUI toolkit, crlibm, wxWidgets.
+The use of these (and any other LGPL code) is covered by the LGPL.
 
 LGPL states, in part:
 
@@ -92,7 +91,17 @@ any LGPL libraries themselves will need to ensure that they adhere to the
 license terms if they distribute the resulting binary, and they will probably
 also wish to place a source archive beside their own binaries.
 
+The Reduce builds also make use of a collection of other generously
+licensed components such as libedit, the Berkeley SoftFloat code, in the
+future there may be use of the Boehm conservative garbage collector,
+an MD5-evaluation library and other code fragments, in addition to all the
+standard libraries the come along with the operating environment. The Reduce
+developers are grateful to all the authors of these libraries, and the full
+set of Reduce sources should contain clean copies of the versions that
+we started from and full attribution. In a similar way various font files
+are also used and the proper credits should be included along with them.
 
-               Arthur Norman        March 2009
+
+               Arthur Norman        May 2016
 
 
