@@ -6,16 +6,23 @@
  * one might be!
  *
  * Usage:
- *      make-cygwin-symlink d:/installed/somewhere/foo.exe cygfoo
- * This is like
- *   ln -s /cygdrive/d/installed/somewhere.foo.exe /usr/local/bin/cygfoo
  *
- *      make-cygwin-symlink WINPATH1 WINPATH2 name-for-cygwin
- * This is much the same but it links to WINPATH1 for any 32-bit installation
- * of cygwin and WINPATH2 for any 64-bit one.
+ *(a)   make-cygwin-symlink name-for-cygwin
+ *          Delete the cygwin link in all /usr/local/bin directories
+ *          that it is found in.
+ *
+ *(b)   make-cygwin-symlink d:/installed/somewhere/foo.exe cygfoo
+ *          This is like
+ *            ln -s /cygdrive/d/installed/somewhere.foo.exe \
+ *                  /usr/local/bin/cygfoo
+ *
+ *(c)   make-cygwin-symlink WINPATH1 WINPATH2 name-for-cygwin
+ *          This is much the same but it links to WINPATH1 for any 32-bit
+ *          installation of cygwin and WINPATH2 for any 64-bit one.
+ *
  */
 
-/* $Id: findcygwin.c 2277 2014-01-06 10:33:50Z arthurcnorman $ */
+/* $Id$ */
 
 
 /**************************************************************************
@@ -89,36 +96,38 @@ case SCS_64BIT_BINARY:
     sprintf(path+strlen(path)-strlen("/bin/bash.exe"),
             "/usr/local/bin/%s", cygname);
     DeleteFile(path); /* delete before trying to create it */
-    f = fopen(path, "wb");
-    if (f == NULL)
-    {   printf("Unable to write to %s\n", path);
-        return 1;
-    }
-    fwrite("!<symlink>", 1, 10, f);
-    putc(0xff, f);
-    putc(0xfe, f);
+    if (wname != NULL)
+    {   f = fopen(path, "wb");
+        if (f == NULL)
+        {   printf("Unable to write to %s\n", path);
+            return 1;
+        }
+        fwrite("!<symlink>", 1, 10, f);
+        putc(0xff, f);
+        putc(0xfe, f);
 /*
  * Here I have to do two things. One is to convert the Windows name to
  * on in cygwin format.
  */
-    for (p = "/cygdrive/"; *p!=0; p++)
-    {   putc(*p, f);
+        for (p = "/cygdrive/"; *p!=0; p++)
+        {   putc(*p, f);
+            putc(0, f);
+        }
+        p = wname;   // Expected to be of form "x:\..."
+        putc(*p++, f);
         putc(0, f);
-    }
-    p = wname;   // Expected to be of form "x:\..."
-    putc(*p++, f);
-    putc(0, f);
-    p++;           // Skip the ":"
-    while(*p!=0)
-    {   int c = *p++;
-        if (c == '\\') c = '/';
-        putc(c, f);
+        p++;           // Skip the ":"
+        while(*p!=0)
+        {   int c = *p++;
+            if (c == '\\') c = '/';
+            putc(c, f);
+            putc(0, f);
+        }
         putc(0, f);
+        putc(0, f);
+        fclose(f);
+        SetFileAttributes(path, FILE_ATTRIBUTE_SYSTEM);
     }
-    putc(0, f);
-    putc(0, f);
-    fclose(f);
-    SetFileAttributes(path, FILE_ATTRIBUTE_SYSTEM);
     return 0;
 }
 
@@ -134,7 +143,7 @@ int processDrive(const char *drive)
  * the path given to FindFirstFile, so the pattern I sort of wanted to
  * use, viz "x:\cyg*\bin\cygwin1.dll" is not acceptable. I need to find
  * directories that match "x:\cyg*" and then check within them as a
- * separtate step.
+ * separate step.
  */
     sprintf(name, "%scyg*", drive);
     printf("Pattern is %s\n", name);
@@ -195,8 +204,11 @@ int main(int argc, char *argv[])
         fclose(o);
     }
 #endif
-    if ((argc != 3 && argc != 4) || strncmp(argv[1], "--h", 3) == 0)
+    if ((args != 2 && argc != 3 && argc != 4) ||
+        strncmp(argv[1], "--h", 3) == 0)
     {   printf("[%d] Usage:\n", argc);
+        printf("     make-cygwin-symlink cygname\n");
+        printf("Delete /usr/local/bin/cygname in all cywgin installations\n");
         printf("     make-cygwin-symlink winname cygname\n");
         printf("or   make-cygwin-symlink winname winname64 cygname\n");
         printf("e.g. make-cygwin-symlink \"c:/Program Files/reduce/csl-reduce/reduce.exe\" redcsl\n");
@@ -219,6 +231,11 @@ int main(int argc, char *argv[])
  */
     switch (argc)
     {
+case 2:
+    winname = NULL;   /* NULL used to indicate the "delete" option */
+    winname64 = NULL;
+    cygname = argv[1];
+    break;
 case 3:
     winname = argv[1];
     winname64 = argv[1];
