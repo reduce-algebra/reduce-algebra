@@ -61,6 +61,8 @@ printf "Next build scheduled for $nextdate\n" >> $here/croncheck.log
 # a log of all the output it creates. Note that this is run on a Macintosh
 # hence the exact order of arguments passed to the "script" command.
 
+svn update $here/croncheck1.sh
+
 script $here/croncheck1.log bash -v $here/croncheck1.sh
 
 exit 0
