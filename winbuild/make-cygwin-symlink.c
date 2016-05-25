@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
         fclose(o);
     }
 #endif
-    if ((args != 2 && argc != 3 && argc != 4) ||
+    if ((argc != 2 && argc != 3 && argc != 4) ||
         strncmp(argv[1], "--h", 3) == 0)
     {   printf("[%d] Usage:\n", argc);
         printf("     make-cygwin-symlink cygname\n");
