@@ -88,16 +88,16 @@ static FILE *myfopen(const char *name, const char *mode)
     return fopen(newname, mode);
 }
 
-static int mygetc()
+static int get_without_cr(FILE *f)
 {
 // This mess is here in case an input file has carriage returns in.
 // An isolated CR is turned into '\n', while the sequence turns into
 // a single '\n'. Other more complicated sequences of CR and LF may end up
 // delivering multiple newlines to downstream.
-    int c = getc();
+    int c = getc(f);
     if (c == '\r')
-    {   int c1 = getc();
-        if (c1 != '\n') ungetc(c1, stdin);
+    {   int c1 = getc(f);
+        if (c1 != '\n') ungetc(c1, f);
         c = '\n';
     }
     return c;
@@ -122,9 +122,9 @@ int main(int argc, const char *argv[])
                 state != STRINGESC &&
                 state != CHAR &&
                 state != CHARESC)
-            {   while (ch == ' ') ch = mygetc(f);
+            {   while (ch == ' ') ch = get_without_cr(f);
             }
-            else if (ch != EOF) ch = mygetc(f);  // next character
+            else if (ch != EOF) ch = get_without_cr(f);  // next character
             if (ch == EOF) break;
             switch (state)
             {
