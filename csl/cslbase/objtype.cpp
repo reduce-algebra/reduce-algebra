@@ -1,4 +1,4 @@
-// objtype.cpp                         Copyright (C) 2005-2015 Codemist    
+// objtype.cpp                         Copyright (C) 2005-2016 Codemist    
 
 
 /**************************************************************************
@@ -184,6 +184,7 @@ int main(int argc, const char *argv[])
     for (;;)
     {   char line[100];
         int ch = getc(f2);
+// Here I just IGNORE carriage returns.
         while (ch == '\r') ch = getc(f2);
         i = 0;
         while (ch != '\n' && ch != EOF)

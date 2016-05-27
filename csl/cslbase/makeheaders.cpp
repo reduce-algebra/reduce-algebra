@@ -1,4 +1,4 @@
-// makeheaders.cpp                     Copyright (C) 2005-2015 Codemist    
+// makeheaders.cpp                     Copyright (C) 2005-2016 Codemist    
 
 
 /**************************************************************************
@@ -88,6 +88,21 @@ static FILE *myfopen(const char *name, const char *mode)
     return fopen(newname, mode);
 }
 
+static int mygetc()
+{
+// This mess is here in case an input file has carriage returns in.
+// An isolated CR is turned into '\n', while the sequence turns into
+// a single '\n'. Other more complicated sequences of CR and LF may end up
+// delivering multiple newlines to downstream.
+    int c = getc();
+    if (c == '\r')
+    {   int c1 = getc();
+        if (c1 != '\n') ungetc(c1, stdin);
+        c = '\n';
+    }
+    return c;
+}
+
 int main(int argc, const char *argv[])
 {   int i;
     printf("const char *config_header[] =\n{\n    \"");
@@ -107,9 +122,9 @@ int main(int argc, const char *argv[])
                 state != STRINGESC &&
                 state != CHAR &&
                 state != CHARESC)
-            {   while (ch == ' ') ch = getc(f);
+            {   while (ch == ' ') ch = mygetc(f);
             }
-            else if (ch != EOF) ch = getc(f);  // next character
+            else if (ch != EOF) ch = mygetc(f);  // next character
             if (ch == EOF) break;
             switch (state)
             {
