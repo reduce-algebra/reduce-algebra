@@ -160,7 +160,7 @@
 %%! predef [$ff$] \item [{\ttfamily !\$ff!\$}] \index{{\ttfamily !\$ff!\$}} ~\newline
 %% The value of this variable is a form-feed character.
 
-%%! predef [carriage-return] \item [{\ttfamily carriage\!-return}] \index{{\ttfamily carriage"!-return}} ~\newline
+%%! predef [carriage-return] \item [{\ttfamily carriage!-return}] \index{{\ttfamily carriage"!-return}} ~\newline
 %% The value of this variable is a carriage-return character that could arise
 %% in DOS-format files.
 
