@@ -635,8 +635,8 @@ ac_header_list=
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
-crlibmorboehm_FALSE
-crlibmorboehm_TRUE
+redfront_FALSE
+redfront_TRUE
 boehm_FALSE
 boehm_TRUE
 crlibm_FALSE
@@ -823,6 +823,7 @@ enable_option_checking
 enable_silent_rules
 with_csl
 with_psl
+with_redfront
 with_mingw64
 with_gui
 with_build
@@ -830,7 +831,6 @@ with_pslbuild
 with_cygbuild
 with_cygbuild64
 with_crlibm
-with_boehm
 with_lto
 with_fox
 with_wx
@@ -841,6 +841,7 @@ with_fox_pending
 enable_debug
 enable_conservative
 enable_test
+with_boehm
 enable_embedded
 enable_dependency_tracking
 enable_static
@@ -1516,6 +1517,7 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-csl              Use the CSL Lisp system
   --with-psl              Use the PSL Lisp system. Do not use here!
+  --with-redfront         Build and install redfront
   --with-mingw64          this option is ignored here!
   --with-gui              this option is ignored here!
   --with-build            specify host-name to use when logging
@@ -1523,7 +1525,6 @@ Optional Packages:
   --with-cygbuild         used if I wish to call the cygwin version
   --with-cygbuild64       used if I wish to call the 64-bit cygwin version
   --with-crlibm           Can be used to disable use of crlibm
-  --with-boehm            Can be used to disable use of boehm
   --with-lto              Force extreme optimisation with gcc
   --with-fox=DIR          FOX installation location
   --with-wx               enable use of wxWidgets
@@ -1531,6 +1532,7 @@ Optional Packages:
   --with-autogen          Used at a higher level
   --with-force            Used at a higher level
   --with-fox-pending      do not check dir from --with-fox
+  --with-boehm            Can be used to disable use of boehm
   --with-pic[=PKGS]       try to use only PIC/non-PIC objects [default=use
                           both]
   --with-aix-soname=aix|svr4|both
@@ -2886,11 +2888,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-# automake 1.13 was the first to support AC_CONFIG_MACRO_DIRS
-am__api_version='1.14'
-
 ac_aux_dir=
-for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
+for ac_dir in . "$srcdir"/.; do
   if test -f "$ac_dir/install-sh"; then
     ac_aux_dir=$ac_dir
     ac_install_sh="$ac_aux_dir/install-sh -c"
@@ -2906,7 +2905,7 @@ for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
   fi
 done
 if test -z "$ac_aux_dir"; then
-  as_fn_error $? "cannot find install-sh, install.sh, or shtool in \"$srcdir\" \"$srcdir/..\" \"$srcdir/../..\"" "$LINENO" 5
+  as_fn_error $? "cannot find install-sh, install.sh, or shtool in . \"$srcdir\"/." "$LINENO" 5
 fi
 
 # These three variables are undocumented and unsupported,
@@ -2917,6 +2916,10 @@ ac_config_guess="$SHELL $ac_aux_dir/config.guess"  # Please don't use this var.
 ac_config_sub="$SHELL $ac_aux_dir/config.sub"  # Please don't use this var.
 ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
+
+
+# automake 1.13 was the first to support AC_CONFIG_MACRO_DIRS
+am__api_version='1.14'
 
 # Find a good install program.  We prefer a C program (faster),
 # so one script is as good as another.  But avoid the broken or
@@ -3553,6 +3556,18 @@ else
 fi
 
 
+# By configuring "--without-redfront" you can avoid having a CSL built
+# making an attempt to coompile and instate the newfront version of redfront.
+
+
+# Check whether --with-redfront was given.
+if test "${with_redfront+set}" = set; then :
+  withval=$with_redfront;
+else
+  with_redfront="yes"
+fi
+
+
 
 # Check whether --with-mingw64 was given.
 if test "${with_mingw64+set}" = set; then :
@@ -3703,22 +3718,6 @@ if test "x$with_crlibm" != "xno"
 then
 
 $as_echo "#define HAVE_CRLIBM 1" >>confdefs.h
-
-fi
-
-
-# Check whether --with-boehm was given.
-if test "${with_boehm+set}" = set; then :
-  withval=$with_boehm;
-else
-  with_boehm="no"
-fi
-
-
-if test "x$with_boehm" != "xno"
-then
-
-$as_echo "#define HAVE_BOEHM 1" >>confdefs.h
 
 fi
 
@@ -4566,7 +4565,7 @@ $as_echo "#define MACINTOSH 1" >>confdefs.h
   XLIBS="-lXext -lX11 -lXft -lfontconfig"
   macintosh_build="yes"
   darwin_build="yes"
-  if test "x$CC$CXX" == "x" || (test "x$CC" == "xgcc" && test "x$CXX" == "xg++")
+  if test "x$CC$CXX" = "x" || (test "x$CC" = "xgcc" && test "x$CXX" = "xg++")
   then
 # The following line was suggested by the libEDIT configuration files.
 # Even though I no longer use libEDIT I will keep it!
@@ -5121,6 +5120,25 @@ then
   CPPFLAGS="$CPPFLAGS -DEXPERIMENT=1"
 
 $as_echo "#define EXPERIMENT 1" >>confdefs.h
+
+fi
+
+# Note that if I go "--enable-test" that causes a default "--with-boehm",
+# so that the conservative garbage collector will be available.
+
+
+# Check whether --with-boehm was given.
+if test "${with_boehm+set}" = set; then :
+  withval=$with_boehm;
+else
+  with_boehm=$enable_test
+fi
+
+
+if test "x$with_boehm" != "xno"
+then
+
+$as_echo "#define HAVE_BOEHM 1" >>confdefs.h
 
 fi
 
@@ -20218,7 +20236,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_static" >&5
 $as_echo "$enable_static" >&6; }
 
-# In lots of cases I will be using gcc. In that case I will use -O2 for
+# In lots of cases I will be using gcc. In that case I will use -O3 for
 # release code, but -O0 when debugging. I also stick in -Wall so I get
 # loads of comments about code style etc. For other C compilers I do
 # not set any optimisation flags but I do expect "-g" to be available
@@ -20235,12 +20253,15 @@ $as_echo "$enable_static" >&6; }
 # though it hits performance a little. Furthermore in 2008 I found that
 # some things behaved in ways I did not understand with "-O1 -g" hence I
 # drop back to "-O0 -g".
-#
+# Now in 2016 I am moving back to -O3 for production use, but will remain
+# with a very conservative -O0 for debugging builds. Please note that these
+# settings are applied if the compiler is detected as gcc. Also note that
+# I may try to disable optimisations that exploit the strict aliasing rules.
 
 LOWOPT="-O0"
 if test "x$HIGHOPT" = "x"
 then
-  HIGHOPT="-O2"
+  HIGHOPT="-O3"
 fi
 
 case $CC in
@@ -20271,6 +20292,8 @@ fi
 
 if test "x$GCC" = "xyes"
 then
+  NSA=
+# NSA="-fno-strict-aliasing"
   if test "x$enable_debug" = "xyes"
   then
 # If only to see how many people get upset, I will put "-pg" in the command
@@ -20284,14 +20307,18 @@ then
 # used... but I will leave people to adjust for that manually.
     PROFILE="-pg"
 #   PROFILE=""
-    CFLAGS="${CFLAGS} -fno-strict-aliasing ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
-    CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
-    DLL_CFLAGS="${DLL_CFLAGS} -fno-strict-aliasing ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
+    CFLAGS="${CFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
+    CXXFLAGS="${CXXFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
+    DLL_CFLAGS="${DLL_CFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
     LDFLAGS="${LDFLAGS} -g ${PROFILE}"
   else
-    CFLAGS="$CFLAGS -fno-strict-aliasing ${HIGHOPT} -Wall"
-    CXXFLAGS="$CXXFLAGS -fno-strict-aliasing ${HIGHOPT} -Wall"
-    DLL_CFLAGS="${DLL_CFLAGS} -fno-strict-aliasing ${HIGHOPT}"
+# As of April 2016 my belief is that gcc with strict aliasing enabled breaks
+# some things. I do not understand exactly what, but implementing dynamic
+# memory allocation is just the sort of area where the strict aliasing
+# rule sin general are a total misery and disaster!
+    CFLAGS="$CFLAGS ${NSA} ${HIGHOPT} -Wall"
+    CXXFLAGS="$CXXFLAGS ${NSA} ${HIGHOPT} -Wall"
+    DLL_CFLAGS="${DLL_CFLAGS} ${NSA} ${HIGHOPT}"
   fi
   if test "x$enable_static" = "xyes"
   then
@@ -23055,12 +23082,12 @@ else
   boehm_FALSE=
 fi
 
- if test "x$with_crlibm" != "xno" || "x$with_boehm" != "xno"; then
-  crlibmorboehm_TRUE=
-  crlibmorboehm_FALSE='#'
+ if test "x$with_redfront" != "xno"; then
+  redfront_TRUE=
+  redfront_FALSE='#'
 else
-  crlibmorboehm_TRUE='#'
-  crlibmorboehm_FALSE=
+  redfront_TRUE='#'
+  redfront_FALSE=
 fi
 
 
@@ -23289,8 +23316,8 @@ if test -z "${boehm_TRUE}" && test -z "${boehm_FALSE}"; then
   as_fn_error $? "conditional \"boehm\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${crlibmorboehm_TRUE}" && test -z "${crlibmorboehm_FALSE}"; then
-  as_fn_error $? "conditional \"crlibmorboehm\" was never defined.
+if test -z "${redfront_TRUE}" && test -z "${redfront_FALSE}"; then
+  as_fn_error $? "conditional \"redfront\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

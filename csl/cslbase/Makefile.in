@@ -16,6 +16,7 @@
 
 # CSL and REDUCE build sequences
 
+
 VPATH = @srcdir@
 am__is_gnu_make = test -n '$(MAKEFILE_LIST)' && test -n '$(MAKELEVEL)'
 am__make_running_with_option = \
@@ -85,12 +86,13 @@ host_triplet = @host@
 @wx_TRUE@am__append_3 = $(MY_CPPFLAGS)
 @mac_framework_FALSE@noinst_PROGRAMS = bootstrapreduce$(EXEEXT) \
 @mac_framework_FALSE@	fwindemo$(EXEEXT) termdemo$(EXEEXT) \
-@mac_framework_FALSE@	$(am__EXEEXT_1) dyndemo$(EXEEXT) \
-@mac_framework_FALSE@	$(am__EXEEXT_2) $(am__append_4)
+@mac_framework_FALSE@	softfloatdemo$(EXEEXT) $(am__EXEEXT_1) \
+@mac_framework_FALSE@	dyndemo$(EXEEXT) $(am__EXEEXT_2) \
+@mac_framework_FALSE@	$(am__append_4)
 @mac_framework_TRUE@noinst_PROGRAMS = bootstrapreduce$(EXEEXT) \
 @mac_framework_TRUE@	fwindemo$(EXEEXT) termdemo$(EXEEXT) \
-@mac_framework_TRUE@	$(am__EXEEXT_1) $(am__EXEEXT_2) \
-@mac_framework_TRUE@	$(am__append_4)
+@mac_framework_TRUE@	softfloatdemo$(EXEEXT) $(am__EXEEXT_1) \
+@mac_framework_TRUE@	$(am__EXEEXT_2) $(am__append_4)
 @boehm_TRUE@am__append_4 = gctest$(EXEEXT)
 @crlibm_TRUE@am__append_5 = $(CRINC)
 @crlibm_TRUE@am__append_6 = $(CRINC)
@@ -146,22 +148,24 @@ PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am__bootstrapreduce_SOURCES_DIST = arith01.cpp arith02.cpp arith03.cpp \
 	arith04.cpp arith05.cpp arith06.cpp arith07.cpp arith08.cpp \
 	arith09.cpp arith10.cpp arith11.cpp arith12.cpp arith13.cpp \
-	bytes1.cpp char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp \
-	eval4.cpp fns1.cpp fns2.cpp fns3.cpp print.cpp cslread.cpp \
-	restart.cpp serialize.cpp sysfwin.cpp csl.cpp fasl.cpp \
-	cslgc.cpp preserve.cpp fwin.cpp termed.cpp wxfwin.cpp \
-	wxterminal.cpp jit1.cpp jit2.cpp jit3.cpp jitx86.cpp \
-	x86defs.cpp wstring.cpp textdefs.cpp prefix.cpp operands.cpp \
-	insts.cpp instructions.cpp distorm.cpp decoder.cpp stubs.cpp
+	arith14.cpp bytes1.cpp char.cpp cslmpi.cpp eval1.cpp eval2.cpp \
+	eval3.cpp eval4.cpp fns1.cpp fns2.cpp fns3.cpp inthash.cpp \
+	print.cpp cslread.cpp restart.cpp lisphash.cpp serialize.cpp \
+	sysfwin.cpp csl.cpp fasl.cpp cslgc.cpp preserve.cpp fwin.cpp \
+	termed.cpp wxfwin.cpp wxterminal.cpp jit1.cpp jit2.cpp \
+	jit3.cpp jitx86.cpp x86defs.cpp wstring.cpp textdefs.cpp \
+	prefix.cpp operands.cpp insts.cpp instructions.cpp distorm.cpp \
+	decoder.cpp stubs.cpp
 am__objects_1 = arith01.$(OBJEXT) arith02.$(OBJEXT) arith03.$(OBJEXT) \
 	arith04.$(OBJEXT) arith05.$(OBJEXT) arith06.$(OBJEXT) \
 	arith07.$(OBJEXT) arith08.$(OBJEXT) arith09.$(OBJEXT) \
 	arith10.$(OBJEXT) arith11.$(OBJEXT) arith12.$(OBJEXT) \
-	arith13.$(OBJEXT) bytes1.$(OBJEXT) char.$(OBJEXT) \
-	cslmpi.$(OBJEXT) eval1.$(OBJEXT) eval2.$(OBJEXT) \
-	eval3.$(OBJEXT) eval4.$(OBJEXT) fns1.$(OBJEXT) fns2.$(OBJEXT) \
-	fns3.$(OBJEXT) print.$(OBJEXT) cslread.$(OBJEXT) \
-	restart.$(OBJEXT) serialize.$(OBJEXT) sysfwin.$(OBJEXT)
+	arith13.$(OBJEXT) arith14.$(OBJEXT) bytes1.$(OBJEXT) \
+	char.$(OBJEXT) cslmpi.$(OBJEXT) eval1.$(OBJEXT) \
+	eval2.$(OBJEXT) eval3.$(OBJEXT) eval4.$(OBJEXT) fns1.$(OBJEXT) \
+	fns2.$(OBJEXT) fns3.$(OBJEXT) inthash.$(OBJEXT) \
+	print.$(OBJEXT) cslread.$(OBJEXT) restart.$(OBJEXT) \
+	lisphash.$(OBJEXT) serialize.$(OBJEXT) sysfwin.$(OBJEXT)
 am__objects_2 = csl.$(OBJEXT) fasl.$(OBJEXT) cslgc.$(OBJEXT) \
 	preserve.$(OBJEXT)
 @fox_FALSE@@wx_FALSE@am__objects_3 = fwin.$(OBJEXT) termed.$(OBJEXT)
@@ -184,26 +188,29 @@ am__v_lt_0 = --silent
 am__v_lt_1 = 
 am__csl_SOURCES_DIST = arith01.cpp arith02.cpp arith03.cpp arith04.cpp \
 	arith05.cpp arith06.cpp arith07.cpp arith08.cpp arith09.cpp \
-	arith10.cpp arith11.cpp arith12.cpp arith13.cpp bytes1.cpp \
-	char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp eval4.cpp \
-	fns1.cpp fns2.cpp fns3.cpp print.cpp cslread.cpp restart.cpp \
-	serialize.cpp sysfwin.cpp csl.cpp fasl.cpp cslgc.cpp \
-	preserve.cpp fwin.cpp termed.cpp wxfwin.cpp wxterminal.cpp \
-	jit1.cpp jit2.cpp jit3.cpp jitx86.cpp x86defs.cpp wstring.cpp \
-	textdefs.cpp prefix.cpp operands.cpp insts.cpp \
-	instructions.cpp distorm.cpp decoder.cpp stubs.cpp
+	arith10.cpp arith11.cpp arith12.cpp arith13.cpp arith14.cpp \
+	bytes1.cpp char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp \
+	eval4.cpp fns1.cpp fns2.cpp fns3.cpp inthash.cpp print.cpp \
+	cslread.cpp restart.cpp lisphash.cpp serialize.cpp sysfwin.cpp \
+	csl.cpp fasl.cpp cslgc.cpp preserve.cpp fwin.cpp termed.cpp \
+	wxfwin.cpp wxterminal.cpp jit1.cpp jit2.cpp jit3.cpp \
+	jitx86.cpp x86defs.cpp wstring.cpp textdefs.cpp prefix.cpp \
+	operands.cpp insts.cpp instructions.cpp distorm.cpp \
+	decoder.cpp stubs.cpp
 am__objects_6 = csl-arith01.$(OBJEXT) csl-arith02.$(OBJEXT) \
 	csl-arith03.$(OBJEXT) csl-arith04.$(OBJEXT) \
 	csl-arith05.$(OBJEXT) csl-arith06.$(OBJEXT) \
 	csl-arith07.$(OBJEXT) csl-arith08.$(OBJEXT) \
 	csl-arith09.$(OBJEXT) csl-arith10.$(OBJEXT) \
 	csl-arith11.$(OBJEXT) csl-arith12.$(OBJEXT) \
-	csl-arith13.$(OBJEXT) csl-bytes1.$(OBJEXT) csl-char.$(OBJEXT) \
-	csl-cslmpi.$(OBJEXT) csl-eval1.$(OBJEXT) csl-eval2.$(OBJEXT) \
-	csl-eval3.$(OBJEXT) csl-eval4.$(OBJEXT) csl-fns1.$(OBJEXT) \
-	csl-fns2.$(OBJEXT) csl-fns3.$(OBJEXT) csl-print.$(OBJEXT) \
+	csl-arith13.$(OBJEXT) csl-arith14.$(OBJEXT) \
+	csl-bytes1.$(OBJEXT) csl-char.$(OBJEXT) csl-cslmpi.$(OBJEXT) \
+	csl-eval1.$(OBJEXT) csl-eval2.$(OBJEXT) csl-eval3.$(OBJEXT) \
+	csl-eval4.$(OBJEXT) csl-fns1.$(OBJEXT) csl-fns2.$(OBJEXT) \
+	csl-fns3.$(OBJEXT) csl-inthash.$(OBJEXT) csl-print.$(OBJEXT) \
 	csl-cslread.$(OBJEXT) csl-restart.$(OBJEXT) \
-	csl-serialize.$(OBJEXT) csl-sysfwin.$(OBJEXT)
+	csl-lisphash.$(OBJEXT) csl-serialize.$(OBJEXT) \
+	csl-sysfwin.$(OBJEXT)
 am__objects_7 = csl-csl.$(OBJEXT) csl-fasl.$(OBJEXT) \
 	csl-cslgc.$(OBJEXT) csl-preserve.$(OBJEXT)
 @fox_FALSE@@wx_FALSE@am__objects_8 = csl-fwin.$(OBJEXT) \
@@ -233,43 +240,44 @@ am__fwindemo_SOURCES_DIST = fwindemo.cpp fwin.cpp termed.cpp \
 	wxfwin.cpp wxterminal.cpp
 am_fwindemo_OBJECTS = fwindemo.$(OBJEXT) $(am__objects_3)
 fwindemo_OBJECTS = $(am_fwindemo_OBJECTS)
-am__gctest_SOURCES_DIST = gctest.cpp serialize.cpp
-@boehm_TRUE@am_gctest_OBJECTS = gctest-gctest.$(OBJEXT) \
-@boehm_TRUE@	gctest-serialize.$(OBJEXT)
+am__gctest_SOURCES_DIST = gctest.cpp
+@boehm_TRUE@am_gctest_OBJECTS = gctest-gctest.$(OBJEXT)
 gctest_OBJECTS = $(am_gctest_OBJECTS)
 am__reduce_SOURCES_DIST = arith01.cpp arith02.cpp arith03.cpp \
 	arith04.cpp arith05.cpp arith06.cpp arith07.cpp arith08.cpp \
 	arith09.cpp arith10.cpp arith11.cpp arith12.cpp arith13.cpp \
-	bytes1.cpp char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp \
-	eval4.cpp fns1.cpp fns2.cpp fns3.cpp print.cpp cslread.cpp \
-	restart.cpp serialize.cpp sysfwin.cpp csl.cpp fasl.cpp \
-	cslgc.cpp preserve.cpp fwin.cpp termed.cpp wxfwin.cpp \
-	wxterminal.cpp jit1.cpp jit2.cpp jit3.cpp jitx86.cpp \
-	x86defs.cpp wstring.cpp textdefs.cpp prefix.cpp operands.cpp \
-	insts.cpp instructions.cpp distorm.cpp decoder.cpp u01.cpp \
-	u02.cpp u03.cpp u04.cpp u05.cpp u06.cpp u07.cpp u08.cpp \
-	u09.cpp u10.cpp u11.cpp u12.cpp u13.cpp u14.cpp u15.cpp \
-	u16.cpp u17.cpp u18.cpp u19.cpp u20.cpp u21.cpp u22.cpp \
-	u23.cpp u24.cpp u25.cpp u26.cpp u27.cpp u28.cpp u29.cpp \
-	u30.cpp u31.cpp u32.cpp u33.cpp u34.cpp u35.cpp u36.cpp \
-	u37.cpp u38.cpp u39.cpp u40.cpp u41.cpp u42.cpp u43.cpp \
-	u44.cpp u45.cpp u46.cpp u47.cpp u48.cpp u49.cpp u50.cpp \
-	u51.cpp u52.cpp u53.cpp u54.cpp u55.cpp u56.cpp u57.cpp \
-	u58.cpp u59.cpp u60.cpp
+	arith14.cpp bytes1.cpp char.cpp cslmpi.cpp eval1.cpp eval2.cpp \
+	eval3.cpp eval4.cpp fns1.cpp fns2.cpp fns3.cpp inthash.cpp \
+	print.cpp cslread.cpp restart.cpp lisphash.cpp serialize.cpp \
+	sysfwin.cpp csl.cpp fasl.cpp cslgc.cpp preserve.cpp fwin.cpp \
+	termed.cpp wxfwin.cpp wxterminal.cpp jit1.cpp jit2.cpp \
+	jit3.cpp jitx86.cpp x86defs.cpp wstring.cpp textdefs.cpp \
+	prefix.cpp operands.cpp insts.cpp instructions.cpp distorm.cpp \
+	decoder.cpp u01.cpp u02.cpp u03.cpp u04.cpp u05.cpp u06.cpp \
+	u07.cpp u08.cpp u09.cpp u10.cpp u11.cpp u12.cpp u13.cpp \
+	u14.cpp u15.cpp u16.cpp u17.cpp u18.cpp u19.cpp u20.cpp \
+	u21.cpp u22.cpp u23.cpp u24.cpp u25.cpp u26.cpp u27.cpp \
+	u28.cpp u29.cpp u30.cpp u31.cpp u32.cpp u33.cpp u34.cpp \
+	u35.cpp u36.cpp u37.cpp u38.cpp u39.cpp u40.cpp u41.cpp \
+	u42.cpp u43.cpp u44.cpp u45.cpp u46.cpp u47.cpp u48.cpp \
+	u49.cpp u50.cpp u51.cpp u52.cpp u53.cpp u54.cpp u55.cpp \
+	u56.cpp u57.cpp u58.cpp u59.cpp u60.cpp
 am__objects_11 = reduce-arith01.$(OBJEXT) reduce-arith02.$(OBJEXT) \
 	reduce-arith03.$(OBJEXT) reduce-arith04.$(OBJEXT) \
 	reduce-arith05.$(OBJEXT) reduce-arith06.$(OBJEXT) \
 	reduce-arith07.$(OBJEXT) reduce-arith08.$(OBJEXT) \
 	reduce-arith09.$(OBJEXT) reduce-arith10.$(OBJEXT) \
 	reduce-arith11.$(OBJEXT) reduce-arith12.$(OBJEXT) \
-	reduce-arith13.$(OBJEXT) reduce-bytes1.$(OBJEXT) \
-	reduce-char.$(OBJEXT) reduce-cslmpi.$(OBJEXT) \
-	reduce-eval1.$(OBJEXT) reduce-eval2.$(OBJEXT) \
-	reduce-eval3.$(OBJEXT) reduce-eval4.$(OBJEXT) \
-	reduce-fns1.$(OBJEXT) reduce-fns2.$(OBJEXT) \
-	reduce-fns3.$(OBJEXT) reduce-print.$(OBJEXT) \
+	reduce-arith13.$(OBJEXT) reduce-arith14.$(OBJEXT) \
+	reduce-bytes1.$(OBJEXT) reduce-char.$(OBJEXT) \
+	reduce-cslmpi.$(OBJEXT) reduce-eval1.$(OBJEXT) \
+	reduce-eval2.$(OBJEXT) reduce-eval3.$(OBJEXT) \
+	reduce-eval4.$(OBJEXT) reduce-fns1.$(OBJEXT) \
+	reduce-fns2.$(OBJEXT) reduce-fns3.$(OBJEXT) \
+	reduce-inthash.$(OBJEXT) reduce-print.$(OBJEXT) \
 	reduce-cslread.$(OBJEXT) reduce-restart.$(OBJEXT) \
-	reduce-serialize.$(OBJEXT) reduce-sysfwin.$(OBJEXT)
+	reduce-lisphash.$(OBJEXT) reduce-serialize.$(OBJEXT) \
+	reduce-sysfwin.$(OBJEXT)
 am__objects_12 = reduce-csl.$(OBJEXT) reduce-fasl.$(OBJEXT) \
 	reduce-cslgc.$(OBJEXT) reduce-preserve.$(OBJEXT)
 @fox_FALSE@@wx_FALSE@am__objects_13 = reduce-fwin.$(OBJEXT) \
@@ -311,6 +319,9 @@ am_reduce_OBJECTS = $(am__objects_11) $(am__objects_12) \
 reduce_OBJECTS = $(am_reduce_OBJECTS)
 am_showmathdemo_OBJECTS = showmathdemo-showmathdemo.$(OBJEXT)
 showmathdemo_OBJECTS = $(am_showmathdemo_OBJECTS)
+am_softfloatdemo_OBJECTS = softfloatdemo-softfloatdemo.$(OBJEXT) \
+	softfloatdemo-arith14.$(OBJEXT)
+softfloatdemo_OBJECTS = $(am_softfloatdemo_OBJECTS)
 am_termdemo_OBJECTS = termdemo.$(OBJEXT) termed.$(OBJEXT)
 termdemo_OBJECTS = $(am_termdemo_OBJECTS)
 termdemo_LDADD = $(LDADD)
@@ -330,6 +341,7 @@ am_wxshowmath_OBJECTS = wxshowmath.$(OBJEXT) charmetrics.$(OBJEXT) \
 wxshowmath_OBJECTS = $(am_wxshowmath_OBJECTS)
 am_wxshowmathdemo_OBJECTS = wxshowmathdemo.$(OBJEXT)
 wxshowmathdemo_OBJECTS = $(am_wxshowmathdemo_OBJECTS)
+SCRIPTS = $(noinst_SCRIPTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -367,17 +379,17 @@ am__v_CXXLD_1 =
 SOURCES = $(bootstrapreduce_SOURCES) $(csl_SOURCES) $(dyndemo_SOURCES) \
 	$(fontdemo_SOURCES) $(foxdemo_SOURCES) $(fwindemo_SOURCES) \
 	$(gctest_SOURCES) $(reduce_SOURCES) $(showmathdemo_SOURCES) \
-	$(termdemo_SOURCES) $(wxdemo_SOURCES) $(wxdvi_SOURCES) \
-	$(wxfontdemo_SOURCES) $(wxpsl_SOURCES) $(wxshowmath_SOURCES) \
-	$(wxshowmathdemo_SOURCES)
+	$(softfloatdemo_SOURCES) $(termdemo_SOURCES) $(wxdemo_SOURCES) \
+	$(wxdvi_SOURCES) $(wxfontdemo_SOURCES) $(wxpsl_SOURCES) \
+	$(wxshowmath_SOURCES) $(wxshowmathdemo_SOURCES)
 DIST_SOURCES = $(am__bootstrapreduce_SOURCES_DIST) \
 	$(am__csl_SOURCES_DIST) $(dyndemo_SOURCES) $(fontdemo_SOURCES) \
 	$(foxdemo_SOURCES) $(am__fwindemo_SOURCES_DIST) \
 	$(am__gctest_SOURCES_DIST) $(am__reduce_SOURCES_DIST) \
-	$(showmathdemo_SOURCES) $(termdemo_SOURCES) $(wxdemo_SOURCES) \
-	$(wxdvi_SOURCES) $(wxfontdemo_SOURCES) \
-	$(am__wxpsl_SOURCES_DIST) $(wxshowmath_SOURCES) \
-	$(wxshowmathdemo_SOURCES)
+	$(showmathdemo_SOURCES) $(softfloatdemo_SOURCES) \
+	$(termdemo_SOURCES) $(wxdemo_SOURCES) $(wxdvi_SOURCES) \
+	$(wxfontdemo_SOURCES) $(am__wxpsl_SOURCES_DIST) \
+	$(wxshowmath_SOURCES) $(wxshowmathdemo_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -573,11 +585,12 @@ TRACE = $(warning TRACE: $@ :: $?)
 # I wish to know where this build intends to install things...
 AM_CPPFLAGS = $(TRACE) $(am__append_1) -DBINDIR=$(bindir) \
 	-DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) \
-	$(am__append_5) $(am__append_14)
+	$(am__append_5) $(am__append_14) $(SOFTFLOATINC)
 AM_LDFLAGS = $(TRACE)
 reduce_CPPFLAGS = $(TRACE) -DNO_BYTECOUNT=1 $(am__append_2) \
 	-DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) \
-	-Dfontsdir=reduce.$(fontsdir) $(am__append_6) $(am__append_15)
+	-Dfontsdir=reduce.$(fontsdir) $(am__append_6) $(am__append_15) \
+	$(SOFTFLOATINC)
 #
 # At least on a temporary basis I will make CSL keep profiling
 # information. This is because that will help me debug the profile
@@ -588,7 +601,7 @@ reduce_CPPFLAGS = $(TRACE) -DNO_BYTECOUNT=1 $(am__append_2) \
 #csl_CPPFLAGS    = $(TRACE) -DNO_BYTECOUNT=1
 csl_CPPFLAGS = $(TRACE) $(am__append_3) -DBINDIR=$(bindir) \
 	-DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) \
-	$(am__append_7) $(am__append_16)
+	$(am__append_7) $(am__append_16) $(SOFTFLOATINC)
 @exeext_FALSE@plain_csl = csl.unnecessary.except.on.windows
 
 # If I list all the phony targets here this may help document things you
@@ -613,6 +626,8 @@ csl_CPPFLAGS = $(TRACE) $(am__append_3) -DBINDIR=$(bindir) \
 @exeext_TRUE@plain_wxpsl = wxpsl
 @exeext_FALSE@plain_termdemo = termdemo.unnecessary.except.on.windows
 @exeext_TRUE@plain_termdemo = termdemo
+@exeext_FALSE@plain_softfloatdemo = softfloatdemo.unnecessary.except.on.windows
+@exeext_TRUE@plain_softfloatdemo = softfloatdemo
 @exeext_FALSE@plain_foxdemo = foxdemo.unnecessary.except.on.windows
 @exeext_TRUE@plain_foxdemo = foxdemo
 @exeext_FALSE@plain_fontdemo = fontdemo.unnecessary.except.on.windows
@@ -671,11 +686,14 @@ RM = rm
 @wx_TRUE@wxdemotarget = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxdvi$(EXEEXT) wxshowmath$(EXEEXT) wxshowmathdemo$(EXEEXT)
 @wx_FALSE@bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
 @wx_TRUE@bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT) wxpsl$(EXEEXT)
+@mac_framework_FALSE@REDUCE_IMG = reduce.img
+@mac_framework_TRUE@REDUCE_IMG = reduce.app/Contents/MacOS/reduce.img
 core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
-		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp arith11.cpp \
-		arith12.cpp arith13.cpp bytes1.cpp char.cpp cslmpi.cpp eval1.cpp eval2.cpp \
-		eval3.cpp eval4.cpp fns1.cpp fns2.cpp fns3.cpp \
-		print.cpp cslread.cpp restart.cpp serialize.cpp sysfwin.cpp
+		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp \
+		arith11.cpp arith12.cpp arith13.cpp arith14.cpp bytes1.cpp \
+		char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp eval4.cpp \
+		fns1.cpp fns2.cpp fns3.cpp inthash.cpp print.cpp cslread.cpp \
+		restart.cpp lisphash.cpp serialize.cpp sysfwin.cpp
 
 demo_sources = csl.cpp fasl.cpp cslgc.cpp preserve.cpp
 undemo_sources = csl.cpp fasl.cpp cslgc.cpp preserve.cpp
@@ -913,18 +931,28 @@ dyndemo_SOURCES = dyndemo.cpp
 @windows_TRUE@reduceres = fwin-reduce.$(OBJEXT)
 @windows_FALSE@fwindemo_LDADD = $(FOX_LIBS)
 @windows_TRUE@fwindemo_LDADD = $(fwin_icon) $(FOX_LIBS)
+
+# The following ugly dependencies are here so that one can go, for
+# instance, "make csl.o" in a clean tree and softfloat building will get
+# triggered.
 @windows_FALSE@csl_LDADD = $(FOX_LIBS) $(am__append_8) \
-@windows_FALSE@	$(am__append_17)
+@windows_FALSE@	$(am__append_17) -L../lib -lsoftfloat
+
+# The following ugly dependencies are here so that one can go, for
+# instance, "make csl.o" in a clean tree and softfloat building will get
+# triggered.
 @windows_TRUE@csl_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS) \
-@windows_TRUE@	$(am__append_8) $(am__append_17)
+@windows_TRUE@	$(am__append_8) $(am__append_17) -L../lib \
+@windows_TRUE@	-lsoftfloat
 @windows_FALSE@bootstrapreduce_LDADD = $(FOX_LIBS) $(am__append_9) \
-@windows_FALSE@	$(am__append_18)
+@windows_FALSE@	$(am__append_18) -L../lib -lsoftfloat
 @windows_TRUE@bootstrapreduce_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS) \
-@windows_TRUE@	$(am__append_9) $(am__append_18)
+@windows_TRUE@	$(am__append_9) $(am__append_18) -L../lib \
+@windows_TRUE@	-lsoftfloat
 @windows_FALSE@reduce_LDADD = $(FOX_LIBS) $(am__append_10) \
-@windows_FALSE@	$(am__append_19)
+@windows_FALSE@	$(am__append_19) -L../lib -lsoftfloat
 @windows_TRUE@reduce_LDADD = $(reduceres) $(FOX_LIBS) $(am__append_10) \
-@windows_TRUE@	$(am__append_19)
+@windows_TRUE@	$(am__append_19) -L../lib -lsoftfloat
 @cygwin_FALSE@@windows_TRUE@WINHELPERS = cygwin-isatty.exe cygwin64-isatty.exe not-under-cygwin.exe
 
 # The purpose of these two tiny programs is explained in the
@@ -933,24 +961,28 @@ dyndemo_SOURCES = dyndemo.cpp
 # options.
 @cygwin_TRUE@@windows_TRUE@WINHELPERS = 
 @windows_FALSE@csl_DEPENDENCIES = $(FONTDEP) $(WXC) $(am__append_11) \
-@windows_FALSE@	$(am__append_20)
+@windows_FALSE@	$(am__append_20) $(SOFTFLOATDEPS)
 @windows_TRUE@csl_DEPENDENCIES = local-cslexe.def local-cslcom.def \
 @windows_TRUE@	fwin-csl.$(OBJEXT) $(FONTDEP) $(WXC) \
-@windows_TRUE@	$(am__append_11) $(am__append_20)
+@windows_TRUE@	$(am__append_11) $(am__append_20) \
+@windows_TRUE@	$(SOFTFLOATDEPS)
 @windows_FALSE@bootstrapreduce_DEPENDENCIES = $(FONTDEP) \
 @windows_FALSE@	reduce.doc/index.html $(AWKFILES) $(GP) $(WXC) \
-@windows_FALSE@	$(am__append_12) $(am__append_21)
+@windows_FALSE@	$(am__append_12) $(am__append_21) \
+@windows_FALSE@	$(SOFTFLOATDEPS)
 @windows_TRUE@bootstrapreduce_DEPENDENCIES =  \
 @windows_TRUE@	local-bootstrapreduceexe.def fwin-csl.$(OBJEXT) \
 @windows_TRUE@	$(FONTDEP) reduce.doc/index.html $(AWKFILES) \
-@windows_TRUE@	$(GP) $(WXC) $(am__append_12) $(am__append_21)
+@windows_TRUE@	$(GP) $(WXC) $(am__append_12) $(am__append_21) \
+@windows_TRUE@	$(SOFTFLOATDEPS)
 @windows_FALSE@reduce_DEPENDENCIES = $(FONTDEP) reduce.doc/index.html \
 @windows_FALSE@	$(AWKFILES) $(GP) $(WXC) $(am__append_13) \
-@windows_FALSE@	$(am__append_22)
+@windows_FALSE@	$(am__append_22) $(SOFTFLOATDEPS)
 @windows_TRUE@reduce_DEPENDENCIES = local-reduceexe.def \
 @windows_TRUE@	local-reducecom.def $(reduceres) $(FONTDEP) \
 @windows_TRUE@	reduce.doc/index.html $(GP) $(WXC) $(AWKFILES) \
-@windows_TRUE@	$(am__append_13) $(am__append_22)
+@windows_TRUE@	$(am__append_13) $(am__append_22) \
+@windows_TRUE@	$(SOFTFLOATDEPS)
 @windows_FALSE@@wx_FALSE@fwindemo_DEPENDENCIES = $(fwin_icon)
 @windows_FALSE@@wx_TRUE@fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 @windows_TRUE@@wx_FALSE@fwindemo_DEPENDENCIES = $(fwin_icon) $(WINHELPERS)
@@ -975,17 +1007,25 @@ DEST = -o # Note that the variable needs to include a trailing blank
 #FOXDEPS=../lib/libFOX-1.6.lib
 @fox_TRUE@@win64_TRUE@FOXDEPS = ../lib/libFOX-1.6.a
 @crlibm_TRUE@CRLIBMDEPS = ../lib/libcrlibm.a ../include/crlibm.h
+@crlibm_FALSE@CRDEP = 
 @crlibm_TRUE@CRDEP = ../include/crlibm.h
 @crlibm_FALSE@CRINC = 
 @crlibm_TRUE@CRINC = -I../include
-@boehm_TRUE@gctest_SOURCES = gctest.cpp serialize.cpp
+@boehm_TRUE@gctest_SOURCES = gctest.cpp
 @boehm_TRUE@gctest_CPPFLAGS = $(TRACE) $(BOEHMINC)
 @boehm_TRUE@gctest_LDADD = ../lib/libgc.a
 @boehm_TRUE@gctest_DEPENDENCIES = $(BOEHMDEPS)
 @boehm_TRUE@BOEHMDEPS = ../lib/libgc.a ../include/gc/gc.h
+@boehm_FALSE@BOEHMDEP = 
 @boehm_TRUE@BOEHMDEP = ../include/gc/gc.h
 @boehm_FALSE@BOEHMINC = 
 @boehm_TRUE@BOEHMINC = -I../include
+SOFTFLOATDEPS = ../lib/libsoftfloat.a ../include/softfloat.h
+SOFTFLOATDEP = ../include/softfloat.h
+SOFTFLOATINC = -I../include
+softfloatdemo_CPPFLAGS = $(SOFTFLOATINC)
+softfloatdemo_LDADD = -L../lib -lsoftfloat
+softfloatdemo_DEPENDENCIES = $(SOFTFLOATDEPS)
 
 #
 # the wxWidgets snapshot that I have just uploaded builds as version
@@ -1002,9 +1042,11 @@ DEST = -o # Note that the variable needs to include a trailing blank
 fwindemo_SOURCES = fwindemo.cpp $(fwin_sources)
 @wx_TRUE@wxpsl_SOURCES = wxpsl.cpp $(fwin_sources)
 termdemo_SOURCES = termdemo.cpp termed.cpp
-termdemo_LIBS = 
+termdemo_LIBS = $(FOX_LIBS)
+softfloatdemo_SOURCES = softfloatdemo.cpp arith14.cpp
+softfloatdemo_LIBS = 
 @mac_framework_FALSE@@windows_FALSE@image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir)
-@mac_framework_TRUE@@windows_FALSE@image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir) *.app
+@mac_framework_TRUE@@windows_FALSE@image_files = csl.img $(REDUCE_IMG) reduce.doc reduce.resources reduce.$(fontsdir) *.app
 
 #
 # Possibly unreasonably (but it is WHAT I DO!) image files for CSL live
@@ -1048,23 +1090,30 @@ COMPILE_DLL = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 @fox_FALSE@@wx_FALSE@guisrc = 
 @fox_FALSE@@wx_TRUE@guisrc = $(wxdemo_SOURCES) $(wxfontdemo_SOURCES) $(wxshowmathdemo_SOURCES)
 @fox_TRUE@guisrc = $(foxdemo_SOURCES) $(fontdemo_SOURCES) $(showmathdemo_SOURCES)
-@wx_FALSE@mainsrc = $(guisrc) $(fwindemo_SOURCES) $(termdemo_SOURCES) $(reduce_SOURCES)
-@wx_TRUE@mainsrc = $(guisrc) $(fwindemo_SOURCES) $(wxpsl_SOURCES) $(termdemo_SOURCES) $(reduce_SOURCES)
+@wx_FALSE@mainsrc = $(guisrc) $(fwindemo_SOURCES) $(termdemo_SOURCES) $(softfloatdemo_SOURCES) $(reduce_SOURCES)
+@wx_TRUE@mainsrc = $(guisrc) $(fwindemo_SOURCES) $(wxpsl_SOURCES) $(termdemo_SOURCES) $(softfloatdemo_SOURCES) $(reduce_SOURCES)
 srcfiles = $(mainsrc) $(csl_SOURCES)
 @fox_FALSE@@wx_FALSE@guibin = 
 @fox_FALSE@@wx_TRUE@guibin = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxshowmathdemo$(EXEEXT)
 @fox_TRUE@guibin = foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)
 @wx_FALSE@mainbin = $(guibin) fwindemo$(EXEEXT) termdemo$(EXEEXT) \
-@wx_FALSE@	reduce$(EXEEXT) $(am__append_23) $(am__append_24)
+@wx_FALSE@	softfloatdemo$(EXEEXT) reduce$(EXEEXT) \
+@wx_FALSE@	$(am__append_23) $(am__append_24)
 @wx_TRUE@mainbin = $(guibin) fwindemo$(EXEEXT) wxpsl$(EXEEXT) \
-@wx_TRUE@	termdemo$(EXEEXT) reduce$(EXEEXT) $(am__append_23) \
-@wx_TRUE@	$(am__append_24)
+@wx_TRUE@	termdemo$(EXEEXT) softfloatdemo$(EXEEXT) \
+@wx_TRUE@	reduce$(EXEEXT) $(am__append_23) $(am__append_24)
 binfiles = $(mainbin) csl$(EXEEXT) $(am__append_25)
 @win64_FALSE@@windows_FALSE@NAME = $(BUILD)
 @win64_FALSE@@windows_TRUE@NAME = windows32
 @win64_TRUE@NAME = windows64
 @windows_FALSE@ARCHIVE = reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 
 @windows_TRUE@ARCHIVE = reduce-$(NAME)-$(shell date +%Y%m%d).zip
+
+# This little bit of trickieness is intended to arrange that if you go
+# just "make" it will, in addition to everything else, have a go at
+# building and installing redfront if that is needed. It assumes that
+# when rfcsl$(EXEEXT) is build that rfpsl etc get built too.
+@redfront_TRUE@noinst_SCRIPTS = $(srcdir)/../../bin/rfcsl$(EXEEXT)
 all: $(BUILT_SOURCES) config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -1178,10 +1227,6 @@ clean-noinstPROGRAMS:
 	echo " rm -f" $$list; \
 	rm -f $$list
 
-dyndemo$(EXEEXT): $(dyndemo_OBJECTS) $(dyndemo_DEPENDENCIES) $(EXTRA_dyndemo_DEPENDENCIES) 
-	@rm -f dyndemo$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(dyndemo_OBJECTS) $(dyndemo_LDADD) $(LIBS)
-
 @fox_FALSE@fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) $(EXTRA_fontdemo_DEPENDENCIES) 
 @fox_FALSE@	@rm -f fontdemo$(EXEEXT)
 @fox_FALSE@	$(AM_V_CXXLD)$(CXXLINK) $(fontdemo_OBJECTS) $(fontdemo_LDADD) $(LIBS)
@@ -1190,17 +1235,13 @@ dyndemo$(EXEEXT): $(dyndemo_OBJECTS) $(dyndemo_DEPENDENCIES) $(EXTRA_dyndemo_DEP
 @fox_FALSE@	@rm -f foxdemo$(EXEEXT)
 @fox_FALSE@	$(AM_V_CXXLD)$(CXXLINK) $(foxdemo_OBJECTS) $(foxdemo_LDADD) $(LIBS)
 
-gctest$(EXEEXT): $(gctest_OBJECTS) $(gctest_DEPENDENCIES) $(EXTRA_gctest_DEPENDENCIES) 
-	@rm -f gctest$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(gctest_OBJECTS) $(gctest_LDADD) $(LIBS)
+@boehm_FALSE@gctest$(EXEEXT): $(gctest_OBJECTS) $(gctest_DEPENDENCIES) $(EXTRA_gctest_DEPENDENCIES) 
+@boehm_FALSE@	@rm -f gctest$(EXEEXT)
+@boehm_FALSE@	$(AM_V_CXXLD)$(CXXLINK) $(gctest_OBJECTS) $(gctest_LDADD) $(LIBS)
 
 @fox_FALSE@showmathdemo$(EXEEXT): $(showmathdemo_OBJECTS) $(showmathdemo_DEPENDENCIES) $(EXTRA_showmathdemo_DEPENDENCIES) 
 @fox_FALSE@	@rm -f showmathdemo$(EXEEXT)
 @fox_FALSE@	$(AM_V_CXXLD)$(CXXLINK) $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(LIBS)
-
-termdemo$(EXEEXT): $(termdemo_OBJECTS) $(termdemo_DEPENDENCIES) $(EXTRA_termdemo_DEPENDENCIES) 
-	@rm -f termdemo$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(termdemo_OBJECTS) $(termdemo_LDADD) $(LIBS)
 
 @wx_FALSE@wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(EXTRA_wxdemo_DEPENDENCIES) 
 @wx_FALSE@	@rm -f wxdemo$(EXEEXT)
@@ -1245,6 +1286,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/arith11.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/arith12.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/arith13.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/arith14.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bytes1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/char.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/charmetrics.Po@am__quote@
@@ -1261,6 +1303,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-arith11.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-arith12.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-arith13.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-arith14.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-bytes1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-char.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-csl.Po@am__quote@
@@ -1280,10 +1323,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-fwin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-instructions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-insts.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-inthash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-jit1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-jit2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-jit3.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-jitx86.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-lisphash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-operands.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-prefix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csl-preserve.Po@am__quote@
@@ -1318,13 +1363,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fwin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fwindemo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gctest-gctest.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gctest-serialize.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/instructions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/insts.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/inthash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jit1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jit2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jit3.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jitx86.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lisphash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/operands.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/prefix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/preserve.Po@am__quote@
@@ -1342,6 +1388,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-arith11.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-arith12.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-arith13.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-arith14.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-bytes1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-char.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-csl.Po@am__quote@
@@ -1361,10 +1408,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-fwin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-instructions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-insts.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-inthash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-jit1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-jit2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-jit3.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-jitx86.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-lisphash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-operands.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-prefix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce-preserve.Po@am__quote@
@@ -1441,6 +1490,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/restart.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/serialize.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/showmathdemo-showmathdemo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/softfloatdemo-arith14.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/softfloatdemo-softfloatdemo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stubs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sysfwin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/termdemo.Po@am__quote@
@@ -1661,6 +1712,20 @@ csl-arith13.obj: arith13.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o csl-arith13.obj `if test -f 'arith13.cpp'; then $(CYGPATH_W) 'arith13.cpp'; else $(CYGPATH_W) '$(srcdir)/arith13.cpp'; fi`
 
+csl-arith14.o: arith14.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT csl-arith14.o -MD -MP -MF $(DEPDIR)/csl-arith14.Tpo -c -o csl-arith14.o `test -f 'arith14.cpp' || echo '$(srcdir)/'`arith14.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/csl-arith14.Tpo $(DEPDIR)/csl-arith14.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='arith14.cpp' object='csl-arith14.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o csl-arith14.o `test -f 'arith14.cpp' || echo '$(srcdir)/'`arith14.cpp
+
+csl-arith14.obj: arith14.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT csl-arith14.obj -MD -MP -MF $(DEPDIR)/csl-arith14.Tpo -c -o csl-arith14.obj `if test -f 'arith14.cpp'; then $(CYGPATH_W) 'arith14.cpp'; else $(CYGPATH_W) '$(srcdir)/arith14.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/csl-arith14.Tpo $(DEPDIR)/csl-arith14.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='arith14.cpp' object='csl-arith14.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o csl-arith14.obj `if test -f 'arith14.cpp'; then $(CYGPATH_W) 'arith14.cpp'; else $(CYGPATH_W) '$(srcdir)/arith14.cpp'; fi`
+
 csl-bytes1.o: bytes1.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT csl-bytes1.o -MD -MP -MF $(DEPDIR)/csl-bytes1.Tpo -c -o csl-bytes1.o `test -f 'bytes1.cpp' || echo '$(srcdir)/'`bytes1.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/csl-bytes1.Tpo $(DEPDIR)/csl-bytes1.Po
@@ -1801,6 +1866,20 @@ csl-fns3.obj: fns3.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o csl-fns3.obj `if test -f 'fns3.cpp'; then $(CYGPATH_W) 'fns3.cpp'; else $(CYGPATH_W) '$(srcdir)/fns3.cpp'; fi`
 
+csl-inthash.o: inthash.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT csl-inthash.o -MD -MP -MF $(DEPDIR)/csl-inthash.Tpo -c -o csl-inthash.o `test -f 'inthash.cpp' || echo '$(srcdir)/'`inthash.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/csl-inthash.Tpo $(DEPDIR)/csl-inthash.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='inthash.cpp' object='csl-inthash.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o csl-inthash.o `test -f 'inthash.cpp' || echo '$(srcdir)/'`inthash.cpp
+
+csl-inthash.obj: inthash.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT csl-inthash.obj -MD -MP -MF $(DEPDIR)/csl-inthash.Tpo -c -o csl-inthash.obj `if test -f 'inthash.cpp'; then $(CYGPATH_W) 'inthash.cpp'; else $(CYGPATH_W) '$(srcdir)/inthash.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/csl-inthash.Tpo $(DEPDIR)/csl-inthash.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='inthash.cpp' object='csl-inthash.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o csl-inthash.obj `if test -f 'inthash.cpp'; then $(CYGPATH_W) 'inthash.cpp'; else $(CYGPATH_W) '$(srcdir)/inthash.cpp'; fi`
+
 csl-print.o: print.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT csl-print.o -MD -MP -MF $(DEPDIR)/csl-print.Tpo -c -o csl-print.o `test -f 'print.cpp' || echo '$(srcdir)/'`print.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/csl-print.Tpo $(DEPDIR)/csl-print.Po
@@ -1842,6 +1921,20 @@ csl-restart.obj: restart.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='restart.cpp' object='csl-restart.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o csl-restart.obj `if test -f 'restart.cpp'; then $(CYGPATH_W) 'restart.cpp'; else $(CYGPATH_W) '$(srcdir)/restart.cpp'; fi`
+
+csl-lisphash.o: lisphash.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT csl-lisphash.o -MD -MP -MF $(DEPDIR)/csl-lisphash.Tpo -c -o csl-lisphash.o `test -f 'lisphash.cpp' || echo '$(srcdir)/'`lisphash.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/csl-lisphash.Tpo $(DEPDIR)/csl-lisphash.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='lisphash.cpp' object='csl-lisphash.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o csl-lisphash.o `test -f 'lisphash.cpp' || echo '$(srcdir)/'`lisphash.cpp
+
+csl-lisphash.obj: lisphash.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT csl-lisphash.obj -MD -MP -MF $(DEPDIR)/csl-lisphash.Tpo -c -o csl-lisphash.obj `if test -f 'lisphash.cpp'; then $(CYGPATH_W) 'lisphash.cpp'; else $(CYGPATH_W) '$(srcdir)/lisphash.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/csl-lisphash.Tpo $(DEPDIR)/csl-lisphash.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='lisphash.cpp' object='csl-lisphash.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o csl-lisphash.obj `if test -f 'lisphash.cpp'; then $(CYGPATH_W) 'lisphash.cpp'; else $(CYGPATH_W) '$(srcdir)/lisphash.cpp'; fi`
 
 csl-serialize.o: serialize.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(csl_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT csl-serialize.o -MD -MP -MF $(DEPDIR)/csl-serialize.Tpo -c -o csl-serialize.o `test -f 'serialize.cpp' || echo '$(srcdir)/'`serialize.cpp
@@ -2221,20 +2314,6 @@ gctest-gctest.obj: gctest.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gctest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gctest-gctest.obj `if test -f 'gctest.cpp'; then $(CYGPATH_W) 'gctest.cpp'; else $(CYGPATH_W) '$(srcdir)/gctest.cpp'; fi`
 
-gctest-serialize.o: serialize.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gctest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gctest-serialize.o -MD -MP -MF $(DEPDIR)/gctest-serialize.Tpo -c -o gctest-serialize.o `test -f 'serialize.cpp' || echo '$(srcdir)/'`serialize.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gctest-serialize.Tpo $(DEPDIR)/gctest-serialize.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='serialize.cpp' object='gctest-serialize.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gctest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gctest-serialize.o `test -f 'serialize.cpp' || echo '$(srcdir)/'`serialize.cpp
-
-gctest-serialize.obj: serialize.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gctest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gctest-serialize.obj -MD -MP -MF $(DEPDIR)/gctest-serialize.Tpo -c -o gctest-serialize.obj `if test -f 'serialize.cpp'; then $(CYGPATH_W) 'serialize.cpp'; else $(CYGPATH_W) '$(srcdir)/serialize.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gctest-serialize.Tpo $(DEPDIR)/gctest-serialize.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='serialize.cpp' object='gctest-serialize.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gctest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gctest-serialize.obj `if test -f 'serialize.cpp'; then $(CYGPATH_W) 'serialize.cpp'; else $(CYGPATH_W) '$(srcdir)/serialize.cpp'; fi`
-
 reduce-arith01.o: arith01.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT reduce-arith01.o -MD -MP -MF $(DEPDIR)/reduce-arith01.Tpo -c -o reduce-arith01.o `test -f 'arith01.cpp' || echo '$(srcdir)/'`arith01.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/reduce-arith01.Tpo $(DEPDIR)/reduce-arith01.Po
@@ -2417,6 +2496,20 @@ reduce-arith13.obj: arith13.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o reduce-arith13.obj `if test -f 'arith13.cpp'; then $(CYGPATH_W) 'arith13.cpp'; else $(CYGPATH_W) '$(srcdir)/arith13.cpp'; fi`
 
+reduce-arith14.o: arith14.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT reduce-arith14.o -MD -MP -MF $(DEPDIR)/reduce-arith14.Tpo -c -o reduce-arith14.o `test -f 'arith14.cpp' || echo '$(srcdir)/'`arith14.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/reduce-arith14.Tpo $(DEPDIR)/reduce-arith14.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='arith14.cpp' object='reduce-arith14.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o reduce-arith14.o `test -f 'arith14.cpp' || echo '$(srcdir)/'`arith14.cpp
+
+reduce-arith14.obj: arith14.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT reduce-arith14.obj -MD -MP -MF $(DEPDIR)/reduce-arith14.Tpo -c -o reduce-arith14.obj `if test -f 'arith14.cpp'; then $(CYGPATH_W) 'arith14.cpp'; else $(CYGPATH_W) '$(srcdir)/arith14.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/reduce-arith14.Tpo $(DEPDIR)/reduce-arith14.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='arith14.cpp' object='reduce-arith14.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o reduce-arith14.obj `if test -f 'arith14.cpp'; then $(CYGPATH_W) 'arith14.cpp'; else $(CYGPATH_W) '$(srcdir)/arith14.cpp'; fi`
+
 reduce-bytes1.o: bytes1.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT reduce-bytes1.o -MD -MP -MF $(DEPDIR)/reduce-bytes1.Tpo -c -o reduce-bytes1.o `test -f 'bytes1.cpp' || echo '$(srcdir)/'`bytes1.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/reduce-bytes1.Tpo $(DEPDIR)/reduce-bytes1.Po
@@ -2557,6 +2650,20 @@ reduce-fns3.obj: fns3.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o reduce-fns3.obj `if test -f 'fns3.cpp'; then $(CYGPATH_W) 'fns3.cpp'; else $(CYGPATH_W) '$(srcdir)/fns3.cpp'; fi`
 
+reduce-inthash.o: inthash.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT reduce-inthash.o -MD -MP -MF $(DEPDIR)/reduce-inthash.Tpo -c -o reduce-inthash.o `test -f 'inthash.cpp' || echo '$(srcdir)/'`inthash.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/reduce-inthash.Tpo $(DEPDIR)/reduce-inthash.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='inthash.cpp' object='reduce-inthash.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o reduce-inthash.o `test -f 'inthash.cpp' || echo '$(srcdir)/'`inthash.cpp
+
+reduce-inthash.obj: inthash.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT reduce-inthash.obj -MD -MP -MF $(DEPDIR)/reduce-inthash.Tpo -c -o reduce-inthash.obj `if test -f 'inthash.cpp'; then $(CYGPATH_W) 'inthash.cpp'; else $(CYGPATH_W) '$(srcdir)/inthash.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/reduce-inthash.Tpo $(DEPDIR)/reduce-inthash.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='inthash.cpp' object='reduce-inthash.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o reduce-inthash.obj `if test -f 'inthash.cpp'; then $(CYGPATH_W) 'inthash.cpp'; else $(CYGPATH_W) '$(srcdir)/inthash.cpp'; fi`
+
 reduce-print.o: print.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT reduce-print.o -MD -MP -MF $(DEPDIR)/reduce-print.Tpo -c -o reduce-print.o `test -f 'print.cpp' || echo '$(srcdir)/'`print.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/reduce-print.Tpo $(DEPDIR)/reduce-print.Po
@@ -2598,6 +2705,20 @@ reduce-restart.obj: restart.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='restart.cpp' object='reduce-restart.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o reduce-restart.obj `if test -f 'restart.cpp'; then $(CYGPATH_W) 'restart.cpp'; else $(CYGPATH_W) '$(srcdir)/restart.cpp'; fi`
+
+reduce-lisphash.o: lisphash.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT reduce-lisphash.o -MD -MP -MF $(DEPDIR)/reduce-lisphash.Tpo -c -o reduce-lisphash.o `test -f 'lisphash.cpp' || echo '$(srcdir)/'`lisphash.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/reduce-lisphash.Tpo $(DEPDIR)/reduce-lisphash.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='lisphash.cpp' object='reduce-lisphash.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o reduce-lisphash.o `test -f 'lisphash.cpp' || echo '$(srcdir)/'`lisphash.cpp
+
+reduce-lisphash.obj: lisphash.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT reduce-lisphash.obj -MD -MP -MF $(DEPDIR)/reduce-lisphash.Tpo -c -o reduce-lisphash.obj `if test -f 'lisphash.cpp'; then $(CYGPATH_W) 'lisphash.cpp'; else $(CYGPATH_W) '$(srcdir)/lisphash.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/reduce-lisphash.Tpo $(DEPDIR)/reduce-lisphash.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='lisphash.cpp' object='reduce-lisphash.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o reduce-lisphash.obj `if test -f 'lisphash.cpp'; then $(CYGPATH_W) 'lisphash.cpp'; else $(CYGPATH_W) '$(srcdir)/lisphash.cpp'; fi`
 
 reduce-serialize.o: serialize.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(reduce_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT reduce-serialize.o -MD -MP -MF $(DEPDIR)/reduce-serialize.Tpo -c -o reduce-serialize.o `test -f 'serialize.cpp' || echo '$(srcdir)/'`serialize.cpp
@@ -3775,6 +3896,34 @@ showmathdemo-showmathdemo.obj: showmathdemo.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(showmathdemo_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o showmathdemo-showmathdemo.obj `if test -f 'showmathdemo.cpp'; then $(CYGPATH_W) 'showmathdemo.cpp'; else $(CYGPATH_W) '$(srcdir)/showmathdemo.cpp'; fi`
 
+softfloatdemo-softfloatdemo.o: softfloatdemo.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(softfloatdemo_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT softfloatdemo-softfloatdemo.o -MD -MP -MF $(DEPDIR)/softfloatdemo-softfloatdemo.Tpo -c -o softfloatdemo-softfloatdemo.o `test -f 'softfloatdemo.cpp' || echo '$(srcdir)/'`softfloatdemo.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/softfloatdemo-softfloatdemo.Tpo $(DEPDIR)/softfloatdemo-softfloatdemo.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='softfloatdemo.cpp' object='softfloatdemo-softfloatdemo.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(softfloatdemo_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o softfloatdemo-softfloatdemo.o `test -f 'softfloatdemo.cpp' || echo '$(srcdir)/'`softfloatdemo.cpp
+
+softfloatdemo-softfloatdemo.obj: softfloatdemo.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(softfloatdemo_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT softfloatdemo-softfloatdemo.obj -MD -MP -MF $(DEPDIR)/softfloatdemo-softfloatdemo.Tpo -c -o softfloatdemo-softfloatdemo.obj `if test -f 'softfloatdemo.cpp'; then $(CYGPATH_W) 'softfloatdemo.cpp'; else $(CYGPATH_W) '$(srcdir)/softfloatdemo.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/softfloatdemo-softfloatdemo.Tpo $(DEPDIR)/softfloatdemo-softfloatdemo.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='softfloatdemo.cpp' object='softfloatdemo-softfloatdemo.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(softfloatdemo_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o softfloatdemo-softfloatdemo.obj `if test -f 'softfloatdemo.cpp'; then $(CYGPATH_W) 'softfloatdemo.cpp'; else $(CYGPATH_W) '$(srcdir)/softfloatdemo.cpp'; fi`
+
+softfloatdemo-arith14.o: arith14.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(softfloatdemo_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT softfloatdemo-arith14.o -MD -MP -MF $(DEPDIR)/softfloatdemo-arith14.Tpo -c -o softfloatdemo-arith14.o `test -f 'arith14.cpp' || echo '$(srcdir)/'`arith14.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/softfloatdemo-arith14.Tpo $(DEPDIR)/softfloatdemo-arith14.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='arith14.cpp' object='softfloatdemo-arith14.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(softfloatdemo_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o softfloatdemo-arith14.o `test -f 'arith14.cpp' || echo '$(srcdir)/'`arith14.cpp
+
+softfloatdemo-arith14.obj: arith14.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(softfloatdemo_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT softfloatdemo-arith14.obj -MD -MP -MF $(DEPDIR)/softfloatdemo-arith14.Tpo -c -o softfloatdemo-arith14.obj `if test -f 'arith14.cpp'; then $(CYGPATH_W) 'arith14.cpp'; else $(CYGPATH_W) '$(srcdir)/arith14.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/softfloatdemo-arith14.Tpo $(DEPDIR)/softfloatdemo-arith14.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='arith14.cpp' object='softfloatdemo-arith14.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(softfloatdemo_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o softfloatdemo-arith14.obj `if test -f 'arith14.cpp'; then $(CYGPATH_W) 'arith14.cpp'; else $(CYGPATH_W) '$(srcdir)/arith14.cpp'; fi`
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
@@ -4008,7 +4157,7 @@ distcleancheck: distclean
 check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(PROGRAMS) config.h all-local
+all-am: Makefile $(PROGRAMS) $(SCRIPTS) config.h all-local
 installdirs:
 	for dir in "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -4156,6 +4305,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 .PHONY: $(plain_wxshowmath)
 .PHONY: $(plain_wxshowmathdemo)
 .PHONY: $(plain_termdemo)
+.PHONY: $(plain_softfloatdemo)
 .PHONY: $(plain_dyndemo)
 .PHONY: $(plain_gctest)
 
@@ -4181,13 +4331,18 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 .PHONY:	showhost
 
 @cygwin_TRUE@all-local:	report-dlls csl.img reduce.img
-@cygwin_FALSE@all-local:	csl.img reduce.img
+@cygwin_FALSE@all-local:	csl.img $(REDUCE_IMG)
 
 $(INLINE_DEFS):
 	touch $(INLINE_DEFS)
 
 @cygwin_TRUE@@windows_FALSE@libdyndemo.a: $(srcdir)/dyndemo.def
 @cygwin_TRUE@@windows_FALSE@	$(TRACE)$(DLLTOOL) --input-def $(srcdir)/dyndemo.def --dllname=dyndemo.exe --output-lib libdyndemo.a
+
+dyndemo$(EXEEXT): $(dyndemo_OBJECTS) $(dyndemo_DEPENDENCIES)
+	-$(RM) -f dyndemo$(EXEEXT)
+	$(CXXLINKTO) $(DEST)dyndemo$(EXEEXT) $(dyndemo_OBJECTS) $(LIBS)
+@darwin_FALSE@@debug_FALSE@	$(STRIP) dyndemo$(EXEEXT)
 
 # Even on Windows I will try to use commands "cp" and "rm", and in general
 # I will expect the user to have established a path which includes the
@@ -4233,7 +4388,7 @@ $(INLINE_DEFS):
 
 @windows_TRUE@cygwin64-isatty.exe:	$(srcdir)/cygwin-isatty.cpp
 @windows_TRUE@	if test -x /usr/bin/x86_64-pc-cygwin-g++.exe; then x86_64-pc-cygwin-g++ -O3 $(srcdir)/cygwin-isatty.cpp -o cygwin64-isatty.exe; else $(CP) $(srcdir)/premade-cygwin64-isatty.exe .; \
-@windows_TRUE@	  if test -s /usr/bin/x86_64-pc-cygwin-strip.exe; then x86_64-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi fi
+@windows_TRUE@	  if test -s /usr/bin/x86_64-pc-cygwin-strip.exe; then x86_64-pc-cygwin-strip cygwin64-isatty.exe; else strip cygwin64-isatty.exe; fi fi
 
 @windows_TRUE@not-under-cygwin.exe:	$(srcdir)/not-under-cygwin.cpp
 @windows_TRUE@	i686-w64-mingw32-g++ -O3 $(srcdir)/not-under-cygwin.cpp -o not-under-cygwin.exe
@@ -4267,149 +4422,151 @@ $(FOXDEPS):	$(srcdir)/../fox/CHANGED
 @crlibm_TRUE@$(CRLIBMDEPS):
 @crlibm_TRUE@	$(TRACE)@cd ../crlibm && $(MAKE) install
 
-# It is important for the next line that restart.$(OBJEXT) is created from
-# restart.cpp using a generic default rule - otherwise the lack of
-# explicit actions here would hurt.
-@crlibm_FALSE@restart.$(OBJEXT):	machineid.cpp
-@crlibm_FALSE@csl-restart.$(OBJEXT):	machineid.cpp
-@crlibm_FALSE@reduce-restart.$(OBJEXT):	machineid.cpp
-
 @boehm_TRUE@$(BOEHMDEPS):
 @boehm_TRUE@	$(TRACE)@cd ../boehm && $(MAKE) install
 
-@boehm_FALSE@restart.$(OBJEXT):	machineid.cpp
-@boehm_FALSE@csl-restart.$(OBJEXT):	machineid.cpp
-@boehm_FALSE@reduce-restart.$(OBJEXT):	machineid.cpp
+@boehm_TRUE@gctest$(EXEEXT): $(gctest_OBJECTS) $(gctest_DEPENDENCIES)
+@boehm_TRUE@	-$(RM) -f gctest$(EXEEXT)
+@boehm_TRUE@	$(CXXLINKTO) $(DEST)gctest$(EXEEXT) $(gctest_OBJECTS) $(gctest_LDADD) $(LIBS)
+@boehm_TRUE@@darwin_FALSE@@debug_FALSE@	$(STRIP) gctest$(EXEEXT)
+
+$(SOFTFLOATDEPS):
+	$(TRACE)@cd ../softfloat && $(MAKE) install
 
 # Note that all the compilation of these files must be performed using
 # a Make "default" action so that the dependencies shown here are not
 # taken as specifing conflicting actions.
 
-@crlibmorboehm_TRUE@arith01.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@arith02.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@arith03.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@arith04.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@arith05.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@arith06.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@arith07.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@arith08.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@arith09.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@cslmpi.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@cslread.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@eval1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@eval2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@eval3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@eval4.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@imulvc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@print.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@pro.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) machineid.cpp
-@crlibmorboehm_TRUE@stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+arith01.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith02.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith03.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith04.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith05.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith06.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith07.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith08.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith09.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+arith14.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+cslmpi.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+cslread.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+eval1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+eval2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+eval3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+eval4.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+lisphash.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+print.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+pro.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) machineid.cpp
+stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 
-@crlibmorboehm_TRUE@csl-arith01.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-arith02.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-arith03.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-arith04.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-arith05.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-arith06.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-arith07.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-arith08.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-arith09.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-cslmpi.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-cslread.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-eval1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-eval2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-eval3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-eval4.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-imulvc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-print.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-pro.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) machineid.cpp
-@crlibmorboehm_TRUE@csl-stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@csl-sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+csl-arith01.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith02.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith03.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith04.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith05.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith06.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith07.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith08.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith09.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-arith14.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-cslmpi.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-cslread.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-eval1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-eval2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-eval3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-eval4.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-lisphash.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-print.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-pro.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) machineid.cpp
+csl-stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+csl-sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 
-@crlibmorboehm_TRUE@reduce-arith01.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-arith02.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-arith03.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-arith04.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-arith05.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-arith06.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-arith07.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-arith08.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-arith09.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-cslmpi.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-cslread.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-eval1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-eval2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-eval3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-eval4.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-imulvc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-print.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-pro.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) machineid.cpp
-@crlibmorboehm_TRUE@reduce-stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
-@crlibmorboehm_TRUE@reduce-sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP)
+reduce-arith01.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith02.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith03.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith04.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith05.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith06.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith07.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith08.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith09.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith10.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith11.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith12.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith13.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-arith14.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-bytes1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-char.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-csl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-cslmpi.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-cslread.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-eval1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-eval2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-eval3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-eval4.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-fasl.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-lisphash.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-print.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-pro.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) machineid.cpp
+reduce-stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+reduce-sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
+
+softfloatdemo-softfloatdemo.$(OBJEXT):	$(SOFTFLOATDEP)
 
 # If one of the major foundations of this Makefile have a date later than that
 # on fxver.h then make does a futile recursion to try to fix it and in the
@@ -4511,9 +4668,9 @@ csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPE
 	-$(RM) -f csl$(EXEEXT)
 @gui_TRUE@@windows_TRUE@	$(CP) $(srcdir)/csl .
 @gui_FALSE@@windows_TRUE@	$(CP) $(srcdir)/csl-nogui .
-@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && make csl.exe; fi
+@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && $(MAKE) csl.exe; fi
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild)/csl/csl.exe; then $(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe; fi
-@cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make csl.exe; fi
+@cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && $(MAKE) csl.exe; fi
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild64)/csl/csl.exe; then $(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe; fi
 	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 @gui_TRUE@@windows_TRUE@	-$(RM) -f csl$(COM)
@@ -4532,9 +4689,9 @@ reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
 # See "gui-or-not.txt" for an explanation of what this is about...
 @gui_TRUE@@windows_TRUE@	$(CP) $(srcdir)/reduce .
 @gui_FALSE@@windows_TRUE@	$(CP) $(srcdir)/reduce-nogui .
-@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && make reduce.exe; fi
+@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && $(MAKE) reduce.exe; fi
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild)/csl/reduce.exe; then $(CP) $(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe; fi
-@cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	if test "x$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make reduce.exe; fi
+@cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	if test "x$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && $(MAKE) reduce.exe; fi
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild64)/csl/reduce.exe; then $(CP) $(with_cygbuild64)/csl/reduce.exe cygwin64-reduce.exe; fi
 	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 @gui_TRUE@@windows_TRUE@	-$(RM) -f reduce$(COM)
@@ -4565,9 +4722,9 @@ bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENC
 	-$(RM) -f bootstrapreduce$(EXEEXT)
 # See "gui-or-not.txt" for an explanation of what this is about...
 @windows_TRUE@	$(CP) $(srcdir)/bootstrapreduce .
-@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && make bootstrapreduce.exe; fi
+@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && $(MAKE) bootstrapreduce.exe; fi
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe; fi
-@cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make bootstrapreduce.exe; fi
+@cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && $(MAKE) bootstrapreduce.exe; fi
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild64)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe; fi
 	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) bootstrapreduce$(EXEEXT)
@@ -4580,9 +4737,9 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXD
 	-$(RM) -f fwindemo$(EXEEXT)
 @gui_TRUE@@windows_TRUE@	$(CP) $(srcdir)/fwindemo .
 @gui_FALSE@@windows_TRUE@	$(CP) $(srcdir)/fwindemo-nogui .
-@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && make fwindemo.exe; fi
+@cyg32_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && $(MAKE) fwindemo.exe; fi
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild)/csl/fwindemo.exe; then $(CP) $(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe; fi
-@cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && make fwindemo.exe; fi
+@cyg64_TRUE@@cygwin_FALSE@@windows_TRUE@	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && $(MAKE) fwindemo.exe; fi
 @cygwin_FALSE@@windows_TRUE@	if test -x $(with_cygbuild64)/csl/fwindemo.exe; then $(CP) $(with_cygbuild64)/csl/fwindemo.exe cygwin64-fwindemo.exe; fi
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 @gui_TRUE@@windows_TRUE@	-$(RM) -f fwindemo$(COM)
@@ -4684,79 +4841,82 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 # because in that case automake will not auto-map the target adding ".exe".
 
 @cygwin_TRUE@@exeext_TRUE@$(plain_csl):	csl.exe
-@cygwin_TRUE@@exeext_TRUE@	echo "make csl.exe is preferred"
+@cygwin_TRUE@@exeext_TRUE@	echo "$(MAKE) csl.exe is preferred"
 
 @cygwin_TRUE@@exeext_TRUE@$(plain_reduce):	reduce.exe
-@cygwin_TRUE@@exeext_TRUE@	echo "make reduce.exe is preferred"
+@cygwin_TRUE@@exeext_TRUE@	echo "$(MAKE) reduce.exe is preferred"
 
 @cygwin_TRUE@@exeext_TRUE@$(plain_bootstrapreduce):	bootstrapreduce.exe
-@cygwin_TRUE@@exeext_TRUE@	echo "make bootstrapreduce.exe is preferred"
+@cygwin_TRUE@@exeext_TRUE@	echo "$(MAKE) bootstrapreduce.exe is preferred"
 
 @cygwin_TRUE@@exeext_TRUE@$(plain_fwindemo):	fwindemo.exe
-@cygwin_TRUE@@exeext_TRUE@	echo "make fwindemo.exe is preferred"
+@cygwin_TRUE@@exeext_TRUE@	echo "$(MAKE) fwindemo.exe is preferred"
 
 @cygwin_TRUE@@exeext_TRUE@@wx_TRUE@$(plain_wxpsl):	wxpsl.exe
-@cygwin_TRUE@@exeext_TRUE@@wx_TRUE@	echo "make wxpsl.exe is preferred"
+@cygwin_TRUE@@exeext_TRUE@@wx_TRUE@	echo "$(MAKE) wxpsl.exe is preferred"
 
 @cygwin_FALSE@@exeext_TRUE@@gui_TRUE@$(plain_csl):	csl.exe csl$(COM)
-@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@	echo "make csl.exe is preferred"
+@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@	echo "$(MAKE) csl.exe is preferred"
 
 @cygwin_FALSE@@exeext_TRUE@@gui_TRUE@$(plain_reduce):	reduce.exe reduce$(COM)
-@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@	echo "make reduce.exe is preferred"
+@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@	echo "$(MAKE) reduce.exe is preferred"
 
 @cygwin_FALSE@@exeext_TRUE@@gui_TRUE@$(plain_bootstrapreduce):	bootstrapreduce.exe
-@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@	echo "make bootstrapreduce.exe is preferred"
+@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@	echo "$(MAKE) bootstrapreduce.exe is preferred"
 
 @cygwin_FALSE@@exeext_TRUE@@gui_TRUE@$(plain_fwindemo):	fwindemo.exe fwindemo$(COM)
-@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@	echo "make fwindemo.exe is preferred"
+@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@	echo "$(MAKE) fwindemo.exe is preferred"
 
 @cygwin_FALSE@@exeext_TRUE@@gui_TRUE@@wx_TRUE@$(plain_wxpsl):	wxpsl.exe wxpsl$(COM)
-@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@@wx_TRUE@	echo "make wxpsl.exe is preferred"
+@cygwin_FALSE@@exeext_TRUE@@gui_TRUE@@wx_TRUE@	echo "$(MAKE) wxpsl.exe is preferred"
 
 @cygwin_FALSE@@exeext_TRUE@@gui_FALSE@$(plain_csl):	csl.exe
-@cygwin_FALSE@@exeext_TRUE@@gui_FALSE@	echo "make csl.exe is preferred"
+@cygwin_FALSE@@exeext_TRUE@@gui_FALSE@	echo "$(MAKE) csl.exe is preferred"
 
 @cygwin_FALSE@@exeext_TRUE@@gui_FALSE@$(plain_reduce):	reduce.exe
-@cygwin_FALSE@@exeext_TRUE@@gui_FALSE@	echo "make reduce.exe is preferred"
+@cygwin_FALSE@@exeext_TRUE@@gui_FALSE@	echo "$(MAKE) reduce.exe is preferred"
 
 @cygwin_FALSE@@exeext_TRUE@@gui_FALSE@$(plain_bootstrapreduce):	bootstrapreduce.exe
-@cygwin_FALSE@@exeext_TRUE@@gui_FALSE@	echo "make bootstrapreduce.exe is preferred"
+@cygwin_FALSE@@exeext_TRUE@@gui_FALSE@	echo "$(MAKE) bootstrapreduce.exe is preferred"
 
 @cygwin_FALSE@@exeext_TRUE@@gui_FALSE@$(plain_fwindemo):	fwindemo.exe
-@cygwin_FALSE@@exeext_TRUE@@gui_FALSE@	echo "make fwindemo.exe is preferred"
+@cygwin_FALSE@@exeext_TRUE@@gui_FALSE@	echo "$(MAKE) fwindemo.exe is preferred"
 
 @exeext_TRUE@@fox_TRUE@$(plain_foxdemo):	foxdemo.exe
-@exeext_TRUE@@fox_TRUE@	echo "make foxdemo.exe is preferred"
+@exeext_TRUE@@fox_TRUE@	echo "$(MAKE) foxdemo.exe is preferred"
 
 @exeext_TRUE@@fox_TRUE@$(plain_fontdemo):	fontdemo.exe
-@exeext_TRUE@@fox_TRUE@	echo "make fontdemo.exe is preferred"
+@exeext_TRUE@@fox_TRUE@	echo "$(MAKE) fontdemo.exe is preferred"
 
 @exeext_TRUE@@fox_TRUE@$(plain_showmathdemo):	showmathdemo.exe
-@exeext_TRUE@@fox_TRUE@	echo "make showmathdemo.exe is preferred"
+@exeext_TRUE@@fox_TRUE@	echo "$(MAKE) showmathdemo.exe is preferred"
 
 @exeext_TRUE@@wx_TRUE@$(plain_wxdemo):	wxdemo.exe
-@exeext_TRUE@@wx_TRUE@	echo "make wxdemo.exe is preferred"
+@exeext_TRUE@@wx_TRUE@	echo "$(MAKE) wxdemo.exe is preferred"
 
 @exeext_TRUE@@wx_TRUE@$(plain_wxfontdemo):	wxfontdemo.exe
-@exeext_TRUE@@wx_TRUE@	echo "make wxfontdemo.exe is preferred"
+@exeext_TRUE@@wx_TRUE@	echo "$(MAKE) wxfontdemo.exe is preferred"
 
 @exeext_TRUE@@wx_TRUE@$(plain_wxdvi):	wxdvi.exe
-@exeext_TRUE@@wx_TRUE@	echo "make wxdvi.exe is preferred"
+@exeext_TRUE@@wx_TRUE@	echo "$(MAKE) wxdvi.exe is preferred"
 
 @exeext_TRUE@@wx_TRUE@$(plain_wxshowmath):	wxshowmath.exe
-@exeext_TRUE@@wx_TRUE@	echo "make wxshowmath.exe is preferred"
+@exeext_TRUE@@wx_TRUE@	echo "$(MAKE) wxshowmath.exe is preferred"
 
 @exeext_TRUE@@wx_TRUE@$(plain_wxshowmathdemo):	wxshowmathdemo.exe
-@exeext_TRUE@@wx_TRUE@	echo "make wxshowmathdemo.exe is preferred"
+@exeext_TRUE@@wx_TRUE@	echo "$(MAKE) wxshowmathdemo.exe is preferred"
 
 @exeext_TRUE@$(plain_termdemo):	termdemo.exe
-@exeext_TRUE@	echo "make termdemo.exe is preferred"
+@exeext_TRUE@	echo "$(MAKE) termdemo.exe is preferred"
+
+@exeext_TRUE@$(plain_softfloatdemo):	softfloatdemo.exe
+@exeext_TRUE@	echo "$(MAKE) softfloatdemo.exe is preferred"
 
 @exeext_TRUE@$(plain_dyndemo):	dyndemo.exe
-@exeext_TRUE@	echo "make dyndemo.exe is preferred"
+@exeext_TRUE@	echo "$(MAKE) dyndemo.exe is preferred"
 
 @boehm_TRUE@@exeext_TRUE@$(plain_gctest):	gctest.exe
-@boehm_TRUE@@exeext_TRUE@	echo "make gctest.exe is preferred"
+@boehm_TRUE@@exeext_TRUE@	echo "$(MAKE) gctest.exe is preferred"
 
 # on cygwin I scan to verify which DLLs are referenced by my main
 # executables so that I can verify (eg) that they do not link to
@@ -4766,6 +4926,16 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 @cygwin_TRUE@	$(OBJDUMP) -p csl.exe | grep "DLL"
 @cygwin_TRUE@	$(OBJDUMP) -p bootstrapreduce.exe | grep "DLL"
 @cygwin_TRUE@	$(OBJDUMP) -p reduce.exe | grep "DLL"
+
+termdemo$(EXEEXT): $(termdemo_OBJECTS) $(termdemo_DEPENDENCIES)
+	-$(RM) -f termdemo$(EXEEXT)
+	$(CXXLINKTO) $(DEST)termdemo$(EXEEXT) $(termdemo_OBJECTS) $(LIBS)
+@darwin_FALSE@@debug_FALSE@	$(STRIP) termdemo$(EXEEXT)
+
+softfloatdemo$(EXEEXT): $(softfloatdemo_OBJECTS) $(softfloatdemo_DEPENDENCIES)
+	-$(RM) -f softfloatdemo$(EXEEXT)
+	$(CXXLINKTO) $(DEST)softfloatdemo$(EXEEXT) $(softfloatdemo_OBJECTS) $(softfloatdemo_LDADD) $(LIBS)
+@darwin_FALSE@@debug_FALSE@	$(STRIP) softfloatdemo$(EXEEXT)
 install-data-local: $(image_files)
 	$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
@@ -4848,7 +5018,7 @@ install-data-local: $(image_files)
 #
 #=============================================================================
 
-default:	reduce$(EXEEXT) reduce.img
+default:	reduce$(EXEEXT) $(REDUCE_IMG)
 
 dynmodule.$(DLLEXT):	$(srcdir)/dynmodule.cpp $(dyndep)
 	$(COMPILE_DLL) $(srcdir)/dynmodule.cpp $(dyndep) $(DEST)dynmodule.$(DLLEXT)
@@ -4895,8 +5065,8 @@ machineid.cpp:	reduce-cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(E
 reduce.dep:
 	$(TRACE)touch reduce.dep
 
-reduce.img:	reduce$(COM) $(reducedep) $(generated_lisp)
-	-$(TRACE)$(RM) -rf reduce.img
+$(REDUCE_IMG):	reduce$(COM) $(reducedep) $(generated_lisp)
+	-$(TRACE)$(RM) -rf $(REDUCE_IMG)
 # I will make the REDUCE image file a directory rather than a single
 # file... This is achieved by specifying its name here with a trailing "/",
 # but I could have also have just made a directory with the right name
@@ -4972,26 +5142,26 @@ reduce.dir:	reduce$(COM) $(reducedep) $(generated_lisp)
 
 bootstraprecompile:
 @canrun_TRUE@	chmod 664 $(gensrc)/*
-@canrun_TRUE@	if !test -f bootstrapreduce.img; then make bootstrapreduce.img; fi
+@canrun_TRUE@	if !test -f bootstrapreduce.img; then $(MAKE) bootstrapreduce.img; fi
 @canrun_TRUE@	mkdir -p buildlogs
 @canrun_TRUE@	chmod 664 $(gensrc)/*
 @canrun_TRUE@	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/recompile.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 @canrun_TRUE@		-l buildlogs/$(which).log -Dwhich=$(which)
 @canrun_TRUE@	chmod 664 $(gensrc)/*
-@canrun_TRUE@	make -t bootstrapreduce.img > /dev/null
+@canrun_TRUE@	$(MAKE) -t bootstrapreduce.img > /dev/null
 @canrun_FALSE@	echo Can not build images on this platfrom
 
 recompile:
 @canrun_TRUE@	chmod 664 $(gensrc)/*
-@canrun_TRUE@	if !test -f reduce.img; then make reduce.img; fi
+@canrun_TRUE@	if !test -f $(REDUCE_IMG); then $(MAKE) $(REDUCE_IMG); fi
 @canrun_TRUE@	mkdir -p buildlogs
 @canrun_TRUE@	chmod 664 $(gensrc)/*
 @canrun_TRUE@	./reduce$(COM) -v -w $(CYGSRC)/recompile.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 @canrun_TRUE@		-l buildlogs/$(which).log -Dwhich=$(which)
 @canrun_TRUE@	chmod 664 $(gensrc)/*
-@canrun_TRUE@	make -t reduce.img > /dev/null
+@canrun_TRUE@	$(MAKE) -t $(REDUCE_IMG) > /dev/null
 @canrun_FALSE@	echo Can not build images on this platfrom
 
 # Copy HTML help files in a directory reduce.doc.
@@ -5209,7 +5379,7 @@ testslow:	bootstrapreduce.img
 @canrun_TRUE@		-- testlogs/checkslow.log
 @canrun_FALSE@	echo Can not run tests on this platfrom
 
-testall:	reduce.img
+testall:	$(REDUCE_IMG)
 @canrun_TRUE@	mkdir -p testlogs
 @canrun_TRUE@	./reduce$(COM) -v -w $(CYGSRC)/testall.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
@@ -5228,7 +5398,7 @@ testslow1:	bootstrapreduce.img
 @canrun_TRUE@		-- testlogs/test$(which).log -Dwhich=$(which)
 @canrun_FALSE@	echo Can not run tests on this platfrom
 
-@valgrind_TRUE@countall:	reduce.img
+@valgrind_TRUE@countall:	$(REDUCE_IMG)
 @valgrind_TRUE@	mkdir -p testlogs
 @valgrind_TRUE@	valgrind --tool=exp-bbv --instr-count-only=yes \
 @valgrind_TRUE@		./reduce$(COM) -v -w $(CYGSRC)/testall.red \
@@ -5236,7 +5406,7 @@ testslow1:	bootstrapreduce.img
 @valgrind_TRUE@		-Dcpulimit=30000 -Dconslimit=$(conslimit) \
 @valgrind_TRUE@		-- testlogs/countreduce.log
 
-test1:	reduce.img
+test1:	$(REDUCE_IMG)
 @canrun_TRUE@	mkdir -p testlogs
 @canrun_TRUE@	./reduce$(COM) -v -w $(CYGSRC)/testall.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
@@ -5244,7 +5414,7 @@ test1:	reduce.img
 @canrun_TRUE@		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit)
 @canrun_FALSE@	echo Can not run tests on this platfrom
 
-@valgrind_TRUE@count1:	reduce.img
+@valgrind_TRUE@count1:	$(REDUCE_IMG)
 @valgrind_TRUE@	mkdir -p testlogs
 @valgrind_TRUE@	valgrind --tool=exp-bbv --instr-count-only=yes \
 @valgrind_TRUE@		./reduce$(COM) -v -w $(CYGSRC)/testall.red \
@@ -5252,7 +5422,7 @@ test1:	reduce.img
 @valgrind_TRUE@		-- testlogs/count$(which).log -Dwhich=$(which) \
 @valgrind_TRUE@		-Dcpulimit=30000 -Dconslimit=$(conslimit)
 
-checkall:	reduce.img
+checkall:	$(REDUCE_IMG)
 @canrun_TRUE@	mkdir -p testlogs
 @canrun_TRUE@	./reduce$(COM) -v -w $(CYGSRC)/checkall.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
@@ -5316,6 +5486,19 @@ save:	all
 @windows_FALSE@	$(CP) -r reduce reduce.img reduce.doc reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
 @windows_FALSE@	tar cfj reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 reduce-$(NAME)-$(shell date +%Y%m%d)
 	if test "x$(savedest)" != "x"; then scp $(ARCHIVE) $(savedest); fi
+
+@redfront_TRUE@$(srcdir)/../../bin/rfcsl$(EXEEXT): \
+@redfront_TRUE@		$(srcdir)/../../generic/newfront/findself.c \
+@redfront_TRUE@		$(srcdir)/../../generic/newfront/findself.h \
+@redfront_TRUE@		$(srcdir)/../../generic/newfront/redchild.c \
+@redfront_TRUE@		$(srcdir)/../../generic/newfront/reddeb.c \
+@redfront_TRUE@		$(srcdir)/../../generic/newfront/redfront.c \
+@redfront_TRUE@		$(srcdir)/../../generic/newfront/redfront.h \
+@redfront_TRUE@		$(srcdir)/../../generic/newfront/redline.c \
+@redfront_TRUE@		$(srcdir)/../../generic/newfront/redparent.c \
+@redfront_TRUE@		$(srcdir)/../../generic/newfront/redsig.c \
+@redfront_TRUE@		$(srcdir)/../../generic/newfront/redstrings.c
+@redfront_TRUE@	cd ../redfront && $(MAKE)
 
 showhost:
 	echo host = $(HOST)

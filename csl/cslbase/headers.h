@@ -73,9 +73,15 @@
 
 // The following need to be defined so that the useful C macros in
 // stdint.h get defined. They reflect an ugly gulf between C and C++.
+// Well this is a gulf that USED to exist and these should not longer be
+// required - but sometimes I may try building an somewhat ancient platforms
+// so I use them...
 
 #ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS 1
+#endif
+#ifndef __STDC_LIMIT_MACROS
+#define __STDC_LIMIT_MACROS 1
 #endif
 #ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS 1
