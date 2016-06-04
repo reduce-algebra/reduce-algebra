@@ -1,4 +1,4 @@
- 
+/* tags.h                               Copyright (C) Codemist 1990-2016 */
 
 //
 //   Data-structure and tag bit definitions, also common C macros
@@ -547,9 +547,9 @@ typedef uintptr_t Header;
 //   000:01 01 g010  array
 //   000:10 01 g010  structure
 //   000:11 01 g010  object
-//   001:00 01 g010  hash table
-//   001:01 01 g010  hash table with rehash pending
-//   001:10 01 g010  (spare: 1 code)
+//   001:00 01 g010  indexvec (used to implement huge vectors)
+//   001:01 01 g010  hash table
+//   001:10 01 g010  hash table with rehash pending
 //   001:11 01 g010  rational number  *
 //   010:xx 01 g010  (spare: 4 codes, one a "number")
 //   011:11 01 g010  complex number   *
@@ -815,8 +815,9 @@ typedef uintptr_t Header;
 #define vector_holds_binary(h) (((h) & (0x2<<Tw)) != 0)
 
 #define TYPE_SIMPLE_VEC   ( 0x01 <<Tw) // simple general vector
-#define TYPE_HASH         ( 0x11 <<Tw) // hash table
-#define TYPE_HASHX        ( 0x15 <<Tw) // hash table in need of re-hashing
+#define TYPE_INDEXVEC     ( 0x11 <<Tw) // used for huge vectors
+#define TYPE_HASH         ( 0x15 <<Tw) // hash table
+#define TYPE_HASHX        ( 0x19 <<Tw) // hash table in need of re-hashing
 #define TYPE_ARRAY        ( 0x05 <<Tw) // header record for general array
 #define TYPE_STRUCTURE    ( 0x09 <<Tw) // includes packages etc possibly
 #define TYPE_OBJECT       ( 0x0d <<Tw) // and "object"
@@ -849,8 +850,8 @@ typedef uintptr_t Header;
 #define SPID_FBIND          (TAG_SPID+0x0100)  // Fluid binding on stack
 #define SPID_CATCH          (TAG_SPID+0x0200)  // CATCH frame on stack
 #define SPID_PROTECT        (TAG_SPID+0x0300)  // UNWIND_PROTECT on stack
-#define SPID_HASH0          (TAG_SPID+0x0400)  // Empty hash slot
-#define SPID_HASH1          (TAG_SPID+0x0500)  // Deleted hash item (tombstone)
+#define SPID_HASHEMPTY      (TAG_SPID+0x0400)  // Empty hash slot
+#define SPID_HASHTOMB       (TAG_SPID+0x0500)  // Deleted hash item (tombstone)
 #define SPID_GCMARK         (TAG_SPID+0x0600)  // Used by GC as sentinel
 #define SPID_NOINPUT        (TAG_SPID+0x0700)  // Used by (read) in #X()
 #define SPID_ERROR          (TAG_SPID+0x0800)  // Used to indicate error

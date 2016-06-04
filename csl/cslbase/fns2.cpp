@@ -37,9 +37,6 @@
 
 #include "headers.h"
 
-
-#include "clsyms.h"
-
 #ifdef SOCKETS
 #include "sockhdr.h"
 #endif
@@ -3306,10 +3303,10 @@ LispObject Lassoc(LispObject nil, LispObject a, LispObject b)
 #ifdef DEBUG_ASSOC
     int64_t this_assoc = 0;
     if ((assoc_calls % 1000) == 999)
-        term_printf("Assoc %.1f calls %.3f av length %.1f max\n",
-                    (double)assoc_calls,
+        term_printf("Assoc %.3f av length %.1f max %.1f calls\n",
                     (double)assoc_length/(double)assoc_calls,
-                    (double)assoc_max);
+                    (double)assoc_max,
+                    (double)assoc_calls);
     assoc_calls++;
 #endif
     if (is_symbol(a) || is_fixnum(a))
@@ -3317,6 +3314,7 @@ LispObject Lassoc(LispObject nil, LispObject a, LispObject b)
         {   LispObject c = qcar(b);
 #ifdef DEBUG_ASSOC
             assoc_length++;
+            if (assoc_length > 100*assoc_calls) return aerror("average search for assoc");
             if (++this_assoc > assoc_max) assoc_max = this_assoc;
 //!!        if (assoc_max > 1000) return aerror("length for assoc");
 #endif

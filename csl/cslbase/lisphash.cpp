@@ -38,8 +38,24 @@
 
 #include "headers.h"
 
+//
+// (June 2016) I am working on a total replacement for this file that
+// will use a different hashing scheme based on Cuckoo Hashing so that
+// I end up with a guarantee that every lookup will cost at worst 3 probes
+// (and in practise lookups are expected to average out at under 1.5 probes
+// when successful and under 2 when not). The new scheme will also cope with
+// large tables more efficiently. The variable new_hash_tables will be
+// true when the new scheme is installed, but false here. Perhaps the main
+// difference elsewhere in the code will be that the new scheme expects
+// the garbage collector to take hash tables as in need of rehashing, while
+// the old one did some rehashing within the garbage collector itself. The
+// idea behind the new version there is that the rehashing will now only
+// happen when the table is next used, and parhaps many hash tables will
+// just remain in a slightly messed up state saving the cost of gratuitously
+// rehashing them in an eager manner.
+//
 
-#include "clsyms.h"
+bool new_hash_tables = false; // To help me with a transition
 
 //
 // Common Lisp and Standard Lisp disagree about vector sizes.  Common
@@ -88,13 +104,13 @@ static LispObject get_hash_vector(int32_t n)
 // to be, but keeping all chunks the same standard size seems a useful
 // simplification right at present!
 //
-            v1 = getvector_init(HASH_CHUNK_SIZE+CELL, SPID_HASH0);
+            v1 = getvector_init(HASH_CHUNK_SIZE+CELL, SPID_HASHEMPTY);
             pop(v);
             errexit();
             elt(v, i+2) = v1;
         }
     }
-    else v = getvector_init(n, SPID_HASH0);
+    else v = getvector_init(n, SPID_HASHEMPTY);
     return v;
 }
 
@@ -1033,7 +1049,7 @@ LispObject Lget_hash(LispObject nil, int nargs, ...)
     {   LispObject q = ht_elt(v, p+1);
         bool cf;
 //@@    printf("probe %d at %d\n", nprobes, p);
-        if (q == SPID_HASH0)
+        if (q == SPID_HASHEMPTY)
         {   mv_2 = nil;
             work_0 = v;
             hashoffset = p;
@@ -1042,7 +1058,7 @@ LispObject Lget_hash(LispObject nil, int nargs, ...)
 #endif
             return nvalues(dflt, 2);
         }
-        if (q == SPID_HASH1)
+        if (q == SPID_HASHTOMB)
         {   hashgap = p;
             cf = false;  // vacated slot
         }
@@ -1133,7 +1149,7 @@ static void reinsert_hash(LispObject v, int32_t size, int32_t flavour,
     large_hash_table = type_of_header(vechdr(v)) == TYPE_STRUCTURE;
     for (;;)
     {   LispObject q = ht_elt(v, p+1);
-        if (q == SPID_HASH0 || q == SPID_HASH1)
+        if (q == SPID_HASHEMPTY || q == SPID_HASHTOMB)
         {   ht_elt(v, p+1) = key;
             ht_elt(v, p+2) = val;
             return;
@@ -1187,13 +1203,13 @@ void rehash_this_table(LispObject v)
 //
 
         for (j=0; j<size; j+=2)
-            if (ht_elt(v, j+1) == SPID_HASH1) ht_elt(v, j+1) = SPID_HASH0;
+            if (ht_elt(v, j+1) == SPID_HASHTOMB) ht_elt(v, j+1) = SPID_HASHEMPTY;
         many = 0;
         for (j=0; j<size; j+=2)
         {   LispObject key = ht_elt(v, j+1), val = ht_elt(v, j+2);
-            if (key == SPID_HASH0 || key == SPID_HASH1) continue;
+            if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
             pendkey[many] = key;      pendval[many++] = val;
-            ht_elt(v, j+1) = SPID_HASH1; ht_elt(v, j+2) = SPID_HASH0;
+            ht_elt(v, j+1) = SPID_HASHTOMB; ht_elt(v, j+2) = SPID_HASHEMPTY;
             if (many >= REHASH_AT_ONE_GO)
             {   while (many > 0)
                 {   many--;
@@ -1233,7 +1249,7 @@ LispObject Lmaphash(LispObject nil, LispObject fn, LispObject tab)
     for (i=1; i<size; i+=2)
     {   LispObject key = ht_elt(v1, i), val = ht_elt(v1, i+1);
         int save = large_hash_table;
-        if (key == SPID_HASH0 || key == SPID_HASH1) continue;
+        if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
         push2(v1, fn);
         Lapply2(nil, 3, fn, key, val);
         pop2(fn, v1);
@@ -1266,7 +1282,7 @@ restart:
     ogcnum = gc_number;
     for (i=1; i<size; i+=2)
     {   LispObject k1 = ht_elt(v, i), v1 = ht_elt(v, i+1);
-        if (k1 == SPID_HASH0 || k1 == SPID_HASH1) continue;
+        if (k1 == SPID_HASHEMPTY || k1 == SPID_HASHTOMB) continue;
         push(v);
         r = acons(k1, v1, r);
         pop(v);
@@ -1384,7 +1400,7 @@ LispObject Lput_hash(LispObject nil, int nargs, ...)
             for (i=0; i<isize; i+=2)
             {   LispObject key1 = ht_elt(v, i+1), val1 = ht_elt(v, i+2);
                 bool large = large_hash_table;
-                if (key1 == SPID_HASH0 || key1 == SPID_HASH1) continue;
+                if (key1 == SPID_HASHEMPTY || key1 == SPID_HASHTOMB) continue;
 //
 // NB the new hash table is big enough to hold all the data that was in the
 // old one, so inserting stuff into it can not cause a (recursive)
@@ -1424,8 +1440,8 @@ LispObject Lrem_hash(LispObject nil, LispObject key, LispObject tab)
     errexit();
     if (mv_2 == nil) return onevalue(nil);
     else
-    {   ht_elt(work_0, hashoffset+1) = SPID_HASH1;
-        ht_elt(work_0, hashoffset+2) = SPID_HASH0;
+    {   ht_elt(work_0, hashoffset+1) = SPID_HASHTOMB;
+        ht_elt(work_0, hashoffset+2) = SPID_HASHEMPTY;
         elt(tab, 1) -= 0x10;
 //
 // Some folk would believe that if the table shrank too much I should
@@ -1449,7 +1465,7 @@ LispObject Lclr_hash(LispObject, LispObject tab)
     v = elt(tab, 4);
     large_hash_table = type_of_header(vechdr(v)) == TYPE_STRUCTURE;
     size = words_in_hash_table(v);
-    for (i=1; i<size; i++) ht_elt(v, i) = SPID_HASH0;
+    for (i=1; i<size; i++) ht_elt(v, i) = SPID_HASHEMPTY;
     return tab;
 }
 
@@ -1457,6 +1473,16 @@ LispObject Lclr_hash_0(LispObject nil, int nargs, ...)
 {   argcheck(nargs, 0, "clrhash");
     return Lclr_hash(nil, sys_hash_table);
 }
+
+// sxhash is a function that I am coming to believe that I do not like.
+// For the "hash value" that it returns to follow the requirements that
+// Common Lisp was garbled from the start and clean-ups seem to me to leave
+// it still a mess. Tha main issue here is that the hash value that is
+// computed must not change when garbage collection shuffles memory, and
+// so all items that EQUAL compares using EQ have to have some special
+// treatment where it is not clear that there is a sensible behaviour
+// to use. But the KEY issue here is that the hash function used to support
+// built-in hash tables is probably not going to be suitable.
 
 LispObject Lsxhash(LispObject nil, LispObject key)
 {

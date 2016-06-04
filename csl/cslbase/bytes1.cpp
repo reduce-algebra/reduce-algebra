@@ -1027,7 +1027,7 @@ LispObject bytecounts(LispObject nil, int nargs, ...)
     for (i=1; i<size; i+=2)
     {   LispObject key = elt(v, i), val = elt(v, i+1);
         int32_t yes, no;
-        if (key == SPID_HASH0 || key == SPID_HASH1) continue;
+        if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
         yes = no = 0;
         if (consp(val)) yes = int_of_fixnum(qcar(val)),
                             no  = int_of_fixnum(qcdr(val));
@@ -1037,7 +1037,7 @@ LispObject bytecounts(LispObject nil, int nargs, ...)
     for (i=1; i<size; i+=2)
     {   LispObject key = elt(v, i), val = elt(v, i+1);
         int32_t yes, no;
-        if (key == SPID_HASH0 || key == SPID_HASH1) continue;
+        if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
         yes = no = 0;
         if (consp(val)) yes = int_of_fixnum(qcar(val)),
                             no  = int_of_fixnum(qcdr(val));
@@ -1074,7 +1074,7 @@ LispObject bytecounts1(LispObject nil, LispObject a)
     for (i=1; i<size; i+=2)
     {   LispObject key = elt(v, i), val = elt(v, i+1);
         int32_t yes, no;
-        if (key == SPID_HASH0 || key == SPID_HASH1) continue;
+        if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
         yes = no = 0;
         if (consp(val)) yes = int_of_fixnum(qcar(val)),
                             no  = int_of_fixnum(qcdr(val));
@@ -1085,7 +1085,7 @@ LispObject bytecounts1(LispObject nil, LispObject a)
     for (i=1; i<size; i+=2)
     {   LispObject key = elt(v, i), val = elt(v, i+1);
         int32_t yes, no;
-        if (key == SPID_HASH0 || key == SPID_HASH1) continue;
+        if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
         yes = no = 0;
         if (consp(val)) yes = int_of_fixnum(qcar(val)),
                             no  = int_of_fixnum(qcdr(val));

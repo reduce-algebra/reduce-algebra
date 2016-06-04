@@ -2,7 +2,8 @@
 
 
 //
-// Header defining the vector of literals just used in Common Lisp mode.
+// Header defining the vector of literals just used for the support
+// of some Common Lisp style features.
 //
 
 
@@ -39,6 +40,8 @@
 
 #ifndef header_clsyms_h
 #define header_clsyms_h 1
+
+// I have to note that I view most of these as pretty frivolous!
 
 #define nicknames_symbol  elt(qvalue(cl_symbols), 0)  // :nicknames
 #define use_symbol        elt(qvalue(cl_symbols), 1)  // :use

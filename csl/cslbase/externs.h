@@ -582,6 +582,7 @@ extern void rehash_this_table(LispObject v);
 extern LispObject eq_hash_tables, equal_hash_tables;
 extern uint32_t hash_equal(LispObject key);
 extern uint32_t hash_for_checking(LispObject key, int depth);
+extern bool new_hash_tables;
 
 //
 // The following are used to help <escape> processing.

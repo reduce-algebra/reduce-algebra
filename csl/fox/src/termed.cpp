@@ -495,10 +495,13 @@ void term_setprompt(const char *s)
 //
     if (prompt_length > MAX_PROMPT_LENGTH) prompt_length = MAX_PROMPT_LENGTH;
 //
-// Here I winden the characters in the prompt by merely using the passsed
+// Here I widen the characters in the prompt by merely using the passed
 // characters as the low 8-bits of each desired character. That is fine
 // for 7-bit ASCII characters but not if the 8-bit values depend on some
-// particular code page...
+// particular code page... I should probably (these days) allow the
+// passed prompt to be an utf8 string and decode/convert it here. Note that
+// dealing with characters beyond the basic multilingual plane will
+// involve unpacking to utf16!
 //
     for (i=0; i<prompt_length; i++)
     {   wint_t c = *s++ & 0xff;

@@ -38,8 +38,6 @@
 
 #include "headers.h"
 
-#include "clsyms.h"
-
 #ifdef SOCKETS
 #include "sockhdr.h"
 #endif

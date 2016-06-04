@@ -39,9 +39,6 @@
 
 #include "headers.h"
 
-
-#include "clsyms.h"
-
 //
 // Common Lisp and Standard Lisp disagree about vector sizes.  Common
 // Lisp counts the number of elements in a vector (with make-simple-vector
@@ -57,9 +54,10 @@ LispObject Lmkvect(LispObject nil, LispObject n)
     if (!is_fixnum(n)) return aerror1("mkvect", n);
     n1 = int_of_fixnum(n)*CELL;
     n1 += CELL; // Oh! What an abomination! Standard Lisp allocated 0::n,
-    // Common allocates n items
+                // Common allocates n items
 // Note that this allows the user to go (mkvect -1) to make a vector with
-//* no elements at all. This is mildly odd!
+// no elements at all. This is mildly odd! But it is a consequence of agreeing
+// that (mkvect 0) will make a vector of length 1.
     if (n1 < 0) return aerror1("mkvect", n);
     return onevalue(getvector_init(n1+CELL, nil));
 }

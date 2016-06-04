@@ -1,4 +1,4 @@
-// File gc.cpp                      Copyright (c) Codemist    , 1990-2016
+// File cslgc.cpp                         Copyright (c) Codemist, 1990-2016
 
 //
 // Garbage collection.
@@ -384,8 +384,10 @@ void validate_all(const char *why, int line, const char *file)
 
     for (i = first_nil_offset; i<last_nil_offset; i++) validate(BASE[i], __LINE__);
     for (sp=stack; sp>(LispObject *)stackbase; sp--) validate(*sp, __LINE__);
-    validate(eq_hash_tables, __LINE__);
-    validate(equal_hash_tables, __LINE__);
+    if (!new_hash_tables)
+    {   validate(eq_hash_tables, __LINE__);
+        validate(equal_hash_tables, __LINE__);
+    }
 //  term_printf("Validation complete\n");
 }
 
@@ -419,6 +421,8 @@ static intptr_t cons_cells, symbol_heads, strings, user_vectors,
 
 #define is_immed(x) (is_immed_or_cons(x) && !is_cons(x))
 
+// Marking (in the mark and sweep collector) is done using either this
+// pointer reversing code or one that uses recursion (which may be faster).
 
 static void non_recursive_mark(LispObject *top)
 {
@@ -645,6 +649,12 @@ descend:
                 goto ascend_from_vector;
             }
             vechdr(p) = h = flip_mark_bit_h(h);
+// If I am using the new hash table scheme then when I mark a hash table
+// I will reset its header word so that it is tagged for rehashing before
+// its next use.
+            if (new_hash_tables &&
+                type_of_header(h) == TYPE_HASH)
+                vechdr(p) = h = h ^ (TYPE_HASHX ^ TYPE_HASH);
             i = (intptr_t)doubleword_align_up(length_of_header(h));
             if (is_mixed_header(h))
                 i = 4*CELL;  // Only use first few pointers
@@ -721,7 +731,7 @@ ascend:
     if (b == (LispObject)top) return;
 
     switch ((int)b & TAG_BITS)
-{       default:
+    {   default:
             term_printf("Bad tag bits in GC\n");
             ensure_screen();
             abort();
@@ -853,7 +863,7 @@ ascend:
 // The back-pointer will be doubleword aligned, so on 32-bit systems
 // it is not quite enough to tell me which cell of the vector was involved,
 // and so in that case I do a further inspection of mark bits in the two
-// parts of the doubelword concerned.
+// parts of the doubleword concerned.
 //
             w = *(LispObject *)((char *)b - TAG_VECTOR);
             if (!SIXTY_FOUR_BIT)
@@ -948,7 +958,7 @@ ascend_from_vector:
     }
 
     switch ((int)b & TAG_BITS)
-{       default:
+    {   default:
             term_printf("Bad tag bits in GC\n");
             ensure_screen();
             abort();
@@ -1291,6 +1301,8 @@ top:
                 if (pp == NULL) return;
                 else goto top;
             }
+            if (new_hash_tables && type_of_header(h) == TYPE_HASH)
+                vechdr(p) = h = h ^ (TYPE_HASH ^ TYPE_HASHX);
             *pp = flip_mark_bit_i(h);
             vechdr(p) = (Header)flip_mark_bit_p((LispObject)pp);
             if (vector_holds_binary(h))  // strings & bitvecs
@@ -1789,6 +1801,8 @@ static void relocate_vecheap(void)
                         other_mem += doubleword_align_up(length_of_header(h));
                         break;
                     case TYPE_HASH:
+                    case TYPE_HASHX:
+                    case TYPE_INDEXVEC:
                     case TYPE_SIMPLE_VEC:
                     case TYPE_ARRAY:
                     case TYPE_STRUCTURE:
@@ -2020,6 +2034,8 @@ static void copy(LispObject *p)
                     len = symhdr_length, symbol_heads += symhdr_length;
                 else
                 {   len = doubleword_align_up(length_of_header(h));
+                    if (new_hash_tables && type_of_header(h) == TYPE_HASH)
+                        h = h ^ (TYPE_HASH ^ TYPE_HASHX);
                     switch (type_of_header(h))
                     {
                         case TYPE_STRING_1:
@@ -2554,7 +2570,8 @@ static void lose_dead_hashtables(void)
 // This splices out from the list of hash tables all entries that point to
 // tables that have not been marked or copied this garbage collection.
 //
-{   LispObject *p = &eq_hash_tables, q, r;
+{   if (new_hash_tables) return;
+    LispObject *p = &eq_hash_tables, q, r;
     while ((q = *p) != C_nil)
     {   Header h;
         r = qcar(q);
@@ -3150,7 +3167,10 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 //
 // Now I need to perform some magic on the list of hash tables...
 //
-        lose_dead_hashtables();
+        if (!new_hash_tables) lose_dead_hashtables();
+// When I have transitions to the new hash table scheme the two lists
+// processed specially here become redundant and this fragment of code can
+// go, I think.
 #ifdef DEBUG_GC
         term_printf("About to copy eq hash tables\n");
 #endif // DEBUG_GC
@@ -3225,7 +3245,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 //
 // Now I need to perform some magic on the list of hash tables...
 //
-        lose_dead_hashtables();
+        if (!new_hash_tables) lose_dead_hashtables();
         mark(&eq_hash_tables);
         mark(&equal_hash_tables);
 //
@@ -3278,6 +3298,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         abandon_heap_pages(bottom_page_number);
     }
 
+    if (!new_hash_tables)
     {   LispObject qq;
 //
 // Note that EQUAL hash tables do not need to be rehashed here, though
@@ -3457,4 +3478,4 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     return use_gchook(p, lisp_true);
 }
 
-// end of file gc.cpp
+// end of file cslgc.cpp

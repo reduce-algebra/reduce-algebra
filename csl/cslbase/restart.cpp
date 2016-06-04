@@ -2669,7 +2669,7 @@ static void *my_malloc_1(size_t n)
 // not to be valid as an address (?) but appears to be within the address
 // range of the block of store just allocated.
 //
-    if ((pun ^ pun1) < 0) fatal_error(err_mem_spans_zero);
+    if ((intptr_t)(pun ^ pun1) < 0) fatal_error(err_mem_spans_zero);
 //
 // Now if I get a block with the "wrong" top bit I will just return NULL
 // to suggest that no more memory was available - CSL can then proceed
@@ -2681,7 +2681,12 @@ static void *my_malloc_1(size_t n)
 // I will check it.
 //
     if (nilsegment != NULL)
-    {   if ((pun + address_sign) < 0) return NULL;
+    {
+// The way I write this seems to matter on an Raspberry Pi with optimization
+// level -O3 as of June 2016. I hope this version works and the previous
+// version of this line with a "+" rather than a "^" and without the cast
+// seemed not to!
+        if ((intptr_t)(pun ^ address_sign) < 0) return NULL;
         // fatal_error(err_top_bit);
     }
     else address_sign = pun & GC_BIT_P;
@@ -6041,6 +6046,13 @@ void get_user_files_checksum(unsigned char *b)
     CSL_MD5_Final(b);
 }
 
+#ifdef __ARM__
+// June 2016: on the Raspberry pi this code gets messed up by -O2 and -O3.
+// This may well be my fault, but for now I will half the fort by sticking in
+// a pragma to downgrade the optimization (with a "z") level... Ugh.
+#pragma GCC optimize ("1")
+#endif
+
 void setup(int restart_flag, double store_size)
 {
 //
@@ -6422,8 +6434,8 @@ void setup(int restart_flag, double store_size)
 //
             intptr_t pun = (intptr_t)page;
             intptr_t pun1 = (intptr_t)((char *)page + CSL_PAGE_SIZE + 16);
-            if ((pun ^ pun1) < 0) page = NULL;
-            if ((pun + address_sign) < 0) page = NULL;
+            if ((intptr_t)(pun ^ pun1) < 0) page = NULL;
+            if ((intptr_t)(pun ^ address_sign) < 0) page = NULL;
             if (page == NULL)
             {   init_flags &= ~INIT_EXPANDABLE;
                 break;
@@ -6914,3 +6926,4 @@ void CSL_MD5_Final(unsigned char *md)
 
 
 // end of restart.cpp
+

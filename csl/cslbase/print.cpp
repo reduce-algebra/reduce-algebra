@@ -37,8 +37,6 @@
 
 #include "headers.h"
 
-#include "clsyms.h"
-
 #ifdef WIN32
 #include <windows.h>
 #include <process.h>
@@ -2272,8 +2270,8 @@ restart:
                     case SPID_CATCH:   strcpy(my_buff, "SPID_CATCH");   break;
                     case SPID_PROTECT: strcpy(my_buff, "SPID_PROTECT"); break;
                     case SPID_NOARG:   strcpy(my_buff, "SPID_NOARG");   break;
-                    case SPID_HASH0:   strcpy(my_buff, "SPID_HASH0");   break;
-                    case SPID_HASH1:   strcpy(my_buff, "SPID_HASH1");   break;
+                    case SPID_HASHEMPTY:strcpy(my_buff, "SPID_HASHEMPTY");break;
+                    case SPID_HASHTOMB:strcpy(my_buff, "SPID_HASHTOMB");break;
                     case SPID_GCMARK:  strcpy(my_buff, "SPID_GCMARK");  break;
                     case SPID_NOINPUT: strcpy(my_buff, "SPID_NOINPUT"); break;
                     case SPID_ERROR:   strcpy(my_buff, "SPID_ERROR");   break;

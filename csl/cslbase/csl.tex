@@ -1,4 +1,4 @@
-% Generated using doxtract Sun Dec  6 17:44:25 2015
+% Generated using doxtract Fri May 27 09:50:05 2016
 \documentclass[a4paper,11pt]{article}
 \title{CSL reference}
 \author{A C Norman}
@@ -13,7 +13,7 @@ are the ones that are initially present in a raw CSL image. Some
 proportion of them are not really intended to be used by end-users but
 are merely the internal components of some feature.
 
-% Generating section 01 [options] with 36 subsections
+% Generating section 01 [options] with 37 subsections
 \section{Command-line options}
 The items shown here are the ones that are recognized on the CSL command
 line. In general an option that requires an argument can be written as either
@@ -58,6 +58,12 @@ At some time I had felt the need for this option, but I now forget what I
 expected to use it for! It leads the executable to display the fully
 rooted name of the directory it was in and then terminate. It may be useful
 in some script?
+
+\item [{\ttfamily --no-rcfile}] \index{{\ttfamily --no-rcfile}}
+Instruct the system not to read a user-specific configuation file, which
+make have such a names as ``{\ttfamily .reducerc}'', at startup time. This
+can be useful during system building where utterly self-contained and
+predictable behaviour is important.
 
 \item [{\ttfamily --nogui}] \index{{\ttfamily --nogui}}
 Encourage the system to run as a console-style application. Similar
@@ -550,7 +556,7 @@ any odd values in the (shell) environment will cause trouble, and the
 lines such as {\ttfamily (rdf~"\$cslbase/compat.lsp")} can appear in the build
 code without any need for absolute path names or any
 reliance on the setting of a current directory.
-
+  
 In a file-name a path that starting {\ttfamily $\sim$/} or
 {\ttfamily $\sim$name/} tries to identify the home directory of the
 current or named user. This has a clear-cut meaning on Unix-like
@@ -560,10 +566,9 @@ platforms but should perhaps not be relied on under Windows.
 The value of this variable is an space or blank character. This
 might otherwise be written as {\ttfamily "! "}.
 
-%%\item [{\ttfamily carriage\!-return}]
-%%\index{{\ttfamily carriage"!-return}} ~\newline
-%%The value of this variable is a carriage-return character that could arise
-%%in DOS-format files.
+\item [{\ttfamily carriage!-return}] \index{{\ttfamily carriage"!-return}} ~\newline
+The value of this variable is a carriage-return character that could arise
+in DOS-format files.
 
 \item [{\ttfamily common!-lisp!-mode}] \index{{\ttfamily common"!-lisp"!-mode}} ~\newline
 The CSL Lisp system was designed so that if necessary much of the code could

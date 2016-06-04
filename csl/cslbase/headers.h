@@ -138,6 +138,7 @@
 #include "proc.h"
 #include "stream.h"
 #include "cslread.h"
+#include "clsyms.h"
 #include "inthash.h"
 
 #ifdef HAVE_FWIN
@@ -152,7 +153,7 @@
 //
 // crlibm aims to produce correctly rounded results in all cases.
 // The functions from it selected here are the ones that round to
-// nearest.
+// nearest. I think I will now ALWAYS use it.
 //
 
 #include "crlibm.h"
