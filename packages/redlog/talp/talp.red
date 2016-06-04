@@ -94,9 +94,7 @@ put('talp,'rl_params,'(
    (rl_op!* . talp_op) ));
 
 % Switches
-put('talp,'rl_cswitches, '(
-   (rlverbose . t)
-   (rlsism . t) ));
+put('talp,'rl_cswitches, '((rlsism . t)));
 
 % Services
 put('talp,'rl_services,'(

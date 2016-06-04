@@ -148,7 +148,7 @@
  (redfront      "redfront"                                   csl psl)
  (reduce4       "reduce4"                                    csl psl)
  (tables        "reduce4"                                    csl psl)
- (talp          "redlog/talp"                                csl psl)
+ (talp          "redlog/talp"           test                 csl psl)
  (sum           "sum"                   test                 csl psl)
  (zeilberg      "sum"                   test                 csl psl)
  (symaux        "symmetry"                                   csl psl)

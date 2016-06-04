@@ -1,0 +1,193 @@
+% Natural Numbers as Elements of a Term Algebra
+
+rlset(talp, {o, 0}, {s, 1});
+
+
+{}
+
+
+nn1 := all(x, ex(y, y=s(x)));
+
+
+nn1 := all x ex y (y = s(x))
+
+
+rlqe nn1;
+
+
+true
+
+
+% The successor of each natural number is unique:
+
+nn2 := all(x, y=s(x) and z=s(x) impl y=z);
+
+
+nn2 := all x ((y = s(x) and z = s(x)) impl z = y)
+
+
+rlqe nn2;
+
+
+inv_s1(z) <> inv_s1(y) or y = o or z = o or z = y
+
+
+rlqe rlall ws;
+
+
+true
+
+
+% Disprove that every natural number is a successor:
+
+nn3 := all(x, ex(y, x=s(y)));
+
+
+nn3 := all x ex y (x = s(y))
+
+
+rlqe nn3;
+
+
+false
+
+
+rlqea nn3;
+
+
+{{false,{x = o}}}
+
+
+% Binary Trees as Term Algebras.
+
+rlset(talp, {o, 0}, {l, 1}, {r, 1});
+
+
+{talp,{o,0},{s,1}}
+
+
+bt1 := all(x, ex({y, z}, y=l(x) and z=r(x)));
+
+
+bt1 := all x ex y ex z (y = l(x) and z = r(x))
+
+
+rlqe bt1;
+
+
+true
+
+
+bt2 := all(x, u=l(x) and v=l(x) and y=r(x) and z=r(x) impl u=v and y=z);
+
+
+bt2 := 
+
+all x ((u = l(x) and v = l(x) and y = r(x) and z = r(x)) impl (v = u and z = y))
+
+
+rlqe bt2;
+
+
+inv_l1(v) <> inv_l1(u) or inv_r1(y) <> inv_l1(u) or inv_r1(z) <> inv_l1(u)
+
+ or u = inv_l1(u) or v = inv_l1(v) or y = inv_r1(y) or z = inv_r1(z)
+
+ or (v = u and z = y)
+
+
+bt3 := all(x, ex({y, z}, x=l(y) or x=r(z)));
+
+
+bt3 := all x ex y ex z (x = l(y) or x = r(z))
+
+
+rlqe bt3;
+
+
+false
+
+
+rlqea bt3;
+
+
+{{false,{x = o}}}
+
+
+% Hoffelner's Artificial Parametric Problems
+
+rlset(talp, {a, 0}, {f, 1}, {g, 2});
+
+
+{talp,{o,0},{l,1},{r,1}}
+
+
+pp1 := ex({x, y}, g(x, f(y))=g(u, x));
+
+
+pp1 := ex x ex y (g(x,f(y)) = g(u,x))
+
+
+rlqe pp1;
+
+
+u <> inv_f1(u)
+
+
+rlqea pp1;
+
+
+{{u <> inv_f1(u),{y = inv_f1(u),x = f(inv_f1(u))}}}
+
+
+pp2 := rlsimpl pp1;
+
+
+pp2 := ex x ex y (x = f(y) and x = u)
+
+
+rlset(talp, {a, 0}, {f, 1});
+
+
+{talp,{a,0},{f,1},{g,2}}
+
+
+rlqe pp2;
+
+
+u <> a
+
+
+rlset(talp, {a, 0}, {f, 1}, {g, 2});
+
+
+{talp,{a,0},{f,1}}
+
+
+pp3 := ex({x, y, z}, x=u and y=a and z<>x);
+
+
+pp3 := ex x ex y ex z (x = u and y = a and z <> x)
+
+
+rlqe pp3;
+
+
+true
+
+
+rlqea pp3;
+
+
+{{true,{z = f(u),x = u,y = a}}}
+
+
+end;
+
+Tested on x86_64-mac_10.11_elcapitan-darwin15.5.0 CSL
+Time (counter 1): 40 ms
+
+End of Lisp run after 0.04+0.13 seconds
+real         0.31
+user         0.23
+sys          0.07
