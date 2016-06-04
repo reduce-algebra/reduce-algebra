@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2004-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module talpsism;  % Term algebra Lisp prefix simplify smart.
+
+revision('talpsism, "$Id$");
+
+copyright('talpsism, "(c) 2004-2009 A. Dolzmann, T. Sturm, 2016 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -26,18 +27,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
-
-lisp <<
-   fluid '(talp_sism_rcsid!* talp_sism_copyright!*);
-   talp_sism_rcsid!* :=
-      "$Id$";
-   talp_sism_copyright!* :=
-      "Copyright (c) 2004-2009 A. Dolzmann, T. Sturm"
->>;
-
-module talpsism;
-% Term algebra Lisp prefix simplify smart. Submodule of [talp].
+%
 
 procedure talp_smwupdknowl(op,atl,knowl,n);
    % Term algebra Lisp prefix smart simplification wrapper update
@@ -104,7 +94,7 @@ procedure talp_chkknowl(atf,knowl);
       	 invt := if atom talp_arg2l atf then <<
 	    tvar := talp_arg2l atf;
 	    talp_arg2r atf
-      	 >> else << 
+      	 >> else <<
 	    tvar := talp_arg2r atf;
 	    talp_arg2l atf
       	 >>;
@@ -114,9 +104,9 @@ procedure talp_chkknowl(atf,knowl);
 	 while tmp and not stop do <<
 	    at := caar tmp;
 	    if talp_candp at then <<
-	       invt := if talp_invp talp_arg2l at then 
+	       invt := if talp_invp talp_arg2l at then
 	       	  talp_arg2l at
-	       else talp_arg2r at;	       
+	       else talp_arg2r at;
        	       if talp_invarg invt eq tvar then
 	       	  if rl_op at eq atop and atop eq 'neq then
 		     if talp_invf invt neq fs then <<
@@ -182,7 +172,7 @@ procedure talp_try1(f);
       op := talp_op tmp;
       return if op eq 'or then
       	 cl_simpl(cl_nnfnot talp_try2( 'and .
-	    for each sf in talp_argl tmp collect 
+	    for each sf in talp_argl tmp collect
 	       talp_try1 cl_nnfnot sf),nil,-1)
       else if op eq 'and then
 	 cl_simpl(talp_try2( op .
@@ -210,7 +200,7 @@ procedure talp_try3(f,vars);
 	       lhs := talp_arg2l subf;
 	       rhs := talp_arg2r subf;
 	       for each x in vars do <<
-		  if atom lhs and talp_contains(rhs,x) or 
+		  if atom lhs and talp_contains(rhs,x) or
 		     talp_td lhs < talp_td rhs then contrvar := t;
 		  if atom rhs and talp_contains(lhs,x) or
 		     talp_td rhs < talp_td lhs then contlvar := t
@@ -391,7 +381,7 @@ procedure talp_ctns(pair,pairl);
 	    found := t
 	 else pairl := cdr pairl;
       return found
-   end;   
+   end;
 
 operator talp_lssimpl;
 
@@ -474,7 +464,7 @@ procedure talp_tcandt1(cand,cop,knowl,op);
       invt := if atom talp_arg2l cand then <<
 	 tvar := talp_arg2l cand;
 	 talp_arg2r cand
-      >> else << 
+      >> else <<
 	 tvar := talp_arg2r cand;
 	 talp_arg2l cand
       >>;
@@ -506,10 +496,10 @@ procedure talp_testknowl(term,var,atop,knowl);
       while tmp and invfs do <<
 	 atf := car tmp;
 	 if talp_candp atf then <<
-	    invt := if talp_invp talp_arg2l atf then 
-	       talp_arg2l atf 
+	    invt := if talp_invp talp_arg2l atf then
+	       talp_arg2l atf
 	    else talp_arg2r atf;
-	    if atop eq talp_op atf and talp_invarg invt eq var then 
+	    if atop eq talp_op atf and talp_invarg invt eq var then
 	       invfs := delete(talp_op invt,invfs)
 	 >>;
 	 tmp := cdr tmp
@@ -545,7 +535,7 @@ procedure talp_invtscsimpl(f);
       f := talp_rnf f;
       if atom f then return f;
       if talp_atfp f then
-	 if talp_invtscc f then 
+	 if talp_invtscc f then
 	    return talp_rnf talp_invtscsimplat talp_simpat f
 	 else return talp_simpat f;
       op := talp_op f;
@@ -578,8 +568,8 @@ procedure talp_invtscsimplat(atf);
 	 >>
       >>;
       len := length fctsyml;
-      if pure and len > 1 then 
-      	 return talp_simpat 
+      if pure and len > 1 then
+      	 return talp_simpat
 	    talp_mk2(op,talp_mkinv(talp_getinvfsym(fctsym,1),var),var);
       res := for i:= 1 : len collect <<
 	 fctsym := car fctsyml;
@@ -589,8 +579,8 @@ procedure talp_invtscsimplat(atf);
       return if talp_noffcts() eq length res then
 	 talp_mkn(if op eq 'equal then 'or else 'and,
 	    for each elem in talp_getcts() collect
-	       talp_simpat talp_mk2(op,var,elem)) 
-      else if op eq 'equal then 
+	       talp_simpat talp_mk2(op,var,elem))
+      else if op eq 'equal then
 	 talp_mkn('and,res)
       else talp_mkn('or,res)
    end;
@@ -601,13 +591,16 @@ procedure talp_invtscc(atf);
    % pair $var . invt$ if [atf] is of one of the forms
    % $inv_x1(...(inv_xn(y)))) = y$ or $inv_x1(...(inv_xn(y)))) <> y$,
    % nil otherwise.
-   begin scalar var,invt,tmp,nof;
-      var := if atom talp_arg2l atf then 
-	 talp_arg2l atf 
-      else if atom talp_arg2r atf then talp_arg2r atf else return nil;
+   begin scalar var, invt, tmp, nof;
+      if atom talp_arg2l atf then
+	 var := talp_arg2l atf
+      else if atom talp_arg2r atf then
+ 	 var := talp_arg2r atf
+      else
+ 	 return nil;
       invt := if atom talp_arg2l atf then talp_arg2r atf else talp_arg2l atf;
       nof := talp_noffcts();
-      if not (talp_invp invt) or 
+      if not (talp_invp invt) or
 	 not (talp_td invt > 1 or nof = 1) then return nil;
       tmp := invt;
       while not (atom talp_invarg tmp) do tmp := talp_invarg tmp;
