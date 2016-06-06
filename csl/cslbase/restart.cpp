@@ -3051,8 +3051,8 @@ setup_type const *setup_tables[] =
     NULL,
     arith06_setup, arith08_setup, arith10_setup, arith12_setup,
     arith13_setup, char_setup, eval1_setup, eval2_setup, eval3_setup,
-    funcs1_setup, funcs2_setup, funcs3_setup, lisphash_setup, print_setup,
-    read_setup, mpi_setup,
+    funcs1_setup, funcs2_setup, funcs3_setup, lisphash_setup,
+    newhash_setup, print_setup, read_setup, mpi_setup,
     NULL
 };
 
@@ -4973,13 +4973,14 @@ void set_up_functions(int restart_flag)
     create_symbols(funcs2_setup, restart_flag);
     create_symbols(funcs3_setup, restart_flag);
     create_symbols(lisphash_setup, restart_flag);
+    create_symbols(newhash_setup, restart_flag);
     create_symbols(print_setup, restart_flag);
     create_symbols(read_setup, restart_flag);
     create_symbols(restart_setup, restart_flag);
     create_symbols(mpi_setup, restart_flag);
 //
-// Although almost everything is mappeed into upper case in a Common Lisp
-// world I will preserve the case of symbols defined in u01 to u60.
+// Although almost everything is mapped into upper case in a Common Lisp
+// world, I will preserve the case of symbols defined in u01 to u60.
 //
     for (i=0; setup_tables[i]!=NULL; i++)
         create_symbols(setup_tables[i], restart_flag | 2);

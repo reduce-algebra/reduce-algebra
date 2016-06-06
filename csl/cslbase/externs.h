@@ -1086,7 +1086,8 @@ extern setup_type const
     arith06_setup[], arith08_setup[], arith10_setup[], arith12_setup[],
     arith13_setup[], char_setup[], eval1_setup[], eval2_setup[],
     eval3_setup[], funcs1_setup[], funcs2_setup[], funcs3_setup[],
-    lisphash_setup[], print_setup[], read_setup[], mpi_setup[];
+    lisphash_setup[], newhash_setup[], print_setup[], read_setup[],
+    mpi_setup[];
 extern setup_type const
     u01_setup[], u02_setup[], u03_setup[], u04_setup[],
     u05_setup[], u06_setup[], u07_setup[], u08_setup[], u09_setup[],
