@@ -546,15 +546,14 @@ put('asin, 'cmpxsplitfn, 'reimasin);
 put('acos, 'cmpxsplitfn, 'reimasin);
 
 symbolic procedure reimasin u;
-begin scalar rearg, imarg, x, y, sr, si, op;
+begin scalar rearg, imarg, x, y, sr, si, op, res;
   rearg := prepsq simprepart cdr u;
   imarg := prepsq simpimpart cdr u;
   op := car u;
-  (if rearg=0 then 
+  if rearg=0 then <<
+     res := simp {'times, 'i, {'asinh, imarg}};
      if op='asin then return res
-     else if op='acos then
-        return addsq(simp {'quotient, 'pi, 2}, negsq res))
-   where res= simp {'times, 'i, {'asinh, imarg}};
+     else return addsq(simp {'quotient, 'pi, 2}, negsq res)>>;
 
   y := invfn!-args(rearg, imarg);
 
@@ -576,10 +575,11 @@ begin scalar rearg, imarg, x, y, sr, si, op;
   % Multiply y by si if si neq 0 and by -sr if si=0
   y := multsq(y, addsq(si, 
                        multsq(sr, addsq(multsq(si, si), (-1) ./ 1))));
+		       
+  res := addsq(x, multsq(simp 'i, y));
+  if op='asin then return res
+  else return addsq(simp {'quotient, 'pi, 2}, negsq res);
 
-  (if op='asin then return res
-   else if op='acos then return addsq(simp {'quotient, 'pi, 2}, negsq res))  
-     where res = addsq(x, multsq(simp 'i, y));
 end;
 
 put('asinh, 'cmpxsplitfn, 'reimasinh);
