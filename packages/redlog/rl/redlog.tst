@@ -36,7 +36,7 @@ rlthsimpl ({a*b*c=0,b<>0});
 
 rlqe ex({x,y},(for i:=1:5 product mkid(a,i)*x**10-mkid(b,i)*y**2)<=0);
 
-sol := rlqe ex(x,a*x**2+b*x+c>0);
+sol := rlqe ex(x,a1*a2*x**2+b*x+c>0);
 rlatnum sol;
 
 rlatl sol;
@@ -46,10 +46,10 @@ rltermml sol;
 rlifacl sol;
 rlifacml sol;
 
-rlstruct(sol,v);
-rlifstruct(sol,v);
+rlstruct(sol, fac=no, w);
+rlstruct(sol);
 
-rlitab sol;
+rltab sol;
 rlatnum ws;
 rlgsn sol;
 rlatnum ws;

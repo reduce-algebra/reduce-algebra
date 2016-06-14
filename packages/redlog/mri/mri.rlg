@@ -50,13 +50,11 @@ x_trunc >= 0 and x_trunc - 1 < 0 and x_int + x_trunc - y < 0
  and [4*y] - 4*x_int - 2 <= 0
 
 +++ MRI entering integer qe for x_int ... finished
-([4*y] - 2*[2*y] <= 0 and [2*y] - 2*y < 0 and [2*y] + 1 ~2~ 0) or bex g0002 [0
+([4*y] - 2*[2*y] <= 0 and [2*y] - 2*y < 0 and [2*y] + 1 ~2~ 0) or bex _k2 [0
 
- <= g0002 <= 4] ([4*y] - 2*[2*y] + g0002 < 0 and [4*y] + g0002 + 2 ~4~ 0) or bex
+ <= _k2 <= 4] ([4*y] - 2*[2*y] + _k2 < 0 and [4*y] + _k2 + 2 ~4~ 0) or bex _k2 [
 
- g0002 [ - 2 <= g0002 <= -1] ([4*y] - 2*[2*y] - 2*g0002 <= 0
-
- and [2*y] + g0002 + 1 ~2~ 0)
+ - 2 <= _k2 <= -1] ([4*y] - 2*[2*y] - 2*_k2 <= 0 and [2*y] + _k2 + 1 ~2~ 0)
 
 
 
@@ -82,10 +80,10 @@ rlexpand ws;
 
 end;
 
-Tested on x86_64-pc-windows CSL
+Tested on x86_64-mac_10.11_elcapitan-darwin15.5.0 CSL
 Time (counter 1): 0 ms
 
-End of Lisp run after 0.00+0.09 seconds
-real 0.26
-user 0.01
-sys 0.04
+End of Lisp run after 0.00+0.18 seconds
+real         0.30
+user         0.23
+sys          0.07

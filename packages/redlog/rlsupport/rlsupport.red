@@ -1,8 +1,8 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% (c) 2016 T. Sturm
-% ----------------------------------------------------------------------
+module rlsupport;
+
+put('rlsupport, 'revision, "$Id$");
+put('rlsupport, 'copyright, "(c) 2016 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,7 +28,6 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-module rlsupport;
 % This package collects code which for technical reasons must be compiled before
 % the compilation of the redlog main package in redlog/rl. Otherwise, I would
 % love to have all the modules here a modules of the package redlog. A
@@ -41,7 +40,7 @@ module rlsupport;
 % essentially sections of packages but units that are independent w.r.t.
 % compilation.
 
-create!-package('(rlsupport rltype rlservice),nil);
+create!-package('(rlsupport rltype rlservice rlhelp),nil);
 
 imports assert;
 imports rltools;
@@ -55,19 +54,42 @@ exports rl_service;
 % should export it here. This is a actually subtility about the semantics of
 % the exports statement to be clarified at some point.
 exports rl_servicewrapper;
+exports rl_exc;
+exports rl_excP;
+exports rl_excErr;
 
-asserted procedure rl_elist2alist(el: List): Alist;
-   % Turn equational specifications into (nested) Alists. This is a common
-   % recursive subroutine of the formfunctions rl_formtype and rl_formservice
-   % defined in the corrresponding modules of this package.
-   if eqcar(el, 'equal) then
-      % We do not expect equations in keys.
-      cadr el . rl_elist2alist caddr el
-   else if eqcar(el, 'list) then
-      for each x in cdr el collect
-      	 rl_elist2alist x
-   else
-      el;
+asserted procedure revision(m: Id, rev: String): String;
+   put(m, 'revision, rev);
+
+asserted procedure copyright(m: Id, c: String): String;
+   put(m, 'copyright, c);
+
+inline procedure rl_skipequal(proc);
+   <<
+      scan();
+      if cursym!* neq 'equal then
+	 rederr {"expecting '=' in", proc, "but found", cursym!*}
+   >>;
+
+% Temporary
+
+fluid '(rl_bbl!*);
+
+put('rl_blackBox, 'formfn, 'rl_formBlackBox);
+
+asserted procedure rl_formBlackBox(argl: List, vars: List, mode: Id): List;
+   % Make black box.
+   begin scalar args, vn, name, n, p;
+      name := eval cadr argl;
+      n := eval caddr argl;
+      args := for i := 1:n collect mkid('a, i);
+      vn := intern compress nconc(explode name, '(!! !*));
+      push({'fluid, mkquote {vn}}, p);
+      push({'setq, 'rl_bbl!*, {'cons, mkquote vn, 'rl_bbl!*}}, p);
+      push({'put, mkquote name, ''number!-of!-args, n}, p);
+      push({'de, name, args, {'apply, vn, 'list . args}}, p);
+      return 'progn . reversip p
+   end;
 
 endmodule;
 

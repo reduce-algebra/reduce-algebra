@@ -219,7 +219,7 @@ procedure lto_sconcat2(s1,s2);
    % [s1][s2].
    compress append(reversip cdr reversip explode s1,cdr explode s2);
 
-procedure lto_sconcat(l);
+asserted procedure lto_sconcat(l: List): String;
    % List tools string concatenation. [l] is a list of strings.
    % Returns a string. The returned string is the concatenation of all
    % strings in [l].
@@ -227,7 +227,9 @@ procedure lto_sconcat(l);
       if cdr l then
  	 lto_sconcat2(car l,lto_sconcat cdr l)
       else
-	 car l;
+	 car l
+   else
+      "";
 
 asserted procedure lto_substr(s: String, n: Integer, m: Integer): ExtraBoolean;
    % Return the n character substring starting at m, or nil.
@@ -250,6 +252,9 @@ asserted procedure lto_substr(s: String, n: Integer, m: Integer): ExtraBoolean;
  	 return nil;
       return compress reversip('!" . res)
    end;
+
+asserted procedure lto_string2id(s: String): Id;
+   intern compress explodec s;
 
 procedure lto_max(l);
    if null l then '(minus infinity) else lto_max1 l;
@@ -361,7 +366,6 @@ procedure lto_equallengthp(s1,s2);
       >>;
       null s1 and null s2
    >>;
-
 
 procedure lto_lengthgeq(l,n);
    % Length greater than or equal. [l] is a list; [n] is a non-negative
@@ -582,8 +586,33 @@ procedure lto_at2str(s);
    else
       compress('!" . reversip('!" . reversip explode s));
 
+inline procedure lto_fastgensym();
+   <<
+      if !*rlgensymintern then intern w else remob w;
+      w
+   >> where w = compress('!! . '!_ . 'k . explode(cdr rlgensymfast!* := cdr rlgensymfast!* + 1));
+
+inline procedure lto_gensym();
+   lto_gensym1 rlgensymbase!*;
+
+asserted procedure lto_gensym1(base: Id): Id;
+   begin scalar l, w; integer c;
+      c := atsoc(base, rlgensymcountal!*);
+      if c then
+      	 cdr c := cdr c + 1
+      else <<
+	 c := base . 1;
+	 push(c, rlgensymcountal!*)
+      >>;
+      l := explode cdr c;
+      for i := length l + 1 : rlgensymlen!* do push('!0, l);
+      w := compress nconc(explode base, l);
+      if !*rlgensymintern then intern w else remob w;
+      return w
+   end;
+
 procedure lto_maxkl(kl);
-   % Maximum of a kernel list. [kl] is a list of kernels. Returns the biggest
+   % Maximum of a kernel list. [kl] is a list of kernels. Returns the greastest
    % kernel w.r.t. kord!* or nil if [kl] is nil.
    begin scalar m, w;
       if null kl then
@@ -598,6 +627,7 @@ procedure lto_maxkl(kl);
    end;
 
 asserted procedure lto_0listp(l: List): Boolean;
+   % Is [l] a list of zeros?
    null l or eqn(car l, 0) and lto_0listp cdr l;
 
 asserted procedure lto_alphap(x: Id): ExtraBoolean;
@@ -610,6 +640,139 @@ asserted procedure lto_alphap(x: Id): ExtraBoolean;
 	 c := pop l memq alphabet;
       return c
    end;
+
+asserted procedure lto_upcase(s: String): String;
+   compress for each c in explode s collect lto_charUpcase c;
+
+asserted procedure lto_charUpcase(c: Id): Id;
+   begin scalar table;
+      table := '((!a . !A) (!b . !B) (!c . !C) (!d . !D) (!e .  !E) (!f . !F)
+       	 (!g . !G) (!h . !H) (!i . !I) (!j . !J) (!k . !K) (!l . !L) (!m . !M)
+         (!n . !N) (!o . !O) (!p . !P) (!q . !Q) (!r . !R) (!s . !S) (!t . !T)
+         (!u . !U) (!v . !V) (!w . !W) (!x . !X) (!y . !Y) (!z. !Z));
+      return lto_catsoc(c, table) or c
+   end;
+
+asserted procedure lto_downcase(s: String): String;
+   compress for each c in explode s collect lto_charDowncase c;
+
+asserted procedure lto_charDowncase(c: Id): Id;
+   begin scalar table;
+      table := '((!A . !a) (!B . !b) (!C . !c) (!D . !d) (!E .  !e) (!F . !f)
+       	 (!G . !g) (!H . !h) (!I . !i) (!J . !j) (!K . !k) (!L . !l) (!M . !m)
+         (!N . !n) (!O . !o) (!P . !p) (!Q . !q) (!R . !r) (!S . !s) (!T . !t)
+         (!U . !u) (!V . !v) (!W . !w) (!X . !x) (!Y . !y) (!Z. !z));
+      return lto_catsoc(c, table) or c
+   end;
+
+asserted procedure lto_stringDescriptionList(al: Alist, indent: Integer, colsep: Integer, len: Integer, xdtl: List): List;
+   begin scalar line, lines, indentl, dt, ddl; integer llen, roffset, lendt;
+      for i := 1:indent do <<
+	 push('!!, indentl);
+	 push('! , indentl)
+      >>;
+      for each pr in al do
+	 llen := max2(llen, lto_strlen car pr);
+      for each x in xdtl do
+	 llen := max2(llen, lto_strlen x);
+      roffset := indent + llen + colsep;
+      line := indentl;
+      for each pr in al do <<
+	 dt := car pr;
+	 lendt := lto_strlen dt;
+	 for each c in explodec dt do <<
+	    push('!!, line);
+	    push(c, line)
+	 >>;
+	 ddl := lto_stringParagraph(cdr pr, 0, len - roffset);
+	 for each l in ddl do <<
+	    for i := indent +  lendt : roffset do <<
+	       push('!!, line);
+	       push('! , line)
+	    >>;
+	    for each c in explodec l do <<
+	       push('!!, line);
+	       push(c, line)
+	    >>;
+      	    push(id2string compress reverse line, lines);
+      	    line := indentl;
+	    lendt := 0
+	 >>
+      >>;
+      return reversip lines
+   end;
+
+asserted procedure lto_stringParagraph(s: String, indent: Integer, len: Integer): List;
+   lto_stringFormat(lto_stringSplit(s, {'! , !$eol!$, cr!*, ff!*, tab!*}), indent, len);
+
+asserted procedure lto_stringSplit(s: String, fsl: List): String;
+   % Split a string into a list of strings; fs is a list of identifiers used as
+   % field separators.
+   begin scalar wl, sl, fsl;
+      for each c in explodec s do
+	 if c memq fsl then <<
+	    if wl then <<
+	       push(id2string compress reversip wl, sl);
+	       wl := nil
+	    >>
+      	 >> else <<
+	    push('!!, wl);
+	    push(c, wl)
+	 >>;
+      if wl then
+	 push(id2string compress reversip wl, sl);
+      return reversip sl
+   end;
+
+asserted procedure lto_stringFormat(sl: List, indent: Integer, len: Integer): List;
+   % Convert a list [sl] of words into a list of lines of length at most [len]
+   % with an indent of [indent] spaces.
+   begin scalar line, lines, indentl, s; integer l, slen;
+      l := len - indent;
+      for i := 1:indent do <<
+	 push('!!, indentl);
+	 push('! , indentl)
+      >>;
+      line := indentl;
+      for each rest on sl do <<
+	 s := car rest;
+	 slen := lto_strlen s;
+	 if slen > l and line neq indentl then <<
+	    push(id2string compress reverse cddr line, lines);
+	    line := indentl;
+	    l := len - indent
+	 >>;
+	 for each c in explodec s do <<
+	    push('!!, line);
+	    push(c, line)
+	 >>;
+	 l := l - slen;
+	 if cdr rest then <<
+	    push('!!, line);
+	    push('! , line);
+	    l := l - 1
+	 >>
+      >>;
+      push(if line then id2string compress reversip line else "", lines);
+      return reversip lines
+   end;
+
+asserted procedure lto_strlen(s: String): Integer;
+   % Number of characters in [s] excluding the double quotes.
+   length explodec s;
+
+asserted procedure lto_loremIpsumAl(): Alist;
+   '(("Lorem" .  "Lorem ipsum dolor sit amet, consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
+     ("Duis" .  "Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.")
+     ("Ut" . "Ut  wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.")
+     ("Nam" . "Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.")
+     ("Duis" . "Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis.")
+     ("At" . "At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo eirmod eos erat, et nonumy sed tempor et et invidunt justo labore Stet clita ea et gubergren, kasd magna no rebum. sanctus sea sed takimata ut vero voluptua. est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.")
+     ("Consetetur" . "Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet."));
+
+asserted procedure lto_loremIpsum(): String;
+   lto_sconcat(for each rpr on lto_loremIpsumAl() join
+      {cdar rpr, if cdr rpr then " " else ""});
 
 endmodule;  % [lto]
 

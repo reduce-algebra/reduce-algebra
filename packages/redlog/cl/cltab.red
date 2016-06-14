@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module cltab;  % Common logic tableau method.
+
+revision('cltab, "$Id$");
+
+copyright('cltab, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2016 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -26,26 +27,24 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
-lisp <<
-   fluid '(cl_tab_rcsid!* cl_tab_copyright!*);
-   cl_tab_rcsid!* :=
-      "$Id$";
-   cl_tab_copyright!* := "(c) 1995-2009 by A. Dolzmann and T. Sturm"
->>;
+asserted procedure cl_tab(f: Formula, cdl: List, iterate: Boolean, iterateb: Boolean): Formula;
+   if cdl then  % ignore iterate
+      cl_tab0(f, cdl)
+   else if iterate then
+      cl_itab(f, iterateb)
+   else
+      cl_atab f;
 
-module cltab;
-% Common logic tableau method. Submodule of [cl].
-
-procedure cl_tab(f,cdl);
+asserted procedure cl_tab0(f: Formula, cdl: List): Formula;
    % Common logic tableau; simplification. [f] is a formula; [cdl] is
    % a list of atomic formulas. Returns a formula. The result is a
    % case distiction on the atomic formulas in [cdl] in conjunction
    % with corresponding specializations of [f].
    cl_mktf cl_tab1(f,cdl);
 
-procedure cl_tab1(f,cdl);
+asserted procedure cl_tab1(f: Formula, cdl: List): AList;
    % Common logic tableau subroutine. [f] is a formula; [cdl] is a
    % list of atomic formulas. Returns a list of consed pairs of $(...,
    % (\phi_i . c_i), ...)$, where $c_i$ is in [cdl] and $\phi_i$ is a
@@ -62,7 +61,7 @@ procedure cl_tab1(f,cdl);
       return resl
    end;
 
-procedure cl_mktf(resl);
+asserted procedure cl_mktf(resl: AList): Formula;
    % Common logic make tableau formula. [resl] is a list of consed
    % pairs. Returns a formula. Uses a heuristic approach whether to
    % use the simplifier or not. Depends on the facilities of
@@ -77,14 +76,14 @@ procedure cl_mktf(resl);
 	    w := cdr w;
       return
 	 if flg then
-	    rl_simpl(rl_mkn('or,for each x in resl collect
+	    rl_simpl(rl_smkn('or,for each x in resl collect
       	       rl_mkn('and,{cdr x,car x})),nil,-1)
       	 else
-	    rl_mkn('or,for each x in resl collect
-      	       rl_mkn('and,{cdr x,car x}));
+	    rl_smkn('or,for each x in resl collect
+      	       rl_mkn('and,{cdr x,car x}))
    end;
 
-procedure cl_atab(f);
+asserted procedure cl_atab(f: Formula): Formula;
    % Common logic automatic tableau; simplification. [f] is a formula.
    % Returns a simplified equivalent of [f] or [f] itself. The result
    % is obtained by trying [cl_tab] with case distictions on the signs
@@ -94,10 +93,10 @@ procedure cl_atab(f);
       return if w then
 	 cl_mktf w
       else
-	 f  
+	 f
    end;
 
-procedure cl_atab1(f);
+asserted procedure cl_atab1(f: Formula): ExtraBoolean;
    % Common logic new automatic tableau subroutine. [f] is a formula.
    % Returns [nil] or a resl.
    begin scalar cdl,cdll,atnum,atnumold,atnumnf,nresl,resl,dpth;
@@ -130,18 +129,17 @@ procedure cl_atab1(f);
       return resl
    end;
 
-procedure cl_itab(f);
-   % Common logic iterative tableau; simplification. [f] is a formula.
-   % Returns a simplified equivalent of [f] or [f] itself. The result
-   % is obtained by iterative application of [cl_atab]. Depends on the
-   % switch [rltabib]. With [rltabib] on, the iteration is not
-   % performed on the entire formula but on the single sepcialization
+asserted procedure cl_itab(f: Formula, iterateb: Boolean): Formula;
+   % Common logic iterative tableau; simplification. [f] is a formula. Returns a
+   % simplified equivalent of [f] or [f] itself. The result is obtained by
+   % iterative application of [cl_atab]. With [iterateb] on, the iteration is
+   % not performed on the entire formula but on the single sepcialization
    % branches.
-   if !*rltabib then cl_itab2 f else cl_itab1 f;
+   if iterateb then cl_itab2 f else cl_itab1 f;
 
-procedure cl_itab1(f);
-   % Common logic iterative tableau subroutine. [f] is a formula.
-   % The switch [rltabib] is off. Returns a formula.
+asserted procedure cl_itab1(f: Formula): Formula;
+   % Common logic iterative tableau subroutine. [f] is a formula. The flag
+   % [iterateb] is off. Returns a formula.
    begin scalar w,res;
       w := cl_atab1 f;
       while w do <<
@@ -153,7 +151,7 @@ procedure cl_itab1(f);
       return res or f
    end;
 
-procedure cl_itab2(f);
+asserted procedure cl_itab2(f: Formula): Formula;
    % Common logic iterative tableau subroutine. [f] is a formula.
    % Iterate branchwise. Returns a formula.
    begin scalar w;
@@ -164,7 +162,7 @@ procedure cl_itab2(f);
 	 f
    end;
 
-procedure cl_gentheo(theo,f,bvl);
+asserted procedure cl_gentheo(theo: List, f: Formula, bvl: List);
    % Common logic generate theory. [theo] is THEORY; [f] is a
    % quantifier-free formula; [bvl] is a list of variables. Returns a
    % pair $(\Theta . \phi)$, where $\Theta$ is a THEORY extending
@@ -176,7 +174,7 @@ procedure cl_gentheo(theo,f,bvl);
       return rl_thsimpl(union(theo,car w)) . cdr w
    end;
 
-procedure cl_gentheo0(f,bvl);
+asserted procedure cl_gentheo0(f: Formula, bvl: List): DottedPair;
    % Generate theory. [f] is a quantifier-free formula; [bvl] is a
    % list of variables. Returns a pair $\theta . \phi$ where $\theta$
    % is a list of inequations not containing variables from [bvl], and
@@ -191,7 +189,7 @@ procedure cl_gentheo0(f,bvl);
       return theo . f
    end;
 
-procedure cl_gentheo1(f,bvl);
+asserted procedure cl_gentheo1(f: Formula, bvl: List): DottedPair;
    % Generate theory subroutine. [f] is a formula; [bvl] is a list of
    % variables. Returns a consed pair (flag . res).
    begin scalar cdl,result,nres,flag,theo;
@@ -208,7 +206,7 @@ procedure cl_gentheo1(f,bvl);
       return flag . (result . theo)
    end;
 
-procedure cl_cmpfp(f,nf);
+asserted procedure cl_cmpfp(f: Formula, nf: Formula);
    % Generate theory compare formulas predicate. [f] and [nf] are
    % quantifier-free formulas. Returns a Boolean.
    cl_atnum f < cl_atnum nf;

@@ -31,35 +31,35 @@ rlqea rlex sec;
 
 {{true,
 
-  {n = g0016,
+  {n = _k16,
 
-        3*g0016 - 1
-   b = -------------,
-             2
-
-        g0016 - 1
-   a = -----------,
+        3*_k16 - 1
+   b = ------------,
             2
+
+        _k16 - 1
+   a = ----------,
+           2
 
    !,
 
-   g0016 + 2 >= 0 and g0016 - 2 <= 0}},
+   _k16 + 2 >= 0 and _k16 - 2 <= 0}},
 
  {true,
 
-  {n = g0012,
+  {n = _k12,
 
-        3*g0012
-   b = ---------,
-           2
-
-        g0012
-   a = -------,
+        3*_k12
+   b = --------,
           2
+
+        _k12
+   a = ------,
+         2
 
    !,
 
-   g0012 + 2 >= 0 and g0012 - 2 <= 0}}}
+   _k12 + 2 >= 0 and _k12 - 2 <= 0}}}
 
 
 rlqe ex(n,sec);
@@ -82,17 +82,17 @@ phi := ex(n,
 rlwqe phi;
 
 
-               2            2                  2            2
-bex g0020 [ - a  + 2*a*b - b  - 2 <= g0020 <= a  - 2*a*b + b  + 2] (a - b < 0
+              2            2                 2            2
+bex _k20 [ - a  + 2*a*b - b  - 2 <= _k20 <= a  - 2*a*b + b  + 2] (a - b < 0
 
-                  2
- and a - b + g0020  = 0 and a + b #2# 0 and a + b - 2*g0020 + 1 = 0) or bex 
+                                                    2
+ and a + b #2# 0 and 2*_k20 - a - b - 1 = 0 and _k20  + a - b = 0) or bex _k19 [
 
-           2            2                  2            2
-g0019 [ - a  + 2*a*b - b  - 2 <= g0019 <= a  - 2*a*b + b  + 2] (a - b < 0
+    2            2                 2            2
+ - a  + 2*a*b - b  - 2 <= _k19 <= a  - 2*a*b + b  + 2] (a - b < 0
 
-                  2
- and a - b + g0019  = 0 and a + b ~2~ 0 and a + b - 2*g0019 = 0)
+                                                2
+ and a + b ~2~ 0 and 2*_k19 - a - b = 0 and _k19  + a - b = 0)
 
 
 % Integer Roots
@@ -114,8 +114,8 @@ phi := ex(x,a*x^2+b*x+c=0)$
 rlwqe phi;
 
 
-               2    2                  2    2              2
-bex g0021 [ - b  - c  - 2 <= g0021 <= b  + c  + 2] (a*g0021  + b*g0021 + c = 0)
+              2    2                 2    2           2
+bex _k21 [ - b  - c  - 2 <= _k21 <= b  + c  + 2] (_k21 *a + _k21*b + c = 0)
 
 
 % Feasibility of Parametric Integer Constraints
@@ -126,19 +126,19 @@ las := ex(x,a*x>=b and c*x<=d)$
 rlwqe las;
 
 
-(b <= 0 and d >= 0) or bex g0023 [ - abs(a) <= g0023 <= abs(a)] (
+(b <= 0 and d >= 0) or bex _k23 [ - abs(a) <= _k23 <= abs(a)] (
 
-((a < 0 and g0023 <= 0) or (a > 0 and g0023 >= 0)) and (
+((_k23 <= 0 and a < 0) or (_k23 >= 0 and a > 0)) and (
 
-(a*d - b*c - c*g0023 <= 0 and a < 0) or (a*d - b*c - c*g0023 >= 0 and a > 0))
+(_k23*c - a*d + b*c <= 0 and a > 0) or (_k23*c - a*d + b*c >= 0 and a < 0))
 
- and b + g0023 ~a~ 0 and a <> 0) or bex g0023 [ - abs(c) <= g0023 <= abs(c)] (
+ and a <> 0 and _k23 + b ~a~ 0) or bex _k23 [ - abs(c) <= _k23 <= abs(c)] (
 
-((c < 0 and g0023 >= 0) or (c > 0 and g0023 <= 0)) and (
+((_k23 <= 0 and c > 0) or (_k23 >= 0 and c < 0)) and (
 
-(a*d + a*g0023 - b*c <= 0 and c < 0) or (a*d + a*g0023 - b*c >= 0 and c > 0))
+(_k23*a + a*d - b*c <= 0 and c < 0) or (_k23*a + a*d - b*c >= 0 and c > 0))
 
- and d + g0023 ~c~ 0 and c <> 0)
+ and c <> 0 and _k23 + d ~c~ 0)
 
 
 procedure t1(m);
@@ -272,10 +272,10 @@ z - 3 > 0
 
 end;
 
-Tested on x86_64-mac_10.11_elcapitan-darwin15.0.0 CSL
-Time (counter 1): 2119 ms  plus GC time: 200 ms
+Tested on x86_64-mac_10.11_elcapitan-darwin15.5.0 CSL
+Time (counter 1): 4429 ms  plus GC time: 350 ms
 
-End of Lisp run after 2.11+0.33 seconds
-real         2.68
-user         2.57
-sys          0.09
+End of Lisp run after 4.42+0.49 seconds
+real         5.13
+user         5.01
+sys          0.11

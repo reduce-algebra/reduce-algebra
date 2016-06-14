@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2004-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module talpmisc;  % Term algebra Lisp prefix miscellaneous.
+
+revision('talpmisc, "$Id$");
+
+copyright('talpmisc, "(c) 2004-2009 A. Dolzmann, T. Sturm, 2016 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -26,17 +27,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
-
-lisp <<
-   fluid '(talp_misc_rcsid!* talp_misc_copyright!*);
-   talp_misc_rcsid!* :=
-      "$Id$";
-   talp_misc_copyright!* := "Copyright (c) 2004-2009 A. Dolzmann and T. Sturm"
->>;
-
-module talpmisc;
-% Term algebra Lisp prefix miscellaneous. Submodule of [talp].
+%
 
 procedure talp_ordatp(a1,a2);
    % Term algebra Lisp prefix ordering of atomic formulas
@@ -110,7 +101,7 @@ procedure talp_varlt1(term,vl);
    % [vl].
    begin
       if atom term then
-	 if not atsoc(term,talp_getl()) then 
+	 if not atsoc(term,talp_getl()) then
 	    return lto_insert(term,vl)
 	 else return nil;
       for each arg in talp_argl term do
@@ -148,7 +139,7 @@ procedure talp_varsubstat(atf,new,old);
    % Term algebra Lisp prefix substitute variable for variable in
    % atomic formula. [atf] is an atomic formula; [old] is a variable;
    % [new] is a variable.
-   talp_mk2(talp_op atf, talp_varsubstat1(talp_arg2l atf,old,new), 
+   talp_mk2(talp_op atf, talp_varsubstat1(talp_arg2l atf,old,new),
       talp_varsubstat1(talp_arg2r atf,old,new));
 
 procedure talp_varsubstat1(u,v,w);
@@ -171,7 +162,15 @@ procedure talp_negateat(atf);
       return talp_mk2(op,talp_arg2l atf,talp_arg2r atf)
    end;
 
-procedure talp_tab(f,cdl);
+asserted procedure talp_tab(f: Formula, cdl: List, iterate: Boolean, iterateb: Boolean): Formula;
+   if cdl then  % ignore iterate
+      talp_tab0(f, cdl)
+   else if iterate then
+      talp_itab(f, iterateb)
+   else
+      talp_atab f;
+
+procedure talp_tab0(f,cdl);
    % Term algebra Lisp prefix tableau; simplification. [f] is a
    % formula, [cdl] is a list of atomic formulas. Returns a
    % formula. The result is a case distinction on the atomic formulas
@@ -189,7 +188,7 @@ procedure talp_atab(f);
       return if w then
 	 cl_mktf w
       else
-	 f  
+	 f
    end;
 
 procedure talp_atab1(f);
@@ -225,18 +224,17 @@ procedure talp_atab1(f);
       return resl
    end;
 
-procedure talp_itab(f);
-   % Term algebra Lisp prefix iterative tableau; simplification. [f]
-   % is a formula.  Returns a simplified equivalent of [f] or [f]
-   % itself. The result is obtained by iterative application of
-   % [cl_atab]. Depends on the switch [rltabib]. With [rltabib] on,
-   % the iteration is not performed on the entire formula but on the
-   % single sepcialization branches.
-   if !*rltabib then talp_itab2 f else talp_itab1 f;
+procedure talp_itab(f, iterateb);
+   % Term algebra Lisp prefix iterative tableau; simplification. [f] is a
+   % formula. Returns a simplified equivalent of [f] or [f] itself. The result
+   % is obtained by iterative application of [cl_atab]. With [iterateb] on, the
+   % iteration is not performed on the entire formula but on the single
+   % sepcialization branches.
+   if iterateb then talp_itab2 f else talp_itab1 f;
 
 procedure talp_itab1(f);
    % Term algebra Lisp prefix iterative tableau subroutine. [f] is a formula.
-   % The switch [rltabib] is off. Returns a formula.
+   % The flag [iterateb] is off. Returns a formula.
    begin scalar w,res;
       w := talp_atab1 f;
       while w do <<
@@ -292,8 +290,8 @@ procedure talp_rnf1(f);
       tmp := cl_simpl(f,nil,-1);
       if rl_tvalp tmp then return tmp;
       if talp_atfp tmp then
-	 return if talp_acfrp tmp then 
-	    cl_simpl(talp_raf tmp,nil,-1) 
+	 return if talp_acfrp tmp then
+	    cl_simpl(talp_raf tmp,nil,-1)
 	 else tmp;
       return cl_simpl(talp_op tmp .
 	 for each sf in talp_argl tmp collect talp_rnf1 sf,nil,-1)
@@ -324,8 +322,8 @@ procedure talp_raf(atf);
 	 talp_arg2l atf >>
       else << rhs := talp_arg2l atf; talp_arg2r atf >>;
       f := talp_mkinv(talp_getinvfsym(talp_op lhs,1),rhs);
-      fst := talp_simpat if rel eq 'equal then 
-	 talp_mk2('neq,f,rhs) 
+      fst := talp_simpat if rel eq 'equal then
+	 talp_mk2('neq,f,rhs)
       else talp_mk2('equal,f,rhs);
       snd := for i:=1 : cdr atsoc(talp_op lhs,talp_getl()) collect <<
 	 tmp := talp_getinvfsym(talp_op lhs,i);

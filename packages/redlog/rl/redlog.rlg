@@ -98,7 +98,6 @@ rlqe h;
 ---- (all a1 a2 a3 a4 a5 a6) [DFS DYN]
 [6:1] [5:6] [5:5] [5:4] [5:3] [5:2] [5:1] [DEL:71/34]
 +++ Final simplification ... 0 -> 0
-Realtime: 0 s
 
 true
 
@@ -214,161 +213,259 @@ rlqe ex({x,y},(for i:=1:5 product mkid(a,i)*x**10-mkid(b,i)*y**2)<=0);
 true
 
 
-sol := rlqe ex(x,a*x**2+b*x+c>0);
+sol := rlqe ex(x,a1*a2*x**2+b*x+c>0);
 
 ++++ Entering cl_qe
 ---- (ex x) [BFS: depth 0]
 -- left: 1
-[1e(12)] [DEL:0/1]
-+++ Final simplification ... 12 -> 9
+[1e(22)] [DEL:0/1]
++++ Final simplification ... 22 -> 16
 
-sol := a > 0 or (b < 0 and a = 0) or (a = 0 and (b > 0 or (c > 0 and b = 0)))
+                                               3
+sol := a1*a2 > 0 or (b <> 0 and 2*a1*a2*b*c - b  > 0
 
-                        2
- or (a < 0 and 4*a*c - b  < 0)
+ and (c = 0 or a2 = 0 or a1 = 0) and (a2 = 0 or a1 = 0))
+
+                                          2
+ or (a2 <> 0 and a1 <> 0 and 4*a1*a2*c - b  < 0)
+
+ or ((b > 0 or (c > 0 and b = 0)) and (a2 = 0 or a1 = 0))
 
 rlatnum sol;
 
 
-9
+16
 
 
 rlatl sol;
 
 
-{c > 0,
+{c = 0,
+
+ c > 0,
 
  b = 0,
 
- b < 0,
+ b <> 0,
 
  b > 0,
 
- a = 0,
+ a2 = 0,
 
- a < 0,
+ a2 <> 0,
 
- a > 0,
+ a1 = 0,
 
-          2
- 4*a*c - b  < 0}
+ a1 <> 0,
+
+ a1*a2 > 0,
+
+              2
+ 4*a1*a2*c - b  < 0,
+
+                3
+ 2*a1*a2*b*c - b  > 0}
 
 rlatml sol;
 
 
-{{c > 0,1},
+{{c = 0,1},
+
+ {c > 0,1},
 
  {b = 0,1},
 
- {b < 0,1},
+ {b <> 0,1},
 
  {b > 0,1},
 
- {a = 0,2},
+ {a2 = 0,3},
 
- {a < 0,1},
+ {a2 <> 0,1},
 
- {a > 0,1},
+ {a1 = 0,3},
 
-           2
- {4*a*c - b  < 0,1}}
+ {a1 <> 0,1},
+
+ {a1*a2 > 0,1},
+
+               2
+ {4*a1*a2*c - b  < 0,1},
+
+                 3
+ {2*a1*a2*b*c - b  > 0,1}}
 
 rlterml sol;
 
 
-          2
-{4*a*c - b ,a,b,c}
+                 2
+{b*(2*a1*a2*c - b ),
+
+              2
+ 4*a1*a2*c - b ,
+
+ a1*a2,
+
+ a1,
+
+ a2,
+
+ b,
+
+ c}
 
 rltermml sol;
 
 
-           2
-{{4*a*c - b ,1},
+                  2
+{{b*(2*a1*a2*c - b ),1},
 
- {a,4},
+               2
+ {4*a1*a2*c - b ,1},
+
+ {a1*a2,1},
+
+ {a1,4},
+
+ {a2,4},
 
  {b,3},
 
- {c,1}}
+ {c,2}}
 
 rlifacl sol;
 
 
-          2
-{4*a*c - b ,a,b,c}
+              2
+{4*a1*a2*c - b ,
+
+              2
+ 2*a1*a2*c - b ,
+
+ a1,
+
+ a2,
+
+ b,
+
+ c}
 
 rlifacml sol;
 
 
-           2
-{{4*a*c - b ,1},
+               2
+{{4*a1*a2*c - b ,1},
 
- {a,4},
+               2
+ {2*a1*a2*c - b ,1},
 
- {b,3},
+ {a1,5},
 
- {c,1}}
+ {a2,5},
 
+ {b,4},
 
-rlstruct(sol,v);
-
-
-{v2 > 0 or (v3 < 0 and v2 = 0) or (v2 = 0 and (v3 > 0 or (v4 > 0 and v3 = 0)))
-
-  or (v2 < 0 and v1 < 0),
-
-                2
- {v1 = 4*a*c - b ,v2 = a,v3 = b,v4 = c}}
-
-rlifstruct(sol,v);
+ {c,2}}
 
 
-{v2 > 0 or (v3 < 0 and v2 = 0) or (v2 = 0 and (v3 > 0 or (v4 > 0 and v3 = 0)))
-
-  or (v2 < 0 and v1 < 0),
-
-                2
- {v1 = 4*a*c - b ,v2 = a,v3 = b,v4 = c}}
+rlstruct(sol, fac=no, w);
 
 
-rlitab sol;
+{w3 > 0 or (w6 <> 0 and w1 > 0 and (w7 = 0 or w5 = 0 or w4 = 0)
 
-9 = 100%
-[8: 12] [7: 6] [6: 6] [5: 6] [4: 9] [3: 9] [2: 9] [1: 24] 
-Success: 9 -> 6
-0 = 100%
-No success, returning the original formula
+  and (w5 = 0 or w4 = 0)) or (w5 <> 0 and w4 <> 0 and w2 < 0)
+
+  or ((w6 > 0 or (w7 > 0 and w6 = 0)) and (w5 = 0 or w4 = 0)),
+
+                      3
+ {w1 = 2*a1*a2*b*c - b ,
+
+                    2
+  w2 = 4*a1*a2*c - b ,
+
+  w3 = a1*a2,
+
+  w4 = a1,
+
+  w5 = a2,
+
+  w6 = b,
+
+  w7 = c}}
+
+rlstruct(sol);
+
+
+{v3*v4 > 0 or (v5 <> 0 and v2*v5 > 0 and (v6 = 0 or v4 = 0 or v3 = 0)
+
+  and (v4 = 0 or v3 = 0)) or (v4 <> 0 and v3 <> 0 and v1 < 0)
+
+  or ((v5 > 0 or (v6 > 0 and v5 = 0)) and (v4 = 0 or v3 = 0)),
+
+                    2
+ {v1 = 4*a1*a2*c - b ,
+
+                    2
+  v2 = 2*a1*a2*c - b ,
+
+  v3 = a1,
+
+  v4 = a2,
+
+  v5 = b,
+
+  v6 = c}}
+
+
+rltab sol;
+
+16 = 100%
+[12: 28] [11: 30] [10: 19] [9: 14] [8: 14] [7: 14] [6: 14] [5: 24] [4: 24] [3: 
+24] [2: 36] [1: 36] 
+Success: 16 -> 14
 2 = 100%
 [2: 2] [1: 2] 
 No success, returning the original formula
-1 = 100%
-[1: 1] 
+10 = 100%
+[9: 12] [8: 12] [7: 6] [6: 6] [5: 10] [4: 10] [3: 10] [2: 10] [1: 24] 
+Success: 10 -> 6
+2 = 100%
+[2: 2] [1: 2] 
+No success, returning the original formula
+2 = 100%
+[2: 2] [1: 5] 
 No success, returning the original formula
 
-                                                              2
-a > 0 or (a = 0 and (c > 0 or b <> 0)) or (a < 0 and 4*a*c - b  < 0)
+(a1 = 0 and (c > 0 or b <> 0)) or (a1 <> 0 and ((a2 = 0 and (c > 0 or b <> 0))
+
+                                            2
+ or (a2 <> 0 and (a1*a2 > 0 or 4*a1*a2*c - b  < 0))))
 
 rlatnum ws;
 
 
-6
+10
 
 rlgsn sol;
 
 [DNF] 
-global: 1; impl: 1; no neq: 2; glob-prod-al: 0.
-[GP] [1] 
-[2] [1] 
+global: 1; impl: 6; no neq: 1; glob-prod-al: 0.
+[GP] [6] [5] [4] [3] [2] [1] 
+[1] 
 
-a > 0 or (c > 0 and b = 0 and a = 0) or (b <> 0 and a = 0)
+a1*a2 > 0 or (c = 0 and b < 0 and a2 = 0) or (c = 0 and b < 0 and a1 = 0)
 
-                        2
- or (a < 0 and 4*a*c - b  < 0)
+ or (c > 0 and b = 0 and a2 = 0) or (c > 0 and b = 0 and a1 = 0)
+
+ or (b <> 0 and a2 = 0) or (b <> 0 and a1 = 0)
+
+                                          2
+ or (a2 <> 0 and a1 <> 0 and 4*a1*a2*c - b  < 0)
 
 rlatnum ws;
 
 
-8
+20
 
 
 off rlverbose;
@@ -853,10 +950,9 @@ b = 0 or m <> 0
 
 end;
 
-Tested on x86_64-mac_10.11_elcapitan-darwin15.0.0 CSL
-Time (counter 1): 400 ms  plus GC time: 70 ms
-
-End of Lisp run after 0.40+0.20 seconds
-real         0.75
-user         0.65
-sys          0.08
+Tested on x86_64-mac_10.11_elcapitan-darwin15.5.0 PSL
+Time (counter 1): 300 ms
+Quitting
+real         0.51
+user         0.36
+sys          0.14

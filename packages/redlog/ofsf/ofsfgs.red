@@ -137,17 +137,17 @@ procedure ofsf_gsd2(f,atl);
       return cl_nnfnot phi
    end;
 
-procedure ofsf_gsn(f,atl);
+asserted procedure ofsf_gsn(f: Formula, atl: List, bnf: Id): Formula;
    % This is to mind !*rlpos at the end.
    begin scalar ql,varll,w;
       if !*rlqepnf then
 	 f := cl_pnf f;
-      {ql,varll,f} := cl_split f;
-      w := ofsf_gsn1(f,atl);
-      return cl_unsplit(ql,varll,w)
+      {ql, varll, f} := cl_split f;
+      w := ofsf_gsn1(f, atl, bnf);
+      return cl_unsplit(ql, varll, w)
    end;
 
-procedure ofsf_gsn1(f,atl);
+asserted procedure ofsf_gsn1(f: Formula, atl: List, bnf: Id): Formula;
    % Ordered field standard form groebner simplification via boolean
    % normal form. [f] is an formula; [atl] is a list of atomic
    % formulas, which are considered to describe a theory. An formula
@@ -160,6 +160,10 @@ procedure ofsf_gsn1(f,atl);
    % called.
    if rl_tvalp f then
       f
+   else if bnf eq 'dnf then
+      ofsf_gsd(f, atl)
+   else if bnf eq 'cnf then
+      ofsf_gsc(f, atl)
    else if cl_atflp(rl_argn f) then
       if rl_op(f) eq 'and then ofsf_gsd(f,atl) else ofsf_gsc(f,atl)
    else

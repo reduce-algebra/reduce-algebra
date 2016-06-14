@@ -611,10 +611,10 @@ and i2 = 0 and 9*n - 380*q >= 0 and q - 40 <= 0 and q >= 0 and 400*q + 9
 p1 - 7 >= 0)}$
 for each ex in testseries collect {rlatnum ex,rlatnum rlgsn ex};
 
-%%% Test rlitab
+%%% Test rltab
 
 % Result of the rectangle problem from testing rlqe above.
-rlitab rp2sol;
+rltab rp2sol;
 
 % Polynomial exponential problems
 

@@ -914,17 +914,10 @@ procedure pasf_subfof1(atf,var,ex);
       numr subf(pasf_arg2r atf,{(var . ex)}));
    % LASARUK: Evidence for an error!
 
-% When off prevent pasf_newvar interning new variable symbols.
-switch rlpasfintern;
-on1 'rlpasfintern;
-
-procedure pasf_newvar(f);
+inline procedure pasf_newvar(f);
    % Presburger arithmetic standard form new variable generation. [f] is a
    % formula. Returns a new variable which is not present in [f].
-   if !*rlpasfintern then
-      intern gensym()
-   else
-      gensym();
+   lto_fastgensym();
 
 procedure pasf_newvar1(f);
    % Presburger arithmetic standard form new variable generation. [f] is a

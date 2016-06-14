@@ -237,7 +237,6 @@ put('ofsf,'rl_services,'(
    (rl_xqe!* . ofsf_xopt!-qe)
    (rl_xqea!* . ofsf_xopt!-qea)
    (rl_lthsimpl!* . ofsf_lthsimpl)
-   (rl_lthsimpl!* . ofsf_lthsimpl)
    (rl_quine!* . cl_quine)
    (rl_cadporder!* . ofsf_cadporder)
    (rl_gcadporder!* . ofsf_gcadporder)

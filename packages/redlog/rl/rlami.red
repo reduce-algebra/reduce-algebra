@@ -91,7 +91,14 @@ procedure rl_prepfof1(f);
       return apply(get(car rl_cid!*,'rl_prepat),{f})
    end;
 
-procedure rl_cleanup(u,v);
+asserted procedure rl_cleanup(u: Any, v: ExtraBoolean): Any;
+   % This is bound to the property [cleanupfn] of the rl_service!$ functions
+   % that are in turn the [psopfn] of the corresponding rlservice AM
+   % entrypoints. The [cleanupfn] is used with the evaluation of [psopfn] in
+   % [reval1] in [alg/reval.red], where it converts - in the right moment - the
+   % result of of rl_service!$ to Lisp prefix so that [part(rlservice(...),
+   % ...)] works properly. However, the final evaluation result is generally
+   % Pseudo Lisp Prefix.
    reval1(u,v);
 
 procedure rl_simpa(u);
@@ -664,13 +671,6 @@ procedure rl_s2a!-gqea(res);
    else
       {'list,rl_s2a!-atl car res,rl_s2a!-qea cdr res};
 
-procedure rl_s2a!-qea(res);
-   if rl_exceptionp res and cdr res eq 'inctheo then
-      rederr "inconsistent theory"
-   else
-      'list . for each x in res collect
- 	 {'list,rl_mk!*fof car x,'list . cadr x};
-
 procedure rl_s2a!-wqea(res);
    if rl_exceptionp res and cdr res eq 'inctheo then
       rederr "inconsistent theory"
@@ -718,8 +718,6 @@ procedure rl_a2s!-terml(l);
          apply(get(car rl_cid!*,'rl_simpterm),{x})
    end;
 
-procedure rl_s2a!-terml(l);
-   'list . for each u in l collect apply(get(car rl_cid!*,'rl_prepterm),{u});
 
 procedure rl_a2s!-term(l);
    apply(get(car rl_cid!*,'rl_simpterm),{l});
@@ -740,9 +738,9 @@ procedure rl_s2a!-struct(l);
       	    {'equal,cdr x,prepf car x}}
    >>;
 
-procedure rl_a2s!-pt(u);
-   for each x in cdr reval u collect
-      cadr x . caddr x;
+%% procedure rl_a2s!-pt(u);
+%%    for each x in cdr reval u collect
+%%       cadr x . caddr x;
 
 procedure rl_a2s!-aqepoints(u);
    begin scalar w;

@@ -1264,13 +1264,13 @@ for each ex in testseries collect {rlatnum ex,rlatnum rlgsn ex};
 {{710,185},{94,40},{292,221},{157,146}}
 
 
-%%% Test rlitab
+%%% Test rltab
 
 % Result of the rectangle problem from testing rlqe above.
-rlitab rp2sol;
+rltab rp2sol;
 
 
-(a > 0 and ((b > 0 and ((d1 > 0 and ((b - d1 > 0 and ((a - b = 0 and (
+a > 0 and (b > 0 and (d1 > 0 and ((b - d1 > 0 and ((a - b = 0 and (
 
 a - b - d1 >= 0 or (b - 2*d1 > 0 and a - d1 = 0 and a - b + d1 = 0)
 
@@ -1288,7 +1288,7 @@ a - d1 = 0 and ((b - 2*d1 <= 0 and a - 2*d1 > 0) or (b - 2*d1 > 0 and (
 
 a - 2*d1 > 0 or a - b = 0 or a - b + d1 = 0 or (a - b < 0 and a - b + d1 > 0))))
 
-))) or (b - d1 < 0 and (a - d1 > 0 and a - b = 0 and a - b + d1 <= 0))))))))
+))) or (b - d1 < 0 and (a - d1 > 0 and a - b = 0 and a - b + d1 <= 0)))))
 
 
 % Polynomial exponential problems
@@ -2096,10 +2096,9 @@ true
 
 end;
 
-Tested on x86_64-mac_10.11_elcapitan-darwin15.0.0 CSL
-Time (counter 1): 6779 ms  plus GC time: 500 ms
-
-End of Lisp run after 6.77+0.66 seconds
-real         7.81
-user         7.67
-sys          0.13
+Tested on x86_64-mac_10.11_elcapitan-darwin15.5.0 PSL
+Time (counter 1): 11270 ms  plus GC time: 70 ms
+Quitting
+real        12.02
+user        11.43
+sys          0.49

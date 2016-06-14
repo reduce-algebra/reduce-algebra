@@ -1,8 +1,11 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% (c) 1995-2009 A. Dolzmann and T. Sturm, 2010-2016 T. Sturm
-% ----------------------------------------------------------------------
+module redlog;
+
+% Reduce logic component.
+
+revision('redlog, "$Id$");
+
+copyright('redlog, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2016 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,18 +31,10 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-lisp <<
-   fluid '(rl_rcsid!* rl_copyright!*);
-   rl_rcsid!* := "$Id$";
-   rl_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2016 T. Sturm"
->>;
-
-module redlog;
-% Reduce logic component.
-
-create!-package('(redlog rlami rltypes rlservices rlsched rlcont rlhelp rlsl rlslv),nil);
+create!-package('(redlog rlami rltypes rlservices rlsched rlcont rlsl rlslv),nil);
 
 load!-package 'rltools;  % rlhelp needs ioto.
+load!-package 'rlsupport;
 
 exports quotelog,rl_mkbb,rl_mkserv,rl_op,rl_arg1,rl_arg2l,rl_arg2r,rl_argn,
    rl_var,rl_mat,rl_mk1,rl_mk2,rl_mkn,rl_smkn,rl_mkq,rl_quap,rl_junctp,rl_basbp,
@@ -56,15 +51,36 @@ exports quotelog,rl_mkbb,rl_mkserv,rl_op,rl_arg1,rl_arg2l,rl_arg2r,rl_argn,
 global '(rldynamic!#);
 bothtimes(rldynamic!# := nil);
 
-fluid '(rl_cid!* rl_argl!* rl_usedcname!* rl_deflang!* rl_ocswitches!*
-   rl_bbl!* rl_servl!* !*utf8);
+% context identifier:
+fluid '(rl_cid!*);
+
+% List of fluid variables corresponding to black boxes. Those variables are
+% rebound to the domain-specific SM entry points when switching the context with
+% rl_set. That is, rl_service(...) will apply('rl_service!*, {...}), where
+% rl_service!* is in rl_servl!* and e.g, rl_service!* = 'ofsf_service.
+fluid '(rl_servl!*);
+
+% List of fluid variables corresponding to black boxes. Those variables are
+% rebound when switching the context with rl_set. They are used via apply within
+% genric implementaion in the cl module:
+fluid '(rl_bbl!*);
+
+
+% default language (context), probably obsolete:
+fluid '(rl_deflang!*);
+
+fluid '(rl_argl!*);
+fluid '(rl_usedcname!*);
+fluid '(rl_ocswitches!*);
+
+fluid '(!*utf8);
 
 fluid '(fancy!-line!* fancy!-pos!*);
 
 fluid '(!*strict_argcount);
 
 switch rlsism,rlsichk,rlsiidem,rlsiatadv,rlsipd,rlsiexpl,rlsiexpla,rlsiso,
-   rlsisocx,rlsipw,rlsipo,rltabib,rlverbose,rlrealtime,rlidentify,rlgssub,
+   rlsisocx,rlsipw,rlsipo,rlverbose,rlrealtime,rlidentify,rlgssub,
    rlgsrad,rlgsred,rlgsprod,rlqepnf,rlqedfs,rlparallel,rlopt1s,rlbrop,
    rlbnfsm,rlsimpl,rlsifac,rlqegsd,rlgserf,rlbnfsac,rlgsvb,rlqesr,rlqeheu,
    rldavgcd,rlsitsqspl,rlgsbnf,rlgsutord,rlqegenct,rltnft,rlnzden,rlposden,
@@ -83,55 +99,93 @@ switch rlsism,rlsichk,rlsiidem,rlsiatadv,rlsipd,rlsiexpl,rlsiexpla,rlsiso,
    rlqedyn,rlqesubf,rlqevb,rlqevbold,rlgetrtypecar,rlvsllog,rlvsllearn,
    rlqestdans,rlqestdansvb,rlqefullans,rlqebacksub,rlqestdansq,rlqestdansint;
 
+% Global
 on1 'rlbrop;
+off1 'rlsimpl;
+off1 'rlrealtime;
+off1 'rlparallel;
+off1 'rlverbose;
+off1 'rlidentify;
+off1 'rlnzden;
+off1 'rlposden;
+off1 'rladdcond;
+off1 'rlgetrtypecar;
+
+% rlcnf/rldnf (+ Gröbner)
 off1 'rlbnfsm;
 on1 'rlbnfsac;
+
+% rlqe
 on1 'rlqepnf;
+on1 'rlqedfs;
+off1 'rlqesr;
+off1 'rlqeheu;
+off1 'rlqegsd;
+off1 'rlqeqsc;
+off1 'rlqesqsc;
+on1 'rlqedyn;
+off1 'rlqesubf;
+on1 'rlqevb;
+off1 'rlqevbold;
+on1 'rlqevarsel;
+on1 'rlqefb;
+off1 'rlqelog;          % Hack by TS to look into elimination set generation.
+off1 'rlqeprecise;      % Possibly avoid epsilon and infinity with rlqe.
+off1 'rlqevarseltry;    % Allow rl_varsel to return several variables.
+off1 'rlqestdans;       % Remove pinf, minf, epsilon.
+off1 'rlqestdansvb;
+off1 'rlqefullans;      % Do not eliminate shift variables from answer.
+on1 'rlqebacksub;       % Back substitution in answer.
+on1 'rlqestdansq;       % Try to replace answers by quotients.
+on1 'rlqestdansint;     % Try to find integer solutions.
+on1 'rlqefilterbounds;  % Remove bounds w false guards before counting.
+off1 'rlqeidentify;
+on1 'rlqegenct;
+
+off1 'rlbrkcxk;         % Break complex kernels. PROBABLY RLQE ONLY.
+
+% rlqea
+on1 'rlqeasri;          % Simplifier-recognized implication for pasf answers.
+off1 'rlqeaprecise;     % Possibly avoid epsilon and infinity with rlqea.
+
+% rlsimpl
 on1 'rlsiso;
 on1 'rlsisocx;  % simplifier sort complex subformulas
 on1 'rlsiidem;
-off1 'rlidentify;
-off1 'rlrealtime;
-off1 'rlparallel;
-off1 'rlopt1s;
-on1 'rlqedfs;
-off1 'rlverbose;
 on1 'rlsichk;
 on1 'rlsism;
 off1 'rlsipw;
 on1 'rlsipo;
-on1 'rltabib;
+on1 'rlsiatadv;
+on1 'rlsipd;
+on1 'rlsiexpl;
+on1 'rlsiexpla;
+on1 'rlsifac;
+on1 'rlsitsqspl;
+on1 'rlsid;             % Smart simplification of derivatives in dcfsf.
+on1 'rlsiplugtheo;      % Plug in constant values of variables in the recursive theory (dcfsf only).
+off1 'rlsifaco;         % Factorize lhs of ordering inequalities in simplat.
+
+% rlgsn/rlgsc/rlgsd
 on1 'rlgssub;
 on1 'rlgsrad;
 on1 'rlgsred;
 on1 'rlgserf;
 off1 'rlgsprod;
 on1 'rlgsvb;
-off1 'rlsimpl;
-on1 'rlsiatadv;
-on1 'rlsipd;
-on1 'rlsiexpl;
-on1 'rlsiexpla;
-on1 'rlsifac;
-off1 'rlqesr;
-off1 'rlqeheu;
-off1 'rlqegsd;
-on1 'rldavgcd;
-on1 'rlsitsqspl;
 on1 'rlgsbnf;
 off1 'rlgsutord;
-on1 'rlqegenct;
-on1 'rltnft;
-on1 'rlqevarsel;
-off1 'rlnzden;
-off1 'rlposden;
-off1 'rladdcond;
-off1 'rlqeqsc;
-off1 'rlqesqsc;
+
+% ???
+off1 'rlopt1s;
+
+% Susi
 off1 'rlsusi;
 off1 'rlsusimult;
 off1 'rlsusigs;
 on1 'rlsusiadd;
+
+% rlcad
 on1 'rlcaddnfformula;
 off1 'rlcadpreponly;
 off1 'rlcadprojonly;
@@ -147,20 +201,11 @@ off1 'rlanuexsgnopt;
 off1 'rlcaddecdeg;
 on1 'rlcadte;
 on1 'rlcadpbfvs;
-on1 'rlqefb;
-on1 'rlxopt;
-on1 'rlxoptsb;    % select boundary type
-on1 'rlxoptpl;    % passive list
-on1 'rlxoptri;    % result inheritance
-off1 'rlxoptric;  % result inheritance to conatiner
-off1 'rlxoptrir;  % result inheritance to result
-on1 'rlxoptses;   % structural elimination sets.
-off1 'rlourdet;
-off1 'rlvmatvb;  % Fixied switch, provides debugging within ofsfdet
+
+% rlhqe
 on1 'rlhqetfcsplit;  % Splits type formula computation up to degree 4.
 off1 'rlhqetfcfast;  % Splits type formula computation unconditionally.
 off1 'rlhqetfcfullsplit;  % Compute case distinctions only for unknown signs.
-
 off1 'rlhqevb;          % More verbose output.
 on1 'rlhqevarsel;       % Optimize variable selection in the case dim I=n.
 on1 'rlhqevarselx;      % Advances optimization with more computational effort.
@@ -169,37 +214,33 @@ off1 'rlhqedim0;        % Only zero dimensional branches.
 off1 'rlhqegbred;       % Use reduced Groebner systems.
 off1 'rlhqeconnect;     % Connect branches which differs only in the theory.
 on1 'rlhqestrconst;     % Use combined structure constants.
-on1 'rlhqegbdimmin;     % Choose maximal independent variable set with
-                        % minimal cardinality in the case 0<dim<n.
-on1 'rlresi;            % Implicit (local) simplification for rlresolve.
-on1 'rlqeasri;          % Simplifier-recognized implication for pasf answers.
-off1 'rlqeaprecise;     % Possibly avoid epsilon and infinity with rlqea.
-on1 'rlqefilterbounds;  % Remove bounds w false guards before counting.
-off1 'rlsifaco;         % Factorize lhs of ordering inequalities in simplat.
-off1 'rlqelog;          % Hack by TS to look into elimination set generation.
-off1 'rlqeprecise;      % Possibly avoid epsilon and infinity with rlqe.
-off1 'rlqevarseltry;    % Allow rl_varsel to return several variables.
-on1 'rlsid;             % Smart simplification of derivatives in dcfsf.
-on1 'rlsiplugtheo;      % Plug in constant values of variables in the
-			% recursive theory (dcfsf only).
+on1 'rlhqegbdimmin;     % Choose maximal independent variable set with minimal cardinality in the case 0<dim<n.
+
+% rlxopt
+on1 'rlxopt;
+on1 'rlxoptsb;    % select boundary type
+on1 'rlxoptpl;    % passive list
+on1 'rlxoptri;    % result inheritance
+off1 'rlxoptric;  % result inheritance to conatiner
+off1 'rlxoptrir;  % result inheritance to result
+on1 'rlxoptses;   % structural elimination sets.
+
+% rlvsl
+off1 'rlvsllog;         % Extra verbose output for ofsf vs with learning.
+on1 'rlvsllearn;        % Learning for ofsf vs with learning.
+
+% DCFSF
 off1 'rlenffac;         % For dcfsf.
 on1 'rlenffacne;        % For dcfsf.
 on1 'rlplsimpl;         % For dcfsf.
-off1 'rlbrkcxk;         % Break complex kernels.
-off1 'rlqeidentify;
-on1 'rlqedyn;
-off1 'rlqesubf;
-on1 'rlqevb;
-off1 'rlqevbold;
-off1 'rlgetrtypecar;
-off1 'rlvsllog;         % Extra verbose output for ofsf vs with learning.
-on1 'rlvsllearn;        % Learning for ofsf vs with learning.
-off1 'rlqestdans;       % Remove pinf, minf, epsilon.
-off1 'rlqestdansvb;
-off1 'rlqefullans;      % Do not eliminate shift variables from answer.
-on1 'rlqebacksub;       % Back substitution in answer.
-on1 'rlqestdansq;       % Try to replace answers by quotients.
-on1 'rlqestdansint;     % Try to find integer solutions.
+
+% rlresolve
+on1 'rlresi;            % Implicit (local) simplification for rlresolve.
+
+on1 'rldavgcd;
+on1 'rltnft;
+off1 'rlourdet;
+off1 'rlvmatvb;  % Fixied switch, provides debugging within ofsfdet
 
 put('rlidentify,'simpfg,
    '((t (rl_identifyonoff t)) (nil (rl_identifyonoff nil))));

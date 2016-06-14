@@ -44,11 +44,11 @@ rl_helpdb!* := nil;
 rl_switchdb!* := nil;
 rl_helpindent!* := 3;
 
-put('?,'stat,'rlis);
-flag('(?),'go);
+%% put('?,'stat,'rlis);
+%% flag('(?),'go);
 
-procedure !?(l);
-   rl_help!$ l;
+%% procedure !?(l);
+%%    rl_help!$ l;
 
 procedure rl_help!$(l);
    if null l then

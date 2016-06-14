@@ -496,7 +496,11 @@ procedure cl_terml1(f);
    % set of all non-zero terms occurring in [f] as a list.
    for each x in cl_termml1 f collect car x;
 
-procedure cl_struct(f,v);
+
+asserted procedure cl_struct(f: Formula, fac: Boolean, v: Id): DottedPair;
+   if fac then cl_ifstruct(f, v) else cl_struct0(f, v);
+
+asserted procedure cl_struct0(f: Formula, v: Id): DottedPair;
    % Common logic structure of a formula. [f] is a formula; [v] is a
    % kernel. Returns a pair $(\phi . (..., (v_i . t_i), ...))$. The
    % $v_i$ are the kernels $[v] \circ i$ with $i = 1, 2, ...$; the
@@ -506,7 +510,7 @@ procedure cl_struct(f,v);
       w := cl_terml(f);
       w := for each s in w collect
 	 (s . mkid(v,j := j+1));
-      return cl_struct1(f,w) . w;
+      return cl_struct1(f,w) . for each pr in w collect cdr pr . car pr
    end;
 
 procedure cl_struct1(f,al);
@@ -525,7 +529,7 @@ procedure cl_ifstruct(f,v);
       w := cl_ifacl(f);
       w := for each s in w collect
 	 (s . mkid(v,j := j+1));
-      return cl_ifstruct1(f,w) . w;
+      return cl_ifstruct1(f,w) . for each pr in w collect cdr pr . car pr
    end;
 
 procedure cl_ifstruct1(f,al);

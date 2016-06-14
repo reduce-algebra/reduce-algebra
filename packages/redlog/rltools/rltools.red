@@ -55,6 +55,20 @@ fluid '(overflowed!*);
 fluid '(testing!-width!*);
 fluid '(rlsmaprinbuf!*);
 
+switch rlgensymintern;
+
+global '(rlgensymlen!*);
+rlgensymlen!* := rlgensymlen!* or 0;
+
+global '(rlgensymbase!*);
+rlgensymbase!* := rlgensymbase!* or '!_k;
+
+global '(rlgensymfast!*);
+rlgensymfast!* := rlgensymfast!* or ('!_k . 0);
+
+global '(rlgensymcountal!*);
+rlgensymcountal!* := rlgensymcountal!* or {rlgensymfast!*};
+
 exports ioto_prin2,ioto_tprin2,ioto_prin2t,ioto_tprin2t,ioto_prtmsg,
    ioto_cterpri,ioto_cplu,ioto_realtime,ioto_flush,ioto_datestamp,
    lto_insert,lto_insertq,lto_mergesort,lto_catsoc,lto_natsoc,lto_cassoc,
@@ -240,7 +254,7 @@ operator rlrndseed;
  	 a * (b / gcdn(a,b));
 #endif
 
- #if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
    fluid '(symbolfilename!*);
 
    procedure rltools_trunk();

@@ -64,7 +64,7 @@ imports rltools;
 fluid '(cl_identify!-atl!* cl_pal!* cl_lps!* cl_theo!*
    !*rlidentify !*rlsichk !*rlsism !*rlsiexpla !*rlbnfsm !*rlverbose
    !*rlsiidem !*rlsiso !*rlqepnf !*rlqedfs !*rlqeans !*rlqegsd !*rlqeheu
-   !*rlqegen !*rlbnfsac !*rltabib !*rltnft !*rlsipw !*rlsipo !*rlqevarsel
+   !*rlqegen !*rlbnfsac !*rltnft !*rlsipw !*rlsipo !*rlqevarsel
    !*rlspgs !*rlsithok !*rlqefb !*rlqelocal !*rlqeapprox !*rlresi !*rlqeprecise
    !*rlqeaprecise !*rlqestdans !*slat);
 

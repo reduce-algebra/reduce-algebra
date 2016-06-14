@@ -63,7 +63,7 @@ procedure cl_expand!-extbool(f);
       return f;
    end;
 
-procedure cl_nnf(f);
+asserted procedure cl_nnf(f: Formula): Formula;
    % Common logic negation normal form. [f] is a formula. Returns a
    % formula equivalent to [f] that does not contain the operator
    % [not].
@@ -380,11 +380,12 @@ asserted procedure cl_qvarl1(f: Formula): KernelL;
       return nil
    end;
 
-procedure cl_apnf(phi);
-   % Common logic anti-prenex normal form. [phi] is a positive
-   % formula. Returns a positive formula equivalent to [phi], where
-   % all quantifiers are moved to the inside as far as possible.
+asserted procedure cl_apnf(phi: Formula): Formula;
+   % Common logic anti-prenex normal form. [phi] is a formula. Returns a
+   % positive formula equivalent to [phi], where all quantifiers are moved to
+   % the inside as far as possible.
    begin scalar op;
+      phi := rl_nnf phi;
       op := rl_op phi;
       if op eq 'ex then
          return cl_apnf1(rl_var phi,cl_apnf rl_mat phi);
