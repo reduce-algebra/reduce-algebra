@@ -30,12 +30,208 @@
 module 'yylex;
 
 %
-% This is a lexical anaylser for use with RLISP. Its interface is
-% styles after the one needed by yacc, in that it exports a function
+% This is a lexical anaylser for use with the LALR parser generator.
+% By default it will handle items in the way that Rlisp does. Its interface
+% is styled after the one needed by yacc, in that it exports a function
 % called yylex() that returns as a value a category code, but
 % sets a variable yylval to details associated with the item
 % just parsed. The result will be an integer corresponding to a token
-% type.
+% type. By setting a flag I may change the lexical rules to match some
+% other language.
+%
+% The variations listed here are so I can collect my thoughts about what
+% options might plausibly arise. However having a fully general scheme
+% would need to await implementation of something like "lex" or "flex" and
+% that is overkill for the present!
+%
+% COMMENTS
+%
+% (1)  Rlisp    % ... EOL
+% (2)           COMMENT ... ; or $
+% (3)  C        /* ... */         (no nesting allowed)
+% (4)  C++      // ... EOL
+% (5)  SML      (* ... *)         (nesting honoured)
+% (6)  Shell    # ... EOL
+% (7)  CommonLisp  ; ... EOL
+% (8)  Haskell  -- ... EOL
+% (9)  CMD      REM ... EOL
+% (10) ?        [ ... ]
+%
+% I propose to ignore comments introduced by words, and assume that
+% placement on the line is not special, so that comments will be
+% recognised either at the start of a line or anywhere within.
+% This leaves the following cases
+% (.) A single character starts a comment, which then runs to
+%     the end of the line. (1), (6), (7).
+% (.) a pair of characters (not necessarily the same) start a comment
+%     that runs to end of line. (4), (8).
+% (.) A pair of characters open a comment and a different pair end it,
+%     with no nexting permitted. (3).
+% (.) As above but comments do nest. (5).
+% A grammar should be allowed to support one style of line comment and
+% one of multiline comment, but I think that having more choices beyond that
+% would feel excessive. Note the acronym YAGNI for "You ain't gonna need it"
+% applies! But in summary the reasonable generality would need:
+%    0, 1 or 2 characters that indicate line comments. If none then
+%        there are no line comments. If 1 then line comments are introduced
+%        by that character. If 2 they start with the character pair.
+%    a flag and 2 or 4 characters for block comments. The flag indicates
+%        whether nesting is supported. Well I suppose it should be
+%        (1 or 2) plus (1 or 2) characters since start or end could perhaps
+%        independently be either single characters or pairs.
+%
+%
+% NAMES
+%
+% Basic names will start with a letter and continue with letters or
+% digits.
+%
+% The key options are:
+% (1) Are not-letters permitted at the start or within a name? For instance
+%     Reduce allows "_" within a name but not as the first character. SML
+%     allows quote marks but treats a name differently if the first character
+%     is one. Common Lisp makes its lexer programmble, but by default it
+%     will count !, $, %, &, +, -, *, /, @ and more as alphabetic, with
+%     ", #, ', |, parentheses and comma perhaps having special status.
+%     So I probably need a way to mark which characters can start a symbol
+%     and which can continue it. SML also allows operator-like names, so I
+%     also need a second pair of character-sets to support that. Rlisp
+%     uses (!) as a character to escape something, while other languages
+%     use (\). TeX allows a name to start with (\) but does not allow that
+%     character within names.
+%     Common Lisp allows names to be written as "|any chars|" and may
+%     have special treatment of ":" within names: I will not support those
+%     options.
+%
+% (2) Strings will be in (") marks, but there is an issue about escapes.
+%     Many languages allow (\) escapes within strings and the exact rules
+%     can be messy. But if that is what is provided I think I should
+%     merely accept that the character after a (\) is treated as a generic
+%     character and is not special even if it is (\) or (").
+%
+% (3) Character literals may be like string literals but with single
+%     quotes?
+%
+%
+% NUMBERS
+%
+% I intend (at least at present) to take a simple view that numbers are
+% written in a naive simple way. That means that (at present) I will not
+% support suffix notation such as "1LL", and if I support non-decimal
+% notation at all it will be as in C/C++. Floating point may only use
+% the letter (E) or (e) as an exponent marker. I am certainly not going to
+% play games with Common Lisp "potential numbers"!
+%
+
+% (R)LISP SPECIALS
+%
+% For Rlisp/Lisp I want (') to act as a read-macro that leads to the
+% parsing of an s-expression! I will also make the lexer handle "#if" style
+% conditional sections.
+%
+%
+%
+% In the face of all this I will simplify and support just a small menu
+% of regimes:
+%  RLISP: Very specialist as far as the outside world is concerned, but
+%         given that this is part of REDUCE it makes sense. The main features
+%         are "!" as an escape character, "'" to introduce quoted expressions
+%         "%" for comments and "#if" for conditional inclusion.
+%  C/C++: Both "/*..*/" and "//" comments with broadly C-like rules for
+%         names and strings.
+%  SML:   Provided because I happen to have some SML that I wish to process.
+%         "(*..*)" nesting comments and sequences of operator-characters
+%         making up a single token are characteristic.
+%  Simple: For simple scripting I will provide a lexical scheme where "#"
+%         introduces a comment and syntax is otherwise rather C-like.
+%  TeX:   No strings, and names can be things lile "\begin" and "\(".
+%
+% I think that if I support just these (to start with) I should cover the
+% needs I have for now! In all cases reserved words and reserved sequences
+% of punctuation can emerge from the grammar, so of the grammar contains
+% a rule with ":=" or "begin" in it then those strings will be recognized
+% and treated specially.
+
+fluid '(lexer_style!*
+        lexer_style_rlisp lexer_style_c lexer_style_sml lexer_style_simple);
+
+#define lexer_comment_percent        1    %  "%..." is a comment
+#define lexer_comment_hash           2    %  "#..." is a comment
+#define lexer_comment_slashslash     4    %  "//..." is a comment
+#define lexer_comment_slashstar      8    %  "/*...*/" is a comment
+#define lexer_comment_lparstar      16    %  "(*...*)" is a comment
+#define lexer_comment_nesting       32    %  block comments nest
+% BEWARE - the nested option is not implemented yet, so SML-style
+% comments of the form "(* xxx (* xxx *) xxx *)" would give problems.
+% See the code at lex_skip_block_comment for where an upgrade to
+% support nesting would go.
+#define lexer_hashif                64    %  support for "#if"
+#define lexer_string               128    %  double quote starts a string
+#define lexer_char                 256    %  single quote starts a character
+#define lexer_string_escapes      1024    %  support "\x" escapes in strings
+#define lexer_string_rlisp        2048    %  "a""b" is string for 'a"b'
+#define lexer_start_underscore    4096    %  _word is a symbol
+#define lexer_start_backslash     8192    %  \word is a symbol
+#define lexer_start_prime        32768    %  'word is a (special) symbol
+#define lexer_cont_underscore    65536    %  a_b is a symbol
+#define lexer_escape_pling      131072    %  a!+!*!^b is a symbol
+#define lexer_cont_prime        262144    %  a'' is a symbol
+#define lexer_sml_operators     524288    %  +++*+++ is a symbol
+% sml_operators is not yet supported. To use multi-character operator-like
+% symbols it is at present essential that the sequence forms an explicit
+% terminal symbol in the grammar. Cases such as ":=" and "=>" and "::"
+% are really liable to, so I hope this will not be too much of a burden.
+% if this were to be changed it should be in the code that handles
+% lexical dipthongs.
+#define lexer_lispquote        1048576    %  '(s-expression) accepted
+#define lexer_spare1           2097152    % 2^21   spare
+#define lexer_spare2           4194304    % 2^22   spare
+#define lexer_spare3           8388608    % 2^23   spare
+#define lexer_spare4          16777216    % 2^24   spare
+
+% Establish simple names for some plausible combinations of options.
+
+lexer_style_rlisp :=
+   lexer_comment_percent +
+   lexer_hashif +
+   lexer_string +
+   lexer_string_rlisp +
+   lexer_cont_underscore +
+   lexer_escape_pling +
+   lexer_lispquote;
+  
+lexer_style_c :=
+   lexer_comment_slashslash +
+   lexer_comment_slashstar +
+   lexer_char +
+   lexer_string +
+   lexer_string_escapes +
+   lexer_start_underscore +
+   lexer_cont_underscore;
+  
+lexer_style_sml :=
+   lexer_comment_lparstar +
+   lexer_comment_nesting +
+   lexer_string +
+   lexer_string_escapes +
+   lexer_start_underscore +
+   lexer_cont_underscore +
+   lexer_start_prime +
+   lexer_cont_prime +
+   lexer_sml_operators;
+  
+lexer_style_simple :=
+   lexer_comment_hash +
+   lexer_string +
+   lexer_string_escapes +
+   lexer_start_underscore +
+   lexer_cont_underscore;
+  
+lexer_style!* := lexer_style_rlisp;
+
+symbolic inline procedure lexer_option o;
+  not zerop land(lexer_style!*, o);
+
 
 % Before using this lexer all the special tokens that it must handle
 % must be passed to it. These are passed as strings. Some of these
@@ -106,44 +302,52 @@ global '(lex_keyword_names lex_next_code lex_initial_next_code lex_codename);
 %                  cases that are keywords, or any other string of
 %                  characters with leading digits or underscores and any
 %                  punctuation marks preceeded by exclamation marks.
+%   :typename      A symbol whose name starts with a quote mark. This may
+%                  arise in SML mode.
 %   :string        Enclosed in double quotes. To include a double quote
 %                  within a string double it, as in "with ""inside"" quotes".
+%   :char          Enclosed in single quotes in C mode.
 %   :number        Either an integer or a floating point value. I will need
 %                  to review whether non-decimal representations for
 %                  integers (eg 0xff) are supported.
 %   :list          Either a quote or a backquote followed by Lisp-like
 %                  data, for instance 'word or `(template ,sub1 ,@sub2 end).
 
-put('!:eof,    'lex_fixed_code, 0);
-put('!:symbol, 'lex_fixed_code, 1);
-put('!:string, 'lex_fixed_code, 2);
-put('!:number, 'lex_fixed_code, 3);
-put('!:list,   'lex_fixed_code, 4);
+put('!:eof,     'lex_fixed_code, 0);
+put('!:symbol,  'lex_fixed_code, 1);
+put('!:typename,'lex_fixed_code, 2);
+put('!:string,  'lex_fixed_code, 3);
+put('!:char,    'lex_fixed_code, 4);
+put('!:number,  'lex_fixed_code, 5);
+put('!:list,    'lex_fixed_code, 6);
 
 % lex_codename is just used when generating trace output and maps from
 % numeric codes back to the corresponding terminal symbols. Because it is
 % only used for tracing I am not concerned about performance and I will use
 % a simple association list.
 
-lex_codename := '((0 . !:eof) (1 . !:symbol) (2 . !:string)
-                  (3 . !:number) (4 . !:list));
+lex_codename := '((0 . !:eof)    (1 . !:symbol) (2 . !:typename)
+                  (3 . !:string) (4 . !:char)   (5 . !:number)
+                  (6 . !:list));
 
 % All further terminals are given codes beyond the range used for the
 % primitive ones.
 
-lex_initial_next_code := lex_next_code := 5;
+lex_initial_next_code := lex_next_code := 7;
 
 lex_keyword_names := nil;
 
 global '(lex_escaped
          lex_eof_code lex_symbol_code lex_number_code
-         lex_string_code lex_list_code);
+         lex_string_code lex_char_code lex_list_code);
 
-lex_eof_code    := get('!:eof,    'lex_fixed_code);
-lex_symbol_code := get('!:symbol, 'lex_fixed_code);
-lex_number_code := get('!:number, 'lex_fixed_code);
-lex_string_code := get('!:string, 'lex_fixed_code);
-lex_list_code   := get('!:list,   'lex_fixed_code);
+lex_eof_code      := get('!:eof,      'lex_fixed_code);
+lex_symbol_code   := get('!:symbol,   'lex_fixed_code);
+lex_typename_code := get('!:typename, 'lex_fixed_code);
+lex_number_code   := get('!:number,   'lex_fixed_code);
+lex_string_code   := get('!:string,   'lex_fixed_code);
+lex_char_code     := get('!:char,     'lex_fixed_code);
+lex_list_code     := get('!:list,     'lex_fixed_code);
 
 
 % I will treat just very plain letters as items that can be in
@@ -153,13 +357,13 @@ lex_list_code   := get('!:list,   'lex_fixed_code);
 % mathematical (eg U+1d41a et seq)) are not treated as things that could
 % make a simple symbol without the nees for escapes. 
 
-symbolic procedure lex_unicode_alphabetic c;
+symbolic inline procedure lex_unicode_alphabetic c;
   (c >= 0x41 and c <= 0x5a) or (c >= 0x61 and c <= 0x7a);
 
 % Similarly only basic Latin digits can be used in numbers. "Other language"
 % digits and mathematical presentation forms will not count.
 
-symbolic procedure lex_unicode_numeric c;
+symbolic inline procedure lex_unicode_numeric c;
   (c >= 0x30 and c <= 0x39);
 
 symbolic procedure lex_keywords l;
@@ -227,8 +431,9 @@ symbolic procedure lex_cleanup();
       remprop(x, 'lex_dipthong) >>;
     lex_keyword_names := nil;
     lex_next_code := lex_initial_next_code;
-    lex_codename := '((0 . !:eof) (1 . !:symbol) (2 . !:string)
-                      (3 . !:number) (4 . !:list));
+    lex_codename := '((0 . !:eof)    (1 . !:symbol) (2 . !:typename)
+                      (3 . !:string) (4 . !:char)   (5 . !:number)
+                      (6 . !:list));
   end;
 
 % The following pair of procedures provide for switching back and forth  
@@ -264,26 +469,36 @@ symbolic procedure lex_restore_context(context);
 % to export the same structure for consumption by other code, like 
 % the parser generator.
 symbolic procedure lex_export_codes(); 
-  sort(lex_codename, function ordopcar); %% does this do what i think
+  sort(lex_codename, function ordopcar); %% does this do what I think?
 
 % I keep a circular buffer with the last 64 characters that have been
 % read. Initially the buffer contains NILs rather than characters, so I can
-% tell when it is only partially filled. I have tagged yyreadch() inline
-% because it is probably one of the time-critical parts of the entire
-% parsing process.
+% tell when it is only partially filled.
 
 % Note that in CSL (ar least) readch will return a character and it will
 % interpret UTF-8 multi-byte sequences as single characters where necessary.
 % So this code is (at least on CSL) unicode friendly.
 
+fluid '(yypeek_char!*);
+yypeek_char!* := nil;
+
 symbolic procedure yyreadch();
- << lex_char := readch();
+  if not null yypeek_char!* then <<
+    lex_char := yypeek_char!*;
+    yypeek_char!* := nil;
+    lex_char >>
+  else <<
+    lex_char := readch();
     if lex_char = !$eol!$ then which_line := which_line + 1;
-    if lex_char neq !$eof!$ then << 
+    if lex_char neq !$eof!$ then <<
       last64p := last64p + 1;
       if last64p = 64 then last64p := 0;
       putv(last64, last64p, lex_char) >>;
     lex_char >>;
+
+symbolic procedure yypeek();
+ << if null yypeek_char!* then yypeek_char!* := readch();
+    yypeek_char!* >>;
 
 symbolic procedure yyerror msg;
   begin
@@ -414,8 +629,11 @@ symbolic procedure yylex();
 % you can write it as (again for instance) "!comment" so it is not processed
 % here. Ha ha ha "comment" is now a keyword in that it will never generate
 % a lexer-code to pass back as a result. But it is recognised in the same
-% sort of circumstances that keywords are.
+% sort of circumstances that keywords are. Note that I only accept COMMENT
+% if I will also accept the special syntax    '(s-expression)   so I am
+% parsing RLISP.
     while w = lex_symbol_code and yylval = 'COMMENT and
+          lexer_option(lexer_lispquote) and
           not lex_escaped do <<
       while not (lex_char = '!; or lex_char = '!$) do yyreadch();
       yyreadch();
@@ -424,8 +642,9 @@ symbolic procedure yylex();
 % may be a keyword - if it is, then deal with it it here.
     if w = lex_symbol_code and not lex_escaped then <<
 % #define provides a simple (very simple) macro substitution scheme that is
-% probably too limited to be really useful.
-      if done := get(yylval, '!#define) then <<
+% probably too limited to be really useful. I will only make the substitution
+% if "#if" processing is enabled.
+      if done := get(yylval, '!#define) and lexer_option(lexer_hashif) then <<
         yylval := done;
         if numberp done then w := lex_number_code
         else if stringp done then w := lex_string_code;
@@ -437,24 +656,24 @@ symbolic procedure yylex();
     else if w = lex_symbol_code then <<
 % Note that the conditional compilation keywords are not recognised within
 % quoted expressions, so "'!#if" is safe here.
-      if yylval eq '!#if then <<
+      if yylval eq '!#if and lexer_option(lexer_hashif) then <<
         read_s_expression();
         w := lex_conditional yylval >>
-      else if yylval eq '!#else or
-              yylval eq '!#elif then <<
+      else if (yylval eq '!#else or
+               yylval eq '!#elif) and lexer_option(lexer_hashif) then <<
         if if_depth = 0 then yyerror "Unexpected #else of #elif"
         else if_depth := if_depth-1;
         yylval := nil;
         w := lex_skipping(w, nil) >>
-      else if yylval eq '!#endif then <<
+      else if yylval eq '!#endif and lexer_option(lexer_hashif) then <<
         if if_depth = 0 then yyerror "Unexpected #endif"
         else if_depth := if_depth-1;
         w := lex_basic_token() >>
-      else if yylval eq '!#eval then << 
+      else if yylval eq '!#eval and lexer_option(lexer_hashif) then << 
         read_s_expression();
         errorset(yylval, nil, nil);
         w := lex_basic_token() >>
-      else if yylval eq '!#define then <<
+      else if yylval eq '!#define and lexer_option(lexer_hashif) then <<
         read_s_expression();
         w := yylval;    % Ought to be a symbol, number of string
         done := read_s_expression();
@@ -463,7 +682,8 @@ symbolic procedure yylex();
         w := lex_basic_token();
         done := nil >>
       else if not lex_escaped then <<
-        if done := get(yylval, '!#define) then <<
+        if (done := get(yylval, '!#define)) and
+           lexer_option(lexer_hashif) then <<
           yylval := done;
           if numberp done then w := lex_number_code
           else if stringp done then w := lex_string_code;
@@ -489,6 +709,10 @@ symbolic procedure yylex();
 % "#if t" equivalents I have passed so that I can match them with their
 % corresponding "#endif" statements and moan if an "#else" or "#endif"
 % occurs out of place.
+%
+% If I wanted to support this in C mode I would need to introduce the
+% symbol "#ifdef" as well, and have a rather different scheme for
+% decoding conditions. However at present I ONLY support #if in RLISP mode.
 
 symbolic procedure lex_conditional x;
   begin
@@ -536,6 +760,53 @@ symbolic procedure lex_skipping(w, x);
 
 global '(lex_peeked lex_peeked_yylval lex_peeked_escaped);
 
+% There are a range of different ways in which a comment might start!
+
+symbolic procedure lex_start_line_comment ch;
+  (ch = '!% and lexer_option(lexer_comment_percent)) or
+  (ch = '!# and lexer_option(lexer_comment_hash));
+
+symbolic procedure lex_skip_line_comment();
+  << while not (lex_char = !$eol!$ or lex_char = !$eof!$) do yyreadch();
+     t >>;
+
+symbolic procedure lex_start_block_comment ch;
+  (ch = '!/ and yypeek() = '!* and lexer_option(lexer_comment_slashstar)) or
+  (ch = '!( and yypeek() = '!* and lexer_option(lexer_comment_lparstar));
+
+symbolic procedure lex_skip_block_comment();
+  begin
+    scalar flavour, term;
+    flavour  := lex_char;   % Tells if it was /* or (* style
+    if flavour = '!/ then term := '!/
+    else term := '!);
+    lex_char := yyreadch(); % reads the "*", previouly peeked
+% As implemented here this does not support nested block
+% comments. At some stage I might deal with that, but the
+% main language I know of that supports them is SML and the
+% SML code that I have at hand at present happpens not to
+% use any, so this does not feel urgent.
+    while ((lex_char := yyreadch()) neq '!* or
+           yypeekchar() neq term) and
+          lex_char neq !$eof!$ do nil;
+    lex_char := yyreadch();  % reads the terminating character.
+    return t
+  end;
+
+% Symbols have a range of rules about initial and subsequent characters.
+
+symbolic procedure lexer_word_starter ch;
+  liter ch or
+  (ch = '!_ and lexer_option(lexer_start_underscore)) or
+  (ch = '!' and lexer_option(lexer_start_prime)) or
+  (ch = '!\ and lexer_option(lexer_start_backslash));
+
+symbolic procedure lexer_word_continues ch;
+  liter ch or
+  digit ch or
+  (ch = '!_ and lexer_option(lexer_cont_underscore)) or
+  (ch = '!' and lexer_option(lexer_cont_prime));
+
 symbolic procedure lex_basic_token();
   begin
     scalar r, w;
@@ -546,7 +817,7 @@ symbolic procedure lex_basic_token();
 % Oh dear, what about the input
 %     #!#if
 % well that will return # and then #if, and because the inner "#if" is
-%  introduced with an exclamation mark it can not cause nested attempts at
+% introduced with an exclamation mark it can not cause nested attempts at
 % look-ahead. Whew.
     if lex_peeked then <<
       r := lex_peeked;
@@ -557,41 +828,53 @@ symbolic procedure lex_basic_token();
     lex_escaped := nil;
 % First skip over whitespace. Note that at some stage in the future RLISP
 % may want to make newlines significant and partially equivalent to
-% semicolons, but that is not supported at present.
-    while lex_char = '!  or lex_char = !$eol!$ or
-% I treat from "%" to the en dof a line as being comment.
-          (lex_char = '!% and <<
-            while not (lex_char = !$eol!$ or lex_char = !$eof!$) do yyreadch();
-            t >>) do yyreadch();
+% semicolons, but that is not supported at present. Indeed in this lexer
+% at present newline are treated like all other whitespace and are discarded.
+% So any syntax that needs to know about them is out of luck. Similarly
+% any syntax that depends on other fine details of whitespace such as
+% the distinction between space and tab, or indentation levels, will again
+% be out of luck - anybody needing that will need to provide their own
+% lexer. Possibly by modifying this one, or possibly by starting from
+% scratch.
+    while lex_char = '!  or
+          lex_char = !$eol!$ or
+          lex_char = tab or
+          (lex_start_line_comment lex_char and
+           lex_skip_line_comment()) or
+          (lex_start_block_comment lex_char and
+           lex_skip_block_comment()) do yyreadch();
+%
 % Symbols start with a letter or an escaped character and continue with
 % letters, digits, underscores and escapes.
-    if liter lex_char or
-       (lex_char = '!! and <<
+    if lexer_word_starter lex_char or
+       (lex_char = '!! and lexer_option(lexer_escape_pling) and <<
           yyreadch() where !*raise = nil, !*lower = nil;
           lex_escaped := t >>) then <<
       r := lex_char. r;
-      while yyreadch() = '!_ or
-            liter lex_char or
-            digit lex_char or
-            (lex_char = '!! and <<
+      while lexer_word_continues yyreadch() or
+            (lex_char = '!! and lexer_option(lexer_escape_pling) and <<
                yyreadch() where !*raise = nil, !*lower = nil;
                lex_escaped := t >>) do r := lex_char . r;
 % If there was a '!' in the word I will never treat it as a keyword.
 % That situation is spottable by virtue of the variable lex_escaped.
 % Note that list2widestring is passed a list of symbols here not integers,
 % bur recent implementations of it support that case.
-      yylval := intern list2widestring reversip r;
+      yylval := intern list2widestring (r := reversip r);
 %     if !*tracelex then <<
 %       princ "symbol is '"; prin yylval;
 %       princ "' lex_escaped="; prin lex_escaped;
 %       princ " lex_code="; print get(yylval, 'lex_code) >>;
       if not lex_escaped and (w := get(yylval, 'lex_code)) then return w
+      else if eqcar(r, '!') then return lex_typename_code
       else return lex_symbol_code >>
 % Numbers are either integers or floats. A floating point number is
 % indicated by either a point "." or an exponent marker "e". In the code
 % here I keep a flag (in w) to indicate if I had a floating or integer
 % value, but in the end I ignore this and hand back the lexical category
 % for :number in both cases. At present I will not handle radix specifiers.
+% I think I should probably upgrade this to support the notation 0xNNN for
+% hex numbers, and perhaps 0NNN for octal (though does anybody use octal
+% these days?).
     else if digit lex_char then <<
       r := list lex_char;
       while << yyreadch(); digit lex_char >> do r := lex_char . r;
@@ -621,7 +904,7 @@ symbolic procedure lex_basic_token();
 % Strings are enclosed in double-quotes, and "abc""def" is a string with
 % a double-quote mark within it. Note no case folding on characters in a
 % string.
-    else if lex_char = '!" then <<
+    else if lex_char = '!" and lexer_option(lexer_string) then <<
       begin
         scalar !*raise, !*lower;      % Make !*raise & !*lower both nil.
         repeat <<
@@ -631,13 +914,23 @@ symbolic procedure lex_basic_token();
       end;
       yylval := list2widestring reversip cdr r;
       return lex_string_code >>
+    else if lex_char = '!' and lexer_option(lexer_char) then <<
+      begin
+        scalar !*raise, !*lower;      % Make !*raise & !*lower both nil.
+        repeat <<
+          while not (yyreadch() = '!') do r := lex_char . r;
+          r := lex_char . r;
+          yyreadch() >> until not (lex_char = '!');
+      end;
+      yylval := list2widestring reversip cdr r;
+      return lex_char_code >>
 % "'" and "`"(backquote) introduce Lisp syntax S-expressions
-    else if lex_char = '!' then <<
+    else if lex_char = '!' and lexer_option(lexer_lispquote) then <<
       yyreadch();
       read_s_expression();
       yylval := list('quote, yylval);
       return lex_list_code >>
-    else if lex_char = '!` then <<
+    else if lex_char = '!` and lexer_option(lexer_lispquote) then <<
       yyreadch();
       read_s_expression();
       yylval := list('backquote, yylval);
@@ -659,7 +952,8 @@ symbolic procedure lex_basic_token();
 % about here, and that requires a 1-symbol look-ahead. Well even there
 % the look ahead only has to consider a whole symbol if the character after
 % the "#" is a letter (or an "!").
-      if yylval = '!# and liter lex_char or lex_char = '!! then <<
+      if (yylval = '!# and lexer_option(lexer_hashif) and liter lex_char)
+         or lex_char = '!! then <<
         r := lex_basic_token();
 % Observe that I only check yylval here not the type of token returned.
 % That is because words like "if" and "define" stand a real chance of being

@@ -25,14 +25,24 @@
 % non-terminals that are unambiguous even when case-folded, but I would like
 % to establish a convention that in source code they are written in capitals.
 %
-% The rhs items may be either non-terminals (identified because they are
+% The RHS items may be either non-terminals (identified because they are
 % present in the left hand side of some production) or terminals. Terminal
 % symbols can be specified in two different ways.
-% The lexer has built-in recipies that decode certain sequences of characters
-% and return the special markers for !:symbol, !:number, !:string, !:list for
-% commonly used cases. In these cases the variable yylval gets left set
-% to associated data, so for instance in the case of !:symbol it gets set
-% to the particular symbol concerned.
+%
+% Semantic actions must be given in Lisp, and the variables !$1, !$2, ...
+% refer to the components from the matched right hand side. The final
+% item in the semantic action is used as the result (and hence gets built
+% up into the parse tree). If an explicit action is not given the
+% behaviour is as if "(list !$1 !$2 ... !$n)" had been given, where the
+% number of items is the number of terms in the pattern -- with a special
+% case if there is only one item in which case the implicit action is
+% just "!$1".
+%
+% The default lexer has built-in recipies that decode certain sequences
+% of characters and return the special markers for !:symbol, !:number,
+% !:string, !:list for commonly used cases. In these cases the variable
+% yylval gets left set to associated data, so for instance in the case of
+% !:symbol it gets set to the particular symbol concerned.
 % The token type :list is used for Lisp or rlisp-like notation where the
 % input contains
 %     'expression
@@ -50,7 +60,10 @@
 % terminal then '<', '<-' and '<--' will each by parsed as single tokens, and
 % any of them that are not used as terminals will be classified as !:symbol.
 %
-% As well as terminals and non-terminals (which are wrirrent as symbols or
+% A non-default lexer needs to be hand-written and can be installed
+% for a grammar by using "set!-lexer". See examples.
+%
+% As well as terminals and non-terminals (which are written as symbols or
 % strings) it is possible to write one of
 %     (OPT s1 s2 ...)           0 or 1 instances of the sequence s1, ...
 %     (STAR s1 s2 ...)          0, 1, 2, ... instances
@@ -71,15 +84,28 @@
 % Precedence can be set using lalr_precedence. See examples lower down in this
 % file.
 
-% Limitations are
-% (1) At present the parser generator will not cope with large grammars
-%     because it does not merge rules promptly enough.
-% (2) The lexer is hand-written and can not readily be reconfigured for
-%     use with languages other than rlisp. For instance it has use of "!"
-%     as a character escape built into it.
+% Some of the limitations are:
+% (0) Testing has been pretty minimal so far, with the examples in this
+%     file the main ones used. Well testing is ongoing with a grammar
+%     for SML, and so things are improving on that front.
+% (1) The lexer is hand-written and hence somewhat inflexible. It does
+%     provide a set of option that can be used to tune it for (broad)
+%     compatibility with several commonly-used languages. Probably some
+%     people would appreciate something like "lex" or "flex" to make
+%     lexer generationm automatic?
+% (2) The issue of when input should end is not properly though through,
+%     and so it is easy to end up with a syntax error reported when the
+%     parser reaches what you had wanted to be the end of your input.
+% (3) Diagnostics if you give a malformed grammar are weak.
+% (4) The input format is perhaps crude, and in particular semantic actions
+%     have to be given as raw Lisp code.
+% (5) Diagnostics when you present malformed input to the parser are
+%     not that good either...
+% (6) The internals of the code use association lists and I *believe* that
+%     calls to assoc, rassoc and related functions represent bottlenecks
+%     such that processing could be made somewhat faster.
 %
-%
-
+% I have listed the above in the order that I think I need to work on them. 
 
 symbolic;
 

@@ -73,18 +73,12 @@
 fluid '(symbols nonterminals lex_context precedence_table);
 
 symbolic procedure lalr_precedence terminal;
-  begin 
-    scalar x;
-    if (x := getv(precedence_table, terminal)) then
-      return car x
-  end;
+  (if x then car x else nil)
+  where x = getv(precedence_table, terminal);
 
 symbolic procedure lalr_associativity terminal;
-  begin 
-    scalar x;
-    if (x := getv(precedence_table, terminal)) then 
-      return cdr x
-  end;
+  (if x then cdr x else nil)
+  where x = getv(precedence_table, terminal);
 
 % The following structure is provided for use by genparserprint.red, in which 
 % lives all the code for printing diagnostic information during the parser 
@@ -843,16 +837,7 @@ symbolic procedure lalr_analyze_lookaheads;
 % Searches the given itemset for the LALR item with the given production rule.
 % (Or in other words, with the given "LR(0) core".)
 symbolic procedure lalr_item_with_rule(rule, itemset);
-  begin
-    scalar result;
-    while itemset do <<
-      if caar itemset = rule then <<
-        result := car itemset;
-        itemset := nil >>
-      else 
-        itemset := cdr itemset >>;
-    return result
-  end;  
+  assoc(rule, itemset);
 
 
 
@@ -1182,11 +1167,7 @@ symbolic procedure cdrassoc(key, alist);
 
 
 symbolic procedure lalr_reduction_index rule;
-  begin
-    scalar x, rhs;
-    x := car rule; rhs := cdr rule;
-    return cdrassoc(rhs, lalr_productions x)
-  end;
+  cdrassoc(cdr rule, lalr_productions car rule);
 
 
 symbolic procedure lalr_construct_fn(lambda_expr, args_n);

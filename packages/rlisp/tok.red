@@ -1107,13 +1107,15 @@ symbolic procedure scan;
                      curescaped!* := (escaped!* := nil),
                      go to a)
          else if nxtsym!* eq '!#define then progn(
-                     x := errorset(rread(), !*backtrace, nil),
+                     x := errorset('(rread), !*backtrace, nil),
                      curescaped!* := (escaped!* := nil),
                      progn(if errorp x then go to a),
-                     y := errorset(rread(), !*backtrace, nil),
+                     y := errorset('(rread), !*backtrace, nil),
                      curescaped!* := (escaped!* := nil),
                      progn(if errorp y then go to a),
-                     put(x, 'newnam, y),
+                     put(car x, 'newnam, car y),
+% Print a message to show that the "#define" has been seen.
+                     princ "*** ", prin car x, princ " => ", print car y,
                      go to a)
          else if null(ttype!* = 3) then go to l
          else if nxtsym!* eq !$eof!$ then return filenderr()

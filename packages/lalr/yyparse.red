@@ -240,10 +240,13 @@ symbolic procedure yyparse parser;
 
     if w = nil then <<
       terpri();
-      yyerror(nil);
-      princ "states: "; print state_stack;
-      princ "symbols: "; print sym_stack;
-      princ "next token: "; print next_input >>;
+      w := append(explodec "Item ",
+             append(explode next_input,
+               explodec " unexpected."));
+      yyerror list2string w;
+      princ "states: "; print state_stack;       % Probably not useful.
+      princ "symbols: "; print sym_stack;        % Probably not useful.
+      princ "next token: "; print next_input >>; % Probably redundant.
 
     if !*lalr_verbose then <<
       if not zerop posn() then terpri();
