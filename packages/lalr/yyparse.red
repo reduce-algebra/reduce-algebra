@@ -242,7 +242,9 @@ symbolic procedure yyparse parser;
       terpri();
       w := append(explodec "Item ",
              append(explode next_input,
-               explodec " unexpected."));
+               append(explodec " ('",
+                 append(explodec yylval,
+                   explodec "') unexpected."))));
       yyerror list2string w;
       princ "states: "; print state_stack;       % Probably not useful.
       princ "symbols: "; print sym_stack;        % Probably not useful.

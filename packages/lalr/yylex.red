@@ -161,10 +161,6 @@ fluid '(lexer_style!*
 #define lexer_comment_slashstar      8    %  "/*...*/" is a comment
 #define lexer_comment_lparstar      16    %  "(*...*)" is a comment
 #define lexer_comment_nesting       32    %  block comments nest
-% BEWARE - the nested option is not implemented yet, so SML-style
-% comments of the form "(* xxx (* xxx *) xxx *)" would give problems.
-% See the code at lex_skip_block_comment for where an upgrade to
-% support nesting would go.
 #define lexer_hashif                64    %  support for "#if"
 #define lexer_string               128    %  double quote starts a string
 #define lexer_char                 256    %  single quote starts a character
@@ -338,8 +334,9 @@ lex_initial_next_code := lex_next_code := 7;
 lex_keyword_names := nil;
 
 global '(lex_escaped
-         lex_eof_code lex_symbol_code lex_number_code
-         lex_string_code lex_char_code lex_list_code);
+         lex_eof_code      lex_symbol_code   lex_typename_code
+         lex_number_code   lex_string_code   lex_char_code
+         lex_list_code);
 
 lex_eof_code      := get('!:eof,      'lex_fixed_code);
 lex_symbol_code   := get('!:symbol,   'lex_fixed_code);
@@ -479,7 +476,7 @@ symbolic procedure lex_export_codes();
 % interpret UTF-8 multi-byte sequences as single characters where necessary.
 % So this code is (at least on CSL) unicode friendly.
 
-fluid '(yypeek_char!*);
+fluid '(lex_char yypeek_char!*);
 yypeek_char!* := nil;
 
 symbolic procedure yyreadch();
@@ -496,9 +493,14 @@ symbolic procedure yyreadch();
       putv(last64, last64p, lex_char) >>;
     lex_char >>;
 
+% yypeek() must not mess with lex_char
+
 symbolic procedure yypeek();
- << if null yypeek_char!* then yypeek_char!* := readch();
-    yypeek_char!* >>;
+  begin
+    scalar lex_char;
+    if null yypeek_char!* then yypeek_char!* := yyreadch();
+    return yypeek_char!*
+  end;
 
 symbolic procedure yyerror msg;
   begin
@@ -513,8 +515,9 @@ symbolic procedure yyerror msg;
       if last64p = 64 then last64p := 0;
       c := getv(last64, last64p);
       if not (c = nil) then prin2 c >>;
+    princ "^^^";    % Marks where we had read as far as...
     if not (c = !$eol!$) then terpri();
-    if lex_char = !$eof!$ then printc "<EOF>"
+    if lex_char = !$eof!$ then printc "<EOF>";
   end;
 
 % Before a succession of calls to yylex() it is necessary to
@@ -781,14 +784,12 @@ symbolic procedure lex_skip_block_comment();
     if flavour = '!/ then term := '!/
     else term := '!);
     lex_char := yyreadch(); % reads the "*", previouly peeked
-% As implemented here this does not support nested block
-% comments. At some stage I might deal with that, but the
-% main language I know of that supports them is SML and the
-% SML code that I have at hand at present happpens not to
-% use any, so this does not feel urgent.
     while ((lex_char := yyreadch()) neq '!* or
-           yypeekchar() neq term) and
-          lex_char neq !$eof!$ do nil;
+           yypeek() neq term) and
+          lex_char neq !$eof!$ do <<
+       if lexer_option lexer_comment_nesting and
+          lex_start_block_comment lex_char then
+         lex_skip_block_comment() >>;
     lex_char := yyreadch();  % reads the terminating character.
     return t
   end;
@@ -948,14 +949,14 @@ symbolic procedure lex_basic_token();
 %  #if #else #elif #endif #eval and #define
 % to be accepted without needing an initial exclamation mark.
 % The spelling "!#if" (etc) will already have been coped with,
-% it is the case with no escape character I am concered
+% it is the case with no escape character I am concerned
 % about here, and that requires a 1-symbol look-ahead. Well even there
 % the look ahead only has to consider a whole symbol if the character after
 % the "#" is a letter (or an "!").
       if (yylval = '!# and lexer_option(lexer_hashif) and liter lex_char)
          or lex_char = '!! then <<
         r := lex_basic_token();
-% Observe that I only check yylval here not the type of token returned.
+% Observe that I only check yylval here (not the type of token returned).
 % That is because words like "if" and "define" stand a real chance of being
 % keywords! For this to be safe it is important that lex_basic_token
 % always updates yylval whatever it returns.

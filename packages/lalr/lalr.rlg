@@ -86,11 +86,13 @@
 
 % Some of the limitations are:
 % (0) Testing has been pretty minimal so far, with the examples in this
-%     file the main ones used.
-% (1) The lexer is hand-written and can not readily be reconfigured for
-%     use with languages other than rlisp. For instance it has use of "!"
-%     as a character escape built into it, as is the Rlisp convention for
-%     comments and "#if" etc preprocessing.
+%     file the main ones used. Well testing is ongoing with a grammar
+%     for SML, and so things are improving on that front.
+% (1) The lexer is hand-written and hence somewhat inflexible. It does
+%     provide a set of option that can be used to tune it for (broad)
+%     compatibility with several commonly-used languages. Probably some
+%     people would appreciate something like "lex" or "flex" to make
+%     lexer generationm automatic?
 % (2) The issue of when input should end is not properly though through,
 %     and so it is easy to end up with a syntax error reported when the
 %     parser reaches what you had wanted to be the end of your input.
