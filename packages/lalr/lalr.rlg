@@ -175,13 +175,13 @@ Result: (3 "a string")
 Result: (6 (quote (quoted lisp)))
 Result: (6 (backquote (backquoted (!, comma) (!,!@ comma_at))))
 Result: (1 !+)
-Result: (8 !<!=!>)
+Result: (28 !<!=!>)
 Result: (1 !-)
 Result: (1 !=)
 Result: (1 !>)
-Result: (10 !<)
-Result: (9 !<!=)
-Result: (7 begin)
+Result: (30 !<)
+Result: (29 !<!=)
+Result: (27 begin)
 Result: (1 !;)
 Result: (1 !;)
 Result: (1 !;)
@@ -189,6 +189,165 @@ Result: (1 !;)
 
 nil
 
+
+
+% I will now illustrate the various lexing styles that are available:
+
+symbolic procedure demonstrate_lexer style;
+  begin
+    lex_init();
+% This sets one of the "lexer styles".
+    lexer_style!* := style;
+    r := nil;
+    while << tt := yylex(); yylval neq '!; >> do r := (tt . yylval) . r;
+% Because the list that I print as a result can overflow line-length I
+% will display it using portable_print so that Lisp-level discrepancies
+% about how lines get broken will not cause confusion.
+    portable_print reverse r
+  end;
+*** nonlocal use of undeclared variable r in procedure demonstrate_lexer 
+
+*** nonlocal use of undeclared variable tt in procedure demonstrate_lexer 
+
+*** nonlocal use of undeclared variable tt in procedure demonstrate_lexer 
+
+*** nonlocal use of undeclared variable r in procedure demonstrate_lexer 
+
+*** nonlocal use of undeclared variable r in procedure demonstrate_lexer 
+
+*** nonlocal use of undeclared variable r in procedure demonstrate_lexer 
+
+
+
+demonstrate_lexer
+
+
+% I will read exactly the same sequence of characters using various lexer
+% styles so that token syntax, string treatment and comments show up.
+
+demonstrate_lexer lexer_style_rlisp;
+
+
+% Rlisp comment "C/SML strings\n""two strings not 1" char 'x'
+// Rlisp'n'SML here :=:
+/* /* C comments do not nest */ !Eek */
+(* SML (* comments *) nest *)
+#if nil
+Not in Rlisp
+#endif
+end;
+((1 . !/) (1 . !/) (1 . rlisp) (6 quote n) (6 quote sml) (1 . here) (1 . !:
+) (1 . !=) (1 . !:) (1 . !/) (1 . !*) (1 . !/) (1 . !*) (1 . c) (1 .
+comments) (1 . do) (1 . not) (1 . nest) (1 . !*) (1 . !/) (1 . !Eek) (1 . !*
+) (1 . !/) (1 . !() (1 . !*) (1 . sml) (1 . !() (1 . !*) (1 . comments) (1
+. !*) (1 . !)) (1 . nest) (1 . !*) (1 . !)) (1 . !#if) (1) (1 . not) (1 . in
+) (1 . rlisp) (1 . !#endif) (1 . end))
+
+nil
+;
+
+
+nil
+;
+
+
+nil
+
+
+demonstrate_lexer lexer_style_C;
+
+
+% Rlisp comment "C/SML strings\n""two strings not 1" char 'x'
+// Rlisp'n'SML here :=:
+/* /* C comments do not nest */ !Eek */
+(* SML (* comments *) nest *)
+#if nil
+Not in Rlisp
+#endif
+end;
+((1 . !%) (1 . rlisp) (1 . comment) (3 .
+"C/SML strings\n""two strings not 1") (1 . char) (4 . "x") (1 . !/) (1 . !/
+) (1 . rlisp) (4 . "n") (1 . !Sml) (1 . here) (1 . !:) (1 . !=) (1 . !:) (1
+. !!) (1 . eek) (1 . !*) (1 . !/) (1 . !() (1 . !*) (1 . sml) (1 . !() (1 .
+!*) (1 . comments) (1 . !*) (1 . !)) (1 . nest) (1 . !*) (1 . !)) (1 . !#) (
+1 . if) (1) (1 . not) (1 . in) (1 . rlisp) (1 . !#) (1 . endif) (1 . end))
+
+nil
+;
+
+
+nil
+;
+
+
+nil
+
+
+demonstrate_lexer lexer_style_SML;
+
+
+% Rlisp comment "C/SML strings\n""two strings not 1" char 'x'
+// Rlisp'n'SML here :=:
+/* /* C comments do not nest */ !Eek */
+(* SML (* comments *) nest *)
+#if nil
+Not in Rlisp
+#endif
+end;
+((1 . !%) (1 . rlisp) (1 . comment) (3 .
+"C/SML strings\n""two strings not 1") (1 . char) (2 . !'x!') (1 . !/!/) (1
+. rlisp!'n!'sml) (1 . here) (1 . !:!=!:) (1 . !/!*) (1 . !/!*) (1 . c) (1 .
+comments) (1 . do) (1 . not) (1 . nest) (1 . !*!/) (1 . !!) (1 . eek) (1 .
+!*!/) (1 . !#) (1 . if) (1) (1 . not) (1 . in) (1 . rlisp) (1 . !#) (1 .
+endif) (1 . end))
+
+nil
+;
+
+
+nil
+;
+
+
+nil
+
+
+demonstrate_lexer lexer_style_script;
+
+
+% Rlisp comment "C/SML strings\n""two strings not 1" char 'x'
+// Rlisp'n'SML here :=:
+/* /* C comments do not nest */ !Eek */
+(* SML (* comments *) nest *)
+#if nil
+Not in Rlisp
+#endif
+end;
+((1 . !%) (1 . rlisp) (1 . comment) (3 .
+"C/SML strings\n""two strings not 1") (1 . char) (1 . !') (1 . x) (1 . !') (
+1 . !/) (1 . !/) (1 . rlisp) (1 . !') (1 . n) (1 . !') (1 . sml) (1 . here)
+(1 . !:) (1 . !=) (1 . !:) (1 . !/) (1 . !*) (1 . !/) (1 . !*) (1 . c) (1 .
+comments) (1 . do) (1 . not) (1 . nest) (1 . !*) (1 . !/) (1 . !!) (1 . eek
+) (1 . !*) (1 . !/) (1 . !() (1 . !*) (1 . sml) (1 . !() (1 . !*) (1 .
+comments) (1 . !*) (1 . !)) (1 . nest) (1 . !*) (1 . !)) (1 . not) (1 . in)
+(1 . rlisp) (1 . end))
+
+nil
+;
+
+
+nil
+;
+
+
+nil
+
+
+
+lexer_style!* := lexer_style_rlisp;
+
+
+1247425
 
 
 on lalr_verbose;
@@ -232,8 +391,8 @@ grammar := '(
 g := lalr_create_parser(nil, grammar)$
 
 === Terminal symbols ===
-   d [8]
-   c [7]
+   d [28]
+   c [27]
 
 === Nonterminal symbols ===
 [-1] S'             : S                         { nil }
@@ -822,71 +981,71 @@ nil
 
 g := lalr_create_parser(p, mini_language)$
 
-Token 'eof' allocated code 7
-Token '!;' allocated code 8
-Token '!*' allocated code 9
-Token '!/' allocated code 10
-Token '!+' allocated code 11
-Token '!-' allocated code 12
-Token '!<' allocated code 13
+Token 'eof' allocated code 27
+Token '!;' allocated code 28
+Token '!*' allocated code 29
+Token '!/' allocated code 30
+Token '!+' allocated code 31
+Token '!-' allocated code 32
+Token '!<' allocated code 33
 dipthong data '!<' plus '!=' => '!<!='
-Token '!=' allocated code 16
+Token '!=' allocated code 36
 dipthong data '!=' plus '!=' => '!=!='
-Token 'neq' allocated code 17
+Token 'neq' allocated code 37
 dipthong data '!=' plus '!>' => '!=!>'
-Token '!>' allocated code 19
-Token '!:' allocated code 21
+Token '!>' allocated code 39
+Token '!:' allocated code 41
 dipthong data '!:' plus '!=' => '!:!='
-Token 'fun' allocated code 22
-Token 'if' allocated code 23
-Token 'then' allocated code 24
-Token 'else' allocated code 25
-Token 'go' allocated code 26
-Token 'goto' allocated code 27
-Token 'return' allocated code 28
-Token 'to' allocated code 29
-Token 'let' allocated code 30
-Token 'in' allocated code 31
-Token 'end' allocated code 32
-Token '!(' allocated code 33
-Token '!)' allocated code 34
-Token '![' allocated code 35
-Token '!]' allocated code 36
-Token '!,' allocated code 37
+Token 'fun' allocated code 42
+Token 'if' allocated code 43
+Token 'then' allocated code 44
+Token 'else' allocated code 45
+Token 'go' allocated code 46
+Token 'goto' allocated code 47
+Token 'return' allocated code 48
+Token 'to' allocated code 49
+Token 'let' allocated code 50
+Token 'in' allocated code 51
+Token 'end' allocated code 52
+Token '!(' allocated code 53
+Token '!)' allocated code 54
+Token '![' allocated code 55
+Token '!]' allocated code 56
+Token '!,' allocated code 57
 === Terminal symbols ===
-   , [37]
+   , [57]
    :string [3]
-   ] [36]
-   [ [35]
-   ) [34]
-   ( [33]
-   end [32]
-   in [31]
-   let [30]
+   ] [56]
+   [ [55]
+   ) [54]
+   ( [53]
+   end [52]
+   in [51]
+   let [50]
    :number [5]
-   to [29]
-   return [28] (precedence 5, left associativity)
-   goto [27]
+   to [49]
+   return [48] (precedence 5, left associativity)
+   goto [47]
    :symbol [1]
-   go [26]
-   else [25] (precedence 5, left associativity)
-   then [24] (precedence 5, left associativity)
-   if [23]
-   = [16] (precedence 4, right associativity)
-   fun [22]
-   := [20] (precedence 3, right associativity)
-   > [19] (precedence 2, none associativity)
-   => [18]
-   neq [17] (precedence 2, none associativity)
-   == [15] (precedence 2, none associativity)
-   <= [14] (precedence 2, none associativity)
-   < [13] (precedence 2, none associativity)
-   - [12] (precedence 1, left associativity)
-   + [11] (precedence 1, left associativity)
-   / [10] (precedence 0, left associativity)
-   * [9] (precedence 0, left associativity)
-   ; [8]
-   eof [7]
+   go [46]
+   else [45] (precedence 5, left associativity)
+   then [44] (precedence 5, left associativity)
+   if [43]
+   = [36] (precedence 4, right associativity)
+   fun [42]
+   := [40] (precedence 3, right associativity)
+   > [39] (precedence 2, none associativity)
+   => [38]
+   neq [37] (precedence 2, none associativity)
+   == [35] (precedence 2, none associativity)
+   <= [34] (precedence 2, none associativity)
+   < [33] (precedence 2, none associativity)
+   - [32] (precedence 1, left associativity)
+   + [31] (precedence 1, left associativity)
+   / [30] (precedence 0, left associativity)
+   * [29] (precedence 0, left associativity)
+   ; [28]
+   eof [27]
 
 === Nonterminal symbols ===
 [-1] S'             : PROGRAM                   { nil }
@@ -4912,7 +5071,7 @@ pparse g$
 yylex initialized
 
 fun 
-yylex = fun type 22
+yylex = fun type 42
 Shift token fun onto stack, and shift to state 17
 f(
 yylex = f type 1
@@ -4921,7 +5080,7 @@ On lookahead -1, reduce 1 symbols to nonterminal CLOSEDEXPRESSION
 , and goto state 5
 On lookahead -1, reduce 1 symbols to nonterminal FUNCALL, and goto state 18
 a
-yylex = !( type 33
+yylex = !( type 53
 Shift token !( onto stack, and shift to state 9
 ,
 yylex = a type 1
@@ -4929,8 +5088,8 @@ Shift token a onto stack, and shift to state 14
 On lookahead -1, reduce 1 symbols to nonterminal CLOSEDEXPRESSION
 , and goto state 5
 On lookahead -1, reduce 1 symbols to nonterminal FUNCALL, and goto state 4
-yylex = !, type 37
-On lookahead 37, reduce 1 symbols to nonterminal EXPRESSION, and goto state 65
+yylex = !, type 57
+On lookahead 57, reduce 1 symbols to nonterminal EXPRESSION, and goto state 65
 Shift token !, onto stack, and shift to state 72
 b)
 yylex = b type 1
@@ -4938,21 +5097,21 @@ Shift token b onto stack, and shift to state 14
 On lookahead -1, reduce 1 symbols to nonterminal CLOSEDEXPRESSION
 , and goto state 5
 On lookahead -1, reduce 1 symbols to nonterminal FUNCALL, and goto state 4
-yylex = !) type 34
-On lookahead 34, reduce 1 symbols to nonterminal EXPRESSION, and goto state 73
-On lookahead 34, reduce 0 symbols to nonterminal LALR_INTERNAL_23
+yylex = !) type 54
+On lookahead 54, reduce 1 symbols to nonterminal EXPRESSION, and goto state 73
+On lookahead 54, reduce 0 symbols to nonterminal LALR_INTERNAL_23
 , and goto state 74
-On lookahead 34, reduce 3 symbols to nonterminal LALR_INTERNAL_23
+On lookahead 54, reduce 3 symbols to nonterminal LALR_INTERNAL_23
 , and goto state 71
-On lookahead 34, reduce 2 symbols to nonterminal LALR_INTERNAL_21
+On lookahead 54, reduce 2 symbols to nonterminal LALR_INTERNAL_21
 , and goto state 67
-On lookahead 34, reduce 1 symbols to nonterminal EXPRLIST, and goto state 66
+On lookahead 54, reduce 1 symbols to nonterminal EXPRLIST, and goto state 66
 Shift token !) onto stack, and shift to state 70
 On lookahead -1, reduce 3 symbols to nonterminal CLOSEDEXPRESSION
 , and goto state 19
 On lookahead -1, reduce 2 symbols to nonterminal FUNCALL, and goto state 18
  = 
-yylex = != type 16
+yylex = != type 36
 Shift token != onto stack, and shift to state 20
 a 
 yylex = a type 1
@@ -4961,8 +5120,8 @@ On lookahead -1, reduce 1 symbols to nonterminal CLOSEDEXPRESSION
 , and goto state 5
 On lookahead -1, reduce 1 symbols to nonterminal FUNCALL, and goto state 4
 +
-yylex = !+ type 11
-On lookahead 11, reduce 1 symbols to nonterminal EXPRESSION, and goto state 21
+yylex = !+ type 31
+On lookahead 31, reduce 1 symbols to nonterminal EXPRESSION, and goto state 21
 Shift token !+ onto stack, and shift to state 30
  b;
 yylex = b type 1
@@ -4970,10 +5129,10 @@ Shift token b onto stack, and shift to state 14
 On lookahead -1, reduce 1 symbols to nonterminal CLOSEDEXPRESSION
 , and goto state 5
 On lookahead -1, reduce 1 symbols to nonterminal FUNCALL, and goto state 4
-yylex = !; type 8
-On lookahead 8, reduce 1 symbols to nonterminal EXPRESSION, and goto state 35
-On lookahead 8, reduce 3 symbols to nonterminal EXPRESSION, and goto state 21
-On lookahead 8, reduce 4 symbols to nonterminal EXPRESSION, and goto state 3
+yylex = !; type 28
+On lookahead 28, reduce 1 symbols to nonterminal EXPRESSION, and goto state 35
+On lookahead 28, reduce 3 symbols to nonterminal EXPRESSION, and goto state 21
+On lookahead 28, reduce 4 symbols to nonterminal EXPRESSION, and goto state 3
 Shift token !; onto stack, and shift to state 80
 
 f(
@@ -4983,7 +5142,7 @@ On lookahead -1, reduce 1 symbols to nonterminal CLOSEDEXPRESSION
 , and goto state 5
 On lookahead -1, reduce 1 symbols to nonterminal FUNCALL, and goto state 4
 2
-yylex = !( type 33
+yylex = !( type 53
 Shift token !( onto stack, and shift to state 9
 2,
 yylex = 22 type 5
@@ -4991,8 +5150,8 @@ Shift token 22 onto stack, and shift to state 11
 On lookahead -1, reduce 1 symbols to nonterminal CLOSEDEXPRESSION
 , and goto state 5
 On lookahead -1, reduce 1 symbols to nonterminal FUNCALL, and goto state 4
-yylex = !, type 37
-On lookahead 37, reduce 1 symbols to nonterminal EXPRESSION, and goto state 65
+yylex = !, type 57
+On lookahead 57, reduce 1 symbols to nonterminal EXPRESSION, and goto state 65
 Shift token !, onto stack, and shift to state 72
 33)
 yylex = 33 type 5
@@ -5000,28 +5159,28 @@ Shift token 33 onto stack, and shift to state 11
 On lookahead -1, reduce 1 symbols to nonterminal CLOSEDEXPRESSION
 , and goto state 5
 On lookahead -1, reduce 1 symbols to nonterminal FUNCALL, and goto state 4
-yylex = !) type 34
-On lookahead 34, reduce 1 symbols to nonterminal EXPRESSION, and goto state 73
-On lookahead 34, reduce 0 symbols to nonterminal LALR_INTERNAL_23
+yylex = !) type 54
+On lookahead 54, reduce 1 symbols to nonterminal EXPRESSION, and goto state 73
+On lookahead 54, reduce 0 symbols to nonterminal LALR_INTERNAL_23
 , and goto state 74
-On lookahead 34, reduce 3 symbols to nonterminal LALR_INTERNAL_23
+On lookahead 54, reduce 3 symbols to nonterminal LALR_INTERNAL_23
 , and goto state 71
-On lookahead 34, reduce 2 symbols to nonterminal LALR_INTERNAL_21
+On lookahead 54, reduce 2 symbols to nonterminal LALR_INTERNAL_21
 , and goto state 67
-On lookahead 34, reduce 1 symbols to nonterminal EXPRLIST, and goto state 66
+On lookahead 54, reduce 1 symbols to nonterminal EXPRLIST, and goto state 66
 Shift token !) onto stack, and shift to state 70
 On lookahead -1, reduce 3 symbols to nonterminal CLOSEDEXPRESSION
 , and goto state 19
 On lookahead -1, reduce 2 symbols to nonterminal FUNCALL, and goto state 4
 
 eof
-yylex = eof type 7
-On lookahead 7, reduce 1 symbols to nonterminal EXPRESSION, and goto state 81
-On lookahead 7, reduce 0 symbols to nonterminal LALR_INTERNAL_17
+yylex = eof type 27
+On lookahead 27, reduce 1 symbols to nonterminal EXPRESSION, and goto state 81
+On lookahead 27, reduce 0 symbols to nonterminal LALR_INTERNAL_17
 , and goto state 82
-On lookahead 7, reduce 3 symbols to nonterminal LALR_INTERNAL_17
+On lookahead 27, reduce 3 symbols to nonterminal LALR_INTERNAL_17
 , and goto state 79
-On lookahead 7, reduce 2 symbols to nonterminal LALR_INTERNAL_15
+On lookahead 27, reduce 2 symbols to nonterminal LALR_INTERNAL_15
 , and goto state 2
 Shift token eof onto stack, and shift to state 83
 On lookahead -1, reduce 2 symbols to nonterminal PROGRAM, and goto state 1

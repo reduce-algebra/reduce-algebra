@@ -47,11 +47,24 @@ symbolic procedure carx(u,v);
 fluid '(!*ll!*);
 
 symbolic procedure p_print(u, blankfirst);
-  if atom u then
+  if vectorp u then <<
+    if blankfirst then <<
+      if (posn() + 2) > !*ll!* then terpri()
+      else prin2 '!  >>
+    else if (posn()+1) >= !*ll!* then terpri();
+    prin2 "[";
+    if upbv u >= 0 then <<
+      p_print(getv(u, 0), nil);
+      for i := 1 : upbv u do p_print(getv(u, i), t) >>;
+    if (posn()+1) >= !*ll!* then terpri();
+    prin2 "]" >>
+  else if atom u then
   begin
     scalar n, e;
-% Vectors are treated however "explode" handles them (at present).
-    n := length (e := explode u);
+% Vectors are treated in whatever style "explode" handles them (at present).
+    e := explode u;
+    if eqcar(e, '!_) then e := '!! . e; % patch for PSL behaviour June 2016
+    n := length e;
     if blankfirst then <<
       if (posn() + n + 1) > !*ll!* then terpri()
       else prin2 '!  >>

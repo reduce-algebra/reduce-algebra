@@ -124,7 +124,6 @@ lex_keywords '("begin" "<=>" "<==");
 %  Result: (4 200)
 %  Result: (4 3.542)
 %  Result: (3 "a string")
-%  Result: (2 nil)
 %  Result: (5 (quote (quoted lisp)))
 %  Result: (5 (backquote (backquoted (!, comma) (!,!@ comma_at))))
 %  Result: (2 !+)
@@ -137,7 +136,6 @@ lex_keywords '("begin" "<=>" "<==");
 %  Result: (5 begin)
 %  Result: (2 !;)
 %  Result: (2 !;)
-%  Result: (2 !;)
 %
 %  nil
 
@@ -147,14 +145,17 @@ lex_keywords '("begin" "<=>" "<==");
 % syntax and so the rest of this test file will be able to continue happily.
 
 
-<< off echo;
-   lex_init();
-   for i := 1:18 do <<
-     tt := yylex();
-     if not zerop posn() then terpri();
-     princ "Result: ";
-     print list(tt, yylval) >>;
-   on echo >>;
+begin
+  scalar tt;
+  off echo;
+  lex_init();
+  for i := 1:16 do <<
+    tt := yylex();
+    if not zerop posn() then terpri();
+    princ "Result: ";
+    print list(tt, yylval) >>;
+  on echo
+end;
 
 symbol
 200
@@ -169,8 +170,89 @@ symbol
 <
 <=
 begin
-; ; ; ;
+; ; ;
 
+
+% I will now illustrate the various lexing styles that are available:
+
+symbolic procedure demonstrate_lexer style;
+  begin
+    scalar tt, r;
+    lex_init();
+% This sets one of the "lexer styles".
+    lexer_style!* := style;
+    while << tt := yylex(); yylval neq '!; >> do r := (tt . yylval) . r;
+% Because the list that I print as a result can overflow line-length I
+% will display it using portable_print so that Lisp-level discrepancies
+% about how lines get broken will not cause confusion.
+    portable_print reverse r
+  end;
+
+% I will read exactly the same sequence of characters using various lexer
+% styles so that token syntax, string treatment and comments show up.
+
+demonstrate_lexer lexer_style_rlisp;
+% Rlisp
+# script comment test $
+// C line
+/* C block /* no_nesting */ outside */
+(* SML (* nesting *) inside *)
+'x'
+"strings \" twice \" escapes & embedded "" quotes"
+quote'-'chars :=: !!!! _ _ABC mixed!Case a!-b
+0xBadFace
+#if nil
+conditional
+#endif
+;;;
+
+demonstrate_lexer lexer_style_C;
+% Rlisp
+# script comment test $
+// C line
+/* C block /* no_nesting */ outside */
+(* SML (* nesting *) inside *)
+'x'
+"strings \" twice \" escapes & embedded "" quotes"
+quote'-'chars :=: !!!! _ _ABC mixed!Case a!-b
+0xBadFace
+#if nil
+conditional
+#endif
+;;;
+
+demonstrate_lexer lexer_style_SML;
+% Rlisp
+# script comment test $
+// C line
+/* C block /* no_nesting */ outside */
+(* SML (* nesting *) inside *)
+'x'
+"strings \" twice \" escapes & embedded "" quotes"
+quote'-'chars :=: !!!! _ _ABC mixed!Case a!-b
+0xBadFace
+#if nil
+conditional
+#endif
+;;;
+
+demonstrate_lexer lexer_style_script;
+% Rlisp
+# script comment test $
+// C line
+/* C block /* no_nesting */ outside */
+(* SML (* nesting *) inside *)
+'x'
+"strings \" twice \" escapes & embedded "" quotes"
+quote'-'chars :=: !!!! _ _ABC mixed!Case a!-b
+0xBadFace
+#if nil
+conditional
+#endif
+;;;
+
+
+lexer_style!* := lexer_style_rlisp;
 
 on lalr_verbose;
 
